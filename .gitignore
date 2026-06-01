@@ -9,3 +9,11 @@ winvenv/
 __pycache__/
 *.pyc
 *.zip
+*.backup
+*.backup_*
+*.bak
+*.bak_*
+server.log
+reports/
+pruebas_legible*.txt
+resultados_pruebas.csv
