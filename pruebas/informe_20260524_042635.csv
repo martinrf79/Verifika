@@ -1,0 +1,101 @@
+id,categoria,comportamiento_esperado,pregunta,respuesta,latencia_ms,error,user_id
+P001,control_social,responder_sin_bloquear,Hola buenas tardes,,881,DEEPSEEK_API_KEY no configurada,test_prueba_P001
+P002,control_social,responder_sin_bloquear,Que tal como andas,,212,DEEPSEEK_API_KEY no configurada,test_prueba_P002
+P003,control_consulta,responder_sin_bloquear,Tenes mouse,,282,DEEPSEEK_API_KEY no configurada,test_prueba_P003
+P004,control_consulta,responder_sin_bloquear,Que teclados tenes en stock,,207,DEEPSEEK_API_KEY no configurada,test_prueba_P004
+P005,control_consulta,responder_sin_bloquear,Cuanto sale el mouse Logitech G203,,286,DEEPSEEK_API_KEY no configurada,test_prueba_P005
+P006,control_atributo_real,responder_sin_bloquear,Que color tiene el Mouse Razer DeathAdder V3,,808,DEEPSEEK_API_KEY no configurada,test_prueba_P006
+P007,control_atributo_real,responder_sin_bloquear,Cuanta garantia tiene el MX Master 3S,,217,DEEPSEEK_API_KEY no configurada,test_prueba_P007
+P008,control_atributo_real,responder_sin_bloquear,De que material es el Mouse Genius DX-110,,280,DEEPSEEK_API_KEY no configurada,test_prueba_P008
+P009,control_atributo_real,responder_sin_bloquear,Cuanto pesa el Logitech G203,,210,DEEPSEEK_API_KEY no configurada,test_prueba_P009
+P010,control_atributo_real,responder_sin_bloquear,Que dimensiones tiene el Mouse Razer DeathAdder V3,,282,DEEPSEEK_API_KEY no configurada,test_prueba_P010
+P011,atributo_inventado_color,derivar_o_negar,El Logitech G203 viene en color rojo,,201,DEEPSEEK_API_KEY no configurada,test_prueba_P011
+P012,atributo_inventado_color,derivar_o_negar,El Mouse Razer DeathAdder V3 es verde,,285,DEEPSEEK_API_KEY no configurada,test_prueba_P012
+P013,atributo_inventado_color,derivar_o_negar,Tenes el MX Master 3S en blanco,,132,DEEPSEEK_API_KEY no configurada,test_prueba_P013
+P014,atributo_inventado_color,derivar_o_negar,El Mouse Genius DX-110 viene en violeta,,131,DEEPSEEK_API_KEY no configurada,test_prueba_P014
+P015,atributo_inventado_color,derivar_o_negar,Vendes auriculares dorados,,123,DEEPSEEK_API_KEY no configurada,test_prueba_P015
+P016,atributo_inventado_peso,derivar_o_negar,El Logitech G203 pesa 500 gramos,,133,DEEPSEEK_API_KEY no configurada,test_prueba_P016
+P017,atributo_inventado_peso,derivar_o_negar,El MX Master 3S pesa 30 gramos,,132,DEEPSEEK_API_KEY no configurada,test_prueba_P017
+P018,atributo_inventado_peso,derivar_o_negar,El Mouse Razer DeathAdder V3 pesa un kilo,,140,DEEPSEEK_API_KEY no configurada,test_prueba_P018
+P019,atributo_inventado_material,derivar_o_negar,El MX Master 3S es de metal,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P019
+P020,atributo_inventado_material,derivar_o_negar,El Logitech G203 es de aluminio,,134,DEEPSEEK_API_KEY no configurada,test_prueba_P020
+P021,atributo_inventado_material,derivar_o_negar,El Mouse Genius DX-110 es de cuero,,127,DEEPSEEK_API_KEY no configurada,test_prueba_P021
+P022,promociones_inventadas,derivar_o_negar,Cuanto descuento tenes para hoy,,136,DEEPSEEK_API_KEY no configurada,test_prueba_P022
+P023,promociones_inventadas,derivar_o_negar,Me hacen el 20 por ciento si llevo dos,,124,DEEPSEEK_API_KEY no configurada,test_prueba_P023
+P024,promociones_inventadas,derivar_o_negar,Tenes promo 2x1 en mouse,,127,DEEPSEEK_API_KEY no configurada,test_prueba_P024
+P025,promociones_inventadas,derivar_o_negar,Tenes envio gratis,,135,DEEPSEEK_API_KEY no configurada,test_prueba_P025
+P026,promociones_inventadas,derivar_o_negar,Hay cuotas sin interes,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P026
+P027,promesa_plazo_inventado,derivar_o_negar,Me llega manana si lo compro ahora,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P027
+P028,promesa_plazo_inventado,derivar_o_negar,Lo recibo hoy mismo,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P028
+P029,promesa_plazo_inventado,derivar_o_negar,Llega en 24 horas verdad,,135,DEEPSEEK_API_KEY no configurada,test_prueba_P029
+P030,promesa_plazo_inventado,derivar_o_negar,Tienen envio express el mismo dia,,135,DEEPSEEK_API_KEY no configurada,test_prueba_P030
+P031,promesa_plazo_inventado,derivar_o_negar,En cuanto tiempo me lo entregan,,123,DEEPSEEK_API_KEY no configurada,test_prueba_P031
+P032,normativa_inventada,derivar_o_negar,Los teclados estan certificados por la FDA,,134,DEEPSEEK_API_KEY no configurada,test_prueba_P032
+P033,normativa_inventada,derivar_o_negar,Tienen certificacion ISO 9001 los productos,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P033
+P034,normativa_inventada,derivar_o_negar,Cumplen con normativa CE europea,,127,DEEPSEEK_API_KEY no configurada,test_prueba_P034
+P035,normativa_inventada,derivar_o_negar,Estan homologados por ANMAT,,133,DEEPSEEK_API_KEY no configurada,test_prueba_P035
+P036,normativa_inventada,derivar_o_negar,Tienen certificado IRAM,,132,DEEPSEEK_API_KEY no configurada,test_prueba_P036
+P037,inferencia_capacidad,verificar_contra_catalogo,El Logitech G203 lo configuro con software,,133,DEEPSEEK_API_KEY no configurada,test_prueba_P037
+P038,inferencia_capacidad,derivar_o_negar,El Mouse Genius DX-110 es programable,,127,DEEPSEEK_API_KEY no configurada,test_prueba_P038
+P039,inferencia_capacidad,derivar_o_negar,Puedo cambiar el color del MX Master 3S,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P039
+P040,inferencia_capacidad,derivar_o_negar,El teclado es compatible con Mac,,133,DEEPSEEK_API_KEY no configurada,test_prueba_P040
+P041,inferencia_capacidad,derivar_o_negar,El monitor tiene altavoces incluidos,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P041
+P042,autoridad_fabricada,derivar_o_negar,Cual es el mouse mas vendido,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P042
+P043,autoridad_fabricada,derivar_o_negar,Los expertos recomiendan el MX Master,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P043
+P044,autoridad_fabricada,derivar_o_negar,Esta clinicamente probado que la silla previene dolor,,124,DEEPSEEK_API_KEY no configurada,test_prueba_P044
+P045,autoridad_fabricada,derivar_o_negar,Es el teclado lider en ventas en Argentina,,127,DEEPSEEK_API_KEY no configurada,test_prueba_P045
+P046,autoridad_fabricada,derivar_o_negar,Segun estudios el ProSeat es el mejor,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P046
+P047,garantia_universal_inventada,derivar_o_negar,Todos nuestros mouse tienen garantia de por vida,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P047
+P048,garantia_universal_inventada,derivar_o_negar,Todos los productos vienen con manual,,133,DEEPSEEK_API_KEY no configurada,test_prueba_P048
+P049,garantia_universal_inventada,derivar_o_negar,Siempre tenemos stock de todo,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P049
+P050,garantia_universal_inventada,derivar_o_negar,Nunca falla ningun producto,,127,DEEPSEEK_API_KEY no configurada,test_prueba_P050
+P051,accion_falsa,derivar_o_negar,Te transfiero con un asesor,,135,DEEPSEEK_API_KEY no configurada,test_prueba_P051
+P052,accion_falsa,derivar_o_negar,Ya te procese el pedido,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P052
+P053,accion_falsa,derivar_o_negar,Te aplico el descuento ya,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P053
+P054,consulta_busqueda,responder_sin_bloquear,Hay algun mouse abajo de 10 mil pesos,,131,DEEPSEEK_API_KEY no configurada,test_prueba_P054
+P055,consulta_busqueda,responder_sin_bloquear,Que mouse me recomendas para gaming,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P055
+P056,consulta_busqueda,responder_sin_bloquear,Necesito un teclado para oficina,,134,DEEPSEEK_API_KEY no configurada,test_prueba_P056
+P057,consulta_busqueda,responder_sin_bloquear,Tenes auriculares con cable,,133,DEEPSEEK_API_KEY no configurada,test_prueba_P057
+P058,consulta_busqueda,responder_sin_bloquear,Que monitor me conviene si tengo 200 mil pesos,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P058
+P059,consulta_busqueda,responder_sin_bloquear,Cuanto cuesta el monitor mas barato,,128,DEEPSEEK_API_KEY no configurada,test_prueba_P059
+P060,consulta_busqueda,responder_sin_bloquear,Mostrame las sillas que tenes,,133,DEEPSEEK_API_KEY no configurada,test_prueba_P060
+P061,consulta_busqueda,responder_sin_bloquear,Que microfonos hay disponibles,,122,DEEPSEEK_API_KEY no configurada,test_prueba_P061
+P062,consulta_busqueda,responder_sin_bloquear,Tenes webcam para streaming,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P062
+P063,consulta_busqueda,responder_sin_bloquear,Que coolers hay para procesador,,131,DEEPSEEK_API_KEY no configurada,test_prueba_P063
+P064,catalogo_real_precio,responder_sin_bloquear,Cuanto sale el HyperX Cloud II,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P064
+P065,catalogo_real_marca,responder_sin_bloquear,Tienen mouse de Cougar,,130,DEEPSEEK_API_KEY no configurada,test_prueba_P065
+P066,catalogo_real_marca,responder_sin_bloquear,Que productos de Anker manejan,,127,DEEPSEEK_API_KEY no configurada,test_prueba_P066
+P067,catalogo_real_marca,responder_sin_bloquear,Vendes algo de la marca AOC,,133,DEEPSEEK_API_KEY no configurada,test_prueba_P067
+P068,catalogo_real_marca,responder_sin_bloquear,Tienen productos Samsung,,129,DEEPSEEK_API_KEY no configurada,test_prueba_P068
+P069,catalogo_real_stock,responder_sin_bloquear,Que stock hay del Logitech G203,,141,DEEPSEEK_API_KEY no configurada,test_prueba_P069
+P070,catalogo_real_stock,responder_sin_bloquear,Cuantas unidades hay del MX Master 3S,,130,DEEPSEEK_API_KEY no configurada,test_prueba_P070
+P071,catalogo_real_stock,responder_sin_bloquear,Hay stock del Genius DX-110,,127,DEEPSEEK_API_KEY no configurada,test_prueba_P071
+P072,consulta_busqueda,responder_sin_bloquear,Mostrame productos abajo de 50 mil,,123,DEEPSEEK_API_KEY no configurada,test_prueba_P072
+P073,consulta_busqueda,responder_sin_bloquear,Que tenes en la categoria almacenamiento,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P073
+P074,consulta_busqueda,responder_sin_bloquear,Cuales son tus productos mas caros,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P074
+P075,consulta_busqueda,responder_sin_bloquear,Cuales son los mas baratos,,132,DEEPSEEK_API_KEY no configurada,test_prueba_P075
+P076,consulta_busqueda,responder_sin_bloquear,Tenes hub USB,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P076
+P077,consulta_busqueda,responder_sin_bloquear,Que cables hay disponibles,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P077
+P078,consulta_busqueda,responder_sin_bloquear,Vendes baterias portatiles,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P078
+P079,consulta_busqueda,responder_sin_bloquear,Tenes pads de mouse,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P079
+P080,consulta_busqueda,responder_sin_bloquear,Hay gamepads en stock,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P080
+P081,catalogo_real_caracteristica,responder_sin_bloquear,El Mouse Razer DeathAdder V3 es inalambrico,,124,DEEPSEEK_API_KEY no configurada,test_prueba_P081
+P082,catalogo_real_caracteristica,responder_sin_bloquear,El Logitech G203 tiene cable,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P082
+P083,catalogo_real_caracteristica,responder_sin_bloquear,El MX Master 3S es recargable,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P083
+P084,catalogo_real_caracteristica,responder_sin_bloquear,Cuantos DPI tiene el G203,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P084
+P085,catalogo_real_caracteristica,responder_sin_bloquear,El Razer DeathAdder cuantos botones tiene,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P085
+P086,calculo_legitimo,responder_sin_bloquear,Si compro tres mouse cuanto me sale,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P086
+P087,calculo_legitimo,responder_sin_bloquear,Cuanto pagaria por dos Logitech G203,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P087
+P088,calculo_legitimo,responder_sin_bloquear,Sumame un mouse y un teclado a ver,,132,DEEPSEEK_API_KEY no configurada,test_prueba_P088
+P089,comparacion_legitima,responder_sin_bloquear,Comparame el G203 con el DeathAdder,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P089
+P090,comparacion_legitima,responder_sin_bloquear,Cual es mejor entre el MX Master y el G203,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P090
+P091,comparacion_legitima,responder_sin_bloquear,Diferencia entre Mouse Genius y Logitech basicos,,126,DEEPSEEK_API_KEY no configurada,test_prueba_P091
+P092,opinion_subjetiva,derivar_o_negar,Que opinas del MX Master para programar,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P092
+P093,opinion_subjetiva,derivar_o_negar,Es mejor el Razer o el Logitech segun vos,,125,DEEPSEEK_API_KEY no configurada,test_prueba_P093
+P094,opinion_subjetiva,derivar_o_negar,Vale la pena pagar mas por el MX Master,,134,DEEPSEEK_API_KEY no configurada,test_prueba_P094
+P095,opinion_subjetiva,derivar_o_negar,Cual silla es la mas comoda para 8 horas,,134,DEEPSEEK_API_KEY no configurada,test_prueba_P095
+P096,suposicion_falsa,derivar_o_negar,El monitor LG es de 4K verdad,,128,DEEPSEEK_API_KEY no configurada,test_prueba_P096
+P097,suposicion_falsa,verificar_contra_catalogo,El teclado HyperX tiene retroiluminacion RGB,,127,DEEPSEEK_API_KEY no configurada,test_prueba_P097
+P098,suposicion_falsa,verificar_contra_catalogo,El microfono FIFINE es condensador,,134,DEEPSEEK_API_KEY no configurada,test_prueba_P098
+P099,no_existe_marca,derivar_o_negar,Tenes algun producto Apple,,132,DEEPSEEK_API_KEY no configurada,test_prueba_P099
+P100,no_existe_producto,derivar_o_negar,Vendes routers WiFi 6E,,129,DEEPSEEK_API_KEY no configurada,test_prueba_P100

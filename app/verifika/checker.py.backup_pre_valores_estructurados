@@ -1,0 +1,193 @@
+"""
+CHECKER — valida cada afirmación atómica contra la evidencia.
+
+CLAVE: el Checker recibe SOLO las afirmaciones y la evidencia. No ve la
+respuesta original ni la pregunta. Esto rompe el sesgo de autoconfirmación.
+
+Para cada afirmación dictamina:
+- "soportada": la evidencia la respalda directamente
+- "contradicha": la evidencia la contradice
+- "sin_evidencia": la evidencia no menciona el tema
+
+La decisión final (responder o no) la toma el Router de Confianza, no el Checker.
+"""
+import json
+from typing import Optional
+
+from app.verifika.llm_adapter import llm_complete
+from app.logger import get_logger
+
+log = get_logger(__name__)
+
+
+CHECKER_SYSTEM_PROMPT = """Sos un verificador de hechos. Recibís una lista de afirmaciones y un conjunto de evidencia (datos reales del catálogo y FAQ). Tu única tarea es decidir, para cada afirmación, si la evidencia la respalda.
+
+REGLAS:
+1. NO uses conocimiento externo. SOLO la evidencia provista.
+2. "soportada" si la afirmación menciona elementos que están literalmente en la evidencia, aunque la frase no sea idéntica. Ejemplo, FAQ dice "aceptamos transferencia, Mercado Pago y tarjetas Visa, Mastercard, American Express", bot dice "aceptamos Mercado Pago", es "soportada" porque Mercado Pago está literal en la FAQ.
+3. "soportada" si la afirmación es un subconjunto correcto de lo que dice la evidencia. Ejemplo, FAQ enumera cuatro medios de pago, bot enumera dos de esos cuatro sin agregar otros, es "soportada".
+4. "contradicha" si la afirmación extiende, generaliza o cambia condiciones de lo que dice la evidencia. Ejemplo, FAQ dice "cuotas sin interés solo con Visa y Mastercard", bot dice "cuotas sin interés con cualquier tarjeta", es "contradicha". También si agrega medios de pago, marcas o servicios que la evidencia no menciona.
+5. "contradicha" si los números no coinciden. Si afirmación dice 280000 y evidencia dice 285000, es "contradicha". Si dice "10 por ciento" y evidencia dice "diez por ciento", es "soportada" porque es el mismo número en distinto formato.
+6. "sin_evidencia" si la evidencia no menciona el tema en absoluto.
+7. NO inventes datos. Reconocer paráfrasis equivalentes está permitido, inventar condiciones nuevas no.
+
+FORMATO DE SALIDA: JSON estricto, sin texto antes ni después.
+{
+  "veredictos": [
+    {"id": "a1", "veredicto": "soportada|contradicha|sin_evidencia", "evidencia_id": "..." o null, "razon": "breve"},
+    ...
+  ]
+}
+
+El campo "evidencia_id" debe ser el ID del producto o tema de FAQ que respalda la afirmación.
+Si veredicto es "sin_evidencia", evidencia_id es null.
+"""
+
+
+def _format_evidence(evidence: list[dict]) -> str:
+    """Convierte la lista de evidencia a texto legible para el modelo."""
+    if not evidence:
+        return "(sin evidencia disponible)"
+
+    lines = []
+    for item in evidence:
+        tipo = item.get("tipo", "producto")
+        if tipo == "producto":
+            lines.append(
+                f"[{item.get('id', '?')}] {item.get('nombre', '?')} "
+                f"| categoria: {item.get('categoria', '?')} "
+                f"| marca: {item.get('marca', '?')} "
+                f"| modelo: {item.get('modelo', '?')} "
+                f"| precio: {item.get('precio_ars', '?')} pesos "
+                f"| stock: {item.get('stock', '?')} unidades "
+                f"| color: {item.get('color', '?')} "
+                f"| material: {item.get('material', '?')} "
+                f"| peso: {item.get('peso_gramos', '?')} gramos "
+                f"| dimensiones: {item.get('dimensiones', '?')} "
+                f"| garantia: {item.get('garantia_meses', '?')} meses "
+                f"| uso: {item.get('uso_recomendado', '?')} "
+                f"| descripcion: {item.get('descripcion', '')} "
+                f"| caracteristicas: {item.get('caracteristicas_extra', '')}"
+            )
+        elif tipo == "faq":
+            lines.append(
+                f"[FAQ-{item.get('id', '?')}] tema: {item.get('tema', '?')} "
+                f"| respuesta: {item.get('respuesta', '')}"
+            )
+        else:
+            lines.append(f"[{item.get('id', '?')}] {json.dumps(item, ensure_ascii=False)}")
+
+    return "\n".join(lines)
+
+
+def check_claims(afirmaciones: list[dict],
+                 evidence: list[dict],
+                 trace_id: Optional[str] = None) -> list[dict]:
+    """
+    Verifica cada afirmación contra la evidencia.
+
+    Args:
+        afirmaciones: lista de {"id", "texto", "tipo"} del Proposer
+        evidence: lista de productos/FAQs recuperados durante la búsqueda
+        trace_id: para logging correlacionado
+
+    Returns:
+        Lista de veredictos: [{"id", "veredicto", "evidencia_id", "razon"}, ...]
+    """
+    if not afirmaciones:
+        log.info("checker_no_claims", trace_id=trace_id)
+        return []
+
+    afirmaciones_texto = "\n".join(
+        f"- {a['id']}: {a['texto']}" for a in afirmaciones
+    )
+
+    evidencia_texto = _format_evidence(evidence)
+
+    user_message = f"""EVIDENCIA DISPONIBLE:
+{evidencia_texto}
+
+AFIRMACIONES A VERIFICAR:
+{afirmaciones_texto}
+
+Devolvé el JSON con los veredictos."""
+
+    messages = [
+        {"role": "system", "content": CHECKER_SYSTEM_PROMPT},
+        {"role": "user", "content": user_message},
+    ]
+
+    try:
+        result = llm_complete(
+            messages=messages,
+            role="checker",
+            temperature=0.0,
+            max_tokens=1000,
+            trace_id=trace_id,
+        )
+    except Exception as e:
+        log.error("checker_llm_error", trace_id=trace_id, error=str(e)[:200])
+        # Si el Checker falla, devolvemos "sin_evidencia" para todas
+        # (el Router de Confianza decidirá qué hacer)
+        return [
+            {"id": a["id"], "veredicto": "sin_evidencia",
+             "evidencia_id": None, "razon": "checker_error"}
+            for a in afirmaciones
+        ]
+
+    content = result.get("content", "").strip()
+
+    if content.startswith("```"):
+        content = content.split("```")[1] if "```" in content[3:] else content[3:]
+        if content.startswith("json"):
+            content = content[4:]
+        content = content.strip()
+
+    try:
+        parsed = json.loads(content)
+    except json.JSONDecodeError as e:
+        log.warning("checker_json_invalid", trace_id=trace_id,
+                    error=str(e)[:100], content_preview=content[:200])
+        return [
+            {"id": a["id"], "veredicto": "sin_evidencia",
+             "evidencia_id": None, "razon": "json_invalid"}
+            for a in afirmaciones
+        ]
+
+    veredictos = parsed.get("veredictos", [])
+    if not isinstance(veredictos, list):
+        return [
+            {"id": a["id"], "veredicto": "sin_evidencia",
+             "evidencia_id": None, "razon": "no_list"}
+            for a in afirmaciones
+        ]
+
+    # Asegurar que todas las afirmaciones tengan veredicto
+    veredictos_por_id = {v.get("id"): v for v in veredictos if isinstance(v, dict)}
+    final = []
+    for a in afirmaciones:
+        v = veredictos_por_id.get(a["id"])
+        if not v or v.get("veredicto") not in ("soportada", "contradicha", "sin_evidencia"):
+            final.append({
+                "id": a["id"],
+                "veredicto": "sin_evidencia",
+                "evidencia_id": None,
+                "razon": "missing_or_invalid",
+            })
+        else:
+            final.append({
+                "id": a["id"],
+                "veredicto": v["veredicto"],
+                "evidencia_id": v.get("evidencia_id"),
+                "razon": v.get("razon", "")[:100],
+            })
+
+    soportadas = sum(1 for v in final if v["veredicto"] == "soportada")
+    contradichas = sum(1 for v in final if v["veredicto"] == "contradicha")
+    sin_evidencia = sum(1 for v in final if v["veredicto"] == "sin_evidencia")
+
+    log.info("checker_ok", trace_id=trace_id,
+             total=len(final), soportadas=soportadas,
+             contradichas=contradichas, sin_evidencia=sin_evidencia)
+
+    return final

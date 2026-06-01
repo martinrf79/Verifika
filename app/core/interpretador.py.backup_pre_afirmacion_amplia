@@ -1,0 +1,323 @@
+"""
+INTERPRETADOR - capa de interpretacion previa al Solver.
+
+Recibe el mensaje del cliente mas contexto enriquecido y devuelve JSON
+estructurado para que el orchestrator decida el flujo.
+
+v2: prompt mas estricto, decision_compra solo con frases inequivocas.
+    Doble seguro: validacion local de palabras de cierre.
+
+Feature flag: USE_INTERPRETER=true para activarlo. False por default.
+"""
+import os
+import json
+import re
+from openai import OpenAI
+from app.config import get_settings
+from app.logger import get_logger
+
+log = get_logger(__name__)
+settings = get_settings()
+
+USE_INTERPRETER = os.getenv("USE_INTERPRETER", "false").lower() == "true"
+UMBRAL_CONFIANZA_ALTA = float(os.getenv("INTERPRETER_UMBRAL_ALTA", "0.85"))
+UMBRAL_CONFIANZA_MEDIA = float(os.getenv("INTERPRETER_UMBRAL_MEDIA", "0.6"))
+
+# Palabras inequivocas de cierre para doble seguro
+PALABRAS_CIERRE_INEQUIVOCAS = [
+    "lo llevo", "la llevo", "los llevo", "las llevo",
+    "lo quiero", "la quiero", "los quiero", "las quiero",
+    "lo compro", "la compro",
+    "dale", "dale lo llevo", "dale ese", "dale esa",
+    "ok cerrado", "cerramos", "cerrado",
+    "lo voy a llevar", "la voy a llevar",
+    "pasame el link", "mandame el link",
+    "me lo guardas", "me la guardas",
+    "me lo reservas", "me la reservas",
+]
+
+# Afirmaciones cortas que valen como cierre SOLO si el bot pregunto algo de compra
+AFIRMACIONES_CORTAS = [
+    "si", "sí", "sip", "siii", "siiii",
+    "dale", "ok", "okey", "okay", "oka",
+    "claro", "obvio", "perfecto", "listo",
+    "bueno", "buenisimo", "buenísimo",
+    "va", "vale", "joya",
+    "si por favor", "sí por favor", "si porfa", "sí porfa",
+    "si dale", "sí dale",
+    "me interesa", "si me interesa", "sí me interesa",
+]
+
+# Patrones que indican que el bot hizo una propuesta de cierre
+PATRONES_PROPUESTA_CIERRE = [
+    "te lo llevas", "te la llevas", "te los llevas", "te las llevas",
+    "te lo llevás", "te la llevás",
+    "lo queres", "la queres", "los queres", "las queres",
+    "lo querés", "la querés",
+    "te lo reservo", "te la reservo",
+    "te interesa", "te interesan",
+    "cerramos", "lo confirmas", "lo confirmás",
+    "te lo guardo", "te la guardo",
+    "lo llevamos", "la llevamos",
+    "te lo mando", "te la mando",
+    "te lo envio", "te la envio", "te lo envío", "te la envío",
+    "coordinamos", "avanzamos",
+]
+
+_client = None
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        _client = OpenAI(
+            api_key=settings.DEEPSEEK_API_KEY,
+            base_url="https://api.deepseek.com/v1",
+        )
+    return _client
+
+
+RE_PRODUCTO_PRECIO = re.compile(
+    r"\*\*([^*]+)\*\*[^$]*?\$\s*([\d.]+)"
+)
+
+
+def extraer_productos_mostrados(history: list[dict],
+                                  ultimos_n_turnos: int = 4) -> list[dict]:
+    """Extrae productos mencionados en los ultimos turnos del bot."""
+    productos = []
+    turnos_bot = [h for h in history[-ultimos_n_turnos*2:]
+                  if h.get("role") == "assistant"]
+
+    for turno in turnos_bot[-ultimos_n_turnos:]:
+        contenido = turno.get("content", "")
+        matches = RE_PRODUCTO_PRECIO.findall(contenido)
+        for nombre, precio_str in matches:
+            try:
+                precio = int(precio_str.replace(".", "").replace(",", ""))
+                productos.append({
+                    "nombre": nombre.strip(),
+                    "precio": precio,
+                })
+            except ValueError:
+                continue
+
+    vistos = set()
+    productos_unicos = []
+    for p in productos:
+        clave = p["nombre"]
+        if clave not in vistos:
+            vistos.add(clave)
+            productos_unicos.append(p)
+
+    return productos_unicos
+
+
+def tiene_palabra_cierre_inequivoca(mensaje: str) -> bool:
+    """Doble seguro: chequea si el mensaje contiene frases inequivocas de cierre."""
+    msg = mensaje.lower()
+    for frase in PALABRAS_CIERRE_INEQUIVOCAS:
+        if frase in msg:
+            return True
+    return False
+
+
+def bot_hizo_propuesta_cierre(ultimo_turno_bot: str) -> bool:
+    """Detecta si el ultimo mensaje del bot contiene propuesta de cierre."""
+    if not ultimo_turno_bot:
+        return False
+    texto = ultimo_turno_bot.lower()
+    for patron in PATRONES_PROPUESTA_CIERRE:
+        if patron in texto:
+            return True
+    return False
+
+
+def es_afirmacion_corta(mensaje: str) -> bool:
+    """Detecta si el mensaje del cliente es una afirmacion corta de cierre."""
+    msg = mensaje.lower().strip()
+    msg = msg.rstrip(".!?,;: ")
+    if msg in AFIRMACIONES_CORTAS:
+        return True
+    # Tambien acepta variantes con signos repetidos tipo siii o daleeee
+    if len(msg) <= 15:
+        for afirm in AFIRMACIONES_CORTAS:
+            if msg.startswith(afirm) and len(msg) - len(afirm) <= 5:
+                return True
+    return False
+
+
+def construir_prompt_interpretador(mensaje: str,
+                                     ultimos_turnos_bot: list[str],
+                                     productos_mostrados: list[dict]) -> str:
+    """Arma el prompt cerrado para DeepSeek."""
+
+    contexto_bot = "\n".join([
+        f"Turno bot anterior {i+1}: {t[:300]}"
+        for i, t in enumerate(ultimos_turnos_bot)
+    ]) or "Sin turnos previos del bot"
+
+    productos_str = "\n".join([
+        f"- {p['nombre']} a ${p['precio']:,}"
+        for p in productos_mostrados
+    ]) or "Sin productos mostrados aun"
+
+    prompt = f"""Sos un interpretador de mensajes de clientes en un bot de ventas argentino.
+Tu tarea es analizar el mensaje del cliente y devolver SOLO un JSON valido.
+
+CONTEXTO DE LA CONVERSACION:
+{contexto_bot}
+
+PRODUCTOS QUE EL BOT YA MOSTRO AL CLIENTE:
+{productos_str}
+
+MENSAJE ACTUAL DEL CLIENTE:
+{mensaje}
+
+DEVOLVE SOLO ESTE JSON, SIN TEXTO ADICIONAL:
+{{
+  "intencion": "saludo|exploracion|pregunta_especifica|decision_compra|otra",
+  "producto_resuelto": "nombre exacto del producto si el cliente se refiere a uno mostrado, o null",
+  "candidatos": ["nombres de productos alternativos si hay ambiguedad"],
+  "confianza": 0.0 a 1.0,
+  "datos_pedido": null
+}}
+
+REGLAS ESTRICTAS PARA INTENCION:
+
+saludo: hola, buenas, que tal, buen dia, holis.
+
+exploracion: que venden, que tienen, mostrame X, tenes Y, hay Z.
+
+pregunta_especifica: cualquier pregunta sobre un producto concreto.
+Ejemplos: precio de X, cuanto sale, hacen envios, tienen stock,
+me interesa, me gusta, me sirve, lo necesito, podria llevarlo,
+de que color es, que medidas tiene.
+IMPORTANTE: "me interesa el de X" es pregunta_especifica, NO decision_compra.
+El cliente esta evaluando, no decidio aun.
+
+decision_compra: SOLO si el cliente expresa decision INEQUIVOCA de compra.
+Ejemplos validos: lo llevo, la llevo, lo quiero, lo compro, dale,
+ok cerrado, cerramos, pasame el link, me lo guardas, me lo reservas,
+voy con ese, dale ese, dale lo llevo.
+NO uses decision_compra para: me interesa, me gusta, me sirve, lo necesito,
+podria llevarlo, esta bueno, esta lindo, me convence.
+Esas frases son pregunta_especifica o exploracion.
+
+otra: no encaja en las anteriores.
+
+REGLAS DE PRODUCTO RESUELTO:
+- producto_resuelto solo si hay UN producto claro entre los mostrados.
+- Si hay duda, null.
+
+REGLAS DE CANDIDATOS:
+- candidatos solo si hay 2 o mas productos posibles entre los mostrados.
+
+REGLAS DE CONFIANZA:
+- alta 0.85+: match exacto por precio unico, nombre completo, o frase inequivoca.
+- media 0.6-0.85: match parcial razonable.
+- baja menor a 0.6: ambiguedad real.
+
+RESPUESTA SOLO EL JSON."""
+
+    return prompt
+
+
+async def interpretar_mensaje(mensaje: str,
+                                history: list[dict],
+                                trace_id: str) -> dict:
+    """Funcion principal del Interpretador."""
+    try:
+        turnos_bot = [h.get("content", "") for h in history
+                       if h.get("role") == "assistant"][-2:]
+
+        productos = extraer_productos_mostrados(history)
+
+        # SHORT CIRCUIT por par propuesta de cierre del bot mas afirmacion corta
+        # del cliente. Evita llamada al LLM y resuelve el caso si monosilabo.
+        ultimo_turno_bot = turnos_bot[-1] if turnos_bot else ""
+        if (bot_hizo_propuesta_cierre(ultimo_turno_bot)
+                and es_afirmacion_corta(mensaje)
+                and productos):
+            producto_contexto = productos[-1]["nombre"]
+            log.info("interpretador_cierre_por_afirmacion_corta",
+                     trace_id=trace_id,
+                     mensaje=mensaje[:50],
+                     producto=producto_contexto)
+            return {
+                "intencion": "decision_compra",
+                "producto_resuelto": producto_contexto,
+                "candidatos": [],
+                "confianza": 0.95,
+                "datos_pedido": None,
+            }
+
+        prompt = construir_prompt_interpretador(mensaje, turnos_bot, productos)
+
+        client = _get_client()
+        response = client.chat.completions.create(
+            model=settings.DEEPSEEK_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+            max_tokens=400,
+        )
+
+        raw = response.choices[0].message.content or ""
+
+        cleaned = raw.strip()
+        if cleaned.startswith("```"):
+            cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+            cleaned = re.sub(r"\s*```$", "", cleaned)
+
+        try:
+            resultado = json.loads(cleaned)
+        except json.JSONDecodeError:
+            log.warning("interpretador_json_invalido", trace_id=trace_id,
+                        raw=raw[:200])
+            return {
+                "intencion": "otra",
+                "producto_resuelto": None,
+                "candidatos": [],
+                "confianza": 0.0,
+                "datos_pedido": None,
+                "error": "json_invalido",
+            }
+
+        if "intencion" not in resultado:
+            resultado["intencion"] = "otra"
+        if "confianza" not in resultado:
+            resultado["confianza"] = 0.0
+        if "producto_resuelto" not in resultado:
+            resultado["producto_resuelto"] = None
+        if "candidatos" not in resultado:
+            resultado["candidatos"] = []
+
+        # DOBLE SEGURO: si el LLM dijo decision_compra, validar localmente
+        # que el mensaje contenga una palabra de cierre inequivoca.
+        # Si no la contiene, bajamos a pregunta_especifica.
+        if resultado.get("intencion") == "decision_compra":
+            if not tiene_palabra_cierre_inequivoca(mensaje):
+                log.info("interpretador_downgrade_decision_compra",
+                         trace_id=trace_id, mensaje_preview=mensaje[:80])
+                resultado["intencion"] = "pregunta_especifica"
+
+        log.info("interpretador_ok", trace_id=trace_id,
+                 intencion=resultado.get("intencion"),
+                 confianza=resultado.get("confianza"),
+                 producto_resuelto=resultado.get("producto_resuelto"),
+                 candidatos_count=len(resultado.get("candidatos", [])),
+                 productos_contexto=len(productos))
+
+        return resultado
+
+    except Exception as e:
+        log.error("interpretador_error", trace_id=trace_id,
+                  error=str(e)[:200])
+        return {
+            "intencion": "otra",
+            "producto_resuelto": None,
+            "candidatos": [],
+            "confianza": 0.0,
+            "datos_pedido": None,
+            "error": str(e)[:100],
+        }

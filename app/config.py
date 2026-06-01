@@ -1,0 +1,367 @@
+"""Configuración del bot v5 — Firestore + DeepSeek + tools + Verifika."""
+import os
+from functools import lru_cache
+from pydantic import BaseModel
+
+
+class Settings(BaseModel):
+    # Negocio
+    BUSINESS_NAME: str = os.getenv("BUSINESS_NAME", "Tienda Tecno")
+    TIENDA_ID: str = os.getenv("TIENDA_ID", "tienda_principal")
+
+    # GCP
+    GCP_PROJECT: str = os.getenv("GCP_PROJECT", "memory-engine-v1")
+
+    # Telegram
+    TELEGRAM_TOKEN: str = os.getenv("TELEGRAM_TOKEN", "")
+
+    # WhatsApp
+    WHATSAPP_TOKEN: str = os.getenv("WHATSAPP_TOKEN", "")
+    WHATSAPP_VERIFY_TOKEN: str = os.getenv("WHATSAPP_VERIFY_TOKEN", "")
+
+    # LLM provider — soportamos deepseek (default) y groq (fallback)
+    # NOTA: Verifika tiene su propia config por rol en llm_adapter.py.
+    # Estos settings son SOLO para el Solver del agente v4 (legacy).
+    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "deepseek").lower()
+
+    # DeepSeek
+    DEEPSEEK_API_KEY: str = os.getenv("DEEPSEEK_API_KEY", "")
+    DEEPSEEK_MODEL: str = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+
+    # Groq (fallback)
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+
+    # Gemini (alternativa rapida con tool calling solido y limite gratis enorme).
+    # Usa el endpoint compatible con OpenAI de Google, asi entra con el mismo
+    # cliente. Se activa con LLM_PROVIDER=gemini.
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+    GEMINI_BASE_URL: str = os.getenv(
+        "GEMINI_BASE_URL",
+        "https://generativelanguage.googleapis.com/v1beta/openai/")
+
+    # OpenAI nativo (servidores en EEUU, tool calling solido). Se activa con
+    # LLM_PROVIDER=openai o INTERPRETER_PROVIDER=openai. Usa el mismo cliente
+    # OpenAI con la base_url default (api.openai.com). gpt-4o-mini es economico
+    # (~0,15 USD el millon de tokens de entrada) y maneja bien las herramientas.
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+    # Comportamiento del LLM
+    TEMPERATURE: float = float(os.getenv("TEMPERATURE", "0.2"))
+    MAX_OUTPUT_TOKENS: int = int(os.getenv("MAX_OUTPUT_TOKENS", "800"))
+    # 6 da aire a turnos contextuales, como un cambio de opinion que obliga a
+    # re-buscar y recalcular. Los turnos simples siguen cerrando en 1 o 2.
+    MAX_TOOL_ITERATIONS: int = int(os.getenv("MAX_TOOL_ITERATIONS", "6"))
+
+    # Historial de conversación: 10 turnos = 20 entradas
+    HISTORY_LIMIT: int = int(os.getenv("HISTORY_LIMIT", "10"))
+
+    # Búsqueda: cuántos productos devolver al LLM por consulta
+    SEARCH_TOP_N: int = int(os.getenv("SEARCH_TOP_N", "10"))
+
+    # Mensaje fallback cuando algo falla
+    FALLBACK_MESSAGE: str = (
+        "Disculpá, tuve un problema técnico. ¿Podés repetirme tu consulta?"
+    )
+
+    # Limpieza de markdown en la respuesta final (asteriscos, viñetas, encabezados).
+    # Telegram y WhatsApp se mandan en texto plano: el markdown se ve roto.
+    # Si algo sale mal, poner CLEAN_MARKDOWN=false y vuelve al comportamiento previo.
+    CLEAN_MARKDOWN: bool = os.getenv("CLEAN_MARKDOWN", "true").lower() == "true"
+
+    # ────────────────────────────────────────────────────────
+    # VERIFIKA — núcleo verificable
+    # ────────────────────────────────────────────────────────
+
+    # Activar/desactivar el pipeline Proposer + Checker
+    USE_VERIFIKA: bool = os.getenv("USE_VERIFIKA", "false").lower() == "true"
+
+    # Mensaje cuando Verifika decide no mandar la respuesta del Solver
+    VERIFIKA_FALLBACK_MESSAGE: str = os.getenv(
+        "VERIFIKA_FALLBACK_MESSAGE",
+        "No tengo esa información confirmada en el catálogo. "
+        "Dejame consultar y te confirmo en breve."
+    )
+
+    # Evidencia del Checker construida desde los resultados REALES de las tools
+    # (lo que vio el Solver) en vez de releer todo el catálogo de Firestore.
+    # Conecta bien las capas Solver→Checker y baja costo en tokens.
+    # Si bloquea de más, poner VERIFIKA_EVIDENCE_FROM_TOOLS=false y vuelve a
+    # la evidencia vieja (catálogo completo).
+    VERIFIKA_EVIDENCE_FROM_TOOLS: bool = (
+        os.getenv("VERIFIKA_EVIDENCE_FROM_TOOLS", "true").lower() == "true"
+    )
+
+    # ────────────────────────────────────────────────────────
+    # ESCALABILIDAD — no bloquear el event loop
+    # ────────────────────────────────────────────────────────
+
+    # Los clientes LLM son SINCRONOS (cliente OpenAI sync). Cuando se los llama
+    # dentro de un handler async de FastAPI, la llamada de red bloquea TODO el
+    # server mientras espera la respuesta del modelo, que tarda segundos. Con un
+    # solo usuario no se nota, pero con varios en paralelo se encolan: el segundo
+    # espera a que termine el primero. Esto manda la llamada bloqueante a un
+    # thread con asyncio.to_thread, asi el event loop sigue libre y los requests
+    # se atienden de a varios. to_thread copia el contexto (contextvars), asi que
+    # la tienda actual se sigue resolviendo bien dentro del thread.
+    # Si algo sale mal, poner ASYNC_LLM_OFFLOAD=false y vuelve al comportamiento
+    # previo (bloqueante).
+    ASYNC_LLM_OFFLOAD: bool = (
+        os.getenv("ASYNC_LLM_OFFLOAD", "true").lower() == "true"
+    )
+
+    # ────────────────────────────────────────────────────────
+    # CAPA DE PRODUCTO — herramientas del agente de ventas
+    # ────────────────────────────────────────────────────────
+
+    # Calculo de extras porcentuales en calculate_total (descuentos, recargos).
+    # Antes la calculadora solo manejaba montos fijos en pesos y rangos: un
+    # descuento de 10 por ciento, guardado como monto 10 con unidad porcentaje,
+    # se sumaba como 10 pesos en vez de restar el 10 por ciento del subtotal.
+    # Con el flag activo lee el campo unidad: si es porcentaje, calcula el monto
+    # sobre el subtotal de productos y, si es descuento, lo resta.
+    # false vuelve al comportamiento viejo (todo como monto fijo en pesos).
+    CALC_PORCENTAJES: bool = os.getenv("CALC_PORCENTAJES", "true").lower() == "true"
+
+    # Envio gratis automatico por umbral. Si el subtotal de PRODUCTOS supera
+    # UMBRAL_ENVIO_GRATIS, la calculadora pone el envio en gratis sola, sin
+    # importar el concepto de envio que pida el Solver. Asi el total final sale
+    # entero y deterministico de la calculadora (con envio gratis + descuento ya
+    # aplicados), el Solver solo lo copia y el verificador no bloquea numeros
+    # improvisados. Era la causa de los fallback en cierres con compra grande.
+    # false vuelve al comportamiento previo (el envio depende del concepto).
+    ENVIO_GRATIS_AUTO: bool = (
+        os.getenv("ENVIO_GRATIS_AUTO", "true").lower() == "true"
+    )
+    UMBRAL_ENVIO_GRATIS: int = int(os.getenv("UMBRAL_ENVIO_GRATIS", "250000"))
+
+    # Calculadora defensiva. Normaliza y valida los inputs que manda el modelo
+    # ANTES de calcular, en app/core/calc_defensiva.py. Resuelve dualidades como
+    # el verificador resuelve la salida: rechaza cantidades cero o negativas,
+    # normaliza la capitalizacion del concepto de FAQ, fusiona el mismo producto
+    # mandado en dos lineas y deduplica un extra identico mandado dos veces. Asi
+    # un input sucio del modelo no ensucia el total ni dispara fallback.
+    # false: comportamiento identico al previo, la calculadora confia en el input.
+    CALC_DEFENSIVA: bool = (
+        os.getenv("CALC_DEFENSIVA", "false").lower() == "true"
+    )
+
+    # Anclaje del Interpretador al catalogo. Hoy el Interpretador no ve el
+    # catalogo: sus candidatos los inventa el modelo y a veces no existen. Con el
+    # flag, despues de interpretar, los candidatos y el producto se aterrizan al
+    # catalogo real por match de palabras mas fuzzy (sin embeddings), en
+    # app/core/interprete_ancla.py. Si hay un producto real claro lo resuelve; si
+    # hay varios reales empatados los deja como opciones y baja la confianza para
+    # que el bot pregunte; si es una categoria generica lo deja para el Solver.
+    # false: el Interpretador se comporta igual que hoy.
+    INTERPRETE_ANCLA_CATALOGO: bool = (
+        os.getenv("INTERPRETE_ANCLA_CATALOGO", "false").lower() == "true"
+    )
+
+    # Busqueda semantica con embeddings. Con el flag activo, la busqueda mezcla
+    # el puntaje por palabras con el puntaje por significado (coseno entre el
+    # vector de la consulta y el del producto). Ayuda cuando el cliente usa
+    # sinonimos o no nombra las palabras exactas del catalogo, y a rankear los
+    # mas relevantes entre muchos. Requiere que los productos tengan su vector
+    # generado (scripts/generar_embeddings.py). false: solo busqueda por palabras.
+    EMBEDDINGS_ON: bool = os.getenv("EMBEDDINGS_ON", "false").lower() == "true"
+    # Proveedor del embedding: openai (con OPENAI_API_KEY) o deepseek (legacy).
+    EMBEDDINGS_PROVIDER: str = os.getenv("EMBEDDINGS_PROVIDER", "openai").lower()
+    EMBEDDINGS_MODEL: str = os.getenv("EMBEDDINGS_MODEL", "text-embedding-3-small")
+
+    # Herramienta para listar el catalogo completo o de una categoria, para
+    # responder "que tenes", "mostrame todo" o "lista completa" sin depender de
+    # que la busqueda por keywords enganche. false la saca del schema del LLM y
+    # el bot vuelve a depender solo de search_products para mostrar productos.
+    TOOL_LISTAR_CATALOGO: bool = (
+        os.getenv("TOOL_LISTAR_CATALOGO", "true").lower() == "true"
+    )
+
+    # ────────────────────────────────────────────────────────
+    # OBSERVABILIDAD
+    # ────────────────────────────────────────────────────────
+
+    # Diagnostico verboso (nivel dos). Cuando esta en true, ademas de las
+    # metricas baratas que van siempre (tiempos por etapa, trace_id en todos
+    # los eventos, contadores de decision), se loguea el detalle pesado para
+    # investigar: el texto que iba a responder el bot, cuanta evidencia vio y,
+    # por cada afirmacion, su tipo, su veredicto y la razon del Checker.
+    # Se prende solo para diagnosticar y se apaga despues, por costo y privacidad.
+    DIAG_TRACE: bool = os.getenv("DIAG_TRACE", "false").lower() == "true"
+
+    # ────────────────────────────────────────────────────────
+    # ROBUSTEZ DE VERIFIKA — bajar falsos bloqueos sin aflojar la guardia
+    # ────────────────────────────────────────────────────────
+
+    # El Checker solo puede validar lo que ve en la evidencia. Cuando una
+    # respuesta toca varios temas de FAQ, formas de pago mas envio, el Solver
+    # suele llamar query_faq una sola vez, asi que el resto queda sin evidencia
+    # y afirmaciones VERDADERAS caen como sin_evidencia y bloquean. La FAQ es
+    # chica, 22 temas, asi que la metemos entera como evidencia siempre.
+    # false vuelve a la evidencia de FAQ solo de los temas que query_faq trajo.
+    VERIFIKA_FULL_FAQ_EVIDENCE: bool = (
+        os.getenv("VERIFIKA_FULL_FAQ_EVIDENCE", "true").lower() == "true"
+    )
+
+    # El Proposer a veces convierte una cantidad pedida, el "2x Monitor", en una
+    # afirmacion de stock, "hay 2 unidades", que despues contradice el stock real
+    # y bloquea. Esta regla le dice al Proposer que las cantidades pedidas NO son
+    # stock. Las afirmaciones de stock explicitas se siguen verificando.
+    # false saca la regla y vuelve al comportamiento previo.
+    PROPOSER_IGNORA_CANTIDAD: bool = (
+        os.getenv("PROPOSER_IGNORA_CANTIDAD", "true").lower() == "true"
+    )
+
+    # Reconciliacion numerica deterministica. Despues de que el Checker opina,
+    # se revisan las afirmaciones que quedaron contradicha o sin_evidencia: si
+    # TODAS las cifras de dinero de la afirmacion estan en el PROOF de la
+    # calculadora, en un precio del catalogo o en un valor de la FAQ, se corrige
+    # a soportada, porque esos numeros ya son verdad por construccion. Si alguna
+    # cifra no sale de ninguna fuente, se respeta el veredicto del Checker y se
+    # bloquea. Asi una alucinacion numerica se sigue frenando, pero un numero
+    # correcto no lo bloquea un error de juicio del modelo. Corta el loop de
+    # falsos bloqueos sobre aritmetica. false desactiva la reconciliacion.
+    VERIFIKA_RECONCILE_NUMBERS: bool = (
+        os.getenv("VERIFIKA_RECONCILE_NUMBERS", "true").lower() == "true"
+    )
+
+    # ────────────────────────────────────────────────────────
+    # VERIFICADOR DETERMINISTA — linea cero de la anti alucinacion
+    # ────────────────────────────────────────────────────────
+    # La decision final de mandar o no la respuesta la toma el CODIGO, no un
+    # modelo. El verificador escanea la respuesta y exige que cada cifra de
+    # dinero salga de una fuente real: precio de catalogo, valor o texto de FAQ,
+    # o un PROOF de la calculadora, de este turno o de turnos recientes. Si una
+    # cifra no tiene respaldo, se bloquea. Es exacto y no entra en loop.
+    #
+    # Modos:
+    #   off    -> no corre. Gatea Verifika (Checker LLM) como hasta ahora.
+    #   shadow -> corre y loguea su decision, pero NO cambia la conducta. Gatea
+    #             Verifika. Sirve para comparar con datos antes de confiar.
+    #   on     -> el verificador determinista GATEA. El Checker LLM se desconecta
+    #             (o queda de asesor si VERIFIKA_CHECKER_ADVISORY=true).
+    VERIFICADOR_MODE: str = os.getenv("VERIFICADOR_MODE", "shadow").lower()
+
+    # Cuantos PROOF recientes arrastrar entre turnos, para que en la confirmacion
+    # ("si, dale") el total repetido siga teniendo respaldo. Acompaña la memoria
+    # de la conversacion y el reconocimiento del estado de compra.
+    VERIFICADOR_PROOF_MEMORY: int = int(os.getenv("VERIFICADOR_PROOF_MEMORY", "7"))
+
+    # Si el verificador gatea (modo on), correr igual el Checker LLM solo para
+    # loguear una segunda opinion, sin bloquear. Default false: desconectado,
+    # para ahorrar las dos llamadas al modelo y bajar latencia.
+    VERIFIKA_CHECKER_ADVISORY: bool = (
+        os.getenv("VERIFIKA_CHECKER_ADVISORY", "false").lower() == "true"
+    )
+
+    # ────────────────────────────────────────────────────────
+    # LATENCIA — timeout de las llamadas al modelo
+    # ────────────────────────────────────────────────────────
+    # Sin timeout, el cliente espera hasta 600 segundos y una llamada lenta
+    # cuelga todo el mensaje. Esto la corta a tiempo. Una llamada sana tarda
+    # 5 a 10 segundos, asi que el cap solo actua sobre cuelgues anormales.
+    LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "45"))
+
+    # Provider del interpretador. Default DeepSeek. Poner groq para que tambien
+    # use Groq y baje su latencia. El Solver se cambia aparte con LLM_PROVIDER.
+    INTERPRETER_PROVIDER: str = os.getenv("INTERPRETER_PROVIDER", "deepseek").lower()
+
+    # Prompt del Solver recortado. El anti alucinacion lo hace el codigo
+    # (verificador), asi que el prompt largo de 180 lineas no hace falta. Uno
+    # corto baja tokens por llamada y acelera. Por ahora en false para no
+    # arriesgar, se mantiene el prompt original probado. Poner true para usar el
+    # corto cuando se quiera medir o cuando este mas testeado.
+    PROMPT_LEAN: bool = os.getenv("PROMPT_LEAN", "false").lower() == "true"
+
+    # ────────────────────────────────────────────────────────
+    # FASE 1 — la calculadora arma el presupuesto, el Solver lo copia
+    # ────────────────────────────────────────────────────────
+    # calculate_total devuelve un campo presentacion, el presupuesto ya armado
+    # en texto por codigo. Con este flag, el prompt del Solver le ordena copiar
+    # ese bloque tal cual y NO calcular ni reescribir numeros. Asi ningun numero
+    # sale de la cabeza del modelo. false vuelve al comportamiento previo.
+    SOLVER_USA_PRESENTACION: bool = (
+        os.getenv("SOLVER_USA_PRESENTACION", "true").lower() == "true"
+    )
+
+    # query_faq resuelve por keywords primero, sin llamar al modelo. Si las
+    # palabras clave de la FAQ matchean la consulta, devuelve el tema al toque.
+    # Si no matchea, cae al modelo como antes. Baja latencia sacando una llamada.
+    # false vuelve a usar siempre el modelo como retriever.
+    FAQ_KEYWORD_FIRST: bool = (
+        os.getenv("FAQ_KEYWORD_FIRST", "true").lower() == "true"
+    )
+
+    # ────────────────────────────────────────────────────────
+    # CIERRE DE VENTA — captura completa del pedido y datos del cliente
+    # ────────────────────────────────────────────────────────
+    # Dentro del circuito de leads (USE_LEADS), cuando el cliente confirma,
+    # captura nombre, telefono, direccion y forma de pago, guarda el pedido y
+    # avisa al dueno con la orden completa. false vuelve a la captura simple de
+    # solo nombre y telefono. Requiere USE_LEADS=true para activarse.
+    CIERRE_COMPLETO: bool = (
+        os.getenv("CIERRE_COMPLETO", "true").lower() == "true"
+    )
+
+    # Regla de orden: nunca pedir datos de cierre antes de haber mostrado un
+    # presupuesto. Si el cliente larga senial de compra pero todavia no vio un
+    # precio, el Solver responde primero el precio y el cierre queda para el
+    # turno siguiente. Evita que el bot pida nombre y telefono sin haber pasado
+    # el numero. true por default. false vuelve a la conducta anterior.
+    CIERRE_PRECIO_PRIMERO: bool = (
+        os.getenv("CIERRE_PRECIO_PRIMERO", "true").lower() == "true"
+    )
+
+    # ────────────────────────────────────────────────────────
+    # ATAJO DE SALUDO — no invocar el Solver para un simple hola
+    # ────────────────────────────────────────────────────────
+    # Cuando el interpretador clasifica el mensaje como saludo con confianza
+    # alta, responder un saludo directo SIN correr el Solver. Para un hola, el
+    # Solver encadena varias llamadas al modelo de gusto, que en prod son
+    # decenas de segundos por el peaje de red. El interpretador marca saludo
+    # solo cuando el cliente saluda y todavia NO pidio producto ni precio, asi
+    # que una consulta comercial nunca cae en el atajo. La respuesta invita a
+    # avanzar: si el cliente queria algo mas, lo dice en el turno siguiente y
+    # ahi corre el Solver normal, no se pierde venta. Requiere USE_INTERPRETER.
+    # Default false: entra apagado, no cambia conducta hasta activarlo por env.
+    SALUDO_DIRECTO: bool = os.getenv("SALUDO_DIRECTO", "false").lower() == "true"
+
+    # ────────────────────────────────────────────────────────
+    # HISTORIAL LEAN DEL SOLVER — memoria sin arrastrar la mochila
+    # ────────────────────────────────────────────────────────
+    # El Solver reenvia el historial COMPLETO en cada llamada; cuanto mas larga
+    # la charla, mas pesa el payload y mas lento responde (confirmado: el solver
+    # trepa de 23s a 54s en una misma conversacion). Con el flag, al armar el
+    # prompt del Solver se manda MENOS turnos y cada mensaje recortado a un tope
+    # de caracteres, igual que ya hace el Interpretador (por eso vuela). El
+    # cliente sigue viendo la respuesta completa; solo se aliviana lo que el
+    # modelo RELEE en turnos siguientes. Los numeros del cierre no se afectan:
+    # el presupuesto y los PROOF viven aparte (ultimo_presupuesto, proofs).
+    # false = comportamiento actual (historial completo).
+    SOLVER_HISTORIAL_LEAN: bool = (
+        os.getenv("SOLVER_HISTORIAL_LEAN", "false").lower() == "true"
+    )
+    # COMPRIME el contenido de los mensajes largos del bot en el historial (los
+    # catalogos/listados redundantes) CONSERVANDO los productos y sus precios.
+    # NO reduce la cantidad de turnos: el Solver sigue viendo los 10 turnos,
+    # solo que las respuestas pesadas viajan condensadas. El solver no pierde de
+    # vista que productos se mostraron ni a que precio. Mensajes cortos quedan
+    # intactos. Solo aplica a mensajes que superan este tope de caracteres.
+    SOLVER_HIST_MAXCHARS: int = int(os.getenv("SOLVER_HIST_MAXCHARS", "500"))
+
+    # ────────────────────────────────────────────────────────
+    # AUTOFIX — autocorreccion ante bloqueo del verificador
+    # ────────────────────────────────────────────────────────
+    # Cuando el verificador determinista bloquea por numeros sin respaldo, en vez
+    # de mandar el fallback, reintenta UNA vez: le pide al Solver que rehaga el
+    # presupuesto con la calculadora, sin inventar, y vuelve a verificar. Si se
+    # corrige, responde bien. Si no, recien ahi manda el fallback. Suma una
+    # corrida del Solver solo cuando hubo bloqueo, que es raro. Default false.
+    AUTOFIX: bool = os.getenv("AUTOFIX", "false").lower() == "true"
+
+
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    return Settings()

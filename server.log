@@ -1,0 +1,15 @@
+2026-05-28 22:38:33 [info     ] leads_disabled
+2026-05-28 22:38:33 [info     ] verifika_disabled
+2026-05-28 22:38:33 [info     ] interpreter_disabled
+INFO:     Started server process [9664]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8080 (Press CTRL+C to quit)
+INFO:     127.0.0.1:50899 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50900 - "GET / HTTP/1.1" 200 OK
+{"update_id": 1, "event": "telegram_webhook_received", "turn_id": "tg_1", "level": "info", "timestamp": "2026-05-29T01:38:48.956948Z"}
+{"error": "Your default credentials were not found. To set up Application Default Credentials, see https://clou", "event": "idempotency_check_failed", "turn_id": "tg_1", "level": "warning", "timestamp": "2026-05-29T01:39:01.097570Z"}
+INFO:     127.0.0.1:50901 - "POST /webhook/telegram HTTP/1.1" 200 OK
+{"event": "process_message_inicio", "turn_id": "tg_1", "level": "info", "timestamp": "2026-05-29T01:39:01.100043Z"}
+{"trace_id": "90726ca8", "tienda_id": "tienda_principal", "user_id": "123", "msg_preview": "hola, que productos tienen?", "event": "message_received", "turn_id": "tg_1", "level": "info", "timestamp": "2026-05-29T01:39:01.101041Z"}
+{"error": "Your default credentials were not found. To set up Application Default Credentials, see https://cloud.google.com/docs/authentication/external/set-up-adc for more information.", "chat_id": "123", "event": "telegram_processing_error", "turn_id": "tg_1", "level": "error", "timestamp": "2026-05-29T01:39:13.098488Z"}

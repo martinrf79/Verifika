@@ -1,0 +1,51 @@
+id,nombre,categoria,precio_ars,stock,descripcion
+TEST-001,Mouse Logitech G203 Lightsync,mouse,38000,15,Mouse gamer RGB 8000 DPI 6 botones cable trenzado
+TEST-002,Mouse Razer DeathAdder V3,mouse,125000,8,Mouse gamer 30000 DPI sensor Focus Pro inalambrico
+TEST-003,Mouse Logitech MX Master 3S,mouse,210000,5,Mouse productividad inalambrico ergonomico USB-C
+TEST-004,Mouse HyperX Pulsefire Haste,mouse,75000,10,Mouse gamer ultraliviano 59g panal RGB
+TEST-005,Mouse Genius DX-110,mouse,8500,40,Mouse basico cable USB 1000 DPI ideal oficina
+TEST-006,Teclado Redragon Kumara K552,teclados,85000,12,Mecanico TKL switch outemu blue retroiluminado
+TEST-007,Teclado Logitech G915 TKL,teclados,485000,3,Mecanico inalambrico low profile GL Tactile RGB
+TEST-008,Teclado Razer BlackWidow V4,teclados,295000,5,Mecanico full size green switch RGB Chroma
+TEST-009,Teclado HyperX Alloy Origins,teclados,165000,7,Mecanico aluminio switch HyperX red RGB
+TEST-010,Teclado Genius KB-110X,teclados,12000,35,Teclado basico USB layout español ideal oficina
+TEST-011,Monitor LG UltraGear 27GP850,monitores,580000,4,Monitor gamer 27 QHD 165Hz IPS 1ms NanoIPS
+TEST-012,Monitor Samsung Odyssey G5 32,monitores,485000,3,Monitor curvo 32 QHD 144Hz VA HDR10
+TEST-013,Monitor LG 24MK430H,monitores,225000,8,Monitor 24 Full HD IPS 75Hz ideal oficina
+TEST-014,Monitor AOC 27G2 27 IPS,monitores,295000,6,Monitor gamer 27 Full HD 144Hz IPS 1ms
+TEST-015,Monitor Dell S2722QC 4K,monitores,685000,2,Monitor 27 4K UHD USB-C 65W IPS profesional
+TEST-016,Auriculares HyperX Cloud II,audio,125000,9,Auriculares gamer 7.1 virtual drivers 53mm
+TEST-017,Auriculares Sony WH-1000XM5,audio,685000,3,Auriculares bluetooth noise cancelling 30hs
+TEST-018,Auriculares Logitech G Pro X,audio,285000,4,Auriculares gamer Blue Voice DTS Headphone X
+TEST-019,Auriculares JBL Tune 510BT,audio,75000,18,Auriculares bluetooth on-ear 40hs Pure Bass
+TEST-020,Auriculares Genius HS-300A,audio,18000,25,Auriculares con microfono jack 3.5mm oficina
+TEST-021,SSD Kingston A400 480GB,almacenamiento,65000,22,SSD SATA 2.5 480GB lectura 500MB/s
+TEST-022,SSD Samsung 980 PRO 1TB NVMe,almacenamiento,225000,5,SSD NVMe Gen4 1TB lectura 7000MB/s gaming
+TEST-023,Disco rigido Seagate Barracuda 2TB,almacenamiento,115000,10,HDD 3.5 2TB 7200RPM ideal almacenamiento
+TEST-024,SSD Crucial MX500 1TB,almacenamiento,165000,7,SSD SATA 2.5 1TB lectura 560MB/s AES 256
+TEST-025,Pendrive Kingston DataTraveler 128GB,almacenamiento,28000,30,Pendrive USB 3.2 128GB hasta 200MB/s
+TEST-026,Memoria RAM Kingston Fury 16GB DDR4,memorias,115000,10,Kit DDR4 2x8GB 3200MHz disipador RGB
+TEST-027,Memoria RAM Corsair Vengeance 32GB DDR4,memorias,225000,6,Kit DDR4 2x16GB 3600MHz disipador aluminio
+TEST-028,Memoria RAM G.Skill Trident Z 32GB DDR5,memorias,385000,4,Kit DDR5 2x16GB 6000MHz RGB premium
+TEST-029,Memoria RAM Crucial 8GB DDR4,memorias,48000,18,Memoria DDR4 8GB 2666MHz sin disipador
+TEST-030,Silla gamer Redragon Coeus,sillas,395000,3,Silla gamer reclinable hasta 130kg lumbares
+TEST-031,Silla gamer Cougar Armor S,sillas,535000,2,Silla profesional cuero PVC brazos 4D 120kg
+TEST-032,Silla oficina ergonomica basica,sillas,155000,8,Silla giratoria regulable malla transpirable
+TEST-033,Webcam Logitech C920 HD Pro,webcams,145000,9,Webcam Full HD 1080p autoenfoque microfono dual
+TEST-034,Webcam Genius FaceCam 1000X,webcams,35000,15,Webcam HD 720p microfono integrado USB
+TEST-035,Webcam Logitech Brio 4K,webcams,385000,3,Webcam 4K UHD HDR Windows Hello premium
+TEST-036,Microfono Blue Yeti USB,microfonos,225000,5,Microfono condensador USB 4 patrones polares streaming
+TEST-037,Microfono HyperX QuadCast S,microfonos,265000,4,Microfono condensador RGB anti-vibracion
+TEST-038,Microfono FIFINE K669B,microfonos,68000,12,Microfono USB cardioide ideal podcast zoom
+TEST-039,Pad mouse Razer Goliathus Extended,pads,58000,10,Pad mouse XL 920x294mm RGB base goma
+TEST-040,Pad mouse Logitech G240,pads,28000,18,Pad mouse tela 340x280mm sensores opticos
+TEST-041,Pad mouse Redragon Flick L,pads,18000,25,Pad mouse 450x400mm antideslizante speed
+TEST-042,Cable HDMI 2m 4K,cables,9500,45,Cable HDMI 2.0 2 metros soporta 4K 60Hz
+TEST-043,Cable USB-C a USB-C 1m,cables,13000,30,Cable USB-C 60W carga rapida datos 10Gbps
+TEST-044,Adaptador USB-C a HDMI,cables,22000,15,Adaptador USB-C a HDMI 4K plug and play
+TEST-045,Hub USB-C 7 en 1 Anker,hubs,105000,7,Hub USB-C HDMI 4K 2xUSB 3.0 SD microSD PD
+TEST-046,Hub USB 3.0 4 puertos Genius,hubs,14000,22,Hub USB 3.0 4 puertos plug and play compacto
+TEST-047,Cooler CPU DeepCool AK620,coolers,135000,6,Cooler dual tower 6 heatpipes 260W TDP
+TEST-048,Watercooling Cooler Master ML240L,coolers,245000,3,Refrigeracion liquida 240mm RGB AMD/Intel
+TEST-049,Joystick Xbox Wireless Controller,gamepads,195000,5,Control inalambrico Xbox Series compatible PC bluetooth
+TEST-050,Joystick PS5 DualSense Edge,gamepads,485000,2,Control PS5 premium customizable gatillos adaptativos

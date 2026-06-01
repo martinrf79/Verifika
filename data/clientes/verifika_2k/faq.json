@@ -1,0 +1,213 @@
+[
+  {
+    "tema": "costo_envio",
+    "keywords": ["costo envio", "cuanto sale el envio", "precio envio", "cuanto cuesta el envio", "valor envio"],
+    "respuesta": "Envio a CABA y GBA 4500 pesos por Andreani o OCA. Interior segun localidad entre 6500 y 16000 pesos. Envio gratis en compras superiores a 300000 pesos.",
+    "tipo": "cuantitativo",
+    "valores": [
+      {"concepto": "envio_caba_gba", "modalidad": "fijo", "monto": 4500, "unidad": "ars"},
+      {"concepto": "envio_interior", "modalidad": "rango", "monto_min": 6500, "monto_max": 16000, "unidad": "ars", "condicion": "segun localidad"},
+      {"concepto": "envio_gratis", "modalidad": "fijo", "monto": 0, "unidad": "ars", "condicion": "compra mayor a 300000"}
+    ]
+  },
+  {
+    "tema": "envio_express",
+    "keywords": ["express", "urgente", "mismo dia", "24 horas", "rapido", "el dia"],
+    "respuesta": "Hacemos envio express en CABA y GBA con entrega en 24 horas habiles, con un costo adicional de 8000 pesos sobre el envio normal.",
+    "tipo": "cuantitativo",
+    "valores": [
+      {"concepto": "express_caba_gba", "modalidad": "fijo", "monto": 8000, "unidad": "ars", "condicion": "CABA y GBA, 24 horas habiles"}
+    ]
+  },
+  {
+    "tema": "descuento_transferencia",
+    "keywords": ["descuento", "transferencia", "efectivo", "rebaja", "deposito"],
+    "respuesta": "Tenemos 10 por ciento de descuento pagando por transferencia bancaria o efectivo.",
+    "tipo": "cuantitativo",
+    "valores": [
+      {"concepto": "descuento_transferencia", "modalidad": "fijo", "monto": 10, "unidad": "porcentaje", "condicion": "pago por transferencia o efectivo"}
+    ]
+  },
+  {
+    "tema": "cuotas",
+    "keywords": ["cuotas", "financiacion", "sin interes", "plan", "tarjeta en cuotas"],
+    "respuesta": "Hasta 3 y 6 cuotas sin interes con bancos y tarjetas seleccionadas. Hasta 12 cuotas con interes con Visa y Mastercard.",
+    "tipo": "cuantitativo",
+    "valores": [
+      {"concepto": "cuotas_sin_interes", "modalidad": "fijo", "monto": 6, "unidad": "cuotas", "condicion": "bancos y tarjetas seleccionadas"},
+      {"concepto": "cuotas_con_interes", "modalidad": "fijo", "monto": 12, "unidad": "cuotas", "condicion": "Visa y Mastercard"}
+    ]
+  },
+  {
+    "tema": "sena_reserva",
+    "keywords": ["sin stock", "reservar", "reserva", "sena", "encargar", "a pedido", "esperar"],
+    "respuesta": "Si un producto esta sin stock lo podemos traer a pedido tomando una sena del 30 por ciento. El plazo depende del proveedor y te lo confirmamos antes.",
+    "tipo": "cuantitativo",
+    "valores": [
+      {"concepto": "sena_reserva", "modalidad": "fijo", "monto": 30, "unidad": "porcentaje", "condicion": "productos sin stock o a pedido"}
+    ]
+  },
+  {
+    "tema": "armado_pc",
+    "keywords": ["armado", "armar la pc", "ensamblado", "armado y testeo", "me la arman", "montaje"],
+    "respuesta": "Armamos y testeamos tu PC con los componentes comprados aca por 25000 pesos. Incluye ensamblado, cableado prolijo, instalacion de Windows y prueba de stress.",
+    "tipo": "cuantitativo",
+    "valores": [
+      {"concepto": "armado_y_testeo", "modalidad": "fijo", "monto": 25000, "unidad": "ars", "condicion": "sobre componentes comprados en la tienda"}
+    ]
+  },
+  {
+    "tema": "formas_pago",
+    "keywords": ["pago", "pagos", "formas de pago", "medios de pago", "como pago", "como pagar", "cobran"],
+    "respuesta": "Aceptamos transferencia bancaria, Mercado Pago, tarjetas de credito y debito Visa, Mastercard y American Express, y efectivo coordinando retiro.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "plazo_envio",
+    "keywords": ["cuanto tarda", "plazo envio", "demora", "cuando llega", "dias habiles", "tiempo de entrega"],
+    "respuesta": "CABA y GBA 24 a 72 horas habiles desde el pago acreditado. Interior 3 a 7 dias habiles segun la localidad y el correo.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "garantia",
+    "keywords": ["garantia", "garantizan", "defectos", "roto", "falla", "cuanto de garantia"],
+    "respuesta": "Todos los productos tienen garantia oficial del fabricante. El minimo es 6 meses y la mayoria de los componentes tiene 12, 24 o 36 meses. El detalle exacto figura en cada producto.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "garantia_componentes",
+    "keywords": ["garantia placa de video", "garantia procesador", "garantia ssd", "garantia fuente", "rma"],
+    "respuesta": "Los componentes como placas de video, procesadores, motherboards y fuentes tienen garantia directa del fabricante, en general de 24 a 36 meses. Gestionamos el RMA por vos si hay falla dentro del plazo.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "devoluciones",
+    "keywords": ["devolucion", "devoluciones", "arrepentimiento", "devolver", "me arrepenti"],
+    "respuesta": "Tenes 10 dias corridos desde la recepcion para arrepentirte de la compra. El producto debe estar sin uso y en su empaque original. El reintegro se hace por el mismo medio de pago.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "cambios",
+    "keywords": ["cambio", "cambiar producto", "cambiar por otro", "permuta"],
+    "respuesta": "Podes cambiar un producto sin uso y en su empaque original dentro de los 10 dias. Si el nuevo producto vale mas, abonas la diferencia.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "producto_defectuoso",
+    "keywords": ["defectuoso", "llego roto", "no funciona", "vino fallado", "dead on arrival"],
+    "respuesta": "Si el producto llega defectuoso o falla dentro de los primeros 7 dias, lo cambiamos sin costo por uno nuevo. El envio de la reposicion corre por nuestra cuenta.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "factura",
+    "keywords": ["factura", "facturacion", "factura a", "factura b", "iva", "responsable inscripto"],
+    "respuesta": "Emitimos factura A y factura B segun corresponda. Para factura A pasanos tus datos fiscales al confirmar la compra. Todos los precios ya incluyen IVA.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "compatibilidad",
+    "keywords": ["compatible", "compatibilidad", "me sirve", "entra en mi pc", "funciona con", "socket"],
+    "respuesta": "Te asesoramos sin cargo sobre compatibilidad de componentes, socket del procesador, tipo de RAM, consumo de la fuente y tamaño del gabinete. Contanos que tenes y te decimos que entra.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "asesoramiento",
+    "keywords": ["asesoran", "consultar", "ayuda", "recomendacion", "antes de comprar", "que me conviene"],
+    "respuesta": "Si, asesoramos antes de comprar por WhatsApp y chat. Contanos para que vas a usar el equipo y tu presupuesto, y te armamos la mejor opcion.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "soporte_tecnico",
+    "keywords": ["soporte", "no me anda", "configurar", "instalar", "ayuda tecnica", "drivers"],
+    "respuesta": "Damos soporte tecnico basico de lo que compraste aca, instalacion de drivers y configuracion inicial. Para soporte avanzado coordinamos un turno.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "seguimiento_pedido",
+    "keywords": ["seguimiento", "donde esta mi pedido", "codigo de seguimiento", "tracking", "ya salio"],
+    "respuesta": "Cuando despachamos te mandamos el codigo de seguimiento del correo para que veas el estado del envio en todo momento.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "retiro_local",
+    "keywords": ["retiro", "retirar", "buscar en persona", "pasar a buscar", "showroom"],
+    "respuesta": "Podes retirar tu compra sin costo coordinando dia y horario en nuestro punto de CABA. Te avisamos cuando esta lista para retirar.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "ubicacion",
+    "keywords": ["ubicacion", "donde estan", "direccion", "local", "fisico", "sucursal"],
+    "respuesta": "Somos una tienda online con punto de retiro en CABA con cita previa. Despachamos a todo el pais por Andreani y OCA.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "horarios",
+    "keywords": ["horarios", "horario", "atienden", "atencion", "horas"],
+    "respuesta": "Atendemos de lunes a viernes de 9 a 19 hs y sabados de 10 a 14 hs por WhatsApp, chat y mail.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "formas_contacto",
+    "keywords": ["contacto", "telefono", "whatsapp", "mail", "email", "como los contacto"],
+    "respuesta": "Nos contactas por WhatsApp, chat o mail. La atencion humana es de lunes a viernes de 9 a 19 hs.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "envios",
+    "keywords": ["envio", "envios", "envian", "mandan", "llega", "entregan", "a todo el pais"],
+    "respuesta": "Hacemos envios a todo el pais por Andreani y OCA, a domicilio o a sucursal y puntos de retiro.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "mayoristas",
+    "keywords": ["mayorista", "revendedor", "reventa", "por cantidad", "precio por volumen"],
+    "respuesta": "Para compras mayoristas o reventa tenemos precios especiales por volumen. Contanos que y cuanto pensas comprar y armamos una cotizacion.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "marcas_originales",
+    "keywords": ["originales", "truchos", "replica", "oficial", "marca", "garantia oficial"],
+    "respuesta": "Todas las marcas que vendemos son originales con garantia oficial del fabricante. No trabajamos con replicas.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "usados",
+    "keywords": ["usados", "reacondicionados", "segunda mano", "refurbished", "open box"],
+    "respuesta": "Vendemos solo productos nuevos en su empaque original. No trabajamos usados ni reacondicionados.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "stock_consulta",
+    "keywords": ["tienen stock", "hay stock", "disponibilidad", "queda", "unidades"],
+    "respuesta": "El stock que ves publicado es real y se actualiza seguido. Si te interesa algo puntual te confirmo las unidades exactas en el momento.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "precios_iva",
+    "keywords": ["iva", "precio final", "precio incluye", "impuestos", "es con iva"],
+    "respuesta": "Todos los precios publicados ya incluyen IVA y son precios finales para consumidor final.",
+    "tipo": "informativo",
+    "valores": []
+  }
+]

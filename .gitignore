@@ -1,0 +1,11 @@
+﻿.env
+.secrets.env
+.secrets1.env
+.secrets2.env
+.secrets3.env
+.secrets4.env
+venv/
+winvenv/
+__pycache__/
+*.pyc
+*.zip

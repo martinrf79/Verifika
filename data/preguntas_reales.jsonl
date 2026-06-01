@@ -1,0 +1,34 @@
+{"id": "q01", "texto": "hola buenas", "categoria": "saludo", "esp_intencion": "saludo", "esp_producto": "NINGUNO", "nota": "saludo puro"}
+{"id": "q02", "texto": "que tenes?", "categoria": "exploracion", "esp_intencion": "exploracion", "esp_producto": "NINGUNO", "nota": "explorar sin objetivo"}
+{"id": "q03", "texto": "kiero un mouse barato para la pc", "categoria": "ortografia", "esp_producto": "NINGUNO", "nota": "browse de categoria con precio, lo maneja el solver"}
+{"id": "q04", "texto": "tenes teclas mecanicos?", "categoria": "ortografia", "esp_producto": "MULTIPLE", "nota": "hay varios teclados mecanicos, no debe resolver uno solo"}
+{"id": "q05", "texto": "cuanto sale el monitos samsung", "categoria": "ortografia", "esp_producto": "MULTIPLE", "nota": "hay dos Samsung, ambiguo"}
+{"id": "q06", "texto": "necesito un teclado", "categoria": "ambiguedad", "esp_pregunta": true, "esp_producto": "NINGUNO", "nota": "browse de categoria"}
+{"id": "q07", "texto": "el mouse logitech ese", "categoria": "ambiguedad", "esp_pregunta": true, "esp_producto": "MULTIPLE", "nota": "varios Logitech"}
+{"id": "q08", "texto": "mmm no se si llevar el de 38 mil o el otro", "categoria": "indecision", "esp_pregunta": true, "esp_producto": "MULTIPLE", "nota": "indecision entre dos"}
+{"id": "q09", "texto": "estaba viendo, no estoy seguro todavia", "categoria": "indecision", "esp_producto": "NINGUNO", "nota": "no decide"}
+{"id": "q10", "texto": "hacen factura A?", "categoria": "faq", "esp_intencion": "pregunta_especifica", "esp_producto": "NINGUNO", "nota": "facturacion"}
+{"id": "q11", "texto": "cuanto tardan en mandar a mendoza?", "categoria": "faq", "esp_intencion": "pregunta_especifica", "esp_producto": "NINGUNO", "nota": "plazo envio"}
+{"id": "q12", "texto": "aceptan mercado pago?", "categoria": "faq", "esp_intencion": "pregunta_especifica", "esp_producto": "NINGUNO", "nota": "forma de pago"}
+{"id": "q13", "texto": "che tenes algo zarpado para jugar?", "categoria": "jerga", "esp_producto": "NINGUNO", "nota": "slang, browse gaming"}
+{"id": "q14", "texto": "necesito fierros para armar una pc gamer", "categoria": "jerga", "esp_producto": "NINGUNO", "nota": "browse generico"}
+{"id": "q15", "texto": "dale, lo llevo", "categoria": "decision_clara", "esp_intencion": "decision_compra", "esp_producto": "NINGUNO", "nota": "decision sin producto en contexto"}
+{"id": "q16", "texto": "cerramos, pasame el link de pago", "categoria": "decision_clara", "esp_intencion": "decision_compra", "esp_producto": "NINGUNO", "nota": "cierre, no nombra producto"}
+{"id": "q17", "texto": "no, mejor lo pienso", "categoria": "negacion", "esp_producto": "NINGUNO", "nota": "postergacion"}
+{"id": "q18", "texto": "lo quiero pero solo si me haces un descuento", "categoria": "cambio_opinion", "esp_pregunta": true, "esp_producto": "NINGUNO", "nota": "no nombra producto, condiciona a descuento"}
+{"id": "q19", "texto": "dale lo llevo... pero esperá, no me bajas algo el precio?", "categoria": "cambio_opinion", "esp_producto": "NINGUNO", "nota": "se arrepiente buscando descuento"}
+{"id": "q20", "texto": "si total es lo mismo, aunque pensandolo bien el otro era mejor no?", "categoria": "cambio_opinion", "esp_pregunta": true, "esp_producto": "NINGUNO", "nota": "duda, no nombra producto concreto"}
+{"id": "q21", "texto": "Necesito 2 sillas economicas y 4 monitores envio a cordoba las sillas y a carlos paz los monitores economicos, pago sillas con mercado pago y monitores con transferencia, armame el presupuesto", "categoria": "multi_intento", "esp_producto": "NINGUNO", "nota": "compuesto, no resuelve un producto unico"}
+{"id": "q22", "texto": "quiero un combo teclado mouse y auriculares con envio a rosario", "categoria": "multi_intento", "esp_producto": "NINGUNO", "nota": "combo multi producto"}
+{"id": "q23", "texto": "tenes el teclado ese rosa que es bluetooth", "categoria": "pregunta_especifica", "esp_intencion": "pregunta_especifica", "esp_producto": "Teclado Logitech K380", "nota": "describe por color y conexion, mapea a uno solo"}
+{"id": "q24", "texto": "necesito 4 monitores para la oficina, los mas baratos", "categoria": "cantidad", "esp_producto": "NINGUNO", "nota": "browse por precio"}
+{"id": "q25", "texto": "me pasas precio del mouse razer y del logitech mx?", "categoria": "pregunta_especifica", "esp_intencion": "pregunta_especifica", "esp_producto": "MULTIPLE", "nota": "dos productos puntuales"}
+{"id": "q26", "texto": "buenas, hacen envios a todo el pais? y cuanto sale a salta", "categoria": "faq", "esp_intencion": "pregunta_especifica", "esp_producto": "NINGUNO", "nota": "envio, no nombra producto"}
+{"id": "q27", "texto": "ese mismo dale", "categoria": "ambiguedad", "esp_pregunta": true, "esp_producto": "NINGUNO", "nota": "referencia sin contexto"}
+{"id": "q28", "texto": "tienen sillas? cuanto la mas barata y si llega hoy a caba", "categoria": "multi_intento", "esp_producto": "NINGUNO", "nota": "categoria + precio + plazo + destino"}
+{"id": "s01", "texto": "busco algo comodo para escribir muchas horas en la oficina", "categoria": "sinonimo", "esp_categoria": "teclado", "nota": "concepto, sin nombrar teclado"}
+{"id": "s02", "texto": "necesito grabar mi voz para youtube desde casa", "categoria": "sinonimo", "esp_categoria": "microfono", "nota": "concepto, sin nombrar microfono"}
+{"id": "s03", "texto": "se me recalienta mucho la compu cuando juego, que me recomendas", "categoria": "sinonimo", "esp_categoria": "cooler", "nota": "concepto, sin nombrar cooler"}
+{"id": "s04", "texto": "quiero escuchar musica yo solo sin molestar a nadie en casa", "categoria": "sinonimo", "esp_categoria": "auriculares", "nota": "concepto, sin nombrar auriculares"}
+{"id": "s05", "texto": "necesito guardar muchos juegos y que carguen rapido", "categoria": "sinonimo", "esp_categoria": "ssd", "nota": "concepto, sin nombrar ssd"}
+{"id": "s06", "texto": "quiero ver peliculas en una pantalla grande para mi escritorio", "categoria": "sinonimo", "esp_categoria": "monitor", "nota": "concepto, sin nombrar monitor"}

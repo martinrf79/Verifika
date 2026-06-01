@@ -1,0 +1,802 @@
+[
+  {
+    "id": "MON-001",
+    "nombre": "Monitor Samsung 24'' Full HD",
+    "categoria": "monitores",
+    "precio_ars": 280000,
+    "stock": 5,
+    "descripcion": "Monitor LED 24'' resolución 1920x1080, HDMI y VGA, ideal oficina y uso diario"
+  },
+  {
+    "id": "MON-002",
+    "nombre": "Monitor LG 27'' 144Hz",
+    "categoria": "monitores",
+    "precio_ars": 450000,
+    "stock": 2,
+    "descripcion": "Monitor gamer 27'' 144Hz, 1ms, ideal gaming competitivo"
+  },
+  {
+    "id": "MON-003",
+    "nombre": "Monitor AOC 22'' Full HD",
+    "categoria": "monitores",
+    "precio_ars": 215000,
+    "stock": 8,
+    "descripcion": "Monitor LED 22'' 1920x1080, panel VA, conexión HDMI y VGA"
+  },
+  {
+    "id": "MON-004",
+    "nombre": "Monitor Samsung 32'' 4K",
+    "categoria": "monitores",
+    "precio_ars": 720000,
+    "stock": 3,
+    "descripcion": "Monitor 32'' resolución 4K UHD, ideal diseño y video"
+  },
+  {
+    "id": "MON-005",
+    "nombre": "Monitor Philips 24'' IPS",
+    "categoria": "monitores",
+    "precio_ars": 320000,
+    "stock": 6,
+    "descripcion": "Monitor 24'' panel IPS, colores precisos, ideal diseño"
+  },
+  {
+    "id": "MON-006",
+    "nombre": "Monitor Gigabyte 27'' QHD 165Hz",
+    "categoria": "monitores",
+    "precio_ars": 580000,
+    "stock": 2,
+    "descripcion": "Monitor gamer 27'' 2560x1440 165Hz, panel IPS, FreeSync"
+  },
+  {
+    "id": "MON-007",
+    "nombre": "Monitor LG UltraWide 29''",
+    "categoria": "monitores",
+    "precio_ars": 540000,
+    "stock": 1,
+    "descripcion": "Monitor ultrawide 29'' 2560x1080, ideal multitasking"
+  },
+  {
+    "id": "MON-008",
+    "nombre": "Monitor BenQ 24'' Eye-Care",
+    "categoria": "monitores",
+    "precio_ars": 295000,
+    "stock": 4,
+    "descripcion": "Monitor 24'' Full HD, tecnología Eye-Care, sin parpadeo"
+  },
+  {
+    "id": "MON-009",
+    "nombre": "Monitor Asus TUF Gaming 27''",
+    "categoria": "monitores",
+    "precio_ars": 620000,
+    "stock": 2,
+    "descripcion": "Monitor gamer 27'' 1ms 165Hz, panel IPS, ELMB"
+  },
+  {
+    "id": "MON-010",
+    "nombre": "Monitor MSI Optix 24''",
+    "categoria": "monitores",
+    "precio_ars": 380000,
+    "stock": 5,
+    "descripcion": "Monitor curvo 24'' 144Hz, panel VA, FreeSync"
+  },
+  {
+    "id": "TEC-001",
+    "nombre": "Teclado mecánico Redragon Kumara",
+    "categoria": "teclados",
+    "precio_ars": 85000,
+    "stock": 12,
+    "descripcion": "Teclado mecánico RGB switches red, retroiluminado, layout español"
+  },
+  {
+    "id": "TEC-002",
+    "nombre": "Teclado Logitech K120",
+    "categoria": "teclados",
+    "precio_ars": 22000,
+    "stock": 30,
+    "descripcion": "Teclado de membrana USB, layout español latinoamericano"
+  },
+  {
+    "id": "TEC-003",
+    "nombre": "Teclado mecánico HyperX Alloy Origins",
+    "categoria": "teclados",
+    "precio_ars": 195000,
+    "stock": 4,
+    "descripcion": "Teclado mecánico TKL, switches HyperX Aqua, RGB"
+  },
+  {
+    "id": "TEC-004",
+    "nombre": "Teclado Razer BlackWidow V3",
+    "categoria": "teclados",
+    "precio_ars": 245000,
+    "stock": 3,
+    "descripcion": "Teclado mecánico full size, switches Razer Green, RGB"
+  },
+  {
+    "id": "TEC-005",
+    "nombre": "Teclado Genius KB-110",
+    "categoria": "teclados",
+    "precio_ars": 14000,
+    "stock": 50,
+    "descripcion": "Teclado básico USB membrana, layout español, ideal oficina"
+  },
+  {
+    "id": "TEC-006",
+    "nombre": "Teclado Corsair K70 RGB MK.2",
+    "categoria": "teclados",
+    "precio_ars": 320000,
+    "stock": 2,
+    "descripcion": "Teclado mecánico Cherry MX Red, RGB por tecla, USB passthrough"
+  },
+  {
+    "id": "TEC-007",
+    "nombre": "Teclado Redragon Devarajas",
+    "categoria": "teclados",
+    "precio_ars": 95000,
+    "stock": 8,
+    "descripcion": "Teclado mecánico full RGB, switches outemu blue, antighosting"
+  },
+  {
+    "id": "TEC-008",
+    "nombre": "Teclado inalámbrico Logitech K380",
+    "categoria": "teclados",
+    "precio_ars": 75000,
+    "stock": 15,
+    "descripcion": "Teclado bluetooth multi-dispositivo, layout español, ultradelgado"
+  },
+  {
+    "id": "TEC-009",
+    "nombre": "Teclado SteelSeries Apex 3",
+    "categoria": "teclados",
+    "precio_ars": 145000,
+    "stock": 6,
+    "descripcion": "Teclado gaming RGB resistente al agua IP32, anti-ghosting"
+  },
+  {
+    "id": "TEC-010",
+    "nombre": "Teclado Microsoft Wired 600",
+    "categoria": "teclados",
+    "precio_ars": 28000,
+    "stock": 25,
+    "descripcion": "Teclado USB básico, layout español, ergonómico"
+  },
+  {
+    "id": "TEC-011",
+    "nombre": "Teclado Asus ROG Strix Scope",
+    "categoria": "teclados",
+    "precio_ars": 215000,
+    "stock": 3,
+    "descripcion": "Teclado mecánico Cherry MX, RGB Aura Sync, gamer"
+  },
+  {
+    "id": "TEC-012",
+    "nombre": "Teclado Logitech MX Keys",
+    "categoria": "teclados",
+    "precio_ars": 235000,
+    "stock": 5,
+    "descripcion": "Teclado inalámbrico premium, retroiluminación inteligente, USB-C"
+  },
+  {
+    "id": "MOU-001",
+    "nombre": "Mouse Logitech G203",
+    "categoria": "mouse",
+    "precio_ars": 35000,
+    "stock": 20,
+    "descripcion": "Mouse gamer 8000 DPI, RGB, 6 botones programables"
+  },
+  {
+    "id": "MOU-002",
+    "nombre": "Mouse Razer DeathAdder V2",
+    "categoria": "mouse",
+    "precio_ars": 95000,
+    "stock": 8,
+    "descripcion": "Mouse gamer 20000 DPI, sensor Focus+, 8 botones, RGB"
+  },
+  {
+    "id": "MOU-003",
+    "nombre": "Mouse Logitech M90",
+    "categoria": "mouse",
+    "precio_ars": 12000,
+    "stock": 40,
+    "descripcion": "Mouse óptico USB básico, 1000 DPI, ambidiestro"
+  },
+  {
+    "id": "MOU-004",
+    "nombre": "Mouse HyperX Pulsefire Surge",
+    "categoria": "mouse",
+    "precio_ars": 75000,
+    "stock": 10,
+    "descripcion": "Mouse gamer 16000 DPI, RGB 360°, 6 botones"
+  },
+  {
+    "id": "MOU-005",
+    "nombre": "Mouse Redragon Cobra M711",
+    "categoria": "mouse",
+    "precio_ars": 32000,
+    "stock": 18,
+    "descripcion": "Mouse gamer 10000 DPI, 7 botones programables, RGB"
+  },
+  {
+    "id": "MOU-006",
+    "nombre": "Mouse Logitech MX Master 3",
+    "categoria": "mouse",
+    "precio_ars": 215000,
+    "stock": 4,
+    "descripcion": "Mouse productividad inalámbrico, scroll magnético, USB-C"
+  },
+  {
+    "id": "MOU-007",
+    "nombre": "Mouse Razer Basilisk V3",
+    "categoria": "mouse",
+    "precio_ars": 145000,
+    "stock": 6,
+    "descripcion": "Mouse gamer 26000 DPI, 11 botones, scroll wheel inteligente"
+  },
+  {
+    "id": "MOU-008",
+    "nombre": "Mouse SteelSeries Aerox 3",
+    "categoria": "mouse",
+    "precio_ars": 110000,
+    "stock": 5,
+    "descripcion": "Mouse gamer ultraliviano 59g, 18000 DPI, IP54"
+  },
+  {
+    "id": "MOU-009",
+    "nombre": "Mouse Microsoft Comfort 4500",
+    "categoria": "mouse",
+    "precio_ars": 22000,
+    "stock": 22,
+    "descripcion": "Mouse ergonómico USB, 1000 DPI, ideal oficina"
+  },
+  {
+    "id": "MOU-010",
+    "nombre": "Mouse Genius DX-110",
+    "categoria": "mouse",
+    "precio_ars": 8500,
+    "stock": 60,
+    "descripcion": "Mouse óptico USB, 1000 DPI, plug & play"
+  },
+  {
+    "id": "MOU-011",
+    "nombre": "Mouse inalámbrico Logitech M170",
+    "categoria": "mouse",
+    "precio_ars": 18000,
+    "stock": 35,
+    "descripcion": "Mouse inalámbrico USB nano, 1000 DPI, hasta 12 meses batería"
+  },
+  {
+    "id": "MOU-012",
+    "nombre": "Mouse Corsair Harpoon RGB",
+    "categoria": "mouse",
+    "precio_ars": 65000,
+    "stock": 12,
+    "descripcion": "Mouse gamer 6000 DPI, 6 botones, RGB, ergonómico"
+  },
+  {
+    "id": "AUR-001",
+    "nombre": "Auriculares HyperX Cloud II",
+    "categoria": "audio",
+    "precio_ars": 145000,
+    "stock": 7,
+    "descripcion": "Auriculares gamer 7.1 surround virtual, micrófono desmontable"
+  },
+  {
+    "id": "AUR-002",
+    "nombre": "Auriculares Logitech G733",
+    "categoria": "audio",
+    "precio_ars": 245000,
+    "stock": 4,
+    "descripcion": "Auriculares gamer inalámbricos, RGB, micrófono LIGHTSPEED"
+  },
+  {
+    "id": "AUR-003",
+    "nombre": "Auriculares Razer Kraken X",
+    "categoria": "audio",
+    "precio_ars": 85000,
+    "stock": 12,
+    "descripcion": "Auriculares gamer 7.1 surround, micrófono cardioide flexible"
+  },
+  {
+    "id": "AUR-004",
+    "nombre": "Auriculares Sony WH-CH520",
+    "categoria": "audio",
+    "precio_ars": 95000,
+    "stock": 10,
+    "descripcion": "Auriculares bluetooth, 50hs autonomía, ideal música"
+  },
+  {
+    "id": "AUR-005",
+    "nombre": "Auriculares JBL Tune 510BT",
+    "categoria": "audio",
+    "precio_ars": 75000,
+    "stock": 15,
+    "descripcion": "Auriculares bluetooth on-ear, 40hs autonomía, JBL Pure Bass"
+  },
+  {
+    "id": "AUR-006",
+    "nombre": "Auriculares Genius HS-300A",
+    "categoria": "audio",
+    "precio_ars": 18000,
+    "stock": 25,
+    "descripcion": "Auriculares con micrófono, jack 3.5mm, ideal oficina/zoom"
+  },
+  {
+    "id": "AUR-007",
+    "nombre": "Auriculares Redragon Zeus H510",
+    "categoria": "audio",
+    "precio_ars": 65000,
+    "stock": 10,
+    "descripcion": "Auriculares gamer 7.1, drivers 53mm, micrófono retráctil"
+  },
+  {
+    "id": "AUR-008",
+    "nombre": "Auriculares SteelSeries Arctis 5",
+    "categoria": "audio",
+    "precio_ars": 195000,
+    "stock": 5,
+    "descripcion": "Auriculares gamer 7.1, micrófono ClearCast, RGB"
+  },
+  {
+    "id": "AUR-009",
+    "nombre": "Auriculares in-ear Sony MDR-EX15LP",
+    "categoria": "audio",
+    "precio_ars": 22000,
+    "stock": 30,
+    "descripcion": "Auriculares in-ear con cable, drivers 9mm, ideal celular"
+  },
+  {
+    "id": "AUR-010",
+    "nombre": "Auriculares Razer BlackShark V2 X",
+    "categoria": "audio",
+    "precio_ars": 115000,
+    "stock": 6,
+    "descripcion": "Auriculares gamer 7.1, drivers TriForce 50mm, ultraliviano"
+  },
+  {
+    "id": "SIL-001",
+    "nombre": "Silla gamer Redragon Coeus",
+    "categoria": "sillas",
+    "precio_ars": 385000,
+    "stock": 3,
+    "descripcion": "Silla gamer reclinable, ergonómica, hasta 130kg, almohadas lumbares"
+  },
+  {
+    "id": "SIL-002",
+    "nombre": "Silla gamer Cougar Armor S",
+    "categoria": "sillas",
+    "precio_ars": 520000,
+    "stock": 2,
+    "descripcion": "Silla gamer profesional, cuero PVC, brazos 4D, hasta 120kg"
+  },
+  {
+    "id": "SIL-003",
+    "nombre": "Silla gamer Razer Iskur",
+    "categoria": "sillas",
+    "precio_ars": 850000,
+    "stock": 1,
+    "descripcion": "Silla gamer premium, soporte lumbar incorporado, cuero PVC"
+  },
+  {
+    "id": "SIL-004",
+    "nombre": "Silla oficina ergonómica básica",
+    "categoria": "sillas",
+    "precio_ars": 145000,
+    "stock": 8,
+    "descripcion": "Silla oficina giratoria, regulable en altura, malla transpirable"
+  },
+  {
+    "id": "SIL-005",
+    "nombre": "Silla gamer Sentey GS-1500",
+    "categoria": "sillas",
+    "precio_ars": 285000,
+    "stock": 5,
+    "descripcion": "Silla gamer reclinable 180°, brazos 2D, hasta 110kg"
+  },
+  {
+    "id": "SIL-006",
+    "nombre": "Silla gamer Noblechairs Hero",
+    "categoria": "sillas",
+    "precio_ars": 1100000,
+    "stock": 1,
+    "descripcion": "Silla gamer ultra premium, eco-cuero, soporte lumbar 4D"
+  },
+  {
+    "id": "ALM-001",
+    "nombre": "SSD Kingston A400 480GB",
+    "categoria": "almacenamiento",
+    "precio_ars": 65000,
+    "stock": 20,
+    "descripcion": "SSD SATA 2.5'' 480GB, lectura 500MB/s, escritura 450MB/s"
+  },
+  {
+    "id": "ALM-002",
+    "nombre": "SSD Samsung 970 EVO 1TB",
+    "categoria": "almacenamiento",
+    "precio_ars": 185000,
+    "stock": 6,
+    "descripcion": "SSD NVMe M.2 1TB, lectura 3500MB/s, ideal gaming"
+  },
+  {
+    "id": "ALM-003",
+    "nombre": "Disco rígido Seagate 1TB",
+    "categoria": "almacenamiento",
+    "precio_ars": 75000,
+    "stock": 15,
+    "descripcion": "HDD 3.5'' 1TB 7200RPM, ideal almacenamiento masivo"
+  },
+  {
+    "id": "ALM-004",
+    "nombre": "SSD Western Digital Blue 500GB",
+    "categoria": "almacenamiento",
+    "precio_ars": 78000,
+    "stock": 10,
+    "descripcion": "SSD SATA 2.5'' 500GB, lectura 560MB/s"
+  },
+  {
+    "id": "ALM-005",
+    "nombre": "Disco rígido externo Toshiba 2TB",
+    "categoria": "almacenamiento",
+    "precio_ars": 125000,
+    "stock": 8,
+    "descripcion": "HDD externo USB 3.0 2TB, portátil, 2.5''"
+  },
+  {
+    "id": "ALM-006",
+    "nombre": "Pendrive Kingston DataTraveler 64GB",
+    "categoria": "almacenamiento",
+    "precio_ars": 18000,
+    "stock": 30,
+    "descripcion": "Pendrive USB 3.2 64GB, hasta 100MB/s"
+  },
+  {
+    "id": "ALM-007",
+    "nombre": "Pendrive SanDisk Cruzer 32GB",
+    "categoria": "almacenamiento",
+    "precio_ars": 12000,
+    "stock": 40,
+    "descripcion": "Pendrive USB 2.0 32GB, plug & play"
+  },
+  {
+    "id": "ALM-008",
+    "nombre": "SSD Crucial MX500 1TB",
+    "categoria": "almacenamiento",
+    "precio_ars": 165000,
+    "stock": 5,
+    "descripcion": "SSD SATA 2.5'' 1TB, lectura 560MB/s, AES 256-bit"
+  },
+  {
+    "id": "ALM-009",
+    "nombre": "Tarjeta SD Lexar 128GB",
+    "categoria": "almacenamiento",
+    "precio_ars": 28000,
+    "stock": 18,
+    "descripcion": "Tarjeta microSD 128GB clase 10, U3, ideal celular/cámara"
+  },
+  {
+    "id": "ALM-010",
+    "nombre": "SSD NVMe Western Digital SN770 500GB",
+    "categoria": "almacenamiento",
+    "precio_ars": 110000,
+    "stock": 7,
+    "descripcion": "SSD NVMe Gen4 500GB, lectura 5000MB/s"
+  },
+  {
+    "id": "RAM-001",
+    "nombre": "Memoria RAM Kingston Fury 8GB DDR4",
+    "categoria": "memorias",
+    "precio_ars": 55000,
+    "stock": 12,
+    "descripcion": "Memoria DDR4 8GB 2666MHz, disipador, gaming"
+  },
+  {
+    "id": "RAM-002",
+    "nombre": "Memoria RAM Corsair Vengeance 16GB DDR4",
+    "categoria": "memorias",
+    "precio_ars": 115000,
+    "stock": 8,
+    "descripcion": "Kit DDR4 2x8GB 3200MHz, disipador aluminio"
+  },
+  {
+    "id": "RAM-003",
+    "nombre": "Memoria RAM G.Skill Ripjaws 32GB DDR4",
+    "categoria": "memorias",
+    "precio_ars": 235000,
+    "stock": 4,
+    "descripcion": "Kit DDR4 2x16GB 3600MHz, alto rendimiento"
+  },
+  {
+    "id": "RAM-004",
+    "nombre": "Memoria RAM Crucial 8GB DDR4",
+    "categoria": "memorias",
+    "precio_ars": 48000,
+    "stock": 15,
+    "descripcion": "Memoria DDR4 8GB 2666MHz, sin disipador"
+  },
+  {
+    "id": "RAM-005",
+    "nombre": "Memoria RAM Kingston Fury 16GB DDR5",
+    "categoria": "memorias",
+    "precio_ars": 195000,
+    "stock": 5,
+    "descripcion": "Memoria DDR5 16GB 5200MHz, RGB"
+  },
+  {
+    "id": "RAM-006",
+    "nombre": "Memoria RAM Corsair Dominator 32GB DDR5",
+    "categoria": "memorias",
+    "precio_ars": 425000,
+    "stock": 2,
+    "descripcion": "Kit DDR5 2x16GB 6000MHz, premium gaming"
+  },
+  {
+    "id": "WEB-001",
+    "nombre": "Webcam Logitech C920",
+    "categoria": "webcams",
+    "precio_ars": 145000,
+    "stock": 8,
+    "descripcion": "Webcam Full HD 1080p, autoenfoque, micrófono dual"
+  },
+  {
+    "id": "WEB-002",
+    "nombre": "Webcam Genius FaceCam 1000X",
+    "categoria": "webcams",
+    "precio_ars": 35000,
+    "stock": 18,
+    "descripcion": "Webcam HD 720p, micrófono integrado, USB"
+  },
+  {
+    "id": "WEB-003",
+    "nombre": "Webcam Logitech Brio 4K",
+    "categoria": "webcams",
+    "precio_ars": 385000,
+    "stock": 3,
+    "descripcion": "Webcam 4K UHD, HDR, autenticación facial Windows Hello"
+  },
+  {
+    "id": "WEB-004",
+    "nombre": "Webcam Razer Kiyo",
+    "categoria": "webcams",
+    "precio_ars": 195000,
+    "stock": 4,
+    "descripcion": "Webcam 1080p 30fps, anillo de luz incorporado, streaming"
+  },
+  {
+    "id": "WEB-005",
+    "nombre": "Webcam HP w200",
+    "categoria": "webcams",
+    "precio_ars": 45000,
+    "stock": 12,
+    "descripcion": "Webcam HD 720p, plug & play, ideal videoconferencia"
+  },
+  {
+    "id": "MIC-001",
+    "nombre": "Micrófono Blue Yeti USB",
+    "categoria": "microfonos",
+    "precio_ars": 215000,
+    "stock": 5,
+    "descripcion": "Micrófono condensador USB, 4 patrones polares, ideal streaming"
+  },
+  {
+    "id": "MIC-002",
+    "nombre": "Micrófono HyperX QuadCast",
+    "categoria": "microfonos",
+    "precio_ars": 245000,
+    "stock": 3,
+    "descripcion": "Micrófono condensador RGB, anti-vibración, monitoreo"
+  },
+  {
+    "id": "MIC-003",
+    "nombre": "Micrófono Razer Seiren X",
+    "categoria": "microfonos",
+    "precio_ars": 165000,
+    "stock": 4,
+    "descripcion": "Micrófono condensador supercardioide, ideal streaming"
+  },
+  {
+    "id": "MIC-004",
+    "nombre": "Micrófono FIFINE K669B USB",
+    "categoria": "microfonos",
+    "precio_ars": 65000,
+    "stock": 12,
+    "descripcion": "Micrófono USB cardioide, ideal podcast/zoom"
+  },
+  {
+    "id": "MIC-005",
+    "nombre": "Micrófono Audio-Technica ATR2100x",
+    "categoria": "microfonos",
+    "precio_ars": 195000,
+    "stock": 4,
+    "descripcion": "Micrófono dinámico USB/XLR, ideal podcast profesional"
+  },
+  {
+    "id": "PAD-001",
+    "nombre": "Pad mouse Redragon Flick L",
+    "categoria": "pads",
+    "precio_ars": 18000,
+    "stock": 25,
+    "descripcion": "Pad mouse 450x400mm, base antideslizante, superficie speed"
+  },
+  {
+    "id": "PAD-002",
+    "nombre": "Pad mouse Logitech G240",
+    "categoria": "pads",
+    "precio_ars": 25000,
+    "stock": 18,
+    "descripcion": "Pad mouse de tela 340x280mm, ideal sensores ópticos"
+  },
+  {
+    "id": "PAD-003",
+    "nombre": "Pad mouse Razer Goliathus Extended",
+    "categoria": "pads",
+    "precio_ars": 55000,
+    "stock": 8,
+    "descripcion": "Pad mouse XL 920x294mm, RGB, base de goma"
+  },
+  {
+    "id": "PAD-004",
+    "nombre": "Pad mouse SteelSeries QcK",
+    "categoria": "pads",
+    "precio_ars": 32000,
+    "stock": 15,
+    "descripcion": "Pad mouse mediano 320x270mm, tela alta densidad"
+  },
+  {
+    "id": "CAB-001",
+    "nombre": "Cable HDMI 2m 4K",
+    "categoria": "cables",
+    "precio_ars": 8500,
+    "stock": 50,
+    "descripcion": "Cable HDMI 2.0 de 2 metros, soporta 4K 60Hz"
+  },
+  {
+    "id": "CAB-002",
+    "nombre": "Cable HDMI 5m 4K",
+    "categoria": "cables",
+    "precio_ars": 14000,
+    "stock": 30,
+    "descripcion": "Cable HDMI 2.0 de 5 metros, soporta 4K 60Hz"
+  },
+  {
+    "id": "CAB-003",
+    "nombre": "Cable USB-C a USB-C 1m",
+    "categoria": "cables",
+    "precio_ars": 12000,
+    "stock": 35,
+    "descripcion": "Cable USB-C 1m, 60W carga rápida, datos hasta 10Gbps"
+  },
+  {
+    "id": "CAB-004",
+    "nombre": "Cable DisplayPort 1.8m",
+    "categoria": "cables",
+    "precio_ars": 11000,
+    "stock": 22,
+    "descripcion": "Cable DisplayPort 1.4 de 1.8m, soporta 4K 144Hz"
+  },
+  {
+    "id": "CAB-005",
+    "nombre": "Cable USB-A a Lightning 1m",
+    "categoria": "cables",
+    "precio_ars": 9500,
+    "stock": 40,
+    "descripcion": "Cable certificado MFi para iPhone, 1 metro"
+  },
+  {
+    "id": "CAB-006",
+    "nombre": "Adaptador USB-C a HDMI",
+    "categoria": "cables",
+    "precio_ars": 18000,
+    "stock": 18,
+    "descripcion": "Adaptador USB-C a HDMI 4K, plug & play"
+  },
+  {
+    "id": "CAB-007",
+    "nombre": "Cable de red Cat 6 5m",
+    "categoria": "cables",
+    "precio_ars": 6500,
+    "stock": 60,
+    "descripcion": "Cable ethernet Cat 6 UTP de 5 metros, hasta 10Gbps"
+  },
+  {
+    "id": "HUB-001",
+    "nombre": "Hub USB 3.0 4 puertos Genius",
+    "categoria": "hubs",
+    "precio_ars": 12000,
+    "stock": 25,
+    "descripcion": "Hub USB 3.0 con 4 puertos, plug & play"
+  },
+  {
+    "id": "HUB-002",
+    "nombre": "Hub USB-C 7 en 1 Anker",
+    "categoria": "hubs",
+    "precio_ars": 95000,
+    "stock": 8,
+    "descripcion": "Hub USB-C: HDMI 4K + 2x USB 3.0 + SD + microSD + USB-C PD"
+  },
+  {
+    "id": "HUB-003",
+    "nombre": "Hub USB 2.0 7 puertos con fuente",
+    "categoria": "hubs",
+    "precio_ars": 28000,
+    "stock": 12,
+    "descripcion": "Hub 7 puertos USB 2.0 con alimentación externa"
+  },
+  {
+    "id": "HUB-004",
+    "nombre": "Hub USB-C 5 en 1 portátil",
+    "categoria": "hubs",
+    "precio_ars": 55000,
+    "stock": 10,
+    "descripcion": "Hub USB-C: HDMI + 2 USB 3.0 + USB-C PD + Ethernet"
+  },
+  {
+    "id": "COO-001",
+    "nombre": "Cooler CPU DeepCool Gammaxx 400",
+    "categoria": "coolers",
+    "precio_ars": 65000,
+    "stock": 10,
+    "descripcion": "Cooler CPU 4 heatpipes, ventilador 120mm RGB, hasta 130W TDP"
+  },
+  {
+    "id": "COO-002",
+    "nombre": "Cooler Noctua NH-U12S",
+    "categoria": "coolers",
+    "precio_ars": 195000,
+    "stock": 4,
+    "descripcion": "Cooler CPU premium, ventilador 120mm, máximo silencio"
+  },
+  {
+    "id": "COO-003",
+    "nombre": "Watercooling Cooler Master ML240L",
+    "categoria": "coolers",
+    "precio_ars": 235000,
+    "stock": 3,
+    "descripcion": "Refrigeración líquida 240mm, RGB, compatible AMD/Intel"
+  },
+  {
+    "id": "COO-004",
+    "nombre": "Ventilador 120mm Corsair LL120",
+    "categoria": "coolers",
+    "precio_ars": 38000,
+    "stock": 18,
+    "descripcion": "Ventilador 120mm RGB, doble anillo de luz, PWM"
+  },
+  {
+    "id": "JOY-001",
+    "nombre": "Joystick Xbox Wireless Controller",
+    "categoria": "gamepads",
+    "precio_ars": 185000,
+    "stock": 6,
+    "descripcion": "Control inalámbrico Xbox, compatible PC, Series X/S, bluetooth"
+  },
+  {
+    "id": "JOY-002",
+    "nombre": "Joystick PS5 DualSense",
+    "categoria": "gamepads",
+    "precio_ars": 215000,
+    "stock": 4,
+    "descripcion": "Control PS5, retroalimentación háptica, gatillos adaptativos"
+  },
+  {
+    "id": "JOY-003",
+    "nombre": "Joystick Logitech F310",
+    "categoria": "gamepads",
+    "precio_ars": 55000,
+    "stock": 12,
+    "descripcion": "Control USB para PC, 2 modos D-input/X-input, layout PlayStation"
+  },
+  {
+    "id": "JOY-004",
+    "nombre": "Joystick 8BitDo Pro 2",
+    "categoria": "gamepads",
+    "precio_ars": 145000,
+    "stock": 5,
+    "descripcion": "Control bluetooth multiplataforma, retroiluminación, customizable"
+  },
+  {
+    "id": "JOY-005",
+    "nombre": "Volante Logitech G29",
+    "categoria": "gamepads",
+    "precio_ars": 685000,
+    "stock": 2,
+    "descripcion": "Volante racing 900° con pedales, force feedback, PS4/PS5/PC"
+  }
+]

@@ -1,0 +1,631 @@
+"""
+TOOLS v4 — funciones que el LLM puede invocar.
+
+Multi-tenant: cada tool resuelve la tienda actual desde tools_context (ContextVar).
+El LLM no ve este parámetro. El orchestrator lo setea antes de invocar al agente.
+"""
+from app.storage.firestore_client import (
+    get_all_products,
+    get_product_by_id,
+    get_categories,
+    get_all_faq,
+)
+from app.storage.search import hybrid_search
+from app.config import get_settings
+from app.logger import get_logger
+from app.core.tools_context import get_current_tienda
+
+log = get_logger(__name__)
+settings = get_settings()
+
+
+# ────────────────────────────────────────────────────────────
+# 1) BUSCAR PRODUCTOS (con búsqueda híbrida)
+# ────────────────────────────────────────────────────────────
+
+def search_products(query: str | None = None,
+                    categoria: str | None = None,
+                    precio_min: int | None = None,
+                    precio_max: int | None = None) -> dict:
+    """Busca productos en Firestore con búsqueda híbrida."""
+    tid = get_current_tienda()
+    resultados = hybrid_search(
+        query=query,
+        categoria=categoria,
+        precio_min=precio_min,
+        precio_max=precio_max,
+        top_n=settings.SEARCH_TOP_N,
+        tienda_id=tid,
+    )
+
+    if not resultados:
+        return {
+            "encontrados": 0,
+            "productos": [],
+            "mensaje_para_llm": (
+                "No hay productos que cumplan los criterios. "
+                "Decile al cliente honestamente que no tenemos algo así. "
+                "Si querés, ofrecé la categoría más cercana del catálogo."
+            ),
+        }
+
+    return {
+        "encontrados": len(resultados),
+        "productos": [_resumir(p) for p in resultados],
+    }
+
+
+# ────────────────────────────────────────────────────────────
+# 2) DETALLE
+# ────────────────────────────────────────────────────────────
+
+def get_product_details(product_id: str) -> dict:
+    tid = get_current_tienda()
+    p = get_product_by_id(product_id, tienda_id=tid)
+    if not p:
+        return {
+            "encontrado": False,
+            "mensaje_para_llm": f"No existe producto con ID {product_id}.",
+        }
+    return {"encontrado": True, "producto": _resumir(p)}
+
+
+# ────────────────────────────────────────────────────────────
+# 3) CALCULAR TOTAL
+# ────────────────────────────────────────────────────────────
+
+def calculate_total(items: list[dict], items_extra: list[dict] | None = None) -> dict:
+    log.info(f"calculate_total INICIO items={items} items_extra={items_extra}")
+    """
+    Calcula total exacto de productos del catalogo, mas extras verificados
+    contra FAQ cuantitativa (envios, descuentos, recargos).
+
+    items: lista de {"product_id", "cantidad"} del catalogo.
+    items_extra: lista opcional de {"faq_tema", "concepto"}, donde faq_tema es
+        el ID de la FAQ y concepto es el id del valor estructurado dentro de esa
+        FAQ. La funcion busca el monto o rango en la FAQ. Si no existe rechaza.
+
+    Devuelve total_ars cuando todo es fijo, o total_min_ars y total_max_ars
+    cuando algun extra es de modalidad rango.
+    """
+    tid = get_current_tienda()
+    detalle = []
+    total = 0
+    no_encontrados = []
+    for item in items:
+        pid = item.get("product_id", "")
+        cantidad = int(item.get("cantidad", 1))
+        producto = get_product_by_id(pid, tienda_id=tid)
+        if not producto:
+            no_encontrados.append(pid)
+            continue
+        if cantidad > producto.get("stock", 0):
+            return {
+                "ok": False,
+                "mensaje_para_llm": (
+                    f"Stock insuficiente: {producto['nombre']} tiene "
+                    f"{producto.get('stock', 0)} unidades, el cliente quiere {cantidad}."
+                ),
+            }
+        subtotal = producto["precio_ars"] * cantidad
+        total += subtotal
+        detalle.append({
+            "id": producto["id"],
+            "nombre": producto["nombre"],
+            "cantidad": cantidad,
+            "precio_unitario": producto["precio_ars"],
+            "subtotal": subtotal,
+        })
+    if no_encontrados:
+        return {
+            "ok": False,
+            "mensaje_para_llm": f"IDs no existentes: {no_encontrados}.",
+        }
+
+    extras_detalle = []
+    extra_min = 0
+    extra_max = 0
+    hay_rango = False
+    if items_extra:
+        from app.storage.firestore_client import get_all_faq
+        faqs = get_all_faq(tienda_id=tid)
+        extras_no_validos = []
+        for ex in items_extra:
+            tema = (ex.get("faq_tema") or "").strip().lower()
+            concepto = (ex.get("concepto") or "").strip()
+            faq = faqs.get(tema)
+            if not faq or faq.get("tipo") != "cuantitativo":
+                extras_no_validos.append(f"{tema}:{concepto} (FAQ no cuantitativa)")
+                continue
+            valores = faq.get("valores") or []
+            valor = next((v for v in valores if v.get("concepto") == concepto), None)
+            if not valor:
+                extras_no_validos.append(f"{tema}:{concepto} (concepto no existe)")
+                continue
+            if valor.get("modalidad") == "fijo":
+                m = int(valor.get("monto", 0))
+                extra_min += m
+                extra_max += m
+                extras_detalle.append({
+                    "faq_tema": tema, "concepto": concepto,
+                    "modalidad": "fijo", "monto": m,
+                    "condicion": valor.get("condicion", ""),
+                })
+            elif valor.get("modalidad") == "rango":
+                mn = int(valor.get("monto_min", 0))
+                mx = int(valor.get("monto_max", 0))
+                extra_min += mn
+                extra_max += mx
+                hay_rango = True
+                extras_detalle.append({
+                    "faq_tema": tema, "concepto": concepto,
+                    "modalidad": "rango", "monto_min": mn, "monto_max": mx,
+                    "condicion": valor.get("condicion", ""),
+                })
+            else:
+                extras_no_validos.append(f"{tema}:{concepto} (modalidad invalida)")
+        if extras_no_validos:
+            return {
+                "ok": False,
+                "mensaje_para_llm": f"Extras no validos: {extras_no_validos}",
+            }
+
+    if hay_rango:
+        return {
+            "ok": True,
+            "total_min_ars": total + extra_min,
+            "total_max_ars": total + extra_max,
+            "subtotal_productos_ars": total,
+            "detalle": detalle,
+            "extras": extras_detalle,
+            "proof": {
+                "tipo": "calculo_total_rango",
+                "formula": "suma_productos + suma_extras_rango",
+                "operandos_productos": [
+                    {"id": d["id"], "monto": d["subtotal"], "fuente": "catalogo"}
+                    for d in detalle
+                ],
+                "operandos_extras": extras_detalle,
+                "resultado_min": total + extra_min,
+                "resultado_max": total + extra_max,
+            },
+        }
+    return {
+        "ok": True,
+        "total_ars": total + extra_min,
+        "subtotal_productos_ars": total,
+        "proof": {
+            "tipo": "calculo_total_fijo",
+            "formula": "suma_productos + suma_extras",
+            "operandos_productos": [
+                {"id": d["id"], "monto": d["subtotal"], "fuente": "catalogo"}
+                for d in detalle
+            ],
+            "operandos_extras": extras_detalle,
+            "resultado": total + extra_min,
+        },
+        "detalle": detalle,
+        "extras": extras_detalle,
+    }
+
+
+# ────────────────────────────────────────────────────────────
+# 4) ENCONTRAR DENTRO DE PRESUPUESTO
+# ────────────────────────────────────────────────────────────
+
+def find_within_budget(presupuesto_max: int,
+                       categorias: list[str] | None = None) -> dict:
+    tid = get_current_tienda()
+    productos = get_all_products(tienda_id=tid)
+    if categorias is None:
+        categorias = ["monitores", "teclados", "mouse", "audio"]
+
+    cats_validas_global = set(get_categories(tienda_id=tid))
+    cats_validas = [c for c in categorias if c in cats_validas_global]
+    if not cats_validas:
+        return {
+            "ok": False,
+            "mensaje_para_llm": (
+                f"Categorías inválidas. Disponibles: {sorted(cats_validas_global)}."
+            ),
+        }
+
+    seleccion = []
+    restante = presupuesto_max
+
+    for cat in cats_validas:
+        candidatos = [
+            p for p in productos
+            if p["categoria"] == cat and p.get("stock", 0) > 0
+        ]
+        candidatos.sort(key=lambda p: p["precio_ars"])
+        elegido = next((p for p in candidatos if p["precio_ars"] <= restante), None)
+        if elegido:
+            seleccion.append(elegido)
+            restante -= elegido["precio_ars"]
+
+    cats_ordenadas = sorted(
+        cats_validas,
+        key=lambda c: max(
+            (p["precio_ars"] for p in productos if p["categoria"] == c),
+            default=0,
+        ),
+        reverse=True,
+    )
+
+    for cat in cats_ordenadas:
+        actual = next((p for p in seleccion if p["categoria"] == cat), None)
+        if not actual:
+            continue
+        candidatos_upgrade = [
+            p for p in productos
+            if p["categoria"] == cat
+            and p.get("stock", 0) > 0
+            and p["precio_ars"] > actual["precio_ars"]
+            and (p["precio_ars"] - actual["precio_ars"]) <= restante
+        ]
+        if candidatos_upgrade:
+            mejor_upgrade = max(candidatos_upgrade, key=lambda p: p["precio_ars"])
+            restante -= (mejor_upgrade["precio_ars"] - actual["precio_ars"])
+            idx = seleccion.index(actual)
+            seleccion[idx] = mejor_upgrade
+
+    seleccion = [_resumir(p) for p in seleccion]
+
+    if not seleccion:
+        precios = [p["precio_ars"] for p in productos if p.get("stock", 0) > 0]
+        min_precio = min(precios) if precios else 0
+        return {
+            "ok": False,
+            "presupuesto": presupuesto_max,
+            "mensaje_para_llm": (
+                f"Con ${presupuesto_max:,} no llegamos a armar nada. "
+                f"El producto más barato es ${min_precio:,}."
+            ),
+        }
+
+    total = sum(p["precio_ars"] for p in seleccion)
+    return {
+        "ok": True,
+        "presupuesto": presupuesto_max,
+        "total_seleccion": total,
+        "ahorro": presupuesto_max - total,
+        "productos": seleccion,
+        "completo": len(seleccion) == len(cats_validas),
+    }
+
+
+# ────────────────────────────────────────────────────────────
+# 5) COMPARAR
+# ────────────────────────────────────────────────────────────
+
+def compare_products(product_ids: list[str]) -> dict:
+    if len(product_ids) < 2:
+        return {"ok": False, "mensaje_para_llm": "Mínimo 2 productos."}
+
+    tid = get_current_tienda()
+    productos = []
+    no_encontrados = []
+    for pid in product_ids:
+        p = get_product_by_id(pid, tienda_id=tid)
+        if p:
+            productos.append(_resumir(p))
+        else:
+            no_encontrados.append(pid)
+
+    if no_encontrados:
+        return {"ok": False, "mensaje_para_llm": f"No existen: {no_encontrados}."}
+
+    precios = [p["precio_ars"] for p in productos]
+    return {
+        "ok": True,
+        "productos": productos,
+        "mas_caro": productos[precios.index(max(precios))]["nombre"],
+        "mas_barato": productos[precios.index(min(precios))]["nombre"],
+        "diferencia_precio": max(precios) - min(precios),
+    }
+
+
+# ────────────────────────────────────────────────────────────
+# 6) RECOMENDAR
+# ────────────────────────────────────────────────────────────
+
+def recommend_product(criterio: str = "precio_calidad",
+                      categoria: str | None = None) -> dict:
+    tid = get_current_tienda()
+    productos = get_all_products(tienda_id=tid)
+    if categoria:
+        candidatos = [
+            p for p in productos
+            if p["categoria"].lower() == categoria.lower() and p.get("stock", 0) > 0
+        ]
+    else:
+        candidatos = [p for p in productos if p.get("stock", 0) > 0]
+
+    if not candidatos:
+        return {"ok": False, "mensaje_para_llm": "No hay productos disponibles."}
+
+    candidatos.sort(key=lambda p: p["precio_ars"])
+
+    if criterio == "precio_calidad":
+        elegido = candidatos[len(candidatos) // 2]
+        razon = "buena relación precio-calidad (precio intermedio)"
+    elif criterio == "principiante":
+        elegido = candidatos[0]
+        razon = "ideal para empezar, opción más accesible"
+    elif criterio == "premium":
+        elegido = candidatos[-1]
+        razon = "la opción top de la categoría"
+    else:
+        return {"ok": False, "mensaje_para_llm": f"Criterio '{criterio}' no válido."}
+
+    return {"ok": True, "producto": _resumir(elegido), "razon": razon}
+
+
+# ────────────────────────────────────────────────────────────
+# 7) FAQ
+# ────────────────────────────────────────────────────────────
+
+def query_faq(consulta: str) -> dict:
+    """
+    Busca FAQ relevante usando el LLM como retriever semantico.
+    Le pasa al LLM la lista de temas con sus respuestas y el LLM decide
+    cual aplica. Resuelve reformulaciones, sinonimos, errores de tipeo.
+    """
+    from app.verifika.llm_adapter import llm_complete
+    import json as _json
+
+    tid = get_current_tienda()
+    faq = get_all_faq(tienda_id=tid)
+    if not faq:
+        return {"encontrada": False, "mensaje_para_llm": "FAQ vacia"}
+
+    temas_texto = ""
+    for tema, data in faq.items():
+        respuesta = data.get("respuesta", "")
+        temas_texto += "\n- tema: " + tema + "\n  respuesta: " + respuesta + "\n"
+
+    system_prompt = (
+        "Sos un buscador de FAQ. Recibis una consulta y una lista de temas con respuestas. "
+        "Elegi UN tema que responda directamente, o deci que ninguno aplica.\n"
+        "REGLAS:\n"
+        "1. Solo elegi un tema si la respuesta contiene la informacion exacta que pide el cliente.\n"
+        "2. Si la consulta menciona costos, plazos, pagos, envios, garantia, devoluciones, "
+        "buscá entre los temas el que tenga esa info concreta.\n"
+        "3. Si ningun tema responde, devolve tema vacio.\n"
+        "4. Devolve SOLO JSON estricto: "
+        '{\"tema\": \"nombre\" o \"\"}'
+    )
+
+    user_message = "CONSULTA:\n" + consulta + "\n\nTEMAS DISPONIBLES:" + temas_texto + "\n\nDevolve el JSON."
+
+    try:
+        result = llm_complete(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message},
+            ],
+            role="proposer",
+            temperature=0.0,
+            max_tokens=80,
+        )
+    except Exception as e:
+        log.warning("query_faq_llm_error", error=str(e)[:150])
+        return {"encontrada": False, "mensaje_para_llm": "error de busqueda"}
+
+    content = result.get("content", "").strip()
+    if content.startswith("```"):
+        content = content.split("```")[1] if "```" in content[3:] else content[3:]
+        if content.startswith("json"):
+            content = content[4:]
+        content = content.strip()
+
+    try:
+        parsed = _json.loads(content)
+        tema_elegido = parsed.get("tema", "").strip()
+    except Exception:
+        tema_elegido = ""
+
+    if tema_elegido and tema_elegido in faq:
+        log.info("query_faq_hit", tema=tema_elegido)
+        return {"encontrada": True, "respuesta": faq[tema_elegido].get("respuesta", "")}
+
+    return {
+        "encontrada": False,
+        "mensaje_para_llm": (
+            "No hay FAQ que responda a esto. Decile al cliente que vas a "
+            "consultar y le confirmas, o pedile que reformule."
+        ),
+    }
+# Helper
+# ────────────────────────────────────────────────────────────
+
+def _resumir(p: dict) -> dict:
+    """
+    Devuelve TODOS los campos del producto (excepto embedding y campos internos)
+    para que el Solver y Verifika puedan ver toda la informacion del catalogo.
+    Esto resuelve alucinaciones tipo "todos hechos en China" o "es de aluminio"
+    cuando el cliente extendio el CSV con campos como origen, material, garantia, etc.
+    """
+    EXCLUIR = {"embedding", "_id", "created_at", "updated_at"}
+    return {k: v for k, v in p.items() if k not in EXCLUIR and not k.startswith("_")}
+
+
+# ────────────────────────────────────────────────────────────
+# REGISTRY: schemas y mapeo de funciones
+# ────────────────────────────────────────────────────────────
+
+def _build_schema():
+    """Schema dinámico. Las categorías reflejan las de la tienda actual."""
+    try:
+        cats = get_categories(tienda_id=get_current_tienda())
+    except Exception:
+        cats = []
+
+    return [
+        {
+            "type": "function",
+            "function": {
+                "name": "search_products",
+                "description": (
+                    "Busca productos en el catálogo. Usar SIEMPRE que el cliente "
+                    "mencione cualquier producto, marca, categoría o palabra "
+                    "relacionada. Devuelve los TOP 10 más relevantes."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Texto libre para buscar. Opcional.",
+                        },
+                        "categoria": {
+                            "type": "string",
+                            "description": f"Categoría a filtrar. Disponibles: {cats}",
+                        },
+                        "precio_min": {"type": "integer"},
+                        "precio_max": {"type": "integer"},
+                    },
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_product_details",
+                "description": "Detalle completo de un producto por su ID.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"product_id": {"type": "string"}},
+                    "required": ["product_id"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "calculate_total",
+                "description": (
+                    "Calcula total exacto de N productos del catalogo, opcionalmente sumando "
+                    "extras verificados contra FAQ cuantitativa (envios, descuentos, recargos). "
+                    "USAR SIEMPRE para sumas. NUNCA calcules vos mismo. "
+                    "Si el cliente pide total con envio u otro concepto de FAQ, pasalo en items_extra."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "items": {
+                            "type": "array",
+                            "description": "Productos del catalogo",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "product_id": {"type": "string"},
+                                    "cantidad": {"type": "integer", "minimum": 1},
+                                },
+                                "required": ["product_id", "cantidad"],
+                            },
+                        },
+                        "items_extra": {
+                            "type": "array",
+                            "description": "Extras desde FAQ cuantitativa. faq_tema es el ID de la FAQ (ej costo_envio) y concepto es el id del valor estructurado (ej envio_interior o envio_caba_gba). Solo usar conceptos que existan en la FAQ.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "faq_tema": {"type": "string"},
+                                    "concepto": {"type": "string"},
+                                },
+                                "required": ["faq_tema", "concepto"],
+                            },
+                        },
+                    },
+                    "required": ["items"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "find_within_budget",
+                "description": "Arma combinación de productos dentro de un presupuesto.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "presupuesto_max": {"type": "integer"},
+                        "categorias": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
+                    },
+                    "required": ["presupuesto_max"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "compare_products",
+                "description": "Compara 2+ productos lado a lado.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "product_ids": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "minItems": 2,
+                        },
+                    },
+                    "required": ["product_ids"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "recommend_product",
+                "description": "Recomienda producto: precio_calidad | principiante | premium.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "criterio": {
+                            "type": "string",
+                            "enum": ["precio_calidad", "principiante", "premium"],
+                        },
+                        "categoria": {"type": "string"},
+                    },
+                    "required": ["criterio"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "query_faq",
+                "description": (
+                    "Consulta FAQ del negocio: envíos, pagos, garantía, "
+                    "devoluciones, horarios, ubicación, factura."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {"consulta": {"type": "string"}},
+                    "required": ["consulta"],
+                },
+            },
+        },
+    ]
+
+
+TOOLS_REGISTRY = {
+    "search_products": search_products,
+    "get_product_details": get_product_details,
+    "calculate_total": calculate_total,
+    "find_within_budget": find_within_budget,
+    "compare_products": compare_products,
+    "recommend_product": recommend_product,
+    "query_faq": query_faq,
+}
+
+
+def get_tools_schema():
+    """Schema fresco en cada llamada (las categorías pueden variar por tienda)."""
+    return _build_schema()

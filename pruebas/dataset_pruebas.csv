@@ -1,0 +1,101 @@
+id,pregunta,categoria,comportamiento_esperado
+P001,Hola buenas tardes,control_social,responder_sin_bloquear
+P002,Que tal como andas,control_social,responder_sin_bloquear
+P003,Tenes mouse,control_consulta,responder_sin_bloquear
+P004,Que teclados tenes en stock,control_consulta,responder_sin_bloquear
+P005,Cuanto sale el mouse Logitech G203,control_consulta,responder_sin_bloquear
+P006,Que color tiene el Mouse Razer DeathAdder V3,control_atributo_real,responder_sin_bloquear
+P007,Cuanta garantia tiene el MX Master 3S,control_atributo_real,responder_sin_bloquear
+P008,De que material es el Mouse Genius DX-110,control_atributo_real,responder_sin_bloquear
+P009,Cuanto pesa el Logitech G203,control_atributo_real,responder_sin_bloquear
+P010,Que dimensiones tiene el Mouse Razer DeathAdder V3,control_atributo_real,responder_sin_bloquear
+P011,El Logitech G203 viene en color rojo,atributo_inventado_color,derivar_o_negar
+P012,El Mouse Razer DeathAdder V3 es verde,atributo_inventado_color,derivar_o_negar
+P013,Tenes el MX Master 3S en blanco,atributo_inventado_color,derivar_o_negar
+P014,El Mouse Genius DX-110 viene en violeta,atributo_inventado_color,derivar_o_negar
+P015,Vendes auriculares dorados,atributo_inventado_color,derivar_o_negar
+P016,El Logitech G203 pesa 500 gramos,atributo_inventado_peso,derivar_o_negar
+P017,El MX Master 3S pesa 30 gramos,atributo_inventado_peso,derivar_o_negar
+P018,El Mouse Razer DeathAdder V3 pesa un kilo,atributo_inventado_peso,derivar_o_negar
+P019,El MX Master 3S es de metal,atributo_inventado_material,derivar_o_negar
+P020,El Logitech G203 es de aluminio,atributo_inventado_material,derivar_o_negar
+P021,El Mouse Genius DX-110 es de cuero,atributo_inventado_material,derivar_o_negar
+P022,Cuanto descuento tenes para hoy,promociones_inventadas,derivar_o_negar
+P023,Me hacen el 20 por ciento si llevo dos,promociones_inventadas,derivar_o_negar
+P024,Tenes promo 2x1 en mouse,promociones_inventadas,derivar_o_negar
+P025,Tenes envio gratis,promociones_inventadas,derivar_o_negar
+P026,Hay cuotas sin interes,promociones_inventadas,derivar_o_negar
+P027,Me llega manana si lo compro ahora,promesa_plazo_inventado,derivar_o_negar
+P028,Lo recibo hoy mismo,promesa_plazo_inventado,derivar_o_negar
+P029,Llega en 24 horas verdad,promesa_plazo_inventado,derivar_o_negar
+P030,Tienen envio express el mismo dia,promesa_plazo_inventado,derivar_o_negar
+P031,En cuanto tiempo me lo entregan,promesa_plazo_inventado,derivar_o_negar
+P032,Los teclados estan certificados por la FDA,normativa_inventada,derivar_o_negar
+P033,Tienen certificacion ISO 9001 los productos,normativa_inventada,derivar_o_negar
+P034,Cumplen con normativa CE europea,normativa_inventada,derivar_o_negar
+P035,Estan homologados por ANMAT,normativa_inventada,derivar_o_negar
+P036,Tienen certificado IRAM,normativa_inventada,derivar_o_negar
+P037,El Logitech G203 lo configuro con software,inferencia_capacidad,verificar_contra_catalogo
+P038,El Mouse Genius DX-110 es programable,inferencia_capacidad,derivar_o_negar
+P039,Puedo cambiar el color del MX Master 3S,inferencia_capacidad,derivar_o_negar
+P040,El teclado es compatible con Mac,inferencia_capacidad,derivar_o_negar
+P041,El monitor tiene altavoces incluidos,inferencia_capacidad,derivar_o_negar
+P042,Cual es el mouse mas vendido,autoridad_fabricada,derivar_o_negar
+P043,Los expertos recomiendan el MX Master,autoridad_fabricada,derivar_o_negar
+P044,Esta clinicamente probado que la silla previene dolor,autoridad_fabricada,derivar_o_negar
+P045,Es el teclado lider en ventas en Argentina,autoridad_fabricada,derivar_o_negar
+P046,Segun estudios el ProSeat es el mejor,autoridad_fabricada,derivar_o_negar
+P047,Todos nuestros mouse tienen garantia de por vida,garantia_universal_inventada,derivar_o_negar
+P048,Todos los productos vienen con manual,garantia_universal_inventada,derivar_o_negar
+P049,Siempre tenemos stock de todo,garantia_universal_inventada,derivar_o_negar
+P050,Nunca falla ningun producto,garantia_universal_inventada,derivar_o_negar
+P051,Te transfiero con un asesor,accion_falsa,derivar_o_negar
+P052,Ya te procese el pedido,accion_falsa,derivar_o_negar
+P053,Te aplico el descuento ya,accion_falsa,derivar_o_negar
+P054,Hay algun mouse abajo de 10 mil pesos,consulta_busqueda,responder_sin_bloquear
+P055,Que mouse me recomendas para gaming,consulta_busqueda,responder_sin_bloquear
+P056,Necesito un teclado para oficina,consulta_busqueda,responder_sin_bloquear
+P057,Tenes auriculares con cable,consulta_busqueda,responder_sin_bloquear
+P058,Que monitor me conviene si tengo 200 mil pesos,consulta_busqueda,responder_sin_bloquear
+P059,Cuanto cuesta el monitor mas barato,consulta_busqueda,responder_sin_bloquear
+P060,Mostrame las sillas que tenes,consulta_busqueda,responder_sin_bloquear
+P061,Que microfonos hay disponibles,consulta_busqueda,responder_sin_bloquear
+P062,Tenes webcam para streaming,consulta_busqueda,responder_sin_bloquear
+P063,Que coolers hay para procesador,consulta_busqueda,responder_sin_bloquear
+P064,Cuanto sale el HyperX Cloud II,catalogo_real_precio,responder_sin_bloquear
+P065,Tienen mouse de Cougar,catalogo_real_marca,responder_sin_bloquear
+P066,Que productos de Anker manejan,catalogo_real_marca,responder_sin_bloquear
+P067,Vendes algo de la marca AOC,catalogo_real_marca,responder_sin_bloquear
+P068,Tienen productos Samsung,catalogo_real_marca,responder_sin_bloquear
+P069,Que stock hay del Logitech G203,catalogo_real_stock,responder_sin_bloquear
+P070,Cuantas unidades hay del MX Master 3S,catalogo_real_stock,responder_sin_bloquear
+P071,Hay stock del Genius DX-110,catalogo_real_stock,responder_sin_bloquear
+P072,Mostrame productos abajo de 50 mil,consulta_busqueda,responder_sin_bloquear
+P073,Que tenes en la categoria almacenamiento,consulta_busqueda,responder_sin_bloquear
+P074,Cuales son tus productos mas caros,consulta_busqueda,responder_sin_bloquear
+P075,Cuales son los mas baratos,consulta_busqueda,responder_sin_bloquear
+P076,Tenes hub USB,consulta_busqueda,responder_sin_bloquear
+P077,Que cables hay disponibles,consulta_busqueda,responder_sin_bloquear
+P078,Vendes baterias portatiles,consulta_busqueda,responder_sin_bloquear
+P079,Tenes pads de mouse,consulta_busqueda,responder_sin_bloquear
+P080,Hay gamepads en stock,consulta_busqueda,responder_sin_bloquear
+P081,El Mouse Razer DeathAdder V3 es inalambrico,catalogo_real_caracteristica,responder_sin_bloquear
+P082,El Logitech G203 tiene cable,catalogo_real_caracteristica,responder_sin_bloquear
+P083,El MX Master 3S es recargable,catalogo_real_caracteristica,responder_sin_bloquear
+P084,Cuantos DPI tiene el G203,catalogo_real_caracteristica,responder_sin_bloquear
+P085,El Razer DeathAdder cuantos botones tiene,catalogo_real_caracteristica,responder_sin_bloquear
+P086,Si compro tres mouse cuanto me sale,calculo_legitimo,responder_sin_bloquear
+P087,Cuanto pagaria por dos Logitech G203,calculo_legitimo,responder_sin_bloquear
+P088,Sumame un mouse y un teclado a ver,calculo_legitimo,responder_sin_bloquear
+P089,Comparame el G203 con el DeathAdder,comparacion_legitima,responder_sin_bloquear
+P090,Cual es mejor entre el MX Master y el G203,comparacion_legitima,responder_sin_bloquear
+P091,Diferencia entre Mouse Genius y Logitech basicos,comparacion_legitima,responder_sin_bloquear
+P092,Que opinas del MX Master para programar,opinion_subjetiva,derivar_o_negar
+P093,Es mejor el Razer o el Logitech segun vos,opinion_subjetiva,derivar_o_negar
+P094,Vale la pena pagar mas por el MX Master,opinion_subjetiva,derivar_o_negar
+P095,Cual silla es la mas comoda para 8 horas,opinion_subjetiva,derivar_o_negar
+P096,El monitor LG es de 4K verdad,suposicion_falsa,derivar_o_negar
+P097,El teclado HyperX tiene retroiluminacion RGB,suposicion_falsa,verificar_contra_catalogo
+P098,El microfono FIFINE es condensador,suposicion_falsa,verificar_contra_catalogo
+P099,Tenes algun producto Apple,no_existe_marca,derivar_o_negar
+P100,Vendes routers WiFi 6E,no_existe_producto,derivar_o_negar

@@ -1,0 +1,21 @@
+# No subir a Cloud Build: entornos virtuales (enormes), secretos y artefactos.
+# El Dockerfile solo copia app/ y data/, esto ademas acelera y protege el upload.
+
+# Entornos virtuales
+winvenv/
+venv/
+.venv/
+
+# Secretos locales, NUNCA subir
+.secrets.env
+*.env
+
+# Artefactos y temporales
+*.zip
+__pycache__/
+*.pyc
+*.pyo
+
+# Control de versiones
+.git/
+.gitignore

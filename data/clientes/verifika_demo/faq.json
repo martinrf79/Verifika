@@ -1,0 +1,342 @@
+[
+  {
+    "tema": "ubicacion",
+    "keywords": [
+      "ubicacion",
+      "ubicados",
+      "donde estan",
+      "direccion",
+      "local",
+      "fisico",
+      "sucursal"
+    ],
+    "respuesta": "Somos solo online, no tenemos local fisico. Despachamos desde Buenos Aires a todo el pais.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "horarios",
+    "keywords": [
+      "horarios",
+      "horario",
+      "atienden",
+      "atencion",
+      "horas"
+    ],
+    "respuesta": "Atendemos de lunes a viernes de 9 a 18 hs y sabados de 10 a 13 hs por WhatsApp y mail.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "formas_pago",
+    "keywords": [
+      "pago",
+      "pagos",
+      "formas de pago",
+      "medios de pago",
+      "cobran",
+      "como pago",
+      "como pagar"
+    ],
+    "respuesta": "Aceptamos transferencia bancaria, Mercado Pago, tarjetas de credito y debito Visa, Mastercard y American Express.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "cuotas",
+    "keywords": [
+      "cuotas",
+      "financiacion",
+      "sin interes",
+      "plan"
+    ],
+    "respuesta": "Tenemos hasta 6 cuotas sin interes con Visa y Mastercard. Hasta 12 cuotas con interes.",
+    "tipo": "cuantitativo",
+    "valores": [
+      {
+        "concepto": "cuotas_sin_interes",
+        "modalidad": "fijo",
+        "monto": 6,
+        "unidad": "cuotas",
+        "condicion": "con Visa y Mastercard"
+      },
+      {
+        "concepto": "cuotas_con_interes",
+        "modalidad": "fijo",
+        "monto": 12,
+        "unidad": "cuotas"
+      }
+    ]
+  },
+  {
+    "tema": "envios",
+    "keywords": [
+      "envio",
+      "envios",
+      "envian",
+      "mandan",
+      "llega",
+      "llegan",
+      "entregan",
+      "a todo el pais"
+    ],
+    "respuesta": "Hacemos envios a todo el pais por Andreani y OCA.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "costo_envio",
+    "keywords": [
+      "costo envio",
+      "cuanto sale el envio",
+      "precio envio",
+      "cuanto cuesta envio"
+    ],
+    "respuesta": "Envio a CABA y GBA 3000 pesos. Interior segun localidad entre 5000 y 12000 pesos. Envio gratis en compras superiores a 250000 pesos.",
+    "tipo": "cuantitativo",
+    "valores": [
+      {
+        "concepto": "envio_caba_gba",
+        "modalidad": "fijo",
+        "monto": 3000,
+        "unidad": "ars"
+      },
+      {
+        "concepto": "envio_interior",
+        "modalidad": "rango",
+        "monto_min": 5000,
+        "monto_max": 12000,
+        "unidad": "ars",
+        "condicion": "segun localidad"
+      },
+      {
+        "concepto": "envio_gratis",
+        "modalidad": "fijo",
+        "monto": 0,
+        "unidad": "ars",
+        "condicion": "compra mayor a 250000"
+      }
+    ]
+  },
+  {
+    "tema": "plazo_envio",
+    "keywords": [
+      "cuanto tarda",
+      "plazo envio",
+      "demora",
+      "cuando llega",
+      "dias"
+    ],
+    "respuesta": "CABA y GBA 2 a 3 dias habiles desde el pago acreditado. Interior 4 a 7 dias habiles.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "garantia",
+    "keywords": [
+      "garantia",
+      "garantizan",
+      "defectos",
+      "roto"
+    ],
+    "respuesta": "Todos los productos tienen garantia oficial del fabricante, minimo 6 meses. El detalle exacto figura en cada producto.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "devoluciones",
+    "keywords": [
+      "devolucion",
+      "devoluciones",
+      "arrepentimiento",
+      "devolver",
+      "cambiar"
+    ],
+    "respuesta": "Tenes 10 dias corridos desde la recepcion para arrepentirte. El producto debe estar sin uso y en su empaque original.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "factura",
+    "keywords": [
+      "factura",
+      "facturacion",
+      "factura a",
+      "factura b",
+      "iva"
+    ],
+    "respuesta": "Emitimos factura A y factura B segun corresponda. Todos los precios incluyen IVA.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "descuento_transferencia",
+    "keywords": [
+      "descuento",
+      "transferencia",
+      "efectivo",
+      "rebaja"
+    ],
+    "respuesta": "Tenemos 10 por ciento de descuento pagando por transferencia bancaria.",
+    "tipo": "cuantitativo",
+    "valores": [
+      {
+        "concepto": "descuento_transferencia",
+        "modalidad": "fijo",
+        "monto": 10,
+        "unidad": "porcentaje",
+        "condicion": "pago por transferencia bancaria"
+      }
+    ]
+  },
+  {
+    "tema": "redes",
+    "keywords": [
+      "instagram",
+      "redes",
+      "web",
+      "pagina",
+      "sitio",
+      "facebook"
+    ],
+    "respuesta": "Estamos en Instagram como arroba verifikademo y nuestra web es verifikademo.com.ar",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "contacto_humano",
+    "keywords": [
+      "hablar con humano",
+      "asesor",
+      "persona",
+      "encargado",
+      "dueno",
+      "urgente"
+    ],
+    "respuesta": "Para casos urgentes te podemos derivar al WhatsApp del encargado. Decime tu consulta y armamos el contacto.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "asesoramiento",
+    "keywords": [
+      "asesoran",
+      "consultar",
+      "ayuda",
+      "recomendacion",
+      "antes de comprar"
+    ],
+    "respuesta": "Si, asesoramos antes de comprar por WhatsApp y chat. Contanos que necesitas y te ayudamos a elegir.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "reservas",
+    "keywords": [
+      "sin stock",
+      "reservar",
+      "reserva",
+      "sena",
+      "encargar",
+      "esperar"
+    ],
+    "respuesta": "Si no tenemos stock podemos tomar reserva con sena del 20 por ciento. El plazo depende del producto y proveedor.",
+    "tipo": "cuantitativo",
+    "valores": [
+      {
+        "concepto": "sena_reserva",
+        "modalidad": "fijo",
+        "monto": 20,
+        "unidad": "porcentaje",
+        "condicion": "sin stock"
+      }
+    ]
+  },
+  {
+    "tema": "marcas_originales",
+    "keywords": [
+      "originales",
+      "truchos",
+      "replica",
+      "oficial",
+      "marca"
+    ],
+    "respuesta": "Todas las marcas que vendemos son originales con garantia oficial del fabricante.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "usados",
+    "keywords": [
+      "usados",
+      "reacondicionados",
+      "segunda mano",
+      "refurbished"
+    ],
+    "respuesta": "No vendemos usados ni reacondicionados. Solo productos nuevos en su empaque original.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "precios_iva",
+    "keywords": [
+      "iva",
+      "precio final",
+      "precio incluye",
+      "impuestos"
+    ],
+    "respuesta": "Todos los precios publicados ya incluyen IVA, son precios finales para consumidor final.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "defectuoso",
+    "keywords": [
+      "defectuoso",
+      "llego roto",
+      "no funciona",
+      "cambio defecto"
+    ],
+    "respuesta": "Si el producto llega defectuoso lo cambiamos sin costo dentro de los primeros 7 dias desde la recepcion.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "envio_urgente",
+    "keywords": [
+      "urgente",
+      "express",
+      "mismo dia",
+      "rapido",
+      "24 horas"
+    ],
+    "respuesta": "Hacemos envios express en CABA y GBA con costo extra y entrega en 24 horas habiles.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "mayoristas",
+    "keywords": [
+      "mayorista",
+      "revendedor",
+      "reventa",
+      "por cantidad"
+    ],
+    "respuesta": "Para compras mayoristas o reventa tenemos precios especiales. Contanos cuanto pensas comprar y armamos cotizacion.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "formas_contacto",
+    "keywords": [
+      "contacto",
+      "telefono",
+      "whatsapp",
+      "mail",
+      "email"
+    ],
+    "respuesta": "Nos podes contactar por WhatsApp o mail. Atencion humana de lunes a viernes de 9 a 18 hs.",
+    "tipo": "informativo",
+    "valores": []
+  }
+]

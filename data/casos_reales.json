@@ -1,0 +1,44 @@
+[
+  {
+    "id": "real-001",
+    "origen": "incidente prod: cierre grande caia a fallback (>250k)",
+    "items": [{"product_id": "TEC002", "cantidad": 1}],
+    "items_extra": [
+      {"faq_tema": "costo_envio", "concepto": "envio_interior"},
+      {"faq_tema": "descuento_transferencia", "concepto": "descuento_transferencia"}
+    ],
+    "destino": "interior",
+    "espera_ok": true,
+    "total_esperado": 265500,
+    "nota": "295000 supera umbral -> envio gratis -> descuento 10% -> 265500"
+  },
+  {
+    "id": "real-002",
+    "origen": "cotizacion chica con envio CABA pago + descuento transferencia",
+    "items": [{"product_id": "MOU002", "cantidad": 1}],
+    "items_extra": [
+      {"faq_tema": "costo_envio", "concepto": "envio_caba_gba"},
+      {"faq_tema": "descuento_transferencia", "concepto": "descuento_transferencia"}
+    ],
+    "destino": "caba_gba",
+    "espera_ok": true,
+    "total_esperado": 115500,
+    "nota": "125000 - 10% (12500) + envio 3000 = 115500. Por debajo del umbral, envio se cobra"
+  },
+  {
+    "id": "real-003",
+    "origen": "cierre multi producto grande, patron del incidente",
+    "items": [
+      {"product_id": "MON001", "cantidad": 1},
+      {"product_id": "TEC003", "cantidad": 1}
+    ],
+    "items_extra": [
+      {"faq_tema": "costo_envio", "concepto": "envio_interior"},
+      {"faq_tema": "descuento_transferencia", "concepto": "descuento_transferencia"}
+    ],
+    "destino": "interior",
+    "espera_ok": true,
+    "total_esperado": 351000,
+    "nota": "225000+165000=390000 supera umbral -> envio gratis -> descuento 39000 -> 351000"
+  }
+]

@@ -1,0 +1,75 @@
+"""Prueba la regla de orden precio-primero en el circuito de cierre.
+
+Sin Firestore real: parchea crear_lead, get_lead_activo y notificar_lead.
+Verifica que cuando hay senial de compra pero NO se mostro presupuesto, el
+cierre NO pide datos (se degrada a tibia) y deja pasar al Solver. Y que con
+presupuesto en mano si dispara el cierre fuerte.
+"""
+import os
+import sys
+import asyncio
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+
+os.environ["USE_LEADS"] = "true"
+os.environ["CIERRE_PRECIO_PRIMERO"] = "true"
+
+from app.core import leads
+
+# ─── Parches: nada toca Firestore ni notificaciones reales ───
+_leads_creados = []
+
+
+def _fake_crear_lead(**kw):
+    _leads_creados.append(kw)
+    return "lead_fake_id"
+
+
+async def _fake_notificar(**kw):
+    return None
+
+
+leads.crear_lead = _fake_crear_lead
+leads.notificar_lead = _fake_notificar
+leads.get_lead_activo = lambda *a, **k: None  # sin lead activo previo
+
+INTERP_COMPRA = {"intencion": "decision_compra", "confianza": 0.92,
+                 "producto_resuelto": "Teclado Genius KB-110X"}
+
+
+async def caso(nombre, presupuesto, interpretacion, espera_accion):
+    _leads_creados.clear()
+    extra, meta = await leads.procesar_mensaje_para_lead(
+        user_id="u1", canal="telegram", tienda_id="verifika_demo",
+        mensaje="el pago seria por tarjeta de credito, lo llevo",
+        respuesta_solver="(respuesta del solver)", trace_id="t",
+        interpretacion=interpretacion, presupuesto=presupuesto,
+    )
+    accion = meta.get("accion")
+    nivel_lead = _leads_creados[0].get("nivel") if _leads_creados else "ninguno"
+    pide_datos = bool(meta.get("respuesta_directa"))
+    ok = accion == espera_accion
+    print(f"  [{'OK' if ok else 'FALLA'}] {nombre}")
+    print(f"        accion={accion} nivel_lead={nivel_lead} pide_datos={pide_datos}")
+    return ok
+
+
+async def main():
+    print("\n=== REGLA DE ORDEN: precio primero, despues cierre ===\n")
+    r = []
+    # 1) Senial de compra SIN presupuesto: no debe pedir datos, queda tibia.
+    r.append(await caso(
+        "compra sin precio mostrado -> tibia, no pide datos",
+        presupuesto="", interpretacion=INTERP_COMPRA,
+        espera_accion="tibia_registrada"))
+    # 2) Senial de compra CON presupuesto: dispara cierre fuerte.
+    r.append(await caso(
+        "compra con presupuesto -> handoff fuerte, pide datos",
+        presupuesto="Teclado Genius KB-110X - 12.000\nTotal: 12.000",
+        interpretacion=INTERP_COMPRA, espera_accion="handoff_humano"))
+    print(f"\n  Total: {len(r)} casos, {r.count(False)} fallas\n")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
