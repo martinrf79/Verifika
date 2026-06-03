@@ -19,9 +19,22 @@ LLM secundarios: Groq (fallback), Claude/Gemini (solo en Checker cuando haya cli
 
 ---
 
+## Norte del proyecto — el objetivo manda sobre los reflejos
+
+La meta es UNA: un producto **VENDIBLE que funcione a escala real y esté DEPLOYADO** en producción. Eso es lo único que cuenta como "funciona".
+
+- "Funciona" NO significa "no se rompe con 50 productos" ni "demostra sin crashear". Un prototipo que se exhibe no es la meta. Si anda a 50 y no a más, no anda.
+- Toda decisión se mide contra ese objetivo, no contra "es seguro" ni "no toca lo que hay". La pregunta de cada paso es: ¿esto acerca a vender a escala, o solo protege el estado actual?
+- La cautela de abajo es un cinturón, no el destino. Es una restricción al servicio del Norte, NUNCA una excusa para no avanzar hacia la meta.
+- No ofrecer la opción segura por default. Ofrecer la que acerca al objetivo y marcar el riesgo aparte; decide Martín.
+- Cuando una orden directa de Martín choque con un reflejo de cautela, NO gana el reflejo por descarte: se le plantea el riesgo y se respeta su decisión. Su intención es simple y sin doble fondo, que todo funcione para venderse. Guiarlo hacia esa meta en todo momento.
+- PRIORIDAD ACTUAL concreta (de Martín, no posponer ni reinterpretar): el catálogo de 2000 productos REAL de producción, vendible, con FAQs enriquecidas, NO el fixture sintético verifika_2k. Ver HANDOFF.md.
+
+---
+
 ## Regla de oro
 
-**No romper lo que funciona.** Este código está en producción con Telegram y va a integrarse con WhatsApp Cloud API directo. Antes de modificar cualquier archivo existente:
+**No romper lo que funciona, pero al servicio del Norte de arriba, nunca como excusa para no avanzar.** Este código está en producción con Telegram y va a integrarse con WhatsApp Cloud API directo. Antes de modificar cualquier archivo existente:
 
 1. Leer el archivo completo, no solo la parte a tocar.
 2. Si la modificación es invasiva, crear archivo nuevo en paralelo en lugar de editar.

@@ -2,6 +2,9 @@
 
 Leer esto primero. Resume todo lo hecho para no re-derivar contexto.
 
+## NORTE (lo que manda sobre todo)
+El objetivo es un producto VENDIBLE que funcione a escala real y DEPLOYADO. "Funciona" NO es "no se rompe con 50 productos". Toda decision se mide contra esa meta; la cautela es restriccion, no objetivo, y nunca excusa para no avanzar. PRIORIDAD de Martin, no posponer: catalogo de 2000 productos REAL de produccion (vendible, FAQ rica), NO el fixture sintetico verifika_2k. Ver consigna en el bloque siguiente. (Detalle del Norte en CLAUDE.md.)
+
 ## >>> PLAN DE CIERRE Y SIMPLIFICACION (sesion 2026-06-03, EMPEZAR POR ACA) <<<
 
 DIAGNOSTICO honesto: las soluciones estan CONSTRUIDAS Y PROBADAS LOCAL pero NO deployadas ni validadas en prod. El proyecto construye y prueba, pero no cierra el loop (este HANDOFF esta lleno de "hecho, probado local, deploy pendiente"). Por eso nunca se siente terminado. El bot NO esta listo para vender: en single-turn aguanta (red-team 0 alucinaciones graves en 77 preguntas), pero en MULTI-TURNO falla (caso Jorge: sobre-prometio dia de entrega e invento retiro en local). Los dos fallos caen en clases que YA tienen verificador (hechos y servicios) pero estan en shadow/off, por eso pasan. Ademas hay laberinto de flags (~40) que esconde fallas. NO ofrecer todavia.
