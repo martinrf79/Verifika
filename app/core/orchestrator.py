@@ -807,17 +807,53 @@ async def process_message(user_id: str, raw_message: str,
 
         # ─── GATE del verificador de HECHOS ───
         # Si la respuesta narra mal una regla (plazo, dia de entrega, pago), no se
-        # manda tal cual. Por ahora gatea al fallback (sin autofix; el reintento
-        # guiado con el plazo correcto es el proximo sub-paso). En shadow solo
-        # loguea para medir precision antes de confiar.
+        # manda tal cual. Con AUTOFIX reintenta una respuesta correcta (con el
+        # plazo real) ANTES del fallback: el contrario de mentir no es callar, es
+        # decir la verdad comercial. En shadow solo loguea para medir.
         if settings.VERIFICADOR_HECHOS == "on" and hechos_result is not None:
             if (not hechos_result.get("ok", True)
                     and final_response not in (
                         settings.VERIFIKA_FALLBACK_MESSAGE,
                         settings.FALLBACK_MESSAGE)):
-                log.info("hechos_bloqueo", trace_id=trace_id,
-                         problemas=hechos_result.get("problemas", []))
-                final_response = settings.VERIFIKA_FALLBACK_MESSAGE
+                problemas_h = hechos_result.get("problemas", [])
+                log.info("hechos_bloqueo", trace_id=trace_id, problemas=problemas_h)
+                arreglado_hechos = False
+                if settings.AUTOFIX:
+                    try:
+                        correctivo = (
+                            mensaje_enriquecido
+                            + "\n\n[Sistema: en tu respuesta anterior narraste mal "
+                            f"una regla de la tienda ({problemas_h}). Corregi sin "
+                            "inventar: NO prometas un dia exacto de entrega ni "
+                            "acortes el plazo; deci el plazo en dias habiles TAL "
+                            "CUAL la FAQ (usa query_faq) y aclara que el dia depende "
+                            "del correo. NO inventes detalles de pago que no esten "
+                            "en la FAQ. Da una respuesta honesta y comercial con el "
+                            "dato real.]")
+                        resp_h, meta_h = await run_agent(
+                            correctivo, history, trace_id,
+                            tienda_id=tid, user_id=user_id)
+                        clean_h = clean_response(resp_h, tienda_id=tid)
+                        ev_h = _build_evidence_for_verifika(
+                            meta_h.get("tools_called", []), tid)
+                        for p in proofs_memoria:
+                            ev_h.append({"tipo": "proof", "tool": "memoria",
+                                         "proof": p})
+                        vh2 = verificar_hechos(clean_h, ev_h, trace_id=trace_id)
+                        vr_h = (verificar_respuesta(clean_h, ev_h, trace_id=trace_id)
+                                if VERIFICADOR_MODE != "off" else {"ok": True})
+                        if vh2.get("ok") and vr_h.get("ok", True):
+                            final_response = clean_h
+                            arreglado_hechos = True
+                            log.info("hechos_autofix_ok", trace_id=trace_id)
+                        else:
+                            log.info("hechos_autofix_fallo", trace_id=trace_id,
+                                     problemas=vh2.get("problemas", []))
+                    except Exception as e:
+                        log.error("hechos_autofix_error", trace_id=trace_id,
+                                  error=str(e)[:200])
+                if not arreglado_hechos:
+                    final_response = settings.VERIFIKA_FALLBACK_MESSAGE
         elif (settings.VERIFICADOR_HECHOS == "shadow"
                 and hechos_result is not None):
             log.info("hechos_shadow", trace_id=trace_id,
