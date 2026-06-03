@@ -42,7 +42,7 @@ if not os.environ.get("DEEPSEEK_API_KEY", "").startswith("sk-"):
     raise SystemExit("No se encontro DEEPSEEK_API_KEY valida")
 
 # Flags del bot, estado deseado de prod, ANTES de importar la app.
-os.environ["USE_INTERPRETER"] = "true"
+os.environ.setdefault("USE_INTERPRETER", "true")  # override por env para A/B
 os.environ["USE_VERIFIKA"] = "false"        # gatea el verificador deterministico
 os.environ["USE_LEADS"] = "false"           # sin Telegram
 os.environ["VERIFICADOR_MODE"] = "on"
@@ -50,6 +50,7 @@ os.environ["CALC_DEFENSIVA"] = "true"
 os.environ["INTERPRETE_ANCLA_CATALOGO"] = "true"
 os.environ["SOLVER_USA_PRESENTACION"] = "true"
 os.environ["ASYNC_LLM_OFFLOAD"] = "false"
+os.environ["AUTOFIX"] = "true"
 os.environ.setdefault("DIAG_TRACE", "false")
 
 # Silenciar logs INFO para ver solo las respuestas.

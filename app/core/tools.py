@@ -128,7 +128,19 @@ def _label_extra(e: dict) -> str:
         return "Envio: gratis" if int(monto) == 0 else f"Envio: {_money(monto)}"
     if es_desc:
         return f"Descuento: -{_money(monto)}"
+    if modalidad == "informativo":
+        # Dato no monetario (ej cuotas). NO es plata, no lleva $. Se muestra como
+        # condicion legible: "Cuotas sin interes: hasta 6 cuotas".
+        concepto_legible = str(e.get("concepto", "")).replace("_", " ").strip()
+        unidad = str(e.get("unidad", "")).strip()
+        val = e.get("valor_num", "")
+        return f"{concepto_legible.capitalize()}: hasta {val} {unidad}".strip()
     return f"{concepto}: {_money(monto)}"
+
+
+# Unidades que SI son dinero. Un extra "fijo" solo suma al total si su unidad es
+# monetaria. Una unidad como "cuotas" es una cantidad, no pesos: nunca se suma.
+_UNIDADES_MONETARIAS = {"", "ars", "pesos", "peso", "$"}
 
 
 def _render_presentacion(detalle, extras, subtotal,
@@ -280,13 +292,23 @@ def calculate_total(items: list[dict] | None = None,
                 })
             elif valor.get("modalidad") == "fijo":
                 m = int(valor.get("monto", 0))
-                extra_min += m
-                extra_max += m
-                extras_detalle.append({
-                    "faq_tema": tema, "concepto": concepto,
-                    "modalidad": "fijo", "monto": m,
-                    "condicion": valor.get("condicion", ""),
-                })
+                if unidad in _UNIDADES_MONETARIAS:
+                    extra_min += m
+                    extra_max += m
+                    extras_detalle.append({
+                        "faq_tema": tema, "concepto": concepto,
+                        "modalidad": "fijo", "monto": m,
+                        "condicion": valor.get("condicion", ""),
+                    })
+                else:
+                    # Unidad NO monetaria (ej cuotas): es una cantidad, no pesos.
+                    # NO se suma al total ni se muestra con $. Se reporta como dato.
+                    extras_detalle.append({
+                        "faq_tema": tema, "concepto": concepto,
+                        "modalidad": "informativo", "valor_num": m,
+                        "unidad": unidad,
+                        "condicion": valor.get("condicion", ""),
+                    })
             elif valor.get("modalidad") == "rango":
                 mn = int(valor.get("monto_min", 0))
                 mx = int(valor.get("monto_max", 0))

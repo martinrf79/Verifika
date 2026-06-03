@@ -17,6 +17,8 @@ import structlog
 from app.core.agent import run_agent
 from app.core.guardian import validate_response, clean_response
 from app.core.verificador import verificar_respuesta
+from app.core.verificador_servicios import verificar_servicios
+from app.core.verificador_hechos import verificar_hechos
 from app.config import get_settings
 from app.logger import get_logger
 from app.storage.firestore_client import (
@@ -297,6 +299,82 @@ def _respuesta_clarificacion(candidatos: list[str]) -> str:
     return f"Tenemos varios. Te referis al {opciones}?"
 
 
+# ─── DEFENSA 3 — confirmar antes de cotizar (interpretacion rica) ───
+def _slots_ambiguos_decisivos(interp: dict) -> bool:
+    """True si hay un slot DECISIVO sin resolver: un item sin producto claro o
+    un destino sin cajon, que ademas el interprete marco en ambiguedades. Es la
+    senal de que no se puede cotizar sin preguntar antes."""
+    amb = interp.get("ambiguedades") or []
+    for i, it in enumerate(interp.get("items") or []):
+        if it.get("producto_resuelto"):
+            continue
+        if f"items[{i}]" in amb or (it.get("confianza") or 1) < 0.7:
+            return True
+    for i, d in enumerate(interp.get("destinos") or []):
+        if not d.get("cajon") and f"destinos[{i}]" in amb:
+            return True
+    return False
+
+
+def _intencion_de_compra(interp: dict) -> bool:
+    """True si el cliente esta tratando de cotizar o comprar, no solo mirando.
+    Senales: pide descuento, dio forma de pago, dio destino o cantidad, o hay
+    decision de compra. Asi NO preguntamos de mas en una exploracion."""
+    if interp.get("pide_descuento") or interp.get("forma_pago"):
+        return True
+    if "decision_compra" in (interp.get("intenciones") or []):
+        return True
+    if interp.get("destinos"):
+        return True
+    return any(it.get("cantidad") for it in (interp.get("items") or []))
+
+
+def _respuesta_confirmacion_rica(interp: dict) -> str:
+    """Read-back que pide confirmar el slot dudoso ANTES de cotizar. No adivina,
+    pregunta. De paso repite el pedido, que es una jugada de venta."""
+    refs = [str(it.get("referencia") or "").strip()
+            for it in (interp.get("items") or [])
+            if not it.get("producto_resuelto")]
+    refs = [r for r in refs if r]
+    pedido = " y ".join(refs) if refs else "lo que necesitas"
+    msg = (f"Para pasarte el precio justo y no equivocarme, decime cual "
+           f"exactamente queres de {pedido}.")
+    dests = interp.get("destinos") or []
+    if dests and dests[0].get("texto"):
+        msg += f" Con eso te armo el total con envio a {dests[0]['texto']}."
+    return msg
+
+
+def _contexto_slots(interp: dict) -> str:
+    """Bloque con los slots ya interpretados para que el Solver reciba el detalle
+    masticado y no lo re-derive del mensaje crudo. Los numeros siguen saliendo de
+    la calculadora, esto es guia de interpretacion."""
+    partes = []
+    items = interp.get("items") or []
+    if items:
+        _it = []
+        for it in items:
+            cant = it.get("cantidad")
+            nom = it.get("producto_resuelto") or it.get("referencia") or "?"
+            _it.append(f"{cant or ''}x {nom}".strip())
+        partes.append("items: " + "; ".join(_it))
+    dests = interp.get("destinos") or []
+    if dests:
+        partes.append("destinos: " + "; ".join(
+            f"{d.get('texto')} ({d.get('cajon') or 'sin cajon'})" for d in dests))
+    if interp.get("atributo_consultado"):
+        partes.append("consulta puntual: " + str(interp["atributo_consultado"]))
+    if interp.get("forma_pago"):
+        partes.append("forma de pago: " + str(interp["forma_pago"]))
+    if interp.get("pide_descuento"):
+        partes.append("pide descuento: el unico descuento valido es el de la FAQ, "
+                      "transferencia o efectivo, no inventes otro")
+    if not partes:
+        return ""
+    return ("\n\n[Detalle ya interpretado del mensaje, usalo como guia, los "
+            "numeros igual salen de la calculadora:\n- " + "\n- ".join(partes) + "]")
+
+
 async def process_message(user_id: str, raw_message: str,
                           tienda_id: str | None = None,
                           canal: str = "telegram") -> str:
@@ -401,6 +479,17 @@ async def process_message(user_id: str, raw_message: str,
                     log.info("interpreter_candidatos_invalidos", trace_id=trace_id,
                              candidatos_originales=candidatos[:3])
 
+            # Defensa 3: si hay un slot decisivo dudoso y el cliente quiere
+            # cotizar, confirmamos antes de mandar al Solver. Preguntar, no adivinar.
+            elif (settings.INTERPRETE_RICO
+                    and not producto_resuelto
+                    and _slots_ambiguos_decisivos(interpretacion)
+                    and _intencion_de_compra(interpretacion)):
+                final_response = _respuesta_confirmacion_rica(interpretacion)
+                interpreter_short_circuit = True
+                log.info("interpreter_confirmacion_rica", trace_id=trace_id,
+                         ambiguedades=interpretacion.get("ambiguedades"))
+
         except Exception as e:
             log.error("interpreter_error", trace_id=trace_id,
                       error=str(e)[:200])
@@ -433,6 +522,11 @@ async def process_message(user_id: str, raw_message: str,
                            f"caminos, presentalos como opcion A y B y pregunta "
                            f"cual prefiere: {ofrecer_opciones}]")
         mensaje_enriquecido = mensaje_enriquecido + ctx_estado
+
+        # Detalle interpretado (Defensa 1): le pasamos al Solver los slots ya
+        # entendidos para que adivine menos. Solo con el flag y si hubo interprete.
+        if settings.INTERPRETE_RICO and interpretacion:
+            mensaje_enriquecido += _contexto_slots(interpretacion)
 
         # Destino del envio para la calculadora defensiva. Determinista, por
         # keywords del mensaje del cliente. El LLM no lo elige: lo inyecta el
@@ -467,6 +561,8 @@ async def process_message(user_id: str, raw_message: str,
         # siga teniendo respaldo aunque el bot no recalcule.
         verifika_result = None
         verificador_result = None
+        servicios_result = None
+        hechos_result = None
         evidence: list[dict] = []
         if response_text and response_text != settings.FALLBACK_MESSAGE:
             try:
@@ -510,6 +606,33 @@ async def process_message(user_id: str, raw_message: str,
                     ],
                     solver_response=cleaned_response[:1500],
                 )
+
+        # ─── VERIFICADOR DE SERVICIOS (segunda linea, plata aparte) ───
+        # Marca promesas de servicios que la tienda no ofrece. Codigo puro, usa la
+        # misma evidencia. No bloquea numeros: cuida capacidades inventadas.
+        if (settings.VERIFICADOR_SERVICIOS != "off" and response_text
+                and response_text != settings.FALLBACK_MESSAGE):
+            try:
+                servicios_result = verificar_servicios(
+                    cleaned_response, evidence, trace_id=trace_id)
+            except Exception as e:
+                log.error("verificador_servicios_error", trace_id=trace_id,
+                          error=str(e)[:200])
+                servicios_result = {"ok": True, "accion": "responder"}
+
+        # ─── VERIFICADOR DE HECHOS (tercera linea: reglas mal narradas) ───
+        # Marca cuando el bot dice mal una REGLA de la tienda (plazo de envio,
+        # un dia de entrega que el correo no garantiza, un detalle de pago sin
+        # respaldo). Codigo puro, misma evidencia. No toca numeros ni capacidades.
+        if (settings.VERIFICADOR_HECHOS != "off" and response_text
+                and response_text != settings.FALLBACK_MESSAGE):
+            try:
+                hechos_result = verificar_hechos(
+                    cleaned_response, evidence, trace_id=trace_id)
+            except Exception as e:
+                log.error("verificador_hechos_error", trace_id=trace_id,
+                          error=str(e)[:200])
+                hechos_result = {"ok": True, "accion": "responder"}
 
         # ─── CHECKER LLM (Verifika) ───
         # Gatea solo si el verificador NO esta en on. En on queda desconectado,
@@ -639,10 +762,87 @@ async def process_message(user_id: str, raw_message: str,
                      verifika_accion=(verifika_result or {}).get("accion"),
                      numeros_no_respaldados=verificador_result.get(
                          "numeros_no_respaldados", [])[:10])
+
+        # ─── GATE DE SERVICIOS (independiente del modo de plata) ───
+        # Si la respuesta promete un servicio que la tienda no ofrece, no se manda.
+        # No corre AUTOFIX: una promesa inventada no se arregla recalculando, asi
+        # que va directo al fallback. En shadow solo loguea para medir.
+        if settings.VERIFICADOR_SERVICIOS == "on" and servicios_result is not None:
+            if (not servicios_result.get("ok", True)
+                    and final_response not in (
+                        settings.VERIFIKA_FALLBACK_MESSAGE,
+                        settings.FALLBACK_MESSAGE)):
+                inventados = servicios_result.get("servicios_inventados", [])
+                log.info("servicios_bloqueo", trace_id=trace_id,
+                         servicios=inventados)
+                arreglado_serv = False
+                # AUTOFIX para servicios: reintento guiado antes del fallback,
+                # misma logica que con la plata pero apuntado a la promesa inventada.
+                if settings.AUTOFIX:
+                    try:
+                        correctivo = (
+                            mensaje_enriquecido
+                            + "\n\n[Sistema: en tu respuesta anterior prometiste "
+                            f"servicios que la tienda NO ofrece segun la FAQ: "
+                            f"{inventados}. NO los prometas. Si el cliente los pide, "
+                            "deci con honestidad que eso no figura y que lo "
+                            "consultas, y ofrece lo que SI hay. No inventes "
+                            "capacidades ni servicios.]")
+                        resp_s, meta_s = await run_agent(
+                            correctivo, history, trace_id,
+                            tienda_id=tid, user_id=user_id)
+                        clean_s = clean_response(resp_s, tienda_id=tid)
+                        ev_s = _build_evidence_for_verifika(
+                            meta_s.get("tools_called", []), tid)
+                        for p in proofs_memoria:
+                            ev_s.append({"tipo": "proof", "tool": "memoria",
+                                         "proof": p})
+                        vs2 = verificar_servicios(clean_s, ev_s, trace_id=trace_id)
+                        # La nueva respuesta tambien tiene que pasar el de plata.
+                        vr_s = (verificar_respuesta(clean_s, ev_s, trace_id=trace_id)
+                                if VERIFICADOR_MODE != "off" else {"ok": True})
+                        if vs2.get("ok") and vr_s.get("ok", True):
+                            final_response = clean_s
+                            arreglado_serv = True
+                            log.info("servicios_autofix_ok", trace_id=trace_id)
+                        else:
+                            log.info("servicios_autofix_fallo", trace_id=trace_id,
+                                     servicios=vs2.get("servicios_inventados", []))
+                    except Exception as e:
+                        log.error("servicios_autofix_error", trace_id=trace_id,
+                                  error=str(e)[:200])
+                if not arreglado_serv:
+                    final_response = settings.VERIFIKA_FALLBACK_MESSAGE
+        elif (settings.VERIFICADOR_SERVICIOS == "shadow"
+                and servicios_result is not None):
+            log.info("servicios_shadow", trace_id=trace_id,
+                     accion=servicios_result.get("accion"),
+                     servicios=servicios_result.get("servicios_inventados", []))
+
+        # ─── GATE del verificador de HECHOS ───
+        # Si la respuesta narra mal una regla (plazo, dia de entrega, pago), no se
+        # manda tal cual. Por ahora gatea al fallback (sin autofix; el reintento
+        # guiado con el plazo correcto es el proximo sub-paso). En shadow solo
+        # loguea para medir precision antes de confiar.
+        if settings.VERIFICADOR_HECHOS == "on" and hechos_result is not None:
+            if (not hechos_result.get("ok", True)
+                    and final_response not in (
+                        settings.VERIFIKA_FALLBACK_MESSAGE,
+                        settings.FALLBACK_MESSAGE)):
+                log.info("hechos_bloqueo", trace_id=trace_id,
+                         problemas=hechos_result.get("problemas", []))
+                final_response = settings.VERIFIKA_FALLBACK_MESSAGE
+        elif (settings.VERIFICADOR_HECHOS == "shadow"
+                and hechos_result is not None):
+            log.info("hechos_shadow", trace_id=trace_id,
+                     accion=hechos_result.get("accion"),
+                     problemas=hechos_result.get("problemas", []))
     else:
         validation = {"is_clean": True}
         verifika_result = None
         verificador_result = None
+        servicios_result = None
+        hechos_result = None
 
     # Ultimo presupuesto armado por la calculadora este turno, si lo hubo.
     presupuesto_turno = ""

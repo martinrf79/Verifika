@@ -46,7 +46,7 @@ _MONEDA_POST_RE = re.compile(r"\s*(pesos|peso|ars)\b", re.IGNORECASE)
 # Unidades de especificacion: si un numero las sigue, es una spec, no plata.
 # Ej "30.000 DPI", "75Hz", "8000 dpi". Evita confundir specs con precios.
 _UNIDAD_SPEC_RE = re.compile(
-    r"\s*(dpi|hz|ghz|mhz|fps|rpm|nits|mah|gramos|gr|kg|mm|cm|pulgadas|px|bits?|w)\b",
+    r"\s*(dpi|hz|ghz|mhz|fps|rpm|nits|mah|gramos|gr|kg|g|mm|cm|pulgadas|px|gb|tb|bits?|w)\b",
     re.IGNORECASE)
 
 

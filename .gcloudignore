@@ -19,3 +19,11 @@ __pycache__/
 # Control de versiones
 .git/
 .gitignore
+
+# Datos de prueba y tienda simulada: prod lee de Firestore, NO de estos archivos.
+# Evita subir el catalogo de 2000 y su embeddings.json (~40MB) de gusto.
+reports/
+data/clientes/verifika_2k/
+data/preguntas_*.jsonl
+data/mini_*.jsonl
+**/embeddings.json
