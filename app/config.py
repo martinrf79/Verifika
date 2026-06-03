@@ -360,13 +360,6 @@ class Settings(BaseModel):
     # scripts/prueba_bot_completo.py antes de prenderlo en prod.
     PROMPT_VENTA: bool = os.getenv("PROMPT_VENTA", "false").lower() == "true"
 
-    # Prompt del Solver recortado. El anti alucinacion lo hace el codigo
-    # (verificador), asi que el prompt largo de 180 lineas no hace falta. Uno
-    # corto baja tokens por llamada y acelera. Por ahora en false para no
-    # arriesgar, se mantiene el prompt original probado. Poner true para usar el
-    # corto cuando se quiera medir o cuando este mas testeado.
-    PROMPT_LEAN: bool = os.getenv("PROMPT_LEAN", "false").lower() == "true"
-
     # ────────────────────────────────────────────────────────
     # FASE 1 — la calculadora arma el presupuesto, el Solver lo copia
     # ────────────────────────────────────────────────────────
@@ -405,43 +398,6 @@ class Settings(BaseModel):
     CIERRE_PRECIO_PRIMERO: bool = (
         os.getenv("CIERRE_PRECIO_PRIMERO", "true").lower() == "true"
     )
-
-    # ────────────────────────────────────────────────────────
-    # ATAJO DE SALUDO — no invocar el Solver para un simple hola
-    # ────────────────────────────────────────────────────────
-    # Cuando el interpretador clasifica el mensaje como saludo con confianza
-    # alta, responder un saludo directo SIN correr el Solver. Para un hola, el
-    # Solver encadena varias llamadas al modelo de gusto, que en prod son
-    # decenas de segundos por el peaje de red. El interpretador marca saludo
-    # solo cuando el cliente saluda y todavia NO pidio producto ni precio, asi
-    # que una consulta comercial nunca cae en el atajo. La respuesta invita a
-    # avanzar: si el cliente queria algo mas, lo dice en el turno siguiente y
-    # ahi corre el Solver normal, no se pierde venta. Requiere USE_INTERPRETER.
-    # Default false: entra apagado, no cambia conducta hasta activarlo por env.
-    SALUDO_DIRECTO: bool = os.getenv("SALUDO_DIRECTO", "false").lower() == "true"
-
-    # ────────────────────────────────────────────────────────
-    # HISTORIAL LEAN DEL SOLVER — memoria sin arrastrar la mochila
-    # ────────────────────────────────────────────────────────
-    # El Solver reenvia el historial COMPLETO en cada llamada; cuanto mas larga
-    # la charla, mas pesa el payload y mas lento responde (confirmado: el solver
-    # trepa de 23s a 54s en una misma conversacion). Con el flag, al armar el
-    # prompt del Solver se manda MENOS turnos y cada mensaje recortado a un tope
-    # de caracteres, igual que ya hace el Interpretador (por eso vuela). El
-    # cliente sigue viendo la respuesta completa; solo se aliviana lo que el
-    # modelo RELEE en turnos siguientes. Los numeros del cierre no se afectan:
-    # el presupuesto y los PROOF viven aparte (ultimo_presupuesto, proofs).
-    # false = comportamiento actual (historial completo).
-    SOLVER_HISTORIAL_LEAN: bool = (
-        os.getenv("SOLVER_HISTORIAL_LEAN", "false").lower() == "true"
-    )
-    # COMPRIME el contenido de los mensajes largos del bot en el historial (los
-    # catalogos/listados redundantes) CONSERVANDO los productos y sus precios.
-    # NO reduce la cantidad de turnos: el Solver sigue viendo los 10 turnos,
-    # solo que las respuestas pesadas viajan condensadas. El solver no pierde de
-    # vista que productos se mostraron ni a que precio. Mensajes cortos quedan
-    # intactos. Solo aplica a mensajes que superan este tope de caracteres.
-    SOLVER_HIST_MAXCHARS: int = int(os.getenv("SOLVER_HIST_MAXCHARS", "500"))
 
     # ────────────────────────────────────────────────────────
     # AUTOFIX — autocorreccion ante bloqueo del verificador

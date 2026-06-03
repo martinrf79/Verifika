@@ -287,9 +287,7 @@ def _build_system_prompt(tienda_id: str | None) -> str:
             log.warning("system_prompt_fallback_to_default",
                         tienda_id=tienda_id, error=str(e)[:100])
 
-    plantilla = (_SYSTEM_PROMPT_LEAN if settings.PROMPT_LEAN
-                 else _SYSTEM_PROMPT_TEMPLATE)
-    prompt = plantilla.format(business_name=business_name)
+    prompt = _SYSTEM_PROMPT_TEMPLATE.format(business_name=business_name)
     if settings.SOLVER_USA_PRESENTACION:
         prompt += _REGLA_PRESENTACION
     if settings.PROMPT_VENTA:
@@ -338,19 +336,8 @@ async def run_agent(user_message: str,
     messages = [{"role": "system", "content": system_prompt}]
     # MISMA cantidad de turnos siempre (no se reduce la memoria).
     _turnos = history[-(settings.HISTORY_LIMIT * 2):]
-    if settings.SOLVER_HISTORIAL_LEAN:
-        _cap = settings.SOLVER_HIST_MAXCHARS
-        for turn in _turnos:
-            _c = turn.get("content", "") or ""
-            # Comprime SOLO respuestas largas del bot (catalogos/listados),
-            # conservando productos y precios. No toca mensajes cortos ni los
-            # del cliente. No reduce turnos.
-            if turn.get("role") == "assistant" and len(_c) > _cap:
-                _c = _comprimir_contenido(_c, _cap)
-            messages.append({"role": turn["role"], "content": _c})
-    else:
-        for turn in _turnos:
-            messages.append({"role": turn["role"], "content": turn["content"]})
+    for turn in _turnos:
+        messages.append({"role": turn["role"], "content": turn["content"]})
     messages.append({"role": "user", "content": user_message})
 
     tools_called: list[dict] = []

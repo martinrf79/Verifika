@@ -447,20 +447,6 @@ async def process_message(user_id: str, raw_message: str,
                     interpreter_short_circuit = True
                     ultima_compra = producto_resuelto
 
-            # Caso saludo: saludo puro con alta confianza. Respondemos directo
-            # sin invocar el Solver, que para un hola encadena llamadas al
-            # modelo de gusto. El interpretador marca saludo solo cuando el
-            # cliente NO pidio producto ni precio, asi que una consulta
-            # comercial nunca cae aca. Si el cliente queria algo mas, lo dice
-            # en el turno siguiente y ahi corre el Solver: no se pierde venta.
-            elif (settings.SALUDO_DIRECTO
-                    and intencion == "saludo"
-                    and confianza >= UMBRAL_CONFIANZA_ALTA):
-                final_response = _respuesta_saludo()
-                interpreter_short_circuit = True
-                log.info("interpreter_saludo_directo", trace_id=trace_id,
-                         confianza=confianza)
-
             # Caso B: confianza baja con candidatos, pedir clarificacion.
             # Solo si los candidatos son productos reales mostrados, no inventados.
             elif confianza < UMBRAL_CONFIANZA_BAJA and candidatos:
