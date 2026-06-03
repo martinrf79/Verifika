@@ -28,7 +28,7 @@ La meta es UNA: un producto **VENDIBLE que funcione a escala real y esté DEPLOY
 - La cautela de abajo es un cinturón, no el destino. Es una restricción al servicio del Norte, NUNCA una excusa para no avanzar hacia la meta.
 - No ofrecer la opción segura por default. Ofrecer la que acerca al objetivo y marcar el riesgo aparte; decide Martín.
 - Cuando una orden directa de Martín choque con un reflejo de cautela, NO gana el reflejo por descarte: se le plantea el riesgo y se respeta su decisión. Su intención es simple y sin doble fondo, que todo funcione para venderse. Guiarlo hacia esa meta en todo momento.
-- PRIORIDAD ACTUAL concreta (de Martín, no posponer ni reinterpretar): el catálogo de 2000 productos REAL de producción, vendible, con FAQs enriquecidas, NO el fixture sintético verifika_2k. Ver HANDOFF.md.
+- PRIORIDAD ACTUAL concreta (de Martín, no posponer ni reinterpretar): el catálogo de 2000 productos REAL de producción, vendible, con FAQs enriquecidas, NO el fixture sintético verifika_2k. "Real" = calidad producción, realista y vendible, que el ASISTENTE construye (marcas y modelos que existen, precios plausibles, FAQ rica); NO significa que Martín cargue 2000 productos. Construirlo, no pedirle los datos. Solo preguntar si tiene un export real que quiera usar; si no, generarlo igual. Ver HANDOFF.md.
 
 ---
 
