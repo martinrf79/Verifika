@@ -144,15 +144,12 @@ def resolver_puertas(consulta: str,
                    siga el resto del pipeline.
     Ante la duda nunca inventa: cae en confirmar, consultar o seguir.
     """
-    # Sin match fuerte: recien ahi miramos producto. Un match FUERTE de la fuente
-    # gana sobre lo que opine el interprete, asi una pregunta de politica clara
-    # (factura, usados, garantia) se contesta aunque el interprete haya marcado
-    # producto. Solo si la fuente no tiene nada claro delegamos.
+    # Sin match fuerte de la fuente, DELEGAMOS al Solver. El Solver busca en el
+    # catalogo (una pregunta de producto como "cuanto sale la RTX 4070" la
+    # resuelve ahi) y, si no hay nada, abstiene seguro via verificador. No
+    # abstenemos en el nucleo: hacerlo pisaba preguntas de producto que el Solver
+    # SI sabe contestar. La objecion (regateo/retiro) se chequea aparte, antes.
     def _sin_dato() -> dict:
-        if hay_producto:
-            return {"puerta": "seguir"}
-        if es_consulta_info:
-            return {"puerta": "consultar", "motivo": "sin_dato"}
         return {"puerta": "seguir"}
 
     # Compra activa (decision de compra): va al solver para cotizar y cerrar,

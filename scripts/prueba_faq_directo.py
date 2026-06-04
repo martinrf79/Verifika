@@ -83,7 +83,8 @@ def main():
         ("que formas de pago tienen", False, False, True, "responder"),
         # compuesta (precio+tiempo): la maneja el Solver, no rebota con read-back
         ("cuanto cuesta envio y cuanto tarda", False, False, True, "seguir"),
-        ("tienen estacionamiento para autos", False, False, True, "consultar"),
+        # sin match de fuente y sin objecion -> delega al Solver (no abstiene)
+        ("tienen estacionamiento para autos", False, False, True, "seguir"),
         ("quiero un mouse para gaming", False, True, False, "seguir"),
         ("me llevo el monitor LG como pago", True, True, True, "seguir"),
         # politica con producto mencionado: el match fuerte gana sobre la mencion

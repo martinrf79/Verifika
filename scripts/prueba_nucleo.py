@@ -96,11 +96,11 @@ async def run():
     check("compuesta: delega al solver",
           not r4["manejado"] and r4["puerta"] == "seguir")
 
-    # ── Puerta CONSULTAR ──
+    # ── Sin match ni objecion -> delega al Solver (no abstiene en el nucleo) ──
     r5 = await procesar_nucleo("tienen estacionamiento para autos", INFO, faq,
                                modelo_bueno)
-    check("consultar: mensaje de consulta",
-          r5["puerta"] == "consultar" and r5["respuesta"] == MENSAJE_CONSULTAR)
+    check("sin match: delega al solver",
+          not r5["manejado"] and r5["puerta"] == "seguir")
 
     # ── Puerta SEGUIR (producto) ──
     r6 = await procesar_nucleo("quiero un mouse para gaming", PROD, faq,
