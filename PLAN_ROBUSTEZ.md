@@ -63,6 +63,38 @@ CÓMO HACERLO MÁS DURO QUE LA REALIDAD (hacer esto en la ETAPA 4):
 
 ---
 
+## SÍNTESIS: una versión MEJOR que el viejo y que el núcleo
+
+Objetivo: NO elegir viejo o nuevo, sino combinarlos en una sola versión superior.
+
+- BASE / ESPINA = el PIPELINE VIEJO. Conserva lo que el núcleo perdió: el contexto
+  multi-turno (el solver ve el historial) y la calculadora con tools para pedidos
+  complejos (multi-producto, multi-destino, totales separados). Probado fuerte.
+- TRAER del NÚCLEO NUEVO, e injertar en esa espina, SOLO lo bueno:
+  1. La CONSTITUCIÓN (app/core/constitucion.py): tabla única de reglas que leen el
+     prompt del solver Y el gate. Hoy las reglas están dispersas en el prompt.
+  2. El GATE POR GRAVEDAD: duro en precio/stock/política/compatibilidad, blando en
+     tono/color/opinión. Se implementa endureciendo y PRENDIENDO los verificadores
+     (plata + hechos + servicios) en on, no con el redactor del núcleo.
+  3. La CAPA DE CONVERSIÓN "venta" de la fuente de verdad (ya está en la FAQ):
+     inyectarla al prompt del solver para que venda sin inventar.
+- NO TRAER del núcleo: el redactor SIN ESTADO y el ruteo de 4 puertas. Eso rompió
+  el contexto multi-turno. Queda parkeado (NUCLEO_FUENTE_VERDAD off).
+
+Cómo se hace: es la misma iteración de las ETAPAS de abajo, PERO sobre el viejo,
+sumando (a) verificadores en on, (b) constitución + capa venta inyectadas al
+prompt del solver, (c) tapar cada clase de falla por código con el gate por
+gravedad. Medir siempre con scripts/simulador_multiturno.py sobre verifika_prod.
+
+KICKOFF PARA CHAT NUEVO (pegar esto): "Leé PLAN_ROBUSTEZ.md y
+memory/nucleo-fuente-verdad.md. Vamos a la SÍNTESIS: base el pipeline viejo (que
+conserva contexto y calculadora), injertándole del núcleo la constitución como
+tabla única de reglas, el gate por gravedad (verificadores plata+hechos+servicios
+endurecidos y en on) y la capa de conversión 'venta' de la FAQ inyectada al prompt
+del solver. NO traer el redactor sin estado ni las 4 puertas. Después iterar con
+scripts/simulador_multiturno.py sobre verifika_prod, tapando clases por código
+hasta 0 violaciones reales."
+
 ## DECISIÓN DE BASE (no re-discutir)
 
 - Apostar al PIPELINE VIEJO + verificadores en on. El núcleo nuevo REGRESÓ:
