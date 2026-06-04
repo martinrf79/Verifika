@@ -186,6 +186,17 @@ async def procesar_mensaje_para_lead(
     # Caso uno, lead activo esperando datos
     if lead_activo and lead_activo.get("estado") == "datos_solicitados":
         from app.core import cierre
+        # Si el cliente PIVOTEA a una pregunta nueva (precio, info de producto) en
+        # vez de aportar datos, hay que CONTESTARLE, no seguir empujando el cierre
+        # ni extraer datos de una consulta. Ej: "cuanto sale el X con envio a
+        # Cordoba" no es un domicilio, es una cotizacion. El cierre se retoma
+        # cuando el cliente realmente aporta datos o confirma.
+        _intent = (interpretacion or {}).get("intencion")
+        if _intent in ("pregunta_especifica", "exploracion") and \
+                not extraer_telefono(mensaje):
+            log.info("cierre_pausado_pregunta_nueva", trace_id=trace_id,
+                     intencion=_intent)
+            return None, {"accion": "ninguna"}
         datos = cierre.extraer_datos_cliente(mensaje, trace_id)
         cambios = {k: v for k, v in datos.items() if v}
         if not cambios:

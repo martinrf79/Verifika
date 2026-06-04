@@ -68,6 +68,25 @@ async def main():
         "compra con presupuesto -> handoff fuerte, pide datos",
         presupuesto="Teclado Genius KB-110X - 12.000\nTotal: 12.000",
         interpretacion=INTERP_COMPRA, espera_accion="handoff_humano"))
+
+    # 3) Lead activo pidiendo datos, pero el cliente PIVOTEA a una pregunta nueva:
+    #    el cierre se PAUSA y deja contestar al Solver (no extrae datos truchos).
+    leads.get_lead_activo = lambda *a, **k: {
+        "lead_id": "L1", "estado": "datos_solicitados", "nombre": "",
+        "telefono": "", "direccion": "", "forma_pago": ""}
+    extra, meta = await leads.procesar_mensaje_para_lead(
+        user_id="u1", canal="telegram", tienda_id="verifika_demo",
+        mensaje="cuanto sale el Mouse Logitech G203 con envio a Cordoba",
+        respuesta_solver="(solver)", trace_id="t",
+        interpretacion={"intencion": "pregunta_especifica", "confianza": 0.9,
+                        "producto_resuelto": "Mouse Logitech G203 Lightsync"},
+        presupuesto="")
+    ok3 = meta.get("accion") == "ninguna"
+    print(f"  [{'OK' if ok3 else 'FALLA'}] lead activo + pregunta nueva -> pausa cierre")
+    print(f"        accion={meta.get('accion')}")
+    r.append(ok3)
+    leads.get_lead_activo = lambda *a, **k: None  # restaurar
+
     print(f"\n  Total: {len(r)} casos, {r.count(False)} fallas\n")
 
 
