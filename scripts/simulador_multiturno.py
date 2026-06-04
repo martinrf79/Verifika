@@ -119,6 +119,13 @@ def _get_config(key, default=None, tienda_id=None):
     return "Verifika" if key in ("business_name", "nombre") else default
 def _noop(*a, **k): return None
 
+# Silenciar el flood de logs INFO del bot (igual que molino.py): consola limpia,
+# se ve el progreso y no parece colgado.
+import logging
+import structlog
+structlog.configure(
+    wrapper_class=structlog.make_filtering_bound_logger(logging.WARNING))
+
 # Realizar el monkeypatch en todos los módulos importados
 import app.storage.firestore_client as FS
 import app.core.tools as T
@@ -228,7 +235,9 @@ async def run_scenario(scenario, client_llm, client_model, semaphore, tienda_id=
     # Identificador único de usuario para mantener el historial
     user_id = f"sim_{scenario_id}_{int(time.time() * 1000)}"
     mock_get_conversation(user_id, tienda_id)
-    
+    _t_inicio = time.time()
+    print(f"  -> [{scenario_id}] arrancando (max {turnos_max} turnos)...", flush=True)
+
     chat_turns = []
     
     # Inicia con el primer mensaje del cliente
@@ -405,6 +414,9 @@ Tu respuesta debe ser un objeto JSON válido que cumpla estrictamente con la sig
             "resumen_critico": "Error crítico al procesar la respuesta del Juez."
         }
         
+    print(f"  <- [{scenario_id}] listo en {time.time()-_t_inicio:.0f}s, "
+          f"puntaje {evaluation.get('puntaje_venta', '?')}/10, "
+          f"{'PASO' if evaluation.get('passed') else 'FALLO'}", flush=True)
     return {
         "id": scenario_id,
         "nombre": nombre,
@@ -424,8 +436,13 @@ async def async_main():
         
     with open(scenarios_path, encoding="utf-8") as f:
         scenarios = json.load(f)
-        
-    print(f"Cargados {len(scenarios)} escenarios fijos de data/escenarios_multiturno.json")
+
+    # MAX_ESCENARIOS=N para correr solo los primeros N (prueba rapida).
+    _max = int(os.environ.get("MAX_ESCENARIOS", "0"))
+    if _max > 0:
+        scenarios = scenarios[:_max]
+
+    print(f"Cargados {len(scenarios)} escenarios de data/escenarios_multiturno.json")
     
     # 2. Inicializar cliente LLM de la simulación
     try:
@@ -443,7 +460,7 @@ async def async_main():
     
     # Semáforo para limitar la concurrencia a un máximo de 3 llamadas simultáneas 
     # (previene el error 429 de Rate Limit de la API de LLMs baratos/gratuitos)
-    semaphore = asyncio.Semaphore(3)
+    semaphore = asyncio.Semaphore(int(os.environ.get("SIM_CONC", "6")))
     
     # 3. Correr todos los escenarios concurrentemente
     tasks = [run_scenario(scen, client_llm, client_model, semaphore) for scen in scenarios]
