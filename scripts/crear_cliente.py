@@ -118,6 +118,9 @@ def cargar_faq_json(path: str, tienda_id: str) -> int:
             respuesta = row["respuesta"].strip()
             tipo = row.get("tipo", "informativo").strip().lower()
             valores = row.get("valores", [])
+            # Capa de conversion curada (opcional): angulo de venta y siguiente
+            # paso, verdaderos. El nucleo lo usa para que la respuesta venda.
+            venta = str(row.get("venta", "") or "").strip()
             if tipo not in ("informativo", "cuantitativo"):
                 print(f"  fila ignorada ({tema}): tipo invalido {tipo}")
                 continue
@@ -126,6 +129,7 @@ def cargar_faq_json(path: str, tienda_id: str) -> int:
                 "respuesta": respuesta,
                 "tipo": tipo,
                 "valores": valores,
+                "venta": venta,
             }, tienda_id=tienda_id)
             ok += 1
         except (KeyError, ValueError) as e:
