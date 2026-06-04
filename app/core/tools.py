@@ -256,8 +256,7 @@ def calculate_total(items: list[dict] | None = None,
             # supera UMBRAL_ENVIO_GRATIS, el envio es gratis sin importar el
             # concepto pedido. Asi el total sale entero y deterministico de la
             # calculadora y el modelo no improvisa (causa de fallback en cierres).
-            if (settings.ENVIO_GRATIS_AUTO and tema == "costo_envio"
-                    and total > settings.UMBRAL_ENVIO_GRATIS):
+            if tema == "costo_envio" and total > settings.UMBRAL_ENVIO_GRATIS:
                 if not envio_gratis_aplicado:
                     extras_detalle.append({
                         "faq_tema": tema, "concepto": concepto,
@@ -269,7 +268,7 @@ def calculate_total(items: list[dict] | None = None,
                     envio_gratis_aplicado = True
                 continue
             unidad = (valor.get("unidad") or "").strip().lower()
-            if settings.CALC_PORCENTAJES and unidad == "porcentaje":
+            if unidad == "porcentaje":
                 # El monto guardado es un porcentaje, no pesos. Se calcula sobre
                 # el subtotal de productos ya acumulado en total.
                 pct = int(valor.get("monto", 0))
@@ -607,11 +606,10 @@ def query_faq(consulta: str) -> dict:
         return {"encontrada": False, "mensaje_para_llm": "FAQ vacia"}
 
     # Keyword-first: si matchea, resolvemos sin llamar al modelo.
-    if settings.FAQ_KEYWORD_FIRST:
-        tema_kw = _faq_keyword_match(consulta, faq)
-        if tema_kw:
-            log.info("query_faq_keyword_hit", tema=tema_kw)
-            return _faq_resp(tema_kw, faq[tema_kw])
+    tema_kw = _faq_keyword_match(consulta, faq)
+    if tema_kw:
+        log.info("query_faq_keyword_hit", tema=tema_kw)
+        return _faq_resp(tema_kw, faq[tema_kw])
 
     temas_texto = ""
     for tema, data in faq.items():
@@ -902,33 +900,32 @@ def _build_schema():
         },
     ]
 
-    # Herramienta de listar catalogo, solo si el flag esta activo.
-    if settings.TOOL_LISTAR_CATALOGO:
-        schemas.append({
-            "type": "function",
-            "function": {
-                "name": "list_catalog",
-                "description": (
-                    "Lista el catalogo completo o el de una categoria. Usar "
-                    "cuando el cliente pide ver TODO, la lista completa, que "
-                    "productos hay o que tenes en general. Para busquedas "
-                    "puntuales por nombre o marca usa search_products. El "
-                    "parametro categoria es opcional."
-                ),
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "categoria": {
-                            "type": "string",
-                            "description": (
-                                f"Categoria opcional para filtrar. "
-                                f"Disponibles: {cats}"
-                            ),
-                        },
+    # Herramienta de listar catalogo completo o por categoria.
+    schemas.append({
+        "type": "function",
+        "function": {
+            "name": "list_catalog",
+            "description": (
+                "Lista el catalogo completo o el de una categoria. Usar "
+                "cuando el cliente pide ver TODO, la lista completa, que "
+                "productos hay o que tenes en general. Para busquedas "
+                "puntuales por nombre o marca usa search_products. El "
+                "parametro categoria es opcional."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "categoria": {
+                        "type": "string",
+                        "description": (
+                            f"Categoria opcional para filtrar. "
+                            f"Disponibles: {cats}"
+                        ),
                     },
                 },
             },
-        })
+        },
+    })
 
     return schemas
 

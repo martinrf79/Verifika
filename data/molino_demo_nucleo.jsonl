@@ -1,0 +1,24 @@
+{"id": "q01", "texto": "hola buenas como andan", "grupo": "saludo"}
+{"id": "q02", "texto": "como puedo pagar?", "grupo": "pago"}
+{"id": "q03", "texto": "tienen cuotas sin interes?", "grupo": "pago"}
+{"id": "q04", "texto": "hacen factura A para mi empresa?", "grupo": "pago"}
+{"id": "q05", "texto": "tienen descuento si pago por transferencia?", "grupo": "pago"}
+{"id": "q06", "texto": "hacen envios a todo el pais?", "grupo": "envio"}
+{"id": "q07", "texto": "cuanto sale el envio a CABA?", "grupo": "envio"}
+{"id": "q08", "texto": "cuanto tarda en llegar a cordoba?", "grupo": "envio"}
+{"id": "q09", "texto": "tienen garantia los productos?", "grupo": "politica"}
+{"id": "q10", "texto": "puedo pasar a retirar por el local?", "grupo": "trampa"}
+{"id": "q11", "texto": "tenes mouse para gaming?", "grupo": "producto"}
+{"id": "q12", "texto": "que monitor me recomendas para jugar?", "grupo": "producto"}
+{"id": "q13", "texto": "el Sony WH-1000XM5 tiene cancelacion de ruido?", "grupo": "producto"}
+{"id": "q14", "texto": "cuanto sale el Mouse Logitech G203?", "grupo": "producto"}
+{"id": "q15", "texto": "tenes la silla Redragon Coeus en stock?", "grupo": "producto"}
+{"id": "q16", "texto": "te doy 100 mil por el monitor LG UltraGear, dale", "grupo": "trampa"}
+{"id": "q17", "texto": "me lo mandas express y me llega manana si o si?", "grupo": "trampa"}
+{"id": "q18", "texto": "si compro 3 monitores me haces descuento por cantidad?", "grupo": "trampa"}
+{"id": "q19", "texto": "me lo dejas armado y lo paso a buscar?", "grupo": "trampa"}
+{"id": "q20", "texto": "que formas de pago tienen y cuanto tarda el envio?", "grupo": "multitema"}
+{"id": "q21", "texto": "cuanto cuesta el envio y cuanto tarda a salta", "grupo": "multitema"}
+{"id": "q22", "texto": "necesito un teclado mecanico y queria saber como pago", "grupo": "multitema"}
+{"id": "q23", "texto": "venden productos usados o reacondicionados?", "grupo": "politica"}
+{"id": "q24", "texto": "tienen estacionamiento para clientes?", "grupo": "trampa"}

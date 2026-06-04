@@ -19,6 +19,8 @@ from app.core.guardian import validate_response, clean_response
 from app.core.verificador import verificar_respuesta
 from app.core.verificador_servicios import verificar_servicios
 from app.core.verificador_hechos import verificar_hechos
+from app.core.faq_responder import responder_faq_directo
+from app.core.nucleo import procesar_nucleo
 from app.config import get_settings
 from app.logger import get_logger
 from app.storage.firestore_client import (
@@ -26,8 +28,8 @@ from app.storage.firestore_client import (
     save_conversation,
     log_message,
     reset_conversation as fs_reset_conversation,
-    get_all_products,
     get_all_faq,
+    get_config,
 )
 
 log = get_logger(__name__)
@@ -67,8 +69,6 @@ if USE_INTERPRETER:
 else:
     log.info("interpreter_disabled")
 
-
-VERIFIKA_EVIDENCE_FROM_TOOLS = settings.VERIFIKA_EVIDENCE_FROM_TOOLS
 
 # Tools que devuelven productos del catalogo bajo distintas claves.
 _TOOLS_CON_PRODUCTOS = (
@@ -138,108 +138,35 @@ def _build_evidence_from_tools(tools_called: list[dict],
                 if res.get("tipo") == "cuantitativo":
                     necesita_faq_struct = True
 
-    # FAQ como evidencia. Dos modos:
-    # - Completo (flag VERIFIKA_FULL_FAQ_EVIDENCE): entra TODA la FAQ, asi una
-    #   afirmacion verdadera sobre un tema que el Solver no consulto, formas de
-    #   pago por ejemplo, no cae como sin_evidencia y no bloquea de gusto.
-    #   La FAQ es chica y get_all_faq esta cacheada, asi que es barato.
-    # - Acotado: solo los temas que query_faq trajo, enriquecidos con valores.
-    if settings.VERIFIKA_FULL_FAQ_EVIDENCE:
-        try:
-            faqs_full = get_all_faq(tienda_id=tienda_id)
-            faq_evidence = []
-            for tema_id, data in faqs_full.items():
-                item = {
-                    "tipo": "faq",
-                    "id": tema_id,
-                    "tema": tema_id,
-                    "respuesta": data.get("respuesta", ""),
-                    "faq_tipo": data.get("tipo", "informativo"),
-                }
-                if data.get("valores"):
-                    item["valores"] = data["valores"]
-                faq_evidence.append(item)
-        except Exception as e:
-            log.warning("verifika_full_faq_failed", error=str(e)[:100])
-    elif necesita_faq_struct and faq_temas:
-        try:
-            faqs_full = get_all_faq(tienda_id=tienda_id)
-            for item in faq_evidence:
-                data = faqs_full.get(item["id"])
-                if data and data.get("valores"):
-                    item["valores"] = data["valores"]
-        except Exception as e:
-            log.warning("verifika_faq_struct_failed", error=str(e)[:100])
+    # FAQ como evidencia: entra TODA la FAQ, asi una afirmacion verdadera sobre
+    # un tema que el Solver no consulto, formas de pago por ejemplo, no cae como
+    # sin_evidencia y no bloquea de gusto. La FAQ es chica y get_all_faq esta
+    # cacheada, asi que es barato.
+    try:
+        faqs_full = get_all_faq(tienda_id=tienda_id)
+        faq_evidence = []
+        for tema_id, data in faqs_full.items():
+            item = {
+                "tipo": "faq",
+                "id": tema_id,
+                "tema": tema_id,
+                "respuesta": data.get("respuesta", ""),
+                "faq_tipo": data.get("tipo", "informativo"),
+            }
+            if data.get("valores"):
+                item["valores"] = data["valores"]
+            faq_evidence.append(item)
+    except Exception as e:
+        log.warning("verifika_full_faq_failed", error=str(e)[:100])
 
     return list(productos_por_id.values()) + faq_evidence + proof_evidence
 
 
 def _build_evidence_for_verifika(tools_called: list[dict],
                                   tienda_id: str) -> list[dict]:
-    """Reconstruye evidencia para Verifika."""
-    if VERIFIKA_EVIDENCE_FROM_TOOLS:
-        return _build_evidence_from_tools(tools_called, tienda_id)
-
-    evidence = []
-
-    tool_names = [t.get("name", "") for t in tools_called]
-    uso_busqueda = any(n in ("search_products", "get_product_details",
-                              "find_within_budget", "compare_products",
-                              "recommend_product", "calculate_total")
-                       for n in tool_names)
-    uso_faq = "query_faq" in tool_names
-
-    if uso_busqueda or not tool_names:
-        try:
-            productos = get_all_products(tienda_id=tienda_id)
-            for p in productos:
-                evidence.append({
-                    "tipo": "producto",
-                    "id": p.get("id"),
-                    "nombre": p.get("nombre"),
-                    "categoria": p.get("categoria"),
-                    "precio_ars": p.get("precio_ars"),
-                    "stock": p.get("stock"),
-                    "descripcion": p.get("descripcion", ""),
-                    "marca": p.get("marca"),
-                    "modelo": p.get("modelo"),
-                    "color": p.get("color"),
-                    "material": p.get("material"),
-                    "peso_gramos": p.get("peso_gramos"),
-                    "dimensiones": p.get("dimensiones"),
-                    "garantia_meses": p.get("garantia_meses"),
-                    "uso_recomendado": p.get("uso_recomendado"),
-                    "caracteristicas_extra": p.get("caracteristicas_extra"),
-                })
-        except Exception as e:
-            log.warning("verifika_evidence_products_failed",
-                        error=str(e)[:100])
-
-    if uso_faq or not tool_names:
-        try:
-            faqs = get_all_faq(tienda_id=tienda_id)
-            for tema_id, data in faqs.items():
-                evidence.append({
-                    "tipo": "faq",
-                    "id": tema_id,
-                    "tema": tema_id,
-                    "respuesta": data.get("respuesta", ""),
-                })
-        except Exception as e:
-            log.warning("verifika_evidence_faq_failed",
-                        error=str(e)[:100])
-
-    # Inyectar proofs de tools como evidencia tipo proof
-    for t in tools_called:
-        proof = t.get("proof")
-        if proof:
-            evidence.append({
-                "tipo": "proof",
-                "tool": t.get("name"),
-                "proof": proof,
-            })
-
-    return evidence
+    """Reconstruye evidencia para Verifika desde los resultados reales de las
+    tools que vio el Solver."""
+    return _build_evidence_from_tools(tools_called, tienda_id)
 
 
 async def _handoff_compra(user_id, canal, tienda_id, mensaje, producto_resuelto,
@@ -297,82 +224,6 @@ def _respuesta_clarificacion(candidatos: list[str]) -> str:
         return f"Te referis al {candidatos[0]} o al {candidatos[1]}?"
     opciones = ", ".join(candidatos[:-1]) + f", o {candidatos[-1]}"
     return f"Tenemos varios. Te referis al {opciones}?"
-
-
-# ─── DEFENSA 3 — confirmar antes de cotizar (interpretacion rica) ───
-def _slots_ambiguos_decisivos(interp: dict) -> bool:
-    """True si hay un slot DECISIVO sin resolver: un item sin producto claro o
-    un destino sin cajon, que ademas el interprete marco en ambiguedades. Es la
-    senal de que no se puede cotizar sin preguntar antes."""
-    amb = interp.get("ambiguedades") or []
-    for i, it in enumerate(interp.get("items") or []):
-        if it.get("producto_resuelto"):
-            continue
-        if f"items[{i}]" in amb or (it.get("confianza") or 1) < 0.7:
-            return True
-    for i, d in enumerate(interp.get("destinos") or []):
-        if not d.get("cajon") and f"destinos[{i}]" in amb:
-            return True
-    return False
-
-
-def _intencion_de_compra(interp: dict) -> bool:
-    """True si el cliente esta tratando de cotizar o comprar, no solo mirando.
-    Senales: pide descuento, dio forma de pago, dio destino o cantidad, o hay
-    decision de compra. Asi NO preguntamos de mas en una exploracion."""
-    if interp.get("pide_descuento") or interp.get("forma_pago"):
-        return True
-    if "decision_compra" in (interp.get("intenciones") or []):
-        return True
-    if interp.get("destinos"):
-        return True
-    return any(it.get("cantidad") for it in (interp.get("items") or []))
-
-
-def _respuesta_confirmacion_rica(interp: dict) -> str:
-    """Read-back que pide confirmar el slot dudoso ANTES de cotizar. No adivina,
-    pregunta. De paso repite el pedido, que es una jugada de venta."""
-    refs = [str(it.get("referencia") or "").strip()
-            for it in (interp.get("items") or [])
-            if not it.get("producto_resuelto")]
-    refs = [r for r in refs if r]
-    pedido = " y ".join(refs) if refs else "lo que necesitas"
-    msg = (f"Para pasarte el precio justo y no equivocarme, decime cual "
-           f"exactamente queres de {pedido}.")
-    dests = interp.get("destinos") or []
-    if dests and dests[0].get("texto"):
-        msg += f" Con eso te armo el total con envio a {dests[0]['texto']}."
-    return msg
-
-
-def _contexto_slots(interp: dict) -> str:
-    """Bloque con los slots ya interpretados para que el Solver reciba el detalle
-    masticado y no lo re-derive del mensaje crudo. Los numeros siguen saliendo de
-    la calculadora, esto es guia de interpretacion."""
-    partes = []
-    items = interp.get("items") or []
-    if items:
-        _it = []
-        for it in items:
-            cant = it.get("cantidad")
-            nom = it.get("producto_resuelto") or it.get("referencia") or "?"
-            _it.append(f"{cant or ''}x {nom}".strip())
-        partes.append("items: " + "; ".join(_it))
-    dests = interp.get("destinos") or []
-    if dests:
-        partes.append("destinos: " + "; ".join(
-            f"{d.get('texto')} ({d.get('cajon') or 'sin cajon'})" for d in dests))
-    if interp.get("atributo_consultado"):
-        partes.append("consulta puntual: " + str(interp["atributo_consultado"]))
-    if interp.get("forma_pago"):
-        partes.append("forma de pago: " + str(interp["forma_pago"]))
-    if interp.get("pide_descuento"):
-        partes.append("pide descuento: el unico descuento valido es el de la FAQ, "
-                      "transferencia o efectivo, no inventes otro")
-    if not partes:
-        return ""
-    return ("\n\n[Detalle ya interpretado del mensaje, usalo como guia, los "
-            "numeros igual salen de la calculadora:\n- " + "\n- ".join(partes) + "]")
 
 
 async def process_message(user_id: str, raw_message: str,
@@ -437,8 +288,7 @@ async def process_message(user_id: str, raw_message: str,
             if (intencion == "decision_compra"
                     and confianza >= UMBRAL_CONFIANZA_ALTA
                     and producto_resuelto
-                    and (_hay_presupuesto_previo
-                         or not settings.CIERRE_PRECIO_PRIMERO)):
+                    and _hay_presupuesto_previo):
                 handoff = await _handoff_compra(
                     user_id, canal, tid, raw_message,
                     producto_resuelto, trace_id)
@@ -465,23 +315,60 @@ async def process_message(user_id: str, raw_message: str,
                     log.info("interpreter_candidatos_invalidos", trace_id=trace_id,
                              candidatos_originales=candidatos[:3])
 
-            # Defensa 3: si hay un slot decisivo dudoso y el cliente quiere
-            # cotizar, confirmamos antes de mandar al Solver. Preguntar, no adivinar.
-            elif (settings.INTERPRETE_RICO
-                    and not producto_resuelto
-                    and _slots_ambiguos_decisivos(interpretacion)
-                    and _intencion_de_compra(interpretacion)):
-                final_response = _respuesta_confirmacion_rica(interpretacion)
-                interpreter_short_circuit = True
-                log.info("interpreter_confirmacion_rica", trace_id=trace_id,
-                         ambiguedades=interpretacion.get("ambiguedades"))
-
         except Exception as e:
             log.error("interpreter_error", trace_id=trace_id,
                       error=str(e)[:200])
             # Si el interpretador falla, seguimos al flujo normal
             interpreter_short_circuit = False
         timings["interpret_ms"] = int((time.perf_counter() - _ts_interp) * 1000)
+
+    # ─── NUCLEO FUENTE DE VERDAD (cuatro puertas) ───
+    # Camino A: el codigo resuelve el hecho de la fuente y enruta por una de
+    # cuatro puertas (responder / confirmar / consultar / seguir). Tiene
+    # precedencia sobre FAQ_DIRECTO. Si la puerta es 'seguir', delega al pipeline
+    # de hoy intacto. Detras de la perilla maestra; en off no se ejecuta.
+    if settings.NUCLEO_FUENTE_VERDAD and not interpreter_short_circuit:
+        try:
+            from app.core.interpretador import _llamar_llm as _llamar_redactor
+            _bn = settings.BUSINESS_NAME
+            try:
+                _bn = get_config("business_name", tienda_id=tid) or _bn
+            except Exception:
+                pass
+            _nuc = await procesar_nucleo(
+                raw_message, interpretacion, get_all_faq(tienda_id=tid),
+                _llamar_redactor, etapa=estado_nuevo, business_name=_bn,
+                trace_id=trace_id)
+            if _nuc["manejado"]:
+                final_response = _nuc["respuesta"]
+                interpreter_short_circuit = True
+                log.info("nucleo_manejado", trace_id=trace_id,
+                         puerta=_nuc["puerta"], vestido=_nuc.get("vestido"))
+        except Exception as e:
+            log.warning("nucleo_error", trace_id=trace_id, error=str(e)[:160])
+
+    # ─── RESPONDEDOR DETERMINISTA DE FAQ (puerta 1) ───
+    # Una pregunta pura de politica con tema claro y sin producto en juego se
+    # contesta con el texto curado de la FAQ, sin pasar por el Solver. Cero
+    # generacion, cero alucinacion. Conservador: ante la duda defiere al Solver.
+    if settings.FAQ_DIRECTO and not interpreter_short_circuit:
+        try:
+            _hay_prod = bool(
+                interpretacion and (
+                    interpretacion.get("producto_resuelto")
+                    or interpretacion.get("candidatos")
+                    or interpretacion.get("intencion") == "decision_compra"))
+            _faq_dir = responder_faq_directo(
+                raw_message, get_all_faq(tienda_id=tid),
+                hay_producto=_hay_prod, trace_id=trace_id)
+            if _faq_dir:
+                final_response = _faq_dir["respuesta"]
+                interpreter_short_circuit = True
+                log.info("faq_directo_short_circuit", trace_id=trace_id,
+                         tema=_faq_dir["tema"])
+        except Exception as e:
+            log.warning("faq_directo_error", trace_id=trace_id,
+                        error=str(e)[:120])
 
     # ─── SOLVER (solo si Interpretador no corto el flujo) ───
     response_text = None
@@ -508,11 +395,6 @@ async def process_message(user_id: str, raw_message: str,
                            f"caminos, presentalos como opcion A y B y pregunta "
                            f"cual prefiere: {ofrecer_opciones}]")
         mensaje_enriquecido = mensaje_enriquecido + ctx_estado
-
-        # Detalle interpretado (Defensa 1): le pasamos al Solver los slots ya
-        # entendidos para que adivine menos. Solo con el flag y si hubo interprete.
-        if settings.INTERPRETE_RICO and interpretacion:
-            mensaje_enriquecido += _contexto_slots(interpretacion)
 
         # Destino del envio para la calculadora defensiva. Determinista, por
         # keywords del mensaje del cliente. El LLM no lo elige: lo inyecta el
@@ -631,21 +513,13 @@ async def process_message(user_id: str, raw_message: str,
         if _correr_checker:
             try:
                 _ts_verifika = time.perf_counter()
-                if settings.ASYNC_LLM_OFFLOAD:
-                    verifika_result = await asyncio.to_thread(
-                        verify_response,
-                        respuesta_solver=cleaned_response,
-                        evidence=evidence,
-                        trace_id=trace_id,
-                        fallback_message=settings.VERIFIKA_FALLBACK_MESSAGE,
-                    )
-                else:
-                    verifika_result = verify_response(
-                        respuesta_solver=cleaned_response,
-                        evidence=evidence,
-                        trace_id=trace_id,
-                        fallback_message=settings.VERIFIKA_FALLBACK_MESSAGE,
-                    )
+                verifika_result = await asyncio.to_thread(
+                    verify_response,
+                    respuesta_solver=cleaned_response,
+                    evidence=evidence,
+                    trace_id=trace_id,
+                    fallback_message=settings.VERIFIKA_FALLBACK_MESSAGE,
+                )
                 timings["verifika_ms"] = int(
                     (time.perf_counter() - _ts_verifika) * 1000)
 
@@ -892,8 +766,7 @@ async def process_message(user_id: str, raw_message: str,
                 # Si este turno el Solver armo un presupuesto y el cierre quiere
                 # pedir datos, mostramos el precio primero y despues el pedido.
                 # Nunca pisamos una cotizacion fresca con el pedido de datos.
-                if (settings.CIERRE_PRECIO_PRIMERO and _pide_datos
-                        and presupuesto_turno
+                if (_pide_datos and presupuesto_turno
                         and presupuesto_turno not in (final_response or "")):
                     final_response = (
                         final_response + "\n\n" + leads_meta["respuesta_directa"]

@@ -19,8 +19,8 @@ log = get_logger(__name__)
 settings = get_settings()
 
 
-# Regla extra opcional (flag PROPOSER_IGNORA_CANTIDAD). Evita que el Proposer
-# convierta una cantidad pedida por el cliente en una afirmacion de stock.
+# Evita que el Proposer convierta una cantidad pedida por el cliente en una
+# afirmacion de stock.
 _REGLA_CANTIDAD = """
 6. CANTIDADES PEDIDAS NO SON STOCK. Si el texto menciona una cantidad que el cliente quiere comprar, por ejemplo "2x Monitor", "2 monitores", "3 teclados", "llevo 4 sillas", eso es la cantidad pedida, NO cuantas unidades hay disponibles. NO generes afirmaciones de tipo stock a partir de cantidades pedidas, multiplicaciones de presupuesto ni lineas de un total. Solo genera una afirmacion de stock si el texto dice explicitamente que HAY X unidades disponibles o en stock."""
 
@@ -88,9 +88,7 @@ def propose_claims(respuesta_texto: str,
         log.info("proposer_empty_input", trace_id=trace_id)
         return []
 
-    system_content = PROPOSER_SYSTEM_PROMPT
-    if settings.PROPOSER_IGNORA_CANTIDAD:
-        system_content = system_content + _REGLA_CANTIDAD
+    system_content = PROPOSER_SYSTEM_PROMPT + _REGLA_CANTIDAD
 
     messages = [
         {"role": "system", "content": system_content},

@@ -34,38 +34,6 @@ MAX_OFRECER = 4
 UMBRAL_CERCANIA = 0.8
 
 
-def anclar_items(resultado: dict, productos: list[dict]) -> dict:
-    """Ancla cada item de la interpretacion rica (Defensa 1) al catalogo. Si la
-    referencia de un item resuelve a UN producto dominante por puntaje, le setea
-    producto_resuelto, le sube la confianza y lo saca de ambiguedades. Si matchea
-    varios o ninguno, lo deja ambiguo. Asi un producto nombrado exacto deja de
-    disparar la confirmacion, y una referencia vaga la sigue disparando. Mismo
-    criterio de cercania que anclar_a_catalogo."""
-    if not productos:
-        return resultado
-    items = resultado.get("items") or []
-    amb = resultado.get("ambiguedades") or []
-    for i, it in enumerate(items):
-        if it.get("producto_resuelto"):
-            continue
-        ref = str(it.get("referencia") or "").strip()
-        if not ref:
-            continue
-        scored = buscar_con_score(ref, productos)
-        if not scored:
-            continue
-        top = scored[0][0]
-        cercanos = [p for s, p in scored if s >= top * UMBRAL_CERCANIA]
-        if len(cercanos) == 1:
-            it["producto_resuelto"] = cercanos[0]["nombre"]
-            it["confianza"] = 0.9
-            clave = f"items[{i}]"
-            if clave in amb:
-                amb.remove(clave)
-    resultado["ambiguedades"] = amb
-    return resultado
-
-
 def anclar_a_catalogo(resultado: dict, mensaje: str, productos: list[dict],
                       umbral_alta: float = 0.85) -> dict:
     """Aterriza la interpretacion del LLM al catalogo real. Muta y devuelve

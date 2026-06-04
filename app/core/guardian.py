@@ -112,7 +112,7 @@ def clean_response(response_text: str, tienda_id: str | None = None) -> str:
     Limpia la respuesta para mostrarla al usuario:
     - Reemplaza markers [ID] residuales por nombre del producto.
     - Si el ID no existe, lo borra silenciosamente.
-    - Saca markdown (asteriscos, vinetas, encabezados) si CLEAN_MARKDOWN.
+    - Saca markdown (asteriscos, vinetas, encabezados).
     - Normaliza espacios.
 
     tienda_id es obligatorio en multi-tenant: el reemplazo de [ID] busca el
@@ -128,8 +128,7 @@ def clean_response(response_text: str, tienda_id: str | None = None) -> str:
     # Marker con corchetes: [MON-001]
     cleaned = re.sub(r"\[([A-Z]{3,4}-\d{3})\]", _replace, response_text)
     # Sacar markdown antes de colapsar espacios (necesita los saltos de linea)
-    if os.getenv("CLEAN_MARKDOWN", "true").lower() == "true":
-        cleaned = _strip_markdown(cleaned)
+    cleaned = _strip_markdown(cleaned)
     # Normalizar dobles espacios y espacios antes de signos
     cleaned = re.sub(r"\s+", " ", cleaned)
     cleaned = re.sub(r"\s+([,.!?;:])", r"\1", cleaned)

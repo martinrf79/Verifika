@@ -231,65 +231,6 @@ RESPUESTA SOLO EL JSON, SIN PREAMBULO NI EXPLICACION."""
     return prompt
 
 
-_BLOQUE_RICO = """
-
-ADEMAS, agrega al MISMO JSON estos campos nuevos. Devolve UN SOLO JSON con los campos de arriba Y estos:
-
-"intenciones": lista de una o mas de saludo, exploracion, pregunta_especifica, decision_compra, aporta_dato, pide_descuento, otra. Un mensaje real puede traer varias a la vez.
-"items": lista de productos que el cliente menciona. Cada item es un objeto con:
-   "referencia": el texto crudo con que el cliente lo nombro, por ejemplo "memorias de 45000".
-   "categoria": la categoria del catalogo si la podes inferir, o null.
-   "producto_resuelto": el nombre exacto del producto mostrado si hay UNO claro, o null.
-   "cantidad": numero entero si el cliente lo dijo, o null.
-   "confianza": 0.0 a 1.0, que tan seguro estas de a que producto se refiere. Si el cliente nombra un precio o atributo que NO existe entre los mostrados, baja la confianza, NO inventes el producto mas parecido por precio.
-"destinos": lista de destinos de envio mencionados. Cada uno es un objeto con:
-   "texto": el destino tal cual lo dijo el cliente.
-   "cajon": razona si es "caba_gba" o "interior" segun la localidad, o null si no es claro. Una localidad del interior aunque diga la palabra "capital", por ejemplo Cordoba Capital, es "interior".
-   "confianza": 0.0 a 1.0.
-"atributo_consultado": en una frase corta, la caracteristica o preocupacion puntual que pregunta el cliente, por ejemplo "compatibilidad con Windows 7", "se quema a 220", "original o replica", "envases originales para garantia", o null.
-"forma_pago": transferencia, mercadopago, efectivo, tarjeta, cuotas, o null.
-"pide_descuento": true si el cliente pide rebaja, regatea o tira un precio mas bajo, si no false.
-"ambiguedades": lista con los nombres de los slots DECISIVOS que quedaron con confianza baja y habria que confirmar con el cliente antes de cotizar, por ejemplo "items[0]" o "destinos[0]". Vacia si no hay duda.
-
-REGLA DE ORO de estos campos, no inventes. Si un dato no esta en el mensaje, dejalo null o la lista vacia. Si dudas a que producto se refiere, baja la confianza y sumalo a ambiguedades en vez de adivinar."""
-
-
-def construir_prompt_interpretador_rico(mensaje: str,
-                                         contexto_conversacional: str,
-                                         productos_mostrados: list[dict]) -> str:
-    """Prompt de interpretacion rica, Defensa 1. Reusa el prompt actual y le
-    suma el bloque de slots cerrados. Devuelve un SUPERSET del JSON de hoy."""
-    base = construir_prompt_interpretador(mensaje, contexto_conversacional,
-                                          productos_mostrados)
-    # El base termina pidiendo SOLO el JSON; insertamos los campos nuevos antes
-    # de ese cierre para que el modelo los incluya en el mismo objeto.
-    cierre = "RESPUESTA SOLO EL JSON"
-    if cierre in base:
-        cabeza, cola = base.split(cierre, 1)
-        return cabeza + _BLOQUE_RICO + "\n\n" + cierre + cola
-    return base + _BLOQUE_RICO
-
-
-def normalizar_rico(resultado: dict) -> dict:
-    """Asegura que los campos ricos existan con defaults seguros, asi el resto
-    del sistema puede leerlos sin romper aunque el modelo omita alguno."""
-    if not isinstance(resultado.get("intenciones"), list):
-        intencion = resultado.get("intencion")
-        resultado["intenciones"] = [intencion] if intencion else []
-    if not isinstance(resultado.get("items"), list):
-        resultado["items"] = []
-    if not isinstance(resultado.get("destinos"), list):
-        resultado["destinos"] = []
-    if "atributo_consultado" not in resultado:
-        resultado["atributo_consultado"] = None
-    if "forma_pago" not in resultado:
-        resultado["forma_pago"] = None
-    resultado["pide_descuento"] = bool(resultado.get("pide_descuento", False))
-    if not isinstance(resultado.get("ambiguedades"), list):
-        resultado["ambiguedades"] = []
-    return resultado
-
-
 def validar_schema(resultado: dict) -> tuple[bool, str]:
     """Valida que el JSON tenga los campos requeridos con tipos correctos.
     Devuelve tupla valido mas mensaje de error."""
@@ -359,12 +300,9 @@ async def _llamar_llm(prompt: str) -> str:
         )
         return response.choices[0].message.content or ""
 
-    # El cliente OpenAI es sincrono. Sin offload, este create() bloquea el
-    # event loop pese a estar en una funcion async. Con el flag lo mandamos
-    # a un thread.
-    if settings.ASYNC_LLM_OFFLOAD:
-        return await asyncio.to_thread(_do_call)
-    return _do_call()
+    # El cliente OpenAI es sincrono: este create() bloquearia el event loop
+    # pese a estar en una funcion async, asi que lo mandamos a un thread.
+    return await asyncio.to_thread(_do_call)
 
 
 async def interpretar_mensaje(mensaje: str,
@@ -387,12 +325,8 @@ async def interpretar_mensaje(mensaje: str,
                 f"estado real leyendo el ultimo mensaje del cliente.\n\n"
                 + contexto_conv
             )
-        if settings.INTERPRETE_RICO:
-            prompt = construir_prompt_interpretador_rico(
-                mensaje, contexto_conv, productos)
-        else:
-            prompt = construir_prompt_interpretador(
-                mensaje, contexto_conv, productos)
+        prompt = construir_prompt_interpretador(
+            mensaje, contexto_conv, productos)
 
         # Primera llamada al LLM
         raw = await _llamar_llm(prompt)
@@ -454,11 +388,6 @@ async def interpretar_mensaje(mensaje: str,
         if "respondiendo_a" not in resultado:
             resultado["respondiendo_a"] = None
 
-        # Interpretacion rica (Defensa 1): garantiza los slots nuevos con
-        # defaults seguros. No toca los campos viejos.
-        if settings.INTERPRETE_RICO:
-            resultado = normalizar_rico(resultado)
-
         # Capa dos, filtro de negacion sobre decision_compra
         if resultado["intencion"] == "decision_compra" and contiene_negacion(mensaje):
             log.info("interpretador_filtro_negacion", trace_id=trace_id,
@@ -477,22 +406,16 @@ async def interpretar_mensaje(mensaje: str,
         # Capa cuatro, anclaje al catalogo: aterriza candidatos y producto a la
         # fuente de verdad. Detras del flag. El LLM corrige el lenguaje, el codigo
         # mapea a productos reales y resuelve o pide elegir.
-        if settings.INTERPRETE_ANCLA_CATALOGO or settings.INTERPRETE_RICO:
+        if settings.INTERPRETE_ANCLA_CATALOGO:
             try:
                 from app.storage.firestore_client import get_all_products
                 from app.core.tools_context import get_current_tienda
                 tid = tienda_id or get_current_tienda()
                 productos = get_all_products(tienda_id=tid)
-                if settings.INTERPRETE_ANCLA_CATALOGO:
-                    from app.core.interprete_ancla import anclar_a_catalogo
-                    resultado = anclar_a_catalogo(
-                        resultado, mensaje, productos,
-                        umbral_alta=UMBRAL_CONFIANZA_ALTA)
-                if settings.INTERPRETE_RICO:
-                    # Ancla los items: un nombre exacto resuelve y deja de ser
-                    # ambiguo; uno vago sigue ambiguo y dispara la confirmacion.
-                    from app.core.interprete_ancla import anclar_items
-                    resultado = anclar_items(resultado, productos)
+                from app.core.interprete_ancla import anclar_a_catalogo
+                resultado = anclar_a_catalogo(
+                    resultado, mensaje, productos,
+                    umbral_alta=UMBRAL_CONFIANZA_ALTA)
             except Exception as e:
                 log.warning("interprete_ancla_error", trace_id=trace_id,
                             error=str(e)[:120])

@@ -54,7 +54,6 @@ os.environ["ASYNC_LLM_OFFLOAD"] = "true"   # clave para que la concurrencia rind
 os.environ.setdefault("USE_INTERPRETER", "true")
 os.environ.setdefault("INTERPRETE_ANCLA_CATALOGO", "true")
 os.environ.setdefault("PROMPT_VENTA", "true")
-os.environ.setdefault("INTERPRETE_RICO", "true")
 os.environ.setdefault("VERIFICADOR_SERVICIOS", "on")
 os.environ.setdefault("DIAG_TRACE", "false")
 
@@ -205,7 +204,7 @@ def main():
     qs = leer(PREGUNTAS)
     print("=== MOLINO: %d preguntas, conc %d, tienda %s, tag %s ===" %
           (len(qs), CONC, TIENDA, TAG))
-    flags = ["USE_INTERPRETER", "INTERPRETE_RICO", "INTERPRETE_ANCLA_CATALOGO",
+    flags = ["USE_INTERPRETER", "INTERPRETE_ANCLA_CATALOGO",
              "VERIFICADOR_SERVICIOS", "PROMPT_VENTA", "AUTOFIX", "VERIFICADOR_MODE"]
     print("flags:", {f: os.environ.get(f) for f in flags})
     t0 = time.time()

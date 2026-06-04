@@ -270,9 +270,8 @@ def verify_response(
     # Checker. Corrige falsos contradicha o sin_evidencia sobre numeros que ya
     # son verdad en el PROOF, el catalogo o la FAQ. Las alucinaciones numericas
     # reales no se tocan, porque su numero no esta en ninguna fuente.
-    if settings.VERIFIKA_RECONCILE_NUMBERS:
-        veredictos = _reconciliar_numeros(
-            veredictos, afirmaciones, evidence, trace_id=trace_id)
+    veredictos = _reconciliar_numeros(
+        veredictos, afirmaciones, evidence, trace_id=trace_id)
 
     # 3) Router de Confianza: calcular score y decidir
     confianza = _calcular_confianza(veredictos)

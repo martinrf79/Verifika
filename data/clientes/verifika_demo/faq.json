@@ -51,6 +51,7 @@
       "plan"
     ],
     "respuesta": "Tenemos hasta 6 cuotas sin interes con Visa y Mastercard. Hasta 12 cuotas con interes.",
+    "venta": "Lo podes llevar en 6 cuotas sin interes con Visa o Mastercard. Te armo el plan de pago?",
     "tipo": "cuantitativo",
     "valores": [
       {
@@ -93,6 +94,7 @@
       "cuanto cuesta envio"
     ],
     "respuesta": "Envio a CABA y GBA 3000 pesos. Interior segun localidad entre 5000 y 12000 pesos. Envio gratis en compras superiores a 250000 pesos.",
+    "venta": "Si te falta poco para los 250 mil, sumando algo mas el envio te sale gratis. Querés que te ayude a armarlo?",
     "tipo": "cuantitativo",
     "valores": [
       {
@@ -178,6 +180,7 @@
       "rebaja"
     ],
     "respuesta": "Tenemos 10 por ciento de descuento pagando por transferencia bancaria.",
+    "venta": "Pagando por transferencia te queda 10 por ciento mas barato. Te paso el total con ese descuento aplicado?",
     "tipo": "cuantitativo",
     "valores": [
       {
@@ -241,6 +244,7 @@
       "esperar"
     ],
     "respuesta": "Si no tenemos stock podemos tomar reserva con sena del 20 por ciento. El plazo depende del producto y proveedor.",
+    "venta": "Si te interesa y no hay stock, con una sena del 20 por ciento te lo reservo y te aviso apenas entra.",
     "tipo": "cuantitativo",
     "valores": [
       {
@@ -311,6 +315,7 @@
       "24 horas"
     ],
     "respuesta": "Hacemos envios express en CABA y GBA con costo extra y entrega en 24 horas habiles.",
+    "venta": "Si lo necesitas ya, el express en CABA y GBA te lo deja en 24 horas habiles. Lo coordinamos?",
     "tipo": "informativo",
     "valores": []
   },

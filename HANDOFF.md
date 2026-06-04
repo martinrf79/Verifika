@@ -8,6 +8,52 @@ El objetivo es un producto VENDIBLE que funcione a escala real y DEPLOYADO. "Fun
 ## CONSIGNA CATALOGO 2000 (que significa "REAL", para no trabarse)
 "Real/produccion" NO quiere decir que Martin tenga que cargar 2000 productos ni dar el inventario de una tienda. Quiere decir un catalogo de CALIDAD PRODUCCION, realista y vendible, que el ASISTENTE construye: marcas y modelos que existen de verdad en el mercado (GPUs, CPUs, monitores, perifericos, notebooks, etc. reales), precios en ARS plausibles y coherentes, descripciones buenas, y FAQ ENRIQUECIDA. Es lo OPUESTO al fixture sintetico actual verifika_2k (nombres procedurales truchos tipo "Placa MSI Go 3284"). EJECUTAR construyendolo, NO pedirle los datos a Martin. Lo unico valido a preguntar: si Martin YA tiene un export real de una tienda que quiera usar (entonces se usa ese); si no, se genera el catalogo de calidad igual, sin frenar. No fabricar basura procedural; apuntar a que parezca una tienda real y promocionable.
 
+## >>> NUCLEO FUENTE DE VERDAD (sesion 2026-06-03 cont., camino A) <<<
+
+REGLA MADRE clavada con Martin: el modelo es libre en la FORMA, nunca en el HECHO.
+Detalle y decisiones en memoria nucleo-fuente-verdad.md. Construido en paralelo,
+TODO detras de la perilla maestra NUCLEO_FUENTE_VERDAD (default OFF, prod intacto).
+
+Flujo (perilla on): el interprete SOLO entiende y da etapa de venta; el CODIGO
+enruta por suficiencia de evidencia a cuatro puertas + objecion; resuelve el hecho
+de la fuente; un 2o LLM (redactor) lo viste de venta SIN ver el input como fuente;
+gate por gravedad + autofix. Si la puerta es "seguir", delega al pipeline de hoy.
+
+Piezas nuevas (test gratis, sin Firestore ni LLM salvo el molino):
+- app/core/constitucion.py: regla madre + 10 articulos (prohibiciones + deberes de
+  venta) + tabla de GRAVEDAD. Unica fuente de reglas que leen prompt y gate.
+- app/core/faq_responder.py: resolver_puertas (responder/confirmar/consultar/
+  seguir) + matcher por RAIZ (pagar==pago) con puntaje por keyword mas larga.
+  Test scripts/prueba_faq_directo.py (12/12 + 3/3 conversion + 6/6 puertas).
+- app/core/redactor.py: capa 2, prompt con hechos verificados + etapa + directiva,
+  salida {analisis_interno, respuesta_final}. Test prueba_redactor.py 13/13.
+- app/core/objecion.py: detecta regateo / descuento_cantidad / servicio (retiro,
+  armado) y arma hechos de pivot desde la FAQ. Objecion tiene precedencia sobre
+  consultar y seguir.
+- app/core/nucleo.py: orquesta (procesar_nucleo + gate_gravedad que reusa los 3
+  verificadores + _vestir con autofix 2 vueltas + fallback al dato curado). Test
+  prueba_nucleo.py 12/12. PROPIEDAD probada: la puerta responder NUNCA termina en
+  dato inventado; si el redactor inventa o falla, cae a la verdad curada.
+- FUENTE "modificada para convertir": campo "venta" en entradas de FAQ de
+  verifika_demo = angulo de conversion curado y verdadero. OJO: el cargador a
+  Firestore (crear_cliente.py cargar_faq_json) hoy IGNORA "venta", pasarlo al
+  deployar.
+- Enganchado en orchestrator detras de NUCLEO_FUENTE_VERDAD. Off = prod identico
+  (bateria 11/11).
+
+A/B molino verifika_demo, 100 adversariales (data/_molino_demo_grande.txt):
+baseline off 92 ok / 8 fallback; nucleo+objecion ON 99 ok / 1 fallback / 0
+confirmacion, largo 255 vs 441. CERO alucinaciones, cero tecnicos. El fallback que
+queda es seguro (precio que tira el cliente sobre producto inexistente en demo).
+LECCION: el confirmar cruzado entre temas se DESACTIVO (disparaba 68% en preguntas
+compuestas; el cliente quiere las dos cosas, lo maneja el Solver).
+
+PENDIENTE del nucleo: (1) regateo que diga el precio real (necesita lookup de
+catalogo); (2) medir en set rico en preguntas PURAS de FAQ, donde mas brilla; (3)
+opcion 2 "el LLM elige el tema" quedo NO urgente (el matcher por raiz cubrio los
+misses); (4) internet en el interprete: solo para ENTENDER, gateado. NADA del
+nucleo deployado; la perilla queda OFF hasta decision de Martin.
+
 ## >>> PLAN DE CIERRE Y SIMPLIFICACION (sesion 2026-06-03, EMPEZAR POR ACA) <<<
 
 DIAGNOSTICO honesto: las soluciones estan CONSTRUIDAS Y PROBADAS LOCAL pero NO deployadas ni validadas en prod. El proyecto construye y prueba, pero no cierra el loop (este HANDOFF esta lleno de "hecho, probado local, deploy pendiente"). Por eso nunca se siente terminado. El bot NO esta listo para vender: en single-turn aguanta (red-team 0 alucinaciones graves en 77 preguntas), pero en MULTI-TURNO falla (caso Jorge: sobre-prometio dia de entrega e invento retiro en local). Los dos fallos caen en clases que YA tienen verificador (hechos y servicios) pero estan en shadow/off, por eso pasan. Ademas hay laberinto de flags (~40) que esconde fallas. NO ofrecer todavia.

@@ -7,7 +7,7 @@ con el modelo, que es interpretacion, no aritmetica, y arma los mensajes de
 pedir lo que falta y de confirmacion final. El telefono ademas tiene respaldo
 deterministico por regex.
 
-Va dentro del circuito de leads, detras del flag CIERRE_COMPLETO.
+Va dentro del circuito de leads (USE_LEADS).
 """
 import json
 

@@ -185,73 +185,43 @@ async def procesar_mensaje_para_lead(
 
     # Caso uno, lead activo esperando datos
     if lead_activo and lead_activo.get("estado") == "datos_solicitados":
-        if settings.CIERRE_COMPLETO:
-            from app.core import cierre
-            datos = cierre.extraer_datos_cliente(mensaje, trace_id)
-            cambios = {k: v for k, v in datos.items() if v}
-            if not cambios:
-                # El cliente no aporto ningun dato, lo dejamos al Solver.
-                return None, {"accion": "ninguna"}
-            cambios["ultimo_mensaje"] = mensaje[:500]
-            merged = {**lead_activo, **cambios}
-            falt = cierre.faltantes(merged)
-            if falt:
-                actualizar_lead(lead_activo["lead_id"], tienda_id, cambios)
-                log.info("lead_pidiendo_datos", lead_id=lead_activo["lead_id"],
-                         faltan=falt, trace_id=trace_id)
-                return None, {"accion": "pidiendo_datos",
-                              "lead_id": lead_activo["lead_id"],
-                              "respuesta_directa": cierre.mensaje_pedir_datos(falt)}
-            cambios["estado"] = "capturado"
+        from app.core import cierre
+        datos = cierre.extraer_datos_cliente(mensaje, trace_id)
+        cambios = {k: v for k, v in datos.items() if v}
+        if not cambios:
+            # El cliente no aporto ningun dato, lo dejamos al Solver.
+            return None, {"accion": "ninguna"}
+        cambios["ultimo_mensaje"] = mensaje[:500]
+        merged = {**lead_activo, **cambios}
+        falt = cierre.faltantes(merged)
+        if falt:
             actualizar_lead(lead_activo["lead_id"], tienda_id, cambios)
-            log.info("lead_capturado_completo", lead_id=lead_activo["lead_id"],
-                     tienda_id=tienda_id, user_id=user_id, trace_id=trace_id)
-            try:
-                await notificar_lead(
-                    tienda_id=tienda_id, user_id=user_id, canal=canal,
-                    estado="capturado", nombre=merged.get("nombre", ""),
-                    telefono=merged.get("telefono", ""),
-                    direccion=merged.get("direccion", ""),
-                    forma_pago=merged.get("forma_pago", ""),
-                    orden=merged.get("orden", ""), ultimo_mensaje=mensaje,
-                )
-            except Exception as e:
-                log.warning("notificar_lead_failed", error=str(e)[:120])
-            return None, {
-                "accion": "lead_capturado",
-                "lead_id": lead_activo["lead_id"],
-                "respuesta_directa": cierre.mensaje_confirmacion(
-                    merged, merged.get("orden", "")),
-            }
-        # Modo simple (CIERRE_COMPLETO=false): solo nombre y telefono.
-        nombre = extraer_nombre(mensaje)
-        telefono = extraer_telefono(mensaje)
-        if nombre or telefono:
-            cambios = {"estado": "capturado",
-                       "ultimo_mensaje": mensaje[:500]}
-            if nombre:
-                cambios["nombre"] = nombre
-            if telefono:
-                cambios["telefono"] = telefono
-            actualizar_lead(lead_activo["lead_id"], tienda_id, cambios)
-            log.info("lead_capturado", lead_id=lead_activo["lead_id"],
-                     tienda_id=tienda_id, user_id=user_id,
-                     tiene_nombre=bool(nombre),
-                     tiene_telefono=bool(telefono),
-                     trace_id=trace_id)
-            try:
-                await notificar_lead(
-                    tienda_id=tienda_id, user_id=user_id, canal=canal,
-                    estado="capturado", nombre=nombre, telefono=telefono,
-                    ultimo_mensaje=mensaje,
-                )
-            except Exception as e:
-                log.warning("notificar_lead_failed", error=str(e)[:120])
-            meta["accion"] = "lead_capturado"
-            meta["lead_id"] = lead_activo["lead_id"]
-            extra = "\n\nGracias, ya le aviso al dueno para coordinar con vos."
-            return extra, meta
-        return None, {"accion": "ninguna"}
+            log.info("lead_pidiendo_datos", lead_id=lead_activo["lead_id"],
+                     faltan=falt, trace_id=trace_id)
+            return None, {"accion": "pidiendo_datos",
+                          "lead_id": lead_activo["lead_id"],
+                          "respuesta_directa": cierre.mensaje_pedir_datos(falt)}
+        cambios["estado"] = "capturado"
+        actualizar_lead(lead_activo["lead_id"], tienda_id, cambios)
+        log.info("lead_capturado_completo", lead_id=lead_activo["lead_id"],
+                 tienda_id=tienda_id, user_id=user_id, trace_id=trace_id)
+        try:
+            await notificar_lead(
+                tienda_id=tienda_id, user_id=user_id, canal=canal,
+                estado="capturado", nombre=merged.get("nombre", ""),
+                telefono=merged.get("telefono", ""),
+                direccion=merged.get("direccion", ""),
+                forma_pago=merged.get("forma_pago", ""),
+                orden=merged.get("orden", ""), ultimo_mensaje=mensaje,
+            )
+        except Exception as e:
+            log.warning("notificar_lead_failed", error=str(e)[:120])
+        return None, {
+            "accion": "lead_capturado",
+            "lead_id": lead_activo["lead_id"],
+            "respuesta_directa": cierre.mensaje_confirmacion(
+                merged, merged.get("orden", "")),
+        }
 
     # Interpretador como unica fuente de verdad.
     # Solo dispara fuerte con decision_compra confirmada y confianza alta.
@@ -279,7 +249,7 @@ async def procesar_mensaje_para_lead(
         # Regla de orden: no cerrar sin precio mostrado. Si todavia no hay
         # presupuesto, registramos el interes en silencio y dejamos que el
         # Solver responda el precio. El cierre queda para el turno siguiente.
-        if settings.CIERRE_PRECIO_PRIMERO and not str(presupuesto).strip():
+        if not str(presupuesto).strip():
             lead_id = crear_lead(
                 user_id=user_id, canal=canal, tienda_id=tienda_id,
                 ultimo_mensaje=mensaje, frase_disparadora=frase,
