@@ -254,6 +254,8 @@ Tu trabajo no es solo tirar el dato, es hacer AVANZAR la venta sin inventar nada
 
 5. UNA PREGUNTA, NO UNA SUPOSICION. Si el uso es ambiguo (algo para editar, para trabajar, para jugar), pregunta UNA cosa corta antes de recomendar, no asumas el equipo ni el escenario del cliente.
 
+6. CIERRE SUGERIDO DE LA FAQ. Si query_faq devuelve un campo sugerencia_venta, ese es un cierre comercial YA redactado y verificado contra la politica de la tienda (cuotas, envio gratis por monto, descuento por transferencia, reserva con sena, express). Usalo o adaptalo con tus palabras para avanzar hacia el cierre cuando venga al caso. Es texto seguro: no inventes otros beneficios ni cambies sus numeros, y no lo fuerces si no aplica al momento de la charla.
+
 Todo esto SIN romper las reglas 1 a 8: cero numeros de cabeza, cero datos inventados, cero promesas fuera de la FAQ. Vender es ordenar bien lo que ES verdad, nunca agregar lo que no."""
 
 
@@ -273,6 +275,17 @@ def _build_system_prompt(tienda_id: str | None) -> str:
                         tienda_id=tienda_id, error=str(e)[:100])
 
     prompt = _SYSTEM_PROMPT_TEMPLATE.format(business_name=business_name)
+    # Constitucion como tabla suprema: el mismo texto canonico que el gate
+    # enforcea por codigo, leido tambien por el Solver. Va arriba de todo, como
+    # marco que manda sobre las reglas operativas 1-9 de abajo.
+    if settings.PROMPT_CONSTITUCION:
+        try:
+            from app.core.constitucion import constitucion_como_prompt
+            prompt = (constitucion_como_prompt()
+                      + "\n\nLas reglas de abajo son el COMO operativo de esta "
+                      "constitucion.\n\n" + prompt)
+        except Exception as e:
+            log.warning("constitucion_prompt_error", error=str(e)[:120])
     prompt += _REGLA_PRESENTACION
     if settings.PROMPT_VENTA:
         prompt += _REGLA_VENTA
@@ -455,6 +468,35 @@ async def run_agent(user_message: str,
                 "name": fname,
                 "content": json.dumps(result, ensure_ascii=False),
             })
+
+    # CIERRE FORZADO al pegar el tope de iteraciones. En vez de tirarle al
+    # cliente el mensaje de error tecnico (que es un error VISIBLE: corta la
+    # charla a mitad), pedimos UNA respuesta final SIN tools para que el modelo
+    # cierre con lo que ya junto de las herramientas. Es seguro: cualquier cifra
+    # sin respaldo la gatea el verificador determinista despues, en el
+    # orchestrator. Flag CIERRE_FORZADO_MAX_ITER, default off.
+    if settings.CIERRE_FORZADO_MAX_ITER:
+        try:
+            messages.append({"role": "user", "content": (
+                "[Sistema: cerra AHORA con la informacion que ya obtuviste de las "
+                "herramientas. Da la mejor respuesta posible SIN llamar mas "
+                "funciones. NO inventes numeros, precios ni datos: si algo no lo "
+                "pudiste calcular o confirmar, decilo con honestidad y ofrece el "
+                "siguiente paso concreto.]")})
+            resp_final = await asyncio.to_thread(
+                _call_llm, client, model_name, messages, tools_schema, "none")
+            txt = (resp_final.choices[0].message.content or "").strip()
+            if txt:
+                log.info("agent_cierre_forzado_ok", trace_id=trace_id,
+                         iterations=iterations, tools_called=len(tools_called))
+                return txt, {
+                    "tools_called": tools_called,
+                    "iterations": iterations,
+                    "cierre_forzado": True,
+                }
+        except Exception as e:
+            log.warning("agent_cierre_forzado_error", trace_id=trace_id,
+                        error=str(e)[:160])
 
     log.warning("agent_max_iterations_reached", trace_id=trace_id,
                 iterations=iterations, tools_called=len(tools_called))

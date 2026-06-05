@@ -588,6 +588,16 @@ def _faq_resp(tema: str, data: dict) -> dict:
         resp["conceptos_disponibles"] = [
             v.get("concepto") for v in data.get("valores", []) if v.get("concepto")
         ]
+    # CAPA DE VENTA de la fuente de verdad. La FAQ trae, en algunos temas, un
+    # cierre comercial ya redactado y verificado contra la politica (campo
+    # 'venta'). Hasta ahora ese texto era dato muerto: query_faq no lo devolvia,
+    # asi que el Solver nunca lo veia. Con PROMPT_VENTA on se lo pasamos como
+    # sugerencia_venta para que avance la venta sin inventar (la Regla 9 del
+    # prompt le dice como usarlo). Sin el flag, la respuesta es identica a antes.
+    if settings.PROMPT_VENTA:
+        venta = (data.get("venta", "") or "").strip()
+        if venta:
+            resp["sugerencia_venta"] = venta
     return resp
 
 

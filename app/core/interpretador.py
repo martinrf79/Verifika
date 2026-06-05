@@ -33,6 +33,34 @@ UMBRAL_CONFIANZA_MEDIA = float(os.getenv("INTERPRETER_UMBRAL_MEDIA", "0.6"))
 INTENCIONES_VALIDAS = {"saludo", "exploracion", "pregunta_especifica", "aporta_dato",
                         "decision_compra", "otra"}
 
+# Estados que indican una charla YA en curso. Si la conversacion llego a
+# cualquiera de estos, no puede "volver" a saludo sin perder el hilo.
+ESTADOS_EN_CURSO = {"explorando", "esperando_confirmacion", "esperando_datos",
+                    "derivar_humano", "posventa"}
+
+
+def corregir_estado_regresion(estado_nuevo: str | None,
+                              estado_anterior: str | None,
+                              hay_historial: bool) -> str | None:
+    """Una conversacion en curso NO puede volver a 'saludo'.
+
+    El estado lo fija el LLM-interpretador y el orchestrator se lo inyecta al
+    solver, cuya Regla #0 dice 'saludo, devolve el saludo y ofrece ayuda corta'.
+    Si el interpretador lee mal un turno de mitad de charla como saludo (caso
+    real: el cliente putea por el envio en el turno 11 y el bot contesta
+    '¡Hola! Soy vendedor...'), el solver se reinicia y pierde el hilo. Esto es
+    la falla (e), contradiccion entre turnos.
+
+    Regla determinista: si ya hubo historial y el interpretador devuelve saludo,
+    degradamos al estado anterior si era en curso, o a 'explorando'. El saludo
+    solo es valido al arranque, cuando todavia no hay turnos previos.
+    """
+    if estado_nuevo == "saludo" and hay_historial:
+        if estado_anterior in ESTADOS_EN_CURSO:
+            return estado_anterior
+        return "explorando"
+    return estado_nuevo
+
 # Frases nucleo de negacion o postergacion. Lista corta, solo se aplica
 # como veto sobre decision_compra del LLM, no como decisor.
 FRASES_NEGACION_NUCLEO = [
@@ -244,8 +272,16 @@ def validar_schema(resultado: dict) -> tuple[bool, str]:
         return False, "confianza no es numero"
     if confianza < 0 or confianza > 1:
         return False, f"confianza fuera de rango, recibido {confianza}"
+    # candidatos: el LLM a veces lo manda null o como string suelto en vez de
+    # lista. Antes eso fallaba la validacion y disparaba un RETRY al modelo
+    # (latencia y costo de gusto). Lo coercionamos en el lugar: null/vacio -> [],
+    # string -> [string]. Solo un tipo realmente raro (dict, numero) falla.
     candidatos = resultado.get("candidatos", [])
-    if not isinstance(candidatos, list):
+    if candidatos is None:
+        resultado["candidatos"] = []
+    elif isinstance(candidatos, str):
+        resultado["candidatos"] = [candidatos.strip()] if candidatos.strip() else []
+    elif not isinstance(candidatos, list):
         return False, "candidatos no es lista"
     return True, ""
 

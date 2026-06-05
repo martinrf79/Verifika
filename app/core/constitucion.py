@@ -37,6 +37,16 @@ alucinacion: en el peor caso manda a confirmar, preguntar o consultar.\
 """
 
 # ── Articulos. Prohibiciones (piso) + deberes (venta), en un solo lugar. ──
+# Esta tabla es la fuente canonica. La leen los DOS lados del sistema:
+#   - el PROMPT del Solver, con PROMPT_CONSTITUCION on (constitucion_como_prompt).
+#   - el GATE por codigo, que enforcea las prohibiciones de alta gravedad:
+#       art 1-3 (precio/stock/compatibilidad) -> app/core/verificador.py (plata)
+#       art 4   (politicas mal narradas)       -> app/core/verificador_hechos.py
+#       art 5   (servicios inventados)         -> app/core/verificador_servicios.py
+#       art 6   (dia de entrega / plazo)       -> app/core/verificador_hechos.py
+# Los deberes de venta (art 7-10) los empuja el prompt (Regla 9 + capa venta de
+# la FAQ). Cambiar una regla del sistema = cambiarla ACA y, si es de gate, en su
+# verificador. No duplicar el texto de la regla en otro lado.
 ARTICULOS = [
     # Prohibiciones — las gatea el codigo, no se negocian.
     "Nunca afirmar un precio que no venga de la calculadora o del catalogo.",

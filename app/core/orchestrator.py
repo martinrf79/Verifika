@@ -322,6 +322,18 @@ async def process_message(user_id: str, raw_message: str,
             interpreter_short_circuit = False
         timings["interpret_ms"] = int((time.perf_counter() - _ts_interp) * 1000)
 
+        # Guard anti pierde-el-hilo: una charla en curso no vuelve a 'saludo'.
+        # Evita que el solver se reinicie con un '¡Hola! Soy vendedor...' a mitad
+        # de conversacion por una mala lectura del interpretador (falla e).
+        if settings.ESTADO_NO_REGRESA_SALUDO and history:
+            from app.core.interpretador import corregir_estado_regresion
+            _estado_corr = corregir_estado_regresion(
+                estado_nuevo, estado_anterior, hay_historial=True)
+            if _estado_corr != estado_nuevo:
+                log.info("estado_regresion_corregida", trace_id=trace_id,
+                         de=estado_nuevo, a=_estado_corr)
+                estado_nuevo = _estado_corr
+
     # ─── NUCLEO FUENTE DE VERDAD (cuatro puertas) ───
     # Camino A: el codigo resuelve el hecho de la fuente y enruta por una de
     # cuatro puertas (responder / confirmar / consultar / seguir). Tiene
@@ -508,7 +520,8 @@ async def process_message(user_id: str, raw_message: str,
         _correr_checker = (
             USE_VERIFIKA and response_text
             and response_text != settings.FALLBACK_MESSAGE
-            and (VERIFICADOR_MODE != "on" or VERIFIKA_CHECKER_ADVISORY)
+            and (VERIFICADOR_MODE != "on" or VERIFIKA_CHECKER_ADVISORY
+                 or settings.CHECKER_GATEA)
         )
         if _correr_checker:
             try:
@@ -733,6 +746,80 @@ async def process_message(user_id: str, raw_message: str,
             log.info("hechos_shadow", trace_id=trace_id,
                      accion=hechos_result.get("accion"),
                      problemas=hechos_result.get("problemas", []))
+
+        # ─── GATE GENERAL POR GRAVEDAD (Checker de Verifika) ───
+        # El mecanismo GENERAL de grounding: el Checker marca las afirmaciones
+        # sin respaldo en la evidencia y el gate por gravedad decide. Caza de una
+        # sola forma lo que los verificadores deterministas cazan de a uno
+        # (producto inventado, promesa de dia, servicio o politica sin respaldo).
+        # Los numeros ya los reconcilio el pipeline contra la calculadora, asi
+        # que aca no se pelea con la plata. Con AUTOFIX repromptea antes del
+        # fallback: el contrario de inventar no es callar, es decir lo verdadero.
+        if settings.CHECKER_GATEA and verifika_result is not None:
+            try:
+                from app.core.gate_gravedad import (
+                    decidir_gate, textos_no_respaldados)
+                _gate = decidir_gate(
+                    verifika_result.get("veredictos", []),
+                    verifika_result.get("afirmaciones", []),
+                    trace_id=trace_id)
+            except Exception as e:
+                log.error("checker_gate_error", trace_id=trace_id,
+                          error=str(e)[:160])
+                _gate = {"bloquear": False, "problemas": []}
+            if (_gate["bloquear"]
+                    and final_response not in (
+                        settings.VERIFIKA_FALLBACK_MESSAGE,
+                        settings.FALLBACK_MESSAGE)):
+                _no_resp = textos_no_respaldados(_gate)
+                log.info("checker_gate_bloqueo", trace_id=trace_id,
+                         problemas=[f"{p['tipo']}:{p['motivo']}"
+                                    for p in _gate["problemas"]],
+                         textos=_no_resp[:6])
+                _arreglado_chk = False
+                if settings.AUTOFIX:
+                    try:
+                        correctivo = (
+                            mensaje_enriquecido
+                            + "\n\n[Sistema: en tu respuesta anterior estas "
+                            f"afirmaciones NO tienen respaldo en la evidencia de "
+                            f"las herramientas: {_no_resp}. No las afirmes. Si es "
+                            "un producto, NO lo nombres si no aparece en el "
+                            "catalogo (usa search_products). Si es una politica o "
+                            "un plazo, cita SOLO lo que diga la FAQ (usa query_faq) "
+                            "sin extender ni prometer un dia. Rehace la respuesta "
+                            "solo con datos respaldados.]")
+                        resp_c, meta_c = await run_agent(
+                            correctivo, history, trace_id,
+                            tienda_id=tid, user_id=user_id)
+                        clean_c = clean_response(resp_c, tienda_id=tid)
+                        ev_c = _build_evidence_for_verifika(
+                            meta_c.get("tools_called", []), tid)
+                        for p in proofs_memoria:
+                            ev_c.append({"tipo": "proof", "tool": "memoria",
+                                         "proof": p})
+                        vc2 = await asyncio.to_thread(
+                            verify_response,
+                            respuesta_solver=clean_c, evidence=ev_c,
+                            trace_id=trace_id,
+                            fallback_message=settings.VERIFIKA_FALLBACK_MESSAGE)
+                        g2 = decidir_gate(vc2.get("veredictos", []),
+                                          vc2.get("afirmaciones", []),
+                                          trace_id=trace_id)
+                        vr_c = (verificar_respuesta(clean_c, ev_c, trace_id=trace_id)
+                                if VERIFICADOR_MODE != "off" else {"ok": True})
+                        if not g2["bloquear"] and vr_c.get("ok", True):
+                            final_response = clean_c
+                            _arreglado_chk = True
+                            log.info("checker_gate_autofix_ok", trace_id=trace_id)
+                        else:
+                            log.info("checker_gate_autofix_fallo", trace_id=trace_id,
+                                     problemas=[p["tipo"] for p in g2["problemas"]])
+                    except Exception as e:
+                        log.error("checker_gate_autofix_error", trace_id=trace_id,
+                                  error=str(e)[:200])
+                if not _arreglado_chk:
+                    final_response = settings.VERIFIKA_FALLBACK_MESSAGE
     else:
         validation = {"is_clean": True}
         verifika_result = None

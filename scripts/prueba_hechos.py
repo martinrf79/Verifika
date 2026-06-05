@@ -45,7 +45,15 @@ CASOS = [
     ("Lo preparamos para que salga a principio de semana y lo recibis el "
      "jueves.", True, "jorge: recibis el jueves"),
     ("El envio al interior tarda 24 horas.", True, "interior en horas"),
+    ("Si pagas hoy por transferencia, el pedido sale manana y llega entre jueves "
+     "y viernes, justo antes del sabado. No te puedo asegurar un dia exacto "
+     "porque el correo no lo garantiza.", True,
+     "promete dia + hedge en oracion posterior"),
+    ("Con el express, si pagas hoy se acredita en el dia y te lo deja manana "
+     "martes sin falta.", True, "molino: te lo deja manana martes (verbo dejar)"),
     # --- DEBEN PASAR (correctos o neutros) ---
+    ("Para este jueves no llega, recien la semana que viene.", False,
+     "niega el dia en la misma clausula"),
     ("El envio al interior tarda entre 4 y 7 dias habiles por Andreani y OCA. "
      "No te puedo confirmar un dia exacto porque depende del correo.",
      False, "cita el plazo correcto"),

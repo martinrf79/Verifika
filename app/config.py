@@ -148,6 +148,19 @@ class Settings(BaseModel):
     # app/core/faq_responder.py. false: todo va al Solver como hoy.
     FAQ_DIRECTO: bool = os.getenv("FAQ_DIRECTO", "false").lower() == "true"
 
+    # Guard anti pierde-el-hilo. Una conversacion en curso no puede volver a
+    # estado 'saludo'. El estado lo fija el LLM-interpretador y se lo inyecta al
+    # solver, cuya Regla #0 dice 'saludo, devolve el saludo'. Si el interpretador
+    # lee mal un turno de mitad de charla como saludo, el solver se reinicia con
+    # un '¡Hola! Soy vendedor...' y pierde el contexto (falla e, contradiccion
+    # entre turnos, vista en el molino). Con el flag on, si ya hubo historial y el
+    # estado vuelve a saludo, se degrada a 'explorando' o al estado en curso
+    # anterior, en app/core/interpretador.corregir_estado_regresion. Solo aplica
+    # con USE_INTERPRETER. false: el estado pasa tal cual lo da el interpretador.
+    ESTADO_NO_REGRESA_SALUDO: bool = (
+        os.getenv("ESTADO_NO_REGRESA_SALUDO", "false").lower() == "true"
+    )
+
     # PERILLA MAESTRA del nucleo nuevo "fuente de verdad" (camino A). Cuando esta
     # en on, el mensaje corre por el flujo de cuatro puertas: un LLM entiende
     # (solo entiende), el codigo enruta por suficiencia de evidencia, el codigo
@@ -272,6 +285,49 @@ class Settings(BaseModel):
     # Default false: el prompt se comporta igual que hoy. Se mide con A/B en
     # scripts/prueba_bot_completo.py antes de prenderlo en prod.
     PROMPT_VENTA: bool = os.getenv("PROMPT_VENTA", "false").lower() == "true"
+
+    # CHECKER COMO GATE GENERAL POR GRAVEDAD. El Checker de Verifika (Proposer +
+    # Checker LLM) es el mecanismo GENERAL de grounding: descompone la respuesta
+    # en afirmaciones tipadas e indica cuales no tiene respaldo en la evidencia,
+    # cubriendo de una sola forma las infinitas redacciones (producto inventado,
+    # promesa de dia que extiende el plazo, servicio o politica sin respaldo) que
+    # los verificadores deterministas cazan con regex de a una. Con el flag on, el
+    # Checker corre AUNQUE VERIFICADOR_MODE=on y su salida pasa por el gate por
+    # gravedad (app/core/gate_gravedad.py): bloquea contradicha de cualquier tipo
+    # y sin_evidencia de tipos duros (precio, stock, producto, politica), no las
+    # caracteristicas blandas. Si AUTOFIX, repromptea antes del fallback. Cuesta
+    # dos llamadas LLM extra por turno (Proposer + Checker): se prende cuando se
+    # prioriza robustez sobre tokens. Los numeros siguen mandados por la
+    # calculadora via reconciliacion numerica del pipeline. false: como hoy.
+    CHECKER_GATEA: bool = (
+        os.getenv("CHECKER_GATEA", "false").lower() == "true"
+    )
+
+    # Constitucion como tabla unica de reglas en el prompt del Solver. Hoy las
+    # reglas del Solver estan dispersas en el prompt (reglas 1-9) y, por otro
+    # lado, el gate (verificadores de plata, servicios y hechos) las enforcea por
+    # codigo. La constitucion (app/core/constitucion.py) es la tabla canonica que
+    # mezcla las prohibiciones que gatea el codigo con los deberes de venta. Con
+    # el flag on, ese mismo texto se inyecta como preambulo supremo del prompt,
+    # asi el Solver LEE exactamente las reglas que despues gatea el codigo (una
+    # sola fuente). Las reglas 1-9 quedan como el COMO operativo (buscar primero,
+    # calculate_total, etc.); la constitucion es el QUE manda sobre todo.
+    # false: el prompt se comporta igual que hoy, sin el preambulo.
+    PROMPT_CONSTITUCION: bool = (
+        os.getenv("PROMPT_CONSTITUCION", "false").lower() == "true"
+    )
+
+    # Cierre forzado al pegar el tope de iteraciones del Solver. Hoy, si el
+    # Solver agota MAX_TOOL_ITERATIONS (caso de calculo complejo: multi-producto
+    # mas rango de envio mas descuento), devuelve el FALLBACK_MESSAGE "tuve un
+    # problema tecnico" a mitad de charla, que es un error VISIBLE para el
+    # cliente. Con el flag on, antes de rendirse hace UNA llamada final sin tools
+    # para cerrar con lo que ya junto. Seguro: el verificador determinista gatea
+    # despues cualquier cifra sin respaldo. En app/core/agent.py. false: se
+    # comporta igual que hoy (manda el fallback).
+    CIERRE_FORZADO_MAX_ITER: bool = (
+        os.getenv("CIERRE_FORZADO_MAX_ITER", "false").lower() == "true"
+    )
 
     # ────────────────────────────────────────────────────────
     # AUTOFIX — autocorreccion ante bloqueo del verificador

@@ -8,6 +8,35 @@ El objetivo es un producto VENDIBLE que funcione a escala real y DEPLOYADO. "Fun
 ## CONSIGNA CATALOGO 2000 (que significa "REAL", para no trabarse)
 "Real/produccion" NO quiere decir que Martin tenga que cargar 2000 productos ni dar el inventario de una tienda. Quiere decir un catalogo de CALIDAD PRODUCCION, realista y vendible, que el ASISTENTE construye: marcas y modelos que existen de verdad en el mercado (GPUs, CPUs, monitores, perifericos, notebooks, etc. reales), precios en ARS plausibles y coherentes, descripciones buenas, y FAQ ENRIQUECIDA. Es lo OPUESTO al fixture sintetico actual verifika_2k (nombres procedurales truchos tipo "Placa MSI Go 3284"). EJECUTAR construyendolo, NO pedirle los datos a Martin. Lo unico valido a preguntar: si Martin YA tiene un export real de una tienda que quiera usar (entonces se usa ese); si no, se genera el catalogo de calidad igual, sin frenar. No fabricar basura procedural; apuntar a que parezca una tienda real y promocionable.
 
+## >>> ESTADO EN PROD AL CIERRE (sesion 2026-06-03) <<<
+
+DEPLOYADO y andando en vivo (Cloud Run agente-bot, rev 00156-n6b):
+- TIENDA_ID=verifika_prod: el bot ATIENDE con el catalogo de produccion de 880
+  productos reales (cargado a Firestore con crear_cliente.py). Reversible a
+  verifika_demo con --update-env-vars=TIENDA_ID=verifika_demo.
+- Modelo deepseek-v4-flash (migracion hecha). Fix de cuotas + regla Jorge (prompt)
+  activos. Fix de leads (pausar cierre en pregunta nueva) activo.
+- VERIFICADOR_HECHOS=shadow, VERIFICADOR_SERVICIOS=shadow (midiendo, no gatean).
+- NUCLEO_FUENTE_VERDAD=OFF: el nucleo nuevo NO corre en prod (construido y
+  validado local). PROMPT_VENTA=true, VERIFICADOR_MODE=on, AUTOFIX=true.
+- Rama simplify/remove-dead-flags pusheada a origin (GitHub Verifika).
+- PROBADO EN VIVO ok: catalogo (880, conteos y precios reales), RTX 4070 multi
+  opcion, Ryzen 7800X3D, iPhone negado honesto, multi-turno con dia de entrega
+  (NO prometio el jueves), regateo. Cero alucinaciones.
+
+PENDIENTE/PROXIMO (definido con Martin, el vuelve a Claude solo para mejoras):
+- Sistema de pruebas FUERA de Claude, foco MULTI-TURNO (simulador conversacional:
+  cliente-LLM con persona+objetivo, juez-LLM contra ficha+constitucion). Opciones
+  recomendadas: promptfoo o DeepEval (juez con deepseek/v4-flash, barato), +
+  mantener el molino deterministico (gratis) y bateria/servicios/hechos.
+- memory-engine (proyecto en reposo): integrarlo como OTRA fuente de verdad
+  (memoria del cliente: compras/preferencias) DETRAS de la misma constitucion y
+  gate. "Apartados por cliente" = bundle de fuente de verdad por tienda
+  (catalogo+FAQ+politicas) y opcional memoria por cliente final. Nunca memoria
+  que el modelo crea libre: es fuente, el modelo viste.
+- Prender el nucleo en prod (Fase 4): ventana de bajo trafico, NUCLEO_FUENTE_VERDAD
+  =on, mirar logs (DIAG_TRACE on), rollback por perilla.
+
 ## >>> NUCLEO FUENTE DE VERDAD (sesion 2026-06-03 cont., camino A) <<<
 
 REGLA MADRE clavada con Martin: el modelo es libre en la FORMA, nunca en el HECHO.

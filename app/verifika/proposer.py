@@ -9,6 +9,7 @@ Una "afirmación atómica" es una oración o cláusula que afirma UN hecho concr
 - "Tenemos varios monitores incluyendo el G7 a 280.000 y otros más baratos"  ← NO, son varias
 """
 import json
+import re
 from typing import Optional
 
 from app.verifika.llm_adapter import llm_complete
@@ -17,6 +18,28 @@ from app.logger import get_logger
 
 log = get_logger(__name__)
 settings = get_settings()
+
+# Objeto-afirmacion mas interno: {...} sin llaves anidadas. Cada afirmacion del
+# Proposer es plana (id, texto, tipo), asi que esto matchea una por una.
+_OBJ_RE = re.compile(r"\{[^{}]*\}")
+
+
+def salvage_afirmaciones(content: str) -> list[dict]:
+    """Rescata las afirmaciones COMPLETAS de un JSON truncado. Si el modelo se
+    queda sin tokens y corta la salida a la mitad de un string, json.loads falla
+    y perdiamos TODAS las afirmaciones del turno: el Checker se quedaba sin nada
+    que verificar y la respuesta pasaba sin gatear. Esto extrae los objetos
+    {..."texto"...} que SI cerraron y descarta solo el ultimo cortado. Codigo
+    puro, sin LLM."""
+    out: list[dict] = []
+    for m in _OBJ_RE.finditer(content or ""):
+        try:
+            o = json.loads(m.group(0))
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if isinstance(o, dict) and o.get("texto"):
+            out.append(o)
+    return out
 
 
 # Evita que el Proposer convierta una cantidad pedida por el cliente en una
@@ -100,7 +123,9 @@ def propose_claims(respuesta_texto: str,
             messages=messages,
             role="proposer",
             temperature=0.0,  # determinista
-            max_tokens=600,
+            # 1200: una respuesta larga del Solver (presupuesto + objeciones)
+            # genera muchas afirmaciones y 600 tokens truncaba el JSON.
+            max_tokens=1200,
             trace_id=trace_id,
         )
     except Exception as e:
@@ -118,15 +143,21 @@ def propose_claims(respuesta_texto: str,
 
     try:
         parsed = json.loads(content)
+        afirmaciones = parsed.get("afirmaciones", [])
+        if not isinstance(afirmaciones, list):
+            log.warning("proposer_afirmaciones_not_list", trace_id=trace_id)
+            return []
     except json.JSONDecodeError as e:
-        log.warning("proposer_json_invalid", trace_id=trace_id,
-                    error=str(e)[:100], content_preview=content[:200])
-        return []
-
-    afirmaciones = parsed.get("afirmaciones", [])
-    if not isinstance(afirmaciones, list):
-        log.warning("proposer_afirmaciones_not_list", trace_id=trace_id)
-        return []
+        # JSON truncado (el modelo se quedo sin tokens): rescatamos las
+        # afirmaciones que SI cerraron en vez de perder todo el turno.
+        afirmaciones = salvage_afirmaciones(content)
+        if afirmaciones:
+            log.warning("proposer_json_salvaged", trace_id=trace_id,
+                        rescatadas=len(afirmaciones), error=str(e)[:80])
+        else:
+            log.warning("proposer_json_invalid", trace_id=trace_id,
+                        error=str(e)[:100], content_preview=content[:200])
+            return []
 
     # Validación básica de estructura
     afirmaciones_validas = []

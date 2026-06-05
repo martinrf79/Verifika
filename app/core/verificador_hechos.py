@@ -39,8 +39,14 @@ _DIAS = ("lunes", "martes", "miercoles", "jueves", "viernes", "sabado",
 # deseo, no promesa. "llega/llegara/llego" (indicativo) si es promesa. Esto saca
 # de raiz una familia de falsos positivos sin enumerar negaciones una por una.
 _ARRIBO_RE = re.compile(
-    r"\b(lleg(?!ue)\w+|recib[íi]s|recibe|entreg\w+|despach\w+|lo ten[ée]s|"
-    r"te llega|sale el|sali[óo] el|estaria llegando|estar[íi]a en tus manos)\b")
+    r"(\blleg(?!ue)\w+|\brecib[íi]s|\brecibe|\bentreg\w+|\bdespach\w+|"
+    r"\blo ten[ée]s|\bte llega|\bsale el|\bsali[óo] el|\bestaria llegando|"
+    # "dejar" en sentido de ENTREGA: "te lo deja", "te la dejamos", "deja en tu
+    # casa". Cuidado: NO matchea "te dejo el descuento" (no lleva lo/la) ni
+    # "dejame consultar" (lo veta _NO_PROMESA_RE). Falta visto en el molino:
+    # "el express te lo deja mañana martes sin falta".
+    r"te l[oa]s? dej\w+|dej\w+ en (tu|el|la)\b|"
+    r"en tus manos|en tu (casa|puerta|domicilio))")
 # Marcas de que es HORARIO DE ATENCION, no entrega. Si aparecen en la ventana,
 # no se marca el dia.
 _HORARIO_RE = re.compile(r"atend\w+|horario|\bhs\b|de \d+ a \d+|a viernes")
@@ -111,9 +117,28 @@ def construir_ficha(evidence: list[dict]) -> dict:
     return ficha
 
 
+def _clausula_derecha(resp: str, fin_dia: int) -> str:
+    """Texto desde el final del dia hasta el cierre de la cláusula: el primer
+    punto, signo o salto, o 25 caracteres, lo que llegue antes. Asi un hedge que
+    el bot agrega en OTRA oracion ('...jueves. No te puedo asegurar el dia') NO
+    cuenta como negacion del dia, pero una negacion pegada en la misma cláusula
+    ('el jueves no llega') si."""
+    cola = resp[fin_dia:fin_dia + 26]
+    corte = re.search(r"[.!?\n;]", cola)
+    if corte:
+        cola = cola[:corte.start()]
+    return cola
+
+
 def _promete_dia_entrega(resp: str) -> Optional[str]:
     """Devuelve el dia si la respuesta COMPROMETE la entrega un dia puntual de la
-    semana (lo que el correo no garantiza), sin confundir con horario de atencion."""
+    semana (lo que el correo no garantiza), sin confundir con horario de atencion.
+
+    La negacion/condicional solo suprime la marca si esta en la MISMA cláusula que
+    el dia: a la izquierda (ventana previa) o pegada a la derecha hasta el cierre
+    de oracion. Un hedge en una oracion POSTERIOR ('llega el jueves. Igual no te
+    aseguro el dia') ya no cancela una llegada afirmativa, que era justo el agujero
+    por el que se colaba 'llega entre jueves y viernes' del red-team."""
     for dia in _DIAS:
         for m in re.finditer(r"\b" + dia + r"\b", resp):
             ini = max(0, m.start() - 45)
@@ -121,10 +146,15 @@ def _promete_dia_entrega(resp: str) -> Optional[str]:
             ventana = resp[ini:fin]
             if _HORARIO_RE.search(ventana):
                 continue
-            if _NO_PROMESA_RE.search(ventana):
+            if not _ARRIBO_RE.search(ventana):
                 continue
-            if _ARRIBO_RE.search(ventana):
-                return dia
+            # Negacion en la misma cláusula: izquierda (antes del dia) + cola
+            # pegada (hasta el punto). El hedge de la oracion siguiente queda afuera.
+            izquierda = resp[ini:m.start()]
+            clausula = izquierda + _clausula_derecha(resp, m.end())
+            if _NO_PROMESA_RE.search(clausula):
+                continue
+            return dia
     return None
 
 

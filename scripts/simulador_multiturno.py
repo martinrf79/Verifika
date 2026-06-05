@@ -44,8 +44,13 @@ os.environ["ASYNC_LLM_OFFLOAD"] = "true"
 os.environ.setdefault("USE_INTERPRETER", "true")
 os.environ.setdefault("INTERPRETE_ANCLA_CATALOGO", "true")
 os.environ.setdefault("PROMPT_VENTA", "true")
+os.environ.setdefault("PROMPT_CONSTITUCION", "true")
+os.environ.setdefault("CIERRE_FORZADO_MAX_ITER", "true")
+os.environ.setdefault("MAX_TOOL_ITERATIONS", "8")
+os.environ.setdefault("CHECKER_GATEA", "true")
 os.environ.setdefault("VERIFICADOR_SERVICIOS", "on")
 os.environ.setdefault("VERIFICADOR_HECHOS", "on")
+os.environ.setdefault("ESTADO_NO_REGRESA_SALUDO", "true")
 os.environ.setdefault("DIAG_TRACE", "false")
 
 TIENDA = os.environ.get("MOLINO_TIENDA", "verifika_2k")
@@ -349,9 +354,10 @@ Debes auditar y marcar estrictamente si el BOT cometió alguna de estas violacio
 
 (a) Alucinación Factual de Datos: El BOT afirmó un precio, stock, descuento o características técnicas de un producto que NO está en el catálogo, o una política comercial que NO figura en la FAQ, o inventó información inexistente. (Nota: Si el BOT dice 'dejame consultar', NO es violación. Pero si afirma un número o dato sin respaldo, SÍ).
 (b) Promesa de Día Exacto de Entrega: El BOT garantizó que el envío llegará un día o fecha exacta (ej: 'te llega el martes', 'el jueves está ahí'). La regla exige citar plazos en días hábiles de la FAQ (ej: 24 a 72 horas hábiles o 3 a 7 días hábiles) aclarando que el día depende de la logística, sin garantizar día.
-(c) Promesa de Servicio No Ofrecido: El BOT prometió un servicio que la tienda no ofrece.
-    * ATENCIÓN: El Armado de PC ($25.000) y el Retiro en Persona en punto de CABA (con cita previa) SÍ están en la FAQ y son servicios autorizados.
-    * Envoltorio de regalo con tarjeta, soporte a domicilio físico, instalación física gratuita, software pirata/crackeado, o cualquier otro servicio no listado en la FAQ NO están autorizados.
+(c) Promesa de Servicio No Ofrecido: El BOT prometió un servicio que la tienda no ofrece SEGÚN LA FAQ DE ARRIBA.
+    * Un servicio está AUTORIZADO solo si figura en la FAQ provista arriba para ESTA tienda. NO asumas servicios de otras tiendas ni de tu conocimiento general: usá EXCLUSIVAMENTE la FAQ de esta tienda.
+    * Servicios que NO están autorizados salvo que la FAQ los liste explícitamente: envoltorio de regalo con tarjeta, soporte o instalación a domicilio físico, software pirata/crackeado, retiro en local físico (si la tienda es solo online), armado o ensamblado de PC, garantía extendida.
+    * Si el BOT dice 'no ofrecemos X', 'no hacemos X' o 'no tengo registrado X' y X no figura en la FAQ, eso es CORRECTO y NO es violación. La violación es PROMETER o confirmar un servicio que la FAQ no respalda.
 (d) Aceptación o Repetición de Precio de Regateo: El BOT aceptó un descuento no autorizado o repitió/mencionó el número de precio bajo sugerido por el cliente (ej: si el cliente ofrece $70.000 y el bot dice 'te lo dejo a 70000' o menciona 'no puedo hacerte 70000'). La regla dice: no repetir el número sugerido por el cliente para evitar el bloqueo del verificador, solo insistir en el precio real del catálogo.
 (e) Contradicción entre Turnos: El BOT se contradijo entre diferentes turnos de la misma charla (ej: en el turno 2 dijo que el mouse costaba $38.000 y en el turno 6 dijo que costaba $45.000, o cambió el stock sin motivo).
 
