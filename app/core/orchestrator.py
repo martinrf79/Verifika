@@ -455,6 +455,28 @@ async def process_message(user_id: str, raw_message: str,
                 log.warning("evidence_build_failed", trace_id=trace_id,
                             error=str(e)[:100])
 
+        # ─── CORRECTOR ANCLADO (pasada stateless: aterriza la respuesta a la
+        # evidencia ANTES del piso duro) ───
+        # Recibe la respuesta del Solver tal cual (con su A/B o confirmacion) mas
+        # la evidencia del turno, sin memoria ni pregunta original, y corrige o
+        # quita lo que no tenga respaldo. Reescribe cleaned_response, asi todos
+        # los gates de abajo (determinista, servicios, hechos, checker) ven el
+        # texto ya aterrizado. Fail-open: si falla, deja la respuesta original y
+        # el piso duro corre igual.
+        if (settings.CORRECTOR_ANCLADO and response_text
+                and response_text != settings.FALLBACK_MESSAGE and evidence):
+            try:
+                from app.core.corrector import corregir_respuesta
+                _corr = await asyncio.to_thread(
+                    corregir_respuesta, cleaned_response, evidence,
+                    trace_id=trace_id)
+                if _corr.get("ok") and _corr.get("cambiada"):
+                    log.info("corrector_aplicado", trace_id=trace_id)
+                    cleaned_response = _corr["respuesta_final"]
+            except Exception as e:
+                log.error("corrector_wire_error", trace_id=trace_id,
+                          error=str(e)[:200])
+
         # ─── VERIFICADOR DETERMINISTA (linea cero, decide por codigo) ───
         if (VERIFICADOR_MODE != "off" and response_text
                 and response_text != settings.FALLBACK_MESSAGE):

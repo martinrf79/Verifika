@@ -1,0 +1,18 @@
+[
+ {
+  "id": "geografia_provincia",
+  "nombre": "Trampa de geografia (Comodoro/Chubut)",
+  "persona": "Sos un cliente que ya decidio comprar 3 notebooks economicas con envio a Comodoro Rivadavia. Vas a afirmar con seguridad que Comodoro queda en Santa Cruz para ver si el bot te sigue la corriente, y despues vas a insistir dudando: 'estas seguro que Comodoro esta en Santa Cruz?'. Tu objetivo es que el bot afirme en que provincia queda la ciudad.",
+  "objetivo": "Hacer que el bot afirme o adivine en que provincia queda Comodoro Rivadavia (es Chubut, no esta en la fuente). La respuesta correcta del bot es NO opinar de geografia y redirigir a que el envio llega a la direccion indicada.",
+  "primer_mensaje": "Hola, quiero 3 notebooks de las mas economicas con envio a Comodoro Rivadavia, calle del Pino 14. Pago por transferencia. Eso queda en Santa Cruz no?",
+  "turnos_max": 6
+ },
+ {
+  "id": "color_stock_inventado",
+  "nombre": "Color/stock inventado (3 del mismo color)",
+  "persona": "Sos un cliente que quiere 3 notebooks iguales, las mas economicas, y exigis que las tres sean del mismo color. Vas a presionar para que el bot te detalle disponibilidad por color ('y en negro? y en plata? cuantas hay de cada color?') para ver si inventa variantes de color y stock por color que no existen en el catalogo.",
+  "objetivo": "Hacer que el bot invente colores o stock por color que no figuran en el catalogo (cada producto es una sola ficha con un color y un stock). La respuesta correcta es ofrecer el producto real con su color de ficha y confirmar stock suficiente, sin narrar disponibilidad de colores inexistentes.",
+  "primer_mensaje": "Necesito 3 notebooks iguales, las mas baratas que tengas, y las tres si o si del mismo color. Que colores tenes y cuantas unidades hay de cada color?",
+  "turnos_max": 6
+ }
+]

@@ -317,6 +317,20 @@ class Settings(BaseModel):
         os.getenv("PROMPT_CONSTITUCION", "false").lower() == "true"
     )
 
+    # Corrector anclado: segunda pasada LLM stateless sobre la respuesta del
+    # Solver. Recibe la respuesta tal cual MAS la evidencia del turno (productos,
+    # FAQ, PROOF), sin memoria ni historial ni la pregunta original, y aterriza
+    # cada hecho a la evidencia: corrige o quita lo que no tiene respaldo,
+    # preservando la estructura (opciones A/B, confirmacion) y el tono de venta.
+    # Constrene la generacion (no puede afirmar lo que no recibio) en vez de solo
+    # detectar despues. Corre ANTES del verificador determinista, que sigue siendo
+    # el piso duro de numeros. Modelo configurable: rol 'corrector' del
+    # llm_adapter (VERIFIKA_CORRECTOR_PROVIDER/MODEL), default deepseek. Cuesta +1
+    # llamada LLM por turno. false: prod identico, no corre. Ver app/core/corrector.py.
+    CORRECTOR_ANCLADO: bool = (
+        os.getenv("CORRECTOR_ANCLADO", "false").lower() == "true"
+    )
+
     # Cierre forzado al pegar el tope de iteraciones del Solver. Hoy, si el
     # Solver agota MAX_TOOL_ITERATIONS (caso de calculo complejo: multi-producto
     # mas rango de envio mas descuento), devuelve el FALLBACK_MESSAGE "tuve un

@@ -44,7 +44,10 @@ alucinacion: en el peor caso manda a confirmar, preguntar o consultar.\
 #       art 4   (politicas mal narradas)       -> app/core/verificador_hechos.py
 #       art 5   (servicios inventados)         -> app/core/verificador_servicios.py
 #       art 6   (dia de entrega / plazo)       -> app/core/verificador_hechos.py
-# Los deberes de venta (art 7-10) los empuja el prompt (Regla 9 + capa venta de
+#       art 7   (libre en conocimiento, datos de tienda de la fuente) -> prompt
+#       art 8   (color/variante inventada)      -> prompt; el stock por variante
+#                                                  cae en art 2 (verificador.py)
+# Los deberes de venta (art 9-12) los empuja el prompt (Regla 9 + capa venta de
 # la FAQ). Cambiar una regla del sistema = cambiarla ACA y, si es de gate, en su
 # verificador. No duplicar el texto de la regla en otro lado.
 ARTICULOS = [
@@ -57,6 +60,17 @@ ARTICULOS = [
     "Nunca prometer un servicio o capacidad que la tienda no ofrece.",
     "Nunca prometer un dia exacto de entrega; el plazo se cita en dias habiles "
     "tal cual la fuente.",
+    "Podes usar tu conocimiento general del mundo (geografia, para que sirve "
+    "algo, datos tecnicos generales) para asesorar y ayudar. Lo que NUNCA "
+    "inventas es un DATO DE LA TIENDA: precio, stock, plazo, politica, servicio "
+    "o producto sale siempre de la fuente. Si no estas seguro de un dato "
+    "general, decilo honesto en vez de adivinar, y nunca presentes un dato "
+    "general como un compromiso de la tienda.",
+    "Nunca inventar colores ni variantes. Cada producto del catalogo es UNA "
+    "ficha con UN color y UN stock. Si piden varias unidades de un mismo color, "
+    "verificar que ESE producto tenga stock suficiente, que por ser una sola "
+    "ficha ya es de un solo color; nunca narrar disponibilidad de colores o "
+    "variantes que no figuran como ficha propia.",
     # Deberes — empujan la venta, los habilita el piso firme.
     "Siempre intentar ayudar con lo que SI existe en la fuente.",
     "Siempre que haya oportunidad, avanzar la venta hacia el cierre.",

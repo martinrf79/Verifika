@@ -51,6 +51,7 @@ os.environ.setdefault("CHECKER_GATEA", "true")
 os.environ.setdefault("VERIFICADOR_SERVICIOS", "on")
 os.environ.setdefault("VERIFICADOR_HECHOS", "on")
 os.environ.setdefault("ESTADO_NO_REGRESA_SALUDO", "true")
+os.environ.setdefault("CORRECTOR_ANCLADO", "false")
 os.environ.setdefault("DIAG_TRACE", "false")
 
 TIENDA = os.environ.get("MOLINO_TIENDA", "verifika_2k")
@@ -435,7 +436,7 @@ async def async_main():
     print("=== INICIANDO HARNESS DE EVALUACIÓN MULTI-TURNO ===")
     
     # 1. Cargar escenarios
-    scenarios_path = ROOT / "data/escenarios_multiturno.json"
+    scenarios_path = ROOT / os.environ.get("ESCENARIOS_FILE", "data/escenarios_multiturno.json")
     if not scenarios_path.exists():
         print(f"ERROR: No se encontró {scenarios_path}")
         return
