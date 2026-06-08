@@ -488,5 +488,94 @@
     "respuesta": "Embalamos cada pedido reforzado para el transporte y va asegurado durante el envio. Si por el traslado llegara danado, lo cambiamos sin costo avisandonos dentro de los primeros 7 dias desde la recepcion.",
     "tipo": "informativo",
     "valores": []
+  },
+  {
+    "tema": "retiro_local",
+    "keywords": [
+      "retiro",
+      "retirar",
+      "pasar a buscar",
+      "lo busco yo",
+      "puedo pasar a retirar",
+      "retiro en mano",
+      "retiran"
+    ],
+    "respuesta": "Somos una tienda online, no tenemos punto de retiro. Todos los pedidos salen por envio a la direccion que nos indiques, a todo el pais.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "reembolso",
+    "keywords": [
+      "reembolso",
+      "reintegro",
+      "me devuelven la plata",
+      "me devuelven el dinero",
+      "recupero mi dinero",
+      "devolucion del dinero",
+      "cuando me reintegran"
+    ],
+    "respuesta": "Si te corresponde un reembolso por una devolucion aceptada, te lo reintegramos por el mismo medio de pago que usaste. El plazo depende del banco o la tarjeta; apenas recibimos el producto de vuelta gestionamos el reintegro y te confirmamos los tiempos.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "seguimiento_pedido",
+    "keywords": [
+      "seguimiento",
+      "tracking",
+      "codigo de seguimiento",
+      "donde esta mi pedido",
+      "rastrear",
+      "numero de seguimiento",
+      "rastreo"
+    ],
+    "respuesta": "Cuando despachamos tu pedido te mandamos el numero de seguimiento del correo, Andreani u OCA, para que lo rastrees online. Si no te llego, escribinos con tu numero de pedido y te lo pasamos.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "cancelacion_pedido",
+    "keywords": [
+      "cancelar",
+      "cancelacion",
+      "anular",
+      "anular pedido",
+      "cancelar la compra",
+      "dar de baja el pedido"
+    ],
+    "respuesta": "Podes cancelar el pedido sin costo mientras todavia no lo hayamos despachado. Escribinos cuanto antes con tu numero de pedido. Si ya salio, se gestiona como una devolucion.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "envio_exterior",
+    "keywords": [
+      "exterior",
+      "internacional",
+      "al extranjero",
+      "fuera del pais",
+      "envian afuera",
+      "a otro pais",
+      "envio internacional"
+    ],
+    "respuesta": "Por ahora hacemos envios solo dentro de Argentina. No despachamos al exterior.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "confianza_seguridad",
+    "keywords": [
+      "son confiables",
+      "es seguro comprar",
+      "es seguro pagar",
+      "compra segura",
+      "estafa",
+      "confiable",
+      "mis datos estan seguros"
+    ],
+    "respuesta": "Es una compra segura. Procesamos los pagos por Mercado Pago y medios bancarios oficiales, no manejamos los datos de tu tarjeta directamente, y todas nuestras marcas son originales con garantia oficial. Te acompanamos en todo el proceso por este canal.",
+    "tipo": "informativo",
+    "valores": []
   }
 ]
