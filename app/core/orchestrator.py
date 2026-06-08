@@ -248,6 +248,26 @@ async def process_message(user_id: str, raw_message: str,
     log.info("message_received", trace_id=trace_id, tienda_id=tid,
              user_id=user_id, msg_preview=raw_message[:80])
 
+    # ─── ANTI-JAILBREAK (primera linea, filtro de entrada por codigo) ───
+    # Corre antes de cualquier LLM. En 'on', un patron de manipulacion corta el
+    # pipeline con una respuesta estatica de marca, sin gastar tokens. En
+    # 'shadow' solo loguea para medir falsos positivos. En 'off' no corre.
+    if settings.ANTI_JAILBREAK != "off":
+        try:
+            from app.core.antijailbreak import (
+                evaluar_mensaje, RESPUESTA_BLOQUEO)
+            _aj = evaluar_mensaje(raw_message)
+            if _aj["ataque"]:
+                if settings.ANTI_JAILBREAK == "on":
+                    log.warning("antijailbreak_bloqueo", trace_id=trace_id,
+                                motivo=_aj["motivo"], patron=_aj["patron"])
+                    return RESPUESTA_BLOQUEO
+                log.info("antijailbreak_shadow", trace_id=trace_id,
+                         motivo=_aj["motivo"], patron=_aj["patron"])
+        except Exception as e:
+            log.error("antijailbreak_error", trace_id=trace_id,
+                      error=str(e)[:160])
+
     conv = get_conversation(user_id, tienda_id=tid)
     history = conv.get("history", [])
     estado_anterior = conv.get("estado_conversacion", "saludo")

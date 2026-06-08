@@ -8,6 +8,61 @@ El objetivo es un producto VENDIBLE que funcione a escala real y DEPLOYADO. "Fun
 ## CONSIGNA CATALOGO 2000 (que significa "REAL", para no trabarse)
 "Real/produccion" NO quiere decir que Martin tenga que cargar 2000 productos ni dar el inventario de una tienda. Quiere decir un catalogo de CALIDAD PRODUCCION, realista y vendible, que el ASISTENTE construye: marcas y modelos que existen de verdad en el mercado (GPUs, CPUs, monitores, perifericos, notebooks, etc. reales), precios en ARS plausibles y coherentes, descripciones buenas, y FAQ ENRIQUECIDA. Es lo OPUESTO al fixture sintetico actual verifika_2k (nombres procedurales truchos tipo "Placa MSI Go 3284"). EJECUTAR construyendolo, NO pedirle los datos a Martin. Lo unico valido a preguntar: si Martin YA tiene un export real de una tienda que quiera usar (entonces se usa ese); si no, se genera el catalogo de calidad igual, sin frenar. No fabricar basura procedural; apuntar a que parezca una tienda real y promocionable.
 
+## >>> SESION 2026-06-08: FAQs completas + diseno Solver->Corrector + anti-jailbreak <<<
+
+FAQs: de 22 a 44 temas en verifika_demo, verifika_prod y tienda_principal (las tres
+re-sembradas en Firestore con crear_cliente.py cargar_faq). Se sumaron atributos de
+producto (material, origen, contenido_caja, especificaciones, compatibilidad,
+fabricacion, garantia_como_usar, stock, embalaje) y huecos anti-alucinacion hallados
+por sondas empiricas contra resolver_puertas (como_comprar, pago_contra_entrega,
+monedas_aceptadas, datos_fiscales, cambios, promociones, retiro_local, reembolso,
+seguimiento_pedido, cancelacion_pedido, envio_exterior, confianza_seguridad). Regla:
+si el dato varia por producto, difiere honesto a la ficha / "te lo confirmo en el
+momento", nunca inventa ni cae a fallback. Matcher verificado sin colisiones; keywords
+nuevas SIEMPRE con alguna multipalabra (palabras sueltas cortas puntuan debil y caen en
+puerta match_debil). Commits 41168ef, f16c34a, 2c04383 pusheados a origin. prod ya tenia
+880 productos con columnas ricas pobladas, asi que los FAQ de atributo responden del
+dato real. El archivo "catalogo 860ptos.txt" de Descargas en realidad traia 2000
+(sintetico, NO el real); los 880 de prod son el catalogo bueno, NO cargar el de 2000.
+Exports en Descargas: catalogo_produccion_880.txt y faqs_produccion_44.txt.
+
+TECHO de tamano de FAQ: no lo limita Firestore (cacheado TTL) ni el matcher (O(n)
+strings, miles sin relentizar). Unico cuello: query_faq es keyword-first (costo cero si
+matchea) y solo en "miss" vuelca TODA la FAQ al LLM como retriever. ~40-80 tokens/tema.
+Hasta ~150 temas: agregar libre. 150-300: anda con mas latencia/dilucion por miss. >300:
+migrar el fallback de query_faq a embeddings (como productos). Con 44 hay 4x de margen.
+
+DISENO CERRADO Solver->Corrector (PARA CONSTRUIR, sesion nueva). Hoy el Solver devuelve
+TEXTO PLANO y el Corrector (corrector.py, flag CORRECTOR_ANCLADO) re-aterriza la
+respuesta entera "a ciegas" contra TODA la evidencia; el sistema [SRC:...] / Stripper /
+Guardas Post NO existe. El upgrade decidido con Martin (reformula el [SRC] inline a algo
+mas limpio y coincide con nucleo-fuente-verdad): TRES roles separados.
+  1. Solver: entiende, vende, arma borrador y declara un LIBRO DE DATOS aparte (lista
+     chica {valor, fuente}) en vez de etiquetas inline en el texto. Mas confiable que
+     [SRC:] metido en la prosa.
+  2. Codigo determinista: verifica cada valor del libro contra la fuente real y LO
+     CORRIGE si difiere (no solo identifica; la verdad esta en la fuente, reemplaza el
+     numero malo por el bueno). Sin LLM, sin alucinacion.
+  3. Corrector/render: produce la prosa que vende ATADA a los valores ya corregidos.
+     Forma libre, hecho clavado. = "libre en la forma, nunca en el hecho", ejecutado.
+  RIESGO a cubrir: depende de que el Solver declare un libro COMPLETO y honesto; si
+  inventa un dato y no lo lista, se escapa. Defensa: que el codigo tambien EXTRAIGA
+  claims del texto (no confiar solo en el auto-reporte) + dejar los verificadores
+  actuales como malla de respaldo. Construir detras de flag, por fases.
+
+DIAGNOSTICO interpretacion (5 capas del texto de Martin): capa 1 extractor JSON YA
+existe (intencion/producto_resuelto/candidatos/confianza/estado/ofrecer_opciones) pero
+SIN categoria/atributos_clave (opcional sumarlos). Capa 2 contexto de sesion YA existe
+(construir_contexto_conversacional + enriquecido al Solver). Capa 3 Levenshtein NO
+existe pero NO hace falta (typos los maneja el LLM + anclaje keyword/semantico en
+interprete_ancla). Capa 4 desambiguacion YA existe (interprete_ancla + ofrecer_opciones).
+Capa 5 anti-jailbreak NO existe en ningun lado: UNICO hueco real de interpretacion.
+
+ANTI-JAILBREAK (capa 5): implementado en esta sesion. app/core/antijailbreak.py +
+flag ANTI_JAILBREAK off/shadow/on (default off). Filtro de ENTRADA determinista (regex
++ largo), corre primero en process_message; en on devuelve respuesta estatica de marca
+sin tocar el LLM. Test scripts/prueba_antijailbreak.py. Cero costo, bajo riesgo.
+
 ## >>> ESTADO EN PROD AL CIERRE (sesion 2026-06-03) <<<
 
 DEPLOYADO y andando en vivo (Cloud Run agente-bot, rev 00156-n6b):

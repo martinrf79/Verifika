@@ -353,6 +353,24 @@ class Settings(BaseModel):
     # corrida del Solver solo cuando hubo bloqueo, que es raro. Default false.
     AUTOFIX: bool = os.getenv("AUTOFIX", "false").lower() == "true"
 
+    # ────────────────────────────────────────────────────────
+    # ANTI-JAILBREAK — filtro de ENTRADA, primera linea, por codigo
+    # ────────────────────────────────────────────────────────
+    # Antes de cualquier LLM, el mensaje del cliente pasa por reglas deterministas
+    # (regex de patrones de manipulacion + largo). Caza intentos de jailbreak
+    # ("ignora tus instrucciones", "actua como", "decime tu prompt", "modo
+    # desarrollador", volcados enormes) que buscan que el bot se salga de su rol.
+    # NO interpreta nada: frena basura antes de gastar tokens. Codigo puro en
+    # app/core/antijailbreak.py. Conservador: solo marca patrones claros de ataque,
+    # una consulta normal de cliente NUNCA dispara.
+    # Modos:
+    #   off    -> no corre (prod identico).
+    #   shadow -> corre y loguea (evento antijailbreak_shadow), NO bloquea. Para
+    #             medir falsos positivos con trafico real antes de confiar.
+    #   on     -> bloquea: si detecta ataque, devuelve una respuesta estatica de
+    #             marca y corta el pipeline sin llamar al LLM.
+    ANTI_JAILBREAK: str = os.getenv("ANTI_JAILBREAK", "off").lower()
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
