@@ -152,7 +152,11 @@
       "devoluciones",
       "arrepentimiento",
       "devolver",
-      "cambiar"
+      "cambiar",
+      "arrepentir",
+      "arrepentirme",
+      "me arrepenti",
+      "quiero arrepentirme"
     ],
     "respuesta": "Tenes 10 dias corridos desde la recepcion para arrepentirte. El producto debe estar sin uso y en su empaque original.",
     "tipo": "informativo",
@@ -572,9 +576,107 @@
       "compra segura",
       "estafa",
       "confiable",
-      "mis datos estan seguros"
+      "mis datos estan seguros",
+      "datos de tarjeta",
+      "es seguro dejar mis datos",
+      "seguridad de pago",
+      "mis datos de tarjeta"
     ],
     "respuesta": "Es una compra segura. Procesamos los pagos por Mercado Pago y medios bancarios oficiales, no manejamos los datos de tu tarjeta directamente, y todas nuestras marcas son originales con garantia oficial. Te acompanamos en todo el proceso por este canal.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "como_comprar",
+    "keywords": [
+      "como compro",
+      "como hago el pedido",
+      "como hago la compra",
+      "como pido",
+      "proceso de compra",
+      "como funciona la compra",
+      "donde compro"
+    ],
+    "respuesta": "Es facil: decime que producto te interesa y te paso el precio y las formas de pago. Coordinamos el pago por transferencia o Mercado Pago, y apenas se acredita despachamos el envio a tu direccion. Te voy guiando paso a paso.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "pago_contra_entrega",
+    "keywords": [
+      "pago contra entrega",
+      "pagar al recibir",
+      "pago al recibir",
+      "contrareembolso",
+      "efectivo al recibir",
+      "pago cuando llega"
+    ],
+    "respuesta": "No trabajamos con pago contra entrega. El pedido se abona antes del despacho, por transferencia o Mercado Pago, y una vez acreditado lo enviamos.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "monedas_aceptadas",
+    "keywords": [
+      "dolares",
+      "dolar",
+      "cripto",
+      "criptomonedas",
+      "bitcoin",
+      "usdt",
+      "pagar en dolares",
+      "moneda extranjera",
+      "aceptan dolares",
+      "aceptan cripto",
+      "pagar con cripto",
+      "aceptan criptomonedas",
+      "reciben dolares"
+    ],
+    "respuesta": "Operamos solo en pesos argentinos. No aceptamos dolares en efectivo ni criptomonedas. El pago es por transferencia o Mercado Pago en pesos.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "datos_fiscales",
+    "keywords": [
+      "cuit",
+      "razon social",
+      "datos fiscales",
+      "condicion fiscal",
+      "datos de la empresa",
+      "factura a empresa",
+      "datos para facturar"
+    ],
+    "respuesta": "Emitimos factura A o B segun corresponda. Los datos fiscales para tu factura te los pasamos al momento de facturar, contra tu compra. Si necesitas factura A, avisanos tu CUIT y condicion frente al IVA.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "cambios",
+    "keywords": [
+      "cambiar por otro",
+      "cambio de producto",
+      "cambiar de modelo",
+      "cambio por otro modelo",
+      "quiero cambiarlo",
+      "cambio de talle",
+      "cambio de color"
+    ],
+    "respuesta": "Si queres cambiar un producto sin uso y en su empaque original por otro modelo, tenes 10 dias corridos desde que lo recibis. Coordinamos el cambio y, si hay diferencia de precio, la ajustamos. Escribinos con tu numero de pedido.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "promociones",
+    "keywords": [
+      "promociones",
+      "promo",
+      "ofertas",
+      "oferta",
+      "hay promo",
+      "oferta vigente"
+    ],
+    "respuesta": "Tenemos 10 por ciento de descuento pagando por transferencia y cuotas sin interes con tarjeta. Las promos puntuales por producto te las confirmo en el momento segun lo que estes mirando. Decime que buscas y te digo si tiene algo especial.",
     "tipo": "informativo",
     "valores": []
   }
