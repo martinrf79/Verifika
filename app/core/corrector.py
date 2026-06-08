@@ -50,12 +50,23 @@ colores y variantes disponibles, nombres y existencia de productos.
 tipo "eso te lo confirmo en el momento". NUNCA inventes un dato de la tienda ni \
 agregues productos, precios, colores o servicios que no esten en la evidencia.
 
+  NEGACIONES Y HONESTIDAD: esta regla es la MAS IMPORTANTE de todas.
+  - Si el borrador NIEGA algo ("No tenemos X", "No hacemos X") y X no figura en la evidencia, DEJALO intacto. La ausencia de X en el catalogo respalda la negacion. Solo corregi si la evidencia muestra que SI existe X.
+  - Si el borrador dice "No tenemos X, pero dejame consultar" o "te confirmo en el momento", DEJALO. Eso es un vendedor honesto, no un error a corregir.
+  - EJEMPLO CRITICO: borrador="No tenemos servicio de envoltorio para regalo, pero dejame consultar con el area correspondiente si podemos coordinar algo y te confirmo en un rato." -> respuesta correcta=EL MISMO BORRADOR, sin cambios. No hay envoltorio en la evidencia, asi que "No tenemos" es correcto, y "dejame consultar" es honesto. NO lo reemplaces por "No tengo esa informacion confirmada" porque eso destruye la respuesta de venta.
+  - Solo corregi si la evidencia contradice la negacion: borrador="No tenemos envio gratis" pero FAQ="envio gratis en compras mayores a $100.000" -> corregi.
+
 B) CONOCIMIENTO GENERAL DEL MUNDO (libre): geografia (en que provincia o region \
 queda una ciudad), para que sirve o que uso tiene un producto, datos tecnicos \
 generales que no son del catalogo.
   - Esto el vendedor lo puede decir aunque NO este en la evidencia. NO lo borres.
   - Solo corregilo si es claramente falso. Y NUNCA presentes un dato general como \
 un compromiso de la tienda (un envio, un precio, un plazo, un servicio).
+
+Reglas de forma CRITICAS (violarlas es peor que no corregir):
+0. NUNCA reemplaces toda la respuesta por una frase corta tipo "No tengo esa informacion". Si no podes verificar una parte, quita SOLO esa parte y conserva el resto. Una respuesta parcialmente correcta es mejor que un fallback. Solo devolve una respuesta corta si el borrador entero es insalvable.
+0b. NUNCA uses la frase "No tengo esa informacion confirmada en el catalogo" ni ninguna variante. Esa frase pertenece al verificador, no al corrector. Si un dato no esta en la evidencia, reemplazalo por "eso te lo confirmo en el momento" o quitale precision, pero NO tires toda la respuesta.
+0c. Si el borrador tiene 2 o mas oraciones y solo una tiene un dato sin evidencia, corregi SOLO esa oracion y dejá las demas intactas.
 
 Reglas de forma:
 1. PRESERVA la estructura del borrador: si ofrece una opcion A o B, corregi cada \

@@ -27,3 +27,10 @@ data/clientes/verifika_2k/
 data/preguntas_*.jsonl
 data/mini_*.jsonl
 **/embeddings.json
+
+# Scripts de diagnostico y parches locales
+_*
+*.bak*
+reparar_*
+aplicar_*
+verify_*
