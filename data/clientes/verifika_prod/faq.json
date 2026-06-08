@@ -343,5 +343,150 @@
     "respuesta": "Nos podes contactar por WhatsApp o mail. Atencion humana de lunes a viernes de 9 a 18 hs.",
     "tipo": "informativo",
     "valores": []
+  },
+  {
+    "tema": "envoltorio_regalo",
+    "keywords": [
+      "envoltorio",
+      "para regalo",
+      "envolver",
+      "papel de regalo",
+      "mono",
+      "regalo"
+    ],
+    "respuesta": "No tenemos servicio de envoltorio para regalo. De todos modos el producto viaja en su caja original sellada, prolijo para regalar. Si te sirve, puedo dejar una nota al despacho para que vaya sin el remito de precio a la vista.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "contenido_caja",
+    "keywords": [
+      "que trae",
+      "que incluye",
+      "contenido",
+      "viene con",
+      "accesorios",
+      "en la caja",
+      "viene completo",
+      "partes"
+    ],
+    "respuesta": "Cada producto viene en su caja original sellada con lo que indica el fabricante para ese modelo: el equipo y sus accesorios estandar. El detalle de lo que incluye figura en la ficha del producto. Si necesitas confirmar un accesorio puntual, decime cual y lo chequeo en el momento.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "origen_procedencia",
+    "keywords": [
+      "procedencia",
+      "origen",
+      "importado",
+      "nacional",
+      "de donde viene",
+      "de donde es"
+    ],
+    "respuesta": "Trabajamos con productos importados y nacionales segun la marca y el modelo. La procedencia de cada uno figura en la ficha del producto. Si no figura, te la confirmo en el momento, no te la invento.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "material_composicion",
+    "keywords": [
+      "material",
+      "de que esta hecho",
+      "de que material",
+      "composicion",
+      "tela",
+      "plastico",
+      "metal",
+      "aluminio"
+    ],
+    "respuesta": "El material y la composicion dependen de cada modelo y figuran en las especificaciones de la ficha del producto. Si el dato puntual que buscas no esta ahi, te lo confirmo en el momento antes de que compres.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "fabricacion",
+    "keywords": [
+      "donde se fabrica",
+      "fabricacion",
+      "made in",
+      "pais de fabricacion",
+      "donde lo hacen"
+    ],
+    "respuesta": "El pais de fabricacion varia segun la marca y figura en la ficha o en la caja cuando el fabricante lo informa. Si necesitas ese dato para un modelo puntual, decime cual y lo verifico antes de la compra.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "especificaciones",
+    "keywords": [
+      "especificaciones",
+      "ficha tecnica",
+      "caracteristicas",
+      "specs",
+      "detalles tecnicos",
+      "medidas",
+      "peso",
+      "dimensiones"
+    ],
+    "respuesta": "Las especificaciones tecnicas completas figuran en la ficha de cada producto. Decime que modelo te interesa y que dato necesitas y te paso lo que esta publicado. Si un dato no figura, te lo confirmo en el momento.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "compatibilidad",
+    "keywords": [
+      "compatible",
+      "compatibilidad",
+      "sirve para",
+      "funciona con",
+      "anda con",
+      "es para"
+    ],
+    "respuesta": "Te ayudo a chequear la compatibilidad. Decime el producto que miras y con que lo queres usar y lo verifico contra lo que indica la ficha. Si la ficha no lo aclara, te lo confirmo en el momento antes de que compres, no te arriesgo un si sin estar seguro.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "garantia_como_usar",
+    "keywords": [
+      "como hago la garantia",
+      "hacer efectiva la garantia",
+      "se rompio",
+      "falla",
+      "reclamo garantia",
+      "service"
+    ],
+    "respuesta": "Si un producto falla dentro del periodo de garantia, escribinos con tu numero de pedido y una descripcion de la falla. Coordinamos el service oficial del fabricante o el cambio segun corresponda, sin costo de gestion de nuestra parte. El plazo de cada producto figura en su ficha, minimo 6 meses.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "stock_disponibilidad",
+    "keywords": [
+      "hay stock",
+      "disponible",
+      "disponibilidad",
+      "tienen stock",
+      "queda",
+      "hay unidades"
+    ],
+    "respuesta": "La disponibilidad la confirmo en el momento contra el catalogo. Decime que producto buscas y te digo si esta disponible. Si esta sin stock, podemos tomar reserva con sena del 20 por ciento.",
+    "tipo": "informativo",
+    "valores": []
+  },
+  {
+    "tema": "embalaje_envio",
+    "keywords": [
+      "embalaje",
+      "como lo mandan",
+      "como viaja",
+      "se rompe en el envio",
+      "protegido",
+      "embalado"
+    ],
+    "respuesta": "Embalamos cada pedido reforzado para el transporte y va asegurado durante el envio. Si por el traslado llegara danado, lo cambiamos sin costo avisandonos dentro de los primeros 7 dias desde la recepcion.",
+    "tipo": "informativo",
+    "valores": []
   }
 ]
