@@ -256,6 +256,15 @@ async def _process_and_reply_telegram(chat_id: str, text: str):
         if SENTRY_DSN:
             import sentry_sdk
             sentry_sdk.capture_exception(e)
+        # Mismo criterio que WhatsApp: no dejar al cliente sin respuesta ante un
+        # blip transitorio del LLM. Envio en su propio try.
+        try:
+            await get_telegram_connector().send_message(
+                chat_id,
+                "Perdón, estoy con mucha demanda en este momento. "
+                "Probá de nuevo en un ratito y te respondo. 🙏")
+        except Exception:
+            pass
 
 
 @app.post("/webhook/telegram")
@@ -316,6 +325,17 @@ async def _process_and_reply_whatsapp(tienda_id: str, user_id: str,
         if SENTRY_DSN:
             import sentry_sdk
             sentry_sdk.capture_exception(e)
+        # No dejar al cliente en silencio ante un blip transitorio (ej. 503 del
+        # proveedor de LLM por sobrecarga): mandamos un fallback amable. El envio
+        # va en su propio try para que un fallo de envio no vuelva a romper.
+        try:
+            await get_whatsapp_connector_for_tienda(
+                whatsapp_token, phone_number_id).send_message(
+                user_id,
+                "Perdón, estoy con mucha demanda en este momento. "
+                "Probá de nuevo en un ratito y te respondo. 🙏")
+        except Exception:
+            pass
 
 
 @app.get("/webhook/whatsapp")
