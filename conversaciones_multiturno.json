@@ -1,0 +1,99 @@
+{
+  "_nota": "Conversaciones guionadas de 8 a 12 turnos para el molino multiturno. Cada turno es un mensaje del cliente que se manda en orden, con el MISMO user_id, para que el bot arrastre el historial. La conversacion se resetea entre escenarios. Apuntan a los puntos debiles: perder el hilo, A/B, cajon de envio equivocado, confirmaciones, servicios inexistentes, regateo, geografia.",
+  "conversaciones": [
+    {
+      "id": "c01_explorar_y_cerrar",
+      "escenario": "Explorar mouse, elegir, calcular envio interior, confirmar y dar datos",
+      "turnos": [
+        "Hola, buenas",
+        "Estoy buscando un mouse para jugar",
+        "cual me conviene de esos dos?",
+        "el mas barato cuanto sale?",
+        "y con envio a Cordoba capital?",
+        "es a Nueva Cordoba, barrio centrico",
+        "dale, me lo llevo",
+        "pago por transferencia",
+        "mi nombre es Martin y mi telefono es 351 5551234"
+      ]
+    },
+    {
+      "id": "c02_cambio_de_opinion",
+      "escenario": "Arranca por teclado y a mitad cambia a monitor, obliga a re-buscar y recalcular sin perder el hilo",
+      "turnos": [
+        "buenas, tenes teclados mecanicos?",
+        "cuanto sale el Redragon?",
+        "mmm, mejor mostrame monitores",
+        "alguno bueno para jugar?",
+        "el de 27 pulgadas cuanto es?",
+        "lo queres con el teclado que vimos antes, cuanto me queda todo junto?",
+        "con envio a Rosario",
+        "y si pago en efectivo tengo descuento?",
+        "listo, cerralo asi",
+        "te paso los datos: Juan, 341 5559876"
+      ]
+    },
+    {
+      "id": "c03_servicios_inexistentes",
+      "escenario": "Pide servicios que la tienda online no ofrece y mete presion; el bot no debe inventar ni cortar la venta",
+      "turnos": [
+        "hola, una consulta",
+        "hacen envoltorio para regalo?",
+        "y lo puedo pasar a retirar por el local?",
+        "me lo instalan o configuran?",
+        "tienen garantia extendida de 3 anios?",
+        "bueno, igual me interesa unos auriculares gamer",
+        "el HyperX cuanto sale?",
+        "me hacen factura A?",
+        "ok lo pienso y te aviso"
+      ]
+    },
+    {
+      "id": "c04_regateo_precio_afuera",
+      "escenario": "Cliente regatea y tira precios de otra tienda; el bot no repite ni acepta ese numero",
+      "turnos": [
+        "buenas, el teclado Corsair K70 cuanto sale?",
+        "uh, en otra tienda me lo dejan a 250000",
+        "dale no seas asi, me lo haces a 250000?",
+        "soy amigo del dueño, haceme precio",
+        "y si te compro dos me bajas algo?",
+        "bueno y el descuento por transferencia cuanto es?",
+        "asi con transferencia cuanto me queda uno?",
+        "y los dos?",
+        "lo pienso, gracias"
+      ]
+    },
+    {
+      "id": "c05_cajon_envio_y_geografia",
+      "escenario": "Caso canonico: numero real en cajon equivocado, y preguntas de geografia que el bot no debe afirmar",
+      "turnos": [
+        "hola, quiero comprar un SSD",
+        "el Samsung de 1TB cuanto sale?",
+        "cuanto me sale el envio a Cordoba capital?",
+        "Cordoba capital esta en la provincia de Cordoba no?",
+        "y a Villa Carlos Paz llega? esta en Cordoba tambien?",
+        "ah ok, mandalo a Carlos Paz entonces",
+        "cuanto me queda con el envio ahi?",
+        "y cuando llega? para que dia?",
+        "dale, lo confirmo",
+        "transferencia"
+      ]
+    },
+    {
+      "id": "c06_posventa_y_dudas_tecnicas",
+      "escenario": "Dudas tecnicas y posventa multi-turno: compatibilidad, garantia, devolucion, formas de pago",
+      "turnos": [
+        "hola, tengo una duda antes de comprar",
+        "el teclado inalambrico anda con Windows 7?",
+        "y es original Logitech o replica?",
+        "si no me gusta lo puedo devolver?",
+        "cuantos dias tengo para la devolucion?",
+        "y la garantia cuanto cubre?",
+        "puedo pagar en cuotas?",
+        "cuantas cuotas sin interes?",
+        "bueno me decidi, el Logitech K380",
+        "cuanto sale con envio a La Plata?",
+        "perfecto, lo cierro"
+      ]
+    }
+  ]
+}

@@ -29,6 +29,47 @@ def search_products(query: str | None = None,
                     precio_max: int | None = None) -> dict:
     """Busca productos en Firestore con búsqueda híbrida."""
     tid = get_current_tienda()
+
+    # Escalera de relajacion (flag): si la palabra del cliente no engancha pero
+    # la categoria tiene productos, se ofrecen igual en vez de negar stock real.
+    if settings.BUSQUEDA_RELAJADA:
+        from app.storage.search import hybrid_search_relajada
+        r = hybrid_search_relajada(
+            query=query, categoria=categoria, precio_min=precio_min,
+            precio_max=precio_max, top_n=settings.SEARCH_TOP_N, tienda_id=tid)
+        productos = r["productos"]
+        if productos and not r["match_exacto"]:
+            cat = r.get("categoria_usada") or "esa"
+            return {
+                "encontrados": len(productos),
+                "productos": [_resumir(p) for p in productos],
+                "match_exacto": False,
+                "mensaje_para_llm": (
+                    f"No encontre coincidencia textual con '{query}', pero la "
+                    f"categoria '{cat}' tiene {r['total_categoria']} productos "
+                    f"reales en stock; aca van los mas economicos. OFRECELOS al "
+                    f"cliente como opciones. NO digas que no tenemos: el dato "
+                    f"especifico que pidio no figura textual, pero estos "
+                    f"productos existen y estan disponibles."
+                ),
+            }
+        if not productos:
+            cats = r.get("categorias_disponibles") or []
+            return {
+                "encontrados": 0,
+                "productos": [],
+                "mensaje_para_llm": (
+                    "No hay productos que cumplan los criterios. "
+                    "Decile al cliente honestamente que no tenemos algo así y "
+                    f"ofrecele la categoría más cercana. Categorías reales del "
+                    f"catálogo: {cats}."
+                ),
+            }
+        return {
+            "encontrados": len(productos),
+            "productos": [_resumir(p) for p in productos],
+        }
+
     resultados = hybrid_search(
         query=query,
         categoria=categoria,
@@ -169,10 +210,13 @@ def calculate_total(items: list[dict] | None = None,
     if not items:
         return {
             "ok": False,
+            # Redactado en voz cliente-segura a proposito: el Solver a veces
+            # pega este texto TAL CUAL en la respuesta (visto 12-jun con
+            # "cuanto era el total de mi pedido?" sin pedido vigente), asi que
+            # tiene que poder leerse como respuesta al cliente sin verguenza.
             "mensaje_para_llm": (
-                "No hay items para sumar. Pedile al cliente que te diga que "
-                "productos y cantidades quiere, o sugerile una combinacion vos. "
-                "Sumar todo el catalogo no es una cotizacion util."
+                "No tengo un pedido armado para sumar. Decime que productos "
+                "y cantidades queres y te paso el total."
             ),
         }
     """
@@ -249,6 +293,26 @@ def calculate_total(items: list[dict] | None = None,
                 continue
             valores = faq.get("valores") or []
             valor = next((v for v in valores if v.get("concepto") == concepto), None)
+            if (not valor and settings.TARIFA_PROVINCIA
+                    and tema == "costo_envio" and concepto.startswith("envio_")):
+                # Concepto de tarifa por provincia: cotizar_envio (flag
+                # TARIFA_PROVINCIA) emite envio_<provincia> con monto de
+                # config/tarifas_envio, que NO vive en la FAQ. La calculadora
+                # tiene que hablar el mismo idioma que el cotizador; si no, el
+                # modelo recibe "concepto no existe" e improvisa el total a mano
+                # (visto en el arnes, caso a25).
+                try:
+                    from app.storage.firestore_client import get_config
+                    _tabla = get_config("tarifas_envio", tienda_id=tid) or {}
+                    _monto_prov = (_tabla.get("provincias") or {}).get(
+                        concepto[len("envio_"):])
+                except Exception as e:
+                    log.warning("tarifas_envio_read_error", error=str(e)[:120])
+                    _monto_prov = None
+                if _monto_prov:
+                    valor = {"concepto": concepto, "modalidad": "fijo",
+                             "monto": int(_monto_prov), "unidad": "ars",
+                             "condicion": "tarifa exacta de esa provincia"}
             if not valor:
                 extras_no_validos.append(f"{tema}:{concepto} (concepto no existe)")
                 continue
@@ -322,10 +386,21 @@ def calculate_total(items: list[dict] | None = None,
             else:
                 extras_no_validos.append(f"{tema}:{concepto} (modalidad invalida)")
         if extras_no_validos:
-            return {
-                "ok": False,
-                "mensaje_para_llm": f"Extras no validos: {extras_no_validos}",
-            }
+            # Veredicto + opciones: sin la lista de extras validos el modelo
+            # improvisa una disculpa y mata el cierre (visto en el molino
+            # multiturno con el descuento por transferencia). Con la lista,
+            # reintenta con el par exacto. Mismo dominio que CALC_DEFENSIVA.
+            msg = f"Extras no validos: {extras_no_validos}."
+            if settings.CALC_DEFENSIVA:
+                cuantitativas = {
+                    t: [v.get("concepto") for v in (f.get("valores") or [])]
+                    for t, f in faqs.items()
+                    if f.get("tipo") == "cuantitativo"
+                }
+                msg += (f" Los UNICOS extras validos son (faq_tema: conceptos): "
+                        f"{cuantitativas}. Reintenta calculate_total usando "
+                        f"exactamente uno de esos pares.")
+            return {"ok": False, "mensaje_para_llm": msg}
 
     _nota_envio = None
     if envio_gratis_aplicado:
@@ -351,7 +426,9 @@ def calculate_total(items: list[dict] | None = None,
                 "tipo": "calculo_total_rango",
                 "formula": "suma_productos + suma_extras_rango (extras pueden ser montos fijos, rangos o porcentajes; los descuentos restan)",
                 "operandos_productos": [
-                    {"id": d["id"], "monto": d["subtotal"], "fuente": "catalogo"}
+                    {"id": d["id"], "monto": d["subtotal"],
+                     "precio_unitario": d["precio_unitario"],
+                     "fuente": "catalogo"}
                     for d in detalle
                 ],
                 "operandos_extras": extras_detalle,
@@ -371,7 +448,9 @@ def calculate_total(items: list[dict] | None = None,
             "tipo": "calculo_total_fijo",
             "formula": "suma_productos + suma_extras (extras pueden ser montos fijos o porcentajes; los descuentos restan)",
             "operandos_productos": [
-                {"id": d["id"], "monto": d["subtotal"], "fuente": "catalogo"}
+                {"id": d["id"], "monto": d["subtotal"],
+                 "precio_unitario": d["precio_unitario"],
+                 "fuente": "catalogo"}
                 for d in detalle
             ],
             "operandos_extras": extras_detalle,
@@ -560,6 +639,32 @@ def _norm_txt(s: str) -> str:
     return "".join(c for c in s if not unicodedata.combining(c))
 
 
+def _canon_palabra(w: str) -> str:
+    """saca una s final para tolerar plurales (envios->envio, cuotas->cuota)."""
+    return w[:-1] if len(w) > 3 and w.endswith("s") else w
+
+
+def _faq_ranking_palabras(consulta: str, faq: dict) -> list[tuple[int, str]]:
+    """Rankea temas de FAQ: una keyword matchea si TODAS sus palabras aparecen
+    en la consulta (normalizadas, tolerantes a plural), aunque haya palabras en
+    el medio. Asi 'costo envio' engancha 'costo de envio a cordoba' y el tema
+    especifico con el numero le gana al generico. Devuelve [(score, tema)]
+    de mayor a menor, solo los que matchean."""
+    palabras_consulta = {_canon_palabra(w) for w in _norm_txt(consulta).split()}
+    ranking = []
+    for tema, data in faq.items():
+        score = 0
+        for kw in data.get("keywords", []) or []:
+            k = _norm_txt(kw)
+            kws = {_canon_palabra(w) for w in k.split()}
+            if kws and kws <= palabras_consulta:
+                score += len(k)
+        if score > 0:
+            ranking.append((score, tema))
+    ranking.sort(key=lambda t: (-t[0], t[1]))
+    return ranking
+
+
 def _faq_keyword_match(consulta: str, faq: dict):
     """Elige el tema de FAQ por keywords, sin modelo. Puntua por largo de las
     keywords que matchean, asi las frases mas especificas, costo envio, ganan
@@ -614,6 +719,25 @@ def query_faq(consulta: str) -> dict:
     faq = get_all_faq(tienda_id=tid)
     if not faq:
         return {"encontrada": False, "mensaje_para_llm": "FAQ vacia"}
+
+    # Matcheo por palabras (flag): el tema especifico gana al generico y la
+    # respuesta lleva hasta dos temas relacionados, asi el Solver ve el cajon
+    # con el numero (costo_envio) y no solo el informativo (envios).
+    if settings.FAQ_MATCH_PALABRAS:
+        ranking = _faq_ranking_palabras(consulta, faq)
+        if ranking:
+            principal = ranking[0][1]
+            log.info("query_faq_palabras_hit", tema=principal,
+                     relacionadas=[t for _, t in ranking[1:3]])
+            resp = _faq_resp(principal, faq[principal])
+            relacionadas = []
+            for _, tema in ranking[1:3]:
+                rel = _faq_resp(tema, faq[tema])
+                rel.pop("encontrada", None)
+                relacionadas.append(rel)
+            if relacionadas:
+                resp["relacionadas"] = relacionadas
+            return resp
 
     # Keyword-first: si matchea, resolvemos sin llamar al modelo.
     tema_kw = _faq_keyword_match(consulta, faq)
@@ -805,7 +929,11 @@ def _build_schema():
                     "Calcula total exacto de N productos del catalogo, opcionalmente sumando "
                     "extras verificados contra FAQ cuantitativa (envios, descuentos, recargos). "
                     "USAR SIEMPRE para sumas. NUNCA calcules vos mismo. "
-                    "Si el cliente pide total con envio u otro concepto de FAQ, pasalo en items_extra."
+                    "Si el cliente pide total con envio u otro concepto de FAQ, pasalo en items_extra. "
+                    "PAGO MIXTO: si el cliente paga unidades con metodos distintos (una por "
+                    "transferencia, otra con otro medio), hace UNA llamada por cada grupo de pago, "
+                    "cada una con sus items y su descuento si corresponde. NUNCA repartas ni "
+                    "prorratees un descuento entre unidades vos mismo."
                 ),
                 "parameters": {
                     "type": "object",
@@ -937,11 +1065,391 @@ def _build_schema():
         },
     })
 
+    # Tool determinista de envio por zona, solo si el flag esta on.
+    if settings.ENVIO_POR_ZONA:
+        schemas.append({
+            "type": "function",
+            "function": {
+                "name": "cotizar_envio",
+                "description": (
+                    "Cotiza el costo de envio. El CODIGO determina la zona desde "
+                    "el codigo postal o la localidad del cliente y devuelve la "
+                    "tarifa real. USALO siempre que el cliente pregunte el costo "
+                    "de envio o a donde mandar. NO elijas vos la zona ni la "
+                    "tarifa. Si devuelve zona null, pedile el codigo postal o la "
+                    "localidad y provincia, no asumas."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "localidad": {
+                            "type": "string",
+                            "description": (
+                                "Lo que el cliente dijo de a donde enviar: codigo "
+                                "postal, localidad y/o provincia. Tal cual, sin "
+                                "interpretarlo vos."
+                            ),
+                        },
+                        "subtotal": {
+                            "type": "integer",
+                            "description": (
+                                "Subtotal de productos, para envio gratis por "
+                                "umbral si corresponde. Opcional."
+                            ),
+                        },
+                    },
+                    "required": ["localidad"],
+                },
+            },
+        })
+        schemas.append({
+            "type": "function",
+            "function": {
+                "name": "cubre_envio",
+                "description": (
+                    "Confirma si la tienda envia a una localidad. El CODIGO "
+                    "determina la zona desde el codigo postal o la localidad. "
+                    "Usalo cuando el cliente pregunta si llegan a su zona. Si "
+                    "devuelve zona null, pedile el codigo postal o la localidad."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "localidad": {"type": "string"},
+                    },
+                    "required": ["localidad"],
+                },
+            },
+        })
+
+    # Tool determinista de fecha/plazo de entrega, solo si el flag esta on.
+    if settings.FECHA_ENTREGA:
+        schemas.append({
+            "type": "function",
+            "function": {
+                "name": "calcular_entrega",
+                "description": (
+                    "Estima el plazo y la ventana de fechas de entrega. El CODIGO "
+                    "calcula los dias habiles desde el pago por la zona del codigo "
+                    "postal. USALO cuando el cliente pregunta cuando llega o para "
+                    "que fecha. NUNCA prometas un dia exacto vos: pasa la ventana "
+                    "que devuelve el tool, que es una estimacion no garantizada."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "localidad": {
+                            "type": "string",
+                            "description": (
+                                "Codigo postal, localidad y/o provincia, tal cual "
+                                "lo dijo el cliente."
+                            ),
+                        },
+                        "fecha_pago": {
+                            "type": "string",
+                            "description": (
+                                "Opcional. Fecha de pago acreditado en formato "
+                                "YYYY-MM-DD. Si no se da, se usa hoy."
+                            ),
+                        },
+                    },
+                    "required": ["localidad"],
+                },
+            },
+        })
+
+    # Tools de posventa (devolucion, garantia, CUIT), solo si el flag esta on.
+    if settings.POSVENTA_TOOLS:
+        schemas.append({
+            "type": "function",
+            "function": {
+                "name": "plazo_devolucion",
+                "description": (
+                    "Plazo de devolucion por arrepentimiento. Usalo cuando "
+                    "preguntan si pueden devolver o hasta cuando. Si el cliente da "
+                    "la fecha de compra, calcula si esta en termino."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "fecha_compra": {
+                            "type": "string",
+                            "description": "Opcional, fecha de compra YYYY-MM-DD.",
+                        },
+                    },
+                },
+            },
+        })
+        schemas.append({
+            "type": "function",
+            "function": {
+                "name": "garantia_vigente",
+                "description": (
+                    "Calcula hasta cuando cubre la garantia de un producto y si "
+                    "esta vigente. Necesita la fecha de compra y los meses de "
+                    "garantia del producto (de get_product_details). NO afirmes "
+                    "garantia vigente sin calcularla aca."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "fecha_compra": {"type": "string",
+                                         "description": "Fecha de compra YYYY-MM-DD."},
+                        "meses": {"type": "integer",
+                                  "description": "Meses de garantia del producto."},
+                    },
+                    "required": ["fecha_compra", "meses"],
+                },
+            },
+        })
+        schemas.append({
+            "type": "function",
+            "function": {
+                "name": "validar_cuit",
+                "description": (
+                    "Valida un CUIT o CUIL argentino por su digito verificador. "
+                    "Usalo cuando el cliente pasa un CUIT, por ejemplo para "
+                    "factura A."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "cuit": {"type": "string",
+                                 "description": "El CUIT/CUIL a validar."},
+                    },
+                    "required": ["cuit"],
+                },
+            },
+        })
+
+    # Tier standard (flag TOOLS_MINIMAS): saca del schema las tools que el modelo
+    # puede pensar solo, dejando solo las que traen un hecho de la fuente. Las
+    # funciones quedan en el registry; esto solo recorta lo que ve el LLM.
+    if settings.TOOLS_MINIMAS:
+        _podar = {"find_within_budget", "compare_products",
+                  "recommend_product", "cubre_envio"}
+        schemas = [s for s in schemas
+                   if s.get("function", {}).get("name") not in _podar]
+
     return schemas
+
+
+def cotizar_envio(localidad: str | None = None,
+                  subtotal: int | None = None) -> dict:
+    """Cotiza el envio de forma determinista: el CODIGO clasifica la zona desde el
+    codigo postal o la localidad (no el modelo) y devuelve la tarifa de la tienda.
+
+    localidad: texto con el codigo postal, la localidad y/o la provincia del cliente.
+    subtotal: subtotal de productos, para aplicar envio gratis por umbral si supera.
+    """
+    from app.core.envio import clasificar_zona
+
+    tid = get_current_tienda()
+    zona = clasificar_zona(localidad or "")
+    if zona is None:
+        if settings.TARIFA_PROVINCIA:
+            # Con tabla por provincia, el dato util es la PROVINCIA o el CP:
+            # con eso la tarifa sale exacta, no en rango.
+            return {
+                "ok": False,
+                "zona": None,
+                "mensaje_para_llm": (
+                    "No pude determinar la zona con ese dato. Pedile UNA vez la "
+                    "PROVINCIA o el CODIGO POSTAL (ej: cordoba, o CP 5121): con "
+                    "eso te doy la tarifa exacta. NO asumas la zona ni la tarifa."
+                ),
+            }
+        return {
+            "ok": False,
+            "zona": None,
+            "mensaje_para_llm": (
+                "No pude determinar la zona con ese dato. NO pidas el codigo "
+                "postal en loop: preguntale derecho si el envio es a CAPITAL, a "
+                "GRAN BUENOS AIRES, o al INTERIOR del pais, esas tres opciones. "
+                "Con que elija una alcanza. NO asumas la zona ni la tarifa."
+            ),
+        }
+
+    faqs = get_all_faq(tienda_id=tid) or {}
+    faq = faqs.get("costo_envio")
+    if not faq or faq.get("tipo") != "cuantitativo":
+        return {
+            "ok": False,
+            "zona": zona,
+            "mensaje_para_llm": (
+                "No tengo cargada la tarifa de envio de la tienda. Deci que lo "
+                "consultas y lo confirmas, no inventes un monto."
+            ),
+        }
+    valores = faq.get("valores") or []
+
+    # Envio gratis por umbral: dato de la tienda (condicion del concepto envio_gratis)
+    # o el umbral de plataforma como respaldo. Si el subtotal lo supera, es gratis.
+    umbral = settings.UMBRAL_ENVIO_GRATIS
+    if subtotal and isinstance(subtotal, (int, float)) and subtotal > umbral:
+        return {
+            "ok": True, "zona": zona, "concepto": "envio_gratis",
+            "modalidad": "fijo", "monto": 0,
+            "mensaje_para_llm": (
+                f"Envio GRATIS: la compra supera {umbral} pesos. Zona {zona}. "
+                f"Para dar el TOTAL llama calculate_total con TODOS los "
+                f"productos del pedido e items_extra "
+                f"{{faq_tema: costo_envio, concepto: envio_gratis}}; NO sumes "
+                f"a mano ni dejes productos afuera."),
+            "proof": {"tipo": "envio", "valores": [0], "resultado": 0},
+        }
+
+    # Tarifa EXACTA por provincia (flag TARIFA_PROVINCIA): si la provincia se
+    # determina con certeza y la tienda tiene tabla cargada, se devuelve el monto
+    # fijo de esa provincia en vez del rango generico de interior. Si no hay
+    # certeza o no hay tabla, sigue el flujo de siempre: nunca se adivina.
+    if settings.TARIFA_PROVINCIA and zona == "interior":
+        from app.core.envio import clasificar_provincia
+        from app.storage.firestore_client import get_config
+        prov = clasificar_provincia(localidad or "")
+        if prov:
+            try:
+                tabla = get_config("tarifas_envio", tienda_id=tid) or {}
+            except Exception as e:
+                log.warning("tarifas_envio_read_error", error=str(e)[:120])
+                tabla = {}
+            monto_prov = (tabla.get("provincias") or {}).get(prov)
+            if monto_prov:
+                monto_prov = int(monto_prov)
+                prov_legible = prov.replace("_", " ").title()
+                return {
+                    "ok": True, "zona": zona, "provincia": prov,
+                    "concepto": f"envio_{prov}".replace(" ", "_"),
+                    "modalidad": "fijo", "monto": monto_prov,
+                    "mensaje_para_llm": (
+                        f"Envio a {prov_legible}: {monto_prov} pesos, tarifa "
+                        f"exacta de esa provincia. Usa este monto, no el rango. "
+                        f"Para dar el TOTAL llama calculate_total con TODOS los "
+                        f"productos del pedido e items_extra "
+                        f"{{faq_tema: costo_envio, concepto: envio_{prov}}}; "
+                        f"NO sumes a mano ni dejes productos afuera."),
+                    "proof": {"tipo": "envio", "valores": [monto_prov],
+                              "resultado": monto_prov},
+                }
+
+    # Mapeo zona -> concepto por SUBCADENA del nombre (no por nombre exacto), asi
+    # tolera variantes de naming entre tiendas. caba/gba comparten tarifa metropolitana.
+    claves = ("caba", "gba", "metropol", "amba") if zona in ("caba", "gba") \
+        else ("interior",)
+    valor = next((v for v in valores
+                  if any(k in str(v.get("concepto", "")).lower() for k in claves)),
+                 None)
+    if not valor:
+        return {
+            "ok": False, "zona": zona,
+            "mensaje_para_llm": (
+                f"La tienda no tiene tarifa cargada para la zona {zona}. Deci que "
+                "lo consultas, no inventes el monto."),
+        }
+
+    modalidad = (valor.get("modalidad") or "fijo").lower()
+    if modalidad == "rango":
+        mn, mx = int(valor.get("monto_min", 0)), int(valor.get("monto_max", 0))
+        if settings.TARIFA_PROVINCIA and zona == "interior":
+            # Hay tabla por provincia pero la provincia no se pudo determinar:
+            # el CP o la provincia SI afinan la tarifa, conviene pedirlos.
+            _msg = (
+                f"Envio a zona {zona}: entre {mn} y {mx} pesos. Si el cliente te "
+                f"da la PROVINCIA o el CODIGO POSTAL, volve a llamar cotizar_envio "
+                f"con ese dato y te doy el monto exacto. Mientras tanto deci las "
+                f"dos puntas, no promedies.")
+        else:
+            _msg = (
+                f"Envio a zona {zona}: entre {mn} y {mx} pesos. Esta es la tarifa "
+                f"FINAL de la zona, deci las dos puntas como el costo y avanza. NO "
+                f"pidas el codigo postal para afinar, no lo cambia. No promedies.")
+        return {
+            "ok": True, "zona": zona, "concepto": valor.get("concepto"),
+            "modalidad": "rango", "monto_min": mn, "monto_max": mx,
+            "mensaje_para_llm": _msg,
+            "proof": {"tipo": "envio", "resultado_min": mn, "resultado_max": mx,
+                      "valores": [mn, mx]},
+        }
+    monto = int(valor.get("monto", 0))
+    return {
+        "ok": True, "zona": zona, "concepto": valor.get("concepto"),
+        "modalidad": "fijo", "monto": monto,
+        "mensaje_para_llm": (
+            f"Envio a zona {zona}: {monto} pesos. Para dar el TOTAL llama "
+            f"calculate_total con TODOS los productos del pedido e items_extra "
+            f"{{faq_tema: costo_envio, concepto: {valor.get('concepto')}}}; "
+            f"NO sumes a mano ni dejes productos afuera."),
+        "proof": {"tipo": "envio", "valores": [monto], "resultado": monto},
+    }
+
+
+def cubre_envio(localidad: str | None = None) -> dict:
+    """¿La tienda envia a esa localidad? El codigo clasifica la zona por el CP o el
+    nombre. Si la reconoce, la tienda despacha a todo el pais. Si no, pide el dato."""
+    from app.core.envio import clasificar_zona
+    zona = clasificar_zona(localidad or "")
+    if zona is None:
+        return {
+            "ok": False, "cubre": None, "zona": None,
+            "mensaje_para_llm": (
+                "No puedo confirmar la cobertura sin saber la zona. Pedile el "
+                "codigo postal o la localidad y provincia."),
+        }
+    return {
+        "ok": True, "cubre": True, "zona": zona,
+        "mensaje_para_llm": (
+            f"Si, despachamos a esa zona ({zona}) por correo a todo el pais."),
+    }
+
+
+def calcular_entrega(localidad: str | None = None,
+                     fecha_pago: str | None = None) -> dict:
+    """Estima la VENTANA de entrega de forma determinista: zona por codigo postal
+    + plazo de la tienda en dias habiles, salteando fines de semana y feriados.
+    Nunca un dia garantizado. fecha_pago opcional en formato ISO YYYY-MM-DD."""
+    from app.core.envio import clasificar_zona
+    from app.core.entrega import estimar_entrega
+    import datetime as _dt
+
+    zona = clasificar_zona(localidad or "")
+    desde = None
+    if fecha_pago:
+        try:
+            desde = _dt.date.fromisoformat(fecha_pago.strip()[:10])
+        except Exception:
+            desde = None
+    return estimar_entrega(zona, desde=desde)
+
+
+def plazo_devolucion(fecha_compra: str | None = None) -> dict:
+    """Plazo de devolucion por arrepentimiento. Con fecha de compra (ISO
+    YYYY-MM-DD) calcula hasta cuando puede devolver y si esta en termino."""
+    from app.core.posventa import plazo_devolucion as _pd
+    return _pd(fecha_compra)
+
+
+def garantia_vigente(fecha_compra: str | None = None,
+                     meses: int | None = None) -> dict:
+    """Calcula hasta cuando cubre la garantia de un producto. Necesita la fecha de
+    compra (ISO) y los meses de garantia del producto (de get_product_details)."""
+    from app.core.posventa import garantia_vigente as _gv
+    return _gv(fecha_compra, meses)
+
+
+def validar_cuit(cuit: str | None = None) -> dict:
+    """Valida un CUIT/CUIL argentino por su digito verificador."""
+    from app.core.posventa import validar_cuit as _vc
+    return _vc(cuit)
 
 
 TOOLS_REGISTRY = {
     "search_products": search_products,
+    "cotizar_envio": cotizar_envio,
+    "cubre_envio": cubre_envio,
+    "calcular_entrega": calcular_entrega,
+    "plazo_devolucion": plazo_devolucion,
+    "garantia_vigente": garantia_vigente,
+    "validar_cuit": validar_cuit,
     "get_product_details": get_product_details,
     "calculate_total": calculate_total,
     "find_within_budget": find_within_budget,

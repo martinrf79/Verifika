@@ -67,6 +67,11 @@ Núcleo verificable, reutilizable entre productos. Contiene:
 
 ## Reglas técnicas no negociables
 
+0. **Identidad ≠ Compatibilidad. El LLM nunca inventa identidad.** (Martín, 15-jun)
+   - Identidad ("¿existe este producto?") la decide UNA sola función determinista, el CERTIFICADOR (`app/core/certificador.py`), con tres veredictos de primera clase: `exists`, `ambiguous`, `not_found`. `not_found` NO es un error, es un resultado válido y exitoso.
+   - El LLM puede razonar, comparar, recomendar y cerrar, pero NUNCA decide que un producto existe. Ante `ambiguous` está obligado a preguntar, no a elegir.
+   - **Toda herramienta comercial (ficha, calculadora, tarifa, cierre) consume un `product_id` CERTIFICADO; ninguna opera sobre un producto inferido.**
+   - Compatibilidad ("¿este producto sirve para aquel?") es otro eje: respuesta razonada del LLM con ficha y FAQ. No se mezcla con identidad.
 1. **Multi-tenant siempre.** Toda función que toca datos debe recibir o resolver `tienda_id`. Nunca asumir tienda default fuera del orchestrator.
 2. **El LLM nunca decide qué tienda usar.** Eso lo resuelve el backend por `phone_number_id` o canal.
 3. **Anti-alucinación vive en dos lados:** prompt (línea uno) + código (línea cero, no negociable). El código siempre puede invalidar lo que dice el modelo.

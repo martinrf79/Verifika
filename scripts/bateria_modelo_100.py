@@ -67,10 +67,10 @@ async def main():
     problemas = []
     for i in range(n):
         msg = _gen(i)
-        pm.set_current_tienda("verifika_demo")
+        pm.set_current_tienda("verifika_prod")
         try:
             resp, meta = await pm.AG.run_agent(
-                msg, [], f"b{i}", tienda_id="verifika_demo", user_id="tester")
+                msg, [], f"b{i}", tienda_id="verifika_prod", user_id="tester")
         except Exception as e:
             res["excepcion"] += 1
             problemas.append((i, "EXCEPCION", msg, str(e)[:80]))

@@ -156,6 +156,10 @@ async def diag_latencia(request: Request):
         modelo = settings.GEMINI_MODEL
     elif settings.LLM_PROVIDER == "openai":
         modelo = settings.OPENAI_MODEL
+    elif settings.LLM_PROVIDER == "anthropic":
+        modelo = settings.ANTHROPIC_MODEL
+    elif settings.LLM_PROVIDER == "nemotron":
+        modelo = settings.NEMOTRON_MODEL
     else:
         modelo = settings.DEEPSEEK_MODEL
 

@@ -1,0 +1,42 @@
+# Configuracion de las herramientas de auditoria de codigo de Verifika.
+# Todas gratis y de uso comercial: Ruff (estilo y bugs), Mypy (tipos),
+# Bandit (seguridad), Pytest (tests). Correrlas todas: .\auditar.ps1
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["venv-win", "venv", "data", "reports"]
+
+[tool.ruff.lint]
+# Reglas F (bugs reales: imports sin uso, variables sin uso) y E (estilo pep8).
+select = ["E4", "E7", "E9", "F"]
+# Idioma del proyecto, decisiones conscientes, no deudas:
+#   E701/E702: varias sentencias en una linea en codigo de guardas compactas.
+#   E731: lambdas con nombre en stubs y callbacks chicos.
+#   E741: variables de una letra en zonas de matematica corta.
+ignore = ["E701", "E702", "E731", "E741"]
+
+[tool.ruff.lint.per-file-ignores]
+# Los scripts y lanzadores insertan la raiz al sys.path ANTES de importar app
+# (no son paquetes instalados): el import despues de esa linea es a proposito.
+"scripts/*" = ["E402"]
+"correr_*.py" = ["E402"]
+"smoke_local.py" = ["E402"]
+"tests/*" = ["E402"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["app"]
+# Arranque gradual: sin stubs de terceros y sin exigir anotaciones todavia.
+# El endurecimiento va modulo a modulo, empezando por app/core nuevo.
+ignore_missing_imports = true
+check_untyped_defs = false
+exclude = "(venv|venv-win|data|reports)"
+
+[tool.bandit]
+# Seguridad: el codigo de app/ esta limpio en medium y high (linea base 11-jun).
+exclude_dirs = ["venv", "venv-win", "tests", "data", "reports"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "prueba_*.py"]

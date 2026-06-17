@@ -1,0 +1,35 @@
+{
+  "_nota": "Banco de PUENTES de venta (flag PUENTES_VENTA). Un puente reemplaza el fallback seco cuando el sistema NO tiene el dato, manteniendo viva la venta SIN inventar un hecho. REGLA DURA: ningun texto de aca afirma un precio, stock, plazo, servicio ni promesa. Solo ofrece seguir o consultar. Editable sin deploy. umbral_insistencia: cuantas veces el cliente puede chocar contra el MISMO hueco antes de derivar a humano.",
+  "umbral_insistencia": 2,
+  "puentes": {
+    "sin_precio": {
+      "keywords": ["precio", "cuanto sale", "cuanto cuesta", "cuanto es", "valor", "cotiza", "presupuesto", "total"],
+      "texto": "Ese valor exacto lo confirmo con el area y te aviso en el momento, no te lo quiero tirar de memoria. Mientras tanto, te muestro lo que si tengo disponible y vamos viendo, dale?"
+    },
+    "servicio_inexistente": {
+      "keywords": ["envoltorio", "regalo", "armado", "instalacion", "instalan", "retiro", "retirar", "pasar a buscar", "local", "sucursal", "en mano", "entrega en mano", "factura a", "personalizado", "alquiler", "alquilan", "alquilar", "alquilo", "en alquiler"],
+      "texto": "Eso puntual no lo manejamos como servicio, pero no es drama: te puedo ayudar con el envio a domicilio y las formas de pago para que lo tengas sin moverte. Avanzamos por ahi?"
+    },
+    "fuera_catalogo": {
+      "keywords": ["tenes", "venden", "manejan", "consigo", "hay"],
+      "texto": "Eso no lo estoy viendo en lo que manejo, capaz lo tengo con otro nombre. Decime un poco mas para que lo busque bien, o te muestro las categorias que si tengo?"
+    },
+    "atributo_faltante": {
+      "keywords": ["color", "material", "viene con", "incluye", "compatible", "sirve para", "garantia", "origen", "fabricado", "peso", "medidas", "consumo"],
+      "texto": "Ese detalle puntual no lo tengo confirmado en la ficha y no te lo quiero inventar. Lo consulto y te confirmo, o seguimos con lo que si se del producto?"
+    },
+    "no_entiende": {
+      "keywords": [],
+      "texto": "Perdona, eso se me escapo un poco. Me lo decis de otra forma asi te ayudo bien? Si queres te muestro lo que tengo y vamos de ahi."
+    },
+    "promesa_entrega": {
+      "keywords": ["cuando llega", "que dia", "fecha de entrega", "tarda", "demora", "cuanto tarda", "para cuando"],
+      "texto": "El plazo te lo paso tal cual figura, pero un dia exacto no te lo puedo prometer porque depende del correo. Apenas se despacha te llega el seguimiento. Te paso el plazo estimado y avanzamos?"
+    },
+    "generico": {
+      "keywords": [],
+      "texto": "Esa puntual la tengo que confirmar para no pasarte un dato flojo. La consulto y te aviso, y mientras seguimos con lo que si tengo a mano?"
+    }
+  },
+  "derivar_humano": "Mira, para no hacerte perder tiempo con algo que no te puedo confirmar yo, te paso con una persona del equipo que te lo resuelve seguro. Me dejas tu nombre y un telefono y te contactan a la brevedad?"
+}

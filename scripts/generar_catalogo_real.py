@@ -17,7 +17,6 @@ Uso:
 """
 import os
 import csv
-import json
 import random
 import shutil
 

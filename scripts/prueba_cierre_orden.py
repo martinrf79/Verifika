@@ -41,7 +41,7 @@ INTERP_COMPRA = {"intencion": "decision_compra", "confianza": 0.92,
 async def caso(nombre, presupuesto, interpretacion, espera_accion):
     _leads_creados.clear()
     extra, meta = await leads.procesar_mensaje_para_lead(
-        user_id="u1", canal="telegram", tienda_id="verifika_demo",
+        user_id="u1", canal="telegram", tienda_id="verifika_prod",
         mensaje="el pago seria por tarjeta de credito, lo llevo",
         respuesta_solver="(respuesta del solver)", trace_id="t",
         interpretacion=interpretacion, presupuesto=presupuesto,
@@ -75,7 +75,7 @@ async def main():
         "lead_id": "L1", "estado": "datos_solicitados", "nombre": "",
         "telefono": "", "direccion": "", "forma_pago": ""}
     extra, meta = await leads.procesar_mensaje_para_lead(
-        user_id="u1", canal="telegram", tienda_id="verifika_demo",
+        user_id="u1", canal="telegram", tienda_id="verifika_prod",
         mensaje="cuanto sale el Mouse Logitech G203 con envio a Cordoba",
         respuesta_solver="(solver)", trace_id="t",
         interpretacion={"intencion": "pregunta_especifica", "confianza": 0.9,

@@ -101,6 +101,134 @@ def hybrid_search(query: str | None = None,
     return [p for _, p in scored[:top_n]]
 
 
+def _norm(s: str) -> str:
+    """minusculas sin acentos, para comparar lo que escribe el cliente con el
+    texto del catalogo sin que una tilde o mayuscula rompa el match."""
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(s).lower())
+    return "".join(c for c in s if not unicodedata.combining(c))
+
+
+def _canon(w: str) -> str:
+    """forma canonica de una palabra: saca una s final (mouses->mouse,
+    teclados->teclado). Suficiente para plurales del castellano comercial."""
+    return w[:-1] if len(w) > 3 and w.endswith("s") else w
+
+
+def _texto_buscable(p: dict) -> str:
+    """texto normalizado de TODOS los campos descriptivos del producto, no solo
+    nombre/categoria/descripcion: marca, modelo, color y uso_recomendado suelen
+    tener la palabra que el cliente uso (gaming, inalambrico, oficina)."""
+    partes = [p.get(k, "") for k in (
+        "nombre", "categoria", "descripcion", "marca", "modelo",
+        "color", "uso_recomendado", "caracteristicas_extra")]
+    return _norm(" ".join(str(x) for x in partes if x))
+
+
+def _score_relajado(p: dict, q_norm: str) -> float:
+    """score por palabras sobre el texto ampliado, tolerante a plural."""
+    texto = _texto_buscable(p)
+    score = 0.0
+    if q_norm in texto:
+        score += 5.0
+    for w in q_norm.split():
+        if len(w) < 3:
+            continue
+        if w in texto or _canon(w) in texto:
+            score += 1.5
+    return score
+
+
+def _resolver_categoria(categoria: str, cats_reales: list[str]) -> tuple[str | None, str]:
+    """Mapea la categoria que paso el modelo a una real del catalogo.
+    Devuelve (categoria_real | None, resto_para_query). 'teclado mecanico' ->
+    ('teclado', 'mecanico'); 'mouses' -> ('mouse', ''); 'proyector' -> (None,
+    'proyector') y esas palabras viajan a la query en vez de filtrar a cero."""
+    c = _norm(categoria)
+    c_canon = " ".join(_canon(w) for w in c.split())
+    for real in cats_reales:
+        r = _norm(real)
+        if c == r or c_canon == " ".join(_canon(w) for w in r.split()):
+            return real, ""
+    for real in sorted(cats_reales, key=len, reverse=True):
+        r = _norm(real)
+        if r in c_canon or r in c:
+            resto = c_canon.replace(r, " ").strip()
+            return real, resto
+    return None, c
+
+
+def hybrid_search_relajada(query: str | None = None,
+                           categoria: str | None = None,
+                           precio_min: int | None = None,
+                           precio_max: int | None = None,
+                           top_n: int = DEFAULT_TOP_N,
+                           tienda_id: str | None = None) -> dict:
+    """
+    Busqueda con escalera de relajacion (flag BUSQUEDA_RELAJADA). Garantia: si
+    los filtros duros (categoria real + precio) dejan candidatos, NUNCA devuelve
+    vacio; a lo sumo devuelve los candidatos marcados match_exacto=False para
+    que el vendedor los ofrezca en vez de negar stock que existe.
+
+    Devuelve {"productos", "match_exacto", "categoria_usada", "total_categoria",
+    "categorias_disponibles"} (la ultima solo cuando no hay nada que mostrar).
+    """
+    productos = get_all_products(tienda_id=tienda_id)
+    cats_reales = sorted({p.get("categoria", "") for p in productos if p.get("categoria")})
+
+    q = _norm(query) if query and query.strip() else ""
+    categoria_usada = None
+    if categoria and categoria.strip():
+        categoria_usada, resto = _resolver_categoria(categoria, cats_reales)
+        if resto:
+            q = (q + " " + resto).strip()
+
+    candidatos = productos
+    if categoria_usada:
+        candidatos = [p for p in candidatos
+                      if p.get("categoria", "") == categoria_usada]
+    if precio_min is not None:
+        candidatos = [p for p in candidatos if p.get("precio_ars", 0) >= precio_min]
+    if precio_max is not None:
+        candidatos = [p for p in candidatos if p.get("precio_ars", 0) <= precio_max]
+
+    if not q:
+        elegidos = sorted(candidatos, key=lambda p: p.get("precio_ars", 0))[:top_n]
+        log.info("hybrid_search_relajada", query="", categoria=categoria,
+                 categoria_usada=categoria_usada, encontrados=len(elegidos),
+                 match_exacto=True)
+        return {"productos": elegidos, "match_exacto": True,
+                "categoria_usada": categoria_usada,
+                "total_categoria": len(candidatos)}
+
+    scored = [(s, p) for p in candidatos if (s := _score_relajado(p, q)) > 0]
+    scored.sort(key=lambda t: t[0], reverse=True)
+    if scored:
+        log.info("hybrid_search_relajada", query=q[:50], categoria=categoria,
+                 categoria_usada=categoria_usada, encontrados=len(scored),
+                 match_exacto=True)
+        return {"productos": [p for _, p in scored[:top_n]], "match_exacto": True,
+                "categoria_usada": categoria_usada,
+                "total_categoria": len(candidatos)}
+
+    # Escalera: la palabra no engancho pero el cajon tiene productos reales.
+    # Mostrar el cajon (los mas baratos primero) en vez de negar.
+    if candidatos and (categoria_usada or precio_min is not None or precio_max is not None):
+        baratos = sorted(candidatos, key=lambda p: p.get("precio_ars", 0))[:top_n]
+        log.info("hybrid_search_relajada", query=q[:50], categoria=categoria,
+                 categoria_usada=categoria_usada, encontrados=len(baratos),
+                 match_exacto=False)
+        return {"productos": baratos, "match_exacto": False,
+                "categoria_usada": categoria_usada,
+                "total_categoria": len(candidatos)}
+
+    log.info("hybrid_search_relajada", query=q[:50], categoria=categoria,
+             categoria_usada=categoria_usada, encontrados=0, match_exacto=True)
+    return {"productos": [], "match_exacto": True,
+            "categoria_usada": categoria_usada, "total_categoria": 0,
+            "categorias_disponibles": cats_reales}
+
+
 def buscar_con_score(query: str | None,
                      productos: list[dict]) -> list[tuple[float, dict]]:
     """

@@ -15,10 +15,10 @@ import asyncio
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.core.nucleo import procesar_nucleo, gate_gravedad, _evidencia_faq, MENSAJE_CONSULTAR
+from app.core.nucleo import procesar_nucleo, gate_gravedad, _evidencia_faq
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FAQ_PATH = os.path.join(ROOT, "data", "clientes", "verifika_demo", "faq.json")
+FAQ_PATH = os.path.join(ROOT, "data", "clientes", "verifika_prod", "faq.json")
 
 
 def cargar_faq() -> dict:

@@ -19,6 +19,7 @@ Uso:
     else:
         mandar resultado["respuesta_final"]  # ya es el fallback
 """
+import os
 import re
 from typing import Optional
 
@@ -153,7 +154,6 @@ def _reconciliar_numeros(veredictos: list[dict],
 
 # Umbral mínimo de afirmaciones soportadas para mandar la respuesta tal cual.
 # Configurable por env: VERIFIKA_UMBRAL_CONFIANZA=0.7
-import os
 UMBRAL_CONFIANZA = float(os.getenv("VERIFIKA_UMBRAL_CONFIANZA", "0.7"))
 
 # Si hay AUNQUE SEA UNA afirmación contradicha, bloqueamos.

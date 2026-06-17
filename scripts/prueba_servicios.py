@@ -1,7 +1,7 @@
 """
 Prueba del verificador de servicios. Sin Firestore ni credenciales.
 
-Carga la FAQ real de verifika_demo, arma la evidencia igual que el orchestrator
+Carga la FAQ real de verifika_prod, arma la evidencia igual que el orchestrator
 (toda la FAQ como fuente de verdad) y corre escenarios: promesas inventadas que
 deben bloquear, servicios reales y negaciones que deben pasar.
 
@@ -17,7 +17,7 @@ sys.path.insert(0, str(RAIZ))
 
 from app.core.verificador_servicios import verificar_servicios  # noqa: E402
 
-FAQ_PATH = RAIZ / "data" / "clientes" / "verifika_demo" / "faq.json"
+FAQ_PATH = RAIZ / "data" / "clientes" / "verifika_prod" / "faq.json"
 
 
 def cargar_evidencia():

@@ -75,7 +75,6 @@ def _format_evidence(evidence: list[dict]) -> str:
                 f"| caracteristicas: {item.get('caracteristicas_extra', '')}"
             )
         elif tipo == "faq":
-            faq_tipo = item.get("faq_tipo") or item.get("tipo_faq") or "informativo"
             valores = item.get("valores") or []
             linea = (
                 f"[FAQ-{item.get('id', '?')}] tema: {item.get('tema', '?')} "

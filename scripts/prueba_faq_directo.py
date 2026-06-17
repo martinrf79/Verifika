@@ -1,7 +1,7 @@
 """
 Prueba del respondedor determinista de FAQ (Hito 2). Sin Firestore, sin LLM.
 
-Carga la FAQ real de verifika_demo y verifica que:
+Carga la FAQ real de verifika_prod y verifica que:
 - preguntas puras de envio y pago se contestan directo con el texto curado,
 - una pregunta multitema o con producto NO se cortocircuita (devuelve None),
   porque esas las maneja el Solver.
@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.core.faq_responder import responder_faq_directo, resolver_puertas
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FAQ_PATH = os.path.join(ROOT, "data", "clientes", "verifika_demo", "faq.json")
+FAQ_PATH = os.path.join(ROOT, "data", "clientes", "verifika_prod", "faq.json")
 
 
 def cargar_faq() -> dict:

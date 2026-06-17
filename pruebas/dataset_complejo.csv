@@ -70,42 +70,42 @@ M007,puedo pagar el Sony WH-1000XM5 en cuotas sin interes,mixto_faq_catalogo,res
 M008,el hyperx cloud ii tiene factura a,mixto_faq_catalogo,responder_combinando
 M009,el envio del teclado G915 cuanto demora,mixto_faq_catalogo,responder_combinando
 M010,tienen el fifine k669b con descuento por transferencia,mixto_faq_catalogo,responder_combinando
-M011,el cable HDMI lo puedo retirar en local,mixto_faq_catalogo,responder_combinando
+M011,el router TP-Link lo puedo retirar en local,mixto_faq_catalogo,responder_combinando
 M012,cuotas para la silla redragon coeus,mixto_faq_catalogo,responder_combinando
 M013,el monitor AOC sale envio gratis,mixto_faq_catalogo,responder_combinando
 M014,la garantia del ssd samsumg 980 es oficial,mixto_faq_catalogo,responder_combinando
 M015,puedo encargar el Logitech G Pro X si no hay stock,mixto_faq_catalogo,responder_combinando
 M016,como pago el cooler deepcool ak620,mixto_faq_catalogo,responder_combinando
-M017,el envio de la lampara Xiaomi a La Plata,mixto_faq_catalogo,responder_combinando
+M017,el envio del cargador Xiaomi a La Plata,mixto_faq_catalogo,responder_combinando
 M018,factura a para el teclado razer blackwidow,mixto_faq_catalogo,responder_combinando
 M019,es original el Mouse Razer DeathAdder,mixto_faq_catalogo,responder_combinando
 M020,tienn el monitor lg ultragear a 24 cuotas,mixto_faq_catalogo,responder_combinando
-M021,el envio del kit limpieza GoldenTech sale algo,mixto_faq_catalogo,responder_combinando
+M021,el envio del parlante Logitech Z313 sale algo,mixto_faq_catalogo,responder_combinando
 M022,la webcam c920 con cuotas visa,mixto_faq_catalogo,responder_combinando
 M023,puedo devolver el mouse Genius DX-110 si no me gusta,mixto_faq_catalogo,responder_combinando
 M024,el blue yeti llega manana a tucuman,mixto_faq_catalogo,responder_combinando
 M025,la memoria Corsair Vengeance tiene garantia oficial,mixto_faq_catalogo,responder_combinando
-M026,el adaptador wifi tp-link es nuevo o usado,mixto_faq_catalogo,responder_combinando
-M027,puedo pagar el Hub Anker en 3 cuotas,mixto_faq_catalogo,responder_combinando
-M028,la bateria xiaomi viene con factura,mixto_faq_catalogo,responder_combinando
+M026,el router tp-link es nuevo o usado,mixto_faq_catalogo,responder_combinando
+M027,puedo pagar el cargador Anker en 3 cuotas,mixto_faq_catalogo,responder_combinando
+M028,el cargador xiaomi viene con factura,mixto_faq_catalogo,responder_combinando
 M029,la silla ProSeat la hacen llegar a Salta,mixto_faq_catalogo,responder_combinando
-M030,el cooler watercooling cooler master tiene envio express,mixto_faq_catalogo,responder_combinando
-M031,el gamepad Xbox Wireless tiene garantia oficial,mixto_faq_catalogo,responder_combinando
-M032,el ssd kingston a2000 tiene 12 cuotas,mixto_faq_catalogo,responder_combinando
-M033,puedo retirar el Soporte VESA en buenos aires,mixto_faq_catalogo,responder_combinando
-M034,el organizador de cables tiene factura a,mixto_faq_catalogo,responder_combinando
+M030,la fuente cooler master tiene envio express,mixto_faq_catalogo,responder_combinando
+M031,el microfono HyperX QuadCast tiene garantia oficial,mixto_faq_catalogo,responder_combinando
+M032,el ssd kingston nv2 tiene 12 cuotas,mixto_faq_catalogo,responder_combinando
+M033,puedo retirar el gabinete en buenos aires,mixto_faq_catalogo,responder_combinando
+M034,la memoria ram kingston fury tiene factura a,mixto_faq_catalogo,responder_combinando
 M035,el cargador Anker 65W llega a Neuquen,mixto_faq_catalogo,responder_combinando
-M036,puedo pagar el razer goliathus en efectivo,mixto_faq_catalogo,responder_combinando
-M037,el Joystick Logitech F310 viene con manual,mixto_faq_catalogo,responder_combinando
-M038,es nuevo el soporte ergonomico notebook,mixto_faq_catalogo,responder_combinando
+M036,puedo pagar los auriclares jbl en efectivo,mixto_faq_catalogo,responder_combinando
+M037,el parlante Logitech viene con manual,mixto_faq_catalogo,responder_combinando
+M038,es nueva la notebook lenovo ideapad,mixto_faq_catalogo,responder_combinando
 M039,si compro tres mouse hay descuento mayorista,mixto_faq_catalogo,responder_combinando
-M040,el envio del pad steelseries qck mini al sur,mixto_faq_catalogo,responder_combinando
+M040,el envio del mause redragon cobra al sur,mixto_faq_catalogo,responder_combinando
 X001,me dijeron que el envio era gratis a todo el pais,contradiccion,corregir_con_catalogo_suavemente
-X002,uds estan en cordoba verdad,contradiccion,corregir_con_catalogo_suavemente
+X002,ustedes estan en cordoba verdad,contradiccion,corregir_con_catalogo_suavemente
 X003,tienen local en palermo no,contradiccion,corregir_con_catalogo_suavemente
 X004,el envio a interior es siempre gratis,contradiccion,corregir_con_catalogo_suavemente
 X005,el Logitech G203 me lo vendieron en blanco la vez pasada,contradiccion,corregir_con_catalogo_suavemente
-X006,la garantia es de 5 anos en todos los productos,contradiccion,corregir_con_catalogo_suavemente
+X006,la garantia es de 5 anos en todos los prodctos,contradiccion,corregir_con_catalogo_suavemente
 X007,el MX Master 3S pesa 250 gramos confirmame,contradiccion,corregir_con_catalogo_suavemente
 X008,el razer deathadder tiene cable yo lo vi,contradiccion,corregir_con_catalogo_suavemente
 X009,ustedes facturan factura C,contradiccion,corregir_con_catalogo_suavemente
@@ -113,35 +113,35 @@ X010,atienden las 24 horas,contradiccion,corregir_con_catalogo_suavemente
 X011,el Sony WH-1000XM5 tiene garantia de por vida,contradiccion,corregir_con_catalogo_suavemente
 X012,el monitor lg es 4k seguro me dijeron,contradiccion,corregir_con_catalogo_suavemente
 X013,tenes el HyperX Cloud II en azul,contradiccion,corregir_con_catalogo_suavemente
-X014,todos los productos son made in china,contradiccion,corregir_con_catalogo_suavemente
+X014,todos los prodctos son made in china,contradiccion,corregir_con_catalogo_suavemente
 X015,el FIFINE K669B es dinamico no condensador,contradiccion,corregir_con_catalogo_suavemente
-X016,venden iphone tmb,contradiccion,corregir_con_catalogo_suavemente
+X016,venden iphone tambien,contradiccion,corregir_con_catalogo_suavemente
 X017,el monitor Samsung Odyssey es de 27 pulgadas,contradiccion,corregir_con_catalogo_suavemente
 X018,el genius dx-110 trae 5 botones,contradiccion,corregir_con_catalogo_suavemente
 X019,la silla Cougar soporta 200 kilos,contradiccion,corregir_con_catalogo_suavemente
-X020,el cable hdmi cuesta 25 mil pesos no 9500,contradiccion,corregir_con_catalogo_suavemente
+X020,la memoria kingston fury ddr4 cuesta 25 mil no 34500,contradiccion,corregir_con_catalogo_suavemente
 X021,ustedes son distribuidores oficiales de Apple,contradiccion,corregir_con_catalogo_suavemente
 X022,el cargador anker es de 100w,contradiccion,corregir_con_catalogo_suavemente
 X023,venden tambien notebooks,contradiccion,corregir_con_catalogo_suavemente
 X024,el blue yeti es inalambrico,contradiccion,corregir_con_catalogo_suavemente
 X025,el teclado K380 viene en negro,contradiccion,corregir_con_catalogo_suavemente
 X026,uds acen repaciones tambien,contradiccion,corregir_con_catalogo_suavemente
-X027,el SSD Samsung 980 es de 2TB,contradiccion,corregir_con_catalogo_suavemente
-X028,el adaptador tp-link es wifi 6,contradiccion,corregir_con_catalogo_suavemente
-X029,el Hub Anker tiene 12 puertos,contradiccion,corregir_con_catalogo_suavemente
+X027,el SSD Samsung 980 es de 8TB,contradiccion,corregir_con_catalogo_suavemente
+X028,el router tp-link archer c6 es wifi 6,contradiccion,corregir_con_catalogo_suavemente
+X029,la webcam C920 es 4K,contradiccion,corregir_con_catalogo_suavemente
 X030,ustedes venden por mercado libre solamente,contradiccion,corregir_con_catalogo_suavemente
 X031,el envio a Ushuaia es gratis,contradiccion,corregir_con_catalogo_suavemente
 X032,el cougar armor s es de tela,contradiccion,corregir_con_catalogo_suavemente
 X033,el Razer BlackWidow es inalambrico,contradiccion,corregir_con_catalogo_suavemente
-X034,el ssd kingston tiene 1tb,contradiccion,corregir_con_catalogo_suavemente
-X035,la lampara Xiaomi es de pie,contradiccion,corregir_con_catalogo_suavemente
-X036,el watercooling cooler master es de 360mm,contradiccion,corregir_con_catalogo_suavemente
+X034,el ssd kingston nv2 es sata,contradiccion,corregir_con_catalogo_suavemente
+X035,el cargador Xiaomi es de 65W,contradiccion,corregir_con_catalogo_suavemente
+X036,la fuente cooler master es de 850w,contradiccion,corregir_con_catalogo_suavemente
 X037,la memoria G.Skill Trident Z es DDR4,contradiccion,corregir_con_catalogo_suavemente
 X038,ustedes envian por correo argentino,contradiccion,corregir_con_catalogo_suavemente
 X039,tienen sucursal en Mendoza,contradiccion,corregir_con_catalogo_suavemente
 X040,el cable usb-c anker es de 3 metros,contradiccion,corregir_con_catalogo_suavemente
-A001,el mouse Logitech a 38 mil que tenia RGB,ambiguedad,identificar_o_pedir_aclaracion
-A002,cual era el de samsumg de 225,ambiguedad,identificar_o_pedir_aclaracion
+A001,el mouse Logitech a 37 mil y pico que tenia RGB,ambiguedad,identificar_o_pedir_aclaracion
+A002,cual era el de samsumg de 117,ambiguedad,identificar_o_pedir_aclaracion
 A003,el teclado mecanico ese RGB,ambiguedad,identificar_o_pedir_aclaracion
 A004,los auriculares sony cuanto eran,ambiguedad,identificar_o_pedir_aclaracion
 A005,el mouse rojo de Razer,ambiguedad,identificar_o_pedir_aclaracion
@@ -156,7 +156,7 @@ A013,el mouse para programar,ambiguedad,identificar_o_pedir_aclaracion
 A014,el teclao pa mac,ambiguedad,identificar_o_pedir_aclaracion
 A015,el SSD mas rapido,ambiguedad,identificar_o_pedir_aclaracion
 A016,la memoria ddr5 que tenian,ambiguedad,identificar_o_pedir_aclaracion
-A017,el hub con HDMI,ambiguedad,identificar_o_pedir_aclaracion
+A017,el parlante chico para escritorio,ambiguedad,identificar_o_pedir_aclaracion
 A018,el cargador rapido pa notebook,ambiguedad,identificar_o_pedir_aclaracion
 A019,el gamepad inalambrico,ambiguedad,identificar_o_pedir_aclaracion
 A020,el pad mas grande,ambiguedad,identificar_o_pedir_aclaracion

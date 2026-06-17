@@ -12,7 +12,7 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-os.environ["TIENDA_ID"] = "verifika_demo"
+os.environ["TIENDA_ID"] = "verifika_prod"
 
 from app.core.orchestrator import process_message
 
@@ -58,7 +58,7 @@ async def correr_una_prueba(caso, idx, total):
     print(f"[{idx}/{total}] {caso['id']}: {pregunta[:60]}", flush=True)
     t0 = time.time()
     try:
-        respuesta = await process_message(user_id, pregunta, tienda_id="verifika_demo")
+        respuesta = await process_message(user_id, pregunta, tienda_id="verifika_prod")
         latencia_ms = int((time.time() - t0) * 1000)
         error = ""
     except Exception as e:

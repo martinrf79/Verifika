@@ -29,7 +29,7 @@ from app.core.notificador import disparar_notificacion_background
 from app.config import get_settings
 from app.logger import get_logger
 from app.core.tools import get_tools_schema, TOOLS_REGISTRY
-from app.core.tools_context import set_current_tienda, get_current_tienda
+from app.core.tools_context import set_current_tienda
 from app.storage.firestore_client import get_config
 
 log = get_logger(__name__)
@@ -93,6 +93,37 @@ def _get_client():
                 base_url=settings.ANTHROPIC_BASE_URL,
                 timeout=settings.LLM_TIMEOUT_SECONDS,
             )
+        elif settings.LLM_PROVIDER == "nemotron":
+            # Nemotron via NIM de NVIDIA (endpoint compatible OpenAI): mismo
+            # cliente, base_url de NVIDIA. API gratis. El tool calling no esta
+            # garantizado en required: el Solver va en auto (ver tc_mode abajo).
+            if not settings.NEMOTRON_API_KEY:
+                raise RuntimeError("NEMOTRON_API_KEY no configurada")
+            _client = OpenAI(
+                api_key=settings.NEMOTRON_API_KEY,
+                base_url=settings.NEMOTRON_BASE_URL,
+                timeout=settings.LLM_TIMEOUT_SECONDS,
+            )
+        elif settings.LLM_PROVIDER == "kimi":
+            # Kimi (Moonshot) via NIM de NVIDIA (endpoint compatible OpenAI). API
+            # gratis, obediente. Misma clave nvapi- que Nemotron. El tool calling
+            # required de NIM no esta garantizado: el Solver va en auto (tc_mode).
+            if not settings.KIMI_API_KEY:
+                raise RuntimeError("KIMI_API_KEY (o NEMOTRON_API_KEY) no configurada")
+            _client = OpenAI(
+                api_key=settings.KIMI_API_KEY,
+                base_url=settings.KIMI_BASE_URL,
+                timeout=settings.LLM_TIMEOUT_SECONDS,
+            )
+        elif settings.LLM_PROVIDER == "openrouter":
+            # OpenRouter: OpenAI-compatible, una clave para cientos de modelos.
+            if not settings.OPENROUTER_API_KEY:
+                raise RuntimeError("OPENROUTER_API_KEY no configurada")
+            _client = OpenAI(
+                api_key=settings.OPENROUTER_API_KEY,
+                base_url=settings.OPENROUTER_BASE_URL,
+                timeout=settings.LLM_TIMEOUT_SECONDS,
+            )
         else:
             raise RuntimeError(f"LLM_PROVIDER inválido: {settings.LLM_PROVIDER}")
     return _client
@@ -111,20 +142,38 @@ def _get_schema():
     reraise=True,
 )
 def _call_llm(client, model_name, messages, tools_schema, tool_choice="auto"):
-    from app.config import deepseek_extra_body, deepseek_pensando
+    from app.config import (deepseek_extra_body, deepseek_pensando,
+                            gemini_thinking_off, nvidia_thinking_off,
+                            openrouter_reasoning_off)
     # El modo razonador NO soporta forzar la tool: si pensamos, vamos en auto.
     if deepseek_pensando(model_name) and tool_choice == "required":
         tool_choice = "auto"
-    extra = deepseek_extra_body(model_name)
-    resp = client.chat.completions.create(
-        model=model_name,
-        messages=messages,
-        tools=tools_schema,
-        tool_choice=tool_choice,
-        temperature=settings.TEMPERATURE,
-        max_tokens=settings.MAX_OUTPUT_TOKENS,
-        **({"extra_body": extra} if extra else {}),
-    )
+    # En NVIDIA NIM (nemotron/kimi) el thinking se apaga con chat_template_kwargs;
+    # en OpenRouter con reasoning; en Gemini directo con reasoning_effort; en
+    # DeepSeek directo, con el extra_body propio.
+    nv = nvidia_thinking_off(settings.LLM_PROVIDER, model_name)
+    orr = openrouter_reasoning_off(settings.LLM_PROVIDER, model_name)
+    gm = gemini_thinking_off(settings.LLM_PROVIDER, model_name)
+    extra = nv or orr or gm or deepseek_extra_body(model_name)
+    try:
+        resp = client.chat.completions.create(
+            model=model_name,
+            messages=messages,
+            tools=tools_schema,
+            tool_choice=tool_choice,
+            temperature=settings.TEMPERATURE,
+            max_tokens=settings.MAX_OUTPUT_TOKENS,
+            **({"extra_body": extra} if extra else {}),
+        )
+    except Exception:
+        # Si el modelo rechaza el extra (chat_template_kwargs no soportado), reintentar limpio.
+        if extra:
+            resp = client.chat.completions.create(
+                model=model_name, messages=messages, tools=tools_schema,
+                tool_choice=tool_choice, temperature=settings.TEMPERATURE,
+                max_tokens=settings.MAX_OUTPUT_TOKENS)
+        else:
+            raise
     # Visibilidad del cache de contexto de DeepSeek (automatico). Si cache_hit
     # viene alto, estamos ahorrando tokens por el prefijo estable del prompt.
     u = getattr(resp, "usage", None)
@@ -182,7 +231,7 @@ Si la FAQ no tiene la respuesta → "Dejame consultar con el área indicada y te
 ═══ REGLA #4 — CÁLCULOS ═══
 Cualquier total, multiplicación por cantidad, presupuesto → llamás calculate_total o find_within_budget.
 TODO numero derivado de una cuenta sale de calculate_total, sin excepcion: subtotal, total, descuento por transferencia, precio con descuento, recargo y ahorro. PROHIBIDO calcular cualquiera de estos de cabeza aunque la cuenta parezca trivial. El descuento por transferencia y el ahorro TAMBIEN salen de calculate_total con su items_extra correspondiente, nunca los calcules vos. Si no podes obtener un numero derivado llamando la herramienta, NO lo digas: pedi el dato que falta o deriva.
-IMPORTANTE sobre product_id: NUNCA inventes product_ids como MOUSE_LOGITECH_X o TECLADO_Y. Los product_ids reales SOLO los obtenes del campo id que devuelve search_products o get_product_details. Si vas a llamar calculate_total y no tenes los ids reales en evidencia previa, PRIMERO llama search_products para conseguirlos. No adivines ids a partir del nombre del producto.
+IMPORTANTE sobre product_id: nunca lo inventes ni lo derives del nombre. Sacalo del campo id que devuelve search_products o get_product_details; si no lo tenes en evidencia, busca primero.
 
 CALCULO CON EXTRAS DE FAQ (envios, descuentos, recargos):
 Si el cliente pide un total que incluye algo de FAQ cuantitativa (por ejemplo cuanto sale con envio a Santa Fe), llamas calculate_total con DOS parametros:
@@ -260,6 +309,44 @@ Tu trabajo no es solo tirar el dato, es hacer AVANZAR la venta sin inventar nada
 Todo esto SIN romper las reglas 1 a 8: cero numeros de cabeza, cero datos inventados, cero promesas fuera de la FAQ. Vender es ordenar bien lo que ES verdad, nunca agregar lo que no."""
 
 
+# ── PROMPT LIVIANO (flag PROMPT_LIGERO) ──────────────────────────────────────
+# Mismo trabajo que el pesado pero sin los parrafos defensivos que el codigo ya
+# enforcea (verificador de numeros, calculadora, corrector). El modelo vende y,
+# cuando no tiene el dato, RELATA el veredicto de la tool en vez de adivinar.
+# Conserva intactas las dos piezas no negociables: opcion A/B y confirmacion.
+_SYSTEM_PROMPT_LIGERO = """Sos un vendedor de {business_name}, tienda online argentina de tecnologia y gaming. Hablas en espanol argentino, tuteando. Tu trabajo es vender bien y honesto: ordenas lo que ES verdad y lo haces avanzar hacia la compra, sin agregar lo que no sabes. Pensa libre la forma de vender; el hecho nunca lo inventas.
+
+COMO TRABAJAS
+- Todo dato de producto (precio, stock, specs, marca) y de la tienda (envio, pago, garantia, devoluciones) sale de las herramientas, nunca de tu cabeza. Antes de afirmar algo, llamas la tool. Si necesitas varias cosas, hace las busquedas juntas en un solo paso.
+- Los totales, descuentos y recargos los da calculate_total. Copia su campo presentacion TAL CUAL. Nunca sumes ni multipliques vos.
+- El costo de envio lo da cotizar_envio con el codigo postal o la localidad del cliente. No elijas la zona vos ni afirmes en que provincia queda una ciudad.
+
+EL ESTADO LO PONE EL INTERPRETADOR, no lo cambies vos
+- explorando: informa y mostra productos con las tools.
+- esperando_confirmacion: ayudalo a decidir, no reabras el catalogo.
+- esperando_datos: pedi o confirma el dato que falta (direccion, pago, contacto), sin volver a ofrecer.
+- derivar_humano: cerra cordial, una persona del equipo lo contacta.
+- saludo: devolve el saludo y ofrece ayuda corta. posventa: responde con query_faq, no fuerces venta nueva.
+
+CUANDO NO TENES EL DATO (lo mas importante)
+La herramienta te dice que tiene. Vos relatas lo que dice, no adivinas:
+- DOS CAMINOS O CANDIDATOS (incluido el campo ofrecer_opciones, o un rango que da calculate_total): presentalos como opcion A y opcion B con su detalle o valor, y termina preguntando cual prefiere. Nunca elijas vos, nunca promedies, nunca des un solo numero cuando hay dos.
+- HUECO QUE SE PUEDE ACOTAR: hace UNA pregunta corta para acotar (que uso, que presupuesto, que ciudad) y segui. No asumas el escenario del cliente.
+- HUECO QUE NO SE PUEDE ACOTAR: decilo honesto, "eso lo confirmo con el area y te aviso en un rato", y ofrece lo que SI tenes del catalogo relacionado. Nunca inventes para tapar el hueco: ni precios, ni stock, ni materiales, ni promesas de entrega, ni servicios que no esten en la FAQ (armado, retiro en local, envoltorio, instalacion).
+
+VENDER SIN INVENTAR
+- Tranquiliza la duda tecnica con lo que dice la ficha del catalogo; si ese dato no esta, decilo honesto y ofrece lo que si sabes.
+- Compatibilidad y originalidad: contesta desde las specs y la marca de la ficha, con seguridad. No repitas como cierta la duda del cliente.
+- Lee la senal de compra (si compro dos, lo necesito ya, paso a buscarlo): reconocela y avanza al cierre o al dato que falta. El unico descuento que existe es el de la FAQ (transferencia o efectivo); no inventes rebajas por cantidad.
+- Si query_faq trae sugerencia_venta, es un cierre ya verificado: usalo o adaptalo cuando venga al caso, sin cambiar sus numeros.
+- Regateo o precio de afuera: no repitas ni aceptes ese numero (repetirlo bloquea tu respuesta). Deci el precio real del catalogo con cortesia.
+- No emitas juicios de valor que no esten en el catalogo (vale la pena, es el mejor); traducilos a criterios objetivos de la ficha.
+
+ESTILO
+- Espanol argentino, tuteo. 1 a 3 oraciones. Texto plano, sin markdown ni asteriscos. Precios formato $280.000. Productos por nombre completo, nunca por ID.
+"""
+
+
 def _build_system_prompt(tienda_id: str | None) -> str:
     """
     Construye el system prompt usando el nombre del negocio de la tienda actual.
@@ -274,6 +361,13 @@ def _build_system_prompt(tienda_id: str | None) -> str:
         except Exception as e:
             log.warning("system_prompt_fallback_to_default",
                         tienda_id=tienda_id, error=str(e)[:100])
+
+    # Prompt liviano: template corto y self-contained. La venta, el A/B, la
+    # confirmacion y la regla de envio ya viven adentro, asi que NO se le pegan los
+    # apendices pesados (_REGLA_VENTA, _REGLA_PRESENTACION, bloque ENVIO). El hecho
+    # lo custodia el codigo (verificador, calculadora). Reversible por flag.
+    if settings.PROMPT_LIGERO:
+        return _SYSTEM_PROMPT_LIGERO.format(business_name=business_name)
 
     prompt = _SYSTEM_PROMPT_TEMPLATE.format(business_name=business_name)
     # Constitucion como tabla suprema: el mismo texto canonico que el gate
@@ -290,6 +384,34 @@ def _build_system_prompt(tienda_id: str | None) -> str:
     prompt += _REGLA_PRESENTACION
     if settings.PROMPT_VENTA:
         prompt += _REGLA_VENTA
+    # Envio por zona: el costo de envio lo resuelve el codigo, no el modelo.
+    if settings.ENVIO_POR_ZONA:
+        prompt += (
+            "\n\n═══ ENVIO: USA cotizar_envio ═══\n"
+            "Costo de envio: llama cotizar_envio con lo que dijo el cliente tal "
+            "cual, no elijas la zona vos ni uses items_extra de costo_envio. Segui "
+            "el mensaje que devuelve la tool. Nunca afirmes en que provincia queda "
+            "una ciudad."
+        )
+    # Fecha de entrega: la ventana la calcula el codigo, el modelo no promete dia.
+    if settings.FECHA_ENTREGA:
+        prompt += (
+            "\n\n═══ ENTREGA: USA calcular_entrega ═══\n"
+            "Cuando el cliente pregunte cuando llega o para que fecha, llama "
+            "calcular_entrega con su localidad o codigo postal. NUNCA prometas un "
+            "dia exacto ni acortes el plazo: pasa la ventana que devuelve el tool, "
+            "que ya es una estimacion en dias habiles y aclara que el dia depende "
+            "del correo. Si no hay zona, pedi el codigo postal."
+        )
+    # Libro de asientos de numeros (Fase 2): el Solver lista al final cada cifra de
+    # dinero con su fuente. Solo en modo solver; en extractor/fusion el Solver
+    # responde libre y el libro lo declara el corrector LLM (mejor emision).
+    if settings.LIBRO_ASIENTOS and settings.LIBRO_MODO == "solver":
+        try:
+            from app.core.libro import PROMPT_LIBRO
+            prompt += PROMPT_LIBRO
+        except Exception as e:
+            log.warning("prompt_libro_error", error=str(e)[:120])
     return prompt
 
 
@@ -297,14 +419,22 @@ async def run_agent(user_message: str,
                     history: list[dict],
                     trace_id: str,
                     tienda_id: str | None = None,
-                    user_id: str | None = None) -> tuple[str, dict]:
+                    user_id: str | None = None,
+                    system_prompt: str | None = None,
+                    tools_schema: list | None = None) -> tuple[str, dict]:
     log.info("run_agent_inicio")
-    """Ejecuta el agente. Devuelve (respuesta_texto, metadata)."""
+    """Ejecuta el agente. Devuelve (respuesta_texto, metadata).
+
+    system_prompt: si viene, se usa TAL CUAL en vez del prompt pesado por
+    defecto. Lo usa el MODO_LIBRE para correr el modelo con un prompt corto de
+    venta. Default None = comportamiento identico al previo.
+    tools_schema: si viene, el modelo ve SOLO esas tools (override). Lo usa el
+    MODO_LIBRE para acotar a catalogo y FAQs. Default None = todas, como hoy."""
     set_current_tienda(tienda_id)
 
     client = _get_client()
-    tools_schema = _get_schema()
-    system_prompt = _build_system_prompt(tienda_id)
+    tools_schema = tools_schema if tools_schema is not None else _get_schema()
+    system_prompt = system_prompt or _build_system_prompt(tienda_id)
 
     messages = [{"role": "system", "content": system_prompt}]
     # MISMA cantidad de turnos siempre (no se reduce la memoria).
@@ -315,6 +445,7 @@ async def run_agent(user_message: str,
 
     tools_called: list[dict] = []
     iterations = 0
+    reintento_vacio_hecho = False
     if settings.LLM_PROVIDER == "groq":
         model_name = settings.GROQ_MODEL
     elif settings.LLM_PROVIDER == "gemini":
@@ -323,13 +454,20 @@ async def run_agent(user_message: str,
         model_name = settings.OPENAI_MODEL
     elif settings.LLM_PROVIDER == "anthropic":
         model_name = settings.ANTHROPIC_MODEL
+    elif settings.LLM_PROVIDER == "nemotron":
+        model_name = settings.NEMOTRON_MODEL
+    elif settings.LLM_PROVIDER == "kimi":
+        model_name = settings.KIMI_MODEL
+    elif settings.LLM_PROVIDER == "openrouter":
+        model_name = settings.OPENROUTER_MODEL
     else:
         model_name = settings.DEEPSEEK_MODEL
 
     while iterations < settings.MAX_TOOL_ITERATIONS:
         iterations += 1
-        if settings.LLM_PROVIDER == "gemini":
-            # El compat de Gemini no soporta required de forma confiable.
+        if settings.LLM_PROVIDER in ("gemini", "nemotron", "kimi"):
+            # El compat de Gemini y el NIM de NVIDIA (Nemotron, Kimi) no soportan
+            # required de forma confiable: vamos en auto para no romper la 1a vuelta.
             tc_mode = "auto"
         else:
             tc_mode = "required" if iterations == 1 else "auto"
@@ -359,6 +497,21 @@ async def run_agent(user_message: str,
             }
 
         _call_ms = int((time.perf_counter() - _ts_call) * 1000)
+        # OpenRouter (y otros gateways) a veces devuelven 200 con choices=None
+        # (error del upstream embebido en el body). Sin esta guarda, el turno
+        # entero moria con TypeError en vez de reintentar.
+        if not getattr(response, "choices", None):
+            _err_body = getattr(response, "error", None) or getattr(
+                response, "model_extra", None)
+            log.warning("agent_llm_respuesta_vacia", trace_id=trace_id,
+                        iteration=iterations, detalle=str(_err_body)[:200])
+            if iterations < settings.MAX_TOOL_ITERATIONS:
+                continue
+            return settings.FALLBACK_MESSAGE, {
+                "tools_called": tools_called,
+                "error": "respuesta_sin_choices",
+                "iterations": iterations,
+            }
         msg = response.choices[0].message
         # Tokens de la llamada: dato duro para ver si el payload (historial,
         # tools, evidencia) crece y encarece/ralentiza cada llamada.
@@ -378,7 +531,73 @@ async def run_agent(user_message: str,
                  cache_hit_tokens=_cache_hit)
 
         if not msg.tool_calls:
-            final_text = (msg.content or "").strip() or settings.FALLBACK_MESSAGE
+            final_text = (msg.content or "").strip()
+            # RESCATE: el modelo escribio el tool call como TEXTO en vez del
+            # campo tool_calls (DeepSeek via OpenRouter, Gemma). Sin esto, el
+            # markup crudo llega al cliente. Se parsea, se EJECUTA la tool de
+            # verdad y sigue el loop; si no se puede parsear, se limpia el
+            # markup y, si no queda texto util, cae al reintento normal.
+            if settings.RESCATE_TOOLCALL_TEXTO and final_text:
+                from app.core.rescate_toolcall import (
+                    hay_markup, parsear_toolcalls_texto)
+                if hay_markup(final_text):
+                    llamadas, limpio = parsear_toolcalls_texto(final_text)
+                    if llamadas:
+                        log.warning("rescate_toolcall_texto", trace_id=trace_id,
+                                    iteration=iterations,
+                                    tools=[c["name"] for c in llamadas])
+                        tcs = [{
+                            "id": f"rescate_{iterations}_{j}",
+                            "type": "function",
+                            "function": {
+                                "name": c["name"],
+                                "arguments": json.dumps(
+                                    c["args"], ensure_ascii=False),
+                            },
+                        } for j, c in enumerate(llamadas)]
+                        messages.append({"role": "assistant",
+                                         "content": limpio,
+                                         "tool_calls": tcs})
+                        for j, c in enumerate(llamadas):
+                            func = TOOLS_REGISTRY.get(c["name"])
+                            if func is None:
+                                result = {"error": f"tool '{c['name']}' no existe"}
+                            else:
+                                try:
+                                    result = func(**c["args"])
+                                except Exception as e:
+                                    log.error("tool_exception", trace_id=trace_id,
+                                              tool=c["name"], error=str(e)[:200])
+                                    result = {"error": f"error ejecutando tool: {str(e)[:100]}"}
+                            tools_called.append({
+                                "name": c["name"], "args": c["args"],
+                                "result_keys": list(result.keys()) if isinstance(result, dict) else None,
+                                "proof": result.get("proof") if isinstance(result, dict) else None,
+                                "result": result if isinstance(result, dict) else None,
+                            })
+                            messages.append({
+                                "role": "tool",
+                                "tool_call_id": tcs[j]["id"],
+                                "name": c["name"],
+                                "content": json.dumps(result, ensure_ascii=False),
+                            })
+                        continue
+                    # Markup sin llamada parseable: que el cliente no vea tokens
+                    # crudos. Si lo que queda es ruido, se trata como vacia.
+                    log.warning("rescate_toolcall_sin_parse", trace_id=trace_id,
+                                iteration=iterations, preview=final_text[:120])
+                    final_text = "" if "{" in limpio else limpio
+            # Respuesta VACIA sin tools: el compat de Gemini lo hace esporadico
+            # (3 turnos del molino del 10-jun terminaron en "problema tecnico"
+            # sin excepcion ni log de error: era esto). Un reintento inmediato
+            # antes de resignar el turno al fallback.
+            if (not final_text and settings.REINTENTA_RESPUESTA_VACIA
+                    and not reintento_vacio_hecho):
+                reintento_vacio_hecho = True
+                log.warning("agent_respuesta_vacia_reintento",
+                            trace_id=trace_id, iteration=iterations)
+                continue
+            final_text = final_text or settings.FALLBACK_MESSAGE
             # VALIDATOR VIEJO de palabras peligrosas. Desactivado por defecto.
             # Verifika Proposer Checker ya cubre estos casos con contexto semantico.
             # Para reactivar setear USE_VALIDATOR_VIEJO=true en Cloud Run.

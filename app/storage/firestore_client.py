@@ -255,7 +255,11 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       estado_conversacion: str | None = None,
                       ultima_compra: str | None = None,
                       proofs_recientes: list | None = None,
-                      ultimo_presupuesto: str | None = None):
+                      ultimo_presupuesto: str | None = None,
+                      productos_vistos: list | None = None,
+                      ultima_localidad: str | None = None,
+                      carrito_vigente: list | None = None,
+                      pedido_pendiente: dict | None = None):
     datos = {
         "history": history,
         "summary": summary,
@@ -271,6 +275,23 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
         datos["proofs_recientes"] = proofs_recientes
     if ultimo_presupuesto is not None:
         datos["ultimo_presupuesto"] = ultimo_presupuesto
+    # REGISTRO DE SESION: productos mostrados con su product_id, para que en el
+    # turno siguiente el Solver tenga el ID real (la prosa solo guarda nombre y
+    # precio). Lista {id, nombre, precio}, ya viene capada por el orchestrator.
+    if productos_vistos is not None:
+        datos["productos_vistos"] = productos_vistos
+    # Ultima localidad de envio mencionada, para cotizar el envio en turnos
+    # siguientes cuando el cliente dice "el envio ahi" sin repetir la ciudad.
+    if ultima_localidad is not None:
+        datos["ultima_localidad"] = ultima_localidad
+    # CARRITO VIGENTE: items del ultimo calculate_total ok {id, nombre,
+    # cantidad}, para que el pedido no mute de identidad entre turnos.
+    if carrito_vigente is not None:
+        datos["carrito_vigente"] = carrito_vigente
+    # PEDIDO PENDIENTE: el pedido a medio armar (items resueltos + terminos
+    # ambiguos con cantidad) esperando el criterio del cliente. {} = limpiar.
+    if pedido_pendiente is not None:
+        datos["pedido_pendiente"] = pedido_pendiente
     _tienda_ref(tienda_id).collection("conversaciones").document(user_id).set(
         datos, merge=True)
 

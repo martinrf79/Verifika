@@ -63,7 +63,7 @@ from app.core.verificador import verificar_respuesta
 
 # ── Datos locales ──
 prods = []
-with open(os.path.join(ROOT, "data/clientes/verifika_demo/productos.csv"),
+with open(os.path.join(ROOT, "data/clientes/verifika_prod/productos.csv"),
           encoding="utf-8") as f:
     for row in csv.DictReader(f):
         p = {"id": row["id"].strip(), "nombre": row["nombre"].strip(),
@@ -76,7 +76,7 @@ with open(os.path.join(ROOT, "data/clientes/verifika_demo/productos.csv"),
                 p[k] = str(v).strip()
         prods.append(p)
 faq = {x["tema"]: x for x in json.load(
-    open(os.path.join(ROOT, "data/clientes/verifika_demo/faq.json"),
+    open(os.path.join(ROOT, "data/clientes/verifika_prod/faq.json"),
          encoding="utf-8"))}
 by_id = {p["id"]: p for p in prods}
 
@@ -134,11 +134,11 @@ ESCENARIOS = [
 
 
 async def probar(nombre, mensaje):
-    set_current_tienda("verifika_demo")
+    set_current_tienda("verifika_prod")
     t0 = time.perf_counter()
     try:
         resp, meta = await AG.run_agent(mensaje, [], "smoke-" + nombre,
-                                        tienda_id="verifika_demo", user_id="tester")
+                                        tienda_id="verifika_prod", user_id="tester")
     except Exception as e:
         print(f"\n[EXCEPCION] {nombre}: {str(e)[:200]}")
         return

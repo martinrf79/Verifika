@@ -1,0 +1,9 @@
+# Reproduce la venta de teclados del 12-jun (errores: stock inventado,
+# direccion fantasma, link ignorado, leads duplicados, pedido viejo al cierre).
+Estoy buscando 3 teclados blancos los mas economicos con envio a villa rumipal
+y el envio
+a donde lo envian
+ok enviame link
+Y el link de mp?
+Carlos Paez 3571658745 mercado pago
+calle mitre 100 villa rumipal cordoba

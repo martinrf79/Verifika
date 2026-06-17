@@ -117,6 +117,46 @@ def _get_client(provider: str):
             raise RuntimeError("OPENAI_API_KEY no configurada")
         client = OpenAI(api_key=api_key)
 
+    elif provider == "nemotron":
+        # Nemotron via NIM de NVIDIA: OpenAI-compatible, otra base_url. API gratis.
+        api_key = os.getenv("NEMOTRON_API_KEY", "")
+        if not api_key:
+            raise RuntimeError("NEMOTRON_API_KEY no configurada")
+        client = OpenAI(
+            api_key=api_key,
+            base_url=os.getenv("NEMOTRON_BASE_URL",
+                               "https://integrate.api.nvidia.com/v1"),
+            timeout=_timeout,
+        )
+
+    elif provider == "openrouter":
+        # OpenRouter: OpenAI-compatible, una clave (sk-or-) para cientos de modelos.
+        api_key = os.getenv("OPENROUTER_API_KEY", "")
+        if not api_key:
+            raise RuntimeError("OPENROUTER_API_KEY no configurada")
+        client = OpenAI(
+            api_key=api_key,
+            base_url=os.getenv("OPENROUTER_BASE_URL",
+                               "https://openrouter.ai/api/v1"),
+            timeout=_timeout,
+        )
+
+    elif provider == "kimi":
+        # Kimi (Moonshot) via NIM de NVIDIA: OpenAI-compatible, API gratis, obediente
+        # y con tool calling real. Misma clave nvapi- que Nemotron, asi que si no hay
+        # KIMI_API_KEY propia, cae a NEMOTRON_API_KEY. La base_url default es la de
+        # NVIDIA; si tu clave fuera de Moonshot directo u OpenRouter, solo cambia
+        # KIMI_BASE_URL en el .env (no toca codigo).
+        api_key = os.getenv("KIMI_API_KEY", "") or os.getenv("NEMOTRON_API_KEY", "")
+        if not api_key:
+            raise RuntimeError("KIMI_API_KEY (o NEMOTRON_API_KEY) no configurada")
+        client = OpenAI(
+            api_key=api_key,
+            base_url=os.getenv("KIMI_BASE_URL",
+                               "https://integrate.api.nvidia.com/v1"),
+            timeout=_timeout,
+        )
+
     else:
         raise RuntimeError(f"Provider desconocido: {provider}")
 
@@ -150,10 +190,74 @@ _RETRYABLE_EXCEPTIONS = (
     before_sleep=before_sleep_log(_tenacity_log, logging.WARNING),
     reraise=True,
 )
+def _nvidia_thinking_off(client, model: str) -> dict:
+    """En el endpoint de NVIDIA NIM, los modelos que razonan por default
+    (deepseek v4, qwen3, nemotron, gpt-oss) suman 30-200s de latencia. NVIDIA
+    apaga el thinking con chat_template_kwargs. Devuelve el extra_body solo si
+    el cliente apunta a NVIDIA y el modelo razona; si no, {}. Otros providers
+    (deepseek directo, groq, openai) no reciben este parametro."""
+    try:
+        base = str(getattr(client, "base_url", "")).lower()
+    except Exception:
+        base = ""
+    if "nvidia" not in base:
+        return {}
+    m = model.lower()
+    razona = (("v4" in m and "deepseek" in m) or "qwen3" in m
+              or "nemotron" in m or "gpt-oss" in m)
+    if not razona:
+        return {}
+    return {"extra_body": {"chat_template_kwargs": {"thinking": False}}}
+
+
+def _openrouter_reasoning_off(client, model: str) -> dict:
+    """Gemelo del de arriba para OpenRouter: los modelos que razonan por
+    default (gemini-2.5, qwen3, deepseek v4/r1, gpt-oss) suman 10-40s por
+    llamada. OpenRouter lo apaga con el parametro unificado reasoning. Solo si
+    el cliente apunta a OpenRouter y el modelo razona; si no, {}. Se puede
+    desactivar con OPENROUTER_REASONING_OFF=false."""
+    import os
+    if os.getenv("OPENROUTER_REASONING_OFF", "true").lower() != "true":
+        return {}
+    try:
+        base = str(getattr(client, "base_url", "")).lower()
+    except Exception:
+        base = ""
+    if "openrouter" not in base:
+        return {}
+    m = model.lower()
+    razona = ("gemini-2.5" in m or "qwen3" in m or "gpt-oss" in m
+              or ("deepseek" in m and ("v4" in m or "r1" in m))
+              or "thinking" in m)
+    if not razona:
+        return {}
+    return {"extra_body": {"reasoning": {"enabled": False}}}
+
+
+def _gemini_thinking_off(client, model: str) -> dict:
+    """Gemelo para la API directa de Gemini (endpoint compat de Google):
+    gemini-2.5 piensa por default y el pensamiento consume max_tokens, dejando
+    el contenido vacio o cortado. Se apaga con reasoning_effort=none. Solo si
+    el cliente apunta a generativelanguage.googleapis.com y el modelo es 2.5+.
+    Se desactiva con GEMINI_THINKING_OFF=false."""
+    import os
+    if os.getenv("GEMINI_THINKING_OFF", "true").lower() != "true":
+        return {}
+    try:
+        base = str(getattr(client, "base_url", "")).lower()
+    except Exception:
+        base = ""
+    if "generativelanguage" not in base:
+        return {}
+    if "2.5" not in model.lower():
+        return {}
+    return {"extra_body": {"reasoning_effort": "none"}}
+
+
 def _call_openai_compatible(client, model: str, messages: list,
                              temperature: float, max_tokens: int,
                              tools: Optional[list] = None) -> dict:
-    """Para deepseek, groq, openai (todos OpenAI-compatible)."""
+    """Para deepseek, groq, openai, nemotron, kimi (todos OpenAI-compatible)."""
     kwargs = {
         "model": model,
         "messages": messages,
@@ -164,7 +268,18 @@ def _call_openai_compatible(client, model: str, messages: list,
         kwargs["tools"] = tools
         kwargs["tool_choice"] = "auto"
 
-    response = client.chat.completions.create(**kwargs)
+    extra = (_nvidia_thinking_off(client, model)
+             or _openrouter_reasoning_off(client, model)
+             or _gemini_thinking_off(client, model))
+    try:
+        response = client.chat.completions.create(**kwargs, **extra)
+    except Exception:
+        # Si el modelo no acepta el extra (chat_template_kwargs o reasoning
+        # no soportado), reintentar sin el.
+        if extra:
+            response = client.chat.completions.create(**kwargs)
+        else:
+            raise
     msg = response.choices[0].message
 
     return {
@@ -250,7 +365,7 @@ def llm_complete(
 
     client = _get_client(provider)
 
-    if provider in ("deepseek", "groq", "openai"):
+    if provider in ("deepseek", "groq", "openai", "nemotron", "kimi", "openrouter"):
         result = _call_openai_compatible(
             client, model, messages, temperature, max_tokens, tools
         )

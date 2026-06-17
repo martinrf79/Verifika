@@ -22,7 +22,7 @@ from app.core.verificador import verificar_respuesta
 
 # ── Cargar datos reales ──
 prods = []
-with open(os.path.join(ROOT, "data/clientes/verifika_demo/productos.csv"),
+with open(os.path.join(ROOT, "data/clientes/verifika_prod/productos.csv"),
           encoding="utf-8") as f:
     for row in csv.DictReader(f):
         p = {
@@ -38,7 +38,7 @@ with open(os.path.join(ROOT, "data/clientes/verifika_demo/productos.csv"),
                 p[k] = str(v).strip()
         prods.append(p)
 
-faq_list = json.load(open(os.path.join(ROOT, "data/clientes/verifika_demo/faq.json"),
+faq_list = json.load(open(os.path.join(ROOT, "data/clientes/verifika_prod/faq.json"),
                           encoding="utf-8"))
 faq = {x["tema"]: x for x in faq_list}
 by_id = {p["id"]: p for p in prods}
@@ -47,7 +47,7 @@ T.get_product_by_id = lambda pid, tienda_id=None: by_id.get(pid)
 T.get_all_products = lambda tienda_id=None, force_refresh=False: prods
 T.get_categories = lambda tienda_id=None: sorted({p["categoria"] for p in prods})
 FS.get_all_faq = lambda tienda_id=None, force_refresh=False: faq
-set_current_tienda("verifika_demo")
+set_current_tienda("verifika_prod")
 
 
 def money(n):
@@ -69,6 +69,14 @@ def build_evidence(proof):
 def cheapest(cat):
     c = [p for p in prods if p["categoria"] == cat and p["stock"] > 0]
     return min(c, key=lambda p: p["precio_ars"]) if c else None
+
+
+def priciest(cat):
+    # Para los escenarios que deben SUPERAR el umbral de envio gratis sin
+    # depender del precio exacto del catalogo (que cambia entre tiendas):
+    # el item mas caro con stock clava el caso por encima de 250k.
+    c = [p for p in prods if p["categoria"] == cat and p["stock"] > 0]
+    return max(c, key=lambda p: p["precio_ars"]) if c else None
 
 
 resultados = []
@@ -94,13 +102,13 @@ def correr(nombre, items, items_extra, render_fn, espera_ok=True):
 # 1. Compra grande (>250k) + envio interior pedido + descuento: el envio debe
 #    salir GRATIS automaticamente (regla por umbral) y el total queda FIJO.
 #    Este es el caso que se bloqueaba en produccion antes del fix.
-a = cheapest("auriculares"); t = cheapest("teclado")
+a = priciest("auriculares"); t = cheapest("teclado")
 correr(
     "F1 envio gratis auto (>250k)+descuento",
-    [{"product_id": a["id"], "cantidad": 3}, {"product_id": t["id"], "cantidad": 4}],
+    [{"product_id": a["id"], "cantidad": 1}, {"product_id": t["id"], "cantidad": 4}],
     [{"faq_tema": "costo_envio", "concepto": "envio_interior"},
      {"faq_tema": "descuento_transferencia", "concepto": "descuento_transferencia"}],
-    lambda r: f"3x {a['nombre']} {money(a['precio_ars'])} c/u = {money(a['precio_ars']*3)}. "
+    lambda r: f"{a['nombre']} {money(a['precio_ars'])}. "
               f"4x {t['nombre']} {money(t['precio_ars'])} c/u = {money(t['precio_ars']*4)}. "
               f"Subtotal {money(r['subtotal_productos_ars'])}. Envio gratis. "
               f"Total {money(r['total_ars'])}.",
@@ -119,10 +127,10 @@ correr(
               f"Total entre {money(r['total_min_ars'])} y {money(r['total_max_ars'])}.",
 )
 
-# 3. silla + cargador, supera 250000 -> envio gratis (calculadora con gba)
-si = cheapest("silla"); ca = cheapest("cargador")
+# 3. monitor + cargador, supera 250000 -> envio gratis (calculadora con gba)
+si = priciest("monitor"); ca = cheapest("cargador")
 correr(
-    "F3 silla+cargador GBA",
+    "F3 monitor+cargador GBA",
     [{"product_id": si["id"], "cantidad": 1}, {"product_id": ca["id"], "cantidad": 1}],
     [{"faq_tema": "costo_envio", "concepto": "envio_caba_gba"}],
     lambda r: f"{si['nombre']} {money(si['precio_ars'])}. {ca['nombre']} {money(ca['precio_ars'])}. "

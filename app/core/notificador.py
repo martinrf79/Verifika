@@ -16,9 +16,14 @@ Se llama en background, no bloquea la respuesta al cliente.
 import os
 import asyncio
 import httpx
-import logging
 
-log = logging.getLogger(__name__)
+# structlog, como el resto de los modulos. El logger estandar de Python NO
+# acepta kwargs (log.info("x", tienda_id=...) tira TypeError) y ese crash,
+# dentro del try del envio, enmascaraba el resultado real de la notificacion
+# (bug visto en prod 11-jun: "Logger._log() got an unexpected keyword 'error'").
+from app.logger import get_logger
+
+log = get_logger(__name__)
 
 # Chat id del dueno. Si no esta seteado, el notificador queda inactivo.
 OWNER_CHAT_ID = os.getenv("OWNER_TELEGRAM_CHAT_ID", "").strip()

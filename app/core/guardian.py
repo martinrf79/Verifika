@@ -20,6 +20,18 @@ PRICE_PATTERN = re.compile(r"\$\s*([\d.]+)")
 # Tolerancia para precios mencionados (ej: redondeos)
 PRICE_TOLERANCE_PCT = 0.01
 
+# Marcadores internos que el backend inyecta al Solver dentro del mensaje
+# (contexto del interpretador, estado, registro de sesion, presupuesto por
+# codigo). Algunos modelos los repiten en la respuesta y el cliente los ve
+# (paso con gemini-2.5-flash en el molino multiturno). Se borran por codigo
+# antes de mostrar. Flag LIMPIA_MARCADORES_INTERNOS, default on: es higiene,
+# nunca hay un caso legitimo en que el cliente deba ver estos bloques.
+MARCADOR_INTERNO_PATTERN = re.compile(
+    r"\[(?:Contexto del Interpretador|Estado de la conversaci[oó]n|"
+    r"ofrecer_opciones|El cliente se refiere a|Presupuesto YA calculado|"
+    r"Productos ya mostrados)[^\]]*\]",
+    re.IGNORECASE | re.DOTALL)
+
 
 def validate_response(response_text: str, trace_id: str,
                       tienda_id: str | None = None) -> dict:
@@ -125,6 +137,9 @@ def clean_response(response_text: str, tienda_id: str | None = None) -> str:
             return ""
         return product["nombre"]
 
+    # Marcadores internos del backend que el modelo haya repetido
+    if os.getenv("LIMPIA_MARCADORES_INTERNOS", "true").lower() == "true":
+        response_text = MARCADOR_INTERNO_PATTERN.sub("", response_text)
     # Marker con corchetes: [MON-001]
     cleaned = re.sub(r"\[([A-Z]{3,4}-\d{3})\]", _replace, response_text)
     # Sacar markdown antes de colapsar espacios (necesita los saltos de linea)

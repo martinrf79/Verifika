@@ -12,7 +12,6 @@ import csv
 import time
 import asyncio
 from pathlib import Path
-from collections import defaultdict
 import datetime
 
 # Forzar codificación UTF-8 en consola Windows
@@ -53,6 +52,10 @@ os.environ.setdefault("VERIFICADOR_HECHOS", "on")
 os.environ.setdefault("ESTADO_NO_REGRESA_SALUDO", "true")
 os.environ.setdefault("CORRECTOR_ANCLADO", "false")
 os.environ.setdefault("DIAG_TRACE", "false")
+# Si el libro de asientos esta on, prendemos su sink de diagnostico para ver por
+# sesion si el libro emitio, cuanto corrigio el codigo y que fugas vio la guarda.
+if os.environ.get("LIBRO_ASIENTOS", "false").lower() == "true":
+    os.environ.setdefault("DIAG_LIBRO", "true")
 
 TIENDA = os.environ.get("MOLINO_TIENDA", "verifika_2k")
 os.environ["TIENDA_ID"] = TIENDA
@@ -245,7 +248,12 @@ async def run_scenario(scenario, client_llm, client_model, semaphore, tienda_id=
     print(f"  -> [{scenario_id}] arrancando (max {turnos_max} turnos)...", flush=True)
 
     chat_turns = []
-    
+    libro_turnos = []  # diagnostico del libro por turno (si DIAG_LIBRO on)
+    try:
+        from app.core.libro import diag_pop
+    except Exception:
+        diag_pop = None
+
     # Inicia con el primer mensaje del cliente
     msg = primer_mensaje
     chat_turns.append({"role": "user", "content": msg})
@@ -266,7 +274,13 @@ async def run_scenario(scenario, client_llm, client_model, semaphore, tienda_id=
                 break
                 
             chat_turns.append({"role": "assistant", "content": bot_response})
-            
+            # Capturar el diagnostico del libro de ESTE turno antes de que el
+            # proximo lo pise (diag_record acumula por user_id con update).
+            if diag_pop is not None:
+                d = diag_pop(user_id)
+                if d:
+                    libro_turnos.append(d)
+
             # Chequear terminaciones abruptas o derivaciones a humanos
             if "[FALLO TÉCNICO" in bot_response or "tuve un problema tecnico" in bot_response.lower():
                 break
@@ -323,7 +337,6 @@ INSTRUCCIONES CLAVE:
                 break
                 
             chat_turns.append({"role": "user", "content": msg})
-            await asyncio.sleep(0.5) # Breve pausa entre turnos
             
     # 3. Invocar al Juez para evaluar la conversación completa
     referenced_products = get_referenced_products(chat_turns, prods)
@@ -424,11 +437,20 @@ Tu respuesta debe ser un objeto JSON válido que cumpla estrictamente con la sig
     print(f"  <- [{scenario_id}] listo en {time.time()-_t_inicio:.0f}s, "
           f"puntaje {evaluation.get('puntaje_venta', '?')}/10, "
           f"{'PASO' if evaluation.get('passed') else 'FALLO'}", flush=True)
+    # Agregado del libro a nivel sesion: sumar lo de cada turno.
+    libro_resumen = {
+        "turnos_con_libro": sum(1 for d in libro_turnos if d.get("emitio_libro")),
+        "turnos_totales": len(libro_turnos),
+        "asientos": sum(d.get("n_asientos", 0) for d in libro_turnos),
+        "correcciones": [c for d in libro_turnos for c in (d.get("correcciones") or [])],
+        "fugas": [f for d in libro_turnos for f in (d.get("fugas") or [])],
+    }
     return {
         "id": scenario_id,
         "nombre": nombre,
         "turns": chat_turns,
-        "evaluation": evaluation
+        "evaluation": evaluation,
+        "libro": libro_resumen,
     }
 
 # ── Runner Principal ──
@@ -465,9 +487,12 @@ async def async_main():
     
     t0 = time.time()
     
-    # Semáforo para limitar la concurrencia a un máximo de 3 llamadas simultáneas 
-    # (previene el error 429 de Rate Limit de la API de LLMs baratos/gratuitos)
-    semaphore = asyncio.Semaphore(int(os.environ.get("SIM_CONC", "6")))
+    # Concurrencia entre ESCENARIOS (no entre turnos: los turnos de una charla son
+    # secuenciales por naturaleza). El techo util es la cantidad de escenarios, asi
+    # que el default corre todos en paralelo. Misma calidad de respuestas: cada
+    # charla se procesa igual, solo cambia el throughput. Subir SIM_CONC arriba de
+    # los escenarios no aporta. DeepSeek aguanta; con OpenAI un 429 se auto-reintenta.
+    semaphore = asyncio.Semaphore(int(os.environ.get("SIM_CONC", "10")))
     
     # 3. Correr todos los escenarios concurrentemente
     tasks = [run_scenario(scen, client_llm, client_model, semaphore) for scen in scenarios]
@@ -553,7 +578,7 @@ async def async_main():
 
     # Imprimir en consola de forma estructurada
     print("\n" + "="*50)
-    print(f"=== RESULTADOS DE SIMULACIÓN MULTI-TURNO ===")
+    print("=== RESULTADOS DE SIMULACIÓN MULTI-TURNO ===")
     print(f"Pasaron: {total_passed}/{total_scenarios} escenarios ({(total_passed/total_scenarios)*100:.1f}%)")
     print(f"Tiempo de ejecución: {dt:.0f}s")
     print("="*50)
@@ -573,6 +598,25 @@ async def async_main():
         viol_str = ",".join(viols) if viols else "-"
         print("%-32s %-10s %-8s %s" % (r["id"], passed_str, score, viol_str))
         
+    # Resumen del libro de asientos (Fase 2-4), si hubo diagnostico.
+    _con_libro = [r for r in results if r.get("libro", {}).get("turnos_totales")]
+    if _con_libro:
+        t_emit = sum(r["libro"]["turnos_con_libro"] for r in _con_libro)
+        t_tot = sum(r["libro"]["turnos_totales"] for r in _con_libro)
+        correg = [(r["id"], c) for r in _con_libro for c in r["libro"]["correcciones"]]
+        fugas = [(r["id"], f) for r in _con_libro for f in r["libro"]["fugas"]]
+        contrab = [x for x in fugas if x[1].get("en_evidencia")]
+        invento = [x for x in fugas if not x[1].get("en_evidencia")]
+        print("\n=== LIBRO DE ASIENTOS (multiturno, Fase 2-4) ===")
+        print("turnos con libro emitido      : %d/%d (%.0f%%)" %
+              (t_emit, t_tot, 100 * t_emit / t_tot if t_tot else 0))
+        print("correcciones aplicadas (codigo): %d  %s" %
+              (len(correg), [(i, c.get("de"), "->", c.get("a")) for i, c in correg][:12]))
+        print("guarda - fugas totales         : %d (contrabando %d / invento %d)" %
+              (len(fugas), len(contrab), len(invento)))
+        print("  invento (fuera de toda fuente):",
+              [(i, f.get("valor")) for i, f in invento][:12])
+
     print("\nReportes guardados:")
     print(f"- Detalle JSON: reports/simulacion_multiturno_{timestamp}.json")
     print(f"- Reporte Markdown: reports/simulacion_multiturno_{timestamp}.md")

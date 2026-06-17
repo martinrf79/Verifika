@@ -77,9 +77,9 @@ from app.core.interpretador import interpretar_mensaje, UMBRAL_CONFIANZA_ALTA
 from app.config import get_settings
 import app.storage.firestore_client as FS
 
-# Tienda a usar: --tienda <nombre>, default verifika_demo. Permite correr el
+# Tienda a usar: --tienda <nombre>, default verifika_prod. Permite correr el
 # mismo set de preguntas contra el catalogo chico o el de 2000 (verifika_2k).
-TIENDA = "verifika_demo"
+TIENDA = "verifika_prod"
 if "--tienda" in sys.argv:
     TIENDA = sys.argv[sys.argv.index("--tienda") + 1]
 
@@ -177,7 +177,7 @@ def evaluar_producto(q, r, nombres):
         return ("OK" if ok else "REVISAR"), f"esp=NINGUNO prod={prod} cand={len(cand)}"
     if esp == "MULTIPLE":
         ok = (prod is None and (len(cand) >= 2 or bool(ofr)))
-        return ("OK" if ok else "REVISAR"), f"esp=MULTIPLE"
+        return ("OK" if ok else "REVISAR"), "esp=MULTIPLE"
     ok = (prod == esp)
     return ("OK" if ok else "REVISAR"), f"esp={esp}"
 
@@ -199,7 +199,7 @@ def evaluar_categoria(q, r):
 async def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0)
-    ap.add_argument("--tienda", default="verifika_demo")
+    ap.add_argument("--tienda", default="verifika_prod")
     ap.add_argument("--embeddings", action="store_true")
     ap.add_argument("--preguntas",
                     default=os.path.join(ROOT, "data", "preguntas_reales.jsonl"),

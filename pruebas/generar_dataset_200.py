@@ -208,7 +208,7 @@ NUEVOS = [
 ]
 
 todos = REPETIDOS + NUEVOS
-salida = Path("/home/martinrf79/agente-v4/pruebas/dataset_200.csv")
+salida = Path(__file__).resolve().parent / "dataset_200.csv"
 
 with open(salida, "w", newline="", encoding="utf-8") as f:
     w = csv.writer(f)

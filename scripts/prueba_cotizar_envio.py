@@ -1,0 +1,75 @@
+# -*- coding: utf-8 -*-
+"""
+Test de cotizar_envio: zona (por codigo) + tarifa (dato de tienda) + envio gratis.
+Sin Firestore: se monkeypatchea la FAQ y la tienda actual, como el molino.
+
+Correr: winvenv\\Scripts\\python.exe scripts\\prueba_cotizar_envio.py
+"""
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
+import app.core.tools as T
+from app.core.tools_context import set_current_tienda
+
+# FAQ de envio real (misma forma que verifika_2k): caba_gba fijo, interior rango,
+# gratis por umbral.
+FAQ = {
+    "costo_envio": {
+        "tema": "costo_envio", "tipo": "cuantitativo",
+        "valores": [
+            {"concepto": "envio_caba_gba", "modalidad": "fijo", "monto": 4500},
+            {"concepto": "envio_interior", "modalidad": "rango",
+             "monto_min": 6500, "monto_max": 16000},
+            {"concepto": "envio_gratis", "modalidad": "fijo", "monto": 0},
+        ],
+    }
+}
+T.get_all_faq = lambda tienda_id=None, force_refresh=False: FAQ
+set_current_tienda("test")
+
+resultados = []
+
+
+def check(nombre, cond):
+    resultados.append(cond)
+    print(f"[{'OK ' if cond else 'FALLA'}] {nombre}")
+
+
+# CABA -> tarifa fija caba_gba
+r = T.cotizar_envio("C1425ABC")
+check("CABA: ok, fijo 4500, zona caba",
+      r["ok"] and r["modalidad"] == "fijo" and r["monto"] == 4500 and r["zona"] == "caba")
+
+# GBA -> misma tarifa metropolitana
+r = T.cotizar_envio("Lomas de Zamora")
+check("GBA: ok, fijo 4500", r["ok"] and r["monto"] == 4500 and r["zona"] == "gba")
+
+# Interior -> rango
+r = T.cotizar_envio("Colon 4500 Cordoba capital")
+check("INTERIOR: ok, rango 6500-16000, zona interior",
+      r["ok"] and r["modalidad"] == "rango" and r["monto_min"] == 6500
+      and r["monto_max"] == 16000 and r["zona"] == "interior")
+
+# Zona indeterminada -> no cotiza, pide dato
+r = T.cotizar_envio("un pueblito por la ruta 36")
+check("INDETERMINADA: no ok, zona None, pide dato",
+      (not r["ok"]) and r["zona"] is None)
+
+# Envio gratis por umbral (subtotal > 250000 default)
+r = T.cotizar_envio("Cordoba", subtotal=300000)
+check("GRATIS: subtotal alto -> monto 0",
+      r["ok"] and r["concepto"] == "envio_gratis" and r["monto"] == 0)
+
+# El PROOF respalda el numero (para el verificador)
+r = T.cotizar_envio("C1425ABC")
+check("PROOF presente con el monto", r["proof"]["valores"] == [4500])
+
+ok = sum(resultados)
+print(f"\n{ok}/{len(resultados)} casos correctos")
+sys.exit(0 if ok == len(resultados) else 1)

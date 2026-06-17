@@ -56,6 +56,11 @@ os.environ.setdefault("INTERPRETE_ANCLA_CATALOGO", "true")
 os.environ.setdefault("PROMPT_VENTA", "true")
 os.environ.setdefault("VERIFICADOR_SERVICIOS", "on")
 os.environ.setdefault("DIAG_TRACE", "false")
+# Si el libro de asientos esta on, prendemos su sink de diagnostico para ver por
+# respuesta si el Solver lo emitio, cuanto corrigio y que fugas vio la guarda (el
+# molino silencia los log.info, asi que sin esto la telemetria del libro no se ve).
+if os.environ.get("LIBRO_ASIENTOS", "false").lower() == "true":
+    os.environ.setdefault("DIAG_LIBRO", "true")
 
 import logging
 import structlog
@@ -68,7 +73,13 @@ TIENDA = os.environ.get("MOLINO_TIENDA", "verifika_2k")
 os.environ["TIENDA_ID"] = TIENDA
 PREGUNTAS = os.environ.get("MOLINO_PREGUNTAS",
                            os.path.join(ROOT, "data", "molino_set.jsonl"))
-CONC = int(os.environ.get("MOLINO_CONC", "10"))
+# Concurrencia: las preguntas del molino son INDEPENDIENTES, asi que el throughput
+# escala casi lineal con este numero, con la MISMA calidad (cada respuesta se
+# computa igual). Aca vive el "mas rapido sin perder calidad": DeepSeek aguanta
+# concurrencia alta. Default 24 (~2-3x vs el viejo 10). Para correr a full con
+# DeepSeek se puede empujar a 40-80 por env; con OpenAI bajar si aparecen 429
+# (igual se auto-reintentan via tenacity en el bot).
+CONC = int(os.environ.get("MOLINO_CONC", "24"))
 TAG = os.environ.get("MOLINO_TAG", "nuevo")
 
 # ── Base local monkeypatcheada (sin Firestore) ──
@@ -165,9 +176,15 @@ async def correr(qs):
                     tienda_id=TIENDA, canal="telegram")
             except Exception as e:
                 resp = f"[ERROR: {str(e)[:160]}]"
+            diag = {}
+            try:
+                from app.core.libro import diag_pop
+                diag = diag_pop(f"m_{q['id']}")
+            except Exception:
+                pass
             salidas[idx] = {"id": q["id"], "grupo": q.get("grupo", "?"),
                             "pregunta": q["texto"], "respuesta": resp,
-                            "clase": clasificar(resp)}
+                            "clase": clasificar(resp), "libro": diag}
             hechos[0] += 1
             if hechos[0] % 25 == 0:
                 print(f"  ... {hechos[0]}/{len(qs)}")
@@ -198,6 +215,39 @@ def planilla(salidas):
            tot["fallback_verificador"], tot["fallback_tecnico"], largo))
     print("\nFallbacks tecnicos (errores duros, deberian ser 0):",
           [s["id"] for s in salidas if s["clase"] == "fallback_tecnico"][:20])
+    _planilla_libro(salidas)
+
+
+def _planilla_libro(salidas):
+    """Resumen del libro de asientos (Fase 2-4): solo si hubo diagnostico. Mide si
+    DeepSeek emite el libro y si la guarda en shadow encontro fugas reales."""
+    con_diag = [s for s in salidas if s.get("libro")]
+    if not con_diag:
+        return
+    n = len(con_diag)
+    emitio = sum(1 for s in con_diag if s["libro"].get("emitio_libro"))
+    asientos = sum(s["libro"].get("n_asientos", 0) for s in con_diag)
+    correg = [(s["id"], c) for s in con_diag
+              for c in (s["libro"].get("correcciones") or [])]
+    fugas = [(s["id"], f) for s in con_diag
+             for f in (s["libro"].get("fugas") or [])]
+    contrabando = [x for x in fugas if x[1].get("en_evidencia")]
+    invento = [x for x in fugas if not x[1].get("en_evidencia")]
+    print("\n=== LIBRO DE ASIENTOS (Fase 2-4) ===")
+    print("respuestas con libro evaluado : %d" % n)
+    print("emitio bloque [[LIBRO]]        : %d/%d (%.0f%%)" %
+          (emitio, n, 100 * emitio / n if n else 0))
+    print("total asientos declarados      : %d" % asientos)
+    print("correcciones aplicadas (codigo): %d  %s" %
+          (len(correg), [(i, c.get("de"), "->", c.get("a")) for i, c in correg][:12]))
+    print("guarda shadow - fugas totales  : %d (contrabando %d / invento %d)" %
+          (len(fugas), len(contrabando), len(invento)))
+    print("  contrabando (real, no declarado):",
+          [(i, f.get("valor")) for i, f in contrabando][:12])
+    print("  invento (fuera de toda fuente)  :",
+          [(i, f.get("valor")) for i, f in invento][:12])
+    print("respuestas que NO emitieron libro:",
+          [s["id"] for s in con_diag if not s["libro"].get("emitio_libro")][:20])
 
 
 def main():

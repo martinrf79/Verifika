@@ -1,5 +1,6 @@
 """Genera el dataset complejo de 200 casos con mitad mal escritos."""
 import csv
+from pathlib import Path
 import random
 random.seed(42)
 
@@ -128,36 +129,36 @@ mixtos = [
     "el HyperX Cloud II tiene factura A",
     "el envio del teclado G915 cuanto demora",
     "tienen el FIFINE K669B con descuento por transferencia",
-    "el cable HDMI lo puedo retirar en local",
+    "el router TP-Link lo puedo retirar en local",
     "cuotas para la silla Redragon Coeus",
     "el monitor AOC sale envio gratis",
     "la garantia del SSD Samsung 980 es oficial",
     "puedo encargar el Logitech G Pro X si no hay stock",
     "como pago el Cooler DeepCool AK620",
-    "el envio de la lampara Xiaomi a La Plata",
+    "el envio del cargador Xiaomi a La Plata",
     "factura A para el teclado Razer BlackWidow",
     "es original el Mouse Razer DeathAdder",
     "tienen el monitor LG UltraGear a 24 cuotas",
-    "el envio del kit limpieza GoldenTech sale algo",
+    "el envio del parlante Logitech Z313 sale algo",
     "la webcam C920 con cuotas Visa",
     "puedo devolver el mouse Genius DX-110 si no me gusta",
     "el Blue Yeti llega manana a Tucuman",
     "la memoria Corsair Vengeance tiene garantia oficial",
-    "el adaptador WiFi TP-Link es nuevo o usado",
-    "puedo pagar el Hub Anker en 3 cuotas",
-    "la bateria Xiaomi viene con factura",
+    "el router TP-Link es nuevo o usado",
+    "puedo pagar el cargador Anker en 3 cuotas",
+    "el cargador Xiaomi viene con factura",
     "la silla ProSeat la hacen llegar a Salta",
-    "el cooler Watercooling Cooler Master tiene envio express",
-    "el gamepad Xbox Wireless tiene garantia oficial",
-    "el SSD Kingston A2000 tiene 12 cuotas",
-    "puedo retirar el Soporte VESA en buenos aires",
-    "el organizador de cables tiene factura A",
+    "la fuente Cooler Master tiene envio express",
+    "el microfono HyperX QuadCast tiene garantia oficial",
+    "el SSD Kingston NV2 tiene 12 cuotas",
+    "puedo retirar el gabinete en buenos aires",
+    "la memoria ram Kingston Fury tiene factura A",
     "el cargador Anker 65W llega a Neuquen",
-    "puedo pagar el Razer Goliathus en efectivo",
-    "el Joystick Logitech F310 viene con manual",
-    "es nuevo el Soporte ergonomico notebook",
+    "puedo pagar los auriculares JBL en efectivo",
+    "el parlante Logitech viene con manual",
+    "es nueva la notebook Lenovo IdeaPad",
     "si compro tres mouse hay descuento mayorista",
-    "el envio del pad SteelSeries QcK Mini al sur",
+    "el envio del mouse Redragon Cobra al sur",
 ]
 for i, preg in enumerate(mixtos, 1):
     pregunta = aplicar_errores(preg) if i % 2 == 0 else preg
@@ -183,23 +184,23 @@ contradicciones = [
     "el monitor Samsung Odyssey es de 27 pulgadas",
     "el Genius DX-110 trae 5 botones",
     "la silla Cougar soporta 200 kilos",
-    "el cable HDMI cuesta 25 mil pesos no 9500",
+    "la memoria Kingston Fury DDR4 cuesta 25 mil no 34500",
     "ustedes son distribuidores oficiales de Apple",
     "el cargador Anker es de 100W",
     "venden tambien notebooks",
     "el Blue Yeti es inalambrico",
     "el teclado K380 viene en negro",
     "ustedes hacen reparaciones tambien",
-    "el SSD Samsung 980 es de 2TB",
-    "el adaptador TP-Link es wifi 6",
-    "el Hub Anker tiene 12 puertos",
+    "el SSD Samsung 980 es de 8TB",
+    "el router TP-Link Archer C6 es wifi 6",
+    "la webcam C920 es 4K",
     "ustedes venden por mercado libre solamente",
     "el envio a Ushuaia es gratis",
     "el Cougar Armor S es de tela",
     "el Razer BlackWidow es inalambrico",
-    "el SSD Kingston tiene 1TB",
-    "la lampara Xiaomi es de pie",
-    "el Watercooling Cooler Master es de 360mm",
+    "el SSD Kingston NV2 es SATA",
+    "el cargador Xiaomi es de 65W",
+    "la fuente Cooler Master es de 850W",
     "la memoria G.Skill Trident Z es DDR4",
     "ustedes envian por correo argentino",
     "tienen sucursal en Mendoza",
@@ -210,8 +211,8 @@ for i, preg in enumerate(contradicciones, 1):
     casos.append({"id": f"X{i:03d}", "pregunta": pregunta, "categoria": "contradiccion", "comportamiento_esperado": "corregir_con_catalogo_suavemente"})
 
 ambiguedades = [
-    "el mouse Logitech a 38 mil que tenia RGB",
-    "cual era el de Samsung de 225",
+    "el mouse Logitech a 37 mil y pico que tenia RGB",
+    "cual era el de Samsung de 117",
     "el teclado mecanico ese RGB",
     "los auriculares Sony cuanto eran",
     "el mouse rojo de Razer",
@@ -226,7 +227,7 @@ ambiguedades = [
     "el teclado para Mac",
     "el SSD mas rapido",
     "la memoria DDR5 que tenian",
-    "el hub con HDMI",
+    "el parlante chico para escritorio",
     "el cargador rapido para notebook",
     "el gamepad inalambrico",
     "el pad mas grande",
@@ -285,7 +286,7 @@ print(f"Total casos generados: {len(casos)}")
 mal_escritos = sum(1 for c in casos if any(x in c["pregunta"] for x in ["mause","acen","ke ","kuanto","xq","tmb","uds","pa ","loguitech","razer ","samsumg","tienn","acetan","entrgan"]))
 print(f"Casos con errores aplicados: aproximadamente la mitad de cada bloque")
 
-ruta = "/home/martinrf79/agente-v4/pruebas/dataset_complejo.csv"
+ruta = str(Path(__file__).resolve().parent / "dataset_complejo.csv")
 with open(ruta, "w", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=["id","pregunta","categoria","comportamiento_esperado"])
     writer.writeheader()

@@ -29,6 +29,11 @@ USE_LEADS = os.getenv("USE_LEADS", "false").lower() == "true"
 LEAD_VENTANA_SEGUNDOS = 24 * 60 * 60
 
 UMBRAL_LEAD_FUERTE = float(os.getenv("INTERPRETER_UMBRAL_ALTA", "0.85"))
+
+# Pedido explicito del link de pago: señal de cierre determinista (con
+# CIERRE_CONTRATO). Misma familia de patrones que el handoff del orchestrator.
+_RE_PIDE_LINK = re.compile(
+    r"(?i)\blink\b|mercado\s*pago|\bmp\b|donde\s+pago|como\s+pago")
 UMBRAL_LEAD_TIBIA = float(os.getenv("INTERPRETER_UMBRAL_BAJA", "0.6"))
 
 # Intencion FUERTE, el cliente ya decidio comprar
@@ -121,10 +126,44 @@ def get_lead_activo(user_id: str, canal: str, tienda_id: str) -> dict | None:
         data["lead_id"] = docs[0].id
         if data.get("creado_en_ts", 0) < cutoff_ts:
             return None
+        # Un lead descartado (por "nueva compra") o ya cerrado no se reusa: si no,
+        # un pedido viejo se completa con datos de una compra nueva (visto en prod
+        # 16-jun: cierre con "javier rojas" y 2 gabinetes sobre una compra de RAM).
+        if data.get("estado") in ("descartado", "cerrado", "completado"):
+            return None
         return data
     except Exception as e:
         log.warning("lead_query_failed", error=str(e)[:500])
         return None
+
+
+def descartar_leads_activos(user_id: str, canal: str, tienda_id: str) -> int:
+    """Marca como 'descartado' los leads recientes del usuario en este canal.
+    Lo usa "nueva compra": sin esto, un lead viejo a medio llenar sobrevive al
+    reset de la conversacion y se completa con la direccion nueva, mezclando
+    nombre, pedido y pago de otra compra. Devuelve cuantos descarto."""
+    try:
+        leads_ref = _tienda_ref(tienda_id).collection("leads")
+        cutoff_ts = time.time() - LEAD_VENTANA_SEGUNDOS
+        query = (leads_ref
+                 .where(filter=firestore.FieldFilter("user_id", "==", user_id))
+                 .where(filter=firestore.FieldFilter("canal", "==", canal))
+                 .order_by("creado_en_ts", direction=firestore.Query.DESCENDING)
+                 .limit(10))
+        n = 0
+        for doc in query.stream():
+            d = doc.to_dict()
+            if d.get("creado_en_ts", 0) < cutoff_ts:
+                break
+            if d.get("estado") in ("descartado", "cerrado", "completado"):
+                continue
+            doc.reference.update({"estado": "descartado",
+                                  "actualizado_en": firestore.SERVER_TIMESTAMP})
+            n += 1
+        return n
+    except Exception as e:
+        log.warning("descartar_leads_failed", error=str(e)[:300])
+        return 0
 
 
 def crear_lead(user_id: str, canal: str, tienda_id: str,
@@ -160,6 +199,44 @@ def crear_lead(user_id: str, canal: str, tienda_id: str,
 def actualizar_lead(lead_id: str, tienda_id: str, cambios: dict):
     cambios["actualizado_en"] = firestore.SERVER_TIMESTAMP
     _tienda_ref(tienda_id).collection("leads").document(lead_id).update(cambios)
+
+
+async def _finalizar_cierre(lead_id: str, merged: dict, tienda_id: str,
+                            user_id: str, canal: str, mensaje: str,
+                            presupuesto: str, trace_id: str) -> dict:
+    """Cierra la venta con un lead que ya tiene los cuatro datos: avisa al
+    dueño, arma la confirmacion y, si hay total unico, agrega el link de pago
+    real. Devuelve el meta con accion lead_capturado. Mismo camino que el
+    cierre normal (Caso uno), reusado cuando el mensaje disparador ya trajo
+    todo."""
+    log.info("lead_capturado_completo", lead_id=lead_id, tienda_id=tienda_id,
+             user_id=user_id, trace_id=trace_id)
+    try:
+        await notificar_lead(
+            tienda_id=tienda_id, user_id=user_id, canal=canal,
+            estado="capturado", nombre=merged.get("nombre", ""),
+            telefono=merged.get("telefono", ""),
+            direccion=merged.get("direccion", ""),
+            forma_pago=merged.get("forma_pago", ""),
+            orden=merged.get("orden", ""), ultimo_mensaje=mensaje,
+        )
+    except Exception as e:
+        log.warning("notificar_lead_failed", error=str(e)[:120])
+    from app.core import cierre
+    respuesta_cierre = cierre.mensaje_confirmacion(
+        merged, merged.get("orden", ""))
+    if settings.LINK_PAGO:
+        try:
+            from app.core.pago import link_pago_para_lead
+            _url = await link_pago_para_lead(
+                presupuesto or merged.get("orden", ""), merged,
+                tienda_id, trace_id)
+            if _url:
+                respuesta_cierre += f"\nPodes pagar aca: {_url}"
+        except Exception as e:
+            log.warning("link_pago_error", trace_id=trace_id, error=str(e)[:160])
+    return {"accion": "lead_capturado", "lead_id": lead_id,
+            "respuesta_directa": respuesta_cierre}
 
 
 async def procesar_mensaje_para_lead(
@@ -227,11 +304,27 @@ async def procesar_mensaje_para_lead(
             )
         except Exception as e:
             log.warning("notificar_lead_failed", error=str(e)[:120])
+        respuesta_cierre = cierre.mensaje_confirmacion(
+            merged, merged.get("orden", ""))
+        # Link de pago (flag LINK_PAGO): generado por CODIGO desde el total
+        # verificado del presupuesto. Si no hay total unico o falta el token de
+        # Mercado Pago, la venta cierra igual sin link.
+        if settings.LINK_PAGO:
+            try:
+                from app.core.pago import link_pago_para_lead
+                merged["lead_id"] = lead_activo["lead_id"]
+                _url = await link_pago_para_lead(
+                    presupuesto or merged.get("orden", ""), merged,
+                    tienda_id, trace_id)
+                if _url:
+                    respuesta_cierre += f"\nPodes pagar aca: {_url}"
+            except Exception as e:
+                log.warning("link_pago_error", trace_id=trace_id,
+                            error=str(e)[:160])
         return None, {
             "accion": "lead_capturado",
             "lead_id": lead_activo["lead_id"],
-            "respuesta_directa": cierre.mensaje_confirmacion(
-                merged, merged.get("orden", "")),
+            "respuesta_directa": respuesta_cierre,
         }
 
     # Interpretador como unica fuente de verdad.
@@ -241,10 +334,19 @@ async def procesar_mensaje_para_lead(
     if interpretacion and interpretacion.get("intencion"):
         intencion_llm = interpretacion.get("intencion")
         confianza_llm = interpretacion.get("confianza", 0.0)
-        producto_llm = interpretacion.get("producto_resuelto")
         if intencion_llm == "decision_compra" and confianza_llm >= UMBRAL_LEAD_FUERTE:
             nivel = "fuerte"
             frase = f"interpretador_decision_compra_{confianza_llm:.2f}"
+        elif (settings.CIERRE_CONTRATO
+              and _RE_PIDE_LINK.search(mensaje or "")
+              and str(presupuesto).strip()):
+            # Pedir el link de pago ES decision de compra, la marque o no el
+            # interpretador (visto 12-jun: "ok enviame link" quedo en
+            # pregunta_especifica, nadie creo el lead y el Solver PROMETIO un
+            # link que ningun engranaje iba a mandar). Determinista: con
+            # presupuesto mostrado, pedir el link dispara el cierre por codigo.
+            nivel = "fuerte"
+            frase = "pide_link_pago"
         else:
             nivel = "ninguna"
             frase = ""
@@ -287,6 +389,42 @@ async def procesar_mensaje_para_lead(
         log.info("intencion_fuerte_detectada", lead_id=lead_id,
                  tienda_id=tienda_id, user_id=user_id,
                  frase=frase, trace_id=trace_id)
+
+        # CIERRE_SIEMBRA_INICIAL: el mensaje que dispara el cierre suele traer
+        # datos ya ("envio a Los Condores medio de pago mercado pago"). Sin
+        # esto se piden de cero y el cliente repite lo que ya dijo (visto en
+        # prod 13-jun WhatsApp: forma de pago dicha junto al envio, ignorada,
+        # el cliente tuvo que escribir "Mercado pago" de nuevo al final). Se
+        # siembra el lead con lo presente; si estan los cuatro, cierra ya; si
+        # falta algo, pide SOLO lo que falta.
+        if settings.CIERRE_SIEMBRA_INICIAL:
+            from app.core import cierre
+            sembrados = {k: v for k, v in
+                         cierre.extraer_datos_cliente(mensaje, trace_id).items()
+                         if v}
+            if sembrados:
+                actualizar_lead(lead_id, tienda_id, sembrados)
+                merged = {"orden": presupuesto, "lead_id": lead_id, **sembrados}
+                falt = cierre.faltantes(merged)
+                log.info("cierre_siembra_inicial", lead_id=lead_id,
+                         sembrados=list(sembrados.keys()), faltan=falt,
+                         trace_id=trace_id)
+                if not falt:
+                    actualizar_lead(lead_id, tienda_id, {"estado": "capturado"})
+                    return None, await _finalizar_cierre(
+                        lead_id, merged, tienda_id, user_id, canal,
+                        mensaje, presupuesto, trace_id)
+                try:
+                    await notificar_lead(
+                        tienda_id=tienda_id, user_id=user_id, canal=canal,
+                        estado="intencion_fuerte",
+                        nombre=sembrados.get("nombre", ""),
+                        telefono=sembrados.get("telefono", ""),
+                        ultimo_mensaje=mensaje)
+                except Exception as e:
+                    log.warning("notificar_lead_failed", error=str(e)[:120])
+                return None, {"accion": "pidiendo_datos", "lead_id": lead_id,
+                              "respuesta_directa": cierre.mensaje_pedir_datos(falt)}
         try:
             await notificar_lead(
                 tienda_id=tienda_id, user_id=user_id, canal=canal,
@@ -297,12 +435,22 @@ async def procesar_mensaje_para_lead(
             log.warning("notificar_lead_failed", error=str(e)[:120])
         meta["accion"] = "handoff_humano"
         meta["lead_id"] = lead_id
-        meta["respuesta_directa"] = (
-            "Buenisimo, gracias por la decision. En un momento te contacta "
-            "una persona del equipo para coordinar tu compra. Para que pueda "
-            "hablarte directo, pasame por favor tu nombre y un telefono "
-            "donde ubicarte."
-        )
+        if frase == "pide_link_pago":
+            # El cliente pidio el link: la respuesta lo reconoce y el codigo
+            # lo manda al completarse los datos (LINK_PAGO), sin promesas
+            # del Solver.
+            meta["respuesta_directa"] = (
+                "Dale, te genero el link de pago apenas me pases tu nombre, "
+                "un telefono de contacto y la direccion de envio. Pasamelos "
+                "y te lo mando al toque."
+            )
+        else:
+            meta["respuesta_directa"] = (
+                "Buenisimo, gracias por la decision. En un momento te contacta "
+                "una persona del equipo para coordinar tu compra. Para que pueda "
+                "hablarte directo, pasame por favor tu nombre y un telefono "
+                "donde ubicarte."
+            )
         return None, meta
 
     # Caso tres, intencion tibia

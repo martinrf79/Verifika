@@ -1,0 +1,2 @@
+conv_id,escenario,turno,mensaje,respuesta,tiempo_seg,fallback,error
+c01_explorar_y_cerrar,"Explorar mouse, elegir, calcular envio interior, confirmar y dar datos",1,"Hola, buenas","Disculpá, tuve un problema técnico. ¿Podés repetirme tu consulta?",7.8,si,no

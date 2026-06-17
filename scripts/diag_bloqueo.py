@@ -3,7 +3,11 @@ DIAGNOSTICO DE BLOQUEO: muestra el BORRADOR que el solver intento mandar y que
 numero exacto bloqueo el verificador, para los casos que cayeron a fallback.
 El cliente solo ve el fallback; esto destapa el motivo. Local, sin red.
 """
-import os, sys, csv, json, asyncio
+import os
+import sys
+import csv
+import json
+import asyncio
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -24,7 +28,8 @@ os.environ["CALC_DEFENSIVA"] = "true"; os.environ["INTERPRETE_ANCLA_CATALOGO"] =
 os.environ["SOLVER_USA_PRESENTACION"] = "true"; os.environ["ASYNC_LLM_OFFLOAD"] = "false"
 os.environ["TIENDA_ID"] = "verifika_2k"
 
-import logging, structlog
+import logging
+import structlog
 structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(logging.CRITICAL))
 sys.path.insert(0, ROOT)
 

@@ -56,7 +56,7 @@ settings.CALC_DEFENSIVA = True
 
 # ── Cargar datos reales (mismo patron que bateria_robustez) ──
 prods = []
-with open(os.path.join(ROOT, "data/clientes/verifika_demo/productos.csv"),
+with open(os.path.join(ROOT, "data/clientes/verifika_prod/productos.csv"),
           encoding="utf-8") as f:
     for row in csv.DictReader(f):
         p = {
@@ -72,7 +72,7 @@ with open(os.path.join(ROOT, "data/clientes/verifika_demo/productos.csv"),
                 p[k] = str(v).strip()
         prods.append(p)
 
-faq_list = json.load(open(os.path.join(ROOT, "data/clientes/verifika_demo/faq.json"),
+faq_list = json.load(open(os.path.join(ROOT, "data/clientes/verifika_prod/faq.json"),
                           encoding="utf-8"))
 faq = {x["tema"]: x for x in faq_list}
 by_id = {p["id"]: p for p in prods}
@@ -81,7 +81,7 @@ T.get_product_by_id = lambda pid, tienda_id=None: by_id.get(pid)
 T.get_all_products = lambda tienda_id=None, force_refresh=False: prods
 T.get_categories = lambda tienda_id=None: sorted({p["categoria"] for p in prods})
 FS.get_all_faq = lambda tienda_id=None, force_refresh=False: faq
-set_current_tienda("verifika_demo")
+set_current_tienda("verifika_prod")
 
 
 # ── Helpers ──
@@ -527,8 +527,8 @@ hist = {
 with open(os.path.join(reportes_dir, "banco_history.jsonl"), "a",
           encoding="utf-8") as f:
     f.write(json.dumps(hist, ensure_ascii=False) + "\n")
-print(f"  Metricas en reports/banco_metrics.json | historial en "
-      f"reports/banco_history.jsonl\n")
+print("  Metricas en reports/banco_metrics.json | historial en "
+      "reports/banco_history.jsonl\n")
 
 # Exit 1 solo si fallo un caso IMPLEMENTADO. Los pendientes no rompen.
 sys.exit(1 if fallas else 0)

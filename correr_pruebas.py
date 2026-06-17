@@ -17,6 +17,7 @@ Salida:
 import asyncio
 import csv
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -24,7 +25,12 @@ from pathlib import Path
 # Asegurar que app sea importable
 sys.path.insert(0, str(Path(__file__).parent))
 
+# Telemetria SIEMPRE en el molino: la columna tools del CSV separa "el modelo
+# no llamo la tool" de "la llamo y el resultado se perdio". Solo memoria.
+os.environ.setdefault("TELEMETRIA_TURNO", "true")
+
 from app.core.orchestrator import process_message
+from app.core.telemetria import tools_compacto
 
 ARCHIVO_PREGUNTAS = "preguntas_100.json"
 ARCHIVO_SALIDA = "resultados_pruebas.csv"
@@ -70,6 +76,7 @@ async def correr_pruebas():
         print(f"[{i}/{total}] ({categoria}) {pregunta[:60]}...")
 
         t0 = time.time()
+        tools = ""
         try:
             respuesta = await process_message(
                 user_id=f"{USER_ID_TEST}_{pid}",
@@ -78,7 +85,9 @@ async def correr_pruebas():
             )
             tiempo = round(time.time() - t0, 2)
             derivo = detecto_derivacion(respuesta)
-            print(f"   -> ({tiempo}s) {'DERIVO' if derivo else 'RESPONDIO'}: {respuesta[:80]}\n")
+            tools = tools_compacto()
+            print(f"   -> ({tiempo}s) {'DERIVO' if derivo else 'RESPONDIO'}: {respuesta[:80]}")
+            print(f"      tools: {tools[:140]}\n")
         except Exception as e:
             respuesta = f"ERROR: {type(e).__name__}: {e}"
             tiempo = round(time.time() - t0, 2)
@@ -92,6 +101,7 @@ async def correr_pruebas():
             "respuesta": respuesta,
             "derivo": "si" if derivo else "no",
             "tiempo_seg": tiempo,
+            "tools": tools,
         })
 
         # Guardar incrementalmente por si se corta
@@ -108,7 +118,8 @@ def guardar_csv(resultados):
     with open(ARCHIVO_SALIDA, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(
             f,
-            fieldnames=["id", "categoria", "pregunta", "respuesta", "derivo", "tiempo_seg"],
+            fieldnames=["id", "categoria", "pregunta", "respuesta", "derivo",
+                        "tiempo_seg", "tools"],
         )
         writer.writeheader()
         writer.writerows(resultados)

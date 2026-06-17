@@ -117,5 +117,5 @@ if __name__ == "__main__":
     if realistas:
         med = int(statistics.median(realistas))
         print(f"  Llamada realista de un turno: mediana {med} ms")
-        print(f"  Un turno de cotizacion encadena 4-5 de estas en serie:")
+        print("  Un turno de cotizacion encadena 4-5 de estas en serie:")
         print(f"    estimado ~{med*4//1000}-{med*5//1000} s solo en DeepSeek")

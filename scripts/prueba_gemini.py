@@ -45,7 +45,7 @@ import prueba_modelo as pm
 
 
 async def main():
-    pm.set_current_tienda("verifika_demo")
+    pm.set_current_tienda("verifika_prod")
     casos = [
         "dame precio de 2 teclados y 3 mouses los mas economicos con envio a cordoba y transferencia",
         "cuanto sale el monitor mas barato",
@@ -55,7 +55,7 @@ async def main():
         t = time.time()
         try:
             resp, meta = await pm.AG.run_agent(
-                m, [], "gem", tienda_id="verifika_demo", user_id="t")
+                m, [], "gem", tienda_id="verifika_prod", user_id="t")
             dt = round(time.time() - t, 1)
             tools = [x.get("name") for x in meta.get("tools_called", [])]
             ev = pm.build_evidence(meta.get("tools_called", []))

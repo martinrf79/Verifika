@@ -184,8 +184,13 @@ def _corpus_tienda(evidence: list[dict]) -> str:
                 partes.append(str(v.get("concepto", "")))
                 partes.append(str(v.get("condicion", "")))
         elif tipo == "producto":
+            # Incluye los campos de la ficha enriquecida (origen, contenido de
+            # caja, garantia detallada): si la ficha dice "manual de armado" o
+            # "servicio tecnico autorizado", el bot puede relatarlo sin que se
+            # marque como servicio inventado. El dato de la fuente respalda.
             for k in ("nombre", "categoria", "descripcion", "uso_recomendado",
-                      "caracteristicas_extra", "material"):
+                      "caracteristicas_extra", "material", "origen",
+                      "contenido_caja", "garantia_detalle"):
                 partes.append(str(item.get(k, "")))
     return _normaliza(" ".join(partes))
 

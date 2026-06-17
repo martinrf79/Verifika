@@ -4,6 +4,7 @@
 # Entornos virtuales
 winvenv/
 venv/
+venv-win/
 .venv/
 
 # Secretos locales, NUNCA subir

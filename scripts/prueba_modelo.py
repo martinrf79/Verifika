@@ -55,7 +55,7 @@ from app.core.verificador import verificar_respuesta
 
 # ── Datos locales ──
 prods = []
-with open(os.path.join(ROOT, "data/clientes/verifika_demo/productos.csv"),
+with open(os.path.join(ROOT, "data/clientes/verifika_prod/productos.csv"),
           encoding="utf-8") as f:
     for row in csv.DictReader(f):
         p = {"id": row["id"].strip(), "nombre": row["nombre"].strip(),
@@ -68,7 +68,7 @@ with open(os.path.join(ROOT, "data/clientes/verifika_demo/productos.csv"),
                 p[k] = str(v).strip()
         prods.append(p)
 faq = {x["tema"]: x for x in json.load(
-    open(os.path.join(ROOT, "data/clientes/verifika_demo/faq.json"), encoding="utf-8"))}
+    open(os.path.join(ROOT, "data/clientes/verifika_prod/faq.json"), encoding="utf-8"))}
 by_id = {p["id"]: p for p in prods}
 
 # ── Firestore simulado ──
@@ -121,10 +121,10 @@ FALLBACKS = (
 
 
 async def probar(nombre, mensaje):
-    set_current_tienda("verifika_demo")
+    set_current_tienda("verifika_prod")
     try:
         resp, meta = await AG.run_agent(mensaje, [], "test-" + nombre,
-                                        tienda_id="verifika_demo", user_id="tester")
+                                        tienda_id="verifika_prod", user_id="tester")
     except Exception as e:
         print("\n" + "=" * 70)
         print(f"ESCENARIO: {nombre}  ->  EXCEPCION: {str(e)[:150]}")
@@ -141,13 +141,13 @@ async def probar(nombre, mensaje):
 
 
 async def probar_multiturno(nombre, mensajes):
-    set_current_tienda("verifika_demo")
+    set_current_tienda("verifika_prod")
     history = []
     print(f"\n===== MULTITURNO: {nombre} =====")
     for i, msg in enumerate(mensajes):
         try:
             resp, meta = await AG.run_agent(msg, history, f"mt-{nombre}-{i}",
-                                            tienda_id="verifika_demo", user_id="tester")
+                                            tienda_id="verifika_prod", user_id="tester")
         except Exception as e:
             print(f"  turno {i+1} EXCEPCION: {str(e)[:120]}")
             return
