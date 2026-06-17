@@ -116,12 +116,12 @@ def _canon(w: str) -> str:
 
 
 def _texto_buscable(p: dict) -> str:
-    """texto normalizado de TODOS los campos descriptivos del producto, no solo
-    nombre/categoria/descripcion: marca, modelo, color y uso_recomendado suelen
-    tener la palabra que el cliente uso (gaming, inalambrico, oficina)."""
+    """texto normalizado de TODOS los campos descriptivos del producto.
+    Incluye tags para que el ancla del interprete resuelva sinonimos."""
     partes = [p.get(k, "") for k in (
         "nombre", "categoria", "descripcion", "marca", "modelo",
-        "color", "uso_recomendado", "caracteristicas_extra")]
+        "color", "uso_recomendado", "caracteristicas_extra",
+        "tags", "descripcion_rica")]
     return _norm(" ".join(str(x) for x in partes if x))
 
 
@@ -278,19 +278,28 @@ def buscar_con_score(query: str | None,
 
 def _keyword_score(producto: dict, query_lower: str) -> float:
     """
-    Score simple por aparición de la query en campos del producto.
-    nombre > categoría > descripción.
+    Score por aparición de la query en campos del producto.
+    nombre > categoría > tags > descripcion_rica > descripción.
+    Los tags cubren sinonimos y formas alternativas que el cliente usa.
     """
     score = 0.0
     nombre = producto.get("nombre", "").lower()
     categoria = producto.get("categoria", "").lower()
     desc = producto.get("descripcion", "").lower()
+    tags = producto.get("tags", "").lower()
+    desc_rica = producto.get("descripcion_rica", "").lower()
+    marca = producto.get("marca", "").lower()
+    modelo = producto.get("modelo", "").lower()
 
     # Match de la query completa pesa más
     if query_lower in nombre:
         score += 5.0
+    if query_lower in tags:
+        score += 4.0
     if query_lower in categoria:
         score += 3.0
+    if query_lower in desc_rica:
+        score += 2.5
     if query_lower in desc:
         score += 2.0
 
@@ -299,8 +308,14 @@ def _keyword_score(producto: dict, query_lower: str) -> float:
     for palabra in palabras:
         if palabra in nombre:
             score += 1.5
+        elif palabra in tags:
+            score += 1.3
+        elif palabra in marca or palabra in modelo:
+            score += 1.2
         elif palabra in categoria:
             score += 1.0
+        elif palabra in desc_rica:
+            score += 0.6
         elif palabra in desc:
             score += 0.5
 
