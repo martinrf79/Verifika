@@ -469,6 +469,11 @@ async def run_agent(user_message: str,
             # El compat de Gemini y el NIM de NVIDIA (Nemotron, Kimi) no soportan
             # required de forma confiable: vamos en auto para no romper la 1a vuelta.
             tc_mode = "auto"
+        elif (settings.LLM_PROVIDER == "deepseek"
+              and "v4" in model_name.lower()):
+            # DeepSeek v4-flash y v4-pro: tool_choice=required devuelve 400.
+            # El modelo llama herramientas bien en auto.
+            tc_mode = "auto"
         else:
             tc_mode = "required" if iterations == 1 else "auto"
         _ts_call = time.perf_counter()
