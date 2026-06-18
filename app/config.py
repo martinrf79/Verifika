@@ -799,6 +799,13 @@ class Settings(BaseModel):
         os.getenv("NUEVA_COMPRA_RESET", "false").lower() == "true"
     )
 
+    # Codigo secreto de reset para pruebas. Si el mensaje del usuario es
+    # exactamente este texto (case-insensitive, sin espacios extra), se borra
+    # toda la conversacion y el sistema responde confirmando el reset.
+    # Util para testear sin usar numeros distintos ni mecanismos de produccion.
+    # Cambiar el valor si se quiere rotar el codigo. "" = desactivado.
+    RESET_CODE: str = os.getenv("RESET_CODE", "verifika2026")
+
     # Limpieza de consulta del Provider: las palabras de PLATA y PEDIDO (total,
     # pedido, presupuesto, era, monto) salen de la busqueda, y si despues de
     # limpiar no queda NADA que describa un producto, no se busca (antes caia

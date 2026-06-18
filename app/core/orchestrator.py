@@ -600,6 +600,41 @@ async def process_message(user_id: str, raw_message: str,
     # o lo reemplazo un pedido nuevo), None = no tocar el campo en Firestore.
     pedido_pendiente_out = None
 
+    # ─── RESET_CODE: codigo secreto de pruebas (antes de cualquier LLM) ───
+    # Si el mensaje es exactamente el codigo configurado (ej: "verifika2026"),
+    # se borra toda la conversacion y se responde por codigo. Util para pruebas
+    # desde el mismo numero sin cambiar el entorno de produccion.
+    _rc = (settings.RESET_CODE or "").strip().lower()
+    if _rc and (raw_message or "").strip().lower() == _rc:
+        presupuesto_memoria = ""
+        carrito_memoria = []
+        ultima_localidad_memoria = ""
+        proofs_memoria = []
+        productos_vistos_memoria = []
+        pedido_pendiente_memoria = None
+        history = []
+        conv["summary"] = ""
+        estado_anterior = "saludo"
+        estado_nuevo = "saludo"
+        try:
+            save_conversation(user_id, [], "", tienda_id=tid,
+                              estado_conversacion="saludo",
+                              proofs_recientes=[], ultimo_presupuesto="",
+                              productos_vistos=[], ultima_localidad="",
+                              carrito_vigente=[], pedido_pendiente={})
+        except Exception as e:
+            log.warning("reset_code_save_failed", trace_id=trace_id,
+                        error=str(e)[:120])
+        if USE_LEADS:
+            try:
+                from app.core.leads import descartar_leads_activos
+                descartar_leads_activos(user_id, canal, tid)
+            except Exception:
+                pass
+        log.info("reset_code_triggered", trace_id=trace_id, user_id=user_id)
+        final_response = "Listo, conversacion reiniciada. Empezamos de cero."
+        interpreter_short_circuit = True
+
     # ─── NUEVA_COMPRA_RESET (por codigo, antes de cualquier LLM) ───
     # "nueva compra" descarta la memoria de compra ENTERA y el historial de
     # texto: ahi viven los datos fantasma (la direccion "Arenales" de otra
