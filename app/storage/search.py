@@ -118,7 +118,7 @@ def _canon(w: str) -> str:
 def _texto_buscable(p: dict) -> str:
     """texto normalizado de TODOS los campos descriptivos del producto.
     Incluye tags para que el ancla del interprete resuelva sinonimos."""
-    partes = [p.get(k, "") for k in (
+    partes = [(p.get(k) or "") for k in (
         "nombre", "categoria", "descripcion", "marca", "modelo",
         "color", "uso_recomendado", "caracteristicas_extra",
         "tags", "descripcion_rica")]
@@ -283,13 +283,13 @@ def _keyword_score(producto: dict, query_lower: str) -> float:
     Los tags cubren sinonimos y formas alternativas que el cliente usa.
     """
     score = 0.0
-    nombre = producto.get("nombre", "").lower()
-    categoria = producto.get("categoria", "").lower()
-    desc = producto.get("descripcion", "").lower()
-    tags = producto.get("tags", "").lower()
-    desc_rica = producto.get("descripcion_rica", "").lower()
-    marca = producto.get("marca", "").lower()
-    modelo = producto.get("modelo", "").lower()
+    nombre = (producto.get("nombre") or "").lower()
+    categoria = (producto.get("categoria") or "").lower()
+    desc = (producto.get("descripcion") or "").lower()
+    tags = (producto.get("tags") or "").lower()
+    desc_rica = (producto.get("descripcion_rica") or "").lower()
+    marca = (producto.get("marca") or "").lower()
+    modelo = (producto.get("modelo") or "").lower()
 
     # Match de la query completa pesa más
     if query_lower in nombre:
