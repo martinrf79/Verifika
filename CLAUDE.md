@@ -5,6 +5,33 @@ No borrarlo, no moverlo.
 
 ---
 
+## Diagnóstico obligatorio antes de tocar nada (Martín, 21-jun-2026)
+
+Este proyecto acumuló dos arquitecturas en paralelo, dos interpretadores y unos
+cuarenta flags que se pisan. Para no repetir el error de parchar a ciegas:
+
+1. **Cada dos o tres sesiones, o ante cualquier diagnóstico, primero mapear el
+   sistema completo:** qué flags existen en `app/config.py`, qué camino corre de
+   verdad en producción (pedir a Martín la salida de `gcloud run services
+   describe`), y qué módulos están vivos vs muertos. NO opinar sobre el flujo sin
+   haber leído esto.
+2. **Regla de consolidación, reemplaza al reflejo de agregar:** por cada cosa
+   nueva que se prende, se BORRA o apaga una vieja. Prohibido sumar otra capa o
+   flag "en paralelo por las dudas". El problema histórico fue agregar y nunca
+   sacar. El método ahora es al revés.
+3. **Un test que no corre sobre el código de producción no vale.** Los bancos en
+   `scripts/` tienen su propia copia del prompt y no prueban el path vivo. Antes
+   de confiar en un número, verificar que el banco llame al código real.
+4. **La config manda desde un solo lugar.** Los flags viven en Cloud Run y derivan
+   entre sesiones. Tender a que el repo sea la única fuente de verdad de qué camino
+   está prendido.
+
+Objetivo principal que no se pierde: que el sistema INTERPRETE bien la conversación
+en turnos largos, con negaciones y cambios de decisión, y responda en consecuencia.
+Eso primero. Después enriquecer Firestore. El resto es ruido.
+
+---
+
 ## Identidad del proyecto
 
 Nombre: agente-v4 (en evolución a v5)
