@@ -75,6 +75,43 @@ def _categoria_pedida(term: str) -> Optional[str]:
     return None
 
 
+def categorias_en(term: str) -> set:
+    """TODAS las categorias del catalogo nombradas en el texto, no solo la
+    primera. Sirve para detectar un pedido de varios rubros ('2 sillas, 2 mouse y
+    2 teclados'): eso NO es una identidad unica y no debe certificarse como un
+    solo producto. El que consume decide; aca solo se cuentan los rubros."""
+    t = _norm(term)
+    cats = set()
+    for cat, frases in _CAT_SINONIMOS:
+        for f in frases:
+            # Tolerante al plural: 'sillas', 'teclados', 'mouses' tienen que contar
+            # igual que el singular del sinonimo.
+            if re.search(r"\b" + re.escape(_norm(f)) + r"(?:es|s)?\b", t):
+                cats.add(cat)
+                break
+    return cats
+
+
+# Cantidades al inicio del termino ('2 sillas', 'dos teclados'). Son CUENTA, no
+# parte de la identidad: si no se sacan, el guardia de modelo toma el '2' como un
+# numero de modelo y devuelve not_found para un rubro que existe (visto: '2 sillas'
+# daba not_found y el turno caia al puente).
+_NUM_PALABRAS = {"un", "una", "uno", "dos", "tres", "cuatro", "cinco", "seis",
+                 "siete", "ocho", "nueve", "diez"}
+
+
+def _sin_cantidad_inicial(term: str) -> str:
+    """Saca los tokens de cantidad del COMIENZO del termino. Solo al inicio y
+    solo si queda texto: nunca vacia el termino ni toca un modelo interno."""
+    toks = term.split()
+    i = 0
+    while i < len(toks) and (toks[i].isdigit()
+                             or _norm(toks[i]) in _NUM_PALABRAS):
+        i += 1
+    resto = toks[i:]
+    return " ".join(resto) if resto else term
+
+
 def _toks_distintivos(term: str) -> list[str]:
     return [t for t in re.findall(r"[a-z0-9]+", _norm(term))
             if any(c.isdigit() for c in t) or len(t) >= 4]
@@ -150,6 +187,9 @@ def certificar(termino: str, tienda_id: str, *,
     termino = (termino or "").strip()
     if not termino:
         return dict(_NOT_FOUND)
+    # La cantidad al inicio ('2 sillas') es cuenta, no identidad: se saca para que
+    # el guardia de modelo no tome el numero como un SKU inexistente.
+    termino = _sin_cantidad_inicial(termino)
 
     # 1) Candidatos del catalogo (con red de typos). La pista del interprete, si
     #    existe y trae un token distintivo, busca primero (mas precisa).

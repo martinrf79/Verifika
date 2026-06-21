@@ -319,11 +319,17 @@ async def procesar_camino_nuevo(user_id: str, raw_message: str,
         # puente fuera_catalogo de forma natural. Una sola autoridad, sin parche.
         _cert_no_existe = False
         _pc = (interpretacion.get("producto_consultado") or "").strip()
-        if (_pc and not hubo_cambio_carrito
+        # El certificador valida UN producto. Un pedido de varios rubros ('2 sillas,
+        # 2 mouse y 2 teclados') NO es una identidad unica: certificarlo como un
+        # solo SKU da not_found, apaga el motor de pedido multiple que SI resuelve y
+        # tira el turno al puente (y a la segunda, a humano). Si el mensaje nombra
+        # dos o mas rubros del catalogo, no se certifica aca: lo maneja el provider.
+        from app.core.certificador import certificar, categorias_en
+        _multi_rubros = len(categorias_en(_pc) | categorias_en(raw_message)) >= 2
+        if (_pc and not _multi_rubros and not hubo_cambio_carrito
                 and interpretacion.get("intencion")
                 in ("pregunta_especifica", "exploracion", "otra", "decision_compra")):
             try:
-                from app.core.certificador import certificar
                 _cert = certificar(_pc, tienda_id, trace_id=trace_id)
                 if _cert["status"] == "not_found":
                     _cert_no_existe = True
@@ -332,6 +338,9 @@ async def procesar_camino_nuevo(user_id: str, raw_message: str,
             except Exception as e:
                 log.warning("camino_nuevo_cert_error", trace_id=trace_id,
                             error=str(e)[:120])
+        elif _multi_rubros:
+            log.info("camino_nuevo_multi_rubros_no_cert", trace_id=trace_id,
+                     consultado=_pc[:60])
 
         # ── PASO 3: RESOLVER EL HECHO (provider, subordinado al certificador) ──
         from app.core.provider import proveer, contrato, verdad_del_turno
