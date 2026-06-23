@@ -5,6 +5,24 @@ from pydantic import BaseModel
 
 
 class Settings(BaseModel):
+    # ────────────────────────────────────────────────────────
+    # MODO DE PRUEBA DEL INTERPRETE (sesión 23-jun-2026) — INTERRUPTOR MAESTRO
+    # ────────────────────────────────────────────────────────
+    # Mientras SOLO_INTERPRETE está en true (DEFAULT), el orchestrator delega TODO
+    # el turno a app/core/interprete_libre.py: intérprete + solver libre + memoria,
+    # y NINGUNO de los otros ~70 flags ni de los cuatro caminos importa. Es la forma
+    # de probar la interpretación en real con el resto apagado. Para volver al
+    # sistema viejo: SOLO_INTERPRETE=false. No borra nada; es reversible.
+    SOLO_INTERPRETE: bool = (
+        os.getenv("SOLO_INTERPRETE", "true").lower() == "true"
+    )
+    # El bot muestra al final de cada respuesta QUÉ entendió el intérprete, para
+    # poder juzgar la interpretación chateando, sin leer logs. Apagar con false
+    # cuando ya no haga falta ver el detalle.
+    INTERPRETE_DEBUG: bool = (
+        os.getenv("INTERPRETE_DEBUG", "true").lower() == "true"
+    )
+
     # Negocio
     BUSINESS_NAME: str = os.getenv("BUSINESS_NAME", "Tienda Tecno")
     TIENDA_ID: str = os.getenv("TIENDA_ID", "tienda_principal")

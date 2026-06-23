@@ -503,6 +503,18 @@ async def process_message(user_id: str, raw_message: str,
     log.info("message_received", trace_id=trace_id, tienda_id=tid,
              user_id=user_id, msg_preview=raw_message[:80])
 
+    # ─── SOLO_INTERPRETE: modo de prueba del intérprete (interruptor maestro) ───
+    # Va ARRIBA DE TODO. Mientras está prendido (default), el turno entero lo
+    # maneja interprete_libre (intérprete + solver libre + memoria) y NINGÚN otro
+    # flag ni camino corre. Es como Martín quiere probar la interpretación con el
+    # resto apagado, sin depender de la config de Cloud Run. Off vuelve al viejo.
+    if settings.SOLO_INTERPRETE:
+        from app.core.interprete_libre import procesar_interprete_libre
+        resp = await procesar_interprete_libre(
+            user_id, raw_message, tid, canal, trace_id)
+        structlog.contextvars.clear_contextvars()
+        return resp
+
     # ─── MODO_LIBRE: el modelo responde libre, sin ninguna capa ───
     # El experimento de Martin (16-jun). El turno entero lo maneja
     # app/core/modo_libre.py: Gemini con un prompt corto de venta y las tools
