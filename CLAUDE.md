@@ -66,6 +66,45 @@ más abajo contradice esto, MANDA esto.
 
 ---
 
+## 🧭 PROTOCOLO DE ORDEN — repo GitHub + Cloud Run (seguir SIEMPRE)
+
+Nació del día que se perdió por deployar al servicio equivocado y por 70 flags
+sueltos. Seguir estos pasos cada sesión para que no se repita.
+
+**A. Antes de tocar nada**
+1. Leer este `CLAUDE.md`, `MAPA_SISTEMA.md` y `RESUMEN_PARA_NUEVO_CHAT.md`. No
+   inventar contexto; ante la duda, preguntar a Martín.
+2. Confirmar carpeta `~/verifika` y la rama de trabajo.
+
+**B. Cloud Run — un solo camino**
+3. Un solo servicio de bot: `agente-bot`. Nunca crear otro ni deployar a otro.
+4. `video-engine` apagado (min-instances 0), no se borra.
+5. Deploy SOLO por CI (push a la rama) o `./deploy.sh`. Nunca un `gcloud run
+   deploy` suelto a mano.
+6. Después de CADA deploy, verificar la corrida en GitHub. Recién con el verde
+   se dice "listo". Si falla, leer el log y arreglar; no adivinar.
+7. La config vive en el código (`config.py`), no en variables de la nube. El
+   servicio solo lleva secretos + `TIENDA_ID`. Secretos en Secret Manager,
+   nunca en texto plano.
+8. LLM: DeepSeek en todo. Gemini u otros solo con OK explícito de Martín.
+
+**C. GitHub — repo limpio**
+9. Commits chicos y mensajes claros. Pushear tras cada cambio cerrado.
+10. Una sola fuente de verdad: `CLAUDE.md` + `MAPA_SISTEMA` + `RESUMEN`. No crear
+    handoffs nuevos sueltos; actualizar los que mandan.
+11. Consolidar, no agregar: por cada cosa que se prende, apagar o borrar una
+    vieja. Prohibido sumar capas o flags "por las dudas".
+12. No romper lo que funciona: leer el archivo entero antes de editar; si el
+    cambio es invasivo, ir detrás de un flag o en archivo nuevo.
+
+**D. Verificar y cerrar**
+13. Nada se da por hecho sin probar el camino VIVO, no una copia.
+14. Reportar fiel: si algo falla, decirlo con la salida real, sin maquillar.
+15. Al cerrar el chat: actualizar la memoria y, si toca, limpiar Cloud Run (env
+    viejas, servicios de más, costo).
+
+---
+
 ## Diagnóstico obligatorio antes de tocar nada (Martín, 21-jun-2026)
 
 Este proyecto acumuló dos arquitecturas en paralelo, dos interpretadores y unos
