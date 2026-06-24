@@ -10,6 +10,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout
@@ -18,7 +21,8 @@ jobs:
       - name: Autenticar en Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: projects/1000939441597/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github-deployer@memory-engine-v1.iam.gserviceaccount.com
 
       - name: Configurar gcloud
         uses: google-github-actions/setup-gcloud@v2
