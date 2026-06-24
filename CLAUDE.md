@@ -146,9 +146,25 @@ uvicorn app.main:app --reload --port 8080
 # Tests locales antes de deploy
 python -m pytest tests/ -v
 
-# Deploy a Cloud Run (NO ejecutar sin permiso)
-gcloud run deploy agente-v4 --region southamerica-east1 --source .
+# Deploy a Cloud Run (NO ejecutar sin permiso). UN solo camino: ./deploy.sh
+# Deploya SIEMPRE al servicio vivo agente-bot, nunca a mano a otro servicio.
+cd ~/verifika && ./deploy.sh
 ```
+
+## Infraestructura Cloud Run — UN solo servicio de bot (24-jun-2026)
+
+Regla dura, nació de un día entero perdido: en el proyecto memory-engine-v1
+había DOS servicios de bot, `agente-bot` y `agente-v4`, y se deployaba al
+equivocado, así que el código nuevo nunca llegaba al bot vivo.
+
+- **Servicio VIVO del bot: `agente-bot`.** Es el que usa el webhook de WhatsApp.
+  Es el ÚNICO que se deploya. `agente-v4` se eliminó.
+- **`video-engine`** es el otro producto, el generador de videos. Queda APAGADO
+  (min-instances 0), NO se elimina.
+- **Deploy: siempre `./deploy.sh`** desde `~/verifika`, nunca un `gcloud run
+  deploy` a mano. El script fuerza la rama correcta y el servicio correcto.
+- Carpeta única de trabajo en Cloud Shell: `~/verifika` (clon limpio de la rama).
+  El atajo `agente` te para ahí.
 
 ---
 
