@@ -205,15 +205,16 @@ def calculate_total(items: list[dict] | None = None,
     Devuelve total_ars cuando todo es fijo, o total_min_ars y total_max_ars
     cuando algun extra es de modalidad rango.
     """
-    # Capa defensiva: normaliza y valida los inputs del modelo antes de calcular.
-    # Detras del flag CALC_DEFENSIVA. Apagada, comportamiento identico al previo.
-    if settings.CALC_DEFENSIVA:
-        from app.core.calc_defensiva import normalizar_inputs
-        from app.core.tools_context import get_current_destino
-        items, items_extra, _err = normalizar_inputs(
-            items, items_extra, destino=get_current_destino())
-        if _err:
-            return {"ok": False, "mensaje_para_llm": _err}
+    # Capa defensiva (unico camino, sin flag): normaliza y valida los inputs del
+    # modelo antes de calcular. Rechaza cantidades cero o negativas, normaliza el
+    # concepto de FAQ, fusiona el mismo producto mandado en dos lineas y deduplica
+    # un extra identico. Asi un input sucio del modelo no ensucia el total.
+    from app.core.calc_defensiva import normalizar_inputs
+    from app.core.tools_context import get_current_destino
+    items, items_extra, _err = normalizar_inputs(
+        items, items_extra, destino=get_current_destino())
+    if _err:
+        return {"ok": False, "mensaje_para_llm": _err}
 
     tid = get_current_tienda()
     detalle = []
@@ -363,17 +364,15 @@ def calculate_total(items: list[dict] | None = None,
             # Veredicto + opciones: sin la lista de extras validos el modelo
             # improvisa una disculpa y mata el cierre (visto en el molino
             # multiturno con el descuento por transferencia). Con la lista,
-            # reintenta con el par exacto. Mismo dominio que CALC_DEFENSIVA.
-            msg = f"Extras no validos: {extras_no_validos}."
-            if settings.CALC_DEFENSIVA:
-                cuantitativas = {
-                    t: [v.get("concepto") for v in (f.get("valores") or [])]
-                    for t, f in faqs.items()
-                    if f.get("tipo") == "cuantitativo"
-                }
-                msg += (f" Los UNICOS extras validos son (faq_tema: conceptos): "
-                        f"{cuantitativas}. Reintenta calculate_total usando "
-                        f"exactamente uno de esos pares.")
+            # reintenta con el par exacto. Unico camino, sin flag.
+            cuantitativas = {
+                t: [v.get("concepto") for v in (f.get("valores") or [])]
+                for t, f in faqs.items()
+                if f.get("tipo") == "cuantitativo"
+            }
+            msg = (f"Extras no validos: {extras_no_validos}. Los UNICOS extras "
+                   f"validos son (faq_tema: conceptos): {cuantitativas}. "
+                   f"Reintenta calculate_total usando exactamente uno de esos pares.")
             return {"ok": False, "mensaje_para_llm": msg}
 
     _nota_envio = None

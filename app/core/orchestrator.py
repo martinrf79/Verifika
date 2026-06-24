@@ -1196,18 +1196,17 @@ async def process_message(user_id: str, raw_message: str,
 
         # Destino del envio para la calculadora defensiva. Determinista, por
         # keywords del mensaje del cliente. El LLM no lo elige: lo inyecta el
-        # backend por contextvar, igual que la tienda. Solo cuando el flag esta on.
-        if settings.CALC_DEFENSIVA:
-            try:
-                from app.core.tools_context import set_current_destino
-                from app.core.calc_defensiva import destino_a_categoria
-                _dest = destino_a_categoria(raw_message)
-                set_current_destino(_dest)
-                if _dest:
-                    log.info("destino_detectado", trace_id=trace_id, destino=_dest)
-            except Exception as e:
-                log.warning("destino_deteccion_error", trace_id=trace_id,
-                            error=str(e)[:120])
+        # backend por contextvar, igual que la tienda. Unico camino, sin flag.
+        try:
+            from app.core.tools_context import set_current_destino
+            from app.core.calc_defensiva import destino_a_categoria
+            _dest = destino_a_categoria(raw_message)
+            set_current_destino(_dest)
+            if _dest:
+                log.info("destino_detectado", trace_id=trace_id, destino=_dest)
+        except Exception as e:
+            log.warning("destino_deteccion_error", trace_id=trace_id,
+                        error=str(e)[:120])
 
         _ts_solver = time.perf_counter()
         # ─── SOLVER_CODIGO_PRIMARIO: redactor por codigo ANTES del Solver ───

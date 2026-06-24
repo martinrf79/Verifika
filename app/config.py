@@ -174,16 +174,9 @@ class Settings(BaseModel):
     # entero y deterministico de la calculadora.
     UMBRAL_ENVIO_GRATIS: int = int(os.getenv("UMBRAL_ENVIO_GRATIS", "300000"))
 
-    # Calculadora defensiva. Normaliza y valida los inputs que manda el modelo
-    # ANTES de calcular, en app/core/calc_defensiva.py. Resuelve dualidades como
-    # el verificador resuelve la salida: rechaza cantidades cero o negativas,
-    # normaliza la capitalizacion del concepto de FAQ, fusiona el mismo producto
-    # mandado en dos lineas y deduplica un extra identico mandado dos veces. Asi
-    # un input sucio del modelo no ensucia el total ni dispara fallback.
-    # false: comportamiento identico al previo, la calculadora confia en el input.
-    CALC_DEFENSIVA: bool = (
-        os.getenv("CALC_DEFENSIVA", "true").lower() == "true"
-    )
+    # NOTA: la calculadora defensiva (ex flag CALC_DEFENSIVA) ya es el UNICO camino
+    # de calculate_total, cableada en app/core/tools.py (normaliza y valida inputs
+    # del modelo antes de calcular). Consolidada 24-jun: dejo de ser flag.
 
     # Anclaje del Interpretador al catalogo. Hoy el Interpretador no ve el
     # catalogo: sus candidatos los inventa el modelo y a veces no existen. Con el

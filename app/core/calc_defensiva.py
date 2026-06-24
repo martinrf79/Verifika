@@ -21,8 +21,8 @@ Esta primera version cubre:
   El destino lo inyecta el backend por contextvar, el LLM no lo elige. Si no hay
   destino claro, se rechaza para que el bot pregunte, sin adivinar el envio.
 
-Todo esto corre solo si el flag CALC_DEFENSIVA esta activo. Con el flag apagado
-calculate_total no la invoca y el comportamiento es identico al previo.
+Es el unico camino de calculate_total (ex flag CALC_DEFENSIVA, consolidado): la
+tool siempre invoca esta capa antes de calcular.
 """
 
 # Palabras que delatan el destino del envio en el texto del cliente. Se buscan
