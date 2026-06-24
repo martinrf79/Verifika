@@ -10,7 +10,7 @@ from app.storage.firestore_client import (
     get_categories,
     get_all_faq,
 )
-from app.storage.search import hybrid_search
+from app.storage.search import hybrid_search_relajada
 from app.config import get_settings
 from app.logger import get_logger
 from app.core.tools_context import get_current_tienda
@@ -27,72 +27,46 @@ def search_products(query: str | None = None,
                     categoria: str | None = None,
                     precio_min: int | None = None,
                     precio_max: int | None = None) -> dict:
-    """Busca productos en Firestore con búsqueda híbrida."""
+    """Busca productos en Firestore con escalera de relajacion: si la palabra
+    del cliente no engancha pero la categoria tiene productos reales, los ofrece
+    igual en vez de negar stock que existe (cura el bug de 0 ventas por negar
+    stock). Es el unico camino de busqueda; sin flag."""
     tid = get_current_tienda()
 
-    # Escalera de relajacion (flag): si la palabra del cliente no engancha pero
-    # la categoria tiene productos, se ofrecen igual en vez de negar stock real.
-    if settings.BUSQUEDA_RELAJADA:
-        from app.storage.search import hybrid_search_relajada
-        r = hybrid_search_relajada(
-            query=query, categoria=categoria, precio_min=precio_min,
-            precio_max=precio_max, top_n=settings.SEARCH_TOP_N, tienda_id=tid)
-        productos = r["productos"]
-        if productos and not r["match_exacto"]:
-            cat = r.get("categoria_usada") or "esa"
-            return {
-                "encontrados": len(productos),
-                "productos": [_resumir(p) for p in productos],
-                "match_exacto": False,
-                "mensaje_para_llm": (
-                    f"No encontre coincidencia textual con '{query}', pero la "
-                    f"categoria '{cat}' tiene {r['total_categoria']} productos "
-                    f"reales en stock; aca van los mas economicos. OFRECELOS al "
-                    f"cliente como opciones. NO digas que no tenemos: el dato "
-                    f"especifico que pidio no figura textual, pero estos "
-                    f"productos existen y estan disponibles."
-                ),
-            }
-        if not productos:
-            cats = r.get("categorias_disponibles") or []
-            return {
-                "encontrados": 0,
-                "productos": [],
-                "mensaje_para_llm": (
-                    "No hay productos que cumplan los criterios. "
-                    "Decile al cliente honestamente que no tenemos algo así y "
-                    f"ofrecele la categoría más cercana. Categorías reales del "
-                    f"catálogo: {cats}."
-                ),
-            }
+    r = hybrid_search_relajada(
+        query=query, categoria=categoria, precio_min=precio_min,
+        precio_max=precio_max, top_n=settings.SEARCH_TOP_N, tienda_id=tid)
+    productos = r["productos"]
+    if productos and not r["match_exacto"]:
+        cat = r.get("categoria_usada") or "esa"
         return {
             "encontrados": len(productos),
             "productos": [_resumir(p) for p in productos],
+            "match_exacto": False,
+            "mensaje_para_llm": (
+                f"No encontre coincidencia textual con '{query}', pero la "
+                f"categoria '{cat}' tiene {r['total_categoria']} productos "
+                f"reales en stock; aca van los mas economicos. OFRECELOS al "
+                f"cliente como opciones. NO digas que no tenemos: el dato "
+                f"especifico que pidio no figura textual, pero estos "
+                f"productos existen y estan disponibles."
+            ),
         }
-
-    resultados = hybrid_search(
-        query=query,
-        categoria=categoria,
-        precio_min=precio_min,
-        precio_max=precio_max,
-        top_n=settings.SEARCH_TOP_N,
-        tienda_id=tid,
-    )
-
-    if not resultados:
+    if not productos:
+        cats = r.get("categorias_disponibles") or []
         return {
             "encontrados": 0,
             "productos": [],
             "mensaje_para_llm": (
                 "No hay productos que cumplan los criterios. "
-                "Decile al cliente honestamente que no tenemos algo así. "
-                "Si querés, ofrecé la categoría más cercana del catálogo."
+                "Decile al cliente honestamente que no tenemos algo así y "
+                f"ofrecele la categoría más cercana. Categorías reales del "
+                f"catálogo: {cats}."
             ),
         }
-
     return {
-        "encontrados": len(resultados),
-        "productos": [_resumir(p) for p in resultados],
+        "encontrados": len(productos),
+        "productos": [_resumir(p) for p in productos],
     }
 
 

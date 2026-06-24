@@ -246,19 +246,9 @@ class Settings(BaseModel):
     # generado (scripts/generar_embeddings.py). false: solo busqueda por palabras.
     EMBEDDINGS_ON: bool = os.getenv("EMBEDDINGS_ON", "false").lower() == "true"
 
-    # Busqueda relajada de productos. Tapa la clase "dato real, cajon equivocado"
-    # en search_products: el catalogo dice gaming y el cliente dice gamer, la
-    # busqueda por substring da 0 sobre una categoria con 52 productos y la tool
-    # le ordena al modelo negar stock (visto en el molino multiturno del 10-jun:
-    # 0 ventas en 58 turnos). Con el flag activo: normaliza acentos y plurales,
-    # busca tambien en marca, modelo, color y uso_recomendado, mapea categorias
-    # inexactas del modelo (teclado mecanico -> teclado) y, si la palabra no
-    # engancha pero la categoria tiene productos, devuelve esos productos
-    # marcados como match parcial para que el modelo los OFREZCA en vez de negar.
-    # false: comportamiento identico al previo.
-    BUSQUEDA_RELAJADA: bool = (
-        os.getenv("BUSQUEDA_RELAJADA", "true").lower() == "true"
-    )
+    # NOTA: la busqueda relajada (ex flag BUSQUEDA_RELAJADA) ya es el UNICO camino
+    # de search_products, cableada en app/core/tools.py. Tapaba "0 ventas por negar
+    # stock que existe". Consolidada 24-jun: dejo de ser flag.
 
     # Matcheo de FAQ por palabras. El matcheo por keywords actual exige la frase
     # entera como substring: "costo de envio a cordoba" NO contiene "costo envio",

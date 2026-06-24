@@ -165,7 +165,7 @@ def hybrid_search_relajada(query: str | None = None,
                            top_n: int = DEFAULT_TOP_N,
                            tienda_id: str | None = None) -> dict:
     """
-    Busqueda con escalera de relajacion (flag BUSQUEDA_RELAJADA). Garantia: si
+    Busqueda con escalera de relajacion (unico camino de search_products). Garantia: si
     los filtros duros (categoria real + precio) dejan candidatos, NUNCA devuelve
     vacio; a lo sumo devuelve los candidatos marcados match_exacto=False para
     que el vendedor los ofrezca en vez de negar stock que existe.
