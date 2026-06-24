@@ -69,10 +69,27 @@ texto plano `MP_ACCESS_TOKEN` y `OPENAI_API_KEY` (ROTAR).
 
 ---
 
+## Formato de trabajo (deploy + verificación), probado verde 24-jun
+
+El pipeline profesional quedó andando:
+
+1. Claude escribe el código y lo pushea a la rama.
+2. GitHub Actions deploya solo a `agente-bot` con Workload Identity Federation
+   (sin clave descargable; la SA es `github-deployer@memory-engine-v1`).
+3. Claude lee el resultado de la corrida por el MCP de GitHub y confirma el verde
+   o arregla el error. Sin gcloud a mano, sin posibilidad de errar el servicio.
+
+Respaldo manual: `./deploy.sh` desde `~/verifika`. El workflow ignora cambios
+solo de `.md` (no deploya de gusto). Martín se dedica a diseñar el bot; los
+deploys los maneja y verifica Claude.
+
+---
+
 ## Reglas de oro para NO volver al caos
 
 - **Un solo servicio de bot:** `agente-bot`. Nunca crear otro.
-- **Un solo deploy:** `./deploy.sh` desde `~/verifika`. Nunca a mano.
+- **Un solo deploy:** CI por push (preferido) o `./deploy.sh` (respaldo). Nunca un
+  `gcloud run deploy` suelto a otro servicio.
 - **Un solo intérprete:** `interpretador.py`.
 - **Un solo LLM:** DeepSeek. Gemini queda prohibido salvo OK explícito de Martín.
 - **El repo manda.** La meta es que la config viva en el código, no en env de la

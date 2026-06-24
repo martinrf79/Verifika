@@ -19,11 +19,16 @@ más abajo contradice esto, MANDA esto.
   (min-instances 0). NO se elimina, NO se toca.
 - **Carpeta de trabajo única: `~/verifika`** (Cloud Shell y notebook). El atajo
   `agente` te para ahí.
-- **Deploy: SIEMPRE `./deploy.sh`** desde `~/verifika`. Nunca `gcloud run deploy` a
-  mano. El script fuerza la rama y el servicio correctos. No se puede deployar al
-  servicio equivocado.
+- **Deploy: dos caminos, ambos al servicio correcto `agente-bot`.**
+  1. **CI automático (preferido):** un push a la rama dispara GitHub Actions
+     (`.github/workflows/deploy.yml`), que deploya a `agente-bot` con Workload
+     Identity Federation (sin clave descargable). Claude lee el resultado de la
+     corrida por el MCP de GitHub y confirma o arregla. Probado verde 24-jun.
+  2. **Manual (respaldo):** `./deploy.sh` desde `~/verifika`. Fuerza rama y
+     servicio. Útil si CI no está disponible.
+  Ninguno puede deployar al servicio equivocado.
 - **Rama de trabajo: `claude/interpreter-solver-pipeline-mdlynm`**. Cuando se
-  mergee a `main`, cambiar la rama en `deploy.sh`.
+  mergee a `main`, cambiar la rama en `deploy.sh` y en el trigger del workflow.
 
 ### Camino del bot HOY (código)
 
