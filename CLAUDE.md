@@ -55,8 +55,9 @@ más abajo contradice esto, MANDA esto.
 - `CLAUDE.md` (este archivo): instrucciones + estado actual.
 - `MAPA_SISTEMA.md`: auditoría de flags y módulos vivos vs muertos.
 - `RESUMEN_PARA_NUEVO_CHAT.md`: handoff de dónde quedamos.
-- El resto (`HANDOFF*.md`, `INSTRUCCIONES_v5.md`, `PLAN_*.md`, `CAMBIOS_*.md`) es
-  historia vieja. Útil de contexto, pero NO es la fuente de verdad.
+- Los handoffs viejos (`HANDOFF*.md`, `INSTRUCCIONES_v5.md`, `PLAN_*.md`,
+  `CAMBIOS_*.md`, etc.) se BORRARON el 24-jun para no confundir. Si hace falta
+  algo, vive en el historial de git, no se perdió.
 
 ---
 

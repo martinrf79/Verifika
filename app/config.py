@@ -133,7 +133,7 @@ class Settings(BaseModel):
     MAX_OUTPUT_TOKENS: int = int(os.getenv("MAX_OUTPUT_TOKENS", "800"))
     # 6 da aire a turnos contextuales, como un cambio de opinion que obliga a
     # re-buscar y recalcular. Los turnos simples siguen cerrando en 1 o 2.
-    MAX_TOOL_ITERATIONS: int = int(os.getenv("MAX_TOOL_ITERATIONS", "6"))
+    MAX_TOOL_ITERATIONS: int = int(os.getenv("MAX_TOOL_ITERATIONS", "8"))
     # Si el modelo devuelve contenido VACIO sin tool calls (vicio esporadico del
     # compat de Gemini), reintentar UNA vez antes de caer al fallback tecnico.
     REINTENTA_RESPUESTA_VACIA: bool = (
@@ -172,7 +172,7 @@ class Settings(BaseModel):
     # UMBRAL_ENVIO_GRATIS, la calculadora pone el envio en gratis sola, sin
     # importar el concepto de envio que pida el Solver. Asi el total final sale
     # entero y deterministico de la calculadora.
-    UMBRAL_ENVIO_GRATIS: int = int(os.getenv("UMBRAL_ENVIO_GRATIS", "250000"))
+    UMBRAL_ENVIO_GRATIS: int = int(os.getenv("UMBRAL_ENVIO_GRATIS", "300000"))
 
     # Calculadora defensiva. Normaliza y valida los inputs que manda el modelo
     # ANTES de calcular, en app/core/calc_defensiva.py. Resuelve dualidades como
@@ -182,7 +182,7 @@ class Settings(BaseModel):
     # un input sucio del modelo no ensucia el total ni dispara fallback.
     # false: comportamiento identico al previo, la calculadora confia en el input.
     CALC_DEFENSIVA: bool = (
-        os.getenv("CALC_DEFENSIVA", "false").lower() == "true"
+        os.getenv("CALC_DEFENSIVA", "true").lower() == "true"
     )
 
     # Anclaje del Interpretador al catalogo. Hoy el Interpretador no ve el
@@ -194,7 +194,7 @@ class Settings(BaseModel):
     # que el bot pregunte; si es una categoria generica lo deja para el Solver.
     # false: el Interpretador se comporta igual que hoy.
     INTERPRETE_ANCLA_CATALOGO: bool = (
-        os.getenv("INTERPRETE_ANCLA_CATALOGO", "false").lower() == "true"
+        os.getenv("INTERPRETE_ANCLA_CATALOGO", "true").lower() == "true"
     )
 
     # Respondedor determinista de FAQ (Hito 2, puerta 1). Una pregunta pura de
@@ -257,7 +257,7 @@ class Settings(BaseModel):
     # marcados como match parcial para que el modelo los OFREZCA en vez de negar.
     # false: comportamiento identico al previo.
     BUSQUEDA_RELAJADA: bool = (
-        os.getenv("BUSQUEDA_RELAJADA", "false").lower() == "true"
+        os.getenv("BUSQUEDA_RELAJADA", "true").lower() == "true"
     )
 
     # Matcheo de FAQ por palabras. El matcheo por keywords actual exige la frase
@@ -268,7 +268,7 @@ class Settings(BaseModel):
     # tolerantes a plural), y la respuesta incluye hasta dos temas relacionados
     # para que el Solver vea el cajon correcto. false: identico al previo.
     FAQ_MATCH_PALABRAS: bool = (
-        os.getenv("FAQ_MATCH_PALABRAS", "false").lower() == "true"
+        os.getenv("FAQ_MATCH_PALABRAS", "true").lower() == "true"
     )
     # Proveedor del embedding: openai (con OPENAI_API_KEY) o deepseek (legacy).
     EMBEDDINGS_PROVIDER: str = os.getenv("EMBEDDINGS_PROVIDER", "openai").lower()
@@ -295,7 +295,7 @@ class Settings(BaseModel):
     # de verdad y sigue el loop; si no puede parsear, limpia el markup para que
     # el cliente nunca lo vea. false: identico al previo.
     RESCATE_TOOLCALL_TEXTO: bool = (
-        os.getenv("RESCATE_TOOLCALL_TEXTO", "false").lower() == "true"
+        os.getenv("RESCATE_TOOLCALL_TEXTO", "true").lower() == "true"
     )
 
     # ────────────────────────────────────────────────────────
@@ -596,7 +596,7 @@ class Settings(BaseModel):
     # despues cualquier cifra sin respaldo. En app/core/agent.py. false: se
     # comporta igual que hoy (manda el fallback).
     CIERRE_FORZADO_MAX_ITER: bool = (
-        os.getenv("CIERRE_FORZADO_MAX_ITER", "false").lower() == "true"
+        os.getenv("CIERRE_FORZADO_MAX_ITER", "true").lower() == "true"
     )
 
     # Tarifa de envio por PROVINCIA (dato de tienda, no codigo). El rango de
@@ -607,7 +607,7 @@ class Settings(BaseModel):
     # Si la provincia no se determina o no esta en la tabla, cae al rango de
     # siempre: nunca adivina. false: identico al previo.
     TARIFA_PROVINCIA: bool = (
-        os.getenv("TARIFA_PROVINCIA", "false").lower() == "true"
+        os.getenv("TARIFA_PROVINCIA", "true").lower() == "true"
     )
 
     # Link de pago Mercado Pago al cerrar la venta. Con el lead capturado, el
@@ -691,7 +691,7 @@ class Settings(BaseModel):
     # (app/core/confirmacion.py). false: identico al previo (el Solver arma la
     # pregunta desde las secciones ambiguos del contrato).
     CONFIRMACION_PROVIDER: bool = (
-        os.getenv("CONFIRMACION_PROVIDER", "false").lower() == "true"
+        os.getenv("CONFIRMACION_PROVIDER", "true").lower() == "true"
     )
 
     # INTENCION_MANDA: el mensaje NUEVO manda sobre el estado guardado. Cuando el
@@ -720,7 +720,7 @@ class Settings(BaseModel):
     # mejor que entra y sale del estado en cada turno. false: identico al previo
     # (el interprete no emite acciones y el carrito se maneja como hoy).
     DIRECTOR_LLM: bool = (
-        os.getenv("DIRECTOR_LLM", "false").lower() == "true"
+        os.getenv("DIRECTOR_LLM", "true").lower() == "true"
     )
 
     # CAMINO_NUEVO: la columna limpia de cinco pasos (app/core/camino_nuevo.py).
@@ -977,7 +977,7 @@ class Settings(BaseModel):
     # literal. Si no puede determinar la zona, pide el CP, no adivina. Motor generico
     # (geografia argentina) + dato de tienda (tarifa por zona), no se rediseña por
     # cliente. Default false: el tool no aparece y el envio sigue por calculate_total.
-    ENVIO_POR_ZONA: bool = os.getenv("ENVIO_POR_ZONA", "false").lower() == "true"
+    ENVIO_POR_ZONA: bool = os.getenv("ENVIO_POR_ZONA", "true").lower() == "true"
 
     # ────────────────────────────────────────────────────────
     # FECHA_ENTREGA — tool determinista de plazo/fecha de entrega
