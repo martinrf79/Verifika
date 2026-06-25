@@ -274,29 +274,16 @@ def construir_prompt_interpretador(mensaje: str,
     # emitir sacar / cambiar_cantidad apuntando a un producto que YA esta cargado.
     # Sin esto el modelo no sabe que hay en el pedido y no acierta el target del
     # comando (visto: "mejor que sean 2 teclados" no emitia cambiar_cantidad).
+    # Director y confirmacion-provider se borraron en la consolidacion: el
+    # interprete emite el JSON BASELINE (intencion, producto, candidatos, etc.),
+    # sin acciones de carrito, producto_consultado ni tipo_confirmacion, que el
+    # camino vivo no consumia. Estas variables quedan vacias.
     bloque_carrito = ""
-    if settings.DIRECTOR_LLM and carrito_actual:
-        _lineas = "\n".join(
-            f"- {it.get('cantidad', 1)}x {it.get('nombre')}"
-            for it in carrito_actual if it.get("nombre"))
-        if _lineas:
-            bloque_carrito = (
-                "\n\nPEDIDO ACTUAL EN EL CARRITO DEL CLIENTE (lo que ya tiene "
-                "cargado; para sacar o cambiar cantidad referite a estos):\n"
-                + _lineas)
-
-    # CONFIRMACION_PROVIDER: el interprete suma la PISTA tipo_confirmacion. Con el
-    # flag off el prompt queda byte a byte igual al previo (baseline de pruebas).
-    con_conf = settings.CONFIRMACION_PROVIDER
-    coma_tc = "," if con_conf else ""
-    linea_tc = ('\n  "tipo_confirmacion": "a_o_b|te_referis_a|confirmar_compra, '
-                'o null"') if con_conf else ""
-    guia_tc = GUIA_TIPO_CONFIRMACION if con_conf else ""
-
-    # DIRECTOR_LLM: el interprete emite las ACCIONES sobre el carrito en el mismo
-    # JSON. Con el flag off, estas tres variables quedan vacias y el prompt es
-    # byte a byte igual al previo (baseline de pruebas intacto).
-    con_dir = settings.DIRECTOR_LLM
+    con_conf = False
+    coma_tc = ""
+    linea_tc = ""
+    guia_tc = ""
+    con_dir = False
     coma_ac = "," if con_dir else ""
     linea_ac = ('\n  "acciones_carrito": [{"tipo": '
                 '"agregar|sacar|cambiar_cantidad|vaciar", '
@@ -617,23 +604,6 @@ async def interpretar_mensaje(mensaje: str,
             log.info("interpretador_downgrade_baja_confianza", trace_id=trace_id,
                      intencion_original=resultado["intencion"])
             resultado["intencion"] = "otra"
-
-        # Capa cuatro, anclaje al catalogo: aterriza candidatos y producto a la
-        # fuente de verdad. Detras del flag. El LLM corrige el lenguaje, el codigo
-        # mapea a productos reales y resuelve o pide elegir.
-        if settings.INTERPRETE_ANCLA_CATALOGO:
-            try:
-                from app.storage.firestore_client import get_all_products
-                from app.core.tools_context import get_current_tienda
-                tid = tienda_id or get_current_tienda()
-                productos = get_all_products(tienda_id=tid)
-                from app.core.interprete_ancla import anclar_a_catalogo
-                resultado = anclar_a_catalogo(
-                    resultado, mensaje, productos,
-                    umbral_alta=UMBRAL_CONFIANZA_ALTA)
-            except Exception as e:
-                log.warning("interprete_ancla_error", trace_id=trace_id,
-                            error=str(e)[:120])
 
         log.info("interpretador_ok", trace_id=trace_id,
                  intencion=resultado.get("intencion"),

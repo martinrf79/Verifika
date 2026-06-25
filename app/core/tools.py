@@ -665,16 +665,6 @@ def _faq_resp(tema: str, data: dict) -> dict:
         resp["conceptos_disponibles"] = [
             v.get("concepto") for v in data.get("valores", []) if v.get("concepto")
         ]
-    # CAPA DE VENTA de la fuente de verdad. La FAQ trae, en algunos temas, un
-    # cierre comercial ya redactado y verificado contra la politica (campo
-    # 'venta'). Hasta ahora ese texto era dato muerto: query_faq no lo devolvia,
-    # asi que el Solver nunca lo veia. Con PROMPT_VENTA on se lo pasamos como
-    # sugerencia_venta para que avance la venta sin inventar (la Regla 9 del
-    # prompt le dice como usarlo). Sin el flag, la respuesta es identica a antes.
-    if settings.PROMPT_VENTA:
-        venta = (data.get("venta", "") or "").strip()
-        if venta:
-            resp["sugerencia_venta"] = venta
     return resp
 
 
@@ -1076,8 +1066,10 @@ def _build_schema():
         },
     })
 
-    # Tool determinista de fecha/plazo de entrega, solo si el flag esta on.
-    if settings.FECHA_ENTREGA:
+    # Tool determinista de fecha/plazo de entrega. Siempre en el schema completo
+    # (posventa se conserva); el solver vivo no la ve porque MODO_LIBRE_TOOLS la
+    # filtra, pero queda disponible para exponerla cuando se decida.
+    if True:
         schemas.append({
             "type": "function",
             "function": {
@@ -1112,8 +1104,10 @@ def _build_schema():
             },
         })
 
-    # Tools de posventa (devolucion, garantia, CUIT), solo si el flag esta on.
-    if settings.POSVENTA_TOOLS:
+    # Tools de posventa (devolucion, garantia, CUIT). Siempre en el schema completo
+    # (posventa se conserva); el solver vivo no las ve porque MODO_LIBRE_TOOLS las
+    # filtra, pero quedan disponibles para exponerlas cuando se decida.
+    if True:
         schemas.append({
             "type": "function",
             "function": {
@@ -1176,15 +1170,8 @@ def _build_schema():
             },
         })
 
-    # Tier standard (flag TOOLS_MINIMAS): saca del schema las tools que el modelo
-    # puede pensar solo, dejando solo las que traen un hecho de la fuente. Las
-    # funciones quedan en el registry; esto solo recorta lo que ve el LLM.
-    if settings.TOOLS_MINIMAS:
-        _podar = {"find_within_budget", "compare_products",
-                  "recommend_product"}
-        schemas = [s for s in schemas
-                   if s.get("function", {}).get("name") not in _podar]
-
+    # El schema completo se devuelve entero. El recorte de tools que ve el solver
+    # vivo lo hace MODO_LIBRE_TOOLS en interprete_libre (ex flag TOOLS_MINIMAS).
     return schemas
 
 

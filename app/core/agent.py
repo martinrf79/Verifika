@@ -362,28 +362,12 @@ def _build_system_prompt(tienda_id: str | None) -> str:
             log.warning("system_prompt_fallback_to_default",
                         tienda_id=tienda_id, error=str(e)[:100])
 
-    # Prompt liviano: template corto y self-contained. La venta, el A/B, la
-    # confirmacion y la regla de envio ya viven adentro, asi que NO se le pegan los
-    # apendices pesados (_REGLA_VENTA, _REGLA_PRESENTACION, bloque ENVIO). El hecho
-    # lo custodia el codigo (verificador, calculadora). Reversible por flag.
-    if settings.PROMPT_LIGERO:
-        return _SYSTEM_PROMPT_LIGERO.format(business_name=business_name)
-
+    # Prompt del Solver legacy (lo usa solo un endpoint de debug de main; el camino
+    # vivo pasa su propio prompt). Los apendices condicionales (ligero, constitucion,
+    # venta, entrega, libro) se consolidaron: queda el template base + presentacion
+    # + la regla de envio, que es lo unico siempre activo.
     prompt = _SYSTEM_PROMPT_TEMPLATE.format(business_name=business_name)
-    # Constitucion como tabla suprema: el mismo texto canonico que el gate
-    # enforcea por codigo, leido tambien por el Solver. Va arriba de todo, como
-    # marco que manda sobre las reglas operativas 1-9 de abajo.
-    if settings.PROMPT_CONSTITUCION:
-        try:
-            from app.core.constitucion import constitucion_como_prompt
-            prompt = (constitucion_como_prompt()
-                      + "\n\nLas reglas de abajo son el COMO operativo de esta "
-                      "constitucion.\n\n" + prompt)
-        except Exception as e:
-            log.warning("constitucion_prompt_error", error=str(e)[:120])
     prompt += _REGLA_PRESENTACION
-    if settings.PROMPT_VENTA:
-        prompt += _REGLA_VENTA
     # Envio por zona: el costo de envio lo resuelve el codigo, no el modelo.
     prompt += (
         "\n\n═══ ENVIO: USA cotizar_envio ═══\n"
@@ -392,25 +376,6 @@ def _build_system_prompt(tienda_id: str | None) -> str:
         "el mensaje que devuelve la tool. Nunca afirmes en que provincia queda "
         "una ciudad."
     )
-    # Fecha de entrega: la ventana la calcula el codigo, el modelo no promete dia.
-    if settings.FECHA_ENTREGA:
-        prompt += (
-            "\n\n═══ ENTREGA: USA calcular_entrega ═══\n"
-            "Cuando el cliente pregunte cuando llega o para que fecha, llama "
-            "calcular_entrega con su localidad o codigo postal. NUNCA prometas un "
-            "dia exacto ni acortes el plazo: pasa la ventana que devuelve el tool, "
-            "que ya es una estimacion en dias habiles y aclara que el dia depende "
-            "del correo. Si no hay zona, pedi el codigo postal."
-        )
-    # Libro de asientos de numeros (Fase 2): el Solver lista al final cada cifra de
-    # dinero con su fuente. Solo en modo solver; en extractor/fusion el Solver
-    # responde libre y el libro lo declara el corrector LLM (mejor emision).
-    if settings.LIBRO_ASIENTOS and settings.LIBRO_MODO == "solver":
-        try:
-            from app.core.libro import PROMPT_LIBRO
-            prompt += PROMPT_LIBRO
-        except Exception as e:
-            log.warning("prompt_libro_error", error=str(e)[:120])
     return prompt
 
 
@@ -541,7 +506,7 @@ async def run_agent(user_message: str,
             # markup crudo llega al cliente. Se parsea, se EJECUTA la tool de
             # verdad y sigue el loop; si no se puede parsear, se limpia el
             # markup y, si no queda texto util, cae al reintento normal.
-            if settings.RESCATE_TOOLCALL_TEXTO and final_text:
+            if final_text:  # rescate de tool-calls emitidos como texto (siempre)
                 from app.core.rescate_toolcall import (
                     hay_markup, parsear_toolcalls_texto)
                 if hay_markup(final_text):
@@ -595,8 +560,7 @@ async def run_agent(user_message: str,
             # (3 turnos del molino del 10-jun terminaron en "problema tecnico"
             # sin excepcion ni log de error: era esto). Un reintento inmediato
             # antes de resignar el turno al fallback.
-            if (not final_text and settings.REINTENTA_RESPUESTA_VACIA
-                    and not reintento_vacio_hecho):
+            if not final_text and not reintento_vacio_hecho:
                 reintento_vacio_hecho = True
                 log.warning("agent_respuesta_vacia_reintento",
                             trace_id=trace_id, iteration=iterations)
@@ -693,34 +657,31 @@ async def run_agent(user_message: str,
                 "content": json.dumps(result, ensure_ascii=False),
             })
 
-    # CIERRE FORZADO al pegar el tope de iteraciones. En vez de tirarle al
-    # cliente el mensaje de error tecnico (que es un error VISIBLE: corta la
-    # charla a mitad), pedimos UNA respuesta final SIN tools para que el modelo
-    # cierre con lo que ya junto de las herramientas. Es seguro: cualquier cifra
-    # sin respaldo la gatea el verificador determinista despues, en el
-    # orchestrator. Flag CIERRE_FORZADO_MAX_ITER, default off.
-    if settings.CIERRE_FORZADO_MAX_ITER:
-        try:
-            messages.append({"role": "user", "content": (
-                "[Sistema: cerra AHORA con la informacion que ya obtuviste de las "
-                "herramientas. Da la mejor respuesta posible SIN llamar mas "
-                "funciones. NO inventes numeros, precios ni datos: si algo no lo "
-                "pudiste calcular o confirmar, decilo con honestidad y ofrece el "
-                "siguiente paso concreto.]")})
-            resp_final = await asyncio.to_thread(
-                _call_llm, client, model_name, messages, tools_schema, "none")
-            txt = (resp_final.choices[0].message.content or "").strip()
-            if txt:
-                log.info("agent_cierre_forzado_ok", trace_id=trace_id,
-                         iterations=iterations, tools_called=len(tools_called))
-                return txt, {
-                    "tools_called": tools_called,
-                    "iterations": iterations,
-                    "cierre_forzado": True,
-                }
-        except Exception as e:
-            log.warning("agent_cierre_forzado_error", trace_id=trace_id,
-                        error=str(e)[:160])
+    # CIERRE FORZADO al pegar el tope de iteraciones (siempre). En vez de tirarle
+    # al cliente el mensaje de error tecnico (corta la charla a mitad), pedimos UNA
+    # respuesta final SIN tools para que el modelo cierre con lo que ya junto. Es
+    # seguro: cualquier cifra sin respaldo la gatea el filtro determinista despues.
+    try:
+        messages.append({"role": "user", "content": (
+            "[Sistema: cerra AHORA con la informacion que ya obtuviste de las "
+            "herramientas. Da la mejor respuesta posible SIN llamar mas "
+            "funciones. NO inventes numeros, precios ni datos: si algo no lo "
+            "pudiste calcular o confirmar, decilo con honestidad y ofrece el "
+            "siguiente paso concreto.]")})
+        resp_final = await asyncio.to_thread(
+            _call_llm, client, model_name, messages, tools_schema, "none")
+        txt = (resp_final.choices[0].message.content or "").strip()
+        if txt:
+            log.info("agent_cierre_forzado_ok", trace_id=trace_id,
+                     iterations=iterations, tools_called=len(tools_called))
+            return txt, {
+                "tools_called": tools_called,
+                "iterations": iterations,
+                "cierre_forzado": True,
+            }
+    except Exception as e:
+        log.warning("agent_cierre_forzado_error", trace_id=trace_id,
+                    error=str(e)[:160])
 
     log.warning("agent_max_iterations_reached", trace_id=trace_id,
                 iterations=iterations, tools_called=len(tools_called))
