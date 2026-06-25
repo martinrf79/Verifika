@@ -693,24 +693,23 @@ def query_faq(consulta: str) -> dict:
     if not faq:
         return {"encontrada": False, "mensaje_para_llm": "FAQ vacia"}
 
-    # Matcheo por palabras (flag): el tema especifico gana al generico y la
-    # respuesta lleva hasta dos temas relacionados, asi el Solver ve el cajon
-    # con el numero (costo_envio) y no solo el informativo (envios).
-    if settings.FAQ_MATCH_PALABRAS:
-        ranking = _faq_ranking_palabras(consulta, faq)
-        if ranking:
-            principal = ranking[0][1]
-            log.info("query_faq_palabras_hit", tema=principal,
-                     relacionadas=[t for _, t in ranking[1:3]])
-            resp = _faq_resp(principal, faq[principal])
-            relacionadas = []
-            for _, tema in ranking[1:3]:
-                rel = _faq_resp(tema, faq[tema])
-                rel.pop("encontrada", None)
-                relacionadas.append(rel)
-            if relacionadas:
-                resp["relacionadas"] = relacionadas
-            return resp
+    # Matcheo por palabras (unico camino, sin flag): el tema especifico gana al
+    # generico y la respuesta lleva hasta dos temas relacionados, asi el Solver ve
+    # el cajon con el numero (costo_envio) y no solo el informativo (envios).
+    ranking = _faq_ranking_palabras(consulta, faq)
+    if ranking:
+        principal = ranking[0][1]
+        log.info("query_faq_palabras_hit", tema=principal,
+                 relacionadas=[t for _, t in ranking[1:3]])
+        resp = _faq_resp(principal, faq[principal])
+        relacionadas = []
+        for _, tema in ranking[1:3]:
+            rel = _faq_resp(tema, faq[tema])
+            rel.pop("encontrada", None)
+            relacionadas.append(rel)
+        if relacionadas:
+            resp["relacionadas"] = relacionadas
+        return resp
 
     # Keyword-first: si matchea, resolvemos sin llamar al modelo.
     tema_kw = _faq_keyword_match(consulta, faq)

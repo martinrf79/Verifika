@@ -243,16 +243,9 @@ class Settings(BaseModel):
     # de search_products, cableada en app/core/tools.py. Tapaba "0 ventas por negar
     # stock que existe". Consolidada 24-jun: dejo de ser flag.
 
-    # Matcheo de FAQ por palabras. El matcheo por keywords actual exige la frase
-    # entera como substring: "costo de envio a cordoba" NO contiene "costo envio",
-    # entonces gana el tema generico envios (sin precio) sobre costo_envio y el
-    # bot dice "dejame consultar" teniendo el dato. Con el flag activo, una
-    # keyword matchea si TODAS sus palabras aparecen en la consulta (normalizadas,
-    # tolerantes a plural), y la respuesta incluye hasta dos temas relacionados
-    # para que el Solver vea el cajon correcto. false: identico al previo.
-    FAQ_MATCH_PALABRAS: bool = (
-        os.getenv("FAQ_MATCH_PALABRAS", "true").lower() == "true"
-    )
+    # NOTA: el matcheo de FAQ por palabras (ex flag FAQ_MATCH_PALABRAS) ya es el
+    # UNICO camino de query_faq, cableado en app/core/tools.py: el tema especifico
+    # gana al generico y la respuesta lleva temas relacionados. Consolidado 24-jun.
     # Proveedor del embedding: openai (con OPENAI_API_KEY) o deepseek (legacy).
     EMBEDDINGS_PROVIDER: str = os.getenv("EMBEDDINGS_PROVIDER", "openai").lower()
     EMBEDDINGS_MODEL: str = os.getenv("EMBEDDINGS_MODEL", "text-embedding-3-small")
