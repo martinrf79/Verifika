@@ -102,6 +102,9 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     history = conv.get("history", []) or []
     estado_anterior = conv.get("estado_conversacion", "saludo") or "saludo"
     carrito_memoria = conv.get("carrito_vigente", []) or []
+    # PROOF de turnos anteriores: respaldan un total que el cliente confirma y el
+    # bot repite sin recalcular, asi el filtro determinista no bloquea en falso.
+    proofs_memoria = conv.get("proofs_recientes", []) or []
 
     # ── PASO 1: INTERPRETE ──────────────────────────────────────────────
     interp = {}
@@ -136,6 +139,31 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         log.error("interprete_libre_solver_error", trace_id=trace_id,
                   error=str(e)[:200])
         respuesta = settings.FALLBACK_MESSAGE
+
+    # ── PASO 2a: FILTRO DETERMINISTA (anti-alucinacion, linea cero) ──────
+    # El CODIGO decide si la respuesta del solver sale: cada cifra de dinero tiene
+    # que salir de una fuente real (precio de catalogo, FAQ, o PROOF de la
+    # calculadora de este turno o de turnos recientes en memoria). Una cifra sin
+    # respaldo es alucinacion y se reemplaza por un mensaje honesto. Sin LLM, exacto.
+    proofs_turno = [t["proof"] for t in (meta.get("tools_called") or [])
+                    if t.get("proof")]
+    proofs_recientes = (proofs_memoria + proofs_turno)[-settings.VERIFICADOR_PROOF_MEMORY:]
+    if respuesta != settings.FALLBACK_MESSAGE:
+        try:
+            from app.core.orchestrator import _build_evidence_from_tools
+            from app.core.verificador import verificar_respuesta
+            evidencia = _build_evidence_from_tools(
+                meta.get("tools_called", []) or [], tienda_id)
+            # Sumar los PROOF de turnos anteriores (este turno ya entra por tools).
+            evidencia += [{"tipo": "proof", "proof": p} for p in proofs_memoria]
+            veredicto = verificar_respuesta(respuesta, evidencia, trace_id)
+            if not veredicto["ok"]:
+                log.warning("interprete_libre_bloqueo_numerico", trace_id=trace_id,
+                            no_respaldados=veredicto["numeros_no_respaldados"][:8])
+                respuesta = settings.VERIFIKA_FALLBACK_MESSAGE
+        except Exception as e:
+            log.warning("interprete_libre_verif_error", trace_id=trace_id,
+                        error=str(e)[:160])
 
     # ── PASO 2b: CIERRE (codigo) — capta el lead, pide datos, manda el link ──
     # El codigo toma el control SOLO cuando hay que cerrar: detecta la decision de
@@ -177,7 +205,8 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         save_conversation(user_id, history, conv.get("summary", ""),
                           tienda_id=tienda_id,
                           estado_conversacion=estado_nuevo,
-                          ultimo_presupuesto=presupuesto)
+                          ultimo_presupuesto=presupuesto,
+                          proofs_recientes=proofs_recientes)
     except Exception as e:
         log.warning("interprete_libre_save_failed", trace_id=trace_id,
                     error=str(e)[:120])
