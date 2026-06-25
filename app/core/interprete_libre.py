@@ -25,15 +25,62 @@ import time
 from app.core.agent import run_agent
 from app.core.interpretador import interpretar_mensaje
 from app.core.leads import procesar_mensaje_para_lead, descartar_leads_activos
-from app.core.modo_libre import _PROMPT_LIBRE, _business_name, _schema_acotado
+from app.core.tools import get_tools_schema
 from app.config import get_settings
 from app.logger import get_logger
 from app.storage.firestore_client import (
     get_conversation, save_conversation, log_message, reset_conversation,
+    get_config,
 )
 
 log = get_logger(__name__)
 settings = get_settings()
+
+
+# Prompt corto de venta del solver libre. SIN las mega-reglas defensivas: el
+# modelo vende libre; lo unico firme es que los datos salen de las herramientas
+# (atadas a Firestore). El filtro determinista y autofix son la red de despues.
+_PROMPT_LIBRE = """Sos un vendedor de {business_name}, una tienda online argentina de tecnologia y gaming. Hablas en espanol argentino, tuteando, con calidez y ganas de ayudar a comprar.
+
+Tu objetivo es VENDER bien: entender que necesita el cliente, mostrarle las mejores opciones, sacarle las dudas y avanzar hacia la compra. Sos libre en como lo decis y como ordenas la venta.
+
+Lo unico que NO inventas son los datos reales de la tienda. Para eso tenes herramientas:
+- search_products, get_product_details, list_catalog: precios, stock, specs y modelos del catalogo real.
+- query_faq: formas de pago, garantia, devoluciones y demas politicas.
+- calculate_total: cualquier total, subtotal, descuento o cuenta con cantidades.
+- cotizar_envio: el costo de envio. Pasale lo que dijo el cliente (codigo postal, localidad o provincia) tal cual; el codigo determina la zona y la tarifa. NO elijas vos la zona ni inventes el costo. Si pide envio y no dio la zona, pedile el CP o la localidad.
+Usalas cuando necesites un dato o un numero concreto, en vez de adivinarlo. Si necesitas varias cosas, pedilas juntas en un solo paso.
+
+Estilo: espanol argentino, tuteo. Conciso y natural. Texto plano sin markdown. Precios en formato $280.000.
+"""
+
+
+def _business_name(tienda_id: str | None) -> str:
+    name = settings.BUSINESS_NAME
+    if tienda_id:
+        try:
+            stored = get_config("business_name", tienda_id=tienda_id)
+            if stored:
+                name = stored
+        except Exception:
+            pass
+    return name
+
+
+def _schema_acotado() -> list:
+    """El schema de tools recortado a las que ve el solver libre (MODO_LIBRE_TOOLS:
+    catalogo, FAQ, calculadora, envio). Si la lista queda vacia o no matchea, cae
+    al schema completo para no dejar al modelo sin herramientas."""
+    permitidas = {
+        t.strip() for t in (settings.MODO_LIBRE_TOOLS or "").split(",")
+        if t.strip()
+    }
+    full = get_tools_schema()
+    if not permitidas:
+        return full
+    acotado = [s for s in full
+               if s.get("function", {}).get("name") in permitidas]
+    return acotado or full
 
 
 def _presupuesto_de_meta(meta: dict) -> str:
@@ -161,11 +208,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                     if t.get("proof")]
     if respuesta != settings.FALLBACK_MESSAGE:
         try:
-            from app.core.orchestrator import _build_evidence_from_tools
+            from app.core.evidencia import build_evidence_from_tools
             from app.core.verificador import verificar_respuesta
 
             def _evidencia(m: dict) -> list:
-                ev = _build_evidence_from_tools(
+                ev = build_evidence_from_tools(
                     m.get("tools_called", []) or [], tienda_id)
                 # PROOF de turnos anteriores (este turno ya entra por tools).
                 ev += [{"tipo": "proof", "proof": p} for p in proofs_memoria]

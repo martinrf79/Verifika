@@ -1,36 +1,15 @@
 """
-VERIFIKA — núcleo verificable reutilizable entre productos.
+VERIFIKA — adaptador de modelo LLM reutilizable.
 
-Componentes:
-- llm_adapter: interfaz única para cualquier modelo LLM
-- proposer: descompone respuesta en afirmaciones atómicas
-- checker: valida cada afirmación contra evidencia
-- pipeline: orquesta Proposer + Checker para una respuesta dada
+- llm_adapter: interfaz unica para cualquier modelo LLM, por rol.
 
-Uso desde un producto (ej: agente de ventas):
-
-    from app.verifika.pipeline import verify_response
-
-    resultado = verify_response(
-        respuesta_solver="...",
-        evidencia=[...],  # productos/fragmentos recuperados
-        trace_id="abc123",
-    )
-
-    if resultado["confianza"] >= 0.7:
-        # mandar la respuesta
-    else:
-        # responder "no tengo esa info"
+El Checker LLM (proposer/checker/pipeline) se consolido y borro el 25-jun: el
+camino vivo usa el filtro determinista (app/core/verificador.py), no un LLM
+juzgando a otro LLM.
 """
 from app.verifika.llm_adapter import llm_complete, list_roles_config
-from app.verifika.proposer import propose_claims
-from app.verifika.checker import check_claims
-from app.verifika.pipeline import verify_response
 
 __all__ = [
     "llm_complete",
     "list_roles_config",
-    "propose_claims",
-    "check_claims",
-    "verify_response",
 ]
