@@ -88,30 +88,23 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # bot repite sin recalcular, asi el filtro determinista no bloquea en falso.
     proofs_memoria = conv.get("proofs_recientes", []) or []
 
-    # ── NUEVA COMPRA: reset por codigo, ANTES del interprete ─────────────
-    # "nueva compra" / "empezar de cero" descarta la memoria de compra Y el
-    # historial: ahi vive el pedido viejo que si no el interprete arrastra (visto:
-    # "nueva compra" se resolvio al producto de la charla anterior y el bot cayo a
-    # "no tengo info"). Si el mensaje es SOLO el reset, responde el codigo; si trae
-    # el pedido nuevo, sigue el pipeline con la memoria ya limpia.
-    from app.core.orchestrator import (
-        _es_nueva_compra, _es_nueva_compra_pura, _respuesta_nueva_compra)
-    if _es_nueva_compra(raw_message):
+    # ── RESET_CODE: palabra clave de PRUEBA para arrancar de cero ────────
+    # El bot mantiene CONTINUIDAD siempre. NO resetea con frases naturales como
+    # "nueva compra" (un cliente real las usa para seguir comprando, no para
+    # borrar todo). Para las pruebas hay una palabra clave dedicada (RESET_CODE,
+    # ej "verifika2026"): si el mensaje es EXACTAMENTE esa, se borra la conversacion
+    # entera y se confirma. Con clientes reales no hace falta; es solo para testear
+    # desde el mismo numero sin tocar el entorno.
+    _rc = (settings.RESET_CODE or "").strip().lower()
+    if _rc and (raw_message or "").strip().lower() == _rc:
         try:
             reset_conversation(user_id, tienda_id=tienda_id)
             descartar_leads_activos(user_id, canal, tienda_id)
         except Exception as e:
             log.warning("interprete_libre_reset_error", trace_id=trace_id,
                         error=str(e)[:120])
-        conv = {}
-        history = []
-        carrito_memoria = []
-        proofs_memoria = []
-        estado_anterior = "saludo"
-        log.info("interprete_libre_nueva_compra", trace_id=trace_id,
-                 puro=_es_nueva_compra_pura(raw_message))
-        if _es_nueva_compra_pura(raw_message):
-            return _respuesta_nueva_compra()
+        log.info("interprete_libre_reset_code", trace_id=trace_id, user_id=user_id)
+        return "Listo, conversacion reiniciada. Empezamos de cero."
 
     # ── PASO 1: INTERPRETE ──────────────────────────────────────────────
     interp = {}
