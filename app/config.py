@@ -16,12 +16,9 @@ class Settings(BaseModel):
     SOLO_INTERPRETE: bool = (
         os.getenv("SOLO_INTERPRETE", "true").lower() == "true"
     )
-    # El bot muestra al final de cada respuesta QUÉ entendió el intérprete, para
-    # poder juzgar la interpretación chateando, sin leer logs. Apagar con false
-    # cuando ya no haga falta ver el detalle.
-    INTERPRETE_DEBUG: bool = (
-        os.getenv("INTERPRETE_DEBUG", "true").lower() == "true"
-    )
+    # NOTA: el cartel de interpretacion (ex flag INTERPRETE_DEBUG) se quito del
+    # mensaje al cliente. La interpretacion ahora va al log (evento
+    # interprete_libre_interpretacion). Consolidado 25-jun.
 
     # Negocio
     BUSINESS_NAME: str = os.getenv("BUSINESS_NAME", "Tienda Tecno")

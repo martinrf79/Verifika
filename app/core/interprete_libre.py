@@ -12,9 +12,9 @@ las catorce capas. Solo:
      redacta y vende libre, con las herramientas atadas a Firestore (catálogo y
      FAQs reales) y con la MEMORIA de la conversación. Recibe como guía lo que
      entendió el intérprete, pero no calcula nada que no salga de las tools.
-  3. ECO DE INTERPRETACIÓN (flag INTERPRETE_DEBUG): al final de la respuesta, el
-     bot muestra en una línea QUÉ entendió el intérprete, para que Martín juzgue
-     la interpretación chateando, sin leer logs. Se apaga con INTERPRETE_DEBUG=false.
+La interpretación de cada turno se LOGUEA (evento interprete_libre_interpretacion)
+para diagnosticar, pero NO se muestra al cliente: el cartel era solo de la etapa
+de prueba y se quitó.
 
 Es el interruptor maestro SOLO_INTERPRETE (default on). Mientras está prendido,
 el orchestrator delega todo el turno acá y NINGÚN otro flag importa. Para volver
@@ -24,12 +24,12 @@ import time
 
 from app.core.agent import run_agent
 from app.core.interpretador import interpretar_mensaje
-from app.core.leads import procesar_mensaje_para_lead
+from app.core.leads import procesar_mensaje_para_lead, descartar_leads_activos
 from app.core.modo_libre import _PROMPT_LIBRE, _business_name, _schema_acotado
 from app.config import get_settings
 from app.logger import get_logger
 from app.storage.firestore_client import (
-    get_conversation, save_conversation, log_message,
+    get_conversation, save_conversation, log_message, reset_conversation,
 )
 
 log = get_logger(__name__)
@@ -73,29 +73,11 @@ def _guia_para_solver(interp: dict) -> str:
             "datos de la tienda salen SOLO de las herramientas, no los inventes.]")
 
 
-def _eco_interpretacion(interp: dict) -> str:
-    """Línea legible para que Martín vea qué entendió el intérprete mientras
-    chatea. Sin esto no se puede juzgar la interpretación sin mirar logs."""
-    if not isinstance(interp, dict):
-        return ""
-    intencion = interp.get("intencion", "?")
-    confianza = interp.get("confianza", 0)
-    estado = interp.get("estado_conversacion", "?")
-    prod = interp.get("producto_resuelto") or "ninguno"
-    resp_a = interp.get("respondiendo_a") or "nada"
-    cands = interp.get("candidatos") or []
-    cand_txt = (", candidatos: " + ", ".join(str(c) for c in cands[:3])
-                if cands else "")
-    return (f"\n\n———\nInterpretación (modo prueba): intención {intencion}, "
-            f"confianza {confianza}, estado {estado}, producto {prod}, "
-            f"responde a {resp_a}{cand_txt}.")
-
-
 async def procesar_interprete_libre(user_id: str, raw_message: str,
                                     tienda_id: str, canal: str,
                                     trace_id: str) -> str:
-    """Maneja el turno entero: intérprete + solver libre + memoria. Devuelve la
-    respuesta, con el eco de interpretación al final si INTERPRETE_DEBUG está on."""
+    """Maneja el turno entero: intérprete + solver libre + memoria. La
+    interpretación se loguea para diagnosticar, no se muestra al cliente."""
     t0 = time.time()
 
     conv = get_conversation(user_id, tienda_id=tienda_id)
@@ -105,6 +87,31 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # PROOF de turnos anteriores: respaldan un total que el cliente confirma y el
     # bot repite sin recalcular, asi el filtro determinista no bloquea en falso.
     proofs_memoria = conv.get("proofs_recientes", []) or []
+
+    # ── NUEVA COMPRA: reset por codigo, ANTES del interprete ─────────────
+    # "nueva compra" / "empezar de cero" descarta la memoria de compra Y el
+    # historial: ahi vive el pedido viejo que si no el interprete arrastra (visto:
+    # "nueva compra" se resolvio al producto de la charla anterior y el bot cayo a
+    # "no tengo info"). Si el mensaje es SOLO el reset, responde el codigo; si trae
+    # el pedido nuevo, sigue el pipeline con la memoria ya limpia.
+    from app.core.orchestrator import (
+        _es_nueva_compra, _es_nueva_compra_pura, _respuesta_nueva_compra)
+    if _es_nueva_compra(raw_message):
+        try:
+            reset_conversation(user_id, tienda_id=tienda_id)
+            descartar_leads_activos(user_id, canal, tienda_id)
+        except Exception as e:
+            log.warning("interprete_libre_reset_error", trace_id=trace_id,
+                        error=str(e)[:120])
+        conv = {}
+        history = []
+        carrito_memoria = []
+        proofs_memoria = []
+        estado_anterior = "saludo"
+        log.info("interprete_libre_nueva_compra", trace_id=trace_id,
+                 puro=_es_nueva_compra_pura(raw_message))
+        if _es_nueva_compra_pura(raw_message):
+            return _respuesta_nueva_compra()
 
     # ── PASO 1: INTERPRETE ──────────────────────────────────────────────
     interp = {}
@@ -119,6 +126,16 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
 
     estado_nuevo = (interp.get("estado_conversacion")
                     or estado_anterior) if isinstance(interp, dict) else estado_anterior
+
+    # La interpretacion va al LOG para diagnosticar (reemplaza el cartel que antes
+    # se mostraba al cliente). Asi se juzga la interpretacion sin molestar la charla.
+    if isinstance(interp, dict):
+        log.info("interprete_libre_interpretacion", trace_id=trace_id,
+                 intencion=interp.get("intencion"), confianza=interp.get("confianza"),
+                 estado=interp.get("estado_conversacion"),
+                 producto=interp.get("producto_resuelto"),
+                 responde_a=interp.get("respondiendo_a"),
+                 candidatos=interp.get("candidatos"))
 
     # ── PASO 2: SOLVER LIBRE (con la guía del intérprete) ───────────────
     system_prompt = _PROMPT_LIBRE.format(business_name=_business_name(tienda_id))
@@ -186,14 +203,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             log.warning("interprete_libre_lead_error", trace_id=trace_id,
                         error=str(e)[:160])
 
-    # ── PASO 3: ECO DE INTERPRETACIÓN (para probar la interpretación) ───
+    # El cliente recibe la respuesta limpia: el cartel de interpretacion se quito
+    # (ahora va al log). La interpretacion se sigue viendo en interprete_libre_interpretacion.
     respuesta_final = respuesta
-    if settings.INTERPRETE_DEBUG and respuesta != settings.FALLBACK_MESSAGE:
-        respuesta_final = respuesta + _eco_interpretacion(interp)
 
     # ── MEMORIA: guardar el turno (el solver siempre recuerda la charla) ──
-    # Se guarda la respuesta SIN el eco de debug, para que el historial que ve
-    # el modelo el próximo turno sea limpio.
     history = history + [
         {"role": "user", "content": raw_message},
         {"role": "assistant", "content": respuesta},
