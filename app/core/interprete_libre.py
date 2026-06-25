@@ -150,37 +150,57 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                   error=str(e)[:200])
         respuesta = settings.FALLBACK_MESSAGE
 
-    # ── PASO 2a: FILTRO DETERMINISTA (anti-alucinacion, linea cero) ──────
-    # Chequea que cada cifra de dinero de la respuesta salga de una fuente real
-    # (precio de catalogo, FAQ, o PROOF de la calculadora de este turno o de turnos
-    # recientes en memoria). HOY en MODO OBSERVACION: loguea lo que bloquearia pero
-    # no corta, para afinarlo sobre casos reales antes de que vuelva a bloquear.
+    # ── PASO 2a: FILTRO DETERMINISTA + AUTOFIX (anti-alucinacion) ────────
+    # Cada cifra de dinero de la respuesta tiene que salir de una fuente real
+    # (catalogo, FAQ, o PROOF de la calculadora de este turno o de turnos recientes).
+    # Si una no tiene respaldo, AUTOFIX no cae directo a fallback: le pide al solver
+    # UNA vez que rehaga las cifras con la herramienta y re-verifica. Si la segunda
+    # da respaldada, sale; si no, recien ahi el fallback honesto. Sin LLM el chequeo,
+    # un LLM extra solo en el reintento (raro). Asi el filtro protege sin ser romo.
     proofs_turno = [t["proof"] for t in (meta.get("tools_called") or [])
                     if t.get("proof")]
-    proofs_recientes = (proofs_memoria + proofs_turno)[-settings.VERIFICADOR_PROOF_MEMORY:]
     if respuesta != settings.FALLBACK_MESSAGE:
         try:
             from app.core.orchestrator import _build_evidence_from_tools
             from app.core.verificador import verificar_respuesta
-            evidencia = _build_evidence_from_tools(
-                meta.get("tools_called", []) or [], tienda_id)
-            # Sumar los PROOF de turnos anteriores (este turno ya entra por tools).
-            evidencia += [{"tipo": "proof", "proof": p} for p in proofs_memoria]
-            veredicto = verificar_respuesta(respuesta, evidencia, trace_id)
+
+            def _evidencia(m: dict) -> list:
+                ev = _build_evidence_from_tools(
+                    m.get("tools_called", []) or [], tienda_id)
+                # PROOF de turnos anteriores (este turno ya entra por tools).
+                ev += [{"tipo": "proof", "proof": p} for p in proofs_memoria]
+                return ev
+
+            veredicto = verificar_respuesta(respuesta, _evidencia(meta), trace_id)
             if not veredicto["ok"]:
-                # MODO OBSERVACION (fase de prueba): se LOGUEA lo que se bloquearia
-                # pero NO se reemplaza la respuesta. El bloqueo duro era demasiado
-                # romo para el solver libre y cortaba respuestas legitimas (envio a
-                # San Agustin, etc.). Asi vemos al modelo vender y que numeros marca
-                # el filtro, para afinarlo sobre casos reales. Para volver a bloquear:
-                # respuesta = settings.VERIFIKA_FALLBACK_MESSAGE aca.
-                log.warning("interprete_libre_numero_no_respaldado_shadow",
-                            trace_id=trace_id,
-                            no_respaldados=veredicto["numeros_no_respaldados"][:8],
-                            respuesta_preview=respuesta[:200])
+                no_resp = veredicto.get("numeros_no_respaldados", [])
+                log.info("interprete_libre_autofix_intento", trace_id=trace_id,
+                         no_respaldados=no_resp[:8])
+                correctivo = (
+                    mensaje_enriquecido
+                    + "\n\n[Sistema: estos numeros de tu respuesta anterior no "
+                    f"tenian respaldo de la calculadora ni del catalogo: {no_resp}. "
+                    "Rehace las cifras llamando a la herramienta que corresponda "
+                    "(calculate_total para totales, cotizar_envio para envio) y NO "
+                    "inventes ningun numero. Mostra solo lo que devuelvan las tools.]"
+                )
+                resp2, meta2 = await run_agent(
+                    correctivo, history, trace_id,
+                    tienda_id=tienda_id, user_id=user_id,
+                    system_prompt=system_prompt, tools_schema=tools_schema)
+                if verificar_respuesta(resp2, _evidencia(meta2), trace_id)["ok"]:
+                    respuesta, meta = resp2, meta2
+                    proofs_turno = [t["proof"] for t in (meta2.get("tools_called") or [])
+                                    if t.get("proof")]
+                    log.info("interprete_libre_autofix_ok", trace_id=trace_id)
+                else:
+                    log.warning("interprete_libre_autofix_fallo", trace_id=trace_id,
+                                no_respaldados=no_resp[:8])
+                    respuesta = settings.VERIFIKA_FALLBACK_MESSAGE
         except Exception as e:
             log.warning("interprete_libre_verif_error", trace_id=trace_id,
                         error=str(e)[:160])
+    proofs_recientes = (proofs_memoria + proofs_turno)[-settings.VERIFICADOR_PROOF_MEMORY:]
 
     # ── PASO 2b: CIERRE (codigo) — capta el lead, pide datos, manda el link ──
     # El codigo toma el control SOLO cuando hay que cerrar: detecta la decision de
