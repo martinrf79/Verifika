@@ -151,10 +151,10 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         respuesta = settings.FALLBACK_MESSAGE
 
     # ── PASO 2a: FILTRO DETERMINISTA (anti-alucinacion, linea cero) ──────
-    # El CODIGO decide si la respuesta del solver sale: cada cifra de dinero tiene
-    # que salir de una fuente real (precio de catalogo, FAQ, o PROOF de la
-    # calculadora de este turno o de turnos recientes en memoria). Una cifra sin
-    # respaldo es alucinacion y se reemplaza por un mensaje honesto. Sin LLM, exacto.
+    # Chequea que cada cifra de dinero de la respuesta salga de una fuente real
+    # (precio de catalogo, FAQ, o PROOF de la calculadora de este turno o de turnos
+    # recientes en memoria). HOY en MODO OBSERVACION: loguea lo que bloquearia pero
+    # no corta, para afinarlo sobre casos reales antes de que vuelva a bloquear.
     proofs_turno = [t["proof"] for t in (meta.get("tools_called") or [])
                     if t.get("proof")]
     proofs_recientes = (proofs_memoria + proofs_turno)[-settings.VERIFICADOR_PROOF_MEMORY:]
@@ -168,9 +168,16 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             evidencia += [{"tipo": "proof", "proof": p} for p in proofs_memoria]
             veredicto = verificar_respuesta(respuesta, evidencia, trace_id)
             if not veredicto["ok"]:
-                log.warning("interprete_libre_bloqueo_numerico", trace_id=trace_id,
-                            no_respaldados=veredicto["numeros_no_respaldados"][:8])
-                respuesta = settings.VERIFIKA_FALLBACK_MESSAGE
+                # MODO OBSERVACION (fase de prueba): se LOGUEA lo que se bloquearia
+                # pero NO se reemplaza la respuesta. El bloqueo duro era demasiado
+                # romo para el solver libre y cortaba respuestas legitimas (envio a
+                # San Agustin, etc.). Asi vemos al modelo vender y que numeros marca
+                # el filtro, para afinarlo sobre casos reales. Para volver a bloquear:
+                # respuesta = settings.VERIFIKA_FALLBACK_MESSAGE aca.
+                log.warning("interprete_libre_numero_no_respaldado_shadow",
+                            trace_id=trace_id,
+                            no_respaldados=veredicto["numeros_no_respaldados"][:8],
+                            respuesta_preview=respuesta[:200])
         except Exception as e:
             log.warning("interprete_libre_verif_error", trace_id=trace_id,
                         error=str(e)[:160])
