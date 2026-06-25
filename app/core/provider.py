@@ -588,12 +588,11 @@ def proveer(mensaje: str, *, tienda_id: str,
     if multi and multi.get("desde_pendiente"):
         cotiza = True
 
-    # CIERRE_CONTRATO: dar la direccion o la zona ES señal de compra. Sin esto,
-    # el cliente que contesta el pedido de CP con su direccion pelada deja el
+    # Dar la direccion o la zona ES señal de compra (unico camino, sin flag). Sin
+    # esto, el cliente que contesta el pedido de CP con su direccion pelada deja el
     # calculo del turno como especulativo, la memoria conserva un pedido viejo
     # y el cierre (resumen + link de pago) sale con ese pedido equivocado.
-    if (not cotiza and settings.CIERRE_CONTRATO
-            and (foco or carrito_calc) and _zona_clara(mensaje)):
+    if (not cotiza and (foco or carrito_calc) and _zona_clara(mensaje)):
         cotiza = True
         log.info("provider_cotiza_por_direccion", trace_id=trace_id)
 

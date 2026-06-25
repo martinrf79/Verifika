@@ -276,7 +276,7 @@ async def _handoff_compra(user_id, canal, tienda_id, mensaje, producto_resuelto,
         # enlatado). Se reusa el lead y se actualiza el ultimo mensaje.
         lead_id = None
         lead_reusado = False
-        if settings.CIERRE_CONTRATO:
+        if True:  # ex flag CIERRE_CONTRATO, ahora siempre on (camino legacy)
             try:
                 from app.core.leads import get_lead_activo, actualizar_lead
                 _activo = get_lead_activo(user_id, canal, tienda_id)
@@ -314,7 +314,7 @@ async def _handoff_compra(user_id, canal, tienda_id, mensaje, producto_resuelto,
         _pide_link = bool(re.search(
             r"(?i)\blink\b|mercado\s*pago|\bmp\b|como\s+pago|donde\s+pago",
             mensaje or ""))
-        if settings.CIERRE_CONTRATO and _pide_link:
+        if _pide_link:
             respuesta = (
                 f"Dale, te paso el link de pago del {producto_resuelto} "
                 "apenas me digas tu nombre y un telefono de contacto. "
@@ -1967,7 +1967,7 @@ async def process_message(user_id: str, raw_message: str,
     # con formato perfecto, y ningun verificador caza URLs. El unico link
     # legitimo (Mercado Pago) lo agrega el CODIGO en el cierre, DESPUES de esta
     # linea: toda URL que llegue hasta aca es inventada y se elimina.
-    if settings.CIERRE_CONTRATO and final_response \
+    if final_response \
             and re.search(r"https?://", final_response):
         _urls = re.findall(r"https?://\S+", final_response)
         log.warning("link_inventado_bloqueado", trace_id=trace_id,

@@ -225,16 +225,17 @@ async def _finalizar_cierre(lead_id: str, merged: dict, tienda_id: str,
     from app.core import cierre
     respuesta_cierre = cierre.mensaje_confirmacion(
         merged, merged.get("orden", ""))
-    if settings.LINK_PAGO:
-        try:
-            from app.core.pago import link_pago_para_lead
-            _url = await link_pago_para_lead(
-                presupuesto or merged.get("orden", ""), merged,
-                tienda_id, trace_id)
-            if _url:
-                respuesta_cierre += f"\nPodes pagar aca: {_url}"
-        except Exception as e:
-            log.warning("link_pago_error", trace_id=trace_id, error=str(e)[:160])
+    # Link de pago por CODIGO desde el total verificado (unico camino, sin flag).
+    # Si no hay total unico o falta el token de Mercado Pago, cierra igual sin link.
+    try:
+        from app.core.pago import link_pago_para_lead
+        _url = await link_pago_para_lead(
+            presupuesto or merged.get("orden", ""), merged,
+            tienda_id, trace_id)
+        if _url:
+            respuesta_cierre += f"\nPodes pagar aca: {_url}"
+    except Exception as e:
+        log.warning("link_pago_error", trace_id=trace_id, error=str(e)[:160])
     return {"accion": "lead_capturado", "lead_id": lead_id,
             "respuesta_directa": respuesta_cierre}
 
@@ -306,21 +307,20 @@ async def procesar_mensaje_para_lead(
             log.warning("notificar_lead_failed", error=str(e)[:120])
         respuesta_cierre = cierre.mensaje_confirmacion(
             merged, merged.get("orden", ""))
-        # Link de pago (flag LINK_PAGO): generado por CODIGO desde el total
-        # verificado del presupuesto. Si no hay total unico o falta el token de
-        # Mercado Pago, la venta cierra igual sin link.
-        if settings.LINK_PAGO:
-            try:
-                from app.core.pago import link_pago_para_lead
-                merged["lead_id"] = lead_activo["lead_id"]
-                _url = await link_pago_para_lead(
-                    presupuesto or merged.get("orden", ""), merged,
-                    tienda_id, trace_id)
-                if _url:
-                    respuesta_cierre += f"\nPodes pagar aca: {_url}"
-            except Exception as e:
-                log.warning("link_pago_error", trace_id=trace_id,
-                            error=str(e)[:160])
+        # Link de pago por CODIGO desde el total verificado del presupuesto (unico
+        # camino, sin flag). Si no hay total unico o falta el token de Mercado
+        # Pago, la venta cierra igual sin link.
+        try:
+            from app.core.pago import link_pago_para_lead
+            merged["lead_id"] = lead_activo["lead_id"]
+            _url = await link_pago_para_lead(
+                presupuesto or merged.get("orden", ""), merged,
+                tienda_id, trace_id)
+            if _url:
+                respuesta_cierre += f"\nPodes pagar aca: {_url}"
+        except Exception as e:
+            log.warning("link_pago_error", trace_id=trace_id,
+                        error=str(e)[:160])
         return None, {
             "accion": "lead_capturado",
             "lead_id": lead_activo["lead_id"],
@@ -337,14 +337,14 @@ async def procesar_mensaje_para_lead(
         if intencion_llm == "decision_compra" and confianza_llm >= UMBRAL_LEAD_FUERTE:
             nivel = "fuerte"
             frase = f"interpretador_decision_compra_{confianza_llm:.2f}"
-        elif (settings.CIERRE_CONTRATO
-              and _RE_PIDE_LINK.search(mensaje or "")
+        elif (_RE_PIDE_LINK.search(mensaje or "")
               and str(presupuesto).strip()):
             # Pedir el link de pago ES decision de compra, la marque o no el
             # interpretador (visto 12-jun: "ok enviame link" quedo en
             # pregunta_especifica, nadie creo el lead y el Solver PROMETIO un
             # link que ningun engranaje iba a mandar). Determinista: con
             # presupuesto mostrado, pedir el link dispara el cierre por codigo.
+            # Unico camino, sin flag.
             nivel = "fuerte"
             frase = "pide_link_pago"
         else:
@@ -390,41 +390,38 @@ async def procesar_mensaje_para_lead(
                  tienda_id=tienda_id, user_id=user_id,
                  frase=frase, trace_id=trace_id)
 
-        # CIERRE_SIEMBRA_INICIAL: el mensaje que dispara el cierre suele traer
-        # datos ya ("envio a Los Condores medio de pago mercado pago"). Sin
-        # esto se piden de cero y el cliente repite lo que ya dijo (visto en
-        # prod 13-jun WhatsApp: forma de pago dicha junto al envio, ignorada,
-        # el cliente tuvo que escribir "Mercado pago" de nuevo al final). Se
-        # siembra el lead con lo presente; si estan los cuatro, cierra ya; si
-        # falta algo, pide SOLO lo que falta.
-        if settings.CIERRE_SIEMBRA_INICIAL:
-            from app.core import cierre
-            sembrados = {k: v for k, v in
-                         cierre.extraer_datos_cliente(mensaje, trace_id).items()
-                         if v}
-            if sembrados:
-                actualizar_lead(lead_id, tienda_id, sembrados)
-                merged = {"orden": presupuesto, "lead_id": lead_id, **sembrados}
-                falt = cierre.faltantes(merged)
-                log.info("cierre_siembra_inicial", lead_id=lead_id,
-                         sembrados=list(sembrados.keys()), faltan=falt,
-                         trace_id=trace_id)
-                if not falt:
-                    actualizar_lead(lead_id, tienda_id, {"estado": "capturado"})
-                    return None, await _finalizar_cierre(
-                        lead_id, merged, tienda_id, user_id, canal,
-                        mensaje, presupuesto, trace_id)
-                try:
-                    await notificar_lead(
-                        tienda_id=tienda_id, user_id=user_id, canal=canal,
-                        estado="intencion_fuerte",
-                        nombre=sembrados.get("nombre", ""),
-                        telefono=sembrados.get("telefono", ""),
-                        ultimo_mensaje=mensaje)
-                except Exception as e:
-                    log.warning("notificar_lead_failed", error=str(e)[:120])
-                return None, {"accion": "pidiendo_datos", "lead_id": lead_id,
-                              "respuesta_directa": cierre.mensaje_pedir_datos(falt)}
+        # Siembra inicial (unico camino, sin flag): el mensaje que dispara el
+        # cierre suele traer datos ya ("envio a Los Condores medio de pago
+        # mercado pago"). Sin esto se piden de cero y el cliente repite lo que ya
+        # dijo. Se siembra el lead con lo presente; si estan los cuatro, cierra
+        # ya; si falta algo, pide SOLO lo que falta.
+        from app.core import cierre
+        sembrados = {k: v for k, v in
+                     cierre.extraer_datos_cliente(mensaje, trace_id).items()
+                     if v}
+        if sembrados:
+            actualizar_lead(lead_id, tienda_id, sembrados)
+            merged = {"orden": presupuesto, "lead_id": lead_id, **sembrados}
+            falt = cierre.faltantes(merged)
+            log.info("cierre_siembra_inicial", lead_id=lead_id,
+                     sembrados=list(sembrados.keys()), faltan=falt,
+                     trace_id=trace_id)
+            if not falt:
+                actualizar_lead(lead_id, tienda_id, {"estado": "capturado"})
+                return None, await _finalizar_cierre(
+                    lead_id, merged, tienda_id, user_id, canal,
+                    mensaje, presupuesto, trace_id)
+            try:
+                await notificar_lead(
+                    tienda_id=tienda_id, user_id=user_id, canal=canal,
+                    estado="intencion_fuerte",
+                    nombre=sembrados.get("nombre", ""),
+                    telefono=sembrados.get("telefono", ""),
+                    ultimo_mensaje=mensaje)
+            except Exception as e:
+                log.warning("notificar_lead_failed", error=str(e)[:120])
+            return None, {"accion": "pidiendo_datos", "lead_id": lead_id,
+                          "respuesta_directa": cierre.mensaje_pedir_datos(falt)}
         try:
             await notificar_lead(
                 tienda_id=tienda_id, user_id=user_id, canal=canal,

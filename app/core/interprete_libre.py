@@ -24,6 +24,7 @@ import time
 
 from app.core.agent import run_agent
 from app.core.interpretador import interpretar_mensaje
+from app.core.leads import procesar_mensaje_para_lead
 from app.core.modo_libre import _PROMPT_LIBRE, _business_name, _schema_acotado
 from app.config import get_settings
 from app.logger import get_logger
@@ -33,6 +34,18 @@ from app.storage.firestore_client import (
 
 log = get_logger(__name__)
 settings = get_settings()
+
+
+def _presupuesto_de_meta(meta: dict) -> str:
+    """Saca el presupuesto YA VERIFICADO (campo presentacion de calculate_total)
+    del meta del solver, para que el cierre y el link de pago usen el total real
+    de la calculadora, nunca uno inventado. "" si el solver no calculo este turno."""
+    for tc in reversed((meta or {}).get("tools_called", []) or []):
+        if tc.get("name") == "calculate_total":
+            pres = (tc.get("result") or {}).get("presentacion")
+            if pres:
+                return pres
+    return ""
 
 
 def _guia_para_solver(interp: dict) -> str:
@@ -124,6 +137,27 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                   error=str(e)[:200])
         respuesta = settings.FALLBACK_MESSAGE
 
+    # ── PASO 2b: CIERRE (codigo) — capta el lead, pide datos, manda el link ──
+    # El codigo toma el control SOLO cuando hay que cerrar: detecta la decision de
+    # compra por la interpretacion, junta nombre/telefono/direccion/forma de pago y
+    # genera el link de Mercado Pago con el total VERIFICADO de la calculadora (de
+    # presentacion, nunca un monto del modelo). Si no hay cierre, la respuesta libre
+    # del solver queda intacta. El presupuesto sale del turno o de la memoria.
+    presupuesto = _presupuesto_de_meta(meta) or (conv.get("ultimo_presupuesto") or "")
+    if respuesta != settings.FALLBACK_MESSAGE:
+        try:
+            _, meta_lead = await procesar_mensaje_para_lead(
+                user_id, canal, tienda_id, raw_message, respuesta, trace_id,
+                interpretacion=interp if isinstance(interp, dict) else None,
+                presupuesto=presupuesto)
+            if meta_lead.get("respuesta_directa"):
+                respuesta = meta_lead["respuesta_directa"]
+                log.info("interprete_libre_cierre", trace_id=trace_id,
+                         accion=meta_lead.get("accion"))
+        except Exception as e:
+            log.warning("interprete_libre_lead_error", trace_id=trace_id,
+                        error=str(e)[:160])
+
     # ── PASO 3: ECO DE INTERPRETACIÓN (para probar la interpretación) ───
     respuesta_final = respuesta
     if settings.INTERPRETE_DEBUG and respuesta != settings.FALLBACK_MESSAGE:
@@ -142,7 +176,8 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     try:
         save_conversation(user_id, history, conv.get("summary", ""),
                           tienda_id=tienda_id,
-                          estado_conversacion=estado_nuevo)
+                          estado_conversacion=estado_nuevo,
+                          ultimo_presupuesto=presupuesto)
     except Exception as e:
         log.warning("interprete_libre_save_failed", trace_id=trace_id,
                     error=str(e)[:120])

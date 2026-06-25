@@ -570,24 +570,12 @@ class Settings(BaseModel):
     # determinados, el codigo devuelve la tarifa exacta de config/tarifas_envio;
     # si no, cae al rango publicado, nunca adivina. Consolidada 24-jun.
 
-    # Link de pago Mercado Pago al cerrar la venta. Con el lead capturado, el
-    # CODIGO genera la preferencia con el total VERIFICADO del presupuesto de la
-    # calculadora (nunca un monto del modelo; total en rango = sin link) y lo
-    # agrega al mensaje de cierre. Requiere config/mp_access_token en Firestore
-    # de la tienda o MP_ACCESS_TOKEN por entorno; sin token no hace nada.
-    LINK_PAGO: bool = os.getenv("LINK_PAGO", "false").lower() == "true"
-
-    # Cierre desde el contrato. Visto en prod 12-jun (venta de Carlos): el
-    # cliente contesto el pedido de CP con su direccion pelada; sin palabras de
-    # precio ni "envio" quiere_cotizar dio falso, el presupuesto del foco quedo
-    # ESPECULATIVO y la memoria conservo un pedido VIEJO de otra charla. El
-    # cierre (resumen + link de pago) salio con ese pedido equivocado. Con el
-    # flag activo, un mensaje con zona o direccion clara y pedido resuelto
-    # (foco o carrito) cuenta como cotizacion ACTIVA: el presupuesto mostrado
-    # pasa a la memoria y el cierre hereda el pedido REAL. false: identico.
-    CIERRE_CONTRATO: bool = (
-        os.getenv("CIERRE_CONTRATO", "false").lower() == "true"
-    )
+    # NOTA: el link de pago Mercado Pago (ex flag LINK_PAGO) y el cierre desde el
+    # contrato (ex flag CIERRE_CONTRATO) ya son el UNICO camino del cierre, cableados
+    # en leads.py/provider.py: con el lead capturado el codigo genera la preferencia
+    # con el total VERIFICADO (total en rango = sin link), y dar la direccion/zona
+    # cuenta como señal de compra. Requiere config/mp_access_token en Firestore o
+    # MP_ACCESS_TOKEN por entorno; sin token, no manda link. Consolidados 25-jun.
 
     # Compuerta de stock en el Provider. Visto en prod 12-jun (teclados): la
     # calculadora cotizo 3 unidades de un producto con stock 0 y el contrato
@@ -832,16 +820,11 @@ class Settings(BaseModel):
         os.getenv("EVIDENCIA_REGISTRO", "false").lower() == "true"
     )
 
-    # Al disparar el cierre por intencion fuerte CON presupuesto, sembrar el
-    # lead con los datos que ya trae ese mismo mensaje (nombre, telefono,
-    # direccion, forma de pago) en vez de pedirlos de cero. Si estan los
-    # cuatro, cierra en el acto; si falta alguno, pide SOLO lo que falta.
-    # Visto en prod 13-jun (WhatsApp): "envio a Los Condores medio de pago
-    # mercado pago" -> el cierre ignoro la forma de pago y el cliente tuvo
-    # que repetir "Mercado pago" al final. false: identico al previo.
-    CIERRE_SIEMBRA_INICIAL: bool = (
-        os.getenv("CIERRE_SIEMBRA_INICIAL", "false").lower() == "true"
-    )
+    # NOTA: la siembra inicial del cierre (ex flag CIERRE_SIEMBRA_INICIAL) ya es el
+    # UNICO camino en leads.py: al disparar el cierre con presupuesto, el lead se
+    # siembra con los datos que ya trae el mensaje (nombre, telefono, direccion,
+    # forma de pago); si estan los cuatro cierra ya, si falta pide solo lo que
+    # falta. Consolidada 25-jun.
 
     # Leads no pide datos sobre un fallback. Visto en prod 11-jun: el verificador
     # bloqueo la respuesta (fallback "dejame consultar") y la capa de leads igual
