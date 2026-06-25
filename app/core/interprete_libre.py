@@ -197,53 +197,27 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                   error=str(e)[:200])
         respuesta = settings.FALLBACK_MESSAGE
 
-    # ── PASO 2a: FILTRO DETERMINISTA + AUTOFIX (anti-alucinacion) ────────
-    # Cada cifra de dinero de la respuesta tiene que salir de una fuente real
-    # (catalogo, FAQ, o PROOF de la calculadora de este turno o de turnos recientes).
-    # Si una no tiene respaldo, AUTOFIX no cae directo a fallback: le pide al solver
-    # UNA vez que rehaga las cifras con la herramienta y re-verifica. Si la segunda
-    # da respaldada, sale; si no, recien ahi el fallback honesto. Sin LLM el chequeo,
-    # un LLM extra solo en el reintento (raro). Asi el filtro protege sin ser romo.
+    # ── PASO 2a: FILTRO DETERMINISTA en MODO OBSERVACION ────────────────
+    # Chequea que cada cifra de dinero salga de una fuente real (catalogo, FAQ, o
+    # PROOF de la calculadora de este turno o de turnos recientes). HOY solo LOGUEA
+    # lo que marcaria; NO bloquea ni reintenta. El bloqueo+autofix sumaba una
+    # llamada extra al modelo (mas lento) y cortaba respuestas legitimas a fallback.
+    # Se afina sobre estos logs (evento ..._shadow) antes de volver a enforce.
     proofs_turno = [t["proof"] for t in (meta.get("tools_called") or [])
                     if t.get("proof")]
     if respuesta != settings.FALLBACK_MESSAGE:
         try:
             from app.core.evidencia import build_evidence_from_tools
             from app.core.verificador import verificar_respuesta
-
-            def _evidencia(m: dict) -> list:
-                ev = build_evidence_from_tools(
-                    m.get("tools_called", []) or [], tienda_id)
-                # PROOF de turnos anteriores (este turno ya entra por tools).
-                ev += [{"tipo": "proof", "proof": p} for p in proofs_memoria]
-                return ev
-
-            veredicto = verificar_respuesta(respuesta, _evidencia(meta), trace_id)
+            evidencia = build_evidence_from_tools(
+                meta.get("tools_called", []) or [], tienda_id)
+            evidencia += [{"tipo": "proof", "proof": p} for p in proofs_memoria]
+            veredicto = verificar_respuesta(respuesta, evidencia, trace_id)
             if not veredicto["ok"]:
-                no_resp = veredicto.get("numeros_no_respaldados", [])
-                log.info("interprete_libre_autofix_intento", trace_id=trace_id,
-                         no_respaldados=no_resp[:8])
-                correctivo = (
-                    mensaje_enriquecido
-                    + "\n\n[Sistema: estos numeros de tu respuesta anterior no "
-                    f"tenian respaldo de la calculadora ni del catalogo: {no_resp}. "
-                    "Rehace las cifras llamando a la herramienta que corresponda "
-                    "(calculate_total para totales, cotizar_envio para envio) y NO "
-                    "inventes ningun numero. Mostra solo lo que devuelvan las tools.]"
-                )
-                resp2, meta2 = await run_agent(
-                    correctivo, history, trace_id,
-                    tienda_id=tienda_id, user_id=user_id,
-                    system_prompt=system_prompt, tools_schema=tools_schema)
-                if verificar_respuesta(resp2, _evidencia(meta2), trace_id)["ok"]:
-                    respuesta, meta = resp2, meta2
-                    proofs_turno = [t["proof"] for t in (meta2.get("tools_called") or [])
-                                    if t.get("proof")]
-                    log.info("interprete_libre_autofix_ok", trace_id=trace_id)
-                else:
-                    log.warning("interprete_libre_autofix_fallo", trace_id=trace_id,
-                                no_respaldados=no_resp[:8])
-                    respuesta = settings.VERIFIKA_FALLBACK_MESSAGE
+                log.warning("interprete_libre_numero_no_respaldado_shadow",
+                            trace_id=trace_id,
+                            no_respaldados=veredicto["numeros_no_respaldados"][:8],
+                            respuesta_preview=respuesta[:220])
         except Exception as e:
             log.warning("interprete_libre_verif_error", trace_id=trace_id,
                         error=str(e)[:160])
