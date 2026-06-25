@@ -323,16 +323,6 @@ class Settings(BaseModel):
         os.getenv("ESTADO_PEDIDO", "false").lower() == "true"
     )
 
-    # CP COMPLETO: herramienta de codigo postal entera. (1) Un mensaje que es
-    # SOLO un CP ("5000", "X5000", "es 1425") clasifica sin marcador: es la
-    # respuesta natural cuando el bot pide el CP. Un numero suelto dentro de
-    # una frase sigue sin contar (altura de calle, cantidad). (2) Tabla de
-    # provincia por CP ampliada con bloques verificados (La Plata, Rosario,
-    # Rafaela, San Francisco, Pergamino/Zarate, Junin, Tandil/MdP, Bahia
-    # Blanca); los bloques donde conviven provincias quedan afuera: rango
-    # honesto antes que provincia equivocada. Default off.
-    CP_COMPLETO: bool = os.getenv("CP_COMPLETO", "false").lower() == "true"
-
     # Diagnostico verboso (nivel dos). Cuando esta en true, ademas de las
     # metricas baratas que van siempre (tiempos por etapa, trace_id en todos
     # los eventos, contadores de decision), se loguea el detalle pesado para
@@ -575,16 +565,10 @@ class Settings(BaseModel):
         os.getenv("CIERRE_FORZADO_MAX_ITER", "true").lower() == "true"
     )
 
-    # Tarifa de envio por PROVINCIA (dato de tienda, no codigo). El rango de
-    # interior (5000-12000) es la politica publicada, pero con la provincia
-    # determinada con certeza (letra del CPA, nombre de provincia o ciudad
-    # inequivoca) el codigo devuelve la tarifa EXACTA desde la tabla
-    # config/tarifas_envio de la tienda (cargada por scripts/cargar_tarifas_envio.py).
-    # Si la provincia no se determina o no esta en la tabla, cae al rango de
-    # siempre: nunca adivina. false: identico al previo.
-    TARIFA_PROVINCIA: bool = (
-        os.getenv("TARIFA_PROVINCIA", "true").lower() == "true"
-    )
+    # NOTA: la tarifa de envio por PROVINCIA (ex flag TARIFA_PROVINCIA) ya es el
+    # UNICO camino de cotizar_envio y de la calculadora: con la provincia o el CP
+    # determinados, el codigo devuelve la tarifa exacta de config/tarifas_envio;
+    # si no, cae al rango publicado, nunca adivina. Consolidada 24-jun.
 
     # Link de pago Mercado Pago al cerrar la venta. Con el lead capturado, el
     # CODIGO genera la preferencia con el total VERIFICADO del presupuesto de la
@@ -728,14 +712,15 @@ class Settings(BaseModel):
         os.getenv("MODO_LIBRE", "false").lower() == "true"
     )
 
-    # Tools que ve el MODO_LIBRE. Solo las que traen un HECHO real de Firestore:
-    # catalogo (search/details/list/calculate_total) y FAQs (query_faq). Se le
-    # ocultan las de razonamiento puro (find_within_budget, compare, recommend) y
-    # las de envio/entrega, para que el experimento sea limpio: el modelo libre
-    # apoyado solo en catalogo y FAQs. Editable por env (lista separada por comas).
+    # Tools que ve el solver libre (MODO_LIBRE y el camino vivo SOLO_INTERPRETE).
+    # Solo las que traen un HECHO real determinista: catalogo (search/details/list/
+    # calculate_total), FAQs (query_faq) y envio (cotizar_envio, el codigo clasifica
+    # la zona por CP y devuelve la tarifa de la tienda). Se le ocultan las de
+    # razonamiento puro (find_within_budget, compare, recommend). Editable por env.
     MODO_LIBRE_TOOLS: str = os.getenv(
         "MODO_LIBRE_TOOLS",
-        "search_products,get_product_details,list_catalog,query_faq,calculate_total")
+        "search_products,get_product_details,list_catalog,query_faq,"
+        "calculate_total,cotizar_envio")
 
     # Saludo respondido por codigo cuando el interprete lo marca con confianza
     # alta y el mensaje es corto y sin numeros. Visto 12-jun: "nueva compra"
@@ -942,18 +927,10 @@ class Settings(BaseModel):
     # Solo aplica con LIBRO_ASIENTOS on. Default solver (conducta de siempre).
     LIBRO_MODO: str = os.getenv("LIBRO_MODO", "solver").lower()
 
-    # ────────────────────────────────────────────────────────
-    # ENVIO_POR_ZONA — tool determinista de costo de envio por CP
-    # ────────────────────────────────────────────────────────
-    # Hoy el MODELO elige el concepto de envio (caba_gba vs interior) y puede meter
-    # el cajon equivocado (cobrar CABA a Cordoba). Con el flag on, aparece el tool
-    # cotizar_envio: el CODIGO clasifica la zona desde el codigo postal (tabla CPA
-    # oficial, app/core/envio.py) y devuelve la tarifa de la tienda (FAQ costo_envio)
-    # con su PROOF. El modelo nunca elige la zona: la resuelve el codigo por el CP
-    # literal. Si no puede determinar la zona, pide el CP, no adivina. Motor generico
-    # (geografia argentina) + dato de tienda (tarifa por zona), no se rediseña por
-    # cliente. Default false: el tool no aparece y el envio sigue por calculate_total.
-    ENVIO_POR_ZONA: bool = os.getenv("ENVIO_POR_ZONA", "true").lower() == "true"
+    # NOTA: cotizar_envio (ex flag ENVIO_POR_ZONA) es ahora un tool SIEMPRE
+    # presente: el CODIGO clasifica la zona desde el CP o la localidad y devuelve
+    # la tarifa de la tienda; el modelo nunca elige la zona. Consolidada 24-jun.
+    # cubre_envio se elimino: cotizar_envio ya implica cobertura.
 
     # ────────────────────────────────────────────────────────
     # FECHA_ENTREGA — tool determinista de plazo/fecha de entrega

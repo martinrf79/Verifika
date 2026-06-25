@@ -268,14 +268,13 @@ def calculate_total(items: list[dict] | None = None,
                 continue
             valores = faq.get("valores") or []
             valor = next((v for v in valores if v.get("concepto") == concepto), None)
-            if (not valor and settings.TARIFA_PROVINCIA
-                    and tema == "costo_envio" and concepto.startswith("envio_")):
-                # Concepto de tarifa por provincia: cotizar_envio (flag
-                # TARIFA_PROVINCIA) emite envio_<provincia> con monto de
-                # config/tarifas_envio, que NO vive en la FAQ. La calculadora
-                # tiene que hablar el mismo idioma que el cotizador; si no, el
-                # modelo recibe "concepto no existe" e improvisa el total a mano
-                # (visto en el arnes, caso a25).
+            if (not valor and tema == "costo_envio"
+                    and concepto.startswith("envio_")):
+                # Concepto de tarifa por provincia: cotizar_envio emite
+                # envio_<provincia> con monto de config/tarifas_envio, que NO vive
+                # en la FAQ. La calculadora tiene que hablar el mismo idioma que el
+                # cotizador; si no, el modelo recibe "concepto no existe" e improvisa
+                # el total a mano (visto en el arnes, caso a25).
                 try:
                     from app.storage.firestore_client import get_config
                     _tabla = get_config("tarifas_envio", tienda_id=tid) or {}
@@ -1037,62 +1036,45 @@ def _build_schema():
         },
     })
 
-    # Tool determinista de envio por zona, solo si el flag esta on.
-    if settings.ENVIO_POR_ZONA:
-        schemas.append({
-            "type": "function",
-            "function": {
-                "name": "cotizar_envio",
-                "description": (
-                    "Cotiza el costo de envio. El CODIGO determina la zona desde "
-                    "el codigo postal o la localidad del cliente y devuelve la "
-                    "tarifa real. USALO siempre que el cliente pregunte el costo "
-                    "de envio o a donde mandar. NO elijas vos la zona ni la "
-                    "tarifa. Si devuelve zona null, pedile el codigo postal o la "
-                    "localidad y provincia, no asumas."
-                ),
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "localidad": {
-                            "type": "string",
-                            "description": (
-                                "Lo que el cliente dijo de a donde enviar: codigo "
-                                "postal, localidad y/o provincia. Tal cual, sin "
-                                "interpretarlo vos."
-                            ),
-                        },
-                        "subtotal": {
-                            "type": "integer",
-                            "description": (
-                                "Subtotal de productos, para envio gratis por "
-                                "umbral si corresponde. Opcional."
-                            ),
-                        },
+    # Tool determinista de envio por zona (unico camino, sin flag): el costo lo
+    # resuelve el codigo desde el CP o la localidad, nunca el modelo. cotizar_envio
+    # ya implica cobertura (si puede cotizar, la tienda despacha ahi), por eso no
+    # hay una tool aparte de cubre_envio: una herramienta menos que decidir.
+    schemas.append({
+        "type": "function",
+        "function": {
+            "name": "cotizar_envio",
+            "description": (
+                "Cotiza el costo de envio. El CODIGO determina la zona desde "
+                "el codigo postal o la localidad del cliente y devuelve la "
+                "tarifa real. USALO siempre que el cliente pregunte el costo "
+                "de envio, si llegan a su zona, o a donde mandar. NO elijas vos "
+                "la zona ni la tarifa. Si devuelve zona null, pedile el codigo "
+                "postal o la localidad y provincia, no asumas."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "localidad": {
+                        "type": "string",
+                        "description": (
+                            "Lo que el cliente dijo de a donde enviar: codigo "
+                            "postal, localidad y/o provincia. Tal cual, sin "
+                            "interpretarlo vos."
+                        ),
                     },
-                    "required": ["localidad"],
-                },
-            },
-        })
-        schemas.append({
-            "type": "function",
-            "function": {
-                "name": "cubre_envio",
-                "description": (
-                    "Confirma si la tienda envia a una localidad. El CODIGO "
-                    "determina la zona desde el codigo postal o la localidad. "
-                    "Usalo cuando el cliente pregunta si llegan a su zona. Si "
-                    "devuelve zona null, pedile el codigo postal o la localidad."
-                ),
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "localidad": {"type": "string"},
+                    "subtotal": {
+                        "type": "integer",
+                        "description": (
+                            "Subtotal de productos, para envio gratis por "
+                            "umbral si corresponde. Opcional."
+                        ),
                     },
-                    "required": ["localidad"],
                 },
+                "required": ["localidad"],
             },
-        })
+        },
+    })
 
     # Tool determinista de fecha/plazo de entrega, solo si el flag esta on.
     if settings.FECHA_ENTREGA:
@@ -1199,7 +1181,7 @@ def _build_schema():
     # funciones quedan en el registry; esto solo recorta lo que ve el LLM.
     if settings.TOOLS_MINIMAS:
         _podar = {"find_within_budget", "compare_products",
-                  "recommend_product", "cubre_envio"}
+                  "recommend_product"}
         schemas = [s for s in schemas
                    if s.get("function", {}).get("name") not in _podar]
 
@@ -1219,26 +1201,15 @@ def cotizar_envio(localidad: str | None = None,
     tid = get_current_tienda()
     zona = clasificar_zona(localidad or "")
     if zona is None:
-        if settings.TARIFA_PROVINCIA:
-            # Con tabla por provincia, el dato util es la PROVINCIA o el CP:
-            # con eso la tarifa sale exacta, no en rango.
-            return {
-                "ok": False,
-                "zona": None,
-                "mensaje_para_llm": (
-                    "No pude determinar la zona con ese dato. Pedile UNA vez la "
-                    "PROVINCIA o el CODIGO POSTAL (ej: cordoba, o CP 5121): con "
-                    "eso te doy la tarifa exacta. NO asumas la zona ni la tarifa."
-                ),
-            }
+        # Con tabla por provincia, el dato util es la PROVINCIA o el CP: con eso
+        # la tarifa sale exacta, no en rango. Nunca se adivina la zona.
         return {
             "ok": False,
             "zona": None,
             "mensaje_para_llm": (
-                "No pude determinar la zona con ese dato. NO pidas el codigo "
-                "postal en loop: preguntale derecho si el envio es a CAPITAL, a "
-                "GRAN BUENOS AIRES, o al INTERIOR del pais, esas tres opciones. "
-                "Con que elija una alcanza. NO asumas la zona ni la tarifa."
+                "No pude determinar la zona con ese dato. Pedile UNA vez la "
+                "PROVINCIA o el CODIGO POSTAL (ej: cordoba, o CP 5121): con "
+                "eso te doy la tarifa exacta. NO asumas la zona ni la tarifa."
             ),
         }
 
@@ -1271,11 +1242,11 @@ def cotizar_envio(localidad: str | None = None,
             "proof": {"tipo": "envio", "valores": [0], "resultado": 0},
         }
 
-    # Tarifa EXACTA por provincia (flag TARIFA_PROVINCIA): si la provincia se
+    # Tarifa EXACTA por provincia (unico camino, sin flag): si la provincia se
     # determina con certeza y la tienda tiene tabla cargada, se devuelve el monto
     # fijo de esa provincia en vez del rango generico de interior. Si no hay
     # certeza o no hay tabla, sigue el flujo de siempre: nunca se adivina.
-    if settings.TARIFA_PROVINCIA and zona == "interior":
+    if zona == "interior":
         from app.core.envio import clasificar_provincia
         from app.storage.firestore_client import get_config
         prov = clasificar_provincia(localidad or "")
@@ -1322,7 +1293,7 @@ def cotizar_envio(localidad: str | None = None,
     modalidad = (valor.get("modalidad") or "fijo").lower()
     if modalidad == "rango":
         mn, mx = int(valor.get("monto_min", 0)), int(valor.get("monto_max", 0))
-        if settings.TARIFA_PROVINCIA and zona == "interior":
+        if zona == "interior":
             # Hay tabla por provincia pero la provincia no se pudo determinar:
             # el CP o la provincia SI afinan la tarifa, conviene pedirlos.
             _msg = (
@@ -1352,25 +1323,6 @@ def cotizar_envio(localidad: str | None = None,
             f"{{faq_tema: costo_envio, concepto: {valor.get('concepto')}}}; "
             f"NO sumes a mano ni dejes productos afuera."),
         "proof": {"tipo": "envio", "valores": [monto], "resultado": monto},
-    }
-
-
-def cubre_envio(localidad: str | None = None) -> dict:
-    """¿La tienda envia a esa localidad? El codigo clasifica la zona por el CP o el
-    nombre. Si la reconoce, la tienda despacha a todo el pais. Si no, pide el dato."""
-    from app.core.envio import clasificar_zona
-    zona = clasificar_zona(localidad or "")
-    if zona is None:
-        return {
-            "ok": False, "cubre": None, "zona": None,
-            "mensaje_para_llm": (
-                "No puedo confirmar la cobertura sin saber la zona. Pedile el "
-                "codigo postal o la localidad y provincia."),
-        }
-    return {
-        "ok": True, "cubre": True, "zona": zona,
-        "mensaje_para_llm": (
-            f"Si, despachamos a esa zona ({zona}) por correo a todo el pais."),
     }
 
 
@@ -1417,7 +1369,6 @@ def validar_cuit(cuit: str | None = None) -> dict:
 TOOLS_REGISTRY = {
     "search_products": search_products,
     "cotizar_envio": cotizar_envio,
-    "cubre_envio": cubre_envio,
     "calcular_entrega": calcular_entrega,
     "plazo_devolucion": plazo_devolucion,
     "garantia_vigente": garantia_vigente,

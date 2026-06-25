@@ -385,14 +385,13 @@ def _build_system_prompt(tienda_id: str | None) -> str:
     if settings.PROMPT_VENTA:
         prompt += _REGLA_VENTA
     # Envio por zona: el costo de envio lo resuelve el codigo, no el modelo.
-    if settings.ENVIO_POR_ZONA:
-        prompt += (
-            "\n\n═══ ENVIO: USA cotizar_envio ═══\n"
-            "Costo de envio: llama cotizar_envio con lo que dijo el cliente tal "
-            "cual, no elijas la zona vos ni uses items_extra de costo_envio. Segui "
-            "el mensaje que devuelve la tool. Nunca afirmes en que provincia queda "
-            "una ciudad."
-        )
+    prompt += (
+        "\n\n═══ ENVIO: USA cotizar_envio ═══\n"
+        "Costo de envio: llama cotizar_envio con lo que dijo el cliente tal "
+        "cual, no elijas la zona vos ni uses items_extra de costo_envio. Segui "
+        "el mensaje que devuelve la tool. Nunca afirmes en que provincia queda "
+        "una ciudad."
+    )
     # Fecha de entrega: la ventana la calcula el codigo, el modelo no promete dia.
     if settings.FECHA_ENTREGA:
         prompt += (
