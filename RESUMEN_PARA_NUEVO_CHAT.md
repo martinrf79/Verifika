@@ -1,98 +1,79 @@
-# Resumen para el nuevo chat — 24-jun-2026
+# Resumen para el chat nuevo — estado al 25-jun-2026
 
-Handoff de dónde quedamos. Si arrancás un chat nuevo, leé esto y el bloque
-"ESTADO ACTUAL" del `CLAUDE.md`. Con eso alcanza para no re-equivocarse.
+Este doc MANDA sobre el estado actual. `CLAUDE.md` y `MAPA_SISTEMA.md` describen
+la etapa ANTERIOR (cuatro caminos, ~70 flags, SOLO_INTERPRETE): quedaron viejos
+tras la consolidación de hoy. Guiarse por ESTE doc.
 
----
+## Qué es el bot hoy: UN solo camino
 
-## Qué se hizo en esta sesión
+Entrada → `orchestrator.process_message` (despachador mínimo: anti-jailbreak +
+delega) → `app/core/interprete_libre.py`, que hace todo el turno:
 
-1. **Auditoría completa del sistema** (`MAPA_SISTEMA.md`). Hallazgo: había cuatro
-   caminos completos compitiendo en el orchestrator y ~70 flags que se pisan. La
-   arquitectura de dos cañerías que quiere Martín YA existe y se llama
-   `camino_nuevo`. El intérprete bueno es `interpretador.py`; `comprension.py`
-   está muerto.
+1. **RESET_CODE**: si el mensaje es exactamente `verifika2026`, borra la
+   conversación y confirma. Es la palabra de PRUEBA para arrancar de cero. El bot
+   NUNCA resetea con frases naturales ("nueva compra"): continuidad siempre.
+2. **Intérprete** (DeepSeek): entiende el mensaje en contexto. La interpretación
+   se loguea (evento `interprete_libre_interpretacion`), no se muestra al cliente.
+3. **Solver libre** (DeepSeek, `agent.run_agent`): vende libre con las tools
+   atadas a Firestore: search, get_product_details (ficha), list_catalog,
+   query_faq (FAQ), calculate_total (calculadora), cotizar_envio (envío). La lista
+   la fija `MODO_LIBRE_TOOLS` en config.
+4. **Filtro determinista** (`verificador.py`) — HOY EN MODO OBSERVACIÓN: loguea
+   las cifras sin respaldo (evento `interprete_libre_numero_no_respaldado_shadow`)
+   pero NO bloquea. El bloqueo+autofix se sacó porque era lento y cortaba ventas
+   legítimas a fallback. Volver a enforce recién cuando esté afinado sobre logs.
+5. **Cierre** (`leads.py` + `cierre.py` + `pago.py`): capta el lead, avisa al
+   dueño, junta nombre/teléfono/dirección/pago, y genera el link de Mercado Pago
+   con el total VERIFICADO. Necesita `config/mp_access_token` en Firestore o
+   `MP_ACCESS_TOKEN` por entorno para el link.
+6. **Memoria**: historial de texto (últimos 10 turnos) + estado + último
+   presupuesto + proofs recientes, en Firestore por usuario.
 
-2. **Modo de prueba del intérprete** (`app/core/interprete_libre.py`, flag
-   `SOLO_INTERPRETE` default on). Apaga de una los ~70 flags y deja un solo
-   camino: intérprete + solver libre + memoria, con un eco que muestra qué
-   entendió el intérprete. Para volver al sistema viejo: `SOLO_INTERPRETE=false`.
+## Infra (sin cambios)
 
-3. **Se ordenó Cloud Run** (era la causa raíz del día perdido):
-   - Había DOS servicios de bot: `agente-bot` (vivo, lo usa WhatsApp) y
-     `agente-v4` (fantasma). Se deployaba a `agente-v4`, por eso el código nunca
-     llegaba al bot. **`agente-v4` se eliminó.**
-   - `video-engine` (generador de videos) quedó apagado, no borrado.
-   - Carpeta única `~/verifika`, atajo `agente`, deploy único `./deploy.sh`
-     (fuerza rama y servicio correctos, verifica que no falte `app/logger.py`,
-     que fue el archivo que rompió varios deploys por una copia desincronizada).
+- Servicio Cloud Run: `agente-bot`, región `southamerica-east1`, proyecto
+  `memory-engine-v1`. Es el ÚNICO. Webhook de WhatsApp apunta ahí.
+- Deploy por CI: push a la rama `claude/interpreter-solver-pipeline-mdlynm`
+  dispara `.github/workflows/deploy.yml`. Verificar el verde antes de decir listo.
+- Rama viva = `claude/interpreter-solver-pipeline-mdlynm`. Pendiente: mergear a
+  `main` y reapuntar el trigger del workflow.
+- LLM: DeepSeek en todo. `LLM_PROVIDER=deepseek`.
 
-4. **Bug del bot resuelto.** Tiraba "problema técnico" porque el servicio tenía
-   `LLM_PROVIDER=gemini` con clave vencida (401). Se forzó `LLM_PROVIDER=deepseek`.
-   El bot ahora anda y corre el modo `SOLO_INTERPRETE`.
+## La consolidación de hoy (Fase B)
 
----
+- De 60 a 24 módulos en `app/core`: se borraron los 4 caminos paralelos
+  (modo_libre, camino_nuevo, nucleo, legacy), su cañería, los verificadores
+  legacy y el Checker LLM (verifika/proposer-checker-pipeline).
+- De 110 a 59 campos en `config.py`: se podaron 52 flags muertos.
+- Se conservan: anti-jailbreak (cableado, activo) y posventa/garantía (código
+  presente, no expuesto al solver todavía).
 
-## Estado del bot ahora
+## Cómo probar en el entorno de Claude
 
-- Vivo en `agente-bot`, corriendo `interprete_libre` (SOLO_INTERPRETE on).
-- Intérprete y solver en DeepSeek. WhatsApp y Telegram entran por el mismo
-  `process_message`.
-- Tienda real: `TIENDA_ID=verifika_prod`, catálogo de 880 productos.
+`bash scripts/setup_test_env.sh` (lo corre solo el hook de SessionStart) instala
+deps y arregla cffi. Después:
+- `python3 scripts/smoke_logica.py` corre la lógica determinista offline (envío,
+  verificador, calculadora). Sin Firestore ni LLM.
+- Se puede importar TODO el app para verificar que no hay imports rotos.
+- Lo que NO se puede acá: llamadas reales a Firestore o al LLM (faltan claves).
+  El intérprete y el solver se prueban en WhatsApp.
+- Logs de runtime del bot: Claude NO los ve. Pedir a Martín la salida de
+  `gcloud logging read 'resource.type="cloud_run_revision" AND
+  resource.labels.service_name="agente-bot" AND severity>=WARNING'
+  --project=memory-engine-v1 --limit=40 --freshness=30m`.
 
----
+## Pendientes (orden sugerido para el chat nuevo)
 
-## La config de producción (lo que tiene Cloud Run)
-
-El servicio `agente-bot` tiene ~70 variables de entorno con flags prendidos
-(`CAMINO_NUEVO=true`, `DIRECTOR_LLM=true`, `PROVIDER=true`, etc.). **Hoy NO
-importan**: `SOLO_INTERPRETE` los saltea a todos. Son ruido que hay que bajar al
-código en el próximo paso. Secretos: la mayoría en Secret Manager; quedaron en
-texto plano `MP_ACCESS_TOKEN` y `OPENAI_API_KEY` (ROTAR).
-
----
-
-## Próximos pasos, en orden
-
-1. **Bajar la config al código.** Que `config.py` tenga la config buena por
-   default y el servicio solo lleve secretos + `TIENDA_ID`. Mata para siempre el
-   "la nube deriva sola". Después, limpiar las ~70 env del servicio.
-2. **Validar la interpretación** chateando casos difíciles y leyendo el eco.
-   Mejorar `interpretador.py` donde falle.
-3. **Adoptar la cañería secundaria completa** (`camino_nuevo`) cuando el
-   intérprete esté fino, para tener el sistema entero verificado.
-4. **Seguridad:** rotar `MP_ACCESS_TOKEN` y `OPENAI_API_KEY`, moverlos a Secret
-   Manager.
-5. **Costo Cloud Run:** verificar `min-instances=0` en `agente-bot` y apagar
-   `DIAG_TRACE` (logueo verboso). Tres servicios y deploys repetidos de hoy
-   inflaron el gasto puntual.
-
----
-
-## Formato de trabajo (deploy + verificación), probado verde 24-jun
-
-El pipeline profesional quedó andando:
-
-1. Claude escribe el código y lo pushea a la rama.
-2. GitHub Actions deploya solo a `agente-bot` con Workload Identity Federation
-   (sin clave descargable; la SA es `github-deployer@memory-engine-v1`).
-3. Claude lee el resultado de la corrida por el MCP de GitHub y confirma el verde
-   o arregla el error. Sin gcloud a mano, sin posibilidad de errar el servicio.
-
-Respaldo manual: `./deploy.sh` desde `~/verifika`. El workflow ignora cambios
-solo de `.md` (no deploya de gusto). Martín se dedica a diseñar el bot; los
-deploys los maneja y verifica Claude.
-
----
-
-## Reglas de oro para NO volver al caos
-
-- **Un solo servicio de bot:** `agente-bot`. Nunca crear otro.
-- **Un solo deploy:** CI por push (preferido) o `./deploy.sh` (respaldo). Nunca un
-  `gcloud run deploy` suelto a otro servicio.
-- **Un solo intérprete:** `interpretador.py`.
-- **Un solo LLM:** DeepSeek. Gemini queda prohibido salvo OK explícito de Martín.
-- **El repo manda.** La meta es que la config viva en el código, no en env de la
-  nube que derivan entre sesiones.
-- **Consolidar, no agregar.** Por cada cosa nueva que se prende, se apaga o borra
-  una vieja.
+1. **Limpiar env de Cloud Run**: sacar las ~63 vars de flags muertos de
+   `agente-bot` (ya están ignoradas por el código; es higiene). Comando entregado.
+2. **Segunda pasada de flags legacy**, dentro de `agent.py`, `interpretador.py` y
+   `tools.py` (ej `DIRECTOR_LLM`, `CONFIRMACION_PROVIDER`, `PROMPT_VENTA`,
+   `PROMPT_LIGERO`, `PROMPT_CONSTITUCION`, `LIBRO_*`, `TOOLS_MINIMAS`,
+   `CIERRE_FORZADO_MAX_ITER`, `RESCATE_TOOLCALL_TEXTO`). Varios están PRENDIDOS en
+   prod, así que sacarlos cambia el prompt del intérprete/solver: hacerlo con el
+   harness, verificando, no a ciegas. NO tocar `FECHA_ENTREGA`/`POSVENTA_TOOLS`
+   (posventa se conserva).
+3. **Afinar el filtro determinista** sobre los logs `_shadow` y recién ahí volver
+   a enforce (sin el autofix romo: un diseño mejor).
+4. **Errores abiertos a diagnosticar con logs**: latencia y algún fallback que
+   Martín reporte. La causa del fallback anterior era el filtro+autofix, ya sacado.
