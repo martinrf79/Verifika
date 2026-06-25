@@ -27,8 +27,10 @@ más abajo contradice esto, MANDA esto.
   2. **Manual (respaldo):** `./deploy.sh` desde `~/verifika`. Fuerza rama y
      servicio. Útil si CI no está disponible.
   Ninguno puede deployar al servicio equivocado.
-- **Rama de trabajo: `claude/interpreter-solver-pipeline-mdlynm`**. Cuando se
-  mergee a `main`, cambiar la rama en `deploy.sh` y en el trigger del workflow.
+- **Rama ÚNICA: `main`** (25-jun). Toda la consolidación se mergeó a `main` y se
+  borraron las ramas feature. Una sola rama, una sola fuente de verdad. El estado
+  real del sistema vive en `RESUMEN_PARA_NUEVO_CHAT.md`; este `CLAUDE.md` quedó de
+  la etapa anterior salvo esta nota.
 
 ### Camino del bot HOY (código)
 

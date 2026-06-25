@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - claude/interpreter-solver-pipeline-mdlynm
     paths-ignore:
       - '**.md'
   workflow_dispatch:

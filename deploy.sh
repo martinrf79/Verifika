@@ -11,8 +11,8 @@
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
-# Rama de trabajo actual. Cuando se mergee a main, cambiar a "main".
-RAMA="claude/interpreter-solver-pipeline-mdlynm"
+# Rama unica: main. Toda la consolidacion se mergeo aca (25-jun).
+RAMA="main"
 # Servicio VIVO, el que usa el webhook de WhatsApp. NO cambiar sin repointar Meta.
 SERVICIO="agente-bot"
 REGION="southamerica-east1"
