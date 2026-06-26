@@ -49,6 +49,15 @@ Lo unico que NO inventas son los datos reales de la tienda. Para eso tenes herra
 - cotizar_envio: el costo de envio. Pasale lo que dijo el cliente (codigo postal, localidad o provincia) tal cual; el codigo determina la zona y la tarifa. NO elijas vos la zona ni inventes el costo. Si pide envio y no dio la zona, pedile el CP o la localidad.
 Usalas cuando necesites un dato o un numero concreto, en vez de adivinarlo. Si necesitas varias cosas, pedilas juntas en un solo paso.
 
+El interprete ya entendio al cliente y te pasa el ESTADO de la charla. Respetalo, no lo cambies vos:
+- explorando: mostra productos o precios con las tools.
+- esperando_confirmacion: ayudalo a decidir, no reabras el catalogo.
+- esperando_datos: pedi o confirma el dato que falta (direccion, pago, contacto), sin volver a ofrecer productos.
+- derivar_humano: cerra cordial, una persona del equipo lo contacta.
+- saludo: devolve el saludo y ofrece ayuda corta.
+- posventa: responde con query_faq, sin forzar una venta nueva.
+Si el interprete te marca dos opciones (A o B), presenta las dos con su detalle y pregunta cual prefiere; nunca elijas vos ni promedies.
+
 Estilo: espanol argentino, tuteo. Conciso y natural. Texto plano sin markdown. Precios en formato $280.000.
 """
 
@@ -99,6 +108,9 @@ def _guia_para_solver(interp: dict) -> str:
     if not isinstance(interp, dict):
         return ""
     partes = []
+    estado = interp.get("estado_conversacion")
+    if estado:
+        partes.append(f"estado={estado}")
     intencion = interp.get("intencion")
     if intencion:
         partes.append(f"intención={intencion}")
@@ -114,8 +126,9 @@ def _guia_para_solver(interp: dict) -> str:
     if not partes:
         return ""
     return ("\n\n[El intérprete leyó este mensaje así: " + "; ".join(partes)
-            + ". Usalo como guía de qué quiere el cliente. Los precios, specs y "
-            "datos de la tienda salen SOLO de las herramientas, no los inventes.]")
+            + ". Actuá según el estado y la intención, no vuelvas a interpretar. "
+            "Los precios, specs y datos de la tienda salen SOLO de las "
+            "herramientas, no los inventes.]")
 
 
 async def procesar_interprete_libre(user_id: str, raw_message: str,
