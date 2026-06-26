@@ -147,10 +147,19 @@ for mod in (FS, ILIB):
     if hasattr(mod, "log_message"): mod.log_message = _noop
     if hasattr(mod, "reset_conversation"): mod.reset_conversation = _noop
 
-# Cierre: en pruebas NO se avisa al dueno por canal externo (sin red ni token).
+# Cierre/leads APAGADO en pruebas, igual que el harness viejo con USE_LEADS=false.
+# La capa de leads hace queries REALES a Firestore (get_lead_activo, crear_lead,
+# descartar_leads_activos) que sin credenciales tiran "default credentials not
+# found" en CADA turno y ensucian la corrida. Se mockean los dos puntos de entrada
+# que usa interprete_libre: el solver vende igual, no se captura lead ni se genera
+# link de pago, y no se toca Firestore ni se avisa al dueno por canal externo.
 async def _anoop(*a, **k): return None
+async def _mock_lead(*a, **k): return (None, {})
+def _mock_descartar(*a, **k): return 0
 NOTIF.notificar_lead = _anoop
 if hasattr(LEADS, "notificar_lead"): LEADS.notificar_lead = _anoop
+ILIB.procesar_mensaje_para_lead = _mock_lead
+ILIB.descartar_leads_activos = _mock_descartar
 
 # ── Instanciación de Cliente OpenAI para el Simulador ──
 def get_simulator_model_and_client():
