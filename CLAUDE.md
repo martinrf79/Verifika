@@ -5,68 +5,11 @@ No borrarlo, no moverlo.
 
 ---
 
-## ⛳ ESTADO ACTUAL — CAMINO ÚNICO (24-jun-2026). LEER ESTO PRIMERO
+## ⛳ ESTADO ACTUAL — LEER ESTO PRIMERO
 
-Después de un día entero ordenando el caos, esta es la verdad única. Si algo de
-más abajo contradice esto, MANDA esto.
-
-### Infraestructura, un solo camino, sin ambigüedad
-
-- **Servicio de bot VIVO: `agente-bot`** en Cloud Run, región `southamerica-east1`,
-  proyecto `memory-engine-v1`. Es el que usa el webhook de WhatsApp. Es el ÚNICO.
-- `agente-v4` se ELIMINÓ (era un servicio fantasma al que se deployaba por error).
-- `video-engine` es el otro producto, generador de videos. Queda APAGADO
-  (min-instances 0). NO se elimina, NO se toca.
-- **Carpeta de trabajo única: `~/verifika`** (Cloud Shell y notebook). El atajo
-  `agente` te para ahí.
-- **Deploy: dos caminos, ambos al servicio correcto `agente-bot`.**
-  1. **CI automático (preferido):** un push a la rama dispara GitHub Actions
-     (`.github/workflows/deploy.yml`), que deploya a `agente-bot` con Workload
-     Identity Federation (sin clave descargable). Claude lee el resultado de la
-     corrida por el MCP de GitHub y confirma o arregla. Probado verde 24-jun.
-  2. **Manual (respaldo):** `./deploy.sh` desde `~/verifika`. Fuerza rama y
-     servicio. Útil si CI no está disponible.
-  Ninguno puede deployar al servicio equivocado.
-- **Rama ÚNICA: `main`** (25-jun). Toda la consolidación se mergeó a `main` y se
-  borraron las ramas feature. Una sola rama, una sola fuente de verdad. El estado
-  real del sistema vive en `RESUMEN_PARA_NUEVO_CHAT.md`; este `CLAUDE.md` quedó de
-  la etapa anterior salvo esta nota.
-
-### Camino del bot HOY (código)
-
-- **Interruptor maestro `SOLO_INTERPRETE=true` (default).** Mientras está prendido,
-  el orchestrator delega TODO el turno a `app/core/interprete_libre.py`:
-  intérprete (LLM 1, DeepSeek) + solver libre con memoria y tools de Firestore
-  (LLM 2, DeepSeek) + un eco de interpretación al final (flag `INTERPRETE_DEBUG`).
-- **Mientras `SOLO_INTERPRETE` esté on, los ~70 flags viejos NO importan: se
-  saltean todos.** El bot ya corre por el camino limpio.
-- **Un solo intérprete vivo: `interpretador.py`.** `comprension.py` está muerto.
-- **LLM: DeepSeek en todo.** NO usar Gemini. (El bug del 24-jun fue justo eso: el
-  servicio tenía `LLM_PROVIDER=gemini` con clave vencida y el solver tiraba 401.)
-
-### Lo que NO está resuelto todavía (próximos pasos)
-
-1. **Bajar la config al código (lo más importante para que no derive más).** Los
-   ~70 flags todavía viven como variables de entorno en Cloud Run. El plan: dejar
-   la config buena escrita en `config.py` y que el servicio solo necesite secretos
-   + `TIENDA_ID=verifika_prod`. Así el REPO manda y la nube deja de derivar sola.
-2. **Validar la interpretación** en casos difíciles (negación, arrepentimiento,
-   cambio de producto, pregunta capciosa) chateando con el bot y leyendo el eco.
-3. **Construir/adoptar la cañería secundaria completa** (es `camino_nuevo`, ya
-   existe) cuando el intérprete esté fino.
-4. **Seguridad: rotar `MP_ACCESS_TOKEN` y `OPENAI_API_KEY`**, que estaban en texto
-   plano. El resto de secretos ya está en Secret Manager.
-
-### Documentos que MANDAN (lo demás es histórico, no guiarse por eso)
-
-- `CLAUDE.md` (este archivo): instrucciones + estado actual.
-- `MAPA_SISTEMA.md`: auditoría de flags y módulos vivos vs muertos.
-- `RESUMEN_PARA_NUEVO_CHAT.md`: handoff de dónde quedamos.
-- Los handoffs viejos (`HANDOFF*.md`, `INSTRUCCIONES_v5.md`, `PLAN_*.md`,
-  `CAMBIOS_*.md`, etc.) se BORRARON el 24-jun para no confundir. Si hace falta
-  algo, vive en el historial de git, no se perdió.
-
----
+El estado del sistema (qué camino corre, infra, pendientes) vive en UN solo
+lugar: `RESUMEN_PARA_NUEVO_CHAT.md`. Es la fuente única de verdad. Este
+`CLAUDE.md` tiene solo las reglas e instrucciones permanentes.
 
 ## 🧭 PROTOCOLO DE ORDEN — repo GitHub + Cloud Run (seguir SIEMPRE)
 
@@ -74,8 +17,8 @@ Nació del día que se perdió por deployar al servicio equivocado y por 70 flag
 sueltos. Seguir estos pasos cada sesión para que no se repita.
 
 **A. Antes de tocar nada**
-1. Leer este `CLAUDE.md`, `MAPA_SISTEMA.md` y `RESUMEN_PARA_NUEVO_CHAT.md`. No
-   inventar contexto; ante la duda, preguntar a Martín.
+1. Leer este `CLAUDE.md` y `RESUMEN_PARA_NUEVO_CHAT.md`. No inventar contexto;
+   ante la duda, preguntar a Martín.
 2. Confirmar carpeta `~/verifika` y la rama de trabajo.
 
 **B. Cloud Run — un solo camino**
@@ -92,7 +35,7 @@ sueltos. Seguir estos pasos cada sesión para que no se repita.
 
 **C. GitHub — repo limpio**
 9. Commits chicos y mensajes claros. Pushear tras cada cambio cerrado.
-10. Una sola fuente de verdad: `CLAUDE.md` + `MAPA_SISTEMA` + `RESUMEN`. No crear
+10. Una sola fuente de verdad: `CLAUDE.md` (reglas) + `RESUMEN` (estado). No crear
     handoffs nuevos sueltos; actualizar los que mandan.
 11. Consolidar, no agregar: por cada cosa que se prende, apagar o borrar una
     vieja. Prohibido sumar capas o flags "por las dudas".
