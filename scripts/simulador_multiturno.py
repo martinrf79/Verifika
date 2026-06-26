@@ -32,30 +32,14 @@ if secrets_path.exists():
             k, v = line.split("=", 1)
             os.environ[k.strip()] = v.strip()
 
-# ── Configurar entorno del Bot (valores tipo producción) ──
-os.environ["USE_VERIFIKA"] = os.environ.get("USE_VERIFIKA", "true")
-os.environ["USE_LEADS"] = "false"  # Leads desactivados en testing para evitar ensuciar DB
-os.environ["VERIFICADOR_MODE"] = os.environ.get("VERIFICADOR_MODE", "on")
-os.environ["CALC_DEFENSIVA"] = "true"
-os.environ["SOLVER_USA_PRESENTACION"] = "true"
-os.environ["AUTOFIX"] = "true"
-os.environ["ASYNC_LLM_OFFLOAD"] = "true"
-os.environ.setdefault("USE_INTERPRETER", "true")
-os.environ.setdefault("INTERPRETE_ANCLA_CATALOGO", "true")
-os.environ.setdefault("PROMPT_VENTA", "true")
-os.environ.setdefault("PROMPT_CONSTITUCION", "true")
-os.environ.setdefault("CIERRE_FORZADO_MAX_ITER", "true")
+# ── Configurar entorno del Bot (CAMINO VIVO: interprete_libre) ──
+# El camino vivo ya no tiene flags de comportamiento: el turno entero lo maneja
+# interprete_libre (interprete DeepSeek + solver libre + filtro en observacion +
+# cierre). Los ~15 flags que este harness seteaba se fijaron en codigo y se
+# borraron. Solo seteamos lo que el codigo de verdad lee: provider e identidad.
+os.environ.setdefault("LLM_PROVIDER", "deepseek")
+os.environ.setdefault("INTERPRETER_PROVIDER", "deepseek")
 os.environ.setdefault("MAX_TOOL_ITERATIONS", "8")
-os.environ.setdefault("CHECKER_GATEA", "true")
-os.environ.setdefault("VERIFICADOR_SERVICIOS", "on")
-os.environ.setdefault("VERIFICADOR_HECHOS", "on")
-os.environ.setdefault("ESTADO_NO_REGRESA_SALUDO", "true")
-os.environ.setdefault("CORRECTOR_ANCLADO", "false")
-os.environ.setdefault("DIAG_TRACE", "false")
-# Si el libro de asientos esta on, prendemos su sink de diagnostico para ver por
-# sesion si el libro emitio, cuanto corrigio el codigo y que fugas vio la guarda.
-if os.environ.get("LIBRO_ASIENTOS", "false").lower() == "true":
-    os.environ.setdefault("DIAG_LIBRO", "true")
 
 TIENDA = os.environ.get("MOLINO_TIENDA", "verifika_2k")
 os.environ["TIENDA_ID"] = TIENDA
@@ -120,11 +104,11 @@ def mock_save_conversation(user_id, history, summary="", tienda_id=None,
         conv["ultimo_presupuesto"] = ultimo_presupuesto
     _conversaciones[user_id] = conv
 
-def _all_products(tienda_id=None, force_refresh=False): return prods
-def _by_id(pid, tienda_id=None): return by_id.get(str(pid).upper()) or by_id.get(pid)
-def _cats(tienda_id=None): return sorted({p["categoria"] for p in prods})
-def _all_faq(tienda_id=None, force_refresh=False): return faq
-def _get_config(key, default=None, tienda_id=None):
+def _all_products(*a, **k): return prods
+def _by_id(pid=None, *a, **k): return by_id.get(str(pid).upper()) or by_id.get(pid)
+def _cats(*a, **k): return sorted({p["categoria"] for p in prods})
+def _all_faq(*a, **k): return faq
+def _get_config(key=None, default=None, *a, **k):
     return "Verifika" if key in ("business_name", "nombre") else default
 def _noop(*a, **k): return None
 
@@ -135,26 +119,38 @@ import structlog
 structlog.configure(
     wrapper_class=structlog.make_filtering_bound_logger(logging.WARNING))
 
-# Realizar el monkeypatch en todos los módulos importados
+# Monkeypatch del CAMINO VIVO. interprete_libre importa por NOMBRE las funciones
+# de Firestore (get_conversation, save_conversation, log_message, reset_conversation,
+# get_config), asi que hay que rebindearlas en SU namespace, no en el del
+# orchestrator: el orchestrator nuevo solo delega y no toca Firestore.
 import app.storage.firestore_client as FS
-import app.core.tools as T
 import app.storage.search as SE
+import app.core.tools as T
 import app.core.agent as AG
-import app.core.guardian as GUARD
+import app.core.interprete_libre as ILIB
+import app.core.leads as LEADS
+import app.core.notificador as NOTIF
 import app.core.orchestrator as ORCH
 
-for mod in (FS, T, SE, AG, GUARD, ORCH):
+# Catalogo y FAQ locales en cada modulo que los lea por nombre.
+for mod in (FS, SE, T, AG, ILIB, ORCH):
     if hasattr(mod, "get_all_products"): mod.get_all_products = _all_products
     if hasattr(mod, "get_product_by_id"): mod.get_product_by_id = _by_id
     if hasattr(mod, "get_categories"): mod.get_categories = _cats
     if hasattr(mod, "get_all_faq"): mod.get_all_faq = _all_faq
     if hasattr(mod, "get_config"): mod.get_config = _get_config
 
-FS.get_conversation = mock_get_conversation
-FS.save_conversation = mock_save_conversation
-ORCH.get_conversation = mock_get_conversation
-ORCH.save_conversation = mock_save_conversation
-ORCH.log_message = _noop
+# Memoria de conversacion en RAM, en el namespace que la usa (interprete_libre).
+for mod in (FS, ILIB):
+    if hasattr(mod, "get_conversation"): mod.get_conversation = mock_get_conversation
+    if hasattr(mod, "save_conversation"): mod.save_conversation = mock_save_conversation
+    if hasattr(mod, "log_message"): mod.log_message = _noop
+    if hasattr(mod, "reset_conversation"): mod.reset_conversation = _noop
+
+# Cierre: en pruebas NO se avisa al dueno por canal externo (sin red ni token).
+async def _anoop(*a, **k): return None
+NOTIF.notificar_lead = _anoop
+if hasattr(LEADS, "notificar_lead"): LEADS.notificar_lead = _anoop
 
 # ── Instanciación de Cliente OpenAI para el Simulador ──
 def get_simulator_model_and_client():
@@ -248,11 +244,6 @@ async def run_scenario(scenario, client_llm, client_model, semaphore, tienda_id=
     print(f"  -> [{scenario_id}] arrancando (max {turnos_max} turnos)...", flush=True)
 
     chat_turns = []
-    libro_turnos = []  # diagnostico del libro por turno (si DIAG_LIBRO on)
-    try:
-        from app.core.libro import diag_pop
-    except Exception:
-        diag_pop = None
 
     # Inicia con el primer mensaje del cliente
     msg = primer_mensaje
@@ -274,12 +265,6 @@ async def run_scenario(scenario, client_llm, client_model, semaphore, tienda_id=
                 break
                 
             chat_turns.append({"role": "assistant", "content": bot_response})
-            # Capturar el diagnostico del libro de ESTE turno antes de que el
-            # proximo lo pise (diag_record acumula por user_id con update).
-            if diag_pop is not None:
-                d = diag_pop(user_id)
-                if d:
-                    libro_turnos.append(d)
 
             # Chequear terminaciones abruptas o derivaciones a humanos
             if "[FALLO TÉCNICO" in bot_response or "tuve un problema tecnico" in bot_response.lower():
@@ -437,20 +422,11 @@ Tu respuesta debe ser un objeto JSON válido que cumpla estrictamente con la sig
     print(f"  <- [{scenario_id}] listo en {time.time()-_t_inicio:.0f}s, "
           f"puntaje {evaluation.get('puntaje_venta', '?')}/10, "
           f"{'PASO' if evaluation.get('passed') else 'FALLO'}", flush=True)
-    # Agregado del libro a nivel sesion: sumar lo de cada turno.
-    libro_resumen = {
-        "turnos_con_libro": sum(1 for d in libro_turnos if d.get("emitio_libro")),
-        "turnos_totales": len(libro_turnos),
-        "asientos": sum(d.get("n_asientos", 0) for d in libro_turnos),
-        "correcciones": [c for d in libro_turnos for c in (d.get("correcciones") or [])],
-        "fugas": [f for d in libro_turnos for f in (d.get("fugas") or [])],
-    }
     return {
         "id": scenario_id,
         "nombre": nombre,
         "turns": chat_turns,
         "evaluation": evaluation,
-        "libro": libro_resumen,
     }
 
 # ── Runner Principal ──
@@ -481,9 +457,9 @@ async def async_main():
         print(f"ERROR DE CONFIGURACIÓN: {e}")
         return
         
-    # Mostrar flags activos del Bot
-    flags = ["USE_VERIFIKA", "VERIFICADOR_MODE", "CALC_DEFENSIVA", "AUTOFIX", "USE_INTERPRETER", "VERIFICADOR_SERVICIOS", "VERIFICADOR_HECHOS"]
-    print("Flags activos en el Bot:", {f: os.environ.get(f) for f in flags})
+    # Config real del camino vivo (ya no hay flags de comportamiento).
+    cfg = ["LLM_PROVIDER", "INTERPRETER_PROVIDER", "DEEPSEEK_MODEL", "TIENDA_ID", "MAX_TOOL_ITERATIONS"]
+    print("Config del Bot:", {c: os.environ.get(c) for c in cfg})
     
     t0 = time.time()
     
@@ -598,25 +574,6 @@ async def async_main():
         viol_str = ",".join(viols) if viols else "-"
         print("%-32s %-10s %-8s %s" % (r["id"], passed_str, score, viol_str))
         
-    # Resumen del libro de asientos (Fase 2-4), si hubo diagnostico.
-    _con_libro = [r for r in results if r.get("libro", {}).get("turnos_totales")]
-    if _con_libro:
-        t_emit = sum(r["libro"]["turnos_con_libro"] for r in _con_libro)
-        t_tot = sum(r["libro"]["turnos_totales"] for r in _con_libro)
-        correg = [(r["id"], c) for r in _con_libro for c in r["libro"]["correcciones"]]
-        fugas = [(r["id"], f) for r in _con_libro for f in r["libro"]["fugas"]]
-        contrab = [x for x in fugas if x[1].get("en_evidencia")]
-        invento = [x for x in fugas if not x[1].get("en_evidencia")]
-        print("\n=== LIBRO DE ASIENTOS (multiturno, Fase 2-4) ===")
-        print("turnos con libro emitido      : %d/%d (%.0f%%)" %
-              (t_emit, t_tot, 100 * t_emit / t_tot if t_tot else 0))
-        print("correcciones aplicadas (codigo): %d  %s" %
-              (len(correg), [(i, c.get("de"), "->", c.get("a")) for i, c in correg][:12]))
-        print("guarda - fugas totales         : %d (contrabando %d / invento %d)" %
-              (len(fugas), len(contrab), len(invento)))
-        print("  invento (fuera de toda fuente):",
-              [(i, f.get("valor")) for i, f in invento][:12])
-
     print("\nReportes guardados:")
     print(f"- Detalle JSON: reports/simulacion_multiturno_{timestamp}.json")
     print(f"- Reporte Markdown: reports/simulacion_multiturno_{timestamp}.md")
