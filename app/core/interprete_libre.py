@@ -232,6 +232,33 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                         error=str(e)[:160])
     proofs_recientes = (proofs_memoria + proofs_turno)[-settings.VERIFICADOR_PROOF_MEMORY:]
 
+    # ── PASO 2a-bis: GUARDIA DE PROMESAS PROHIBIDAS (enforce) ───────────────
+    # Linea cero del TEXTO: un conjunto cerrado de afirmaciones que el bot no puede
+    # decir aunque el cliente insista (dia exacto de entrega, retiro en local,
+    # servicios fuera de la FAQ). Si la deteccion determinista dispara, el codigo
+    # reescribe el mensaje sin la promesa antes de mandarlo. Una sola llamada extra
+    # al modelo y SOLO en los turnos que disparan, no en todos.
+    if respuesta != settings.FALLBACK_MESSAGE:
+        try:
+            from app.core.guardia_promesas import detectar, reescribir_sin_promesas
+            clases = detectar(respuesta)
+            if clases:
+                log.warning("interprete_libre_promesa_prohibida", trace_id=trace_id,
+                            clases=clases, respuesta_preview=respuesta[:200])
+                nueva = await reescribir_sin_promesas(respuesta, clases, trace_id)
+                if nueva:
+                    quedan = detectar(nueva)
+                    respuesta = nueva
+                    if quedan:
+                        log.warning("interprete_libre_promesa_persiste",
+                                    trace_id=trace_id, clases=quedan)
+                    else:
+                        log.info("interprete_libre_promesa_reescrita",
+                                 trace_id=trace_id, clases=clases)
+        except Exception as e:
+            log.warning("interprete_libre_guardia_error", trace_id=trace_id,
+                        error=str(e)[:160])
+
     # ── PASO 2b: CIERRE (codigo) — capta el lead, pide datos, manda el link ──
     # El codigo toma el control SOLO cuando hay que cerrar: detecta la decision de
     # compra por la interpretacion, junta nombre/telefono/direccion/forma de pago y
