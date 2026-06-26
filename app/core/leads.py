@@ -10,7 +10,6 @@ Intencion TIBIA, el cliente esta evaluando. Frases como hacen envios,
 como pago, tienen stock. El bot sigue conversando normal, el dueno recibe
 aviso informativo en silencio.
 
-Feature flag: USE_LEADS=true para activarlo. False por default.
 """
 import os
 import re
@@ -24,7 +23,6 @@ from app.core.notificador import notificar_lead
 log = get_logger(__name__)
 settings = get_settings()
 
-USE_LEADS = os.getenv("USE_LEADS", "false").lower() == "true"
 
 LEAD_VENTANA_SEGUNDOS = 24 * 60 * 60
 

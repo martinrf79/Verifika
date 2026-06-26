@@ -12,8 +12,6 @@ v3: rediseño profundo. Sin listas hardcodeadas. Prompt minimalista
 v4: prompt liberado. Intencion aporta_dato agregada para respuestas
     con datos concretos. Campo respondiendo_a agregado para detectar
     respuestas a preguntas previas del bot.
-
-Feature flag: USE_INTERPRETER=true para activarlo. False por default.
 """
 import os
 import json
@@ -26,17 +24,10 @@ from app.logger import get_logger
 log = get_logger(__name__)
 settings = get_settings()
 
-USE_INTERPRETER = os.getenv("USE_INTERPRETER", "false").lower() == "true"
-UMBRAL_CONFIANZA_ALTA = float(os.getenv("INTERPRETER_UMBRAL_ALTA", "0.85"))
 UMBRAL_CONFIANZA_MEDIA = float(os.getenv("INTERPRETER_UMBRAL_MEDIA", "0.6"))
 
 INTENCIONES_VALIDAS = {"saludo", "exploracion", "pregunta_especifica", "aporta_dato",
                         "decision_compra", "otra"}
-
-# Tipos de confirmacion validos (campo tipo_confirmacion, pista del flag
-# CONFIRMACION_PROVIDER). Cualquier otra cosa se coerciona a None: el codigo
-# decide igual con el catalogo, asi que un valor raro no debe fallar la lectura.
-TIPOS_CONFIRMACION_VALIDOS = {"a_o_b", "te_referis_a", "confirmar_compra"}
 
 # Estados que indican una charla YA en curso. Si la conversacion llego a
 # cualquiera de estos, no puede "volver" a saludo sin perder el hilo.
@@ -210,58 +201,13 @@ def construir_contexto_conversacional(history: list[dict],
     return "\n".join(lineas)
 
 
-# GUIA del campo tipo_confirmacion (solo con CONFIRMACION_PROVIDER on). El
-# interprete SOLO clasifica el tipo de ambiguedad, NO escribe la frase: el codigo
-# del Provider la arma con los datos reales del catalogo. Es una PISTA; el codigo
-# decide si finalmente pregunta.
-GUIA_TIPO_CONFIRMACION = """
-
-GUIA DE TIPO DE CONFIRMACION, campo tipo_confirmacion.
-Clasifica QUE TIPO de pregunta de confirmacion haria falta, no la escribas, solo el tipo. El sistema arma la frase con datos reales del catalogo.
-a_o_b, el cliente podria referirse a dos productos o caminos distintos y habria que preguntar cual de los dos.
-te_referis_a, el cliente nombra algo que puede ser varios modelos o variantes y habria que preguntar a cual.
-confirmar_compra, el cliente parece decidir pero no es inequivoco y conviene confirmar antes de cerrar.
-null, no hace falta ninguna confirmacion, el caso es claro.
-Es solo una PISTA. Abajo el codigo decide con el catalogo real si finalmente pregunta, asi que no fuerces el campo, marcalo solo ante ambiguedad genuina.
-"""
 
 
-GUIA_ACCIONES_CARRITO = """
-
-GUIA DE ACCIONES SOBRE EL CARRITO, campo acciones_carrito. LO MAS IMPORTANTE.
-Es lo que hay que HACER con el pedido segun ESTE mensaje del cliente. El codigo lo ejecuta contra el catalogo: vos solo decis la accion y el texto del producto como lo nombro el cliente, no el id ni el precio.
-Lista VACIA [] si el mensaje NO cambia el pedido: un saludo, una pregunta (precio, si sirve, como se usa, donde queda un boton), una duda, un comentario, un reclamo, o algo fuera de tema. En la enorme mayoria de los turnos que no son una orden de compra, la lista va vacia.
-Emiti acciones SOLO cuando el cliente claramente quiere modificar el pedido:
-  agregar: suma un producto. producto = como lo nombro, cantidad = cuantos (1 si no aclara). OJO: si en el turno anterior el bot ofrecio productos u opciones (un A o B, una lista, "cual preferis") y el cliente ELIGE uno ("los 3 K380 negros", "el blanco", "la opcion A", "dale ese", "el primero"), eso ES agregar: emiti agregar con el producto elegido y la cantidad que dijo.
-  sacar: quita un producto que ya estaba en el pedido.
-  cambiar_cantidad: cambia cuantas unidades de un producto YA en el pedido. cantidad = el numero nuevo (0 = sacarlo). Frases tipo "mejor que sean 2", "que sean 2 teclados", "cambialo a 2", "dejalo en 2", "en vez de 3 poneme 2", "hacelo 2" SON cambiar_cantidad sobre el producto de ese tipo que ya esta en el carrito; producto = como lo nombra (mira el PEDIDO ACTUAL para saber a cual te referis), cantidad = el numero nuevo. NO es una pregunta ni un pedido nuevo: el cliente esta ajustando lo que ya tiene.
-  vaciar: el cliente quiere empezar de cero o descartar todo el pedido.
-EJEMPLO CONCRETO. Si el PEDIDO ACTUAL tiene "3x Teclado Logitech K380 Negro" y "1x Mouse Logitech G203 Lightsync Negro", y el cliente dice "mejor que sean 2 teclados", devolves acciones_carrito: [{"tipo": "cambiar_cantidad", "producto": "Teclado K380", "cantidad": 2}]. Si dice "saca el mouse": [{"tipo": "sacar", "producto": "mouse G203"}]. Si dice "sumale otro teclado": [{"tipo": "agregar", "producto": "Teclado K380", "cantidad": 1}]. Siempre que el cliente ajuste el pedido, el campo acciones_carrito tiene que venir POBLADO, no vacio.
-Regla de oro: ante la duda, NO toques el carrito (lista vacia). Una pregunta sobre un producto NUNCA es agregar. Cambiar de tema NO borra el pedido salvo que lo pida. Solo el cliente mueve su carrito; vos reflejas lo que el pidio en este mensaje, nada mas.
-"""
-
-
-GUIA_PRODUCTO_CONSULTADO = """
-
-GUIA DE PRODUCTO CONSULTADO, campo producto_consultado.
-Es el producto que el cliente NOMBRA o PREGUNTA en este mensaje, copiado en sus palabras (con marca y modelo si los dijo), EXISTA O NO en la tienda. Sirve para que el sistema verifique despues si existe; vos NO decidis si existe, solo lo extraes.
-Ejemplos: "tenes una impresora 3D Zyltech?" -> "impresora 3D Zyltech". "que garantia tiene el teclado K380?" -> "teclado K380". "me sirve la RTX 5070?" -> "RTX 5070".
-null si el mensaje NO nombra ningun producto: un saludo, una pregunta de politica general (envios, formas de pago), un dato de contacto, un comentario. No inventes ni completes un producto que el cliente no nombro.
-"""
-
-
-GUIA_CATALOGO = """
-
-GUIA DE QUIERE_CATALOGO, campo quiere_catalogo (true o false). IMPORTANTE: es una INTENCION, no un producto.
-true cuando el cliente pide una VISTA GENERAL del inventario, ver QUE HAY en general, sin nombrar un producto ni una categoria puntual: "catalogo", "mostrame todo", "que venden", "que tienen", "que productos hay", "que ofrecen", "inventario", "mostrame lo que tengas", "todo lo que vendan". No hay ninguna identidad que buscar; el cliente quiere el panorama.
-false en TODO otro caso: si nombra un producto ("tenes el K380"), si nombra una categoria concreta ("que teclados tenes", "mostrame mouses"), si pregunta precio, envio, pago, garantia, o cualquier otra cosa. Ante la duda, false.
-"""
 
 
 def construir_prompt_interpretador(mensaje: str,
                                      contexto_conversacional: str,
-                                     productos_mostrados: list[dict],
-                                     carrito_actual: list[dict] | None = None) -> str:
+                                     productos_mostrados: list[dict]) -> str:
     """Prompt liberado v4. Da al LLM contexto y libertad para entender.
     Verifika valida abajo, asi que el Interpretador puede interpretar."""
 
@@ -270,30 +216,6 @@ def construir_prompt_interpretador(mensaje: str,
         for p in productos_mostrados
     ]) or "Sin productos mostrados aun"
 
-    # DIRECTOR_LLM: el carrito vigente entra al prompt para que el LLM pueda
-    # emitir sacar / cambiar_cantidad apuntando a un producto que YA esta cargado.
-    # Sin esto el modelo no sabe que hay en el pedido y no acierta el target del
-    # comando (visto: "mejor que sean 2 teclados" no emitia cambiar_cantidad).
-    # Director y confirmacion-provider se borraron en la consolidacion: el
-    # interprete emite el JSON BASELINE (intencion, producto, candidatos, etc.),
-    # sin acciones de carrito, producto_consultado ni tipo_confirmacion, que el
-    # camino vivo no consumia. Estas variables quedan vacias.
-    bloque_carrito = ""
-    con_conf = False
-    coma_tc = ""
-    linea_tc = ""
-    guia_tc = ""
-    con_dir = False
-    coma_ac = "," if con_dir else ""
-    linea_ac = ('\n  "acciones_carrito": [{"tipo": '
-                '"agregar|sacar|cambiar_cantidad|vaciar", '
-                '"producto": "texto, o null", "cantidad": N}],'
-                '\n  "producto_consultado": "el producto que el cliente nombra o '
-                'pregunta en este mensaje, en sus palabras, exista o no, o null",'
-                '\n  "quiere_catalogo": true/false'
-                ) if con_dir else ""
-    guia_ac = (GUIA_ACCIONES_CARRITO + GUIA_PRODUCTO_CONSULTADO
-               + GUIA_CATALOGO) if con_dir else ""
 
     prompt = f"""Sos un interpretador de mensajes de clientes en un bot de ventas argentino.
 Tu trabajo es entender que quiere el cliente, considerando toda la conversacion.
@@ -303,7 +225,7 @@ CONTEXTO DE LA CONVERSACION (siete turnos recientes):
 {contexto_conversacional}
 
 PRODUCTOS QUE EL BOT YA MOSTRO AL CLIENTE:
-{productos_str}{bloque_carrito}
+{productos_str}
 
 MENSAJE ACTUAL DEL CLIENTE:
 {mensaje}
@@ -317,7 +239,7 @@ DEVOLVE ESTE JSON:
   "datos_pedido": null,
   "respondiendo_a": "que pregunto el bot en su ultimo turno y a que responde el cliente, o null si no responde a una pregunta previa",
   "estado_conversacion": "saludo|explorando|esperando_confirmacion|esperando_datos|derivar_humano|posventa",
-  "ofrecer_opciones": "null si no hay duda, o lista de dos opciones [opcion A, opcion B] cuando hay dos caminos posibles y no se puede determinar uno con certeza"{coma_tc}{linea_tc}{coma_ac}{linea_ac}
+  "ofrecer_opciones": "null si no hay duda, o lista de dos opciones [opcion A, opcion B] cuando hay dos caminos posibles y no se puede determinar uno con certeza"
 }}
 
 GUIA DE INTENCIONES, usalas con criterio, no son recetas rigidas.
@@ -348,7 +270,7 @@ derivar_humano, el cliente dio todos los datos necesarios o pidio hablar con una
 posventa, el cliente pregunta por algo posterior a la compra, garantia, seguimiento de pedido o consulta suelta fuera del flujo.
 
 GUIA DE CAMINO A O B, campo ofrecer_opciones.
-Cuando haya dos opciones o dos valores posibles y NO puedas determinar con certeza cual corresponde, no elijas uno ni promedies. Pobla ofrecer_opciones con las dos como opcion A y opcion B, cada una con su detalle o valor. Aplica a productos cuando hay duda entre dos, a envios con rango de costo, a precios o formas de pago con mas de una alternativa. Si el caso es claro y unico, deja ofrecer_opciones en null. Cuando pobles este campo, el estado suele ser esperando_confirmacion porque el cliente debera elegir.{guia_tc}
+Cuando haya dos opciones o dos valores posibles y NO puedas determinar con certeza cual corresponde, no elijas uno ni promedies. Pobla ofrecer_opciones con las dos como opcion A y opcion B, cada una con su detalle o valor. Aplica a productos cuando hay duda entre dos, a envios con rango de costo, a precios o formas de pago con mas de una alternativa. Si el caso es claro y unico, deja ofrecer_opciones en null. Cuando pobles este campo, el estado suele ser esperando_confirmacion porque el cliente debera elegir.
 
 PRODUCTO RESUELTO.
 Solo si hay UN producto claro entre los mostrados al que el cliente se refiere.
@@ -362,7 +284,7 @@ baja menor a 0.6, ambiguedad real que requiere preguntar al cliente.
 
 Si dudas entre dos opciones, baja la confianza y pobla candidatos en lugar de adivinar.
 
-Tene en cuenta que abajo tuyo hay un sistema de verificacion que controla numeros y productos contra catalogo y FAQ. No tengas miedo de interpretar con criterio, ese sistema te respalda. Tu prioridad es entender al cliente bien.{guia_ac}
+Tene en cuenta que abajo tuyo hay un sistema de verificacion que controla numeros y productos contra catalogo y FAQ. No tengas miedo de interpretar con criterio, ese sistema te respalda. Tu prioridad es entender al cliente bien.
 
 RESPUESTA SOLO EL JSON, SIN PREAMBULO NI EXPLICACION."""
 
@@ -393,34 +315,6 @@ def validar_schema(resultado: dict) -> tuple[bool, str]:
         resultado["candidatos"] = [candidatos.strip()] if candidatos.strip() else []
     elif not isinstance(candidatos, list):
         return False, "candidatos no es lista"
-    # tipo_confirmacion: pista opcional. Se coerciona, nunca falla la validacion
-    # (igual que candidatos): valor valido se conserva, cualquier otra cosa -> None.
-    tc = resultado.get("tipo_confirmacion")
-    if isinstance(tc, str) and tc.strip().lower() in TIPOS_CONFIRMACION_VALIDOS:
-        resultado["tipo_confirmacion"] = tc.strip().lower()
-    else:
-        resultado["tipo_confirmacion"] = None
-    # acciones_carrito: lista de acciones sobre el pedido (DIRECTOR_LLM). Se
-    # coerciona y se filtra a las acciones bien formadas; cualquier cosa rara ->
-    # []. Nunca falla la validacion (no dispara retry). El director valida de nuevo.
-    acc = resultado.get("acciones_carrito")
-    limpias = []
-    if isinstance(acc, list):
-        for a in acc:
-            if (isinstance(a, dict)
-                    and str(a.get("tipo", "")).strip().lower()
-                    in ("agregar", "sacar", "cambiar_cantidad", "vaciar")):
-                limpias.append(a)
-    resultado["acciones_carrito"] = limpias
-    # producto_consultado: el producto que el cliente nombra/pregunta, en texto.
-    # El certificador decide despues si existe; aca solo se normaliza a str o None.
-    pc = resultado.get("producto_consultado")
-    resultado["producto_consultado"] = (
-        pc.strip() if isinstance(pc, str) and pc.strip() else None)
-    # quiere_catalogo: INTENCION de ver el inventario general (no un producto).
-    qc = resultado.get("quiere_catalogo")
-    resultado["quiere_catalogo"] = (
-        qc is True or (isinstance(qc, str) and qc.strip().lower() == "true"))
     return True, ""
 
 
@@ -508,8 +402,7 @@ async def interpretar_mensaje(mensaje: str,
                                 history: list[dict],
                                 trace_id: str,
                                 estado_anterior: str | None = None,
-                                tienda_id: str | None = None,
-                                carrito_actual: list[dict] | None = None) -> dict:
+                                tienda_id: str | None = None) -> dict:
     log.info("interpretar_mensaje_inicio")
     """Funcion principal del Interpretador.
     Prompt liberado mas tres capas de filtro al final."""
@@ -526,7 +419,7 @@ async def interpretar_mensaje(mensaje: str,
                 + contexto_conv
             )
         prompt = construir_prompt_interpretador(
-            mensaje, contexto_conv, productos, carrito_actual=carrito_actual)
+            mensaje, contexto_conv, productos)
 
         # Primera llamada al LLM
         raw = await _llamar_llm(prompt)
@@ -587,8 +480,6 @@ async def interpretar_mensaje(mensaje: str,
             resultado["datos_pedido"] = None
         if "respondiendo_a" not in resultado:
             resultado["respondiendo_a"] = None
-        if "tipo_confirmacion" not in resultado:
-            resultado["tipo_confirmacion"] = None
 
         # Capa dos, filtro de negacion sobre decision_compra
         if resultado["intencion"] == "decision_compra" and contiene_negacion(mensaje):

@@ -33,10 +33,10 @@ delega) → `app/core/interprete_libre.py`, que hace todo el turno:
 
 - Servicio Cloud Run: `agente-bot`, región `southamerica-east1`, proyecto
   `memory-engine-v1`. Es el ÚNICO. Webhook de WhatsApp apunta ahí.
-- Deploy por CI: push a la rama `claude/interpreter-solver-pipeline-mdlynm`
-  dispara `.github/workflows/deploy.yml`. Verificar el verde antes de decir listo.
-- Rama viva = `claude/interpreter-solver-pipeline-mdlynm`. Pendiente: mergear a
-  `main` y reapuntar el trigger del workflow.
+- Deploy por CI: push a `main` dispara `.github/workflows/deploy.yml` y deploya a
+  `agente-bot`. Verificar el verde antes de decir listo.
+- Rama viva = `main` (todo el trabajo del 25-jun ya se mergeo, el trigger apunta a
+  main). Las ramas claude/* son para revisar antes de mergear.
 - LLM: DeepSeek en todo. `LLM_PROVIDER=deepseek`.
 
 ## La consolidación de hoy (Fase B)

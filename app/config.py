@@ -200,7 +200,7 @@ class Settings(BaseModel):
     # cuenta como señal de compra. Requiere config/mp_access_token en Firestore o
     # MP_ACCESS_TOKEN por entorno; sin token, no manda link. Consolidados 25-jun.
 
-    # Tools que ve el solver libre (MODO_LIBRE y el camino vivo SOLO_INTERPRETE).
+    # Tools que ve el solver libre (camino vivo interprete_libre).
     # Solo las que traen un HECHO real determinista: catalogo (search/details/list/
     # calculate_total), FAQs (query_faq) y envio (cotizar_envio, el codigo clasifica
     # la zona por CP y devuelve la tarifa de la tienda). Se le ocultan las de

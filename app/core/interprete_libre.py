@@ -16,9 +16,7 @@ La interpretación de cada turno se LOGUEA (evento interprete_libre_interpretaci
 para diagnosticar, pero NO se muestra al cliente: el cartel era solo de la etapa
 de prueba y se quitó.
 
-Es el interruptor maestro SOLO_INTERPRETE (default on). Mientras está prendido,
-el orchestrator delega todo el turno acá y NINGÚN otro flag importa. Para volver
-al sistema viejo: SOLO_INTERPRETE=false. Nada se borra; es reversible.
+Es el ÚNICO camino del bot: el orchestrator delega acá todo el turno, sin flags.
 """
 import time
 
@@ -130,7 +128,6 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     conv = get_conversation(user_id, tienda_id=tienda_id)
     history = conv.get("history", []) or []
     estado_anterior = conv.get("estado_conversacion", "saludo") or "saludo"
-    carrito_memoria = conv.get("carrito_vigente", []) or []
     # PROOF de turnos anteriores: respaldan un total que el cliente confirma y el
     # bot repite sin recalcular, asi el filtro determinista no bloquea en falso.
     proofs_memoria = conv.get("proofs_recientes", []) or []
@@ -158,8 +155,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     try:
         interp = await interpretar_mensaje(
             raw_message, history, trace_id,
-            estado_anterior=estado_anterior, tienda_id=tienda_id,
-            carrito_actual=carrito_memoria)
+            estado_anterior=estado_anterior, tienda_id=tienda_id)
     except Exception as e:
         log.error("interprete_libre_interp_error", trace_id=trace_id,
                   error=str(e)[:200])
