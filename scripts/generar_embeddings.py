@@ -34,7 +34,7 @@ def cargar_secrets():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--tienda", default="verifika_2k")
+    ap.add_argument("--tienda", default="verifika_prod")
     ap.add_argument("--limit", type=int, default=0, help="0 = todos")
     args = ap.parse_args()
 

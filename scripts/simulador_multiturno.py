@@ -41,7 +41,7 @@ os.environ.setdefault("LLM_PROVIDER", "deepseek")
 os.environ.setdefault("INTERPRETER_PROVIDER", "deepseek")
 os.environ.setdefault("MAX_TOOL_ITERATIONS", "8")
 
-TIENDA = os.environ.get("MOLINO_TIENDA", "verifika_2k")
+TIENDA = os.environ.get("MOLINO_TIENDA", "verifika_prod")
 os.environ["TIENDA_ID"] = TIENDA
 
 # ── Carga local del Catálogo y FAQ (Monkeypatching) ──
