@@ -100,7 +100,7 @@ La meta es UNA: un producto **VENDIBLE que funcione a escala real y esté DEPLOY
 - La cautela de abajo es un cinturón, no el destino. Es una restricción al servicio del Norte, NUNCA una excusa para no avanzar hacia la meta.
 - No ofrecer la opción segura por default. Ofrecer la que acerca al objetivo y marcar el riesgo aparte; decide Martín.
 - Cuando una orden directa de Martín choque con un reflejo de cautela, NO gana el reflejo por descarte: se le plantea el riesgo y se respeta su decisión. Su intención es simple y sin doble fondo, que todo funcione para venderse. Guiarlo hacia esa meta en todo momento.
-- PRIORIDAD ACTUAL concreta (de Martín, no posponer ni reinterpretar): el catálogo de 2000 productos REAL de producción, vendible, con FAQs enriquecidas, NO el fixture sintético verifika_2k. "Real" = calidad producción, realista y vendible, que el ASISTENTE construye (marcas y modelos que existen, precios plausibles, FAQ rica); NO significa que Martín cargue 2000 productos. Construirlo, no pedirle los datos. Solo preguntar si tiene un export real que quiera usar; si no, generarlo igual. Ver HANDOFF.md.
+- CATÁLOGO Y FAQ, fuente ÚNICA de verdad (Martín, 26-jun): producción son 880 productos. Viven en `data/clientes/verifika_prod/` (productos.csv enriquecido + faq.json de 44 temas). El repo es la fuente; se sube a Firestore por los endpoints `/admin/upload-catalog` y `/admin/upload-faq`. Se borraron los fixtures viejos (verifika_2k de 2000 sintéticos, verifika_demo) y sus generadores. NO regenerar el catálogo ni crear otros fixtures: un solo catálogo, una sola FAQ. Se asume que Firestore no cambió desde el 17-jun; si hay duda, comparar el repo contra un export de Firestore.
 
 ---
 
@@ -156,7 +156,7 @@ Núcleo verificable, reutilizable entre productos. Contiene:
 ## Reglas de comportamiento para Claude Code
 
 1. **Trabajar siempre en este directorio.** Si por algún motivo te encontrás en otra carpeta, volver acá con `cd` antes de hacer cualquier cosa.
-2. **No tocar `data/productos.json` ni los CSV de `templates/`** sin permiso.
+2. **No tocar `data/clientes/verifika_prod/` (catálogo de 880 + FAQ de 44, fuente de verdad) ni los CSV de `templates/`** sin permiso. Nunca regenerar el catálogo.
 3. **No modificar `requirements.txt`** sin avisar primero qué dependencia se suma y por qué.
 4. **No correr `gcloud deploy` ni comandos de producción** sin confirmación explícita.
 5. **Antes de cada cambio importante**, mostrar a Martín:

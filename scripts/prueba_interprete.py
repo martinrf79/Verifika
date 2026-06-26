@@ -78,7 +78,7 @@ from app.config import get_settings
 import app.storage.firestore_client as FS
 
 # Tienda a usar: --tienda <nombre>, default verifika_prod. Permite correr el
-# mismo set de preguntas contra el catalogo chico o el de 2000 (verifika_2k).
+# mismo set de preguntas contra el catalogo de produccion (verifika_prod).
 TIENDA = "verifika_prod"
 if "--tienda" in sys.argv:
     TIENDA = sys.argv[sys.argv.index("--tienda") + 1]

@@ -17,7 +17,7 @@ except Exception:
 import app.core.tools as T
 from app.core.tools_context import set_current_tienda
 
-# FAQ de envio real (misma forma que verifika_2k): caba_gba fijo, interior rango,
+# FAQ de envio real (misma forma que verifika_prod): caba_gba fijo, interior rango,
 # gratis por umbral.
 FAQ = {
     "costo_envio": {

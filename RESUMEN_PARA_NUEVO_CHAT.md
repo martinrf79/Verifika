@@ -32,6 +32,17 @@ todo el turno:
 - Rama viva = `main`. Las ramas `claude/*` son para revisar antes de mergear.
 - LLM: DeepSeek en todo (`LLM_PROVIDER=deepseek`). Nada de Gemini sin OK de Martín.
 
+## Datos: un solo catálogo, una sola FAQ
+
+- Producción son **880 productos**. Viven en `data/clientes/verifika_prod/`
+  (`productos.csv` enriquecido + `faq.json` de 44 temas). Es la ÚNICA fuente.
+- El repo es la fuente; se sube a Firestore por `/admin/upload-catalog` y
+  `/admin/upload-faq`. Firestore es la copia que lee el bot vivo.
+- Se borraron los fixtures `verifika_2k` (2000 sintéticos) y `verifika_demo`, más
+  sus generadores. NO regenerar el catálogo ni crear otros fixtures.
+- Se asume que Firestore no cambió desde el 17-jun (el conteo de 880 coincide). Si
+  hay duda, comparar el repo contra un export de Firestore.
+
 ## Pendientes (en orden)
 
 1. **Conectar el intérprete al solver.** Hoy lo que el intérprete entiende casi no gobierna

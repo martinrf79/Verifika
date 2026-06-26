@@ -9,7 +9,7 @@ Costo: ~2000 productos x ~50 tokens = centavos, una sola vez. La clave de OpenAI
 sale de .secrets4.env, nunca se imprime.
 
 Uso:
-  winvenv\\Scripts\\python.exe scripts\\generar_embeddings.py --tienda verifika_2k
+  winvenv\\Scripts\\python.exe scripts\\generar_embeddings.py --tienda verifika_prod
 """
 import os
 import sys
