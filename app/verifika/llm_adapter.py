@@ -55,17 +55,6 @@ _ROLE_CONFIG = {
         "provider": os.getenv("VERIFIKA_PROPOSER_PROVIDER", "deepseek"),
         "model": os.getenv("VERIFIKA_PROPOSER_MODEL", "deepseek-chat"),
     },
-    "checker": {
-        "provider": os.getenv("VERIFIKA_CHECKER_PROVIDER", "deepseek"),
-        "model": os.getenv("VERIFIKA_CHECKER_MODEL", "deepseek-chat"),
-    },
-    # Corrector anclado: segunda pasada stateless que aterriza la respuesta del
-    # Solver a la evidencia del turno. Default DeepSeek (centavos). Para probar
-    # con gpt-4-mini: VERIFIKA_CORRECTOR_PROVIDER=openai + VERIFIKA_CORRECTOR_MODEL=gpt-4o-mini
-    "corrector": {
-        "provider": os.getenv("VERIFIKA_CORRECTOR_PROVIDER", "deepseek"),
-        "model": os.getenv("VERIFIKA_CORRECTOR_MODEL", "deepseek-chat"),
-    },
 }
 
 

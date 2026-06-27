@@ -23,8 +23,6 @@ from tenacity import (
     RetryError,
 )
 import logging
-from app.core.validator import validar_respuesta
-from app.core.notificador import disparar_notificacion_background
 
 from app.config import get_settings
 from app.logger import get_logger
@@ -510,40 +508,11 @@ async def run_agent(user_message: str,
                             trace_id=trace_id, iteration=iterations)
                 continue
             final_text = final_text or settings.FALLBACK_MESSAGE
-            # VALIDATOR VIEJO de palabras peligrosas. Desactivado por defecto.
-            # Verifika Proposer Checker ya cubre estos casos con contexto semantico.
-            # Para reactivar setear USE_VALIDATOR_VIEJO=true en Cloud Run.
-            validator_bloqueo = False
-            validator_motivo = None
-            if os.getenv("USE_VALIDATOR_VIEJO", "false").lower() == "true":
-                evidencia_texto = ""
-                for m in messages:
-                    if m.get("role") == "tool":
-                        evidencia_texto += " " + str(m.get("content", ""))
-                resultado_val = validar_respuesta(final_text, evidencia_texto, user_message)
-                if not resultado_val["valida"]:
-                    log.warning("agent_validator_block", trace_id=trace_id,
-                                categoria=resultado_val["categoria"],
-                                palabra=resultado_val["palabra"])
-                    final_text = resultado_val["respuesta_final"]
-                    validator_bloqueo = True
-                    validator_motivo = f"{resultado_val['categoria']}:{resultado_val['palabra']}"
-                    disparar_notificacion_background(
-                        tienda_id=tienda_id or "default",
-                        user_id=str(user_id) if user_id else "desconocido",
-                        pregunta=user_message,
-                        respuesta_iba_a_dar=resultado_val.get("respuesta_original", ""),
-                        categoria=resultado_val["categoria"],
-                        palabra=resultado_val["palabra"],
-                        canal="telegram",
-                    )
             log.info("agent_response_ok", trace_id=trace_id,
                      iterations=iterations, tools_called=len(tools_called))
             return final_text, {
                 "tools_called": tools_called,
                 "iterations": iterations,
-                "validator_bloqueo": validator_bloqueo,
-                "validator_motivo": validator_motivo,
             }
 
         messages.append({
