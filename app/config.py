@@ -176,6 +176,17 @@ class Settings(BaseModel):
     # de la conversacion y el reconocimiento del estado de compra.
     VERIFICADOR_PROOF_MEMORY: int = int(os.getenv("VERIFICADOR_PROOF_MEMORY", "7"))
 
+    # AUTOCORRECCION DETERMINISTA (partida doble de la verdad). El mismo motor de
+    # las herramientas (calculadora, tarifa de envio) que le da los numeros al
+    # Solver se usa DESPUES como CLON para auditar la respuesta que el Solver
+    # escribio: si una cifra de total fue cambiada y la verdad esta en el PROOF, el
+    # codigo la REESCRIBE por la buena, sin llamar a ningun modelo (ver
+    # autocorregir_montos en verificador.py). Si la cifra ya es correcta, pasa
+    # intacta. Conservador: solo toca un total con un reemplazo INEQUIVOCO; ante
+    # cualquier ambiguedad no la toca. false = vuelve a modo observacion (el paso
+    # 2a solo loguea las cifras no respaldadas, no corrige).
+    AUTOCORRIGE_MONTOS: bool = os.getenv("AUTOCORRIGE_MONTOS", "true").lower() == "true"
+
     # ────────────────────────────────────────────────────────
     # LATENCIA — timeout de las llamadas al modelo
     # ────────────────────────────────────────────────────────

@@ -206,27 +206,63 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                   error=str(e)[:200])
         respuesta = settings.FALLBACK_MESSAGE
 
-    # ── PASO 2a: FILTRO DETERMINISTA en MODO OBSERVACION ────────────────
-    # Chequea que cada cifra de dinero salga de una fuente real (catalogo, FAQ, o
-    # PROOF de la calculadora de este turno o de turnos recientes). HOY solo LOGUEA
-    # lo que marcaria; NO bloquea ni reintenta. El bloqueo+autofix sumaba una
-    # llamada extra al modelo (mas lento) y cortaba respuestas legitimas a fallback.
-    # Se afina sobre estos logs (evento ..._shadow) antes de volver a enforce.
+    # ── PASO 2a: FILTRO DETERMINISTA — CLON DEL MOTOR DE PRECIOS/ENVIO ──────
+    # Partida doble de la verdad. Las herramientas deterministas (calculadora,
+    # tarifa de envio, ficha del catalogo) le dan los numeros al Solver via
+    # tool-call. Su PROOF queda guardado. ACA ese MISMO motor se usa como CLON
+    # para auditar la respuesta que el Solver redacto:
+    #   - si cada cifra de dinero coincide con el PROOF, la respuesta pasa intacta;
+    #   - si el Solver CAMBIO un total y la verdad esta en el PROOF, el codigo
+    #     REESCRIBE la cifra mala por la buena, sin llamar a ningun modelo
+    #     (autocorregir_montos, conservador: solo un reemplazo INEQUIVOCO).
+    # Con AUTOCORRIGE_MONTOS=false vuelve a modo observacion: solo loguea, no toca.
     proofs_turno = [t["proof"] for t in (meta.get("tools_called") or [])
                     if t.get("proof")]
     if respuesta != settings.FALLBACK_MESSAGE:
         try:
             from app.core.evidencia import build_evidence_from_tools
-            from app.core.verificador import verificar_respuesta
+            from app.core.verificador import (
+                verificar_respuesta, autocorregir_montos)
             evidencia = build_evidence_from_tools(
                 meta.get("tools_called", []) or [], tienda_id)
             evidencia += [{"tipo": "proof", "proof": p} for p in proofs_memoria]
-            veredicto = verificar_respuesta(respuesta, evidencia, trace_id)
-            if not veredicto["ok"]:
-                log.warning("interprete_libre_numero_no_respaldado_shadow",
-                            trace_id=trace_id,
-                            no_respaldados=veredicto["numeros_no_respaldados"][:8],
-                            respuesta_preview=respuesta[:220])
+            # Precios reales del catalogo: nunca se pisan aunque el filtro no los
+            # vea respaldados en este turno (pueden venir de uno anterior).
+            precios_validos = {
+                int(i["precio_ars"]) for i in evidencia
+                if i.get("tipo") == "producto"
+                and isinstance(i.get("precio_ars"), (int, float))
+            }
+            if settings.AUTOCORRIGE_MONTOS:
+                fix = autocorregir_montos(
+                    respuesta, evidencia, trace_id,
+                    precios_validos=precios_validos)
+                if fix["cambiada"] and fix["verificacion"].get("ok"):
+                    # El Solver habia cambiado el total y se reescribio por el real.
+                    log.warning("interprete_libre_monto_corregido",
+                                trace_id=trace_id,
+                                correcciones=fix["correcciones"][:8],
+                                respuesta_preview=fix["respuesta"][:220])
+                    respuesta = fix["respuesta"]
+                elif fix["cambiada"]:
+                    # Se intento corregir pero el texto sigue sin cerrar: no se
+                    # arriesga un numero a medias, queda el original (shadow).
+                    log.warning("interprete_libre_correccion_descartada",
+                                trace_id=trace_id,
+                                correcciones=fix["correcciones"][:8])
+                elif not fix["verificacion"].get("ok"):
+                    # Cifra sin respaldo que no se pudo corregir sin ambiguedad.
+                    log.warning("interprete_libre_numero_no_respaldado_shadow",
+                                trace_id=trace_id,
+                                no_respaldados=fix["verificacion"]["numeros_no_respaldados"][:8],
+                                respuesta_preview=respuesta[:220])
+            else:
+                veredicto = verificar_respuesta(respuesta, evidencia, trace_id)
+                if not veredicto["ok"]:
+                    log.warning("interprete_libre_numero_no_respaldado_shadow",
+                                trace_id=trace_id,
+                                no_respaldados=veredicto["numeros_no_respaldados"][:8],
+                                respuesta_preview=respuesta[:220])
         except Exception as e:
             log.warning("interprete_libre_verif_error", trace_id=trace_id,
                         error=str(e)[:160])
