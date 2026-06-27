@@ -238,6 +238,14 @@ async def _finalizar_cierre(lead_id: str, merged: dict, tienda_id: str,
             "respuesta_directa": respuesta_cierre}
 
 
+def _contacto_del_canal(user_id: str, canal: str) -> str:
+    """En WhatsApp/Telegram el contacto del cliente ES el id del canal: su numero
+    de WhatsApp o su chat de Telegram. El cliente NO tipea su telefono, asi que
+    exigirselo lo manda a un loop de 'me falta un telefono' que nunca completa,
+    aunque ya haya dado nombre y direccion. Se usa el user_id como contacto."""
+    return (user_id or "").strip()
+
+
 async def procesar_mensaje_para_lead(
     user_id: str,
     canal: str,
@@ -279,6 +287,9 @@ async def procesar_mensaje_para_lead(
             # El cliente no aporto ningun dato, lo dejamos al Solver.
             return None, {"accion": "ninguna"}
         cambios["ultimo_mensaje"] = mensaje[:500]
+        # El telefono es el contacto del canal, no un dato que el cliente tipea.
+        if not str(lead_activo.get("telefono", "")).strip():
+            cambios.setdefault("telefono", _contacto_del_canal(user_id, canal))
         merged = {**lead_activo, **cambios}
         falt = cierre.faltantes(merged)
         if falt:
@@ -397,6 +408,9 @@ async def procesar_mensaje_para_lead(
         sembrados = {k: v for k, v in
                      cierre.extraer_datos_cliente(mensaje, trace_id).items()
                      if v}
+        # El telefono es el contacto del canal: se siembra siempre, asi el cierre
+        # no lo pide aparte (ver _contacto_del_canal).
+        sembrados.setdefault("telefono", _contacto_del_canal(user_id, canal))
         if sembrados:
             actualizar_lead(lead_id, tienda_id, sembrados)
             merged = {"orden": presupuesto, "lead_id": lead_id, **sembrados}
