@@ -15,8 +15,12 @@ todo el turno:
 3. **Solver libre** (DeepSeek, `agent.run_agent`): vende libre con las tools atadas a
    Firestore: search_products, get_product_details, list_catalog, query_faq,
    calculate_total, cotizar_envio. La lista la fija `MODO_LIBRE_TOOLS` en config.
-4. **Filtro determinista** (`verificador.py`) — HOY EN MODO OBSERVACIÓN: loguea las
-   cifras de plata sin respaldo (`..._shadow`), NO bloquea. Falta afinarlo y volver a enforce.
+4. **Filtro determinista** (`verificador.py`) — ENFORCE por autocorrección (flag
+   `AUTOCORRIGE_MONTOS`, default true). El MISMO motor de las tools que le dio los números
+   al solver audita su respuesta: si el solver cambió un total y la verdad está en el PROOF,
+   el código reescribe la cifra por la buena, sin LLM; si ya está bien, pasa intacta. Es una
+   sola función (`autocorregir_montos`), no una tool duplicada. Hoy corrige montos/totales;
+   precio de ficha y FAQ los respalda pero la reescritura fina de texto FAQ queda pendiente.
 5. **Cierre** (`leads.py` + `cierre.py` + `pago.py`): capta el lead, junta datos y genera
    el link de Mercado Pago con el total VERIFICADO de la calculadora.
 6. **Memoria**: historial (10 turnos) + estado + último presupuesto + proofs, en Firestore
@@ -45,14 +49,11 @@ todo el turno:
 
 ## Pendientes (en orden)
 
-1. **Conectar el intérprete al solver.** Hoy lo que el intérprete entiende casi no gobierna
-   la respuesta: llega como un susurro de texto y el `estado_conversacion` ni se le pasa al
-   solver. Objetivo del chat actual.
-2. **Afinar el filtro determinista** sobre los logs `_shadow` y volver a enforce. Hoy solo
-   cubre plata; ampliar a existencia de producto.
-3. **Bajar la config de Cloud Run al código** (`config.py` manda; el servicio solo lleva
+1. **Ampliar la autocorrección** de montos a la reescritura de texto de FAQ y a existencia
+   de producto. Hoy corrige totales/montos; el resto lo respalda pero no lo reescribe.
+2. **Bajar la config de Cloud Run al código** (`config.py` manda; el servicio solo lleva
    secretos + `TIENDA_ID`).
-4. **Seguridad**: rotar `MP_ACCESS_TOKEN` y `OPENAI_API_KEY` si siguen en texto plano.
+3. **Seguridad**: rotar `MP_ACCESS_TOKEN` y `OPENAI_API_KEY` si siguen en texto plano.
 
 ## Probar en el entorno de Claude
 

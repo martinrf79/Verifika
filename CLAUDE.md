@@ -11,6 +11,21 @@ El estado del sistema (qué camino corre, infra, pendientes) vive en UN solo
 lugar: `RESUMEN_PARA_NUEVO_CHAT.md`. Es la fuente única de verdad. Este
 `CLAUDE.md` tiene solo las reglas e instrucciones permanentes.
 
+## 🔒 DOS REGLAS QUE MANDAN SOBRE TODO LO DEMÁS (Martín, 27-jun-2026)
+
+**1. La orden directa de Martín se ejecuta. Punto.** Martín es el dueño y maneja
+él las sesiones de Cloud. Cuando da una orden directa, NO se la frena con un
+reflejo de cautela ni se le ofrece "la opción segura" en su lugar. Se marca el
+riesgo en una línea, se ejecuta lo que pidió, y si algo sale mal se vuelve atrás.
+El patrón que nos retrasó fue NO hacerle caso por exceso de cautela; se terminó.
+Ante duda REAL de contenido se pregunta corto; nunca se desobedece por reflejo.
+
+**2. Cero cosas sueltas. Un solo todo.** Un repo, un Cloud Run, un servicio
+(`agente-bot`), un camino vivo, CERO flags sueltas. Todo cambio que se hace se
+DEPLOYA; si falla, se resuelve o se vuelve atrás, no queda a medias. PROHIBIDO
+sumar un flag o una capa "por las dudas": por cada cosa nueva que se prende, se
+borra o consolida una vieja. Las flags sueltas fueron lo que más tiempo costó.
+
 ## 🧭 PROTOCOLO DE ORDEN — repo GitHub + Cloud Run (seguir SIEMPRE)
 
 Nació del día que se perdió por deployar al servicio equivocado y por 70 flags
