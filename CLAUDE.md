@@ -26,6 +26,22 @@ DEPLOYA; si falla, se resuelve o se vuelve atrás, no queda a medias. PROHIBIDO
 sumar un flag o una capa "por las dudas": por cada cosa nueva que se prende, se
 borra o consolida una vieja. Las flags sueltas fueron lo que más tiempo costó.
 
+**2-bis. PROHIBIDO dejar flags apagadas. La causa raíz de los 70 flags
+(Martín, 27-jun-2026, repetido 4 veces).** Esta regla manda sobre cualquier
+reflejo anterior de "todo detrás de feature flag". Se acabó el camino apagado
+"por las dudas". El método ahora es:
+- Si un cambio o una mejora se acuerda con Martín, se HACE y se DEPLOYA a
+  producción directo. No se esconde detrás de un flag en false esperando.
+- Si después funciona mal, se VUELVE al punto anterior con git o se le busca
+  solución. El revert es la red, no un flag dormido.
+- NO existe la "opción segura" de mergear un camino nuevo apagado en paralelo
+  al viejo. Eso es exactamente lo que creó los 70 flags. No se repite.
+- Lo único que SÍ puede ser configurable son secretos, IDs de tienda, modelos,
+  timeouts y umbrales operativos. Eso es config, no es un camino apagado.
+- Antes de proponer cualquier cosa: si la propuesta incluye "detrás de un flag"
+  o "lo dejamos en false para medir", está MAL por defecto. Proponer el cambio
+  vivo, marcar el riesgo en una línea, y deployar si Martín da el OK.
+
 ## 🧭 PROTOCOLO DE ORDEN — repo GitHub + Cloud Run (seguir SIEMPRE)
 
 Nació del día que se perdió por deployar al servicio equivocado y por 70 flags
@@ -55,7 +71,9 @@ sueltos. Seguir estos pasos cada sesión para que no se repita.
 11. Consolidar, no agregar: por cada cosa que se prende, apagar o borrar una
     vieja. Prohibido sumar capas o flags "por las dudas".
 12. No romper lo que funciona: leer el archivo entero antes de editar; si el
-    cambio es invasivo, ir detrás de un flag o en archivo nuevo.
+    cambio es invasivo, escribirlo en un archivo nuevo que REEMPLAZA al viejo en
+    el camino vivo. Nunca dejar el camino nuevo apagado al lado del viejo (regla
+    2-bis). El revert con git es la red, no un flag dormido.
 
 **D. Verificar y cerrar**
 13. Nada se da por hecho sin probar el camino VIVO, no una copia.
@@ -124,9 +142,16 @@ La meta es UNA: un producto **VENDIBLE que funcione a escala real y esté DEPLOY
 **No romper lo que funciona, pero al servicio del Norte de arriba, nunca como excusa para no avanzar.** Este código está en producción con Telegram y va a integrarse con WhatsApp Cloud API directo. Antes de modificar cualquier archivo existente:
 
 1. Leer el archivo completo, no solo la parte a tocar.
-2. Si la modificación es invasiva, crear archivo nuevo en paralelo en lugar de editar.
-3. Toda funcionalidad nueva detrás de **feature flag** en `app/config.py`.
-4. Si un cambio no puede activarse/desactivarse con un flag, no es un cambio, es una refactorización y requiere confirmación explícita de Martín.
+2. Si la modificación es invasiva, escribirla en un archivo nuevo en lugar de
+   editar a ciegas el viejo. El archivo nuevo REEMPLAZA al viejo en el camino
+   vivo, no convive apagado al lado.
+3. NO usar feature flags apagados (ver regla 2-bis arriba). El cambio acordado
+   se hace vivo y se deploya. La red de seguridad es el revert con git, no un
+   flag en false. Lo único configurable es config operativa: secretos, modelos,
+   timeouts, umbrales.
+4. Si un cambio es grande o invasivo, se le muestra a Martín qué archivos toca y
+   qué se rompería antes de hacerlo, y se respeta su OK. Pero la respuesta a "no
+   estoy seguro" es preguntar y después deployar, no esconder el cambio apagado.
 
 ---
 
@@ -177,7 +202,7 @@ Núcleo verificable, reutilizable entre productos. Contiene:
 5. **Antes de cada cambio importante**, mostrar a Martín:
    - Qué archivos van a tocarse
    - Qué se rompería si el cambio sale mal
-   - Cómo se activa/desactiva el cambio (feature flag)
+   - Cómo se vuelve atrás si falla (revert con git), NO un flag apagado
 6. **Respuestas concisas, sin corchetes ni paréntesis innecesarios** (Martín usa lector de texto a voz).
 7. **Español argentino, voseo.**
 
@@ -185,12 +210,10 @@ Núcleo verificable, reutilizable entre productos. Contiene:
 
 ## Estado actual de la evolución
 
-- [x] Análisis del código v4 completo
-- [ ] **Paso 1:** Adaptador de modelo LLM (`app/verifika/llm_adapter.py`)
-- [ ] **Paso 2:** Módulo Verifika con Proposer y Checker (`app/verifika/`)
-- [ ] **Paso 3:** Integración al orchestrator detrás de feature flag `USE_VERIFIKA`
-- [ ] **Paso 4:** Fix del SYSTEM_PROMPT congelado (multi-tenant correcto)
-- [ ] **Paso 5:** Evaluación del generador de videos (pendiente código)
+El estado vivo (qué paso corre, qué falta, pendientes) NO vive acá. Vive en
+`RESUMEN_PARA_NUEVO_CHAT.md`, fuente única. Este archivo son solo reglas
+permanentes. No volver a poner checklists de estado acá ni mencionar flags de
+integración: ya no se usan flags apagadas (regla 2-bis).
 
 ---
 
