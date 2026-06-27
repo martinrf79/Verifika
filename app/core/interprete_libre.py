@@ -24,6 +24,9 @@ from app.core.agent import run_agent
 from app.core.interpretador import interpretar_mensaje
 from app.core.leads import (
     procesar_mensaje_para_lead, descartar_leads_activos, get_lead_activo)
+from app.core.estado_venta import (
+    construir_estado, set_current_estado, bloque_para_solver,
+    productos_de_meta, carrito_de_meta, envio_de_meta, merge_productos)
 from app.core.tools import get_tools_schema
 from app.config import get_settings
 from app.logger import get_logger
@@ -103,134 +106,6 @@ def _presupuesto_de_meta(meta: dict) -> str:
     return ""
 
 
-def _money(n) -> str:
-    """Entero a formato argentino con separador de miles: 48000 -> '48.000'."""
-    try:
-        return f"{int(n):,}".replace(",", ".")
-    except (TypeError, ValueError):
-        return str(n)
-
-
-def _productos_de_meta(meta: dict) -> list[dict]:
-    """Productos que las tools mostraron este turno (id, nombre, precio REAL),
-    desde el catalogo y el detalle de la calculadora. El precio sale verbatim de
-    la tool, nunca del texto del solver."""
-    vistos: dict[str, dict] = {}
-    for tc in (meta or {}).get("tools_called", []) or []:
-        res = tc.get("result")
-        if not isinstance(res, dict):
-            continue
-        cands = list(res.get("productos") or [])
-        if isinstance(res.get("producto"), dict):
-            cands.append(res["producto"])
-        cands += list(res.get("detalle") or [])
-        for p in cands:
-            if not isinstance(p, dict):
-                continue
-            pid = str(p.get("id") or "").upper()
-            precio = p.get("precio_ars")
-            if precio is None:
-                precio = p.get("precio_unitario")
-            nombre = p.get("nombre")
-            if pid and nombre and isinstance(precio, (int, float)):
-                vistos[pid] = {"id": pid, "nombre": nombre, "precio": int(precio)}
-    return list(vistos.values())
-
-
-def _carrito_de_meta(meta: dict) -> list[dict]:
-    """Items del ultimo calculate_total que cerro bien (id, nombre, cantidad),
-    para que el pedido no pierda identidad entre turnos."""
-    for tc in reversed((meta or {}).get("tools_called", []) or []):
-        if tc.get("name") != "calculate_total":
-            continue
-        res = tc.get("result")
-        if not isinstance(res, dict) or res.get("ok") is False or not res.get("detalle"):
-            continue
-        items = [{"id": d["id"], "nombre": d.get("nombre", ""),
-                  "cantidad": d.get("cantidad", 1)}
-                 for d in res["detalle"] if isinstance(d, dict) and d.get("id")]
-        if items:
-            return items
-    return []
-
-
-def _envio_de_meta(meta: dict) -> str:
-    """Zona/provincia y costo del ultimo cotizar_envio que cerro bien, como texto
-    listo para el bloque de estado. '' si no se cotizo nada valido este turno."""
-    for tc in reversed((meta or {}).get("tools_called", []) or []):
-        if tc.get("name") != "cotizar_envio":
-            continue
-        res = tc.get("result")
-        if not isinstance(res, dict) or not res.get("ok"):
-            continue
-        zona = res.get("provincia") or res.get("zona") or "esa zona"
-        zona = str(zona).replace("_", " ")
-        if res.get("modalidad") == "rango":
-            costo = (f"entre ${_money(res.get('monto_min'))} y "
-                     f"${_money(res.get('monto_max'))}")
-        else:
-            m = res.get("monto", 0)
-            costo = "gratis" if m in (0, None) else f"${_money(m)}"
-        return f"{zona}: {costo}"
-    return ""
-
-
-def _merge_productos(memoria: list[dict], turno: list[dict],
-                     tope: int = 20) -> list[dict]:
-    """Une los productos vistos en memoria con los del turno, deduplicando por id
-    (el dato del turno pisa al viejo) y dejando los ultimos `tope`."""
-    por_id: dict[str, dict] = {}
-    for p in (memoria or []) + (turno or []):
-        pid = str(p.get("id") or "").upper()
-        if pid:
-            por_id[pid] = p
-    return list(por_id.values())[-tope:]
-
-
-def _bloque_estado_venta(conv: dict, lead: dict | None) -> str:
-    """Resume en un bloque compacto los datos deterministas YA establecidos en
-    turnos anteriores (productos con precio real, carrito, total, envio cotizado) y
-    los datos del cliente YA capturados, para que el solver no los vuelva a pedir ni
-    recalcular. Se arma desde la MEMORIA persistida, no desde el texto del solver."""
-    partes: list[str] = []
-    prods = conv.get("productos_vistos") or []
-    if prods:
-        items = "; ".join(f"{p.get('nombre')} (id {p.get('id')}) ${_money(p.get('precio'))}"
-                          for p in prods[-8:] if p.get("nombre"))
-        if items:
-            partes.append("Productos ya mostrados con su precio real: " + items)
-    carrito = conv.get("carrito_vigente") or []
-    if carrito:
-        items = ", ".join(f"{c.get('cantidad', 1)}x {c.get('nombre')}"
-                          for c in carrito if c.get("nombre"))
-        if items:
-            partes.append("Carrito actual: " + items)
-    presup = (conv.get("ultimo_presupuesto") or "").strip()
-    if presup:
-        partes.append("Total ya calculado y verificado: " + presup)
-    loc = (conv.get("ultima_localidad") or "").strip()
-    if loc:
-        partes.append("Envio ya cotizado a " + loc)
-    if lead:
-        datos = []
-        for campo, etiqueta in (("nombre", "nombre"), ("telefono", "telefono"),
-                                ("direccion", "direccion"),
-                                ("forma_pago", "forma de pago")):
-            v = (lead.get(campo) or "").strip()
-            if v:
-                datos.append(f"{etiqueta} {v}")
-        if datos:
-            partes.append("Datos del cliente YA dados (NO los vuelvas a pedir): "
-                          + "; ".join(datos))
-    if not partes:
-        return ""
-    return ("\n\n[ESTADO DE LA VENTA, establecido en turnos anteriores. Usalo, no lo "
-            "vuelvas a pedir ni recalcular:\n- " + "\n- ".join(partes)
-            + "\nSi el cliente cambia un producto o una cantidad, volve a llamar las "
-            "herramientas; los precios y el envio salen SIEMPRE de las tools, nunca "
-            "los inventes.]")
-
-
 def _guia_para_solver(interp: dict) -> str:
     """Inyecta al solver libre lo que entendió el intérprete, como GUÍA de qué
     quiere el cliente. No trae datos del catálogo: eso lo sacan las tools."""
@@ -292,6 +167,19 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         log.info("interprete_libre_reset_code", trace_id=trace_id, user_id=user_id)
         return "Listo, conversacion reiniciada. Empezamos de cero."
 
+    # ── ESTADO DE VENTA: fuente unica del turno, una sola carga ─────────────
+    # Se arma desde la conversacion persistida + el lead activo y se setea en la
+    # contextvar, asi el interprete, el solver, las herramientas y el cierre leen
+    # la MISMA verdad sin recibirla por parametro (igual que tienda y destino).
+    lead_activo = None
+    try:
+        lead_activo = get_lead_activo(user_id, canal, tienda_id)
+    except Exception as e:
+        log.warning("interprete_libre_lead_lookup_error", trace_id=trace_id,
+                    error=str(e)[:120])
+    estado = construir_estado(conv, lead_activo)
+    set_current_estado(estado)
+
     # ── PASO 1: INTERPRETE ──────────────────────────────────────────────
     interp = {}
     try:
@@ -317,20 +205,13 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
 
     # ── PASO 2: SOLVER LIBRE (con la guía del intérprete + estado de venta) ──
     # El solver ve, ademas del mensaje y la guia del interprete, el ESTADO DE LA
-    # VENTA: lo que las herramientas deterministas ya establecieron en turnos
-    # previos (productos con precio real, carrito, total, envio cotizado) y los
-    # datos del cliente ya capturados en el lead. Asi no re-pregunta la direccion
-    # ni re-inventa un precio que ya salio de una tool.
-    lead_activo = None
-    try:
-        lead_activo = get_lead_activo(user_id, canal, tienda_id)
-    except Exception as e:
-        log.warning("interprete_libre_lead_lookup_error", trace_id=trace_id,
-                    error=str(e)[:120])
+    # VENTA armado arriba: productos con precio real, carrito, total, envio cotizado
+    # y datos del cliente ya capturados. Asi no re-pregunta la direccion ni
+    # re-inventa un precio que ya salio de una tool.
     system_prompt = _PROMPT_LIBRE.format(business_name=_business_name(tienda_id))
     tools_schema = _schema_acotado()
     mensaje_enriquecido = (raw_message + _guia_para_solver(interp)
-                           + _bloque_estado_venta(conv, lead_activo))
+                           + bloque_para_solver(estado))
 
     log.info("interprete_libre_inicio", trace_id=trace_id,
              intencion=interp.get("intencion") if isinstance(interp, dict) else None,
@@ -473,10 +354,10 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # tools generaron este turno se suman a los de turnos anteriores, asi el bloque
     # del proximo turno los tiene a la vista. Si este turno no llamo una tool, queda
     # lo que ya habia en memoria.
-    productos_vistos = _merge_productos(
-        conv.get("productos_vistos") or [], _productos_de_meta(meta))
-    carrito_vigente = _carrito_de_meta(meta) or (conv.get("carrito_vigente") or [])
-    ultima_localidad = _envio_de_meta(meta) or (conv.get("ultima_localidad") or "")
+    productos_vistos = merge_productos(
+        conv.get("productos_vistos") or [], productos_de_meta(meta))
+    carrito_vigente = carrito_de_meta(meta) or (conv.get("carrito_vigente") or [])
+    ultima_localidad = envio_de_meta(meta) or (conv.get("ultima_localidad") or "")
 
     latency_ms = int((time.time() - t0) * 1000)
     try:
