@@ -182,6 +182,17 @@ def calculate_total(items: list[dict] | None = None,
                     items_extra: list[dict] | None = None) -> dict:
     log.info(f"calculate_total INICIO items={items} items_extra={items_extra}")
     if not items:
+        # El Solver no paso items: si hay un carrito vigente en el ESTADO del turno
+        # (lo dejo un calculate_total anterior), se parte de ahi. Asi "cuanto es el
+        # total" sobre el pedido ya armado no responde "no tengo pedido". Solo actua
+        # cuando el modelo no manda nada; si manda items, se respetan tal cual.
+        from app.core.estado_venta import get_current_estado
+        _seed = [{"product_id": c.get("id"), "cantidad": c.get("cantidad", 1)}
+                 for c in (get_current_estado().get("carrito") or []) if c.get("id")]
+        if _seed:
+            log.info(f"calculate_total carrito_estado items={len(_seed)}")
+            items = _seed
+    if not items:
         return {
             "ok": False,
             # Redactado en voz cliente-segura a proposito: el Solver a veces
@@ -1184,6 +1195,17 @@ def cotizar_envio(localidad: str | None = None,
     subtotal: subtotal de productos, para aplicar envio gratis por umbral si supera.
     """
     from app.core.envio import clasificar_zona
+
+    # Si el Solver no paso localidad pero el cliente YA dio su direccion (esta en el
+    # ESTADO del turno), se usa esa para clasificar la zona. Asi no se le vuelve a
+    # pedir el codigo postal que ya dio. Solo actua cuando el modelo no manda nada.
+    if not (localidad or "").strip():
+        from app.core.estado_venta import get_current_estado
+        _dc = get_current_estado().get("datos_cliente") or {}
+        _dir = (_dc.get("direccion") or "").strip()
+        if _dir:
+            log.info(f"cotizar_envio direccion_estado={_dir[:60]}")
+            localidad = _dir
 
     tid = get_current_tienda()
     zona = clasificar_zona(localidad or "")
