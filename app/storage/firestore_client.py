@@ -259,7 +259,8 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       productos_vistos: list | None = None,
                       ultima_localidad: str | None = None,
                       carrito_vigente: list | None = None,
-                      pedido_pendiente: dict | None = None):
+                      pedido_pendiente: dict | None = None,
+                      datos_cliente_parciales: dict | None = None):
     datos = {
         "history": history,
         "summary": summary,
@@ -292,6 +293,12 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
     # ambiguos con cantidad) esperando el criterio del cliente. {} = limpiar.
     if pedido_pendiente is not None:
         datos["pedido_pendiente"] = pedido_pendiente
+    # DATOS DEL CLIENTE ACUMULADOS turno a turno (nombre, telefono, direccion,
+    # forma de pago), aunque todavia no exista un lead. Asi un dato dado ANTES de
+    # la decision de compra no se pierde y el lead se siembra completo, sin volver
+    # a pedir la direccion que el cliente ya dio.
+    if datos_cliente_parciales is not None:
+        datos["datos_cliente_parciales"] = datos_cliente_parciales
     _tienda_ref(tienda_id).collection("conversaciones").document(user_id).set(
         datos, merge=True)
 

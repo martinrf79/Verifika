@@ -255,6 +255,8 @@ async def procesar_mensaje_para_lead(
     trace_id: str,
     interpretacion: dict | None = None,
     presupuesto: str = "",
+    datos_turno: dict | None = None,
+    datos_previos: dict | None = None,
 ) -> tuple[str | None, dict]:
     """
     Logica principal hibrida.
@@ -281,11 +283,16 @@ async def procesar_mensaje_para_lead(
             log.info("cierre_pausado_pregunta_nueva", trace_id=trace_id,
                      intencion=_intent)
             return None, {"accion": "ninguna"}
-        datos = cierre.extraer_datos_cliente(mensaje, trace_id)
+        datos = dict(datos_turno or {})
         cambios = {k: v for k, v in datos.items() if v}
         if not cambios:
-            # El cliente no aporto ningun dato, lo dejamos al Solver.
+            # El cliente no aporto ningun dato este turno, lo dejamos al Solver.
             return None, {"accion": "ninguna"}
+        # Datos acumulados de turnos anteriores: se guardan junto con los de este
+        # turno, asi el lead queda completo y no se re-pregunta lo ya dicho.
+        prev = {k: v for k, v in (datos_previos or {}).items()
+                if v and k in cierre.CAMPOS_REQUERIDOS}
+        cambios = {**prev, **cambios}
         cambios["ultimo_mensaje"] = mensaje[:500]
         # El telefono es el contacto del canal, no un dato que el cliente tipea.
         if not str(lead_activo.get("telefono", "")).strip():
@@ -405,9 +412,12 @@ async def procesar_mensaje_para_lead(
         # dijo. Se siembra el lead con lo presente; si estan los cuatro, cierra
         # ya; si falta algo, pide SOLO lo que falta.
         from app.core import cierre
-        sembrados = {k: v for k, v in
-                     cierre.extraer_datos_cliente(mensaje, trace_id).items()
-                     if v}
+        # Siembra con TODO lo acumulado en turnos anteriores mas lo de este turno,
+        # asi una direccion o un pago dados ANTES de la decision de compra ya estan
+        # y no se vuelven a pedir.
+        prev = {k: v for k, v in (datos_previos or {}).items()
+                if v and k in cierre.CAMPOS_REQUERIDOS}
+        sembrados = {**prev, **{k: v for k, v in (datos_turno or {}).items() if v}}
         # El telefono es el contacto del canal: se siembra siempre, asi el cierre
         # no lo pide aparte (ver _contacto_del_canal).
         sembrados.setdefault("telefono", _contacto_del_canal(user_id, canal))

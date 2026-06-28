@@ -347,12 +347,34 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # presentacion, nunca un monto del modelo). Si no hay cierre, la respuesta libre
     # del solver queda intacta. El presupuesto sale del turno o de la memoria.
     presupuesto = _presupuesto_de_meta(meta) or (conv.get("ultimo_presupuesto") or "")
+
+    # ── ACUMULAR DATOS DEL CLIENTE turno a turno (raiz del re-pedido) ────────
+    # El cliente suele dar la direccion, el pago o el nombre ANTES de la decision
+    # de compra, cuando todavia no hay lead donde guardarlos. Sin acumular, ese
+    # dato se perdia y el cierre lo volvia a pedir. Una sola extraccion por turno,
+    # solo cuando el interprete dice que el cliente esta aportando un dato o
+    # decidiendo la compra; el acumulado viaja al cierre para sembrar el lead
+    # completo y se persiste al final del turno.
+    _intent = interp.get("intencion") if isinstance(interp, dict) else None
+    datos_previos = conv.get("datos_cliente_parciales") or {}
+    datos_turno: dict = {}
+    if _intent in ("aporta_dato", "decision_compra"):
+        try:
+            from app.core.cierre import extraer_datos_cliente
+            datos_turno = {k: v for k, v in
+                           extraer_datos_cliente(raw_message, trace_id).items() if v}
+        except Exception as e:
+            log.warning("interprete_libre_extractor_error", trace_id=trace_id,
+                        error=str(e)[:120])
+    datos_acumulados = {**datos_previos, **datos_turno}
+
     if respuesta != settings.FALLBACK_MESSAGE:
         try:
             _, meta_lead = await procesar_mensaje_para_lead(
                 user_id, canal, tienda_id, raw_message, respuesta, trace_id,
                 interpretacion=interp if isinstance(interp, dict) else None,
-                presupuesto=presupuesto)
+                presupuesto=presupuesto,
+                datos_turno=datos_turno, datos_previos=datos_acumulados)
             if meta_lead.get("respuesta_directa"):
                 respuesta = meta_lead["respuesta_directa"]
                 log.info("interprete_libre_cierre", trace_id=trace_id,
@@ -391,7 +413,8 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                           proofs_recientes=proofs_recientes,
                           productos_vistos=productos_vistos,
                           carrito_vigente=carrito_vigente,
-                          ultima_localidad=ultima_localidad)
+                          ultima_localidad=ultima_localidad,
+                          datos_cliente_parciales=datos_acumulados)
     except Exception as e:
         log.warning("interprete_libre_save_failed", trace_id=trace_id,
                     error=str(e)[:120])
