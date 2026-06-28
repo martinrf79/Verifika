@@ -1,0 +1,52 @@
+name: diagnostico
+
+# Permite a Claude leer logs de Cloud Run y Firestore desde cualquier dispositivo,
+# disparando este workflow en GitHub. Usa WIF (sin llaves).
+
+on:
+  workflow_dispatch:
+    inputs:
+      severity:
+        description: "Severidad minima de logs (DEFAULT, INFO, WARNING, ERROR)"
+        default: "WARNING"
+      freshness:
+        description: "Ventana de tiempo (ej 2d, 6h, 30m)"
+        default: "2d"
+      limit:
+        description: "Cuantas lineas de log"
+        default: "30"
+      firestore_collection:
+        description: "(Opcional) coleccion de Firestore a listar; vacio = no toca Firestore"
+        default: ""
+
+permissions:
+  contents: read
+  id-token: write   # necesario para WIF
+
+jobs:
+  diagnostico:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Autenticar a Google (WIF, sin llave)
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: memory-engine-v1
+          workload_identity_provider: projects/1000939441597/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: claude-bridge@memory-engine-v1.iam.gserviceaccount.com
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Leer logs de agente-bot
+        run: |
+          gcloud logging read \
+            "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"agente-bot\" AND severity>=${{ inputs.severity }}" \
+            --limit=${{ inputs.limit }} --freshness=${{ inputs.freshness }} \
+            --format="table(timestamp,severity,textPayload)"
+
+      - name: (Opcional) Listar Firestore
+        if: ${{ inputs.firestore_collection != '' }}
+        run: |
+          gcloud firestore documents list \
+            --collection-ids=${{ inputs.firestore_collection }} \
+            --format="value(name)" | head -50
