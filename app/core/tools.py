@@ -135,12 +135,14 @@ def _label_extra(e: dict) -> str:
         if es_sena:
             return f"Sena {pct}%: {_money(monto)} (pago parcial)"
         return f"Recargo {pct}%: +{_money(monto)}"
+    _dest = int(e.get("destinos", 1) or 1)
+    _suf = f" ({_dest} envios)" if _dest > 1 else ""
     if modalidad == "rango":
-        return (f"Envio: entre {_money(e.get('monto_min', 0))} y "
+        return (f"Envio{_suf}: entre {_money(e.get('monto_min', 0))} y "
                 f"{_money(e.get('monto_max', 0))}")
     monto = e.get("monto", 0)
     if "envio" in concepto:
-        return "Envio: gratis" if int(monto) == 0 else f"Envio: {_money(monto)}"
+        return f"Envio{_suf}: gratis" if int(monto) == 0 else f"Envio{_suf}: {_money(monto)}"
     if es_desc:
         return f"Descuento: -{_money(monto)}"
     if modalidad == "informativo":
@@ -179,8 +181,16 @@ def _render_presentacion(detalle, extras, subtotal,
 
 
 def calculate_total(items: list[dict] | None = None,
-                    items_extra: list[dict] | None = None) -> dict:
-    log.info(f"calculate_total INICIO items={items} items_extra={items_extra}")
+                    items_extra: list[dict] | None = None,
+                    destinos: int = 1) -> dict:
+    log.info(f"calculate_total INICIO items={items} items_extra={items_extra} destinos={destinos}")
+    # Envios separados (multi-destino): el costo de envio se cobra una vez por
+    # destino. Acotado a 1..3 para no inventar multiplicadores raros. 1 = idéntico
+    # a como funcionaba antes (un solo envio).
+    try:
+        n_envios = max(1, min(int(destinos or 1), 3))
+    except (TypeError, ValueError):
+        n_envios = 1
     if not items:
         # El Solver no paso items: si hay un carrito vigente en el ESTADO del turno
         # (lo dejo un calculate_total anterior), se parte de ahi. Asi "cuanto es el
@@ -341,11 +351,14 @@ def calculate_total(items: list[dict] | None = None,
             elif valor.get("modalidad") == "fijo":
                 m = int(valor.get("monto", 0))
                 if unidad in _UNIDADES_MONETARIAS:
+                    mult = n_envios if tema == "costo_envio" else 1
+                    m *= mult
                     extra_min += m
                     extra_max += m
                     extras_detalle.append({
                         "faq_tema": tema, "concepto": concepto,
                         "modalidad": "fijo", "monto": m,
+                        **({"destinos": mult} if mult > 1 else {}),
                         "condicion": valor.get("condicion", ""),
                     })
                 else:
@@ -358,14 +371,16 @@ def calculate_total(items: list[dict] | None = None,
                         "condicion": valor.get("condicion", ""),
                     })
             elif valor.get("modalidad") == "rango":
-                mn = int(valor.get("monto_min", 0))
-                mx = int(valor.get("monto_max", 0))
+                mult = n_envios if tema == "costo_envio" else 1
+                mn = int(valor.get("monto_min", 0)) * mult
+                mx = int(valor.get("monto_max", 0)) * mult
                 extra_min += mn
                 extra_max += mx
                 hay_rango = True
                 extras_detalle.append({
                     "faq_tema": tema, "concepto": concepto,
                     "modalidad": "rango", "monto_min": mn, "monto_max": mx,
+                    **({"destinos": mult} if mult > 1 else {}),
                     "condicion": valor.get("condicion", ""),
                 })
             else:
@@ -933,6 +948,12 @@ def _build_schema():
                                 },
                                 "required": ["faq_tema", "concepto"],
                             },
+                        },
+                        "destinos": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 3,
+                            "description": "Cantidad de envios SEPARADOS del pedido (direcciones distintas). 1 por defecto. Si el cliente pide mandar a 2 o 3 direcciones distintas, poner ese numero: el costo de envio se cobra una vez por cada destino y el total sale como rango.",
                         },
                     },
                     "required": ["items"],
