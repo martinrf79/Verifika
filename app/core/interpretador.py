@@ -481,20 +481,11 @@ async def interpretar_mensaje(mensaje: str,
         if "respondiendo_a" not in resultado:
             resultado["respondiendo_a"] = None
 
-        # Capa dos, filtro de negacion sobre decision_compra
-        if resultado["intencion"] == "decision_compra" and contiene_negacion(mensaje):
-            log.info("interpretador_filtro_negacion", trace_id=trace_id,
-                     mensaje_preview=mensaje[:80])
-            resultado["intencion"] = "otra"
-            resultado["confianza"] = 0.3
-
-        # Capa tres, downgrade si baja confianza sin candidatos
-        if (resultado["confianza"] < UMBRAL_CONFIANZA_MEDIA
-                and not resultado["candidatos"]
-                and resultado["intencion"] in {"decision_compra", "pregunta_especifica"}):
-            log.info("interpretador_downgrade_baja_confianza", trace_id=trace_id,
-                     intencion_original=resultado["intencion"])
-            resultado["intencion"] = "otra"
+        # El interprete tiene LIBERTAD para interpretar: el codigo NO cambia su
+        # intencion. Se quitaron las capas que la pisaban (veto de negacion y
+        # downgrade por baja confianza); negacion, duda y ambiguedad ya las maneja
+        # el prompt del LLM (baja la confianza y pobla candidatos). El codigo solo
+        # valida que el JSON tenga forma; lo que el LLM entendio, queda.
 
         log.info("interpretador_ok", trace_id=trace_id,
                  intencion=resultado.get("intencion"),
