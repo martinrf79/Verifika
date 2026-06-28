@@ -2,6 +2,15 @@ name: diagnostico
 
 # Permite a Claude leer logs de Cloud Run y Firestore desde cualquier dispositivo,
 # disparando este workflow en GitHub. Usa WIF (sin llaves).
+#
+# La app loguea en JSON estructurado (app/logger.py, structlog), asi que el
+# mensaje real vive en jsonPayload, NO en textPayload. Por eso el formato muestra
+# jsonPayload: si no, las lineas salen en blanco aunque el job corra en verde.
+#
+# Para cazar el loop de cierre que re-pide datos de contacto, disparar con:
+#   severity = INFO
+#   filtro   = jsonPayload.event=("lead_pidiendo_datos" OR "cierre_siembra_inicial" OR "lead_capturado_completo")
+# Para errores generales alcanza con severity = WARNING y filtro vacio.
 
 on:
   workflow_dispatch:
@@ -14,7 +23,10 @@ on:
         default: "2d"
       limit:
         description: "Cuantas lineas de log"
-        default: "30"
+        default: "50"
+      filtro:
+        description: "(Opcional) filtro extra de Cloud Logging, ej jsonPayload.event=\"lead_pidiendo_datos\""
+        default: ""
       firestore_collection:
         description: "(Opcional) coleccion de Firestore a listar; vacio = no toca Firestore"
         default: ""
@@ -38,11 +50,23 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Leer logs de agente-bot
+        env:
+          SEV: ${{ inputs.severity }}
+          FILTRO: ${{ inputs.filtro }}
+          LIM: ${{ inputs.limit }}
+          FRESH: ${{ inputs.freshness }}
         run: |
-          gcloud logging read \
-            "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"agente-bot\" AND severity>=${{ inputs.severity }}" \
-            --limit=${{ inputs.limit }} --freshness=${{ inputs.freshness }} \
-            --format="table(timestamp,severity,textPayload)"
+          QUERY="resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"agente-bot\" AND severity>=${SEV}"
+          if [ -n "${FILTRO}" ]; then
+            QUERY="${QUERY} AND ${FILTRO}"
+          fi
+          echo "Query: ${QUERY}"
+          echo "-----------------------------------------------------------------"
+          # jsonPayload trae el evento y sus campos (event, faltan, trace_id...);
+          # textPayload queda como respaldo para stack traces de uvicorn.
+          gcloud logging read "${QUERY}" \
+            --limit="${LIM}" --freshness="${FRESH}" \
+            --format="value(timestamp,severity,jsonPayload,textPayload)"
 
       - name: (Opcional) Listar Firestore
         if: ${{ inputs.firestore_collection != '' }}
