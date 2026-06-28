@@ -135,6 +135,21 @@ def _guia_para_solver(interp: dict) -> str:
             "herramientas, no los inventes.]")
 
 
+def _parece_aportar_dato(mensaje: str) -> bool:
+    """Heuristica barata: el mensaje parece traer un dato de cierre (numero, pago,
+    o cue de domicilio), aunque el interprete no lo haya marcado como aporta_dato.
+    Abre el extractor LLM en cotizaciones que ya mencionan direccion o pago."""
+    if not mensaje:
+        return False
+    t = mensaje.lower()
+    if any(ch.isdigit() for ch in t):
+        return True
+    claves = ("transferenc", "mercado pago", "efectivo", "tarjeta", "debito",
+              "credito", "calle", "avenida", " av ", "direccion", "domicilio",
+              "envio a", "enviar a", "me llamo", "mi nombre")
+    return any(k in t for k in claves)
+
+
 async def procesar_interprete_libre(user_id: str, raw_message: str,
                                     tienda_id: str, canal: str,
                                     trace_id: str) -> str:
@@ -350,23 +365,34 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
 
     # ── ACUMULAR DATOS DEL CLIENTE turno a turno (raiz del re-pedido) ────────
     # El cliente suele dar la direccion, el pago o el nombre ANTES de la decision
-    # de compra, cuando todavia no hay lead donde guardarlos. Sin acumular, ese
-    # dato se perdia y el cierre lo volvia a pedir. Una sola extraccion por turno,
-    # solo cuando el interprete dice que el cliente esta aportando un dato o
-    # decidiendo la compra; el acumulado viaja al cierre para sembrar el lead
-    # completo y se persiste al final del turno.
+    # de compra, o DENTRO de un mensaje de otra intencion (ej una cotizacion que ya
+    # menciona "pago transferencia"). Antes la extraccion estaba atada a la intencion
+    # (solo aporta_dato/decision_compra), asi que ese dato se perdia y el cierre lo
+    # volvia a pedir. Ahora: (1) la extraccion DETERMINISTA (telefono, pago,
+    # direccion por patron) corre SIEMPRE, barata y sin LLM; (2) el extractor LLM
+    # corre cuando el interprete sugiere datos O el mensaje trae numeros/cue de dato.
+    # El acumulado viaja al cierre y se persiste al final del turno.
     _intent = interp.get("intencion") if isinstance(interp, dict) else None
     datos_previos = conv.get("datos_cliente_parciales") or {}
     datos_turno: dict = {}
-    if _intent in ("aporta_dato", "decision_compra"):
-        try:
-            from app.core.cierre import extraer_datos_cliente
-            datos_turno = {k: v for k, v in
-                           extraer_datos_cliente(raw_message, trace_id).items() if v}
-        except Exception as e:
-            log.warning("interprete_libre_extractor_error", trace_id=trace_id,
-                        error=str(e)[:120])
+    try:
+        from app.core.cierre import extraer_determinista, extraer_datos_cliente
+        # Determinista, en CADA turno: el codigo manda en los datos.
+        datos_turno.update(extraer_determinista(raw_message))
+        # LLM, cuando hay senal de dato (intencion o el texto lo parece).
+        if _intent in ("aporta_dato", "decision_compra") or _parece_aportar_dato(raw_message):
+            for k, v in extraer_datos_cliente(raw_message, trace_id).items():
+                if v:
+                    datos_turno[k] = v
+    except Exception as e:
+        log.warning("interprete_libre_extractor_error", trace_id=trace_id,
+                    error=str(e)[:120])
     datos_acumulados = {**datos_previos, **datos_turno}
+    if datos_turno:
+        log.info("interprete_libre_datos_turno", trace_id=trace_id,
+                 user_id=user_id, intencion=_intent,
+                 campos=sorted(datos_turno.keys()),
+                 acumulado=sorted(datos_acumulados.keys()))
 
     if respuesta != settings.FALLBACK_MESSAGE:
         try:
