@@ -10,6 +10,8 @@ deterministico por regex.
 Va dentro del circuito de leads.
 """
 import json
+import re
+import unicodedata
 
 from app.config import get_settings
 from app.logger import get_logger
@@ -36,9 +38,83 @@ Devolve JSON estricto, sin texto antes ni despues:
 Reglas:
 - nombre: nombre y apellido de la persona, si lo dice.
 - telefono: solo numeros, si da un telefono.
-- direccion: calle, numero y localidad, lo que sirva para el envio.
+- direccion: calle, numero y localidad, lo que sirva para el envio. Si el cliente da MAS DE UNA direccion (envios separados), devolvelas todas separadas por " | ".
 - forma_pago: una sola de estas si la menciona: transferencia, mercado pago, efectivo, tarjeta, debito, credito.
 - Si un dato NO esta en el mensaje, deja ese campo como string vacio. Nunca pongas datos que el cliente no dijo."""
+
+
+# ── RESPALDOS DETERMINISTAS (sin LLM) ───────────────────────────────────────
+# El codigo manda en los datos: forma de pago y direccion se pueden reconocer por
+# patron con alta precision. Asi un dato dicho dentro de un mensaje de OTRA
+# intencion (ej "presupuestame Cordoba con pago transferencia") igual se captura,
+# sin depender de que el modelo lo saque ni de la puerta de intencion.
+
+# Palabra de pago -> forma normalizada. Se matchea por palabra completa.
+_FORMAS_PAGO = [
+    (r"transferenc", "transferencia"),
+    (r"\bmercado\s*pago\b", "mercado pago"),
+    (r"\bmp\b", "mercado pago"),
+    (r"efectiv", "efectivo"),
+    (r"tarjeta", "tarjeta"),
+    (r"\bdebito\b", "debito"),
+    (r"\bcredito\b", "credito"),
+]
+
+# Cue words que confirman que un numero es un domicilio, no una cantidad/precio.
+_DIR_CUE = (r"calle|avenida|\bav\b|\bav\.|pasaje|\bpje\b|ruta|barrio|altura|"
+            r"manzana|\bmza\b|departamento|\bdepto\b|\bpiso\b|direccion|"
+            r"domicilio|envi[oa]\s+a\b|enviar\s+a\b|mandar\s+a\b")
+
+
+def _sin_acentos(s: str) -> str:
+    return "".join(c for c in unicodedata.normalize("NFD", s)
+                   if unicodedata.category(c) != "Mn")
+
+
+def extraer_forma_pago(mensaje: str) -> str:
+    """Forma de pago por palabra clave, normalizada. '' si no hay ninguna clara."""
+    txt = _sin_acentos((mensaje or "").lower())
+    for patron, forma in _FORMAS_PAGO:
+        if re.search(patron, txt):
+            return forma
+    return ""
+
+
+def extraer_direccion(mensaje: str) -> str:
+    """Direccion SOLO cuando hay una cue word de domicilio cerca de un numero, para
+    no confundir cantidades/precios con un domicilio. Conservador (precision sobre
+    cobertura); el resto lo saca el LLM. Si hay varias, las une con ' | '."""
+    txt = mensaje or ""
+    if not re.search(_DIR_CUE, _sin_acentos(txt.lower())):
+        return ""
+    encontradas: list[str] = []
+    # "<cue> ... <palabra(s)> <numero 1-5 digitos>" -> tramo de domicilio.
+    for m in re.finditer(r"([A-Za-zÀ-ÿ.\s]{2,40}?\d{1,5})", txt):
+        tramo = m.group(1).strip(" ,.;")
+        if re.search(r"\d", tramo) and len(tramo) >= 4:
+            encontradas.append(re.sub(r"\s+", " ", tramo))
+    vistos: list[str] = []
+    for d in encontradas:
+        if d not in vistos:
+            vistos.append(d)
+    return " | ".join(vistos[:3])
+
+
+def extraer_determinista(mensaje: str) -> dict:
+    """Datos sacables SIN LLM (telefono, forma de pago, direccion con cue). Pensado
+    para correr en CADA turno: barato, alta precision, no atado a la intencion.
+    Devuelve solo los campos que reconocio (no pone vacios)."""
+    datos: dict = {}
+    tel = extraer_telefono(mensaje)
+    if tel:
+        datos["telefono"] = tel
+    fp = extraer_forma_pago(mensaje)
+    if fp:
+        datos["forma_pago"] = fp
+    dir_ = extraer_direccion(mensaje)
+    if dir_:
+        datos["direccion"] = dir_
+    return datos
 
 
 def extraer_datos_cliente(mensaje: str, trace_id=None) -> dict:
@@ -67,11 +143,11 @@ def extraer_datos_cliente(mensaje: str, trace_id=None) -> dict:
     except Exception as e:
         log.warning("cierre_extractor_error", trace_id=trace_id, error=str(e)[:150])
 
-    # Respaldo deterministico del telefono.
-    if not datos["telefono"]:
-        tel = extraer_telefono(mensaje)
-        if tel:
-            datos["telefono"] = tel
+    # Respaldo deterministico: telefono, forma de pago y direccion por patron.
+    # Solo rellena lo que el LLM dejo vacio; nunca pisa lo que el modelo si saco.
+    for campo, valor in extraer_determinista(mensaje).items():
+        if valor and not datos.get(campo):
+            datos[campo] = valor
     return datos
 
 
