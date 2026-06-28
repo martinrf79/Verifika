@@ -245,8 +245,18 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             from app.core.evidencia import build_evidence_from_tools
             from app.core.verificador import (
                 verificar_respuesta, autocorregir_montos)
+            # Productos vistos en turnos anteriores: su precio REAL respalda una
+            # cifra que el bot ya mostro y repite, asi el filtro no la marca en
+            # falso. El estado los guarda con la clave 'precio'; el verificador
+            # lee 'precio_ars', por eso se normaliza al pasarlos.
+            prods_vistos = [
+                {**p, "precio_ars": p.get("precio_ars", p.get("precio"))}
+                for p in (estado.get("productos_vistos") or [])
+                if isinstance(p, dict)
+            ]
             evidencia = build_evidence_from_tools(
-                meta.get("tools_called", []) or [], tienda_id)
+                meta.get("tools_called", []) or [], tienda_id,
+                productos_vistos=prods_vistos)
             evidencia += [{"tipo": "proof", "proof": p} for p in proofs_memoria]
             # Precios reales del catalogo: nunca se pisan aunque el filtro no los
             # vea respaldados en este turno (pueden venir de uno anterior).
@@ -273,11 +283,24 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                                 trace_id=trace_id,
                                 correcciones=fix["correcciones"][:8])
                 elif not fix["verificacion"].get("ok"):
-                    # Cifra sin respaldo que no se pudo corregir sin ambiguedad.
-                    log.warning("interprete_libre_numero_no_respaldado_shadow",
-                                trace_id=trace_id,
-                                no_respaldados=fix["verificacion"]["numeros_no_respaldados"][:8],
-                                respuesta_preview=respuesta[:220])
+                    # Cifra de plata sin respaldo que no se pudo corregir. Si el
+                    # solver NO llamo ni una herramienta en el turno, ese numero es
+                    # alucinacion pura: no tiene de donde salir. NO sale al cliente,
+                    # va el mensaje seguro. Con herramientas llamadas el residual
+                    # suele ser falso positivo, asi que ahi se queda en shadow para
+                    # no cortar respuestas legitimas.
+                    sin_tools = not (meta.get("tools_called") or [])
+                    if sin_tools:
+                        log.warning("interprete_libre_numero_bloqueado",
+                                    trace_id=trace_id,
+                                    no_respaldados=fix["verificacion"]["numeros_no_respaldados"][:8],
+                                    respuesta_preview=respuesta[:220])
+                        respuesta = settings.VERIFIKA_FALLBACK_MESSAGE
+                    else:
+                        log.warning("interprete_libre_numero_no_respaldado_shadow",
+                                    trace_id=trace_id,
+                                    no_respaldados=fix["verificacion"]["numeros_no_respaldados"][:8],
+                                    respuesta_preview=respuesta[:220])
             else:
                 veredicto = verificar_respuesta(respuesta, evidencia, trace_id)
                 if not veredicto["ok"]:
