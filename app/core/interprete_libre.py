@@ -339,6 +339,9 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # Productos: el solver los referencia por [[PROD:<id>]] y el codigo pone
     # nombre+precio+stock reales del catalogo (curaduria del solver, datos de la
     # fuente). Un id inventado se cae solo.
+    # Los ids que el solver mostro (antes de estampar): son el QUE realmente en la
+    # respuesta. Se guardan para respaldar sus precios reales en el verificador.
+    _ids_mostrados = re.findall(r"\[\[PROD:([A-Za-z0-9_\-]+)\]\]", respuesta or "")
     if "[[PROD:" in (respuesta or ""):
         respuesta = _estampar_productos(respuesta, tienda_id, trace_id)
         log.info("interprete_libre_productos_estampados", trace_id=trace_id)
@@ -373,6 +376,18 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 meta.get("tools_called", []) or [], tienda_id,
                 productos_vistos=prods_vistos)
             evidencia += [{"tipo": "proof", "proof": p} for p in proofs_memoria]
+            # Productos que el solver MOSTRO ([[PROD:id]]): se respaldan con su
+            # precio_ars REAL de get_product_by_id, asi un precio real mostrado nunca
+            # cae como "sin respaldo" (es el QUE que de verdad esta en la respuesta).
+            if _ids_mostrados:
+                from app.storage.firestore_client import get_product_by_id as _gpid
+                for _pid in {i.upper() for i in _ids_mostrados}:
+                    try:
+                        _pp = _gpid(_pid, tienda_id=tienda_id)
+                    except Exception:
+                        _pp = None
+                    if isinstance(_pp, dict) and _pp.get("precio_ars") is not None:
+                        evidencia.append({"tipo": "producto", **_pp})
             # QUE PROACTIVO: el codigo busca en el catalogo lo que el cliente pidio,
             # SIN depender de que el solver haya buscado. Esos productos REALES entran
             # como evidencia COMPLETA del QUE, asi el corrector valida/corrige contra
