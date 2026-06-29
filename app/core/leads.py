@@ -28,10 +28,14 @@ LEAD_VENTANA_SEGUNDOS = 24 * 60 * 60
 
 UMBRAL_LEAD_FUERTE = float(os.getenv("INTERPRETER_UMBRAL_ALTA", "0.85"))
 
-# Pedido explicito del link de pago: señal de cierre determinista (con
-# CIERRE_CONTRATO). Misma familia de patrones que el handoff del orchestrator.
+# Pedido EXPLICITO del link de pago: señal de cierre determinista.
+# OJO: aca NO van nombres de medios de pago (mercado pago, mp, transferencia).
+# Nombrar un medio de pago dentro de una cotizacion ("los envios por mercado
+# pago") NO es pedir el link; tratarlo asi pisaba al interprete y forzaba el
+# cierre, pidiendo datos en vez de mostrar el presupuesto (caso 29-jun, trace
+# a1f2ea32). Solo un pedido real de link / donde pagar cuenta.
 _RE_PIDE_LINK = re.compile(
-    r"(?i)\blink\b|mercado\s*pago|\bmp\b|donde\s+pago|como\s+pago")
+    r"(?i)\blink\b|d[oó]nde\s+(?:pago|abono)|pasa(?:me)?\s+el\s+link")
 UMBRAL_LEAD_TIBIA = float(os.getenv("INTERPRETER_UMBRAL_BAJA", "0.6"))
 
 # Intencion FUERTE, el cliente ya decidio comprar
