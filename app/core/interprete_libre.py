@@ -590,5 +590,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         log.warning("interprete_libre_log_failed", trace_id=trace_id,
                     error=str(e)[:120])
 
-    log.info("interprete_libre_ok", trace_id=trace_id, ms=latency_ms)
+    # Preview de la respuesta del bot en CADA turno: sin esto el texto que el bot
+    # contesta no queda en Cloud Logging (solo en Firestore y solo en los WARNING
+    # de correccion), y se diagnostica a ciegas. Es la salida del bot, no dato del
+    # cliente; truncado para no inflar el log. Permite leer que dijo el bot por
+    # trace_id sin depender de copiar a mano.
+    log.info("interprete_libre_ok", trace_id=trace_id, ms=latency_ms,
+             respuesta_preview=(respuesta_final or "")[:300])
     return respuesta_final
