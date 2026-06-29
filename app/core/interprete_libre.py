@@ -307,6 +307,23 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                   error=str(e)[:200])
         respuesta = settings.FALLBACK_MESSAGE
 
+    # ── DIAGNOSTICO DE INTEGRACION (solver <-> herramientas mellizas) ──────────
+    # Loguea, por turno, lo que DEVOLVIERON las tools deterministas (result/proof)
+    # y la respuesta CRUDA del solver, ANTES de estampar/corregir. Sin esto no se
+    # puede ver si el dato real de la herramienta llega al mensaje o el solver lo
+    # re-tipea distinto. Compacto y truncado; son datos de la tienda, no del
+    # cliente. Comparar contra respuesta_preview (final) cierra el triplete.
+    try:
+        _tools_dump = [
+            {"t": tc.get("name"), "res": str(tc.get("result"))[:180]}
+            for tc in (meta.get("tools_called") or [])
+        ]
+        log.info("interprete_libre_solver_crudo", trace_id=trace_id,
+                 respuesta_cruda=(respuesta or "")[:400],
+                 tools=_tools_dump[:8])
+    except Exception:
+        pass
+
     # ── CLON (ESTAMPA): los datos duros NACEN de la fuente, no del modelo ──
     # El solver pone un marcador donde va cada dato duro; el codigo lo reemplaza por
     # el bloque real renderizado desde la tool/Firestore (precio = presentacion de
