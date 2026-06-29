@@ -57,6 +57,23 @@ todo el turno:
    pedido REAL de link. CAUSA DE FONDO sin resolver: la decisión de cierre la toman TRES
    jueces que se pisan (intérprete `decision_compra`, regex `_RE_PIDE_LINK`, detector legacy
    `detectar_intencion`); conviene unificarlos en UN motor alimentado por el intérprete.
+4. **Preview de respuesta en logs** (`interprete_libre.py`): el evento `interprete_libre_ok`
+   ahora lleva `respuesta_preview` (300 chars). Antes el texto que el bot CONTESTA no quedaba
+   en Cloud Logging y se diagnosticaba a ciegas. Leer con: filtro `jsonPayload.event="interprete_libre_ok"`,
+   formato `value(timestamp,jsonPayload.trace_id,jsonPayload.respuesta_preview)`.
+
+## PENDIENTE PRIORITARIO — bug del ENVÍO (diagnosticado 29-jun, sin arreglar)
+
+Síntoma (caso real, 3 envíos a Córdoba: Río Tercero, Villa María, Córdoba Capital):
+el costo de envío cambia turno a turno para el MISMO pedido ($7.500 fijo en un turno,
+"$5.000–$12.000" + $3.000 en el siguiente) y a Córdoba Capital le cobró $3.000, que es la
+tarifa de CABA/GBA, no la de interior. Número real, ZONA equivocada: el verificador no lo
+caza porque chequea respaldo, no zona. CAUSA RAÍZ: el solver ELIGE la zona pasando el
+concepto de envío a mano (`envio_caba_gba` / `envio_interior`) dentro de `calculate_total`,
+y la elige mal y distinto cada vez. FIX DE FONDO: la zona/costo de envío debe salir SIEMPRE
+de `cotizar_envio` (determinista, deriva la zona de la localidad/CP del destino); el solver
+no debe poder pasar un concepto de envío inventado. Toca `tools.py` (calculate_total/items_extra
+y cotizar_envio) — no es de una línea, mostrar archivos y riesgo antes de tocar.
 
 ## Datos: un solo catálogo, una sola FAQ
 
@@ -82,6 +99,10 @@ todo el turno:
    arquitectura, no un parche; encararlo con el costo ya bajo control.
 3. **Ampliar la autocorrección** a lo que NO es una cifra: texto de FAQ (garantía,
    devoluciones) y existencia de producto. Total, envío y precio ya se corrigen.
+4. **Calidad de interpretación / deducción** (NORTE del proyecto): el bot dejó de deducir
+   bien casos simples (ej: 6 ítems en 3 envíos, deducir qué va al tercer destino). Es
+   razonamiento del modelo, no lo causaron los cambios deterministas. Es el objetivo madre;
+   atacar después de estabilizar costo y envío.
 4. **Seguridad**: el bot loguea el cuerpo crudo del webhook de WhatsApp (`whatsapp_webhook_received`,
    `message_received`); recortar para no guardar datos sensibles. Rotar `MP_ACCESS_TOKEN` y
    `OPENAI_API_KEY` si siguen en texto plano.
