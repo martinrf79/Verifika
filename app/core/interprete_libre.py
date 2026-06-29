@@ -388,6 +388,14 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             except Exception as e:
                 log.warning("interprete_libre_que_proactivo_error",
                             trace_id=trace_id, error=str(e)[:120])
+            # El catalogo guarda el precio bajo 'precio' o 'precio_ars' segun la
+            # fuente; el verificador lee SOLO precio_ars. Se normaliza TODA la
+            # evidencia de productos para que un precio real no caiga como
+            # "sin respaldo" por un nombre de campo (causa del falso positivo 14500).
+            for _i in evidencia:
+                if (_i.get("tipo") == "producto" and _i.get("precio_ars") is None
+                        and isinstance(_i.get("precio"), (int, float))):
+                    _i["precio_ars"] = _i["precio"]
             # Precios reales del catalogo: nunca se pisan aunque el filtro no los
             # vea respaldados en este turno (pueden venir de uno anterior).
             precios_validos = {
