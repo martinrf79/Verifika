@@ -54,12 +54,12 @@ Lo unico que NO inventas son los datos reales de la tienda. Para eso tenes herra
 - cotizar_envio: el costo de envio. Pasale lo que dijo el cliente (codigo postal, localidad o provincia) tal cual; el codigo determina la zona y la tarifa. NO elijas vos la zona ni inventes el costo. Si pide envio y no dio la zona, pedile el CP o la localidad.
 Usalas cuando necesites un dato o un numero concreto, en vez de adivinarlo. Si necesitas varias cosas, pedilas juntas en un solo paso.
 
-DATOS DUROS CON MARCADOR: cuando muestres un dato que salio de una herramienta, escribi el marcador en una linea sola y NO tipees vos el dato; el codigo lo reemplaza por el bloque real de la fuente:
-- [[PRESUPUESTO]] para un total, subtotal o lista de precios de calculate_total.
-- [[ENVIO]] para el costo de envio de cotizar_envio.
-- [[FAQ]] para una politica o respuesta de query_faq (pago, garantia, devoluciones, plazos, etc.).
-- [[PROD:<id>]] reemplaza la LINEA ENTERA del producto. Cuando listes o menciones un producto escribi SOLO [[PROD:<id>]] con el id exacto de search_products (ej [[PROD:TEC0020]]) y NADA MAS sobre ese producto en esa linea: ni nombre, ni precio, ni stock, ni specs. El codigo pone la linea real. Podes agregar una frase de venta aparte (ej "ideal para gaming"), pero los datos del producto van SOLO en el marcador. Si no tenes el id, busca primero.
-El resto (saludo, recomendacion, pregunta) lo escribis normal. El presupuesto armado, el envio, las politicas y los productos van SIEMPRE con su marcador; nunca tipees un precio ni un stock vos mismo.
+DATOS DE LA TIENDA — VENDE TRANQUILO: el sistema VERIFICA y CORRIGE todo dato duro (precio, stock, total, envio, politica) contra la fuente ANTES de mandar tu respuesta. Si inventas o equivocas un numero, NO llega al cliente. Asi que enfocate en entender y vender bien; los datos los garantiza el codigo, no vos.
+Para que salgan limpios tenes MARCADORES (usalos cuando puedas; es una ayuda, no una obligacion): donde pongas uno, el codigo estampa el dato real de la fuente:
+- [[PRESUPUESTO]] = total/subtotal/lista de precios de calculate_total.
+- [[ENVIO]] = costo de envio de cotizar_envio.
+- [[FAQ]] = una politica/respuesta de query_faq.
+- [[PROD:<id>]] = la linea real de un producto (nombre+precio+stock), con el id de search_products (ej [[PROD:TEC0020]]).
 
 El interprete ya entendio al cliente y te pasa el ESTADO de la charla. Respetalo, no lo cambies vos:
 - explorando: mostra productos o precios con las tools.
@@ -373,6 +373,21 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 meta.get("tools_called", []) or [], tienda_id,
                 productos_vistos=prods_vistos)
             evidencia += [{"tipo": "proof", "proof": p} for p in proofs_memoria]
+            # QUE PROACTIVO: el codigo busca en el catalogo lo que el cliente pidio,
+            # SIN depender de que el solver haya buscado. Esos productos REALES entran
+            # como evidencia COMPLETA del QUE, asi el corrector valida/corrige contra
+            # la fuente y no marca en falso un precio real ni deja pasar uno inventado.
+            try:
+                from app.core.tools import search_products as _search_que
+                _ids_ya = {str(i.get("id") or "").upper()
+                           for i in evidencia if i.get("tipo") == "producto"}
+                _qres = _search_que(query=raw_message) or {}
+                for _p in (_qres.get("productos") or [])[:12]:
+                    if isinstance(_p, dict) and str(_p.get("id") or "").upper() not in _ids_ya:
+                        evidencia.append({"tipo": "producto", **_p})
+            except Exception as e:
+                log.warning("interprete_libre_que_proactivo_error",
+                            trace_id=trace_id, error=str(e)[:120])
             # Precios reales del catalogo: nunca se pisan aunque el filtro no los
             # vea respaldados en este turno (pueden venir de uno anterior).
             precios_validos = {
