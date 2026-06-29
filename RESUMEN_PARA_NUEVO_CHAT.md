@@ -38,6 +38,25 @@ todo el turno:
   Respaldo: `./deploy.sh`. Verificar el verde antes de decir "listo".
 - Rama viva = `main`. Las ramas `claude/*` son para revisar antes de mergear.
 - LLM: DeepSeek en todo (`LLM_PROVIDER=deepseek`). Nada de Gemini sin OK de Martín.
+- **Observabilidad (arreglado 29-jun)**: la app loguea con structlog y ahora emite el campo
+  `severity` que Cloud Logging entiende (antes mandaba solo `level`, todo caía en DEFAULT y
+  cualquier consulta `severity>=INFO` lo descartaba: estuvimos ciegos sin saberlo). Para leer
+  logs sin gcloud local: disparar el workflow `diagnostico.yml` (Run workflow, severity INFO,
+  freshness 1h) y Claude lee la salida del job. Claude NO puede dispararlo (403, sin permiso
+  Actions de escritura); lo dispara Martín. El workflow sanitiza los inputs.
+
+## Cambios deployados el 29-jun (probados offline, vivos en main)
+
+1. **Corrector determinista anclado al concepto** (`verificador.py`): además de totales,
+   corrige precio (anclado al NOMBRE del producto) y envío. Bancos `prueba_autocorrige` y
+   `prueba_autocorrige_concepto` en verde.
+2. **Logger** (`logger.py`): emite `severity`/`message`, conserva `event`. Ver Observabilidad.
+3. **Bug de cierre por "mercado pago"** (`leads.py`): `_RE_PIDE_LINK` matcheaba el NOMBRE del
+   medio de pago, así que nombrar "mercado pago" en una cotización forzaba el cierre y pedía
+   datos en vez de mostrar el presupuesto (trace a1f2ea32). Ahora el regex solo reconoce un
+   pedido REAL de link. CAUSA DE FONDO sin resolver: la decisión de cierre la toman TRES
+   jueces que se pisan (intérprete `decision_compra`, regex `_RE_PIDE_LINK`, detector legacy
+   `detectar_intencion`); conviene unificarlos en UN motor alimentado por el intérprete.
 
 ## Datos: un solo catálogo, una sola FAQ
 
@@ -52,12 +71,22 @@ todo el turno:
 
 ## Pendientes (en orden)
 
-1. **Ampliar la autocorrección** a lo que NO es una cifra: reescritura de texto de FAQ
-   (garantía, devoluciones) y existencia de producto. Total, envío y precio ya se corrigen
-   anclados al concepto; falta lo textual, que necesita otro mecanismo (no es un número).
-2. **Bajar la config de Cloud Run al código** (`config.py` manda; el servicio solo lleva
+1. **COSTO DeepSeek (prioridad nueva, 29-jun)**: hubo un disparo de gasto. Hay VARIAS llamadas
+   LLM por turno (intérprete + solver + extractor de datos que se prende ante cualquier número
+   + reintentos del intérprete por JSON malo + modo "pensante" de DeepSeek que quema tokens).
+   Leer el evento `llm_usage` (cuántas llamadas y tokens por turno) y capar: apagar pensante,
+   frenar reintentos, prender el extractor solo cuando hace falta. Es config, no toca la
+   interpretación. Va ANTES del motor de intenciones.
+2. **Motor de decisión de cierre unificado**: hoy deciden el "fuerte" tres jueces que se pisan
+   (ver cambio 3 del 29-jun). Unificar en un solo motor alimentado por el intérprete. Es
+   arquitectura, no un parche; encararlo con el costo ya bajo control.
+3. **Ampliar la autocorrección** a lo que NO es una cifra: texto de FAQ (garantía,
+   devoluciones) y existencia de producto. Total, envío y precio ya se corrigen.
+4. **Seguridad**: el bot loguea el cuerpo crudo del webhook de WhatsApp (`whatsapp_webhook_received`,
+   `message_received`); recortar para no guardar datos sensibles. Rotar `MP_ACCESS_TOKEN` y
+   `OPENAI_API_KEY` si siguen en texto plano.
+5. **Bajar la config de Cloud Run al código** (`config.py` manda; el servicio solo lleva
    secretos + `TIENDA_ID`).
-3. **Seguridad**: rotar `MP_ACCESS_TOKEN` y `OPENAI_API_KEY` si siguen en texto plano.
 
 ## Probar en el entorno de Claude
 
