@@ -19,7 +19,7 @@ on:
         description: "Severidad minima de logs (DEFAULT, INFO, WARNING, ERROR)"
         default: "WARNING"
       freshness:
-        description: "Ventana de tiempo (ej 2d, 6h, 30m)"
+        description: "Ventana de tiempo (ej 2d, 6h, 30m). Aunque escribas '50 min' se sanitiza a 50m."
         default: "2d"
       limit:
         description: "Cuantas lineas de log"
@@ -56,16 +56,30 @@ jobs:
           LIM: ${{ inputs.limit }}
           FRESH: ${{ inputs.freshness }}
         run: |
-          QUERY="resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"agente-bot\" AND severity>=${SEV}"
+          # Sanitizar las entradas: el dispatch se hace a mano desde el celular y
+          # un espacio o una palabra rompia el comando (ej "50 min" en vez de "50m"
+          # tiraba: Failed to parse duration). Acotamos cada input a su forma valida
+          # asi un toque nunca falla por formato.
+          SEV_CLEAN=$(echo "${SEV:-WARNING}" | tr -dc 'A-Za-z' | tr '[:lower:]' '[:upper:]')
+          case "$SEV_CLEAN" in DEFAULT|DEBUG|INFO|NOTICE|WARNING|ERROR|CRITICAL) ;; *) SEV_CLEAN=WARNING ;; esac
+          # freshness: toma el numero + la primera unidad s/m/h/d (ignora espacios y
+          # palabras: "50 min" -> 50m, "2 dias" -> 2d). Sin match valido -> 2d.
+          FRESH_CLEAN=$(echo "${FRESH:-2d}" | grep -oiE '[0-9]+[[:space:]]*[smhd]' | head -1 | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+          [ -z "$FRESH_CLEAN" ] && FRESH_CLEAN="2d"
+          # limit: solo digitos. Vacio o basura -> 50.
+          LIM_CLEAN=$(echo "${LIM:-50}" | tr -dc '0-9')
+          [ -z "$LIM_CLEAN" ] && LIM_CLEAN=50
+          QUERY="resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"agente-bot\" AND severity>=${SEV_CLEAN}"
           if [ -n "${FILTRO}" ]; then
             QUERY="${QUERY} AND ${FILTRO}"
           fi
+          echo "Inputs sanitizados: severity=${SEV_CLEAN} freshness=${FRESH_CLEAN} limit=${LIM_CLEAN}"
           echo "Query: ${QUERY}"
           echo "-----------------------------------------------------------------"
           # jsonPayload trae el evento y sus campos (event, faltan, trace_id...);
           # textPayload queda como respaldo para stack traces de uvicorn.
           gcloud logging read "${QUERY}" \
-            --limit="${LIM}" --freshness="${FRESH}" \
+            --limit="${LIM_CLEAN}" --freshness="${FRESH_CLEAN}" \
             --format="value(timestamp,severity,jsonPayload,textPayload)"
 
       - name: (Opcional) Listar Firestore
