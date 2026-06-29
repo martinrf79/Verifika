@@ -54,9 +54,9 @@ Lo unico que NO inventas son los datos reales de la tienda. Para eso tenes herra
 Usalas cuando necesites un dato o un numero concreto, en vez de adivinarlo. Si necesitas varias cosas, pedilas juntas en un solo paso.
 
 DATOS DUROS CON MARCADOR: cuando muestres un dato que salio de una herramienta, escribi el marcador en una linea sola y NO tipees vos el dato; el codigo lo reemplaza por el bloque real de la fuente:
-- {{PRESUPUESTO}} para un total, subtotal o lista de precios de calculate_total.
-- {{ENVIO}} para el costo de envio de cotizar_envio.
-- {{FAQ}} para una politica o respuesta de query_faq (pago, garantia, devoluciones, plazos, etc.).
+- [[PRESUPUESTO]] para un total, subtotal o lista de precios de calculate_total.
+- [[ENVIO]] para el costo de envio de cotizar_envio.
+- [[FAQ]] para una politica o respuesta de query_faq (pago, garantia, devoluciones, plazos, etc.).
 El resto (saludo, recomendacion, pregunta) lo escribis normal. Un precio suelto de UN producto podes decirlo; el presupuesto armado, el envio y las politicas van SIEMPRE con su marcador.
 
 El interprete ya entendio al cliente y te pasa el ESTADO de la charla. Respetalo, no lo cambies vos:
@@ -279,11 +279,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     _env = envio_de_meta(meta)
     _present = _presupuesto_de_meta(meta)
     _marcadores = {
-        "{{PRESUPUESTO}}": _present,
-        "{{ENVIO}}": (f"Envio a {_env}" if _env else ""),
-        "{{FAQ}}": _faq_de_meta(meta),
+        "[[PRESUPUESTO]]": _present,
+        "[[ENVIO]]": (f"Envio a {_env}" if _env else ""),
+        "[[FAQ]]": _faq_de_meta(meta),
     }
-    _tenia_marcador_presup = "{{PRESUPUESTO}}" in (respuesta or "")
+    _tenia_marcador_presup = "[[PRESUPUESTO]]" in (respuesta or "")
     for _marca, _bloque in _marcadores.items():
         if _marca not in (respuesta or ""):
             continue
