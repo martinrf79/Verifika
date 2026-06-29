@@ -19,8 +19,11 @@ todo el turno:
    `AUTOCORRIGE_MONTOS`, default true). El MISMO motor de las tools que le dio los números
    al solver audita su respuesta: si el solver cambió un total y la verdad está en el PROOF,
    el código reescribe la cifra por la buena, sin LLM; si ya está bien, pasa intacta. Es una
-   sola función (`autocorregir_montos`), no una tool duplicada. Hoy corrige montos/totales;
-   precio de ficha y FAQ los respalda pero la reescritura fina de texto FAQ queda pendiente.
+   sola función (`autocorregir_montos`), ANCLADA AL CONCEPTO: clasifica cada cifra por contexto
+   y la corrige con el pool de ESE concepto. Cubre total (banda 15%), envío (banda 50%, pool de
+   cotizar_envio) y precio de producto (anclado al NOMBRE que nombró el solver, no a la cercanía
+   numérica). Cada corrección loguea su `concepto`. Pendiente: la reescritura de texto FAQ que
+   no es una cifra (garantía, devoluciones) y existencia de producto.
 5. **Cierre** (`leads.py` + `cierre.py` + `pago.py`): capta el lead, junta datos y genera
    el link de Mercado Pago con el total VERIFICADO de la calculadora.
 6. **Memoria**: historial (10 turnos) + estado + último presupuesto + proofs, en Firestore
@@ -49,8 +52,9 @@ todo el turno:
 
 ## Pendientes (en orden)
 
-1. **Ampliar la autocorrección** de montos a la reescritura de texto de FAQ y a existencia
-   de producto. Hoy corrige totales/montos; el resto lo respalda pero no lo reescribe.
+1. **Ampliar la autocorrección** a lo que NO es una cifra: reescritura de texto de FAQ
+   (garantía, devoluciones) y existencia de producto. Total, envío y precio ya se corrigen
+   anclados al concepto; falta lo textual, que necesita otro mecanismo (no es un número).
 2. **Bajar la config de Cloud Run al código** (`config.py` manda; el servicio solo lleva
    secretos + `TIENDA_ID`).
 3. **Seguridad**: rotar `MP_ACCESS_TOKEN` y `OPENAI_API_KEY` si siguen en texto plano.

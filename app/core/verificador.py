@@ -242,6 +242,97 @@ def _totales_validos(evidence: list[dict]) -> set:
     return tot
 
 
+def _envios_validos(evidence: list[dict]) -> set:
+    """Montos de ENVIO respaldados: el resultado/valores de un PROOF de envio
+    (cotizar_envio), los extras de envio (no descuento) de calculate_total y la
+    tarifa cargada en la FAQ costo_envio. Es el pool para corregir un costo de
+    envio mal tipeado por el modelo. El 0 (envio gratis) se descarta: no se
+    reescribe una cifra por cero, eso cambiaria la frase y se maneja aparte."""
+    env: set[int] = set()
+
+    def _add(v):
+        if isinstance(v, (int, float)) and int(v) > 0:
+            env.add(int(v))
+
+    for item in evidence or []:
+        tipo = item.get("tipo")
+        if tipo == "proof":
+            proof = item.get("proof", {}) or {}
+            if proof.get("tipo") == "envio":
+                _add(proof.get("resultado"))
+                _add(proof.get("monto"))
+                for v in proof.get("valores", []) or []:
+                    _add(v)
+            for e in proof.get("operandos_extras", []) or []:
+                if _es_descuento(e):
+                    continue
+                for k in ("monto", "monto_min", "monto_max", "monto_calculado_ars"):
+                    _add(e.get(k))
+        elif tipo == "faq" and str(item.get("id") or "") == "costo_envio":
+            for v in item.get("valores", []) or []:
+                for k in ("monto", "monto_min", "monto_max",
+                          "monto_calculado_ars", "base_ars"):
+                    _add(v.get(k))
+    return env
+
+
+_ENVIO_CTX = ("envio", "envío", "flete")
+
+
+def _contexto_envio(texto: str, start: int) -> bool:
+    """True si el numero viene en contexto de envio (la palabra envio/flete aparece
+    justo antes). Ancla la cifra al concepto envio para no corregirla con un total."""
+    pre = texto[max(0, start - 30):start].lower()
+    return any(k in pre for k in _ENVIO_CTX)
+
+
+def _tokens_significativos(nombre: str) -> list[str]:
+    """Palabras distintivas de un nombre de producto: alfanumericas de 4+ chars.
+    Descarta conectores y sufijos cortos (de, pro, v4) que dan falsos match."""
+    return [t for t in re.findall(r"[a-z0-9]+", (nombre or "").lower())
+            if len(t) >= 4]
+
+
+def _precio_de_producto_nombrado(texto: str, start: int,
+                                 evidence: list[dict]) -> Optional[int]:
+    """Precio REAL del producto que el solver nombro justo antes de esta cifra.
+    Ancla el numero al NOMBRE: si en la ventana previa aparece, sin ambiguedad, el
+    nombre de UN solo producto del catalogo, devuelve su precio_ars. Asi un precio
+    mal tipeado se corrige por el del producto que el modelo realmente nombro, no
+    por el numero mas cercano de cualquier lado. Si matchean dos productos distintos,
+    es ambiguo y no se toca (devuelve None)."""
+    ventana = texto[max(0, start - 90):start].lower()
+    candidatos: set[int] = set()
+    for item in evidence or []:
+        if item.get("tipo") != "producto":
+            continue
+        precio = item.get("precio_ars")
+        if not isinstance(precio, (int, float)):
+            continue
+        toks = _tokens_significativos(item.get("nombre", ""))
+        if not toks:
+            continue
+        presentes = sum(1 for t in toks if t in ventana)
+        if presentes >= min(2, len(toks)):
+            candidatos.add(int(precio))
+    return candidatos.pop() if len(candidatos) == 1 else None
+
+
+def _mejor_candidato(n: int, pool: set, banda: float) -> Optional[int]:
+    """El valor del pool mas cercano a n, solo si el error es plausible (<= banda)
+    y el mas cercano es UNICO (sin empate de distancia). None si no hay candidato
+    inequivoco. Regla conservadora compartida por total y envio."""
+    if not pool:
+        return None
+    ordenados = sorted(pool, key=lambda r: abs(r - n))
+    r = ordenados[0]
+    if r == n or abs(r - n) > banda * n:
+        return None
+    if len(ordenados) > 1 and abs(ordenados[1] - n) == abs(r - n):
+        return None
+    return r
+
+
 def _fmt_ar(n: int) -> str:
     """Formatea un entero al estilo argentino con separador de miles: 273000 ->
     '273.000'. Asi el numero reescrito queda igual que como lo escribe el bot."""
@@ -263,12 +354,20 @@ def autocorregir_montos(respuesta: str,
           "verificacion": dict,         # verificar_respuesta del texto resultante
         }
 
-    Conservador: solo reescribe una cifra sin respaldo por el total valido del
-    PROOF mas cercano, y solo si ese error es plausible (la verdad esta a <=15% de
-    la cifra mala, o sea un error de calculo/envio, no un numero inventado de la
-    nada) y el mas cercano es UNICO (sin empate de distancia). Cualquier ambiguedad
-    -> no la toca. El llamador debe usar el resultado solo si verificacion['ok'] es
-    True; si sigue fallando, descartar y seguir con el comportamiento de siempre.
+    Conservador y ANCLADO AL CONCEPTO. Para cada cifra sin respaldo decide por el
+    contexto si es precio de producto, envio o total, y la reescribe solo con el
+    pool de ESE concepto:
+      - precio: se ancla al NOMBRE del producto que el solver nombro antes de la
+        cifra; si en la ventana previa aparece, sin ambiguedad, un solo producto del
+        catalogo, se usa SU precio_ars. No depende de cercania numerica.
+      - envio: el monto de envio mas cercano (cotizar_envio/FAQ costo_envio), con
+        banda ancha (50%) porque el envio es chico y el error puede ser proporcional.
+      - total: el total valido del PROOF mas cercano con banda fina (15%), mas el
+        caso del total truncado ($594 por $594.000).
+    En todos, el candidato debe ser UNICO (sin empate). Cualquier ambiguedad -> no la
+    toca. Cada correccion lleva su 'concepto' para loguear que se piso y por que. El
+    llamador debe usar el resultado solo si verificacion['ok'] es True; si sigue
+    fallando, descartar y seguir con el comportamiento de siempre.
     """
     base = verificar_respuesta(respuesta, evidence, trace_id=trace_id)
     no_resp = set(base.get("numeros_no_respaldados", []) or [])
@@ -277,14 +376,22 @@ def autocorregir_montos(respuesta: str,
                 "correcciones": [], "verificacion": base}
 
     totales = _totales_validos(evidence)
-    if not totales:
+    envios = _envios_validos(evidence)
+    hay_precio = any(
+        i.get("tipo") == "producto" and isinstance(i.get("precio_ars"), (int, float))
+        for i in (evidence or []))
+    if not (totales or envios or hay_precio):
         return {"cambiada": False, "respuesta": respuesta,
                 "correcciones": [], "verificacion": base}
 
-    # Plan de reemplazos: para cada monto del texto que este sin respaldo, busca el
-    # total valido mas cercano y lo reescribe solo si el error es plausible (<=15%)
-    # y el mas cercano es unico (sin empate de distancia). Si no, se saltea.
-    _BANDA = 0.15
+    # Plan de reemplazos: para cada monto del texto sin respaldo se decide el
+    # concepto por el CONTEXTO (precio de producto, envio o total) y se reescribe
+    # solo con el pool de ESE concepto, de forma inequivoca. Asi una cifra de precio
+    # no se corrige con un total ni viceversa. El envio admite mas error (banda
+    # ancha) porque es chico; el total es fino (15%). El precio se ancla al NOMBRE
+    # del producto que el solver nombro, no a la cercania numerica.
+    _BANDA_TOTAL = 0.15
+    _BANDA_ENVIO = 0.5
     reemplazos: list[tuple] = []  # (start, end, token_nuevo)
     correcciones: list[dict] = []
     for m in _NUM_RE.finditer(respuesta or ""):
@@ -298,25 +405,36 @@ def autocorregir_montos(respuesta: str,
         # citado de un turno anterior. Corregirlo lo corromperia (caso Corsair).
         if precios_validos and n in precios_validos:
             continue
-        # TOTAL TRUNCADO: un monto chico pegado a "total" cuyos digitos son el
-        # PREFIJO de un unico total valido ($594 vs $594.000) es la misma cifra
-        # cortada por el modelo: se reescribe entera. Va antes de la banda
-        # porque la distancia numerica es enorme aunque el error sea trivial.
-        if n < _MIN_MONETARIO and _contexto_total(respuesta, m.start()):
+        en_total = _contexto_total(respuesta, m.start())
+        en_envio = _contexto_envio(respuesta, m.start())
+        candidato: Optional[int] = None
+        concepto: Optional[str] = None
+        # a) PRECIO anclado al nombre: solo en contexto de precio puro (ni total ni
+        #    envio), para no pisar un total que comparta la frase con el producto.
+        if not en_total and not en_envio:
+            pr = _precio_de_producto_nombrado(respuesta, m.start(), evidence)
+            if pr is not None and pr != n:
+                candidato, concepto = pr, "precio"
+        # b) ENVIO: la cifra viene en contexto de envio -> pool de envios.
+        if candidato is None and en_envio:
+            c = _mejor_candidato(n, envios, _BANDA_ENVIO)
+            if c is not None:
+                candidato, concepto = c, "envio"
+        # c) TOTAL TRUNCADO: $594 pegado a "total" cuyos digitos son el PREFIJO de
+        #    un unico total valido ($594 por $594.000), misma cifra cortada.
+        if candidato is None and n < _MIN_MONETARIO and en_total:
             prefijo = [t for t in totales if str(t).startswith(str(n))]
             if len(set(prefijo)) == 1:
-                reemplazos.append((m.start(), m.end(), _fmt_ar(prefijo[0])))
-                correcciones.append({"de": n, "a": prefijo[0]})
-                continue
-        ordenados = sorted(totales, key=lambda r: abs(r - n))
-        r = ordenados[0]
-        if r == n or abs(r - n) > _BANDA * n:
+                candidato, concepto = prefijo[0], "total"
+        # d) TOTAL por banda: el total valido mas cercano si el error es plausible.
+        if candidato is None:
+            c = _mejor_candidato(n, totales, _BANDA_TOTAL)
+            if c is not None:
+                candidato, concepto = c, "total"
+        if candidato is None or candidato == n:
             continue
-        # Empate de distancia entre dos totales validos -> ambiguo, no tocar.
-        if len(ordenados) > 1 and abs(ordenados[1] - n) == abs(r - n):
-            continue
-        reemplazos.append((m.start(), m.end(), _fmt_ar(r)))
-        correcciones.append({"de": n, "a": r})
+        reemplazos.append((m.start(), m.end(), _fmt_ar(candidato)))
+        correcciones.append({"de": n, "a": candidato, "concepto": concepto})
 
     if not reemplazos:
         return {"cambiada": False, "respuesta": respuesta,
