@@ -18,6 +18,7 @@ de prueba y se quitó.
 
 Es el ÚNICO camino del bot: el orchestrator delega acá todo el turno, sin flags.
 """
+import re
 import time
 
 from app.core.agent import run_agent
@@ -57,7 +58,8 @@ DATOS DUROS CON MARCADOR: cuando muestres un dato que salio de una herramienta, 
 - [[PRESUPUESTO]] para un total, subtotal o lista de precios de calculate_total.
 - [[ENVIO]] para el costo de envio de cotizar_envio.
 - [[FAQ]] para una politica o respuesta de query_faq (pago, garantia, devoluciones, plazos, etc.).
-El resto (saludo, recomendacion, pregunta) lo escribis normal. Un precio suelto de UN producto podes decirlo; el presupuesto armado, el envio y las politicas van SIEMPRE con su marcador.
+- [[PROD:<id>]] CADA VEZ que menciones o listes un producto: poné el id EXACTO que te dio search_products/get_product_details (ej [[PROD:TEC0020]]) y NO tipees vos el nombre, el precio ni el stock; el codigo los pone reales de la fuente. Si no tenes el id de la herramienta, no menciones el producto: buscalo primero.
+El resto (saludo, recomendacion, pregunta) lo escribis normal. El presupuesto armado, el envio, las politicas y los productos van SIEMPRE con su marcador; nunca tipees un precio ni un stock vos mismo.
 
 El interprete ya entendio al cliente y te pasa el ESTADO de la charla. Respetalo, no lo cambies vos:
 - explorando: mostra productos o precios con las tools.
@@ -129,6 +131,43 @@ def _faq_de_meta(meta: dict) -> str:
                 partes.append(r)
         return "\n".join(p for p in partes if p)
     return ""
+
+
+def _estampar_productos(texto: str, tienda_id: str, trace_id: str = None) -> str:
+    """Reemplaza cada [[PROD:<id>]] por nombre + precio + stock REALES del catalogo.
+    El solver ELIGE que producto mostrar (curaduria de venta); el codigo pone el DATO
+    (verdad de la fuente). Un id que no existe se quita: el solver no puede inventar un
+    producto ni un precio. Asi el listado nace del catalogo, no del texto del modelo."""
+    if not texto or "[[PROD:" not in texto:
+        return texto or ""
+    from app.storage.firestore_client import get_product_by_id
+
+    def _money(n):
+        try:
+            return f"{int(n):,}".replace(",", ".")
+        except (TypeError, ValueError):
+            return None
+
+    def _rep(m):
+        pid = (m.group(1) or "").strip().upper()
+        try:
+            p = get_product_by_id(pid, tienda_id=tienda_id)
+        except Exception:
+            p = None
+        if not p:
+            log.warning("interprete_libre_prod_inexistente", trace_id=trace_id, pid=pid)
+            return ""
+        nombre = str(p.get("nombre", "")).strip()
+        precio = _money(p.get("precio_ars"))
+        stock = p.get("stock", 0)
+        partes = [nombre]
+        if precio:
+            partes.append(f"- ${precio}")
+        if isinstance(stock, int) and stock > 0:
+            partes.append(f"({stock} en stock)")
+        return " ".join(partes).strip()
+
+    return re.sub(r"\[\[PROD:([A-Za-z0-9_\-]+)\]\]", _rep, texto)
 
 
 def _guia_para_solver(interp: dict) -> str:
@@ -296,6 +335,13 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                         trace_id=trace_id, marca=_marca)
     if _present and not _tenia_marcador_presup:
         log.warning("interprete_libre_presupuesto_sin_marcador", trace_id=trace_id)
+
+    # Productos: el solver los referencia por [[PROD:<id>]] y el codigo pone
+    # nombre+precio+stock reales del catalogo (curaduria del solver, datos de la
+    # fuente). Un id inventado se cae solo.
+    if "[[PROD:" in (respuesta or ""):
+        respuesta = _estampar_productos(respuesta, tienda_id, trace_id)
+        log.info("interprete_libre_productos_estampados", trace_id=trace_id)
 
     # ── PASO 2a: FILTRO DETERMINISTA — CLON DEL MOTOR DE PRECIOS/ENVIO ──────
     # Partida doble de la verdad. Las herramientas deterministas (calculadora,
