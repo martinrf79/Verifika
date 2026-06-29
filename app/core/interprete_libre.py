@@ -53,7 +53,11 @@ Lo unico que NO inventas son los datos reales de la tienda. Para eso tenes herra
 - cotizar_envio: el costo de envio. Pasale lo que dijo el cliente (codigo postal, localidad o provincia) tal cual; el codigo determina la zona y la tarifa. NO elijas vos la zona ni inventes el costo. Si pide envio y no dio la zona, pedile el CP o la localidad.
 Usalas cuando necesites un dato o un numero concreto, en vez de adivinarlo. Si necesitas varias cosas, pedilas juntas en un solo paso.
 
-PRESUPUESTO: cuando muestres un total, subtotal o lista de precios que salio de calculate_total, escribi EXACTAMENTE {{PRESUPUESTO}} en una linea sola donde va ese bloque. NO tipees vos los numeros del presupuesto: el codigo reemplaza el marcador por el bloque real de la fuente. El resto (saludo, recomendacion, pregunta) lo escribis normal. Un precio suelto de UN producto podes decirlo, pero el presupuesto armado va con el marcador.
+DATOS DUROS CON MARCADOR: cuando muestres un dato que salio de una herramienta, escribi el marcador en una linea sola y NO tipees vos el dato; el codigo lo reemplaza por el bloque real de la fuente:
+- {{PRESUPUESTO}} para un total, subtotal o lista de precios de calculate_total.
+- {{ENVIO}} para el costo de envio de cotizar_envio.
+- {{FAQ}} para una politica o respuesta de query_faq (pago, garantia, devoluciones, plazos, etc.).
+El resto (saludo, recomendacion, pregunta) lo escribis normal. Un precio suelto de UN producto podes decirlo; el presupuesto armado, el envio y las politicas van SIEMPRE con su marcador.
 
 El interprete ya entendio al cliente y te pasa el ESTADO de la charla. Respetalo, no lo cambies vos:
 - explorando: mostra productos o precios con las tools.
@@ -105,6 +109,25 @@ def _presupuesto_de_meta(meta: dict) -> str:
             pres = (tc.get("result") or {}).get("presentacion")
             if pres:
                 return pres
+    return ""
+
+
+def _faq_de_meta(meta: dict) -> str:
+    """Respuesta VERBATIM del ultimo query_faq (texto cargado en Firestore) + las
+    relacionadas, para estampar una politica tal cual la fuente, sin que el solver
+    la parafrasee mal. "" si no hubo consulta de FAQ valida este turno."""
+    for tc in reversed((meta or {}).get("tools_called", []) or []):
+        if tc.get("name") != "query_faq":
+            continue
+        res = tc.get("result")
+        if not isinstance(res, dict) or not res.get("encontrada"):
+            continue
+        partes = [str(res.get("respuesta", "")).strip()]
+        for rel in res.get("relacionadas", []) or []:
+            r = str((rel or {}).get("respuesta", "")).strip()
+            if r:
+                partes.append(r)
+        return "\n".join(p for p in partes if p)
     return ""
 
 
@@ -245,22 +268,33 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                   error=str(e)[:200])
         respuesta = settings.FALLBACK_MESSAGE
 
-    # ── CLON (ESTAMPA): el bloque de precio NACE de la fuente, no del modelo ──
-    # El solver pone {{PRESUPUESTO}} donde va el presupuesto; el codigo lo
-    # reemplaza por el bloque que renderizo calculate_total (numeros reales de
-    # Firestore via _render_presentacion). Asi el numero no se re-tipea ni se
-    # inventa. Si hay marcador pero no hubo calculo este turno, se quita (no se
-    # inventa nada). Se loguea cuando el solver calculo y NO uso el marcador, para
-    # medir cuanto cuesta endurecerlo despues.
+    # ── CLON (ESTAMPA): los datos duros NACEN de la fuente, no del modelo ──
+    # El solver pone un marcador donde va cada dato duro; el codigo lo reemplaza por
+    # el bloque real renderizado desde la tool/Firestore (precio = presentacion de
+    # calculate_total; envio = cotizar_envio; politica = respuesta verbatim de
+    # query_faq). Asi ni el presupuesto, ni el envio, ni una politica se re-tipean o
+    # se inventan. Marcador sin dato (la tool no corrio) -> se quita, no se inventa.
+    # Se loguea cuando el solver dio el presupuesto SIN marcador, para medir.
+    from app.core.estado_venta import envio_de_meta
+    _env = envio_de_meta(meta)
     _present = _presupuesto_de_meta(meta)
-    if "{{PRESUPUESTO}}" in (respuesta or ""):
-        if _present:
-            respuesta = respuesta.replace("{{PRESUPUESTO}}", _present)
-            log.info("interprete_libre_presupuesto_estampado", trace_id=trace_id)
+    _marcadores = {
+        "{{PRESUPUESTO}}": _present,
+        "{{ENVIO}}": (f"Envio a {_env}" if _env else ""),
+        "{{FAQ}}": _faq_de_meta(meta),
+    }
+    _tenia_marcador_presup = "{{PRESUPUESTO}}" in (respuesta or "")
+    for _marca, _bloque in _marcadores.items():
+        if _marca not in (respuesta or ""):
+            continue
+        if _bloque:
+            respuesta = respuesta.replace(_marca, _bloque)
+            log.info("interprete_libre_estampado", trace_id=trace_id, marca=_marca)
         else:
-            respuesta = respuesta.replace("{{PRESUPUESTO}}", "").strip()
-            log.warning("interprete_libre_marcador_sin_calculo", trace_id=trace_id)
-    elif _present:
+            respuesta = respuesta.replace(_marca, "").strip()
+            log.warning("interprete_libre_marcador_sin_dato",
+                        trace_id=trace_id, marca=_marca)
+    if _present and not _tenia_marcador_presup:
         log.warning("interprete_libre_presupuesto_sin_marcador", trace_id=trace_id)
 
     # ── PASO 2a: FILTRO DETERMINISTA — CLON DEL MOTOR DE PRECIOS/ENVIO ──────
