@@ -58,7 +58,7 @@ DATOS DUROS CON MARCADOR: cuando muestres un dato que salio de una herramienta, 
 - [[PRESUPUESTO]] para un total, subtotal o lista de precios de calculate_total.
 - [[ENVIO]] para el costo de envio de cotizar_envio.
 - [[FAQ]] para una politica o respuesta de query_faq (pago, garantia, devoluciones, plazos, etc.).
-- [[PROD:<id>]] CADA VEZ que menciones o listes un producto: poné el id EXACTO que te dio search_products/get_product_details (ej [[PROD:TEC0020]]) y NO tipees vos el nombre, el precio ni el stock; el codigo los pone reales de la fuente. Si no tenes el id de la herramienta, no menciones el producto: buscalo primero.
+- [[PROD:<id>]] reemplaza la LINEA ENTERA del producto. Cuando listes o menciones un producto escribi SOLO [[PROD:<id>]] con el id exacto de search_products (ej [[PROD:TEC0020]]) y NADA MAS sobre ese producto en esa linea: ni nombre, ni precio, ni stock, ni specs. El codigo pone la linea real. Podes agregar una frase de venta aparte (ej "ideal para gaming"), pero los datos del producto van SOLO en el marcador. Si no tenes el id, busca primero.
 El resto (saludo, recomendacion, pregunta) lo escribis normal. El presupuesto armado, el envio, las politicas y los productos van SIEMPRE con su marcador; nunca tipees un precio ni un stock vos mismo.
 
 El interprete ya entendio al cliente y te pasa el ESTADO de la charla. Respetalo, no lo cambies vos:
