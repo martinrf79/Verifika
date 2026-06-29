@@ -231,9 +231,7 @@ def calculate_total(items: list[dict] | None = None,
     # concepto de FAQ, fusiona el mismo producto mandado en dos lineas y deduplica
     # un extra identico. Asi un input sucio del modelo no ensucia el total.
     from app.core.calc_defensiva import normalizar_inputs
-    from app.core.tools_context import get_current_destino
-    items, items_extra, _err = normalizar_inputs(
-        items, items_extra, destino=get_current_destino())
+    items, items_extra, _err = normalizar_inputs(items, items_extra)
     if _err:
         return {"ok": False, "mensaje_para_llm": _err}
 
@@ -280,7 +278,19 @@ def calculate_total(items: list[dict] | None = None,
         from app.storage.firestore_client import get_all_faq
         faqs = get_all_faq(tienda_id=tid)
         extras_no_validos = []
-        for ex in items_extra:
+        # El ENVIO no se calcula aca. Su UNICA fuente es cotizar_envio, que deduce
+        # zona y tarifa de la localidad. La calculadora separa el envio del resto de
+        # extras (descuentos, recargos, sena, cuotas), que SI salen de la FAQ, y mas
+        # abajo le pide el costo a cotizar_envio. Que el modelo haya pasado un
+        # concepto de envio es solo la senal de "incluir envio"; el concepto se
+        # IGNORA, lo resuelve el codigo. Asi el costo de envio nace en un solo lugar.
+        pide_envio = any(
+            (e.get("faq_tema") or "").strip().lower() == "costo_envio"
+            for e in items_extra)
+        otros_extra = [
+            e for e in items_extra
+            if (e.get("faq_tema") or "").strip().lower() != "costo_envio"]
+        for ex in otros_extra:
             tema = (ex.get("faq_tema") or "").strip().lower()
             concepto = (ex.get("concepto") or "").strip()
             faq = faqs.get(tema)
@@ -289,42 +299,8 @@ def calculate_total(items: list[dict] | None = None,
                 continue
             valores = faq.get("valores") or []
             valor = next((v for v in valores if v.get("concepto") == concepto), None)
-            if (not valor and tema == "costo_envio"
-                    and concepto.startswith("envio_")):
-                # Concepto de tarifa por provincia: cotizar_envio emite
-                # envio_<provincia> con monto de config/tarifas_envio, que NO vive
-                # en la FAQ. La calculadora tiene que hablar el mismo idioma que el
-                # cotizador; si no, el modelo recibe "concepto no existe" e improvisa
-                # el total a mano (visto en el arnes, caso a25).
-                try:
-                    from app.storage.firestore_client import get_config
-                    _tabla = get_config("tarifas_envio", tienda_id=tid) or {}
-                    _monto_prov = (_tabla.get("provincias") or {}).get(
-                        concepto[len("envio_"):])
-                except Exception as e:
-                    log.warning("tarifas_envio_read_error", error=str(e)[:120])
-                    _monto_prov = None
-                if _monto_prov:
-                    valor = {"concepto": concepto, "modalidad": "fijo",
-                             "monto": int(_monto_prov), "unidad": "ars",
-                             "condicion": "tarifa exacta de esa provincia"}
             if not valor:
                 extras_no_validos.append(f"{tema}:{concepto} (concepto no existe)")
-                continue
-            # Envio gratis automatico por umbral: si el subtotal de PRODUCTOS
-            # supera UMBRAL_ENVIO_GRATIS, el envio es gratis sin importar el
-            # concepto pedido. Asi el total sale entero y deterministico de la
-            # calculadora y el modelo no improvisa (causa de fallback en cierres).
-            if tema == "costo_envio" and total > settings.UMBRAL_ENVIO_GRATIS:
-                if not envio_gratis_aplicado:
-                    extras_detalle.append({
-                        "faq_tema": tema, "concepto": concepto,
-                        "modalidad": "fijo", "monto": 0,
-                        "envio_gratis_auto": True,
-                        "condicion": (f"envio gratis por compra mayor a "
-                                      f"{settings.UMBRAL_ENVIO_GRATIS}"),
-                    })
-                    envio_gratis_aplicado = True
                 continue
             unidad = (valor.get("unidad") or "").strip().lower()
             if unidad == "porcentaje":
@@ -351,14 +327,11 @@ def calculate_total(items: list[dict] | None = None,
             elif valor.get("modalidad") == "fijo":
                 m = int(valor.get("monto", 0))
                 if unidad in _UNIDADES_MONETARIAS:
-                    mult = n_envios if tema == "costo_envio" else 1
-                    m *= mult
                     extra_min += m
                     extra_max += m
                     extras_detalle.append({
                         "faq_tema": tema, "concepto": concepto,
                         "modalidad": "fijo", "monto": m,
-                        **({"destinos": mult} if mult > 1 else {}),
                         "condicion": valor.get("condicion", ""),
                     })
                 else:
@@ -371,16 +344,14 @@ def calculate_total(items: list[dict] | None = None,
                         "condicion": valor.get("condicion", ""),
                     })
             elif valor.get("modalidad") == "rango":
-                mult = n_envios if tema == "costo_envio" else 1
-                mn = int(valor.get("monto_min", 0)) * mult
-                mx = int(valor.get("monto_max", 0)) * mult
+                mn = int(valor.get("monto_min", 0))
+                mx = int(valor.get("monto_max", 0))
                 extra_min += mn
                 extra_max += mx
                 hay_rango = True
                 extras_detalle.append({
                     "faq_tema": tema, "concepto": concepto,
                     "modalidad": "rango", "monto_min": mn, "monto_max": mx,
-                    **({"destinos": mult} if mult > 1 else {}),
                     "condicion": valor.get("condicion", ""),
                 })
             else:
@@ -399,6 +370,48 @@ def calculate_total(items: list[dict] | None = None,
                    f"validos son (faq_tema: conceptos): {cuantitativas}. "
                    f"Reintenta calculate_total usando exactamente uno de esos pares.")
             return {"ok": False, "mensaje_para_llm": msg}
+
+        # ── ENVIO: lo cotiza cotizar_envio (unica fuente), la calculadora solo lo
+        #    TOMA y lo cobra una vez por destino. Se le pasa el subtotal real, asi
+        #    el envio gratis por umbral lo decide tambien cotizar_envio, no esta
+        #    funcion. Si no hay zona (falta direccion), se devuelve ok False con el
+        #    pedido de cotizar_envio: nunca se inventa un costo de envio.
+        if pide_envio:
+            from app.core.estado_venta import get_envio_localidad
+            quote = cotizar_envio(localidad=get_envio_localidad(), subtotal=total)
+            if not quote.get("ok"):
+                return {"ok": False, "mensaje_para_llm": quote.get(
+                    "mensaje_para_llm",
+                    "Para sumar el envio al total necesito la zona. Pedile al "
+                    "cliente la provincia o el codigo postal y cotiza el envio "
+                    "con cotizar_envio antes de calcular el total.")}
+            concepto_env = quote.get("concepto") or "envio"
+            if quote.get("modalidad") == "rango":
+                mn = int(quote.get("monto_min", 0)) * n_envios
+                mx = int(quote.get("monto_max", 0)) * n_envios
+                extra_min += mn
+                extra_max += mx
+                hay_rango = True
+                extras_detalle.append({
+                    "faq_tema": "costo_envio", "concepto": concepto_env,
+                    "modalidad": "rango", "monto_min": mn, "monto_max": mx,
+                    **({"destinos": n_envios} if n_envios > 1 else {}),
+                    "condicion": "tarifa de envio cotizada por zona",
+                })
+            else:
+                m = int(quote.get("monto", 0)) * n_envios
+                extra_min += m
+                extra_max += m
+                if m == 0:
+                    envio_gratis_aplicado = True
+                extras_detalle.append({
+                    "faq_tema": "costo_envio", "concepto": concepto_env,
+                    "modalidad": "fijo", "monto": m,
+                    **({"destinos": n_envios} if n_envios > 1 else {}),
+                    **({"envio_gratis_auto": True} if m == 0 else {}),
+                    "condicion": ("envio gratis por umbral" if m == 0
+                                  else "tarifa de envio cotizada por zona"),
+                })
 
     _nota_envio = None
     if envio_gratis_aplicado:
@@ -939,7 +952,7 @@ def _build_schema():
                         },
                         "items_extra": {
                             "type": "array",
-                            "description": "Extras desde FAQ cuantitativa. faq_tema es el ID de la FAQ (ej costo_envio) y concepto es el id del valor estructurado (ej envio_interior o envio_caba_gba). Solo usar conceptos que existan en la FAQ.",
+                            "description": "Extras del total. Para descuentos, recargos, sena o cuotas: faq_tema es el ID de la FAQ cuantitativa y concepto es el id del valor (ej transferencia, financiacion). Para INCLUIR EL ENVIO en el total: pasa un extra con faq_tema costo_envio; el concepto es opcional y se ignora, el costo lo resuelve cotizar_envio por la zona. Cotiza el envio con cotizar_envio ANTES de pedir el total con envio.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -1242,6 +1255,11 @@ def cotizar_envio(localidad: str | None = None,
                 "eso te doy la tarifa exacta. NO asumas la zona ni la tarifa."
             ),
         }
+
+    # Zona resuelta: guardo la localidad efectiva para que calculate_total le pida
+    # el costo a ESTA misma herramienta (unica fuente del envio), sin recalcularla.
+    from app.core.estado_venta import set_envio_localidad
+    set_envio_localidad(localidad)
 
     faqs = get_all_faq(tienda_id=tid) or {}
     faq = faqs.get("costo_envio")

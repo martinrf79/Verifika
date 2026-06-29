@@ -8,76 +8,24 @@ dualidades de input. Si algo no se puede normalizar de forma segura, devuelve un
 error claro para que calculate_total responda ok False y el bot vuelva a
 preguntar, en vez de armar un total sucio.
 
-Esta primera version cubre:
+Esta version cubre:
 - P2: cantidad cero o negativa o no numerica -> se rechaza.
 - P3: concepto de FAQ con otra capitalizacion -> se normaliza a minuscula (igual
   que ya se hace con faq_tema), asi matchea contra el valor de la FAQ.
 - P4: el mismo product_id mandado en dos lineas -> se fusiona en una sola,
   sumando las cantidades.
 - P1: el mismo extra (faq_tema + concepto) mandado dos veces -> se deduplica.
-
-- P5: dos conceptos de envio DISTINTOS -> se elige uno filtrando por el destino
-  del cliente (caba_gba o interior), igual que filtra la busqueda de productos.
-  El destino lo inyecta el backend por contextvar, el LLM no lo elige. Si no hay
-  destino claro, se rechaza para que el bot pregunte, sin adivinar el envio.
+- P5: varios extras de costo_envio -> se colapsan en UN disparador. El costo de
+  envio NO se decide aca: su unica fuente es cotizar_envio, que deduce la zona de
+  la direccion. El concepto de envio que mande el modelo es irrelevante, lo ignora
+  la calculadora. Por eso esta capa ya no clasifica zona ni desempata por destino.
 
 Es el unico camino de calculate_total (ex flag CALC_DEFENSIVA, consolidado): la
 tool siempre invoca esta capa antes de calcular.
 """
 
-# Palabras que delatan el destino del envio en el texto del cliente. Se buscan
-# como subcadena sobre el mensaje normalizado a minuscula sin acentos.
-_KW_CABA_GBA = (
-    "caba", "capital", "ciudad autonoma", "ciudad de buenos aires", "microcentro",
-    "gba", "gran buenos aires", "conurbano", "zona norte", "zona sur", "zona oeste",
-    "provincia de buenos aires", "buenos aires",
-)
-_KW_INTERIOR = (
-    "interior", "provincia", "cordoba", "rosario", "santa fe", "mendoza", "tucuman",
-    "salta", "neuquen", "bariloche", "mar del plata", "la plata", "jujuy", "chaco",
-    "misiones", "corrientes", "entre rios", "san juan", "san luis", "catamarca",
-    "formosa", "chubut", "rio negro", "santa cruz", "tierra del fuego", "la rioja",
-    "santiago del estero", "la pampa",
-)
 
-
-def _norm(texto: str) -> str:
-    import unicodedata
-    s = unicodedata.normalize("NFKD", str(texto or "").lower())
-    return "".join(c for c in s if not unicodedata.combining(c))
-
-
-def destino_a_categoria(texto: str):
-    """Detecta el destino del envio en el texto del cliente y lo categoriza en
-    'caba_gba', 'interior' o None si no es claro. Determinista, sin modelo.
-    'la plata' (interior) gana a 'buenos aires' (caba_gba) por especificidad: se
-    revisa interior primero solo cuando el match es mas largo y especifico."""
-    c = _norm(texto)
-    # 'buenos aires' es ambiguo: aparece tanto en CABA como en 'provincia de
-    # buenos aires'. Por eso interior pesa cuando hay una localidad puntual.
-    hit_interior = next((k for k in _KW_INTERIOR if k in c), None)
-    hit_caba = next((k for k in _KW_CABA_GBA if k in c), None)
-    if hit_interior and hit_caba:
-        # Si el match de interior es mas especifico (mas largo), gana interior.
-        return "interior" if len(hit_interior) >= len(hit_caba) else "caba_gba"
-    if hit_interior:
-        return "interior"
-    if hit_caba:
-        return "caba_gba"
-    return None
-
-
-def _concepto_a_categoria(concepto: str):
-    """Categoriza un concepto de envio de la FAQ por su nombre."""
-    c = concepto.lower()
-    if "caba" in c or "gba" in c:
-        return "caba_gba"
-    if "interior" in c:
-        return "interior"
-    return None
-
-
-def normalizar_inputs(items, items_extra, destino=None):
+def normalizar_inputs(items, items_extra):
     """
     Normaliza y valida los inputs de calculate_total.
 
@@ -130,32 +78,13 @@ def normalizar_inputs(items, items_extra, destino=None):
             vistos.add(clave)
             items_extra_norm.append({"faq_tema": tema, "concepto": concepto})
 
-        # ── P5: dos conceptos de envio DISTINTOS -> uno solo por destino ──
+        # ── P5: un solo disparador de envio. El costo lo resuelve cotizar_envio
+        # (unica fuente); el concepto es irrelevante. Si vinieron varios extras de
+        # costo_envio, se deja uno y se descartan los demas, sin clasificar zona.
         envios = [e for e in items_extra_norm if e["faq_tema"] == "costo_envio"]
-        distintos = {e["concepto"] for e in envios}
-        if len(distintos) > 1:
-            if not destino:
-                return None, None, (
-                    "Hay mas de un costo de envio posible y no me queda claro el "
-                    "destino. Preguntale al cliente si el envio es a CABA o GBA o "
-                    "al interior, y volve a cotizar con esa respuesta. NO elijas "
-                    "un envio al azar."
-                )
-            elegidos = {
-                e["concepto"] for e in envios
-                if _concepto_a_categoria(e["concepto"]) == destino
-            }
-            if len(elegidos) != 1:
-                return None, None, (
-                    f"No puedo resolver el envio para el destino '{destino}' entre "
-                    f"los conceptos {sorted(distintos)}. Confirmale el destino al "
-                    f"cliente antes de cotizar."
-                )
-            keep = elegidos.pop()
-            # Conservar todo lo que no sea envio, mas el unico envio elegido.
+        if len(envios) > 1:
             items_extra_norm = [
-                e for e in items_extra_norm
-                if e["faq_tema"] != "costo_envio" or e["concepto"] == keep
-            ]
+                e for e in items_extra_norm if e["faq_tema"] != "costo_envio"
+            ] + [envios[0]]
 
     return items_norm, items_extra_norm, None

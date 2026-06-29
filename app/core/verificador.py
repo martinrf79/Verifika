@@ -233,6 +233,12 @@ def _totales_validos(evidence: list[dict]) -> set:
         if item.get("tipo") != "proof":
             continue
         proof = item.get("proof", {}) or {}
+        # El PROOF de cotizar_envio NO es un total: su resultado es el costo de
+        # envio. Si entrara aca, un costo de envio (ej 7.500) quedaria como total
+        # valido y el corrector podria reescribir un total por una cifra de envio.
+        # El total tiene una sola fuente: el PROOF de calculate_total.
+        if proof.get("tipo") == "envio":
+            continue
         tot |= _totales_derivables(proof)
         for k in ("resultado", "resultado_min", "resultado_max"):
             v = proof.get(k)

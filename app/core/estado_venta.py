@@ -22,11 +22,32 @@ from typing import Any
 
 _current_estado: ContextVar[dict | None] = ContextVar("current_estado", default=None)
 
+# Localidad que cotizar_envio clasifico con exito en este turno. Es el puente entre
+# las dos herramientas mellizas de envio: cotizar_envio (UNICA que calcula el costo)
+# la escribe, y calculate_total la lee para volver a pedirle a cotizar_envio el monto
+# con el subtotal real, sin recalcular zona ni tarifa por su cuenta. Asi el costo de
+# envio nace en un solo lugar y la calculadora solo lo toma.
+_envio_localidad: ContextVar[str | None] = ContextVar("envio_localidad", default=None)
+
 
 def set_current_estado(estado: dict | None):
     """Setea el estado de venta del request. Lo llama el camino vivo al arrancar
-    el turno, despues de cargar la conversacion y el lead."""
+    el turno, despues de cargar la conversacion y el lead. Limpia la localidad de
+    envio del turno anterior para no arrastrar una cotizacion vieja."""
     _current_estado.set(estado)
+    _envio_localidad.set(None)
+
+
+def set_envio_localidad(localidad: str | None):
+    """Guarda la localidad que cotizar_envio clasifico bien este turno, para que la
+    calculadora le pida el costo a la MISMA herramienta con el subtotal real."""
+    _envio_localidad.set((localidad or "").strip() or None)
+
+
+def get_envio_localidad() -> str | None:
+    """Localidad cotizada este turno, o None. La lee calculate_total para delegar el
+    costo de envio en cotizar_envio sin recalcular la zona."""
+    return _envio_localidad.get()
 
 
 def get_current_estado() -> dict:
