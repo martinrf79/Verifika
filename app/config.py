@@ -229,6 +229,28 @@ class Settings(BaseModel):
     #   off   = el cierre no actua; el bot vende igual, sin captar lead.
     MODO_CIERRE: str = os.getenv("MODO_CIERRE", "venta").lower()
 
+    # TARIFA DE ENVIO AL INTERIOR POR PROVINCIA (fuente de verdad en codigo). El
+    # interior dejo de ser un rango: cada provincia tiene un monto fijo, dentro del
+    # rango publicado en la FAQ costo_envio (5000-12000), agrupado en tres tramos
+    # por distancia al origen de despacho (Buenos Aires). Asi cotizar_envio devuelve
+    # UN numero por destino, el Solver no inventa una cifra y el total sale unico.
+    # Editar aca para ajustar; una entrada en Firestore config 'tarifas_envio'
+    # (clave 'provincias') pisa este default por tienda. Las claves son los slugs
+    # que devuelve clasificar_provincia (envio.py). El disclaimer avisa que el costo
+    # puede variar al confirmar la compra.
+    ENVIO_INTERIOR_POR_PROVINCIA: dict = {
+        # Cercano
+        "buenos_aires": 6000, "cordoba": 6000, "santa fe": 6000,
+        "entre rios": 6000, "la pampa": 6000,
+        # Medio
+        "mendoza": 9000, "san luis": 9000, "san juan": 9000, "tucuman": 9000,
+        "santiago del estero": 9000, "la rioja": 9000, "catamarca": 9000,
+        "salta": 9000, "jujuy": 9000, "corrientes": 9000, "chaco": 9000,
+        "formosa": 9000, "misiones": 9000, "neuquen": 9000, "rio negro": 9000,
+        # Lejano (Patagonia sur)
+        "chubut": 12000, "santa cruz": 12000, "tierra del fuego": 12000,
+    }
+
     # Codigo secreto de reset para pruebas. Si el mensaje del usuario es
     # exactamente este texto (case-insensitive, sin espacios extra), se borra
     # toda la conversacion y el sistema responde confirmando el reset.

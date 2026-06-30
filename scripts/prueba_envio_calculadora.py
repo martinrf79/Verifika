@@ -53,8 +53,10 @@ T.get_all_faq = _faq
 FS.get_all_faq = _faq
 T.get_product_by_id = _prod
 FS.get_product_by_id = _prod
-# Sin tabla de tarifas por provincia: interior cae al rango generico (no credenciales).
+# Sin tabla de tarifas por provincia (ni en Firestore ni en el mapa de config.py):
+# interior cae al colapso por tope publicado. Asi este banco prueba ESE camino.
 FS.get_config = lambda clave, tienda_id=None: {}
+T.settings.ENVIO_INTERIOR_POR_PROVINCIA = {}
 set_current_tienda("test")
 
 resultados = []
