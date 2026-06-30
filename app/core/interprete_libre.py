@@ -516,7 +516,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # genera el link de Mercado Pago con el total VERIFICADO de la calculadora (de
     # presentacion, nunca un monto del modelo). Si no hay cierre, la respuesta libre
     # del solver queda intacta. El presupuesto sale del turno o de la memoria.
-    presupuesto = _presupuesto_de_meta(meta) or (conv.get("ultimo_presupuesto") or "")
+    _present_turno = _presupuesto_de_meta(meta)
+    presupuesto = _present_turno or (conv.get("ultimo_presupuesto") or "")
+    # Presupuesto NUEVO = la calculadora dio un total ESTE turno (no de memoria).
+    # Es el momento natural para la pregunta suave de cierre, asi no se repite.
+    presupuesto_nuevo = bool(_present_turno)
 
     # ── ACUMULAR DATOS DEL CLIENTE turno a turno (raiz del re-pedido) ────────
     # El cliente suele dar la direccion, el pago o el nombre ANTES de la decision
@@ -555,7 +559,8 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 user_id, canal, tienda_id, raw_message, respuesta, trace_id,
                 interpretacion=interp if isinstance(interp, dict) else None,
                 presupuesto=presupuesto,
-                datos_turno=datos_turno, datos_previos=datos_acumulados)
+                datos_turno=datos_turno, datos_previos=datos_acumulados,
+                presupuesto_nuevo=presupuesto_nuevo)
             if meta_lead.get("respuesta_directa"):
                 respuesta = meta_lead["respuesta_directa"]
                 log.info("interprete_libre_cierre", trace_id=trace_id,

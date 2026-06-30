@@ -33,6 +33,8 @@ async def _fake_notificar(**kw):
 leads.crear_lead = _fake_crear_lead
 leads.notificar_lead = _fake_notificar
 leads.get_lead_activo = lambda *a, **k: None  # sin lead activo previo
+leads.actualizar_lead = lambda *a, **k: None  # no toca Firestore
+leads.modo_cierre = lambda tid: "venta"       # modalidad fija para la prueba
 
 INTERP_COMPRA = {"intencion": "decision_compra", "confianza": 0.92,
                  "producto_resuelto": "Teclado Genius KB-110X"}
@@ -63,11 +65,38 @@ async def main():
         "compra sin precio mostrado -> tibia, no pide datos",
         presupuesto="", interpretacion=INTERP_COMPRA,
         espera_accion="tibia_registrada"))
-    # 2) Senial de compra CON presupuesto: dispara cierre fuerte.
+    # 2) Senial de compra CON presupuesto: dispara cierre fuerte y, como el lead
+    #    se siembra con el telefono del canal pero faltan nombre/direccion/pago,
+    #    pide SOLO lo que falta (pidiendo_datos).
     r.append(await caso(
-        "compra con presupuesto -> handoff fuerte, pide datos",
+        "compra con presupuesto -> cierre fuerte, pide datos faltantes",
         presupuesto="Teclado Genius KB-110X - 12.000\nTotal: 12.000",
-        interpretacion=INTERP_COMPRA, espera_accion="handoff_humano"))
+        interpretacion=INTERP_COMPRA, espera_accion="pidiendo_datos"))
+
+    # 2b) PREGUNTA SUAVE: interes (pregunta_especifica) con presupuesto NUEVO y sin
+    #     decision confirmada -> el bot suma la pregunta de cierre a la respuesta.
+    _leads_creados.clear()
+    _, meta_q = await leads.procesar_mensaje_para_lead(
+        user_id="u1", canal="telegram", tienda_id="verifika_prod",
+        mensaje="me gusta ese teclado", respuesta_solver="Es un gran teclado.",
+        trace_id="t",
+        interpretacion={"intencion": "pregunta_especifica", "confianza": 0.6},
+        presupuesto="Total: 12.000", presupuesto_nuevo=True)
+    ok2b = (meta_q.get("accion") == "pregunta_cierre"
+            and leads.PREGUNTA_CIERRE in (meta_q.get("respuesta_directa") or ""))
+    print(f"  [{'OK' if ok2b else 'FALLA'}] interes + precio nuevo -> pregunta suave")
+    r.append(ok2b)
+
+    # 2c) MISMO interes pero presupuesto de MEMORIA (no nuevo) -> no pregunta.
+    _, meta_nn = await leads.procesar_mensaje_para_lead(
+        user_id="u1", canal="telegram", tienda_id="verifika_prod",
+        mensaje="me gusta ese teclado", respuesta_solver="Es un gran teclado.",
+        trace_id="t",
+        interpretacion={"intencion": "pregunta_especifica", "confianza": 0.6},
+        presupuesto="Total: 12.000", presupuesto_nuevo=False)
+    ok2c = meta_nn.get("accion") == "ninguna"
+    print(f"  [{'OK' if ok2c else 'FALLA'}] interes + precio de memoria -> sin pregunta")
+    r.append(ok2c)
 
     # 3) Lead activo pidiendo datos, pero el cliente PIVOTEA a una pregunta nueva:
     #    el cierre se PAUSA y deja contestar al Solver (no extrae datos truchos).

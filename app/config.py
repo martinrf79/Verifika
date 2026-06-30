@@ -221,6 +221,14 @@ class Settings(BaseModel):
         "search_products,get_product_details,list_catalog,query_faq,"
         "calculate_total,cotizar_envio")
 
+    # Modalidad del cierre (aditivo, por tienda). La config "modo_cierre" en
+    # Firestore pisa este default por tienda; esto es el valor base. Es config
+    # de producto (que plan se le vende a cada usuario), no un camino apagado:
+    #   venta = capta el lead y manda el link de Mercado Pago (total verificado).
+    #   lead  = capta el lead y avisa al usuario, sin link (cierre humano).
+    #   off   = el cierre no actua; el bot vende igual, sin captar lead.
+    MODO_CIERRE: str = os.getenv("MODO_CIERRE", "venta").lower()
+
     # Codigo secreto de reset para pruebas. Si el mensaje del usuario es
     # exactamente este texto (case-insensitive, sin espacios extra), se borra
     # toda la conversacion y el sistema responde confirmando el reset.
