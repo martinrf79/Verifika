@@ -1326,9 +1326,10 @@ def cotizar_envio(localidad: str | None = None,
         }
 
     # Tarifa EXACTA por provincia (unico camino, sin flag): si la provincia se
-    # determina con certeza y la tienda tiene tabla cargada, se devuelve el monto
-    # fijo de esa provincia en vez del rango generico de interior. Si no hay
-    # certeza o no hay tabla, sigue el flujo de siempre: nunca se adivina.
+    # determina con certeza, se devuelve su monto fijo en vez del rango generico de
+    # interior. La fuente de verdad es config.py (ENVIO_INTERIOR_POR_PROVINCIA); una
+    # tabla en Firestore 'tarifas_envio' pisa ese default por tienda. Si la provincia
+    # no se determina, cae al colapso por tope de abajo: nunca se adivina la zona.
     if zona == "interior":
         from app.core.envio import clasificar_provincia
         from app.storage.firestore_client import get_config
@@ -1339,7 +1340,9 @@ def cotizar_envio(localidad: str | None = None,
             except Exception as e:
                 log.warning("tarifas_envio_read_error", error=str(e)[:120])
                 tabla = {}
-            monto_prov = (tabla.get("provincias") or {}).get(prov)
+            # Firestore pisa; si no hay, el mapa del codigo (fuente de verdad).
+            monto_prov = (tabla.get("provincias") or {}).get(prov) \
+                or settings.ENVIO_INTERIOR_POR_PROVINCIA.get(prov)
             if monto_prov:
                 monto_prov = int(monto_prov)
                 prov_legible = prov.replace("_", " ").title()

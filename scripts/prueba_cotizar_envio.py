@@ -50,9 +50,17 @@ check("CABA: ok, fijo 4500, zona caba",
 r = T.cotizar_envio("Lomas de Zamora")
 check("GBA: ok, fijo 4500", r["ok"] and r["monto"] == 4500 and r["zona"] == "gba")
 
-# Interior -> tarifa fija (se mata el rango en la fuente: el tope publicado 16000)
+# Tarifa fija POR PROVINCIA (fuente de verdad en config.py): Cordoba tiene su monto.
+T.settings.ENVIO_INTERIOR_POR_PROVINCIA = {"cordoba": 6000, "chubut": 12000}
 r = T.cotizar_envio("Colon 4500 Cordoba capital")
-check("INTERIOR: ok, fijo 16000 (tope, sin rango), zona interior",
+check("PROVINCIA: Cordoba -> fijo 6000 del mapa por provincia",
+      r["ok"] and r["modalidad"] == "fijo" and r["monto"] == 6000
+      and r.get("provincia") == "cordoba" and "monto_min" not in r)
+
+# Interior SIN provincia en el mapa -> colapsa al tope publicado (16000), sin rango.
+T.settings.ENVIO_INTERIOR_POR_PROVINCIA = {}
+r = T.cotizar_envio("Colon 4500 Cordoba capital")
+check("INTERIOR sin tarifa de provincia: fijo 16000 (tope, sin rango)",
       r["ok"] and r["modalidad"] == "fijo" and r["monto"] == 16000
       and r["zona"] == "interior" and "monto_min" not in r)
 
