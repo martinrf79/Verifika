@@ -62,18 +62,27 @@ todo el turno:
    en Cloud Logging y se diagnosticaba a ciegas. Leer con: filtro `jsonPayload.event="interprete_libre_ok"`,
    formato `value(timestamp,jsonPayload.trace_id,jsonPayload.respuesta_preview)`.
 
-## PENDIENTE PRIORITARIO — bug del ENVÍO (diagnosticado 29-jun, sin arreglar)
+## ENVÍO — bug de zona RESUELTO (commit 16fce67, 29-jun)
 
-Síntoma (caso real, 3 envíos a Córdoba: Río Tercero, Villa María, Córdoba Capital):
-el costo de envío cambia turno a turno para el MISMO pedido ($7.500 fijo en un turno,
-"$5.000–$12.000" + $3.000 en el siguiente) y a Córdoba Capital le cobró $3.000, que es la
-tarifa de CABA/GBA, no la de interior. Número real, ZONA equivocada: el verificador no lo
-caza porque chequea respaldo, no zona. CAUSA RAÍZ: el solver ELIGE la zona pasando el
-concepto de envío a mano (`envio_caba_gba` / `envio_interior`) dentro de `calculate_total`,
-y la elige mal y distinto cada vez. FIX DE FONDO: la zona/costo de envío debe salir SIEMPRE
-de `cotizar_envio` (determinista, deriva la zona de la localidad/CP del destino); el solver
-no debe poder pasar un concepto de envío inventado. Toca `tools.py` (calculate_total/items_extra
-y cotizar_envio) — no es de una línea, mostrar archivos y riesgo antes de tocar.
+`cotizar_envio` quedó como ÚNICA fuente del costo de envío. `calculate_total` ya no elige
+zona ni concepto: cuando el total incluye envío, le pide el monto a `cotizar_envio` con el
+subtotal real y lo cobra una vez por destino. El corrector dejó de tratar el envío como
+total candidato. Banco `prueba_envio_calculadora` 9/9. El síntoma viejo (costo de envío que
+cambiaba turno a turno y zona equivocada a Córdoba) ya no aplica.
+
+## CIERRE — unificado y aditivo (commit nuevo, 30-jun)
+
+Se borraron los TRES jueces que se pisaban: ahora la decisión de cierre la toma UN solo juez,
+el interpretador (`decision_compra` con confianza ≥ 0.85). Fuera el regex `_RE_PIDE_LINK` y el
+detector legacy `detectar_intencion`. Cuando hay interés pero NO decisión confirmada y recién
+se mostró un precio NUEVO, el bot suma una pregunta suave de cierre ("¿Te parece si avanzamos
+con la compra?"); un "sí" vuelve como `decision_compra` y cierra. Ante duda, todo cae en la
+pregunta, no en un juez paralelo.
+El cierre es ADITIVO y tiene modalidad por tienda (`MODO_CIERRE` en config.py, pisable con la
+config `modo_cierre` en Firestore): `venta` (capta el lead + manda link de Mercado Pago),
+`lead` (capta el lead y avisa al usuario, sin link) y `off` (no actúa; el bot vende igual).
+Default `venta`. Pendiente a futuro dentro de `venta`: datos de cuenta bancaria/CBU como
+segunda opción al link.
 
 ## Datos: un solo catálogo, una sola FAQ
 
@@ -94,9 +103,8 @@ y cotizar_envio) — no es de una línea, mostrar archivos y riesgo antes de toc
    Leer el evento `llm_usage` (cuántas llamadas y tokens por turno) y capar: apagar pensante,
    frenar reintentos, prender el extractor solo cuando hace falta. Es config, no toca la
    interpretación. Va ANTES del motor de intenciones.
-2. **Motor de decisión de cierre unificado**: hoy deciden el "fuerte" tres jueces que se pisan
-   (ver cambio 3 del 29-jun). Unificar en un solo motor alimentado por el intérprete. Es
-   arquitectura, no un parche; encararlo con el costo ya bajo control.
+2. ~~**Motor de decisión de cierre unificado**~~ HECHO (30-jun): un solo juez (el intérprete) +
+   pregunta suave de cierre + modalidad por tienda (`MODO_CIERRE`). Ver sección "CIERRE".
 3. **Ampliar la autocorrección** a lo que NO es una cifra: texto de FAQ (garantía,
    devoluciones) y existencia de producto. Total, envío y precio ya se corrigen.
 4. **Calidad de interpretación / deducción** (NORTE del proyecto): el bot dejó de deducir

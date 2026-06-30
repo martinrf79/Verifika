@@ -68,23 +68,23 @@ L.get_lead_activo = lambda user_id, canal, tienda_id: None
 L.crear_lead = _fake_crear_lead
 L.actualizar_lead = lambda lead_id, tienda_id, cambios: _updates.append(cambios)
 L.notificar_lead = _fake_notificar
+L.modo_cierre = lambda tid: "venta"  # modalidad fija para la prueba
 
 PRESUP = "Presupuesto:\n2x Mouse: $24.000\n2x Teclado: $110.000\nTotal: $141.500"
 INTERP_COMPRA = {"intencion": "decision_compra", "confianza": 0.9}
 
 
 def _correr(mensaje, datos_extractor, presupuesto=PRESUP):
-    """Corre procesar_mensaje_para_lead con el extractor monkeypatcheado para
-    devolver datos_extractor (lo que el LLM 'leeria' del mensaje)."""
-    cierre.extraer_datos_cliente = lambda m, t=None: {
-        "nombre": "", "telefono": "", "direccion": "", "forma_pago": "",
-        **datos_extractor}
+    """Corre procesar_mensaje_para_lead pasando datos_turno=datos_extractor: la
+    extraccion de datos del mensaje vive ahora en interprete_libre y llega al
+    cierre por ese parametro (lo que el LLM 'leeria' del mensaje)."""
     _updates.clear()
     return asyncio.get_event_loop().run_until_complete(
         L.procesar_mensaje_para_lead(
             user_id="u1", canal="whatsapp", tienda_id="verifika_prod",
             mensaje=mensaje, respuesta_solver="", trace_id="t1",
-            interpretacion=INTERP_COMPRA, presupuesto=presupuesto))
+            interpretacion=INTERP_COMPRA, presupuesto=presupuesto,
+            datos_turno=dict(datos_extractor)))
 
 
 # ── 2) EL CASO: forma de pago + direccion en el mensaje disparador ──
@@ -95,9 +95,9 @@ chequear("siembra: la forma de pago entro al lead (no se pide de cero)",
          any(c.get("forma_pago") == "mercado pago" for c in _updates))
 chequear("siembra: NO termina en handoff generico",
          meta["accion"] == "pidiendo_datos")
-chequear("siembra: pide solo nombre y telefono (lo que falta)",
+chequear("siembra: pide solo el nombre (telefono se siembra del canal, pago y direccion ya vinieron)",
          "nombre" in meta["respuesta_directa"]
-         and "telefono" in meta["respuesta_directa"]
+         and "telefono" not in meta["respuesta_directa"].lower()
          and "pago" not in meta["respuesta_directa"].lower())
 
 # ── 3) Mensaje disparador con los CUATRO datos: cierra en el acto ──
@@ -111,10 +111,11 @@ chequear("cuatro datos: cierra venta en un turno",
 chequear("cuatro datos: marca el lead capturado",
          any(c.get("estado") == "capturado" for c in _updates))
 
-# ── 4) Disparador SIN datos: cae al handoff de siempre (no rompe) ──
+# ── 4) Disparador SIN datos del mensaje: el telefono se siembra del canal, asi
+#    que pide los tres datos que faltan (nombre, direccion, forma de pago). ──
 _extra3, meta3 = _correr("dale, lo quiero, cerralo", {})
-chequear("sin datos: handoff generico como antes",
-         meta3["accion"] == "handoff_humano")
+chequear("sin datos: pide los faltantes (telefono ya sembrado del canal)",
+         meta3["accion"] == "pidiendo_datos")
 
 # ── Resumen ──
 print()
