@@ -693,6 +693,29 @@ def _faq_keyword_match(consulta: str, faq: dict):
     return mejor if mejor_score > 0 else None
 
 
+def _faq_candidatos(consulta: str, faq: dict, n: int = 5) -> list[str]:
+    """Preselecciona los N temas mas plausibles para el fallback del LLM, cuando
+    el match estricto fallo. Score = palabras de la consulta que aparecen en las
+    keywords o en el nombre del tema (solapamiento PARCIAL, basta una palabra).
+    Asi el LLM recibe pocos candidatos en vez de los 44 temas enteros: mismo
+    rescate semantico, mucho menos prompt. Devuelve los temas de mayor a menor."""
+    palabras = {_canon_palabra(w) for w in _norm_txt(consulta).split() if len(w) > 2}
+    if not palabras:
+        return list(faq.keys())[:n]
+    puntajes = []
+    for tema, data in faq.items():
+        vocab = {_canon_palabra(w) for w in _norm_txt(tema).split()}
+        for kw in data.get("keywords", []) or []:
+            vocab |= {_canon_palabra(w) for w in _norm_txt(kw).split()}
+        score = len(palabras & vocab)
+        if score > 0:
+            puntajes.append((score, tema))
+    if not puntajes:
+        return list(faq.keys())[:n]
+    puntajes.sort(key=lambda t: (-t[0], t[1]))
+    return [tema for _, tema in puntajes[:n]]
+
+
 def _faq_resp(tema: str, data: dict) -> dict:
     resp = {
         "encontrada": True,
@@ -745,19 +768,24 @@ def query_faq(consulta: str) -> dict:
         log.info("query_faq_keyword_hit", tema=tema_kw)
         return _faq_resp(tema_kw, faq[tema_kw])
 
+    # Fallback semantico: solo los temas candidatos y solo su nombre + keywords,
+    # no la respuesta entera de los 44. Recorta el prompt sin perder la eleccion:
+    # el LLM elige el TEMA y la respuesta completa la trae el codigo despues.
+    candidatos = _faq_candidatos(consulta, faq)
     temas_texto = ""
-    for tema, data in faq.items():
-        respuesta = data.get("respuesta", "")
-        temas_texto += "\n- tema: " + tema + "\n  respuesta: " + respuesta + "\n"
+    for tema in candidatos:
+        kws = ", ".join((faq[tema].get("keywords") or [])[:8])
+        temas_texto += "\n- tema: " + tema + "\n  cubre: " + kws + "\n"
 
     system_prompt = (
-        "Sos un buscador de FAQ. Recibis una consulta y una lista de temas con respuestas. "
-        "Elegi UN tema que responda directamente, o deci que ninguno aplica.\n"
+        "Sos un buscador de FAQ. Recibis una consulta y una lista de temas con las "
+        "palabras que cubre cada uno. Elegi UN tema que responda directamente, o deci "
+        "que ninguno aplica.\n"
         "REGLAS:\n"
-        "1. Solo elegi un tema si la respuesta contiene la informacion exacta que pide el cliente.\n"
+        "1. Solo elegi un tema si claramente cubre lo que pide el cliente.\n"
         "2. Si la consulta menciona costos, plazos, pagos, envios, garantia, devoluciones, "
-        "buscá entre los temas el que tenga esa info concreta.\n"
-        "3. Si ningun tema responde, devolve tema vacio.\n"
+        "buscá el tema que cubra eso.\n"
+        "3. Si ningun tema aplica, devolve tema vacio.\n"
         "4. Devolve SOLO JSON estricto: "
         '{\"tema\": \"nombre\" o \"\"}'
     )
