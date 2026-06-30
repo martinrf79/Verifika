@@ -50,19 +50,19 @@ check("CABA: ok, fijo 4500, zona caba",
 r = T.cotizar_envio("Lomas de Zamora")
 check("GBA: ok, fijo 4500", r["ok"] and r["monto"] == 4500 and r["zona"] == "gba")
 
-# Interior -> rango
+# Interior -> tarifa fija (se mata el rango en la fuente: el tope publicado 16000)
 r = T.cotizar_envio("Colon 4500 Cordoba capital")
-check("INTERIOR: ok, rango 6500-16000, zona interior",
-      r["ok"] and r["modalidad"] == "rango" and r["monto_min"] == 6500
-      and r["monto_max"] == 16000 and r["zona"] == "interior")
+check("INTERIOR: ok, fijo 16000 (tope, sin rango), zona interior",
+      r["ok"] and r["modalidad"] == "fijo" and r["monto"] == 16000
+      and r["zona"] == "interior" and "monto_min" not in r)
 
 # Zona indeterminada -> no cotiza, pide dato
 r = T.cotizar_envio("un pueblito por la ruta 36")
 check("INDETERMINADA: no ok, zona None, pide dato",
       (not r["ok"]) and r["zona"] is None)
 
-# Envio gratis por umbral (subtotal > 250000 default)
-r = T.cotizar_envio("Cordoba", subtotal=300000)
+# Envio gratis por umbral (subtotal estrictamente mayor al umbral default 300000)
+r = T.cotizar_envio("Cordoba", subtotal=350000)
 check("GRATIS: subtotal alto -> monto 0",
       r["ok"] and r["concepto"] == "envio_gratis" and r["monto"] == 0)
 

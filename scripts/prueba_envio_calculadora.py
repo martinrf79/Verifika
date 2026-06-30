@@ -103,16 +103,17 @@ verif1 = verificar_respuesta(
     "Son 50.000 del mouse mas 13.500 de envio, total 63.500.", ev1, "c1")
 check("verificador: mensaje con total real 63500 pasa", verif1["ok"])
 
-# ── CASO 2: 3 envios al interior (rango). El total sale como rango, x3. ──
+# ── CASO 2: 3 envios al interior. Ahora el interior NO es un rango: se colapsa al
+#    tope publicado (monto_max=16000), tarifa fija, asi el total sale UNICO x3. ──
 set_envio_localidad("Cordoba")
 r2 = T.calculate_total(
     items=[{"product_id": "M1", "cantidad": 1}],
     items_extra=[{"faq_tema": "costo_envio", "concepto": "envio_interior"}],
     destinos=3)
-# 50000 + (6500..16000) x 3 = 69500 .. 98000
-check("3 envios interior: total_min 69500, total_max 98000",
-      r2.get("ok") and r2.get("total_min_ars") == 69500
-      and r2.get("total_max_ars") == 98000)
+# 50000 + 16000 x 3 = 98000, total unico (sin rango)
+check("3 envios interior: total fijo 98000 (tope x3, sin rango)",
+      r2.get("ok") and r2.get("total_ars") == 98000
+      and r2.get("total_min_ars") is None)
 
 # ── CASO 3: el solver NO cotizo y no hay direccion. La calculadora NO inventa
 #    un envio: devuelve ok False pidiendo la zona. ──

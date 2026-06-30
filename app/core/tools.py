@@ -1269,6 +1269,13 @@ def cotizar_envio(localidad: str | None = None,
             log.info(f"cotizar_envio direccion_estado={_dir[:60]}")
             localidad = _dir
 
+    # Disclaimer de envio (determinista): el Solver lo cierra como oracion aparte y
+    # EXACTA, asi no se mezcla con su redaccion ni promete un precio grabado. Cubre
+    # la realidad inflacionaria sin asustar al cliente. No aplica a envio gratis.
+    _NOTA_ENVIO = (
+        " Cerra la parte del envio con esta frase EXACTA, como oracion aparte: "
+        "\"Envío orientativo, puede variar al confirmar la compra.\"")
+
     tid = get_current_tienda()
     zona = clasificar_zona(localidad or "")
     if zona is None:
@@ -1346,7 +1353,7 @@ def cotizar_envio(localidad: str | None = None,
                         f"Para dar el TOTAL llama calculate_total con TODOS los "
                         f"productos del pedido e items_extra "
                         f"{{faq_tema: costo_envio, concepto: envio_{prov}}}; "
-                        f"NO sumes a mano ni dejes productos afuera."),
+                        f"NO sumes a mano ni dejes productos afuera." + _NOTA_ENVIO),
                     "proof": {"tipo": "envio", "valores": [monto_prov],
                               "resultado": monto_prov},
                 }
@@ -1369,25 +1376,24 @@ def cotizar_envio(localidad: str | None = None,
     modalidad = (valor.get("modalidad") or "fijo").lower()
     if modalidad == "rango":
         mn, mx = int(valor.get("monto_min", 0)), int(valor.get("monto_max", 0))
-        if zona == "interior":
-            # Hay tabla por provincia pero la provincia no se pudo determinar:
-            # el CP o la provincia SI afinan la tarifa, conviene pedirlos.
-            _msg = (
-                f"Envio a zona {zona}: entre {mn} y {mx} pesos. Si el cliente te "
-                f"da la PROVINCIA o el CODIGO POSTAL, volve a llamar cotizar_envio "
-                f"con ese dato y te doy el monto exacto. Mientras tanto deci las "
-                f"dos puntas, no promedies.")
-        else:
-            _msg = (
-                f"Envio a zona {zona}: entre {mn} y {mx} pesos. Esta es la tarifa "
-                f"FINAL de la zona, deci las dos puntas como el costo y avanza. NO "
-                f"pidas el codigo postal para afinar, no lo cambia. No promedies.")
+        # MATAR EL RANGO EN LA FUENTE: sin tarifa exacta por provincia, el interior
+        # devuelve UN numero fijo (el tope publicado monto_max: dato real, nunca
+        # inventado) en vez de un rango. Asi el Solver no tiene rango dentro del cual
+        # inventar una cifra (el caso $7.500), la melliza tiene un valor exacto que
+        # enforce y el total sale unico. Conservador: cobra el tope, y el disclaimer
+        # avisa que puede variar; cargar tarifas_envio por provincia lo afina hacia
+        # abajo cuando la tienda quiera tarifas mas finas.
+        monto = mx
         return {
             "ok": True, "zona": zona, "concepto": valor.get("concepto"),
-            "modalidad": "rango", "monto_min": mn, "monto_max": mx,
-            "mensaje_para_llm": _msg,
-            "proof": {"tipo": "envio", "resultado_min": mn, "resultado_max": mx,
-                      "valores": [mn, mx]},
+            "modalidad": "fijo", "monto": monto,
+            "mensaje_para_llm": (
+                f"Envio a zona {zona}: {monto} pesos, tarifa fija de la zona. Usa "
+                f"este monto EXACTO, nunca un rango ni un promedio. Para dar el "
+                f"TOTAL llama calculate_total con TODOS los productos del pedido e "
+                f"items_extra {{faq_tema: costo_envio, concepto: {valor.get('concepto')}}}; "
+                f"NO sumes a mano ni dejes productos afuera." + _NOTA_ENVIO),
+            "proof": {"tipo": "envio", "valores": [monto], "resultado": monto},
         }
     monto = int(valor.get("monto", 0))
     return {
@@ -1397,7 +1403,7 @@ def cotizar_envio(localidad: str | None = None,
             f"Envio a zona {zona}: {monto} pesos. Para dar el TOTAL llama "
             f"calculate_total con TODOS los productos del pedido e items_extra "
             f"{{faq_tema: costo_envio, concepto: {valor.get('concepto')}}}; "
-            f"NO sumes a mano ni dejes productos afuera."),
+            f"NO sumes a mano ni dejes productos afuera." + _NOTA_ENVIO),
         "proof": {"tipo": "envio", "valores": [monto], "resultado": monto},
     }
 
