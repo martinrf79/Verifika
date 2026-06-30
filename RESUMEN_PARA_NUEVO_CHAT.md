@@ -70,6 +70,15 @@ subtotal real y lo cobra una vez por destino. El corrector dejó de tratar el en
 total candidato. Banco `prueba_envio_calculadora` 9/9. El síntoma viejo (costo de envío que
 cambiaba turno a turno y zona equivocada a Córdoba) ya no aplica.
 
+**Sin rango en la fuente (30-jun)**: `cotizar_envio` ya NO devuelve un rango. CABA/GBA es
+fijo; el interior, si no hay tarifa exacta por provincia cargada en `tarifas_envio`, se
+colapsa al TOPE publicado (`monto_max`, dato real, nunca inventado). Así devuelve UN número
+por destino, el Solver no tiene rango dentro del cual inventar (caso $7.500 que vimos), la
+melliza tiene un valor exacto que forzar y el total sale único. Conservador: cobra el tope;
+cargar `tarifas_envio` por provincia lo afina hacia abajo. Cada cotización con costo cierra
+con la frase fija "Envío orientativo, puede variar al confirmar la compra." (no en envío
+gratis). Bancos `prueba_cotizar_envio` 6/6 y `prueba_envio_calculadora` 9/9.
+
 ## CIERRE — unificado y aditivo (commit nuevo, 30-jun)
 
 Se borraron los TRES jueces que se pisaban: ahora la decisión de cierre la toma UN solo juez,
