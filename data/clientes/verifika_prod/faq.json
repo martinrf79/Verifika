@@ -116,6 +116,7 @@
         "modalidad": "fijo",
         "monto": 0,
         "unidad": "ars",
+        "umbral_ars": 250000,
         "condicion": "compra mayor a 250000"
       }
     ]
