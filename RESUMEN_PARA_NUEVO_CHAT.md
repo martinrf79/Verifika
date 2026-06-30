@@ -80,8 +80,16 @@ default por tienda. Si la provincia no se determina, colapsa al TOPE publicado (
 Así cada destino devuelve UN número, el Solver no inventa (caso $7.500 que vimos), la melliza
 tiene un valor exacto y el total sale único. Cada cotización con costo cierra con la frase
 fija "Envío orientativo, puede variar al confirmar la compra." (no en envío gratis). Para
-ajustar montos: editar el dict en `config.py`. Bancos `prueba_cotizar_envio` 7/7 y
+ajustar montos: editar el dict en `config.py`. Bancos `prueba_cotizar_envio` 8/8 y
 `prueba_envio_calculadora` 9/9.
+
+**Umbral de envío gratis unificado (30-jun)**: había un bug — la FAQ decía gratis sobre
+$250.000 (lo que el bot le dice al cliente) pero `cotizar_envio` aplicaba el setting
+$300.000, así una compra de $270.000 prometía gratis y cobraba. Ahora el umbral sale de la
+FAQ `costo_envio` (concepto `envio_gratis`: campo `umbral_ars` o el número de su `condicion`),
+ÚNICA fuente; el setting `UMBRAL_ENVIO_GRATIS` quedó solo como respaldo y alineado a $250.000.
+El número aplicado y el publicado ya no pueden divergir. Caso de regresión en
+`prueba_cotizar_envio`.
 
 ## CIERRE — unificado y aditivo (commit nuevo, 30-jun)
 

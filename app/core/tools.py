@@ -1248,6 +1248,26 @@ def _build_schema():
     return schemas
 
 
+def _umbral_envio_gratis(valores: list) -> int:
+    """Umbral de envio gratis desde la FAQ costo_envio: UNICA fuente, el MISMO dato
+    que se le dice al cliente. Lo saca del concepto envio_gratis (campo estructurado
+    umbral_ars/base_ars/monto_min, o el numero de su 'condicion', ej 'compra mayor a
+    250000'). Cae al default de plataforma SOLO si la FAQ no lo trae. Asi el numero
+    que el codigo aplica y el que el bot publica nunca pueden divergir (era el bug:
+    FAQ 250000 vs setting 300000)."""
+    for v in valores or []:
+        if str(v.get("concepto", "")).lower() != "envio_gratis":
+            continue
+        for k in ("umbral_ars", "base_ars", "monto_min"):
+            n = v.get(k)
+            if isinstance(n, (int, float)) and n > 0:
+                return int(n)
+        digitos = "".join(c for c in str(v.get("condicion", "")) if c.isdigit())
+        if digitos:
+            return int(digitos)
+    return settings.UMBRAL_ENVIO_GRATIS
+
+
 def cotizar_envio(localidad: str | None = None,
                   subtotal: int | None = None) -> dict:
     """Cotiza el envio de forma determinista: el CODIGO clasifica la zona desde el
@@ -1309,9 +1329,10 @@ def cotizar_envio(localidad: str | None = None,
         }
     valores = faq.get("valores") or []
 
-    # Envio gratis por umbral: dato de la tienda (condicion del concepto envio_gratis)
-    # o el umbral de plataforma como respaldo. Si el subtotal lo supera, es gratis.
-    umbral = settings.UMBRAL_ENVIO_GRATIS
+    # Envio gratis por umbral: sale de la FAQ costo_envio (UNICA fuente, el mismo
+    # numero que el bot le dice al cliente), con el default de plataforma solo como
+    # respaldo. Si el subtotal lo supera, es gratis.
+    umbral = _umbral_envio_gratis(valores)
     if subtotal and isinstance(subtotal, (int, float)) and subtotal > umbral:
         return {
             "ok": True, "zona": zona, "concepto": "envio_gratis",

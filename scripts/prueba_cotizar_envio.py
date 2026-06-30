@@ -78,6 +78,16 @@ check("GRATIS: subtotal alto -> monto 0",
 r = T.cotizar_envio("C1425ABC")
 check("PROOF presente con el monto", r["proof"]["valores"] == [4500])
 
+# UMBRAL DE ENVIO GRATIS sale de la FAQ, NO del setting (regresion del bug
+# 250000 vs 300000). Se pone umbral_ars=200000 en la FAQ: una compra de 210000
+# tiene que salir gratis aunque el setting de respaldo sea mayor.
+FAQ["costo_envio"]["valores"].append(
+    {"concepto": "envio_gratis", "modalidad": "fijo", "monto": 0,
+     "umbral_ars": 200000})
+r = T.cotizar_envio("Cordoba", subtotal=210000)
+check("UMBRAL: gratis a 210000 porque la FAQ manda (umbral 200000), no el setting",
+      r["ok"] and r["concepto"] == "envio_gratis" and r["monto"] == 0)
+
 ok = sum(resultados)
 print(f"\n{ok}/{len(resultados)} casos correctos")
 sys.exit(0 if ok == len(resultados) else 1)

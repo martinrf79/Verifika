@@ -146,11 +146,12 @@ class Settings(BaseModel):
     # CAPA DE PRODUCTO — herramientas del agente de ventas
     # ────────────────────────────────────────────────────────
 
-    # Envio gratis automatico por umbral. Si el subtotal de PRODUCTOS supera
-    # UMBRAL_ENVIO_GRATIS, la calculadora pone el envio en gratis sola, sin
-    # importar el concepto de envio que pida el Solver. Asi el total final sale
-    # entero y deterministico de la calculadora.
-    UMBRAL_ENVIO_GRATIS: int = int(os.getenv("UMBRAL_ENVIO_GRATIS", "300000"))
+    # Envio gratis automatico por umbral. La FUENTE DE VERDAD del umbral es la FAQ
+    # costo_envio (concepto envio_gratis), el mismo numero que el bot le dice al
+    # cliente; cotizar_envio lo lee de ahi. Esto es SOLO el respaldo si la FAQ no lo
+    # trae. Se alinea a 250000 (el valor publicado en la FAQ) para que el respaldo no
+    # vuelva a divergir del numero que ve el cliente (era el bug: 250000 vs 300000).
+    UMBRAL_ENVIO_GRATIS: int = int(os.getenv("UMBRAL_ENVIO_GRATIS", "250000"))
 
     # NOTA: la calculadora defensiva (ex flag CALC_DEFENSIVA) ya es el UNICO camino
     # de calculate_total, cableada en app/core/tools.py (normaliza y valida inputs
