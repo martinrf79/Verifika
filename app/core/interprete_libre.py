@@ -453,14 +453,20 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                                 trace_id=trace_id,
                                 correcciones=fix["correcciones"][:8])
                 elif not fix["verificacion"].get("ok"):
-                    # Cifra de plata sin respaldo que no se pudo corregir. Si el
-                    # solver NO llamo ni una herramienta en el turno, ese numero es
-                    # alucinacion pura: no tiene de donde salir. NO sale al cliente,
-                    # va el mensaje seguro. Con herramientas llamadas el residual
-                    # suele ser falso positivo, asi que ahi se queda en shadow para
-                    # no cortar respuestas legitimas.
-                    sin_tools = not (meta.get("tools_called") or [])
-                    if sin_tools:
+                    # Cifra de plata sin respaldo que no se pudo corregir. La
+                    # melliza activa decide: bloquea (canned) SOLO si no hay
+                    # ninguna evidencia de donde pudo salir el numero, ni tools de
+                    # este turno ni memoria. El solver que repite un presupuesto ya
+                    # calculado en turnos anteriores no llama tools pero sus cifras
+                    # son legitimas: la evidencia esta en proofs/productos de
+                    # memoria, asi que queda en shadow y la respuesta sale.
+                    from app.core.verificador import decidir_accion_no_respaldado
+                    hay_tools = bool(meta.get("tools_called"))
+                    hay_memoria = bool(proofs_memoria) or bool(prods_vistos)
+                    accion = decidir_accion_no_respaldado(
+                        verificacion_ok=False, hay_tools=hay_tools,
+                        hay_memoria=hay_memoria)
+                    if accion == "bloquear":
                         log.warning("interprete_libre_numero_bloqueado",
                                     trace_id=trace_id,
                                     no_respaldados=fix["verificacion"]["numeros_no_respaldados"][:8],

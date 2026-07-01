@@ -533,6 +533,30 @@ def autocorregir_montos(respuesta: str,
             "correcciones": correcciones, "verificacion": verif2}
 
 
+def decidir_accion_no_respaldado(verificacion_ok: bool,
+                                 hay_tools: bool,
+                                 hay_memoria: bool) -> str:
+    """Melliza activa: cuando queda una cifra de plata SIN respaldo, decide que
+    hacer con el mensaje. Tres acciones:
+        "responder"  la verificacion cerro, sale intacto.
+        "shadow"     queda un residual sin respaldo pero HAY de donde pudo salir
+                     (tools de este turno o evidencia en memoria): sale igual y
+                     solo se loguea; cortar aca mata respuestas legitimas.
+        "bloquear"   no hay NINGUNA evidencia (ni tools ni memoria): el numero es
+                     alucinacion pura, no llega al cliente y va el canned.
+
+    El error que corrige A: antes se bloqueaba por 'este turno no llamo tools'.
+    Pero el solver que repite un presupuesto ya calculado en turnos anteriores no
+    llama tools y sus cifras son legitimas: la evidencia esta en MEMORIA. La
+    decision correcta mira si hay evidencia en cualquier lado, no solo en el turno.
+    """
+    if verificacion_ok:
+        return "responder"
+    if not hay_tools and not hay_memoria:
+        return "bloquear"
+    return "shadow"
+
+
 def verificar_respuesta(respuesta: str,
                         evidence: list[dict],
                         trace_id: Optional[str] = None) -> dict:

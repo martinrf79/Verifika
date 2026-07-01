@@ -109,6 +109,36 @@ def test_multienvio_autocorrige_hacia_el_total_real():
         "debe corregir hacia 121500 (subtotal + los 3 envios), no a 100000.")
 
 
+def test_a_repite_presupuesto_de_memoria_sin_tools_no_bloquea():
+    """A: cuando queda una cifra sin respaldo pero HAY evidencia en memoria
+    (proofs o productos vistos en turnos anteriores), la melliza activa NO
+    bloquea con el canned: el solver repitio un presupuesto ya calculado y sus
+    cifras son legitimas. Hoy se bloquea por 'este turno no llamo tools', que
+    mataba un presupuesto bueno."""
+    accion = verificador.decidir_accion_no_respaldado(
+        verificacion_ok=False, hay_tools=False, hay_memoria=True)
+    assert accion != "bloquear", (
+        "con evidencia en memoria no debe salir el canned, aunque este turno "
+        "no se hayan llamado herramientas.")
+
+
+def test_a_sin_tools_sin_memoria_bloquea():
+    """A: si no hay NINGUNA evidencia, ni tools este turno ni memoria, una cifra
+    sin respaldo es alucinacion pura y SI se bloquea. La correccion de A no debe
+    aflojar esta linea cero."""
+    accion = verificador.decidir_accion_no_respaldado(
+        verificacion_ok=False, hay_tools=False, hay_memoria=False)
+    assert accion == "bloquear", (
+        "sin tools y sin memoria, un numero sin respaldo no tiene de donde "
+        "salir: es alucinacion y no debe llegar al cliente.")
+
+
+def test_a_verificacion_ok_siempre_responde():
+    """A: si la verificacion cierra, se responde, haya o no memoria o tools."""
+    assert verificador.decidir_accion_no_respaldado(
+        verificacion_ok=True, hay_tools=False, hay_memoria=False) == "responder"
+
+
 def test_e7_numero_de_prosa_faq_no_respalda_precio():
     """E7: un numero que solo aparece en el texto libre de una FAQ no debe servir
     para blanquear un precio de producto alucinado."""
