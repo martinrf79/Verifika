@@ -55,6 +55,13 @@ se asienta acá como contrato; el verde dice hecho, la fila sin archivo dice fal
 Cada pendiente arranca escribiendo su test en rojo, se arregla el código hasta el
 verde y recién ahí pasa a hecho, sin dejar rojos en main.
 
+**Switch de versión A/B.** Un solo lugar elige qué versión corre: `MODO_CIERRE` en
+`config.py` o env, o la config `modo_cierre` por tienda en Firestore (pisa el
+default). Valores: **A** o `lead` = el bot capta el lead fuerte y avisa, cierra un
+humano; **B** o `venta` = el bot cierra la venta y manda el cobro, link de Mercado
+Pago o CBU según la forma de pago. La prueba actual corre en **B**. El mapeo A/B
+está clavado en `test_cierre.py`.
+
 ## Dos pisos
 
 - **offline**: lógica viva en Python puro. No llama a ningún modelo, no necesita
