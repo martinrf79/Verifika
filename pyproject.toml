@@ -40,3 +40,9 @@ exclude_dirs = ["venv", "venv-win", "tests", "data", "reports"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py", "prueba_*.py"]
+# Dos pisos: por default corre SOLO el offline (Python puro, sin LLM, gratis).
+# Los tests marcados 'vivo' llaman a DeepSeek y se corren a proposito: pytest -m vivo
+markers = [
+    "vivo: test que llama al LLM (DeepSeek); no corre por default, gasta tokens",
+]
+addopts = "-m 'not vivo'"
