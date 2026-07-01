@@ -15,10 +15,11 @@ Esta version cubre:
 - P4: el mismo product_id mandado en dos lineas -> se fusiona en una sola,
   sumando las cantidades.
 - P1: el mismo extra (faq_tema + concepto) mandado dos veces -> se deduplica.
-- P5: varios extras de costo_envio -> se colapsan en UN disparador. El costo de
-  envio NO se decide aca: su unica fuente es cotizar_envio, que deduce la zona de
-  la direccion. El concepto de envio que mande el modelo es irrelevante, lo ignora
-  la calculadora. Por eso esta capa ya no clasifica zona ni desempata por destino.
+- P5: varios extras de costo_envio con conceptos DISTINTOS son destinos distintos
+  (multi-destino) y SOBREVIVEN como envios separados; solo los identicos se
+  deduplican (mismo faq_tema + concepto, ver arriba). El costo de cada envio no se
+  decide aca: su unica fuente es cotizar_envio, que deduce la zona de la direccion.
+  Esta capa ya no colapsa los envios en uno ni clasifica zona.
 
 Es el unico camino de calculate_total (ex flag CALC_DEFENSIVA, consolidado): la
 tool siempre invoca esta capa antes de calcular.
@@ -78,13 +79,9 @@ def normalizar_inputs(items, items_extra):
             vistos.add(clave)
             items_extra_norm.append({"faq_tema": tema, "concepto": concepto})
 
-        # ── P5: un solo disparador de envio. El costo lo resuelve cotizar_envio
-        # (unica fuente); el concepto es irrelevante. Si vinieron varios extras de
-        # costo_envio, se deja uno y se descartan los demas, sin clasificar zona.
-        envios = [e for e in items_extra_norm if e["faq_tema"] == "costo_envio"]
-        if len(envios) > 1:
-            items_extra_norm = [
-                e for e in items_extra_norm if e["faq_tema"] != "costo_envio"
-            ] + [envios[0]]
+        # ── P5: multi-destino. Varios costo_envio con conceptos distintos son
+        # destinos distintos y se dejan pasar como envios separados; los identicos
+        # ya quedaron deduplicados arriba. No se colapsan en uno: cada destino se
+        # cobra por separado. El costo de cada uno sigue siendo cosa de cotizar_envio.
 
     return items_norm, items_extra_norm, None

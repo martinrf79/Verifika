@@ -159,6 +159,10 @@ def _label_extra(e: dict) -> str:
 # monetaria. Una unidad como "cuotas" es una cantidad, no pesos: nunca se suma.
 _UNIDADES_MONETARIAS = {"", "ars", "pesos", "peso", "$"}
 
+# Techo de destinos separados de un pedido (multi-destino). Generoso para una
+# compra real y a la vez guarda contra un numero disparatado del modelo.
+_MAX_DESTINOS = 10
+
 
 def _render_presentacion(detalle, extras, subtotal,
                          total_ars=None, total_min=None, total_max=None) -> str:
@@ -185,10 +189,11 @@ def calculate_total(items: list[dict] | None = None,
                     destinos: int = 1) -> dict:
     log.info(f"calculate_total INICIO items={items} items_extra={items_extra} destinos={destinos}")
     # Envios separados (multi-destino): el costo de envio se cobra una vez por
-    # destino. Acotado a 1..3 para no inventar multiplicadores raros. 1 = idéntico
-    # a como funcionaba antes (un solo envio).
+    # destino. Piso 1 (un solo envio, como funcionaba antes) y un techo sano para
+    # no inventar multiplicadores absurdos si el modelo manda un numero disparatado.
+    # Antes se capaba en 3 EN SILENCIO y el cuarto destino viajaba gratis (E13).
     try:
-        n_envios = max(1, min(int(destinos or 1), 3))
+        n_envios = max(1, min(int(destinos or 1), _MAX_DESTINOS))
     except (TypeError, ValueError):
         n_envios = 1
     if not items:
@@ -993,8 +998,8 @@ def _build_schema():
                         "destinos": {
                             "type": "integer",
                             "minimum": 1,
-                            "maximum": 3,
-                            "description": "Cantidad de envios SEPARADOS del pedido (direcciones distintas). 1 por defecto. Si el cliente pide mandar a 2 o 3 direcciones distintas, poner ese numero: el costo de envio se cobra una vez por cada destino y el total sale como rango.",
+                            "maximum": 10,
+                            "description": "Cantidad de envios SEPARADOS del pedido (direcciones distintas). 1 por defecto. Si el cliente pide mandar a varias direcciones distintas, poner ese numero: el costo de envio se cobra una vez por cada destino y el total sale como rango.",
                         },
                     },
                     "required": ["items"],

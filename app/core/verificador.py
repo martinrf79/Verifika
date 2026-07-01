@@ -119,29 +119,40 @@ def _totales_derivables(proof: dict) -> set:
     cands.add(sub)
 
     descuentos = 0
-    envios = {0}  # envio gratis siempre es una opcion derivable
+    # Envios: en multi-destino hay un envio por destino y el total los SUMA todos,
+    # no son alternativas entre si. Cada slot aporta su monto; un rango aporta su
+    # piso y su techo, asi el total sale con la suma minima o con la maxima. El 0
+    # (envio gratis por umbral) es la unica alternativa que reemplaza al envio
+    # entero. Sumar en vez de alternar es lo que distingue un total que incluye
+    # todos los envios de uno que se come alguno (ese ultimo ya no valida).
+    suma_min = 0
+    suma_max = 0
     for e in proof.get("operandos_extras", []) or []:
         modalidad = e.get("modalidad")
-        if modalidad == "porcentaje":
+        if modalidad == "rango":
+            mn, mx = e.get("monto_min"), e.get("monto_max")
+            if isinstance(mn, (int, float)):
+                suma_min += int(mn)
+            if isinstance(mx, (int, float)):
+                suma_max += int(mx)
+        elif modalidad == "porcentaje":
             m = e.get("monto_calculado_ars")
             if isinstance(m, (int, float)):
                 if _es_descuento(e):
                     descuentos += int(m)
                 else:
-                    envios.add(int(m))
-        elif modalidad == "rango":
-            for k in ("monto_min", "monto_max"):
-                m = e.get(k)
-                if isinstance(m, (int, float)):
-                    envios.add(int(m))
+                    suma_min += int(m)
+                    suma_max += int(m)
         else:  # fijo
             m = e.get("monto")
             if isinstance(m, (int, float)):
                 if _es_descuento(e):
                     descuentos += int(m)
                 else:
-                    envios.add(int(m))
+                    suma_min += int(m)
+                    suma_max += int(m)
 
+    envios = {0, suma_min, suma_max}
     neto = sub - descuentos
     cands.add(neto)
     for env in envios:
