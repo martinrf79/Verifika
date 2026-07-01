@@ -214,14 +214,13 @@ async def _finalizar_cierre(lead_id: str, merged: dict, tienda_id: str,
     # falta el token de Mercado Pago, cierra igual sin link.
     if modo == "venta":
         try:
-            from app.core.pago import link_pago_para_lead
-            _url = await link_pago_para_lead(
-                presupuesto or merged.get("orden", ""), merged,
-                tienda_id, trace_id)
-            if _url:
-                respuesta_cierre += f"\nPodes pagar aca: {_url}"
+            from app.core.pago import instruccion_cobro
+            cobro = await instruccion_cobro(
+                presupuesto or merged.get("orden", ""), merged, tienda_id, trace_id)
+            if cobro:
+                respuesta_cierre += "\n" + cobro
         except Exception as e:
-            log.warning("link_pago_error", trace_id=trace_id, error=str(e)[:160])
+            log.warning("cobro_error", trace_id=trace_id, error=str(e)[:160])
     return {"accion": "lead_capturado", "lead_id": lead_id,
             "respuesta_directa": respuesta_cierre}
 
@@ -325,15 +324,15 @@ async def procesar_mensaje_para_lead(
         # unico o falta el token de Mercado Pago, la venta cierra igual sin link.
         if modo == "venta":
             try:
-                from app.core.pago import link_pago_para_lead
+                from app.core.pago import instruccion_cobro
                 merged["lead_id"] = lead_activo["lead_id"]
-                _url = await link_pago_para_lead(
+                cobro = await instruccion_cobro(
                     presupuesto or merged.get("orden", ""), merged,
                     tienda_id, trace_id)
-                if _url:
-                    respuesta_cierre += f"\nPodes pagar aca: {_url}"
+                if cobro:
+                    respuesta_cierre += "\n" + cobro
             except Exception as e:
-                log.warning("link_pago_error", trace_id=trace_id,
+                log.warning("cobro_error", trace_id=trace_id,
                             error=str(e)[:160])
         return None, {
             "accion": "lead_capturado",

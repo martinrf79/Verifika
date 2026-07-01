@@ -116,3 +116,85 @@ async def link_pago_para_lead(presupuesto: str, lead: dict,
     return await crear_link_pago(
         total, titulo, tienda_id=tienda_id,
         referencia=str(lead.get("lead_id") or ""))
+
+
+# ── COBRO POR MEDIO ELEGIDO: CBU (transferencia) o link de Mercado Pago ───────
+# En modo 'venta' el bot cobra solo. El medio lo decide la FORMA DE PAGO que el
+# cliente ya eligio, no el modelo: transferencia -> CBU/alias de la tienda,
+# Mercado Pago -> link. Un solo lugar arma el cobro, para las dos vias.
+
+def _money(n) -> str:
+    """Entero a formato argentino con separador de miles: 1247400 -> '1.247.400'."""
+    try:
+        return f"{int(n):,}".replace(",", ".")
+    except (TypeError, ValueError):
+        return str(n)
+
+
+def elegir_medio_pago(forma_pago: str) -> str:
+    """Medio de cobro segun lo que eligio el cliente: 'cbu' para transferencia,
+    'mp' para Mercado Pago, 'efectivo' para efectivo. '' si no se sabe. Determinista."""
+    f = (forma_pago or "").strip().lower()
+    if not f:
+        return ""
+    if "transfer" in f or "cbu" in f or "deposito" in f or "depósito" in f:
+        return "cbu"
+    if "mercado" in f or f == "mp":
+        return "mp"
+    if "efectivo" in f:
+        return "efectivo"
+    return ""
+
+
+def datos_transferencia(tienda_id: str | None) -> dict:
+    """CBU, alias, titular y banco de la tienda desde la config. Es config
+    operativa de la tienda (no un secreto), igual que la tarifa de envio."""
+    out: dict = {}
+    for k in ("cbu", "alias", "titular_cuenta", "banco"):
+        try:
+            v = get_config(k, tienda_id=tienda_id)
+        except Exception:
+            v = None
+        if v:
+            out[k] = str(v).strip()
+    return out
+
+
+def mensaje_transferencia(datos: dict, monto=None) -> str:
+    """Texto con los datos de transferencia de la tienda. '' si no hay ni CBU ni
+    alias configurados: sin dato real no se inventa nada, el cierre cae al humano."""
+    datos = datos or {}
+    if not datos.get("cbu") and not datos.get("alias"):
+        return ""
+    lineas = ["Para pagar por transferencia:"]
+    if datos.get("cbu"):
+        lineas.append(f"CBU: {datos['cbu']}")
+    if datos.get("alias"):
+        lineas.append(f"Alias: {datos['alias']}")
+    if datos.get("titular_cuenta"):
+        lineas.append(f"Titular: {datos['titular_cuenta']}")
+    if datos.get("banco"):
+        lineas.append(f"Banco: {datos['banco']}")
+    if monto:
+        lineas.append(f"Monto: ${_money(monto)}")
+    lineas.append("Cuando transfieras, mandame el comprobante y coordinamos el envío.")
+    return "\n".join(lineas)
+
+
+async def instruccion_cobro(presupuesto: str, lead: dict,
+                            tienda_id: str | None,
+                            trace_id: str | None = None) -> str:
+    """Texto de cobro para el cierre en modo venta, segun la forma de pago del
+    cliente: CBU/alias para transferencia, link de Mercado Pago para MP. '' si no
+    hay como cobrar sin humano (efectivo, o faltan datos). Un solo lugar arma las
+    dos vias, para que ambos puntos del cierre cobren igual."""
+    medio = elegir_medio_pago(lead.get("forma_pago", ""))
+    if medio == "cbu":
+        total = extraer_total_verificado(presupuesto or lead.get("orden", ""))
+        return mensaje_transferencia(datos_transferencia(tienda_id), total)
+    if medio == "efectivo":
+        return ""  # el efectivo lo coordina una persona, sin link ni CBU
+    # Mercado Pago, o forma no reconocida: el link es el default historico.
+    url = await link_pago_para_lead(
+        presupuesto or lead.get("orden", ""), lead, tienda_id, trace_id)
+    return f"Podés pagar acá: {url}" if url else ""
