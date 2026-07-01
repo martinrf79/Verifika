@@ -32,6 +32,7 @@ contrato entero de su herramienta, no un bug suelto.
 | Guardia de promesas | `test_guardia_promesas.py` | `detectar` | E3, E4 |
 | Antijailbreak | `test_antijailbreak.py` | `evaluar_mensaje` | E12 |
 | Identidad / certificador | `test_certificador.py` | `certificar` (Regla Cero) | E6, E15 |
+| Cobro del cierre | `test_pago.py` | `elegir_medio_pago`, `mensaje_transferencia`, `instruccion_cobro` | CBU / MP |
 
 E11 (teléfono en leads) y E14 (veto de negación en interpretador) se retiraron:
 el teléfono y el DNI no se piden para la venta, los procesa Mercado Pago o el
@@ -49,6 +50,7 @@ se asienta acá como contrato; el verde dice hecho, la fila sin archivo dice fal
 | **B** | El criterio del cliente persiste como decisión: "lo más barato" se detecta con código, viaja por el estado y el solver no repregunta modelo ni color. | ✅ verde | `test_preferencias.py` |
 | **C** | La provincia que el cliente dio viaja por el estado a todos los destinos: no se repide el CP de cada pueblo. | ✅ verde | `test_envio.py` |
 | **D** | Gatillo de cierre: el bot hace UNA pregunta ("¿Seguimos adelante con tu pedido?") y la respuesta del cliente decide determinista, un no lo toma un humano, cualquier otra respuesta dispara el lead fuerte. Las dos versiones (avisar al cliente vs vender hasta el link) las gobierna `modo_cierre`. | ✅ verde | `test_cierre.py` |
+| **D-pago** | En modo venta el bot cobra solo por el medio que el cliente eligió: CBU/alias de la tienda para transferencia, link de Mercado Pago para MP. El CBU sale de la config de la tienda; sin datos cargados, cae al humano. | ✅ verde | `test_pago.py` |
 
 Cada pendiente arranca escribiendo su test en rojo, se arregla el código hasta el
 verde y recién ahí pasa a hecho, sin dejar rojos en main.
