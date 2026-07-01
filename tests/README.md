@@ -29,16 +29,20 @@ contrato entero de su herramienta, no un bug suelto.
 | Calculadora y total | `test_calculadora.py` | `calculate_total`, `calc_defensiva` | E5, E13 |
 | Envío y zona | `test_envio.py` | `cotizar_envio` (CP / provincia) | locks (crece) |
 | Cierre | `test_cierre.py` | `extraer_forma_pago`, `extraer_direccion` | E8, E9, E10 |
-| Leads | `test_leads.py` | `extraer_telefono` | E11 |
 | Guardia de promesas | `test_guardia_promesas.py` | `detectar` | E3, E4 |
 | Antijailbreak | `test_antijailbreak.py` | `evaluar_mensaje` | E12 |
-| Interpretador | `test_interpretador.py` | veto de negación | E14 |
 | Identidad / certificador | `test_certificador.py` | `certificar` (Regla Cero) | E6, E15 |
+
+E11 (teléfono en leads) y E14 (veto de negación en interpretador) se retiraron:
+el teléfono y el DNI no se piden para la venta, los procesa Mercado Pago o el
+banco, y el veto de negación se saca a propósito porque manda la interpretación
+del LLM libre con filtros más abajo. Se borraron sus tests y su código muerto.
 
 ## Dos pisos
 
 - **offline**: lógica viva en Python puro. No llama a ningún modelo, no necesita
-  credenciales. Es el que corre siempre. Cubre 14 de los 15 errores.
+  credenciales. Es el que corre siempre. Cubre los 13 errores confirmados vivos,
+  todos en verde.
 - **vivo**: marcado `@pytest.mark.vivo`, usa el doble local de `banco_pruebas`
   con DeepSeek vivo. Para lo que sí depende de interpretación del modelo.
 

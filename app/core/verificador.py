@@ -180,6 +180,40 @@ def _totales_derivables(proof: dict) -> set:
     return cands
 
 
+def _total_multienvio(evidence: list[dict]) -> set:
+    """Total de un pedido con VARIOS envios a zonas distintas: el subtotal de
+    productos mas la SUMA de todas las cotizaciones de envio de la evidencia.
+
+    El solver cotiza cada destino por separado, un PROOF de envio (cotizar_envio)
+    por zona, y la calculadora da el subtotal de productos. Ese combinado es el
+    UNICO total correcto del multienvio, y ningun PROOF suelto lo deriva: la
+    calculadora colapsa a una sola zona y cada PROOF de envio trae una sola
+    tarifa. Sin esto la melliza activa bloquea el total correcto y hasta
+    'corrige' el que se come un envio hacia el subtotal pelado (le saca TODOS
+    los envios). Solo aplica con 2+ cotizaciones, el caso real de multi-destino.
+    Suma pura: agrega el total verdadero, nunca puede bendecir uno equivocado."""
+    subtotales: set[int] = set()
+    envios: list[int] = []
+    for item in evidence or []:
+        if item.get("tipo") != "proof":
+            continue
+        proof = item.get("proof", {}) or {}
+        if proof.get("tipo") == "envio":
+            m = proof.get("resultado")
+            if not isinstance(m, (int, float)):
+                m = proof.get("monto")
+            if isinstance(m, (int, float)) and int(m) > 0:
+                envios.append(int(m))
+        else:
+            sub = proof.get("subtotal_productos")
+            if isinstance(sub, (int, float)):
+                subtotales.add(int(sub))
+    if not subtotales or len(envios) < 2:
+        return set()
+    suma = sum(envios)
+    return {sub + suma for sub in subtotales}
+
+
 def numeros_confiables(evidence: list[dict]):
     """Junta los numeros verdaderos de la evidencia: precios de catalogo, valores
     y numeros del texto de la FAQ, y todo lo que computo la calculadora en sus
@@ -236,6 +270,9 @@ def numeros_confiables(evidence: list[dict]):
                 _add(v)
             # Totales derivables (con descuento, con envio gratis, etc).
             nums |= _totales_derivables(proof)
+    # Total del multienvio: subtotal + suma de todas las cotizaciones de envio.
+    # Lo unico que ata las cotizaciones sueltas de cada zona en un gran total.
+    nums |= _total_multienvio(evidence)
     return nums, rangos
 
 
@@ -277,6 +314,10 @@ def _totales_validos(evidence: list[dict]) -> set:
             v = proof.get(k)
             if isinstance(v, (int, float)):
                 tot.add(int(v))
+    # Total del multienvio (subtotal + suma de cotizaciones): candidato legitimo
+    # para corregir un total que se comio uno de varios envios. Sin esto el
+    # corrector reescribia ese total hacia el subtotal pelado, sacando los envios.
+    tot |= _total_multienvio(evidence)
     tot.discard(0)
     return tot
 
