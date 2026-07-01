@@ -580,9 +580,12 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         except Exception as e:
             log.warning("interprete_libre_lead_error", trace_id=trace_id,
                         error=str(e)[:160])
-    # Queda marcado SOLO el turno en que se hizo la pregunta; al turno siguiente se
-    # consume y vuelve a False, asi la pregunta se hace una sola vez.
-    pregunta_cierre_hecha = (meta_lead.get("accion") == "pregunta_cierre")
+    # Queda marcado el turno en que se hizo la pregunta; al siguiente se consume y
+    # vuelve a False, asi la pregunta se hace una sola vez. EXCEPCION: si el cliente
+    # respondio con una duda o pregunta, el cierre sigue PENDIENTE (no se consume),
+    # asi un "dale" en el turno siguiente todavia cierra.
+    pregunta_cierre_hecha = (
+        meta_lead.get("accion") in ("pregunta_cierre", "pregunta_pendiente_cierre"))
 
     # El cliente recibe la respuesta limpia: el cartel de interpretacion se quito
     # (ahora va al log). La interpretacion se sigue viendo en interprete_libre_interpretacion.

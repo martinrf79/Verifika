@@ -395,6 +395,15 @@ async def procesar_mensaje_para_lead(
                 log.warning("notificar_lead_failed", error=str(e)[:120])
             return None, {"accion": "no_interesado",
                           "respuesta_directa": MENSAJE_NO_INTERESADO}
+        # El cliente PREGUNTA o DUDA en vez de confirmar (ej "estas seguro que el
+        # envio llega a Santa Ana?"): NO se cierra. El solver le contesta la duda y
+        # la oferta de cierre sigue PENDIENTE para el proximo turno. Sin esto el bot
+        # se apura y salta a pedir datos sobre una pregunta (apuro visto 1-jul).
+        if (_cierre.parece_pregunta(mensaje)
+                or intencion_llm in ("pregunta_especifica", "exploracion", "posventa")):
+            log.info("cierre_gatillo_pausado_pregunta", trace_id=trace_id,
+                     intencion_llm=intencion_llm)
+            return None, {"accion": "pregunta_pendiente_cierre"}
         nivel = "fuerte"
         frase = "respuesta_afirmativa_pregunta_cierre"
         log.info("cierre_gatillo_determinista_fuerte", trace_id=trace_id)

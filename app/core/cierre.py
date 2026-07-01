@@ -48,11 +48,33 @@ def es_no_interesado(respuesta: str) -> bool:
     return bool(_NEG_FRASES_RE.search(t))
 
 
+# Una duda o pregunta del cliente NO es una confirmacion de compra. Marcadores:
+# el signo de pregunta, o cues de duda/interrogacion (estas seguro, en serio, cuanto,
+# como, cuando, donde). Sin esto, una pregunta como "estas seguro que el envio llega
+# a Santa Ana?" se tomaba como un si y el bot saltaba a pedir datos (apuro real visto
+# en prod 1-jul).
+_PREGUNTA_RE = re.compile(
+    r"[¿?]|\b(seguro\s+que|est[aá]s?\s+seguro|est[aá]n\s+seguros?|en\s+serio|"
+    r"de\s+verdad|es\s+cierto|es\s+verdad|me\s+lo\s+confirm|lo\s+confirm[aá]s|"
+    r"realmente|cu[aá]nto|cu[aá]ntos|c[oó]mo|cu[aá]ndo|d[oó]nde|por\s+qu[eé]|"
+    r"qu[eé]\s+tal)\b",
+    re.IGNORECASE)
+
+
+def parece_pregunta(mensaje: str) -> bool:
+    """True si el mensaje es una pregunta o una duda del cliente. Determinista:
+    detecta el signo de pregunta o cues de duda. Una pregunta se contesta, no
+    cierra la venta."""
+    return bool(_PREGUNTA_RE.search(mensaje or ""))
+
+
 def dispara_lead_fuerte(pregunta_hecha: bool, respuesta: str) -> bool:
     """Gatillo del lead fuerte: solo dispara si el turno pasado se hizo la pregunta
-    de cierre Y la respuesta no es un no. Sin pregunta previa no dispara; un no
-    tampoco (ese lo toma un humano)."""
-    return bool(pregunta_hecha) and not es_no_interesado(respuesta)
+    de cierre Y la respuesta no es un no NI una pregunta. Sin pregunta previa no
+    dispara; un no lo toma un humano; una duda la contesta el bot y el cierre queda
+    pendiente."""
+    return (bool(pregunta_hecha) and not es_no_interesado(respuesta)
+            and not parece_pregunta(respuesta))
 
 _ETIQUETAS = {
     "nombre": "tu nombre y apellido",

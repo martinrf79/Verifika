@@ -101,6 +101,37 @@ def test_d_dispara_lead_fuerte_solo_con_pregunta_hecha_y_sin_no():
         pregunta_hecha=False, respuesta="dale") is False
 
 
+# (mensaje del cliente, es una pregunta o duda)
+CASOS_PREGUNTA = [
+    ("estas seguro que el envio llega a Santa Ana?", True),
+    ("¿llega a Cordoba?", True),
+    ("cuanto tarda el envio?", True),
+    ("me lo confirmas?", True),
+    ("en serio llega hasta alla", True),
+    # Confirmaciones o datos: NO son preguntas, cierran.
+    ("dale, cerremos", False),
+    ("si, avancemos", False),
+    ("listo, mi nombre es Juan Perez", False),
+]
+
+
+@pytest.mark.parametrize("mensaje, esperado", CASOS_PREGUNTA)
+def test_d_detecta_pregunta_o_duda(mensaje, esperado):
+    assert cierre.parece_pregunta(mensaje) is esperado
+
+
+def test_d_una_duda_no_dispara_el_cierre():
+    """El apuro real: el cliente pregunta '¿estas seguro que el envio llega a
+    Santa Ana?' y el bot salta a pedir datos. Una duda NO es una confirmacion:
+    no debe disparar el lead fuerte, el bot tiene que contestar la duda."""
+    assert cierre.dispara_lead_fuerte(
+        pregunta_hecha=True,
+        respuesta="estas seguro que el envio llega a Santa Ana?") is False
+    # Pero un dale despues sigue cerrando.
+    assert cierre.dispara_lead_fuerte(
+        pregunta_hecha=True, respuesta="dale, cerremos") is True
+
+
 # ── Switch de version A/B del bot ────────────────────────────────────────────
 # Dos versiones del producto, un solo lugar para prenderla:
 #   Version A = lead fuerte, el bot capta y avisa, cierra un humano  -> modo 'lead'
