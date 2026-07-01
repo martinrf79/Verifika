@@ -17,8 +17,23 @@ Regla de escritura (una sola por dato): el significado lo escribe el interprete;
 numeros las herramientas con su PROOF; la identidad el certificador; la redaccion el
 solver. El estado es de LECTURA para todos; cada dato lo actualiza solo su dueno.
 """
+import re
 from contextvars import ContextVar
 from typing import Any
+
+# Criterio de eleccion que el cliente deja dicho: "lo mas barato". Se detecta con
+# codigo (no con el LLM) para que sea determinista y viaje por el estado. La raiz
+# 'barat' cubre barato/barata/baratos/baratito; 'econom' cubre economico/economica.
+_CRITERIO_BARATO_RE = re.compile(r"barat|econ[oó]mic", re.IGNORECASE)
+
+
+def detectar_criterio(mensaje: str) -> str:
+    """Criterio de precio que el cliente dejo dicho en el mensaje. Hoy uno solo:
+    'más barato'. Devuelve '' si el mensaje no trae ninguno. Determinista: el
+    mismo texto siempre da el mismo criterio, sin llamar a ningun modelo."""
+    if _CRITERIO_BARATO_RE.search(mensaje or ""):
+        return "más barato"
+    return ""
 
 _current_estado: ContextVar[dict | None] = ContextVar("current_estado", default=None)
 
@@ -156,6 +171,7 @@ def construir_estado(conv: dict | None, lead: dict | None) -> dict:
         "carrito": conv.get("carrito_vigente") or [],
         "presupuesto": (conv.get("ultimo_presupuesto") or "").strip(),
         "localidad_envio": (conv.get("ultima_localidad") or "").strip(),
+        "criterio": (conv.get("criterio_cliente") or "").strip(),
         "datos_cliente": datos_cliente,
     }
 
@@ -191,6 +207,12 @@ def bloque_para_solver(estado: dict | None) -> str:
     loc = (estado.get("localidad_envio") or "").strip()
     if loc:
         partes.append("Envio ya cotizado a " + loc)
+
+    criterio = (estado.get("criterio") or "").strip()
+    if criterio:
+        partes.append(f"Preferencia YA dada por el cliente (NO la vuelvas a "
+                      f"preguntar): quiere {criterio}. Elegi el {criterio} con "
+                      f"stock y segui; no repreguntes modelo ni color.")
 
     datos = estado.get("datos_cliente") or {}
     if datos:

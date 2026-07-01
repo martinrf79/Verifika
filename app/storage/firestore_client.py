@@ -260,6 +260,7 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       ultima_localidad: str | None = None,
                       carrito_vigente: list | None = None,
                       pedido_pendiente: dict | None = None,
+                      criterio_cliente: str | None = None,
                       datos_cliente_parciales: dict | None = None):
     datos = {
         "history": history,
@@ -293,6 +294,10 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
     # ambiguos con cantidad) esperando el criterio del cliente. {} = limpiar.
     if pedido_pendiente is not None:
         datos["pedido_pendiente"] = pedido_pendiente
+    # CRITERIO del cliente ("lo mas barato"): decision vigente que persiste entre
+    # turnos para que el solver no repregunte modelo ni color (arreglo B).
+    if criterio_cliente is not None:
+        datos["criterio_cliente"] = criterio_cliente
     # DATOS DEL CLIENTE ACUMULADOS turno a turno (nombre, telefono, direccion,
     # forma de pago), aunque todavia no exista un lead. Asi un dato dado ANTES de
     # la decision de compra no se pierde y el lead se siembra completo, sin volver

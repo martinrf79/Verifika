@@ -595,6 +595,12 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         conv.get("productos_vistos") or [], productos_de_meta(meta))
     carrito_vigente = carrito_de_meta(meta) or (conv.get("carrito_vigente") or [])
     ultima_localidad = envio_de_meta(meta) or (conv.get("ultima_localidad") or "")
+    # Criterio del cliente ("lo mas barato"): se detecta determinista en el mensaje
+    # y es STICKY. Una vez dicho persiste entre turnos hasta que el cliente diga
+    # otro, asi el solver no vuelve a preguntar modelo ni color (arreglo B).
+    from app.core.estado_venta import detectar_criterio
+    criterio_cliente = detectar_criterio(raw_message) or (
+        conv.get("criterio_cliente") or "")
 
     latency_ms = int((time.time() - t0) * 1000)
     try:
@@ -606,6 +612,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                           productos_vistos=productos_vistos,
                           carrito_vigente=carrito_vigente,
                           ultima_localidad=ultima_localidad,
+                          criterio_cliente=criterio_cliente,
                           datos_cliente_parciales=datos_acumulados)
     except Exception as e:
         log.warning("interprete_libre_save_failed", trace_id=trace_id,
