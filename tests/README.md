@@ -49,6 +49,39 @@ contrato entero de su herramienta, no un bug suelto.
 3. Nada se mergea en rojo (lo bloquea el CI).
 4. Consolidar, no agregar: un cambio sin test no cuenta como hecho.
 
+## Cómo se mantiene — contra el teléfono descompuesto
+
+**Qué vive en un test.** Un solo contrato: dado este dato, el bot da este
+resultado, porque esto importa. El *qué* es la afirmación, el *por qué* es el
+docstring en una línea. NADA más: ni fechas, ni historia, ni estado. El *cuándo*
+lo guarda git. Un test con fecha en el nombre es un diario disfrazado, no un test.
+
+**Cómo se actualiza cada uno.** Un rojo tiene tres motivos y hay que distinguirlos:
+1. El código está mal → se arregla el código, el test NO se toca.
+2. El requisito cambió a propósito → se cambia la afirmación, y el commit explica
+   el nuevo requisito. Es el único motivo legítimo para editar lo que un test espera.
+3. El test prueba algo equivocado o repetido → se borra.
+
+**Regla de oro:** nunca edites un test para que pase. Editás el código para que
+pase, o editás el test porque el requisito cambió de verdad. Confundir esas dos
+cosas es el momento exacto en que entra la mentira. Una afirmación cambiada en un
+diff SIEMPRE lleva su porqué en el commit.
+
+**Archivos que no crecen sin fin.** El archivo crece con contratos nuevos, no con
+variaciones. Muchas formas de decir lo mismo = una TABLA de casos
+(`pytest.mark.parametrize`), no muchas funciones. Ver `test_cierre.py` como
+plantilla: agregar un caso visto en WhatsApp es agregar una FILA. Un archivo = una
+herramienta del bot; si no se describe en una frase, son dos archivos.
+
+**Podar, no solo sumar.** Cada arreglo pregunta si deja algún test viejo de más.
+Cuando se consolida un camino, se borran en el MISMO commit los tests del camino
+que se sacó. Un test de código muerto es un test muerto.
+
+**Una autoridad por cada cosa.** El test dice cómo se comporta el bot. El README
+es el mapa (dónde), no describe comportamiento. CLAUDE.md son las reglas. RESUMEN
+es el foco de hoy. No hay un quinto documento que describa comportamiento. Si un
+dato de comportamiento no está en un test, es una opinión, no un hecho.
+
 ## Cómo arranca un chat nuevo
 
 Leer `CLAUDE.md` (reglas) y `RESUMEN_PARA_NUEVO_CHAT.md` (estado), y correr

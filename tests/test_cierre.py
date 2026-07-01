@@ -1,30 +1,55 @@
 """
-Regresion de la captura de datos del cierre (forma de pago y direccion por regex).
+AREA: Cierre — captura de datos del cliente por regex (forma de pago, direccion).
 
-  E8   Captura la forma de pago que el cliente RECHAZO: agarra la primera por
-       orden de patron, sin mirar la negacion.
+Herramientas del bot cubiertas: extraer_forma_pago y extraer_direccion
+(app/core/cierre.py).
+
+PATRON DE ESTA AREA (plantilla del proyecto): los casos viven en una TABLA, no en
+funciones repetidas. Agregar una forma nueva vista en WhatsApp es agregar una
+FILA, no un archivo. Cada fila es (mensaje, esperado, id). Las que hoy fallan son
+los errores confirmados; las que hoy pasan son locks que protegen lo que anda.
+
+Errores sembrados:
+  E8   Captura la forma de pago RECHAZADA en vez de la elegida.
   E9   'mp' de megapixeles se toma como Mercado Pago.
   E10  La direccion agarra 'mandar a 4 cuotas' como domicilio.
 """
+import pytest
+
 from app.core import cierre
 
 
-def test_e8_forma_pago_ignora_la_rechazada():
-    """E8: si el cliente rechaza un medio y prefiere otro, se captura el que
-    prefiere, no el rechazado."""
-    fp = cierre.extraer_forma_pago(
-        "no quiero pagar con transferencia, prefiero efectivo")
-    assert fp == "efectivo", (
-        "Debe capturar 'efectivo' (el elegido), no 'transferencia' (el rechazado).")
+# ── Forma de pago: (mensaje, forma esperada) ────────────────────────────────
+CASOS_FORMA_PAGO = [
+    # Errores confirmados (hoy ROJO):
+    ("no quiero pagar con transferencia, prefiero efectivo", "efectivo"),  # E8
+    ("la camara tiene 48 mp de resolucion", ""),                          # E9
+    # Locks de camino feliz (hoy VERDE): protegen lo que funciona.
+    ("lo pago con transferencia", "transferencia"),
+    ("pago en efectivo", "efectivo"),
+    ("con mercado pago", "mercado pago"),
+]
 
 
-def test_e9_mp_de_megapixeles_no_es_mercado_pago():
-    """E9: 'mp' como unidad de megapixeles no debe leerse como forma de pago."""
-    fp = cierre.extraer_forma_pago("la camara tiene 48 mp de resolucion")
-    assert fp == "", "'48 mp' es megapixeles, no Mercado Pago."
+@pytest.mark.parametrize("mensaje, esperado", CASOS_FORMA_PAGO)
+def test_forma_pago(mensaje, esperado):
+    assert cierre.extraer_forma_pago(mensaje) == esperado
 
 
-def test_e10_direccion_no_captura_cuotas():
-    """E10: 'mandar a 4 cuotas' es forma de pago, no un domicilio."""
-    d = cierre.extraer_direccion("me lo podes mandar a 4 cuotas?")
-    assert d == "", "'4 cuotas' no es una direccion de envio."
+# ── Direccion: (mensaje, fragmento esperado o "" si no debe capturar) ────────
+CASOS_DIRECCION = [
+    # Error confirmado (hoy ROJO): 'cuotas' no es un domicilio.
+    ("me lo podes mandar a 4 cuotas?", ""),  # E10
+    # Locks de camino feliz (hoy VERDE): una direccion real se captura.
+    ("envio a la calle San Martin 1234, Cordoba", "1234"),
+    ("mi casa es Av Colon 850", "850"),
+]
+
+
+@pytest.mark.parametrize("mensaje, fragmento", CASOS_DIRECCION)
+def test_direccion(mensaje, fragmento):
+    r = cierre.extraer_direccion(mensaje)
+    if fragmento == "":
+        assert r == "", "No debe capturar un domicilio donde no lo hay."
+    else:
+        assert fragmento in r, f"Debe capturar la direccion (contiene {fragmento})."
