@@ -46,9 +46,9 @@ se asienta acá como contrato; el verde dice hecho, la fila sin archivo dice fal
 | Caso | Qué garantiza | Estado | Archivo |
 |---|---|---|---|
 | **A** | La melliza activa NO tira el canned cuando el solver repite un presupuesto ya calculado en memoria (sin tools ese turno). Bloquea solo sin evidencia en ningún lado. | ✅ verde | `test_verificador.py` |
-| **B** | La preferencia del cliente persiste como decisión: "lo más barato" no se repregunta modelo ni color, se elige el más barato con stock solo. | ⏳ pendiente | `test_preferencias.py` (nuevo) |
-| **C** | El dato determinista viaja por el flujo: la zona de cada destino queda cacheada y no se repide el CP; el ítem más barato elegido se congela y no salta entre turnos. | ⏳ pendiente | `test_envio.py` + `test_preferencias.py` |
-| **D** | Cierre en dos versiones: A con intención de compra, lead fuerte que avisa al cliente; B el bot vende solo hasta el link de Mercado Pago o CBU, con disparador por pregunta del sistema. | ⏳ pendiente | `test_cierre.py` |
+| **B** | El criterio del cliente persiste como decisión: "lo más barato" se detecta con código, viaja por el estado y el solver no repregunta modelo ni color. | ✅ verde | `test_preferencias.py` |
+| **C** | La provincia que el cliente dio viaja por el estado a todos los destinos: no se repide el CP de cada pueblo. | ✅ verde | `test_envio.py` |
+| **D** | Cierre en dos versiones: A con intención de compra, lead fuerte que avisa al cliente; B el bot vende solo hasta el link de Mercado Pago o CBU, con disparador por pregunta del sistema. Es lo que hace converger la charla; B y C sacan la repregunta, D remata. | ⏳ pendiente | `test_cierre.py` |
 
 Cada pendiente arranca escribiendo su test en rojo, se arregla el código hasta el
 verde y recién ahí pasa a hecho, sin dejar rojos en main.
