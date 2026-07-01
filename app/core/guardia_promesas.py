@@ -42,10 +42,14 @@ _ENTREGA = (r"(?:lleg\w*|entreg\w*|recib\w*|arrib\w*|tendr\w*|"
             r"(?:lo\s+|te\s+lo\s+)?(?:vas\s+a\s+)?ten[eé]s|vas\s+a\s+tener|"
             r"en\s+tu\s+casa|en\s+tu\s+puerta|en\s+tu\s+domicilio|en\s+tus\s+manos)")
 # Dia o fecha concreta, con diminutivos comunes y "finde". "dias habiles" no
-# entra: no nombra un dia puntual.
+# entra: no nombra un dia puntual. Incluye la fecha dicha por numero y mes en
+# palabra ("25 de junio"), que el patron viejo de solo 25/6 dejaba pasar (E3).
+_MESES = (r"enero|febrero|marzo|abril|mayo|junio|julio|agosto|"
+          r"septiembre|setiembre|octubre|noviembre|diciembre")
 _DIA = (r"(?:lunes|lunecito|martes|martecito|mi[eé]rcoles|jueves|juevecito|"
         r"viernes|viernecito|s[áa]bado|sabadito|domingo|dominguito|"
         r"finde|fin\s+de\s+semana|ma[ñn]ana|pasado\s+ma[ñn]ana|hoy\s+mismo|"
+        rf"\d{{1,2}}\s+de\s+(?:{_MESES})|"
         r"\b\d{1,2}/\d{1,2}\b)")
 _RE_DIA_ENTREGA = re.compile(
     rf"(?:{_ENTREGA}.{{0,40}}?{_DIA}|{_DIA}.{{0,40}}?{_ENTREGA})",
@@ -69,17 +73,37 @@ _RE_SERVICIOS = re.compile(
     re.IGNORECASE)
 
 
+# Negacion de POLITICA de la tienda: "no hacemos", "no tenemos", "no ofrecemos".
+# Cuando el disparo cae dentro de una de estas, la tienda esta siendo HONESTA
+# (niega un servicio que no da), no prometiendo: no es una promesa prohibida (E4).
+_NEG_POLITICA = re.compile(
+    r"\b(?:no|tampoco)\s+(?:\w+\s+){0,2}"
+    r"(?:hac\w+|ten\w+|ofrec\w+|cont\w+|hay|dam\w+|realiz\w+|brind\w+|"
+    r"manej\w+|trabaj\w+|dispon\w+)",
+    re.IGNORECASE)
+
+
+def _negado(texto: str, start: int) -> bool:
+    """True si el disparo viene dentro de una negacion de politica de la tienda
+    ('no hacemos instalacion'): es honestidad, no una promesa. Mira la ventana
+    corta antes del match, asi una negacion lejana e inconexa no lo tapa."""
+    return bool(_NEG_POLITICA.search(texto[max(0, start - 30):start]))
+
+
 def detectar(respuesta: str) -> list[str]:
-    """Devuelve las clases de promesa prohibida presentes en el texto. [] si limpio."""
+    """Devuelve las clases de promesa prohibida presentes en el texto. [] si limpio.
+    Un disparo dentro de una negacion de politica ('no hacemos X') no cuenta: la
+    tienda niega el servicio, no lo promete."""
     if not respuesta:
         return []
     clases = []
-    if _RE_DIA_ENTREGA.search(respuesta):
-        clases.append("dia_entrega")
-    if _RE_RETIRO.search(respuesta):
-        clases.append("retiro_local")
-    if _RE_SERVICIOS.search(respuesta):
-        clases.append("servicio_no_ofrecido")
+    for clase, rx in (("dia_entrega", _RE_DIA_ENTREGA),
+                      ("retiro_local", _RE_RETIRO),
+                      ("servicio_no_ofrecido", _RE_SERVICIOS)):
+        for m in rx.finditer(respuesta):
+            if not _negado(respuesta, m.start()):
+                clases.append(clase)
+                break
     return clases
 
 

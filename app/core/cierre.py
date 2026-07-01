@@ -49,16 +49,26 @@ Reglas:
 # intencion (ej "presupuestame Cordoba con pago transferencia") igual se captura,
 # sin depender de que el modelo lo saque ni de la puerta de intencion.
 
-# Palabra de pago -> forma normalizada. Se matchea por palabra completa.
+# Palabra de pago -> forma normalizada. Se matchea por palabra completa. La sigla
+# 'mp' SOLO cuenta como Mercado Pago en contexto de pago (con mp, pago con mp): asi
+# '48 mp de resolucion' de una camara no se toma como forma de pago (E9).
 _FORMAS_PAGO = [
     (r"transferenc", "transferencia"),
     (r"\bmercado\s*pago\b", "mercado pago"),
-    (r"\bmp\b", "mercado pago"),
+    (r"(?:\bcon\b|\bpor\b|pag\w*|abon\w*|mando|transfier\w*)\s+(?:con\s+|por\s+)?mp\b",
+     "mercado pago"),
     (r"efectiv", "efectivo"),
     (r"tarjeta", "tarjeta"),
     (r"\bdebito\b", "debito"),
     (r"\bcredito\b", "credito"),
 ]
+
+# Negacion de una forma de pago: 'no quiero transferencia', 'nunca por tarjeta'.
+# La forma NEGADA se descarta, asi 'no quiero transferencia, prefiero efectivo'
+# captura efectivo y no la rechazada (E8). 'sin' queda afuera a proposito: 'pago
+# sin recargo con transferencia' no niega la transferencia.
+_NEG_PAGO = re.compile(r"\b(?:no|nunca|tampoco)\b|nada\s+de|prefiero\s+no",
+                       re.IGNORECASE)
 
 # Cue words que confirman que un numero es un domicilio, no una cantidad/precio.
 _DIR_CUE = (r"calle|avenida|\bav\b|\bav\.|pasaje|\bpje\b|ruta|barrio|altura|"
@@ -72,12 +82,23 @@ def _sin_acentos(s: str) -> str:
 
 
 def extraer_forma_pago(mensaje: str) -> str:
-    """Forma de pago por palabra clave, normalizada. '' si no hay ninguna clara."""
+    """Forma de pago por frase clave, normalizada. '' si no hay ninguna clara.
+    Descarta la forma que viene NEGADA ('no quiero transferencia') y, entre las que
+    quedan, devuelve la primera del mensaje: asi gana la elegida, no la rechazada."""
     txt = _sin_acentos((mensaje or "").lower())
+    candidatos: list[tuple[int, str]] = []
     for patron, forma in _FORMAS_PAGO:
-        if re.search(patron, txt):
-            return forma
-    return ""
+        m = re.search(patron, txt)
+        if not m:
+            continue
+        # La forma negada ('no quiero X') se descarta: se mira la ventana previa.
+        if _NEG_PAGO.search(txt[max(0, m.start() - 20):m.start()]):
+            continue
+        candidatos.append((m.start(), forma))
+    if not candidatos:
+        return ""
+    candidatos.sort()
+    return candidatos[0][1]
 
 
 def extraer_direccion(mensaje: str) -> str:
@@ -90,6 +111,12 @@ def extraer_direccion(mensaje: str) -> str:
     encontradas: list[str] = []
     # "<cue> ... <palabra(s)> <numero 1-5 digitos>" -> tramo de domicilio.
     for m in re.finditer(r"([A-Za-zÀ-ÿ.\s]{2,40}?\d{1,5})", txt):
+        # Si el numero es un plan de pago o una cantidad ('4 cuotas', '3 pagos',
+        # '6 meses'), NO es una altura de domicilio: se descarta (E10).
+        siguiente = txt[m.end():m.end() + 12]
+        if re.match(r"\s*(?:cuota|pago|mes\b|meses|unidad|producto|persona|"
+                    r"a[nñ]o|dia)", siguiente, re.IGNORECASE):
+            continue
         tramo = m.group(1).strip(" ,.;")
         if re.search(r"\d", tramo) and len(tramo) >= 4:
             encontradas.append(re.sub(r"\s+", " ", tramo))

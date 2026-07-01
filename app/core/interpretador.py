@@ -57,16 +57,6 @@ def corregir_estado_regresion(estado_nuevo: str | None,
         return "explorando"
     return estado_nuevo
 
-# Frases nucleo de negacion o postergacion. Lista corta, solo se aplica
-# como veto sobre decision_compra del LLM, no como decisor.
-FRASES_NEGACION_NUCLEO = [
-    "no quiero", "no lo quiero", "no la quiero",
-    "no me sirve", "no me interesa",
-    "tal vez despues", "tal vez mas adelante",
-    "no se si", "me lo pienso", "lo pienso",
-    "mas adelante", "ahora no", "despues veo",
-    "lo voy a pensar", "lo pensare",
-]
 
 _client = None
 
@@ -316,15 +306,6 @@ def validar_schema(resultado: dict) -> tuple[bool, str]:
     elif not isinstance(candidatos, list):
         return False, "candidatos no es lista"
     return True, ""
-
-
-def contiene_negacion(mensaje: str) -> bool:
-    """Detecta si el mensaje contiene frase nucleo de negacion o postergacion."""
-    msg = mensaje.lower()
-    for frase in FRASES_NEGACION_NUCLEO:
-        if frase in msg:
-            return True
-    return False
 
 
 def parsear_respuesta_llm(raw: str) -> dict | None:
