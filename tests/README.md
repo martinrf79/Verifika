@@ -25,7 +25,7 @@ contrato entero de su herramienta, no un bug suelto.
 
 | Área | Archivo | Herramienta del bot | Errores sembrados |
 |---|---|---|---|
-| Verificador de plata | `test_verificador.py` | `verificar_respuesta`, `_totales_derivables` | E1, E2, E7 |
+| Verificador de plata | `test_verificador.py` | `verificar_respuesta`, `_totales_derivables`, `decidir_accion_no_respaldado` | E1, E2, E7, A |
 | Calculadora y total | `test_calculadora.py` | `calculate_total`, `calc_defensiva` | E5, E13 |
 | Envío y zona | `test_envio.py` | `cotizar_envio` (CP / provincia) | locks (crece) |
 | Cierre | `test_cierre.py` | `extraer_forma_pago`, `extraer_direccion` | E8, E9, E10 |
@@ -37,6 +37,21 @@ E11 (teléfono en leads) y E14 (veto de negación en interpretador) se retiraron
 el teléfono y el DNI no se piden para la venta, los procesa Mercado Pago o el
 banco, y el veto de negación se saca a propósito porque manda la interpretación
 del LLM libre con filtros más abajo. Se borraron sus tests y su código muerto.
+
+## Historial de la charla de WhatsApp (1-jul) — lo hecho y lo pendiente
+
+Cuatro errores no graves reproducidos en el banco sobre el camino vivo. Cada uno
+se asienta acá como contrato; el verde dice hecho, la fila sin archivo dice falta.
+
+| Caso | Qué garantiza | Estado | Archivo |
+|---|---|---|---|
+| **A** | La melliza activa NO tira el canned cuando el solver repite un presupuesto ya calculado en memoria (sin tools ese turno). Bloquea solo sin evidencia en ningún lado. | ✅ verde | `test_verificador.py` |
+| **B** | La preferencia del cliente persiste como decisión: "lo más barato" no se repregunta modelo ni color, se elige el más barato con stock solo. | ⏳ pendiente | `test_preferencias.py` (nuevo) |
+| **C** | El dato determinista viaja por el flujo: la zona de cada destino queda cacheada y no se repide el CP; el ítem más barato elegido se congela y no salta entre turnos. | ⏳ pendiente | `test_envio.py` + `test_preferencias.py` |
+| **D** | Cierre en dos versiones: A con intención de compra, lead fuerte que avisa al cliente; B el bot vende solo hasta el link de Mercado Pago o CBU, con disparador por pregunta del sistema. | ⏳ pendiente | `test_cierre.py` |
+
+Cada pendiente arranca escribiendo su test en rojo, se arregla el código hasta el
+verde y recién ahí pasa a hecho, sin dejar rojos en main.
 
 ## Dos pisos
 
