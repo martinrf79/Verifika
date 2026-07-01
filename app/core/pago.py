@@ -22,6 +22,7 @@ import re
 
 import httpx
 
+from app.config import get_settings
 from app.logger import get_logger
 from app.storage.firestore_client import get_config
 
@@ -157,6 +158,13 @@ def datos_transferencia(tienda_id: str | None) -> dict:
             v = None
         if v:
             out[k] = str(v).strip()
+    # Fallback DEMO: si la tienda todavia no cargo ni CBU ni alias, se usan los
+    # datos de demostracion (config.py, marcados como tal) para que el bot igual
+    # mande la modalidad de transferencia. La config real de la tienda los pisa.
+    if not out.get("cbu") and not out.get("alias"):
+        s = get_settings()
+        out = {"cbu": s.DEMO_CBU, "alias": s.DEMO_ALIAS,
+               "titular_cuenta": s.DEMO_TITULAR, "banco": s.DEMO_BANCO}
     return out
 
 
@@ -197,4 +205,8 @@ async def instruccion_cobro(presupuesto: str, lead: dict,
     # Mercado Pago, o forma no reconocida: el link es el default historico.
     url = await link_pago_para_lead(
         presupuesto or lead.get("orden", ""), lead, tienda_id, trace_id)
+    if not url:
+        # Sin token real de Mercado Pago cae al link de DEMO, asi en la demo el bot
+        # igual manda un enlace. En produccion el token genera el link verdadero.
+        url = get_settings().DEMO_LINK_PAGO
     return f"Podés pagar acá: {url}" if url else ""

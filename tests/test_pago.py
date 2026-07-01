@@ -47,6 +47,14 @@ def test_transferencia_arma_mensaje_con_cbu():
 
 
 def test_transferencia_sin_datos_no_inventa():
-    """Sin CBU ni alias en la config, no se inventa nada: devuelve '' y el cierre
-    cae al camino humano, no manda un dato de cobro falso."""
+    """El formateador puro sin CBU ni alias devuelve '': no arma un dato falso."""
     assert pago.mensaje_transferencia({}, monto=1000) == ""
+
+
+def test_transferencia_usa_demo_si_tienda_sin_datos(firestore_doble):
+    """Demo: si la tienda no cargo CBU ni alias, datos_transferencia cae a los
+    datos de demostracion, asi el bot igual manda la modalidad de transferencia.
+    La config real de la tienda los pisa cuando existan."""
+    datos = pago.datos_transferencia("verifika_prod")
+    assert datos.get("alias"), "debe haber datos de cobro (demo) para mandar la via"
+    assert pago.mensaje_transferencia(datos, monto=1000), "el bot manda la modalidad"

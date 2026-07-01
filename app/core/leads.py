@@ -50,20 +50,42 @@ RE_TELEFONO = re.compile(
 RE_TELEFONO_GENERICO = re.compile(r"\b\d{8,13}\b")
 
 
+# SWITCH DE VERSION DEL BOT (A/B), un solo lugar para prenderla. Las dos versiones
+# del producto se eligen con una config simple: "A" o "B" (o los nombres largos).
+#   Version A = lead fuerte: el bot capta el interes y avisa, cierra un humano.
+#   Version B = venta: el bot cierra la venta y manda el cobro (link o CBU).
+# Los nombres internos (lead/venta/off) siguen valiendo para no romper lo que andaba.
+_ALIAS_MODO = {
+    "a": "lead", "version_a": "lead", "opcion_a": "lead", "lead": "lead",
+    "b": "venta", "version_b": "venta", "opcion_b": "venta", "venta": "venta",
+    "off": "off",
+}
+
+
+def _normalizar_modo(v: str) -> str:
+    """Traduce el valor de config al modo interno: acepta 'A'/'B' (el switch de
+    version) o los nombres largos. '' si el valor no se reconoce, para que el
+    llamador caiga al default sin inventar un modo."""
+    clave = (v or "").strip().lower().replace(" ", "_")
+    return _ALIAS_MODO.get(clave, "")
+
+
 def modo_cierre(tienda_id: str) -> str:
-    """Modalidad del cierre para la tienda (aditivo). La config por tienda en
-    Firestore ('modo_cierre') pisa el default de config.py. Valores:
-      venta = capta el lead y manda el link de Mercado Pago con el total verificado.
-      lead  = capta el lead y avisa al usuario, sin link (cierre humano).
-      off   = el cierre no actua; el bot vende igual, sin captar lead."""
+    """Modalidad del cierre para la tienda. La config por tienda en Firestore
+    ('modo_cierre') pisa el default de config.py. Se setea con el switch de version:
+      A o 'lead'  = version A: capta el lead y avisa al usuario, cierra un humano.
+      B o 'venta' = version B: el bot cierra y manda el cobro (link de Mercado Pago
+                    o CBU segun la forma de pago).
+      off         = el cierre no actua; el bot vende igual, sin captar lead."""
     try:
         from app.storage.firestore_client import get_config
         v = get_config("modo_cierre", tienda_id=tienda_id)
-        if v:
-            return str(v).strip().lower()
+        m = _normalizar_modo(v)
+        if m:
+            return m
     except Exception as e:
         log.warning("modo_cierre_read_error", error=str(e)[:100])
-    return settings.MODO_CIERRE
+    return _normalizar_modo(settings.MODO_CIERRE) or settings.MODO_CIERRE
 
 
 def extraer_telefono(texto: str) -> str:

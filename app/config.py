@@ -222,13 +222,30 @@ class Settings(BaseModel):
         "search_products,get_product_details,list_catalog,query_faq,"
         "calculate_total,cotizar_envio")
 
-    # Modalidad del cierre (aditivo, por tienda). La config "modo_cierre" en
-    # Firestore pisa este default por tienda; esto es el valor base. Es config
-    # de producto (que plan se le vende a cada usuario), no un camino apagado:
-    #   venta = capta el lead y manda el link de Mercado Pago (total verificado).
-    #   lead  = capta el lead y avisa al usuario, sin link (cierre humano).
-    #   off   = el cierre no actua; el bot vende igual, sin captar lead.
-    MODO_CIERRE: str = os.getenv("MODO_CIERRE", "venta").lower()
+    # SWITCH DE VERSION DEL BOT (A/B). Un solo lugar para elegir que version corre.
+    # Poner "A" o "B" aca (o por la env MODO_CIERRE), o en la config Firestore
+    # 'modo_cierre' por tienda, que pisa este default. Es config de producto, no un
+    # camino apagado:
+    #   B (o "venta") = el bot cierra la venta y manda el cobro: link de Mercado
+    #                   Pago o CBU segun la forma de pago. <-- version de prueba actual.
+    #   A (o "lead")  = el bot capta el lead fuerte y avisa; cierra un humano.
+    #   off           = el cierre no actua; el bot vende igual, sin captar lead.
+    MODO_CIERRE: str = os.getenv("MODO_CIERRE", "B").lower()
+
+    # DATOS DE COBRO POR DEFECTO (demo). Config operativa de la tienda, no secreto:
+    # la config de Firestore por tienda (cbu/alias/titular_cuenta/banco) PISA estos
+    # valores. Estos defaults son de DEMOSTRACION, marcados como tal a proposito para
+    # que nadie transfiera plata real a una cuenta de ejemplo; se editan por cliente.
+    # Sirven para que en la demo el bot SI mande la modalidad de transferencia aunque
+    # la tienda todavia no cargo sus datos reales. Editables por entorno.
+    DEMO_CBU: str = os.getenv("DEMO_CBU", "0000000000000000000000")
+    DEMO_ALIAS: str = os.getenv("DEMO_ALIAS", "demo.verifika")
+    DEMO_TITULAR: str = os.getenv("DEMO_TITULAR", "CUENTA DEMO - reemplazar")
+    DEMO_BANCO: str = os.getenv("DEMO_BANCO", "Banco Demo")
+    # Link de pago de DEMO cuando no hay token de Mercado Pago cargado: asi el bot
+    # igual manda un enlace y se ve la accion. En produccion real, el token genera
+    # el link verdadero y este no se usa.
+    DEMO_LINK_PAGO: str = os.getenv("DEMO_LINK_PAGO", "https://mpago.la/demo")
 
     # TARIFA DE ENVIO AL INTERIOR POR PROVINCIA (fuente de verdad en codigo). El
     # interior dejo de ser un rango: cada provincia tiene un monto fijo, dentro del
