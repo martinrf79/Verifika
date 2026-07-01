@@ -40,3 +40,35 @@ def test_zona_indeterminable_pide_dato_no_inventa(firestore_doble):
     q = cotizar_envio(localidad="qwerty zxcvb", subtotal=1000)
     assert q.get("ok") is False
     assert q.get("zona") is None
+
+
+# ── C: la provincia que el cliente ya dio VIAJA por el estado ─────────────────
+# En la charla real el cliente dijo "son pueblos de cordoba" y el bot le siguio
+# pidiendo el codigo postal de cada pueblo. La provincia se detecta determinista
+# (clasificar_provincia, ya existe) pero no viajaba: no se cacheaba ni se
+# aplicaba a todos los destinos. Estos tests fijan ese viaje. HOY fallan (rojo).
+
+def test_c_detecta_provincia_de_los_pueblos():
+    """El dato de la provincia se saca con codigo del mensaje del cliente, no con
+    el modelo. 'son pueblos de cordoba' -> cordoba, para todos los destinos."""
+    from app.core.envio import clasificar_provincia
+    assert clasificar_provincia("son pueblos de cordoba") == "cordoba"
+
+
+def test_c_estado_persiste_provincia():
+    """construir_estado levanta la provincia guardada, asi sobrevive entre turnos
+    y no hay que volver a pedirla."""
+    from app.core import estado_venta
+    estado = estado_venta.construir_estado({"provincia_envio": "cordoba"}, None)
+    assert estado.get("provincia_envio") == "cordoba"
+
+
+def test_c_bloque_inyecta_provincia_y_prohibe_repedir_cp():
+    """El bloque del solver lleva la provincia Y la orden de no repedir el CP:
+    es lo que evita el 'ya te dije pueblo y provincia'. Debe cubrir TODOS los
+    destinos con esa provincia."""
+    from app.core import estado_venta
+    bloque = estado_venta.bloque_para_solver({"provincia_envio": "cordoba"})
+    assert "cordoba" in bloque.lower()
+    assert "NO" in bloque
+    assert "cp" in bloque.lower() or "codigo postal" in bloque.lower()

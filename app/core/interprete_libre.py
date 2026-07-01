@@ -601,6 +601,12 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     from app.core.estado_venta import detectar_criterio
     criterio_cliente = detectar_criterio(raw_message) or (
         conv.get("criterio_cliente") or "")
+    # Provincia del cliente: se detecta determinista y es STICKY. Una vez dada
+    # persiste entre turnos y se aplica a TODOS los destinos, asi el bot no repide
+    # el CP de cada pueblo (arreglo C, el 'ya te dije pueblo y provincia').
+    from app.core.envio import clasificar_provincia
+    provincia_envio = (clasificar_provincia(raw_message) or "") or (
+        conv.get("provincia_envio") or "")
 
     latency_ms = int((time.time() - t0) * 1000)
     try:
@@ -613,6 +619,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                           carrito_vigente=carrito_vigente,
                           ultima_localidad=ultima_localidad,
                           criterio_cliente=criterio_cliente,
+                          provincia_envio=provincia_envio,
                           datos_cliente_parciales=datos_acumulados)
     except Exception as e:
         log.warning("interprete_libre_save_failed", trace_id=trace_id,

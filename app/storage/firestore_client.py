@@ -261,6 +261,7 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       carrito_vigente: list | None = None,
                       pedido_pendiente: dict | None = None,
                       criterio_cliente: str | None = None,
+                      provincia_envio: str | None = None,
                       datos_cliente_parciales: dict | None = None):
     datos = {
         "history": history,
@@ -298,6 +299,10 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
     # turnos para que el solver no repregunte modelo ni color (arreglo B).
     if criterio_cliente is not None:
         datos["criterio_cliente"] = criterio_cliente
+    # PROVINCIA del cliente: una vez dada se aplica a todos los destinos, para no
+    # repedir el CP de cada pueblo (arreglo C).
+    if provincia_envio is not None:
+        datos["provincia_envio"] = provincia_envio
     # DATOS DEL CLIENTE ACUMULADOS turno a turno (nombre, telefono, direccion,
     # forma de pago), aunque todavia no exista un lead. Asi un dato dado ANTES de
     # la decision de compra no se pierde y el lead se siembra completo, sin volver
