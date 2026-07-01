@@ -48,7 +48,7 @@ se asienta acá como contrato; el verde dice hecho, la fila sin archivo dice fal
 | **A** | La melliza activa NO tira el canned cuando el solver repite un presupuesto ya calculado en memoria (sin tools ese turno). Bloquea solo sin evidencia en ningún lado. | ✅ verde | `test_verificador.py` |
 | **B** | El criterio del cliente persiste como decisión: "lo más barato" se detecta con código, viaja por el estado y el solver no repregunta modelo ni color. | ✅ verde | `test_preferencias.py` |
 | **C** | La provincia que el cliente dio viaja por el estado a todos los destinos: no se repide el CP de cada pueblo. | ✅ verde | `test_envio.py` |
-| **D** | Cierre en dos versiones: A con intención de compra, lead fuerte que avisa al cliente; B el bot vende solo hasta el link de Mercado Pago o CBU, con disparador por pregunta del sistema. Es lo que hace converger la charla; B y C sacan la repregunta, D remata. | ⏳ pendiente | `test_cierre.py` |
+| **D** | Gatillo de cierre: el bot hace UNA pregunta ("¿Seguimos adelante con tu pedido?") y la respuesta del cliente decide determinista, un no lo toma un humano, cualquier otra respuesta dispara el lead fuerte. Las dos versiones (avisar al cliente vs vender hasta el link) las gobierna `modo_cierre`. | ✅ verde | `test_cierre.py` |
 
 Cada pendiente arranca escribiendo su test en rojo, se arregla el código hasta el
 verde y recién ahí pasa a hecho, sin dejar rojos en main.
