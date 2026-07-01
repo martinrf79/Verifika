@@ -7,8 +7,10 @@ es no determinista y se equivoca, este verificador es codigo puro:
 
 - Escanea la respuesta y junta cada cifra de dinero.
 - Exige que cada cifra salga de una fuente real: un precio del catalogo, un valor
-  o un numero del texto de la FAQ, o un PROOF de la calculadora (de este turno o
-  de turnos recientes guardados en memoria).
+  estructurado de la FAQ cuantitativa (monto, rango o el numero de su condicion),
+  o un PROOF de la calculadora (de este turno o de turnos recientes en memoria).
+  La prosa libre de una FAQ NO respalda: un numero suelto en el texto de respuesta
+  no alcanza para blanquear un precio (evita el falso positivo del umbral de envio).
 - Si una cifra no tiene respaldo en ninguna fuente, es alucinacion y se bloquea.
 
 No descompone en afirmaciones, no llama a ningun modelo, no tiene umbrales de
@@ -49,12 +51,23 @@ _UNIDAD_SPEC_RE = re.compile(
     r"\s*(dpi|hz|ghz|mhz|fps|rpm|nits|mah|gramos|gr|kg|g|mm|cm|pulgadas|px|gb|tb|bits?|w)\b",
     re.IGNORECASE)
 
+# Contexto de plata para un numero SIN formato (sin puntos, sin signo, sin
+# 'pesos'): precedido por un verbo de precio (sale, cuesta, vale, total...) o
+# seguido de 'total'. Asi un precio que el modelo tipea pelado igual se cuenta y
+# se verifica, en vez de esquivar el control por no venir formateado.
+_PRECIO_PRE_RE = re.compile(
+    r"\b(sale|salen|cuesta|cuestan|vale|valen|son|paga|pagas|abona|abonas|"
+    r"queda|quedan|precio|total|subtotal)\s*(?:de\s+)?\$?\s*$",
+    re.IGNORECASE)
+_TOTAL_POST_RE = re.compile(r"\s*(?:en\s+)?(?:sub)?total\b", re.IGNORECASE)
+
 
 def _es_monto(texto: str, match) -> bool:
     """Decide si un numero del texto es una cifra de dinero y no una direccion,
     un numero de modelo, una spec o una cantidad. Es plata si tiene separador de
-    miles (273.000), o signo pesos antes, o la palabra pesos despues. NO es plata
-    si la sigue una unidad de spec como DPI o Hz."""
+    miles (273.000), o signo pesos antes, o la palabra pesos despues, o si viene en
+    contexto explicito de precio (sale/cuesta/total) aunque este sin formato. NO es
+    plata si la sigue una unidad de spec como DPI o Hz."""
     start, end = match.span()
     post = texto[end:end + 9]
     if _UNIDAD_SPEC_RE.match(post):
@@ -66,6 +79,12 @@ def _es_monto(texto: str, match) -> bool:
     if "$" in pre:
         return True
     if _MONEDA_POST_RE.match(post):
+        return True
+    # Numero sin formato en contexto de plata: verbo de precio antes, o 'total'
+    # despues. Cubre el precio pelado (999999) que si no se colaba sin verificar.
+    if _PRECIO_PRE_RE.search(texto[max(0, start - 24):start]):
+        return True
+    if _TOTAL_POST_RE.match(texto[end:end + 12]):
         return True
     return False
 
@@ -119,29 +138,40 @@ def _totales_derivables(proof: dict) -> set:
     cands.add(sub)
 
     descuentos = 0
-    envios = {0}  # envio gratis siempre es una opcion derivable
+    # Envios: en multi-destino hay un envio por destino y el total los SUMA todos,
+    # no son alternativas entre si. Cada slot aporta su monto; un rango aporta su
+    # piso y su techo, asi el total sale con la suma minima o con la maxima. El 0
+    # (envio gratis por umbral) es la unica alternativa que reemplaza al envio
+    # entero. Sumar en vez de alternar es lo que distingue un total que incluye
+    # todos los envios de uno que se come alguno (ese ultimo ya no valida).
+    suma_min = 0
+    suma_max = 0
     for e in proof.get("operandos_extras", []) or []:
         modalidad = e.get("modalidad")
-        if modalidad == "porcentaje":
+        if modalidad == "rango":
+            mn, mx = e.get("monto_min"), e.get("monto_max")
+            if isinstance(mn, (int, float)):
+                suma_min += int(mn)
+            if isinstance(mx, (int, float)):
+                suma_max += int(mx)
+        elif modalidad == "porcentaje":
             m = e.get("monto_calculado_ars")
             if isinstance(m, (int, float)):
                 if _es_descuento(e):
                     descuentos += int(m)
                 else:
-                    envios.add(int(m))
-        elif modalidad == "rango":
-            for k in ("monto_min", "monto_max"):
-                m = e.get(k)
-                if isinstance(m, (int, float)):
-                    envios.add(int(m))
+                    suma_min += int(m)
+                    suma_max += int(m)
         else:  # fijo
             m = e.get("monto")
             if isinstance(m, (int, float)):
                 if _es_descuento(e):
                     descuentos += int(m)
                 else:
-                    envios.add(int(m))
+                    suma_min += int(m)
+                    suma_max += int(m)
 
+    envios = {0, suma_min, suma_max}
     neto = sub - descuentos
     cands.add(neto)
     for env in envios:
@@ -172,12 +202,15 @@ def numeros_confiables(evidence: list[dict]):
         if tipo == "producto":
             _add(item.get("precio_ars"))
         elif tipo == "faq":
+            # Solo lo ESTRUCTURADO respalda: montos/rangos de los valores y el
+            # numero de su condicion (ej umbral de envio gratis). La prosa libre de
+            # la respuesta NO entra al pool: un numero suelto ahi blanqueaba precios
+            # alucinados que coincidian con el (E7). El dato de verdad es el valor.
             for v in item.get("valores", []) or []:
                 for k in ("monto", "monto_min", "monto_max",
                           "monto_calculado_ars", "base_ars"):
                     _add(v.get(k))
                 _add_texto(v.get("condicion", ""))
-            _add_texto(item.get("respuesta", ""))
         elif tipo == "proof":
             proof = item.get("proof", {}) or {}
             for k in ("resultado", "resultado_min", "resultado_max",
