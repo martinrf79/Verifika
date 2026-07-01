@@ -66,6 +66,49 @@ def test_e2_monto_sin_formato_se_verifica():
         "999999 es un precio sin respaldo; sin formato hoy se cuela sin control.")
 
 
+def _ev_multienvio():
+    """Evidencia de un pedido con 3 envios a zonas distintas: la calculadora dio
+    el subtotal de productos y el solver cotizo cada destino por separado (un
+    PROOF de envio por zona). El gran total correcto es 100000+7500+9000+5000."""
+    return [
+        {"tipo": "proof", "proof": {
+            "tipo": "calculo_total_fijo", "subtotal_productos": 100000,
+            "operandos_productos": [{"id": "A", "monto": 100000}],
+            "operandos_extras": [], "resultado": 100000}},
+        {"tipo": "proof", "proof": {"tipo": "envio", "resultado": 7500}},
+        {"tipo": "proof", "proof": {"tipo": "envio", "resultado": 9000}},
+        {"tipo": "proof", "proof": {"tipo": "envio", "resultado": 5000}},
+    ]
+
+
+def test_multienvio_total_suma_cotizaciones_valida():
+    """El gran total de un multienvio es el subtotal mas la suma de TODAS las
+    cotizaciones de envio. Debe validar; hoy ningun PROOF suelto lo derivaba."""
+    r = verificador.verificar_respuesta(
+        "El total con los tres envios es $121.500", _ev_multienvio())
+    assert r["ok"], (
+        "subtotal 100000 + envios 7500+9000+5000 = 121500 es el total correcto "
+        "del multienvio y debe estar respaldado.")
+
+
+def test_multienvio_total_que_come_un_envio_no_valida():
+    """Un total que se olvida uno de los tres envios no debe pasar como valido."""
+    r = verificador.verificar_respuesta(
+        "El total con los tres envios es $116.500", _ev_multienvio())
+    assert not r["ok"], (
+        "116500 = subtotal + solo 2 de 3 envios; se come uno y no debe validar.")
+
+
+def test_multienvio_autocorrige_hacia_el_total_real():
+    """El corrector debe llevar un total que se comio un envio al total real del
+    multienvio, no al subtotal pelado sin ningun envio."""
+    fix = verificador.autocorregir_montos(
+        "El total con los tres envios es $116.500", _ev_multienvio())
+    assert fix["cambiada"] and fix["verificacion"]["ok"]
+    assert "121.500" in fix["respuesta"], (
+        "debe corregir hacia 121500 (subtotal + los 3 envios), no a 100000.")
+
+
 def test_e7_numero_de_prosa_faq_no_respalda_precio():
     """E7: un numero que solo aparece en el texto libre de una FAQ no debe servir
     para blanquear un precio de producto alucinado."""
