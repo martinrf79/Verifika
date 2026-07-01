@@ -53,3 +53,49 @@ def test_direccion(mensaje, fragmento):
         assert r == "", "No debe capturar un domicilio donde no lo hay."
     else:
         assert fragmento in r, f"Debe capturar la direccion (contiene {fragmento})."
+
+
+# ── D: gatillo del lead fuerte por la pregunta de cierre ─────────────────────
+# El sistema hace UNA pregunta de cierre cuando ya hay intencion suficiente. La
+# respuesta del cliente decide de forma determinista, sin depender de la
+# confianza del LLM: cualquier respuesta que NO sea un no claro dispara el lead
+# fuerte; un no lo toma un humano. Estos tests fijan ese gatillo. HOY fallan.
+
+def test_d_pregunta_de_cierre_es_la_acordada():
+    """La pregunta de cierre es la elegida con Martin: apunta a seguir con el
+    pedido y dejarlo preparado, sin apurar el pago de frente."""
+    from app.core import leads
+    assert leads.PREGUNTA_CIERRE == (
+        "¿Seguimos adelante con tu pedido así te lo dejo preparado?")
+
+
+# (respuesta del cliente, es_no_interesado esperado)
+CASOS_NO_INTERES = [
+    ("no gracias", True),
+    ("no, todavia no", True),
+    ("no me interesa", True),
+    ("ahora no", True),
+    ("despues lo veo", True),
+    ("mas adelante", True),
+    # Afirmativas o neutras: NO son un no, disparan el lead.
+    ("dale", False),
+    ("si, avancemos", False),
+    ("bueno, sigamos", False),
+    ("obvio", False),
+    ("listo, cerramos", False),
+]
+
+
+@pytest.mark.parametrize("respuesta, esperado", CASOS_NO_INTERES)
+def test_d_detecta_no_interesado(respuesta, esperado):
+    assert cierre.es_no_interesado(respuesta) is esperado
+
+
+def test_d_dispara_lead_fuerte_solo_con_pregunta_hecha_y_sin_no():
+    """El gatillo: hecha la pregunta, una respuesta que no sea un no dispara el
+    lead fuerte. Sin pregunta previa no dispara; un no tampoco."""
+    assert cierre.dispara_lead_fuerte(pregunta_hecha=True, respuesta="dale") is True
+    assert cierre.dispara_lead_fuerte(
+        pregunta_hecha=True, respuesta="no gracias") is False
+    assert cierre.dispara_lead_fuerte(
+        pregunta_hecha=False, respuesta="dale") is False

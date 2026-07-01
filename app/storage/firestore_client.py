@@ -262,6 +262,7 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       pedido_pendiente: dict | None = None,
                       criterio_cliente: str | None = None,
                       provincia_envio: str | None = None,
+                      pregunta_cierre_hecha: bool | None = None,
                       datos_cliente_parciales: dict | None = None):
     datos = {
         "history": history,
@@ -303,6 +304,10 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
     # repedir el CP de cada pueblo (arreglo C).
     if provincia_envio is not None:
         datos["provincia_envio"] = provincia_envio
+    # Flag one-shot del gatillo de cierre (D): marca que el turno pasado se hizo la
+    # pregunta de cierre, para que la respuesta del cliente dispare el lead fuerte.
+    if pregunta_cierre_hecha is not None:
+        datos["pregunta_cierre_hecha"] = pregunta_cierre_hecha
     # DATOS DEL CLIENTE ACUMULADOS turno a turno (nombre, telefono, direccion,
     # forma de pago), aunque todavia no exista un lead. Asi un dato dado ANTES de
     # la decision de compra no se pierde y el lead se siembra completo, sin volver

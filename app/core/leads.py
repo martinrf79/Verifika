@@ -35,7 +35,14 @@ UMBRAL_LEAD_FUERTE = float(os.getenv("INTERPRETER_UMBRAL_ALTA", "0.85"))
 # confirmada y recien se mostro un precio, el bot hace UNA pregunta suave de
 # cierre; un "si" a esa pregunta vuelve como decision_compra y cierra. Asi todo
 # conflicto cae en la pregunta, no en un juez paralelo.
-PREGUNTA_CIERRE = "¿Te parece si avanzamos con la compra?"
+PREGUNTA_CIERRE = "¿Seguimos adelante con tu pedido así te lo dejo preparado?"
+
+# Respuesta cuando el cliente dice que no a la pregunta de cierre: se cierra suave
+# y lo toma un humano, sin insistir (arreglo D).
+MENSAJE_NO_INTERESADO = (
+    "Perfecto, sin problema. Cuando quieras retomar, acá estoy. "
+    "Igual le paso el dato a una persona del equipo por si te puede dar una mano."
+)
 
 RE_TELEFONO = re.compile(
     r"(?:\+?54\s?9?\s?)?(?:11|2\d{2}|3\d{2})\s?\d{3,4}\s?\d{4}"
@@ -239,6 +246,7 @@ async def procesar_mensaje_para_lead(
     datos_turno: dict | None = None,
     datos_previos: dict | None = None,
     presupuesto_nuevo: bool = False,
+    pregunta_cierre_hecha: bool = False,
 ) -> tuple[str | None, dict]:
     """
     Logica del cierre (aditivo). Juez UNICO: el interpretador.
@@ -347,6 +355,28 @@ async def procesar_mensaje_para_lead(
     log.info("lead_decision_via_interpretador", trace_id=trace_id,
              intencion_llm=intencion_llm, confianza_llm=confianza_llm,
              nivel_mapeado=nivel)
+
+    # GATILLO DETERMINISTA DE CIERRE (arreglo D). Si el turno PASADO se hizo la
+    # pregunta de cierre, la respuesta del cliente decide sin depender de la
+    # confianza del LLM: un no lo toma un humano y cerramos suave; cualquier otra
+    # respuesta dispara el lead fuerte. Es el gatillo acordado: una sola pregunta,
+    # y con la respuesta ya hay decision.
+    if pregunta_cierre_hecha and nivel != "fuerte":
+        from app.core import cierre as _cierre
+        if _cierre.es_no_interesado(mensaje):
+            log.info("cierre_respuesta_no_interesado", trace_id=trace_id)
+            try:
+                await notificar_lead(
+                    tienda_id=tienda_id, user_id=user_id, canal=canal,
+                    estado="intencion_tibia", nombre="", telefono="",
+                    ultimo_mensaje=mensaje)
+            except Exception as e:
+                log.warning("notificar_lead_failed", error=str(e)[:120])
+            return None, {"accion": "no_interesado",
+                          "respuesta_directa": MENSAJE_NO_INTERESADO}
+        nivel = "fuerte"
+        frase = "respuesta_afirmativa_pregunta_cierre"
+        log.info("cierre_gatillo_determinista_fuerte", trace_id=trace_id)
 
     # Caso tres, PREGUNTA SUAVE DE CIERRE. Cuando NO hay decision confirmada pero
     # recien se mostro un precio nuevo y el interprete ve interes (no exploracion

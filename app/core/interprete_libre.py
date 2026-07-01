@@ -559,6 +559,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                  campos=sorted(datos_turno.keys()),
                  acumulado=sorted(datos_acumulados.keys()))
 
+    # Flag one-shot del gatillo de cierre (D): si el turno pasado el bot hizo la
+    # pregunta de cierre, este turno la respuesta del cliente la decide. Se lee de
+    # la conversacion y se recalcula abajo segun lo que pase este turno.
+    pregunta_cierre_previa = bool(conv.get("pregunta_cierre_hecha"))
+    meta_lead: dict = {}
     if respuesta != settings.FALLBACK_MESSAGE:
         try:
             _, meta_lead = await procesar_mensaje_para_lead(
@@ -566,7 +571,8 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 interpretacion=interp if isinstance(interp, dict) else None,
                 presupuesto=presupuesto,
                 datos_turno=datos_turno, datos_previos=datos_acumulados,
-                presupuesto_nuevo=presupuesto_nuevo)
+                presupuesto_nuevo=presupuesto_nuevo,
+                pregunta_cierre_hecha=pregunta_cierre_previa)
             if meta_lead.get("respuesta_directa"):
                 respuesta = meta_lead["respuesta_directa"]
                 log.info("interprete_libre_cierre", trace_id=trace_id,
@@ -574,6 +580,9 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         except Exception as e:
             log.warning("interprete_libre_lead_error", trace_id=trace_id,
                         error=str(e)[:160])
+    # Queda marcado SOLO el turno en que se hizo la pregunta; al turno siguiente se
+    # consume y vuelve a False, asi la pregunta se hace una sola vez.
+    pregunta_cierre_hecha = (meta_lead.get("accion") == "pregunta_cierre")
 
     # El cliente recibe la respuesta limpia: el cartel de interpretacion se quito
     # (ahora va al log). La interpretacion se sigue viendo en interprete_libre_interpretacion.
@@ -620,6 +629,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                           ultima_localidad=ultima_localidad,
                           criterio_cliente=criterio_cliente,
                           provincia_envio=provincia_envio,
+                          pregunta_cierre_hecha=pregunta_cierre_hecha,
                           datos_cliente_parciales=datos_acumulados)
     except Exception as e:
         log.warning("interprete_libre_save_failed", trace_id=trace_id,

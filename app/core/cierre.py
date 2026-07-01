@@ -23,6 +23,37 @@ settings = get_settings()
 
 CAMPOS_REQUERIDOS = ["nombre", "telefono", "direccion", "forma_pago"]
 
+# ── GATILLO DE CIERRE (arreglo D) ────────────────────────────────────────────
+# El sistema hace UNA pregunta de cierre cuando ya hay intencion suficiente. La
+# respuesta del cliente decide de forma DETERMINISTA, sin depender de la confianza
+# del LLM: cualquier respuesta que no sea un no claro dispara el lead fuerte; un no
+# lo toma un humano. Asi el gatillo no se cuelga esperando que el modelo reclasifique.
+_NEG_INICIO_RE = re.compile(r"^\s*(no|nop|nel|nah|negativo|jamas)\b", re.IGNORECASE)
+_NEG_FRASES_RE = re.compile(
+    r"(todav[ií]a\s+no|ahora\s+no|no\s+por\s+ahora|no\s+gracias|no\s+me\s+interesa|"
+    r"m[aá]s\s+adelante|otro\s+d[ií]a|lo\s+pienso|lo\s+voy\s+a\s+pensar|"
+    r"d[eé]jame\s+pensar|despu[eé]s\s+(?:lo\s+)?veo|lo\s+veo\s+despu[eé]s)",
+    re.IGNORECASE)
+
+
+def es_no_interesado(respuesta: str) -> bool:
+    """True si la respuesta del cliente denota un no o falta de interes. Determinista:
+    detecta la negacion al inicio ('no', 'no gracias') o frases de postergacion
+    ('todavia no', 'mas adelante', 'lo pienso'). Todo lo demas NO es un no."""
+    t = (respuesta or "").strip()
+    if not t:
+        return False
+    if _NEG_INICIO_RE.match(t):
+        return True
+    return bool(_NEG_FRASES_RE.search(t))
+
+
+def dispara_lead_fuerte(pregunta_hecha: bool, respuesta: str) -> bool:
+    """Gatillo del lead fuerte: solo dispara si el turno pasado se hizo la pregunta
+    de cierre Y la respuesta no es un no. Sin pregunta previa no dispara; un no
+    tampoco (ese lo toma un humano)."""
+    return bool(pregunta_hecha) and not es_no_interesado(respuesta)
+
 _ETIQUETAS = {
     "nombre": "tu nombre y apellido",
     "telefono": "un telefono de contacto",
