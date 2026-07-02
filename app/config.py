@@ -226,11 +226,14 @@ class Settings(BaseModel):
     # Poner "A" o "B" aca (o por la env MODO_CIERRE), o en la config Firestore
     # 'modo_cierre' por tienda, que pisa este default. Es config de producto, no un
     # camino apagado:
+    #   A (o "lead")  = el bot capta el lead fuerte y avisa; cierra un humano, y el
+    #                   bot sigue conversando sin pedir datos. <-- deploy 1: prueba
+    #                   en produccion de que el lead fuerte dispara y no frena la
+    #                   iteracion. Despues de validarlo se vuelve a "B".
     #   B (o "venta") = el bot cierra la venta y manda el cobro: link de Mercado
-    #                   Pago o CBU segun la forma de pago. <-- version de prueba actual.
-    #   A (o "lead")  = el bot capta el lead fuerte y avisa; cierra un humano.
+    #                   Pago o CBU segun la forma de pago.
     #   off           = el cierre no actua; el bot vende igual, sin captar lead.
-    MODO_CIERRE: str = os.getenv("MODO_CIERRE", "B").lower()
+    MODO_CIERRE: str = os.getenv("MODO_CIERRE", "A").lower()
 
     # DATOS DE COBRO POR DEFECTO (demo). Config operativa de la tienda, no secreto:
     # la config de Firestore por tienda (cbu/alias/titular_cuenta/banco) PISA estos
