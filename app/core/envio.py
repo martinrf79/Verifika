@@ -331,6 +331,14 @@ def clasificar_provincia(texto: str) -> Optional[str]:
         if prov:
             return prov
 
+    # Tabla completa de localidades (Correo Argentino): resuelve la provincia de
+    # cualquier localidad del pais, no solo las de las listas a mano. Autoritativa
+    # sobre los atajos de abajo, que quedan de respaldo.
+    from app.core import geo_cp
+    prov_tabla, _cp = geo_cp.resolver(texto)
+    if prov_tabla:
+        return prov_tabla
+
     def _c(frase: str) -> bool:
         return re.search(r"(^| )" + re.escape(frase) + r"( |$)", t) is not None
 
@@ -403,10 +411,21 @@ def clasificar_zona(texto: str) -> Optional[str]:
         if z:
             return z
 
-    # 3) Nombre de provincia/ciudad/partido/barrio.
+    # 3) Tabla completa de localidades (Correo Argentino): con provincia +
+    # localidad (o una localidad inequivoca) sale la provincia y un CP
+    # representativo; con eso la zona es exacta. Cubre todo el pais, no solo las
+    # listas a mano. Para Buenos Aires el CP desempata GBA vs interior.
+    from app.core import geo_cp
+    prov_tabla, cp_tabla = geo_cp.resolver(texto)
+    if prov_tabla:
+        z = _zona_por_provincia(prov_tabla, cp_tabla)
+        if z:
+            return z
+
+    # 4) Nombre de provincia/ciudad/partido/barrio (respaldo de las listas a mano).
     z = _zona_por_nombre(t)
     if z:
         return z
 
-    # 4) Indeterminada: el codigo no adivina.
+    # 5) Indeterminada: el codigo no adivina.
     return None
