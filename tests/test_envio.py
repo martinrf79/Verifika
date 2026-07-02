@@ -120,3 +120,26 @@ def test_numero_suelto_en_frase_no_es_cp(firestore_doble):
     from app.core.envio import clasificar_zona
     assert clasificar_zona("quiero 5000 unidades") is None
     assert clasificar_zona("calle falsa 1414") is None
+
+
+# ── GUARDA DE CALLE: nombre + numero suelto NO es la localidad ────────────────
+# Hallado en el mega-estres (2-jul): 'san martin 1234' sin provincia caia en GBA
+# por la lista de partidos a mano, tomando una altura de calle como el partido
+# General San Martin. Ahora un nombre inmediatamente seguido de un numero no
+# clasifica zona (es una direccion): ante la duda se pide el dato, no se adivina.
+
+def test_nombre_seguido_de_numero_no_clasifica(firestore_doble):
+    from app.core.envio import clasificar_zona
+    assert clasificar_zona("san martin 1234") is None
+    assert clasificar_zona("belgrano 850") is None
+    assert clasificar_zona("lomas de zamora 1234") is None
+
+
+def test_guarda_calle_no_rompe_lo_legitimo(firestore_doble):
+    """La guarda NO debe frenar los casos con provincia o sin altura pegada."""
+    from app.core.envio import clasificar_zona
+    assert clasificar_zona("san martin, mendoza") == "interior"   # provincia desambigua
+    assert clasificar_zona("lomas de zamora") == "gba"            # partido sin numero
+    assert clasificar_zona("Palermo") == "caba"                    # barrio sin numero
+    # La ciudad real gana a la calle homonima: 'san martin 45, rio tercero'.
+    assert clasificar_zona("calle san martin 45, rio tercero") == "interior"
