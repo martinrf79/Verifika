@@ -150,3 +150,82 @@ def test_switch_version_a_es_lead_y_b_es_venta():
     assert leads._normalizar_modo("off") == "off"
     # Un valor desconocido no inventa: devuelve "" y el llamador cae al default.
     assert leads._normalizar_modo("cualquiera") == ""
+
+
+# ── VERSION A (modo 'lead'): el lead fuerte NO pide datos ─────────────────────
+# El acuerdo con Martin: cuando el cliente confirma el cierre en modo 'lead', el
+# bot capta el lead fuerte y avisa al dueño, pero NO le empieza a pedir datos
+# (nombre, telefono, documento). Sigue conversando con el cliente. Estos tests
+# fijan ese comportamiento sin Firestore ni LLM: se monkeypatchea la persistencia
+# y la notificacion, y se verifica la DECISION de la capa de leads.
+
+def _correr_lead_fuerte(monkeypatch, mensaje, datos_turno, modo,
+                        lead_activo=None):
+    """Corre procesar_mensaje_para_lead con persistencia y notificacion falsas.
+    Devuelve (meta, updates, creado) para inspeccionar la decision."""
+    import asyncio
+    from app.core import leads as L
+
+    creado: dict = {}
+    updates: list = []
+
+    def _fake_crear_lead(**kw):
+        creado.update(kw)
+        return "LEAD_TEST"
+
+    async def _fake_notificar(**kw):
+        creado.setdefault("_notificaciones", []).append(kw.get("estado"))
+        return None
+
+    monkeypatch.setattr(L, "get_lead_activo",
+                        lambda user_id, canal, tienda_id: lead_activo)
+    monkeypatch.setattr(L, "crear_lead", _fake_crear_lead)
+    monkeypatch.setattr(L, "actualizar_lead",
+                        lambda lead_id, tienda_id, cambios: updates.append(cambios))
+    monkeypatch.setattr(L, "notificar_lead", _fake_notificar)
+    monkeypatch.setattr(L, "modo_cierre", lambda tid: modo)
+
+    interp = {"intencion": "decision_compra", "confianza": 0.95}
+    presup = "Presupuesto:\n1x Camara: $100.000\nTotal: $100.000"
+    meta = asyncio.new_event_loop().run_until_complete(
+        L.procesar_mensaje_para_lead(
+            user_id="u1", canal="whatsapp", tienda_id="verifika_prod",
+            mensaje=mensaje, respuesta_solver="Genial.", trace_id="t1",
+            interpretacion=interp, presupuesto=presup,
+            datos_turno=dict(datos_turno)))[1]
+    return meta, updates, creado
+
+
+def test_modo_lead_capta_fuerte_sin_pedir_datos(monkeypatch):
+    """En modo 'lead', un cierre confirmado capta el lead fuerte y avisa, pero NO
+    devuelve un mensaje pidiendo datos: el bot sigue con la respuesta del Solver."""
+    meta, updates, creado = _correr_lead_fuerte(
+        monkeypatch, "dale, lo quiero", {}, modo="lead")
+    assert meta["accion"] == "lead_fuerte_captado"
+    # No hay respuesta_directa: el Solver sigue la charla, no se pide nada.
+    assert "respuesta_directa" not in meta
+    # El lead quedo captado y avisado, no en 'datos_solicitados'.
+    assert creado.get("estado_inicial") == "capturado"
+    assert "lead_fuerte_captado" in creado.get("_notificaciones", [])
+
+
+def test_modo_lead_no_reavisa_si_ya_hay_lead_fuerte(monkeypatch):
+    """Si ya hay un lead fuerte captado activo, no se crea otro ni se re-avisa:
+    el bot solo sigue conversando."""
+    activo = {"lead_id": "L1", "nivel": "fuerte", "estado": "capturado"}
+    meta, updates, creado = _correr_lead_fuerte(
+        monkeypatch, "dale, lo quiero", {}, modo="lead", lead_activo=activo)
+    assert meta["accion"] == "lead_fuerte_ya_captado"
+    assert "respuesta_directa" not in meta
+    # No se creo un lead nuevo.
+    assert creado.get("estado_inicial") is None
+
+
+def test_modo_venta_sigue_pidiendo_datos(monkeypatch):
+    """El modo 'venta' (version B) no cambia: sigue pidiendo los datos que faltan
+    para cerrar y mandar el cobro."""
+    meta, updates, creado = _correr_lead_fuerte(
+        monkeypatch, "dale, lo quiero", {}, modo="venta")
+    assert meta["accion"] == "pidiendo_datos"
+    assert "respuesta_directa" in meta
+    assert creado.get("estado_inicial") == "datos_solicitados"

@@ -447,6 +447,50 @@ async def procesar_mensaje_para_lead(
             except Exception as e:
                 log.warning("notificar_lead_failed", error=str(e)[:120])
             return None, {"accion": "tibia_registrada", "lead_id": lead_id}
+
+        # VERSION A (modo 'lead'): el lead fuerte YA se logra acá. El cliente
+        # confirmo, hay precio mostrado, se avisa al dueño y se guarda lo que
+        # haya (el telefono es el contacto del canal). NO se piden datos ni
+        # documento: el bot deja el lead anotado y SIGUE conversando con la
+        # respuesta natural del Solver. Cerrar la coordinacion lo hace un humano.
+        if modo == "lead":
+            from app.core import cierre
+            # Si ya hay un lead fuerte captado activo, no se re-avisa ni se crea
+            # otro: el bot solo sigue la charla, sin spamear al dueño.
+            if lead_activo and lead_activo.get("nivel") == "fuerte":
+                log.info("lead_fuerte_ya_captado", trace_id=trace_id,
+                         lead_id=lead_activo.get("lead_id"))
+                return None, {"accion": "lead_fuerte_ya_captado"}
+            prev = {k: v for k, v in (datos_previos or {}).items()
+                    if v and k in cierre.CAMPOS_REQUERIDOS}
+            sembrados = {**prev, **{k: v for k, v in (datos_turno or {}).items() if v}}
+            sembrados.setdefault("telefono", _contacto_del_canal(user_id, canal))
+            lead_id = crear_lead(
+                user_id=user_id, canal=canal, tienda_id=tienda_id,
+                ultimo_mensaje=mensaje, frase_disparadora=frase,
+                nivel="fuerte", estado_inicial="capturado",
+                orden=presupuesto,
+            )
+            actualizar_lead(lead_id, tienda_id, sembrados)
+            log.info("lead_fuerte_captado_modo_lead", lead_id=lead_id,
+                     tienda_id=tienda_id, user_id=user_id, frase=frase,
+                     sembrados=list(sembrados.keys()), trace_id=trace_id)
+            try:
+                await notificar_lead(
+                    tienda_id=tienda_id, user_id=user_id, canal=canal,
+                    estado="lead_fuerte_captado",
+                    nombre=sembrados.get("nombre", ""),
+                    telefono=sembrados.get("telefono", ""),
+                    direccion=sembrados.get("direccion", ""),
+                    forma_pago=sembrados.get("forma_pago", ""),
+                    orden=presupuesto, ultimo_mensaje=mensaje)
+            except Exception as e:
+                log.warning("notificar_lead_failed", error=str(e)[:120])
+            # SIN respuesta_directa: el bot sigue iterando con el cliente con la
+            # respuesta del Solver. El lead fuerte ya quedo captado y avisado.
+            return None, {"accion": "lead_fuerte_captado", "lead_id": lead_id}
+
+        # VERSION B (modo 'venta'): el bot cierra y usa los datos para el cobro.
         lead_id = crear_lead(
             user_id=user_id, canal=canal, tienda_id=tienda_id,
             ultimo_mensaje=mensaje, frase_disparadora=frase,

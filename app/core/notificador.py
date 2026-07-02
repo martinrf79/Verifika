@@ -165,7 +165,22 @@ async def notificar_lead(
         log.warning("notificador_lead_sin_token")
         return False
 
-    if estado == "intencion_fuerte":
+    if estado == "lead_fuerte_captado":
+        titulo = "Lead FUERTE captado, cliente confirmo"
+        partes = ["El cliente dijo que si al cierre. El bot NO le pide datos, "
+                  "sigue conversando. Contactalo vos para coordinar."]
+        if nombre:
+            partes.append(f"Nombre: {nombre}")
+        if telefono:
+            partes.append(f"Contacto: {telefono}")
+        if direccion:
+            partes.append(f"Direccion: {direccion}")
+        if forma_pago:
+            partes.append(f"Pago: {forma_pago}")
+        if orden:
+            partes.append(f"\nPedido:\n{orden}")
+        detalle = "\n".join(partes)
+    elif estado == "intencion_fuerte":
         titulo = "Lead FUERTE, cliente quiere comprar"
         detalle = "El bot le pidio nombre y telefono. Prepara la coordinacion."
     elif estado == "intencion_tibia":
