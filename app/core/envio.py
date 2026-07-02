@@ -66,7 +66,7 @@ _CPA_CORTO_MARCADO_RE = re.compile(
     r"\b(?:cp|c\.p\.|codigo postal|cod postal|cod\. postal)\s*[:n°]?\s*"
     r"([a-z])\s*(\d{4})\b",
     re.IGNORECASE)
-# CP PELADO (flag CP_COMPLETO): el mensaje ENTERO es un codigo postal, sin
+# CP PELADO: el mensaje ENTERO es un codigo postal, sin
 # marcador. Es la respuesta natural del cliente cuando el bot le PIDE el CP
 # ("5000", "X5000", "es 1425"). Solo full-match del texto: un numero suelto
 # dentro de una frase sigue sin contar (puede ser altura de calle o cantidad).
@@ -76,19 +76,14 @@ _CP_SOLO_RE = re.compile(
     re.IGNORECASE)
 
 
-def _cp_completo_on() -> bool:
-    try:
-        from app.config import get_settings
-        return bool(get_settings().CP_COMPLETO)
-    except Exception:
-        return False
-
-
 def _cp_solo(t: str):
     """(letra, cp4) si el texto normalizado ENTERO es un CP pelado, sino None.
-    Solo con el flag CP_COMPLETO."""
-    if not _cp_completo_on():
-        return None
+    Camino vivo: es la respuesta natural del cliente cuando el bot le PIDE el CP
+    ('5000', 'X5000', 'mi cp es 1425'). El regex es full-match del texto entero,
+    asi un numero suelto dentro de una frase (altura de calle, cantidad) NO se
+    toma como CP. Antes esto estaba detras de un flag muerto (CP_COMPLETO, que ni
+    existia en config) que dejaba la funcion inalcanzable: el bot repreguntaba el
+    CP que el cliente ya habia dado pelado."""
     m = _CP_SOLO_RE.match(t)
     if not m:
         return None
@@ -275,7 +270,7 @@ _PROVINCIA_POR_CP4 = (
     (9300, 9499, "santa cruz"),
 )
 
-# Bloques EXTRA verificados (flag CP_COMPLETO), anclados en cabeceras conocidas:
+# Bloques EXTRA verificados, anclados en cabeceras conocidas del correo:
 # La Plata 1900, Rosario 2000 / San Lorenzo 2200, Rafaela 2300 / Ceres 2340,
 # San Francisco 2400 / Morteros 2421, Pergamino 2700 / Zarate 2800,
 # Junin 6000, Tandil 7000 / Azul 7300 / Mar del Plata 7600, Bahia Blanca 8000.
@@ -301,10 +296,9 @@ def _provincia_por_cp4(n: int) -> Optional[str]:
     for desde, hasta, prov in _PROVINCIA_POR_CP4:
         if desde <= n <= hasta:
             return prov
-    if _cp_completo_on():
-        for desde, hasta, prov in _PROVINCIA_POR_CP4_EXT:
-            if desde <= n <= hasta:
-                return prov
+    for desde, hasta, prov in _PROVINCIA_POR_CP4_EXT:
+        if desde <= n <= hasta:
+            return prov
     return None
 
 
@@ -326,8 +320,8 @@ def clasificar_provincia(texto: str) -> Optional[str]:
         if prov:
             return prov
 
-    # CP pelado (flag CP_COMPLETO): el texto entero es un CP. La letra CPA
-    # manda; sin letra, el numero por bloque inequivoco del correo.
+    # CP pelado: el texto entero es un CP. La letra CPA manda; sin letra, el
+    # numero por bloque inequivoco del correo.
     solo = _cp_solo(t)
     if solo:
         letra, cp4 = solo
@@ -396,8 +390,8 @@ def clasificar_zona(texto: str) -> Optional[str]:
         if z:
             return z
 
-    # 2c) CP pelado (flag CP_COMPLETO): el texto entero es un CP, la respuesta
-    # natural cuando el bot lo pide. La letra CPA desempata Buenos Aires.
+    # 2c) CP pelado: el texto entero es un CP, la respuesta natural cuando el bot
+    # lo pide. La letra CPA desempata Buenos Aires.
     solo = _cp_solo(t)
     if solo:
         letra, cp4 = solo

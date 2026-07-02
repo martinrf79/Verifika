@@ -72,3 +72,51 @@ def test_c_bloque_inyecta_provincia_y_prohibe_repedir_cp():
     assert "cordoba" in bloque.lower()
     assert "NO" in bloque
     assert "cp" in bloque.lower() or "codigo postal" in bloque.lower()
+
+
+# ── CP PELADO: el cliente responde el codigo postal solo, sin la palabra "CP" ──
+# Hallado en el estres (2-jul): cuando el bot pide el codigo postal y el cliente
+# contesta el numero pelado ('5000', '1414'), el clasificador daba None y el bot
+# lo volvia a pedir. Estaba detras de un flag muerto (CP_COMPLETO, que ni existia
+# en config): funcion real inalcanzable. Se hizo vivo el camino. El regex es
+# full-match del texto entero, asi un numero suelto en una frase no se confunde.
+
+# (texto del cliente, zona esperada)
+CASOS_CP_PELADO = [
+    ("1414", "caba"),
+    ("mi cp es 1425", "caba"),
+    ("1832", "gba"),
+    ("5000", "interior"),
+    ("X5000", "interior"),
+    ("2000", "interior"),
+]
+
+
+import pytest
+
+
+@pytest.mark.parametrize("texto, zona", CASOS_CP_PELADO)
+def test_cp_pelado_clasifica_zona(texto, zona, firestore_doble):
+    from app.core.envio import clasificar_zona
+    assert clasificar_zona(texto) == zona, (
+        f"'{texto}' es un CP pelado, deberia dar zona '{zona}'.")
+
+
+def test_cp_pelado_cotiza_provincia_exacta(firestore_doble):
+    """Un CP pelado del interior deduce la provincia y da la tarifa EXACTA de esa
+    provincia, no el rango generico. 5000 = Cordoba capital -> 7500 (sembrado)."""
+    from app.core.tools import cotizar_envio
+    q = cotizar_envio(localidad="5000", subtotal=1000)
+    assert q.get("ok") is True
+    assert q.get("zona") == "interior"
+    assert q.get("provincia") == "cordoba"
+    assert q.get("monto") == 7500
+
+
+def test_numero_suelto_en_frase_no_es_cp(firestore_doble):
+    """El regex del CP pelado es full-match: un numero dentro de una frase (altura
+    de calle, cantidad) NO se toma como codigo postal. Sin esto, '5000 unidades'
+    o 'calle falsa 1414' inventarian una zona."""
+    from app.core.envio import clasificar_zona
+    assert clasificar_zona("quiero 5000 unidades") is None
+    assert clasificar_zona("calle falsa 1414") is None
