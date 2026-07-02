@@ -167,20 +167,31 @@ def _zona_por_nombre(t: str) -> Optional[str]:
     def _c(frase: str) -> bool:
         return re.search(r"(^| )" + re.escape(frase) + r"( |$)", t) is not None
 
+    def _c_calle(frase: str) -> bool:
+        """Como _c, pero NO cuenta si el nombre viene seguido de un numero de calle
+        ('san martin 1234'): eso es una direccion, no la localidad. Sin esto un
+        nombre de partido o barrio que ademas es una calle comun en todo el pais
+        (san martin, belgrano) clasificaba una zona equivocada a partir de una
+        altura de calle suelta, sin provincia. Ante la duda, mejor pedir el dato."""
+        if not _c(frase):
+            return False
+        return not re.search(
+            r"(^| )" + re.escape(frase) + r"\s+\d{1,5}( |$)", t)
+
     # Provincia o ciudad ganan PRIMERO, asi "Cordoba Capital" cae en interior y no
     # lo pisa la palabra "capital" de abajo (bug canonico del cajon equivocado).
     for p in _PROVINCIAS_INTERIOR:
         if _c(p):
             return "interior"
     for c in _CIUDADES_INTERIOR:
-        if _c(c):
+        if _c_calle(c):
             return "interior"
     # Ciudades de la tabla ciudad->provincia: toda ciudad ahi listada es interior
     # (o interior bonaerense). Va ANTES que los partidos GBA para que una calle
     # homonima no gane: "calle san martin 45, rio tercero" es Cordoba, no el
     # partido General San Martin (bug visto en prod 11-jun).
     for c in _CIUDAD_PROVINCIA:
-        if _c(c):
+        if _c_calle(c):
             return "interior"
     # Respuesta directa al colchon "Capital, Gran Buenos Aires o interior?": el
     # cliente nombra la zona en criollo y el codigo la toma tal cual. Va DESPUES de
@@ -191,13 +202,13 @@ def _zona_por_nombre(t: str) -> Optional[str]:
         if _c(w):
             return "gba"
     for partido in _PARTIDOS_GBA:
-        if _c(partido):
+        if _c_calle(partido):
             return "gba"
     for m in _CABA_MARKERS:
         if _c(m):
             return "caba"
     for b in _BARRIOS_CABA:
-        if _c(b):
+        if _c_calle(b):
             return "caba"
     return None
 
