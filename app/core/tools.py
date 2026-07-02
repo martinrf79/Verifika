@@ -651,8 +651,14 @@ def recommend_product(criterio: str = "precio_calidad",
 
 def _norm_txt(s: str) -> str:
     import unicodedata
+    import re as _re
     s = unicodedata.normalize("NFKD", str(s).lower())
-    return "".join(c for c in s if not unicodedata.combining(c))
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    # Puntuacion a espacio: sin esto un signo pegado a la palabra ('entrega?')
+    # rompe el match de una keyword multi-palabra ('pago contra entrega') y el
+    # tema especifico pierde contra el generico. Visto en el estres: 'pago contra
+    # entrega?' caia en 'formas_pago' en vez de 'pago_contra_entrega'.
+    return _re.sub(r"[^\w\s]", " ", s)
 
 
 def _canon_palabra(w: str) -> str:
@@ -674,7 +680,13 @@ def _faq_ranking_palabras(consulta: str, faq: dict) -> list[tuple[int, str]]:
             k = _norm_txt(kw)
             kws = {_canon_palabra(w) for w in k.split()}
             if kws and kws <= palabras_consulta:
-                score += len(k)
+                # La keyword MAS especifica que matchea decide, no la suma de
+                # todas. Sumar premiaba al tema generico con muchas keywords
+                # cortas ('envio'+'envios') por encima del especifico con una
+                # keyword larga ('exterior'): 'hacen envios al exterior' caia en
+                # 'envios' en vez de 'envio_exterior'. El largo del match ES la
+                # senal de especificidad, que es justo lo que se quiere premiar.
+                score = max(score, len(k))
         if score > 0:
             ranking.append((score, tema))
     ranking.sort(key=lambda t: (-t[0], t[1]))
