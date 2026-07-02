@@ -199,6 +199,43 @@ def _guia_para_solver(interp: dict) -> str:
             "herramientas, no los inventes.]")
 
 
+def _forzar_pregunta_si_ambiguo(interp: dict, respuesta: str) -> str | None:
+    """Guarda determinista del caso 'interprete BIEN, solver MAL': cuando el
+    interprete marco ofrecer_opciones (hay dos caminos y no se puede elegir con
+    certeza) pero el solver NO planteo la eleccion, se FUERZA la pregunta A o B en
+    vez de dejar que el solver elija por el cliente. Asi la divergencia no se
+    resuelve con una alucinacion silenciosa, sino con una pregunta de confirmacion.
+    Devuelve el texto a usar, o None si no corresponde tocar la respuesta."""
+    if not isinstance(interp, dict):
+        return None
+    opciones = interp.get("ofrecer_opciones")
+    if not isinstance(opciones, list) or len(opciones) < 2:
+        return None
+    a, b = str(opciones[0]).strip(), str(opciones[1]).strip()
+    if not a or not b:
+        return None
+    import unicodedata
+
+    def _n(s):
+        s = unicodedata.normalize("NFKD", str(s or "").lower())
+        return "".join(c for c in s if not unicodedata.combining(c))
+
+    r = _n(respuesta)
+    ya_pregunta = ("?" in (respuesta or "")) or ("¿" in (respuesta or ""))
+
+    def _menciona(op):
+        toks = [t for t in _n(op).split() if len(t) > 3][:3]
+        return bool(toks) and any(t in r for t in toks)
+
+    # Si el solver YA pregunta y nombra las dos opciones, planteo la eleccion bien:
+    # se respeta su redaccion. En cualquier otro caso (eligio una, o no pregunto),
+    # se fuerza la pregunta con el detalle que dio el interprete.
+    if ya_pregunta and _menciona(a) and _menciona(b):
+        return None
+    return ("Quiero darte la opción correcta, tengo dos y no me quiero equivocar:\n"
+            f"- Opción A: {a}\n- Opción B: {b}\n\n¿Cuál preferís?")
+
+
 def _parece_aportar_dato(mensaje: str) -> bool:
     """Heuristica barata: el mensaje parece traer un dato de cierre (numero, pago,
     o cue de domicilio), aunque el interprete no lo haya marcado como aporta_dato.
@@ -516,6 +553,20 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             log.warning("interprete_libre_guardia_error", trace_id=trace_id,
                         error=str(e)[:160])
 
+    # ── GUARDA DE DIVERGENCIA (caso interprete BIEN, solver MAL) ────────────
+    # Si el interprete marco ofrecer_opciones (dos caminos, no se puede elegir con
+    # certeza) pero el solver NO planteo la eleccion, se FUERZA la pregunta A/B.
+    # Asi la divergencia se resuelve con una pregunta de confirmacion, no con una
+    # eleccion silenciosa del solver. Si esto dispara, no se cierra este turno: no
+    # se cierra sobre un producto todavia ambiguo.
+    ambiguo_forzado = False
+    if respuesta != settings.FALLBACK_MESSAGE:
+        _preg_amb = _forzar_pregunta_si_ambiguo(interp, respuesta)
+        if _preg_amb:
+            respuesta = _preg_amb
+            ambiguo_forzado = True
+            log.info("interprete_libre_pregunta_ambiguo_forzada", trace_id=trace_id)
+
     # ── PASO 2b: CIERRE (codigo) — capta el lead, pide datos, manda el link ──
     # El codigo toma el control SOLO cuando hay que cerrar: detecta la decision de
     # compra por la interpretacion, junta nombre/telefono/direccion/forma de pago y
@@ -564,7 +615,9 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # la conversacion y se recalcula abajo segun lo que pase este turno.
     pregunta_cierre_previa = bool(conv.get("pregunta_cierre_hecha"))
     meta_lead: dict = {}
-    if respuesta != settings.FALLBACK_MESSAGE:
+    # No se cierra cuando la guarda forzo una pregunta de ambiguedad: el producto
+    # todavia no esta elegido, cerrar seria sobre algo indefinido.
+    if respuesta != settings.FALLBACK_MESSAGE and not ambiguo_forzado:
         try:
             _, meta_lead = await procesar_mensaje_para_lead(
                 user_id, canal, tienda_id, raw_message, respuesta, trace_id,
