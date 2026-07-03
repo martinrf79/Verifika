@@ -229,3 +229,67 @@ def test_modo_venta_sigue_pidiendo_datos(monkeypatch):
     assert meta["accion"] == "pidiendo_datos"
     assert "respuesta_directa" in meta
     assert creado.get("estado_inicial") == "datos_solicitados"
+
+
+# ── LA PREGUNTA MANDA SOBRE EL SCORE (decidido 3-jul) ────────────────────────
+# El disparo del lead no debe depender de que decision_compra venga con confianza
+# alta: cuando el interprete ve una decision de compra SIN confianza suficiente y
+# ya hay un presupuesto mostrado (de este turno o de memoria), el sistema hace SU
+# pregunta de cierre. La respuesta a esa pregunta decide determinista (gatillo D).
+# Antes ese caso caia en "nada": ni cerraba ni preguntaba, y el lead solo salia
+# si el score justo superaba 0.85 (visto en la charla real del 1-jul).
+
+def _correr_cierre(monkeypatch, mensaje, intencion, confianza,
+                   presupuesto, presupuesto_nuevo, modo="lead"):
+    """Corre procesar_mensaje_para_lead con fakes, variando intencion/confianza
+    y si el presupuesto es nuevo o de memoria. Devuelve el meta de la decision."""
+    import asyncio
+    from app.core import leads as L
+
+    monkeypatch.setattr(L, "get_lead_activo",
+                        lambda user_id, canal, tienda_id: None)
+    monkeypatch.setattr(L, "crear_lead", lambda **kw: "LEAD_TEST")
+    monkeypatch.setattr(L, "actualizar_lead",
+                        lambda lead_id, tienda_id, cambios: None)
+
+    async def _fake_notificar(**kw):
+        return None
+
+    monkeypatch.setattr(L, "notificar_lead", _fake_notificar)
+    monkeypatch.setattr(L, "modo_cierre", lambda tid: modo)
+
+    interp = {"intencion": intencion, "confianza": confianza}
+    return asyncio.new_event_loop().run_until_complete(
+        L.procesar_mensaje_para_lead(
+            user_id="u1", canal="whatsapp", tienda_id="verifika_prod",
+            mensaje=mensaje, respuesta_solver="Genial.", trace_id="t1",
+            interpretacion=interp, presupuesto=presupuesto,
+            presupuesto_nuevo=presupuesto_nuevo))[1]
+
+
+def test_decision_sin_confianza_con_presupuesto_de_memoria_pregunta(monkeypatch):
+    """decision_compra con confianza baja + presupuesto YA mostrado (memoria):
+    el sistema hace la pregunta de cierre en vez de no hacer nada."""
+    from app.core import leads
+    meta = _correr_cierre(
+        monkeypatch, "me parece que lo llevo", "decision_compra", 0.6,
+        presupuesto="Total: $100.000", presupuesto_nuevo=False)
+    assert meta["accion"] == "pregunta_cierre"
+    assert meta["respuesta_directa"].endswith(leads.PREGUNTA_CIERRE)
+
+
+def test_exploracion_con_presupuesto_de_memoria_no_pregunta(monkeypatch):
+    """Explorar con un presupuesto viejo en memoria NO gatilla la pregunta: solo
+    la decision de compra la adelanta."""
+    meta = _correr_cierre(
+        monkeypatch, "que otros teclados tenes?", "exploracion", 0.9,
+        presupuesto="Total: $100.000", presupuesto_nuevo=False)
+    assert meta["accion"] == "ninguna"
+
+
+def test_lock_presupuesto_nuevo_sigue_preguntando(monkeypatch):
+    """Lock del camino que ya andaba: presupuesto NUEVO + interes -> pregunta."""
+    meta = _correr_cierre(
+        monkeypatch, "cuanto queda con envio?", "pregunta_especifica", 0.7,
+        presupuesto="Total: $100.000", presupuesto_nuevo=True)
+    assert meta["accion"] == "pregunta_cierre"

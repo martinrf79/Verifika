@@ -383,7 +383,14 @@ def calculate_total(items: list[dict] | None = None,
         #    pedido de cotizar_envio: nunca se inventa un costo de envio.
         if pide_envio:
             from app.core.estado_venta import get_envio_localidad
-            quote = cotizar_envio(localidad=get_envio_localidad(), subtotal=total)
+            # Envio gratis por umbral en MULTI-destino: el umbral se mira POR
+            # DESTINO, no por la suma del pedido. Los items no declaran a que
+            # destino van, asi que se usa el promedio (suma/destinos): solo
+            # libera el envio si el reparto claramente supera el umbral. Antes 4
+            # destinos chicos sumados daban "todo gratis" (visto en real 2-jul).
+            _sub_umbral = total if n_envios <= 1 else total // n_envios
+            quote = cotizar_envio(localidad=get_envio_localidad(),
+                                  subtotal=_sub_umbral)
             if not quote.get("ok"):
                 return {"ok": False, "mensaje_para_llm": quote.get(
                     "mensaje_para_llm",

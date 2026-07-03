@@ -234,6 +234,46 @@ python -m pytest tests/ -v
 cd ~/verifika && ./deploy.sh
 ```
 
+## Correr la batería desde la NOTEBOOK (Windows) — receta para chats nuevos
+
+Política de trabajo: UN repo, UNA rama viva (`main`), UN Cloud Run. Cada sesión
+se trabaja en una rama nueva `claude/<tema>` sobre un clon fresco; al terminar
+se mergea a `main` (el CI gateado testea y deploya solo) y la rama se puede
+borrar a mano. Desde el celular ya está armado; esta es la receta equivalente
+para la notebook, verificada el 3-jul-2026 (Windows 10, Python 3.14):
+
+```powershell
+git clone https://github.com/martinrf79/verifika.git
+cd verifika
+git checkout -b claude/<tema>
+
+# Entorno local (una sola vez por clon)
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt pytest
+```
+
+Si pip falla compilando `pydantic-core` (pasa con Python 3.13/3.14 en Windows,
+porque `requirements.txt` pinea pydantic 2.9.2 para el CI/Docker con 3.11),
+instalar el equivalente sin el pin — NO tocar `requirements.txt`, es solo del
+entorno local:
+
+```powershell
+.venv\Scripts\python -m pip install "pydantic>=2.9" fastapi "openai>=1.3.0" groq "google-cloud-firestore>=2.18.0" httpx structlog python-dotenv tenacity pytest
+```
+
+Correr la batería offline (sin LLM, sin credenciales de Google, sin tocar
+producción): el doble local de Firestore (`banco_pruebas/sim_firestore`, vía la
+fixture `firestore_doble` de `tests/conftest.py`) carga el catálogo y la FAQ
+REALES del repo, igual que en el celular:
+
+```powershell
+.venv\Scripts\python -m pytest -q
+```
+
+Los tests `vivo` (DeepSeek) no corren acá: se prueban por WhatsApp/Telegram o
+leyendo logs de Cloud Run. Para logs/Firestore desde la notebook, usar gcloud
+por Bash (ruta completa, ya autenticado en memory-engine-v1), NO PowerShell.
+
 ## Infraestructura Cloud Run — UN solo servicio de bot (24-jun-2026)
 
 Regla dura, nació de un día entero perdido: en el proyecto memory-engine-v1
