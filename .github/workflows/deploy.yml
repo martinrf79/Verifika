@@ -10,7 +10,33 @@ on:
   workflow_dispatch:
 
 jobs:
+  # GATE de regresion: la bateria offline corre ANTES del deploy. Si un test
+  # falla, este job queda rojo y el deploy (needs: test) NI ARRANCA. Asi una
+  # regresion no puede llegar a produccion, sin depender de que nadie mire el CI.
+  # Es el mismo piso offline de test.yml (Python puro, sin LLM ni credenciales).
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Correr tests offline (sin LLM, sin credenciales)
+        run: pytest -v
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
