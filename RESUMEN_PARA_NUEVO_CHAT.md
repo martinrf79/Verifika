@@ -3,144 +3,176 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-## Un solo camino
+**Última actualización: 3-jul-2026.** Sesión larga de blindaje determinista + reorganización
+con pytest/CI. Todo lo de abajo está deployado y verificado en verde salvo lo marcado como
+PENDIENTE.
 
-Entrada → `orchestrator.process_message` → `app/core/interprete_libre.py`, que hace
-todo el turno:
+---
 
-1. **RESET_CODE** (`verifika2026`): borra la conversación. Es solo para pruebas. El bot
-   mantiene CONTINUIDAD siempre; NUNCA resetea con frases naturales tipo "nueva compra".
-2. **Intérprete** (DeepSeek, `interpretador.py`): entiende el mensaje en contexto. Se
-   loguea (`interprete_libre_interpretacion`), no se muestra al cliente.
-3. **Solver libre** (DeepSeek, `agent.run_agent`): vende libre con las tools atadas a
-   Firestore: search_products, get_product_details, list_catalog, query_faq,
-   calculate_total, cotizar_envio. La lista la fija `MODO_LIBRE_TOOLS` en config.
-4. **Filtro determinista** (`verificador.py`) — ENFORCE por autocorrección (flag
-   `AUTOCORRIGE_MONTOS`, default true). El MISMO motor de las tools que le dio los números
-   al solver audita su respuesta: si el solver cambió un total y la verdad está en el PROOF,
-   el código reescribe la cifra por la buena, sin LLM; si ya está bien, pasa intacta. Es una
-   sola función (`autocorregir_montos`), ANCLADA AL CONCEPTO: clasifica cada cifra por contexto
-   y la corrige con el pool de ESE concepto. Cubre total (banda 15%), envío (banda 50%, pool de
-   cotizar_envio) y precio de producto (anclado al NOMBRE que nombró el solver, no a la cercanía
-   numérica). Cada corrección loguea su `concepto`. Pendiente: la reescritura de texto FAQ que
-   no es una cifra (garantía, devoluciones) y existencia de producto.
-5. **Cierre** (`leads.py` + `cierre.py` + `pago.py`): capta el lead, junta datos y genera
-   el link de Mercado Pago con el total VERIFICADO de la calculadora.
-6. **Memoria**: historial (10 turnos) + estado + último presupuesto + proofs, en Firestore
-   por usuario.
+## Un solo camino (pipeline del turno)
+
+Entrada → `orchestrator.process_message` → `app/core/interprete_libre.py`, que hace todo el turno:
+
+1. **Intérprete** (DeepSeek, `interpretador.py`): entiende el mensaje en contexto. Devuelve
+   intención, confianza, candidatos y `ofrecer_opciones`. Se loguea, no se muestra al cliente.
+2. **Solver libre** (DeepSeek, `agent.run_agent`): vende libre con las tools atadas a Firestore
+   (search_products, get_product_details, list_catalog, query_faq, calculate_total,
+   cotizar_envio). Lista en `MODO_LIBRE_TOOLS`.
+3. **Estampado determinista** (`_estampar_productos`): cada `[[PROD:id]]` se reemplaza por
+   nombre + precio + stock REALES del catálogo. Un id inexistente se borra: el solver no puede
+   inventar producto ni precio.
+4. **Verificador de plata** (`verificador.py`): toda cifra de dinero de la respuesta tiene que
+   salir de la evidencia (catálogo/FAQ/PROOF de las tools). Si no, autocorrige (candidato único)
+   o bloquea (sin evidencia → fallback). Anclado al concepto (total/envío/precio).
+5. **Guardia de promesas** (`guardia_promesas.py`): set CERRADO de 3 clases prohibidas
+   (día de entrega, retiro en local, servicio no ofrecido) → reescribe.
+6. **Guarda de divergencia A/B** (NUEVO, `interprete_libre._forzar_pregunta_si_ambiguo`): si el
+   intérprete marcó `ofrecer_opciones` (dos caminos, no puede elegir) pero el solver NO planteó
+   la elección, el código FUERZA la pregunta A/B. Si dispara, no se cierra ese turno.
+7. **Cierre** (`leads.py` + `cierre.py` + `pago.py`): capta el lead según el modo (ver CIERRE).
+8. **Memoria**: historial (10 turnos) + estado + último presupuesto + proofs, en Firestore.
+
+---
+
+## CI / DEPLOY — cadena con GATE anti-regresión (3-jul)
+
+- **`test.yml`**: corre en cada push y PR → `pytest` (122 tests offline, `-m 'not vivo'`).
+- **`deploy.yml`**: al pushear a `main`, dos jobs: `test` (batería offline) y `deploy` con
+  **`needs: test`**. El deploy arranca SOLO si los tests pasan. Una regresión determinista no
+  puede llegar a producción sin que el CI la frene sola. Verificado en vivo (run #70).
+- **Límite:** el gate cubre los tests OFFLINE, no los `vivo` (LLM). Y **`./deploy.sh` manual
+  SALTEA el gate** (hace `git reset --hard` + `gcloud deploy` directo). Deployar por CI (push a
+  main). PENDIENTE opcional: agregar `pytest` a `deploy.sh` para blindar también el camino manual.
+- Verificar el verde del run antes de decir "listo". Claude puede leer el estado del run por MCP.
 
 ## Infra
 
-- Cloud Run: `agente-bot`, región `southamerica-east1`, proyecto `memory-engine-v1`. Es el
-  ÚNICO servicio de bot. El webhook de WhatsApp apunta ahí.
-- `video-engine`: otro producto, apagado (min-instances 0). No se toca.
-- Deploy: push a `main` dispara CI (`.github/workflows/deploy.yml`) y deploya a `agente-bot`.
-  Respaldo: `./deploy.sh`. Verificar el verde antes de decir "listo".
-- Rama viva = `main`. Las ramas `claude/*` son para revisar antes de mergear.
-- LLM: DeepSeek en todo (`LLM_PROVIDER=deepseek`). Nada de Gemini sin OK de Martín.
-- **Observabilidad (arreglado 29-jun)**: la app loguea con structlog y ahora emite el campo
-  `severity` que Cloud Logging entiende (antes mandaba solo `level`, todo caía en DEFAULT y
-  cualquier consulta `severity>=INFO` lo descartaba: estuvimos ciegos sin saberlo). Para leer
-  logs sin gcloud local: disparar el workflow `diagnostico.yml` (Run workflow, severity INFO,
-  freshness 1h) y Claude lee la salida del job. Claude NO puede dispararlo (403, sin permiso
-  Actions de escritura); lo dispara Martín. El workflow sanitiza los inputs.
+- Cloud Run: `agente-bot`, región `southamerica-east1`, proyecto `memory-engine-v1`. ÚNICO
+  servicio de bot; el webhook de WhatsApp apunta ahí. `video-engine` apagado, no se toca.
+- Rama viva = `main`. Se desarrolla en `claude/*` y se mergea a main (dispara el CI gateado).
+- LLM: **DeepSeek en todo**. Premium (Opus/Fable) solo para un Checker pago, con OK de Martín.
+- Config manda desde `config.py`; el servicio solo lleva secretos + `TIENDA_ID`.
+- Observabilidad: structlog emite `severity` (Cloud Logging). Logs sin gcloud local: workflow
+  `diagnostico.yml` (lo dispara Martín; Claude no tiene permiso de Actions de escritura).
 
-## Cambios deployados el 29-jun (probados offline, vivos en main)
+---
 
-1. **Corrector determinista anclado al concepto** (`verificador.py`): además de totales,
-   corrige precio (anclado al NOMBRE del producto) y envío. Bancos `prueba_autocorrige` y
-   `prueba_autocorrige_concepto` en verde.
-2. **Logger** (`logger.py`): emite `severity`/`message`, conserva `event`. Ver Observabilidad.
-3. **Bug de cierre por "mercado pago"** (`leads.py`): `_RE_PIDE_LINK` matcheaba el NOMBRE del
-   medio de pago, así que nombrar "mercado pago" en una cotización forzaba el cierre y pedía
-   datos en vez de mostrar el presupuesto (trace a1f2ea32). Ahora el regex solo reconoce un
-   pedido REAL de link. CAUSA DE FONDO sin resolver: la decisión de cierre la toman TRES
-   jueces que se pisan (intérprete `decision_compra`, regex `_RE_PIDE_LINK`, detector legacy
-   `detectar_intencion`); conviene unificarlos en UN motor alimentado por el intérprete.
-4. **Preview de respuesta en logs** (`interprete_libre.py`): el evento `interprete_libre_ok`
-   ahora lleva `respuesta_preview` (300 chars). Antes el texto que el bot CONTESTA no quedaba
-   en Cloud Logging y se diagnosticaba a ciegas. Leer con: filtro `jsonPayload.event="interprete_libre_ok"`,
-   formato `value(timestamp,jsonPayload.trace_id,jsonPayload.respuesta_preview)`.
+## ENVÍO — robusto (3-jul)
 
-## ENVÍO — bug de zona RESUELTO (commit 16fce67, 29-jun)
+`cotizar_envio` es la ÚNICA fuente del costo. Clasifica zona y provincia de forma determinista
+y devuelve UN número (nunca rango). Estado actual:
 
-`cotizar_envio` quedó como ÚNICA fuente del costo de envío. `calculate_total` ya no elige
-zona ni concepto: cuando el total incluye envío, le pide el monto a `cotizar_envio` con el
-subtotal real y lo cobra una vez por destino. El corrector dejó de tratar el envío como
-total candidato. Banco `prueba_envio_calculadora` 9/9. El síntoma viejo (costo de envío que
-cambiaba turno a turno y zona equivocada a Córdoba) ya no aplica.
+- **Tabla completa de localidades** (`app/core/geo_cp.py` + `data/geo/codigos_postales_ar.csv`,
+  ~16 mil localidades del país). Resuelve **provincia + localidad** → provincia canónica + CP →
+  zona (caba/gba/interior) y tarifa exacta de la provincia. Reemplaza las listas parciales a mano.
+  Localidad ambigua (existe en varias provincias) solo resuelve si la provincia está en el texto.
+- **CP pelado** vivo: "5000", "1414", "mi cp es 1425" clasifican (regex full-match; un número
+  suelto en una frase NO se toma como CP). Se eliminó el flag muerto `CP_COMPLETO`.
+- **Guarda de calle**: un nombre seguido de un número ("san martin 1234") NO clasifica zona
+  (es una dirección); ante la duda pide el dato, no adivina.
+- Tarifa interior por provincia en `config.py` (`ENVIO_INTERIOR_POR_PROVINCIA`), pisable por
+  tienda con Firestore `tarifas_envio`. Umbral de envío gratis desde la FAQ `costo_envio`
+  ($250.000). Cierra con la frase fija "Envío orientativo, puede variar al confirmar la compra".
+- **PENDIENTE (bug conocido):** en multi-destino el envío gratis se calcula sobre la SUMA de los
+  destinos, no por destino. En envíos separados el umbral debe mirar cada destino. (Visto en real:
+  4 destinos chicos → "todo gratis" incorrecto.)
 
-**Sin rango en la fuente (30-jun)**: `cotizar_envio` ya NO devuelve un rango. CABA/GBA es
-fijo $3.000. El interior tiene **tarifa fija por provincia**, fuente de verdad en
-`config.py` (`ENVIO_INTERIOR_POR_PROVINCIA`), dentro del rango publicado $5.000–$12.000, en
-tres tramos por distancia: cercano $6.000 (Córdoba, Santa Fe, Entre Ríos, La Pampa, Buenos
-Aires interior), medio $9.000 (Cuyo, NOA, NEA, Neuquén, Río Negro) y lejano $12.000
-(Patagonia sur). Una tabla en Firestore `tarifas_envio` (clave `provincias`) pisa ese
-default por tienda. Si la provincia no se determina, colapsa al TOPE publicado (`monto_max`).
-Así cada destino devuelve UN número, el Solver no inventa (caso $7.500 que vimos), la melliza
-tiene un valor exacto y el total sale único. Cada cotización con costo cierra con la frase
-fija "Envío orientativo, puede variar al confirmar la compra." (no en envío gratis). Para
-ajustar montos: editar el dict en `config.py`. Bancos `prueba_cotizar_envio` 8/8 y
-`prueba_envio_calculadora` 9/9.
+## CIERRE — modo A (lead) vivo (3-jul)
 
-**Umbral de envío gratis unificado (30-jun)**: había un bug — la FAQ decía gratis sobre
-$250.000 (lo que el bot le dice al cliente) pero `cotizar_envio` aplicaba el setting
-$300.000, así una compra de $270.000 prometía gratis y cobraba. Ahora el umbral sale de la
-FAQ `costo_envio` (concepto `envio_gratis`: campo `umbral_ars` o el número de su `condicion`),
-ÚNICA fuente; el setting `UMBRAL_ENVIO_GRATIS` quedó solo como respaldo y alineado a $250.000.
-El número aplicado y el publicado ya no pueden divergir. Caso de regresión en
-`prueba_cotizar_envio`.
+Un solo juez: el interpretador (`decision_compra` con confianza ≥ 0.85) + pregunta suave de
+cierre + gatillo determinista por respuesta a la pregunta. Modalidad por tienda (`MODO_CIERRE`
+en config.py, pisable con Firestore `modo_cierre`):
 
-## CIERRE — unificado y aditivo (commit nuevo, 30-jun)
+- **`A` / `lead` (DEFAULT ACTUAL):** el cliente confirma → capta el lead fuerte, avisa al dueño
+  y **sigue iterando SIN pedir datos** (nombre/teléfono/documento). El lead fuerte ya se logra
+  captando + avisando; cierra un humano. Si ya hay lead fuerte activo, no re-avisa.
+- **`B` / `venta`:** el bot cierra y manda el cobro (link de Mercado Pago o CBU).
+- **`off`:** no actúa; el bot vende igual.
 
-Se borraron los TRES jueces que se pisaban: ahora la decisión de cierre la toma UN solo juez,
-el interpretador (`decision_compra` con confianza ≥ 0.85). Fuera el regex `_RE_PIDE_LINK` y el
-detector legacy `detectar_intencion`. Cuando hay interés pero NO decisión confirmada y recién
-se mostró un precio NUEVO, el bot suma una pregunta suave de cierre ("¿Te parece si avanzamos
-con la compra?"); un "sí" vuelve como `decision_compra` y cierra. Ante duda, todo cae en la
-pregunta, no en un juez paralelo.
-El cierre es ADITIVO y tiene modalidad por tienda (`MODO_CIERRE` en config.py, pisable con la
-config `modo_cierre` en Firestore): `venta` (capta el lead + manda link de Mercado Pago),
-`lead` (capta el lead y avisa al usuario, sin link) y `off` (no actúa; el bot vende igual).
-Default `venta`. Pendiente a futuro dentro de `venta`: datos de cuenta bancaria/CBU como
-segunda opción al link.
+**DECIDIDO, PENDIENTE de implementar:** la **pregunta del sistema debe mandar sobre el score de
+intención**. Un "sí" a una pregunta bien formulada dispara el lead; no depender del score de
+`decision_compra`. Es la forma más simple y abarcativa. (En una charla real el lead disparó por
+score, no por la pregunta, porque la pregunta de cierre exacta no apareció.)
+
+## FAQ — endurecido (3-jul)
+
+Ruteo determinista por keywords (`query_faq`): el tema ESPECÍFICO le gana al genérico (score por
+la keyword más específica, no la suma) y la puntuación no rompe el match ("pago contra entrega?"
+rutea bien). Locks en `tests/test_faq.py`.
+**PENDIENTE:** que las FAQ con NÚMERO (precios, %, plazos) se estampen del valor estructurado, no
+que el modelo las parafrasee.
+
+---
 
 ## Datos: un solo catálogo, una sola FAQ
 
-- Producción son **880 productos**. Viven en `data/clientes/verifika_prod/`
-  (`productos.csv` enriquecido + `faq.json` de 44 temas). Es la ÚNICA fuente.
-- El repo es la fuente; se sube a Firestore por `/admin/upload-catalog` y
-  `/admin/upload-faq`. Firestore es la copia que lee el bot vivo.
-- Se borraron los fixtures `verifika_2k` (2000 sintéticos) y `verifika_demo`, más
-  sus generadores. NO regenerar el catálogo ni crear otros fixtures.
-- Se asume que Firestore no cambió desde el 17-jun (el conteo de 880 coincide). Si
-  hay duda, comparar el repo contra un export de Firestore.
+- Producción: **880 productos** + **44 temas de FAQ** en `data/clientes/verifika_prod/`
+  (`productos.csv` + `faq.json`). ÚNICA fuente. NO regenerar ni crear otros fixtures.
+- Tabla de códigos postales: `data/geo/codigos_postales_ar.csv` (referencia estática, en el repo,
+  NO en Firestore; se carga en memoria).
+- El repo es la fuente; sube a Firestore por `/admin/upload-catalog` y `/admin/upload-faq`.
 
-## Pendientes (en orden)
+---
 
-1. **COSTO DeepSeek (prioridad nueva, 29-jun)**: hubo un disparo de gasto. Hay VARIAS llamadas
-   LLM por turno (intérprete + solver + extractor de datos que se prende ante cualquier número
-   + reintentos del intérprete por JSON malo + modo "pensante" de DeepSeek que quema tokens).
-   Leer el evento `llm_usage` (cuántas llamadas y tokens por turno) y capar: apagar pensante,
-   frenar reintentos, prender el extractor solo cuando hace falta. Es config, no toca la
-   interpretación. Va ANTES del motor de intenciones.
-2. ~~**Motor de decisión de cierre unificado**~~ HECHO (30-jun): un solo juez (el intérprete) +
-   pregunta suave de cierre + modalidad por tienda (`MODO_CIERRE`). Ver sección "CIERRE".
-3. **Ampliar la autocorrección** a lo que NO es una cifra: texto de FAQ (garantía,
-   devoluciones) y existencia de producto. Total, envío y precio ya se corrigen.
-4. **Calidad de interpretación / deducción** (NORTE del proyecto): el bot dejó de deducir
-   bien casos simples (ej: 6 ítems en 3 envíos, deducir qué va al tercer destino). Es
-   razonamiento del modelo, no lo causaron los cambios deterministas. Es el objetivo madre;
-   atacar después de estabilizar costo y envío.
-4. **Seguridad**: el bot loguea el cuerpo crudo del webhook de WhatsApp (`whatsapp_webhook_received`,
-   `message_received`); recortar para no guardar datos sensibles. Rotar `MP_ACCESS_TOKEN` y
-   `OPENAI_API_KEY` si siguen en texto plano.
-5. **Bajar la config de Cloud Run al código** (`config.py` manda; el servicio solo lleva
-   secretos + `TIENDA_ID`).
+## TEORÍA / estrategia acordada (marco para lo que viene)
+
+- **Cerrado vs abierto.** El código gana en problemas CERRADOS (fuente de verdad + chequeo
+  unívoco: precio, stock, aritmética, envío, palabra prohibida). El LLM es para lo ABIERTO
+  (intención en negociación enredada, compatibilidad, tono). No pedirle al código que razone lo
+  abierto, ni al LLM que garantice lo cerrado.
+- **Invariantes, no casos.** No enumerar casos con listas de `if` (explota, arreglás A y rompés
+  B). Enforcar UN invariante por campo ("todo precio del texto = catálogo; si no, se pisa"). Los
+  invariantes componen y son ortogonales; cada uno se lockea con un test en tabla.
+- **Verificador por campo con safe-override** (estado del arte 2026): pisar solo el dato que
+  contradice la fuente, dejar pasar el resto. Verifika ya lo hace con la plata; el plan es
+  extender el MISMO patrón a cada campo cerrado que falta.
+- **Cobertura:** hoy ~70% de las afirmaciones de hecho garantizadas (precio, total, envío,
+  identidad, promesas). Techo útil ~90-95% aplicando el patrón a stock/disponibilidad, FAQ
+  numérica y guardas de salida. El ~5-10% restante es irreducible (abierto, del LLM).
+- **Diferenciador vendible:** "un bot de ventas que no puede mentir sobre precio, stock ni total
+  porque el código lo garantiza". No prometer conversación impecable (es del LLM); prometer que
+  no miente en los números.
+
+## Hallazgos de pruebas reales (2-jul)
+
+- **Cero alucinaciones de PRECIO/total** en dos charlas reales largas: todos los precios, stocks
+  informados coincidentes y cuentas correctas venían de la fuente. El blindaje de plata funcionó.
+- **Hueco de STOCK (por acá se filtró):** el solver inventó faltantes ("DX-110 no tiene stock",
+  "Zeus X no tiene stock" — falso, tenían) y upselleó a lo caro; y eligió mal "el más barato con
+  stock". El verificador cubre la plata, NO la disponibilidad. Es el próximo campo a blindar.
+
+---
+
+## PENDIENTES (en orden de prioridad)
+
+1. **Enforcer de STOCK (calculadora)** — donde una alucinación llegó al cliente. Dos piezas del
+   mismo patrón:
+   - **Pieza 1:** "más barato con stock" DETERMINISTA (el código lo computa por categoría, filtro
+     `stock>0` ordenado por precio; extender `find_within_budget`). El solver usa ese, no elige.
+     Diseño acordado: inyectarlo como GUÍA determinista, no como tool opcional.
+   - **Pieza 2:** verificador de afirmación de stock (safe-override): detectar "sin stock / N
+     unidades" atado a un producto y pisar si contradice el catálogo.
+2. **FAQ numérica**: estampar los números de la FAQ desde el valor estructurado, no parafrasear.
+3. **Guardas de salida (baratas):** malas palabras (blocklist + reescritura, ej. "al pedo") y
+   **disclaimer legal** (aclarar que es una herramienta automática; determinista: línea fija en el
+   primer mensaje + gatillo regex sobre "sos humano/quién sos/con quién hablo"). El prompt solo ya
+   falló en real.
+4. **Cierre**: la pregunta del sistema manda sobre el score (ver CIERRE).
+5. **Envío multi-destino**: envío gratis por destino, no por la suma (ver ENVÍO).
+6. **Confirmar el disparo del lead** por logs (qué camino disparó: `lead_decision_via_interpretador`
+   vs `cierre_gatillo_determinista_fuerte`).
+7. **Sugerencias externas de Martín** para FAQ y calculadora (las trae al chat nuevo).
+8. Costo DeepSeek (varias llamadas LLM por turno), seguridad (recortar log del webhook, rotar
+   tokens): pendientes de arrastre, atacar cuando toque.
+
+**Metodología no negociable al tocar cada herramienta:** primero escribir el test que captura el
+comportamiento bueno de HOY, después cambiar. El gate del CI + el test lockean contra regresión.
+
+---
 
 ## Probar en el entorno de Claude
 
-`bash scripts/setup_test_env.sh` (lo corre el hook de SessionStart). Después
-`python3 scripts/smoke_logica.py` corre la lógica determinista offline (envío, verificador,
-calculadora). Acá NO hay LLM ni Firestore: el intérprete y el solver se prueban en WhatsApp
-o leyendo logs de Cloud Run.
+`pytest` corre los 122 tests offline (Python puro, catálogo+FAQ reales por la fixture
+`firestore_doble` en `tests/conftest.py`, sin LLM ni Google). El intérprete y el solver (DeepSeek)
+NO corren offline (van marcados `vivo`, excluidos por default); se prueban en WhatsApp/Telegram o
+leyendo logs de Cloud Run.
