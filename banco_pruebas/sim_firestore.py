@@ -74,6 +74,7 @@ def _cargar_faq() -> dict:
                 "tipo": tema.get("tipo", "informativo"),
                 "valores": tema.get("valores", []),
                 "keywords": tema.get("keywords", []),
+                "respuesta_curada": tema.get("respuesta_curada", ""),
             }
     return faq
 

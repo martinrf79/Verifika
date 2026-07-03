@@ -320,6 +320,33 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                  responde_a=interp.get("respondiendo_a"),
                  candidatos=interp.get("candidatos"))
 
+    # Flag one-shot del gatillo de cierre (se lee ACA porque tambien condiciona
+    # el atajo curado: con una pregunta de cierre pendiente no se ataja nada).
+    pregunta_cierre_previa = bool(conv.get("pregunta_cierre_hecha"))
+
+    # ── ATAJO CURADO: pregunta PURA de politica -> respuesta aprobada ───────
+    # Patron "LLM compila offline, runtime determinista": si el ruteo de FAQ
+    # matchea un tema con respuesta_curada y el turno no tiene venta en juego
+    # (sin producto, sin carrito, sin cierre pendiente), sale el texto aprobado
+    # por la tienda con los numeros estampados de los valores. El solver NI
+    # CORRE: cero alucinacion posible y un turno mas barato. Ante cualquier
+    # duda devuelve None y el turno sigue por el camino normal.
+    respuesta_curada_servida = False
+    respuesta = ""
+    meta: dict = {}
+    try:
+        from app.core.curadas import servir_curada
+        _cur = servir_curada(raw_message, interp, estado,
+                             pregunta_cierre_previa, tienda_id)
+        if _cur:
+            respuesta = _cur[1]
+            respuesta_curada_servida = True
+            log.info("interprete_libre_curada_servida", trace_id=trace_id,
+                     tema=_cur[0])
+    except Exception as e:
+        log.warning("interprete_libre_curada_error", trace_id=trace_id,
+                    error=str(e)[:120])
+
     # ── PASO 2: SOLVER LIBRE (con la guía del intérprete + estado de venta) ──
     # El solver ve, ademas del mensaje y la guia del interprete, el ESTADO DE LA
     # VENTA armado arriba: productos con precio real, carrito, total, envio cotizado
@@ -351,16 +378,16 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
              intencion=interp.get("intencion") if isinstance(interp, dict) else None,
              tools=len(tools_schema), hist=len(history))
 
-    meta = {}
-    try:
-        respuesta, meta = await run_agent(
-            mensaje_enriquecido, history, trace_id,
-            tienda_id=tienda_id, user_id=user_id,
-            system_prompt=system_prompt, tools_schema=tools_schema)
-    except Exception as e:
-        log.error("interprete_libre_solver_error", trace_id=trace_id,
-                  error=str(e)[:200])
-        respuesta = settings.FALLBACK_MESSAGE
+    if not respuesta_curada_servida:
+        try:
+            respuesta, meta = await run_agent(
+                mensaje_enriquecido, history, trace_id,
+                tienda_id=tienda_id, user_id=user_id,
+                system_prompt=system_prompt, tools_schema=tools_schema)
+        except Exception as e:
+            log.error("interprete_libre_solver_error", trace_id=trace_id,
+                      error=str(e)[:200])
+            respuesta = settings.FALLBACK_MESSAGE
 
     # ── DIAGNOSTICO DE INTEGRACION (solver <-> herramientas mellizas) ──────────
     # Loguea, por turno, lo que DEVOLVIERON las tools deterministas (result/proof)
@@ -696,10 +723,9 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                  campos=sorted(datos_turno.keys()),
                  acumulado=sorted(datos_acumulados.keys()))
 
-    # Flag one-shot del gatillo de cierre (D): si el turno pasado el bot hizo la
-    # pregunta de cierre, este turno la respuesta del cliente la decide. Se lee de
-    # la conversacion y se recalcula abajo segun lo que pase este turno.
-    pregunta_cierre_previa = bool(conv.get("pregunta_cierre_hecha"))
+    # El flag one-shot del gatillo de cierre (D) ya se leyo arriba (condiciona
+    # tambien el atajo curado): si el turno pasado el bot hizo la pregunta de
+    # cierre, este turno la respuesta del cliente la decide.
     meta_lead: dict = {}
     # No se cierra cuando la guarda forzo una pregunta de ambiguedad: el producto
     # todavia no esta elegido, cerrar seria sobre algo indefinido.

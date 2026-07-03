@@ -113,6 +113,15 @@ rutea bien). Locks en `tests/test_faq.py`.
 **FAQ NUMÉRICA cubierta (3-jul):** `verificador_faq.py` chequea los números de política (%,
 cuotas, días, meses, horas) contra la fuente y corrige anclado al tema consultado (ver pipeline
 4-ter). Locks en `tests/test_faq_numerica.py`.
+**RESPUESTAS CURADAS (3-jul, `curadas.py`):** patrón "LLM compila offline, runtime determinista".
+Temas con `respuesta_curada` en faq.json (texto aprobado por Martín, números como huecos
+`{{concepto}}` estampados desde los valores): si la pregunta es PURA de política (ruteo por
+keywords + intérprete sin producto/carrito/cierre pendiente), sale ese texto TAL CUAL y el
+solver NI CORRE — cero alucinación posible y turno más barato. Ante cualquier duda cae al camino
+normal. Cargadas: costo_envio, descuento_transferencia, cuotas. Evento: `interprete_libre_curada_servida`.
+**ACTIVACIÓN pendiente:** el runtime lee la FAQ de Firestore; hay que re-subir la FAQ del repo
+(`scripts/crear_cliente.py` ya carga `respuesta_curada`) para que el atajo dispare en vivo.
+Hasta entonces el código deployado es inerte (sin el campo, siempre cae al camino normal).
 
 ---
 

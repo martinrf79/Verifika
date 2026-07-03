@@ -67,7 +67,8 @@
         "monto": 12,
         "unidad": "cuotas"
       }
-    ]
+    ],
+    "respuesta_curada": "Podes pagar hasta en {{cuotas_sin_interes}} cuotas sin interes con Visa y Mastercard, o hasta {{cuotas_con_interes}} cuotas con interes. Contame que producto te interesa y te armo el plan."
   },
   {
     "tema": "envios",
@@ -119,7 +120,8 @@
         "umbral_ars": 250000,
         "condicion": "compra mayor a 250000"
       }
-    ]
+    ],
+    "respuesta_curada": "Si, llegamos a todo el pais. A CABA y GBA el envio sale {{envio_caba_gba}}; al interior depende de la provincia: pasame tu provincia o codigo postal y te digo la tarifa exacta. Y un dato: superando los {{envio_gratis}} el envio te queda gratis. A donde te lo mandariamos?"
   },
   {
     "tema": "plazo_envio",
@@ -195,7 +197,8 @@
         "unidad": "porcentaje",
         "condicion": "pago por transferencia bancaria"
       }
-    ]
+    ],
+    "respuesta_curada": "Si, pagando por transferencia bancaria tenes {{descuento_transferencia}} de descuento. Si queres, decime que producto estas mirando y te paso el total con el descuento ya aplicado."
   },
   {
     "tema": "redes",

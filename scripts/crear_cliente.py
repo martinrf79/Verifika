@@ -130,6 +130,10 @@ def cargar_faq_json(path: str, tienda_id: str) -> int:
                 "tipo": tipo,
                 "valores": valores,
                 "venta": venta,
+                # Respuesta aprobada por la tienda (atajo curado, curadas.py):
+                # la pregunta pura de este tema sale con este texto TAL CUAL,
+                # con los {{conceptos}} estampados desde valores.
+                "respuesta_curada": str(row.get("respuesta_curada", "") or "").strip(),
             }, tienda_id=tienda_id)
             ok += 1
         except (KeyError, ValueError) as e:
