@@ -183,3 +183,6 @@ comportamiento bueno de HOY, después cambiar. El gate del CI + el test lockean 
 `firestore_doble` en `tests/conftest.py`, sin LLM ni Google). El intérprete y el solver (DeepSeek)
 NO corren offline (van marcados `vivo`, excluidos por default); se prueban en WhatsApp/Telegram o
 leyendo logs de Cloud Run.
+
+**Desde la NOTEBOOK (Windows):** la receta completa (clon + rama nueva + venv + batería) está en
+`CLAUDE.md` → "Correr la batería desde la NOTEBOOK". Mismo doble de Firestore que en el celular.
