@@ -414,7 +414,16 @@ async def procesar_mensaje_para_lead(
     # la red ante la duda: un "si" en el turno siguiente vuelve como
     # decision_compra y cae en el Caso dos. Solo cuando hay presupuesto NUEVO,
     # asi no se repite turno a turno.
-    if (nivel == "ninguna" and presupuesto_nuevo
+    # LA PREGUNTA MANDA SOBRE EL SCORE (3-jul): una decision_compra que NO llego
+    # a la confianza del umbral tampoco puede quedar en NADA. Si ya hay un
+    # presupuesto mostrado (nuevo o de memoria), se hace LA pregunta del sistema
+    # y la respuesta del cliente decide determinista (gatillo D), sin depender de
+    # que el score justo supere 0.85. Antes ese caso solo cerraba si el score
+    # acompañaba (visto en la charla real del 1-jul).
+    hay_presupuesto = bool(str(presupuesto).strip())
+    if (nivel == "ninguna"
+            and (presupuesto_nuevo
+                 or (intencion_llm == "decision_compra" and hay_presupuesto))
             and intencion_llm in ("pregunta_especifica", "aporta_dato",
                                   "decision_compra")):
         log.info("cierre_pregunta_suave", trace_id=trace_id,

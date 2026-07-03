@@ -131,18 +131,18 @@ def _get_client():
     return _client
 
 
-async def reescribir_sin_promesas(respuesta: str, clases: list[str],
-                                  trace_id: str | None = None) -> str:
-    """Reescribe el mensaje sacando las promesas prohibidas, manteniendo el tono y
-    la intencion de venta. No agrega datos. Una sola llamada a DeepSeek."""
-    reglas = "; ".join(_INSTR[c] for c in clases if c in _INSTR)
+async def reescribir_con_reglas(respuesta: str, reglas: str,
+                                trace_id: str | None = None) -> str:
+    """Maquinaria compartida de reescritura: saca lo prohibido manteniendo el tono
+    y la intencion de venta. La usan la guardia de promesas y el verificador de
+    stock. Una sola llamada a DeepSeek, solo en los turnos que disparan."""
     if not reglas:
         return respuesta
     prompt = (
         "Sos un editor. Reescribi el mensaje de un vendedor manteniendo el mismo "
         f"tono calido y la intencion de venta, pero {reglas}. No agregues datos "
-        "nuevos ni numeros. Devolve SOLO el mensaje reescrito, sin comillas ni "
-        f"explicacion.\n\nMensaje:\n{respuesta}")
+        "nuevos ni numeros que no esten en estas reglas. Devolve SOLO el mensaje "
+        f"reescrito, sin comillas ni explicacion.\n\nMensaje:\n{respuesta}")
 
     def _call() -> str:
         r = _get_client().chat.completions.create(
@@ -152,3 +152,11 @@ async def reescribir_sin_promesas(respuesta: str, clases: list[str],
         return (r.choices[0].message.content or "").strip()
 
     return await asyncio.to_thread(_call)
+
+
+async def reescribir_sin_promesas(respuesta: str, clases: list[str],
+                                  trace_id: str | None = None) -> str:
+    """Reescribe el mensaje sacando las promesas prohibidas, manteniendo el tono y
+    la intencion de venta. No agrega datos. Una sola llamada a DeepSeek."""
+    reglas = "; ".join(_INSTR[c] for c in clases if c in _INSTR)
+    return await reescribir_con_reglas(respuesta, reglas, trace_id)

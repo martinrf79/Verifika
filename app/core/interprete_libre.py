@@ -27,7 +27,8 @@ from app.core.leads import (
     procesar_mensaje_para_lead, descartar_leads_activos, get_lead_activo)
 from app.core.estado_venta import (
     construir_estado, set_current_estado, bloque_para_solver,
-    productos_de_meta, carrito_de_meta, envio_de_meta, merge_productos)
+    productos_de_meta, carrito_de_meta, envio_de_meta, merge_productos,
+    detectar_criterio)
 from app.core.tools import get_tools_schema
 from app.config import get_settings
 from app.logger import get_logger
@@ -329,6 +330,23 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     mensaje_enriquecido = (raw_message + _guia_para_solver(interp)
                            + bloque_para_solver(estado))
 
+    # GUIA DETERMINISTA "mas barato con stock" (blindaje del hueco real 2-jul):
+    # si el criterio del cliente es el precio (dicho este turno o sticky en
+    # memoria), elegir el minimo es un problema CERRADO y lo computa el CODIGO.
+    # La guia viaja en el mensaje con el [[PROD:id]] ya decidido; el solver
+    # conserva la redaccion, no la eleccion. Generar > corregir > verificar.
+    if detectar_criterio(raw_message) or (estado.get("criterio") or "").strip():
+        try:
+            from app.core.guia_compra import guia_mas_barato
+            _guia_barato = guia_mas_barato(
+                raw_message, estado.get("productos_vistos"))
+            if _guia_barato:
+                mensaje_enriquecido += _guia_barato
+                log.info("interprete_libre_guia_mas_barato", trace_id=trace_id)
+        except Exception as e:
+            log.warning("interprete_libre_guia_barato_error", trace_id=trace_id,
+                        error=str(e)[:120])
+
     log.info("interprete_libre_inicio", trace_id=trace_id,
              intencion=interp.get("intencion") if isinstance(interp, dict) else None,
              tools=len(tools_schema), hist=len(history))
@@ -368,7 +386,6 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # query_faq). Asi ni el presupuesto, ni el envio, ni una politica se re-tipean o
     # se inventan. Marcador sin dato (la tool no corrio) -> se quita, no se inventa.
     # Se loguea cuando el solver dio el presupuesto SIN marcador, para medir.
-    from app.core.estado_venta import envio_de_meta
     _env = envio_de_meta(meta)
     _present = _presupuesto_de_meta(meta)
     _marcadores = {
@@ -412,6 +429,10 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # Con AUTOCORRIGE_MONTOS=false vuelve a modo observacion: solo loguea, no toca.
     proofs_turno = [t["proof"] for t in (meta.get("tools_called") or [])
                     if t.get("proof")]
+    # La evidencia del turno se comparte con los verificadores por campo de mas
+    # abajo (stock, FAQ numerica): se declara afuera del try para que un error en
+    # el filtro de plata no los deje sin fuente.
+    evidencia: list = []
     if respuesta != settings.FALLBACK_MESSAGE:
         try:
             from app.core.evidencia import build_evidence_from_tools
@@ -524,6 +545,71 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         except Exception as e:
             log.warning("interprete_libre_verif_error", trace_id=trace_id,
                         error=str(e)[:160])
+
+    # ── PASO 2a-ter: VERIFICADOR DE STOCK (mismo patron por campo) ──────────
+    # La plata ya esta cubierta; este es el campo por donde se filtro la
+    # alucinacion real del 2-jul (negar stock que existia). Dos piezas:
+    # 1) la CIFRA de unidades contradicha se reescribe por la real (safe-override
+    #    determinista); 2) una CONTRADICCION de texto (negar stock existente,
+    #    ofrecer un agotado) se reescribe con la maquinaria de guardia_promesas,
+    #    con el dato real del catalogo en la regla. Solo juzga productos cuyo
+    #    stock REAL esta en la evidencia de este turno.
+    if respuesta != settings.FALLBACK_MESSAGE and evidencia:
+        try:
+            from app.core.verificador_stock import (
+                corregir_unidades_stock, detectar_stock_contradicho,
+                instruccion_stock)
+            _fix_stock = corregir_unidades_stock(respuesta, evidencia)
+            if _fix_stock["correcciones"]:
+                log.warning("interprete_libre_stock_cifra_corregida",
+                            trace_id=trace_id,
+                            correcciones=_fix_stock["correcciones"][:8])
+                respuesta = _fix_stock["respuesta"]
+            _contradicho = detectar_stock_contradicho(respuesta, evidencia)
+            if _contradicho:
+                log.warning("interprete_libre_stock_contradicho",
+                            trace_id=trace_id, casos=_contradicho[:6],
+                            respuesta_preview=respuesta[:200])
+                from app.core.guardia_promesas import reescribir_con_reglas
+                _nueva = await reescribir_con_reglas(
+                    respuesta, instruccion_stock(_contradicho), trace_id)
+                if _nueva:
+                    respuesta = _nueva
+                    _quedan = detectar_stock_contradicho(respuesta, evidencia)
+                    if _quedan:
+                        log.warning("interprete_libre_stock_persiste",
+                                    trace_id=trace_id, casos=_quedan[:6])
+                    else:
+                        log.info("interprete_libre_stock_reescrito",
+                                 trace_id=trace_id)
+        except Exception as e:
+            log.warning("interprete_libre_stock_error", trace_id=trace_id,
+                        error=str(e)[:160])
+
+    # ── PASO 2a-quater: FAQ NUMERICA (porcentaje, cuotas, plazos, garantia) ──
+    # Los numeros chicos de politica que la plata no mira. Si el numero
+    # contradice la fuente y el turno consulto la FAQ (ancla del tema), se
+    # estampa el valor verdadero; sin ancla univoca, queda logueado.
+    if respuesta != settings.FALLBACK_MESSAGE and evidencia:
+        try:
+            from app.core.verificador_faq import (
+                autocorregir_faq_numerica, temas_de_meta)
+            _fix_faq = autocorregir_faq_numerica(
+                respuesta, evidencia,
+                temas_consultados=temas_de_meta(meta), trace_id=trace_id)
+            if _fix_faq["cambiada"] and _fix_faq["verificacion"]["ok"]:
+                log.warning("interprete_libre_faq_numerica_corregida",
+                            trace_id=trace_id,
+                            correcciones=_fix_faq["correcciones"][:8])
+                respuesta = _fix_faq["respuesta"]
+            elif not _fix_faq["verificacion"]["ok"]:
+                log.warning("interprete_libre_faq_numerica_sin_respaldo",
+                            trace_id=trace_id,
+                            sin_respaldo=_fix_faq["verificacion"]["sin_respaldo"][:8],
+                            respuesta_preview=respuesta[:200])
+        except Exception as e:
+            log.warning("interprete_libre_faq_numerica_error",
+                        trace_id=trace_id, error=str(e)[:160])
     proofs_recientes = (proofs_memoria + proofs_turno)[-settings.VERIFICADOR_PROOF_MEMORY:]
 
     # ── PASO 2a-bis: GUARDIA DE PROMESAS PROHIBIDAS (enforce) ───────────────
@@ -663,7 +749,6 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # Criterio del cliente ("lo mas barato"): se detecta determinista en el mensaje
     # y es STICKY. Una vez dicho persiste entre turnos hasta que el cliente diga
     # otro, asi el solver no vuelve a preguntar modelo ni color (arreglo B).
-    from app.core.estado_venta import detectar_criterio
     criterio_cliente = detectar_criterio(raw_message) or (
         conv.get("criterio_cliente") or "")
     # Provincia del cliente: se detecta determinista y es STICKY. Una vez dada

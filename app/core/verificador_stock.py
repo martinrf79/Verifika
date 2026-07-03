@@ -1,0 +1,179 @@
+"""
+VERIFICADOR DE STOCK — el MISMO patron del verificador de plata, aplicado al campo
+disponibilidad. Es el campo por donde se filtro la alucinacion real del 2-jul: el
+solver invento faltantes ("DX-110 no tiene stock", falso) y upselleo a lo caro.
+
+Invariante (uno, no casos): toda afirmacion de disponibilidad de la respuesta,
+anclada a UN producto nombrado, tiene que coincidir con el stock del catalogo.
+
+Dos piezas, ambas deterministas en la deteccion:
+  1. CIFRA de unidades ("quedan 9", "3 en stock"): si contradice el catalogo y el
+     ancla es unica, se reescribe SOLO la cifra (safe-override, edicion minima).
+  2. CONTRADICCION de texto ("no tiene stock" de un producto que SI tiene;
+     "disponible" de uno agotado): no se puede corregir con un numero, se marca la
+     clase y el llamador reescribe con la MISMA maquinaria de guardia_promesas
+     (una llamada LLM solo en los turnos que disparan).
+
+Conservador como la plata: el ancla debe ser UN unico producto nombrado en la
+ventana previa; ante ambiguedad, frase condicional o stock desconocido, no toca.
+Solo juzga productos cuyo stock REAL esta en la evidencia DE ESTE turno (el stock
+cambia; un dato viejo no acusa a nadie).
+"""
+import re
+
+from app.core.verificador import _tokens_significativos
+from app.logger import get_logger
+
+log = get_logger(__name__)
+
+# Ventana previa donde buscar el producto nombrado. Corta a proposito: el nombre
+# tiene que estar pegado a la afirmacion para que el ancla sea creible.
+_VENTANA = 110
+
+# Negacion de stock. Cubre las formas vistas en real y variantes cercanas.
+_RE_SIN_STOCK = re.compile(
+    r"(?:sin\s+stock|no\s+(?:hay|tiene|tienen|tenemos|queda|quedan)"
+    r"(?:\s+m[aá]s)?\s+(?:stock|unidades|disponibilidad)|"
+    r"agotad\w+|no\s+est[aá]n?\s+disponibles?|sin\s+disponibilidad|"
+    r"fuera\s+de\s+stock|no\s+lo\s+tenemos\s+disponible)",
+    re.IGNORECASE)
+
+# Afirmacion de disponibilidad.
+_RE_CON_STOCK = re.compile(
+    r"(?:(?:tiene|tienen|tenemos|hay)\s+stock|en\s+stock|disponibles?\b)",
+    re.IGNORECASE)
+
+# Cifra de unidades SOLO con cue de disponibilidad: "quedan 9", "3 en stock",
+# "5 disponibles", "4 unidades disponibles". Un numero pelado ("te confirmo 10
+# unidades") es la cantidad del pedido, no una afirmacion de stock: no se toca.
+_RE_UNIDADES = re.compile(
+    r"(?:quedan?\s+(\d{1,4})\b|"
+    r"(\d{1,4})\s+(?:unidades?\s+)?(?:en\s+stock|disponibles?)\b)",
+    re.IGNORECASE)
+
+# Si al numero lo sigue OTRA unidad (dias, cuotas...), no es stock ("quedan 3
+# dias de oferta").
+_RE_NO_ES_STOCK = re.compile(
+    r"^\s*(?:d[ií]as?|cuotas?|mes(?:es)?|horas?|hs|pesos|%)", re.IGNORECASE)
+
+# Frase condicional/hipotetica antes del disparo: "si no tiene stock te aviso".
+_RE_CONDICIONAL = re.compile(
+    r"\b(?:si|cuando|en\s+caso(?:\s+de)?|por\s+si)\b[^.!?\n]{0,45}$",
+    re.IGNORECASE)
+
+# Negacion pegada a una afirmacion de disponibilidad: "no tiene stock" contiene
+# "tiene stock"; sin esta guarda la afirmacion dispararia dentro de su negacion.
+_RE_NEGADO = re.compile(r"\b(?:no|sin|tampoco|nunca|ya\s+no)\b[\w\s]{0,12}$",
+                        re.IGNORECASE)
+
+
+def _productos_con_stock(evidencia: list[dict]) -> list[dict]:
+    """Productos de la evidencia cuyo stock real ES conocido (entero). Los de
+    memoria sin stock no juzgan: el stock cambia turno a turno."""
+    return [i for i in (evidencia or [])
+            if i.get("tipo") == "producto" and isinstance(i.get("stock"), int)]
+
+
+def _producto_nombrado(texto: str, start: int,
+                       productos: list[dict]) -> dict | None:
+    """El UNICO producto del catalogo nombrado en la ventana previa a la posicion
+    start. None si ninguno matchea o si matchean dos distintos (ambiguo). Mismo
+    anclaje por tokens del nombre que usa el verificador de plata."""
+    pre = texto[max(0, start - _VENTANA):start].lower()
+    candidatos: dict[str, dict] = {}
+    for p in productos:
+        toks = _tokens_significativos(p.get("nombre", ""))
+        if not toks:
+            continue
+        presentes = sum(1 for t in toks if t in pre)
+        if presentes >= min(2, len(toks)):
+            candidatos[str(p.get("id") or "").upper()] = p
+    if len(candidatos) == 1:
+        return next(iter(candidatos.values()))
+    return None
+
+
+def detectar_stock_contradicho(respuesta: str,
+                               evidencia: list[dict]) -> list[dict]:
+    """Afirmaciones de disponibilidad que CONTRADICEN el catalogo, ancladas a un
+    producto unico. Devuelve [{clase, id, nombre, stock}]:
+      - sin_stock_falso: niega stock de un producto que SI tiene (venta perdida).
+      - con_stock_falso: ofrece como disponible un producto agotado (promesa falsa).
+    Una negacion VERDADERA (agotado de verdad) no dispara: es honestidad."""
+    productos = _productos_con_stock(evidencia)
+    if not respuesta or not productos:
+        return []
+    out: list[dict] = []
+    vistos: set[tuple] = set()
+
+    def _agregar(clase: str, p: dict):
+        clave = (clase, str(p.get("id") or "").upper())
+        if clave in vistos:
+            return
+        vistos.add(clave)
+        out.append({"clase": clase, "id": str(p.get("id") or "").upper(),
+                    "nombre": p.get("nombre", ""), "stock": int(p["stock"])})
+
+    for m in _RE_SIN_STOCK.finditer(respuesta):
+        if _RE_CONDICIONAL.search(respuesta[max(0, m.start() - 50):m.start()]):
+            continue
+        p = _producto_nombrado(respuesta, m.start(), productos)
+        if p is not None and int(p["stock"]) > 0:
+            _agregar("sin_stock_falso", p)
+    for m in _RE_CON_STOCK.finditer(respuesta):
+        if _RE_NEGADO.search(respuesta[max(0, m.start() - 20):m.start()]):
+            continue
+        p = _producto_nombrado(respuesta, m.start(), productos)
+        if p is not None and int(p["stock"]) == 0:
+            _agregar("con_stock_falso", p)
+    return out
+
+
+def corregir_unidades_stock(respuesta: str, evidencia: list[dict]) -> dict:
+    """Safe-override de la CIFRA de unidades: si el texto declara una cantidad en
+    stock distinta a la del catalogo y el producto anclado es unico, reescribe
+    SOLO el numero por el real. Devuelve {respuesta, correcciones}."""
+    productos = _productos_con_stock(evidencia)
+    if not respuesta or not productos:
+        return {"respuesta": respuesta, "correcciones": []}
+    reemplazos: list[tuple] = []
+    correcciones: list[dict] = []
+    for m in _RE_UNIDADES.finditer(respuesta):
+        if _RE_NO_ES_STOCK.match(respuesta[m.end():m.end() + 10]):
+            continue
+        gidx = 1 if m.group(1) else 2
+        n = int(m.group(gidx))
+        p = _producto_nombrado(respuesta, m.start(), productos)
+        if p is None:
+            continue
+        real = int(p["stock"])
+        if n == real:
+            continue
+        s, e = m.span(gidx)
+        reemplazos.append((s, e, str(real)))
+        correcciones.append({"de": n, "a": real,
+                             "id": str(p.get("id") or "").upper(),
+                             "concepto": "stock"})
+    if not reemplazos:
+        return {"respuesta": respuesta, "correcciones": []}
+    nuevo = respuesta
+    for s, e, token in sorted(reemplazos, reverse=True):
+        nuevo = nuevo[:s] + token + nuevo[e:]
+    return {"respuesta": nuevo, "correcciones": correcciones}
+
+
+def instruccion_stock(contradicciones: list[dict]) -> str:
+    """Regla de reescritura para la maquinaria de guardia_promesas, con el dato
+    REAL del catalogo adentro, asi la reescritura no inventa."""
+    partes = []
+    for c in contradicciones:
+        if c["clase"] == "sin_stock_falso":
+            partes.append(
+                f"el producto {c['nombre']} SI tiene stock ({c['stock']} "
+                f"unidades): no digas que no hay stock, ofrecelo con su "
+                f"disponibilidad real")
+        else:
+            partes.append(
+                f"el producto {c['nombre']} esta SIN stock: no lo ofrezcas "
+                f"como disponible, ofrece una alternativa del catalogo")
+    return "; ".join(partes)

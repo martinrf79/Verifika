@@ -73,3 +73,56 @@ def test_e13_no_capa_destinos_en_silencio(firestore_doble):
         "Cuatro destinos deben cobrar 4 envios; hoy se capa a 3 en silencio.")
     assert envio.get("monto") == 7500 * 4, (
         "El envio a 4 destinos a Cordoba es 7500x4=30000; hoy da 7500x3=22500.")
+
+
+# ── Envio gratis por umbral en multi-destino: POR DESTINO, no por la suma ────
+# Bug real (2-jul): 4 destinos chicos que SUMADOS superan el umbral salian
+# "todo gratis". El umbral de envio gratis debe mirarse por destino: como los
+# items no declaran a que destino van, se usa el promedio (suma/destinos), que
+# es conservador: solo libera el envio si el reparto claramente supera el umbral.
+
+def _producto_para_umbral(min_precio, cantidad):
+    from app.core.tools import get_all_products
+    return next(p for p in sorted(get_all_products(),
+                                  key=lambda x: x.get("precio_ars", 0))
+                if p.get("precio_ars", 0) > min_precio
+                and p.get("stock", 0) >= cantidad)
+
+
+def test_multidestino_no_regala_envio_por_la_suma(firestore_doble):
+    """4 destinos cuya SUMA supera el umbral pero cada destino no: el envio se
+    COBRA (4 tarifas), no sale gratis por mirar la suma."""
+    from app.core.tools import calculate_total
+    from app.core import estado_venta
+
+    p = _producto_para_umbral(min_precio=250000 // 4, cantidad=4)
+    estado_venta.set_envio_localidad("Cordoba, provincia de Cordoba")
+    r = calculate_total(
+        items=[{"product_id": p["id"], "cantidad": 4}],
+        items_extra=[{"faq_tema": "costo_envio", "concepto": "x"}],
+        destinos=4,
+    )
+    assert r.get("ok")
+    envio = next(e for e in r["extras"] if e["faq_tema"] == "costo_envio")
+    assert envio.get("monto", 0) > 0, (
+        "Con 4 destinos chicos el envio se cobra por destino; la suma de los "
+        "destinos no libera el envio gratis.")
+
+
+def test_un_destino_sobre_el_umbral_sigue_gratis(firestore_doble):
+    """Lock del camino que ya andaba: UN destino cuya compra supera el umbral
+    mantiene el envio gratis."""
+    from app.core.tools import calculate_total
+    from app.core import estado_venta
+
+    p = _producto_para_umbral(min_precio=250000 // 4, cantidad=4)
+    estado_venta.set_envio_localidad("Cordoba, provincia de Cordoba")
+    r = calculate_total(
+        items=[{"product_id": p["id"], "cantidad": 4}],
+        items_extra=[{"faq_tema": "costo_envio", "concepto": "x"}],
+        destinos=1,
+    )
+    assert r.get("ok")
+    envio = next(e for e in r["extras"] if e["faq_tema"] == "costo_envio")
+    assert envio.get("monto") == 0, (
+        "Una compra de un destino que supera el umbral va con envio gratis.")

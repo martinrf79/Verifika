@@ -3,9 +3,10 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 3-jul-2026.** Sesión larga de blindaje determinista + reorganización
-con pytest/CI. Todo lo de abajo está deployado y verificado en verde salvo lo marcado como
-PENDIENTE.
+**Última actualización: 3-jul-2026 (segunda sesión).** Blindaje por campo extendido a STOCK y
+FAQ NUMÉRICA, la pregunta de cierre manda sobre el score, y envío gratis multi-destino por
+destino. 153 tests offline en verde (122 + 31 nuevos). Todo lo de abajo está deployado y
+verificado en verde salvo lo marcado como PENDIENTE.
 
 ---
 
@@ -24,6 +25,16 @@ Entrada → `orchestrator.process_message` → `app/core/interprete_libre.py`, q
 4. **Verificador de plata** (`verificador.py`): toda cifra de dinero de la respuesta tiene que
    salir de la evidencia (catálogo/FAQ/PROOF de las tools). Si no, autocorrige (candidato único)
    o bloquea (sin evidencia → fallback). Anclado al concepto (total/envío/precio).
+4-bis. **Verificador de STOCK** (NUEVO, `verificador_stock.py`): afirmación de disponibilidad
+   anclada al producto NOMBRADO vs stock real de la evidencia del turno. Cifra de unidades
+   contradicha → safe-override determinista; "no tiene stock" falso u ofrecer un agotado →
+   reescritura con la maquinaria de guardia (LLM solo en turnos que disparan). Además, GUIA
+   determinista (`guia_compra.py`): si el cliente quiere "lo más barato", el CÓDIGO computa el
+   más barato CON stock y lo inyecta como [[PROD:id]]; el solver no elige.
+4-ter. **Verificador de FAQ NUMÉRICA** (NUEVO, `verificador_faq.py`): números chicos de política
+   (X%, N cuotas, N días, N meses) contra FAQ estructurada+prosa y garantia_meses del catálogo.
+   Porcentaje/meses exactos; cuotas/días/horas por rango ("hasta 6" habilita ≤6). Corrección
+   SOLO anclada al tema consultado por query_faq este turno y con candidato único; si no, log.
 5. **Guardia de promesas** (`guardia_promesas.py`): set CERRADO de 3 clases prohibidas
    (día de entrega, retiro en local, servicio no ofrecido) → reescribe.
 6. **Guarda de divergencia A/B** (NUEVO, `interprete_libre._forzar_pregunta_si_ambiguo`): si el
@@ -73,9 +84,9 @@ y devuelve UN número (nunca rango). Estado actual:
 - Tarifa interior por provincia en `config.py` (`ENVIO_INTERIOR_POR_PROVINCIA`), pisable por
   tienda con Firestore `tarifas_envio`. Umbral de envío gratis desde la FAQ `costo_envio`
   ($250.000). Cierra con la frase fija "Envío orientativo, puede variar al confirmar la compra".
-- **PENDIENTE (bug conocido):** en multi-destino el envío gratis se calcula sobre la SUMA de los
-  destinos, no por destino. En envíos separados el umbral debe mirar cada destino. (Visto en real:
-  4 destinos chicos → "todo gratis" incorrecto.)
+- **Multi-destino ARREGLADO (3-jul):** el envío gratis se mira POR DESTINO, no por la suma. Como
+  los items no declaran destino, se usa el promedio (suma/destinos): conservador, solo libera el
+  envío si el reparto claramente supera el umbral. Lockeado en `test_calculadora.py`.
 
 ## CIERRE — modo A (lead) vivo (3-jul)
 
@@ -89,18 +100,19 @@ en config.py, pisable con Firestore `modo_cierre`):
 - **`B` / `venta`:** el bot cierra y manda el cobro (link de Mercado Pago o CBU).
 - **`off`:** no actúa; el bot vende igual.
 
-**DECIDIDO, PENDIENTE de implementar:** la **pregunta del sistema debe mandar sobre el score de
-intención**. Un "sí" a una pregunta bien formulada dispara el lead; no depender del score de
-`decision_compra`. Es la forma más simple y abarcativa. (En una charla real el lead disparó por
-score, no por la pregunta, porque la pregunta de cierre exacta no apareció.)
+**IMPLEMENTADO (3-jul): la pregunta manda sobre el score.** Una `decision_compra` que NO llega
+a la confianza del umbral ya no queda en nada: si hay presupuesto mostrado (nuevo o de memoria)
+se hace LA pregunta de cierre, y la respuesta decide determinista (gatillo D). El score alto
+(≥0.85) sigue cerrando directo; el resto pasa por la pregunta. Lockeado en test_cierre.
 
 ## FAQ — endurecido (3-jul)
 
 Ruteo determinista por keywords (`query_faq`): el tema ESPECÍFICO le gana al genérico (score por
 la keyword más específica, no la suma) y la puntuación no rompe el match ("pago contra entrega?"
 rutea bien). Locks en `tests/test_faq.py`.
-**PENDIENTE:** que las FAQ con NÚMERO (precios, %, plazos) se estampen del valor estructurado, no
-que el modelo las parafrasee.
+**FAQ NUMÉRICA cubierta (3-jul):** `verificador_faq.py` chequea los números de política (%,
+cuotas, días, meses, horas) contra la fuente y corrige anclado al tema consultado (ver pipeline
+4-ter). Locks en `tests/test_faq_numerica.py`.
 
 ---
 
@@ -126,9 +138,11 @@ que el modelo las parafrasee.
 - **Verificador por campo con safe-override** (estado del arte 2026): pisar solo el dato que
   contradice la fuente, dejar pasar el resto. Verifika ya lo hace con la plata; el plan es
   extender el MISMO patrón a cada campo cerrado que falta.
-- **Cobertura:** hoy ~70% de las afirmaciones de hecho garantizadas (precio, total, envío,
-  identidad, promesas). Techo útil ~90-95% aplicando el patrón a stock/disponibilidad, FAQ
-  numérica y guardas de salida. El ~5-10% restante es irreducible (abierto, del LLM).
+- **Cobertura:** con el 3-jul quedaron cubiertos stock/disponibilidad y FAQ numérica: la
+  estimación pasa de ~70% a ~85% de las afirmaciones de hecho garantizadas (precio, total,
+  envío, identidad, promesas, stock, números de política). Falta para el techo útil (~90-95%):
+  guardas de salida (disclaimer, malas palabras) y validación en vivo de lo nuevo. El ~5-10%
+  restante es irreducible (abierto, del LLM).
 - **Diferenciador vendible:** "un bot de ventas que no puede mentir sobre precio, stock ni total
   porque el código lo garantiza". No prometer conversación impecable (es del LLM); prometer que
   no miente en los números.
@@ -139,30 +153,23 @@ que el modelo las parafrasee.
   informados coincidentes y cuentas correctas venían de la fuente. El blindaje de plata funcionó.
 - **Hueco de STOCK (por acá se filtró):** el solver inventó faltantes ("DX-110 no tiene stock",
   "Zeus X no tiene stock" — falso, tenían) y upselleó a lo caro; y eligió mal "el más barato con
-  stock". El verificador cubre la plata, NO la disponibilidad. Es el próximo campo a blindar.
+  stock". **BLINDADO el 3-jul** (verificador_stock + guia_compra, ver pipeline 4-bis); queda
+  verificarlo en charla real.
 
 ---
 
 ## PENDIENTES (en orden de prioridad)
 
-1. **Enforcer de STOCK (calculadora)** — donde una alucinación llegó al cliente. Dos piezas del
-   mismo patrón:
-   - **Pieza 1:** "más barato con stock" DETERMINISTA (el código lo computa por categoría, filtro
-     `stock>0` ordenado por precio; extender `find_within_budget`). El solver usa ese, no elige.
-     Diseño acordado: inyectarlo como GUÍA determinista, no como tool opcional.
-   - **Pieza 2:** verificador de afirmación de stock (safe-override): detectar "sin stock / N
-     unidades" atado a un producto y pisar si contradice el catálogo.
-2. **FAQ numérica**: estampar los números de la FAQ desde el valor estructurado, no parafrasear.
-3. **Guardas de salida (baratas):** malas palabras (blocklist + reescritura, ej. "al pedo") y
+1. **Verificar en VIVO el blindaje nuevo** (stock, FAQ numérica, pregunta de cierre, multi-destino):
+   charla real por WhatsApp/Telegram + leer los eventos nuevos en logs
+   (`interprete_libre_stock_*`, `interprete_libre_faq_numerica_*`, `interprete_libre_guia_mas_barato`).
+2. **Guardas de salida (baratas):** malas palabras (blocklist + reescritura, ej. "al pedo") y
    **disclaimer legal** (aclarar que es una herramienta automática; determinista: línea fija en el
    primer mensaje + gatillo regex sobre "sos humano/quién sos/con quién hablo"). El prompt solo ya
    falló en real.
-4. **Cierre**: la pregunta del sistema manda sobre el score (ver CIERRE).
-5. **Envío multi-destino**: envío gratis por destino, no por la suma (ver ENVÍO).
-6. **Confirmar el disparo del lead** por logs (qué camino disparó: `lead_decision_via_interpretador`
-   vs `cierre_gatillo_determinista_fuerte`).
-7. **Sugerencias externas de Martín** para FAQ y calculadora (las trae al chat nuevo).
-8. Costo DeepSeek (varias llamadas LLM por turno), seguridad (recortar log del webhook, rotar
+3. **Confirmar el disparo del lead** por logs (qué camino disparó: `lead_decision_via_interpretador`
+   vs `cierre_gatillo_determinista_fuerte`, y ahora también `cierre_pregunta_suave` con score bajo).
+4. Costo DeepSeek (varias llamadas LLM por turno), seguridad (recortar log del webhook, rotar
    tokens): pendientes de arrastre, atacar cuando toque.
 
 **Metodología no negociable al tocar cada herramienta:** primero escribir el test que captura el
@@ -172,7 +179,7 @@ comportamiento bueno de HOY, después cambiar. El gate del CI + el test lockean 
 
 ## Probar en el entorno de Claude
 
-`pytest` corre los 122 tests offline (Python puro, catálogo+FAQ reales por la fixture
+`pytest` corre los 153 tests offline (Python puro, catálogo+FAQ reales por la fixture
 `firestore_doble` en `tests/conftest.py`, sin LLM ni Google). El intérprete y el solver (DeepSeek)
 NO corren offline (van marcados `vivo`, excluidos por default); se prueban en WhatsApp/Telegram o
 leyendo logs de Cloud Run.
