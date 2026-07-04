@@ -382,46 +382,66 @@ def calculate_total(items: list[dict] | None = None,
         #    funcion. Si no hay zona (falta direccion), se devuelve ok False con el
         #    pedido de cotizar_envio: nunca se inventa un costo de envio.
         if pide_envio:
-            from app.core.estado_venta import get_envio_localidad
+            from app.core.estado_venta import get_envio_localidades
             # Envio gratis por umbral en MULTI-destino: el umbral se mira POR
             # DESTINO, no por la suma del pedido. Los items no declaran a que
             # destino van, asi que se usa el promedio (suma/destinos): solo
             # libera el envio si el reparto claramente supera el umbral. Antes 4
             # destinos chicos sumados daban "todo gratis" (visto en real 2-jul).
             _sub_umbral = total if n_envios <= 1 else total // n_envios
-            quote = cotizar_envio(localidad=get_envio_localidad(),
-                                  subtotal=_sub_umbral)
-            if not quote.get("ok"):
-                return {"ok": False, "mensaje_para_llm": quote.get(
-                    "mensaje_para_llm",
-                    "Para sumar el envio al total necesito la zona. Pedile al "
-                    "cliente la provincia o el codigo postal y cotiza el envio "
-                    "con cotizar_envio antes de calcular el total.")}
-            concepto_env = quote.get("concepto") or "envio"
-            if quote.get("modalidad") == "rango":
-                mn = int(quote.get("monto_min", 0)) * n_envios
-                mx = int(quote.get("monto_max", 0)) * n_envios
-                extra_min += mn
-                extra_max += mx
+            # DESTINOS DISTINTOS, TARIFAS DISTINTAS: si este turno se cotizaron
+            # varias localidades, cada destino cobra SU tarifa real (Cordoba +
+            # Rosario suma 7500 + 6000, no dos veces la ultima). Con una sola
+            # localidad conocida, los n destinos van a esa tarifa, como antes.
+            # Si el solver declara mas destinos que localidades cotizadas, los
+            # restantes cobran la ultima tarifa conocida (conservador).
+            _locs = get_envio_localidades()
+            if n_envios > 1 and len(_locs) > 1:
+                _locs = _locs[-n_envios:]
+            else:
+                _locs = _locs[-1:] or [None]
+            _cuentas = [1] * len(_locs)
+            _cuentas[-1] += max(0, n_envios - len(_locs))
+            _env_min = _env_max = 0
+            _env_rango = False
+            concepto_env = "envio"
+            for _loc, _n in zip(_locs, _cuentas):
+                quote = cotizar_envio(localidad=_loc, subtotal=_sub_umbral)
+                if not quote.get("ok"):
+                    return {"ok": False, "mensaje_para_llm": quote.get(
+                        "mensaje_para_llm",
+                        "Para sumar el envio al total necesito la zona. Pedile al "
+                        "cliente la provincia o el codigo postal y cotiza el envio "
+                        "con cotizar_envio antes de calcular el total.")}
+                concepto_env = quote.get("concepto") or concepto_env
+                if quote.get("modalidad") == "rango":
+                    _env_rango = True
+                    _env_min += int(quote.get("monto_min", 0)) * _n
+                    _env_max += int(quote.get("monto_max", 0)) * _n
+                else:
+                    m = int(quote.get("monto", 0)) * _n
+                    _env_min += m
+                    _env_max += m
+            extra_min += _env_min
+            extra_max += _env_max
+            if _env_rango:
                 hay_rango = True
                 extras_detalle.append({
                     "faq_tema": "costo_envio", "concepto": concepto_env,
-                    "modalidad": "rango", "monto_min": mn, "monto_max": mx,
+                    "modalidad": "rango", "monto_min": _env_min,
+                    "monto_max": _env_max,
                     **({"destinos": n_envios} if n_envios > 1 else {}),
                     "condicion": "tarifa de envio cotizada por zona",
                 })
             else:
-                m = int(quote.get("monto", 0)) * n_envios
-                extra_min += m
-                extra_max += m
-                if m == 0:
+                if _env_min == 0:
                     envio_gratis_aplicado = True
                 extras_detalle.append({
                     "faq_tema": "costo_envio", "concepto": concepto_env,
-                    "modalidad": "fijo", "monto": m,
+                    "modalidad": "fijo", "monto": _env_min,
                     **({"destinos": n_envios} if n_envios > 1 else {}),
-                    **({"envio_gratis_auto": True} if m == 0 else {}),
-                    "condicion": ("envio gratis por umbral" if m == 0
+                    **({"envio_gratis_auto": True} if _env_min == 0 else {}),
+                    "condicion": ("envio gratis por umbral" if _env_min == 0
                                   else "tarifa de envio cotizada por zona"),
                 })
 

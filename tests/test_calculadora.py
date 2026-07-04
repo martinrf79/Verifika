@@ -126,3 +126,32 @@ def test_un_destino_sobre_el_umbral_sigue_gratis(firestore_doble):
     envio = next(e for e in r["extras"] if e["faq_tema"] == "costo_envio")
     assert envio.get("monto") == 0, (
         "Una compra de un destino que supera el umbral va con envio gratis.")
+
+
+# ── Destinos DISTINTOS cobran cada uno SU tarifa (bug real: se cobraba la ────
+# ultima tarifa por todos). Cordoba 7500 + Santa Fe 6000 = 13500, no 12000.
+
+def test_multidestino_tarifas_distintas_suman_cada_una(firestore_doble):
+    """Dos destinos en provincias distintas cotizados el mismo turno: el envio
+    del total es la SUMA de las dos tarifas reales, no dos veces la ultima."""
+    from app.core.tools import calculate_total, cotizar_envio, get_all_products
+    from app.core import estado_venta
+
+    estado_venta.set_current_estado({})  # arranca el turno sin arrastre
+    q1 = cotizar_envio(localidad="Cordoba, provincia de Cordoba", subtotal=0)
+    q2 = cotizar_envio(localidad="Rosario, Santa Fe", subtotal=0)
+    assert q1.get("ok") and q2.get("ok")
+    esperado = int(q1["monto"]) + int(q2["monto"])
+    assert q1["monto"] != q2["monto"], "el caso exige tarifas distintas"
+
+    barato = sorted(get_all_products(), key=lambda p: p.get("precio_ars", 0))[0]
+    r = calculate_total(
+        items=[{"product_id": barato["id"], "cantidad": 2}],
+        items_extra=[{"faq_tema": "costo_envio", "concepto": "x"}],
+        destinos=2,
+    )
+    estado_venta.set_current_estado({})  # no arrastrar localidades a otro test
+    assert r.get("ok")
+    envio = next(e for e in r["extras"] if e["faq_tema"] == "costo_envio")
+    assert envio.get("monto") == esperado, (
+        "Cada destino cobra su tarifa real; hoy se cobra la ultima por todos.")

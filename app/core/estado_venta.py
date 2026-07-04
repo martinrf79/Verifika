@@ -37,32 +37,49 @@ def detectar_criterio(mensaje: str) -> str:
 
 _current_estado: ContextVar[dict | None] = ContextVar("current_estado", default=None)
 
-# Localidad que cotizar_envio clasifico con exito en este turno. Es el puente entre
-# las dos herramientas mellizas de envio: cotizar_envio (UNICA que calcula el costo)
-# la escribe, y calculate_total la lee para volver a pedirle a cotizar_envio el monto
-# con el subtotal real, sin recalcular zona ni tarifa por su cuenta. Asi el costo de
-# envio nace en un solo lugar y la calculadora solo lo toma.
-_envio_localidad: ContextVar[str | None] = ContextVar("envio_localidad", default=None)
+# Localidades que cotizar_envio clasifico con exito en este turno, EN ORDEN. Es el
+# puente entre las dos herramientas mellizas de envio: cotizar_envio (UNICA que
+# calcula el costo) las escribe, y calculate_total las lee para pedirle a
+# cotizar_envio el monto de CADA destino con el subtotal real, sin recalcular zona
+# ni tarifa por su cuenta. Es una LISTA y no una sola: un pedido multi-destino
+# cotiza varias localidades en el mismo turno y cada una cobra SU tarifa (antes se
+# guardaba solo la ultima y dos destinos distintos cobraban dos veces la misma).
+_envio_localidades: ContextVar[list | None] = ContextVar(
+    "envio_localidades", default=None)
 
 
 def set_current_estado(estado: dict | None):
     """Setea el estado de venta del request. Lo llama el camino vivo al arrancar
-    el turno, despues de cargar la conversacion y el lead. Limpia la localidad de
-    envio del turno anterior para no arrastrar una cotizacion vieja."""
+    el turno, despues de cargar la conversacion y el lead. Limpia las localidades
+    de envio del turno anterior para no arrastrar una cotizacion vieja."""
     _current_estado.set(estado)
-    _envio_localidad.set(None)
+    _envio_localidades.set([])
 
 
 def set_envio_localidad(localidad: str | None):
-    """Guarda la localidad que cotizar_envio clasifico bien este turno, para que la
-    calculadora le pida el costo a la MISMA herramienta con el subtotal real."""
-    _envio_localidad.set((localidad or "").strip() or None)
+    """Suma la localidad que cotizar_envio clasifico bien este turno. Re-cotizar la
+    misma localidad (el cliente corrige o el solver repite) no crea otro destino:
+    se deduplica por texto y queda al final como la mas reciente."""
+    loc = (localidad or "").strip()
+    if not loc:
+        return
+    locs = [l for l in (_envio_localidades.get() or [])
+            if l.lower() != loc.lower()]
+    locs.append(loc)
+    _envio_localidades.set(locs)
 
 
 def get_envio_localidad() -> str | None:
-    """Localidad cotizada este turno, o None. La lee calculate_total para delegar el
-    costo de envio en cotizar_envio sin recalcular la zona."""
-    return _envio_localidad.get()
+    """Ultima localidad cotizada este turno, o None. Compatibilidad para quien
+    necesita UNA sola (pedido de un destino)."""
+    locs = _envio_localidades.get() or []
+    return locs[-1] if locs else None
+
+
+def get_envio_localidades() -> list[str]:
+    """Todas las localidades cotizadas con exito este turno, en orden. Las lee
+    calculate_total para cobrar cada destino de un multi-destino con su tarifa."""
+    return list(_envio_localidades.get() or [])
 
 
 def get_current_estado() -> dict:
