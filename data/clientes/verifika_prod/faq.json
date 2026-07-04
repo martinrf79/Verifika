@@ -12,7 +12,8 @@
     ],
     "respuesta": "Somos solo online, no tenemos local fisico. Despachamos desde Buenos Aires a todo el pais.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Somos una tienda 100 por ciento online, sin local fisico, y despachamos desde Buenos Aires a todo el pais. Vos elegis desde tu casa y te lo mandamos. Que estas buscando?"
   },
   {
     "tema": "horarios",
@@ -25,7 +26,8 @@
     ],
     "respuesta": "Atendemos de lunes a viernes de 9 a 18 hs y sabados de 10 a 13 hs por WhatsApp y mail.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Te atendemos de lunes a viernes de 9 a 18 hs y los sabados de 10 a 13 hs, por WhatsApp y mail. Igual dejame tu consulta ahora y la vamos resolviendo. En que te puedo ayudar?"
   },
   {
     "tema": "formas_pago",
@@ -40,7 +42,8 @@
     ],
     "respuesta": "Aceptamos transferencia bancaria, Mercado Pago, tarjetas de credito y debito Visa, Mastercard y American Express.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Aceptamos transferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express, credito o debito. Con transferencia ademas tenes descuento. Contame que producto te interesa y te paso el total con cada forma de pago."
   },
   {
     "tema": "cuotas",
@@ -84,7 +87,8 @@
     ],
     "respuesta": "Hacemos envios a todo el pais por Andreani y OCA.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Si, llegamos a todo el pais por Andreani y OCA. Pasame tu provincia o codigo postal y te digo la tarifa exacta y el plazo. A donde te lo mandariamos?"
   },
   {
     "tema": "costo_envio",
@@ -134,7 +138,33 @@
     ],
     "respuesta": "CABA y GBA 2 a 3 dias habiles desde el pago acreditado. Interior 4 a 7 dias habiles.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [
+      {
+        "concepto": "dias_caba_min",
+        "modalidad": "fijo",
+        "monto": 2,
+        "unidad": "dias"
+      },
+      {
+        "concepto": "dias_caba_max",
+        "modalidad": "fijo",
+        "monto": 3,
+        "unidad": "dias"
+      },
+      {
+        "concepto": "dias_interior_min",
+        "modalidad": "fijo",
+        "monto": 4,
+        "unidad": "dias"
+      },
+      {
+        "concepto": "dias_interior_max",
+        "modalidad": "fijo",
+        "monto": 7,
+        "unidad": "dias"
+      }
+    ],
+    "respuesta_curada": "Una vez acreditado el pago, a CABA y GBA llega en {{dias_caba_min}} a {{dias_caba_max}} dias habiles, y al interior en {{dias_interior_min}} a {{dias_interior_max}} dias habiles. Decime tu zona y te confirmo tambien el costo del envio."
   },
   {
     "tema": "garantia",
@@ -146,7 +176,16 @@
     ],
     "respuesta": "Todos los productos tienen garantia oficial del fabricante, minimo 6 meses. El detalle exacto figura en cada producto.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [
+      {
+        "concepto": "garantia_minima_meses",
+        "modalidad": "fijo",
+        "monto": 6,
+        "unidad": "meses",
+        "condicion": "minimo; el plazo exacto figura en cada producto"
+      }
+    ],
+    "respuesta_curada": "Todos nuestros productos son originales y tienen garantia oficial del fabricante, minimo {{garantia_minima_meses}} meses. El plazo exacto figura en cada producto: decime cual te interesa y te lo confirmo."
   },
   {
     "tema": "devoluciones",
@@ -163,7 +202,16 @@
     ],
     "respuesta": "Tenes 10 dias corridos desde la recepcion para arrepentirte. El producto debe estar sin uso y en su empaque original.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [
+      {
+        "concepto": "dias_devolucion",
+        "modalidad": "fijo",
+        "monto": 10,
+        "unidad": "dias",
+        "condicion": "corridos desde la recepcion, sin uso y en empaque original"
+      }
+    ],
+    "respuesta_curada": "Tenes {{dias_devolucion}} dias corridos desde que lo recibis para arrepentirte, con el producto sin uso y en su empaque original. Compras tranquilo. Queres que te ayude a elegir?"
   },
   {
     "tema": "factura",
@@ -176,7 +224,8 @@
     ],
     "respuesta": "Emitimos factura A y factura B segun corresponda. Todos los precios incluyen IVA.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Si, emitimos factura A o B segun corresponda, y todos los precios ya incluyen IVA. Si necesitas factura A, pasame tu CUIT al momento de comprar y listo."
   },
   {
     "tema": "descuento_transferencia",
@@ -212,7 +261,8 @@
     ],
     "respuesta": "Estamos en Instagram como arroba verifikademo y nuestra web es verifikademo.com.ar",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Nos encontras en Instagram como arroba verifikademo y en verifikademo.com.ar. Pero aca por chat te atiendo directo: decime que buscas y lo vemos ahora."
   },
   {
     "tema": "contacto_humano",
@@ -226,7 +276,8 @@
     ],
     "respuesta": "Para casos urgentes te podemos derivar al WhatsApp del encargado. Decime tu consulta y armamos el contacto.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Si, te puedo derivar con una persona del equipo. Contame brevemente tu consulta asi la paso con todo el contexto y te contactan a la brevedad."
   },
   {
     "tema": "asesoramiento",
@@ -239,7 +290,8 @@
     ],
     "respuesta": "Si, asesoramos antes de comprar por WhatsApp y chat. Contanos que necesitas y te ayudamos a elegir.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Claro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo."
   },
   {
     "tema": "reservas",
@@ -262,7 +314,8 @@
         "unidad": "porcentaje",
         "condicion": "sin stock"
       }
-    ]
+    ],
+    "respuesta_curada": "Si esta sin stock lo podemos reservar con una sena del {{sena_reserva}}. El plazo de reposicion depende del producto y el proveedor. Decime cual te interesa y te confirmo si conviene reservarlo."
   },
   {
     "tema": "marcas_originales",
@@ -275,7 +328,8 @@
     ],
     "respuesta": "Todas las marcas que vendemos son originales con garantia oficial del fabricante.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Todas las marcas que vendemos son originales, con garantia oficial del fabricante. Nada generico ni replica. Que producto estas mirando?"
   },
   {
     "tema": "usados",
@@ -287,7 +341,8 @@
     ],
     "respuesta": "No vendemos usados ni reacondicionados. Solo productos nuevos en su empaque original.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Vendemos unicamente productos nuevos, en su caja original sellada. No trabajamos usados ni reacondicionados. Te paso opciones nuevas de lo que buscas?"
   },
   {
     "tema": "precios_iva",
@@ -299,7 +354,8 @@
     ],
     "respuesta": "Todos los precios publicados ya incluyen IVA, son precios finales para consumidor final.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Los precios publicados son finales: ya incluyen IVA, sin sorpresas al pagar. Decime que producto estas mirando y te paso el total con envio incluido."
   },
   {
     "tema": "defectuoso",
@@ -311,7 +367,16 @@
     ],
     "respuesta": "Si el producto llega defectuoso lo cambiamos sin costo dentro de los primeros 7 dias desde la recepcion.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [
+      {
+        "concepto": "dias_cambio_defectuoso",
+        "modalidad": "fijo",
+        "monto": 7,
+        "unidad": "dias",
+        "condicion": "desde la recepcion"
+      }
+    ],
+    "respuesta_curada": "Quedate tranquilo: si llega defectuoso lo cambiamos sin costo, avisandonos dentro de los {{dias_cambio_defectuoso}} dias de recibido. Ademas todo tiene garantia oficial del fabricante."
   },
   {
     "tema": "envio_urgente",
@@ -325,7 +390,16 @@
     "respuesta": "Hacemos envios express en CABA y GBA con costo extra y entrega en 24 horas habiles.",
     "venta": "Si lo necesitas ya, el express en CABA y GBA te lo deja en 24 horas habiles. Lo coordinamos?",
     "tipo": "informativo",
-    "valores": []
+    "valores": [
+      {
+        "concepto": "horas_express",
+        "modalidad": "fijo",
+        "monto": 24,
+        "unidad": "horas",
+        "condicion": "habiles, solo CABA y GBA, costo extra"
+      }
+    ],
+    "respuesta_curada": "En CABA y GBA tenemos envio express con entrega en {{horas_express}} horas habiles, con un costo extra. Decime tu zona y que necesitas, y te lo cotizo."
   },
   {
     "tema": "mayoristas",
@@ -337,7 +411,8 @@
     ],
     "respuesta": "Para compras mayoristas o reventa tenemos precios especiales. Contanos cuanto pensas comprar y armamos cotizacion.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Si, para compras por cantidad o reventa tenemos precios especiales. Contame que productos y que cantidades pensas comprar y te armo una cotizacion mayorista."
   },
   {
     "tema": "formas_contacto",
@@ -350,7 +425,8 @@
     ],
     "respuesta": "Nos podes contactar por WhatsApp o mail. Atencion humana de lunes a viernes de 9 a 18 hs.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Nos podes escribir por WhatsApp o mail, y la atencion humana es de lunes a viernes de 9 a 18 hs. Igual decime tu consulta ahora y la resolvemos aca mismo."
   },
   {
     "tema": "envoltorio_regalo",
@@ -364,7 +440,8 @@
     ],
     "respuesta": "No tenemos servicio de envoltorio para regalo. De todos modos el producto viaja en su caja original sellada, prolijo para regalar. Si te sirve, puedo dejar una nota al despacho para que vaya sin el remito de precio a la vista.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "No tenemos envoltorio de regalo, pero el producto viaja en su caja original sellada, prolijo para regalar. Si es un regalo, avisame y pido que vaya sin el remito con el precio a la vista."
   },
   {
     "tema": "contenido_caja",
@@ -380,7 +457,8 @@
     ],
     "respuesta": "Cada producto viene en su caja original sellada con lo que indica el fabricante para ese modelo: el equipo y sus accesorios estandar. El detalle de lo que incluye figura en la ficha del producto. Si necesitas confirmar un accesorio puntual, decime cual y lo chequeo en el momento.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Cada producto viene en su caja original sellada con el equipo y los accesorios estandar del fabricante. El detalle exacto figura en la ficha. De que producto queres que te lo confirme?"
   },
   {
     "tema": "origen_procedencia",
@@ -394,7 +472,8 @@
     ],
     "respuesta": "Trabajamos con productos importados y nacionales segun la marca y el modelo. La procedencia de cada uno figura en la ficha del producto. Si no figura, te la confirmo en el momento, no te la invento.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Trabajamos productos importados y nacionales segun la marca y el modelo; la procedencia figura en la ficha de cada uno. Decime cual te interesa y te la confirmo, no te la invento."
   },
   {
     "tema": "material_composicion",
@@ -410,7 +489,8 @@
     ],
     "respuesta": "El material y la composicion dependen de cada modelo y figuran en las especificaciones de la ficha del producto. Si el dato puntual que buscas no esta ahi, te lo confirmo en el momento antes de que compres.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "El material y la composicion dependen del modelo y estan en las especificaciones de la ficha. Decime que producto miras y que dato necesitas y te lo confirmo antes de que compres."
   },
   {
     "tema": "fabricacion",
@@ -423,7 +503,8 @@
     ],
     "respuesta": "El pais de fabricacion varia segun la marca y figura en la ficha o en la caja cuando el fabricante lo informa. Si necesitas ese dato para un modelo puntual, decime cual y lo verifico antes de la compra.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "El pais de fabricacion varia segun la marca y figura en la ficha o en la caja cuando el fabricante lo informa. Pasame el modelo puntual y lo verifico antes de tu compra."
   },
   {
     "tema": "especificaciones",
@@ -439,7 +520,8 @@
     ],
     "respuesta": "Las especificaciones tecnicas completas figuran en la ficha de cada producto. Decime que modelo te interesa y que dato necesitas y te paso lo que esta publicado. Si un dato no figura, te lo confirmo en el momento.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Las especificaciones completas estan en la ficha de cada producto. Decime el modelo y el dato que te importa y te paso lo publicado; si algo no figura, lo confirmo antes de que compres."
   },
   {
     "tema": "compatibilidad",
@@ -453,7 +535,8 @@
     ],
     "respuesta": "Te ayudo a chequear la compatibilidad. Decime el producto que miras y con que lo queres usar y lo verifico contra lo que indica la ficha. Si la ficha no lo aclara, te lo confirmo en el momento antes de que compres, no te arriesgo un si sin estar seguro.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Te lo chequeo con gusto. Decime que producto estas mirando y con que lo queres usar, y lo verifico contra la ficha. Si ahi no lo aclara, lo confirmo antes de que compres; no te arriesgo un si sin estar seguro."
   },
   {
     "tema": "garantia_como_usar",
@@ -467,7 +550,8 @@
     ],
     "respuesta": "Si un producto falla dentro del periodo de garantia, escribinos con tu numero de pedido y una descripcion de la falla. Coordinamos el service oficial del fabricante o el cambio segun corresponda, sin costo de gestion de nuestra parte. El plazo de cada producto figura en su ficha, minimo 6 meses.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Si falla dentro de la garantia, escribinos con tu numero de pedido y una descripcion de la falla, y coordinamos el service oficial o el cambio segun corresponda, sin costo de gestion. El plazo de tu producto figura en su ficha."
   },
   {
     "tema": "stock_disponibilidad",
@@ -481,7 +565,8 @@
     ],
     "respuesta": "La disponibilidad la confirmo en el momento contra el catalogo. Decime que producto buscas y te digo si esta disponible. Si esta sin stock, podemos tomar reserva con sena del 20 por ciento.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "La disponibilidad te la confirmo al instante contra el catalogo real. Decime que producto buscas y te digo si hay stock; si esta agotado, lo podemos reservar con una sena."
   },
   {
     "tema": "embalaje_envio",
@@ -495,7 +580,16 @@
     ],
     "respuesta": "Embalamos cada pedido reforzado para el transporte y va asegurado durante el envio. Si por el traslado llegara danado, lo cambiamos sin costo avisandonos dentro de los primeros 7 dias desde la recepcion.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [
+      {
+        "concepto": "dias_aviso_dano",
+        "modalidad": "fijo",
+        "monto": 7,
+        "unidad": "dias",
+        "condicion": "desde la recepcion"
+      }
+    ],
+    "respuesta_curada": "Va embalado reforzado y asegurado durante todo el envio. Si llegara danado por el traslado, lo cambiamos sin costo avisandonos dentro de los {{dias_aviso_dano}} dias de recibido."
   },
   {
     "tema": "retiro_local",
@@ -510,7 +604,8 @@
     ],
     "respuesta": "Somos una tienda online, no tenemos punto de retiro. Todos los pedidos salen por envio a la direccion que nos indiques, a todo el pais.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Somos tienda online, sin punto de retiro: todo va por envio a la direccion que nos digas, a todo el pais. Pasame tu zona y te cotizo el envio en el momento."
   },
   {
     "tema": "reembolso",
@@ -525,7 +620,8 @@
     ],
     "respuesta": "Si te corresponde un reembolso por una devolucion aceptada, te lo reintegramos por el mismo medio de pago que usaste. El plazo depende del banco o la tarjeta; apenas recibimos el producto de vuelta gestionamos el reintegro y te confirmamos los tiempos.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Si corresponde reembolso por una devolucion aceptada, te reintegramos por el mismo medio con el que pagaste. Apenas recibimos el producto gestionamos el reintegro; el plazo final depende del banco o la tarjeta."
   },
   {
     "tema": "seguimiento_pedido",
@@ -540,7 +636,8 @@
     ],
     "respuesta": "Cuando despachamos tu pedido te mandamos el numero de seguimiento del correo, Andreani u OCA, para que lo rastrees online. Si no te llego, escribinos con tu numero de pedido y te lo pasamos.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Cuando despachamos te mandamos el numero de seguimiento de Andreani u OCA para rastrearlo online. Si no te llego, pasame tu numero de pedido y te lo reenvio."
   },
   {
     "tema": "cancelacion_pedido",
@@ -554,7 +651,8 @@
     ],
     "respuesta": "Podes cancelar el pedido sin costo mientras todavia no lo hayamos despachado. Escribinos cuanto antes con tu numero de pedido. Si ya salio, se gestiona como una devolucion.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Podes cancelar sin costo mientras el pedido no haya salido. Escribinos cuanto antes con tu numero de pedido; si ya se despacho, lo gestionamos como devolucion."
   },
   {
     "tema": "envio_exterior",
@@ -569,7 +667,8 @@
     ],
     "respuesta": "Por ahora hacemos envios solo dentro de Argentina. No despachamos al exterior.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Por ahora enviamos solo dentro de Argentina, no despachamos al exterior. Si tenes una direccion en el pais, te lo mandamos ahi sin problema."
   },
   {
     "tema": "confianza_seguridad",
@@ -588,7 +687,8 @@
     ],
     "respuesta": "Es una compra segura. Procesamos los pagos por Mercado Pago y medios bancarios oficiales, no manejamos los datos de tu tarjeta directamente, y todas nuestras marcas son originales con garantia oficial. Te acompanamos en todo el proceso por este canal.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Es una compra segura: los pagos van por Mercado Pago o medios bancarios oficiales, no manejamos los datos de tu tarjeta, y todas las marcas son originales con garantia oficial. Ademas te acompano por este canal en todo el proceso."
   },
   {
     "tema": "como_comprar",
@@ -603,7 +703,8 @@
     ],
     "respuesta": "Es facil: decime que producto te interesa y te paso el precio y las formas de pago. Coordinamos el pago por transferencia o Mercado Pago, y apenas se acredita despachamos el envio a tu direccion. Te voy guiando paso a paso.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Es simple: decime que producto te interesa y te paso precio y formas de pago. Pagas por transferencia o Mercado Pago y, acreditado el pago, despachamos a tu direccion. Te guio paso a paso. Arrancamos?"
   },
   {
     "tema": "pago_contra_entrega",
@@ -617,7 +718,8 @@
     ],
     "respuesta": "No trabajamos con pago contra entrega. El pedido se abona antes del despacho, por transferencia o Mercado Pago, y una vez acreditado lo enviamos.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "No trabajamos contra entrega: el pedido se abona antes del despacho, por transferencia o Mercado Pago. Apenas se acredita, sale el envio. Con transferencia ademas tenes descuento."
   },
   {
     "tema": "monedas_aceptadas",
@@ -638,7 +740,8 @@
     ],
     "respuesta": "Operamos solo en pesos argentinos. No aceptamos dolares en efectivo ni criptomonedas. El pago es por transferencia o Mercado Pago en pesos.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Operamos solo en pesos argentinos, por transferencia o Mercado Pago. No tomamos dolares en efectivo ni criptomonedas. Te paso el total en pesos de lo que estes mirando?"
   },
   {
     "tema": "datos_fiscales",
@@ -653,7 +756,8 @@
     ],
     "respuesta": "Emitimos factura A o B segun corresponda. Los datos fiscales para tu factura te los pasamos al momento de facturar, contra tu compra. Si necesitas factura A, avisanos tu CUIT y condicion frente al IVA.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Emitimos factura A o B segun corresponda; los datos fiscales te los pasamos al facturar tu compra. Si necesitas factura A, dejame tu CUIT y tu condicion frente al IVA."
   },
   {
     "tema": "cambios",
@@ -668,7 +772,16 @@
     ],
     "respuesta": "Si queres cambiar un producto sin uso y en su empaque original por otro modelo, tenes 10 dias corridos desde que lo recibis. Coordinamos el cambio y, si hay diferencia de precio, la ajustamos. Escribinos con tu numero de pedido.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [
+      {
+        "concepto": "dias_cambio",
+        "modalidad": "fijo",
+        "monto": 10,
+        "unidad": "dias",
+        "condicion": "corridos desde la recepcion, sin uso y en empaque original"
+      }
+    ],
+    "respuesta_curada": "Si, tenes {{dias_cambio}} dias corridos desde que lo recibis para cambiarlo por otro modelo, sin uso y en su empaque original. Si hay diferencia de precio la ajustamos. Pasame tu numero de pedido y lo coordinamos."
   },
   {
     "tema": "promociones",
@@ -682,6 +795,7 @@
     ],
     "respuesta": "Tenemos 10 por ciento de descuento pagando por transferencia y cuotas sin interes con tarjeta. Las promos puntuales por producto te las confirmo en el momento segun lo que estes mirando. Decime que buscas y te digo si tiene algo especial.",
     "tipo": "informativo",
-    "valores": []
+    "valores": [],
+    "respuesta_curada": "Hoy tenes descuento pagando por transferencia y cuotas sin interes con tarjeta. Las promos puntuales por producto te las confirmo segun lo que mires. Contame que buscas y te digo si tiene algo especial."
   }
 ]

@@ -98,8 +98,15 @@ def test_interp_caido_no_ataja(firestore_doble):
     assert r is None
 
 
-def test_tema_sin_curada_no_ataja(firestore_doble):
-    # 'horarios' no tiene respuesta_curada: va al camino normal.
+def test_tema_sin_curada_no_ataja(firestore_doble, monkeypatch):
+    # Un tema SIN respuesta_curada va al camino normal. Desde el 4-jul los 44
+    # temas reales estan curados, asi que el caso se arma con una FAQ sintetica.
+    import app.storage.firestore_client as fc
+    sin_curada = {"horarios": {"tema": "horarios",
+                               "keywords": ["horarios", "horario"],
+                               "respuesta": "de 9 a 18", "tipo": "informativo",
+                               "valores": []}}
+    monkeypatch.setattr(fc, "get_all_faq", lambda tienda_id=None: sin_curada)
     r = C.servir_curada("que horarios tienen?", _interp(), {},
                         pregunta_cierre_previa=False, tienda_id="verifika_prod")
     assert r is None
