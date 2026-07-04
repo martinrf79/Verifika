@@ -6,7 +6,7 @@ permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, ma
 **Última actualización: 4-jul-2026.** Multi-destino con tarifa REAL por destino (bug de la
 última tarifa repetida, arreglado), FAQ 44/44 curada aprobada por Martín, y ACOPLE: el bloque
 curado del tema consultado se pega en vertical a la prosa del solver (marcador `[[FAQ]]`
-retirado). 186 tests offline en verde. Todo lo de abajo está deployado y verificado en verde
+retirado). 191 tests offline en verde. Todo lo de abajo está deployado y verificado en verde
 salvo lo marcado como PENDIENTE. Estrategia vigente: respuestas curadas + bloques deterministas
 (el código es dueño de todo dato duro; el solver, de la prosa), acordada el 4-jul.
 
@@ -127,6 +127,15 @@ temas para que ningún número de política viva hardcodeado). Dos caminos de sa
   oración), sin duplicar si el solver pegó el texto tal cual. Lo decide el CÓDIGO, no un
   marcador: el marcador `[[FAQ]]` se RETIRÓ (consolidación). Evento:
   `interprete_libre_faq_acoplada`. Locks en `tests/test_acople.py`.
+- **ACOPLE POR RUTEO (4-jul, charla viva):** el bloque también dispara por el ruteo determinista
+  del MENSAJE (intérprete ve pregunta de política + keywords matchean tema curado), sin depender
+  de que el solver llame query_faq. Además el tema acoplado ANCLA al verificador de FAQ numérica.
+- **GUARDIA CON RED DETERMINISTA (4-jul, charla viva):** si la reescritura LLM de una promesa
+  prohibida falla (volvió VACÍA dos veces en real y una dirección de local inventada salió al
+  cliente) o deja la promesa, la CUARENTENA poda las líneas infractoras; sin mensaje decente,
+  canned. La negación con "sin" pegada al match ("sin punto de retiro") no dispara, así la
+  guardia no ataca a la propia curada. Verificado en vivo: el caso repetido salió limpio con el
+  bloque oficial. Eventos: `interprete_libre_promesa_cuarentena` / `_promesa_bloqueada`.
 **ACTIVACIÓN pendiente:** el runtime lee la FAQ de Firestore; hay que re-subir la FAQ del repo
 por `/admin/upload-faq` para que curadas y acople disparen en vivo. Hasta entonces el código
 deployado es inerte (sin el campo, siempre cae al camino normal del solver + verificadores).
