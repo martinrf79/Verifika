@@ -59,8 +59,8 @@ DATOS DE LA TIENDA — VENDE TRANQUILO: el sistema VERIFICA y CORRIGE todo dato 
 Para que salgan limpios tenes MARCADORES (usalos cuando puedas; es una ayuda, no una obligacion): donde pongas uno, el codigo estampa el dato real de la fuente:
 - [[PRESUPUESTO]] = total/subtotal/lista de precios de calculate_total.
 - [[ENVIO]] = costo de envio de cotizar_envio.
-- [[FAQ]] = una politica/respuesta de query_faq.
 - [[PROD:<id>]] = la linea real de un producto (nombre+precio+stock), con el id de search_products (ej [[PROD:TEC0020]]).
+POLITICAS (query_faq): cuando consultes la FAQ, el codigo pega la respuesta oficial de la tienda al final de tu mensaje. Vos escribi SOLO la parte de venta o el puente; NO re-escribas la politica ni repitas sus numeros.
 
 El interprete ya entendio al cliente y te pasa el ESTADO de la charla. Respetalo, no lo cambies vos:
 - explorando: mostra productos o precios con las tools.
@@ -112,25 +112,6 @@ def _presupuesto_de_meta(meta: dict) -> str:
             pres = (tc.get("result") or {}).get("presentacion")
             if pres:
                 return pres
-    return ""
-
-
-def _faq_de_meta(meta: dict) -> str:
-    """Respuesta VERBATIM del ultimo query_faq (texto cargado en Firestore) + las
-    relacionadas, para estampar una politica tal cual la fuente, sin que el solver
-    la parafrasee mal. "" si no hubo consulta de FAQ valida este turno."""
-    for tc in reversed((meta or {}).get("tools_called", []) or []):
-        if tc.get("name") != "query_faq":
-            continue
-        res = tc.get("result")
-        if not isinstance(res, dict) or not res.get("encontrada"):
-            continue
-        partes = [str(res.get("respuesta", "")).strip()]
-        for rel in res.get("relacionadas", []) or []:
-            r = str((rel or {}).get("respuesta", "")).strip()
-            if r:
-                partes.append(r)
-        return "\n".join(p for p in partes if p)
     return ""
 
 
@@ -418,7 +399,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     _marcadores = {
         "[[PRESUPUESTO]]": _present,
         "[[ENVIO]]": (f"Envio a {_env}" if _env else ""),
-        "[[FAQ]]": _faq_de_meta(meta),
+        # El marcador [[FAQ]] se retiro (consolidacion): la politica ahora entra
+        # SIEMPRE por el ACOPLE del bloque curado, decidido por el codigo, no por
+        # un marcador que el solver podia no poner. Uno que haya quedado en el
+        # texto se limpia como marcador sin dato.
+        "[[FAQ]]": "",
     }
     _tenia_marcador_presup = "[[PRESUPUESTO]]" in (respuesta or "")
     for _marca, _bloque in _marcadores.items():
@@ -443,6 +428,25 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     if "[[PROD:" in (respuesta or ""):
         respuesta = _estampar_productos(respuesta, tienda_id, trace_id)
         log.info("interprete_libre_productos_estampados", trace_id=trace_id)
+
+    # ── ACOPLE CURADO de FAQ (reemplaza al marcador [[FAQ]]) ────────────────
+    # Si el turno consulto la FAQ, la politica sale del BLOQUE curado del tema
+    # (texto aprobado por la tienda con los numeros estampados de los valores),
+    # pegado en VERTICAL debajo de la prosa del solver. Lo decide el CODIGO por
+    # el query_faq del turno, no un marcador que el solver podia no poner. Un
+    # solo cierre por mensaje y sin duplicar si el solver pego el texto tal
+    # cual. Corre antes de los verificadores, que auditan el mensaje final.
+    if not respuesta_curada_servida and respuesta != settings.FALLBACK_MESSAGE:
+        try:
+            from app.core.curadas import bloque_curado_de_meta, acoplar_bloque
+            _bc = bloque_curado_de_meta(meta, tienda_id)
+            if _bc:
+                respuesta = acoplar_bloque(respuesta, _bc[1])
+                log.info("interprete_libre_faq_acoplada", trace_id=trace_id,
+                         tema=_bc[0])
+        except Exception as e:
+            log.warning("interprete_libre_acople_error", trace_id=trace_id,
+                        error=str(e)[:120])
 
     # ── PASO 2a: FILTRO DETERMINISTA — CLON DEL MOTOR DE PRECIOS/ENVIO ──────
     # Partida doble de la verdad. Las herramientas deterministas (calculadora,

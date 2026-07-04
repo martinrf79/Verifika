@@ -89,6 +89,61 @@ def estampar_valores(texto: str, faq_tema: dict) -> str | None:
     return out
 
 
+def bloque_curado_de_meta(meta: dict, tienda_id: str) -> tuple[str, str] | None:
+    """ACOPLE: (tema, bloque estampado) del ultimo query_faq del turno cuyo tema
+    tiene respuesta_curada. Es la fuente del bloque de politica que se pega en
+    vertical a la prosa del solver cuando la pregunta de FAQ llega DENTRO de una
+    venta (el atajo standalone servir_curada no aplica ahi). None si el turno no
+    consulto FAQ, el tema no esta curado o algun hueco no estampa."""
+    for tc in reversed((meta or {}).get("tools_called", []) or []):
+        if tc.get("name") != "query_faq":
+            continue
+        res = tc.get("result")
+        if not isinstance(res, dict) or not res.get("encontrada"):
+            continue
+        tema = str(res.get("tema") or "").strip()
+        if not tema:
+            return None
+        from app.storage.firestore_client import get_all_faq
+        data = (get_all_faq(tienda_id=tienda_id) or {}).get(tema) or {}
+        texto = str(data.get("respuesta_curada") or "").strip()
+        if not texto:
+            return None
+        estampada = estampar_valores(texto, data)
+        return (tema, estampada) if estampada else None
+    return None
+
+
+# Gancho final de un bloque curado: la ultima oracion interrogativa. Se recorta
+# cuando la prosa del solver ya cierra con SU pregunta (un solo cierre por
+# mensaje). Corte por ORACION entera, nunca cirugia adentro de una.
+_GANCHO_FINAL_RE = re.compile(r"[^.?!\n]+\?\s*$")
+
+
+def acoplar_bloque(prosa: str, bloque: str) -> str:
+    """Composicion VERTICAL: prosa del solver arriba, bloque curado abajo como
+    parrafo propio. La costura es un salto de linea, no una conjuncion, asi la
+    gramatica no puede quedar mal. Reglas deterministas:
+      - si el bloque ya esta pegado tal cual en la prosa, no se duplica;
+      - un solo cierre: si la prosa termina preguntando, el gancho final del
+        bloque (su ultima oracion interrogativa) se recorta;
+      - prosa vacia -> sale el bloque solo."""
+    prosa = (prosa or "").strip()
+    bloque = (bloque or "").strip()
+    if not bloque:
+        return prosa
+    if not prosa:
+        return bloque
+    # El solver pego la curada verbatim (se compara sin el gancho, por si la
+    # copio recortada): no se duplica.
+    nucleo = _GANCHO_FINAL_RE.sub("", bloque).strip()
+    if nucleo and nucleo in prosa:
+        return prosa
+    if prosa.endswith("?") and nucleo:
+        bloque = nucleo
+    return prosa + "\n\n" + bloque
+
+
 def servir_curada(mensaje: str, interp: dict | None, estado: dict | None,
                   pregunta_cierre_previa: bool, tienda_id: str,
                   ) -> tuple[str, str] | None:

@@ -3,10 +3,12 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 3-jul-2026 (segunda sesión).** Blindaje por campo extendido a STOCK y
-FAQ NUMÉRICA, la pregunta de cierre manda sobre el score, y envío gratis multi-destino por
-destino. 153 tests offline en verde (122 + 31 nuevos). Todo lo de abajo está deployado y
-verificado en verde salvo lo marcado como PENDIENTE.
+**Última actualización: 4-jul-2026.** Multi-destino con tarifa REAL por destino (bug de la
+última tarifa repetida, arreglado), FAQ 44/44 curada aprobada por Martín, y ACOPLE: el bloque
+curado del tema consultado se pega en vertical a la prosa del solver (marcador `[[FAQ]]`
+retirado). 186 tests offline en verde. Todo lo de abajo está deployado y verificado en verde
+salvo lo marcado como PENDIENTE. Estrategia vigente: respuestas curadas + bloques deterministas
+(el código es dueño de todo dato duro; el solver, de la prosa), acordada el 4-jul.
 
 ---
 
@@ -113,15 +115,21 @@ rutea bien). Locks en `tests/test_faq.py`.
 **FAQ NUMÉRICA cubierta (3-jul):** `verificador_faq.py` chequea los números de política (%,
 cuotas, días, meses, horas) contra la fuente y corrige anclado al tema consultado (ver pipeline
 4-ter). Locks en `tests/test_faq_numerica.py`.
-**RESPUESTAS CURADAS (3-jul, `curadas.py`):** patrón "LLM compila offline, runtime determinista".
-Temas con `respuesta_curada` en faq.json (texto aprobado por Martín, números como huecos
-`{{concepto}}` estampados desde los valores): si la pregunta es PURA de política (ruteo por
-keywords + intérprete sin producto/carrito/cierre pendiente), sale ese texto TAL CUAL y el
-solver NI CORRE — cero alucinación posible y turno más barato. Ante cualquier duda cae al camino
-normal. Cargadas: costo_envio, descuento_transferencia, cuotas. Evento: `interprete_libre_curada_servida`.
+**RESPUESTAS CURADAS 44/44 (4-jul, `curadas.py`):** patrón "LLM compila offline, runtime
+determinista". Los 44 temas de faq.json tienen `respuesta_curada` aprobada por Martín (números
+como huecos `{{concepto}}` estampados desde los valores del MISMO tema; 10 valores nuevos en 7
+temas para que ningún número de política viva hardcodeado). Dos caminos de salida:
+- **Standalone** (pregunta PURA de política, sin producto/carrito/cierre): sale la curada TAL
+  CUAL y el solver NI CORRE. Evento: `interprete_libre_curada_servida`.
+- **ACOPLE (4-jul):** si la FAQ se consulta DENTRO de una venta (query_faq del turno), el bloque
+  curado del tema se pega en VERTICAL debajo de la prosa del solver: costura por salto de línea,
+  un solo cierre por mensaje (si la prosa ya pregunta, el gancho del bloque se recorta por
+  oración), sin duplicar si el solver pegó el texto tal cual. Lo decide el CÓDIGO, no un
+  marcador: el marcador `[[FAQ]]` se RETIRÓ (consolidación). Evento:
+  `interprete_libre_faq_acoplada`. Locks en `tests/test_acople.py`.
 **ACTIVACIÓN pendiente:** el runtime lee la FAQ de Firestore; hay que re-subir la FAQ del repo
-(`scripts/crear_cliente.py` ya carga `respuesta_curada`) para que el atajo dispare en vivo.
-Hasta entonces el código deployado es inerte (sin el campo, siempre cae al camino normal).
+por `/admin/upload-faq` para que curadas y acople disparen en vivo. Hasta entonces el código
+deployado es inerte (sin el campo, siempre cae al camino normal del solver + verificadores).
 
 ---
 
