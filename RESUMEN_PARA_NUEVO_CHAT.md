@@ -136,9 +136,13 @@ temas para que ningún número de política viva hardcodeado). Dos caminos de sa
   canned. La negación con "sin" pegada al match ("sin punto de retiro") no dispara, así la
   guardia no ataca a la propia curada. Verificado en vivo: el caso repetido salió limpio con el
   bloque oficial. Eventos: `interprete_libre_promesa_cuarentena` / `_promesa_bloqueada`.
-**ACTIVACIÓN pendiente:** el runtime lee la FAQ de Firestore; hay que re-subir la FAQ del repo
-por `/admin/upload-faq` para que curadas y acople disparen en vivo. Hasta entonces el código
-deployado es inerte (sin el campo, siempre cae al camino normal del solver + verificadores).
+**ACTIVADO EN VIVO (4-jul):** Martín cargó la FAQ 44/44 a Firestore desde Cloud Shell
+(`.venv-shell/bin/python scripts/crear_cliente.py cargar_faq --tienda_id verifika_prod --faq
+data/clientes/verifika_prod/faq.json` → "OK 44 preguntas cargadas"). Curadas y acople VIVOS en
+producción. Nota: el Python global de Cloud Shell tiene el namespace google.cloud roto; usar
+SIEMPRE el venv `.venv-shell` de ~/verifika para scripts con Firestore. PENDIENTE: validar en
+charla real de WhatsApp (curada pura, acople en venta, retiro de local) leyendo los eventos
+`interprete_libre_curada_servida`, `_faq_acoplada`, `_promesa_cuarentena`.
 
 ---
 
