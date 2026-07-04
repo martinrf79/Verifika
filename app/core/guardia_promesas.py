@@ -85,9 +85,14 @@ _NEG_POLITICA = re.compile(
 
 def _negado(texto: str, start: int) -> bool:
     """True si el disparo viene dentro de una negacion de politica de la tienda
-    ('no hacemos instalacion'): es honestidad, no una promesa. Mira la ventana
-    corta antes del match, asi una negacion lejana e inconexa no lo tapa."""
-    return bool(_NEG_POLITICA.search(texto[max(0, start - 30):start]))
+    ('no hacemos instalacion', 'sin punto de retiro'): es honestidad, no una
+    promesa. Mira la ventana corta antes del match, asi una negacion lejana e
+    inconexa no lo tapa. El 'sin' solo cuenta pegado al match ('tienda online,
+    sin punto de retiro'), no un 'sin problema' cualquiera en la oracion."""
+    ventana = texto[max(0, start - 30):start]
+    if _NEG_POLITICA.search(ventana):
+        return True
+    return bool(re.search(r"\bsin\s*$", ventana, re.IGNORECASE))
 
 
 def detectar(respuesta: str) -> list[str]:
@@ -105,6 +110,19 @@ def detectar(respuesta: str) -> list[str]:
                 clases.append(clase)
                 break
     return clases
+
+
+def cuarentena_prohibidas(texto: str) -> str:
+    """Red DETERMINISTA para cuando el editor LLM falla (respuesta vacia) o deja
+    la promesa: elimina las LINEAS del mensaje donde la deteccion dispara. La
+    linea ENTERA, no la palabra: el detalle que acompana la promesa (direccion
+    inventada, horario del local) es parte de la misma invencion y no hay regex
+    que lo cubra. Puede devolver '' si todo el mensaje era la promesa; el
+    llamador decide el fallback final. Visto en real 4-jul: DeepSeek devolvio
+    la reescritura vacia dos veces y una direccion inventada salio al cliente."""
+    lineas = (texto or "").split("\n")
+    limpias = [l for l in lineas if not detectar(l)]
+    return "\n".join(limpias).strip()
 
 
 # ── REESCRITURA (una sola llamada al LLM, solo si disparo) ───────────────────

@@ -114,6 +114,35 @@ def bloque_curado_de_meta(meta: dict, tienda_id: str) -> tuple[str, str] | None:
     return None
 
 
+def bloque_curado_por_mensaje(mensaje: str, interp: dict | None,
+                              tienda_id: str) -> tuple[str, str] | None:
+    """ACOPLE SIN TOOL-CALL: el bloque curado disparado por el RUTEO determinista
+    del MENSAJE del cliente, sin depender de que el solver haya llamado query_faq
+    (hueco real 4-jul: 'tienen local para retirar?' en medio de una venta, el
+    solver no consulto la FAQ e invento un local con direccion). Mismo gate de
+    intencion que el atajo standalone (pregunta de politica segun el interprete),
+    pero SIN las restricciones de venta: aca el bloque acompana a la prosa, no la
+    reemplaza. None si el interprete no ve una pregunta o el ruteo no matchea un
+    tema curado."""
+    if not isinstance(interp, dict) or not interp:
+        return None
+    if interp.get("intencion") not in _INTENCIONES_FAQ:
+        return None
+    from app.storage.firestore_client import get_all_faq
+    from app.core.tools import _faq_ranking_palabras
+    faq = get_all_faq(tienda_id=tienda_id) or {}
+    ranking = _faq_ranking_palabras(mensaje or "", faq)
+    if not ranking:
+        return None
+    tema = ranking[0][1]
+    data = faq.get(tema) or {}
+    texto = str(data.get("respuesta_curada") or "").strip()
+    if not texto:
+        return None
+    estampada = estampar_valores(texto, data)
+    return (tema, estampada) if estampada else None
+
+
 # Gancho final de un bloque curado: la ultima oracion interrogativa. Se recorta
 # cuando la prosa del solver ya cierra con SU pregunta (un solo cierre por
 # mensaje). Corte por ORACION entera, nunca cirugia adentro de una.

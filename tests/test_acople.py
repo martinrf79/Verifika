@@ -79,3 +79,24 @@ def test_sin_query_faq_no_hay_bloque(firestore_doble):
 def test_tema_inexistente_no_hay_bloque(firestore_doble):
     assert C.bloque_curado_de_meta(
         _meta_faq("tema_que_no_existe"), "verifika_prod") is None
+
+
+# ── Bloque por RUTEO del mensaje: no depende del query_faq del solver ────────
+
+def test_bloque_por_mensaje_sin_toolcall(firestore_doble):
+    # 'tienen local para retirar?' en medio de una venta: el solver no llamo
+    # query_faq, pero el interprete ve pregunta y el ruteo matchea retiro_local.
+    interp = {"intencion": "pregunta_especifica", "confianza": 0.9}
+    bc = C.bloque_curado_por_mensaje(
+        "tienen local para retirar?", interp, "verifika_prod")
+    assert bc is not None
+    tema, bloque = bc
+    assert tema == "retiro_local"
+    assert "sin punto de retiro" in bloque
+
+
+def test_bloque_por_mensaje_respeta_intencion(firestore_doble):
+    # Con intencion de compra no se rutea bloque: el turno es de venta pura.
+    interp = {"intencion": "decision_compra", "confianza": 0.9}
+    assert C.bloque_curado_por_mensaje(
+        "dale lo quiero, retiro yo?", interp, "verifika_prod") is None

@@ -436,14 +436,22 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # el query_faq del turno, no un marcador que el solver podia no poner. Un
     # solo cierre por mensaje y sin duplicar si el solver pego el texto tal
     # cual. Corre antes de los verificadores, que auditan el mensaje final.
+    tema_acoplado = ""
     if not respuesta_curada_servida and respuesta != settings.FALLBACK_MESSAGE:
         try:
-            from app.core.curadas import bloque_curado_de_meta, acoplar_bloque
-            _bc = bloque_curado_de_meta(meta, tienda_id)
+            from app.core.curadas import (
+                bloque_curado_de_meta, bloque_curado_por_mensaje, acoplar_bloque)
+            # Doble ancla: primero el query_faq que el solver llamo; si no llamo
+            # ninguno pero el interprete ve una pregunta de politica y el ruteo
+            # matchea un tema curado, el bloque va IGUAL (el codigo decide, no
+            # depende de la obediencia del solver).
+            _bc = (bloque_curado_de_meta(meta, tienda_id)
+                   or bloque_curado_por_mensaje(raw_message, interp, tienda_id))
             if _bc:
                 respuesta = acoplar_bloque(respuesta, _bc[1])
+                tema_acoplado = _bc[0]
                 log.info("interprete_libre_faq_acoplada", trace_id=trace_id,
-                         tema=_bc[0])
+                         tema=tema_acoplado)
         except Exception as e:
             log.warning("interprete_libre_acople_error", trace_id=trace_id,
                         error=str(e)[:120])
@@ -625,9 +633,16 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         try:
             from app.core.verificador_faq import (
                 autocorregir_faq_numerica, temas_de_meta)
+            # El tema del bloque ACOPLADO tambien ancla: si el codigo pego la
+            # politica oficial de un tema, un numero de la prosa del solver que
+            # la contradiga se juzga contra ESE tema aunque el solver no haya
+            # llamado query_faq (visto en real 4-jul: '3 a 5 dias' inventado).
+            _temas_turno = temas_de_meta(meta)
+            if tema_acoplado and tema_acoplado not in _temas_turno:
+                _temas_turno.append(tema_acoplado)
             _fix_faq = autocorregir_faq_numerica(
                 respuesta, evidencia,
-                temas_consultados=temas_de_meta(meta), trace_id=trace_id)
+                temas_consultados=_temas_turno, trace_id=trace_id)
             if _fix_faq["cambiada"] and _fix_faq["verificacion"]["ok"]:
                 log.warning("interprete_libre_faq_numerica_corregida",
                             trace_id=trace_id,
@@ -651,21 +666,36 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # al modelo y SOLO en los turnos que disparan, no en todos.
     if respuesta != settings.FALLBACK_MESSAGE:
         try:
-            from app.core.guardia_promesas import detectar, reescribir_sin_promesas
+            from app.core.guardia_promesas import (
+                detectar, reescribir_sin_promesas, cuarentena_prohibidas)
             clases = detectar(respuesta)
             if clases:
                 log.warning("interprete_libre_promesa_prohibida", trace_id=trace_id,
                             clases=clases, respuesta_preview=respuesta[:200])
-                nueva = await reescribir_sin_promesas(respuesta, clases, trace_id)
-                if nueva:
-                    quedan = detectar(nueva)
+                nueva = ""
+                try:
+                    nueva = await reescribir_sin_promesas(respuesta, clases, trace_id)
+                except Exception as e:
+                    log.warning("interprete_libre_reescritura_error",
+                                trace_id=trace_id, error=str(e)[:120])
+                if nueva and not detectar(nueva):
                     respuesta = nueva
-                    if quedan:
-                        log.warning("interprete_libre_promesa_persiste",
-                                    trace_id=trace_id, clases=quedan)
+                    log.info("interprete_libre_promesa_reescrita",
+                             trace_id=trace_id, clases=clases)
+                else:
+                    # Red DETERMINISTA (hueco real 4-jul: el editor devolvio vacio
+                    # y una direccion inventada salio al cliente). Se podan las
+                    # lineas con promesa; si no queda mensaje decente, canned.
+                    poda = cuarentena_prohibidas(nueva or respuesta)
+                    if poda and not detectar(poda):
+                        respuesta = poda
+                        log.warning("interprete_libre_promesa_cuarentena",
+                                    trace_id=trace_id, clases=clases,
+                                    respuesta_preview=poda[:200])
                     else:
-                        log.info("interprete_libre_promesa_reescrita",
-                                 trace_id=trace_id, clases=clases)
+                        respuesta = settings.VERIFIKA_FALLBACK_MESSAGE
+                        log.warning("interprete_libre_promesa_bloqueada",
+                                    trace_id=trace_id, clases=clases)
         except Exception as e:
             log.warning("interprete_libre_guardia_error", trace_id=trace_id,
                         error=str(e)[:160])
