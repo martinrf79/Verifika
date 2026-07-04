@@ -100,3 +100,43 @@ def test_bloque_por_mensaje_respeta_intencion(firestore_doble):
     interp = {"intencion": "decision_compra", "confianza": 0.9}
     assert C.bloque_curado_por_mensaje(
         "dale lo quiero, retiro yo?", interp, "verifika_prod") is None
+
+
+# ── Pertinencia del bloque (charla viva 4-jul): cuando NO va ─────────────────
+
+def test_gancho_se_recorta_con_pregunta_en_el_medio():
+    # El solver suele preguntar con lista numerada en el medio, sin cerrar
+    # con "?": igual es UNA pregunta del mensaje y el gancho del bloque sobra.
+    prosa = "Decime:\n1. ¿A que CP la mandamos?\n2. Como pagas (transferencia)."
+    bloque = "Tenes 10 dias corridos para arrepentirte. Queres que te ayude?"
+    out = C.acoplar_bloque(prosa, bloque)
+    assert "Queres que te ayude?" not in out
+    assert "arrepentirte." in out
+
+
+def test_tool_del_dominio_cubre_el_tema():
+    meta = {"tools_called": [
+        {"name": "cotizar_envio", "result": {"ok": True, "monto": 6000}},
+        {"name": "calculate_total", "result": {"ok": True, "detalle": [{}]}},
+    ]}
+    cubiertos = C.temas_cubiertos_por_tools(meta)
+    assert "envios" in cubiertos and "costo_envio" in cubiertos
+    assert "descuento_transferencia" in cubiertos
+    assert "devoluciones" not in cubiertos
+
+
+def test_tool_fallida_no_cubre():
+    meta = {"tools_called": [{"name": "cotizar_envio", "result": {"ok": False}}]}
+    assert C.temas_cubiertos_por_tools(meta) == set()
+
+
+def test_solapa_prosa_detecta_parafraseo():
+    bloque = ("Aceptamos transferencia bancaria, Mercado Pago y tarjetas Visa, "
+              "Mastercard y American Express, credito o debito. Con transferencia "
+              "ademas tenes descuento. Contame que producto te interesa y te paso "
+              "el total con cada forma de pago.")
+    prosa = ("Las formas de pago son: transferencia bancaria (con descuento), "
+             "Mercado Pago con tarjeta de credito o debito Visa, Mastercard o "
+             "American Express. Todo en pesos.")
+    assert C.solapa_prosa(prosa, bloque)
+    assert not C.solapa_prosa("Buenisima eleccion, el mouse anda muy bien.", bloque)

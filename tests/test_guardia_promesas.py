@@ -61,3 +61,35 @@ def test_negacion_con_sin_no_dispara():
                     "envio a la direccion que nos digas.") == []
     # Un 'sin' inconexo no tapa una promesa real.
     assert detectar("Sin problema, podes pasar a retirar por el local.") != []
+
+
+# ── Datos de pago fabricados (visto en real 4-jul: CBU y alias inventados) ───
+
+def test_detecta_cbu_alias_y_titular_inventados():
+    from app.core.guardia_promesas import detectar
+    msg = ("Te paso los datos para la transferencia:\n"
+           "- Banco: Santander Rio\n"
+           "- Titular: Verifika S.A.\n"
+           "- CBU: 0720075488000001234567\n"
+           "- Alias: VERIFIKA.TRANSFERENCIA\n"
+           "- Monto exacto: $237.000")
+    assert "datos_pago" in detectar(msg)
+
+
+def test_promesa_inocente_de_cbu_no_dispara():
+    from app.core.guardia_promesas import detectar
+    assert detectar("Apenas confirmes, te paso el CBU para transferir.") == []
+    assert detectar("Te mando los datos de la cuenta al cerrar el pedido.") == []
+
+
+def test_cuarentena_poda_el_bloque_bancario_entero():
+    from app.core.guardia_promesas import cuarentena_prohibidas
+    msg = ("Perfecto, vamos con eso!\n"
+           "Banco: Santander Rio\n"
+           "Titular: Verifika S.A.\n"
+           "CBU: 0720075488000001234567\n"
+           "Alias: VERIFIKA.PAGO\n"
+           "Decime tu nombre completo para armar el pedido.")
+    out = cuarentena_prohibidas(msg)
+    assert "0720" not in out and "Santander" not in out and "VERIFIKA.PAGO" not in out
+    assert "Perfecto" in out and "nombre completo" in out

@@ -448,10 +448,27 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             _bc = (bloque_curado_de_meta(meta, tienda_id)
                    or bloque_curado_por_mensaje(raw_message, interp, tienda_id))
             if _bc:
-                respuesta = acoplar_bloque(respuesta, _bc[1])
-                tema_acoplado = _bc[0]
-                log.info("interprete_libre_faq_acoplada", trace_id=trace_id,
-                         tema=tema_acoplado)
+                from app.core.curadas import solapa_prosa, temas_cubiertos_por_tools
+                from app.storage.firestore_client import get_all_faq as _gaf
+                _tema_bc, _bloque_bc = _bc
+                _tiene_valores = bool(
+                    ((_gaf(tienda_id=tienda_id) or {}).get(_tema_bc) or {}).get("valores"))
+                # Pertinencia (vista en real 4-jul): el bloque NO va cuando una
+                # tool del mismo dominio ya dio la respuesta concreta (envio
+                # cotizado, descuento en el total), ni cuando la prosa ya dice
+                # lo mismo Y el tema es de texto puro. Un tema con numeros
+                # lleva SIEMPRE su bloque: el numero oficial no se negocia.
+                if _tema_bc in temas_cubiertos_por_tools(meta):
+                    log.info("interprete_libre_acople_salteado", trace_id=trace_id,
+                             tema=_tema_bc, motivo="tool_cubre")
+                elif not _tiene_valores and solapa_prosa(respuesta, _bloque_bc):
+                    log.info("interprete_libre_acople_salteado", trace_id=trace_id,
+                             tema=_tema_bc, motivo="prosa_solapa")
+                else:
+                    respuesta = acoplar_bloque(respuesta, _bloque_bc)
+                    tema_acoplado = _tema_bc
+                    log.info("interprete_libre_faq_acoplada", trace_id=trace_id,
+                             tema=tema_acoplado)
         except Exception as e:
             log.warning("interprete_libre_acople_error", trace_id=trace_id,
                         error=str(e)[:120])
@@ -637,9 +654,9 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             # politica oficial de un tema, un numero de la prosa del solver que
             # la contradiga se juzga contra ESE tema aunque el solver no haya
             # llamado query_faq (visto en real 4-jul: '3 a 5 dias' inventado).
-            _temas_turno = temas_de_meta(meta)
-            if tema_acoplado and tema_acoplado not in _temas_turno:
-                _temas_turno.append(tema_acoplado)
+            _temas_turno = set(temas_de_meta(meta))
+            if tema_acoplado:
+                _temas_turno.add(tema_acoplado)
             _fix_faq = autocorregir_faq_numerica(
                 respuesta, evidencia,
                 temas_consultados=_temas_turno, trace_id=trace_id)

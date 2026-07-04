@@ -61,6 +61,19 @@ _RE_RETIRO = re.compile(
     r"en\s+(?:el|nuestro)\s+local|en\s+la\s+sucursal|showroom|punto\s+de\s+retiro)",
     re.IGNORECASE)
 
+# Datos de PAGO fabricados (visto en real 4-jul: el solver invento banco,
+# titular, CBU y alias completos). Los datos de pago REALES los emite SOLO el
+# codigo del cierre (pago.py), nunca el solver. Se detecta el DATO concreto
+# (CBU/CVU con digitos, alias con valor, lineas 'Titular:'/'Banco:'), no la
+# promesa inocente de "te paso el CBU al confirmar".
+_RE_DATOS_PAGO = re.compile(
+    r"\b\d{22}\b"
+    r"|\b(?:cbu|cvu)\b\W{0,4}\d{4,}"
+    r"|\balias\b\W{0,4}[\w\-]+(?:\.[\w\-]+)+"
+    r"|\btitular\s*:\s*\S+"
+    r"|\bbanco\s*:\s*\S+",
+    re.IGNORECASE)
+
 _RE_SERVICIOS = re.compile(
     r"envoltori\w*|envolv\w*\s+(?:para|de)\s+regalo|envuelt\w*\s+(?:para|de)?\s*regalo|"
     r"papel\w*\s+de?\s*regalo|papelit\w*|"
@@ -104,7 +117,8 @@ def detectar(respuesta: str) -> list[str]:
     clases = []
     for clase, rx in (("dia_entrega", _RE_DIA_ENTREGA),
                       ("retiro_local", _RE_RETIRO),
-                      ("servicio_no_ofrecido", _RE_SERVICIOS)):
+                      ("servicio_no_ofrecido", _RE_SERVICIOS),
+                      ("datos_pago", _RE_DATOS_PAGO)):
         for m in rx.finditer(respuesta):
             if not _negado(respuesta, m.start()):
                 clases.append(clase)
@@ -135,6 +149,10 @@ _INSTR = {
     "servicio_no_ofrecido": ("no prometas servicios que no ofrecemos como envoltorio "
                              "o nota de regalo, instalacion, armado o entrega en mano: "
                              "decilo con honestidad y pivotea a lo que si hacemos"),
+    "datos_pago": ("elimina TODO dato bancario (banco, titular, CBU, CVU, alias, "
+                   "numero de cuenta): NO los tenes vos, son inventados. Deci que al "
+                   "confirmar el pedido se le envian los datos de pago oficiales por "
+                   "este mismo canal"),
 }
 
 _client = None

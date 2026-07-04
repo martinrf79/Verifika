@@ -149,6 +149,46 @@ def bloque_curado_por_mensaje(mensaje: str, interp: dict | None,
 _GANCHO_FINAL_RE = re.compile(r"[^.?!\n]+\?\s*$")
 
 
+def _raices(s: str) -> set[str]:
+    """Raices (5 letras) de las palabras largas del texto, sin acentos. Para
+    comparar si dos textos dicen lo mismo tolerando conjugaciones."""
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(s or "").lower())
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    return {w[:5] for w in re.findall(r"[a-zñ]+", s) if len(w) >= 5}
+
+
+def solapa_prosa(prosa: str, bloque: str) -> bool:
+    """True si la prosa del solver YA dice lo que dice el bloque (60% de las
+    raices largas del bloque aparecen en la prosa): pegarlo seria repetir la
+    politica dos veces. SOLO se usa para temas SIN valores (texto puro); un
+    tema numerico lleva SIEMPRE su bloque, el numero oficial no se negocia."""
+    raices_b = _raices(_GANCHO_FINAL_RE.sub("", bloque or ""))
+    if not raices_b:
+        return False
+    raices_p = _raices(prosa)
+    return len(raices_b & raices_p) / len(raices_b) >= 0.6
+
+
+def temas_cubiertos_por_tools(meta: dict) -> set[str]:
+    """Temas de FAQ cuya respuesta CONCRETA ya la dio una herramienta
+    determinista este turno: pegarles el bloque generico encima es ruido
+    (visto en real 4-jul: presupuesto completo con envio cotizado + bloque
+    'pasame tu provincia y te digo la tarifa'). cotizar_envio ok cubre los
+    temas de envio; calculate_total ok cubre envio y descuento (ya integrados
+    al total renderizado)."""
+    cubiertos: set[str] = set()
+    for tc in (meta or {}).get("tools_called", []) or []:
+        res = tc.get("result")
+        if not isinstance(res, dict) or not res.get("ok"):
+            continue
+        if tc.get("name") == "cotizar_envio":
+            cubiertos |= {"envios", "costo_envio"}
+        elif tc.get("name") == "calculate_total":
+            cubiertos |= {"envios", "costo_envio", "descuento_transferencia"}
+    return cubiertos
+
+
 def acoplar_bloque(prosa: str, bloque: str) -> str:
     """Composicion VERTICAL: prosa del solver arriba, bloque curado abajo como
     parrafo propio. La costura es un salto de linea, no una conjuncion, asi la
@@ -168,7 +208,10 @@ def acoplar_bloque(prosa: str, bloque: str) -> str:
     nucleo = _GANCHO_FINAL_RE.sub("", bloque).strip()
     if nucleo and nucleo in prosa:
         return prosa
-    if prosa.endswith("?") and nucleo:
+    # Un solo cierre por mensaje: si la prosa YA pregunta algo (donde sea, el
+    # solver suele preguntar en el medio con lista numerada), el gancho final
+    # del bloque se recorta. Visto en real 4-jul: quedaban dos pedidos.
+    if nucleo and ("?" in prosa or "¿" in prosa):
         bloque = nucleo
     return prosa + "\n\n" + bloque
 
