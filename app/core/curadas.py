@@ -267,10 +267,31 @@ def servir_curada(mensaje: str, interp: dict | None, estado: dict | None,
     # Import perezoso: asi el doble de pruebas (sim_firestore) que parchea
     # firestore_client despues del import de este modulo igual nos alcanza.
     from app.storage.firestore_client import get_all_faq
-    from app.core.tools import _faq_ranking_palabras
+    from app.core.tools import (
+        _faq_ranking_palabras, temas_distintos_consultados)
     faq = get_all_faq(tienda_id=tienda_id) or {}
     ranking = _faq_ranking_palabras(mensaje or "", faq)
     if not ranking:
+        return None
+    # PREGUNTA PURA = UNA sola cosa. Si el cliente encaja DOS preguntas en el
+    # mismo mensaje, el atajo serviria una sola curada y la otra quedaria sin
+    # responder (visto en real 5-jul: "puedo retirar? donde estan? y cuantas
+    # cuotas?" salio SOLO con las cuotas, el retiro quedo mudo). Ante multi-
+    # pregunta se cae al camino normal: el solver contesta TODO y el bloque
+    # curado del tema principal igual se acopla despues. Dos senales
+    # deterministas, ortogonales, cada una caza un fraseo real:
+    #   1) el mensaje toca dos TOPICOS de FAQ distintos (cuotas + ubicacion),
+    #      aunque vayan en una sola oracion ("envio y cuotas?"); un tema
+    #      relacionado (envios bajo costo_envio) es el MISMO topico y no cuenta.
+    #   2) dos o mas signos de pregunta: el cliente pregunto dos cosas aunque la
+    #      segunda no matchee ningun tema curado ("cuanto sale el envio? me lo
+    #      recomendas?").
+    n_preguntas = len(re.findall(r"\?+", mensaje or ""))
+    n_topicos = temas_distintos_consultados(mensaje or "", faq)
+    if n_topicos >= 2 or n_preguntas >= 2:
+        log.info("curada_multi_pregunta_al_solver",
+                 temas=[t for _, t in ranking[:3]],
+                 n_topicos=n_topicos, n_preguntas=n_preguntas)
         return None
     tema = ranking[0][1]
     data = faq.get(tema) or {}

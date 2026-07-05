@@ -762,6 +762,57 @@ def _faq_ranking_palabras(consulta: str, faq: dict) -> list[tuple[int, str]]:
     return ranking
 
 
+# Palabras que NO identifican un topico (conectores, articulos, pronombres y
+# palabras de pregunta genericas). Se ignoran al agrupar temas por solape: sin
+# esto dos temas distintos que comparten un 'donde' o un 'de' se fundirian en
+# uno y el mensaje multi-tema pasaria por unico.
+_STOP_TEMA = {
+    "de", "del", "el", "la", "los", "las", "un", "una", "unos", "unas", "y",
+    "o", "u", "en", "por", "para", "con", "sin", "mi", "tu", "su", "me", "te",
+    "se", "es", "son", "al", "lo", "que", "si", "a", "donde", "como", "cuanto",
+    "cual", "cuando", "quien", "tienen", "tene", "hacen", "hace", "puedo",
+    "pode", "hay", "esta", "estan", "quiero", "todo", "pais",
+}
+
+
+def temas_distintos_consultados(consulta: str, faq: dict) -> int:
+    """Cuenta cuantos TOPICOS distintos toca un mensaje segun el ruteo por
+    keywords. Dos temas que matchean por palabras de contenido que se solapan
+    (costo_envio y envios comparten 'envio') son el MISMO topico; dos que
+    matchean por palabras disjuntas (cuotas por 'cuota', ubicacion por 'local')
+    son distintos. Lo usa el atajo curado para disparar SOLO con un topico: si
+    el cliente pregunto por dos cosas en el mismo mensaje, corre el solver y las
+    contesta las dos, en vez de servir una curada y dejar la otra muda."""
+    palabras_consulta = {_canon_palabra(w) for w in _norm_txt(consulta).split()}
+    # Palabras de CONTENIDO que dispararon cada tema que matcheo.
+    grupos: list[set[str]] = []
+    for _tema, data in faq.items():
+        matcheo = False
+        contenido: set[str] = set()
+        for kw in data.get("keywords", []) or []:
+            kws = {_canon_palabra(w) for w in _norm_txt(kw).split()}
+            if kws and kws <= palabras_consulta:
+                matcheo = True
+                contenido |= {w for w in kws if w not in _STOP_TEMA}
+        if matcheo:
+            grupos.append(contenido)
+    # Fusiona los temas cuyas palabras de contenido se solapan (mismo topico).
+    # Un tema sin contenido (matcheo solo por stopwords) queda como topico
+    # propio: sesga a multi, que corre el solver, el lado seguro.
+    componentes: list[set[str]] = []
+    for g in grupos:
+        fusion = set(g)
+        resto: list[set[str]] = []
+        for c in componentes:
+            if g and c and (g & c):
+                fusion |= c
+            else:
+                resto.append(c)
+        resto.append(fusion)
+        componentes = resto
+    return len(componentes)
+
+
 def _faq_keyword_match(consulta: str, faq: dict):
     """Elige el tema de FAQ por keywords, sin modelo. Puntua por largo de las
     keywords que matchean, asi las frases mas especificas, costo envio, ganan
