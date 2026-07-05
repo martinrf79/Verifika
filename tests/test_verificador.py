@@ -163,3 +163,21 @@ def test_productos_nombrados_entran_a_la_evidencia(firestore_doble):
     assert nombrados[0]["precio_ars"] == 14000
     assert nombrados[0]["stock"] == 18
     assert productos_nombrados_en("hola, buen dia") == []
+
+
+def test_precio_ancla_nombre_completo_gana_a_hermanos_de_marca():
+    """El precio tipeado a mano junto al nombre COMPLETO se corrige aunque
+    hermanos de la marca en la evidencia empaten por tokens (banco: '$8.000'
+    junto a 'Mouse Genius NX-7000 Negro', real $14.000, quedaba ambiguo entre
+    NX-7000 y DX-110 y no se corregia)."""
+    from app.core.verificador import _precio_de_producto_nombrado
+
+    ev = [
+        {"tipo": "producto", "id": "MOU0049",
+         "nombre": "Mouse Genius NX-7000 Negro", "precio_ars": 14000},
+        {"tipo": "producto", "id": "MOU0023",
+         "nombre": "Mouse Genius DX-110 Negro", "precio_ars": 8500},
+    ]
+    texto = "El mas barato es este: Mouse Genius NX-7000 Negro - $8.000"
+    pr = _precio_de_producto_nombrado(texto, texto.index("$8.000"), ev)
+    assert pr == 14000

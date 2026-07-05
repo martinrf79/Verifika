@@ -382,7 +382,19 @@ def _precio_de_producto_nombrado(texto: str, start: int,
     por el numero mas cercano de cualquier lado. Si matchean dos productos distintos,
     es ambiguo y no se toca (devuelve None)."""
     ventana = texto[max(0, start - 90):start].lower()
-    candidatos: set[int] = set()
+    # Ancla EXACTA primero (mismo criterio que el verificador de stock): el
+    # nombre COMPLETO del producto esta literal en la ventana. Gana aunque
+    # hermanos de la marca compartan tokens ("Genius NX-7000" vs "Genius
+    # DX-110": el ancla por tokens los empata y el precio tipeado a mano
+    # quedaba sin corregir, visto en el banco con $8.000 por $14.000).
+    exactos = {int(i["precio_ars"]) for i in evidence or []
+               if i.get("tipo") == "producto"
+               and isinstance(i.get("precio_ars"), (int, float))
+               and str(i.get("nombre") or "").strip()
+               and str(i["nombre"]).lower() in ventana}
+    if len(exactos) == 1:
+        return exactos.pop()
+    puntuados: list[tuple[int, int]] = []  # (tokens presentes, precio)
     for item in evidence or []:
         if item.get("tipo") != "producto":
             continue
@@ -394,8 +406,17 @@ def _precio_de_producto_nombrado(texto: str, start: int,
             continue
         presentes = sum(1 for t in toks if t in ventana)
         if presentes >= min(2, len(toks)):
-            candidatos.add(int(precio))
-    return candidatos.pop() if len(candidatos) == 1 else None
+            puntuados.append((presentes, int(precio)))
+    precios = {p for _, p in puntuados}
+    if len(precios) == 1:
+        return precios.pop()
+    # Desempate entre variantes (mismo criterio que stock): el que matchea MAS
+    # tokens es el nombrado; empate real de puntaje sigue siendo ambiguo.
+    if puntuados:
+        puntuados.sort(reverse=True)
+        if len(puntuados) == 1 or puntuados[0][0] > puntuados[1][0]:
+            return puntuados[0][1]
+    return None
 
 
 def _mejor_candidato(n: int, pool: set, banda: float) -> Optional[int]:
