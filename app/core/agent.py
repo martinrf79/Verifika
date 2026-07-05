@@ -480,6 +480,12 @@ async def run_agent(user_message: str,
                                     log.error("tool_exception", trace_id=trace_id,
                                               tool=c["name"], error=str(e)[:200])
                                     result = {"error": f"error ejecutando tool: {str(e)[:100]}"}
+                            try:
+                                from app.core.estado_venta import (
+                                    certificar_ids_de_resultado)
+                                certificar_ids_de_resultado(result)
+                            except Exception:
+                                pass
                             tools_called.append({
                                 "name": c["name"], "args": c["args"],
                                 "result_keys": list(result.keys()) if isinstance(result, dict) else None,
@@ -551,6 +557,14 @@ async def run_agent(user_message: str,
                     log.error("tool_exception", trace_id=trace_id,
                               tool=fname, error=str(e)[:200])
                     result = {"error": f"error ejecutando tool: {str(e)[:100]}"}
+
+            # Los product_id que la tool devolvio quedan CERTIFICADOS para el
+            # turno (regla cero mecanica: la calculadora rechaza ids inferidos).
+            try:
+                from app.core.estado_venta import certificar_ids_de_resultado
+                certificar_ids_de_resultado(result)
+            except Exception:
+                pass
 
             tools_called.append({
                 "name": fname,

@@ -240,6 +240,39 @@ def calculate_total(items: list[dict] | None = None,
     if _err:
         return {"ok": False, "mensaje_para_llm": _err}
 
+    # REGLA CERO mecanica: con un pedido VIGENTE, los items solo pueden venir de
+    # ids CERTIFICADOS (el carrito, los productos ya mostrados o los devueltos
+    # por una tool de ESTE turno). Un id inferido de memoria muta la identidad
+    # del pedido en silencio: visto en el banco, el solver pidio el total con el
+    # NX-7000 cuando el carrito era el DX-110 y el cliente recibio numeros
+    # reales del producto equivocado. Sin carrito no se restringe (el flujo de
+    # primer turno arma el pedido con lo que la busqueda del turno devuelve).
+    from app.core.estado_venta import get_current_estado, get_ids_certificados
+    _est = get_current_estado()
+    _carrito = [c for c in (_est.get("carrito") or []) if c.get("id")]
+    if _carrito:
+        _permitidos = get_ids_certificados()
+        _permitidos |= {str(c["id"]).upper() for c in _carrito}
+        _permitidos |= {str(p.get("id") or "").upper()
+                        for p in (_est.get("productos_vistos") or [])
+                        if isinstance(p, dict) and p.get("id")}
+        _sueltos = sorted({str(i.get("product_id") or "").upper()
+                           for i in items
+                           if str(i.get("product_id") or "").upper()
+                           not in _permitidos})
+        if _sueltos:
+            _orden = ", ".join(
+                f"{c.get('cantidad', 1)}x {c.get('nombre', '')} "
+                f"(product_id {c['id']})" for c in _carrito)
+            log.warning(f"calculate_total id_no_certificado sueltos={_sueltos}")
+            return {"ok": False, "mensaje_para_llm": (
+                f"Los product_id {', '.join(_sueltos)} no salen ni del pedido "
+                f"vigente ni de una busqueda de este turno: no uses ids de "
+                f"memoria. El pedido vigente del cliente es: {_orden}. Llama "
+                f"calculate_total con ESOS product_id; si el cliente pidio "
+                f"OTRO producto, primero resolvelo con search_products o "
+                f"get_product_details y despues sumalo.")}
+
     tid = get_current_tienda()
     detalle = []
     total = 0

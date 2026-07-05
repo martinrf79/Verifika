@@ -200,3 +200,57 @@ def test_bloque_solver_lista_destinos_cotizados():
     assert "cordoba capital" in b and "mendoza capital" in b
     assert "NO vuelvas a pedir" in b
     assert "destinos=2" in b
+
+
+def test_carrito_vigente_rechaza_id_inferido_de_memoria(firestore_doble):
+    """REGLA CERO mecanica: con pedido vigente, un product_id que no sale del
+    carrito, ni de lo mostrado, ni de una tool del turno se rechaza con la
+    instruccion del pedido real (banco: el solver pidio el total con el
+    NX-7000 cuando el carrito era el DX-110)."""
+    from app.core.tools import calculate_total
+    from app.core import estado_venta
+
+    estado_venta.set_current_estado({"carrito": [
+        {"id": "MOU0023", "nombre": "Mouse Genius DX-110 Negro", "cantidad": 2}]})
+    r = calculate_total(items=[{"product_id": "MOU0049", "cantidad": 2}])
+    estado_venta.set_current_estado({})
+    assert r.get("ok") is False
+    assert "MOU0049" in r["mensaje_para_llm"]
+    assert "MOU0023" in r["mensaje_para_llm"]
+
+
+def test_carrito_vigente_acepta_id_certificado_del_turno(firestore_doble):
+    """El mismo id pasa si una tool del turno lo devolvio (certificado)."""
+    from app.core.tools import calculate_total, get_product_details
+    from app.core import estado_venta
+    from app.core.estado_venta import certificar_ids_de_resultado
+
+    estado_venta.set_current_estado({"carrito": [
+        {"id": "MOU0023", "nombre": "Mouse Genius DX-110 Negro", "cantidad": 2}]})
+    certificar_ids_de_resultado(get_product_details(product_id="MOU0049"))
+    r = calculate_total(items=[{"product_id": "MOU0049", "cantidad": 1}])
+    estado_venta.set_current_estado({})
+    assert r.get("ok") is True
+
+
+def test_carrito_vigente_acepta_ids_del_propio_carrito(firestore_doble):
+    from app.core.tools import calculate_total
+    from app.core import estado_venta
+
+    estado_venta.set_current_estado({"carrito": [
+        {"id": "MOU0023", "nombre": "Mouse Genius DX-110 Negro", "cantidad": 2}]})
+    r = calculate_total(items=[{"product_id": "MOU0023", "cantidad": 2}])
+    estado_venta.set_current_estado({})
+    assert r.get("ok") is True
+    assert r["total_ars"] == 17000
+
+
+def test_sin_carrito_no_se_restringe(firestore_doble):
+    """Primer turno sin pedido vigente: el flujo normal no se toca."""
+    from app.core.tools import calculate_total
+    from app.core import estado_venta
+
+    estado_venta.set_current_estado({})
+    r = calculate_total(items=[{"product_id": "MOU0049", "cantidad": 1}])
+    estado_venta.set_current_estado({})
+    assert r.get("ok") is True

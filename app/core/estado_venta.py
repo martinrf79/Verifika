@@ -47,6 +47,14 @@ _current_estado: ContextVar[dict | None] = ContextVar("current_estado", default=
 _envio_localidades: ContextVar[list | None] = ContextVar(
     "envio_localidades", default=None)
 
+# Product_id que las tools DEVOLVIERON este turno (search, details, catalogo,
+# calculadora): son los ids CERTIFICADOS del turno. La calculadora los usa para
+# aplicar la regla cero mecanicamente: con un pedido vigente, un id que no sale
+# ni del carrito, ni de lo ya mostrado, ni de una tool del turno es un id
+# INFERIDO de memoria y muta la identidad del pedido en silencio.
+_ids_certificados: ContextVar[set | None] = ContextVar(
+    "ids_certificados", default=None)
+
 
 def set_current_estado(estado: dict | None):
     """Setea el estado de venta del request. Lo llama el camino vivo al arrancar
@@ -54,6 +62,7 @@ def set_current_estado(estado: dict | None):
     de envio del turno anterior para no arrastrar una cotizacion vieja."""
     _current_estado.set(estado)
     _envio_localidades.set([])
+    _ids_certificados.set(set())
 
 
 def set_envio_localidad(localidad: str | None):
@@ -80,6 +89,30 @@ def get_envio_localidades() -> list[str]:
     """Todas las localidades cotizadas con exito este turno, en orden. Las lee
     calculate_total para cobrar cada destino de un multi-destino con su tarifa."""
     return list(_envio_localidades.get() or [])
+
+
+def certificar_ids_de_resultado(result):
+    """Registra los product_id que una tool devolvio este turno. Lo llama el
+    loop del agente despues de CADA tool: un solo lugar cubre search, details,
+    catalogo y calculadora (mismas claves que lee productos_de_meta)."""
+    if not isinstance(result, dict):
+        return
+    ids = _ids_certificados.get()
+    if ids is None:
+        ids = set()
+        _ids_certificados.set(ids)
+    cands = list(result.get("productos") or [])
+    if isinstance(result.get("producto"), dict):
+        cands.append(result["producto"])
+    cands += list(result.get("detalle") or [])
+    for p in cands:
+        if isinstance(p, dict) and p.get("id"):
+            ids.add(str(p["id"]).upper())
+
+
+def get_ids_certificados() -> set:
+    """Los product_id certificados por tools en este turno (copia)."""
+    return set(_ids_certificados.get() or set())
 
 
 def get_current_estado() -> dict:
