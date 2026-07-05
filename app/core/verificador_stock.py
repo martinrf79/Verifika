@@ -126,17 +126,27 @@ def _producto_nombrado(texto: str, start: int,
         texto[max(0, start - _VENTANA):start].lower(), productos)
 
 
-def _producto_anclado(texto: str, m: "re.Match",
-                      productos: list[dict]) -> dict | None:
+def _producto_anclado(texto: str, m: "re.Match", productos: list[dict],
+                      misma_oracion: bool = False) -> dict | None:
     """Ancla de una afirmacion de disponibilidad: primero hacia atras (el caso
     normal, 'el X no tiene stock') y si no hay, hacia ADELANTE ('tenemos el X',
     'no hay stock del X': el nombre viene despues del verbo). Misma regla de
-    unicidad en las dos direcciones."""
+    unicidad en las dos direcciones.
+
+    misma_oracion=True corta la ventana adelante en el primer limite de
+    oracion: para una NEGACION, el producto negado viene en la misma clausula;
+    lo que sigue despues del punto suele ser la ALTERNATIVA que se ofrece y
+    anclarla acusaria al producto equivocado (falso positivo visto en el
+    banco: 'no tiene stock. Mira estas opciones: Glorious...')."""
     p = _producto_nombrado(texto, m.start(), productos)
     if p is not None:
         return p
-    return _producto_en_ventana(
-        texto[m.end():m.end() + _VENTANA].lower(), productos)
+    post = texto[m.end():m.end() + _VENTANA]
+    if misma_oracion:
+        corte = re.search(r"[.!?\n]", post)
+        if corte:
+            post = post[:corte.start()]
+    return _producto_en_ventana(post.lower(), productos)
 
 
 def detectar_stock_contradicho(respuesta: str,
@@ -163,7 +173,7 @@ def detectar_stock_contradicho(respuesta: str,
     for m in _RE_SIN_STOCK.finditer(respuesta):
         if _RE_CONDICIONAL.search(respuesta[max(0, m.start() - 50):m.start()]):
             continue
-        p = _producto_anclado(respuesta, m, productos)
+        p = _producto_anclado(respuesta, m, productos, misma_oracion=True)
         if p is not None and int(p["stock"]) > 0:
             _agregar("sin_stock_falso", p)
     for m in _RE_CON_STOCK.finditer(respuesta):

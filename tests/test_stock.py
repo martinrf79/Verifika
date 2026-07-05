@@ -235,3 +235,14 @@ def test_producto_duplicado_en_evidencia_no_es_ambiguedad():
     r = "Tenemos el mismo modelo en blanco:\n\nMouse Genius DX-110 Blanco - $8.500"
     dets = VS.detectar_stock_contradicho(r, ev)
     assert [d["id"] for d in dets] == ["MOU0024"]
+
+
+def test_negacion_honesta_no_acusa_a_la_alternativa_siguiente():
+    """'no tiene stock. Mira estas opciones: Y...': la alternativa ofrecida en
+    la ORACION siguiente no se ancla a la negacion (falso positivo visto en el
+    banco, acusaba sin_stock_falso al producto CON stock que se ofrecia)."""
+    ev = [_prod("MOU0024", "Mouse Genius DX-110 Blanco", 0),
+          _prod("MOU0031", "Mouse Glorious Model O Negro", 23)]
+    r = ("Uf, el blanco no tiene stock por ahora. "
+         "Pero mira estas opciones: Mouse Glorious Model O Negro - $95.000.")
+    assert VS.detectar_stock_contradicho(r, ev) == []
