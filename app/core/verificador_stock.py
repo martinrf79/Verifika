@@ -87,11 +87,16 @@ def _producto_en_ventana(pre: str, productos: list[dict]) -> dict | None:
     # la misma marca compartan tokens ("Genius DX-110" vs "Genius NX-7000",
     # cuyos codigos cortos el tokenizador descarta). Dos nombres completos
     # presentes = ambiguedad real, se sigue con el puntaje por tokens.
-    exactos = [p for p in productos
+    # Dedup por id: el mismo producto puede entrar a la evidencia por varios
+    # caminos (mostrado + nombrado + busqueda del turno) y dos entradas
+    # identicas NO son ambiguedad (bug visto en el banco: el duplicado hacia
+    # caer el ancla exacta al puntaje por tokens, donde dos blancos de modelos
+    # distintos empataban y la mentira pasaba).
+    exactos = {str(p.get("id") or id(p)).upper(): p for p in productos
                if (p.get("nombre") or "").strip()
-               and str(p["nombre"]).lower() in pre]
+               and str(p["nombre"]).lower() in pre}
     if len(exactos) == 1:
-        return exactos[0]
+        return next(iter(exactos.values()))
     candidatos: dict[str, tuple[int, dict]] = {}
     for p in productos:
         toks = _tokens_significativos(p.get("nombre", ""))

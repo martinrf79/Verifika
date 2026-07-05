@@ -223,3 +223,15 @@ def test_cuarentena_devuelve_vacio_si_todo_era_mentira():
     ev = [_prod("MOU0024", "Mouse Genius DX-110 Blanco", 0)]
     r = "Tenemos el Mouse Genius DX-110 Blanco disponible."
     assert VS.cuarentena_stock(r, ev) == ""
+
+
+def test_producto_duplicado_en_evidencia_no_es_ambiguedad():
+    """El mismo producto entra a la evidencia por varios caminos (mostrado +
+    nombrado + busqueda del turno): dos entradas identicas no son ambiguedad y
+    el ancla exacta sigue firmando (bug visto en el banco: el duplicado
+    tumbaba el ancla y la oferta del Blanco agotado pasaba)."""
+    b = _prod("MOU0024", "Mouse Genius DX-110 Blanco", 0)
+    ev = [b, dict(b), _prod("MOU0050", "Mouse Genius NX-7000 Blanco", 18)]
+    r = "Tenemos el mismo modelo en blanco:\n\nMouse Genius DX-110 Blanco - $8.500"
+    dets = VS.detectar_stock_contradicho(r, ev)
+    assert [d["id"] for d in dets] == ["MOU0024"]
