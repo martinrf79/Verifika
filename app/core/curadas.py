@@ -146,7 +146,15 @@ def bloque_curado_por_mensaje(mensaje: str, interp: dict | None,
 # Gancho final de un bloque curado: la ultima oracion interrogativa. Se recorta
 # cuando la prosa del solver ya cierra con SU pregunta (un solo cierre por
 # mensaje). Corte por ORACION entera, nunca cirugia adentro de una.
-_GANCHO_FINAL_RE = re.compile(r"[^.?!\n]+\?\s*$")
+# Gancho = la ultima oracion si es interrogativa, O si es un pedido imperativo
+# tipico de venta ("Contame que producto...", "Decime tu zona..."): tambien es
+# un segundo cierre cuando la prosa ya pregunta (visto en el banco: quedaba
+# "Contame que producto te interesa" con el producto YA elegido en la charla).
+_GANCHO_FINAL_RE = re.compile(
+    r"(?:[^.?!\n]+\?\s*$|"
+    r"(?:^|(?<=[.?!] ))(?:contame|decime|pasame|avisame|escribime|consultame)"
+    r"\b[^.?!\n]*[.!]?\s*$)",
+    re.IGNORECASE)
 
 
 def _raices(s: str) -> set[str]:
@@ -168,6 +176,24 @@ def solapa_prosa(prosa: str, bloque: str) -> bool:
         return False
     raices_p = _raices(prosa)
     return len(raices_b & raices_p) / len(raices_b) >= 0.6
+
+
+def prosa_trae_valores(prosa: str, valores: list[dict] | None) -> bool:
+    """True si la prosa del solver ya contiene TODOS los montos oficiales del
+    tema (como numero suelto: '6 cuotas', 'hasta 12'). Es la condicion para
+    saltear el bloque de un tema NUMERICO sin negociar el numero oficial: si
+    los numeros estan literales en la prosa, el bloque solo repetiria la
+    politica dos veces (visto en el banco: cuotas contestadas bien por el
+    solver + bloque identico pegado abajo con gancho contradictorio). Si falta
+    UN monto, False y el bloque viaja como siempre."""
+    if not valores or not prosa:
+        return False
+    numeros_prosa = set(re.findall(r"\d+", prosa))
+    montos = [v.get("monto") for v in valores if isinstance(v, dict)]
+    montos = [m for m in montos if isinstance(m, (int, float))]
+    if not montos:
+        return False
+    return all(str(int(m)) in numeros_prosa for m in montos)
 
 
 def temas_cubiertos_por_tools(meta: dict) -> set[str]:

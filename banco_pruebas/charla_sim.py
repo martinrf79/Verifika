@@ -3,8 +3,11 @@ CHARLA SOBRE FIRESTORE SIMULADO — corre el camino vivo de punta a punta con la
 base local real y DeepSeek vivo. Sin credenciales de Google.
 
 Uso:
-    python3 scripts/charla_sim.py                 # guion de ejemplo
-    python3 scripts/charla_sim.py guion.txt       # un mensaje por linea
+    python3 banco_pruebas/charla_sim.py               # guion de ejemplo
+    python3 banco_pruebas/charla_sim.py guion.txt     # un mensaje por linea
+
+Cada respuesta pasa por el JUEZ de invariantes (banco_pruebas/juez.py); si
+alguna viola uno, el proceso termina con codigo distinto de cero.
 """
 import asyncio
 import sys
@@ -40,6 +43,9 @@ async def main():
     else:
         mensajes = _GUION_DEMO
 
+    from banco_pruebas.juez import juzgar
+
+    problemas_total = 0
     for i, msg in enumerate(mensajes, 1):
         print(f"[{i}] CLIENTE: {msg}")
         t0 = time.time()
@@ -51,7 +57,22 @@ async def main():
             traceback.print_exc()
         ms = int((time.time() - t0) * 1000)
         print(f"    BOT ({ms} ms): {resp}\n")
+        # JUEZ de invariantes: la tanda falla sola si una respuesta viola uno
+        # (stock contradicho, promesa prohibida, marcador sin estampar, precio
+        # de lista pisado, narracion interna). Sin juez habia que LEER todo.
+        if resp.startswith("<<ERROR"):
+            problemas_total += 1
+        else:
+            for p in juzgar(resp, tienda_id=TIENDA):
+                print(f"    [JUEZ] PROBLEMA: {p}")
+                problemas_total += 1
+
+    if problemas_total:
+        print(f"[JUEZ] TANDA CON {problemas_total} PROBLEMA(S)")
+    else:
+        print("[JUEZ] tanda limpia")
+    return problemas_total
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    raise SystemExit(1 if asyncio.run(main()) else 0)

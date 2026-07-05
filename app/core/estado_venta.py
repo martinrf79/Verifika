@@ -188,6 +188,7 @@ def construir_estado(conv: dict | None, lead: dict | None) -> dict:
         "carrito": conv.get("carrito_vigente") or [],
         "presupuesto": (conv.get("ultimo_presupuesto") or "").strip(),
         "localidad_envio": (conv.get("ultima_localidad") or "").strip(),
+        "localidades_envio": conv.get("ultimas_localidades") or [],
         "provincia_envio": (conv.get("provincia_envio") or "").strip(),
         "criterio": (conv.get("criterio_cliente") or "").strip(),
         "datos_cliente": datos_cliente,
@@ -222,9 +223,16 @@ def bloque_para_solver(estado: dict | None) -> str:
     if presup:
         partes.append("Total ya calculado y verificado: " + presup)
 
-    loc = (estado.get("localidad_envio") or "").strip()
-    if loc:
-        partes.append("Envio ya cotizado a " + loc)
+    locs = [str(l).strip() for l in (estado.get("localidades_envio") or [])
+            if str(l or "").strip()]
+    if len(locs) > 1:
+        partes.append("Destinos del pedido YA cotizados (NO vuelvas a pedir esos "
+                      "CP): " + ", ".join(locs) + ". Para el total con envio "
+                      "llama calculate_total con destinos=" + str(len(locs)) + ".")
+    else:
+        loc = (estado.get("localidad_envio") or "").strip()
+        if loc:
+            partes.append("Envio ya cotizado a " + loc)
 
     prov = (estado.get("provincia_envio") or "").strip()
     if prov:

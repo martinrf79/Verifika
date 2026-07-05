@@ -73,6 +73,68 @@ def test_sin_producto_nombrado_no_dispara():
     assert VS.detectar_stock_contradicho(r, EVIDENCIA) == []
 
 
+def test_variante_de_color_nombrada_dispara():
+    """Dos variantes del mismo modelo en evidencia (Negro con stock, Blanco sin):
+    la nombrada con su color matchea MAS tokens y gana el desempate. Antes las
+    dos variantes dejaban el ancla ambigua y la mentira pasaba (visto en el
+    banco: ofrecio el DX-110 Blanco agotado como disponible con 11 en stock)."""
+    ev = [_prod("MOU0023", "Mouse Genius DX-110 Negro", 11),
+          _prod("MOU0024", "Mouse Genius DX-110 Blanco", 0)]
+    r = "Tenemos el Mouse Genius DX-110 Blanco disponible, te lo sumo?"
+    dets = VS.detectar_stock_contradicho(r, ev)
+    assert [d["id"] for d in dets] == ["MOU0024"]
+    assert dets[0]["clase"] == "con_stock_falso"
+
+
+def test_variante_de_color_cifra_se_corrige():
+    """La cifra de stock de la variante nombrada se corrige por la real aunque
+    la otra variante del modelo tambien este en la evidencia."""
+    ev = [_prod("MOU0023", "Mouse Genius DX-110 Negro", 11),
+          _prod("MOU0024", "Mouse Genius DX-110 Blanco", 0)]
+    r = "Mouse Genius DX-110 Blanco - $8.500 (11 en stock)."
+    fix = VS.corregir_unidades_stock(r, ev)
+    assert fix["correcciones"] == [
+        {"de": 11, "a": 0, "id": "MOU0024", "concepto": "stock"}]
+
+
+def test_tenemos_el_producto_agotado_dispara():
+    """'Tenemos el X' de un producto con stock 0 es la misma promesa falsa
+    aunque no diga la palabra stock; el nombre viene DESPUES del verbo y lo
+    ancla la ventana hacia adelante (visto en el banco)."""
+    ev = [_prod("MOU0023", "Mouse Genius DX-110 Negro", 11),
+          _prod("MOU0024", "Mouse Genius DX-110 Blanco", 0)]
+    r = "Tenemos el Mouse Genius DX-110 Blanco, justo lo que buscas."
+    dets = VS.detectar_stock_contradicho(r, ev)
+    assert [d["id"] for d in dets] == ["MOU0024"]
+    assert dets[0]["clase"] == "con_stock_falso"
+
+
+def test_no_tenemos_el_agotado_no_dispara():
+    """'No lo tenemos' de un agotado es honestidad: la negacion pegada al
+    match lo apaga."""
+    ev = [_prod("MOU0024", "Mouse Genius DX-110 Blanco", 0)]
+    r = "No lo tenemos al Mouse Genius DX-110 Blanco por ahora."
+    assert VS.detectar_stock_contradicho(r, ev) == []
+
+
+def test_sin_stock_con_nombre_despues_dispara():
+    """'No hay stock del X' con el nombre despues del verbo: ancla adelante."""
+    ev = [_prod("MOU0023", "Mouse Genius DX-110 Negro", 11)]
+    r = "Uf, no hay stock del Mouse Genius DX-110 Negro, te paso otro."
+    dets = VS.detectar_stock_contradicho(r, ev)
+    assert [d["id"] for d in dets] == ["MOU0023"]
+    assert dets[0]["clase"] == "sin_stock_falso"
+
+
+def test_empate_real_sigue_ambiguo():
+    """Si ninguna variante junta mas tokens que la otra (ninguno de los dos
+    colores esta en la ventana), sigue siendo ambiguo y no se acusa a nadie."""
+    ev = [_prod("MOU0023", "Mouse Genius DX-110 Negro", 11),
+          _prod("MOU0024", "Mouse Genius DX-110 Blanco", 0)]
+    r = "El Mouse Genius DX-110 no tiene stock."
+    assert VS.detectar_stock_contradicho(r, ev) == []
+
+
 # ── Safe-override de la CIFRA de unidades ────────────────────────────────────
 
 def test_cifra_de_unidades_equivocada_se_corrige():

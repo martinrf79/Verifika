@@ -36,7 +36,10 @@ _CONV: dict = {}
 # Config simulada de la tienda. tarifas_envio: ver LIMITES arriba.
 _CONFIG = {
     "business_name": "Verifika",
-    "modo_cierre": "off",
+    # Igual que produccion (config.py MODO_CIERRE default "A"): el camino del
+    # cierre/lead corre REAL sobre el doble de leads en RAM de abajo. Antes se
+    # simulaba "off" y el cierre no se probaba nunca antes de la charla real.
+    "modo_cierre": "A",
     "mp_access_token": "",
     "tarifas_envio": {
         "provincias": {
@@ -154,13 +157,76 @@ def install():
     for n in ("get_conversation", "save_conversation", "reset_conversation", "get_config"):
         setattr(il, n, _patches[n])
 
-    # Stub del cierre/lead (no toca el pago): este doble prueba interpretacion +
-    # anti-alucinacion, no el link de Mercado Pago.
-    async def _procesar_lead_noop(*a, **k):
-        return "", {}
+    # LEADS EN RAM: el camino REAL del cierre (procesar_mensaje_para_lead, con
+    # sus gatillos, pregunta suave y captura) corre TAL CUAL. Se dobla SOLO el
+    # almacenamiento del lead (dict en RAM en vez de la coleccion Firestore) y
+    # el aviso al dueño (notificar_lead, que es una llamada HTTP saliente).
+    # Antes todo el camino era un no-op y el cierre no se probaba nunca en el
+    # banco: los errores del lead se estrenaban en la charla real.
+    import app.core.leads as leads
 
-    il.get_lead_activo = lambda *a, **k: None
-    il.descartar_leads_activos = lambda *a, **k: 0
-    il.procesar_mensaje_para_lead = _procesar_lead_noop
+    _leads_ram: dict = {}
+    _leads_seq = {"n": 0}
+    _avisos: list = []
 
-    return {"productos": len(productos), "faq": len(faq)}
+    def _lead_vivo(d) -> bool:
+        cutoff = time.time() - leads.LEAD_VENTANA_SEGUNDOS
+        return (d.get("creado_en_ts", 0) >= cutoff
+                and d.get("estado") not in ("descartado", "cerrado", "completado"))
+
+    def get_lead_activo(user_id, canal, tienda_id):
+        vivos = [d for d in _leads_ram.values()
+                 if d.get("user_id") == user_id and d.get("canal") == canal
+                 and _lead_vivo(d)]
+        if not vivos:
+            return None
+        return dict(max(vivos, key=lambda d: d.get("creado_en_ts", 0)))
+
+    def descartar_leads_activos(user_id, canal, tienda_id):
+        n = 0
+        for d in _leads_ram.values():
+            if (d.get("user_id") == user_id and d.get("canal") == canal
+                    and _lead_vivo(d)):
+                d["estado"] = "descartado"
+                n += 1
+        return n
+
+    def crear_lead(user_id, canal, tienda_id, ultimo_mensaje, frase_disparadora,
+                   nivel, estado_inicial, orden=""):
+        _leads_seq["n"] += 1
+        lid = f"lead{_leads_seq['n']:04d}"
+        _leads_ram[lid] = {
+            "lead_id": lid, "tienda_id": tienda_id, "canal": canal,
+            "user_id": user_id, "nombre": "", "telefono": "", "direccion": "",
+            "forma_pago": "", "orden": (orden or "")[:1500],
+            "estado": estado_inicial, "nivel": nivel,
+            "ultimo_mensaje": (ultimo_mensaje or "")[:500],
+            "frase_disparadora": frase_disparadora,
+            "creado_en_ts": time.time(),
+        }
+        print(f"[sim] lead_created {lid} nivel={nivel} estado={estado_inicial}")
+        return lid
+
+    def actualizar_lead(lead_id, tienda_id, cambios):
+        doc = _leads_ram[lead_id]
+        doc.update({k: v for k, v in cambios.items() if k != "actualizado_en"})
+
+    async def notificar_lead(**kw):
+        _avisos.append(kw)
+        print(f"[sim] AVISO AL DUEÑO (notificar_lead): estado={kw.get('estado')} "
+              f"nombre={kw.get('nombre')} orden={str(kw.get('orden'))[:80]}")
+        return None
+
+    leads.get_lead_activo = get_lead_activo
+    leads.descartar_leads_activos = descartar_leads_activos
+    leads.crear_lead = crear_lead
+    leads.actualizar_lead = actualizar_lead
+    leads.notificar_lead = notificar_lead
+    # interprete_libre importo estos nombres arriba: reenganche al doble y al
+    # camino REAL del cierre.
+    il.get_lead_activo = get_lead_activo
+    il.descartar_leads_activos = descartar_leads_activos
+    il.procesar_mensaje_para_lead = leads.procesar_mensaje_para_lead
+
+    return {"productos": len(productos), "faq": len(faq),
+            "leads_ram": _leads_ram, "avisos": _avisos}

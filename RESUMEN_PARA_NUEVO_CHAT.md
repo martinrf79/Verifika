@@ -3,12 +3,17 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 4-jul-2026.** Multi-destino con tarifa REAL por destino (bug de la
-última tarifa repetida, arreglado), FAQ 44/44 curada aprobada por Martín, y ACOPLE: el bloque
-curado del tema consultado se pega en vertical a la prosa del solver (marcador `[[FAQ]]`
-retirado). 191 tests offline en verde. Todo lo de abajo está deployado y verificado en verde
-salvo lo marcado como PENDIENTE. Estrategia vigente: respuestas curadas + bloques deterministas
-(el código es dueño de todo dato duro; el solver, de la prosa), acordada el 4-jul.
+**Última actualización: 5-jul-2026.** BANCO DE CHARLAS VIVAS con JUEZ automático: los errores
+que antes se estrenaban en la charla real ahora se cazan y arreglan ANTES, corriendo el pipeline
+completo con DeepSeek desde el entorno de Claude (la clave está en el entorno web). La primera
+tanda encontró 5 errores reales y se arreglaron por invariante (ver BANCO abajo): memoria de
+productos MOSTRADOS (el solver ya no adivina ids), evidencia VIVA de vistos (los verificadores
+juzgan productos de turnos anteriores con stock actual), ancla de stock con desempate de
+variantes + nombre completo + ventana adelante ("tenemos el X" agotado dispara), multi-destino
+que RECUERDA los destinos cotizados entre turnos, y acople sin duplicar (prosa que ya trae los
+montos oficiales + gancho imperativo recortado). 217 tests offline + 8 tests VIVO (guiones de
+charla real lockeados). Estrategia vigente: respuestas curadas + bloques deterministas (el
+código es dueño de todo dato duro; el solver, de la prosa), acordada el 4-jul.
 
 ---
 
@@ -177,6 +182,37 @@ charla real de WhatsApp (curada pura, acople en venta, retiro de local) leyendo 
   porque el código lo garantiza". No prometer conversación impecable (es del LLM); prometer que
   no miente en los números.
 
+## Hallazgos del BANCO de charlas vivas (5-jul) — 5 errores cazados y arreglados
+
+La primera tanda de 8 guiones (DeepSeek real, pipeline real) encontró y se arregló:
+
+1. **El solver ADIVINABA ids de memoria** (pidió el total con un teclado de $172.500 en vez
+   del de $12.000 mostrado, y justificó inventando que el barato no tenía stock). Causa raíz:
+   los [[PROD:id]] estampados (ej. de la guía determinista) no quedaban en `productos_vistos`
+   si el turno no llamó tools. ARREGLADO: todo producto MOSTRADO queda en memoria con su id
+   y el estado se lo muestra al solver en el turno siguiente.
+2. **Stock inventado entre variantes de color** ("Tenemos el DX-110 Blanco", stock CERO): el
+   ancla del verificador de stock quedaba ambigua entre Negro y Blanco y se abstenía.
+   ARREGLADO: nombre completo primero, desempate por tokens, ventana hacia adelante para
+   "tenemos el X" / "no hay stock del X", y la evidencia ahora incluye los productos vistos
+   re-leídos VIVOS del catálogo (precio y stock actuales).
+3. **Multi-destino perdía los destinos entre turnos** (re-pedía el CP de Córdoba ya cotizado).
+   ARREGLADO: `ultimas_localidades` persiste en la conversación, el estado se la muestra al
+   solver y calculate_total cae a esa memoria si el turno no cotizó.
+4. **Descuento por transferencia calculado a mano por el solver** (salió en sombra, la cuenta
+   dio bien de casualidad). Tras los arreglos el solver llama a la calculadora y el total sale
+   con proof ($19.050 verificado en la re-tanda). Vigilarlo en el banco.
+5. **El acople duplicaba la política** (bloque de cuotas idéntico a la prosa + gancho
+   "contame qué producto" con el producto ya elegido). ARREGLADO: tema numérico cuya prosa ya
+   trae TODOS los montos oficiales se saltea (`prosa_trae_valores`), y el gancho imperativo
+   final también se recorta cuando la prosa ya pregunta.
+
+**Observaciones abiertas del banco (revisar con Martín, no se tocaron):** en modo A el solver
+sigue pidiendo nombre y dirección en su prosa después de captar el lead (la regla era captar
+sin pedir datos; es conducta del prompt, no del cierre); el presupuesto estampado a veces sale
+con el total repetido en dos líneas (cosmético); "dale, lo compro" creó lead nivel TIBIA, no
+fuerte (¿confianza del interpretador baja en ese fraseo?).
+
 ## Hallazgos de pruebas reales (2-jul)
 
 - **Cero alucinaciones de PRECIO/total** en dos charlas reales largas: todos los precios, stocks
@@ -190,9 +226,13 @@ charla real de WhatsApp (curada pura, acople en venta, retiro de local) leyendo 
 
 ## PENDIENTES (en orden de prioridad)
 
-1. **Verificar en VIVO el blindaje nuevo** (stock, FAQ numérica, pregunta de cierre, multi-destino):
-   charla real por WhatsApp/Telegram + leer los eventos nuevos en logs
-   (`interprete_libre_stock_*`, `interprete_libre_faq_numerica_*`, `interprete_libre_guia_mas_barato`).
+1. **Charla real de HUMO por WhatsApp/Telegram** (después de mergear y deployar esta rama):
+   el banco ya validó el pipeline con DeepSeek real; falta solo el transporte (webhook,
+   reintentos) y confirmar las asunciones del doble contra Firestore real (tarifas_envio por
+   provincia, modo_cierre). Leer los eventos en logs (`interprete_libre_stock_*`,
+   `interprete_libre_faq_numerica_*`, `_curada_servida`, `_faq_acoplada`, `_promesa_cuarentena`).
+1-bis. **Revisar con Martín las observaciones abiertas del banco** (modo A pidiendo datos en
+   prosa, total repetido cosmético, lead tibia con "dale, lo compro" — ver HALLAZGOS 5-jul).
 2. **Guardas de salida (baratas):** malas palabras (blocklist + reescritura, ej. "al pedo") y
    **disclaimer legal** (aclarar que es una herramienta automática; determinista: línea fija en el
    primer mensaje + gatillo regex sobre "sos humano/quién sos/con quién hablo"). El prompt solo ya
@@ -207,12 +247,34 @@ comportamiento bueno de HOY, después cambiar. El gate del CI + el test lockean 
 
 ---
 
-## Probar en el entorno de Claude
+## Probar en el entorno de Claude — BANCO DE CHARLAS VIVAS (5-jul)
 
-`pytest` corre los 153 tests offline (Python puro, catálogo+FAQ reales por la fixture
-`firestore_doble` en `tests/conftest.py`, sin LLM ni Google). El intérprete y el solver (DeepSeek)
-NO corren offline (van marcados `vivo`, excluidos por default); se prueban en WhatsApp/Telegram o
-leyendo logs de Cloud Run.
+`pytest` corre los 217 tests offline (Python puro, catálogo+FAQ reales por la fixture
+`firestore_doble` en `tests/conftest.py`, sin LLM ni Google).
+
+**El camino VIVO también se prueba desde acá** (la DEEPSEEK_API_KEY está en el entorno web de
+Claude): método acordado el 5-jul para que la primera charla real de Martín sea confirmación,
+no descubrimiento. El ciclo es: batería offline verde → tanda viva verde → recién ahí charla
+real. Piezas, todas en `banco_pruebas/`:
+
+- **`charla_sim.py`**: corre una charla de punta a punta por el pipeline REAL (intérprete +
+  solver DeepSeek + verificadores + cierre) sobre el doble de Firestore. Un guion por charla:
+  `python3 banco_pruebas/charla_sim.py banco_pruebas/guiones/03_stock.txt`.
+- **`juez.py`**: JUEZ de invariantes determinista sobre cada respuesta (reusa los detectores
+  de producción contra el catálogo completo): stock contradicho, promesa prohibida, marcador
+  sin estampar, precio de lista pisado, narración interna filtrada. La tanda falla sola.
+- **`guiones/`**: 8 guiones que replican los errores de charlas reales (curada pura, retiro
+  de local, stock, más barato, multi-destino, cierre, negaciones, acople). Son también los
+  primeros tests `vivo` DE VERDAD: `tests/test_vivo_charlas.py` los corre por el pipeline y
+  exige juez limpio. Correr a propósito antes de mergear cambios del camino LLM:
+  `python -m pytest -m vivo tests/test_vivo_charlas.py -v`.
+- **El doble ahora simula el cierre REAL**: `modo_cierre: "A"` como producción y leads en RAM
+  (solo se dobla el almacenamiento y el aviso al dueño). Antes el cierre era un no-op y no se
+  probaba nunca.
+
+Límites del doble que siguen: tarifas_envio por provincia sembradas como asunción
+(cordoba=7500, confirmar contra Firestore real) y el transporte WhatsApp/Telegram en sí
+(webhook, reintentos), que se valida con UNA charla corta de humo después de la tanda limpia.
 
 **Desde la NOTEBOOK (Windows):** la receta completa (clon + rama nueva + venv + batería) está en
 `CLAUDE.md` → "Correr la batería desde la NOTEBOOK". Mismo doble de Firestore que en el celular.

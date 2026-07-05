@@ -140,3 +140,49 @@ def test_solapa_prosa_detecta_parafraseo():
              "American Express. Todo en pesos.")
     assert C.solapa_prosa(prosa, bloque)
     assert not C.solapa_prosa("Buenisima eleccion, el mouse anda muy bien.", bloque)
+
+
+def test_prosa_trae_valores_todos_los_montos():
+    """Tema numerico cuya prosa ya trae TODOS los montos oficiales: el bloque
+    no agrega nada (visto en el banco: cuotas bien contestadas por el solver +
+    bloque identico pegado abajo con un segundo gancho contradictorio)."""
+    valores = [{"concepto": "cuotas_sin_interes", "monto": 6, "unidad": "cuotas"},
+               {"concepto": "cuotas_con_interes", "monto": 12, "unidad": "cuotas"}]
+    prosa = ("Si, se puede pagar en cuotas sin interes. Tenemos hasta 6 cuotas "
+             "sin interes con Visa y Mastercard, y hasta 12 con interes.")
+    assert C.prosa_trae_valores(prosa, valores)
+
+
+def test_prosa_con_un_monto_faltante_no_saltea():
+    """Falta UN numero oficial en la prosa: el bloque viaja como siempre."""
+    valores = [{"concepto": "cuotas_sin_interes", "monto": 6, "unidad": "cuotas"},
+               {"concepto": "cuotas_con_interes", "monto": 12, "unidad": "cuotas"}]
+    prosa = "Si, tenemos hasta 6 cuotas sin interes con Visa y Mastercard."
+    assert not C.prosa_trae_valores(prosa, valores)
+
+
+def test_tema_sin_valores_no_aplica():
+    """Sin valores estructurados no hay montos que comparar: False, decide el
+    solape de texto puro como hasta ahora."""
+    assert not C.prosa_trae_valores("Emitimos factura A o B.", [])
+    assert not C.prosa_trae_valores("", [{"monto": 6}])
+
+
+def test_gancho_imperativo_tambien_se_recorta():
+    """El gancho no siempre pregunta: 'Contame que producto te interesa.' es un
+    segundo cierre igual. Si la prosa ya pregunta, se recorta tambien."""
+    prosa = "Te lo agrego al pedido. Confirmamos?"
+    bloque = ("Podes pagar hasta en 6 cuotas sin interes con Visa y Mastercard. "
+              "Contame que producto te interesa y te armo el plan.")
+    out = C.acoplar_bloque(prosa, bloque)
+    assert "Contame que producto" not in out
+    assert "6 cuotas sin interes" in out
+
+
+def test_gancho_imperativo_queda_si_prosa_no_pregunta():
+    """Sin pregunta en la prosa el gancho del bloque ES el cierre del mensaje."""
+    prosa = "Buenisima eleccion."
+    bloque = ("Podes pagar hasta en 6 cuotas sin interes. "
+              "Contame que producto te interesa y te armo el plan.")
+    out = C.acoplar_bloque(prosa, bloque)
+    assert "Contame que producto" in out

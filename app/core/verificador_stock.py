@@ -38,9 +38,12 @@ _RE_SIN_STOCK = re.compile(
     r"fuera\s+de\s+stock|no\s+lo\s+tenemos\s+disponible)",
     re.IGNORECASE)
 
-# Afirmacion de disponibilidad.
+# Afirmacion de disponibilidad. Incluye "lo tenemos" / "tenemos el X": afirmar
+# que se TIENE un producto agotado es la misma promesa falsa aunque no diga la
+# palabra stock (visto en el banco: "Tenemos el DX-110 Blanco", stock 0).
 _RE_CON_STOCK = re.compile(
-    r"(?:(?:tiene|tienen|tenemos|hay)\s+stock|en\s+stock|disponibles?\b)",
+    r"(?:(?:tiene|tienen|tenemos|hay)\s+stock|en\s+stock|disponibles?\b|"
+    r"(?:lo|la)\s+tenemos\b|tenemos\s+(?:el|la)\b)",
     re.IGNORECASE)
 
 # Cifra de unidades SOLO con cue de disponibilidad: "quedan 9", "3 en stock",
@@ -74,23 +77,61 @@ def _productos_con_stock(evidencia: list[dict]) -> list[dict]:
             if i.get("tipo") == "producto" and isinstance(i.get("stock"), int)]
 
 
-def _producto_nombrado(texto: str, start: int,
-                       productos: list[dict]) -> dict | None:
-    """El UNICO producto del catalogo nombrado en la ventana previa a la posicion
-    start. None si ninguno matchea o si matchean dos distintos (ambiguo). Mismo
+def _producto_en_ventana(pre: str, productos: list[dict]) -> dict | None:
+    """El UNICO producto del catalogo nombrado en la ventana de texto dada.
+    None si ninguno matchea o si matchean dos distintos (ambiguo). Mismo
     anclaje por tokens del nombre que usa el verificador de plata."""
-    pre = texto[max(0, start - _VENTANA):start].lower()
-    candidatos: dict[str, dict] = {}
+    # Ancla EXACTA primero: el nombre COMPLETO del producto esta literal en la
+    # ventana (el estampado imprime el nombre completo, asi que es el caso
+    # normal). Uno solo con nombre completo presente gana aunque hermanos de
+    # la misma marca compartan tokens ("Genius DX-110" vs "Genius NX-7000",
+    # cuyos codigos cortos el tokenizador descarta). Dos nombres completos
+    # presentes = ambiguedad real, se sigue con el puntaje por tokens.
+    exactos = [p for p in productos
+               if (p.get("nombre") or "").strip()
+               and str(p["nombre"]).lower() in pre]
+    if len(exactos) == 1:
+        return exactos[0]
+    candidatos: dict[str, tuple[int, dict]] = {}
     for p in productos:
         toks = _tokens_significativos(p.get("nombre", ""))
         if not toks:
             continue
         presentes = sum(1 for t in toks if t in pre)
         if presentes >= min(2, len(toks)):
-            candidatos[str(p.get("id") or "").upper()] = p
+            candidatos[str(p.get("id") or "").upper()] = (presentes, p)
+    if not candidatos:
+        return None
     if len(candidatos) == 1:
-        return next(iter(candidatos.values()))
+        return next(iter(candidatos.values()))[1]
+    # Desempate entre variantes del mismo modelo (el caso comun: dos colores):
+    # gana el que matchea MAS tokens del nombre, porque el token que sobra es
+    # justamente el distintivo ("blanco" nombra al Blanco, no al Negro). Empate
+    # real de puntaje sigue siendo ambiguo y no se toca.
+    puntajes = sorted((c[0] for c in candidatos.values()), reverse=True)
+    if puntajes[0] > puntajes[1]:
+        return max(candidatos.values(), key=lambda c: c[0])[1]
     return None
+
+
+def _producto_nombrado(texto: str, start: int,
+                       productos: list[dict]) -> dict | None:
+    """Ancla hacia ATRAS: el producto nombrado en la ventana previa a start."""
+    return _producto_en_ventana(
+        texto[max(0, start - _VENTANA):start].lower(), productos)
+
+
+def _producto_anclado(texto: str, m: "re.Match",
+                      productos: list[dict]) -> dict | None:
+    """Ancla de una afirmacion de disponibilidad: primero hacia atras (el caso
+    normal, 'el X no tiene stock') y si no hay, hacia ADELANTE ('tenemos el X',
+    'no hay stock del X': el nombre viene despues del verbo). Misma regla de
+    unicidad en las dos direcciones."""
+    p = _producto_nombrado(texto, m.start(), productos)
+    if p is not None:
+        return p
+    return _producto_en_ventana(
+        texto[m.end():m.end() + _VENTANA].lower(), productos)
 
 
 def detectar_stock_contradicho(respuesta: str,
@@ -117,13 +158,13 @@ def detectar_stock_contradicho(respuesta: str,
     for m in _RE_SIN_STOCK.finditer(respuesta):
         if _RE_CONDICIONAL.search(respuesta[max(0, m.start() - 50):m.start()]):
             continue
-        p = _producto_nombrado(respuesta, m.start(), productos)
+        p = _producto_anclado(respuesta, m, productos)
         if p is not None and int(p["stock"]) > 0:
             _agregar("sin_stock_falso", p)
     for m in _RE_CON_STOCK.finditer(respuesta):
         if _RE_NEGADO.search(respuesta[max(0, m.start() - 20):m.start()]):
             continue
-        p = _producto_nombrado(respuesta, m.start(), productos)
+        p = _producto_anclado(respuesta, m, productos)
         if p is not None and int(p["stock"]) == 0:
             _agregar("con_stock_falso", p)
     return out

@@ -155,3 +155,48 @@ def test_multidestino_tarifas_distintas_suman_cada_una(firestore_doble):
     envio = next(e for e in r["extras"] if e["faq_tema"] == "costo_envio")
     assert envio.get("monto") == esperado, (
         "Cada destino cobra su tarifa real; hoy se cobra la ultima por todos.")
+
+
+def test_multidestino_recuerda_destinos_de_turnos_anteriores(firestore_doble):
+    """'Y el total de todo?' UN TURNO DESPUES de cotizar dos destinos: las
+    localidades ya cotizadas viajan en el estado (memoria del pedido) y
+    calculate_total las usa sin volver a pedir el CP. Visto en el banco: el bot
+    re-pedia el codigo postal de Cordoba que el cliente ya habia dado."""
+    from app.core.tools import calculate_total, cotizar_envio, get_all_products
+    from app.core import estado_venta
+
+    # Turno 1: se cotizan los dos destinos (esto llena las localidades del turno).
+    estado_venta.set_current_estado({})
+    q1 = cotizar_envio(localidad="Cordoba, provincia de Cordoba", subtotal=0)
+    q2 = cotizar_envio(localidad="Rosario, Santa Fe", subtotal=0)
+    assert q1.get("ok") and q2.get("ok")
+    esperado = int(q1["monto"]) + int(q2["monto"])
+    locs_memoria = estado_venta.get_envio_localidades()
+    assert len(locs_memoria) == 2
+
+    # Turno 2: contexto NUEVO (set_current_estado limpia las localidades del
+    # turno), pero el estado trae los destinos persistidos de la conversacion.
+    estado_venta.set_current_estado({"localidades_envio": locs_memoria})
+    assert estado_venta.get_envio_localidades() == []
+    barato = sorted(get_all_products(), key=lambda p: p.get("precio_ars", 0))[0]
+    r = calculate_total(
+        items=[{"product_id": barato["id"], "cantidad": 2}],
+        items_extra=[{"faq_tema": "costo_envio", "concepto": "x"}],
+        destinos=2,
+    )
+    estado_venta.set_current_estado({})
+    assert r.get("ok"), "con destinos en memoria no puede pedir el CP de nuevo"
+    envio = next(e for e in r["extras"] if e["faq_tema"] == "costo_envio")
+    assert envio.get("monto") == esperado
+
+
+def test_bloque_solver_lista_destinos_cotizados():
+    """El bloque de estado que ve el solver enumera los destinos ya cotizados y
+    le ordena no volver a pedir esos CP."""
+    from app.core.estado_venta import bloque_para_solver
+
+    b = bloque_para_solver({"localidades_envio": ["cordoba capital",
+                                                  "mendoza capital"]})
+    assert "cordoba capital" in b and "mendoza capital" in b
+    assert "NO vuelvas a pedir" in b
+    assert "destinos=2" in b

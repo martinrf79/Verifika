@@ -396,6 +396,15 @@ def calculate_total(items: list[dict] | None = None,
             # Si el solver declara mas destinos que localidades cotizadas, los
             # restantes cobran la ultima tarifa conocida (conservador).
             _locs = get_envio_localidades()
+            if not _locs:
+                # Memoria del pedido: destinos cotizados en turnos ANTERIORES.
+                # Sin esto, "y el total de todo?" un turno despues de cotizar
+                # dos destinos no encuentra ninguna localidad y vuelve a pedir
+                # un CP que el cliente ya dio (visto en el banco de charlas).
+                from app.core.estado_venta import get_current_estado
+                _locs = [str(l).strip() for l in
+                         (get_current_estado().get("localidades_envio") or [])
+                         if str(l or "").strip()]
             if n_envios > 1 and len(_locs) > 1:
                 _locs = _locs[-n_envios:]
             else:

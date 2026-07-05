@@ -28,7 +28,7 @@ from app.core.leads import (
 from app.core.estado_venta import (
     construir_estado, set_current_estado, bloque_para_solver,
     productos_de_meta, carrito_de_meta, envio_de_meta, merge_productos,
-    detectar_criterio)
+    detectar_criterio, get_envio_localidades)
 from app.core.tools import get_tools_schema
 from app.config import get_settings
 from app.logger import get_logger
@@ -448,11 +448,13 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             _bc = (bloque_curado_de_meta(meta, tienda_id)
                    or bloque_curado_por_mensaje(raw_message, interp, tienda_id))
             if _bc:
-                from app.core.curadas import solapa_prosa, temas_cubiertos_por_tools
+                from app.core.curadas import (
+                    solapa_prosa, temas_cubiertos_por_tools, prosa_trae_valores)
                 from app.storage.firestore_client import get_all_faq as _gaf
                 _tema_bc, _bloque_bc = _bc
-                _tiene_valores = bool(
-                    ((_gaf(tienda_id=tienda_id) or {}).get(_tema_bc) or {}).get("valores"))
+                _valores_bc = ((_gaf(tienda_id=tienda_id) or {})
+                               .get(_tema_bc) or {}).get("valores")
+                _tiene_valores = bool(_valores_bc)
                 # Pertinencia (vista en real 4-jul): el bloque NO va cuando una
                 # tool del mismo dominio ya dio la respuesta concreta (envio
                 # cotizado, descuento en el total), ni cuando la prosa ya dice
@@ -464,6 +466,15 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 elif not _tiene_valores and solapa_prosa(respuesta, _bloque_bc):
                     log.info("interprete_libre_acople_salteado", trace_id=trace_id,
                              tema=_tema_bc, motivo="prosa_solapa")
+                # Tema NUMERICO cuya prosa ya trae TODOS los montos oficiales
+                # y ademas dice lo mismo que el bloque: pegarlo repetiria la
+                # politica dos veces con un segundo gancho (visto en el banco,
+                # guion de acople). El numero oficial esta literal en la prosa
+                # y el verificador de FAQ numerica lo audita igual.
+                elif (_tiene_valores and prosa_trae_valores(respuesta, _valores_bc)
+                        and solapa_prosa(respuesta, _bloque_bc)):
+                    log.info("interprete_libre_acople_salteado", trace_id=trace_id,
+                             tema=_tema_bc, motivo="prosa_trae_valores")
                 else:
                     respuesta = acoplar_bloque(respuesta, _bloque_bc)
                     tema_acoplado = _tema_bc
@@ -498,11 +509,29 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             # cifra que el bot ya mostro y repite, asi el filtro no la marca en
             # falso. El estado los guarda con la clave 'precio'; el verificador
             # lee 'precio_ars', por eso se normaliza al pasarlos.
-            prods_vistos = [
-                {**p, "precio_ars": p.get("precio_ars", p.get("precio"))}
-                for p in (estado.get("productos_vistos") or [])
-                if isinstance(p, dict)
-            ]
+            # Cada visto se re-lee VIVO del catalogo por id: asi la evidencia
+            # trae el precio Y el stock actuales y los verificadores (plata y
+            # stock) pueden juzgar afirmaciones sobre productos de turnos
+            # anteriores. La memoria guarda el precio de cuando se mostro; el
+            # que juzga es siempre el dato vivo de la fuente. Si la lectura
+            # falla, queda el precio de memoria (sin stock: no acusa a nadie).
+            from app.storage.firestore_client import get_product_by_id as _gpid_ev
+            prods_vistos = []
+            for p in (estado.get("productos_vistos") or []):
+                if not isinstance(p, dict):
+                    continue
+                _vivo = None
+                _pid = str(p.get("id") or "").upper()
+                if _pid:
+                    try:
+                        _vivo = _gpid_ev(_pid, tienda_id=tienda_id)
+                    except Exception:
+                        _vivo = None
+                if isinstance(_vivo, dict) and _vivo.get("precio_ars") is not None:
+                    prods_vistos.append(_vivo)
+                else:
+                    prods_vistos.append(
+                        {**p, "precio_ars": p.get("precio_ars", p.get("precio"))})
             evidencia = build_evidence_from_tools(
                 meta.get("tools_called", []) or [], tienda_id,
                 productos_vistos=prods_vistos)
@@ -819,10 +848,33 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # tools generaron este turno se suman a los de turnos anteriores, asi el bloque
     # del proximo turno los tiene a la vista. Si este turno no llamo una tool, queda
     # lo que ya habia en memoria.
+    # Los productos que el bot MOSTRO ([[PROD:id]] estampados, ej. los que trae la
+    # guia determinista) tambien son vistos, aunque el turno no haya llamado tools.
+    # Sin esto el turno de la guia no deja rastro y el solver del proximo turno
+    # ADIVINA el id de memoria (visto en el banco: pidio el total con un teclado de
+    # $172.500 en vez del de $12.000 mostrado). Nombre y precio salen del catalogo.
+    mostrados: list[dict] = []
+    if _ids_mostrados:
+        from app.storage.firestore_client import get_product_by_id as _gpid_mem
+        for _pid in {i.upper() for i in _ids_mostrados}:
+            try:
+                _pp = _gpid_mem(_pid, tienda_id=tienda_id)
+            except Exception:
+                _pp = None
+            if (isinstance(_pp, dict) and _pp.get("nombre")
+                    and isinstance(_pp.get("precio_ars"), (int, float))):
+                mostrados.append({"id": _pid, "nombre": _pp["nombre"],
+                                  "precio": int(_pp["precio_ars"])})
     productos_vistos = merge_productos(
-        conv.get("productos_vistos") or [], productos_de_meta(meta))
+        conv.get("productos_vistos") or [], productos_de_meta(meta) + mostrados)
     carrito_vigente = carrito_de_meta(meta) or (conv.get("carrito_vigente") or [])
     ultima_localidad = envio_de_meta(meta) or (conv.get("ultima_localidad") or "")
+    # TODAS las localidades cotizadas con exito (multi-destino), no solo la
+    # ultima: si este turno no se cotizo ninguna queda lo de memoria. Sin esto,
+    # "y el total de todo?" al turno siguiente de cotizar dos destinos vuelve a
+    # pedir un CP que el cliente ya dio (visto en el banco, guion multi-destino).
+    ultimas_localidades = get_envio_localidades() or (
+        conv.get("ultimas_localidades") or [])
     # Criterio del cliente ("lo mas barato"): se detecta determinista en el mensaje
     # y es STICKY. Una vez dicho persiste entre turnos hasta que el cliente diga
     # otro, asi el solver no vuelve a preguntar modelo ni color (arreglo B).
@@ -845,6 +897,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                           productos_vistos=productos_vistos,
                           carrito_vigente=carrito_vigente,
                           ultima_localidad=ultima_localidad,
+                          ultimas_localidades=ultimas_localidades,
                           criterio_cliente=criterio_cliente,
                           provincia_envio=provincia_envio,
                           pregunta_cierre_hecha=pregunta_cierre_hecha,
