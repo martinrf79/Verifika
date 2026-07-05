@@ -655,7 +655,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         try:
             from app.core.verificador_stock import (
                 corregir_unidades_stock, detectar_stock_contradicho,
-                instruccion_stock)
+                instruccion_stock, cuarentena_stock)
             _fix_stock = corregir_unidades_stock(respuesta, evidencia)
             if _fix_stock["correcciones"]:
                 log.warning("interprete_libre_stock_cifra_corregida",
@@ -672,13 +672,25 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                     respuesta, instruccion_stock(_contradicho), trace_id)
                 if _nueva:
                     respuesta = _nueva
-                    _quedan = detectar_stock_contradicho(respuesta, evidencia)
-                    if _quedan:
-                        log.warning("interprete_libre_stock_persiste",
-                                    trace_id=trace_id, casos=_quedan[:6])
+                _quedan = detectar_stock_contradicho(respuesta, evidencia)
+                if _quedan:
+                    # Red DETERMINISTA (mismo patron que la guardia, visto en
+                    # el banco: la reescritura dejo la mentira y salio al
+                    # cliente): se podan las lineas contradichas; sin mensaje
+                    # decente, canned. Antes aca solo se logueaba stock_persiste.
+                    _poda = cuarentena_stock(respuesta, evidencia)
+                    if _poda and not detectar_stock_contradicho(_poda, evidencia):
+                        respuesta = _poda
+                        log.warning("interprete_libre_stock_cuarentena",
+                                    trace_id=trace_id, casos=_quedan[:6],
+                                    respuesta_preview=_poda[:200])
                     else:
-                        log.info("interprete_libre_stock_reescrito",
-                                 trace_id=trace_id)
+                        respuesta = settings.VERIFIKA_FALLBACK_MESSAGE
+                        log.warning("interprete_libre_stock_bloqueado",
+                                    trace_id=trace_id, casos=_quedan[:6])
+                else:
+                    log.info("interprete_libre_stock_reescrito",
+                             trace_id=trace_id)
         except Exception as e:
             log.warning("interprete_libre_stock_error", trace_id=trace_id,
                         error=str(e)[:160])

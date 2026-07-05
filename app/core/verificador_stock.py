@@ -203,6 +203,21 @@ def corregir_unidades_stock(respuesta: str, evidencia: list[dict]) -> dict:
     return {"respuesta": nuevo, "correcciones": correcciones}
 
 
+def cuarentena_stock(texto: str, evidencia: list[dict]) -> str:
+    """Red DETERMINISTA para cuando la reescritura LLM falla o deja la
+    contradiccion (mismo patron que guardia_promesas.cuarentena_prohibidas,
+    visto en el banco: la reescritura dejo 'el Blanco esta disponible' con
+    stock CERO y salio al cliente): poda las LINEAS del mensaje donde la
+    deteccion de stock contradicho dispara. La linea entera, porque el detalle
+    que acompana la afirmacion falsa es parte de la misma invencion. Puede
+    devolver '' si todo el mensaje era la mentira; el llamador decide el
+    fallback final."""
+    lineas = (texto or "").split("\n")
+    limpias = [l for l in lineas
+               if not detectar_stock_contradicho(l, evidencia)]
+    return "\n".join(limpias).strip()
+
+
 def instruccion_stock(contradicciones: list[dict]) -> str:
     """Regla de reescritura para la maquinaria de guardia_promesas, con el dato
     REAL del catalogo adentro, asi la reescritura no inventa."""

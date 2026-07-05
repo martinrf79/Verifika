@@ -201,3 +201,25 @@ def test_guia_mas_barato_trae_id_y_marcador(firestore_doble):
     guia = guia_mas_barato("quiero el mouse mas barato", productos_vistos=[])
     assert guia and "[[PROD:" in guia
     assert "mas barato CON STOCK" in guia
+
+
+# ── Cuarentena determinista (red cuando la reescritura LLM deja la mentira) ──
+
+def test_cuarentena_poda_la_linea_contradicha():
+    """La linea entera con la afirmacion falsa se poda; el resto del mensaje
+    queda intacto (mismo patron que la cuarentena de la guardia)."""
+    ev = [_prod("MOU0023", "Mouse Genius DX-110 Negro", 11),
+          _prod("MOU0024", "Mouse Genius DX-110 Blanco", 0)]
+    r = ("Buenas!\n"
+         "Tenemos el Mouse Genius DX-110 Blanco disponible, te lo reservo?\n"
+         "El Mouse Genius DX-110 Negro tiene 11 en stock.")
+    poda = VS.cuarentena_stock(r, ev)
+    assert "Blanco" not in poda
+    assert "Negro" in poda and "Buenas!" in poda
+    assert VS.detectar_stock_contradicho(poda, ev) == []
+
+
+def test_cuarentena_devuelve_vacio_si_todo_era_mentira():
+    ev = [_prod("MOU0024", "Mouse Genius DX-110 Blanco", 0)]
+    r = "Tenemos el Mouse Genius DX-110 Blanco disponible."
+    assert VS.cuarentena_stock(r, ev) == ""
