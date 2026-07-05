@@ -268,6 +268,11 @@ real. Piezas, todas en `banco_pruebas/`:
   primeros tests `vivo` DE VERDAD: `tests/test_vivo_charlas.py` los corre por el pipeline y
   exige juez limpio. Correr a propósito antes de mergear cambios del camino LLM:
   `python -m pytest -m vivo tests/test_vivo_charlas.py -v`.
+  **Cómo leer una marca:** el solver varía entre corridas, así que una marca del juez merece
+  LEER esa charla antes de tocar código: puede ser una mentira real que el pipeline dejó pasar
+  (se arregla el invariante en producción), un falso positivo del juez (se afina el juez, ej.
+  la tarifa de envío pegada al producto) o una variación puntual del LLM que en la siguiente
+  corrida no aparece. Verde estable dos corridas seguidas = listo para charla real.
 - **El doble ahora simula el cierre REAL**: `modo_cierre: "A"` como producción y leads en RAM
   (solo se dobla el almacenamiento y el aviso al dueño). Antes el cierre era un no-op y no se
   probaba nunca.

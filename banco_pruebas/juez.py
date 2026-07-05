@@ -40,6 +40,40 @@ def _catalogo_evidencia(tienda_id: str = "verifika_prod") -> list[dict]:
             for p in get_all_products(tienda_id=tienda_id)]
 
 
+def _tarifas_envio_conocidas(tienda_id: str) -> set[int]:
+    """Todos los montos de envio que la tienda puede cobrar (config por
+    provincia, tarifas_envio de la tienda, valores de la FAQ costo_envio). Una
+    cifra igual a una tarifa es plausiblemente un envio del pedido aunque no
+    diga la palabra 'envio' cerca ('Mouse a Cordoba: $7.500'): no se acusa
+    como precio de lista pisado."""
+    montos: set[int] = set()
+    try:
+        from app.config import get_settings
+        montos |= {int(v) for v in
+                   get_settings().ENVIO_INTERIOR_POR_PROVINCIA.values()}
+    except Exception:
+        pass
+    try:
+        from app.storage.firestore_client import get_config
+        provincias = (get_config("tarifas_envio", tienda_id=tienda_id)
+                      or {}).get("provincias") or {}
+        montos |= {int(v) for v in provincias.values()
+                   if isinstance(v, (int, float))}
+    except Exception:
+        pass
+    try:
+        from app.storage.firestore_client import get_all_faq
+        valores = ((get_all_faq(tienda_id=tienda_id) or {})
+                   .get("costo_envio") or {}).get("valores") or []
+        for v in valores:
+            for k in ("monto", "monto_min", "monto_max"):
+                if isinstance(v.get(k), (int, float)):
+                    montos.add(int(v[k]))
+    except Exception:
+        pass
+    return montos
+
+
 def juzgar(respuesta: str, tienda_id: str = "verifika_prod") -> list[str]:
     """Lista de violaciones de invariantes en la respuesta ([] = limpia)."""
     problemas: list[str] = []
@@ -68,6 +102,7 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod") -> list[str]:
     #    producto que no es su precio real ni una cuenta declarada. El nombre
     #    completo es el ancla porque el estampado siempre lo imprime entero;
     #    contra el catalogo completo el ancla por tokens empata entre hermanos.
+    tarifas = _tarifas_envio_conocidas(tienda_id)
     for m in _RE_MONTO.finditer(respuesta):
         ventana_previa = respuesta[max(0, m.start() - 30):m.start()]
         if _RE_CONTEXTO_CUENTA.search(ventana_previa):
@@ -80,6 +115,8 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod") -> list[str]:
         if len(nombrados) != 1:
             continue
         n = int(m.group(1).replace(".", ""))
+        if n in tarifas:
+            continue
         pr = int(nombrados[0]["precio_ars"])
         if pr != n and (pr == 0 or n % pr != 0):
             problemas.append(

@@ -44,3 +44,12 @@ def test_total_de_cuenta_no_es_falso_positivo(firestore_doble):
     r = ("2x Mouse Genius DX-110 Negro a $8.500 c/u. "
          "Con envio a Cordoba $7.500, Total: $24.500.")
     assert juzgar(r) == []
+
+
+def test_tarifa_de_envio_junto_al_producto_no_es_falso_positivo(firestore_doble):
+    """La cifra del envio puede aparecer pegada al nombre del producto sin la
+    palabra envio cerca ('Mouse ... a Cordoba: $7.500'): si coincide con una
+    tarifa conocida de la tienda, no se acusa como precio de lista pisado.
+    Visto en la primera corrida viva del guion multi-destino."""
+    r = "- Mouse Genius DX-110 Negro a Cordoba: $7.500"
+    assert juzgar(r) == []
