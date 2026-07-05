@@ -83,3 +83,23 @@ def build_evidence_from_tools(tools_called: list[dict],
         _add_producto(p)
 
     return list(productos_por_id.values()) + faq_evidence + proof_evidence
+
+
+def productos_nombrados_en(texto: str, tienda_id: str | None = None) -> list[dict]:
+    """Productos del catalogo cuyo NOMBRE COMPLETO aparece literal en el texto
+    (case-insensitive). Para completar la evidencia con lo que la respuesta
+    NOMBRA: la melliza no puede juzgar un producto que no ve, y el solver a
+    veces tipea una linea de producto a mano, sin tool ni marcador (visto en el
+    banco: "NX-7000 - $8.000 (11 en stock)" con precio y stock de fantasia que
+    ningun verificador pudo corregir). El catalogo esta cacheado; el chequeo es
+    una subcadena por producto."""
+    low = (texto or "").lower()
+    if not low:
+        return []
+    from app.storage.firestore_client import get_all_products
+    out = []
+    for p in get_all_products(tienda_id=tienda_id):
+        nom = str(p.get("nombre") or "").strip().lower()
+        if nom and nom in low:
+            out.append(p)
+    return out

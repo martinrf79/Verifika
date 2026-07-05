@@ -148,3 +148,18 @@ def test_e7_numero_de_prosa_faq_no_respalda_precio():
     assert not r["ok"], (
         "150000 viene de la prosa de la FAQ, no es un precio de catalogo; "
         "no debe respaldar un precio de producto.")
+
+
+def test_productos_nombrados_entran_a_la_evidencia(firestore_doble):
+    """La evidencia se completa con los productos que la respuesta NOMBRA con
+    su nombre completo, para que la melliza pueda juzgar una linea de producto
+    tipeada a mano sin tool ni marcador (visto en el banco: NX-7000 con precio
+    y stock de fantasia que nadie pudo corregir)."""
+    from app.core.evidencia import productos_nombrados_en
+
+    r = "Mira, el Mouse Genius NX-7000 Negro - $8.000 (11 en stock) va joya."
+    nombrados = productos_nombrados_en(r)
+    assert [p["id"] for p in nombrados] == ["MOU0049"]
+    assert nombrados[0]["precio_ars"] == 14000
+    assert nombrados[0]["stock"] == 18
+    assert productos_nombrados_en("hola, buen dia") == []

@@ -548,6 +548,18 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                         _pp = None
                     if isinstance(_pp, dict) and _pp.get("precio_ars") is not None:
                         evidencia.append({"tipo": "producto", **_pp})
+            # Todo producto NOMBRADO con su nombre completo en la respuesta
+            # entra VIVO a la evidencia: la melliza no puede juzgar lo que no
+            # ve. Visto en el banco: el solver tipeo a mano una linea de
+            # producto sin tool ni marcador ("NX-7000 - $8.000, 11 en stock",
+            # precio y stock de fantasia) y ni la plata ni el stock la
+            # corrigieron porque el producto no estaba en la evidencia.
+            from app.core.evidencia import productos_nombrados_en
+            _ids_ev = {str(i.get("id") or "").upper() for i in evidencia
+                       if i.get("tipo") == "producto"}
+            for _pn in productos_nombrados_en(respuesta, tienda_id):
+                if str(_pn.get("id") or "").upper() not in _ids_ev:
+                    evidencia.append({"tipo": "producto", **_pn})
             # QUE PROACTIVO: el codigo busca en el catalogo lo que el cliente pidio,
             # SIN depender de que el solver haya buscado. Esos productos REALES entran
             # como evidencia COMPLETA del QUE, asi el corrector valida/corrige contra
