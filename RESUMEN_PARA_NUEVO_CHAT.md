@@ -11,9 +11,15 @@ productos MOSTRADOS (el solver ya no adivina ids), evidencia VIVA de vistos (los
 juzgan productos de turnos anteriores con stock actual), ancla de stock con desempate de
 variantes + nombre completo + ventana adelante ("tenemos el X" agotado dispara), multi-destino
 que RECUERDA los destinos cotizados entre turnos, y acople sin duplicar (prosa que ya trae los
-montos oficiales + gancho imperativo recortado). 217 tests offline + 8 tests VIVO (guiones de
-charla real lockeados). Estrategia vigente: respuestas curadas + bloques deterministas (el
-código es dueño de todo dato duro; el solver, de la prosa), acordada el 4-jul.
+montos oficiales + gancho imperativo recortado). Segunda ola del mismo día (iterando la tanda
+hasta verde): REGLA CERO mecánica en la calculadora (con pedido vigente solo acepta ids
+certificados: carrito, mostrados o tools del turno; mató el total fantasma de otro producto),
+evidencia con todo producto NOMBRADO en la respuesta (la melliza no juzga lo que no ve),
+CUARENTENA determinista de stock (la reescritura que deja la mentira ya no sale), y ancla
+exacta por nombre completo en plata y stock con dedup por id y negación que no cruza la
+oración. **229 tests offline + 8 tests VIVO en VERDE ESTABLE: dos tandas completas seguidas
+(5-jul). Listo para la charla real de humo.** Estrategia vigente: respuestas curadas + bloques
+deterministas (el código es dueño de todo dato duro; el solver, de la prosa), acordada el 4-jul.
 
 ---
 
