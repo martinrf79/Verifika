@@ -53,3 +53,13 @@ def test_tarifa_de_envio_junto_al_producto_no_es_falso_positivo(firestore_doble)
     Visto en la primera corrida viva del guion multi-destino."""
     r = "- Mouse Genius DX-110 Negro a Cordoba: $7.500"
     assert juzgar(r) == []
+
+
+def test_precio_de_otro_producto_despues_del_anclado_no_acusa(firestore_doble):
+    """Si entre el nombre anclado y la cifra ya hay otro monto, esa cifra es de
+    otra cosa (el nombre del segundo producto puede venir incompleto y no
+    anclar). Visto en la tanda viva: los $57.500 de los Zeus X acusados al
+    DX-110 Negro."""
+    r = ("Te anoto el Mouse Genius DX-110 Negro a $8.500. "
+         "Y los auriculares Zeus X salen $57.500, decime si los sumo.")
+    assert juzgar(r) == []

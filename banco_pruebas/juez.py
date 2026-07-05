@@ -114,6 +114,14 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod") -> list[str]:
                      and isinstance(p.get("precio_ars"), (int, float))]
         if len(nombrados) != 1:
             continue
+        # Si entre el nombre anclado y la cifra ya aparece OTRO monto, el ancla
+        # no vale: aquel monto era el precio de ese producto y esta cifra es de
+        # otra cosa ("...DX-110 Negro a $8.500. Y los Zeus X salen $57.500",
+        # donde el nombre completo de los Zeus no esta en la ventana).
+        nombre = str(nombrados[0]["nombre"]).lower()
+        entre = ventana[ventana.rfind(nombre) + len(nombre):]
+        if _RE_MONTO.search(entre):
+            continue
         n = int(m.group(1).replace(".", ""))
         if n in tarifas:
             continue

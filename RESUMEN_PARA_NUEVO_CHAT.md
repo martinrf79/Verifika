@@ -211,7 +211,10 @@ La primera tanda de 8 guiones (DeepSeek real, pipeline real) encontró y se arre
 sigue pidiendo nombre y dirección en su prosa después de captar el lead (la regla era captar
 sin pedir datos; es conducta del prompt, no del cierre); el presupuesto estampado a veces sale
 con el total repetido en dos líneas (cosmético); "dale, lo compro" creó lead nivel TIBIA, no
-fuerte (¿confianza del interpretador baja en ese fraseo?).
+fuerte (¿confianza del interpretador baja en ese fraseo?). En UNA corrida del guion
+multi-destino se vio un "Total final: $44.500" con items listados que sumaban $33.500 (el log
+completo se perdió, no se pudo reconstruir si la calculadora corrió): extensión candidata del
+juez = chequear que el total declarado sea la suma de los renglones del MISMO mensaje.
 
 ## Hallazgos de pruebas reales (2-jul)
 
