@@ -186,8 +186,19 @@ def _render_presentacion(detalle, extras, subtotal,
 
 def calculate_total(items: list[dict] | None = None,
                     items_extra: list[dict] | None = None,
-                    destinos: int = 1) -> dict:
-    log.info(f"calculate_total INICIO items={items} items_extra={items_extra} destinos={destinos}")
+                    destinos: int = 1,
+                    pago: list[dict] | None = None) -> dict:
+    log.info(f"calculate_total INICIO items={items} items_extra={items_extra} "
+             f"destinos={destinos} pago={pago}")
+    # PAGO DIVIDIDO POR PORCENTAJE: si el cliente reparte el total entre medios
+    # (50/50, 70/30, etc.), el descuento por transferencia lo dueña el split, NO
+    # el items_extra. Se saca un descuento_transferencia que el solver haya
+    # pasado para no aplicarlo dos veces; el reparto lo aplica abajo con el pct
+    # real de la FAQ.
+    if pago:
+        items_extra = [e for e in (items_extra or [])
+                       if (e.get("faq_tema") or "").strip().lower()
+                       != "descuento_transferencia"]
     # Envios separados (multi-destino): el costo de envio se cobra una vez por
     # destino. Piso 1 (un solo envio, como funcionaba antes) y un techo sano para
     # no inventar multiplicadores absurdos si el modelo manda un numero disparatado.
@@ -522,6 +533,58 @@ def calculate_total(items: list[dict] | None = None,
                 "resultado_max": total + extra_max,
             },
         }
+    # ── PAGO DIVIDIDO POR PORCENTAJE: el CODIGO dueña TODA la cuenta ──────────
+    # base = productos + envio (el descuento por transferencia ya se saco de los
+    # extras arriba; lo aplica el reparto a lo que no es Mercado Pago). Una sola
+    # funcion cubre cualquier reparto: 50/50, 70/30, tres medios, etc. El solver
+    # no calcula ni una cifra: pasa 'pago' y el codigo devuelve el bloque sellado.
+    base_total = total + extra_min
+    if pago and not hay_rango:
+        from app.core.pago_split import calcular_split, render_split
+        _pct = 0
+        try:
+            from app.storage.firestore_client import get_all_faq as _gaf_pct
+            _vt = (((_gaf_pct(tienda_id=tid) or {}).get("descuento_transferencia")
+                    or {}).get("valores") or [])
+            _dv = next((v for v in _vt
+                        if (v.get("unidad") or "").lower() == "porcentaje"), None)
+            if _dv:
+                _pct = int(_dv.get("monto", 0))
+        except Exception as _e:
+            log.warning(f"calculate_total split_pct_faq_error {_e}")
+        _split = calcular_split(base_total, pago, _pct)
+        if _split.get("ok"):
+            _pres = _render_presentacion(
+                detalle, extras_detalle, total, total_ars=base_total)
+            _pres = _pres + "\n\n" + render_split(_split)
+            _montos_proof = ([base_total, _split["total_final_ars"],
+                              _split["descuento_total_ars"]]
+                             + [p["monto_ars"] for p in _split["partes"]]
+                             + [p["monto_final_ars"] for p in _split["partes"]])
+            return {
+                "ok": True,
+                "mensaje_para_llm": _nota_envio,
+                "total_ars": base_total,
+                "total_final_ars": _split["total_final_ars"],
+                "split_pago": _split,
+                "subtotal_productos_ars": total,
+                "presentacion": _pres,
+                "proof": {
+                    "tipo": "calculo_total_split_pago",
+                    "formula": ("base productos+envio repartida por porcentaje; "
+                                "descuento por transferencia a lo que no es "
+                                "Mercado Pago"),
+                    "subtotal_productos": total,
+                    "base_total": base_total,
+                    "split": _split,
+                    "montos": _montos_proof,
+                    "resultado": _split["total_final_ars"],
+                },
+                "detalle": detalle,
+                "extras": extras_detalle,
+            }
+        log.warning(f"calculate_total split_invalido motivo={_split.get('motivo')}")
+
     return {
         "ok": True,
         "mensaje_para_llm": _nota_envio,
@@ -1044,10 +1107,11 @@ def _build_schema():
                     "extras verificados contra FAQ cuantitativa (envios, descuentos, recargos). "
                     "USAR SIEMPRE para sumas. NUNCA calcules vos mismo. "
                     "Si el cliente pide total con envio u otro concepto de FAQ, pasalo en items_extra. "
-                    "PAGO MIXTO: si el cliente paga unidades con metodos distintos (una por "
-                    "transferencia, otra con otro medio), hace UNA llamada por cada grupo de pago, "
-                    "cada una con sus items y su descuento si corresponde. NUNCA repartas ni "
-                    "prorratees un descuento entre unidades vos mismo."
+                    "PAGO DIVIDIDO POR PORCENTAJE: si el cliente paga un porcentaje del TOTAL con un "
+                    "medio y el resto con otro (ej 50% transferencia y 50% Mercado Pago, o 70/30, o "
+                    "tres medios), pasa el reparto en 'pago' con cada medio y su porcentaje; el codigo "
+                    "reparte el total y aplica el descuento a lo que no es Mercado Pago. NUNCA repartas "
+                    "ni prorratees un descuento ni un total vos mismo."
                 ),
                 "parameters": {
                     "type": "object",
@@ -1081,6 +1145,18 @@ def _build_schema():
                             "minimum": 1,
                             "maximum": 10,
                             "description": "Cantidad de envios SEPARADOS del pedido (direcciones distintas). 1 por defecto. Si el cliente pide mandar a varias direcciones distintas, poner ese numero: el costo de envio se cobra una vez por cada destino y el total sale como rango.",
+                        },
+                        "pago": {
+                            "type": "array",
+                            "description": "Reparto del pago por PORCENTAJE del total. Cada item: medio (ej transferencia, Mercado Pago, Uala) y porcentaje. Deben sumar 100. El codigo calcula cada parte y aplica el descuento por transferencia a todo lo que NO sea Mercado Pago. Usalo cuando el cliente divide el pago entre medios (50/50, 70/30, etc.); NO pases ademas un items_extra de descuento_transferencia, el reparto ya lo aplica.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "medio": {"type": "string"},
+                                    "porcentaje": {"type": "number"},
+                                },
+                                "required": ["medio", "porcentaje"],
+                            },
                         },
                     },
                     "required": ["items"],
