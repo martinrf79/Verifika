@@ -25,6 +25,27 @@ def test_e4_no_dispara_en_negacion_de_retiro():
         "Negar el retiro es la politica correcta, no una promesa prohibida.")
 
 
+def test_promesa_dia_de_semana_con_tengas():
+    """Charla real 6-jul: 'entre miercoles y viernes de la semana que viene ya
+    tengas todo' es promesa de dia de entrega y se filtro (la guarda no cazaba
+    'tengas' ni 'semana que viene')."""
+    clases = guardia_promesas.detectar(
+        "lo mas probable es que entre miercoles y viernes de la semana que viene "
+        "ya tengas todo en cada destino")
+    assert "dia_entrega" in clases
+
+
+def test_promesa_semana_que_viene():
+    clases = guardia_promesas.detectar("lo tenes la semana que viene sin falta")
+    assert "dia_entrega" in clases
+
+
+def test_tengas_sin_dia_no_dispara():
+    """'cuando tengas los datos' no nombra un dia: no es promesa de entrega."""
+    assert guardia_promesas.detectar(
+        "cuando tengas los datos te confirmo el pedido") == []
+
+
 def test_e4_no_dispara_en_negacion_de_servicio():
     """E4: negar un servicio que no se ofrece es honesto, no debe marcarse."""
     clases = guardia_promesas.detectar(
