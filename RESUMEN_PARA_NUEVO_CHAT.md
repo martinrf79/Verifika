@@ -3,7 +3,69 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 5-jul-2026.** BANCO DE CHARLAS VIVAS con JUEZ automático: los errores
+**Última actualización: 6-jul-2026.** ARBITRAJE DE DIVERGENCIA intérprete↔solver por ejes
+CERRADOS + primera pieza del ENSAMBLADOR, todo DEPLOYADO a producción (runs #78 y #79 verdes).
+Cuatro cambios nuevos, mismo patrón de guarda determinista, con test cada uno:
+1. **Medición de divergencia** (`app/core/divergencia.py`): loguea, sin tocar la respuesta,
+   cuándo el solver hizo algo distinto a lo que leyó el intérprete en producto, opciones A/B y
+   estado del embudo. Evento `interprete_libre_divergencia`. En el banco solo disparó un falso
+   positivo del eje estado (el "te confirmo el producto" re-muestra el mismo producto): dato para
+   afinar antes de enforzar el embudo.
+2. **Guarda de producto** (`_reanclar_si_producto_divergente` en interprete_libre + reconciliación
+   por nombre): si el intérprete resolvió con confianza un nombre que reconcilia con UN único
+   producto del catálogo y el solver mostró otro, re-ancla al correcto con su línea real y
+   pregunta; nunca cierra sobre un id inferido. Triple candado. OJO: el certificador de queries da
+   'ambiguous' para un nombre completo (comparte 'mouse' con medio catálogo), por eso se reconcilia
+   por nombre, no con el certificador.
+3. **Memoria borrosa** (`app/core/memoria_ref.py`): "el que te dije, no me acuerdo" → el código
+   ancla el único visto, manda preguntar si hay varios, manda no inventar si no hay ninguno.
+   Inyección previa al solver, mismo patrón que la guía del más barato.
+4. **ENSAMBLADOR** (`app/core/ensamblador.py`, `colocar_bloque`): el código arma el mensaje final
+   cuidando la congruencia; un dato de una línea va donde el solver puso el marcador, un bloque de
+   varias líneas (presupuesto, política) se levanta a su propio párrafo y no queda incrustado en
+   una oración; marcador sin dato se quita limpio. Reemplaza el replace crudo de [[PRESUPUESTO]] y
+   [[ENVIO]]. **260 tests offline en verde, 8 vivos con juez limpio.**
+
+**ESTRATEGIA NUEVA acordada con Martín (6-jul), el norte de lo que viene:** salir del loop de
+"parchar error por error" invirtiendo quién genera. Hoy el solver genera todo y el código corrige
+atrás (whack-a-mole infinito). El destino es el **ENSAMBLADOR**: el código corre las tools, arma
+los bloques duros CERRADOS y sella una plantilla con huecos; el LLM NO elige ni escribe ningún
+dato, solo redacta la prosa de unión entre bloques que no puede tocar. La garantía no sale de
+confiar en el solver sino de SACARLE EL DATO DE LAS MANOS: el mensaje final lo concatena el código,
+100% predecible. Único residual: la prosa del hueco (acotada, la filtra lo de siempre) y una mala
+lectura del INTÉRPRETE en la etapa 1 (respuesta: si la confianza es baja, el Ensamblador PREGUNTA,
+no afirma). Por qué los marcadores fallaron antes y esta vez no: antes se los dábamos al solver
+como obligación opcional (podía olvidarlos o escribir el dato por fuera); el Ensamblador hace al
+código dueño de la colocación. Ya está la COHERENCIA; falta el SELLADO (que ningún dato duro entre
+por fuera de un marcador y podar lo suelto) para la garantía total.
+
+**PRÓXIMO PASO (arrancar acá el chat que viene):** el SELLADO de datos por marcador — todo precio/
+producto/total que el solver escriba por FUERA de un marcador se poda o se marca. Eso tapa el
+"teclado fantasma" de abajo. Y DEFINIR CON MARTÍN la regla de Ualá (decisión de negocio, no la
+puede tomar Claude): ¿Ualá cuenta como transferencia para el 10%? ¿el descuento va a TODO el
+pedido o solo a la parte pagada por transferencia?
+
+**HALLAZGOS charla real de WhatsApp (6-jul), verificados contra catálogo+FAQ del repo:**
+- **Precios y stock: TODOS correctos**, sin una alucinación de plata. El blindaje funcionó.
+- **ERROR grave — teclado fantasma:** el bot metió "Logitech G915 TKL $512.500" (producto real,
+  precio real) que el cliente NUNCA pidió, en un turno de "lo más barato". Causa: el solver emitió
+  un [[PROD:id]] con el id equivocado (TEC0001) y el estampado lo renderizó con dato real; los
+  verificadores no lo frenan porque la plata ES verdadera, solo que de OTRO producto. Es selección
+  MAL de producto por fuera de la intención → lo tapa el SELLADO del próximo paso.
+- **Ualá / descuento:** la cuenta del 10% la hace el CÓDIGO (calculate_total) y está bien
+  ($705.000 −$70.500 = $634.500). El problema es que el SOLVER decidió que Ualá = transferencia y
+  aplicó el 10% a TODO (incluida la notebook que el cliente dijo pagar por Ualá), sin regla de
+  fuente: en ninguna FAQ está definido si Ualá cuenta. Hueco de política, pendiente con Martín.
+- **Envío: NO le falta infraestructura.** La tabla de 16.164 localidades YA resuelve: "Villa Los
+  Aromos" sola, sin CP, cae a Córdoba/interior/$7.500; hasta "Pcia de córdoba no sé CP" resuelve.
+  El defecto es que el SOLVER pidió el CP igual teniendo todo para cotizar. Es conducta del solver,
+  no tabla faltante. En esta charla el envío fue GRATIS bien (compra > umbral $250.000 de la FAQ).
+- Menor: dio el Asus Vivobook como "agotado" pero la variante i5 Plata tiene 6 unidades (el
+  verificador de stock se abstiene sin color nombrado).
+
+---
+
+**5-jul-2026.** BANCO DE CHARLAS VIVAS con JUEZ automático: los errores
 que antes se estrenaban en la charla real ahora se cazan y arreglan ANTES, corriendo el pipeline
 completo con DeepSeek desde el entorno de Claude (la clave está en el entorno web). La primera
 tanda encontró 5 errores reales y se arreglaron por invariante (ver BANCO abajo): memoria de
