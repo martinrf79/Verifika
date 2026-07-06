@@ -250,6 +250,13 @@ def numeros_confiables(evidence: list[dict]):
             for k in ("resultado", "resultado_min", "resultado_max",
                       "subtotal_productos"):
                 _add(proof.get(k))
+            # PROOF del split de pago: base, total final, descuento y cada parte
+            # (monto por medio y monto con descuento) son cifras que computo la
+            # calculadora, no el solver. Sin esto la respuesta CORRECTA del
+            # reparto (ej "transferencia $754.650, MP $838.500") se bloquea en
+            # falso, porque esos montos no salen de un resultado suelto.
+            for m in proof.get("montos", []) or []:
+                _add(m)
             for o in proof.get("operandos_productos", []) or []:
                 _add(o.get("monto"))
                 # Precio unitario declarado por la calculadora: respalda el
