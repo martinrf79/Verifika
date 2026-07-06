@@ -38,7 +38,7 @@ settings = get_settings()
 
 # Contexto de LLEGADA (no de despacho: despachar rapido es legitimo, lo que
 # miente es prometer el DIA en que el pedido llega).
-_ENTREGA = (r"(?:lleg\w*|entreg\w*|recib\w*|arrib\w*|tendr\w*|"
+_ENTREGA = (r"(?:lleg\w*|entreg\w*|recib\w*|arrib\w*|tendr\w*|teng\w*|"
             r"(?:lo\s+|te\s+lo\s+)?(?:vas\s+a\s+)?ten[eé]s|vas\s+a\s+tener|"
             r"en\s+tu\s+casa|en\s+tu\s+puerta|en\s+tu\s+domicilio|en\s+tus\s+manos)")
 # Dia o fecha concreta, con diminutivos comunes y "finde". "dias habiles" no
@@ -48,7 +48,8 @@ _MESES = (r"enero|febrero|marzo|abril|mayo|junio|julio|agosto|"
           r"septiembre|setiembre|octubre|noviembre|diciembre")
 _DIA = (r"(?:lunes|lunecito|martes|martecito|mi[eé]rcoles|jueves|juevecito|"
         r"viernes|viernecito|s[áa]bado|sabadito|domingo|dominguito|"
-        r"finde|fin\s+de\s+semana|ma[ñn]ana|pasado\s+ma[ñn]ana|hoy\s+mismo|"
+        r"finde|fin\s+de\s+semana|semana\s+que\s+viene|pr[oó]xima\s+semana|"
+        r"semana\s+pr[oó]xima|ma[ñn]ana|pasado\s+ma[ñn]ana|hoy\s+mismo|"
         rf"\d{{1,2}}\s+de\s+(?:{_MESES})|"
         r"\b\d{1,2}/\d{1,2}\b)")
 _RE_DIA_ENTREGA = re.compile(
