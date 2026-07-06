@@ -114,3 +114,27 @@ def test_split_no_duplica_descuento_si_solver_pasa_extra(firestore_doble):
     assert r["ok"]
     # 100% transferencia: 36.000 - 10% = 32.400, UNA sola vez.
     assert r["total_final_ars"] == 32_400
+
+
+def test_sellado_split_correcto_pasa_y_total_malo_se_corrige(firestore_doble):
+    """Sellado: el verificador de plata reconoce los montos del split (no bloquea
+    la respuesta correcta) y corrige un total mal escrito al del proof. Cierra el
+    error de la charla 6-jul, donde el bot escribio $1.617.375 a mano."""
+    from app.core.tools import calculate_total
+    from app.core.estado_venta import set_current_estado, construir_estado
+    from app.core.verificador import verificar_respuesta, autocorregir_montos
+    set_current_estado(construir_estado({}, None))
+    items = [{"product_id": "NOT0065", "cantidad": 2},
+             {"product_id": "TEC0015", "cantidad": 2},
+             {"product_id": "AUR0003", "cantidad": 2}]
+    r = calculate_total(items=items, pago=[
+        {"medio": "transferencia", "porcentaje": 50},
+        {"medio": "mercado pago", "porcentaje": 50}])
+    ev = [{"tipo": "proof", "proof": r["proof"]}]
+    # La respuesta CORRECTA del reparto no se bloquea en falso.
+    ok = verificar_respuesta(
+        "Total final $1.593.150. Transferencia $754.650, Mercado Pago $838.500.", ev)
+    assert ok["ok"], ok.get("numeros_no_respaldados")
+    # Un total escrito a mano y mal se corrige al del proof.
+    fix = autocorregir_montos("Total final: $1.617.375.", ev)
+    assert any(c["a"] == 1_593_150 for c in fix["correcciones"])
