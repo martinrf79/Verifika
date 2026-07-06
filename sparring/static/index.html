@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sparring — el gimnasio de ventas</title>
+<style>
+  :root{
+    --fondo:#0d1117; --panel:#161b22; --borde:#2d333b; --texto:#e6edf3;
+    --tenue:#9aa4b2; --acento:#31c48d; --acento2:#f0b429; --rojo:#ef6a6a;
+    --burb-cli:#1f2937; --burb-ven:#1d4034;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--fondo);color:var(--texto);
+    font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    min-height:100vh;display:flex;flex-direction:column;align-items:center}
+  .caja{width:100%;max-width:640px;padding:16px}
+  h1{font-size:1.5rem;margin:20px 0 4px}
+  .sub{color:var(--tenue);margin-bottom:20px}
+  .tarjeta{background:var(--panel);border:1px solid var(--borde);
+    border-radius:14px;padding:16px;margin-bottom:12px;cursor:pointer;
+    transition:border-color .15s}
+  .tarjeta:hover{border-color:var(--acento)}
+  .tarjeta .fila{display:flex;align-items:center;gap:12px}
+  .avatar{width:44px;height:44px;border-radius:50%;background:var(--acento);
+    color:#08251b;font-weight:700;display:flex;align-items:center;
+    justify-content:center;font-size:1.2rem;flex:none}
+  .tarjeta h3{font-size:1.05rem}
+  .chip{display:inline-block;font-size:.75rem;color:var(--acento2);
+    border:1px solid var(--acento2);border-radius:99px;padding:1px 10px;
+    margin-left:8px;vertical-align:middle}
+  .tarjeta p{color:var(--tenue);font-size:.9rem;margin-top:8px}
+  /* chat */
+  #chat{display:none;flex-direction:column;height:100dvh;max-height:100dvh;width:100%;max-width:640px}
+  #cab{background:var(--panel);border-bottom:1px solid var(--borde);
+    padding:12px 16px;display:flex;align-items:center;gap:12px}
+  #cab .nom{font-weight:600}
+  #cab .est{font-size:.8rem;color:var(--tenue)}
+  #hilo{flex:1;overflow-y:auto;padding:16px;display:flex;
+    flex-direction:column;gap:10px}
+  .burbuja{max-width:80%;padding:10px 14px;border-radius:14px;
+    white-space:pre-wrap;word-wrap:break-word}
+  .cli{background:var(--burb-cli);align-self:flex-start;border-bottom-left-radius:4px}
+  .ven{background:var(--burb-ven);align-self:flex-end;border-bottom-right-radius:4px}
+  .pensando{color:var(--tenue);font-style:italic}
+  #pie{display:flex;gap:8px;padding:12px;background:var(--panel);
+    border-top:1px solid var(--borde)}
+  #texto{flex:1;background:var(--fondo);color:var(--texto);
+    border:1px solid var(--borde);border-radius:10px;padding:10px 12px;
+    font-size:1rem;outline:none}
+  button{background:var(--acento);color:#08251b;border:0;border-radius:10px;
+    padding:10px 16px;font-weight:700;font-size:.95rem;cursor:pointer}
+  button.sec{background:transparent;color:var(--tenue);
+    border:1px solid var(--borde)}
+  button:disabled{opacity:.5;cursor:default}
+  /* reporte */
+  #reporte{display:none}
+  .puntajote{font-size:4rem;font-weight:800;text-align:center;margin:8px 0 0}
+  .resultado{text-align:center;color:var(--tenue);margin-bottom:20px}
+  .dim{margin:14px 0}
+  .dim .cabdim{display:flex;justify-content:space-between;font-weight:600}
+  .barra{height:8px;background:var(--borde);border-radius:99px;margin:6px 0}
+  .barra i{display:block;height:100%;border-radius:99px;background:var(--acento)}
+  .veredicto{color:var(--texto);font-size:.92rem}
+  .evidencia{color:var(--tenue);font-size:.85rem;border-left:3px solid var(--acento2);
+    padding-left:10px;margin-top:6px;font-style:italic}
+  .bloque{background:var(--panel);border:1px solid var(--borde);
+    border-radius:14px;padding:16px;margin:14px 0}
+  .bloque h3{font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--tenue);margin-bottom:10px}
+  .muerte{border-color:var(--rojo)}
+  .muerte .cita{color:var(--texto);font-style:italic}
+  ul{padding-left:20px;color:var(--tenue);font-size:.9rem}
+  #compartir{width:100%;margin-top:8px}
+  .spark{display:flex;align-items:flex-end;gap:4px;height:56px;margin-top:8px}
+  .spark b{flex:1;background:var(--acento);border-radius:3px 3px 0 0;min-height:3px}
+  .spark b.baja{background:var(--rojo)}
+  .pieL{color:var(--tenue);font-size:.8rem;text-align:center;margin:24px 0}
+</style>
+</head>
+<body>
+
+<div class="caja" id="lobby">
+  <h1>🥊 Sparring</h1>
+  <div class="sub">El gimnasio de ventas. Elegí un cliente difícil, tratá de
+    venderle por chat y recibí tu veredicto con evidencia. Nadie te mira:
+    entrená las veces que quieras.</div>
+  <div id="personas"></div>
+  <div class="pieL">Cada cliente tiene una condición oculta de compra.
+    Se revela recién en tu veredicto.</div>
+</div>
+
+<div id="chat">
+  <div id="cab">
+    <div class="avatar" id="cAvatar"></div>
+    <div><div class="nom" id="cNombre"></div><div class="est" id="cEstado">en línea</div></div>
+    <div style="margin-left:auto"><button class="sec" id="btnFin">Pedir veredicto</button></div>
+  </div>
+  <div id="hilo"></div>
+  <div id="pie">
+    <input id="texto" placeholder="Escribí como vendedor..." autocomplete="off">
+    <button id="btnEnviar">Enviar</button>
+  </div>
+</div>
+
+<div class="caja" id="reporte"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+let sesion=null, persona=null, terminado=false;
+
+async function api(ruta, body){
+  const r=await fetch('/api/'+ruta,{method:body?'POST':'GET',
+    headers:{'Content-Type':'application/json'},
+    body:body?JSON.stringify(body):undefined});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function lobby(){
+  const ps=await api('personas');
+  $('#personas').innerHTML=ps.map(p=>`
+    <div class="tarjeta" onclick="empezar('${p.id}')">
+      <div class="fila"><div class="avatar">${p.avatar}</div>
+        <div><h3>${p.nombre} — ${p.titulo}<span class="chip">${p.dificultad}</span></h3>
+        <div style="color:var(--tenue);font-size:.85rem">${p.rubro}</div></div></div>
+      <p>${p.descripcion_publica}</p>
+    </div>`).join('');
+}
+
+function burbuja(texto, clase){
+  const d=document.createElement('div');
+  d.className='burbuja '+clase; d.textContent=texto;
+  $('#hilo').appendChild(d); $('#hilo').scrollTop=1e9;
+  return d;
+}
+
+async function empezar(id){
+  const s=await api('sesion',{persona_id:id});
+  sesion=s.sesion_id; persona=s.persona; terminado=false;
+  $('#lobby').style.display='none'; $('#chat').style.display='flex';
+  $('#cAvatar').textContent=persona.avatar;
+  $('#cNombre').textContent=persona.nombre+' · '+persona.rubro;
+  burbuja(s.apertura,'cli');
+  $('#texto').focus();
+}
+
+async function enviar(){
+  const t=$('#texto').value.trim();
+  if(!t||terminado) return;
+  $('#texto').value=''; burbuja(t,'ven');
+  const esp=burbuja('escribiendo...','cli pensando');
+  $('#btnEnviar').disabled=true;
+  try{
+    const r=await api('mensaje',{sesion_id:sesion,texto:t});
+    esp.remove(); burbuja(r.mensaje,'cli');
+    $('#cEstado').textContent='turno '+r.turno+' de '+r.max_turnos;
+    if(r.terminado){terminado=true; setTimeout(verReporte,1200);}
+  }catch(e){esp.textContent='error: '+e.message;}
+  $('#btnEnviar').disabled=false; $('#texto').focus();
+}
+
+function sparkline(linea){
+  if(!linea.length) return '';
+  let prev=40;
+  const barras=linea.map(p=>{
+    const baja=p.interes<prev; prev=p.interes;
+    return `<b style="height:${Math.max(4,p.interes)}%" class="${baja?'baja':''}"
+      title="turno ${p.turno}: interés ${p.interes}"></b>`;
+  }).join('');
+  return `<div class="bloque"><h3>Temperatura del cliente, turno a turno</h3>
+    <div class="spark">${barras}</div></div>`;
+}
+
+async function verReporte(){
+  $('#cEstado').textContent='el juez está mirando la conversación...';
+  const rep=await api('reporte',{sesion_id:sesion});
+  $('#chat').style.display='none';
+  const res={compra:'🏆 ¡Cerraste la venta!',avanza:'📅 Conseguiste el siguiente paso: cita concreta agendada.',se_va:'❌ El cliente se fue.',
+    se_enfrio:'🧊 La charla se enfrió sin cierre.',
+    abandonada:'🚪 Abandonaste la partida.'}[rep.resultado]||rep.resultado;
+  const nombres={descubrimiento:'Descubrimiento',manejo_objecion:'Manejo de la objeción',
+    avance:'Avance y cierre',tono:'Tono y control'};
+  const dims=Object.entries(rep.dimensiones).map(([k,d])=>`
+    <div class="dim"><div class="cabdim"><span>${nombres[k]}</span><span>${d.puntaje}</span></div>
+      <div class="barra"><i style="width:${d.puntaje}%"></i></div>
+      <div class="veredicto">${d.veredicto}</div>
+      <div class="evidencia">“${d.evidencia}”</div></div>`).join('');
+  const muerte=rep.momento_clave?`
+    <div class="bloque muerte"><h3>El momento donde perdiste al cliente</h3>
+      <div>Turno ${rep.momento_clave.turno}: el interés cayó ${rep.momento_clave.caida} puntos
+      después de tu mensaje:</div>
+      <div class="evidencia cita">“${rep.momento_clave.mensaje_vendedor}”</div>
+      <div style="margin-top:8px;color:var(--tenue)">Lo que pensó ${rep.persona.nombre}:
+      “${rep.momento_clave.nota_cliente}”</div></div>`:'';
+  const ajustes=rep.ajustes_del_codigo.length?`
+    <div class="bloque"><h3>Ajustes automáticos del juez</h3>
+      <ul>${rep.ajustes_del_codigo.map(a=>`<li>${a}</li>`).join('')}</ul></div>`:'';
+  const share=`Mi sparring contra ${rep.persona.nombre} (${rep.persona.titulo}): `+
+    `${rep.puntaje_final}/100. ${res.replace(/^[^ ]+ /,'')} ¿Le vendés vos? 🥊`;
+  $('#reporte').innerHTML=`
+    <h1>Tu veredicto</h1>
+    <div class="puntajote">${rep.puntaje_final}<span style="font-size:1.5rem;color:var(--tenue)">/100</span></div>
+    <div class="resultado">${res}</div>
+    <div class="bloque">${dims}</div>
+    ${muerte}
+    <div class="bloque"><h3>La condición oculta de ${rep.persona.nombre}</h3>
+      <div class="veredicto">${rep.condicion_oculta_revelada}</div></div>
+    <div class="bloque"><h3>El consejo del entrenador</h3>
+      <div class="veredicto">${rep.consejo_principal}</div></div>
+    ${ajustes}
+    ${sparkline(rep.linea_interes)}
+    <button id="compartir">Copiar mi resultado para compartir</button>
+    <button class="sec" style="width:100%;margin-top:8px" onclick="location.reload()">Entrenar de nuevo</button>
+    <div class="pieL">Sparring — entrenamiento de ventas con clientes simulados.</div>`;
+  const btn=$('#compartir');
+  btn.onclick=()=>navigator.clipboard.writeText(share)
+    .then(()=>btn.textContent='¡Copiado! Pegalo donde quieras');
+  $('#reporte').style.display='block';
+  window.scrollTo(0,0);
+}
+
+$('#btnEnviar').onclick=enviar;
+$('#texto').addEventListener('keydown',e=>{if(e.key==='Enter')enviar();});
+$('#btnFin').onclick=()=>{terminado=true;verReporte();};
+lobby();
+</script>
+</body>
+</html>

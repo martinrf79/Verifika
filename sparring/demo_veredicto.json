@@ -1,0 +1,106 @@
+{
+  "puntaje_final": 0,
+  "resultado": "se_va",
+  "dimensiones": {
+    "manejo_objecion": {
+      "puntaje": 20,
+      "veredicto": "Ignoraste las preguntas concretas sobre garantía y service, y respondiste con descuentos y presión en lugar de argumentos de valor.",
+      "evidencia": "Ojo con el de la otra agencia, esos que están más baratos suelen venir chocados o con la caja hecha percha. El nuestro está mucho mejor."
+    },
+    "descubrimiento": {
+      "puntaje": 10,
+      "veredicto": "No preguntaste nada sobre las necesidades de la clienta, directamente ofreciste descuento y producto.",
+      "evidencia": "Hola Marta! Sí, ese Cronos está impecable, un solo dueño. Mirá, para no perderte te puedo hacer un 5% de descuento si lo señás hoy mismo."
+    },
+    "avance": {
+      "puntaje": 15,
+      "veredicto": "No propusiste pasos concretos como mostrar el auto o dar garantía por escrito; solo ofreciste descuentos con urgencia falsa.",
+      "evidencia": "Te entiendo, pero decidite rápido porque hay otra pareja que lo viene a ver hoy a la tarde y se lo van a llevar seguro."
+    },
+    "tono": {
+      "puntaje": 30,
+      "veredicto": "Te pusiste defensivo y ansioso, con presión de tiempo y sin escuchar las necesidades reales de la clienta.",
+      "evidencia": "Bueno, última oferta: te hago el 7% y te regalo el polarizado. Más que eso no puedo, lo estoy perdiendo plata."
+    }
+  },
+  "consejo_principal": "Dejá de ofrecer descuentos de entrada y empezá preguntando qué necesita realmente tu cliente. Escuchá sus preguntas sobre garantía y service, y respondelas con información concreta antes de hablar de precio.",
+  "ajustes_del_codigo": [
+    "Regalaste descuento antes de defender el valor: -10.",
+    "Ni una pregunta en tus primeros tres mensajes: -5.",
+    "El cliente se fue: -10."
+  ],
+  "senales": {
+    "preguntas_en_primeros_3": 0,
+    "descuento_gratuito": true,
+    "muros_de_texto": 0
+  },
+  "momento_clave": {
+    "turno": 1,
+    "caida": 15,
+    "interes": 25,
+    "nota_cliente": "Desconfío porque ofreció descuento sin explicar valor; me mantengo firme pidiendo info concreta.",
+    "mensaje_vendedor": "Hola Marta! Sí, ese Cronos está impecable, un solo dueño. Mirá, para no perderte te puedo hacer un 5% de descuento si lo señás hoy mismo."
+  },
+  "condicion_oculta_revelada": "En realidad el precio no es lo que decide: te importa que el auto sea seguro y sin sorpresas para tu hija. Comprás únicamente si el vendedor deja de discutir el precio y te muestra valor concreto y verificable: garantía por escrito, estado real del auto o service, y alguna forma de financiar o señar. Si te ofrece descuento de entrada sin defender el valor, desconfiás más.",
+  "linea_interes": [
+    {
+      "turno": 1,
+      "interes": 25
+    },
+    {
+      "turno": 2,
+      "interes": 20
+    },
+    {
+      "turno": 3,
+      "interes": 10
+    },
+    {
+      "turno": 4,
+      "interes": 5
+    }
+  ],
+  "persona": {
+    "nombre": "Marta",
+    "titulo": "La que lo vio más barato en otro lado",
+    "rubro": "Concesionaria de autos usados"
+  },
+  "historial": [
+    {
+      "rol": "cliente",
+      "texto": "Hola. Vi el Cronos 2021 que publicaron. En otra agencia tienen uno parecido un 8% más barato. ¿Me mejorás el precio o voy por aquel?"
+    },
+    {
+      "rol": "vendedor",
+      "texto": "Hola Marta! Sí, ese Cronos está impecable, un solo dueño. Mirá, para no perderte te puedo hacer un 5% de descuento si lo señás hoy mismo."
+    },
+    {
+      "rol": "cliente",
+      "texto": "Che, pará. Ni lo vi el auto y ya me querés bajar el precio. Primero decime qué garantía trae, si tiene service oficial, y si puedo pagarlo en cuotas."
+    },
+    {
+      "rol": "vendedor",
+      "texto": "Ojo con el de la otra agencia, esos que están más baratos suelen venir chocados o con la caja hecha percha. El nuestro está mucho mejor."
+    },
+    {
+      "rol": "cliente",
+      "texto": "No me respondiste nada. Garantía, service, cuotas. ¿O acá también venden humo?"
+    },
+    {
+      "rol": "vendedor",
+      "texto": "Te entiendo, pero decidite rápido porque hay otra pareja que lo viene a ver hoy a la tarde y se lo van a llevar seguro."
+    },
+    {
+      "rol": "cliente",
+      "texto": "No me gusta que me apuren. Si no me podés dar la garantía por escrito y el historial de service, no hay trato. El precio es secundario."
+    },
+    {
+      "rol": "vendedor",
+      "texto": "Bueno, última oferta: te hago el 7% y te regalo el polarizado. Más que eso no puedo, lo estoy perdiendo plata."
+    },
+    {
+      "rol": "cliente",
+      "texto": "No me estás escuchando. No quiero descuentos, quiero saber si el auto es seguro para mi hija. Garantía por escrito y service oficial, sí o no."
+    }
+  ]
+}

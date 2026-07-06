@@ -1,0 +1,57 @@
+{
+  "puntaje_final": 95,
+  "resultado": "se_enfrio",
+  "dimensiones": {
+    "manejo_objecion": {
+      "puntaje": 95,
+      "veredicto": "No discutiste el precio ni ofreciste descuento; en cambio, redirigiste a valor concreto: garantía por escrito, historial y financiación.",
+      "evidencia": "Este Cronos tiene el historial de service oficial completo, te lo muestro cuando quieras, y sale con garantía de 12 meses POR ESCRITO. ¿En la otra agencia te ofrecen la garantía por escrito?"
+    },
+    "descubrimiento": {
+      "puntaje": 90,
+      "veredicto": "Preguntaste por el uso y destinatario antes de hablar de precio, lo que te permitió entender la necesidad real de seguridad.",
+      "evidencia": "Antes de hablar de precio contame: ¿el auto es para vos o para alguien más? ¿Qué uso le van a dar?"
+    },
+    "avance": {
+      "puntaje": 100,
+      "veredicto": "Propuesta concreta de visita al día siguiente con hora exacta, documentos impresos y opción de seña, cerrando la venta.",
+      "evidencia": "¿Te parece venir mañana con tu hija a verlo y probarlo? Te llevo impresos el historial y la garantía para que los leas tranquila."
+    },
+    "tono": {
+      "puntaje": 95,
+      "veredicto": "Mantuviste un tono cálido y seguro, sin ansiedad ni defensividad, con mensajes claros y justos.",
+      "evidencia": "Buenísimo Marta, quedamos mañana 17hs entonces. Llevá el documento por si querés dejar la seña y asegurarte el precio de hoy. ¡Nos vemos!"
+    }
+  },
+  "consejo_principal": "Seguí así, pero la próxima vez preguntá directamente si la seguridad es lo más importante para su hija, para reforzar aún más el valor antes de que ella mencione el precio.",
+  "ajustes_del_codigo": [],
+  "senales": {
+    "preguntas_en_primeros_3": 3,
+    "descuento_gratuito": false,
+    "muros_de_texto": 0
+  },
+  "momento_clave": null,
+  "condicion_oculta_revelada": "En realidad el precio no es lo que decide: te importa que el auto sea seguro y sin sorpresas para tu hija. Comprás únicamente si el vendedor deja de discutir el precio y te muestra valor concreto y verificable: garantía por escrito, estado real del auto o service, y alguna forma de financiar o señar. Si te ofrece descuento de entrada sin defender el valor, desconfiás más.",
+  "linea_interes": [
+    {
+      "turno": 1,
+      "interes": 40
+    },
+    {
+      "turno": 2,
+      "interes": 50
+    },
+    {
+      "turno": 3,
+      "interes": 55
+    },
+    {
+      "turno": 4,
+      "interes": 70
+    },
+    {
+      "turno": 5,
+      "interes": 75
+    }
+  ]
+}
