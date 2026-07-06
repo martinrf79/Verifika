@@ -3,7 +3,44 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 6-jul-2026.** ARBITRAJE DE DIVERGENCIA intérprete↔solver por ejes
+**Última actualización: 6-jul-2026 (noche).** ERRORES DE PLATA DE CHARLA REAL ATACADOS Y
+DEPLOYADOS + el cuello de botella se MOVIÓ. Tres deploys nuevos (runs #80, #81, #82 verdes):
+1. **Guarda de promesas** (`guardia_promesas.py`): ahora caza el día de entrega con la forma
+   'tengas' y 'la semana que viene'/'próxima semana' ("entre miércoles y viernes de la semana que
+   viene ya tengas todo" se filtraba). 'cuando tengas los datos', sin un día, sigue sin disparar.
+2. **Split de pago en la calculadora** (`pago_split.py` + param `pago` de `calculate_total`): UNA
+   función genérica reparte el total entre medios por porcentaje (50/50, 70/30, tres medios, etc.),
+   aplica el 10% de la FAQ a todo lo que NO es Mercado Pago (regla de Martín: no-MP = transferencia,
+   Ualá incluido). El solver no calcula nada: pasa `pago` y recibe el bloque sellado por
+   [[PRESUPUESTO]]. Mata el error de la charla donde el bot hizo la cuenta a mano ($1.617.375 mal
+   vs $1.593.150 real).
+3. **Sellado del split** (`verificador.py`, `numeros_confiables`): el verificador reconoce los
+   montos del reparto (base, total final, descuento, cada parte) del proof, así la respuesta
+   correcta no se bloquea en falso, y un total escrito a mano y mal se AUTOCORRIGE al del proof. Es
+   el sellado SEGURO (autocorrige, no bloqueo bruto): el código dueña la cuenta sin frenar ventas.
+
+**EL CUELLO DE BOTELLA SE MOVIÓ (2ª charla real 6-jul, mismo pedido):** las tres piezas de plata
+están BIEN pero NO se ejecutaron, porque la charla nunca llegó a calcular. El bot se quedó pidiendo
+colores y modelos aunque el cliente delegó ("confío en tu elección") TRES veces, y NUNCA llamó a la
+calculadora. El bloqueante ya no es la cuenta, es que **el solver no COMPROMETE la venta y no llama
+las herramientas**. Persisten además: (a) tarifas de envío INVENTADAS (Jujuy $11.000 real $9.000,
+Correa $7.000 real $6.000; el solver no llama cotizar_envio, las tipea); (b) plazo contradictorio
+("4 a 7 días" bien, pero después "3 o 4 días" bajo el piso y "una semana tenés todo en mano", una
+promesa blanda que la guarda aún no caza); (c) lee mal el split ("10% transferencia + 10% MP" por
+50/50). Precios, stock, distribución de destinos y carriers (Andreani/OCA de la FAQ): TODO correcto.
+
+**PRÓXIMO PASO (los cambios grandes, arrancar acá):** FORZAR el uso de herramientas. No se puede
+obligar a un LLM a llamar una tool, pero sí hacer que no importe: (1) el CÓDIGO hace la llamada
+determinista cuando se dan las condiciones cerradas —igual que `guia_compra` ya elige el más barato—
+: si hay localidades en la charla, el código cotiza el envío y lo inyecta; si el cliente delegó y
+el pedido está definido, el código elige los modelos recomendados y llama `calculate_total` con el
+split; (2) el verificador BLOQUEA una afirmación de envío/total sin su proof del turno. Los dos
+juntos hacen que la plata ya deployada por fin se ejecute. Área 3 (piso de plazo) y el huequito de
+la guarda ('una semana en mano') son chicos y van con eso.
+
+---
+
+**6-jul-2026 (tarde).** ARBITRAJE DE DIVERGENCIA intérprete↔solver por ejes
 CERRADOS + primera pieza del ENSAMBLADOR, todo DEPLOYADO a producción (runs #78 y #79 verdes).
 Cuatro cambios nuevos, mismo patrón de guarda determinista, con test cada uno:
 1. **Medición de divergencia** (`app/core/divergencia.py`): loguea, sin tocar la respuesta,
