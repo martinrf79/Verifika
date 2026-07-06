@@ -115,6 +115,30 @@ def _presupuesto_de_meta(meta: dict) -> str:
     return ""
 
 
+def _money(n):
+    try:
+        return f"{int(n):,}".replace(",", ".")
+    except (TypeError, ValueError):
+        return None
+
+
+def _linea_producto(p: dict) -> str:
+    """Linea REAL de un producto desde el catalogo: nombre + precio + stock. La
+    verdad de la fuente, la usa el estampado de [[PROD:id]] y la guarda de
+    producto para re-anclar con el dato real, no re-tipeado."""
+    if not isinstance(p, dict):
+        return ""
+    nombre = str(p.get("nombre", "")).strip()
+    precio = _money(p.get("precio_ars"))
+    stock = p.get("stock", 0)
+    partes = [nombre]
+    if precio:
+        partes.append(f"- ${precio}")
+    if isinstance(stock, int) and stock > 0:
+        partes.append(f"({stock} en stock)")
+    return " ".join(partes).strip()
+
+
 def _estampar_productos(texto: str, tienda_id: str, trace_id: str = None) -> str:
     """Reemplaza cada [[PROD:<id>]] por nombre + precio + stock REALES del catalogo.
     El solver ELIGE que producto mostrar (curaduria de venta); el codigo pone el DATO
@@ -123,12 +147,6 @@ def _estampar_productos(texto: str, tienda_id: str, trace_id: str = None) -> str
     if not texto or "[[PROD:" not in texto:
         return texto or ""
     from app.storage.firestore_client import get_product_by_id
-
-    def _money(n):
-        try:
-            return f"{int(n):,}".replace(",", ".")
-        except (TypeError, ValueError):
-            return None
 
     def _rep(m):
         pid = (m.group(1) or "").strip().upper()
@@ -139,15 +157,7 @@ def _estampar_productos(texto: str, tienda_id: str, trace_id: str = None) -> str
         if not p:
             log.warning("interprete_libre_prod_inexistente", trace_id=trace_id, pid=pid)
             return ""
-        nombre = str(p.get("nombre", "")).strip()
-        precio = _money(p.get("precio_ars"))
-        stock = p.get("stock", 0)
-        partes = [nombre]
-        if precio:
-            partes.append(f"- ${precio}")
-        if isinstance(stock, int) and stock > 0:
-            partes.append(f"({stock} en stock)")
-        return " ".join(partes).strip()
+        return _linea_producto(p)
 
     return re.sub(r"\[\[PROD:([A-Za-z0-9_\-]+)\]\]", _rep, texto)
 
@@ -216,6 +226,84 @@ def _forzar_pregunta_si_ambiguo(interp: dict, respuesta: str) -> str | None:
         return None
     return ("Quiero darte la opción correcta, tengo dos y no me quiero equivocar:\n"
             f"- Opción A: {a}\n- Opción B: {b}\n\n¿Cuál preferís?")
+
+
+# Confianza minima del interprete para PISAR al solver por divergencia de
+# producto. Si el interprete no esta seguro del producto, no se override al
+# solver: la guarda solo actua cuando la lectura es UNIVOCA (conf alta) y el
+# nombre resuelto reconcilia con UN unico producto del catalogo. Umbral
+# operativo, vive en codigo (config, no flag apagada).
+_CONF_MIN_PRODUCTO = 0.8
+
+
+def _resolver_nombre_a_producto(resuelto: str, catalogo: list) -> dict | None:
+    """Reconcilia el NOMBRE que resolvio el interprete con UN producto del
+    catalogo. Ojo, esto NO es el certificador de queries del cliente (ese
+    descarta modificadores genericos y da 'ambiguous' para un nombre completo
+    como 'Mouse Genius DX-110 Negro', porque comparte 'mouse' con medio
+    catalogo). Aca el interprete ya resolvio un NOMBRE, asi que se matchea por
+    nombre completo: el nombre del catalogo esta contenido en el resuelto o al
+    reves. Devuelve el producto SOLO si matchea uno unico; ante cero o varios,
+    None (no se pisa al solver). Un termino vago como 'mouse' matchea muchos y
+    cae a None, que es lo que queremos."""
+    import unicodedata
+
+    def _n(s):
+        s = unicodedata.normalize("NFKD", str(s or "").lower())
+        return "".join(c for c in s if not unicodedata.combining(c)).strip()
+
+    r = _n(resuelto)
+    if not r:
+        return None
+    hits: dict[str, dict] = {}
+    for p in catalogo or []:
+        nom = _n(p.get("nombre"))
+        pid = str(p.get("id") or "")
+        if nom and pid and (nom in r or r in nom):
+            hits[pid] = p
+    return next(iter(hits.values())) if len(hits) == 1 else None
+
+
+def _reanclar_si_producto_divergente(interp: dict, respuesta: str,
+                                     ids_mostrados: list, tienda_id: str) -> str | None:
+    """Guarda determinista del caso 'interprete BIEN, solver MAL' sobre el
+    PRODUCTO (gemela de _forzar_pregunta_si_ambiguo, para un solo producto).
+
+    Si el interprete resolvio CON CONFIANZA un producto, ese nombre reconcilia
+    con UN unico producto del catalogo y el solver mostro OTRO id, no se deja
+    pasar el producto equivocado: se re-ancla al producto correcto con su LINEA
+    REAL del catalogo y una pregunta de confirmacion. No cierra sobre esto: solo
+    pregunta, nunca compromete una venta sobre un id inferido (Regla Cero).
+    Triple candado para no pisar respuestas buenas: confianza alta, nombre que
+    reconcilia UNICO, y que ese id NO este entre los que el solver ya mostro (si
+    ya lo mostro, la divergencia era solo textual, ej categoria vs nombre).
+    Devuelve el texto re-anclado o None."""
+    if not isinstance(interp, dict):
+        return None
+    try:
+        conf = float(interp.get("confianza") or 0)
+    except (TypeError, ValueError):
+        conf = 0.0
+    if conf < _CONF_MIN_PRODUCTO:
+        return None
+    resuelto = str(interp.get("producto_resuelto") or "").strip()
+    if not resuelto:
+        return None
+    from app.core.divergencia import detectar_divergencias
+    if not any(d.get("eje") == "producto"
+               for d in detectar_divergencias(interp, respuesta, ids_mostrados)):
+        return None
+    from app.storage.firestore_client import get_all_products
+    p = _resolver_nombre_a_producto(resuelto, get_all_products(tienda_id=tienda_id))
+    if not isinstance(p, dict) or not p.get("nombre"):
+        return None  # nombre vago o que no reconcilia unico: no se pisa al solver
+    pid = str(p.get("id") or "").upper()
+    ya_mostrados = {str(i).upper() for i in (ids_mostrados or [])}
+    if not pid or pid in ya_mostrados:
+        return None  # el solver YA mostro ese producto: no hay divergencia real
+    linea = _linea_producto(p)
+    return (f"Pará que no me quiero equivocar: vos buscás el {p['nombre']}, "
+            f"¿verdad?\n{linea}\n¿Avanzo con ese?")
 
 
 def _parece_aportar_dato(mensaje: str) -> bool:
@@ -355,6 +443,24 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             log.warning("interprete_libre_guia_barato_error", trace_id=trace_id,
                         error=str(e)[:120])
 
+    # GUIA DE MEMORIA BORROSA (paso 3): el cliente referencia algo anterior ("el
+    # que te dije", "no me acuerdo cual"). El CODIGO es dueño de la memoria: si
+    # hay UN unico producto visto lo ancla ([[PROD:id]] real), si hay varios manda
+    # preguntar cual, si no hay ninguno manda no inventar. Asi el solver no
+    # adivina un id de memoria (la raiz del error del banco 5-jul). Inyeccion
+    # previa, mismo patron que la guia del mas barato; compone con los
+    # verificadores. No decide identidad sobre un id inferido: solo ancla lo YA
+    # mostrado o manda preguntar (Regla Cero).
+    try:
+        from app.core.memoria_ref import guia_memoria
+        _guia_mem = guia_memoria(raw_message, estado.get("productos_vistos"))
+        if _guia_mem:
+            mensaje_enriquecido += _guia_mem
+            log.info("interprete_libre_guia_memoria", trace_id=trace_id)
+    except Exception as e:
+        log.warning("interprete_libre_guia_memoria_error", trace_id=trace_id,
+                    error=str(e)[:120])
+
     log.info("interprete_libre_inicio", trace_id=trace_id,
              intencion=interp.get("intencion") if isinstance(interp, dict) else None,
              tools=len(tools_schema), hist=len(history))
@@ -428,6 +534,24 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     if "[[PROD:" in (respuesta or ""):
         respuesta = _estampar_productos(respuesta, tienda_id, trace_id)
         log.info("interprete_libre_productos_estampados", trace_id=trace_id)
+
+    # ── MEDICION DE DIVERGENCIA intérprete <-> solver (paso 1: SOLO mide) ────
+    # No cambia la respuesta. Loguea, por turno, cuándo el solver hizo algo
+    # distinto a lo que leyó el intérprete en los ejes CERRADOS (producto,
+    # opciones A/B, estado del embudo). Se calcula sobre la respuesta del solver
+    # ya estampada, ANTES de la guarda A/B y los verificadores, para ver la
+    # conducta CRUDA del solver. Es la base para enforzar en los pasos 2, 3 y 4:
+    # primero medir el tamaño real del problema en el banco de charlas vivas.
+    try:
+        from app.core.divergencia import detectar_divergencias
+        _divs = detectar_divergencias(interp, respuesta, _ids_mostrados)
+        if _divs:
+            log.warning("interprete_libre_divergencia", trace_id=trace_id,
+                        divergencias=_divs[:6],
+                        respuesta_preview=(respuesta or "")[:200])
+    except Exception as e:
+        log.warning("interprete_libre_divergencia_error", trace_id=trace_id,
+                    error=str(e)[:120])
 
     # ── ACOPLE CURADO de FAQ (reemplaza al marcador [[FAQ]]) ────────────────
     # Si el turno consulto la FAQ, la politica sale del BLOQUE curado del tema
@@ -784,6 +908,27 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             ambiguo_forzado = True
             log.info("interprete_libre_pregunta_ambiguo_forzada", trace_id=trace_id)
 
+    # ── GUARDA DE PRODUCTO (paso 2: interprete BIEN, solver MAL sobre el QUE) ──
+    # Extiende el MISMO patron de la guarda A/B al producto unico: si el
+    # interprete resolvio con confianza un producto que el certificador confirma
+    # como unico y real, y el solver mostro OTRO, se re-ancla al producto
+    # correcto con su linea REAL del catalogo y una pregunta de confirmacion. Si
+    # dispara, no se cierra este turno: el producto todavia no esta confirmado.
+    producto_forzado = False
+    if respuesta != settings.FALLBACK_MESSAGE and not ambiguo_forzado:
+        try:
+            _re_prod = _reanclar_si_producto_divergente(
+                interp, respuesta, _ids_mostrados, tienda_id)
+            if _re_prod:
+                respuesta = _re_prod
+                producto_forzado = True
+                log.warning("interprete_libre_producto_reanclado",
+                            trace_id=trace_id,
+                            producto=str(interp.get("producto_resuelto"))[:60])
+        except Exception as e:
+            log.warning("interprete_libre_producto_guarda_error",
+                        trace_id=trace_id, error=str(e)[:120])
+
     # ── PASO 2b: CIERRE (codigo) — capta el lead, pide datos, manda el link ──
     # El codigo toma el control SOLO cuando hay que cerrar: detecta la decision de
     # compra por la interpretacion, junta nombre/telefono/direccion/forma de pago y
@@ -831,9 +976,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # tambien el atajo curado): si el turno pasado el bot hizo la pregunta de
     # cierre, este turno la respuesta del cliente la decide.
     meta_lead: dict = {}
-    # No se cierra cuando la guarda forzo una pregunta de ambiguedad: el producto
-    # todavia no esta elegido, cerrar seria sobre algo indefinido.
-    if respuesta != settings.FALLBACK_MESSAGE and not ambiguo_forzado:
+    # No se cierra cuando una guarda forzo una pregunta (ambiguedad A/B o
+    # re-ancla de producto): el producto todavia no esta confirmado, cerrar seria
+    # sobre algo indefinido.
+    if (respuesta != settings.FALLBACK_MESSAGE
+            and not ambiguo_forzado and not producto_forzado):
         try:
             _, meta_lead = await procesar_mensaje_para_lead(
                 user_id, canal, tienda_id, raw_message, respuesta, trace_id,
