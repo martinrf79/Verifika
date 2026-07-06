@@ -511,15 +511,19 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         # texto se limpia como marcador sin dato.
         "[[FAQ]]": "",
     }
+    # El Ensamblador coloca cada bloque cuidando la congruencia: un dato de una
+    # linea va donde el solver puso el marcador; un bloque de varias lineas
+    # (presupuesto, politica) se levanta a su propio parrafo y no queda
+    # incrustado en medio de una oracion. Un marcador sin dato se quita limpio.
+    from app.core.ensamblador import colocar_bloque
     _tenia_marcador_presup = "[[PRESUPUESTO]]" in (respuesta or "")
     for _marca, _bloque in _marcadores.items():
         if _marca not in (respuesta or ""):
             continue
+        respuesta = colocar_bloque(respuesta, _marca, _bloque)
         if _bloque:
-            respuesta = respuesta.replace(_marca, _bloque)
             log.info("interprete_libre_estampado", trace_id=trace_id, marca=_marca)
         else:
-            respuesta = respuesta.replace(_marca, "").strip()
             log.warning("interprete_libre_marcador_sin_dato",
                         trace_id=trace_id, marca=_marca)
     if _present and not _tenia_marcador_presup:
