@@ -3,6 +3,32 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
+**Última actualización: 7-jul-2026.** CONSTRAINED GENERATION + FUENTE DE VERDAD DE VENTA,
+DEPLOYADO. Con OK explícito de Martín el sistema pasó a GPT-4 mini de OpenAI para correr la
+restricción por código en su forma DURA. Se validó primero que GPT-4 mini respeta constrained
+generation a nivel token (imposible emitir un valor fuera de la fuente de verdad: precio, stock,
+identidad, todo atado a enum con escape). Seis piezas nuevas, un solo cambio coherente:
+1. **Taxonomía de venta** (`CATEGORIAS_PREGUNTAS_VENTA.md`): categorías comunes, complejas y las de
+   memoria (listadas para después). Semilla de la fuente de verdad de venta y del espacio de
+   etiquetas que leen los dos LLM.
+2. **Curadas de venta B1-B12** (`BORRADORES_CURADAS_VENTA.md`): movidas con bloque sellado + nexos
+   adaptativos. Registro universal, no atado a un modelo. Pendientes de retoque fino de Martín.
+3. **Router de venta** (`ruteo_venta.py`): elige la movida o manda preguntar (escape), determinista
+   y conservador. Fuente de verdad del espacio de etiquetas.
+4. **Movidas en vivo** (`guia_venta.py`, enchufado en `interprete_libre.py`): el brief de la movida
+   se inyecta al solver por el mismo carril que `guia_mas_barato`/`guia_memoria`; el dato duro sigue
+   sellado. El LLM redacta los nexos, el código no le suelta ningún número.
+5. **Intérprete constreñido** (`interpretador.py`): en OpenAI usa Structured Outputs con schema
+   estricto (intención y estado por enum, `producto_resuelto` atado al enum de lo mostrado o null),
+   con fallback seguro. Provider a OpenAI gpt-4o-mini en `config.py` (config, no camino apagado).
+6. **Sello del precio de lista** (`verificador.py`): el ancla de precio por NOMBRE ahora corre aunque
+   la cifra figure en el pool. Cierra el hueco del $16.500 del KB-110X: si el solver tipea un precio
+   que no coincide con el del producto nombrado, el código lo autocorrige antes de salir. Candado
+   Corsair intacto.
+La regla DeepSeek-por-default sigue en pie a nivel código: se vuelve cambiando un default. **304 tests
+offline en verde, banco vivo por OpenAI 8/8 limpio.** Próximo frente: cerrar y aprobar las curadas de
+venta con Martín, y la capa de memoria (categorías C).
+
 **Última actualización: 6-jul-2026 (noche).** ERRORES DE PLATA DE CHARLA REAL ATACADOS Y
 DEPLOYADOS + el cuello de botella se MOVIÓ. Tres deploys nuevos (runs #80, #81, #82 verdes):
 1. **Guarda de promesas** (`guardia_promesas.py`): ahora caza el día de entrega con la forma
