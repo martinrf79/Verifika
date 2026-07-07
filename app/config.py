@@ -25,10 +25,11 @@ class Settings(BaseModel):
     # LLM provider — soportamos deepseek (default) y groq (fallback)
     # NOTA: Verifika tiene su propia config por rol en llm_adapter.py.
     # Estos settings son SOLO para el Solver del agente v4 (legacy).
-    # Provider del SOLVER. OK explicito de Martin (7-jul-2026): se pasa a OpenAI
-    # gpt-4o-mini para correr la constrained generation dura de punta a punta.
-    # Es config, no camino apagado; se vuelve a deepseek cambiando este default.
-    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "openai").lower()
+    # Provider del SOLVER. VUELTO a deepseek (7-jul-2026, hotfix): el flip a openai
+    # rompio produccion porque el servicio agente-bot NO tiene OPENAI_API_KEY
+    # cargada. Para correr GPT-4 mini en vivo, primero cargar el secreto en el
+    # servicio y RECIEN despues poner 'openai' aca (o por env LLM_PROVIDER).
+    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "deepseek").lower()
 
     # DeepSeek
     DEEPSEEK_API_KEY: str = os.getenv("DEEPSEEK_API_KEY", "")
@@ -199,11 +200,11 @@ class Settings(BaseModel):
     # 5 a 10 segundos, asi que el cap solo actua sobre cuelgues anormales.
     LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "45"))
 
-    # Provider del interpretador. OK de Martin (7-jul-2026): OpenAI gpt-4o-mini,
-    # para que el interprete corra con Structured Outputs (constrained generation
-    # dura: intencion, estado y producto_resuelto atados a enum). El Solver se
-    # cambia aparte con LLM_PROVIDER. Config, no camino apagado.
-    INTERPRETER_PROVIDER: str = os.getenv("INTERPRETER_PROVIDER", "openai").lower()
+    # Provider del interpretador. VUELTO a deepseek (7-jul-2026, hotfix): mismo
+    # motivo que LLM_PROVIDER, falta OPENAI_API_KEY en el servicio. El codigo de
+    # Structured Outputs queda listo: apenas el interprete corra en openai (con la
+    # clave cargada) activa la constrained generation dura, sin tocar nada mas.
+    INTERPRETER_PROVIDER: str = os.getenv("INTERPRETER_PROVIDER", "deepseek").lower()
 
     # NOTA: la tarifa de envio por PROVINCIA (ex flag TARIFA_PROVINCIA) ya es el
     # UNICO camino de cotizar_envio y de la calculadora: con la provincia o el CP
