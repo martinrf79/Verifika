@@ -479,15 +479,19 @@ def autocorregir_montos(respuesta: str,
     """
     base = verificar_respuesta(respuesta, evidence, trace_id=trace_id)
     no_resp = set(base.get("numeros_no_respaldados", []) or [])
-    if base.get("ok") or not no_resp:
-        return {"cambiada": False, "respuesta": respuesta,
-                "correcciones": [], "verificacion": base}
 
     totales = _totales_validos(evidence)
     envios = _envios_validos(evidence)
     hay_precio = any(
         i.get("tipo") == "producto" and isinstance(i.get("precio_ars"), (int, float))
         for i in (evidence or []))
+    # El ancla de precio por NOMBRE actua aunque no haya cifras marcadas sin
+    # respaldo: un precio de lista mal tipeado puede coincidir con un numero del
+    # pool y no marcarse. Por eso NO se corta temprano por base.ok si hay productos
+    # para anclar. Sin cifras sin respaldo NI productos, no hay nada que hacer.
+    if not no_resp and not hay_precio:
+        return {"cambiada": False, "respuesta": respuesta,
+                "correcciones": [], "verificacion": base}
     if not (totales or envios or hay_precio):
         return {"cambiada": False, "respuesta": respuesta,
                 "correcciones": [], "verificacion": base}
@@ -506,36 +510,44 @@ def autocorregir_montos(respuesta: str,
         if not _es_monto(respuesta, m):
             continue
         n = _parse_num(m.group())
-        if n is None or n not in no_resp:
+        if n is None:
             continue
-        # NUNCA pisar un numero que sea un precio real de catalogo: que no este en
-        # la evidencia de ESTE turno no lo hace falso, puede venir de un producto
-        # citado de un turno anterior. Corregirlo lo corromperia (caso Corsair).
+        # NUNCA pisar un numero que sea un precio real de catalogo citado: que no
+        # este en la evidencia de ESTE turno no lo hace falso, puede venir de un
+        # producto citado de un turno anterior (caso Corsair). Aplica a TODAS las
+        # ramas, incluida el ancla por nombre.
         if precios_validos and n in precios_validos:
             continue
         en_total = _contexto_total(respuesta, m.start())
         en_envio = _contexto_envio(respuesta, m.start())
         candidato: Optional[int] = None
         concepto: Optional[str] = None
-        # a) PRECIO anclado al nombre: solo en contexto de precio puro (ni total ni
-        #    envio), para no pisar un total que comparta la frase con el producto.
+        # a) PRECIO anclado al NOMBRE: en contexto de precio puro (ni total ni
+        #    envio) corre SIEMPRE, aunque la cifra figure "respaldada" por el pool.
+        #    El ancla al nombre es mas fuerte que la pertenencia al pool: el numero
+        #    puede ser el precio real de OTRO producto (KB-110X tipeado a $16.500,
+        #    que es precio de un tercero, se corrige a su $12.000 real). Cierra el
+        #    hueco del precio de lista mal tipeado que no se marcaba como sin respaldo.
         if not en_total and not en_envio:
             pr = _precio_de_producto_nombrado(respuesta, m.start(), evidence)
             if pr is not None and pr != n:
                 candidato, concepto = pr, "precio"
+        # b/c/d) envio y total: SOLO para cifras efectivamente sin respaldo (se
+        #    corrigen por cercania al pool, no por nombre). Una cifra respaldada en
+        #    esos contextos no se toca.
         # b) ENVIO: la cifra viene en contexto de envio -> pool de envios.
-        if candidato is None and en_envio:
+        if candidato is None and n in no_resp and en_envio:
             c = _mejor_candidato(n, envios, _BANDA_ENVIO)
             if c is not None:
                 candidato, concepto = c, "envio"
         # c) TOTAL TRUNCADO: $594 pegado a "total" cuyos digitos son el PREFIJO de
         #    un unico total valido ($594 por $594.000), misma cifra cortada.
-        if candidato is None and n < _MIN_MONETARIO and en_total:
+        if candidato is None and n in no_resp and n < _MIN_MONETARIO and en_total:
             prefijo = [t for t in totales if str(t).startswith(str(n))]
             if len(set(prefijo)) == 1:
                 candidato, concepto = prefijo[0], "total"
         # d) TOTAL por banda: el total valido mas cercano si el error es plausible.
-        if candidato is None:
+        if candidato is None and n in no_resp:
             c = _mejor_candidato(n, totales, _BANDA_TOTAL)
             if c is not None:
                 candidato, concepto = c, "total"
