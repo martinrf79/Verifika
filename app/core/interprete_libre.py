@@ -461,6 +461,22 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         log.warning("interprete_libre_guia_memoria_error", trace_id=trace_id,
                     error=str(e)[:120])
 
+    # GUIA DE VENTA (movidas de preguntas complejas): el router determinista elige
+    # la movida (indecision, objecion de precio, presion por descuento, etc.) o
+    # manda PREGUNTAR (escape). Se inyecta como brief al solver, que redacta los
+    # nexos; el dato duro sigue sellado por tools/estado/verificador. Conservador:
+    # "" cuando el turno va por el camino normal. Mismo carril que las guias de
+    # arriba. Fuente: ruteo_venta.py + BORRADORES_CURADAS_VENTA.md.
+    try:
+        from app.core.guia_venta import guia_venta
+        _guia_vta = guia_venta(raw_message, interp, estado)
+        if _guia_vta:
+            mensaje_enriquecido += _guia_vta
+            log.info("interprete_libre_guia_venta", trace_id=trace_id)
+    except Exception as e:
+        log.warning("interprete_libre_guia_venta_error", trace_id=trace_id,
+                    error=str(e)[:120])
+
     log.info("interprete_libre_inicio", trace_id=trace_id,
              intencion=interp.get("intencion") if isinstance(interp, dict) else None,
              tools=len(tools_schema), hist=len(history))
