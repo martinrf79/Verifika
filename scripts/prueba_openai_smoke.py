@@ -2,7 +2,8 @@
 modelo usa bien las herramientas, ANTES de deployar. Corre el Solver real con
 LLM_PROVIDER=openai contra catalogo y FAQ locales. NO toca produccion.
 
-La clave OPENAI_API_KEY va en .secrets.env (linea OPENAI_API_KEY=sk-...).
+La clave OPENAI_API_KEY va en .secrets.env (linea OPENAI_API_KEY=sk-...) o,
+en el entorno web de Claude, ya viene inyectada como variable de entorno.
 Nunca se imprime. El tiempo que mida acá NO es el de prod (la demora de prod
 es la red de Cloud Run); esto solo valida funcionamiento y da una referencia.
 """
@@ -38,8 +39,12 @@ def _cargar_secrets():
                 if "=" in line:
                     k, v = line.split("=", 1)
                     os.environ[k.strip()] = v.strip()
-    if not cargado:
-        raise SystemExit("No encontre .secrets.env ni .secrets4.env en la raiz")
+    if not cargado and not os.environ.get("OPENAI_API_KEY"):
+        # Sin archivo de secrets y sin la clave ya en el entorno: no hay de donde
+        # sacarla. En el entorno web de Claude la clave viene inyectada como
+        # variable, asi que ahi este camino no aplica.
+        raise SystemExit("No encontre .secrets.env ni .secrets4.env en la raiz "
+                         "y OPENAI_API_KEY no esta en el entorno")
 
 
 _cargar_secrets()
