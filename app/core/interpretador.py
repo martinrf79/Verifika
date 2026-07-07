@@ -29,6 +29,11 @@ UMBRAL_CONFIANZA_MEDIA = float(os.getenv("INTERPRETER_UMBRAL_MEDIA", "0.6"))
 INTENCIONES_VALIDAS = {"saludo", "exploracion", "pregunta_especifica", "aporta_dato",
                         "decision_compra", "otra"}
 
+# Estados validos del embudo. Lista (no set) para que el enum del schema estricto
+# sea estable entre llamadas.
+ESTADOS_VALIDOS = ["saludo", "explorando", "esperando_confirmacion",
+                   "esperando_datos", "derivar_humano", "posventa"]
+
 # Estados que indican una charla YA en curso. Si la conversacion llego a
 # cualquiera de estos, no puede "volver" a saludo sin perder el hilo.
 ESTADOS_EN_CURSO = {"explorando", "esperando_confirmacion", "esperando_datos",
@@ -320,8 +325,38 @@ def parsear_respuesta_llm(raw: str) -> dict | None:
         return None
 
 
-async def _llamar_llm(prompt: str) -> str:
-    """Llamada al LLM con parametros fijos."""
+def _schema_interprete(nombres_mostrados: list[str]) -> dict:
+    """Schema estricto para Structured Outputs de OpenAI: constrained generation
+    DURA. intencion y estado atados a su enum; producto_resuelto atado al enum de
+    los productos REALMENTE mostrados (o null): el interprete no puede referenciar
+    a nivel token un producto que no se mostro. El LLM sigue INTERPRETANDO; el
+    schema solo evita que emita un valor fuera de la fuente. Fuera de OpenAI el
+    schema se ignora y queda el parseo + validacion de siempre."""
+    nombres = list(dict.fromkeys(n for n in nombres_mostrados if n))
+    prod_enum = ([None] + nombres) if nombres else [None]
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "intencion": {"type": "string", "enum": sorted(INTENCIONES_VALIDAS)},
+            "producto_resuelto": {"type": ["string", "null"], "enum": prod_enum},
+            "candidatos": {"type": "array", "items": {"type": "string"}},
+            "confianza": {"type": "number"},
+            "datos_pedido": {"type": ["string", "null"]},
+            "respondiendo_a": {"type": ["string", "null"]},
+            "estado_conversacion": {"type": "string", "enum": ESTADOS_VALIDOS},
+            "ofrecer_opciones": {"type": ["array", "null"],
+                                 "items": {"type": "string"}},
+        },
+        "required": ["intencion", "producto_resuelto", "candidatos", "confianza",
+                     "datos_pedido", "respondiendo_a", "estado_conversacion",
+                     "ofrecer_opciones"],
+    }
+
+
+async def _llamar_llm(prompt: str, response_format: dict | None = None) -> str:
+    """Llamada al LLM con parametros fijos. response_format (json_schema strict)
+    solo se aplica en OpenAI; en otros providers se ignora y cae al parseo normal."""
     client = _get_client()
 
     def _do_call() -> str:
@@ -357,21 +392,23 @@ async def _llamar_llm(prompt: str) -> str:
         # En modo razonador el thinking consume tokens antes del JSON: le damos
         # mas presupuesto para que la respuesta no salga vacia.
         max_tok = 2000 if (es_deepseek and deepseek_pensando(modelo)) else 400
+        kwargs = {"model": modelo,
+                  "messages": [{"role": "user", "content": prompt}],
+                  "temperature": 0.0, "max_tokens": max_tok}
+        if extra:
+            kwargs["extra_body"] = extra
+        rf = (response_format if (settings.INTERPRETER_PROVIDER == "openai"
+                                  and response_format) else None)
         try:
-            response = client.chat.completions.create(
-                model=modelo,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.0,
-                max_tokens=max_tok,
-                **({"extra_body": extra} if extra else {}),
-            )
-        except Exception:
-            if extra:
-                response = client.chat.completions.create(
-                    model=modelo, messages=[{"role": "user", "content": prompt}],
-                    temperature=0.0, max_tokens=max_tok)
+            if rf:
+                response = client.chat.completions.create(response_format=rf, **kwargs)
             else:
-                raise
+                response = client.chat.completions.create(**kwargs)
+        except Exception:
+            # Si el schema estricto o el extra no lo acepta el modelo, se reintenta
+            # sin ellos: cae al parseo + validacion de siempre. La red no se cae.
+            kwargs.pop("extra_body", None)
+            response = client.chat.completions.create(**kwargs)
         return response.choices[0].message.content or ""
 
     # El cliente OpenAI es sincrono: este create() bloquearia el event loop
@@ -402,8 +439,15 @@ async def interpretar_mensaje(mensaje: str,
         prompt = construir_prompt_interpretador(
             mensaje, contexto_conv, productos)
 
+        # Constrained generation dura (solo OpenAI): el enum de producto_resuelto
+        # se arma con los productos que el bot REALMENTE mostro este contexto.
+        _nombres = [p.get("nombre") for p in productos if p.get("nombre")]
+        _rf = {"type": "json_schema", "json_schema": {
+            "name": "interpretacion", "strict": True,
+            "schema": _schema_interprete(_nombres)}}
+
         # Primera llamada al LLM
-        raw = await _llamar_llm(prompt)
+        raw = await _llamar_llm(prompt, response_format=_rf)
         resultado = parsear_respuesta_llm(raw)
 
         # Capa uno, validacion de schema con retry una vez
@@ -413,7 +457,7 @@ async def interpretar_mensaje(mensaje: str,
             prompt_retry = (prompt +
                             "\n\nTU RESPUESTA ANTERIOR NO FUE JSON VALIDO. "
                             "DEVOLVE SOLO EL JSON, SIN BACKTICKS NI EXPLICACION.")
-            raw = await _llamar_llm(prompt_retry)
+            raw = await _llamar_llm(prompt_retry, response_format=_rf)
             resultado = parsear_respuesta_llm(raw)
             if resultado is None:
                 log.error("interpretador_json_invalido_final", trace_id=trace_id)
@@ -434,7 +478,7 @@ async def interpretar_mensaje(mensaje: str,
             prompt_retry = (prompt +
                             f"\n\nTU RESPUESTA ANTERIOR FALLO VALIDACION, {error_msg}. "
                             "DEVOLVE SOLO EL JSON CON TODOS LOS CAMPOS CORRECTOS.")
-            raw = await _llamar_llm(prompt_retry)
+            raw = await _llamar_llm(prompt_retry, response_format=_rf)
             resultado = parsear_respuesta_llm(raw)
             if resultado is None:
                 resultado = {}

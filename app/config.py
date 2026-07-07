@@ -25,7 +25,10 @@ class Settings(BaseModel):
     # LLM provider — soportamos deepseek (default) y groq (fallback)
     # NOTA: Verifika tiene su propia config por rol en llm_adapter.py.
     # Estos settings son SOLO para el Solver del agente v4 (legacy).
-    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "deepseek").lower()
+    # Provider del SOLVER. OK explicito de Martin (7-jul-2026): se pasa a OpenAI
+    # gpt-4o-mini para correr la constrained generation dura de punta a punta.
+    # Es config, no camino apagado; se vuelve a deepseek cambiando este default.
+    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "openai").lower()
 
     # DeepSeek
     DEEPSEEK_API_KEY: str = os.getenv("DEEPSEEK_API_KEY", "")
@@ -196,9 +199,11 @@ class Settings(BaseModel):
     # 5 a 10 segundos, asi que el cap solo actua sobre cuelgues anormales.
     LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "45"))
 
-    # Provider del interpretador. Default DeepSeek. Poner groq para que tambien
-    # use Groq y baje su latencia. El Solver se cambia aparte con LLM_PROVIDER.
-    INTERPRETER_PROVIDER: str = os.getenv("INTERPRETER_PROVIDER", "deepseek").lower()
+    # Provider del interpretador. OK de Martin (7-jul-2026): OpenAI gpt-4o-mini,
+    # para que el interprete corra con Structured Outputs (constrained generation
+    # dura: intencion, estado y producto_resuelto atados a enum). El Solver se
+    # cambia aparte con LLM_PROVIDER. Config, no camino apagado.
+    INTERPRETER_PROVIDER: str = os.getenv("INTERPRETER_PROVIDER", "openai").lower()
 
     # NOTA: la tarifa de envio por PROVINCIA (ex flag TARIFA_PROVINCIA) ya es el
     # UNICO camino de cotizar_envio y de la calculadora: con la provincia o el CP
