@@ -3,6 +3,34 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
+**Última actualización: 7-jul-2026 (tarde).** CURADAS DE VENTA AMPLIADAS A B1-B24 +
+CONSOLIDACIÓN DE PROVIDERS (todo el camino vivo en GPT-4 mini). Cuatro cambios:
+1. **Doce categorías nuevas de venta** (B13-B24: urgencia, mayorista, presupuesto
+   acotado, regalo, queja, pedir humano, cancelación, pago no ofrecido, envío
+   exterior, pedido de fotos, reclamo posventa, multi-pregunta) con su movida
+   redactada en `BORRADORES_CURADAS_VENTA.md`, detector determinista en
+   `ruteo_venta.py` y brief en `guia_venta.py`. B3 (negación intra-turno) tenía
+   brief pero NINGÚN detector que lo disparara (movida muerta): ahora rutea. B9
+   tenía movida sin brief: ahora lo tiene. Test nuevo de coherencia: toda
+   categoría que rutea a movida DEBE tener brief (no más movidas muertas).
+2. **Reescritor de la guardia consolidado**: usaba DeepSeek HARDCODEADO (quedó
+   así cuando el sistema pasó a OpenAI) y corría deepseek-v4-flash SIN apagar el
+   thinking — causa probable de las reescrituras VACÍAS del 4-jul. Ahora usa el
+   MISMO cliente y modelo del solver (`modelo_solver()` en agent.py, un solo
+   lugar), con el apagado de thinking si el provider razonador vuelve.
+3. **llm_adapter (rol proposer: extractor del cierre + fallback de query_faq)**:
+   el default era deepseek-chat, que SE DA DE BAJA EL 24-JUL — se rompía solo ese
+   día. Ahora default openai/gpt-4o-mini (se vuelve por env). Y DeepSeek directo
+   v4 en el adapter ahora apaga thinking como NVIDIA/OpenRouter/Gemini.
+4. Los textos de B1-B12 se retocaron (criterio sticky en B1, cruces B4→B14 y
+   B11→B19, fuentes FAQ explícitas). PENDIENTE: retoque fino de Martín sobre los
+   24 textos; lo corregido se pasa al brief y se deploya.
+**324 tests offline en verde (20 nuevos).** Los LLM del camino vivo quedan:
+intérprete (structured outputs), solver, reescritor de guardia y proposer — los
+CUATRO en GPT-4 mini; el dato duro sigue saliendo solo del código.
+
+---
+
 **Última actualización: 7-jul-2026.** CONSTRAINED GENERATION + FUENTE DE VERDAD DE VENTA,
 DEPLOYADO. Con OK explícito de Martín el sistema pasó a GPT-4 mini de OpenAI para correr la
 restricción por código en su forma DURA. Se validó primero que GPT-4 mini respeta constrained

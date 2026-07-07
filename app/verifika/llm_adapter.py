@@ -42,18 +42,20 @@ _tenacity_log = logging.getLogger("verifika.llm.retry")
 # Configuración por rol — cada rol puede usar modelo distinto
 # ────────────────────────────────────────────────────────────
 
-# Por defecto TODO va con DeepSeek (barato).
-# Cuando haya cliente pagando, se puede cambiar Checker a Claude
-# simplemente seteando VERIFIKA_CHECKER_PROVIDER=anthropic en .env
+# Por defecto los roles siguen al camino vivo: OpenAI gpt-4o-mini (OK explicito
+# de Martin, 7-jul-2026). El default anterior era deepseek-chat, que se da de
+# baja el 24-jul-2026: no puede quedar como default o el extractor del cierre y
+# el fallback semantico de query_faq se rompen solos ese dia. Se vuelve a
+# DeepSeek (u otro) seteando VERIFIKA_<ROL>_PROVIDER y VERIFIKA_<ROL>_MODEL.
 
 _ROLE_CONFIG = {
     "solver": {
-        "provider": os.getenv("VERIFIKA_SOLVER_PROVIDER", "deepseek"),
-        "model": os.getenv("VERIFIKA_SOLVER_MODEL", "deepseek-chat"),
+        "provider": os.getenv("VERIFIKA_SOLVER_PROVIDER", "openai"),
+        "model": os.getenv("VERIFIKA_SOLVER_MODEL", "gpt-4o-mini"),
     },
     "proposer": {
-        "provider": os.getenv("VERIFIKA_PROPOSER_PROVIDER", "deepseek"),
-        "model": os.getenv("VERIFIKA_PROPOSER_MODEL", "deepseek-chat"),
+        "provider": os.getenv("VERIFIKA_PROPOSER_PROVIDER", "openai"),
+        "model": os.getenv("VERIFIKA_PROPOSER_MODEL", "gpt-4o-mini"),
     },
 }
 
@@ -243,6 +245,20 @@ def _gemini_thinking_off(client, model: str) -> dict:
     return {"extra_body": {"reasoning_effort": "none"}}
 
 
+def _deepseek_thinking_off(client, model: str) -> dict:
+    """Gemelo para DeepSeek DIRECTO: los v4 (v4-flash, v4-pro) razonan por
+    default y el pensamiento consume max_tokens (respuesta vacia o cortada,
+    mismo bug que tuvo el reescritor de la guardia). Solo si el cliente apunta
+    a api.deepseek.com y el modelo es v4; deepseek-chat viejo no lo necesita."""
+    try:
+        base = str(getattr(client, "base_url", "")).lower()
+    except Exception:
+        base = ""
+    if "deepseek" not in base or "v4" not in model.lower():
+        return {}
+    return {"extra_body": {"thinking": {"type": "disabled"}}}
+
+
 def _call_openai_compatible(client, model: str, messages: list,
                              temperature: float, max_tokens: int,
                              tools: Optional[list] = None) -> dict:
@@ -259,7 +275,8 @@ def _call_openai_compatible(client, model: str, messages: list,
 
     extra = (_nvidia_thinking_off(client, model)
              or _openrouter_reasoning_off(client, model)
-             or _gemini_thinking_off(client, model))
+             or _gemini_thinking_off(client, model)
+             or _deepseek_thinking_off(client, model))
     try:
         response = client.chat.completions.create(**kwargs, **extra)
     except Exception:
