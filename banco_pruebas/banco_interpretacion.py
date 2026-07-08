@@ -156,6 +156,65 @@ CASOS = [
      _HIST_OFERTA, "y el M170 cuanto sale con envio a Rosario?",
      [("no es compra", _no_es("intencion", "decision_compra")),
       ("resuelve M170", _producto_contiene("m170"))]),
+
+    # ── Tanda 2 (8-jul): enredados, referencias cruzadas, regionalismos ─────
+    ("mensaje largo enredado con pedido adentro",
+     _HIST_OFERTA,
+     "che buenas, mira te cuento, ando necesitando para el negocio de mi "
+     "cuñado unas cositas, el quiere si o si algo logitech porque dice que lo "
+     "demas no le sirve, asi que pasame precio del mouse logitech ese que "
+     "tenes, y decime si el genius anda bien porque capaz lo convenzo",
+     [("resuelve el logitech", _producto_contiene("m170")),
+      ("no es compra", _no_es("intencion", "decision_compra"))]),
+
+    ("referencia ordinal a la lista del bot: 'el segundo'",
+     _HIST_OFERTA, "dale, el segundo",
+     [("resuelve el blanco (2do de la lista)",
+       lambda i: "blanco" in str(i.get("producto_resuelto") or "").lower()
+       or any("blanco" in str(c).lower()
+              for c in (i.get("candidatos") or [])))]),
+
+    ("regionalismo cordobes con objecion",
+     _HIST_OFERTA, "uh que caro que ta el logi, tenei algo ma barato?",
+     [("no es compra", _no_es("intencion", "decision_compra"))]),
+
+    ("jerga fuerte de compra: 'de una, facturame'",
+     _HIST_CIERRE, "de una, facturame nomas",
+     [("es compra", _es("intencion", "decision_compra"))]),
+
+    ("pedido multiple mezclado en frase larga",
+     _HIST_OFERTA,
+     "pasame 1 del dx-110 negro y 2 del blanco, ah y me olvidaba, el "
+     "logitech tambien, uno solo",
+     [("pedido de tres lineas", _pedido_es(("dx-110 negro", 1),
+                                           ("dx-110 blanco", 2),
+                                           ("m170", 1)))]),
+
+    ("referencia a lo que dijo el bot: 'el de 16 lucas'",
+     _HIST_CIERRE, "si dale, el que me dijiste que salia 16 lucas total, ese",
+     [("resuelve el DX-110 negro", _producto_contiene("dx-110 negro"))]),
+
+    ("'ponele que si' es un si tibio, no un rechazo",
+     _HIST_CIERRE, "ponele que si",
+     [("no es rechazo", _no_es("intencion", "otra"))]),
+
+    ("sarcasmo de queja no es compra",
+     _HIST_CIERRE, "buenisimo, otra vez me dejan esperando como ayer no?",
+     [("no es compra", _no_es("intencion", "decision_compra"))]),
+
+    ("edicion de pedido: 'sacale uno' sobre 3 pedidos",
+     _HIST_OFERTA + [
+         {"role": "user", "content": "dame 3 del DX-110 negro"},
+         {"role": "assistant", "content":
+             "Perfecto, 3x Mouse Genius DX-110 Negro: $25.500 en total. "
+             "¿Confirmamos?"}],
+     "mejor sacale uno",
+     [("pedido queda en 2", _pedido_es(("dx-110 negro", 2)))]),
+
+    ("numero que NO es cantidad: 'cumple 15'",
+     _HIST_OFERTA, "es para mi hijo que cumple 15, que me recomendas?",
+     [("no arma pedido", lambda i: not (i.get("pedido") or [])),
+      ("no es compra", _no_es("intencion", "decision_compra"))]),
 ]
 
 
