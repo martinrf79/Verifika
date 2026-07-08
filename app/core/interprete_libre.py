@@ -693,14 +693,34 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                                                   instruccion_categorias)
                 _cats_pedido = cantidades_por_categoria(raw_message, tienda_id)
                 if not _cats_pedido and not (estado.get("carrito") or []):
-                    _cats_pedido = [tuple(c) for c in
-                                    (conv.get("pedido_categorias_pendiente")
-                                     or []) if isinstance(c, (list, tuple))
-                                    and len(c) == 2]
+                    # Persistido como lista de DICTS: Firestore real prohibe
+                    # listas anidadas (bug real 8-jul: 400 'Nested arrays are
+                    # not allowed' rompia el save COMPLETO y el bot quedaba
+                    # amnesico justo en las charlas con categorias).
+                    _cats_pedido = [
+                        (c.get("cantidad"), c.get("categoria"))
+                        for c in (conv.get("pedido_categorias_pendiente") or [])
+                        if isinstance(c, dict)
+                        and isinstance(c.get("cantidad"), int)
+                        and c.get("categoria")]
                 if _cats_pedido:
-                    mensaje_enriquecido += instruccion_categorias(_cats_pedido)
-                    log.info("interprete_libre_pedido_categorias",
-                             trace_id=trace_id, cats=_cats_pedido)
+                    # "Los mas baratos" sobre el pedido por categorias es un
+                    # problema CERRADO (caso real de Martin, 8-jul): el codigo
+                    # elige el mas barato con stock de cada categoria por las
+                    # cantidades pedidas y SELLA el presupuesto completo.
+                    if detectar_criterio(raw_message):
+                        from app.core.guia_pedido import calcular_categorias_baratas
+                        _tools_precalc = calcular_categorias_baratas(
+                            _cats_pedido, estado, tienda_id, trace_id,
+                            mensaje=raw_message) or []
+                        if _tools_precalc:
+                            log.info("interprete_libre_categorias_baratas",
+                                     trace_id=trace_id, cats=_cats_pedido)
+                            _cats_pedido = []
+                    if _cats_pedido:
+                        mensaje_enriquecido += instruccion_categorias(_cats_pedido)
+                        log.info("interprete_libre_pedido_categorias",
+                                 trace_id=trace_id, cats=_cats_pedido)
             if _tools_precalc:
                 mensaje_enriquecido += INSTRUCCION_SOLVER
                 # El pedido queda SELLADO para el turno: calculate_total rechaza
@@ -788,6 +808,16 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                         trace_id=trace_id, marca=_marca)
     if _present and not _tenia_marcador_presup:
         log.warning("interprete_libre_presupuesto_sin_marcador", trace_id=trace_id)
+        # ULTIMA MILLA del Ensamblador (caso real 8-jul): si el CODIGO sello el
+        # presupuesto (guia de pedido / categorias baratas) y el solver no puso
+        # el marcador (dijo "voy a calcular el total, un momento" y nada), el
+        # bloque sellado NO se pierde: se acopla en vertical, como la FAQ. El
+        # marcador es una ayuda, no una condicion para que el cliente vea el
+        # total que el codigo ya computo.
+        if _tools_precalc:
+            from app.core.curadas import acoplar_bloque as _acoplar_presup
+            respuesta = _acoplar_presup(respuesta, _present)
+            log.info("interprete_libre_presupuesto_acoplado", trace_id=trace_id)
 
     # Productos: el solver los referencia por [[PROD:<id>]] y el codigo pone
     # nombre+precio+stock reales del catalogo (curaduria del solver, datos de la
@@ -1422,8 +1452,12 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                           # El pendiente de modelos persiste hasta que el
                           # pedido se selle o se forme carrito; asi ningun
                           # turno intermedio puede inventar un presupuesto.
+                          # Lista de DICTS, nunca lista de listas: Firestore
+                          # real rechaza arrays anidados y tiraba el save
+                          # entero (bug real 8-jul, amnesia en produccion).
                           pedido_categorias_pendiente=(
-                              [list(c) for c in _cats_pedido]
+                              [{"cantidad": int(n), "categoria": str(c)}
+                               for n, c in _cats_pedido]
                               if (_cats_pedido and not _tools_precalc
                                   and not carrito_vigente) else []),
                           pregunta_cierre_hecha=pregunta_cierre_hecha,

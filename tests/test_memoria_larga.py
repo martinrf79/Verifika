@@ -69,3 +69,26 @@ def test_sin_historial_pero_con_resumen_no_dice_sin_historial():
     ctx = construir_contexto_conversacional([], resumen="Charla previa: mouse.")
     assert "Sin historial previo" not in ctx
     assert "Charla previa: mouse." in ctx
+
+
+# ── Vacuna del bug real 8-jul: el doble valida tipos como Firestore real ─────
+def test_doble_rechaza_arrays_anidados_como_firestore(firestore_doble):
+    # Una lista de listas rompia el save REAL con 400 'Nested arrays are not
+    # allowed' y el bot quedaba amnesico. El doble ahora explota igual.
+    import pytest
+    from app.storage.firestore_client import save_conversation
+    with pytest.raises(ValueError, match="Nested arrays"):
+        save_conversation("u1", [], tienda_id="verifika_prod",
+                          pedido_categorias_pendiente=[[4, "notebook"]])
+
+
+def test_pendiente_de_categorias_persiste_como_dicts(firestore_doble):
+    # El formato bueno (lista de dicts) pasa la validacion del doble.
+    from app.storage.firestore_client import (save_conversation,
+                                              get_conversation)
+    save_conversation("u2", [], tienda_id="verifika_prod",
+                      pedido_categorias_pendiente=[
+                          {"cantidad": 4, "categoria": "notebook"},
+                          {"cantidad": 5, "categoria": "mouse"}])
+    conv = get_conversation("u2", tienda_id="verifika_prod")
+    assert conv["pedido_categorias_pendiente"][0]["cantidad"] == 4

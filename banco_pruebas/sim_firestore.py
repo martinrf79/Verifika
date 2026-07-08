@@ -113,12 +113,35 @@ def install():
             return doc
         return {"history": [], "summary": "", "estado_conversacion": "saludo", "updated_at": None}
 
+    def _validar_como_firestore(valor, campo):
+        """El doble impone las MISMAS reglas de tipos que Firestore real. Bug
+        real 8-jul: una lista de listas (pedido_categorias_pendiente) pasaba
+        el doble pero Firestore la rechaza con 400 'Nested arrays are not
+        allowed', el save entero fallaba y el bot quedaba AMNESICO en
+        produccion. El doble ahora explota igual que la vida real."""
+        if isinstance(valor, tuple):
+            raise ValueError(
+                f"Firestore no acepta tuplas (campo {campo}): usar lista")
+        if isinstance(valor, list):
+            for item in valor:
+                if isinstance(item, (list, tuple)):
+                    raise ValueError(
+                        f"400 Nested arrays are not allowed (campo {campo})")
+                if isinstance(item, dict):
+                    for kk, vv in item.items():
+                        _validar_como_firestore(vv, f"{campo}.{kk}")
+        elif isinstance(valor, dict):
+            for kk, vv in valor.items():
+                _validar_como_firestore(vv, f"{campo}.{kk}")
+
     def save_conversation(user_id, history, summary="", tienda_id=None, **kw):
         doc = _CONV.setdefault((tienda_id, user_id), {})
+        _validar_como_firestore(history, "history")
         doc["history"] = history
         doc["summary"] = summary
         for k, v in kw.items():
             if v is not None:
+                _validar_como_firestore(v, k)
                 doc[k] = v
 
     def reset_conversation(user_id, tienda_id=None):

@@ -114,18 +114,46 @@ def calcular_pedido(interp: dict | None, estado: dict | None,
                         vistos=[str((p or {}).get("nombre"))[:40]
                                 for p in (estado.get("productos_vistos") or [])[:8]])
         return None
+    # Nucleo compartido con las categorias baratas: envio de memoria o del
+    # mensaje, pago del mensaje, calculadora sellada.
+    return _calcular_items_sellados(items, estado, tienda_id, trace_id, mensaje)
+
+
+def calcular_categorias_baratas(cats_pedido: list, estado: dict | None,
+                                tienda_id: str, trace_id: str | None = None,
+                                mensaje: str = "") -> list[dict] | None:
+    """'Los mas baratos' sobre un pedido por CATEGORIAS pendiente (caso real
+    de Martin, 8-jul): problema CERRADO. El codigo elige el mas barato CON
+    stock de cada categoria, arma los items con las cantidades pedidas y sella
+    el presupuesto con la misma maquinaria de calcular_pedido. None si alguna
+    categoria no tiene producto con stock o la calculadora rechaza (ej. stock
+    insuficiente para la cantidad): el turno sigue por el camino normal."""
+    if not cats_pedido:
+        return None
+    from app.core.tools_context import set_current_tienda
+    from app.core.guia_compra import mas_barato_con_stock
+    set_current_tienda(tienda_id)
+    items = []
+    for n, cat in cats_pedido:
+        p = mas_barato_con_stock(cat)
+        if not isinstance(p, dict) or not p.get("id"):
+            return None
+        items.append({"product_id": str(p["id"]).upper(), "cantidad": int(n)})
+    # Reusa el camino sellado: envio de la memoria/mensaje, pago del mensaje.
+    return _calcular_items_sellados(items, estado, tienda_id, trace_id, mensaje)
+
+
+def _calcular_items_sellados(items: list[dict], estado: dict | None,
+                             tienda_id: str, trace_id: str | None,
+                             mensaje: str) -> list[dict] | None:
+    """Nucleo compartido: corre calculate_total sellado para unos items ya
+    decididos por el CODIGO (de calcular_pedido o de las categorias baratas)."""
+    estado = estado if isinstance(estado, dict) else {}
     from app.core.tools_context import set_current_tienda
     from app.core.tools import calculate_total
     set_current_tienda(tienda_id)
-
-    # Destinos: los que la charla ya cotizo (memoria multi-destino). El envio
-    # solo se suma si hay al menos una zona resuelta; si no, el presupuesto va
-    # sin envio y el solver pide el dato como siempre.
     msg = _norm(mensaje or "")
     locs = [l for l in (estado.get("localidades_envio") or []) if l]
-    # ENVIO pedido en el MISMO mensaje ("total con envio a La Plata"): se
-    # cotiza ANTES de sellar, asi el bloque ya trae el flete. Visto 8-jul: el
-    # sello salia sin envio ni descuento aunque el cliente pidio ambos.
     if not locs:
         _menv = _RE_ENVIO_A.search(msg)
         if _menv:
@@ -137,13 +165,9 @@ def calcular_pedido(interp: dict | None, estado: dict | None,
     destinos = max(1, len(locs))
     extra = ([{"faq_tema": "costo_envio", "concepto": "envio"}]
              if locs else None)
-    # PAGO dicho en el mensaje: 100% transferencia entra al sello (el
-    # descuento real de la FAQ lo aplica el split de la calculadora). Un
-    # reparto (mitad y mitad, porcentajes) lo maneja el solver: no se adivina.
     pago = None
     if _RE_PAGO_TRANSF.search(msg) and not _RE_PAGO_MIXTO.search(msg):
         pago = [{"medio": "transferencia", "porcentaje": 100}]
-
     args = {"items": items, "destinos": destinos,
             **({"items_extra": extra} if extra else {}),
             **({"pago": pago} if pago else {})}
