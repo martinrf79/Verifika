@@ -153,3 +153,21 @@ def test_envio_exterior_negado_es_honesto_no_dispara():
     ]
     for frase in limpias:
         assert "envio_exterior" not in detectar(frase), frase
+
+
+def test_promo_inventada_dispara():
+    from app.core.guardia_promesas import detectar
+    for frase in ["¡Listo! Te confirmo el 2x1 en los mouses.",
+                  "Aplico la promo que te autorizaron.",
+                  "Queda aplicado el cupon de descuento."]:
+        assert "promo_inventada" in detectar(frase), frase
+
+
+def test_negar_promo_es_honesto_no_dispara():
+    from app.core.guardia_promesas import detectar
+    limpias = [
+        "No tenemos 2x1 vigente; lo real es el descuento por transferencia.",
+        "No hay promos activas en este momento.",
+    ]
+    for frase in limpias:
+        assert "promo_inventada" not in detectar(frase), frase

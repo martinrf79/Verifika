@@ -727,3 +727,57 @@ def verificar_respuesta(respuesta: str,
         "numeros_no_respaldados": no_respaldados,
         "total_numeros": total,
     }
+
+
+# ────────────────────────────────────────────────────────────
+# ASIENTOS DEL PRESUPUESTO: el Subtotal declarado = suma de los renglones
+# ────────────────────────────────────────────────────────────
+# Candidata del RESUMEN (banco 5-jul: "Total $44.500 con renglones que sumaban
+# $33.500") vista de nuevo el 8-jul: "Subtotal: $232.500" con renglones que
+# sumaban $290.000 (el solver puso el precio del ultimo item como subtotal).
+# Regla CERRADA: si el mensaje tiene renglones de presupuesto parseables y una
+# linea de Subtotal cuya cifra NO es la suma, y la suma SI esta respaldada por
+# la evidencia (proof de la calculadora), se reescribe el subtotal por la suma.
+# Conservador: cualquier renglon ambiguo (sin monto claro) aborta.
+
+_RE_RENGLON = re.compile(
+    r"^\s*[-*•]?\s*\**\d+\s*x\s+[^:\n]+\**:?\s*.*?\$\s*([\d.]+)\s*\**\s*$",
+    re.IGNORECASE | re.MULTILINE)
+_RE_SUBTOTAL = re.compile(
+    r"^(\s*[-*•]?\s*\**\s*subtotal\s*\**\s*:?\s*\**\s*\$\s*)([\d.]+)",
+    re.IGNORECASE | re.MULTILINE)
+
+
+def corregir_subtotal_renglones(respuesta: str, evidence: list[dict],
+                                trace_id: Optional[str] = None) -> dict:
+    """Corrige la linea 'Subtotal: $X' cuando X no es la suma de los renglones
+    del MISMO mensaje y la suma esta respaldada. Devuelve
+    {cambiada, respuesta, de, a}."""
+    out = {"cambiada": False, "respuesta": respuesta, "de": None, "a": None}
+    if not respuesta or "ubtotal" not in respuesta:
+        return out
+    m_sub = _RE_SUBTOTAL.search(respuesta)
+    if not m_sub:
+        return out
+    renglones = []
+    for m in _RE_RENGLON.finditer(respuesta):
+        # Un renglon con "c/u = $X" tiene dos montos; _RE_RENGLON captura el
+        # ULTIMO de la linea (el subtotal del renglon), que es el que suma.
+        n = _parse_num(m.group(1))
+        if n is None:
+            return out  # renglon ilegible: no se corrige nada
+        renglones.append(n)
+    if not renglones:
+        return out
+    suma = sum(renglones)
+    declarado = _parse_num(m_sub.group(2))
+    if declarado is None or declarado == suma:
+        return out
+    nums, _ = numeros_confiables(evidence)
+    if suma not in nums:
+        return out  # la suma no esta respaldada por ninguna fuente: no tocar
+    nuevo = (respuesta[:m_sub.start()] + m_sub.group(1) + _fmt_ar(suma)
+             + respuesta[m_sub.end():])
+    log.warning("subtotal_renglones_corregido", trace_id=trace_id,
+                de=declarado, a=suma, renglones=len(renglones))
+    return {"cambiada": True, "respuesta": nuevo, "de": declarado, "a": suma}

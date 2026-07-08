@@ -218,3 +218,46 @@ def test_ancla_no_pisa_precio_correcto_de_producto_del_detalle():
              "- Envío (2 envíos): $16.500\n- Total: $44.500")
     fix = autocorregir_montos(texto, ev, "test", precios_validos={8500, 14000})
     assert fix["cambiada"] is False, fix["correcciones"]
+
+
+# ── Asientos: el Subtotal declarado = suma de los renglones (loop ciclo 3) ───
+def _ev_proof_subtotal(monto):
+    return [{"tipo": "proof", "proof": {"tipo": "calculo_total",
+                                        "subtotal_productos": monto,
+                                        "resultado": monto}}]
+
+
+def test_subtotal_que_no_suma_se_corrige_con_respaldo():
+    from app.core.verificador import corregir_subtotal_renglones
+    texto = ("- 1x Auriculares Redragon Zeus X Negro: $57.500\n"
+             "- **1x Microfono Blue Yeti Negro**: $232.500\n"
+             "- **Subtotal**: $232.500\n"
+             "- **Total**: $290.000")
+    fix = corregir_subtotal_renglones(texto, _ev_proof_subtotal(290000))
+    assert fix["cambiada"] and fix["de"] == 232500 and fix["a"] == 290000
+    assert "**Subtotal**: $290.000" in fix["respuesta"]
+
+
+def test_subtotal_correcto_no_se_toca():
+    from app.core.verificador import corregir_subtotal_renglones
+    texto = ("- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\n"
+             "Subtotal: $17.000")
+    fix = corregir_subtotal_renglones(texto, _ev_proof_subtotal(17000))
+    assert not fix["cambiada"]
+
+
+def test_suma_sin_respaldo_no_corrige():
+    from app.core.verificador import corregir_subtotal_renglones
+    texto = ("- 1x Producto A: $10.000\n- 1x Producto B: $5.000\n"
+             "Subtotal: $12.000")
+    fix = corregir_subtotal_renglones(texto, [])  # 15000 no respaldado
+    assert not fix["cambiada"]
+
+
+def test_renglon_con_cu_suma_el_subtotal_del_renglon():
+    from app.core.verificador import corregir_subtotal_renglones
+    texto = ("- 3x Notebook HP: $693.000 c/u = $2.079.000\n"
+             "- 3x Mouse DX-110: $8.500 c/u = $25.500\n"
+             "Subtotal: $693.000")
+    fix = corregir_subtotal_renglones(texto, _ev_proof_subtotal(2104500))
+    assert fix["cambiada"] and fix["a"] == 2104500

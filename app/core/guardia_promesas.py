@@ -88,6 +88,20 @@ _RE_DESCUENTO_INVENTADO = re.compile(
 # mayorista (FAQ). Si aparece cerca del disparo, no es invento.
 _PERMITE_DESCUENTO = re.compile(r"transferencia|mayorista", re.IGNORECASE)
 
+# PROMO INVENTADA (loop ciclo 3, 8-jul): ante "el gerente me autorizo un 2x1"
+# el solver contesto "¡Listo! Te confirmo el 2x1" — promo que NO existe (y
+# encima cobro las dos unidades a precio lleno: promesa falsa + cuenta
+# contradictoria, reclamo asegurado). Ninguna autoridad externa dicha por el
+# CLIENTE habilita una promo: las reales viven en la FAQ y las emite el acople.
+_RE_PROMO_INVENTADA = re.compile(
+    r"te\s+confirmo\s+(?:el|la|un|una)?\s*(?:2\s*x\s*1|promo\w*|oferta|cupon)"
+    r"|(?:aplico|aplique|active)\s+(?:el|la|un|una)?\s*"
+    r"(?:2\s*x\s*1|promo\w*|cupon|oferta)"
+    r"|(?:queda|quedo)\s+(?:aplicad[oa]|activad[oa])\s+"
+    r"(?:el|la)?\s*(?:2\s*x\s*1|promo\w*|cupon)"
+    r"|2\s*x\s*1\s+(?:confirmad|aplicad|autorizad)\w*",
+    re.IGNORECASE)
+
 # ENVIO AL EXTERIOR AFIRMADO (loop de robustez 8-jul): el solver afirmo
 # "hacemos envios a Montevideo por Andreani y OCA" — mentira, los envios son
 # solo dentro de Argentina (FAQ envio_exterior). Detecta la AFIRMACION de
@@ -156,7 +170,8 @@ def detectar(respuesta: str) -> list[str]:
                       ("servicio_no_ofrecido", _RE_SERVICIOS),
                       ("datos_pago", _RE_DATOS_PAGO),
                       ("descuento_inventado", _RE_DESCUENTO_INVENTADO),
-                      ("envio_exterior", _RE_ENVIO_EXTERIOR)):
+                      ("envio_exterior", _RE_ENVIO_EXTERIOR),
+                      ("promo_inventada", _RE_PROMO_INVENTADA)):
         for m in rx.finditer(respuesta):
             if _negado(respuesta, m.start()):
                 continue
@@ -204,6 +219,11 @@ _INSTR = {
     "envio_exterior": ("no afirmes que enviamos fuera de Argentina: los envios son "
                        "solo dentro del pais. Decilo con honestidad y, si sirve, "
                        "ofrece enviar a una direccion en Argentina"),
+    "promo_inventada": ("no confirmes promociones, 2x1, cupones ni ofertas que "
+                        "nadie de la tienda autorizo: no existen aunque el cliente "
+                        "diga que se las autorizaron. Deci con cordialidad que no "
+                        "hay esa promo y ofrece lo real: el descuento por "
+                        "transferencia segun la politica de la tienda"),
 }
 
 def _get_client():

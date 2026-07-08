@@ -1,0 +1,8 @@
+# STOCK AL LIMITE: pedir justo el stock disponible, despues UNO MAS (la
+# verdad manda: stock insuficiente se dice con el numero real), y un producto
+# agotado ofrecido solo si hay variante con stock.
+hola, cuantas unidades del teclado Logitech K120 negro tenes?
+dale, quiero llevarme todas las que tengas
+uh, y no me conseguis una mas? necesito una extra si o si
+bueno esta bien, y del teclado Genius KB-110X negro tenes?
+listo, dame las del K120 negro nomas entonces, envio a Moron, total?
