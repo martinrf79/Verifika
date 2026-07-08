@@ -231,6 +231,9 @@ def construir_estado(conv: dict | None, lead: dict | None) -> dict:
         "provincia_envio": (conv.get("provincia_envio") or "").strip(),
         "criterio": (conv.get("criterio_cliente") or "").strip(),
         "datos_cliente": datos_cliente,
+        # Memoria larga: el resumen acumulado de la charla que ya salio del
+        # historial vivo (turnos viejos fundidos). Contexto, no fuente de datos.
+        "resumen_charla": (conv.get("summary") or "").strip(),
     }
 
 
@@ -242,6 +245,11 @@ def bloque_para_solver(estado: dict | None) -> str:
     '' si no hay nada que aportar."""
     estado = estado or {}
     partes: list[str] = []
+
+    resumen = (estado.get("resumen_charla") or "").strip()
+    if resumen:
+        partes.append("Lo hablado ANTES en esta charla (memoria, los turnos "
+                      "viejos ya no estan arriba): " + resumen)
 
     prods = estado.get("productos_vistos") or []
     if prods:

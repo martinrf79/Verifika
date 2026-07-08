@@ -284,6 +284,26 @@ def calculate_total(items: list[dict] | None = None,
                 f"OTRO producto, primero resolvelo con search_products o "
                 f"get_product_details y despues sumalo.")}
 
+    # PEDIDO SELLADO DEL TURNO (guia_pedido, 8-jul): el interprete ya extrajo el
+    # pedido de este turno y el codigo lo calculo entero. Un calculate_total del
+    # solver que AGREGA productos fuera del pedido sellado (+carrito) muta el
+    # pedido en silencio: visto en el banco, el solver sumo un microfono de
+    # $76.500 que el cliente nunca eligio. Quitar o repetir items sellados esta
+    # bien (subconjunto); agregar, no.
+    _sellado = {str(i).upper() for i in (_est.get("pedido_sellado_turno") or [])}
+    if _sellado:
+        _extras_pedido = sorted(
+            {str(i.get("product_id") or "").upper() for i in items}
+            - _sellado - {str(c["id"]).upper() for c in _carrito})
+        if _extras_pedido:
+            log.warning(f"calculate_total pedido_sellado_extras={_extras_pedido}")
+            return {"ok": False, "mensaje_para_llm": (
+                "El pedido de este turno YA fue calculado por el sistema con "
+                "lo que el cliente eligio; no agregues productos que no pidio "
+                f"({', '.join(_extras_pedido)}). Pone el marcador "
+                "[[PRESUPUESTO]] donde va el detalle del presupuesto y NO "
+                "vuelvas a llamar calculate_total.")}
+
     tid = get_current_tienda()
     detalle = []
     total = 0

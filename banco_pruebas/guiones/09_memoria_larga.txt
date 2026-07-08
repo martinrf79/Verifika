@@ -1,0 +1,19 @@
+# MEMORIA LARGA (C2-C4): charla de 14 turnos. El cliente da su destino y elige
+# un producto AL PRINCIPIO, mete 10 turnos de ruido en el medio (el historial
+# vivo son 10 turnos: lo del principio se cae y queda solo en el resumen), y al
+# final referencia lo del principio. El bot NO debe re-pedir el destino ni
+# perder el producto elegido; el juez audita ademas que no mienta datos.
+hola, busco un mouse para regalo, va con envio a Rio Tercero, provincia de Cordoba
+me gusta el Genius DX-110 negro, dejalo anotado que sigo mirando otras cosas
+tenes teclados mecanicos?
+cual es la diferencia entre membrana y mecanico?
+y de esos teclados cual es el mas barato con stock?
+hacen factura A?
+se puede pagar en cuotas?
+que garantia tienen los productos?
+tenes auriculares con microfono?
+cuanto salen los auriculares mas baratos?
+los auriculares dejalos, no me convencen
+tenes joysticks?
+bueno listo, no quiero nada mas
+dale, cerremos con el mouse que te dije al principio y mandalo a donde te dije, pasame el total con envio

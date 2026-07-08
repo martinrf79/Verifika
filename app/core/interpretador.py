@@ -168,10 +168,11 @@ def truncar_listado(texto: str, max_chars: int = 250) -> str:
 
 
 def construir_contexto_conversacional(history: list[dict],
-                                       n_turnos_completos: int = 7) -> str:
+                                       n_turnos_completos: int = 7,
+                                       resumen: str = "") -> str:
     """Arma contexto conversacional con turnos recientes completos
     y resumen de turnos viejos. Trunca listados largos del bot."""
-    if not history:
+    if not history and not (resumen or "").strip():
         return "Sin historial previo"
 
     n_mensajes = n_turnos_completos * 2
@@ -180,6 +181,12 @@ def construir_contexto_conversacional(history: list[dict],
 
     lineas = []
 
+    # MEMORIA LARGA: el resumen acumulado de la charla vieja (turnos que ya no
+    # estan en el historial vivo) entra primero, asi el interprete puede leer
+    # una referencia a algo dicho muchos turnos atras (C2-C4).
+    if (resumen or "").strip():
+        lineas.append("LO HABLADO ANTES EN ESTA CHARLA (resumen acumulado de "
+                      "turnos viejos):\n" + resumen.strip())
     if viejos:
         lineas.append(f"Resumen de {len(viejos)} mensajes previos: "
                        "conversacion en curso, ver mensajes recientes para contexto actual.")
@@ -443,7 +450,8 @@ async def interpretar_mensaje(mensaje: str,
                                 trace_id: str,
                                 estado_anterior: str | None = None,
                                 tienda_id: str | None = None,
-                                productos_vistos: list[dict] | None = None) -> dict:
+                                productos_vistos: list[dict] | None = None,
+                                resumen: str = "") -> dict:
     log.info("interpretar_mensaje_inicio")
     """Funcion principal del Interpretador.
     Prompt liberado mas tres capas de filtro al final."""
@@ -463,8 +471,8 @@ async def interpretar_mensaje(mensaje: str,
             if isinstance(_precio, (int, float)):
                 productos.append({"nombre": pv["nombre"], "precio": int(_precio)})
                 _nombres_regex.add(pv["nombre"])
-        contexto_conv = construir_contexto_conversacional(history,
-                                                            n_turnos_completos=7)
+        contexto_conv = construir_contexto_conversacional(
+            history, n_turnos_completos=7, resumen=resumen)
 
         if estado_anterior:
             contexto_conv = (

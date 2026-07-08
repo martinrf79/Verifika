@@ -3,6 +3,25 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
+**Última actualización: 8-jul-2026 (2ª tanda).** MEMORIA LARGA (C2-C4) + pedido
+sellado del turno + carrito que no se envenena. Validado: dos rondas vivas 9/9
+seguidas (guion nuevo de 14 turnos incluido). Cuatro piezas:
+1. **Memoria larga** (`memoria_larga.py`): los turnos que caen del tope de 10 se
+   FUNDEN en el campo `summary` (existía, iba vacío) con una llamada corta al modelo
+   del solver SOLO en turnos que desbordan; red determinista si el LLM falla, tope
+   1500 chars. El resumen entra al contexto del intérprete y al bloque del solver
+   (`resumen_charla` en el estado). Verificado vivo: a los 14 turnos el bot retomó el
+   producto elegido en el turno 2 y el destino del turno 1, total exacto $16.000.
+2. **Pedido sellado del turno** (`calculate_total`): cuando la guía de pedido calculó,
+   un calculate_total del solver que AGREGA productos fuera del pedido (+carrito) se
+   rechaza (mató el micrófono fantasma de $76.500 que el cliente nunca eligió).
+3. **Carrito sin veneno**: un turno con intención "otra" (rechazo, off-topic) NO
+   actualiza el carrito desde una calculadora especulativa del solver.
+4. Guion vivo nuevo `09_memoria_larga.txt` (14 turnos, dato clave al principio y ruido
+   en el medio). **358 tests offline + 9 vivos, dos rondas seguidas en verde.**
+PENDIENTE: OK de Martín para mergear a main (deploya el CI) y arrancar el /loop de
+robustez (charlas complejas generadas, prueba-error hasta producto robusto).
+
 **Última actualización: 8-jul-2026.** SALUDO INICIAL + GUÍA DETERMINISTA DE PEDIDO +
 tres bugs de verificación cazados con el caso real de multi-envío de Martín. Todo
 validado de punta a punta en el banco (dos rondas vivas 8/8 seguidas + caso multi-envío

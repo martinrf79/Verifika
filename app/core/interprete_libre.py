@@ -401,7 +401,8 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         interp = await interpretar_mensaje(
             raw_message, history, trace_id,
             estado_anterior=estado_anterior, tienda_id=tienda_id,
-            productos_vistos=estado.get("productos_vistos"))
+            productos_vistos=estado.get("productos_vistos"),
+            resumen=estado.get("resumen_charla") or "")
     except Exception as e:
         log.error("interprete_libre_interp_error", trace_id=trace_id,
                   error=str(e)[:200])
@@ -521,6 +522,12 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 interp, estado, tienda_id, trace_id) or []
             if _tools_precalc:
                 mensaje_enriquecido += INSTRUCCION_SOLVER
+                # El pedido queda SELLADO para el turno: calculate_total rechaza
+                # a un solver que quiera AGREGAR productos que el cliente no
+                # pidio (el estado es el mismo dict de la contextvar del turno).
+                estado["pedido_sellado_turno"] = [
+                    i.get("product_id")
+                    for i in _tools_precalc[0].get("args", {}).get("items", [])]
                 log.info("interprete_libre_guia_pedido", trace_id=trace_id)
         except Exception as e:
             log.warning("interprete_libre_guia_pedido_error", trace_id=trace_id,
@@ -1105,6 +1112,21 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         {"role": "user", "content": raw_message},
         {"role": "assistant", "content": respuesta},
     ]
+    # MEMORIA LARGA (8-jul): los turnos que el recorte descarta se FUNDEN en el
+    # resumen acumulado (campo summary, antes iba vacio y lo viejo se perdia).
+    # Cubre retomar charla vieja, contradiccion lejana y dato dado hace muchos
+    # turnos (C2-C4). Solo llama al LLM en los turnos donde la charla desborda
+    # el tope; si falla, red determinista en memoria_larga.
+    resumen_charla = conv.get("summary", "") or ""
+    _descartados = history[:-(settings.HISTORY_LIMIT * 2)]
+    if _descartados:
+        try:
+            from app.core.memoria_larga import actualizar_resumen
+            resumen_charla = await actualizar_resumen(
+                resumen_charla, _descartados, trace_id)
+        except Exception as e:
+            log.warning("interprete_libre_memoria_larga_error",
+                        trace_id=trace_id, error=str(e)[:120])
     history = history[-(settings.HISTORY_LIMIT * 2):]
 
     # ── ESTADO DE VENTA: mergear lo de este turno con la memoria y persistir ──
@@ -1131,7 +1153,14 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                                   "precio": int(_pp["precio_ars"])})
     productos_vistos = merge_productos(
         conv.get("productos_vistos") or [], productos_de_meta(meta) + mostrados)
-    carrito_vigente = carrito_de_meta(meta) or (conv.get("carrito_vigente") or [])
+    # El carrito NO se actualiza en un turno SIN intencion de compra: si el
+    # cliente dijo "no quiero nada mas" (intencion otra) y el solver igual corrio
+    # una calculadora especulativa, ese detalle NO pisa el pedido del cliente.
+    # Visto en el banco (8-jul): un microfono especulativo entro al carrito en el
+    # turno del rechazo y el sello del turno siguiente lo dio por vigente.
+    _cambia_carrito = _intent not in ("otra",)
+    carrito_vigente = ((carrito_de_meta(meta) if _cambia_carrito else [])
+                       or (conv.get("carrito_vigente") or []))
     ultima_localidad = envio_de_meta(meta) or (conv.get("ultima_localidad") or "")
     # TODAS las localidades cotizadas con exito (multi-destino), no solo la
     # ultima: si este turno no se cotizo ninguna queda lo de memoria. Sin esto,
@@ -1152,7 +1181,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
 
     latency_ms = int((time.time() - t0) * 1000)
     try:
-        save_conversation(user_id, history, conv.get("summary", ""),
+        save_conversation(user_id, history, resumen_charla,
                           tienda_id=tienda_id,
                           estado_conversacion=estado_nuevo,
                           ultimo_presupuesto=presupuesto,

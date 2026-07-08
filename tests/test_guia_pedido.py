@@ -119,3 +119,25 @@ def test_producto_duplicado_en_pedido_invalida_todo():
         {"producto": "mouse genius dx-110 negro", "cantidad": 3},
     ])
     assert items_de_pedido(interp, _VISTOS) is None
+
+
+def test_pedido_sellado_rechaza_items_agregados(firestore_doble):
+    # Con el pedido del turno sellado por la guia, un calculate_total del solver
+    # que AGREGA un producto no pedido (el microfono fantasma del banco) se
+    # rechaza; el mismo pedido o un subconjunto pasa.
+    from app.core.estado_venta import set_current_estado
+    from app.core.tools import calculate_total
+    from app.core.tools_context import set_current_tienda
+    set_current_tienda("verifika_prod")
+    set_current_estado({"carrito": [], "productos_vistos": _VISTOS,
+                        "pedido_sellado_turno": ["MOU0023"]})
+    try:
+        con_extra = calculate_total(items=[
+            {"product_id": "MOU0023", "cantidad": 1},
+            {"product_id": "MIC0019", "cantidad": 1}])
+        assert con_extra["ok"] is False
+        assert "MIC0019" in con_extra["mensaje_para_llm"]
+        mismo = calculate_total(items=[{"product_id": "MOU0023", "cantidad": 1}])
+        assert mismo["ok"] is True
+    finally:
+        set_current_estado({})
