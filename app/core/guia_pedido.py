@@ -245,6 +245,79 @@ def opciones_por_categoria(categoria: str, tienda_id: str,
     return prods[:k]
 
 
+# Destinos declarados en el MISMO mensaje del pedido ("va a tancacha", "con
+# envio a los condores"). El CODIGO los cotiza en el acto: no se depende de
+# que el solver llame cotizar_envio (en real a veces no lo hace y el total
+# sale SIN envio, visto 8-jul).
+_RE_DESTINOS_MSG = re.compile(
+    r"\b(?:van?|vaya|env[ií]os?|mandar?|con\s+env[ií]o)\s+a\s+"
+    r"([a-zñ][a-zñ .'-]{2,30}?)"
+    r"(?=\s+(?:una?|un|todos?|lo|dime|decime|pagando|y|e)\b|[,.?!]|$)")
+
+
+def cotizar_destinos_del_mensaje(mensaje: str) -> list[str]:
+    """Cotiza deterministamente cada destino nombrado en el mensaje (max 4).
+    Devuelve las localidades que RESOLVIERON zona; quedan ademas en la memoria
+    del turno (set_envio_localidad, via cotizar_envio) para que el sello y la
+    persistencia las vean. Las que no resuelven se ignoran (el solver pide el
+    dato como siempre)."""
+    from app.core.tools import cotizar_envio
+    ok: list[str] = []
+    for m in list(_RE_DESTINOS_MSG.finditer(_norm(mensaje or "")))[:4]:
+        cand = m.group(1).strip(" .,-")
+        if len(cand) < 3 or cand in {c.lower() for c in ok}:
+            continue
+        try:
+            q = cotizar_envio(localidad=cand)
+        except Exception:
+            continue
+        if q.get("ok"):
+            ok.append(cand)
+    return ok
+
+
+def mensaje_opciones_categorias(cats_pedido: list[tuple], tienda_id: str,
+                                destinos: list[str] | None = None,
+                                business_name: str = "la tienda") -> str | None:
+    """El MENSAJE ENTERO del turno de pedido por categorias, armado por el
+    CODIGO: opciones reales CON stock por categoria + destinos cotizados +
+    pregunta de modelos. Cero prosa del LLM: en real el solver listaba
+    productos sin stock y re-pedia la provincia ya dada. None si ninguna
+    categoria tiene opciones (el turno cae al camino normal)."""
+    from app.core.interprete_libre import _linea_producto
+    bloques = []
+    for n, cat in cats_pedido:
+        ops = opciones_por_categoria(cat, tienda_id)
+        if not ops:
+            continue
+        lineas = "\n".join("- " + _linea_producto(p) for p in ops)
+        bloques.append(f"Para {'las' if n > 1 else 'la'} {n} de {cat}, "
+                       f"opciones con stock:\n{lineas}")
+    if not bloques:
+        return None
+    partes = ["¡Buena compra la que estás armando! Para pasarte el precio "
+              "exacto necesito que elijas los modelos.",
+              "\n\n".join(bloques)]
+    if destinos:
+        partes.append("Los envíos van a: " + ", ".join(destinos)
+                      + ". Ya los tengo cotizados.")
+    partes.append("¿Qué modelo elegís de cada categoría? Si querés vamos por "
+                  "los más económicos: decime \"los más baratos\" y te armo "
+                  "el total al instante.")
+    return "\n\n".join(partes)
+
+
+def mensaje_presupuesto_sellado(presentacion: str) -> str:
+    """El MENSAJE ENTERO del turno 'los mas baratos': plantilla fija del codigo
+    + bloque sellado de la calculadora. Cero prosa del LLM (en real la prosa
+    listaba OTROS productos y contradecia al bloque)."""
+    return ("Listo, te armé el pedido con los más económicos de cada "
+            "categoría:\n\n" + presentacion.strip()
+            + "\n\nEnvío orientativo, puede variar al confirmar la compra.\n"
+            "¿Lo dejamos confirmado? Decime la forma de pago: transferencia "
+            "(10% de descuento) o Mercado Pago.")
+
+
 def instruccion_categorias(cats_pedido: list[tuple]) -> str:
     """Brief para el solver cuando el pedido es por categorias sin modelos."""
     pedido_txt = ", ".join(f"{n} de {c}" for n, c in cats_pedido)

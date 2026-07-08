@@ -239,3 +239,45 @@ def test_categoria_sin_stock_cae_al_camino_normal(firestore_doble):
     from app.core.guia_pedido import calcular_categorias_baratas
     assert calcular_categorias_baratas(
         [(2, "categoria_inexistente")], {}, "verifika_prod") is None
+
+
+# ── Atajos 100% deterministas del flujo por categorias (8-jul) ───────────────
+def test_cotizar_destinos_del_mensaje(firestore_doble):
+    from app.core.estado_venta import set_current_estado
+    from app.core import estado_venta
+    from app.core.guia_pedido import cotizar_destinos_del_mensaje
+    from app.core.tools_context import set_current_tienda
+    set_current_tienda("verifika_prod")
+    estado_venta._envio_localidades.set([])
+    set_current_estado({"provincia_envio": "cordoba"})
+    try:
+        msg = ("una Notebook y un teclado va a tancacha una Notebook y un "
+               "mouse va a Rio tercero lo demas va con envio a los condores "
+               "todos en provincia de Cordoba")
+        dest = cotizar_destinos_del_mensaje(msg)
+        assert len(dest) == 3, dest
+        # y quedaron en la memoria del turno para el sello y la persistencia
+        assert len(estado_venta.get_envio_localidades()) == 3
+    finally:
+        estado_venta._envio_localidades.set([])
+        set_current_estado({})
+
+
+def test_mensaje_opciones_categorias_lo_arma_el_codigo(firestore_doble):
+    from app.core.guia_pedido import mensaje_opciones_categorias
+    txt = mensaje_opciones_categorias(
+        [(4, "notebook"), (3, "teclado"), (5, "mouse")], "verifika_prod",
+        ["tancacha", "rio tercero", "los condores"])
+    assert txt is not None
+    assert "opciones con stock" in txt
+    assert "tancacha" in txt and "Ya los tengo cotizados" in txt
+    assert "los más baratos" in txt  # ofrece el atajo
+    assert "Stock: 0" not in txt  # jamas una opcion sin stock
+
+
+def test_mensaje_presupuesto_sellado_es_plantilla_fija():
+    from app.core.guia_pedido import mensaje_presupuesto_sellado
+    out = mensaje_presupuesto_sellado("Presupuesto:\n- 4x X: $1 c/u = $4\nTotal: $4")
+    assert out.startswith("Listo, te armé el pedido")
+    assert "Total: $4" in out
+    assert "transferencia" in out
