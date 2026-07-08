@@ -86,3 +86,36 @@ def test_producto_alineado_no_pisa(firestore_doble):
 def test_sin_producto_resuelto_no_pisa(firestore_doble):
     interp = {"producto_resuelto": None, "confianza": 0.95}
     assert _reanclar_si_producto_divergente(interp, "cualquier cosa", ["X"], TIENDA) is None
+
+
+# ── Guarda del MAS BARATO (loop ciclo 2, 8-jul) ─────────────────────────────
+def test_barato_divergente_se_reancla(firestore_doble):
+    # El codigo computo DX-110 ($8.500) y el solver dijo que el mas barato es
+    # el M170 ($12.000) sin mostrar el DX-110: se re-ancla al real.
+    from app.core.interprete_libre import _reanclar_si_barato_divergente
+    r = _reanclar_si_barato_divergente(
+        "El mouse más barato que tenemos es el Logitech M170 a $12.000.",
+        "MOU0023", [], "verifika_prod")
+    assert r is not None
+    assert "DX-110" in r and "8.500" in r
+
+
+def test_barato_correcto_no_se_toca(firestore_doble):
+    from app.core.interprete_libre import _reanclar_si_barato_divergente
+    # El solver mostro el correcto (por nombre): no se pisa su redaccion.
+    r = _reanclar_si_barato_divergente(
+        "El más barato es el Mouse Genius DX-110 Negro, $8.500.",
+        "MOU0023", [], "verifika_prod")
+    assert r is None
+    # O por marcador ya estampado (id en mostrados): tampoco.
+    r2 = _reanclar_si_barato_divergente(
+        "El más barato es este: ...", "MOU0023", ["MOU0023"], "verifika_prod")
+    assert r2 is None
+
+
+def test_sin_reclamo_de_barato_no_se_toca(firestore_doble):
+    from app.core.interprete_libre import _reanclar_si_barato_divergente
+    r = _reanclar_si_barato_divergente(
+        "Te muestro el Logitech M170, muy buena opción.", "MOU0023", [],
+        "verifika_prod")
+    assert r is None

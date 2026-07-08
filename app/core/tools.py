@@ -457,8 +457,6 @@ def calculate_total(items: list[dict] | None = None,
             # varias localidades, cada destino cobra SU tarifa real (Cordoba +
             # Rosario suma 7500 + 6000, no dos veces la ultima). Con una sola
             # localidad conocida, los n destinos van a esa tarifa, como antes.
-            # Si el solver declara mas destinos que localidades cotizadas, los
-            # restantes cobran la ultima tarifa conocida (conservador).
             _locs = get_envio_localidades()
             if not _locs:
                 # Memoria del pedido: destinos cotizados en turnos ANTERIORES.
@@ -469,6 +467,46 @@ def calculate_total(items: list[dict] | None = None,
                 _locs = [str(l).strip() for l in
                          (get_current_estado().get("localidades_envio") or [])
                          if str(l or "").strip()]
+            # DESTINO UNICO (sticky del estado): el cliente dijo "mandalo todo
+            # a X" / "me mude". Todo va a UN lugar; un destino viejo que el
+            # solver re-cotice desde el historial queda OBSOLETO y no se
+            # cobra (visto en el banco 8-jul: mudanza Mendoza->Salta cobro dos
+            # envios). Se queda con el destino de la MEMORIA si esta entre los
+            # cotizados; si no, con el ultimo cotizado del turno.
+            from app.core.estado_venta import get_current_estado as _gce_du
+            if _gce_du().get("destino_unico") and len(_locs) > 1:
+                _mem_du = [str(l).strip() for l in
+                           (_gce_du().get("localidades_envio") or [])
+                           if str(l or "").strip()]
+                _elegida = next(
+                    (l for l in _locs
+                     if _mem_du and l.lower() == _mem_du[-1].lower()),
+                    _locs[-1])
+                log.info(f"calculate_total destino_unico "
+                         f"cotizados={_locs} usado={_elegida}")
+                _locs = [_elegida]
+            if _gce_du().get("destino_unico") and n_envios > 1:
+                n_envios = 1
+                _sub_umbral = total
+
+            # DESTINOS SIN COTIZAR NO SE COBRAN NI SE INVENTAN: si el solver
+            # declara MAS destinos que localidades cotizadas (turno + memoria),
+            # antes se rellenaba duplicando la ultima tarifa (E13, para no
+            # regalar el envio) — pero eso COBRO DE MAS en real: tras "mandalo
+            # todo a Salta" (UN destino) el solver mando destinos=2 y el total
+            # sumo dos envios de $9.000 (banco 8-jul). Ahora se pide cotizar el
+            # destino faltante: ni capa en silencio (E13) ni duplica tarifa.
+            if _locs and n_envios > len(_locs):
+                log.warning(f"calculate_total destinos_sin_cotizar "
+                            f"declarados={n_envios} cotizados={len(_locs)}")
+                return {"ok": False, "mensaje_para_llm": (
+                    f"Declaraste {n_envios} destinos pero hay "
+                    f"{len(_locs)} localidad(es) cotizada(s): "
+                    f"{', '.join(_locs)}. Si de verdad hay mas destinos, "
+                    f"cotiza cada uno con cotizar_envio (uno por localidad, "
+                    f"aunque la ciudad se repita) y volve a llamar. Si es UN "
+                    f"solo destino, llama con destinos={len(_locs)}. No cobro "
+                    f"envios sin cotizar.")}
             if n_envios > 1 and len(_locs) > 1:
                 _locs = _locs[-n_envios:]
             else:

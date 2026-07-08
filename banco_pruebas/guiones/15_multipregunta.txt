@@ -1,0 +1,6 @@
+# MULTI-PREGUNTA (B24): varias preguntas en un mensaje. Ninguna puede quedar
+# sin responder y cada dato sale de su fuente.
+hola, cuanto sale el mouse mas barato con stock, llega a Neuquen capital y en cuantos dias?
+y aceptan tarjeta? cuantas cuotas sin interes? hay recargo con debito?
+perfecto, y si llevo ese mouse y el teclado mas barato, cuanto queda todo con envio y pagando mitad transferencia mitad mercado pago?
+dale, cerralo asi

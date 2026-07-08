@@ -52,27 +52,30 @@ def test_normaliza_rechaza_cantidad_cero():
 
 # ── E13: multi-destino, corre sobre el doble local (sin LLM ni Google) ───────
 
-def test_e13_no_capa_destinos_en_silencio(firestore_doble):
-    """E13: con 4 destinos, el envio se cobra 4 veces, no 3. Hoy se capa en 3
-    sin avisar (22500 en vez de 30000 a Cordoba, tarifa fija 7500)."""
+def test_e13_destinos_sin_cotizar_ni_se_capan_ni_se_duplican(firestore_doble):
+    """E13 v2 (8-jul): con 4 destinos declarados y UNA sola localidad cotizada,
+    antes se rellenaba duplicando la ultima tarifa; eso COBRO DE MAS en real
+    (caso mudanza: "mandalo todo a Salta" + destinos=2 del solver = dos envios
+    de $9.000). Ahora la calculadora ni capa en silencio ni inventa: devuelve
+    ok False pidiendo cotizar cada destino."""
     from app.core.tools import calculate_total, get_all_products
     from app.core import estado_venta
 
     prods = sorted(get_all_products(), key=lambda p: p.get("precio_ars", 0))
     barato = prods[0]
+    estado_venta._envio_localidades.set([])
     estado_venta.set_envio_localidad("Cordoba, provincia de Cordoba")
-
-    r = calculate_total(
-        items=[{"product_id": barato["id"], "cantidad": 1}],
-        items_extra=[{"faq_tema": "costo_envio", "concepto": "x"}],
-        destinos=4,
-    )
-    assert r.get("ok")
-    envio = next(e for e in r["extras"] if e["faq_tema"] == "costo_envio")
-    assert envio.get("destinos") == 4, (
-        "Cuatro destinos deben cobrar 4 envios; hoy se capa a 3 en silencio.")
-    assert envio.get("monto") == 7500 * 4, (
-        "El envio a 4 destinos a Cordoba es 7500x4=30000; hoy da 7500x3=22500.")
+    try:
+        r = calculate_total(
+            items=[{"product_id": barato["id"], "cantidad": 1}],
+            items_extra=[{"faq_tema": "costo_envio", "concepto": "x"}],
+            destinos=4,
+        )
+        assert r.get("ok") is False
+        assert "cotiza" in r["mensaje_para_llm"].lower()
+        assert "4" in r["mensaje_para_llm"]
+    finally:
+        estado_venta._envio_localidades.set([])
 
 
 # ── Envio gratis por umbral en multi-destino: POR DESTINO, no por la suma ────
@@ -96,17 +99,23 @@ def test_multidestino_no_regala_envio_por_la_suma(firestore_doble):
     from app.core import estado_venta
 
     p = _producto_para_umbral(min_precio=250000 // 4, cantidad=4)
-    estado_venta.set_envio_localidad("Cordoba, provincia de Cordoba")
-    r = calculate_total(
-        items=[{"product_id": p["id"], "cantidad": 4}],
-        items_extra=[{"faq_tema": "costo_envio", "concepto": "x"}],
-        destinos=4,
-    )
-    assert r.get("ok")
-    envio = next(e for e in r["extras"] if e["faq_tema"] == "costo_envio")
-    assert envio.get("monto", 0) > 0, (
-        "Con 4 destinos chicos el envio se cobra por destino; la suma de los "
-        "destinos no libera el envio gratis.")
+    estado_venta._envio_localidades.set([])
+    for loc in ("Cordoba, provincia de Cordoba", "Rio Tercero, cordoba",
+                "Tancacha, cordoba", "Los Condores, cordoba"):
+        estado_venta.set_envio_localidad(loc)
+    try:
+        r = calculate_total(
+            items=[{"product_id": p["id"], "cantidad": 4}],
+            items_extra=[{"faq_tema": "costo_envio", "concepto": "x"}],
+            destinos=4,
+        )
+        assert r.get("ok")
+        envio = next(e for e in r["extras"] if e["faq_tema"] == "costo_envio")
+        assert envio.get("monto", 0) > 0, (
+            "Con 4 destinos chicos el envio se cobra por destino; la suma de "
+            "los destinos no libera el envio gratis.")
+    finally:
+        estado_venta._envio_localidades.set([])
 
 
 def test_un_destino_sobre_el_umbral_sigue_gratis(firestore_doble):
@@ -254,3 +263,62 @@ def test_sin_carrito_no_se_restringe(firestore_doble):
     r = calculate_total(items=[{"product_id": "MOU0049", "cantidad": 1}])
     estado_venta.set_current_estado({})
     assert r.get("ok") is True
+
+
+def test_mudanza_destinos_de_mas_no_duplican_tarifa(firestore_doble):
+    # Caso mudanza (banco 8-jul): tras "mandalo todo a Salta" la memoria tiene
+    # UN destino, pero el solver mando destinos=2 y el total cobro DOS envios
+    # de $9.000. Ahora se rechaza pidiendo cotizar; con destinos=1 sale bien.
+    from app.core.estado_venta import set_current_estado
+    from app.core import estado_venta
+    from app.core.tools import calculate_total
+    from app.core.tools_context import set_current_tienda
+    set_current_tienda("verifika_prod")
+    estado_venta._envio_localidades.set([])
+    set_current_estado({"carrito": [], "productos_vistos": [],
+                        "localidades_envio": ["Salta capital, salta"]})
+    try:
+        inflado = calculate_total(
+            items=[{"product_id": "MOU0023", "cantidad": 1},
+                   {"product_id": "TEC0030", "cantidad": 1}],
+            items_extra=[{"faq_tema": "costo_envio", "concepto": "envio"}],
+            destinos=2)
+        assert inflado["ok"] is False
+        assert "cotiza" in inflado["mensaje_para_llm"].lower()
+        bien = calculate_total(
+            items=[{"product_id": "MOU0023", "cantidad": 1},
+                   {"product_id": "TEC0030", "cantidad": 1}],
+            items_extra=[{"faq_tema": "costo_envio", "concepto": "envio"}],
+            destinos=1)
+        assert bien["ok"] is True
+        assert bien["total_ars"] == 8500 + 14500 + 9000  # UN envio a Salta
+    finally:
+        set_current_estado({})
+
+
+def test_destino_unico_no_cobra_el_destino_obsoleto(firestore_doble):
+    # Mudanza (banco 8-jul): con destino_unico sticky ("mandalo todo a Salta"),
+    # aunque el solver re-cotice Mendoza desde el historial, el envio se cobra
+    # UNA vez y al destino de la memoria (Salta), no al obsoleto.
+    from app.core.estado_venta import set_current_estado
+    from app.core import estado_venta
+    from app.core.tools import calculate_total
+    from app.core.tools_context import set_current_tienda
+    set_current_tienda("verifika_prod")
+    estado_venta._envio_localidades.set([])
+    set_current_estado({"carrito": [], "productos_vistos": [],
+                        "destino_unico": True,
+                        "localidades_envio": ["Salta capital, salta"]})
+    try:
+        # El solver cotizo Salta Y el obsoleto Mendoza en el mismo turno.
+        estado_venta.set_envio_localidad("Salta capital, salta")
+        estado_venta.set_envio_localidad("Mendoza, mendoza")
+        r = calculate_total(
+            items=[{"product_id": "MOU0023", "cantidad": 1}],
+            items_extra=[{"faq_tema": "costo_envio", "concepto": "envio"}],
+            destinos=2)
+        assert r["ok"] is True
+        assert r["total_ars"] == 8500 + 9000  # UN envio, tarifa de Salta
+    finally:
+        estado_venta._envio_localidades.set([])
+        set_current_estado({})

@@ -64,3 +64,15 @@ def test_variantes_de_la_pregunta_disparan():
                 "con quien estoy hablando?", "me atiende un robot?"]:
         out = _asegurar_honestidad_bot(msg, "Hola, decime.", "Tienda")
         assert "asistente automático" in out, msg
+
+
+# ── Destino unico: deteccion determinista en el mensaje ──────────────────────
+def test_destino_unico_detecta_mudanza_y_todo_a():
+    from app.core.interprete_libre import (_RE_DESTINO_UNICO,
+                                            _RE_MULTI_DESTINO, _norm_msg)
+    for msg in ["mandalo todo a Salta capital", "me mude, ahora vivo en Salta",
+                "cambia el envio a Jujuy"]:
+        assert _RE_DESTINO_UNICO.search(_norm_msg(msg)), msg
+    # Un pedido multi-destino explicito NO es destino unico y limpia el flag.
+    assert _RE_MULTI_DESTINO.search(_norm_msg("uno va a Cordoba y el otro a Mendoza"))
+    assert not _RE_DESTINO_UNICO.search(_norm_msg("cuanto sale el mouse?"))

@@ -306,6 +306,25 @@ def _reanclar_si_producto_divergente(interp: dict, respuesta: str,
             f"¿verdad?\n{linea}\n¿Avanzo con ese?")
 
 
+# DESTINO UNICO ("mandalo todo a Salta", "me mude"): el pedido entero va a UN
+# lugar y los destinos viejos quedan OBSOLETOS. Sin esto, el solver re-cotiza
+# el destino anterior desde el historial y el total cobra dos envios (visto en
+# el banco 8-jul: mudanza de Mendoza a Salta cobro $18.000 de envio). El flag
+# es sticky y lo limpia un pedido multi-destino explicito.
+_RE_DESTINO_UNICO = re.compile(
+    r"\btodo\b.{0,25}\ba\b|\bme mud[eo]\b|\bahora vivo en\b|"
+    r"\bcambi\w{0,5}\s+(?:el\s+|la\s+)?(?:envio|destino|direccion)\b")
+_RE_MULTI_DESTINO = re.compile(
+    r"\b(?:uno|una)\b.{0,30}\ba\b.{0,60}\b(?:otro|otra)\b.{0,30}\ba\b|"
+    r"\bdestinos (?:distintos|diferentes|separados)\b|\bpor separado a\b")
+
+
+def _norm_msg(s: str) -> str:
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(s or "").lower())
+    return "".join(c for c in s if not unicodedata.combining(c))
+
+
 # Pregunta directa de IDENTIDAD del bot ("sos un robot?", "con quien hablo?").
 # La honestidad es obligatoria y el prompt solo no alcanza (visto en el banco:
 # el solver esquivo la pregunta): si el cliente pregunta y la respuesta no dice
@@ -358,6 +377,61 @@ def _con_saludo_inicial(respuesta: str, business_name: str) -> str:
     linea = (f"¡Hola! Soy el asistente automático de {business_name}. "
              "Te ayudo con precios, stock y envíos al instante.")
     return linea + ("\n\n" + cuerpo if cuerpo else "")
+
+
+def _reanclar_si_barato_divergente(respuesta: str, id_barato: str,
+                                   ids_mostrados: list, tienda_id: str) -> str | None:
+    """Guarda del MAS BARATO (caso 'codigo BIEN, solver MAL'): la guia
+    determinista ya computo el minimo con stock, pero el solver afirmo que el
+    mas barato es OTRO producto (visto en el banco 8-jul: dijo M170 $12.000
+    cuando el DX-110 sale $8.500). Si la respuesta reclama 'mas barato' y no
+    muestra el producto que computo el codigo, se re-ancla con su linea real.
+    Devuelve el texto re-anclado o None si la respuesta esta bien."""
+    if not id_barato or not respuesta:
+        return None
+    import unicodedata
+
+    def _nn(s):
+        s = unicodedata.normalize("NFKD", str(s or "").lower())
+        return "".join(c for c in s if not unicodedata.combining(c))
+
+    r = _nn(respuesta)
+    if not re.search(r"mas (barat|econom)", r):
+        return None
+    if id_barato.upper() in {str(i).upper() for i in (ids_mostrados or [])}:
+        return None
+    from app.storage.firestore_client import get_product_by_id
+    try:
+        p = get_product_by_id(id_barato.upper(), tienda_id=tienda_id)
+    except Exception:
+        p = None
+    if not isinstance(p, dict) or not p.get("nombre"):
+        return None
+    if _nn(p["nombre"]) in r:
+        return None  # el solver SI mostro el correcto, solo sin marcador
+    return (f"El más barato con stock es el {p['nombre']}:\n"
+            f"{_linea_producto(p)}\n"
+            "¿Te lo sumo o querés ver más opciones?")
+
+
+def _fallback_o_curada(mensaje: str, interp: dict | None, tienda_id: str,
+                       trace_id: str | None = None) -> str:
+    """Cuando una guarda BLOQUEA la respuesta, el enlatado generico es la peor
+    salida si el cliente pregunto una POLITICA que tiene curada (visto en el
+    banco 8-jul: '¿como es la seña?' termino en 'no tengo esa informacion').
+    Si el ruteo matchea un tema curado, sale ESA respuesta oficial; si no, el
+    fallback de siempre."""
+    try:
+        from app.core.curadas import bloque_curado_por_mensaje
+        _bc = bloque_curado_por_mensaje(mensaje, interp, tienda_id)
+        if _bc:
+            log.info("interprete_libre_fallback_curada", trace_id=trace_id,
+                     tema=_bc[0])
+            return _bc[1]
+    except Exception as e:
+        log.warning("interprete_libre_fallback_curada_error",
+                    trace_id=trace_id, error=str(e)[:120])
+    return settings.VERIFIKA_FALLBACK_MESSAGE
 
 
 def _parece_aportar_dato(mensaje: str) -> bool:
@@ -426,6 +500,18 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     _prov_msg = clasificar_provincia(raw_message) or ""
     if _prov_msg:
         estado["provincia_envio"] = _prov_msg
+    # DESTINO UNICO sticky: "mandalo todo a X" / "me mude" manda todo a UN
+    # lugar hasta que el cliente pida destinos separados de nuevo. La
+    # calculadora lo lee para no cobrar un envio por un destino obsoleto que
+    # el solver re-cotice desde el historial.
+    _msg_norm = _norm_msg(raw_message)
+    if _RE_MULTI_DESTINO.search(_msg_norm):
+        destino_unico = False
+    elif _RE_DESTINO_UNICO.search(_msg_norm):
+        destino_unico = True
+    else:
+        destino_unico = bool(conv.get("destino_unico"))
+    estado["destino_unico"] = destino_unico
     set_current_estado(estado)
 
     # ── PASO 1: INTERPRETE ──────────────────────────────────────────────
@@ -496,6 +582,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # memoria), elegir el minimo es un problema CERRADO y lo computa el CODIGO.
     # La guia viaja en el mensaje con el [[PROD:id]] ya decidido; el solver
     # conserva la redaccion, no la eleccion. Generar > corregir > verificar.
+    _id_barato = ""
     if detectar_criterio(raw_message) or (estado.get("criterio") or "").strip():
         try:
             from app.core.guia_compra import guia_mas_barato
@@ -503,6 +590,10 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 raw_message, estado.get("productos_vistos"))
             if _guia_barato:
                 mensaje_enriquecido += _guia_barato
+                # El id que computo el codigo: la guarda de mas abajo re-ancla
+                # si el solver afirma que el mas barato es OTRO producto.
+                _mb = re.search(r"\[\[PROD:([A-Za-z0-9_\-]+)\]\]", _guia_barato)
+                _id_barato = (_mb.group(1).upper() if _mb else "")
                 log.info("interprete_libre_guia_mas_barato", trace_id=trace_id)
         except Exception as e:
             log.warning("interprete_libre_guia_barato_error", trace_id=trace_id,
@@ -874,7 +965,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                                     trace_id=trace_id,
                                     no_respaldados=fix["verificacion"]["numeros_no_respaldados"][:8],
                                     respuesta_preview=respuesta[:220])
-                        respuesta = settings.VERIFIKA_FALLBACK_MESSAGE
+                        respuesta = _fallback_o_curada(raw_message, interp, tienda_id, trace_id)
                     else:
                         log.warning("interprete_libre_numero_no_respaldado_shadow",
                                     trace_id=trace_id,
@@ -933,7 +1024,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                                     trace_id=trace_id, casos=_quedan[:6],
                                     respuesta_preview=_poda[:200])
                     else:
-                        respuesta = settings.VERIFIKA_FALLBACK_MESSAGE
+                        respuesta = _fallback_o_curada(raw_message, interp, tienda_id, trace_id)
                         log.warning("interprete_libre_stock_bloqueado",
                                     trace_id=trace_id, casos=_quedan[:6])
                 else:
@@ -1011,7 +1102,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                                     trace_id=trace_id, clases=clases,
                                     respuesta_preview=poda[:200])
                     else:
-                        respuesta = settings.VERIFIKA_FALLBACK_MESSAGE
+                        respuesta = _fallback_o_curada(raw_message, interp, tienda_id, trace_id)
                         log.warning("interprete_libre_promesa_bloqueada",
                                     trace_id=trace_id, clases=clases)
         except Exception as e:
@@ -1058,6 +1149,17 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 log.warning("interprete_libre_producto_reanclado",
                             trace_id=trace_id,
                             producto=str(interp.get("producto_resuelto"))[:60])
+            # GUARDA DEL MAS BARATO: mismo patron, sobre el minimo que computo
+            # la guia determinista. Si el solver afirmo que el mas barato es
+            # OTRO producto, se re-ancla al real (dato del catalogo).
+            if not producto_forzado and _id_barato:
+                _re_barato = _reanclar_si_barato_divergente(
+                    respuesta, _id_barato, _ids_mostrados, tienda_id)
+                if _re_barato:
+                    respuesta = _re_barato
+                    producto_forzado = True
+                    log.warning("interprete_libre_barato_reanclado",
+                                trace_id=trace_id, id_barato=_id_barato)
         except Exception as e:
             log.warning("interprete_libre_producto_guarda_error",
                         trace_id=trace_id, error=str(e)[:120])
@@ -1234,6 +1336,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                           ultimas_localidades=ultimas_localidades,
                           criterio_cliente=criterio_cliente,
                           provincia_envio=provincia_envio,
+                          destino_unico=destino_unico,
                           pregunta_cierre_hecha=pregunta_cierre_hecha,
                           datos_cliente_parciales=datos_acumulados)
     except Exception as e:
