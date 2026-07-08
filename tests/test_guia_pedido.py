@@ -210,3 +210,32 @@ def test_sello_con_envio_y_transferencia_del_mensaje(firestore_doble):
     finally:
         estado_venta._envio_localidades.set([])
         set_current_estado({})
+
+
+def test_categorias_baratas_sella_el_pedido_completo(firestore_doble):
+    # Caso real de Martin (8-jul): '4 notebooks, 3 teclados y 5 mouse' pendiente
+    # + 'los mas baratos' -> el codigo elige el mas barato con stock de cada
+    # categoria por las cantidades y sella el presupuesto.
+    from app.core.estado_venta import set_current_estado
+    from app.core import estado_venta
+    from app.core.guia_pedido import calcular_categorias_baratas
+    estado_venta._envio_localidades.set([])
+    estado = {"productos_vistos": [], "carrito": [], "localidades_envio": []}
+    set_current_estado(estado)
+    try:
+        entradas = calcular_categorias_baratas(
+            [(4, "notebook"), (3, "teclado"), (5, "mouse")],
+            estado, "verifika_prod", mensaje="los mas baratos")
+        assert entradas and entradas[0]["result"]["ok"] is True
+        items = entradas[0]["args"]["items"]
+        assert sorted(i["cantidad"] for i in items) == [3, 4, 5]
+        assert len(items) == 3
+        assert "presentacion" in entradas[0]["result"]
+    finally:
+        set_current_estado({})
+
+
+def test_categoria_sin_stock_cae_al_camino_normal(firestore_doble):
+    from app.core.guia_pedido import calcular_categorias_baratas
+    assert calcular_categorias_baratas(
+        [(2, "categoria_inexistente")], {}, "verifika_prod") is None
