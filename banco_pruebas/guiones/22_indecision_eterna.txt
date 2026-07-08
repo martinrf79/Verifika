@@ -1,0 +1,8 @@
+# INDECISION ETERNA (B1 + B11 + B2 encadenadas): cliente que delega, cambia,
+# vuelve a cambiar y posterga. El bot acompana sin presionar, no marca compra
+# cerrada nunca, y deja la puerta abierta al final.
+hola, quiero unos auriculares pero la verdad no tengo idea, vos que me recomendas?
+mm no se, es para escuchar musica nomas, no para jugar
+y entre ese y uno mas barato cual me conviene?
+no, ese no me gusta, mejor el primero que dijiste
+ay no se, sabes que? lo pienso y te escribo manana

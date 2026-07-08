@@ -165,3 +165,19 @@ def test_prosa_suelta_con_precio_del_pool_respeta_el_candado():
          "viste $62.500.")
     fix = autocorregir_montos(r, ev, precios_validos={57500, 62500})
     assert not fix["cambiada"]
+
+
+def test_renglones_consecutivos_no_confunden_el_ancla():
+    # Caso real WhatsApp 8-jul: "...Acer: $732.500" en el renglon anterior y
+    # "K120 Blanco: $732.500" abajo. La ventana cruza el salto de linea y los
+    # dos nombres la volvian ambigua; el nombre del MISMO renglon desempata y
+    # el precio robado se corrige.
+    ev = [_prod("NOT0064", "Notebook Acer Aspire 5 Core i5 16GB 512GB SSD Gris", 732500),
+          _prod("TEC0030", "Teclado Logitech K120 Blanco", 14500)]
+    r = ("- 1x Notebook Acer Aspire 5 Core i5 16GB 512GB SSD Gris: $732.500\n"
+         "- 1x Teclado Logitech K120 Blanco: $732.500")
+    fix = autocorregir_montos(r, ev, precios_validos={732500, 14500})
+    assert fix["cambiada"]
+    assert any(c["de"] == 732500 and c["a"] == 14500 for c in fix["correcciones"])
+    # el renglon del Acer (correcto) quedo intacto
+    assert "Acer Aspire 5 Core i5 16GB 512GB SSD Gris: $732.500" in fix["respuesta"]

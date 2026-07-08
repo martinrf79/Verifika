@@ -22,6 +22,27 @@ seguidas (guion nuevo de 14 turnos incluido). Cuatro piezas:
 PENDIENTE: OK de Martín para mergear a main (deploya el CI) y arrancar el /loop de
 robustez (charlas complejas generadas, prueba-error hasta producto robusto).
 
+**8-jul (PRIORIDAD 1 de Martín, caso real de WhatsApp): INTERPRETACIÓN + BUG
+CRÍTICO DE PERSISTENCIA.** La charla real mostró: (a) el bot armó un presupuesto
+1x-de-cada inventado ante "4 notebooks, 3 teclados y 5 mouse" sin modelos, con un
+K120 al precio del Acer; (b) en el turno 2 saludó de cero: LA CONVERSACIÓN NO
+PERSISTÍA. Causa raíz de (b): save_conversation de producción enumera sus
+parámetros sin **kwargs y el campo nuevo destino_unico tiraba TypeError en CADA
+turno (el doble del banco acepta cualquier kwarg y no lo cazó). ARREGLADO: firma
+tolerante que persiste kwargs desconocidos con warning — la deriva sim/prod ya no
+puede tirar la memoria. Para (a), módulo de PEDIDO POR CATEGORÍAS (guia_pedido):
+cantidades+categorías sin modelos → opciones reales con stock por categoría +
+pregunta de modelos; PROHIBIDO armar presupuesto, guarda que lo reemplaza si el
+solver lo intenta, y pendiente STICKY entre turnos (el turno siguiente inventaba
+$607.000 de items fantasía). Además: ancla del corrector desempata por nombre del
+MISMO renglón (K120 a $732.500 del renglón del Acer ahora se corrige), B6 detecta
+la forma afirmativa ("las calidades son buenas, los envíos son seguros"), y el
+sello de la guía ya trae envío y transferencia dichos en el mismo mensaje.
+Verificado con el guión 24 (la charla real de Martín, textual): turno 1 opciones
+perfectas 4/3/5 + destinos, turno 2 sin presupuesto fantasma. 388 tests offline.
+**PRÓXIMO MÓDULO acordado: interpretación con categorías difíciles (el bot es
+50% venta / 50% no alucinar; sin interpretar bien no es viable).**
+
 **LOOP DE ROBUSTEZ — ciclos 2 y 3 (8-jul, deploy indirecto por ciclo verde).**
 Guiones 14-20 (desprolijo, multipregunta, contradicción lejana, reserva/split,
 cliente que vuelve, jailbreak comercial, stock al límite). Salieron BIEN de fábrica:

@@ -93,7 +93,13 @@ _RE_OBJ_PRECIO = re.compile(
 _RE_DESCONFIANZA = re.compile(
     r"\bes seguro\b|\bes confiable\b|\bson (originales|truchos|replica)\b|"
     r"\bno sera (trucho|falso|estafa)\b|\bpuedo confiar\b|\bes una estafa\b|"
-    r"\bde verdad (llega|existe)\b")
+    r"\bde verdad (llega|existe)\b|"
+    # Forma AFIRMATIVA de la consulta de confianza (caso real WhatsApp 8-jul:
+    # 'los materiales, las calidades son buenas, los envios son seguros'):
+    # el cliente chequea calidad/seguridad sin signo de pregunta.
+    r"\bson segur[oa]s?\b|\bson confiables\b|"
+    r"\b(calidad(es)?|materiales?) son (buen\w+|de calidad)\b|"
+    r"\bes de buena calidad\b")
 
 _RE_POSTERGACION = re.compile(
     r"\blo pienso\b|\bme lo pienso\b|\bdespues (vuelvo|veo|te digo)\b|"
