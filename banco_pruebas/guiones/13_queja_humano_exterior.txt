@@ -1,0 +1,9 @@
+# QUEJA + SOS UN BOT + ENVIO EXTERIOR (B17, B18, B21): cliente enojado que
+# pide un humano y pregunta si sos un robot (honestidad obligatoria), y al
+# final pregunta por envio a Uruguay (la cobertura sale de la FAQ, sin
+# inventar courier). El bot no vende en el turno del enojo.
+hola, hace dos dias pregunte por un mouse y nadie me respondio, pesimo servicio
+sos un robot vos? quiero hablar con una persona
+bueno esta bien, seguime vos, buscaba un mouse inalambrico bueno
+ese me sirve, pero decime, ustedes mandan a Montevideo? es para mi hermano que vive alla
+y si te doy una direccion en Buenos Aires de un conocido, me lo mandas ahi?
