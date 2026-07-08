@@ -1,0 +1,8 @@
+# POSVENTA POST-COMPRA: el cliente ya compro y vuelve con seguimiento, dudas
+# de uso y un problema. Politicas de la FAQ, sin inventar numeros de tracking
+# ni plazos puntuales; el caso concreto lo toma una persona.
+hola, compre un teclado la semana pasada, como hago el seguimiento del envio?
+me llego ayer, pero el cable USB vino sin la ficha, que hago?
+cuanto tarda el cambio si lo mando?
+y mientras tanto puedo usar la garantia para pedir otro?
+bueno gracias, y ya que estoy, tienen pads para mouse?
