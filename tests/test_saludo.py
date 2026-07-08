@@ -34,3 +34,33 @@ def test_respuesta_vacia_sale_solo_el_saludo():
     out = _con_saludo_inicial("", "Tienda Tecno")
     assert out == ("¡Hola! Soy el asistente automático de Tienda Tecno. "
                    "Te ayudo con precios, stock y envíos al instante.")
+
+
+# ── Honestidad de bot: gatillo determinista sobre "sos un robot?" ────────────
+def test_pregunta_bot_sin_respuesta_honesta_se_antepone():
+    from app.core.interprete_libre import _asegurar_honestidad_bot
+    out = _asegurar_honestidad_bot(
+        "sos un robot vos?", "Entiendo que prefieras hablar con una persona.",
+        "Tienda Tecno")
+    assert out.startswith("Sí, te lo digo derecho: soy el asistente automático")
+    assert "hablar con una persona" in out
+
+
+def test_respuesta_ya_honesta_no_se_toca():
+    from app.core.interprete_libre import _asegurar_honestidad_bot
+    r = "Sí, soy el asistente automático de la tienda, decime en qué te ayudo."
+    assert _asegurar_honestidad_bot("sos un bot?", r, "Tienda") == r
+
+
+def test_mensaje_sin_pregunta_de_bot_no_se_toca():
+    from app.core.interprete_libre import _asegurar_honestidad_bot
+    r = "El mouse sale $8.500."
+    assert _asegurar_honestidad_bot("cuanto sale el mouse?", r, "Tienda") == r
+
+
+def test_variantes_de_la_pregunta_disparan():
+    from app.core.interprete_libre import _asegurar_honestidad_bot
+    for msg in ["sos humano?", "eres un bot?", "hablo con una persona?",
+                "con quien estoy hablando?", "me atiende un robot?"]:
+        out = _asegurar_honestidad_bot(msg, "Hola, decime.", "Tienda")
+        assert "asistente automático" in out, msg

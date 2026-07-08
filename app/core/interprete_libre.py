@@ -306,6 +306,39 @@ def _reanclar_si_producto_divergente(interp: dict, respuesta: str,
             f"¿verdad?\n{linea}\n¿Avanzo con ese?")
 
 
+# Pregunta directa de IDENTIDAD del bot ("sos un robot?", "con quien hablo?").
+# La honestidad es obligatoria y el prompt solo no alcanza (visto en el banco:
+# el solver esquivo la pregunta): si el cliente pregunta y la respuesta no dice
+# la verdad, el codigo la antepone determinista.
+_RE_PREGUNTA_BOT = re.compile(
+    r"\bsos\s+(?:un\s+)?(?:bot|robot|humano|una\s+maquina|una\s+ia|real)\b"
+    r"|\beres\s+(?:un\s+)?(?:bot|robot|humano)\b"
+    r"|\bhablo\s+con\s+(?:un\s+)?(?:bot|robot|humano|una\s+persona|una\s+maquina)\b"
+    r"|\bcon\s+quien\s+(?:hablo|estoy\s+hablando)\b"
+    r"|\bme\s+atiende\s+(?:un\s+)?(?:bot|robot|una\s+maquina)\b",
+    re.IGNORECASE)
+
+
+def _asegurar_honestidad_bot(mensaje: str, respuesta: str,
+                             business_name: str) -> str:
+    """Si el cliente pregunta si habla con un bot y la respuesta no lo dice, el
+    codigo antepone la verdad. Determinista; no toca respuestas que ya la dicen."""
+    import unicodedata
+
+    def _n(s):
+        s = unicodedata.normalize("NFKD", str(s or "").lower())
+        return "".join(c for c in s if not unicodedata.combining(c))
+
+    if not _RE_PREGUNTA_BOT.search(_n(mensaje)):
+        return respuesta
+    r = _n(respuesta)
+    if ("asistente automatico" in r or "asistente virtual" in r
+            or "soy un bot" in r or "soy un robot" in r):
+        return respuesta
+    return (f"Sí, te lo digo derecho: soy el asistente automático de "
+            f"{business_name}.\n\n" + (respuesta or "").strip()).strip()
+
+
 # Saludo del solver al arranque de SU texto: se recorta cuando el codigo
 # antepone el saludo oficial, para no saludar dos veces. Solo saludos
 # inequivocos ("hola", "buenas tardes/noches", "buen dia"); "buenas" pelado NO
@@ -984,6 +1017,15 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         except Exception as e:
             log.warning("interprete_libre_guardia_error", trace_id=trace_id,
                         error=str(e)[:160])
+
+    # ── HONESTIDAD DE BOT (gatillo determinista, pendiente del disclaimer) ──
+    # "sos un robot?" exige la verdad; si el solver la esquivo, se antepone.
+    if respuesta != settings.FALLBACK_MESSAGE:
+        _resp_honesta = _asegurar_honestidad_bot(
+            raw_message, respuesta, _business_name(tienda_id))
+        if _resp_honesta != respuesta:
+            respuesta = _resp_honesta
+            log.info("interprete_libre_honestidad_bot", trace_id=trace_id)
 
     # ── GUARDA DE DIVERGENCIA (caso interprete BIEN, solver MAL) ────────────
     # Si el interprete marco ofrecer_opciones (dos caminos, no se puede elegir con

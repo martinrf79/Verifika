@@ -22,6 +22,19 @@ seguidas (guion nuevo de 14 turnos incluido). Cuatro piezas:
 PENDIENTE: OK de Martín para mergear a main (deploya el CI) y arrancar el /loop de
 robustez (charlas complejas generadas, prueba-error hasta producto robusto).
 
+**LOOP DE ROBUSTEZ — ciclo 1 (8-jul, Martín deployó y dejó el loop corriendo cada
+20 min).** Cuatro guiones complejos nuevos (10-13: regateo+precio falso,
+urgencia+cancelación, regalo+presupuesto, queja+humano+exterior). Juez limpio en
+datos; la LECTURA de conducta cazó tres mentiras de texto y se cerraron con redes
+deterministas + test: (1) guardia clase `descuento_inventado` ("descuento especial"
+prometido que no existe; transferencia/mayorista eximen), (2) guardia clase
+`envio_exterior` ("hacemos envíos a Montevideo" — falso, solo Argentina; la negación
+honesta no dispara), (3) gatillo determinista de HONESTIDAD DE BOT ("¿sos un robot?"
+→ si el solver esquiva, el código antepone la verdad; era el pendiente del
+disclaimer). B21 ahora detecta ciudades (montevideo, etc.). Verificado en vivo: las
+tres redes dispararon y reescribieron. En el guion de regalo se vio el pedido
+sellado rechazando un item agregado en producción simulada. 367 tests offline.
+
 **Última actualización: 8-jul-2026.** SALUDO INICIAL + GUÍA DETERMINISTA DE PEDIDO +
 tres bugs de verificación cazados con el caso real de multi-envío de Martín. Todo
 validado de punta a punta en el banco (dos rondas vivas 8/8 seguidas + caso multi-envío

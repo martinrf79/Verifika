@@ -73,6 +73,43 @@ _RE_DATOS_PAGO = re.compile(
     r"|\bbanco\s*:\s*\S+",
     re.IGNORECASE)
 
+# DESCUENTO INVENTADO (loop de robustez 8-jul): el solver prometio "un
+# descuento especial" por llevar dos, rebaja que NO existe. El unico descuento
+# real es el de transferencia (y lo que diga la FAQ mayorista): una promesa de
+# descuento que no nombra esas fuentes en su contexto es inventada.
+_RE_DESCUENTO_INVENTADO = re.compile(
+    r"te\s+(?:hago|puedo\s+hacer|ofrezco|armo|doy|dejo)\s+un[a]?\s*"
+    r"(?:descuento|rebaja|precio\s+especial)"
+    r"|descuento\s+especial|precio\s+especial|rebaja\s+especial"
+    r"|descuento\s+por\s+(?:llevar|cantidad|comprar|los\s+dos|ambos)"
+    r"|te\s+(?:bajo|rebajo|mejoro)\s+el\s+precio",
+    re.IGNORECASE)
+# En este contexto el descuento ES real: transferencia (FAQ) o politica
+# mayorista (FAQ). Si aparece cerca del disparo, no es invento.
+_PERMITE_DESCUENTO = re.compile(r"transferencia|mayorista", re.IGNORECASE)
+
+# ENVIO AL EXTERIOR AFIRMADO (loop de robustez 8-jul): el solver afirmo
+# "hacemos envios a Montevideo por Andreani y OCA" — mentira, los envios son
+# solo dentro de Argentina (FAQ envio_exterior). Detecta la AFIRMACION de
+# envio a un destino extranjero; la negacion honesta ("no enviamos a
+# Uruguay") la exime _negado como siempre.
+_EXTERIOR_DESTINOS = (
+    r"uruguay|montevideo|punta\s+del\s+este|chile|santiago\s+de\s+chile|"
+    r"paraguay|asunci[oó]n|bolivia|brasil|s[aã]o\s+paulo|per[uú]|lima|"
+    r"colombia|bogot[aá]|m[eé]xico|espa[ñn]a|madrid|barcelona|miami|"
+    r"estados\s+unidos|el\s+exterior|todo\s+el\s+mundo|otros?\s+pa[ií]ses|"
+    r"fuera\s+de(?:l\s+pais|\s+argentina)")
+# El lookbehind de negacion va en el regex porque el verbo ES el inicio del
+# match y la ventana de _negado no lo alcanza ("No hacemos envios a Uruguay").
+_RE_ENVIO_EXTERIOR = re.compile(
+    rf"(?<!no )(?<!tampoco )"
+    rf"(?:enviamos|mandamos|llegamos|despachamos|"
+    rf"(?:hacemos|realizamos)\s+env[ií]os?|te\s+lo\s+(?:mando|env[ií]o|enviamos))"
+    rf"(?:\s+\w+){{0,3}}?\s+a(?:l)?\s+(?:{_EXTERIOR_DESTINOS})"
+    rf"|(?<!no )(?<!tampoco )(?:hacemos|realizamos|tenemos)\s+"
+    rf"env[ií]os?\s+internacional\w*",
+    re.IGNORECASE)
+
 _RE_SERVICIOS = re.compile(
     r"envoltori\w*|envolv\w*\s+(?:para|de)\s+regalo|envuelt\w*\s+(?:para|de)?\s*regalo|"
     r"papel\w*\s+de?\s*regalo|papelit\w*|"
@@ -117,11 +154,19 @@ def detectar(respuesta: str) -> list[str]:
     for clase, rx in (("dia_entrega", _RE_DIA_ENTREGA),
                       ("retiro_local", _RE_RETIRO),
                       ("servicio_no_ofrecido", _RE_SERVICIOS),
-                      ("datos_pago", _RE_DATOS_PAGO)):
+                      ("datos_pago", _RE_DATOS_PAGO),
+                      ("descuento_inventado", _RE_DESCUENTO_INVENTADO),
+                      ("envio_exterior", _RE_ENVIO_EXTERIOR)):
         for m in rx.finditer(respuesta):
-            if not _negado(respuesta, m.start()):
-                clases.append(clase)
-                break
+            if _negado(respuesta, m.start()):
+                continue
+            # El descuento con fuente real cerca (transferencia, mayorista)
+            # no es invento: no dispara.
+            if clase == "descuento_inventado" and _PERMITE_DESCUENTO.search(
+                    respuesta[max(0, m.start() - 80):m.end() + 80]):
+                continue
+            clases.append(clase)
+            break
     return clases
 
 
@@ -152,6 +197,13 @@ _INSTR = {
                    "numero de cuenta): NO los tenes vos, son inventados. Deci que al "
                    "confirmar el pedido se le envian los datos de pago oficiales por "
                    "este mismo canal"),
+    "descuento_inventado": ("no prometas descuentos, rebajas ni precios especiales "
+                            "que no existen: el unico descuento real es el de "
+                            "transferencia segun la politica de la tienda. Ofrece "
+                            "ese, sin inventar otro"),
+    "envio_exterior": ("no afirmes que enviamos fuera de Argentina: los envios son "
+                       "solo dentro del pais. Decilo con honestidad y, si sirve, "
+                       "ofrece enviar a una direccion en Argentina"),
 }
 
 def _get_client():
