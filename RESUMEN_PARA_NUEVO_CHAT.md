@@ -3,6 +3,43 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
+**Última actualización: 8-jul-2026.** SALUDO INICIAL + GUÍA DETERMINISTA DE PEDIDO +
+tres bugs de verificación cazados con el caso real de multi-envío de Martín. Todo
+validado de punta a punta en el banco (dos rondas vivas 8/8 seguidas + caso multi-envío
+con juez limpio). Cinco piezas:
+1. **Saludo inicial determinista** (`_con_saludo_inicial`, interprete_libre): el PRIMER
+   mensaje de cada charla lleva saludo cordial + "soy el asistente automático de X",
+   una sola vez (pedido de Martín; era el pendiente del disclaimer). Si el solver ya
+   saludaba, su saludo se recorta para no saludar dos veces.
+2. **GUÍA DETERMINISTA DE PEDIDO** (`guia_pedido.py` + campo `pedido` en el schema del
+   intérprete): cuando el cliente define el pedido (productos MOSTRADOS + cantidades,
+   atado por enum), el CÓDIGO llama calculate_total con los ids reconciliados (todo o
+   nada) y sella el presupuesto; el solver redacta alrededor. Es el primer paso real de
+   "forzar herramientas": mata el caso visto de ids equivocados + cuenta tipeada a mano.
+   El cálculo entra a meta.tools_called al final (gana en reversed sobre un calc del
+   solver con items equivocados).
+3. **cotizar_envio con provincia de la charla**: una localidad ambigua ('Los Cóndores')
+   reintenta con la provincia sticky o la dicha en el MISMO mensaje; ya no re-pide el CP
+   que el cliente ya dio. La provincia del mensaje entra al estado al ARRANQUE del turno.
+4. **Tres bugs de verificación arreglados** (cazados por el banco con el caso nuevo):
+   (a) el sello del precio de lista pisaba los renglones multiplicados del presupuesto
+   sellado ("3x X: $693.000 c/u = $2.079.000" → corregía a 693.000); ahora exime por
+   IDENTIDAD el monto computado en el proof PARA el producto nombrado. (b) el detalle de
+   calculate_total entraba a la evidencia sin precio_ars (trae precio_unitario) y el
+   ancla corregía un precio CORRECTO al del hermano (NX-7000 → 8.500); se normaliza en
+   la fuente. (c) el candado Corsair anulaba al sello para todo precio del pool: en un
+   RENGLÓN de presupuesto (cifra pegada al nombre) el ancla ahora manda (caso
+   Zeus/Pandora); en prosa suelta el candado sigue. Además `_contexto_total` tolera
+   negrita markdown y merge_productos sube el tope a 60 (30 productos de un turno
+   tiraban la primera categoría y rompían el enum del intérprete).
+5. **Tests: 350 offline + 8 vivos en verde, dos rondas vivas seguidas.** PENDIENTE con
+   OK de Martín: mergear a main (CI deploya). Conducta abierta a vigilar: en el primer
+   turno el solver a veces arma un presupuesto provisorio 1x-de-cada en vez de preguntar
+   modelos (los datos son reales, es presunción); y ante pedido sin modelos el gancho
+   ideal es preguntar. Lo tapa la iteración de casos con Martín.
+
+---
+
 **Última actualización: 7-jul-2026 (tarde).** CURADAS DE VENTA AMPLIADAS A B1-B24 +
 CONSOLIDACIÓN DE PROVIDERS (todo el camino vivo en GPT-4 mini). Cuatro cambios:
 1. **Doce categorías nuevas de venta** (B13-B24: urgencia, mayorista, presupuesto

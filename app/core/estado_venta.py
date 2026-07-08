@@ -194,9 +194,15 @@ def envio_de_meta(meta: dict) -> str:
 
 
 def merge_productos(memoria: list[dict], turno: list[dict],
-                    tope: int = 20) -> list[dict]:
+                    tope: int = 60) -> list[dict]:
     """Une los productos vistos en memoria con los del turno, deduplicando por id (el
-    dato del turno pisa al viejo) y dejando los ultimos `tope`."""
+    dato del turno pisa al viejo) y dejando los ultimos `tope`.
+
+    Tope 60 (era 20): un solo turno de tres busquedas trae 30 productos y el tope
+    viejo TIRABA la primera categoria entera (visto 8-jul: las notebooks caian de
+    la memoria y el enum del interprete no podia referenciarlas, asi que el pedido
+    extraido salia sin notebook y con el mouse duplicado). El solver solo ve los
+    ultimos 8 (bloque_para_solver), asi que subir el tope no infla su prompt."""
     por_id: dict[str, dict] = {}
     for p in (memoria or []) + (turno or []):
         pid = str(p.get("id") or "").upper()

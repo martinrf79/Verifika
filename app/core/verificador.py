@@ -90,7 +90,7 @@ def _es_monto(texto: str, match) -> bool:
 
 
 _CONTEXTO_TOTAL_RE = re.compile(
-    r"(?:sub)?total(?:\s+final)?\s*(?:es\s+de|de|es|:)?\s*\$?\s*$",
+    r"(?:sub)?total(?:\s+final)?\s*(?:es\s+de|de|es|:)?\s*\*{0,2}\s*\$?\s*$",
     re.IGNORECASE)
 
 
@@ -380,28 +380,43 @@ def _tokens_significativos(nombre: str) -> list[str]:
             if len(t) >= 4]
 
 
-def _precio_de_producto_nombrado(texto: str, start: int,
-                                 evidence: list[dict]) -> Optional[int]:
-    """Precio REAL del producto que el solver nombro justo antes de esta cifra.
-    Ancla el numero al NOMBRE: si en la ventana previa aparece, sin ambiguedad, el
-    nombre de UN solo producto del catalogo, devuelve su precio_ars. Asi un precio
-    mal tipeado se corrige por el del producto que el modelo realmente nombro, no
-    por el numero mas cercano de cualquier lado. Si matchean dos productos distintos,
-    es ambiguo y no se toca (devuelve None)."""
+# Entre el nombre del producto y su cifra, en un RENGLON de presupuesto, solo
+# hay separadores y aritmetica ("1x NOMBRE: $14.000 c/u = $"). Letras sueltas
+# de prosa ("sale", "el otro que viste") rompen la adyacencia.
+_ADYACENTE_RE = re.compile(r"[\s:;,.\-–—*()=$/\dxcu%]*")
+
+
+def _producto_nombrado(texto: str, start: int,
+                       evidence: list[dict]) -> Optional[tuple]:
+    """(precio, ids, adyacente) del producto que el solver nombro justo antes de
+    esta cifra. Ancla el numero al NOMBRE: si en la ventana previa aparece, sin
+    ambiguedad, el nombre de UN solo producto del catalogo, devuelve su
+    precio_ars, el set de ids que resuelven a ese precio, y si la cifra esta
+    PEGADA al nombre como renglon de presupuesto (adyacente=True: entre nombre y
+    cifra solo hay separadores). Asi un precio mal tipeado se corrige por el del
+    producto que el modelo realmente nombro, no por el numero mas cercano de
+    cualquier lado. Si matchean dos productos con precios distintos, es ambiguo
+    y no se toca (devuelve None)."""
     ventana = texto[max(0, start - 90):start].lower()
     # Ancla EXACTA primero (mismo criterio que el verificador de stock): el
     # nombre COMPLETO del producto esta literal en la ventana. Gana aunque
     # hermanos de la marca compartan tokens ("Genius NX-7000" vs "Genius
     # DX-110": el ancla por tokens los empata y el precio tipeado a mano
     # quedaba sin corregir, visto en el banco con $8.000 por $14.000).
-    exactos = {int(i["precio_ars"]) for i in evidence or []
+    exactos = [i for i in evidence or []
                if i.get("tipo") == "producto"
                and isinstance(i.get("precio_ars"), (int, float))
                and str(i.get("nombre") or "").strip()
-               and str(i["nombre"]).lower() in ventana}
-    if len(exactos) == 1:
-        return exactos.pop()
-    puntuados: list[tuple[int, int]] = []  # (tokens presentes, precio)
+               and str(i["nombre"]).lower() in ventana]
+    precios_ex = {int(i["precio_ars"]) for i in exactos}
+    if len(precios_ex) == 1:
+        fin_nombre = max(ventana.rfind(str(i["nombre"]).lower())
+                         + len(str(i["nombre"])) for i in exactos)
+        adyacente = bool(_ADYACENTE_RE.fullmatch(ventana[fin_nombre:]))
+        return (precios_ex.pop(),
+                {str(i.get("id") or "").upper() for i in exactos},
+                adyacente)
+    puntuados: list[tuple[int, int, str]] = []  # (tokens presentes, precio, id)
     for item in evidence or []:
         if item.get("tipo") != "producto":
             continue
@@ -413,17 +428,25 @@ def _precio_de_producto_nombrado(texto: str, start: int,
             continue
         presentes = sum(1 for t in toks if t in ventana)
         if presentes >= min(2, len(toks)):
-            puntuados.append((presentes, int(precio)))
-    precios = {p for _, p in puntuados}
+            puntuados.append((presentes, int(precio),
+                              str(item.get("id") or "").upper()))
+    precios = {p for _, p, _ in puntuados}
     if len(precios) == 1:
-        return precios.pop()
+        return (precios.pop(), {i for _, _, i in puntuados}, False)
     # Desempate entre variantes (mismo criterio que stock): el que matchea MAS
     # tokens es el nombrado; empate real de puntaje sigue siendo ambiguo.
     if puntuados:
         puntuados.sort(reverse=True)
         if len(puntuados) == 1 or puntuados[0][0] > puntuados[1][0]:
-            return puntuados[0][1]
+            return (puntuados[0][1], {puntuados[0][2]}, False)
     return None
+
+
+def _precio_de_producto_nombrado(texto: str, start: int,
+                                 evidence: list[dict]) -> Optional[int]:
+    """Solo el precio del producto nombrado (ver _producto_nombrado)."""
+    r = _producto_nombrado(texto, start, evidence)
+    return r[0] if r else None
 
 
 def _mejor_candidato(n: int, pool: set, banda: float) -> Optional[int]:
@@ -496,6 +519,20 @@ def autocorregir_montos(respuesta: str,
         return {"cambiada": False, "respuesta": respuesta,
                 "correcciones": [], "verificacion": base}
 
+    # Renglones que COMPUTO la calculadora (operandos del PROOF, con id): un
+    # renglon legitimo "3x Notebook X: $693.000 c/u = $2.079.000" tiene el
+    # nombre del producto en la ventana y una cifra distinta del precio
+    # unitario, y el sello del precio de lista lo pisaba por $693.000 (visto
+    # 8-jul con el presupuesto sellado de la guia de pedido). La exencion es
+    # por IDENTIDAD: solo exime el monto computado PARA EL MISMO producto
+    # nombrado; un monto computado para OTRO producto (el solver le puso el
+    # nombre equivocado, caso Zeus X Negro con el subtotal de un tercero) se
+    # sigue corrigiendo al precio del nombrado.
+    operandos_proof = [
+        o for i in (evidence or []) if i.get("tipo") == "proof"
+        for o in ((i.get("proof") or {}).get("operandos_productos") or [])
+        if isinstance(o, dict)]
+
     # Plan de reemplazos: para cada monto del texto sin respaldo se decide el
     # concepto por el CONTEXTO (precio de producto, envio o total) y se reescribe
     # solo con el pool de ESE concepto, de forma inequivoca. Asi una cifra de precio
@@ -512,26 +549,39 @@ def autocorregir_montos(respuesta: str,
         n = _parse_num(m.group())
         if n is None:
             continue
-        # NUNCA pisar un numero que sea un precio real de catalogo citado: que no
-        # este en la evidencia de ESTE turno no lo hace falso, puede venir de un
-        # producto citado de un turno anterior (caso Corsair). Aplica a TODAS las
-        # ramas, incluida el ancla por nombre.
-        if precios_validos and n in precios_validos:
-            continue
+        # Candado Corsair: un numero que es un precio real de catalogo citado no
+        # se pisa por cercania (ramas b/c/d) — puede ser un producto citado de un
+        # turno anterior. La UNICA excepcion es el ancla por nombre ADYACENTE
+        # (rama a): en un renglon de presupuesto ("1x Zeus X Negro: $62.500") el
+        # vinculo nombre-cifra es inequivoco, y que la cifra sea el precio real
+        # de OTRO producto (el Pandora) es justamente el error de etiqueta que el
+        # sello corrige (visto en el banco 8-jul; sin esto el candado anulaba al
+        # sello para todo precio del pool).
+        n_protegido = bool(precios_validos and n in precios_validos)
         en_total = _contexto_total(respuesta, m.start())
         en_envio = _contexto_envio(respuesta, m.start())
         candidato: Optional[int] = None
         concepto: Optional[str] = None
         # a) PRECIO anclado al NOMBRE: en contexto de precio puro (ni total ni
-        #    envio) corre SIEMPRE, aunque la cifra figure "respaldada" por el pool.
+        #    envio) corre aunque la cifra figure "respaldada" por el pool.
         #    El ancla al nombre es mas fuerte que la pertenencia al pool: el numero
         #    puede ser el precio real de OTRO producto (KB-110X tipeado a $16.500,
         #    que es precio de un tercero, se corrige a su $12.000 real). Cierra el
-        #    hueco del precio de lista mal tipeado que no se marcaba como sin respaldo.
+        #    hueco del precio de lista mal tipeado que no se marcaba como sin
+        #    respaldo. Sobre un precio protegido del pool solo actua con ancla
+        #    ADYACENTE (renglon de presupuesto); en prosa suelta el candado manda.
         if not en_total and not en_envio:
-            pr = _precio_de_producto_nombrado(respuesta, m.start(), evidence)
-            if pr is not None and pr != n:
-                candidato, concepto = pr, "precio"
+            _anclado = _producto_nombrado(respuesta, m.start(), evidence)
+            if _anclado and _anclado[0] != n:
+                pr, _ids_anclados, _adyacente = _anclado
+                _renglon_propio = any(
+                    str(o.get("id") or "").upper() in _ids_anclados
+                    and o.get("monto") == n
+                    for o in operandos_proof)
+                if not _renglon_propio and (_adyacente or not n_protegido):
+                    candidato, concepto = pr, "precio"
+        if candidato is None and n_protegido:
+            continue
         # b/c/d) envio y total: SOLO para cifras efectivamente sin respaldo (se
         #    corrigen por cercania al pool, no por nombre). Una cifra respaldada en
         #    esos contextos no se toca.

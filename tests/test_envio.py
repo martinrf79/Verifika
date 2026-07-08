@@ -143,3 +143,28 @@ def test_guarda_calle_no_rompe_lo_legitimo(firestore_doble):
     assert clasificar_zona("Palermo") == "caba"                    # barrio sin numero
     # La ciudad real gana a la calle homonima: 'san martin 45, rio tercero'.
     assert clasificar_zona("calle san martin 45, rio tercero") == "interior"
+
+
+# Caso real 8-jul: 'Los Condores' (ambigua o desconocida sola) fallaba aunque el
+# cliente dijo 'todos en provincia de Cordoba' en el MISMO mensaje, y el bot
+# re-pedia el CP. Ahora cotizar_envio reintenta con la provincia de la charla
+# (estado provincia_envio, sticky o detectada este turno).
+
+def test_localidad_ambigua_resuelve_con_provincia_del_estado(firestore_doble):
+    from app.core.estado_venta import set_current_estado
+    from app.core.tools import cotizar_envio
+    set_current_estado({"provincia_envio": "cordoba"})
+    try:
+        q = cotizar_envio(localidad="Los Condores", subtotal=1000)
+        assert q["ok"] is True
+        assert q["zona"] == "interior"
+    finally:
+        set_current_estado({})
+
+
+def test_localidad_ambigua_sin_provincia_sigue_pidiendo_dato(firestore_doble):
+    from app.core.estado_venta import set_current_estado
+    from app.core.tools import cotizar_envio
+    set_current_estado({})
+    q = cotizar_envio(localidad="Los Condores", subtotal=1000)
+    assert q["ok"] is False  # sin provincia en la charla, se pide el dato

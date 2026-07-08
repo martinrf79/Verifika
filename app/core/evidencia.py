@@ -40,7 +40,20 @@ def build_evidence_from_tools(tools_called: list[dict],
         pid = str(p.get("id") or "").upper()
         if not pid or pid in productos_por_id:
             return
-        productos_por_id[pid] = {"tipo": "producto", **p}
+        item = {"tipo": "producto", **p}
+        # Normalizacion del precio EN LA FUENTE: el detalle de calculate_total
+        # trae 'precio_unitario' y algunos caminos viejos 'precio'; el resto del
+        # sistema (verificador, ancla por nombre, precios protegidos) lee SOLO
+        # precio_ars. Sin esto el producto entra "mudo" (precio_ars None), el
+        # dedup ademas bloquea la entrada buena de productos_nombrados_en, y el
+        # ancla del corrector matchea un hermano por tokens y pisa un precio
+        # correcto (caso NX-7000 del banco, 8-jul: $14.000 reescrito a $8.500).
+        if item.get("precio_ars") is None:
+            for k in ("precio", "precio_unitario"):
+                if isinstance(item.get(k), (int, float)):
+                    item["precio_ars"] = item[k]
+                    break
+        productos_por_id[pid] = item
 
     for t in tools_called or []:
         name = t.get("name", "")

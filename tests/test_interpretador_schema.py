@@ -37,3 +37,13 @@ def test_strict_todos_los_campos_requeridos():
     s = _schema_interprete(["A"])
     assert s["additionalProperties"] is False
     assert set(s["required"]) == set(s["properties"])
+
+
+def test_pedido_atado_al_enum_de_mostrados():
+    # El campo pedido (guia determinista de pedido) tambien queda atado por
+    # enum a lo mostrado: el interprete no puede pedir un producto no visto.
+    s = _schema_interprete(["Mouse A", "Teclado B"])
+    item = s["properties"]["pedido"]["items"]
+    assert item["properties"]["producto"]["enum"] == [None, "Mouse A", "Teclado B"]
+    assert item["properties"]["cantidad"]["type"] == "integer"
+    assert set(item["required"]) == {"producto", "cantidad"}

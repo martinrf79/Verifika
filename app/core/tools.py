@@ -1460,6 +1460,21 @@ def cotizar_envio(localidad: str | None = None,
 
     tid = get_current_tienda()
     zona = clasificar_zona(localidad or "")
+    if zona is None and (localidad or "").strip():
+        # PROVINCIA DE LA CHARLA: si el cliente ya dio la provincia (en este
+        # mensaje o en turnos anteriores, sticky en el estado), una localidad
+        # ambigua o desconocida se reintenta como "localidad, provincia" (la
+        # tabla resuelve ambiguas solo con la provincia en el texto). Caso real
+        # 8-jul: 'Los Condores' fallaba con 'todos en provincia de Cordoba'
+        # dicho en el MISMO mensaje, y el bot re-pedia el CP que ya tenia.
+        from app.core.estado_venta import get_current_estado
+        _prov = (get_current_estado().get("provincia_envio") or "").strip()
+        if _prov:
+            _con_prov = f"{localidad}, {_prov}"
+            zona = clasificar_zona(_con_prov)
+            if zona is not None:
+                log.info(f"cotizar_envio provincia_de_charla={_prov}")
+                localidad = _con_prov
     if zona is None:
         # Con tabla por provincia, el dato util es la PROVINCIA o el CP: con eso
         # la tarifa sale exacta, no en rango. Nunca se adivina la zona.
