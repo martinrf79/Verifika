@@ -379,6 +379,41 @@ def _con_saludo_inicial(respuesta: str, business_name: str) -> str:
     return linea + ("\n\n" + cuerpo if cuerpo else "")
 
 
+_RE_PRESUPUESTO_EN_TEXTO = re.compile(
+    r"\bpresupuesto\b|\btotal\b[^\n]{0,20}\$", re.IGNORECASE)
+
+
+def _forzar_opciones_si_presupuesto(respuesta: str, cats_pedido: list,
+                                    tienda_id: str) -> str | None:
+    """Guarda del PEDIDO POR CATEGORIAS (prioridad 1, caso real WhatsApp
+    8-jul): el cliente pidio N unidades por categoria SIN modelos y el solver
+    igual armo un presupuesto inventado (1x de cada producto que se le ocurrio,
+    con un teclado al precio de una notebook). Si la respuesta trae un
+    presupuesto/total, se reemplaza por el mensaje correcto construido por el
+    CODIGO: opciones reales con stock por categoria + pregunta de modelos.
+    None si la respuesta no armo presupuesto (el brief alcanzo)."""
+    if not cats_pedido or not respuesta:
+        return None
+    if not _RE_PRESUPUESTO_EN_TEXTO.search(respuesta):
+        return None
+    from app.core.guia_pedido import opciones_por_categoria
+    bloques = []
+    for n, cat in cats_pedido:
+        ops = opciones_por_categoria(cat, tienda_id)
+        if not ops:
+            continue
+        lineas = "\n".join("- " + _linea_producto(p) for p in ops)
+        bloques.append(f"Para {'las' if n > 1 else 'la'} {n} de {cat}, "
+                       f"opciones con stock:\n{lineas}")
+    if not bloques:
+        return None
+    return ("¡Buena compra la que estás armando! Para pasarte el precio exacto "
+            "necesito que me digas los modelos.\n\n"
+            + "\n\n".join(bloques)
+            + "\n\n¿Qué modelo elegís de cada categoría? Con eso te armo el "
+            "total con los envíos al instante.")
+
+
 def _reanclar_si_barato_divergente(respuesta: str, id_barato: str,
                                    ids_mostrados: list, tienda_id: str) -> str | None:
     """Guarda del MAS BARATO (caso 'codigo BIEN, solver MAL'): la guia
@@ -639,11 +674,33 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # del bloque y no elige ids ni suma a mano. Cierra el caso real de
     # multi-envio: ids equivocados en calculate_total y cuenta tipeada a mano.
     _tools_precalc: list = []
+    _cats_pedido: list = []
     if not respuesta_curada_servida:
         try:
             from app.core.guia_pedido import calcular_pedido, INSTRUCCION_SOLVER
             _tools_precalc = calcular_pedido(
-                interp, estado, tienda_id, trace_id) or []
+                interp, estado, tienda_id, trace_id,
+                mensaje=raw_message) or []
+            # PEDIDO POR CATEGORIAS sin modelos (prioridad 1, caso real 8-jul):
+            # "4 notebooks, 3 teclados y 5 mouse" -> nada de presupuesto
+            # inventado; opciones por categoria y preguntar modelos. El
+            # pendiente es STICKY: mientras los modelos no esten elegidos
+            # (ni pedido sellado ni carrito), NINGUN turno puede armar un
+            # presupuesto (el solver lo hizo en el turno siguiente, con diez
+            # items de fantasia por $607.000).
+            if not _tools_precalc:
+                from app.core.guia_pedido import (cantidades_por_categoria,
+                                                  instruccion_categorias)
+                _cats_pedido = cantidades_por_categoria(raw_message, tienda_id)
+                if not _cats_pedido and not (estado.get("carrito") or []):
+                    _cats_pedido = [tuple(c) for c in
+                                    (conv.get("pedido_categorias_pendiente")
+                                     or []) if isinstance(c, (list, tuple))
+                                    and len(c) == 2]
+                if _cats_pedido:
+                    mensaje_enriquecido += instruccion_categorias(_cats_pedido)
+                    log.info("interprete_libre_pedido_categorias",
+                             trace_id=trace_id, cats=_cats_pedido)
             if _tools_precalc:
                 mensaje_enriquecido += INSTRUCCION_SOLVER
                 # El pedido queda SELLADO para el turno: calculate_total rechaza
@@ -1162,6 +1219,18 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 log.warning("interprete_libre_producto_reanclado",
                             trace_id=trace_id,
                             producto=str(interp.get("producto_resuelto"))[:60])
+            # GUARDA DEL PEDIDO POR CATEGORIAS: si el cliente pidio N x
+            # categoria SIN modelos y el solver igual armo un presupuesto, lo
+            # reemplaza el mensaje correcto construido por el codigo (opciones
+            # reales + pregunta de modelos). Prioridad 1 de Martin, 8-jul.
+            if not producto_forzado and _cats_pedido and not _tools_precalc:
+                _re_cats = _forzar_opciones_si_presupuesto(
+                    respuesta, _cats_pedido, tienda_id)
+                if _re_cats:
+                    respuesta = _re_cats
+                    producto_forzado = True
+                    log.warning("interprete_libre_opciones_forzadas",
+                                trace_id=trace_id, cats=_cats_pedido)
             # GUARDA DEL MAS BARATO: mismo patron, sobre el minimo que computo
             # la guia determinista. Si el solver afirmo que el mas barato es
             # OTRO producto, se re-ancla al real (dato del catalogo).
@@ -1350,6 +1419,13 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                           criterio_cliente=criterio_cliente,
                           provincia_envio=provincia_envio,
                           destino_unico=destino_unico,
+                          # El pendiente de modelos persiste hasta que el
+                          # pedido se selle o se forme carrito; asi ningun
+                          # turno intermedio puede inventar un presupuesto.
+                          pedido_categorias_pendiente=(
+                              [list(c) for c in _cats_pedido]
+                              if (_cats_pedido and not _tools_precalc
+                                  and not carrito_vigente) else []),
                           pregunta_cierre_hecha=pregunta_cierre_hecha,
                           datos_cliente_parciales=datos_acumulados)
     except Exception as e:

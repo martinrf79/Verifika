@@ -263,13 +263,34 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       pedido_pendiente: dict | None = None,
                       criterio_cliente: str | None = None,
                       provincia_envio: str | None = None,
+                      destino_unico: bool | None = None,
+                      pedido_categorias_pendiente: list | None = None,
                       pregunta_cierre_hecha: bool | None = None,
-                      datos_cliente_parciales: dict | None = None):
+                      datos_cliente_parciales: dict | None = None,
+                      **extras):
+    # RED CONTRA LA DERIVA sim/prod (bug REAL 8-jul): el doble del banco acepta
+    # cualquier kwarg y esta firma enumeraba los suyos; un campo nuevo pasado
+    # desde interprete_libre (destino_unico) tiraba TypeError EN PRODUCCION en
+    # cada turno, el save fallaba en silencio (solo un warning) y el bot
+    # arrancaba de cero en cada mensaje (visto en WhatsApp real: re-saludo y
+    # perdida total del contexto). Un kwarg desconocido ahora se loguea y se
+    # persiste igual: perder un campo nuevo es infinitamente mejor que perder
+    # la conversacion entera.
+    if extras:
+        log.warning("save_conversation_kwargs_desconocidos",
+                    campos=sorted(extras.keys()))
     datos = {
         "history": history,
         "summary": summary,
         "updated_at": firestore.SERVER_TIMESTAMP,
     }
+    for _k, _v in extras.items():
+        if _v is not None:
+            datos[_k] = _v
+    if destino_unico is not None:
+        datos["destino_unico"] = destino_unico
+    if pedido_categorias_pendiente is not None:
+        datos["pedido_categorias_pendiente"] = pedido_categorias_pendiente
     if estado_conversacion is not None:
         datos["estado_conversacion"] = estado_conversacion
     if ultima_compra is not None:

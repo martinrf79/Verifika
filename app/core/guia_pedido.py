@@ -22,11 +22,26 @@ reconcilia, cantidad rara, la calculadora devuelve error) devuelve None y el
 turno sigue por el camino de siempre. Todo o nada: no se calcula un pedido a
 medias.
 """
+import re
 import unicodedata
 
 from app.logger import get_logger
 
 log = get_logger(__name__)
+
+# "total con envio a La Plata": la localidad pedida en el MISMO mensaje se
+# cotiza ANTES de sellar, asi el bloque ya trae el flete (visto 8-jul: el
+# sellado salio sin envio ni descuento aunque el cliente pidio ambos).
+_RE_ENVIO_A = re.compile(
+    r"env[ií]o?s?\s+(?:a|hasta|para)\s+([a-zñ][a-zñ .'-]{2,40}?)"
+    r"(?=\s+(?:pagando|por|con|y\s)|[?.!,]|$)")
+# Pago 100% transferencia dicho en el mensaje; un reparto (mitad/porcentajes/
+# dos medios) lo maneja el solver con su propia llamada, la guia no adivina.
+_RE_PAGO_TRANSF = re.compile(r"\btransferencia\b")
+_RE_PAGO_MIXTO = re.compile(
+    r"\bmitad\b|\bpor\s*ciento\b|%|\bcuota\w*\b"
+    r"|\bmercado\s*pago\b.{0,60}\btransferencia\b"
+    r"|\btransferencia\b.{0,60}\bmercado\s*pago\b")
 
 # Confianza minima del interprete para que el codigo se anime a armar el
 # pedido solo. Umbral operativo (config en codigo, no flag).
@@ -82,7 +97,8 @@ def items_de_pedido(interp: dict | None,
 
 
 def calcular_pedido(interp: dict | None, estado: dict | None,
-                    tienda_id: str, trace_id: str | None = None) -> list[dict] | None:
+                    tienda_id: str, trace_id: str | None = None,
+                    mensaje: str = "") -> list[dict] | None:
     """Corre calculate_total con el pedido extraido por el interprete. Devuelve
     la lista de entradas estilo tools_called (para mergear en meta) o None si
     la guia no aplica o la calculadora no pudo (stock, envio sin zona, etc.)."""
@@ -105,13 +121,32 @@ def calcular_pedido(interp: dict | None, estado: dict | None,
     # Destinos: los que la charla ya cotizo (memoria multi-destino). El envio
     # solo se suma si hay al menos una zona resuelta; si no, el presupuesto va
     # sin envio y el solver pide el dato como siempre.
+    msg = _norm(mensaje or "")
     locs = [l for l in (estado.get("localidades_envio") or []) if l]
+    # ENVIO pedido en el MISMO mensaje ("total con envio a La Plata"): se
+    # cotiza ANTES de sellar, asi el bloque ya trae el flete. Visto 8-jul: el
+    # sello salia sin envio ni descuento aunque el cliente pidio ambos.
+    if not locs:
+        _menv = _RE_ENVIO_A.search(msg)
+        if _menv:
+            from app.core.tools import cotizar_envio
+            _q = cotizar_envio(localidad=_menv.group(1).strip())
+            if _q.get("ok"):
+                from app.core.estado_venta import get_envio_localidades
+                locs = get_envio_localidades() or [_menv.group(1).strip()]
     destinos = max(1, len(locs))
     extra = ([{"faq_tema": "costo_envio", "concepto": "envio"}]
              if locs else None)
+    # PAGO dicho en el mensaje: 100% transferencia entra al sello (el
+    # descuento real de la FAQ lo aplica el split de la calculadora). Un
+    # reparto (mitad y mitad, porcentajes) lo maneja el solver: no se adivina.
+    pago = None
+    if _RE_PAGO_TRANSF.search(msg) and not _RE_PAGO_MIXTO.search(msg):
+        pago = [{"medio": "transferencia", "porcentaje": 100}]
 
     args = {"items": items, "destinos": destinos,
-            **({"items_extra": extra} if extra else {})}
+            **({"items_extra": extra} if extra else {}),
+            **({"pago": pago} if pago else {})}
     try:
         res = calculate_total(**args)
     except Exception as e:
@@ -128,6 +163,72 @@ def calcular_pedido(interp: dict | None, estado: dict | None,
     if res.get("proof"):
         entrada["proof"] = res["proof"]
     return [entrada]
+
+
+# ── PEDIDO POR CATEGORIAS (prioridad 1 de Martin, caso real WhatsApp 8-jul) ──
+# "4 notebooks, 3 teclados y 5 mouse" SIN modelos: el bot NO puede inventar un
+# presupuesto 1x-de-cada (eso hizo en real, con un teclado al precio de una
+# notebook). La lectura correcta es CERRADA: cantidades + categorias reales de
+# la tienda -> mostrar opciones con stock por categoria y preguntar modelos.
+
+_NUM_PAL = {"un": 1, "una": 1, "uno": 1, "dos": 2, "tres": 3, "cuatro": 4,
+            "cinco": 5, "seis": 6, "siete": 7, "ocho": 8, "nueve": 9,
+            "diez": 10, "docena": 12}
+
+
+def _singular(w: str) -> str:
+    return w[:-1] if len(w) > 3 and w.endswith("s") else w
+
+
+def cantidades_por_categoria(mensaje: str, tienda_id: str) -> list[tuple]:
+    """[(cantidad, categoria_real)] extraidos del mensaje: un numero (cifra o
+    palabra) pegado a una categoria REAL de la tienda, plural tolerante. Se
+    queda con la PRIMERA mencion de cada categoria (en el fraseo natural las
+    cantidades totales van primero y la distribucion despues). [] si nada."""
+    from app.storage.firestore_client import get_categories
+    try:
+        cats = {_singular(_norm(c)): str(c) for c in
+                (get_categories(tienda_id=tienda_id) or [])}
+    except Exception:
+        return []
+    if not cats:
+        return []
+    out: list[tuple] = []
+    vistas: set[str] = set()
+    for m in re.finditer(
+            r"\b(\d{1,2}|un|una|uno|dos|tres|cuatro|cinco|seis|siete|ocho|"
+            r"nueve|diez|docena)\s+([a-zñ]+)", _norm(mensaje)):
+        tok = m.group(1)
+        n = int(tok) if tok.isdigit() else _NUM_PAL.get(tok, 0)
+        cat = cats.get(_singular(m.group(2)))
+        if cat and 1 <= n <= 99 and cat not in vistas:
+            vistas.add(cat)
+            out.append((n, cat))
+    return out
+
+
+def opciones_por_categoria(categoria: str, tienda_id: str,
+                           k: int = 3) -> list[dict]:
+    """Las k opciones mas baratas CON stock de una categoria, del catalogo
+    real. Determinista: mismo orden siempre."""
+    from app.storage.firestore_client import get_all_products
+    cat = _norm(categoria)
+    prods = [p for p in get_all_products(tienda_id=tienda_id)
+             if _norm(p.get("categoria", "")) == cat
+             and p.get("stock", 0) > 0
+             and isinstance(p.get("precio_ars"), (int, float))]
+    prods.sort(key=lambda p: p["precio_ars"])
+    return prods[:k]
+
+
+def instruccion_categorias(cats_pedido: list[tuple]) -> str:
+    """Brief para el solver cuando el pedido es por categorias sin modelos."""
+    pedido_txt = ", ".join(f"{n} de {c}" for n, c in cats_pedido)
+    return (f"\n\n[PEDIDO POR CATEGORIAS SIN MODELOS: el cliente pide {pedido_txt} "
+            "pero NO eligio modelos. PROHIBIDO armar un presupuesto o un total: "
+            "todavia no hay pedido cerrado. Mostra 2-3 opciones con stock por "
+            "categoria usando [[PROD:id]] y pregunta que modelos quiere de cada "
+            "una. Si dio destinos de envio, confirmalos sin cotizar de mas.]")
 
 
 # Instruccion para el solver cuando la guia calculo el pedido: redacta la

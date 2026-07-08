@@ -141,3 +141,72 @@ def test_pedido_sellado_rechaza_items_agregados(firestore_doble):
         assert mismo["ok"] is True
     finally:
         set_current_estado({})
+
+
+# ── Pedido por CATEGORIAS sin modelos (prioridad 1, caso real 8-jul) ────────
+def test_cantidades_por_categoria_extrae_el_pedido(firestore_doble):
+    from app.core.guia_pedido import cantidades_por_categoria
+    msg = ("Hola necesito precio de 4 notebooks tres teclados y 5 Mouse de los "
+           "cuales una Notebook y un teclado va a tancacha una Notebook y un "
+           "mouse va a Rio tercero lo demas va con envio a los condores")
+    cats = cantidades_por_categoria(msg, "verifika_prod")
+    # La PRIMERA mencion de cada categoria manda (los totales van primero).
+    assert (4, "notebook") in cats and (3, "teclado") in cats and (5, "mouse") in cats
+    assert len(cats) == 3
+
+
+def test_cantidades_sin_categoria_no_extrae(firestore_doble):
+    from app.core.guia_pedido import cantidades_por_categoria
+    assert cantidades_por_categoria("cuanto sale el mouse?", "verifika_prod") == []
+    assert cantidades_por_categoria("tengo 3 hijos", "verifika_prod") == []
+
+
+def test_opciones_por_categoria_son_reales_y_con_stock(firestore_doble):
+    from app.core.guia_pedido import opciones_por_categoria
+    ops = opciones_por_categoria("mouse", "verifika_prod")
+    assert 1 <= len(ops) <= 3
+    assert all(p["stock"] > 0 for p in ops)
+    # ordenadas por precio: la primera es la mas barata
+    assert ops[0]["precio_ars"] <= ops[-1]["precio_ars"]
+
+
+def test_guarda_reemplaza_presupuesto_inventado(firestore_doble):
+    from app.core.interprete_libre import _forzar_opciones_si_presupuesto
+    r = ("Aqui tienes el presupuesto detallado:\n"
+         "- 1x Notebook HP: $693.000\nTotal: $2.179.500")
+    out = _forzar_opciones_si_presupuesto(
+        r, [(4, "notebook"), (3, "teclado"), (5, "mouse")], "verifika_prod")
+    assert out is not None
+    assert "modelos" in out.lower() or "modelo" in out.lower()
+    assert "opciones con stock" in out
+    assert "$2.179.500" not in out
+
+
+def test_guarda_no_toca_respuesta_sin_presupuesto(firestore_doble):
+    from app.core.interprete_libre import _forzar_opciones_si_presupuesto
+    r = "Te muestro opciones de notebooks para que elijas modelos."
+    assert _forzar_opciones_si_presupuesto(
+        r, [(4, "notebook")], "verifika_prod") is None
+
+
+def test_sello_con_envio_y_transferencia_del_mensaje(firestore_doble):
+    # "total con envio a Rosario por transferencia": el sello ya trae flete y
+    # descuento (antes salia el total pelado aunque el cliente pidio ambos).
+    from app.core.estado_venta import set_current_estado
+    from app.core import estado_venta
+    estado = {"productos_vistos": _VISTOS, "localidades_envio": [], "carrito": []}
+    estado_venta._envio_localidades.set([])
+    set_current_estado(estado)
+    try:
+        interp = _interp(pedido=[
+            {"producto": "Mouse Genius DX-110 Negro", "cantidad": 2}])
+        entradas = calcular_pedido(
+            interp, estado, "verifika_prod",
+            mensaje="dale, pasame el total con envio a Rosario pagando por transferencia")
+        assert entradas and entradas[0]["result"]["ok"] is True
+        args = entradas[0]["args"]
+        assert args.get("pago") == [{"medio": "transferencia", "porcentaje": 100}]
+        assert args.get("items_extra")  # el envio entro al sello
+    finally:
+        estado_venta._envio_localidades.set([])
+        set_current_estado({})

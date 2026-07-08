@@ -408,6 +408,15 @@ def _producto_nombrado(texto: str, start: int,
                and isinstance(i.get("precio_ars"), (int, float))
                and str(i.get("nombre") or "").strip()
                and str(i["nombre"]).lower() in ventana]
+    # En un presupuesto por renglones la ventana cruza al renglon ANTERIOR y
+    # dos nombres exactos la vuelven ambigua (caso real WhatsApp 8-jul: el
+    # K120 a $732.500 —precio del Acer del renglon de arriba— no se corrigio).
+    # El nombre en el MISMO renglon que la cifra desempata.
+    if len({int(i["precio_ars"]) for i in exactos}) > 1:
+        linea = ventana.rsplit("\n", 1)[-1]
+        en_linea = [i for i in exactos if str(i["nombre"]).lower() in linea]
+        if en_linea:
+            exactos = en_linea
     precios_ex = {int(i["precio_ars"]) for i in exactos}
     if len(precios_ex) == 1:
         fin_nombre = max(ventana.rfind(str(i["nombre"]).lower())

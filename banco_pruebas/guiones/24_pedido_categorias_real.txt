@@ -1,0 +1,6 @@
+# CASO REAL WhatsApp 8-jul (prioridad 1 de Martin): pedido por categorias con
+# cantidades y distribucion pero SIN modelos -> el bot NO inventa presupuesto:
+# muestra opciones con stock por categoria y pregunta modelos. El turno 2 es
+# afirmacion/consulta de confianza en contexto: NO se resetea la charla.
+Hola necesito precio de 4 notebooks tres teclados y 5 Mouse de los cuales una Notebook y un teclado va a tancacha una Notebook y un mouse va a Rio tercero lo demas va con envio a los condores todos en provincia de Cordoba dime si puedes pasarme el precio con envio
+Los materiales, las calidades son buenas, los envios son seguros
