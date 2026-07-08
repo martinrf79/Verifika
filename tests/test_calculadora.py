@@ -294,3 +294,31 @@ def test_mudanza_destinos_de_mas_no_duplican_tarifa(firestore_doble):
         assert bien["total_ars"] == 8500 + 14500 + 9000  # UN envio a Salta
     finally:
         set_current_estado({})
+
+
+def test_destino_unico_no_cobra_el_destino_obsoleto(firestore_doble):
+    # Mudanza (banco 8-jul): con destino_unico sticky ("mandalo todo a Salta"),
+    # aunque el solver re-cotice Mendoza desde el historial, el envio se cobra
+    # UNA vez y al destino de la memoria (Salta), no al obsoleto.
+    from app.core.estado_venta import set_current_estado
+    from app.core import estado_venta
+    from app.core.tools import calculate_total
+    from app.core.tools_context import set_current_tienda
+    set_current_tienda("verifika_prod")
+    estado_venta._envio_localidades.set([])
+    set_current_estado({"carrito": [], "productos_vistos": [],
+                        "destino_unico": True,
+                        "localidades_envio": ["Salta capital, salta"]})
+    try:
+        # El solver cotizo Salta Y el obsoleto Mendoza en el mismo turno.
+        estado_venta.set_envio_localidad("Salta capital, salta")
+        estado_venta.set_envio_localidad("Mendoza, mendoza")
+        r = calculate_total(
+            items=[{"product_id": "MOU0023", "cantidad": 1}],
+            items_extra=[{"faq_tema": "costo_envio", "concepto": "envio"}],
+            destinos=2)
+        assert r["ok"] is True
+        assert r["total_ars"] == 8500 + 9000  # UN envio, tarifa de Salta
+    finally:
+        estado_venta._envio_localidades.set([])
+        set_current_estado({})

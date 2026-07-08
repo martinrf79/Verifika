@@ -306,6 +306,25 @@ def _reanclar_si_producto_divergente(interp: dict, respuesta: str,
             f"¿verdad?\n{linea}\n¿Avanzo con ese?")
 
 
+# DESTINO UNICO ("mandalo todo a Salta", "me mude"): el pedido entero va a UN
+# lugar y los destinos viejos quedan OBSOLETOS. Sin esto, el solver re-cotiza
+# el destino anterior desde el historial y el total cobra dos envios (visto en
+# el banco 8-jul: mudanza de Mendoza a Salta cobro $18.000 de envio). El flag
+# es sticky y lo limpia un pedido multi-destino explicito.
+_RE_DESTINO_UNICO = re.compile(
+    r"\btodo\b.{0,25}\ba\b|\bme mud[eo]\b|\bahora vivo en\b|"
+    r"\bcambi\w{0,5}\s+(?:el\s+|la\s+)?(?:envio|destino|direccion)\b")
+_RE_MULTI_DESTINO = re.compile(
+    r"\b(?:uno|una)\b.{0,30}\ba\b.{0,60}\b(?:otro|otra)\b.{0,30}\ba\b|"
+    r"\bdestinos (?:distintos|diferentes|separados)\b|\bpor separado a\b")
+
+
+def _norm_msg(s: str) -> str:
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(s or "").lower())
+    return "".join(c for c in s if not unicodedata.combining(c))
+
+
 # Pregunta directa de IDENTIDAD del bot ("sos un robot?", "con quien hablo?").
 # La honestidad es obligatoria y el prompt solo no alcanza (visto en el banco:
 # el solver esquivo la pregunta): si el cliente pregunta y la respuesta no dice
@@ -481,6 +500,18 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     _prov_msg = clasificar_provincia(raw_message) or ""
     if _prov_msg:
         estado["provincia_envio"] = _prov_msg
+    # DESTINO UNICO sticky: "mandalo todo a X" / "me mude" manda todo a UN
+    # lugar hasta que el cliente pida destinos separados de nuevo. La
+    # calculadora lo lee para no cobrar un envio por un destino obsoleto que
+    # el solver re-cotice desde el historial.
+    _msg_norm = _norm_msg(raw_message)
+    if _RE_MULTI_DESTINO.search(_msg_norm):
+        destino_unico = False
+    elif _RE_DESTINO_UNICO.search(_msg_norm):
+        destino_unico = True
+    else:
+        destino_unico = bool(conv.get("destino_unico"))
+    estado["destino_unico"] = destino_unico
     set_current_estado(estado)
 
     # ── PASO 1: INTERPRETE ──────────────────────────────────────────────
@@ -1305,6 +1336,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                           ultimas_localidades=ultimas_localidades,
                           criterio_cliente=criterio_cliente,
                           provincia_envio=provincia_envio,
+                          destino_unico=destino_unico,
                           pregunta_cierre_hecha=pregunta_cierre_hecha,
                           datos_cliente_parciales=datos_acumulados)
     except Exception as e:
