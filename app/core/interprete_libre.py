@@ -692,7 +692,9 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 from app.core.guia_pedido import (cantidades_por_categoria,
                                                   instruccion_categorias)
                 _cats_pedido = cantidades_por_categoria(raw_message, tienda_id)
+                _cats_de_memoria = False
                 if not _cats_pedido and not (estado.get("carrito") or []):
+                    _cats_de_memoria = True
                     # Persistido como lista de DICTS: Firestore real prohibe
                     # listas anidadas (bug real 8-jul: 400 'Nested arrays are
                     # not allowed' rompia el save COMPLETO y el bot quedaba
@@ -704,23 +706,60 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                         and isinstance(c.get("cantidad"), int)
                         and c.get("categoria")]
                 if _cats_pedido:
-                    # "Los mas baratos" sobre el pedido por categorias es un
-                    # problema CERRADO (caso real de Martin, 8-jul): el codigo
-                    # elige el mas barato con stock de cada categoria por las
-                    # cantidades pedidas y SELLA el presupuesto completo.
+                    # ATAJOS 100% DETERMINISTAS (decision 8-jul tras la charla
+                    # real de Martin): en el flujo de pedido por categorias el
+                    # MENSAJE ENTERO lo arma el CODIGO y el solver NI CORRE. La
+                    # prosa del LLM listaba productos sin stock, re-pedia la
+                    # provincia ya dada y contradecia al bloque sellado.
+                    # "Los mas baratos": el codigo elige el mas barato con
+                    # stock de cada categoria, sella el total y LO ESCRIBE.
                     if detectar_criterio(raw_message):
-                        from app.core.guia_pedido import calcular_categorias_baratas
+                        from app.core.guia_pedido import (
+                            calcular_categorias_baratas,
+                            mensaje_presupuesto_sellado)
                         _tools_precalc = calcular_categorias_baratas(
                             _cats_pedido, estado, tienda_id, trace_id,
                             mensaje=raw_message) or []
                         if _tools_precalc:
+                            respuesta = mensaje_presupuesto_sellado(
+                                _tools_precalc[0]["result"]["presentacion"])
+                            respuesta_curada_servida = True
                             log.info("interprete_libre_categorias_baratas",
                                      trace_id=trace_id, cats=_cats_pedido)
                             _cats_pedido = []
-                    if _cats_pedido:
-                        mensaje_enriquecido += instruccion_categorias(_cats_pedido)
+                    # Pedido nuevo por categorias (dicho en ESTE mensaje): el
+                    # codigo cotiza los destinos del mensaje y arma las
+                    # opciones reales. Con pendiente de MEMORIA no se re-sirve
+                    # la lista (el cliente pregunto otra cosa, ej confianza):
+                    # va el brief + la guarda, y el solver contesta lo suyo.
+                    if (_cats_pedido and not respuesta_curada_servida
+                            and not _cats_de_memoria):
+                        from app.core.guia_pedido import (
+                            cotizar_destinos_del_mensaje,
+                            mensaje_opciones_categorias)
+                        _dest_ok = cotizar_destinos_del_mensaje(raw_message)
+                        _txt_ops = mensaje_opciones_categorias(
+                            _cats_pedido, tienda_id, _dest_ok)
+                        if _txt_ops:
+                            respuesta = _txt_ops
+                            respuesta_curada_servida = True
+                            log.info("interprete_libre_opciones_categorias",
+                                     trace_id=trace_id, cats=_cats_pedido,
+                                     destinos=_dest_ok)
+                        else:
+                            mensaje_enriquecido += instruccion_categorias(
+                                _cats_pedido)
+                            log.info("interprete_libre_pedido_categorias",
+                                     trace_id=trace_id, cats=_cats_pedido)
+                    elif _cats_pedido and not respuesta_curada_servida:
+                        # Pendiente de MEMORIA: el solver contesta la pregunta
+                        # del cliente; el brief le recuerda el pedido abierto y
+                        # la guarda impide cualquier presupuesto inventado.
+                        mensaje_enriquecido += instruccion_categorias(
+                            _cats_pedido)
                         log.info("interprete_libre_pedido_categorias",
-                                 trace_id=trace_id, cats=_cats_pedido)
+                                 trace_id=trace_id, cats=_cats_pedido,
+                                 origen="memoria")
             if _tools_precalc:
                 mensaje_enriquecido += INSTRUCCION_SOLVER
                 # El pedido queda SELLADO para el turno: calculate_total rechaza
