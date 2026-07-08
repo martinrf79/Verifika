@@ -127,6 +127,29 @@ def _get_client():
     return _client
 
 
+def modelo_solver() -> str:
+    """Modelo del provider VIVO del solver (LLM_PROVIDER), en un solo lugar.
+    Lo usan run_agent y el reescritor de la guardia de promesas, asi TODA la
+    redaccion del bot corre sobre el mismo modelo (consolidacion 7-jul: el
+    reescritor habia quedado con DeepSeek hardcodeado cuando el sistema paso
+    a OpenAI)."""
+    if settings.LLM_PROVIDER == "groq":
+        return settings.GROQ_MODEL
+    if settings.LLM_PROVIDER == "gemini":
+        return settings.GEMINI_MODEL
+    if settings.LLM_PROVIDER == "openai":
+        return settings.OPENAI_MODEL
+    if settings.LLM_PROVIDER == "anthropic":
+        return settings.ANTHROPIC_MODEL
+    if settings.LLM_PROVIDER == "nemotron":
+        return settings.NEMOTRON_MODEL
+    if settings.LLM_PROVIDER == "kimi":
+        return settings.KIMI_MODEL
+    if settings.LLM_PROVIDER == "openrouter":
+        return settings.OPENROUTER_MODEL
+    return settings.DEEPSEEK_MODEL
+
+
 def _get_schema():
     # Schema dinámico por tienda: no cachear globalmente
     return get_tools_schema()
@@ -352,22 +375,7 @@ async def run_agent(user_message: str,
     tools_called: list[dict] = []
     iterations = 0
     reintento_vacio_hecho = False
-    if settings.LLM_PROVIDER == "groq":
-        model_name = settings.GROQ_MODEL
-    elif settings.LLM_PROVIDER == "gemini":
-        model_name = settings.GEMINI_MODEL
-    elif settings.LLM_PROVIDER == "openai":
-        model_name = settings.OPENAI_MODEL
-    elif settings.LLM_PROVIDER == "anthropic":
-        model_name = settings.ANTHROPIC_MODEL
-    elif settings.LLM_PROVIDER == "nemotron":
-        model_name = settings.NEMOTRON_MODEL
-    elif settings.LLM_PROVIDER == "kimi":
-        model_name = settings.KIMI_MODEL
-    elif settings.LLM_PROVIDER == "openrouter":
-        model_name = settings.OPENROUTER_MODEL
-    else:
-        model_name = settings.DEEPSEEK_MODEL
+    model_name = modelo_solver()
 
     while iterations < settings.MAX_TOOL_ITERATIONS:
         iterations += 1

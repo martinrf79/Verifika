@@ -306,6 +306,27 @@ def _reanclar_si_producto_divergente(interp: dict, respuesta: str,
             f"¿verdad?\n{linea}\n¿Avanzo con ese?")
 
 
+# Saludo del solver al arranque de SU texto: se recorta cuando el codigo
+# antepone el saludo oficial, para no saludar dos veces. Solo saludos
+# inequivocos ("hola", "buenas tardes/noches", "buen dia"); "buenas" pelado NO
+# matchea para no comerse un "Buenas noticias...".
+_RE_SALUDO_SOLVER = re.compile(
+    r"^[¡!]*\s*(hola+|buen(as)?\s+(tardes|noches|d[ií]as?))\b[\s,.!:]*",
+    re.IGNORECASE)
+
+
+def _con_saludo_inicial(respuesta: str, business_name: str) -> str:
+    """Primer mensaje de la charla: linea FIJA de saludo cordial con el aviso de
+    herramienta automatica (determinista, no depende del prompt), y abajo la
+    respuesta del turno. El aviso va una sola vez en toda la conversacion."""
+    cuerpo = _RE_SALUDO_SOLVER.sub("", (respuesta or "").strip(), count=1).strip()
+    if cuerpo:
+        cuerpo = cuerpo[0].upper() + cuerpo[1:]
+    linea = (f"¡Hola! Soy el asistente automático de {business_name}. "
+             "Te ayudo con precios, stock y envíos al instante.")
+    return linea + ("\n\n" + cuerpo if cuerpo else "")
+
+
 def _parece_aportar_dato(mensaje: str) -> bool:
     """Heuristica barata: el mensaje parece traer un dato de cierre (numero, pago,
     o cue de domicilio), aunque el interprete no lo haya marcado como aporta_dato.
@@ -364,6 +385,14 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         log.warning("interprete_libre_lead_lookup_error", trace_id=trace_id,
                     error=str(e)[:120])
     estado = construir_estado(conv, lead_activo)
+    # La provincia dicha en ESTE mensaje entra al estado del turno YA (no recien
+    # al persistir al final): asi cotizar_envio resuelve una localidad ambigua
+    # ('Los Condores') con la provincia que el cliente acaba de dar en la misma
+    # frase. Se detecta una sola vez y se reusa al persistir abajo.
+    from app.core.envio import clasificar_provincia
+    _prov_msg = clasificar_provincia(raw_message) or ""
+    if _prov_msg:
+        estado["provincia_envio"] = _prov_msg
     set_current_estado(estado)
 
     # ── PASO 1: INTERPRETE ──────────────────────────────────────────────
@@ -371,7 +400,9 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     try:
         interp = await interpretar_mensaje(
             raw_message, history, trace_id,
-            estado_anterior=estado_anterior, tienda_id=tienda_id)
+            estado_anterior=estado_anterior, tienda_id=tienda_id,
+            productos_vistos=estado.get("productos_vistos"),
+            resumen=estado.get("resumen_charla") or "")
     except Exception as e:
         log.error("interprete_libre_interp_error", trace_id=trace_id,
                   error=str(e)[:200])
@@ -387,7 +418,8 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                  estado=interp.get("estado_conversacion"),
                  producto=interp.get("producto_resuelto"),
                  responde_a=interp.get("respondiendo_a"),
-                 candidatos=interp.get("candidatos"))
+                 candidatos=interp.get("candidatos"),
+                 pedido=interp.get("pedido"))
 
     # Flag one-shot del gatillo de cierre (se lee ACA porque tambien condiciona
     # el atajo curado: con una pregunta de cierre pendiente no se ataja nada).
@@ -477,6 +509,30 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         log.warning("interprete_libre_guia_venta_error", trace_id=trace_id,
                     error=str(e)[:120])
 
+    # GUIA DETERMINISTA DE PEDIDO (8-jul): si el interprete extrajo el pedido
+    # completo (productos MOSTRADOS + cantidades, atado por enum), el CODIGO
+    # llama la calculadora y sella el presupuesto; el solver redacta alrededor
+    # del bloque y no elige ids ni suma a mano. Cierra el caso real de
+    # multi-envio: ids equivocados en calculate_total y cuenta tipeada a mano.
+    _tools_precalc: list = []
+    if not respuesta_curada_servida:
+        try:
+            from app.core.guia_pedido import calcular_pedido, INSTRUCCION_SOLVER
+            _tools_precalc = calcular_pedido(
+                interp, estado, tienda_id, trace_id) or []
+            if _tools_precalc:
+                mensaje_enriquecido += INSTRUCCION_SOLVER
+                # El pedido queda SELLADO para el turno: calculate_total rechaza
+                # a un solver que quiera AGREGAR productos que el cliente no
+                # pidio (el estado es el mismo dict de la contextvar del turno).
+                estado["pedido_sellado_turno"] = [
+                    i.get("product_id")
+                    for i in _tools_precalc[0].get("args", {}).get("items", [])]
+                log.info("interprete_libre_guia_pedido", trace_id=trace_id)
+        except Exception as e:
+            log.warning("interprete_libre_guia_pedido_error", trace_id=trace_id,
+                        error=str(e)[:120])
+
     log.info("interprete_libre_inicio", trace_id=trace_id,
              intencion=interp.get("intencion") if isinstance(interp, dict) else None,
              tools=len(tools_schema), hist=len(history))
@@ -491,6 +547,13 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             log.error("interprete_libre_solver_error", trace_id=trace_id,
                       error=str(e)[:200])
             respuesta = settings.FALLBACK_MESSAGE
+
+    # El calculo PRE-hecho por la guia de pedido entra a meta como una tool mas,
+    # AL FINAL: los lectores (presupuesto, carrito, proofs, evidencia) recorren
+    # reversed(), asi el presupuesto sellado del CODIGO gana sobre un
+    # calculate_total del solver con items equivocados en el mismo turno.
+    if _tools_precalc:
+        meta["tools_called"] = (meta.get("tools_called") or []) + _tools_precalc
 
     # ── DIAGNOSTICO DE INTEGRACION (solver <-> herramientas mellizas) ──────────
     # Loguea, por turno, lo que DEVOLVIERON las tools deterministas (result/proof)
@@ -734,6 +797,14 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 if i.get("tipo") == "producto"
                 and isinstance(i.get("precio_ars"), (int, float))
             }
+            # Observabilidad de la evidencia del turno: sin esto un producto que
+            # NO entro (y deja al ancla del corrector matchear un hermano por
+            # tokens) se diagnostica a ciegas (caso NX-7000 del banco, 8-jul).
+            log.info("interprete_libre_evidencia", trace_id=trace_id,
+                     productos=[str(i.get("id")) for i in evidencia
+                                if i.get("tipo") == "producto"][:20],
+                     proofs=len([i for i in evidencia if i.get("tipo") == "proof"]),
+                     faqs=len([i for i in evidencia if i.get("tipo") == "faq"]))
             if settings.AUTOCORRIGE_MONTOS:
                 fix = autocorregir_montos(
                     respuesta, evidencia, trace_id,
@@ -1023,6 +1094,15 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     pregunta_cierre_hecha = (
         meta_lead.get("accion") in ("pregunta_cierre", "pregunta_pendiente_cierre"))
 
+    # ── SALUDO INICIAL (solo el PRIMER mensaje de la charla) ────────────────
+    # Determinista: saludo cordial + aviso de que es una herramienta automatica,
+    # UNA sola vez (pedido de Martin 8-jul; el prompt solo ya fallo en real para
+    # esto). Los turnos siguientes no lo repiten. Si el solver ya arranco
+    # saludando, su saludo se recorta para no saludar dos veces.
+    if not history:
+        respuesta = _con_saludo_inicial(respuesta, _business_name(tienda_id))
+        log.info("interprete_libre_saludo_inicial", trace_id=trace_id)
+
     # El cliente recibe la respuesta limpia: el cartel de interpretacion se quito
     # (ahora va al log). La interpretacion se sigue viendo en interprete_libre_interpretacion.
     respuesta_final = respuesta
@@ -1032,6 +1112,21 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         {"role": "user", "content": raw_message},
         {"role": "assistant", "content": respuesta},
     ]
+    # MEMORIA LARGA (8-jul): los turnos que el recorte descarta se FUNDEN en el
+    # resumen acumulado (campo summary, antes iba vacio y lo viejo se perdia).
+    # Cubre retomar charla vieja, contradiccion lejana y dato dado hace muchos
+    # turnos (C2-C4). Solo llama al LLM en los turnos donde la charla desborda
+    # el tope; si falla, red determinista en memoria_larga.
+    resumen_charla = conv.get("summary", "") or ""
+    _descartados = history[:-(settings.HISTORY_LIMIT * 2)]
+    if _descartados:
+        try:
+            from app.core.memoria_larga import actualizar_resumen
+            resumen_charla = await actualizar_resumen(
+                resumen_charla, _descartados, trace_id)
+        except Exception as e:
+            log.warning("interprete_libre_memoria_larga_error",
+                        trace_id=trace_id, error=str(e)[:120])
     history = history[-(settings.HISTORY_LIMIT * 2):]
 
     # ── ESTADO DE VENTA: mergear lo de este turno con la memoria y persistir ──
@@ -1058,7 +1153,14 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                                   "precio": int(_pp["precio_ars"])})
     productos_vistos = merge_productos(
         conv.get("productos_vistos") or [], productos_de_meta(meta) + mostrados)
-    carrito_vigente = carrito_de_meta(meta) or (conv.get("carrito_vigente") or [])
+    # El carrito NO se actualiza en un turno SIN intencion de compra: si el
+    # cliente dijo "no quiero nada mas" (intencion otra) y el solver igual corrio
+    # una calculadora especulativa, ese detalle NO pisa el pedido del cliente.
+    # Visto en el banco (8-jul): un microfono especulativo entro al carrito en el
+    # turno del rechazo y el sello del turno siguiente lo dio por vigente.
+    _cambia_carrito = _intent not in ("otra",)
+    carrito_vigente = ((carrito_de_meta(meta) if _cambia_carrito else [])
+                       or (conv.get("carrito_vigente") or []))
     ultima_localidad = envio_de_meta(meta) or (conv.get("ultima_localidad") or "")
     # TODAS las localidades cotizadas con exito (multi-destino), no solo la
     # ultima: si este turno no se cotizo ninguna queda lo de memoria. Sin esto,
@@ -1073,14 +1175,13 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         conv.get("criterio_cliente") or "")
     # Provincia del cliente: se detecta determinista y es STICKY. Una vez dada
     # persiste entre turnos y se aplica a TODOS los destinos, asi el bot no repide
-    # el CP de cada pueblo (arreglo C, el 'ya te dije pueblo y provincia').
-    from app.core.envio import clasificar_provincia
-    provincia_envio = (clasificar_provincia(raw_message) or "") or (
-        conv.get("provincia_envio") or "")
+    # el CP de cada pueblo (arreglo C, el 'ya te dije pueblo y provincia'). La
+    # deteccion de este turno ya se hizo al arranque (_prov_msg, la usa el estado).
+    provincia_envio = _prov_msg or (conv.get("provincia_envio") or "")
 
     latency_ms = int((time.time() - t0) * 1000)
     try:
-        save_conversation(user_id, history, conv.get("summary", ""),
+        save_conversation(user_id, history, resumen_charla,
                           tienda_id=tienda_id,
                           estado_conversacion=estado_nuevo,
                           ultimo_presupuesto=presupuesto,

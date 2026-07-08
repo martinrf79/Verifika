@@ -1,0 +1,8 @@
+# REGALO + PRESUPUESTO ACOTADO + NEGACION INTRA-TURNO (B16, B15, B3): compra
+# para un tercero con tope de plata y una negacion adentro de la frase. El bot
+# debe preguntar el dato que falta, respetar el tope real y leer la negacion.
+hola, busco algo para mi hijo de 12 que arranca con los jueguitos
+tengo hasta $60.000, que me alcanza?
+me gusta el teclado pero no quiero uno con luces, algo mas simple
+perfecto ese, hacen envoltorio para regalo?
+dale, cerralo, va a Salta capital, pasame el total con envio

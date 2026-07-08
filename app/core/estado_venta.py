@@ -194,9 +194,15 @@ def envio_de_meta(meta: dict) -> str:
 
 
 def merge_productos(memoria: list[dict], turno: list[dict],
-                    tope: int = 20) -> list[dict]:
+                    tope: int = 60) -> list[dict]:
     """Une los productos vistos en memoria con los del turno, deduplicando por id (el
-    dato del turno pisa al viejo) y dejando los ultimos `tope`."""
+    dato del turno pisa al viejo) y dejando los ultimos `tope`.
+
+    Tope 60 (era 20): un solo turno de tres busquedas trae 30 productos y el tope
+    viejo TIRABA la primera categoria entera (visto 8-jul: las notebooks caian de
+    la memoria y el enum del interprete no podia referenciarlas, asi que el pedido
+    extraido salia sin notebook y con el mouse duplicado). El solver solo ve los
+    ultimos 8 (bloque_para_solver), asi que subir el tope no infla su prompt."""
     por_id: dict[str, dict] = {}
     for p in (memoria or []) + (turno or []):
         pid = str(p.get("id") or "").upper()
@@ -225,6 +231,9 @@ def construir_estado(conv: dict | None, lead: dict | None) -> dict:
         "provincia_envio": (conv.get("provincia_envio") or "").strip(),
         "criterio": (conv.get("criterio_cliente") or "").strip(),
         "datos_cliente": datos_cliente,
+        # Memoria larga: el resumen acumulado de la charla que ya salio del
+        # historial vivo (turnos viejos fundidos). Contexto, no fuente de datos.
+        "resumen_charla": (conv.get("summary") or "").strip(),
     }
 
 
@@ -236,6 +245,11 @@ def bloque_para_solver(estado: dict | None) -> str:
     '' si no hay nada que aportar."""
     estado = estado or {}
     partes: list[str] = []
+
+    resumen = (estado.get("resumen_charla") or "").strip()
+    if resumen:
+        partes.append("Lo hablado ANTES en esta charla (memoria, los turnos "
+                      "viejos ya no estan arriba): " + resumen)
 
     prods = estado.get("productos_vistos") or []
     if prods:

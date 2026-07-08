@@ -181,3 +181,40 @@ def test_precio_ancla_nombre_completo_gana_a_hermanos_de_marca():
     texto = "El mas barato es este: Mouse Genius NX-7000 Negro - $8.000"
     pr = _precio_de_producto_nombrado(texto, texto.index("$8.000"), ev)
     assert pr == 14000
+
+
+def test_evidencia_normaliza_precio_del_detalle_de_calculadora():
+    # Caso NX-7000 del banco (8-jul): el detalle de calculate_total trae
+    # precio_unitario, no precio_ars; el producto entraba "mudo" a la evidencia,
+    # el ancla del corrector matcheaba un hermano por tokens y pisaba un precio
+    # CORRECTO ($14.000 -> $8.500). La normalizacion va en la fuente.
+    from app.core.evidencia import build_evidence_from_tools
+    tools = [{"name": "calculate_total", "result": {
+        "ok": True,
+        "detalle": [{"id": "MOU0049", "nombre": "Mouse Genius NX-7000 Negro",
+                     "cantidad": 2, "precio_unitario": 14000,
+                     "subtotal": 28000}],
+    }}]
+    ev = build_evidence_from_tools(tools, "verifika_prod")
+    prod = next(i for i in ev if i.get("tipo") == "producto"
+                and i.get("id") == "MOU0049")
+    assert prod["precio_ars"] == 14000
+
+
+def test_ancla_no_pisa_precio_correcto_de_producto_del_detalle():
+    from app.core.verificador import autocorregir_montos
+    ev = [
+        {"tipo": "producto", "id": "MOU0023",
+         "nombre": "Mouse Genius DX-110 Negro", "precio_ars": 8500},
+        {"tipo": "producto", "id": "MOU0049",
+         "nombre": "Mouse Genius NX-7000 Negro", "precio_ars": 14000},
+        {"tipo": "proof", "proof": {
+            "tipo": "calculo_total",
+            "operandos_productos": [
+                {"id": "MOU0049", "monto": 28000, "precio_unitario": 14000}],
+            "subtotal_productos": 28000, "resultado": 44500}},
+    ]
+    texto = ("- 2x Mouse Genius NX-7000 Negro: $14.000 c/u = $28.000\n"
+             "- Envío (2 envíos): $16.500\n- Total: $44.500")
+    fix = autocorregir_montos(texto, ev, "test", precios_validos={8500, 14000})
+    assert fix["cambiada"] is False, fix["correcciones"]

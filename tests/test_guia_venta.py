@@ -41,6 +41,41 @@ def test_confianza_baja_pregunta_no_afirma():
     assert "aclarar" in g.lower() or "una pregunta" in g.lower()
 
 
+def test_movidas_nuevas_inyectan_brief():
+    casos = {
+        "quiero el DX-110 pero no el negro": "B3",
+        "lo necesito para el viernes": "B13",
+        "tienen precio por mayor?": "B14",
+        "tengo $50.000, que me alcanza?": "B15",
+        "es para regalar": "B16",
+        "es una verguenza, nadie responde": "B17",
+        "sos un bot?": "B18",
+        "quiero cancelar el pedido": "B19",
+        "aceptan cripto?": "B20",
+        "hacen envios a uruguay?": "B21",
+        "mandame fotos reales": "B22",
+        "se me rompio el mouse": "B23",
+    }
+    for msg, cat in casos.items():
+        g = guia_venta(msg, _interp(), {})
+        assert f"[VENTA ({cat}):" in g, f"{msg} -> esperaba {cat}, dio: {g[:80]}"
+
+
+def test_humano_dice_la_verdad_del_bot():
+    g = guia_venta("sos un bot?", _interp(), {})
+    assert "asistente autom" in g.lower()
+
+
+def test_urgencia_prohibe_dia_puntual():
+    g = guia_venta("lo necesito para manana", _interp(), {})
+    assert "PROHIBIDO" in g and "día puntual" in g
+
+
+def test_queja_no_vende():
+    g = guia_venta("es una verguenza, nadie me responde", _interp(), {})
+    assert "NO vendas" in g
+
+
 def test_camino_normal_no_inyecta_nada():
     assert guia_venta("hola, tenes mouse?", _interp(), {}) == ""
 

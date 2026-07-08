@@ -1,0 +1,8 @@
+# URGENCIA + CAMBIO + CANCELACION (B13, B2, B19): apuro con fecha limite (el
+# bot NO puede prometer un dia exacto), cambio de producto a mitad de charla,
+# y cancelacion final que debe aceptarse sin friccion ni contraoferta.
+hola, necesito unos auriculares urgente para el viernes, llegan a Mendoza capital?
+dale, mostrame los que tenes con microfono
+me gusta el primero, pero no, mejor mostrame algo mas barato
+ok, el mas barato con stock, pasame el total con envio
+uf sabes que? mejor cancelalo, no lo quiero mas, me surgio un gasto

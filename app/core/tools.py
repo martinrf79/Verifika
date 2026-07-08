@@ -284,6 +284,26 @@ def calculate_total(items: list[dict] | None = None,
                 f"OTRO producto, primero resolvelo con search_products o "
                 f"get_product_details y despues sumalo.")}
 
+    # PEDIDO SELLADO DEL TURNO (guia_pedido, 8-jul): el interprete ya extrajo el
+    # pedido de este turno y el codigo lo calculo entero. Un calculate_total del
+    # solver que AGREGA productos fuera del pedido sellado (+carrito) muta el
+    # pedido en silencio: visto en el banco, el solver sumo un microfono de
+    # $76.500 que el cliente nunca eligio. Quitar o repetir items sellados esta
+    # bien (subconjunto); agregar, no.
+    _sellado = {str(i).upper() for i in (_est.get("pedido_sellado_turno") or [])}
+    if _sellado:
+        _extras_pedido = sorted(
+            {str(i.get("product_id") or "").upper() for i in items}
+            - _sellado - {str(c["id"]).upper() for c in _carrito})
+        if _extras_pedido:
+            log.warning(f"calculate_total pedido_sellado_extras={_extras_pedido}")
+            return {"ok": False, "mensaje_para_llm": (
+                "El pedido de este turno YA fue calculado por el sistema con "
+                "lo que el cliente eligio; no agregues productos que no pidio "
+                f"({', '.join(_extras_pedido)}). Pone el marcador "
+                "[[PRESUPUESTO]] donde va el detalle del presupuesto y NO "
+                "vuelvas a llamar calculate_total.")}
+
     tid = get_current_tienda()
     detalle = []
     total = 0
@@ -1460,6 +1480,21 @@ def cotizar_envio(localidad: str | None = None,
 
     tid = get_current_tienda()
     zona = clasificar_zona(localidad or "")
+    if zona is None and (localidad or "").strip():
+        # PROVINCIA DE LA CHARLA: si el cliente ya dio la provincia (en este
+        # mensaje o en turnos anteriores, sticky en el estado), una localidad
+        # ambigua o desconocida se reintenta como "localidad, provincia" (la
+        # tabla resuelve ambiguas solo con la provincia en el texto). Caso real
+        # 8-jul: 'Los Condores' fallaba con 'todos en provincia de Cordoba'
+        # dicho en el MISMO mensaje, y el bot re-pedia el CP que ya tenia.
+        from app.core.estado_venta import get_current_estado
+        _prov = (get_current_estado().get("provincia_envio") or "").strip()
+        if _prov:
+            _con_prov = f"{localidad}, {_prov}"
+            zona = clasificar_zona(_con_prov)
+            if zona is not None:
+                log.info(f"cotizar_envio provincia_de_charla={_prov}")
+                localidad = _con_prov
     if zona is None:
         # Con tabla por provincia, el dato util es la PROVINCIA o el CP: con eso
         # la tarifa sale exacta, no en rango. Nunca se adivina la zona.

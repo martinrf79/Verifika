@@ -25,8 +25,6 @@ multi-tienda, hacerla derivar de la FAQ.
 import re
 import asyncio
 
-from openai import OpenAI
-
 from app.config import get_settings
 from app.logger import get_logger
 
@@ -156,23 +154,21 @@ _INSTR = {
                    "este mismo canal"),
 }
 
-_client = None
-
-
 def _get_client():
-    global _client
-    if _client is None:
-        _client = OpenAI(api_key=settings.DEEPSEEK_API_KEY,
-                         base_url="https://api.deepseek.com/v1",
-                         timeout=settings.LLM_TIMEOUT_SECONDS)
-    return _client
+    """CONSOLIDADO (7-jul): el reescritor usa el MISMO cliente y provider que el
+    solver (LLM_PROVIDER), un solo camino. Antes quedo DeepSeek hardcodeado
+    cuando el sistema paso a OpenAI, y corria deepseek-v4-flash SIN apagar el
+    thinking: el razonamiento se comia el presupuesto de tokens y la reescritura
+    volvia VACIA (visto en real el 4-jul, salio una promesa al cliente)."""
+    from app.core.agent import _get_client as _cliente_solver
+    return _cliente_solver()
 
 
 async def reescribir_con_reglas(respuesta: str, reglas: str,
                                 trace_id: str | None = None) -> str:
     """Maquinaria compartida de reescritura: saca lo prohibido manteniendo el tono
     y la intencion de venta. La usan la guardia de promesas y el verificador de
-    stock. Una sola llamada a DeepSeek, solo en los turnos que disparan."""
+    stock. Una sola llamada al modelo del solver, solo en los turnos que disparan."""
     if not reglas:
         return respuesta
     prompt = (
@@ -182,10 +178,28 @@ async def reescribir_con_reglas(respuesta: str, reglas: str,
         f"reescrito, sin comillas ni explicacion.\n\nMensaje:\n{respuesta}")
 
     def _call() -> str:
-        r = _get_client().chat.completions.create(
-            model=settings.DEEPSEEK_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.2, max_tokens=settings.MAX_OUTPUT_TOKENS)
+        from app.core.agent import modelo_solver
+        from app.config import (deepseek_extra_body, gemini_thinking_off,
+                                nvidia_thinking_off, openrouter_reasoning_off)
+        modelo = modelo_solver()
+        # Si el provider razonador vuelve algun dia (deepseek v4, NIM, gemini
+        # 2.5), el thinking se apaga igual que en el solver: sin esto el
+        # razonamiento consume max_tokens y la reescritura sale vacia.
+        extra = (nvidia_thinking_off(settings.LLM_PROVIDER, modelo)
+                 or openrouter_reasoning_off(settings.LLM_PROVIDER, modelo)
+                 or gemini_thinking_off(settings.LLM_PROVIDER, modelo)
+                 or (deepseek_extra_body(modelo)
+                     if settings.LLM_PROVIDER == "deepseek" else {}))
+        kwargs = {"model": modelo,
+                  "messages": [{"role": "user", "content": prompt}],
+                  "temperature": 0.2, "max_tokens": settings.MAX_OUTPUT_TOKENS}
+        if extra:
+            kwargs["extra_body"] = extra
+        try:
+            r = _get_client().chat.completions.create(**kwargs)
+        except Exception:
+            kwargs.pop("extra_body", None)
+            r = _get_client().chat.completions.create(**kwargs)
         return (r.choices[0].message.content or "").strip()
 
     return await asyncio.to_thread(_call)
@@ -194,6 +208,6 @@ async def reescribir_con_reglas(respuesta: str, reglas: str,
 async def reescribir_sin_promesas(respuesta: str, clases: list[str],
                                   trace_id: str | None = None) -> str:
     """Reescribe el mensaje sacando las promesas prohibidas, manteniendo el tono y
-    la intencion de venta. No agrega datos. Una sola llamada a DeepSeek."""
+    la intencion de venta. No agrega datos. Una sola llamada al modelo del solver."""
     reglas = "; ".join(_INSTR[c] for c in clases if c in _INSTR)
     return await reescribir_con_reglas(respuesta, reglas, trace_id)

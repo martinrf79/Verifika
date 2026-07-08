@@ -42,7 +42,7 @@ _UMBRAL_CONF = 0.6
 CATEGORIAS: dict[str, dict] = {
     "B1": {"nombre": "indecision", "familia": "compleja", "escape_default": "preguntar"},
     "B2": {"nombre": "cambio_producto", "familia": "compleja", "escape_default": "preguntar"},
-    "B3": {"nombre": "negacion_intraturno", "familia": "compleja", "escape_default": "normal"},
+    "B3": {"nombre": "negacion_intraturno", "familia": "compleja", "escape_default": "movida"},
     "B4": {"nombre": "presion_descuento", "familia": "compleja", "escape_default": "movida"},
     "B5": {"nombre": "objecion_precio", "familia": "compleja", "escape_default": "movida"},
     "B6": {"nombre": "desconfianza", "familia": "compleja", "escape_default": "movida"},
@@ -52,6 +52,18 @@ CATEGORIAS: dict[str, dict] = {
     "B10": {"nombre": "multidestino", "familia": "compleja", "escape_default": "normal"},
     "B11": {"nombre": "postergacion", "familia": "compleja", "escape_default": "movida"},
     "B12": {"nombre": "fuera_de_tema", "familia": "compleja", "escape_default": "normal"},
+    "B13": {"nombre": "urgencia", "familia": "compleja", "escape_default": "movida"},
+    "B14": {"nombre": "mayorista", "familia": "compleja", "escape_default": "movida"},
+    "B15": {"nombre": "presupuesto_acotado", "familia": "compleja", "escape_default": "movida"},
+    "B16": {"nombre": "regalo", "familia": "compleja", "escape_default": "movida"},
+    "B17": {"nombre": "queja", "familia": "compleja", "escape_default": "movida"},
+    "B18": {"nombre": "pedir_humano", "familia": "compleja", "escape_default": "movida"},
+    "B19": {"nombre": "cancelacion", "familia": "compleja", "escape_default": "movida"},
+    "B20": {"nombre": "pago_no_ofrecido", "familia": "compleja", "escape_default": "movida"},
+    "B21": {"nombre": "envio_exterior", "familia": "compleja", "escape_default": "movida"},
+    "B22": {"nombre": "pedido_foto", "familia": "compleja", "escape_default": "movida"},
+    "B23": {"nombre": "reclamo_posventa", "familia": "compleja", "escape_default": "movida"},
+    "B24": {"nombre": "multi_pregunta", "familia": "compleja", "escape_default": "normal"},
     # Memoria: listadas, NO ruteadas por ahora (ver memoria_ref.py y taxonomia C).
     "C1": {"nombre": "referencia_borrosa", "familia": "memoria", "escape_default": "normal"},
     "C2": {"nombre": "retomar_charla_vieja", "familia": "memoria", "escape_default": "normal"},
@@ -98,10 +110,72 @@ _RE_CAMBIO_PROD = re.compile(
     r"\ben (vez|lugar) del?\b|\bcambia(me|lo)?\b|\bprefiero (el|la) otro\b|"
     r"\bno,? mejor\b")
 
-# Off-topic es dificil de acusar por regex sin falsos positivos; el router no lo
-# rutea por ahora (queda 'normal'). Precio_falso (B9), inexistente (B8) y
-# multidestino (B10) necesitan el catalogo / tools y se resuelven en el cableado,
-# no en esta logica pura.
+# B3 NEGACION INTRA-TURNO: afirmacion e interes + negacion en la misma frase
+# ("quiero el DX-110 pero no el negro"). Requiere el verbo de interes ANTES del
+# "pero no/sin" en la misma oracion, para no agarrar un "pero no" cualquiera.
+_RE_NEGACION_INTRA = re.compile(
+    r"\b(quiero|me gusta|me sirve|me interesa|llevo|dame)\b[^.?!]*\bpero (no|sin)\b")
+
+_RE_URGENCIA = re.compile(
+    r"\b(lo|la|los|las) necesito (para|antes|urgente|ya)\b|\bes urgente\b|"
+    r"\benvio (urgente|express|rapido)\b|\bllega (antes de|para el|manana|hoy)\b|"
+    r"\bque (me )?llegue (antes|para|manana|hoy)\b|\blo preciso (para|ya)\b")
+
+_RE_MAYORISTA = re.compile(
+    r"\b(al |por )mayor\b|\bmayorista\b|\bventa mayorista\b|"
+    r"\bprecio por cantidad\b|\b\d{2,}\s?unidades\b")
+
+_RE_PRESUPUESTO = re.compile(
+    r"\btengo (un presupuesto|hasta)\b|\bmi presupuesto es\b|"
+    r"\bque me alcanza\b|\bno quiero gastar mas de\b|"
+    r"\bhasta \$?\s?\d|\btengo \$\s?\d")
+
+_RE_REGALO = re.compile(
+    r"\bes (un|para) regalo\b|\bpara regalar\b|\bregalo para\b|"
+    r"\bpara (mi|un|una) (hijo|hija|nene|nena|novio|novia|mama|papa|"
+    r"viejo|vieja|sobrin\w+|herman\w+|amig\w+|abuel\w+)\b")
+
+_RE_QUEJA = re.compile(
+    r"\bes una verguenza\b|\bpesimo\b|\bpesima\b|\bmal servicio\b|"
+    r"\bmala atencion\b|\bme atendieron mal\b|\bnadie (me )?(responde|contesta|atiende)\b|"
+    r"\btengo una queja\b|\bquiero (hacer un reclamo|quejarme)\b|\bindignad\w\b")
+
+_RE_HUMANO = re.compile(
+    r"\b(hablar|charlar|comunicarme) con (una persona|un humano|alguien)\b|"
+    r"\bpasame con (una persona|un humano|alguien)\b|\bsos un (bot|robot)\b|"
+    r"\bsos (humano|una maquina|real)\b|\bcon quien (hablo|estoy hablando)\b|"
+    r"\bme atiende una persona\b|\bquiero una persona\b|\batencion humana\b")
+
+_RE_CANCELACION = re.compile(
+    r"\bcancelal[oa]\b|\bcancela (el|mi) pedido\b|\bquiero cancelar\b|"
+    r"\bno l[oa] quiero mas\b|\bolvidalo\b|\bno va,? gracias\b|"
+    r"\bdejalo,? no\b|\bme arrepenti\b|\bday? de baja\b")
+
+_RE_PAGO_RARO = re.compile(
+    r"\bcripto\w*\b|\bbitcoin\b|\busdt?\b|\ben dolares\b|\ben euros\b|"
+    r"\bcontra entrega\b|\bcontrarreembolso\b|\bpago al recibir\w*\b")
+
+_RE_EXTERIOR = re.compile(
+    r"\b(envian?|mandan?|llegan?|hacen envios?) a "
+    r"(uruguay|chile|paraguay|bolivia|brasil|peru|colombia|mexico|espana|"
+    r"miami|estados unidos|usa)\b|"
+    r"\bal exterior\b|\bfuera de argentina\b|\benvio internacional\b")
+
+_RE_FOTO = re.compile(
+    r"\b(mandame|pasame|enviame|tenes|tienen|hay) (un |una |mas |otras? )?"
+    r"(fotos?|imagen(es)?|videos?)\b|\bfotos? real(es)?\b")
+
+_RE_RECLAMO = re.compile(
+    r"\bse me rompio\b|\bvino (fallado|roto|danado|golpeado)\b|"
+    r"\bllego (roto|fallado|danado|golpeado|mal)\b|\bsalio fallad[oa]\b|"
+    r"\bquiero devolver\w*\b|\bhacer valer la garantia\b|\bme llego mal\b|"
+    r"\bdejo de (andar|funcionar)\b|\bno (anda|funciona) el que (compre|me mandaron)\b")
+
+# Off-topic (B12) es dificil de acusar por regex sin falsos positivos; el router
+# no lo rutea por ahora (queda 'normal'). Precio_falso (B9), inexistente (B8) y
+# multidestino (B10) necesitan el catalogo / tools y los cubren el verificador,
+# el certificador/estampado y la calculadora. Multi_pregunta (B24) no tiene
+# detector: la vigila el juez del banco.
 
 
 def _decidir(categoria: str, mensaje: str, interp: dict, estado: dict) -> dict:
@@ -145,7 +219,32 @@ def rutear_venta(mensaje: str, interp: dict | None, estado: dict | None) -> dict
                 "motivo": "ambiguedad_variante"}
 
     # Deteccion por frase, orden de mas especifico a mas general. La primera que
-    # matchea gana; son mutuamente excluyentes en la practica.
+    # matchea gana; son mutuamente excluyentes en la practica. Las emocionales y
+    # de posventa van primero: una queja con un precio adentro sigue siendo queja.
+    if _RE_QUEJA.search(m):
+        return _decidir("B17", mensaje, interp, estado)
+    if _RE_HUMANO.search(m):
+        return _decidir("B18", mensaje, interp, estado)
+    if _RE_RECLAMO.search(m):
+        return _decidir("B23", mensaje, interp, estado)
+    if _RE_CANCELACION.search(m):
+        return _decidir("B19", mensaje, interp, estado)
+    if _RE_NEGACION_INTRA.search(m):
+        return _decidir("B3", mensaje, interp, estado)
+    if _RE_URGENCIA.search(m):
+        return _decidir("B13", mensaje, interp, estado)
+    if _RE_EXTERIOR.search(m):
+        return _decidir("B21", mensaje, interp, estado)
+    if _RE_FOTO.search(m):
+        return _decidir("B22", mensaje, interp, estado)
+    if _RE_PAGO_RARO.search(m):
+        return _decidir("B20", mensaje, interp, estado)
+    if _RE_MAYORISTA.search(m):
+        return _decidir("B14", mensaje, interp, estado)
+    if _RE_PRESUPUESTO.search(m):
+        return _decidir("B15", mensaje, interp, estado)
+    if _RE_REGALO.search(m):
+        return _decidir("B16", mensaje, interp, estado)
     if _RE_DESCUENTO.search(m):
         return _decidir("B4", mensaje, interp, estado)
     if _RE_OBJ_PRECIO.search(m):

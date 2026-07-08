@@ -84,6 +84,18 @@ el escape obligatorio.
 | B10 | Multi-destino / multi-producto | "uno a Córdoba y otro a Mendoza" | varios envíos y totales | Código calcula cada tramo; LLM presenta |
 | B11 | Postergación | "lo pienso", "después vuelvo" | no es no, es tibio | Dejar la puerta abierta, marcar lead, no presionar |
 | B12 | Fuera de tema | comentario off-topic | ruido | Reconducir corto y cordial a la venta |
+| B13 | Urgencia | "lo necesito para mañana", "¿llega antes del viernes?" | tienta a prometer un día | Plazo oficial de la FAQ; nunca un día puntual |
+| B14 | Cantidad grande / mayorista | "¿precio por mayor?", "quiero 20 unidades" | tienta a inventar rebaja mayorista | FAQ mayoristas + total de la calculadora; derivar si excede |
+| B15 | Presupuesto acotado | "tengo $50.000, ¿qué me alcanza?" | hay que filtrar por precio real | Código filtra catálogo con stock; proponer UNO que entra |
+| B16 | Regalo / compra para otro | "es para regalar", "para mi hijo de 10" | falta el criterio del destinatario | UNA pregunta si falta el dato; recomendar UNO real |
+| B17 | Queja / enojo | "es una vergüenza", "nadie me responde" | emocional, no se vende ahí | Bajar la temperatura, resolver o derivar; cero venta ese turno |
+| B18 | Pedir humano / ¿sos bot? | "pasame con una persona", "¿sos un robot?" | honestidad obligatoria | Decir que es asistente automático; derivar sin fricción |
+| B19 | Cancelación | "cancelalo", "no lo quiero más" | es un no, no un tibio | Aceptar sin fricción; FAQ cancelación si hay pedido; descartar lead |
+| B20 | Medio de pago no ofrecido | "¿aceptan cripto?", "¿pago en dólares?" | tienta a aceptar o prometer | No derecho + medios reales de la FAQ |
+| B21 | Envío al exterior | "¿mandan a Uruguay?" | fuera de cobertura | FAQ envio_exterior tal cual; no inventar courier |
+| B22 | Pedido de fotos / video | "mandame fotos reales" | el canal no manda archivos | No prometer material; specs reales de la ficha + redes de la FAQ |
+| B23 | Reclamo posventa | "se me rompió", "vino fallado" | máximo riesgo de confianza | Empatía + FAQ defectuoso/garantía/cambios; deriva a persona |
+| B24 | Varias preguntas juntas | "¿cuánto sale y llega a Salta?" | fácil dejar una sin responder | Sin detector; responder todas, la vigila el juez del banco |
 
 ---
 

@@ -168,10 +168,11 @@ def truncar_listado(texto: str, max_chars: int = 250) -> str:
 
 
 def construir_contexto_conversacional(history: list[dict],
-                                       n_turnos_completos: int = 7) -> str:
+                                       n_turnos_completos: int = 7,
+                                       resumen: str = "") -> str:
     """Arma contexto conversacional con turnos recientes completos
     y resumen de turnos viejos. Trunca listados largos del bot."""
-    if not history:
+    if not history and not (resumen or "").strip():
         return "Sin historial previo"
 
     n_mensajes = n_turnos_completos * 2
@@ -180,6 +181,12 @@ def construir_contexto_conversacional(history: list[dict],
 
     lineas = []
 
+    # MEMORIA LARGA: el resumen acumulado de la charla vieja (turnos que ya no
+    # estan en el historial vivo) entra primero, asi el interprete puede leer
+    # una referencia a algo dicho muchos turnos atras (C2-C4).
+    if (resumen or "").strip():
+        lineas.append("LO HABLADO ANTES EN ESTA CHARLA (resumen acumulado de "
+                      "turnos viejos):\n" + resumen.strip())
     if viejos:
         lineas.append(f"Resumen de {len(viejos)} mensajes previos: "
                        "conversacion en curso, ver mensajes recientes para contexto actual.")
@@ -234,7 +241,8 @@ DEVOLVE ESTE JSON:
   "datos_pedido": null,
   "respondiendo_a": "que pregunto el bot en su ultimo turno y a que responde el cliente, o null si no responde a una pregunta previa",
   "estado_conversacion": "saludo|explorando|esperando_confirmacion|esperando_datos|derivar_humano|posventa",
-  "ofrecer_opciones": "null si no hay duda, o lista de dos opciones [opcion A, opcion B] cuando hay dos caminos posibles y no se puede determinar uno con certeza"
+  "ofrecer_opciones": "null si no hay duda, o lista de dos opciones [opcion A, opcion B] cuando hay dos caminos posibles y no se puede determinar uno con certeza",
+  "pedido": "lista de {{\\"producto\\": nombre EXACTO de un producto mostrado, \\"cantidad\\": numero}} SOLO cuando el cliente define un pedido concreto: que productos de los mostrados quiere y cuantos de cada uno (ej tres del DX-110 y dos teclados K120). Si no define productos y cantidades concretos, lista vacia []"
 }}
 
 GUIA DE INTENCIONES, usalas con criterio, no son recetas rigidas.
@@ -271,6 +279,13 @@ PRODUCTO RESUELTO.
 Solo si hay UN producto claro entre los mostrados al que el cliente se refiere.
 Si hay duda entre dos o mas, producto_resuelto null y candidatos con esos productos.
 Si no hay producto en contexto, producto_resuelto null.
+
+PEDIDO.
+Completalo SOLO cuando el cliente arma un pedido concreto: nombra productos que
+estan entre los mostrados y dice cuantos quiere de cada uno. Usa el nombre EXACTO
+del producto mostrado, no el apodo del cliente. Si el cliente pide un producto que
+no esta entre los mostrados, o no da cantidades, o esta preguntando sin armar
+pedido, deja la lista vacia. No inventes cantidades: solo las que dijo el cliente.
 
 CONFIANZA.
 alta 0.85 a 1.0, intencion inequivoca o referencia clara a un producto unico.
@@ -347,10 +362,24 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
             "estado_conversacion": {"type": "string", "enum": ESTADOS_VALIDOS},
             "ofrecer_opciones": {"type": ["array", "null"],
                                  "items": {"type": "string"}},
+            # PEDIDO estructurado (8-jul): cuando el cliente define productos
+            # concretos CON cantidad, el interprete lo extrae atado al enum de
+            # lo MOSTRADO. Es la entrada de la guia determinista de pedido: el
+            # codigo llama la calculadora con estos items y sella el bloque; el
+            # solver no elige ids. Fuera de OpenAI el campo llega libre y la
+            # validacion de abajo lo filtra igual (todo o nada).
+            "pedido": {"type": ["array", "null"], "items": {
+                "type": "object", "additionalProperties": False,
+                "properties": {
+                    "producto": {"type": ["string", "null"], "enum": prod_enum},
+                    "cantidad": {"type": "integer"},
+                },
+                "required": ["producto", "cantidad"],
+            }},
         },
         "required": ["intencion", "producto_resuelto", "candidatos", "confianza",
                      "datos_pedido", "respondiendo_a", "estado_conversacion",
-                     "ofrecer_opciones"],
+                     "ofrecer_opciones", "pedido"],
     }
 
 
@@ -420,14 +449,30 @@ async def interpretar_mensaje(mensaje: str,
                                 history: list[dict],
                                 trace_id: str,
                                 estado_anterior: str | None = None,
-                                tienda_id: str | None = None) -> dict:
+                                tienda_id: str | None = None,
+                                productos_vistos: list[dict] | None = None,
+                                resumen: str = "") -> dict:
     log.info("interpretar_mensaje_inicio")
     """Funcion principal del Interpretador.
     Prompt liberado mas tres capas de filtro al final."""
     try:
         productos = extraer_productos_mostrados(history)
-        contexto_conv = construir_contexto_conversacional(history,
-                                                            n_turnos_completos=7)
+        # Los productos VISTOS del estado (ids reales persistidos por las tools y
+        # los [[PROD:]] estampados) enriquecen el contexto y el ENUM del schema:
+        # son mas confiables que el regex sobre el historial (el solver no
+        # siempre lista en negrita). Dedup por nombre, los del regex primero.
+        _nombres_regex = {p.get("nombre") for p in productos}
+        for pv in (productos_vistos or []):
+            if not isinstance(pv, dict) or not pv.get("nombre"):
+                continue
+            if pv["nombre"] in _nombres_regex:
+                continue
+            _precio = pv.get("precio", pv.get("precio_ars"))
+            if isinstance(_precio, (int, float)):
+                productos.append({"nombre": pv["nombre"], "precio": int(_precio)})
+                _nombres_regex.add(pv["nombre"])
+        contexto_conv = construir_contexto_conversacional(
+            history, n_turnos_completos=7, resumen=resumen)
 
         if estado_anterior:
             contexto_conv = (
@@ -505,6 +550,8 @@ async def interpretar_mensaje(mensaje: str,
             resultado["datos_pedido"] = None
         if "respondiendo_a" not in resultado:
             resultado["respondiendo_a"] = None
+        if not isinstance(resultado.get("pedido"), list):
+            resultado["pedido"] = []
 
         # El interprete tiene LIBERTAD para interpretar: el codigo NO cambia su
         # intencion. Se quitaron las capas que la pisaban (veto de negacion y
@@ -518,6 +565,7 @@ async def interpretar_mensaje(mensaje: str,
                  producto_resuelto=resultado.get("producto_resuelto"),
                  respondiendo_a=resultado.get("respondiendo_a"),
                  candidatos_count=len(resultado.get("candidatos", [])),
+                 pedido=resultado.get("pedido"),
                  productos_contexto=len(productos))
 
         return resultado
