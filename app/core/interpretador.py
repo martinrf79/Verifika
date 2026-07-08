@@ -279,6 +279,11 @@ PRODUCTO RESUELTO.
 Solo si hay UN producto claro entre los mostrados al que el cliente se refiere.
 Si hay duda entre dos o mas, producto_resuelto null y candidatos con esos productos.
 Si no hay producto en contexto, producto_resuelto null.
+Referencias COMPARATIVAS: "el mas barato", "el mas caro", "el otro", "el
+primero" se resuelven comparando los PRECIOS y el orden de los productos
+mostrados, no adivinando. "El barato no, el otro" apunta al que NO es el mas
+barato. Si aun comparando queda empate o duda real, candidatos con los
+posibles y confianza baja: preguntar es mejor que elegir mal.
 
 PEDIDO.
 Completalo SOLO cuando el cliente arma un pedido concreto: nombra productos que
@@ -299,6 +304,60 @@ Tene en cuenta que abajo tuyo hay un sistema de verificacion que controla numero
 RESPUESTA SOLO EL JSON, SIN PREAMBULO NI EXPLICACION."""
 
     return prompt
+
+
+_RE_BARATO_NO = re.compile(
+    r"\b(?:el|la) barat[oa] no\b|\bno (?:quiero |me sirve )?(?:el|la) barat[oa]\b")
+
+
+def _corregir_referencia_comparativa(resultado: dict, mensaje: str,
+                                     productos_vistos: list[dict] | None) -> dict:
+    """Filtro DETERMINISTA de un sesgo medido del modelo (banco de
+    interpretacion, 8-jul): ante 'el barato no, el otro' con dos variantes
+    baratas empatadas, GPT-4 mini resuelve confiado la OTRA variante barata en
+    vez del que no es barato. La comparacion de precios es un problema CERRADO:
+    si el cliente NEGO el barato y el interprete resolvio un producto con el
+    precio MINIMO de los vistos, el codigo lo corrige: al unico mas caro si hay
+    uno, o a candidatos con confianza baja si hay varios."""
+    import unicodedata
+
+    def _n(s):
+        s = unicodedata.normalize("NFKD", str(s or "").lower())
+        return "".join(c for c in s if not unicodedata.combining(c))
+
+    if not isinstance(resultado, dict) or not _RE_BARATO_NO.search(_n(mensaje)):
+        return resultado
+    vistos = [v for v in (productos_vistos or [])
+              if isinstance(v, dict) and v.get("nombre")
+              and isinstance(v.get("precio", v.get("precio_ars")), (int, float))]
+    if len(vistos) < 2:
+        return resultado
+    precio_de = {_n(v["nombre"]): int(v.get("precio", v.get("precio_ars")))
+                 for v in vistos}
+    pmin = min(precio_de.values())
+    caros = [v["nombre"] for v in vistos
+             if precio_de[_n(v["nombre"])] > pmin]
+    if not caros:
+        return resultado  # todos empatados: no hay "otro" que computar
+    resuelto = _n(resultado.get("producto_resuelto"))
+    if resuelto and precio_de.get(resuelto, pmin + 1) > pmin:
+        return resultado  # ya resolvio uno NO barato: lectura coherente
+    log.info("interpretador_comparativa_corregida",
+             de=resultado.get("producto_resuelto"), caros=caros[:3])
+    if len(caros) == 1:
+        resultado["producto_resuelto"] = caros[0]
+        # El pedido que arrastre el barato negado se re-apunta al correcto.
+        for it in (resultado.get("pedido") or []):
+            if isinstance(it, dict) and precio_de.get(
+                    _n(it.get("producto")), pmin + 1) == pmin:
+                it["producto"] = caros[0]
+    else:
+        resultado["producto_resuelto"] = None
+        resultado["candidatos"] = caros[:3]
+        resultado["confianza"] = min(
+            float(resultado.get("confianza") or 0), 0.5)
+        resultado["pedido"] = []
+    return resultado
 
 
 def validar_schema(resultado: dict) -> tuple[bool, str]:
@@ -552,6 +611,11 @@ async def interpretar_mensaje(mensaje: str,
             resultado["respondiendo_a"] = None
         if not isinstance(resultado.get("pedido"), list):
             resultado["pedido"] = []
+
+        # Sesgo medido del modelo en referencias comparativas ('el barato no,
+        # el otro'): la comparacion de precios la corrige el CODIGO.
+        resultado = _corregir_referencia_comparativa(
+            resultado, mensaje, productos_vistos)
 
         # El interprete tiene LIBERTAD para interpretar: el codigo NO cambia su
         # intencion. Se quitaron las capas que la pisaban (veto de negacion y

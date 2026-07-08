@@ -43,6 +43,18 @@ perfectas 4/3/5 + destinos, turno 2 sin presupuesto fantasma. 388 tests offline.
 **PRÓXIMO MÓDULO acordado: interpretación con categorías difíciles (el bot es
 50% venta / 50% no alucinar; sin interpretar bien no es viable).**
 
+**MÓDULO DE INTERPRETACIÓN — banco nuevo (8-jul, prioridad 1).**
+`banco_pruebas/banco_interpretacion.py`: mide al INTÉRPRETE aislado, caso por caso
+(mensaje difícil + contexto → lectura esperada), con piso 80% y lock vivo en
+`tests/test_vivo_interpretacion.py`. 16 casos: ironía, decisión condicionada
+("dale pero antes..."), correcciones a mitad de frase ("2... no, mejor 3"),
+negación doble, despedida-que-parece-compra, jerga ("metele q va"), typos.
+Primera corrida: 15/16 — la falla ("el barato no, el otro" con dos baratos
+empatados: el modelo elige confiado la otra variante barata) es un sesgo del
+modelo y se corrigió por CÓDIGO (`_corregir_referencia_comparativa`: la
+comparación de precios es cerrada; único caro → se corrige, varios → candidatos
+con confianza baja). Segunda corrida: 16/16 = 100%. 392 tests offline.
+
 **LOOP DE ROBUSTEZ — ciclos 2 y 3 (8-jul, deploy indirecto por ciclo verde).**
 Guiones 14-20 (desprolijo, multipregunta, contradicción lejana, reserva/split,
 cliente que vuelve, jailbreak comercial, stock al límite). Salieron BIEN de fábrica:
