@@ -982,6 +982,19 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             log.warning("interprete_libre_verif_error", trace_id=trace_id,
                         error=str(e)[:160])
 
+    # ── ASIENTOS: el Subtotal declarado = suma de los renglones del mensaje ──
+    # (candidata del RESUMEN, vista dos veces en el banco). Solo corrige con la
+    # suma RESPALDADA por la evidencia; cualquier renglon ilegible aborta.
+    if respuesta != settings.FALLBACK_MESSAGE and evidencia:
+        try:
+            from app.core.verificador import corregir_subtotal_renglones
+            _fix_sub = corregir_subtotal_renglones(respuesta, evidencia, trace_id)
+            if _fix_sub["cambiada"]:
+                respuesta = _fix_sub["respuesta"]
+        except Exception as e:
+            log.warning("interprete_libre_subtotal_error", trace_id=trace_id,
+                        error=str(e)[:120])
+
     # ── PASO 2a-ter: VERIFICADOR DE STOCK (mismo patron por campo) ──────────
     # La plata ya esta cubierta; este es el campo por donde se filtro la
     # alucinacion real del 2-jul (negar stock que existia). Dos piezas:

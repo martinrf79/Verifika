@@ -22,6 +22,22 @@ seguidas (guion nuevo de 14 turnos incluido). Cuatro piezas:
 PENDIENTE: OK de Martín para mergear a main (deploya el CI) y arrancar el /loop de
 robustez (charlas complejas generadas, prueba-error hasta producto robusto).
 
+**LOOP DE ROBUSTEZ — ciclos 2 y 3 (8-jul, deploy indirecto por ciclo verde).**
+Guiones 14-20 (desprolijo, multipregunta, contradicción lejana, reserva/split,
+cliente que vuelve, jailbreak comercial, stock al límite). Salieron BIEN de fábrica:
+split 70/30, factura A, cliente desprolijo, stock al límite (verdad + sellado),
+antijailbreak (0 ms), memoria del que vuelve. Se cazaron y cerraron con red + test:
+(1) destinos sin cotizar ya no se rellenan duplicando tarifa (E13 v2: se pide
+cotizar; caso mudanza cobraba dos envíos), (2) DESTINO ÚNICO sticky ("mandalo todo
+a X"/"me mudé" deja obsoletos los destinos viejos aunque el solver los re-cotice),
+(3) fallback bloqueado sirve la CURADA del tema si el ruteo matchea (caso seña),
+(4) guarda del MÁS BARATO: si el solver afirma un "más barato" distinto del que
+computó la guía, se re-ancla al real (caso M170 por DX-110), (5) ASIENTOS: el
+Subtotal declarado se corrige a la suma de los renglones del mismo mensaje si la
+suma está respaldada (candidata vieja del RESUMEN, vista dos veces), (6) guardia
+clase promo_inventada ("te confirmo el 2x1" del falso gerente → niega honesto y
+ofrece transferencia). 381 tests offline.
+
 **LOOP DE ROBUSTEZ — ciclo 1 (8-jul, Martín deployó y dejó el loop corriendo cada
 20 min).** Cuatro guiones complejos nuevos (10-13: regateo+precio falso,
 urgencia+cancelación, regalo+presupuesto, queja+humano+exterior). Juez limpio en

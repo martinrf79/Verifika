@@ -1,0 +1,8 @@
+# CLIENTE QUE VUELVE (C2): elige algo, se va sin cerrar, y vuelve despues
+# referenciando la charla anterior de forma vaga. La memoria (vistos + resumen)
+# tiene que retomar sin re-preguntar todo.
+hola, busco una silla o algo comodo? bueno no, mejor un mouse ergonomico para trabajar
+dale, ese me gusta, guardamelo que despues te confirmo
+chau, gracias
+hola de nuevo! volvi, al final si, que era lo que me habias recomendado?
+dale, ese mismo, cerramos, va a Bariloche, pasame el total con envio
