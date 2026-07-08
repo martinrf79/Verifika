@@ -114,3 +114,42 @@ def test_cuarentena_poda_el_bloque_bancario_entero():
     out = cuarentena_prohibidas(msg)
     assert "0720" not in out and "Santander" not in out and "VERIFIKA.PAGO" not in out
     assert "Perfecto" in out and "nombre completo" in out
+
+
+# ── Clases nuevas del loop de robustez (8-jul, ciclo 1) ─────────────────────
+def test_descuento_inventado_dispara():
+    from app.core.guardia_promesas import detectar
+    for frase in ["Puedo ofrecerte un descuento especial por llevar los dos.",
+                  "Te hago un descuento si llevas ambos.",
+                  "Te bajo el precio si te decidis hoy."]:
+        assert "descuento_inventado" in detectar(frase), frase
+
+
+def test_descuento_por_transferencia_no_dispara():
+    from app.core.guardia_promesas import detectar
+    limpias = [
+        "Pagando por transferencia tenes 10% de descuento sobre el total.",
+        "Te hago un descuento del 10% pagando por transferencia.",
+        "No hacemos descuentos por cantidad, solo el de transferencia.",
+    ]
+    for frase in limpias:
+        assert "descuento_inventado" not in detectar(frase), frase
+
+
+def test_envio_exterior_afirmado_dispara():
+    from app.core.guardia_promesas import detectar
+    for frase in ["Si, hacemos envios a Montevideo a traves de Andreani y OCA.",
+                  "Te lo mando a Uruguay sin problema.",
+                  "Enviamos tambien a Chile y Paraguay.",
+                  "Realizamos envios internacionales."]:
+        assert "envio_exterior" in detectar(frase), frase
+
+
+def test_envio_exterior_negado_es_honesto_no_dispara():
+    from app.core.guardia_promesas import detectar
+    limpias = [
+        "No hacemos envios a Uruguay, solo dentro de Argentina.",
+        "Por ahora no enviamos al exterior.",
+    ]
+    for frase in limpias:
+        assert "envio_exterior" not in detectar(frase), frase

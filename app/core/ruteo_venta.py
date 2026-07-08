@@ -158,7 +158,8 @@ _RE_PAGO_RARO = re.compile(
 _RE_EXTERIOR = re.compile(
     r"\b(envian?|mandan?|llegan?|hacen envios?) a "
     r"(uruguay|chile|paraguay|bolivia|brasil|peru|colombia|mexico|espana|"
-    r"miami|estados unidos|usa)\b|"
+    r"miami|estados unidos|usa|montevideo|punta del este|santiago de chile|"
+    r"asuncion|sao paulo|lima|bogota|madrid|barcelona)\b|"
     r"\bal exterior\b|\bfuera de argentina\b|\benvio internacional\b")
 
 _RE_FOTO = re.compile(

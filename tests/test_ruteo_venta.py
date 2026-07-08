@@ -217,3 +217,9 @@ def test_toda_movida_ruteable_tiene_brief_o_pregunta():
     for cat, meta in CATEGORIAS.items():
         if meta["familia"] == "compleja" and meta["escape_default"] == "movida":
             assert cat in _BRIEFS, f"{cat} rutea a movida pero no tiene brief"
+
+
+def test_envio_exterior_por_ciudad():
+    for msg in ["mandan a montevideo?", "llegan a santiago de chile?"]:
+        d = rutear_venta(msg, _interp(), {})
+        assert d["categoria"] == "B21", msg
