@@ -110,3 +110,25 @@ def test_tema_sin_curada_no_ataja(firestore_doble, monkeypatch):
     r = C.servir_curada("que horarios tienen?", _interp(), {},
                         pregunta_cierre_previa=False, tienda_id="verifika_prod")
     assert r is None
+
+
+def test_fallback_bloqueado_sirve_la_curada_si_hay(firestore_doble):
+    # Caso seña (banco 8-jul): la respuesta del solver se bloqueo (ofrecio un
+    # producto sin stock) y salio el enlatado generico, comiendose la pregunta
+    # de POLITICA. Si el ruteo matchea un tema curado, sale esa respuesta.
+    from app.core.interprete_libre import _fallback_o_curada
+    interp = {"intencion": "pregunta_especifica", "confianza": 0.8,
+              "producto_resuelto": None, "candidatos": []}
+    out = _fallback_o_curada("como es la seña para reservar?", interp,
+                             "verifika_prod")
+    from app.config import get_settings
+    assert out != get_settings().VERIFIKA_FALLBACK_MESSAGE
+    assert "reserv" in out.lower() or "seña" in out.lower()
+
+
+def test_fallback_sin_tema_curado_cae_al_enlatado(firestore_doble):
+    from app.core.interprete_libre import _fallback_o_curada
+    from app.config import get_settings
+    interp = {"intencion": "decision_compra", "confianza": 0.9}
+    out = _fallback_o_curada("dale lo llevo", interp, "verifika_prod")
+    assert out == get_settings().VERIFIKA_FALLBACK_MESSAGE

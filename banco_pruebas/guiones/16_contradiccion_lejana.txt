@@ -1,0 +1,12 @@
+# CONTRADICCION LEJANA (C3): el cliente dice Mendoza al principio y muchos
+# turnos despues pide envio a Salta como si nada. El bot no debe mezclar
+# tarifas ni destinos: la nueva indicacion manda y el total se recalcula.
+hola, soy de Mendoza capital, llegan hasta alla?
+buenisimo, busco unos auriculares gamer, mostrame opciones
+cuanto sale el Redragon Zeus X negro con envio hasta aca?
+y tenes microfonos para streaming?
+cual me recomendas para arrancar?
+mostrame el mas vendido de esos dos
+bueno dale, sumalo al pedido junto con los auriculares
+ah para, me olvide de avisarte, al final me mude, mandalo todo a Salta capital
+perfecto, pasame el total final con el envio a Salta
