@@ -778,13 +778,24 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
              tools=len(tools_schema), hist=len(history))
 
     if not respuesta_curada_servida:
+        # COMPOSITOR (decision de Martin, 8-jul): el modelo NUNCA le escribe al
+        # cliente. La unica llamada LLM del turno es el interprete constreñido
+        # (arriba); aca el CODIGO compone el mensaje entero desde plantillas,
+        # curadas y tools selladas. Reemplaza a run_agent en el camino vivo:
+        # semanas de corregir prosa libre probaron que esa guerra no se gana.
         try:
-            respuesta, meta = await run_agent(
-                mensaje_enriquecido, history, trace_id,
-                tienda_id=tienda_id, user_id=user_id,
-                system_prompt=system_prompt, tools_schema=tools_schema)
+            if _tools_precalc:
+                # Pedido ya SELLADO por la guia (modelos elegidos): el mensaje
+                # es la plantilla fija + bloque de la calculadora, directo.
+                from app.core.guia_pedido import mensaje_presupuesto_sellado
+                respuesta = mensaje_presupuesto_sellado(
+                    _tools_precalc[0]["result"]["presentacion"])
+            else:
+                from app.core.compositor import componer
+                respuesta, meta = componer(
+                    raw_message, interp, estado, tienda_id, trace_id)
         except Exception as e:
-            log.error("interprete_libre_solver_error", trace_id=trace_id,
+            log.error("interprete_libre_compositor_error", trace_id=trace_id,
                       error=str(e)[:200])
             respuesta = settings.FALLBACK_MESSAGE
 
