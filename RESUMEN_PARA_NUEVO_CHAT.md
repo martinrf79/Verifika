@@ -3,7 +3,37 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 9-jul-2026 — COMPOSITOR (decisión de Martín, "hacelo").**
+**Última actualización: 9-jul-2026 (tarde) — DOS INTÉRPRETES DEL CRITERIO +
+curada que tapaba las categorías.** Charla real de Martín: pidió "4 notebooks,
+3 teclados y 5 mouse... dame el precio con envío", eligió "Lo mas eco" y el bot
+respondió la pregunta boba "¿qué producto estás mirando?". Dos causas raíz:
+1. **"Lo mas eco" no lo cazaba el regex del código** (solo cubría barato/
+   económico). Solución acordada con Martín: SEGUNDO intérprete. El LLM ya corre
+   cada turno; se le agregó el campo `criterio` al schema estricto (entiende
+   "eco", "lo más conveniente", abreviaturas). `concordancia_criterio` cruza los
+   dos: ambos coinciden → se arma; divergen → se CONFIRMA con pregunta corta
+   ("¿te armo el total con los más baratos?"), nunca sellar un total dudoso ni la
+   pregunta boba. Un "sí" del turno siguiente cuenta como coincidencia (flag
+   `criterio_confirmar_pendiente`). `criterio_cliente` sticky ahora lo alimentan
+   los dos.
+2. **La curada de envío tapaba el pedido por categorías** (causa de fondo que el
+   banco no veía por variación del LLM). "...dame el precio con envío" servía la
+   curada standalone de envío y salteaba las opciones por categoría; el pedido
+   pendiente nunca se persistía, así que "Lo mas eco" del turno siguiente no
+   tenía a qué engancharse. Fix DETERMINISTA en `servir_curada`: con pedido en
+   juego (campo `pedido` del intérprete o cantidades por categoría en el mensaje)
+   NO se sirve enlatado, lo maneja el flujo de pedido. Además el guard
+   `_forzar_opciones_si_presupuesto` ya no pisa una respuesta que compuso el
+   código (mi confirmación decía "presupuesto" y la confundía).
+Verificado con el guion 25 (la charla real, textual): turno 1 las 3 categorías
+con stock + destinos, turno 2 la confirmación corta, turno 3 el total completo
+sellado $2.850.500 con envío gratis. Juez limpio. Banco de interpretación 29/29
+(3 casos nuevos: "lo mas eco", "mandame lo mas conveniente", "los mas baratos").
+407 tests offline. Pendiente: correr la suite vivo entera y mergear a main.
+
+---
+
+**9-jul-2026 — COMPOSITOR (decisión de Martín, "hacelo").**
 Cambio de arquitectura del camino vivo: **el modelo NUNCA MÁS le escribe al
 cliente.** Una sola llamada LLM por turno (el INTÉRPRETE con Structured Outputs
 estricto) devuelve solo DATOS: intención, producto resuelto, pedido atado por

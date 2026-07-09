@@ -1,0 +1,8 @@
+# CASO REAL WhatsApp 9-jul (Martin): pedido por categorias SIN modelos y despues
+# "Lo mas eco" (abreviatura que el regex del codigo NO cazaba: cayo al fallback
+# "¿que producto estas mirando?" ignorando el pedido). Fix: DOS interpretes del
+# criterio (codigo + LLM). El LLM entiende "eco" -> divergen -> el bot CONFIRMA
+# corto sin perder el pedido; el "si" del turno 3 arma el total sellado.
+Hola necesito precio de 4 notebooks tres teclados y 5 Mouse de los cuales una Notebook y un teclado va a tancacha una Notebook y un mouse va a Rio tercero lo demas va con envio a los condores todos en provincia de Cordoba dime si puedes pasarme el precio con envio
+Lo mas eco
+si dale, los mas baratos

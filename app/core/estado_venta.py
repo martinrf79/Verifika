@@ -35,6 +35,35 @@ def detectar_criterio(mensaje: str) -> str:
         return "más barato"
     return ""
 
+
+def criterio_del_interprete(interp) -> bool:
+    """El SEGUNDO interprete del criterio: la lectura del LLM. El regex de arriba
+    no entiende 'eco' ni abreviaturas ni modismos; el interprete si (campo
+    'criterio' del schema). True si el LLM leyo que el cliente quiere lo mas
+    barato."""
+    if not isinstance(interp, dict):
+        return False
+    return str(interp.get("criterio") or "").strip() == "mas_barato"
+
+
+def concordancia_criterio(mensaje: str, interp) -> str:
+    """DOS interpretes del criterio 'lo mas barato' (decision de Martin, 9-jul):
+    el CODIGO (regex determinista) y el LLM (entiende 'eco', 'lo mas conveniente'
+    y typos que el regex no cubre). Regla:
+      - ambos lo ven      -> 'actuar'    (se arma sin preguntar)
+      - solo uno lo ve    -> 'confirmar' (pregunta corta '¿los mas baratos?')
+      - ninguno           -> ''          (no es un turno de criterio)
+    Asi 'eco' se entiende sin listar sinonimos a mano, pero un disparo dudoso de
+    UN solo interprete se confirma en vez de sellar un total que el cliente
+    quiza no pidio. Generar > confirmar antes de comprometer plata."""
+    cod = bool(detectar_criterio(mensaje))
+    llm = criterio_del_interprete(interp)
+    if cod and llm:
+        return "actuar"
+    if cod or llm:
+        return "confirmar"
+    return ""
+
 _current_estado: ContextVar[dict | None] = ContextVar("current_estado", default=None)
 
 # Localidades que cotizar_envio clasifico con exito en este turno, EN ORDEN. Es el
