@@ -1,0 +1,7 @@
+# EXPERIMENTO (cascada DeepSeek libre + filtro): la charla REAL de Martin del
+# 9-jul que rompio la arquitectura de codigo. Turno 3 es un mensaje COMPUESTO:
+# confirma + pregunta cuotas + pide total con envio + pone tope por cuota. Es
+# justo lo que el codigo rigido no supo manejar.
+Hola necesito precio de 4 notebooks tres teclados y 5 Mouse de los cuales una Notebook y un teclado va a tancacha una Notebook y un mouse va a Rio tercero lo demas va con envio a los condores todos en provincia de Cordoba dime si puedes pasarme el precio con envio
+Mientras menos gaste mejor
+Si y puedo pagar en cuotas, calcula con envio, no puedo pagar mas de 100 lucas la cuota
