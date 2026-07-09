@@ -263,6 +263,23 @@ def servir_curada(mensaje: str, interp: dict | None, estado: dict | None,
         return None
     if (estado or {}).get("carrito"):
         return None
+    # Un pedido en juego NO es una pregunta pura de politica: si el cliente esta
+    # armando una compra (pedido con cantidades, o cantidades por categoria en el
+    # mensaje) aunque de paso pregunte por el envio, el turno lo maneja el flujo
+    # de pedido, no un enlatado. Bug real 9-jul: "4 notebooks, 3 teclados y 5
+    # mouse... dime el precio con envio" servia la curada de envio y salteaba las
+    # opciones por categoria; el pedido pendiente nunca se persistia y "lo mas
+    # eco" del turno siguiente no tenia a que engancharse. Deterministico: no
+    # depende de la variacion del interprete (en prod a veces mostraba las
+    # categorias, en el banco las tapaba).
+    if interp.get("pedido"):
+        return None
+    try:
+        from app.core.guia_pedido import cantidades_por_categoria
+        if cantidades_por_categoria(mensaje or "", tienda_id):
+            return None
+    except Exception:
+        pass
 
     # Import perezoso: asi el doble de pruebas (sim_firestore) que parchea
     # firestore_client despues del import de este modulo igual nos alcanza.

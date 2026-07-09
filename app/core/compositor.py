@@ -149,11 +149,14 @@ def _sec_categoria(mensaje: str, interp: dict, tienda_id: str) -> str | None:
     return (f"De {cat_hit} tengo, de lo más económico para arriba:\n{lineas}")
 
 
-def _sec_mas_barato(mensaje: str, estado: dict, tienda_id: str,
+def _sec_mas_barato(mensaje: str, interp: dict, estado: dict, tienda_id: str,
                     meta: dict) -> str | None:
-    """'El mas barato': lo computa el codigo, problema cerrado."""
-    from app.core.estado_venta import detectar_criterio
-    if not detectar_criterio(mensaje):
+    """'El mas barato': lo computa el codigo, problema cerrado. El criterio lo
+    leen los DOS interpretes (regex + LLM), asi 'lo mas eco' tambien dispara.
+    Aca solo se MUESTRA el mas barato (informativo, sin sellar un total), por
+    eso alcanza con que UNO de los dos lo vea."""
+    from app.core.estado_venta import concordancia_criterio
+    if not concordancia_criterio(mensaje, interp):
         return None
     from app.core.guia_compra import mas_barato_con_stock, _categorias_en_juego
     from app.core.tools_context import set_current_tienda
@@ -335,7 +338,9 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
     # o pedido de humano, ese ES el turno (no se vende encima).
     movida = _sec_movida(mensaje, interp, estado, tienda_id, meta)
     from app.core.ruteo_venta import rutear_venta
-    _cat_mov = rutear_venta(mensaje, interp, estado).get("categoria")
+    _ruteo = rutear_venta(mensaje, interp, estado)
+    _cat_mov = _ruteo.get("categoria")
+    _accion_mov = _ruteo.get("accion")
     if movida and _cat_mov in ("B6", "B17", "B18", "B19", "B11"):
         log.info("compositor_secciones", trace_id=trace_id,
                  secciones=[_cat_mov])
@@ -344,14 +349,22 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
     _add("saludo", _sec_saludo_puro(interp, tienda_id))
     _add("producto", _sec_producto(mensaje, interp, estado, tienda_id, meta))
     if "producto" not in usadas:
-        _add("mas_barato", _sec_mas_barato(mensaje, estado, tienda_id, meta))
+        _add("mas_barato",
+             _sec_mas_barato(mensaje, interp, estado, tienda_id, meta))
     if "producto" not in usadas and "mas_barato" not in usadas:
         _add("categoria", _sec_categoria(mensaje, interp, tienda_id))
     _add("envio", _sec_envio(mensaje, estado, tienda_id, meta))
     if "saludo" not in usadas:
         _add("faq", None if movida else _sec_faq(mensaje, interp, tienda_id, meta))
     if movida and _cat_mov not in ("B17", "B18", "B19", "B11"):
-        _add("movida", movida)
+        # El "preguntar" generico ('¿que producto?') NO se apila sobre una
+        # respuesta de datos: si ya salio ficha, mas barato, categoria, envio
+        # o FAQ, esa es la respuesta. Solo va como fallback cuando nada mas
+        # respondio (evita el 'mas barato + ¿que producto?' contradictorio).
+        _hay_datos = any(u in usadas for u in
+                         ("producto", "mas_barato", "categoria", "envio", "faq"))
+        if not (_accion_mov == "preguntar" and _hay_datos):
+            _add("movida", movida)
 
     if not secciones:
         log.info("compositor_secciones", trace_id=trace_id, secciones=["fallback"])

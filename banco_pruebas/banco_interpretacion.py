@@ -66,6 +66,12 @@ def _producto_contiene(txt):
     return _chk
 
 
+def _criterio_barato(i):
+    """El interprete leyo el criterio 'mas barato' (el SEGUNDO interprete que el
+    regex del codigo no cubre: 'eco', abreviaturas, modismos)."""
+    return str(i.get("criterio") or "").strip() == "mas_barato"
+
+
 def _pedido_es(*pares):
     """pares = (fragmento_nombre, cantidad). Exige el pedido EXACTO en largo."""
     def _chk(i):
@@ -215,6 +221,20 @@ CASOS = [
      _HIST_OFERTA, "es para mi hijo que cumple 15, que me recomendas?",
      [("no arma pedido", lambda i: not (i.get("pedido") or [])),
       ("no es compra", _no_es("intencion", "decision_compra"))]),
+
+    # ── Tanda 3 (9-jul): criterio "mas barato" abreviado, el caso real que el
+    #    regex del codigo NO cubria ("Lo mas eco" cayo al fallback en produccion)
+    ("criterio abreviado: 'lo mas eco'",
+     _HIST_OFERTA, "dale, lo mas eco",
+     [("lee criterio mas barato", _criterio_barato)]),
+
+    ("criterio en modismo: 'mandame lo mas conveniente'",
+     _HIST_OFERTA, "y bueno, mandame lo mas conveniente para el bolsillo",
+     [("lee criterio mas barato", _criterio_barato)]),
+
+    ("criterio explicito clasico: 'los mas baratos'",
+     _HIST_OFERTA, "los mas baratos",
+     [("lee criterio mas barato", _criterio_barato)]),
 ]
 
 

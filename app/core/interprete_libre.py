@@ -20,6 +20,7 @@ Es el ÚNICO camino del bot: el orchestrator delega acá todo el turno, sin flag
 """
 import re
 import time
+import unicodedata
 
 from app.core.agent import run_agent
 from app.core.interpretador import interpretar_mensaje
@@ -28,7 +29,8 @@ from app.core.leads import (
 from app.core.estado_venta import (
     construir_estado, set_current_estado, bloque_para_solver,
     productos_de_meta, carrito_de_meta, envio_de_meta, merge_productos,
-    detectar_criterio, get_envio_localidades)
+    detectar_criterio, criterio_del_interprete, concordancia_criterio,
+    get_envio_localidades)
 from app.core.tools import get_tools_schema
 from app.config import get_settings
 from app.logger import get_logger
@@ -414,6 +416,31 @@ def _forzar_opciones_si_presupuesto(respuesta: str, cats_pedido: list,
             "total con los envíos al instante.")
 
 
+def _norm_txt(s: str) -> str:
+    s = unicodedata.normalize("NFKD", str(s or "").lower())
+    return "".join(c for c in s if not unicodedata.combining(c))
+
+
+_RE_NEGACION = re.compile(
+    r"\bno\b|ningun|mejor no|otra cosa|no gracias|dejalo|olvidalo")
+_RE_AFIRMACION = re.compile(
+    r"\b(si|sisi|sip|sep|dale|obvio|claro|correcto|exacto|eso|esos|esas|esa|"
+    r"ok|oka|okey|oki|de una|va|vamos|vale|perfecto|joya|listo|bueno|"
+    r"buenisimo|hacelo|hagamoslo|confirmo|confirmado|ahi|asi|tal cual)\b")
+
+
+def _es_afirmacion_barato(mensaje: str, interp: dict) -> bool:
+    """El cliente confirma que SI quiere lo mas barato tras la pregunta de
+    confirmacion. Cuenta un 'si'/'dale'/'eso', volver a decir el criterio, o que
+    el LLM lo lea de nuevo. Una negacion explicita manda que NO."""
+    t = _norm_txt(mensaje)
+    if _RE_NEGACION.search(t):
+        return False
+    if detectar_criterio(mensaje) or criterio_del_interprete(interp):
+        return True
+    return bool(_RE_AFIRMACION.search(t))
+
+
 def _reanclar_si_barato_divergente(respuesta: str, id_barato: str,
                                    ids_mostrados: list, tienda_id: str) -> str | None:
     """Guarda del MAS BARATO (caso 'codigo BIEN, solver MAL'): la guia
@@ -675,6 +702,9 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # multi-envio: ids equivocados en calculate_total y cuenta tipeada a mano.
     _tools_precalc: list = []
     _cats_pedido: list = []
+    # Flag de confirmacion de criterio pendiente para el turno siguiente: se
+    # prende cuando los DOS interpretes del "mas barato" divergen y se pregunta.
+    _criterio_confirmar = False
     if not respuesta_curada_servida:
         try:
             from app.core.guia_pedido import calcular_pedido, INSTRUCCION_SOLVER
@@ -713,7 +743,20 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                     # provincia ya dada y contradecia al bloque sellado.
                     # "Los mas baratos": el codigo elige el mas barato con
                     # stock de cada categoria, sella el total y LO ESCRIBE.
-                    if detectar_criterio(raw_message):
+                    #
+                    # CRITERIO por DOS interpretes (decision de Martin, 9-jul):
+                    # el regex del codigo no cubre "eco"/abreviaturas, el LLM si.
+                    # Coinciden -> se arma; divergen -> se CONFIRMA con una
+                    # pregunta corta (nunca el "¿que producto?" que ignoraba el
+                    # pedido). Una confirmacion afirmada del turno previo cuenta
+                    # como coincidencia; una negacion la cancela.
+                    _conc = concordancia_criterio(raw_message, interp)
+                    if conv.get("criterio_confirmar_pendiente"):
+                        if _es_afirmacion_barato(raw_message, interp):
+                            _conc = "actuar"
+                        elif _RE_NEGACION.search(_norm_txt(raw_message)):
+                            _conc = ""
+                    if _conc == "actuar":
                         from app.core.guia_pedido import (
                             calcular_categorias_baratas,
                             mensaje_presupuesto_sellado)
@@ -727,6 +770,17 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                             log.info("interprete_libre_categorias_baratas",
                                      trace_id=trace_id, cats=_cats_pedido)
                             _cats_pedido = []
+                    elif _conc == "confirmar":
+                        # Divergen los dos interpretes: pregunta corta que NO
+                        # pierde el pedido pendiente y deja armado el "si".
+                        respuesta = (
+                            "¿Te referís a que te arme el total con los más "
+                            "baratos con stock de cada categoría? Confirmame "
+                            "con un sí y te paso el presupuesto al instante.")
+                        respuesta_curada_servida = True
+                        _criterio_confirmar = True
+                        log.info("interprete_libre_criterio_confirmar",
+                                 trace_id=trace_id, cats=_cats_pedido)
                     # Pedido nuevo por categorias (dicho en ESTE mensaje): el
                     # codigo cotiza los destinos del mensaje y arma las
                     # opciones reales. Con pendiente de MEMORIA no se re-sirve
@@ -1303,7 +1357,12 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             # categoria SIN modelos y el solver igual armo un presupuesto, lo
             # reemplaza el mensaje correcto construido por el codigo (opciones
             # reales + pregunta de modelos). Prioridad 1 de Martin, 8-jul.
-            if not producto_forzado and _cats_pedido and not _tools_precalc:
+            # Solo sobre una respuesta que NO compuso el codigo: si ya salio una
+            # curada, la confirmacion de criterio o el bloque sellado, no se
+            # re-fuerza (mi pregunta de confirmacion dice "presupuesto" y este
+            # guard la confundia con un presupuesto inventado, bug 9-jul).
+            if (not producto_forzado and _cats_pedido and not _tools_precalc
+                    and not respuesta_curada_servida):
                 _re_cats = _forzar_opciones_si_presupuesto(
                     respuesta, _cats_pedido, tienda_id)
                 if _re_cats:
@@ -1474,11 +1533,14 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # pedir un CP que el cliente ya dio (visto en el banco, guion multi-destino).
     ultimas_localidades = get_envio_localidades() or (
         conv.get("ultimas_localidades") or [])
-    # Criterio del cliente ("lo mas barato"): se detecta determinista en el mensaje
-    # y es STICKY. Una vez dicho persiste entre turnos hasta que el cliente diga
-    # otro, asi el solver no vuelve a preguntar modelo ni color (arreglo B).
-    criterio_cliente = detectar_criterio(raw_message) or (
-        conv.get("criterio_cliente") or "")
+    # Criterio del cliente ("lo mas barato"): lo leen los DOS interpretes (regex
+    # del codigo + campo del LLM, que entiende "eco" y abreviaturas) y es STICKY.
+    # Una vez dicho persiste entre turnos hasta que el cliente diga otro, asi el
+    # bot no vuelve a preguntar modelo ni color (arreglo B).
+    criterio_cliente = (
+        detectar_criterio(raw_message)
+        or ("más barato" if criterio_del_interprete(interp) else "")
+        or (conv.get("criterio_cliente") or ""))
     # Provincia del cliente: se detecta determinista y es STICKY. Una vez dada
     # persiste entre turnos y se aplica a TODOS los destinos, asi el bot no repide
     # el CP de cada pueblo (arreglo C, el 'ya te dije pueblo y provincia'). La
@@ -1510,6 +1572,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                                for n, c in _cats_pedido]
                               if (_cats_pedido and not _tools_precalc
                                   and not carrito_vigente) else []),
+                          # Confirmacion de criterio pendiente: prendida cuando
+                          # los dos interpretes del "mas barato" divergen y se
+                          # pregunto. El turno siguiente, un "si" cuenta como
+                          # coincidencia y arma el total.
+                          criterio_confirmar_pendiente=_criterio_confirmar,
                           pregunta_cierre_hecha=pregunta_cierre_hecha,
                           datos_cliente_parciales=datos_acumulados)
     except Exception as e:

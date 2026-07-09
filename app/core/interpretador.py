@@ -242,6 +242,7 @@ DEVOLVE ESTE JSON:
   "respondiendo_a": "que pregunto el bot en su ultimo turno y a que responde el cliente, o null si no responde a una pregunta previa",
   "estado_conversacion": "saludo|explorando|esperando_confirmacion|esperando_datos|derivar_humano|posventa",
   "ofrecer_opciones": "null si no hay duda, o lista de dos opciones [opcion A, opcion B] cuando hay dos caminos posibles y no se puede determinar uno con certeza",
+  "criterio": "mas_barato si el cliente expresa que quiere lo mas barato / mas economico / lo mas conveniente en CUALQUIER forma, abreviatura o modismo (ej lo mas barato, las mas baratas, lo mas eco, lo mas economico, mandame lo mas conveniente, lo de menor precio). null si no expresa ese criterio",
   "pedido": "lista de {{\\"producto\\": nombre EXACTO de un producto mostrado, \\"cantidad\\": numero}} SOLO cuando el cliente define un pedido concreto: que productos de los mostrados quiere y cuantos de cada uno (ej tres del DX-110 y dos teclados K120). Si no define productos y cantidades concretos, lista vacia []"
 }}
 
@@ -284,6 +285,9 @@ primero" se resuelven comparando los PRECIOS y el orden de los productos
 mostrados, no adivinando. "El barato no, el otro" apunta al que NO es el mas
 barato. Si aun comparando queda empate o duda real, candidatos con los
 posibles y confianza baja: preguntar es mejor que elegir mal.
+
+CRITERIO.
+Poné "mas_barato" cuando el cliente pide lo mas economico en cualquier forma: "lo mas barato", "las mas baratas", "lo mas eco", "lo mas economico", "mandame lo mas conveniente", "lo de menor precio", "algo barato". Cubri abreviaturas y modismos argentinos, no solo la palabra exacta. Si el cliente no expresa ese criterio, poné null. Es independiente del pedido: puede haber criterio sin pedido cerrado y viceversa.
 
 PEDIDO.
 Completalo SOLO cuando el cliente arma un pedido concreto: nombra productos que
@@ -421,6 +425,12 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
             "estado_conversacion": {"type": "string", "enum": ESTADOS_VALIDOS},
             "ofrecer_opciones": {"type": ["array", "null"],
                                  "items": {"type": "string"}},
+            # CRITERIO de eleccion por precio (9-jul): segundo interprete del
+            # "lo mas barato". El regex del codigo (detectar_criterio) no cubre
+            # "eco" ni abreviaturas; el LLM si. Se cruza con el regex en
+            # concordancia_criterio: coinciden -> se arma; divergen -> se
+            # confirma. Enum acotado: solo "mas_barato" o null.
+            "criterio": {"type": ["string", "null"], "enum": ["mas_barato", None]},
             # PEDIDO estructurado (8-jul): cuando el cliente define productos
             # concretos CON cantidad, el interprete lo extrae atado al enum de
             # lo MOSTRADO. Es la entrada de la guia determinista de pedido: el
@@ -438,7 +448,7 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
         },
         "required": ["intencion", "producto_resuelto", "candidatos", "confianza",
                      "datos_pedido", "respondiendo_a", "estado_conversacion",
-                     "ofrecer_opciones", "pedido"],
+                     "ofrecer_opciones", "criterio", "pedido"],
     }
 
 

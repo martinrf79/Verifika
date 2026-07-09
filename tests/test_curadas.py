@@ -98,6 +98,28 @@ def test_interp_caido_no_ataja(firestore_doble):
     assert r is None
 
 
+def test_pedido_por_categorias_no_ataja(firestore_doble):
+    # Bug real 9-jul: "4 notebooks, 3 teclados y 5 mouse... dime el precio con
+    # envio" servia la curada de envio y salteaba las opciones por categoria; el
+    # pedido pendiente nunca se persistia. Con cantidades por categoria en el
+    # mensaje NO es pregunta pura de politica: no ataja.
+    r = C.servir_curada(
+        "necesito 4 notebooks 3 teclados y 5 mouse, dame el precio con envio",
+        _interp("pregunta_especifica"), {},
+        pregunta_cierre_previa=False, tienda_id="verifika_prod")
+    assert r is None
+
+
+def test_pedido_en_interp_no_ataja(firestore_doble):
+    # Mismo caso pero via el campo pedido del interprete (cantidades sin modelo).
+    r = C.servir_curada(
+        "y el envio cuanto sale?",
+        _interp("pregunta_especifica",
+                pedido=[{"producto": None, "cantidad": 4}]), {},
+        pregunta_cierre_previa=False, tienda_id="verifika_prod")
+    assert r is None
+
+
 def test_tema_sin_curada_no_ataja(firestore_doble, monkeypatch):
     # Un tema SIN respuesta_curada va al camino normal. Desde el 4-jul los 44
     # temas reales estan curados, asi que el caso se arma con una FAQ sintetica.
