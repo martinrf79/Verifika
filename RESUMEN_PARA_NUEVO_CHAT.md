@@ -3,7 +3,30 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 8-jul-2026 (2ª tanda).** MEMORIA LARGA (C2-C4) + pedido
+**Última actualización: 9-jul-2026 — COMPOSITOR (decisión de Martín, "hacelo").**
+Cambio de arquitectura del camino vivo: **el modelo NUNCA MÁS le escribe al
+cliente.** Una sola llamada LLM por turno (el INTÉRPRETE con Structured Outputs
+estricto) devuelve solo DATOS: intención, producto resuelto, pedido atado por
+enum. El CÓDIGO (`app/core/compositor.py`) compone el 100% del texto de salida
+desde plantillas y curadas aprobadas con los números sellados: ficha, opciones
+por categoría, más barato, envío cotizado, FAQ curada, movidas B fijas, fallback
+cordial fijo. `agent.run_agent` (el solver libre) quedó FUERA del camino vivo;
+los verificadores y guardias siguen atrás como red, pero ya no hay prosa libre
+que corregir. Muere la clase entera de errores de "corregir al solver".
+Evidencia antes de tocar main: **24 guiones vivos limpios con juez (incluido el
+24, la charla real de Martín, con la curada de confianza en el turno 2), 399
+tests offline, banco de interpretación 26/26 = 100%** (tanda 2 completa: "sacale
+uno" edita el pedido, "el segundo" resuelve ordinal, "ponele que sí" confirma,
+sarcasmo no compra, "cumple 15" no es cantidad, pedido múltiple enredado sale
+entero). Los cambios de decisión del cliente quedan cubiertos: el estado
+persistido (pedido pendiente, destino único sticky, producto en foco, memoria
+larga) se reinterpreta CONTRA cada mensaje nuevo y el presupuesto se recompone
+de cero con datos sellados en cada turno. Pendiente inmediato: que Martín
+repita su guion real de 3 mensajes por WhatsApp contra producción.
+
+---
+
+**8-jul-2026 (2ª tanda).** MEMORIA LARGA (C2-C4) + pedido
 sellado del turno + carrito que no se envenena. Validado: dos rondas vivas 9/9
 seguidas (guion nuevo de 14 turnos incluido). Cuatro piezas:
 1. **Memoria larga** (`memoria_larga.py`): los turnos que caen del tope de 10 se
