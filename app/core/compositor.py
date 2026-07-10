@@ -378,6 +378,11 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
         log.info("compositor_secciones", trace_id=trace_id, secciones=["fallback"])
         return _fallback(estado), meta
 
+    # Los bloques crudos viajan en meta para el REDACTOR (nivel 2 de la
+    # escalera): el modelo cose la prosa ENTRE bloques que no puede tocar.
+    meta["secciones"] = list(secciones)
+    meta["secciones_nombres"] = list(usadas)
+
     texto = "\n\n".join(secciones)
     # Un solo gancho al final si nadie pregunto todavia.
     if usadas == ["saludo"]:
