@@ -11,8 +11,17 @@ name: diagnostico
 #   severity = INFO
 #   filtro   = jsonPayload.event=("lead_pidiendo_datos" OR "cierre_siembra_inicial" OR "lead_capturado_completo")
 # Para errores generales alcanza con severity = WARNING y filtro vacio.
+#
+# CORRIDA AUTOMATICA (10-jul): ademas del disparo a mano, corre solo cada 6
+# horas volcando los eventos INFO de las ultimas 7 horas. Claude puede LEER los
+# logs de las corridas por la API de GitHub (verificado), pero NO puede
+# dispararlas (403, la integracion no tiene permiso de Actions de escritura):
+# con el schedule, la ventana de produccion queda siempre disponible sin que
+# Martin tenga que tocar nada.
 
 on:
+  schedule:
+    - cron: "17 */6 * * *"
   workflow_dispatch:
     inputs:
       severity:
@@ -51,10 +60,13 @@ jobs:
 
       - name: Leer logs de agente-bot
         env:
-          SEV: ${{ inputs.severity }}
+          # En la corrida por schedule los inputs vienen vacios: caen a
+          # INFO / 7h / 300, la ventana ancha que lee Claude. A mano, los
+          # defaults del dispatch (WARNING / 2d / 50) siguen mandando.
+          SEV: ${{ inputs.severity || 'INFO' }}
           FILTRO: ${{ inputs.filtro }}
-          LIM: ${{ inputs.limit }}
-          FRESH: ${{ inputs.freshness }}
+          LIM: ${{ inputs.limit || '300' }}
+          FRESH: ${{ inputs.freshness || '7h' }}
         run: |
           # Sanitizar las entradas: el dispatch se hace a mano desde el celular y
           # un espacio o una palabra rompia el comando (ej "50 min" en vez de "50m"
