@@ -199,17 +199,6 @@ def test_multidestino_recuerda_destinos_de_turnos_anteriores(firestore_doble):
     assert envio.get("monto") == esperado
 
 
-def test_bloque_solver_lista_destinos_cotizados():
-    """El bloque de estado que ve el solver enumera los destinos ya cotizados y
-    le ordena no volver a pedir esos CP."""
-    from app.core.estado_venta import bloque_para_solver
-
-    b = bloque_para_solver({"localidades_envio": ["cordoba capital",
-                                                  "mendoza capital"]})
-    assert "cordoba capital" in b and "mendoza capital" in b
-    assert "NO vuelvas a pedir" in b
-    assert "destinos=2" in b
-
 
 def test_carrito_vigente_rechaza_id_inferido_de_memoria(firestore_doble):
     """REGLA CERO mecanica: con pedido vigente, un product_id que no sale del

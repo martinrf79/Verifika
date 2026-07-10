@@ -1359,9 +1359,8 @@ def _build_schema():
         },
     })
 
-    # Tool determinista de fecha/plazo de entrega. Siempre en el schema completo
-    # (posventa se conserva); el solver vivo no la ve porque MODO_LIBRE_TOOLS la
-    # filtra, pero queda disponible para exponerla cuando se decida.
+    # Tool determinista de fecha/plazo de entrega. En el schema completo; el
+    # compositor la llama por codigo cuando corresponde.
     if True:
         schemas.append({
             "type": "function",
@@ -1397,9 +1396,8 @@ def _build_schema():
             },
         })
 
-    # Tools de posventa (devolucion, garantia, CUIT). Siempre en el schema completo
-    # (posventa se conserva); el solver vivo no las ve porque MODO_LIBRE_TOOLS las
-    # filtra, pero quedan disponibles para exponerlas cuando se decida.
+    # Tools de posventa (devolucion, garantia, CUIT). En el schema completo; el
+    # compositor las llama por codigo cuando corresponde.
     if True:
         schemas.append({
             "type": "function",
@@ -1463,8 +1461,8 @@ def _build_schema():
             },
         })
 
-    # El schema completo se devuelve entero. El recorte de tools que ve el solver
-    # vivo lo hace MODO_LIBRE_TOOLS en interprete_libre (ex flag TOOLS_MINIMAS).
+    # El schema completo se devuelve entero (el solver libre y su recorte
+    # MODO_LIBRE_TOOLS se retiraron en la limpieza del 10-jul).
     return schemas
 
 

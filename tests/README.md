@@ -31,8 +31,11 @@ contrato entero de su herramienta, no un bug suelto.
 | Cierre | `test_cierre.py` | `extraer_forma_pago`, `extraer_direccion` | E8, E9, E10 |
 | Guardia de promesas | `test_guardia_promesas.py` | `detectar` | E3, E4 |
 | Antijailbreak | `test_antijailbreak.py` | `evaluar_mensaje` | E12 |
-| Identidad / certificador | `test_certificador.py` | `certificar` (Regla Cero) | E6, E15 |
 | Cobro del cierre | `test_pago.py` | `elegir_medio_pago`, `mensaje_transferencia`, `instruccion_cobro` | CBU / MP |
+
+Nota 10-jul: `test_certificador.py` se retiró con `certificador.py` (limpieza de
+código muerto: nadie lo llamaba en el camino vivo; la identidad la garantizan la
+reconciliación por nombre + el enum del intérprete + el estampado).
 
 E11 (teléfono en leads) y E14 (veto de negación en interpretador) se retiraron:
 el teléfono y el DNI no se piden para la venta, los procesa Mercado Pago o el

@@ -1,51 +1,21 @@
 """
-AGENTE — núcleo de razonamiento con tool calling.
-Compatible con DeepSeek (default) y Groq (fallback).
-
-v4.1: retry con tenacity en llamadas al LLM.
-v5: SYSTEM_PROMPT dinámico por tienda (fix del bug multi-tenant).
-    Antes el f-string se evaluaba al importar el módulo y usaba el BUSINESS_NAME
-    del settings global. Ahora se construye fresco en cada request, leyendo
-    el nombre del negocio de la tienda actual.
+CLIENTE LLM COMPARTIDO — un solo lugar para el cliente, el modelo y el prompt
+del provider vivo. El solver libre (run_agent) se ELIMINO en la limpieza del
+10-jul: el compositor compone todo el texto del cliente. Consumidores de este
+modulo: guardia_promesas (reescritor), memoria_larga (resumen) y el endpoint
+de diagnostico de latencia de main.py.
 """
-import os
-import time
-import json
-import asyncio
-import httpx
-from openai import OpenAI, APITimeoutError, APIConnectionError, RateLimitError, InternalServerError
-from tenacity import (
-    retry,
-    stop_after_attempt,
-    wait_exponential,
-    retry_if_exception_type,
-    before_sleep_log,
-    RetryError,
-)
-import logging
+from openai import OpenAI
 
 from app.config import get_settings
 from app.logger import get_logger
-from app.core.tools import get_tools_schema, TOOLS_REGISTRY
-from app.core.tools_context import set_current_tienda
+from app.core.tools import get_tools_schema
 from app.storage.firestore_client import get_config
 
 log = get_logger(__name__)
 settings = get_settings()
 
-_tenacity_log = logging.getLogger("agent.retry")
-
 _client = None
-
-_RETRYABLE_EXCEPTIONS = (
-    APITimeoutError,
-    APIConnectionError,
-    RateLimitError,
-    InternalServerError,
-    httpx.TimeoutException,
-    httpx.ConnectError,
-    httpx.RemoteProtocolError,
-)
 
 
 def _get_client():
@@ -128,11 +98,9 @@ def _get_client():
 
 
 def modelo_solver() -> str:
-    """Modelo del provider VIVO del solver (LLM_PROVIDER), en un solo lugar.
-    Lo usan run_agent y el reescritor de la guardia de promesas, asi TODA la
-    redaccion del bot corre sobre el mismo modelo (consolidacion 7-jul: el
-    reescritor habia quedado con DeepSeek hardcodeado cuando el sistema paso
-    a OpenAI)."""
+    """Modelo del provider VIVO (LLM_PROVIDER), en un solo lugar. Lo usan el
+    reescritor de la guardia de promesas y la memoria larga, asi toda la
+    redaccion auxiliar corre sobre el mismo modelo (consolidacion 7-jul)."""
     if settings.LLM_PROVIDER == "groq":
         return settings.GROQ_MODEL
     if settings.LLM_PROVIDER == "gemini":
@@ -154,56 +122,6 @@ def _get_schema():
     # Schema dinámico por tienda: no cachear globalmente
     return get_tools_schema()
 
-
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=1, max=4),
-    retry=retry_if_exception_type(_RETRYABLE_EXCEPTIONS),
-    before_sleep=before_sleep_log(_tenacity_log, logging.WARNING),
-    reraise=True,
-)
-def _call_llm(client, model_name, messages, tools_schema, tool_choice="auto"):
-    from app.config import (deepseek_extra_body, deepseek_pensando,
-                            gemini_thinking_off, nvidia_thinking_off,
-                            openrouter_reasoning_off)
-    # El modo razonador NO soporta forzar la tool: si pensamos, vamos en auto.
-    if deepseek_pensando(model_name) and tool_choice == "required":
-        tool_choice = "auto"
-    # En NVIDIA NIM (nemotron/kimi) el thinking se apaga con chat_template_kwargs;
-    # en OpenRouter con reasoning; en Gemini directo con reasoning_effort; en
-    # DeepSeek directo, con el extra_body propio.
-    nv = nvidia_thinking_off(settings.LLM_PROVIDER, model_name)
-    orr = openrouter_reasoning_off(settings.LLM_PROVIDER, model_name)
-    gm = gemini_thinking_off(settings.LLM_PROVIDER, model_name)
-    extra = nv or orr or gm or deepseek_extra_body(model_name)
-    try:
-        resp = client.chat.completions.create(
-            model=model_name,
-            messages=messages,
-            tools=tools_schema,
-            tool_choice=tool_choice,
-            temperature=settings.TEMPERATURE,
-            max_tokens=settings.MAX_OUTPUT_TOKENS,
-            **({"extra_body": extra} if extra else {}),
-        )
-    except Exception:
-        # Si el modelo rechaza el extra (chat_template_kwargs no soportado), reintentar limpio.
-        if extra:
-            resp = client.chat.completions.create(
-                model=model_name, messages=messages, tools=tools_schema,
-                tool_choice=tool_choice, temperature=settings.TEMPERATURE,
-                max_tokens=settings.MAX_OUTPUT_TOKENS)
-        else:
-            raise
-    # Visibilidad del cache de contexto de DeepSeek (automatico). Si cache_hit
-    # viene alto, estamos ahorrando tokens por el prefijo estable del prompt.
-    u = getattr(resp, "usage", None)
-    if u is not None:
-        log.info("llm_usage", model=model_name,
-                 cache_hit=getattr(u, "prompt_cache_hit_tokens", None),
-                 cache_miss=getattr(u, "prompt_cache_miss_tokens", None),
-                 out=getattr(u, "completion_tokens", None))
-    return resp
 
 
 # ────────────────────────────────────────────────────────────
@@ -344,284 +262,3 @@ def _build_system_prompt(tienda_id: str | None) -> str:
     return prompt
 
 
-async def run_agent(user_message: str,
-                    history: list[dict],
-                    trace_id: str,
-                    tienda_id: str | None = None,
-                    user_id: str | None = None,
-                    system_prompt: str | None = None,
-                    tools_schema: list | None = None) -> tuple[str, dict]:
-    log.info("run_agent_inicio")
-    """Ejecuta el agente. Devuelve (respuesta_texto, metadata).
-
-    system_prompt: si viene, se usa TAL CUAL en vez del prompt pesado por
-    defecto. Lo usa el MODO_LIBRE para correr el modelo con un prompt corto de
-    venta. Default None = comportamiento identico al previo.
-    tools_schema: si viene, el modelo ve SOLO esas tools (override). Lo usa el
-    MODO_LIBRE para acotar a catalogo y FAQs. Default None = todas, como hoy."""
-    set_current_tienda(tienda_id)
-
-    client = _get_client()
-    tools_schema = tools_schema if tools_schema is not None else _get_schema()
-    system_prompt = system_prompt or _build_system_prompt(tienda_id)
-
-    messages = [{"role": "system", "content": system_prompt}]
-    # MISMA cantidad de turnos siempre (no se reduce la memoria).
-    _turnos = history[-(settings.HISTORY_LIMIT * 2):]
-    for turn in _turnos:
-        messages.append({"role": turn["role"], "content": turn["content"]})
-    messages.append({"role": "user", "content": user_message})
-
-    tools_called: list[dict] = []
-    iterations = 0
-    reintento_vacio_hecho = False
-    model_name = modelo_solver()
-
-    while iterations < settings.MAX_TOOL_ITERATIONS:
-        iterations += 1
-        if settings.LLM_PROVIDER in ("gemini", "nemotron", "kimi"):
-            # El compat de Gemini y el NIM de NVIDIA (Nemotron, Kimi) no soportan
-            # required de forma confiable: vamos en auto para no romper la 1a vuelta.
-            tc_mode = "auto"
-        elif (settings.LLM_PROVIDER == "deepseek"
-              and "v4" in model_name.lower()):
-            # DeepSeek v4-flash y v4-pro: tool_choice=required devuelve 400.
-            # El modelo llama herramientas bien en auto.
-            tc_mode = "auto"
-        else:
-            tc_mode = "required" if iterations == 1 else "auto"
-        _ts_call = time.perf_counter()
-        try:
-            # Llamada bloqueante a un thread: no congela el event loop.
-            response = await asyncio.to_thread(
-                _call_llm, client, model_name, messages,
-                tools_schema, tc_mode)
-        except RetryError as e:
-            inner = e.last_attempt.exception() if e.last_attempt else None
-            log.error("agent_llm_retry_exhausted", trace_id=trace_id,
-                      error=str(inner)[:200] if inner else "unknown",
-                      iteration=iterations)
-            return settings.FALLBACK_MESSAGE, {
-                "tools_called": tools_called,
-                "error": f"retry_exhausted: {str(inner)[:200]}" if inner else "retry_exhausted",
-                "iterations": iterations,
-            }
-        except Exception as e:
-            log.error("agent_llm_error", trace_id=trace_id,
-                      error=str(e)[:200], iteration=iterations)
-            return settings.FALLBACK_MESSAGE, {
-                "tools_called": tools_called,
-                "error": str(e)[:200],
-                "iterations": iterations,
-            }
-
-        _call_ms = int((time.perf_counter() - _ts_call) * 1000)
-        # OpenRouter (y otros gateways) a veces devuelven 200 con choices=None
-        # (error del upstream embebido en el body). Sin esta guarda, el turno
-        # entero moria con TypeError en vez de reintentar.
-        if not getattr(response, "choices", None):
-            _err_body = getattr(response, "error", None) or getattr(
-                response, "model_extra", None)
-            log.warning("agent_llm_respuesta_vacia", trace_id=trace_id,
-                        iteration=iterations, detalle=str(_err_body)[:200])
-            if iterations < settings.MAX_TOOL_ITERATIONS:
-                continue
-            return settings.FALLBACK_MESSAGE, {
-                "tools_called": tools_called,
-                "error": "respuesta_sin_choices",
-                "iterations": iterations,
-            }
-        msg = response.choices[0].message
-        # Tokens de la llamada: dato duro para ver si el payload (historial,
-        # tools, evidencia) crece y encarece/ralentiza cada llamada.
-        # prompt_tokens es lo que el modelo recibio de ENTRADA; si sube con la
-        # conversacion, confirma que arrastramos historial pesado. cache_hit es
-        # lo que DeepSeek reuso de cache (no se reprocesa). Defensivo: si la
-        # respuesta no trae usage, quedan en None y no rompe nada.
-        _usage = getattr(response, "usage", None)
-        _prompt_tokens = getattr(_usage, "prompt_tokens", None)
-        _completion_tokens = getattr(_usage, "completion_tokens", None)
-        _cache_hit = getattr(_usage, "prompt_cache_hit_tokens", None)
-        # Tiempo de cada llamada del Solver, para ver si hay alguna anomala.
-        log.info("agent_llm_call", trace_id=trace_id, iteration=iterations,
-                 ms=_call_ms, tool_calls=len(msg.tool_calls or []),
-                 prompt_tokens=_prompt_tokens,
-                 completion_tokens=_completion_tokens,
-                 cache_hit_tokens=_cache_hit)
-
-        if not msg.tool_calls:
-            final_text = (msg.content or "").strip()
-            # RESCATE: el modelo escribio el tool call como TEXTO en vez del
-            # campo tool_calls (DeepSeek via OpenRouter, Gemma). Sin esto, el
-            # markup crudo llega al cliente. Se parsea, se EJECUTA la tool de
-            # verdad y sigue el loop; si no se puede parsear, se limpia el
-            # markup y, si no queda texto util, cae al reintento normal.
-            if final_text:  # rescate de tool-calls emitidos como texto (siempre)
-                from app.core.rescate_toolcall import (
-                    hay_markup, parsear_toolcalls_texto)
-                if hay_markup(final_text):
-                    llamadas, limpio = parsear_toolcalls_texto(final_text)
-                    if llamadas:
-                        log.warning("rescate_toolcall_texto", trace_id=trace_id,
-                                    iteration=iterations,
-                                    tools=[c["name"] for c in llamadas])
-                        tcs = [{
-                            "id": f"rescate_{iterations}_{j}",
-                            "type": "function",
-                            "function": {
-                                "name": c["name"],
-                                "arguments": json.dumps(
-                                    c["args"], ensure_ascii=False),
-                            },
-                        } for j, c in enumerate(llamadas)]
-                        messages.append({"role": "assistant",
-                                         "content": limpio,
-                                         "tool_calls": tcs})
-                        for j, c in enumerate(llamadas):
-                            func = TOOLS_REGISTRY.get(c["name"])
-                            if func is None:
-                                result = {"error": f"tool '{c['name']}' no existe"}
-                            else:
-                                try:
-                                    result = func(**c["args"])
-                                except Exception as e:
-                                    log.error("tool_exception", trace_id=trace_id,
-                                              tool=c["name"], error=str(e)[:200])
-                                    result = {"error": f"error ejecutando tool: {str(e)[:100]}"}
-                            try:
-                                from app.core.estado_venta import (
-                                    certificar_ids_de_resultado)
-                                certificar_ids_de_resultado(result)
-                            except Exception:
-                                pass
-                            tools_called.append({
-                                "name": c["name"], "args": c["args"],
-                                "result_keys": list(result.keys()) if isinstance(result, dict) else None,
-                                "proof": result.get("proof") if isinstance(result, dict) else None,
-                                "result": result if isinstance(result, dict) else None,
-                            })
-                            messages.append({
-                                "role": "tool",
-                                "tool_call_id": tcs[j]["id"],
-                                "name": c["name"],
-                                "content": json.dumps(result, ensure_ascii=False),
-                            })
-                        continue
-                    # Markup sin llamada parseable: que el cliente no vea tokens
-                    # crudos. Si lo que queda es ruido, se trata como vacia.
-                    log.warning("rescate_toolcall_sin_parse", trace_id=trace_id,
-                                iteration=iterations, preview=final_text[:120])
-                    final_text = "" if "{" in limpio else limpio
-            # Respuesta VACIA sin tools: el compat de Gemini lo hace esporadico
-            # (3 turnos del molino del 10-jun terminaron en "problema tecnico"
-            # sin excepcion ni log de error: era esto). Un reintento inmediato
-            # antes de resignar el turno al fallback.
-            if not final_text and not reintento_vacio_hecho:
-                reintento_vacio_hecho = True
-                log.warning("agent_respuesta_vacia_reintento",
-                            trace_id=trace_id, iteration=iterations)
-                continue
-            final_text = final_text or settings.FALLBACK_MESSAGE
-            log.info("agent_response_ok", trace_id=trace_id,
-                     iterations=iterations, tools_called=len(tools_called))
-            return final_text, {
-                "tools_called": tools_called,
-                "iterations": iterations,
-            }
-
-        messages.append({
-            "role": "assistant",
-            "content": msg.content or "",
-            "tool_calls": [
-                {
-                    "id": tc.id,
-                    "type": "function",
-                    "function": {
-                        "name": tc.function.name,
-                        "arguments": tc.function.arguments,
-                    },
-                }
-                for tc in msg.tool_calls
-            ],
-        })
-
-        for tc in msg.tool_calls:
-            fname = tc.function.name
-            try:
-                fargs = json.loads(tc.function.arguments or "{}")
-            except json.JSONDecodeError:
-                fargs = {}
-
-            log.info("tool_call", trace_id=trace_id,
-                     tool=fname, args=fargs, iteration=iterations)
-
-            func = TOOLS_REGISTRY.get(fname)
-            if func is None:
-                result = {"error": f"tool '{fname}' no existe"}
-            else:
-                try:
-                    result = func(**fargs)
-                except Exception as e:
-                    log.error("tool_exception", trace_id=trace_id,
-                              tool=fname, error=str(e)[:200])
-                    result = {"error": f"error ejecutando tool: {str(e)[:100]}"}
-
-            # Los product_id que la tool devolvio quedan CERTIFICADOS para el
-            # turno (regla cero mecanica: la calculadora rechaza ids inferidos).
-            try:
-                from app.core.estado_venta import certificar_ids_de_resultado
-                certificar_ids_de_resultado(result)
-            except Exception:
-                pass
-
-            tools_called.append({
-                "name": fname,
-                "args": fargs,
-                "result_keys": list(result.keys()) if isinstance(result, dict) else None,
-                "proof": result.get("proof") if isinstance(result, dict) else None,
-                # Resultado completo de la tool: lo que el Solver REALMENTE vio.
-                # Vive solo en memoria durante el request (Verifika lo consume
-                # para construir evidencia). No se persiste en log_message.
-                "result": result if isinstance(result, dict) else None,
-            })
-
-            messages.append({
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "name": fname,
-                "content": json.dumps(result, ensure_ascii=False),
-            })
-
-    # CIERRE FORZADO al pegar el tope de iteraciones (siempre). En vez de tirarle
-    # al cliente el mensaje de error tecnico (corta la charla a mitad), pedimos UNA
-    # respuesta final SIN tools para que el modelo cierre con lo que ya junto. Es
-    # seguro: cualquier cifra sin respaldo la gatea el filtro determinista despues.
-    try:
-        messages.append({"role": "user", "content": (
-            "[Sistema: cerra AHORA con la informacion que ya obtuviste de las "
-            "herramientas. Da la mejor respuesta posible SIN llamar mas "
-            "funciones. NO inventes numeros, precios ni datos: si algo no lo "
-            "pudiste calcular o confirmar, decilo con honestidad y ofrece el "
-            "siguiente paso concreto.]")})
-        resp_final = await asyncio.to_thread(
-            _call_llm, client, model_name, messages, tools_schema, "none")
-        txt = (resp_final.choices[0].message.content or "").strip()
-        if txt:
-            log.info("agent_cierre_forzado_ok", trace_id=trace_id,
-                     iterations=iterations, tools_called=len(tools_called))
-            return txt, {
-                "tools_called": tools_called,
-                "iterations": iterations,
-                "cierre_forzado": True,
-            }
-    except Exception as e:
-        log.warning("agent_cierre_forzado_error", trace_id=trace_id,
-                    error=str(e)[:160])
-
-    log.warning("agent_max_iterations_reached", trace_id=trace_id,
-                iterations=iterations, tools_called=len(tools_called))
-    return settings.FALLBACK_MESSAGE, {
-        "tools_called": tools_called,
-        "iterations": iterations,
-        "warning": "max_iterations_reached",
-    }

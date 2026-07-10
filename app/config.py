@@ -217,15 +217,9 @@ class Settings(BaseModel):
     # cuenta como señal de compra. Requiere config/mp_access_token en Firestore o
     # MP_ACCESS_TOKEN por entorno; sin token, no manda link. Consolidados 25-jun.
 
-    # Tools que ve el solver libre (camino vivo interprete_libre).
-    # Solo las que traen un HECHO real determinista: catalogo (search/details/list/
-    # calculate_total), FAQs (query_faq) y envio (cotizar_envio, el codigo clasifica
-    # la zona por CP y devuelve la tarifa de la tienda). Se le ocultan las de
-    # razonamiento puro (find_within_budget, compare, recommend). Editable por env.
-    MODO_LIBRE_TOOLS: str = os.getenv(
-        "MODO_LIBRE_TOOLS",
-        "search_products,get_product_details,list_catalog,query_faq,"
-        "calculate_total,cotizar_envio")
+    # NOTA: MODO_LIBRE_TOOLS se retiro en la limpieza del 10-jul: era el recorte
+    # de tools del solver libre, que ya no corre (el compositor llama las tools
+    # por codigo, no elige de un menu).
 
     # SWITCH DE VERSION DEL BOT (A/B). Un solo lugar para elegir que version corre.
     # Poner "A" o "B" aca (o por la env MODO_CIERRE), o en la config Firestore

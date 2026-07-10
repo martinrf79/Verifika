@@ -3,7 +3,42 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 9-jul-2026 (tarde) — DOS INTÉRPRETES DEL CRITERIO +
+**Última actualización: 10-jul-2026 — LIMPIEZA GRANDE (orden directa de Martín):
+se borró todo el código muerto que dejó el compositor.** El diagnóstico fue que
+los "errores infantiles" son plomería entre capas acumuladas, así que se trazó el
+camino vivo desde el webhook y se eliminó todo lo que no se ejecuta:
+- **Módulos borrados de `app/core/`** (nadie los llamaba en el camino vivo):
+  `certificador.py` (la identidad la garantizan la reconciliación por nombre +
+  el enum del intérprete + el estampado; ojo, la regla 0 de CLAUDE.md sigue
+  nombrándolo, pendiente de ajuste con Martín), `divergencia.py` (el chequeo de
+  producto quedó inline en la guarda), `memoria_ref.py`, `guia_venta.py` (los
+  briefs iban a un solver que ya no corre; las movidas viven en el compositor,
+  constante `_MOVIDAS_FIJAS`), `rescate_toolcall.py`.
+- **`agent.py` quedó reducido a cliente LLM compartido**: se borró `run_agent`
+  (el solver libre) y `_call_llm`. Quedan `_get_client`, `modelo_solver`,
+  `_get_schema` y `_build_system_prompt`, que usan la guardia, la memoria larga
+  y el diag de latencia.
+- **`interprete_libre.py` sin plomería muerta**: se borró `mensaje_enriquecido`
+  (se armaba con briefs y guías en 5 lugares y NO lo consumía nadie desde que
+  el solver murió), `_PROMPT_LIBRE`, `_schema_acotado`, `_guia_para_solver` y
+  la medición de divergencia. Las guardas y verificadores siguen todos vivos.
+- **Flag muerta `MODO_LIBRE_TOOLS` retirada** de config.py (regla 2-bis).
+- **`bloque_para_solver` retirado** de estado_venta (solo lo usaban tests).
+- **Raíz y scripts**: se borraron los arneses viejos de la raíz (arnes_*,
+  correr_molino_*, 13 guiones sueltos, ver_*.py, pruebas/ entera) y ~75 scripts
+  de experimentos (banco_*, bench_*, prueba_*, dbg_*, ping_*, probe_*...). En
+  `scripts/` quedan SOLO los 7 operativos: crear_cliente, cargar_firestore,
+  cargar_tarifas_envio, borrar_productos_tienda, generar_embeddings,
+  registrar_whatsapp, setup_test_env.sh. El banco vigente es `banco_pruebas/`.
+- **Batería: 368 tests offline en verde** (los ~39 que faltan respecto de 407
+  eran tests de los módulos muertos, borrados con ellos).
+PENDIENTE inmediato: mergear a main con OK de Martín (CI gateado deploya) y la
+charla real de humo. Diagnóstico banco-vs-real y opciones de modelo (DeepSeek
+V4 Pro sin thinking) charladas el 10-jul, decisión abierta.
+
+---
+
+**9-jul-2026 (tarde) — DOS INTÉRPRETES DEL CRITERIO +
 curada que tapaba las categorías.** Charla real de Martín: pidió "4 notebooks,
 3 teclados y 5 mouse... dame el precio con envío", eligió "Lo mas eco" y el bot
 respondió la pregunta boba "¿qué producto estás mirando?". Dos causas raíz:

@@ -1,9 +1,0 @@
-# Valida la mejora: carrito con ids reales + preguntas que NO re-estampan
-hola, buenas
-quiero un mouse para jugar, que tenes?
-el mas barato
-sumale un teclado mecanico
-cuanto me queda en total?
-que formas de pago tenes?
-saca el mouse
-y con envio a cordoba capital cuanto queda?

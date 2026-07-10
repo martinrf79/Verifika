@@ -63,16 +63,6 @@ def test_c_estado_persiste_provincia():
     assert estado.get("provincia_envio") == "cordoba"
 
 
-def test_c_bloque_inyecta_provincia_y_prohibe_repedir_cp():
-    """El bloque del solver lleva la provincia Y la orden de no repedir el CP:
-    es lo que evita el 'ya te dije pueblo y provincia'. Debe cubrir TODOS los
-    destinos con esa provincia."""
-    from app.core import estado_venta
-    bloque = estado_venta.bloque_para_solver({"provincia_envio": "cordoba"})
-    assert "cordoba" in bloque.lower()
-    assert "NO" in bloque
-    assert "cp" in bloque.lower() or "codigo postal" in bloque.lower()
-
 
 # ── CP PELADO: el cliente responde el codigo postal solo, sin la palabra "CP" ──
 # Hallado en el estres (2-jul): cuando el bot pide el codigo postal y el cliente

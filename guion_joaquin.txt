@@ -1,5 +1,0 @@
-# Reproduce la charla de Joaquin (12-jun prod): el corrector reescribia el
-# presupuesto correcto en 24.000 c/u / 48.000 / 55.500 + "0 unidades".
-Soy joaquin dame precio de 2 teclados los mas economicos con envio a san agustin
-es en cordoba
-me pasaste dos precios distintos cual es

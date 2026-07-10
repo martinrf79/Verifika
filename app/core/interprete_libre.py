@@ -1,20 +1,18 @@
 """
-INTERPRETE_LIBRE — modo de prueba del intérprete (sesión 23-jun-2026).
+INTERPRETE_LIBRE — el turno completo del bot (hub del camino vivo).
 
-Objetivo de Martín para esta etapa: dejar UNA sola cosa andando para poder
-PROBAR la interpretación en real, apagando los ~70 flags y los cuatro caminos
-paralelos del orchestrator. Acá no hay provider, ni verificadores, ni gate, ni
-las catorce capas. Solo:
+Desde el COMPOSITOR (decisión de Martín, 8-jul) el modelo NUNCA le escribe al
+cliente. El turno es:
 
-  1. INTERPRETE (LLM 1, interpretador.interpretar_mensaje): entiende el mensaje
-     en el contexto de la charla. Es lo único que se está probando.
-  2. SOLVER LIBRE (LLM 2, agent.run_agent con el prompt corto de modo_libre):
-     redacta y vende libre, con las herramientas atadas a Firestore (catálogo y
-     FAQs reales) y con la MEMORIA de la conversación. Recibe como guía lo que
-     entendió el intérprete, pero no calcula nada que no salga de las tools.
+  1. INTERPRETE (LLM, interpretador.interpretar_mensaje, structured outputs):
+     entiende el mensaje en el contexto de la charla y devuelve SOLO datos.
+  2. COMPOSITOR (código, compositor.componer): compone el 100% del texto de
+     salida desde plantillas, curadas y tools selladas. El solver libre
+     (agent.run_agent) se ELIMINO en la limpieza del 10-jul.
+  3. Verificadores y guardas deterministas como red, sobre el mensaje final.
+
 La interpretación de cada turno se LOGUEA (evento interprete_libre_interpretacion)
-para diagnosticar, pero NO se muestra al cliente: el cartel era solo de la etapa
-de prueba y se quitó.
+para diagnosticar, pero NO se muestra al cliente.
 
 Es el ÚNICO camino del bot: el orchestrator delega acá todo el turno, sin flags.
 """
@@ -22,16 +20,14 @@ import re
 import time
 import unicodedata
 
-from app.core.agent import run_agent
 from app.core.interpretador import interpretar_mensaje
 from app.core.leads import (
     procesar_mensaje_para_lead, descartar_leads_activos, get_lead_activo)
 from app.core.estado_venta import (
-    construir_estado, set_current_estado, bloque_para_solver,
+    construir_estado, set_current_estado,
     productos_de_meta, carrito_de_meta, envio_de_meta, merge_productos,
     detectar_criterio, criterio_del_interprete, concordancia_criterio,
     get_envio_localidades)
-from app.core.tools import get_tools_schema
 from app.config import get_settings
 from app.logger import get_logger
 from app.storage.firestore_client import (
@@ -43,38 +39,6 @@ log = get_logger(__name__)
 settings = get_settings()
 
 
-# Prompt corto de venta del solver libre. SIN las mega-reglas defensivas: el
-# modelo vende libre; lo unico firme es que los datos salen de las herramientas
-# (atadas a Firestore). El filtro determinista y autofix son la red de despues.
-_PROMPT_LIBRE = """Sos un vendedor de {business_name}, una tienda online argentina de tecnologia y gaming. Hablas en espanol argentino, tuteando, con calidez y ganas de ayudar a comprar.
-
-Tu objetivo es VENDER bien: entender que necesita el cliente, mostrarle las mejores opciones, sacarle las dudas y avanzar hacia la compra. Sos libre en como lo decis y como ordenas la venta.
-
-Lo unico que NO inventas son los datos reales de la tienda. Para eso tenes herramientas:
-- search_products, get_product_details, list_catalog: precios, stock, specs y modelos del catalogo real.
-- query_faq: formas de pago, garantia, devoluciones y demas politicas.
-- calculate_total: cualquier total, subtotal, descuento o cuenta con cantidades.
-- cotizar_envio: el costo de envio. Pasale lo que dijo el cliente (codigo postal, localidad o provincia) tal cual; el codigo determina la zona y la tarifa. NO elijas vos la zona ni inventes el costo. Si pide envio y no dio la zona, pedile el CP o la localidad.
-Usalas cuando necesites un dato o un numero concreto, en vez de adivinarlo. Si necesitas varias cosas, pedilas juntas en un solo paso.
-
-DATOS DE LA TIENDA — VENDE TRANQUILO: el sistema VERIFICA y CORRIGE todo dato duro (precio, stock, total, envio, politica) contra la fuente ANTES de mandar tu respuesta. Si inventas o equivocas un numero, NO llega al cliente. Asi que enfocate en entender y vender bien; los datos los garantiza el codigo, no vos.
-Para que salgan limpios tenes MARCADORES (usalos cuando puedas; es una ayuda, no una obligacion): donde pongas uno, el codigo estampa el dato real de la fuente:
-- [[PRESUPUESTO]] = total/subtotal/lista de precios de calculate_total.
-- [[ENVIO]] = costo de envio de cotizar_envio.
-- [[PROD:<id>]] = la linea real de un producto (nombre+precio+stock), con el id de search_products (ej [[PROD:TEC0020]]).
-POLITICAS (query_faq): cuando consultes la FAQ, el codigo pega la respuesta oficial de la tienda al final de tu mensaje. Vos escribi SOLO la parte de venta o el puente; NO re-escribas la politica ni repitas sus numeros.
-
-El interprete ya entendio al cliente y te pasa el ESTADO de la charla. Respetalo, no lo cambies vos:
-- explorando: mostra productos o precios con las tools.
-- esperando_confirmacion: ayudalo a decidir, no reabras el catalogo.
-- esperando_datos: pedi o confirma SOLO lo que falta para cerrar: nombre, direccion de envio y forma de pago. NO pidas DNI, CUIT, telefono ni email: el telefono lo tomamos del canal y los datos de facturacion los maneja el medio de pago. No vuelvas a ofrecer productos.
-- derivar_humano: cerra cordial, una persona del equipo lo contacta.
-- saludo: devolve el saludo y ofrece ayuda corta.
-- posventa: responde con query_faq, sin forzar una venta nueva.
-Si el interprete te marca dos opciones (A o B), presenta las dos con su detalle y pregunta cual prefiere; nunca elijas vos ni promedies.
-
-Estilo: espanol argentino, tuteo. Conciso y natural. Texto plano sin markdown. Precios en formato $280.000.
-"""
 
 
 def _business_name(tienda_id: str | None) -> str:
@@ -88,21 +52,6 @@ def _business_name(tienda_id: str | None) -> str:
             pass
     return name
 
-
-def _schema_acotado() -> list:
-    """El schema de tools recortado a las que ve el solver libre (MODO_LIBRE_TOOLS:
-    catalogo, FAQ, calculadora, envio). Si la lista queda vacia o no matchea, cae
-    al schema completo para no dejar al modelo sin herramientas."""
-    permitidas = {
-        t.strip() for t in (settings.MODO_LIBRE_TOOLS or "").split(",")
-        if t.strip()
-    }
-    full = get_tools_schema()
-    if not permitidas:
-        return full
-    acotado = [s for s in full
-               if s.get("function", {}).get("name") in permitidas]
-    return acotado or full
 
 
 def _presupuesto_de_meta(meta: dict) -> str:
@@ -164,34 +113,6 @@ def _estampar_productos(texto: str, tienda_id: str, trace_id: str = None) -> str
     return re.sub(r"\[\[PROD:([A-Za-z0-9_\-]+)\]\]", _rep, texto)
 
 
-def _guia_para_solver(interp: dict) -> str:
-    """Inyecta al solver libre lo que entendió el intérprete, como GUÍA de qué
-    quiere el cliente. No trae datos del catálogo: eso lo sacan las tools."""
-    if not isinstance(interp, dict):
-        return ""
-    partes = []
-    estado = interp.get("estado_conversacion")
-    if estado:
-        partes.append(f"estado={estado}")
-    intencion = interp.get("intencion")
-    if intencion:
-        partes.append(f"intención={intencion}")
-    if interp.get("producto_resuelto"):
-        partes.append(f"se refiere a={interp['producto_resuelto']}")
-    cands = interp.get("candidatos") or []
-    if cands:
-        partes.append("posibles=" + ", ".join(str(c) for c in cands[:3]))
-    if interp.get("respondiendo_a"):
-        partes.append(f"responde a={interp['respondiendo_a']}")
-    if interp.get("ofrecer_opciones"):
-        partes.append(f"ofrecer opción A o B={interp['ofrecer_opciones']}")
-    if not partes:
-        return ""
-    return ("\n\n[El intérprete leyó este mensaje así: " + "; ".join(partes)
-            + ". Actuá según el estado y la intención, no vuelvas a interpretar. "
-            "Los precios, specs y datos de la tienda salen SOLO de las "
-            "herramientas, no los inventes.]")
-
 
 def _forzar_pregunta_si_ambiguo(interp: dict, respuesta: str) -> str | None:
     """Guarda determinista del caso 'interprete BIEN, solver MAL': cuando el
@@ -240,14 +161,13 @@ _CONF_MIN_PRODUCTO = 0.8
 
 def _resolver_nombre_a_producto(resuelto: str, catalogo: list) -> dict | None:
     """Reconcilia el NOMBRE que resolvio el interprete con UN producto del
-    catalogo. Ojo, esto NO es el certificador de queries del cliente (ese
-    descarta modificadores genericos y da 'ambiguous' para un nombre completo
-    como 'Mouse Genius DX-110 Negro', porque comparte 'mouse' con medio
-    catalogo). Aca el interprete ya resolvio un NOMBRE, asi que se matchea por
-    nombre completo: el nombre del catalogo esta contenido en el resuelto o al
-    reves. Devuelve el producto SOLO si matchea uno unico; ante cero o varios,
-    None (no se pisa al solver). Un termino vago como 'mouse' matchea muchos y
-    cae a None, que es lo que queremos."""
+    catalogo, por contencion de nombre completo: el nombre del catalogo esta
+    contenido en el resuelto o al reves (matchear por token suelto daria
+    'mouse' contra medio catalogo; por eso el viejo certificador de queries no
+    servia aca y se retiro en la limpieza del 10-jul). Devuelve el producto
+    SOLO si matchea uno unico; ante cero o varios, None (no se pisa la
+    respuesta). Un termino vago como 'mouse' matchea muchos y cae a None, que
+    es lo que queremos."""
     import unicodedata
 
     def _n(s):
@@ -291,9 +211,19 @@ def _reanclar_si_producto_divergente(interp: dict, respuesta: str,
     resuelto = str(interp.get("producto_resuelto") or "").strip()
     if not resuelto:
         return None
-    from app.core.divergencia import detectar_divergencias
-    if not any(d.get("eje") == "producto"
-               for d in detectar_divergencias(interp, respuesta, ids_mostrados)):
+    # Divergencia de producto, inline (era divergencia.py, retirado 10-jul): el
+    # turno MOSTRO productos pero ninguno de los tokens con carne del nombre
+    # resuelto aparece en la respuesta -> se mostro OTRO producto.
+    if not ids_mostrados:
+        return None
+
+    def _sin_acentos(s):
+        s = unicodedata.normalize("NFKD", str(s or "").lower())
+        return "".join(c for c in s if not unicodedata.combining(c))
+
+    _toks = [t for t in _sin_acentos(resuelto).split() if len(t) > 3]
+    _r = _sin_acentos(respuesta)
+    if not _toks or any(t in _r for t in _toks):
         return None
     from app.storage.firestore_client import get_all_products
     p = _resolver_nombre_a_producto(resuelto, get_all_products(tienda_id=tienda_id))
@@ -629,21 +559,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         log.warning("interprete_libre_curada_error", trace_id=trace_id,
                     error=str(e)[:120])
 
-    # ── PASO 2: SOLVER LIBRE (con la guía del intérprete + estado de venta) ──
-    # El solver ve, ademas del mensaje y la guia del interprete, el ESTADO DE LA
-    # VENTA armado arriba: productos con precio real, carrito, total, envio cotizado
-    # y datos del cliente ya capturados. Asi no re-pregunta la direccion ni
-    # re-inventa un precio que ya salio de una tool.
-    system_prompt = _PROMPT_LIBRE.format(business_name=_business_name(tienda_id))
-    tools_schema = _schema_acotado()
-    mensaje_enriquecido = (raw_message + _guia_para_solver(interp)
-                           + bloque_para_solver(estado))
-
     # GUIA DETERMINISTA "mas barato con stock" (blindaje del hueco real 2-jul):
     # si el criterio del cliente es el precio (dicho este turno o sticky en
     # memoria), elegir el minimo es un problema CERRADO y lo computa el CODIGO.
-    # La guia viaja en el mensaje con el [[PROD:id]] ya decidido; el solver
-    # conserva la redaccion, no la eleccion. Generar > corregir > verificar.
+    # El id computado alimenta la guarda del mas barato de mas abajo, que
+    # re-ancla si la respuesta afirma que el mas barato es OTRO producto.
     _id_barato = ""
     if detectar_criterio(raw_message) or (estado.get("criterio") or "").strip():
         try:
@@ -651,49 +571,12 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             _guia_barato = guia_mas_barato(
                 raw_message, estado.get("productos_vistos"))
             if _guia_barato:
-                mensaje_enriquecido += _guia_barato
-                # El id que computo el codigo: la guarda de mas abajo re-ancla
-                # si el solver afirma que el mas barato es OTRO producto.
                 _mb = re.search(r"\[\[PROD:([A-Za-z0-9_\-]+)\]\]", _guia_barato)
                 _id_barato = (_mb.group(1).upper() if _mb else "")
                 log.info("interprete_libre_guia_mas_barato", trace_id=trace_id)
         except Exception as e:
             log.warning("interprete_libre_guia_barato_error", trace_id=trace_id,
                         error=str(e)[:120])
-
-    # GUIA DE MEMORIA BORROSA (paso 3): el cliente referencia algo anterior ("el
-    # que te dije", "no me acuerdo cual"). El CODIGO es dueño de la memoria: si
-    # hay UN unico producto visto lo ancla ([[PROD:id]] real), si hay varios manda
-    # preguntar cual, si no hay ninguno manda no inventar. Asi el solver no
-    # adivina un id de memoria (la raiz del error del banco 5-jul). Inyeccion
-    # previa, mismo patron que la guia del mas barato; compone con los
-    # verificadores. No decide identidad sobre un id inferido: solo ancla lo YA
-    # mostrado o manda preguntar (Regla Cero).
-    try:
-        from app.core.memoria_ref import guia_memoria
-        _guia_mem = guia_memoria(raw_message, estado.get("productos_vistos"))
-        if _guia_mem:
-            mensaje_enriquecido += _guia_mem
-            log.info("interprete_libre_guia_memoria", trace_id=trace_id)
-    except Exception as e:
-        log.warning("interprete_libre_guia_memoria_error", trace_id=trace_id,
-                    error=str(e)[:120])
-
-    # GUIA DE VENTA (movidas de preguntas complejas): el router determinista elige
-    # la movida (indecision, objecion de precio, presion por descuento, etc.) o
-    # manda PREGUNTAR (escape). Se inyecta como brief al solver, que redacta los
-    # nexos; el dato duro sigue sellado por tools/estado/verificador. Conservador:
-    # "" cuando el turno va por el camino normal. Mismo carril que las guias de
-    # arriba. Fuente: ruteo_venta.py + BORRADORES_CURADAS_VENTA.md.
-    try:
-        from app.core.guia_venta import guia_venta
-        _guia_vta = guia_venta(raw_message, interp, estado)
-        if _guia_vta:
-            mensaje_enriquecido += _guia_vta
-            log.info("interprete_libre_guia_venta", trace_id=trace_id)
-    except Exception as e:
-        log.warning("interprete_libre_guia_venta_error", trace_id=trace_id,
-                    error=str(e)[:120])
 
     # GUIA DETERMINISTA DE PEDIDO (8-jul): si el interprete extrajo el pedido
     # completo (productos MOSTRADOS + cantidades, atado por enum), el CODIGO
@@ -707,7 +590,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     _criterio_confirmar = False
     if not respuesta_curada_servida:
         try:
-            from app.core.guia_pedido import calcular_pedido, INSTRUCCION_SOLVER
+            from app.core.guia_pedido import calcular_pedido
             _tools_precalc = calcular_pedido(
                 interp, estado, tienda_id, trace_id,
                 mensaje=raw_message) or []
@@ -719,8 +602,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             # presupuesto (el solver lo hizo en el turno siguiente, con diez
             # items de fantasia por $607.000).
             if not _tools_precalc:
-                from app.core.guia_pedido import (cantidades_por_categoria,
-                                                  instruccion_categorias)
+                from app.core.guia_pedido import cantidades_por_categoria
                 _cats_pedido = cantidades_por_categoria(raw_message, tienda_id)
                 _cats_de_memoria = False
                 if not _cats_pedido and not (estado.get("carrito") or []):
@@ -801,21 +683,17 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                                      trace_id=trace_id, cats=_cats_pedido,
                                      destinos=_dest_ok)
                         else:
-                            mensaje_enriquecido += instruccion_categorias(
-                                _cats_pedido)
+                            # Sin texto de opciones: queda el pendiente sticky y
+                            # la guarda de abajo impide un presupuesto inventado.
                             log.info("interprete_libre_pedido_categorias",
                                      trace_id=trace_id, cats=_cats_pedido)
                     elif _cats_pedido and not respuesta_curada_servida:
-                        # Pendiente de MEMORIA: el solver contesta la pregunta
-                        # del cliente; el brief le recuerda el pedido abierto y
+                        # Pendiente de MEMORIA: el compositor contesta lo suyo;
                         # la guarda impide cualquier presupuesto inventado.
-                        mensaje_enriquecido += instruccion_categorias(
-                            _cats_pedido)
                         log.info("interprete_libre_pedido_categorias",
                                  trace_id=trace_id, cats=_cats_pedido,
                                  origen="memoria")
             if _tools_precalc:
-                mensaje_enriquecido += INSTRUCCION_SOLVER
                 # El pedido queda SELLADO para el turno: calculate_total rechaza
                 # a un solver que quiera AGREGAR productos que el cliente no
                 # pidio (el estado es el mismo dict de la contextvar del turno).
@@ -829,7 +707,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
 
     log.info("interprete_libre_inicio", trace_id=trace_id,
              intencion=interp.get("intencion") if isinstance(interp, dict) else None,
-             tools=len(tools_schema), hist=len(history))
+             hist=len(history))
 
     if not respuesta_curada_servida:
         # COMPOSITOR (decision de Martin, 8-jul): el modelo NUNCA le escribe al
@@ -932,24 +810,6 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     if "[[PROD:" in (respuesta or ""):
         respuesta = _estampar_productos(respuesta, tienda_id, trace_id)
         log.info("interprete_libre_productos_estampados", trace_id=trace_id)
-
-    # ── MEDICION DE DIVERGENCIA intérprete <-> solver (paso 1: SOLO mide) ────
-    # No cambia la respuesta. Loguea, por turno, cuándo el solver hizo algo
-    # distinto a lo que leyó el intérprete en los ejes CERRADOS (producto,
-    # opciones A/B, estado del embudo). Se calcula sobre la respuesta del solver
-    # ya estampada, ANTES de la guarda A/B y los verificadores, para ver la
-    # conducta CRUDA del solver. Es la base para enforzar en los pasos 2, 3 y 4:
-    # primero medir el tamaño real del problema en el banco de charlas vivas.
-    try:
-        from app.core.divergencia import detectar_divergencias
-        _divs = detectar_divergencias(interp, respuesta, _ids_mostrados)
-        if _divs:
-            log.warning("interprete_libre_divergencia", trace_id=trace_id,
-                        divergencias=_divs[:6],
-                        respuesta_preview=(respuesta or "")[:200])
-    except Exception as e:
-        log.warning("interprete_libre_divergencia_error", trace_id=trace_id,
-                    error=str(e)[:120])
 
     # ── ACOPLE CURADO de FAQ (reemplaza al marcador [[FAQ]]) ────────────────
     # Si el turno consulto la FAQ, la politica sale del BLOQUE curado del tema

@@ -46,9 +46,4 @@ def test_b_estado_persiste_criterio():
     assert estado.get("criterio") == "más barato"
 
 
-def test_b_bloque_inyecta_criterio_y_prohibe_repreguntar():
-    """El bloque del solver tiene que llevar el criterio Y la orden de no volver a
-    preguntarlo: es lo que evita que repregunte modelo y color."""
-    bloque = estado_venta.bloque_para_solver({"criterio": "más barato"})
-    assert "más barato" in bloque
-    assert "NO" in bloque  # instruccion explicita de no repreguntar
+

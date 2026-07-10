@@ -1,5 +1,0 @@
-# Caso Esteban 12-jun: "nueva compra" debe descartar el pedido viejo entero.
-# Turno 1: reset puro -> respuesta por codigo, sin rastro del pedido.
-nueva compra
-# Turno 2: pesca de fantasmas -> NO debe resucitar los $447.000 ni las tablets.
-cuanto era el total de mi pedido?

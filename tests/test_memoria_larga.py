@@ -44,15 +44,12 @@ def test_fallo_del_llm_cae_a_la_red_determinista(monkeypatch):
     assert "Falsa 123" in r
 
 
-# ── Cableado: el resumen viaja al solver y al interprete ─────────────────────
-def test_estado_lleva_el_resumen_y_el_bloque_lo_muestra():
-    from app.core.estado_venta import construir_estado, bloque_para_solver
+# ── Cableado: el resumen viaja al estado y al interprete ─────────────────────
+def test_estado_lleva_el_resumen():
+    from app.core.estado_venta import construir_estado
     conv = {"summary": "El cliente ya dio su direccion en Rio Tercero."}
     estado = construir_estado(conv, None)
     assert estado["resumen_charla"] == "El cliente ya dio su direccion en Rio Tercero."
-    bloque = bloque_para_solver(estado)
-    assert "Rio Tercero" in bloque
-    assert "memoria" in bloque.lower()
 
 
 def test_contexto_del_interprete_incluye_el_resumen():
