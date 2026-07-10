@@ -1,8 +1,0 @@
-# Test del ciclo de vida del carrito manejado por el LLM (memoria + tools)
-hola, buenas
-quiero un mouse para jugar, que tenes?
-el mas barato
-sumale un teclado mecanico
-cuanto me queda en total?
-saca el mouse
-y con envio a cordoba capital cuanto queda?

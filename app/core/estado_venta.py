@@ -10,12 +10,12 @@ dos veces (el solver y el cierre no compartian la misma verdad).
 
 Este modulo consolida todo en UN objeto `estado` que se construye una sola vez por
 turno (desde la conversacion + el lead) y viaja por una contextvar, igual que la
-tienda y el destino. Asi el interprete, el solver, las herramientas deterministas y
-el cierre leen la MISMA verdad sin recibirla por parametro.
+tienda y el destino. Asi el interprete, el compositor, las herramientas
+deterministas y el cierre leen la MISMA verdad sin recibirla por parametro.
 
-Regla de escritura (una sola por dato): el significado lo escribe el interprete; los
-numeros las herramientas con su PROOF; la identidad el certificador; la redaccion el
-solver. El estado es de LECTURA para todos; cada dato lo actualiza solo su dueno.
+Regla de escritura (una sola por dato): el significado lo escribe el interprete;
+los numeros las herramientas con su PROOF; la redaccion el compositor. El estado
+es de LECTURA para todos; cada dato lo actualiza solo su dueno.
 """
 import re
 from contextvars import ContextVar
@@ -230,8 +230,7 @@ def merge_productos(memoria: list[dict], turno: list[dict],
     Tope 60 (era 20): un solo turno de tres busquedas trae 30 productos y el tope
     viejo TIRABA la primera categoria entera (visto 8-jul: las notebooks caian de
     la memoria y el enum del interprete no podia referenciarlas, asi que el pedido
-    extraido salia sin notebook y con el mouse duplicado). El solver solo ve los
-    ultimos 8 (bloque_para_solver), asi que subir el tope no infla su prompt."""
+    extraido salia sin notebook y con el mouse duplicado)."""
     por_id: dict[str, dict] = {}
     for p in (memoria or []) + (turno or []):
         pid = str(p.get("id") or "").upper()
@@ -265,77 +264,3 @@ def construir_estado(conv: dict | None, lead: dict | None) -> dict:
         "resumen_charla": (conv.get("summary") or "").strip(),
     }
 
-
-def bloque_para_solver(estado: dict | None) -> str:
-    """Resume el estado en un bloque compacto para inyectar al solver: productos ya
-    mostrados con su precio REAL, carrito, total verificado, envio cotizado y datos
-    del cliente ya capturados. Asi el solver no re-pregunta ni re-inventa un dato que
-    ya salio de una herramienta. Se arma desde el estado, no desde el texto del solver.
-    '' si no hay nada que aportar."""
-    estado = estado or {}
-    partes: list[str] = []
-
-    resumen = (estado.get("resumen_charla") or "").strip()
-    if resumen:
-        partes.append("Lo hablado ANTES en esta charla (memoria, los turnos "
-                      "viejos ya no estan arriba): " + resumen)
-
-    prods = estado.get("productos_vistos") or []
-    if prods:
-        items = "; ".join(
-            f"{p.get('nombre')} (id {p.get('id')}) ${_money(p.get('precio'))}"
-            for p in prods[-8:] if p.get("nombre"))
-        if items:
-            partes.append("Productos ya mostrados con su precio real: " + items)
-
-    carrito = estado.get("carrito") or []
-    if carrito:
-        items = ", ".join(f"{c.get('cantidad', 1)}x {c.get('nombre')}"
-                          for c in carrito if c.get("nombre"))
-        if items:
-            partes.append("Carrito actual: " + items)
-
-    presup = (estado.get("presupuesto") or "").strip()
-    if presup:
-        partes.append("Total ya calculado y verificado: " + presup)
-
-    locs = [str(l).strip() for l in (estado.get("localidades_envio") or [])
-            if str(l or "").strip()]
-    if len(locs) > 1:
-        partes.append("Destinos del pedido YA cotizados (NO vuelvas a pedir esos "
-                      "CP): " + ", ".join(locs) + ". Para el total con envio "
-                      "llama calculate_total con destinos=" + str(len(locs)) + ".")
-    else:
-        loc = (estado.get("localidad_envio") or "").strip()
-        if loc:
-            partes.append("Envio ya cotizado a " + loc)
-
-    prov = (estado.get("provincia_envio") or "").strip()
-    if prov:
-        partes.append(f"Provincia YA dada por el cliente (NO repidas el CP ni la "
-                      f"localidad): {prov}. Cotiza TODOS los destinos del pedido "
-                      f"con esa provincia.")
-
-    criterio = (estado.get("criterio") or "").strip()
-    if criterio:
-        partes.append(f"Preferencia YA dada por el cliente (NO la vuelvas a "
-                      f"preguntar): quiere {criterio}. Elegi el {criterio} con "
-                      f"stock y segui; no repreguntes modelo ni color.")
-
-    datos = estado.get("datos_cliente") or {}
-    if datos:
-        etiquetas = {"nombre": "nombre", "telefono": "telefono",
-                     "direccion": "direccion", "forma_pago": "forma de pago"}
-        dichos = [f"{etiquetas[k]} {v}" for k, v in datos.items()
-                  if k in etiquetas and v]
-        if dichos:
-            partes.append("Datos del cliente YA dados (NO los vuelvas a pedir): "
-                          + "; ".join(dichos))
-
-    if not partes:
-        return ""
-    return ("\n\n[ESTADO DE LA VENTA, establecido en turnos anteriores. Usalo, no lo "
-            "vuelvas a pedir ni recalcular:\n- " + "\n- ".join(partes)
-            + "\nSi el cliente cambia un producto o una cantidad, volve a llamar las "
-            "herramientas; los precios y el envio salen SIEMPRE de las tools, nunca "
-            "los inventes.]")

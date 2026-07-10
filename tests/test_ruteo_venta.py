@@ -209,14 +209,16 @@ def test_registro_tiene_las_24_complejas_y_las_4_de_memoria():
     assert 0 < _UMBRAL_CONF < 1
 
 
-def test_toda_movida_ruteable_tiene_brief_o_pregunta():
-    # Coherencia registro <-> guia: toda categoria compleja cuyo escape_default
-    # es 'movida' tiene que tener su brief en guia_venta (si no, el router la
-    # elige y la guia no inyecta nada: movida muerta, como le paso a B3).
-    from app.core.guia_venta import _BRIEFS
-    for cat, meta in CATEGORIAS.items():
-        if meta["familia"] == "compleja" and meta["escape_default"] == "movida":
-            assert cat in _BRIEFS, f"{cat} rutea a movida pero no tiene brief"
+def test_movidas_emocionales_tienen_texto_en_compositor():
+    # Coherencia registro <-> compositor (la guia_venta del solver se retiro en
+    # la limpieza del 10-jul): las movidas que cortan el turno (queja, humano,
+    # cancelacion, indecision) y las de objecion tienen que tener su texto fijo
+    # en el compositor; las de politica salen de la FAQ curada del tema.
+    from app.core.compositor import _MOVIDAS_FIJAS, _MOVIDAS_FAQ
+    for cat in ("B4", "B5", "B11", "B17", "B18", "B19", "B22"):
+        assert cat in _MOVIDAS_FIJAS, f"{cat} sin texto fijo en compositor"
+    for cat in _MOVIDAS_FAQ:
+        assert cat in CATEGORIAS, f"{cat} de FAQ no existe en el registro"
 
 
 def test_envio_exterior_por_ciudad():

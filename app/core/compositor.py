@@ -241,33 +241,9 @@ def _sec_faq(mensaje: str, interp: dict, tienda_id: str,
 
 
 # Plantillas de las MOVIDAS de venta (las curadas B, ahora texto del codigo).
-def _sec_movida(mensaje: str, interp: dict, estado: dict, tienda_id: str,
-                meta: dict) -> str | None:
-    from app.core.ruteo_venta import rutear_venta
-    d = rutear_venta(mensaje, interp, estado)
-    cat = d.get("categoria")
-    if not cat or d.get("accion") == "normal":
-        return None
-    def _curada_tema(tema: str) -> str | None:
-        from app.storage.firestore_client import get_all_faq
-        from app.core.curadas import estampar_valores
-        data = (get_all_faq(tienda_id=tienda_id) or {}).get(tema) or {}
-        texto = str(data.get("respuesta_curada") or data.get("respuesta")
-                    or "").strip()
-        if not texto:
-            return None
-        return estampar_valores(texto, data) or texto
-
-    if cat == "B6":
-        # Desconfianza ('¿es seguro?', 'las calidades son buenas?'): empatia
-        # fija + la curada OFICIAL de confianza, no la tarifa de envio.
-        oficial = _curada_tema("confianza_seguridad") or _curada_tema(
-            "marcas_originales") or ""
-        return ("Comprar sin ver da un poco de reparo, es normal, así que te "
-                "lo digo con hechos:\n\n" + oficial).strip()
-
-    faqmsg = _sec_faq(mensaje, interp, tienda_id, meta)
-    fijas = {
+# Movidas de venta con texto FIJO del codigo (las curadas B que no dependen de
+# una FAQ). Constante de modulo: el test de coherencia del router la lockea.
+_MOVIDAS_FIJAS = {
         "B4": ("Te entiendo, a todos nos gusta pagar menos. La forma real de "
                "bajarlo es pagando por transferencia: tenés 10% de descuento "
                "sobre el total. ¿Te armo el presupuesto así lo ves?"),
@@ -289,15 +265,47 @@ def _sec_movida(mensaje: str, interp: dict, estado: dict, tienda_id: str,
         "B22": ("Por este canal no puedo mandarte fotos, pero te paso el "
                 "detalle completo de la ficha de lo que estés mirando. "
                 "¿Qué producto era?"),
-    }
-    if cat in fijas:
-        base = fijas[cat]
+}
+
+# Movidas cuyo bloque oficial sale de la FAQ curada del tema.
+_MOVIDAS_FAQ = ("B6", "B13", "B20", "B21", "B23")
+
+
+def _sec_movida(mensaje: str, interp: dict, estado: dict, tienda_id: str,
+                meta: dict) -> str | None:
+    from app.core.ruteo_venta import rutear_venta
+    d = rutear_venta(mensaje, interp, estado)
+    cat = d.get("categoria")
+    if not cat or d.get("accion") == "normal":
+        return None
+
+    def _curada_tema(tema: str) -> str | None:
+        from app.storage.firestore_client import get_all_faq
+        from app.core.curadas import estampar_valores
+        data = (get_all_faq(tienda_id=tienda_id) or {}).get(tema) or {}
+        texto = str(data.get("respuesta_curada") or data.get("respuesta")
+                    or "").strip()
+        if not texto:
+            return None
+        return estampar_valores(texto, data) or texto
+
+    if cat == "B6":
+        # Desconfianza ('¿es seguro?', 'las calidades son buenas?'): empatia
+        # fija + la curada OFICIAL de confianza, no la tarifa de envio.
+        oficial = _curada_tema("confianza_seguridad") or _curada_tema(
+            "marcas_originales") or ""
+        return ("Comprar sin ver da un poco de reparo, es normal, así que te "
+                "lo digo con hechos:\n\n" + oficial).strip()
+
+    faqmsg = _sec_faq(mensaje, interp, tienda_id, meta)
+    if cat in _MOVIDAS_FIJAS:
+        base = _MOVIDAS_FIJAS[cat]
         # Si hay curada de FAQ pertinente (queja de envios, garantia...), va
         # abajo como bloque oficial.
-        if faqmsg and cat in ("B6", "B13", "B20", "B21", "B23"):
+        if faqmsg and cat in _MOVIDAS_FAQ:
             return base + "\n\n" + faqmsg
         return base
-    if cat in ("B6", "B13", "B20", "B21", "B23") and faqmsg:
+    if cat in _MOVIDAS_FAQ and faqmsg:
         return faqmsg
     if d.get("accion") == "preguntar":
         return ("Quiero darte el dato justo y me falta una cosa: "
