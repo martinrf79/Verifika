@@ -218,26 +218,32 @@ def _sec_envio(mensaje: str, estado: dict, tienda_id: str,
 def _sec_faq(mensaje: str, interp: dict, tienda_id: str,
              meta: dict) -> str | None:
     """Politica de la tienda: SIEMPRE la curada oficial estampada. Sin las
-    restricciones del atajo viejo: aca no hay solver con quien pisarse."""
+    restricciones del atajo viejo: aca no hay solver con quien pisarse.
+    MULTI-PREGUNTA (charla real 10-jul): un turno con varias preguntas de
+    politica distintas ('es segura la compra, cuanto demoran, hay garantia')
+    sirve hasta 3 bloques curados, uno por tema, sin solapamiento."""
     from app.storage.firestore_client import get_all_faq
-    from app.core.tools import _faq_ranking_palabras
+    from app.core.tools import _faq_temas_multi
     from app.core.curadas import estampar_valores
     faq = get_all_faq(tienda_id=tienda_id) or {}
-    ranking = _faq_ranking_palabras(mensaje or "", faq)
-    if not ranking:
-        return None
-    tema = ranking[0][1]
-    data = faq.get(tema) or {}
-    texto = str(data.get("respuesta_curada") or "").strip()
-    if not texto:
-        texto = str(data.get("respuesta") or "").strip()
-        return texto or None
-    estampada = estampar_valores(texto, data)
-    if estampada:
-        _registrar(meta, "query_faq",
-                   {"encontrada": True, "tema": tema,
-                    "respuesta": estampada, "ok": True}, {"consulta": mensaje})
-    return estampada
+    temas = _faq_temas_multi(mensaje or "", faq)
+    bloques: list[str] = []
+    for tema in temas:
+        data = faq.get(tema) or {}
+        texto = str(data.get("respuesta_curada") or "").strip()
+        if not texto:
+            texto = str(data.get("respuesta") or "").strip()
+            if texto:
+                bloques.append(texto)
+            continue
+        estampada = estampar_valores(texto, data)
+        if estampada:
+            bloques.append(estampada)
+            _registrar(meta, "query_faq",
+                       {"encontrada": True, "tema": tema,
+                        "respuesta": estampada, "ok": True},
+                       {"consulta": mensaje})
+    return "\n\n".join(bloques) if bloques else None
 
 
 # Plantillas de las MOVIDAS de venta (las curadas B, ahora texto del codigo).

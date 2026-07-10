@@ -51,6 +51,27 @@ def test_prosa_kilometrica_rechaza():
     assert ensamblar_si_valido(salida, _SECS) is None
 
 
+def test_marcador_incrustado_sale_en_parrafo_propio():
+    # Charla real 10-jul: "...se ajusta a tu compra El envio a cordoba sale
+    # $7.500" pegoteado en la misma oracion. El codigo separa el bloque.
+    salida = "Mirá lo que te cuesta [[B1]] y el envío es así: [[B2]]."
+    texto = ensamblar_si_valido(salida, _SECS)
+    assert texto is not None
+    lineas = [l.strip() for l in texto.splitlines() if l.strip()]
+    assert _B1 in lineas and _B2 in lineas  # cada bloque en linea propia
+    assert lineas[-1] == _B2  # el punto huerfano final se limpio
+
+
+def test_prosa_que_duplica_el_arranque_del_bloque_rechaza():
+    # Charla real 10-jul: "Tengo estas opciones y no quiero errarle:" salio
+    # DOS veces (una en la prosa, otra en el bloque). Se descarta entero.
+    b_opciones = ("Tengo estas opciones y no quiero errarle:\n"
+                  "- Teclado Genius KB-110X Blanco")
+    salida = ("Tengo estas opciones y no quiero errarle: mirá\n"
+              "[[B1]]\n[[B2]]")
+    assert ensamblar_si_valido(salida, [b_opciones, _B2]) is None
+
+
 def test_un_solo_bloque_no_llama_al_modelo():
     # Con menos de dos bloques no hay nada que coser: None inmediato, sin LLM
     # (si intentara llamar, explotaria por cliente/clave y el test lo veria).
