@@ -3,7 +3,30 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 10-jul-2026 (tarde) — NIVEL 2 DE LA ESCALERA: REDACTOR
+**Última actualización: 10-jul-2026 (noche) — MULTI-DESTINO + ACCESO DIRECTO
+A PRODUCCIÓN.** La segunda charla real del día (15:16, tres destinos) cobró UN
+envío: arreglado de punta a punta. `cotizar_destinos_del_mensaje` ahora corre
+en el camino SELLADO (cubre "será enviado a X"), calculate_total cobra una
+tarifa por destino (ya sabía), y un destino AMBIGUO (Isla Verde existe en 3
+provincias) no se calla: el mensaje sellado pide la provincia
+(`pregunta_destinos_pendientes`, completitud). Verificado con la charla real
+como guion 27: "Envio (3 envios): $19.500" y juez limpio. Locks en
+`tests/test_multidestino.py`. PENDIENTE del multi-destino fino: agrupar QUÉ
+item va a cada destino (campo `grupos_envio` del intérprete, para el envío
+gratis por destino exacto y el detalle por grupo).
+**ACCESO DIRECTO (10-jul): Claude tiene clave de service account de SOLO
+lectura (`claude-lector@memory-engine-v1`, roles logging.viewer +
+datastore.viewer) para leer logs y Firestore reales por REST al instante. La
+clave NO vive en el repo (se pega por chat al inicio de sesión o via entorno);
+se revoca con `gcloud iam service-accounts keys list/delete`. Además sigue la
+ventana automática de `diagnostico.yml` cada 6h. DIAGNÓSTICO por logs de la
+charla 15:16: corrió con el código PREVIO a los fixes (deploy 16:4x), el
+intérprete dio pedido vacío conf 0.5 y el flujo salió del regex de categorías
+con destinos=1 — consistente con lo arreglado.**
+
+---
+
+**10-jul-2026 (tarde) — NIVEL 2 DE LA ESCALERA: REDACTOR
 con sellos mecánicos, OK de Martín.** La ESCALERA acordada (contingencia de
 redacción, decidida ANTES de necesitarla, para que ningún chat futuro rediscuta
 arquitectura): nivel 1 compositor puro; nivel 2 (VIVO ahora) el código arma los

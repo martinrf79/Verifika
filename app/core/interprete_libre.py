@@ -650,8 +650,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                             _cats_pedido, estado, tienda_id, trace_id,
                             mensaje=raw_message) or []
                         if _tools_precalc:
-                            respuesta = mensaje_presupuesto_sellado(
+                            from app.core.guia_pedido import (
+                                pregunta_destinos_pendientes)
+                            respuesta = (mensaje_presupuesto_sellado(
                                 _tools_precalc[0]["result"]["presentacion"])
+                                + pregunta_destinos_pendientes(raw_message))
                             respuesta_curada_servida = True
                             _sellado_pedido = True
                             log.info("interprete_libre_categorias_baratas",
@@ -724,9 +727,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             if _tools_precalc:
                 # Pedido ya SELLADO por la guia (modelos elegidos): el mensaje
                 # es la plantilla fija + bloque de la calculadora, directo.
-                from app.core.guia_pedido import mensaje_presupuesto_sellado
-                respuesta = mensaje_presupuesto_sellado(
+                from app.core.guia_pedido import (
+                    mensaje_presupuesto_sellado, pregunta_destinos_pendientes)
+                respuesta = (mensaje_presupuesto_sellado(
                     _tools_precalc[0]["result"]["presentacion"])
+                    + pregunta_destinos_pendientes(raw_message))
                 _sellado_pedido = True
             else:
                 from app.core.compositor import componer

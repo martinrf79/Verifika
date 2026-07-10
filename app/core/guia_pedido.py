@@ -153,7 +153,14 @@ def _calcular_items_sellados(items: list[dict], estado: dict | None,
     from app.core.tools import calculate_total
     set_current_tienda(tienda_id)
     msg = _norm(mensaje or "")
-    locs = [l for l in (estado.get("localidades_envio") or []) if l]
+    # MULTI-DESTINO (charla real 10-jul, dos veces: "un teclado y un mouse a
+    # Rio Tercero, un auricular y un teclado a Isla Verde y el resto a
+    # Serodino" cobro UN envio de $7.500): se cotizan TODOS los destinos del
+    # mensaje, no el primero; calculate_total ya cobra una tarifa por destino
+    # con la tarifa de cada localidad cotizada.
+    locs = cotizar_destinos_del_mensaje(mensaje or "")
+    if not locs:
+        locs = [l for l in (estado.get("localidades_envio") or []) if l]
     if not locs:
         _menv = _RE_ENVIO_A.search(msg)
         if _menv:
@@ -250,9 +257,33 @@ def opciones_por_categoria(categoria: str, tienda_id: str,
 # que el solver llame cotizar_envio (en real a veces no lo hace y el total
 # sale SIN envio, visto 8-jul).
 _RE_DESTINOS_MSG = re.compile(
-    r"\b(?:van?|vaya|env[ií]os?|mandar?|con\s+env[ií]o)\s+a\s+"
+    r"\b(?:van?|vaya|env[ií]os?|mandar?|enviad[oa]s?|con\s+env[ií]o)\s+a\s+"
     r"([a-zñ][a-zñ .'-]{2,30}?)"
-    r"(?=\s+(?:una?|un|todos?|lo|dime|decime|pagando|y|e)\b|[,.?!]|$)")
+    r"(?=\s+(?:una?|un|todos?|lo|los|las|el|dime|decime|pasame|pagando|y|e"
+    r"|cuanto|dame)\b|[,.?!]|$)")
+
+
+def pregunta_destinos_pendientes(mensaje: str) -> str:
+    """COMPLETITUD del multi-destino: si el cliente declaro destinos que no
+    resolvieron zona (localidad ambigua, ej. Isla Verde existe en tres
+    provincias), el mensaje lo DICE y pide el dato, en vez de cobrar menos
+    envios en silencio (charla real 10-jul). '' si todo resolvio."""
+    declarados = []
+    for m in list(_RE_DESTINOS_MSG.finditer(_norm(mensaje or "")))[:4]:
+        cand = m.group(1).strip(" .,-")
+        if len(cand) >= 3 and cand not in declarados:
+            declarados.append(cand)
+    if not declarados:
+        return ""
+    from app.core.estado_venta import get_envio_localidades
+    resueltos = {str(l).lower() for l in (get_envio_localidades() or [])}
+    pendientes = [d for d in declarados if d.lower() not in resueltos]
+    if not pendientes:
+        return ""
+    lista = " y ".join(p.title() for p in pendientes)
+    return (f"\n\nOjo: para el envío a {lista} necesito la provincia o el "
+            f"código postal, porque hay más de una localidad con ese nombre. "
+            f"Pasámelo y te ajusto el total con ese envío incluido.")
 
 
 def cotizar_destinos_del_mensaje(mensaje: str) -> list[str]:
