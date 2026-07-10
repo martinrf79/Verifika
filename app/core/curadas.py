@@ -115,7 +115,9 @@ def bloque_curado_de_meta(meta: dict, tienda_id: str) -> tuple[str, str] | None:
 
 
 def bloque_curado_por_mensaje(mensaje: str, interp: dict | None,
-                              tienda_id: str) -> tuple[str, str] | None:
+                              tienda_id: str,
+                              sin_gate_intencion: bool = False
+                              ) -> tuple[str, str] | None:
     """ACOPLE SIN TOOL-CALL: el bloque curado disparado por el RUTEO determinista
     del MENSAJE del cliente, sin depender de que el solver haya llamado query_faq
     (hueco real 4-jul: 'tienen local para retirar?' en medio de una venta, el
@@ -126,21 +128,31 @@ def bloque_curado_por_mensaje(mensaje: str, interp: dict | None,
     tema curado."""
     if not isinstance(interp, dict) or not interp:
         return None
-    if interp.get("intencion") not in _INTENCIONES_FAQ:
+    # sin_gate_intencion (10-jul): en el mensaje SELLADO del pedido la
+    # intencion es de compra, pero una pregunta de politica pegada al pedido
+    # ("...y dime cuanto demora") tiene que salir igual, acoplada abajo.
+    if not sin_gate_intencion and interp.get("intencion") not in _INTENCIONES_FAQ:
         return None
     from app.storage.firestore_client import get_all_faq
-    from app.core.tools import _faq_ranking_palabras
+    from app.core.tools import _faq_temas_multi
     faq = get_all_faq(tienda_id=tienda_id) or {}
-    ranking = _faq_ranking_palabras(mensaje or "", faq)
-    if not ranking:
+    # MULTI-PREGUNTA (charla real 10-jul): varias preguntas de politica en un
+    # turno acoplan hasta 3 bloques, uno por tema, sin solapamiento.
+    temas = _faq_temas_multi(mensaje or "", faq)
+    bloques: list[str] = []
+    primero = ""
+    for tema in temas:
+        data = faq.get(tema) or {}
+        texto = str(data.get("respuesta_curada") or "").strip()
+        if not texto:
+            continue
+        estampada = estampar_valores(texto, data)
+        if estampada:
+            bloques.append(estampada)
+            primero = primero or tema
+    if not bloques:
         return None
-    tema = ranking[0][1]
-    data = faq.get(tema) or {}
-    texto = str(data.get("respuesta_curada") or "").strip()
-    if not texto:
-        return None
-    estampada = estampar_valores(texto, data)
-    return (tema, estampada) if estampada else None
+    return (primero, "\n\n".join(bloques))
 
 
 # Gancho final de un bloque curado: la ultima oracion interrogativa. Se recorta

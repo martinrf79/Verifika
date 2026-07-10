@@ -588,6 +588,10 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # Flag de confirmacion de criterio pendiente para el turno siguiente: se
     # prende cuando los DOS interpretes del "mas barato" divergen y se pregunta.
     _criterio_confirmar = False
+    # Mensaje SELLADO de pedido este turno: el acople de politica corre igual
+    # (charla real 10-jul: "...y dime cuanto demora" pegado al pedido se
+    # perdia porque el sellado marcaba el turno como curada servida).
+    _sellado_pedido = False
     if not respuesta_curada_servida:
         try:
             from app.core.guia_pedido import calcular_pedido
@@ -649,6 +653,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                             respuesta = mensaje_presupuesto_sellado(
                                 _tools_precalc[0]["result"]["presentacion"])
                             respuesta_curada_servida = True
+                            _sellado_pedido = True
                             log.info("interprete_libre_categorias_baratas",
                                      trace_id=trace_id, cats=_cats_pedido)
                             _cats_pedido = []
@@ -722,6 +727,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 from app.core.guia_pedido import mensaje_presupuesto_sellado
                 respuesta = mensaje_presupuesto_sellado(
                     _tools_precalc[0]["result"]["presentacion"])
+                _sellado_pedido = True
             else:
                 from app.core.compositor import componer
                 respuesta, meta = componer(
@@ -838,16 +844,21 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # solo cierre por mensaje y sin duplicar si el solver pego el texto tal
     # cual. Corre antes de los verificadores, que auditan el mensaje final.
     tema_acoplado = ""
-    if not respuesta_curada_servida and respuesta != settings.FALLBACK_MESSAGE:
+    if ((not respuesta_curada_servida or _sellado_pedido)
+            and respuesta != settings.FALLBACK_MESSAGE):
         try:
             from app.core.curadas import (
                 bloque_curado_de_meta, bloque_curado_por_mensaje, acoplar_bloque)
             # Doble ancla: primero el query_faq que el solver llamo; si no llamo
             # ninguno pero el interprete ve una pregunta de politica y el ruteo
             # matchea un tema curado, el bloque va IGUAL (el codigo decide, no
-            # depende de la obediencia del solver).
+            # depende de la obediencia del solver). Sobre el mensaje SELLADO del
+            # pedido, el gate de intencion se saltea: la intencion es de compra
+            # pero la pregunta de politica pegada al pedido sale igual.
             _bc = (bloque_curado_de_meta(meta, tienda_id)
-                   or bloque_curado_por_mensaje(raw_message, interp, tienda_id))
+                   or bloque_curado_por_mensaje(
+                       raw_message, interp, tienda_id,
+                       sin_gate_intencion=_sellado_pedido))
             if _bc:
                 from app.core.curadas import (
                     solapa_prosa, temas_cubiertos_por_tools, prosa_trae_valores)

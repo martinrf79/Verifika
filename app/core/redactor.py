@@ -67,11 +67,33 @@ def ensamblar_si_valido(salida: str, secciones: list[str],
     if len(prosa.strip()) > _MAX_PROSA:
         return None
 
+    # Sello 4 (charla real 10-jul, "Tengo estas opciones..." repetido): la
+    # prosa no puede DUPLICAR el arranque de un bloque; si el modelo re-tipeo
+    # el contenido ademas del marcador, se descarta entero.
+    def _norm(s: str) -> str:
+        import unicodedata
+        s = unicodedata.normalize("NFKD", str(s or "").lower())
+        s = "".join(c for c in s if not unicodedata.combining(c))
+        return re.sub(r"\s+", " ", s).strip()
+
+    prosa_norm = _norm(prosa)
+    for bloque in secciones:
+        primera = _norm((bloque or "").strip().splitlines()[0])
+        if len(primera) >= 12 and primera in prosa_norm:
+            return None
+
+    # Estampado con PARRAFO PROPIO por bloque (charla real 10-jul: "...se
+    # ajusta a tu compra El envio a cordoba sale $7.500" pegoteado en la misma
+    # oracion): el marcador puede venir incrustado; el codigo lo separa.
     texto = salida
     for m, bloque in zip(marcas, secciones):
-        texto = texto.replace(m, bloque.strip())
-    # Colapsar lineas en blanco de mas.
-    texto = re.sub(r"\n{3,}", "\n\n", texto).strip()
+        texto = texto.replace(m, "\n\n" + bloque.strip() + "\n\n")
+    # Limpiar lineas que quedaron SOLO con puntuacion suelta (el "." huerfano
+    # tras separar un marcador incrustado); las lineas vacias se conservan
+    # para no perder los parrafos.
+    lineas = [l for l in texto.splitlines()
+              if not (l.strip() and re.fullmatch(r"[\s.,;:!?¡¿]+", l))]
+    texto = re.sub(r"\n{3,}", "\n\n", "\n".join(lineas)).strip()
     return texto or None
 
 

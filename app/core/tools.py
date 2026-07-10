@@ -856,13 +856,26 @@ def _canon_palabra(w: str) -> str:
     return w[:-1] if len(w) > 3 and w.endswith("s") else w
 
 
+# Senal determinista de PLAZO de entrega (charla real 10-jul: "cuanto demoran
+# los envios" y "en cuanto tiempo llegan los productos" caian al tema generico
+# 'envios' y el cliente pregunto CINCO veces la demora sin respuesta). Las
+# conjugaciones (demoran/tardan/llegan) y "cuanto tiempo" no matchean las
+# keywords de plazo_envio; esta senal re-rankea plazo_envio arriba de todo
+# cuando la consulta habla de tiempo de entrega.
+import re as _re_plazo
+_RE_SENAL_PLAZO = _re_plazo.compile(
+    r"\b(demora\w*|tarda\w*|plazo\w*|cuanto tiempo|cuantos dias|"
+    r"en cuanto (tiempo )?(llega\w*|esta\w*|tengo)|cuando (llega\w*|estaria))\b")
+
+
 def _faq_ranking_palabras(consulta: str, faq: dict) -> list[tuple[int, str]]:
     """Rankea temas de FAQ: una keyword matchea si TODAS sus palabras aparecen
     en la consulta (normalizadas, tolerantes a plural), aunque haya palabras en
     el medio. Asi 'costo envio' engancha 'costo de envio a cordoba' y el tema
     especifico con el numero le gana al generico. Devuelve [(score, tema)]
     de mayor a menor, solo los que matchean."""
-    palabras_consulta = {_canon_palabra(w) for w in _norm_txt(consulta).split()}
+    consulta_norm = _norm_txt(consulta)
+    palabras_consulta = {_canon_palabra(w) for w in consulta_norm.split()}
     ranking = []
     for tema, data in faq.items():
         score = 0
@@ -879,8 +892,58 @@ def _faq_ranking_palabras(consulta: str, faq: dict) -> list[tuple[int, str]]:
                 score = max(score, len(k))
         if score > 0:
             ranking.append((score, tema))
+    # Senal de plazo: manda arriba de cualquier keyword generica.
+    if "plazo_envio" in faq and _RE_SENAL_PLAZO.search(consulta_norm):
+        tope = (max(s for s, _ in ranking) if ranking else 0) + 1
+        ranking = [(s, t) for s, t in ranking if t != "plazo_envio"]
+        ranking.append((tope, "plazo_envio"))
     ranking.sort(key=lambda t: (-t[0], t[1]))
     return ranking
+
+
+def _faq_temas_multi(consulta: str, faq: dict, max_n: int = 3) -> list[str]:
+    """Temas a servir en UN turno multi-pregunta (charla real 10-jul: 'es
+    segura la compra, cuanto demoran los envios y si tienen garantia' recibia
+    UNA sola respuesta y el cliente re-preguntaba). Recorre el ranking y suma
+    un tema SOLO si sus palabras matcheadas no se solapan con las de los temas
+    ya elegidos: preguntas DISTINTAS suman, sinonimos del mismo eje no (evita
+    servir costo_envio + envios generico por la misma palabra 'envio')."""
+    consulta_norm = _norm_txt(consulta)
+    palabras_consulta = {_canon_palabra(w) for w in consulta_norm.split()}
+
+    def _palabras_match(tema: str) -> set:
+        mejor, mejor_len = set(), 0
+        for kw in (faq.get(tema, {}).get("keywords") or []):
+            k = _norm_txt(kw)
+            kws = {_canon_palabra(w) for w in k.split()}
+            if kws and kws <= palabras_consulta and len(k) > mejor_len:
+                mejor, mejor_len = kws, len(k)
+        if tema == "plazo_envio" and not mejor:
+            m = _RE_SENAL_PLAZO.search(consulta_norm)
+            if m:
+                mejor = {_canon_palabra(w) for w in m.group(0).split()}
+        return mejor
+
+    elegidos: list[str] = []
+    usadas: set = set()
+    for _, tema in _faq_ranking_palabras(consulta, faq):
+        pal = _palabras_match(tema)
+        if not pal or (pal & usadas):
+            continue
+        # El generico 'envios' (Andreani y OCA) no suma nada si ya salio un
+        # tema especifico de envio (plazo, costo, exterior).
+        if tema == "envios" and any("envio" in e for e in elegidos):
+            continue
+        # 'asesoramiento' ("Claro, para eso estoy...") solo vale como respuesta
+        # UNICA; de cola tras otro tema es el "Claro, para eso estoy" suelto
+        # de la charla real 10-jul.
+        if tema == "asesoramiento" and elegidos:
+            continue
+        elegidos.append(tema)
+        usadas |= pal
+        if len(elegidos) >= max_n:
+            break
+    return elegidos
 
 
 def _faq_keyword_match(consulta: str, faq: dict):
