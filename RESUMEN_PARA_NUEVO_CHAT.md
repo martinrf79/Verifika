@@ -3,7 +3,42 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 10-jul-2026 — LIMPIEZA GRANDE (orden directa de Martín):
+**Última actualización: 10-jul-2026 (tarde) — NIVEL 2 DE LA ESCALERA: REDACTOR
+con sellos mecánicos, OK de Martín.** La ESCALERA acordada (contingencia de
+redacción, decidida ANTES de necesitarla, para que ningún chat futuro rediscuta
+arquitectura): nivel 1 compositor puro; nivel 2 (VIVO ahora) el código arma los
+bloques sellados y el modelo escribe SOLO la prosa de unión; nivel 3 (si el 2
+no alcanza) el modelo propone un PLAN de bloques y el código valida y renderiza.
+En ningún nivel el texto crudo del modelo viaja al cliente; degradación siempre
+hacia abajo: el peor caso es un mensaje soso, nunca un dato falso.
+- **`redactor.py`**: con 2+ bloques del compositor, una llamada LLM cose la
+  prosa usando marcadores [[B1]]..[[Bn]]; el código estampa los bloques reales.
+  Sellos todo-o-nada: marcadores exactos y en orden, prosa sin dígitos ni
+  nombres de producto, tope de largo; violación → sale el compositor puro.
+  Lockeado en `tests/test_redactor.py` (8 tests).
+- **Multi-envío en el intérprete**: campo `destino` por renglón del pedido
+  (plano, no anidado: Firestore prohíbe listas anidadas) + instrucción con el
+  ejemplo real de Martín (Carlos Paz / Villa María / Río Tercero). El código
+  que CONSUME el destino (cotizar por grupo) está pendiente.
+- **Bancos de interpretación**: DeepSeek v4-flash 29/29 (100%) en casos sueltos
+  y 23/23 (100%) en el banco multi-turno nuevo
+  (`banco_pruebas/banco_interpretacion_multiturno.py`, 6 charlas de 3-4
+  turnos); GPT-4o mini (prod) 22/23 (96%: leyó "se me rompió el mouse,
+  necesito algo ya" como compra). Cambio de intérprete a DeepSeek: decisión
+  ABIERTA (trade-off: fuera de OpenAI no hay schema estricto a nivel token,
+  queda el parseo validado + redes).
+- **Ventana de producción**: `diagnostico.yml` corre SOLO cada 6h (3:17, 9:17,
+  15:17 y 21:17 hora argentina) volcando eventos INFO de las últimas 7h;
+  Claude LEE esas corridas por la API de GitHub (no puede dispararlas: 403).
+- **376 tests offline + 25 vivos con juez limpio (DeepSeek punta a punta).**
+MÉTODO acordado (10-jul, tras la charla honesta del círculo): los bancos solo
+demuestran fallas, nunca éxito; la única prueba es el tráfico real. Prohibido
+tocar código salvo atado a una falla vista en charla real, de a una. Pendiente:
+prueba real de Martín por WhatsApp del nivel 2 + leer los logs de la ventana.
+
+---
+
+**10-jul-2026 — LIMPIEZA GRANDE (orden directa de Martín):
 se borró todo el código muerto que dejó el compositor.** El diagnóstico fue que
 los "errores infantiles" son plomería entre capas acumuladas, así que se trazó el
 camino vivo desde el webhook y se eliminó todo lo que no se ejecuta:

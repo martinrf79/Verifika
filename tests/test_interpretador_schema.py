@@ -42,8 +42,11 @@ def test_strict_todos_los_campos_requeridos():
 def test_pedido_atado_al_enum_de_mostrados():
     # El campo pedido (guia determinista de pedido) tambien queda atado por
     # enum a lo mostrado: el interprete no puede pedir un producto no visto.
+    # destino (multi-envio, 10-jul): renglon PLANO con su localidad o null,
+    # nunca grupos anidados (Firestore los prohibe).
     s = _schema_interprete(["Mouse A", "Teclado B"])
     item = s["properties"]["pedido"]["items"]
     assert item["properties"]["producto"]["enum"] == [None, "Mouse A", "Teclado B"]
     assert item["properties"]["cantidad"]["type"] == "integer"
-    assert set(item["required"]) == {"producto", "cantidad"}
+    assert item["properties"]["destino"]["type"] == ["string", "null"]
+    assert set(item["required"]) == {"producto", "cantidad", "destino"}

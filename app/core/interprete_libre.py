@@ -726,6 +726,25 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 from app.core.compositor import componer
                 respuesta, meta = componer(
                     raw_message, interp, estado, tienda_id, trace_id)
+                # NIVEL 2 de la escalera (OK de Martin, 10-jul): con dos o mas
+                # bloques, el REDACTOR cose la prosa de union. Su salida usa
+                # marcadores y el codigo estampa los bloques reales: el texto
+                # crudo del modelo nunca viaja al cliente. Sello violado o
+                # error -> queda el texto del compositor puro.
+                try:
+                    _secs = meta.get("secciones") or []
+                    if len(_secs) >= 2:
+                        from app.core.redactor import redactar
+                        _red = await redactar(
+                            raw_message, _secs, tienda_id, trace_id,
+                            estado.get("productos_vistos"))
+                        if _red:
+                            respuesta = _red
+                            log.info("interprete_libre_redactor_ok",
+                                     trace_id=trace_id)
+                except Exception as e:
+                    log.warning("interprete_libre_redactor_error",
+                                trace_id=trace_id, error=str(e)[:120])
         except Exception as e:
             log.error("interprete_libre_compositor_error", trace_id=trace_id,
                       error=str(e)[:200])
