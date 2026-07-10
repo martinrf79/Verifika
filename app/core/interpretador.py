@@ -296,6 +296,19 @@ del producto mostrado, no el apodo del cliente. Si el cliente pide un producto q
 no esta entre los mostrados, o no da cantidades, o esta preguntando sin armar
 pedido, deja la lista vacia. No inventes cantidades: solo las que dijo el cliente.
 
+DESTINO por renglon del pedido.
+Si el cliente reparte el pedido entre varios destinos, cada renglon lleva su
+"destino" (la localidad tal cual la dijo) y las cantidades se DESGLOSAN por
+destino. Ejemplo: mostrados teclado K120, mouse M170 y auricular H390; el
+cliente dice "dame 2 teclados, 2 mouse y 2 auriculares: un teclado y un mouse
+a Carlos Paz, un auricular y un teclado a Villa Maria, y el resto a Rio
+Tercero". El pedido correcto es 6 renglones: K120 x1 destino Carlos Paz, M170
+x1 destino Carlos Paz, H390 x1 destino Villa Maria, K120 x1 destino Villa
+Maria, M170 x1 destino Rio Tercero, H390 x1 destino Rio Tercero. "El resto" =
+lo pedido menos lo ya asignado. Las cantidades por producto tienen que sumar
+lo que pidio el cliente. Con un solo destino o sin destino dicho, "destino"
+va null en todos los renglones.
+
 CONFIANZA.
 alta 0.85 a 1.0, intencion inequivoca o referencia clara a un producto unico.
 media 0.6 a 0.85, intencion identificada pero referencia parcial.
@@ -442,8 +455,15 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
                 "properties": {
                     "producto": {"type": ["string", "null"], "enum": prod_enum},
                     "cantidad": {"type": "integer"},
+                    # DESTINO por renglon (pedido de Martin, 10-jul): pedidos
+                    # multi-envio ("un teclado y un mouse a Carlos Paz, el
+                    # resto a Rio Tercero") salen ya repartidos y el codigo
+                    # cotiza cada grupo. Renglon plano, NO grupos anidados:
+                    # Firestore prohibe listas anidadas (bug real 8-jul).
+                    # null = destino unico o sin decir.
+                    "destino": {"type": ["string", "null"]},
                 },
-                "required": ["producto", "cantidad"],
+                "required": ["producto", "cantidad", "destino"],
             }},
         },
         "required": ["intencion", "producto_resuelto", "candidatos", "confianza",
