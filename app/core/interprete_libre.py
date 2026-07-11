@@ -507,13 +507,21 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     set_current_estado(estado)
 
     # ── PASO 1: INTERPRETE ──────────────────────────────────────────────
+    # El producto ANOTADO viaja como contexto del interprete junto al resumen:
+    # "el que te dije al principio" resuelve aunque el turno del ancla ya haya
+    # caido del historial vivo.
+    _resumen_interp = estado.get("resumen_charla") or ""
+    _ancla_previa = estado.get("producto_anotado") or {}
+    if _ancla_previa.get("nombre"):
+        _resumen_interp = (_resumen_interp + " [Producto elegido y anotado "
+                           f"por el cliente: {_ancla_previa['nombre']}]").strip()
     interp = {}
     try:
         interp = await interpretar_mensaje(
             raw_message, history, trace_id,
             estado_anterior=estado_anterior, tienda_id=tienda_id,
             productos_vistos=estado.get("productos_vistos"),
-            resumen=estado.get("resumen_charla") or "")
+            resumen=_resumen_interp)
     except Exception as e:
         log.error("interprete_libre_interp_error", trace_id=trace_id,
                   error=str(e)[:200])
@@ -531,6 +539,24 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                  responde_a=interp.get("respondiendo_a"),
                  candidatos=interp.get("candidatos"),
                  pedido=interp.get("pedido"))
+
+    # ANCLA DE PRODUCTO ANOTADO (11-jul): dos mutaciones deterministas sobre
+    # la interpretacion. "Me gusta X, anotalo" con candidato unico completa
+    # producto_resuelto (la ficha reemplaza al fallback "no te entendi");
+    # "el que te dije al principio" resuelve al ancla persistida y, si pide
+    # total/cierre, arma el pedido para que la guia selle el presupuesto real.
+    try:
+        from app.core.estado_venta import aplicar_ancla_producto
+        from app.storage.firestore_client import get_all_products as _gap_ancla
+        _ancla_ev = aplicar_ancla_producto(
+            interp, raw_message, estado, _gap_ancla(tienda_id=tienda_id))
+        if _ancla_ev:
+            log.info("interprete_libre_ancla_producto", trace_id=trace_id,
+                     evento=_ancla_ev,
+                     producto=interp.get("producto_resuelto"))
+    except Exception as e:
+        log.warning("interprete_libre_ancla_error", trace_id=trace_id,
+                    error=str(e)[:120])
 
     # Flag one-shot del gatillo de cierre (se lee ACA porque tambien condiciona
     # el atajo curado: con una pregunta de cierre pendiente no se ataja nada).
@@ -1441,6 +1467,19 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # el CP de cada pueblo (arreglo C, el 'ya te dije pueblo y provincia'). La
     # deteccion de este turno ya se hizo al arranque (_prov_msg, la usa el estado).
     provincia_envio = _prov_msg or (conv.get("provincia_envio") or "")
+    # ANCLA de producto anotado: se actualiza con lo resuelto este turno (ya
+    # pasado por aplicar_ancla_producto) y se limpia solo ante una negacion
+    # que NOMBRA al ancla. Conservador: ante duda queda el previo.
+    try:
+        from app.core.estado_venta import producto_anotado_actualizado
+        from app.storage.firestore_client import get_all_products as _gap_save
+        producto_anotado = producto_anotado_actualizado(
+            conv.get("producto_anotado"), interp, raw_message,
+            _gap_save(tienda_id=tienda_id))
+    except Exception as e:
+        log.warning("interprete_libre_ancla_save_error", trace_id=trace_id,
+                    error=str(e)[:120])
+        producto_anotado = conv.get("producto_anotado") or {}
 
     latency_ms = int((time.time() - t0) * 1000)
     try:
@@ -1473,7 +1512,8 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                           # coincidencia y arma el total.
                           criterio_confirmar_pendiente=_criterio_confirmar,
                           pregunta_cierre_hecha=pregunta_cierre_hecha,
-                          datos_cliente_parciales=datos_acumulados)
+                          datos_cliente_parciales=datos_acumulados,
+                          producto_anotado=producto_anotado)
     except Exception as e:
         log.warning("interprete_libre_save_failed", trace_id=trace_id,
                     error=str(e)[:120])

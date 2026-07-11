@@ -267,6 +267,7 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       pedido_categorias_pendiente: list | None = None,
                       pregunta_cierre_hecha: bool | None = None,
                       datos_cliente_parciales: dict | None = None,
+                      producto_anotado: dict | None = None,
                       **extras):
     # RED CONTRA LA DERIVA sim/prod (bug REAL 8-jul): el doble del banco acepta
     # cualquier kwarg y esta firma enumeraba los suyos; un campo nuevo pasado
@@ -335,6 +336,11 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
     # pregunta de cierre, para que la respuesta del cliente dispare el lead fuerte.
     if pregunta_cierre_hecha is not None:
         datos["pregunta_cierre_hecha"] = pregunta_cierre_hecha
+    # PRODUCTO ANOTADO: el que el cliente eligio y pidio guardar ("me gusta X,
+    # anotalo"). Ancla de memoria para "el que te dije al principio". {id,
+    # nombre, precio}; {} = limpiar el ancla.
+    if producto_anotado is not None:
+        datos["producto_anotado"] = producto_anotado
     # DATOS DEL CLIENTE ACUMULADOS turno a turno (nombre, telefono, direccion,
     # forma de pago), aunque todavia no exista un lead. Asi un dato dado ANTES de
     # la decision de compra no se pierde y el lead se siembra completo, sin volver
