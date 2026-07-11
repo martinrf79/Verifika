@@ -615,10 +615,19 @@ def calculate_total(items: list[dict] | None = None,
             _pres = _render_presentacion(
                 detalle, extras_detalle, total, total_ars=base_total)
             _pres = _pres + "\n\n" + render_split(_split)
+            # El proof del split respalda TODOS los montos de la presentacion:
+            # renglones, subtotal y EXTRAS (envio). Sin el envio en el proof,
+            # el verificador lo tomaba por no respaldado y lo "autocorregia"
+            # a un valor de la FAQ (visto 11-jul: envio La Plata $6.000
+            # cotizado bien y pisado a $5.000 en el mensaje final).
             _montos_proof = ([base_total, _split["total_final_ars"],
-                              _split["descuento_total_ars"]]
+                              _split["descuento_total_ars"], total]
                              + [p["monto_ars"] for p in _split["partes"]]
-                             + [p["monto_final_ars"] for p in _split["partes"]])
+                             + [p["monto_final_ars"] for p in _split["partes"]]
+                             + [d["subtotal"] for d in detalle]
+                             + [d["precio_unitario"] for d in detalle]
+                             + [e.get("monto") for e in extras_detalle
+                                if isinstance(e.get("monto"), (int, float))])
             return {
                 "ok": True,
                 "mensaje_para_llm": _nota_envio,
@@ -632,6 +641,13 @@ def calculate_total(items: list[dict] | None = None,
                     "formula": ("base productos+envio repartida por porcentaje; "
                                 "descuento por transferencia a lo que no es "
                                 "Mercado Pago"),
+                    "operandos_productos": [
+                        {"id": d["id"], "monto": d["subtotal"],
+                         "precio_unitario": d["precio_unitario"],
+                         "fuente": "catalogo"}
+                        for d in detalle
+                    ],
+                    "operandos_extras": extras_detalle,
                     "subtotal_productos": total,
                     "base_total": base_total,
                     "split": _split,

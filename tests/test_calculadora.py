@@ -311,3 +311,25 @@ def test_destino_unico_no_cobra_el_destino_obsoleto(firestore_doble):
     finally:
         estado_venta._envio_localidades.set([])
         set_current_estado({})
+
+
+def test_split_proof_respalda_envio_y_renglones(firestore_doble):
+    # Bug real 11-jul: el proof del split solo traia los montos del reparto;
+    # el envio cotizado ($6.000 La Plata) quedaba sin respaldo y el
+    # verificador lo "autocorregia" a un valor de la FAQ ($5.000).
+    from app.core.tools_context import set_current_tienda
+    from app.core.estado_venta import set_current_estado
+    from app.core.tools import cotizar_envio, calculate_total
+    set_current_tienda("verifika_prod")
+    set_current_estado({})
+    q = cotizar_envio(localidad="La Plata")
+    assert q["ok"] and q["monto"] == 6000
+    r = calculate_total(
+        items=[{"product_id": "MOU0017", "cantidad": 1}],
+        items_extra=[{"faq_tema": "costo_envio", "concepto": "envio"}],
+        pago=[{"medio": "transferencia", "porcentaje": 100}])
+    assert r["ok"]
+    assert "Envio: $6.000" in r["presentacion"]
+    montos = r["proof"]["montos"]
+    assert 6000 in montos          # el envio esta respaldado
+    assert 23000 in montos         # el subtotal y el renglon tambien
