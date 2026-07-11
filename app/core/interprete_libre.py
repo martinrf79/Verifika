@@ -932,8 +932,23 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 _sellado_pedido = True
             else:
                 from app.core.compositor import componer
+                # SELECTOR del menu cerrado (decision de Martin 10-jul,
+                # construido 11-jul): una llamada LLM con schema estricto
+                # elige QUE secciones componen el turno viendo la lectura
+                # del interprete + el estado sellado completo. Reemplaza a
+                # la cascada de regex como decisor; la cascada queda de red
+                # ante error, timeout o plan que no respalda.
+                _plan = None
+                try:
+                    from app.core.selector import elegir_plan
+                    _plan = await elegir_plan(
+                        raw_message, interp, estado, tienda_id, trace_id)
+                except Exception as e:
+                    log.warning("interprete_libre_selector_error",
+                                trace_id=trace_id, error=str(e)[:120])
                 respuesta, meta = componer(
-                    raw_message, interp, estado, tienda_id, trace_id)
+                    raw_message, interp, estado, tienda_id, trace_id,
+                    plan=_plan)
                 # NIVEL 2 de la escalera (OK de Martin, 10-jul): con dos o mas
                 # bloques, el REDACTOR cose la prosa de union. Su salida usa
                 # marcadores y el codigo estampa los bloques reales: el texto

@@ -165,9 +165,12 @@ def _sec_producto(mensaje: str, interp: dict, estado: dict,
     return None
 
 
-def _sec_categoria(mensaje: str, interp: dict, tienda_id: str) -> str | None:
+def _sec_categoria(mensaje: str, interp: dict, tienda_id: str,
+                   categoria: str | None = None) -> str | None:
     """Listado de una categoria consultada ('tenes mouse?'): opciones reales
-    CON stock, de la mas barata para arriba."""
+    CON stock, de la mas barata para arriba. `categoria` explicita (del plan
+    del selector) saltea la deteccion por palabras, validada igual contra
+    las categorias reales."""
     from app.core.guia_pedido import opciones_por_categoria
     from app.storage.firestore_client import get_categories
     m = _norm(mensaje)
@@ -176,6 +179,10 @@ def _sec_categoria(mensaje: str, interp: dict, tienda_id: str) -> str | None:
     _limpias = (w.strip(".,!?¿¡;:()") for w in m.split())
     palabras = {w[:-1] if len(w) > 3 and w.endswith("s") else w
                 for w in _limpias if w}
+    if categoria:
+        cn_arg = _norm(categoria)
+        cn_arg = cn_arg[:-1] if cn_arg.endswith("s") else cn_arg
+        palabras = {cn_arg}
     cat_hit = None
     for c in (get_categories(tienda_id=tienda_id) or []):
         cn = _norm(c)
@@ -337,6 +344,18 @@ _MOVIDAS_FIJAS = {
 _MOVIDAS_FAQ = ("B6", "B13", "B20", "B21", "B23")
 
 
+def _curada_tema(tema: str, tienda_id: str) -> str | None:
+    """La curada oficial estampada de UN tema de FAQ, o None."""
+    from app.storage.firestore_client import get_all_faq
+    from app.core.curadas import estampar_valores
+    data = (get_all_faq(tienda_id=tienda_id) or {}).get(tema) or {}
+    texto = str(data.get("respuesta_curada") or data.get("respuesta")
+                or "").strip()
+    if not texto:
+        return None
+    return estampar_valores(texto, data) or texto
+
+
 def _sec_movida(mensaje: str, interp: dict, estado: dict, tienda_id: str,
                 meta: dict) -> str | None:
     from app.core.ruteo_venta import rutear_venta
@@ -345,21 +364,11 @@ def _sec_movida(mensaje: str, interp: dict, estado: dict, tienda_id: str,
     if not cat or d.get("accion") == "normal":
         return None
 
-    def _curada_tema(tema: str) -> str | None:
-        from app.storage.firestore_client import get_all_faq
-        from app.core.curadas import estampar_valores
-        data = (get_all_faq(tienda_id=tienda_id) or {}).get(tema) or {}
-        texto = str(data.get("respuesta_curada") or data.get("respuesta")
-                    or "").strip()
-        if not texto:
-            return None
-        return estampar_valores(texto, data) or texto
-
     if cat == "B6":
         # Desconfianza ('¿es seguro?', 'las calidades son buenas?'): empatia
         # fija + la curada OFICIAL de confianza, no la tarifa de envio.
-        oficial = _curada_tema("confianza_seguridad") or _curada_tema(
-            "marcas_originales") or ""
+        oficial = _curada_tema("confianza_seguridad", tienda_id) or \
+            _curada_tema("marcas_originales", tienda_id) or ""
         return ("Comprar sin ver da un poco de reparo, es normal, así que te "
                 "lo digo con hechos:\n\n" + oficial).strip()
 
@@ -387,14 +396,17 @@ _RE_DISPONIBILIDAD = re.compile(
     r"\bten[eé]s\b|\btienen\b|\bhay\b|\bvenden\b|\btrabajan\b|\bmanejan\b")
 
 
-def _sec_not_found(mensaje: str, interp: dict, tienda_id: str) -> str | None:
+def _sec_not_found(mensaje: str, interp: dict, tienda_id: str,
+                   forzar: bool = False) -> str | None:
     """NOT_FOUND honesto (11-jul, caso real del banco: 'tenes joysticks?'
     caia al fallback 'no te entendi'). Pregunta de disponibilidad + candidato
     unico del interprete que no matchea NI una categoria NI ningun producto
     del catalogo -> se dice que no derecho y se ofrecen las categorias
-    reales. not_found es un resultado valido, no un error (regla 0)."""
+    reales. not_found es un resultado valido, no un error (regla 0).
+    `forzar` (plan del selector) saltea el regex de disponibilidad; la
+    validacion contra catalogo y categorias corre SIEMPRE."""
     m = _norm(mensaje)
-    if not _RE_DISPONIBILIDAD.search(m):
+    if not forzar and not _RE_DISPONIBILIDAD.search(m):
         return None
     cands = [str(c).strip() for c in (interp or {}).get("candidatos") or []
              if str(c).strip()]
@@ -435,11 +447,102 @@ def _fallback(estado: dict) -> str:
             "garantía.")
 
 
+def _texto_preguntar(argumento: str | None) -> str:
+    """Pregunta FIJA del codigo segun que falta (el argumento del selector
+    solo elige entre textos aprobados; la prosa del modelo no viaja)."""
+    a = _norm(argumento or "")
+    if any(k in a for k in ("destino", "localidad", "provincia", "envio",
+                            "direccion", "codigo postal", "cp")):
+        return ("Para cotizarte el envío me falta el destino: ¿a qué "
+                "localidad y provincia te lo mando?")
+    if "cantidad" in a or "cuant" in a:
+        return "¿Cuántas unidades querés? Con eso te armo el total exacto."
+    return ("Quiero darte el dato justo y me falta una cosa: ¿me confirmás "
+            "exactamente qué producto o modelo estás mirando?")
+
+
+def _ejecutar_plan(plan: list[dict], mensaje: str, interp: dict, estado: dict,
+                   tienda_id: str, meta: dict) -> tuple[list[str], list[str]]:
+    """Ejecuta el plan del SELECTOR: cada tipo del menu mapea a una seccion
+    determinista que arma el CODIGO desde la fuente (y puede devolver None si
+    la fuente no respalda: la seccion se saltea). Devuelve (secciones,
+    usadas) con los nombres canonicos que ya usa el gancho."""
+    secciones: list[str] = []
+    usadas: list[str] = []
+
+    def _add(nombre, texto):
+        if texto and texto.strip() not in secciones:
+            secciones.append(texto.strip())
+            usadas.append(nombre)
+
+    from app.core.guia_compra import (mas_barato_con_stock,
+                                      intermedio_con_stock,
+                                      _categorias_en_juego)
+    from app.core.tools_context import set_current_tienda
+    set_current_tienda(tienda_id)
+
+    for s in plan:
+        tipo = s.get("tipo")
+        arg = s.get("argumento")
+        if tipo == "saludo":
+            _add("saludo", _sec_saludo_puro(
+                {"intencion": "saludo"}, tienda_id))
+        elif tipo == "ficha_producto" and arg:
+            shim = {"producto_resuelto": arg, "candidatos": [arg]}
+            _add("producto",
+                 _sec_producto(mensaje, shim, estado, tienda_id, meta))
+        elif tipo == "opciones_categoria":
+            _add("categoria",
+                 _sec_categoria(mensaje, interp, tienda_id, categoria=arg))
+        elif tipo in ("mas_barato", "intermedio"):
+            cats = ([arg] if arg else
+                    _categorias_en_juego(mensaje,
+                                         estado.get("productos_vistos")))
+            elegir = (intermedio_con_stock if tipo == "intermedio"
+                      else mas_barato_con_stock)
+            p = elegir(cats[0] if cats else None)
+            if p:
+                _registrar(meta, "search_products",
+                           {"encontrados": 1, "productos": [p]},
+                           {"query": tipo})
+                titulo = ("Ni lo más barato ni lo más caro, el punto medio "
+                          "con stock es:" if tipo == "intermedio"
+                          else "El más barato con stock es:")
+                _add("mas_barato", titulo + "\n- " + _linea(p))
+        elif tipo == "envio":
+            _add("envio", _sec_envio(mensaje, estado, tienda_id, meta))
+        elif tipo == "faq":
+            texto = _sec_faq(mensaje, interp, tienda_id, meta)
+            if not texto and arg:
+                texto = _curada_tema(_norm(arg).replace(" ", "_"), tienda_id)
+            _add("faq", texto)
+        elif tipo == "movida":
+            texto = _sec_movida(mensaje, interp, estado, tienda_id, meta)
+            if not texto and arg:
+                texto = _MOVIDAS_FIJAS.get(str(arg).upper().strip())
+            _add("movida", texto)
+        elif tipo == "rechazo":
+            _add("rechazo", "Listo, lo dejamos de lado, sin problema.")
+        elif tipo == "not_found":
+            shim = {"candidatos": [arg]} if arg else interp
+            _add("not_found",
+                 _sec_not_found(mensaje, shim, tienda_id, forzar=True))
+        elif tipo == "preguntar":
+            _add("preguntar", _texto_preguntar(arg))
+        elif tipo == "fallback":
+            _add("fallback", _fallback(estado))
+    return secciones, usadas
+
+
 # ── Composicion del turno ────────────────────────────────────────────────────
 def componer(mensaje: str, interp: dict | None, estado: dict | None,
-             tienda_id: str, trace_id: str | None = None) -> tuple[str, dict]:
+             tienda_id: str, trace_id: str | None = None,
+             plan: list[dict] | None = None) -> tuple[str, dict]:
     """El mensaje ENTERO del turno, armado por el codigo. Devuelve
-    (texto, meta) con meta.tools_called para el resto del pipeline."""
+    (texto, meta) con meta.tools_called para el resto del pipeline.
+    Con `plan` (la eleccion del SELECTOR, menu cerrado 11-jul) ejecuta esas
+    secciones; sin plan, o si el plan no produjo nada, corre la cascada
+    determinista de siempre (red de degradacion)."""
     interp = interp if isinstance(interp, dict) else {}
     estado = estado if isinstance(estado, dict) else {}
     meta: dict = {"tools_called": []}
@@ -455,7 +558,8 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
             usadas.append(nombre)
 
     # Movidas emocionales/de politica dura primero: si hay queja, cancelacion
-    # o pedido de humano, ese ES el turno (no se vende encima).
+    # o pedido de humano, ese ES el turno (no se vende encima). Manda incluso
+    # sobre el plan del selector: es regla de negocio, no eleccion.
     movida = _sec_movida(mensaje, interp, estado, tienda_id, meta)
     from app.core.ruteo_venta import rutear_venta
     _ruteo = rutear_venta(mensaje, interp, estado)
@@ -466,35 +570,55 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
                  secciones=[_cat_mov])
         return movida, meta
 
-    _add("saludo", _sec_saludo_puro(interp, tienda_id))
-    # RECHAZO (11-jul, guion 09: "los auriculares dejalos, no me convencen"
-    # re-ofrecia las mismas opciones): un descarte se RECONOCE, no se
-    # insiste. Las secciones de producto/categoria no corren este turno; la
-    # edicion del carrito con recalculo vive en interprete_libre.
-    from app.core.estado_venta import es_rechazo
-    _rech = es_rechazo(mensaje)
-    if _rech:
-        _add("rechazo", "Listo, lo dejamos de lado, sin problema.")
-    if not _rech:
-        _add("producto",
-             _sec_producto(mensaje, interp, estado, tienda_id, meta))
-    if not _rech and "producto" not in usadas:
-        _add("mas_barato",
-             _sec_mas_barato(mensaje, interp, estado, tienda_id, meta))
-    if not _rech and "producto" not in usadas and "mas_barato" not in usadas:
-        _add("categoria", _sec_categoria(mensaje, interp, tienda_id))
-    _add("envio", _sec_envio(mensaje, estado, tienda_id, meta))
-    if "saludo" not in usadas:
-        _add("faq", None if movida else _sec_faq(mensaje, interp, tienda_id, meta))
-    if movida and _cat_mov not in ("B17", "B18", "B19", "B11"):
-        # El "preguntar" generico ('¿que producto?') NO se apila sobre una
-        # respuesta de datos: si ya salio ficha, mas barato, categoria, envio
-        # o FAQ, esa es la respuesta. Solo va como fallback cuando nada mas
-        # respondio (evita el 'mas barato + ¿que producto?' contradictorio).
-        _hay_datos = any(u in usadas for u in
-                         ("producto", "mas_barato", "categoria", "envio", "faq"))
-        if not (_accion_mov == "preguntar" and _hay_datos):
-            _add("movida", movida)
+    # PLAN del selector: si eligio y alguna seccion respaldo, ese es el
+    # turno. Si el plan no produjo texto (fuente que no respalda, argumento
+    # que no reconcilia), cae a la cascada: nunca un turno mudo.
+    if plan:
+        try:
+            secciones, usadas = _ejecutar_plan(
+                plan, mensaje, interp, estado, tienda_id, meta)
+        except Exception as e:
+            log.warning("compositor_plan_error", trace_id=trace_id,
+                        error=str(e)[:150])
+            secciones, usadas = [], []
+        if secciones:
+            log.info("compositor_plan_ok", trace_id=trace_id,
+                     secciones=usadas)
+
+    if not secciones:
+        # CASCADA determinista (el camino previo al selector, hoy su red).
+        _add("saludo", _sec_saludo_puro(interp, tienda_id))
+        # RECHAZO (11-jul, guion 09: "los auriculares dejalos, no me
+        # convencen" re-ofrecia las mismas opciones): un descarte se
+        # RECONOCE, no se insiste. Las secciones de producto/categoria no
+        # corren este turno; la edicion del carrito vive en interprete_libre.
+        from app.core.estado_venta import es_rechazo
+        _rech = es_rechazo(mensaje)
+        if _rech:
+            _add("rechazo", "Listo, lo dejamos de lado, sin problema.")
+        if not _rech:
+            _add("producto",
+                 _sec_producto(mensaje, interp, estado, tienda_id, meta))
+        if not _rech and "producto" not in usadas:
+            _add("mas_barato",
+                 _sec_mas_barato(mensaje, interp, estado, tienda_id, meta))
+        if (not _rech and "producto" not in usadas
+                and "mas_barato" not in usadas):
+            _add("categoria", _sec_categoria(mensaje, interp, tienda_id))
+        _add("envio", _sec_envio(mensaje, estado, tienda_id, meta))
+        if "saludo" not in usadas:
+            _add("faq", None if movida
+                 else _sec_faq(mensaje, interp, tienda_id, meta))
+        if movida and _cat_mov not in ("B17", "B18", "B19", "B11"):
+            # El "preguntar" generico ('¿que producto?') NO se apila sobre
+            # una respuesta de datos: si ya salio ficha, mas barato,
+            # categoria, envio o FAQ, esa es la respuesta. Solo va como
+            # fallback cuando nada mas respondio.
+            _hay_datos = any(u in usadas for u in
+                             ("producto", "mas_barato", "categoria", "envio",
+                              "faq"))
+            if not (_accion_mov == "preguntar" and _hay_datos):
+                _add("movida", movida)
 
     if not secciones:
         # Antes del fallback ciego: si es una pregunta de disponibilidad por
