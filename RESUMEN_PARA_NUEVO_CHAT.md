@@ -45,13 +45,28 @@ permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, ma
    edición de pedido, cambio de destino, split, estado del pedido) en
    BORRADORES_CURADAS_VENTA.md, PENDIENTES DE APROBACIÓN de Martín, sin
    cablear.
-7. **442 tests offline + 3 guiones nuevos del banco (28, 29 y el 09 de
-   memoria) con juez limpio.** Conducta pendiente conocida: pregunta de
-   conocimiento ("membrana vs mecánico") sigue en pregunta boba (necesita
-   curada nueva aprobada); criterio mixto por categoría ("teclados
-   intermedios y mouse baratos") no se arma en un solo total; "no quiero
-   nada más" responde rechazo genérico en vez de despedida; el selector a
-   veces suma una sección de más (inofensivo, dato correcto).
+7. **BATERÍA COMPLETA GPT-4 mini (11-jul, tarde): interpretación 29/29 =
+   100% y los 29 guiones de punta a punta con juez limpio.** 146 turnos:
+   CERO fallbacks "no te entendí", el selector eligió en 74 turnos (la
+   cascada cubrió el resto), los sellos del redactor rechazaron 20
+   redacciones (salió compositor puro, nunca dato falso). La batería cazó
+   y se arregló un bug de PLATA: el proof del split de pago no respaldaba
+   el envío y el VERIFICADOR "autocorregía" $6.000 correcto a $5.000 de la
+   FAQ; el proof ahora respalda renglones, subtotal y extras.
+8. **Fuente de verdad ampliada (orden de Martín):** faq.json pasa a 46
+   temas (nuevos: teclado_mecanico_membrana y mouse_dpi, conocimiento sin
+   dígitos; reservas con keywords reales "me lo guardás"). B31 DESPEDIDA
+   nueva ("no quiero nada más" → cierre cordial). PREGUNTA SIN FUENTE:
+   lo que ninguna sección responde ya no cae a "no te entendí": honesto
+   "no lo tengo confirmado" + derivación, y el evento
+   `compositor_pregunta_sin_fuente` en el log es la mina de curadas
+   nuevas. PENDIENTE DE MARTÍN: cargar la FAQ 46 a Firestore tras el
+   merge (`.venv-shell/bin/python scripts/crear_cliente.py cargar_faq
+   --tienda_id verifika_prod --faq data/clientes/verifika_prod/faq.json`).
+   Conducta pendiente conocida: criterio mixto por categoría ("teclados
+   intermedios y mouse baratos") no se arma en un solo total; B25
+   compatibilidad podría usar el producto anotado en vez de re-preguntar;
+   el selector a veces suma una sección de más (inofensivo).
 
 ---
 1. **La arquitectura decidida:** una llamada LLM (SELECTOR/planificador)
