@@ -338,6 +338,11 @@ _MOVIDAS_FIJAS = {
         "B22": ("Por este canal no puedo mandarte fotos, pero te paso el "
                 "detalle completo de la ficha de lo que estés mirando. "
                 "¿Qué producto era?"),
+        # B31 despedida (11-jul): "no quiero nada más" cerraba con el
+        # fallback "no te entendí". Cierre cordial, puerta abierta.
+        "B31": ("¡Listo, gracias por pasar! Lo que estuvimos viendo te "
+                "queda anotado por si querés retomarlo. Cuando necesites "
+                "algo escribime y lo resolvemos al toque. ¡Que andes bien!"),
 }
 
 # Movidas cuyo bloque oficial sale de la FAQ curada del tema.
@@ -436,12 +441,31 @@ def _sec_not_found(mensaje: str, interp: dict, tienda_id: str,
             "¿Te muestro algo de eso?")
 
 
-def _fallback(estado: dict) -> str:
+# Mensaje con forma de PREGUNTA: signo de pregunta o arranque interrogativo.
+_RE_ES_PREGUNTA = re.compile(
+    r"[?¿]|^(que|como|cual|cuales|cuando|donde|cuanto|cuanta|por que"
+    r"|quien|puedo|puede|hay|se puede|tienen|tenes)\b")
+
+
+def _fallback(estado: dict, mensaje: str = "") -> str:
     pend = estado.get("pedido_categorias_pendiente") or []
     if pend:
         return ("Seguimos con tu pedido cuando quieras: decime los modelos "
                 "que elegís, o escribí \"los más baratos\" y te armo el "
                 "total al instante.")
+    # PREGUNTA SIN FUENTE (11-jul, pedido de Martin): una pregunta que ni el
+    # catalogo, ni la FAQ, ni ninguna seccion pudo responder NO se tapa con
+    # "no te entendi": se dice honesto que ese dato no esta en la fuente
+    # oficial y se deriva. El evento compositor_pregunta_sin_fuente queda en
+    # el log: de ahi se minan las curadas nuevas que faltan.
+    if _RE_ES_PREGUNTA.search(_norm(mensaje)):
+        log.warning("compositor_pregunta_sin_fuente",
+                    mensaje=(mensaje or "")[:200])
+        return ("Esa puntual no la tengo confirmada en mi información "
+                "oficial y prefiero no inventarte: se la paso a una persona "
+                "del equipo para que te la responda bien. Mientras tanto te "
+                "resuelvo al instante precios, stock, envíos y formas de "
+                "pago. ¿Te ayudo con algo de eso?")
     return ("Quiero ayudarte bien y no te terminé de entender. Contame qué "
             "producto o categoría buscás, o preguntame por envíos, pagos o "
             "garantía.")
@@ -530,7 +554,7 @@ def _ejecutar_plan(plan: list[dict], mensaje: str, interp: dict, estado: dict,
         elif tipo == "preguntar":
             _add("preguntar", _texto_preguntar(arg))
         elif tipo == "fallback":
-            _add("fallback", _fallback(estado))
+            _add("fallback", _fallback(estado, mensaje))
     return secciones, usadas
 
 
@@ -565,7 +589,7 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
     _ruteo = rutear_venta(mensaje, interp, estado)
     _cat_mov = _ruteo.get("categoria")
     _accion_mov = _ruteo.get("accion")
-    if movida and _cat_mov in ("B6", "B17", "B18", "B19", "B11"):
+    if movida and _cat_mov in ("B6", "B17", "B18", "B19", "B11", "B31"):
         log.info("compositor_secciones", trace_id=trace_id,
                  secciones=[_cat_mov])
         return movida, meta
@@ -630,7 +654,7 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
                      secciones=["not_found"])
             return nf, meta
         log.info("compositor_secciones", trace_id=trace_id, secciones=["fallback"])
-        return _fallback(estado), meta
+        return _fallback(estado, mensaje), meta
 
     # Los bloques crudos viajan en meta para el REDACTOR (nivel 2 de la
     # escalera): el modelo cose la prosa ENTRE bloques que no puede tocar.

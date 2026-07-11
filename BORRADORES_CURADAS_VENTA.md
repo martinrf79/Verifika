@@ -775,7 +775,30 @@ nombre de la compra?"
 2. Los huecos siempre estampan desde catálogo, FAQ o calculadora; una movida
    con hueco sin fuente no sale (escape al camino normal).
 3. B24 no se rutea por detector: la vigila el juez del banco de charlas.
-4. B25 a B30 quedan pendientes de la aprobación de Martín ANTES de cablear.
-   Por la regla de las dos mitades del menú cerrado: B25, B26 y B30 son
-   curadas de texto; B27, B28 y B29 son primitivas de datos (el texto de acá
-   es el marco, el dato lo sella la herramienta).
+4. Estado del cableado (11-jul, orden directa de Martín de crear y cargar):
+   - B26 reserva/seña y B30 estado del pedido: VIVAS vía la FAQ (temas
+     `reservas` con keywords ampliadas y `seguimiento_pedido`).
+   - B27 edición de pedido, B28 cambio de destino y B29 split: PRIMITIVAS
+     ya implementadas en código (rechazo con recálculo sellado, asignación
+     de destino que no pisa, `pago_split`).
+   - B25 compatibilidad: la responde la curada FAQ `compatibilidad` +
+     ficha; queda afinar que use el producto anotado en vez de re-preguntar.
+   - B31 despedida: VIVA (`_MOVIDAS_FIJAS`, ruteo `_RE_DESPEDIDA`).
+   - Conocimiento de producto: temas nuevos de FAQ
+     `teclado_mecanico_membrana` y `mouse_dpi` en faq.json, a cargar en
+     Firestore.
+   Martín retoca cualquier texto y se pasa al código/faq.json y se deploya.
+
+## B31. Despedida sin compra — "no quiero nada más", "eso es todo"
+
+**Objetivo.** Cerrar la charla con calidez y puerta abierta; nunca el
+fallback "no te entendí" a un cliente que se despide.
+
+**Dispara / escape.** Frases inequívocas de despedida sin pedido en curso.
+Con pedido confirmado en juego es B19 (cancelación), no esta.
+
+**Bloque duro sellado.** Ninguno.
+
+**Texto fijo (vivo).** "¡Listo, gracias por pasar! Lo que estuvimos viendo
+te queda anotado por si querés retomarlo. Cuando necesites algo escribime y
+lo resolvemos al toque. ¡Que andes bien!"

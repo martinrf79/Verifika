@@ -102,6 +102,7 @@ el escape obligatorio.
 | B28 | Cambio de destino | "me mudé", "mandalo todo a Rosario" | tarifas viejas quedan obsoletas | PRIMITIVA: destino sticky invalida lo viejo + recotizar todo |
 | B29 | Split de pago | "mitad MP, mitad transferencia" | el descuento va solo a una parte | PRIMITIVA: `pago_split` sella el reparto; el LLM no calcula |
 | B30 | Estado del pedido ya hecho | "¿ya salió lo mío?", "¿dónde está?" | no hay tracking: tienta a inventar estado | Honestidad + plazo oficial FAQ + derivar a persona; no es B23 |
+| B31 | Despedida sin compra | "no quiero nada más", "eso es todo, chau" | antes caía al fallback "no te entendí" | Cierre cordial fijo, puerta abierta; no es B19 ni B11 |
 
 ---
 
