@@ -3,7 +3,54 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 10-jul-2026 (noche) — MULTI-DESTINO + ACCESO DIRECTO
+**Última actualización: 10-jul-2026 (cierre) — DECISIÓN DE ARQUITECTURA:
+MENÚ CERRADO CON SELECTOR (acordada con Martín). ARRANCAR ACÁ EL CHAT NUEVO.**
+1. **La arquitectura decidida:** una llamada LLM (SELECTOR/planificador)
+   recibe la lectura del intérprete + el estado sellado (pedido vigente,
+   destinos, presupuesto) + contexto completo de las áreas, y su ÚNICA salida
+   posible, atada por enum/schema, es elegir del MENÚ: curadas de texto o
+   primitivas de datos (calculadora, cotizador, reagrupar pedido por destino,
+   re-servir presupuesto). El modelo VE todo para elegir bien; JAMÁS reescribe
+   un dato: el dato nace de la herramienta o del bloque. Regla de las dos
+   mitades: pregunta de TEXTO → curada; pregunta de ESTADO/CÁLCULO →
+   primitiva; PROHIBIDO tapar cálculo con texto enlatado. El filtro de salida
+   (verificadores/juez, Martín lo llama "Benifica") queda como fiscal final:
+   la atadura garantiza salida EN el menú, no la elección correcta.
+   Evidencia que la motiva: charla real 20:07-20:14 ("armame bien con cada
+   cosa que te pedí con cada localidad" x3 → el sistema cayó al flujo genérico
+   e inventó un envío a Corrientes; son turnos de razonamiento sobre estado,
+   sin flujo escrito posible).
+2. **Primer paso del build: AUDITORÍA de cobertura.** Cada caso difícil del
+   repo (CATEGORIAS_PREGUNTAS_VENTA.md, guiones, bancos) y de las charlas
+   reales, marcado como curada-o-primitiva; lista de huecos con textos
+   propuestos PARA APROBACIÓN DE MARTÍN (las curadas las aprueba él).
+3. **Gemini 2.5 Flash** (clave en env GEMINI_API_KEY): probarlo como selector
+   y solver (banco de interpretación + multiturno). Su atadura dura requiere
+   adaptar el schema estricto que hoy solo corre con provider openai
+   (interpretador._llamar_llm); Gemini tiene generación restringida propia.
+4. **Acceso directo a producción (solo lectura):** clave de service account
+   en env `GCP_SA_KEY_B64` (base64). Decodificarla al SCRATCHPAD (nunca al
+   repo), y usar REST con `REQUESTS_CA_BUNDLE=/root/.ccr/ca-bundle.crt`:
+   logs → POST logging.googleapis.com/v2/entries:list (filtro service_name
+   agente-bot); Firestore → firestore.googleapis.com REST. Cuenta:
+   claude-lector@memory-engine-v1 (logging.viewer + datastore.viewer). Sirve
+   para leer charlas reales AL INSTANTE y para correr el banco contra el
+   Firestore REAL (lecturas reales, escrituras al doble en RAM: pendiente
+   cablearlo como modo del banco). Además sigue la ventana automática de
+   diagnostico.yml cada 6h (3:17/9:17/15:17/21:17 ART).
+5. **Método que manda (acordado tras la charla honesta del círculo):** los
+   bancos solo demuestran fallas, la única prueba es el tráfico real; se toca
+   código SOLO atado a una falla vista en charla real; toda charla real de
+   Martín se lockea como guion del banco.
+Pendientes menores arrastrados: grupos_envio (qué item va a cada destino),
+"no es lo que pregunté" (leído como despedida), "colores distintos" ignorado,
+doble pregunta de cierre cosmética, evento save_conversation_kwargs_desconocidos
+en logs (mirar), ADMIN_TOKEN con default público en main.py (pisarlo con
+secreto).
+
+---
+
+**10-jul-2026 (noche) — MULTI-DESTINO + ACCESO DIRECTO
 A PRODUCCIÓN.** La segunda charla real del día (15:16, tres destinos) cobró UN
 envío: arreglado de punta a punta. `cotizar_destinos_del_mensaje` ahora corre
 en el camino SELLADO (cubre "será enviado a X"), calculate_total cobra una
