@@ -292,6 +292,18 @@ def servir_curada(mensaje: str, interp: dict | None, estado: dict | None,
             return None
     except Exception:
         pass
+    # Una LOCALIDAD concreta en el mensaje no es pregunta pura de politica:
+    # "el envio va a Villa Maria, Cordoba, ¿cuanto me queda?" quiere LA
+    # tarifa, no el enlatado de cobertura que re-pide la provincia (bug real
+    # del banco 11-jul, guion 28). La cotiza el compositor.
+    try:
+        from app.core.guia_pedido import cotizar_destinos_del_mensaje
+        from app.core.tools_context import set_current_tienda
+        set_current_tienda(tienda_id)
+        if cotizar_destinos_del_mensaje(mensaje or ""):
+            return None
+    except Exception:
+        pass
 
     # Import perezoso: asi el doble de pruebas (sim_firestore) que parchea
     # firestore_client despues del import de este modulo igual nos alcanza.

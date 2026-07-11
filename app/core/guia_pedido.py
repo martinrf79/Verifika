@@ -277,7 +277,8 @@ def opciones_por_categoria(categoria: str, tienda_id: str,
 # que el solver llame cotizar_envio (en real a veces no lo hace y el total
 # sale SIN envio, visto 8-jul).
 _RE_DESTINOS_MSG = re.compile(
-    r"\b(?:van?|vaya|env[ií]os?|mandar?|enviad[oa]s?|con\s+env[ií]o)\s+a\s+"
+    r"\b(?:van?|vaya|env[ií]os?|mandar?|mandal[oa]s?|envial[oa]s?"
+    r"|enviad[oa]s?|con\s+env[ií]o)\s+(?:todos?\s+)?a\s+"
     r"([a-zñ][a-zñ .'-]{2,30}?)"
     r"(?=\s+(?:una?|un|todos?|lo|los|las|el|dime|decime|pasame|pagando|y|e"
     r"|cuanto|dame)\b|[,.?!]|$)")

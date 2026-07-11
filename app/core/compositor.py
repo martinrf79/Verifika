@@ -230,15 +230,18 @@ def _sec_mas_barato(mensaje: str, interp: dict, estado: dict, tienda_id: str,
 def _sec_envio(mensaje: str, estado: dict, tienda_id: str,
                meta: dict) -> str | None:
     """Tarifa de envio: cotiza deterministamente la localidad del mensaje o la
-    de memoria; sin zona resoluble, pide la provincia con el texto oficial."""
+    de memoria; sin zona resoluble, pide la provincia con el texto oficial.
+    Dispara por keyword de envio O por un destino declarado que resuelve
+    ("va todo a San Francisco, Cordoba" no traia keyword y el destino se
+    perdia, banco 11-jul)."""
     m = _norm(mensaje)
-    if not _RE_QUIERE_ENVIO.search(m):
-        return None
     from app.core.tools import cotizar_envio
     from app.core.guia_pedido import cotizar_destinos_del_mensaje
     from app.core.tools_context import set_current_tienda
     set_current_tienda(tienda_id)
     destinos = cotizar_destinos_del_mensaje(mensaje)
+    if not destinos and not _RE_QUIERE_ENVIO.search(m):
+        return None
     if not destinos:
         # el mensaje entero como localidad (cubre 'llega a Neuquen capital?')
         q = cotizar_envio(localidad=mensaje)
@@ -445,7 +448,9 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
     usadas: list[str] = []
 
     def _add(nombre, texto):
-        if texto:
+        # Dedup barato: dos secciones con el mismo texto (ej. la misma
+        # curada llegando por dos caminos) no se pegan dos veces.
+        if texto and texto.strip() not in secciones:
             secciones.append(texto.strip())
             usadas.append(nombre)
 
