@@ -325,13 +325,28 @@ def _norm_ancla(s) -> str:
     return "".join(c for c in s if not unicodedata.combining(c)).strip()
 
 
+def _variantes_singular(tok: str) -> list[str]:
+    """El token y sus singulares castellanos simples: auriculares ->
+    [auriculares, auricular, auriculare]. Para que 'el auricular' matchee
+    el nombre en plural del catalogo."""
+    out = [tok]
+    if len(tok) > 4 and tok.endswith("es"):
+        out.append(tok[:-2])
+    if len(tok) > 3 and tok.endswith("s"):
+        out.append(tok[:-1])
+    return out
+
+
 def _nombre_en_mensaje(nombre: str, mensaje: str) -> bool:
     """True si algun token distintivo del nombre (largo > 3, no generico) esta
-    en el mensaje. Para la LIMPIEZA del ancla: 'el mouse no, sacalo' limpia el
-    mouse anotado; 'los auriculares dejalos' NO toca un mouse anotado."""
+    en el mensaje, tolerando singular/plural. Para la LIMPIEZA del ancla:
+    'el mouse no, sacalo' limpia el mouse anotado; 'los auriculares dejalos'
+    NO toca un mouse anotado."""
     m = _norm_ancla(mensaje)
     for tok in _norm_ancla(nombre).split():
-        if len(tok) > 3 and tok in m:
+        if len(tok) <= 3:
+            continue
+        if any(v in m for v in _variantes_singular(tok)):
             return True
     return False
 
@@ -420,3 +435,83 @@ def producto_anotado_actualizado(previo: dict | None, interp: dict,
         return {"id": str(p["id"]).upper(), "nombre": str(p["nombre"]),
                 "precio": precio}
     return previo
+
+
+# ── RECHAZO / EDICION DE PEDIDO (11-jul, banco: guiones 09 y 28) ─────────────
+# "Los auriculares dejalos", "el auricular no, sacalo": antes el turno
+# re-ofrecia las mismas opciones o caia al fallback. El rechazo se detecta
+# determinista y: con carrito, se QUITA el item y se recalcula sellado; sin
+# carrito, el compositor reconoce el descarte en vez de insistir.
+
+_RE_RECHAZO = re.compile(
+    r"no me convence|no me gusta|mejor no\b|descartal|sacal[oa]s?\b"
+    r"|no l[oa]s? quiero|ya no quiero|dejal[oa]s\b", re.IGNORECASE)
+
+
+def es_rechazo(mensaje: str) -> bool:
+    """True si el mensaje descarta algo. 'Dejalo anotado' NO es rechazo."""
+    m = str(mensaje or "")
+    if _RE_ANOTAR.search(m) and "anotado" in _norm_ancla(m):
+        return False
+    return bool(_RE_RECHAZO.search(m))
+
+
+def rechazados_del_carrito(carrito: list, mensaje: str,
+                           catalogo: list) -> tuple[list, list]:
+    """Separa el carrito en (quitados, restantes) segun el rechazo del
+    mensaje. Un item se quita si el mensaje nombra un token distintivo de su
+    NOMBRE o su CATEGORIA (singular). Sin rechazo detectado devuelve
+    ([], carrito) intacto."""
+    carrito = [c for c in (carrito or []) if isinstance(c, dict)]
+    if not carrito or not es_rechazo(mensaje):
+        return [], carrito
+    m = _norm_ancla(mensaje)
+    cat_por_id = {str(p.get("id") or "").upper(): _norm_ancla(p.get("categoria"))
+                  for p in (catalogo or []) if isinstance(p, dict)}
+    quitados, restantes = [], []
+    for it in carrito:
+        nombre = str(it.get("nombre") or "")
+        cat = cat_por_id.get(str(it.get("id") or "").upper(), "")
+        hit = _nombre_en_mensaje(nombre, mensaje) or (
+            cat and any(v in m for v in _variantes_singular(cat)))
+        (quitados if hit else restantes).append(it)
+    return quitados, restantes
+
+
+# Asignacion PARCIAL de destino (11-jul, guion 29: "una parte va a Rafaela,
+# un teclado y un mouse van ahi" pisaba el pedido de 3+2 con uno de 1+1).
+_RE_ASIGNA_DESTINO = re.compile(
+    r"una parte|el resto|van? ah[ií]\b|van? all[aá]\b|parte va", re.IGNORECASE)
+
+
+def es_asignacion_destino(mensaje: str) -> bool:
+    """True si el mensaje reparte el pedido vigente entre destinos, en vez de
+    pedir productos nuevos."""
+    return bool(_RE_ASIGNA_DESTINO.search(mensaje or ""))
+
+
+def cantidades_vigentes_por_categoria(carrito: list, pendiente_cats: list,
+                                      catalogo: list) -> dict:
+    """{categoria: cantidad} del pedido vigente: el carrito (con la categoria
+    real del catalogo por id) o, sin carrito, el pendiente de categorias."""
+    out: dict[str, int] = {}
+    cat_por_id = {str(p.get("id") or "").upper(): _norm_ancla(p.get("categoria"))
+                  for p in (catalogo or []) if isinstance(p, dict)}
+    for it in (carrito or []):
+        if not isinstance(it, dict):
+            continue
+        cat = cat_por_id.get(str(it.get("id") or "").upper())
+        if cat:
+            try:
+                out[cat] = out.get(cat, 0) + int(it.get("cantidad") or 1)
+            except (TypeError, ValueError):
+                continue
+    if out:
+        return out
+    for c in (pendiente_cats or []):
+        if isinstance(c, dict) and c.get("categoria"):
+            try:
+                out[_norm_ancla(c["categoria"])] = int(c.get("cantidad") or 0)
+            except (TypeError, ValueError):
+                continue
+    return out

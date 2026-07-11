@@ -621,6 +621,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # (charla real 10-jul: "...y dime cuanto demora" pegado al pedido se
     # perdia porque el sellado marcaba el turno como curada servida).
     _sellado_pedido = False
+    # El rechazo vacio o EDITO el carrito este turno ("sacalo"): al persistir,
+    # el carrito viejo no debe volver de la memoria aunque la intencion del
+    # turno sea "otra" (el rechazo suele leerse asi).
+    _carrito_vaciado = False
+    _carrito_editado = False
     if not respuesta_curada_servida:
         try:
             from app.core.guia_pedido import calcular_pedido
@@ -634,7 +639,51 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             # (ni pedido sellado ni carrito), NINGUN turno puede armar un
             # presupuesto (el solver lo hizo en el turno siguiente, con diez
             # items de fantasia por $607.000).
-            if not _tools_precalc:
+            # EDICION DEL PEDIDO POR RECHAZO (11-jul, guion 28: "el auricular
+            # no, sacalo" re-ofrecia las mismas opciones): si el interprete no
+            # trajo el pedido editado y el mensaje descarta un item del
+            # carrito vigente, el CODIGO lo quita y recalcula sellado.
+            if not _tools_precalc and (estado.get("carrito") or []):
+                from app.core.estado_venta import rechazados_del_carrito
+                from app.storage.firestore_client import (
+                    get_all_products as _gap_rech)
+                _quitados, _restantes = rechazados_del_carrito(
+                    estado.get("carrito"), raw_message,
+                    _gap_rech(tienda_id=tienda_id))
+                if _quitados:
+                    _noms_q = ", ".join(
+                        str(q.get("nombre") or "") for q in _quitados)
+                    if _restantes:
+                        from app.core.guia_pedido import (
+                            _calcular_items_sellados,
+                            mensaje_presupuesto_sellado)
+                        _items_rest = [
+                            {"product_id": str(r.get("id") or "").upper(),
+                             "cantidad": int(r.get("cantidad") or 1)}
+                            for r in _restantes if r.get("id")]
+                        _tools_precalc = _calcular_items_sellados(
+                            _items_rest, estado, tienda_id, trace_id,
+                            raw_message) or []
+                        if _tools_precalc:
+                            respuesta = (
+                                f"Listo, saqué {_noms_q} del pedido. Queda "
+                                "así:\n\n" + mensaje_presupuesto_sellado(
+                                    _tools_precalc[0]["result"]["presentacion"]))
+                            respuesta_curada_servida = True
+                            _sellado_pedido = True
+                            _carrito_editado = True
+                            log.info("interprete_libre_pedido_editado",
+                                     trace_id=trace_id, quitados=_noms_q)
+                    else:
+                        respuesta = (
+                            f"Listo, saqué {_noms_q} y el pedido quedó "
+                            "vacío, sin problema. ¿Te muestro alguna "
+                            "alternativa o buscás otra cosa?")
+                        respuesta_curada_servida = True
+                        _carrito_vaciado = True
+                        log.info("interprete_libre_pedido_vaciado",
+                                 trace_id=trace_id, quitados=_noms_q)
+            if not _tools_precalc and not respuesta_curada_servida:
                 from app.core.guia_pedido import cantidades_por_categoria
                 _cats_pedido = cantidades_por_categoria(raw_message, tienda_id)
                 _cats_de_memoria = False
@@ -650,7 +699,73 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                         if isinstance(c, dict)
                         and isinstance(c.get("cantidad"), int)
                         and c.get("categoria")]
-                if _cats_pedido:
+                # ASIGNACION PARCIAL DE DESTINO (11-jul, guion 29): "una
+                # parte va a Rafaela, un teclado y un mouse van ahi" NO es
+                # un pedido nuevo: es el MISMO pedido repartiendo envios.
+                # Si el pedido vigente CONTIENE las cantidades del mensaje,
+                # no se pisa nada: se cotizan los destinos (los nuevos y los
+                # ya dados, para que persistan juntos) y el pedido sigue.
+                if _cats_pedido and not _cats_de_memoria:
+                    from app.core.estado_venta import (
+                        es_asignacion_destino,
+                        cantidades_vigentes_por_categoria)
+                    if es_asignacion_destino(raw_message):
+                        from app.storage.firestore_client import (
+                            get_all_products as _gap_dest)
+                        _vig = cantidades_vigentes_por_categoria(
+                            estado.get("carrito"),
+                            conv.get("pedido_categorias_pendiente"),
+                            _gap_dest(tienda_id=tienda_id))
+                        _entra = _vig and all(
+                            _vig.get(_norm_txt(c), 0) >= n
+                            for n, c in _cats_pedido)
+                        if _entra:
+                            from app.core.guia_pedido import (
+                                cotizar_destinos_del_mensaje)
+                            from app.core.tools import cotizar_envio as _ce
+                            _dest_msg = cotizar_destinos_del_mensaje(
+                                raw_message)
+                            # Re-cotizar los destinos ya dados: la memoria
+                            # de localidades persiste TODAS juntas.
+                            for _loc_prev in (
+                                    estado.get("localidades_envio") or []):
+                                if _loc_prev and _loc_prev not in _dest_msg:
+                                    _ce(localidad=_loc_prev)
+                            from app.core.estado_venta import (
+                                get_envio_localidades as _gel)
+                            _todas = _gel()
+                            if _dest_msg:
+                                _lineas_env = []
+                                for _d in _dest_msg:
+                                    _q = _ce(localidad=_d)
+                                    if _q.get("ok"):
+                                        _m = _q.get("monto")
+                                        _c = ("gratis" if _m in (0, None)
+                                              else f"${_m:,}".replace(
+                                                  ",", "."))
+                                        _lineas_env.append(
+                                            f"- Envío a {_d}: {_c}")
+                                respuesta = (
+                                    "Listo, repartimos los envíos y el "
+                                    "pedido queda igual.\n"
+                                    + "\n".join(_lineas_env)
+                                    + "\n¿Te paso el total final con todos "
+                                      "los envíos?")
+                                respuesta_curada_servida = True
+                                # El pendiente vigente (si el pedido aun no
+                                # es carrito) se conserva: repartir destinos
+                                # no borra el pedido.
+                                _cats_pedido = [
+                                    (c.get("cantidad"), c.get("categoria"))
+                                    for c in (conv.get(
+                                        "pedido_categorias_pendiente") or [])
+                                    if isinstance(c, dict)
+                                    and isinstance(c.get("cantidad"), int)
+                                    and c.get("categoria")]
+                                log.info(
+                                    "interprete_libre_asignacion_destino",
+                                    trace_id=trace_id, destinos=_todas)
+                if _cats_pedido and not respuesta_curada_servida:
                     # ATAJOS 100% DETERMINISTAS (decision 8-jul tras la charla
                     # real de Martin): en el flujo de pedido por categorias el
                     # MENSAJE ENTERO lo arma el CODIGO y el solver NI CORRE. La
@@ -1503,6 +1618,13 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     _cambia_carrito = _intent not in ("otra",)
     carrito_vigente = ((carrito_de_meta(meta) if _cambia_carrito else [])
                        or (conv.get("carrito_vigente") or []))
+    if _carrito_vaciado:
+        # El rechazo dejo el pedido vacio: no vuelve el carrito de memoria.
+        carrito_vigente = []
+    elif _carrito_editado:
+        # El rechazo recalculo el pedido sin el item: manda el nuevo aunque
+        # la intencion del turno haya sido "otra".
+        carrito_vigente = carrito_de_meta(meta) or carrito_vigente
     ultima_localidad = envio_de_meta(meta) or (conv.get("ultima_localidad") or "")
     # TODAS las localidades cotizadas con exito (multi-destino), no solo la
     # ultima: si este turno no se cotizo ninguna queda lo de memoria. Sin esto,

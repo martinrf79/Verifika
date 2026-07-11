@@ -462,11 +462,21 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
         return movida, meta
 
     _add("saludo", _sec_saludo_puro(interp, tienda_id))
-    _add("producto", _sec_producto(mensaje, interp, estado, tienda_id, meta))
-    if "producto" not in usadas:
+    # RECHAZO (11-jul, guion 09: "los auriculares dejalos, no me convencen"
+    # re-ofrecia las mismas opciones): un descarte se RECONOCE, no se
+    # insiste. Las secciones de producto/categoria no corren este turno; la
+    # edicion del carrito con recalculo vive en interprete_libre.
+    from app.core.estado_venta import es_rechazo
+    _rech = es_rechazo(mensaje)
+    if _rech:
+        _add("rechazo", "Listo, lo dejamos de lado, sin problema.")
+    if not _rech:
+        _add("producto",
+             _sec_producto(mensaje, interp, estado, tienda_id, meta))
+    if not _rech and "producto" not in usadas:
         _add("mas_barato",
              _sec_mas_barato(mensaje, interp, estado, tienda_id, meta))
-    if "producto" not in usadas and "mas_barato" not in usadas:
+    if not _rech and "producto" not in usadas and "mas_barato" not in usadas:
         _add("categoria", _sec_categoria(mensaje, interp, tienda_id))
     _add("envio", _sec_envio(mensaje, estado, tienda_id, meta))
     if "saludo" not in usadas:
@@ -506,6 +516,9 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
         texto = _gancho(texto, "¿Te lo sumo al pedido o querés ver algo más?")
     elif "categoria" in usadas:
         texto = _gancho(texto, "¿Cuál te muestro en detalle?")
+    elif "rechazo" in usadas:
+        texto = _gancho(texto, "¿Querés que te muestre otra alternativa o "
+                               "seguimos con lo que venías mirando?")
     elif "envio" in usadas or "faq" in usadas:
         texto = _gancho(texto, "¿Qué producto estás mirando? Así te paso el "
                                "total con envío incluido.")
