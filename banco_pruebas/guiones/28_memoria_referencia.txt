@@ -1,0 +1,15 @@
+# MEMORIA + REFERENCIA AL PRINCIPIO (pedido de Martin, 11-jul): 10 turnos. El
+# cliente ancla UN producto al principio, mete ruido de FAQ, compatibilidad,
+# objecion y un agregado que despues SACA, y al final cierra con "el que te
+# mencione al principio". El bot no debe perder el ancla ni confundirla con el
+# producto agregado y sacado en el medio.
+hola, estoy armando un setup, tenes mouse y auriculares?
+el mouse Logitech M170 negro me interesa, anotalo que despues vemos el resto
+que auriculares con microfono tenes?
+alguno sirve para playstation? lo quiero para la play 5
+cuantas cuotas puedo hacer? y aceptan tarjeta de debito?
+mi hermano dice que en otro lado esta mas barato, no se
+bueno dale, sumame el HyperX Cloud II a la compra
+pensandolo mejor el auricular no, sacalo
+el envio va a Villa Maria, Cordoba, cuanto me queda?
+listo, cerrame la compra con el mouse que te mencione al principio, pasame el total final con envio

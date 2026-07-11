@@ -3,8 +3,72 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 10-jul-2026 (cierre) — DECISIÓN DE ARQUITECTURA:
-MENÚ CERRADO CON SELECTOR (acordada con Martín). ARRANCAR ACÁ EL CHAT NUEVO.**
+**Última actualización: 11-jul-2026 — SELECTOR DEL MENÚ CERRADO CONSTRUIDO
++ ancla de producto anotado + tanda de mejoras del banco. EN RAMA
+`claude/gemini-firestore-setup-7msh3a`, pendiente de merge (OK de Martín).**
+
+1. **SELECTOR construido (la arquitectura del 10-jul, viva).** `selector.py`:
+   una llamada LLM (gpt-4o-mini, schema estricto, también corre en Gemini)
+   ve lectura del intérprete + estado sellado completo y elige 1-3 secciones
+   del MENÚ (ficha, opciones, más barato, intermedio, envío, faq, movida,
+   rechazo, not_found, preguntar). El código arma cada sección desde la
+   fuente; sin respaldo se saltea; error/timeout → cascada determinista de
+   red (mismo patrón que el redactor). La movida emocional (B17/B18/B19)
+   manda SOBRE el plan.
+2. **ANCLA `producto_anotado`** (falla madre del banco): "me gusta X,
+   anotalo" persiste el ancla; "el que te dije al principio" resuelve y
+   sella el pedido con ese id. Verificado vivo: guion 28 cierra con el M170
+   anotado ($19.500 con envío), no con el más barato. El ancla viaja como
+   contexto del intérprete; la limpia solo una negación que la NOMBRA.
+3. **Más mejoras de la tanda 11-jul, todas con test y verificadas vivo:**
+   criterio INTERMEDIO (enum + escalón arriba del mínimo; "no lo más barato"
+   ya no arma los más baratos); búsqueda certificada del candidato único
+   (HyperX nombrado de cero → ficha o A/B de variantes); not_found honesto
+   ("tenés joysticks" → no derecho + categorías); rechazo reconocido y
+   edición de carrito con recálculo sellado ("sacalo"); asignación parcial
+   de destino que NO pisa el pedido (cotiza todos los destinos CON proof);
+   destino dado cotiza sin keyword ("va todo a San Francisco"); filtro de
+   pronombres ("a donde te dije" no es localidad); sellos 5-6 del redactor
+   (sin saludo a mitad de charla, sin frase cortada); guarda del más barato
+   solo con criterio del TURNO y jamás sobre pedido sellado; una objeción
+   B4/B5 no deja criterio sticky; reparación determinista del JSON truncado
+   del intérprete (whitespace-runaway de gpt-4o-mini: banco 26/29 → 29/29,
+   disparaba en 8 de 29 casos).
+4. **Gemini listo para probar**: el schema estricto ya se manda con provider
+   gemini y el default es 2.5-flash. FALTA la clave: la env está mal
+   (`GEMINI_APY_KEY`, valor inválido tipo `AQ.`); cargar una AIza real de
+   aistudio.google.com como `GEMINI_API_KEY` y abrir sesión nueva.
+5. **Firestore real verificado por REST** (service account claude-lector):
+   880 productos exactos, FAQ ok, tarifas reales coinciden con el doble
+   (córdoba 7500), `modo_cierre` sin doc → corre default "A" del código.
+6. **Curadas de venta B25-B30 redactadas** (compatibilidad, reserva/seña,
+   edición de pedido, cambio de destino, split, estado del pedido) en
+   BORRADORES_CURADAS_VENTA.md, PENDIENTES DE APROBACIÓN de Martín, sin
+   cablear.
+7. **BATERÍA COMPLETA GPT-4 mini (11-jul, tarde): interpretación 29/29 =
+   100% y los 29 guiones de punta a punta con juez limpio.** 146 turnos:
+   CERO fallbacks "no te entendí", el selector eligió en 74 turnos (la
+   cascada cubrió el resto), los sellos del redactor rechazaron 20
+   redacciones (salió compositor puro, nunca dato falso). La batería cazó
+   y se arregló un bug de PLATA: el proof del split de pago no respaldaba
+   el envío y el VERIFICADOR "autocorregía" $6.000 correcto a $5.000 de la
+   FAQ; el proof ahora respalda renglones, subtotal y extras.
+8. **Fuente de verdad ampliada (orden de Martín):** faq.json pasa a 46
+   temas (nuevos: teclado_mecanico_membrana y mouse_dpi, conocimiento sin
+   dígitos; reservas con keywords reales "me lo guardás"). B31 DESPEDIDA
+   nueva ("no quiero nada más" → cierre cordial). PREGUNTA SIN FUENTE:
+   lo que ninguna sección responde ya no cae a "no te entendí": honesto
+   "no lo tengo confirmado" + derivación, y el evento
+   `compositor_pregunta_sin_fuente` en el log es la mina de curadas
+   nuevas. PENDIENTE DE MARTÍN: cargar la FAQ 46 a Firestore tras el
+   merge (`.venv-shell/bin/python scripts/crear_cliente.py cargar_faq
+   --tienda_id verifika_prod --faq data/clientes/verifika_prod/faq.json`).
+   Conducta pendiente conocida: criterio mixto por categoría ("teclados
+   intermedios y mouse baratos") no se arma en un solo total; B25
+   compatibilidad podría usar el producto anotado en vez de re-preguntar;
+   el selector a veces suma una sección de más (inofensivo).
+
+---
 1. **La arquitectura decidida:** una llamada LLM (SELECTOR/planificador)
    recibe la lectura del intérprete + el estado sellado (pedido vigente,
    destinos, presupuesto) + contexto completo de las áreas, y su ÚNICA salida

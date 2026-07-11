@@ -1,0 +1,14 @@
+# PEDIDO COMPLEJO + CORRECCIONES + MEMORIA (pedido de Martin, 11-jul): 9
+# turnos. Pedido por categorias con criterio dificil ("intermedio, no lo mas
+# barato"), correccion de cantidades a mitad de charla, referencia borrosa
+# ("el teclado que me dijiste"), cambio de destino en caliente y cierre con
+# split implicito por transferencia. Prueba interpretacion + estado, no FAQ.
+buenas, necesito 2 teclados y 3 mouse para la oficina
+los teclados que sean economicos pero no lo mas barato que haya, algo intermedio
+los mouse si, los mas baratos que tengas con stock
+espera, mejor 3 teclados y 2 mouse, me confundi antes
+hay stock de todo eso?
+el teclado que me dijiste tiene garantia? y es mecanico o de membrana?
+va todo a San Francisco, Cordoba
+no espera, una parte va a Rafaela, Santa Fe, un teclado y un mouse van ahi
+dale, pasame el total final con los envios, pago todo por transferencia

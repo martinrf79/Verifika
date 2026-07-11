@@ -1,12 +1,16 @@
 # CURADAS de VENTA (familia B) — texto pendiente de retoque fino de Martín
 
-Estado: CABLEADAS Y VIVAS. El router determinista (`app/core/ruteo_venta.py`)
-detecta la categoría y la guía (`app/core/guia_venta.py`) inyecta el brief de
-cada movida al solver. Este documento es la fuente de verdad del TEXTO de cada
-movida: el brief compacto del código sale de acá. Un cambio acá se refleja en
-el brief y se deploya; el revert con git es la red. Son las movidas de venta
-para las categorías complejas B1 a B24 de `CATEGORIAS_PREGUNTAS_VENTA.md`.
-Martín aprueba o corrige el texto de cada una; lo corregido se pasa al brief.
+Estado: B1 a B24 CABLEADAS Y VIVAS. El router determinista
+(`app/core/ruteo_venta.py`) detecta la categoría y el compositor
+(`app/core/compositor.py`, constantes `_MOVIDAS_FIJAS` y `_MOVIDAS_FAQ`) sirve
+el texto; desde la limpieza del 10-jul ya no existe `guia_venta.py` ni brief al
+solver. Este documento es la fuente de verdad del TEXTO de cada movida: el
+texto del código sale de acá. Un cambio acá se refleja en el compositor y se
+deploya; el revert con git es la red. Son las movidas de venta para las
+categorías complejas B1 a B30 de `CATEGORIAS_PREGUNTAS_VENTA.md`. Martín
+aprueba o corrige el texto de cada una; lo corregido se pasa al código.
+B25 a B30 (11-jul) son NUEVAS: huecos detectados en la auditoría de cobertura,
+pendientes de aprobación de Martín y SIN cablear todavía.
 
 ## Qué es una curada de venta acá, y en qué se diferencia de la FAQ
 
@@ -609,11 +613,192 @@ $9.000 y tarda de 4 a 7 días hábiles. ¿Te lo mando para allá?"
 
 ---
 
+## B25. Compatibilidad entre productos — "¿este mouse anda con Mac?", "¿sirve para PS5?"
+
+**Objetivo.** Responder compatibilidad razonando SOLO desde la ficha real del
+producto. Es el eje que la regla 0 separa de identidad: el LLM puede razonar
+si esto sirve para aquello, pero nunca garantiza lo que la ficha no dice.
+
+**Dispara / escape.** Dispara cuando el cliente pregunta si un producto sirve
+para un sistema, consola o uso puntual. El producto tiene que estar
+identificado; si es ambiguo, primero B7. Si la ficha trae el dato (conexión,
+sistema, uso), se responde con eso. Si la ficha NO dice nada del sistema
+preguntado, se dice derecho que la ficha no lo especifica y no se garantiza:
+prohibido afirmar compatibilidad sin respaldo.
+
+**Bloque duro sellado.**
+`Según la ficha del {{producto}}: {{descripcion_ficha}}.`  (specs reales)
+
+**Nexos adaptativos (brief).** Eco de para qué lo quiere usar. Puente al dato
+concreto de la ficha que responde la pregunta, en una frase. Si la ficha no
+alcanza, decilo con honestidad y ofrecé la alternativa real que sí especifica
+ese uso. Cierre de avance normal.
+
+**Ejemplo (no fijo).** "Para PS5 te sirve: el Cobra M711 es USB estándar, según
+la ficha funciona en cualquier equipo con puerto USB. ¿Te lo sumo?"
+
+---
+
+## B26. Reserva / seña — "¿me lo guardás hasta el viernes?", "¿puedo señarlo?"
+
+**Objetivo.** Responder con la política real de reserva o seña, sin prometer
+que un producto queda guardado si la fuente no lo respalda.
+
+**Dispara / escape.** Dispara ante pedido de reserva, seña o "guardámelo". La
+política sale de la FAQ del tema (seña/reserva) tal cual sea. PROHIBIDO
+prometer stock futuro ("cuando vuelvas va a estar") o un apartado que la FAQ
+no ofrece. Si la política permite señar, el paso siguiente es el cierre normal.
+
+**Bloque duro sellado.** El bloque de la FAQ del tema, estampado por el acople.
+
+**Nexos adaptativos (brief).** Reconocé la intención de compra, es un cliente
+caliente que necesita tiempo. Puente a la política real. Si se puede señar,
+empujá a concretar la seña ya; si no se puede, decilo derecho y ofrecé cerrar
+la compra como la vía segura de asegurarse el producto. Un solo cierre.
+
+**Ejemplo (no fijo).** "Buenísimo que lo quieras asegurar. Podés señarlo y te
+queda reservado según la política de la tienda. ¿Lo dejamos señado ahora así
+no lo perdés?"
+
+---
+
+## B27. Edición del pedido vigente — "sacale uno", "agregale otro mouse"
+
+**Objetivo.** Que el pedido en curso se edite limpio y el total se recomponga
+de cero, sellado por la calculadora. Es pregunta de ESTADO, no de texto: la
+regla de las dos mitades manda primitiva de datos, nunca un texto enlatado.
+
+**Dispara / escape.** Dispara cuando el cliente modifica el pedido vigente:
+quitar, agregar, cambiar cantidad o reemplazar un renglón. El intérprete emite
+el pedido EDITADO completo atado al enum de lo mostrado; `calculate_total`
+re-sella el total desde cero. PROHIBIDO ajustar a mano el total anterior
+(restarle un producto de cabeza) o dejar el total viejo. Si la referencia es
+ambigua (¿sacale uno a cuál?), se pregunta antes de tocar el pedido.
+
+**Bloque duro sellado.**  (renderiza `[[PRESUPUESTO]]` recompuesto)
+`{{total}}` nuevo con todos los renglones vigentes.
+
+**Nexos adaptativos (brief).** Confirmá el cambio con eco corto, qué quedó
+dentro y qué salió. Puente al presupuesto nuevo sellado. Cierre que retoma el
+punto donde estaba la venta, pago o envío.
+
+**Ejemplo (no fijo).** "Listo, saqué un teclado: quedan 2. Te paso el total
+actualizado con el detalle completo. ¿Seguimos con el envío?"
+
+---
+
+## B28. Cambio de destino — "me mudé", "mandalo todo a Rosario mejor"
+
+**Objetivo.** Que un destino nuevo deje obsoletos los viejos y el envío se
+recotice entero. Pregunta de ESTADO: primitiva de datos, el destino sticky ya
+existe en el código.
+
+**Dispara / escape.** Dispara cuando el cliente cambia el destino de un envío
+ya cotizado o unifica todo a un destino nuevo. El código invalida las
+cotizaciones viejas y `cotizar_envio` recotiza; el total se recompone sellado.
+PROHIBIDO mantener una tarifa vieja o mezclar tarifas de destinos descartados.
+Localidad ambigua (existe en varias provincias): se pide la provincia, no se
+adivina.
+
+**Bloque duro sellado.**  (renderiza `[[ENVIO]]` / `[[PRESUPUESTO]]` recotizado)
+`{{tarifa_envio}}` del destino nuevo y `{{total}}` recompuesto.
+
+**Nexos adaptativos (brief).** Eco del cambio sin fricción, mudarse o cambiar
+de idea es normal. Puente a la cotización nueva. Si el envío gratis cambió por
+el destino nuevo, decilo con la regla real. Cierre de avance.
+
+**Ejemplo (no fijo).** "Perfecto, va todo a Rosario entonces. El envío queda
+$8.000 y el total te lo paso completo acá abajo. ¿Cerramos así?"
+
+---
+
+## B29. Split de pago — "mitad Mercado Pago, mitad transferencia"
+
+**Objetivo.** Que el reparto entre medios lo calcule el código, con el
+descuento aplicado SOLO a la parte que corresponde. Primitiva de datos: la
+función `pago_split` ya existe y `calculate_total` la sella.
+
+**Dispara / escape.** Dispara cuando el cliente reparte el pago entre dos o
+más medios, por porcentaje o por mitades. El bloque sale entero de la
+calculadora con el parámetro `pago`: base, descuento sobre la parte que no es
+Mercado Pago, y cada parte final. PROHIBIDO que el LLM haga la cuenta o
+aplique el descuento al total entero cuando solo una parte va por
+transferencia. Medio no ofrecido dentro del split → B20. Porcentajes que no
+cierran (60 y 60) → se pregunta.
+
+**Bloque duro sellado.**  (renderiza `[[PRESUPUESTO]]` con el reparto)
+`{{parte_pago}}` de cada medio, `{{descuento}}` y `{{total}}` final.
+
+**Nexos adaptativos (brief).** Eco del reparto que pidió, en sus palabras.
+Puente al bloque sellado remarcando que el descuento aplica a la parte por
+transferencia. Cierre que confirma si lo dejamos así.
+
+**Ejemplo (no fijo).** "Dale, mitad y mitad. La parte por transferencia lleva
+el 10% de descuento, así que te queda el detalle exacto acá abajo. ¿Lo
+confirmamos así?"
+
+---
+
+## B30. Estado del pedido ya hecho — "¿ya salió lo mío?", "¿dónde está mi pedido?"
+
+**Objetivo.** No inventar jamás un estado de envío ni un número de
+seguimiento. El bot no tiene sistema de tracking: honestidad y derivación a
+una persona con los canales reales de la FAQ.
+
+**Dispara / escape.** Dispara cuando el cliente pregunta por un pedido ya
+confirmado o despachado. Es distinto de B23: acá no hay falla, hay consulta de
+estado. PROHIBIDO afirmar "ya salió", "está en camino" o un día de llegada:
+nada de eso está en la fuente y la guardia de promesas lo caza. Se responde
+con el plazo oficial de la FAQ si aplica y se deriva el caso puntual a una
+persona por el canal de `contacto_humano`.
+
+**Bloque duro sellado.** El bloque de la FAQ (`plazo_envio` /
+`contacto_humano`), estampado por el acople.
+
+**Nexos adaptativos (brief).** Reconocé la ansiedad por el pedido, es normal.
+Decí derecho que el estado puntual lo confirma una persona del equipo y pasale
+el caso, con el plazo oficial como referencia general. No prometas cuándo
+llega. Cierre que confirma que el reclamo quedó tomado.
+
+**Ejemplo (no fijo).** "Te entiendo, querés saber dónde está. El estado puntual
+te lo confirma una persona del equipo, ya le paso tu caso. Como referencia, el
+plazo al interior es de 4 a 7 días hábiles. ¿Me pasás tu número de pedido o el
+nombre de la compra?"
+
+---
+
 ## Cómo se aprueba y se corrige
 
 1. Martín marca OK o corrige el texto de cada movida; lo corregido se traslada
-   al brief compacto de `guia_venta.py` y se deploya (regla 2-bis: vivo, sin
-   flags).
+   al compositor (`_MOVIDAS_FIJAS` / `_MOVIDAS_FAQ`) y se deploya (regla
+   2-bis: vivo, sin flags).
 2. Los huecos siempre estampan desde catálogo, FAQ o calculadora; una movida
    con hueco sin fuente no sale (escape al camino normal).
 3. B24 no se rutea por detector: la vigila el juez del banco de charlas.
+4. Estado del cableado (11-jul, orden directa de Martín de crear y cargar):
+   - B26 reserva/seña y B30 estado del pedido: VIVAS vía la FAQ (temas
+     `reservas` con keywords ampliadas y `seguimiento_pedido`).
+   - B27 edición de pedido, B28 cambio de destino y B29 split: PRIMITIVAS
+     ya implementadas en código (rechazo con recálculo sellado, asignación
+     de destino que no pisa, `pago_split`).
+   - B25 compatibilidad: la responde la curada FAQ `compatibilidad` +
+     ficha; queda afinar que use el producto anotado en vez de re-preguntar.
+   - B31 despedida: VIVA (`_MOVIDAS_FIJAS`, ruteo `_RE_DESPEDIDA`).
+   - Conocimiento de producto: temas nuevos de FAQ
+     `teclado_mecanico_membrana` y `mouse_dpi` en faq.json, a cargar en
+     Firestore.
+   Martín retoca cualquier texto y se pasa al código/faq.json y se deploya.
+
+## B31. Despedida sin compra — "no quiero nada más", "eso es todo"
+
+**Objetivo.** Cerrar la charla con calidez y puerta abierta; nunca el
+fallback "no te entendí" a un cliente que se despide.
+
+**Dispara / escape.** Frases inequívocas de despedida sin pedido en curso.
+Con pedido confirmado en juego es B19 (cancelación), no esta.
+
+**Bloque duro sellado.** Ninguno.
+
+**Texto fijo (vivo).** "¡Listo, gracias por pasar! Lo que estuvimos viendo
+te queda anotado por si querés retomarlo. Cuando necesites algo escribime y
+lo resolvemos al toque. ¡Que andes bien!"

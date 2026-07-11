@@ -64,6 +64,10 @@ CATEGORIAS: dict[str, dict] = {
     "B22": {"nombre": "pedido_foto", "familia": "compleja", "escape_default": "movida"},
     "B23": {"nombre": "reclamo_posventa", "familia": "compleja", "escape_default": "movida"},
     "B24": {"nombre": "multi_pregunta", "familia": "compleja", "escape_default": "normal"},
+    # B31 (11-jul, banco): despedida sin compra ("no quiero nada mas"). No es
+    # cancelacion de pedido (B19) ni postergacion tibia (B11): es un cierre
+    # cordial de la charla que antes caia al fallback "no te entendi".
+    "B31": {"nombre": "despedida", "familia": "compleja", "escape_default": "movida"},
     # Memoria: listadas, NO ruteadas por ahora (ver memoria_ref.py y taxonomia C).
     "C1": {"nombre": "referencia_borrosa", "familia": "memoria", "escape_default": "normal"},
     "C2": {"nombre": "retomar_charla_vieja", "familia": "memoria", "escape_default": "normal"},
@@ -105,6 +109,11 @@ _RE_POSTERGACION = re.compile(
     r"\blo pienso\b|\bme lo pienso\b|\bdespues (vuelvo|veo|te digo)\b|"
     r"\bmas tarde\b|\blo consulto\b|\btengo que (pensarlo|verlo|consultar\w*)\b|"
     r"\bpor ahora no\b|\bcualquier cosa (vuelvo|te aviso)\b")
+
+_RE_DESPEDIDA = re.compile(
+    r"no quiero nada mas|nada mas por ahora|por ahora nada mas|"
+    r"\beso es todo\b|nada mas,? gracias|listo,? nada mas|"
+    r"\bchau\b|\bhasta luego\b|\bnos vemos\b")
 
 _RE_INDECISION = re.compile(
     r"\bno se cual\b|\bcual me (recomendas|conviene|llevo)\b|\bque me recomendas\b|"
@@ -197,7 +206,9 @@ def _decidir(categoria: str, mensaje: str, interp: dict, estado: dict) -> dict:
     # Si la movida deberia afirmar algo (accion 'movida') pero la confianza del
     # interprete es baja, se degrada a preguntar: mejor una aclaracion que una
     # afirmacion floja. Las que YA son 'preguntar' o 'normal' no cambian.
-    if accion == "movida" and conf < _UMBRAL_CONF:
+    # B31 (despedida) queda exenta: el saludo de cierre no afirma ningun dato
+    # y la frase que lo dispara es inequivoca.
+    if accion == "movida" and conf < _UMBRAL_CONF and categoria != "B31":
         accion = "preguntar"
     return {
         "categoria": categoria,
@@ -258,6 +269,8 @@ def rutear_venta(mensaje: str, interp: dict | None, estado: dict | None) -> dict
         return _decidir("B5", mensaje, interp, estado)
     if _RE_DESCONFIANZA.search(m):
         return _decidir("B6", mensaje, interp, estado)
+    if _RE_DESPEDIDA.search(m):
+        return _decidir("B31", mensaje, interp, estado)
     if _RE_POSTERGACION.search(m):
         return _decidir("B11", mensaje, interp, estado)
     if _RE_CAMBIO_PROD.search(m):

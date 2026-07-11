@@ -13,6 +13,10 @@ compositor puro, el peor caso es un mensaje mas soso, nunca un dato falso):
 1. Cada marcador aparece exactamente UNA vez y en el MISMO orden.
 2. La prosa fuera de los marcadores no trae digitos ni nombres de productos.
 3. Tope de largo de la prosa (el redactor une, no diserta).
+4. La prosa no duplica el arranque de un bloque.
+5. La prosa no saluda (el saludo inicial lo pone el codigo, una sola vez).
+6. Ningun tramo de prosa termina colgado (preposicion/articulo al final,
+   la frase cortada "tiene un costo de" vista en el banco 11-jul).
 """
 import asyncio
 import re
@@ -80,6 +84,27 @@ def ensamblar_si_valido(salida: str, secciones: list[str],
     for bloque in secciones:
         primera = _norm((bloque or "").strip().splitlines()[0])
         if len(primera) >= 12 and primera in prosa_norm:
+            return None
+
+    # Sello 5 (banco 11-jul: "¡Hola! Que bueno que consultes" en el turno 6):
+    # la prosa del redactor no saluda. El saludo inicial lo pone el CODIGO en
+    # el primer turno; un saludo a mitad de charla queda raro y se descarta.
+    if re.search(r"\bhola\b|\bbuenas\b|buen dia|bienvenid", prosa_norm):
+        return None
+
+    # Sello 6 (banco 11-jul: "El envio a Cordoba tiene un costo de" cortado a
+    # mitad de frase): ningun tramo de prosa puede terminar colgado en una
+    # preposicion, articulo o conjuncion. Un verbo si puede cerrar el tramo
+    # ("mira lo que te cuesta [[B1]]" es prosa valida que el bloque completa).
+    _CORTES = {"de", "del", "a", "al", "el", "la", "los", "las", "un", "una",
+               "unos", "unas", "con", "por", "para", "y", "o", "u", "que",
+               "en", "su", "tu", "mi"}
+    resto = salida
+    for m in marcas:
+        resto = resto.replace(m, "\x00")
+    for frag in resto.split("\x00"):
+        toks = _norm(frag).rstrip(" .,;:!?¡¿").split()
+        if toks and toks[-1] in _CORTES:
             return None
 
     # Estampado con PARRAFO PROPIO por bloque (charla real 10-jul: "...se

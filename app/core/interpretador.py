@@ -242,7 +242,7 @@ DEVOLVE ESTE JSON:
   "respondiendo_a": "que pregunto el bot en su ultimo turno y a que responde el cliente, o null si no responde a una pregunta previa",
   "estado_conversacion": "saludo|explorando|esperando_confirmacion|esperando_datos|derivar_humano|posventa",
   "ofrecer_opciones": "null si no hay duda, o lista de dos opciones [opcion A, opcion B] cuando hay dos caminos posibles y no se puede determinar uno con certeza",
-  "criterio": "mas_barato si el cliente expresa que quiere lo mas barato / mas economico / lo mas conveniente en CUALQUIER forma, abreviatura o modismo (ej lo mas barato, las mas baratas, lo mas eco, lo mas economico, mandame lo mas conveniente, lo de menor precio). null si no expresa ese criterio",
+  "criterio": "mas_barato si el cliente expresa que quiere lo mas barato / mas economico / lo mas conveniente en CUALQUIER forma, abreviatura o modismo (ej lo mas barato, las mas baratas, lo mas eco, lo mas economico, mandame lo mas conveniente, lo de menor precio). intermedio si pide algo de precio medio o rechaza explicitamente lo mas barato (ej algo intermedio, gama media, ni el mas barato ni el mas caro, economico pero no lo mas barato que haya). null si no expresa criterio",
   "pedido": "lista de {{\\"producto\\": nombre EXACTO de un producto mostrado, \\"cantidad\\": numero}} SOLO cuando el cliente define un pedido concreto: que productos de los mostrados quiere y cuantos de cada uno (ej tres del DX-110 y dos teclados K120). Si no define productos y cantidades concretos, lista vacia []"
 }}
 
@@ -287,7 +287,7 @@ barato. Si aun comparando queda empate o duda real, candidatos con los
 posibles y confianza baja: preguntar es mejor que elegir mal.
 
 CRITERIO.
-Poné "mas_barato" cuando el cliente pide lo mas economico en cualquier forma: "lo mas barato", "las mas baratas", "lo mas eco", "lo mas economico", "mandame lo mas conveniente", "lo de menor precio", "algo barato". Cubri abreviaturas y modismos argentinos, no solo la palabra exacta. Si el cliente no expresa ese criterio, poné null. Es independiente del pedido: puede haber criterio sin pedido cerrado y viceversa.
+Poné "mas_barato" cuando el cliente pide lo mas economico en cualquier forma: "lo mas barato", "las mas baratas", "lo mas eco", "lo mas economico", "mandame lo mas conveniente", "lo de menor precio", "algo barato". Poné "intermedio" cuando pide precio medio o RECHAZA lo mas barato: "algo intermedio", "gama media", "termino medio", "economico pero no lo mas barato que haya", "ni el mas barato ni el mas caro". Cubri abreviaturas y modismos argentinos, no solo la palabra exacta. Si el cliente no expresa criterio, poné null. Es independiente del pedido: puede haber criterio sin pedido cerrado y viceversa.
 
 PEDIDO.
 Completalo SOLO cuando el cliente arma un pedido concreto: nombra productos que
@@ -404,8 +404,47 @@ def validar_schema(resultado: dict) -> tuple[bool, str]:
     return True, ""
 
 
+def _reparar_json_truncado(cleaned: str) -> dict | None:
+    """Red determinista contra el JSON cortado por max_tokens. Caso real
+    (banco 11-jul, gpt-4o-mini): la gramatica del schema estricto obliga el
+    proximo campo requerido, el modelo prefiere cerrar el objeto, y como el
+    cierre esta prohibido emite espacios en blanco hasta agotar los tokens.
+    Queda un JSON valido a medio cerrar y el turno caia al fallback de
+    intencion 'otra' confianza 0. Aca se cierra lo que quedo abierto (string,
+    llaves, corchetes) y se reintenta el parseo; si ni asi parsea, None."""
+    s = cleaned.rstrip().rstrip(",")
+    pila = []
+    en_string = False
+    escape = False
+    for ch in s:
+        if en_string:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                en_string = False
+        elif ch == '"':
+            en_string = True
+        elif ch in "{[":
+            pila.append(ch)
+        elif ch in "}]":
+            if pila:
+                pila.pop()
+    if en_string:
+        s += '"'
+        s = s.rstrip().rstrip(",")
+    s += "".join("}" if c == "{" else "]" for c in reversed(pila))
+    try:
+        out = json.loads(s)
+    except json.JSONDecodeError:
+        return None
+    return out if isinstance(out, dict) else None
+
+
 def parsear_respuesta_llm(raw: str) -> dict | None:
-    """Limpia y parsea JSON de la respuesta cruda del LLM."""
+    """Limpia y parsea JSON de la respuesta cruda del LLM. Si no parsea,
+    intenta la reparacion determinista del truncado por max_tokens."""
     cleaned = raw.strip()
     if cleaned.startswith("```"):
         cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
@@ -413,16 +452,21 @@ def parsear_respuesta_llm(raw: str) -> dict | None:
     try:
         return json.loads(cleaned)
     except json.JSONDecodeError:
-        return None
+        reparado = _reparar_json_truncado(cleaned)
+        if reparado is not None:
+            log.warning("interpretador_json_truncado_reparado",
+                        largo_raw=len(raw))
+        return reparado
 
 
 def _schema_interprete(nombres_mostrados: list[str]) -> dict:
-    """Schema estricto para Structured Outputs de OpenAI: constrained generation
-    DURA. intencion y estado atados a su enum; producto_resuelto atado al enum de
+    """Schema estricto para constrained generation DURA: Structured Outputs de
+    OpenAI y el response_format json_schema del endpoint compatible de Gemini.
+    intencion y estado atados a su enum; producto_resuelto atado al enum de
     los productos REALMENTE mostrados (o null): el interprete no puede referenciar
     a nivel token un producto que no se mostro. El LLM sigue INTERPRETANDO; el
-    schema solo evita que emita un valor fuera de la fuente. Fuera de OpenAI el
-    schema se ignora y queda el parseo + validacion de siempre."""
+    schema solo evita que emita un valor fuera de la fuente. En los demas
+    providers el schema se ignora y queda el parseo + validacion de siempre."""
     nombres = list(dict.fromkeys(n for n in nombres_mostrados if n))
     prod_enum = ([None] + nombres) if nombres else [None]
     return {
@@ -443,13 +487,17 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
             # "eco" ni abreviaturas; el LLM si. Se cruza con el regex en
             # concordancia_criterio: coinciden -> se arma; divergen -> se
             # confirma. Enum acotado: solo "mas_barato" o null.
-            "criterio": {"type": ["string", "null"], "enum": ["mas_barato", None]},
+            # "intermedio" (11-jul, caso real del banco: "economicos pero no
+            # lo mas barato que haya" armaba los MAS baratos): el rechazo del
+            # minimo es un criterio propio, no una variante de mas_barato.
+            "criterio": {"type": ["string", "null"],
+                         "enum": ["mas_barato", "intermedio", None]},
             # PEDIDO estructurado (8-jul): cuando el cliente define productos
             # concretos CON cantidad, el interprete lo extrae atado al enum de
             # lo MOSTRADO. Es la entrada de la guia determinista de pedido: el
             # codigo llama la calculadora con estos items y sella el bloque; el
-            # solver no elige ids. Fuera de OpenAI el campo llega libre y la
-            # validacion de abajo lo filtra igual (todo o nada).
+            # solver no elige ids. Fuera de OpenAI/Gemini el campo llega libre
+            # y la validacion de abajo lo filtra igual (todo o nada).
             "pedido": {"type": ["array", "null"], "items": {
                 "type": "object", "additionalProperties": False,
                 "properties": {
@@ -474,7 +522,8 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
 
 async def _llamar_llm(prompt: str, response_format: dict | None = None) -> str:
     """Llamada al LLM con parametros fijos. response_format (json_schema strict)
-    solo se aplica en OpenAI; en otros providers se ignora y cae al parseo normal."""
+    se aplica en OpenAI y Gemini; en otros providers se ignora y cae al parseo
+    normal."""
     client = _get_client()
 
     def _do_call() -> str:
@@ -515,8 +564,13 @@ async def _llamar_llm(prompt: str, response_format: dict | None = None) -> str:
                   "temperature": 0.0, "max_tokens": max_tok}
         if extra:
             kwargs["extra_body"] = extra
-        rf = (response_format if (settings.INTERPRETER_PROVIDER == "openai"
-                                  and response_format) else None)
+        # Generacion restringida a nivel token via json_schema: OpenAI
+        # (Structured Outputs) y Gemini (el endpoint compatible acepta
+        # response_format json_schema; los 2.5 la respetan duro). Si el
+        # provider lo rechaza, el except de abajo reintenta sin schema.
+        rf = (response_format if (settings.INTERPRETER_PROVIDER in
+                                  ("openai", "gemini") and response_format)
+              else None)
         try:
             if rf:
                 response = client.chat.completions.create(response_format=rf, **kwargs)

@@ -128,14 +128,34 @@ def calcular_categorias_baratas(cats_pedido: list, estado: dict | None,
     el presupuesto con la misma maquinaria de calcular_pedido. None si alguna
     categoria no tiene producto con stock o la calculadora rechaza (ej. stock
     insuficiente para la cantidad): el turno sigue por el camino normal."""
+    from app.core.guia_compra import mas_barato_con_stock
+    return _calcular_categorias_criterio(
+        cats_pedido, estado, tienda_id, trace_id, mensaje,
+        elegir=mas_barato_con_stock)
+
+
+def calcular_categorias_intermedias(cats_pedido: list, estado: dict | None,
+                                    tienda_id: str,
+                                    trace_id: str | None = None,
+                                    mensaje: str = "") -> list[dict] | None:
+    """Criterio INTERMEDIO confirmado (11-jul): mismo camino sellado que los
+    baratos pero eligiendo la opcion del medio por precio de cada categoria."""
+    from app.core.guia_compra import intermedio_con_stock
+    return _calcular_categorias_criterio(
+        cats_pedido, estado, tienda_id, trace_id, mensaje,
+        elegir=intermedio_con_stock)
+
+
+def _calcular_categorias_criterio(cats_pedido: list, estado: dict | None,
+                                  tienda_id: str, trace_id: str | None,
+                                  mensaje: str, elegir) -> list[dict] | None:
     if not cats_pedido:
         return None
     from app.core.tools_context import set_current_tienda
-    from app.core.guia_compra import mas_barato_con_stock
     set_current_tienda(tienda_id)
     items = []
     for n, cat in cats_pedido:
-        p = mas_barato_con_stock(cat)
+        p = elegir(cat)
         if not isinstance(p, dict) or not p.get("id"):
             return None
         items.append({"product_id": str(p["id"]).upper(), "cantidad": int(n)})
@@ -257,10 +277,23 @@ def opciones_por_categoria(categoria: str, tienda_id: str,
 # que el solver llame cotizar_envio (en real a veces no lo hace y el total
 # sale SIN envio, visto 8-jul).
 _RE_DESTINOS_MSG = re.compile(
-    r"\b(?:van?|vaya|env[ií]os?|mandar?|enviad[oa]s?|con\s+env[ií]o)\s+a\s+"
+    r"\b(?:van?|vaya|env[ií]os?|mandar?|mandal[oa]s?|envial[oa]s?"
+    r"|enviad[oa]s?|con\s+env[ií]o)\s+(?:todos?\s+)?a\s+"
     r"([a-zñ][a-zñ .'-]{2,30}?)"
     r"(?=\s+(?:una?|un|todos?|lo|los|las|el|dime|decime|pasame|pagando|y|e"
     r"|cuanto|dame)\b|[,.?!]|$)")
+
+
+# "Mandalo a DONDE TE DIJE" no es una localidad: referencias y pronombres
+# que el regex de destinos captura pero jamas hay que tratar como lugar
+# (visto 11-jul: "para el envio a Donde Te Dije necesito la provincia").
+_RE_DESTINO_PRONOMBRE = re.compile(
+    r"^(?:a\s+)?(?:donde|adonde|ahi|alla|alli|casa|mi casa|tu casa|su casa"
+    r"|el mismo|la misma|ese lugar|este lugar)\b")
+
+
+def _es_destino_real(cand: str) -> bool:
+    return not _RE_DESTINO_PRONOMBRE.match((cand or "").strip())
 
 
 def pregunta_destinos_pendientes(mensaje: str) -> str:
@@ -271,7 +304,7 @@ def pregunta_destinos_pendientes(mensaje: str) -> str:
     declarados = []
     for m in list(_RE_DESTINOS_MSG.finditer(_norm(mensaje or "")))[:4]:
         cand = m.group(1).strip(" .,-")
-        if len(cand) >= 3 and cand not in declarados:
+        if len(cand) >= 3 and cand not in declarados and _es_destino_real(cand):
             declarados.append(cand)
     if not declarados:
         return ""
@@ -296,7 +329,8 @@ def cotizar_destinos_del_mensaje(mensaje: str) -> list[str]:
     ok: list[str] = []
     for m in list(_RE_DESTINOS_MSG.finditer(_norm(mensaje or "")))[:4]:
         cand = m.group(1).strip(" .,-")
-        if len(cand) < 3 or cand in {c.lower() for c in ok}:
+        if (len(cand) < 3 or cand in {c.lower() for c in ok}
+                or not _es_destino_real(cand)):
             continue
         try:
             q = cotizar_envio(localidad=cand)

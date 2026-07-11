@@ -202,9 +202,10 @@ def test_categorias_memoria_no_se_rutean_por_frase():
 
 
 def test_registro_tiene_las_24_complejas_y_las_4_de_memoria():
+    # 24 originales + B31 despedida (11-jul).
     complejas = [k for k, v in CATEGORIAS.items() if v["familia"] == "compleja"]
     memoria = [k for k, v in CATEGORIAS.items() if v["familia"] == "memoria"]
-    assert len(complejas) == 24
+    assert len(complejas) == 25
     assert len(memoria) == 4
     assert 0 < _UMBRAL_CONF < 1
 

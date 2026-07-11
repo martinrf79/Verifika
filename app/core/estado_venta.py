@@ -25,12 +25,21 @@ from typing import Any
 # codigo (no con el LLM) para que sea determinista y viaje por el estado. La raiz
 # 'barat' cubre barato/barata/baratos/baratito; 'econom' cubre economico/economica.
 _CRITERIO_BARATO_RE = re.compile(r"barat|econ[oó]mic", re.IGNORECASE)
+# "Algo intermedio" o el RECHAZO explicito del minimo (caso real del banco
+# 11-jul: "economicos pero no lo mas barato que haya" armaba los MAS baratos,
+# lo contrario de lo pedido). Se chequea ANTES que el de barato: la negacion
+# contiene la palabra 'barato' y sin el orden ganaria el criterio equivocado.
+_CRITERIO_INTERMEDIO_RE = re.compile(
+    r"intermedi|t[eé]rmino medio|gama media|del medio"
+    r"|n[oi] (?:el |lo )?m[aá]s barat|ni tan barat", re.IGNORECASE)
 
 
 def detectar_criterio(mensaje: str) -> str:
-    """Criterio de precio que el cliente dejo dicho en el mensaje. Hoy uno solo:
-    'más barato'. Devuelve '' si el mensaje no trae ninguno. Determinista: el
+    """Criterio de precio que el cliente dejo dicho en el mensaje: 'más barato'
+    o 'intermedio'. Devuelve '' si el mensaje no trae ninguno. Determinista: el
     mismo texto siempre da el mismo criterio, sin llamar a ningun modelo."""
+    if _CRITERIO_INTERMEDIO_RE.search(mensaje or ""):
+        return "intermedio"
     if _CRITERIO_BARATO_RE.search(mensaje or ""):
         return "más barato"
     return ""
@@ -46,21 +55,35 @@ def criterio_del_interprete(interp) -> bool:
     return str(interp.get("criterio") or "").strip() == "mas_barato"
 
 
+def criterio_llm(interp) -> str:
+    """El criterio crudo que leyo el LLM: 'mas_barato', 'intermedio' o ''."""
+    if not isinstance(interp, dict):
+        return ""
+    v = str(interp.get("criterio") or "").strip()
+    return v if v in ("mas_barato", "intermedio") else ""
+
+
 def concordancia_criterio(mensaje: str, interp) -> str:
-    """DOS interpretes del criterio 'lo mas barato' (decision de Martin, 9-jul):
+    """DOS interpretes del criterio de precio (decision de Martin, 9-jul):
     el CODIGO (regex determinista) y el LLM (entiende 'eco', 'lo mas conveniente'
     y typos que el regex no cubre). Regla:
-      - ambos lo ven      -> 'actuar'    (se arma sin preguntar)
-      - solo uno lo ve    -> 'confirmar' (pregunta corta '¿los mas baratos?')
-      - ninguno           -> ''          (no es un turno de criterio)
+      - alguno lee INTERMEDIO -> 'intermedio' (proponer el del medio y
+        confirmar; JAMAS armar los mas baratos: es lo contrario de lo pedido)
+      - ambos leen barato     -> 'actuar'    (se arma sin preguntar)
+      - solo uno lee barato   -> 'confirmar' (pregunta corta '¿los mas baratos?')
+      - ninguno               -> ''          (no es un turno de criterio)
     Asi 'eco' se entiende sin listar sinonimos a mano, pero un disparo dudoso de
     UN solo interprete se confirma en vez de sellar un total que el cliente
     quiza no pidio. Generar > confirmar antes de comprometer plata."""
-    cod = bool(detectar_criterio(mensaje))
-    llm = criterio_del_interprete(interp)
-    if cod and llm:
+    cod = detectar_criterio(mensaje)
+    llm = criterio_llm(interp)
+    if "intermedio" in (cod, llm):
+        return "intermedio"
+    cod_b = cod == "más barato"
+    llm_b = llm == "mas_barato"
+    if cod_b and llm_b:
         return "actuar"
-    if cod or llm:
+    if cod_b or llm_b:
         return "confirmar"
     return ""
 
@@ -262,5 +285,233 @@ def construir_estado(conv: dict | None, lead: dict | None) -> dict:
         # Memoria larga: el resumen acumulado de la charla que ya salio del
         # historial vivo (turnos viejos fundidos). Contexto, no fuente de datos.
         "resumen_charla": (conv.get("summary") or "").strip(),
+        # ANCLA del producto que el cliente eligio y pidio guardar ("me gusta
+        # X, anotalo"). {id, nombre, precio} o {}. Resuelve "el que te dije
+        # al principio" sin adivinar (falla madre del banco 11-jul).
+        "producto_anotado": (conv.get("producto_anotado")
+                             if isinstance(conv.get("producto_anotado"), dict)
+                             else {}) or {},
     }
 
+
+
+# ── ANCLA DE PRODUCTO ANOTADO (11-jul, falla madre del banco) ────────────────
+# El cliente elige un producto y pide guardarlo ("me gusta el M170, anotalo");
+# diez turnos despues cierra con "el que te mencione al principio". Antes ese
+# ancla no existia: el cierre listaba todo de nuevo o acertaba de casualidad
+# (si el elegido era el mas barato). Tres piezas deterministas:
+#   - deteccion de ANOTAR este turno (regex + candidato unico del interprete)
+#   - deteccion de REFERENCIA a lo anotado (regex de memoria)
+#   - actualizacion del ancla persistida (nuevo ancla / limpieza por negacion)
+
+_RE_ANOTAR = re.compile(
+    r"anotal[oa]\b|\banota\b|dejal[oa] anotado|me gusta\b|me interesa\b"
+    r"|me quedo con\b|quiero ese\b|ese quiero\b", re.IGNORECASE)
+_RE_REF_ANOTADO = re.compile(
+    r"que te (dije|mencione|mencioné|nombre|nombré|anote|anoté|pedi|pedí)"
+    r"|al principio|al comienzo|el anotado|el que anotaste|el que elegi"
+    r"|el que elegí|el de antes\b", re.IGNORECASE)
+_RE_QUITAR_ANOTADO = re.compile(
+    r"sacal[oa]\b|no l[oa] quiero|ya no l[oa] quiero|cancelal[oa]\b"
+    r"|olvidal[oa]\b|dejal[oa]s\b", re.IGNORECASE)
+_RE_PEDIDO_ANOTADO = re.compile(
+    r"\btotal\b|cerra|cerremos|cerrame|comprar|lo llevo|lo compro"
+    r"|confirmo|presupuesto|armame", re.IGNORECASE)
+
+
+def _norm_ancla(s) -> str:
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(s or "").lower())
+    return "".join(c for c in s if not unicodedata.combining(c)).strip()
+
+
+def _variantes_singular(tok: str) -> list[str]:
+    """El token y sus singulares castellanos simples: auriculares ->
+    [auriculares, auricular, auriculare]. Para que 'el auricular' matchee
+    el nombre en plural del catalogo."""
+    out = [tok]
+    if len(tok) > 4 and tok.endswith("es"):
+        out.append(tok[:-2])
+    if len(tok) > 3 and tok.endswith("s"):
+        out.append(tok[:-1])
+    return out
+
+
+def _nombre_en_mensaje(nombre: str, mensaje: str) -> bool:
+    """True si algun token distintivo del nombre (largo > 3, no generico) esta
+    en el mensaje, tolerando singular/plural. Para la LIMPIEZA del ancla:
+    'el mouse no, sacalo' limpia el mouse anotado; 'los auriculares dejalos'
+    NO toca un mouse anotado."""
+    m = _norm_ancla(mensaje)
+    for tok in _norm_ancla(nombre).split():
+        if len(tok) <= 3:
+            continue
+        if any(v in m for v in _variantes_singular(tok)):
+            return True
+    return False
+
+
+def aplicar_ancla_producto(interp: dict, mensaje: str, estado: dict,
+                           catalogo: list) -> str:
+    """Muta interp con el ancla, en dos direcciones. Devuelve el evento ('' si
+    no hizo nada):
+      - 'anotado': el cliente elige/anota este turno y el interprete no
+        resolvio producto pero dejo UN candidato que reconcilia unico ->
+        producto_resuelto se completa (el compositor muestra la ficha en vez
+        del fallback 'no te entendi').
+      - 'referencia': el mensaje referencia lo anotado ('el que te dije al
+        principio') sin resolver producto -> producto_resuelto = el ancla, y
+        si ademas pide total/cierre, el pedido se arma con ese producto para
+        que la guia selle el presupuesto real."""
+    if not isinstance(interp, dict):
+        return ""
+    from app.core.interprete_libre import _resolver_nombre_a_producto
+    estado = estado if isinstance(estado, dict) else {}
+    m = _norm_ancla(mensaje)
+
+    # Referencia a lo anotado: el ancla persistida manda.
+    ancla = estado.get("producto_anotado") or {}
+    if (ancla.get("nombre") and _RE_REF_ANOTADO.search(m)
+            and not str(interp.get("producto_resuelto") or "").strip()
+            and not (interp.get("pedido") or [])):
+        interp["producto_resuelto"] = ancla["nombre"]
+        if _RE_PEDIDO_ANOTADO.search(m):
+            interp["pedido"] = [{"producto": ancla["nombre"], "cantidad": 1,
+                                 "destino": None}]
+            try:
+                conf = float(interp.get("confianza") or 0)
+            except (TypeError, ValueError):
+                conf = 0.0
+            interp["confianza"] = max(conf, 0.7)
+        return "referencia"
+
+    # Anotar este turno: candidato unico + palabras de eleccion.
+    if (_RE_ANOTAR.search(m)
+            and not str(interp.get("producto_resuelto") or "").strip()):
+        cands = [str(c) for c in (interp.get("candidatos") or [])
+                 if str(c).strip()]
+        if len(cands) == 1:
+            p = _resolver_nombre_a_producto(cands[0], catalogo)
+            if isinstance(p, dict) and p.get("nombre"):
+                interp["producto_resuelto"] = p["nombre"]
+                return "anotado"
+    return ""
+
+
+def producto_anotado_actualizado(previo: dict | None, interp: dict,
+                                 mensaje: str, catalogo: list) -> dict:
+    """El ancla que se PERSISTE al final del turno. Regla conservadora:
+      - producto_resuelto del turno (ya pasado por aplicar_ancla_producto)
+        que reconcilia unico con el catalogo -> nuevo ancla, salvo intencion
+        'otra' (rechazo/off-topic no ancla).
+      - negacion sobre el anotado ('el mouse no, sacalo') -> se limpia, SOLO
+        si el mensaje nombra un token distintivo del ancla (no se limpia por
+        rechazar OTRO producto).
+      - si no, queda el previo."""
+    previo = previo if isinstance(previo, dict) else {}
+    interp = interp if isinstance(interp, dict) else {}
+    if (previo.get("nombre") and _RE_QUITAR_ANOTADO.search(mensaje or "")
+            and _nombre_en_mensaje(previo["nombre"], mensaje)):
+        return {}
+    if str(interp.get("intencion") or "") == "otra":
+        return previo
+    resuelto = str(interp.get("producto_resuelto") or "").strip()
+    if not resuelto:
+        return previo
+    # Solo ancla una ELECCION: palabras de anotar/elegir en el mensaje o una
+    # intencion de compra/aporte. Una pregunta suelta sobre OTRO producto
+    # ("¿cuanto sale el DX-110?") no pisa el ancla del elegido.
+    if not (_RE_ANOTAR.search(mensaje or "")
+            or str(interp.get("intencion") or "") in
+            ("decision_compra", "aporta_dato")):
+        return previo
+    from app.core.interprete_libre import _resolver_nombre_a_producto
+    p = _resolver_nombre_a_producto(resuelto, catalogo)
+    if isinstance(p, dict) and p.get("id") and p.get("nombre"):
+        try:
+            precio = int(p.get("precio_ars") or 0)
+        except (TypeError, ValueError):
+            precio = 0
+        return {"id": str(p["id"]).upper(), "nombre": str(p["nombre"]),
+                "precio": precio}
+    return previo
+
+
+# ── RECHAZO / EDICION DE PEDIDO (11-jul, banco: guiones 09 y 28) ─────────────
+# "Los auriculares dejalos", "el auricular no, sacalo": antes el turno
+# re-ofrecia las mismas opciones o caia al fallback. El rechazo se detecta
+# determinista y: con carrito, se QUITA el item y se recalcula sellado; sin
+# carrito, el compositor reconoce el descarte en vez de insistir.
+
+_RE_RECHAZO = re.compile(
+    r"no me convence|no me gusta|mejor no\b|descartal|sacal[oa]s?\b"
+    r"|no l[oa]s? quiero|ya no quiero|dejal[oa]s\b", re.IGNORECASE)
+
+
+def es_rechazo(mensaje: str) -> bool:
+    """True si el mensaje descarta algo. 'Dejalo anotado' NO es rechazo."""
+    m = str(mensaje or "")
+    if _RE_ANOTAR.search(m) and "anotado" in _norm_ancla(m):
+        return False
+    return bool(_RE_RECHAZO.search(m))
+
+
+def rechazados_del_carrito(carrito: list, mensaje: str,
+                           catalogo: list) -> tuple[list, list]:
+    """Separa el carrito en (quitados, restantes) segun el rechazo del
+    mensaje. Un item se quita si el mensaje nombra un token distintivo de su
+    NOMBRE o su CATEGORIA (singular). Sin rechazo detectado devuelve
+    ([], carrito) intacto."""
+    carrito = [c for c in (carrito or []) if isinstance(c, dict)]
+    if not carrito or not es_rechazo(mensaje):
+        return [], carrito
+    m = _norm_ancla(mensaje)
+    cat_por_id = {str(p.get("id") or "").upper(): _norm_ancla(p.get("categoria"))
+                  for p in (catalogo or []) if isinstance(p, dict)}
+    quitados, restantes = [], []
+    for it in carrito:
+        nombre = str(it.get("nombre") or "")
+        cat = cat_por_id.get(str(it.get("id") or "").upper(), "")
+        hit = _nombre_en_mensaje(nombre, mensaje) or (
+            cat and any(v in m for v in _variantes_singular(cat)))
+        (quitados if hit else restantes).append(it)
+    return quitados, restantes
+
+
+# Asignacion PARCIAL de destino (11-jul, guion 29: "una parte va a Rafaela,
+# un teclado y un mouse van ahi" pisaba el pedido de 3+2 con uno de 1+1).
+_RE_ASIGNA_DESTINO = re.compile(
+    r"una parte|el resto|van? ah[ií]\b|van? all[aá]\b|parte va", re.IGNORECASE)
+
+
+def es_asignacion_destino(mensaje: str) -> bool:
+    """True si el mensaje reparte el pedido vigente entre destinos, en vez de
+    pedir productos nuevos."""
+    return bool(_RE_ASIGNA_DESTINO.search(mensaje or ""))
+
+
+def cantidades_vigentes_por_categoria(carrito: list, pendiente_cats: list,
+                                      catalogo: list) -> dict:
+    """{categoria: cantidad} del pedido vigente: el carrito (con la categoria
+    real del catalogo por id) o, sin carrito, el pendiente de categorias."""
+    out: dict[str, int] = {}
+    cat_por_id = {str(p.get("id") or "").upper(): _norm_ancla(p.get("categoria"))
+                  for p in (catalogo or []) if isinstance(p, dict)}
+    for it in (carrito or []):
+        if not isinstance(it, dict):
+            continue
+        cat = cat_por_id.get(str(it.get("id") or "").upper())
+        if cat:
+            try:
+                out[cat] = out.get(cat, 0) + int(it.get("cantidad") or 1)
+            except (TypeError, ValueError):
+                continue
+    if out:
+        return out
+    for c in (pendiente_cats or []):
+        if isinstance(c, dict) and c.get("categoria"):
+            try:
+                out[_norm_ancla(c["categoria"])] = int(c.get("cantidad") or 0)
+            except (TypeError, ValueError):
+                continue
+    return out

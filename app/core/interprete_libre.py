@@ -507,13 +507,21 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     set_current_estado(estado)
 
     # ── PASO 1: INTERPRETE ──────────────────────────────────────────────
+    # El producto ANOTADO viaja como contexto del interprete junto al resumen:
+    # "el que te dije al principio" resuelve aunque el turno del ancla ya haya
+    # caido del historial vivo.
+    _resumen_interp = estado.get("resumen_charla") or ""
+    _ancla_previa = estado.get("producto_anotado") or {}
+    if _ancla_previa.get("nombre"):
+        _resumen_interp = (_resumen_interp + " [Producto elegido y anotado "
+                           f"por el cliente: {_ancla_previa['nombre']}]").strip()
     interp = {}
     try:
         interp = await interpretar_mensaje(
             raw_message, history, trace_id,
             estado_anterior=estado_anterior, tienda_id=tienda_id,
             productos_vistos=estado.get("productos_vistos"),
-            resumen=estado.get("resumen_charla") or "")
+            resumen=_resumen_interp)
     except Exception as e:
         log.error("interprete_libre_interp_error", trace_id=trace_id,
                   error=str(e)[:200])
@@ -531,6 +539,24 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                  responde_a=interp.get("respondiendo_a"),
                  candidatos=interp.get("candidatos"),
                  pedido=interp.get("pedido"))
+
+    # ANCLA DE PRODUCTO ANOTADO (11-jul): dos mutaciones deterministas sobre
+    # la interpretacion. "Me gusta X, anotalo" con candidato unico completa
+    # producto_resuelto (la ficha reemplaza al fallback "no te entendi");
+    # "el que te dije al principio" resuelve al ancla persistida y, si pide
+    # total/cierre, arma el pedido para que la guia selle el presupuesto real.
+    try:
+        from app.core.estado_venta import aplicar_ancla_producto
+        from app.storage.firestore_client import get_all_products as _gap_ancla
+        _ancla_ev = aplicar_ancla_producto(
+            interp, raw_message, estado, _gap_ancla(tienda_id=tienda_id))
+        if _ancla_ev:
+            log.info("interprete_libre_ancla_producto", trace_id=trace_id,
+                     evento=_ancla_ev,
+                     producto=interp.get("producto_resuelto"))
+    except Exception as e:
+        log.warning("interprete_libre_ancla_error", trace_id=trace_id,
+                    error=str(e)[:120])
 
     # Flag one-shot del gatillo de cierre (se lee ACA porque tambien condiciona
     # el atajo curado: con una pregunta de cierre pendiente no se ataja nada).
@@ -565,7 +591,13 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # El id computado alimenta la guarda del mas barato de mas abajo, que
     # re-ancla si la respuesta afirma que el mas barato es OTRO producto.
     _id_barato = ""
-    if detectar_criterio(raw_message) or (estado.get("criterio") or "").strip():
+    # Solo con criterio BARATO dicho en ESTE mensaje: el guard del minimo no
+    # aplica al criterio "intermedio" (11-jul) ni al sticky de turnos viejos
+    # (11-jul, banco: el cliente pregunto por el HyperX y el sticky de tres
+    # turnos atras hizo que la guarda reescribiera la respuesta correcta al
+    # mas barato de otra categoria). El sticky sigue valiendo para ARMAR el
+    # pedido pendiente; para POLICIAR la respuesta solo vale el turno.
+    if detectar_criterio(raw_message) == "más barato":
         try:
             from app.core.guia_compra import guia_mas_barato
             _guia_barato = guia_mas_barato(
@@ -592,6 +624,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # (charla real 10-jul: "...y dime cuanto demora" pegado al pedido se
     # perdia porque el sellado marcaba el turno como curada servida).
     _sellado_pedido = False
+    # El rechazo vacio o EDITO el carrito este turno ("sacalo"): al persistir,
+    # el carrito viejo no debe volver de la memoria aunque la intencion del
+    # turno sea "otra" (el rechazo suele leerse asi).
+    _carrito_vaciado = False
+    _carrito_editado = False
     if not respuesta_curada_servida:
         try:
             from app.core.guia_pedido import calcular_pedido
@@ -605,7 +642,51 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             # (ni pedido sellado ni carrito), NINGUN turno puede armar un
             # presupuesto (el solver lo hizo en el turno siguiente, con diez
             # items de fantasia por $607.000).
-            if not _tools_precalc:
+            # EDICION DEL PEDIDO POR RECHAZO (11-jul, guion 28: "el auricular
+            # no, sacalo" re-ofrecia las mismas opciones): si el interprete no
+            # trajo el pedido editado y el mensaje descarta un item del
+            # carrito vigente, el CODIGO lo quita y recalcula sellado.
+            if not _tools_precalc and (estado.get("carrito") or []):
+                from app.core.estado_venta import rechazados_del_carrito
+                from app.storage.firestore_client import (
+                    get_all_products as _gap_rech)
+                _quitados, _restantes = rechazados_del_carrito(
+                    estado.get("carrito"), raw_message,
+                    _gap_rech(tienda_id=tienda_id))
+                if _quitados:
+                    _noms_q = ", ".join(
+                        str(q.get("nombre") or "") for q in _quitados)
+                    if _restantes:
+                        from app.core.guia_pedido import (
+                            _calcular_items_sellados,
+                            mensaje_presupuesto_sellado)
+                        _items_rest = [
+                            {"product_id": str(r.get("id") or "").upper(),
+                             "cantidad": int(r.get("cantidad") or 1)}
+                            for r in _restantes if r.get("id")]
+                        _tools_precalc = _calcular_items_sellados(
+                            _items_rest, estado, tienda_id, trace_id,
+                            raw_message) or []
+                        if _tools_precalc:
+                            respuesta = (
+                                f"Listo, saqué {_noms_q} del pedido. Queda "
+                                "así:\n\n" + mensaje_presupuesto_sellado(
+                                    _tools_precalc[0]["result"]["presentacion"]))
+                            respuesta_curada_servida = True
+                            _sellado_pedido = True
+                            _carrito_editado = True
+                            log.info("interprete_libre_pedido_editado",
+                                     trace_id=trace_id, quitados=_noms_q)
+                    else:
+                        respuesta = (
+                            f"Listo, saqué {_noms_q} y el pedido quedó "
+                            "vacío, sin problema. ¿Te muestro alguna "
+                            "alternativa o buscás otra cosa?")
+                        respuesta_curada_servida = True
+                        _carrito_vaciado = True
+                        log.info("interprete_libre_pedido_vaciado",
+                                 trace_id=trace_id, quitados=_noms_q)
+            if not _tools_precalc and not respuesta_curada_servida:
                 from app.core.guia_pedido import cantidades_por_categoria
                 _cats_pedido = cantidades_por_categoria(raw_message, tienda_id)
                 _cats_de_memoria = False
@@ -621,7 +702,90 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                         if isinstance(c, dict)
                         and isinstance(c.get("cantidad"), int)
                         and c.get("categoria")]
-                if _cats_pedido:
+                # ASIGNACION PARCIAL DE DESTINO (11-jul, guion 29): "una
+                # parte va a Rafaela, un teclado y un mouse van ahi" NO es
+                # un pedido nuevo: es el MISMO pedido repartiendo envios.
+                # Si el pedido vigente CONTIENE las cantidades del mensaje,
+                # no se pisa nada: se cotizan los destinos (los nuevos y los
+                # ya dados, para que persistan juntos) y el pedido sigue.
+                if _cats_pedido and not _cats_de_memoria:
+                    from app.core.estado_venta import (
+                        es_asignacion_destino,
+                        cantidades_vigentes_por_categoria)
+                    if es_asignacion_destino(raw_message):
+                        from app.storage.firestore_client import (
+                            get_all_products as _gap_dest)
+                        _vig = cantidades_vigentes_por_categoria(
+                            estado.get("carrito"),
+                            conv.get("pedido_categorias_pendiente"),
+                            _gap_dest(tienda_id=tienda_id))
+                        _entra = _vig and all(
+                            _vig.get(_norm_txt(c), 0) >= n
+                            for n, c in _cats_pedido)
+                        if _entra:
+                            from app.core.guia_pedido import (
+                                cotizar_destinos_del_mensaje)
+                            from app.core.tools import cotizar_envio as _ce
+
+                            def _reg_envio(_loc, _q):
+                                # El proof de CADA cotizacion entra a meta:
+                                # sin el, el verificador no tiene respaldo
+                                # del monto correcto y lo "autocorrige" a un
+                                # valor de la FAQ (visto 11-jul: $6.000 de
+                                # Rafaela pisado a $5.000).
+                                _e = {"name": "cotizar_envio",
+                                      "args": {"localidad": _loc},
+                                      "result": _q}
+                                if isinstance(_q, dict) and _q.get("proof"):
+                                    _e["proof"] = _q["proof"]
+                                _tools_precalc.append(_e)
+
+                            _dest_msg = cotizar_destinos_del_mensaje(
+                                raw_message)
+                            # Re-cotizar los destinos ya dados: la memoria
+                            # de localidades persiste TODAS juntas.
+                            for _loc_prev in (
+                                    estado.get("localidades_envio") or []):
+                                if _loc_prev and _loc_prev not in _dest_msg:
+                                    _qp = _ce(localidad=_loc_prev)
+                                    if _qp.get("ok"):
+                                        _reg_envio(_loc_prev, _qp)
+                            from app.core.estado_venta import (
+                                get_envio_localidades as _gel)
+                            _todas = _gel()
+                            if _dest_msg:
+                                _lineas_env = []
+                                for _d in _dest_msg:
+                                    _q = _ce(localidad=_d)
+                                    if _q.get("ok"):
+                                        _reg_envio(_d, _q)
+                                        _m = _q.get("monto")
+                                        _c = ("gratis" if _m in (0, None)
+                                              else f"${_m:,}".replace(
+                                                  ",", "."))
+                                        _lineas_env.append(
+                                            f"- Envío a {_d}: {_c}")
+                                respuesta = (
+                                    "Listo, repartimos los envíos y el "
+                                    "pedido queda igual.\n"
+                                    + "\n".join(_lineas_env)
+                                    + "\n¿Te paso el total final con todos "
+                                      "los envíos?")
+                                respuesta_curada_servida = True
+                                # El pendiente vigente (si el pedido aun no
+                                # es carrito) se conserva: repartir destinos
+                                # no borra el pedido.
+                                _cats_pedido = [
+                                    (c.get("cantidad"), c.get("categoria"))
+                                    for c in (conv.get(
+                                        "pedido_categorias_pendiente") or [])
+                                    if isinstance(c, dict)
+                                    and isinstance(c.get("cantidad"), int)
+                                    and c.get("categoria")]
+                                log.info(
+                                    "interprete_libre_asignacion_destino",
+                                    trace_id=trace_id, destinos=_todas)
+                if _cats_pedido and not respuesta_curada_servida:
                     # ATAJOS 100% DETERMINISTAS (decision 8-jul tras la charla
                     # real de Martin): en el flujo de pedido por categorias el
                     # MENSAJE ENTERO lo arma el CODIGO y el solver NI CORRE. La
@@ -639,10 +803,63 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                     _conc = concordancia_criterio(raw_message, interp)
                     if conv.get("criterio_confirmar_pendiente"):
                         if _es_afirmacion_barato(raw_message, interp):
-                            _conc = "actuar"
+                            # El "si" arma con el criterio que quedo sticky al
+                            # preguntar: intermedio confirma intermedios.
+                            _conc = ("intermedio_confirmado"
+                                     if (conv.get("criterio_cliente") or "")
+                                     == "intermedio" else "actuar")
                         elif _RE_NEGACION.search(_norm_txt(raw_message)):
                             _conc = ""
-                    if _conc == "actuar":
+                    if _conc == "intermedio_confirmado":
+                        # Criterio INTERMEDIO confirmado por el cliente: el
+                        # codigo elige la opcion del medio por precio de cada
+                        # categoria y sella el total (mismo camino que los
+                        # baratos, otro elegidor).
+                        from app.core.guia_pedido import (
+                            calcular_categorias_intermedias,
+                            mensaje_presupuesto_sellado,
+                            pregunta_destinos_pendientes)
+                        _tools_precalc = calcular_categorias_intermedias(
+                            _cats_pedido, estado, tienda_id, trace_id,
+                            mensaje=raw_message) or []
+                        if _tools_precalc:
+                            respuesta = (mensaje_presupuesto_sellado(
+                                _tools_precalc[0]["result"]["presentacion"])
+                                + pregunta_destinos_pendientes(raw_message))
+                            respuesta_curada_servida = True
+                            _sellado_pedido = True
+                            log.info("interprete_libre_categorias_intermedias",
+                                     trace_id=trace_id, cats=_cats_pedido)
+                            _cats_pedido = []
+                    elif _conc == "intermedio":
+                        # Criterio INTERMEDIO leido este turno (caso real del
+                        # banco 11-jul: "economicos pero no lo mas barato que
+                        # haya" armaba los MAS baratos, lo contrario de lo
+                        # pedido). Como "intermedio" es difuso, se PROPONE la
+                        # opcion del medio de cada categoria con datos reales
+                        # y se confirma antes de sellar plata.
+                        from app.core.guia_compra import intermedio_con_stock
+                        from app.core.tools_context import set_current_tienda
+                        set_current_tienda(tienda_id)
+                        _lineas_int = []
+                        for _n, _cat in _cats_pedido:
+                            _pi = intermedio_con_stock(_cat)
+                            if isinstance(_pi, dict) and _pi.get("nombre"):
+                                _lineas_int.append(
+                                    f"- {_n}x " + _linea_producto(_pi))
+                        if _lineas_int:
+                            respuesta = (
+                                "Buscás algo intermedio, ni lo más económico "
+                                "ni lo más caro. Te propongo:\n"
+                                + "\n".join(_lineas_int)
+                                + "\n¿Te armo el total con estos? Confirmame "
+                                  "con un sí y te paso el presupuesto al "
+                                  "instante.")
+                            respuesta_curada_servida = True
+                            _criterio_confirmar = True
+                            log.info("interprete_libre_criterio_intermedio",
+                                     trace_id=trace_id, cats=_cats_pedido)
+                    elif _conc == "actuar":
                         from app.core.guia_pedido import (
                             calcular_categorias_baratas,
                             mensaje_presupuesto_sellado)
@@ -735,8 +952,23 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 _sellado_pedido = True
             else:
                 from app.core.compositor import componer
+                # SELECTOR del menu cerrado (decision de Martin 10-jul,
+                # construido 11-jul): una llamada LLM con schema estricto
+                # elige QUE secciones componen el turno viendo la lectura
+                # del interprete + el estado sellado completo. Reemplaza a
+                # la cascada de regex como decisor; la cascada queda de red
+                # ante error, timeout o plan que no respalda.
+                _plan = None
+                try:
+                    from app.core.selector import elegir_plan
+                    _plan = await elegir_plan(
+                        raw_message, interp, estado, tienda_id, trace_id)
+                except Exception as e:
+                    log.warning("interprete_libre_selector_error",
+                                trace_id=trace_id, error=str(e)[:120])
                 respuesta, meta = componer(
-                    raw_message, interp, estado, tienda_id, trace_id)
+                    raw_message, interp, estado, tienda_id, trace_id,
+                    plan=_plan)
                 # NIVEL 2 de la escalera (OK de Martin, 10-jul): con dos o mas
                 # bloques, el REDACTOR cose la prosa de union. Su salida usa
                 # marcadores y el codigo estampa los bloques reales: el texto
@@ -1268,7 +1500,15 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             # GUARDA DEL MAS BARATO: mismo patron, sobre el minimo que computo
             # la guia determinista. Si el solver afirmo que el mas barato es
             # OTRO producto, se re-ancla al real (dato del catalogo).
-            if not producto_forzado and _id_barato:
+            # NO corre sobre un pedido SELLADO ni cuando el cliente pidio un
+            # producto PUNTUAL con pedido armado (banco 11-jul: el cliente
+            # cerro con el M170 anotado y la guarda reescribio la respuesta
+            # correcta al DX-110 por un criterio sticky contaminado).
+            _pidio_puntual = bool(
+                str(interp.get("producto_resuelto") or "").strip()
+                and (interp.get("pedido") or []))
+            if (not producto_forzado and _id_barato
+                    and not _sellado_pedido and not _pidio_puntual):
                 _re_barato = _reanclar_si_barato_divergente(
                     respuesta, _id_barato, _ids_mostrados, tienda_id)
                 if _re_barato:
@@ -1421,6 +1661,13 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     _cambia_carrito = _intent not in ("otra",)
     carrito_vigente = ((carrito_de_meta(meta) if _cambia_carrito else [])
                        or (conv.get("carrito_vigente") or []))
+    if _carrito_vaciado:
+        # El rechazo dejo el pedido vacio: no vuelve el carrito de memoria.
+        carrito_vigente = []
+    elif _carrito_editado:
+        # El rechazo recalculo el pedido sin el item: manda el nuevo aunque
+        # la intencion del turno haya sido "otra".
+        carrito_vigente = carrito_de_meta(meta) or carrito_vigente
     ultima_localidad = envio_de_meta(meta) or (conv.get("ultima_localidad") or "")
     # TODAS las localidades cotizadas con exito (multi-destino), no solo la
     # ultima: si este turno no se cotizo ninguna queda lo de memoria. Sin esto,
@@ -1432,15 +1679,45 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # del codigo + campo del LLM, que entiende "eco" y abreviaturas) y es STICKY.
     # Una vez dicho persiste entre turnos hasta que el cliente diga otro, asi el
     # bot no vuelve a preguntar modelo ni color (arreglo B).
-    criterio_cliente = (
-        detectar_criterio(raw_message)
-        or ("más barato" if criterio_del_interprete(interp) else "")
-        or (conv.get("criterio_cliente") or ""))
+    from app.core.estado_venta import criterio_llm as _criterio_llm
+    # OJO: una OBJECION de precio ("mi hermano dice que en otro lado esta
+    # mas barato") NO es un criterio del cliente; dejaba sticky "más barato"
+    # y contaminaba los turnos siguientes (banco 11-jul). Con ruteo B4/B5,
+    # el criterio del mensaje no se toma.
+    try:
+        from app.core.ruteo_venta import rutear_venta as _rv_crit
+        _cat_crit = (_rv_crit(raw_message, interp, estado) or {}).get(
+            "categoria")
+    except Exception:
+        _cat_crit = None
+    if _cat_crit in ("B4", "B5"):
+        # Regateo u objecion: NINGUNA lectura de criterio del mensaje (ni
+        # regex ni LLM) queda sticky; solo persiste lo que ya habia.
+        criterio_cliente = conv.get("criterio_cliente") or ""
+    else:
+        criterio_cliente = (
+            detectar_criterio(raw_message)
+            or ("más barato" if criterio_del_interprete(interp) else "")
+            or ("intermedio" if _criterio_llm(interp) == "intermedio" else "")
+            or (conv.get("criterio_cliente") or ""))
     # Provincia del cliente: se detecta determinista y es STICKY. Una vez dada
     # persiste entre turnos y se aplica a TODOS los destinos, asi el bot no repide
     # el CP de cada pueblo (arreglo C, el 'ya te dije pueblo y provincia'). La
     # deteccion de este turno ya se hizo al arranque (_prov_msg, la usa el estado).
     provincia_envio = _prov_msg or (conv.get("provincia_envio") or "")
+    # ANCLA de producto anotado: se actualiza con lo resuelto este turno (ya
+    # pasado por aplicar_ancla_producto) y se limpia solo ante una negacion
+    # que NOMBRA al ancla. Conservador: ante duda queda el previo.
+    try:
+        from app.core.estado_venta import producto_anotado_actualizado
+        from app.storage.firestore_client import get_all_products as _gap_save
+        producto_anotado = producto_anotado_actualizado(
+            conv.get("producto_anotado"), interp, raw_message,
+            _gap_save(tienda_id=tienda_id))
+    except Exception as e:
+        log.warning("interprete_libre_ancla_save_error", trace_id=trace_id,
+                    error=str(e)[:120])
+        producto_anotado = conv.get("producto_anotado") or {}
 
     latency_ms = int((time.time() - t0) * 1000)
     try:
@@ -1473,7 +1750,8 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                           # coincidencia y arma el total.
                           criterio_confirmar_pendiente=_criterio_confirmar,
                           pregunta_cierre_hecha=pregunta_cierre_hecha,
-                          datos_cliente_parciales=datos_acumulados)
+                          datos_cliente_parciales=datos_acumulados,
+                          producto_anotado=producto_anotado)
     except Exception as e:
         log.warning("interprete_libre_save_failed", trace_id=trace_id,
                     error=str(e)[:120])

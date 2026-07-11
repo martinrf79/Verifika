@@ -55,7 +55,7 @@ class Settings(BaseModel):
     # Usa el endpoint compatible con OpenAI de Google, asi entra con el mismo
     # cliente. Se activa con LLM_PROVIDER=gemini.
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     GEMINI_BASE_URL: str = os.getenv(
         "GEMINI_BASE_URL",
         "https://generativelanguage.googleapis.com/v1beta/openai/")

@@ -301,7 +301,12 @@
       "reserva",
       "sena",
       "encargar",
-      "esperar"
+      "esperar",
+      "guardas",
+      "guardar",
+      "guardamelo",
+      "apartar",
+      "apartame"
     ],
     "respuesta": "Si no tenemos stock podemos tomar reserva con sena del 20 por ciento. El plazo depende del producto y proveedor.",
     "venta": "Si te interesa y no hay stock, con una sena del 20 por ciento te lo reservo y te aviso apenas entra.",
@@ -797,5 +802,33 @@
     "tipo": "informativo",
     "valores": [],
     "respuesta_curada": "Hoy tenes descuento pagando por transferencia y cuotas sin interes con tarjeta. Las promos puntuales por producto te las confirmo segun lo que mires. Contame que buscas y te digo si tiene algo especial."
+  },
+  {
+    "tema": "teclado_mecanico_membrana",
+    "tipo": "informativo",
+    "keywords": [
+      "mecanico",
+      "membrana",
+      "switch",
+      "switches",
+      "mecanicos",
+      "clicky"
+    ],
+    "respuesta": "Un teclado mecanico tiene un switch fisico independiente debajo de cada tecla: dura mas, responde mas preciso y suele ser mas ruidoso. El de membrana usa una lamina de goma comun a todas las teclas: mas silencioso y mas economico. Los switches mecanicos se identifican por color: red es lineal y suave, ideal gaming; blue es clicky y sonoro; brown es tactil, un punto medio.",
+    "respuesta_curada": "Te lo explico corto: un teclado mecanico tiene un switch fisico independiente debajo de cada tecla, dura mas, responde mas preciso y suele ser mas ruidoso. El de membrana usa una lamina de goma comun a todas las teclas, es mas silencioso y mas economico. En los mecanicos el color del switch te dice el caracter: red es lineal y suave, ideal gaming; blue es clicky y sonoro; brown es tactil, un punto medio. Decime cual estas mirando y te confirmo que switch trae segun la ficha.",
+    "valores": []
+  },
+  {
+    "tema": "mouse_dpi",
+    "tipo": "informativo",
+    "keywords": [
+      "dpi",
+      "sensibilidad del mouse",
+      "sensor optico",
+      "sensor laser"
+    ],
+    "respuesta": "El DPI es la sensibilidad del sensor del mouse: a mas DPI, mas rapido se mueve el puntero con el mismo movimiento de mano. Para oficina alcanza una sensibilidad baja; para gaming se busca mas rango y precision. El valor exacto de cada modelo figura en su ficha.",
+    "respuesta_curada": "El DPI es la sensibilidad del sensor: a mas DPI, mas rapido se mueve el puntero con el mismo movimiento de mano. Para oficina alcanza una sensibilidad baja; para gaming conviene mas rango y precision. Decime que mouse estas mirando y te paso el dato exacto de su ficha.",
+    "valores": []
   }
 ]
