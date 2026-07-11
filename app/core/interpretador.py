@@ -404,8 +404,47 @@ def validar_schema(resultado: dict) -> tuple[bool, str]:
     return True, ""
 
 
+def _reparar_json_truncado(cleaned: str) -> dict | None:
+    """Red determinista contra el JSON cortado por max_tokens. Caso real
+    (banco 11-jul, gpt-4o-mini): la gramatica del schema estricto obliga el
+    proximo campo requerido, el modelo prefiere cerrar el objeto, y como el
+    cierre esta prohibido emite espacios en blanco hasta agotar los tokens.
+    Queda un JSON valido a medio cerrar y el turno caia al fallback de
+    intencion 'otra' confianza 0. Aca se cierra lo que quedo abierto (string,
+    llaves, corchetes) y se reintenta el parseo; si ni asi parsea, None."""
+    s = cleaned.rstrip().rstrip(",")
+    pila = []
+    en_string = False
+    escape = False
+    for ch in s:
+        if en_string:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                en_string = False
+        elif ch == '"':
+            en_string = True
+        elif ch in "{[":
+            pila.append(ch)
+        elif ch in "}]":
+            if pila:
+                pila.pop()
+    if en_string:
+        s += '"'
+        s = s.rstrip().rstrip(",")
+    s += "".join("}" if c == "{" else "]" for c in reversed(pila))
+    try:
+        out = json.loads(s)
+    except json.JSONDecodeError:
+        return None
+    return out if isinstance(out, dict) else None
+
+
 def parsear_respuesta_llm(raw: str) -> dict | None:
-    """Limpia y parsea JSON de la respuesta cruda del LLM."""
+    """Limpia y parsea JSON de la respuesta cruda del LLM. Si no parsea,
+    intenta la reparacion determinista del truncado por max_tokens."""
     cleaned = raw.strip()
     if cleaned.startswith("```"):
         cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
@@ -413,7 +452,11 @@ def parsear_respuesta_llm(raw: str) -> dict | None:
     try:
         return json.loads(cleaned)
     except json.JSONDecodeError:
-        return None
+        reparado = _reparar_json_truncado(cleaned)
+        if reparado is not None:
+            log.warning("interpretador_json_truncado_reparado",
+                        largo_raw=len(raw))
+        return reparado
 
 
 def _schema_interprete(nombres_mostrados: list[str]) -> dict:
