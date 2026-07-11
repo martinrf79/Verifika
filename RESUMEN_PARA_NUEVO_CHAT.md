@@ -3,9 +3,32 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 11-jul-2026 — SELECTOR DEL MENÚ CERRADO CONSTRUIDO
-+ ancla de producto anotado + tanda de mejoras del banco. EN RAMA
-`claude/gemini-firestore-setup-7msh3a`, pendiente de merge (OK de Martín).**
+**Última actualización: 11-jul-2026 (noche) — TODO EN PRODUCCIÓN
+(deploys 99-103 verdes). SELECTOR v2 con la primitiva de plata: fin del
+parche-por-regex para las acciones de datos.**
+
+0. **SELECTOR v2 (la mejora "en serio" que pidió Martín).** El menú suma
+   `calcular_pedido` con argumentos estructurados atados por schema: items
+   (el pedido completo como debe quedar), destinos y reparto de pago. El
+   ejecutor (`guia_pedido.ejecutar_calculo_plan`) valida TODO contra la
+   fuente antes de sellar (nombres→ids todo-o-nada, porcentajes que suman
+   cien, destinos que resuelven, proofs de cada tramo); algo no valida →
+   cascada. Las combinaciones nuevas (editar + destino + split en un
+   mensaje) las resuelve UN camino general, no un regex por caso. Guion 32
+   lo lockea. Las tres charlas reales de Martín del 11-jul quedaron como
+   guiones 30, 31 y 32; batería completa: **32/32 guiones con juez limpio,
+   459 tests offline**.
+0-bis. **Fixes de las charlas reales del 11-jul (todos deployados):**
+   reparto de envíos por grupo con proof por tramo (10:42); split de pago
+   sobre el pedido vigente + error de PLATA cazado (es_mercado_pago no
+   reconocía 'mercado_pago' y descontaba el 10% a la mitad de MP) (17:22);
+   'modalidades de pago' en keywords; el enlatado de envío no se acopla
+   con destinos ya cotizados; 'va todo junto a X' parsea el destino.
+   GEMINI OPERATIVO: la clave AQ. quedó activa (modelos Gemini 3; los 2.5
+   no aceptan usuarios nuevos), thinking apagado para todos los que
+   razonan, default `gemini-flash-latest`; bancos con Gemini intérprete:
+   29/29 y 23/23 = 100%. Falta solo renombrar la env `GEMINI_APY_KEY` →
+   `GEMINI_API_KEY` para activarlo sin puente.
 
 1. **SELECTOR construido (la arquitectura del 10-jul, viva).** `selector.py`:
    una llamada LLM (gpt-4o-mini, schema estricto, también corre en Gemini)
