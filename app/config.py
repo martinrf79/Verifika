@@ -55,7 +55,9 @@ class Settings(BaseModel):
     # Usa el endpoint compatible con OpenAI de Google, asi entra con el mismo
     # cliente. Se activa con LLM_PROVIDER=gemini.
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    # gemini-2.5-* ya no acepta usuarios nuevos (404 verificado 11-jul); el
+    # alias -latest apunta al flash vigente (hoy Gemini 3) y no envejece.
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
     GEMINI_BASE_URL: str = os.getenv(
         "GEMINI_BASE_URL",
         "https://generativelanguage.googleapis.com/v1beta/openai/")
@@ -352,8 +354,11 @@ def gemini_thinking_off(provider: str, model_name: str) -> dict:
     if os.getenv("GEMINI_THINKING_OFF", "true").lower() != "true":
         return {}
     m = (model_name or "").lower()
-    # 2.0-flash no razona; solo los 2.5+ lo traen prendido por default.
-    return {"reasoning_effort": "none"} if "2.5" in m else {}
+    # 2.0-flash no razona; 2.5+, gemini-3 y los alias -latest lo traen
+    # prendido por default (verificado 11-jul con gemini-flash-latest: el
+    # thinking se comia los 400 tokens y el JSON salia cortado; con
+    # reasoning_effort=none el schema estricto respondio perfecto).
+    return {} if "2.0" in m else {"reasoning_effort": "none"}
 
 def deepseek_pensando(model_name: str) -> bool:
     """True si esta llamada va a ir en modo razonador: modelo v4 y thinking on."""
