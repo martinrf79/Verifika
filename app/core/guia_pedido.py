@@ -238,8 +238,20 @@ def cantidades_por_categoria(mensaje: str, tienda_id: str) -> list[tuple]:
     cantidades totales van primero y la distribucion despues). [] si nada."""
     from app.storage.firestore_client import get_categories
     try:
-        cats = {_singular(_norm(c)): str(c) for c in
-                (get_categories(tienda_id=tienda_id) or [])}
+        cats: dict[str, str] = {}
+        for c in (get_categories(tienda_id=tienda_id) or []):
+            cn = _norm(c)
+            # Todas las variantes singulares castellanas como clave:
+            # 'auriculares' responde por 'auriculares', 'auriculare' y
+            # 'auricular' (el singular real; sin esto 'un auricular' no
+            # matcheaba y el reparto por destino salia mal, 11-jul).
+            claves = {cn}
+            if cn.endswith("s"):
+                claves.add(cn[:-1])
+            if cn.endswith("es") and len(cn) > 4:
+                claves.add(cn[:-2])
+            for k in claves:
+                cats.setdefault(k, str(c))
     except Exception:
         return []
     if not cats:
@@ -372,12 +384,15 @@ def mensaje_opciones_categorias(cats_pedido: list[tuple], tienda_id: str,
     return "\n\n".join(partes)
 
 
-def mensaje_presupuesto_sellado(presentacion: str) -> str:
+def mensaje_presupuesto_sellado(presentacion: str, reparto: str = "") -> str:
     """El MENSAJE ENTERO del turno 'los mas baratos': plantilla fija del codigo
     + bloque sellado de la calculadora. Cero prosa del LLM (en real la prosa
-    listaba OTROS productos y contradecia al bloque)."""
+    listaba OTROS productos y contradecia al bloque). `reparto` (opcional): el
+    detalle de que items van a cada destino, ANTES del cierre (charla real de
+    Martin 11-jul: la plata salia bien pero el reparto no se mostraba)."""
     return ("Listo, te armé el pedido con los más económicos de cada "
             "categoría:\n\n" + presentacion.strip()
+            + (("\n" + reparto.strip("\n") + "\n") if reparto else "")
             + "\n\nEnvío orientativo, puede variar al confirmar la compra.\n"
             "¿Lo dejamos confirmado? Decime la forma de pago: transferencia "
             "(10% de descuento) o Mercado Pago.")
@@ -402,3 +417,101 @@ INSTRUCCION_SOLVER = (
     "donde va el detalle: el código estampa ahí el bloque real. NO escribas vos "
     "ningún precio, subtotal, total ni costo de envío, ni vuelvas a llamar "
     "calculate_total: ya está hecho.]")
+
+
+# ── REPARTO DE ENVIOS POR GRUPO (charla real de Martin, 11-jul 10:42) ────────
+# "Un mouse y un teclado a Rosario, un teclado y un auricular a Concordia y
+# lo demas a Rio Cuarto": la plata salia bien (una tarifa por destino) pero
+# la respuesta NO mostraba el reparto, y el cliente no ve que el bot entendio
+# la distribucion. Parser DETERMINISTA todo-o-nada: si los grupos del mensaje
+# no reconcilian exactos con las cantidades del pedido, no se muestra nada
+# (la plata ya esta bien; el detalle solo sale cuando es seguro).
+
+_RE_RESTO_GRUPO = re.compile(r"lo demas|el resto|lo restante|lo que queda")
+
+
+def reparto_envios_detalle(mensaje: str, cats_pedido: list,
+                           tienda_id: str) -> tuple[str, list]:
+    """(bloque de texto 'Reparto de envios', tools de cotizar_envio con su
+    proof) o ("", []). El texto detalla que items van a cada destino con la
+    tarifa REAL de cada tramo; los proofs respaldan cada monto ante el
+    verificador."""
+    try:
+        totales = {cat: int(n) for n, cat in (cats_pedido or [])}
+    except (TypeError, ValueError):
+        return "", []
+    if not totales:
+        return "", []
+    m = _norm(mensaje or "")
+    hitos = [(h.group(1).strip(" .,-"), h.start(), h.end())
+             for h in _RE_DESTINOS_MSG.finditer(m)]
+    hitos = [h for h in hitos if _es_destino_real(h[0])]
+    if len(hitos) < 2:
+        return "", []
+
+    from app.core.tools import cotizar_envio
+    restantes = dict(totales)
+    grupos: list[tuple] = []   # (destino, [(n, cat)])
+    resto_destino = None
+    prev_fin = 0
+    for destino, ini, fin in hitos[:4]:
+        segmento = m[prev_fin:ini]
+        prev_fin = fin
+        # La frase del grupo vive PEGADA al destino ("...el un mouse y un
+        # teclado es envio a Rosario"); los totales del pedido suelen estar
+        # al principio del mensaje. Ventana corta antes del destino, cortada
+        # en limite de palabra, para no confundir totales con grupo.
+        ventana = segmento[-70:]
+        if len(segmento) > 70 and " " in ventana:
+            ventana = ventana[ventana.find(" ") + 1:]
+        if _RE_RESTO_GRUPO.search(ventana):
+            if resto_destino:
+                return "", []  # dos "lo demas": ambiguo, no se muestra
+            resto_destino = destino
+            continue
+        items = cantidades_por_categoria(ventana, tienda_id)
+        if not items:
+            return "", []
+        for n, cat in items:
+            restantes[cat] = restantes.get(cat, 0) - int(n)
+        grupos.append((destino, items))
+    sobrante = {c: n for c, n in restantes.items() if n > 0}
+    if any(n < 0 for n in restantes.values()):
+        return "", []  # un grupo pide mas de lo que hay: no reconcilia
+    if resto_destino:
+        if not sobrante:
+            return "", []
+        grupos.append((resto_destino,
+                       [(n, c) for c, n in sorted(sobrante.items())]))
+    elif sobrante:
+        return "", []  # quedo pedido sin destino: el reparto esta incompleto
+
+    lineas = []
+    tools = []
+    for destino, items in grupos:
+        q = cotizar_envio(localidad=destino)
+        if not q.get("ok"):
+            return "", []
+        entrada = {"name": "cotizar_envio",
+                   "args": {"localidad": destino}, "result": q}
+        if isinstance(q, dict) and q.get("proof"):
+            entrada["proof"] = q["proof"]
+        tools.append(entrada)
+        monto = q.get("monto")
+        costo = ("gratis" if monto in (0, None)
+                 else f"${monto:,}".replace(",", "."))
+
+        def _label(n, cat):
+            c = str(cat)
+            if int(n) == 1:  # singular para leerse natural ("1 auricular")
+                if c.endswith("es") and len(c) > 4:
+                    return c[:-2]
+                if c.endswith("s") and len(c) > 3:
+                    return c[:-1]
+            return c
+        det = " y ".join(f"{n} {_label(n, c)}" for n, c in items)
+        lineas.append(f"- A {destino.title()}: {det} — envío {costo}")
+    if not lineas:
+        return "", []
+    return ("\nReparto de envíos, como lo pediste:\n"
+            + "\n".join(lineas)), tools

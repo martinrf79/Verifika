@@ -72,3 +72,45 @@ def test_un_solo_destino_no_regresiona():
     assert entradas and entradas[0]["args"]["destinos"] == 1
     assert pregunta_destinos_pendientes(
         "dame 2 mouse con envio a cordoba capital") == ""
+
+
+# --- REPARTO DE ENVIOS POR GRUPO (charla real de Martin, 11-jul 10:42) ---
+
+def test_reparto_charla_real_de_martin(firestore_doble):
+    from app.core.tools_context import set_current_tienda
+    from app.core.estado_venta import set_current_estado
+    from app.core.guia_pedido import reparto_envios_detalle
+    set_current_tienda("verifika_prod")
+    set_current_estado({})
+    msg = ("Hola quisiera preguntar precio por dos Mouse dos teclados y dos "
+           "auriculares los más baratos que tengan el un Mouse y un teclado "
+           "es envío a Rosario un teclado y un auricular es envío a "
+           "Concordia y lo demás será enviado a Río cuarto Pásame los "
+           "precios y Cuáles serían las modalidades de pagos")
+    texto, tools = reparto_envios_detalle(
+        msg, [(2, "mouse"), (2, "teclado"), (2, "auriculares")],
+        "verifika_prod")
+    assert "A Rosario: 1 mouse y 1 teclado" in texto
+    assert "A Concordia: 1 teclado y 1 auricular" in texto
+    assert "A Rio Cuarto: 1 auricular y 1 mouse" in texto
+    # cada tramo con su proof para el verificador
+    assert len(tools) == 3
+    assert all(t["name"] == "cotizar_envio" for t in tools)
+
+
+def test_reparto_que_no_reconcilia_no_sale(firestore_doble):
+    from app.core.tools_context import set_current_tienda
+    from app.core.estado_venta import set_current_estado
+    from app.core.guia_pedido import reparto_envios_detalle
+    set_current_tienda("verifika_prod")
+    set_current_estado({})
+    # un grupo pide MAS de lo que hay: todo o nada, sin detalle
+    t, _ = reparto_envios_detalle(
+        "un mouse va a Rosario y tres teclados a Salta",
+        [(2, "mouse"), (2, "teclado")], "verifika_prod")
+    assert t == ""
+    # un solo destino: no es reparto
+    t, _ = reparto_envios_detalle(
+        "2 mouse y 2 teclados con envio a Cordoba",
+        [(2, "mouse"), (2, "teclado")], "verifika_prod")
+    assert t == ""

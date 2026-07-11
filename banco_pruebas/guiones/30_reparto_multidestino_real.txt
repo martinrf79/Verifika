@@ -1,0 +1,7 @@
+# CHARLA REAL de Martin (11-jul 10:42, WhatsApp): pedido por categorias con
+# criterio barato Y reparto explicito de grupos por destino + pregunta de
+# modalidades de pago. La plata salia bien (tres tarifas) pero la respuesta
+# NO mostraba el reparto ni respondia las modalidades. El mensaje debe traer:
+# los mas baratos de cada categoria, el reparto grupo por grupo con su
+# tarifa, y el bloque de formas de pago.
+Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos

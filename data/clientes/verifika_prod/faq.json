@@ -38,7 +38,10 @@
       "medios de pago",
       "cobran",
       "como pago",
-      "como pagar"
+      "como pagar",
+      "modalidades de pago",
+      "modalidades de pagos",
+      "modalidad de pago"
     ],
     "respuesta": "Aceptamos transferencia bancaria, Mercado Pago, tarjetas de credito y debito Visa, Mastercard y American Express.",
     "tipo": "informativo",

@@ -823,8 +823,14 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                             _cats_pedido, estado, tienda_id, trace_id,
                             mensaje=raw_message) or []
                         if _tools_precalc:
+                            from app.core.guia_pedido import (
+                                reparto_envios_detalle)
+                            _rep_txt, _rep_tools = reparto_envios_detalle(
+                                raw_message, _cats_pedido, tienda_id)
+                            _tools_precalc = _tools_precalc + _rep_tools
                             respuesta = (mensaje_presupuesto_sellado(
-                                _tools_precalc[0]["result"]["presentacion"])
+                                _tools_precalc[0]["result"]["presentacion"],
+                                reparto=_rep_txt)
                                 + pregunta_destinos_pendientes(raw_message))
                             respuesta_curada_servida = True
                             _sellado_pedido = True
@@ -868,9 +874,18 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                             mensaje=raw_message) or []
                         if _tools_precalc:
                             from app.core.guia_pedido import (
-                                pregunta_destinos_pendientes)
+                                pregunta_destinos_pendientes,
+                                reparto_envios_detalle)
+                            # REPARTO por destino (charla real 11-jul 10:42):
+                            # la plata salia bien pero el mensaje no mostraba
+                            # que grupo va a cada destino. Con proofs de cada
+                            # tramo para el verificador.
+                            _rep_txt, _rep_tools = reparto_envios_detalle(
+                                raw_message, _cats_pedido, tienda_id)
+                            _tools_precalc = _tools_precalc + _rep_tools
                             respuesta = (mensaje_presupuesto_sellado(
-                                _tools_precalc[0]["result"]["presentacion"])
+                                _tools_precalc[0]["result"]["presentacion"],
+                                reparto=_rep_txt)
                                 + pregunta_destinos_pendientes(raw_message))
                             respuesta_curada_servida = True
                             _sellado_pedido = True

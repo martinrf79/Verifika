@@ -139,6 +139,17 @@ def bloque_curado_por_mensaje(mensaje: str, interp: dict | None,
     # MULTI-PREGUNTA (charla real 10-jul): varias preguntas de politica en un
     # turno acoplan hasta 3 bloques, uno por tema, sin solapamiento.
     temas = _faq_temas_multi(mensaje or "", faq)
+    # Con destinos ya COTIZADOS este turno, el enlatado generico de envio
+    # ("pasame tu provincia y te digo la tarifa") contradice a las tarifas
+    # exactas que el mensaje ya trae (charla real 11-jul, reparto a tres
+    # destinos + bloque generico pidiendo la provincia). Se filtra el tema
+    # de envio generico; plazo_envio y envio_gratis siguen pasando.
+    try:
+        from app.core.estado_venta import get_envio_localidades
+        if get_envio_localidades():
+            temas = [t for t in temas if t not in ("envios", "costo_envio")]
+    except Exception:
+        pass
     bloques: list[str] = []
     primero = ""
     for tema in temas:
