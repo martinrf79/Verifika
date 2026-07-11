@@ -417,12 +417,13 @@ def parsear_respuesta_llm(raw: str) -> dict | None:
 
 
 def _schema_interprete(nombres_mostrados: list[str]) -> dict:
-    """Schema estricto para Structured Outputs de OpenAI: constrained generation
-    DURA. intencion y estado atados a su enum; producto_resuelto atado al enum de
+    """Schema estricto para constrained generation DURA: Structured Outputs de
+    OpenAI y el response_format json_schema del endpoint compatible de Gemini.
+    intencion y estado atados a su enum; producto_resuelto atado al enum de
     los productos REALMENTE mostrados (o null): el interprete no puede referenciar
     a nivel token un producto que no se mostro. El LLM sigue INTERPRETANDO; el
-    schema solo evita que emita un valor fuera de la fuente. Fuera de OpenAI el
-    schema se ignora y queda el parseo + validacion de siempre."""
+    schema solo evita que emita un valor fuera de la fuente. En los demas
+    providers el schema se ignora y queda el parseo + validacion de siempre."""
     nombres = list(dict.fromkeys(n for n in nombres_mostrados if n))
     prod_enum = ([None] + nombres) if nombres else [None]
     return {
@@ -448,8 +449,8 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
             # concretos CON cantidad, el interprete lo extrae atado al enum de
             # lo MOSTRADO. Es la entrada de la guia determinista de pedido: el
             # codigo llama la calculadora con estos items y sella el bloque; el
-            # solver no elige ids. Fuera de OpenAI el campo llega libre y la
-            # validacion de abajo lo filtra igual (todo o nada).
+            # solver no elige ids. Fuera de OpenAI/Gemini el campo llega libre
+            # y la validacion de abajo lo filtra igual (todo o nada).
             "pedido": {"type": ["array", "null"], "items": {
                 "type": "object", "additionalProperties": False,
                 "properties": {
@@ -474,7 +475,8 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
 
 async def _llamar_llm(prompt: str, response_format: dict | None = None) -> str:
     """Llamada al LLM con parametros fijos. response_format (json_schema strict)
-    solo se aplica en OpenAI; en otros providers se ignora y cae al parseo normal."""
+    se aplica en OpenAI y Gemini; en otros providers se ignora y cae al parseo
+    normal."""
     client = _get_client()
 
     def _do_call() -> str:
@@ -515,8 +517,13 @@ async def _llamar_llm(prompt: str, response_format: dict | None = None) -> str:
                   "temperature": 0.0, "max_tokens": max_tok}
         if extra:
             kwargs["extra_body"] = extra
-        rf = (response_format if (settings.INTERPRETER_PROVIDER == "openai"
-                                  and response_format) else None)
+        # Generacion restringida a nivel token via json_schema: OpenAI
+        # (Structured Outputs) y Gemini (el endpoint compatible acepta
+        # response_format json_schema; los 2.5 la respetan duro). Si el
+        # provider lo rechaza, el except de abajo reintenta sin schema.
+        rf = (response_format if (settings.INTERPRETER_PROVIDER in
+                                  ("openai", "gemini") and response_format)
+              else None)
         try:
             if rf:
                 response = client.chat.completions.create(response_format=rf, **kwargs)
