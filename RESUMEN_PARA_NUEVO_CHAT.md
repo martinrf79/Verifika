@@ -3,8 +3,57 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 10-jul-2026 (cierre) — DECISIÓN DE ARQUITECTURA:
-MENÚ CERRADO CON SELECTOR (acordada con Martín). ARRANCAR ACÁ EL CHAT NUEVO.**
+**Última actualización: 11-jul-2026 — SELECTOR DEL MENÚ CERRADO CONSTRUIDO
++ ancla de producto anotado + tanda de mejoras del banco. EN RAMA
+`claude/gemini-firestore-setup-7msh3a`, pendiente de merge (OK de Martín).**
+
+1. **SELECTOR construido (la arquitectura del 10-jul, viva).** `selector.py`:
+   una llamada LLM (gpt-4o-mini, schema estricto, también corre en Gemini)
+   ve lectura del intérprete + estado sellado completo y elige 1-3 secciones
+   del MENÚ (ficha, opciones, más barato, intermedio, envío, faq, movida,
+   rechazo, not_found, preguntar). El código arma cada sección desde la
+   fuente; sin respaldo se saltea; error/timeout → cascada determinista de
+   red (mismo patrón que el redactor). La movida emocional (B17/B18/B19)
+   manda SOBRE el plan.
+2. **ANCLA `producto_anotado`** (falla madre del banco): "me gusta X,
+   anotalo" persiste el ancla; "el que te dije al principio" resuelve y
+   sella el pedido con ese id. Verificado vivo: guion 28 cierra con el M170
+   anotado ($19.500 con envío), no con el más barato. El ancla viaja como
+   contexto del intérprete; la limpia solo una negación que la NOMBRA.
+3. **Más mejoras de la tanda 11-jul, todas con test y verificadas vivo:**
+   criterio INTERMEDIO (enum + escalón arriba del mínimo; "no lo más barato"
+   ya no arma los más baratos); búsqueda certificada del candidato único
+   (HyperX nombrado de cero → ficha o A/B de variantes); not_found honesto
+   ("tenés joysticks" → no derecho + categorías); rechazo reconocido y
+   edición de carrito con recálculo sellado ("sacalo"); asignación parcial
+   de destino que NO pisa el pedido (cotiza todos los destinos CON proof);
+   destino dado cotiza sin keyword ("va todo a San Francisco"); filtro de
+   pronombres ("a donde te dije" no es localidad); sellos 5-6 del redactor
+   (sin saludo a mitad de charla, sin frase cortada); guarda del más barato
+   solo con criterio del TURNO y jamás sobre pedido sellado; una objeción
+   B4/B5 no deja criterio sticky; reparación determinista del JSON truncado
+   del intérprete (whitespace-runaway de gpt-4o-mini: banco 26/29 → 29/29,
+   disparaba en 8 de 29 casos).
+4. **Gemini listo para probar**: el schema estricto ya se manda con provider
+   gemini y el default es 2.5-flash. FALTA la clave: la env está mal
+   (`GEMINI_APY_KEY`, valor inválido tipo `AQ.`); cargar una AIza real de
+   aistudio.google.com como `GEMINI_API_KEY` y abrir sesión nueva.
+5. **Firestore real verificado por REST** (service account claude-lector):
+   880 productos exactos, FAQ ok, tarifas reales coinciden con el doble
+   (córdoba 7500), `modo_cierre` sin doc → corre default "A" del código.
+6. **Curadas de venta B25-B30 redactadas** (compatibilidad, reserva/seña,
+   edición de pedido, cambio de destino, split, estado del pedido) en
+   BORRADORES_CURADAS_VENTA.md, PENDIENTES DE APROBACIÓN de Martín, sin
+   cablear.
+7. **442 tests offline + 3 guiones nuevos del banco (28, 29 y el 09 de
+   memoria) con juez limpio.** Conducta pendiente conocida: pregunta de
+   conocimiento ("membrana vs mecánico") sigue en pregunta boba (necesita
+   curada nueva aprobada); criterio mixto por categoría ("teclados
+   intermedios y mouse baratos") no se arma en un solo total; "no quiero
+   nada más" responde rechazo genérico en vez de despedida; el selector a
+   veces suma una sección de más (inofensivo, dato correcto).
+
+---
 1. **La arquitectura decidida:** una llamada LLM (SELECTOR/planificador)
    recibe la lectura del intérprete + el estado sellado (pedido vigente,
    destinos, presupuesto) + contexto completo de las áreas, y su ÚNICA salida
