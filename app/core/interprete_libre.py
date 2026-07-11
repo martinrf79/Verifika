@@ -591,10 +591,13 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # El id computado alimenta la guarda del mas barato de mas abajo, que
     # re-ancla si la respuesta afirma que el mas barato es OTRO producto.
     _id_barato = ""
-    # Solo con criterio BARATO: el guard del minimo no aplica a un cliente que
-    # pidio "intermedio" (rechazo explicito del mas barato, 11-jul).
-    if (detectar_criterio(raw_message) == "más barato"
-            or (estado.get("criterio") or "").strip() == "más barato"):
+    # Solo con criterio BARATO dicho en ESTE mensaje: el guard del minimo no
+    # aplica al criterio "intermedio" (11-jul) ni al sticky de turnos viejos
+    # (11-jul, banco: el cliente pregunto por el HyperX y el sticky de tres
+    # turnos atras hizo que la guarda reescribiera la respuesta correcta al
+    # mas barato de otra categoria). El sticky sigue valiendo para ARMAR el
+    # pedido pendiente; para POLICIAR la respuesta solo vale el turno.
+    if detectar_criterio(raw_message) == "más barato":
         try:
             from app.core.guia_compra import guia_mas_barato
             _guia_barato = guia_mas_barato(
@@ -1687,13 +1690,16 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             "categoria")
     except Exception:
         _cat_crit = None
-    _crit_msg_sticky = ("" if _cat_crit in ("B4", "B5")
-                        else detectar_criterio(raw_message))
-    criterio_cliente = (
-        _crit_msg_sticky
-        or ("más barato" if criterio_del_interprete(interp) else "")
-        or ("intermedio" if _criterio_llm(interp) == "intermedio" else "")
-        or (conv.get("criterio_cliente") or ""))
+    if _cat_crit in ("B4", "B5"):
+        # Regateo u objecion: NINGUNA lectura de criterio del mensaje (ni
+        # regex ni LLM) queda sticky; solo persiste lo que ya habia.
+        criterio_cliente = conv.get("criterio_cliente") or ""
+    else:
+        criterio_cliente = (
+            detectar_criterio(raw_message)
+            or ("más barato" if criterio_del_interprete(interp) else "")
+            or ("intermedio" if _criterio_llm(interp) == "intermedio" else "")
+            or (conv.get("criterio_cliente") or ""))
     # Provincia del cliente: se detecta determinista y es STICKY. Una vez dada
     # persiste entre turnos y se aplica a TODOS los destinos, asi el bot no repide
     # el CP de cada pueblo (arreglo C, el 'ya te dije pueblo y provincia'). La
