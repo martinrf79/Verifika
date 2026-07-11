@@ -96,6 +96,12 @@ el escape obligatorio.
 | B22 | Pedido de fotos / video | "mandame fotos reales" | el canal no manda archivos | No prometer material; specs reales de la ficha + redes de la FAQ |
 | B23 | Reclamo posventa | "se me rompió", "vino fallado" | máximo riesgo de confianza | Empatía + FAQ defectuoso/garantía/cambios; deriva a persona |
 | B24 | Varias preguntas juntas | "¿cuánto sale y llega a Salta?" | fácil dejar una sin responder | Sin detector; responder todas, la vigila el juez del banco |
+| B25 | Compatibilidad entre productos | "¿anda con Mac?", "¿sirve para PS5?" | tienta a garantizar lo que la ficha no dice | Razonar SOLO desde la ficha real; sin dato en la ficha, decirlo derecho |
+| B26 | Reserva / seña | "¿me lo guardás hasta el viernes?" | tienta a prometer apartado o stock futuro | FAQ de seña/reserva tal cual; sin respaldo no se promete |
+| B27 | Edición del pedido vigente | "sacale uno", "agregale otro mouse" | el total viejo queda inválido | PRIMITIVA: pedido editado por enum + calculadora re-sella de cero |
+| B28 | Cambio de destino | "me mudé", "mandalo todo a Rosario" | tarifas viejas quedan obsoletas | PRIMITIVA: destino sticky invalida lo viejo + recotizar todo |
+| B29 | Split de pago | "mitad MP, mitad transferencia" | el descuento va solo a una parte | PRIMITIVA: `pago_split` sella el reparto; el LLM no calcula |
+| B30 | Estado del pedido ya hecho | "¿ya salió lo mío?", "¿dónde está?" | no hay tracking: tienta a inventar estado | Honestidad + plazo oficial FAQ + derivar a persona; no es B23 |
 
 ---
 
