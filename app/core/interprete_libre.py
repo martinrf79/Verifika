@@ -686,6 +686,36 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                         _carrito_vaciado = True
                         log.info("interprete_libre_pedido_vaciado",
                                  trace_id=trace_id, quitados=_noms_q)
+            # SPLIT DE PAGO SOBRE EL PEDIDO VIGENTE (charla real 11-jul
+            # 17:22): "mitad transferencia y mitad mercado pago" con el
+            # presupuesto ya sellado respondia "¿que producto estas
+            # mirando?". La cuenta existia (pago_split via calculate_total);
+            # ahora el mensaje la dispara con los items del carrito y los
+            # destinos de memoria, y sale el bloque sellado con el reparto.
+            if (not _tools_precalc and not respuesta_curada_servida
+                    and (estado.get("carrito") or [])):
+                from app.core.pago_split import pago_de_mensaje
+                if pago_de_mensaje(raw_message):
+                    from app.core.guia_pedido import _calcular_items_sellados
+                    _items_cv = [
+                        {"product_id": str(c.get("id") or "").upper(),
+                         "cantidad": int(c.get("cantidad") or 1)}
+                        for c in estado["carrito"] if c.get("id")]
+                    _tools_precalc = _calcular_items_sellados(
+                        _items_cv, estado, tienda_id, trace_id,
+                        raw_message) or []
+                    if _tools_precalc:
+                        respuesta = (
+                            "Así queda tu pedido con ese reparto de "
+                            "pago:\n\n"
+                            + _tools_precalc[0]["result"]["presentacion"]
+                            + "\n\nEnvío orientativo, puede variar al "
+                              "confirmar la compra.\n¿Lo dejamos "
+                              "confirmado así?")
+                        respuesta_curada_servida = True
+                        _sellado_pedido = True
+                        log.info("interprete_libre_split_pago_vigente",
+                                 trace_id=trace_id)
             if not _tools_precalc and not respuesta_curada_servida:
                 from app.core.guia_pedido import cantidades_por_categoria
                 _cats_pedido = cantidades_por_categoria(raw_message, tienda_id)

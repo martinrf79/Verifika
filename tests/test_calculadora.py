@@ -333,3 +333,37 @@ def test_split_proof_respalda_envio_y_renglones(firestore_doble):
     montos = r["proof"]["montos"]
     assert 6000 in montos          # el envio esta respaldado
     assert 23000 in montos         # el subtotal y el renglon tambien
+
+
+def test_pago_de_mensaje_parser():
+    # Charla real 11-jul 17:22: el split dicho en el mensaje dispara la cuenta.
+    from app.core.pago_split import pago_de_mensaje
+    assert pago_de_mensaje(
+        "Decime mitad transferencia y mitad mercado pago como quedaria") == [
+        {"medio": "transferencia", "porcentaje": 50},
+        {"medio": "mercado pago", "porcentaje": 50}]
+    assert pago_de_mensaje("70 transferencia y 30 mercado pago") == [
+        {"medio": "transferencia", "porcentaje": 70},
+        {"medio": "mercado pago", "porcentaje": 30}]
+    # conservador: sin ambos medios o porcentajes que no cierran -> None
+    assert pago_de_mensaje("pago todo por transferencia") is None
+    assert pago_de_mensaje("mitad y mitad") is None
+    assert pago_de_mensaje("60 transferencia y 60 mercado pago") is None
+
+
+def test_split_mitad_no_descuenta_mercado_pago():
+    # Error de PLATA cazado leyendo la charla del guion 31: el medio
+    # 'mercado_pago' con guion bajo no era reconocido como Mercado Pago y le
+    # aplicaba el 10% de descuento tambien a esa mitad.
+    from app.core.pago_split import calcular_split, pago_de_mensaje, \
+        es_mercado_pago
+    assert es_mercado_pago("mercado_pago")
+    assert es_mercado_pago("Mercado Pago")
+    assert not es_mercado_pago("transferencia")
+    pago = pago_de_mensaje("mitad transferencia y mitad mercado pago")
+    r = calcular_split(175500, pago, 10)
+    assert r["ok"]
+    por_medio = {p["medio"]: p for p in r["partes"]}
+    assert por_medio["transferencia"]["monto_final_ars"] == 78975
+    assert por_medio["mercado pago"]["monto_final_ars"] == 87750  # SIN descuento
+    assert r["total_final_ars"] == 166725

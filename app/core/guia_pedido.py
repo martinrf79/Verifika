@@ -192,8 +192,11 @@ def _calcular_items_sellados(items: list[dict], estado: dict | None,
     destinos = max(1, len(locs))
     extra = ([{"faq_tema": "costo_envio", "concepto": "envio"}]
              if locs else None)
-    pago = None
-    if _RE_PAGO_TRANSF.search(msg) and not _RE_PAGO_MIXTO.search(msg):
+    # Reparto EXPLICITO entre medios dicho en el mensaje ("mitad y mitad",
+    # "70 y 30"): la cuenta la sella pago_split (charla real 11-jul 17:22).
+    from app.core.pago_split import pago_de_mensaje
+    pago = pago_de_mensaje(mensaje or "")
+    if not pago and _RE_PAGO_TRANSF.search(msg) and not _RE_PAGO_MIXTO.search(msg):
         pago = [{"medio": "transferencia", "porcentaje": 100}]
     args = {"items": items, "destinos": destinos,
             **({"items_extra": extra} if extra else {}),

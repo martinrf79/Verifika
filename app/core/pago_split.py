@@ -23,8 +23,10 @@ def _norm(s: str) -> str:
 
 def es_mercado_pago(medio: str) -> bool:
     """True si el medio es Mercado Pago (único que NO lleva descuento). Todo lo
-    demás (transferencia, Ualá, billeteras, etc.) cuenta como transferencia."""
-    m = _norm(medio)
+    demás (transferencia, Ualá, billeteras, etc.) cuenta como transferencia.
+    Tolera guion bajo ('mercado_pago'): sin esto, el split del 11-jul le
+    aplico el descuento a la mitad de Mercado Pago (error de PLATA)."""
+    m = _norm(medio).replace("_", " ").replace("-", " ")
     return "mercado pago" in m or "mercadopago" in m or m in ("mp", "mercado")
 
 
@@ -106,3 +108,44 @@ def render_split(split: dict) -> str:
             lineas.append(f"- {p['medio']} ({pct}): ${_money(p['monto_ars'])}")
     lineas.append(f"Total final: ${_money(split['total_final_ars'])}")
     return "\n".join(lineas)
+
+
+# ── SPLIT DICHO EN EL MENSAJE (charla real 11-jul 17:22) ─────────────────────
+# "Decime mitad transferencia y mitad mercado pago como quedaria" con el
+# presupuesto ya sellado respondia "¿que producto estas mirando?": la cuenta
+# existia (calcular_split) pero nada la disparaba desde el mensaje. Parser
+# DETERMINISTA y conservador: solo reconoce un reparto entre transferencia y
+# Mercado Pago con mitades o porcentajes que suman 100; ante cualquier otra
+# cosa devuelve None y el turno sigue por el camino normal.
+import re as _re
+
+_RE_MITAD_SPLIT = _re.compile(r"\bmitad\b")
+_RE_PCT_MEDIO = _re.compile(
+    r"(\d{1,3})\s*(?:%|por ?ciento)?\s*(?:por |con |en |de )?"
+    r"(transferencia|mercado ?pago|mercadopago)")
+
+
+def pago_de_mensaje(mensaje: str) -> list[dict] | None:
+    """[{medio, porcentaje}] si el mensaje reparte el pago entre transferencia
+    y Mercado Pago; None si no. Formas cubiertas: 'mitad transferencia y
+    mitad mercado pago' (cualquier orden) y '70 transferencia y 30 mercado
+    pago' (con o sin %). Ambos medios tienen que estar nombrados."""
+    m = _norm(mensaje)
+    tiene_transf = "transferencia" in m
+    tiene_mp = "mercado pago" in m or "mercadopago" in m
+    if not (tiene_transf and tiene_mp):
+        return None
+    if _RE_MITAD_SPLIT.search(m):
+        return [{"medio": "transferencia", "porcentaje": 50},
+                {"medio": "mercado pago", "porcentaje": 50}]
+    pares = _RE_PCT_MEDIO.findall(m)
+    if len(pares) == 2:
+        (n1, m1), (n2, m2) = pares
+        try:
+            p1, p2 = int(n1), int(n2)
+        except ValueError:
+            return None
+        if abs(p1 + p2 - 100) <= 1 and _norm(m1) != _norm(m2):
+            return [{"medio": _norm(m1), "porcentaje": p1},
+                    {"medio": _norm(m2), "porcentaje": p2}]
+    return None
