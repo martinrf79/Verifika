@@ -154,15 +154,29 @@ def _sec_mas_barato(mensaje: str, interp: dict, estado: dict, tienda_id: str,
     """'El mas barato': lo computa el codigo, problema cerrado. El criterio lo
     leen los DOS interpretes (regex + LLM), asi 'lo mas eco' tambien dispara.
     Aca solo se MUESTRA el mas barato (informativo, sin sellar un total), por
-    eso alcanza con que UNO de los dos lo vea."""
+    eso alcanza con que UNO de los dos lo vea. Criterio INTERMEDIO (11-jul):
+    muestra la opcion del medio, nunca el minimo que el cliente rechazo."""
     from app.core.estado_venta import concordancia_criterio
-    if not concordancia_criterio(mensaje, interp):
+    conc = concordancia_criterio(mensaje, interp)
+    if not conc:
         return None
-    from app.core.guia_compra import mas_barato_con_stock, _categorias_en_juego
+    from app.core.guia_compra import (mas_barato_con_stock,
+                                      intermedio_con_stock,
+                                      _categorias_en_juego)
     from app.core.tools_context import set_current_tienda
     set_current_tienda(tienda_id)
     cats = _categorias_en_juego(mensaje, estado.get("productos_vistos"))
-    p = mas_barato_con_stock(cats[0] if cats else None)
+    cat = cats[0] if cats else None
+    if conc == "intermedio":
+        p = intermedio_con_stock(cat)
+        if not p:
+            return None
+        _registrar(meta, "search_products",
+                   {"encontrados": 1, "productos": [p]},
+                   {"query": "intermedio"})
+        return ("Ni lo más barato ni lo más caro, el punto medio con stock "
+                "es:\n- " + _linea(p))
+    p = mas_barato_con_stock(cat)
     if not p:
         return None
     _registrar(meta, "search_products",

@@ -591,7 +591,10 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # El id computado alimenta la guarda del mas barato de mas abajo, que
     # re-ancla si la respuesta afirma que el mas barato es OTRO producto.
     _id_barato = ""
-    if detectar_criterio(raw_message) or (estado.get("criterio") or "").strip():
+    # Solo con criterio BARATO: el guard del minimo no aplica a un cliente que
+    # pidio "intermedio" (rechazo explicito del mas barato, 11-jul).
+    if (detectar_criterio(raw_message) == "más barato"
+            or (estado.get("criterio") or "").strip() == "más barato"):
         try:
             from app.core.guia_compra import guia_mas_barato
             _guia_barato = guia_mas_barato(
@@ -665,10 +668,63 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                     _conc = concordancia_criterio(raw_message, interp)
                     if conv.get("criterio_confirmar_pendiente"):
                         if _es_afirmacion_barato(raw_message, interp):
-                            _conc = "actuar"
+                            # El "si" arma con el criterio que quedo sticky al
+                            # preguntar: intermedio confirma intermedios.
+                            _conc = ("intermedio_confirmado"
+                                     if (conv.get("criterio_cliente") or "")
+                                     == "intermedio" else "actuar")
                         elif _RE_NEGACION.search(_norm_txt(raw_message)):
                             _conc = ""
-                    if _conc == "actuar":
+                    if _conc == "intermedio_confirmado":
+                        # Criterio INTERMEDIO confirmado por el cliente: el
+                        # codigo elige la opcion del medio por precio de cada
+                        # categoria y sella el total (mismo camino que los
+                        # baratos, otro elegidor).
+                        from app.core.guia_pedido import (
+                            calcular_categorias_intermedias,
+                            mensaje_presupuesto_sellado,
+                            pregunta_destinos_pendientes)
+                        _tools_precalc = calcular_categorias_intermedias(
+                            _cats_pedido, estado, tienda_id, trace_id,
+                            mensaje=raw_message) or []
+                        if _tools_precalc:
+                            respuesta = (mensaje_presupuesto_sellado(
+                                _tools_precalc[0]["result"]["presentacion"])
+                                + pregunta_destinos_pendientes(raw_message))
+                            respuesta_curada_servida = True
+                            _sellado_pedido = True
+                            log.info("interprete_libre_categorias_intermedias",
+                                     trace_id=trace_id, cats=_cats_pedido)
+                            _cats_pedido = []
+                    elif _conc == "intermedio":
+                        # Criterio INTERMEDIO leido este turno (caso real del
+                        # banco 11-jul: "economicos pero no lo mas barato que
+                        # haya" armaba los MAS baratos, lo contrario de lo
+                        # pedido). Como "intermedio" es difuso, se PROPONE la
+                        # opcion del medio de cada categoria con datos reales
+                        # y se confirma antes de sellar plata.
+                        from app.core.guia_compra import intermedio_con_stock
+                        from app.core.tools_context import set_current_tienda
+                        set_current_tienda(tienda_id)
+                        _lineas_int = []
+                        for _n, _cat in _cats_pedido:
+                            _pi = intermedio_con_stock(_cat)
+                            if isinstance(_pi, dict) and _pi.get("nombre"):
+                                _lineas_int.append(
+                                    f"- {_n}x " + _linea_producto(_pi))
+                        if _lineas_int:
+                            respuesta = (
+                                "Buscás algo intermedio, ni lo más económico "
+                                "ni lo más caro. Te propongo:\n"
+                                + "\n".join(_lineas_int)
+                                + "\n¿Te armo el total con estos? Confirmame "
+                                  "con un sí y te paso el presupuesto al "
+                                  "instante.")
+                            respuesta_curada_servida = True
+                            _criterio_confirmar = True
+                            log.info("interprete_libre_criterio_intermedio",
+                                     trace_id=trace_id, cats=_cats_pedido)
+                    elif _conc == "actuar":
                         from app.core.guia_pedido import (
                             calcular_categorias_baratas,
                             mensaje_presupuesto_sellado)
@@ -1458,9 +1514,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # del codigo + campo del LLM, que entiende "eco" y abreviaturas) y es STICKY.
     # Una vez dicho persiste entre turnos hasta que el cliente diga otro, asi el
     # bot no vuelve a preguntar modelo ni color (arreglo B).
+    from app.core.estado_venta import criterio_llm as _criterio_llm
     criterio_cliente = (
         detectar_criterio(raw_message)
         or ("más barato" if criterio_del_interprete(interp) else "")
+        or ("intermedio" if _criterio_llm(interp) == "intermedio" else "")
         or (conv.get("criterio_cliente") or ""))
     # Provincia del cliente: se detecta determinista y es STICKY. Una vez dada
     # persiste entre turnos y se aplica a TODOS los destinos, asi el bot no repide

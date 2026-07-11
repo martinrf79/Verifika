@@ -128,14 +128,34 @@ def calcular_categorias_baratas(cats_pedido: list, estado: dict | None,
     el presupuesto con la misma maquinaria de calcular_pedido. None si alguna
     categoria no tiene producto con stock o la calculadora rechaza (ej. stock
     insuficiente para la cantidad): el turno sigue por el camino normal."""
+    from app.core.guia_compra import mas_barato_con_stock
+    return _calcular_categorias_criterio(
+        cats_pedido, estado, tienda_id, trace_id, mensaje,
+        elegir=mas_barato_con_stock)
+
+
+def calcular_categorias_intermedias(cats_pedido: list, estado: dict | None,
+                                    tienda_id: str,
+                                    trace_id: str | None = None,
+                                    mensaje: str = "") -> list[dict] | None:
+    """Criterio INTERMEDIO confirmado (11-jul): mismo camino sellado que los
+    baratos pero eligiendo la opcion del medio por precio de cada categoria."""
+    from app.core.guia_compra import intermedio_con_stock
+    return _calcular_categorias_criterio(
+        cats_pedido, estado, tienda_id, trace_id, mensaje,
+        elegir=intermedio_con_stock)
+
+
+def _calcular_categorias_criterio(cats_pedido: list, estado: dict | None,
+                                  tienda_id: str, trace_id: str | None,
+                                  mensaje: str, elegir) -> list[dict] | None:
     if not cats_pedido:
         return None
     from app.core.tools_context import set_current_tienda
-    from app.core.guia_compra import mas_barato_con_stock
     set_current_tienda(tienda_id)
     items = []
     for n, cat in cats_pedido:
-        p = mas_barato_con_stock(cat)
+        p = elegir(cat)
         if not isinstance(p, dict) or not p.get("id"):
             return None
         items.append({"product_id": str(p["id"]).upper(), "cantidad": int(n)})

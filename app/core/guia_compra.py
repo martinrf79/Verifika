@@ -52,6 +52,25 @@ def mas_barato_con_stock(categoria: str | None = None) -> dict | None:
     return min(productos, key=lambda p: p["precio_ars"])
 
 
+def intermedio_con_stock(categoria: str | None = None) -> dict | None:
+    """La opcion INTERMEDIA con stock (criterio 'intermedio', 11-jul: el
+    cliente que rechaza lo mas barato). Determinista: ordenados por precio,
+    el del medio (con dos, el mas caro de los dos: el cliente ya dijo que el
+    minimo no). None si no hay ninguno con stock."""
+    tid = get_current_tienda()
+    productos = [p for p in get_all_products(tienda_id=tid)
+                 if p.get("stock", 0) > 0
+                 and isinstance(p.get("precio_ars"), (int, float))]
+    if categoria:
+        cat = _norm(categoria)
+        productos = [p for p in productos
+                     if _norm(p.get("categoria", "")) == cat]
+    if not productos:
+        return None
+    productos.sort(key=lambda p: (p["precio_ars"], str(p.get("id"))))
+    return productos[len(productos) // 2]
+
+
 def _categorias_en_juego(mensaje: str,
                          productos_vistos: list[dict] | None) -> list[str]:
     """Las categorias sobre las que el cliente esta eligiendo: las nombradas en

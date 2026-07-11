@@ -25,12 +25,21 @@ from typing import Any
 # codigo (no con el LLM) para que sea determinista y viaje por el estado. La raiz
 # 'barat' cubre barato/barata/baratos/baratito; 'econom' cubre economico/economica.
 _CRITERIO_BARATO_RE = re.compile(r"barat|econ[oó]mic", re.IGNORECASE)
+# "Algo intermedio" o el RECHAZO explicito del minimo (caso real del banco
+# 11-jul: "economicos pero no lo mas barato que haya" armaba los MAS baratos,
+# lo contrario de lo pedido). Se chequea ANTES que el de barato: la negacion
+# contiene la palabra 'barato' y sin el orden ganaria el criterio equivocado.
+_CRITERIO_INTERMEDIO_RE = re.compile(
+    r"intermedi|t[eé]rmino medio|gama media|del medio"
+    r"|n[oi] (?:el |lo )?m[aá]s barat|ni tan barat", re.IGNORECASE)
 
 
 def detectar_criterio(mensaje: str) -> str:
-    """Criterio de precio que el cliente dejo dicho en el mensaje. Hoy uno solo:
-    'más barato'. Devuelve '' si el mensaje no trae ninguno. Determinista: el
+    """Criterio de precio que el cliente dejo dicho en el mensaje: 'más barato'
+    o 'intermedio'. Devuelve '' si el mensaje no trae ninguno. Determinista: el
     mismo texto siempre da el mismo criterio, sin llamar a ningun modelo."""
+    if _CRITERIO_INTERMEDIO_RE.search(mensaje or ""):
+        return "intermedio"
     if _CRITERIO_BARATO_RE.search(mensaje or ""):
         return "más barato"
     return ""
@@ -46,21 +55,35 @@ def criterio_del_interprete(interp) -> bool:
     return str(interp.get("criterio") or "").strip() == "mas_barato"
 
 
+def criterio_llm(interp) -> str:
+    """El criterio crudo que leyo el LLM: 'mas_barato', 'intermedio' o ''."""
+    if not isinstance(interp, dict):
+        return ""
+    v = str(interp.get("criterio") or "").strip()
+    return v if v in ("mas_barato", "intermedio") else ""
+
+
 def concordancia_criterio(mensaje: str, interp) -> str:
-    """DOS interpretes del criterio 'lo mas barato' (decision de Martin, 9-jul):
+    """DOS interpretes del criterio de precio (decision de Martin, 9-jul):
     el CODIGO (regex determinista) y el LLM (entiende 'eco', 'lo mas conveniente'
     y typos que el regex no cubre). Regla:
-      - ambos lo ven      -> 'actuar'    (se arma sin preguntar)
-      - solo uno lo ve    -> 'confirmar' (pregunta corta '¿los mas baratos?')
-      - ninguno           -> ''          (no es un turno de criterio)
+      - alguno lee INTERMEDIO -> 'intermedio' (proponer el del medio y
+        confirmar; JAMAS armar los mas baratos: es lo contrario de lo pedido)
+      - ambos leen barato     -> 'actuar'    (se arma sin preguntar)
+      - solo uno lee barato   -> 'confirmar' (pregunta corta '¿los mas baratos?')
+      - ninguno               -> ''          (no es un turno de criterio)
     Asi 'eco' se entiende sin listar sinonimos a mano, pero un disparo dudoso de
     UN solo interprete se confirma en vez de sellar un total que el cliente
     quiza no pidio. Generar > confirmar antes de comprometer plata."""
-    cod = bool(detectar_criterio(mensaje))
-    llm = criterio_del_interprete(interp)
-    if cod and llm:
+    cod = detectar_criterio(mensaje)
+    llm = criterio_llm(interp)
+    if "intermedio" in (cod, llm):
+        return "intermedio"
+    cod_b = cod == "más barato"
+    llm_b = llm == "mas_barato"
+    if cod_b and llm_b:
         return "actuar"
-    if cod or llm:
+    if cod_b or llm_b:
         return "confirmar"
     return ""
 
