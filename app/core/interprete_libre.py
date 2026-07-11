@@ -484,6 +484,15 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         log.warning("interprete_libre_lead_lookup_error", trace_id=trace_id,
                     error=str(e)[:120])
     estado = construir_estado(conv, lead_activo)
+    # La ULTIMA respuesta del bot entra al estado del turno: la usan las
+    # curadas para NO repetir el mismo bloque enlatado que acaba de salir
+    # (charla real 11-jul 17:59: pregunta de detalle sobre tarjetas ->
+    # re-sirvio identica la curada de formas de pago en vez del honesto
+    # "ese detalle no lo tengo confirmado").
+    for _h in reversed(history or []):
+        if isinstance(_h, dict) and _h.get("role") == "assistant":
+            estado["ultima_respuesta_bot"] = str(_h.get("content") or "")
+            break
     # La provincia dicha en ESTE mensaje entra al estado del turno YA (no recien
     # al persistir al final): asi cotizar_envio resuelve una localidad ambigua
     # ('Los Condores') con la provincia que el cliente acaba de dar en la misma
@@ -1172,7 +1181,14 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 # cotizado, descuento en el total), ni cuando la prosa ya dice
                 # lo mismo Y el tema es de texto puro. Un tema con numeros
                 # lleva SIEMPRE su bloque: el numero oficial no se negocia.
-                if _tema_bc in temas_cubiertos_por_tools(meta):
+                from app.core.curadas import bloque_repetido
+                if bloque_repetido(_bloque_bc, estado, raw_message):
+                    # El mismo enlatado que acaba de salir no se re-pega
+                    # (11-jul 17:59): el cliente pregunta un detalle que el
+                    # bloque no contiene.
+                    log.info("interprete_libre_acople_salteado", trace_id=trace_id,
+                             tema=_tema_bc, motivo="repetido")
+                elif _tema_bc in temas_cubiertos_por_tools(meta):
                     log.info("interprete_libre_acople_salteado", trace_id=trace_id,
                              tema=_tema_bc, motivo="tool_cubre")
                 elif not _tiene_valores and solapa_prosa(respuesta, _bloque_bc):

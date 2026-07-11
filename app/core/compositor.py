@@ -283,7 +283,7 @@ def _sec_envio(mensaje: str, estado: dict, tienda_id: str,
 
 
 def _sec_faq(mensaje: str, interp: dict, tienda_id: str,
-             meta: dict) -> str | None:
+             meta: dict, estado: dict | None = None) -> str | None:
     """Politica de la tienda: SIEMPRE la curada oficial estampada. Sin las
     restricciones del atajo viejo: aca no hay solver con quien pisarse.
     MULTI-PREGUNTA (charla real 10-jul): un turno con varias preguntas de
@@ -292,6 +292,7 @@ def _sec_faq(mensaje: str, interp: dict, tienda_id: str,
     from app.storage.firestore_client import get_all_faq
     from app.core.tools import _faq_temas_multi
     from app.core.curadas import estampar_valores
+    from app.core.curadas import bloque_repetido
     faq = get_all_faq(tienda_id=tienda_id) or {}
     temas = _faq_temas_multi(mensaje or "", faq)
     bloques: list[str] = []
@@ -300,11 +301,11 @@ def _sec_faq(mensaje: str, interp: dict, tienda_id: str,
         texto = str(data.get("respuesta_curada") or "").strip()
         if not texto:
             texto = str(data.get("respuesta") or "").strip()
-            if texto:
+            if texto and not bloque_repetido(texto, estado, mensaje):
                 bloques.append(texto)
             continue
         estampada = estampar_valores(texto, data)
-        if estampada:
+        if estampada and not bloque_repetido(estampada, estado, mensaje):
             bloques.append(estampada)
             _registrar(meta, "query_faq",
                        {"encontrada": True, "tema": tema,
@@ -377,7 +378,7 @@ def _sec_movida(mensaje: str, interp: dict, estado: dict, tienda_id: str,
         return ("Comprar sin ver da un poco de reparo, es normal, así que te "
                 "lo digo con hechos:\n\n" + oficial).strip()
 
-    faqmsg = _sec_faq(mensaje, interp, tienda_id, meta)
+    faqmsg = _sec_faq(mensaje, interp, tienda_id, meta, estado)
     if cat in _MOVIDAS_FIJAS:
         base = _MOVIDAS_FIJAS[cat]
         # Si hay curada de FAQ pertinente (queja de envios, garantia...), va
@@ -447,7 +448,8 @@ _RE_ES_PREGUNTA = re.compile(
     r"|quien|puedo|puede|hay|se puede|tienen|tenes)\b")
 
 
-def _fallback(estado: dict, mensaje: str = "") -> str:
+def _fallback(estado: dict, mensaje: str = "",
+              interp: dict | None = None) -> str:
     pend = estado.get("pedido_categorias_pendiente") or []
     if pend:
         return ("Seguimos con tu pedido cuando quieras: decime los modelos "
@@ -458,7 +460,13 @@ def _fallback(estado: dict, mensaje: str = "") -> str:
     # "no te entendi": se dice honesto que ese dato no esta en la fuente
     # oficial y se deriva. El evento compositor_pregunta_sin_fuente queda en
     # el log: de ahi se minan las curadas nuevas que faltan.
-    if _RE_ES_PREGUNTA.search(_norm(mensaje)):
+    # Pregunta por regex O por la lectura del interprete (las preguntas de
+    # WhatsApp suelen venir sin signo: "las tarjetas van por mercado pago o
+    # directo", charla real 11-jul 17:59).
+    es_pregunta = (_RE_ES_PREGUNTA.search(_norm(mensaje))
+                   or (interp or {}).get("intencion") in
+                   ("pregunta_especifica", "posventa"))
+    if es_pregunta:
         log.warning("compositor_pregunta_sin_fuente",
                     mensaje=(mensaje or "")[:200])
         return ("Esa puntual no la tengo confirmada en mi información "
@@ -536,7 +544,7 @@ def _ejecutar_plan(plan: list[dict], mensaje: str, interp: dict, estado: dict,
         elif tipo == "envio":
             _add("envio", _sec_envio(mensaje, estado, tienda_id, meta))
         elif tipo == "faq":
-            texto = _sec_faq(mensaje, interp, tienda_id, meta)
+            texto = _sec_faq(mensaje, interp, tienda_id, meta, estado)
             if not texto and arg:
                 texto = _curada_tema(_norm(arg).replace(" ", "_"), tienda_id)
             _add("faq", texto)
@@ -564,7 +572,7 @@ def _ejecutar_plan(plan: list[dict], mensaje: str, interp: dict, estado: dict,
         elif tipo == "preguntar":
             _add("preguntar", _texto_preguntar(arg))
         elif tipo == "fallback":
-            _add("fallback", _fallback(estado, mensaje))
+            _add("fallback", _fallback(estado, mensaje, interp))
     return secciones, usadas
 
 
@@ -619,6 +627,13 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
             log.info("compositor_plan_ok", trace_id=trace_id,
                      secciones=usadas)
 
+    # Si el selector ELIGIO pero ninguna seccion respaldo (ej. la FAQ elegida
+    # se filtro por repetida), la cascada solo puede servir secciones que
+    # RESPONDEN el mensaje; los empujes informativos por criterio (mas
+    # barato) quedan afuera: metian el minimo en una pregunta de pago
+    # (charla real 11-jul 17:59) y tapaban el honesto "sin fuente".
+    _plan_fallido = bool(plan) and not secciones
+
     if not secciones:
         # CASCADA determinista (el camino previo al selector, hoy su red).
         _add("saludo", _sec_saludo_puro(interp, tienda_id))
@@ -633,7 +648,7 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
         if not _rech:
             _add("producto",
                  _sec_producto(mensaje, interp, estado, tienda_id, meta))
-        if not _rech and "producto" not in usadas:
+        if not _rech and "producto" not in usadas and not _plan_fallido:
             _add("mas_barato",
                  _sec_mas_barato(mensaje, interp, estado, tienda_id, meta))
         if (not _rech and "producto" not in usadas
@@ -642,7 +657,7 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
         _add("envio", _sec_envio(mensaje, estado, tienda_id, meta))
         if "saludo" not in usadas:
             _add("faq", None if movida
-                 else _sec_faq(mensaje, interp, tienda_id, meta))
+                 else _sec_faq(mensaje, interp, tienda_id, meta, estado))
         if movida and _cat_mov not in ("B17", "B18", "B19", "B11"):
             # El "preguntar" generico ('¿que producto?') NO se apila sobre
             # una respuesta de datos: si ya salio ficha, mas barato,
@@ -664,7 +679,7 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
                      secciones=["not_found"])
             return nf, meta
         log.info("compositor_secciones", trace_id=trace_id, secciones=["fallback"])
-        return _fallback(estado, mensaje), meta
+        return _fallback(estado, mensaje, interp), meta
 
     # Los bloques crudos viajan en meta para el REDACTOR (nivel 2 de la
     # escalera): el modelo cose la prosa ENTRE bloques que no puede tocar.

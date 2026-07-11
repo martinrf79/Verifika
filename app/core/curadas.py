@@ -332,4 +332,34 @@ def servir_curada(mensaje: str, interp: dict | None, estado: dict | None,
     estampada = estampar_valores(texto, data)
     if not estampada:
         return None
+    # El mismo enlatado que acaba de salir no se re-sirve (11-jul 17:59):
+    # el cliente esta preguntando un DETALLE que la curada no contiene.
+    if bloque_repetido(estampada, estado, mensaje):
+        log.info("curada_no_repetida", tema=tema)
+        return None
     return tema, estampada
+
+
+# ── NO REPETIR EL MISMO ENLATADO (charla real 11-jul 17:59) ──────────────────
+# "¿Las tarjetas van por Mercado Pago o directo?" re-sirvio IDENTICA la
+# curada de formas de pago que acababa de salir: el cliente pregunto un
+# detalle que la curada no contiene, y repetirla es peor que decir "no lo
+# se". Si el bloque a servir ya esta dicho en la ULTIMA respuesta del bot,
+# no se sirve: el turno cae al honesto "sin fuente" del compositor y la
+# pregunta queda logueada para minar la curada que falta. Excepcion: el
+# cliente pidio explicitamente que se lo repitan.
+
+_RE_PIDE_REPETIR = re.compile(
+    r"repet[ií]|de nuevo|otra vez|nuevamente|mandamel[oa] de vuelta",
+    re.IGNORECASE)
+
+
+def bloque_repetido(bloque: str, estado: dict | None, mensaje: str) -> bool:
+    """True si el bloque ya salio en la ultima respuesta del bot y el
+    cliente NO pidio que se lo repitan."""
+    ult = str((estado or {}).get("ultima_respuesta_bot") or "")
+    if not ult or not bloque:
+        return False
+    if _RE_PIDE_REPETIR.search(mensaje or ""):
+        return False
+    return solapa_prosa(ult, bloque)
