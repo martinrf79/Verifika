@@ -89,6 +89,24 @@ def _resolver_producto(nombre: str, tienda_id: str) -> dict | None:
     return _resolver_nombre_a_producto(nombre, get_all_products(tienda_id=tienda_id))
 
 
+def _hits_catalogo(termino: str, tienda_id: str, tope: int = 5) -> list[dict]:
+    """Productos del catalogo cuyo nombre contiene al termino (o al reves),
+    misma regla de contencion que _resolver_nombre_a_producto pero devolviendo
+    TODOS los hits (capados): distingue el unico, las variantes y lo vago."""
+    from app.storage.firestore_client import get_all_products
+    r = _norm(termino)
+    if not r:
+        return []
+    hits = []
+    for p in (get_all_products(tienda_id=tienda_id) or []):
+        nom = _norm(p.get("nombre"))
+        if nom and (nom in r or r in nom):
+            hits.append(p)
+            if len(hits) > tope:
+                break
+    return hits
+
+
 def _sec_producto(mensaje: str, interp: dict, estado: dict,
                   tienda_id: str, meta: dict) -> str | None:
     """Ficha del producto puntual: linea real + descripcion del catalogo.
@@ -113,6 +131,28 @@ def _sec_producto(mensaje: str, interp: dict, estado: dict,
                 partes.append("Ahora mismo está sin stock; si querés te "
                               "muestro una alternativa parecida con stock.")
             return "\n".join(partes)
+    # BUSQUEDA CERTIFICADA del candidato unico (11-jul, caso real del banco:
+    # "sumame el HyperX Cloud II" caia al fallback porque el enum del
+    # interprete solo referencia lo MOSTRADO). El codigo busca el candidato
+    # en el catalogo: UN hit -> ficha certificada; 2-4 hits (variantes) ->
+    # pregunta A/B con las opciones reales, nunca elegir por el cliente
+    # (regla 0); mas hits = termino vago -> sigue el camino normal.
+    if len(cands) == 1:
+        hits = _hits_catalogo(cands[0], tienda_id)
+        if len(hits) == 1:
+            p = hits[0]
+            _registrar(meta, "get_product_details",
+                       {"encontrado": True, "producto": p},
+                       {"product_id": p.get("id")})
+            partes = [_linea(p)]
+            if p.get("stock", 0) <= 0:
+                partes.append("Ahora mismo está sin stock; si querés te "
+                              "muestro una alternativa parecida con stock.")
+            return "\n".join(partes)
+        if 2 <= len(hits) <= 4:
+            return ("Tengo estas opciones y no quiero errarle:\n"
+                    + "\n".join("- " + _linea(p) for p in hits)
+                    + "\n¿Cuál preferís?")
     if len(cands) >= 2:
         lineas = []
         for c in cands[:3]:
@@ -131,8 +171,11 @@ def _sec_categoria(mensaje: str, interp: dict, tienda_id: str) -> str | None:
     from app.core.guia_pedido import opciones_por_categoria
     from app.storage.firestore_client import get_categories
     m = _norm(mensaje)
+    # La puntuacion pegada ("auriculares?") rompia el match de la categoria
+    # (visto 11-jul): se limpia por palabra antes de singularizar.
+    _limpias = (w.strip(".,!?¿¡;:()") for w in m.split())
     palabras = {w[:-1] if len(w) > 3 and w.endswith("s") else w
-                for w in m.split()}
+                for w in _limpias if w}
     cat_hit = None
     for c in (get_categories(tienda_id=tienda_id) or []):
         cn = _norm(c)
@@ -334,6 +377,50 @@ def _sec_movida(mensaje: str, interp: dict, estado: dict, tienda_id: str,
     return None
 
 
+# Pregunta de DISPONIBILIDAD: "tenes joysticks?", "venden fundas?". Solo con
+# esta forma se responde el no honesto; una pregunta conceptual ("diferencia
+# entre membrana y mecanico") no es disponibilidad y no dispara.
+_RE_DISPONIBILIDAD = re.compile(
+    r"\bten[eé]s\b|\btienen\b|\bhay\b|\bvenden\b|\btrabajan\b|\bmanejan\b")
+
+
+def _sec_not_found(mensaje: str, interp: dict, tienda_id: str) -> str | None:
+    """NOT_FOUND honesto (11-jul, caso real del banco: 'tenes joysticks?'
+    caia al fallback 'no te entendi'). Pregunta de disponibilidad + candidato
+    unico del interprete que no matchea NI una categoria NI ningun producto
+    del catalogo -> se dice que no derecho y se ofrecen las categorias
+    reales. not_found es un resultado valido, no un error (regla 0)."""
+    m = _norm(mensaje)
+    if not _RE_DISPONIBILIDAD.search(m):
+        return None
+    cands = [str(c).strip() for c in (interp or {}).get("candidatos") or []
+             if str(c).strip()]
+    if len(cands) != 1:
+        return None
+    term = _norm(cands[0])
+    if len(term) <= 3:
+        return None
+    from app.storage.firestore_client import get_categories, get_all_products
+    sing = term[:-1] if term.endswith("s") else term
+    cats = [str(c) for c in (get_categories(tienda_id=tienda_id) or [])]
+    for c in cats:
+        cn = _norm(c)
+        cs = cn[:-1] if cn.endswith("s") else cn
+        if cs == sing or cn in term or term in cn:
+            return None  # es una categoria real: responde la seccion categoria
+    for p in (get_all_products(tienda_id=tienda_id) or []):
+        nom = _norm(p.get("nombre"))
+        ncat = _norm(p.get("categoria"))
+        if nom and (sing in nom or nom in term):
+            return None  # matchea un producto: no es un not_found
+        if ncat and (sing == ncat or sing == ncat[:-1]):
+            return None
+    lista = ", ".join(cats[:6]) if cats else "tecnología y gaming"
+    return (f"Justo {cands[0].lower()} no trabajamos por ahora, te lo digo "
+            f"derecho. Lo que sí tenemos: {lista}. "
+            "¿Te muestro algo de eso?")
+
+
 def _fallback(estado: dict) -> str:
     pend = estado.get("pedido_categorias_pendiente") or []
     if pend:
@@ -395,6 +482,14 @@ def componer(mensaje: str, interp: dict | None, estado: dict | None,
             _add("movida", movida)
 
     if not secciones:
+        # Antes del fallback ciego: si es una pregunta de disponibilidad por
+        # algo que NO existe en el catalogo, el no honesto vende mas que un
+        # "no te entendi" (caso real: 'tenes joysticks?').
+        nf = _sec_not_found(mensaje, interp, tienda_id)
+        if nf:
+            log.info("compositor_secciones", trace_id=trace_id,
+                     secciones=["not_found"])
+            return nf, meta
         log.info("compositor_secciones", trace_id=trace_id, secciones=["fallback"])
         return _fallback(estado), meta
 
