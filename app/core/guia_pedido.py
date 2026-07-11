@@ -284,6 +284,18 @@ _RE_DESTINOS_MSG = re.compile(
     r"|cuanto|dame)\b|[,.?!]|$)")
 
 
+# "Mandalo a DONDE TE DIJE" no es una localidad: referencias y pronombres
+# que el regex de destinos captura pero jamas hay que tratar como lugar
+# (visto 11-jul: "para el envio a Donde Te Dije necesito la provincia").
+_RE_DESTINO_PRONOMBRE = re.compile(
+    r"^(?:a\s+)?(?:donde|adonde|ahi|alla|alli|casa|mi casa|tu casa|su casa"
+    r"|el mismo|la misma|ese lugar|este lugar)\b")
+
+
+def _es_destino_real(cand: str) -> bool:
+    return not _RE_DESTINO_PRONOMBRE.match((cand or "").strip())
+
+
 def pregunta_destinos_pendientes(mensaje: str) -> str:
     """COMPLETITUD del multi-destino: si el cliente declaro destinos que no
     resolvieron zona (localidad ambigua, ej. Isla Verde existe en tres
@@ -292,7 +304,7 @@ def pregunta_destinos_pendientes(mensaje: str) -> str:
     declarados = []
     for m in list(_RE_DESTINOS_MSG.finditer(_norm(mensaje or "")))[:4]:
         cand = m.group(1).strip(" .,-")
-        if len(cand) >= 3 and cand not in declarados:
+        if len(cand) >= 3 and cand not in declarados and _es_destino_real(cand):
             declarados.append(cand)
     if not declarados:
         return ""
@@ -317,7 +329,8 @@ def cotizar_destinos_del_mensaje(mensaje: str) -> list[str]:
     ok: list[str] = []
     for m in list(_RE_DESTINOS_MSG.finditer(_norm(mensaje or "")))[:4]:
         cand = m.group(1).strip(" .,-")
-        if len(cand) < 3 or cand in {c.lower() for c in ok}:
+        if (len(cand) < 3 or cand in {c.lower() for c in ok}
+                or not _es_destino_real(cand)):
             continue
         try:
             q = cotizar_envio(localidad=cand)

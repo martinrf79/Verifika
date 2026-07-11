@@ -97,3 +97,28 @@ def test_compositor_reconoce_rechazo_sin_insistir(firestore_doble):
     assert "lo dejamos de lado" in texto
     assert "Zeus X" not in texto
     assert "no quiero errarle" not in texto
+
+
+def test_destino_pronombre_no_es_localidad(firestore_doble):
+    # 'mandalo a donde te dije' pedia la provincia de "Donde Te Dije".
+    from app.core.tools_context import set_current_tienda
+    from app.core.guia_pedido import (cotizar_destinos_del_mensaje,
+                                      pregunta_destinos_pendientes)
+    set_current_tienda("verifika_prod")
+    assert cotizar_destinos_del_mensaje(
+        "cerremos y mandalo a donde te dije") == []
+    assert pregunta_destinos_pendientes(
+        "cerremos y mandalo a donde te dije") == ""
+
+
+def test_intermedio_es_el_escalon_arriba_del_minimo(firestore_doble):
+    from app.core.tools_context import set_current_tienda
+    from app.core.guia_compra import (intermedio_con_stock,
+                                      mas_barato_con_stock)
+    set_current_tienda("verifika_prod")
+    barato = mas_barato_con_stock("teclado")
+    medio = intermedio_con_stock("teclado")
+    assert medio["precio_ars"] > barato["precio_ars"]
+    # El escalon siguiente, no la mediana de la categoria entera: para el
+    # catalogo real de teclados eso es un teclado economico, no uno de gama.
+    assert medio["precio_ars"] < 50000

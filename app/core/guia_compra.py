@@ -54,9 +54,11 @@ def mas_barato_con_stock(categoria: str | None = None) -> dict | None:
 
 def intermedio_con_stock(categoria: str | None = None) -> dict | None:
     """La opcion INTERMEDIA con stock (criterio 'intermedio', 11-jul: el
-    cliente que rechaza lo mas barato). Determinista: ordenados por precio,
-    el del medio (con dos, el mas caro de los dos: el cliente ya dijo que el
-    minimo no). None si no hay ninguno con stock."""
+    cliente que rechaza lo mas barato). Determinista: el ESCALON de precio
+    siguiente al minimo (segundo precio distinto). La mediana de toda la
+    categoria proponia un teclado de $144.000 a quien pidio 'economico pero
+    no lo mas barato' (visto en el banco); el escalon de arriba del minimo
+    es lo que ese cliente pide. None si no hay ninguno con stock."""
     tid = get_current_tienda()
     productos = [p for p in get_all_products(tienda_id=tid)
                  if p.get("stock", 0) > 0
@@ -68,7 +70,11 @@ def intermedio_con_stock(categoria: str | None = None) -> dict | None:
     if not productos:
         return None
     productos.sort(key=lambda p: (p["precio_ars"], str(p.get("id"))))
-    return productos[len(productos) // 2]
+    minimo = productos[0]["precio_ars"]
+    for p in productos:
+        if p["precio_ars"] > minimo:
+            return p
+    return productos[-1]  # todos al mismo precio: el ultimo estable
 
 
 def _categorias_en_juego(mensaje: str,

@@ -723,6 +723,20 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                             from app.core.guia_pedido import (
                                 cotizar_destinos_del_mensaje)
                             from app.core.tools import cotizar_envio as _ce
+
+                            def _reg_envio(_loc, _q):
+                                # El proof de CADA cotizacion entra a meta:
+                                # sin el, el verificador no tiene respaldo
+                                # del monto correcto y lo "autocorrige" a un
+                                # valor de la FAQ (visto 11-jul: $6.000 de
+                                # Rafaela pisado a $5.000).
+                                _e = {"name": "cotizar_envio",
+                                      "args": {"localidad": _loc},
+                                      "result": _q}
+                                if isinstance(_q, dict) and _q.get("proof"):
+                                    _e["proof"] = _q["proof"]
+                                _tools_precalc.append(_e)
+
                             _dest_msg = cotizar_destinos_del_mensaje(
                                 raw_message)
                             # Re-cotizar los destinos ya dados: la memoria
@@ -730,7 +744,9 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                             for _loc_prev in (
                                     estado.get("localidades_envio") or []):
                                 if _loc_prev and _loc_prev not in _dest_msg:
-                                    _ce(localidad=_loc_prev)
+                                    _qp = _ce(localidad=_loc_prev)
+                                    if _qp.get("ok"):
+                                        _reg_envio(_loc_prev, _qp)
                             from app.core.estado_venta import (
                                 get_envio_localidades as _gel)
                             _todas = _gel()
@@ -739,6 +755,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                                 for _d in _dest_msg:
                                     _q = _ce(localidad=_d)
                                     if _q.get("ok"):
+                                        _reg_envio(_d, _q)
                                         _m = _q.get("monto")
                                         _c = ("gratis" if _m in (0, None)
                                               else f"${_m:,}".replace(
@@ -1480,7 +1497,15 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             # GUARDA DEL MAS BARATO: mismo patron, sobre el minimo que computo
             # la guia determinista. Si el solver afirmo que el mas barato es
             # OTRO producto, se re-ancla al real (dato del catalogo).
-            if not producto_forzado and _id_barato:
+            # NO corre sobre un pedido SELLADO ni cuando el cliente pidio un
+            # producto PUNTUAL con pedido armado (banco 11-jul: el cliente
+            # cerro con el M170 anotado y la guarda reescribio la respuesta
+            # correcta al DX-110 por un criterio sticky contaminado).
+            _pidio_puntual = bool(
+                str(interp.get("producto_resuelto") or "").strip()
+                and (interp.get("pedido") or []))
+            if (not producto_forzado and _id_barato
+                    and not _sellado_pedido and not _pidio_puntual):
                 _re_barato = _reanclar_si_barato_divergente(
                     respuesta, _id_barato, _ids_mostrados, tienda_id)
                 if _re_barato:
@@ -1652,8 +1677,20 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # Una vez dicho persiste entre turnos hasta que el cliente diga otro, asi el
     # bot no vuelve a preguntar modelo ni color (arreglo B).
     from app.core.estado_venta import criterio_llm as _criterio_llm
+    # OJO: una OBJECION de precio ("mi hermano dice que en otro lado esta
+    # mas barato") NO es un criterio del cliente; dejaba sticky "más barato"
+    # y contaminaba los turnos siguientes (banco 11-jul). Con ruteo B4/B5,
+    # el criterio del mensaje no se toma.
+    try:
+        from app.core.ruteo_venta import rutear_venta as _rv_crit
+        _cat_crit = (_rv_crit(raw_message, interp, estado) or {}).get(
+            "categoria")
+    except Exception:
+        _cat_crit = None
+    _crit_msg_sticky = ("" if _cat_crit in ("B4", "B5")
+                        else detectar_criterio(raw_message))
     criterio_cliente = (
-        detectar_criterio(raw_message)
+        _crit_msg_sticky
         or ("más barato" if criterio_del_interprete(interp) else "")
         or ("intermedio" if _criterio_llm(interp) == "intermedio" else "")
         or (conv.get("criterio_cliente") or ""))
