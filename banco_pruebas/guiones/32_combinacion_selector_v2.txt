@@ -1,0 +1,6 @@
+# SELECTOR v2 (11-jul): pregunta COMPLEJA combinada que ninguna red de regex
+# cubre: editar el pedido + unificar destino + reparto de pago con
+# porcentajes, todo en un solo mensaje. La debe resolver la primitiva
+# calcular_pedido del selector con argumentos validados.
+Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos
+dejame solo los dos mouse, va todo junto a Rosario, y decime como queda pagando 70 transferencia y 30 mercado pago

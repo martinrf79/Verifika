@@ -545,6 +545,16 @@ def _ejecutar_plan(plan: list[dict], mensaje: str, interp: dict, estado: dict,
             if not texto and arg:
                 texto = _MOVIDAS_FIJAS.get(str(arg).upper().strip())
             _add("movida", texto)
+        elif tipo == "calcular_pedido":
+            # LA PRIMITIVA DE PLATA del selector v2 (11-jul): el selector
+            # eligio argumentos (items, destinos, pago); el ejecutor los
+            # valida TODOS contra la fuente y la calculadora sella. Si algo
+            # no valida devuelve None y la seccion se saltea.
+            from app.core.guia_pedido import ejecutar_calculo_plan
+            texto, _tls = ejecutar_calculo_plan(s, mensaje, estado, tienda_id)
+            for _e in _tls:
+                meta.setdefault("tools_called", []).append(_e)
+            _add("presupuesto", texto)
         elif tipo == "rechazo":
             _add("rechazo", "Listo, lo dejamos de lado, sin problema.")
         elif tipo == "not_found":

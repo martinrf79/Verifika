@@ -293,7 +293,7 @@ def opciones_por_categoria(categoria: str, tienda_id: str,
 # sale SIN envio, visto 8-jul).
 _RE_DESTINOS_MSG = re.compile(
     r"\b(?:van?|vaya|env[ií]os?|mandar?|mandal[oa]s?|envial[oa]s?"
-    r"|enviad[oa]s?|con\s+env[ií]o)\s+(?:todos?\s+)?a\s+"
+    r"|enviad[oa]s?|con\s+env[ií]o)\s+(?:todos?\s+)?(?:junt[oa]s?\s+)?a\s+"
     r"([a-zñ][a-zñ .'-]{2,30}?)"
     r"(?=\s+(?:una?|un|todos?|lo|los|las|el|dime|decime|pasame|pagando|y|e"
     r"|cuanto|dame)\b|[,.?!]|$)")
@@ -387,14 +387,17 @@ def mensaje_opciones_categorias(cats_pedido: list[tuple], tienda_id: str,
     return "\n\n".join(partes)
 
 
-def mensaje_presupuesto_sellado(presentacion: str, reparto: str = "") -> str:
-    """El MENSAJE ENTERO del turno 'los mas baratos': plantilla fija del codigo
+def mensaje_presupuesto_sellado(presentacion: str, reparto: str = "",
+                                titulo: str | None = None) -> str:
+    """El MENSAJE ENTERO del turno sellado: plantilla fija del codigo
     + bloque sellado de la calculadora. Cero prosa del LLM (en real la prosa
     listaba OTROS productos y contradecia al bloque). `reparto` (opcional): el
     detalle de que items van a cada destino, ANTES del cierre (charla real de
-    Martin 11-jul: la plata salia bien pero el reparto no se mostraba)."""
-    return ("Listo, te armé el pedido con los más económicos de cada "
-            "categoría:\n\n" + presentacion.strip()
+    Martin 11-jul). `titulo` pisa la primera linea (default: la de los mas
+    economicos, que es el flujo de categorias; un pedido puntual o editado
+    usa un titulo neutral para no mentir el criterio)."""
+    return ((titulo or "Listo, te armé el pedido con los más económicos de "
+             "cada categoría:") + "\n\n" + presentacion.strip()
             + (("\n" + reparto.strip("\n") + "\n") if reparto else "")
             + "\n\nEnvío orientativo, puede variar al confirmar la compra.\n"
             "¿Lo dejamos confirmado? Decime la forma de pago: transferencia "
@@ -518,3 +521,125 @@ def reparto_envios_detalle(mensaje: str, cats_pedido: list,
         return "", []
     return ("\nReparto de envíos, como lo pediste:\n"
             + "\n".join(lineas)), tools
+
+
+# ── EJECUTOR DE LA PRIMITIVA calcular_pedido (selector v2, 11-jul) ───────────
+# El selector elige ARGUMENTOS (items editados, destinos, reparto de pago) y
+# aca se validan TODOS contra la fuente antes de sellar: nombres que
+# reconcilian con carrito/vistos, cantidades sanas, porcentajes que suman
+# cien, destinos que resuelven zona. Cualquier argumento que no valida ->
+# (None, []) y el turno cae a la cascada: el selector jamas inventa un valor,
+# porque ningun valor sale de el.
+
+def ejecutar_calculo_plan(seccion: dict, mensaje: str, estado: dict | None,
+                          tienda_id: str,
+                          trace_id: str | None = None) -> tuple[str | None, list]:
+    """(texto sellado del presupuesto, tools con proof) o (None, [])."""
+    estado = estado if isinstance(estado, dict) else {}
+    seccion = seccion if isinstance(seccion, dict) else {}
+    items_arg = seccion.get("items")
+    destinos_arg = seccion.get("destinos")
+    pago_arg = seccion.get("pago")
+
+    # 1. ITEMS: nombres del selector reconciliados a ids REALES del carrito
+    #    o de lo mostrado. Todo o nada.
+    fuentes: dict[str, str] = {}
+    for src in ((estado.get("carrito") or [])
+                + (estado.get("productos_vistos") or [])):
+        if isinstance(src, dict) and src.get("id") and src.get("nombre"):
+            fuentes.setdefault(_norm(src["nombre"]), str(src["id"]).upper())
+    items: list[dict] = []
+    grupos: list[tuple] = []  # (destino, cantidad, nombre) por renglon
+    if items_arg:
+        for it in items_arg:
+            if not isinstance(it, dict):
+                return None, []
+            nom = _norm(it.get("producto"))
+            pid = fuentes.get(nom)
+            if not pid and nom:
+                hits = {v for k, v in fuentes.items() if nom in k or k in nom}
+                pid = hits.pop() if len(hits) == 1 else None
+            try:
+                cant = int(it.get("cantidad"))
+            except (TypeError, ValueError):
+                return None, []
+            if not pid or not (1 <= cant <= _MAX_CANTIDAD):
+                return None, []
+            previo = next((x for x in items if x["product_id"] == pid), None)
+            if previo:
+                previo["cantidad"] += cant
+            else:
+                items.append({"product_id": pid, "cantidad": cant})
+            if it.get("destino"):
+                grupos.append((str(it["destino"]).strip(), cant,
+                               str(it.get("producto") or "")))
+    else:
+        items = [{"product_id": str(c.get("id") or "").upper(),
+                  "cantidad": int(c.get("cantidad") or 1)}
+                 for c in (estado.get("carrito") or []) if c.get("id")]
+    if not items:
+        return None, []
+
+    # 2. PAGO: porcentajes que suman cien o nada.
+    pago = None
+    if pago_arg:
+        try:
+            total_pct = sum(float(p.get("porcentaje") or 0)
+                            for p in pago_arg if isinstance(p, dict))
+        except (TypeError, ValueError):
+            return None, []
+        if abs(total_pct - 100) > 1:
+            return None, []
+        pago = [{"medio": str(p.get("medio") or ""),
+                 "porcentaje": float(p.get("porcentaje") or 0)}
+                for p in pago_arg if isinstance(p, dict)]
+
+    # 3. DESTINOS: los explicitos (o los de los renglones) tienen que
+    #    resolver TODOS; sin explicitos, se re-cotizan los de memoria.
+    from app.core.tools import cotizar_envio, calculate_total
+    from app.core.tools_context import set_current_tienda
+    set_current_tienda(tienda_id)
+    tools_env: list[dict] = []
+    locs: list[str] = []
+    for l in list(destinos_arg or []) + [g[0] for g in grupos]:
+        ln = _norm(l)
+        if ln and ln not in {_norm(x) for x in locs}:
+            locs.append(str(l).strip())
+    explicitos = bool(locs)
+    if not explicitos:
+        locs = [l for l in (estado.get("localidades_envio") or []) if l]
+    for l in list(locs):
+        q = cotizar_envio(localidad=l)
+        if not q.get("ok"):
+            if explicitos:
+                return None, []  # un destino elegido que no resuelve: escape
+            locs.remove(l)
+            continue
+        e = {"name": "cotizar_envio", "args": {"localidad": l}, "result": q}
+        if q.get("proof"):
+            e["proof"] = q["proof"]
+        tools_env.append(e)
+
+    extra = ([{"faq_tema": "costo_envio", "concepto": "envio"}]
+             if locs else None)
+    args = {"items": items, "destinos": max(1, len(locs)),
+            **({"items_extra": extra} if extra else {}),
+            **({"pago": pago} if pago else {})}
+    try:
+        res = calculate_total(**args)
+    except Exception as e:
+        log.warning("ejecutar_calculo_plan_error", trace_id=trace_id,
+                    error=str(e)[:120])
+        return None, []
+    if not isinstance(res, dict) or not res.get("ok") \
+            or not res.get("presentacion"):
+        return None, []
+    entrada = {"name": "calculate_total", "args": args, "result": res}
+    if res.get("proof"):
+        entrada["proof"] = res["proof"]
+    log.info("ejecutar_calculo_plan_ok", trace_id=trace_id,
+             items=len(items), destinos=len(locs), con_pago=bool(pago))
+    texto = ("Así queda tu pedido:\n\n" + res["presentacion"].strip()
+             + "\n\nEnvío orientativo, puede variar al confirmar la compra."
+               "\n¿Lo dejamos confirmado así?")
+    return texto, [entrada] + tools_env

@@ -695,7 +695,21 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             if (not _tools_precalc and not respuesta_curada_servida
                     and (estado.get("carrito") or [])):
                 from app.core.pago_split import pago_de_mensaje
-                if pago_de_mensaje(raw_message):
+                from app.core.estado_venta import es_rechazo as _es_rech_sp
+                _re_edita = re.compile(
+                    r"sacal[eo]|agregal[eo]|sumal[eo]|dejame solo"
+                    r"|quedate con|cambial[eo]")
+                # Solo cuando el mensaje es ESENCIALMENTE de pago: si ademas
+                # edita items o cambia destinos, la combinacion la resuelve
+                # el selector v2 con todos los argumentos juntos.
+                _solo_pago = (pago_de_mensaje(raw_message)
+                              and not _es_rech_sp(raw_message)
+                              and not _re_edita.search(_norm_txt(raw_message)))
+                if _solo_pago:
+                    from app.core.guia_pedido import (
+                        cotizar_destinos_del_mensaje as _cddm_sp)
+                    _solo_pago = not _cddm_sp(raw_message)
+                if _solo_pago:
                     from app.core.guia_pedido import _calcular_items_sellados
                     _items_cv = [
                         {"product_id": str(c.get("id") or "").upper(),
@@ -989,10 +1003,14 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             if _tools_precalc:
                 # Pedido ya SELLADO por la guia (modelos elegidos): el mensaje
                 # es la plantilla fija + bloque de la calculadora, directo.
+                # Titulo NEUTRAL: este camino es el pedido puntual/editado del
+                # interprete, no el de "los mas economicos" (cosmetico visto
+                # en el guion 32: mentia el criterio).
                 from app.core.guia_pedido import (
                     mensaje_presupuesto_sellado, pregunta_destinos_pendientes)
                 respuesta = (mensaje_presupuesto_sellado(
-                    _tools_precalc[0]["result"]["presentacion"])
+                    _tools_precalc[0]["result"]["presentacion"],
+                    titulo="Listo, así queda tu pedido:")
                     + pregunta_destinos_pendientes(raw_message))
                 _sellado_pedido = True
             else:

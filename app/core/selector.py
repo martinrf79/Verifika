@@ -41,6 +41,11 @@ TIPOS_MENU = (
     "not_found",          # no trabajamos eso, honesto (argumento: termino)
     "preguntar",          # falta UN dato para responder bien
     "fallback",           # no se entendio
+    # PRIMITIVA DE DATOS (selector v2, 11-jul): recalcular el pedido con
+    # argumentos estructurados (items editados, destinos, reparto de pago).
+    # El selector elige ARGUMENTOS, jamas valores: el codigo los valida
+    # contra carrito/vistos/tabla y la calculadora sella el numero.
+    "calcular_pedido",
 )
 
 
@@ -54,8 +59,36 @@ def _schema_selector() -> dict:
                 "properties": {
                     "tipo": {"type": "string", "enum": list(TIPOS_MENU)},
                     "argumento": {"type": ["string", "null"]},
+                    # Argumentos de calcular_pedido (null en los demas tipos).
+                    # items: el pedido COMPLETO como debe quedar (nombres de
+                    # lo mostrado/carrito; el codigo reconcilia a ids).
+                    # null = el pedido vigente tal cual.
+                    "items": {"type": ["array", "null"], "items": {
+                        "type": "object", "additionalProperties": False,
+                        "properties": {
+                            "producto": {"type": "string"},
+                            "cantidad": {"type": "integer"},
+                            "destino": {"type": ["string", "null"]},
+                        },
+                        "required": ["producto", "cantidad", "destino"],
+                    }},
+                    # destinos de envio (null = los de la memoria).
+                    "destinos": {"type": ["array", "null"],
+                                 "items": {"type": "string"}},
+                    # reparto de pago (null = sin reparto).
+                    "pago": {"type": ["array", "null"], "items": {
+                        "type": "object", "additionalProperties": False,
+                        "properties": {
+                            "medio": {"type": "string",
+                                      "enum": ["transferencia",
+                                               "mercado pago"]},
+                            "porcentaje": {"type": "number"},
+                        },
+                        "required": ["medio", "porcentaje"],
+                    }},
                 },
-                "required": ["tipo", "argumento"],
+                "required": ["tipo", "argumento", "items", "destinos",
+                             "pago"],
             }},
         },
         "required": ["secciones"],
@@ -131,7 +164,18 @@ def _prompt(mensaje: str, interp: dict, estado: dict, tienda_id: str) -> str:
         "- not_found: pregunta por algo que la tienda no trabaja / el "
         "término.\n"
         "- preguntar: falta UN dato imprescindible / qué falta.\n"
-        "- fallback: no se entiende el mensaje / null.\n\n"
+        "- fallback: no se entiende el mensaje / null.\n"
+        "- calcular_pedido: LA PRIMITIVA DE PLATA. Usala cuando el cliente "
+        "pide un total, edita el pedido en curso (sacar, sumar, cambiar "
+        "cantidades), cambia o reparte destinos, o pide cómo queda con un "
+        "reparto de pago. Campos: items = el pedido COMPLETO como debe "
+        "quedar (nombres EXACTOS de productos ya mostrados o del carrito, "
+        "con cantidad y destino por renglón si lo dijo; null = el pedido "
+        "vigente tal cual); destinos = las localidades de envío si las "
+        "cambió (null = las ya dadas); pago = el reparto entre transferencia "
+        "y mercado pago con porcentajes que suman 100 (null = sin reparto). "
+        "El código valida todo y la calculadora sella los números: vos solo "
+        "elegís los argumentos, nunca escribís un precio.\n\n"
         "REGLAS:\n"
         "- Elegí 1 a 3 secciones, las mínimas que respondan TODO lo que el "
         "cliente preguntó en este mensaje (si preguntó dos cosas, dos "
@@ -163,8 +207,16 @@ def validar_plan(d) -> list[dict] | None:
             continue
         vistos.add(tipo)
         arg = s.get("argumento")
-        plan.append({"tipo": tipo,
-                     "argumento": str(arg).strip() if arg else None})
+        entrada = {"tipo": tipo,
+                   "argumento": str(arg).strip() if arg else None}
+        if tipo == "calcular_pedido":
+            # Los argumentos estructurados viajan crudos: la VALIDACION dura
+            # (reconciliar nombres a ids, porcentajes que suman 100,
+            # destinos que resuelven) la hace el ejecutor en guia_pedido.
+            for k in ("items", "destinos", "pago"):
+                v = s.get(k)
+                entrada[k] = v if isinstance(v, list) and v else None
+        plan.append(entrada)
     return plan or None
 
 
