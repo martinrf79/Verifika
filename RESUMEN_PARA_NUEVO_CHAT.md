@@ -47,11 +47,35 @@ pierde la respuesta razonada; y el cierre enlatado no se pega si la prosa ya
 cerró con pregunta (fin del doble cierre). Son mejoras a un módulo de banco,
 no al camino vivo.
 
+**TOKENS Y COSTO (pedido de Martín, el banco ya lo mide por mensaje):**
+promedio ~12.500 tokens por mensaje, ~$0,0045, proyección 1000 mensajes
+~$4,5 (tarifa aprox editable, ajustar con la factura real). CLAVE: casi todo
+es INPUT (169k in vs 5k out en 14 mensajes) porque cada vuelta del loop de
+tools REENVÍA el schema completo + los resultados; ahí está el gasto, no en la
+redacción. Optimizable recortando el schema y los resultados que se reenvían.
+
+**FUENTE DE PROSA DE VENTA (para las de razonamiento):** el banco expone una
+tool LOCAL `consultar_guia_venta` con prosa semilla (uso, comparativa, marcas,
+durabilidad, compatibilidad, sin números). Gemini LA CONSULTA sola antes de
+opinar (verificado: llama consultar_guia_venta→search_products→responde). Para
+un cliente real esa prosa sería mucho más extensa y por producto; acá es
+semilla de prueba. NO toca el catálogo real ni el camino vivo.
+
+**RESIDUALES REPRODUCIBLES que cazan los filtros (dato de config):** (a) en
+preguntas de presupuesto Gemini hace la resta de cabeza ("te sobran $5.500")
+aunque se le dice no calcular → el verificador de plata lo marca; (b) a veces
+ofrece "retiro en local" que no existe → la guardia de promesas lo marca; (c)
+algún desliz de stock. Todos los caza la red; se tapan con prompt más duro o
+curada. La atadura garante el DATO, no la prosa blanda: por eso el filtro se
+queda.
+
 **PENDIENTE para decidir cablear el solver-con-tools a producción:** correr
 contra los 33 guiones reales + charlas reales de Martín, varias corridas,
-medir latencia (el loop de tools son varias llamadas), y definir qué residual
-blando se tapa con curada/filtro. El camino vivo sigue en el compositor/
-selector (gpt-4o-mini); NADA de esto está cableado todavía.
+medir latencia (el loop de tools son varias llamadas), recortar el input que
+se reenvía (costo), y definir qué residual blando se tapa con curada/filtro.
+El camino vivo sigue en el compositor/selector (gpt-4o-mini); NADA de esto
+está cableado todavía. Próximo acordado con Martín: agregar prosa donde haga
+falta y DEPLOY para probar en red.
 
 ---
 
