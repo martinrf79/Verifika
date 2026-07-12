@@ -3,8 +3,51 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 12-jul-2026 (2ª tanda) — SOLVER GEMINI QUE
-LLAMA LAS HERRAMIENTAS EL MISMO (pedido directo de Martín). ARRANCAR ACÁ.**
+**Última actualización: 12-jul-2026 (3ª tanda) — SOLVER GEMINI CABLEADO
+AL CAMINO VIVO (conservador) + verificador de stock reparado. ARRANCAR ACÁ.**
+
+CABLEADO (OK de Martín para verificador + cableado, con él offline):
+- **`app/core/solver_gemini.py`** (NUEVO): el solver de producción. Loop de
+  function calling con las tools reales del sistema + la guía de venta; el
+  modelo llama, el código ejecuta, devuelve `(respuesta, meta)` con
+  `meta['tools_called']` en el formato que consume TODO el downstream
+  (evidencia, verificadores, envío, presupuesto, carrito, cierre, memoria).
+  Ante error/timeout/sin-clave devuelve `(None, None)` y cae al compositor.
+- **`app/core/guia_venta_prosa.py`** (NUEVO): la prosa de venta de criterio
+  (uso, comparativa, marcas, durabilidad, compatibilidad), tool
+  `consultar_guia_venta`. Semilla; se extiende sumando texto, no tocando código.
+- **`interprete_libre.py`**: en la rama general (no curada, no pedido sellado)
+  el solver es PRIMARIO; el selector+compositor quedan de RED. Cuando la
+  respuesta viene del solver (`_via_solver`), las guardas de FORMATO del viejo
+  solver libre (reanclar más barato/producto, forzar A/B, forzar opciones) NO
+  corren: peleaban con la prosa natural de Gemini y la reescribían aunque el
+  dato fuera correcto. Los verificadores REALES (plata, stock, promesas, FAQ)
+  siguen corriendo igual como red.
+- **Verificador de stock**: guarda de variante por COLOR (reparado el falso
+  positivo real: "KB-110X Blanco... el negro sin stock" ya no acusa al Blanco).
+  4 locks nuevos en tests/test_stock.py.
+
+PROBADO por `process_message` en el sim (pipeline vivo entero, sin crashes):
+el solver conduce el caso general (ej "mouse más barato": sale la prosa de
+Gemini con el dato real, sin clobber). CI no tiene GEMINI_API_KEY -> los tests
+offline caen al compositor y pasan igual.
+
+**LÍMITE CONSCIENTE, POR QUÉ NO ES INVERSIÓN TOTAL (decisión a validar con
+Martín antes de deploy):** el solver sólo conduce la rama GENERAL. Los
+short-circuits deterministas siguen ganando ANTES: curadas de política/
+honestidad (factura, envío, exterior, bot, cancelación), pedido SELLADO por la
+calculadora, y opciones por categoría / criterio_confirmar. NO se ripearon
+porque son las garantías, y hay EVIDENCIA de que la inversión total regresa
+honestidad: en el banco, a "mandan a Uruguay?" el solver dijo "llegamos a todo
+el país por Andreani y OCA" (engañoso para exterior) y NINGÚN verificador lo
+caza; la curada de envio_exterior sí da la política correcta. Ampliar el
+territorio del solver a esos casos hay que hacerlo caso por caso, con un
+verificador/curada por tema, no ripeando a ciegas. NADA mergeado a main
+todavía: pendiente el OK de Martín para el deploy y para decidir si se amplía.
+
+---
+
+**12-jul-2026 (2ª tanda) — SOLVER GEMINI QUE LLAMA LAS HERRAMIENTAS EL MISMO.**
 
 DECISIÓN de Martín (12-jul): probar a Gemini como SOLVER con function
 calling REAL, que use TODAS las herramientas (search, ficha, FAQ,
