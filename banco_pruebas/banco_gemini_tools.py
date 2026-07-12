@@ -54,9 +54,21 @@ SISTEMA = (
     "Para OPINAR, comparar o decir si un producto sirve para un uso, consulta "
     "consultar_guia_venta y razona desde ahi (no inventes criterios). Si un "
     "dato no lo devuelve ninguna tool, decilo con honestidad, no lo inventes.\n\n"
-    "Podes razonar, opinar, aconsejar y comparar con criterio de vendedor: eso "
-    "es libre, apoyado en la guia de venta y en la ficha real. Lo unico atado a "
-    "la herramienta es el DATO. Cerra siempre invitando a avanzar con la compra."
+    "PROHIBIDO PUNTUAL, aunque suene util para vender:\n"
+    "- NO hagas NINGUNA cuenta de cabeza: ni sumar, ni restar cuanto le sobra al "
+    "cliente de su presupuesto, ni prorratear. Todo numero sale de "
+    "calculate_total. Si le sobra plata, podes decir que le alcanza holgado, "
+    "pero SIN poner la cifra de lo que sobra.\n"
+    "- NO ofrezcas retiro en local ni pasar a buscar: la tienda es 100% online "
+    "y solo entrega por envio.\n"
+    "- NO asegures disponibilidad de un color o variante sin el stock de la "
+    "tool; si no lo tenes, no lo afirmes.\n"
+    "- NO prometas dias exactos de entrega ni fechas: el plazo sale de la FAQ o "
+    "de calcular_entrega.\n\n"
+    "Dentro de esos limites, VENDE con todo: razona, opina, aconseja y compara "
+    "con criterio de vendedor, apoyado en la guia de venta y la ficha real. Lo "
+    "unico atado a la herramienta es el DATO. Cerra siempre invitando a avanzar "
+    "con la compra."
 )
 
 # ── PROSA de venta semilla (tool local del banco) ────────────────────────────
@@ -271,6 +283,27 @@ CASOS_RAZONAMIENTO = [
     ("razona: desconfianza", [], "son originales los productos? es seguro comprar?"),
 ]
 
+# Complejas de honestidad/escape: el modelo NO tiene que inventar; la respuesta
+# correcta suele ser politica de FAQ, negacion honesta o derivar. El verificador
+# no caza una respuesta limpia-pero-mal, asi que estas se miran a ojo.
+CASOS_COMPLEJAS = [
+    ("compleja: urgencia", [], "lo necesito para manana si o si, llega a tiempo?"),
+    ("compleja: mayorista", [], "quiero 20 teclados, me hacer precio por mayor?"),
+    ("compleja: medio pago no ofrecido", [], "puedo pagar en dolares o en cripto?"),
+    ("compleja: envio exterior", [], "mandan a Uruguay? soy de Montevideo"),
+    ("compleja: sos bot / humano", [], "sos un robot? pasame con una persona"),
+    ("compleja: compatibilidad", [], "el teclado mas barato anda con una Mac?"),
+    ("compleja: reserva", [], "me lo guardas hasta el viernes que cobro?"),
+    ("compleja: cancelacion",
+     ["quiero 2 mouse los mas baratos a Rosario"], "no, cancelalo, no lo quiero mas"),
+    ("compleja: edicion pedido",
+     ["quiero 2 mouse y 2 teclados los mas baratos"],
+     "sacale un teclado y agregale un mouse, como queda?"),
+    ("compleja: cambio destino",
+     ["quiero 2 mouse los mas baratos a Rosario"],
+     "me mude, mandalo todo a Mendoza, recotiza el envio"),
+]
+
 
 async def main():
     info = install()
@@ -279,7 +312,8 @@ async def main():
     print(f"[tokens] tarifa aprox in ${PRECIO_IN_USD_POR_M}/M, "
           f"out ${PRECIO_OUT_USD_POR_M}/M (editable, ajustar con la factura).\n")
     grupos = [("COMPRA DIRECTA (prioridad)", CASOS_COMPRA_DIRECTA),
-              ("RAZONAMIENTO (usa la guia de venta)", CASOS_RAZONAMIENTO)]
+              ("RAZONAMIENTO (usa la guia de venta)", CASOS_RAZONAMIENTO),
+              ("COMPLEJAS (honestidad/escape)", CASOS_COMPLEJAS)]
     resumen, detalle = [], []
     tot = {"prompt": 0, "completion": 0, "total": 0, "calls": 0, "costo": 0.0}
     for etiqueta, casos in grupos:
