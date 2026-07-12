@@ -191,9 +191,11 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None):
         "NO escribis datos duros. Componés la respuesta como una lista de "
         "FRAGMENTOS en el orden en que el cliente los va a leer. El sistema "
         "estampa cada dato real. Tipos:\n"
-        "- prosa: tu texto de venta libre. PROHIBIDO poner numeros, precios o "
-        "nombres de producto aca (eso va por su fragmento). Usala para "
-        "saludar, hacer puente, recomendar con criterio, cerrar hablado.\n"
+        "- prosa: tu texto de venta libre y tu RAZONAMIENTO. PROHIBIDO poner "
+        "numeros o precios aca (eso va por su fragmento). SI podes nombrar un "
+        "producto del listado para opinar, aconsejar o comparar. Usala para "
+        "saludar, hacer puente, decir si un producto sirve para lo que el "
+        "cliente quiere, recomendar con criterio, cerrar hablado.\n"
         "- producto: mostrar la linea (nombre+precio+stock) de UN producto "
         "-> producto_id.\n"
         "- opciones: mostrar las opciones con stock de una categoria -> "
@@ -217,13 +219,16 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None):
            f"fragmento tipo 'presupuesto'):\n{presupuesto_pre}" if presupuesto_pre else "")
         + f"\n\nCharla:\n{hist}\n\nMensaje del cliente:\n{mensaje}\n\n"
         "Reglas: responde TODAS las cosas que pregunto el cliente, cada una "
-        "por su fragmento. Si el cliente pide el PRECIO o TOTAL de varios "
-        "productos, o da cantidades (ej. '2 mouse y 2 teclados'), USA un "
-        "fragmento calculo con todos los items, NO productos sueltos: el "
-        "cliente quiere el total armado. Si pide 'los mas baratos', elegi vos "
-        "los de menor precio del listado. Si un dato no esta disponible, decilo en prosa "
-        "sin inventar. Cerra siempre invitando a avanzar. Devolve SOLO el "
-        "JSON de fragmentos.")
+        "por su fragmento; NUNCA dejes una pregunta sin responder. Si el "
+        "cliente pide tu OPINION o consejo (si un producto le sirve para algo, "
+        "si le conviene, comparaciones), mostralo con un fragmento producto y "
+        "dá tu recomendacion razonada en prosa (sin numeros). Si el cliente "
+        "pide el PRECIO o TOTAL de varios productos, o da cantidades (ej. "
+        "'2 mouse y 2 teclados'), USA un fragmento calculo con todos los "
+        "items, NO productos sueltos: el cliente quiere el total armado. Si "
+        "pide 'los mas baratos', elegi vos los de menor precio del listado. Si "
+        "un dato no esta disponible, decilo en prosa sin inventar. Cerra "
+        "siempre invitando a avanzar. Devolve SOLO el JSON de fragmentos.")
 
 
 def _cliente_gemini():
@@ -292,17 +297,16 @@ def _campo_ficha(prod, campo):
     return ""
 
 
-def _poda_prosa(texto, nombres_universo):
-    """La prosa no puede traer datos: si tiene un digito o el nombre completo
-    de un producto, se descarta ese fragmento (el dato va por el suyo)."""
+def _poda_prosa(texto, nombres_universo=None):
+    """La prosa no puede traer DATOS DUROS: si tiene un digito se descarta el
+    fragmento (todo numero/precio/spec va por su fragmento, estampado desde la
+    fuente). SI puede nombrar un producto para opinar, aconsejar o comparar: el
+    nombre no es un dato que pueda salir mal (el universo esta atado al enum, el
+    modelo no puede inventar uno). Sin esto, una pregunta de consejo ('¿el mas
+    barato sirve para la oficina?') perdia toda la respuesta razonada."""
     t = str(texto or "").strip()
     if not t or _RE_DIGITO.search(t):
         return ""
-    tl = _norm(t)
-    for nom in nombres_universo:
-        n = _norm(nom)
-        if len(n) >= 8 and n in tl:  # nombre completo colado en prosa
-            return ""
     return t
 
 
@@ -460,8 +464,13 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                     e["proof"] = q["proof"]
                 tools.append(e)
         elif t == "cierre":
-            partes.append("¿Lo dejamos confirmado? Decime la forma de pago: "
-                          "transferencia (10% de descuento) o Mercado Pago.")
+            # Sin doble cierre: si la ultima parte ya cerro con una pregunta
+            # (la prosa del modelo ya invito a avanzar), no se pega el enlatado.
+            ya_pregunta = bool(partes) and partes[-1].rstrip().endswith("?")
+            if not ya_pregunta:
+                partes.append(
+                    "¿Lo dejamos confirmado? Decime la forma de pago: "
+                    "transferencia (10% de descuento) o Mercado Pago.")
     if presupuesto_pre and not presu_usado:
         # red: el pre-armado va si o si aunque el modelo no lo posiciono
         partes.append(presupuesto_pre)

@@ -3,8 +3,60 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 12-jul-2026 — ARQUITECTURA NUEVA EN EL BANCO
-(generador de fragmentos con Gemini). ARRANCAR ACÁ EL CHAT NUEVO.**
+**Última actualización: 12-jul-2026 (2ª tanda) — SOLVER GEMINI QUE
+LLAMA LAS HERRAMIENTAS EL MISMO (pedido directo de Martín). ARRANCAR ACÁ.**
+
+DECISIÓN de Martín (12-jul): probar a Gemini como SOLVER con function
+calling REAL, que use TODAS las herramientas (search, ficha, FAQ,
+calculadora, envío). La tesis: si el modelo maneja bien las tools, borra un
+montón de configuración porque el código no tiene que pre-armar cada caso; y
+sigue atado a la fuente porque el DATO sale de la tool, no del modelo. Se
+prueba en el banco; si anda, se piensa deploy.
+
+**Banco nuevo `banco_pruebas/banco_gemini_tools.py`:** Gemini recibe las
+MISMAS tools del sistema (`app.core.tools.get_tools_schema`), decide cuál
+llamar, el CÓDIGO la ejecuta contra Firestore/FAQ/calculadora deterministas y
+le devuelve el resultado, en loop, hasta que redacta. Reporta la SECUENCIA de
+tool calls (cómo las usa) y mide la salida con los verificadores reales.
+- **Resultado: 3 corridas → 9/9, 9/9 y 8/9 LIMPIO** (el único MARCA fue un
+  desliz de stock que el filtro cazó). Gemini usa las tools bien y en orden
+  sensato: search→cotizar_envio→calculate_total con envío; query_faq para
+  política; recommend_product en la objeción.
+- **Gana el caso que la arq de fragmentos erraba:** el SPLIT multiproducto.
+  Gemini arrastró el destino Rosario del turno previo, llamó
+  cotizar_envio(Rosario) y calculate_total con items+envío+reparto de pago, y
+  dio el total final CON envío. La arq de fragmentos (generador_v2) perdía el
+  envío ahí porque la localidad no persiste en `localidades_envio` (agujero
+  del pipeline vivo, aguas arriba, NO tocado).
+- **Detalle técnico clave (para que no se repita):** Gemini 3 por el endpoint
+  compat de OpenAI EXIGE que se le reenvíe la `thought_signature` que genera
+  en cada tool_call (viene en `tool_call.extra_content.google`); sin eso el
+  2º request tira 400 "missing a thought_signature". El banco ya la preserva.
+  `reasoning_effort: none` NO la desactiva en `gemini-flash-latest`.
+- **Residual honesto (por eso los filtros quedan):** Gemini a veces adorna en
+  prosa datos NO numéricos que el verificador de plata no chequea (ej. llamó
+  "mecánico" a un teclado, dijo "despachamos desde Buenos Aires", "garantía
+  mínima 6 meses"). No son inventos de PLATA, pero son afirmaciones blandas
+  que sólo cazan los filtros de salida (stock/promesas) o una curada. Ese es
+  el trade-off a vigilar antes de cablear.
+
+**Ajustes menores al generador_v2 (banco) de la 1ª tanda de hoy, quedaron:**
+la poda de prosa ya NO descarta un fragmento por nombrar un producto REAL del
+universo (sólo descarta si trae un dígito), así una pregunta de consejo no
+pierde la respuesta razonada; y el cierre enlatado no se pega si la prosa ya
+cerró con pregunta (fin del doble cierre). Son mejoras a un módulo de banco,
+no al camino vivo.
+
+**PENDIENTE para decidir cablear el solver-con-tools a producción:** correr
+contra los 33 guiones reales + charlas reales de Martín, varias corridas,
+medir latencia (el loop de tools son varias llamadas), y definir qué residual
+blando se tapa con curada/filtro. El camino vivo sigue en el compositor/
+selector (gpt-4o-mini); NADA de esto está cableado todavía.
+
+---
+
+**12-jul-2026 (1ª tanda) — ARQUITECTURA DE FRAGMENTOS EN EL BANCO
+(generador de fragmentos con Gemini).**
 
 DECISIÓN DE ARQUITECTURA acordada con Martín (12-jul), en construcción y
 prueba EN EL BANCO, NO cableada a producción todavía:
