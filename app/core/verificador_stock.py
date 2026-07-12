@@ -70,6 +70,57 @@ _RE_NEGADO = re.compile(r"\b(?:no|sin|tampoco|nunca|ya\s+no)\b[\w\s]{0,12}$",
                         re.IGNORECASE)
 
 
+# Colores del catalogo y sus variantes de genero, a una clave canonica. Sirve
+# para no acusar a un producto de una afirmacion que habla de OTRO color: "el
+# KB-110X Blanco... el negro esta sin stock" es honesto (el blanco tiene stock,
+# el negro NO), pero el ancla cae al Blanco nombrado y disparaba falso positivo.
+_COLOR_CANON = {
+    "negro": "negro", "negra": "negro",
+    "blanco": "blanco", "blanca": "blanco",
+    "gris": "gris", "plata": "plata", "plateado": "plata", "plateada": "plata",
+    "azul": "azul", "celeste": "celeste",
+    "rojo": "rojo", "roja": "rojo",
+    "verde": "verde", "rosa": "rosa", "rosado": "rosa", "rosada": "rosa",
+    "amarillo": "amarillo", "amarilla": "amarillo", "violeta": "violeta",
+    "naranja": "naranja", "dorado": "dorado", "dorada": "dorado",
+    "bordo": "bordo", "beige": "beige",
+}
+
+
+def _norm_txt(s: str) -> str:
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(s or "").lower())
+    return "".join(c for c in s if not unicodedata.combining(c))
+
+
+def _color_de_otra_variante(texto: str, m: "re.Match", prod: dict) -> bool:
+    """True si la CLAUSULA de la afirmacion nombra un color distinto al del
+    producto anclado: entonces habla de OTRA variante y no lo acusa. El producto
+    real tiene campo `color`; sin color conocido, no se aplica la guarda."""
+    canon_prod = _COLOR_CANON.get(_norm_txt(prod.get("color")).strip())
+    if not canon_prod:
+        return False
+    # Clausula: desde el limite de oracion o parentesis previo hasta un poco
+    # despues del disparo. El color que CALIFICA la afirmacion es el mas CERCANO
+    # al disparo, no cualquiera de la clausula: el nombre del producto trae su
+    # propio color mas atras ("KB-110X Blanco, el negro esta sin stock") y no
+    # debe confundir. Se compara ese color cercano con el del producto anclado.
+    ini = 0
+    for ch in ".!?\n(":
+        pos = texto.rfind(ch, 0, m.start())
+        if pos + 1 > ini:
+            ini = pos + 1
+    win = _norm_txt(texto[ini:m.end() + 15])
+    trig = m.start() - ini
+    mejor = None  # (distancia_al_disparo, color_canonico)
+    for w, canon in _COLOR_CANON.items():
+        for cm in re.finditer(r"\b" + re.escape(w) + r"\b", win):
+            d = abs(cm.start() - trig)
+            if mejor is None or d < mejor[0]:
+                mejor = (d, canon)
+    return mejor is not None and mejor[1] != canon_prod
+
+
 def _productos_con_stock(evidencia: list[dict]) -> list[dict]:
     """Productos de la evidencia cuyo stock real ES conocido (entero). Los de
     memoria sin stock no juzgan: el stock cambia turno a turno."""
@@ -175,12 +226,16 @@ def detectar_stock_contradicho(respuesta: str,
             continue
         p = _producto_anclado(respuesta, m, productos, misma_oracion=True)
         if p is not None and int(p["stock"]) > 0:
+            if _color_de_otra_variante(respuesta, m, p):
+                continue
             _agregar("sin_stock_falso", p)
     for m in _RE_CON_STOCK.finditer(respuesta):
         if _RE_NEGADO.search(respuesta[max(0, m.start() - 20):m.start()]):
             continue
         p = _producto_anclado(respuesta, m, productos)
         if p is not None and int(p["stock"]) == 0:
+            if _color_de_otra_variante(respuesta, m, p):
+                continue
             _agregar("con_stock_falso", p)
     return out
 

@@ -246,3 +246,47 @@ def test_negacion_honesta_no_acusa_a_la_alternativa_siguiente():
     r = ("Uf, el blanco no tiene stock por ahora. "
          "Pero mira estas opciones: Mouse Glorious Model O Negro - $95.000.")
     assert VS.detectar_stock_contradicho(r, ev) == []
+
+
+# ── Guarda de VARIANTE por COLOR (falso positivo real del solver Gemini) ──────
+def _prodc(pid, nombre, stock, color, precio=10000):
+    """Como _prod pero con el campo `color` que trae el catalogo real."""
+    d = _prod(pid, nombre, stock, precio)
+    d["color"] = color
+    return d
+
+
+_EV_COLOR = [_prodc("TEC0020", "Teclado Genius KB-110X Blanco", 11, "Blanco"),
+             _prodc("TEC0021", "Teclado Genius KB-110X Negro", 0, "Negro")]
+
+
+def test_color_otra_variante_sin_stock_no_acusa_al_nombrado():
+    """Gemini honesto: el blanco tiene stock, el negro NO. El ancla cae al
+    Blanco nombrado, pero la clausula del 'sin stock' habla del NEGRO -> es otra
+    variante y no se acusa al Blanco (falso positivo real del solver Gemini)."""
+    r = ("El Teclado Genius KB-110X Blanco a $12.000. "
+         "El de color negro esta sin stock en este momento.")
+    assert VS.detectar_stock_contradicho(r, _EV_COLOR) == []
+
+
+def test_color_otra_variante_agotado_pegado_no_acusa():
+    """Mismo caso con 'agotado' pegado tras el nombre del producto con stock."""
+    r = "Te llevo el Teclado Genius KB-110X Blanco, ojo que el negro esta agotado."
+    assert VS.detectar_stock_contradicho(r, _EV_COLOR) == []
+
+
+def test_color_mismo_niega_stock_real_sigue_disparando():
+    """La guarda de color NO tapa la mentira real: negar stock del Blanco, que SI
+    tiene, con el color Blanco pegado a la negacion, sigue disparando."""
+    r = "El Teclado Genius KB-110X Blanco no tiene stock ahora."
+    dets = VS.detectar_stock_contradicho(r, _EV_COLOR)
+    assert [d["id"] for d in dets] == ["TEC0020"]
+    assert dets[0]["clase"] == "sin_stock_falso"
+
+
+def test_color_mismo_ofrece_agotado_sigue_disparando():
+    """Ofrecer el Negro (agotado) como disponible, con su color, sigue cazandose."""
+    r = "Tenemos el Teclado Genius KB-110X Negro disponible para vos."
+    dets = VS.detectar_stock_contradicho(r, _EV_COLOR)
+    assert [d["id"] for d in dets] == ["TEC0021"]
+    assert dets[0]["clase"] == "con_stock_falso"
