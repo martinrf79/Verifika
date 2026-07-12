@@ -3,8 +3,58 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 11-jul-2026 (noche) — TODO EN PRODUCCIÓN
-(deploys 99-103 verdes). SELECTOR v2 con la primitiva de plata: fin del
+**Última actualización: 12-jul-2026 — ARQUITECTURA NUEVA EN EL BANCO
+(generador de fragmentos con Gemini). ARRANCAR ACÁ EL CHAT NUEVO.**
+
+DECISIÓN DE ARQUITECTURA acordada con Martín (12-jul), en construcción y
+prueba EN EL BANCO, NO cableada a producción todavía:
+
+**El problema de fondo:** hoy el CÓDIGO redacta el mensaje final (selector +
+compositor); cada pregunta nueva es un parche. El intento viejo (DeepSeek de
+solver redactando libre + verificadores corrigiendo) se abandonó el 8-jul
+porque corregir texto libre no tiene fondo. La síntesis acordada NO es ni una
+ni otra.
+
+**La arquitectura nueva (`app/core/generador_v2.py`, en la rama):** UNA
+llamada a Gemini compone la respuesta como FRAGMENTOS atados por enum
+(structured outputs). El modelo elige QUÉ, en qué ORDEN y con qué TONO
+(prosa libre de venta), pero JAMÁS escribe un dato: emite referencias
+(producto, opciones, calculo, presupuesto, ficha, faq, envio, cierre) y el
+CÓDIGO estampa cada número/spec desde la fuente. La prosa se poda de
+cualquier dígito/nombre colado. Garantía por CONSTRUCCIÓN (prevenir), no por
+corrección.
+- El ENUM se arma SOLO en cada turno desde Firestore (productos, temas de
+  FAQ, campos de ficha): automático, sin intervención humana. Cargar un
+  producto/FAQ nuevo a Firestore lo suma al enum solo. Yo configuro el
+  MECANISMO una vez, no el contenido.
+- Lo CERRADO al código: `presupuesto_precalculado` calcula el total cuando
+  el pedido es determinable (cantidades+criterio, o carrito+total/split); el
+  modelo solo lo POSICIONA. Así el total no depende de que el modelo lo arme
+  bien (la inconsistencia que anticipó Martín y que se vio en el banco).
+- El universo de productos es ACOTADO (mostrados+carrito+baratos/intermedio
+  de las categorías en juego, capado a 16): enum chico y siempre real.
+
+**Estado de la prueba (`banco_pruebas/banco_arquitectura_nueva.py`):** 9
+áreas (venta, multiproducto+envío, ficha mixta = el ejemplo de Martín con
+procedencia/garantía/material reales, FAQ, envío, objeción, pregunta
+abierta, desconfianza, split) → 9/9 LIMPIO en verificadores, 2 corridas
+seguidas, prosa MUY superior al código con datos atados. Gemini 29/29 y
+23/23 en los bancos de interpretación. PENDIENTE de pulir: envío en el
+split, doble cierre cosmético; y lo grande: correr contra los 33 guiones
+reales + más casos + varias corridas hasta CONSISTENTE antes de decidir
+cablear a producción. Herramientas de diagnóstico: `exp_gemini_libre.py`
+(muestra el agujero del verificador con catálogo grande) y
+`banco_gemini_solver.py` (Gemini libre, para contraste).
+
+**Método acordado:** queda en el banco hasta pasar todos los casos en varias
+corridas; recién ahí se cablea y deploya. Gemini ya operativo
+(`GEMINI_API_KEY` bien cargada, modelo `gemini-flash-latest`, thinking off);
+producción sigue en gpt-4o-mini. FAQ en Firestore real: 46 (verificado).
+
+---
+
+**11-jul-2026 (noche) — TODO EN PRODUCCIÓN
+(deploys 99-104 verdes). SELECTOR v2 con la primitiva de plata: fin del
 parche-por-regex para las acciones de datos.**
 
 0. **SELECTOR v2 (la mejora "en serio" que pidió Martín).** El menú suma
