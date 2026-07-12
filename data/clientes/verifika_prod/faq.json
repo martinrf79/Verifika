@@ -41,12 +41,18 @@
       "como pagar",
       "modalidades de pago",
       "modalidades de pagos",
-      "modalidad de pago"
+      "modalidad de pago",
+      "tarjeta directo",
+      "tarjeta directa",
+      "credito directo",
+      "pago directo",
+      "via mercado pago",
+      "tarjeta de credito"
     ],
-    "respuesta": "Aceptamos transferencia bancaria, Mercado Pago, tarjetas de credito y debito Visa, Mastercard y American Express.",
+    "respuesta": "Transferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Tarjeta de credito directa o via Mercado Pago. Transferencia con descuento.",
     "tipo": "informativo",
     "valores": [],
-    "respuesta_curada": "Aceptamos transferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express, credito o debito. Con transferencia ademas tenes descuento. Contame que producto te interesa y te paso el total con cada forma de pago."
+    "respuesta_curada": "Aceptamos transferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Con tarjeta de credito podes pagar de forma directa o a traves de Mercado Pago, como te quede mas comodo. Por transferencia ademas tenes descuento. Contame que producto te interesa y te paso el total con cada forma de pago."
   },
   {
     "tema": "cuotas",
