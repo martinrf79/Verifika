@@ -22,12 +22,16 @@ class Settings(BaseModel):
     WHATSAPP_TOKEN: str = os.getenv("WHATSAPP_TOKEN", "")
     WHATSAPP_VERIFY_TOKEN: str = os.getenv("WHATSAPP_VERIFY_TOKEN", "")
 
-    # LLM provider — soportamos deepseek (default) y groq (fallback)
-    # NOTA: Verifika tiene su propia config por rol en llm_adapter.py.
-    # Estos settings son SOLO para el Solver del agente v4 (legacy).
-    # Provider del SOLVER. OK explicito de Martin (7-jul-2026): se pasa a OpenAI
-    # gpt-4o-mini para correr la constrained generation dura de punta a punta.
-    # Es config, no camino apagado; se vuelve a deepseek cambiando este default.
+    # LLM_PROVIDER — PERILLA MAESTRA del modelo de la conversacion. Manda el
+    # SOLVER y, por herencia, el INTERPRETER_PROVIDER (ver abajo), o sea interprete
+    # + selector + redactor + guardia + memoria. El solver Gemini (solver_gemini.py)
+    # se activa SOLO cuando esto vale "gemini"; con cualquier otro (openai, groq,
+    # deepseek...) corre el camino determinista con ese provider. Un solo cambio
+    # aca mueve todo el turno: pruebas openai/groq baratas, produccion gemini.
+    # Los roles internos de Verifika (proposer/checker/extractor del cierre y
+    # fallback de FAQ) quedan aparte, baratos en openai mini, en llm_adapter.py:
+    # no son la conversacion, no conviene pagarlos a precio Gemini.
+    # Es config, no camino apagado; la red es el revert con git.
     LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "openai").lower()
 
     # DeepSeek
@@ -201,11 +205,16 @@ class Settings(BaseModel):
     # 5 a 10 segundos, asi que el cap solo actua sobre cuelgues anormales.
     LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "45"))
 
-    # Provider del interpretador. OK de Martin (7-jul-2026): OpenAI gpt-4o-mini,
-    # para que el interprete corra con Structured Outputs (constrained generation
-    # dura: intencion, estado y producto_resuelto atados a enum). El Solver se
-    # cambia aparte con LLM_PROVIDER. Config, no camino apagado.
-    INTERPRETER_PROVIDER: str = os.getenv("INTERPRETER_PROVIDER", "openai").lower()
+    # Provider del interpretador. Por default SIGUE a la perilla maestra
+    # LLM_PROVIDER, asi un solo cambio mueve interprete + selector + solver juntos
+    # (pruebas en openai/groq, produccion en gemini). Se puede PISAR aparte
+    # seteando INTERPRETER_PROVIDER explicito, ej dejar el interprete en openai
+    # mini barato con el solver en gemini. OpenAI gpt-4o-mini corre el interprete
+    # con Structured Outputs (intencion, estado y producto_resuelto atados a enum).
+    # Config, no camino apagado.
+    INTERPRETER_PROVIDER: str = (
+        os.getenv("INTERPRETER_PROVIDER") or os.getenv("LLM_PROVIDER", "openai")
+    ).lower()
 
     # NOTA: la tarifa de envio por PROVINCIA (ex flag TARIFA_PROVINCIA) ya es el
     # UNICO camino de cotizar_envio y de la calculadora: con la provincia o el CP

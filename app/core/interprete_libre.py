@@ -1037,8 +1037,11 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # vieja decia "llegamos a todo el pais"). Su meta['tools_called'] alimenta
     # igual a todo el downstream; los verificadores (plata, stock, promesas,
     # FAQ) corren DESPUES como red. Falla, timeout o sin clave -> camino
-    # determinista de abajo.
-    if not (_sellado_pedido or _tools_precalc):
+    # determinista de abajo. GATE por la perilla maestra: el solver Gemini solo
+    # conduce cuando LLM_PROVIDER es gemini; con openai/groq/etc corre el camino
+    # determinista (selector + compositor) con ese provider. Asi una sola variable
+    # cambia todo el turno: pruebas baratas vs produccion gemini.
+    if settings.LLM_PROVIDER == "gemini" and not (_sellado_pedido or _tools_precalc):
         try:
             from app.core.solver_gemini import generar_respuesta as _solver_g
             _sr, _sm = await _solver_g(
