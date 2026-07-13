@@ -32,18 +32,35 @@ el solver conduce el caso general (ej "mouse más barato": sale la prosa de
 Gemini con el dato real, sin clobber). CI no tiene GEMINI_API_KEY -> los tests
 offline caen al compositor y pasan igual.
 
-**LÍMITE CONSCIENTE, POR QUÉ NO ES INVERSIÓN TOTAL (decisión a validar con
-Martín antes de deploy):** el solver sólo conduce la rama GENERAL. Los
-short-circuits deterministas siguen ganando ANTES: curadas de política/
-honestidad (factura, envío, exterior, bot, cancelación), pedido SELLADO por la
-calculadora, y opciones por categoría / criterio_confirmar. NO se ripearon
-porque son las garantías, y hay EVIDENCIA de que la inversión total regresa
-honestidad: en el banco, a "mandan a Uruguay?" el solver dijo "llegamos a todo
-el país por Andreani y OCA" (engañoso para exterior) y NINGÚN verificador lo
-caza; la curada de envio_exterior sí da la política correcta. Ampliar el
-territorio del solver a esos casos hay que hacerlo caso por caso, con un
-verificador/curada por tema, no ripeando a ciegas. NADA mergeado a main
-todavía: pendiente el OK de Martín para el deploy y para decidir si se amplía.
+**AMPLIADO A "REAL = BANCO" (opinión de Martín, 12-jul): el solver conduce
+TODOS los casos salvo el pedido SELLADO por la calculadora.** Corre primario
+antes de las curadas/opciones; sólo cede cuando el código ya selló un total
+(garantía de plata dura). Corrección importante: mi reparo del "Uruguay" era al
+revés. Probado por REST/sim: el solver conectado a las tools contesta el
+exterior BIEN ("envíos únicamente dentro de Argentina, no llegamos a
+Montevideo", vía query_faq envio_exterior); la respuesta engañosa "llegamos a
+todo el país" venía de la CURADA vieja, no del solver. O sea el solver
+conectado se porta MEJOR que la curada. La tabla de envío YA existe (16.164
+localidades en cotizar_envio, no 1.200): localidad/CP -> zona -> costo; el
+solver la consulta sola.
+
+**BUG cazado y arreglado al ampliar (verificador.py):** el solver escribe el
+stock en prosa ("quedan 11 unidades en stock") y 'quedan' es verbo de precio,
+así que el verificador de plata tomaba el 11 como precio y lo autocorregía a
+$8.500 dejando "11.11 unidades". Fix: un número seguido de
+unidades/en stock/disponibles es CONTEO, no plata (`_UNIDAD_CANT_RE`). 2 locks
+nuevos en test_verificador.py; los 36 tests de plata siguen verdes.
+
+**Probado end-to-end por process_message (pipeline vivo, sim):** el solver
+conduce mouse más barato, factura, Uruguay, razonamiento Razer (consulta la
+guía), bot; el multiproducto usa el total sellado del código; cero tracebacks;
+stock sin corromper. Cuando la respuesta viene del solver, las guardas de
+formato del viejo solver libre no corren; los verificadores reales sí.
+
+**PENDIENTE: deploy.** NADA mergeado a main. No pude probar contra WhatsApp
+real. Con el OK de Martín se mergea a main (CI gateado deploya) y se prueba en
+red; el CI no tiene GEMINI_API_KEY así que sus tests caen al compositor y pasan.
+En producción el solver se activa cuando la env GEMINI_API_KEY está cargada.
 
 ---
 

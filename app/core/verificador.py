@@ -50,6 +50,13 @@ _MONEDA_POST_RE = re.compile(r"\s*(pesos|peso|ars)\b", re.IGNORECASE)
 _UNIDAD_SPEC_RE = re.compile(
     r"\s*(dpi|hz|ghz|mhz|fps|rpm|nits|mah|gramos|gr|kg|g|mm|cm|pulgadas|px|gb|tb|bits?|w)\b",
     re.IGNORECASE)
+# Unidad de CANTIDAD/stock: un numero seguido de 'unidades', 'en stock' o
+# 'disponibles' es un conteo, no plata. El solver escribe el stock en prosa
+# libre ("quedan 11 unidades en stock") y 'quedan' es verbo de precio abajo, asi
+# que sin esta guarda el 11 se tomaba como un precio y se autocorregia a $8.500.
+_UNIDAD_CANT_RE = re.compile(
+    r"\s*(unidades?|en\s+stock|disponibles?|en\s+existencia|"
+    r"stock|piezas?)\b", re.IGNORECASE)
 
 # Contexto de plata para un numero SIN formato (sin puntos, sin signo, sin
 # 'pesos'): precedido por un verbo de precio (sale, cuesta, vale, total...) o
@@ -71,6 +78,8 @@ def _es_monto(texto: str, match) -> bool:
     start, end = match.span()
     post = texto[end:end + 9]
     if _UNIDAD_SPEC_RE.match(post):
+        return False
+    if _UNIDAD_CANT_RE.match(texto[end:end + 14]):
         return False
     token = match.group()
     if _MILES_RE.search(token):

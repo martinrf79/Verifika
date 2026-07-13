@@ -261,3 +261,26 @@ def test_renglon_con_cu_suma_el_subtotal_del_renglon():
              "Subtotal: $693.000")
     fix = corregir_subtotal_renglones(texto, _ev_proof_subtotal(2104500))
     assert fix["cambiada"] and fix["a"] == 2104500
+
+
+def test_stock_en_prosa_no_es_monto_ni_se_autocorrige():
+    """El solver escribe el stock en prosa libre ('quedan 11 unidades en
+    stock'). 'quedan' es verbo de precio, pero '11 unidades' es un CONTEO: no se
+    cuenta como plata ni se autocorrige a un precio (bug real cazado al cablear
+    el solver: el 11 se volvia $8.500 y quedaba '11.11 unidades')."""
+    from app.core.verificador import _es_monto, autocorregir_montos, _NUM_RE
+    texto = "Tiene un precio de $8.500 y nos quedan 11 unidades en stock."
+    montos = [m.group() for m in _NUM_RE.finditer(texto) if _es_monto(texto, m)]
+    assert montos == ["8.500"]
+    ev = [{"tipo": "producto", "id": "MOU0023",
+           "nombre": "Mouse Genius DX-110 Negro", "precio_ars": 8500, "stock": 11}]
+    fix = autocorregir_montos(texto, ev)
+    assert fix["correcciones"] == []
+    assert "11 unidades en stock" in fix["respuesta"]
+
+
+def test_disponibles_no_es_monto():
+    """'3 disponibles' es stock, no plata."""
+    from app.core.verificador import _es_monto, _NUM_RE
+    texto = "Nos quedan 3 disponibles del negro."
+    assert [m.group() for m in _NUM_RE.finditer(texto) if _es_monto(texto, m)] == []

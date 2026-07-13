@@ -1010,19 +1010,36 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
              intencion=interp.get("intencion") if isinstance(interp, dict) else None,
              hist=len(history))
 
-    if not respuesta_curada_servida:
-        # COMPOSITOR (decision de Martin, 8-jul): el modelo NUNCA le escribe al
-        # cliente. La unica llamada LLM del turno es el interprete constreñido
-        # (arriba); aca el CODIGO compone el mensaje entero desde plantillas,
-        # curadas y tools selladas. Reemplaza a run_agent en el camino vivo:
-        # semanas de corregir prosa libre probaron que esa guerra no se gana.
+    # SOLVER GEMINI primario (Martin, 12-jul; "real = banco"): el modelo LLAMA
+    # las MISMAS tools que en el banco y compone. CONDUCE el turno salvo cuando
+    # el codigo ya sello el pedido por la calculadora (garantia de plata dura:
+    # ahi el total lo dueña el codigo). Aun sobre una curada/opciones ya
+    # servida, el solver conectado a las tools se porta mejor (ej envio al
+    # exterior: consulta la tabla/FAQ y responde la politica real, la curada
+    # vieja decia "llegamos a todo el pais"). Su meta['tools_called'] alimenta
+    # igual a todo el downstream; los verificadores (plata, stock, promesas,
+    # FAQ) corren DESPUES como red. Falla, timeout o sin clave -> camino
+    # determinista de abajo.
+    if not (_sellado_pedido or _tools_precalc):
+        try:
+            from app.core.solver_gemini import generar_respuesta as _solver_g
+            _sr, _sm = await _solver_g(
+                raw_message, interp, estado, tienda_id, trace_id,
+                history, _business_name(tienda_id))
+            if _sr:
+                respuesta, meta, _via_solver = _sr, _sm, True
+                log.info("interprete_libre_solver_gemini_ok", trace_id=trace_id)
+        except Exception as e:
+            log.warning("interprete_libre_solver_gemini_error",
+                        trace_id=trace_id, error=str(e)[:150])
+
+    if not _via_solver and not respuesta_curada_servida:
+        # RED determinista: el CODIGO compone desde plantillas, curadas y tools
+        # selladas (el camino previo, cuando el solver no condujo).
         try:
             if _tools_precalc:
-                # Pedido ya SELLADO por la guia (modelos elegidos): el mensaje
-                # es la plantilla fija + bloque de la calculadora, directo.
-                # Titulo NEUTRAL: este camino es el pedido puntual/editado del
-                # interprete, no el de "los mas economicos" (cosmetico visto
-                # en el guion 32: mentia el criterio).
+                # Pedido ya SELLADO por la guia (modelos elegidos): plantilla
+                # fija + bloque de la calculadora. Titulo NEUTRAL (guion 32).
                 from app.core.guia_pedido import (
                     mensaje_presupuesto_sellado, pregunta_destinos_pendientes)
                 respuesta = (mensaje_presupuesto_sellado(
@@ -1031,61 +1048,37 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                     + pregunta_destinos_pendientes(raw_message))
                 _sellado_pedido = True
             else:
-                # SOLVER GEMINI (Martin, 12-jul): el modelo LLAMA las tools y
-                # compone la respuesta. Es el camino vivo del caso general; el
-                # codigo sigue dueno del DATO (cada numero/politica sale de una
-                # tool determinista) y los verificadores/guardias corren
-                # DESPUES como red. Su meta['tools_called'] alimenta igual que
-                # el del compositor a todo el downstream. Falla, timeout o sin
-                # clave -> cae al selector+compositor determinista.
-                respuesta, meta = None, None
+                # SELECTOR del menu cerrado + COMPOSITOR: una llamada LLM con
+                # schema estricto elige las secciones; la cascada de regex queda
+                # atras ante error. El texto duro sale del codigo, no del modelo.
+                from app.core.compositor import componer
+                _plan = None
                 try:
-                    from app.core.solver_gemini import generar_respuesta as _solver_g
-                    respuesta, meta = await _solver_g(
-                        raw_message, interp, estado, tienda_id, trace_id,
-                        history, _business_name(tienda_id))
+                    from app.core.selector import elegir_plan
+                    _plan = await elegir_plan(
+                        raw_message, interp, estado, tienda_id, trace_id)
                 except Exception as e:
-                    log.warning("interprete_libre_solver_gemini_error",
-                                trace_id=trace_id, error=str(e)[:150])
-                    respuesta, meta = None, None
-                if respuesta:
-                    _via_solver = True
-                    log.info("interprete_libre_solver_gemini_ok",
-                             trace_id=trace_id)
-                else:
-                    # RED determinista: SELECTOR del menu cerrado + COMPOSITOR.
-                    # Una llamada LLM con schema estricto elige QUE secciones
-                    # componen el turno; la cascada de regex queda atras ante
-                    # error/timeout. El texto duro sale del codigo, no del modelo.
-                    from app.core.compositor import componer
-                    _plan = None
-                    try:
-                        from app.core.selector import elegir_plan
-                        _plan = await elegir_plan(
-                            raw_message, interp, estado, tienda_id, trace_id)
-                    except Exception as e:
-                        log.warning("interprete_libre_selector_error",
-                                    trace_id=trace_id, error=str(e)[:120])
-                    respuesta, meta = componer(
-                        raw_message, interp, estado, tienda_id, trace_id,
-                        plan=_plan)
-                    # NIVEL 2 de la escalera (OK de Martin, 10-jul): con dos o
-                    # mas bloques, el REDACTOR cose la prosa de union. Sello
-                    # violado o error -> queda el compositor puro.
-                    try:
-                        _secs = meta.get("secciones") or []
-                        if len(_secs) >= 2:
-                            from app.core.redactor import redactar
-                            _red = await redactar(
-                                raw_message, _secs, tienda_id, trace_id,
-                                estado.get("productos_vistos"))
-                            if _red:
-                                respuesta = _red
-                                log.info("interprete_libre_redactor_ok",
-                                         trace_id=trace_id)
-                    except Exception as e:
-                        log.warning("interprete_libre_redactor_error",
-                                    trace_id=trace_id, error=str(e)[:120])
+                    log.warning("interprete_libre_selector_error",
+                                trace_id=trace_id, error=str(e)[:120])
+                respuesta, meta = componer(
+                    raw_message, interp, estado, tienda_id, trace_id,
+                    plan=_plan)
+                # NIVEL 2 de la escalera: con dos o mas bloques, el REDACTOR
+                # cose la prosa. Sello violado o error -> compositor puro.
+                try:
+                    _secs = meta.get("secciones") or []
+                    if len(_secs) >= 2:
+                        from app.core.redactor import redactar
+                        _red = await redactar(
+                            raw_message, _secs, tienda_id, trace_id,
+                            estado.get("productos_vistos"))
+                        if _red:
+                            respuesta = _red
+                            log.info("interprete_libre_redactor_ok",
+                                     trace_id=trace_id)
+                except Exception as e:
+                    log.warning("interprete_libre_redactor_error",
+                                trace_id=trace_id, error=str(e)[:120])
         except Exception as e:
             log.error("interprete_libre_compositor_error", trace_id=trace_id,
                       error=str(e)[:200])
