@@ -3,8 +3,67 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 12-jul-2026 (3ª tanda) — SOLVER GEMINI CABLEADO
-AL CAMINO VIVO (conservador) + verificador de stock reparado. ARRANCAR ACÁ.**
+**Última actualización: 13-jul-2026 — TANDA DE ROBUSTEZ (orden de Martín:
+prueba-error hasta robusto). MEMORIA DEL SOLVER + 3 FLACOS CAZADOS EN BANCO
+ADVERSARIAL + GUÍA DE VENTA 16 TEMAS. ARRANCAR ACÁ.**
+
+Corrida de validación 13-jul (todo por el pipeline VIVO del sim, Gemini
+solver conduciendo):
+- Batería viva: 1ª corrida 30/33 (03_stock, 04_mas_barato, 15_multipregunta
+  marcaron y pasan al repetirlos = variación del LLM); 2ª corrida COMPLETA
+  con los fixes adentro: **33/33 LIMPIO**. Guiones nuevos 34-37 también
+  verdes por el arnés (4/4). Total del día: 37/37 con los fixes.
+- Interpretación medida HOY, mismo día, mismos bancos:
+  gpt-4o-mini (prod): suelto 29/29, multiturno 20/23 (87%, arriba del piso).
+  Gemini: suelto 29/29, multiturno 23/23 = 100%.
+  Las 3 fallas de gpt mini: guía dato-no-compra, ironía leída como compra,
+  referencia al histórico. DECISIÓN ABIERTA con Martín: pasar el intérprete
+  a Gemini (hoy mide mejor y unifica proveedor con el solver; riesgo: todo
+  el turno depende de un solo proveedor, y gpt mini queda de fallback por
+  config si hiciera falta volver).
+- 478 tests offline en verde.
+
+LO NUEVO CABLEADO (13-jul, OK directo de Martín "corrígelo directamente"):
+1. **Bloque MEMORIA DE LA CHARLA del solver** (`solver_gemini._bloque_memoria`):
+   el solver veía SOLO los últimos 3 turnos crudos; ni resumen de memoria
+   larga, ni producto anotado, ni carrito, ni destino sticky, ni criterio,
+   ni datos del cliente. Ahora todo eso entra como contexto (con la orden de
+   que números salen de las tools). Verificado vivo: destino dado en turno 1
+   cotizado bien en turno 6 (guion 37). Locks test_solver_memoria.py.
+2. **Verificador de stock, ancla por tokens con límite de palabra**: 'model'
+   (Glorious Model O) matcheaba por substring adentro de 'modelo' y acusaba
+   sin_stock_falso a un producto AUSENTE del texto (falso positivo visto en
+   banco). Lock en test_stock.py.
+3. **Pendiente de categorías de memoria no se sella con otra categoría
+   nombrada**: '¿un ssd externo me sirve?' dejaba pendiente (1, ssd) y 'el
+   más barato de esos auriculares' sellaba un pedido de SSD que nadie pidió.
+   `categorias_nombradas` nueva en guia_pedido + descarte del pendiente
+   (evento `interprete_libre_pendiente_descartado`). Lock test_guia_pedido.
+4. **Prompt del solver endurecido**: compatibilidad con consolas/equipos y
+   tipo de conector SOLO si la ficha lo dice ('cable USB ideal para la Play
+   5' salía sin respaldo; ahora responde honesto que la ficha no lo
+   especifica). Y el acople NO re-pega una curada de texto puro cuando el
+   bloque nace del query_faq que el solver mismo llamó (salía 'decime qué
+   producto mirás' después de haberlo detallado).
+5. **Guía de venta en prosa 6→16 temas** (`guia_venta_prosa.py`): notebook,
+   memoria_ram, ssd_almacenamiento, componentes_pc (método de cruce de
+   fichas), auriculares, monitor, perifericos_conexion, sillas_gamer,
+   streaming, tablet. Cero números (invariante con test). Match por ALIAS
+   de palabra antes del difuso ('ram' caía en streaming, 'router' en mouse).
+   Es la semilla para preguntas técnicas/compatibilidad de la demo; para un
+   cliente real se llena con la prosa del cliente.
+6. **Guiones nuevos 34-37** (memoria+ancla+ruido, compatibilidad técnica,
+   negación+cambio de decisión ida y vuelta, memoria de destino lejano):
+   las charlas adversariales del 13-jul lockeadas al banco vivo.
+
+PENDIENTE inmediato al retomar: resultado de la 2ª corrida completa de la
+batería (medir consistencia de los 3 flakes), decidir intérprete
+(gpt-4o-mini vs gemini) con Martín, y el merge a main (CI gateado deploya).
+
+---
+
+**12-jul-2026 (3ª tanda) — SOLVER GEMINI CABLEADO
+AL CAMINO VIVO (conservador) + verificador de stock reparado.**
 
 CABLEADO (OK de Martín para verificador + cableado, con él offline):
 - **`app/core/solver_gemini.py`** (NUEVO): el solver de producción. Loop de

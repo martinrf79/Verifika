@@ -763,6 +763,24 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                         if isinstance(c, dict)
                         and isinstance(c.get("cantidad"), int)
                         and c.get("categoria")]
+                    # Un pendiente de MEMORIA solo vale si el cliente sigue en
+                    # ESA conversacion: si este mensaje nombra explicitamente
+                    # OTRA categoria de la tienda, el pendiente viejo no se
+                    # sella ni persiste (13-jul: '¿un ssd me sirve?' dejaba
+                    # pendiente (1, ssd) y 'el mas barato de esos auriculares'
+                    # sellaba un pedido de SSD que nadie pidio).
+                    if _cats_pedido:
+                        from app.core.guia_pedido import categorias_nombradas
+                        _noms = set(categorias_nombradas(
+                            raw_message, tienda_id))
+                        if _noms and not (_noms
+                                          & {c for _, c in _cats_pedido}):
+                            log.info(
+                                "interprete_libre_pendiente_descartado",
+                                trace_id=trace_id,
+                                pendiente=[c for _, c in _cats_pedido],
+                                nombradas=sorted(_noms))
+                            _cats_pedido = []
                 # ASIGNACION PARCIAL DE DESTINO (11-jul, guion 29): "una
                 # parte va a Rafaela, un teclado y un mouse van ahi" NO es
                 # un pedido nuevo: es el MISMO pedido repartiendo envios.
@@ -1183,7 +1201,8 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             # depende de la obediencia del solver). Sobre el mensaje SELLADO del
             # pedido, el gate de intencion se saltea: la intencion es de compra
             # pero la pregunta de politica pegada al pedido sale igual.
-            _bc = (bloque_curado_de_meta(meta, tienda_id)
+            _bc_meta = bloque_curado_de_meta(meta, tienda_id)
+            _bc = (_bc_meta
                    or bloque_curado_por_mensaje(
                        raw_message, interp, tienda_id,
                        sin_gate_intencion=_sellado_pedido))
@@ -1210,6 +1229,15 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 elif _tema_bc in temas_cubiertos_por_tools(meta):
                     log.info("interprete_libre_acople_salteado", trace_id=trace_id,
                              tema=_tema_bc, motivo="tool_cubre")
+                elif _bc_meta and not _tiene_valores and _via_solver:
+                    # El bloque nace del query_faq que el SOLVER llamo: ya
+                    # leyo esa politica y la integro a su prosa. Un tema de
+                    # texto puro no se re-pega (13-jul: el enlatado de
+                    # compatibilidad "decime que producto miras" salia
+                    # DESPUES de que el solver ya habia detallado el
+                    # producto). Un tema con montos sigue llevando bloque.
+                    log.info("interprete_libre_acople_salteado", trace_id=trace_id,
+                             tema=_tema_bc, motivo="solver_ya_leyo_faq")
                 elif not _tiene_valores and solapa_prosa(respuesta, _bloque_bc):
                     log.info("interprete_libre_acople_salteado", trace_id=trace_id,
                              tema=_tema_bc, motivo="prosa_solapa")

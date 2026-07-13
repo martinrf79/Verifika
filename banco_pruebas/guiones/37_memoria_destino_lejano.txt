@@ -1,0 +1,10 @@
+# Memoria de destino lejano (13-jul): el destino se da en el turno 1 y se usa
+# en el turno 6, fuera de la ventana corta de historia del solver. Lo cubre el
+# bloque MEMORIA DE LA CHARLA del solver (resumen+estado): no debe re-preguntar
+# el destino.
+hola! soy Marta, quiero hacer un regalo, el envio seria a Rosario
+que auriculares me recomendas para regalar?
+y de mouse, que tenes barato?
+los teclados mecanicos son muy ruidosos para una oficina?
+una duda, se puede pagar en cuotas?
+bueno dale, decime cuanto me saldria el envio hasta alla

@@ -273,6 +273,42 @@ def cantidades_por_categoria(mensaje: str, tienda_id: str) -> list[tuple]:
     return out
 
 
+def categorias_nombradas(mensaje: str, tienda_id: str) -> list[str]:
+    """Categorias REALES de la tienda nombradas en el mensaje, con o sin
+    cantidad ('el mas barato de esos auriculares' -> ['auriculares']).
+    Tolera plural/singular naive y categorias de varias palabras. Sirve para
+    saber de QUE esta hablando el cliente en este turno (13-jul: un pendiente
+    de categorias de MEMORIA no debe sellarse si el mensaje habla de otra
+    categoria)."""
+    from app.storage.firestore_client import get_categories
+    try:
+        categorias = get_categories(tienda_id=tienda_id) or []
+    except Exception:
+        return []
+    msg = _norm(mensaje)
+    out: list[str] = []
+    for c in categorias:
+        cn = _norm(c)
+        if not cn:
+            continue
+        variantes = {cn}
+        if cn.endswith("s"):
+            variantes.add(cn[:-1])
+        else:
+            variantes.add(cn + "s")
+        if cn.endswith("es") and len(cn) > 4:
+            variantes.add(cn[:-2])
+        partes = cn.split()
+        if len(partes) > 1:
+            p0, resto = partes[0], " ".join(partes[1:])
+            variantes.add((p0[:-1] if p0.endswith("s") else p0 + "s")
+                          + " " + resto)
+        if any(re.search(r"\b" + re.escape(v) + r"\b", msg)
+               for v in variantes):
+            out.append(str(c))
+    return out
+
+
 def opciones_por_categoria(categoria: str, tienda_id: str,
                            k: int = 3) -> list[dict]:
     """Las k opciones mas baratas CON stock de una categoria, del catalogo

@@ -281,3 +281,20 @@ def test_mensaje_presupuesto_sellado_es_plantilla_fija():
     assert out.startswith("Listo, te armé el pedido")
     assert "Total: $4" in out
     assert "transferencia" in out
+
+
+def test_categorias_nombradas_detecta_con_y_sin_cantidad(firestore_doble):
+    """13-jul: '¿un ssd me sirve?' dejaba pendiente (1, ssd) y 'el mas barato
+    de esos auriculares' sellaba un pedido de SSD que nadie pidio. La pieza
+    que corta eso es saber de QUE categoria habla el mensaje."""
+    from app.core.guia_pedido import categorias_nombradas
+    assert categorias_nombradas(
+        "dale, mostrame el mas barato de esos auriculares",
+        "verifika_prod") == ["auriculares"]
+    assert categorias_nombradas(
+        "busco una placa de video y sillas gamer", "verifika_prod") == [
+        "placa de video", "silla gamer"]
+    # Sin categoria nombrada no opina: el pendiente de memoria sigue valiendo.
+    assert categorias_nombradas("lo mas eco", "verifika_prod") == []
+    assert categorias_nombradas(
+        "cuanto sale el envio a rosario?", "verifika_prod") == []
