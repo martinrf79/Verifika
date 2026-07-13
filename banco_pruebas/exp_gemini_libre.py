@@ -31,7 +31,7 @@ def _gemini_redacta(prompt: str) -> str:
     c = OpenAI(api_key=key,
                base_url="https://generativelanguage.googleapis.com/v1beta/openai/")
     r = c.chat.completions.create(
-        model="gemini-flash-latest",
+        model=os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite"),
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7, max_tokens=600,
         extra_body={"reasoning_effort": "none"})

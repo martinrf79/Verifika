@@ -32,13 +32,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from banco_pruebas.sim_firestore import install
 
 _MAX_ITERS = 7
-_MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
+# PRUEBAS GRATIS clavadas a gemini-3.1-flash-lite (Martin, 13-jul): el modelo
+# Lite entra en el tier gratuito y es el mas barato; asi las corridas del banco
+# NO gastan la cuota paga de produccion (que corre gemini-3-flash-preview).
+# Overridable por env GEMINI_MODEL si se quiere medir con otro.
+_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
-# Tarifa APROXIMADA de gemini-flash (USD por millon de tokens). Editable: las
-# plataformas no la dejan clara y cambia por modelo/tier. Ajustar con la
-# factura real. Sirve para proyectar el costo de muchas corridas.
-PRECIO_IN_USD_POR_M = float(os.environ.get("GEMINI_PRECIO_IN", "0.30"))
-PRECIO_OUT_USD_POR_M = float(os.environ.get("GEMINI_PRECIO_OUT", "2.50"))
+# Tarifa APROXIMADA de gemini-3.1-flash-lite (USD por millon de tokens).
+# Editable: las plataformas no la dejan clara y cambia por modelo/tier. Ajustar
+# con la factura real. Sirve para proyectar el costo de muchas corridas.
+PRECIO_IN_USD_POR_M = float(os.environ.get("GEMINI_PRECIO_IN", "0.10"))
+PRECIO_OUT_USD_POR_M = float(os.environ.get("GEMINI_PRECIO_OUT", "0.40"))
 
 SISTEMA = (
     "Sos el vendedor por WhatsApp de Verifika Tech, tienda argentina de "
@@ -149,8 +153,31 @@ _TOOL_GUIA = {
 def _cliente():
     from openai import OpenAI
     key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_APY_KEY")
+    # La clave puede venir contaminada en el entorno (dos secretos pegados con un
+    # espacio); tomamos solo el primer token, que es la clave real.
+    key = (key or "").strip().split()[0] if key else key
     return OpenAI(api_key=key,
                   base_url="https://generativelanguage.googleapis.com/v1beta/openai/")
+
+
+def _crear_con_backoff(c, **kw):
+    """Llama a chat.completions.create respetando el 429 del tier gratuito.
+    gemini-3.1-flash-lite gratis da 15 requests/min; el banco dispara varias
+    llamadas por caso, asi que sin pausa choca el limite a mitad. Ante 429
+    espera lo que pide el mensaje ('retry in Xs') y reintenta, hasta 4 veces."""
+    import re as _re
+    import time as _time
+    for intento in range(4):
+        try:
+            return c.chat.completions.create(**kw)
+        except Exception as e:  # openai.RateLimitError u otra con status 429
+            msg = str(e)
+            if "429" not in msg and getattr(e, "status_code", None) != 429:
+                raise
+            m = _re.search(r"retry in ([\d.]+)s", msg)
+            espera = min(float(m.group(1)), 40) if m else 2 ** intento
+            _time.sleep(espera + 0.5)
+    return c.chat.completions.create(**kw)
 
 
 def _ejecutar_tool(nombre, args):
@@ -188,8 +215,8 @@ def _resolver(mensajes_previos, mensaje, tienda_id):
     tools_llamadas, tools_para_evidencia = [], []
     texto = ""
     for _ in range(_MAX_ITERS):
-        r = c.chat.completions.create(
-            model=_MODEL, messages=mensajes, tools=schema, tool_choice="auto",
+        r = _crear_con_backoff(
+            c, model=_MODEL, messages=mensajes, tools=schema, tool_choice="auto",
             temperature=0.5, max_tokens=1200,
             extra_body={"reasoning_effort": "none"})
         u = getattr(r, "usage", None)
