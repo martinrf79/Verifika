@@ -260,7 +260,7 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
     def _call():
         c = _cliente_gemini()
         r = c.chat.completions.create(
-            model=(settings.GEMINI_MODEL or "gemini-flash-latest"),
+            model=(settings.GEMINI_MODEL or "gemini-3.1-flash-lite"),
             messages=[{"role": "user", "content": prompt}],
             temperature=0.6, max_tokens=1500,
             extra_body={"reasoning_effort": "none"},

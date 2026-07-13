@@ -146,7 +146,7 @@ def _run(raw_message, history, tienda_id, business_name, trace_id,
     from app.core.tools import get_tools_schema
     schema = list(get_tools_schema()) + [guia_venta_prosa.tool_schema()]
     c = _cliente()
-    modelo = settings.GEMINI_MODEL or "gemini-flash-latest"
+    modelo = settings.GEMINI_MODEL or "gemini-3.1-flash-lite"
 
     mensajes = [{"role": "system", "content": _system_prompt(business_name)}]
     memoria = _bloque_memoria(estado or {})
