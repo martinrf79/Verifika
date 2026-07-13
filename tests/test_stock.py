@@ -290,3 +290,17 @@ def test_color_mismo_ofrece_agotado_sigue_disparando():
     dets = VS.detectar_stock_contradicho(r, _EV_COLOR)
     assert [d["id"] for d in dets] == ["TEC0021"]
     assert dets[0]["clase"] == "con_stock_falso"
+
+
+def test_token_substring_no_ancla_producto_ausente():
+    """Falso positivo 13-jul: 'model' (token del Glorious Model O) matcheaba
+    por SUBSTRING adentro de la palabra 'modelo', y con 'blanco' llegaba al
+    umbral de 2 tokens: acusaba sin_stock_falso a un producto que NO estaba en
+    el texto. Los tokens anclan con limite de palabra."""
+    ev = [_prodc("MOU0023", "Mouse Genius DX-110 Negro", 11, "Negro"),
+          _prodc("MOU0024", "Mouse Genius DX-110 Blanco", 0, "Blanco"),
+          _prodc("MOU0028", "Mouse Glorious Model O Blanco", 23, "Blanco")]
+    r = ("El Mouse Genius DX-110 (Negro) es un clasico de cable, comodo y "
+         "preciso. Tiene garantia oficial. (Nota: el color blanco de este "
+         "modelo actualmente esta sin stock).")
+    assert VS.detectar_stock_contradicho(r, ev) == []

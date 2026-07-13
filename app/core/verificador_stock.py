@@ -153,7 +153,13 @@ def _producto_en_ventana(pre: str, productos: list[dict]) -> dict | None:
         toks = _tokens_significativos(p.get("nombre", ""))
         if not toks:
             continue
-        presentes = sum(1 for t in toks if t in pre)
+        # Tokens con LIMITE DE PALABRA: el chequeo por substring anclaba
+        # productos que NO estaban en el texto ('model' del Glorious Model O
+        # matcheaba adentro de 'modelo' y con 'blanco' llegaba al umbral;
+        # falso sin_stock_falso visto en el banco 13-jul).
+        presentes = sum(
+            1 for t in toks
+            if re.search(r"\b" + re.escape(str(t)) + r"\b", pre))
         if presentes >= min(2, len(toks)):
             candidatos[str(p.get("id") or "").upper()] = (presentes, p)
     if not candidatos:
