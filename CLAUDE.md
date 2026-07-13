@@ -190,6 +190,7 @@ Núcleo verificable, reutilizable entre productos. Contiene:
 4. **Citas verificadas mecánicamente.** Si una afirmación menciona un producto, debe poder mapearse a un ID en Firestore. Si no se puede, se descarta.
 5. **Observabilidad obligatoria.** Cada engranaje loguea con `trace_id` consistente. Sin logs no se hace deploy.
 6. **DeepSeek por default.** No usar Claude/Gemini/OpenAI sin permiso explícito de Martín (cuestan plata, DeepSeek no).
+7. **Un solo lugar para el proveedor del modelo (Martín, 13-jul-2026).** El modelo de la conversación se elige con UNA sola variable, `LLM_PROVIDER`. De ahí heredan el intérprete, el selector, el solver, el redactor, la guardia y la memoria. El solver Gemini se enciende SOLO cuando `LLM_PROVIDER` vale gemini. PROHIBIDO volver a clavar Gemini en el código o desparramar la elección de proveedor en varias variables del servicio: eso fue lo que descontroló el gasto en julio, casi diez dólares de Gemini en tres días de pruebas. Para pruebas `LLM_PROVIDER=openai` o `groq`; para producción `LLM_PROVIDER=gemini`, y en ningún otro lado. Único override legítimo: `INTERPRETER_PROVIDER`, si a propósito se quiere el intérprete en un modelo distinto del solver. Los roles internos de Verifika, o sea el extractor del cierre y el fallback de FAQ, quedan en openai mini barato aparte, porque no son la conversación.
 
 ---
 

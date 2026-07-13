@@ -3,6 +3,56 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
+---
+
+## COMANDOS — cambiar de proveedor y deploy (13-jul-2026)
+
+Contexto: el gasto de julio fue 96% Gemini, 9.65 USD, casi todo tokens de ENTRADA
+del solver Gemini que reenvía el esquema de 14 tools en cada vuelta del loop.
+Cloud Run inocente, 9 centavos. Golpe 1 hecho en la rama
+`claude/gcloud-spending-review-it3bdg`: PERILLA ÚNICA `LLM_PROVIDER` que manda
+intérprete + solver (ver regla técnica 7 de CLAUDE.md). PENDIENTE mergear a main.
+
+**PASO 0 — ver qué variables tiene el servicio SIN exponer secretos (solo nombres):**
+```bash
+gcloud run services describe agente-bot --project memory-engine-v1 \
+  --region southamerica-east1 \
+  --format="value(spec.template.spec.containers[0].env[].name)"
+```
+Antes de pasar a openai, confirmar que `OPENAI_API_KEY` figura en esa lista. Si NO
+está, el bot se rompe al cambiar: primero cargar la clave. Si aparece
+`INTERPRETER_PROVIDER` pegada, conviene sacarla para que herede de `LLM_PROVIDER`.
+
+**PASO 1 — deployar el Golpe 1 (sin esto, el gate no existe y el solver Gemini
+corre igual aunque LLM_PROVIDER diga openai):** mergear la rama a main; el CI
+gateado testea y deploya a `agente-bot`. O `./deploy.sh` desde `~/verifika`.
+
+**PASO 2 — cambiar el proveedor vivo (una sola variable):**
+```bash
+# Pruebas / ahorro: intérprete + solver en gpt-4o-mini barato
+gcloud run services update agente-bot --project memory-engine-v1 \
+  --region southamerica-east1 --update-env-vars LLM_PROVIDER=openai
+# si PASO 0 mostró INTERPRETER_PROVIDER pegada en gemini, sumar:
+#   --remove-env-vars INTERPRETER_PROVIDER
+
+# Volver a producción Gemini
+gcloud run services update agente-bot --project memory-engine-v1 \
+  --region southamerica-east1 --update-env-vars LLM_PROVIDER=gemini
+
+# Probar Groq (necesita GROQ_API_KEY en el servicio)
+gcloud run services update agente-bot --project memory-engine-v1 \
+  --region southamerica-east1 --update-env-vars LLM_PROVIDER=groq
+```
+
+**TRADE-OFF MEDIDO (13-jul, mismos bancos):** intérprete gpt-4o-mini 87% en
+multiturno adversarial vs Gemini 100%; en casos sueltos empatan 29/29. Las 3
+fallas de gpt mini: ironía leída como compra, referencia al histórico,
+dato-no-compra. Si se quiere el solver barato pero el intérprete fuerte, override:
+`LLM_PROVIDER=openai` con `INTERPRETER_PROVIDER=gemini`.
+
+**TOPE DE GASTO:** poner presupuesto con alerta en Billing → Presupuestos y
+alertas (5 USD), red para que no se repita el susto.
+
 **Última actualización: 13-jul-2026 — TANDA DE ROBUSTEZ (orden de Martín:
 prueba-error hasta robusto). MEMORIA DEL SOLVER + 3 FLACOS CAZADOS EN BANCO
 ADVERSARIAL + GUÍA DE VENTA 16 TEMAS. ARRANCAR ACÁ.**
