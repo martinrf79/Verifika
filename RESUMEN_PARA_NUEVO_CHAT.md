@@ -53,9 +53,77 @@ dato-no-compra. Si se quiere el solver barato pero el intérprete fuerte, overri
 **TOPE DE GASTO:** poner presupuesto con alerta en Billing → Presupuestos y
 alertas (5 USD), red para que no se repita el susto.
 
+---
+
+## ⚡ 13-jul-2026 (tarde) — REVISIÓN DE GASTO + PERILLA ÚNICA + MODELO CLAVADO. ARRANCAR ACÁ.
+
+Sesión de revisión del gasto. Todo en la rama `claude/gcloud-spending-review-it3bdg`
+(commiteado y pusheado), PENDIENTE de merge a main. Batería offline 478/478 verde.
+
+**DIAGNÓSTICO DEL GASTO (cerrado):** factura de julio 10 USD, 96% Gemini (9,65).
+Cloud Run inocente (9 centavos), NINGÚN servicio colado (solo agente-bot y
+video-engine, los dos escalan a cero). El salto empezó el 11-jul, commit "Gemini
+vivo": Gemini entró como solver (solver_gemini.py, 12-jul) e intérprete. El 7,63
+son tokens de ENTRADA: el solver reenvía el esquema de 14 tools (2160 tokens) en
+CADA vuelta del loop (hasta 7). Las pruebas de Martín del 11-13 lo dispararon.
+
+**GOLPE 1 HECHO (perilla única):**
+- `LLM_PROVIDER` es la PERILLA MAESTRA: manda solver + intérprete (INTERPRETER_PROVIDER
+  hereda de LLM_PROVIDER si no se setea aparte).
+- solver_gemini GATEADO en interprete_libre.py: solo conduce si LLM_PROVIDER==gemini;
+  con openai/groq corre el camino determinista (selector+compositor). Antes estaba
+  clavado a Gemini sin flag (la causa del desparramo).
+- Regla técnica 7 nueva en CLAUDE.md: un solo lugar para el proveedor.
+- Uso: LLM_PROVIDER=openai o groq para pruebas; =gemini para producción.
+
+**MODELO CLAVADO:** GEMINI_MODEL pasó de `gemini-flash-latest` (se movía solo al
+flash más caro) a `gemini-3.1-flash-lite` (GA estable, el más barato 0,25/1,50).
+Reemplazado en config.py, solver_gemini.py, generador_v2.py. Fallback si no rinde:
+`gemini-3.5-flash` (GA, 1,50/9,00). El 3-flash es PREVIEW inestable, evitado.
+
+**COSTO MEDIDO (medidor offline, coincide con el banco ~12.500 tok/msg):** camino
+Gemini: pregunta simple ~3 USD/1000 msgs, producto+envío ~8, enredado ~16. Camino
+determinista (openai/groq) mucho más barato.
+
+**INVESTIGACIÓN DE PROVEEDORES:**
+- Gemini tier GRATIS existe: clave de un proyecto NUEVO SIN facturación (~1000-1500
+  req/día). OJO: los créditos son por PROYECTO, no por clave; una clave nueva en el
+  MISMO proyecto pago agotado NO suma. AI Studio → "Create API key in a new project".
+- NVIDIA gratis = SOLO test; producción exige AI Enterprise 4500 USD/GPU/año, inviable.
+- Groq de pago no ahorra mucho vs Gemini en input-heavy; su valor es free tier + velocidad.
+- Gemini es el líder de calidad en los bancos (100% multiturno). Se queda para prod.
+- El recorte de prod SIN perder calidad es el CACHÉ de contexto (pendiente verificar
+  en el endpoint compat de Gemini).
+
+**⚠️ ESTADO URGENTE — PRODUCCIÓN GEMINI CAÍDA:** la GEMINI_API_KEY del entorno y la
+que probó Martín son del MISMO proyecto pago AGOTADO → 429 "prepayment credits
+depleted". Si agente-bot usa una clave de ese proyecto, el bot vivo está fallando
+Gemini y cayendo al compositor determinista (vende igual, sin la cabeza Gemini).
+DESTRABA: clave de un proyecto NUEVO sin facturación (gratis) para probar, y reponer
+crédito/clave en producción.
+
+**DISEÑO 2 CLAVES:** GEMINI_API_KEY = clave GRATIS de prueba (default seguro, el
+código la lee sola, no gasta la paga); GEMINI_API_KEY_PROD = clave paga, aparte,
+opt-in. Producción lleva solo la paga como GEMINI_API_KEY.
+
+**PENDIENTES / PRÓXIMOS PASOS:**
+1. Sacar clave Gemini gratis de un proyecto NUEVO sin facturación; probarla.
+2. Mergear la rama a main = deploya el Golpe 1 por CI. ANTES verificar que agente-bot
+   tenga OPENAI_API_KEY si se va a probar LLM_PROVIDER=openai (comando de nombres en
+   COMANDOS; una rama vieja decía "prod no tiene OPENAI_API_KEY").
+3. Tope de presupuesto (5 USD) en Billing.
+4. Probar 3.1-flash-lite vivo; comparar con 3.5-flash si no alcanza.
+5. GOLPE 2 (DIFERIDO, charlar con Martín): optimizar llamadas SIN perder calidad ni
+   contexto/memoria. NO recortar funciones. Palancas: mandar solo las tools del turno
+   según intención, caché de contexto, bajar el tope de vueltas. Medir antes y después.
+6. RAMAS: 15 ramas claude/* son basura segura de borrar (comando listo en el historial
+   del chat), pero el borrado está BLOQUEADO (403) desde el entorno; Martín las borra
+   de su lado. Revisar antes de tirar: `claude/verifica-testing-options-5icbi1` (banco
+   adversarial con cliente-IA, 951 líneas, 13-jul).
+
 **Última actualización: 13-jul-2026 — TANDA DE ROBUSTEZ (orden de Martín:
 prueba-error hasta robusto). MEMORIA DEL SOLVER + 3 FLACOS CAZADOS EN BANCO
-ADVERSARIAL + GUÍA DE VENTA 16 TEMAS. ARRANCAR ACÁ.**
+ADVERSARIAL + GUÍA DE VENTA 16 TEMAS (sesión previa).**
 
 Corrida de validación 13-jul (todo por el pipeline VIVO del sim, Gemini
 solver conduciendo):
