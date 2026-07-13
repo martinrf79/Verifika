@@ -1,0 +1,8 @@
+# Negacion + cambio de decision ida y vuelta (13-jul): mecanico -> membrana ->
+# vuelve al mecanico -> cierra con envio. Prueba que el estado sigue al cliente
+# y el total final sale sellado con el envio del turno.
+hola, busco un teclado mecanico para jugar
+mmm no se, el mecanico hace mucho ruido no? mejor mostrame de membrana
+cuanto sale el de membrana mas barato?
+sabes que no, tenias razon vos, al final voy con el mecanico. cual era el mas barato de los mecanicos?
+dale ese, cuanto queda con envio a rosario?

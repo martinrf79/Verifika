@@ -1,0 +1,13 @@
+# Memoria con ancla y ruido en el medio (13-jul): el cliente anota un mouse al
+# principio, mete FAQ/envios/otra categoria en el medio, se arrepiente de la
+# otra categoria, y cierra con "el que te dije al principio". El invariante
+# comercial (cerrar con el anotado) lo garantizan ancla+guia; el juez audita
+# los datos.
+hola, estoy mirando mouse, cual me recomendas para oficina?
+me gusta ese, anotalo que despues lo confirmo
+mientras tanto, hacen factura A?
+y los envios como son, cuanto tardan?
+tenes auriculares con microfono?
+uh no, auriculares no, era para un amigo que al final no quiere
+una consulta, los productos son originales con garantia?
+perfecto. bueno dale, cerrame la compra del mouse que te dije que anotes al principio
