@@ -57,10 +57,15 @@ guía), bot; el multiproducto usa el total sellado del código; cero tracebacks;
 stock sin corromper. Cuando la respuesta viene del solver, las guardas de
 formato del viejo solver libre no corren; los verificadores reales sí.
 
-**PENDIENTE: deploy.** NADA mergeado a main. No pude probar contra WhatsApp
-real. Con el OK de Martín se mergea a main (CI gateado deploya) y se prueba en
-red; el CI no tiene GEMINI_API_KEY así que sus tests caen al compositor y pasan.
-En producción el solver se activa cuando la env GEMINI_API_KEY está cargada.
+**DEPLOYADO (OK directo de Martín, 12-jul): run 109 de deploy.yml VERDE**
+(test gateado + deploy a Cloud Run agente-bot, commit 1a1053d). El camino vivo
+ahora es: solver Gemini primario salvo pedido sellado, con el compositor de red
+y los verificadores como filtro. OJO: el solver se activa en prod SOLO si la env
+GEMINI_API_KEY está cargada en el servicio agente-bot; si no, cae al compositor
+(comportamiento previo). Validación en red PENDIENTE: Martín manda un WhatsApp y
+se leen los logs de Cloud Run (evento `interprete_libre_solver_gemini_ok` =
+el solver condujo; si no aparece, revisar la env de la clave). El CI no tiene la
+clave, por eso sus tests offline caen al compositor y pasan.
 
 ---
 
