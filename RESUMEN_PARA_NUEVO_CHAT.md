@@ -9,15 +9,19 @@ ADVERSARIAL + GUÍA DE VENTA 16 TEMAS. ARRANCAR ACÁ.**
 
 Corrida de validación 13-jul (todo por el pipeline VIVO del sim, Gemini
 solver conduciendo):
-- Batería viva de 33 guiones: 30/33 limpio 1ª corrida; los 3 que marcaron
-  (03_stock, 04_mas_barato, 15_multipregunta) pasan al repetirlos =
-  variación del LLM, no regresión. 2ª corrida completa en curso al cierre.
-- Banco interpretación suelto 29/29; multiturno 20/23 (87%, piso 80; las 3
-  fallas son lecturas blandas conocidas de gpt-4o-mini: guía dato-no-compra,
-  ironía leída como compra, referencia al histórico). DATO para decidir:
-  Gemini como intérprete venía 23/23; Martín dijo que si gpt mini es
-  impedimento, se cambia. Aún no es impedimento (arriba del piso).
-- 482 tests offline en verde.
+- Batería viva: 1ª corrida 30/33 (03_stock, 04_mas_barato, 15_multipregunta
+  marcaron y pasan al repetirlos = variación del LLM); 2ª corrida COMPLETA
+  con los fixes adentro: **33/33 LIMPIO**. Guiones nuevos 34-37 también
+  verdes por el arnés (4/4). Total del día: 37/37 con los fixes.
+- Interpretación medida HOY, mismo día, mismos bancos:
+  gpt-4o-mini (prod): suelto 29/29, multiturno 20/23 (87%, arriba del piso).
+  Gemini: suelto 29/29, multiturno 23/23 = 100%.
+  Las 3 fallas de gpt mini: guía dato-no-compra, ironía leída como compra,
+  referencia al histórico. DECISIÓN ABIERTA con Martín: pasar el intérprete
+  a Gemini (hoy mide mejor y unifica proveedor con el solver; riesgo: todo
+  el turno depende de un solo proveedor, y gpt mini queda de fallback por
+  config si hiciera falta volver).
+- 478 tests offline en verde.
 
 LO NUEVO CABLEADO (13-jul, OK directo de Martín "corrígelo directamente"):
 1. **Bloque MEMORIA DE LA CHARLA del solver** (`solver_gemini._bloque_memoria`):
