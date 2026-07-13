@@ -114,8 +114,19 @@ opt-in. Producción lleva solo la paga como GEMINI_API_KEY.
 3. Tope de presupuesto (5 USD) en Billing.
 4. Probar 3.1-flash-lite vivo; comparar con 3.5-flash si no alcanza.
 5. GOLPE 2 (DIFERIDO, charlar con Martín): optimizar llamadas SIN perder calidad ni
-   contexto/memoria. NO recortar funciones. Palancas: mandar solo las tools del turno
-   según intención, caché de contexto, bajar el tope de vueltas. Medir antes y después.
+   contexto/memoria. NO recortar funciones.
+   - PALANCA DE RIESGO CERO, no toca el flujo ni la calidad: CACHÉ DE CONTEXTO de
+     Gemini. El paquete fijo que el solver reenvía en CADA vuelta (prompt de sistema
+     + esquema de 14 tools = 2670 tokens) es idéntico; cacheado se cobra barato en las
+     repeticiones. Mismas llamadas, mismas respuestas, solo baja la factura. Gemini
+     tiene caché IMPLÍCITA (automática, sin tocar código, si el modelo la aplica sobre
+     el prefijo repetido) y EXPLÍCITA (hay que setearla). Paso 1: verificar si la
+     implícita ya descuenta en gemini-3.1-flash-lite; si no, ver si el endpoint compat
+     de OpenAI la deja activar. Esta es la que se puede hacer sin discusión.
+   - PALANCAS QUE SÍ PUEDEN TOCAR CALIDAD (NO aplicar solas, charlar): mandar solo las
+     tools del turno según intención (una pregunta ambigua puede necesitar una tool
+     que no se mandó, riesgo que marcó Martín), bajar el tope de vueltas (un turno
+     complejo real podría cortarse). Medir antes y después.
 6. RAMAS: 15 ramas claude/* son basura segura de borrar (comando listo en el historial
    del chat), pero el borrado está BLOQUEADO (403) desde el entorno; Martín las borra
    de su lado. Revisar antes de tirar: `claude/verifica-testing-options-5icbi1` (banco
