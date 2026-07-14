@@ -1,0 +1,8 @@
+# Charla real 14-jul (WhatsApp): 2 mouse, 2 teclados, 2 auriculares los mas
+# baratos, split 70% transferencia / 30% mp. El verificador "corregia" el 70%
+# del subtotal (109.200) al unitario de los auriculares (57.500), rompiendo el
+# split. Fix: montos del split protegidos en autocorregir_montos.
+hola quisiera preguntar precio por dos mouse, dos teclados y dos auriculares, los mas baratos
+si, me gustaria gastar solo lo justo y necesario
+dale
+seria 70% transferencia y 30% mp

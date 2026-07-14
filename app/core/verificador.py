@@ -551,6 +551,19 @@ def autocorregir_montos(respuesta: str,
         for o in ((i.get("proof") or {}).get("operandos_productos") or [])
         if isinstance(o, dict)]
 
+    # PROOF del split de pago: los montos que computo la calculadora (la parte
+    # por medio, la parte con descuento, el total final) NO son precios de
+    # producto y NO se re-anclan a un nombre. Sin esto el ancla por nombre
+    # (rama a) tomaba el 70% del subtotal como un precio mal etiquetado y lo
+    # pisaba con el unitario de un producto cercano: caso REAL 14-jul, el
+    # $109.200 (70% de $156.000) salio "corregido" a $57.500 (unitario de los
+    # auriculares), rompiendo el split. Estan respaldados por el proof; se
+    # protegen explicito porque la rama (a) corre aunque figuren en el pool.
+    montos_split = {
+        int(m) for i in (evidence or []) if i.get("tipo") == "proof"
+        for m in ((i.get("proof") or {}).get("montos") or [])
+        if isinstance(m, (int, float))}
+
     # Plan de reemplazos: para cada monto del texto sin respaldo se decide el
     # concepto por el CONTEXTO (precio de producto, envio o total) y se reescribe
     # solo con el pool de ESE concepto, de forma inequivoca. Asi una cifra de precio
@@ -567,6 +580,8 @@ def autocorregir_montos(respuesta: str,
         n = _parse_num(m.group())
         if n is None:
             continue
+        if n in montos_split:
+            continue  # monto computado del split: respaldado, no se re-ancla
         # Candado Corsair: un numero que es un precio real de catalogo citado no
         # se pisa por cercania (ramas b/c/d) — puede ser un producto citado de un
         # turno anterior. La UNICA excepcion es el ancla por nombre ADYACENTE

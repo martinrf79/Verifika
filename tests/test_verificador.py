@@ -227,6 +227,44 @@ def _ev_proof_subtotal(monto):
                                         "resultado": monto}}]
 
 
+def test_split_no_se_reancla_a_precio_de_producto():
+    """Caso REAL 14-jul (WhatsApp): pedido con split 70/30. El $109.200 (70% de
+    $156.000) lo computo la calculadora y viaja en proof['montos'], pero la rama
+    del ancla por nombre lo tomaba como un precio mal etiquetado y lo pisaba con
+    el unitario de los auriculares ($57.500), rompiendo el split. Un monto del
+    split NO se re-ancla a un precio de producto."""
+    from app.core.verificador import autocorregir_montos
+    ev = [
+        {"tipo": "producto", "id": "MOU0023",
+         "nombre": "Mouse Genius DX-110 Negro", "precio_ars": 8500},
+        {"tipo": "producto", "id": "TEC0020",
+         "nombre": "Teclado Genius KB-110X Blanco", "precio_ars": 12000},
+        {"tipo": "producto", "id": "AUR0019",
+         "nombre": "Auriculares Redragon Zeus X Negro", "precio_ars": 57500},
+        {"tipo": "proof", "proof": {
+            "tipo": "calculo_total_split_pago",
+            "operandos_productos": [
+                {"id": "MOU0023", "monto": 17000, "precio_unitario": 8500},
+                {"id": "TEC0020", "monto": 24000, "precio_unitario": 12000},
+                {"id": "AUR0019", "monto": 115000, "precio_unitario": 57500}],
+            "subtotal_productos": 156000, "resultado": 156000,
+            "montos": [156000, 109200, 98280, 46800, 145080, 10920]}},
+    ]
+    texto = ("- 2x Mouse Genius DX-110 Negro: $17.000\n"
+             "- 2x Teclado Genius KB-110X Blanco: $24.000\n"
+             "- 2x Auriculares Redragon Zeus X Negro: $115.000\n"
+             "Subtotal: $156.000\n\n"
+             "Pago dividido:\n"
+             "- Transferencia (70%): $109.200 - 10% descuento = $98.280\n"
+             "- Mercado Pago (30%): $46.800\n"
+             "Total final: $145.080")
+    fix = autocorregir_montos(texto, ev, "test",
+                              precios_validos={8500, 12000, 57500})
+    corregidos = {c["de"] for c in fix["correcciones"]}
+    assert 109200 not in corregidos, fix["correcciones"]
+    assert "$109.200" in fix["respuesta"]
+
+
 def test_subtotal_que_no_suma_se_corrige_con_respaldo():
     from app.core.verificador import corregir_subtotal_renglones
     texto = ("- 1x Auriculares Redragon Zeus X Negro: $57.500\n"
