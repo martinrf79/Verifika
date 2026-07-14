@@ -11,6 +11,7 @@ mucho mas y por familia de producto. El MECANISMO es el que importa; sumar
 temas es cargar texto, no tocar codigo. Registro: argentino, voseo, criterio
 de vendedor, cero dato duro.
 """
+import re
 from difflib import get_close_matches
 
 # Cada tema es criterio de venta en prosa, sin un solo numero.
@@ -166,22 +167,56 @@ def consultar_guia_venta(tema: str | None = None, **_) -> dict:
         return {"temas": list(GUIA_VENTA)}
     t = str(tema).lower().strip()
     if t in GUIA_VENTA:
-        return {"tema": t, "texto": GUIA_VENTA[t]}
+        return {"tema": t, "id": t, "texto": GUIA_VENTA[t]}
     # Por palabra, en orden: tema literal o alias, lo primero que aparezca.
     # Cubre 'ram', 'compatibilidad de placa de video', 'sirve esta memoria
     # para mi notebook' (gana 'memoria', que aparece antes).
     for palabra in t.replace("/", " ").split():
         tema_p = palabra if palabra in GUIA_VENTA else _ALIAS.get(palabra)
         if tema_p:
-            return {"tema": tema_p, "texto": GUIA_VENTA[tema_p]}
+            return {"tema": tema_p, "id": tema_p, "texto": GUIA_VENTA[tema_p]}
     m = get_close_matches(t, GUIA_VENTA.keys(), n=1, cutoff=0.6)
     if m:
-        return {"tema": m[0], "texto": GUIA_VENTA[m[0]]}
+        return {"tema": m[0], "id": m[0], "texto": GUIA_VENTA[m[0]]}
     for k in GUIA_VENTA:
         if k in t or t in k:
-            return {"tema": k, "texto": GUIA_VENTA[k]}
+            return {"tema": k, "id": k, "texto": GUIA_VENTA[k]}
     return {"tema": None, "temas": list(GUIA_VENTA),
             "nota": "sin guia para ese tema; razona desde la ficha o se honesto"}
+
+
+def recuperar(consulta: str | None = None, k: int = 3) -> list[dict]:
+    """Recuperacion tipo RAG sobre el corpus de prosa. Puntua cada chunk contra
+    la consulta del cliente por solapamiento de alias y del nombre del tema, y
+    devuelve los K mejores como [{'id', 'texto'}], ordenados. El 'id' es la
+    CITA: habilita pedirle al modelo que responda desde estos chunks y diga cual
+    uso, y verificar despues que cito uno real. Sin match devuelve lista vacia
+    (honesto: que el modelo diga que no tiene ese criterio, no que invente).
+
+    Primer ladrillo del RAG: recuperacion simple por palabra clave, sin
+    embeddings (gratis, cero infra). Si el corpus crece y esto no alcanza, se
+    reemplaza el scoring por embeddings SIN tocar el resto del contrato."""
+    if not consulta:
+        return []
+    q = str(consulta).lower()
+    palabras = set(re.findall(r"\w+", q))
+    puntajes: dict[str, int] = {}
+    for palabra in palabras:
+        tema = palabra if palabra in GUIA_VENTA else _ALIAS.get(palabra)
+        if tema:
+            puntajes[tema] = puntajes.get(tema, 0) + 1
+    # El nombre del tema dicho literal pesa mas ('componentes pc', 'memoria ram').
+    for tema in GUIA_VENTA:
+        if tema.replace("_", " ") in q:
+            puntajes[tema] = puntajes.get(tema, 0) + 2
+    ordenados = sorted(puntajes.items(), key=lambda kv: (-kv[1], kv[0]))[:k]
+    return [{"id": t, "texto": GUIA_VENTA[t]} for t, _ in ordenados]
+
+
+def texto_de(chunk_id: str) -> str | None:
+    """Devuelve el texto de un chunk por id, o None. Para el verificador de
+    cita: chequear que el id que dijo el modelo existe en el corpus."""
+    return GUIA_VENTA.get(str(chunk_id).strip())
 
 
 def tool_schema() -> dict:
