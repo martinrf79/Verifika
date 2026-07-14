@@ -3,8 +3,49 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
+## ⭐ PLAN DE ARRANQUE PRÓXIMA SESIÓN (decidido con Martín 14-jul) — LEER PRIMERO
+
+**El problema de fondo (charla honesta con Martín):** el sistema entra en un
+loop de bugs porque NO confía en el modelo, lo CORRIGE con una pila de
+verificadores/anclas/guardias de prosa que pelean entre sí y se auto-infligen
+errores. Prueba viva: el bug del split del 14-jul lo rompió NUESTRO corrector,
+no el modelo (el modelo calculó bien $109.200; `autocorregir_montos` lo pisó con
+$57.500). Cambiar de modelo NO corta el loop; sacar la máquina de corregir, sí.
+
+**La estrategia acordada (simplificar, no agregar):**
+1. Forzar que el modelo hable la PROSA DE VENTA desde la fuente determinista
+   (`consultar_guia_venta`), no desde su entrenamiento. HOY es MIXTO: el dato
+   duro (precio/stock/total/envío) sale SÍ o SÍ de las tools y no alucina; la
+   prosa blanda ("mecánico", "ideal gaming", "confiable") sale mayormente de la
+   cabeza del modelo, que a veces inventa. Ese es el hueco a cerrar: extender la
+   prosa determinista + forzar que el modelo la consulte y hable desde ahí.
+2. Con eso probado, SACAR los correctores de prosa que causan las regresiones,
+   dejando SOLO los filtros de plata y Verifika (los que garantizan el dato).
+3. MEDIR con el molino antes/después: cuántas afirmaciones blandas sin respaldo
+   soltó. Deja de ser sensación, es un número. Es el experimento go/no-go: si el
+   modelo+tools aguanta sin inventar → el camino funciona, es barato con Lite,
+   se invierte. Si se cae → semáforo para comprar una plataforma hecha.
+
+**Herramienta lista:** `banco_pruebas/banco_molino.py` (RESTAURADO 14-jul) genera
+casos catálogo×intención×dificultad, corre el pipeline vivo y agrupa fallas por
+clase. 1ª corrida (20 casos Lite) cazó: pedido fantasma (browse "quiero un X
+barato" → Total sellado, Martín confirmó que ES error) y stock falso (M170
+Blanco dicho sin stock con 17 real). Corre en tier GRATIS con pausa (15 rpm
+Lite), sin cache; el gratis mide COMPORTAMIENTO, no costo.
+
+**Economía (para saber si cierra):** Lite + cacheo = ~9 USD/mes por cliente a
+200 msgs/día → VIABLE con suscripción de 30-40. Gemini 3 Flash (grande) = 2-4x,
+finito. Meta: que el LITE alcance vía simplificación, no poner Flash. El costo de
+TESTEAR (dev) es aparte y se hace gratis; no confundir con el costo por cliente.
+
+**Método:** arrancar sesión NUEVA y liviana para el trabajo de código (este chat
+quedó largo). Ideas para más adelante, NO ahora: repo de promoción, evaluar bot
+comercial hecho.
+
+---
+
 **Última actualización: 14-jul-2026 — SOLVER GEMINI AL ENDPOINT NATIVO CON
-CACHEO DE CONTEXTO + PRODUCCIÓN A GEMINI 3.1 FLASH LITE. ARRANCAR ACÁ.**
+CACHEO DE CONTEXTO + PRODUCCIÓN A GEMINI 3.1 FLASH LITE.**
 
 Sesión de costos (orden de Martín: bajar la factura sin sacrificar respuesta).
 Lo hecho, medido y validado:
