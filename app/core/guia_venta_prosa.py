@@ -30,10 +30,18 @@ GUIA_VENTA: dict[str, str] = {
         "dia prioriza comodidad y bajo ruido; para gaming, respuesta y "
         "durabilidad. La estructura de aluminio suma resistencia."),
     "marcas": (
-        "Genius es marca de entrada confiable, buena relacion precio-uso para lo "
-        "basico. Logitech es un clasico de confianza para trabajo y uso diario, "
-        "muy probado. Razer apunta a gaming de alto rendimiento, premium. Todas "
-        "las que vendemos son originales con garantia oficial."),
+        "Cada marca tiene su caracter y conviene elegir por el que encaja con el "
+        "cliente. En notebooks, Lenovo, Asus, HP, Dell y Acer son las mas "
+        "probadas para estudio y trabajo, cada una con lineas de oficina y lineas "
+        "gamer. En perifericos, Logitech es el clasico confiable para uso diario "
+        "y trabajo, mientras que Razer, Redragon, HyperX y Corsair apuntan mas al "
+        "gaming y al rendimiento; Genius es una entrada honesta para lo basico. "
+        "En memoria y almacenamiento interno, Kingston, Corsair, Crucial, G punto "
+        "Skill y Adata son referencias seguras. En discos y pendrives, Western "
+        "Digital, Samsung, SanDisk y Seagate son de las mas elegidas. En audio, "
+        "JBL y HyperX rinden bien. Todas las que vendemos son originales con "
+        "garantia oficial. El criterio: para uso rudo o gaming, marcas premium; "
+        "para lo basico, una de entrada cumple sin gastar de mas."),
     "gaming_setup": (
         "Un setup gamer que rinda sin gastar de mas prioriza un mouse con buen "
         "sensor y un teclado con respuesta pareja; se puede arrancar en gama "
@@ -128,6 +136,199 @@ GUIA_VENTA: dict[str, str] = {
         "sobrada; para dibujar o trabajar conviene mirar ficha y accesorios. "
         "Que acepte teclado o lapiz depende del modelo: la ficha manda. No "
         "garantizar accesorios de terceros que no figuran en la ficha."),
+    "almacenamiento_externo": (
+        "Un disco externo o un pendrive sirve para llevar archivos, hacer copias "
+        "de respaldo y sumar espacio sin abrir la computadora: se conecta por USB "
+        "y anda en cualquier equipo moderno sin instalar nada. Para respaldo y "
+        "mucha capacidad conviene un disco externo; para llevar algo en el "
+        "bolsillo y transferir rapido, un pendrive o una unidad solida portatil, "
+        "mas veloz y resistente a los golpes que el disco de plato. Si la idea es "
+        "usarlo en un televisor o una consola, hay que revisar que el equipo "
+        "acepte ese formato, y a veces pide formatearlo de una manera puntual: "
+        "eso sale de la ficha o del manual del equipo, no lo prometas de memoria. "
+        "Para editar video o mover archivos grandes seguido, prioriza una unidad "
+        "solida por velocidad; para guardar y olvidarte, el disco de plato rinde "
+        "por capacidad. La velocidad real depende tambien del puerto de la "
+        "computadora del cliente."),
+    "parlante": (
+        "Un parlante se elige por donde y para que suena. Para escritorio o "
+        "escuchar mientras trabajas, uno compacto por USB o con conexion clasica "
+        "alcanza. Para juntadas o llevar afuera conviene uno portatil con bateria "
+        "y conexion inalambrica, y ahi importan la autonomia y que sea "
+        "resistente. Los que van por Bluetooth andan con celular, tablet o "
+        "computadora que tengan Bluetooth; los USB son para computadora; los de "
+        "ficha clasica entran en casi todo lo que tenga esa salida. La potencia y "
+        "el alcance salen de la ficha; no prometas volumen ni metros de memoria. "
+        "Si el cliente busca sonido para peliculas o musica con graves, orientalo "
+        "a modelos pensados para eso y confirma con la ficha antes de asegurar."),
+    "gabinete": (
+        "El gabinete es la caja donde vive la PC, y elegirlo no es solo estetica: "
+        "tiene que entrar el tamano de la placa madre del cliente y dejar lugar "
+        "para la placa de video, el cooler y la fuente. Un buen gabinete cuida el "
+        "flujo de aire, que es lo que mantiene fresco al equipo, y facilita el "
+        "armado y el cableado. Para un equipo potente conviene uno con espacio y "
+        "buena ventilacion; para una PC de oficina, uno compacto sobra. Lo que "
+        "nunca se adivina es la compatibilidad de tamanos: el formato de la placa "
+        "madre y el largo de la placa de video tienen que entrar, y eso lo dicen "
+        "las fichas de cada pieza. Si el cliente arma de cero, cruza los tamanos "
+        "antes de cerrar."),
+    "microfono": (
+        "Un microfono dedicado siempre suena mejor que el integrado de la "
+        "notebook o de los auriculares, y es la mejora que mas se nota para "
+        "llamadas, clases, grabar o transmitir. Los microfonos USB son la opcion "
+        "directa: se enchufan a la computadora y andan sin complicaciones, "
+        "ideales para arrancar. Los de conexion profesional necesitan una placa o "
+        "interfaz aparte, asi que no se los recomiendes a alguien que solo quiere "
+        "hablar por la compu sin equipo extra. Para transmitir o grabar voz, "
+        "prioriza uno pensado para voz cercana; para reuniones, uno que tome bien "
+        "de mas lejos. El brazo, la arana y el filtro ayudan, pero se suman segun "
+        "necesidad. Lo que dice la ficha manda; no asegures compatibilidad con "
+        "una consola si no figura."),
+    "router": (
+        "Un router ordena y extiende la red del hogar o la oficina: mejora la "
+        "cobertura, permite conectar mas equipos y reparte mejor el trafico. Ojo "
+        "con una confusion tipica del cliente: la velocidad maxima de internet la "
+        "pone el proveedor, no el router; el router aprovecha mejor lo que ya "
+        "tenes y llega a mas rincones, pero no multiplica el plan contratado. "
+        "Para una casa grande o con paredes conviene uno de mayor alcance o un "
+        "sistema de varios puntos; para un monoambiente, uno basico rinde. Si el "
+        "cliente se queja de zonas sin senal, ahi el router o un repetidor ayudan "
+        "de verdad. No prometas velocidades ni cantidad de dispositivos de "
+        "memoria: eso sale de la ficha y del servicio de internet del cliente."),
+    "impresora": (
+        "La impresora se elige por lo que el cliente imprime y como. Si imprime "
+        "poco y sobre todo texto, una opcion simple y economica alcanza; si "
+        "imprime mucho, conviene mirar el costo del repuesto de tinta o toner mas "
+        "que el precio del aparato, porque ahi esta el gasto real con el tiempo. "
+        "Las que tienen wifi imprimen desde el celular con la aplicacion del "
+        "fabricante, comodo para la casa; las de solo cable son para computadora. "
+        "Si necesita escanear o copiar, orientalo a una multifuncion. Para fotos, "
+        "una pensada para color; para la oficina, una que rinda en texto y sea "
+        "rapida. La compatibilidad con el celular o el sistema del cliente y el "
+        "rendimiento salen de la ficha; no los prometas de memoria."),
+    "cargador": (
+        "Un cargador o fuente de carga tiene que respetar dos cosas del equipo "
+        "del cliente: el tipo de conector y la potencia que pide. Un cargador de "
+        "menos potencia puede cargar lento o no alcanzar; uno con el conector "
+        "equivocado directamente no entra. Los cargadores modernos por USB tipo C "
+        "sirven para muchos equipos, pero no todos piden lo mismo, asi que ante "
+        "la duda se cruza con la ficha del dispositivo o se confirma con el "
+        "fabricante. Para notebook conviene el que corresponde a ese equipo o uno "
+        "universal que declare la compatibilidad; para celular y accesorios, uno "
+        "que de la carga que piden. Nunca asegures compatibilidad ni tiempos de "
+        "carga sin respaldo de la ficha."),
+    "procesador": (
+        "El procesador es el motor de la PC y se elige por el uso, no por el "
+        "nombre mas alto. Para oficina, navegar y estudiar, uno de gama de "
+        "entrada o media rinde de sobra; para juegos, edicion o trabajo pesado, "
+        "conviene subir de gama. Lo que jamas se adivina es la compatibilidad: el "
+        "procesador y la placa madre tienen que compartir el zocalo y que la "
+        "placa lo acepte, y a veces hace falta actualizar la placa. Si el cliente "
+        "ya tiene placa madre, se cruza contra su ficha antes de recomendar; si "
+        "arma de cero, se elige el procesador y la placa juntos. Mas nucleos "
+        "ayudan a tareas pesadas y en paralelo; para uso liviano no hacen falta. "
+        "El detalle exacto sale siempre de la ficha, no de memoria."),
+    "placa_video": (
+        "La placa de video es la pieza que mas pesa para jugar, editar o trabajar "
+        "con diseno y modelado; para oficina y uso diario, con el video integrado "
+        "del equipo suele alcanzar. Se elige por lo que el cliente quiere correr: "
+        "cuanto mas exigente el juego o el programa, mas placa. Pero no va sola: "
+        "necesita una fuente con potencia y los conectores que pide, lugar fisico "
+        "en el gabinete por su largo, y un procesador que la acompane para que no "
+        "la frene. Todo eso se cruza con las fichas antes de prometer. Para jugar "
+        "en alta resolucion conviene apuntar mas alto; para empezar o jugar "
+        "liviano, una de gama media rinde. Nunca asegures rendimiento en un juego "
+        "puntual sin respaldo; orienta por criterio y confirma con la ficha."),
+    "motherboard": (
+        "La placa madre es la base donde se conecta todo, asi que manda la "
+        "compatibilidad. Tiene que aceptar el zocalo del procesador y su chipset, "
+        "el tipo y la generacion de memoria que usa el cliente, y traer las "
+        "conexiones que necesita para disco, placa de video y puertos. El formato "
+        "de la placa define ademas que gabinete entra. Si el cliente ya tiene "
+        "procesador o memoria, se cruza todo contra las fichas antes de "
+        "recomendar, porque una placa linda que no acepta su procesador no sirve. "
+        "Para armar a futuro conviene una con lugar para crecer, mas ranuras y "
+        "puertos; para un equipo simple, una basica cumple. Nada de esto se "
+        "adivina: el zocalo, el chipset y la memoria compatible salen de la "
+        "ficha."),
+    "fuente": (
+        "La fuente de alimentacion es la pieza que menos se luce y mas problemas "
+        "evita: le da energia estable a todo el equipo. Se elige por la potencia "
+        "que suma el conjunto, sobre todo si hay una placa de video exigente, y "
+        "por los conectores que esas piezas piden. Conviene no ir al limite "
+        "justo: una fuente con algo de margen trabaja mas tranquila y dura mas. "
+        "La certificacion de eficiencia es una buena senal de calidad. Una fuente "
+        "floja o de marca dudosa es un riesgo para todo lo demas, asi que no es "
+        "lugar para arriesgar. Para un equipo de oficina alcanza una modesta; "
+        "para uno con placa dedicada, una con potencia y buenos conectores. La "
+        "potencia exacta que pide el equipo se cruza con las fichas, no se estima "
+        "de memoria."),
+    "cooler": (
+        "El cooler mantiene fresco al procesador para que rinda y dure. Los hay "
+        "de aire, con disipador y ventilador, y de refrigeracion liquida; el de "
+        "aire es simple y confiable, el liquido enfria mas y suele ser mas "
+        "silencioso en equipos exigentes. Lo primero que se mira no es cual "
+        "enfria mas, sino que corresponda al zocalo del procesador del cliente y "
+        "que entre en el gabinete por su altura o por el espacio del radiador. "
+        "Para un procesador de oficina, el que suele venir de fabrica alcanza; "
+        "para uno potente o para exigirlo, conviene uno dedicado. La "
+        "compatibilidad de zocalo y el tamano salen de las fichas; se cruzan "
+        "antes de recomendar, no se prometen de memoria."),
+    "webcam": (
+        "Una webcam mejora al toque las videollamadas, las clases y las "
+        "transmisiones frente a la camara integrada de la notebook, que suele ser "
+        "pobre. Se enchufa por USB y anda en cualquier computadora moderna sin "
+        "instalar casi nada. Para reuniones y estudio, una de buena definicion "
+        "alcanza; para transmitir o mostrar detalle, conviene una mas nitida y "
+        "que se porte bien con poca luz. El microfono que traen sirve para salir "
+        "del paso, pero si el cliente busca buena voz, mejor sumar un microfono "
+        "aparte. La compatibilidad con el sistema del cliente y la calidad real "
+        "salen de la ficha; orienta por uso y confirma ahi antes de asegurar."),
+    "gama_entrada_media_alta": (
+        "Casi todo lo que vendemos se ordena en gamas, y entenderlas ayuda a "
+        "elegir sin gastar de mas ni de menos. La gama de entrada cumple para lo "
+        "basico y es la compra inteligente cuando el uso es liviano. La gama "
+        "media es el punto justo para la mayoria: rinde bien, dura y no se paga "
+        "de mas. La gama alta se justifica cuando el uso es exigente o "
+        "profesional, o cuando el cliente quiere que le sobre para el futuro. El "
+        "criterio honesto no es venderle lo mas caro, es cruzar su uso real y lo "
+        "que tiene pensado gastar con la gama que le conviene, y explicarle por "
+        "que. Si duda, se le pregunta para que lo va a usar antes de recomendar. "
+        "Los precios y modelos concretos salen del catalogo, no de aca."),
+    "objecion_precio": (
+        "Cuando el cliente dice que algo le parece caro, no se discute el precio "
+        "ni se inventa un descuento: se ayuda a ver el valor y se ofrecen "
+        "alternativas reales. Primero se entiende el uso: muchas veces hay una "
+        "opcion de gama mas baja que le cumple perfecto y le entra en el "
+        "bolsillo, y mostrarla genera confianza. Otras veces el producto vale lo "
+        "que cuesta y conviene explicar por que, la durabilidad, la garantia "
+        "oficial, el rendimiento, para que la decision sea informada. Lo que "
+        "nunca se hace es prometer una rebaja, una promocion o un beneficio que "
+        "no exista: eso lo define la tienda y sale de la informacion oficial. La "
+        "honestidad vende mas que el apuro. Si hay una forma de pago que "
+        "conviene, se menciona solo la que este confirmada."),
+    "regalo": (
+        "Cuando la compra es un regalo, lo mejor es preguntar para quien y para "
+        "que lo va a usar, porque eso define todo. Si es para alguien que juega, "
+        "se apunta a perifericos o equipos de ese palo; si es para estudio o "
+        "trabajo, a algo comodo y confiable; si no se sabe el gusto fino, "
+        "conviene lo versatil y de marca conocida, que rara vez falla. Un "
+        "accesorio lindo y util suele ser mas seguro que adivinar un equipo "
+        "grande con requisitos puntuales. Ayuda orientar por gama segun lo que "
+        "quiera gastar, y recordar que hay opcion de envoltorio para regalo. Si "
+        "el cliente no esta seguro, se le hacen dos o tres preguntas simples y se "
+        "arma una recomendacion, en vez de tirar cualquier cosa."),
+    "asesoramiento_metodo": (
+        "La forma de asesorar que mejor funciona es simple: entender antes de "
+        "recomendar. Se le pregunta al cliente el uso principal, si tiene una "
+        "idea de cuanto quiere gastar, y si ya tiene algo que el producto tenga "
+        "que acompanar, por ejemplo la computadora donde va a ir una pieza. Con "
+        "eso se cruza su necesidad con lo que hay en catalogo y se le ofrecen "
+        "pocas opciones bien elegidas, no una lista larga que lo maree. Mejor dos "
+        "o tres candidatos con el porque de cada uno. Si algo depende de un dato "
+        "que no tenemos confirmado, se le dice honesto y se ofrece verificarlo "
+        "antes de la compra. Guiar con criterio y honestidad cierra mas ventas "
+        "que empujar el producto mas caro."),
 }
 
 
@@ -139,24 +340,42 @@ _ALIAS: dict[str, str] = {
     "dimm": "memoria_ram",
     "ssd": "ssd_almacenamiento", "disco": "ssd_almacenamiento",
     "almacenamiento": "ssd_almacenamiento", "nvme": "ssd_almacenamiento",
-    "pendrive": "ssd_almacenamiento",
-    "procesador": "componentes_pc", "micro": "componentes_pc",
-    "cpu": "componentes_pc", "mother": "componentes_pc",
-    "motherboard": "componentes_pc", "placa": "componentes_pc",
-    "gpu": "componentes_pc", "fuente": "componentes_pc",
-    "cooler": "componentes_pc", "gabinete": "componentes_pc",
-    "socket": "componentes_pc", "zocalo": "componentes_pc",
+    "solido": "ssd_almacenamiento",
+    "externo": "almacenamiento_externo", "backup": "almacenamiento_externo",
+    "respaldo": "almacenamiento_externo", "pendrive": "almacenamiento_externo",
+    "portable": "almacenamiento_externo", "portatil": "almacenamiento_externo",
+    "procesador": "procesador", "micro": "procesador", "cpu": "procesador",
+    "mother": "motherboard", "motherboard": "motherboard",
+    "chipset": "motherboard", "socket": "motherboard", "zocalo": "motherboard",
+    "madre": "motherboard",
+    "placa": "placa_video", "gpu": "placa_video", "grafica": "placa_video",
+    "video": "placa_video",
+    "fuente": "fuente",
+    "cooler": "cooler", "ventilador": "cooler", "refrigeracion": "cooler",
+    "disipador": "cooler",
+    "gabinete": "gabinete", "case": "gabinete", "torre": "gabinete",
+    "armar": "componentes_pc", "armado": "componentes_pc",
+    "combo": "componentes_pc", "piezas": "componentes_pc",
     "auricular": "auriculares", "auriculares": "auriculares",
     "headset": "auriculares", "vincha": "auriculares",
     "monitor": "monitor", "pantalla": "monitor",
-    "webcam": "perifericos_conexion", "camara": "perifericos_conexion",
-    "microfono": "streaming", "mic": "streaming",
-    "parlante": "perifericos_conexion", "parlantes": "perifericos_conexion",
-    "impresora": "perifericos_conexion", "router": "perifericos_conexion",
-    "wifi": "perifericos_conexion", "cargador": "perifericos_conexion",
+    "webcam": "webcam", "camara": "webcam",
+    "microfono": "microfono", "mic": "microfono",
+    "stream": "streaming", "streaming": "streaming", "transmitir": "streaming",
+    "parlante": "parlante", "parlantes": "parlante", "altavoz": "parlante",
+    "bafle": "parlante",
+    "impresora": "impresora", "imprimir": "impresora",
+    "multifuncion": "impresora", "toner": "impresora", "tinta": "impresora",
+    "router": "router", "wifi": "router", "repetidor": "router",
+    "cargador": "cargador", "adaptador": "cargador", "alimentador": "cargador",
     "silla": "sillas_gamer", "sillas": "sillas_gamer",
     "notebook": "notebook", "laptop": "notebook", "compu": "notebook",
     "tablet": "tablet",
+    "gama": "gama_entrada_media_alta", "presupuesto": "gama_entrada_media_alta",
+    "gastar": "gama_entrada_media_alta",
+    "caro": "objecion_precio", "costoso": "objecion_precio",
+    "regalo": "regalo", "regalar": "regalo", "obsequio": "regalo",
+    "asesoria": "asesoramiento_metodo", "recomendacion": "asesoramiento_metodo",
 }
 
 

@@ -28,20 +28,42 @@ def test_temas_cubren_familias_grandes_del_catalogo():
         assert tema in GUIA_VENTA, f"falta el tema {tema}"
 
 
+def test_corpus_cubre_las_22_familias_reales_del_catalogo():
+    # Cada categoria real del catalogo verifika_prod tiene criterio de venta,
+    # sea con tema propio o mapeada por alias a uno que la cubre.
+    familias = {
+        "notebook": "notebook", "memoria ram": "memoria_ram",
+        "almacenamiento externo": "almacenamiento_externo", "ssd": "ssd_almacenamiento",
+        "mouse": "mouse", "teclado": "teclado", "auriculares": "auriculares",
+        "silla gamer": "sillas_gamer", "parlante": "parlante", "gabinete": "gabinete",
+        "tablet": "tablet", "monitor": "monitor", "microfono": "microfono",
+        "router": "router", "impresora": "impresora", "cargador": "cargador",
+        "procesador": "procesador", "placa de video": "placa_video",
+        "motherboard": "motherboard", "fuente": "fuente", "cooler": "cooler",
+        "webcam": "webcam",
+    }
+    faltan = {f: t for f, t in familias.items() if t not in GUIA_VENTA}
+    assert faltan == {}, f"familias sin criterio propio: {faltan}"
+
+
 def test_match_por_alias_y_literal():
     esperado = {
         "ram": "memoria_ram",
         "ssd": "ssd_almacenamiento",
-        "disco": "ssd_almacenamiento",
-        "procesador": "componentes_pc",
-        "mother": "componentes_pc",
-        "fuente": "componentes_pc",
-        "router": "perifericos_conexion",
-        "impresora": "perifericos_conexion",
-        "webcam": "perifericos_conexion",
+        "pendrive": "almacenamiento_externo",
+        "procesador": "procesador",
+        "mother": "motherboard",
+        "fuente": "fuente",
+        "gabinete": "gabinete",
+        "cooler": "cooler",
+        "parlante": "parlante",
+        "router": "router",
+        "impresora": "impresora",
+        "webcam": "webcam",
+        "cargador": "cargador",
         "auricular": "auriculares",
         "silla": "sillas_gamer",
-        "microfono para stream": "streaming",
+        "microfono para stream": "microfono",
         "compatibilidad de placa de video": "compatibilidad",
         "sirve esta memoria para mi notebook": "memoria_ram",
         "mouse": "mouse",
