@@ -2,6 +2,45 @@
 
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
+El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
+
+**Última actualización: 14-jul-2026 (tarde) — RAG DE PROSA DE VENTA + MAPA DE
+CAPAS. Rama `claude/model-tools-sales-prose-px8xmn` (NO mergeada a main).
+ARRANCAR ACÁ; el chat nuevo debe trabajar sobre esa rama, no sobre un clon de
+main, o no ve nada de esto.**
+
+Hecho en esta tanda, todo en la rama de arriba:
+1. **Prosa de venta jurada COMPLETA** en `app/core/guia_venta_prosa.py`: de 16 a
+   33 temas de criterio, groundeada al catálogo real de 880 productos, CERO
+   números (invariante testeado), sin pisar la FAQ. Cubre las 22 familias del
+   catálogo más gama, objeción de precio, regalo y método de asesoramiento.
+2. **Recuperación tipo RAG:** `recuperar(consulta, k)` devuelve los mejores
+   chunks como {id, texto}; `texto_de(id)` resuelve un id a su texto o None;
+   `consultar_guia_venta` ahora devuelve `id`. Es la base de la CITA.
+3. **Mapa de las cuatro capas** en `ARQUITECTURA.md`.
+4. 485 tests offline verdes.
+
+**PENDIENTE INMEDIATO — los DOS LADRILLOS (próximo chat, en esta misma rama):**
+- **Ladrillo 1, la CITA en `solver_gemini.py`:** que el solver declare en el meta
+  los ids de los chunks de prosa que usó, por ejemplo `meta['prosa_citada'] =
+  [ids]`. El modelo ya llama `consultar_guia_venta`; hay que capturar los ids que
+  consultó y, si hace falta, pedirle salida estructurada con los ids que
+  sostienen la respuesta. Es el "Citador" de la Capa A del CLAUDE.md aplicado a
+  la prosa.
+- **Ladrillo 2, el VERIFICADOR de la cita**, archivo nuevo estilo
+  `app/core/verificador_cita.py`, en la línea de los otros verificadores:
+  chequear que cada id citado exista de verdad en el corpus con `texto_de(id)`, y
+  que en una respuesta de criterio no se cuele una afirmación blanda sin respaldo
+  del corpus; si la cita es falsa o vacía, marcar o degradar. Lockear con test.
+- **Aceptación:** 485 tests offline siguen verdes más los nuevos de cada
+  ladrillo; después probar en el banco vivo con el tier gratis (clave
+  `GEMINI_API_KEY` la GRATUITA, modelo `gemini-3.1-flash-lite`), midiendo que
+  cita bien y no alucina fuera del corpus.
+- Recién DESPUÉS de los dos ladrillos van las mejoras deterministas (regla de las
+  dos mitades: aflojar filtros de prosa donde dan falso positivo, dejar duros los
+  de dato).
+
+---
 
 **Última actualización: 14-jul-2026 — SOLVER GEMINI AL ENDPOINT NATIVO CON
 CACHEO DE CONTEXTO + PRODUCCIÓN A GEMINI 3.1 FLASH LITE. ARRANCAR ACÁ.**
