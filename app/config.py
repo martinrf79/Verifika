@@ -55,12 +55,11 @@ class Settings(BaseModel):
     # Usa el endpoint compatible con OpenAI de Google, asi entra con el mismo
     # cliente. Se activa con LLM_PROVIDER=gemini.
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-    # PRODUCCION CLAVADA a gemini-3-flash-preview (Martin, 13-jul): el alias
-    # gemini-flash-latest FLOTA (hoy resuelve a gemini-3.5-flash) y el dia que
-    # Google mueve el alias te cambia el modelo y el costo sin avisar. El
-    # camino vivo se probo con Gemini 3 Flash, asi que se pinea EXPLICITO. Se
-    # repinea a mano cuando salga la version GA estable; nunca con -latest.
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
+    # PRODUCCION CLAVADA a gemini-3.1-flash-lite (Martin, 14-jul): el mas barato
+    # y el que validamos con el cacheo de contexto (~46 USD/mes por 1000 msgs
+    # diarios). NUNCA el alias -latest, que FLOTA y te cambia modelo y costo sin
+    # avisar el dia que Google mueve el alias. Se repinea a mano si hace falta.
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
     GEMINI_BASE_URL: str = os.getenv(
         "GEMINI_BASE_URL",
         "https://generativelanguage.googleapis.com/v1beta/openai/")

@@ -260,7 +260,7 @@ def _run(raw_message, history, tienda_id, business_name, trace_id,
     """El loop de function calling nativo (sincrono; corre en un thread)."""
     system = _system_prompt(business_name)
     tools = _tools_nativas()
-    modelo = settings.GEMINI_MODEL or "gemini-3-flash-preview"
+    modelo = settings.GEMINI_MODEL or "gemini-3.1-flash-lite"
     base = _native_base()
     gen_cfg = {"maxOutputTokens": 1200, "temperature": 0.5,
                "thinkingConfig": {"thinkingBudget": 0}}
