@@ -14,12 +14,23 @@ consume todo el downstream (evidencia, verificadores, envio, presupuesto,
 carrito, cierre, memoria). Ante cualquier error devuelve (None, None) y el
 llamador usa el compositor.
 
-Detalle de Gemini 3: por el endpoint compat de OpenAI hay que reenviarle la
-thought_signature que genera en cada tool_call (viene en
-tool_call.extra_content.google); sin eso el 2do request tira 400.
+Endpoint NATIVO de Gemini (14-jul): el solver dejó el endpoint compat de OpenAI
+y usa la API nativa (generateContent) para poder CACHEAR el prefijo fijo. El
+system prompt + el schema de las 13 tools son ~2.580 tokens que viajaban en
+CADA vuelta del loop; ahora van a un cache explicito (cachedContents) que se
+cobra al 10%, y baja la factura ~a la mitad SIN cambiar un byte de lo que el
+modelo ve (respuesta idéntica, riesgo de calidad cero). El cache se crea una
+vez, dura por TTL y se refresca solo; si no se puede crear (tier sin cache), el
+solver sigue igual mandando system+tools inline, solo que más caro. El thinking
+va apagado por thinkingConfig.thinkingBudget=0 (el nativo no usa reasoning_effort).
 """
 import asyncio
+import hashlib
 import json
+import threading
+import time
+
+import httpx
 
 from app.config import get_settings
 from app.core import guia_venta_prosa
@@ -30,6 +41,7 @@ settings = get_settings()
 
 _MAX_ITERS = 7
 _TIMEOUT_TOTAL_S = 30
+_TOOL_RESULT_CAP = 4000  # chars del resultado de tool que se reenvia (como antes)
 
 
 def _system_prompt(business_name: str) -> str:
@@ -118,10 +130,83 @@ def _bloque_memoria(estado: dict) -> str:
             "todo numero igual sale de las tools):\n- " + "\n- ".join(partes))
 
 
-def _cliente():
-    from openai import OpenAI
-    return OpenAI(api_key=settings.GEMINI_API_KEY,
-                  base_url=settings.GEMINI_BASE_URL)
+def _native_base() -> str:
+    """El endpoint nativo. GEMINI_BASE_URL viene como .../v1beta/openai/ ; el
+    nativo es .../v1beta ."""
+    return settings.GEMINI_BASE_URL.replace("/openai/", "/").rstrip("/")
+
+
+def _limpiar_schema(s):
+    """Deja solo lo que Gemini acepta en parameters (subset de OpenAPI). El
+    schema OpenAI trae campos que el nativo rechaza."""
+    if not isinstance(s, dict):
+        return s
+    ok = {"type", "description", "enum", "properties", "items", "required",
+          "nullable"}
+    out = {}
+    for k, v in s.items():
+        if k not in ok:
+            continue
+        if k == "properties":
+            out[k] = {pk: _limpiar_schema(pv) for pk, pv in v.items()}
+        elif k == "items":
+            out[k] = _limpiar_schema(v)
+        else:
+            out[k] = v
+    return out
+
+
+def _tools_nativas():
+    """El menu de tools en formato nativo (function_declarations)."""
+    from app.core.tools import get_tools_schema
+    decls = []
+    for t in list(get_tools_schema()) + [guia_venta_prosa.tool_schema()]:
+        fn = t.get("function", t)
+        decls.append({"name": fn["name"],
+                      "description": fn.get("description", ""),
+                      "parameters": _limpiar_schema(fn.get("parameters", {}))})
+    return [{"function_declarations": decls}]
+
+
+_cache_lock = threading.Lock()
+_cache_state: dict = {}  # clave -> {"name": str, "expira": float}
+
+
+def _obtener_cache(client, modelo, system, tools):
+    """Crea o reusa el cache explicito de system+tools. Devuelve el name o None
+    (sin cache el solver sigue igual, mandando system+tools inline)."""
+    ttl = int(settings.GEMINI_CACHE_TTL_S or 1800)
+    clave = hashlib.sha1(
+        (modelo + "|" + system + "|" + json.dumps(tools)).encode()).hexdigest()
+    ahora = time.time()
+    with _cache_lock:
+        st = _cache_state.get(clave)
+        if st and st["expira"] > ahora + 30:
+            return st["name"]
+    try:
+        r = client.post(
+            f"{_native_base()}/cachedContents",
+            json={"model": f"models/{modelo}",
+                  "system_instruction": {"parts": [{"text": system}]},
+                  "tools": tools, "ttl": f"{ttl}s"})
+        r.raise_for_status()
+        name = r.json()["name"]
+    except Exception as e:
+        log.warning("solver_gemini_cache_error", error=str(e)[:200])
+        return None
+    with _cache_lock:
+        _cache_state[clave] = {"name": name, "expira": ahora + ttl}
+    return name
+
+
+def _cap_result(res):
+    """functionResponse exige un objeto JSON. Reenvia el resultado como string
+    JSON, con el mismo tope de 4000 chars que usaba el path compat."""
+    try:
+        crudo = json.dumps(res, default=str)
+    except Exception:
+        crudo = str(res)
+    return {"result": crudo[:_TOOL_RESULT_CAP]}
 
 
 def _ejecutar_tool(nombre, args, trace_id):
@@ -140,60 +225,93 @@ def _ejecutar_tool(nombre, args, trace_id):
         return {"error": str(e)[:150]}
 
 
+def _generar(client, base, modelo, contents, gen_cfg, cache_name, system, tools,
+             trace_id):
+    """Una llamada a generateContent. Usa el cache si esta; si el cache falla
+    (expiro/GC), invalida y reintenta inline con system+tools. Devuelve el JSON."""
+    body = {"contents": contents, "generationConfig": gen_cfg}
+    if cache_name:
+        body["cachedContent"] = cache_name
+    else:
+        body["system_instruction"] = {"parts": [{"text": system}]}
+        body["tools"] = tools
+    url = f"{base}/models/{modelo}:generateContent"
+    try:
+        r = client.post(url, json=body)
+        r.raise_for_status()
+        return r.json(), cache_name
+    except httpx.HTTPStatusError as e:
+        if not cache_name:
+            raise
+        log.warning("solver_gemini_cache_fallback", trace_id=trace_id,
+                    code=e.response.status_code)
+        with _cache_lock:
+            _cache_state.clear()
+        body.pop("cachedContent", None)
+        body["system_instruction"] = {"parts": [{"text": system}]}
+        body["tools"] = tools
+        r = client.post(url, json=body)
+        r.raise_for_status()
+        return r.json(), None
+
+
 def _run(raw_message, history, tienda_id, business_name, trace_id,
          estado=None):
-    """El loop de function calling (sincrono; corre en un thread)."""
-    from app.core.tools import get_tools_schema
-    schema = list(get_tools_schema()) + [guia_venta_prosa.tool_schema()]
-    c = _cliente()
+    """El loop de function calling nativo (sincrono; corre en un thread)."""
+    system = _system_prompt(business_name)
+    tools = _tools_nativas()
     modelo = settings.GEMINI_MODEL or "gemini-3-flash-preview"
+    base = _native_base()
+    gen_cfg = {"maxOutputTokens": 1200, "temperature": 0.5,
+               "thinkingConfig": {"thinkingBudget": 0}}
 
-    mensajes = [{"role": "system", "content": _system_prompt(business_name)}]
-    memoria = _bloque_memoria(estado or {})
-    if memoria:
-        mensajes.append({"role": "system", "content": memoria})
-    for h in (history or [])[-6:]:
-        if not isinstance(h, dict):
-            continue
-        rol = "assistant" if h.get("role") == "assistant" else "user"
-        cont = str(h.get("content") or "").strip()
-        if cont:
-            mensajes.append({"role": rol, "content": cont[:800]})
-    mensajes.append({"role": "user", "content": raw_message})
+    with httpx.Client(
+            timeout=_TIMEOUT_TOTAL_S,
+            headers={"x-goog-api-key": settings.GEMINI_API_KEY,
+                     "Content-Type": "application/json"}) as client:
+        cache_name = _obtener_cache(client, modelo, system, tools)
 
-    tools_called = []
-    for _ in range(_MAX_ITERS):
-        r = c.chat.completions.create(
-            model=modelo, messages=mensajes, tools=schema, tool_choice="auto",
-            temperature=0.5, max_tokens=1200,
-            extra_body={"reasoning_effort": "none"})
-        msg = r.choices[0].message
-        if not msg.tool_calls:
-            return (msg.content or "").strip(), tools_called
-        tcs = []
-        for tc in msg.tool_calls:
-            d = {"id": tc.id, "type": "function",
-                 "function": {"name": tc.function.name,
-                              "arguments": tc.function.arguments}}
-            extra = getattr(tc, "model_extra", None) or {}
-            if extra.get("extra_content"):
-                d["extra_content"] = extra["extra_content"]
-            tcs.append(d)
-        mensajes.append({"role": "assistant", "content": msg.content or "",
-                         "tool_calls": tcs})
-        for tc in msg.tool_calls:
-            nombre = tc.function.name
-            try:
-                args = json.loads(tc.function.arguments or "{}")
-            except json.JSONDecodeError:
-                args = {}
-            res = _ejecutar_tool(nombre, args, trace_id)
-            entrada = {"name": nombre, "args": args, "result": res}
-            if isinstance(res, dict) and res.get("proof"):
-                entrada["proof"] = res["proof"]
-            tools_called.append(entrada)
-            mensajes.append({"role": "tool", "tool_call_id": tc.id,
-                             "content": json.dumps(res, default=str)[:4000]})
+        # El system va en el cache; la MEMORIA de la charla es dinamica por turno,
+        # asi que entra como primer turno de contexto, no en el cache.
+        contents = []
+        memoria = _bloque_memoria(estado or {})
+        if memoria:
+            contents.append({"role": "user", "parts": [{"text": memoria}]})
+            contents.append({"role": "model",
+                             "parts": [{"text": "Entendido, lo tengo presente."}]})
+        for h in (history or [])[-6:]:
+            if not isinstance(h, dict):
+                continue
+            rol = "model" if h.get("role") == "assistant" else "user"
+            cont = str(h.get("content") or "").strip()
+            if cont:
+                contents.append({"role": rol, "parts": [{"text": cont[:800]}]})
+        contents.append({"role": "user", "parts": [{"text": raw_message}]})
+
+        tools_called = []
+        for _ in range(_MAX_ITERS):
+            data, cache_name = _generar(client, base, modelo, contents, gen_cfg,
+                                        cache_name, system, tools, trace_id)
+            cand = (data.get("candidates") or [{}])[0]
+            parts = (cand.get("content") or {}).get("parts") or []
+            fcalls = [p["functionCall"] for p in parts if "functionCall" in p]
+            if not fcalls:
+                texto = " ".join(p["text"] for p in parts
+                                 if isinstance(p.get("text"), str)).strip()
+                return texto, tools_called
+            contents.append(cand["content"])
+            resp_parts = []
+            for fc in fcalls:
+                nombre = fc.get("name", "")
+                args = fc.get("args") or {}
+                res = _ejecutar_tool(nombre, args, trace_id)
+                entrada = {"name": nombre, "args": args, "result": res}
+                if isinstance(res, dict) and res.get("proof"):
+                    entrada["proof"] = res["proof"]
+                tools_called.append(entrada)
+                resp_parts.append({"functionResponse":
+                                   {"name": nombre, "response": _cap_result(res)}})
+            contents.append({"role": "function", "parts": resp_parts})
     # Se acabaron las iteraciones sin respuesta final: no hay texto confiable.
     log.warning("solver_gemini_sin_texto", trace_id=trace_id)
     return "", tools_called

@@ -64,6 +64,11 @@ class Settings(BaseModel):
     GEMINI_BASE_URL: str = os.getenv(
         "GEMINI_BASE_URL",
         "https://generativelanguage.googleapis.com/v1beta/openai/")
+    # TTL del cache explicito de contexto (system + schema de tools) que usa el
+    # solver por el endpoint NATIVO. El prefijo fijo se cachea una vez y se cobra
+    # al 10% en cada vuelta del loop; baja la factura ~a la mitad sin cambiar lo
+    # que el modelo ve. Se refresca solo al expirar. Config operativa.
+    GEMINI_CACHE_TTL_S: int = int(os.getenv("GEMINI_CACHE_TTL_S", "1800"))
 
     # OpenAI nativo (servidores en EEUU, tool calling solido). Se activa con
     # LLM_PROVIDER=openai o INTERPRETER_PROVIDER=openai. Usa el mismo cliente
