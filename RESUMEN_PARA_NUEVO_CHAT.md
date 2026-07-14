@@ -2,6 +2,7 @@
 
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
+El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
 **Última actualización: 14-jul-2026 — SOLVER GEMINI AL ENDPOINT NATIVO CON
 CACHEO DE CONTEXTO + PRODUCCIÓN A GEMINI 3.1 FLASH LITE. ARRANCAR ACÁ.**
