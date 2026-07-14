@@ -3,7 +3,54 @@
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 
-**Última actualización: 13-jul-2026 — TANDA DE ROBUSTEZ (orden de Martín:
+**Última actualización: 14-jul-2026 — SOLVER GEMINI AL ENDPOINT NATIVO CON
+CACHEO DE CONTEXTO + PRODUCCIÓN A GEMINI 3.1 FLASH LITE. ARRANCAR ACÁ.**
+
+Sesión de costos (orden de Martín: bajar la factura sin sacrificar respuesta).
+Lo hecho, medido y validado:
+
+1. **Modelos clavados, se acabó el alias `-latest` que flota.** Producción en
+   `gemini-3.1-flash-lite` (config `GEMINI_MODEL`), el más barato; pruebas gratis
+   del banco también en Lite. NUNCA `gemini-flash-latest` (hoy resuelve a
+   3.5-flash y cambia costo sin avisar). Fallbacks de solver_gemini/generador_v2
+   alineados. Modelos de texto que existen hoy: `gemini-3-flash-preview`,
+   `gemini-3.1-flash-lite`, `gemini-3.5-flash`.
+
+2. **Solver migrado al endpoint NATIVO de Gemini (generateContent) con CACHE de
+   contexto explícito.** El system prompt + el schema de las 13 tools (~2.582
+   tokens) viajaban en CADA vuelta del loop; ahora van a un `cachedContents` que
+   se cobra al 10%. Medido punta a punta en tier PAGO: ahorro 25% en mensajes
+   pesados, 48-64% en simples, **~50% promedio**, SIN cambiar un byte de lo que
+   el modelo ve (respuesta idéntica, riesgo de calidad CERO). El cache se crea
+   una vez, TTL configurable (`GEMINI_CACHE_TTL_S`, default 1800s), se refresca
+   solo, y si no se puede crear (tier sin cache) cae a inline (más caro, nunca
+   rompe). httpx, sin dependencias nuevas. Contrato de `generar_respuesta`
+   intacto: ante error cae al compositor.
+
+3. **Costo medido (Lite, $0,25 in / $1,50 out por millón):** ~11.000 tokens por
+   mensaje promedio, 98% input. Sin cache ~$92/mes por 1.000 msgs diarios; CON
+   cache ~$46/mes. Un mensaje combinado pesado ~20.000 tokens; simple ~6.800.
+
+4. **El cacheo es SOLO de tier pago.** En free tier el explícito da `limit=0` y
+   el implícito reporta `cached=0`; el flujo igual cierra gratis para medir
+   tokens, pero el descuento requiere billing. La clave paga `GEMINI_API_KEY_PROD`
+   ya tiene saldo (Martín cargó 14-jul).
+
+5. **Validación:** 478 tests offline verde; batería completa de 37 guiones vivos
+   sobre Lite + solver nativo + cache + intérprete Gemini = **36/37 limpios en la
+   1ª pasada; el 34 (memoria_ancla_ruido) flakeó "narración interna" y dio limpio
+   3 de 3 al repetir = variación del LLM documentada, no regresión.**
+
+OJO DEPLOY: en Cloud Run la env `GEMINI_API_KEY` DEBE ser la clave PAGA y LIMPIA
+(sin el `OPENAI…` pegado que trae el entorno de la sesión; son dos secretos
+unidos por un espacio, tomar el primer token). Si quedara la free, el solver no
+se rompe pero NO ahorra. La 2ª palanca pendiente (ruteo/poda del schema, y
+recortar los resultados de búsqueda que se reenvían) NO se tocó: es la de riesgo,
+espera a validar el sistema, con el banco de árbitro.
+
+---
+
+**13-jul-2026 — TANDA DE ROBUSTEZ (orden de Martín:
 prueba-error hasta robusto). MEMORIA DEL SOLVER + 3 FLACOS CAZADOS EN BANCO
 ADVERSARIAL + GUÍA DE VENTA 16 TEMAS. ARRANCAR ACÁ.**
 
