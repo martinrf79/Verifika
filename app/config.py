@@ -208,11 +208,14 @@ class Settings(BaseModel):
     # 5 a 10 segundos, asi que el cap solo actua sobre cuelgues anormales.
     LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "45"))
 
-    # Provider del interpretador. OK de Martin (7-jul-2026): OpenAI gpt-4o-mini,
-    # para que el interprete corra con Structured Outputs (constrained generation
-    # dura: intencion, estado y producto_resuelto atados a enum). El Solver se
-    # cambia aparte con LLM_PROVIDER. Config, no camino apagado.
-    INTERPRETER_PROVIDER: str = os.getenv("INTERPRETER_PROVIDER", "openai").lower()
+    # Provider del interpretador. UNIFICADO en Gemini gratis (Martin, 15-jul-2026):
+    # el interprete corre en gemini-3.1-flash-lite igual que el Solver, con la
+    # clave GEMINI_API_KEY, para bajar la factura y no depender de OpenAI. Medido
+    # vivo: confianza 0.9-1.0, resuelve producto, destino y criterio, batería
+    # exigente con juez limpio. Pierde el enum a nivel token que daba OpenAI, pero
+    # el parseo validado y las redes lo cubren. Se vuelve a openai/otro seteando
+    # INTERPRETER_PROVIDER. Config, no camino apagado.
+    INTERPRETER_PROVIDER: str = os.getenv("INTERPRETER_PROVIDER", "gemini").lower()
 
     # NOTA: la tarifa de envio por PROVINCIA (ex flag TARIFA_PROVINCIA) ya es el
     # UNICO camino de cotizar_envio y de la calculadora: con la provincia o el CP
