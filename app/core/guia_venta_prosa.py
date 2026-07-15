@@ -415,6 +415,23 @@ GUIA_VENTA: dict[str, str] = {
         "naturalidad y se deja la puerta abierta para cuando quiera seguir. Un "
         "lead bien tratado vuelve; uno presionado se pierde. El objetivo es "
         "facilitar la proxima decision, no forzar la de ahora."),
+    "urgencia_honesta": (
+        "La urgencia se transmite con verdad, nunca inventando escasez ni una "
+        "oferta que no existe. Se apoya en lo real: conviene asegurarlo asi lo "
+        "tenes cuanto antes, mientras haya stock disponible te lo dejo listo hoy. "
+        "Se puede recordar el costo de esperar sin mentir: si lo pensas mucho "
+        "puede volar y despues capaz no esta. Prohibido decir ultima unidad, "
+        "oferta por hoy o va a subir, si no sale de la informacion oficial. La "
+        "urgencia honesta acompana la decision del cliente, no lo aprieta con un "
+        "cuento. La disponibilidad real siempre sale de la herramienta de stock."),
+    "despedida_cordial": (
+        "Cuando el cliente cierra sin comprar o dice que no quiere nada mas, se "
+        "despide con calidez y deja la puerta abierta, sin insistir ni hacerlo "
+        "sentir mal. Buenisimo, cualquier cosa que necesites aca estoy; gracias "
+        "por escribir, cuando quieras retomamos. No se lo presiona con un ultimo "
+        "empujon ni se lo interroga. Una despedida amable deja la mejor impresion "
+        "y hace que el cliente vuelva. Se agradece el tiempo y se ofrece ayuda a "
+        "futuro, con naturalidad."),
 }
 
 
@@ -476,6 +493,9 @@ _ALIAS: dict[str, str] = {
     "confianza": "prueba_social_confianza", "seguro": "prueba_social_confianza",
     "original": "prueba_social_confianza", "originales": "prueba_social_confianza",
     "lead": "lead_captura", "contacto": "lead_captura",
+    "urgencia": "urgencia_honesta", "apurar": "urgencia_honesta",
+    "despedida": "despedida_cordial", "chau": "despedida_cordial",
+    "gracias": "despedida_cordial",
 }
 
 
@@ -549,7 +569,8 @@ def tool_schema() -> dict:
                 "durabilidad, compatibilidad general) y MOVIDAS de venta "
                 "(saludo_apertura, continuacion_presupuesto, consulta_algo_mas, "
                 "preguntas_puente, preguntas_confirmacion, cierre_venta, "
-                "seguimiento, prueba_social_confianza, lead_captura). Usala para "
+                "seguimiento, prueba_social_confianza, lead_captura, "
+                "urgencia_honesta, despedida_cordial). Usala para "
                 "OPINAR, comparar, decir si un producto sirve para un uso, y para "
                 "SABER COMO conducir la venta (abrir, confirmar, cerrar, seguir). "
                 "No trae numeros; el dato duro sale de las otras tools. Temas: "
