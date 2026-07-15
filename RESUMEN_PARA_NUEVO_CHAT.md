@@ -4,10 +4,57 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
-**Última actualización: 15-jul-2026 — LOS DOS LADRILLOS DEL RAG DE PROSA,
-HECHOS Y LOCKEADOS. Rama `claude/engineering-bricks-determinism-h2ev1h`
-(sobre la de prosa `claude/model-tools-sales-prose-px8xmn`, NO sobre main;
-main todavía no tiene el RAG). ARRANCAR ACÁ.**
+**Última actualización: 15-jul-2026 (tarde) — PRUEBAS VIVAS DE LOS DOS
+LADRILLOS EN TIER GRATUITO + PLAN DE ATADURA. El CÓDIGO de los ladrillos y del
+RAG vive en las ramas `claude/engineering-bricks-determinism-h2ev1h` (sobre
+`claude/model-tools-sales-prose-px8xmn`); a main van SOLO los DOCS para que el
+chat nuevo vea el estado. ARRANCAR sobre esa rama para tocar código.**
+
+Estos docs se suben a main a propósito: `deploy.yml` ignora `**.md` y `tests/**`,
+así que NO disparan deploy, y el chat nuevo los ve al clonar main sin depender de
+una rama. El código de los ladrillos NO va a main todavía (se mergea con el OK de
+Martín, ahí sí deploya el CI); el test nuevo tampoco va solo, necesita su código.
+
+PRUEBAS VIVAS (gemini-3.1-flash-lite, clave GRATUITA `GEMINI_API_KEY`, NO la PROD):
+- **Prosa pura, 6 preguntas de criterio:** llamó `consultar_guia_venta` y citó
+  bloque válido 6/6, tema exacto 6/6. La prosa salió textual del corpus.
+- **Difíciles bajo presión** (B1 indecisión, B2 cambio, B4 descuento, B5 objeción,
+  B9 precio falso, B14 mayorista, B15 presupuesto, B25 compatibilidad): NUNCA
+  inventó dato. Con catálogo real, al precio falso trajo el real ($8.500) y lo
+  rechazó; a compatibilidad con PS5 pidió el modelo para ver la ficha; a
+  descuento/mayorista difirió a política sin inventar rebaja. Ruteo correcto:
+  criterio→prosa, dato→tools de dato.
+- **Memoria multi-turno:** en 2 charlas retomó el producto anotado y el caso de
+  uso sin re-preguntar. La memoria inyectada por `_bloque_memoria` funciona.
+- **Detalle para el plan:** el modelo tanteó una vez una tool inexistente
+  (`consultar_guia_tema`) y se autocorrigió. Achicar/validar el menú de tools.
+
+**MATIZ ESTRUCTURAL CLAVE (define cómo se configuran los filtros):** la prosa
+NO se llama el 100% de las veces en TODO tipo de pregunta. Es ~100% en criterio
+PURO; en preguntas de DATO el modelo va a la tool de dato, no a la prosa (correcto).
+O sea la atadura de la prosa HOY es BLANDA y ELECTIVA del modelo, no forzada por
+construcción. Para 100% garantizado en criterio habría que FORZAR la tool o GATEAR
+la cita.
+
+**PLAN DE ATADURA (research de bots profesionales + pruebas). Dos mitades atadas
+distinto, para sostener 50% vender / 50% no alucinar:**
+1. **Mitad DATO — atadura DURA por construcción** (typed answer contract): el
+   modelo emite REFERENCIAS (id de producto, cálculo, FAQ, envío), el código
+   estampa el valor; la cita del dato pasa a GATE. No puede inventar un número.
+2. **Mitad VENTA — atadura BLANDA con fuente:** cita el bloque jurado (se
+   verifica que exista), pero redacta libre; NO se aprieta, apretar mata la
+   venta. Se ENRIQUECE el corpus con prosa de venta/seguimiento/objeción/cierre/
+   cross-sell/lead (criterio, cero números).
+3. **Verificadores que corrigen SOLO cuando hace falta:** una pasada con
+   prioridad, dato manda; los filtros de prosa se APAGAN si hay cita válida
+   (aflojar el falso positivo); achicar y validar el menú de tools.
+Orden sugerido: (1) enriquecer corpus de venta, cero riesgo; (2) aflojar filtros
+de prosa con cita + ordenar el pisado; (3) atadura dura del dato + gate + menú chico.
+
+---
+
+**15-jul-2026 — LOS DOS LADRILLOS DEL RAG DE PROSA, HECHOS Y LOCKEADOS
+(código en la rama `claude/engineering-bricks-determinism-h2ev1h`).**
 
 Hecho en esta tanda (los dos ladrillos que faltaban, ahora vivos):
 1. **Ladrillo 1 — el CITADOR** (`solver_gemini._prosa_citada`): cuando el solver
