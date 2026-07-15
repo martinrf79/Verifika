@@ -1398,12 +1398,24 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                     # calculado en turnos anteriores no llama tools pero sus cifras
                     # son legitimas: la evidencia esta en proofs/productos de
                     # memoria, asi que queda en shadow y la respuesta sale.
-                    from app.core.verificador import decidir_accion_no_respaldado
+                    from app.core.verificador import (
+                        decidir_accion_no_respaldado, es_presupuesto_inventado)
                     hay_tools = bool(meta.get("tools_called"))
                     hay_memoria = bool(proofs_memoria) or bool(prods_vistos)
-                    accion = decidir_accion_no_respaldado(
-                        verificacion_ok=False, hay_tools=hay_tools,
-                        hay_memoria=hay_memoria)
+                    _no_resp = fix["verificacion"]["numeros_no_respaldados"]
+                    # HUECO CERRADO (real 15-jul): la memoria legitima YA entra a
+                    # la evidencia de arriba (proofs + productos vistos), asi que
+                    # una cifra que igual quedo sin respaldo NO salio de la
+                    # memoria: es invento. Si forma un PRESUPUESTO (varias cifras
+                    # o estructura con total), se bloquea, no se deja pasar en
+                    # shadow como antes (un presupuesto inventado se colaba solo
+                    # porque existia memoria de turnos previos).
+                    if es_presupuesto_inventado(_no_resp, respuesta):
+                        accion = "bloquear"
+                    else:
+                        accion = decidir_accion_no_respaldado(
+                            verificacion_ok=False, hay_tools=hay_tools,
+                            hay_memoria=hay_memoria)
                     if accion == "bloquear":
                         log.warning("interprete_libre_numero_bloqueado",
                                     trace_id=trace_id,

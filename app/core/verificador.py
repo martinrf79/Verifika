@@ -680,6 +680,34 @@ def decidir_accion_no_respaldado(verificacion_ok: bool,
     return "shadow"
 
 
+# Contexto de PRESUPUESTO en el texto: la palabra presupuesto, o un total/subtotal
+# pegado a una cifra. Igual que en interprete_libre, aca para el bloqueo.
+_RE_CTX_PRESUPUESTO = re.compile(
+    r"\bpresupuesto\b|\b(sub)?total\b[^\n]{0,20}\$|\$[^\n]{0,15}\btotal\b",
+    re.IGNORECASE)
+
+
+def es_presupuesto_inventado(numeros_no_respaldados, respuesta: str) -> bool:
+    """True si las cifras de plata SIN respaldo forman un PRESUPUESTO inventado:
+    varias cifras sin respaldo, o una estructura de presupuesto (detalle + total)
+    con al menos una cifra sin respaldo.
+
+    Cierra el hueco del shadow (caso real WhatsApp 15-jul): un presupuesto que el
+    modelo arma de cabeza se colaba porque EXISTIA memoria de turnos previos,
+    aunque esos numeros nuevos no salieran de ninguna herramienta. La memoria
+    LEGITIMA ya respalda el numero en la evidencia (proofs + productos vistos
+    entran al verificador); si en un contexto de presupuesto quedan cifras sin
+    respaldo, son un invento nuevo y NO deben llegar al cliente. Una sola cifra
+    suelta fuera de contexto de presupuesto no dispara: sigue el shadow, para no
+    matar un repaso viejo legitimo."""
+    n = len(numeros_no_respaldados or [])
+    if n == 0:
+        return False
+    if n >= 2:
+        return True
+    return bool(_RE_CTX_PRESUPUESTO.search(respuesta or ""))
+
+
 def verificar_respuesta(respuesta: str,
                         evidence: list[dict],
                         trace_id: Optional[str] = None) -> dict:
