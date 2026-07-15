@@ -199,6 +199,26 @@ def _obtener_cache(client, modelo, system, tools):
     return name
 
 
+def _prosa_citada(tools_called):
+    """La CITA: los ids de los chunks de la guia de venta que el solver
+    consulto en el turno. Cada llamada a consultar_guia_venta devuelve el id
+    del bloque de criterio usado; esos ids son el 'Citador' de la Capa A
+    aplicado a la prosa. Quedan declarados en el meta para que el verificador
+    de cita chequee que cada uno existe de verdad en el corpus jurado. Sin
+    duplicados, en orden de consulta."""
+    ids, vistos = [], set()
+    for tc in tools_called or []:
+        if not isinstance(tc, dict) or tc.get("name") != "consultar_guia_venta":
+            continue
+        res = tc.get("result")
+        cid = res.get("id") if isinstance(res, dict) else None
+        cid = str(cid).strip() if cid else ""
+        if cid and cid not in vistos:
+            vistos.add(cid)
+            ids.append(cid)
+    return ids
+
+
 def _cap_result(res):
     """functionResponse exige un objeto JSON. Reenvia el resultado como string
     JSON, con el mismo tope de 4000 chars que usaba el path compat."""
@@ -339,6 +359,8 @@ async def generar_respuesta(raw_message, interp, estado, tienda_id, trace_id,
         return None, None
     if not texto:
         return None, None
+    prosa_citada = _prosa_citada(tools_called)
     log.info("solver_gemini_ok", trace_id=trace_id, tools=len(tools_called),
-             preview=texto[:160])
-    return texto, {"tools_called": tools_called, "secciones": []}
+             prosa_citada=prosa_citada, preview=texto[:160])
+    return texto, {"tools_called": tools_called, "secciones": [],
+                   "prosa_citada": prosa_citada}

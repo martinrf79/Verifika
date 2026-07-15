@@ -4,41 +4,42 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
-**Última actualización: 14-jul-2026 (tarde) — RAG DE PROSA DE VENTA + MAPA DE
-CAPAS. Rama `claude/model-tools-sales-prose-px8xmn` (NO mergeada a main).
-ARRANCAR ACÁ; el chat nuevo debe trabajar sobre esa rama, no sobre un clon de
-main, o no ve nada de esto.**
+**Última actualización: 15-jul-2026 — LOS DOS LADRILLOS DEL RAG DE PROSA,
+HECHOS Y LOCKEADOS. Rama `claude/engineering-bricks-determinism-h2ev1h`
+(sobre la de prosa `claude/model-tools-sales-prose-px8xmn`, NO sobre main;
+main todavía no tiene el RAG). ARRANCAR ACÁ.**
 
-Hecho en esta tanda, todo en la rama de arriba:
-1. **Prosa de venta jurada COMPLETA** en `app/core/guia_venta_prosa.py`: de 16 a
-   33 temas de criterio, groundeada al catálogo real de 880 productos, CERO
-   números (invariante testeado), sin pisar la FAQ. Cubre las 22 familias del
-   catálogo más gama, objeción de precio, regalo y método de asesoramiento.
-2. **Recuperación tipo RAG:** `recuperar(consulta, k)` devuelve los mejores
-   chunks como {id, texto}; `texto_de(id)` resuelve un id a su texto o None;
-   `consultar_guia_venta` ahora devuelve `id`. Es la base de la CITA.
-3. **Mapa de las cuatro capas** en `ARQUITECTURA.md`.
-4. 485 tests offline verdes.
+Hecho en esta tanda (los dos ladrillos que faltaban, ahora vivos):
+1. **Ladrillo 1 — el CITADOR** (`solver_gemini._prosa_citada`): cuando el solver
+   consulta la guía con `consultar_guia_venta`, el resultado trae el `id` del
+   chunk; el solver los junta y los declara en `meta['prosa_citada'] = [ids]`,
+   sin duplicados y en orden. Es determinista, sin llamada extra al modelo: los
+   ids ya vienen en el resultado de la tool. Es el "Citador" de la Capa A del
+   CLAUDE.md aplicado a la prosa. Se loguea en `solver_gemini_ok`.
+2. **Ladrillo 2 — el VERIFICADOR de cita** (`app/core/verificador_cita.py`,
+   nuevo): `verificar_cita(ids)` resuelve cada id con `texto_de(id)` y devuelve
+   `{ok, validas, invalidas, total}`; `citas_de_meta(meta)` extrae la cita
+   (prefiere `prosa_citada`, si no la deriva de tools_called); `verificar_meta`
+   hace las dos en un paso. Cableado VIVO en `interprete_libre`: cuando el solver
+   condujo (`_via_solver`), corre como red después de componer y loguea
+   `interprete_libre_cita_prosa` (warning si algún id no resuelve). Determinista,
+   no reescribe: la prosa buena sale igual; en el camino sano los ids salen del
+   propio corpus y siempre validan. Es el candado + la sonda.
+3. **Tests:** `tests/test_verificador_cita.py` lockea los dos ladrillos (Citador,
+   Verificador y la integración meta→verificación), 11 casos. **496 tests
+   offline verdes** (485 base + 11 nuevos, cero regresiones).
 
-**PENDIENTE INMEDIATO — los DOS LADRILLOS (próximo chat, en esta misma rama):**
-- **Ladrillo 1, la CITA en `solver_gemini.py`:** que el solver declare en el meta
-  los ids de los chunks de prosa que usó, por ejemplo `meta['prosa_citada'] =
-  [ids]`. El modelo ya llama `consultar_guia_venta`; hay que capturar los ids que
-  consultó y, si hace falta, pedirle salida estructurada con los ids que
-  sostienen la respuesta. Es el "Citador" de la Capa A del CLAUDE.md aplicado a
-  la prosa.
-- **Ladrillo 2, el VERIFICADOR de la cita**, archivo nuevo estilo
-  `app/core/verificador_cita.py`, en la línea de los otros verificadores:
-  chequear que cada id citado exista de verdad en el corpus con `texto_de(id)`, y
-  que en una respuesta de criterio no se cuele una afirmación blanda sin respaldo
-  del corpus; si la cita es falsa o vacía, marcar o degradar. Lockear con test.
-- **Aceptación:** 485 tests offline siguen verdes más los nuevos de cada
-  ladrillo; después probar en el banco vivo con el tier gratis (clave
-  `GEMINI_API_KEY` la GRATUITA, modelo `gemini-3.1-flash-lite`), midiendo que
-  cita bien y no alucina fuera del corpus.
-- Recién DESPUÉS de los dos ladrillos van las mejoras deterministas (regla de las
-  dos mitades: aflojar filtros de prosa donde dan falso positivo, dejar duros los
-  de dato).
+**PENDIENTE INMEDIATO al retomar:**
+- Probar en el banco VIVO con el tier gratis (clave `GEMINI_API_KEY` la
+  GRATUITA, modelo `gemini-3.1-flash-lite`): confirmar que el solver cita bien
+  (aparece `meta['prosa_citada']` con ids reales en preguntas de criterio) y no
+  alucina fuera del corpus. Los tests offline no ejercitan la llamada real a
+  Gemini (sin clave caen al compositor); la cita real se mide vivo.
+- Merge a main con OK de Martín (arrastra el RAG de prosa + los dos ladrillos;
+  el CI gateado deploya).
+- **Recién DESPUÉS van las mejoras deterministas** (lo próximo que pidió Martín):
+  regla de las dos mitades, aflojar los filtros de PROSA donde dan falso positivo
+  (ahora que la cita ata la prosa a la fuente), dejar duros los de DATO.
 
 ---
 

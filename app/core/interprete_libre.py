@@ -1522,6 +1522,25 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         except Exception as e:
             log.warning("interprete_libre_faq_numerica_error",
                         trace_id=trace_id, error=str(e)[:160])
+    # ── VERIFICADOR DE CITA DE PROSA (ladrillo 2 del RAG) ───────────────────
+    # Cuando el solver condujo apoyandose en la guia de venta, chequea que cada
+    # bloque de criterio que declaro (meta['prosa_citada']) exista de verdad en
+    # el corpus jurado. Asi la prosa de venta queda ATADA a la fuente igual que
+    # el numero: si un id citado no resuelve, se loguea (candado + sonda).
+    # Deterministico, sin llamar al modelo; no reescribe, la prosa buena sale
+    # igual. En el camino sano los ids salen del propio corpus y siempre validan.
+    if _via_solver:
+        try:
+            from app.core.verificador_cita import verificar_meta
+            _vc = verificar_meta(meta)
+            if _vc["citas"]:
+                (log.warning if not _vc["ok"] else log.info)(
+                    "interprete_libre_cita_prosa", trace_id=trace_id,
+                    validas=_vc["validas"], invalidas=_vc["invalidas"])
+        except Exception as e:
+            log.warning("interprete_libre_cita_error", trace_id=trace_id,
+                        error=str(e)[:160])
+
     proofs_recientes = (proofs_memoria + proofs_turno)[-settings.VERIFICADOR_PROOF_MEMORY:]
 
     # ── PASO 2a-bis: GUARDIA DE PROMESAS PROHIBIDAS (enforce) ───────────────
