@@ -4,6 +4,43 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**Última actualización: 15-jul-2026 (noche, HOTFIX) — DIAGNÓSTICO DE LOGS
+REALES DE WHATSAPP + FIX DEL PRESUPUESTO EN PROSA.**
+
+Charla real de Martín (16:5x): pidió 2 mouse + 2 teclados + 2 auriculares,
+"marcas que no sean chinas", y el bot le mostró un presupuesto con un PRECIO MAL,
+teclado a $37.500 cuando eran $110.000 (2x$55.000). Causas encadenadas leídas de
+los logs (`agente-bot`, severity>=WARNING):
+1. **CAUSA RAÍZ del precio mal:** el solver escribía el presupuesto con los
+   NÚMEROS en prosa (evento `presupuesto_sin_marcador`), y el verificador de
+   plata, al anclar cada renglón, PISÓ un precio correcto ($110.000 del teclado)
+   con el de otro producto ($37.500 del mouse) → `monto_corregido` con la
+   corrección equivocada. Es el "filtro que pisa" que veníamos hablando, ahora
+   visible en real.
+2. **`guia_pedido_no_reconcilia`:** cuando el solver recomienda productos por
+   nombre desde su cabeza (las "marcas no chinas") en vez de search, el pedido no
+   reconcilia a ids del catálogo, no se toma el camino SELLADO, y compone el
+   solver → cae en la causa 1.
+3. **`calculate_total id_no_certificado`:** el solver inventó ids tipo
+   `logitech-g203-negro` en vez del id real (MOU0001); calculate_total los
+   rechazó, reintentó.
+
+FIX aplicado y validado (rama de trabajo, va a deploy):
+- **`solver_gemini._system_prompt`:** el solver ahora, para un presupuesto/total,
+  emite SOLO el marcador `[[PRESUPUESTO]]` en su línea, NO los números; el código
+  estampa el detalle real de calculate_total (`_presupuesto_de_meta`). Sin
+  números de prosa, el verificador de plata no tiene qué pisar. Y regla dura
+  contra inventar ids ("nunca armes un id desde el nombre, buscá el real").
+- Verificado en vivo (solver directo, sim, catálogo real): el solver emite
+  `[[PRESUPUESTO]]` con ids reales; el código estampa. 500 tests offline verdes.
+- **PENDIENTE (el plan de filtros, ya con caso real):** el verificador de plata
+  se pisa en presupuestos multi-renglón de prosa; hay que ordenar la pasada para
+  que un número YA respaldado por proof no lo re-corrija otro filtro. Y la
+  reconciliación del pedido cuando el producto viene de la prosa del solver, no
+  de search. Eso es la etapa de herramientas deterministas de salida.
+
+---
+
 **Última actualización: 15-jul-2026 (tarde) — PRUEBAS VIVAS DE LOS DOS
 LADRILLOS EN TIER GRATUITO + PLAN DE ATADURA. El CÓDIGO de los ladrillos y del
 RAG vive en las ramas `claude/engineering-bricks-determinism-h2ev1h` (sobre
