@@ -11,7 +11,7 @@ fuente igual que el numero: en el camino sano los ids salen del propio corpus y
 siempre validan; una cita invalida se marca, no rompe el turno.
 """
 from app.core import guia_venta_prosa
-from app.core.solver_gemini import _prosa_citada
+from app.core.solver_gemini import _prosa_citada, es_turno_criterio
 from app.core.verificador_cita import (
     citas_de_meta, verificar_cita, verificar_meta)
 
@@ -101,3 +101,30 @@ def test_verificar_meta_extremo_a_extremo():
     meta = {"tools_called": tools, "prosa_citada": _prosa_citada(tools)}
     r = verificar_meta(meta)
     assert r["ok"] and r["citas"] == [_ID1] and r["validas"] == [_ID1]
+
+
+# ── Atadura dura: deteccion del turno de criterio (fuerza la tool de prosa) ──
+
+def test_criterio_exploracion_siempre_fuerza():
+    assert es_turno_criterio({"intencion": "exploracion"}, "no se cual llevar")
+
+
+def test_criterio_pregunta_especifica_con_palabra_de_criterio():
+    assert es_turno_criterio(
+        {"intencion": "pregunta_especifica"}, "cual me conviene para jugar?")
+    assert es_turno_criterio(
+        {"intencion": "pregunta_especifica"}, "este teclado sirve para la oficina?")
+
+
+def test_pregunta_especifica_de_dato_puro_no_fuerza():
+    # Precio/stock sin palabra de criterio: NO se fuerza la prosa (turno de dato).
+    assert not es_turno_criterio(
+        {"intencion": "pregunta_especifica"}, "cuanto sale el DX-110?")
+    assert not es_turno_criterio(
+        {"intencion": "pregunta_especifica"}, "tenes stock del negro?")
+
+
+def test_saludo_y_otra_no_fuerzan():
+    assert not es_turno_criterio({"intencion": "saludo"}, "hola")
+    assert not es_turno_criterio({"intencion": "decision_compra"}, "dale, lo compro")
+    assert not es_turno_criterio(None, "cualquier cosa")

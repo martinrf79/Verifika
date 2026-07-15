@@ -1537,6 +1537,13 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 (log.warning if not _vc["ok"] else log.info)(
                     "interprete_libre_cita_prosa", trace_id=trace_id,
                     validas=_vc["validas"], invalidas=_vc["invalidas"])
+            elif meta.get("turno_criterio"):
+                # ATADURA DURA (gate blando): turno de criterio que, pese al
+                # forzado de la tool, quedo SIN prosa consultada. No se degrada
+                # (filtro blando, no matar la venta), pero se marca fuerte: es la
+                # mina para ver si el forzado falla y decidir endurecerlo.
+                log.warning("interprete_libre_cita_criterio_sin_respaldo",
+                            trace_id=trace_id, respuesta_preview=(respuesta or "")[:160])
         except Exception as e:
             log.warning("interprete_libre_cita_error", trace_id=trace_id,
                         error=str(e)[:160])

@@ -27,6 +27,7 @@ va apagado por thinkingConfig.thinkingBudget=0 (el nativo no usa reasoning_effor
 import asyncio
 import hashlib
 import json
+import re
 import threading
 import time
 
@@ -42,6 +43,32 @@ settings = get_settings()
 _MAX_ITERS = 7
 _TIMEOUT_TOTAL_S = 30
 _TOOL_RESULT_CAP = 4000  # chars del resultado de tool que se reenvia (como antes)
+
+# ATADURA DURA de la prosa (15-jul): en un turno de CRITERIO (opinar, comparar,
+# recomendar, decir si algo sirve para un uso) el solver DEBE consultar la guia
+# de venta antes de responder. Se detecta por la intencion del interprete mas
+# palabras de criterio; forzar es de bajo riesgo, si se cuela en un turno de
+# dato el modelo igual consulta despues la tool de dato, solo suma una consulta.
+_CRITERIO_KW = re.compile(
+    r"\b(recomend|aconsej|convien|conviene|sirve|me sirve|mejor|cual me|cuales me|"
+    r"comparar|compara|compará|diferencia|opina|opinas|opinás|vale la pena|"
+    r"para jugar|para trabajar|para la oficina|para oficina|para estudiar|"
+    r"para diseno|para diseño|compatib|anda con|funciona con|elijo|elegir|"
+    r"que llevo|cual llevo|cual me llevo|cual conviene)\b", re.I)
+
+
+def es_turno_criterio(interp, raw_message: str) -> bool:
+    """True si el turno es de CRITERIO y la prosa debe consultarse si o si.
+    exploracion (no se cual llevar, vengo a que me asesores) es criterio claro;
+    pregunta_especifica es mixta (precio/stock vs 'me sirve para X'), asi que ahi
+    se exige ademas una palabra de criterio para no forzar en un turno de dato
+    puro."""
+    intent = (interp or {}).get("intencion") if isinstance(interp, dict) else None
+    if intent == "exploracion":
+        return True
+    if intent == "pregunta_especifica" and _CRITERIO_KW.search(raw_message or ""):
+        return True
+    return False
 
 
 def _system_prompt(business_name: str) -> str:
@@ -246,10 +273,13 @@ def _ejecutar_tool(nombre, args, trace_id):
 
 
 def _generar(client, base, modelo, contents, gen_cfg, cache_name, system, tools,
-             trace_id):
+             trace_id, tool_config=None):
     """Una llamada a generateContent. Usa el cache si esta; si el cache falla
-    (expiro/GC), invalida y reintenta inline con system+tools. Devuelve el JSON."""
+    (expiro/GC), invalida y reintenta inline con system+tools. Devuelve el JSON.
+    tool_config fuerza que herramienta puede llamar (atadura dura de la prosa)."""
     body = {"contents": contents, "generationConfig": gen_cfg}
+    if tool_config:
+        body["toolConfig"] = tool_config
     if cache_name:
         body["cachedContent"] = cache_name
     else:
@@ -276,8 +306,11 @@ def _generar(client, base, modelo, contents, gen_cfg, cache_name, system, tools,
 
 
 def _run(raw_message, history, tienda_id, business_name, trace_id,
-         estado=None):
-    """El loop de function calling nativo (sincrono; corre en un thread)."""
+         estado=None, forzar_prosa=False):
+    """El loop de function calling nativo (sincrono; corre en un thread).
+    forzar_prosa: atadura dura, obliga a consultar_guia_venta en la 1a vuelta
+    del turno de criterio (mode ANY), y despues suelta a AUTO para que el modelo
+    llame las tools de dato y redacte."""
     system = _system_prompt(business_name)
     tools = _tools_nativas()
     modelo = settings.GEMINI_MODEL or "gemini-3.1-flash-lite"
@@ -309,9 +342,19 @@ def _run(raw_message, history, tienda_id, business_name, trace_id,
         contents.append({"role": "user", "parts": [{"text": raw_message}]})
 
         tools_called = []
+        prosa_llamada = False
         for _ in range(_MAX_ITERS):
+            # Atadura dura: mientras el turno sea de criterio y aun no se consulto
+            # la prosa, se FUERZA consultar_guia_venta (mode ANY, solo esa fn).
+            # Una vez consultada, se suelta a AUTO para el dato y la redaccion.
+            tool_config = None
+            if forzar_prosa and not prosa_llamada:
+                tool_config = {"functionCallingConfig": {
+                    "mode": "ANY",
+                    "allowedFunctionNames": ["consultar_guia_venta"]}}
             data, cache_name = _generar(client, base, modelo, contents, gen_cfg,
-                                        cache_name, system, tools, trace_id)
+                                        cache_name, system, tools, trace_id,
+                                        tool_config=tool_config)
             cand = (data.get("candidates") or [{}])[0]
             parts = (cand.get("content") or {}).get("parts") or []
             fcalls = [p["functionCall"] for p in parts if "functionCall" in p]
@@ -323,6 +366,8 @@ def _run(raw_message, history, tienda_id, business_name, trace_id,
             resp_parts = []
             for fc in fcalls:
                 nombre = fc.get("name", "")
+                if nombre == "consultar_guia_venta":
+                    prosa_llamada = True
                 args = fc.get("args") or {}
                 res = _ejecutar_tool(nombre, args, trace_id)
                 entrada = {"name": nombre, "args": args, "result": res}
@@ -348,11 +393,13 @@ async def generar_respuesta(raw_message, interp, estado, tienda_id, trace_id,
     from app.core.estado_venta import set_current_estado
     set_current_tienda(tienda_id)
     set_current_estado(estado if isinstance(estado, dict) else {})
+    forzar_prosa = es_turno_criterio(interp, raw_message)
     try:
         texto, tools_called = await asyncio.wait_for(
             asyncio.to_thread(_run, raw_message, history, tienda_id,
                               business_name, trace_id,
-                              estado if isinstance(estado, dict) else {}),
+                              estado if isinstance(estado, dict) else {},
+                              forzar_prosa),
             _TIMEOUT_TOTAL_S)
     except Exception as e:
         log.warning("solver_gemini_error", trace_id=trace_id, error=str(e)[:200])
@@ -361,6 +408,7 @@ async def generar_respuesta(raw_message, interp, estado, tienda_id, trace_id,
         return None, None
     prosa_citada = _prosa_citada(tools_called)
     log.info("solver_gemini_ok", trace_id=trace_id, tools=len(tools_called),
-             prosa_citada=prosa_citada, preview=texto[:160])
+             turno_criterio=forzar_prosa, prosa_citada=prosa_citada,
+             preview=texto[:160])
     return texto, {"tools_called": tools_called, "secciones": [],
-                   "prosa_citada": prosa_citada}
+                   "prosa_citada": prosa_citada, "turno_criterio": forzar_prosa}
