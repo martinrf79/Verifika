@@ -4,11 +4,48 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
-**Última actualización: 15-jul-2026 (tarde) — PRUEBAS VIVAS DE LOS DOS
-LADRILLOS EN TIER GRATUITO + PLAN DE ATADURA. El CÓDIGO de los ladrillos y del
-RAG vive en las ramas `claude/engineering-bricks-determinism-h2ev1h` (sobre
-`claude/model-tools-sales-prose-px8xmn`); a main van SOLO los DOCS para que el
-chat nuevo vea el estado. ARRANCAR sobre esa rama para tocar código.**
+**Última actualización: 15-jul-2026 (noche) — TODO MERGEADO A MAIN Y DEPLOYADO.
+RAG de prosa + los DOS ladrillos + prosa de venta (11 movidas) + atadura DURA de
+la prosa + intérprete y proposer unificados en Gemini. Producción sigue en la
+clave GEMINI paga del servicio. ARRANCAR ACÁ (ya está todo en main).**
+
+Lo que entró a main en esta tanda:
+1. **RAG de prosa + los dos ladrillos** (cita del solver en `meta['prosa_citada']`
+   + `verificador_cita.py`), corpus jurado de 33 temas de criterio.
+2. **Prosa de VENTA, 11 movidas** en `guia_venta_prosa.py` (saludo, continuación
+   de presupuesto, consulta de algo más, puente, confirmación, cierre,
+   seguimiento, prueba social, lead, urgencia honesta, despedida). Cero números.
+3. **Atadura DURA de la prosa** (`solver_gemini.es_turno_criterio` + `toolConfig`
+   mode ANY): en turno de criterio el solver OBLIGA a consultar la guía antes de
+   opinar; en turno de dato no. Filtros de salida quedan BLANDOS (el verificador
+   de cita marca, no degrada). Medido vivo: 4/4 turnos de criterio citaron prosa.
+4. **Intérprete y proposer unificados en Gemini** (`INTERPRETER_PROVIDER=gemini`,
+   proposer=gemini, rama gemini nueva en `llm_adapter`): se sacó la dependencia
+   de la clave OpenAI (daba 401 en el extractor de cierre). Todo en gemini-3.1-flash-lite.
+
+VALIDACIÓN antes del merge: 500 tests offline verdes; batería exigente
+end-to-end por el pipeline (`process_message`, sim con catálogo real, memoria en
+RAM, intérprete+solver Gemini free) con juez de invariantes en 0 problemas, dos
+corridas (blanda y dura). Memoria a 5 turnos, referencia vaga, cambio de
+decisión y capciosa de precio falso, todo OK.
+
+CUENTA DE TOKENS (tier gratuito gemini-3.1-flash-lite: 15 RPM, ~1.000 RPD, 250k
+TPM): ~4-5 requests por mensaje de WhatsApp (intérprete 1 + solver ~3 + cierre).
+El gratis cubre ~200-250 mensajes/día con los dos en gratis, y ~3 mensajes/minuto
+antes de 429. Por eso PRODUCCIÓN va en la clave PAGA (sin throttle, con cacheo,
+~46 USD/mes); el gratis queda para el banco. Para pruebas reales de bajo volumen
+se puede cambiar el secreto del servicio a la clave gratis con un comando de
+Cloud Run (paso manual en el servicio, no en el repo).
+
+PENDIENTE (lo próximo, tras probar el bot en WhatsApp): el PLAN de las
+herramientas deterministas de salida, ordenar la pasada de verificadores para
+que no se pisen (visto el roce del negador de precio con el estampador en la
+capciosa), regla de las dos mitades, dato duro manda y prosa blanda con cita.
+
+---
+
+**15-jul-2026 (tarde) — PRUEBAS VIVAS DE LOS DOS
+LADRILLOS EN TIER GRATUITO + PLAN DE ATADURA (rama de trabajo).**
 
 Estos docs se suben a main a propósito: `deploy.yml` ignora `**.md` y `tests/**`,
 así que NO disparan deploy, y el chat nuevo los ve al clonar main sin depender de

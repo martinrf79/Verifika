@@ -54,8 +54,10 @@ _ROLE_CONFIG = {
         "model": os.getenv("VERIFIKA_SOLVER_MODEL", "gpt-4o-mini"),
     },
     "proposer": {
-        "provider": os.getenv("VERIFIKA_PROPOSER_PROVIDER", "openai"),
-        "model": os.getenv("VERIFIKA_PROPOSER_MODEL", "gpt-4o-mini"),
+        # Unificado en Gemini gratis (15-jul): el extractor del cierre y el
+        # fallback semantico de query_faq dejan de depender de la clave OpenAI.
+        "provider": os.getenv("VERIFIKA_PROPOSER_PROVIDER", "gemini"),
+        "model": os.getenv("VERIFIKA_PROPOSER_MODEL", "gemini-3.1-flash-lite"),
     },
 }
 
@@ -145,6 +147,22 @@ def _get_client(provider: str):
             api_key=api_key,
             base_url=os.getenv("KIMI_BASE_URL",
                                "https://integrate.api.nvidia.com/v1"),
+            timeout=_timeout,
+        )
+
+    elif provider == "gemini":
+        # Gemini por el endpoint OpenAI-compatible (misma clave GEMINI_API_KEY
+        # que el Solver). Unifica proveedor: el extractor del cierre y el
+        # fallback semantico de query_faq dejan de depender de OpenAI. El modelo
+        # se fija por VERIFIKA_<ROL>_MODEL (default gemini-3.1-flash-lite).
+        api_key = os.getenv("GEMINI_API_KEY", "")
+        if not api_key:
+            raise RuntimeError("GEMINI_API_KEY no configurada")
+        client = OpenAI(
+            api_key=api_key,
+            base_url=os.getenv(
+                "GEMINI_BASE_URL",
+                "https://generativelanguage.googleapis.com/v1beta/openai/"),
             timeout=_timeout,
         )
 
@@ -371,7 +389,8 @@ def llm_complete(
 
     client = _get_client(provider)
 
-    if provider in ("deepseek", "groq", "openai", "nemotron", "kimi", "openrouter"):
+    if provider in ("deepseek", "groq", "openai", "nemotron", "kimi",
+                    "openrouter", "gemini"):
         result = _call_openai_compatible(
             client, model, messages, temperature, max_tokens, tools
         )
