@@ -10,6 +10,12 @@ Semilla acotada (Martin, 12-jul): para un cliente real esta guia se extiende
 mucho mas y por familia de producto. El MECANISMO es el que importa; sumar
 temas es cargar texto, no tocar codigo. Registro: argentino, voseo, criterio
 de vendedor, cero dato duro.
+
+Ademas del criterio de producto, el corpus tiene MOVIDAS DE VENTA (15-jul):
+frases profesionales de la charla, saludo, continuacion de un presupuesto,
+consulta de si quiere algo mas, preguntas puente, preguntas de confirmacion,
+cierre, seguimiento, prueba social y captura de lead. Le dan al modelo el COMO
+vender con oficio, siempre sin numeros: el dato y el producto salen de las tools.
 """
 import re
 from difflib import get_close_matches
@@ -329,6 +335,86 @@ GUIA_VENTA: dict[str, str] = {
         "que no tenemos confirmado, se le dice honesto y se ofrece verificarlo "
         "antes de la compra. Guiar con criterio y honestidad cierra mas ventas "
         "que empujar el producto mas caro."),
+    # ── MOVIDAS DE VENTA (frases profesionales de la charla, sin dato duro) ──
+    # No son criterio de producto sino el COMO conversar la venta: abrir,
+    # confirmar, cerrar, seguir. El solver las consulta para redactar con oficio;
+    # el numero y el producto igual salen de las herramientas.
+    "saludo_apertura": (
+        "El saludo abre la venta y marca el tono: cordial, breve y profesional, "
+        "presentandose como el asistente de la tienda y ofreciendo ayuda concreta "
+        "desde el primer mensaje. Se saluda una sola vez al arranque de la charla, "
+        "no en cada respuesta. Movidas que funcionan: hola, que tal, bienvenido a "
+        "la tienda, en que te puedo ayudar hoy; contame que estas buscando y te "
+        "oriento. Calido pero directo, sin discursos largos: el cliente quiere "
+        "avanzar. Un buen saludo genera confianza y ya invita a decir que necesita."),
+    "continuacion_presupuesto": (
+        "Cuando ya se le paso un presupuesto o una cotizacion, la charla no "
+        "termina ahi: se acompana. Se chequea si el total le cierra, si quiere que "
+        "se lo ajuste, o si prefiere ver una opcion mas economica o una mejor. "
+        "Movidas utiles: te quedo comodo asi, queres que le sume el envio, "
+        "preferis que veamos una alternativa que entre mejor en lo que pensabas "
+        "gastar. La idea es sostener el impulso de compra y allanar el proximo "
+        "paso, sin presionar. Siempre se invita a avanzar: si te sirve, lo dejamos "
+        "listo y coordinamos. El total y el envio salen de las herramientas."),
+    "consulta_algo_mas": (
+        "Antes de cerrar conviene chequear si el cliente necesita algo mas, con "
+        "naturalidad, no como formulismo. Es el momento del complemento: si lleva "
+        "un producto, se le puede ofrecer lo que suele acompanarlo, sin inventar "
+        "precios ni forzar. Movidas: queres que le sume algo mas, necesitas algun "
+        "accesorio para completar, con eso ya estas o buscabas otra cosa tambien. "
+        "Abre la puerta a una venta adicional y muestra atencion. Que el "
+        "complemento tenga sentido para lo que ya eligio; el precio y el stock de "
+        "ese complemento salen siempre de las herramientas, nunca de la cabeza."),
+    "preguntas_puente": (
+        "Cuando falta un dato para avanzar, en vez de frenar la charla se tiende "
+        "un puente: una pregunta corta que consigue lo que falta y mantiene el "
+        "clima de venta, sin que el cliente sienta interrogatorio. Ejemplos de "
+        "puente: para orientarte mejor, lo vas a usar mas para trabajo o para "
+        "jugar; asi te paso el envio exacto, de que localidad sos; para "
+        "recomendarte fino, tenes una idea de cuanto queres invertir. Una sola "
+        "pregunta por vez, la mas util, y despues se sigue vendiendo. El puente "
+        "destraba sin cortar el impulso de compra."),
+    "preguntas_confirmacion": (
+        "Confirmar antes de sellar es clave y evita errores: cuando hay dos "
+        "caminos posibles o el pedido no esta del todo claro, se repregunta corto "
+        "en vez de adivinar. Tambien se confirma el pedido armado antes de cerrar, "
+        "para que el cliente diga que si con seguridad. Movidas: te armo el total "
+        "con los mas economicos, es asi; entonces serian estos productos a tu "
+        "direccion, confirmo; lo dejamos cerrado y te paso los datos para el pago. "
+        "La confirmacion le da control al cliente y evita venderle lo que no pidio. "
+        "Ante ambiguedad de variante o cantidad, se pregunta, no se elige por el."),
+    "cierre_venta": (
+        "El cierre se propone con naturalidad cuando el cliente ya vio lo que "
+        "necesitaba: se invita al proximo paso sin presionar ni apurar. En base a "
+        "lo que vimos, avanzamos; queres que lo dejemos listo; te preparo el "
+        "pedido y coordinamos el pago. Se ofrece la accion concreta, no una "
+        "pregunta abierta que dilate. Si el cliente todavia duda, se resuelve la "
+        "duda primero y recien despues se vuelve a invitar. Un buen cierre es "
+        "firme y amable a la vez, y siempre deja claro cual es el siguiente paso."),
+    "seguimiento": (
+        "Si el cliente quedo en verlo, no se lo abandona ni se lo presiona: se "
+        "deja la puerta abierta y se retoma con cordialidad. Pudiste verlo, te "
+        "quedo alguna duda, seguis interesado en lo que charlamos. El seguimiento "
+        "suma cuando aporta algo, una aclaracion util o recordar el beneficio, no "
+        "solo insistir. Se respeta el tiempo del cliente: un recordatorio amable "
+        "rinde mas que muchos mensajes seguidos. Siempre con la disposicion de "
+        "ayudar a decidir, nunca de apurar la compra."),
+    "prueba_social_confianza": (
+        "Para dar tranquilidad ayuda apoyarse en el respaldo real: son productos "
+        "originales, con garantia oficial, y de los mas elegidos para ese uso. La "
+        "confianza se construye con honestidad, no con promesas: se cuenta lo que "
+        "de verdad respalda la compra, la garantia, la originalidad, el envio "
+        "seguro y el acompanamiento. No se inventan testimonios ni cantidades ni "
+        "opiniones que no existan. Cuando el cliente duda de si es seguro comprar, "
+        "se lo reasegura con lo cierto y se lo invita a avanzar con confianza."),
+    "lead_captura": (
+        "Cuando el cliente muestra interes pero todavia no cierra, conviene "
+        "capturar el contacto y dejar el vinculo abierto, sin presionar. Te tomo "
+        "los datos asi cuando decidas lo dejamos listo enseguida; te guardo la "
+        "consulta y cualquier cosa retomamos. Si posterga, se acepta con "
+        "naturalidad y se deja la puerta abierta para cuando quiera seguir. Un "
+        "lead bien tratado vuelve; uno presionado se pierde. El objetivo es "
+        "facilitar la proxima decision, no forzar la de ahora."),
 }
 
 
@@ -376,6 +462,20 @@ _ALIAS: dict[str, str] = {
     "caro": "objecion_precio", "costoso": "objecion_precio",
     "regalo": "regalo", "regalar": "regalo", "obsequio": "regalo",
     "asesoria": "asesoramiento_metodo", "recomendacion": "asesoramiento_metodo",
+    # Movidas de venta (frases profesionales de la charla).
+    "saludo": "saludo_apertura", "hola": "saludo_apertura",
+    "bienvenida": "saludo_apertura", "apertura": "saludo_apertura",
+    "cotizacion": "continuacion_presupuesto",
+    "complemento": "consulta_algo_mas", "accesorio": "consulta_algo_mas",
+    "adicional": "consulta_algo_mas",
+    "puente": "preguntas_puente",
+    "confirmar": "preguntas_confirmacion", "confirmacion": "preguntas_confirmacion",
+    "confirmo": "preguntas_confirmacion",
+    "cierre": "cierre_venta", "cerrar": "cierre_venta", "avanzar": "cierre_venta",
+    "seguimiento": "seguimiento", "seguir": "seguimiento",
+    "confianza": "prueba_social_confianza", "seguro": "prueba_social_confianza",
+    "original": "prueba_social_confianza", "originales": "prueba_social_confianza",
+    "lead": "lead_captura", "contacto": "lead_captura",
 }
 
 
@@ -446,9 +546,13 @@ def tool_schema() -> dict:
             "name": "consultar_guia_venta",
             "description": (
                 "Guia de venta con CRITERIO (uso, comparativa, marcas, "
-                "durabilidad, compatibilidad general). Usala para OPINAR, "
-                "comparar o decir si un producto sirve para un uso. No trae "
-                "numeros; el dato duro sale de las otras tools. Temas: "
+                "durabilidad, compatibilidad general) y MOVIDAS de venta "
+                "(saludo_apertura, continuacion_presupuesto, consulta_algo_mas, "
+                "preguntas_puente, preguntas_confirmacion, cierre_venta, "
+                "seguimiento, prueba_social_confianza, lead_captura). Usala para "
+                "OPINAR, comparar, decir si un producto sirve para un uso, y para "
+                "SABER COMO conducir la venta (abrir, confirmar, cerrar, seguir). "
+                "No trae numeros; el dato duro sale de las otras tools. Temas: "
                 + ", ".join(GUIA_VENTA)),
             "parameters": {
                 "type": "object",
