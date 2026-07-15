@@ -44,9 +44,10 @@ modelo. Es la capa anti-alucinación por construcción.
   su id, y `texto_de()` para chequear la cita.
 - **Estado:** dato duro completo. Prosa: corpus recién ampliado, groundeado al
   catálogo real, con recuperación top-K andando.
-- **Ladrillos que faltan:** la CITA. Que el solver diga qué bloque de prosa usó,
-  con salida estructurada, y su verificación. Es una de las dos piezas del
-  próximo chat.
+- **Ladrillo HECHO (15-jul):** la CITA. El solver declara en `meta['prosa_citada']`
+  los ids de los chunks de prosa que consultó (`solver_gemini._prosa_citada`);
+  determinista, los ids salen del resultado de `consultar_guia_venta`. Es el
+  "Citador" de la Capa A aplicado a la prosa.
 
 ## Capa 3 — Orquestación
 
@@ -77,19 +78,23 @@ las capas. Es el diferencial de Verifika.
   `calc_defensiva.py`.
 - **Observabilidad y evaluación:** logs con `trace_id`, `tests/` y `banco_pruebas/`.
 - **Estado:** robusto. La red de verificadores es lo que más te distingue.
-- **Ladrillos que faltan:** el verificador de cita de la prosa, la otra pieza del
-  próximo chat; y decidir qué filtros de prosa se aflojan según la regla de las
-  dos mitades.
+- **Ladrillo HECHO (15-jul):** el verificador de cita de la prosa
+  (`verificador_cita.py`): resuelve cada id citado con `texto_de(id)` y marca el
+  que no exista; cableado vivo en `interprete_libre` como red tras el solver,
+  loguea `interprete_libre_cita_prosa`. **Falta** decidir qué filtros de prosa se
+  aflojan según la regla de las dos mitades (mejora determinista pendiente).
 
 ---
 
 ## Resumen de dónde estamos
 
-Las cuatro capas existen y corren en producción. Lo que separa a Verifika de un
-bot profesional no es un modelo más caro, son tres ladrillos concretos:
+Las cuatro capas existen y corren en producción. Lo que separaba a Verifika de un
+bot profesional eran tres ladrillos concretos; los dos primeros ya están HECHOS
+(15-jul):
 
-1. La cita sobre la prosa recuperada, capa 2.
-2. El verificador de esa cita, capa 4.
+1. La cita sobre la prosa recuperada, capa 2. HECHO (`meta['prosa_citada']`).
+2. El verificador de esa cita, capa 4. HECHO (`verificador_cita.py`, vivo).
 3. Una suite de evaluación que no deje pasar regresiones, capa 4, ya a medias.
 
-El corpus de prosa jurado, base de la capa 2 para la venta, ya está cargado.
+El corpus de prosa jurado, base de la capa 2 para la venta, ya está cargado; la
+prosa queda ATADA a la fuente por la cita, igual que el número por la tool.
