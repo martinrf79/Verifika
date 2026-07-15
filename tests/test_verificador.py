@@ -122,6 +122,27 @@ def test_a_repite_presupuesto_de_memoria_sin_tools_no_bloquea():
         "no se hayan llamado herramientas.")
 
 
+def test_presupuesto_inventado_se_bloquea():
+    """HUECO REAL 15-jul (WhatsApp): un presupuesto que el modelo arma de cabeza
+    (varias cifras de plata SIN respaldo) NO debe colarse por el shadow solo
+    porque hay memoria de turnos previos. La memoria legitima ya respalda el
+    numero en la evidencia; si igual queda sin respaldo en contexto de
+    presupuesto, es invento y se bloquea."""
+    resp = ("Presupuesto:\n- 2x Mouse: $75.000\n- 2x Teclado: $110.000\n"
+            "Subtotal: $325.000\nTotal: $346.000")
+    assert verificador.es_presupuesto_inventado([75000, 110000, 346000], resp)
+    # Una estructura de presupuesto con UNA sola cifra sin respaldo tambien.
+    assert verificador.es_presupuesto_inventado([346000], "Total: $346.000")
+
+
+def test_cifra_suelta_fuera_de_presupuesto_no_bloquea():
+    """Una sola cifra sin respaldo, fuera de contexto de presupuesto, NO se
+    bloquea: sigue el shadow para no matar un repaso viejo legitimo."""
+    assert not verificador.es_presupuesto_inventado(
+        [12000], "me gustaba el que salia $12.000, ese")
+    assert not verificador.es_presupuesto_inventado([], "cualquier cosa")
+
+
 def test_a_sin_tools_sin_memoria_bloquea():
     """A: si no hay NINGUNA evidencia, ni tools este turno ni memoria, una cifra
     sin respaldo es alucinacion pura y SI se bloquea. La correccion de A no debe

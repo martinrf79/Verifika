@@ -4,7 +4,39 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
-**Última actualización: 15-jul-2026 (noche, HOTFIX) — DIAGNÓSTICO DE LOGS
+**Última actualización: 15-jul-2026 (noche, FIX 2) — CERRADO EL HUECO DEL SHADOW:
+un presupuesto INVENTADO ya no se cuela.**
+
+Segundo fix del mismo caso real. La causa de que el precio mal llegara al cliente
+no era solo la prosa: el verificador de plata tiene un modo "shadow" que dejaba
+pasar una cifra sin respaldo si EXISTÍA memoria de turnos previos. Un presupuesto
+que el modelo arma de cabeza (marcas elegidas por él) se colaba por ahí. Pero la
+memoria legítima YA entra a la evidencia que ve el verificador (proofs +
+productos vistos), así que una cifra que igual queda sin respaldo es un INVENTO,
+no un repaso. FIX: `verificador.es_presupuesto_inventado` — si las cifras sin
+respaldo forman un presupuesto (varias, o estructura con total), se BLOQUEA y sale
+el fallback ("dame un segundo que lo calculo"), no el precio inventado. Una cifra
+suelta fuera de contexto de presupuesto sigue en shadow (no rompe repasos viejos).
+Lockeado en test_verificador (2 tests). 502 offline verdes.
+
+HONESTIDAD SOBRE LA ATADURA (Martín preguntó, va acá para no repetir el error):
+con el modelo escribiendo TEXTO LIBRE, la atadura NO puede ser completa; es
+"prevenir + red que corrige", y la red tiene huecos que se tapan de a uno. La
+ÚNICA atadura completa es el CONTRATO TIPADO / salida estructurada: el modelo
+emite solo REFERENCIAS (id de producto de un enum de ids reales, id de cálculo,
+de FAQ, de bloque de prosa) y texto libre SOLO en huecos de pegamento sin dígitos
+ni nombres; el código estampa todo dato duro. Es la arquitectura de fragmentos.
+Las cinco categorías, cada una atada distinto: (1) número → calculate_total +
+estampa + BLOQUEO del no respaldado; (2) identidad de producto → id real de
+search, nunca inventado; (3) política → query_faq curada; (4) criterio → prosa
+jurada con cita (blanda); (5) pegamento de venta → libre. El caso real cruzó la
+2 (marcas de cabeza) con la 1 (presupuesto de cabeza). Pendiente: atar la 2
+(reconciliación dura del pedido) y evaluar el contrato tipado para la atadura
+completa.
+
+---
+
+**15-jul-2026 (noche, HOTFIX) — DIAGNÓSTICO DE LOGS
 REALES DE WHATSAPP + FIX DEL PRESUPUESTO EN PROSA.**
 
 Charla real de Martín (16:5x): pidió 2 mouse + 2 teclados + 2 auriculares,
