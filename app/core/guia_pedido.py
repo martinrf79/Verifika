@@ -424,7 +424,8 @@ def mensaje_opciones_categorias(cats_pedido: list[tuple], tienda_id: str,
 
 
 def mensaje_presupuesto_sellado(presentacion: str, reparto: str = "",
-                                titulo: str | None = None) -> str:
+                                titulo: str | None = None,
+                                pago_conocido: bool = False) -> str:
     """El MENSAJE ENTERO del turno sellado: plantilla fija del codigo
     + bloque sellado de la calculadora. Cero prosa del LLM (en real la prosa
     listaba OTROS productos y contradecia al bloque). `reparto` (opcional): el
@@ -432,12 +433,27 @@ def mensaje_presupuesto_sellado(presentacion: str, reparto: str = "",
     Martin 11-jul). `titulo` pisa la primera linea (default: la de los mas
     economicos, que es el flujo de categorias; un pedido puntual o editado
     usa un titulo neutral para no mentir el criterio)."""
+    # CIERRE consciente del pago: si la presentacion YA trae el pago aplicado
+    # (bloque 'Pago dividido' / 'Total final', el cliente lo eligio este turno),
+    # NO se le vuelve a pedir la forma de pago (bug real: pedia el dato que el
+    # cliente acababa de dar). Ahi el cierre avanza al siguiente paso.
+    pago_ya_elegido = (pago_conocido
+                       or "Pago dividido" in presentacion
+                       or "Total final" in presentacion)
+    if pago_ya_elegido:
+        # Frase que AVANZA, sin re-pedir el pago y SIN pregunta (asi no choca
+        # con la pregunta de cierre del lead, '¿Seguimos adelante...?', ni
+        # repite su 'te lo dejo preparado').
+        cierre = ("Si me pasás la localidad, coordino el envío y lo dejamos "
+                  "listo.")
+    else:
+        cierre = ("¿Lo dejamos confirmado? Decime la forma de pago: "
+                  "transferencia (10% de descuento) o Mercado Pago.")
     return ((titulo or "Listo, te armé el pedido con los más económicos de "
              "cada categoría:") + "\n\n" + presentacion.strip()
             + (("\n" + reparto.strip("\n") + "\n") if reparto else "")
             + "\n\nEnvío orientativo, puede variar al confirmar la compra.\n"
-            "¿Lo dejamos confirmado? Decime la forma de pago: transferencia "
-            "(10% de descuento) o Mercado Pago.")
+            + cierre)
 
 
 def instruccion_categorias(cats_pedido: list[tuple]) -> str:

@@ -1075,9 +1075,17 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 # fija + bloque de la calculadora. Titulo NEUTRAL (guion 32).
                 from app.core.guia_pedido import (
                     mensaje_presupuesto_sellado, pregunta_destinos_pendientes)
+                # El cierre no re-pide la forma de pago si el cliente ya la dio,
+                # ni este turno ni en uno previo (persistida en el lead). Bug
+                # real: pedia la modalidad de pago que el cliente ya habia dado.
+                from app.core.cierre import extraer_forma_pago
+                _pago_conocido = bool(
+                    (conv.get("datos_cliente_parciales") or {}).get("forma_pago")
+                    or extraer_forma_pago(raw_message))
                 respuesta = (mensaje_presupuesto_sellado(
                     _tools_precalc[0]["result"]["presentacion"],
-                    titulo="Listo, así queda tu pedido:")
+                    titulo="Listo, así queda tu pedido:",
+                    pago_conocido=_pago_conocido)
                     + pregunta_destinos_pendientes(raw_message))
                 _sellado_pedido = True
             else:
