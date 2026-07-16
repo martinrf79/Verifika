@@ -1028,27 +1028,42 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
              intencion=interp.get("intencion") if isinstance(interp, dict) else None,
              hist=len(history))
 
-    # SOLVER GEMINI primario (Martin, 12-jul; "real = banco"): el modelo LLAMA
-    # las MISMAS tools que en el banco y compone. CONDUCE el turno salvo cuando
-    # el codigo ya sello el pedido por la calculadora (garantia de plata dura:
-    # ahi el total lo dueña el codigo). Aun sobre una curada/opciones ya
-    # servida, el solver conectado a las tools se porta mejor (ej envio al
-    # exterior: consulta la tabla/FAQ y responde la politica real, la curada
-    # vieja decia "llegamos a todo el pais"). Su meta['tools_called'] alimenta
-    # igual a todo el downstream; los verificadores (plata, stock, promesas,
-    # FAQ) corren DESPUES como red. Falla, timeout o sin clave -> camino
+    # GENERADOR DE FRAGMENTOS primario (atadura por contrato tipado, 16-jul):
+    # el modelo NO compone texto libre; devuelve una lista de FRAGMENTOS atados
+    # por enum (producto, calculo, presupuesto, ficha, faq, envio, criterio,
+    # cierre) y el CODIGO renderiza cada dato desde la fuente. Por construccion
+    # el modelo no puede escribir un numero ni un id que no exista; el criterio
+    # de venta va por grounding mas cita sobre el corpus jurado. Reemplaza al
+    # solver de texto libre en el camino vivo (queda superado, no apagado al
+    # lado). CONDUCE el turno salvo cuando el codigo ya sello el pedido por la
+    # calculadora (ahi el total lo dueña el codigo). Su meta['tools_called']
+    # alimenta a todo el downstream; los verificadores (plata, stock, promesas,
+    # FAQ, cita) corren DESPUES como red. Falla, timeout o sin clave -> camino
     # determinista de abajo.
     if not (_sellado_pedido or _tools_precalc):
         try:
-            from app.core.solver_gemini import generar_respuesta as _solver_g
-            _sr, _sm = await _solver_g(
-                raw_message, interp, estado, tienda_id, trace_id,
-                history, _business_name(tienda_id))
-            if _sr:
-                respuesta, meta, _via_solver = _sr, _sm, True
-                log.info("interprete_libre_solver_gemini_ok", trace_id=trace_id)
+            from app.core.generador_v2 import generar_fragmentos, renderizar
+            _frags, _uni, _presu, _presu_tools = await generar_fragmentos(
+                raw_message, history, estado, tienda_id, interp, trace_id)
+            if _frags:
+                _texto, _tools = renderizar(
+                    _frags, _uni, estado, tienda_id, trace_id,
+                    presupuesto_pre=_presu, presupuesto_tools=_presu_tools)
+                if _texto and _texto.strip():
+                    _citada = []
+                    for _tc in _tools:
+                        if _tc.get("name") == "consultar_guia_venta":
+                            _cid = (_tc.get("result") or {}).get("id")
+                            if _cid and str(_cid) not in _citada:
+                                _citada.append(str(_cid))
+                    respuesta, _via_solver = _texto, True
+                    meta = {"tools_called": _tools, "secciones": [],
+                            "prosa_citada": _citada,
+                            "turno_criterio": bool(_citada)}
+                    log.info("interprete_libre_generador_ok", trace_id=trace_id,
+                             fragmentos=len(_frags), prosa_citada=_citada)
         except Exception as e:
-            log.warning("interprete_libre_solver_gemini_error",
+            log.warning("interprete_libre_generador_error",
                         trace_id=trace_id, error=str(e)[:150])
 
     if not _via_solver and not respuesta_curada_servida:
