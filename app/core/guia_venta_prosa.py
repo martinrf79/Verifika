@@ -321,9 +321,9 @@ GUIA_VENTA: dict[str, str] = {
         "conviene lo versatil y de marca conocida, que rara vez falla. Un "
         "accesorio lindo y util suele ser mas seguro que adivinar un equipo "
         "grande con requisitos puntuales. Ayuda orientar por gama segun lo que "
-        "quiera gastar, y recordar que hay opcion de envoltorio para regalo. Si "
-        "el cliente no esta seguro, se le hacen dos o tres preguntas simples y se "
-        "arma una recomendacion, en vez de tirar cualquier cosa."),
+        "quiera gastar. Si el cliente no esta seguro, se le hacen dos o tres "
+        "preguntas simples y se arma una recomendacion, en vez de tirar "
+        "cualquier cosa."),
     "asesoramiento_metodo": (
         "La forma de asesorar que mejor funciona es simple: entender antes de "
         "recomendar. Se le pregunta al cliente el uso principal, si tiene una "

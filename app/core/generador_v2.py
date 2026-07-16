@@ -33,6 +33,28 @@ _TIMEOUT_S = 12
 _MAX_FRAGMENTOS = 8
 CAMPOS_FICHA = ["procedencia", "garantia", "material", "descripcion"]
 
+# Ids del corpus jurado que son MOVIDAS de charla (como vender) y no criterio
+# de producto. Solo para agrupar el menu que ve el modelo; el enum los incluye
+# a todos igual. Fuente: guia_venta_prosa.GUIA_VENTA.
+_MOVIDAS_IDS = (
+    "saludo_apertura", "continuacion_presupuesto", "consulta_algo_mas",
+    "preguntas_puente", "preguntas_confirmacion", "cierre_venta",
+    "seguimiento", "prueba_social_confianza", "lead_captura",
+    "urgencia_honesta", "despedida_cordial")
+
+
+def _criterios_disponibles():
+    """El enum del fragmento criterio: (lista de ids reales del corpus jurado,
+    menu agrupado para el prompt). Se arma SOLO desde el corpus, no se cablea a
+    mano: sumar un tema de venta es cargar texto en GUIA_VENTA, no tocar aca."""
+    from app.core.guia_venta_prosa import GUIA_VENTA
+    ids = list(GUIA_VENTA)
+    producto = [i for i in ids if i not in _MOVIDAS_IDS]
+    movidas = [i for i in ids if i in _MOVIDAS_IDS]
+    menu = ("  criterio de producto: " + ", ".join(producto)
+            + "\n  movidas de venta: " + ", ".join(movidas))
+    return ids, menu
+
 
 def _norm(s):
     import unicodedata
@@ -135,7 +157,7 @@ def presupuesto_precalculado(mensaje, estado, tienda_id, interp=None):
     return None, []
 
 
-def _schema(ids, temas):
+def _schema(ids, temas, criterios):
     ids_o = ids + [None]
     return {
         "type": "object", "additionalProperties": False,
@@ -144,9 +166,11 @@ def _schema(ids, temas):
             "properties": {
                 "tipo": {"type": "string", "enum": [
                     "prosa", "producto", "opciones", "calculo", "presupuesto",
-                    "ficha", "faq", "envio", "cierre"]},
+                    "ficha", "faq", "envio", "criterio", "cierre"]},
                 "texto": {"type": ["string", "null"]},
                 "producto_id": {"type": ["string", "null"], "enum": ids_o},
+                "criterio_id": {"type": ["string", "null"],
+                                "enum": criterios + [None]},
                 "categoria": {"type": ["string", "null"]},
                 "items": {"type": ["array", "null"], "items": {
                     "type": "object", "additionalProperties": False,
@@ -167,12 +191,14 @@ def _schema(ids, temas):
                         "porcentaje": {"type": "number"}},
                     "required": ["medio", "porcentaje"]}},
             },
-            "required": ["tipo", "texto", "producto_id", "categoria", "items",
-                         "campos", "tema", "destino", "pago"]}}},
+            "required": ["tipo", "texto", "producto_id", "criterio_id",
+                         "categoria", "items", "campos", "tema", "destino",
+                         "pago"]}}},
         "required": ["fragmentos"]}
 
 
-def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None):
+def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
+            criterios_menu=""):
     prods = "\n".join(
         f"  {p['id']} = {p['nombre']} | ${int(p.get('precio_ars',0)):,}".replace(",", ".")
         + f" | stock {p.get('stock','?')}" for p in universo)
@@ -191,11 +217,18 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None):
         "NO escribis datos duros. Componés la respuesta como una lista de "
         "FRAGMENTOS en el orden en que el cliente los va a leer. El sistema "
         "estampa cada dato real. Tipos:\n"
-        "- prosa: tu texto de venta libre y tu RAZONAMIENTO. PROHIBIDO poner "
-        "numeros o precios aca (eso va por su fragmento). SI podes nombrar un "
-        "producto del listado para opinar, aconsejar o comparar. Usala para "
-        "saludar, hacer puente, decir si un producto sirve para lo que el "
-        "cliente quiere, recomendar con criterio, cerrar hablado.\n"
+        "- prosa: PEGAMENTO corto y adaptativo. Un eco de lo que dijo el "
+        "cliente, un puente, un nexo natural. PROHIBIDO poner numeros o precios "
+        "aca (eso va por su fragmento). SI podes nombrar un producto del "
+        "listado para opinar o comparar. NO metas el criterio de venta largo "
+        "aca: para eso esta el fragmento criterio.\n"
+        "- criterio: el RAZONAMIENTO de venta (si un producto sirve para un "
+        "uso, cual conviene, comparativa, marcas, durabilidad, compatibilidad "
+        "general, o COMO conducir la charla: saludar, confirmar, cerrar, "
+        "seguir) -> criterio_id, elegido de la guia jurada de abajo. El sistema "
+        "estampa el texto real del criterio desde la fuente; vos solo elegis "
+        "CUAL encaja y en que orden va. Usalo siempre que quieras dar criterio "
+        "o consejo de venta, en vez de improvisarlo en prosa.\n"
         "- producto: mostrar la linea (nombre+precio+stock) de UN producto "
         "-> producto_id.\n"
         "- opciones: mostrar las opciones con stock de una categoria -> "
@@ -214,6 +247,8 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None):
         "- cierre: invitar a comprar y pedir forma de pago.\n\n"
         f"PRODUCTOS disponibles (usa SOLO estos ids):\n{prods}\n\n"
         f"TEMAS de FAQ disponibles: {faq_list}\n"
+        f"CRITERIOS de venta disponibles (para el fragmento criterio, usa SOLO "
+        f"estos ids):\n{criterios_menu}\n"
         f"{car_txt}{dest_txt}\n\n"
         + (f"\n\nPRESUPUESTO YA ARMADO por el sistema (ponelo con un "
            f"fragmento tipo 'presupuesto'):\n{presupuesto_pre}" if presupuesto_pre else "")
@@ -250,12 +285,16 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
     if not ids:
         # sin universo el modelo no tiene con que; igual puede faq/prosa/cierre
         ids = ["_none_"]
+    # El enum del CRITERIO de venta: los ids reales del corpus jurado. El modelo
+    # solo puede referenciar uno de estos; el codigo estampa el texto sellado.
+    criterios, criterios_menu = _criterios_disponibles()
     # Lo CERRADO al codigo: presupuesto pre-calculado si el pedido es
     # determinable. El modelo solo lo POSICIONA (fragmento presupuesto).
     presu_txt, presu_tools = presupuesto_precalculado(
         mensaje, estado, tienda_id, interp)
-    prompt = _prompt(mensaje, historial, universo, temas, estado, presu_txt)
-    schema = _schema(ids, temas)
+    prompt = _prompt(mensaje, historial, universo, temas, estado, presu_txt,
+                     criterios_menu)
+    schema = _schema(ids, temas, criterios)
 
     def _call():
         c = _cliente_gemini()
@@ -334,6 +373,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
     from app.core.interprete_libre import _linea_producto
     from app.storage.firestore_client import get_product_by_id, get_all_faq
     from app.core.curadas import estampar_valores
+    from app.core.guia_venta_prosa import texto_de
     from app.core.estado_venta import set_current_estado
     set_current_tienda(tienda_id)
     # Resetea las localidades del turno (sin esto la calculadora arrastra
@@ -463,6 +503,18 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 if q.get("proof"):
                     e["proof"] = q["proof"]
                 tools.append(e)
+        elif t == "criterio" and f.get("criterio_id"):
+            # El razonamiento de venta ATADO: el modelo eligio un id del corpus
+            # jurado (enum), el codigo estampa el texto sellado desde la fuente.
+            # El id queda como CITA en las tools para el verificador de cita.
+            cid = str(f["criterio_id"]).strip()
+            txt = texto_de(cid)
+            if txt:
+                partes.append(txt.strip())
+                tools.append({"name": "consultar_guia_venta",
+                              "result": {"id": cid, "tema": cid,
+                                         "texto": txt, "ok": True}})
+                log.info("generador_v2_criterio", trace_id=trace_id, id=cid)
         elif t == "cierre":
             # Sin doble cierre: si la ultima parte ya cerro con una pregunta
             # (la prosa del modelo ya invito a avanzar), no se pega el enlatado.
