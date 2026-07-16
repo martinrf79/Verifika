@@ -4,6 +4,46 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== ARRANQUE DEL CHAT NUEVO: ATADURA COMPLETA POR CONTRATO TIPADO (fragmentos) ====**
+
+El próximo trabajo, acordado con Martín (15-jul), es la ATADURA COMPLETA del
+modelo al código, la única que garantiza que NUNCA emita un dato falso. Con texto
+libre no se puede; hay que pasar al CONTRATO TIPADO / salida estructurada.
+
+QUÉ construir (reemplaza la composición de texto libre del solver en el camino vivo):
+- El modelo devuelve una ESTRUCTURA JSON (Gemini responseSchema, ya se usa en el
+  intérprete), NO texto. Es una lista de FRAGMENTOS; cada uno solo puede ser:
+  producto (id de un ENUM de ids reales del catálogo de ese turno), presupuesto
+  (referencia a un cálculo; el código corre calculate_total y estampa), política
+  (tema de FAQ de un enum), criterio (id de bloque del corpus jurado), pegamento
+  (texto libre que el código valida SIN dígitos ni nombres), pregunta.
+- Los ENUMS se arman SOLOS cada turno desde Firestore + el corpus. Se configura el
+  MECANISMO una vez, no área por área. Sumar producto/FAQ/prosa = cargar texto.
+- El código RENDERIZA cada fragmento desde la fuente; lo que no se puede estampar
+  se descarta. El modelo elige QUÉ y en qué ORDEN; jamás escribe un dato.
+- Base YA existente en el repo: `app/core/generador_v2.py` y los bancos
+  `banco_arquitectura_nueva.py` (probado 9/9 en su momento). Hay que terminarlo y
+  CABLEARLO al camino vivo sacando el solver de texto libre.
+
+CÓMO encararlo (acordado, para no repetir el error de sobrevender):
+- Va por RONDAS, no de una: esquema+enums+renderizador → banco → cablear →
+  deploy con cuidado → leer logs reales → arreglar lo que el tráfico muestre.
+  Calcular 3-4 pasadas hasta sólido.
+- NO mata la venta si la prosa es rica y el pegamento generoso. La prosa actual
+  (33 criterio + 11 movidas) ALCANZA para arrancar y validar; crece con texto.
+- Techo honesto: el modelo igual ELIGE qué id referenciar; puede errar una
+  ELECCIÓN (producto real equivocado), que se corrige con "ese no". Nunca más un
+  número inventado. Eso es lo máximo alcanzable y es lo correcto.
+- Las CINCO categorías, cada una atada distinto: (1) número → calc+estampa+bloqueo,
+  (2) identidad → id real de search (enum), (3) política → FAQ curada, (4) criterio
+  → prosa jurada con cita, (5) pegamento → libre validado.
+
+Todo lo anterior (RAG de prosa, dos ladrillos, atadura dura de prosa, Gemini
+unificado, fix del presupuesto inventado) YA está en main y deployado. El chat
+nuevo arranca desde main.
+
+---
+
 **Última actualización: 15-jul-2026 (noche, FIX 2) — CERRADO EL HUECO DEL SHADOW:
 un presupuesto INVENTADO ya no se cuela.**
 
