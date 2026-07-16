@@ -20,6 +20,18 @@ riesgo en una línea, se ejecuta lo que pidió, y si algo sale mal se vuelve atr
 El patrón que nos retrasó fue NO hacerle caso por exceso de cautela; se terminó.
 Ante duda REAL de contenido se pregunta corto; nunca se desobedece por reflejo.
 
+**1-bis. PROHIBIDO abrir ventanas de opciones sobre los pasos (Martín,
+16-jul-2026, dicho muchas veces).** El objetivo es UNO y no cambia: que el bot
+VENDA, RESPONDA, no suene robótico y NO alucine, con la atadura del modelo al
+código que estamos haciendo. Eso ya está acordado; no se vuelve a preguntar.
+NO se usa la ventana de opciones ni se pide aprobación paso por paso para
+elegir entre caminos técnicos: se elige el que mejor sirve al objetivo, se hace
+y se deploya, y el revert con git es la red. Frenar para preguntar "¿opción A o
+B?" sobre cómo implementar es exactamente lo que cansa y se usa de excusa
+después. Solo se pregunta, y corto, cuando falta un DATO real que Claude no
+puede saber ni deducir del repo, por ejemplo una política de la tienda o un
+secreto. La duda técnica se resuelve decidiendo, no consultando.
+
 **2. Cero cosas sueltas. Un solo todo.** Un repo, un Cloud Run, un servicio
 (`agente-bot`), un camino vivo, CERO flags sueltas. Todo cambio que se hace se
 DEPLOYA; si falla, se resuelve o se vuelve atrás, no queda a medias. PROHIBIDO

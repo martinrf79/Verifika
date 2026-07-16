@@ -33,26 +33,26 @@ _TIMEOUT_S = 12
 _MAX_FRAGMENTOS = 8
 CAMPOS_FICHA = ["procedencia", "garantia", "material", "descripcion"]
 
-# Ids del corpus jurado que son MOVIDAS de charla (como vender) y no criterio
-# de producto. Solo para agrupar el menu que ve el modelo; el enum los incluye
-# a todos igual. Fuente: guia_venta_prosa.GUIA_VENTA.
-_MOVIDAS_IDS = (
-    "saludo_apertura", "continuacion_presupuesto", "consulta_algo_mas",
-    "preguntas_puente", "preguntas_confirmacion", "cierre_venta",
-    "seguimiento", "prueba_social_confianza", "lead_captura",
-    "urgencia_honesta", "despedida_cordial")
+def _criterios_del_turno(mensaje, universo=None):
+    """El enum del fragmento criterio para ESTE turno: (ids jurados relevantes,
+    menu con su texto para groundear). Sale del RAG del corpus (recuperar), no
+    de una lista fija: solo los bloques que vienen al caso, asi el modelo no
+    mete criterio de mas y cuando lo mete es el que corresponde. El modelo
+    redacta la frase para el cliente apoyandose en estos textos y cita el id;
+    el codigo NO copia verbatim (leia a manual), el verificador de cita chequea
+    que el id sea real. Sumar un tema es cargar texto en GUIA_VENTA, no tocar
+    aca. Sin match, no hay criterio: el turno se responde con prosa o faq.
 
-
-def _criterios_disponibles():
-    """El enum del fragmento criterio: (lista de ids reales del corpus jurado,
-    menu agrupado para el prompt). Se arma SOLO desde el corpus, no se cablea a
-    mano: sumar un tema de venta es cargar texto en GUIA_VENTA, no tocar aca."""
-    from app.core.guia_venta_prosa import GUIA_VENTA
-    ids = list(GUIA_VENTA)
-    producto = [i for i in ids if i not in _MOVIDAS_IDS]
-    movidas = [i for i in ids if i in _MOVIDAS_IDS]
-    menu = ("  criterio de producto: " + ", ".join(producto)
-            + "\n  movidas de venta: " + ", ".join(movidas))
+    La consulta se enriquece con las CATEGORIAS del universo del turno: sin eso,
+    'el mas barato sirve para la oficina?' (sin nombrar el producto, que venia
+    del turno anterior) perdia el criterio. El universo trae el contexto."""
+    from app.core.guia_venta_prosa import recuperar
+    cats = " ".join(str(p.get("categoria") or "") for p in (universo or []))
+    bloques = recuperar((mensaje or "") + " " + cats, k=4)
+    if not bloques:
+        return ["_ninguno_"], ""
+    ids = [b["id"] for b in bloques]
+    menu = "\n".join(f"  [{b['id']}] {b['texto']}" for b in bloques)
     return ids, menu
 
 
@@ -222,16 +222,15 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
         "aca (eso va por su fragmento). SI podes nombrar un producto del "
         "listado para opinar o comparar. NO metas el criterio de venta largo "
         "aca: para eso esta el fragmento criterio.\n"
-        "- criterio: el RAZONAMIENTO de venta (si un producto sirve para un "
-        "uso, cual conviene, comparativa, marcas, durabilidad, compatibilidad "
-        "general, o COMO conducir la charla: confirmar, seguir) -> criterio_id, "
-        "elegido de la guia jurada de abajo. El sistema estampa el texto real "
-        "del criterio desde la fuente; vos solo elegis CUAL encaja. Usalo SOLO "
-        "cuando aporta: el cliente pide consejo, compara, duda cual llevar u "
-        "OBJETA. Elegilo por lo que el cliente QUIERE, no por la categoria: si "
-        "dice que algo es caro va objecion_precio, no el criterio del producto; "
-        "si no sabe cual, asesoramiento_metodo. En un pedido directo (ej. "
-        "'quiero el mouse mas barato') NO metas criterio: solo satura.\n"
+        "- criterio: cuando das consejo, comparas, el cliente duda cual llevar "
+        "u OBJETA. Escribi VOS la frase para el cliente en el campo texto, "
+        "corta, en voseo, natural, hablandole a el; APOYATE en el criterio "
+        "jurado de la lista de abajo, no lo copies palabra por palabra, "
+        "adaptalo. Poné en criterio_id el id del bloque que usaste. SIN "
+        "numeros. Elegi el bloque por lo que el cliente QUIERE: si dice que "
+        "algo es caro va objecion_precio, si no sabe cual, asesoramiento_metodo. "
+        "En un pedido directo (ej. 'quiero el mouse mas barato') NO metas "
+        "criterio: solo satura.\n"
         "- producto: mostrar la linea (nombre+precio+stock) de UN producto "
         "-> producto_id.\n"
         "- opciones: mostrar las opciones con stock de una categoria -> "
@@ -250,8 +249,8 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
         "- cierre: invitar a comprar y pedir forma de pago.\n\n"
         f"PRODUCTOS disponibles (usa SOLO estos ids):\n{prods}\n\n"
         f"TEMAS de FAQ disponibles: {faq_list}\n"
-        f"CRITERIOS de venta disponibles (para el fragmento criterio, usa SOLO "
-        f"estos ids):\n{criterios_menu}\n"
+        f"CRITERIO jurado para apoyarte (para el fragmento criterio: adapta "
+        f"esto a tu frase y cita el id entre corchetes):\n{criterios_menu}\n"
         f"{car_txt}{dest_txt}\n\n"
         + (f"\n\nPRESUPUESTO YA ARMADO por el sistema (ponelo con un "
            f"fragmento tipo 'presupuesto'):\n{presupuesto_pre}" if presupuesto_pre else "")
@@ -288,9 +287,9 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
     if not ids:
         # sin universo el modelo no tiene con que; igual puede faq/prosa/cierre
         ids = ["_none_"]
-    # El enum del CRITERIO de venta: los ids reales del corpus jurado. El modelo
-    # solo puede referenciar uno de estos; el codigo estampa el texto sellado.
-    criterios, criterios_menu = _criterios_disponibles()
+    # El enum del CRITERIO de venta: los bloques jurados relevantes al turno. El
+    # modelo redacta la frase apoyandose en ellos y cita el id que uso.
+    criterios, criterios_menu = _criterios_del_turno(mensaje, universo)
     # Lo CERRADO al codigo: presupuesto pre-calculado si el pedido es
     # determinable. El modelo solo lo POSICIONA (fragmento presupuesto).
     presu_txt, presu_tools = presupuesto_precalculado(
@@ -514,16 +513,20 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                     e["proof"] = q["proof"]
                 tools.append(e)
         elif t == "criterio" and f.get("criterio_id"):
-            # El razonamiento de venta ATADO: el modelo eligio un id del corpus
-            # jurado (enum), el codigo estampa el texto sellado desde la fuente.
-            # El id queda como CITA en las tools para el verificador de cita.
+            # El razonamiento de venta ATADO por grounding mas cita: el modelo
+            # redacta la frase para el cliente (natural, no verbatim) apoyado en
+            # un bloque jurado, y cita su id. El codigo poda cualquier numero y
+            # deja el bloque jurado como evidencia; el verificador de cita
+            # chequea que el id exista. Sin numero falso posible; la frase lee
+            # natural en vez de recitar el manual.
             cid = str(f["criterio_id"]).strip()
-            txt = texto_de(cid)
-            if txt:
-                partes.append(txt.strip())
+            jurado = texto_de(cid)  # None si el id no es un bloque real (cita mala)
+            txt = _poda_prosa(f.get("texto"), nombres)
+            if jurado is not None and txt:
+                partes.append(txt)
                 tools.append({"name": "consultar_guia_venta",
                               "result": {"id": cid, "tema": cid,
-                                         "texto": txt, "ok": True}})
+                                         "texto": jurado, "ok": True}})
                 log.info("generador_v2_criterio", trace_id=trace_id, id=cid)
         elif t == "cierre":
             # Sin doble cierre: si la ultima parte ya cerro con una pregunta
