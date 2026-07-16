@@ -385,6 +385,11 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
     faq = get_all_faq(tienda_id=tienda_id) or {}
     partes, tools = [], []
     presu_usado = False
+    # Si YA salio un total (por el fragmento presupuesto o por un calculo del
+    # modelo), la red de seguridad del final NO reinyecta el pre-armado: sin
+    # esto el presupuesto salia DUPLICADO cuando el modelo usaba calculo en vez
+    # de presupuesto (visto en el banco, caso ficha mixta).
+    total_mostrado = False
 
     def _prod(pid):
         if pid and str(pid).upper() in ids_validos:
@@ -418,6 +423,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 for e in (presupuesto_tools or []):
                     tools.append(e)
                 presu_usado = True
+                total_mostrado = True
         elif t == "calculo" and f.get("items"):
             items, destinos = [], []
             for it in f["items"]:
@@ -465,6 +471,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             res = calculate_total(**args)
             if res.get("ok") and res.get("presentacion"):
                 partes.append(res["presentacion"])
+                total_mostrado = True
                 e = {"name": "calculate_total", "args": args, "result": res}
                 if res.get("proof"):
                     e["proof"] = res["proof"]
@@ -523,8 +530,9 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 partes.append(
                     "¿Lo dejamos confirmado? Decime la forma de pago: "
                     "transferencia (10% de descuento) o Mercado Pago.")
-    if presupuesto_pre and not presu_usado:
-        # red: el pre-armado va si o si aunque el modelo no lo posiciono
+    if presupuesto_pre and not total_mostrado:
+        # red: el pre-armado va si o si aunque el modelo no lo posiciono, pero
+        # solo si NINGUN total salio ya (evita el presupuesto duplicado).
         partes.append(presupuesto_pre)
         for e in (presupuesto_tools or []):
             tools.append(e)
