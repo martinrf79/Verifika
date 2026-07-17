@@ -168,6 +168,47 @@ def filtrar_por_preferencias(universo, prefs):
     return filtrado if filtrado else universo
 
 
+_RE_INTERMEDIO = re.compile(
+    r"termino medio|intermedio|gama media|ni el mas barato ni|algo mejor(cito)?"
+    r"|un escalon (mas )?arriba")
+
+
+def bloque_intermedio(mensaje, estado, tienda_id):
+    """Fila 15 de la matriz en el camino del generador (caso real 17-jul,
+    20:47: 'dame un termino medio asi elijo' salio criterio sin productos ni
+    precios). Elegir el intermedio es problema CERRADO: si el cliente pide
+    termino medio y hay pedido vigente, el CODIGO arma el menu con el
+    intermedio REAL de cada categoria del carrito, precio estampado.
+    Devuelve (texto, tools) o (None, [])."""
+    if not _RE_INTERMEDIO.search(_norm(mensaje)):
+        return None, []
+    carrito = (estado or {}).get("carrito") or []
+    if not carrito:
+        return None, []
+    from app.core.tools_context import set_current_tienda
+    from app.core.guia_compra import intermedio_con_stock
+    from app.storage.firestore_client import get_product_by_id
+    from app.core.interprete_libre import _linea_producto
+    set_current_tienda(tienda_id)
+    cats, lineas, tools = [], [], []
+    for c in carrito:
+        p = get_product_by_id(str(c.get("id") or "").upper(), tienda_id=tienda_id)
+        cat = (p or {}).get("categoria")
+        if cat and cat not in cats:
+            cats.append(cat)
+    for cat in cats:
+        inter = intermedio_con_stock(cat)
+        if inter:
+            lineas.append("- " + _linea_producto(inter))
+            tools.append({"name": "get_product_details",
+                          "result": {"encontrado": True, "producto": inter}})
+    if not lineas:
+        return None, []
+    return ("Para que elijas, el término medio de cada categoría, con "
+            "precio y stock reales:\n" + "\n".join(lineas)
+            + "\nDecime cuáles cambiás y te rearmo el total al instante."), tools
+
+
 # ── 2. SCHEMA de fragmentos (atado por enum) ─────────────────────────────────
 def presupuesto_precalculado(mensaje, estado, tienda_id, interp=None):
     """Lo CERRADO al codigo: si el pedido es determinable (cantidades por
@@ -391,6 +432,11 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
     # determinable. El modelo solo lo POSICIONA (fragmento presupuesto).
     presu_txt, presu_tools = presupuesto_precalculado(
         mensaje, estado, tienda_id, interp)
+    if not presu_txt:
+        # Termino medio pedido con carrito vigente: el menu de intermedios lo
+        # arma el CODIGO (mismo mecanismo de posicionado + red que el
+        # presupuesto; el cliente SIEMPRE lo recibe).
+        presu_txt, presu_tools = bloque_intermedio(mensaje, estado, tienda_id)
     prompt = _prompt(mensaje, historial, universo, temas, estado, presu_txt,
                      criterios_menu, prefs)
     schema = _schema(ids, temas, criterios)

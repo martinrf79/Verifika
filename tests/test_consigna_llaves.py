@@ -149,3 +149,24 @@ def test_pregunta_de_precio_singular_no_re_sirve(firestore_doble):
     texto, _ = presupuesto_precalculado(
         "que precio tiene el mouse M170?", estado, "verifika_prod")
     assert texto is None
+
+
+def test_termino_medio_arma_menu_intermedio(firestore_doble):
+    """'Dame un termino medio asi elijo' con carrito vigente (caso real
+    20:47): el CODIGO arma el menu con el intermedio real de cada categoria,
+    precio estampado; el cliente lo recibe siempre por la red de posicionado."""
+    from app.core.generador_v2 import bloque_intermedio
+    estado = {"carrito": [
+        {"id": "TEC0020", "cantidad": 2},
+        {"id": "MOU0023", "cantidad": 2},
+    ]}
+    texto, tools = bloque_intermedio(
+        "Ok pero dame un termino medio asi elijo", estado, "verifika_prod")
+    assert texto and "$" in texto
+    assert len(tools) >= 2  # un intermedio por categoria, con su proof
+
+
+def test_termino_medio_sin_carrito_no_dispara(firestore_doble):
+    from app.core.generador_v2 import bloque_intermedio
+    texto, tools = bloque_intermedio("dame algo intermedio", {}, "verifika_prod")
+    assert texto is None and tools == []
