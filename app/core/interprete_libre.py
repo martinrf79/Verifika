@@ -1703,6 +1703,21 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # marca (checker_sin_respaldo = radar). Error o sin clave -> no-op.
     if _via_solver and respuesta and respuesta != settings.FALLBACK_MESSAGE:
         try:
+            # RAG determinista: la prosa de criterio que matchea el mensaje entra
+            # como evidencia AUNQUE el modelo no haya llamado la tool, para que el
+            # checker no pode el razonamiento fundado en el corpus (turnos mudos).
+            from app.core.guia_venta_prosa import recuperar as _recuperar_prosa
+            _prosa_rag = _recuperar_prosa(raw_message, k=2)
+            if _prosa_rag:
+                _ya = {t.get("id") for t in (meta.get("prosa_evidencia") or [])}
+                meta["prosa_evidencia"] = (meta.get("prosa_evidencia") or []) + [
+                    p for p in _prosa_rag if p.get("id") not in _ya]
+                log.info("interprete_libre_prosa_rag_evidencia", trace_id=trace_id,
+                         ids=[p.get("id") for p in _prosa_rag])
+        except Exception as e:
+            log.warning("interprete_libre_prosa_rag_error", trace_id=trace_id,
+                        error=str(e)[:120])
+        try:
             from app.core.checker_afirmaciones import chequear, podar_sin_respaldo
             _chk = await chequear(respuesta, meta, tienda_id, trace_id)
             if _chk and _chk["sin_respaldo"]:

@@ -76,6 +76,13 @@ def evidencia_de_meta(meta: dict, tienda_id: str | None = None) -> str:
             partes.append(f"FAQ {res.get('tema')}: {res['respuesta']}")
         if tc.get("name") == "consultar_guia_venta" and res.get("texto"):
             partes.append(f"CRITERIO JURADO {res.get('id')}: {res['texto']}")
+    # Prosa de criterio RECUPERADA por el codigo (RAG) aunque el modelo no
+    # eligiera llamar la tool: es fuente jurada del corpus igual, asi el
+    # razonamiento fundado en ella NO se poda por "sin respaldo". Solo prosa
+    # (cero digitos): los numeros los sigue gobernando el verificador de plata.
+    for pr in (meta or {}).get("prosa_evidencia", []) or []:
+        if isinstance(pr, dict) and pr.get("texto"):
+            partes.append(f"CRITERIO JURADO {pr.get('id')}: {pr['texto']}")
     return "\n".join(partes)[:_MAX_EVIDENCIA]
 
 
