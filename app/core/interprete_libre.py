@@ -298,12 +298,30 @@ _RE_SALUDO_SOLVER = re.compile(
     r"^[¡!]*\s*(hola+|buen(as)?\s+(tardes|noches|d[ií]as?))\b[\s,.!:]*",
     re.IGNORECASE)
 
+# Bienvenida REDUNDANTE del modelo en el turno 1 (17-jul, visto en repro): el
+# codigo ya antepone el saludo oficial y el modelo ademas abre con "Bienvenido
+# a X, soy tu asistente. Que bueno que nos contactes." = doble saludo. Se
+# recortan del arranque del cuerpo las oraciones que son pura bienvenida (dos
+# como maximo, solo al inicio; el resto del texto no se toca).
+_RE_BIENVENIDA_SOLVER = re.compile(
+    r"^(?:[¡!]\s*)?[^.!?\n]{0,80}?"
+    r"(?:bienvenid[oa]s?\b|soy\s+(?:tu|su|el|la)\s+asistente|"
+    r"qu[eé]\s+bueno\s+que\s+nos\s+(?:contactes|escribas)|"
+    r"gracias\s+por\s+(?:contactarnos|escribirnos))"
+    r"[^.!?\n]*[.!?]\s*",
+    re.IGNORECASE)
+
 
 def _con_saludo_inicial(respuesta: str, business_name: str) -> str:
     """Primer mensaje de la charla: linea FIJA de saludo cordial con el aviso de
     herramienta automatica (determinista, no depende del prompt), y abajo la
     respuesta del turno. El aviso va una sola vez en toda la conversacion."""
     cuerpo = _RE_SALUDO_SOLVER.sub("", (respuesta or "").strip(), count=1).strip()
+    for _ in range(2):
+        nuevo = _RE_BIENVENIDA_SOLVER.sub("", cuerpo, count=1).strip()
+        if nuevo == cuerpo:
+            break
+        cuerpo = nuevo
     if cuerpo:
         cuerpo = cuerpo[0].upper() + cuerpo[1:]
     linea = (f"¡Hola! Soy el asistente automático de {business_name}. "

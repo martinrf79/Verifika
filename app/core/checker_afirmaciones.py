@@ -90,9 +90,13 @@ def _prompt(respuesta: str, evidencia: str) -> str:
         "- sin_respaldo: afirma algo que la evidencia NO dice.\n"
         "- neutral: opinion de venta, cortesia, pregunta o eco del cliente "
         "(no es un hecho chequeable).\n"
-        "NO evalues precios ni numeros (otro sistema ya los verifico). Copia "
-        "cada afirmacion TEXTUAL, tal cual aparece en la respuesta. Si no hay "
-        "afirmaciones de hecho, devolve la lista vacia.\n\n"
+        "HONESTIDAD NO ES INVENTO: cuando el bot dice que algo NO lo tiene, "
+        "NO lo vende, NO lo trabaja o NO lo tiene confirmado, eso es "
+        "honestidad y va como neutral, salvo que la evidencia diga que SI lo "
+        "tiene. NO evalues precios ni numeros (otro sistema ya los "
+        "verifico). Copia cada afirmacion como ORACION COMPLETA, textual, "
+        "tal cual aparece en la respuesta. Si no hay afirmaciones de hecho, "
+        "devolve la lista vacia.\n\n"
         f"EVIDENCIA:\n{evidencia or '(sin evidencia este turno)'}\n\n"
         f"RESPUESTA:\n{respuesta}\n\n"
         "Devolve SOLO el JSON.")
@@ -141,24 +145,58 @@ async def chequear(respuesta: str, meta: dict, tienda_id: str | None = None,
 
 _RE_DINERO_O_DIGITO = re.compile(r"[\d$]")
 
+# Guardia de HONESTIDAD (17-jul, visto en la consigna): el modelo genera "no
+# vendemos celulares" / "Cuota Simple no trabajamos" y el checker lo marcaba
+# sin_respaldo (la evidencia no lo DICE) borrando la honestidad recien
+# generada. Una negacion de oferta o un "no lo tengo confirmado" NUNCA se
+# poda: es exactamente lo que queremos que el bot diga.
+_RE_HONESTIDAD = re.compile(
+    r"\bno\s+(?:lo\s+|la\s+|los\s+|las\s+|te\s+)?"
+    r"(?:vendemos|vendo|trabajamos|tenemos|tengo|manejamos|ofrecemos|"
+    r"ofrezco|aplicamos|aplico|hacemos|incluye|incluimos|puedo|podemos)\b"
+    r"|no\s+(?:lo\s+)?(?:tengo|esta|está)\s+confirmad"
+    r"|no\s+(?:me\s+)?figura|no\s+esta\s+especificad|no\s+está\s+especificad",
+    re.IGNORECASE)
+
+_RE_FIN_ORACION = re.compile(r"(?<=[.!?…])\s+|\n+")
+
 
 def podar_sin_respaldo(respuesta: str, sin_respaldo: list[str]) -> tuple[str, list[str]]:
-    """Decision DETERMINISTA del codigo sobre el veredicto: poda la oracion
-    solo cuando (a) la afirmacion aparece verbatim, (b) no trae digitos ni $
-    (eso es del verificador de plata) y (c) queda respuesta en pie. Devuelve
-    (texto, lista de lo efectivamente podado); lo no podable queda marcado en
-    el log por el llamador."""
+    """Decision DETERMINISTA del codigo sobre el veredicto: se poda SOLO una
+    ORACION COMPLETA de la respuesta que coincida con la afirmacion (nunca un
+    pedazo al medio: eso dejaba muñones tipo 'te cuento que , pero'), que no
+    traiga digitos ni $ (territorio del verificador de plata) ni sea una
+    frase de HONESTIDAD (negacion de oferta / no confirmado), y solo si queda
+    respuesta en pie. Devuelve (texto, lista de lo efectivamente podado)."""
     texto = respuesta or ""
+    reclamos = []
+    for a in sin_respaldo or []:
+        a = str(a).strip().strip('"')
+        if a and not _RE_DINERO_O_DIGITO.search(a) and not _RE_HONESTIDAD.search(a):
+            reclamos.append(a.rstrip(".!?… ").lower())
+    if not reclamos:
+        return respuesta, []
     podadas = []
-    for afirmacion in sin_respaldo or []:
-        a = str(afirmacion).strip()
-        if not a or _RE_DINERO_O_DIGITO.search(a):
-            continue
-        if a not in texto:
-            continue
-        candidato = texto.replace(a, "").replace("  ", " ")
-        candidato = re.sub(r"\n{3,}", "\n\n", candidato).strip(" .\n")
-        if candidato:
-            texto = candidato
-            podadas.append(a)
-    return (texto if podadas else respuesta), podadas
+
+    def _podable(oracion: str) -> bool:
+        o = oracion.strip().rstrip(".!?… ").lower()
+        if not o or _RE_DINERO_O_DIGITO.search(oracion) or _RE_HONESTIDAD.search(oracion):
+            return False
+        return any(o == r or (len(r) > 20 and r in o and len(o) - len(r) < 15)
+                   for r in reclamos)
+
+    lineas_out = []
+    for linea in texto.split("\n"):
+        oraciones = [s for s in _RE_FIN_ORACION.split(linea) if s is not None]
+        keep = []
+        for s in oraciones:
+            if _podable(s):
+                podadas.append(s.strip())
+            else:
+                keep.append(s)
+        lineas_out.append(" ".join(k.strip() for k in keep if k.strip()))
+    candidato = "\n".join(lineas_out)
+    candidato = re.sub(r"\n{3,}", "\n\n", candidato).strip()
+    if not podadas or not candidato:
+        return respuesta, []
+    return candidato, podadas

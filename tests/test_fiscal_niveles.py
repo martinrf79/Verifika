@@ -144,3 +144,45 @@ def test_evidencia_sale_de_la_fuente(firestore_doble):
 def test_schema_del_checker_es_enum_cerrado():
     v = _SCHEMA["properties"]["afirmaciones"]["items"]["properties"]["veredicto"]
     assert v["enum"] == ["respaldada", "sin_respaldo", "neutral"]
+
+
+# ── Nivel 3, ronda 2 (consigna): honestidad intocable y cirugia por oracion ──
+
+def test_no_poda_la_honestidad():
+    """'No vendemos celulares' es exactamente lo que queremos que diga: el
+    checker la marque como la marque, la poda NO la toca."""
+    r = ("Te soy sincero: celulares no vendemos. Cuota Simple no la "
+         "trabajamos por ahora. ¿Te muestro tablets?")
+    texto, podadas = podar_sin_respaldo(
+        r, ["celulares no vendemos", "Cuota Simple no la trabajamos por ahora."])
+    assert texto == r and not podadas
+
+
+def test_poda_por_oracion_completa_sin_munones():
+    """La afirmacion se saca como ORACION entera; un match parcial al medio de
+    una frase no deja 'te cuento que , pero'."""
+    r = ("El teclado es resistente al polvo y al agua. Viene con cable "
+         "desmontable. ¿Lo sumo?")
+    texto, podadas = podar_sin_respaldo(
+        r, ["El teclado es resistente al polvo y al agua."])
+    assert "resistente al polvo" not in texto
+    assert "Viene con cable desmontable. ¿Lo sumo?" in texto.replace("\n", " ")
+    # Fragmento que NO es oracion completa (match parcial): no se opera.
+    r2 = "Te cuento que es liviano, pero robusto. ¿Seguimos?"
+    texto2, podadas2 = podar_sin_respaldo(r2, ["es liviano"])
+    assert texto2 == r2 and not podadas2
+
+
+def test_saludo_inicial_recorta_bienvenida_doble():
+    from app.core.interprete_libre import _con_saludo_inicial
+    r = ("¡Hola! Bienvenido a Verifika Tech, soy tu asistente. Qué bueno que "
+         "nos contactes, te ayudo enseguida a elegir ese mouse.\n\n"
+         "Para gaming te recomiendo el M170.")
+    out = _con_saludo_inicial(r, "Verifika")
+    assert out.count("asistente") == 1  # solo la linea oficial
+    assert "Bienvenido a Verifika Tech" not in out
+    assert "M170" in out
+    # Un cuerpo sin bienvenida redundante queda intacto.
+    out2 = _con_saludo_inicial("Tengo el M170 a buen precio. ¿Te lo muestro?",
+                               "Verifika")
+    assert "Tengo el M170" in out2
