@@ -1583,6 +1583,52 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             log.warning("interprete_libre_cita_error", trace_id=trace_id,
                         error=str(e)[:160])
 
+    # ── FISCAL NIVEL 2: INVARIANTES DE INTENCION (determinista, 17-jul) ─────
+    # La respuesta se cruza contra la lectura ESTRUCTURADA del turno: un
+    # producto de marca/origen EXCLUIDO por el cliente se poda quirurgico (la
+    # red del filtro de universo); todo ofrecido arriba del TOPE se marca.
+    # Estructura contra estructura, sin LLM, jamas rompe el turno.
+    try:
+        from app.core.verificador_intencion import verificar_intencion
+        from app.core.estado_venta import preferencias_actualizadas as _prefs_turno
+        _prefs_fiscal = _prefs_turno(
+            conv.get("preferencias_cliente"), interp, raw_message)
+        if _prefs_fiscal:
+            _vi = verificar_intencion(respuesta, meta, _prefs_fiscal, tienda_id)
+            if _vi["eventos"]:
+                log.warning("interprete_libre_intencion_fiscal",
+                            trace_id=trace_id, eventos=_vi["eventos"],
+                            corrigio=_vi["respuesta"] != respuesta)
+                respuesta = _vi["respuesta"]
+    except Exception as e:
+        log.warning("interprete_libre_intencion_error", trace_id=trace_id,
+                    error=str(e)[:120])
+
+    # ── FISCAL NIVEL 3: CHECKER DE AFIRMACIONES BLANDAS (17-jul) ────────────
+    # Solo cuando el generador/solver condujo (prosa del modelo en juego): un
+    # modelo chico compara cada afirmacion de HECHO contra la evidencia del
+    # turno (fichas, FAQ, prosa jurada) con veredicto atado por enum. El
+    # CODIGO decide: sin_respaldo verbatim y sin digitos se poda; el resto se
+    # marca (checker_sin_respaldo = radar). Error o sin clave -> no-op.
+    if _via_solver and respuesta and respuesta != settings.FALLBACK_MESSAGE:
+        try:
+            from app.core.checker_afirmaciones import chequear, podar_sin_respaldo
+            _chk = await chequear(respuesta, meta, tienda_id, trace_id)
+            if _chk and _chk["sin_respaldo"]:
+                _texto_chk, _podadas = podar_sin_respaldo(
+                    respuesta, _chk["sin_respaldo"])
+                log.warning("interprete_libre_checker_sin_respaldo",
+                            trace_id=trace_id,
+                            sin_respaldo=_chk["sin_respaldo"][:6],
+                            podadas=len(_podadas))
+                respuesta = _texto_chk
+            elif _chk is not None:
+                log.info("interprete_libre_checker_ok", trace_id=trace_id,
+                         afirmaciones=len(_chk["afirmaciones"]))
+        except Exception as e:
+            log.warning("interprete_libre_checker_error", trace_id=trace_id,
+                        error=str(e)[:120])
+
     proofs_recientes = (proofs_memoria + proofs_turno)[-settings.VERIFICADOR_PROOF_MEMORY:]
 
     # ── PASO 2a-bis: GUARDIA DE PROMESAS PROHIBIDAS (enforce) ───────────────

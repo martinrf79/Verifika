@@ -54,11 +54,43 @@ alternativa real. La matriz sumó las filas 42-54 (grupo H). **La puerta a
 WhatsApp real es que los ocho guiones pasen por el camino vivo con juez
 limpio**, después de las configuraciones que falten.
 
-PENDIENTE al retomar: correr los guiones 39-46 por el pipeline vivo, arreglar
-lo que muestren (ahí entran el checker tipado nivel 3 y los invariantes
-restantes), merge a main con OK de Martín (CI gateado deploya) y recién
-después WhatsApp real leyendo `interprete_libre_preferencias` y
-`generador_v2_criterio_sin_bloque` en los logs.
+**MEJORAS 2 Y 3 DEL FISCAL, HECHAS (17-jul, misma sesión), + FUENTE AMPLIADA:**
+
+7. **FUENTE AMPLIADA a 50 temas de FAQ** (orden directa de Martín: cubrir todo
+   desde la teoría). La FAQ ya cubría cuotas, factura/CUIT, seguimiento,
+   cancelación, defectuoso, cambios, urgente y promociones; los 4 huecos
+   REALES contra la matriz se agregaron: `cambio_direccion`,
+   `reposicion_stock`, `soporte_configuracion`, `verificacion_pagos` (un
+   comprobante por chat NO libera envío). Curadas sin dígitos, políticas
+   conservadoras (honesto + derivación donde no hay dato); Martín las revisa
+   en una pasada y hay que SUBIR la FAQ 50 a Firestore tras el merge
+   (`scripts/crear_cliente.py cargar_faq`).
+8. **FISCAL NIVEL 2 (`verificador_intencion.py`, nuevo, cableado):**
+   estructura contra estructura, sin LLM. Producto de marca/origen EXCLUIDO
+   ofrecido → poda quirúrgica de su línea (red del filtro de universo; nunca
+   deja turno mudo); todo lo ofrecido arriba del TOPE → marca
+   (`tope_superado`), no corrige (vender apenas arriba avisando es legítimo).
+   Evento `interprete_libre_intencion_fiscal`.
+9. **FISCAL NIVEL 3 (`checker_afirmaciones.py`, nuevo, cableado): la Capa A
+   (Proposer+Checker) viva.** Cuando el solver/generador condujo, un flash-lite
+   corto recibe respuesta + evidencia del turno (fichas, FAQ, prosa jurada) y
+   emite veredicto por afirmación atado por enum (respaldada / sin_respaldo /
+   neutral). El CÓDIGO decide determinista: sin_respaldo verbatim y sin
+   dígitos se PODA; el resto se marca (`interprete_libre_checker_sin_respaldo`
+   = radar). Números NI se evalúan (territorio del verificador de plata).
+   Error/timeout/sin clave → no-op, jamás rompe. PROBADO VIVO: cazó
+   "es sumergible" inventado, respetó la garantía respaldada y el precio.
+   Costo: una llamada corta extra por turno del solver.
+10. **Tests:** `tests/test_fiscal_niveles.py` (12 locks). **530 offline
+    verdes.**
+
+PENDIENTE al retomar (chat nuevo): merge a main con OK de Martín (CI gateado
+deploya), SUBIR la FAQ de 50 temas a Firestore, correr los guiones 39-46 de
+la consigna por el pipeline vivo (de a uno por el rate limit del tier gratis,
+o con clave paga) y arreglar lo que muestren. Recién con los 8 en juez limpio,
+WhatsApp real, leyendo `interprete_libre_preferencias`,
+`generador_v2_criterio_sin_bloque`, `interprete_libre_intencion_fiscal` y
+`interprete_libre_checker_sin_respaldo` en los logs.
 
 ---
 
