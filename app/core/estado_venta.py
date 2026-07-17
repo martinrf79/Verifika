@@ -291,7 +291,47 @@ def construir_estado(conv: dict | None, lead: dict | None) -> dict:
         "producto_anotado": (conv.get("producto_anotado")
                              if isinstance(conv.get("producto_anotado"), dict)
                              else {}) or {},
+        # PREFERENCIAS del cliente (16-jul): exclusiones por origen/marca, tope
+        # de presupuesto y uso previsto, leidas por el interprete y STICKY entre
+        # turnos como la provincia. Las consume el generador para filtrar el
+        # universo por construccion.
+        "preferencias": (conv.get("preferencias_cliente")
+                         if isinstance(conv.get("preferencias_cliente"), dict)
+                         else {}) or {},
     }
+
+
+_RE_LIMPIA_PREFERENCIAS = re.compile(
+    r"no importa (la marca|el origen|de donde)|cualquier marca|da igual la marca"
+    r"|me da igual (la marca|el origen)", re.IGNORECASE)
+
+
+def preferencias_actualizadas(previas: dict | None, interp: dict | None,
+                              mensaje: str = "") -> dict:
+    """Merge sticky de las preferencias del cliente: las exclusiones se ACUMULAN
+    (dedup por tipo+valor), tope y uso los pisa el ultimo dicho. Una frase que
+    las suelta ('no importa la marca', 'cualquier marca') limpia las
+    exclusiones. Devuelve dict listo para persistir; {} si no hay nada."""
+    prefs = dict(previas or {}) if isinstance(previas, dict) else {}
+    interp = interp if isinstance(interp, dict) else {}
+    if _RE_LIMPIA_PREFERENCIAS.search(mensaje or ""):
+        prefs.pop("exclusiones", None)
+    exc_prev = [e for e in (prefs.get("exclusiones") or [])
+                if isinstance(e, dict) and e.get("valor")]
+    vistas = {(str(e.get("tipo")), str(e.get("valor")).strip().lower())
+              for e in exc_prev}
+    for e in (interp.get("exclusiones") or []):
+        clave = (str(e.get("tipo")), str(e.get("valor") or "").strip().lower())
+        if clave[1] and clave not in vistas:
+            exc_prev.append({"tipo": clave[0], "valor": str(e["valor"]).strip()})
+            vistas.add(clave)
+    if exc_prev:
+        prefs["exclusiones"] = exc_prev
+    if interp.get("tope_presupuesto"):
+        prefs["tope_presupuesto"] = int(interp["tope_presupuesto"])
+    if interp.get("uso_previsto"):
+        prefs["uso_previsto"] = str(interp["uso_previsto"]).strip()
+    return {k: v for k, v in prefs.items() if v}
 
 
 

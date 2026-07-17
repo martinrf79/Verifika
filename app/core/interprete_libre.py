@@ -1905,6 +1905,21 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         log.warning("interprete_libre_ancla_save_error", trace_id=trace_id,
                     error=str(e)[:120])
         producto_anotado = conv.get("producto_anotado") or {}
+    # PREFERENCIAS sticky (16-jul): exclusiones por origen/marca, tope de
+    # presupuesto y uso previsto que leyo el interprete este turno se funden
+    # con las previas y persisten; las consume el generador filtrando el
+    # universo por construccion.
+    try:
+        from app.core.estado_venta import preferencias_actualizadas
+        preferencias_cliente = preferencias_actualizadas(
+            conv.get("preferencias_cliente"), interp, raw_message)
+        if preferencias_cliente != (conv.get("preferencias_cliente") or {}):
+            log.info("interprete_libre_preferencias", trace_id=trace_id,
+                     preferencias=preferencias_cliente)
+    except Exception as e:
+        log.warning("interprete_libre_preferencias_error", trace_id=trace_id,
+                    error=str(e)[:120])
+        preferencias_cliente = conv.get("preferencias_cliente") or {}
 
     latency_ms = int((time.time() - t0) * 1000)
     try:
@@ -1938,7 +1953,8 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                           criterio_confirmar_pendiente=_criterio_confirmar,
                           pregunta_cierre_hecha=pregunta_cierre_hecha,
                           datos_cliente_parciales=datos_acumulados,
-                          producto_anotado=producto_anotado)
+                          producto_anotado=producto_anotado,
+                          preferencias_cliente=preferencias_cliente)
     except Exception as e:
         log.warning("interprete_libre_save_failed", trace_id=trace_id,
                     error=str(e)[:120])

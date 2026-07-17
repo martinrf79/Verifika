@@ -4,6 +4,55 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 17-jul-2026 — IDIOMA ENSANCHADO DEL INTÉRPRETE + VÁLVULA DE CRITERIO +
+MATRIZ DE COBERTURA (rama claude/whatsapp-solver-flexibility-vfrq7d) ====**
+
+Sesión con Fabiola (Claude), pedido de Martín: el generador de fragmentos quedó
+robótico (sin bloque jurado no tenía salida) y la interpretación necesitaba
+leer las mil formas de decir lo mismo. Lo HECHO, testeado y pusheado:
+
+1. **Intérprete ensanchado (interpretador.py):** tres campos nuevos en el
+   idioma, atados por schema estricto: `tope_presupuesto` (solo con cifra
+   dicha), `exclusiones` (origen/marca: "sin partes chinas", "nada de
+   Redragon"), `uso_previsto`. Coerción defensiva en
+   `coercionar_preferencias`. MEDIDO VIVO: banco nuevo
+   `banco_parafrasis_interprete.py`, 24/24 con Gemini (las paráfrasis de
+   Martín del presupuesto ajustado, marcas chinas, marca deducida del
+   contexto, combinadas). El 429 del tier gratis corta a ~15 req/min: correr
+   el banco con pausa o clave paga.
+2. **Preferencias STICKY (estado_venta.preferencias_actualizadas):**
+   exclusiones se acumulan con dedup, tope y uso pisa el último; "no importa
+   la marca" las limpia; persisten en `preferencias_cliente`
+   (save_conversation + construir_estado).
+3. **Atadura POR CONSTRUCCIÓN en el generador (generador_v2):**
+   `filtrar_por_preferencias` saca del universo (del enum) lo excluido y lo
+   arriba del tope ANTES de que el modelo lo vea; `_pais_de_marca` distingue
+   marca china de fabricado en China (casi todo se fabrica ahí). Si el filtro
+   vaciara el universo, vuelve entero y el modelo explica honesto (las
+   preferencias van al prompt). El listado de productos ahora lleva marca,
+   país de marca y uso: evidencia para razonar.
+4. **VÁLVULA DE CRITERIO (anti-robot):** el fragmento criterio ya NO exige
+   bloque jurado para salir: sin bloque que aplique, la frase razonada desde
+   los datos del listado sale igual, con la poda de dígitos intacta y SIN
+   cita falsa. El warning `generador_v2_criterio_sin_bloque` es el RADAR de
+   huecos del corpus: cada uno es un bloque de prosa por escribir.
+5. **MATRIZ_COBERTURA.md (nueva, fuente de verdad de casos):** 41 familias en
+   7 grupos (dato duro, identidad, política, criterio, conversación,
+   adversariales, operativa) + la fila final que atrapa todo; cada una con
+   fuente, atadura, invariante, fallback y lock. El contrato tipado NO se
+   cambia más: los golpes se absorben agregando filas/prosa/invariantes.
+6. **Tests:** `tests/test_preferencias_cliente.py` (19 casos: coerción, merge
+   sticky, filtro de universo, válvula). **518 offline verdes** (cero
+   regresiones).
+
+PENDIENTE al retomar: checker tipado de afirmaciones blandas (nivel 3, la
+Capa A que falta), invariantes de intención nivel 2 restantes (tope respetado
+en total ofrecido), merge a main con OK de Martín (CI gateado deploya) y
+probar en WhatsApp real leyendo `interprete_libre_preferencias` y
+`generador_v2_criterio_sin_bloque` en los logs.
+
+---
+
 **==== ARRANQUE DEL CHAT NUEVO: ATADURA COMPLETA POR CONTRATO TIPADO (fragmentos) ====**
 
 El próximo trabajo, acordado con Martín (15-jul), es la ATADURA COMPLETA del

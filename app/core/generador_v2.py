@@ -109,6 +109,54 @@ def universo_productos(mensaje, estado, tienda_id, interp=None):
     return list(por_id.values())[:16]
 
 
+# ── 1-bis. PREFERENCIAS del cliente: filtran el universo POR CONSTRUCCION ────
+_RE_PAIS_MARCA = re.compile(r"marca .+? de ([a-z ]+?)(?:[.,]|$)")
+
+
+def _pais_de_marca(prod):
+    """El pais de la MARCA desde el campo origen ('Marca Logitech de Suiza.
+    Fabricado en China.' -> 'suiza'). Casi todo se fabrica en China; cuando el
+    cliente dice 'sin marcas chinas' habla de la marca, no de la fabrica."""
+    m = _RE_PAIS_MARCA.search(_norm(prod.get("origen")))
+    return m.group(1).strip() if m else ""
+
+
+def filtrar_por_preferencias(universo, prefs):
+    """Aplica exclusiones (origen/marca) y tope de presupuesto al universo del
+    turno. Prevencion por construccion: lo excluido ni entra al enum, el modelo
+    no puede ofrecerlo. Si el filtro vaciara el universo, se devuelve el
+    original: mejor que el modelo explique honesto (con las preferencias en el
+    prompt) a que se quede sin productos que mostrar."""
+    prefs = prefs if isinstance(prefs, dict) else {}
+    exclusiones = [e for e in (prefs.get("exclusiones") or [])
+                   if isinstance(e, dict) and e.get("valor")]
+    tope = prefs.get("tope_presupuesto")
+    if not exclusiones and not tope:
+        return universo
+
+    def _pasa(p):
+        for e in exclusiones:
+            stem = _norm(e["valor"])[:4]
+            if not stem:
+                continue
+            if e.get("tipo") == "marca" and stem in _norm(p.get("marca")):
+                return False
+            if e.get("tipo") == "origen":
+                pais = _pais_de_marca(p) or _norm(p.get("origen"))
+                if stem in pais:
+                    return False
+        if tope:
+            try:
+                if float(p.get("precio_ars") or 0) > float(tope):
+                    return False
+            except (TypeError, ValueError):
+                pass
+        return True
+
+    filtrado = [p for p in universo if _pasa(p)]
+    return filtrado if filtrado else universo
+
+
 # ── 2. SCHEMA de fragmentos (atado por enum) ─────────────────────────────────
 def presupuesto_precalculado(mensaje, estado, tienda_id, interp=None):
     """Lo CERRADO al codigo: si el pedido es determinable (cantidades por
@@ -198,10 +246,30 @@ def _schema(ids, temas, criterios):
 
 
 def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
-            criterios_menu=""):
-    prods = "\n".join(
-        f"  {p['id']} = {p['nombre']} | ${int(p.get('precio_ars',0)):,}".replace(",", ".")
-        + f" | stock {p.get('stock','?')}" for p in universo)
+            criterios_menu="", prefs=None):
+    def _linea(p):
+        base = (f"  {p['id']} = {p['nombre']} | "
+                f"${int(p.get('precio_ars',0)):,}".replace(",", ".")
+                + f" | stock {p.get('stock','?')}")
+        pais = _pais_de_marca(p)
+        if p.get("marca"):
+            base += f" | marca {p['marca']}" + (f" de {pais}" if pais else "")
+        if p.get("uso_recomendado"):
+            base += f" | para {p['uso_recomendado']}"
+        return base
+    prods = "\n".join(_linea(p) for p in universo)
+    prefs = prefs if isinstance(prefs, dict) else {}
+    pref_lineas = []
+    if prefs.get("tope_presupuesto"):
+        pref_lineas.append("presupuesto maximo "
+                           + f"${int(prefs['tope_presupuesto']):,}".replace(",", "."))
+    for e in (prefs.get("exclusiones") or []):
+        pref_lineas.append(f"NO quiere {e.get('tipo')} {e.get('valor')}")
+    if prefs.get("uso_previsto"):
+        pref_lineas.append("lo va a usar para " + str(prefs["uso_previsto"]))
+    prefs_txt = ("\nPREFERENCIAS que el cliente ya dio (respetalas en TODA la "
+                 "respuesta; si nada del listado las cumple, decilo honesto "
+                 "sin inventar): " + "; ".join(pref_lineas)) if pref_lineas else ""
     faq_list = ", ".join(temas)
     carrito = estado.get("carrito") or []
     car_txt = ("\nPedido vigente: " + ", ".join(
@@ -230,7 +298,11 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
         "numeros. Elegi el bloque por lo que el cliente QUIERE: si dice que "
         "algo es caro va objecion_precio, si no sabe cual, asesoramiento_metodo. "
         "En un pedido directo (ej. 'quiero el mouse mas barato') NO metas "
-        "criterio: solo satura.\n"
+        "criterio: solo satura. Si NINGUN bloque de la lista aplica a lo que "
+        "pregunta el cliente, IGUAL respondele con un fragmento criterio: "
+        "razona desde los datos del listado (marca, pais de la marca, uso, "
+        "precio relativo) y deja criterio_id en null. Nunca dejes la pregunta "
+        "sin responder por falta de bloque; lo que no sepas, decilo honesto.\n"
         "- producto: mostrar la linea (nombre+precio+stock) de UN producto "
         "-> producto_id.\n"
         "- opciones: mostrar las opciones con stock de una categoria -> "
@@ -251,7 +323,7 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
         f"TEMAS de FAQ disponibles: {faq_list}\n"
         f"CRITERIO jurado para apoyarte (para el fragmento criterio: adapta "
         f"esto a tu frase y cita el id entre corchetes):\n{criterios_menu}\n"
-        f"{car_txt}{dest_txt}\n\n"
+        f"{car_txt}{dest_txt}{prefs_txt}\n\n"
         + (f"\n\nPRESUPUESTO YA ARMADO por el sistema (ponelo con un "
            f"fragmento tipo 'presupuesto'):\n{presupuesto_pre}" if presupuesto_pre else "")
         + f"\n\nCharla:\n{hist}\n\nMensaje del cliente:\n{mensaje}\n\n"
@@ -281,6 +353,14 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
     """La llamada a Gemini que compone la respuesta como fragmentos atados.
     Devuelve (fragmentos, universo) o (None, universo) ante error."""
     universo = universo_productos(mensaje, estado, tienda_id, interp)
+    # PREFERENCIAS efectivas del turno: las sticky del estado mas lo que el
+    # interprete leyo AHORA (todavia no persistido). Filtran el universo por
+    # construccion: lo excluido ni entra al enum.
+    from app.core.estado_venta import preferencias_actualizadas
+    prefs = preferencias_actualizadas(
+        (estado or {}).get("preferencias") if isinstance(estado, dict) else {},
+        interp, mensaje)
+    universo = filtrar_por_preferencias(universo, prefs)
     ids = [p["id"] for p in universo]
     from app.storage.firestore_client import get_all_faq
     temas = sorted((get_all_faq(tienda_id=tienda_id) or {}).keys())
@@ -295,7 +375,7 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
     presu_txt, presu_tools = presupuesto_precalculado(
         mensaje, estado, tienda_id, interp)
     prompt = _prompt(mensaje, historial, universo, temas, estado, presu_txt,
-                     criterios_menu)
+                     criterios_menu, prefs)
     schema = _schema(ids, temas, criterios)
 
     def _call():
@@ -512,22 +592,32 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 if q.get("proof"):
                     e["proof"] = q["proof"]
                 tools.append(e)
-        elif t == "criterio" and f.get("criterio_id"):
+        elif t == "criterio":
             # El razonamiento de venta ATADO por grounding mas cita: el modelo
             # redacta la frase para el cliente (natural, no verbatim) apoyado en
             # un bloque jurado, y cita su id. El codigo poda cualquier numero y
             # deja el bloque jurado como evidencia; el verificador de cita
             # chequea que el id exista. Sin numero falso posible; la frase lee
             # natural en vez de recitar el manual.
-            cid = str(f["criterio_id"]).strip()
-            jurado = texto_de(cid)  # None si el id no es un bloque real (cita mala)
+            # VALVULA (16-jul): sin bloque jurado que aplique, el criterio IGUAL
+            # sale, razonado desde los datos del listado (marca, pais, uso) que
+            # el prompt le dio; la poda de digitos sigue. El warning es el RADAR
+            # de huecos del corpus: cada uno es un bloque de prosa por escribir.
+            cid = str(f.get("criterio_id") or "").strip()
+            jurado = texto_de(cid) if cid else None
             txt = _poda_prosa(f.get("texto"), nombres)
-            if jurado is not None and txt:
-                partes.append(txt)
+            if not txt:
+                continue
+            partes.append(txt)
+            if jurado is not None:
                 tools.append({"name": "consultar_guia_venta",
                               "result": {"id": cid, "tema": cid,
                                          "texto": jurado, "ok": True}})
                 log.info("generador_v2_criterio", trace_id=trace_id, id=cid)
+            else:
+                log.warning("generador_v2_criterio_sin_bloque",
+                            trace_id=trace_id, id=cid or None,
+                            texto=txt[:120])
         elif t == "cierre":
             # Sin doble cierre: si la ultima parte ya cerro con una pregunta
             # (la prosa del modelo ya invito a avanzar), no se pega el enlatado.

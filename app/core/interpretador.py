@@ -243,7 +243,10 @@ DEVOLVE ESTE JSON:
   "estado_conversacion": "saludo|explorando|esperando_confirmacion|esperando_datos|derivar_humano|posventa",
   "ofrecer_opciones": "null si no hay duda, o lista de dos opciones [opcion A, opcion B] cuando hay dos caminos posibles y no se puede determinar uno con certeza",
   "criterio": "mas_barato si el cliente expresa que quiere lo mas barato / mas economico / lo mas conveniente en CUALQUIER forma, abreviatura o modismo (ej lo mas barato, las mas baratas, lo mas eco, lo mas economico, mandame lo mas conveniente, lo de menor precio). intermedio si pide algo de precio medio o rechaza explicitamente lo mas barato (ej algo intermedio, gama media, ni el mas barato ni el mas caro, economico pero no lo mas barato que haya). null si no expresa criterio",
-  "pedido": "lista de {{\\"producto\\": nombre EXACTO de un producto mostrado, \\"cantidad\\": numero}} SOLO cuando el cliente define un pedido concreto: que productos de los mostrados quiere y cuantos de cada uno (ej tres del DX-110 y dos teclados K120). Si no define productos y cantidades concretos, lista vacia []"
+  "pedido": "lista de {{\\"producto\\": nombre EXACTO de un producto mostrado, \\"cantidad\\": numero}} SOLO cuando el cliente define un pedido concreto: que productos de los mostrados quiere y cuantos de cada uno (ej tres del DX-110 y dos teclados K120). Si no define productos y cantidades concretos, lista vacia []",
+  "tope_presupuesto": "numero entero en pesos SOLO si el cliente dice una cifra maxima que puede o quiere gastar (ej tengo 100 lucas, no mas de 50 mil, hasta 80000). Si no da cifra, null",
+  "exclusiones": "lista de {{\\"tipo\\": \\"origen\\" o \\"marca\\", \\"valor\\": texto}} cuando el cliente descarta algo por origen o por marca (ej sin partes chinas, que no sea chino, nada de Redragon, menos esa marca). Si no excluye nada, lista vacia []",
+  "uso_previsto": "para que va a usar el producto, en una o dos palabras (oficina, gaming, estudio, diseño, regalo, streaming, trabajo), o null si no lo dice"
 }}
 
 GUIA DE INTENCIONES, usalas con criterio, no son recetas rigidas.
@@ -308,6 +311,21 @@ Maria, M170 x1 destino Rio Tercero, H390 x1 destino Rio Tercero. "El resto" =
 lo pedido menos lo ya asignado. Las cantidades por producto tienen que sumar
 lo que pidio el cliente. Con un solo destino o sin destino dicho, "destino"
 va null en todos los renglones.
+
+PREFERENCIAS DEL CLIENTE, campos tope_presupuesto, exclusiones y uso_previsto.
+El cliente expresa la MISMA preferencia de mil formas; tu trabajo es normalizarla
+al campo, no matchear palabras. Ejemplos del criterio economico (van en
+"criterio" = mas_barato, NO en tope): "quiero gastar lo menos posible", "mi
+presupuesto es muy ajustado", "la situacion economica esta dificil, dame algo
+acorde", "algo accesible", "no estoy para gastar mucho". tope_presupuesto SOLO
+cuando hay una CIFRA: "tengo 100 lucas" es 100000, "no mas de 50 mil" es 50000,
+"hasta 80" con contexto de miles es 80000. exclusiones cuando descarta origen o
+marca en cualquier forma: "sin partes chinas", "que no venga de China", "si es
+chino mejor que no", "nada de Redragon", "esa marca no me gusta" referida a una
+marca nombrada en la charla. uso_previsto cuando dice para que lo quiere: "para
+la oficina", "es para mi hijo que juega", "para editar videos". Estos campos son
+independientes entre si y de la intencion; completa los que el mensaje diga y
+deja el resto en null o vacio.
 
 CONFIANZA.
 alta 0.85 a 1.0, intencion inequivoca o referencia clara a un producto unico.
@@ -374,6 +392,28 @@ def _corregir_referencia_comparativa(resultado: dict, mensaje: str,
         resultado["confianza"] = min(
             float(resultado.get("confianza") or 0), 0.5)
         resultado["pedido"] = []
+    return resultado
+
+
+def coercionar_preferencias(resultado: dict) -> dict:
+    """Coercion defensiva de los campos de preferencias para providers sin
+    schema estricto: tope solo entero positivo; exclusiones solo dicts con tipo
+    origen/marca y valor no vacio; uso string corto o None. Muta y devuelve."""
+    _tope = resultado.get("tope_presupuesto")
+    try:
+        resultado["tope_presupuesto"] = (
+            int(_tope) if _tope and int(_tope) > 0 else None)
+    except (TypeError, ValueError):
+        resultado["tope_presupuesto"] = None
+    _exc = resultado.get("exclusiones")
+    resultado["exclusiones"] = [
+        {"tipo": str(e["tipo"]), "valor": str(e["valor"]).strip()}
+        for e in (_exc if isinstance(_exc, list) else [])
+        if isinstance(e, dict) and e.get("tipo") in ("origen", "marca")
+        and str(e.get("valor") or "").strip()]
+    _uso = resultado.get("uso_previsto")
+    resultado["uso_previsto"] = (
+        str(_uso).strip()[:60] if _uso and str(_uso).strip() else None)
     return resultado
 
 
@@ -513,10 +553,27 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
                 },
                 "required": ["producto", "cantidad", "destino"],
             }},
+            # PREFERENCIAS del cliente (16-jul, idioma ensanchado): el mensaje
+            # dice de mil formas lo mismo y el LLM lo normaliza a estructura
+            # finita. tope_presupuesto solo con CIFRA dicha; exclusiones por
+            # origen o marca ("sin partes chinas", "nada de Redragon");
+            # uso_previsto en una o dos palabras. Consumidos por el generador
+            # (filtran el universo por construccion) y sticky en el estado.
+            "tope_presupuesto": {"type": ["integer", "null"]},
+            "exclusiones": {"type": ["array", "null"], "items": {
+                "type": "object", "additionalProperties": False,
+                "properties": {
+                    "tipo": {"type": "string", "enum": ["origen", "marca"]},
+                    "valor": {"type": "string"},
+                },
+                "required": ["tipo", "valor"],
+            }},
+            "uso_previsto": {"type": ["string", "null"]},
         },
         "required": ["intencion", "producto_resuelto", "candidatos", "confianza",
                      "datos_pedido", "respondiendo_a", "estado_conversacion",
-                     "ofrecer_opciones", "criterio", "pedido"],
+                     "ofrecer_opciones", "criterio", "pedido",
+                     "tope_presupuesto", "exclusiones", "uso_previsto"],
     }
 
 
@@ -695,6 +752,7 @@ async def interpretar_mensaje(mensaje: str,
             resultado["respondiendo_a"] = None
         if not isinstance(resultado.get("pedido"), list):
             resultado["pedido"] = []
+        coercionar_preferencias(resultado)
 
         # Sesgo medido del modelo en referencias comparativas ('el barato no,
         # el otro'): la comparacion de precios la corrige el CODIGO.
