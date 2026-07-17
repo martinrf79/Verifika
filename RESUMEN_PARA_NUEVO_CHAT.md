@@ -4,6 +4,28 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 17-jul-2026 (3ª tanda) — HONESTIDAD INTOCABLE + FIN DEL DOBLE SALUDO.
+DEPLOY 121 VERDE. ====**
+
+La 2ª corrida de la consigna (Opus) reportó mejoras reales (40, 41, 42, 43) y
+dos fallas. VERIFICADO POR REPRODUCCIÓN VIVA en main (process_message + sim):
+- **FALSO del informe:** "turno 1 saludo pelado en los ocho" NO reproduce en
+  el main actual (43 y 44 salen completos con datos reales); la corrida usó
+  un clon a medio actualizar. El "cargador Samsung inventado" tampoco: hay 2
+  cargadores Samsung REALES en catálogo. REGLA para correr la consigna:
+  `git pull origin main` ANTES, y juzgar la respuesta COMPLETA, no la
+  primera línea.
+- **CIERTO y arreglado (deploy 121):** (1) la poda del checker borraba la
+  honestidad recién generada → guardia dura: "no vendemos / no trabajamos /
+  no lo tengo confirmado" NUNCA se poda + el prompt del fiscal las declara
+  neutral; (2) muñones ("te cuento que , pero") → la poda ahora es por
+  ORACIÓN COMPLETA, un match parcial no opera; (3) doble saludo del turno 1
+  (visto en repro propia: "Bienvenido a Verifika Tech, soy tu asistente"
+  abajo del saludo oficial) → la bienvenida redundante del modelo se
+  recorta. 543 offline verdes. Todo verificado vivo post-fix.
+
+---
+
 **==== 17-jul-2026 (2ª tanda) — LAS TRES LLAVES DE LA CONSIGNA ====**
 
 La corrida de los guiones 39-46 (hecha por Opus en otro chat) dio: JUEZ limpio
