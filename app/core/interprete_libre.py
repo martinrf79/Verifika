@@ -1116,11 +1116,26 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # alimenta a todo el downstream; los verificadores (plata, stock, promesas,
     # FAQ, cita) corren DESPUES como red. Falla, timeout o sin clave -> camino
     # determinista de abajo.
-    if not (_sellado_pedido or _tools_precalc or _cat_no_vendida_servida):
+    # El pedido SELLADO por la guia YA NO saltea al generador (caso real
+    # 21:32: "quiero la gris, envio a Monte Ralo, ¿que dia llega? es para
+    # regalo" y la plantilla respondio SOLO el presupuesto y re-pidio la
+    # localidad dicha). El bloque sellado viaja como presupuesto EXTERNO: el
+    # modelo lo posiciona intocable y responde ALREDEDOR el resto (plazo,
+    # regalo, envio). Si el generador falla, la plantilla sigue de red abajo.
+    if not (_sellado_pedido or _cat_no_vendida_servida):
         try:
             from app.core.generador_v2 import generar_fragmentos, renderizar
+            _presu_ext = None
+            if _tools_precalc:
+                try:
+                    _presu_ext = (
+                        _tools_precalc[0]["result"]["presentacion"].strip(),
+                        list(_tools_precalc))
+                except (KeyError, IndexError, AttributeError):
+                    _presu_ext = None
             _frags, _uni, _presu, _presu_tools = await generar_fragmentos(
-                raw_message, history, estado, tienda_id, interp, trace_id)
+                raw_message, history, estado, tienda_id, interp, trace_id,
+                presupuesto_externo=_presu_ext)
             if _frags:
                 _texto, _tools = renderizar(
                     _frags, _uni, estado, tienda_id, trace_id,

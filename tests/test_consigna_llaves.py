@@ -170,3 +170,30 @@ def test_termino_medio_sin_carrito_no_dispara(firestore_doble):
     from app.core.generador_v2 import bloque_intermedio
     texto, tools = bloque_intermedio("dame algo intermedio", {}, "verifika_prod")
     assert texto is None and tools == []
+
+
+def test_presupuesto_sellado_viaja_por_la_red_del_generador(firestore_doble):
+    """El sellado ya no saltea al generador: viaja como presupuesto externo y
+    si el modelo no lo posiciona, la red lo inyecta igual. El cliente SIEMPRE
+    recibe el bloque sellado, y el resto del mensaje se responde alrededor."""
+    from app.core.generador_v2 import renderizar
+    presu = ("Presupuesto:\n- 1x Tablet Samsung Galaxy Tab A9 Gris: "
+             "$211.500 c/u = $211.500\nTotal: $211.500")
+    ptools = [{"name": "calculate_total", "result": {"presentacion": presu}}]
+    frags = [{"tipo": "faq", "tema": "plazo_envio"},
+             {"tipo": "faq", "tema": "envoltorio_regalo"}]
+    texto, tools = renderizar(frags, [], {}, "verifika_prod",
+                              presupuesto_pre=presu, presupuesto_tools=ptools)
+    assert "211.500" in texto            # el sellado llego si o si (red)
+    assert any(t["name"] == "calculate_total" for t in tools)
+
+
+def test_cierre_enlatado_sin_total_es_suave(firestore_doble):
+    """Sin un total sobre la mesa, el cierre no pide la forma de pago (queja
+    real: preguntaba el medio de pago de entrada)."""
+    from app.core.generador_v2 import renderizar
+    frags = [{"tipo": "prosa", "texto": "Buena eleccion, es un equipo solido"},
+             {"tipo": "cierre"}]
+    texto, _ = renderizar(frags, [], {}, "verifika_prod")
+    assert "forma de pago" not in texto
+    assert "?" in texto  # igual invita a avanzar

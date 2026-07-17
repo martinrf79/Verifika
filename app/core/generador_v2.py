@@ -407,9 +407,14 @@ def _cliente_gemini():
 
 
 async def generar_fragmentos(mensaje, historial, estado, tienda_id,
-                             interp=None, trace_id=None):
+                             interp=None, trace_id=None,
+                             presupuesto_externo=None):
     """La llamada a Gemini que compone la respuesta como fragmentos atados.
-    Devuelve (fragmentos, universo) o (None, universo) ante error."""
+    Devuelve (fragmentos, universo) o (None, universo) ante error.
+    presupuesto_externo: (texto, tools) de un presupuesto YA SELLADO por el
+    codigo (guia de pedido). Si viene, manda sobre el precalculo interno: el
+    modelo lo posiciona y responde ALREDEDOR el resto del mensaje (caso real
+    21:32: el sellado ignoraba dia de entrega, regalo y la localidad dicha)."""
     universo = universo_productos(mensaje, estado, tienda_id, interp)
     # PREFERENCIAS efectivas del turno: las sticky del estado mas lo que el
     # interprete leyo AHORA (todavia no persistido). Filtran el universo por
@@ -430,8 +435,11 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
     criterios, criterios_menu = _criterios_del_turno(mensaje, universo)
     # Lo CERRADO al codigo: presupuesto pre-calculado si el pedido es
     # determinable. El modelo solo lo POSICIONA (fragmento presupuesto).
-    presu_txt, presu_tools = presupuesto_precalculado(
-        mensaje, estado, tienda_id, interp)
+    if presupuesto_externo and presupuesto_externo[0]:
+        presu_txt, presu_tools = presupuesto_externo
+    else:
+        presu_txt, presu_tools = presupuesto_precalculado(
+            mensaje, estado, tienda_id, interp)
     if not presu_txt:
         # Termino medio pedido con carrito vigente: el menu de intermedios lo
         # arma el CODIGO (mismo mecanismo de posicionado + red que el
@@ -686,9 +694,18 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             # (la prosa del modelo ya invito a avanzar), no se pega el enlatado.
             ya_pregunta = bool(partes) and partes[-1].rstrip().endswith("?")
             if not ya_pregunta:
-                partes.append(
-                    "¿Lo dejamos confirmado? Decime la forma de pago: "
-                    "transferencia (10% de descuento) o Mercado Pago.")
+                # Pedir la forma de pago SOLO con un total sobre la mesa
+                # (queja real de Martin: preguntaba el medio de pago de
+                # entrada, en desacorde con saber vender). Sin total, la
+                # invitacion es suave y sigue la charla.
+                if total_mostrado:
+                    partes.append(
+                        "¿Lo dejamos confirmado? Decime la forma de pago: "
+                        "transferencia (10% de descuento) o Mercado Pago.")
+                else:
+                    partes.append(
+                        "¿Querés que avancemos con alguno? Te armo el total "
+                        "al instante.")
     if presupuesto_pre and not total_mostrado:
         # red: el pre-armado va si o si aunque el modelo no lo posiciono, pero
         # solo si NINGUN total salio ya (evita el presupuesto duplicado).
