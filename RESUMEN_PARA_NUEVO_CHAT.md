@@ -4,6 +4,46 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 17-jul-2026 (noche, 4ª tanda) — TRÁFICO REAL DE WHATSAPP: CAE LA
+EXCEPCIÓN DEL SELLADO. DEPLOYS 122-124 VERDES. ====**
+
+Tres charlas reales de Martín leídas de logs y Firestore (acceso claude-lector
+por REST, receta en la tanda del 10-jul). Cada una destapó fallas que los
+bancos no cazan, TODAS de código, no de modelo:
+
+1. **Charla 20:03:** pidió el presupuesto 3 veces y nunca salió. Causas:
+   (a) el intérprete INVENTÓ destino "Rosario" → `coercionar_destinos`
+   (invariante: destino que no está en el mensaje va None, evento
+   `interpretador_destino_fantasma`); (b) "presupuesto"/"precios" no
+   disparaban la re-serva → agregados al regex de `presupuesto_precalculado`.
+   Deploy 122.
+2. **Charla 20:41 (post-122):** el presupuesto ya salió al pedirlo; faltó
+   "dame un término medio" → `generador_v2.bloque_intermedio`: menú de
+   intermedios REALES por categoría del carrito, sellado, viaja por la red
+   de posicionado. Deploy 123. PENDIENTE fino: multi-provincia en una frase
+   ("Isla Verde y Río Tercero son de Córdoba y Serodino Santa Fe") quedó en
+   1 destino cotizado de 3 (radar: `destinos_sin_cotizar`).
+3. **Charla 21:32, la joya:** "quiero la gris, transferencia, envío a Monte
+   Ralo, ¿qué día llega? es para regalo" → la PLANTILLA del sellado
+   respondió solo el presupuesto, re-pidió la localidad dicha e ignoró plazo
+   y regalo. **CAUSA RAÍZ ESTRUCTURAL: el pedido sellado salteaba al
+   generador (excepción heredada del diseño viejo). ELIMINADA:** el bloque
+   sellado viaja como `presupuesto_externo` del generador, el modelo lo
+   posiciona INTOCABLE (red lo inyecta si no) y responde alrededor el resto
+   del mensaje. La plantilla queda solo de red ante fallo del generador.
+   Además el cierre enlatado pide la forma de pago SOLO con total sobre la
+   mesa; sin total invita suave (queja directa de Martín). Deploy 124.
+
+**550 tests offline verdes.** La lectura del día: el sistema tenía DOS
+cerebros (plantillas viejas + generador) y cada error real era el viejo
+interrumpiendo al nuevo; con esta tanda cayó el atajo más grande. Prueba de
+fuego pendiente: charla real que mezcle compra + envío + pregunta + regalo
+en un mensaje. Modelo: NO se cambió (flash-lite); las fallas eran de código.
+Precio sugerido a cliente pagador (preguntó Martín): setup 300-500 USD +
+abono 100-200 USD/mes por tienda; costo propio ~50 USD/mes por tienda.
+
+---
+
 **==== 17-jul-2026 (3ª tanda) — HONESTIDAD INTOCABLE + FIN DEL DOBLE SALUDO.
 DEPLOY 121 VERDE. ====**
 
