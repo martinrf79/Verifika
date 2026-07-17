@@ -31,7 +31,11 @@ from app.logger import get_logger
 log = get_logger(__name__)
 settings = get_settings()
 
-_TIMEOUT_S = 8
+# Tope de espera ACOTADO: el checker corre al final del camino critico y ante
+# timeout es no-op, asi que el peor caso que puede sumar es esto. Medido vivo
+# 17-jul: 1,5-2,9 s (promedio ~2 s) en tier gratis; 4 s cubre el triple del
+# promedio sin dejar al cliente colgado si Gemini anda lento.
+_TIMEOUT_S = 4
 _MAX_EVIDENCIA = 4000
 
 _SCHEMA = {
