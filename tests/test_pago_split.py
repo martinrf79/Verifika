@@ -6,7 +6,8 @@ aplica el 10% a todo lo que no es Mercado Pago, y cierra la suma exacta. Verific
 además que reproduce la cuenta CORRECTA de la charla real del 6-jul (donde el bot
 la hizo a mano y dio mal). Lógica pura, sin LLM ni Firestore.
 """
-from app.core.pago_split import calcular_split, es_mercado_pago, render_split
+from app.core.pago_split import (calcular_split, es_mercado_pago,
+                                 render_split, pago_de_mensaje)
 
 
 def test_reproduce_la_cuenta_correcta_de_la_charla():
@@ -138,3 +139,30 @@ def test_sellado_split_correcto_pasa_y_total_malo_se_corrige(firestore_doble):
     # Un total escrito a mano y mal se corrige al del proof.
     fix = autocorregir_montos("Total final: $1.617.375.", ev)
     assert any(c["a"] == 1_593_150 for c in fix["correcciones"])
+
+
+# ── 17-jul (caso real, dicho DOS veces y dos veces ignorado) ─────────────────
+
+def test_split_medio_primero_numero_despues():
+    """'Transferencia 70 mercado pago 30': el orden natural argentino, con y
+    sin porcentaje. Era el hueco de las veinte veces."""
+    esperado = [{"medio": "transferencia", "porcentaje": 70},
+                {"medio": "mercado pago", "porcentaje": 30}]
+    assert pago_de_mensaje("Transferencia 70 mercado pago 30") == esperado
+    assert pago_de_mensaje("Transferencia 70% mercado pago 30%") == esperado
+    assert pago_de_mensaje("transferencia al 60 y mercado pago el 40") == [
+        {"medio": "transferencia", "porcentaje": 60},
+        {"medio": "mercado pago", "porcentaje": 40}]
+
+
+def test_split_un_numero_y_el_resto():
+    assert pago_de_mensaje("70 por transferencia y el resto por mercado pago") == [
+        {"medio": "transferencia", "porcentaje": 70},
+        {"medio": "mercado pago", "porcentaje": 30}]
+
+
+def test_split_no_inventa():
+    """Nombrar los medios sin repartir, o con numeros que no cierran, NO es
+    un split."""
+    assert pago_de_mensaje("puedo pagar con transferencia o mercado pago?") is None
+    assert pago_de_mensaje("transferencia 70 y mercado pago 40") is None

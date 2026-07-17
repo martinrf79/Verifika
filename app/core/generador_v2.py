@@ -697,8 +697,17 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 # Pedir la forma de pago SOLO con un total sobre la mesa
                 # (queja real de Martin: preguntaba el medio de pago de
                 # entrada, en desacorde con saber vender). Sin total, la
-                # invitacion es suave y sigue la charla.
-                if total_mostrado:
+                # invitacion es suave y sigue la charla. Y SLOT LLENO NO SE
+                # RE-PREGUNTA (caso real 17-jul: el cliente dio el split dos
+                # veces y el cierre le volvio a pedir la forma de pago): si
+                # la forma de pago ya se conoce o este turno salio un pago
+                # dividido, solo se pide la confirmacion.
+                pago_conocido = bool(
+                    (estado.get("datos_cliente") or {}).get("forma_pago")
+                    or any("pago dividido" in p.lower() for p in partes))
+                if total_mostrado and pago_conocido:
+                    partes.append("¿Lo dejamos confirmado así?")
+                elif total_mostrado:
                     partes.append(
                         "¿Lo dejamos confirmado? Decime la forma de pago: "
                         "transferencia (10% de descuento) o Mercado Pago.")

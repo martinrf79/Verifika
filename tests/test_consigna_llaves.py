@@ -197,3 +197,18 @@ def test_cierre_enlatado_sin_total_es_suave(firestore_doble):
     texto, _ = renderizar(frags, [], {}, "verifika_prod")
     assert "forma de pago" not in texto
     assert "?" in texto  # igual invita a avanzar
+
+
+def test_cierre_no_repregunta_forma_de_pago_dada(firestore_doble):
+    """SLOT LLENO NO SE RE-PREGUNTA: con la forma de pago ya conocida, el
+    cierre pide solo la confirmacion (caso real: el cliente dio el split dos
+    veces y el bot le volvio a preguntar el medio)."""
+    from app.core.generador_v2 import renderizar
+    presu = "Presupuesto:\n- 1x Tablet: $211.500\nTotal: $211.500"
+    ptools = [{"name": "calculate_total", "result": {"presentacion": presu}}]
+    frags = [{"tipo": "presupuesto"}, {"tipo": "cierre"}]
+    estado = {"datos_cliente": {"forma_pago": "transferencia"}}
+    texto, _ = renderizar(frags, [], estado, "verifika_prod",
+                          presupuesto_pre=presu, presupuesto_tools=ptools)
+    assert "Decime la forma de pago" not in texto
+    assert "confirmado" in texto.lower()

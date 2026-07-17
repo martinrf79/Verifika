@@ -120,16 +120,31 @@ def render_split(split: dict) -> str:
 import re as _re
 
 _RE_MITAD_SPLIT = _re.compile(r"\bmitad\b")
+# Los DOS ordenes de decirlo (bug real repetido: cada arreglo cubria UNA
+# forma). "70 transferencia" y "transferencia 70", con o sin %, con
+# conectores. La extraccion junta todos los pares (medio, numero) del
+# mensaje sin importar el orden.
 _RE_PCT_MEDIO = _re.compile(
-    r"(\d{1,3})\s*(?:%|por ?ciento)?\s*(?:por |con |en |de )?"
+    r"(\d{1,3})\s*(?:%|por ?ciento)?\s*(?:por |con |en |de |para )?(?:la |el )?"
     r"(transferencia|mercado ?pago|mercadopago)")
+_RE_MEDIO_PCT = _re.compile(
+    r"(transferencia|mercado ?pago|mercadopago)\s*"
+    r"(?:al |el |un |con |en |de |por |: ?)?\s*"
+    r"(\d{1,3})\s*(?:%|por ?ciento)?")
+
+
+def _medio_norm(m: str) -> str:
+    m = _norm(m).replace("mercadopago", "mercado pago")
+    return m
 
 
 def pago_de_mensaje(mensaje: str) -> list[dict] | None:
     """[{medio, porcentaje}] si el mensaje reparte el pago entre transferencia
-    y Mercado Pago; None si no. Formas cubiertas: 'mitad transferencia y
-    mitad mercado pago' (cualquier orden) y '70 transferencia y 30 mercado
-    pago' (con o sin %). Ambos medios tienen que estar nombrados."""
+    y Mercado Pago; None si no. Robusto a TODAS las formas de decirlo (caso
+    real 17-jul, dicho dos veces y dos veces ignorado: 'transferencia 70
+    mercado pago 30'): mitades, 'NUMERO medio', 'medio NUMERO', con o sin %,
+    y un solo numero con el resto al otro medio ('70 por transferencia y el
+    resto por mercado pago'). Ambos medios tienen que estar nombrados."""
     m = _norm(mensaje)
     tiene_transf = "transferencia" in m
     tiene_mp = "mercado pago" in m or "mercadopago" in m
@@ -138,14 +153,34 @@ def pago_de_mensaje(mensaje: str) -> list[dict] | None:
     if _RE_MITAD_SPLIT.search(m):
         return [{"medio": "transferencia", "porcentaje": 50},
                 {"medio": "mercado pago", "porcentaje": 50}]
-    pares = _RE_PCT_MEDIO.findall(m)
-    if len(pares) == 2:
-        (n1, m1), (n2, m2) = pares
-        try:
-            p1, p2 = int(n1), int(n2)
-        except ValueError:
-            return None
-        if abs(p1 + p2 - 100) <= 1 and _norm(m1) != _norm(m2):
-            return [{"medio": _norm(m1), "porcentaje": p1},
-                    {"medio": _norm(m2), "porcentaje": p2}]
+    # Cada ORDEN se evalua por separado (mezclarlos cruzaba pares: en
+    # 'transferencia 70 mercado pago 30' el regex numero-medio matcheaba un
+    # falso '70 mercado pago'). Un parse es valido solo si sus pares cubren
+    # TODOS los numeros del mensaje y los porcentajes cierran.
+    numeros = len(_re.findall(r"\d{1,3}", m))
+
+    def _parse(regex, invertido):
+        por_medio: dict[str, int] = {}
+        for a, b in regex.findall(m):
+            med, n = (a, b) if invertido else (b, a)
+            por_medio.setdefault(_medio_norm(med), int(n))
+        return por_medio
+
+    for regex, inv in ((_RE_MEDIO_PCT, True), (_RE_PCT_MEDIO, False)):
+        pares = _parse(regex, inv)
+        if (len(pares) == 2 and numeros == 2
+                and abs(sum(pares.values()) - 100) <= 1):
+            return [{"medio": med, "porcentaje": p} for med, p in pares.items()]
+    if numeros == 1:
+        # Un solo numero con los dos medios nombrados ('70 por transferencia
+        # y el resto por mercado pago'): el resto va al otro medio.
+        for regex, inv in ((_RE_MEDIO_PCT, True), (_RE_PCT_MEDIO, False)):
+            pares = _parse(regex, inv)
+            if len(pares) == 1:
+                m1, p1 = next(iter(pares.items()))
+                if 0 < p1 < 100:
+                    m2 = ("mercado pago" if m1 == "transferencia"
+                          else "transferencia")
+                    return [{"medio": m1, "porcentaje": p1},
+                            {"medio": m2, "porcentaje": 100 - p1}]
     return None
