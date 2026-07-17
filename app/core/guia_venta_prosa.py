@@ -581,3 +581,34 @@ def tool_schema() -> dict:
                     "type": "string",
                     "description": "uno de: " + ", ".join(GUIA_VENTA)}},
                 "required": ["tema"]}}}
+
+
+def _cargar_base_conocimiento() -> None:
+    """Funde la FUENTE DE VERDAD del criterio (base_conocimiento.json) en el
+    corpus vivo: por cada categoria mete su prosa en GUIA_VENTA y suma sus
+    disparadores de una sola palabra a _ALIAS SIN pisar los ya definidos. El
+    JSON es la fuente unica que Martin revisa y lima; este modulo solo la carga.
+    Invariante intacto: una categoria con algun digito en el criterio NO entra
+    (el dato duro sale de las tools, nunca del corpus)."""
+    import json
+    import os
+    ruta = os.path.join(os.path.dirname(__file__), "..", "..", "data",
+                        "clientes", "verifika_prod", "base_conocimiento.json")
+    try:
+        with open(ruta, encoding="utf-8") as f:
+            base = json.load(f)
+    except Exception:
+        return
+    for cat in base.get("categorias", []):
+        cid = cat.get("id")
+        crit = (cat.get("criterio") or "").strip()
+        if not cid or not crit or re.search(r"\d", crit):
+            continue
+        GUIA_VENTA[cid] = crit
+        for disp in cat.get("disparadores", []):
+            d = str(disp).strip().lower()
+            if d and " " not in d and d not in _ALIAS and d not in GUIA_VENTA:
+                _ALIAS[d] = cid
+
+
+_cargar_base_conocimiento()
