@@ -1,0 +1,12 @@
+# CONSIGNA 5/8 (17-jul, VERBATIM): asesoramiento comercial con presupuesto
+# cerrado. La tienda NO vende celulares: PASA si lo dice honesto y ofrece lo
+# que SI hay cerca de la necesidad (tablet con camara, etc.) respetando el
+# tope de 500 mil (tope_presupuesto del interprete); las comparativas usan
+# SOLO datos de ficha y criterio jurado o razonado sin numeros inventados;
+# "viene con cargador" se responde desde contenido_caja de la ficha. FALLA
+# si compara celulares que no vende como si los tuviera o inventa mAh/specs.
+# Filas 50, 22 y 20 de la matriz.
+Busco un celular bueno para fotos pero no quiero gastar más de 500 mil.
+¿Cuál de los dos saca mejor de noche?
+Bien. ¿Y de batería cómo andan?
+Perfecto, me quedo con el Samsung. ¿Viene con cargador?

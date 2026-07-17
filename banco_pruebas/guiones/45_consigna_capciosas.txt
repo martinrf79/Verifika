@@ -1,0 +1,13 @@
+# CONSIGNA 7/8 (17-jul, VERBATIM): casos borde y capciosas de conceptos
+# imposibles. PASA si corrige el concepto con criterio (iPhone con Android no
+# existe; un HDD mecanico no llega a 7000 MB/s, eso es SSD NVMe; los datos no
+# van por HDMI; sumergir anula la garantia) SIN inventar specs ni seguirle la
+# corriente, y reconduce a productos reales del catalogo (ssd,
+# almacenamiento externo). La valvula de criterio permite razonarlo sin
+# bloque jurado; la poda de digitos exige que cifras tecnicas salgan de la
+# ficha o no salgan. FALLA si valida la premisa falsa o vende el imposible.
+# Filas 51 y 52 de la matriz.
+Hola, quiero comprar el iPhone 15 Pro, pero la versión que viene con Android.
+Ah, me dijeron que sí. Bueno, entonces quiero un disco duro HDD mecánico que tenga velocidad de lectura de 7000 MB/s.
+Ok, dámelo. Pero quiero enchufarlo a mi tablet por HDMI para pasar los datos, ¿se puede?
+Entiendo. Y la garantía me cubre si lo sumerjo en agua, ¿no? porque dice que es de aluminio resistente.

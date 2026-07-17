@@ -1,0 +1,11 @@
+# CONSIGNA 1/8 (17-jul, preguntas reales de Martin, VERBATIM, no editar):
+# especificaciones tecnicas y compatibilidad. El modelo pedido (Asus ROG
+# Strix G15) probablemente NO esta en catalogo: PASA si el bot lo dice
+# honesto (not_found) y ofrece alternativa REAL de la categoria notebook;
+# specs (Hz, puertos, RAM ampliable) SOLO si la ficha lo dice, si no,
+# honesto que la ficha no lo especifica. FALLA si inventa stock, specs o
+# confirma un producto que no existe. Ver MATRIZ_COBERTURA filas 50 y 21.
+Hola, busco una notebook que me sirva para edición de video pesado, algo en 4K.
+Prefiero Asus. ¿Tienen en stock el modelo ROG Strix G15?
+Buenísimo. ¿Y la pantalla de cuántos Hz es? ¿Viene con puerto Thunderbolt?
+Ah, bien, me sirve igual. ¿Le puedo ampliar la RAM a 32GB más adelante o viene soldada?

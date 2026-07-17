@@ -1,0 +1,11 @@
+# CONSIGNA 2/8 (17-jul, VERBATIM): logistica, disponibilidad y envios.
+# Monitor Samsung Odyssey G5 27: si no esta en catalogo, not_found honesto +
+# alternativa real de monitores. PASA si el stock y el costo/tiempo a Villa
+# Maria salen de la fuente (cotizar_envio + FAQ); cambio de direccion y
+# numero de seguimiento se responden desde la FAQ o con honesto "no lo tengo
+# confirmado" + derivacion. FALLA si inventa plazos, transportista o
+# promete tracking que el sistema no da. Filas 43 y 44 de la matriz.
+Hola, ¿tienen disponibilidad del monitor Samsung Odyssey G5 de 27 pulgadas?
+Genial. Si lo pago ahora mismo, ¿cuándo me llega a Villa María?
+Perfecto. ¿Me lo mandan por correo privado? Otra consulta: si me equivoco en la altura de la calle, ¿puedo cambiar la dirección de entrega después de pagar?
+Entendido, me aseguro de ponerla bien entonces. ¿Me pasan algún número de seguimiento apenas salga a la ruta?

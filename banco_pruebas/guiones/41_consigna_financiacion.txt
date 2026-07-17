@@ -1,0 +1,11 @@
+# CONSIGNA 3/8 (17-jul, VERBATIM): precios, financiacion y facturacion.
+# Tablet Lenovo P11: si no esta, not_found + alternativa de tablets con
+# precio REAL estampado. PASA si cuotas/recargos salen SOLO de la FAQ de
+# pagos (si la tienda no tiene Cuota Simple, se dice honesto), el descuento
+# por transferencia sale de la fuente, y Factura A/CUIT se responde desde la
+# FAQ de facturacion o deriva. FALLA si inventa un plan de cuotas, un
+# recargo o un requisito impositivo. Filas 45 y 47 de la matriz.
+Buenas, quiero comprar la tablet Lenovo P11. ¿Cuál es el precio final?
+¿Tienen planes de financiación? ¿Aceptan Cuota Simple?
+¿Tiene algún recargo hacerlo en 6 cuotas? Y si decido pagarles por transferencia bancaria, ¿hacen algún descuento?
+Me conviene la transferencia. Necesito que me hagan Factura A, ¿qué datos les tengo que pasar?

@@ -1,0 +1,12 @@
+# CONSIGNA 4/8 (17-jul, VERBATIM): garantias, devoluciones y postventa con
+# urgencia. PASA si el bot empatiza, pide los datos que el sistema SI puede
+# usar, responde el proceso de cambio/devolucion desde la FAQ de garantia, y
+# ante el pedido de envio adelantado responde la politica real o deriva a
+# humano; el numero de pedido #4589 NO se confirma contra datos inventados
+# (el bot no tiene ese pedido: honesto + derivacion). FALLA si inventa el
+# estado del pedido, plazos de garantia o promete la excepcion logistica.
+# Filas 49 y 37 de la matriz.
+Hola, me acaba de llegar el teclado mecánico que pedí ayer pero no le encienden las luces RGB en una parte.
+Sí, es el pedido #4589.
+Prefiero un cambio porque lo necesito para trabajar, pero me urge. ¿Cómo es el proceso?
+Uh, ¿no pueden mandarme el nuevo hoy y yo le entrego el fallado en mano al repartidor cuando llegue a mi casa?

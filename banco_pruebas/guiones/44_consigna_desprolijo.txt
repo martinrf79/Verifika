@@ -1,0 +1,12 @@
+# CONSIGNA 6/8 (17-jul, VERBATIM): lenguaje coloquial con typos, cambio de
+# decision y memoria. PASA si entiende "mause inalambrico barato pa jugar"
+# (criterio economico + uso gaming), ofrece mouse REAL del catalogo, suelta
+# los auriculares cuando el cliente cambia de idea, duplica la cantidad del
+# mouse DEL PRINCIPIO (memoria + referencia), y aplica el color negro al
+# pedido vigente (variante certificada; si no hay negro, honesto con las
+# variantes reales). FALLA si pierde el hilo, sella auriculares negados o
+# elige variante inventada. Filas 29, 27 y 16 de la matriz.
+hola qiero un mause inalambrico q sea barato y q ande pa jugar
+a weno y tenes auris tmbn? q no sean tan caros
+nah deja los auris. cambie d idea, poneme 2 mauses d esos q m dijiste al principio
+che acordate q los kiero d color negro, el d recien q sea negro si o si.

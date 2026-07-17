@@ -45,10 +45,19 @@ leer las mil formas de decir lo mismo. Lo HECHO, testeado y pusheado:
    sticky, filtro de universo, válvula). **518 offline verdes** (cero
    regresiones).
 
-PENDIENTE al retomar: checker tipado de afirmaciones blandas (nivel 3, la
-Capa A que falta), invariantes de intención nivel 2 restantes (tope respetado
-en total ofrecido), merge a main con OK de Martín (CI gateado deploya) y
-probar en WhatsApp real leyendo `interprete_libre_preferencias` y
+**CONSIGNA DE PREPRODUCCIÓN (orden de Martín, 17-jul):** las ocho charlas
+reales de `CONSIGNA_PREGUNTAS_REALES.md` viven VERBATIM como guiones 39-46
+(especificaciones, logística, financiación, postventa, asesoramiento,
+desprolijo, capciosas, manipulación). Las preguntas NO se editan ni se
+adaptan al catálogo: producto ajeno se responde not_found honesto +
+alternativa real. La matriz sumó las filas 42-54 (grupo H). **La puerta a
+WhatsApp real es que los ocho guiones pasen por el camino vivo con juez
+limpio**, después de las configuraciones que falten.
+
+PENDIENTE al retomar: correr los guiones 39-46 por el pipeline vivo, arreglar
+lo que muestren (ahí entran el checker tipado nivel 3 y los invariantes
+restantes), merge a main con OK de Martín (CI gateado deploya) y recién
+después WhatsApp real leyendo `interprete_libre_preferencias` y
 `generador_v2_criterio_sin_bloque` en los logs.
 
 ---
