@@ -395,6 +395,33 @@ def _corregir_referencia_comparativa(resultado: dict, mensaje: str,
     return resultado
 
 
+def coercionar_destinos(resultado: dict, mensaje: str) -> dict:
+    """DESTINO FANTASMA (caso real WhatsApp 17-jul): el interprete metio
+    'Rosario' en el pedido cuando el cliente jamas nombro una localidad
+    (contaminacion de los ejemplos del prompt), el pedido no reconcilio y el
+    camino sellado nunca corrio. Invariante determinista: un destino del
+    pedido tiene que APARECER en el mensaje del cliente; si no aparece, va
+    None (destino unico o sin decir). Muta y devuelve."""
+    import unicodedata
+
+    def _n(s):
+        s = unicodedata.normalize("NFKD", str(s or "").lower())
+        return "".join(c for c in s if not unicodedata.combining(c))
+
+    m = _n(mensaje)
+    fantasmas = []
+    for it in (resultado.get("pedido") or []):
+        if not isinstance(it, dict):
+            continue
+        d = it.get("destino")
+        if d and _n(d) not in m:
+            fantasmas.append(str(d))
+            it["destino"] = None
+    if fantasmas:
+        log.warning("interpretador_destino_fantasma", destinos=fantasmas[:4])
+    return resultado
+
+
 def coercionar_preferencias(resultado: dict) -> dict:
     """Coercion defensiva de los campos de preferencias para providers sin
     schema estricto: tope solo entero positivo; exclusiones solo dicts con tipo
@@ -753,6 +780,7 @@ async def interpretar_mensaje(mensaje: str,
         if not isinstance(resultado.get("pedido"), list):
             resultado["pedido"] = []
         coercionar_preferencias(resultado)
+        coercionar_destinos(resultado, mensaje)
 
         # Sesgo medido del modelo en referencias comparativas ('el barato no,
         # el otro'): la comparacion de precios la corrige el CODIGO.

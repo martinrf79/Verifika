@@ -107,3 +107,45 @@ def test_universo_sin_falsos_positivos(firestore_doble):
     from app.core.generador_v2 import universo_productos
     uni = universo_productos("quiero gastar lo menos posible", {}, "verifika_prod")
     assert uni == []
+
+
+# ── 4. Caos real de WhatsApp 17-jul: destinos fantasma y presupuesto pedido ──
+
+def test_destino_fantasma_se_anula():
+    """El interprete metio 'Rosario' sin que el cliente lo dijera: un destino
+    que no aparece en el mensaje va None (invariante determinista)."""
+    from app.core.interpretador import coercionar_destinos
+    r = {"pedido": [
+        {"producto": "Mouse Genius DX-110 Negro", "cantidad": 2,
+         "destino": "Rosario"},
+        {"producto": "Teclado Genius KB-110X Blanco", "cantidad": 2,
+         "destino": "Carlos Paz"},
+    ]}
+    coercionar_destinos(r, "Y el presupuesto? mandalo todo a carlos paz")
+    assert r["pedido"][0]["destino"] is None       # Rosario: fantasma
+    assert r["pedido"][1]["destino"] == "Carlos Paz"  # dicho en el mensaje
+
+
+def test_pedir_presupuesto_re_sirve_el_sellado(firestore_doble):
+    """'¿Y el presupuesto?' y 'seguis sin mandarme precios' con carrito
+    vigente disparan el calculo SELLADO del codigo (el cliente lo pidio TRES
+    veces en la charla real y el bot nunca lo mando)."""
+    from app.core.generador_v2 import presupuesto_precalculado
+    estado = {"carrito": [
+        {"id": "TEC0015", "nombre": "Teclado Redragon Kumara K552 Negro",
+         "cantidad": 2},
+    ]}
+    for msg in ("Y el presupuesto?", "Seguis sin mandarme los precios"):
+        texto, tools = presupuesto_precalculado(msg, estado, "verifika_prod")
+        assert texto and "$" in texto, msg
+        assert any(t.get("name") == "calculate_total" for t in tools), msg
+
+
+def test_pregunta_de_precio_singular_no_re_sirve(firestore_doble):
+    """'que precio tiene el mouse' con carrito NO re-sirve el presupuesto
+    entero: es pregunta de UN producto, la responde el generador."""
+    from app.core.generador_v2 import presupuesto_precalculado
+    estado = {"carrito": [{"id": "TEC0015", "cantidad": 2}]}
+    texto, _ = presupuesto_precalculado(
+        "que precio tiene el mouse M170?", estado, "verifika_prod")
+    assert texto is None

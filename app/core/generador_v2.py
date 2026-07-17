@@ -188,8 +188,14 @@ def presupuesto_precalculado(mensaje, estado, tienda_id, interp=None):
         # a) carrito vigente + reparto/total pedido en el mensaje
         carrito = estado.get("carrito") or []
         pago = pago_de_mensaje(mensaje or "")
+        # "y el presupuesto?" / "seguis sin mandarme precios" (caso real
+        # WhatsApp 17-jul): el cliente pidio el presupuesto TRES veces y el
+        # regex no lo disparaba; el modelo relataba "aca te lo armo" sin
+        # armarlo. La palabra presupuesto y "precios" en plural re-sirven el
+        # calculo SELLADO del codigo.
         quiere_total = bool(re.search(
             r"\btotal\b|como queda|cuanto (queda|es|sale)|precio final|"
+            r"\bpresupuesto\b|\bprecios\b|"
             r"mitad|transferencia|mercado pago|pagando", _norm(mensaje)))
         if carrito and (pago or quiere_total):
             items = [{"product_id": str(c.get("id") or "").upper(),

@@ -269,6 +269,7 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       datos_cliente_parciales: dict | None = None,
                       producto_anotado: dict | None = None,
                       preferencias_cliente: dict | None = None,
+                      criterio_confirmar_pendiente: bool | None = None,
                       **extras):
     # RED CONTRA LA DERIVA sim/prod (bug REAL 8-jul): el doble del banco acepta
     # cualquier kwarg y esta firma enumeraba los suyos; un campo nuevo pasado
@@ -344,6 +345,8 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
         datos["producto_anotado"] = producto_anotado
     if preferencias_cliente is not None:
         datos["preferencias_cliente"] = preferencias_cliente
+    if criterio_confirmar_pendiente is not None:
+        datos["criterio_confirmar_pendiente"] = criterio_confirmar_pendiente
     # DATOS DEL CLIENTE ACUMULADOS turno a turno (nombre, telefono, direccion,
     # forma de pago), aunque todavia no exista un lead. Asi un dato dado ANTES de
     # la decision de compra no se pierde y el lead se siembra completo, sin volver
