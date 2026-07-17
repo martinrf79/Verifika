@@ -4,6 +4,40 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 17-jul-2026 (2ª tanda) — LAS TRES LLAVES DE LA CONSIGNA ====**
+
+La corrida de los guiones 39-46 (hecha por Opus en otro chat) dio: JUEZ limpio
+8/8 (cero alucinación, jailbreak parado) pero turnos MUDOS o saludo pelado
+ante preguntas reales. Diagnóstico real leído del código: NO es un atajo de
+saludo (no existe); es que el generador quedaba sin universo (typos,
+categorías inexistentes), las podas dejaban un residuo hueco, y el saludo
+fijo del turno 1 lo tapaba. Tres llaves, arregladas y deployadas:
+
+1. **PISO DE COMPOSICIÓN (fila Z por construcción, `interprete_libre`):**
+   mensaje con contenido + respuesta sin sustancia (corta, sin dato ni
+   pregunta) → sale el honesto "no lo tengo confirmado + derivación +
+   repregunta que sigue vendiendo", NUNCA el residuo. Corre antes del saludo
+   inicial, así el turno 1 jamás es saludo pelado. Radar:
+   `interprete_libre_piso_composicion`.
+2. **CERTIFICADOR DE CATEGORÍA (`guia_compra.categoria_no_vendida`):**
+   categoría que NO vendemos (celular, consola, televisor, tabla finita que
+   crece del radar) y sin categoría real en el mensaje → el CÓDIGO responde
+   honesto + alternativa real con opciones estampadas, el modelo ni corre.
+   Palabras ambiguas (play, teléfono) afuera a propósito. Evento
+   `interprete_libre_categoria_no_vendida`. Arregla la consigna 43 (celulares
+   fantasma).
+3. **TYPOS EN EL UNIVERSO (`generador_v2.universo_productos`):** match difuso
+   por token (cutoff 0.75) + prefijo largo: "mause"→mouse, "auris"→
+   auriculares. Sin esto el universo quedaba vacío y el modelo sin productos
+   (consigna 44).
+
+Además: reenganche de `guia_compra` en el doble del banco (un import temprano
+lo clavaba al Firestore real y media batería caía). **540 tests offline
+verdes.** Lo próximo: re-correr la consigna 39-46 completa por el camino vivo
+y medir contra el criterio de CONSIGNA_PREGUNTAS_REALES.md.
+
+---
+
 **==== 17-jul-2026 — IDIOMA ENSANCHADO DEL INTÉRPRETE + VÁLVULA DE CRITERIO +
 MATRIZ DE COBERTURA (rama claude/whatsapp-solver-flexibility-vfrq7d) ====**
 

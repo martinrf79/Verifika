@@ -179,6 +179,12 @@ def install():
     import app.core.interprete_libre as il
     for n in ("get_conversation", "save_conversation", "reset_conversation", "get_config"):
         setattr(il, n, _patches[n])
+    # guia_compra tambien importa los nombres arriba: si alguien lo importo
+    # ANTES de install() (un test que lo importa a nivel de modulo), quedaba
+    # clavado al Firestore real y media bateria caia con DefaultCredentials.
+    import app.core.guia_compra as gc
+    for n in ("get_all_products", "get_product_by_id", "get_categories"):
+        setattr(gc, n, _patches[n])
 
     # LEADS EN RAM: el camino REAL del cierre (procesar_mensaje_para_lead, con
     # sus gatillos, pregunta suave y captura) corre TAL CUAL. Se dobla SOLO el

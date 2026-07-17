@@ -311,6 +311,33 @@ def _con_saludo_inicial(respuesta: str, business_name: str) -> str:
     return linea + ("\n\n" + cuerpo if cuerpo else "")
 
 
+# ── Piso de composicion (fila Z): funciones puras ───────────────────────────
+_RE_SOLO_SALUDO = re.compile(
+    r"^[\s¡!¿?.,]*(hola+|buenas+(\s+(tardes|noches))?|buen\s+d[ií]as?|"
+    r"buenos\s+d[ií]as|que\s+tal|como\s+va|hey|hi)[\s!.,¿?]*$",
+    re.IGNORECASE)
+
+
+def _mensaje_con_contenido(mensaje: str) -> bool:
+    """True si el mensaje del cliente trae algo mas que un saludo pelado. Un
+    'hola' solo NO exige sustancia (el saludo de vuelta alcanza); 'hola, busco
+    una notebook' SI."""
+    import unicodedata
+    m = unicodedata.normalize("NFKD", str(mensaje or "").lower())
+    m = "".join(c for c in m if not unicodedata.combining(c)).strip()
+    return bool(m) and not _RE_SOLO_SALUDO.match(m)
+
+
+def _sin_sustancia(respuesta: str) -> bool:
+    """True si la respuesta quedo hueca: vacia, o corta y sin ningun dato ($ o
+    digito) ni pregunta que mueva la charla. Una respuesta corta CON pregunta
+    ('¿Que estas buscando?') o con dato estampado es valida."""
+    r = (respuesta or "").strip()
+    if not r:
+        return True
+    return len(r) < 60 and not re.search(r"[\d$?¿]", r)
+
+
 _RE_PRESUPUESTO_EN_TEXTO = re.compile(
     r"\bpresupuesto\b|\btotal\b[^\n]{0,20}\$", re.IGNORECASE)
 
@@ -1028,6 +1055,37 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
              intencion=interp.get("intencion") if isinstance(interp, dict) else None,
              hist=len(history))
 
+    # CERTIFICADOR DE CATEGORIA (17-jul, consigna 43): si el cliente pide una
+    # categoria que NO vendemos (celular, consola, televisor) y no nombra
+    # ninguna real, lo decide el CODIGO: honesto "no lo vendemos" + la
+    # alternativa real mas cercana con opciones estampadas. Sin esto el
+    # universo quedaba vacio y el modelo rellenaba siguiendo la premisa.
+    _cat_no_vendida_servida = False
+    if not (respuesta_curada_servida or _sellado_pedido or _tools_precalc):
+        try:
+            from app.core.guia_compra import categoria_no_vendida
+            _cnv = categoria_no_vendida(raw_message, tienda_id)
+            if _cnv:
+                _pedida, _alt = _cnv
+                _partes_cnv = [f"Te soy honesto: {_pedida} no vendemos, "
+                               "nuestro rubro es tecnología e informática."]
+                if _alt:
+                    from app.core.guia_pedido import opciones_por_categoria
+                    _ops = opciones_por_categoria(_alt, tienda_id, k=3)
+                    if _ops:
+                        _partes_cnv.append(
+                            f"Si te sirve, en {_alt} tengo estas opciones "
+                            "con precio y stock reales:\n"
+                            + "\n".join("- " + _linea_producto(p) for p in _ops))
+                _partes_cnv.append("¿Te muestro algo de lo que sí tenemos?")
+                respuesta = "\n\n".join(_partes_cnv)
+                _cat_no_vendida_servida = True
+                log.info("interprete_libre_categoria_no_vendida",
+                         trace_id=trace_id, pedida=_pedida, alternativa=_alt)
+        except Exception as e:
+            log.warning("interprete_libre_cat_no_vendida_error",
+                        trace_id=trace_id, error=str(e)[:120])
+
     # GENERADOR DE FRAGMENTOS primario (atadura por contrato tipado, 16-jul):
     # el modelo NO compone texto libre; devuelve una lista de FRAGMENTOS atados
     # por enum (producto, calculo, presupuesto, ficha, faq, envio, criterio,
@@ -1040,7 +1098,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # alimenta a todo el downstream; los verificadores (plata, stock, promesas,
     # FAQ, cita) corren DESPUES como red. Falla, timeout o sin clave -> camino
     # determinista de abajo.
-    if not (_sellado_pedido or _tools_precalc):
+    if not (_sellado_pedido or _tools_precalc or _cat_no_vendida_servida):
         try:
             from app.core.generador_v2 import generar_fragmentos, renderizar
             _frags, _uni, _presu, _presu_tools = await generar_fragmentos(
@@ -1066,7 +1124,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             log.warning("interprete_libre_generador_error",
                         trace_id=trace_id, error=str(e)[:150])
 
-    if not _via_solver and not respuesta_curada_servida:
+    if not _via_solver and not respuesta_curada_servida and not _cat_no_vendida_servida:
         # RED determinista: el CODIGO compone desde plantillas, curadas y tools
         # selladas (el camino previo, cuando el solver no condujo).
         try:
@@ -1826,6 +1884,26 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # asi un "dale" en el turno siguiente todavia cierra.
     pregunta_cierre_hecha = (
         meta_lead.get("accion") in ("pregunta_cierre", "pregunta_pendiente_cierre"))
+
+    # ── PISO DE COMPOSICION (fila Z de la matriz, 17-jul) ───────────────────
+    # NUNCA sale un turno sin sustancia. Visto en la consigna: las podas
+    # (checker, prosa) dejaban un residuo vacio ("Te cuento,") y en el turno 1
+    # el saludo fijo lo tapaba quedando saludo pelado ante una pregunta real.
+    # Regla determinista: si el mensaje del cliente traia CONTENIDO y la
+    # respuesta quedo sin dato, sin pregunta y corta, sale el honesto de la
+    # fila Z (no confirmado + derivacion + repregunta que sigue vendiendo).
+    # El warning es el radar: cada disparo es un hueco de fuente o un residuo
+    # de poda para mirar.
+    if (respuesta != settings.FALLBACK_MESSAGE
+            and _mensaje_con_contenido(raw_message)
+            and _sin_sustancia(respuesta)):
+        log.warning("interprete_libre_piso_composicion", trace_id=trace_id,
+                    residuo=(respuesta or "")[:120])
+        respuesta = (
+            "Eso puntual no lo tengo confirmado ahora como para dártelo "
+            "seguro. Lo consulto con el equipo y te escribo, o si preferís "
+            "te paso con una persona. Mientras tanto contame qué estás "
+            "buscando, así te muestro opciones con precio y stock reales.")
 
     # ── SALUDO INICIAL (solo el PRIMER mensaje de la charla) ────────────────
     # Determinista: saludo cordial + aviso de que es una herramienta automatica,

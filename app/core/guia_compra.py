@@ -137,3 +137,45 @@ def guia_mas_barato(mensaje: str,
             ". Si el cliente quiere lo mas barato, ofrece EXACTAMENTE ese, "
             "usando el marcador [[PROD:id]] tal cual. NO elijas vos otro ni "
             "digas que no tiene stock.]")
+
+
+# ── CERTIFICADOR DE CATEGORIA (17-jul, consigna 43) ──────────────────────────
+# El certificador de identidad decide sobre PRODUCTOS; nadie decidia sobre la
+# CATEGORIA. Cuando el cliente pide una categoria que la tienda NO vende
+# (celular, consola, televisor), el universo del generador queda vacio y el
+# modelo rellenaba siguiendo la premisa (comparo dos telefonos fantasma en la
+# consigna). Con esto lo decide el CODIGO antes de llamar al modelo: honesto
+# "no lo vendemos" + la alternativa real mas cercana. La tabla es finita y se
+# amplia desde el radar de logs; palabras ambiguas ("play", "telefono" como
+# dato de contacto) quedan AFUERA a proposito.
+_NO_VENDIDAS: dict[str, str | None] = {
+    "celular": "tablet", "celulares": "tablet", "smartphone": "tablet",
+    "smartphones": "tablet", "iphone": "tablet", "iphones": "tablet",
+    "televisor": "monitor", "televisores": "monitor", "smart tv": "monitor",
+    "consola": None, "consolas": None, "playstation": None, "xbox": None,
+    "nintendo": None, "drone": None, "drones": None,
+    "smartwatch": "tablet", "smartwatches": "tablet",
+    "heladera": None, "heladeras": None, "lavarropas": None,
+    "microondas": None, "aire acondicionado": None,
+}
+
+
+def categoria_no_vendida(mensaje: str,
+                         tienda_id: str | None = None) -> tuple[str, str | None] | None:
+    """(palabra pedida, categoria alternativa REAL o None) si el mensaje pide
+    una categoria que la tienda no vende; None si no aplica. Si el mensaje
+    ademas nombra una categoria REAL, no aplica: ese turno lo conduce el
+    generador con el universo normal (responde lo que si hay)."""
+    m = " " + _norm(mensaje) + " "
+    pedida = next((p for p in _NO_VENDIDAS if f" {p} " in m), None)
+    if not pedida:
+        return None
+    reales = [str(c) for c in (get_categories(tienda_id=tienda_id) or [])]
+    for c in reales:
+        cn = _norm(c)
+        if f" {cn} " in m or f" {_singular(cn)} " in m:
+            return None
+    alt = _NO_VENDIDAS[pedida]
+    if alt and not any(_norm(c) == _norm(alt) for c in reales):
+        alt = None
+    return pedida, alt

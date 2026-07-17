@@ -94,14 +94,25 @@ def universo_productos(mensaje, estado, tienda_id, interp=None):
     # categorias mencionadas: 4 mas baratas + el intermedio de cada una
     cats = cantidades_por_categoria(mensaje or "", tienda_id)
     cats_nombres = {c for _, c in cats}
-    # tambien las categorias sueltas nombradas sin cantidad
+    # tambien las categorias sueltas nombradas sin cantidad. Con tolerancia a
+    # TYPOS del cliente ('mause', 'auris'): difuso por token (cutoff alto) o
+    # prefijo largo; sin esto el universo quedaba VACIO y el modelo sin
+    # productos que ofrecer (visto en la consigna 44).
+    from difflib import get_close_matches
     from app.storage.firestore_client import get_categories
     m = _norm(mensaje)
+    toks = [t for t in re.findall(r"\w+", m) if len(t) >= 5]
     for c in (get_categories(tienda_id=tienda_id) or []):
         cn = _norm(c)
         sing = cn[:-1] if cn.endswith("s") else cn
         if sing in m or cn in m:
             cats_nombres.add(str(c))
+            continue
+        for t in toks:
+            if (get_close_matches(t, [sing], n=1, cutoff=0.75)
+                    or sing.startswith(t[:4]) or cn.startswith(t[:4])):
+                cats_nombres.add(str(c))
+                break
     for cat in cats_nombres:
         for p in opciones_por_categoria(cat, tienda_id, k=4):
             _add(p)
