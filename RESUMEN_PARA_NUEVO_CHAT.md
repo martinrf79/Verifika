@@ -4,6 +4,65 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 18-jul-2026 — BASE DE CONOCIMIENTO + JUEZ DE COMPLETITUD + CRÍTICO-
+REESCRITOR + LOOP DE CIERRE ARREGLADO. DEPLOYS 121-127 VERDES. ARRANCAR ACÁ. ====**
+
+Sesión larga leyendo logs reales de WhatsApp. Lo HECHO, testeado y DEPLOYADO a
+`agente-bot` (deploy 127 verde, commit 5168bf0):
+
+1. **BASE DE CONOCIMIENTO, fuente única del criterio**
+   (`data/clientes/verifika_prod/base_conocimiento.json`, 74 categorías en 10
+   grupos). `guia_venta_prosa.py` la carga y arma GUIA_VENTA + _ALIAS 100% desde
+   ahí, sin literal inline duplicado. Tres pilares: dato duro NO vive acá (sale de
+   Firestore), política ruteada, criterio/razonamiento lleno. Las 13 políticas
+   que estaban con precaución se llenaron con criterio general (cuotas, factura,
+   garantía, plazos, etc.), sin dígitos. Espejo legible: `BASE_CONOCIMIENTO.md`.
+2. **JUEZ DE COMPLETITUD** (`banco_pruebas/juez.py`): antes medía solo "no
+   mintió"; ahora también "contestó completo". Caza presupuesto sin total, línea
+   de cuenta vacía (envío en blanco), respuesta cortada y turno mudo. Es el
+   termómetro que faltaba: reproduce el bug real y el banco por fin predice prod.
+3. **PRESUPUESTO DETERMINISTA**: el sellado con envío y total se estampa SIEMPRE,
+   sin depender del marcador (`_sustituir_o_acoplar_presupuesto` en
+   interprete_libre). Clobber-safe: los números salen del proof de
+   calculate_total, el verificador de plata los ve respaldados. Mató la
+   intermitencia del envío perdido (charla 2 de prod).
+4. **CRÍTICO-REESCRITOR** (`checker_afirmaciones.py`): el juez LLM en vivo, en la
+   MISMA llamada que ya corría (cero latencia extra), ahora devuelve
+   `respuesta_corregida`: arregla la prosa sin respaldo en vez de solo podar. Red
+   de código `rewrite_segura` (no inventa número ni marcador); si no pasa, cae a
+   la poda de siempre.
+5. **LOOP DE CIERRE ARREGLADO** (`leads.py`, bug real charla Monte Ralo): en modo
+   lead, al "si" el lead ya estaba captado, el cierre devolvía None y el solver
+   re-mandaba el presupuesto infinito. Ahora la confirmación responde un cierre
+   distinto ("Listo, tomamos tu pedido" al captar; `MENSAJE_PEDIDO_YA_TOMADO` si
+   ya estaba). CONFIRMADO EN PROD post-deploy: al "Si" respondió "tomamos tu
+   pedido", ya no repite. 556 tests verdes (2 nuevos del loop en test_cierre).
+
+**PENDIENTE — PRÓXIMA ETAPA: CIERRE + ROBUSTECER INTÉRPRETE (son el mismo hilo):**
+- **Guardia de destino anula destinos de MEMORIA** (interpretador.py, ~line 412):
+  el guardia anti-alucinación marca "fantasma" un destino que no está en el
+  mensaje ACTUAL, pero el cliente lo dijo en un turno ANTERIOR (Monte Ralo,
+  Palpalá, San Francisco, todas ciudades reales). Anula destinos legítimos de la
+  memoria → el envío no cotiza → el total queda incompleto. NO es la tabla de CP,
+  es el intérprete. Arreglo fino, con memoria multiturno, requiere tests. Este es
+  el corazón de "robustecer el intérprete".
+- **CBU real y token de Mercado Pago**: hoy caen a DEMO (`DEMO_CBU`,
+  `DEMO_LINK_PAGO`). Sin el token real de MP y el CBU real, el modo venta manda
+  datos de demo. Son secretos de Martín, van a Firestore config / Secret Manager
+  (`mp_access_token`, `cbu`, `alias`).
+- **Entrega limpia de datos de transferencia** cuando el cliente los pide
+  ("pasame datos para transferir"): hoy responde genérico, hay que rutear al
+  `instruccion_cobro` con el CBU real.
+- **Modo cierre**: hoy default modo 'lead' (capta y deriva a humano). Para vender
+  con cobro automático (link MP), pasar a modo 'venta' (`modo_cierre` = 'B' o
+  'venta' en config de la tienda) UNA VEZ que el token de MP esté cargado.
+
+**Otros pendientes vivos:** el juez LLM de fidelidad OFFLINE para el banco (medir
+el carril de razonamiento; corre con clave Gemini gratis, no toca latencia de
+prod). Y el residual semántico: el bot a veces arrastra la premisa del cliente
+("el Samsung que elegiste") aunque el certificador ya dijo que no se vende esa
+categoría.
+
 **==== 17-jul-2026 (noche, 4ª tanda) — TRÁFICO REAL DE WHATSAPP: CAE LA
 EXCEPCIÓN DEL SELLADO. DEPLOYS 122-124 VERDES. ====**
 
