@@ -54,6 +54,35 @@ def _business_name(tienda_id: str | None) -> str:
 
 
 
+_RE_RENGLON_PRESUP = re.compile(
+    r"^\s*[-•]\s*\d+\s*[xX]\b.*\$", re.MULTILINE)
+_RE_ROTULO_CUENTA = re.compile(
+    r"^\s*(?:presupuesto|subtotal|total|env[ií]o)\b", re.IGNORECASE)
+
+
+def _sustituir_o_acoplar_presupuesto(respuesta: str, present: str) -> str:
+    """El presupuesto SELLADO (present, con envio y total, respaldado por el
+    proof de calculate_total) es el unico que sale. Si el generador escribio un
+    presupuesto en prosa (renglones '- 2x ...: $...'), se REEMPLAZA ese bloque
+    entero por el sellado: ni se duplica ni quedan numeros sin respaldo que el
+    verificador de plata podria mal-anclar. Si no habia bloque en prosa, se
+    acopla el sellado como su propio parrafo. Determinista, no toca la prosa de
+    venta de alrededor."""
+    if not present:
+        return respuesta
+    lineas = (respuesta or "").split("\n")
+    idxs = [i for i, ln in enumerate(lineas)
+            if _RE_RENGLON_PRESUP.match(ln) or _RE_ROTULO_CUENTA.match(ln)]
+    if not idxs:
+        # No hay presupuesto en prosa: acoplar el sellado en vertical.
+        from app.core.curadas import acoplar_bloque
+        return acoplar_bloque(respuesta, present)
+    ini, fin = idxs[0], idxs[-1]
+    # Extender el bloque a lineas vacias contiguas de adentro (entre renglones).
+    nuevas = lineas[:ini] + present.split("\n") + lineas[fin + 1:]
+    return "\n".join(nuevas).strip()
+
+
 def _presupuesto_de_meta(meta: dict) -> str:
     """Saca el presupuesto YA VERIFICADO (campo presentacion de calculate_total)
     del meta del solver, para que el cierre y el link de pago usen el total real
@@ -1275,16 +1304,18 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                         trace_id=trace_id, marca=_marca)
     if _present and not _tenia_marcador_presup:
         log.warning("interprete_libre_presupuesto_sin_marcador", trace_id=trace_id)
-        # ULTIMA MILLA del Ensamblador (caso real 8-jul): si el CODIGO sello el
-        # presupuesto (guia de pedido / categorias baratas) y el solver no puso
-        # el marcador (dijo "voy a calcular el total, un momento" y nada), el
-        # bloque sellado NO se pierde: se acopla en vertical, como la FAQ. El
-        # marcador es una ayuda, no una condicion para que el cliente vea el
-        # total que el codigo ya computo.
-        if _tools_precalc:
-            from app.core.curadas import acoplar_bloque as _acoplar_presup
-            respuesta = _acoplar_presup(respuesta, _present)
-            log.info("interprete_libre_presupuesto_acoplado", trace_id=trace_id)
+        # DETERMINISTA (18-jul, bug real: envio y total tragados en la charla 2):
+        # si el CODIGO sello un presupuesto este turno y el generador no puso el
+        # marcador, el sellado SIEMPRE se muestra, no dependiendo de _tools_precalc
+        # ni de que el marcador este. Si el generador escribio uno en prosa, se
+        # REEMPLAZA por el sellado (con envio y total); si no, se acopla. El
+        # marcador es una ayuda, no una condicion para que el cliente vea el total.
+        # Clobber-safe: los numeros del sellado salen del proof de calculate_total,
+        # asi que el verificador de plata (que corre despues) los ve respaldados y
+        # no los re-ancla; y se quita el presupuesto en prosa, que era la unica
+        # fuente de numeros sin respaldo que ese filtro podia mal-corregir.
+        respuesta = _sustituir_o_acoplar_presupuesto(respuesta, _present)
+        log.info("interprete_libre_presupuesto_estampado_det", trace_id=trace_id)
 
     # Productos: el solver los referencia por [[PROD:<id>]] y el codigo pone
     # nombre+precio+stock reales del catalogo (curaduria del solver, datos de la
