@@ -197,26 +197,30 @@ def _correr_lead_fuerte(monkeypatch, mensaje, datos_turno, modo,
 
 
 def test_modo_lead_capta_fuerte_sin_pedir_datos(monkeypatch):
-    """En modo 'lead', un cierre confirmado capta el lead fuerte y avisa, pero NO
-    devuelve un mensaje pidiendo datos: el bot sigue con la respuesta del Solver."""
+    """En modo 'lead', un cierre confirmado capta el lead fuerte y avisa, y ahora
+    responde un CIERRE distinto (tomamos tu pedido) en vez de dejar que el solver
+    reitere el presupuesto (arreglo del loop del 'si', charla Monte Ralo). No
+    pide datos: cierra suave y deriva a un humano."""
     meta, updates, creado = _correr_lead_fuerte(
         monkeypatch, "dale, lo quiero", {}, modo="lead")
     assert meta["accion"] == "lead_fuerte_captado"
-    # No hay respuesta_directa: el Solver sigue la charla, no se pide nada.
-    assert "respuesta_directa" not in meta
+    # Ahora SI hay respuesta_directa (cierre), para no re-mandar el presupuesto.
+    assert "tomamos tu pedido" in (meta.get("respuesta_directa") or "").lower()
     # El lead quedo captado y avisado, no en 'datos_solicitados'.
     assert creado.get("estado_inicial") == "capturado"
     assert "lead_fuerte_captado" in creado.get("_notificaciones", [])
 
 
 def test_modo_lead_no_reavisa_si_ya_hay_lead_fuerte(monkeypatch):
-    """Si ya hay un lead fuerte captado activo, no se crea otro ni se re-avisa:
-    el bot solo sigue conversando."""
+    """Si ya hay un lead fuerte captado activo, no se crea otro ni se re-avisa,
+    pero SI se responde un cierre corto distinto (arreglo del loop): antes no
+    devolvia nada y el solver re-mandaba el presupuesto en cada 'si'."""
+    from app.core import leads
     activo = {"lead_id": "L1", "nivel": "fuerte", "estado": "capturado"}
     meta, updates, creado = _correr_lead_fuerte(
         monkeypatch, "dale, lo quiero", {}, modo="lead", lead_activo=activo)
     assert meta["accion"] == "lead_fuerte_ya_captado"
-    assert "respuesta_directa" not in meta
+    assert meta.get("respuesta_directa") == leads.MENSAJE_PEDIDO_YA_TOMADO
     # No se creo un lead nuevo.
     assert creado.get("estado_inicial") is None
 
@@ -293,3 +297,54 @@ def test_lock_presupuesto_nuevo_sigue_preguntando(monkeypatch):
         monkeypatch, "cuanto queda con envio?", "pregunta_especifica", 0.7,
         presupuesto="Total: $100.000", presupuesto_nuevo=True)
     assert meta["accion"] == "pregunta_cierre"
+
+
+# ── LOOP DEL "SI" REPETIDO (18-jul, charla real Monte Ralo) ──────────────────
+# En modo lead, con el lead YA captado, la confirmacion no devolvia respuesta y
+# el solver re-mandaba el presupuesto en cada "si". El arreglo: el cierre
+# responde algo distinto y corta el loop.
+
+def _correr_con_lead_activo(monkeypatch, lead_activo, mensaje, intencion,
+                            confianza, presupuesto, modo="lead"):
+    import asyncio
+    from app.core import leads as L
+    monkeypatch.setattr(L, "get_lead_activo",
+                        lambda user_id, canal, tienda_id: lead_activo)
+    monkeypatch.setattr(L, "crear_lead", lambda **kw: "LEAD_NEW")
+    monkeypatch.setattr(L, "actualizar_lead",
+                        lambda lead_id, tienda_id, cambios: None)
+
+    async def _fake_notificar(**kw):
+        return None
+
+    monkeypatch.setattr(L, "notificar_lead", _fake_notificar)
+    monkeypatch.setattr(L, "modo_cierre", lambda tid: modo)
+    interp = {"intencion": intencion, "confianza": confianza}
+    return asyncio.new_event_loop().run_until_complete(
+        L.procesar_mensaje_para_lead(
+            user_id="u1", canal="whatsapp", tienda_id="verifika_prod",
+            mensaje=mensaje, respuesta_solver="Genial.", trace_id="t1",
+            interpretacion=interp, presupuesto=presupuesto,
+            presupuesto_nuevo=True))[1]
+
+
+def test_lead_ya_captado_corta_el_loop(monkeypatch):
+    """El bug real: lead fuerte YA captado + otro 'si' -> antes devolvia None (el
+    solver re-mandaba el presupuesto). Ahora devuelve un cierre corto distinto."""
+    from app.core import leads
+    lead = {"lead_id": "L1", "nivel": "fuerte", "estado": "capturado"}
+    meta = _correr_con_lead_activo(
+        monkeypatch, lead, "si", "decision_compra", 0.95,
+        presupuesto="Presupuesto:\n- 1x Tablet: $211.500\nTotal: $211.500")
+    assert meta["accion"] == "lead_fuerte_ya_captado"
+    assert meta.get("respuesta_directa") == leads.MENSAJE_PEDIDO_YA_TOMADO
+
+
+def test_lead_fuerte_captado_devuelve_cierre(monkeypatch):
+    """Al captar el lead fuerte en modo lead, el bot responde el cierre (tomamos
+    tu pedido) en vez de dejar que el solver reitere el presupuesto."""
+    meta = _correr_con_lead_activo(
+        monkeypatch, None, "dale, lo confirmo", "decision_compra", 0.95,
+        presupuesto="Presupuesto:\n- 1x Tablet: $211.500\nTotal: $211.500")
+    assert meta["accion"] == "lead_fuerte_captado"
+    assert "tomamos tu pedido" in (meta.get("respuesta_directa") or "").lower()

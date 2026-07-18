@@ -44,6 +44,14 @@ MENSAJE_NO_INTERESADO = (
     "Igual le paso el dato a una persona del equipo por si te puede dar una mano."
 )
 
+# Cierre corto para el lead YA captado. Nace del loop real (charla Monte Ralo):
+# el cliente confirmaba, el lead ya estaba tomado, el cierre no devolvia nada y
+# el solver re-mandaba el presupuesto en cada "si". Este mensaje corta el loop.
+MENSAJE_PEDIDO_YA_TOMADO = (
+    "Tu pedido ya quedó tomado. Una persona del equipo te contacta a la "
+    "brevedad para coordinar el pago y el envío. ¿Te ayudo con algo más?"
+)
+
 RE_TELEFONO = re.compile(
     r"(?:\+?54\s?9?\s?)?(?:11|2\d{2}|3\d{2})\s?\d{3,4}\s?\d{4}"
 )
@@ -469,7 +477,10 @@ async def procesar_mensaje_para_lead(
             if lead_activo and lead_activo.get("nivel") == "fuerte":
                 log.info("lead_fuerte_ya_captado", trace_id=trace_id,
                          lead_id=lead_activo.get("lead_id"))
-                return None, {"accion": "lead_fuerte_ya_captado"}
+                # Corta el loop del "si" repetido: responde un cierre corto y
+                # distinto en vez de dejar que el solver re-mande el presupuesto.
+                return None, {"accion": "lead_fuerte_ya_captado",
+                              "respuesta_directa": MENSAJE_PEDIDO_YA_TOMADO}
             prev = {k: v for k, v in (datos_previos or {}).items()
                     if v and k in cierre.CAMPOS_REQUERIDOS}
             sembrados = {**prev, **{k: v for k, v in (datos_turno or {}).items() if v}}
@@ -495,9 +506,14 @@ async def procesar_mensaje_para_lead(
                     orden=presupuesto, ultimo_mensaje=mensaje)
             except Exception as e:
                 log.warning("notificar_lead_failed", error=str(e)[:120])
-            # SIN respuesta_directa: el bot sigue iterando con el cliente con la
-            # respuesta del Solver. El lead fuerte ya quedo captado y avisado.
-            return None, {"accion": "lead_fuerte_captado", "lead_id": lead_id}
+            # CIERRE DISTINTO al captar (arreglo del loop Monte Ralo): antes no
+            # devolvia respuesta y el solver re-mandaba el presupuesto una y otra
+            # vez ante cada "si". Ahora el bot confirma que tomo el pedido, con el
+            # resumen, y avisa que un humano coordina pago y envio. Asi el destino
+            # sin resolver tampoco frena: lo coordina la persona.
+            return None, {"accion": "lead_fuerte_captado", "lead_id": lead_id,
+                          "respuesta_directa": cierre.mensaje_confirmacion(
+                              {**sembrados, "orden": presupuesto}, presupuesto)}
 
         # VERSION B (modo 'venta'): el bot cierra y usa los datos para el cobro.
         lead_id = crear_lead(
