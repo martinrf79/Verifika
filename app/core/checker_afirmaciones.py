@@ -47,8 +47,9 @@ _SCHEMA = {
             "veredicto": {"type": "string",
                           "enum": ["respaldada", "sin_respaldo", "neutral"]},
         },
-        "required": ["texto", "veredicto"]}}},
-    "required": ["afirmaciones"]}
+        "required": ["texto", "veredicto"]}},
+        "respuesta_corregida": {"type": "string"}},
+    "required": ["afirmaciones", "respuesta_corregida"]}
 
 
 def evidencia_de_meta(meta: dict, tienda_id: str | None = None) -> str:
@@ -103,7 +104,15 @@ def _prompt(respuesta: str, evidencia: str) -> str:
         "tiene. NO evalues precios ni numeros (otro sistema ya los "
         "verifico). Copia cada afirmacion como ORACION COMPLETA, textual, "
         "tal cual aparece en la respuesta. Si no hay afirmaciones de hecho, "
-        "devolve la lista vacia.\n\n"
+        "devolve la lista vacia.\n"
+        "Ademas devolve 'respuesta_corregida': la MISMA respuesta pero "
+        "arreglando SOLO lo sin_respaldo. Sacá o reformulá con criterio lo que "
+        "la evidencia no sostiene, SIN inventar nada nuevo, SIN agregar numeros, "
+        "precios ni productos que no esten en la evidencia. Manté el tono de "
+        "venta calido, el voseo y TODO lo respaldado y lo honesto. Copiá igual, "
+        "sin tocar, cualquier linea que tenga numeros, precios o el presupuesto. "
+        "Si la respuesta ya esta bien y no hay nada que corregir, devolve "
+        "'respuesta_corregida' como cadena vacia.\n\n"
         f"EVIDENCIA:\n{evidencia or '(sin evidencia este turno)'}\n\n"
         f"RESPUESTA:\n{respuesta}\n\n"
         "Devolve SOLO el JSON.")
@@ -143,11 +152,35 @@ async def chequear(respuesta: str, meta: dict, tienda_id: str | None = None,
                         if isinstance(a, dict) and a.get("texto")]
         sin_respaldo = [a["texto"] for a in afirmaciones
                         if a.get("veredicto") == "sin_respaldo"]
-        return {"afirmaciones": afirmaciones, "sin_respaldo": sin_respaldo}
+        corregida = str(data.get("respuesta_corregida") or "").strip()
+        return {"afirmaciones": afirmaciones, "sin_respaldo": sin_respaldo,
+                "corregida": corregida}
     except Exception as e:
         log.warning("checker_afirmaciones_error", trace_id=trace_id,
                     error=str(e)[:120])
         return None
+
+
+_RE_NUM = re.compile(r"\d+")
+
+
+def rewrite_segura(original: str, corregida: str) -> str | None:
+    """RED DE CODIGO sobre la reescritura del critico (manera 3). Acepta la
+    version corregida SOLO si: no esta vacia ni es un muñon (largo razonable),
+    no trae un marcador sin estampar, y NO introduce ningun numero que no
+    estuviera ya en el original (los numeros son territorio del verificador de
+    plata y del estampado; el reescritor jamas inventa una cifra). Asi la
+    correccion toca prosa, nunca dato duro. Devuelve la corregida si es segura,
+    None si hay que caer a la poda determinista."""
+    c = (corregida or "").strip()
+    if len(re.sub(r"\s", "", c)) < 15:
+        return None
+    if "[[" in c or "]]" in c:
+        return None
+    nums_orig = set(_RE_NUM.findall(original or ""))
+    if any(n not in nums_orig for n in _RE_NUM.findall(c)):
+        return None
+    return c
 
 
 _RE_DINERO_O_DIGITO = re.compile(r"[\d$]")

@@ -1749,16 +1749,28 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             log.warning("interprete_libre_prosa_rag_error", trace_id=trace_id,
                         error=str(e)[:120])
         try:
-            from app.core.checker_afirmaciones import chequear, podar_sin_respaldo
+            from app.core.checker_afirmaciones import (
+                chequear, podar_sin_respaldo, rewrite_segura)
             _chk = await chequear(respuesta, meta, tienda_id, trace_id)
             if _chk and _chk["sin_respaldo"]:
-                _texto_chk, _podadas = podar_sin_respaldo(
-                    respuesta, _chk["sin_respaldo"])
-                log.warning("interprete_libre_checker_sin_respaldo",
-                            trace_id=trace_id,
-                            sin_respaldo=_chk["sin_respaldo"][:6],
-                            podadas=len(_podadas))
-                respuesta = _texto_chk
+                # MANERA 3, critico-reescritor: la misma llamada del juez ya
+                # trajo la version corregida. Se usa si pasa la red de codigo
+                # (no inventa numeros ni marcadores, no queda muñon); si no,
+                # cae a la poda determinista de siempre. Cero llamada extra.
+                _reescrita = rewrite_segura(respuesta, (_chk.get("corregida") or ""))
+                if _reescrita and _reescrita != respuesta:
+                    respuesta = _reescrita
+                    log.info("interprete_libre_checker_reescrito",
+                             trace_id=trace_id,
+                             sin_respaldo=_chk["sin_respaldo"][:6])
+                else:
+                    _texto_chk, _podadas = podar_sin_respaldo(
+                        respuesta, _chk["sin_respaldo"])
+                    log.warning("interprete_libre_checker_sin_respaldo",
+                                trace_id=trace_id,
+                                sin_respaldo=_chk["sin_respaldo"][:6],
+                                podadas=len(_podadas))
+                    respuesta = _texto_chk
             elif _chk is not None:
                 log.info("interprete_libre_checker_ok", trace_id=trace_id,
                          afirmaciones=len(_chk["afirmaciones"]))
