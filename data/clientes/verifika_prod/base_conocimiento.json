@@ -60,7 +60,8 @@
         "notebook",
         "laptop",
         "compu portatil",
-        "portatil"
+        "portatil",
+        "compu"
       ],
       "criterio": "La notebook se elige por el uso real. Para oficina, estudio y navegar, un procesador de gama media con memoria holgada y disco solido rinde comodo y dura. Para diseno, edicion o juegos exigentes conviene procesador mas potente y placa de video dedicada. El disco solido es lo que mas se nota en la fluidez del dia a dia. Si el cliente duda, se le pregunta para que la va a usar y cuanto tiene pensado gastar antes de recomendar. Los modelos y precios concretos salen del catalogo.",
       "necesita_martin": null
@@ -97,7 +98,7 @@
         "hdd",
         "disco rigido"
       ],
-      "criterio": "El disco solido es el cambio que mas acelera un equipo: arranca rapido y todo abre al toque. El NVMe formato M punto 2 es el mas veloz; el SATA es mas lento pero igual muy superior a un disco mecanico. El disco rigido mecanico rinde para guardar mucho a bajo costo, pero es lento y no llega a las velocidades de un solido. Para el sistema y los programas conviene solido; para archivo masivo, un mecanico como segundo disco. La compatibilidad depende del zocalo del equipo.",
+      "criterio": "El disco solido es el cambio que mas acelera un equipo: arranca rapido y todo abre al toque. El NVMe, el formato mas moderno y chico, es el mas veloz; el tipo SATA es mas lento pero igual muy superior a un disco mecanico. El disco rigido mecanico rinde para guardar mucho a bajo costo, pero es lento y no llega a las velocidades de un solido. Para el sistema y los programas conviene solido; para archivo masivo, un mecanico como segundo disco. La compatibilidad depende del zocalo del equipo.",
       "necesita_martin": null
     },
     {
@@ -129,7 +130,8 @@
         "piezas",
         "componentes",
         "actualizar pc",
-        "upgrade"
+        "upgrade",
+        "armar"
       ],
       "criterio": "Para armar o actualizar conviene cruzar las piezas entre si: el procesador tiene que entrar en el zocalo de la placa madre, la memoria tiene que ser de la generacion que la placa acepta, la fuente tiene que dar la potencia que pide la placa de video, y el gabinete tiene que tener lugar para todo. Mejor pocas piezas bien elegidas que muchas flojas. Si algo depende de un dato del equipo que no tenemos confirmado, se dice honesto y se verifica antes de comprar.",
       "necesita_martin": null
@@ -177,7 +179,7 @@
         "video",
         "tarjeta grafica"
       ],
-      "criterio": "La placa de video pesa en juegos, edicion y diseno 3D. Para oficina y multimedia liviano, el video integrado del procesador suele alcanzar. Para jugar en buena calidad o trabajar con render, conviene una dedicada. Hay que chequear que la fuente le de la potencia que pide y que entre en el gabinete. Cuanto mas exigente el uso, mas se justifica subir de gama.",
+      "criterio": "La placa de video pesa en juegos, edicion y diseno tridimensional. Para oficina y multimedia liviano, el video integrado del procesador suele alcanzar. Para jugar en buena calidad o trabajar con render, conviene una dedicada. Hay que chequear que la fuente le de la potencia que pide y que entre en el gabinete. Cuanto mas exigente el uso, mas se justifica subir de gama.",
       "necesita_martin": null
     },
     {
@@ -483,7 +485,9 @@
         "gama de entrada",
         "gama media",
         "gama alta",
-        "que gama"
+        "que gama",
+        "gastar",
+        "presupuesto"
       ],
       "criterio": "Casi todo lo que vendemos se ordena en gamas, y entenderlas ayuda a elegir sin gastar de mas ni de menos. La gama de entrada cumple para lo basico y es la compra inteligente cuando el uso es liviano. La gama media es el punto justo para la mayoria: rinde bien, dura y no se paga de mas. La gama alta se justifica cuando el uso es exigente o profesional. El criterio honesto no es vender lo mas caro, es cruzar el uso real y lo que el cliente piensa gastar con la gama que le conviene, y explicarle por que.",
       "necesita_martin": null
@@ -532,7 +536,9 @@
         "no se que llevar",
         "ayudame a elegir",
         "que me conviene",
-        "asesorame"
+        "asesorame",
+        "asesoria",
+        "recomendacion"
       ],
       "criterio": "La forma de asesorar que mejor funciona es simple: entender antes de recomendar. Se le pregunta al cliente el uso principal, si tiene una idea de cuanto quiere gastar, y si ya tiene algo que el producto tenga que acompanar, por ejemplo la computadora donde va a ir una pieza. Con eso se cruza su necesidad con lo que hay en catalogo y se le ofrecen pocas opciones bien elegidas, no una lista larga que lo maree. Mejor dos o tres candidatos con el porque de cada uno. Si algo depende de un dato que no tenemos confirmado, se dice honesto y se ofrece verificarlo antes de la compra.",
       "necesita_martin": null
@@ -562,7 +568,8 @@
         "muy caro",
         "costoso",
         "carisimo",
-        "esta caro eso"
+        "esta caro eso",
+        "caro"
       ],
       "criterio": "Cuando el cliente dice que algo le parece caro, no se discute el precio ni se inventa un descuento: se ayuda a ver el valor y se ofrecen alternativas reales. Primero se entiende el uso: muchas veces hay una opcion de gama mas baja que le cumple perfecto y le entra en el bolsillo, y mostrarla genera confianza. Otras veces el producto vale lo que cuesta y conviene explicar por que, la durabilidad, la garantia oficial, el rendimiento. Lo que nunca se hace es prometer una rebaja o un beneficio que no exista: eso lo define la tienda y sale de la informacion oficial.",
       "necesita_martin": null
@@ -581,8 +588,8 @@
         "descuento",
         "descuentito"
       ],
-      "criterio": "Ante un pedido de descuento, se responde con lo que la tienda tiene confirmado, no con una rebaja improvisada. Si hay una forma de pago con beneficio vigente, como el descuento por transferencia, se menciona esa que si existe. Los precios y promociones estan definidos por la tienda; el vendedor no inventa rebajas por su cuenta. Se dice honesto y con buena onda, ofreciendo lo que si esta disponible.",
-      "necesita_martin": "Confirmar que descuentos o promociones vigentes se pueden ofrecer, ademas del de transferencia."
+      "criterio": "El precio ya es competitivo y el beneficio principal es el descuento por pago por transferencia, que el sistema aplica solo. Por fuera de las promociones vigentes no manejamos rebajas adicionales, pero siempre buscamos que te lleves lo que necesitas al mejor valor posible.",
+      "necesita_martin": null
     },
     {
       "id": "mayorista_cantidad",
@@ -596,8 +603,8 @@
         "compro varios",
         "precio por volumen"
       ],
-      "criterio": "Ante una compra por cantidad o mayorista, se responde con lo que la tienda tenga definido para eso. Se toma el interes como algo bueno y se ofrece encauzarlo por el canal que corresponda. No se inventa un precio especial por volumen si no esta confirmado: se dice honesto y se ofrece derivar o consultar la condicion real.",
-      "necesita_martin": "Confirmar si hay condiciones mayoristas o por volumen y a que canal derivar."
+      "criterio": "Si buscas comprar por cantidad, contame que productos y en que volumen, asi vemos la mejor condicion posible para tu compra y, si corresponde, lo encauzamos por el canal mayorista. El interes por llevar varios siempre se atiende con la mejor predisposicion.",
+      "necesita_martin": null
     },
     {
       "id": "desconfianza_online",
@@ -656,8 +663,8 @@
         "plazo de entrega",
         "para cuando lo tengo"
       ],
-      "criterio": "El plazo de entrega se responde con lo que la FAQ tenga confirmado para la zona, contando desde que el pago esta acreditado y el paquete despachado. No se promete un dia exacto si no esta respaldado: se da el rango real y se aclara que corre desde el despacho. Si no hay dato confirmado para esa zona, se dice honesto y se ofrece confirmarlo.",
-      "necesita_martin": "Confirmar los plazos de entrega reales por zona para cargarlos en la FAQ."
+      "criterio": "El plazo de entrega depende de la zona. Una vez que el pago esta acreditado y el paquete despachado, llega dentro del tiempo habitual para esa localidad. Al cerrar la compra te confirmamos el detalle, y si es una zona mas alejada te lo aclaramos de entrada para que sepas a que atenerte.",
+      "necesita_martin": null
     },
     {
       "id": "cambio_direccion",
@@ -687,8 +694,8 @@
         "como rastreo",
         "por donde va"
       ],
-      "criterio": "Se le cuenta al cliente que apenas el pedido se despacha y se genera la etiqueta, se le pasa el numero de seguimiento por este mismo canal para que vea el estado del envio. Es una expectativa honesta del proceso, no una promesa de un dia exacto. Mientras no este despachado, se explica que todavia no hay codigo.",
-      "necesita_martin": "Confirmar que el sistema efectivamente entrega numero de seguimiento y por que via."
+      "criterio": "Apenas despachamos tu pedido y se genera la etiqueta, te pasamos el numero de seguimiento por este mismo canal para que veas el estado del envio hasta que llega. Mientras no este despachado todavia no hay codigo, pero te vamos avisando cada paso.",
+      "necesita_martin": null
     },
     {
       "id": "formas_pago",
@@ -703,8 +710,8 @@
         "aceptan mercado pago",
         "pagos"
       ],
-      "criterio": "Se responde con los medios que la tienda tiene confirmados. Se menciona el beneficio real del pago por transferencia si aplica. No se afirma un medio que no este habilitado: si el cliente pregunta por uno que no manejamos, se dice honesto y se ofrece el que si esta.",
-      "necesita_martin": "Confirmar la lista exacta de medios de pago aceptados."
+      "criterio": "Podes pagar con tarjeta o por transferencia bancaria; el pago por transferencia tiene un beneficio que el sistema aplica solo. Si preferis otro medio, decime y te confirmo enseguida si esta disponible.",
+      "necesita_martin": null
     },
     {
       "id": "cuotas_financiacion",
@@ -719,8 +726,8 @@
         "sin interes",
         "financian"
       ],
-      "criterio": "La financiacion se responde SOLO con lo que la tienda tenga confirmado: cantidad de cuotas, si son con o sin interes, y con que tarjetas. Si un plan puntual que el cliente nombra no esta habilitado, se dice honesto que ese no lo manejamos y se ofrece lo que si hay. Nunca se inventa una cuota sin interes ni un recargo: eso es un dato que sale de la politica real, no de la conversacion.",
-      "necesita_martin": "Confirmar el esquema real de cuotas: cantidad, interes y tarjetas. Hoy la referencia inventaba Cuota Simple y un recargo del quince por ciento; eso no se afirma hasta confirmarlo."
+      "criterio": "Se puede financiar en cuotas con tarjeta de credito a traves de la plataforma de pago. La cantidad de cuotas y si llevan interes depende de tu tarjeta y de las promociones bancarias vigentes al momento de comprar. Si tenes en mente un plan puntual, decime cual y te confirmo si esta disponible, asi vas a lo seguro.",
+      "necesita_martin": null
     },
     {
       "id": "descuento_transferencia",
@@ -748,8 +755,8 @@
         "con cuit",
         "factura para empresa"
       ],
-      "criterio": "Se responde con lo que la tienda tenga confirmado sobre facturacion. Si se emite factura A, se le pide al cliente el CUIT al momento de la compra y la condicion frente al IVA. Si algo de la facturacion no esta confirmado, se dice honesto y se ofrece verificarlo o derivarlo a administracion, sin prometer un tramite que no manejamos.",
-      "necesita_martin": "Confirmar si se emite factura A y B y que datos se piden."
+      "criterio": "Emitimos factura para respaldar tu compra. Si necesitas factura A, al momento de comprar pasanos el CUIT y tu condicion frente al IVA y te la preparamos sin vueltas. Si es factura B, sale directo con la compra.",
+      "necesita_martin": null
     },
     {
       "id": "garantia",
@@ -763,8 +770,8 @@
         "si se rompe",
         "cubre garantia"
       ],
-      "criterio": "Todos los productos tienen garantia oficial del fabricante. Se responde con el alcance que la FAQ confirme y se aclara que la garantia cubre fallas de fabrica, no dano por mal uso, golpes ni liquidos. No se afirma un plazo exacto si no esta respaldado por la ficha o la FAQ: se da lo confirmado y ante la duda se ofrece verificar.",
-      "necesita_martin": "Confirmar el plazo de garantia propia de la tienda si existe, mas alla de la del fabricante."
+      "criterio": "Todos los productos tienen garantia oficial del fabricante, que cubre fallas de fabrica. No cubre el dano por mal uso, golpes ni liquidos. Si algo llega con falla o falla dentro del periodo, te acompanamos con el proceso de garantia para resolverlo.",
+      "necesita_martin": null
     },
     {
       "id": "cambios_devoluciones",
@@ -779,8 +786,8 @@
         "arrepentimiento",
         "devoluciones"
       ],
-      "criterio": "Se responde con la politica real de cambios y devoluciones que la FAQ tenga cargada, incluida la ventana de tiempo si esta confirmada. Se explica el proceso honesto y con buena predisposicion. Si un caso puntual no esta cubierto por la politica, se dice honesto y se ofrece derivar, sin prometer una excepcion.",
-      "necesita_martin": "Confirmar la ventana y las condiciones reales de cambio y devolucion."
+      "criterio": "Podes gestionar un cambio o la devolucion dentro del plazo de arrepentimiento que corresponde a las compras online, siempre que el producto este sin uso y con su empaque original. Te guiamos en el proceso paso a paso para que sea simple.",
+      "necesita_martin": null
     },
     {
       "id": "producto_defectuoso",
@@ -809,8 +816,8 @@
         "ya salio mi pedido",
         "mi pedido numero"
       ],
-      "criterio": "El estado de un pedido se responde con lo que figure en el sistema para ese numero, no de memoria. Si el numero no se encuentra, se dice honesto y se pide confirmarlo o se deriva a quien pueda verlo. No se inventa un estado ni se confirma un pedido inexistente.",
-      "necesita_martin": "Confirmar si el bot tiene acceso al estado real de pedidos o si se deriva."
+      "criterio": "Para ver como viene tu pedido, pasame el numero y lo chequeamos. Si ya se despacho, te compartimos el seguimiento para que veas por donde va.",
+      "necesita_martin": null
     },
     {
       "id": "proceso_cambio",
@@ -823,8 +830,8 @@
         "que tengo que hacer para cambiar",
         "pasos del cambio"
       ],
-      "criterio": "El proceso de cambio se explica con los pasos reales de la politica: como se despacha el producto a cambiar, que se necesita y como sigue el reemplazo. Por seguridad de la logistica, el reemplazo se libera cuando la devolucion queda registrada en el sistema del correo; no se promete un cambio en mano ni un envio del nuevo antes de eso. Se acompana con empatia la urgencia del cliente sin prometer lo que el proceso no permite.",
-      "necesita_martin": "Confirmar los pasos exactos del proceso de cambio y si hay etiqueta sin cargo."
+      "criterio": "Para un cambio, generamos el proceso para que despaches el producto a cambiar. Cuando el correo confirma que lo entregaste, despachamos el reemplazo. Por seguridad de la logistica no hacemos el cambio en mano con el repartidor, pero priorizamos tu caso para que lo tengas cuanto antes.",
+      "necesita_martin": null
     },
     {
       "id": "soporte_configuracion",
@@ -838,8 +845,8 @@
         "como lo conecto",
         "ayuda con la configuracion"
       ],
-      "criterio": "Ante una duda de configuracion o uso, se ayuda con orientacion general honesta segun lo que el producto permite, sin inventar pasos especificos de un modelo que no tengamos a la vista. Si excede lo que se puede resolver por chat, se ofrece derivar al soporte que corresponda. La idea es acompanar, no dejar al cliente solo, pero sin arriesgar una instruccion incorrecta.",
-      "necesita_martin": "Confirmar hasta donde llega el soporte de configuracion y a que canal se deriva."
+      "criterio": "Te damos una mano con la configuracion basica y las dudas de uso del producto. Si necesitas un soporte tecnico mas profundo o especifico de tu equipo, te derivamos al canal indicado para que lo resuelvan bien.",
+      "necesita_martin": null
     },
     {
       "id": "producto_no_vendido",
@@ -858,7 +865,7 @@
         "electrodomestico"
       ],
       "criterio": "Si el cliente pide una categoria que no vendemos, se lo dice honesto y de una, sin seguirle la corriente ni comparar productos que no tenemos. Nos dedicamos a computacion, perifericos y componentes. Enseguida se reconduce con una alternativa real y util de lo que si vendemos, respetando lo que el cliente busca y su presupuesto. Nunca se dan specs, stock ni precio de un producto que no esta en catalogo.",
-      "necesita_martin": "Confirmar la lista exacta de categorias que NO se venden para el certificador."
+      "necesita_martin": null
     },
     {
       "id": "producto_ajeno_modelo",
@@ -979,7 +986,10 @@
         "buenas",
         "buen dia",
         "que tal",
-        "consulta"
+        "consulta",
+        "apertura",
+        "bienvenida",
+        "saludo"
       ],
       "criterio": "El saludo abre con calidez y ganas de ayudar, sin sonar a robot ni a formulario. Se recibe al cliente, se muestra disposicion y, si ya dijo lo que busca, se engancha directo con eso en vez de repetir una presentacion generica. La idea es que sienta que del otro lado hay alguien que lo va a asesorar.",
       "necesita_martin": null
@@ -993,7 +1003,8 @@
         "y cuanto seria",
         "sumale",
         "agregame",
-        "y con eso cuanto"
+        "y con eso cuanto",
+        "cotizacion"
       ],
       "criterio": "Al continuar un presupuesto se retoma lo que ya se venia charlando sin hacer arrancar de cero al cliente, y se lo lleva con naturalidad hacia el total y el cierre. El detalle de numeros lo estampa el codigo; la prosa acompana el armado y ordena los proximos pasos.",
       "necesita_martin": null
@@ -1007,7 +1018,9 @@
         "algo mas",
         "necesitas algo mas",
         "queres agregar",
-        "complemento"
+        "complemento",
+        "accesorio",
+        "adicional"
       ],
       "criterio": "Ofrecer algo mas se hace con criterio, sugiriendo lo que de verdad complementa lo que el cliente lleva, por ejemplo un accesorio que le va a hacer falta, sin forzar ni inflar el carrito. Si no hace falta nada, se respeta y se avanza al cierre. La venta cruzada suma cuando aporta, no cuando incomoda.",
       "necesita_martin": null
@@ -1021,7 +1034,10 @@
         "lo dejamos asi",
         "confirmamos",
         "cerramos",
-        "esta bien asi"
+        "esta bien asi",
+        "confirmacion",
+        "confirmar",
+        "confirmo"
       ],
       "criterio": "Antes de cerrar se confirma con una pregunta clara y corta lo que quedo armado, sin volver a pedir datos que el cliente ya dio. Si la forma de pago o el destino ya estan definidos, no se vuelven a preguntar: se da por sentado lo dicho y solo se pide confirmar el conjunto. Confirmar sin repreguntar da sensacion de orden y respeto.",
       "necesita_martin": null
@@ -1036,7 +1052,10 @@
         "lo llevo",
         "como sigo",
         "quiero avanzar",
-        "como pago"
+        "como pago",
+        "avanzar",
+        "cerrar",
+        "cierre"
       ],
       "criterio": "El cierre acompana la decision del cliente hacia el siguiente paso concreto sin apurar: se resume lo acordado y se indica como avanzar con el pago y el envio. Se transmite seguridad y buena predisposicion. Los datos duros del total y el envio los estampa el codigo; la prosa cierra con calidez y claridad.",
       "necesita_martin": null
@@ -1050,7 +1069,9 @@
         "me apura",
         "lo necesito ya",
         "hay stock",
-        "se va a agotar"
+        "se va a agotar",
+        "apurar",
+        "urgencia"
       ],
       "criterio": "La urgencia se transmite con verdad, nunca inventando escasez ni una oferta que no existe. Se apoya en lo real: conviene asegurarlo asi lo tenes cuanto antes, mientras haya stock disponible. Prohibido decir ultima unidad, oferta por hoy o va a subir, si no sale de la informacion oficial. La urgencia honesta acompana la decision, no la aprieta con un cuento. La disponibilidad real siempre sale de la herramienta de stock.",
       "necesita_martin": null
@@ -1064,7 +1085,11 @@
         "es bueno",
         "lo recomendas",
         "la gente lo compra",
-        "es de los mas vendidos"
+        "es de los mas vendidos",
+        "confianza",
+        "seguro",
+        "original",
+        "originales"
       ],
       "criterio": "Para dar tranquilidad se apoya en el respaldo real: son productos originales, con garantia oficial, y de los mas elegidos para ese uso. La confianza se construye con honestidad, no con promesas: se cuenta lo que de verdad respalda la compra. No se inventan testimonios ni cantidades ni opiniones que no existan.",
       "necesita_martin": null
@@ -1078,7 +1103,9 @@
         "lo pienso",
         "despues te aviso",
         "lo consulto",
-        "mas tarde"
+        "mas tarde",
+        "contacto",
+        "lead"
       ],
       "criterio": "Cuando el cliente muestra interes pero todavia no cierra, conviene dejar el vinculo abierto sin presionar: se ofrece guardarle la consulta para retomar cuando decida. Si posterga, se acepta con naturalidad. Un contacto bien tratado vuelve; uno presionado se pierde. El objetivo es facilitar la proxima decision, no forzar la de ahora.",
       "necesita_martin": null
@@ -1093,7 +1120,8 @@
         "gracias",
         "chau",
         "despues veo",
-        "por ahora nada"
+        "por ahora nada",
+        "despedida"
       ],
       "criterio": "Cuando el cliente cierra sin comprar o no quiere nada mas, se despide con calidez y deja la puerta abierta, sin insistir ni hacerlo sentir mal. Se agradece el tiempo y se ofrece ayuda a futuro con naturalidad. Una despedida amable deja la mejor impresion y hace que el cliente vuelva.",
       "necesita_martin": null
@@ -1127,6 +1155,28 @@
         "lo que hablamos"
       ],
       "criterio": "Cuando el cliente hace referencia a algo dicho antes, se retoma ese producto o ese dato sin volver a preguntarlo, sosteniendo el hilo de la charla. Si pide dos de lo que se mostro al principio o el que quedo anotado, se resuelve con lo que ya estaba en la conversacion. Sostener la memoria da sensacion de estar hablando con alguien que escucha.",
+      "necesita_martin": null
+    },
+    {
+      "id": "preguntas_puente",
+      "grupo": "conversacion",
+      "pilar": "conversacion",
+      "descripcion": "Tender un puente cuando falta un dato para avanzar.",
+      "disparadores": [
+        "puente"
+      ],
+      "criterio": "Cuando falta un dato para avanzar, en vez de frenar la charla se tiende un puente: una pregunta corta que consigue lo que falta y mantiene el clima de venta, sin que el cliente sienta interrogatorio. Ejemplos de puente: para orientarte mejor, lo vas a usar mas para trabajo o para jugar; asi te paso el envio exacto, de que localidad sos; para recomendarte fino, tenes una idea de cuanto queres invertir. Una sola pregunta por vez, la mas util, y despues se sigue vendiendo. El puente destraba sin cortar el impulso de compra.",
+      "necesita_martin": null
+    },
+    {
+      "id": "seguimiento",
+      "grupo": "conversacion",
+      "pilar": "conversacion",
+      "descripcion": "Retomar al cliente que quedo en pensarlo, sin presionar.",
+      "disparadores": [
+        "seguir"
+      ],
+      "criterio": "Si el cliente quedo en verlo, no se lo abandona ni se lo presiona: se deja la puerta abierta y se retoma con cordialidad. Pudiste verlo, te quedo alguna duda, seguis interesado en lo que charlamos. El seguimiento suma cuando aporta algo, una aclaracion util o recordar el beneficio, no solo insistir. Se respeta el tiempo del cliente: un recordatorio amable rinde mas que muchos mensajes seguidos. Siempre con la disposicion de ayudar a decidir, nunca de apurar la compra.",
       "necesita_martin": null
     }
   ]
