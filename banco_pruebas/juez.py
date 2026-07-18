@@ -135,4 +135,50 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod") -> list[str]:
     if _RE_NARRACION.search(respuesta):
         problemas.append("narracion interna filtrada al cliente")
 
+    # ── INVARIANTES DE COMPLETITUD (18-jul, tras cazar en logs reales que un
+    #    presupuesto sin envio ni total pasaba como "limpio"). El juez de
+    #    invariantes medía "no mintió"; ahora también mide "contestó completo".
+    #    Todo text-only y conservador: solo dispara con senal fuerte.
+
+    # 6. Presupuesto incompleto: si hay estructura de presupuesto (varias lineas
+    #    de producto con precio, o el rotulo Subtotal), TIENE que cerrar con un
+    #    Total. Un presupuesto que lista items y no da el total es el bug real de
+    #    la conversacion 2 (envio y total tragados por presupuesto_sin_marcador).
+    _lineas_prod = re.findall(r"^\s*[-•]\s*\d+\s*[xX].*\$", respuesta, re.M)
+    _hay_presup = bool(re.search(r"(?im)^\s*subtotal\s*:", respuesta)) or \
+        len(_lineas_prod) >= 1 and bool(re.search(r"(?i)presupuesto", respuesta))
+    if _hay_presup:
+        _tiene_total = bool(re.search(
+            r"(?im)^\s*total\s*:\s*(?:\$?\s?\d|gratis|entre)", respuesta))
+        if not _tiene_total:
+            problemas.append("presupuesto incompleto: lista items pero no cierra "
+                             "con un Total")
+
+    # 7. Rotulo de cuenta con la cifra VACIA: "Envio: " / "Total: " / "Subtotal: "
+    #    sin monto detras. Es el bug real de la conversacion 1 (Envio en blanco
+    #    por destino fantasma). El codigo calculo pero no estampo el valor.
+    for _m in re.finditer(r"(?im)^\s*(subtotal|total|env[ií]o[^:\n]*)\s*:\s*"
+                          r"(.*)$", respuesta):
+        _val = _m.group(2).strip()
+        if not _val or not re.search(r"(?i)\d|gratis|entre|consult", _val):
+            problemas.append(
+                f"linea de cuenta vacia o sin monto: '{_m.group(1).strip()}:'")
+
+    # 8. Respuesta CORTADA: termina en dos puntos, coma o un conector colgado,
+    #    o justo despues del rotulo Presupuesto. Es truncamiento, el cliente
+    #    recibe una frase a medias.
+    _fin = respuesta.rstrip()
+    if re.search(r"[:,]\s*$", _fin) or \
+            re.search(r"(?i)\b(te cuento|presupuesto|el detalle|y|de|que|con|"
+                      r"para|asi|entonces)\s*$", _fin):
+        problemas.append("respuesta cortada: termina en conector o rotulo colgado")
+
+    # 9. Turno MUDO: sacado el saludo enlatado, no queda contenido con sustancia.
+    #    Es el "solo saludo" que no contesta la pregunta del cliente.
+    _sin_saludo = re.sub(
+        r"(?i)¡?\s*hola!?\s*(soy el asistente autom[aá]tico[^.\n]*\.?\s*"
+        r"(te ayudo con[^.\n]*\.?)?)?", "", respuesta).strip()
+    if len(re.sub(r"[\s.,¡!¿?]", "", _sin_saludo)) < 12:
+        problemas.append("turno mudo: solo saludo, sin contestar")
+
     return problemas
