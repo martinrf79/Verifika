@@ -254,7 +254,9 @@ def presupuesto_precalculado(mensaje, estado, tienda_id, interp=None):
             tools = calcular_categorias_baratas(
                 cats, estado, tienda_id, None, mensaje) or []
             if tools:
-                rep, rep_tools = reparto_envios_detalle(mensaje, cats, tienda_id)
+                rep, rep_tools = reparto_envios_detalle(
+                    mensaje, cats, tienda_id,
+                    detalle_items=tools[0]["result"].get("detalle"))
                 bloque = tools[0]["result"]["presentacion"].strip()
                 if rep:
                     bloque += "\n" + rep.strip()
@@ -648,8 +650,25 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                          for c in estado["carrito"] if c.get("id")]
             if not items:
                 continue
-            locs = destinos or [l for l in (estado.get("localidades_envio") or []) if l]
-            for l in list(dict.fromkeys(locs)):
+            # Los destinos cotizados por el CODIGO en este turno mandan sobre
+            # los que re-escribe el modelo (19-jul: el modelo re-emitia los
+            # destinos del mensaje mal recortados y perdia uno); despues el
+            # modelo, ultimo la memoria. Dedup por subconjunto: 'san
+            # francisco' tras 'san francisco cordoba' es el mismo lugar.
+            from app.core.estado_venta import get_envio_localidades
+            from app.core.guia_pedido import (_mismo_destino_ya_visto,
+                                              grupos_para_calculo)
+            locs_turno = [l for l in (get_envio_localidades() or []) if l]
+            locs = (locs_turno or destinos
+                    or [l for l in (estado.get("localidades_envio") or []) if l])
+            _dedup: list = []
+            for l in dict.fromkeys(locs):
+                if not _mismo_destino_ya_visto(
+                        _norm(l), [_norm(x) for x in _dedup]):
+                    _dedup.append(l)
+            locs = _dedup
+            grupos_arg = grupos_para_calculo(mensaje or "", locs, tienda_id)
+            for l in locs:
                 q = cotizar_envio(localidad=l)
                 if q.get("ok"):
                     e = {"name": "cotizar_envio", "args": {"localidad": l},
@@ -670,6 +689,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             args = {"items": items, "destinos": max(1, len(locs)),
                     **({"items_extra": [{"faq_tema": "costo_envio",
                                          "concepto": "envio"}]} if locs else {}),
+                    **({"grupos": grupos_arg} if grupos_arg else {}),
                     **({"pago": pago} if pago else {})}
             res = calculate_total(**args)
             if res.get("ok") and res.get("presentacion"):

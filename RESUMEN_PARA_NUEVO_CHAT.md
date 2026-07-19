@@ -4,6 +4,55 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 19-jul-2026 (2ª tanda) — LA CHARLA REAL DE LOS TRES DESTINOS: CADENA
+ENTERA ARREGLADA DE FONDO (grupos_envio, pendiente desde el 10-jul). ====**
+
+Martín probó WhatsApp (12:30, trace 8507a0b6): un mensaje combinado con 6
+productos y TRES destinos con sus grupos dichos. El bot respondió "Envio (2
+envios): gratis". Diagnóstico leído de logs y Firestore reales por
+claude-lector, reproducido EXACTO en el banco (guion 47, verbatim, evidencia
+en corridas/). La cadena de la falla y el arreglo, cada paso con lock:
+
+1. **El intérprete LLM devolvió pedido VACÍO** con este patrón de mensaje
+   (reproducible, no fue un flake). El fallback determinista tenía tres
+   agujeros que ahora están cerrados:
+2. **Regex de destinos ciego a "irá/irán a"** (perdía Palpalá y Correa) y
+   captura basura ("san francisco es", "la otra direccion"). Arreglado:
+   verbos nuevos, corte del lookahead, y DOBLE PUERTA `_es_destino_real`:
+   referencia/pronombre afuera + el candidato tiene que nombrar un lugar de
+   la tabla geo (`geo_cp.es_lugar_conocido`, nueva). Dedup por subconjunto
+   ("san francisco" tras "san francisco cordoba" es el mismo lugar).
+3. **La provincia sticky completaba basura**: "la otra direccion" + "santa
+   fe" cotizaba ok. El reintento con provincia de cotizar_envio ahora corre
+   solo si el texto nombra un lugar real.
+4. **GRUPOS_ENVIO CONSTRUIDO (el pendiente del 10-jul):**
+   `grupos_envio_del_mensaje` parsea todo-o-nada las dos formas naturales
+   ("un mouse y un teclado a Rosario" y "el envío de Jujuy es una notebook y
+   un auricular") + el resto ("los que faltan van a..."). calculate_total
+   acepta `grupos` (parámetro solo de código, no está en el schema del LLM)
+   y decide el ENVÍO GRATIS POR PAQUETE con el subtotal real de cada grupo,
+   no con el promedio que regalaba el envío del paquete chico. Cableado en
+   los TRES llamadores (generador, camino sellado, ejecutor del plan) via
+   `grupos_para_calculo`. El detalle de reparto cotiza con el subtotal de su
+   paquete: reparto y total cuentan la misma plata.
+5. **En el generador, los destinos cotizados por el CÓDIGO mandan** sobre los
+   que re-emite el modelo (re-escribía los del mensaje mal recortados).
+6. **Juez, invariante 11 (envíos perdidos):** N destinos reales declarados en
+   el mensaje vs menos envíos cobrados en el presupuesto → acusa. `juzgar`
+   ahora recibe el mensaje del cliente.
+7. **VERIFICADO VIVO en el banco (guion 47, 2 corridas post-fix):** "Envio (3
+   envios): $7.500", total $1.532.500, reparto Jujuy gratis / Correa gratis /
+   San Francisco $7.500, juez limpio. **584 tests offline verdes.**
+
+Residual honesto que queda del caso: el intérprete LLM sigue devolviendo
+pedido vacío en este patrón (lo salva el camino determinista); el radar
+`presupuesto_sin_marcador` sigue sonando. Y la lección estructural que pidió
+registrar Martín: los arreglos anteriores del multi-destino parchaban la capa
+de turno; la capacidad de fondo (grupos + umbral por paquete) recién ahora
+existe y quedó lockeada contra la charla real.
+
+---
+
 **==== 19-jul-2026 — OBSERVABILIDAD DEL BANCO: OBSERVADOR DE RADARES +
 REGISTRO DE CORRIDAS + 3 FLACOS CAZADOS CON EVIDENCIA (rama
 claude/system-observability-diagnosis-wcqqmg). ====**

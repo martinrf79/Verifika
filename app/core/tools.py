@@ -10,6 +10,8 @@ from app.storage.firestore_client import (
     get_categories,
     get_all_faq,
 )
+import re
+
 from app.storage.search import hybrid_search_relajada
 from app.config import get_settings
 from app.logger import get_logger
@@ -184,10 +186,50 @@ def _render_presentacion(detalle, extras, subtotal,
     return "\n".join(lineas)
 
 
+def _subtotales_por_grupo(grupos: list, locs: list,
+                          cat_precios: dict) -> dict:
+    """{localidad: subtotal_del_paquete} cuando cada localidad mapea a UN
+    grupo declarado por el cliente y cada categoria tiene UN solo precio en
+    el pedido. {} ante cualquier ambiguedad: el que llama sigue con el
+    promedio. Es la pieza de plata de grupos_envio (pendiente 10-jul; charla
+    real 19-jul: el promedio regalo el envio del paquete chico)."""
+    import unicodedata
+
+    def _n(s):
+        s = unicodedata.normalize("NFKD", str(s or "").lower())
+        s = "".join(c for c in s if not unicodedata.combining(c))
+        return set(w for w in re.sub(r"[^\w\s]", " ", s).split() if w)
+
+    out: dict = {}
+    usados: set[int] = set()
+    for loc in locs:
+        pl = _n(loc)
+        duenos = [i for i, g in enumerate(grupos) if i not in usados
+                  and (_n(g.get("destino")) <= pl or pl <= _n(g.get("destino")))]
+        if len(duenos) != 1:
+            return {}
+        usados.add(duenos[0])
+        sub = 0
+        for par in (grupos[duenos[0]].get("cats") or []):
+            try:
+                n, cat = int(par[0]), str(par[1] or "").strip().lower()
+            except (TypeError, ValueError, IndexError):
+                return {}
+            precios = cat_precios.get(cat) or set()
+            if len(precios) != 1 or n < 1:
+                return {}
+            sub += n * next(iter(precios))
+        if sub <= 0:
+            return {}
+        out[loc] = sub
+    return out
+
+
 def calculate_total(items: list[dict] | None = None,
                     items_extra: list[dict] | None = None,
                     destinos: int = 1,
-                    pago: list[dict] | None = None) -> dict:
+                    pago: list[dict] | None = None,
+                    grupos: list[dict] | None = None) -> dict:
     log.info(f"calculate_total INICIO items={items} items_extra={items_extra} "
              f"destinos={destinos} pago={pago}")
     # PAGO DIVIDIDO POR PORCENTAJE: si el cliente reparte el total entre medios
@@ -308,6 +350,7 @@ def calculate_total(items: list[dict] | None = None,
     detalle = []
     total = 0
     no_encontrados = []
+    _cat_precios: dict[str, set] = {}  # para el umbral por grupo de envio
     for item in items:
         pid = item.get("product_id", "")
         cantidad = int(item.get("cantidad", 1))
@@ -325,6 +368,9 @@ def calculate_total(items: list[dict] | None = None,
             }
         subtotal = producto["precio_ars"] * cantidad
         total += subtotal
+        _cat_precios.setdefault(
+            str(producto.get("categoria") or "").strip().lower(),
+            set()).add(int(producto["precio_ars"]))
         detalle.append({
             "id": producto["id"],
             "nombre": producto["nombre"],
@@ -513,11 +559,24 @@ def calculate_total(items: list[dict] | None = None,
                 _locs = _locs[-1:] or [None]
             _cuentas = [1] * len(_locs)
             _cuentas[-1] += max(0, n_envios - len(_locs))
+            # UMBRAL POR GRUPO (grupos_envio, pendiente del 10-jul, cerrado
+            # 19-jul): si el cliente dijo QUE va a cada destino, el envio
+            # gratis se decide con el subtotal REAL de cada paquete, no con
+            # el promedio (que regalaba el envio del paquete chico). Todo-o-
+            # nada: ante cualquier ambiguedad sigue el promedio de siempre.
+            _sub_grupo: dict = {}
+            if grupos and n_envios > 1 and len(grupos) == len(_locs):
+                _sub_grupo = _subtotales_por_grupo(grupos, _locs, _cat_precios)
+                if _sub_grupo:
+                    log.info(f"calculate_total grupos_envio="
+                             f"{ {k: v for k, v in _sub_grupo.items()} }")
             _env_min = _env_max = 0
             _env_rango = False
             concepto_env = "envio"
             for _loc, _n in zip(_locs, _cuentas):
-                quote = cotizar_envio(localidad=_loc, subtotal=_sub_umbral)
+                quote = cotizar_envio(
+                    localidad=_loc,
+                    subtotal=_sub_grupo.get(_loc, _sub_umbral))
                 if not quote.get("ok"):
                     return {"ok": False, "mensaje_para_llm": quote.get(
                         "mensaje_para_llm",
@@ -1604,7 +1663,11 @@ def cotizar_envio(localidad: str | None = None,
         # dicho en el MISMO mensaje, y el bot re-pedia el CP que ya tenia.
         from app.core.estado_venta import get_current_estado
         _prov = (get_current_estado().get("provincia_envio") or "").strip()
-        if _prov:
+        # La provincia sticky NO completa basura (charla real 19-jul: "la otra
+        # direccion" + "santa fe" cotizaba como destino valido): el reintento
+        # corre solo si el texto nombra un lugar de la tabla geo.
+        from app.core.geo_cp import es_lugar_conocido
+        if _prov and es_lugar_conocido(localidad):
             _con_prov = f"{localidad}, {_prov}"
             zona = clasificar_zona(_con_prov)
             if zona is not None:

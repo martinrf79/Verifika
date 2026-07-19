@@ -979,7 +979,9 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                             from app.core.guia_pedido import (
                                 reparto_envios_detalle)
                             _rep_txt, _rep_tools = reparto_envios_detalle(
-                                raw_message, _cats_pedido, tienda_id)
+                                raw_message, _cats_pedido, tienda_id,
+                                detalle_items=_tools_precalc[0]["result"]
+                                .get("detalle"))
                             _tools_precalc = _tools_precalc + _rep_tools
                             respuesta = (mensaje_presupuesto_sellado(
                                 _tools_precalc[0]["result"]["presentacion"],
@@ -1034,7 +1036,9 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                             # que grupo va a cada destino. Con proofs de cada
                             # tramo para el verificador.
                             _rep_txt, _rep_tools = reparto_envios_detalle(
-                                raw_message, _cats_pedido, tienda_id)
+                                raw_message, _cats_pedido, tienda_id,
+                                detalle_items=_tools_precalc[0]["result"]
+                                .get("detalle"))
                             _tools_precalc = _tools_precalc + _rep_tools
                             respuesta = (mensaje_presupuesto_sellado(
                                 _tools_precalc[0]["result"]["presentacion"],

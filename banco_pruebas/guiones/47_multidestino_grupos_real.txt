@@ -1,0 +1,9 @@
+# Charla REAL de WhatsApp 19-jul 12:30 (trace 8507a0b6), VERBATIM. Un solo
+# mensaje combinado: 6 productos, TRES destinos y el grupo de que va a cada
+# uno, dicho por el cliente. En prod fallo triple: el interprete dio pedido
+# vacio, el regex leyo destinos basura ("san francisco es", "la otra
+# direccion"), y el envio salio "2 envios gratis" aplicando el umbral al
+# subtotal TOTAL en vez de por paquete. PASA si: 3 destinos cotizados (o la
+# pregunta honesta por el que falte), ningun destino inventado, y el gratis
+# solo en el paquete que supera el umbral.
+Hola Quiero precio de dos Notebook 2 teclados y dos auriculares los cuales van a ser enviados a tres destinos unos irán a palpalá Jujuy el otro irá a Correa Santa Fe y el otro irá a San Francisco Córdoba el envío de Jujuy es una Notebook y un auricular el envío a San Francisco es un auricular y un teclado y los dos productos que faltan van a la otra dirección Dime O dame precio de los de buena calidad Confío en tu elección

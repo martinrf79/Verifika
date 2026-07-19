@@ -80,8 +80,11 @@ def _tarifas_envio_conocidas(tienda_id: str) -> set[int]:
     return montos
 
 
-def juzgar(respuesta: str, tienda_id: str = "verifika_prod") -> list[str]:
-    """Lista de violaciones de invariantes en la respuesta ([] = limpia)."""
+def juzgar(respuesta: str, tienda_id: str = "verifika_prod",
+           mensaje: str = "") -> list[str]:
+    """Lista de violaciones de invariantes en la respuesta ([] = limpia).
+    Con el mensaje del cliente ademas juzga contra lo DECLARADO (invariante
+    11, envios perdidos)."""
     problemas: list[str] = []
     if not respuesta:
         return ["respuesta vacia"]
@@ -192,6 +195,23 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod") -> list[str]:
     #     con tu pedido?") suenan roboticas: el cierre pregunta UNA vez.
     if len(_RE_PREGUNTA_CIERRE.findall(respuesta)) >= 2:
         problemas.append("doble pregunta de cierre en la misma respuesta")
+
+    # 11. ENVIOS PERDIDOS (charla real 19-jul, trace 8507a0b6): el cliente
+    #     declaro N destinos REALES (validados contra la tabla geo) y el
+    #     presupuesto cobra menos envios ("tres destinos" -> "2 envios").
+    #     Solo con presupuesto sobre la mesa, para no acusar charla previa.
+    if mensaje and re.search(r"(?im)^\s*total\s*:", respuesta):
+        from app.core.guia_pedido import _hitos_destinos, _norm as _gnorm
+        n_decl = len(_hitos_destinos(_gnorm(mensaje)))
+        if n_decl >= 2:
+            m_env = re.search(r"\((\d+)\s+env[ií]os\)", respuesta)
+            n_resp = (int(m_env.group(1)) if m_env
+                      else 1 if re.search(r"(?im)^\s*env[ií]o\s*:", respuesta)
+                      else None)
+            if n_resp is not None and n_resp < n_decl:
+                problemas.append(
+                    f"envios perdidos: el mensaje declara {n_decl} destinos "
+                    f"y el presupuesto cobra {n_resp}")
 
     return problemas
 

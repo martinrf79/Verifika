@@ -198,8 +198,10 @@ def _calcular_items_sellados(items: list[dict], estado: dict | None,
     pago = pago_de_mensaje(mensaje or "")
     if not pago and _RE_PAGO_TRANSF.search(msg) and not _RE_PAGO_MIXTO.search(msg):
         pago = [{"medio": "transferencia", "porcentaje": 100}]
+    _grupos = grupos_para_calculo(mensaje or "", locs, tienda_id)
     args = {"items": items, "destinos": destinos,
             **({"items_extra": extra} if extra else {}),
+            **({"grupos": _grupos} if _grupos else {}),
             **({"pago": pago} if pago else {})}
     try:
         res = calculate_total(**args)
@@ -328,11 +330,11 @@ def opciones_por_categoria(categoria: str, tienda_id: str,
 # que el solver llame cotizar_envio (en real a veces no lo hace y el total
 # sale SIN envio, visto 8-jul).
 _RE_DESTINOS_MSG = re.compile(
-    r"\b(?:van?|vaya|env[ií]os?|mandar?|mandal[oa]s?|envial[oa]s?"
+    r"\b(?:van?|vaya|iran?|env[ií]os?|mandar?|mandal[oa]s?|envial[oa]s?"
     r"|enviad[oa]s?|con\s+env[ií]o)\s+(?:todos?\s+)?(?:junt[oa]s?\s+)?a\s+"
     r"([a-zñ][a-zñ .'-]{2,30}?)"
     r"(?=\s+(?:una?|un|todos?|lo|los|las|el|dime|decime|pasame|pagando|y|e"
-    r"|cuanto|dame)\b|[,.?!]|$)")
+    r"|cuanto|dame|es|son|seran?|sera|lleva|va)\b|[,.?!]|$)")
 
 
 # "Mandalo a DONDE TE DIJE" no es una localidad: referencias y pronombres
@@ -340,11 +342,32 @@ _RE_DESTINOS_MSG = re.compile(
 # (visto 11-jul: "para el envio a Donde Te Dije necesito la provincia").
 _RE_DESTINO_PRONOMBRE = re.compile(
     r"^(?:a\s+)?(?:donde|adonde|ahi|alla|alli|casa|mi casa|tu casa|su casa"
-    r"|el mismo|la misma|ese lugar|este lugar)\b")
+    r"|el mismo|la misma|ese lugar|este lugar|la otra|el otro|otra direccion"
+    r"|otro destino|la direccion|la misma direccion)\b")
 
 
 def _es_destino_real(cand: str) -> bool:
-    return not _RE_DESTINO_PRONOMBRE.match((cand or "").strip())
+    """Doble puerta (charla real 19-jul: 'la otra direccion' y 'san francisco
+    es' cotizaron como destinos): ni referencia/pronombre, ni texto que NO
+    nombre un lugar de la tabla geo. La provincia sticky ya no puede
+    completar basura, porque la basura no llega a cotizar."""
+    c = (cand or "").strip()
+    if not c or _RE_DESTINO_PRONOMBRE.match(c):
+        return False
+    from app.core.geo_cp import es_lugar_conocido
+    return es_lugar_conocido(c)
+
+
+def _mismo_destino_ya_visto(cand: str, vistos: list[str]) -> bool:
+    """'san francisco' despues de 'san francisco cordoba' es el MISMO lugar
+    (el cliente lo re-nombra al detallar el grupo): dedup por subconjunto de
+    palabras, en cualquier direccion."""
+    pc = set(cand.split())
+    for v in vistos:
+        pv = set(v.split())
+        if pc <= pv or pv <= pc:
+            return True
+    return False
 
 
 def pregunta_destinos_pendientes(mensaje: str) -> str:
@@ -378,10 +401,10 @@ def cotizar_destinos_del_mensaje(mensaje: str) -> list[str]:
     dato como siempre)."""
     from app.core.tools import cotizar_envio
     ok: list[str] = []
-    for m in list(_RE_DESTINOS_MSG.finditer(_norm(mensaje or "")))[:4]:
+    for m in list(_RE_DESTINOS_MSG.finditer(_norm(mensaje or "")))[:6]:
         cand = m.group(1).strip(" .,-")
-        if (len(cand) < 3 or cand in {c.lower() for c in ok}
-                or not _es_destino_real(cand)):
+        if (len(cand) < 3 or not _es_destino_real(cand)
+                or _mismo_destino_ya_visto(cand, ok)):
             continue
         try:
             q = cotizar_envio(localidad=cand)
@@ -389,6 +412,8 @@ def cotizar_destinos_del_mensaje(mensaje: str) -> list[str]:
             continue
         if q.get("ok"):
             ok.append(cand)
+        if len(ok) >= 4:
+            break
     return ok
 
 
@@ -485,69 +510,189 @@ INSTRUCCION_SOLVER = (
 # no reconcilian exactos con las cantidades del pedido, no se muestra nada
 # (la plata ya esta bien; el detalle solo sale cuando es seguro).
 
-_RE_RESTO_GRUPO = re.compile(r"lo demas|el resto|lo restante|lo que queda")
+_RE_RESTO_GRUPO = re.compile(
+    r"lo demas|el resto|lo restante|lo que queda|que faltan|lo que falta"
+    r"|faltantes")
+
+# Grupo NOMBRADO por su destino, DESPUES de declararlo ("el envio de Jujuy es
+# una notebook y un auricular", charla real 19-jul). La referencia puede ser
+# un pedazo del destino (la provincia sola, la localidad sin provincia).
+_RE_GRUPO_NOMBRADO = re.compile(
+    r"env[ií]os?\s+(?:de|a|para)\s+([a-zñ][a-zñ .'-]{2,30}?)\s+"
+    r"(?:es|son|seran?|sera|lleva|va con|va)\s+")
+
+# Corte del segmento de un grupo: donde arranca otro envio, el resto, o el
+# cliente cambia de tema.
+_RE_CORTE_GRUPO = re.compile(
+    r"\benv[ií]os?\b|" + _RE_RESTO_GRUPO.pattern +
+    r"|\bdime\b|\bdecime\b|\bdame\b|\bpasame\b|\bcuanto\b")
 
 
-def reparto_envios_detalle(mensaje: str, cats_pedido: list,
-                           tienda_id: str) -> tuple[str, list]:
-    """(bloque de texto 'Reparto de envios', tools de cotizar_envio con su
-    proof) o ("", []). El texto detalla que items van a cada destino con la
-    tarifa REAL de cada tramo; los proofs respaldan cada monto ante el
-    verificador."""
+def _hitos_destinos(m_norm: str) -> list[tuple]:
+    """[(destino, inicio, fin)] validados por la doble puerta y dedupeados
+    por subconjunto ('san francisco' tras 'san francisco cordoba' es el
+    mismo lugar)."""
+    hitos: list[tuple] = []
+    for h in _RE_DESTINOS_MSG.finditer(m_norm):
+        cand = h.group(1).strip(" .,-")
+        if (len(cand) >= 3 and _es_destino_real(cand)
+                and not _mismo_destino_ya_visto(cand, [x[0] for x in hitos])):
+            hitos.append((cand, h.start(), h.end()))
+    return hitos[:4]
+
+
+def grupos_envio_del_mensaje(mensaje: str, cats_pedido: list,
+                             tienda_id: str) -> list[tuple]:
+    """[(destino, [(n, cat)])] cuando el cliente dijo QUE va a cada destino.
+    TODO-O-NADA: si los grupos no reconcilian exactos con las cantidades del
+    pedido, devuelve [] y el que llama cae al comportamiento sin grupos.
+    Entiende las dos formas naturales:
+      - items ANTES del destino: "un mouse y un teclado a Rosario"
+      - grupo nombrado DESPUES: "el envio de Jujuy es una notebook y un
+        auricular" (charla real 19-jul)
+      - resto: "lo demas / los que faltan van a X" cierra con lo sobrante."""
     try:
         totales = {cat: int(n) for n, cat in (cats_pedido or [])}
     except (TypeError, ValueError):
-        return "", []
+        return []
     if not totales:
-        return "", []
+        return []
     m = _norm(mensaje or "")
-    hitos = [(h.group(1).strip(" .,-"), h.start(), h.end())
-             for h in _RE_DESTINOS_MSG.finditer(m)]
-    hitos = [h for h in hitos if _es_destino_real(h[0])]
+    hitos = _hitos_destinos(m)
     if len(hitos) < 2:
-        return "", []
+        return []
 
-    from app.core.tools import cotizar_envio
-    restantes = dict(totales)
-    grupos: list[tuple] = []   # (destino, [(n, cat)])
+    asignado: dict[str, list] = {}
+    limites = sorted(h[1] for h in hitos)
+
+    # 1) Grupos NOMBRADOS por destino ("el envio de jujuy es ...").
+    for g in _RE_GRUPO_NOMBRADO.finditer(m):
+        ref = set(g.group(1).strip(" .,-").split())
+        duenos = [d for d, _, _ in hitos
+                  if ref <= set(d.split()) or set(d.split()) <= ref]
+        if len(duenos) != 1:
+            continue
+        fin = min([l for l in limites if l > g.end()] + [len(m)])
+        seg = m[g.end():fin]
+        corte = _RE_CORTE_GRUPO.search(seg)
+        if corte:
+            seg = seg[:corte.start()]
+        items = cantidades_por_categoria(seg, tienda_id)
+        if not items:
+            continue
+        if duenos[0] in asignado:
+            return []  # dos grupos para el mismo destino: ambiguo
+        asignado[duenos[0]] = items
+
+    # 2) Items PEGADOS ANTES del destino, y el marcador de resto.
     resto_destino = None
     prev_fin = 0
-    for destino, ini, fin in hitos[:4]:
+    for destino, ini, fin in hitos:
         segmento = m[prev_fin:ini]
         prev_fin = fin
-        # La frase del grupo vive PEGADA al destino ("...el un mouse y un
-        # teclado es envio a Rosario"); los totales del pedido suelen estar
-        # al principio del mensaje. Ventana corta antes del destino, cortada
-        # en limite de palabra, para no confundir totales con grupo.
         ventana = segmento[-70:]
         if len(segmento) > 70 and " " in ventana:
             ventana = ventana[ventana.find(" ") + 1:]
         if _RE_RESTO_GRUPO.search(ventana):
             if resto_destino:
-                return "", []  # dos "lo demas": ambiguo, no se muestra
+                return []  # dos "lo demas": ambiguo
             resto_destino = destino
             continue
+        if destino in asignado:
+            continue
         items = cantidades_por_categoria(ventana, tienda_id)
-        if not items:
-            return "", []
+        if items:
+            asignado[destino] = items
+
+    # 3) El resto: lo sobrante va al destino del marcador, o al UNICO destino
+    #    sin grupo ("los dos que faltan van a la otra direccion", donde 'la
+    #    otra direccion' es referencia y el destino real ya fue nombrado).
+    restantes = dict(totales)
+    for items in asignado.values():
         for n, cat in items:
             restantes[cat] = restantes.get(cat, 0) - int(n)
-        grupos.append((destino, items))
-    sobrante = {c: n for c, n in restantes.items() if n > 0}
     if any(n < 0 for n in restantes.values()):
-        return "", []  # un grupo pide mas de lo que hay: no reconcilia
+        return []  # un grupo pide mas de lo que hay: no reconcilia
+    sobrante = {c: n for c, n in restantes.items() if n > 0}
+    sin_grupo = [d for d, _, _ in hitos if d not in asignado
+                 and d != resto_destino]
+    if resto_destino is None and len(sin_grupo) == 1 and sobrante \
+            and _RE_RESTO_GRUPO.search(m):
+        resto_destino = sin_grupo[0]
+        sin_grupo = []
+    grupos = [(d, items) for d, items in asignado.items()]
     if resto_destino:
         if not sobrante:
-            return "", []
+            return []
         grupos.append((resto_destino,
                        [(n, c) for c, n in sorted(sobrante.items())]))
-    elif sobrante:
-        return "", []  # quedo pedido sin destino: el reparto esta incompleto
+    elif sobrante or sin_grupo:
+        return []  # quedo pedido sin destino o destino sin grupo: incompleto
+    orden = {d: i for i, (d, _, _) in enumerate(hitos)}
+    grupos.sort(key=lambda g: orden.get(g[0], 99))
+    return grupos
+
+
+def grupos_para_calculo(mensaje: str, locs: list,
+                        tienda_id: str) -> list | None:
+    """Los grupos del mensaje en el formato que consume calculate_total
+    ([{destino, cats}]), SOLO si mapean uno a uno con las localidades
+    cotizadas. None si no: calculate_total sigue con su promedio."""
+    if len(locs or []) <= 1 or not (mensaje or "").strip():
+        return None
+    cats_msg = cantidades_por_categoria(mensaje, tienda_id)
+    g = grupos_envio_del_mensaje(mensaje, cats_msg, tienda_id)
+    if g and len(g) == len(locs):
+        return [{"destino": d, "cats": it} for d, it in g]
+    return None
+
+
+def reparto_envios_detalle(mensaje: str, cats_pedido: list,
+                           tienda_id: str,
+                           detalle_items: list | None = None) -> tuple[str, list]:
+    """(bloque de texto 'Reparto de envios', tools de cotizar_envio con su
+    proof) o ("", []). El texto detalla que items van a cada destino con la
+    tarifa REAL de cada tramo; los proofs respaldan cada monto ante el
+    verificador. Los grupos los parsea grupos_envio_del_mensaje.
+
+    detalle_items: el detalle del calculate_total ya corrido ([{id,
+    precio_unitario, ...}]). Con el, cada tramo cotiza con el subtotal REAL
+    de su paquete y el gratis por umbral sale IGUAL que en el total (19-jul:
+    el total decia $7.500 y el reparto mostraba las tarifas crudas)."""
+    from app.core.tools import cotizar_envio
+    grupos = grupos_envio_del_mensaje(mensaje, cats_pedido, tienda_id)
+    if not grupos:
+        return "", []
+
+    sub_por_destino: dict[str, int] = {}
+    if detalle_items:
+        from app.storage.firestore_client import get_product_by_id
+        cat_precios: dict[str, set] = {}
+        try:
+            for it in detalle_items:
+                p = get_product_by_id(str(it.get("id")), tienda_id=tienda_id)
+                precio = it.get("precio_unitario") or (p or {}).get("precio_ars")
+                if p and precio:
+                    cat_precios.setdefault(
+                        _norm(p.get("categoria", "")), set()).add(int(precio))
+        except Exception:
+            cat_precios = {}
+        for destino, items in grupos:
+            sub = 0
+            for n, cat in items:
+                precios = cat_precios.get(_norm(cat)) or set()
+                if len(precios) != 1:
+                    sub = 0
+                    break
+                sub += int(n) * next(iter(precios))
+            if sub > 0:
+                sub_por_destino[destino] = sub
 
     lineas = []
     tools = []
     for destino, items in grupos:
-        q = cotizar_envio(localidad=destino)
+        q = cotizar_envio(localidad=destino,
+                          subtotal=sub_por_destino.get(destino))
         if not q.get("ok"):
             return "", []
         entrada = {"name": "cotizar_envio",
@@ -674,8 +819,10 @@ def ejecutar_calculo_plan(seccion: dict, mensaje: str, estado: dict | None,
 
     extra = ([{"faq_tema": "costo_envio", "concepto": "envio"}]
              if locs else None)
+    _grupos = grupos_para_calculo(mensaje or "", locs, tienda_id)
     args = {"items": items, "destinos": max(1, len(locs)),
             **({"items_extra": extra} if extra else {}),
+            **({"grupos": _grupos} if _grupos else {}),
             **({"pago": pago} if pago else {})}
     try:
         res = calculate_total(**args)

@@ -114,3 +114,143 @@ def test_reparto_que_no_reconcilia_no_sale(firestore_doble):
         "2 mouse y 2 teclados con envio a Cordoba",
         [(2, "mouse"), (2, "teclado")], "verifika_prod")
     assert t == ""
+
+
+# ── CHARLA REAL 19-jul (trace 8507a0b6): 6 productos, TRES destinos con grupos.
+# El bot cobro "2 envios gratis": destinos basura del regex ("san francisco
+# es", "la otra direccion"), dos destinos reales perdidos ("iran a" no estaba
+# en el regex) y el umbral de gratis aplicado al subtotal TOTAL. Estos locks
+# fijan la cadena entera del arreglo.
+
+_MSG_REAL_3DEST = (
+    "Hola Quiero precio de dos Notebook 2 teclados y dos auriculares los "
+    "cuales van a ser enviados a tres destinos unos irán a palpalá Jujuy el "
+    "otro irá a Correa Santa Fe y el otro irá a San Francisco Córdoba el "
+    "envío de Jujuy es una Notebook y un auricular el envío a San Francisco "
+    "es un auricular y un teclado y los dos productos que faltan van a la "
+    "otra dirección Dime O dame precio de los de buena calidad Confío en tu "
+    "elección")
+
+
+def test_extraccion_destinos_charla_real_3_destinos(firestore_doble):
+    """Los 3 destinos reales salen CON provincia; la basura no entra y el
+    mismo lugar re-nombrado no duplica."""
+    from app.core.guia_pedido import _hitos_destinos, _norm
+    hitos = [h[0] for h in _hitos_destinos(_norm(_MSG_REAL_3DEST))]
+    assert hitos == ["palpala jujuy", "correa santa fe",
+                     "san francisco cordoba"]
+
+
+def test_destino_referencia_y_no_lugar_no_valen(firestore_doble):
+    from app.core.guia_pedido import _es_destino_real
+    assert not _es_destino_real("la otra direccion")
+    assert not _es_destino_real("tres destinos")
+    assert _es_destino_real("san francisco es")  # nombra un lugar real
+    assert _es_destino_real("palpala")
+
+
+def test_provincia_sticky_no_completa_basura(firestore_doble):
+    """'la otra direccion' + provincia en memoria ya NO cotiza."""
+    from app.core.tools import cotizar_envio
+    from app.core.tools_context import set_current_tienda
+    from app.core.estado_venta import set_current_estado
+    set_current_tienda("verifika_prod")
+    set_current_estado({"provincia_envio": "santa fe"})
+    try:
+        assert not cotizar_envio(localidad="la otra direccion").get("ok")
+        assert cotizar_envio(localidad="correa").get("ok")
+    finally:
+        set_current_estado(None)
+
+
+def test_grupos_del_mensaje_charla_real(firestore_doble):
+    """El fraseo 'el envio de Jujuy es una notebook y un auricular' + 'los
+    que faltan van a la otra direccion' parsea los TRES grupos exactos."""
+    from app.core.guia_pedido import grupos_envio_del_mensaje
+    cats = [(2, "notebook"), (2, "teclado"), (2, "auriculares")]
+    grupos = grupos_envio_del_mensaje(_MSG_REAL_3DEST, cats, "verifika_prod")
+    assert dict(grupos) == {
+        "palpala jujuy": [(1, "notebook"), (1, "auriculares")],
+        "san francisco cordoba": [(1, "auriculares"), (1, "teclado")],
+        "correa santa fe": [(1, "notebook"), (1, "teclado")],
+    }
+
+
+def test_grupos_que_no_reconcilian_devuelven_vacio(firestore_doble):
+    """Un grupo que pide mas de lo que hay -> [] (todo-o-nada)."""
+    from app.core.guia_pedido import grupos_envio_del_mensaje
+    cats = [(1, "notebook")]
+    msg = ("una notebook, el envio de jujuy es dos notebook "
+           "y lo demas va a rosario")
+    assert grupos_envio_del_mensaje(msg, cats, "verifika_prod") == []
+
+
+def test_umbral_de_gratis_por_grupo_charla_real(firestore_doble):
+    """La plata del caso real: Jujuy ($750.500) y Correa ($705.000) superan
+    el umbral de $250.000 y van gratis; San Francisco ($69.500) NO lo supera
+    y paga la tarifa de Cordoba. Antes el promedio regalaba los tres."""
+    from app.core.tools import calculate_total, cotizar_envio
+    from app.core.tools_context import set_current_tienda
+    from app.core.estado_venta import set_current_estado
+    set_current_tienda("verifika_prod")
+    set_current_estado({})  # resetea las localidades del turno
+    for loc in ("palpala jujuy", "correa santa fe", "san francisco cordoba"):
+        assert cotizar_envio(localidad=loc).get("ok")
+    grupos = [
+        {"destino": "palpala jujuy", "cats": [(1, "notebook"), (1, "auriculares")]},
+        {"destino": "correa santa fe", "cats": [(1, "notebook"), (1, "teclado")]},
+        {"destino": "san francisco cordoba", "cats": [(1, "auriculares"), (1, "teclado")]},
+    ]
+    res = calculate_total(
+        items=[{"product_id": "NOT0019", "cantidad": 2},
+               {"product_id": "TEC0020", "cantidad": 2},
+               {"product_id": "AUR0019", "cantidad": 2}],
+        items_extra=[{"faq_tema": "costo_envio", "concepto": "envio"}],
+        destinos=3, grupos=grupos)
+    set_current_estado(None)
+    assert res.get("ok"), res
+    envio = next(e for e in res["extras"]
+                 if e.get("faq_tema") == "costo_envio")
+    assert envio["monto"] == 7500, envio
+    assert res["total_ars"] == 1_525_000 + 7500
+
+
+def test_juez_envios_perdidos_acusa(firestore_doble):
+    """Presupuesto que cobra 2 envios cuando el mensaje declara 3 destinos."""
+    from banco_pruebas.juez import juzgar
+    r = "Presupuesto:\n- 2x Algo: $10 c/u = $20\nEnvio (2 envios): gratis\nTotal: $20"
+    assert any("envios perdidos" in p
+               for p in juzgar(r, mensaje=_MSG_REAL_3DEST))
+
+
+def test_juez_envios_completos_no_acusa(firestore_doble):
+    from banco_pruebas.juez import juzgar
+    r = "Presupuesto:\n- 2x Algo: $10 c/u = $20\nEnvio (3 envios): $7.500\nTotal: $27.520"
+    assert not any("envios perdidos" in p
+                   for p in juzgar(r, mensaje=_MSG_REAL_3DEST))
+
+
+def test_reparto_detalle_gratis_por_grupo_consistente(firestore_doble):
+    """El detalle del reparto cotiza cada tramo con el subtotal de SU paquete:
+    los grupos que superan el umbral dicen gratis, el chico dice su tarifa.
+    Asi el reparto y el total del presupuesto cuentan la misma plata."""
+    from app.core.guia_pedido import reparto_envios_detalle
+    from app.core.tools_context import set_current_tienda
+    from app.core.estado_venta import set_current_estado
+    set_current_tienda("verifika_prod")
+    set_current_estado({})
+    detalle = [
+        {"id": "NOT0019", "precio_unitario": 693000, "cantidad": 2},
+        {"id": "TEC0020", "precio_unitario": 12000, "cantidad": 2},
+        {"id": "AUR0019", "precio_unitario": 57500, "cantidad": 2},
+    ]
+    cats = [(2, "notebook"), (2, "teclado"), (2, "auriculares")]
+    txt, tools = reparto_envios_detalle(_MSG_REAL_3DEST, cats,
+                                        "verifika_prod",
+                                        detalle_items=detalle)
+    set_current_estado(None)
+    assert txt, "el reparto no salio"
+    assert "A Palpala Jujuy: 1 notebook y 1 auricular — envío gratis" in txt
+    assert "A Correa Santa Fe: 1 notebook y 1 teclado — envío gratis" in txt
+    assert ("A San Francisco Cordoba: 1 auricular y 1 teclado — envío $7.500"
+            in txt)

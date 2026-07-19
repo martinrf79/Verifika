@@ -126,6 +126,20 @@ def _localidades_en_texto(t: str):
     return palabras, hits
 
 
+def es_lugar_conocido(texto: str) -> bool:
+    """True si el texto nombra una localidad de la tabla o una provincia.
+    Puerta para los candidatos a destino que salen por regex del mensaje
+    libre: 'la otra direccion' o 'tres destinos' NO son lugares (charla real
+    19-jul: cotizaron igual porque la provincia sticky los completaba)."""
+    _cargar()
+    t = _norm(texto)
+    if not t:
+        return False
+    if _provincia_en_texto(t):
+        return True
+    return bool(_localidades_en_texto(t)[1])
+
+
 def resolver(texto: str):
     """(prov_slug, cp) desde el texto del cliente, o (None, None).
 

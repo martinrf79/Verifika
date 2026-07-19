@@ -83,7 +83,7 @@ async def _correr_guion(nombre: str, mensajes: list[str], pausa_s: float,
             problemas_total += 1
             reporte.append("- **JUEZ: ERROR de ejecucion**")
         else:
-            fallas = juzgar(resp, tienda_id=TIENDA)
+            fallas = juzgar(resp, tienda_id=TIENDA, mensaje=msg)
             for p in fallas:
                 print(f"    [JUEZ] PROBLEMA: {p}")
                 reporte.append(f"- **JUEZ: {p}**")

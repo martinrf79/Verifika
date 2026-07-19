@@ -44,7 +44,7 @@ def test_charla_viva_sin_violaciones(firestore_doble, guion):
         assert resp and not str(resp).startswith("<<ERROR"), (
             f"turno {i} fallo: {resp}")
         respuestas.append(resp)
-        for p in juzgar(resp):
+        for p in juzgar(resp, mensaje=msg):
             problemas.append(f"{guion.stem} turno {i} ({msg[:40]}...): {p}")
     from banco_pruebas.juez import juzgar_charla
     for p in juzgar_charla(respuestas):
