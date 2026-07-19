@@ -44,12 +44,20 @@ entorno de Claude sean fidedignas y quede registro de avances. Lo HECHO:
 4. **Observabilidad fina:** `solver_crudo` ahora loguea los ARGS de las
    tools (sin eso el destino inventado fue invisible); setup_test_env.sh
    instala pytest (el hook prometía entorno listo sin pytest).
-5. **Radares vistos en corrida que quedan de pendiente chico:** el checker
-   vivo abortó una vez por JSON cortado (`checker_afirmaciones_error`,
+5. **VERIFICADO VIVO post-fix (2ª corrida de 05 y 45, reportes en
+   corridas/):** el turno 1 ya no cobra envío inventado (el radar nuevo
+   disparó y el presupuesto salió sin envío, total honesto); el total
+   multidestino con memoria salió bien ($33.500 con los 2 envíos); las
+   coletillas rotaron distintas en todos los turnos y el juez de charla dio
+   limpio. **575 tests offline verdes.**
+6. **Radares y residuales que quedan asentados como pendiente chico:** el
+   checker vivo abortó una vez por JSON cortado (`checker_afirmaciones_error`,
    no-op seguro pero ese turno quedó sin fiscal nivel 3);
    `interprete_libre_presupuesto_sin_marcador` sigue disparando en casi
    todo turno con presupuesto (el estampado determinista lo cubre, pero el
-   solver no aprendió el marcador). **575 tests offline verdes.**
+   solver no aprendió el marcador); y en el 45 turno 2 el bot PROMETIÓ
+   explicar el detalle técnico y la explicación no salió (variación del LLM,
+   candidato a invariante nuevo del juez: anuncio sin contenido).
 
 ---
 
