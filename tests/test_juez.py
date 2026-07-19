@@ -79,3 +79,17 @@ def test_una_pregunta_de_cierre_mas_una_de_dato_no_acusa(firestore_doble):
     r = ("Total: $28.000. ¿A qué localidad te lo mando? "
          "¿Seguimos adelante con tu pedido así te lo dejo preparado?")
     assert not any("doble pregunta" in p for p in juzgar(r))
+
+
+def test_juez_charla_coletilla_repetida_acusa(firestore_doble):
+    """La MISMA linea final en 3+ turnos = robotico (guion 45, 19-jul)."""
+    from banco_pruebas.juez import juzgar_charla
+    r = "Buen producto.\n¿Querés que avancemos con alguno? Te armo el total al instante."
+    assert any("coletilla repetida" in p for p in juzgar_charla([r, r, r]))
+
+
+def test_juez_charla_finales_variados_no_acusa(firestore_doble):
+    from banco_pruebas.juez import juzgar_charla
+    charla = ["Hola. ¿Qué buscás?", "Tengo estos. ¿Cuál te gusta?",
+              "Sale $8.500. ¿Lo sumo?", "Listo. ¿Algo más?"]
+    assert juzgar_charla(charla) == []

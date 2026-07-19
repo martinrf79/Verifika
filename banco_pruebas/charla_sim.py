@@ -54,11 +54,12 @@ def _campos_radar(e: dict) -> str:
 async def _correr_guion(nombre: str, mensajes: list[str], pausa_s: float,
                         reporte: list[str]) -> int:
     from app.core.orchestrator import process_message
-    from banco_pruebas.juez import juzgar
+    from banco_pruebas.juez import juzgar, juzgar_charla
 
     user = f"sim_{nombre}_{int(time.time())}"
     problemas_total = 0
     turnos: list[observador.Turno] = []
+    respuestas: list[str] = []
 
     for i, msg in enumerate(mensajes, 1):
         print(f"[{i}] CLIENTE: {msg}")
@@ -73,6 +74,7 @@ async def _correr_guion(nombre: str, mensajes: list[str], pausa_s: float,
                 resp = f"<<ERROR {type(e).__name__}: {e}>>"
                 traceback.print_exc()
         turnos.append(t)
+        respuestas.append(resp)
         ms = int((time.time() - t0) * 1000)
         print(f"    BOT ({ms} ms): {resp}\n")
         reporte.append(f"BOT ({ms} ms):\n\n```\n{resp}\n```\n")
@@ -95,6 +97,11 @@ async def _correr_guion(nombre: str, mensajes: list[str], pausa_s: float,
             reporte.append(f"- {linea}")
         if pausa_s and i < len(mensajes):
             await asyncio.sleep(pausa_s)
+
+    for p in juzgar_charla(respuestas):
+        print(f"    [JUEZ-CHARLA] PROBLEMA: {p}")
+        reporte.append(f"\n- **JUEZ-CHARLA: {p}**")
+        problemas_total += 1
 
     conteo = observador.resumen_radares(turnos)
     reporte.append("\n## Resumen\n")

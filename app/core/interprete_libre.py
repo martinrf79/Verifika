@@ -1168,7 +1168,8 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             if _frags:
                 _texto, _tools = renderizar(
                     _frags, _uni, estado, tienda_id, trace_id,
-                    presupuesto_pre=_presu, presupuesto_tools=_presu_tools)
+                    presupuesto_pre=_presu, presupuesto_tools=_presu_tools,
+                    mensaje=raw_message)
                 if _texto and _texto.strip():
                     _citada = []
                     for _tc in _tools:
@@ -1259,8 +1260,12 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
     # re-tipea distinto. Compacto y truncado; son datos de la tienda, no del
     # cliente. Comparar contra respuesta_preview (final) cierra el triplete.
     try:
+        # args adentro: sin ellos, el destino inventado del 19-jul fue
+        # invisible en los logs (se veia el resultado de cotizar_envio pero
+        # no que localidad le pidieron).
         _tools_dump = [
-            {"t": tc.get("name"), "res": str(tc.get("result"))[:180]}
+            {"t": tc.get("name"), "args": str(tc.get("args") or "")[:120],
+             "res": str(tc.get("result"))[:180]}
             for tc in (meta.get("tools_called") or [])
         ]
         log.info("interprete_libre_solver_crudo", trace_id=trace_id,

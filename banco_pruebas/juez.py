@@ -194,3 +194,23 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod") -> list[str]:
         problemas.append("doble pregunta de cierre en la misma respuesta")
 
     return problemas
+
+
+def juzgar_charla(respuestas: list[str]) -> list[str]:
+    """Invariantes de la CHARLA entera, lo que ningun turno suelto muestra.
+    Hoy uno solo: la COLETILLA REPETIDA (corrida 19-jul, guion 45: la misma
+    linea de cierre salio identica en 4/4 turnos, robotica). Conservador: la
+    MISMA linea final, normalizada, en 3 o mas respuestas."""
+    problemas: list[str] = []
+    finales: dict[str, int] = {}
+    for r in respuestas or []:
+        lineas = [l.strip() for l in (r or "").splitlines() if l.strip()]
+        if not lineas:
+            continue
+        fin = re.sub(r"\s+", " ", lineas[-1].lower())
+        finales[fin] = finales.get(fin, 0) + 1
+    for fin, n in finales.items():
+        if n >= 3:
+            problemas.append(
+                f"coletilla repetida en {n} turnos: '{fin[:70]}'")
+    return problemas

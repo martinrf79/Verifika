@@ -22,6 +22,7 @@ precio (el codigo lo pone desde el id).
 import asyncio
 import json
 import re
+import zlib
 
 from app.config import get_settings
 from app.logger import get_logger
@@ -516,8 +517,49 @@ def _cat_real(nombre, tienda_id):
     return None
 
 
+# Invitacion a avanzar cuando NO hay total sobre la mesa. Varias pieles de la
+# misma movida (corrida 19-jul, guiones 05/37/45: la UNICA coletilla salia
+# identica en todos los turnos, robotica). Cero numeros, cero nombres.
+_CIERRES_SUAVES = (
+    "¿Querés que avancemos con alguno? Te armo el total al instante.",
+    "¿Alguno te interesa? Decime y te paso el total en el momento.",
+    "Contame cuál te gusta y te armo el presupuesto enseguida.",
+    "¿Seguimos con alguno? En un toque te paso el total.",
+)
+
+
+def _cierre_suave(partes: list[str]) -> str:
+    """Rota entre las variantes con crc del contenido del turno: determinista
+    y reproducible (misma charla, misma salida), sin random."""
+    base = "\n".join(partes).encode("utf-8", "ignore")
+    return _CIERRES_SUAVES[zlib.crc32(base) % len(_CIERRES_SUAVES)]
+
+
+def _destino_respaldado(destino: str, mensaje: str, estado: dict) -> bool:
+    """Un destino que emite el MODELO en un fragmento calculo solo vale si el
+    cliente lo dijo: en el mensaje ACTUAL o en la memoria de destinos del
+    estado. Espejo de coercionar_destinos del interpretador (bug 'Rosario',
+    17-jul), aplicado al generador: en la corrida del 19-jul el modelo invento
+    un destino y el turno 1 cobro $9.000 de envio a una provincia que el
+    cliente jamas nombro. Si se cae, el render cae a la memoria legitima de
+    localidades_envio, nunca inventa."""
+    d = _norm(destino)
+    if not d:
+        return False
+    if d in _norm(mensaje or ""):
+        return True
+    memoria = list(estado.get("localidades_envio") or [])
+    memoria.append(estado.get("localidad_envio") or "")
+    memoria.append(estado.get("provincia_envio") or "")
+    for m in memoria:
+        mn = _norm(m)
+        if mn and (d in mn or mn in d):
+            return True
+    return False
+
+
 def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
-               presupuesto_pre=None, presupuesto_tools=None):
+               presupuesto_pre=None, presupuesto_tools=None, mensaje=None):
     """(texto final, tools_called con proof). El texto lo arma el codigo desde
     los fragmentos; cada dato nace de la fuente."""
     from app.core.tools_context import set_current_tienda
@@ -578,7 +620,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 presu_usado = True
                 total_mostrado = True
         elif t == "calculo" and f.get("items"):
-            items, destinos = [], []
+            items, destinos, destinos_fantasma = [], [], []
             for it in f["items"]:
                 pid = str(it.get("producto_id") or "").upper()
                 if pid not in ids_validos:
@@ -589,7 +631,15 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 except (TypeError, ValueError):
                     pass
                 if it.get("destino"):
-                    destinos.append(str(it["destino"]).strip())
+                    d = str(it["destino"]).strip()
+                    if _destino_respaldado(d, mensaje or "", estado):
+                        destinos.append(d)
+                    else:
+                        destinos_fantasma.append(d)
+            if destinos_fantasma:
+                log.warning("generador_v2_destino_fantasma",
+                            trace_id=trace_id,
+                            destinos=destinos_fantasma[:4])
             if not items and (estado.get("carrito") or []):
                 # El modelo pidio calcular (ej. split) sin re-listar los items:
                 # se usa el pedido VIGENTE del carrito.
@@ -712,9 +762,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                         "¿Lo dejamos confirmado? Decime la forma de pago: "
                         "transferencia (10% de descuento) o Mercado Pago.")
                 else:
-                    partes.append(
-                        "¿Querés que avancemos con alguno? Te armo el total "
-                        "al instante.")
+                    partes.append(_cierre_suave(partes))
     if presupuesto_pre and not total_mostrado:
         # red: el pre-armado va si o si aunque el modelo no lo posiciono, pero
         # solo si NINGUN total salio ya (evita el presupuesto duplicado).

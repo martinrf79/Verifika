@@ -37,11 +37,16 @@ def test_charla_viva_sin_violaciones(firestore_doble, guion):
     # doble aunque la fixture sea de sesion.
     user = f"vivo_{guion.stem}"
     problemas: list[str] = []
+    respuestas: list[str] = []
     for i, msg in enumerate(mensajes, 1):
         resp = asyncio.run(process_message(
             user, msg, tienda_id="verifika_prod", canal="sim"))
         assert resp and not str(resp).startswith("<<ERROR"), (
             f"turno {i} fallo: {resp}")
+        respuestas.append(resp)
         for p in juzgar(resp):
             problemas.append(f"{guion.stem} turno {i} ({msg[:40]}...): {p}")
+    from banco_pruebas.juez import juzgar_charla
+    for p in juzgar_charla(respuestas):
+        problemas.append(f"{guion.stem} charla completa: {p}")
     assert problemas == [], "\n".join(problemas)

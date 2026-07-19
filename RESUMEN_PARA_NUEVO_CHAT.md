@@ -4,6 +4,55 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 19-jul-2026 — OBSERVABILIDAD DEL BANCO: OBSERVADOR DE RADARES +
+REGISTRO DE CORRIDAS + 3 FLACOS CAZADOS CON EVIDENCIA (rama
+claude/system-observability-diagnosis-wcqqmg). ====**
+
+Pedido de Martín: organización de observabilidad para que las pruebas del
+entorno de Claude sean fidedignas y quede registro de avances. Lo HECHO:
+
+1. **OBSERVADOR (`banco_pruebas/observador.py`, nuevo):** captura por
+   processor de structlog los MISMOS eventos radar que en prod se leen en
+   Cloud Logging (con trace_id y campos), cortados por turno. Antes un radar
+   que disparaba en el banco pasaba invisible; ahora queda registrado y
+   juzgable. No toca el logging de producción.
+2. **REGISTRO DE CORRIDAS (`banco_pruebas/corridas/`):** cada corrida de
+   charla_sim deja su reporte commiteado: mensaje, respuesta, latencia, juez
+   y radares por turno + resumen. La evidencia vive en git, no en el chat.
+   charla_sim acepta varios guiones y `BANCO_PAUSA_S` para el tier gratis.
+3. **TRES FLACOS CAZADOS EN CORRIDA VIVA (Gemini gratis, guiones 05/37/45)
+   Y ARREGLADOS, cada uno con su lock:**
+   - **Destino fantasma del GENERADOR** (el gordo): el fragmento calculo
+     tomaba el destino del MODELO sin validar; el turno 1 del guion 05 cobró
+     $9.000 de envío a "santiago del estero" cuando el cliente solo dijo
+     "mouse dx-110 negro". Guardia nueva `_destino_respaldado` (espejo de
+     coercionar_destinos): destino del modelo solo vale si está en el
+     mensaje o en la memoria (localidades_envio / provincia sticky). Radar
+     `generador_v2_destino_fantasma`. OJO: el flaco hermano del RESUMEN
+     18-jul (guardia del INTERPRETADOR anula memoria) sigue PENDIENTE; en el
+     05 turno 3 el radar `interpretador_destino_fantasma` disparó sobre
+     destinos legítimos de memoria (el total salió bien por el fallback a
+     localidades_envio, pero el radar muestra el roce).
+   - **Doble pregunta de cierre:** el gatillo suave pegaba la enlatada
+     encima de la confirmación propia del solver. Ya no; invariante 10 del
+     juez lo caza.
+   - **Coletilla robótica:** "¿Querés que avancemos con alguno?..." salía
+     idéntica en 4/4 turnos. Rotación determinista (crc, sin random) entre 4
+     variantes + `juzgar_charla` nuevo en el juez (invariante de CHARLA:
+     coletilla repetida en 3+ turnos), cableado en charla_sim y
+     test_vivo_charlas.
+4. **Observabilidad fina:** `solver_crudo` ahora loguea los ARGS de las
+   tools (sin eso el destino inventado fue invisible); setup_test_env.sh
+   instala pytest (el hook prometía entorno listo sin pytest).
+5. **Radares vistos en corrida que quedan de pendiente chico:** el checker
+   vivo abortó una vez por JSON cortado (`checker_afirmaciones_error`,
+   no-op seguro pero ese turno quedó sin fiscal nivel 3);
+   `interprete_libre_presupuesto_sin_marcador` sigue disparando en casi
+   todo turno con presupuesto (el estampado determinista lo cubre, pero el
+   solver no aprendió el marcador). **575 tests offline verdes.**
+
+---
+
 **==== 18-jul-2026 — BASE DE CONOCIMIENTO + JUEZ DE COMPLETITUD + CRÍTICO-
 REESCRITOR + LOOP DE CIERRE ARREGLADO. DEPLOYS 121-127 VERDES. ARRANCAR ACÁ. ====**
 
