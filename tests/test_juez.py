@@ -63,3 +63,19 @@ def test_precio_de_otro_producto_despues_del_anclado_no_acusa(firestore_doble):
     r = ("Te anoto el Mouse Genius DX-110 Negro a $8.500. "
          "Y los auriculares Zeus X salen $57.500, decime si los sumo.")
     assert juzgar(r) == []
+
+
+def test_doble_pregunta_de_cierre_acusa(firestore_doble):
+    """Dos preguntas de confirmacion en la misma respuesta = doble cierre
+    robotico. Reproducido en la corrida demo del 19-jul (el solver cerro con
+    '¿Lo dejamos confirmado asi?' y el gatillo pego la enlatada encima)."""
+    r = ("Total: $28.000\n\n¿Lo dejamos confirmado así?\n\n"
+         "¿Seguimos adelante con tu pedido así te lo dejo preparado?")
+    assert any("doble pregunta de cierre" in p for p in juzgar(r))
+
+
+def test_una_pregunta_de_cierre_mas_una_de_dato_no_acusa(firestore_doble):
+    """Una confirmacion + una pregunta de dato no es doble cierre."""
+    r = ("Total: $28.000. ¿A qué localidad te lo mando? "
+         "¿Seguimos adelante con tu pedido así te lo dejo preparado?")
+    assert not any("doble pregunta" in p for p in juzgar(r))

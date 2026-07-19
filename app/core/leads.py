@@ -37,6 +37,13 @@ UMBRAL_LEAD_FUERTE = float(os.getenv("INTERPRETER_UMBRAL_ALTA", "0.85"))
 # conflicto cae en la pregunta, no en un juez paralelo.
 PREGUNTA_CIERRE = "¿Seguimos adelante con tu pedido así te lo dejo preparado?"
 
+# La respuesta del solver ya termina en una pregunta de CONFIRMACION propia
+# (no una pregunta de dato): en ese caso la enlatada no se pega encima.
+# Conservador: solo frases inequivocas de cierre en la ultima pregunta.
+_RE_CIERRE_YA_PREGUNTADO = re.compile(
+    r"(?i)¿[^¿?]*(?:confirm|seguimos|avanzamos|cerramos|lo dejamos|"
+    r"lo preparo|reserv|lo pedimos|hacemos el pedido)[^¿?]*\?\s*$")
+
 # Respuesta cuando el cliente dice que no a la pregunta de cierre: se cierra suave
 # y lo toma un humano, sin insistir (arreglo D).
 MENSAJE_NO_INTERESADO = (
@@ -437,7 +444,15 @@ async def procesar_mensaje_para_lead(
         log.info("cierre_pregunta_suave", trace_id=trace_id,
                  intencion_llm=intencion_llm, confianza_llm=confianza_llm)
         base = (respuesta_solver or "").rstrip()
-        pregunta = (base + "\n\n" + PREGUNTA_CIERRE) if base else PREGUNTA_CIERRE
+        # DOBLE CIERRE (visto en el banco 19-jul): si el solver YA cerro con su
+        # propia pregunta de confirmacion ("¿Lo dejamos confirmado asi?"), pegar
+        # la enlatada encima deja dos preguntas de cierre seguidas, robotico. La
+        # del solver vale como LA pregunta: el "si" del proximo turno cae igual
+        # en el gatillo determinista.
+        if base and _RE_CIERRE_YA_PREGUNTADO.search(base):
+            pregunta = base
+        else:
+            pregunta = (base + "\n\n" + PREGUNTA_CIERRE) if base else PREGUNTA_CIERRE
         return None, {"accion": "pregunta_cierre",
                       "respuesta_directa": pregunta}
 

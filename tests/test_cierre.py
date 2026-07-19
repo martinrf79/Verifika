@@ -244,7 +244,8 @@ def test_modo_venta_sigue_pidiendo_datos(monkeypatch):
 # si el score justo superaba 0.85 (visto en la charla real del 1-jul).
 
 def _correr_cierre(monkeypatch, mensaje, intencion, confianza,
-                   presupuesto, presupuesto_nuevo, modo="lead"):
+                   presupuesto, presupuesto_nuevo, modo="lead",
+                   respuesta_solver="Genial."):
     """Corre procesar_mensaje_para_lead con fakes, variando intencion/confianza
     y si el presupuesto es nuevo o de memoria. Devuelve el meta de la decision."""
     import asyncio
@@ -266,7 +267,7 @@ def _correr_cierre(monkeypatch, mensaje, intencion, confianza,
     return asyncio.new_event_loop().run_until_complete(
         L.procesar_mensaje_para_lead(
             user_id="u1", canal="whatsapp", tienda_id="verifika_prod",
-            mensaje=mensaje, respuesta_solver="Genial.", trace_id="t1",
+            mensaje=mensaje, respuesta_solver=respuesta_solver, trace_id="t1",
             interpretacion=interp, presupuesto=presupuesto,
             presupuesto_nuevo=presupuesto_nuevo))[1]
 
@@ -297,6 +298,31 @@ def test_lock_presupuesto_nuevo_sigue_preguntando(monkeypatch):
         monkeypatch, "cuanto queda con envio?", "pregunta_especifica", 0.7,
         presupuesto="Total: $100.000", presupuesto_nuevo=True)
     assert meta["accion"] == "pregunta_cierre"
+
+
+def test_solver_ya_cerro_no_se_pega_doble_pregunta(monkeypatch):
+    """DOBLE CIERRE (banco 19-jul): el solver ya cerro con su propia pregunta
+    de confirmacion; la enlatada NO se pega encima. La del solver vale como LA
+    pregunta y el 'si' del proximo turno cae igual en el gatillo."""
+    from app.core import leads
+    meta = _correr_cierre(
+        monkeypatch, "cuanto queda con envio?", "pregunta_especifica", 0.7,
+        presupuesto="Total: $28.000", presupuesto_nuevo=True,
+        respuesta_solver="Total: $28.000\n\n¿Lo dejamos confirmado así?")
+    assert meta["accion"] == "pregunta_cierre"
+    assert leads.PREGUNTA_CIERRE not in meta["respuesta_directa"]
+    assert meta["respuesta_directa"].rstrip().endswith(
+        "¿Lo dejamos confirmado así?")
+
+
+def test_pregunta_de_dato_del_solver_no_frena_la_enlatada(monkeypatch):
+    """Una pregunta de DATO del solver no es un cierre: la enlatada va igual."""
+    from app.core import leads
+    meta = _correr_cierre(
+        monkeypatch, "cuanto queda con envio?", "pregunta_especifica", 0.7,
+        presupuesto="Total: $28.000", presupuesto_nuevo=True,
+        respuesta_solver="Sale $28.000. ¿A qué localidad te lo mando?")
+    assert meta["respuesta_directa"].endswith(leads.PREGUNTA_CIERRE)
 
 
 # ── LOOP DEL "SI" REPETIDO (18-jul, charla real Monte Ralo) ──────────────────

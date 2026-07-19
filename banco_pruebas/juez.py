@@ -25,6 +25,12 @@ _RE_CONTEXTO_CUENTA = re.compile(
     r"(?:total|subtotal|env[ií]o|descuento|cuotas?|se[ñn]a|c/u|por\s+los?\s+\d)",
     re.IGNORECASE)
 
+# Pregunta de CONFIRMACION del cierre (no de dato): dos en una misma respuesta
+# es el doble cierre robotico. Conservador: solo frases inequivocas.
+_RE_PREGUNTA_CIERRE = re.compile(
+    r"¿[^¿?]*(?:confirm|seguimos|avanzamos|cerramos|lo dejamos|lo preparo|"
+    r"reserv|lo pedimos|hacemos el pedido)[^¿?]*\?", re.IGNORECASE)
+
 # Narracion interna del solver filtrada al cliente ("el sistema me tiro un
 # detalle", "me pide mas precision"): el cliente nunca tiene que ver la cocina.
 _RE_NARRACION = re.compile(
@@ -180,5 +186,11 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod") -> list[str]:
         r"(te ayudo con[^.\n]*\.?)?)?", "", respuesta).strip()
     if len(re.sub(r"[\s.,¡!¿?]", "", _sin_saludo)) < 12:
         problemas.append("turno mudo: solo saludo, sin contestar")
+
+    # 10. DOBLE PREGUNTA DE CIERRE (banco 19-jul): dos preguntas de confirmacion
+    #     en la misma respuesta ("¿Lo dejamos confirmado?" + "¿Seguimos adelante
+    #     con tu pedido?") suenan roboticas: el cierre pregunta UNA vez.
+    if len(_RE_PREGUNTA_CIERRE.findall(respuesta)) >= 2:
+        problemas.append("doble pregunta de cierre en la misma respuesta")
 
     return problemas
