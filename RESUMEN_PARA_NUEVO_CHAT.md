@@ -4,6 +4,40 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 20-jul-2026 — DEPLOY 128 VERDE + AFINADO DE LA CHARLA REAL POST-DEPLOY
++ CIERRE CON COBRO LISTO (modo venta B, datos demo). ====**
+
+El deploy 128 (multidestino + identidad puntual + anti-robótico) salió VERDE
+y la charla real de Martín (13:56) confirmó el multidestino perfecto: 3
+envíos, total $1.532.500, reparto con gratis por paquete. De esa misma charla
+salieron los ajustes de esta tanda (orden directa de Martín):
+
+1. **Primer turno sin apuro:** con total sobre la mesa, el PRIMER contacto ya
+   no pide "¿Lo dejamos confirmado? + forma de pago" (queja real "estás
+   apurado"); invita a revisar y ajustar. El cierre fuerte va del turno 2 en
+   adelante (`renderizar primer_turno`).
+2. **Curadas sin muletillas contra el estado**
+   (`curadas.podar_muletillas_contra_estado`, cableada en el fragmento faq
+   del generador y en el acople): "decime tu zona" con la zona cotizada y
+   "decime qué producto estás mirando" con el pedido sobre la mesa se
+   recortan por oración. Y TOPE de dos curadas de FAQ por turno en el
+   generador (salían tres apiladas). Radar `generador_v2_faq_excedente`.
+3. **CIERRE CON COBRO LISTO (pedido de Martín "dejalo listo con un enlace
+   genérico y un cbu cualquiera"):** `MODO_CIERRE` default pasa a **"B"
+   (venta)**: el cierre entrega el cobro solo. Sin datos reales cargados caen
+   los DEMO de config.py: CBU 22 ceros, alias demo.verifika, link
+   https://mpago.la/demo. Riesgo marcado: el link demo no cobra plata real;
+   vale mientras el tráfico es de prueba. Los reales van a la config de la
+   tienda (cbu, alias, mp_access_token) cuando Martín los cargue.
+4. **"Pasame los enlaces" entrega el cobro** (`leads._RE_PIDE_COBRO` +
+   entrega directa): pedido explícito de link/CBU/datos de pago con pedido o
+   presupuesto sobre la mesa → CBU/alias + link de Mercado Pago, las dos
+   vías (cubre pago dividido), en cualquier modo. Antes devolvía fichas de
+   producto (charla real 14:02). Guion 48 nuevo lockea la charla.
+   **608 tests offline verdes.**
+
+---
+
 **==== 19-jul-2026 (3ª tanda) — LA PREGUNTA PUNTUAL POR FIN TIENE CAMINO:
 CERTIFICADOR DE MODELO + FICHA QUE CONTESTA + 2 INVARIANTES DEL JUEZ. ====**
 

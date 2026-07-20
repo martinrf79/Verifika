@@ -1256,7 +1256,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                 _texto, _tools = renderizar(
                     _frags, _uni, estado, tienda_id, trace_id,
                     presupuesto_pre=_presu, presupuesto_tools=_presu_tools,
-                    mensaje=raw_message)
+                    mensaje=raw_message, primer_turno=not history)
                 if _texto and _texto.strip():
                     _citada = []
                     for _tc in _tools:
@@ -1488,10 +1488,14 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                     log.info("interprete_libre_acople_salteado", trace_id=trace_id,
                              tema=_tema_bc, motivo="prosa_trae_valores")
                 else:
-                    respuesta = acoplar_bloque(respuesta, _bloque_bc)
-                    tema_acoplado = _tema_bc
-                    log.info("interprete_libre_faq_acoplada", trace_id=trace_id,
-                             tema=tema_acoplado)
+                    from app.core.curadas import podar_muletillas_contra_estado
+                    _bloque_bc = podar_muletillas_contra_estado(
+                        _bloque_bc, estado)
+                    if _bloque_bc:
+                        respuesta = acoplar_bloque(respuesta, _bloque_bc)
+                        tema_acoplado = _tema_bc
+                        log.info("interprete_libre_faq_acoplada",
+                                 trace_id=trace_id, tema=tema_acoplado)
         except Exception as e:
             log.warning("interprete_libre_acople_error", trace_id=trace_id,
                         error=str(e)[:120])

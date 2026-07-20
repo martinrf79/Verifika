@@ -354,6 +354,39 @@ _RE_PIDE_REPETIR = re.compile(
     re.IGNORECASE)
 
 
+# Colas de curada que PIDEN un dato que la charla ya tiene (charla real
+# 20-jul: "decime tu zona" con la zona cotizada, "decime que producto estas
+# mirando" con el pedido entero sobre la mesa). Se recorta la ORACION entera.
+_MULETILLAS_ESTADO = (
+    (re.compile(r"(?i)[^.!?\n]*decime\s+(?:tu|la)\s+zona[^.!?\n]*[.!?]?"),
+     "zona"),
+    (re.compile(r"(?i)[^.!?\n]*pasame\s+tu\s+provincia[^.!?\n]*[.!?]?"),
+     "zona"),
+    (re.compile(r"(?i)[^.!?\n]*decime\s+qu[eé]\s+producto[^.!?\n]*[.!?]?"),
+     "producto"),
+    (re.compile(r"(?i)[^.!?\n]*qu[eé]\s+producto\s+est[aá]s\s+mirando"
+                r"[^.!?\n]*[.!?]?"), "producto"),
+)
+
+
+def podar_muletillas_contra_estado(texto: str, estado: dict | None) -> str:
+    """Recorta de una curada las oraciones que piden un dato YA conocido:
+    la zona si hay localidades o provincia en el estado, el producto si hay
+    carrito, presupuesto o vistos. El resto de la curada queda intacto."""
+    t = str(texto or "")
+    if not t:
+        return t
+    e = estado if isinstance(estado, dict) else {}
+    zona = bool(e.get("localidades_envio") or e.get("localidad_envio")
+                or e.get("provincia_envio"))
+    producto = bool(e.get("carrito") or str(e.get("presupuesto") or "").strip()
+                    or e.get("productos_vistos"))
+    for rx, tipo in _MULETILLAS_ESTADO:
+        if (tipo == "zona" and zona) or (tipo == "producto" and producto):
+            t = rx.sub("", t)
+    return re.sub(r"[ \t]{2,}", " ", t).strip()
+
+
 def bloque_repetido(bloque: str, estado: dict | None, mensaje: str) -> bool:
     """True si el bloque ya salio en la ultima respuesta del bot y el
     cliente NO pidio que se lo repitan."""

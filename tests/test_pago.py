@@ -58,3 +58,37 @@ def test_transferencia_usa_demo_si_tienda_sin_datos(firestore_doble):
     datos = pago.datos_transferencia("verifika_prod")
     assert datos.get("alias"), "debe haber datos de cobro (demo) para mandar la via"
     assert pago.mensaje_transferencia(datos, monto=1000), "el bot manda la modalidad"
+
+
+# ── ENTREGA DE DATOS DE COBRO A PEDIDO (charla real 20-jul) ──────────────────
+
+def test_pasame_los_enlaces_entrega_el_cobro(monkeypatch, firestore_doble):
+    """'Pasame los enlaces' con presupuesto sobre la mesa -> CBU demo + link
+    generico de Mercado Pago, en cualquier modo."""
+    import asyncio
+    from app.core import leads as L
+    monkeypatch.setattr(L, "get_lead_activo",
+                        lambda user_id, canal, tienda_id: None)
+    monkeypatch.setattr(L, "modo_cierre", lambda tid: "lead")
+    _, meta = asyncio.new_event_loop().run_until_complete(
+        L.procesar_mensaje_para_lead(
+            user_id="u1", canal="whatsapp", tienda_id="verifika_prod",
+            mensaje="Pasame los enlaces", respuesta_solver="",
+            trace_id="t1", interpretacion={"intencion": "aporta_dato",
+                                           "confianza": 0.9},
+            presupuesto="Presupuesto:\n- 1x Mouse: $8.500\nTotal: $8.500"))
+    assert meta["accion"] == "cobro_datos"
+    r = meta["respuesta_directa"]
+    assert "CBU" in r or "Alias" in r
+    assert "mpago" in r or "Mercado Pago" in r
+
+
+def test_pregunta_de_datos_de_producto_no_entrega_cobro(monkeypatch,
+                                                        firestore_doble):
+    """'quiero los datos del producto' NO es pedir el cobro."""
+    from app.core.leads import _RE_PIDE_COBRO
+    assert not _RE_PIDE_COBRO.search("quiero los datos del producto")
+    assert _RE_PIDE_COBRO.search("pasame los enlaces")
+    assert _RE_PIDE_COBRO.search("dame el cbu")
+    assert _RE_PIDE_COBRO.search("mandame el link de pago")
+    assert _RE_PIDE_COBRO.search("datos para transferir")

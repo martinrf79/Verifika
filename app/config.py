@@ -244,7 +244,11 @@ class Settings(BaseModel):
     #   B (o "venta") = el bot cierra la venta y manda el cobro: link de Mercado
     #                   Pago o CBU segun la forma de pago.
     #   off           = el cierre no actua; el bot vende igual, sin captar lead.
-    MODO_CIERRE: str = os.getenv("MODO_CIERRE", "A").lower()
+    # "B" (venta) desde el 20-jul, orden de Martin: el cierre entrega el cobro
+    # solo (CBU/alias demo + link generico de Mercado Pago hasta cargar los
+    # reales en la config de la tienda). Riesgo: el link demo no cobra plata
+    # de verdad; valido mientras el trafico es de prueba.
+    MODO_CIERRE: str = os.getenv("MODO_CIERRE", "B").lower()
 
     # DATOS DE COBRO POR DEFECTO (demo). Config operativa de la tienda, no secreto:
     # la config de Firestore por tienda (cbu/alias/titular_cuenta/banco) PISA estos

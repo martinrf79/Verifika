@@ -60,6 +60,14 @@ MENSAJE_PEDIDO_YA_TOMADO = (
     "brevedad para coordinar el pago y el envío. ¿Te ayudo con algo más?"
 )
 
+# El cliente pide explicitamente el link o los datos para pagar.
+_RE_PIDE_COBRO = re.compile(
+    r"(?i)\b(?:pasa(?:me)?|manda(?:me)?|dame|envia(?:me)?|necesito|quiero)\b"
+    r"[^.\n]{0,40}\b(?:links?|enlaces?|cbu|alias)\b"
+    r"|\b(?:links?|enlaces?)\s+de\s+pago"
+    r"|\bdatos\s+(?:para|de)\s+(?:pagar|pago|transferir|transferencia)"
+    r"|\bcu[aá]l\s+es\s+el\s+(?:cbu|alias|link)\b")
+
 RE_TELEFONO = re.compile(
     r"(?:\+?54\s?9?\s?)?(?:11|2\d{2}|3\d{2})\s?\d{3,4}\s?\d{4}"
 )
@@ -302,6 +310,38 @@ async def procesar_mensaje_para_lead(
     if modo == "off":
         return None, meta
     lead_activo = get_lead_activo(user_id, canal, tienda_id)
+
+    # ENTREGA DE DATOS DE COBRO A PEDIDO (charla real 20-jul: "Pasame los
+    # enlaces" devolvia fichas de producto): si el cliente pide el link o el
+    # CBU y hay pedido o presupuesto sobre la mesa, el cobro se entrega
+    # directo, en cualquier modo. Van las DOS vias (transferencia y link):
+    # cubre el pago dividido y el cliente elige.
+    if _RE_PIDE_COBRO.search(mensaje or ""):
+        _presu_cobro = (presupuesto or "").strip() or str(
+            (lead_activo or {}).get("orden") or "")
+        if lead_activo or _presu_cobro.strip():
+            try:
+                from app.core import pago as P
+                bloques = []
+                t_transf = P.mensaje_transferencia(
+                    P.datos_transferencia(tienda_id),
+                    P.extraer_total_verificado(_presu_cobro))
+                if t_transf:
+                    bloques.append(t_transf)
+                url = (await P.link_pago_para_lead(
+                    _presu_cobro, lead_activo or {}, tienda_id, trace_id)
+                    or get_settings().DEMO_LINK_PAGO)
+                if url:
+                    bloques.append(f"Para pagar con Mercado Pago: {url}")
+                if bloques:
+                    log.info("cobro_datos_a_pedido", trace_id=trace_id)
+                    bloques.append("Cualquier duda con el pago, avisame "
+                                   "y te ayudo.")
+                    return None, {"accion": "cobro_datos",
+                                  "respuesta_directa": "\n\n".join(bloques)}
+            except Exception as e:
+                log.warning("cobro_datos_error", trace_id=trace_id,
+                            error=str(e)[:120])
 
     # Caso uno, lead activo esperando datos
     if lead_activo and lead_activo.get("estado") == "datos_solicitados":

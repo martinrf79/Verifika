@@ -616,7 +616,8 @@ def _destino_respaldado(destino: str, mensaje: str, estado: dict) -> bool:
 
 
 def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
-               presupuesto_pre=None, presupuesto_tools=None, mensaje=None):
+               presupuesto_pre=None, presupuesto_tools=None, mensaje=None,
+               primer_turno=False):
     """(texto final, tools_called con proof). El texto lo arma el codigo desde
     los fragmentos; cada dato nace de la fuente."""
     from app.core.tools_context import set_current_tienda
@@ -636,6 +637,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
     ids_validos = {str(p["id"]).upper() for p in universo}
     faq = get_all_faq(tienda_id=tienda_id) or {}
     partes, tools = [], []
+    faqs_pegadas = 0
     presu_usado = False
     # Si YA salio un total (por el fragmento presupuesto o por un calculo del
     # modelo), la red de seguridad del final NO reinyecta el pre-armado: sin
@@ -773,14 +775,28 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                     log.info("generador_v2_ficha_spec_honesta",
                              trace_id=trace_id)
         elif t == "faq" and f.get("tema"):
+            # TOPE de curadas por turno (charla real 20-jul: el modelo pego
+            # TRES seguidas y el mensaje quedo sobrecargado): maximo dos.
+            if faqs_pegadas >= 2:
+                log.info("generador_v2_faq_excedente", trace_id=trace_id,
+                         tema=f["tema"])
+                continue
             data = faq.get(f["tema"]) or {}
             txt = str(data.get("respuesta_curada") or data.get("respuesta") or "").strip()
             est = estampar_valores(txt, data) if txt else None
-            if est or txt:
-                partes.append(est or txt)
+            _txt_faq = est or txt
+            if _txt_faq:
+                # Sin muletillas que piden un dato YA conocido ("decime tu
+                # zona" con la zona cotizada, "decime que producto" con el
+                # pedido sobre la mesa).
+                from app.core.curadas import podar_muletillas_contra_estado
+                _txt_faq = podar_muletillas_contra_estado(_txt_faq, estado)
+            if _txt_faq:
+                partes.append(_txt_faq)
+                faqs_pegadas += 1
                 tools.append({"name": "query_faq",
                               "result": {"encontrada": True, "tema": f["tema"],
-                                         "respuesta": est or txt, "ok": True}})
+                                         "respuesta": _txt_faq, "ok": True}})
         elif t == "envio" and f.get("destino"):
             q = cotizar_envio(localidad=str(f["destino"]))
             if q.get("ok"):
@@ -838,7 +854,16 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 pago_conocido = bool(
                     (estado.get("datos_cliente") or {}).get("forma_pago")
                     or any("pago dividido" in p.lower() for p in partes))
-                if total_mostrado and pago_conocido:
+                if total_mostrado and primer_turno:
+                    # PRIMER contacto (queja real de Martin, 20-jul): pedir
+                    # confirmacion y forma de pago de entrada es apresurado.
+                    # Se invita a revisar; el cierre fuerte va del turno 2 en
+                    # adelante, cuando el cliente ya respondio algo.
+                    partes.append(
+                        "¿Cómo lo ves? Cualquier ajuste de modelos, "
+                        "cantidades o destinos me decís y lo dejamos a tu "
+                        "medida.")
+                elif total_mostrado and pago_conocido:
                     partes.append("¿Lo dejamos confirmado así?")
                 elif total_mostrado:
                     partes.append(

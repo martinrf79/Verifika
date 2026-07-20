@@ -154,3 +154,31 @@ def test_fallback_sin_tema_curado_cae_al_enlatado(firestore_doble):
     interp = {"intencion": "decision_compra", "confianza": 0.9}
     out = _fallback_o_curada("dale lo llevo", interp, "verifika_prod")
     assert out == get_settings().VERIFIKA_FALLBACK_MESSAGE
+
+
+# ── PODA DE MULETILLAS CONTRA ESTADO (charla real 20-jul) ────────────────────
+
+def test_muletilla_zona_se_poda_con_zona_conocida():
+    from app.core.curadas import podar_muletillas_contra_estado
+    txt = ("Al interior llega en 4 a 7 dias habiles. "
+           "Decime tu zona y te confirmo tambien el costo del envio.")
+    out = podar_muletillas_contra_estado(
+        txt, {"localidades_envio": ["correa santa fe"]})
+    assert "Decime tu zona" not in out
+    assert "4 a 7 dias" in out
+
+
+def test_muletilla_producto_se_poda_con_pedido_en_mesa():
+    from app.core.curadas import podar_muletillas_contra_estado
+    txt = ("Con transferencia tenes 10% de descuento. Si queres, decime que "
+           "producto estas mirando y te paso el total con el descuento.")
+    out = podar_muletillas_contra_estado(
+        txt, {"presupuesto": "Total: $1.525.000"})
+    assert "que producto" not in out.lower()
+    assert "10% de descuento" in out
+
+
+def test_muletillas_quedan_si_el_dato_no_se_conoce():
+    from app.core.curadas import podar_muletillas_contra_estado
+    txt = "Decime tu zona y te confirmo el costo del envio."
+    assert podar_muletillas_contra_estado(txt, {}) == txt
