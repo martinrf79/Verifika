@@ -124,3 +124,12 @@ def test_juez_anuncio_con_no_honesto_no_acusa(firestore_doble):
     r = ("Te cuento que ese modelo no lo tenemos en catálogo, "
          "así que no te lo puedo confirmar.")
     assert not any("anuncio sin contenido" in p for p in juzgar(r))
+
+
+def test_juez_no_honesto_con_no_contamos_no_acusa(firestore_doble):
+    """'no contamos con modelos de Asus' es un no honesto (falso positivo
+    visto vivo 20-jul en el guion 39)."""
+    r = ("Hola, te cuento que trabajamos con otras marcas líderes, por lo "
+         "que no contamos con modelos de Asus ni la línea ROG Strix en "
+         "nuestro catálogo actual.\n\n¿Seguimos con alguno?")
+    assert not any("anuncio sin contenido" in p for p in juzgar(r))

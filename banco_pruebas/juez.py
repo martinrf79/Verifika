@@ -213,8 +213,9 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod",
         _sustancia = bool(
             re.search(r"\$\s?\d", respuesta)
             or re.search(r"(?m)^\s*-\s+\S", respuesta)
-            or re.search(r"(?i)\bno\b[^.\n]{0,40}(vend|trabaj|tenemos|tengo"
-                         r"|confirmar|especifica|figura|llegamos)", respuesta)
+            or re.search(r"(?i)\bno\b[^.\n]{0,60}(vend|trabaj|tenemos|tengo"
+                         r"|contamos|cat[aá]logo|confirmar|especifica|figura"
+                         r"|llegamos)", respuesta)
             or re.search(r"(?i)(cu[aá]l|qu[eé] uso|d[oó]nde|provincia"
                          r"|c[oó]digo postal|localidad)[^?]*\?", respuesta))
         if not _sustancia:

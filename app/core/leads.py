@@ -37,12 +37,13 @@ UMBRAL_LEAD_FUERTE = float(os.getenv("INTERPRETER_UMBRAL_ALTA", "0.85"))
 # conflicto cae en la pregunta, no en un juez paralelo.
 PREGUNTA_CIERRE = "¿Seguimos adelante con tu pedido así te lo dejo preparado?"
 
-# La respuesta del solver ya termina en una pregunta de CONFIRMACION propia
-# (no una pregunta de dato): en ese caso la enlatada no se pega encima.
-# Conservador: solo frases inequivocas de cierre en la ultima pregunta.
+# La respuesta del solver YA trae una pregunta de CONFIRMACION propia (no una
+# pregunta de dato): la enlatada no se pega encima. Se busca en TODA la
+# respuesta, no solo al final: el acople de FAQ puede quedar despues de la
+# pregunta y el doble cierre volvia por ahi (visto vivo 20-jul, guion 40).
 _RE_CIERRE_YA_PREGUNTADO = re.compile(
     r"(?i)¿[^¿?]*(?:confirm|seguimos|avanzamos|cerramos|lo dejamos|"
-    r"lo preparo|reserv|lo pedimos|hacemos el pedido)[^¿?]*\?\s*$")
+    r"lo preparo|reserv|lo pedimos|hacemos el pedido)[^¿?]*\?")
 
 # Respuesta cuando el cliente dice que no a la pregunta de cierre: se cierra suave
 # y lo toma un humano, sin insistir (arreglo D).

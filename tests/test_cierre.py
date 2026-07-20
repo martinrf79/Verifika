@@ -374,3 +374,16 @@ def test_lead_fuerte_captado_devuelve_cierre(monkeypatch):
         presupuesto="Presupuesto:\n- 1x Tablet: $211.500\nTotal: $211.500")
     assert meta["accion"] == "lead_fuerte_captado"
     assert "tomamos tu pedido" in (meta.get("respuesta_directa") or "").lower()
+
+
+def test_confirmacion_en_el_medio_tambien_frena_la_enlatada(monkeypatch):
+    """La pregunta de confirmacion puede quedar en el MEDIO (el acople de FAQ
+    se pega despues): la enlatada tampoco va (visto vivo 20-jul, guion 40)."""
+    from app.core import leads
+    meta = _correr_cierre(
+        monkeypatch, "cuanto queda con envio?", "pregunta_especifica", 0.7,
+        presupuesto="Total: $480.000", presupuesto_nuevo=True,
+        respuesta_solver=("Total: $480.000\n\n¿Lo dejamos confirmado? Decime "
+                         "la forma de pago.\n\nNo trabajamos contra entrega: "
+                         "el pedido se abona antes del despacho."))
+    assert leads.PREGUNTA_CIERRE not in meta["respuesta_directa"]
