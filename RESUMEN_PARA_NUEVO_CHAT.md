@@ -34,8 +34,23 @@ por modelo o spec no tenía camino determinista. Lo construido, con OK previo:
    dato, opción ni no honesto — el hueco del 40 y del 45 ya no pasa invisible).
 4. **Dato pendiente del catálogo (para Martín):** las descripciones del CSV
    traen specs duplicadas de fábrica ("Core i5..., Core i5..."); el render ya
-   las depura al mostrar, pero limpiar la fuente suma. **599 tests offline
+   las depura al mostrar, pero limpiar la fuente suma.
+5. **AFINADO POR VERIFICACIÓN VIVA (3 corridas de 39/40, evidencia en
+   corridas/):** el certificador de modelo corre ANTES de las curadas (la
+   curada de disponibilidad le ganaba el turno a la Dell G15 real); la
+   guardia del doble cierre busca la confirmación en TODA la respuesta (el
+   acople la dejaba en el medio); las COLETILLAS enlatadas ya no cuentan como
+   sustancia ni para el piso de composición ni para el juez (turno de
+   seguimiento salió con solo la invitación a avanzar); el checker sube su
+   tope de tokens y repara JSON truncado con el cerrador del interpretador
+   (3 abortes en el día, el turno quedaba sin fiscal). Verificado vivo:
+   "El Rog Strix G15 exacto no lo tengo... lo más parecido real: Dell G15" y
+   el Odyssey G5 32 confirmado con precio y stock. **603 tests offline
    verdes.** Deploy: junto con la tanda 2, con OK de Martín.
+6. **Residual anotado:** el modelo a veces mete una afirmación categórica
+   ("ninguno de nuestros modelos tiene Thunderbolt") que solo el checker
+   puede juzgar — con el checker robustecido queda bajo su fiscalía; radar
+   `checker_sin_respaldo` a vigilar en los logs.
 
 ---
 

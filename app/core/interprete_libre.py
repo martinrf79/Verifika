@@ -375,11 +375,29 @@ def _mensaje_con_contenido(mensaje: str) -> bool:
     return bool(m) and not _RE_SOLO_SALUDO.match(m)
 
 
+def _sin_coletillas(texto: str) -> str:
+    """Saca las coletillas ENLATADAS (cierres suaves del generador, pregunta
+    de cierre) para medir la sustancia real: una respuesta que es SOLO la
+    coletilla no contesta nada (visto vivo 20-jul, guion 40: la pregunta por
+    el seguimiento salio con la invitacion a avanzar y nada mas)."""
+    t = texto or ""
+    try:
+        from app.core.generador_v2 import _CIERRES_SUAVES
+        from app.core.leads import PREGUNTA_CIERRE
+        for c in (*_CIERRES_SUAVES, PREGUNTA_CIERRE,
+                  "¿Te paso el total o querés la ficha completa?"):
+            t = t.replace(c, " ")
+    except Exception:
+        pass
+    return t.strip()
+
+
 def _sin_sustancia(respuesta: str) -> bool:
     """True si la respuesta quedo hueca: vacia, o corta y sin ningun dato ($ o
     digito) ni pregunta que mueva la charla. Una respuesta corta CON pregunta
-    ('¿Que estas buscando?') o con dato estampado es valida."""
-    r = (respuesta or "").strip()
+    ('¿Que estas buscando?') o con dato estampado es valida. Las coletillas
+    enlatadas NO cuentan como sustancia."""
+    r = _sin_coletillas((respuesta or "").strip())
     if not r:
         return True
     return len(r) < 60 and not re.search(r"[\d$?¿]", r)

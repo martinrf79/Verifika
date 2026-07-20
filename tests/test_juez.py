@@ -133,3 +133,10 @@ def test_juez_no_honesto_con_no_contamos_no_acusa(firestore_doble):
          "que no contamos con modelos de Asus ni la línea ROG Strix en "
          "nuestro catálogo actual.\n\n¿Seguimos con alguno?")
     assert not any("anuncio sin contenido" in p for p in juzgar(r))
+
+
+def test_juez_respuesta_solo_coletilla_es_turno_mudo(firestore_doble):
+    """La respuesta real del guion 40 turno 4 (20-jul): SOLO la coletilla,
+    sin contestar el seguimiento. Es turno mudo."""
+    r = "¿Querés que avancemos con alguno? Te armo el total al instante."
+    assert any("turno mudo" in p for p in juzgar(r))

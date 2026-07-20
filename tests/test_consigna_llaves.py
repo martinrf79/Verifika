@@ -212,3 +212,15 @@ def test_cierre_no_repregunta_forma_de_pago_dada(firestore_doble):
                           presupuesto_pre=presu, presupuesto_tools=ptools)
     assert "Decime la forma de pago" not in texto
     assert "confirmado" in texto.lower()
+
+
+def test_piso_composicion_coletilla_sola_no_es_sustancia(firestore_doble):
+    """Una respuesta que es SOLO la coletilla enlatada queda hueca: el piso
+    de composicion tiene que dispararse (visto vivo 20-jul, guion 40)."""
+    from app.core.interprete_libre import _sin_sustancia
+    assert _sin_sustancia(
+        "¿Querés que avancemos con alguno? Te armo el total al instante.")
+    assert _sin_sustancia(
+        "¿Seguimos adelante con tu pedido así te lo dejo preparado?")
+    assert not _sin_sustancia(
+        "El envío a cordoba sale $7.500 y llega en 4 a 7 días hábiles.")

@@ -138,7 +138,7 @@ async def chequear(respuesta: str, meta: dict, tienda_id: str | None = None,
         r = c.chat.completions.create(
             model=(settings.GEMINI_MODEL or "gemini-3.1-flash-lite"),
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.0, max_tokens=600,
+            temperature=0.0, max_tokens=1400,
             extra_body={"reasoning_effort": "none"},
             response_format={"type": "json_schema", "json_schema": {
                 "name": "fiscal", "strict": True, "schema": _SCHEMA}})
@@ -147,7 +147,18 @@ async def chequear(respuesta: str, meta: dict, tienda_id: str | None = None,
         raw = await asyncio.wait_for(asyncio.to_thread(_call), _TIMEOUT_S + 2)
         if not raw:
             return None
-        data = json.loads(raw)
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            # JSON cortado por el tope de tokens (3 veces en el banco 19/20
+            # jul): se repara con el mismo cerrador del interpretador. Si ni
+            # asi, no-op como siempre; el turno no queda sin fiscal por un
+            # corte de la respuesta larga.
+            from app.core.interpretador import _reparar_json_truncado
+            data = _reparar_json_truncado(raw)
+            if data is None:
+                raise
+            log.warning("checker_json_truncado_reparado", trace_id=trace_id)
         afirmaciones = [a for a in data.get("afirmaciones", [])
                         if isinstance(a, dict) and a.get("texto")]
         sin_respaldo = [a["texto"] for a in afirmaciones
