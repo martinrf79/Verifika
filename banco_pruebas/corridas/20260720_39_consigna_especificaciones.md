@@ -1,4 +1,4 @@
-# Corrida 39_consigna_especificaciones — 2026-07-20 11:13
+# Corrida 39_consigna_especificaciones — 2026-07-20 13:21
 
 Entorno: sim_firestore (880 productos, 50 FAQ), camino vivo por process_message, pausa 25.0s.
 
@@ -6,7 +6,7 @@ Entorno: sim_firestore (880 productos, 50 FAQ), camino vivo por process_message,
 
 CLIENTE: Hola, busco una notebook que me sirva para edición de video pesado, algo en 4K.
 
-BOT (7875 ms):
+BOT (8776 ms):
 
 ```
 ¡Hola! Soy el asistente automático de Verifika. Te ayudo con precios, stock y envíos al instante.
@@ -26,7 +26,7 @@ Contame cuál te gusta y te armo el presupuesto enseguida.
 
 CLIENTE: Prefiero Asus. ¿Tienen en stock el modelo ROG Strix G15?
 
-BOT (2503 ms):
+BOT (5443 ms):
 
 ```
 El Rog Strix G15 exacto no lo tengo en catálogo, te lo digo derecho. Lo más parecido real que tengo:
@@ -44,34 +44,41 @@ El Rog Strix G15 exacto no lo tengo en catálogo, te lo digo derecho. Lo más pa
 
 CLIENTE: Buenísimo. ¿Y la pantalla de cuántos Hz es? ¿Viene con puerto Thunderbolt?
 
-BOT (7221 ms):
+BOT (8323 ms):
 
 ```
-¡Hola! Te cuento que sobre ese modelo específico de ROG no trabajamos, pero entiendo perfecto lo que buscás para edición pesada.
+¡Hola! Te cuento, sobre la pantalla y los puertos de ese modelo, te paso los detalles técnicos para que lo veas bien.
 
 Notebook Acer Aspire 5 Core i5 16GB 512GB SSD Gris:
   Notebook Acer Aspire 5 Core i5 16GB 512GB SSD, color Gris. Core i5 16GB 512GB SSD. peso 2213g. dimensiones 37.6x26.2x1.9 cm. Carcasa de Aluminio. Garantia oficial 12 meses. Uso recomendado: Trabajo y estudio.
 
 Sobre los hercios de la pantalla ni el puerto Thunderbolt ni los puertos exactos: la ficha no lo especifica y prefiero no inventarte el dato. Si lo necesitás, lo consulto con el equipo y te lo confirmo.
 
-Te confirmo que ninguno de nuestros modelos actuales cuenta con puerto Thunderbolt ni pantallas de alta tasa de refresco, ya que están orientadas a un perfil de usuario diferente.
-
-¿Alguno te interesa? Decime y te paso el total en el momento.
+¿Seguimos con alguno? En un toque te paso el total.
 
 Cada producto viene en su caja original sellada con el equipo y los accesorios estandar del fabricante. El detalle exacto figura en la ficha.
 ```
 
 - JUEZ: limpio
-- RADAR `checker_afirmaciones_error` [warning] trace_id='3de4ea4d', error='Unterminated string starting at: line 56 column 26 (char 1727)', tienda_id='verifika_prod'
 
 ## Turno 4
 
 CLIENTE: Ah, bien, me sirve igual. ¿Le puedo ampliar la RAM a 32GB más adelante o viene soldada?
 
-BOT (10366 ms):
+BOT (11316 ms):
 
 ```
-¡Qué buena pregunta! Es fundamental saber eso antes de decidir para que la inversión te rinda a largo plazo. Notebook Acer Aspire 5 Core i5 16GB 512GB SSD Gris: Notebook Acer Aspire 5 Core i5 16GB 512GB SSD, color Gris. Core i5 16GB 512GB SSD. peso 2213g. dimensiones 37.6x26.2x1.9 cm. Sobre si la RAM se puede ampliar: la ficha no lo especifica y prefiero no inventarte el dato. Si lo necesitás, lo consulto con el equipo y te lo confirmo. ¿Seguimos con alguno? En un toque te paso el total.
+Te entiendo perfectamente, es una pregunta clave para que el equipo te dure un buen tiempo. Sobre la posibilidad de ampliar la memoria, te comento cómo viene la mano.
+
+Sumar memoria es una de las mejores formas de darle vida extra a tu equipo cuando trabajás con edición de video. Como no todos los modelos permiten la expansión, siempre es mejor verificar el equipo específico antes de cerrar la compra para asegurarnos de que no venga soldada o que tenga el slot disponible.
+
+Notebook Acer Aspire 5 Core i5 16GB 512GB SSD Gris:
+  Notebook Acer Aspire 5 Core i5 16GB 512GB SSD, color Gris. Core i5 16GB 512GB SSD. peso 2213g. dimensiones 37.6x26.2x1.9 cm. Carcasa de Aluminio. Garantia oficial 12 meses. Uso recomendado: Trabajo y estudio.
+  Garantia oficial Acer de 12 meses por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. No cubre danos por mal uso, golpes ni humedad.
+
+Sobre si la RAM se puede ampliar: la ficha no lo especifica y prefiero no inventarte el dato. Si lo necesitás, lo consulto con el equipo y te lo confirmo.
+
+Contame cuál te gusta y te armo el presupuesto enseguida.
 ```
 
 - JUEZ: limpio
@@ -79,5 +86,4 @@ BOT (10366 ms):
 ## Resumen
 
 - Juez: tanda limpia
-- Radares de la corrida:
-  - `checker_afirmaciones_error`: 1
+- Radares de la corrida: ninguno
