@@ -35,7 +35,10 @@ settings = get_settings()
 # timeout es no-op, asi que el peor caso que puede sumar es esto. Medido vivo
 # 17-jul: 1,5-2,9 s (promedio ~2 s) en tier gratis; 4 s cubre el triple del
 # promedio sin dejar al cliente colgado si Gemini anda lento.
-_TIMEOUT_S = 4
+# 8s: con el tope de 1400 tokens (respuesta_corregida incluida) los 4s
+# originales cortaban la llamada y el turno quedaba sin fiscal (radar
+# checker_afirmaciones_error con error vacio = TimeoutError, 20-jul).
+_TIMEOUT_S = 8
 _MAX_EVIDENCIA = 4000
 
 _SCHEMA = {
@@ -167,8 +170,10 @@ async def chequear(respuesta: str, meta: dict, tienda_id: str | None = None,
         return {"afirmaciones": afirmaciones, "sin_respaldo": sin_respaldo,
                 "corregida": corregida}
     except Exception as e:
+        # El TIPO va siempre: un TimeoutError tiene str vacio y el radar
+        # quedaba mudo sobre la causa (visto 20-jul).
         log.warning("checker_afirmaciones_error", trace_id=trace_id,
-                    error=str(e)[:120])
+                    error=f"{type(e).__name__}: {str(e)[:100]}")
         return None
 
 
