@@ -259,6 +259,7 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       productos_vistos: list | None = None,
                       ultima_localidad: str | None = None,
                       ultimas_localidades: list | None = None,
+                      grupos_envio: list | None = None,
                       carrito_vigente: list | None = None,
                       pedido_pendiente: dict | None = None,
                       criterio_cliente: str | None = None,
@@ -318,6 +319,8 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
     # tarifa sin volver a pedir el CP que el cliente ya dio.
     if ultimas_localidades is not None:
         datos["ultimas_localidades"] = ultimas_localidades
+    if grupos_envio is not None:
+        datos["grupos_envio"] = grupos_envio
     # CARRITO VIGENTE: items del ultimo calculate_total ok {id, nombre,
     # cantidad}, para que el pedido no mute de identidad entre turnos.
     if carrito_vigente is not None:

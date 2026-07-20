@@ -635,16 +635,42 @@ def grupos_envio_del_mensaje(mensaje: str, cats_pedido: list,
 
 def grupos_para_calculo(mensaje: str, locs: list,
                         tienda_id: str) -> list | None:
-    """Los grupos del mensaje en el formato que consume calculate_total
-    ([{destino, cats}]), SOLO si mapean uno a uno con las localidades
-    cotizadas. None si no: calculate_total sigue con su promedio."""
-    if len(locs or []) <= 1 or not (mensaje or "").strip():
+    """Los grupos en el formato que consume calculate_total ([{destino,
+    cats}]), SOLO si mapean uno a uno con las localidades cotizadas. Salen
+    del MENSAJE o, si este turno no los repite ('dale, confirmalo'), de la
+    MEMORIA de la charla: sin eso el reprecio de la confirmacion perdia el
+    umbral por paquete y el promedio regalaba los envios (guion 48, 20-jul).
+    Los grupos computados quedan en el estado para persistir."""
+    if len(locs or []) <= 1:
         return None
-    cats_msg = cantidades_por_categoria(mensaje, tienda_id)
-    g = grupos_envio_del_mensaje(mensaje, cats_msg, tienda_id)
-    if g and len(g) == len(locs):
-        return [{"destino": d, "cats": it} for d, it in g]
-    return None
+    g = None
+    if (mensaje or "").strip():
+        cats_msg = cantidades_por_categoria(mensaje, tienda_id)
+        gg = grupos_envio_del_mensaje(mensaje, cats_msg, tienda_id)
+        if gg and len(gg) == len(locs):
+            # cats como DICTS, no pares-lista: Firestore rechaza arrays
+            # anidados y el save entero abortaba en silencio (mismo bug de
+            # la amnesia del 8-jul, reproducido por el doble el 20-jul).
+            g = [{"destino": d,
+                  "cats": [{"n": int(n), "cat": str(c)} for n, c in it]}
+                 for d, it in gg]
+    if g is None:
+        try:
+            from app.core.estado_venta import get_current_estado
+            gmem = (get_current_estado() or {}).get("grupos_envio") or []
+            if gmem and len(gmem) == len(locs):
+                g = gmem
+        except Exception:
+            g = None
+    if g:
+        try:
+            from app.core.estado_venta import get_current_estado
+            est = get_current_estado()
+            if isinstance(est, dict):
+                est["grupos_envio"] = g
+        except Exception:
+            pass
+    return g
 
 
 def reparto_envios_detalle(mensaje: str, cats_pedido: list,

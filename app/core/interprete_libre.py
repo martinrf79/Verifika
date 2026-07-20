@@ -24,7 +24,7 @@ from app.core.interpretador import interpretar_mensaje
 from app.core.leads import (
     procesar_mensaje_para_lead, descartar_leads_activos, get_lead_activo)
 from app.core.estado_venta import (
-    construir_estado, set_current_estado,
+    construir_estado, set_current_estado, get_current_estado,
     productos_de_meta, carrito_de_meta, envio_de_meta, merge_productos,
     detectar_criterio, criterio_del_interprete, concordancia_criterio,
     get_envio_localidades)
@@ -2243,6 +2243,9 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                           carrito_vigente=carrito_vigente,
                           ultima_localidad=ultima_localidad,
                           ultimas_localidades=ultimas_localidades,
+                          grupos_envio=((get_current_estado() or {})
+                                        .get("grupos_envio")
+                                        or conv.get("grupos_envio") or []),
                           criterio_cliente=criterio_cliente,
                           provincia_envio=provincia_envio,
                           destino_unico=destino_unico,

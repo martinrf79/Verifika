@@ -212,7 +212,11 @@ def _subtotales_por_grupo(grupos: list, locs: list,
         sub = 0
         for par in (grupos[duenos[0]].get("cats") or []):
             try:
-                n, cat = int(par[0]), str(par[1] or "").strip().lower()
+                if isinstance(par, dict):
+                    n, cat = int(par.get("n")), str(
+                        par.get("cat") or "").strip().lower()
+                else:
+                    n, cat = int(par[0]), str(par[1] or "").strip().lower()
             except (TypeError, ValueError, IndexError):
                 return {}
             precios = cat_precios.get(cat) or set()

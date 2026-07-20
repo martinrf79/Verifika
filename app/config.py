@@ -258,7 +258,8 @@ class Settings(BaseModel):
     # la tienda todavia no cargo sus datos reales. Editables por entorno.
     DEMO_CBU: str = os.getenv("DEMO_CBU", "0000000000000000000000")
     DEMO_ALIAS: str = os.getenv("DEMO_ALIAS", "demo.verifika")
-    DEMO_TITULAR: str = os.getenv("DEMO_TITULAR", "CUENTA DEMO - reemplazar")
+    # Apto cliente: el "reemplazar" viejo quedaba a la vista en el cobro demo.
+    DEMO_TITULAR: str = os.getenv("DEMO_TITULAR", "Verifika (cuenta demo)")
     DEMO_BANCO: str = os.getenv("DEMO_BANCO", "Banco Demo")
     # Link de pago de DEMO cuando no hay token de Mercado Pago cargado: asi el bot
     # igual manda un enlace y se ve la accion. En produccion real, el token genera

@@ -254,3 +254,35 @@ def test_reparto_detalle_gratis_por_grupo_consistente(firestore_doble):
     assert "A Correa Santa Fe: 1 notebook y 1 teclado — envío gratis" in txt
     assert ("A San Francisco Cordoba: 1 auricular y 1 teclado — envío $7.500"
             in txt)
+
+
+def test_reseteo_de_mitad_de_turno_no_borra_cotizadas(firestore_doble):
+    """Las localidades cotizadas del turno sobreviven al re-seteo del
+    generador (inicio_turno=False); el reseteo del arranque si limpia.
+    Era el agujero por el que la memoria de destinos no persistia y el
+    envio se caia del total al confirmar (guion 48, 20-jul)."""
+    from app.core.estado_venta import (set_current_estado,
+                                       set_envio_localidad,
+                                       get_envio_localidades)
+    set_current_estado({})
+    set_envio_localidad("palpala jujuy")
+    set_current_estado({}, inicio_turno=False)
+    assert get_envio_localidades() == ["palpala jujuy"]
+    set_current_estado({})
+    assert get_envio_localidades() == []
+
+
+def test_grupos_para_calculo_reusa_la_memoria(firestore_doble):
+    """'dale, confirmalo' no repite los grupos: salen de la memoria de la
+    charla y el nuevo computo queda en el estado para persistir."""
+    from app.core.guia_pedido import grupos_para_calculo
+    from app.core.estado_venta import set_current_estado, get_current_estado
+    g_mem = [{"destino": "palpala jujuy", "cats": [[1, "notebook"]]},
+             {"destino": "correa santa fe", "cats": [[1, "teclado"]]}]
+    set_current_estado({"grupos_envio": g_mem})
+    g = grupos_para_calculo("dale, confirmalo",
+                            ["palpala jujuy", "correa santa fe"],
+                            "verifika_prod")
+    assert g == g_mem
+    assert get_current_estado()["grupos_envio"] == g_mem
+    set_current_estado(None)

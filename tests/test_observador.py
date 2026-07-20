@@ -74,15 +74,16 @@ def test_captura_un_radar_real_del_camino_vivo(obs):
     """Integracion con codigo de produccion REAL: coercionar_destinos loguea
     interpretador_destino_fantasma y el observador lo caza con sus campos.
 
-    El caso ademas DOCUMENTA el punto flaco pendiente (RESUMEN 18-jul): el
-    guardia solo mira el mensaje ACTUAL, asi que un destino legitimo dicho en
-    un turno ANTERIOR (memoria) tambien se anula. Cuando se arregle con
-    memoria multiturno, este test cambia con el nuevo contrato."""
+    Sin memoria en el estado, el destino no dicho es fantasma y se anula
+    (el caso CON memoria vive en test_interpretador_schema: cerrado 20-jul)."""
     from app.core.interpretador import coercionar_destinos
+    from app.core.estado_venta import set_current_estado
+    set_current_estado({})  # sin memoria: el destino es fantasma de verdad
     resultado = {"pedido": [{"categoria": "mouse", "cantidad": 1,
                              "destino": "Monte Ralo"}]}
     with obs.turno() as t:
         coercionar_destinos(resultado, "si, dale, ese quiero")
+    set_current_estado(None)
     assert resultado["pedido"][0]["destino"] is None
     radares = t.radares()
     assert [e["event"] for e in radares] == ["interpretador_destino_fantasma"]

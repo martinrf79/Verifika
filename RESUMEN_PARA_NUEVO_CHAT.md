@@ -34,7 +34,23 @@ salieron los ajustes de esta tanda (orden directa de Martín):
    presupuesto sobre la mesa → CBU/alias + link de Mercado Pago, las dos
    vías (cubre pago dividido), en cualquier modo. Antes devolvía fichas de
    producto (charla real 14:02). Guion 48 nuevo lockea la charla.
-   **608 tests offline verdes.**
+5. **CERRADO EL PENDIENTE 1 DEL 18-jul — el guardia de destinos ya respeta la
+   MEMORIA** (`coercionar_destinos` valida contra mensaje + localidades y
+   provincia del estado): "dale, confirmalo" ya no anula los destinos dichos
+   antes. Y la cadena que lo escondía, cerrada entera:
+   - `set_current_estado` con `inicio_turno=False` para los re-seteos del
+     generador: antes borraban las localidades cotizadas del propio turno y
+     la memoria nunca persistía (agujero del 12-jul).
+   - **Los grupos de envío son MEMORIA de la charla** (`grupos_envio` en la
+     conversación, construir_estado los repone): el reprecio de la
+     confirmación reusa el umbral por paquete. Formato en DICTS porque
+     Firestore rechaza arrays anidados y el save entero abortaba en
+     silencio (mismo bug de la amnesia del 8-jul, cazado por el doble).
+   - Verificado vivo: la confirmación da Total $1.532.500 y final $1.379.250
+     con el envío adentro; antes perdía los $7.500.
+6. **Juez:** los datos de pago que salen de la config de la tienda no son
+   promesa prohibida (el cobro del modo venta es legítimo). Titular demo
+   apto cliente. **612 tests offline verdes.**
 
 ---
 

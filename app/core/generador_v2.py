@@ -219,7 +219,11 @@ def presupuesto_precalculado(mensaje, estado, tienda_id, interp=None):
     from app.core.tools_context import set_current_tienda
     from app.core.estado_venta import set_current_estado
     set_current_tienda(tienda_id)
-    set_current_estado(estado if isinstance(estado, dict) else {})
+    # inicio_turno=False: el turno YA arranco en interprete_libre; este
+    # re-seteo es solo para las tools y no debe borrar las localidades
+    # cotizadas del turno (agujero del 12-jul, cerrado 20-jul).
+    set_current_estado(estado if isinstance(estado, dict) else {},
+                       inicio_turno=False)
     estado = estado if isinstance(estado, dict) else {}
     try:
         from app.core.guia_pedido import (
@@ -631,7 +635,11 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
     set_current_tienda(tienda_id)
     # Resetea las localidades del turno (sin esto la calculadora arrastra
     # envios cotizados de un turno anterior y falla, visto 11-jul).
-    set_current_estado(estado if isinstance(estado, dict) else {})
+    # inicio_turno=False: el turno YA arranco en interprete_libre; este
+    # re-seteo es solo para las tools y no debe borrar las localidades
+    # cotizadas del turno (agujero del 12-jul, cerrado 20-jul).
+    set_current_estado(estado if isinstance(estado, dict) else {},
+                       inicio_turno=False)
     estado = estado if isinstance(estado, dict) else {}
     nombres = [p.get("nombre") for p in universo if p.get("nombre")]
     ids_validos = {str(p["id"]).upper() for p in universo}

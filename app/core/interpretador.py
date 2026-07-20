@@ -398,25 +398,53 @@ def _corregir_referencia_comparativa(resultado: dict, mensaje: str,
 def coercionar_destinos(resultado: dict, mensaje: str) -> dict:
     """DESTINO FANTASMA (caso real WhatsApp 17-jul): el interprete metio
     'Rosario' en el pedido cuando el cliente jamas nombro una localidad
-    (contaminacion de los ejemplos del prompt), el pedido no reconcilio y el
-    camino sellado nunca corrio. Invariante determinista: un destino del
-    pedido tiene que APARECER en el mensaje del cliente; si no aparece, va
-    None (destino unico o sin decir). Muta y devuelve."""
+    (contaminacion de los ejemplos del prompt). Invariante determinista: un
+    destino del pedido tiene que APARECER en el mensaje del cliente O en la
+    MEMORIA de destinos de la charla (localidades cotizadas, provincia
+    sticky). Lo segundo cierra el pendiente del 18-jul: el cliente daba los
+    destinos en un turno y al confirmar en el siguiente ('dale, confirmalo')
+    el guardia los anulaba como fantasmas y el envio se caia del total
+    (visto de nuevo en el banco 20-jul, guion 48). Muta y devuelve."""
     import unicodedata
 
     def _n(s):
         s = unicodedata.normalize("NFKD", str(s or "").lower())
-        return "".join(c for c in s if not unicodedata.combining(c))
+        s = "".join(c for c in s if not unicodedata.combining(c))
+        return s.replace(",", " ").strip()
 
     m = _n(mensaje)
+    memoria: list[str] = []
+    try:
+        from app.core.estado_venta import get_current_estado
+        est = get_current_estado() or {}
+        memoria = [_n(x) for x in (est.get("localidades_envio") or []) if x]
+        for k in ("localidad_envio", "provincia_envio"):
+            v = _n(est.get(k) or "")
+            if v:
+                memoria.append(v)
+    except Exception:
+        memoria = []
+
+    def _en_memoria(dn: str) -> bool:
+        pd = set(dn.split())
+        for mv in memoria:
+            pm = set(mv.split())
+            if pd <= pm or pm <= pd:
+                return True
+        return False
+
     fantasmas = []
     for it in (resultado.get("pedido") or []):
         if not isinstance(it, dict):
             continue
         d = it.get("destino")
-        if d and _n(d) not in m:
-            fantasmas.append(str(d))
-            it["destino"] = None
+        if not d:
+            continue
+        dn = _n(d)
+        if dn in m or _en_memoria(dn):
+            continue
+        fantasmas.append(str(d))
+        it["destino"] = None
     if fantasmas:
         log.warning("interpretador_destino_fantasma", destinos=fantasmas[:4])
     return resultado

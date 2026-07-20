@@ -108,13 +108,17 @@ _ids_certificados: ContextVar[set | None] = ContextVar(
     "ids_certificados", default=None)
 
 
-def set_current_estado(estado: dict | None):
-    """Setea el estado de venta del request. Lo llama el camino vivo al arrancar
-    el turno, despues de cargar la conversacion y el lead. Limpia las localidades
-    de envio del turno anterior para no arrastrar una cotizacion vieja."""
+def set_current_estado(estado: dict | None, inicio_turno: bool = True):
+    """Setea el estado de venta del request. Al ARRANCAR el turno (default)
+    limpia las localidades cotizadas del turno anterior. Un re-seteo a mitad
+    de turno (el generador lo hace para sus tools) va con inicio_turno=False:
+    antes borraba las cotizadas del propio turno y la memoria de destinos
+    nunca persistia — el envio se caia del total al confirmar (agujero del
+    12-jul, cerrado 20-jul con el guion 48)."""
     _current_estado.set(estado)
-    _envio_localidades.set([])
-    _ids_certificados.set(set())
+    if inicio_turno:
+        _envio_localidades.set([])
+        _ids_certificados.set(set())
 
 
 def set_envio_localidad(localidad: str | None):
@@ -298,6 +302,12 @@ def construir_estado(conv: dict | None, lead: dict | None) -> dict:
         "preferencias": (conv.get("preferencias_cliente")
                          if isinstance(conv.get("preferencias_cliente"), dict)
                          else {}) or {},
+        # GRUPOS DE ENVIO declarados por el cliente (que item va a cada
+        # destino): memoria de la charla, el reprecio del cierre los reusa
+        # para el umbral de gratis por paquete (20-jul, guion 48).
+        "grupos_envio": (conv.get("grupos_envio")
+                         if isinstance(conv.get("grupos_envio"), list)
+                         else []) or [],
     }
 
 

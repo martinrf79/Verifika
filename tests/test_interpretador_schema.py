@@ -102,3 +102,31 @@ def test_no_dict_devuelve_none():
 def test_json_valido_no_pasa_por_la_reparacion():
     r = parsear_respuesta_llm('{"intencion": "consulta", "confianza": 1.0}')
     assert r == {"intencion": "consulta", "confianza": 1.0}
+
+
+# ── DESTINO DE MEMORIA NO ES FANTASMA (cierre del pendiente 18-jul) ──────────
+
+def test_destino_de_memoria_sobrevive_la_confirmacion():
+    """'dale, confirmalo' no nombra destinos, pero Palpala esta en la memoria
+    de la charla: el guardia NO lo anula (el envio se caia del total al
+    confirmar, visto 20-jul en el guion 48)."""
+    from app.core.interpretador import coercionar_destinos
+    from app.core.estado_venta import set_current_estado
+    set_current_estado({"localidades_envio": ["palpala jujuy"]})
+    r = {"pedido": [{"producto": "notebook", "cantidad": 1,
+                     "destino": "Palpalá, Jujuy"}]}
+    coercionar_destinos(r, "dale, confirmalo")
+    set_current_estado(None)
+    assert r["pedido"][0]["destino"] == "Palpalá, Jujuy"
+
+
+def test_destino_inventado_sigue_cayendo():
+    """Sin memoria ni mencion en el mensaje, el fantasma se anula igual."""
+    from app.core.interpretador import coercionar_destinos
+    from app.core.estado_venta import set_current_estado
+    set_current_estado({})
+    r = {"pedido": [{"producto": "mouse", "cantidad": 1,
+                     "destino": "Rosario"}]}
+    coercionar_destinos(r, "quiero un mouse barato")
+    set_current_estado(None)
+    assert r["pedido"][0]["destino"] is None
