@@ -99,8 +99,21 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod",
             f"cifra de stock {c['de']} distinta del real {c['a']} ({c['id']})")
 
     # 2. Promesas prohibidas (dia de entrega, retiro en local, servicio no
-    #    ofrecido): el mismo detector de la guardia.
+    #    ofrecido): el mismo detector de la guardia. Excepcion: los DATOS DE
+    #    PAGO que salen de la config de la tienda (CBU/alias reales o demo)
+    #    son el cobro del modo venta, no un invento del modelo (20-jul).
+    _datos_pago_fuente = False
+    try:
+        from app.core.pago import datos_transferencia
+        _dt = datos_transferencia(tienda_id) or {}
+        _datos_pago_fuente = any(
+            v and str(v) in respuesta
+            for v in (_dt.get("cbu"), _dt.get("alias")))
+    except Exception:
+        pass
     for clase in GP.detectar(respuesta):
+        if clase == "datos_pago" and _datos_pago_fuente:
+            continue
         problemas.append(f"promesa prohibida en la salida: {clase}")
 
     # 3. Marcador interno sin estampar.
