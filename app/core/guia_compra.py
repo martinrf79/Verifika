@@ -13,6 +13,7 @@ referenciado como [[PROD:id]], que el estampado rellena con nombre+precio+stock
 reales de la fuente. No es una tool opcional que el modelo puede no llamar: si el
 cliente pidio lo mas barato, la guia viaja SIEMPRE en el turno.
 """
+import re
 import unicodedata
 
 from app.core.tools_context import get_current_tienda
@@ -179,3 +180,90 @@ def categoria_no_vendida(mensaje: str,
     if alt and not any(_norm(c) == _norm(alt) for c in reales):
         alt = None
     return pedida, alt
+
+
+# ── CERTIFICADOR DE MODELO PUNTUAL (19-jul, guiones 39/40 de la consigna) ────
+# "¿Tienen el ROG Strix G15?" / "¿el monitor Samsung Odyssey G5?": el modelo
+# NO esta en catalogo y el turno salia hueco ("te lo confirmo al instante")
+# o con una politica inventada ("por politica no trabajamos Asus"). La
+# identidad la decide el CODIGO (regla cero): token de modelo que no existe
+# en el catalogo -> not_found honesto + opciones reales de la categoria.
+
+# El cliente esta preguntando por un producto (no charlando de otra cosa).
+_RE_PIDE_PRODUCTO = re.compile(
+    r"\b(tienen|tenes|tene|hay|stock|disponib\w*|precio|busco|quiero"
+    r"|modelo|me interesa)\b")
+
+# Token con pinta de modelo: letras y numeros mezclados (g15, x3d, mx518).
+_RE_TOKEN_MODELO = re.compile(r"^[a-z]+\d+[a-z0-9]*$")
+
+# Unidades y medidas que parecen modelo pero no lo son (4k, 27p, 16gb solo).
+_RE_UNIDAD = re.compile(
+    r"^\d+[a-z]{1,3}$|^(full|ultra)hd$|^[0-9]+(gb|tb|hz|mah|dpi|mm|cm|w)$")
+
+_STOP_MODELO = {"modelo", "el", "la", "los", "las", "de", "del", "un", "una",
+                "en", "con", "y", "o", "stock", "tienen", "hay", "para"}
+
+
+# Verbos de DECISION: "quiero, dame, sumalo" no es una pregunta de identidad,
+# es un pedido, y ese lo conduce el flujo de pedido normal.
+_RE_DECISION = re.compile(r"\b(quiero|dame|sumal[oa]|sumame|llevo|comprar"
+                          r"|agrega|anotal[oa])\b")
+
+
+def modelo_puntual(mensaje: str, tienda_id: str | None = None) -> dict | None:
+    """Identidad de un MODELO puntual preguntado, decidida por el CODIGO.
+    None si el mensaje no pregunta por un modelo. Si pregunta, devuelve
+    {"frase", "exactos", "cercanos", "categoria"}:
+      - exactos: productos reales que matchean TODA la frase del modelo
+        (pregunto por el Odyssey G5 y existe el Odyssey G5 32).
+      - cercanos: productos que comparten el token de modelo (pregunto el
+        Asus ROG Strix G15 y existe la Dell G15).
+      - los dos vacios: el modelo no existe en catalogo; categoria trae la
+        categoria nombrada para ofrecer opciones reales."""
+    m = _norm(mensaje)
+    if not m or not _RE_PIDE_PRODUCTO.search(m):
+        return None
+    palabras = m.replace(",", " ").replace("?", " ").replace("¿", " ").split()
+    idx = next((i for i, w in enumerate(palabras)
+                if _RE_TOKEN_MODELO.match(w) and not _RE_UNIDAD.match(w)), None)
+    if idx is None:
+        return None
+    ancla = palabras[idx]
+    # La frase del modelo: el ancla + hasta 3 palabras previas con sustancia
+    # ("samsung odyssey g5", "rog strix g15").
+    frase = [ancla]
+    for w in reversed(palabras[max(0, idx - 3):idx]):
+        if w in _STOP_MODELO or _RE_UNIDAD.match(w) or w.isdigit() and len(w) < 3:
+            break
+        frase.insert(0, w)
+    prods = get_all_products(tienda_id=tienda_id) or []
+    cats_reales = {_norm(c) for c in (get_categories(tienda_id=tienda_id) or [])}
+    toks_frase = [t for t in frase
+                  if t not in _STOP_MODELO and _norm(t) not in cats_reales
+                  and _singular(_norm(t)) not in {_singular(c) for c in cats_reales}]
+    exactos, cercanos = [], []
+    for p in prods:
+        base = " " + _norm(str(p.get("nombre", "")) + " "
+                           + str(p.get("modelo", ""))).replace("-", " ") + " "
+        if f" {ancla} " not in base:
+            continue
+        cercanos.append(p)
+        if all(t in base for t in toks_frase):
+            exactos.append(p)
+    if exactos and _RE_DECISION.search(m):
+        # Modelo real + verbo de decision: es un pedido, no una duda de
+        # identidad. Lo conduce el flujo normal.
+        return None
+    cat_op = None
+    for c in (get_categories(tienda_id=tienda_id) or []):
+        cn = _norm(c)
+        if f" {cn} " in f" {m} " or f" {_singular(cn)} " in f" {m} ":
+            cat_op = str(c)
+            break
+    def _orden(p):
+        return (p.get("stock", 0) <= 0, p.get("precio_ars") or 0)
+    return {"frase": " ".join(toks_frase) or ancla,
+            "exactos": sorted(exactos, key=_orden)[:3],
+            "cercanos": sorted(cercanos, key=_orden)[:3],
+            "categoria": cat_op}

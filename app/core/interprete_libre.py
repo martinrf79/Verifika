@@ -1137,6 +1137,67 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
             log.warning("interprete_libre_cat_no_vendida_error",
                         trace_id=trace_id, error=str(e)[:120])
 
+    # CERTIFICADOR DE MODELO PUNTUAL (19-jul, guiones 39/40): un modelo
+    # nombrado que no existe en el catalogo lo contesta el CODIGO con el
+    # not_found honesto + opciones reales, nunca un turno hueco ni una
+    # politica inventada. La categoria de las opciones sale del mensaje o,
+    # si no nombro ninguna, del ultimo producto visto en la charla.
+    if not (respuesta_curada_servida or _sellado_pedido or _tools_precalc
+            or _cat_no_vendida_servida):
+        try:
+            from app.core.guia_compra import modelo_puntual
+            _mnf = modelo_puntual(raw_message, tienda_id)
+            if _mnf:
+                _frase = _mnf["frase"]
+                _ex, _cer = _mnf["exactos"], _mnf["cercanos"]
+                _cat_op = _mnf["categoria"]
+                _partes_mnf = []
+                if _ex:
+                    _partes_mnf = [
+                        "¡Sí! De eso tengo en catálogo, con precio y stock "
+                        "reales:",
+                        "\n".join("- " + _linea_producto(p) for p in _ex),
+                        "¿Te paso el total o querés la ficha completa?"]
+                elif _cer:
+                    _partes_mnf = [
+                        f"El {_frase.title()} exacto no lo tengo en "
+                        "catálogo, te lo digo derecho. Lo más parecido "
+                        "real que tengo:",
+                        "\n".join("- " + _linea_producto(p) for p in _cer),
+                        "¿Alguna te sirve? Te paso la ficha y el total al "
+                        "instante."]
+                else:
+                    if not _cat_op:
+                        _vistos_mnf = estado.get("productos_vistos") or []
+                        if _vistos_mnf:
+                            _cat_op = (_vistos_mnf[-1] or {}).get("categoria")
+                    _partes_mnf = [
+                        f"Te soy honesto: el modelo {_frase.title()} no lo "
+                        "tenemos en catálogo, así que no te lo puedo "
+                        "confirmar ni vender."]
+                    if _cat_op:
+                        from app.core.guia_pedido import opciones_por_categoria
+                        _ops = opciones_por_categoria(str(_cat_op),
+                                                      tienda_id, k=3)
+                        if _ops:
+                            _partes_mnf.append(
+                                f"Lo que sí tengo en {_cat_op}, con precio "
+                                "y stock reales:\n"
+                                + "\n".join("- " + _linea_producto(p)
+                                            for p in _ops))
+                    _partes_mnf.append(
+                        "¿Alguna de estas te sirve? Te paso la ficha y el "
+                        "total al instante.")
+                respuesta = "\n\n".join(_partes_mnf)
+                _cat_no_vendida_servida = True
+                log.info("interprete_libre_modelo_puntual",
+                         trace_id=trace_id, modelo=_frase,
+                         exactos=len(_ex), cercanos=len(_cer),
+                         categoria=_cat_op)
+        except Exception as e:
+            log.warning("interprete_libre_modelo_nf_error",
+                        trace_id=trace_id, error=str(e)[:120])
+
     # GENERADOR DE FRAGMENTOS primario (atadura por contrato tipado, 16-jul):
     # el modelo NO compone texto libre; devuelve una lista de FRAGMENTOS atados
     # por enum (producto, calculo, presupuesto, ficha, faq, envio, criterio,

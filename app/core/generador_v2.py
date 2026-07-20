@@ -478,6 +478,24 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
 _RE_DIGITO = re.compile(r"\d")
 
 
+def _texto_ficha_limpio(texto, tope=220):
+    """Descripcion apta cliente: sin cortes a mitad de palabra ('Uso rec',
+    caso real 19-jul) y sin la duplicacion que a veces trae el CSV
+    ('Core i5..., Core i5...'). El corte cierra en oracion completa."""
+    t = str(texto or "").strip()
+    if not t:
+        return ""
+    t = re.sub(r"([^,.\n]{8,}?)\s*[,.]\s*\1(?=[,.\s]|$)", r"\1", t)
+    if len(t) <= tope:
+        return t
+    corte = t[:tope]
+    p = corte.rfind(". ")
+    if p >= 40:
+        return corte[:p + 1]
+    p = corte.rfind(" ")
+    return (corte[:p] if p > 0 else corte).rstrip(",;: ") + "…"
+
+
 def _campo_ficha(prod, campo):
     if campo == "procedencia":
         return str(prod.get("origen") or "").strip()
@@ -488,8 +506,45 @@ def _campo_ficha(prod, campo):
                       prod.get("descripcion") or "")
         return ("Material " + m.group(1).strip()) if m else ""
     if campo == "descripcion":
-        return str(prod.get("descripcion") or "").strip()[:200]
+        return _texto_ficha_limpio(prod.get("descripcion"))
     return ""
+
+
+# Specs que los clientes preguntan y que la ficha puede no traer. Regex sobre
+# texto normalizado (minusculas, sin acentos). Si la pregunta esta en el
+# mensaje y el dato NO figura en la ficha del producto, el CODIGO estampa el
+# honesto: nunca mas un volcado de ficha que no contesta (guion 39, 19-jul).
+_SPECS_PREGUNTABLES = (
+    (re.compile(r"\bhz\b|hercios|refresco|refresh"), "los hercios de la pantalla"),
+    (re.compile(r"thunderbolt"), "el puerto Thunderbolt"),
+    (re.compile(r"\bram\b[^.]{0,40}(ampli|soldad|expand|slot)"
+                r"|(ampli|soldad|expand|slot)[^.]{0,40}\bram\b"),
+     "si la RAM se puede ampliar"),
+    (re.compile(r"\bpuertos?\b|\busb\b|\bhdmi\b|display\s?port"),
+     "los puertos exactos"),
+    (re.compile(r"bateria|autonomia"), "la autonomía de batería"),
+    (re.compile(r"retroilumin"), "la retroiluminación"),
+)
+
+
+def _honesto_specs_faltantes(mensaje, prod):
+    """La frase honesta cuando el cliente pregunto una spec que la ficha del
+    producto NO trae. '' si no pregunto specs o si el dato esta en la ficha
+    (en ese caso el fragmento lo muestra)."""
+    m = _norm(mensaje or "")
+    if not m or not isinstance(prod, dict):
+        return ""
+    base = _norm(" ".join(str(prod.get(c) or "") for c in
+                          ("nombre", "descripcion", "garantia_detalle",
+                           "origen", "modelo")))
+    faltan = [nombre for rx, nombre in _SPECS_PREGUNTABLES
+              if rx.search(m) and not rx.search(base)]
+    if not faltan:
+        return ""
+    lista = " ni ".join(faltan[:3])
+    return (f"Sobre {lista}: la ficha no lo especifica y prefiero no "
+            "inventarte el dato. Si lo necesitás, lo consulto con el equipo "
+            "y te lo confirmo.")
 
 
 def _poda_prosa(texto, nombres_universo=None):
@@ -709,6 +764,14 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                         linea.append("  " + v)
                 if len(linea) > 1:
                     partes.append("\n".join(linea))
+                # La ficha CONTESTA: si la spec preguntada no figura en la
+                # ficha, sale el honesto estampado por el codigo, no el
+                # volcado mudo (caso real guion 39: Hz y Thunderbolt).
+                _hon = _honesto_specs_faltantes(mensaje, p)
+                if _hon:
+                    partes.append(_hon)
+                    log.info("generador_v2_ficha_spec_honesta",
+                             trace_id=trace_id)
         elif t == "faq" and f.get("tema"):
             data = faq.get(f["tema"]) or {}
             txt = str(data.get("respuesta_curada") or data.get("respuesta") or "").strip()

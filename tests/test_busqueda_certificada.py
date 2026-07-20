@@ -72,3 +72,49 @@ def test_categoria_real_no_dispara_not_found(firestore_doble):
     texto, _ = componer("tenes auriculares?", interp, {}, "verifika_prod")
     assert "no trabajamos" not in texto
     assert "De auriculares tengo" in texto
+
+
+# ── CERTIFICADOR DE MODELO PUNTUAL (19-jul, guiones 39/40) ───────────────────
+
+def _mp(msg):
+    from app.core.guia_compra import modelo_puntual
+    from app.core.tools_context import set_current_tienda
+    set_current_tienda("verifika_prod")
+    return modelo_puntual(msg, "verifika_prod")
+
+
+def test_marca_ajena_ofrece_lo_mas_parecido_real(firestore_doble):
+    """'Asus ROG Strix G15': no hay Asus, pero existe la Dell G15 ->
+    cercanos con la Dell, exactos vacio (la politica inventada muere aca)."""
+    r = _mp("Prefiero Asus. ¿Tienen en stock el modelo ROG Strix G15?")
+    assert r is not None and r["exactos"] == []
+    assert any("G15" in p["nombre"] for p in r["cercanos"])
+
+
+def test_variante_real_se_confirma_con_el_catalogo(firestore_doble):
+    """'monitor Samsung Odyssey G5 de 27': existe el Odyssey G5 32 ->
+    exactos con el real (el turno hueco muere aca)."""
+    r = _mp("Hola, ¿tienen disponibilidad del monitor Samsung Odyssey G5 "
+            "de 27 pulgadas?")
+    assert r is not None
+    assert any("Odyssey G5" in p["nombre"] for p in r["exactos"])
+
+
+def test_decision_sobre_modelo_real_va_al_flujo_normal(firestore_doble):
+    """'quiero la notebook hp 245 g9' es un pedido, no una duda: None."""
+    assert _mp("quiero la notebook hp 245 g9") is None
+
+
+def test_medidas_y_unidades_no_son_modelo(firestore_doble):
+    """'algo en 4K' no dispara el certificador."""
+    assert _mp("busco una notebook para edición de video pesado, "
+               "algo en 4K") is None
+
+
+def test_modelo_inexistente_sin_familia_da_categoria(firestore_doble):
+    """Modelo sin ningun pariente en catalogo -> exactos y cercanos vacios,
+    la categoria nombrada viaja para ofrecer opciones."""
+    r = _mp("¿tienen el teclado Ducky One3 SF? busco un teclado")
+    assert r is not None
+    assert r["exactos"] == [] and r["cercanos"] == []
+    assert r["categoria"] and r["categoria"].lower().startswith("teclado")

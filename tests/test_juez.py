@@ -93,3 +93,34 @@ def test_juez_charla_finales_variados_no_acusa(firestore_doble):
     charla = ["Hola. ¿Qué buscás?", "Tengo estos. ¿Cuál te gusta?",
               "Sale $8.500. ¿Lo sumo?", "Listo. ¿Algo más?"]
     assert juzgar_charla(charla) == []
+
+
+def test_juez_ficha_mutilada_acusa(firestore_doble):
+    """Segmento duplicado consecutivo = volcado roto (guion 39, 19-jul)."""
+    r = ("Notebook HP 245 G9: Core i5 16GB 512GB SSD, Core i5 16GB 512GB "
+         "SSD. peso 1500g.")
+    assert any("duplicado" in p for p in juzgar(r))
+
+
+def test_juez_ficha_sana_no_acusa(firestore_doble):
+    r = "Notebook HP 245 G9: Core i5 16GB 512GB SSD. peso 1500g. 12 meses."
+    assert not any("duplicado" in p for p in juzgar(r))
+
+
+def test_juez_anuncio_sin_contenido_acusa(firestore_doble):
+    """El turno hueco real del guion 40: promete confirmar y no hay nada."""
+    r = ("¡Hola! Soy el asistente automático de Verifika.\n\n"
+         "¿Querés que avancemos con alguno? Te armo el total al instante.\n\n"
+         "La disponibilidad te la confirmo al instante contra el catalogo real.")
+    assert any("anuncio sin contenido" in p for p in juzgar(r))
+
+
+def test_juez_anuncio_con_dato_no_acusa(firestore_doble):
+    r = "Te cuento: el envío a cordoba sale $7.500 y llega en 4 a 7 días."
+    assert not any("anuncio sin contenido" in p for p in juzgar(r))
+
+
+def test_juez_anuncio_con_no_honesto_no_acusa(firestore_doble):
+    r = ("Te cuento que ese modelo no lo tenemos en catálogo, "
+         "así que no te lo puedo confirmar.")
+    assert not any("anuncio sin contenido" in p for p in juzgar(r))

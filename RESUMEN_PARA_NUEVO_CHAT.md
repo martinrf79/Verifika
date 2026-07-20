@@ -4,6 +4,41 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 19-jul-2026 (3ª tanda) — LA PREGUNTA PUNTUAL POR FIN TIENE CAMINO:
+CERTIFICADOR DE MODELO + FICHA QUE CONTESTA + 2 INVARIANTES DEL JUEZ. ====**
+
+Consigna de Martín: probar de punta a punta con Gemini gratis hasta cazar el
+próximo error, arreglar de fondo, nada de parches. La corrida de los guiones
+39 y 40 dio JUEZ LIMPIO con respuestas ROTAS (evidencia en corridas/): volcado
+de ficha que no contesta Hz ni Thunderbolt, descripción cortada a mitad de
+palabra ("Uso rec") y duplicada, turno hueco ante el monitor Odyssey G5, y
+política inventada para decir que no hay Asus. Raíz única: la pregunta PUNTUAL
+por modelo o spec no tenía camino determinista. Lo construido, con OK previo:
+
+1. **CERTIFICADOR DE MODELO PUNTUAL** (`guia_compra.modelo_puntual`, cableado
+   en interprete_libre junto al de categoría): la identidad del modelo
+   preguntado la decide el CÓDIGO con tres veredictos: existe la variante
+   (pregunta por el Odyssey G5 de 27 → se confirma el G5 de 32 REAL del
+   catálogo), existe el pariente (pregunta la Asus ROG Strix G15 → "esa exacta
+   no; lo más parecido real es la Dell G15"), o no existe nada (not_found
+   honesto + opciones de la categoría). Con verbo de decisión ("quiero") no
+   interviene: eso es pedido, lo lleva el flujo normal. Muere el turno hueco y
+   la política inventada; el hallazgo clave fue que el catálogo SÍ tenía la
+   Dell G15 y el Odyssey G5 32 y el bot ni los ofrecía.
+2. **FICHA QUE CONTESTA** (`generador_v2`): descripción sin cortes a mitad de
+   palabra (cierra en oración) y sin la duplicación que trae el CSV; y si la
+   spec preguntada (Hz, Thunderbolt, RAM ampliable, puertos, batería) NO está
+   en la ficha, el CÓDIGO estampa el honesto "la ficha no lo especifica".
+3. **JUEZ, invariantes 12 y 13**: bloque duplicado consecutivo (volcado roto)
+   y anuncio sin contenido (respuesta corta que promete contar/confirmar sin
+   dato, opción ni no honesto — el hueco del 40 y del 45 ya no pasa invisible).
+4. **Dato pendiente del catálogo (para Martín):** las descripciones del CSV
+   traen specs duplicadas de fábrica ("Core i5..., Core i5..."); el render ya
+   las depura al mostrar, pero limpiar la fuente suma. **599 tests offline
+   verdes.** Deploy: junto con la tanda 2, con OK de Martín.
+
+---
+
 **==== 19-jul-2026 (2ª tanda) — LA CHARLA REAL DE LOS TRES DESTINOS: CADENA
 ENTERA ARREGLADA DE FONDO (grupos_envio, pendiente desde el 10-jul). ====**
 

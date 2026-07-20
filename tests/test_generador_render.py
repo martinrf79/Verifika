@@ -70,3 +70,48 @@ def test_cierres_suaves_sin_digitos_ni_duplicados():
     assert len(set(_CIERRES_SUAVES)) == len(_CIERRES_SUAVES)
     for c in _CIERRES_SUAVES:
         assert not re.search(r"\d", c)
+
+
+# ── fragmento ficha que CONTESTA (guion 39, 19-jul) ──────────────────────────
+
+def test_descripcion_no_se_corta_a_mitad_de_palabra():
+    """El corte cierra en oración completa: nunca más 'Uso rec'."""
+    from app.core.generador_v2 import _texto_ficha_limpio
+    desc = ("Notebook HP 245 G9 Core i5 16GB 512GB SSD, color Gris. "
+            "peso 1500g. dimensiones 39.1x25.1x1.9 cm. Carcasa de Aluminio. "
+            "Garantia oficial 12 meses. Uso recomendado: Trabajo y estudio.")
+    out = _texto_ficha_limpio(desc, tope=200)
+    assert not out.endswith("rec")
+    assert out.endswith(".") or out.endswith("…")
+
+
+def test_descripcion_duplicada_del_csv_se_depura():
+    from app.core.generador_v2 import _texto_ficha_limpio
+    out = _texto_ficha_limpio(
+        "Core i5 16GB 512GB SSD, Core i5 16GB 512GB SSD. peso 1500g.")
+    assert out.count("Core i5 16GB 512GB SSD") == 1
+
+
+def test_spec_preguntada_ausente_sale_el_honesto():
+    """Hz y Thunderbolt preguntados, la ficha no los trae -> honesto."""
+    from app.core.generador_v2 import _honesto_specs_faltantes
+    prod = {"nombre": "Notebook HP 245 G9",
+            "descripcion": "Core i5 16GB 512GB SSD. peso 1500g.",
+            "garantia_detalle": "12 meses", "origen": "China"}
+    hon = _honesto_specs_faltantes(
+        "¿Y la pantalla de cuántos Hz es? ¿Viene con puerto Thunderbolt?",
+        prod)
+    assert "no lo especifica" in hon
+    assert "hercios" in hon and "Thunderbolt" in hon
+
+
+def test_spec_presente_en_ficha_no_dispara_honesto():
+    from app.core.generador_v2 import _honesto_specs_faltantes
+    prod = {"nombre": "Monitor Samsung", "descripcion": "Pantalla de 75 Hz."}
+    assert _honesto_specs_faltantes("¿de cuántos Hz es?", prod) == ""
+
+
+def test_sin_pregunta_de_spec_no_hay_honesto():
+    from app.core.generador_v2 import _honesto_specs_faltantes
+    prod = {"nombre": "Mouse Genius", "descripcion": "Mouse USB."}
+    assert _honesto_specs_faltantes("¿cuánto sale el mouse?", prod) == ""
