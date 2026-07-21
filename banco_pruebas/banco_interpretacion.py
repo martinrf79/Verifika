@@ -17,6 +17,7 @@ Sale con codigo != 0 si el puntaje queda abajo del piso (0.8). Tambien lo corre
 tests/test_vivo_interpretacion.py (marcado vivo).
 """
 import asyncio
+import os
 import sys
 from pathlib import Path
 
@@ -238,6 +239,34 @@ CASOS = [
 ]
 
 
+# Ritmo entre llamadas para no pasar el limite por MINUTO de la capa gratis de
+# Gemini (429 quota). No es una falla de interpretacion: es la API cortando por
+# rate. Configurable por si la key cambia de plan. Solo del banco, no toca prod.
+_PACE_SEG = float(os.getenv("BANCO_PACE_SEG", "5"))
+_REINTENTOS_429 = 3
+
+
+def _es_429(interp: dict) -> bool:
+    return "429" in str((interp or {}).get("error") or "")
+
+
+async def _interpretar_con_ritmo(interpretar_mensaje, msg, hist, tid, estado):
+    """Llama al interprete respetando el rate de la free: espera fija entre
+    llamadas y, si igual cae un 429, reintenta con backoff. Asi el numero del
+    banco mide COMPRENSION, no el limite de la API."""
+    espera = _PACE_SEG
+    for intento in range(_REINTENTOS_429 + 1):
+        interp = await interpretar_mensaje(
+            msg, hist, tid, estado_anterior=estado, productos_vistos=_VISTOS)
+        if not _es_429(interp):
+            return interp
+        if intento < _REINTENTOS_429:
+            espera *= 2
+            print(f"    (429 rate, backoff {espera:.0f}s...)")
+            await asyncio.sleep(espera)
+    return interp
+
+
 async def correr(verbose: bool = True) -> float:
     install()
     from app.core.interpretador import interpretar_mensaje
@@ -245,11 +274,11 @@ async def correr(verbose: bool = True) -> float:
     ok_total = 0
     fallas = []
     for idx, (desc, hist, msg, checks) in enumerate(CASOS, 1):
-        interp = await interpretar_mensaje(
-            msg, hist, f"interp{idx:02d}",
-            estado_anterior="esperando_confirmacion" if hist == _HIST_CIERRE
-            else "explorando",
-            productos_vistos=_VISTOS)
+        if idx > 1:
+            await asyncio.sleep(_PACE_SEG)
+        interp = await _interpretar_con_ritmo(
+            interpretar_mensaje, msg, hist, f"interp{idx:02d}",
+            "esperando_confirmacion" if hist == _HIST_CIERRE else "explorando")
         fallos_caso = [n for n, chk in checks if not chk(interp)]
         if fallos_caso:
             fallas.append((idx, desc, fallos_caso, {
