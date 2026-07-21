@@ -180,13 +180,15 @@ CASOS = [
       ("resuelve M170", _producto_contiene("m170"))]),
 
     # ── Tanda 2 (8-jul): enredados, referencias cruzadas, regionalismos ─────
-    ("mensaje largo enredado con pedido adentro",
+    ("mensaje largo enredado con consulta multiple adentro",
      _HIST_OFERTA,
      "che buenas, mira te cuento, ando necesitando para el negocio de mi "
      "cuñado unas cositas, el quiere si o si algo logitech porque dice que lo "
      "demas no le sirve, asi que pasame precio del mouse logitech ese que "
      "tenes, y decime si el genius anda bien porque capaz lo convenzo",
-     [("resuelve el logitech", _producto_contiene("m170")),
+     # Consulta MULTIPLE en medio del ruido: logitech para precio y genius
+     # para opinion. Van a productos_consultados, no a producto_resuelto.
+     [("consulta logitech y genius", _consultados_tiene("m170", "genius")),
       ("no es compra", _no_es("intencion", "decision_compra"))]),
 
     ("referencia ordinal a la lista del bot: 'el segundo'",

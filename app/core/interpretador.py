@@ -226,6 +226,7 @@ Trabajás por PRINCIPIOS, no por recetas:
 - El cliente dice lo mismo de mil formas. Normalizá al campo que corresponde, no matchees palabras sueltas.
 - Ante DUDA REAL de cuál de dos productos quiso decir, no elijas ni promedies: bajá la confianza y poné los candidatos. Preguntar es mejor que adivinar.
 - Si el cliente pregunta por VARIOS productos a la vez, eso NO es duda: es una consulta múltiple. Listá cada producto con lo que pide de él.
+- El TONO manda sobre las palabras. Un "sí", "claro", "seguro", "obvio", "dale" IRÓNICO o sarcástico, o una promesa imposible tipo "seguro que mañana lo tengo gratis", NO es una decisión ni una afirmación real: es lo contrario.
 
 CONTEXTO DE LA CHARLA (turnos recientes + memoria de lo hablado antes):
 {contexto_conversacional}
@@ -280,6 +281,7 @@ EJEMPLOS de lo difícil, refuerzo del criterio, no lista cerrada.
 "no el negro, el blanco": producto_resuelto el blanco, no es compra.
 "dale, pero antes la garantía": NO es decision_compra, hay condición.
 "2 del DX-110... no, mejor 3": pedido final 3, la corrección manda.
+"jaja sí, seguro que mañana lo tengo gratis": ironía, NO es compra aunque diga sí.
 "precio del Logitech y decime si el Genius anda bien": productos_consultados con los dos, producto_resuelto null.
 "el segundo": se resuelve por el orden de lo mostrado.
 "ponele que sí": sí tibio, no rechazo.
