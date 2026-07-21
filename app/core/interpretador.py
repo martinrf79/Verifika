@@ -219,124 +219,72 @@ def construir_prompt_interpretador(mensaje: str,
     ]) or "Sin productos mostrados aun"
 
 
-    prompt = f"""Sos un interpretador de mensajes de clientes en un bot de ventas argentino.
-Tu trabajo es entender que quiere el cliente, considerando toda la conversacion.
-Devolves SOLO un JSON valido, sin texto extra.
+    prompt = f"""Sos el INTÉRPRETE de un bot de ventas argentino. Tu única tarea es ENTENDER qué quiere el cliente en el contexto de la charla y devolver datos estructurados. No le escribís al cliente y no inventás nada: abajo tuyo hay herramientas que traen el dato real del catálogo y una verificación que controla productos y números. Por eso podés interpretar con criterio y confianza, ese sistema te respalda.
 
-CONTEXTO DE LA CONVERSACION (siete turnos recientes):
+Trabajás por PRINCIPIOS, no por recetas:
+- El eje es el ÚLTIMO mensaje del cliente, leído contra lo que el bot dijo en su turno anterior. El historial es contexto, no protagonista. Leé lo que pasa AHORA, no predigas a futuro.
+- El cliente dice lo mismo de mil formas. Normalizá al campo que corresponde, no matchees palabras sueltas.
+- Ante DUDA REAL de cuál de dos productos quiso decir, no elijas ni promedies: bajá la confianza y poné los candidatos. Preguntar es mejor que adivinar.
+- Si el cliente pregunta por VARIOS productos a la vez, eso NO es duda: es una consulta múltiple. Listá cada producto con lo que pide de él.
+
+CONTEXTO DE LA CHARLA (turnos recientes + memoria de lo hablado antes):
 {contexto_conversacional}
 
-PRODUCTOS QUE EL BOT YA MOSTRO AL CLIENTE:
+PRODUCTOS QUE EL BOT YA MOSTRÓ AL CLIENTE:
 {productos_str}
 
 MENSAJE ACTUAL DEL CLIENTE:
 {mensaje}
 
-DEVOLVE ESTE JSON:
+Devolvé SOLO este JSON, sin texto alrededor. Antes de responder, validá que cumpla el schema.
+
 {{
-  "intencion": "saludo|exploracion|pregunta_especifica|decision_compra|aporta_dato|otra",
-  "producto_resuelto": "nombre exacto del producto mostrado al que se refiere, o null",
-  "candidatos": ["opcion1", "opcion2"],
-  "confianza": 0.0 a 1.0,
-  "datos_pedido": null,
-  "respondiendo_a": "que pregunto el bot en su ultimo turno y a que responde el cliente, o null si no responde a una pregunta previa",
+  "respondiendo_a": "si el bot preguntó o pidió algo en su último turno y el cliente responde a eso, describilo corto; si no, null",
+  "productos_consultados": [{{"producto": "nombre EXACTO de un producto mostrado", "consulta": "precio|ficha|stock|opinion|comparacion|envio|otra"}}],
+  "producto_resuelto": "nombre EXACTO del ÚNICO producto foco de una decisión o pedido, o null",
+  "candidatos": ["opción A", "opción B"],
+  "ofrecer_opciones": "null, o lista de dos opciones [A, B] cuando hay dos caminos y no se puede elegir uno con certeza",
+  "intencion": "saludo|exploracion|pregunta_especifica|aporta_dato|decision_compra|otra",
   "estado_conversacion": "saludo|explorando|esperando_confirmacion|esperando_datos|derivar_humano|posventa",
-  "ofrecer_opciones": "null si no hay duda, o lista de dos opciones [opcion A, opcion B] cuando hay dos caminos posibles y no se puede determinar uno con certeza",
-  "criterio": "mas_barato si el cliente expresa que quiere lo mas barato / mas economico / lo mas conveniente en CUALQUIER forma, abreviatura o modismo (ej lo mas barato, las mas baratas, lo mas eco, lo mas economico, mandame lo mas conveniente, lo de menor precio). intermedio si pide algo de precio medio o rechaza explicitamente lo mas barato (ej algo intermedio, gama media, ni el mas barato ni el mas caro, economico pero no lo mas barato que haya). null si no expresa criterio",
-  "pedido": "lista de {{\\"producto\\": nombre EXACTO de un producto mostrado, \\"cantidad\\": numero}} SOLO cuando el cliente define un pedido concreto: que productos de los mostrados quiere y cuantos de cada uno (ej tres del DX-110 y dos teclados K120). Si no define productos y cantidades concretos, lista vacia []",
-  "tope_presupuesto": "numero entero en pesos SOLO si el cliente dice una cifra maxima que puede o quiere gastar (ej tengo 100 lucas, no mas de 50 mil, hasta 80000). Si no da cifra, null",
-  "exclusiones": "lista de {{\\"tipo\\": \\"origen\\" o \\"marca\\", \\"valor\\": texto}} cuando el cliente descarta algo por origen o por marca (ej sin partes chinas, que no sea chino, nada de Redragon, menos esa marca). Si no excluye nada, lista vacia []",
-  "uso_previsto": "para que va a usar el producto, en una o dos palabras (oficina, gaming, estudio, diseño, regalo, streaming, trabajo), o null si no lo dice"
+  "criterio": "mas_barato|intermedio|null",
+  "pedido": [{{"producto": "nombre EXACTO de un producto mostrado", "cantidad": número, "destino": "localidad tal cual la dijo, o null"}}],
+  "tope_presupuesto": número entero en pesos o null,
+  "exclusiones": [{{"tipo": "origen|marca", "valor": "texto"}}],
+  "uso_previsto": "una o dos palabras o null",
+  "confianza": 0.0 a 1.0
 }}
 
-GUIA DE INTENCIONES, usalas con criterio, no son recetas rigidas.
+CÓMO LLENARLO, por principios.
 
-saludo, el cliente saluda o inicia conversacion.
+productos_consultados. Todos los productos MOSTRADOS por los que el cliente pregunta en este mensaje, cada uno con qué quiere saber. Uno solo si pregunta por uno; dos o más si nombra varios. Ejemplo: "precio del Logitech y decime si el Genius anda bien" son dos ítems, Logitech consulta precio y Genius consulta opinion. Vacía si no pregunta por ningún producto puntual.
 
-exploracion, el cliente quiere ver que hay disponible, sin algo concreto en mente.
+producto_resuelto. El ÚNICO producto foco de una decisión o pedido, para que total y cierre operen sobre uno certificado. Si pregunta por varios sin decidir, va null y los productos van en productos_consultados. Referencias comparativas u ordinales, el más barato, el otro, el segundo, se resuelven comparando precio y orden de lo mostrado, no adivinando.
 
-pregunta_especifica, el cliente pregunta sobre algo concreto. Producto, precio, envio, pago, garantia, stock, color, medidas. Tambien expresiones de interes tipo me gusta, me sirve, me interesa. Son evaluacion, no decision.
+candidatos. SOLO para DUDA real, no se sabe a cuál de dos se refiere. No lo uses para una consulta múltiple legítima, eso va en productos_consultados.
 
-decision_compra, el cliente expresa decision INEQUIVOCA y AFIRMATIVA de comprar algo identificable. Frases tipo dale lo llevo, lo quiero, cerramos, pasame el link. Tambien un si o un dale como respuesta directa a una propuesta de cierre del bot. PROHIBIDO marcar decision_compra si hay negacion, postergacion o duda en el mensaje, aunque aparezca la palabra quiero o comprar.
+ofrecer_opciones. Solo cuando hay dos caminos posibles y no se puede elegir uno con certeza, poné los dos como A y B con su detalle; si el caso es claro, null. Suele ir con estado esperando_confirmacion.
 
-aporta_dato, el cliente esta dando un dato concreto que el bot necesita para avanzar. Direccion, codigo postal, telefono, mail, eleccion de pago entre opciones ya ofrecidas, fecha o franja horaria, nombre. Tambien aclaraciones de cantidad o eleccion entre productos ya propuestos. Si el ultimo turno del bot pidio este dato explicitamente, es muy probable que la intencion sea esta.
+intencion. saludo, inicia o saluda. exploracion, quiere ver qué hay sin algo concreto. pregunta_especifica, pregunta puntual, producto, precio, envío, pago, garantía, stock, o interés tipo me gusta, me sirve, son evaluación, no decisión. aporta_dato, da un dato para avanzar, dirección, CP, teléfono, mail, pago, cantidad; si el bot lo pidió en su turno anterior, casi seguro es esta. decision_compra, decisión INEQUÍVOCA y afirmativa, o un sí o dale a una propuesta de cierre; PROHIBIDO si hay negación, postergación o duda, aunque diga comprar o quiero. otra, rechazos o fuera de tema.
 
-otra, no encaja en ninguna anterior. Rechazos, postergaciones, comentarios fuera de tema.
+estado_conversacion. saludo, recién llega. explorando, pregunta o compara sin decidirse. esperando_confirmacion, el bot ofreció algo concreto y el cliente no dijo sí ni no. esperando_datos, ya confirmó avanzar y faltan sus datos. derivar_humano, dio todos los datos o pidió una persona. posventa, algo posterior a la compra o consulta suelta. Una charla en curso NO vuelve a saludo.
 
-COMO USAR EL CAMPO respondiendo_a.
+criterio. mas_barato cuando pide lo más económico en cualquier forma, lo más barato, lo más eco, lo más conveniente, lo de menor precio. intermedio cuando pide precio medio o RECHAZA lo más barato, algo intermedio, gama media, ni el más barato ni el más caro. null si no hay criterio. Cubrí modismos argentinos, no solo la palabra exacta.
 
-Mira el ultimo turno del bot en el contexto. Si el bot hizo una pregunta o pidio algo, y el mensaje del cliente parece responder a eso, completa el campo describiendo brevemente que pregunto el bot y que responde el cliente. Ejemplo, el bot pregunto la direccion de envio, el cliente responde con calle altura y codigo postal. Si el mensaje del cliente no responde a nada previo, deja el campo en null.
+pedido. SOLO cuando arma un pedido concreto, productos mostrados con cantidad, nombre exacto del mostrado, sin inventar cantidades. Si reparte entre destinos, cada renglón con su destino y las cantidades desglosadas; con un solo destino o sin decirlo, destino null. Un destino tiene que aparecer en el mensaje o en la memoria de la charla.
 
-GUIA DE ESTADO DE CONVERSACION, lo mas importante.
-Determina el estado ACTUAL de la charla leyendo el ULTIMO mensaje del cliente en relacion a lo que el bot dijo en su turno anterior. No predigas a futuro. Lee lo que pasa AHORA. El ultimo mensaje del cliente es el eje de la decision, el historial es solo contexto.
-saludo, el cliente recien llega o saluda, todavia no pidio ningun producto ni precio.
-explorando, el cliente pregunta productos, precios o compara opciones, sin haberse decidido por uno.
-esperando_confirmacion, el bot ofrecio algo concreto, un producto o un total, y el cliente todavia no dijo si o no.
-esperando_datos, el cliente ya confirmo que quiere avanzar y falta que de direccion, forma de pago o datos de contacto.
-derivar_humano, el cliente dio todos los datos necesarios o pidio hablar con una persona.
-posventa, el cliente pregunta por algo posterior a la compra, garantia, seguimiento de pedido o consulta suelta fuera del flujo.
+preferencias. tope_presupuesto solo si dice una CIFRA. exclusiones si descarta por origen o marca, sin partes chinas, nada de Redragon. uso_previsto si dice para qué lo quiere. Llená lo que el mensaje diga, el resto null o vacío.
 
-GUIA DE CAMINO A O B, campo ofrecer_opciones.
-Cuando haya dos opciones o dos valores posibles y NO puedas determinar con certeza cual corresponde, no elijas uno ni promedies. Pobla ofrecer_opciones con las dos como opcion A y opcion B, cada una con su detalle o valor. Aplica a productos cuando hay duda entre dos, a envios con rango de costo, a precios o formas de pago con mas de una alternativa. Si el caso es claro y unico, deja ofrecer_opciones en null. Cuando pobles este campo, el estado suele ser esperando_confirmacion porque el cliente debera elegir.
+confianza. alta 0.85 a 1.0 lectura inequívoca; media 0.6 a 0.85 parcial; baja menor a 0.6 ambigüedad real que pide preguntar. Si dudás entre dos, bajá la confianza y poné candidatos.
 
-PRODUCTO RESUELTO.
-Solo si hay UN producto claro entre los mostrados al que el cliente se refiere.
-Si hay duda entre dos o mas, producto_resuelto null y candidatos con esos productos.
-Si no hay producto en contexto, producto_resuelto null.
-Referencias COMPARATIVAS: "el mas barato", "el mas caro", "el otro", "el
-primero" se resuelven comparando los PRECIOS y el orden de los productos
-mostrados, no adivinando. "El barato no, el otro" apunta al que NO es el mas
-barato. Si aun comparando queda empate o duda real, candidatos con los
-posibles y confianza baja: preguntar es mejor que elegir mal.
+EJEMPLOS de lo difícil, refuerzo del criterio, no lista cerrada.
+"no el negro, el blanco": producto_resuelto el blanco, no es compra.
+"dale, pero antes la garantía": NO es decision_compra, hay condición.
+"2 del DX-110... no, mejor 3": pedido final 3, la corrección manda.
+"precio del Logitech y decime si el Genius anda bien": productos_consultados con los dos, producto_resuelto null.
+"el segundo": se resuelve por el orden de lo mostrado.
+"ponele que sí": sí tibio, no rechazo.
 
-CRITERIO.
-Poné "mas_barato" cuando el cliente pide lo mas economico en cualquier forma: "lo mas barato", "las mas baratas", "lo mas eco", "lo mas economico", "mandame lo mas conveniente", "lo de menor precio", "algo barato". Poné "intermedio" cuando pide precio medio o RECHAZA lo mas barato: "algo intermedio", "gama media", "termino medio", "economico pero no lo mas barato que haya", "ni el mas barato ni el mas caro". Cubri abreviaturas y modismos argentinos, no solo la palabra exacta. Si el cliente no expresa criterio, poné null. Es independiente del pedido: puede haber criterio sin pedido cerrado y viceversa.
-
-PEDIDO.
-Completalo SOLO cuando el cliente arma un pedido concreto: nombra productos que
-estan entre los mostrados y dice cuantos quiere de cada uno. Usa el nombre EXACTO
-del producto mostrado, no el apodo del cliente. Si el cliente pide un producto que
-no esta entre los mostrados, o no da cantidades, o esta preguntando sin armar
-pedido, deja la lista vacia. No inventes cantidades: solo las que dijo el cliente.
-
-DESTINO por renglon del pedido.
-Si el cliente reparte el pedido entre varios destinos, cada renglon lleva su
-"destino" (la localidad tal cual la dijo) y las cantidades se DESGLOSAN por
-destino. Ejemplo: mostrados teclado K120, mouse M170 y auricular H390; el
-cliente dice "dame 2 teclados, 2 mouse y 2 auriculares: un teclado y un mouse
-a Carlos Paz, un auricular y un teclado a Villa Maria, y el resto a Rio
-Tercero". El pedido correcto es 6 renglones: K120 x1 destino Carlos Paz, M170
-x1 destino Carlos Paz, H390 x1 destino Villa Maria, K120 x1 destino Villa
-Maria, M170 x1 destino Rio Tercero, H390 x1 destino Rio Tercero. "El resto" =
-lo pedido menos lo ya asignado. Las cantidades por producto tienen que sumar
-lo que pidio el cliente. Con un solo destino o sin destino dicho, "destino"
-va null en todos los renglones.
-
-PREFERENCIAS DEL CLIENTE, campos tope_presupuesto, exclusiones y uso_previsto.
-El cliente expresa la MISMA preferencia de mil formas; tu trabajo es normalizarla
-al campo, no matchear palabras. Ejemplos del criterio economico (van en
-"criterio" = mas_barato, NO en tope): "quiero gastar lo menos posible", "mi
-presupuesto es muy ajustado", "la situacion economica esta dificil, dame algo
-acorde", "algo accesible", "no estoy para gastar mucho". tope_presupuesto SOLO
-cuando hay una CIFRA: "tengo 100 lucas" es 100000, "no mas de 50 mil" es 50000,
-"hasta 80" con contexto de miles es 80000. exclusiones cuando descarta origen o
-marca en cualquier forma: "sin partes chinas", "que no venga de China", "si es
-chino mejor que no", "nada de Redragon", "esa marca no me gusta" referida a una
-marca nombrada en la charla. uso_previsto cuando dice para que lo quiere: "para
-la oficina", "es para mi hijo que juega", "para editar videos". Estos campos son
-independientes entre si y de la intencion; completa los que el mensaje diga y
-deja el resto en null o vacio.
-
-CONFIANZA.
-alta 0.85 a 1.0, intencion inequivoca o referencia clara a un producto unico.
-media 0.6 a 0.85, intencion identificada pero referencia parcial.
-baja menor a 0.6, ambiguedad real que requiere preguntar al cliente.
-
-Si dudas entre dos opciones, baja la confianza y pobla candidatos en lugar de adivinar.
-
-Tene en cuenta que abajo tuyo hay un sistema de verificacion que controla numeros y productos contra catalogo y FAQ. No tengas miedo de interpretar con criterio, ese sistema te respalda. Tu prioridad es entender al cliente bien.
-
-RESPUESTA SOLO EL JSON, SIN PREAMBULO NI EXPLICACION."""
+RESPUESTA: SOLO el JSON válido, sin preámbulo ni explicación."""
 
     return prompt
 
@@ -564,56 +512,56 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
     providers el schema se ignora y queda el parseo + validacion de siempre."""
     nombres = list(dict.fromkeys(n for n in nombres_mostrados if n))
     prod_enum = ([None] + nombres) if nombres else [None]
+    consulta_enum = ["precio", "ficha", "stock", "opinion",
+                     "comparacion", "envio", "otra"]
     return {
         "type": "object",
         "additionalProperties": False,
+        # Orden pensado para la generacion de Gemini: primero los campos de
+        # interpretacion (a que responde, que productos consulta), despues las
+        # decisiones (intencion, estado), y la confianza al FINAL para que
+        # refleje lo ya resuelto, no al reves.
         "properties": {
-            "intencion": {"type": "string", "enum": sorted(INTENCIONES_VALIDAS)},
+            "respondiendo_a": {"type": ["string", "null"]},
+            # PRODUCTOS CONSULTADOS (21-jul): el cliente puede preguntar por DOS
+            # o MAS productos en el mismo mensaje, uno para precio y otro para
+            # opinion. Antes solo habia producto_resuelto (uno) o candidatos
+            # (duda), y una consulta multiple legitima caia a null (caso 17 del
+            # banco). Cada item es un producto MOSTRADO (enum) mas que pide de el.
+            "productos_consultados": {"type": "array", "items": {
+                "type": "object", "additionalProperties": False,
+                "properties": {
+                    "producto": {"type": ["string", "null"], "enum": prod_enum},
+                    "consulta": {"type": "string", "enum": consulta_enum},
+                },
+                "required": ["producto", "consulta"],
+            }},
             "producto_resuelto": {"type": ["string", "null"], "enum": prod_enum},
             "candidatos": {"type": "array", "items": {"type": "string"}},
-            "confianza": {"type": "number"},
-            "datos_pedido": {"type": ["string", "null"]},
-            "respondiendo_a": {"type": ["string", "null"]},
-            "estado_conversacion": {"type": "string", "enum": ESTADOS_VALIDOS},
             "ofrecer_opciones": {"type": ["array", "null"],
                                  "items": {"type": "string"}},
-            # CRITERIO de eleccion por precio (9-jul): segundo interprete del
-            # "lo mas barato". El regex del codigo (detectar_criterio) no cubre
-            # "eco" ni abreviaturas; el LLM si. Se cruza con el regex en
-            # concordancia_criterio: coinciden -> se arma; divergen -> se
-            # confirma. Enum acotado: solo "mas_barato" o null.
-            # "intermedio" (11-jul, caso real del banco: "economicos pero no
-            # lo mas barato que haya" armaba los MAS baratos): el rechazo del
-            # minimo es un criterio propio, no una variante de mas_barato.
+            "intencion": {"type": "string", "enum": sorted(INTENCIONES_VALIDAS)},
+            "estado_conversacion": {"type": "string", "enum": ESTADOS_VALIDOS},
+            # CRITERIO de eleccion por precio (9-jul): el LLM cubre "eco" y
+            # abreviaturas que el regex del codigo no. Enum acotado.
+            # "intermedio" (11-jul): rechazar el minimo es un criterio propio.
             "criterio": {"type": ["string", "null"],
                          "enum": ["mas_barato", "intermedio", None]},
-            # PEDIDO estructurado (8-jul): cuando el cliente define productos
-            # concretos CON cantidad, el interprete lo extrae atado al enum de
-            # lo MOSTRADO. Es la entrada de la guia determinista de pedido: el
-            # codigo llama la calculadora con estos items y sella el bloque; el
-            # solver no elige ids. Fuera de OpenAI/Gemini el campo llega libre
-            # y la validacion de abajo lo filtra igual (todo o nada).
+            # PEDIDO estructurado (8-jul): productos MOSTRADOS con cantidad,
+            # atado por enum. Alimenta la guia determinista de pedido; el solver
+            # no elige ids. destino por renglon, plano (Firestore prohibe listas
+            # anidadas, bug real 8-jul). null = destino unico o sin decir.
             "pedido": {"type": ["array", "null"], "items": {
                 "type": "object", "additionalProperties": False,
                 "properties": {
                     "producto": {"type": ["string", "null"], "enum": prod_enum},
                     "cantidad": {"type": "integer"},
-                    # DESTINO por renglon (pedido de Martin, 10-jul): pedidos
-                    # multi-envio ("un teclado y un mouse a Carlos Paz, el
-                    # resto a Rio Tercero") salen ya repartidos y el codigo
-                    # cotiza cada grupo. Renglon plano, NO grupos anidados:
-                    # Firestore prohibe listas anidadas (bug real 8-jul).
-                    # null = destino unico o sin decir.
                     "destino": {"type": ["string", "null"]},
                 },
                 "required": ["producto", "cantidad", "destino"],
             }},
-            # PREFERENCIAS del cliente (16-jul, idioma ensanchado): el mensaje
-            # dice de mil formas lo mismo y el LLM lo normaliza a estructura
-            # finita. tope_presupuesto solo con CIFRA dicha; exclusiones por
-            # origen o marca ("sin partes chinas", "nada de Redragon");
-            # uso_previsto en una o dos palabras. Consumidos por el generador
-            # (filtran el universo por construccion) y sticky en el estado.
+            # PREFERENCIAS (16-jul): tope solo con CIFRA; exclusiones por origen
+            # o marca; uso en una o dos palabras. Consumidas por el generador.
             "tope_presupuesto": {"type": ["integer", "null"]},
             "exclusiones": {"type": ["array", "null"], "items": {
                 "type": "object", "additionalProperties": False,
@@ -624,11 +572,13 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
                 "required": ["tipo", "valor"],
             }},
             "uso_previsto": {"type": ["string", "null"]},
+            "confianza": {"type": "number"},
         },
-        "required": ["intencion", "producto_resuelto", "candidatos", "confianza",
-                     "datos_pedido", "respondiendo_a", "estado_conversacion",
-                     "ofrecer_opciones", "criterio", "pedido",
-                     "tope_presupuesto", "exclusiones", "uso_previsto"],
+        "required": ["respondiendo_a", "productos_consultados",
+                     "producto_resuelto", "candidatos", "ofrecer_opciones",
+                     "intencion", "estado_conversacion", "criterio", "pedido",
+                     "tope_presupuesto", "exclusiones", "uso_previsto",
+                     "confianza"],
     }
 
 
@@ -765,8 +715,8 @@ async def interpretar_mensaje(mensaje: str,
                     "intencion": "otra",
                     "producto_resuelto": None,
                     "candidatos": [],
+                    "productos_consultados": [],
                     "confianza": 0.0,
-                    "datos_pedido": None,
                     "respondiendo_a": None,
                     "error": "json_invalido",
                 }
@@ -790,8 +740,8 @@ async def interpretar_mensaje(mensaje: str,
                     "intencion": "otra",
                     "producto_resuelto": None,
                     "candidatos": [],
+                    "productos_consultados": [],
                     "confianza": 0.0,
-                    "datos_pedido": None,
                     "respondiendo_a": None,
                     "error": f"schema_invalido_{error_msg}",
                 }
@@ -801,8 +751,8 @@ async def interpretar_mensaje(mensaje: str,
             resultado["producto_resuelto"] = None
         if "candidatos" not in resultado:
             resultado["candidatos"] = []
-        if "datos_pedido" not in resultado:
-            resultado["datos_pedido"] = None
+        if not isinstance(resultado.get("productos_consultados"), list):
+            resultado["productos_consultados"] = []
         if "respondiendo_a" not in resultado:
             resultado["respondiendo_a"] = None
         if not isinstance(resultado.get("pedido"), list):
@@ -839,8 +789,8 @@ async def interpretar_mensaje(mensaje: str,
             "intencion": "otra",
             "producto_resuelto": None,
             "candidatos": [],
+            "productos_consultados": [],
             "confianza": 0.0,
-            "datos_pedido": None,
             "respondiendo_a": None,
             "tipo_confirmacion": None,
             "error": str(e)[:100],

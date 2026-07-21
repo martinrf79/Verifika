@@ -39,6 +39,24 @@ def test_strict_todos_los_campos_requeridos():
     assert set(s["required"]) == set(s["properties"])
 
 
+def test_productos_consultados_atado_a_mostrados():
+    # Consulta MULTIPLE (dos o mas productos en un mensaje): cada item es un
+    # producto mostrado (enum) mas que pide de el (consulta, enum cerrado).
+    s = _schema_interprete(["Mouse A", "Teclado B"])
+    pc = s["properties"]["productos_consultados"]["items"]
+    assert pc["properties"]["producto"]["enum"] == [None, "Mouse A", "Teclado B"]
+    assert pc["properties"]["consulta"]["enum"] == [
+        "precio", "ficha", "stock", "opinion", "comparacion", "envio", "otra"]
+    assert set(pc["required"]) == {"producto", "consulta"}
+
+
+def test_datos_pedido_ya_no_esta():
+    # Campo muerto retirado (21-jul): no lo lee ningun consumidor.
+    s = _schema_interprete(["A"])
+    assert "datos_pedido" not in s["properties"]
+    assert "datos_pedido" not in s["required"]
+
+
 def test_pedido_atado_al_enum_de_mostrados():
     # El campo pedido (guia determinista de pedido) tambien queda atado por
     # enum a lo mostrado: el interprete no puede pedir un producto no visto.

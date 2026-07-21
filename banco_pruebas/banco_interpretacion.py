@@ -87,6 +87,21 @@ def _pedido_es(*pares):
     return _chk
 
 
+def _consultados_tiene(*frags):
+    """El cliente pregunto por VARIOS productos: cada fragmento tiene que
+    aparecer en algun item de productos_consultados. Exige el largo exacto."""
+    def _chk(i):
+        pc = i.get("productos_consultados") or []
+        if len(pc) != len(frags):
+            return False
+        for frag in frags:
+            if not any(frag.lower() in str(p.get("producto") or "").lower()
+                       for p in pc):
+                return False
+        return True
+    return _chk
+
+
 # Cada caso: descripcion, history, mensaje, lista de (nombre_chequeo, funcion).
 CASOS = [
     ("negacion con eleccion: 'no el negro, el blanco'",
@@ -236,6 +251,25 @@ CASOS = [
     ("criterio explicito clasico: 'los mas baratos'",
      _HIST_OFERTA, "los mas baratos",
      [("lee criterio mas barato", _criterio_barato)]),
+
+    # ── Tanda 3 (21-jul): consulta MULTIPLE, dos o mas productos en un mensaje.
+    # Antes caia a producto_resuelto null sin registrar los productos; ahora van
+    # a productos_consultados y no es duda.
+    ("dos productos, precio de los dos",
+     _HIST_OFERTA, "cuanto sale el M170 y el DX-110 negro?",
+     [("consulta los dos", _consultados_tiene("m170", "dx-110 negro")),
+      ("no es compra", _no_es("intencion", "decision_compra"))]),
+
+    ("dos productos, uno precio y otro opinion (caso 17 limpio)",
+     _HIST_OFERTA,
+     "pasame precio del mouse logitech ese, y decime si el genius anda bien",
+     [("consulta logitech y genius", _consultados_tiene("m170", "genius"))]),
+
+    ("tres productos en la misma frase",
+     _HIST_OFERTA,
+     "precio del M170, del DX-110 negro y del DX-110 blanco por favor",
+     [("consulta los tres",
+       _consultados_tiene("m170", "dx-110 negro", "dx-110 blanco"))]),
 ]
 
 
