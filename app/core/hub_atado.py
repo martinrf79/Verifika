@@ -41,7 +41,9 @@ _RE_PRESUP_SOBRANTE = re.compile(r"\s*\[\[PRESUPUESTO\]\]\s*")
 # ("Genius KB-110X (id: TEC0019)"). El cliente no debe verlo. Limpieza del
 # estampado, no una guarda; lo ideal es que el prompt del solver no lo emita.
 _RE_ID_FILTRADO = re.compile(
-    r"[\s,(]*\b(?:id|sku|codigo)\s*[:=]?\s*[A-Z]{2,5}\d{2,}\)?",
+    r"[\s,]*\(\s*(?:(?:id|sku|codigo)\s*[:=]?\s*)?"
+    r"[A-Z]{2,5}\d{2,}(?:\s*/\s*[A-Z]{2,5}\d{2,})*\s*\)"
+    r"|[\s,]*\b(?:id|sku|codigo)\s*[:=]\s*[A-Z]{2,5}\d{2,}",
     re.IGNORECASE)
 
 
