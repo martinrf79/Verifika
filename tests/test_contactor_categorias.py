@@ -8,7 +8,7 @@ pregunta compleja multi-tema y el honesto "ninguna" sin cortar la venta.
 """
 from app.core.guia_venta_prosa import categorias_conocimiento, meta_categoria
 from app.core.interpretador import _schema_interprete, validar_schema
-from app.core.hub_atado import _guia_categorias
+from app.core.generador_v2 import universo_productos
 
 
 def test_enum_es_la_fuente_de_verdad_completa():
@@ -59,75 +59,44 @@ def test_validar_schema_ausente_queda_lista_vacia():
     assert r["categorias"] == []
 
 
-def test_hub_engancha_criterio_multi_tema():
-    # pregunta compleja con VARIAS categorias -> viajan los criterios de todas
-    b = _guia_categorias({"categorias": ["objecion_precio", "compatibilidad",
-                                         "envio_costo"]})
-    assert "objecion_precio:" in b
-    assert "compatibilidad:" in b
-    assert "envio_costo:" in b
-    assert "el dato duro sigue saliendo de las tools" in b
+# ── EL ENUM DEL SOLVER: universo_productos consume los campos ESTRUCTURADOS ──
+# del interprete (no solo el texto). Reemplaza a las guias de texto del hub: el
+# anclado ya no es prosa que viaja al solver, es el ENUM de ids que el solver
+# puede referenciar, atado por construccion. Asi el dato es imposible de inventar.
+
+def test_universo_incluye_solicitud_nueva_no_nombrada_en_el_mensaje(firestore_doble):
+    # el cliente pide una categoria que el MENSAJE no nombra (el interprete la
+    # leyo en solicitud_nueva): igual entra al enum, la categoria no se pierde.
+    u = universo_productos(
+        "necesito algo para la oficina", {}, "verifika_prod",
+        {"solicitud_nueva": [{"categoria": "teclado", "cantidad": 2,
+                              "criterio": "mas_barato"}]})
+    tecs = [p for p in u if "teclado" in (p.get("categoria", "")
+                                          + p.get("nombre", "")).lower()]
+    assert tecs, "la categoria pedida en solicitud_nueva no entro al universo"
 
 
-def test_hub_sin_categorias_no_adjunta_nada():
-    assert _guia_categorias({"categorias": []}) == ""
-    assert _guia_categorias({}) == ""
+def test_universo_incluye_producto_del_pedido(firestore_doble):
+    # el producto del pedido entra al enum por su nombre, atado al id real.
+    u = universo_productos(
+        "dale", {}, "verifika_prod",
+        {"pedido": [{"producto": "Mouse Genius DX-110 Negro", "cantidad": 1,
+                     "destino": None}]})
+    assert any(p["id"] == "MOU0023" for p in u)
 
 
-def test_hub_dedup_no_repite_criterio():
-    b = _guia_categorias({"categorias": ["garantia", "garantia"]})
-    assert b.count("garantia:") == 1
+def test_universo_incluye_producto_consultado(firestore_doble):
+    u = universo_productos(
+        "y ese sirve para oficina?", {}, "verifika_prod",
+        {"productos_consultados": [{"producto": "Mouse Genius DX-110 Negro",
+                                    "consulta": "opinion"}]})
+    assert any(p["id"] == "MOU0023" for p in u)
 
 
-# ── ANCLA DEL CONSULTADO (cierra el hueco intérprete vs solver, T3) ──────────
-from app.core.hub_atado import _guia_consultado
-
-_VISTOS = [{"id": "TEC0019", "nombre": "Teclado Genius KB-110X Blanco"},
-           {"id": "TEC0003", "nombre": "Teclado Logitech K380 Negro"}]
-
-
-def test_ancla_consultado_producto_resuelto_al_id_real():
-    b = _guia_consultado({"producto_resuelto": "Teclado Genius KB-110X Blanco"}, _VISTOS)
-    assert "[[PROD:TEC0019]]" in b
-    assert "TEC0003" not in b  # no mete el otro modelo
-
-
-def test_ancla_consultado_lista_de_consultados():
-    interp = {"productos_consultados": [
-        {"producto": "Teclado Logitech K380 Negro", "consulta": "ficha"}]}
-    b = _guia_consultado(interp, _VISTOS)
-    assert "[[PROD:TEC0003]]" in b
-
-
-def test_ancla_consultado_vacio_sin_consulta():
-    assert _guia_consultado({"producto_resuelto": None}, _VISTOS) == ""
-    assert _guia_consultado({}, _VISTOS) == ""
-
-
-def test_ancla_consultado_vacio_si_no_mapea():
-    # nombre que no está en lo visto -> no se fuerza a medias
-    assert _guia_consultado({"producto_resuelto": "Monitor que no existe"}, _VISTOS) == ""
-
-
-# ── CONTACTO DE CIERRE (continuidad: suma, no reemplaza) ─────────────────────
-from app.core.hub_atado import _es_cierre, _guia_cierre
-
-
-def test_es_cierre_por_decision_o_categoria():
-    assert _es_cierre({"intencion": "decision_compra"})
-    assert _es_cierre({"intencion": "pregunta_especifica",
-                       "categorias": ["cierre_venta"]})
-    assert _es_cierre({"categorias": ["formas_pago"]})
-    assert not _es_cierre({"intencion": "exploracion", "categorias": ["mouse"]})
-    assert not _es_cierre({})
-
-
-def test_guia_cierre_prohibe_datos_de_pago_al_modelo():
-    b = _guia_cierre({"intencion": "decision_compra"})
-    assert "CIERRE" in b
-    assert "CBU" in b and "NO escribas" in b
-    # sin cierre, no adjunta
-    assert _guia_cierre({"intencion": "exploracion"}) == ""
+def test_universo_sin_interp_no_rompe(firestore_doble):
+    # sin campos del interprete el universo sale de mostrados/carrito/mensaje.
+    u = universo_productos("tenes mouse?", {}, "verifika_prod", {})
+    assert any("mouse" in p.get("nombre", "").lower() for p in u)
 
 
 # ── CONTACTOR DEL DESTINO al CP (multidestino robusto 2/3/4) ─────────────────

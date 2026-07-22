@@ -92,6 +92,30 @@ def universo_productos(mensaje, estado, tienda_id, interp=None):
         from app.storage.firestore_client import get_all_products
         _add(_resolver_nombre_a_producto(
             interp["producto_resuelto"], get_all_products(tienda_id=tienda_id)))
+    # CONTACTOR: los campos ESTRUCTURADOS del interprete alimentan el universo,
+    # no solo el texto del mensaje. Asi la categoria pedida aun no mostrada
+    # (solicitud_nueva, atada al enum de categorias) y los productos del pedido o
+    # consultados (atados al enum de lo visto) SIEMPRE entran al enum, aunque el
+    # detector de categorias del mensaje no los pesque. Reemplaza por atadura las
+    # guias de texto que el hub le pasaba al solver viejo.
+    if isinstance(interp, dict):
+        for s in (interp.get("solicitud_nueva") or []):
+            if isinstance(s, dict) and s.get("categoria"):
+                cat = str(s["categoria"])
+                for p in opciones_por_categoria(cat, tienda_id, k=4):
+                    _add(p)
+                _add(intermedio_con_stock(cat))
+        _todos = None
+        for campo in ("pedido", "productos_consultados"):
+            for it in (interp.get(campo) or []):
+                nom = it.get("producto") if isinstance(it, dict) else None
+                if not nom:
+                    continue
+                if _todos is None:
+                    from app.core.interprete_libre import _resolver_nombre_a_producto
+                    from app.storage.firestore_client import get_all_products
+                    _todos = get_all_products(tienda_id=tienda_id)
+                _add(_resolver_nombre_a_producto(nom, _todos))
     # categorias mencionadas: 4 mas baratas + el intermedio de cada una
     cats = cantidades_por_categoria(mensaje or "", tienda_id)
     cats_nombres = {c for _, c in cats}
