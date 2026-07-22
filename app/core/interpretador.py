@@ -214,7 +214,8 @@ def construir_contexto_conversacional(history: list[dict],
 
 def construir_prompt_interpretador(mensaje: str,
                                      contexto_conversacional: str,
-                                     productos_mostrados: list[dict]) -> str:
+                                     productos_mostrados: list[dict],
+                                     categorias: list[str] | None = None) -> str:
     """Prompt liberado v4. Da al LLM contexto y libertad para entender.
     Verifika valida abajo, asi que el Interpretador puede interpretar."""
 
@@ -222,6 +223,8 @@ def construir_prompt_interpretador(mensaje: str,
         f"- {p['nombre']} a ${p['precio']:,}"
         for p in productos_mostrados
     ]) or "Sin productos mostrados aun"
+
+    cats_str = ", ".join(c for c in (categorias or []) if c) or "sin categorias"
 
 
     prompt = f"""Sos el INTÉRPRETE de un bot de ventas argentino. Tu única tarea es ENTENDER qué quiere el cliente en el contexto de la charla y devolver datos estructurados. No le escribís al cliente y no inventás nada: abajo tuyo hay herramientas que traen el dato real del catálogo y una verificación que controla productos y números. Por eso podés interpretar con criterio y confianza, ese sistema te respalda.
@@ -254,6 +257,7 @@ Devolvé SOLO este JSON, sin texto alrededor. Antes de responder, validá que cu
   "estado_conversacion": "saludo|explorando|esperando_confirmacion|esperando_datos|derivar_humano|posventa",
   "criterio": "mas_barato|intermedio|null",
   "pedido": [{{"producto": "nombre EXACTO de un producto mostrado", "cantidad": número, "destino": "localidad tal cual la dijo, o null"}}],
+  "solicitud_nueva": [{{"categoria": "categoria EXACTA de la lista de abajo", "cantidad": número o null, "criterio": "mas_barato|intermedio|null"}}],
   "tope_presupuesto": número entero en pesos o null,
   "exclusiones": [{{"tipo": "origen|marca", "valor": "texto"}}],
   "uso_previsto": "una o dos palabras o null",
@@ -277,6 +281,8 @@ estado_conversacion. saludo, recién llega. explorando, pregunta o compara sin d
 criterio. mas_barato cuando pide lo más económico en cualquier forma, lo más barato, lo más eco, lo más conveniente, lo de menor precio. intermedio cuando pide precio medio o RECHAZA lo más barato, algo intermedio, gama media, ni el más barato ni el más caro. null si no hay criterio. Cubrí modismos argentinos, no solo la palabra exacta.
 
 pedido. SOLO cuando arma un pedido concreto, productos mostrados con cantidad, nombre exacto del mostrado, sin inventar cantidades. Si reparte entre destinos, cada renglón con su destino y las cantidades desglosadas; con un solo destino o sin decirlo, destino null. Un destino tiene que aparecer en el mensaje o en la memoria de la charla.
+
+solicitud_nueva. Cuando el cliente pide una CATEGORÍA de producto que TODAVÍA no se mostró en la charla, por ejemplo pide "2 teclados baratos" y todavía no se mostró ningún teclado. Va la categoría EXACTA de esta lista: {cats_str}. Más la cantidad si la dice y el criterio si lo expresa. Es para lo que hay que traer y mostrar recién ahora, tanto un producto AGREGADO como un CAMBIO a otra categoría. NO uses este campo para algo que ya se mostró, eso va en pedido o en productos_consultados con su nombre exacto. Si no pide ninguna categoría nueva, lista vacía.
 
 preferencias. tope_presupuesto solo si dice una CIFRA. exclusiones si descarta por origen o marca, sin partes chinas, nada de Redragon. uso_previsto si dice para qué lo quiere. Llená lo que el mensaje diga, el resto null o vacío.
 
@@ -509,7 +515,8 @@ def parsear_respuesta_llm(raw: str) -> dict | None:
         return reparado
 
 
-def _schema_interprete(nombres_mostrados: list[str]) -> dict:
+def _schema_interprete(nombres_mostrados: list[str],
+                       categorias: list[str] | None = None) -> dict:
     """Schema estricto para constrained generation DURA: Structured Outputs de
     OpenAI y el response_format json_schema del endpoint compatible de Gemini.
     intencion y estado atados a su enum; producto_resuelto atado al enum de
@@ -521,6 +528,9 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
     prod_enum = ([None] + nombres) if nombres else [None]
     consulta_enum = ["precio", "ficha", "stock", "opinion",
                      "comparacion", "envio", "otra"]
+    # Enum de CATEGORIAS reales de la tienda (lista cerrada y conocida): ata la
+    # solicitud de una categoria AUN NO mostrada sin poder inventarla.
+    cat_enum = list(dict.fromkeys(c for c in (categorias or []) if c)) or ["otra"]
     return {
         "type": "object",
         "additionalProperties": False,
@@ -567,6 +577,23 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
                 },
                 "required": ["producto", "cantidad", "destino"],
             }},
+            # SOLICITUD NUEVA (22-jul): el cliente pide una CATEGORIA que TODAVIA
+            # no se mostro en la charla (ej "2 teclados" y aun no hubo teclado).
+            # No cabe en pedido/consultados, que estan atados al enum de lo visto,
+            # asi que se perdia (lado B de la atadura). Aca se registra atada al
+            # enum de CATEGORIAS reales (no se inventa la categoria); el hub la
+            # usa para buscar y mostrar esa categoria, que recien ahi entra a
+            # vistos y se ancla. Cubre productos AGREGADOS y CAMBIOS de categoria.
+            "solicitud_nueva": {"type": "array", "items": {
+                "type": "object", "additionalProperties": False,
+                "properties": {
+                    "categoria": {"type": "string", "enum": cat_enum},
+                    "cantidad": {"type": ["integer", "null"]},
+                    "criterio": {"type": ["string", "null"],
+                                 "enum": ["mas_barato", "intermedio", None]},
+                },
+                "required": ["categoria", "cantidad", "criterio"],
+            }},
             # PREFERENCIAS (16-jul): tope solo con CIFRA; exclusiones por origen
             # o marca; uso en una o dos palabras. Consumidas por el generador.
             "tope_presupuesto": {"type": ["integer", "null"]},
@@ -584,6 +611,7 @@ def _schema_interprete(nombres_mostrados: list[str]) -> dict:
         "required": ["respondiendo_a", "productos_consultados",
                      "producto_resuelto", "candidatos", "ofrecer_opciones",
                      "intencion", "estado_conversacion", "criterio", "pedido",
+                     "solicitud_nueva",
                      "tope_presupuesto", "exclusiones", "uso_previsto",
                      "confianza"],
     }
@@ -699,15 +727,23 @@ async def interpretar_mensaje(mensaje: str,
                 f"estado real leyendo el ultimo mensaje del cliente.\n\n"
                 + contexto_conv
             )
+        # Categorias reales de la tienda: lista cerrada para atar la solicitud
+        # de una categoria aun no mostrada sin poder inventarla.
+        try:
+            from app.storage.firestore_client import get_categories
+            _categorias = list(get_categories(tienda_id=tienda_id) or [])
+        except Exception:
+            _categorias = []
+
         prompt = construir_prompt_interpretador(
-            mensaje, contexto_conv, productos)
+            mensaje, contexto_conv, productos, _categorias)
 
         # Constrained generation dura (solo OpenAI): el enum de producto_resuelto
         # se arma con los productos que el bot REALMENTE mostro este contexto.
         _nombres = [p.get("nombre") for p in productos if p.get("nombre")]
         _rf = {"type": "json_schema", "json_schema": {
             "name": "interpretacion", "strict": True,
-            "schema": _schema_interprete(_nombres)}}
+            "schema": _schema_interprete(_nombres, _categorias)}}
 
         # Primera llamada al LLM
         raw = await _llamar_llm(prompt, response_format=_rf)
@@ -766,6 +802,8 @@ async def interpretar_mensaje(mensaje: str,
             resultado["candidatos"] = []
         if not isinstance(resultado.get("productos_consultados"), list):
             resultado["productos_consultados"] = []
+        if not isinstance(resultado.get("solicitud_nueva"), list):
+            resultado["solicitud_nueva"] = []
         if "respondiendo_a" not in resultado:
             resultado["respondiendo_a"] = None
         if not isinstance(resultado.get("pedido"), list):

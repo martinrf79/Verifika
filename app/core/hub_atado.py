@@ -111,6 +111,40 @@ def _guia_pedido_anclado(interp, productos_vistos) -> str:
             + "; ".join(lineas) + ". Usa el marcador [[PROD:id]] tal cual.]")
 
 
+def _guia_solicitud_nueva(interp, tienda_id) -> str:
+    """El cliente pidio una CATEGORIA aun no mostrada (campo solicitud_nueva,
+    atado al enum de categorias reales): el codigo trae la opcion de esa
+    categoria desde el catalogo y la inyecta para que el solver la MUESTRE, asi
+    entra a vistos y del turno siguiente se puede pedir/anclar. Cierra el lado B
+    de la atadura: la categoria pedida ya no se pierde. '' si no hay solicitud."""
+    sols = (interp or {}).get("solicitud_nueva") or []
+    if not sols:
+        return ""
+    from app.core.guia_compra import mas_barato_con_stock, intermedio_con_stock
+    lineas = []
+    for s in sols:
+        if not isinstance(s, dict) or not s.get("categoria"):
+            continue
+        cat = str(s["categoria"])
+        crit = s.get("criterio")
+        try:
+            p = (intermedio_con_stock(categoria=cat) if crit == "intermedio"
+                 else mas_barato_con_stock(categoria=cat))
+        except Exception:
+            p = None
+        if p and p.get("id"):
+            cant = s.get("cantidad")
+            q = f"{cant}x " if cant else ""
+            etiqueta = "intermedio" if crit == "intermedio" else "mas barato"
+            lineas.append(f"{q}{cat} ({etiqueta}): [[PROD:{p['id']}]]")
+    if not lineas:
+        return ""
+    return ("\n\n[GUIA DETERMINISTA, categorias que el cliente pidio y que hay "
+            "que MOSTRAR ahora, calculadas desde el catalogo real: "
+            + "; ".join(lineas) + ". Ofrece EXACTAMENTE esos con el marcador "
+            "[[PROD:id]] tal cual, para que queden a la vista.]")
+
+
 async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
                          canal: str, trace_id: str) -> str:
     """Un turno del bot por el flujo atado. Devuelve el texto para el cliente."""
@@ -148,16 +182,25 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     # categoria. Elegir el producto es un problema cerrado; lo ata el codigo y
     # el solver ofrece EXACTAMENTE ese, sin adivinar.
     try:
-        _g = _guia_pedido_anclado(interp, estado.get("productos_vistos"))
-        _tipo_g = "pedido_anclado" if _g else ""
-        if not _g and (detectar_criterio(raw_message) == "más barato"
-                       or criterio_del_interprete(interp)):
+        _bloques, _tipos = [], []
+        _ga = _guia_pedido_anclado(interp, estado.get("productos_vistos"))
+        if _ga:
+            _bloques.append(_ga)
+            _tipos.append("pedido_anclado")
+        _gs = _guia_solicitud_nueva(interp, tienda_id)
+        if _gs:
+            _bloques.append(_gs)
+            _tipos.append("solicitud_nueva")
+        if not _bloques and (detectar_criterio(raw_message) == "más barato"
+                             or criterio_del_interprete(interp)):
             from app.core.guia_compra import guia_mas_barato
-            _g = guia_mas_barato(raw_message, estado.get("productos_vistos"))
-            _tipo_g = "mas_barato" if _g else ""
-        if _g:
-            estado["guia_determinista"] = _g
-            log.info("hub_atado_guia", trace_id=trace_id, tipo=_tipo_g)
+            _gb = guia_mas_barato(raw_message, estado.get("productos_vistos"))
+            if _gb:
+                _bloques.append(_gb)
+                _tipos.append("mas_barato")
+        if _bloques:
+            estado["guia_determinista"] = "\n".join(_bloques)
+            log.info("hub_atado_guia", trace_id=trace_id, tipos=_tipos)
     except Exception as e:
         log.warning("hub_atado_guia_error", trace_id=trace_id,
                     error=str(e)[:120])

@@ -50,6 +50,18 @@ def test_productos_consultados_atado_a_mostrados():
     assert set(pc["required"]) == {"producto", "consulta"}
 
 
+def test_solicitud_nueva_atada_a_categorias():
+    # El cliente pide una CATEGORIA aun no mostrada: se ata al enum de las
+    # categorias reales (lista cerrada), no al de productos. Asi no se pierde
+    # ni se inventa (lado B de la atadura por enum).
+    s = _schema_interprete([], ["mouse", "teclado", "monitor"])
+    sn = s["properties"]["solicitud_nueva"]["items"]
+    assert sn["properties"]["categoria"]["enum"] == ["mouse", "teclado", "monitor"]
+    assert sn["properties"]["criterio"]["enum"] == ["mas_barato", "intermedio", None]
+    assert set(sn["required"]) == {"categoria", "cantidad", "criterio"}
+    assert "solicitud_nueva" in s["required"]
+
+
 def test_datos_pedido_ya_no_esta():
     # Campo muerto retirado (21-jul): no lo lee ningun consumidor.
     s = _schema_interprete(["A"])
