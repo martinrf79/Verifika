@@ -111,6 +111,42 @@ def _guia_pedido_anclado(interp, productos_vistos) -> str:
             + "; ".join(lineas) + ". Usa el marcador [[PROD:id]] tal cual.]")
 
 
+def _guia_consultado(interp, productos_vistos) -> str:
+    """ANCLA del producto CONSULTADO: cierra el hueco de "el interprete resuelve X
+    y el solver contesta sobre Y". El interprete ya certifico contra que producto
+    VISTO pregunta el cliente (producto_resuelto / productos_consultados, atados al
+    enum de lo mostrado); aca se le pasa al solver el id REAL de esos, para que
+    conteste la ficha de EXACTAMENTE ese y NO re-busque otro modelo. El dato de la
+    ficha sigue saliendo de la tool; esto solo fija CUAL. '' si no hay consulta
+    puntual o no se puede anclar (ahi el solver busca como siempre)."""
+    nombres = []
+    pr = (interp or {}).get("producto_resuelto")
+    if isinstance(pr, str) and pr.strip():
+        nombres.append(pr)
+    for c in ((interp or {}).get("productos_consultados") or []):
+        if isinstance(c, dict) and isinstance(c.get("producto"), str) and c["producto"].strip():
+            nombres.append(c["producto"])
+    if not nombres:
+        return ""
+    idx = {}
+    for p in (productos_vistos or []):
+        if isinstance(p, dict) and p.get("nombre") and p.get("id"):
+            idx[_norm_nombre(p["nombre"])] = (str(p["id"]), p["nombre"])
+    lineas, vistos = [], set()
+    for nom in nombres:
+        par = idx.get(_norm_nombre(nom))
+        if not par or par[0] in vistos:
+            continue
+        vistos.add(par[0])
+        lineas.append(f"{par[1]}: [[PROD:{par[0]}]]")
+    if not lineas:
+        return ""
+    return ("\n\n[GUIA DETERMINISTA: el cliente pregunta por ESTOS productos que YA "
+            "vio; contesta la ficha de EXACTAMENTE estos ids con get_product_details, "
+            "NO busques ni elijas otro modelo: " + "; ".join(lineas)
+            + ". Usa el marcador [[PROD:id]] tal cual al nombrarlos.]")
+
+
 def _guia_solicitud_nueva(interp, tienda_id) -> str:
     """El cliente pidio una CATEGORIA aun no mostrada (campo solicitud_nueva,
     atado al enum de categorias reales): el codigo trae la opcion de esa
@@ -268,6 +304,13 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         if _ga:
             _bloques.append(_ga)
             _tipos.append("pedido_anclado")
+        else:
+            # Sin pedido, si el cliente PREGUNTA por un producto visto, se ancla el
+            # consultado para que el solver no re-elija otro modelo (hueco de T3).
+            _gcon = _guia_consultado(interp, estado.get("productos_vistos"))
+            if _gcon:
+                _bloques.append(_gcon)
+                _tipos.append("consultado_anclado")
         _gs = _guia_solicitud_nueva(interp, tienda_id)
         if _gs:
             _bloques.append(_gs)

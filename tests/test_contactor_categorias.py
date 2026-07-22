@@ -77,3 +77,33 @@ def test_hub_sin_categorias_no_adjunta_nada():
 def test_hub_dedup_no_repite_criterio():
     b = _guia_categorias({"categorias": ["garantia", "garantia"]})
     assert b.count("garantia:") == 1
+
+
+# ── ANCLA DEL CONSULTADO (cierra el hueco intérprete vs solver, T3) ──────────
+from app.core.hub_atado import _guia_consultado
+
+_VISTOS = [{"id": "TEC0019", "nombre": "Teclado Genius KB-110X Blanco"},
+           {"id": "TEC0003", "nombre": "Teclado Logitech K380 Negro"}]
+
+
+def test_ancla_consultado_producto_resuelto_al_id_real():
+    b = _guia_consultado({"producto_resuelto": "Teclado Genius KB-110X Blanco"}, _VISTOS)
+    assert "[[PROD:TEC0019]]" in b
+    assert "TEC0003" not in b  # no mete el otro modelo
+
+
+def test_ancla_consultado_lista_de_consultados():
+    interp = {"productos_consultados": [
+        {"producto": "Teclado Logitech K380 Negro", "consulta": "ficha"}]}
+    b = _guia_consultado(interp, _VISTOS)
+    assert "[[PROD:TEC0003]]" in b
+
+
+def test_ancla_consultado_vacio_sin_consulta():
+    assert _guia_consultado({"producto_resuelto": None}, _VISTOS) == ""
+    assert _guia_consultado({}, _VISTOS) == ""
+
+
+def test_ancla_consultado_vacio_si_no_mapea():
+    # nombre que no está en lo visto -> no se fuerza a medias
+    assert _guia_consultado({"producto_resuelto": "Monitor que no existe"}, _VISTOS) == ""
