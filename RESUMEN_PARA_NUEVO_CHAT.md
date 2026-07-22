@@ -4,6 +4,109 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 22-jul-2026 — TRACK ACTIVO: FLUJO ATADO (hub_atado) + EL CONTACTOR.
+Rama `claude/session-lg1xff`. NO está en producción todavía. ====**
+
+Este es el trabajo VIVO de la sesión. Lo de abajo (deploy 128, guardas,
+curadas, movidas) es la PRODUCCIÓN actual, que sigue corriendo por
+`interprete_libre.py` (el orchestrator NO cambió). Este track construye el
+REEMPLAZO y lo mide; se pasa a prod cuando el banco lo justifique.
+
+**Objetivo del track:** un sistema que responda bien y NO alucine con los DOS
+modelos atados al código (intérprete + solver), SIN la pila de ~40 guardas de
+`interprete_libre` (2290 líneas). "Atar por config, no por código duro" (orden
+de Martín): el código no decide ni reescribe al modelo, solo lo amarra a la
+fuente y enruta.
+
+**EL CONTACTOR (nombre acordado):** la capa de contratos DECLARATIVOS, enums y
+campos del schema atados a listas cerradas de la fuente, que conecta lo que el
+modelo declara con la tool que trae el dato y lo enruta, SIN decidir por él. Se
+diferencia de código duro: el Contactor ata y enruta; el código duro decide o
+reescribe (las guardas viejas). Cada campo atado es un "contacto".
+- Regla para cada contacto nuevo (2 condiciones de Martín): 1) disparador
+  MUTUAMENTE EXCLUYENTE, que resuelva lo suyo sin pisarse con otro contacto;
+  2) solo ATA o adjunta el dato de la fuente, NUNCA reescribe la prosa ni fuerza
+  texto enlatado (no roboriza, no mete errores nuevos).
+- PRÓXIMO PASO acordado: hacer el Contactor ABARCATIVO reusando el espacio de
+  categorías que YA existe, no crear uno nuevo: `ruteo_venta.py` tiene el
+  registro cerrado B1..B20 (indecisión, cambio_producto, negación, objeción,
+  desconfianza, ambigüedad, producto_inexistente, multidestino, postergación,
+  urgencia, mayorista, presupuesto, regalo, queja, humano, cancelación...), más
+  `intencion` y `consulta` (precio/ficha/stock/opinion/comparacion/envio) del
+  intérprete. Cada categoría → un contacto con las 2 condiciones de arriba.
+
+**MODELO — resuelto y MEDIDO:**
+- Intérprete anclado en GEMINI (`gemini-3.1-flash-lite`), atadura DURA por
+  `response_format json_schema strict`. Banco de interpretación: 32/32 = 100%.
+- DeepSeek V4 (`deepseek-v4-flash`/`-pro`) queda como FALLBACK más barato:
+  MEDIDO que su API RECHAZA el json_schema strict (400 "response_format type
+  unavailable"); su strict va por tool calling, no por response_format. Se cableó
+  con `json_object` (atadura BLANDA, validación+retry del código). Banco: 91%
+  flash y 91% pro. Por eso el intérprete se ancla en Gemini (100% + atadura dura).
+- Escalera de atadura por enum: 1) constrained decoding a nivel token (OpenAI
+  Structured Outputs, Gemini) = DURA; 2) validación server strict (DeepSeek beta,
+  por tool calling); 3) tool calling con enum; 4) json_object + validar+retry
+  (Instructor o nuestro código) = BLANDA; 5) solo prompt.
+- OJO cuota: la key GRATIS de Gemini throttlea (429) a ~15/min; los bancos usan
+  `BANCO_PAUSA_S=22`/`BANCO_PACE_SEG` para espaciar. En producción no es problema.
+
+**QUÉ SE CONSTRUYÓ Y COMMITEÓ (rama `claude/session-lg1xff`):**
+- `app/core/hub_atado.py` — el hub del flujo atado, SIN guardas. Turno:
+  interprete → guía determinista (Contactor) → solver_gemini (llama tools) →
+  estampado del número sellado + producto real → memoria persistida. Reemplaza a
+  interprete_libre en el camino, convive para medirse.
+- `app/core/interpretador.py` — prompt v5 profesional por principios (más liviano);
+  schema con campos nuevos: `productos_consultados` (multi-producto), y
+  `solicitud_nueva` (CONTACTO nuevo: categoría pedida AÚN NO mostrada, atada al
+  enum de CATEGORÍAS reales — cierra el "lado B" de la atadura, la categoría ya
+  no se pierde). Se sacó `datos_pedido` muerto. Principio de ironía agregado.
+- `app/core/solver_gemini.py` — forzado por config (tool_config mode ANY):
+  fuerza `cotizar_envio` por cada destino que el intérprete extrajo; ya forzaba
+  `consultar_guia_venta` para la prosa. Prompt: se sacó el id de ejemplo real
+  "MOU0001" (contaminaba: el solver lo agarraba); se instruyó variar el cierre
+  (anti-robótico).
+- `hub_atado` guías (Contactor): `_guia_pedido_anclado` (ata cada renglón del
+  pedido al id REAL de lo visto → el solver no re-elige otro modelo),
+  `_guia_solicitud_nueva` (muestra la categoría pedida no vista),
+  `guia_mas_barato` (mínimo con stock). Limpieza mínima de marcadores e ids.
+- `hub_atado_traza` — TRAZA POR COSTURA: 1 línea/turno con el dato en cada
+  juntura (qué leyó el intérprete, guía, tools que llamó el solver y con qué,
+  total sellado, carrito antes→después). Modalidad de diagnóstico elegida para
+  ver DÓNDE se corta antes de tocar. Ya destapó bugs precisos.
+- Bancos: `banco_atado_charlas.py` (charlas multi-turno por hub_atado + juez),
+  `banco_solver_atado.py`, `banco_solver_sin_tools.py`. Guiones 52-54 combinan
+  dificultad + memoria. `banco_interpretacion.py` con pacing.
+
+**MEDIDO:** guion 52 (memoria+dificultad, destino único) juez LIMPIO 10 turnos,
+memoria impecable, más barato OK, cierre no robótico. Solver SOLO sin tools
+(banco_solver_sin_tools): alucina TODO el dato duro (mínimo mal, suma mal,
+inventa envío) → confirma que el dato duro va atado a tool. Flujo ATADO: mata
+esas alucinaciones.
+
+**GAP ABIERTO (el difícil) — multidestino, capa por capa (traza):**
+1. Contaminación MOU0001 (id de ejemplo del prompt) → ARREGLADO.
+2. Envío no entraba en el turno del reparto → ARREGLADO por forzado de config.
+3. Producto del pedido se iba (M170/K380 en vez de DX-110/KB-110X) → el ancla
+   `_guia_pedido_anclado` lo fuerza al id real; anda cuando el intérprete lee bien.
+4. RAÍZ upstream: el intérprete perdía una CATEGORÍA pedida no mostrada (el
+   teclado en "2 mouse y 2 teclados") por estar atado al enum de lo visto →
+   ARREGLADO con el contacto `solicitud_nueva` (validado: captura mouse+teclado;
+   el hub genera la guía con ids reales MOU0023+TEC0020). FALTA correr el guion
+   53 entero VIVO para confirmar de punta a punta (Gemini estaba throttleado).
+
+**CÓMO SEGUIR (en orden):** 1) cuando la cuota de Gemini se libere, correr guion
+53 vivo y confirmar que el teclado sobrevive toda la charla; 2) evolucionar el
+Contactor a abarcativo mapeando cada categoría de `ruteo_venta` (B1..B20) a un
+contacto con las 2 condiciones; 3) cuando el banco esté firme, apuntar el
+orchestrator a hub_atado y retirar la pila de guardas de interprete_libre.
+
+**Correr los bancos:** `python -m pytest -q` (615 offline verdes). Vivo:
+`BANCO_PAUSA_S=22 python banco_pruebas/banco_atado_charlas.py banco_pruebas/guiones/52_*.txt`;
+interpretación: `python banco_pruebas/banco_interpretacion.py` (Gemini) o
+`INTERPRETER_PROVIDER=deepseek BANCO_PACE_SEG=0 python banco_pruebas/banco_interpretacion.py`.
+
+---
+
 **==== 20-jul-2026 — DEPLOY 128 VERDE + AFINADO DE LA CHARLA REAL POST-DEPLOY
 + CIERRE CON COBRO LISTO (modo venta B, datos demo). ====**
 
