@@ -45,6 +45,34 @@ _RE_ID_FILTRADO = re.compile(
     r"[A-Z]{2,5}\d{2,}(?:\s*/\s*[A-Z]{2,5}\d{2,})*\s*\)"
     r"|[\s,]*\b(?:id|sku|codigo)\s*[:=]\s*[A-Z]{2,5}\d{2,}",
     re.IGNORECASE)
+_RE_TOTAL = re.compile(r"[Tt]otal:\s*\$?\s*([\d.]+)")
+
+
+def _tools_traza(meta) -> list[str]:
+    """Resumen COMPACTO de las tools que llamo el solver, con el arg clave: es
+    la costura donde se ve un envio sin cotizar o un producto equivocado que se
+    le mando a la calculadora."""
+    out: list[str] = []
+    for tc in (meta or {}).get("tools_called", []) or []:
+        n = tc.get("name")
+        a = tc.get("args") or {}
+        r = tc.get("result")
+        if n == "cotizar_envio":
+            costo = r.get("costo") if isinstance(r, dict) else None
+            out.append(f"cotizar_envio(loc={a.get('localidad')},costo={costo})")
+        elif n == "calculate_total":
+            items = a.get("items") or []
+            its = ",".join(f"{i.get('product_id')}x{i.get('cantidad')}"
+                           for i in items if isinstance(i, dict))
+            out.append(f"calculate_total([{its}])")
+        else:
+            out.append(str(n))
+    return out
+
+
+def _carrito_traza(carrito) -> list:
+    return [(c.get("nombre"), c.get("cantidad"))
+            for c in (carrito or []) if isinstance(c, dict)]
 
 
 async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
@@ -161,6 +189,34 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
             criterio_cliente=criterio_cliente, provincia_envio=provincia_envio)
     except Exception as e:
         log.warning("hub_atado_save_error", trace_id=trace_id, error=str(e)[:150])
+
+    # ── TRAZA POR COSTURA (modalidad de diagnostico) ────────────────────
+    # UNA linea por turno con el dato en cada juntura del flujo, para ver de una
+    # DONDE se corto: que leyo el interprete, si viajo la guia, que tools llamo
+    # el solver y con que, el total que quedo sellado, y el carrito antes->despues.
+    _tot = _RE_TOTAL.search(texto or "")
+    log.info("hub_atado_traza", trace_id=trace_id,
+             # 1. INTERPRETE
+             i_intencion=interp.get("intencion"),
+             i_producto=interp.get("producto_resuelto"),
+             i_consultados=[c.get("producto")
+                            for c in (interp.get("productos_consultados") or [])
+                            if isinstance(c, dict)],
+             i_pedido=[(it.get("producto"), it.get("cantidad"),
+                        it.get("destino"))
+                       for it in (interp.get("pedido") or [])
+                       if isinstance(it, dict)],
+             i_criterio=interp.get("criterio"),
+             # 2. GUIA / SEÑALES DE ATADURA
+             guia_mas_barato=bool(estado.get("guia_determinista")),
+             destinos_forzados=solver_gemini._destinos_de_interp(interp),
+             # 3. SOLVER: tools que llamo, con el arg clave
+             tools=_tools_traza(meta),
+             # 4. SELLADO
+             total_sellado=(_tot.group(1) if _tot else None),
+             # 5. MEMORIA: carrito antes -> despues
+             carrito_prev=_carrito_traza(conv.get("carrito_vigente")),
+             carrito_nuevo=_carrito_traza(carrito_vigente))
 
     log.info("hub_atado_ok", trace_id=trace_id,
              latency_ms=int((time.time() - t0) * 1000),
