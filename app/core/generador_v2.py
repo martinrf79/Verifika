@@ -34,26 +34,40 @@ _TIMEOUT_S = 12
 _MAX_FRAGMENTOS = 8
 CAMPOS_FICHA = ["procedencia", "garantia", "material", "descripcion"]
 
-def _criterios_del_turno(mensaje, universo=None):
+def _criterios_del_turno(mensaje, universo=None, interp=None):
     """El enum del fragmento criterio para ESTE turno: (ids jurados relevantes,
-    menu con su texto para groundear). Sale del RAG del corpus (recuperar), no
-    de una lista fija: solo los bloques que vienen al caso, asi el modelo no
-    mete criterio de mas y cuando lo mete es el que corresponde. El modelo
-    redacta la frase para el cliente apoyandose en estos textos y cita el id;
-    el codigo NO copia verbatim (leia a manual), el verificador de cita chequea
-    que el id sea real. Sumar un tema es cargar texto en GUIA_VENTA, no tocar
-    aca. Sin match, no hay criterio: el turno se responde con prosa o faq.
+    menu con su texto para groundear). El modelo redacta la frase para el
+    cliente apoyandose en estos textos y cita el id; el codigo NO copia verbatim
+    (leia a manual), el verificador de cita chequea que el id sea real. Sumar un
+    tema es cargar texto en GUIA_VENTA, no tocar aca.
 
-    La consulta se enriquece con las CATEGORIAS del universo del turno: sin eso,
-    'el mas barato sirve para la oficina?' (sin nombrar el producto, que venia
-    del turno anterior) perdia el criterio. El universo trae el contexto."""
-    from app.core.guia_venta_prosa import recuperar
-    cats = " ".join(str(p.get("categoria") or "") for p in (universo or []))
-    bloques = recuperar((mensaje or "") + " " + cats, k=4)
-    if not bloques:
+    DOS fuentes, ambas atadas al mismo enum de ids de GUIA_VENTA:
+    1) CONTACTOR: las CATEGORIAS que el interprete DECLARO (atadas al enum de las
+       76 de base_conocimiento) traen su criterio DIRECTO. Asi objecion,
+       compatibilidad, financiacion, garantia, regalo -cualquiera de las 76-
+       razona desde SU fuente cuando el interprete la ve, sin depender del RAG.
+    2) RAG del corpus (recuperar) sobre el mensaje + las categorias del universo:
+       la red que pesca el tema aunque el interprete no lo declare (ej 'el mas
+       barato sirve para la oficina?' sin nombrar producto ni categoria).
+    Sin match por ninguna via, no hay criterio: el turno se responde con prosa/faq."""
+    from app.core.guia_venta_prosa import recuperar, texto_de
+    menu_items: dict[str, str] = {}
+    # 1) las categorias declaradas por el interprete (enum de la fuente)
+    cats_interp = (interp or {}).get("categorias") if isinstance(interp, dict) else None
+    for cat in (cats_interp or [])[:5]:
+        cid = str(cat).strip()
+        t = texto_de(cid)
+        if t and cid not in menu_items:
+            menu_items[cid] = t
+    # 2) el RAG sobre mensaje + categorias del universo
+    cats_uni = " ".join(str(p.get("categoria") or "") for p in (universo or []))
+    for b in recuperar((mensaje or "") + " " + cats_uni, k=4):
+        if b["id"] not in menu_items:
+            menu_items[b["id"]] = b["texto"]
+    if not menu_items:
         return ["_ninguno_"], ""
-    ids = [b["id"] for b in bloques]
-    menu = "\n".join(f"  [{b['id']}] {b['texto']}" for b in bloques)
+    ids = list(menu_items)
+    menu = "\n".join(f"  [{cid}] {txt}" for cid, txt in menu_items.items())
     return ids, menu
 
 
@@ -463,7 +477,7 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
         ids = ["_none_"]
     # El enum del CRITERIO de venta: los bloques jurados relevantes al turno. El
     # modelo redacta la frase apoyandose en ellos y cita el id que uso.
-    criterios, criterios_menu = _criterios_del_turno(mensaje, universo)
+    criterios, criterios_menu = _criterios_del_turno(mensaje, universo, interp)
     # Lo CERRADO al codigo: presupuesto pre-calculado si el pedido es
     # determinable. El modelo solo lo POSICIONA (fragmento presupuesto).
     if presupuesto_externo and presupuesto_externo[0]:

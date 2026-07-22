@@ -99,6 +99,26 @@ def test_universo_sin_interp_no_rompe(firestore_doble):
     assert any("mouse" in p.get("nombre", "").lower() for p in u)
 
 
+# ── EL CRITERIO del solver atado a las CATEGORIAS que declaro el interprete ───
+from app.core.generador_v2 import _criterios_del_turno
+
+
+def test_criterio_atado_a_categorias_del_interprete(firestore_doble):
+    # el interprete declara categorias que el mensaje no nombra literal: su
+    # criterio entra igual al enum del solver, razona desde la fuente correcta.
+    ids, menu = _criterios_del_turno(
+        "no se, me parece mucho", None,
+        {"categorias": ["objecion_precio", "garantia"]})
+    assert "objecion_precio" in ids and "garantia" in ids
+    assert "[objecion_precio]" in menu
+
+
+def test_criterio_rag_sigue_como_red_sin_categorias(firestore_doble):
+    # sin categorias declaradas, el RAG del mensaje sigue trayendo criterio.
+    ids, _ = _criterios_del_turno("puedo pagar en cuotas", None, {})
+    assert "cuotas_financiacion" in ids
+
+
 # ── CONTACTOR DEL DESTINO al CP (multidestino robusto 2/3/4) ─────────────────
 from app.core.interpretador import _canonizar_destinos_cp
 

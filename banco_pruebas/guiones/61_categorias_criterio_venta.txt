@@ -1,0 +1,9 @@
+# Ronda 2.2: golpea varias categorias de base_conocimiento en una charla de
+# venta (objecion de precio, compatibilidad, financiacion/factura, cierre). PASA
+# si razona desde el criterio de cada categoria SIN inventar dato ni caer la
+# venta, y honesto donde no hay dato.
+hola busco una notebook para trabajo y algo de diseno
+me parece cara, no hay algo mas conveniente que rinda parecido?
+y sirve para correr programas de edicion de video pesados?
+puedo pagar en cuotas y hacen factura A?
+dale la llevo, como seguimos?
