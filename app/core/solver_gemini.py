@@ -71,6 +71,21 @@ def es_turno_criterio(interp, raw_message: str) -> bool:
     return False
 
 
+def _destinos_de_interp(interp) -> list[str]:
+    """Destinos DISTINTOS (no null) del pedido que extrajo el interprete (atado
+    por enum). Es la SEÑAL para forzar cotizar_envio: si el cliente reparte el
+    pedido, el solver DEBE cotizar cada destino antes de redactar. No calcula
+    nada, solo lista que hay que cotizar."""
+    dests: list[str] = []
+    for it in (interp or {}).get("pedido") or []:
+        if not isinstance(it, dict):
+            continue
+        d = str(it.get("destino") or "").strip()
+        if d and d.lower() not in [x.lower() for x in dests]:
+            dests.append(d)
+    return dests
+
+
 def _system_prompt(business_name: str) -> str:
     return (
         f"Sos el vendedor por WhatsApp de {business_name}, tienda argentina de "
@@ -326,11 +341,14 @@ def _generar(client, base, modelo, contents, gen_cfg, cache_name, system, tools,
 
 
 def _run(raw_message, history, tienda_id, business_name, trace_id,
-         estado=None, forzar_prosa=False):
+         estado=None, forzar_prosa=False, destinos=None):
     """El loop de function calling nativo (sincrono; corre en un thread).
     forzar_prosa: atadura dura, obliga a consultar_guia_venta en la 1a vuelta
     del turno de criterio (mode ANY), y despues suelta a AUTO para que el modelo
-    llame las tools de dato y redacte."""
+    llame las tools de dato y redacte.
+    destinos: si el interprete extrajo destinos del pedido, se FUERZA
+    cotizar_envio (mode ANY) hasta cubrir cada uno antes de redactar; el modelo
+    cotiza con la tool real, aca solo se ata QUE la llame, sin calcular envio."""
     system = _system_prompt(business_name)
     tools = _tools_nativas()
     modelo = settings.GEMINI_MODEL or "gemini-3.1-flash-lite"
@@ -361,17 +379,33 @@ def _run(raw_message, history, tienda_id, business_name, trace_id,
                 contents.append({"role": rol, "parts": [{"text": cont[:800]}]})
         contents.append({"role": "user", "parts": [{"text": raw_message}]})
 
+        import unicodedata as _ud
+
+        def _nloc(s):
+            s = _ud.normalize("NFKD", str(s or "").lower())
+            return "".join(c for c in s if not _ud.combining(c)).strip()
+
         tools_called = []
         prosa_llamada = False
+        destinos_pend = list(destinos or [])
+        envio_forzados = 0
+        _max_envio = len(destinos or []) + 1
         for _ in range(_MAX_ITERS):
-            # Atadura dura: mientras el turno sea de criterio y aun no se consulto
-            # la prosa, se FUERZA consultar_guia_venta (mode ANY, solo esa fn).
-            # Una vez consultada, se suelta a AUTO para el dato y la redaccion.
+            # Atadura por config. Prioridad 1: prosa (turno de criterio). Prioridad
+            # 2: envio, mientras queden destinos sin cotizar se FUERZA cotizar_envio
+            # (mode ANY). Cubiertos todos, se suelta a AUTO para el dato y la
+            # redaccion. El modelo hace el trabajo con la tool real; aca solo se
+            # ata QUE llame y CUANDO, sin una linea de calculo en codigo.
             tool_config = None
             if forzar_prosa and not prosa_llamada:
                 tool_config = {"functionCallingConfig": {
                     "mode": "ANY",
                     "allowedFunctionNames": ["consultar_guia_venta"]}}
+            elif destinos_pend and envio_forzados < _max_envio:
+                tool_config = {"functionCallingConfig": {
+                    "mode": "ANY",
+                    "allowedFunctionNames": ["cotizar_envio"]}}
+                envio_forzados += 1
             data, cache_name = _generar(client, base, modelo, contents, gen_cfg,
                                         cache_name, system, tools, trace_id,
                                         tool_config=tool_config)
@@ -388,6 +422,12 @@ def _run(raw_message, history, tienda_id, business_name, trace_id,
                 nombre = fc.get("name", "")
                 if nombre == "consultar_guia_venta":
                     prosa_llamada = True
+                if nombre == "cotizar_envio" and destinos_pend:
+                    _loc = _nloc((fc.get("args") or {}).get("localidad"))
+                    if _loc:
+                        destinos_pend = [
+                            d for d in destinos_pend
+                            if not (_nloc(d) in _loc or _loc in _nloc(d))]
                 args = fc.get("args") or {}
                 res = _ejecutar_tool(nombre, args, trace_id)
                 entrada = {"name": nombre, "args": args, "result": res}
@@ -414,12 +454,13 @@ async def generar_respuesta(raw_message, interp, estado, tienda_id, trace_id,
     set_current_tienda(tienda_id)
     set_current_estado(estado if isinstance(estado, dict) else {})
     forzar_prosa = es_turno_criterio(interp, raw_message)
+    destinos = _destinos_de_interp(interp)
     try:
         texto, tools_called = await asyncio.wait_for(
             asyncio.to_thread(_run, raw_message, history, tienda_id,
                               business_name, trace_id,
                               estado if isinstance(estado, dict) else {},
-                              forzar_prosa),
+                              forzar_prosa, destinos),
             _TIMEOUT_TOTAL_S)
     except Exception as e:
         log.warning("solver_gemini_error", trace_id=trace_id, error=str(e)[:200])
