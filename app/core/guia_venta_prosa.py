@@ -29,6 +29,25 @@ GUIA_VENTA: dict[str, str] = {}
 # en 'streaming', 'router' en 'mouse').
 _ALIAS: dict[str, str] = {}
 
+# EL ENUM DEL CONTACTOR — la lista CERRADA de categorias de la fuente de verdad
+# (base_conocimiento.json). Es el universo unico al que se ata el interprete:
+# el modelo solo puede DECLARAR una de estas, no inventar una categoria. Cada id
+# trae su grupo y su pilar para enrutar (criterio -> prosa, politica/dato -> tool).
+# Se llena en _cargar_base_conocimiento; no se duplica en ningun otro lado.
+_CATEGORIAS_IDS: list[str] = []
+_CATEGORIAS_META: dict[str, dict] = {}
+
+
+def categorias_conocimiento() -> list[str]:
+    """La lista cerrada de ids de categoria de la fuente de verdad, en orden.
+    Es el enum unico del Contactor; el interprete y el hub leen de aca."""
+    return list(_CATEGORIAS_IDS)
+
+
+def meta_categoria(cat_id: str) -> dict:
+    """Grupo y pilar de una categoria, para enrutar sin decidir. {} si no existe."""
+    return dict(_CATEGORIAS_META.get(str(cat_id).strip(), {}))
+
 
 def consultar_guia_venta(tema: str | None = None, **_) -> dict:
     """Devuelve el criterio de venta de un tema (o la lista de temas). Match
@@ -130,8 +149,18 @@ def _cargar_base_conocimiento() -> None:
             base = json.load(f)
     except Exception:
         return
-    validas = [c for c in base.get("categorias", [])
-               if c.get("id") and (c.get("criterio") or "").strip()
+    todas = [c for c in base.get("categorias", []) if c.get("id")]
+    # EL ENUM del Contactor: TODAS las categorias reales de la fuente (con o sin
+    # digito en el criterio). El digito solo decide si la PROSA entra al corpus;
+    # la categoria existe igual y se enruta a su tool. Sin duplicar: una sola vez.
+    _CATEGORIAS_IDS.clear()
+    _CATEGORIAS_META.clear()
+    for c in todas:
+        _CATEGORIAS_IDS.append(c["id"])
+        _CATEGORIAS_META[c["id"]] = {"grupo": c.get("grupo", ""),
+                                     "pilar": c.get("pilar", "")}
+    validas = [c for c in todas
+               if (c.get("criterio") or "").strip()
                and not re.search(r"\d", c["criterio"])]
     # Pasada 1: el criterio de cada categoria (la prosa de la que responde).
     for cat in validas:

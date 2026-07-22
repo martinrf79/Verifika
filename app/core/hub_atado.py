@@ -145,6 +145,36 @@ def _guia_solicitud_nueva(interp, tienda_id) -> str:
             "[[PROD:id]] tal cual, para que queden a la vista.]")
 
 
+def _guia_categorias(interp) -> str:
+    """EL CONTACTOR abarcativo: por cada categoria que el interprete DECLARO
+    (atada al enum de la fuente de verdad), engancha su CRITERIO de prosa desde
+    base_conocimiento y lo adjunta para que el solver razone desde la fuente
+    correcta, no de memoria. Cubre la pregunta compleja multi-tema: si el mensaje
+    toca precio + objecion + envio, viajan los tres criterios. Solo ADJUNTA el
+    dato de la fuente, nunca reescribe la prosa (condicion 2 del Contactor). '' si
+    no hay categoria o ninguna trae criterio (esas se apoyan en su tool)."""
+    from app.core.guia_venta_prosa import consultar_guia_venta
+    cats = (interp or {}).get("categorias") or []
+    if not isinstance(cats, list) or not cats:
+        return ""
+    lineas = []
+    vistas = set()
+    for cat in cats[:5]:  # tope contra sobre-declaracion; multi-tema real no pasa
+        c = str(cat).strip()
+        if not c or c in vistas:
+            continue
+        vistas.add(c)
+        r = consultar_guia_venta(tema=c)
+        txt = str((r or {}).get("texto") or "").strip()
+        if txt:
+            lineas.append(f"- {c}: {txt}")
+    if not lineas:
+        return ""
+    return ("\n\n[CRITERIO DE LA FUENTE que aplica a este turno, razona la prosa "
+            "DESDE aca y no de memoria; el dato duro sigue saliendo de las tools:\n"
+            + "\n".join(lineas) + "]")
+
+
 async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
                          canal: str, trace_id: str) -> str:
     """Un turno del bot por el flujo atado. Devuelve el texto para el cliente."""
@@ -191,6 +221,10 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         if _gs:
             _bloques.append(_gs)
             _tipos.append("solicitud_nueva")
+        _gc = _guia_categorias(interp)
+        if _gc:
+            _bloques.append(_gc)
+            _tipos.append("categorias")
         if not _bloques and (detectar_criterio(raw_message) == "más barato"
                              or criterio_del_interprete(interp)):
             from app.core.guia_compra import guia_mas_barato
@@ -292,6 +326,7 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
                        for it in (interp.get("pedido") or [])
                        if isinstance(it, dict)],
              i_criterio=interp.get("criterio"),
+             i_categorias=interp.get("categorias"),
              # 2. GUIA / SEÑALES DE ATADURA
              guia_mas_barato=bool(estado.get("guia_determinista")),
              destinos_forzados=solver_gemini._destinos_de_interp(interp),

@@ -226,6 +226,12 @@ def construir_prompt_interpretador(mensaje: str,
 
     cats_str = ", ".join(c for c in (categorias or []) if c) or "sin categorias"
 
+    # EL ENUM DEL CONTACTOR: la lista cerrada de categorias de la charla, de la
+    # fuente de verdad. El modelo DECLARA cual/cuales toca el mensaje; el codigo
+    # engancha cada una con su criterio o su tool. No puede inventar una.
+    from app.core.guia_venta_prosa import categorias_conocimiento
+    conoc_str = ", ".join(categorias_conocimiento()) or "sin categorias"
+
 
     prompt = f"""Sos el INTÉRPRETE de un bot de ventas argentino. Tu única tarea es ENTENDER qué quiere el cliente en el contexto de la charla y devolver datos estructurados. No le escribís al cliente y no inventás nada: abajo tuyo hay herramientas que traen el dato real del catálogo y una verificación que controla productos y números. Por eso podés interpretar con criterio y confianza, ese sistema te respalda.
 
@@ -258,6 +264,7 @@ Devolvé SOLO este JSON, sin texto alrededor. Antes de responder, validá que cu
   "criterio": "mas_barato|intermedio|null",
   "pedido": [{{"producto": "nombre EXACTO de un producto mostrado", "cantidad": número, "destino": "localidad tal cual la dijo, o null"}}],
   "solicitud_nueva": [{{"categoria": "categoria EXACTA de la lista de abajo", "cantidad": número o null, "criterio": "mas_barato|intermedio|null"}}],
+  "categorias": ["una o varias categorias EXACTAS de la lista de categorias de la charla, las que toque el mensaje; vacía si ninguna"],
   "tope_presupuesto": número entero en pesos o null,
   "exclusiones": [{{"tipo": "origen|marca", "valor": "texto"}}],
   "uso_previsto": "una o dos palabras o null",
@@ -283,6 +290,8 @@ criterio. mas_barato cuando pide lo más económico en cualquier forma, lo más 
 pedido. SOLO cuando arma un pedido concreto, productos mostrados con cantidad, nombre exacto del mostrado, sin inventar cantidades. Si reparte entre destinos, cada renglón con su destino y las cantidades desglosadas; con un solo destino o sin decirlo, destino null. Un destino tiene que aparecer en el mensaje o en la memoria de la charla.
 
 solicitud_nueva. Cuando el cliente pide una CATEGORÍA de producto que TODAVÍA no se mostró en la charla, por ejemplo pide "2 teclados baratos" y todavía no se mostró ningún teclado. Va la categoría EXACTA de esta lista: {cats_str}. Más la cantidad si la dice y el criterio si lo expresa. Es para lo que hay que traer y mostrar recién ahora, tanto un producto AGREGADO como un CAMBIO a otra categoría. NO uses este campo para algo que ya se mostró, eso va en pedido o en productos_consultados con su nombre exacto. Si no pide ninguna categoría nueva, lista vacía.
+
+categorias. La o las categorías de la charla que toca el mensaje, tomadas EXACTAS de esta lista cerrada: {conoc_str}. Un mensaje puede tocar VARIAS a la vez, por ejemplo pregunta el precio y además objeta que es caro y pide envío: van las tres. Es lo que le dice al sistema desde qué criterio o política responder cada parte. Si el mensaje no encaja en NINGUNA de la lista, dejala vacía, no fuerces una; el sistema responde honesto que no tiene ese dato sin cortar la venta. Elegí por lo que el cliente QUIERE, no por palabras sueltas.
 
 preferencias. tope_presupuesto solo si dice una CIFRA. exclusiones si descarta por origen o marca, sin partes chinas, nada de Redragon. uso_previsto si dice para qué lo quiere. Llená lo que el mensaje diga, el resto null o vacío.
 
@@ -457,6 +466,21 @@ def validar_schema(resultado: dict) -> tuple[bool, str]:
         resultado["candidatos"] = [candidatos.strip()] if candidatos.strip() else []
     elif not isinstance(candidatos, list):
         return False, "candidatos no es lista"
+    # categorias (Contactor): null/str -> lista; se filtran a las ids reales de
+    # la fuente (el enum ya lo garantiza en el schema estricto, esto es la red
+    # para providers sin strict). Nunca falla: si viene raro, queda vacia.
+    _cats = resultado.get("categorias", [])
+    if isinstance(_cats, str):
+        _cats = [_cats]
+    if not isinstance(_cats, list):
+        _cats = []
+    try:
+        from app.core.guia_venta_prosa import categorias_conocimiento
+        _validas = set(categorias_conocimiento())
+        _cats = [c for c in _cats if isinstance(c, str) and c in _validas]
+    except Exception:
+        _cats = []
+    resultado["categorias"] = _cats
     return True, ""
 
 
@@ -531,6 +555,12 @@ def _schema_interprete(nombres_mostrados: list[str],
     # Enum de CATEGORIAS reales de la tienda (lista cerrada y conocida): ata la
     # solicitud de una categoria AUN NO mostrada sin poder inventarla.
     cat_enum = list(dict.fromkeys(c for c in (categorias or []) if c)) or ["otra"]
+    # EL ENUM DEL CONTACTOR: las categorias de la charla de la fuente de verdad
+    # (base_conocimiento). El interprete DECLARA cual/cuales toca el mensaje,
+    # atado a nivel token; no puede inventar una categoria. El hub engancha cada
+    # una con su criterio (prosa) o su tool. Cubre la pregunta compleja multi-tema.
+    from app.core.guia_venta_prosa import categorias_conocimiento
+    conoc_enum = categorias_conocimiento() or ["otra"]
     return {
         "type": "object",
         "additionalProperties": False,
@@ -594,6 +624,13 @@ def _schema_interprete(nombres_mostrados: list[str],
                 },
                 "required": ["categoria", "cantidad", "criterio"],
             }},
+            # CATEGORIAS (Contactor, 22-jul): la o las categorias de la charla
+            # que toca el mensaje, atadas al enum de la fuente de verdad. Lista
+            # porque un mensaje complejo toca varias (precio + objecion + envio).
+            # Vacia si ninguna encaja (el sistema responde honesto sin cortar la
+            # venta). Es el disparador que enruta a criterio o a tool.
+            "categorias": {"type": "array",
+                           "items": {"type": "string", "enum": conoc_enum}},
             # PREFERENCIAS (16-jul): tope solo con CIFRA; exclusiones por origen
             # o marca; uso en una o dos palabras. Consumidas por el generador.
             "tope_presupuesto": {"type": ["integer", "null"]},
@@ -611,7 +648,7 @@ def _schema_interprete(nombres_mostrados: list[str],
         "required": ["respondiendo_a", "productos_consultados",
                      "producto_resuelto", "candidatos", "ofrecer_opciones",
                      "intencion", "estado_conversacion", "criterio", "pedido",
-                     "solicitud_nueva",
+                     "solicitud_nueva", "categorias",
                      "tope_presupuesto", "exclusiones", "uso_previsto",
                      "confianza"],
     }
