@@ -238,6 +238,17 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         await _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
                               trace_id, interp, present)
 
+    # ── FILTRO ANTI-DUPLICADO (refuerzo final, determinista) ────────────
+    # Ultima red antes de mandar y de guardar en memoria: saca cualquier
+    # duplicado exacto y contiguo que se haya colado en algun paso. Conservador,
+    # no toca lo legitimo.
+    from app.core.dedup import deduplicar_respuesta
+    _antes = texto
+    texto = deduplicar_respuesta(texto)
+    if texto != _antes:
+        log.info("hub_atado_dedup", trace_id=trace_id,
+                 quito=len(_antes) - len(texto))
+
     # ── MEMORIA ─────────────────────────────────────────────────────────
     history = history + [
         {"role": "user", "content": raw_message},

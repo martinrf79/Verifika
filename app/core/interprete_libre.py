@@ -2101,6 +2101,12 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
         respuesta = _con_saludo_inicial(respuesta, _business_name(tienda_id))
         log.info("interprete_libre_saludo_inicial", trace_id=trace_id)
 
+    # FILTRO ANTI-DUPLICADO (refuerzo final, determinista): ultima red antes de
+    # mandar y de guardar en memoria, saca cualquier duplicado exacto y contiguo
+    # que se haya colado en algun paso. Conservador, no toca lo legitimo.
+    from app.core.dedup import deduplicar_respuesta
+    respuesta = deduplicar_respuesta(respuesta)
+
     # El cliente recibe la respuesta limpia: el cartel de interpretacion se quito
     # (ahora va al log). La interpretacion se sigue viendo en interprete_libre_interpretacion.
     respuesta_final = respuesta
