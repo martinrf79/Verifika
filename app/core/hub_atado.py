@@ -285,19 +285,26 @@ async def _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
                 pregunta_cierre_hecha=pregunta_cierre_previa)
             rd = meta_lead.get("respuesta_directa")
             if rd:
-                # CONTINUIDAD: el cierre se SUMA a la respuesta coherente del
-                # solver, no la reemplaza (antes el enlatado pisaba la respuesta y
-                # se comia la pregunta que venia en el mismo mensaje: T3 "sirve
-                # para PS5", T9 "confirmame que va a cada ciudad"). El solver ya
-                # trae la confirmacion y la respuesta por el contacto de cierre;
-                # aca se le agregan los datos de pago o la linea de cierre reales.
-                # Solo reemplaza si el solver no dio nada sustancial (fallback).
+                # CONTINUIDAD: el cierre se SUMA a la respuesta del solver, no la
+                # reemplaza (antes el enlatado pisaba la respuesta y se comia la
+                # pregunta que venia en el mismo mensaje: T3 "sirve para PS5", T9
+                # "confirmame que va a cada ciudad"). PERO el path pregunta_suave
+                # arma respuesta_directa = respuesta_solver + pregunta, o sea ya
+                # trae el cuerpo entero: sumarlo duplicaba TODA la respuesta
+                # (banco guion 59 T2 y 60 T2). Si rd ya reconstruyo el cuerpo, se
+                # REEMPLAZA; si aporta solo su parte (datos de pago, linea de
+                # cierre), se SUMA. Sin cuerpo sustancial, rd manda.
                 base = (texto or "").strip()
+                rd_s = rd.strip()
                 sustancial = base and base != settings.VERIFIKA_FALLBACK_MESSAGE
-                texto = (base + "\n\n" + rd.strip()) if sustancial else rd
+                if not sustancial:
+                    texto, modo = rd_s, "reemplazo"
+                elif base[:80] and base[:80] in rd_s:
+                    texto, modo = rd_s, "reemplazo_dedup"
+                else:
+                    texto, modo = base + "\n\n" + rd_s, "suma"
                 log.info("hub_atado_cierre", trace_id=trace_id,
-                         accion=meta_lead.get("accion"),
-                         modo=("suma" if sustancial else "reemplazo"))
+                         accion=meta_lead.get("accion"), modo=modo)
         except Exception as e:
             log.warning("hub_atado_lead_error", trace_id=trace_id,
                         error=str(e)[:160])
@@ -381,24 +388,38 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         log.warning("hub_atado_guia_error", trace_id=trace_id,
                     error=str(e)[:120])
 
-    # ── SOLVER atado a las tools ────────────────────────────────────────
-    business = (get_config("business_name", tienda_id=tienda_id)
-                or settings.BUSINESS_NAME)
-    texto, meta = await solver_gemini.generar_respuesta(
-        raw_message, interp, estado, tienda_id, trace_id, history, business)
-    if not texto:
-        texto, meta = settings.VERIFIKA_FALLBACK_MESSAGE, (meta or {})
+    # ── SOLVER ATADO POR ENUM: generador_v2 (salida estructurada) ───────
+    # El modelo emite FRAGMENTOS atados a enums de la fuente -ids del universo
+    # del turno, temas de FAQ, bloques de criterio- por responseSchema strict,
+    # el MISMO mecanismo que el interprete. El CODIGO estampa cada dato al
+    # renderizar: precio, stock, total NACEN de la fuente, no del modelo.
+    # Reemplaza al solver de prosa libre, cuya salida sin schema dejaba pasar la
+    # alucinacion (stock inventado, banco guion 59). renderizar ya devuelve el
+    # texto final estampado; el unico texto libre es el pegamento, podado de dato.
+    from app.core import generador_v2
+    _primer_turno = not (estado.get("productos_vistos") or estado.get("carrito"))
+    frags, universo, presu_txt, presu_tools = await generador_v2.generar_fragmentos(
+        raw_message, history, estado, tienda_id, interp, trace_id)
+    if frags:
+        texto, _tools_called = generador_v2.renderizar(
+            frags, universo, estado, tienda_id, trace_id,
+            presupuesto_pre=presu_txt, presupuesto_tools=presu_tools,
+            mensaje=raw_message, primer_turno=_primer_turno)
+        meta = {"tools_called": _tools_called, "secciones": [],
+                "prosa_citada": [], "turno_criterio": False}
+        log.info("hub_atado_generador_v2", trace_id=trace_id,
+                 fragmentos=len(frags), tools=len(_tools_called))
+    else:
+        texto, meta = settings.VERIFIKA_FALLBACK_MESSAGE, {"tools_called": []}
+        log.warning("hub_atado_generador_v2_sin_fragmentos", trace_id=trace_id)
 
-    # ── ESTAMPADO por codigo ────────────────────────────────────────────
-    ids_mostrados = [m.upper() for m in _RE_PROD.findall(texto or "")]
-    present = _presupuesto_de_meta(meta)
-    if present:
-        texto = _sustituir_o_acoplar_presupuesto(texto, present)
-    texto = _estampar_productos(texto, tienda_id, trace_id)
-    # Si el modelo puso [[PRESUPUESTO]] sin un total que sellar, se saca prolijo
-    # para no filtrar el marcador (limpieza del estampado, no una guarda).
-    texto = _RE_PRESUP_SOBRANTE.sub(" ", texto).strip()
-    texto = _RE_ID_FILTRADO.sub("", texto)
+    # ── El dato ya lo estampo renderizar desde la fuente. Aca solo se leen el
+    # presupuesto y los productos mostrados para el cierre y la memoria; NO se
+    # re-inyecta (renderizar no deja marcadores [[PROD]] ni [[PRESUPUESTO]]).
+    present = presu_txt or _presupuesto_de_meta(meta)
+    ids_mostrados = [str(p.get("id")).upper()
+                     for p in productos_de_meta(meta) if p.get("id")]
+    texto = _RE_ID_FILTRADO.sub("", texto).strip()
 
     # ── CIERRE Y COBRO ──────────────────────────────────────────────────
     # Reusa la logica del camino vivo: entrega datos de pago a pedido, capta el
