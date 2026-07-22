@@ -272,6 +272,57 @@ def _correr_cierre(monkeypatch, mensaje, intencion, confianza,
             presupuesto_nuevo=presupuesto_nuevo))[1]
 
 
+# ── GATILLO D ATADO AL ENUM (22-jul, banco guion 59) ────────────────────────
+# Tras la pregunta de cierre, el disparo fuerte lo decide la INTENCION del
+# interprete, no el texto. Una pregunta con el interprete caido a "otra" ya no
+# captura un lead falso; una decision_compra si cierra aunque el score sea bajo.
+
+def _correr_cierre_post_pregunta(monkeypatch, mensaje, intencion, confianza=0.6):
+    import asyncio
+    from app.core import leads as L
+    monkeypatch.setattr(L, "get_lead_activo",
+                        lambda user_id, canal, tienda_id: None)
+    monkeypatch.setattr(L, "crear_lead", lambda **kw: "LEAD_TEST")
+    monkeypatch.setattr(L, "actualizar_lead",
+                        lambda lead_id, tienda_id, cambios: None)
+
+    async def _fake_notificar(**kw):
+        return None
+
+    monkeypatch.setattr(L, "notificar_lead", _fake_notificar)
+    monkeypatch.setattr(L, "modo_cierre", lambda tid: "lead")
+    interp = {"intencion": intencion, "confianza": confianza}
+    return asyncio.new_event_loop().run_until_complete(
+        L.procesar_mensaje_para_lead(
+            user_id="u1", canal="whatsapp", tienda_id="verifika_prod",
+            mensaje=mensaje, respuesta_solver="Total: $49.000", trace_id="t1",
+            interpretacion=interp, presupuesto="Total: $49.000",
+            presupuesto_nuevo=False, pregunta_cierre_hecha=True))[1]
+
+
+def test_gatillo_d_pregunta_con_interprete_caido_no_cierra(monkeypatch):
+    """El caso real del guion 59: "me alcanza o me paso" con el interprete caido
+    a intencion=otra NO dispara el cierre fuerte, queda pendiente."""
+    meta = _correr_cierre_post_pregunta(
+        monkeypatch, "tengo 80 lucas para todo con los envios, me alcanza o me paso",
+        "otra")
+    assert meta["accion"] == "pregunta_pendiente_cierre"
+
+
+def test_gatillo_d_pregunta_especifica_no_cierra(monkeypatch):
+    meta = _correr_cierre_post_pregunta(
+        monkeypatch, "y cuanto sale el envio a cada lado", "pregunta_especifica")
+    assert meta["accion"] == "pregunta_pendiente_cierre"
+
+
+def test_gatillo_d_decision_compra_cierra_aunque_score_bajo(monkeypatch):
+    """Una decision_compra tras la pregunta cierra fuerte aunque la confianza no
+    llegue al umbral: la pregunta manda sobre el score."""
+    meta = _correr_cierre_post_pregunta(
+        monkeypatch, "dale, lo llevo", "decision_compra", confianza=0.6)
+    assert meta["accion"] == "lead_fuerte_captado"
+
+
 def test_decision_sin_confianza_con_presupuesto_de_memoria_pregunta(monkeypatch):
     """decision_compra con confianza baja + presupuesto YA mostrado (memoria):
     el sistema hace la pregunta de cierre en vez de no hacer nada."""

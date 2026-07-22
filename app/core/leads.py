@@ -451,12 +451,16 @@ async def procesar_mensaje_para_lead(
                 log.warning("notificar_lead_failed", error=str(e)[:120])
             return None, {"accion": "no_interesado",
                           "respuesta_directa": MENSAJE_NO_INTERESADO}
-        # El cliente PREGUNTA o DUDA en vez de confirmar (ej "estas seguro que el
-        # envio llega a Santa Ana?"): NO se cierra. El solver le contesta la duda y
-        # la oferta de cierre sigue PENDIENTE para el proximo turno. Sin esto el bot
-        # se apura y salta a pedir datos sobre una pregunta (apuro visto 1-jul).
-        if (_cierre.parece_pregunta(mensaje)
-                or intencion_llm in ("pregunta_especifica", "exploracion", "posventa")):
+        # ATADO AL ENUM (22-jul). El cierre fuerte lo dispara la INTENCION del
+        # interprete (decision_compra), NO un heuristico de texto. Antes cerraba
+        # ante "todo lo que no fuera un no", asi que una PREGUNTA como "me alcanza
+        # o me paso" -con el interprete caido a intencion=otra por un JSON fallido-
+        # se leia como un si y capturaba el lead (falso cierre, banco guion 59).
+        # Ahora, tras la pregunta de cierre: solo una decision_compra confirma
+        # (aunque la confianza no llegue al umbral; la pregunta manda sobre el
+        # score). Una pregunta o cualquier otra intencion NO cierra: el solver la
+        # contesta y la oferta de cierre queda PENDIENTE para el proximo turno.
+        if intencion_llm != "decision_compra" or _cierre.parece_pregunta(mensaje):
             log.info("cierre_gatillo_pausado_pregunta", trace_id=trace_id,
                      intencion_llm=intencion_llm)
             return None, {"accion": "pregunta_pendiente_cierre"}
