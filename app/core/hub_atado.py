@@ -201,6 +201,26 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         texto, meta = settings.VERIFIKA_FALLBACK_MESSAGE, {"tools_called": []}
         log.warning("hub_atado_generador_v2_sin_fragmentos", trace_id=trace_id)
 
+    # ── GARANTIA del "no" honesto (categoria no vendida, fuente no_vendidas.json).
+    # El solver ya ofrece la alternativa real (nota + universo), pero el "no" no
+    # puede depender de que el modelo lo diga: el CODIGO lo estampa al frente si el
+    # texto no declino claro. La CASUISTICA vive en config; esto es el mecanismo.
+    try:
+        from app.core.guia_compra import categoria_no_vendida
+        _cnv = categoria_no_vendida(raw_message, tienda_id)
+        _declina = any(k in (texto or "").lower() for k in
+                       ("no vend", "no trabaj", "no manej", "no tenemos",
+                        "no lo tenemos", "no contamos", "no comerci",
+                        "no ofrecemos", "no dispon"))
+        if _cnv and not _declina:
+            texto = (f"Te soy honesto: {_cnv[0]} no trabajamos, nuestro rubro es "
+                     f"tecnología e informática.\n\n" + (texto or "")).strip()
+            log.info("hub_atado_no_vendida_estampada", trace_id=trace_id,
+                     pedida=_cnv[0])
+    except Exception as e:
+        log.warning("hub_atado_no_vendida_error", trace_id=trace_id,
+                    error=str(e)[:120])
+
     # ── El dato ya lo estampo renderizar desde la fuente. Aca solo se leen el
     # presupuesto y los productos mostrados para el cierre y la memoria; NO se
     # re-inyecta (renderizar no deja marcadores [[PROD]] ni [[PRESUPUESTO]]).

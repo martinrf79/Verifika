@@ -349,7 +349,7 @@ def _schema(ids, temas, criterios):
 
 
 def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
-            criterios_menu="", prefs=None):
+            criterios_menu="", prefs=None, nota_no_vendida=""):
     def _linea(p):
         base = (f"  {p['id']} = {p['nombre']} | "
                 f"${int(p.get('precio_ars',0)):,}".replace(",", ".")
@@ -422,6 +422,7 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
         "- faq: politica de la tienda -> tema.\n"
         "- envio: cotizar un destino -> destino.\n"
         "- cierre: invitar a comprar y pedir forma de pago.\n\n"
+        f"{nota_no_vendida}"
         f"PRODUCTOS disponibles (usa SOLO estos ids):\n{prods}\n\n"
         f"TEMAS de FAQ disponibles: {faq_list}\n"
         f"CRITERIO jurado para apoyarte (para el fragmento criterio: adapta "
@@ -490,8 +491,43 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
         # arma el CODIGO (mismo mecanismo de posicionado + red que el
         # presupuesto; el cliente SIEMPRE lo recibe).
         presu_txt, presu_tools = bloque_intermedio(mensaje, estado, tienda_id)
+    # CERTIFICADOR DE CATEGORIA NO VENDIDA (fuente de verdad no_vendidas.json):
+    # si el cliente pide una categoria que NO vendemos, el CODIGO lo decide -no el
+    # modelo- y le pasa el hecho + la alternativa REAL para que redacte el "no"
+    # honesto en su voz, sin caer la venta. La alternativa entra al universo asi
+    # sus opciones son ids reales que el solver puede ofrecer.
+    nota_no_vendida = ""
+    try:
+        from app.core.guia_compra import categoria_no_vendida
+        from app.core.guia_pedido import opciones_por_categoria
+        _cnv = categoria_no_vendida(mensaje or "", tienda_id)
+        if _cnv:
+            _pedida, _alt = _cnv
+            if _alt:
+                for p in opciones_por_categoria(_alt, tienda_id, k=4):
+                    if isinstance(p, dict) and p.get("id") and p["id"] not in ids:
+                        universo.append(p)
+                        ids.append(p["id"])
+                nota_no_vendida = (
+                    f"OJO, HONESTIDAD: el cliente pide '{_pedida}', que NO "
+                    f"vendemos (nuestro rubro es tecnologia e informatica). "
+                    f"Decilo claro y sin vueltas, y ofrecele la alternativa real "
+                    f"de {_alt} que esta en el listado. NO digas ni sugieras que "
+                    f"tenemos '{_pedida}'.\n")
+            else:
+                nota_no_vendida = (
+                    f"OJO, HONESTIDAD: el cliente pide '{_pedida}', que NO "
+                    f"vendemos (nuestro rubro es tecnologia e informatica). "
+                    f"Decilo claro y sin vueltas. NO digas ni sugieras que lo "
+                    f"tenemos ni inventes una alternativa que no este en el "
+                    f"listado; invitalo a ver lo que si tenemos.\n")
+            log.info("generador_v2_no_vendida", trace_id=trace_id,
+                     pedida=_pedida, alt=_alt)
+    except Exception as e:
+        log.warning("generador_v2_no_vendida_error", trace_id=trace_id,
+                    error=str(e)[:120])
     prompt = _prompt(mensaje, historial, universo, temas, estado, presu_txt,
-                     criterios_menu, prefs)
+                     criterios_menu, prefs, nota_no_vendida)
     schema = _schema(ids, temas, criterios)
 
     def _call():

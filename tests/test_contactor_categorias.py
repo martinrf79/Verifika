@@ -119,6 +119,23 @@ def test_criterio_rag_sigue_como_red_sin_categorias(firestore_doble):
     assert "cuotas_financiacion" in ids
 
 
+# ── CATEGORIA NO VENDIDA desde la FUENTE DE VERDAD (no_vendidas.json) ─────────
+from app.core.guia_compra import categoria_no_vendida
+
+
+def test_no_vendida_desde_config_caza_consola_celular_con_puntuacion(firestore_doble):
+    # casos que el guion 62 destapo: consola/play/ps con signo pegado.
+    assert categoria_no_vendida("tenes ps5?", "verifika_prod")[0] == "ps5"
+    assert categoria_no_vendida("y una play 5 tenes?", "verifika_prod")[0] == "play 5"
+    p, alt = categoria_no_vendida("tenes celulares?", "verifika_prod")
+    assert p == "celulares" and alt == "tablet"
+
+
+def test_no_vendida_no_dispara_en_categoria_real(firestore_doble):
+    assert categoria_no_vendida("tenes una notebook?", "verifika_prod") is None
+    assert categoria_no_vendida("dame un mouse", "verifika_prod") is None
+
+
 # ── CONTACTOR DEL DESTINO al CP (multidestino robusto 2/3/4) ─────────────────
 from app.core.interpretador import _canonizar_destinos_cp
 

@@ -149,7 +149,11 @@ def guia_mas_barato(mensaje: str,
 # "no lo vendemos" + la alternativa real mas cercana. La tabla es finita y se
 # amplia desde el radar de logs; palabras ambiguas ("play", "telefono" como
 # dato de contacto) quedan AFUERA a proposito.
-_NO_VENDIDAS: dict[str, str | None] = {
+#
+# FUENTE DE VERDAD: la lista vive en data/clientes/verifika_prod/no_vendidas.json.
+# Sumar un caso es agregar una linea a ESE json, no tocar codigo. El dict de abajo
+# es solo el fallback minimo si el archivo faltara; el archivo, si esta, manda.
+_NO_VENDIDAS_FALLBACK: dict[str, str | None] = {
     "celular": "tablet", "celulares": "tablet", "smartphone": "tablet",
     "smartphones": "tablet", "iphone": "tablet", "iphones": "tablet",
     "televisor": "monitor", "televisores": "monitor", "smart tv": "monitor",
@@ -159,6 +163,28 @@ _NO_VENDIDAS: dict[str, str | None] = {
     "heladera": None, "heladeras": None, "lavarropas": None,
     "microondas": None, "aire acondicionado": None,
 }
+_NO_VENDIDAS_CACHE: dict[str, str | None] | None = None
+
+
+def _no_vendidas() -> dict[str, str | None]:
+    """Lee la fuente de verdad (no_vendidas.json) una vez y la cachea; si el
+    archivo falta o esta roto, cae al fallback en codigo."""
+    global _NO_VENDIDAS_CACHE
+    if _NO_VENDIDAS_CACHE is not None:
+        return _NO_VENDIDAS_CACHE
+    import json
+    import os
+    ruta = os.path.join(os.path.dirname(__file__), "..", "..", "data",
+                        "clientes", "verifika_prod", "no_vendidas.json")
+    try:
+        with open(ruta, encoding="utf-8") as f:
+            data = json.load(f)
+        mapa = {str(k).strip().lower(): v
+                for k, v in (data.get("no_vendidas") or {}).items() if k}
+        _NO_VENDIDAS_CACHE = mapa or dict(_NO_VENDIDAS_FALLBACK)
+    except Exception:
+        _NO_VENDIDAS_CACHE = dict(_NO_VENDIDAS_FALLBACK)
+    return _NO_VENDIDAS_CACHE
 
 
 def categoria_no_vendida(mensaje: str,
@@ -167,8 +193,11 @@ def categoria_no_vendida(mensaje: str,
     una categoria que la tienda no vende; None si no aplica. Si el mensaje
     ademas nombra una categoria REAL, no aplica: ese turno lo conduce el
     generador con el universo normal (responde lo que si hay)."""
-    m = " " + _norm(mensaje) + " "
-    pedida = next((p for p in _NO_VENDIDAS if f" {p} " in m), None)
+    # Puntuacion a espacios: sin esto "ps5?" o "celulares?" (signo pegado al
+    # final) no matchean el borde de palabra y el no honesto no salia.
+    m = " " + re.sub(r"[^\w]+", " ", _norm(mensaje)) + " "
+    no_vendidas = _no_vendidas()
+    pedida = next((p for p in no_vendidas if f" {p} " in m), None)
     if not pedida:
         return None
     reales = [str(c) for c in (get_categories(tienda_id=tienda_id) or [])]
@@ -176,7 +205,7 @@ def categoria_no_vendida(mensaje: str,
         cn = _norm(c)
         if f" {cn} " in m or f" {_singular(cn)} " in m:
             return None
-    alt = _NO_VENDIDAS[pedida]
+    alt = no_vendidas[pedida]
     if alt and not any(_norm(c) == _norm(alt) for c in reales):
         alt = None
     return pedida, alt
