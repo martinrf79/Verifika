@@ -130,6 +130,13 @@ def _bloque_memoria(estado: dict) -> str:
     if not isinstance(estado, dict):
         return ""
     partes: list[str] = []
+    # GUIA DETERMINISTA (ej "el mas barato con stock", calculada por el codigo
+    # desde el catalogo): si viaja en el estado, entra PRIMERA y con fuerza. El
+    # solver debe ofrecer EXACTAMENTE ese producto con su marcador; elegir el
+    # minimo es un problema cerrado, no se lo dejamos al modelo.
+    guia = str(estado.get("guia_determinista") or "").strip()
+    if guia:
+        partes.append(guia)
     resumen = str(estado.get("resumen_charla") or "").strip()
     if resumen:
         partes.append(f"Resumen de lo charlado antes (turnos viejos): {resumen}")

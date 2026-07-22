@@ -76,6 +76,22 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
              producto=interp.get("producto_resuelto"),
              consultados=interp.get("productos_consultados"))
 
+    # ── GUIA DETERMINISTA del "mas barato" ──────────────────────────────
+    # Elegir el minimo con stock es un problema CERRADO: lo computa el codigo y
+    # viaja al solver para que ofrezca EXACTAMENTE ese, en vez de adivinar (el
+    # banco lo mostro intermitente: en el guion 52 nego stock que existia).
+    if (detectar_criterio(raw_message) == "más barato"
+            or criterio_del_interprete(interp)):
+        try:
+            from app.core.guia_compra import guia_mas_barato
+            _g = guia_mas_barato(raw_message, estado.get("productos_vistos"))
+            if _g:
+                estado["guia_determinista"] = _g
+                log.info("hub_atado_guia_mas_barato", trace_id=trace_id)
+        except Exception as e:
+            log.warning("hub_atado_guia_error", trace_id=trace_id,
+                        error=str(e)[:120])
+
     # ── SOLVER atado a las tools ────────────────────────────────────────
     business = (get_config("business_name", tienda_id=tienda_id)
                 or settings.BUSINESS_NAME)
