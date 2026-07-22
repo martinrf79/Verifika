@@ -1,4 +1,4 @@
-# Corrida ATADA 53_multidestino_presupuesto_memoria — 2026-07-22 04:43
+# Corrida ATADA 53_multidestino_presupuesto_memoria — 2026-07-22 05:20
 
 Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 22.0s.
 
@@ -7,14 +7,14 @@ Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 22.0s.
 
 CLIENTE: necesito equipar dos oficinas, algo economico
 
-BOT (6651 ms):
+BOT (5900 ms):
 
 ```
-¡Hola! Qué bueno que nos contactes para equipar las oficinas. Entiendo perfectamente, cuando se trata de equipar varios puestos, la clave es buscar algo que rinda bien, que sea confiable y que no infle el presupuesto innecesariamente.
+¡Hola! Qué bueno que nos contactes para equipar tus oficinas. Te aseguro que en Verifika tenemos opciones para que rindas al máximo sin gastar de más.
 
-Para lo que es oficina, lo más importante es la durabilidad y la comodidad básica. Como me pediste algo económico, te cuento que para el mouse, por ejemplo, tenemos una excelente opción de entrada que es la compra más inteligente por precio y calidad: el Mouse Genius DX-110 Negro - $8.500 (11 en stock). Es un caballito de batalla ideal para el día a día.
+Para empezar, como buscás algo económico, tengo para ofrecerte el mouse Mouse Genius DX-110 Negro - $8.500 (11 en stock), que es nuestra opción más accesible y tenemos stock disponible para que puedas equipar los puestos que necesites.
 
-¿Qué otros periféricos o componentes estás necesitando para estas oficinas? (teclados, monitores, algún otro equipo). Si me das una idea de cuántos puestos querés armar y qué tipo de tareas van a realizar, te puedo armar una propuesta bien ajustada para que optimices la inversión. ¿Te parece si empezamos por ahí?
+¿Qué otros periféricos o componentes tenés pensado sumar para las oficinas? Así te armo un presupuesto bien completo.
 ```
 
 - JUEZ: limpio
@@ -23,15 +23,10 @@ Para lo que es oficina, lo más importante es la durabilidad y la comodidad bás
 
 CLIENTE: pasame los 2 mouse y 2 teclados mas baratos que tengas
 
-BOT (4559 ms):
+BOT (2812 ms):
 
 ```
-Para equipar las oficinas con lo más económico que tenemos disponible, la mejor opción es combinar el mouse y el teclado que te comentaba:
-
-* Mouse: Genius DX-110 (tenemos 11 en stock).
-* Teclado: Genius KB-110 (tenemos 11 en stock).
-
-Como necesitas dos de cada uno, ya los tengo seleccionados para armarte el presupuesto. ¿Querés que te cotice el envío a alguna localidad en particular para tener el total final con entrega incluida?
+No tengo esa información confirmada en el catálogo. Dejame consultar y te confirmo en breve.
 ```
 
 - JUEZ: limpio
@@ -40,17 +35,10 @@ Como necesitas dos de cada uno, ya los tengo seleccionados para armarte el presu
 
 CLIENTE: uno de cada uno va a Cordoba capital y el resto a Rosario
 
-BOT (4929 ms):
+BOT (4934 ms):
 
 ```
-Perfecto, ya te armé el presupuesto considerando los dos envíos a distintos destinos (Córdoba y Rosario). Presupuesto:
-- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000
-- 2x Teclado Redragon Kumara K552 Negro: $36.000 c/u = $72.000
-Subtotal: $89.000
-Envio (2 envios): $13.500
-Total: $102.500
-
-¿Te parece bien avanzar con este pedido o preferís que revisemos alguna otra opción?
+No tengo esa información confirmada en el catálogo. Dejame consultar y te confirmo en breve.
 ```
 
 - JUEZ: limpio
@@ -59,17 +47,23 @@ Total: $102.500
 
 CLIENTE: el que va a Rosario que sea el teclado, cambialo, no el mouse
 
-BOT (7824 ms):
+BOT (8162 ms):
 
 ```
-¡Entendido! Te actualizo el presupuesto. Para que sea lo más económico posible, mantuve los 2 Mouse Genius DX-110 Negro y ajusté el pedido para incluir un Teclado Genius KB-110X (que es nuestra opción más accesible) junto con el Redragon Kumara K552 que ya tenías en mente, repartiendo los envíos a Rosario y Córdoba como necesitabas. Presupuesto:
-- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000
-- 1x Teclado Redragon Kumara K552 Negro: $36.000 c/u = $36.000
-Subtotal: $53.000
-Envio (2 envios): $13.500
-Total: $66.500
+¡Excelente elección! Para tu oficina, lo más económico que tenemos en stock que cumple con lo que buscás es:
 
-¿Te parece bien esta configuración para cerrar el pedido o preferís que ajustemos algo más antes de avanzar?
+- 2 Mouse Genius DX-110 Negro (son un clásico, muy confiables).
+- 1 Teclado Genius KB-110X Blanco.
+- 1 Teclado Logitech K120 Blanco. Como me comentaste que los envíos van a destinos distintos (Córdoba capital y Rosario), el costo de envío se calculará por separado para cada uno.
+
+¿Querés que avancemos con este pedido para que ya lo tengan en las oficinas? Si te parece bien, confirmame así coordinamos los detalles.
+
+Presupuesto:
+- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000
+- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000
+- 1x Teclado Logitech K120 Blanco: $14.500 c/u = $14.500
+Subtotal: $43.500
+Total: $43.500
 ```
 
 - JUEZ: limpio
@@ -78,12 +72,12 @@ Total: $66.500
 
 CLIENTE: cuanto me queda de envio por cada lado?
 
-BOT (4425 ms):
+BOT (7022 ms):
 
 ```
-Te cuento, el costo de envío es de $7.500 para Córdoba Capital y de $6.000 para Rosario. Envío orientativo, puede variar al confirmar la compra.
+Para los envíos a tus dos destinos, los costos son los siguientes: para Córdoba capital el costo es de $7.500 y para Rosario es de $6.000. Envío orientativo, puede variar al confirmar la compra.
 
-¿Querés que avancemos con el pedido así o preferís que revisemos algo más?
+¿Te parece bien que preparemos todo para que salga cuanto antes? Si estás de acuerdo, confirmame y te paso el total final con todo incluido.
 ```
 
 - JUEZ: limpio
@@ -92,7 +86,7 @@ Te cuento, el costo de envío es de $7.500 para Córdoba Capital y de $6.000 par
 
 CLIENTE: tengo 60 lucas para todo, me entra o me paso?
 
-BOT (7798 ms):
+BOT (8195 ms):
 
 ```
 No tengo esa información confirmada en el catálogo. Dejame consultar y te confirmo en breve.
@@ -104,12 +98,10 @@ No tengo esa información confirmada en el catálogo. Dejame consultar y te conf
 
 CLIENTE: y una cosa, son originales los productos?
 
-BOT (5656 ms):
+BOT (5393 ms):
 
 ```
-¡Qué buena pregunta! Te soy totalmente sincero: en Verifika trabajamos con proveedores oficiales y todo lo que vendemos es nuevo y original. No comercializamos réplicas ni productos reacondicionados.
-
-Sobre tu presupuesto, para no decirte nada al aire, voy a calcular el total exacto con los productos que elegimos y los envíos a Rosario y Córdoba, así vemos si estamos dentro de esos $60.000 o si nos pasamos un poquito. Dame un segundo que lo proceso. ¿Te parece que sigamos adelante con este pedido o preferís que busquemos alguna alternativa más económica para ajustarnos a tu límite?
+No tengo esa información confirmada en el catálogo. Dejame consultar y te confirmo en breve.
 ```
 
 - JUEZ: limpio
@@ -118,21 +110,16 @@ Sobre tu presupuesto, para no decirte nada al aire, voy a calcular el total exac
 
 CLIENTE: el primero que me mostraste, el de Cordoba, ese confirmamelo
 
-BOT (12027 ms):
+BOT (5353 ms):
 
 ```
-¡Dale, buenísimo! Te confirmo el presupuesto para el pedido con envío a Córdoba: Presupuesto:
-- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000
-- 1x Teclado Redragon Kumara K552 Negro: $36.000 c/u = $36.000
-Subtotal: $53.000
-Envio: $7.500
-Total: $60.500
-
-Como ves, nos pasamos apenas $500 de tu presupuesto de $60.000. ¿Querés que sigamos adelante con la compra igual o preferís que busquemos algún otro mouse un poco más económico para ajustar ese margen?
+No tengo esa información confirmada en el catálogo. Dejame consultar y te confirmo en breve.
 ```
 
 - JUEZ: limpio
 
+- **JUEZ-CHARLA: coletilla repetida en 5 turnos: 'no tengo esa información confirmada en el catálogo. dejame consultar y'**
+
 ## Resumen
 
-- Juez: charla limpia
+- Juez: 1 problema(s)
