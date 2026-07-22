@@ -4,6 +4,59 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 22-jul-2026 (2ª tanda) — LOS DOS MODELOS ATADOS POR ENUM EN EL FLUJO
+SIMPLE. Rama `claude/session-lg1xff`. NO en producción todavía. ====**
+
+Objetivo de Martín para esta etapa: el flujo SIMPLE (mensaje → intérprete llena
+los campos por enum en todas las categorías → solver responde atado por enum a
+todas las categorías, tools, prosa, cierre, memoria) tiene que dar respuesta con
+técnica de venta y casi CERO alucinación, único error posible el de
+interpretación. El refuerzo duro determinista (verifika) va DESPUÉS. Lo hecho:
+
+1. **RONDA 1 — el solver ata su SALIDA por enum.** El hub cableaba
+   `solver_gemini` (prosa libre, temperature 0.5, sin responseSchema): las tools
+   ataban el dato de ENTRADA pero el texto de SALIDA no, y ahí se colaba la
+   alucinación (stock inventado, guion 59). Ahora el hub usa `generador_v2`: el
+   modelo emite FRAGMENTOS por `responseSchema` strict, el MISMO mecanismo que el
+   intérprete; el código estampa cada dato al renderizar. El único texto libre es
+   el pegamento, podado de dato. Además se arregló la respuesta DUPLICADA del
+   cierre (bug de los dos caminos: `_aplicar_cierre` sumaba el cuerpo entero que
+   ya traía `respuesta_directa`; ahora reemplaza si el cierre reconstruyó el
+   cuerpo, suma si aporta solo su parte).
+2. **RONDA 2.1 — el enum del universo consume los campos del intérprete.**
+   `universo_productos` ahora arma el enum desde `solicitud_nueva`, `pedido` y
+   `productos_consultados` (no solo el texto del mensaje). Se retiraron del hub
+   las guías de TEXTO muertas (`_guia_*`) y sus imports: un solo mecanismo de
+   atadura, el enum. La categoría pedida no mostrada ya no se pierde por
+   construcción.
+3. **RONDA 2.2 — el criterio del solver atado a las categorías del intérprete.**
+   El fragmento criterio tiene DOS fuentes al mismo enum de ids de GUIA_VENTA:
+   las 76 categorías que el intérprete DECLARÓ traen su criterio directo, y el
+   RAG del mensaje sigue como red. Así objeción, compatibilidad, financiación,
+   factura, garantía, regalo, cualquiera de las 76, razona desde su fuente. Es el
+   Contactor abarcativo.
+4. **GATILLO DE CIERRE ATADO AL ENUM** (`leads.py`): el cierre fuerte lo dispara
+   `intencion=decision_compra`, no un heurístico de texto. Mató el falso cierre
+   que leía "me alcanza o me paso" como un sí.
+
+**VERIFICADO VIVO por el flujo atado, juez LIMPIO en los tres:**
+- Guion 59 (multidestino + memoria + presupuesto + cierre con split): cayeron los
+  4 bugs del run viejo (duplicación, falso cierre, deriva de color, stock
+  inventado). Total final $46.550, Córdoba+Neuquén.
+- Guion 61 (objeción de precio, compatibilidad, cuotas+factura, cierre): cada
+  turno citó el bloque de criterio correcto; política honesta sin inventar tasa.
+- Guion 45 (capciosas, conceptos imposibles): corrige cada premisa falsa sin
+  inventar spec ni caer la venta.
+
+**634 tests offline verdes.** Cambios: `hub_atado.py`, `generador_v2.py`,
+`leads.py`, `tests/test_contactor_categorias.py`, `tests/test_cierre.py`.
+
+**PRÓXIMO (2.3+):** probar categoría NO vendida (celular, consola) honesta +
+alternativa por el flujo atado; confirmar el fragmento FAQ (query_faq) para el
+dato duro de política (cuota exacta, plazo exacto); correr el guion 53. Después,
+con el banco firme, apuntar el orchestrator a hub_atado y retirar las guardas.
+Recién ahí, el refuerzo duro determinista que mencionó Martín.
+
 **==== 22-jul-2026 — TRACK ACTIVO: FLUJO ATADO (hub_atado) + EL CONTACTOR.
 Rama `claude/session-lg1xff`. NO está en producción todavía. ====**
 
