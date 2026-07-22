@@ -75,6 +75,42 @@ def _carrito_traza(carrito) -> list:
             for c in (carrito or []) if isinstance(c, dict)]
 
 
+def _norm_nombre(s: str) -> str:
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(s or "").lower())
+    return "".join(c for c in s if not unicodedata.combining(c)).strip()
+
+
+def _guia_pedido_anclado(interp, productos_vistos) -> str:
+    """Ata cada renglon del pedido al id REAL del producto que el cliente YA
+    vio, para que el solver use EXACTAMENTE ese en calculate_total y no re-elija
+    otro modelo al armar el total (fue el nudo del multidestino: el interprete
+    leia DX-110 pero el solver cargaba el M170). Config, no calculo: mapea el
+    nombre que el interprete resolvio (enum-atado a lo visto) a su id de
+    productos_vistos. '' si no hay pedido o no se puede anclar."""
+    pedido = (interp or {}).get("pedido") or []
+    if not pedido:
+        return ""
+    idx = {}
+    for p in (productos_vistos or []):
+        if isinstance(p, dict) and p.get("nombre") and p.get("id"):
+            idx[_norm_nombre(p["nombre"])] = str(p["id"])
+    lineas = []
+    for it in pedido:
+        if not isinstance(it, dict):
+            continue
+        pid = idx.get(_norm_nombre(it.get("producto")))
+        if not pid:
+            return ""  # un renglon sin anclar: no se fuerza a medias, red del solver
+        cant = it.get("cantidad") or 1
+        dest = str(it.get("destino") or "").strip()
+        lineas.append(f"{cant}x [[PROD:{pid}]]" + (f" a {dest}" if dest else ""))
+    return ("\n\n[GUIA DETERMINISTA del pedido, calculada desde lo que el cliente "
+            "YA eligio: usa EXACTAMENTE estos productos e ids en calculate_total "
+            "y para mostrarlos, NO cambies el modelo ni elijas otro: "
+            + "; ".join(lineas) + ". Usa el marcador [[PROD:id]] tal cual.]")
+
+
 async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
                          canal: str, trace_id: str) -> str:
     """Un turno del bot por el flujo atado. Devuelve el texto para el cliente."""
@@ -104,21 +140,27 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
              producto=interp.get("producto_resuelto"),
              consultados=interp.get("productos_consultados"))
 
-    # ── GUIA DETERMINISTA del "mas barato" ──────────────────────────────
-    # Elegir el minimo con stock es un problema CERRADO: lo computa el codigo y
-    # viaja al solver para que ofrezca EXACTAMENTE ese, en vez de adivinar (el
-    # banco lo mostro intermitente: en el guion 52 nego stock que existia).
-    if (detectar_criterio(raw_message) == "más barato"
-            or criterio_del_interprete(interp)):
-        try:
+    # ── GUIA DETERMINISTA que viaja al solver (config, no calculo) ──────
+    # Prioridad 1: si el interprete leyo un PEDIDO concreto, se atan sus
+    # renglones al id real de lo que el cliente vio, asi el solver no re-elige
+    # otro modelo al armar el total (nudo del multidestino). Prioridad 2: si no
+    # hay pedido pero el criterio es "mas barato", viaja el minimo con stock por
+    # categoria. Elegir el producto es un problema cerrado; lo ata el codigo y
+    # el solver ofrece EXACTAMENTE ese, sin adivinar.
+    try:
+        _g = _guia_pedido_anclado(interp, estado.get("productos_vistos"))
+        _tipo_g = "pedido_anclado" if _g else ""
+        if not _g and (detectar_criterio(raw_message) == "más barato"
+                       or criterio_del_interprete(interp)):
             from app.core.guia_compra import guia_mas_barato
             _g = guia_mas_barato(raw_message, estado.get("productos_vistos"))
-            if _g:
-                estado["guia_determinista"] = _g
-                log.info("hub_atado_guia_mas_barato", trace_id=trace_id)
-        except Exception as e:
-            log.warning("hub_atado_guia_error", trace_id=trace_id,
-                        error=str(e)[:120])
+            _tipo_g = "mas_barato" if _g else ""
+        if _g:
+            estado["guia_determinista"] = _g
+            log.info("hub_atado_guia", trace_id=trace_id, tipo=_tipo_g)
+    except Exception as e:
+        log.warning("hub_atado_guia_error", trace_id=trace_id,
+                    error=str(e)[:120])
 
     # ── SOLVER atado a las tools ────────────────────────────────────────
     business = (get_config("business_name", tienda_id=tienda_id)
