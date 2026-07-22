@@ -211,6 +211,39 @@ def _guia_categorias(interp) -> str:
             + "\n".join(lineas) + "]")
 
 
+_CATS_CIERRE = {"cierre_venta", "formas_pago", "descuento_transferencia"}
+
+
+def _es_cierre(interp) -> bool:
+    """True si el turno avanza al cierre: decision de compra o una categoria de
+    cierre/pago declarada por el Contactor. Es el disparador del contacto de
+    cierre que le da continuidad al solver."""
+    if not isinstance(interp, dict):
+        return False
+    if interp.get("intencion") == "decision_compra":
+        return True
+    cats = set(interp.get("categorias") or [])
+    return bool(cats & _CATS_CIERRE)
+
+
+def _guia_cierre(interp) -> str:
+    """CONTACTO DE CIERRE: cuando el cliente avanza a cerrar, el solver mantiene la
+    CONTINUIDAD de la venta, confirma el pedido y, si hay varios destinos, el
+    reparto, y responde cualquier pregunta del mismo mensaje. Regla dura: NO
+    escribe datos de pago, CBU, alias, link ni titular, ni un total inventado, ni
+    una frase enlatada de 'pedido tomado'. El CODIGO agrega el cierre real y los
+    datos de pago al final (estampado determinista). Asi el cierre no pisa ni se
+    come la respuesta; el dato de pago sale de la fuente, no del modelo."""
+    if not _es_cierre(interp):
+        return ""
+    return ("\n\n[EL CLIENTE AVANZA AL CIERRE: confirma con naturalidad el pedido y, "
+            "si hay varios destinos, que va a cada uno, y responde cualquier "
+            "pregunta del mensaje. NO escribas datos de pago (CBU, alias, link, "
+            "titular), ni un total inventado, ni una frase enlatada tipo 'pedido "
+            "tomado': el sistema agrega el cierre y los datos de pago reales al "
+            "final. Vos manten la charla coherente y calida hasta ahi.]")
+
+
 async def _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
                           trace_id, interp, present):
     """Cablea el CIERRE y COBRO al hub reusando la MISMA funcion del camino vivo
@@ -250,10 +283,21 @@ async def _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
                 datos_previos=datos_acumulados,
                 presupuesto_nuevo=presupuesto_nuevo,
                 pregunta_cierre_hecha=pregunta_cierre_previa)
-            if meta_lead.get("respuesta_directa"):
-                texto = meta_lead["respuesta_directa"]
+            rd = meta_lead.get("respuesta_directa")
+            if rd:
+                # CONTINUIDAD: el cierre se SUMA a la respuesta coherente del
+                # solver, no la reemplaza (antes el enlatado pisaba la respuesta y
+                # se comia la pregunta que venia en el mismo mensaje: T3 "sirve
+                # para PS5", T9 "confirmame que va a cada ciudad"). El solver ya
+                # trae la confirmacion y la respuesta por el contacto de cierre;
+                # aca se le agregan los datos de pago o la linea de cierre reales.
+                # Solo reemplaza si el solver no dio nada sustancial (fallback).
+                base = (texto or "").strip()
+                sustancial = base and base != settings.VERIFIKA_FALLBACK_MESSAGE
+                texto = (base + "\n\n" + rd.strip()) if sustancial else rd
                 log.info("hub_atado_cierre", trace_id=trace_id,
-                         accion=meta_lead.get("accion"))
+                         accion=meta_lead.get("accion"),
+                         modo=("suma" if sustancial else "reemplazo"))
         except Exception as e:
             log.warning("hub_atado_lead_error", trace_id=trace_id,
                         error=str(e)[:160])
@@ -319,6 +363,10 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         if _gc:
             _bloques.append(_gc)
             _tipos.append("categorias")
+        _gci = _guia_cierre(interp)
+        if _gci:
+            _bloques.append(_gci)
+            _tipos.append("cierre")
         if not _bloques and (detectar_criterio(raw_message) == "más barato"
                              or criterio_del_interprete(interp)):
             from app.core.guia_compra import guia_mas_barato

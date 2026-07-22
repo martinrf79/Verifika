@@ -107,3 +107,24 @@ def test_ancla_consultado_vacio_sin_consulta():
 def test_ancla_consultado_vacio_si_no_mapea():
     # nombre que no está en lo visto -> no se fuerza a medias
     assert _guia_consultado({"producto_resuelto": "Monitor que no existe"}, _VISTOS) == ""
+
+
+# ── CONTACTO DE CIERRE (continuidad: suma, no reemplaza) ─────────────────────
+from app.core.hub_atado import _es_cierre, _guia_cierre
+
+
+def test_es_cierre_por_decision_o_categoria():
+    assert _es_cierre({"intencion": "decision_compra"})
+    assert _es_cierre({"intencion": "pregunta_especifica",
+                       "categorias": ["cierre_venta"]})
+    assert _es_cierre({"categorias": ["formas_pago"]})
+    assert not _es_cierre({"intencion": "exploracion", "categorias": ["mouse"]})
+    assert not _es_cierre({})
+
+
+def test_guia_cierre_prohibe_datos_de_pago_al_modelo():
+    b = _guia_cierre({"intencion": "decision_compra"})
+    assert "CIERRE" in b
+    assert "CBU" in b and "NO escribas" in b
+    # sin cierre, no adjunta
+    assert _guia_cierre({"intencion": "exploracion"}) == ""
