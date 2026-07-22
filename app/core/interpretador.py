@@ -287,7 +287,7 @@ estado_conversacion. saludo, recién llega. explorando, pregunta o compara sin d
 
 criterio. mas_barato cuando pide lo más económico en cualquier forma, lo más barato, lo más eco, lo más conveniente, lo de menor precio. intermedio cuando pide precio medio o RECHAZA lo más barato, algo intermedio, gama media, ni el más barato ni el más caro. null si no hay criterio. Cubrí modismos argentinos, no solo la palabra exacta.
 
-pedido. SOLO cuando arma un pedido concreto, productos mostrados con cantidad, nombre exacto del mostrado, sin inventar cantidades. Si reparte entre destinos, cada renglón con su destino y las cantidades desglosadas; con un solo destino o sin decirlo, destino null. Un destino tiene que aparecer en el mensaje o en la memoria de la charla.
+pedido. SOLO cuando arma un pedido concreto, productos mostrados con cantidad, nombre exacto del mostrado, sin inventar cantidades. Si reparte entre destinos, cada renglón con su destino y las cantidades desglosadas; con un solo destino o sin decirlo, destino null. Un destino tiene que aparecer en el mensaje o en la memoria de la charla. REGLA DURA del destino: cada renglón lleva UNA sola localidad, nunca dos juntas. Si un set va a una ciudad y otro a otra, hacé un renglón por ciudad con sus cantidades; jamás pongas "Mendoza y Neuquén" en el mismo destino.
 
 solicitud_nueva. Cuando el cliente pide una CATEGORÍA de producto que TODAVÍA no se mostró en la charla, por ejemplo pide "2 teclados baratos" y todavía no se mostró ningún teclado. Va la categoría EXACTA de esta lista: {cats_str}. Más la cantidad si la dice y el criterio si lo expresa. Es para lo que hay que traer y mostrar recién ahora, tanto un producto AGREGADO como un CAMBIO a otra categoría. NO uses este campo para algo que ya se mostró, eso va en pedido o en productos_consultados con su nombre exacto. Si no pide ninguna categoría nueva, lista vacía.
 
@@ -417,6 +417,57 @@ def coercionar_destinos(resultado: dict, mensaje: str) -> dict:
         it["destino"] = None
     if fantasmas:
         log.warning("interpretador_destino_fantasma", destinos=fantasmas[:4])
+    _canonizar_destinos_cp(resultado)
+    return resultado
+
+
+def _canonizar_destinos_cp(resultado: dict) -> dict:
+    """CONTACTOR del destino a la tabla del CP (multidestino robusto para 2, 3, 4
+    localidades): cada renglon del pedido tiene que llevar UNA sola localidad REAL
+    de la tabla geo. Si el destino nombra UNA, se canoniza a esa; si nombra VARIAS
+    ('Mendoza y Neuquen' en un mismo campo, la falla del multidestino), se PARTE el
+    renglon en uno por localidad, repartiendo la cantidad. Asi cotizar_envio corre
+    una vez por destino real y calculate_total agrupa bien. No decide ni recalcula:
+    solo ata el destino a la fuente y deja las cantidades desglosadas."""
+    try:
+        from app.core import geo_cp
+        geo_cp._cargar()  # la tabla se carga lazy; _localidades_en_texto no la dispara
+    except Exception:
+        return resultado
+    pedido = resultado.get("pedido")
+    if not isinstance(pedido, list) or not pedido:
+        return resultado
+    nuevo, partido = [], False
+    for it in pedido:
+        if not isinstance(it, dict) or not it.get("destino"):
+            nuevo.append(it)
+            continue
+        _, hits = geo_cp._localidades_en_texto(geo_cp._norm(str(it["destino"])))
+        locs = list(dict.fromkeys(h[0] for h in hits))  # localidades reales, dedup
+        if len(locs) <= 1:
+            # Un solo destino (o ninguno reconocido): se deja TAL CUAL, con su
+            # provincia si la trae, para no perder la desambiguacion. Solo se
+            # parten las concatenaciones, que son la falla del multidestino.
+            nuevo.append(it)
+            continue
+        # Varias localidades en un mismo destino: se parte, una por renglon.
+        partido = True
+        try:
+            cant = int(it.get("cantidad") or 1)
+        except (TypeError, ValueError):
+            cant = 1
+        k = len(locs)
+        base, rem = divmod(max(cant, 1), k)
+        for i, loc in enumerate(locs):
+            c = base + (1 if i < rem else 0)
+            if c <= 0:
+                continue
+            nuevo.append({**it, "cantidad": c, "destino": loc})
+    if partido:
+        log.warning("interpretador_destino_multiple",
+                    pedido=[(i.get("producto"), i.get("cantidad"), i.get("destino"))
+                            for i in nuevo])
+    resultado["pedido"] = nuevo
     return resultado
 
 

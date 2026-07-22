@@ -128,3 +128,36 @@ def test_guia_cierre_prohibe_datos_de_pago_al_modelo():
     assert "CBU" in b and "NO escribas" in b
     # sin cierre, no adjunta
     assert _guia_cierre({"intencion": "exploracion"}) == ""
+
+
+# ── CONTACTOR DEL DESTINO al CP (multidestino robusto 2/3/4) ─────────────────
+from app.core.interpretador import _canonizar_destinos_cp
+
+
+def test_destino_concatenado_se_parte_por_localidad():
+    r = {"pedido": [{"producto": "Auric", "cantidad": 2, "destino": "Mendoza y Neuquen"}]}
+    _canonizar_destinos_cp(r)
+    dests = [i["destino"] for i in r["pedido"]]
+    assert "mendoza" in dests and "neuquen" in dests
+    assert len(r["pedido"]) == 2
+
+
+def test_destino_una_localidad_queda_intacto():
+    # una sola localidad: NO se toca, conserva su provincia si la trae
+    r = {"pedido": [{"producto": "Mouse", "cantidad": 1, "destino": "Cordoba capital"}]}
+    _canonizar_destinos_cp(r)
+    assert len(r["pedido"]) == 1
+    assert r["pedido"][0]["destino"] == "Cordoba capital"
+
+
+def test_destino_tres_localidades_escala():
+    r = {"pedido": [{"producto": "Kit", "cantidad": 3, "destino": "Rosario, Cordoba y Salta"}]}
+    _canonizar_destinos_cp(r)
+    assert len(r["pedido"]) == 3
+    assert {"rosario", "cordoba", "salta"} <= {i["destino"] for i in r["pedido"]}
+
+
+def test_destino_null_no_toca():
+    r = {"pedido": [{"producto": "Mouse", "cantidad": 1, "destino": None}]}
+    _canonizar_destinos_cp(r)
+    assert r["pedido"][0]["destino"] is None
