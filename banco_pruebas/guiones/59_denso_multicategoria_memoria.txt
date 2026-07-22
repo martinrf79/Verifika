@@ -1,0 +1,14 @@
+# Guion DENSO (22-jul): maxima dificultad en pocos turnos para gastar poco
+# Gemini. Combina en 5 turnos: multiproducto con categoria que se puede perder
+# (mouse+teclado), asesoramiento, multidestino con cambio/negacion sobre la
+# memoria y envio por lado, restriccion de presupuesto contra el carrito en
+# memoria, ancla de memoria (el teclado elegido) + compatibilidad razonada +
+# identidad/original, y cierre con pago dividido + cobro + confirmar destino.
+# PASA si: no pierde el teclado, respeta el cambio del destino, el total y los
+# envios cierran, contesta originalidad y uso sin inventar spec, y el cierre
+# entrega el cobro con el reparto por ciudad. Sin alucinar plata ni stock.
+hola necesito equipar dos oficinas, pasame 2 mouse y 2 teclados buenos pero economicos, confio en tu eleccion
+uno de cada uno va a Cordoba capital y el resto a Neuquen, pero el que va a Neuquen que sea solo el teclado no el mouse, recalcula el envio por lado
+tengo 80 lucas para todo con los envios, me alcanza o me paso
+el teclado que elegiste sirve para escribir 8 horas por dia y es original de fabrica?
+listo cerramos, mitad transferencia y mitad mercado pago, pasame los datos y confirmame que va a cada ciudad
