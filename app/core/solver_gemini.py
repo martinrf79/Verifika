@@ -425,28 +425,33 @@ def _run(raw_message, history, tienda_id, business_name, trace_id,
             # veces emite la MISMA llamada decenas de veces (cotizar_envio de la
             # misma localidad 50 veces, visto vivo en el 53). Se colapsan las
             # IDENTICAS por nombre+args; las distintas (otra localidad, otros ids)
-            # sobreviven intactas. No toca memoria ni el intérprete: es solo sacar
-            # el duplicado exacto antes de ejecutarlo. Tope de guarda al final.
+            # sobreviven intactas. Se dedupea a nivel PARTE, no de functionCall, para
+            # NO perder el thoughtSignature que Gemini 3.x exige devolver en cada
+            # part (si se pierde, 400 "missing thought_signature"). No toca memoria
+            # ni el intérprete: es solo sacar el duplicado exacto. Tope de guarda.
             _vistas = set()
-            _dedup = []
-            for _fc in fcalls:
-                _clave = (_fc.get("name", ""),
-                          json.dumps(_fc.get("args") or {}, sort_keys=True))
-                if _clave in _vistas:
-                    continue
-                _vistas.add(_clave)
-                _dedup.append(_fc)
-            if len(fcalls) != len(_dedup):
+            _fcall_parts = []
+            _otras_parts = []
+            for _p in parts:
+                if "functionCall" in _p:
+                    _fc = _p["functionCall"]
+                    _clave = (_fc.get("name", ""),
+                              json.dumps(_fc.get("args") or {}, sort_keys=True))
+                    if _clave in _vistas:
+                        continue
+                    _vistas.add(_clave)
+                    _fcall_parts.append(_p)  # parte ENTERA, con thoughtSignature
+                else:
+                    _otras_parts.append(_p)  # texto y thought parts
+            if len(fcalls) != len(_fcall_parts):
                 log.info("solver_gemini_fcalls_dedup", trace_id=trace_id,
-                         crudas=len(fcalls), unicas=len(_dedup))
-            fcalls = _dedup[:_MAX_FCALLS]
-            # El turno del modelo se reescribe con SOLO las llamadas unicas mas el
-            # texto, asi hay un functionResponse por cada functionCall y la API no
-            # se queja por descalce (y no arrastra 50 parts basura al contexto).
-            _text_parts = [p for p in parts if "text" in p]
-            contents.append({"role": "model",
-                             "parts": _text_parts
-                             + [{"functionCall": fc} for fc in fcalls]})
+                         crudas=len(fcalls), unicas=len(_fcall_parts))
+            _fcall_parts = _fcall_parts[:_MAX_FCALLS]
+            fcalls = [_p["functionCall"] for _p in _fcall_parts]
+            # El turno del modelo se reescribe con SOLO las partes unicas, asi hay un
+            # functionResponse por functionCall y no arrastra parts basura, pero
+            # conservando la parte completa (firma incluida).
+            contents.append({"role": "model", "parts": _otras_parts + _fcall_parts})
             resp_parts = []
             for fc in fcalls:
                 nombre = fc.get("name", "")
