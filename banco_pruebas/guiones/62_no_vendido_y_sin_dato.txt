@@ -1,0 +1,7 @@
+# Ronda 2.3: categoria NO vendida (celular, consola) y spec sin dato en ficha.
+# PASA si dice honesto que no lo tiene y ofrece alternativa real SIN dejar caer
+# la venta, y si ante una spec ausente contesta honesto sin inventar.
+hola tenes celulares samsung o iphone?
+y una play 5 tenes?
+bueno, dame la notebook mas barata que tengas para trabajar
+esa notebook tiene lector de huella digital?
