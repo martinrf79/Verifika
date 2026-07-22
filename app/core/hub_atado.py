@@ -175,6 +175,57 @@ def _guia_categorias(interp) -> str:
             + "\n".join(lineas) + "]")
 
 
+async def _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
+                          trace_id, interp, present):
+    """Cablea el CIERRE y COBRO al hub reusando la MISMA funcion del camino vivo
+    (leads.procesar_mensaje_para_lead), no la duplica: entrega los datos de pago
+    cuando el cliente los pide, capta el lead en la decision de compra y hace la
+    pregunta suave de cierre. Arma los mismos insumos que interprete_libre. Devuelve
+    (texto posiblemente pisado por el cierre, datos acumulados, flag de pregunta de
+    cierre, presupuesto string) para persistir."""
+    from app.core.leads import procesar_mensaje_para_lead
+    presupuesto = present or (conv.get("ultimo_presupuesto") or "")
+    presupuesto_nuevo = bool(present)
+    _intent = interp.get("intencion") if isinstance(interp, dict) else None
+    datos_previos = conv.get("datos_cliente_parciales") or {}
+    datos_turno: dict = {}
+    try:
+        from app.core.cierre import extraer_determinista, extraer_datos_cliente
+        from app.core.interprete_libre import _parece_aportar_dato
+        datos_turno.update(extraer_determinista(raw_message))
+        if (_intent in ("aporta_dato", "decision_compra")
+                or _parece_aportar_dato(raw_message)):
+            for k, v in extraer_datos_cliente(raw_message, trace_id).items():
+                if v:
+                    datos_turno[k] = v
+    except Exception as e:
+        log.warning("hub_atado_extractor_error", trace_id=trace_id,
+                    error=str(e)[:120])
+    datos_acumulados = {**datos_previos, **datos_turno}
+    pregunta_cierre_previa = bool(conv.get("pregunta_cierre_hecha"))
+    meta_lead: dict = {}
+    # No se cierra sobre el fallback: no hay respuesta real que confirmar.
+    if texto and texto != settings.VERIFIKA_FALLBACK_MESSAGE:
+        try:
+            _, meta_lead = await procesar_mensaje_para_lead(
+                user_id, canal, tienda_id, raw_message, texto, trace_id,
+                interpretacion=interp if isinstance(interp, dict) else None,
+                presupuesto=presupuesto, datos_turno=datos_turno,
+                datos_previos=datos_acumulados,
+                presupuesto_nuevo=presupuesto_nuevo,
+                pregunta_cierre_hecha=pregunta_cierre_previa)
+            if meta_lead.get("respuesta_directa"):
+                texto = meta_lead["respuesta_directa"]
+                log.info("hub_atado_cierre", trace_id=trace_id,
+                         accion=meta_lead.get("accion"))
+        except Exception as e:
+            log.warning("hub_atado_lead_error", trace_id=trace_id,
+                        error=str(e)[:160])
+    pregunta_cierre_hecha = (meta_lead.get("accion")
+                             in ("pregunta_cierre", "pregunta_pendiente_cierre"))
+    return texto, datos_acumulados, pregunta_cierre_hecha, presupuesto
+
+
 async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
                          canal: str, trace_id: str) -> str:
     """Un turno del bot por el flujo atado. Devuelve el texto para el cliente."""
@@ -258,6 +309,15 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     texto = _RE_PRESUP_SOBRANTE.sub(" ", texto).strip()
     texto = _RE_ID_FILTRADO.sub("", texto)
 
+    # ── CIERRE Y COBRO ──────────────────────────────────────────────────
+    # Reusa la logica del camino vivo: entrega datos de pago a pedido, capta el
+    # lead en la decision de compra, pregunta suave de cierre. Puede pisar el
+    # texto (ej "pasame los datos para transferir" -> CBU + link). Corre sobre el
+    # texto YA estampado y antes de guardarlo en la memoria.
+    texto, datos_cli_parciales, pregunta_cierre_hecha, presupuesto_str = \
+        await _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
+                              trace_id, interp, present)
+
     # ── MEMORIA ─────────────────────────────────────────────────────────
     history = history + [
         {"role": "user", "content": raw_message},
@@ -305,7 +365,10 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
             productos_vistos=productos_vistos, carrito_vigente=carrito_vigente,
             ultima_localidad=ultima_localidad,
             ultimas_localidades=ultimas_localidades,
-            criterio_cliente=criterio_cliente, provincia_envio=provincia_envio)
+            criterio_cliente=criterio_cliente, provincia_envio=provincia_envio,
+            datos_cliente_parciales=datos_cli_parciales,
+            pregunta_cierre_hecha=pregunta_cierre_hecha,
+            ultimo_presupuesto=(presupuesto_str or None))
     except Exception as e:
         log.warning("hub_atado_save_error", trace_id=trace_id, error=str(e)[:150])
 
