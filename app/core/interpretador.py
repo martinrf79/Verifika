@@ -116,9 +116,14 @@ def _get_client():
                 timeout=settings.LLM_TIMEOUT_SECONDS,
             )
         else:
+            # DeepSeek V4 soporta STRICT (enum a nivel schema) en el endpoint
+            # beta. Se usa /beta por default para que el response_format
+            # json_schema estricto del interprete ate igual que en Gemini; si el
+            # provider lo rechaza, el except de _llamar_llm cae al parseo + retry.
             _client = OpenAI(
                 api_key=settings.DEEPSEEK_API_KEY,
-                base_url="https://api.deepseek.com/v1",
+                base_url=os.getenv("DEEPSEEK_BASE_URL",
+                                   "https://api.deepseek.com/beta"),
                 timeout=settings.LLM_TIMEOUT_SECONDS,
             )
     return _client
@@ -628,13 +633,19 @@ async def _llamar_llm(prompt: str, response_format: dict | None = None) -> str:
                   "temperature": 0.0, "max_tokens": max_tok}
         if extra:
             kwargs["extra_body"] = extra
-        # Generacion restringida a nivel token via json_schema: OpenAI
-        # (Structured Outputs) y Gemini (el endpoint compatible acepta
-        # response_format json_schema; los 2.5 la respetan duro). Si el
-        # provider lo rechaza, el except de abajo reintenta sin schema.
-        rf = (response_format if (settings.INTERPRETER_PROVIDER in
-                                  ("openai", "gemini") and response_format)
-              else None)
+        # Atadura del schema segun lo que soporta cada API (medido, no supuesto):
+        # OpenAI y Gemini aceptan response_format json_schema STRICT (enum a nivel
+        # token, atadura dura). DeepSeek V4 NO lo soporta por response_format
+        # (400 "response_format type unavailable"); su strict va por tool calling.
+        # Para DeepSeek se usa json_object (garantiza JSON valido) y el enum lo
+        # asegura validar_schema + retry del lado del codigo: atadura BLANDA.
+        prov = settings.INTERPRETER_PROVIDER
+        if prov in ("openai", "gemini") and response_format:
+            rf = response_format
+        elif prov == "deepseek":
+            rf = {"type": "json_object"}
+        else:
+            rf = None
         try:
             if rf:
                 response = client.chat.completions.create(response_format=rf, **kwargs)
