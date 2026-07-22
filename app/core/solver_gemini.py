@@ -115,8 +115,11 @@ def _system_prompt(business_name: str) -> str:
         "compra'.\n\n"
         "Dentro de esos limites, VENDE con todo: razona, opina, aconseja y "
         "compara con criterio de vendedor, apoyado en la guia de venta y la "
-        "ficha real. Cerra siempre invitando a avanzar con la compra. Contesta "
-        "en texto natural de WhatsApp, sin markdown pesado."
+        "ficha real. Cerra siempre invitando a avanzar con la compra, pero VARIA "
+        "la frase de cierre en cada turno: NO repitas la misma muletilla que ya "
+        "usaste antes en la charla, sonas un robot. Mira tus turnos previos y "
+        "deci el cierre distinto. Contesta en texto natural de WhatsApp, sin "
+        "markdown pesado."
     )
 
 
