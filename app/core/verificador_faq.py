@@ -28,8 +28,11 @@ from app.logger import get_logger
 log = get_logger(__name__)
 
 # Clases de numero con unidad. El nombre de grupo 1 es siempre la cifra.
+# El porcentaje admite hasta 3 digitos (100%) y NO arranca pegado a otro digito:
+# sin el lookbehind, "100%" capturaba "00" (n=0) y sonaba un falso sin_respaldo.
 _CLASES: dict[str, re.Pattern] = {
-    "porcentaje": re.compile(r"(\d{1,2})\s*(?:%|por\s?ciento)", re.IGNORECASE),
+    "porcentaje": re.compile(r"(?<!\d)(\d{1,3})\s*(?:%|por\s?ciento)",
+                             re.IGNORECASE),
     "cuotas": re.compile(r"(\d{1,3})\s+cuotas?\b", re.IGNORECASE),
     "dias": re.compile(r"(\d{1,3})\s+d[ií]as?\b", re.IGNORECASE),
     "meses": re.compile(r"(\d{1,3})\s+mes(?:es)?\b", re.IGNORECASE),
@@ -113,13 +116,32 @@ def _respaldado(n: int, clase: str, pool: dict[str, set[int]]) -> bool:
     return min(vals) <= n <= max(vals)
 
 
+# Bloque de "Pago dividido" que estampa render_split (pago_split.py): las
+# proporciones del reparto (50%, 100%) y el % de descuento que sale de la FAQ,
+# TODO calculado y sellado por el codigo, no prosa del modelo. El verificador de
+# politica no lo juzga (mismo criterio que la plata no re-corrige un proof).
+_SPLIT_INICIO = re.compile(r"^\s*Pago dividido:", re.IGNORECASE | re.MULTILINE)
+_SPLIT_FIN = re.compile(r"^\s*Total final:.*$", re.IGNORECASE | re.MULTILINE)
+
+
+def _sin_bloque_split(texto: str) -> str:
+    """Saca el bloque sellado de Pago dividido antes de verificar politica."""
+    m = _SPLIT_INICIO.search(texto or "")
+    if not m:
+        return texto or ""
+    fin = _SPLIT_FIN.search(texto, m.end())
+    corte = fin.end() if fin else len(texto)
+    return texto[:m.start()] + texto[corte:]
+
+
 def verificar_faq_numerica(respuesta: str, evidencia: list[dict]) -> dict:
     """Chequea cada numero con unidad de clase contra el pool GLOBAL (toda la FAQ
     + catalogo). Devuelve {"ok": bool, "sin_respaldo": [{clase, n}]}."""
+    texto = _sin_bloque_split(respuesta)
     pool = _pool_de_evidencia(evidencia)
     sin_respaldo: list[dict] = []
     for clase, rx in _CLASES.items():
-        for m in rx.finditer(respuesta or ""):
+        for m in rx.finditer(texto or ""):
             n = int(m.group(1))
             if not _respaldado(n, clase, pool):
                 d = {"clase": clase, "n": n}

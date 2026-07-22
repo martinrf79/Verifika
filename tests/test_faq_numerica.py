@@ -125,6 +125,42 @@ def test_numero_respaldado_no_se_toca():
     assert fix["respuesta"] == r
 
 
+# ── Bloque sellado de Pago dividido: dato del codigo, no politica del modelo ──
+
+def test_split_proporcion_100_no_es_falso_sin_respaldo():
+    """'transferencia (100%)' es la proporcion del reparto que sella render_split,
+    no una politica: antes el regex de 2 digitos capturaba '00' (n=0) y sonaba un
+    falso sin_respaldo. El bloque sellado no lo juzga el verificador de politica."""
+    r = ("Pago dividido:\n"
+         "- transferencia (100%): $1.532.500 - 20% descuento = $1.226.000\n"
+         "Total final: $1.226.000")
+    v = VF.verificar_faq_numerica(r, EVIDENCIA)
+    assert v["ok"], v["sin_respaldo"]
+
+
+def test_split_medios_partidos_no_marcan():
+    """50/50 entre transferencia y Mercado Pago: las dos proporciones son del
+    codigo, ninguna es politica sin respaldo."""
+    r = ("Pago dividido:\n"
+         "- transferencia (50%): $100.000 - 20% descuento = $80.000\n"
+         "- mercado pago (50%): $100.000\n"
+         "Total final: $180.000")
+    v = VF.verificar_faq_numerica(r, EVIDENCIA)
+    assert v["ok"], v["sin_respaldo"]
+
+
+def test_porcentaje_inventado_en_prosa_fuera_del_split_se_sigue_cazando():
+    """La exclusion es SOLO del bloque sellado: un % inventado en la prosa del
+    modelo alrededor del bloque se sigue marcando."""
+    r = ("Te hago 35% de descuento aparte.\n"
+         "Pago dividido:\n"
+         "- transferencia (100%): $100.000 - 20% descuento = $80.000\n"
+         "Total final: $80.000")
+    v = VF.verificar_faq_numerica(r, EVIDENCIA)
+    assert not v["ok"]
+    assert {"clase": "porcentaje", "n": 35} in v["sin_respaldo"]
+
+
 def test_temas_de_meta_saca_principal_y_relacionadas():
     """El ancla del turno sale de los query_faq del meta: tema principal + las
     relacionadas que la tool devolvio."""
