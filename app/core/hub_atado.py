@@ -221,6 +221,33 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         log.warning("hub_atado_no_vendida_error", trace_id=trace_id,
                     error=str(e)[:120])
 
+    # ── HONESTIDAD DE SPEC (fuente specs_preguntables.json): si el cliente
+    # pregunto una spec que la ficha NO trae, el CODIGO saca la afirmacion del
+    # modelo y estampa "la ficha no lo especifica". El producto en cuestion sale
+    # del que el interprete resolvio o del unico mostrado este turno.
+    try:
+        from app.core.generador_v2 import estampar_honestidad_specs
+        _prod_spec = None
+        _pr = interp.get("producto_resuelto") if isinstance(interp, dict) else None
+        if _pr:
+            from app.core.interprete_libre import _resolver_nombre_a_producto
+            from app.storage.firestore_client import get_all_products
+            _prod_spec = _resolver_nombre_a_producto(
+                _pr, get_all_products(tienda_id=tienda_id))
+        if not _prod_spec:
+            _sh = productos_de_meta(meta)
+            if len(_sh) == 1 and _sh[0].get("id"):
+                _prod_spec = get_product_by_id(str(_sh[0]["id"]).upper(),
+                                               tienda_id=tienda_id)
+        if isinstance(_prod_spec, dict):
+            _antes_sp = texto
+            texto = estampar_honestidad_specs(texto, raw_message, _prod_spec)
+            if texto != _antes_sp:
+                log.info("hub_atado_spec_honesta", trace_id=trace_id)
+    except Exception as e:
+        log.warning("hub_atado_spec_error", trace_id=trace_id,
+                    error=str(e)[:120])
+
     # ── El dato ya lo estampo renderizar desde la fuente. Aca solo se leen el
     # presupuesto y los productos mostrados para el cierre y la memoria; NO se
     # re-inyecta (renderizar no deja marcadores [[PROD]] ni [[PRESUPUESTO]]).

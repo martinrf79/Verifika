@@ -1,0 +1,18 @@
+{
+  "_doc": "Specs que los clientes preguntan y que la ficha puede NO traer. FUENTE DE VERDAD: sumar una spec es agregar una entrada aca (claves = las formas de nombrarla; etiqueta = como la nombra el bot al ser honesto), no tocar codigo. Si el cliente pregunta por una spec de esta lista y el dato NO figura en la ficha del producto, el codigo estampa 'la ficha no lo especifica' y saca cualquier afirmacion del modelo sobre ella. El dato manda; el modelo no afirma lo que la fuente no dice.",
+  "specs": [
+    {"claves": ["hz", "hercios", "tasa de refresco", "refresco", "refresh"], "etiqueta": "los hercios de la pantalla"},
+    {"claves": ["thunderbolt"], "etiqueta": "el puerto Thunderbolt"},
+    {"claves": ["ram ampliable", "ampliar la ram", "ram expandible", "memoria ampliable", "slot de ram", "ram soldada"], "etiqueta": "si la RAM se puede ampliar"},
+    {"claves": ["puerto", "puertos", "usb", "hdmi", "displayport", "display port", "usb-c", "type-c"], "etiqueta": "los puertos exactos"},
+    {"claves": ["bateria", "autonomia", "duracion de bateria"], "etiqueta": "la autonomia de bateria"},
+    {"claves": ["retroiluminado", "retroiluminada", "retroiluminacion"], "etiqueta": "la retroiluminacion"},
+    {"claves": ["lector de huella", "lector de huellas", "huella digital", "huella dactilar", "fingerprint", "sensor de huella"], "etiqueta": "el lector de huella"},
+    {"claves": ["bluetooth"], "etiqueta": "el Bluetooth"},
+    {"claves": ["wifi", "wi-fi", "wifi 6", "wifi6"], "etiqueta": "el estandar de wifi"},
+    {"claves": ["camara", "webcam", "camara web"], "etiqueta": "la camara"},
+    {"claves": ["pantalla tactil", "tactil", "touchscreen", "touch"], "etiqueta": "si la pantalla es tactil"},
+    {"claves": ["lector de tarjetas", "lector sd", "ranura sd", "microsd"], "etiqueta": "el lector de tarjetas"},
+    {"claves": ["resistente al agua", "sumergible", "impermeable", "resistencia al agua"], "etiqueta": "la resistencia al agua"}
+  ]
+}

@@ -136,6 +136,36 @@ def test_no_vendida_no_dispara_en_categoria_real(firestore_doble):
     assert categoria_no_vendida("dame un mouse", "verifika_prod") is None
 
 
+# ── HONESTIDAD DE SPEC desde la FUENTE DE VERDAD (specs_preguntables.json) ────
+from app.core.generador_v2 import estampar_honestidad_specs, _specs_faltantes
+
+
+def test_spec_ausente_saca_afirmacion_del_modelo_y_estampa_honesto(firestore_doble):
+    prod = {"nombre": "Notebook X", "descripcion": "Core i5 16GB 512GB SSD"}
+    msg = "esa notebook tiene lector de huella digital?"
+    assert [e for e, _ in _specs_faltantes(msg, prod)] == ["el lector de huella"]
+    t = ("Notebook X: Core i5 16GB.\n"
+         "Lamentablemente no incluye lector de huella, igual es equilibrada.\n"
+         "¿Avanzamos con alguno?")
+    r = estampar_honestidad_specs(t, msg, prod)
+    assert "no incluye lector de huella" not in r.lower()
+    assert "la ficha no lo especifica" in r.lower()
+    assert "¿Avanzamos con alguno?" in r
+
+
+def test_spec_presente_en_ficha_no_se_estampa(firestore_doble):
+    prod = {"nombre": "Notebook Z", "descripcion": "tiene bluetooth y lector de huella"}
+    assert _specs_faltantes("tiene bluetooth?", prod) == []
+    t = "Sí, tiene Bluetooth integrado."
+    assert estampar_honestidad_specs(t, "tiene bluetooth?", prod) == t
+
+
+def test_spec_no_preguntada_no_toca_el_texto(firestore_doble):
+    prod = {"nombre": "Notebook Z", "descripcion": "Core i5"}
+    t = "Es una máquina muy equilibrada para tu trabajo."
+    assert estampar_honestidad_specs(t, "cuanto sale?", prod) == t
+
+
 # ── CONTACTOR DEL DESTINO al CP (multidestino robusto 2/3/4) ─────────────────
 from app.core.interpretador import _canonizar_destinos_cp
 

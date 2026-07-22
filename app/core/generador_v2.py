@@ -588,41 +588,100 @@ def _campo_ficha(prod, campo):
     return ""
 
 
-# Specs que los clientes preguntan y que la ficha puede no traer. Regex sobre
-# texto normalizado (minusculas, sin acentos). Si la pregunta esta en el
-# mensaje y el dato NO figura en la ficha del producto, el CODIGO estampa el
-# honesto: nunca mas un volcado de ficha que no contesta (guion 39, 19-jul).
-_SPECS_PREGUNTABLES = (
-    (re.compile(r"\bhz\b|hercios|refresco|refresh"), "los hercios de la pantalla"),
-    (re.compile(r"thunderbolt"), "el puerto Thunderbolt"),
-    (re.compile(r"\bram\b[^.]{0,40}(ampli|soldad|expand|slot)"
-                r"|(ampli|soldad|expand|slot)[^.]{0,40}\bram\b"),
+# Specs que los clientes preguntan y que la ficha puede no traer. FUENTE DE
+# VERDAD: data/clientes/verifika_prod/specs_preguntables.json (claves + etiqueta).
+# Sumar una spec es una entrada en ESE json, no tocar codigo. Si la pregunta esta
+# en el mensaje y el dato NO figura en la ficha, el CODIGO estampa el honesto y
+# saca la afirmacion del modelo: nunca un volcado que no contesta (guion 39) ni
+# una spec afirmada sin respaldo (guion 62). El fallback cubre si el archivo falta.
+_SPECS_FALLBACK = [
+    (["hz", "hercios", "refresco", "refresh"], "los hercios de la pantalla"),
+    (["thunderbolt"], "el puerto Thunderbolt"),
+    (["ram ampliable", "ampliar la ram", "ram expandible", "slot de ram"],
      "si la RAM se puede ampliar"),
-    (re.compile(r"\bpuertos?\b|\busb\b|\bhdmi\b|display\s?port"),
-     "los puertos exactos"),
-    (re.compile(r"bateria|autonomia"), "la autonomía de batería"),
-    (re.compile(r"retroilumin"), "la retroiluminación"),
-)
+    (["puerto", "puertos", "usb", "hdmi", "displayport"], "los puertos exactos"),
+    (["bateria", "autonomia"], "la autonomia de bateria"),
+    (["retroilumin"], "la retroiluminacion"),
+    (["lector de huella", "huella digital", "huella dactilar", "fingerprint"],
+     "el lector de huella"),
+]
+_SPECS_CACHE = None
 
 
-def _honesto_specs_faltantes(mensaje, prod):
-    """La frase honesta cuando el cliente pregunto una spec que la ficha del
-    producto NO trae. '' si no pregunto specs o si el dato esta en la ficha
-    (en ese caso el fragmento lo muestra)."""
+def _specs_preguntables():
+    """[(regex, etiqueta, claves)] desde el config, cacheado; fallback al codigo."""
+    global _SPECS_CACHE
+    if _SPECS_CACHE is not None:
+        return _SPECS_CACHE
+    entradas = None
+    try:
+        import json
+        import os
+        ruta = os.path.join(os.path.dirname(__file__), "..", "..", "data",
+                            "clientes", "verifika_prod", "specs_preguntables.json")
+        with open(ruta, encoding="utf-8") as f:
+            data = json.load(f)
+        entradas = [(s.get("claves") or [], s.get("etiqueta") or "")
+                    for s in (data.get("specs") or []) if s.get("etiqueta")]
+    except Exception:
+        entradas = None
+    compiladas = []
+    for claves, etiqueta in (entradas or _SPECS_FALLBACK):
+        cl = [_norm(c) for c in claves if c]
+        pat = "|".join(r"\b" + re.escape(c) + r"\b" for c in cl)
+        if pat and etiqueta:
+            compiladas.append((re.compile(pat), etiqueta, cl))
+    _SPECS_CACHE = compiladas
+    return _SPECS_CACHE
+
+
+def _specs_faltantes(mensaje, prod):
+    """[(etiqueta, regex)] de las specs que el cliente PREGUNTO y que la ficha del
+    producto NO trae. Vacio si no pregunto o si el dato figura en la ficha."""
     m = _norm(mensaje or "")
     if not m or not isinstance(prod, dict):
-        return ""
+        return []
     base = _norm(" ".join(str(prod.get(c) or "") for c in
                           ("nombre", "descripcion", "garantia_detalle",
                            "origen", "modelo")))
-    faltan = [nombre for rx, nombre in _SPECS_PREGUNTABLES
-              if rx.search(m) and not rx.search(base)]
+    return [(etiqueta, rx) for rx, etiqueta, _cl in _specs_preguntables()
+            if rx.search(m) and not rx.search(base)]
+
+
+def _honesto_specs_faltantes(mensaje, prod):
+    """La frase honesta cuando el cliente pregunto una spec que la ficha NO trae."""
+    faltan = [et for et, _rx in _specs_faltantes(mensaje, prod)]
     if not faltan:
         return ""
     lista = " ni ".join(faltan[:3])
     return (f"Sobre {lista}: la ficha no lo especifica y prefiero no "
             "inventarte el dato. Si lo necesitás, lo consulto con el equipo "
             "y te lo confirmo.")
+
+
+def estampar_honestidad_specs(texto, mensaje, prod):
+    """Refuerzo de honestidad por turno: si el cliente pregunto una spec AUSENTE
+    de la ficha, SACA las lineas de prosa que la afirman (el modelo no puede
+    asegurar lo que la fuente no dice) y ESTAMPA el honesto. Idempotente. Las
+    lineas con dato duro ($) y la propia linea honesta se conservan."""
+    faltan = _specs_faltantes(mensaje, prod)
+    if not faltan or not (texto or "").strip():
+        return texto
+    honesto = _honesto_specs_faltantes(mensaje, prod)
+    honesto_n = _norm(honesto)[:40]
+    out = []
+    for linea in texto.split("\n"):
+        n = _norm(linea)
+        if honesto_n and honesto_n in n:
+            out.append(linea)
+            continue
+        if "$" not in linea and any(rx.search(n) for _et, rx in faltan):
+            continue
+        out.append(linea)
+    nuevo = re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()
+    if honesto and honesto_n not in _norm(nuevo):
+        nuevo = (nuevo + "\n\n" + honesto).strip() if nuevo else honesto
+    return nuevo
 
 
 def _poda_prosa(texto, nombres_universo=None):

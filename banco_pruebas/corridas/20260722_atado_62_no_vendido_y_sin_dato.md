@@ -1,4 +1,4 @@
-# Corrida ATADA 62_no_vendido_y_sin_dato — 2026-07-22 23:26
+# Corrida ATADA 62_no_vendido_y_sin_dato — 2026-07-22 23:53
 
 Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 8.0s.
 
@@ -7,14 +7,10 @@ Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 8.0s.
 
 CLIENTE: hola tenes celulares samsung o iphone?
 
-BOT (7476 ms):
+BOT (6097 ms):
 
 ```
-Te soy honesto: celulares no trabajamos, nuestro rubro es tecnología e informática.
-
-¡Hola! Qué bueno que nos escribas. Te cuento, en Verifika Tech nos especializamos exclusivamente en computación, periféricos y componentes, por lo que no comercializamos celulares de ninguna marca.
-
-Si buscás un equipo para multimedia o estudio, tengo una excelente opción que no es Samsung ni iPhone, ideal para lo que necesitás.
+¡Hola! Qué bueno saludarte. Entiendo perfectamente lo que estás buscando, pero te soy sincero: en Verifika Tech no trabajamos ni celulares ni la marca Apple.
 
 Tablet Lenovo Tab M10 Plata - $223.000 (18 en stock)
 
@@ -27,16 +23,12 @@ Tablet Lenovo Tab M10 Plata - $223.000 (18 en stock)
 
 CLIENTE: y una play 5 tenes?
 
-BOT (5450 ms):
+BOT (14957 ms):
 
 ```
 Te soy honesto: play 5 no trabajamos, nuestro rubro es tecnología e informática.
 
-Si buscás algo para entretenerte, ver series o estudiar cómodo en cualquier lado, te recomiendo que le pegues un ojo a las tablets que tenemos, son ideales para multimedia.
-
-Tablet Lenovo Tab M10 Plata - $223.000 (18 en stock)
-
-¿Alguno te interesa? Decime y te paso el total en el momento.
+No tengo esa información confirmada en el catálogo. Dejame consultar y te confirmo en breve.
 ```
 
 - JUEZ: limpio
@@ -45,23 +37,16 @@ Tablet Lenovo Tab M10 Plata - $223.000 (18 en stock)
 
 CLIENTE: bueno, dame la notebook mas barata que tengas para trabajar
 
-BOT (4629 ms):
+BOT (4475 ms):
 
 ```
-Para el trabajo diario, esta notebook te va a rendir muy bien gracias a su procesador y el disco sólido, que es lo que realmente hace que todo vuele. Es la compra inteligente si querés cuidar el bolsillo sin sacrificar fluidez en lo que hacés día a día.
+¡Hola! Entiendo perfectamente, para trabajar necesitás algo que sea ágil y confiable. Te busqué la opción más económica que tenemos en stock que cumple con ese perfil.
 
 Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris - $693.000 (19 en stock)
 
-Presupuesto:
-- 1x Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000 c/u = $693.000
-Subtotal: $693.000
-Total: $693.000
+Como la vas a usar para trabajar, esta notebook te va a dar la fluidez necesaria en el día a día. Al ser una gama media con disco sólido, vas a notar que el sistema vuela comparado con equipos más antiguos.
 
-Pago dividido:
-- transferencia (100%): $693.000 - 10% descuento = $623.700
-Total final: $623.700
-
-¿Lo dejamos confirmado así?
+¿Alguno te interesa? Decime y te paso el total en el momento.
 ```
 
 - JUEZ: limpio
@@ -70,15 +55,12 @@ Total final: $623.700
 
 CLIENTE: esa notebook tiene lector de huella digital?
 
-BOT (4157 ms):
+BOT (4066 ms):
 
 ```
-Te chequeo ese detalle técnico de la notebook ahora mismo.
+¿Seguimos con alguno? En un toque te paso el total.
 
-Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris:
-  Notebook HP 245 G9 Core i5 16GB 512GB SSD, color Gris. Core i5 16GB 512GB SSD. peso 1500g. dimensiones 39.1x25.1x1.9 cm. Carcasa de Aluminio. Garantia oficial 12 meses. Uso recomendado: Trabajo y estudio.
-
-¿Querés que avancemos con alguno? Te armo el total al instante.
+Sobre el lector de huella: la ficha no lo especifica y prefiero no inventarte el dato. Si lo necesitás, lo consulto con el equipo y te lo confirmo.
 ```
 
 - JUEZ: limpio
