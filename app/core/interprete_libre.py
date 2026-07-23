@@ -83,40 +83,10 @@ def _sustituir_o_acoplar_presupuesto(respuesta: str, present: str) -> str:
     return "\n".join(nuevas).strip()
 
 
-def _presupuesto_de_meta(meta: dict) -> str:
-    """Saca el presupuesto YA VERIFICADO (campo presentacion de calculate_total)
-    del meta del solver, para que el cierre y el link de pago usen el total real
-    de la calculadora, nunca uno inventado. "" si el solver no calculo este turno."""
-    for tc in reversed((meta or {}).get("tools_called", []) or []):
-        if tc.get("name") == "calculate_total":
-            pres = (tc.get("result") or {}).get("presentacion")
-            if pres:
-                return pres
-    return ""
-
-
-def _money(n):
-    try:
-        return f"{int(n):,}".replace(",", ".")
-    except (TypeError, ValueError):
-        return None
-
-
-def _linea_producto(p: dict) -> str:
-    """Linea REAL de un producto desde el catalogo: nombre + precio + stock. La
-    verdad de la fuente, la usa el estampado de [[PROD:id]] y la guarda de
-    producto para re-anclar con el dato real, no re-tipeado."""
-    if not isinstance(p, dict):
-        return ""
-    nombre = str(p.get("nombre", "")).strip()
-    precio = _money(p.get("precio_ars"))
-    stock = p.get("stock", 0)
-    partes = [nombre]
-    if precio:
-        partes.append(f"- ${precio}")
-    if isinstance(stock, int) and stock > 0:
-        partes.append(f"({stock} en stock)")
-    return " ".join(partes).strip()
+# _presupuesto_de_meta, _money y _linea_producto se movieron a
+# app/core/pedido_helpers (fuente única). Se re-importan acá sin duplicar.
+from app.core.pedido_helpers import (  # noqa: E402
+    _presupuesto_de_meta, _money, _linea_producto)
 
 
 def _estampar_productos(texto: str, tienda_id: str, trace_id: str = None) -> str:
@@ -188,31 +158,8 @@ def _forzar_pregunta_si_ambiguo(interp: dict, respuesta: str) -> str | None:
 _CONF_MIN_PRODUCTO = 0.8
 
 
-def _resolver_nombre_a_producto(resuelto: str, catalogo: list) -> dict | None:
-    """Reconcilia el NOMBRE que resolvio el interprete con UN producto del
-    catalogo, por contencion de nombre completo: el nombre del catalogo esta
-    contenido en el resuelto o al reves (matchear por token suelto daria
-    'mouse' contra medio catalogo; por eso el viejo certificador de queries no
-    servia aca y se retiro en la limpieza del 10-jul). Devuelve el producto
-    SOLO si matchea uno unico; ante cero o varios, None (no se pisa la
-    respuesta). Un termino vago como 'mouse' matchea muchos y cae a None, que
-    es lo que queremos."""
-    import unicodedata
-
-    def _n(s):
-        s = unicodedata.normalize("NFKD", str(s or "").lower())
-        return "".join(c for c in s if not unicodedata.combining(c)).strip()
-
-    r = _n(resuelto)
-    if not r:
-        return None
-    hits: dict[str, dict] = {}
-    for p in catalogo or []:
-        nom = _n(p.get("nombre"))
-        pid = str(p.get("id") or "")
-        if nom and pid and (nom in r or r in nom):
-            hits[pid] = p
-    return next(iter(hits.values())) if len(hits) == 1 else None
+# _resolver_nombre_a_producto se movió a app/core/pedido_helpers (fuente única).
+from app.core.pedido_helpers import _resolver_nombre_a_producto  # noqa: E402
 
 
 def _reanclar_si_producto_divergente(interp: dict, respuesta: str,
@@ -518,19 +465,8 @@ def _fallback_o_curada(mensaje: str, interp: dict | None, tienda_id: str,
     return settings.VERIFIKA_FALLBACK_MESSAGE
 
 
-def _parece_aportar_dato(mensaje: str) -> bool:
-    """Heuristica barata: el mensaje parece traer un dato de cierre (numero, pago,
-    o cue de domicilio), aunque el interprete no lo haya marcado como aporta_dato.
-    Abre el extractor LLM en cotizaciones que ya mencionan direccion o pago."""
-    if not mensaje:
-        return False
-    t = mensaje.lower()
-    if any(ch.isdigit() for ch in t):
-        return True
-    claves = ("transferenc", "mercado pago", "efectivo", "tarjeta", "debito",
-              "credito", "calle", "avenida", " av ", "direccion", "domicilio",
-              "envio a", "enviar a", "me llamo", "mi nombre")
-    return any(k in t for k in claves)
+# _parece_aportar_dato se movió a app/core/pedido_helpers (fuente única).
+from app.core.pedido_helpers import _parece_aportar_dato  # noqa: E402
 
 
 async def procesar_interprete_libre(user_id: str, raw_message: str,

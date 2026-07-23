@@ -425,7 +425,7 @@ def mensaje_opciones_categorias(cats_pedido: list[tuple], tienda_id: str,
     pregunta de modelos. Cero prosa del LLM: en real el solver listaba
     productos sin stock y re-pedia la provincia ya dada. None si ninguna
     categoria tiene opciones (el turno cae al camino normal)."""
-    from app.core.interprete_libre import _linea_producto
+    from app.core.pedido_helpers import _linea_producto
     bloques = []
     for n, cat in cats_pedido:
         ops = opciones_por_categoria(cat, tienda_id)

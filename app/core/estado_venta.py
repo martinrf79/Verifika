@@ -415,7 +415,7 @@ def aplicar_ancla_producto(interp: dict, mensaje: str, estado: dict,
         que la guia selle el presupuesto real."""
     if not isinstance(interp, dict):
         return ""
-    from app.core.interprete_libre import _resolver_nombre_a_producto
+    from app.core.pedido_helpers import _resolver_nombre_a_producto
     estado = estado if isinstance(estado, dict) else {}
     m = _norm_ancla(mensaje)
 
@@ -475,7 +475,7 @@ def producto_anotado_actualizado(previo: dict | None, interp: dict,
             or str(interp.get("intencion") or "") in
             ("decision_compra", "aporta_dato")):
         return previo
-    from app.core.interprete_libre import _resolver_nombre_a_producto
+    from app.core.pedido_helpers import _resolver_nombre_a_producto
     p = _resolver_nombre_a_producto(resuelto, catalogo)
     if isinstance(p, dict) and p.get("id") and p.get("nombre"):
         try:

@@ -37,7 +37,7 @@ def _norm(s) -> str:
 
 
 def _linea(p: dict) -> str:
-    from app.core.interprete_libre import _linea_producto
+    from app.core.pedido_helpers import _linea_producto
     return _linea_producto(p)
 
 
@@ -84,7 +84,7 @@ def _sec_saludo_puro(interp: dict, tienda_id: str) -> str | None:
 
 
 def _resolver_producto(nombre: str, tienda_id: str) -> dict | None:
-    from app.core.interprete_libre import _resolver_nombre_a_producto
+    from app.core.pedido_helpers import _resolver_nombre_a_producto
     from app.storage.firestore_client import get_all_products
     return _resolver_nombre_a_producto(nombre, get_all_products(tienda_id=tienda_id))
 

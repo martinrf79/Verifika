@@ -138,7 +138,7 @@ def universo_productos(mensaje, estado, tienda_id, interp=None):
             _add(get_product_by_id(str(src["id"]).upper(), tienda_id=tienda_id))
     # producto resuelto por el interprete
     if interp and interp.get("producto_resuelto"):
-        from app.core.interprete_libre import _resolver_nombre_a_producto
+        from app.core.pedido_helpers import _resolver_nombre_a_producto
         from app.storage.firestore_client import get_all_products
         _add(_resolver_nombre_a_producto(
             interp["producto_resuelto"], get_all_products(tienda_id=tienda_id)))
@@ -162,7 +162,7 @@ def universo_productos(mensaje, estado, tienda_id, interp=None):
                 if not nom:
                     continue
                 if _todos is None:
-                    from app.core.interprete_libre import _resolver_nombre_a_producto
+                    from app.core.pedido_helpers import _resolver_nombre_a_producto
                     from app.storage.firestore_client import get_all_products
                     _todos = get_all_products(tienda_id=tienda_id)
                 _add(_resolver_nombre_a_producto(nom, _todos))
@@ -263,7 +263,7 @@ def bloque_intermedio(mensaje, estado, tienda_id):
     from app.core.tools_context import set_current_tienda
     from app.core.guia_compra import intermedio_con_stock
     from app.storage.firestore_client import get_product_by_id
-    from app.core.interprete_libre import _linea_producto
+    from app.core.pedido_helpers import _linea_producto
     set_current_tienda(tienda_id)
     cats, lineas, tools = [], [], []
     for c in carrito:
@@ -860,7 +860,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
     from app.core.tools_context import set_current_tienda
     from app.core.tools import calculate_total, cotizar_envio
     from app.core.guia_pedido import opciones_por_categoria
-    from app.core.interprete_libre import _linea_producto
+    from app.core.pedido_helpers import _linea_producto
     from app.storage.firestore_client import get_product_by_id, get_all_faq
     from app.core.curadas import estampar_valores
     from app.core.guia_venta_prosa import texto_de

@@ -19,13 +19,13 @@ import re
 import time
 
 from app.core.interpretador import interpretar_mensaje
-from app.core import solver_gemini
+from app.core.pedido_helpers import _destinos_de_interp
 from app.core.estado_venta import (
     construir_estado, set_current_estado,
     productos_de_meta, carrito_de_meta, envio_de_meta, merge_productos,
     detectar_criterio, criterio_del_interprete, get_envio_localidades)
 from app.core.tools_context import set_current_tienda
-from app.core.interprete_libre import _presupuesto_de_meta
+from app.core.pedido_helpers import _presupuesto_de_meta
 from app.config import get_settings
 from app.logger import get_logger
 from app.storage.firestore_client import (
@@ -88,7 +88,7 @@ async def _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
     datos_turno: dict = {}
     try:
         from app.core.cierre import extraer_determinista, extraer_datos_cliente
-        from app.core.interprete_libre import _parece_aportar_dato
+        from app.core.pedido_helpers import _parece_aportar_dato
         datos_turno.update(extraer_determinista(raw_message))
         if (_intent in ("aporta_dato", "decision_compra")
                 or _parece_aportar_dato(raw_message)):
@@ -237,7 +237,7 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         _prod_spec = None
         _pr = interp.get("producto_resuelto") if isinstance(interp, dict) else None
         if _pr:
-            from app.core.interprete_libre import _resolver_nombre_a_producto
+            from app.core.pedido_helpers import _resolver_nombre_a_producto
             from app.storage.firestore_client import get_all_products
             _prod_spec = _resolver_nombre_a_producto(
                 _pr, get_all_products(tienda_id=tienda_id))
@@ -359,7 +359,7 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
              i_solicitud_nueva=[s.get("categoria")
                                 for s in (interp.get("solicitud_nueva") or [])
                                 if isinstance(s, dict)],
-             destinos_forzados=solver_gemini._destinos_de_interp(interp),
+             destinos_forzados=_destinos_de_interp(interp),
              # 3. SOLVER: tools que llamo, con el arg clave
              tools=_tools_traza(meta),
              # 4. SELLADO

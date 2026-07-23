@@ -31,19 +31,33 @@ sino medirlo con métrica (DeepEval) y sumar el refuerzo duro determinista.
   localidad ("Córdoba capital" resuelve), sin re-pedir el CP, sin duplicar el
   número cuando hay pedido.
 
+**Limpieza 23-jul (ronda 1 de la optimización global):** se extrajeron los 6
+helpers PUROS de pedido/producto que el camino vivo reusaba del legado a un
+módulo limpio y único, `app/core/pedido_helpers.py` (`_money`, `_linea_producto`,
+`_resolver_nombre_a_producto`, `_presupuesto_de_meta`, `_parece_aportar_dato`,
+`_destinos_de_interp`). El camino vivo (hub_atado, generador_v2, compositor,
+estado_venta, guia_pedido) YA no importa nada de `interprete_libre` ni
+`solver_gemini`; esos dos módulos re-importan desde `pedido_helpers` (sin
+duplicar). 655 tests verdes + smoke vivo OK.
+
 **PENDIENTES anotados (no olvidar):**
-1. **Auditar el patrón "dato duro atado, prosa libre suelta" en las OTRAS áreas**
-   (compatibilidad, garantía, financiación, postventa) con el mismo lente de
-   DeepEval: el modelo puede parafrasear la política y derivar, como pasó en
-   envío. Envío quedó robusto; el resto falta revisar.
-2. **Optimización global de herramientas (grande).** Barrer TODO el código en
-   busca de duplicados, código muerto, funciones que se pisan y conflictos entre
-   tools. Objetivo: que no haya dos caminos que hagan lo mismo ni funciones en
-   pugna. Es la limpieza de fondo que mencionó Martín.
-3. **Ruteo del intérprete a la tool de envío (mejora fina).** El tool resuelve
-   provincia+localidad perfecto; la atadura del intérprete a la herramienta se
-   puede mejorar, pero es tema profundo por área. Se deja como está mientras no
-   dé errores (decisión de Martín 23-jul).
+1. **Borrar el legado (`interprete_libre` 2296 líneas + `solver_gemini`), ronda
+   dedicada.** OJO: NO están muertos, todavía los usan ~15 archivos de tests, 4
+   bancos y el doble de Firestore offline (`sim_firestore`). El camino vivo ya
+   está desacoplado (ver arriba), así que borrarlos requiere migrar/retirar esos
+   tests y bancos y reengancharel doble. Es la parte grande y hay que hacerla con
+   cuidado, área por área.
+2. **Auditar el patrón "dato duro atado, prosa libre suelta" en las OTRAS áreas**
+   (compatibilidad, garantía, financiación, postventa) con el lente de DeepEval:
+   el modelo puede parafrasear la política y derivar, como pasó en envío. Envío
+   quedó robusto; el resto falta.
+3. **Consolidar `_money`.** Está definido en 6 módulos (curadas, estado_venta,
+   pago, pago_split, tools, pedido_helpers) con firmas distintas. Unificar en uno
+   con cuidado (difieren en tipo de entrada y en si anteponen "$").
+4. **Ruteo del intérprete a la tool de envío (mejora fina).** El tool resuelve
+   provincia+localidad perfecto; la atadura del intérprete se puede mejorar, pero
+   es tema profundo por área. Se deja como está mientras no dé errores (Martín,
+   23-jul).
 
 **==== 22-jul-2026 (2ª tanda) — LOS DOS MODELOS ATADOS POR ENUM EN EL FLUJO
 SIMPLE. Rama `claude/session-lg1xff`. NO en producción todavía. ====**

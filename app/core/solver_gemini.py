@@ -75,19 +75,9 @@ def es_turno_criterio(interp, raw_message: str) -> bool:
     return False
 
 
-def _destinos_de_interp(interp) -> list[str]:
-    """Destinos DISTINTOS (no null) del pedido que extrajo el interprete (atado
-    por enum). Es la SEÑAL para forzar cotizar_envio: si el cliente reparte el
-    pedido, el solver DEBE cotizar cada destino antes de redactar. No calcula
-    nada, solo lista que hay que cotizar."""
-    dests: list[str] = []
-    for it in (interp or {}).get("pedido") or []:
-        if not isinstance(it, dict):
-            continue
-        d = str(it.get("destino") or "").strip()
-        if d and d.lower() not in [x.lower() for x in dests]:
-            dests.append(d)
-    return dests
+# _destinos_de_interp se movió a app/core/pedido_helpers (fuente única). Se
+# re-importa acá para lo que aún lo use por el nombre viejo, sin duplicar.
+from app.core.pedido_helpers import _destinos_de_interp  # noqa: E402,F401
 
 
 def _system_prompt(business_name: str) -> str:
