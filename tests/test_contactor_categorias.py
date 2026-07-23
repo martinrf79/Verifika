@@ -1,7 +1,7 @@
 """
 CONTACTOR ABARCATIVO — lock del enum de categorias de la fuente de verdad.
 
-Ata el interprete a las 76 categorias de base_conocimiento (una sola fuente, sin
+Ata el interprete a las 93 categorias de base_conocimiento (una sola fuente, sin
 duplicar): el modelo DECLARA cual/cuales toca el mensaje, atado por enum a nivel
 token, y el hub engancha el criterio de cada una desde la fuente. Cubre la
 pregunta compleja multi-tema y el honesto "ninguna" sin cortar la venta.
@@ -13,8 +13,8 @@ from app.core.generador_v2 import universo_productos
 
 def test_enum_es_la_fuente_de_verdad_completa():
     cats = categorias_conocimiento()
-    # las 85 categorias reales de base_conocimiento, ni una inventada ni de menos
-    assert len(cats) == 85
+    # las 93 categorias reales de base_conocimiento, ni una inventada ni de menos
+    assert len(cats) == 93
     assert len(set(cats)) == len(cats)  # sin duplicados
     for esperada in ("objecion_precio", "compatibilidad", "cuotas_financiacion",
                      "costo_envio", "saludo_apertura", "garantia", "regalo"):
@@ -33,7 +33,7 @@ def test_schema_ata_categorias_al_enum_y_las_exige():
     props = sch["properties"]
     assert "categorias" in props
     enum = props["categorias"]["items"]["enum"]
-    assert len(enum) == 85
+    assert len(enum) == 93
     assert "objecion_precio" in enum
     # required para el strict de Gemini/OpenAI
     assert "categorias" in sch["required"]
