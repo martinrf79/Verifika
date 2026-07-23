@@ -63,6 +63,71 @@ UMBRAL_RELEV = float(os.getenv("DEEPEVAL_UMBRAL_RELEV", "0.75"))
 # Set chico por default: guiones cortos y variados, baratos de correr en el CI.
 _DEFAULT = ["01_curada_pura.txt", "04_mas_barato.txt", "03_stock.txt"]
 
+# ── MEDIDOR DE COSTO REAL ────────────────────────────────────────────────────
+# Se dejó de estimar a ojo: se cuentan los tokens REALES de cada llamada, partidos
+# por proveedor, y se traduce a plata con tarifas por millón configurables. El
+# gasto queda escrito en el reporte de cada corrida, así no sorprende la factura.
+_USO = {"gemini": {"in": 0, "out": 0, "calls": 0},
+        "deepseek": {"in": 0, "out": 0, "calls": 0},
+        "otro": {"in": 0, "out": 0, "calls": 0}}
+
+# US$ por millón de tokens (entrada, salida). Editables por env si cambian las
+# tarifas. Default: Gemini 3.1 flash lite y DeepSeek según precio de lista.
+_PREImg = os.getenv  # alias corto
+_PRECIOS = {
+    "gemini": (float(_PREImg("PRECIO_GEMINI_IN", "0.10")),
+               float(_PREImg("PRECIO_GEMINI_OUT", "0.40"))),
+    "deepseek": (float(_PREImg("PRECIO_DEEPSEEK_IN", "0.27")),
+                 float(_PREImg("PRECIO_DEEPSEEK_OUT", "1.10"))),
+    "otro": (0.0, 0.0),
+}
+
+
+def _instalar_medidor_costo():
+    """Envuelve OpenAI.Completions.create para sumar el uso real de tokens por
+    proveedor. No altera la respuesta; solo mide."""
+    from openai.resources.chat.completions import Completions
+    if getattr(Completions.create, "_medido", False):
+        return
+    orig = Completions.create
+
+    def _wrap(self, *a, **k):
+        r = orig(self, *a, **k)
+        try:
+            base = str(getattr(self._client, "base_url", "")).lower()
+            prov = ("gemini" if "googleapis" in base else
+                    "deepseek" if "deepseek" in base else "otro")
+            u = getattr(r, "usage", None)
+            if u:
+                _USO[prov]["in"] += int(u.prompt_tokens or 0)
+                _USO[prov]["out"] += int(u.completion_tokens or 0)
+                _USO[prov]["calls"] += 1
+        except Exception:
+            pass
+        return r
+    _wrap._medido = True
+    Completions.create = _wrap
+
+
+def _costo_texto() -> list[str]:
+    L = ["## Costo real de esta corrida (tokens medidos)", ""]
+    total = 0.0
+    for prov in ("gemini", "deepseek", "otro"):
+        d = _USO[prov]
+        if not d["calls"]:
+            continue
+        pin, pout = _PRECIOS[prov]
+        c = d["in"] / 1e6 * pin + d["out"] / 1e6 * pout
+        total += c
+        L.append(f"- {prov}: {d['calls']} llamados, in={d['in']:,} out={d['out']:,} "
+                 f"tokens → US$ {c:.3f}  (a {pin}/{pout} por millón)")
+    L.append("")
+    L.append(f"**Costo estimado total de la corrida: US$ {total:.2f}**")
+    L.append("(gemini = el bot bajo prueba; deepseek = el juez. Tarifas de lista,"
+             " tratalas como techo: el cacheo del juez las baja.)")
+    L.append("")
+    return L
+
 
 def _leer_guion(path: Path) -> list[str]:
     return [l.strip() for l in path.read_text(encoding="utf-8").splitlines()
@@ -305,8 +370,9 @@ def _reporte(resultados: list[dict]) -> tuple[str, bool]:
          f"- venta_verificada:  {venta}  (umbral >= {UMBRAL_VENTA})  {'OK' if ok_venta else 'FALLA'}",
          f"- hallucination:     {halu}  (umbral <= {UMBRAL_HALU})  {'OK' if ok_halu else 'FALLA'}",
          f"- answer_relevancy:  {relev}  (informativo, no gatea)",
-         "", f"**Resultado: {'APROBADO' if aprobado else 'RECHAZADO'}**", "",
-         "## Detalle por turno", ""]
+         "", f"**Resultado: {'APROBADO' if aprobado else 'RECHAZADO'}**", ""]
+    L += _costo_texto()
+    L += ["## Detalle por turno", ""]
     for r in resultados:
         L.append(f"### {r['guion']} — turno {r['turno']}")
         L.append(f"- CLIENTE: {r['input']}")
@@ -324,6 +390,7 @@ def _reporte(resultados: list[dict]) -> tuple[str, bool]:
 
 async def _main(archivos: list[str]) -> int:
     install()
+    _instalar_medidor_costo()
     pausa = float(os.getenv("BANCO_PAUSA_S", "0"))
     _CORRIDAS.mkdir(exist_ok=True)
 

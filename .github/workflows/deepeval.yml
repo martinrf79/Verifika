@@ -26,12 +26,15 @@ jobs:
     runs-on: ubuntu-latest
     env:
       INTERPRETER_PROVIDER: gemini
-      # Se usa la clave PAGA de Gemini: el tier gratis throttlea (429) y da rojo
-      # falso en el CI. La corrida es chica y nocturna, el costo es marginal.
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_PROD }}
+      # Clave GRATIS de Gemini a propósito: el nocturno corre el set CHICO (3
+      # guiones, ~10 turnos), que entra sin problema en el tier gratis con la
+      # pausa de abajo. Costo Gemini del nocturno: CERO. La clave paga
+      # (GEMINI_API_KEY_PROD) queda para producción y para la batería completa a
+      # demanda, que sí gasta y no debe correr sola de noche.
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
       TIENDA_ID: verifika_prod
-      BANCO_PAUSA_S: "3"  # pausa corta: la clave paga aguanta el ritmo
+      BANCO_PAUSA_S: "8"  # pausa holgada para no comer 429 del tier gratis
     steps:
       - uses: actions/checkout@v4
 
