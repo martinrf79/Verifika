@@ -1,0 +1,64 @@
+name: deepeval
+
+# Metrica de CALIDAD sobre el camino VIVO (flujo atado): corre los guiones por
+# app.core.hub_atado (Gemini 3.1 flash lite, el mismo codigo de produccion) y le
+# pone numero a cada respuesta con DeepEval, juez DeepSeek. Gatea faithfulness,
+# venta_verificada y hallucination: si el promedio cae del umbral, la corrida
+# queda en rojo.
+#
+# NO corre en cada push: llama a los modelos VIVOS (cuesta plata) y el tier
+# gratis de Gemini throttlea. Se dispara a mano (workflow_dispatch) y una vez por
+# noche (schedule). Necesita los secretos GEMINI_API_KEY y DEEPSEEK_API_KEY
+# cargados en el repo; si faltan, el job avisa y sale sin fallar en falso.
+
+on:
+  workflow_dispatch:
+    inputs:
+      guiones:
+        description: "Guiones a correr (ej: 01_curada_pura.txt 04_mas_barato.txt). Vacio = set default."
+        required: false
+        default: ""
+  schedule:
+    - cron: "0 6 * * *"  # 06:00 UTC, una vez por dia
+
+jobs:
+  eval-vivo:
+    runs-on: ubuntu-latest
+    env:
+      INTERPRETER_PROVIDER: gemini
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      TIENDA_ID: verifika_prod
+      BANCO_PAUSA_S: "22"  # pausa entre turnos por el tier gratis de Gemini
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Chequear secretos
+        run: |
+          if [ -z "$GEMINI_API_KEY" ] || [ -z "$DEEPSEEK_API_KEY" ]; then
+            echo "Faltan GEMINI_API_KEY o DEEPSEEK_API_KEY en los secretos del repo."
+            echo "Cargalos en Settings > Secrets para correr el eval vivo."
+            exit 1
+          fi
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-eval.txt
+
+      - name: Correr DeepEval sobre el flujo atado (camino vivo)
+        run: python3 banco_pruebas/banco_deepeval.py ${{ github.event.inputs.guiones }}
+
+      - name: Guardar el reporte
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-deepeval
+          path: banco_pruebas/corridas/deepeval_*.md

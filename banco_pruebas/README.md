@@ -57,3 +57,34 @@ distinto de cero si el juez marca algún problema.
 - `GEMINI_API_KEY` en el entorno (sin clave, el solver cae al compositor:
   sirve para probar la red, no el camino primario).
 - No requiere credenciales de Google: la base es local.
+
+## Métrica de calidad con DeepEval (`banco_deepeval.py`)
+
+El juez de invariantes dice pasa/no pasa. `banco_deepeval.py` le pone NÚMERO a
+cada respuesta, que es lo que un comprador entiende y pide. Corre los MISMOS
+guiones por el camino vivo (`hub_atado`, Gemini 3.1 flash lite) y mide con
+DeepEval:
+
+- **faithfulness** (gatea, >= 0.85): la respuesta no contradice la evidencia
+  dura de las tools. Es la métrica anti-alucinación de la atadura por enum.
+- **venta_verificada** (gatea, >= 0.70): G-Eval a medida. Premia la técnica de
+  venta (calidez, cierre) y castiga SOLO inventar dato o ignorar la pregunta.
+  Reemplaza a `answer_relevancy` genérico, que da falso negativo porque penaliza
+  el saludo y la pregunta de cierre.
+- **hallucination** (gatea, <= 0.25): cruce inverso contra la misma evidencia.
+- **answer_relevancy**: informativo, no gatea.
+
+El contexto que juzga la faithfulness es la SALIDA REAL de las tools de ese
+turno, no un texto inventado: se captura envolviendo `generador_v2.renderizar`.
+El JUEZ es DeepSeek (`juez_deepeval.py`), independiente del modelo evaluado
+(Gemini) para que no se autocalifique, y default barato del repo.
+
+```bash
+pip install -r ../requirements-eval.txt
+BANCO_PAUSA_S=22 python3 banco_deepeval.py 01_curada_pura.txt 04_mas_barato.txt
+```
+
+Deja el reporte en `corridas/deepeval_*.md` y sale con código != 0 si algún
+promedio cae del umbral (gatea el CI). El workflow `deepeval.yml` lo corre a
+mano y una vez por noche; NO en cada push, porque llama a los modelos vivos.
+Necesita los secretos `GEMINI_API_KEY` y `DEEPSEEK_API_KEY` en el repo.

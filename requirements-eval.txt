@@ -1,0 +1,4 @@
+# Dependencias SOLO del banco de evaluacion (DeepEval). NO van en la imagen de
+# produccion (requirements.txt): el bot no las necesita en runtime. Se instalan
+# aparte para correr banco_pruebas/banco_deepeval.py, local o en el CI de eval.
+deepeval==4.1.3
