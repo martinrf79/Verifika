@@ -638,7 +638,7 @@
    "necesita_martin": null
   },
   {
-   "id": "envio_costo",
+   "id": "costo_envio",
    "grupo": "politica_faq",
    "pilar": "dato",
    "descripcion": "Cuanto sale el envio.",
@@ -652,7 +652,7 @@
    "necesita_martin": null
   },
   {
-   "id": "envio_plazo",
+   "id": "plazo_envio",
    "grupo": "politica_faq",
    "pilar": "politica",
    "descripcion": "En cuanto llega.",

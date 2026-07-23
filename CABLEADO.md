@@ -91,8 +91,16 @@ Para CADA área (envío, garantía, financiación, postventa, fiscal, etc.):
 
 ## Deuda de plomería conocida (snapshot — actualizar al cerrarla)
 
-- **3 colisiones de nombre a reconciliar:** `envio_costo`↔`costo_envio`,
-  `envio_plazo`↔`plazo_envio`, `seguimiento`↔`seguimiento_pedido`.
+- **Colisiones de nombre — reconciliadas (23-jul):** `envio_costo` y
+  `envio_plazo` del contactor se renombraron a `costo_envio` y `plazo_envio`
+  para calzar con la clave FAQ, que es la load-bearing en código. El fix tocó
+  solo `base_conocimiento.json` (las categorías no se referencian en código) más
+  el lock del enum en `tests/test_contactor_categorias.py`.
+- **Falso positivo del pre-scan:** `seguimiento` (contactor) ↔
+  `seguimiento_pedido` (FAQ) NO es colisión: el primero es re-enganche
+  conversacional del cliente que quedó en pensarlo, el segundo es rastreo del
+  envío. Conceptos distintos, no se fusionan. Lo que SÍ falta es una categoría
+  espejo del rastreo de pedido en el contactor: va con el resto de los huecos.
 - **4 temas sin confirmar (cuota Gemini):** `monedas_aceptadas`, `datos_fiscales`,
   `promociones`, `reposicion_stock`.
 - **Falsos positivos del pre-scan** (ya cubiertos, o van por ficha/tool): specs,

@@ -17,7 +17,7 @@ def test_enum_es_la_fuente_de_verdad_completa():
     assert len(cats) == 85
     assert len(set(cats)) == len(cats)  # sin duplicados
     for esperada in ("objecion_precio", "compatibilidad", "cuotas_financiacion",
-                     "envio_costo", "saludo_apertura", "garantia", "regalo"):
+                     "costo_envio", "saludo_apertura", "garantia", "regalo"):
         assert esperada in cats
 
 
@@ -48,9 +48,9 @@ def test_validar_schema_coacciona_string_a_lista():
 
 def test_validar_schema_descarta_categoria_inventada():
     r = {"intencion": "pregunta_especifica", "confianza": 0.9,
-         "categorias": ["objecion_precio", "INVENTADA", "envio_costo"]}
+         "categorias": ["objecion_precio", "INVENTADA", "costo_envio"]}
     validar_schema(r)
-    assert r["categorias"] == ["objecion_precio", "envio_costo"]
+    assert r["categorias"] == ["objecion_precio", "costo_envio"]
 
 
 def test_validar_schema_ausente_queda_lista_vacia():
