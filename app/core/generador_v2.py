@@ -799,6 +799,29 @@ def _destino_respaldado(destino: str, mensaje: str, estado: dict) -> bool:
     return False
 
 
+# Frase FIJA del mecanismo de envío, fiel a la fuente (tabla por localidad, no
+# "automático"). Se estampa verbatim cuando el criterio es envio_costo, para que
+# el modelo no la reescriba y no derive.
+_ENVIO_MECANISMO_FIJO = (
+    "El costo del envío sale de la tabla por localidad; con tu provincia o "
+    "código postal te digo la tarifa exacta.")
+
+
+def _umbral_envio_gratis(faq: dict):
+    """Umbral de envío gratis LEÍDO de la fuente (FAQ costo_envio -> valores ->
+    envio_gratis -> umbral_ars). Devuelve el entero o None si la tienda no lo
+    define. Así el fragmento de envío no hardcodea un monto ni promete gratis
+    donde no corresponde: la política sale del dato, no del código."""
+    ce = (faq or {}).get("costo_envio") or {}
+    for v in ce.get("valores") or []:
+        if v.get("concepto") == "envio_gratis" and v.get("umbral_ars"):
+            try:
+                return int(v["umbral_ars"])
+            except (TypeError, ValueError):
+                return None
+    return None
+
+
 def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                presupuesto_pre=None, presupuesto_tools=None, mensaje=None,
                primer_turno=False):
@@ -992,9 +1015,17 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 costo = ("gratis" if monto in (0, None)
                          else f"${monto:,}".replace(",", "."))
                 zona = str(q.get("provincia") or q.get("zona") or "tu zona")
-                partes.append(f"El envío a {zona.replace('_',' ')} sale {costo}. "
-                              "Superando los $250.000 va gratis. Orientativo, "
-                              "puede variar al confirmar.")
+                linea = f"El envío a {zona.replace('_',' ')} sale {costo}."
+                # Umbral de envío gratis: NO hardcodeado. Sale de la FAQ de la
+                # tienda (costo_envio -> envio_gratis -> umbral_ars). Si la tienda
+                # no define umbral, NO se promete gratis: se evita inventar la
+                # condicion (hallazgo DeepEval 23-jul, guion 37).
+                umbral = _umbral_envio_gratis(faq)
+                if umbral and monto not in (0, None):
+                    _u = f"${umbral:,}".replace(",", ".")
+                    linea += f" Superando los {_u} va gratis."
+                linea += " Orientativo, puede variar al confirmar."
+                partes.append(linea)
                 e = {"name": "cotizar_envio", "args": {"localidad": f["destino"]},
                      "result": q}
                 if q.get("proof"):
@@ -1013,7 +1044,15 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             # de huecos del corpus: cada uno es un bloque de prosa por escribir.
             cid = str(f.get("criterio_id") or "").strip()
             jurado = texto_de(cid) if cid else None
-            txt = _poda_prosa(f.get("texto"), nombres)
+            # ENVÍO: el mecanismo NO lo parafrasea el modelo. El bloque envio_costo
+            # es guía interna ("tabla real por localidad") y el modelo lo reescribía
+            # como "se ajusta automáticamente", perdiendo la fuente (hallazgo
+            # DeepEval 23-jul, guion 34). Se estampa una frase FIJA y fiel, como el
+            # disclaimer: el número ya lo estampa el Presupuesto arriba.
+            if cid == "envio_costo":
+                txt = _ENVIO_MECANISMO_FIJO
+            else:
+                txt = _poda_prosa(f.get("texto"), nombres)
             if not txt:
                 continue
             partes.append(txt)
