@@ -84,10 +84,13 @@ Para CADA área (envío, garantía, financiación, postventa, fiscal, etc.):
   `python3 banco_pruebas/fiscalizador.py [tienda]`
   Cruza los dos namespaces y marca temas sin categoría espejo + colisiones de
   nombre. Sobre-reporta a propósito: algunos temas van por ficha o herramienta.
-- **Capa 2, conductual (la verdad):** correr el fraseo por
-  `app.core.interpretador.interpretar_mensaje` y mirar el campo `categorias`.
-  Es lo ÚNICO que confirma si un hueco es real. Ojo cuota: Gemini free throttlea
-  (429); usar pausas o clave paga para tandas largas.
+- **Capa 2, conductual (la verdad):**
+  `INTERPRETER_PROVIDER=gemini BANCO_PAUSA_S=22 python banco_pruebas/fiscalizador_conductual.py`
+  Corre fraseos NATURALES (que NO copian los disparadores) por el intérprete REAL
+  y verifica que cada uno rutee a la categoría que puede contestarlo, sin que un
+  vecino confundible se lo robe. Es lo ÚNICO que confirma si un hueco es real.
+  Ojo cuota: Gemini free throttlea (429); el script reintenta con backoff y marca
+  "sin evaluar" lo que no pudo, sin contarlo como fallo.
 
 ## Deuda de plomería conocida (snapshot — actualizar al cerrarla)
 
@@ -106,9 +109,19 @@ Para CADA área (envío, garantía, financiación, postventa, fiscal, etc.):
   rueteable: `precios_iva`, `monedas_aceptadas`, `promociones`, `reposicion_stock`,
   `verificacion_pagos`, `cancelacion_pedido`, `contacto_humano`, más
   `envoltorio_regalo`. Todas con criterio sin dígitos y disparadores desde los
-  keywords de la FAQ. **Falta la CONFIRMACIÓN CONDUCTUAL (Capa 2):** correr cada
-  fraseo por el intérprete cuando la cuota de Gemini se libere y verificar que
-  rutee a su categoría nueva y no a una vecina.
+  keywords de la FAQ. **Confirmación conductual (Capa 2) HECHA (23-jul): 18/18.**
+  Las 8 espejos rutean a su id con fraseos naturales, ningún vecino confundible
+  se las roba (ej. "aceptan usdt" → monedas_aceptadas; "quiero dar de baja lo que
+  pedí" → cancelacion_pedido; "rastreo el paquete" → seguimiento_pedido). El set
+  vive en `banco_pruebas/fiscalizador_conductual.py`.
+
+- **Auditoría de cableado determinista (23-jul) — LIMPIA.** Se cruzaron todos los
+  ejes duros offline: los 93 criterios sin dígitos (todos entran a GUIA_VENTA), las
+  50 respuestas_curadas estampan sin fallar (ningún placeholder `{{x}}` sin su
+  valor), FAQ sin temas huérfanos (todos con keywords y curada), no_vendidas con
+  alternativas que validan contra el catálogo real, y las ataduras de código
+  (`faq_tema`/`concepto` en tools) resuelven o degradan sin romper. La Capa 1
+  estructural está sólida; el riesgo residual es solo conductual (Capa 2).
 - **Cubiertos por categoría-concepto bajo otra clave** (el pre-scan los marca por
   token pero SÍ rutean): `reembolso` ← `cambios_devoluciones`, `confianza_seguridad`
   ← `desconfianza_online`, `datos_fiscales` ← `factura`, `mayoristas` ←
