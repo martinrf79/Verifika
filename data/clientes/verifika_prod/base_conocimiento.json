@@ -1240,6 +1240,85 @@
    ],
    "criterio": "No se trabaja con pago contra entrega: el pedido se abona antes del despacho, por transferencia o el medio habilitado, y una vez acreditado se envia. Se explica con amabilidad y se ofrece el medio que si funciona, resaltando el beneficio de la transferencia.",
    "necesita_martin": null
+  },
+  {
+   "id": "ubicacion",
+   "grupo": "politica_faq",
+   "pilar": "politica",
+   "descripcion": "Donde estan ubicados o si hay local fisico.",
+   "disparadores": [
+    "donde estan",
+    "ubicacion",
+    "tienen local",
+    "local fisico",
+    "sucursal",
+    "donde quedan"
+   ],
+   "criterio": "Somos una tienda cien por cien online, sin local fisico; se despacha a todo el pais por envio. Se responde con naturalidad que el cliente elige desde su casa y se le manda, y se lo invita a seguir con lo que busca.",
+   "necesita_martin": null
+  },
+  {
+   "id": "horarios",
+   "grupo": "politica_faq",
+   "pilar": "politica",
+   "descripcion": "Horario de atencion.",
+   "disparadores": [
+    "horario",
+    "horarios",
+    "atienden",
+    "a que hora",
+    "hasta que hora"
+   ],
+   "criterio": "Se atiende en el horario habitual de la tienda por este canal y por mail; el detalle exacto lo estampa la fuente. Igual se invita a dejar la consulta ahora y resolverla, sin frenar la venta por el horario.",
+   "necesita_martin": null
+  },
+  {
+   "id": "reservas",
+   "grupo": "politica_faq",
+   "pilar": "politica",
+   "descripcion": "Reservar o senar un producto sin stock.",
+   "disparadores": [
+    "reservar",
+    "reserva",
+    "apartar",
+    "guardar",
+    "encargar",
+    "sena",
+    "me lo guardas"
+   ],
+   "criterio": "Si el producto esta sin stock se puede reservar con una sena; el monto y el plazo de reposicion dependen del producto y el proveedor, y los confirma la herramienta. Se ofrece la reserva como opcion cuando no hay stock, sin prometer plazos que no esten respaldados.",
+   "necesita_martin": null
+  },
+  {
+   "id": "usados",
+   "grupo": "politica_faq",
+   "pilar": "politica",
+   "descripcion": "Si venden usados o reacondicionados.",
+   "disparadores": [
+    "usados",
+    "usado",
+    "reacondicionado",
+    "segunda mano",
+    "refurbished"
+   ],
+   "criterio": "Se vende unicamente producto nuevo, en su caja original sellada; no se trabajan usados ni reacondicionados. Se dice claro y se ofrecen opciones nuevas de lo que el cliente busca.",
+   "necesita_martin": null
+  },
+  {
+   "id": "retiro_local",
+   "grupo": "politica_faq",
+   "pilar": "politica",
+   "descripcion": "Retiro en persona o punto de retiro.",
+   "disparadores": [
+    "retiro",
+    "retirar",
+    "pasar a buscar",
+    "lo busco yo",
+    "retiro en mano",
+    "punto de retiro"
+   ],
+   "criterio": "Al ser tienda online no hay punto de retiro: todo va por envio a la direccion que indique el cliente, a todo el pais. Se dice honesto y se ofrece cotizar el envio a su zona en el momento.",
+   "necesita_martin": null
   }
  ]
 }
