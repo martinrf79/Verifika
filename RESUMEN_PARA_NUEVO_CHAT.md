@@ -4,6 +4,17 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== CORRECCIÓN 23-jul-2026 — EL FLUJO ATADO YA ESTÁ EN PRODUCCIÓN. ====**
+Los banners de abajo del 22-jul dicen "NO en producción todavía" y "el
+orchestrator NO cambió": eso quedó VIEJO. En `main`, el commit `34f6457`
+(feat(prod): el orchestrator apunta al FLUJO ATADO de punta a punta) ya cableó
+`app/core/orchestrator.py` para que llame SOLO a `hub_atado.procesar_atado`.
+Hoy producción corre el flujo atado por enum (intérprete + solver atados,
+sin la pila de guardas de `interprete_libre`, que queda en el repo solo por si
+hay que revertir). Cuando leas los banners de abajo, interpretá "track a medir"
+como "camino ya vivo". El paso pendiente ya NO es "apuntar el orchestrator",
+sino medirlo con métrica (DeepEval) y sumar el refuerzo duro determinista.
+
 **==== 22-jul-2026 (2ª tanda) — LOS DOS MODELOS ATADOS POR ENUM EN EL FLUJO
 SIMPLE. Rama `claude/session-lg1xff`. NO en producción todavía. ====**
 
