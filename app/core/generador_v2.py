@@ -588,7 +588,9 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
                 "name": "respuesta", "strict": True, "schema": schema}})
         return r.choices[0].message.content or ""
     try:
-        raw = await asyncio.wait_for(asyncio.to_thread(_call), _TIMEOUT_S)
+        from app.core.llm_reintento import llamar_con_reintento
+        raw = await llamar_con_reintento(_call, timeout_s=_TIMEOUT_S,
+                                         trace_id=trace_id)
         data = json.loads(raw)
         frags = data.get("fragmentos")
         if isinstance(frags, list) and frags:

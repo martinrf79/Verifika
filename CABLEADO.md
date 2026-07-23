@@ -62,6 +62,20 @@ mensaje
   verificador). Matiz de prosa/política ("automático" vs "tabla por localidad") =
   se acepta. Perseguir el matiz es lo que robotiza.
 
+## Robustez ante el hipo transitorio del LLM (23-jul)
+
+Un banco end-to-end destapó que ni el intérprete ni el solver reintentaban ante
+un error transitorio del proveedor. Un 429 en RÁFAGA de Gemini hacía que el
+solver (`generar_fragmentos`) devolviera cero fragmentos y el hub emitiera el
+`VERIFIKA_FALLBACK_MESSAGE` ("dejame consultar y te confirmo"), una **promesa
+falsa** que nunca cumple; en el intérprete, el mismo 429 dejaba las `categorias`
+vacías y el ruteo mudo. Se agregó `app/core/llm_reintento.py`: UN helper de
+backoff acotado que reintenta SOLO el error transitorio (429/5xx/timeout), usado
+por las dos llamadas LLM (una red, no dos copias). El camino feliz no paga nada;
+solo suma la suma de los backoffs cuando de verdad hay hipo. En producción
+(clave paga) los 429 son ráfagas que se recuperan en <1s: el backoff los absorbe
+sin que el cliente vea el fallback. Verificado re-corriendo el guion 09.
+
 ## Checklist de cableado correcto (para agregar o robustecer un área)
 
 Para CADA área (envío, garantía, financiación, postventa, fiscal, etc.):
