@@ -13,8 +13,8 @@ from app.core.generador_v2 import universo_productos
 
 def test_enum_es_la_fuente_de_verdad_completa():
     cats = categorias_conocimiento()
-    # las 76 categorias reales de base_conocimiento, ni una inventada ni de menos
-    assert len(cats) == 76
+    # las 80 categorias reales de base_conocimiento, ni una inventada ni de menos
+    assert len(cats) == 80
     assert len(set(cats)) == len(cats)  # sin duplicados
     for esperada in ("objecion_precio", "compatibilidad", "cuotas_financiacion",
                      "envio_costo", "saludo_apertura", "garantia", "regalo"):
@@ -33,7 +33,7 @@ def test_schema_ata_categorias_al_enum_y_las_exige():
     props = sch["properties"]
     assert "categorias" in props
     enum = props["categorias"]["items"]["enum"]
-    assert len(enum) == 76
+    assert len(enum) == 80
     assert "objecion_precio" in enum
     # required para el strict de Gemini/OpenAI
     assert "categorias" in sch["required"]
