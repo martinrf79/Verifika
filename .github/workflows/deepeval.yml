@@ -26,10 +26,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       INTERPRETER_PROVIDER: gemini
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # Se usa la clave PAGA de Gemini: el tier gratis throttlea (429) y da rojo
+      # falso en el CI. La corrida es chica y nocturna, el costo es marginal.
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_PROD }}
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
       TIENDA_ID: verifika_prod
-      BANCO_PAUSA_S: "22"  # pausa entre turnos por el tier gratis de Gemini
+      BANCO_PAUSA_S: "3"  # pausa corta: la clave paga aguanta el ritmo
     steps:
       - uses: actions/checkout@v4
 
