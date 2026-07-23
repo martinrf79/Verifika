@@ -136,6 +136,24 @@ def test_no_vendida_no_dispara_en_categoria_real(firestore_doble):
     assert categoria_no_vendida("dame un mouse", "verifika_prod") is None
 
 
+# ── PEDIDO DE CATALOGO: presentar las categorias reales de la fuente ──────────
+from app.core.generador_v2 import nota_catalogo
+
+
+def test_catalogo_presenta_categorias_reales(firestore_doble):
+    # "catalogo" / "que vendes" sin categoria puntual: la nota trae las categorias
+    # reales para que el solver las liste (bug real: quedaba sin respuesta util).
+    for m in ("catalogo", "Pasame catalogo", "que productos tenes?", "que vendes?"):
+        n = nota_catalogo(m, "verifika_prod")
+        assert n and "mouse" in n and "notebook" in n, m
+
+
+def test_catalogo_no_dispara_con_categoria_puntual(firestore_doble):
+    # si nombra una categoria real, el flujo normal la muestra: no es catalogo.
+    assert nota_catalogo("que tenes de mouse?", "verifika_prod") == ""
+    assert nota_catalogo("hola quiero un mouse", "verifika_prod") == ""
+
+
 # ── HONESTIDAD DE SPEC desde la FUENTE DE VERDAD (specs_preguntables.json) ────
 from app.core.generador_v2 import estampar_honestidad_specs, _specs_faltantes
 

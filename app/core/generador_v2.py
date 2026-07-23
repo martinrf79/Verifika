@@ -77,6 +77,42 @@ def _norm(s):
     return "".join(c for c in s if not unicodedata.combining(c)).strip()
 
 
+# El cliente pide el CATALOGO / que se vende, SIN nombrar una categoria puntual.
+# Ahi el universo queda vacio y el solver no lista nada (bug real: "catalogo",
+# "pasame catalogo", "que productos tenes" quedaban sin respuesta util). El codigo
+# le pasa las categorias reales para que el solver presente que hay e invite.
+_RE_CATALOGO = re.compile(
+    r"\bcatalogos?\b"
+    r"|\bque\s+(?:productos|cosas|articulos|rubros|categor)"
+    r"|\bque\s+(?:tenes|tienen|venden|vendes|vendan|manejan|ofrecen|hay|comercializan)\b"
+    r"|\bque\s+(?:se\s+)?puede[ns]?\s+comprar"
+    r"|\bque\s+puedo\s+comprar"
+    r"|\bmostrame\s+(?:el\s+catalogo|todo|lo\s+que\s+ten|los\s+productos)"
+    r"|\blista\s+de\s+productos"
+    r"|\bque\s+onda\s+el?\s+catalogo")
+
+
+def nota_catalogo(mensaje, tienda_id):
+    """Si el cliente pide el catalogo/que vendemos SIN nombrar una categoria real,
+    devuelve la nota con las CATEGORIAS reales (fuente de verdad) para que el
+    solver las presente e invite a elegir. '' si no aplica."""
+    m = _norm(mensaje or "")
+    if not m or not _RE_CATALOGO.search(m):
+        return ""
+    from app.storage.firestore_client import get_categories
+    cats = [str(c) for c in (get_categories(tienda_id=tienda_id) or [])]
+    if not cats:
+        return ""
+    # Si ademas nombra una categoria REAL ("que tenes de mouse"), no es un pedido
+    # de catalogo entero: el flujo normal muestra esa categoria.
+    if any(_norm(c) in m or _norm(c).rstrip("s") in m for c in cats):
+        return ""
+    return ("EL CLIENTE PIDE EL CATALOGO / que vendemos, sin una categoria puntual. "
+            "Presentale con tu voz las categorias reales que tenemos e invitalo a "
+            "elegir una para mostrarle modelos y precios. Categorias (usá SOLO estas, "
+            "no inventes): " + ", ".join(cats) + ".\n")
+
+
 # ── 1. UNIVERSO de productos disponibles (el enum del turno) ─────────────────
 def universo_productos(mensaje, estado, tienda_id, interp=None):
     """Conjunto ACOTADO de productos que el modelo puede referenciar este
@@ -525,6 +561,17 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
                      pedida=_pedida, alt=_alt)
     except Exception as e:
         log.warning("generador_v2_no_vendida_error", trace_id=trace_id,
+                    error=str(e)[:120])
+    # CATALOGO: pedido general "que vendes / catalogo" sin categoria puntual -> el
+    # universo queda vacio; el codigo le pasa las categorias reales para que el
+    # solver presente que hay (bug real: "catalogo" quedaba sin respuesta util).
+    try:
+        _nc = nota_catalogo(mensaje or "", tienda_id)
+        if _nc:
+            nota_no_vendida = (nota_no_vendida + _nc) if nota_no_vendida else _nc
+            log.info("generador_v2_catalogo", trace_id=trace_id)
+    except Exception as e:
+        log.warning("generador_v2_catalogo_error", trace_id=trace_id,
                     error=str(e)[:120])
     prompt = _prompt(mensaje, historial, universo, temas, estado, presu_txt,
                      criterios_menu, prefs, nota_no_vendida)
