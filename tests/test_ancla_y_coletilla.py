@@ -8,7 +8,8 @@ Dos fixes de comportamiento del banco end-to-end (23-jul), probados determinista
    una variante no usada recientemente (_cierre_suave con history).
 """
 from app.core.hub_atado import _exige_eleccion_de_producto
-from app.core.generador_v2 import _cierre_suave, _CIERRES_SUAVES
+from app.core.generador_v2 import (_cierre_suave, _variar_cierre,
+                                   _CIERRES_SUAVES, _CIERRES_PAGO)
 
 
 # ── 1. ANCLA ─────────────────────────────────────────────────────────────────
@@ -81,3 +82,17 @@ def test_cierre_no_repite_en_tres_turnos_seguidos():
         hist.append({"role": "assistant", "content": f"cuerpo {i}\n" + s})
     # ninguna de las variantes usadas aparece 3 veces
     assert all(salidas.count(s) < 3 for s in salidas)
+
+
+def test_cierre_con_total_tampoco_se_repite_en_cinco_turnos():
+    # el cierre CON total (pide forma de pago) se repetia 4-5 veces en charlas
+    # multi-total (guiones 52/53). Con el pool variado, cada variante < 3 en 5.
+    hist: list = []
+    salidas = []
+    for i in range(5):
+        s = _variar_cierre(_CIERRES_PAGO, [f"Total: ${i}000"], hist)
+        salidas.append(s)
+        hist.append({"role": "assistant", "content": f"Presupuesto {i}\n" + s})
+    assert all(salidas.count(s) < 3 for s in salidas)
+    # y todas conservan el dato de los medios de pago (no se pierde la info)
+    assert all("Mercado Pago" in s for s in salidas)

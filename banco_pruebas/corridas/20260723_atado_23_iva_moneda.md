@@ -1,20 +1,26 @@
-# Corrida ATADA 23_iva_moneda — 2026-07-23 23:02
+# Corrida ATADA 23_iva_moneda — 2026-07-23 23:09
 
-Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 3.0s.
+Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 4.0s.
 
 
 ## Turno 1
 
 CLIENTE: hola, el precio del mouse Redragon Cobra M711 negro incluye IVA?
 
-BOT (5614 ms):
+BOT (8854 ms):
 
 ```
-¡Hola! Qué bueno que nos escribas, acá estamos para ayudarte con lo que necesites sobre nuestros productos.
+¡Hola! Qué bueno que nos escribas, te cuento que ese modelo en particular no lo tenemos en stock en este momento, pero te puedo ayudar con los que sí tenemos disponibles para que te lleves algo que te rinda igual o mejor.
 
-Quedate tranquilo que todos los precios que ves publicados en nuestra tienda son finales, ya incluyen IVA, así que no vas a tener ninguna sorpresa al momento de pagar.
+Sobre tu consulta, te confirmo que todos nuestros precios ya incluyen IVA, así que el valor que ves es el final, sin sorpresas al momento de pagar.
 
-Contame cuál te gusta y te armo el presupuesto enseguida.
+De mouse tengo, de lo más económico para arriba:
+- Mouse Genius DX-110 Negro - $8.500 (11 en stock)
+- Mouse Logitech M170 Negro - $12.000 (16 en stock)
+- Mouse Logitech M170 Blanco - $12.000 (17 en stock)
+- Mouse Genius NX-7000 Negro - $14.000 (18 en stock)
+
+¿Seguimos con alguno? En un toque te paso el total.
 ```
 
 - JUEZ: limpio
@@ -23,14 +29,16 @@ Contame cuál te gusta y te armo el presupuesto enseguida.
 
 CLIENTE: y si te pago en efectivo me lo dejas sin IVA?
 
-BOT (5362 ms):
+BOT (7429 ms):
 
 ```
-Te entiendo perfectamente, siempre buscamos la mejor forma de cuidar el bolsillo al comprar.
+Te entiendo perfectamente, siempre buscamos cuidar el bolsillo. Te cuento cómo trabajamos en Verifika Tech para que te quedes tranquilo.
 
-Sobre lo que me consultas, te cuento que nuestros precios son finales y ya tienen todo incluido. No hacemos quitas adicionales, pero lo que sí tenemos es un beneficio directo si elegís pagar por transferencia bancaria, que es la mejor forma de obtener un descuento real.
+Mirá, nuestros precios ya son finales y tienen el IVA incluido, así que no podemos quitárselo. Lo que sí te aseguro es que son valores súper competitivos y, si pagás por transferencia, tenés un beneficio extra que te ayuda a ahorrar un montón.
 
-¿Querés que avancemos con alguno? Te armo el total al instante.
+Por fuera de las promos vigentes no hacemos rebajas adicionales, pero te garantizo que la calidad de los equipos y el ahorro por transferencia hacen que la compra valga la pena.
+
+Contame cuál te gusta y te armo el presupuesto enseguida.
 ```
 
 - JUEZ: limpio
@@ -39,14 +47,14 @@ Sobre lo que me consultas, te cuento que nuestros precios son finales y ya tiene
 
 CLIENTE: aceptan dolares billete? tengo unos ahorros
 
-BOT (3631 ms):
+BOT (3873 ms):
 
 ```
-¡Hola! Entiendo perfectamente, siempre es bueno ver cómo manejar los ahorros al momento de comprar tecnología.
+Te entiendo perfectamente, es muy común querer aprovechar los ahorros que uno tiene, pero te cuento cómo nos manejamos acá para que no te lleves ninguna sorpresa.
 
-Te cuento que por acá operamos únicamente en pesos argentinos, ya sea por transferencia o a través de Mercado Pago. No estamos tomando dólares en efectivo, pero si querés, pasame lo que tenés en mente y te calculo el total en pesos para que sepas cómo queda.
+Mirá, en Verifika Tech operamos únicamente con pesos argentinos a través de transferencia bancaria o Mercado Pago. No podemos tomar dólares en efectivo ni criptomonedas, pero si querés, pasame qué productos te interesan y te armo el presupuesto total en pesos para que veas cómo queda.
 
-¿Seguimos con alguno? En un toque te paso el total.
+¿Alguno te interesa? Decime y te paso el total en el momento.
 ```
 
 - JUEZ: limpio
@@ -55,14 +63,14 @@ Te cuento que por acá operamos únicamente en pesos argentinos, ya sea por tran
 
 CLIENTE: bueno, y que datos fiscales necesitan para factura A?
 
-BOT (3728 ms):
+BOT (3911 ms):
 
 ```
-¡Qué buena pregunta! Es súper sencillo, para que podamos emitir tu factura A, solo necesitamos que nos pases tu CUIT y nos confirmes tu condición frente al IVA al momento de concretar la compra.
+¡Qué bueno que lo consultes! Es súper sencillo y te lo preparo apenas confirmemos tu pedido.
 
-Emitimos factura para respaldar toda tu compra y que te quedes tranquilo con la garantía y la legalidad de los equipos. Siendo factura A, con los datos que te pedí arriba, la preparamos sin vueltas para que la tengas apenas salga el pedido.
+Para que te emita la factura A, solo pasame tu CUIT y la constancia de tu condición frente al IVA al momento de concretar la compra. Con eso te la preparamos sin vueltas para que tengas todo en regla.
 
-¿Alguno te interesa? Decime y te paso el total en el momento.
+¿Querés que avancemos con alguno? Te armo el total al instante.
 ```
 
 - JUEZ: limpio
@@ -71,14 +79,10 @@ Emitimos factura para respaldar toda tu compra y que te quedes tranquilo con la 
 
 CLIENTE: dale, pasame el total con envio a La Plata pagando por transferencia
 
-BOT (5072 ms):
+BOT (4143 ms):
 
 ```
-¡Excelente elección! Te preparo el presupuesto con el envío a La Plata aplicando el descuento por transferencia para que aproveches al máximo tus ahorros.
-
-Hacer la transferencia es la mejor forma de cerrar la compra hoy, ya que te asegura el mejor precio disponible y procesamos tu pedido de inmediato.
-
-Contame cuál te gusta y te armo el presupuesto enseguida.
+¿Con cuál te preparo el total? Decime el modelo que más te cierra de los que te pasé y lo armo con el envío enseguida.
 ```
 
 - JUEZ: limpio

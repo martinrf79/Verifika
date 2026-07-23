@@ -1,26 +1,26 @@
-# Corrida ATADA 36_negacion_cambio_decision — 2026-07-23 22:33
+# Corrida ATADA 36_negacion_cambio_decision — 2026-07-23 23:09
 
-Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 0.0s.
+Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 4.0s.
 
 
 ## Turno 1
 
 CLIENTE: hola, busco un teclado mecanico para jugar
 
-BOT (3685 ms):
+BOT (3751 ms):
 
 ```
-¡Hola! Qué bueno que nos escribas, te ayudo de una con eso para que armes tu setup.
+¡Hola! Qué bueno que nos escribas para armar tu setup gamer. Te cuento que por el momento tenemos teclados de membrana de excelente respuesta, ideales para empezar a jugar con todo.
 
-Te cuento, los modelos que tengo hoy son de membrana, que son geniales para arrancar a jugar con un presupuesto cuidado. Si bien no son mecánicos, tienen una respuesta muy buena para gaming y son super confiables para el uso diario.
+Si buscás algo para jugar, la clave es la respuesta y la durabilidad. Aunque los mecánicos son los favoritos de muchos por su precisión, nuestros modelos actuales de membrana ofrecen una respuesta muy pareja y confiable para que puedas jugar cómodo sin gastar de más.
 
-De teclados tengo, de lo más económico para arriba:
+De teclado tengo, de lo más económico para arriba:
 - Teclado Genius KB-110X Blanco - $12.000 (11 en stock)
 - Teclado Logitech K120 Negro - $14.500 (4 en stock)
 - Teclado Logitech K120 Blanco - $14.500 (22 en stock)
 - Teclado Genius Slimstar 130 Negro - $16.500 (5 en stock)
 
-¿Querés que avancemos con alguno? Te armo el total al instante.
+¿Seguimos con alguno? En un toque te paso el total.
 ```
 
 - JUEZ: limpio
@@ -29,14 +29,20 @@ De teclados tengo, de lo más económico para arriba:
 
 CLIENTE: mmm no se, el mecanico hace mucho ruido no? mejor mostrame de membrana
 
-BOT (5050 ms):
+BOT (4063 ms):
 
 ```
-¡Te entiendo perfecto! Es un mito común, pero la verdad es que los de membrana son súper cómodos y, como bien decís, mucho más silenciosos. Para jugar van bárbaro y son una excelente opción para cuidar el presupuesto.
+¡Te entiendo perfectamente! Es muy común esa duda, y la verdad es que los de membrana son una opción excelente para jugar sin ese ruido característico de los mecánicos.
 
-Si buscás algo para jugar que sea silencioso y blando, los de membrana son ideales. Vas a poder viciar horas sin hacer ruido y con una respuesta muy suave al tacto.
+Si buscás algo para jugar que sea silencioso y cómodo, los teclados de membrana son ideales. Son mucho más suaves al tacto y no generan ese ruido metálico, permitiéndote viciar tranquilo sin molestar a nadie.
 
-¿Querés que avancemos con alguno? Te armo el total al instante.
+De teclado tengo, de lo más económico para arriba:
+- Teclado Genius KB-110X Blanco - $12.000 (11 en stock)
+- Teclado Logitech K120 Negro - $14.500 (4 en stock)
+- Teclado Logitech K120 Blanco - $14.500 (22 en stock)
+- Teclado Genius Slimstar 130 Negro - $16.500 (5 en stock)
+
+Contame cuál te gusta y te armo el presupuesto enseguida.
 ```
 
 - JUEZ: limpio
@@ -45,10 +51,14 @@ Si buscás algo para jugar que sea silencioso y blando, los de membrana son idea
 
 CLIENTE: cuanto sale el de membrana mas barato?
 
-BOT (5504 ms):
+BOT (4502 ms):
 
 ```
-No tengo esa información confirmada en el catálogo. Dejame consultar y te confirmo en breve.
+Teclado Genius KB-110X Blanco - $12.000 (11 en stock)
+
+Para gaming, este teclado te da una respuesta muy buena sin gastar de más. Al ser de membrana, es súper cómodo y silencioso para que juegues tranquilo sin ruidos molestos.
+
+¿Querés que avancemos con alguno? Te armo el total al instante.
 ```
 
 - JUEZ: limpio
@@ -57,16 +67,16 @@ No tengo esa información confirmada en el catálogo. Dejame consultar y te conf
 
 CLIENTE: sabes que no, tenias razon vos, al final voy con el mecanico. cual era el mas barato de los mecanicos?
 
-BOT (5844 ms):
+BOT (5346 ms):
 
 ```
-¡Excelente decisión! Te cuento que, si bien todos los que tengo en stock son de membrana, los Genius son una opción muy equilibrada para empezar.
+¡Excelente decisión! Te cuento que al final, dentro de lo que tenemos disponible, todos nuestros modelos actuales son de membrana, por lo que no contamos con mecánicos en este momento. Te pido mil disculpas si te confundí antes.
 
-Mirá, para lo que buscás, los teclados de membrana son ideales porque son súper silenciosos y suaves al tacto, perfectos para tipear tranquilo sin ruido extra.
+Para jugar, lo más importante es que te sientas cómodo con la respuesta de las teclas. Aunque no sean mecánicos, los modelos que tengo son muy confiables para gaming de entrada y te van a responder perfecto sin hacer ruido extra.
 
 Teclado Genius KB-110X Blanco - $12.000 (11 en stock)
 
-¿Seguimos con alguno? En un toque te paso el total.
+¿Alguno te interesa? Decime y te paso el total en el momento.
 ```
 
 - JUEZ: limpio
@@ -75,18 +85,14 @@ Teclado Genius KB-110X Blanco - $12.000 (11 en stock)
 
 CLIENTE: dale ese, cuanto queda con envio a rosario?
 
-BOT (5541 ms):
+BOT (5457 ms):
 
 ```
-¡Buenísimo! Te entiendo perfecto, para jugar es una gran elección. Te preparo el presupuesto por ese teclado con el envío a Rosario así ya lo tenés claro.
-
 Presupuesto:
-- 1x Teclado Genius Slimstar 130 Negro: $16.500 c/u = $16.500
-Subtotal: $16.500
+- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000
+Subtotal: $12.000
 Envio: $6.000
-Total: $22.500
-
-El envío a santa fe sale $6.000. Superando los $250.000 va gratis. Orientativo, puede variar al confirmar.
+Total: $18.000
 
 ¿Lo dejamos confirmado? Decime la forma de pago: transferencia (10% de descuento) o Mercado Pago.
 ```
