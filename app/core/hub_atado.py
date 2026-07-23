@@ -72,6 +72,27 @@ def _carrito_traza(carrito) -> list:
             for c in (carrito or []) if isinstance(c, dict)]
 
 
+def _exige_eleccion_de_producto(interp: dict, estado: dict, present,
+                                ancla_valida: bool) -> bool:
+    """True cuando el solver mostro un total pero NO hay producto elegido: sin
+    ancla valida (ni pedido/producto real ni el fantasma not_found), sin carrito,
+    sin criterio de seleccion (solicitud_nueva/consultados como 'mas barato' o
+    'los dos'), y con dos o mas productos mostrados. Ahi se PREGUNTA cual en vez
+    de asumir el mas barato (banco 23-jul). Gatilla sobre el HECHO del total, no
+    sobre la intencion del interprete, que es volatil entre corridas."""
+    if not present or ancla_valida:
+        return False
+    if estado.get("carrito"):
+        return False
+    if isinstance(interp, dict) and (interp.get("solicitud_nueva")
+                                     or interp.get("productos_consultados")):
+        return False
+    vistos = {(p.get("id") or p.get("nombre"))
+              for p in (estado.get("productos_vistos") or [])
+              if isinstance(p, dict) and (p.get("id") or p.get("nombre"))}
+    return len(vistos) >= 2
+
+
 async def _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
                           trace_id, interp, present):
     """Cablea el CIERRE y COBRO al hub reusando la MISMA funcion del camino vivo
@@ -191,6 +212,28 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     # Reemplaza al solver de prosa libre, cuya salida sin schema dejaba pasar la
     # alucinacion (stock inventado, banco guion 59). renderizar ya devuelve el
     # texto final estampado; el unico texto libre es el pegamento, podado de dato.
+    # ── ANCLA DEL CIERRE: se muestra un total pero el cliente NO eligio producto.
+    # Un ancla vale solo si el producto EXISTE en el catalogo. El caso real (banco
+    # 23-jul) tenia el interprete anclado a un fantasma (Redragon Cobra M711,
+    # not_found que el cliente pidio y no se vende): pedido/producto_resuelto sin
+    # producto real detras, y el solver lo tapaba asumiendo el mas barato. Se
+    # resuelve el nombre contra el catalogo (match unico por nombre completo); el
+    # fantasma cae a None y cuenta como SIN ancla. La DECISION la toma abajo el
+    # helper, cuando ya se sabe si salio un total (gatillo por el HECHO, no por la
+    # intencion del interprete, que es volatil entre corridas).
+    _anclas = [p["producto"] for p in (interp.get("pedido") or [])
+               if isinstance(p, dict) and p.get("producto")] if isinstance(interp, dict) else []
+    if isinstance(interp, dict) and interp.get("producto_resuelto"):
+        _anclas.append(interp["producto_resuelto"])
+    _ancla_valida = False
+    if _anclas:
+        try:
+            from app.core.pedido_helpers import _resolver_nombre_a_producto
+            from app.storage.firestore_client import get_all_products
+            _cat = get_all_products(tienda_id=tienda_id)
+            _ancla_valida = any(_resolver_nombre_a_producto(a, _cat) for a in _anclas)
+        except Exception:
+            _ancla_valida = True  # ante la duda no bloqueamos el cierre
     from app.core import generador_v2
     _primer_turno = not (estado.get("productos_vistos") or estado.get("carrito"))
     frags, universo, presu_txt, presu_tools = await generador_v2.generar_fragmentos(
@@ -199,7 +242,7 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         texto, _tools_called = generador_v2.renderizar(
             frags, universo, estado, tienda_id, trace_id,
             presupuesto_pre=presu_txt, presupuesto_tools=presu_tools,
-            mensaje=raw_message, primer_turno=_primer_turno)
+            mensaje=raw_message, primer_turno=_primer_turno, history=history)
         meta = {"tools_called": _tools_called, "secciones": [],
                 "prosa_citada": [], "turno_criterio": False}
         log.info("hub_atado_generador_v2", trace_id=trace_id,
@@ -263,14 +306,33 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
                      for p in productos_de_meta(meta) if p.get("id")]
     texto = _RE_ID_FILTRADO.sub("", texto).strip()
 
+    # ── ANCLA: el solver mostro un total SIN producto elegido -> se PREGUNTA ──
+    # Gatillo robusto (no la intencion, que es volatil): salio un presupuesto y
+    # NO hay ancla (ni carrito, ni pedido/producto real, ni criterio de seleccion
+    # como "mas barato"), con dos o mas productos mostrados. Se descarta el total
+    # asumido y se pide que elija; con UN solo producto o con ancla valida (ej
+    # "cerremos con el que te dije") NO dispara.
+    exigir_eleccion = _exige_eleccion_de_producto(
+        interp, estado, present, _ancla_valida)
+    if exigir_eleccion:
+        texto = ("¿Con cuál te preparo el total? Decime el modelo que más te "
+                 "cierra de los que te pasé y lo armo con el envío enseguida.")
+        present = None
+        log.info("hub_atado_exigir_eleccion", trace_id=trace_id)
+
     # ── CIERRE Y COBRO ──────────────────────────────────────────────────
     # Reusa la logica del camino vivo: entrega datos de pago a pedido, capta el
     # lead en la decision de compra, pregunta suave de cierre. Puede pisar el
     # texto (ej "pasame los datos para transferir" -> CBU + link). Corre sobre el
     # texto YA estampado y antes de guardarlo en la memoria.
-    texto, datos_cli_parciales, pregunta_cierre_hecha, presupuesto_str = \
-        await _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
-                              trace_id, interp, present)
+    if exigir_eleccion:
+        # Sin producto elegido no hay cierre ni cobro que aplicar: la pregunta
+        # por el modelo ya es la respuesta completa del turno.
+        datos_cli_parciales, pregunta_cierre_hecha, presupuesto_str = {}, False, None
+    else:
+        texto, datos_cli_parciales, pregunta_cierre_hecha, presupuesto_str = \
+            await _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
+                                  trace_id, interp, present)
 
     # ── FILTRO ANTI-DUPLICADO (refuerzo final, determinista) ────────────
     # Ultima red antes de mandar y de guardar en memoria: saca cualquier

@@ -771,11 +771,33 @@ _CIERRES_SUAVES = (
 )
 
 
-def _cierre_suave(partes: list[str]) -> str:
-    """Rota entre las variantes con crc del contenido del turno: determinista
-    y reproducible (misma charla, misma salida), sin random."""
-    base = "\n".join(partes).encode("utf-8", "ignore")
-    return _CIERRES_SUAVES[zlib.crc32(base) % len(_CIERRES_SUAVES)]
+def _ultima_linea_norm(texto: str) -> str:
+    lineas = [l.strip() for l in (texto or "").splitlines() if l.strip()]
+    return re.sub(r"\s+", " ", lineas[-1].lower()) if lineas else ""
+
+
+def _cierre_suave(partes: list[str], history: list | None = None) -> str:
+    """Elige una invitacion a avanzar EVITANDO la que ya salio en los ultimos
+    turnos del bot: el crc del contenido da el arranque determinista y, si esa
+    variante ya se uso hace poco, rota a la primera libre. Asi la MISMA linea de
+    cierre no se repite charla a charla (banco end-to-end 23-jul: el juez cazaba
+    la coletilla identica en 3 turnos, robotico). Con 4 variantes y mirando las
+    ultimas 3, siempre hay una libre."""
+    usadas: set[str] = set()
+    for h in reversed(history or []):
+        if not isinstance(h, dict) or h.get("role") != "assistant":
+            continue
+        fin = _ultima_linea_norm(h.get("content") or "")
+        if fin:
+            usadas.add(fin)
+        if len(usadas) >= len(_CIERRES_SUAVES) - 1:
+            break
+    inicio = zlib.crc32("\n".join(partes).encode("utf-8", "ignore")) % len(_CIERRES_SUAVES)
+    for k in range(len(_CIERRES_SUAVES)):
+        cand = _CIERRES_SUAVES[(inicio + k) % len(_CIERRES_SUAVES)]
+        if _ultima_linea_norm(cand) not in usadas:
+            return cand
+    return _CIERRES_SUAVES[inicio]
 
 
 def _destino_respaldado(destino: str, mensaje: str, estado: dict) -> bool:
@@ -803,7 +825,7 @@ def _destino_respaldado(destino: str, mensaje: str, estado: dict) -> bool:
 
 def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                presupuesto_pre=None, presupuesto_tools=None, mensaje=None,
-               primer_turno=False):
+               primer_turno=False, history=None):
     """(texto final, tools_called con proof). El texto lo arma el codigo desde
     los fragmentos; cada dato nace de la fuente."""
     from app.core.tools_context import set_current_tienda
@@ -1060,7 +1082,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                         "¿Lo dejamos confirmado? Decime la forma de pago: "
                         "transferencia (10% de descuento) o Mercado Pago.")
                 else:
-                    partes.append(_cierre_suave(partes))
+                    partes.append(_cierre_suave(partes, history))
     if presupuesto_pre and not total_mostrado:
         # red: el pre-armado va si o si aunque el modelo no lo posiciono, pero
         # solo si NINGUN total salio ya (evita el presupuesto duplicado).

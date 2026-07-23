@@ -1,18 +1,18 @@
-# Corrida ATADA 07_negaciones — 2026-07-23 22:33
+# Corrida ATADA 07_negaciones — 2026-07-23 22:55
 
-Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 0.0s.
+Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 3.0s.
 
 
 ## Turno 1
 
 CLIENTE: hola, busco un mouse razer
 
-BOT (4995 ms):
+BOT (21905 ms):
 
 ```
-¡Hola! Qué bueno que nos escribas. Te cuento que de Razer por el momento no tenemos nada, pero no te preocupes, que tenemos opciones excelentes para que te lleves algo que te va a encantar.
+¡Hola! Qué bueno que nos escribas. Te cuento, en este momento no trabajamos con la marca Razer, pero tenemos excelentes alternativas que te van a rendir muy bien.
 
-Si buscás algo confiable para jugar, Logitech y Genius son marcas que rinden muy bien sin necesidad de ir a gamas más altas. Logitech es un clásico que no falla para el uso diario y gaming, mientras que Genius es una entrada muy honesta si querés algo funcional sin gastar de más.
+Para gaming, lo más importante es que el mouse te resulte cómodo y tenga un sensor preciso. Aunque no tengamos Razer, nuestros modelos de Logitech y Genius son muy confiables y dan resultados geniales para jugar sin gastar de más.
 
 De mouse tengo, de lo más económico para arriba:
 - Mouse Genius DX-110 Negro - $8.500 (11 en stock)
@@ -29,16 +29,16 @@ De mouse tengo, de lo más económico para arriba:
 
 CLIENTE: mmm no, razer no, mucha plata. algo mas barato
 
-BOT (3740 ms):
+BOT (3847 ms):
 
 ```
-Te entiendo perfectamente, a veces buscamos algo funcional sin gastar de más. Por suerte tenemos alternativas muy sólidas que rinden excelente.
+Te entiendo perfectamente, a veces buscamos algo que sea más accesible y que cumpla bien su función sin gastar de más.
 
-Para un uso diario eficiente no hace falta invertir en marcas premium, con un mouse de buena calidad tenés la misma respuesta y durabilidad sin pagar de más por el nombre.
+Para un uso diario eficiente no necesitás irte a gamas altas, con un modelo confiable tenés una excelente relación precio-calidad sin pagar de más por funciones que quizás no aproveches.
 
 Mouse Genius DX-110 Negro - $8.500 (11 en stock)
 
-¿Seguimos con alguno? En un toque te paso el total.
+Contame cuál te gusta y te armo el presupuesto enseguida.
 ```
 
 - JUEZ: limpio
@@ -47,14 +47,12 @@ Mouse Genius DX-110 Negro - $8.500 (11 en stock)
 
 CLIENTE: el genius dx-110 me sirve, pero no el negro
 
-BOT (5004 ms):
+BOT (5253 ms):
 
 ```
 Mouse Logitech M170 Blanco - $12.000 (17 en stock)
 
-Para el uso diario que me comentás, este modelo te va a resultar súper práctico, ya que es un mouse óptico muy cómodo que cumple perfecto sin necesidad de invertir de más.
-
-¿Seguimos con alguno? En un toque te paso el total.
+¿Alguno te interesa? Decime y te paso el total en el momento.
 ```
 
 - JUEZ: limpio
@@ -63,7 +61,7 @@ Para el uso diario que me comentás, este modelo te va a resultar súper prácti
 
 CLIENTE: bueno si no hay blanco no importa, dame el negro nomas
 
-BOT (4414 ms):
+BOT (5010 ms):
 
 ```
 Presupuesto:
@@ -80,10 +78,10 @@ Total: $8.500
 
 CLIENTE: al final cuanto queda todo con envio a caba?
 
-BOT (4116 ms):
+BOT (6434 ms):
 
 ```
-Dale, ahí te preparé el presupuesto sumando el envío a CABA para que veas cómo queda el total.
+¡Hola! Te cuento que el envío a CABA tiene un valor adicional, así que ahí te preparé el presupuesto total para que lo veas bien claro.
 
 Presupuesto:
 - 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500

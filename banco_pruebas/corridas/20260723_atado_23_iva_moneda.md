@@ -1,26 +1,20 @@
-# Corrida ATADA 23_iva_moneda — 2026-07-23 22:32
+# Corrida ATADA 23_iva_moneda — 2026-07-23 23:02
 
-Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 0.0s.
+Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 3.0s.
 
 
 ## Turno 1
 
 CLIENTE: hola, el precio del mouse Redragon Cobra M711 negro incluye IVA?
 
-BOT (6072 ms):
+BOT (5614 ms):
 
 ```
-¡Hola! Qué bueno que nos escribas, te cuento que el modelo que consultás no lo tenemos disponible en nuestro catálogo, pero te ayudo con gusto a encontrar una alternativa excelente que sí tenemos en stock.
+¡Hola! Qué bueno que nos escribas, acá estamos para ayudarte con lo que necesites sobre nuestros productos.
 
-Sobre tu duda, quedate tranquilo que todos los precios que ves acá son finales, ya incluyen IVA, así que no vas a tener ninguna sorpresa al momento de pagar.
+Quedate tranquilo que todos los precios que ves publicados en nuestra tienda son finales, ya incluyen IVA, así que no vas a tener ninguna sorpresa al momento de pagar.
 
-De Mouse tengo, de lo más económico para arriba:
-- Mouse Genius DX-110 Negro - $8.500 (11 en stock)
-- Mouse Logitech M170 Negro - $12.000 (16 en stock)
-- Mouse Logitech M170 Blanco - $12.000 (17 en stock)
-- Mouse Genius NX-7000 Negro - $14.000 (18 en stock)
-
-¿Querés que avancemos con alguno? Te armo el total al instante.
+Contame cuál te gusta y te armo el presupuesto enseguida.
 ```
 
 - JUEZ: limpio
@@ -29,14 +23,14 @@ De Mouse tengo, de lo más económico para arriba:
 
 CLIENTE: y si te pago en efectivo me lo dejas sin IVA?
 
-BOT (4049 ms):
+BOT (5362 ms):
 
 ```
-¡Hola! Entiendo perfectamente tu duda, pero te aclaro cómo nos manejamos en la tienda para que siempre tengas todo claro.
+Te entiendo perfectamente, siempre buscamos la mejor forma de cuidar el bolsillo al comprar.
 
-Te comento que nuestros precios son finales y ya tienen el IVA incluido, no hacemos descuentos adicionales sobre eso. Lo que sí te conviene aprovechar es el descuento especial que tenemos pagando por transferencia, que es nuestra mejor forma de mejorar el precio final.
+Sobre lo que me consultas, te cuento que nuestros precios son finales y ya tienen todo incluido. No hacemos quitas adicionales, pero lo que sí tenemos es un beneficio directo si elegís pagar por transferencia bancaria, que es la mejor forma de obtener un descuento real.
 
-¿Alguno te interesa? Decime y te paso el total en el momento.
+¿Querés que avancemos con alguno? Te armo el total al instante.
 ```
 
 - JUEZ: limpio
@@ -45,14 +39,14 @@ Te comento que nuestros precios son finales y ya tienen el IVA incluido, no hace
 
 CLIENTE: aceptan dolares billete? tengo unos ahorros
 
-BOT (3551 ms):
+BOT (3631 ms):
 
 ```
-Hola, ¿cómo estás? Te entiendo perfectamente, es muy común querer aprovechar esos ahorros, pero te cuento cómo nos manejamos por acá para que estemos todos en la misma página.
+¡Hola! Entiendo perfectamente, siempre es bueno ver cómo manejar los ahorros al momento de comprar tecnología.
 
-Te comento que trabajamos exclusivamente con pesos argentinos mediante transferencia o Mercado Pago. No operamos con dólares en efectivo, así que si querés avanzar con algún producto, te paso el total en pesos y lo resolvemos al toque.
+Te cuento que por acá operamos únicamente en pesos argentinos, ya sea por transferencia o a través de Mercado Pago. No estamos tomando dólares en efectivo, pero si querés, pasame lo que tenés en mente y te calculo el total en pesos para que sepas cómo queda.
 
-¿Alguno te interesa? Decime y te paso el total en el momento.
+¿Seguimos con alguno? En un toque te paso el total.
 ```
 
 - JUEZ: limpio
@@ -61,14 +55,14 @@ Te comento que trabajamos exclusivamente con pesos argentinos mediante transfere
 
 CLIENTE: bueno, y que datos fiscales necesitan para factura A?
 
-BOT (3181 ms):
+BOT (3728 ms):
 
 ```
-¡Qué buena pregunta! Te cuento cómo lo manejamos para que te quedes tranquilo con tu compra.
+¡Qué buena pregunta! Es súper sencillo, para que podamos emitir tu factura A, solo necesitamos que nos pases tu CUIT y nos confirmes tu condición frente al IVA al momento de concretar la compra.
 
-Para que te emitamos la factura A, solo necesitamos que al momento de concretar la compra nos pases tu número de CUIT y nos confirmes tu condición frente al IVA. Con eso ya te la preparamos sin vueltas.
+Emitimos factura para respaldar toda tu compra y que te quedes tranquilo con la garantía y la legalidad de los equipos. Siendo factura A, con los datos que te pedí arriba, la preparamos sin vueltas para que la tengas apenas salga el pedido.
 
-Contame cuál te gusta y te armo el presupuesto enseguida.
+¿Alguno te interesa? Decime y te paso el total en el momento.
 ```
 
 - JUEZ: limpio
@@ -77,22 +71,14 @@ Contame cuál te gusta y te armo el presupuesto enseguida.
 
 CLIENTE: dale, pasame el total con envio a La Plata pagando por transferencia
 
-BOT (4998 ms):
+BOT (5072 ms):
 
 ```
-¡Excelente elección! Te preparo el presupuesto con el envío a La Plata para que aproveches el descuento por transferencia.
+¡Excelente elección! Te preparo el presupuesto con el envío a La Plata aplicando el descuento por transferencia para que aproveches al máximo tus ahorros.
 
-Presupuesto:
-- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500
-Subtotal: $8.500
-Envio: $6.000
-Total: $14.500
+Hacer la transferencia es la mejor forma de cerrar la compra hoy, ya que te asegura el mejor precio disponible y procesamos tu pedido de inmediato.
 
-Si, pagando por transferencia bancaria tenes 10% de descuento.
-
-Te aplico el beneficio de transferencia sobre el total, así te queda el mejor precio posible directo.
-
-¿Lo dejamos confirmado? Decime la forma de pago: transferencia (10% de descuento) o Mercado Pago.
+Contame cuál te gusta y te armo el presupuesto enseguida.
 ```
 
 - JUEZ: limpio
