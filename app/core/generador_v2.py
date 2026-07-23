@@ -799,59 +799,6 @@ def _destino_respaldado(destino: str, mensaje: str, estado: dict) -> bool:
     return False
 
 
-# Frase FIJA del mecanismo de envío, fiel a la fuente (tabla por localidad, no
-# "automático"). Se estampa verbatim cuando el criterio es envio_costo, para que
-# el modelo no la reescriba y no derive.
-_ENVIO_MECANISMO_FIJO = (
-    "El costo del envío sale de la tabla por localidad; con tu provincia o "
-    "código postal te digo la tarifa exacta.")
-
-
-def _cotizar_envio_contexto(mensaje: str):
-    """Intenta cotizar el envío para una pregunta SUELTA (sin pedido), con el
-    destino que ya dio el cliente. Primero con el texto del mensaje (geo_cp
-    extrae provincia/localidad de forma conservadora: 'Córdoba capital' o
-    'ciudad de Córdoba' resuelven, una localidad ambigua sin provincia no), y si
-    ahí no sale, con la memoria de destino del estado (provincia sticky). Devuelve
-    el dict de cotizar_envio si resolvió, o None. El número es determinista."""
-    from app.core.tools import cotizar_envio
-    q = cotizar_envio(localidad=mensaje or "")
-    if q.get("ok"):
-        return q
-    q = cotizar_envio(localidad="")  # usa el destino sticky del estado
-    return q if q.get("ok") else None
-
-
-def _linea_envio_cotizada(q: dict, faq: dict) -> str:
-    """Línea estampada de cotización de envío (mismo formato que el fragmento de
-    envío): número determinista + umbral gratis leído de la fuente."""
-    monto = q.get("monto")
-    costo = "gratis" if monto in (0, None) else f"${monto:,}".replace(",", ".")
-    zona = str(q.get("provincia") or q.get("zona") or "tu zona").replace("_", " ").title()
-    linea = f"El envío a {zona} sale {costo}."
-    umbral = _umbral_envio_gratis(faq)
-    if umbral and monto not in (0, None):
-        _u = f"${umbral:,}".replace(",", ".")
-        linea += f" Superando los {_u} va gratis."
-    linea += " Orientativo, puede variar al confirmar."
-    return linea
-
-
-def _umbral_envio_gratis(faq: dict):
-    """Umbral de envío gratis LEÍDO de la fuente (FAQ costo_envio -> valores ->
-    envio_gratis -> umbral_ars). Devuelve el entero o None si la tienda no lo
-    define. Así el fragmento de envío no hardcodea un monto ni promete gratis
-    donde no corresponde: la política sale del dato, no del código."""
-    ce = (faq or {}).get("costo_envio") or {}
-    for v in ce.get("valores") or []:
-        if v.get("concepto") == "envio_gratis" and v.get("umbral_ars"):
-            try:
-                return int(v["umbral_ars"])
-            except (TypeError, ValueError):
-                return None
-    return None
-
-
 def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                presupuesto_pre=None, presupuesto_tools=None, mensaje=None,
                primer_turno=False):
@@ -890,14 +837,6 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
         if pid and str(pid).upper() in ids_validos:
             return get_product_by_id(str(pid).upper(), tienda_id=tienda_id)
         return None
-
-    # ¿este turno ya va a estampar el NÚMERO de envío por la vía del pedido
-    # (Presupuesto/calculo o fragmento envio)? Si sí, el criterio envio_costo se
-    # queda con la frase de mecanismo y NO vuelve a cotizar (evita doble número).
-    # Si NO hay pedido, es una pregunta suelta de envío: ahí el criterio cotiza
-    # directo con la provincia/localidad que dio el cliente, sin re-pedir el CP.
-    _habra_envio_numero = any(
-        f.get("tipo") in ("calculo", "envio") for f in (fragmentos or []))
 
     for f in (fragmentos or []):
         t = f.get("tipo")
@@ -1053,17 +992,9 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 costo = ("gratis" if monto in (0, None)
                          else f"${monto:,}".replace(",", "."))
                 zona = str(q.get("provincia") or q.get("zona") or "tu zona")
-                linea = f"El envío a {zona.replace('_',' ').title()} sale {costo}."
-                # Umbral de envío gratis: NO hardcodeado. Sale de la FAQ de la
-                # tienda (costo_envio -> envio_gratis -> umbral_ars). Si la tienda
-                # no define umbral, NO se promete gratis: se evita inventar la
-                # condicion (hallazgo DeepEval 23-jul, guion 37).
-                umbral = _umbral_envio_gratis(faq)
-                if umbral and monto not in (0, None):
-                    _u = f"${umbral:,}".replace(",", ".")
-                    linea += f" Superando los {_u} va gratis."
-                linea += " Orientativo, puede variar al confirmar."
-                partes.append(linea)
+                partes.append(f"El envío a {zona.replace('_',' ')} sale {costo}. "
+                              "Superando los $250.000 va gratis. Orientativo, "
+                              "puede variar al confirmar.")
                 e = {"name": "cotizar_envio", "args": {"localidad": f["destino"]},
                      "result": q}
                 if q.get("proof"):
@@ -1082,30 +1013,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             # de huecos del corpus: cada uno es un bloque de prosa por escribir.
             cid = str(f.get("criterio_id") or "").strip()
             jurado = texto_de(cid) if cid else None
-            # ENVÍO: el mecanismo NO lo parafrasea el modelo. El bloque envio_costo
-            # es guía interna ("tabla real por localidad") y el modelo lo reescribía
-            # como "se ajusta automáticamente", perdiendo la fuente (hallazgo
-            # DeepEval 23-jul, guion 34). Se estampa una frase FIJA y fiel, como el
-            # disclaimer: el número ya lo estampa el Presupuesto arriba.
-            if cid == "envio_costo":
-                if _habra_envio_numero:
-                    # El pedido ya estampa el número; acá solo el mecanismo fiel.
-                    txt = _ENVIO_MECANISMO_FIJO
-                else:
-                    # Pregunta suelta: si el cliente ya dio provincia o localidad,
-                    # se cotiza directo en vez de re-pedir el CP.
-                    _q = _cotizar_envio_contexto(mensaje)
-                    if _q:
-                        txt = _linea_envio_cotizada(_q, faq)
-                        _e = {"name": "cotizar_envio",
-                              "args": {"localidad": mensaje}, "result": _q}
-                        if _q.get("proof"):
-                            _e["proof"] = _q["proof"]
-                        tools.append(_e)
-                    else:
-                        txt = _ENVIO_MECANISMO_FIJO
-            else:
-                txt = _poda_prosa(f.get("texto"), nombres)
+            txt = _poda_prosa(f.get("texto"), nombres)
             if not txt:
                 continue
             partes.append(txt)
