@@ -160,7 +160,7 @@ def test_switch_version_a_es_lead_y_b_es_venta():
 # y la notificacion, y se verifica la DECISION de la capa de leads.
 
 def _correr_lead_fuerte(monkeypatch, mensaje, datos_turno, modo,
-                        lead_activo=None):
+                        lead_activo=None, pregunta_cierre_hecha=True):
     """Corre procesar_mensaje_para_lead con persistencia y notificacion falsas.
     Devuelve (meta, updates, creado) para inspeccionar la decision."""
     import asyncio
@@ -187,13 +187,29 @@ def _correr_lead_fuerte(monkeypatch, mensaje, datos_turno, modo,
 
     interp = {"intencion": "decision_compra", "confianza": 0.95}
     presup = "Presupuesto:\n1x Camara: $100.000\nTotal: $100.000"
+    # Confirmacion de una oferta YA hecha (pregunta_cierre_hecha): es el turno del
+    # "si", donde el cierre fuerte SI corresponde. En el primer turno sin oferta
+    # previa el sistema no cierra (primer turno sin apuro), probado aparte.
     meta = asyncio.new_event_loop().run_until_complete(
         L.procesar_mensaje_para_lead(
             user_id="u1", canal="whatsapp", tienda_id="verifika_prod",
             mensaje=mensaje, respuesta_solver="Genial.", trace_id="t1",
             interpretacion=interp, presupuesto=presup,
-            datos_turno=dict(datos_turno)))[1]
+            datos_turno=dict(datos_turno),
+            pregunta_cierre_hecha=pregunta_cierre_hecha))[1]
     return meta, updates, creado
+
+
+def test_primer_turno_sin_apuro_no_cierra_de_una(monkeypatch):
+    """PRIMER TURNO SIN APURO: una decision de compra SIN oferta de cierre previa
+    ('quiero dos mouse') NO cierra ni estampa 'tomamos tu pedido'; marca la oferta
+    y el solver muestra e invita. El bug real que reporto Martin en prod."""
+    meta, updates, creado = _correr_lead_fuerte(
+        monkeypatch, "quiero dos mouse", {}, modo="lead",
+        pregunta_cierre_hecha=False)
+    assert meta["accion"] == "pregunta_cierre"
+    assert not meta.get("respuesta_directa")
+    assert creado.get("estado_inicial") is None  # no se capto todavia
 
 
 def test_modo_lead_capta_fuerte_sin_pedir_datos(monkeypatch):
@@ -330,8 +346,10 @@ def test_decision_sin_confianza_con_presupuesto_de_memoria_pregunta(monkeypatch)
     meta = _correr_cierre(
         monkeypatch, "me parece que lo llevo", "decision_compra", 0.6,
         presupuesto="Total: $100.000", presupuesto_nuevo=False)
+    # El cierre lo OWNS el solver: se marca la oferta (accion) SIN estampar la
+    # pregunta enlatada. respuesta_directa ausente = el texto del solver queda.
     assert meta["accion"] == "pregunta_cierre"
-    assert meta["respuesta_directa"].endswith(leads.PREGUNTA_CIERRE)
+    assert not meta.get("respuesta_directa")
 
 
 def test_exploracion_con_presupuesto_de_memoria_no_pregunta(monkeypatch):
@@ -351,29 +369,27 @@ def test_lock_presupuesto_nuevo_sigue_preguntando(monkeypatch):
     assert meta["accion"] == "pregunta_cierre"
 
 
-def test_solver_ya_cerro_no_se_pega_doble_pregunta(monkeypatch):
-    """DOBLE CIERRE (banco 19-jul): el solver ya cerro con su propia pregunta
-    de confirmacion; la enlatada NO se pega encima. La del solver vale como LA
-    pregunta y el 'si' del proximo turno cae igual en el gatillo."""
-    from app.core import leads
+def test_cierre_suave_marca_oferta_sin_estampar(monkeypatch):
+    """El cierre suave NO estampa mas la pregunta enlatada: marca la oferta
+    (accion pregunta_cierre) y deja el texto del solver intacto. El 'si' del
+    proximo turno cae igual en el gatillo determinista."""
     meta = _correr_cierre(
         monkeypatch, "cuanto queda con envio?", "pregunta_especifica", 0.7,
         presupuesto="Total: $28.000", presupuesto_nuevo=True,
         respuesta_solver="Total: $28.000\n\n¿Lo dejamos confirmado así?")
     assert meta["accion"] == "pregunta_cierre"
-    assert leads.PREGUNTA_CIERRE not in meta["respuesta_directa"]
-    assert meta["respuesta_directa"].rstrip().endswith(
-        "¿Lo dejamos confirmado así?")
+    assert not meta.get("respuesta_directa")
 
 
-def test_pregunta_de_dato_del_solver_no_frena_la_enlatada(monkeypatch):
-    """Una pregunta de DATO del solver no es un cierre: la enlatada va igual."""
-    from app.core import leads
+def test_cierre_suave_no_estampa_ni_con_pregunta_de_dato(monkeypatch):
+    """Con presupuesto nuevo, el cierre suave marca la oferta pero no estampa:
+    el solver ya invita en su prosa, no se pega nada encima."""
     meta = _correr_cierre(
         monkeypatch, "cuanto queda con envio?", "pregunta_especifica", 0.7,
         presupuesto="Total: $28.000", presupuesto_nuevo=True,
         respuesta_solver="Sale $28.000. ¿A qué localidad te lo mando?")
-    assert meta["respuesta_directa"].endswith(leads.PREGUNTA_CIERRE)
+    assert meta["accion"] == "pregunta_cierre"
+    assert not meta.get("respuesta_directa")
 
 
 # ── LOOP DEL "SI" REPETIDO (18-jul, charla real Monte Ralo) ──────────────────
@@ -397,12 +413,15 @@ def _correr_con_lead_activo(monkeypatch, lead_activo, mensaje, intencion,
     monkeypatch.setattr(L, "notificar_lead", _fake_notificar)
     monkeypatch.setattr(L, "modo_cierre", lambda tid: modo)
     interp = {"intencion": intencion, "confianza": confianza}
+    # Turno del "si": la oferta de cierre ya se hizo antes (pregunta_cierre_hecha),
+    # asi que la confirmacion cierra. El primer turno sin oferta previa se prueba
+    # aparte (no cierra de una: primer turno sin apuro).
     return asyncio.new_event_loop().run_until_complete(
         L.procesar_mensaje_para_lead(
             user_id="u1", canal="whatsapp", tienda_id="verifika_prod",
             mensaje=mensaje, respuesta_solver="Genial.", trace_id="t1",
             interpretacion=interp, presupuesto=presupuesto,
-            presupuesto_nuevo=True))[1]
+            presupuesto_nuevo=True, pregunta_cierre_hecha=True))[1]
 
 
 def test_lead_ya_captado_corta_el_loop(monkeypatch):
@@ -427,14 +446,14 @@ def test_lead_fuerte_captado_devuelve_cierre(monkeypatch):
     assert "tomamos tu pedido" in (meta.get("respuesta_directa") or "").lower()
 
 
-def test_confirmacion_en_el_medio_tambien_frena_la_enlatada(monkeypatch):
-    """La pregunta de confirmacion puede quedar en el MEDIO (el acople de FAQ
-    se pega despues): la enlatada tampoco va (visto vivo 20-jul, guion 40)."""
-    from app.core import leads
+def test_cierre_suave_marca_oferta_con_confirmacion_del_solver(monkeypatch):
+    """Aunque el solver ya haya confirmado en su prosa, el cierre suave solo
+    marca la oferta y no estampa nada encima (el cierre lo OWNS el solver)."""
     meta = _correr_cierre(
         monkeypatch, "cuanto queda con envio?", "pregunta_especifica", 0.7,
         presupuesto="Total: $480.000", presupuesto_nuevo=True,
         respuesta_solver=("Total: $480.000\n\n¿Lo dejamos confirmado? Decime "
                          "la forma de pago.\n\nNo trabajamos contra entrega: "
                          "el pedido se abona antes del despacho."))
-    assert leads.PREGUNTA_CIERRE not in meta["respuesta_directa"]
+    assert meta["accion"] == "pregunta_cierre"
+    assert not meta.get("respuesta_directa")

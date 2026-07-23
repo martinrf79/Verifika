@@ -486,23 +486,32 @@ async def procesar_mensaje_para_lead(
                  or (intencion_llm == "decision_compra" and hay_presupuesto))
             and intencion_llm in ("pregunta_especifica", "aporta_dato",
                                   "decision_compra")):
+        # EL CIERRE LO OWNS EL SOLVER (Martin, 23-jul: "encargar por enum al
+        # solver"). Antes se pegaba la pregunta enlatada PREGUNTA_CIERRE encima de
+        # la respuesta del solver, y a veces la entorpecia o sonaba robotica. El
+        # solver ya invita a avanzar en su propia prosa; aca SOLO se MARCA que la
+        # oferta de cierre esta sobre la mesa (accion pregunta_cierre), para que el
+        # "si" del proximo turno cierre por el gatillo determinista. No se estampa
+        # nada: sin respuesta_directa, el texto del solver queda intacto.
         log.info("cierre_pregunta_suave", trace_id=trace_id,
                  intencion_llm=intencion_llm, confianza_llm=confianza_llm)
-        base = (respuesta_solver or "").rstrip()
-        # DOBLE CIERRE (visto en el banco 19-jul): si el solver YA cerro con su
-        # propia pregunta de confirmacion ("¿Lo dejamos confirmado asi?"), pegar
-        # la enlatada encima deja dos preguntas de cierre seguidas, robotico. La
-        # del solver vale como LA pregunta: el "si" del proximo turno cae igual
-        # en el gatillo determinista.
-        if base and _RE_CIERRE_YA_PREGUNTADO.search(base):
-            pregunta = base
-        else:
-            pregunta = (base + "\n\n" + PREGUNTA_CIERRE) if base else PREGUNTA_CIERRE
-        return None, {"accion": "pregunta_cierre",
-                      "respuesta_directa": pregunta}
+        return None, {"accion": "pregunta_cierre"}
 
     # Caso dos, intencion fuerte
     if nivel == "fuerte":
+        # PRIMER TURNO SIN APURO (Martin, 23-jul + regla 20-jul). Una decision de
+        # compra que llega SIN una oferta de cierre previa (pregunta_cierre_hecha)
+        # es la PRIMERA expresion de intencion ("quiero dos mouse"), no una
+        # confirmacion de un pedido cerrado. NO se cierra ni se estampa "tomamos
+        # tu pedido" de una (apuro real que reporto Martin en prod): se MARCA la
+        # oferta y el SOLVER muestra el presupuesto e invita en su prosa. El "si"
+        # del proximo turno, ya con pregunta_cierre_hecha, entra por el gatillo D
+        # y ahi si cierra. La confirmacion de una oferta previa
+        # (respuesta_afirmativa_pregunta_cierre) NO cae aca: cierra normal.
+        if not pregunta_cierre_hecha and frase.startswith("interpretador_decision_compra"):
+            log.info("cierre_primer_turno_sin_apuro", trace_id=trace_id,
+                     frase=frase)
+            return None, {"accion": "pregunta_cierre"}
         # Regla de orden: no cerrar sin precio mostrado. Si todavia no hay
         # presupuesto, registramos el interes en silencio y dejamos que el
         # Solver responda el precio. El cierre queda para el turno siguiente.
