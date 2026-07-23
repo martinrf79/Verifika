@@ -46,6 +46,25 @@ async def process_message(user_id: str, raw_message: str,
             log.error("antijailbreak_error", trace_id=trace_id,
                       error=str(e)[:160])
 
+        # ── RESET_CODE: palabra clave de PRUEBA para arrancar de cero ────────
+        # Vive ACA, en el orchestrator, para que funcione con CUALQUIER camino
+        # (antes estaba dentro de interprete_libre y el switch al flujo atado lo
+        # dejo sin efecto). El bot mantiene continuidad siempre; solo el RESET_CODE
+        # exacto (ej "verifika2026") borra la conversacion y descarta los leads,
+        # para testear desde el mismo numero sin tocar el entorno.
+        _rc = (settings.RESET_CODE or "").strip().lower()
+        if _rc and (raw_message or "").strip().lower() == _rc:
+            try:
+                from app.storage.firestore_client import reset_conversation
+                from app.core.leads import descartar_leads_activos
+                reset_conversation(user_id, tienda_id=tid)
+                descartar_leads_activos(user_id, canal, tid)
+            except Exception as e:
+                log.warning("reset_code_error", trace_id=trace_id,
+                            error=str(e)[:120])
+            log.info("reset_code", trace_id=trace_id, user_id=user_id)
+            return "Listo, conversacion reiniciada. Empezamos de cero."
+
         return await procesar_atado(
             user_id, raw_message, tid, canal, trace_id)
     finally:
