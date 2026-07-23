@@ -86,19 +86,42 @@ def _fact_de_tool(tc: dict) -> str:
     return f"{nombre}({args_txt}) => {res_txt}"
 
 
+def _fact_de_producto(p: dict) -> str:
+    """Un producto del universo (candidato real del catalogo) como linea de
+    evidencia. Es lo que el solver TIENE disponible para listar o recomendar; si
+    no se suma, la faithfulness marca como inventado un precio que salio del
+    catalogo (bug de contexto incompleto, no del bot)."""
+    campos = []
+    for k in ("id", "nombre", "precio_ars", "stock", "marca", "categoria",
+              "garantia_meses"):
+        if p.get(k) not in (None, ""):
+            campos.append(f"{k}={p[k]}")
+    return "catalogo: " + ", ".join(campos)
+
+
 class _CapturaTools:
-    """Envuelve generador_v2.renderizar para quedarse con los tools_called (con
-    su resultado) de cada turno. Es un espejo del camino vivo, no lo altera:
-    devuelve exactamente lo que renderizar devolvia."""
+    """Envuelve generador_v2.renderizar para quedarse con la evidencia REAL de
+    cada turno: los tools_called (con su resultado) Y el universo de candidatos
+    del catalogo que recibio renderizar. Es un espejo del camino vivo, no lo
+    altera: devuelve exactamente lo que renderizar devolvia."""
 
     def __init__(self):
         import app.core.generador_v2 as g2
         self._g2 = g2
         self._orig = g2.renderizar
         self.acum: list[dict] = []
+        self.universo: list[dict] = []
 
     def __enter__(self):
         def _wrap(*a, **k):
+            # universo es el 2do posicional de renderizar (o kwarg).
+            uni = k.get("universo")
+            if uni is None and len(a) >= 2:
+                uni = a[1]
+            if isinstance(uni, list):
+                for p in uni:
+                    if isinstance(p, dict) and p.get("id"):
+                        self.universo.append(p)
             texto, tools = self._orig(*a, **k)
             if tools:
                 self.acum.extend(tools)
@@ -111,9 +134,17 @@ class _CapturaTools:
 
     def reset(self):
         self.acum = []
+        self.universo = []
 
     def contexto(self) -> list[str]:
-        return [_fact_de_tool(tc) for tc in self.acum]
+        ctx = [_fact_de_tool(tc) for tc in self.acum]
+        vistos = set()
+        for p in self.universo:
+            pid = str(p.get("id"))
+            if pid not in vistos:
+                vistos.add(pid)
+                ctx.append(_fact_de_producto(p))
+        return ctx
 
 
 async def _correr_guion(nombre: str, mensajes: list[str], pausa_s: float,
