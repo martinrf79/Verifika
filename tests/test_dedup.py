@@ -26,6 +26,24 @@ def test_lineas_contiguas_identicas_se_sacan():
     assert "Alias: demo" in r
 
 
+def test_bloque_sustancial_repetido_no_contiguo_se_saca():
+    """El presupuesto que el solver mostro y el cierre repite en su 'Resumen'
+    (no contiguo) queda una sola vez. Caso real del modo lead por el flujo atado."""
+    t = ("¡Excelente!\n\nPresupuesto:\n- 2x Mouse: $17.000\nTotal: $17.000\n\n"
+         "¿Lo dejamos confirmado así?\n\nListo, tomamos tu pedido.\nResumen:\n\n"
+         "Presupuesto:\n- 2x Mouse: $17.000\nTotal: $17.000\n\nEl equipo te contacta.")
+    r = D(t)
+    assert r.count("Presupuesto:") == 1
+    assert "Listo, tomamos tu pedido." in r
+
+
+def test_coletilla_corta_repetida_no_contigua_se_conserva():
+    """Un bloque CORTO puede repetirse legitimo (no es sustancial): solo se dedup
+    si es contiguo, no a distancia."""
+    t = "¿Seguimos?\n\nMouse A - $12.000\n\n¿Seguimos?"
+    assert D(t).count("¿Seguimos?") == 2
+
+
 def test_no_toca_lista_legitima_mismo_precio():
     # dos productos al mismo precio son lineas DISTINTAS: no se tocan.
     t = ("De mouse tengo:\n- Mouse Logitech M170 Negro - $12.000\n"

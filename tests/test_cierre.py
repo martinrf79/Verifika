@@ -200,6 +200,17 @@ def _correr_lead_fuerte(monkeypatch, mensaje, datos_turno, modo,
     return meta, updates, creado
 
 
+def test_pide_cobro_detecta_las_formas_reales():
+    """El pedido de cobro se detecta determinista: en el flujo atado el solver
+    cae al fallback ante 'pasame los enlaces' (no es un producto) y la entrega
+    del CBU/link se dispara igual por este detector (bug real guion 48 T3)."""
+    from app.core.leads import _RE_PIDE_COBRO
+    for f in ("Pasame los enlaces para pagar", "pasame los datos para transferir",
+              "cual es el cbu", "dame el alias", "necesito el link de pago"):
+        assert _RE_PIDE_COBRO.search(f.lower()), f
+    assert not _RE_PIDE_COBRO.search("hola tenes mouse")
+
+
 def test_primer_turno_sin_apuro_no_cierra_de_una(monkeypatch):
     """PRIMER TURNO SIN APURO: una decision de compra SIN oferta de cierre previa
     ('quiero dos mouse') NO cierra ni estampa 'tomamos tu pedido'; marca la oferta

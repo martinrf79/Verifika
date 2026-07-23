@@ -1,11 +1,14 @@
 """
 ORCHESTRATOR — despachador minimo.
 
-El turno entero lo maneja el CAMINO VIVO: app/core/interprete_libre.py
-(interprete + solver libre + filtro determinista con autofix + cierre + memoria).
-Las ~14 capas viejas y los caminos paralelos (modo_libre, camino_nuevo, nucleo,
-legacy) se consolidaron y borraron el 25-jun. Lo unico que queda antes del camino
-vivo es el filtro de entrada anti-jailbreak.
+El turno entero lo maneja el FLUJO ATADO: app/core/hub_atado.py (interprete y
+solver AMBOS atados por enum a la fuente de verdad, sin la pila de guardas). El
+dato duro nace de la fuente por construccion: imposible alucinar un precio, stock
+o spec. El cierre y el cobro (modo lead o venta con CBU/link) los resuelve la capa
+de leads reusada. Lo unico que queda antes es el filtro de entrada anti-jailbreak.
+
+El camino viejo (interprete_libre, solver de prosa libre + ~40 guardas) queda en
+el repo por si hay que volver (revert), pero NO es el que corre.
 """
 import uuid
 
@@ -13,7 +16,7 @@ import structlog
 
 from app.config import get_settings
 from app.logger import get_logger
-from app.core.interprete_libre import procesar_interprete_libre
+from app.core.hub_atado import procesar_atado
 
 log = get_logger(__name__)
 settings = get_settings()
@@ -43,7 +46,7 @@ async def process_message(user_id: str, raw_message: str,
             log.error("antijailbreak_error", trace_id=trace_id,
                       error=str(e)[:160])
 
-        return await procesar_interprete_libre(
+        return await procesar_atado(
             user_id, raw_message, tid, canal, trace_id)
     finally:
         structlog.contextvars.clear_contextvars()

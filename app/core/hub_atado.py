@@ -101,8 +101,15 @@ async def _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
     datos_acumulados = {**datos_previos, **datos_turno}
     pregunta_cierre_previa = bool(conv.get("pregunta_cierre_hecha"))
     meta_lead: dict = {}
-    # No se cierra sobre el fallback: no hay respuesta real que confirmar.
-    if texto and texto != settings.VERIFIKA_FALLBACK_MESSAGE:
+    # No se cierra sobre el fallback: no hay respuesta real que confirmar. PERO el
+    # PEDIDO DE COBRO ("pasame los datos/enlaces para pagar") es determinista y NO
+    # depende del solver: el solver atado no tiene fragmento para el cobro y cae al
+    # fallback, y ahi se perdia la entrega del CBU/link (bug real, guion 48 T3 por
+    # el flujo atado). Si el cliente pide el cobro, se corre igual y la entrega
+    # reemplaza al fallback.
+    from app.core.leads import _RE_PIDE_COBRO
+    _pide_cobro = bool(_RE_PIDE_COBRO.search(raw_message or ""))
+    if (texto and texto != settings.VERIFIKA_FALLBACK_MESSAGE) or _pide_cobro:
         try:
             _, meta_lead = await procesar_mensaje_para_lead(
                 user_id, canal, tienda_id, raw_message, texto, trace_id,

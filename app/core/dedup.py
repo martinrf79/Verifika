@@ -36,13 +36,26 @@ def deduplicar_respuesta(texto: str) -> str:
     if nb >= 2 and nb % 2 == 0 and norm[:nb // 2] == norm[nb // 2:] and any(norm[:nb // 2]):
         bloques = bloques[:nb // 2]
 
-    # 1b) bloques contiguos identicos (ej. el presupuesto pegado dos veces).
+    # 1b) bloques identicos repetidos. Contiguos siempre; y NO contiguos SOLO si
+    # el bloque tiene sustancia (varias lineas o largo): el presupuesto que el
+    # solver mostro y el cierre repite en su "Resumen" queda una sola vez (caso
+    # real modo lead). Un bloque corto (una coletilla) puede repetirse legitimo,
+    # asi que ese solo se dedup si es CONTIGUO.
     out_b: list[str] = []
+    vistos_sust: set[str] = set()
     for b in bloques:
         nb_ = _norm(b)
-        if out_b and nb_ and nb_ == _norm(out_b[-1]):
+        if not nb_:
+            out_b.append(b)
             continue
+        if out_b and nb_ == _norm(out_b[-1]):
+            continue  # contiguo identico
+        sustancial = "\n" in b.strip() or len(nb_) > 40
+        if sustancial and nb_ in vistos_sust:
+            continue  # bloque con sustancia ya mostrado antes (no contiguo)
         out_b.append(b)
+        if sustancial:
+            vistos_sust.add(nb_)
     t = "\n\n".join(out_b)
 
     # ── 2) LINEAS contiguas identicas con sustancia ──────────────────────────
