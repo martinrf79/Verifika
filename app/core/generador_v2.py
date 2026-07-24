@@ -779,24 +779,17 @@ def _cierre_suave(partes: list[str]) -> str:
 def _destino_respaldado(destino: str, mensaje: str, estado: dict) -> bool:
     """Un destino que emite el MODELO en un fragmento calculo solo vale si el
     cliente lo dijo: en el mensaje ACTUAL o en la memoria de destinos del
-    estado. Espejo de coercionar_destinos del interpretador (bug 'Rosario',
-    17-jul), aplicado al generador: en la corrida del 19-jul el modelo invento
-    un destino y el turno 1 cobro $9.000 de envio a una provincia que el
-    cliente jamas nombro. Si se cae, el render cae a la memoria legitima de
-    localidades_envio, nunca inventa."""
-    d = _norm(destino)
-    if not d:
-        return False
-    if d in _norm(mensaje or ""):
-        return True
-    memoria = list(estado.get("localidades_envio") or [])
-    memoria.append(estado.get("localidad_envio") or "")
-    memoria.append(estado.get("provincia_envio") or "")
-    for m in memoria:
-        mn = _norm(m)
-        if mn and (d in mn or mn in d):
-            return True
-    return False
+    estado.  Delega en resolver_destino para mantener una única fuente de
+    verdad (bug 'Rosario' 17-jul + corrección del campo localidad_envio
+    singular legado que causaba falsos positivos; bug 19-jul)."""
+    from app.core.destino_resolver import resolver_destino, ESTADOS_VALIDOS
+    res = resolver_destino(
+        texto=destino,
+        mensaje_actual=mensaje,
+        memoria_destinos=list(estado.get("localidades_envio") or []),
+        provincia_sticky=str(estado.get("provincia_envio") or ""),
+    )
+    return res["estado"] in ESTADOS_VALIDOS
 
 
 def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,

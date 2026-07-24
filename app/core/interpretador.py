@@ -366,42 +366,30 @@ def _corregir_referencia_comparativa(resultado: dict, mensaje: str,
 
 
 def coercionar_destinos(resultado: dict, mensaje: str) -> dict:
-    """DESTINO FANTASMA (caso real WhatsApp 17-jul): el interprete metio
-    'Rosario' en el pedido cuando el cliente jamas nombro una localidad
-    (contaminacion de los ejemplos del prompt). Invariante determinista: un
-    destino del pedido tiene que APARECER en el mensaje del cliente O en la
-    MEMORIA de destinos de la charla (localidades cotizadas, provincia
-    sticky). Lo segundo cierra el pendiente del 18-jul: el cliente daba los
-    destinos en un turno y al confirmar en el siguiente ('dale, confirmalo')
-    el guardia los anulaba como fantasmas y el envio se caia del total
-    (visto de nuevo en el banco 20-jul, guion 48). Muta y devuelve."""
-    import unicodedata
+    """Guardia de destinos fantasma: cada destino del pedido debe estar
+    respaldado por el cliente (declarado en el mensaje actual o en la memoria
+    conversacional) Y reconocido como lugar real por la tabla geo_cp.
 
-    def _n(s):
-        s = unicodedata.normalize("NFKD", str(s or "").lower())
-        s = "".join(c for c in s if not unicodedata.combining(c))
-        return s.replace(",", " ").strip()
+    Fuentes de verdad (ver ARQUITECTURA.md#destino-resolver):
+      - geo_cp: certifica existencia y canonización del lugar geográfico.
+      - mensaje actual: certifica que el cliente lo declaró en este turno.
+      - estado["localidades_envio"]: certifica destinos activos de turnos
+        anteriores (array plural; nunca el campo singular legado).
+      - estado["provincia_envio"]: provincia sticky de la conversación.
 
-    m = _n(mensaje)
-    memoria: list[str] = []
+    Un destino inventado por el intérprete que exista en geo_cp pero que el
+    cliente nunca haya mencionado igualmente se anula (no_respaldado).
+    Caso real WhatsApp 17-jul + guion 48 20-jul. Muta y devuelve."""
+    from app.core.destino_resolver import resolver_destino, ESTADOS_FANTASMA
+    from app.core.estado_venta import get_current_estado
+
     try:
-        from app.core.estado_venta import get_current_estado
         est = get_current_estado() or {}
-        memoria = [_n(x) for x in (est.get("localidades_envio") or []) if x]
-        for k in ("localidad_envio", "provincia_envio"):
-            v = _n(est.get(k) or "")
-            if v:
-                memoria.append(v)
     except Exception:
-        memoria = []
+        est = {}
 
-    def _en_memoria(dn: str) -> bool:
-        pd = set(dn.split())
-        for mv in memoria:
-            pm = set(mv.split())
-            if pd <= pm or pm <= pd:
-                return True
-        return False
+    mem_lista = list(est.get("localidades_envio") or [])
+    prov_sticky = str(est.get("provincia_envio") or "")
 
     fantasmas = []
     for it in (resultado.get("pedido") or []):
@@ -410,11 +398,15 @@ def coercionar_destinos(resultado: dict, mensaje: str) -> dict:
         d = it.get("destino")
         if not d:
             continue
-        dn = _n(d)
-        if dn in m or _en_memoria(dn):
-            continue
-        fantasmas.append(str(d))
-        it["destino"] = None
+        res = resolver_destino(
+            texto=d,
+            mensaje_actual=mensaje,
+            memoria_destinos=mem_lista,
+            provincia_sticky=prov_sticky,
+        )
+        if res["estado"] in ESTADOS_FANTASMA:
+            fantasmas.append(str(d))
+            it["destino"] = None
     if fantasmas:
         log.warning("interpretador_destino_fantasma", destinos=fantasmas[:4])
     _canonizar_destinos_cp(resultado)
