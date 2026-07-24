@@ -1189,7 +1189,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                         list(_tools_precalc))
                 except (KeyError, IndexError, AttributeError):
                     _presu_ext = None
-            _frags, _uni, _presu, _presu_tools = await generar_fragmentos(
+            _frags, _uni, _presu, _presu_tools, _rpc = await generar_fragmentos(
                 raw_message, history, estado, tienda_id, interp, trace_id,
                 presupuesto_externo=_presu_ext)
             if _frags:

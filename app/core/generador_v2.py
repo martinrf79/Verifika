@@ -103,6 +103,35 @@ def _faq_del_turno(mensaje, interp, tienda_id):
     return "\n".join(lineas), [t for t in temas[:5] if faq.get(t)]
 
 
+# Grupos cuyas categorias se contestan con PROSA (no producto ni conversacion):
+# son las que, si el solver las saltea, dan whiff en una pregunta simple/media.
+_PROSE_GRUPOS = {"politica_faq", "objeciones", "comparacion_compatibilidad",
+                 "asesoramiento", "postventa", "seguridad", "casos_borde",
+                 "identidad_dato"}
+
+
+def _cats_obligatorias(interp, faq_ground) -> list:
+    """Las categorias ruteadas que DEBEN contestarse con prosa este turno: grupo
+    de prosa (no producto/conversacion) y con grounding disponible (criterio o
+    FAQ). Son los slots requeridos del schema. Tope de 5 para no inflar el JSON."""
+    from app.core.guia_venta_prosa import meta_categoria, texto_de
+    faqset = set(faq_ground or [])
+    out: list = []
+    cats = (interp or {}).get("categorias") if isinstance(interp, dict) else None
+    for c in (cats or []):
+        cid = str(c).strip()
+        if cid in out:
+            continue
+        if meta_categoria(cid).get("grupo", "") not in _PROSE_GRUPOS:
+            continue
+        if not (texto_de(cid) or cid in faqset):
+            continue
+        out.append(cid)
+        if len(out) >= 5:
+            break
+    return out
+
+
 def _norm(s):
     import unicodedata
     s = unicodedata.normalize("NFKD", str(s or "").lower())
@@ -376,9 +405,10 @@ def presupuesto_precalculado(mensaje, estado, tienda_id, interp=None):
     return None, []
 
 
-def _schema(ids, temas, criterios):
+def _schema(ids, temas, criterios, cats_obligatorias=None):
     ids_o = ids + [None]
-    return {
+    cats_obligatorias = cats_obligatorias or []
+    base = {
         "type": "object", "additionalProperties": False,
         "properties": {"fragmentos": {"type": "array", "items": {
             "type": "object", "additionalProperties": False,
@@ -414,10 +444,27 @@ def _schema(ids, temas, criterios):
                          "categoria", "items", "campos", "tema", "destino",
                          "pago"]}}},
         "required": ["fragmentos"]}
+    # ATADURA ESTRUCTURAL DE COBERTURA (propuesta de Martin): un slot REQUERIDO por
+    # categoria ruteada de prosa. Al ser propiedades required de un objeto, el
+    # schema strict OBLIGA al solver a emitir un texto por cada una -a diferencia de
+    # un array, donde no se puede forzar un item por enum-. El whiff se vuelve
+    # imposible por construccion, no por medicion.
+    if cats_obligatorias:
+        base["properties"]["respuestas_por_categoria"] = {
+            "type": "object", "additionalProperties": False,
+            "properties": {c: {
+                "type": "object", "additionalProperties": False,
+                "properties": {"texto": {"type": "string"},
+                               "cita_id": {"type": ["string", "null"]}},
+                "required": ["texto", "cita_id"]} for c in cats_obligatorias},
+            "required": list(cats_obligatorias)}
+        base["required"] = ["fragmentos", "respuestas_por_categoria"]
+    return base
 
 
 def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
-            criterios_menu="", prefs=None, nota_no_vendida="", faq_menu=""):
+            criterios_menu="", prefs=None, nota_no_vendida="", faq_menu="",
+            cats_obligatorias=None):
     def _linea(p):
         base = (f"  {p['id']} = {p['nombre']} | "
                 f"${int(p.get('precio_ars',0)):,}".replace(",", ".")
@@ -510,6 +557,12 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
         f"{car_txt}{dest_txt}{prefs_txt}\n\n"
         + (f"\n\nPRESUPUESTO YA ARMADO por el sistema (ponelo con un "
            f"fragmento tipo 'presupuesto'):\n{presupuesto_pre}" if presupuesto_pre else "")
+        + (("\n\nOBLIGATORIO — respuestas_por_categoria: DEBÉS escribir un texto "
+            "para CADA UNA de estas categorías que el cliente tocó, redactado en "
+            "tu voz desde su bloque de criterio/FAQ de arriba, citando el id en "
+            "cita_id (o null). NO podés dejar ninguna vacía ni saltearla; es tu "
+            "respuesta a lo que preguntó. Categorías: "
+            + ", ".join(cats_obligatorias)) if cats_obligatorias else "")
         + f"\n\nCharla:\n{hist}\n\nMensaje del cliente:\n{mensaje}\n\n"
         "Reglas: responde TODAS las cosas que pregunto el cliente, cada una "
         "por su fragmento; NUNCA dejes una pregunta sin responder. Si el "
@@ -562,6 +615,13 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
     # GROUNDING de FAQ: la curada estampada de los temas ruteados, para que el
     # SOLVER redacte la politica en su voz (no se pega la curada, que robotizaba).
     faq_menu, _faq_ground = _faq_del_turno(mensaje, interp, tienda_id)
+    # OBLIGACION ESTRUCTURAL DE COBERTURA: las categorias ruteadas que se contestan
+    # con PROSA (politica/objecion/compatibilidad/asesoramiento/postventa/etc, no
+    # las de producto ni conversacion) y que tienen grounding entran como SLOTS
+    # REQUERIDOS en el schema. El solver queda obligado a nivel API a redactar un
+    # texto por cada una; el render appendea el que haya salteado. Asi el whiff se
+    # vuelve imposible por construccion, no por medicion.
+    cats_obligatorias = _cats_obligatorias(interp, _faq_ground)
     # Lo CERRADO al codigo: presupuesto pre-calculado si el pedido es
     # determinable. El modelo solo lo POSICIONA (fragmento presupuesto).
     if presupuesto_externo and presupuesto_externo[0]:
@@ -621,8 +681,9 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
         log.warning("generador_v2_catalogo_error", trace_id=trace_id,
                     error=str(e)[:120])
     prompt = _prompt(mensaje, historial, universo, temas, estado, presu_txt,
-                     criterios_menu, prefs, nota_no_vendida, faq_menu)
-    schema = _schema(ids, temas, criterios)
+                     criterios_menu, prefs, nota_no_vendida, faq_menu,
+                     cats_obligatorias)
+    schema = _schema(ids, temas, criterios, cats_obligatorias)
 
     def _call():
         c = _cliente_gemini()
@@ -640,12 +701,15 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
                                          trace_id=trace_id)
         data = json.loads(raw)
         frags = data.get("fragmentos")
+        rpc = data.get("respuestas_por_categoria") or {}
         if isinstance(frags, list) and frags:
-            log.info("generador_v2_ok", trace_id=trace_id, n=len(frags))
-            return frags[:_MAX_FRAGMENTOS], universo, presu_txt, presu_tools
+            log.info("generador_v2_ok", trace_id=trace_id, n=len(frags),
+                     obligatorias=len(cats_obligatorias))
+            return (frags[:_MAX_FRAGMENTOS], universo, presu_txt, presu_tools,
+                    rpc if isinstance(rpc, dict) else {})
     except Exception as e:
         log.warning("generador_v2_error", trace_id=trace_id, error=str(e)[:150])
-    return None, universo, presu_txt, presu_tools
+    return None, universo, presu_txt, presu_tools, {}
 
 
 # ── 3. RENDER: el codigo estampa cada dato desde la fuente ───────────────────
@@ -834,7 +898,7 @@ def _destino_respaldado(destino: str, mensaje: str, estado: dict) -> bool:
 
 def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                presupuesto_pre=None, presupuesto_tools=None, mensaje=None,
-               primer_turno=False):
+               primer_turno=False, respuestas_cat=None):
     """(texto final, tools_called con proof). El texto lo arma el codigo desde
     los fragmentos; cada dato nace de la fuente."""
     from app.core.tools_context import set_current_tienda
@@ -1099,6 +1163,27 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                     partes.append(
                         "¿Lo dejamos confirmado? Decime la forma de pago: "
                         "transferencia (10% de descuento) o Mercado Pago.")
+    # COBERTURA ESTRUCTURAL (schema required de Martin): toda categoria obligatoria
+    # que el solver NO ubico en un fragmento se appendea desde
+    # respuestas_por_categoria -que el schema lo OBLIGO a escribir-. Asi el whiff es
+    # imposible: o la ordeno el solver en su fragmento, o la pone el codigo aca. Se
+    # inserta ANTES del cierre (ultima pregunta) para que lea natural.
+    if respuestas_cat:
+        _cub = set()
+        for f in (fragmentos or []):
+            for _k in ("criterio_id", "tema", "categoria"):
+                if f.get(_k):
+                    _cub.add(str(f[_k]))
+        faltantes = [t for c, r in respuestas_cat.items()
+                     if c not in _cub
+                     and (t := re.sub(r"\s*\[[a-z_]+\]", "",
+                                      str((r or {}).get("texto") or "")).strip())]
+        if faltantes:
+            _pos = len(partes) - (1 if partes and partes[-1].rstrip()
+                                  .endswith("?") else 0)
+            partes[_pos:_pos] = faltantes
+            log.info("generador_v2_cobertura_append", trace_id=trace_id,
+                     faltantes=len(faltantes))
     if presupuesto_pre and not total_mostrado:
         # red: el pre-armado va si o si aunque el modelo no lo posiciono, pero
         # solo si NINGUN total salio ya (evita el presupuesto duplicado).

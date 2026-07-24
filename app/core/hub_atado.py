@@ -251,13 +251,15 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     # texto final estampado; el unico texto libre es el pegamento, podado de dato.
     from app.core import generador_v2
     _primer_turno = not (estado.get("productos_vistos") or estado.get("carrito"))
-    frags, universo, presu_txt, presu_tools = await generador_v2.generar_fragmentos(
-        raw_message, history, estado, tienda_id, interp, trace_id)
+    frags, universo, presu_txt, presu_tools, respuestas_cat = \
+        await generador_v2.generar_fragmentos(
+            raw_message, history, estado, tienda_id, interp, trace_id)
     if frags:
         texto, _tools_called = generador_v2.renderizar(
             frags, universo, estado, tienda_id, trace_id,
             presupuesto_pre=presu_txt, presupuesto_tools=presu_tools,
-            mensaje=raw_message, primer_turno=_primer_turno)
+            mensaje=raw_message, primer_turno=_primer_turno,
+            respuestas_cat=respuestas_cat)
         meta = {"tools_called": _tools_called, "secciones": [],
                 "prosa_citada": [], "turno_criterio": False}
         log.info("hub_atado_generador_v2", trace_id=trace_id,
