@@ -12,11 +12,14 @@ Sin dependencias de app.*: son puras, operan sobre los datos que reciben.
 """
 
 
-def _money(n):
+def _money(n) -> str:
+    """Formatea un número como pesos argentinos con separador de miles:
+    273000 -> '$273.000'. Función canónica; los demás módulos importan
+    desde aquí en vez de duplicar la lógica."""
     try:
-        return f"{int(n):,}".replace(",", ".")
+        return "$" + f"{int(round(n)):,}".replace(",", ".")
     except (TypeError, ValueError):
-        return None
+        return str(n)
 
 
 def _linea_producto(p: dict) -> str:
@@ -26,11 +29,11 @@ def _linea_producto(p: dict) -> str:
     if not isinstance(p, dict):
         return ""
     nombre = str(p.get("nombre", "")).strip()
-    precio = _money(p.get("precio_ars"))
+    precio_raw = p.get("precio_ars")
     stock = p.get("stock", 0)
     partes = [nombre]
-    if precio:
-        partes.append(f"- ${precio}")
+    if isinstance(precio_raw, (int, float)):
+        partes.append(f"- {_money(precio_raw)}")
     if isinstance(stock, int) and stock > 0:
         partes.append(f"({stock} en stock)")
     return " ".join(partes).strip()

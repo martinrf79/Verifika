@@ -21,6 +21,7 @@ camino normal (solver + verificadores). Observabilidad: el llamador loguea
 import re
 
 from app.logger import get_logger
+from app.core.pedido_helpers import _money
 
 log = get_logger(__name__)
 
@@ -30,13 +31,6 @@ _HUECO_RE = re.compile(r"\{\{(\w+)\}\}")
 # atajarse. Cualquier otra (decision_compra, aporta_dato, o interp caido) va al
 # camino normal: en flujo de compra el solver contesta con todo el contexto.
 _INTENCIONES_FAQ = {"pregunta_especifica", "posventa"}
-
-
-def _money(n) -> str:
-    try:
-        return "$" + f"{int(round(n)):,}".replace(",", ".")
-    except (TypeError, ValueError):
-        return str(n)
 
 
 def _fmt_valor(v: dict) -> str | None:

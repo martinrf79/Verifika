@@ -21,6 +21,8 @@ import re
 from contextvars import ContextVar
 from typing import Any
 
+from app.core.pedido_helpers import _money
+
 # Criterio de eleccion que el cliente deja dicho: "lo mas barato". Se detecta con
 # codigo (no con el LLM) para que sea determinista y viaje por el estado. La raiz
 # 'barat' cubre barato/barata/baratos/baratito; 'econom' cubre economico/economica.
@@ -177,14 +179,6 @@ def get_current_estado() -> dict:
     return _current_estado.get() or {}
 
 
-def _money(n: Any) -> str:
-    """Entero a formato argentino con separador de miles: 48000 -> '48.000'."""
-    try:
-        return f"{int(n):,}".replace(",", ".")
-    except (TypeError, ValueError):
-        return str(n)
-
-
 def productos_de_meta(meta: dict) -> list[dict]:
     """Productos que las tools mostraron este turno (id, nombre, precio REAL), desde
     el catalogo y el detalle de la calculadora. El precio sale verbatim de la tool,
@@ -240,11 +234,11 @@ def envio_de_meta(meta: dict) -> str:
         zona = res.get("provincia") or res.get("zona") or "esa zona"
         zona = str(zona).replace("_", " ")
         if res.get("modalidad") == "rango":
-            costo = (f"entre ${_money(res.get('monto_min'))} y "
-                     f"${_money(res.get('monto_max'))}")
+            costo = (f"entre {_money(res.get('monto_min'))} y "
+                     f"{_money(res.get('monto_max'))}")
         else:
             m = res.get("monto", 0)
-            costo = "gratis" if m in (0, None) else f"${_money(m)}"
+            costo = "gratis" if m in (0, None) else f"{_money(m)}"
         return f"{zona}: {costo}"
     return ""
 
