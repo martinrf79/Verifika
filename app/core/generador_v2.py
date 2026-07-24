@@ -1049,28 +1049,32 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                     partes.append(_hon)
                     log.info("generador_v2_ficha_spec_honesta",
                              trace_id=trace_id)
-        elif t == "faq" and f.get("tema"):
-            # TOPE de curadas por turno (charla real 20-jul: el modelo pego
-            # TRES seguidas y el mensaje quedo sobrecargado): maximo dos.
+        elif t == "faq":
+            # El SOLVER redacta la politica en su voz (con memoria/contexto) desde
+            # el grounding de FAQ que se le paso; el codigo YA NO pega la curada
+            # (robotizaba, 2500 pruebas). Los numeros que teje NO se podan aca -son
+            # legitimos- los protege _verificar_montos contra los valores de la FAQ
+            # (que entran enteros a la evidencia). Fallback a la curada estampada
+            # SOLO si el solver no redacto (transicional). Tope de dos por turno.
             if faqs_pegadas >= 2:
                 log.info("generador_v2_faq_excedente", trace_id=trace_id,
-                         tema=f["tema"])
+                         tema=f.get("tema"))
                 continue
-            data = faq.get(f["tema"]) or {}
-            txt = str(data.get("respuesta_curada") or data.get("respuesta") or "").strip()
-            est = estampar_valores(txt, data) if txt else None
-            _txt_faq = est or txt
+            _txt_faq = str(f.get("texto") or "").strip()
+            if not _txt_faq and f.get("tema"):
+                data = faq.get(f["tema"]) or {}
+                txt = str(data.get("respuesta_curada")
+                          or data.get("respuesta") or "").strip()
+                _txt_faq = (estampar_valores(txt, data) or txt) if txt else ""
             if _txt_faq:
-                # Sin muletillas que piden un dato YA conocido ("decime tu
-                # zona" con la zona cotizada, "decime que producto" con el
-                # pedido sobre la mesa).
                 from app.core.curadas import podar_muletillas_contra_estado
                 _txt_faq = podar_muletillas_contra_estado(_txt_faq, estado)
             if _txt_faq:
                 partes.append(_txt_faq)
                 faqs_pegadas += 1
                 tools.append({"name": "query_faq",
-                              "result": {"encontrada": True, "tema": f["tema"],
+                              "result": {"encontrada": True,
+                                         "tema": f.get("tema"),
                                          "respuesta": _txt_faq, "ok": True}})
         elif t == "envio" and f.get("destino"):
             q = cotizar_envio(localidad=str(f["destino"]))
