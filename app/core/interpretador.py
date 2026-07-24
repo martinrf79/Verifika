@@ -775,8 +775,11 @@ async def _llamar_llm(prompt: str, response_format: dict | None = None) -> str:
         return response.choices[0].message.content or ""
 
     # El cliente OpenAI es sincrono: este create() bloquearia el event loop
-    # pese a estar en una funcion async, asi que lo mandamos a un thread.
-    return await asyncio.to_thread(_do_call)
+    # pese a estar en una funcion async, asi que lo mandamos a un thread. El
+    # helper suma reintento con backoff ante hipo transitorio (429/5xx/timeout):
+    # sin el, un 429 en rafaga dejaba las categorias vacias y el ruteo mudo.
+    from app.core.llm_reintento import llamar_con_reintento
+    return await llamar_con_reintento(_do_call, timeout_s=None)
 
 
 async def interpretar_mensaje(mensaje: str,

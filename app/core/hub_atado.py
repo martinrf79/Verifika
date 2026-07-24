@@ -72,6 +72,64 @@ def _carrito_traza(carrito) -> list:
             for c in (carrito or []) if isinstance(c, dict)]
 
 
+def _verificar_montos(texto: str, meta: dict, estado: dict,
+                      tienda_id: str, trace_id: str) -> str:
+    """RED DE NUMEROS del camino atado. Hasta hoy el numero se protegia solo
+    porque el CODIGO lo estampaba; al pasar la FAQ y la venta a redaccion del
+    solver, el numero lo teje el LLM y necesita verificacion. Reusa el mismo
+    verificador determinista del camino viejo: arma la evidencia del turno
+    (tools, productos vistos y nombrados, FAQ entera con valores) y autocorrige
+    cualquier cifra sin respaldo por el valor real de la fuente. Sin LLM,
+    conservador: solo reemplaza lo inequivoco. Gateado por AUTOCORRIGE_MONTOS."""
+    if not texto or texto == settings.VERIFIKA_FALLBACK_MESSAGE:
+        return texto
+    if not settings.AUTOCORRIGE_MONTOS:
+        return texto
+    try:
+        from app.core.evidencia import (build_evidence_from_tools,
+                                        productos_nombrados_en)
+        from app.core.verificador import autocorregir_montos
+        from app.storage.firestore_client import get_product_by_id
+        vistos = []
+        for p in (estado.get("productos_vistos") or []):
+            if not isinstance(p, dict):
+                continue
+            vivo = None
+            pid = str(p.get("id") or "").upper()
+            if pid:
+                try:
+                    vivo = get_product_by_id(pid, tienda_id=tienda_id)
+                except Exception:
+                    vivo = None
+            vistos.append(vivo if isinstance(vivo, dict) and vivo.get("precio_ars")
+                          is not None else
+                          {**p, "precio_ars": p.get("precio_ars", p.get("precio"))})
+        evidencia = build_evidence_from_tools(
+            meta.get("tools_called", []) or [], tienda_id, productos_vistos=vistos)
+        _ids = {str(i.get("id") or "").upper() for i in evidencia
+                if i.get("tipo") == "producto"}
+        for pn in productos_nombrados_en(texto, tienda_id):
+            if str(pn.get("id") or "").upper() not in _ids:
+                evidencia.append({"tipo": "producto", **pn})
+        for i in evidencia:
+            if (i.get("tipo") == "producto" and i.get("precio_ars") is None
+                    and isinstance(i.get("precio"), (int, float))):
+                i["precio_ars"] = i["precio"]
+        precios_validos = {int(i["precio_ars"]) for i in evidencia
+                           if i.get("tipo") == "producto"
+                           and isinstance(i.get("precio_ars"), (int, float))}
+        fix = autocorregir_montos(texto, evidencia, trace_id,
+                                  precios_validos=precios_validos)
+        if fix.get("cambiada"):
+            log.warning("hub_atado_monto_corregido", trace_id=trace_id,
+                        correcciones=(fix.get("correcciones") or [])[:8])
+            return fix.get("respuesta") or texto
+    except Exception as e:
+        log.warning("hub_atado_verificar_montos_error", trace_id=trace_id,
+                    error=str(e)[:150])
+    return texto
+
+
 async def _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
                           trace_id, interp, present):
     """Cablea el CIERRE y COBRO al hub reusando la MISMA funcion del camino vivo
@@ -193,13 +251,15 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     # texto final estampado; el unico texto libre es el pegamento, podado de dato.
     from app.core import generador_v2
     _primer_turno = not (estado.get("productos_vistos") or estado.get("carrito"))
-    frags, universo, presu_txt, presu_tools = await generador_v2.generar_fragmentos(
-        raw_message, history, estado, tienda_id, interp, trace_id)
+    frags, universo, presu_txt, presu_tools, respuestas_cat = \
+        await generador_v2.generar_fragmentos(
+            raw_message, history, estado, tienda_id, interp, trace_id)
     if frags:
         texto, _tools_called = generador_v2.renderizar(
             frags, universo, estado, tienda_id, trace_id,
             presupuesto_pre=presu_txt, presupuesto_tools=presu_tools,
-            mensaje=raw_message, primer_turno=_primer_turno)
+            mensaje=raw_message, primer_turno=_primer_turno,
+            respuestas_cat=respuestas_cat)
         meta = {"tools_called": _tools_called, "secciones": [],
                 "prosa_citada": [], "turno_criterio": False}
         log.info("hub_atado_generador_v2", trace_id=trace_id,
@@ -271,6 +331,12 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     texto, datos_cli_parciales, pregunta_cierre_hecha, presupuesto_str = \
         await _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
                               trace_id, interp, present)
+
+    # ── RED DE NUMEROS: verificacion de montos contra la fuente ─────────
+    # Ahora que la FAQ y la venta las REDACTA el solver, el numero lo teje el LLM
+    # y se chequea aca contra la evidencia del turno (antes se protegia solo por
+    # el estampado). Determinista, conservador: corrige lo inequivoco.
+    texto = _verificar_montos(texto, meta, estado, tienda_id, trace_id)
 
     # ── FILTRO ANTI-DUPLICADO (refuerzo final, determinista) ────────────
     # Ultima red antes de mandar y de guardar en memoria: saca cualquier

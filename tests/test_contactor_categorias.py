@@ -1,7 +1,7 @@
 """
 CONTACTOR ABARCATIVO — lock del enum de categorias de la fuente de verdad.
 
-Ata el interprete a las 76 categorias de base_conocimiento (una sola fuente, sin
+Ata el interprete a las 93 categorias de base_conocimiento (una sola fuente, sin
 duplicar): el modelo DECLARA cual/cuales toca el mensaje, atado por enum a nivel
 token, y el hub engancha el criterio de cada una desde la fuente. Cubre la
 pregunta compleja multi-tema y el honesto "ninguna" sin cortar la venta.
@@ -13,11 +13,11 @@ from app.core.generador_v2 import universo_productos
 
 def test_enum_es_la_fuente_de_verdad_completa():
     cats = categorias_conocimiento()
-    # las 85 categorias reales de base_conocimiento, ni una inventada ni de menos
-    assert len(cats) == 85
+    # las 93 categorias reales de base_conocimiento, ni una inventada ni de menos
+    assert len(cats) == 93
     assert len(set(cats)) == len(cats)  # sin duplicados
     for esperada in ("objecion_precio", "compatibilidad", "cuotas_financiacion",
-                     "envio_costo", "saludo_apertura", "garantia", "regalo"):
+                     "costo_envio", "saludo_apertura", "garantia", "regalo"):
         assert esperada in cats
 
 
@@ -33,7 +33,7 @@ def test_schema_ata_categorias_al_enum_y_las_exige():
     props = sch["properties"]
     assert "categorias" in props
     enum = props["categorias"]["items"]["enum"]
-    assert len(enum) == 85
+    assert len(enum) == 93
     assert "objecion_precio" in enum
     # required para el strict de Gemini/OpenAI
     assert "categorias" in sch["required"]
@@ -48,9 +48,9 @@ def test_validar_schema_coacciona_string_a_lista():
 
 def test_validar_schema_descarta_categoria_inventada():
     r = {"intencion": "pregunta_especifica", "confianza": 0.9,
-         "categorias": ["objecion_precio", "INVENTADA", "envio_costo"]}
+         "categorias": ["objecion_precio", "INVENTADA", "costo_envio"]}
     validar_schema(r)
-    assert r["categorias"] == ["objecion_precio", "envio_costo"]
+    assert r["categorias"] == ["objecion_precio", "costo_envio"]
 
 
 def test_validar_schema_ausente_queda_lista_vacia():

@@ -188,15 +188,19 @@ def test_presupuesto_sellado_viaja_por_la_red_del_generador(firestore_doble):
     assert any(t["name"] == "calculate_total" for t in tools)
 
 
-def test_cierre_enlatado_sin_total_es_suave(firestore_doble):
-    """Sin un total sobre la mesa, el cierre no pide la forma de pago (queja
-    real: preguntaba el medio de pago de entrada)."""
+def test_cierre_sin_total_no_pide_forma_de_pago(firestore_doble):
+    """Sin un total sobre la mesa, el cierre NO pide la forma de pago (queja
+    real: preguntaba el medio de pago de entrada). Y ya no pega una coletilla
+    enlatada: la invitacion a avanzar la redacta el solver en su prosa, asi que
+    el codigo no agrega nada -solo conserva lo que compuso el solver-."""
     from app.core.generador_v2 import renderizar
     frags = [{"tipo": "prosa", "texto": "Buena eleccion, es un equipo solido"},
              {"tipo": "cierre"}]
     texto, _ = renderizar(frags, [], {}, "verifika_prod")
     assert "forma de pago" not in texto
-    assert "?" in texto  # igual invita a avanzar
+    assert "Buena eleccion" in texto  # la prosa del solver se conserva
+    # sin coletilla enlatada agregada por el codigo
+    assert "avancemos con alguno" not in texto
 
 
 def test_cierre_no_repregunta_forma_de_pago_dada(firestore_doble):

@@ -4,6 +4,76 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 24-jul-2026 — ATAR LA RESPUESTA DEL SOLVER (WIP, rama sin mergear) ====**
+
+Rama: `claude/sistema-cableado-robustecimiento-xph8m7`. NO está en `main`. El
+chat nuevo debe ramificar DESDE esta rama para tener este código; NO mergear a
+main todavía (deploya WIP). Fuente de este banner: sesión 23/24-jul con Martín.
+
+**EL DIAGNÓSTICO QUE MANDA (por qué el sistema entraba en loops):** el sistema
+ataba el DATO (precio/stock/total: el código los estampa, no se inventan) pero
+dejaba LIBRE la RESPUESTA (qué contesta el solver). Por eso cada respuesta era
+una tirada de dados: la misma pregunta, un run contesta bien, otro whiffea /
+asume / desvía. "Pasó 32/32" era una muestra afortunada, no una garantía. Los
+parches de prosa (coletilla, ancla) fueron whack-a-mole sobre eso. Confirmado en
+el commit `27de5a9`: la "atadura del criterio" ató el CONTENIDO (grounding
+citado) pero dejó el fragmento OPCIONAL — el solver podía saltarse la respuesta.
+
+**DECISIÓN DE MARTÍN (firme, tras 2500+ pruebas):** el estampado de curadas es
+repetitivo y sin contexto; **el SOLVER redacta TODO — FAQ y todas las categorías —
+desde la fuente como GROUNDING (no pegar texto), con memoria.** El número lo teje
+el LLM pero se VERIFICA contra la fuente (no se estampa en hueco).
+
+**HECHO Y VALIDADO ESTA SESIÓN (3 piezas, con clave paga `GEMINI_API_KEY_PROD`):**
+1. **FAQ como grounding + el solver la redacta** (`generador_v2._faq_del_turno`,
+   prompt, y flip del render `faq`: usa `f.texto`, no la curada estampada). IVA,
+   cuotas, garantía, envío, dólares, factura A salen en la voz del solver,
+   distintos, con memoria. Fallback a curada solo si el solver no redactó.
+2. **KEYSTONE — red de números en el camino atado** (`hub_atado._verificar_montos`).
+   El atado NO tenía verificación (el "no miente" venía solo del estampado). Se
+   portó `autocorregir_montos` + `build_evidence_from_tools` del camino viejo.
+   Gateado por `AUTOCORRIGE_MONTOS`. 0 correcciones espurias, no rompe lo correcto.
+3. **Corroboración N-corridas** (`banco_pruebas/banco_nrun.py`): corre cada probe
+   N veces y mide COBERTURA (whiff) + VARIANZA de wording (robótico). **N=20:
+   6/6 probes 20/20 cobertura, wording ~20/20 distinto** (incluido el caso que
+   whiffeaba). Atado Y no robótico, MEDIDO. Vara: `N=20 GEMINI_API_KEY=$GEMINI_API_KEY_PROD
+   INTERPRETER_PROVIDER=gemini LLM_PROVIDER=gemini python banco_pruebas/banco_nrun.py`.
+
+**CAPSTONE HECHO Y VALIDADO — la obligación ESTRUCTURAL (propuesta de Martín):**
+el schema del solver ahora lleva `respuestas_por_categoria`, un OBJETO con una
+clave `required` por categoría ruteada de prosa (`_cats_obligatorias`: grupos
+politica_faq/objeciones/compat/asesoramiento/postventa/etc con grounding, NO
+producto ni conversacion). Como son propiedades required de un objeto, el schema
+strict OBLIGA al solver a emitir un texto por cada una (el array no podía forzar
+eso). `renderizar` hace coverage-append: la que el solver no ubicó en un
+fragmento se inserta desde el objeto, antes del cierre, sin el marcador de cita.
+Validado con clave paga (banco_nrun N=10): Gemini strict ACEPTA el schema (0
+errores); cobertura 10/10 en las 6; el append cazó la tendencia al whiff en
+compat (9/10); multi-categoría anda (garantía+factura A juntas). El whiff es
+imposible por construcción, no por medición.
+
+**GUARDAS DE PROSA BORRADAS Y MEDIDAS (no volvió el síntoma):** se eliminaron
+`_exige_eleccion_de_producto` (ancla) y toda la coletilla (`_cierre_suave`,
+`_variar_cierre`, `_CIERRES_SUAVES/_PAGO`). El cierre lo redacta el solver
+(campo texto del fragmento cierre; líneas fijas solo fallback). Medido tras
+borrar: N-run 6/6 al 100%, charlas 09/52 limpias, cierres del solver todos
+distintos.
+
+**ESTADO: las TRES ataduras en su lugar** — ruteo (enum, 18/18), cobertura (el
+schema required de este chat), dato (verificador `_verificar_montos` en el
+atado). La fidelidad de la prosa se MIDE (banco_nrun / DeepEval), no se ata: es
+el techo honesto. **PENDIENTE:** correr banco_nrun a N alto sobre más categorías
+(sobre todo objeciones/compat/postventa) para firmar la cobertura estructural en
+todo el enum, y evaluar si `criterio_producto` debería sumarse a
+`_PROSE_GRUPOS`. Nada urgente; el diseño está cerrado.
+
+**COMMITS DE LA SESIÓN** (en la rama): reconciliación de colisiones del cableado
+→ categorías espejo (contactor 85→93) → fiscalización estática + conductual →
+reintento LLM con backoff → fix coletilla/ancla (a revisar si se borran) →
+GROUNDWORK FAQ → keystone verificador → flip FAQ redactada → banco_nrun. El
+cableado determinista se auditó y está LIMPIO (fuente completa); eso NO es el
+cuello de botella, la atadura de la respuesta SÍ.
+
 **==== CORRECCIÓN 23-jul-2026 — EL FLUJO ATADO YA ESTÁ EN PRODUCCIÓN. ====**
 Los banners de abajo del 22-jul dicen "NO en producción todavía" y "el
 orchestrator NO cambió": eso quedó VIEJO. En `main`, el commit `34f6457`
