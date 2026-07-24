@@ -71,6 +71,38 @@ def _criterios_del_turno(mensaje, universo=None, interp=None):
     return ids, menu
 
 
+def _faq_del_turno(mensaje, interp, tienda_id):
+    """GROUNDING de FAQ del turno: la respuesta_curada YA estampada (con los
+    numeros reales) de los temas que el interprete ruteo -categorias que son temas
+    de FAQ- mas los que pesca el ruteo por keywords del mensaje. El solver REDACTA
+    la politica desde este texto en su voz y con memoria; NO se pega la curada
+    (eso robotizaba, 2500 pruebas). El numero que teje sale de aca y el
+    verificador lo chequea contra los mismos valores. Devuelve (menu, temas)."""
+    from app.storage.firestore_client import get_all_faq
+    from app.core.tools import _faq_temas_multi
+    from app.core.curadas import estampar_valores
+    faq = get_all_faq(tienda_id=tienda_id) or {}
+    if not faq:
+        return "", []
+    temas: list[str] = []
+    cats = (interp or {}).get("categorias") if isinstance(interp, dict) else None
+    for c in (cats or []):
+        cid = str(c).strip()
+        if cid in faq and cid not in temas:
+            temas.append(cid)
+    for t in _faq_temas_multi(mensaje or "", faq):
+        if t not in temas:
+            temas.append(t)
+    lineas = []
+    for t in temas[:5]:
+        d = faq.get(t) or {}
+        txt = str(d.get("respuesta_curada") or d.get("respuesta") or "").strip()
+        if not txt:
+            continue
+        lineas.append(f"  [{t}] {estampar_valores(txt, d) or txt}")
+    return "\n".join(lineas), [t for t in temas[:5] if faq.get(t)]
+
+
 def _norm(s):
     import unicodedata
     s = unicodedata.normalize("NFKD", str(s or "").lower())
@@ -385,7 +417,7 @@ def _schema(ids, temas, criterios):
 
 
 def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
-            criterios_menu="", prefs=None, nota_no_vendida=""):
+            criterios_menu="", prefs=None, nota_no_vendida="", faq_menu=""):
     def _linea(p):
         base = (f"  {p['id']} = {p['nombre']} | "
                 f"${int(p.get('precio_ars',0)):,}".replace(",", ".")
@@ -455,13 +487,21 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
         "armado.\n"
         "- ficha: datos reales de un producto -> producto_id + campos "
         "(procedencia/garantia/material/descripcion).\n"
-        "- faq: politica de la tienda -> tema.\n"
+        "- faq: politica de la tienda (envio, pago, garantia, factura, IVA, "
+        "cuotas, seguimiento, etc). REDACTA VOS la respuesta en el campo texto, "
+        "en tu voz, con el contexto de la charla, apoyandote en el bloque de FAQ "
+        "de abajo (NO lo copies palabra por palabra, adaptalo). Poné en tema el "
+        "id del bloque que usaste. Los numeros que menciones salen de ese bloque, "
+        "no los inventes.\n"
         "- envio: cotizar un destino -> destino.\n"
         "- cierre: invitar a comprar y pedir forma de pago.\n\n"
         f"{nota_no_vendida}"
         f"PRODUCTOS disponibles (usa SOLO estos ids):\n{prods}\n\n"
         f"TEMAS de FAQ disponibles: {faq_list}\n"
-        f"CRITERIO jurado para apoyarte (para el fragmento criterio: adapta "
+        + (f"FAQ para REDACTAR (para el fragmento faq: adapta esto a tu voz con "
+           f"el contexto de la charla, cita el id entre corchetes, NO lo copies "
+           f"literal; los numeros salen de aca):\n{faq_menu}\n" if faq_menu else "")
+        + f"CRITERIO jurado para apoyarte (para el fragmento criterio: adapta "
         f"esto a tu frase y cita el id entre corchetes):\n{criterios_menu}\n"
         f"{car_txt}{dest_txt}{prefs_txt}\n\n"
         + (f"\n\nPRESUPUESTO YA ARMADO por el sistema (ponelo con un "
@@ -515,6 +555,9 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
     # El enum del CRITERIO de venta: los bloques jurados relevantes al turno. El
     # modelo redacta la frase apoyandose en ellos y cita el id que uso.
     criterios, criterios_menu = _criterios_del_turno(mensaje, universo, interp)
+    # GROUNDING de FAQ: la curada estampada de los temas ruteados, para que el
+    # SOLVER redacte la politica en su voz (no se pega la curada, que robotizaba).
+    faq_menu, _faq_ground = _faq_del_turno(mensaje, interp, tienda_id)
     # Lo CERRADO al codigo: presupuesto pre-calculado si el pedido es
     # determinable. El modelo solo lo POSICIONA (fragmento presupuesto).
     if presupuesto_externo and presupuesto_externo[0]:
@@ -574,7 +617,7 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
         log.warning("generador_v2_catalogo_error", trace_id=trace_id,
                     error=str(e)[:120])
     prompt = _prompt(mensaje, historial, universo, temas, estado, presu_txt,
-                     criterios_menu, prefs, nota_no_vendida)
+                     criterios_menu, prefs, nota_no_vendida, faq_menu)
     schema = _schema(ids, temas, criterios)
 
     def _call():
