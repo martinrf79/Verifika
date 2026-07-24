@@ -4,6 +4,67 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 24-jul-2026 — ATAR LA RESPUESTA DEL SOLVER (WIP, rama sin mergear) ====**
+
+Rama: `claude/sistema-cableado-robustecimiento-xph8m7`. NO está en `main`. El
+chat nuevo debe ramificar DESDE esta rama para tener este código; NO mergear a
+main todavía (deploya WIP). Fuente de este banner: sesión 23/24-jul con Martín.
+
+**EL DIAGNÓSTICO QUE MANDA (por qué el sistema entraba en loops):** el sistema
+ataba el DATO (precio/stock/total: el código los estampa, no se inventan) pero
+dejaba LIBRE la RESPUESTA (qué contesta el solver). Por eso cada respuesta era
+una tirada de dados: la misma pregunta, un run contesta bien, otro whiffea /
+asume / desvía. "Pasó 32/32" era una muestra afortunada, no una garantía. Los
+parches de prosa (coletilla, ancla) fueron whack-a-mole sobre eso. Confirmado en
+el commit `27de5a9`: la "atadura del criterio" ató el CONTENIDO (grounding
+citado) pero dejó el fragmento OPCIONAL — el solver podía saltarse la respuesta.
+
+**DECISIÓN DE MARTÍN (firme, tras 2500+ pruebas):** el estampado de curadas es
+repetitivo y sin contexto; **el SOLVER redacta TODO — FAQ y todas las categorías —
+desde la fuente como GROUNDING (no pegar texto), con memoria.** El número lo teje
+el LLM pero se VERIFICA contra la fuente (no se estampa en hueco).
+
+**HECHO Y VALIDADO ESTA SESIÓN (3 piezas, con clave paga `GEMINI_API_KEY_PROD`):**
+1. **FAQ como grounding + el solver la redacta** (`generador_v2._faq_del_turno`,
+   prompt, y flip del render `faq`: usa `f.texto`, no la curada estampada). IVA,
+   cuotas, garantía, envío, dólares, factura A salen en la voz del solver,
+   distintos, con memoria. Fallback a curada solo si el solver no redactó.
+2. **KEYSTONE — red de números en el camino atado** (`hub_atado._verificar_montos`).
+   El atado NO tenía verificación (el "no miente" venía solo del estampado). Se
+   portó `autocorregir_montos` + `build_evidence_from_tools` del camino viejo.
+   Gateado por `AUTOCORRIGE_MONTOS`. 0 correcciones espurias, no rompe lo correcto.
+3. **Corroboración N-corridas** (`banco_pruebas/banco_nrun.py`): corre cada probe
+   N veces y mide COBERTURA (whiff) + VARIANZA de wording (robótico). **N=20:
+   6/6 probes 20/20 cobertura, wording ~20/20 distinto** (incluido el caso que
+   whiffeaba). Atado Y no robótico, MEDIDO. Vara: `N=20 GEMINI_API_KEY=$GEMINI_API_KEY_PROD
+   INTERPRETER_PROVIDER=gemini LLM_PROVIDER=gemini python banco_pruebas/banco_nrun.py`.
+
+**PRÓXIMO PASO ACORDADO — la obligación ESTRUCTURAL (no empírica):** hoy "el
+solver contesta cada categoría ruteada" es empírico (prompt + N-run 20/20). El
+capstone es hacerlo SINTÁCTICO: JSON Schema strict no puede forzar "un item por
+enum en un array", PERO sí puede forzar **propiedades `required` de un objeto**.
+Cambiar el schema del solver de `{fragmentos:[...]}` (array libre = agujero del
+whiff) a, por turno, `{respuestas_por_categoria:{<cat_id>:{texto,cita_id},...},
+fragmentos_datos:[...]}` con `required`=todas las categorías ruteadas +
+`additionalProperties:false`. Así el solver queda obligado A NIVEL API a emitir
+un texto por categoría; el whiff se vuelve IMPOSIBLE, no "improbable". Caveats
+honestos: fuerza que el slot exista y sea texto no vacío (poné `minLength`) =
+COBERTURA estructural, NO calidad de prosa (eso sigue LLM = natural, lo que
+queremos); es un rewrite del `_schema` + `renderizar` (itera array plano hoy);
+los datos (productos/total) siguen en el array, estampados y verificados.
+Verificar con el mismo `banco_nrun`: cobertura debe seguir 20/20, wording distinto.
+
+**LIMPIEZA PENDIENTE (borrar, quedan redundantes con lo anterior):** las guardas
+de prosa que se agregaron y ya no hacen falta (anti-coletilla `_variar_cierre` y
+`_exige_eleccion_de_producto` — el ancla asumida la cubre el diseño nuevo).
+
+**COMMITS DE LA SESIÓN** (en la rama): reconciliación de colisiones del cableado
+→ categorías espejo (contactor 85→93) → fiscalización estática + conductual →
+reintento LLM con backoff → fix coletilla/ancla (a revisar si se borran) →
+GROUNDWORK FAQ → keystone verificador → flip FAQ redactada → banco_nrun. El
+cableado determinista se auditó y está LIMPIO (fuente completa); eso NO es el
+cuello de botella, la atadura de la respuesta SÍ.
+
 **==== CORRECCIÓN 23-jul-2026 — EL FLUJO ATADO YA ESTÁ EN PRODUCCIÓN. ====**
 Los banners de abajo del 22-jul dicen "NO en producción todavía" y "el
 orchestrator NO cambió": eso quedó VIEJO. En `main`, el commit `34f6457`
