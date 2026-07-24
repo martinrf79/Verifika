@@ -39,24 +39,33 @@ el LLM pero se VERIFICA contra la fuente (no se estampa en hueco).
    whiffeaba). Atado Y no robótico, MEDIDO. Vara: `N=20 GEMINI_API_KEY=$GEMINI_API_KEY_PROD
    INTERPRETER_PROVIDER=gemini LLM_PROVIDER=gemini python banco_pruebas/banco_nrun.py`.
 
-**PRÓXIMO PASO ACORDADO — la obligación ESTRUCTURAL (no empírica):** hoy "el
-solver contesta cada categoría ruteada" es empírico (prompt + N-run 20/20). El
-capstone es hacerlo SINTÁCTICO: JSON Schema strict no puede forzar "un item por
-enum en un array", PERO sí puede forzar **propiedades `required` de un objeto**.
-Cambiar el schema del solver de `{fragmentos:[...]}` (array libre = agujero del
-whiff) a, por turno, `{respuestas_por_categoria:{<cat_id>:{texto,cita_id},...},
-fragmentos_datos:[...]}` con `required`=todas las categorías ruteadas +
-`additionalProperties:false`. Así el solver queda obligado A NIVEL API a emitir
-un texto por categoría; el whiff se vuelve IMPOSIBLE, no "improbable". Caveats
-honestos: fuerza que el slot exista y sea texto no vacío (poné `minLength`) =
-COBERTURA estructural, NO calidad de prosa (eso sigue LLM = natural, lo que
-queremos); es un rewrite del `_schema` + `renderizar` (itera array plano hoy);
-los datos (productos/total) siguen en el array, estampados y verificados.
-Verificar con el mismo `banco_nrun`: cobertura debe seguir 20/20, wording distinto.
+**CAPSTONE HECHO Y VALIDADO — la obligación ESTRUCTURAL (propuesta de Martín):**
+el schema del solver ahora lleva `respuestas_por_categoria`, un OBJETO con una
+clave `required` por categoría ruteada de prosa (`_cats_obligatorias`: grupos
+politica_faq/objeciones/compat/asesoramiento/postventa/etc con grounding, NO
+producto ni conversacion). Como son propiedades required de un objeto, el schema
+strict OBLIGA al solver a emitir un texto por cada una (el array no podía forzar
+eso). `renderizar` hace coverage-append: la que el solver no ubicó en un
+fragmento se inserta desde el objeto, antes del cierre, sin el marcador de cita.
+Validado con clave paga (banco_nrun N=10): Gemini strict ACEPTA el schema (0
+errores); cobertura 10/10 en las 6; el append cazó la tendencia al whiff en
+compat (9/10); multi-categoría anda (garantía+factura A juntas). El whiff es
+imposible por construcción, no por medición.
 
-**LIMPIEZA PENDIENTE (borrar, quedan redundantes con lo anterior):** las guardas
-de prosa que se agregaron y ya no hacen falta (anti-coletilla `_variar_cierre` y
-`_exige_eleccion_de_producto` — el ancla asumida la cubre el diseño nuevo).
+**GUARDAS DE PROSA BORRADAS Y MEDIDAS (no volvió el síntoma):** se eliminaron
+`_exige_eleccion_de_producto` (ancla) y toda la coletilla (`_cierre_suave`,
+`_variar_cierre`, `_CIERRES_SUAVES/_PAGO`). El cierre lo redacta el solver
+(campo texto del fragmento cierre; líneas fijas solo fallback). Medido tras
+borrar: N-run 6/6 al 100%, charlas 09/52 limpias, cierres del solver todos
+distintos.
+
+**ESTADO: las TRES ataduras en su lugar** — ruteo (enum, 18/18), cobertura (el
+schema required de este chat), dato (verificador `_verificar_montos` en el
+atado). La fidelidad de la prosa se MIDE (banco_nrun / DeepEval), no se ata: es
+el techo honesto. **PENDIENTE:** correr banco_nrun a N alto sobre más categorías
+(sobre todo objeciones/compat/postventa) para firmar la cobertura estructural en
+todo el enum, y evaluar si `criterio_producto` debería sumarse a
+`_PROSE_GRUPOS`. Nada urgente; el diseño está cerrado.
 
 **COMMITS DE LA SESIÓN** (en la rama): reconciliación de colisiones del cableado
 → categorías espejo (contactor 85→93) → fiscalización estática + conductual →
