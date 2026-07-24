@@ -494,7 +494,11 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
         "id del bloque que usaste. Los numeros que menciones salen de ese bloque, "
         "no los inventes.\n"
         "- envio: cotizar un destino -> destino.\n"
-        "- cierre: invitar a comprar y pedir forma de pago.\n\n"
+        "- cierre: invitar a avanzar. Escribi VOS la frase en el campo texto, en "
+        "tu voz y variada (no repitas la misma en turnos seguidos). Si hay un "
+        "TOTAL sobre la mesa, pedi la forma de pago (transferencia con 10% de "
+        "descuento o Mercado Pago). Si NO hay total, invita suave a elegir. Un "
+        "solo cierre por respuesta.\n\n"
         f"{nota_no_vendida}"
         f"PRODUCTOS disponibles (usa SOLO estos ids):\n{prods}\n\n"
         f"TEMAS de FAQ disponibles: {faq_list}\n"
@@ -803,64 +807,6 @@ def _cat_real(nombre, tienda_id):
     return None
 
 
-# Invitacion a avanzar cuando NO hay total sobre la mesa. Varias pieles de la
-# misma movida (corrida 19-jul, guiones 05/37/45: la UNICA coletilla salia
-# identica en todos los turnos, robotica). Cero numeros, cero nombres. El pool es
-# ancho a proposito: una charla larga de browsing dispara el cierre suave muchos
-# turnos, y con pocas variantes alguna se repetia 3 veces igual (juez, banco
-# 23-jul). Con siete, cada una queda por debajo del umbral en charlas realistas.
-_CIERRES_SUAVES = (
-    "¿Querés que avancemos con alguno? Te armo el total al instante.",
-    "¿Alguno te interesa? Decime y te paso el total en el momento.",
-    "¿Cuál te gusta? Te armo el presupuesto enseguida.",
-    "¿Seguimos con alguno? En un toque te paso el total.",
-    "¿Vamos con alguno? Te lo cotizo en el momento.",
-    "¿Cuál te sirve? Te armo el total al toque.",
-    "¿Te decidís por alguno? Te preparo el presupuesto ya mismo.",
-)
-
-# Cierre CON un total sobre la mesa: pide la forma de pago. Mismo problema de
-# repeticion en charlas multi-total (guiones 52/53: salia identico 4-5 turnos).
-# Se varia el arranque; la parte del dato (los medios y el descuento) se mantiene
-# igual para no divergir el numero, que es el mismo que estampa la fuente.
-_CIERRES_PAGO = (
-    "¿Lo dejamos confirmado? Decime la forma de pago: transferencia (10% de descuento) o Mercado Pago.",
-    "¿Avanzamos con el pedido? Elegí la forma de pago: transferencia (10% de descuento) o Mercado Pago.",
-    "¿Lo cerramos así? Forma de pago: transferencia (10% de descuento) o Mercado Pago.",
-    "¿Te parece bien? Decime cómo preferís pagar: transferencia (10% de descuento) o Mercado Pago.",
-)
-
-
-def _ultima_linea_norm(texto: str) -> str:
-    lineas = [l.strip() for l in (texto or "").splitlines() if l.strip()]
-    return re.sub(r"\s+", " ", lineas[-1].lower()) if lineas else ""
-
-
-def _variar_cierre(pool: tuple, partes: list[str],
-                   history: list | None = None) -> str:
-    """Elige una linea del pool EVITANDO la que ya salio en los ultimos turnos del
-    bot: el crc del contenido da el arranque determinista y, si esa ya se uso hace
-    poco, rota a la primera libre. Asi la MISMA linea de cierre no se repite turno
-    a turno (banco 23-jul: el juez cazaba la coletilla identica en 3 turnos)."""
-    usadas: set[str] = set()
-    for h in reversed(history or []):
-        if not isinstance(h, dict) or h.get("role") != "assistant":
-            continue
-        fin = _ultima_linea_norm(h.get("content") or "")
-        if fin:
-            usadas.add(fin)
-        if len(usadas) >= len(pool) - 1:
-            break
-    inicio = zlib.crc32("\n".join(partes).encode("utf-8", "ignore")) % len(pool)
-    for k in range(len(pool)):
-        cand = pool[(inicio + k) % len(pool)]
-        if _ultima_linea_norm(cand) not in usadas:
-            return cand
-    return pool[inicio]
-
-
-def _cierre_suave(partes: list[str], history: list | None = None) -> str:
-    return _variar_cierre(_CIERRES_SUAVES, partes, history)
 
 
 def _destino_respaldado(destino: str, mensaje: str, estado: dict) -> bool:
@@ -888,7 +834,7 @@ def _destino_respaldado(destino: str, mensaje: str, estado: dict) -> bool:
 
 def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                presupuesto_pre=None, presupuesto_tools=None, mensaje=None,
-               primer_turno=False, history=None):
+               primer_turno=False):
     """(texto final, tools_called con proof). El texto lo arma el codigo desde
     los fragmentos; cada dato nace de la fuente."""
     from app.core.tools_context import set_current_tienda
@@ -1133,11 +1079,16 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 pago_conocido = bool(
                     (estado.get("datos_cliente") or {}).get("forma_pago")
                     or any("pago dividido" in p.lower() for p in partes))
-                if total_mostrado and primer_turno:
-                    # PRIMER contacto (queja real de Martin, 20-jul): pedir
-                    # confirmacion y forma de pago de entrada es apresurado.
-                    # Se invita a revisar; el cierre fuerte va del turno 2 en
-                    # adelante, cuando el cliente ya respondio algo.
+                # El SOLVER redacta el cierre en su voz (campo texto del fragmento):
+                # se usa TAL CUAL, variado, sin poda de digitos (el "10%" es dato de
+                # la fuente, lo protege _verificar_montos). Las lineas fijas de abajo
+                # son solo FALLBACK si el solver no escribio el cierre. Sin total, NO
+                # se pega nada enlatado: la prosa del solver ya cierra. Se borraron
+                # las coletillas rotativas; la repeticion se mide con banco_nrun.
+                _cierre_solver = str(f.get("texto") or "").strip()
+                if _cierre_solver:
+                    partes.append(_cierre_solver)
+                elif total_mostrado and primer_turno:
                     partes.append(
                         "¿Cómo lo ves? Cualquier ajuste de modelos, "
                         "cantidades o destinos me decís y lo dejamos a tu "
@@ -1145,9 +1096,9 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 elif total_mostrado and pago_conocido:
                     partes.append("¿Lo dejamos confirmado así?")
                 elif total_mostrado:
-                    partes.append(_variar_cierre(_CIERRES_PAGO, partes, history))
-                else:
-                    partes.append(_cierre_suave(partes, history))
+                    partes.append(
+                        "¿Lo dejamos confirmado? Decime la forma de pago: "
+                        "transferencia (10% de descuento) o Mercado Pago.")
     if presupuesto_pre and not total_mostrado:
         # red: el pre-armado va si o si aunque el modelo no lo posiciono, pero
         # solo si NINGUN total salio ya (evita el presupuesto duplicado).

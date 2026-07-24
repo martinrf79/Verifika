@@ -45,33 +45,6 @@ def test_destino_vacio_no_vale():
     assert not _destino_respaldado("", "a cordoba", {})
 
 
-# ── coletilla de cierre suave: rotacion anti-robot ───────────────────────────
-
-def test_cierre_suave_es_determinista():
-    """Misma charla, misma salida: nada de random."""
-    from app.core.generador_v2 import _cierre_suave
-    partes = ["Tengo estos mouse:", "- lista"]
-    assert _cierre_suave(partes) == _cierre_suave(list(partes))
-
-
-def test_cierre_suave_varia_entre_turnos_distintos():
-    """Contenidos distintos rotan la coletilla: en una charla real de varios
-    turnos no sale siempre la misma frase (robotico, corrida 19-jul)."""
-    from app.core.generador_v2 import _cierre_suave
-    salidas = {_cierre_suave([f"contenido del turno {i} con mas texto"])
-               for i in range(12)}
-    assert len(salidas) >= 2
-
-
-def test_cierres_suaves_sin_digitos_ni_duplicados():
-    """Invariante del corpus enlatado: cero numeros, todas distintas."""
-    import re
-    from app.core.generador_v2 import _CIERRES_SUAVES
-    assert len(set(_CIERRES_SUAVES)) == len(_CIERRES_SUAVES)
-    for c in _CIERRES_SUAVES:
-        assert not re.search(r"\d", c)
-
-
 # ── fragmento ficha que CONTESTA (guion 39, 19-jul) ──────────────────────────
 
 def test_descripcion_no_se_corta_a_mitad_de_palabra():

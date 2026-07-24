@@ -1,4 +1,4 @@
-# Corrida ATADA 06_cierre — 2026-07-24 00:59
+# Corrida ATADA 06_cierre — 2026-07-24 03:16
 
 Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 0.0s.
 
@@ -7,12 +7,12 @@ Entorno: sim_firestore, flujo atado (hub_atado, sin guardas), pausa 0.0s.
 
 CLIENTE: hola, quiero un teclado logitech k120 negro
 
-BOT (6655 ms):
+BOT (4095 ms):
 
 ```
-Hola, ¿cómo estás? Qué bueno que nos escribas. Te cuento que no trabajamos con la marca Logitech, pero no te preocupes, tenemos unas alternativas de Genius que son excelentes y te van a encantar para lo que buscas.
+¡Hola! Qué bueno que nos escribas. Te cuento que no trabajamos con Logitech, pero tengo unas opciones de Genius que son excelentes y muy confiables para lo que necesitás.
 
-Si buscas algo cómodo para tipear o jugar, nuestros teclados Genius son una opción muy equilibrada, silenciosos y con una durabilidad genial para el uso diario que les vas a dar.
+Para que te lleves algo que te rinda, los teclados de membrana como los Genius son ideales si buscás algo silencioso y cómodo para escribir por horas sin gastar de más.
 
 De teclados tengo, de lo más económico para arriba:
 - Teclado Genius KB-110X Blanco - $12.000 (11 en stock)
@@ -20,7 +20,7 @@ De teclados tengo, de lo más económico para arriba:
 - Teclado Logitech K120 Blanco - $14.500 (22 en stock)
 - Teclado Genius Slimstar 130 Negro - $16.500 (5 en stock)
 
-¿Vamos con alguno? Te lo cotizo en el momento.
+Cualquiera de estos dos es un caño. Decime cuál te convence más y avanzamos con el pedido.
 ```
 
 - JUEZ: limpio
@@ -29,22 +29,16 @@ De teclados tengo, de lo más económico para arriba:
 
 CLIENTE: cuanto sale con envio a rosario, santa fe?
 
-BOT (4801 ms):
+BOT (5337 ms):
 
 ```
-¡Hola! Te cuento que a Rosario llegamos sin problemas. Como buscabas una alternativa a lo que consultaste, acá te muestro las opciones de Genius que tenemos en stock, que son excelentes para lo que necesitás.
+Presupuesto:
+- 1x Teclado Logitech K120 Negro: $14.500 c/u = $14.500
+Subtotal: $14.500
+Envio: $6.000
+Total: $20.500
 
-De teclados tengo, de lo más económico para arriba:
-- Teclado Genius KB-110X Blanco - $12.000 (11 en stock)
-- Teclado Logitech K120 Negro - $14.500 (4 en stock)
-- Teclado Logitech K120 Blanco - $14.500 (22 en stock)
-- Teclado Genius Slimstar 130 Negro - $16.500 (5 en stock)
-
-Ambos modelos son de membrana, lo que los hace super silenciosos y cómodos para escribir durante horas sin cansarte, ideales si buscas algo práctico y confiable para el día a día.
-
-El envío a santa fe sale $6.000. Superando los $250.000 va gratis. Orientativo, puede variar al confirmar.
-
-¿Cuál te sirve? Te armo el total al toque.
+Sobre el envío a Rosario, llegamos a todo el país a través de Andreani y OCA. En cuanto el sistema procese tu pedido, te va a dar el costo exacto y el plazo de entrega para tu localidad. ¿Te parece bien si avanzamos así?
 ```
 
 - JUEZ: limpio
@@ -53,22 +47,21 @@ El envío a santa fe sale $6.000. Superando los $250.000 va gratis. Orientativo,
 
 CLIENTE: dale, lo compro
 
-BOT (4155 ms):
+BOT (4294 ms):
 
 ```
-¡Excelente elección! Te preparé el presupuesto para que cerremos la compra y te lo enviamos a Rosario lo antes posible.
+¡Excelente elección! Es un teclado super confiable y cómodo para el día a día.
 
+Para avanzar con el pedido, ¿preferís abonar por transferencia bancaria aprovechando el 10% de descuento o te queda más cómodo hacerlo mediante Mercado Pago?
+
+Listo, tomamos tu pedido.
+Resumen:
 Presupuesto:
-- 1x Teclado Genius Slimstar 130 Negro: $16.500 c/u = $16.500
-Subtotal: $16.500
-Envio: $6.000
-Total: $22.500
-
-Pago dividido:
-- transferencia (100%): $22.500 - 10% descuento = $20.250
-Total final: $20.250
-
-¿Lo dejamos confirmado así?
+- 1x Teclado Logitech K120 Negro: $14.500 c/u = $14.500
+Subtotal: $14.500
+Envio: $5.000
+Total: $12.000
+El equipo te contacta para coordinar y el envio a Rosario, Santa Fe. Gracias por tu compra.
 ```
 
 - JUEZ: limpio
@@ -77,20 +70,20 @@ Total final: $20.250
 
 CLIENTE: transferencia
 
-BOT (6387 ms):
+BOT (4712 ms):
 
 ```
 Presupuesto:
-- 1x Teclado Genius Slimstar 130 Negro: $16.500 c/u = $16.500
-Subtotal: $16.500
+- 1x Teclado Logitech K120 Negro: $14.500 c/u = $14.500
+Subtotal: $14.500
 Envio: $6.000
-Total: $22.500
+Total: $20.500
 
 Pago dividido:
-- transferencia (100%): $22.500 - 10% descuento = $20.250
-Total final: $20.250
+- transferencia (100%): $20.500 - 10% descuento = $18.450
+Total final: $18.450
 
-¿Lo dejamos confirmado así?
+Si estás de acuerdo, pasame por acá los datos para el envío y te comparto el alias para que realices la transferencia así ya te lo reservo.
 ```
 
 - JUEZ: limpio

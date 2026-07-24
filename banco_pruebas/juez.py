@@ -200,17 +200,19 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod",
     _sin_saludo = re.sub(
         r"(?i)¡?\s*hola!?\s*(soy el asistente autom[aá]tico[^.\n]*\.?\s*"
         r"(te ayudo con[^.\n]*\.?)?)?", "", respuesta).strip()
-    # Las coletillas enlatadas tampoco son contestar (visto vivo 20-jul,
-    # guion 40: la pregunta por el seguimiento salio con SOLO la invitacion
-    # "¿Queres que avancemos con alguno?").
+    # La invitacion a avanzar tampoco es contestar (visto vivo 20-jul, guion 40:
+    # la pregunta por el seguimiento salio con SOLO la invitacion). Ya no hay
+    # coletilla enlatada fija (el solver la redacta): se detecta generico -una
+    # ultima linea corta que es una pregunta de cierre se descuenta-.
     try:
-        from app.core.generador_v2 import _CIERRES_SUAVES
         from app.core.leads import PREGUNTA_CIERRE
-        for _c in (*_CIERRES_SUAVES, PREGUNTA_CIERRE,
-                   "¿Te paso el total o querés la ficha completa?"):
-            _sin_saludo = _sin_saludo.replace(_c, " ")
+        _sin_saludo = _sin_saludo.replace(PREGUNTA_CIERRE, " ")
     except Exception:
         pass
+    _lineas = [l for l in _sin_saludo.splitlines() if l.strip()]
+    if _lineas and "?" in _lineas[-1] and 40 < len(_lineas[-1].strip()) < 90:
+        _lineas = _lineas[:-1]
+    _sin_saludo = "\n".join(_lineas).strip()
     if len(re.sub(r"[\s.,¡!¿?]", "", _sin_saludo)) < 12:
         problemas.append("turno mudo: solo saludo o coletilla, sin contestar")
 
