@@ -73,6 +73,10 @@ def specs_config(tienda_id: str | None = None) -> list[dict]:
     if tid in _CACHE_CONFIG:
         return _CACHE_CONFIG[tid]
     entradas: list[dict] = []
+    if not _TIENDA_ID_RX.match(tid):
+        log.warning("fuente_producto_tienda_id_invalido", tienda_id=tid[:60])
+        _CACHE_CONFIG[tid] = entradas
+        return entradas
     try:
         with open(_ruta_config(tid), encoding="utf-8") as f:
             data = json.load(f)
