@@ -389,6 +389,37 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         or (conv.get("criterio_cliente") or ""))
     provincia_envio = _prov_msg or (conv.get("provincia_envio") or "")
 
+    # MEMORIA STICKY que el camino viejo persistia y el atado NO estaba
+    # guardando (27-jul): al pasar produccion al hub, estas tres se leian en
+    # construir_estado pero nunca se escribian, asi que se perdian TODOS los
+    # turnos. Eran memoria muerta:
+    #   - preferencias: "no quiero de China", tope de plata, uso previsto. El
+    #     generador filtra el universo con ellas; sin persistir, valian un turno.
+    #   - producto_anotado: el ancla de "me gusta ese, anotalo", que resuelve
+    #     "el que te dije al principio".
+    #   - grupos_envio: que item va a cada destino, que usa el reprecio del cierre.
+    try:
+        from app.core.estado_venta import (producto_anotado_actualizado,
+                                           preferencias_actualizadas,
+                                           get_current_estado)
+        from app.storage.firestore_client import get_all_products
+        producto_anotado = producto_anotado_actualizado(
+            conv.get("producto_anotado"), interp, raw_message,
+            get_all_products(tienda_id=tienda_id))
+        preferencias_cliente = preferencias_actualizadas(
+            conv.get("preferencias_cliente"), interp, raw_message)
+        grupos_envio = ((get_current_estado() or {}).get("grupos_envio")
+                        or conv.get("grupos_envio") or [])
+        if preferencias_cliente != (conv.get("preferencias_cliente") or {}):
+            log.info("hub_atado_preferencias", trace_id=trace_id,
+                     preferencias=preferencias_cliente)
+    except Exception as e:
+        log.warning("hub_atado_sticky_error", trace_id=trace_id,
+                    error=str(e)[:150])
+        producto_anotado = conv.get("producto_anotado") or {}
+        preferencias_cliente = conv.get("preferencias_cliente") or {}
+        grupos_envio = conv.get("grupos_envio") or []
+
     try:
         save_conversation(
             user_id, history, resumen_charla, tienda_id=tienda_id,
@@ -399,7 +430,10 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
             criterio_cliente=criterio_cliente, provincia_envio=provincia_envio,
             datos_cliente_parciales=datos_cli_parciales,
             pregunta_cierre_hecha=pregunta_cierre_hecha,
-            ultimo_presupuesto=(presupuesto_str or None))
+            ultimo_presupuesto=(presupuesto_str or None),
+            producto_anotado=producto_anotado,
+            preferencias_cliente=preferencias_cliente,
+            grupos_envio=grupos_envio)
     except Exception as e:
         log.warning("hub_atado_save_error", trace_id=trace_id, error=str(e)[:150])
 

@@ -179,6 +179,17 @@ def install():
     import app.core.interprete_libre as il
     for n in ("get_conversation", "save_conversation", "reset_conversation", "get_config"):
         setattr(il, n, _patches[n])
+    # hub_atado es el camino VIVO y tambien importa los nombres arriba: hasta hoy
+    # solo funcionaba de casualidad, porque el banco lo importa DESPUES de
+    # install(). Un test que lo importe antes (o el orchestrator, que lo trae al
+    # colectar) quedaba clavado al Firestore real.
+    try:
+        import app.core.hub_atado as ha
+        for n in ("get_conversation", "save_conversation", "get_config",
+                  "get_product_by_id"):
+            setattr(ha, n, _patches[n])
+    except Exception:
+        pass
     # guia_compra tambien importa los nombres arriba: si alguien lo importo
     # ANTES de install() (un test que lo importa a nivel de modulo), quedaba
     # clavado al Firestore real y media bateria caia con DefaultCredentials.

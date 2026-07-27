@@ -32,7 +32,12 @@ settings = get_settings()
 
 _TIMEOUT_S = 12
 _MAX_FRAGMENTOS = 8
-CAMPOS_FICHA = ["procedencia", "garantia", "material", "descripcion"]
+CAMPOS_FICHA = ["procedencia", "garantia", "material", "descripcion",
+                # 27-jul: sin estos campos la ficha NO podia contestar una spec
+                # ("cuanto disco tiene", "cuanto pesa", "que trae la caja") y la
+                # repregunta se caia o la contestaba el modelo de memoria. El
+                # dato sigue saliendo de la fuente, estampado por el codigo.
+                "caracteristicas", "medidas", "contenido_caja", "uso"]
 
 def _criterios_del_turno(mensaje, universo=None, interp=None):
     """El enum del fragmento criterio para ESTE turno: (ids jurados relevantes,
@@ -227,6 +232,23 @@ def universo_productos(mensaje, estado, tienda_id, interp=None):
                     from app.storage.firestore_client import get_all_products
                     _todos = get_all_products(tienda_id=tienda_id)
                 _add(_resolver_nombre_a_producto(nom, _todos))
+    # CONTEXTO MANDA sobre las palabras sueltas del mensaje (27-jul, charla real
+    # del 24-jul 16:43). Si el cliente PREGUNTA por algo YA mostrado -el
+    # interprete resolvio el producto o lo puso en productos_consultados- y NO
+    # pidio ninguna categoria nueva (solicitud_nueva y pedido vacios), el rastreo
+    # de categorias POR PALABRA del mensaje NO corre. Sin esto, "cuanta memoria
+    # ram y espacio de disco tiene" -pregunta por la tablet del turno anterior-
+    # metia los modulos de MEMORIA RAM al enum y el solver terminaba ofreciendo
+    # RAM en vez de contestar por la tablet. El disparo es mutuamente excluyente
+    # -seguimiento de lo mostrado vs pedido nuevo- y lo decide el INTERPRETE
+    # (Contactor), no un regex sobre el texto.
+    if (isinstance(interp, dict)
+            and (interp.get("producto_resuelto")
+                 or interp.get("productos_consultados"))
+            and not (interp.get("solicitud_nueva") or [])
+            and not (interp.get("pedido") or [])):
+        return list(por_id.values())[:16]
+
     # categorias mencionadas: 4 mas baratas + el intermedio de cada una
     cats = cantidades_por_categoria(mensaje or "", tienda_id)
     cats_nombres = {c for _, c in cats}
@@ -464,7 +486,7 @@ def _schema(ids, temas, criterios, cats_obligatorias=None):
 
 def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
             criterios_menu="", prefs=None, nota_no_vendida="", faq_menu="",
-            cats_obligatorias=None):
+            cats_obligatorias=None, interp=None):
     def _linea(p):
         base = (f"  {p['id']} = {p['nombre']} | "
                 f"${int(p.get('precio_ars',0)):,}".replace(",", ".")
@@ -494,8 +516,40 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
         f"{c.get('cantidad',1)}x {c.get('nombre')}" for c in carrito)) if carrito else ""
     dest = estado.get("localidades_envio") or []
     dest_txt = ("\nDestinos ya dados: " + ", ".join(dest)) if dest else ""
-    hist = ("\n".join(f"{h.get('role')}: {str(h.get('content'))[:160]}"
-                      for h in (historial or [])[-4:]))
+    # MEMORIA del solver (27-jul). Antes solo veia 4 mensajes recortados a 160
+    # caracteres: ni el resumen largo de la charla, ni que productos ya habia
+    # mostrado, ni a QUE producto se referia el mensaje. Por eso una repregunta
+    # ("cuanta memoria ram tiene") quedaba huerfana y el modelo la contestaba
+    # contra el listado en vez de contra el producto en foco. Ahora la charla
+    # llega entera: resumen acumulado, mostrados, foco resuelto por el interprete
+    # e historial mas ancho.
+    hist = ("\n".join(f"{h.get('role')}: {str(h.get('content'))[:300]}"
+                      for h in (historial or [])[-8:]))
+    resumen = str(estado.get("resumen_charla") or "").strip()
+    res_txt = ("\nDe lo que ya hablaron antes (memoria de la charla): "
+               + resumen) if resumen else ""
+    _vistos = [str(p.get("nombre")) for p in (estado.get("productos_vistos") or [])
+               if isinstance(p, dict) and p.get("nombre")]
+    vis_txt = ("\nProductos que YA le mostraste en esta charla: "
+               + ", ".join(dict.fromkeys(_vistos[-8:]))) if _vistos else ""
+    foco_txt = ""
+    if isinstance(interp, dict):
+        _pr = str(interp.get("producto_resuelto") or "").strip()
+        _cons = [f"{c.get('producto')} (quiere saber: {c.get('consulta')})"
+                 for c in (interp.get("productos_consultados") or [])
+                 if isinstance(c, dict) and c.get("producto")]
+        if _pr or _cons:
+            foco = _pr or ", ".join(_cons)
+            foco_txt = (
+                f"\n\nFOCO DEL MENSAJE (ya resuelto por el sistema, no lo "
+                f"discutas): el cliente esta preguntando por {foco}. Toda "
+                f"referencia suelta del mensaje ('tiene', 'ese', 'cuanto pesa', "
+                f"'cuanta memoria') es sobre ESE producto, aunque nombre una "
+                f"palabra que suene a otra categoria. Contestale sobre EL con "
+                f"un fragmento ficha o producto; NO le ofrezcas otra categoria "
+                f"si no la pidio."
+                + (f"\nLo que pregunto de cada uno: " + "; ".join(_cons)
+                   if _cons else ""))
     return (
         "Sos el vendedor por WhatsApp de Verifika Tech, tienda argentina de "
         "tecnologia. Voseo, calido, directo, vendedor de verdad. Tu meta es "
@@ -533,7 +587,12 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
         "cantidad, destino}] y opcional pago. Solo si NO hay presupuesto ya "
         "armado.\n"
         "- ficha: datos reales de un producto -> producto_id + campos "
-        "(procedencia/garantia/material/descripcion).\n"
+        "(procedencia/garantia/material/descripcion/caracteristicas/medidas/"
+        "contenido_caja/uso). ES EL FRAGMENTO PARA CONTESTAR UNA SPEC: si el "
+        "cliente pregunta cuanto pesa, cuanta memoria o disco tiene, que trae, "
+        "de que material es o para que sirve, va ficha con ese producto_id y "
+        "los campos que lo respondan; el sistema estampa el dato de la fuente. "
+        "NO escribas vos la spec en prosa.\n"
         "- faq: politica de la tienda (envio, pago, garantia, factura, IVA, "
         "cuotas, seguimiento, etc). REDACTA VOS la respuesta en el campo texto, "
         "en tu voz, con el contexto de la charla, apoyandote en el bloque de FAQ "
@@ -554,7 +613,7 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
            f"literal; los numeros salen de aca):\n{faq_menu}\n" if faq_menu else "")
         + f"CRITERIO jurado para apoyarte (para el fragmento criterio: adapta "
         f"esto a tu frase y cita el id entre corchetes):\n{criterios_menu}\n"
-        f"{car_txt}{dest_txt}{prefs_txt}\n\n"
+        f"{car_txt}{dest_txt}{vis_txt}{res_txt}{prefs_txt}\n\n"
         + (f"\n\nPRESUPUESTO YA ARMADO por el sistema (ponelo con un "
            f"fragmento tipo 'presupuesto'):\n{presupuesto_pre}" if presupuesto_pre else "")
         + (("\n\nOBLIGATORIO — respuestas_por_categoria: DEBÉS escribir un texto "
@@ -563,7 +622,7 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
             "cita_id (o null). NO podés dejar ninguna vacía ni saltearla; es tu "
             "respuesta a lo que preguntó. Categorías: "
             + ", ".join(cats_obligatorias)) if cats_obligatorias else "")
-        + f"\n\nCharla:\n{hist}\n\nMensaje del cliente:\n{mensaje}\n\n"
+        + f"\n\nCharla:\n{hist}{foco_txt}\n\nMensaje del cliente:\n{mensaje}\n\n"
         "Reglas: responde TODAS las cosas que pregunto el cliente, cada una "
         "por su fragmento; NUNCA dejes una pregunta sin responder. Si el "
         "cliente pide tu OPINION o consejo (si un producto le sirve para algo, "
@@ -682,7 +741,7 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
                     error=str(e)[:120])
     prompt = _prompt(mensaje, historial, universo, temas, estado, presu_txt,
                      criterios_menu, prefs, nota_no_vendida, faq_menu,
-                     cats_obligatorias)
+                     cats_obligatorias, interp)
     schema = _schema(ids, temas, criterios, cats_obligatorias)
 
     def _call():
@@ -704,7 +763,11 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
         rpc = data.get("respuestas_por_categoria") or {}
         if isinstance(frags, list) and frags:
             log.info("generador_v2_ok", trace_id=trace_id, n=len(frags),
-                     obligatorias=len(cats_obligatorias))
+                     obligatorias=len(cats_obligatorias),
+                     # los TIPOS que emitio: sin esto, cuando el render descarta
+                     # un fragmento no hay forma de saber cual se perdio
+                     tipos=[f.get("tipo") for f in frags
+                            if isinstance(f, dict)][:_MAX_FRAGMENTOS])
             return (frags[:_MAX_FRAGMENTOS], universo, presu_txt, presu_tools,
                     rpc if isinstance(rpc, dict) else {})
     except Exception as e:
@@ -714,6 +777,12 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
 
 # ── 3. RENDER: el codigo estampa cada dato desde la fuente ───────────────────
 _RE_DIGITO = re.compile(r"\d")
+# PLATA en la prosa: precio, total, monto o porcentaje. Un numero de 4 o mas
+# digitos (con o sin puntos) es plata en este catalogo; uno chico (12 meses,
+# 128GB, 2 unidades) no lo es y se deja pasar.
+_RE_PLATA = re.compile(
+    r"\$|%|\bpesos\b|\bd[oó]lares\b|\b\d[\d.]{3,}\b|\b\d+\s*(?:mil|lucas|palos)\b",
+    re.IGNORECASE)
 
 
 def _texto_ficha_limpio(texto, tope=220):
@@ -745,6 +814,26 @@ def _campo_ficha(prod, campo):
         return ("Material " + m.group(1).strip()) if m else ""
     if campo == "descripcion":
         return _texto_ficha_limpio(prod.get("descripcion"))
+    if campo == "caracteristicas":
+        v = str(prod.get("caracteristicas_extra") or "").strip()
+        if not v:
+            return ""
+        # el catalogo repite la misma spec por unidad ("8GB, 8GB"): se dedup.
+        v = ", ".join(dict.fromkeys(x.strip() for x in v.split(",") if x.strip()))
+        return ("Características: " + v) if v else ""
+    if campo == "medidas":
+        partes = []
+        if prod.get("peso_gramos"):
+            partes.append(f"Peso {prod['peso_gramos']} g")
+        if prod.get("dimensiones"):
+            partes.append(f"Medidas {str(prod['dimensiones']).strip()}")
+        return ". ".join(partes)
+    if campo == "contenido_caja":
+        v = str(prod.get("contenido_caja") or "").strip()
+        return ("Viene con: " + v) if v else ""
+    if campo == "uso":
+        v = str(prod.get("uso_recomendado") or "").strip()
+        return ("Recomendado para " + v) if v else ""
     return ""
 
 
@@ -769,7 +858,12 @@ _SPECS_CACHE = None
 
 
 def _specs_preguntables():
-    """[(regex, etiqueta, claves)] desde el config, cacheado; fallback al codigo."""
+    """[(regex de la PREGUNTA, etiqueta, regex de la FICHA)] desde el config,
+    cacheado; fallback al codigo. La forma de PREGUNTAR una spec y la forma en
+    que la ficha la ESCRIBE no son la misma: el cliente dice 'espacio de disco'
+    y la ficha dice '128GB'. Por eso una entrada puede traer claves_ficha; si no
+    las trae, se busca con las mismas claves (comportamiento previo). El match
+    en la ficha es por substring -'gb' tiene que pescar dentro de '128GB'-."""
     global _SPECS_CACHE
     if _SPECS_CACHE is not None:
         return _SPECS_CACHE
@@ -781,16 +875,23 @@ def _specs_preguntables():
                             "clientes", "verifika_prod", "specs_preguntables.json")
         with open(ruta, encoding="utf-8") as f:
             data = json.load(f)
-        entradas = [(s.get("claves") or [], s.get("etiqueta") or "")
+        entradas = [(s.get("claves") or [], s.get("etiqueta") or "",
+                     s.get("claves_ficha") or [])
                     for s in (data.get("specs") or []) if s.get("etiqueta")]
     except Exception:
         entradas = None
     compiladas = []
-    for claves, etiqueta in (entradas or _SPECS_FALLBACK):
+    for entrada in (entradas or _SPECS_FALLBACK):
+        claves, etiqueta = entrada[0], entrada[1]
+        claves_ficha = entrada[2] if len(entrada) > 2 else []
         cl = [_norm(c) for c in claves if c]
         pat = "|".join(r"\b" + re.escape(c) + r"\b" for c in cl)
-        if pat and etiqueta:
-            compiladas.append((re.compile(pat), etiqueta, cl))
+        if not (pat and etiqueta):
+            continue
+        cf = [_norm(c) for c in claves_ficha if c]
+        rx_ficha = (re.compile("|".join(re.escape(c) for c in cf))
+                    if cf else re.compile(pat))
+        compiladas.append((re.compile(pat), etiqueta, rx_ficha))
     _SPECS_CACHE = compiladas
     return _SPECS_CACHE
 
@@ -803,9 +904,10 @@ def _specs_faltantes(mensaje, prod):
         return []
     base = _norm(" ".join(str(prod.get(c) or "") for c in
                           ("nombre", "descripcion", "garantia_detalle",
-                           "origen", "modelo")))
-    return [(etiqueta, rx) for rx, etiqueta, _cl in _specs_preguntables()
-            if rx.search(m) and not rx.search(base)]
+                           "origen", "modelo", "caracteristicas_extra",
+                           "contenido_caja", "uso_recomendado")))
+    return [(etiqueta, rx) for rx, etiqueta, rx_ficha in _specs_preguntables()
+            if rx.search(m) and not rx_ficha.search(base)]
 
 
 def _honesto_specs_faltantes(mensaje, prod):
@@ -845,14 +947,16 @@ def estampar_honestidad_specs(texto, mensaje, prod):
 
 
 def _poda_prosa(texto, nombres_universo=None):
-    """La prosa no puede traer DATOS DUROS: si tiene un digito se descarta el
-    fragmento (todo numero/precio/spec va por su fragmento, estampado desde la
-    fuente). SI puede nombrar un producto para opinar, aconsejar o comparar: el
-    nombre no es un dato que pueda salir mal (el universo esta atado al enum, el
-    modelo no puede inventar uno). Sin esto, una pregunta de consejo ('¿el mas
-    barato sirve para la oficina?') perdia toda la respuesta razonada."""
+    """La prosa no puede traer PLATA: precio, total, porcentaje o monto se
+    descartan (van por su fragmento, estampados desde la fuente). SI puede
+    nombrar un producto para opinar, aconsejar o comparar, y SI puede llevar un
+    numero chico que no es plata ('12 meses de garantia', '128GB', '2 unidades'):
+    la poda por CUALQUIER digito borraba en silencio la respuesta entera a una
+    repregunta de spec y dejaba solo el cierre -charla real del 24-jul: el
+    cliente pregunto memoria y disco y le volvio una sola linea suelta-. El
+    numero que queda lo audita _verificar_montos contra la evidencia del turno."""
     t = str(texto or "").strip()
-    if not t or _RE_DIGITO.search(t):
+    if not t or _RE_PLATA.search(t):
         return ""
     return t
 
@@ -941,6 +1045,11 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             p = _poda_prosa(f.get("texto"), nombres)
             if p:
                 partes.append(p)
+            elif str(f.get("texto") or "").strip():
+                # RADAR: la prosa podada se perdia en silencio y el cliente
+                # recibia una respuesta a medias sin que quedara rastro.
+                log.warning("generador_v2_prosa_podada", trace_id=trace_id,
+                            texto=str(f.get("texto"))[:140])
         elif t == "producto":
             p = _prod(f.get("producto_id"))
             if p:
