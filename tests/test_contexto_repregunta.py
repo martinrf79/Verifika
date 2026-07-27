@@ -126,6 +126,7 @@ def test_la_ficha_contesta_almacenamiento_y_medidas():
 
 def test_ram_ausente_de_la_ficha_sale_honesta_y_el_disco_no():
     prod = {"nombre": "Tablet Lenovo Tab M10 Plata",
+            "categoria": "tablet",
             "descripcion": ("Tablet Lenovo Tab M10, color Plata. 128GB. "
                             "peso 344g. Garantia oficial 12 meses."),
             "caracteristicas_extra": "128GB"}

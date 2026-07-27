@@ -28,8 +28,6 @@ from pathlib import Path
 _RAIZ = Path(__file__).resolve().parent.parent
 _DATA = _RAIZ / "data" / "clientes" / "verifika_prod"
 
-_INT_FIELDS = ("precio_ars", "stock", "peso_gramos", "garantia_meses")
-
 # Memoria de conversacion en RAM: {(tid, user_id): doc}
 _CONV: dict = {}
 
@@ -50,19 +48,17 @@ _CONFIG = {
 
 
 def _cargar_productos() -> dict:
+    """El catalogo del banco entra por la MISMA puerta que produccion
+    (fuente_producto.normalizar_producto): mismos tipos, misma ficha depurada y
+    el mismo mapa `specs`. Si el banco cargara el CSV crudo probaria un
+    producto que el bot vivo no ve nunca."""
+    from app.core.fuente_producto import normalizar_producto
     prods = {}
     with open(_DATA / "productos.csv", encoding="utf-8") as f:
         for row in csv.DictReader(f):
-            for k in _INT_FIELDS:
-                v = (row.get(k) or "").strip()
-                if v:
-                    try:
-                        row[k] = int(float(v))
-                    except ValueError:
-                        pass
-            pid = row.get("id")
+            pid = (row.get("id") or "").strip()
             if pid:
-                prods[pid] = row
+                prods[pid] = normalizar_producto(row)
     return prods
 
 

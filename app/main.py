@@ -565,14 +565,19 @@ def _csv_to_dicts(content_bytes: bytes) -> tuple[list[dict], list[str]]:
 def _validate_producto_row(row: dict) -> tuple[dict | None, str | None]:
     """
     Valida una fila de productos. Devuelve (producto_normalizado, error).
-    Campos esperados: id, nombre, categoria, precio_ars, stock, descripcion.
+    Minimo obligatorio: id, nombre, categoria, precio_ars, stock.
+
+    El producto que se guarda lo arma `fuente_producto.normalizar_producto`:
+    conserva TODAS las columnas del CSV (esta funcion se quedaba con 6 de 20 y
+    dejaba a la ficha sin procedencia, garantia, contenido de la caja ni
+    specs), depura la spec fantasma y estampa el mapa `specs`. Una sola puerta
+    de ingesta, la misma que usa scripts/crear_cliente.py.
     """
     pid = (row.get("id") or "").strip()
     nombre = (row.get("nombre") or "").strip()
     categoria = (row.get("categoria") or "").strip().lower()
     precio_raw = (row.get("precio_ars") or row.get("precio") or "").strip()
     stock_raw = (row.get("stock") or "0").strip()
-    descripcion = (row.get("descripcion") or "").strip()
     row_num = row.get("_row_num", "?")
 
     if not pid:
@@ -592,14 +597,11 @@ def _validate_producto_row(row: dict) -> tuple[dict | None, str | None]:
     if precio < 0 or stock < 0:
         return None, f"fila {row_num} ({pid}): precio o stock negativo"
 
-    return {
-        "id": pid,
-        "nombre": nombre,
-        "categoria": categoria,
-        "precio_ars": precio,
-        "stock": stock,
-        "descripcion": descripcion,
-    }, None
+    from app.core.fuente_producto import normalizar_producto
+    prod = normalizar_producto(row)
+    prod.update({"id": pid, "nombre": nombre, "categoria": categoria,
+                 "precio_ars": precio, "stock": stock})
+    return prod, None
 
 
 def _validate_faq_row(row: dict) -> tuple[tuple[str, dict] | None, str | None]:

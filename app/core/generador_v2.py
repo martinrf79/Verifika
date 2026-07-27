@@ -896,18 +896,49 @@ def _specs_preguntables():
     return _SPECS_CACHE
 
 
-def _specs_faltantes(mensaje, prod):
-    """[(etiqueta, regex)] de las specs que el cliente PREGUNTO y que la ficha del
-    producto NO trae. Vacio si no pregunto o si el dato figura en la ficha."""
+def _specs_del_turno(mensaje, prod):
+    """(respondidas, faltantes) de las specs que el cliente PREGUNTO este turno.
+
+    respondidas: [(etiqueta, valor, rx_pregunta, rx_ficha)] con el valor tal
+    como lo dice la FUENTE (mapa `specs` que estampa fuente_producto).
+    faltantes:   [(etiqueta, rx_pregunta)] las que la fuente no responde.
+
+    El mapa `specs` es la atadura: antes esto se resolvia por substring sobre
+    la prosa de la ficha y daba las dos fallas juntas -el 'gb' de la RAM hacia
+    pasar por respondido el almacenamiento (falso positivo: el modelo quedaba
+    libre de inventarlo) y una spec escrita distinto se daba por ausente-.
+    Si el producto viene SIN mapa (doc viejo, dict de test) se cae a la
+    deteccion por substring de siempre, sin valor y sin estampado.
+    """
     m = _norm(mensaje or "")
     if not m or not isinstance(prod, dict):
-        return []
-    base = _norm(" ".join(str(prod.get(c) or "") for c in
-                          ("nombre", "descripcion", "garantia_detalle",
-                           "origen", "modelo", "caracteristicas_extra",
-                           "contenido_caja", "uso_recomendado")))
-    return [(etiqueta, rx) for rx, etiqueta, rx_ficha in _specs_preguntables()
-            if rx.search(m) and not rx_ficha.search(base)]
+        return [], []
+    from app.core.fuente_producto import (aplica, extraer_specs, specs_config,
+                                          texto_ficha)
+    mapa = prod.get("specs")
+    if not isinstance(mapa, dict):
+        # doc viejo o dict de test: se estampa el mapa al vuelo, misma fuente.
+        mapa = extraer_specs(prod)
+    base = _norm(texto_ficha(prod))
+    categoria = prod.get("categoria") or ""
+    respondidas, faltantes = [], []
+    for spec in specs_config():
+        rx = spec["rx_pregunta"]
+        if not rx.search(m) or not aplica(spec, categoria):
+            continue
+        valor = mapa.get(spec["id"])
+        if valor:
+            respondidas.append((spec["etiqueta"], str(valor), rx,
+                                spec["rx_ficha"]))
+        elif not spec["rx_ficha"].search(base):
+            faltantes.append((spec["etiqueta"], rx))
+    return respondidas, faltantes
+
+
+def _specs_faltantes(mensaje, prod):
+    """[(etiqueta, regex)] de las specs que el cliente PREGUNTO y la fuente NO
+    responde. Vacio si no pregunto o si el dato esta."""
+    return _specs_del_turno(mensaje, prod)[1]
 
 
 def _honesto_specs_faltantes(mensaje, prod):
@@ -922,25 +953,51 @@ def _honesto_specs_faltantes(mensaje, prod):
 
 
 def estampar_honestidad_specs(texto, mensaje, prod):
-    """Refuerzo de honestidad por turno: si el cliente pregunto una spec AUSENTE
-    de la ficha, SACA las lineas de prosa que la afirman (el modelo no puede
-    asegurar lo que la fuente no dice) y ESTAMPA el honesto. Idempotente. Las
-    lineas con dato duro ($) y la propia linea honesta se conservan."""
-    faltan = _specs_faltantes(mensaje, prod)
-    if not faltan or not (texto or "").strip():
+    """La spec preguntada la contesta la FUENTE, no el modelo. Por turno:
+
+    - spec que la fuente SI responde: se sacan las lineas que la afirman con
+      otro valor y se ESTAMPA el valor real ('La memoria RAM: 16GB').
+    - spec que la fuente NO responde: se sacan las lineas que la afirman y se
+      estampa el honesto 'la ficha no lo especifica'.
+
+    Idempotente. Las lineas con plata ($) no se tocan: las audita el
+    verificador de montos."""
+    respondidas, faltan = _specs_del_turno(mensaje, prod)
+    if not (respondidas or faltan) or not (texto or "").strip():
         return texto
     honesto = _honesto_specs_faltantes(mensaje, prod)
     honesto_n = _norm(honesto)[:40]
+    # una linea "habla" de una spec respondida si la nombra; es FIEL si ademas
+    # trae alguna parte del valor de la fuente ('512GB SSD' -> '512gb' o 'ssd').
+    tokens_ok = [(rx_p, rx_f, [t for t in re.split(r"[^a-z0-9]+", _norm(valor)) if t])
+                 for _et, valor, rx_p, rx_f in respondidas]
     out = []
     for linea in texto.split("\n"):
         n = _norm(linea)
         if honesto_n and honesto_n in n:
             out.append(linea)
             continue
-        if "$" not in linea and any(rx.search(n) for _et, rx in faltan):
+        if "$" in linea:
+            out.append(linea)
+            continue
+        if any(rx.search(n) for _et, rx in faltan):
+            continue
+        infiel = False
+        for rx_p, rx_f, toks in tokens_ok:
+            if (rx_p.search(n) or rx_f.search(n)) and toks and \
+                    not any(t in n for t in toks):
+                infiel = True
+                break
+        if infiel:
             continue
         out.append(linea)
     nuevo = re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()
+    for etiqueta, valor, _rx_p, _rx_f in respondidas:
+        toks = [t for t in re.split(r"[^a-z0-9]+", _norm(valor)) if t]
+        if toks and not all(t in _norm(nuevo) for t in toks):
+            et = re.sub(r"^(?:el|la|los|las|si)\s+", "", etiqueta).strip()
+            linea = f"{et[0].upper()}{et[1:]}: {valor}."
+            nuevo = (nuevo + "\n" + linea).strip() if nuevo else linea
     if honesto and honesto_n not in _norm(nuevo):
         nuevo = (nuevo + "\n\n" + honesto).strip() if nuevo else honesto
     return nuevo

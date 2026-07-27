@@ -4,6 +4,84 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 27-jul-2026 (2a tanda) — FUENTE DE VERDAD COMPLETA: INVENTARIO + INGESTA
+UNICA + MAPA DE SPECS ====**
+
+Rama: `claude/fuente-verdad-inventory-0yocb2`. Orden de Martin: completar la
+fuente teniendo en cuenta lo que ya hay, con un proceso que sirva para tiendas
+de 880 productos o mas. Se midio primero, se arreglo despues.
+
+**PASO 1 — INVENTARIO (`scripts/inventario_fuente.py`, reporte en
+`INVENTARIO_FUENTE.md`).** Mide, no opina: corre offline sobre el repo y con
+`--vivo` compara contra el Firestore de produccion por REST (clave lectora).
+Es por CATEGORIA y por CAMPO, nunca por producto, asi 880 o 20.000 se leen
+igual. Lo que destapo:
+1. **Dos ingestas que no coinciden.** `/admin/upload-catalog` se quedaba con 6
+   de las 20 columnas del CSV: si Martin recargaba el catalogo por ahi, la
+   ficha perdia procedencia, garantia, contenido de la caja, medidas, marca,
+   modelo y specs. `scripts/crear_cliente.py` guardaba todo. Bomba de tiempo.
+2. **Firestore vivo NO tiene `tags` ni `descripcion_rica`** (880/880 sin
+   ellos), y el buscador puntua con los dos: los sinonimos del CSV ("mause",
+   "raton", "puntero") nunca llegaron a produccion.
+3. **SPEC FANTASMA en 399 de 880 fichas.** El CSV le pega a cada producto,
+   ademas de su spec, la del PRIMERO de su categoria: el SSD de 2TB dice
+   "2TB, 500GB" y la notebook Ryzen dice "Ryzen 7 16GB 512GB SSD, Core i5 16GB
+   512GB SSD". No es una repeticion inofensiva: son dos valores DISTINTOS en la
+   misma ficha, o sea capacidad de otro producto lista para salir al cliente.
+4. **La deteccion de specs era por substring** y fallaba de los dos lados: el
+   'gb' de la RAM hacia pasar por respondido el almacenamiento (el modelo
+   quedaba libre de inventarlo) y una spec escrita distinto se daba por ausente.
+
+**PASO 2 — COMPLETAR (`app/core/fuente_producto.py`, modulo nuevo, UNA puerta).**
+`normalizar_producto` es ahora la unica ingesta: conserva TODAS las columnas,
+coerciona numeros, completa `tags` si la fuente no los trae, DEPURA la spec
+fantasma (se queda con el segmento avalado por el nombre o el modelo del propio
+producto; si ninguno esta avalado no descarta nada) y estampa el mapa `specs`
+del producto. La usan el endpoint admin, `crear_cliente.py` y el doble offline
+del banco. `get_all_products` completa en memoria al producto que venga sin
+mapa: **el catalogo YA cargado responde specs sin re-subir nada** (880 = 90 ms,
+10.000 = ~1,7 s, una vez por refresco de cache).
+Las specs viven en `specs_preguntables.json`, que paso de 15 a 24 entradas y
+ahora ata, por spec: `aplica_a` (a que categorias tiene sentido), `extraer`
+(patrones que SACAN el valor, con acotacion por categoria y por campo) y las
+claves de pregunta. **Sumar una spec o una categoria es editar ese json; el
+codigo no se toca y las 880 filas tampoco.**
+Cobertura medida sobre el catalogo real: almacenamiento 330/330, ram 267/309
+(las tablets no la informan: queda honesto), procesador 190/232, switch 48/48,
+sensor 52/52, memoria de video 18/18, monitor completo (hz, panel, resolucion).
+Y el reporte lista lo que la fuente NO responde en NINGUN producto — bateria
+(404), tactil (244), lector de tarjetas (230), thunderbolt (210), lector de
+huella (198), ram ampliable (186), resistencia al agua (182): eso es dato del
+proveedor, no codigo, y hasta que llegue el bot es honesto.
+
+**LA ATADURA QUE SE ADAPTA (parrafo corto).** La atadura de honestidad de spec
+del hub deja de leer prosa y pasa a leer el mapa `specs`: si el cliente
+pregunta algo que la fuente responde, el CODIGO estampa el valor de la fuente y
+BORRA la linea del modelo que diga otro valor; si la fuente no lo trae, borra
+la afirmacion y estampa "la ficha no lo especifica". Es la misma pinza de
+siempre —enum del universo, ficha estampada, verificador de montos— pero ahora
+tambien sobre la spec, que era el ultimo dato duro que viajaba como texto libre.
+El modelo sigue eligiendo que decir y con que tono; el numero y la spec los
+pone la fuente.
+
+**VERIFICADO:** 679 tests offline verdes, 12 nuevos en
+`tests/test_fuente_producto.py`. Sobre el turno REAL que fallo el 24-jul
+("cuanta memoria ram y espacio de disco tiene"): la tablet contesta
+"Almacenamiento: 128GB" y es honesta con la RAM; y si el modelo tira "8GB" en
+una notebook de 16GB, la linea se cae y se estampa el 16GB de la fuente.
+Se saco el cache de structlog (`app/logger.py`): con cache el logger de un
+modulo quedaba pegado a la primera config y el observador del banco se quedaba
+SORDO a los radares del camino vivo segun el orden de los tests.
+
+**PENDIENTE PARA MARTIN (un solo paso, cierra el hueco 2):** recargar el
+catalogo por la ingesta normalizada para que Firestore reciba `tags`,
+`descripcion_rica`, la ficha depurada y el mapa `specs` guardado:
+`python scripts/crear_cliente.py cargar_catalogo --tienda_id verifika_prod
+--catalogo data/clientes/verifika_prod/productos.csv`. Sin eso el bot igual
+responde specs (se completan al leer), pero el buscador sigue sin sinonimos.
+
+---
+
 **==== 27-jul-2026 — CONTEXTO Y MEMORIA, ARREGLADO SOBRE UNA CHARLA REAL ====**
 
 Rama: `claude/context-memory-review-1x5n7n`. Diagnostico hecho sobre la ULTIMA

@@ -125,6 +125,16 @@ def get_all_products(force_refresh: bool = False, tienda_id: str | None = None) 
         data["id"] = doc.id
         productos[doc.id] = data
 
+    # FUENTE COMPLETA: al producto que viene sin el mapa `specs` se lo completa
+    # aca, una sola vez por refresco de cache (880 productos = milisegundos).
+    # Asi el catalogo YA cargado responde specs sin re-subirlo, y sale depurada
+    # la spec fantasma que el CSV le pega a cada ficha.
+    try:
+        from app.core.fuente_producto import enriquecer
+        enriquecer(list(productos.values()), tienda_id=tid)
+    except Exception as e:
+        log.warning("catalog_enriquecer_failed", tienda_id=tid, error=str(e)[:150])
+
     _catalog_cache[tid] = productos
     _catalog_cache_ts[tid] = now
     log.info("catalog_loaded_from_firestore", tienda_id=tid, count=len(productos))
