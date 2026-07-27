@@ -14,33 +14,38 @@ echo "entorno de prueba listo: el app importa y la logica pura corre offline"
 cat <<'ESTADO'
 
 ========================= ESTADO ACTUAL — LEER =========================
-TRACK ACTIVO (rama claude/session-lg1xff, NO en produccion aun): construir el
-FLUJO ATADO (app/core/hub_atado.py) que reemplaza la pila de ~40 guardas de
-interprete_libre. Los dos modelos atados (interprete + solver) SIN guardas.
-Produccion sigue en interprete_libre (orchestrator NO cambio).
+PRODUCCION corre el FLUJO ATADO: orchestrator -> app/core/hub_atado.py
+(interprete Gemini con schema strict + solver generador_v2 por fragmentos
+atados a enums de la fuente). interprete_libre YA NO es el camino vivo.
 
 EL CONTACTOR = la config declarativa (enums/campos del schema atados a listas
-cerradas de la fuente) que ata y enruta al modelo SIN decidir por el (a
-diferencia del codigo duro que decide/reescribe). Cada contacto: 1) trigger
-mutuamente excluyente; 2) solo ata el dato, nunca reescribe la prosa.
+cerradas de la fuente) que ata y enruta al modelo SIN decidir por el. Cada
+contacto: 1) trigger mutuamente excluyente; 2) solo ata el dato, nunca
+reescribe la prosa.
 
-MODELO (medido): interprete en Gemini (json_schema strict, atadura DURA) 32/32.
-DeepSeek V4 = fallback blando 91% (su API rechaza json_schema strict, 400).
-Cuota gratis de Gemini throttlea: bancos usan BANCO_PAUSA_S=22 / BANCO_PACE_SEG.
+ULTIMO TRACK (27-jul, rama claude/context-memory-review-1x5n7n): CONTEXTO Y
+MEMORIA, diagnosticado sobre la charla REAL del 24-jul leida de los logs.
+Arreglado: 1) el universo ya no se contamina por palabra suelta del mensaje
+cuando el interprete resolvio el producto en foco; 2) el prompt del solver
+lleva resumen de la charla, productos mostrados, FOCO del interprete e
+historial mas ancho; 3) la poda de prosa poda PLATA, no cualquier digito
+(antes borraba la respuesta de spec en silencio); 4) la ficha contesta specs
+(caracteristicas, medidas, contenido_caja, uso); 5) el hub vuelve a
+PERSISTIR preferencias_cliente, producto_anotado y grupos_envio, que se
+leian y no se guardaban desde el pase al atado.
 
-HECHO Y COMMITEADO: hub_atado, prompt v5, schema con productos_consultados y
-solicitud_nueva (categoria pedida no mostrada, atada al enum de categorias),
-forzado de cotizar_envio por config, ancla del pedido al id real, guia mas
-barato, traza por costura (hub_atado_traza), fix contaminacion id de ejemplo,
-anti-coletilla. 615 tests offline verdes.
+COMO VER UNA CHARLA REAL SIN GCLOUD: la env GCP_SA_KEY_B64 trae la clave de
+claude-lector (logging.viewer + datastore.viewer). Decodificar al scratchpad,
+REQUESTS_CA_BUNDLE=/root/.ccr/ca-bundle.crt, y pegarle por REST a
+logging.googleapis.com/v2/entries:list (filtro service_name agente-bot) y a
+firestore.googleapis.com (tiendas/verifika_prod/conversaciones/<user_id>:
+ahi vive el history y el summary vivos).
 
-PROXIMO PASO (en orden): 1) correr guion 53 VIVO cuando la cuota de Gemini se
-libere y confirmar que el teclado sobrevive toda la charla; 2) evolucionar el
-Contactor a abarcativo mapeando cada categoria de ruteo_venta.py (B1..B20) a un
-contacto con las 2 condiciones; 3) con el banco firme, apuntar el orchestrator
-a hub_atado y retirar las guardas.
+PROXIMO PASO: correr bancos VIVOS de memoria multiturno (52, 53, 56, 59) con
+la clave paga y mirar en logs generador_v2_prosa_podada y los tipos de
+fragmento (generador_v2_ok tipos=[...]) para cazar lo que el render descarte.
 
-Detalle completo: tope de RESUMEN_PARA_NUEVO_CHAT.md (seccion 22-jul).
-Bancos: BANCO_PAUSA_S=22 python banco_pruebas/banco_atado_charlas.py banco_pruebas/guiones/52_*.txt
+Detalle completo: tope de RESUMEN_PARA_NUEVO_CHAT.md (seccion 27-jul).
+Bancos: BANCO_PAUSA_S=8 python banco_pruebas/banco_atado_charlas.py banco_pruebas/guiones/68_*.txt
 ========================================================================
 ESTADO

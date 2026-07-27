@@ -4,6 +4,75 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 27-jul-2026 — CONTEXTO Y MEMORIA, ARREGLADO SOBRE UNA CHARLA REAL ====**
+
+Rama: `claude/context-memory-review-1x5n7n`. Diagnostico hecho sobre la ULTIMA
+charla real de Martin por WhatsApp (24-jul 16:42), leida de los logs de Cloud
+Run y del Firestore vivo, no de un banco.
+
+**COMO SE LEE UNA CHARLA REAL SIN GCLOUD (el camino indirecto, dejarlo a mano):**
+la env `GCP_SA_KEY_B64` trae la clave de `claude-lector@memory-engine-v1`
+(logging.viewer + datastore.viewer). Se decodifica al SCRATCHPAD, nunca al repo,
+y se le pega por REST con `REQUESTS_CA_BUNDLE=/root/.ccr/ca-bundle.crt`:
+- logs: POST `logging.googleapis.com/v2/entries:list`, filtro
+  `resource.labels.service_name="agente-bot"`. El evento `message_received` trae
+  el mensaje del cliente y el `trace_id` para seguir todo el turno.
+- memoria viva: GET `firestore.googleapis.com/v1/projects/memory-engine-v1/
+  databases/(default)/documents/tiendas/verifika_prod/conversaciones/<user_id>`.
+  Ahi estan `history` y `summary` tal cual los ve el bot.
+
+**LA FALLA:** "Decime precio de tablet samsung" -> el bot ofrece bien la Tablet
+Lenovo Tab M10. Siguiente mensaje: "Cuanta memoria ram y espacio de disco tiene"
+-> el bot contesta ofreciendo MODULOS DE MEMORIA RAM para notebook. El
+INTERPRETE habia resuelto BIEN (`producto_resuelto = Tablet Lenovo Tab M10`,
+`productos_consultados = [{tablet, ficha}]`): el contexto se rompia DESPUES, en
+cuatro costuras del generador, y cada una sola ya alcanzaba para arruinar el
+turno.
+
+1. **UNIVERSO contaminado por palabra suelta.** `universo_productos` sumaba las
+   categorias que detectaba en el TEXTO del mensaje, y "memoria ram" es una
+   categoria del catalogo: los modulos entraban al enum y el solver los ofrecia.
+   Ahora, si el interprete resolvio producto o lo puso en `productos_consultados`
+   y NO hay `solicitud_nueva` ni `pedido`, el rastreo por palabra NO corre. El
+   disparo es mutuamente excluyente y lo decide el interprete, no un regex.
+2. **El solver no veia la charla.** El prompt llevaba 4 mensajes recortados a 160
+   caracteres, sin resumen largo, sin los productos ya mostrados y sin el FOCO
+   que el interprete ya habia resuelto. Ahora lleva las tres cosas y 8 mensajes
+   a 300 caracteres.
+3. **La poda de prosa borraba la respuesta.** `_poda_prosa` descartaba el
+   fragmento entero si tenia CUALQUIER digito, asi que una respuesta de spec
+   ("128GB") desaparecia en silencio y al cliente le llegaba solo el cierre
+   colgado. Ahora poda PLATA (precio, total, monto, porcentaje) y deja pasar el
+   numero chico, que audita `_verificar_montos`. Se sumo el warning
+   `generador_v2_prosa_podada` como radar.
+4. **La ficha no podia contestar una spec.** `CAMPOS_FICHA` solo tenia
+   procedencia/garantia/material/descripcion. Suma `caracteristicas`, `medidas`,
+   `contenido_caja` y `uso`, estampados desde el catalogo.
+
+**MEMORIA MUERTA EN EL CAMINO VIVO (lo mas grave del chequeo):** desde que
+produccion paso al hub atado, `hub_atado` dejo de persistir tres campos que
+`interprete_libre` si guardaba y que `construir_estado` LEE cada turno:
+`preferencias_cliente` (no quiero de China, tope de plata, uso previsto),
+`producto_anotado` (el ancla de "ese me gusta, anotalo") y `grupos_envio`. Se
+leian y no se escribian nunca: valian un solo turno. Ya se persisten, con lock
+en `tests/test_memoria_sticky_atado.py`.
+
+Ademas `banco_pruebas/sim_firestore.py` ahora reengancha tambien `hub_atado` al
+doble: funcionaba de casualidad, solo porque el banco lo importa despues.
+
+**VERIFICADO VIVO** (banco atado, guion 68 = la charla real lockeada): el turno
+de la repregunta contesta "128GB" desde la ficha y es honesto con la RAM que la
+ficha no trae; el siguiente contesta peso y medidas. Guion 09 (memoria larga, 14
+turnos) juez limpio, con el ancla y el destino recordados al cerrar. 667 tests
+offline verdes.
+
+**PENDIENTE / A MIRAR:** en la corrida larga dos turnos cayeron al fallback por
+throttle de la cuota gratis de Gemini (`_TIMEOUT_S = 12` + reintentos). Con la
+clave paga no se vio. Vale mirar en logs cuantos `generador_v2_error` y
+`hub_atado_generador_v2_sin_fragmentos` aparecen en trafico real.
+
+---
+
 **==== 24-jul-2026 — ATAR LA RESPUESTA DEL SOLVER (WIP, rama sin mergear) ====**
 
 Rama: `claude/sistema-cableado-robustecimiento-xph8m7`. NO está en `main`. El
