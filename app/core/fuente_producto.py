@@ -47,9 +47,17 @@ def _norm(s) -> str:
 
 
 def _ruta_config(tienda_id: str | None) -> str:
+    """Ruta al specs_preguntables.json de la tienda, contenida a la fuerza
+    dentro de data/clientes: tienda_id puede llegar de un path param HTTP
+    (endpoints /admin) y no se confia en el texto para armar una ruta de
+    archivo."""
     tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
-    return os.path.join(os.path.dirname(__file__), "..", "..", "data",
-                        "clientes", tid, "specs_preguntables.json")
+    base = os.path.realpath(os.path.join(os.path.dirname(__file__), "..",
+                                          "..", "data", "clientes"))
+    ruta = os.path.realpath(os.path.join(base, tid, "specs_preguntables.json"))
+    if os.path.commonpath([base, ruta]) != base:
+        raise ValueError(f"tienda_id invalido: {tid!r}")
+    return ruta
 
 
 def specs_config(tienda_id: str | None = None) -> list[dict]:
