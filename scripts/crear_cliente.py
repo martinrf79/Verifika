@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.core.fuente_producto import normalizar_producto
 from app.storage.firestore_client import (
     register_tienda,
-    upsert_product,
+    upsert_products_batch,
     upsert_faq,
     set_config,
 )
@@ -39,23 +39,37 @@ def cargar_productos_csv(path: str, tienda_id: str) -> int:
     Las columnas extra se guardan tal cual en Firestore para que el agente las
     pueda usar al responder y el validator pueda verificar contra ellas.
     """
-    ok = 0
+    productos, ids = [], set()
     with open(path, encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
+        for n, row in enumerate(csv.DictReader(f), start=2):
+            pid = (row.get("id") or "").strip()
+            if not pid:
+                print(f"  fila {n} ignorada: sin id")
+                continue
+            if pid in ids:
+                print(f"  fila {n} ignorada: id duplicado {pid}")
+                continue
             try:
-                if not (row.get("id") or "").strip():
-                    raise KeyError("id")
                 # Una sola puerta de ingesta, la misma del endpoint admin:
                 # conserva todas las columnas, depura la spec fantasma y
                 # estampa el mapa specs desde specs_preguntables.json.
                 producto = normalizar_producto(row, tienda_id)
-                producto["id"] = str(producto["id"]).strip()
-                upsert_product(producto["id"], producto, tienda_id=tienda_id)
-                ok += 1
+                producto["id"] = pid
+                if not producto.get("nombre") or not producto.get("categoria"):
+                    print(f"  fila {n} ignorada ({pid}): sin nombre o categoria")
+                    continue
+                productos.append(producto)
+                ids.add(pid)
             except (KeyError, ValueError) as e:
-                print(f"  fila ignorada ({row.get('id', '?')}): {e}")
-    return ok
+                print(f"  fila {n} ignorada ({pid}): {e}")
+    if not productos:
+        return 0
+    # Se normaliza TODO el CSV antes de escribir nada: si una fila esta rota se
+    # ve antes de tocar Firestore, no con el catalogo a medio cargar.
+    def _progreso(hechos, total):
+        print(f"  {hechos}/{total} escritos")
+    return upsert_products_batch(productos, tienda_id=tienda_id,
+                                 progreso=_progreso)
 
 
 def cargar_faq_csv(path: str, tienda_id: str) -> int:

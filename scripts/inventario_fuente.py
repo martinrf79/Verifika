@@ -212,13 +212,185 @@ def inventario(tienda_id, vivo=False):
     return "\n".join(lineas)
 
 
+# ── VERIFICACION DE LA CARGA ────────────────────────────────────────────────
+# No alcanza con mirar un producto: se comparan los 880 contra el CSV
+# normalizado, campo por campo. Devuelve codigo de salida 1 si algo no coincide,
+# asi la verificacion es una puerta y no una impresion.
+
+def _credenciales():
+    """Credenciales de LECTURA: la clave de servicio si esta en el env, o las
+    del usuario logueado (Cloud Shell / gcloud auth). Nunca tocan disco."""
+    import base64
+    import json as _json
+    import google.auth
+    import google.auth.transport.requests
+    from google.oauth2 import service_account
+
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
+    b64 = os.getenv("GCP_SA_KEY_B64", "")
+    if b64:
+        cred = service_account.Credentials.from_service_account_info(
+            _json.loads(base64.b64decode(b64)), scopes=scopes)
+    else:
+        cred, _proyecto = google.auth.default(scopes=scopes)
+    cred.refresh(google.auth.transport.requests.Request())
+    return cred
+
+
+def _valor(v):
+    """Un campo de Firestore REST a valor de Python."""
+    if not isinstance(v, dict):
+        return v
+    if "stringValue" in v:
+        return v["stringValue"]
+    if "integerValue" in v:
+        return int(v["integerValue"])
+    if "doubleValue" in v:
+        return float(v["doubleValue"])
+    if "booleanValue" in v:
+        return v["booleanValue"]
+    if "nullValue" in v:
+        return None
+    if "mapValue" in v:
+        return {k: _valor(x) for k, x in (v["mapValue"].get("fields") or {}).items()}
+    if "arrayValue" in v:
+        return [_valor(x) for x in (v["arrayValue"].get("values") or [])]
+    return str(v)
+
+
+def productos_vivos(tienda_id):
+    """{id: producto} tal cual esta GUARDADO en Firestore, sin enriquecer al
+    vuelo: aca se verifica lo que quedo escrito, no lo que el bot deduce."""
+    import requests
+
+    cred = _credenciales()
+    ca = os.getenv("REQUESTS_CA_BUNDLE", "")
+    proyecto = os.getenv("GCP_PROJECT", "memory-engine-v1")
+    base = (f"https://firestore.googleapis.com/v1/projects/{proyecto}/"
+            f"databases/(default)/documents/tiendas/{tienda_id}/productos")
+    headers = {"Authorization": f"Bearer {cred.token}"}
+    out, token = {}, None
+    while True:
+        url = base + "?pageSize=300" + (f"&pageToken={token}" if token else "")
+        r = requests.get(url, headers=headers, timeout=60,
+                         **({"verify": ca} if ca else {}))
+        data = r.json()
+        if "error" in data:
+            raise RuntimeError(str(data["error"])[:200])
+        for doc in data.get("documents", []):
+            pid = doc["name"].split("/")[-1]
+            out[pid] = {k: _valor(v) for k, v in (doc.get("fields") or {}).items()}
+        token = data.get("nextPageToken")
+        if not token:
+            break
+    return out
+
+
+def _comparable(v):
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    if isinstance(v, dict):
+        return {k: _comparable(x) for k, x in v.items()}
+    return str(v).strip() if v is not None else ""
+
+
+def verificar_carga(tienda_id):
+    """Compara TODO el catalogo vivo contra el CSV normalizado. (ok, reporte)."""
+    esperados = {}
+    for fila in leer_csv(tienda_id):
+        p = normalizar_producto(dict(fila), tienda_id)
+        esperados[str(p["id"]).strip()] = p
+    vivos = productos_vivos(tienda_id)
+
+    lineas, esc = [], None
+    lineas = []
+    esc = lineas.append
+    esc(f"# Verificacion de la carga — {tienda_id}")
+    esc("")
+    esc(f"CSV: **{len(esperados)}** productos | Firestore: **{len(vivos)}**")
+    esc("")
+
+    faltan = sorted(set(esperados) - set(vivos))
+    sobran = sorted(set(vivos) - set(esperados))
+    problemas = []
+    if faltan:
+        problemas.append(f"faltan {len(faltan)} en Firestore: "
+                         f"{', '.join(faltan[:10])}")
+    if sobran:
+        problemas.append(f"sobran {len(sobran)} en Firestore (productos que ya "
+                         f"no estan en el CSV): {', '.join(sobran[:10])}")
+
+    campos = [c for c, _uso in CAMPOS_QUE_LEE_EL_CODIGO]
+    malos = {c: [] for c in campos + ["specs"]}
+    for pid, esp in esperados.items():
+        viv = vivos.get(pid)
+        if not viv:
+            continue
+        for c in campos:
+            a, b = _comparable(esp.get(c, "")), _comparable(viv.get(c, ""))
+            if a != b:
+                malos[c].append((pid, a[:40], b[:40]))
+        if _comparable(esp.get("specs") or {}) != _comparable(viv.get("specs") or {}):
+            malos["specs"].append((pid, str(esp.get("specs"))[:40],
+                                   str(viv.get("specs"))[:40]))
+
+    esc("| campo | coinciden | no coinciden | ejemplo |")
+    esc("|---|---|---|---|")
+    n = len([p for p in esperados if p in vivos])
+    for c in campos + ["specs"]:
+        difs = malos[c]
+        ej = ""
+        if difs:
+            pid, a, b = difs[0]
+            ej = f"{pid}: CSV `{a}` vs Firestore `{b}`"
+            problemas.append(f"{c}: {len(difs)} productos no coinciden")
+        esc(f"| {c} | {n - len(difs)}/{n} | {len(difs)} | {ej} |")
+    esc("")
+
+    # fichas con dos capacidades pegadas: no puede quedar ninguna
+    cruzadas = [pid for pid, viv in vivos.items()
+                if len([x for x in str(viv.get("caracteristicas_extra") or "")
+                        .split(",") if x.strip()]) > 1
+                and str(viv.get("categoria")) in ("ssd", "memoria ram",
+                                                  "almacenamiento externo")]
+    if cruzadas:
+        problemas.append(f"{len(cruzadas)} fichas quedaron con la capacidad de "
+                         f"otro producto: {', '.join(sorted(cruzadas)[:10])}")
+    esc(f"Fichas con dos capacidades pegadas: **{len(cruzadas)}** (tiene que ser 0)")
+
+    extras = set()
+    for viv in vivos.values():
+        extras |= set(viv) - set(campos) - {"id", "specs", "embedding"}
+    if extras:
+        esc(f"Campos extra en Firestore que el CSV no trae: {', '.join(sorted(extras))} "
+            "(no rompen nada, quedaron de cargas viejas)")
+    esc("")
+
+    if problemas:
+        esc("## NO PASA")
+        for p in problemas:
+            esc(f"- {p}")
+    else:
+        esc("## PASA: el catalogo vivo es identico al CSV normalizado, "
+            "specs incluidas.")
+    return (not problemas), "\n".join(lineas)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tienda", default=os.getenv("TIENDA_ID", "verifika_prod"))
     ap.add_argument("--vivo", action="store_true",
                     help="compara contra el Firestore de produccion (lectura)")
+    ap.add_argument("--verificar", action="store_true",
+                    help="verifica la carga: los 880 productos vivos contra el "
+                         "CSV normalizado, campo por campo. Sale con codigo 1 "
+                         "si algo no coincide")
     ap.add_argument("--md", default="", help="ruta donde escribir el reporte")
     args = ap.parse_args()
+    if args.verificar:
+        ok, reporte = verificar_carga(args.tienda)
+        print(reporte)
+        sys.exit(0 if ok else 1)
     reporte = inventario(args.tienda, vivo=args.vivo)
     if args.md:
         with open(args.md, "w", encoding="utf-8") as f:

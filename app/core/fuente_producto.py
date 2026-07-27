@@ -171,7 +171,10 @@ def depurar_ficha(prod: dict) -> dict:
     esta AVALADO por el nombre o el modelo del propio producto, se queda solo
     el avalado. Si ninguno esta avalado no hay con que decidir y se conserva
     todo (asi 'sensor optico' de un mouse, que no figura en el nombre, no se
-    pierde). Idempotente.
+    pierde). Ademas se colapsa la spec repetida IDENTICA dentro de la
+    descripcion ('Core i5 16GB 512GB SSD, Core i5 16GB 512GB SSD'), que hasta
+    ahora se tapaba recien al renderizar y viajaba sucia a todo lo demas.
+    Idempotente.
     """
     if not isinstance(prod, dict):
         return prod
@@ -182,15 +185,14 @@ def depurar_ficha(prod: dict) -> dict:
     aval = _tokens(f"{prod.get('nombre') or ''} {prod.get('modelo') or ''}")
     avalados = [s for s in segs if _tokens(s) <= aval]
     limpios = avalados or segs
-    if limpios == segs and len(segs) == len(
-            [s.strip() for s in extra.split(",") if s.strip()]):
-        return prod
     prod["caracteristicas_extra"] = ", ".join(limpios)
     desc = str(prod.get("descripcion") or "")
     if desc:
         for fantasma in [s for s in segs if s not in limpios]:
             desc = re.sub(r"\s*,\s*" + re.escape(fantasma) + r"(?=[,.\s]|$)",
                           "", desc, count=1, flags=re.IGNORECASE)
+        # la misma frase dos veces seguidas: se deja una.
+        desc = re.sub(r"([^,.\n]{8,}?)\s*[,.]\s*\1(?=[,.\s]|$)", r"\1", desc)
         prod["descripcion"] = re.sub(r"\s{2,}", " ", desc).strip()
     return prod
 
