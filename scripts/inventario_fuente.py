@@ -68,7 +68,7 @@ def campos_vivos(tienda_id):
     Solo lectura, por REST con la clave de claude-lector."""
     import base64
     import collections
-    import tempfile
+    import json as _json
     import requests
     from google.oauth2 import service_account
     import google.auth.transport.requests
@@ -77,31 +77,27 @@ def campos_vivos(tienda_id):
     if not b64:
         raise RuntimeError("falta GCP_SA_KEY_B64 para el modo --vivo")
     ca = os.getenv("REQUESTS_CA_BUNDLE", "/root/.ccr/ca-bundle.crt")
-    with tempfile.NamedTemporaryFile("wb", suffix=".json", delete=False) as f:
-        f.write(base64.b64decode(b64))
-        ruta_clave = f.name
-    try:
-        cred = service_account.Credentials.from_service_account_file(
-            ruta_clave, scopes=["https://www.googleapis.com/auth/cloud-platform"])
-        cred.refresh(google.auth.transport.requests.Request())
-        proyecto = os.getenv("GCP_PROJECT", "memory-engine-v1")
-        base = (f"https://firestore.googleapis.com/v1/projects/{proyecto}/"
-                f"databases/(default)/documents/tiendas/{tienda_id}/productos")
-        headers = {"Authorization": f"Bearer {cred.token}"}
-        campos, total, token = collections.Counter(), 0, None
-        while True:
-            url = base + "?pageSize=300" + (f"&pageToken={token}" if token else "")
-            data = requests.get(url, headers=headers, verify=ca, timeout=60).json()
-            for doc in data.get("documents", []):
-                total += 1
-                for k in (doc.get("fields") or {}):
-                    campos[k] += 1
-            token = data.get("nextPageToken")
-            if not token:
-                break
-        return total, campos
-    finally:
-        os.unlink(ruta_clave)
+    # La clave se decodifica en memoria y nunca toca disco.
+    info = _json.loads(base64.b64decode(b64))
+    cred = service_account.Credentials.from_service_account_info(
+        info, scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    cred.refresh(google.auth.transport.requests.Request())
+    proyecto = os.getenv("GCP_PROJECT", "memory-engine-v1")
+    base = (f"https://firestore.googleapis.com/v1/projects/{proyecto}/"
+            f"databases/(default)/documents/tiendas/{tienda_id}/productos")
+    headers = {"Authorization": f"Bearer {cred.token}"}
+    campos, total, token = collections.Counter(), 0, None
+    while True:
+        url = base + "?pageSize=300" + (f"&pageToken={token}" if token else "")
+        data = requests.get(url, headers=headers, verify=ca, timeout=60).json()
+        for doc in data.get("documents", []):
+            total += 1
+            for k in (doc.get("fields") or {}):
+                campos[k] += 1
+        token = data.get("nextPageToken")
+        if not token:
+            break
+    return total, campos
 
 
 def inventario(tienda_id, vivo=False):
