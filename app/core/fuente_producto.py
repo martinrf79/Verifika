@@ -40,6 +40,11 @@ CAMPOS_ENTEROS = ("precio_ars", "stock", "peso_gramos", "garantia_meses")
 
 _CACHE_CONFIG: dict[str, list] = {}
 
+# tienda_id puede llegar de un path param HTTP (endpoints /admin/*/{tienda_id})
+# y se usa para armar una ruta de archivo: se valida contra un allowlist antes
+# de tocar el filesystem, nunca se arma la ruta con el texto crudo.
+_TIENDA_ID_RX = re.compile(r"^[a-z0-9_-]+$")
+
 
 def _norm(s) -> str:
     s = unicodedata.normalize("NFKD", str(s or "").lower())
@@ -47,17 +52,12 @@ def _norm(s) -> str:
 
 
 def _ruta_config(tienda_id: str | None) -> str:
-    """Ruta al specs_preguntables.json de la tienda, contenida a la fuerza
-    dentro de data/clientes: tienda_id puede llegar de un path param HTTP
-    (endpoints /admin) y no se confia en el texto para armar una ruta de
-    archivo."""
+    """Ruta al specs_preguntables.json de la tienda."""
     tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
-    base = os.path.realpath(os.path.join(os.path.dirname(__file__), "..",
-                                          "..", "data", "clientes"))
-    ruta = os.path.realpath(os.path.join(base, tid, "specs_preguntables.json"))
-    if os.path.commonpath([base, ruta]) != base:
+    if not _TIENDA_ID_RX.match(tid):
         raise ValueError(f"tienda_id invalido: {tid!r}")
-    return ruta
+    return os.path.join(os.path.dirname(__file__), "..", "..", "data",
+                        "clientes", tid, "specs_preguntables.json")
 
 
 def specs_config(tienda_id: str | None = None) -> list[dict]:
