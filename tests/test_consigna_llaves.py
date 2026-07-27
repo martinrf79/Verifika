@@ -228,3 +228,63 @@ def test_piso_composicion_coletilla_sola_no_es_sustancia(firestore_doble):
         "¿Seguimos adelante con tu pedido así te lo dejo preparado?")
     assert not _sin_sustancia(
         "El envío a cordoba sale $7.500 y llega en 4 a 7 días hábiles.")
+
+
+# ── 5. Radares críticos (los que Martín sigue viendo en logs) ────────────────
+
+def test_destino_de_turno_anterior_no_es_fantasma():
+    """Radar 1 — interpretador_destino_fantasma: un destino mencionado en
+    un turno anterior queda guardado en localidades_envio (memoria). En T2
+    el intérprete lo repite para armar el pedido; la guardia NO lo debe
+    marcar como fantasma porque vive en la memoria de la charla.
+
+    Solo 'Monte Ralo' aparece en el mensaje de T2; 'Córdoba' viene de la
+    memoria del T1. Ninguno de los dos debe quedar en None."""
+    from app.core.interpretador import coercionar_destinos
+    from app.core.estado_venta import set_current_estado
+    set_current_estado({"localidades_envio": ["Córdoba"]})
+    try:
+        resultado = {"pedido": [
+            {"producto": "Mouse Genius DX-110", "cantidad": 1,
+             "destino": "Córdoba"},         # en memoria de T1 → no es fantasma
+            {"producto": "Teclado Genius KB-110X", "cantidad": 1,
+             "destino": "Monte Ralo"},      # en el mensaje de T2 → no es fantasma
+        ]}
+        coercionar_destinos(resultado, "y también uno para Monte Ralo")
+        assert resultado["pedido"][0]["destino"] == "Córdoba"
+        assert resultado["pedido"][1]["destino"] == "Monte Ralo"
+    finally:
+        set_current_estado(None)
+
+
+def test_criterio_sin_bloque_en_corpus_sale_como_prosa_libre(firestore_doble):
+    """Radar 2 — generador_v2_criterio_sin_bloque: un criterio_id que NO
+    existe en el corpus GUIA_VENTA hace que el renderizador emita la prosa
+    libre del solver (válvula abierta, no robot), sin agregar una cita de
+    consultar_guia_venta. El warning en el log es el radar de huecos del
+    corpus: cada uno señala un bloque de prosa jurada por escribir."""
+    from app.core.generador_v2 import renderizar
+    frags = [{"tipo": "criterio", "criterio_id": "ID_INEXISTENTE_XYZ",
+              "texto": "El sensor óptico trabaja bien en superficies ásperas."}]
+    texto, tools = renderizar(frags, [], {}, "verifika_prod")
+    assert "sensor óptico" in texto                              # prosa libre: salió
+    assert not any(t.get("name") == "consultar_guia_venta" for t in tools)  # sin cita
+
+
+def test_checker_poda_afirmacion_inventada(firestore_doble):
+    """Radar 3 — interprete_libre_checker_sin_respaldo: una afirmación que
+    el checker (fiscal L3) marca como 'sin_respaldo' y que aparece verbatim
+    en la respuesta se PODA determinista. El cliente no la recibe.
+
+    'Es apto para lluvia' es inventada por el solver (no en ninguna ficha
+    real del catálogo); el código la elimina antes de que llegue al cliente.
+    El resto del mensaje queda intacto."""
+    from app.core.checker_afirmaciones import podar_sin_respaldo
+    respuesta = ("El Redragon Kumara K552 es un teclado mecánico sólido. "
+                 "Es apto para lluvia y resistente a salpicaduras. "
+                 "¿Lo sumo al pedido?")
+    texto, podadas = podar_sin_respaldo(
+        respuesta, ["Es apto para lluvia y resistente a salpicaduras."])
+    assert "apto para lluvia" not in texto          # afirmación inventada: podada
+    assert "¿Lo sumo al pedido?" in texto           # resto del mensaje: intacto
+    assert podadas == ["Es apto para lluvia y resistente a salpicaduras."]

@@ -25,6 +25,7 @@ import httpx
 from app.config import get_settings
 from app.logger import get_logger
 from app.storage.firestore_client import get_config
+from app.core.pedido_helpers import _money
 
 log = get_logger(__name__)
 
@@ -124,14 +125,6 @@ async def link_pago_para_lead(presupuesto: str, lead: dict,
 # cliente ya eligio, no el modelo: transferencia -> CBU/alias de la tienda,
 # Mercado Pago -> link. Un solo lugar arma el cobro, para las dos vias.
 
-def _money(n) -> str:
-    """Entero a formato argentino con separador de miles: 1247400 -> '1.247.400'."""
-    try:
-        return f"{int(n):,}".replace(",", ".")
-    except (TypeError, ValueError):
-        return str(n)
-
-
 def elegir_medio_pago(forma_pago: str) -> str:
     """Medio de cobro segun lo que eligio el cliente: 'cbu' para transferencia,
     'mp' para Mercado Pago, 'efectivo' para efectivo. '' si no se sabe. Determinista."""
@@ -184,7 +177,7 @@ def mensaje_transferencia(datos: dict, monto=None) -> str:
     if datos.get("banco"):
         lineas.append(f"Banco: {datos['banco']}")
     if monto:
-        lineas.append(f"Monto: ${_money(monto)}")
+        lineas.append(f"Monto: {_money(monto)}")
     lineas.append("Cuando transfieras, mandame el comprobante y coordinamos el envío.")
     return "\n".join(lineas)
 

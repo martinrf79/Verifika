@@ -16,6 +16,7 @@ from app.storage.search import hybrid_search_relajada
 from app.config import get_settings
 from app.logger import get_logger
 from app.core.tools_context import get_current_tienda
+from app.core.pedido_helpers import _money
 
 log = get_logger(__name__)
 settings = get_settings()
@@ -113,14 +114,6 @@ def _efecto_porcentaje(tema: str, concepto: str, valor: dict) -> str:
         return "recargo"
     # Por defecto no arriesgamos mover el total en la direccion equivocada.
     return "informativo"
-
-
-def _money(n) -> str:
-    """Formatea un entero como pesos con separador de miles: 273000 -> $273.000."""
-    try:
-        return "$" + f"{int(round(n)):,}".replace(",", ".")
-    except Exception:
-        return str(n)
 
 
 def _label_extra(e: dict) -> str:

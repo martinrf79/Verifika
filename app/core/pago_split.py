@@ -15,6 +15,8 @@ Lógica pura, determinista, sin LLM ni Firestore (los datos entran por parámetr
 """
 import unicodedata
 
+from app.core.pedido_helpers import _money
+
 
 def _norm(s: str) -> str:
     s = unicodedata.normalize("NFKD", str(s or "").lower())
@@ -28,10 +30,6 @@ def es_mercado_pago(medio: str) -> bool:
     aplico el descuento a la mitad de Mercado Pago (error de PLATA)."""
     m = _norm(medio).replace("_", " ").replace("-", " ")
     return "mercado pago" in m or "mercadopago" in m or m in ("mp", "mercado")
-
-
-def _money(n) -> str:
-    return f"{int(round(n)):,}".replace(",", ".")
 
 
 def calcular_split(base_ars: int, pago: list[dict],
@@ -101,12 +99,12 @@ def render_split(split: dict) -> str:
         pct = f"{p['porcentaje']:g}%"
         if p["es_transferencia"] and p["descuento_ars"]:
             lineas.append(
-                f"- {p['medio']} ({pct}): ${_money(p['monto_ars'])} "
+                f"- {p['medio']} ({pct}): {_money(p['monto_ars'])} "
                 f"- {split['pct_descuento']}% descuento = "
-                f"${_money(p['monto_final_ars'])}")
+                f"{_money(p['monto_final_ars'])}")
         else:
-            lineas.append(f"- {p['medio']} ({pct}): ${_money(p['monto_ars'])}")
-    lineas.append(f"Total final: ${_money(split['total_final_ars'])}")
+            lineas.append(f"- {p['medio']} ({pct}): {_money(p['monto_ars'])}")
+    lineas.append(f"Total final: {_money(split['total_final_ars'])}")
     return "\n".join(lineas)
 
 
