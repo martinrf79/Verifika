@@ -1,155 +1,207 @@
 {
-  "_doc": "Specs que los clientes preguntan y que la ficha puede NO traer. FUENTE DE VERDAD: sumar una spec es agregar una entrada aca (claves = las formas de nombrarla; etiqueta = como la nombra el bot al ser honesto), no tocar codigo. Si el cliente pregunta por una spec de esta lista y el dato NO figura en la ficha del producto, el codigo estampa 'la ficha no lo especifica' y saca cualquier afirmacion del modelo sobre ella. El dato manda; el modelo no afirma lo que la fuente no dice. Una entrada puede traer claves_ficha: como lo ESCRIBE la ficha, que no es como lo PREGUNTA el cliente (pregunta 'espacio de disco', la ficha dice '128GB'). Si no trae claves_ficha se busca con las mismas claves.",
+  "_doc": "FUENTE DE VERDAD de las specs que el cliente pregunta. Sumar una spec es agregar una entrada aca, NUNCA tocar codigo. Cada entrada: id (clave de la spec en el mapa specs del producto); claves (como lo PREGUNTA el cliente); etiqueta (como lo nombra el bot al ser honesto); aplica_a (categorias donde la spec tiene sentido, vacio = todas); extraer (patrones que SACAN el valor del texto de la ficha, en orden, gana el primero que matchea; un patron puede acotarse con su propio aplica_a); claves_ficha (deteccion por substring, red de compatibilidad para productos sin mapa specs). El valor extraido se guarda en producto['specs'][id] y lo ESTAMPA el codigo: si esta, se contesta con el dato de la fuente; si no esta, se estampa 'la ficha no lo especifica' y se saca cualquier afirmacion del modelo sobre esa spec. El dato manda; el modelo no afirma lo que la fuente no dice.",
   "specs": [
     {
-      "claves": [
-        "hz",
-        "hercios",
-        "tasa de refresco",
-        "refresco",
-        "refresh"
-      ],
-      "etiqueta": "los hercios de la pantalla"
+      "id": "hz",
+      "claves": ["hz", "hercios", "tasa de refresco", "refresco", "refresh"],
+      "etiqueta": "los hercios de la pantalla",
+      "aplica_a": ["monitor", "notebook", "tablet"],
+      "extraer": ["(\\d{2,3}\\s*hz)"],
+      "claves_ficha": ["hz"]
     },
     {
-      "claves": [
-        "thunderbolt"
-      ],
-      "etiqueta": "el puerto Thunderbolt"
+      "id": "thunderbolt",
+      "claves": ["thunderbolt"],
+      "etiqueta": "el puerto Thunderbolt",
+      "aplica_a": ["notebook", "motherboard", "monitor"],
+      "extraer": ["(thunderbolt\\s*\\d*)"],
+      "claves_ficha": ["thunderbolt"]
     },
     {
-      "claves": [
-        "ram ampliable",
-        "ampliar la ram",
-        "ram expandible",
-        "memoria ampliable",
-        "slot de ram",
-        "ram soldada"
-      ],
-      "etiqueta": "si la RAM se puede ampliar"
+      "id": "ram_ampliable",
+      "claves": ["ram ampliable", "ampliar la ram", "ram expandible", "memoria ampliable", "slot de ram", "ram soldada"],
+      "etiqueta": "si la RAM se puede ampliar",
+      "aplica_a": ["notebook", "motherboard"],
+      "extraer": ["(ram (?:ampliable|expandible|soldada))", "(\\d+\\s*slots?\\s*(?:de\\s*)?(?:ram|memoria))"],
+      "claves_ficha": ["ram ampliable", "ram expandible", "ram soldada", "slot de ram"]
     },
     {
-      "claves": [
-        "puerto",
-        "puertos",
-        "usb",
-        "hdmi",
-        "displayport",
-        "display port",
-        "usb-c",
-        "type-c"
-      ],
-      "etiqueta": "los puertos exactos"
+      "id": "puertos",
+      "claves": ["puerto", "puertos", "usb", "hdmi", "displayport", "display port", "usb-c", "type-c"],
+      "etiqueta": "los puertos exactos",
+      "aplica_a": ["notebook", "monitor", "motherboard", "gabinete", "router", "tablet", "impresora"],
+      "extraer": ["((?:usb|hdmi|displayport|display port|type-c)[^,.;]{0,24})"],
+      "claves_ficha": ["usb", "hdmi", "displayport", "type-c"]
     },
     {
-      "claves": [
-        "bateria",
-        "autonomia",
-        "duracion de bateria"
-      ],
-      "etiqueta": "la autonomia de bateria"
+      "id": "bateria",
+      "claves": ["bateria", "autonomia", "duracion de bateria"],
+      "etiqueta": "la autonomia de bateria",
+      "aplica_a": ["notebook", "tablet", "auriculares", "parlante", "mouse", "teclado", "microfono"],
+      "extraer": ["(\\d+\\s*(?:mah|wh))", "(\\d+\\s*(?:h|hs|horas)\\s*(?:de\\s*)?(?:bateria|autonomia|uso))"],
+      "claves_ficha": ["mah", "bateria", "autonomia"]
     },
     {
-      "claves": [
-        "retroiluminado",
-        "retroiluminada",
-        "retroiluminacion"
-      ],
-      "etiqueta": "la retroiluminacion"
+      "id": "retroiluminacion",
+      "claves": ["retroiluminado", "retroiluminada", "retroiluminacion", "rgb"],
+      "etiqueta": "la retroiluminacion",
+      "aplica_a": ["teclado", "mouse", "gabinete", "silla gamer", "parlante", "notebook"],
+      "extraer": ["(retroilumina\\w+)", "(rgb)"],
+      "claves_ficha": ["retroilumin", "rgb"]
     },
     {
-      "claves": [
-        "lector de huella",
-        "lector de huellas",
-        "huella digital",
-        "huella dactilar",
-        "fingerprint",
-        "sensor de huella"
-      ],
-      "etiqueta": "el lector de huella"
+      "id": "lector_huella",
+      "claves": ["lector de huella", "lector de huellas", "huella digital", "huella dactilar", "fingerprint", "sensor de huella"],
+      "etiqueta": "el lector de huella",
+      "aplica_a": ["notebook", "tablet"],
+      "extraer": ["(lector de huellas?)", "(huella (?:digital|dactilar))", "(fingerprint)"],
+      "claves_ficha": ["huella", "fingerprint"]
     },
     {
-      "claves": [
-        "bluetooth"
-      ],
-      "etiqueta": "el Bluetooth"
+      "id": "bluetooth",
+      "claves": ["bluetooth"],
+      "etiqueta": "el Bluetooth",
+      "aplica_a": ["auriculares", "parlante", "mouse", "teclado", "notebook", "tablet", "microfono", "impresora", "webcam"],
+      "extraer": ["(bluetooth\\s*[\\d.]*)"],
+      "claves_ficha": ["bluetooth"]
     },
     {
-      "claves": [
-        "wifi",
-        "wi-fi",
-        "wifi 6",
-        "wifi6"
-      ],
-      "etiqueta": "el estandar de wifi"
+      "id": "wifi",
+      "claves": ["wifi", "wi-fi", "wifi 6", "wifi6"],
+      "etiqueta": "el estandar de wifi",
+      "aplica_a": ["router", "notebook", "tablet", "impresora", "webcam", "parlante"],
+      "extraer": ["(wi-?fi\\s*(?:6e|6|5|4|ax|ac)?)"],
+      "claves_ficha": ["wifi", "wi-fi"]
     },
     {
-      "claves": [
-        "camara",
-        "webcam",
-        "camara web"
-      ],
-      "etiqueta": "la camara"
+      "id": "camara",
+      "claves": ["camara", "webcam", "camara web"],
+      "etiqueta": "la camara",
+      "aplica_a": ["notebook", "tablet", "webcam", "microfono"],
+      "extraer": ["(\\d+\\s*mp)", "(1080p|720p|4k)", "(camara \\w+)"],
+      "claves_ficha": ["camara", "webcam", "1080p", "720p", "mp"]
     },
     {
-      "claves": [
-        "pantalla tactil",
-        "tactil",
-        "touchscreen",
-        "touch"
-      ],
-      "etiqueta": "si la pantalla es tactil"
+      "id": "tactil",
+      "claves": ["pantalla tactil", "tactil", "touchscreen", "touch"],
+      "etiqueta": "si la pantalla es tactil",
+      "aplica_a": ["notebook", "tablet", "monitor", "impresora"],
+      "extraer": ["(pantalla tactil)", "(tactil)", "(touchscreen)"],
+      "claves_ficha": ["tactil", "touchscreen"]
     },
     {
-      "claves": [
-        "lector de tarjetas",
-        "lector sd",
-        "ranura sd",
-        "microsd"
-      ],
-      "etiqueta": "el lector de tarjetas"
+      "id": "lector_tarjetas",
+      "claves": ["lector de tarjetas", "lector sd", "ranura sd", "microsd"],
+      "etiqueta": "el lector de tarjetas",
+      "aplica_a": ["notebook", "tablet", "impresora", "webcam"],
+      "extraer": ["(lector (?:de tarjetas|sd|microsd))", "(ranura (?:sd|microsd))", "(microsd)"],
+      "claves_ficha": ["lector de tarjetas", "lector sd", "ranura sd", "microsd"]
     },
     {
-      "claves": [
-        "resistente al agua",
-        "sumergible",
-        "impermeable",
-        "resistencia al agua"
-      ],
-      "etiqueta": "la resistencia al agua"
+      "id": "resistencia_agua",
+      "claves": ["resistente al agua", "sumergible", "impermeable", "resistencia al agua"],
+      "etiqueta": "la resistencia al agua",
+      "aplica_a": ["auriculares", "parlante", "mouse", "teclado"],
+      "extraer": ["(ipx?\\d{1,2})", "(resistente al agua)", "(sumergible)", "(impermeable)"],
+      "claves_ficha": ["ipx", "resistente al agua", "sumergible", "impermeable"]
     },
     {
-      "claves": [
-        "memoria ram",
-        "cuanta ram",
-        "cuanto de ram",
-        "ram tiene",
-        "de ram"
+      "id": "ram",
+      "claves": ["memoria ram", "cuanta ram", "cuanto de ram", "ram tiene", "de ram"],
+      "etiqueta": "la memoria RAM",
+      "aplica_a": ["notebook", "tablet", "memoria ram", "motherboard"],
+      "extraer": [
+        {"patron": "(\\d{1,3}\\s*gb)", "aplica_a": ["memoria ram"]},
+        "(?<![\\d.])(\\d{1,2}\\s*gb)(?!\\s*(?:ssd|hdd|emmc|nvme|m\\.2))"
       ],
-      "claves_ficha": [
-        "ram"
-      ],
-      "etiqueta": "la memoria RAM"
+      "claves_ficha": ["ram"]
     },
     {
-      "claves": [
-        "espacio de disco",
-        "almacenamiento",
-        "capacidad de disco",
-        "disco tiene",
-        "memoria interna",
-        "cuanto guarda",
-        "espacio de almacenamiento"
+      "id": "almacenamiento",
+      "claves": ["espacio de disco", "almacenamiento", "capacidad de disco", "disco tiene", "memoria interna", "cuanto guarda", "espacio de almacenamiento"],
+      "etiqueta": "el almacenamiento",
+      "aplica_a": ["notebook", "tablet", "ssd", "almacenamiento externo"],
+      "extraer": [
+        "(\\d+\\s*(?:gb|tb)\\s*(?:ssd|hdd|emmc|nvme))",
+        {"patron": "(\\d+\\s*(?:gb|tb))", "aplica_a": ["tablet", "ssd", "almacenamiento externo"]}
       ],
-      "claves_ficha": [
-        "gb",
-        "tb",
-        "almacenamiento",
-        "disco",
-        "ssd",
-        "emmc"
+      "claves_ficha": ["almacenamiento", "disco", "ssd", "emmc", "hdd"]
+    },
+    {
+      "id": "procesador",
+      "claves": ["procesador", "cpu", "que micro", "microprocesador", "core i", "ryzen", "nucleos", "que chip"],
+      "etiqueta": "el procesador",
+      "aplica_a": ["notebook", "procesador", "tablet", "motherboard"],
+      "extraer": ["((?:core\\s*i\\d|ryzen\\s*\\d|celeron|pentium|athlon|snapdragon|mediatek)[\\w\\s-]{0,10}?)(?=[,.]|\\s+\\d+\\s*gb|$)", "(\\d+\\s*nucleos)"],
+      "claves_ficha": ["core i", "ryzen", "celeron", "pentium", "nucleos", "snapdragon"]
+    },
+    {
+      "id": "resolucion",
+      "claves": ["resolucion", "full hd", "4k", "1080p", "que pulgadas", "pantalla", "hd"],
+      "etiqueta": "la resolucion de pantalla",
+      "aplica_a": ["monitor", "notebook", "tablet", "webcam"],
+      "extraer": ["((?:full hd|ultra hd|4k|2k|qhd|wqhd|hd\\+?)\\s*(?:\\d+p)?)", "(\\d{3,4}p)", "(\\d{3,4}\\s*x\\s*\\d{3,4})"],
+      "claves_ficha": ["full hd", "4k", "1080p", "720p", "qhd", "hd"]
+    },
+    {
+      "id": "panel",
+      "claves": ["panel", "que tipo de panel", "ips", "va", "tn", "oled"],
+      "etiqueta": "el tipo de panel",
+      "aplica_a": ["monitor", "notebook", "tablet"],
+      "extraer": ["\\b(ips|oled|va|tn|amoled)\\b"],
+      "claves_ficha": ["ips", "oled", "amoled", "tn", "va"]
+    },
+    {
+      "id": "conexion",
+      "claves": ["inalambrico", "inalambrica", "con cable", "wireless", "es con cable", "se conecta"],
+      "etiqueta": "el tipo de conexion",
+      "aplica_a": ["auriculares", "mouse", "teclado", "microfono", "parlante", "webcam", "impresora"],
+      "extraer": [
+        {"patron": "(con cable)", "campos": ["caracteristicas_extra", "nombre", "modelo"]},
+        {"patron": "(inalambric\\w+|wireless)", "campos": ["caracteristicas_extra", "nombre", "modelo"]},
+        {"patron": "\\b(usb-?c?)\\b", "campos": ["caracteristicas_extra", "nombre", "modelo"]}
       ],
-      "etiqueta": "el almacenamiento"
+      "claves_ficha": ["con cable", "inalambric", "wireless", "usb"]
+    },
+    {
+      "id": "switch_teclado",
+      "claves": ["switch", "switches", "mecanico", "es mecanico", "membrana"],
+      "etiqueta": "el tipo de switch",
+      "aplica_a": ["teclado"],
+      "extraer": ["(switch\\s*\\w+)", "(mecanico|membrana)"],
+      "claves_ficha": ["switch", "mecanico", "membrana"]
+    },
+    {
+      "id": "sensor",
+      "claves": ["sensor", "dpi", "optico", "laser"],
+      "etiqueta": "el sensor",
+      "aplica_a": ["mouse"],
+      "extraer": ["(sensor\\s*\\w+)", "(\\d+\\s*dpi)"],
+      "claves_ficha": ["sensor", "dpi"]
+    },
+    {
+      "id": "potencia",
+      "claves": ["potencia", "watts", "cuantos w", "vatios"],
+      "etiqueta": "la potencia",
+      "aplica_a": ["fuente", "parlante", "cargador", "cooler"],
+      "extraer": ["(\\d+\\s*w\\b)"],
+      "claves_ficha": ["w"]
+    },
+    {
+      "id": "memoria_video",
+      "claves": ["memoria de video", "vram", "cuanta memoria tiene la placa", "gddr"],
+      "etiqueta": "la memoria de video",
+      "aplica_a": ["placa de video"],
+      "extraer": ["(\\d+\\s*gb\\s*gddr\\w*)", "(\\d+\\s*gb)"],
+      "claves_ficha": ["gddr", "gb"]
+    },
+    {
+      "id": "formato",
+      "claves": ["formato", "atx", "micro atx", "itx", "que tamano", "socket", "ddr4", "ddr5"],
+      "etiqueta": "el formato",
+      "aplica_a": ["gabinete", "motherboard", "fuente"],
+      "extraer": ["\\b(micro atx|mini itx|matx|atx|itx)\\b", "\\b(ddr\\d)\\b"],
+      "claves_ficha": ["atx", "itx", "ddr"]
     }
   ]
 }

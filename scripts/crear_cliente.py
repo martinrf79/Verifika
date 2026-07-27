@@ -21,6 +21,7 @@ import os
 # Permitir ejecutar desde la raíz del proyecto
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from app.core.fuente_producto import normalizar_producto
 from app.storage.firestore_client import (
     register_tienda,
     upsert_product,
@@ -38,36 +39,18 @@ def cargar_productos_csv(path: str, tienda_id: str) -> int:
     Las columnas extra se guardan tal cual en Firestore para que el agente las
     pueda usar al responder y el validator pueda verificar contra ellas.
     """
-    OBLIGATORIAS = {"id", "nombre", "categoria", "precio_ars", "stock", "descripcion"}
     ok = 0
     with open(path, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             try:
-                # Campos obligatorios con su tipo correcto
-                producto = {
-                    "id": row["id"].strip(),
-                    "nombre": row["nombre"].strip(),
-                    "categoria": row["categoria"].strip().lower(),
-                    "precio_ars": int(float(row["precio_ars"])),
-                    "stock": int(row.get("stock", 0)),
-                    "descripcion": row.get("descripcion", "").strip(),
-                }
-                # Campos extra: todo lo que NO esta en obligatorias
-                for key, val in row.items():
-                    if key in OBLIGATORIAS or not key:
-                        continue
-                    if val is None or str(val).strip() == "":
-                        continue
-                    val_limpio = str(val).strip()
-                    # Intentar convertir a numero si parece numerico
-                    try:
-                        if "." in val_limpio:
-                            producto[key.strip().lower()] = float(val_limpio)
-                        else:
-                            producto[key.strip().lower()] = int(val_limpio)
-                    except ValueError:
-                        producto[key.strip().lower()] = val_limpio
+                if not (row.get("id") or "").strip():
+                    raise KeyError("id")
+                # Una sola puerta de ingesta, la misma del endpoint admin:
+                # conserva todas las columnas, depura la spec fantasma y
+                # estampa el mapa specs desde specs_preguntables.json.
+                producto = normalizar_producto(row, tienda_id)
+                producto["id"] = str(producto["id"]).strip()
                 upsert_product(producto["id"], producto, tienda_id=tienda_id)
                 ok += 1
             except (KeyError, ValueError) as e:
