@@ -40,24 +40,30 @@ CAMPOS_ENTEROS = ("precio_ars", "stock", "peso_gramos", "garantia_meses")
 
 _CACHE_CONFIG: dict[str, list] = {}
 
-# tienda_id puede llegar de un path param HTTP (endpoints /admin/*/{tienda_id})
-# y se usa para armar una ruta de archivo: se valida contra un allowlist antes
-# de tocar el filesystem, nunca se arma la ruta con el texto crudo.
-_TIENDA_ID_RX = re.compile(r"^[a-z0-9_-]+$")
-
 
 def _norm(s) -> str:
     s = unicodedata.normalize("NFKD", str(s or "").lower())
     return "".join(c for c in s if not unicodedata.combining(c)).strip()
 
 
-def _ruta_config(tienda_id: str | None) -> str:
-    """Ruta al specs_preguntables.json de la tienda."""
+def _ruta_config(tienda_id: str | None) -> str | None:
+    """Ruta al specs_preguntables.json de la tienda, o None si no existe.
+
+    tienda_id puede llegar de un path param HTTP (endpoints /admin/*/{tienda_id})
+    y NUNCA se pega al texto crudo para armar una ruta: se busca la carpeta
+    entre las que YA existen en disco (os.scandir) y se compara el nombre, asi
+    la ruta que se abre sale siempre del propio filesystem, no de concatenar
+    el string que mando el cliente."""
     tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
-    if not _TIENDA_ID_RX.match(tid):
-        raise ValueError(f"tienda_id invalido: {tid!r}")
-    return os.path.join(os.path.dirname(__file__), "..", "..", "data",
-                        "clientes", tid, "specs_preguntables.json")
+    base = os.path.join(os.path.dirname(__file__), "..", "..", "data", "clientes")
+    try:
+        with os.scandir(base) as it:
+            for entry in it:
+                if entry.is_dir() and entry.name == tid:
+                    return os.path.join(entry.path, "specs_preguntables.json")
+    except OSError:
+        pass
+    return None
 
 
 def specs_config(tienda_id: str | None = None) -> list[dict]:
@@ -73,12 +79,13 @@ def specs_config(tienda_id: str | None = None) -> list[dict]:
     if tid in _CACHE_CONFIG:
         return _CACHE_CONFIG[tid]
     entradas: list[dict] = []
-    if not _TIENDA_ID_RX.match(tid):
-        log.warning("fuente_producto_tienda_id_invalido", tienda_id=tid[:60])
+    ruta = _ruta_config(tid)
+    if not ruta:
+        log.warning("fuente_producto_sin_config", tienda_id=tid[:60])
         _CACHE_CONFIG[tid] = entradas
         return entradas
     try:
-        with open(_ruta_config(tid), encoding="utf-8") as f:
+        with open(ruta, encoding="utf-8") as f:
             data = json.load(f)
         for s in (data.get("specs") or []):
             sid = (s.get("id") or "").strip()
