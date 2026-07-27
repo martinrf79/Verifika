@@ -4,6 +4,65 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== PLAN VIGENTE — FUENTE DE VERDAD DE PRODUCTO (arranca 28-jul) ====**
+
+Decidido con Martin el 27-jul. Es el track que sigue, y manda sobre cualquier
+otro pendiente de abajo. El diagnostico: las ataduras del DATO funcionan, pero
+el catalogo es una linea de 156 caracteres por producto, asi que el bot no puede
+contestar lo que no tiene. Datos primero; el resto ya esta.
+
+REGLA MADRE DE TODO EL TRACK: el dato se extrae de un TEXTO BAJADO, nunca de la
+memoria del modelo, y el valor tiene que aparecer LITERAL en ese texto o queda
+vacio. Cada campo se guarda con su URL de origen y la fecha. Campo sin origen no
+entra, y el bot dice honesto que no lo tiene, como ya hace hoy con la RAM.
+
+DONDE LEE EL BOT: siempre Firestore. La web del cliente, cuando exista, es una
+FUENTE DE INGESTA, nunca una consulta en vivo del turno.
+
+PASO 1 — PERFIL DE CAMPOS POR CATEGORIA (diseño, va con Opus).
+  Archivo nuevo `data/clientes/verifika_prod/specs_por_categoria.json`: por cada
+  una de las 22 categorias del catalogo, que campos existen, de que tipo, cuales
+  son obligatorios y como los PREGUNTA el cliente (claves) frente a como los
+  ESCRIBE la ficha (claves_ficha, el mecanismo que ya existe en
+  specs_preguntables.json). No es la misma ficha un teclado que una notebook.
+  Ese archivo pasa a ser la fuente unica de: los campos de la ficha del bot, las
+  specs preguntables y, mas adelante, las reglas de compatibilidad.
+
+PASO 2 — EL BOT LEE EL PERFIL (schema vivo, va con Opus).
+  `CAMPOS_FICHA` deja de ser una lista fija y sale del perfil de la categoria del
+  producto en foco. Y la consulta de SPEC entra como slot REQUERIDO del schema
+  del solver, o sea la misma atadura estructural de `respuestas_por_categoria`
+  (generador_v2.py:474 y :118, capstone del 24-jul): hoy esos slots solo cubren
+  las categorias de PROSA con grounding, no la ficha. Con esto la cobertura de la
+  respuesta tecnica pasa de empirica a estructural.
+
+PASO 3 — EXTRACTOR VERIFICADO (mecanico, va con Sonnet).
+  Script `scripts/enriquecer_catalogo.py`: por producto busca marca y modelo en
+  el sitio del fabricante, baja el texto, el LLM barato (DeepSeek o Gemini Flash,
+  NUNCA Claude, que ahi no agrega calidad y cuesta) EXTRAE los campos del perfil,
+  y el codigo descarta todo valor que no aparezca literal en el texto bajado.
+  Salida: CSV por categoria con valor + fuente_url + fecha, y los huecos marcados.
+  Guarda un hash por pagina para que las corridas siguientes solo toquen lo que
+  cambio. Se prueba de punta a punta sobre UNA categoria antes de escalar.
+
+PASO 4 — CORRIDAS POR LOTE Y COMPLETADO MANUAL (mecanico, va con Sonnet).
+  Orden por volumen: notebook 171, memoria ram 96, almacenamiento externo 72,
+  ssd 60, mouse 52, teclado 48, auriculares 46, silla gamer 39. Martin completa
+  a mano solo los huecos marcados; se achican solos porque los modelos se repiten
+  entre variantes de color y capacidad. Sube por `/admin/upload-catalog`, que
+  valida tipo, rango y obligatorios por categoria: fila rota, fila rechazada.
+
+PASO 5 — COMPATIBILIDAD (recien cuando haya specs, va con Opus).
+  No es un valor, es un VEREDICTO: lo calcula el codigo comparando las specs de
+  los dos productos contra una tabla de reglas, y devuelve compatible / no
+  compatible / falta dato. El modelo solo lo redacta, nunca lo decide. Mismo
+  patron que el certificador de identidad.
+
+MODELO POR PASO: 1, 2 y 5 con Opus (tocan el schema vivo, que es donde se rompe
+todo). 3 y 4 con Sonnet (son mecanicos y ahorran tokens de golpe).
+
+---
+
 **==== 27-jul-2026 — CONTEXTO Y MEMORIA, ARREGLADO SOBRE UNA CHARLA REAL ====**
 
 Rama: `claude/context-memory-review-1x5n7n`. Diagnostico hecho sobre la ULTIMA

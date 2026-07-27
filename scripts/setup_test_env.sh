@@ -41,9 +41,12 @@ logging.googleapis.com/v2/entries:list (filtro service_name agente-bot) y a
 firestore.googleapis.com (tiendas/verifika_prod/conversaciones/<user_id>:
 ahi vive el history y el summary vivos).
 
-PROXIMO PASO: correr bancos VIVOS de memoria multiturno (52, 53, 56, 59) con
-la clave paga y mirar en logs generador_v2_prosa_podada y los tipos de
-fragmento (generador_v2_ok tipos=[...]) para cazar lo que el render descarte.
+PROXIMO PASO — TRACK FUENTE DE VERDAD DE PRODUCTO (5 pasos, plan cerrado con
+Martin el 27-jul): 1) perfil de campos por categoria en specs_por_categoria.json;
+2) el bot lee ese perfil y la consulta de spec entra como slot REQUERIDO del
+schema; 3) extractor verificado contra texto bajado; 4) corridas por lote;
+5) compatibilidad como veredicto del codigo. Pasos 1, 2 y 5 con Opus; 3 y 4 con
+Sonnet. El plan entero esta al tope del RESUMEN.
 
 Detalle completo: tope de RESUMEN_PARA_NUEVO_CHAT.md (seccion 27-jul).
 Bancos: BANCO_PAUSA_S=8 python banco_pruebas/banco_atado_charlas.py banco_pruebas/guiones/68_*.txt
