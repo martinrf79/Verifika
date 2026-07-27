@@ -170,3 +170,89 @@ def test_no_estampa_dos_veces():
     uno = estampar_honestidad_specs("Es un monitor muy comodo.", msg, prod)
     assert "75Hz" in uno
     assert estampar_honestidad_specs(uno, msg, prod) == uno
+
+
+# ── 5. LA CARGA A FIRESTORE ─────────────────────────────────────────────────
+
+def test_descripcion_sin_la_spec_repetida():
+    prod = depurar_ficha({
+        "nombre": "Notebook Lenovo IdeaPad 3 Core i5 16GB 512GB SSD Gris",
+        "modelo": "IdeaPad 3 Core i5 16GB 512GB SSD",
+        "caracteristicas_extra": "Core i5 16GB 512GB SSD, Core i5 16GB 512GB SSD",
+        "descripcion": ("Notebook Lenovo IdeaPad 3 Core i5 16GB 512GB SSD, color "
+                        "Gris. Core i5 16GB 512GB SSD, Core i5 16GB 512GB SSD. "
+                        "peso 2547g."),
+    })
+    assert prod["caracteristicas_extra"] == "Core i5 16GB 512GB SSD"
+    assert prod["descripcion"].count("Core i5 16GB 512GB SSD") == 2  # nombre + spec
+    assert ", Core i5 16GB 512GB SSD." not in prod["descripcion"]
+
+
+class _FakeBatch:
+    def __init__(self, registro, fallar_una_vez):
+        self.registro = registro
+        self.ops = []
+        self._fallar = fallar_una_vez
+
+    def set(self, ref, data, merge=False):
+        self.ops.append((ref, data, merge))
+
+    def commit(self):
+        if self._fallar and not self.registro["fallo"]:
+            self.registro["fallo"] = True
+            raise RuntimeError("conexion cortada")
+        self.registro["ops"].extend(self.ops)
+        self.registro["commits"] += 1
+
+
+def _fake_db(registro, fallar_una_vez=False):
+    class _Doc:
+        def __init__(self, pid):
+            self.pid = pid
+
+    class _Col:
+        def document(self, pid):
+            return _Doc(pid)
+
+    class _Tienda:
+        def collection(self, _n):
+            return _Col()
+
+    class _DB:
+        def batch(self):
+            return _FakeBatch(registro, fallar_una_vez)
+
+        def collection(self, _n):
+            class _C:
+                def document(self, _t):
+                    return _Tienda()
+            return _C()
+
+    return _DB()
+
+
+def test_la_carga_va_por_lotes_y_borra_el_mapa_specs_viejo(monkeypatch):
+    from app.storage import firestore_client as fc
+    from google.cloud import firestore as gfs
+    registro = {"ops": [], "commits": 0, "fallo": False}
+    monkeypatch.setattr(fc, "_get_db", lambda: _fake_db(registro))
+    monkeypatch.setattr(fc, "invalidate_cache", lambda *a, **k: None)
+    prods = [{"id": f"P{i}", "nombre": f"prod {i}", "specs": {"ram": "8GB"}}
+             for i in range(450)]
+    escritos = fc.upsert_products_batch(prods, tienda_id="t1")
+    assert escritos == 450
+    assert registro["commits"] == 3          # 200 + 200 + 50
+    assert len(registro["ops"]) == 900       # dos operaciones por producto
+    borrados = [o for o in registro["ops"]
+                if o[1].get("specs") is gfs.DELETE_FIELD]
+    assert len(borrados) == 450, "el mapa specs viejo tiene que borrarse antes"
+
+
+def test_un_lote_que_falla_se_reintenta_y_no_deja_la_carga_a_medias(monkeypatch):
+    from app.storage import firestore_client as fc
+    registro = {"ops": [], "commits": 0, "fallo": False}
+    monkeypatch.setattr(fc, "_get_db", lambda: _fake_db(registro, True))
+    monkeypatch.setattr(fc, "invalidate_cache", lambda *a, **k: None)
+    prods = [{"id": f"P{i}", "nombre": f"prod {i}"} for i in range(10)]
+    assert fc.upsert_products_batch(prods, tienda_id="t1") == 10
+    assert registro["commits"] == 1
