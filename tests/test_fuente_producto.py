@@ -256,3 +256,63 @@ def test_un_lote_que_falla_se_reintenta_y_no_deja_la_carga_a_medias(monkeypatch)
     prods = [{"id": f"P{i}", "nombre": f"prod {i}"} for i in range(10)]
     assert fc.upsert_products_batch(prods, tienda_id="t1") == 10
     assert registro["commits"] == 1
+
+
+# ── 6. LAS TRES CAPAS DE LA FUENTE ──────────────────────────────────────────
+# ficha del producto > tabla por modelo > default de categoria > regla.
+
+def test_la_categoria_completa_lo_que_es_cierto_para_todas():
+    note = normalizar_producto({"id": "N9", "categoria": "notebook",
+                                "nombre": "Notebook Generica Core i5 8GB 256GB SSD",
+                                "precio_ars": "1", "stock": "1"})
+    # nadie cargo nada de esta notebook y sin embargo esto ya se puede contestar
+    assert "bateria" in note["specs"] and "camara" in note["specs"]
+    assert note["specs"]["bluetooth"].startswith("si")
+    # lo que varia de un modelo a otro NO se afirma por categoria
+    for varia in ("lector_huella", "thunderbolt", "ram_ampliable"):
+        assert varia not in note["specs"], f"{varia} no se puede dar por categoria"
+
+
+def test_con_cable_es_una_respuesta_no_un_dato_que_falta():
+    aur = normalizar_producto({"id": "A9", "categoria": "auriculares",
+                               "nombre": "Auriculares HyperX Cloud II",
+                               "precio_ars": "1", "stock": "1",
+                               "caracteristicas_extra": "con cable"})
+    assert aur["specs"]["bluetooth"].startswith("no")
+    assert "cable" in aur["specs"]["bateria"]
+    salida = estampar_honestidad_specs("Suenan muy bien.", "tienen bluetooth?", aur)
+    assert "la ficha no lo especifica" not in salida.lower()
+    assert "no" in salida.lower()
+
+
+def test_la_ficha_del_producto_le_gana_a_la_categoria():
+    # la ficha dice el wifi exacto: la capa de categoria no lo pisa con 'si'
+    note = normalizar_producto({"id": "N8", "categoria": "notebook",
+                                "nombre": "Notebook X WiFi 6",
+                                "precio_ars": "1", "stock": "1",
+                                "caracteristicas_extra": "WiFi 6"})
+    assert note["specs"]["wifi"].lower().replace("-", "") == "wifi 6"
+
+
+def test_la_planilla_por_modelo_se_carga_y_completa(tmp_path, monkeypatch):
+    import app.core.fuente_producto as fp
+    csv_modelo = tmp_path / "specs_por_modelo.csv"
+    csv_modelo.write_text(
+        "marca,modelo,categoria,lector_huella,thunderbolt\n"
+        "Asus,TUF Gaming F15,notebook,si con lector en el touchpad,\n",
+        encoding="utf-8")
+    monkeypatch.setattr(fp, "_ruta_dato", lambda tid, arch: (
+        str(csv_modelo) if arch == "specs_por_modelo.csv" else None))
+    fp._CACHE_MODELO.clear()
+    fp._CACHE_CATEGORIA.clear()
+    try:
+        prod = fp.normalizar_producto({"id": "N7", "categoria": "notebook",
+                                       "marca": "Asus", "modelo": "TUF Gaming F15",
+                                       "nombre": "Notebook Asus TUF Gaming F15",
+                                       "precio_ars": "1", "stock": "1"})
+        assert prod["specs"]["lector_huella"].startswith("si")
+        # la celda vacia de la planilla NO inventa nada
+        assert "thunderbolt" not in prod["specs"]
+    finally:
+        fp._CACHE_MODELO.clear()
+        fp._CACHE_CATEGORIA.clear()

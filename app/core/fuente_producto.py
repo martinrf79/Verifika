@@ -132,6 +132,80 @@ def specs_config(tienda_id: str | None = None) -> list[dict]:
     return entradas
 
 
+def _ruta_dato(tienda_id: str | None, archivo: str) -> str | None:
+    """Ruta a un archivo de datos de la tienda, resuelta por scandir: el
+    tienda_id puede venir de un path param HTTP y nunca se concatena crudo."""
+    tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
+    base = os.path.join(os.path.dirname(__file__), "..", "..", "data", "clientes")
+    try:
+        with os.scandir(base) as it:
+            for entry in it:
+                if entry.is_dir() and entry.name == tid:
+                    ruta = os.path.join(entry.path, archivo)
+                    return ruta if os.path.exists(ruta) else None
+    except OSError:
+        pass
+    return None
+
+
+_CACHE_CATEGORIA: dict[str, dict] = {}
+_CACHE_MODELO: dict[str, dict] = {}
+
+
+def specs_por_categoria(tienda_id: str | None = None) -> dict:
+    """CAPA 2: {categoria: {spec: valor}} + reglas condicionales. Lo cierto para
+    la categoria entera, que no hace falta cargar producto por producto."""
+    tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
+    if tid in _CACHE_CATEGORIA:
+        return _CACHE_CATEGORIA[tid]
+    data = {"categorias": {}, "reglas": []}
+    ruta = _ruta_dato(tid, "specs_por_categoria.json")
+    if ruta:
+        try:
+            with open(ruta, encoding="utf-8") as f:
+                crudo = json.load(f)
+            data = {
+                "categorias": {_norm(k): v for k, v in
+                               (crudo.get("categorias") or {}).items()
+                               if isinstance(v, dict)},
+                "reglas": [r for r in (crudo.get("reglas") or [])
+                           if isinstance(r, dict)],
+            }
+        except Exception as e:
+            log.warning("specs_categoria_error", tienda_id=tid, error=str(e)[:150])
+    _CACHE_CATEGORIA[tid] = data
+    return data
+
+
+def specs_por_modelo(tienda_id: str | None = None) -> dict:
+    """CAPA 3: {(marca, modelo, categoria): {spec: valor}} desde
+    `specs_por_modelo.csv`. Es el dato que varia de un modelo a otro y que NO
+    se puede deducir: autonomia, lector de huella, thunderbolt, puertos. Se
+    llena una vez por MODELO (482 en verifika_prod), no por producto, y la
+    celda vacia sigue saliendo honesta."""
+    tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
+    if tid in _CACHE_MODELO:
+        return _CACHE_MODELO[tid]
+    tabla: dict = {}
+    ruta = _ruta_dato(tid, "specs_por_modelo.csv")
+    if ruta:
+        try:
+            import csv
+            with open(ruta, encoding="utf-8") as f:
+                for fila in csv.DictReader(f):
+                    clave = (_norm(fila.get("marca")), _norm(fila.get("modelo")),
+                             _norm(fila.get("categoria")))
+                    valores = {k: str(v).strip() for k, v in fila.items()
+                               if k not in ("marca", "modelo", "categoria")
+                               and str(v or "").strip()}
+                    if valores:
+                        tabla[clave] = valores
+        except Exception as e:
+            log.warning("specs_modelo_error", tienda_id=tid, error=str(e)[:150])
+    _CACHE_MODELO[tid] = tabla
+    return tabla
+
+
 def aplica(spec: dict, categoria: str) -> bool:
     """La spec tiene sentido para esa categoria. Sin aplica_a aplica a todas, y
     sin categoria tampoco se descarta: no saber no es motivo para callar una
@@ -232,6 +306,37 @@ def extraer_specs(prod: dict, tienda_id: str | None = None) -> dict:
                 break
         if valor:
             out[spec["id"]] = re.sub(r"\s+", " ", valor)
+    return _completar_capas(out, prod, categoria, tienda_id)
+
+
+def _completar_capas(out: dict, prod: dict, categoria: str,
+                     tienda_id: str | None) -> dict:
+    """Completa lo que la ficha del producto no dijo, en orden de autoridad:
+    ficha del producto > tabla por MODELO > default de CATEGORIA > regla
+    condicional. Nunca pisa un valor que ya salio de la ficha, y lo que ninguna
+    capa responde queda vacio: ese hueco es el honesto."""
+    ids_validos = {s["id"] for s in specs_config(tienda_id)}
+    del_modelo = specs_por_modelo(tienda_id).get(
+        (_norm(prod.get("marca")), _norm(prod.get("modelo")), categoria)) or {}
+    for sid, valor in del_modelo.items():
+        if sid in ids_validos and sid not in out and valor:
+            out[sid] = valor
+    cfg = specs_por_categoria(tienda_id)
+    for sid, valor in (cfg["categorias"].get(categoria) or {}).items():
+        if sid in ids_validos and sid not in out and valor:
+            out[sid] = valor
+    for regla in cfg["reglas"]:
+        cond = regla.get("si") or {}
+        cats = {_norm(c) for c in (cond.get("categorias") or [])}
+        if cats and categoria not in cats:
+            continue
+        base = _norm(out.get(cond.get("spec") or "", ""))
+        if not base or not any(_norm(c) in base
+                               for c in (cond.get("contiene") or [])):
+            continue
+        for sid, valor in (regla.get("entonces") or {}).items():
+            if sid in ids_validos and sid not in out and valor:
+                out[sid] = valor
     return out
 
 
