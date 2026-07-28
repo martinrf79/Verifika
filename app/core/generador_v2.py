@@ -224,10 +224,30 @@ def universo_productos(mensaje, estado, tienda_id, interp=None):
     # consultados (atados al enum de lo visto) SIEMPRE entran al enum, aunque el
     # detector de categorias del mensaje no los pesque. Reemplaza por atadura las
     # guias de texto que el hub le pasaba al solver viejo.
+    # ORDEN pedido por el cliente ("la que mas capacidad", "la mas liviana").
+    # Antes el universo era SIEMPRE las 4 mas baratas mas el intermedio, con lo
+    # cual un superlativo del otro lado terminaba mostrando lo mas barato: el
+    # cliente pidio la de mas capacidad y le ofrecimos cuatro de $693.000
+    # teniendo 57 de 1TB, hasta $3.100.500 (charla real 28-jul).
+    _orden = interp.get("orden") if isinstance(interp, dict) else None
+    _orden = _orden if isinstance(_orden, dict) and _orden.get("atributo") else None
+
+    def _cabeza_de_categoria(cat):
+        """Los productos de la categoria que encabezan el orden pedido."""
+        from app.core.fuente_producto import ordenar_por
+        from app.storage.firestore_client import get_all_products
+        dela = [p for p in get_all_products(tienda_id=tienda_id)
+                if str(p.get("categoria", "")).lower() == str(cat).lower()
+                and int(p.get("stock") or 0) > 0]
+        return ordenar_por(dela, _orden["atributo"], _orden.get("direccion"))[:4]
+
     if isinstance(interp, dict):
         for s in (interp.get("solicitud_nueva") or []):
             if isinstance(s, dict) and s.get("categoria"):
                 cat = str(s["categoria"])
+                if _orden:
+                    for p in _cabeza_de_categoria(cat):
+                        _add(p)
                 for p in opciones_por_categoria(cat, tienda_id, k=4):
                     _add(p)
                 _add(intermedio_con_stock(cat))
@@ -284,6 +304,11 @@ def universo_productos(mensaje, estado, tienda_id, interp=None):
                 cats_nombres.add(str(c))
                 break
     for cat in cats_nombres:
+        # el orden pedido manda: primero la cabeza de ESE orden, despues las
+        # baratas como referencia de precio.
+        if _orden:
+            for p in _cabeza_de_categoria(cat):
+                _add(p)
         for p in opciones_por_categoria(cat, tienda_id, k=4):
             _add(p)
         _add(intermedio_con_stock(cat))
