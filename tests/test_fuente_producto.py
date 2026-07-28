@@ -105,9 +105,15 @@ def test_specs_del_catalogo_real(catalogo):
     assert "ssd" in note["specs"]["almacenamiento"].lower()
     assert note["specs"]["procesador"].lower().startswith("ryzen")
     tablet = next(p for p in por_id.values() if p["categoria"] == "tablet")
-    # la tablet informa disco pero NO ram: el hueco tiene que quedar vacio
+    # el disco lo dice la ficha; la RAM NO, y desde que se cargo la planilla por
+    # modelo la contesta esa capa. Lo que ninguna capa trae sigue sin aparecer.
     assert "almacenamiento" in tablet["specs"]
-    assert "ram" not in tablet["specs"], "la ficha no dice la RAM: no se inventa"
+    assert tablet["specs"].get("ram"), "la planilla por modelo tiene que dar la RAM"
+    sin_dato = normalizar_producto({"id": "Z1", "categoria": "tablet",
+                                    "nombre": "Tablet Marca Inexistente 99",
+                                    "marca": "Nadie", "modelo": "No Existe",
+                                    "precio_ars": "1", "stock": "1"})
+    assert "ram" not in sin_dato["specs"], "sin dato en ninguna capa no se inventa"
     monitor = next(p for p in por_id.values() if p["categoria"] == "monitor")
     assert monitor["specs"]["hz"].lower().endswith("hz")
 
@@ -316,3 +322,17 @@ def test_la_planilla_por_modelo_se_carga_y_completa(tmp_path, monkeypatch):
     finally:
         fp._CACHE_MODELO.clear()
         fp._CACHE_CATEGORIA.clear()
+
+
+def test_la_pregunta_en_plural_llega_al_dato():
+    """Bug real cazado al probar: el cliente escribe 'son resistentes al agua'
+    y el match literal contra 'resistente al agua' lo dejaba pasar con el dato
+    cargado. Las claves toleran plural y espaciado."""
+    aur = normalizar_producto({"id": "A7", "categoria": "auriculares",
+                               "nombre": "Auriculares HyperX Cloud II",
+                               "marca": "HyperX", "modelo": "Cloud II",
+                               "precio_ars": "1", "stock": "1",
+                               "caracteristicas_extra": "con cable"})
+    aur["specs"]["resistencia_agua"] = "no, no es resistente al agua"
+    resp, _faltan = _specs_del_turno("son resistentes al agua?", aur)
+    assert [e for e, _v, _a, _b in resp] == ["la resistencia al agua"]

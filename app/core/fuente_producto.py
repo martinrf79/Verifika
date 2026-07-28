@@ -46,6 +46,21 @@ def _norm(s) -> str:
     return "".join(c for c in s if not unicodedata.combining(c)).strip()
 
 
+def _patron_clave(clave: str) -> str:
+    """El patron de una clave de pregunta, tolerante al PLURAL y al espaciado.
+
+    El cliente no escribe la clave tal cual: pregunta "son resistentes al
+    agua", no "resistente al agua", y el match literal lo dejaba pasar con el
+    dato cargado en la fuente. Cada palabra de cuatro letras o mas admite una
+    's' final y los espacios admiten varios.
+    """
+    palabras = [p for p in re.split(r"\s+", clave.strip()) if p]
+    if not palabras:
+        return r"(?!)"
+    partes = [re.escape(p) + ("s?" if len(p) >= 4 else "") for p in palabras]
+    return r"\b" + r"\s+".join(partes) + r"\b"
+
+
 def _ruta_config(tienda_id: str | None) -> str | None:
     """Ruta al specs_preguntables.json de la tienda, o None si no existe.
 
@@ -93,7 +108,7 @@ def specs_config(tienda_id: str | None = None) -> list[dict]:
             claves = [_norm(c) for c in (s.get("claves") or []) if c]
             if not (sid and etiqueta and claves):
                 continue
-            pat_preg = "|".join(r"\b" + re.escape(c) + r"\b" for c in claves)
+            pat_preg = "|".join(_patron_clave(c) for c in claves)
             extraer = []
             for e in (s.get("extraer") or []):
                 patron = e.get("patron") if isinstance(e, dict) else e
@@ -390,12 +405,19 @@ def enriquecer(productos: list, tienda_id: str | None = None) -> list:
         return productos
     completados = 0
     for p in productos:
-        if isinstance(p, dict) and not p.get("specs"):
+        if not isinstance(p, dict):
+            continue
+        if not p.get("specs"):
             depurar_ficha(p)
             if not p.get("tags"):
                 p["tags"] = derivar_tags(p)
             p["specs"] = extraer_specs(p, tienda_id)
             completados += 1
+        else:
+            # el producto YA trae su mapa guardado, pero las capas de modelo y
+            # categoria viven en el repo: se aplican al leer para que cargar
+            # una spec nueva sea editar el csv y deployar, sin resubir las 880.
+            _completar_capas(p["specs"], p, _norm(p.get("categoria")), tienda_id)
     if completados:
         log.info("fuente_producto_enriquecida", tienda_id=tienda_id,
                  productos=completados)
