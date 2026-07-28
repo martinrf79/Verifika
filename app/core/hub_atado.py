@@ -294,23 +294,41 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     # del que el interprete resolvio o del unico mostrado este turno.
     try:
         from app.core.generador_v2 import estampar_honestidad_specs
-        _prod_spec = None
-        _pr = interp.get("producto_resuelto") if isinstance(interp, dict) else None
-        if _pr:
-            from app.core.pedido_helpers import _resolver_nombre_a_producto
+        from app.core.pedido_helpers import certificar_producto
+        _prod_spec, _variantes = None, []
+        # el FOCO del turno: lo que el interprete resolvio o lo que el cliente
+        # pregunto. Antes solo servia un producto UNICO y, como el catalogo
+        # tiene variantes de color y de CPU, casi nunca habia uno solo: el
+        # guardia no corria nunca y el modelo contestaba la spec por su cuenta.
+        _nombres = []
+        if isinstance(interp, dict):
+            if interp.get("producto_resuelto"):
+                _nombres.append(str(interp["producto_resuelto"]))
+            _nombres += [str(c.get("producto")) for c in
+                         (interp.get("productos_consultados") or [])
+                         if isinstance(c, dict) and c.get("producto")]
+        if _nombres:
             from app.storage.firestore_client import get_all_products
-            _prod_spec = _resolver_nombre_a_producto(
-                _pr, get_all_products(tienda_id=tienda_id))
+            _todos = get_all_products(tienda_id=tienda_id)
+            for _n in _nombres:
+                _v, _hits = certificar_producto(_n, _todos)
+                if _hits:
+                    _variantes, _prod_spec = _hits, _hits[0]
+                    break
         if not _prod_spec:
             _sh = productos_de_meta(meta)
             if len(_sh) == 1 and _sh[0].get("id"):
                 _prod_spec = get_product_by_id(str(_sh[0]["id"]).upper(),
                                                tienda_id=tienda_id)
+                _variantes = [_prod_spec] if _prod_spec else []
         if isinstance(_prod_spec, dict):
             _antes_sp = texto
-            texto = estampar_honestidad_specs(texto, raw_message, _prod_spec)
+            texto = estampar_honestidad_specs(texto, raw_message, _prod_spec,
+                                              _variantes)
             if texto != _antes_sp:
-                log.info("hub_atado_spec_honesta", trace_id=trace_id)
+                log.info("hub_atado_spec_honesta", trace_id=trace_id,
+                         producto=_prod_spec.get("nombre"),
+                         variantes=len(_variantes))
     except Exception as e:
         log.warning("hub_atado_spec_error", trace_id=trace_id,
                     error=str(e)[:120])

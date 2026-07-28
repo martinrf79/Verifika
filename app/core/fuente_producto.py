@@ -355,6 +355,36 @@ def _completar_capas(out: dict, prod: dict, categoria: str,
     return out
 
 
+def consenso_specs(productos: list) -> tuple[dict, dict]:
+    """(comunes, difieren) entre las VARIANTES de un mismo modelo.
+
+    El cliente dice "la TUF F15" y en el catalogo hay nueve: tres CPU por tres
+    colores. Casi todo lo que pregunta es igual en las nueve -pantalla, puertos,
+    lector de huella- y eso se puede contestar sin pedirle que elija. Lo que
+    cambia entre versiones, como el Thunderbolt del Intel contra el del Ryzen,
+    NO se contesta con una sola respuesta: se devuelve en `difieren` con que
+    variante tiene cada valor, para preguntar con el dato en la mano.
+    """
+    mapas = [p.get("specs") for p in (productos or [])
+             if isinstance(p, dict) and isinstance(p.get("specs"), dict)]
+    if not mapas:
+        return {}, {}
+    if len(mapas) == 1:
+        return dict(mapas[0]), {}
+    comunes, difieren = {}, {}
+    for sid in set().union(*[set(m) for m in mapas]):
+        vistos: dict = {}
+        for p, m in zip(productos, mapas):
+            vistos.setdefault(m.get(sid, ""), []).append(str(p.get("nombre") or ""))
+        if len(vistos) == 1:
+            valor = next(iter(vistos))
+            if valor:
+                comunes[sid] = valor
+        else:
+            difieren[sid] = [(v, n) for v, n in vistos.items() if v]
+    return comunes, difieren
+
+
 def derivar_tags(prod: dict) -> str:
     """Tags minimos cuando la fuente no los trae: el buscador puntua por tags
     y un catalogo sin ellos pierde el match por sinonimo. No reemplaza a los

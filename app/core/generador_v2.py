@@ -37,7 +37,11 @@ CAMPOS_FICHA = ["procedencia", "garantia", "material", "descripcion",
                 # ("cuanto disco tiene", "cuanto pesa", "que trae la caja") y la
                 # repregunta se caia o la contestaba el modelo de memoria. El
                 # dato sigue saliendo de la fuente, estampado por el codigo.
-                "caracteristicas", "medidas", "contenido_caja", "uso"]
+                "caracteristicas", "medidas", "contenido_caja", "uso",
+                # 28-jul: la ficha no llegaba al mapa `specs` de la fuente, asi
+                # que thunderbolt, lector de huella, hercios o puertos no tenian
+                # por donde salir aunque estuvieran cargados.
+                "specs"]
 
 def _criterios_del_turno(mensaje, universo=None, interp=None):
     """El enum del fragmento criterio para ESTE turno: (ids jurados relevantes,
@@ -202,12 +206,18 @@ def universo_productos(mensaje, estado, tienda_id, interp=None):
                 + (estado.get("carrito") or [])):
         if isinstance(src, dict) and src.get("id"):
             _add(get_product_by_id(str(src["id"]).upper(), tienda_id=tienda_id))
-    # producto resuelto por el interprete
+    # producto resuelto por el interprete. Entran TODAS sus variantes: el
+    # cliente dice "la zenbook 14" y en el catalogo hay nueve entre CPU y
+    # colores. Con el resolutor viejo eso daba None, el universo quedaba sin la
+    # notebook y el modelo le contestaba al cliente que NO la teniamos, teniendo
+    # nueve en stock (charla real del 28-jul, turno 2).
     if interp and interp.get("producto_resuelto"):
-        from app.core.pedido_helpers import _resolver_nombre_a_producto
+        from app.core.pedido_helpers import certificar_producto
         from app.storage.firestore_client import get_all_products
-        _add(_resolver_nombre_a_producto(
-            interp["producto_resuelto"], get_all_products(tienda_id=tienda_id)))
+        _v, _hits = certificar_producto(interp["producto_resuelto"],
+                                        get_all_products(tienda_id=tienda_id))
+        for _p in _hits[:8]:
+            _add(_p)
     # CONTACTOR: los campos ESTRUCTURADOS del interprete alimentan el universo,
     # no solo el texto del mensaje. Asi la categoria pedida aun no mostrada
     # (solicitud_nueva, atada al enum de categorias) y los productos del pedido o
@@ -228,10 +238,12 @@ def universo_productos(mensaje, estado, tienda_id, interp=None):
                 if not nom:
                     continue
                 if _todos is None:
-                    from app.core.pedido_helpers import _resolver_nombre_a_producto
                     from app.storage.firestore_client import get_all_products
                     _todos = get_all_products(tienda_id=tienda_id)
-                _add(_resolver_nombre_a_producto(nom, _todos))
+                from app.core.pedido_helpers import certificar_producto
+                _v, _hits = certificar_producto(nom, _todos)
+                for _p in _hits[:8]:
+                    _add(_p)
     # CONTEXTO MANDA sobre las palabras sueltas del mensaje (27-jul, charla real
     # del 24-jul 16:43). Si el cliente PREGUNTA por algo YA mostrado -el
     # interprete resolvio el producto o lo puso en productos_consultados- y NO
@@ -498,6 +510,31 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
             base += f" | para {p['uso_recomendado']}"
         return base
     prods = "\n".join(_linea(p) for p in universo)
+    # FICHA TECNICA del producto en foco. Sin esto el modelo veia nombre,
+    # precio y stock, nada mas: ante "tiene thunderbolt?" no podia mas que
+    # prometer chequearlo o negar el producto. El dato existe en la fuente y
+    # ahora lo VE, ademas de que el codigo se lo estampa al renderizar.
+    ficha_txt = ""
+    try:
+        from app.core.fuente_producto import consenso_specs, specs_config
+        _etq = {s["id"]: s["etiqueta"] for s in specs_config()}
+        _foco = [p for p in universo if isinstance(p.get("specs"), dict)][:6]
+        if _foco:
+            comunes, difieren = consenso_specs(_foco)
+            lineas = [f"  {_etq.get(k, k)}: {v}" for k, v in sorted(comunes.items())]
+            for k, opciones in sorted(difieren.items()):
+                det = "; ".join(f"{v} en {n[0]}" for v, n in opciones[:3])
+                lineas.append(f"  {_etq.get(k, k)}: depende de la version -> {det}")
+            if lineas:
+                nom = _foco[0].get("nombre", "")
+                ficha_txt = (
+                    f"\n\nFICHA TECNICA de {nom}"
+                    + (f" y sus {len(_foco)} variantes" if len(_foco) > 1 else "")
+                    + " (dato REAL de la fuente, contestá con esto, NO prometas "
+                      "chequearlo ni digas que no lo tenemos):\n"
+                    + "\n".join(lineas))
+    except Exception as e:
+        log.warning("generador_v2_ficha_prompt_error", error=str(e)[:120])
     prefs = prefs if isinstance(prefs, dict) else {}
     pref_lineas = []
     if prefs.get("tope_presupuesto"):
@@ -613,7 +650,7 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
            f"literal; los numeros salen de aca):\n{faq_menu}\n" if faq_menu else "")
         + f"CRITERIO jurado para apoyarte (para el fragmento criterio: adapta "
         f"esto a tu frase y cita el id entre corchetes):\n{criterios_menu}\n"
-        f"{car_txt}{dest_txt}{vis_txt}{res_txt}{prefs_txt}\n\n"
+        f"{car_txt}{dest_txt}{vis_txt}{res_txt}{prefs_txt}{ficha_txt}\n\n"
         + (f"\n\nPRESUPUESTO YA ARMADO por el sistema (ponelo con un "
            f"fragmento tipo 'presupuesto'):\n{presupuesto_pre}" if presupuesto_pre else "")
         + (("\n\nOBLIGATORIO — respuestas_por_categoria: DEBÉS escribir un texto "
@@ -831,6 +868,19 @@ def _campo_ficha(prod, campo):
     if campo == "contenido_caja":
         v = str(prod.get("contenido_caja") or "").strip()
         return ("Viene con: " + v) if v else ""
+    if campo == "specs":
+        mapa = prod.get("specs")
+        if not isinstance(mapa, dict) or not mapa:
+            return ""
+        from app.core.fuente_producto import specs_config
+        etq = {s["id"]: s["etiqueta"] for s in specs_config()}
+        partes = []
+        for sid, valor in mapa.items():
+            if not valor:
+                continue
+            nombre = re.sub(r"^(?:el|la|los|las|si)\s+", "", etq.get(sid, sid))
+            partes.append(f"{nombre}: {valor}")
+        return ". ".join(partes[:8])
     if campo == "uso":
         v = str(prod.get("uso_recomendado") or "").strip()
         return ("Recomendado para " + v) if v else ""
@@ -896,7 +946,7 @@ def _specs_preguntables():
     return _SPECS_CACHE
 
 
-def _specs_del_turno(mensaje, prod):
+def _specs_del_turno(mensaje, prod, variantes=None):
     """(respondidas, faltantes) de las specs que el cliente PREGUNTO este turno.
 
     respondidas: [(etiqueta, valor, rx_pregunta, rx_ficha)] con el valor tal
@@ -913,12 +963,17 @@ def _specs_del_turno(mensaje, prod):
     m = _norm(mensaje or "")
     if not m or not isinstance(prod, dict):
         return [], []
-    from app.core.fuente_producto import (aplica, extraer_specs, specs_config,
-                                          texto_ficha)
+    from app.core.fuente_producto import (aplica, consenso_specs, extraer_specs,
+                                          specs_config, texto_ficha)
     mapa = prod.get("specs")
     if not isinstance(mapa, dict):
         # doc viejo o dict de test: se estampa el mapa al vuelo, misma fuente.
         mapa = extraer_specs(prod)
+    # VARIANTES del mismo modelo: se contesta lo que todas comparten, y lo que
+    # cambia entre versiones se dice como tal en vez de callarlo.
+    difieren = {}
+    if variantes and len(variantes) > 1:
+        mapa, difieren = consenso_specs(variantes)
     base = _norm(texto_ficha(prod))
     categoria = prod.get("categoria") or ""
     respondidas, faltantes = [], []
@@ -927,6 +982,10 @@ def _specs_del_turno(mensaje, prod):
         if not rx.search(m) or not aplica(spec, categoria):
             continue
         valor = mapa.get(spec["id"])
+        if not valor and spec["id"] in difieren:
+            # cambia segun la version: se dice cual trae que, no se calla
+            partes = [f"{v} en {n[0]}" for v, n in difieren[spec['id']][:3]]
+            valor = "depende de la version: " + "; ".join(partes)
         if valor:
             respondidas.append((spec["etiqueta"], str(valor), rx,
                                 spec["rx_ficha"]))
@@ -935,15 +994,15 @@ def _specs_del_turno(mensaje, prod):
     return respondidas, faltantes
 
 
-def _specs_faltantes(mensaje, prod):
+def _specs_faltantes(mensaje, prod, variantes=None):
     """[(etiqueta, regex)] de las specs que el cliente PREGUNTO y la fuente NO
     responde. Vacio si no pregunto o si el dato esta."""
-    return _specs_del_turno(mensaje, prod)[1]
+    return _specs_del_turno(mensaje, prod, variantes)[1]
 
 
-def _honesto_specs_faltantes(mensaje, prod):
+def _honesto_specs_faltantes(mensaje, prod, variantes=None):
     """La frase honesta cuando el cliente pregunto una spec que la ficha NO trae."""
-    faltan = [et for et, _rx in _specs_faltantes(mensaje, prod)]
+    faltan = [et for et, _rx in _specs_faltantes(mensaje, prod, variantes)]
     if not faltan:
         return ""
     lista = " ni ".join(faltan[:3])
@@ -952,7 +1011,7 @@ def _honesto_specs_faltantes(mensaje, prod):
             "y te lo confirmo.")
 
 
-def estampar_honestidad_specs(texto, mensaje, prod):
+def estampar_honestidad_specs(texto, mensaje, prod, variantes=None):
     """La spec preguntada la contesta la FUENTE, no el modelo. Por turno:
 
     - spec que la fuente SI responde: se sacan las lineas que la afirman con
@@ -962,10 +1021,10 @@ def estampar_honestidad_specs(texto, mensaje, prod):
 
     Idempotente. Las lineas con plata ($) no se tocan: las audita el
     verificador de montos."""
-    respondidas, faltan = _specs_del_turno(mensaje, prod)
+    respondidas, faltan = _specs_del_turno(mensaje, prod, variantes)
     if not (respondidas or faltan) or not (texto or "").strip():
         return texto
-    honesto = _honesto_specs_faltantes(mensaje, prod)
+    honesto = _honesto_specs_faltantes(mensaje, prod, variantes)
     honesto_n = _norm(honesto)[:40]
     # una linea "habla" de una spec respondida si la nombra; es FIEL si ademas
     # trae alguna parte del valor de la fuente ('512GB SSD' -> '512gb' o 'ssd').
