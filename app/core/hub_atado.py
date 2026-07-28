@@ -323,12 +323,16 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
                 _variantes = [_prod_spec] if _prod_spec else []
         if isinstance(_prod_spec, dict):
             _antes_sp = texto
+            # las specs que preguntó el cliente las TRADUJO el interprete al
+            # enum de la fuente; el regex sobre el mensaje queda solo de red.
+            _decl = (interp.get("specs_preguntadas")
+                     if isinstance(interp, dict) else None)
             texto = estampar_honestidad_specs(texto, raw_message, _prod_spec,
-                                              _variantes)
+                                              _variantes, _decl)
             if texto != _antes_sp:
                 log.info("hub_atado_spec_honesta", trace_id=trace_id,
                          producto=_prod_spec.get("nombre"),
-                         variantes=len(_variantes))
+                         variantes=len(_variantes), declaradas=_decl)
     except Exception as e:
         log.warning("hub_atado_spec_error", trace_id=trace_id,
                     error=str(e)[:120])

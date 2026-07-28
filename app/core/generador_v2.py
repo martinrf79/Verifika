@@ -946,7 +946,7 @@ def _specs_preguntables():
     return _SPECS_CACHE
 
 
-def _specs_del_turno(mensaje, prod, variantes=None):
+def _specs_del_turno(mensaje, prod, variantes=None, declaradas=None):
     """(respondidas, faltantes) de las specs que el cliente PREGUNTO este turno.
 
     respondidas: [(etiqueta, valor, rx_pregunta, rx_ficha)] con el valor tal
@@ -959,10 +959,22 @@ def _specs_del_turno(mensaje, prod, variantes=None):
     libre de inventarlo) y una spec escrita distinto se daba por ausente-.
     Si el producto viene SIN mapa (doc viejo, dict de test) se cae a la
     deteccion por substring de siempre, sin valor y sin estampado.
+
+    QUIEN DECIDE QUE PREGUNTO EL CLIENTE: el INTERPRETE. `declaradas` son los
+    ids que el modelo tradujo desde el mensaje, atados al enum de la fuente. El
+    modelo entiende "resiste que se me caiga el cafe" y una lista de palabras
+    escrita a mano no, por mas larga que se haga: cada redaccion nueva la
+    rompia. La red de palabras queda SOLO para cuando el interprete no declaro
+    nada (`declaradas is None`, provider sin schema estricto o fallo la
+    llamada). Una lista vacia NO es lo mismo que None: significa que el modelo
+    leyo el mensaje y dice que no pregunta ninguna spec, y eso manda.
     """
     m = _norm(mensaje or "")
     if not m or not isinstance(prod, dict):
         return [], []
+    ids_declarados = None
+    if declaradas is not None:
+        ids_declarados = {str(s) for s in declaradas}
     from app.core.fuente_producto import (aplica, consenso_specs, extraer_specs,
                                           specs_config, texto_ficha)
     mapa = prod.get("specs")
@@ -979,7 +991,9 @@ def _specs_del_turno(mensaje, prod, variantes=None):
     respondidas, faltantes = [], []
     for spec in specs_config():
         rx = spec["rx_pregunta"]
-        if not rx.search(m) or not aplica(spec, categoria):
+        pregunto = (spec["id"] in ids_declarados if ids_declarados is not None
+                    else bool(rx.search(m)))
+        if not pregunto or not aplica(spec, categoria):
             continue
         valor = mapa.get(spec["id"])
         if not valor and spec["id"] in difieren:
@@ -994,15 +1008,16 @@ def _specs_del_turno(mensaje, prod, variantes=None):
     return respondidas, faltantes
 
 
-def _specs_faltantes(mensaje, prod, variantes=None):
+def _specs_faltantes(mensaje, prod, variantes=None, declaradas=None):
     """[(etiqueta, regex)] de las specs que el cliente PREGUNTO y la fuente NO
     responde. Vacio si no pregunto o si el dato esta."""
-    return _specs_del_turno(mensaje, prod, variantes)[1]
+    return _specs_del_turno(mensaje, prod, variantes, declaradas)[1]
 
 
-def _honesto_specs_faltantes(mensaje, prod, variantes=None):
+def _honesto_specs_faltantes(mensaje, prod, variantes=None, declaradas=None):
     """La frase honesta cuando el cliente pregunto una spec que la ficha NO trae."""
-    faltan = [et for et, _rx in _specs_faltantes(mensaje, prod, variantes)]
+    faltan = [et for et, _rx in _specs_faltantes(mensaje, prod, variantes,
+                                                 declaradas)]
     if not faltan:
         return ""
     lista = " ni ".join(faltan[:3])
@@ -1011,7 +1026,8 @@ def _honesto_specs_faltantes(mensaje, prod, variantes=None):
             "y te lo confirmo.")
 
 
-def estampar_honestidad_specs(texto, mensaje, prod, variantes=None):
+def estampar_honestidad_specs(texto, mensaje, prod, variantes=None,
+                              declaradas=None):
     """La spec preguntada la contesta la FUENTE, no el modelo. Por turno:
 
     - spec que la fuente SI responde: se sacan las lineas que la afirman con
@@ -1021,10 +1037,11 @@ def estampar_honestidad_specs(texto, mensaje, prod, variantes=None):
 
     Idempotente. Las lineas con plata ($) no se tocan: las audita el
     verificador de montos."""
-    respondidas, faltan = _specs_del_turno(mensaje, prod, variantes)
+    respondidas, faltan = _specs_del_turno(mensaje, prod, variantes,
+                                           declaradas)
     if not (respondidas or faltan) or not (texto or "").strip():
         return texto
-    honesto = _honesto_specs_faltantes(mensaje, prod, variantes)
+    honesto = _honesto_specs_faltantes(mensaje, prod, variantes, declaradas)
     honesto_n = _norm(honesto)[:40]
     # una linea "habla" de una spec respondida si la nombra; es FIEL si ademas
     # trae alguna parte del valor de la fuente ('512GB SSD' -> '512gb' o 'ssd').

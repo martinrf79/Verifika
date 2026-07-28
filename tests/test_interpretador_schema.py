@@ -6,13 +6,13 @@ intencion y estado a su enum y producto_resuelto al enum de los productos
 mostrados (o null). Logica pura, sin LLM.
 """
 from app.core.interpretador import (_schema_interprete, INTENCIONES_VALIDAS,
-                                     ESTADOS_VALIDOS)
+                                     ESTADOS_VALIDOS, FUERA_DE_LISTA)
 
 
 def test_producto_resuelto_atado_a_mostrados():
     s = _schema_interprete(["Mouse A", "Mouse B"])
     pr = s["properties"]["producto_resuelto"]
-    assert pr["enum"] == [None, "Mouse A", "Mouse B"]
+    assert pr["enum"] == [None, FUERA_DE_LISTA, "Mouse A", "Mouse B"]
     assert "null" in pr["type"]
 
 
@@ -22,14 +22,18 @@ def test_intencion_y_estado_son_enum():
     assert s["properties"]["estado_conversacion"]["enum"] == ESTADOS_VALIDOS
 
 
-def test_sin_productos_solo_null():
+def test_sin_productos_queda_la_valvula_de_escape():
+    """Sin nada que ofrecerle, el interprete igual puede DECLARAR que el
+    cliente nombro algo que no estaba en la lista corta. Sin esa valvula, un
+    candidato que la recuperacion no pesco se volvia un "no lo tenemos" falso."""
     s = _schema_interprete([])
-    assert s["properties"]["producto_resuelto"]["enum"] == [None]
+    assert s["properties"]["producto_resuelto"]["enum"] == [None, FUERA_DE_LISTA]
 
 
 def test_dedup_nombres_conserva_orden():
     s = _schema_interprete(["X", "X", "Y", ""])
-    assert s["properties"]["producto_resuelto"]["enum"] == [None, "X", "Y"]
+    assert s["properties"]["producto_resuelto"]["enum"] == [
+        None, FUERA_DE_LISTA, "X", "Y"]
 
 
 def test_strict_todos_los_campos_requeridos():
@@ -44,7 +48,8 @@ def test_productos_consultados_atado_a_mostrados():
     # producto mostrado (enum) mas que pide de el (consulta, enum cerrado).
     s = _schema_interprete(["Mouse A", "Teclado B"])
     pc = s["properties"]["productos_consultados"]["items"]
-    assert pc["properties"]["producto"]["enum"] == [None, "Mouse A", "Teclado B"]
+    assert pc["properties"]["producto"]["enum"] == [
+        None, FUERA_DE_LISTA, "Mouse A", "Teclado B"]
     assert pc["properties"]["consulta"]["enum"] == [
         "precio", "ficha", "stock", "opinion", "comparacion", "envio", "otra"]
     assert set(pc["required"]) == {"producto", "consulta"}
@@ -160,3 +165,52 @@ def test_destino_inventado_sigue_cayendo():
     coercionar_destinos(r, "quiero un mouse barato")
     set_current_estado(None)
     assert r["pedido"][0]["destino"] is None
+
+
+# ── LAS DOS ETAPAS: recuperar candidatos y despues desambiguar ──────────────
+# El enum de producto no puede llevar los 482 modelos del catalogo: son 11.000
+# caracteres por campo y el limite documentado de structured outputs es 15.000
+# en TODO el schema. Se recupera una lista corta y el modelo elige de ahi.
+
+def test_candidatos_recupera_el_modelo_aunque_falte_una_palabra():
+    from app.core.interpretador import candidatos_modelo
+    modelos = ["Asus TUF Gaming F15 Ryzen 7 16GB 512GB SSD", "Asus TUF VG249Q1A",
+               "Lenovo IdeaPad 3 Core i5 16GB 512GB SSD", "JBL Flip 6"]
+    # el cliente dice "asus tuf f15" y el catalogo dice "TUF Gaming F15"
+    c = candidatos_modelo("la asus tuf f15 tiene thunderbolt", modelos)
+    assert "Asus TUF Gaming F15 Ryzen 7 16GB 512GB SSD" in c
+    # y no arrastra medio catalogo
+    assert "JBL Flip 6" not in c
+
+
+def test_candidatos_tolera_el_typo():
+    from app.core.interpretador import candidatos_modelo
+    modelos = ["Asus Zenbook 14 OLED Core i7 16GB 1TB SSD", "JBL Flip 6"]
+    assert candidatos_modelo("la zenbok 14 cuanto sale", modelos) == [
+        "Asus Zenbook 14 OLED Core i7 16GB 1TB SSD"]
+
+
+def test_el_schema_con_candidatos_entra_holgado():
+    from app.core.interpretador import candidatos_modelo
+    import json
+    modelos = [f"Marca{i} Modelo Largo De Ejemplo {i}" for i in range(482)]
+    cortos = candidatos_modelo("quiero el Modelo Largo 7", modelos)
+    s = json.dumps(_schema_interprete([], ["mouse"], cortos, ["ram", "hz"]))
+    assert len(s) < 15000, "el schema no puede pasar el limite de enums"
+
+
+def test_fuera_de_lista_dispara_la_segunda_vuelta(monkeypatch):
+    """Si el modelo declara que no estaba en la lista, el codigo busca en el
+    catalogo COMPLETO antes de dar por no disponible el producto."""
+    from app.core import interpretador as it
+    catalogo = [{"id": "N1", "nombre": "Notebook Acer Nitro 5 Core i5",
+                 "marca": "Acer", "modelo": "Nitro 5", "categoria": "notebook"}]
+    monkeypatch.setattr("app.storage.firestore_client.get_all_products",
+                        lambda tienda_id=None: catalogo)
+    r = {"producto_resuelto": FUERA_DE_LISTA, "productos_consultados": []}
+    it._resolver_fuera_de_lista(r, "tenes la acer nitro 5?", "t1")
+    assert r["producto_resuelto"] == "Notebook Acer Nitro 5 Core i5"
+    # y si de verdad no existe, queda en None: honesto por dato, no por error
+    r2 = {"producto_resuelto": FUERA_DE_LISTA, "productos_consultados": []}
+    it._resolver_fuera_de_lista(r2, "tenes la macbook pro?", "t1")
+    assert r2["producto_resuelto"] is None

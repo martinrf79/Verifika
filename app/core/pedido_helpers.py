@@ -82,14 +82,33 @@ def certificar_producto(resuelto: str, catalogo: list) -> tuple[str, list]:
     toks = _tokens_producto(resuelto)
     if not toks:
         return "not_found", []
-    hits = []
+    hits, laxos = [], []
     for p in (catalogo or []):
         if not (p.get("nombre") and p.get("id")):
             continue
         nom = _tokens_producto(f"{p.get('nombre')} {p.get('marca') or ''} "
                                f"{p.get('modelo') or ''}")
+        # DOS DIRECCIONES, porque entran dos cosas distintas por aca:
+        # 1) el nombre limpio que resolvio el interprete -"asus tuf f15"-, que
+        #    tiene que estar contenido en el del catalogo;
+        # 2) el MENSAJE crudo del cliente -"tenes la acer nitro 5?"-, al que le
+        #    sobran palabras, y ahi lo que tiene que estar contenido es la marca
+        #    y el modelo del producto dentro del mensaje.
+        # En el catalogo real el campo modelo arrastra el CPU y la RAM
+        # ("Nitro 5 Core i5 16GB 512GB SSD"), asi que pedir el modelo entero
+        # dentro del mensaje no matchea nunca. La marca si tiene que estar
+        # completa, y del modelo alcanza con que el cliente haya dicho al menos
+        # una palabra propia: "acer nitro 5" pega, "algo de acer" no.
+        marca = _tokens_producto(p.get("marca"))
+        modelo = _tokens_producto(p.get("modelo"))
         if toks <= nom:
             hits.append(p)
+        elif marca and marca <= toks and (modelo & toks):
+            laxos.append(p)
+    # La estricta MANDA: si el nombre limpio pego, la laxa no se usa. Sin esta
+    # precedencia, "asus tuf f15" se llevaba puestos los monitores Asus TUF,
+    # porque comparten marca y la palabra TUF.
+    hits = hits or laxos
     if not hits:
         return "not_found", []
     modelos = {(_norm_txt(p.get("marca")), _norm_txt(p.get("modelo")),

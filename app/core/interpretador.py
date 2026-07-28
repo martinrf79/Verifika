@@ -212,10 +212,66 @@ def construir_contexto_conversacional(history: list[dict],
 
 
 
+# El modelo puede declarar que lo que el cliente nombro NO esta en la lista
+# corta que se le dio. Es la valvula de escape de las dos etapas: sin ella, un
+# candidato que la recuperacion no pesco se convierte en un "no lo tenemos"
+# falso, que es justo el error de la charla del 28-jul.
+FUERA_DE_LISTA = "no_esta_en_la_lista"
+
+
+def candidatos_modelo(mensaje: str, modelos: list[str] | None,
+                      contexto: str = "", tope: int = 30) -> list[str]:
+    """Lista CORTA de modelos del catalogo para que el interprete elija.
+
+    Etapa 1 de las dos etapas: recuperar candidatos por texto. Es a proposito
+    GENEROSA -alcanza con que comparta una palabra significativa, y tolera el
+    typo por parecido- porque el que decide es el modelo en la etapa 2, no
+    esto. Un enum con los 482 modelos son 11.000 caracteres por campo y el
+    limite documentado de structured outputs es 15.000 en TODO el schema: no
+    entra, y ademas degrada. Con la lista corta el enum baja a menos de mil.
+
+    Mira el mensaje Y el contexto de la charla, porque la repregunta suele no
+    repetir el nombre ("y esa cuanto pesa?").
+    """
+    from difflib import get_close_matches
+    from app.core.pedido_helpers import _tokens_producto
+    todos = [m for m in (modelos or []) if m]
+    if not todos:
+        return []
+    toks = _tokens_producto(mensaje) | _tokens_producto(contexto)
+    if not toks:
+        return []
+    porton = {}
+    for m in todos:
+        comunes = toks & _tokens_producto(m)
+        if comunes:
+            porton[m] = len(comunes)
+    # typos: para cada palabra del mensaje que no pego en nada, se busca la mas
+    # parecida entre las palabras de los modelos ('zenbok' -> 'zenbook').
+    if len(porton) < tope:
+        vocab = {t for m in todos for t in _tokens_producto(m)}
+        for t in toks:
+            if t in vocab or len(t) < 4:
+                continue
+            for parecida in get_close_matches(t, vocab, n=2, cutoff=0.8):
+                for m in todos:
+                    if parecida in _tokens_producto(m):
+                        porton.setdefault(m, 0.5)
+    return [m for m, _s in sorted(porton.items(), key=lambda x: -x[1])][:tope]
+
+
+def _texto_candidatos(candidatos: list[str]) -> str:
+    if not candidatos:
+        return ("(ninguno del catalogo roza lo que escribio; si igual nombra un "
+                "producto, poné " + FUERA_DE_LISTA + ")")
+    return "\n".join(f"- {m}" for m in candidatos)
+
+
 def construir_prompt_interpretador(mensaje: str,
                                      contexto_conversacional: str,
                                      productos_mostrados: list[dict],
-                                     categorias: list[str] | None = None) -> str:
+                                     categorias: list[str] | None = None,
+                                     modelos: list[str] | None = None) -> str:
     """Prompt liberado v4. Da al LLM contexto y libertad para entender.
     Verifika valida abajo, asi que el Interpretador puede interpretar."""
 
@@ -226,11 +282,30 @@ def construir_prompt_interpretador(mensaje: str,
 
     cats_str = ", ".join(c for c in (categorias or []) if c) or "sin categorias"
 
+    # LOS MODELOS DEL CATALOGO que rozan el mensaje. El enum del schema lleva
+    # los 482 completos -el modelo no puede emitir uno que no exista-, pero
+    # meterlos todos tambien en el prompt son seis mil tokens por turno para
+    # nada: aca van solo los candidatos que comparten alguna palabra con lo que
+    # escribio el cliente, que es lo que necesita mirar de cerca. No es un
+    # pre-filtro que decide: si el candidato correcto no esta en esta lista, el
+    # enum se lo sigue permitiendo.
+    modelos_str = _texto_candidatos(
+        modelos if isinstance(modelos, list) else [])
+
     # EL ENUM DEL CONTACTOR: la lista cerrada de categorias de la charla, de la
     # fuente de verdad. El modelo DECLARA cual/cuales toca el mensaje; el codigo
     # engancha cada una con su criterio o su tool. No puede inventar una.
     from app.core.guia_venta_prosa import categorias_conocimiento
     conoc_str = ", ".join(categorias_conocimiento()) or "sin categorias"
+
+    # el vocabulario de specs de la fuente, con su etiqueta, para que el modelo
+    # TRADUZCA la pregunta del cliente en vez de que el codigo matchee palabras.
+    try:
+        from app.core.fuente_producto import specs_config
+        specs_str = "; ".join(f"{s['id']} = {s['etiqueta']}"
+                              for s in specs_config()) or "sin specs"
+    except Exception:
+        specs_str = "sin specs"
 
 
     prompt = f"""Sos el INTÉRPRETE de un bot de ventas argentino. Tu única tarea es ENTENDER qué quiere el cliente en el contexto de la charla y devolver datos estructurados. No le escribís al cliente y no inventás nada: abajo tuyo hay herramientas que traen el dato real del catálogo y una verificación que controla productos y números. Por eso podés interpretar con criterio y confianza, ese sistema te respalda.
@@ -247,6 +322,9 @@ CONTEXTO DE LA CHARLA (turnos recientes + memoria de lo hablado antes):
 
 PRODUCTOS QUE EL BOT YA MOSTRÓ AL CLIENTE:
 {productos_str}
+
+MODELOS DEL CATÁLOGO QUE SE PARECEN A LO QUE ESCRIBIÓ (si nombra uno de acá, EXISTE aunque no se le haya mostrado todavía. Si nombra un producto que NO está en esta lista, no digas que no lo tenemos: poné no_esta_en_la_lista y el sistema lo busca en el catálogo completo):
+{modelos_str}
 
 MENSAJE ACTUAL DEL CLIENTE:
 {mensaje}
@@ -265,6 +343,7 @@ Devolvé SOLO este JSON, sin texto alrededor. Antes de responder, validá que cu
   "pedido": [{{"producto": "nombre EXACTO de un producto mostrado", "cantidad": número, "destino": "localidad tal cual la dijo, o null"}}],
   "solicitud_nueva": [{{"categoria": "categoria EXACTA de la lista de abajo", "cantidad": número o null, "criterio": "mas_barato|intermedio|null"}}],
   "categorias": ["una o varias categorias EXACTAS de la lista de categorias de la charla, las que toque el mensaje; vacía si ninguna"],
+  "specs_preguntadas": ["los ids EXACTOS de las specs por las que el cliente pregunta, de la lista de abajo; vacía si no pregunta ninguna"],
   "tope_presupuesto": número entero en pesos o null,
   "exclusiones": [{{"tipo": "origen|marca", "valor": "texto"}}],
   "uso_previsto": "una o dos palabras o null",
@@ -296,6 +375,12 @@ categorias. La o las categorías de la charla que toca el mensaje, tomadas EXACT
 preferencias. tope_presupuesto solo si dice una CIFRA. exclusiones si descarta por origen o marca, sin partes chinas, nada de Redragon. uso_previsto si dice para qué lo quiere. Llená lo que el mensaje diga, el resto null o vacío.
 
 confianza. alta 0.85 a 1.0 lectura inequívoca; media 0.6 a 0.85 parcial; baja menor a 0.6 ambigüedad real que pide preguntar. Si dudás entre dos, bajá la confianza y poné candidatos.
+
+specs_preguntadas. TRADUCÍ lo que el cliente pregunta al id de la spec, no matchees su palabra. Esta es tu tarea más importante después de entender la intención: el código de abajo NO razona, sólo sabe ejecutar sobre estos ids, y el dato real ya está cargado esperando. Si el cliente pregunta algo que ninguno de estos ids cubre, dejá la lista vacía; no fuerces uno parecido.
+Ids disponibles con lo que significan: {specs_str}
+Ejemplos de traducción, es criterio y no lista cerrada. "resiste que se me caiga el café encima" y "son resistentes al agua" y "lo puedo meter en la pileta" van todos a resistencia_agua. "cuánto dura sin enchufar" va a bateria. "se le puede poner más memoria" va a ram_ampliable. "tiene lucecitas" va a retroiluminacion. "cuánto guarda" va a almacenamiento. "qué micro trae" va a procesador. "cuántos cuadros por segundo tira la pantalla" va a hz.
+
+producto_resuelto y productos_consultados. El nombre va EXACTO de la lista de productos mostrados o de la lista de modelos del catálogo. Si el cliente nombra un producto que nunca se mostró pero está en el catálogo, usá el nombre del catálogo: para eso está la lista. Si nombra una variante, por ejemplo un color o un procesador, elegí el modelo e igual dejá la variante escrita tal cual la dijo el cliente en respondiendo_a. Si lo que nombra no está en ninguna de las dos listas, va null: no lo inventes ni lo acomodes al más parecido.
 
 EJEMPLOS de lo difícil, refuerzo del criterio, no lista cerrada.
 "no el negro, el blanco": producto_resuelto el blanco, no es compra.
@@ -362,6 +447,50 @@ def _corregir_referencia_comparativa(resultado: dict, mensaje: str,
         resultado["confianza"] = min(
             float(resultado.get("confianza") or 0), 0.5)
         resultado["pedido"] = []
+    return resultado
+
+
+def _resolver_fuera_de_lista(resultado: dict, mensaje: str,
+                             tienda_id: str | None = None) -> dict:
+    """SEGUNDA VUELTA cuando el modelo dice que lo que nombro el cliente no
+    estaba en la lista corta.
+
+    Es la red de las dos etapas: la recuperacion por texto es generosa pero no
+    infalible, y sin esta vuelta un candidato que no pesco se convertia en un
+    "no lo tenemos" falso teniendolo en stock. Aca se busca en el catalogo
+    COMPLETO con el certificador; si aparece, se usa el nombre real; si no
+    aparece, queda en None y el bot es honesto de verdad, no por error.
+    """
+    tocados = []
+    if resultado.get("producto_resuelto") == FUERA_DE_LISTA:
+        tocados.append(("producto_resuelto", None))
+    for i, c in enumerate(resultado.get("productos_consultados") or []):
+        if isinstance(c, dict) and c.get("producto") == FUERA_DE_LISTA:
+            tocados.append(("productos_consultados", i))
+    if not tocados:
+        return resultado
+    real = None
+    try:
+        from app.core.pedido_helpers import certificar_producto
+        from app.storage.firestore_client import get_all_products
+        veredicto, hits = certificar_producto(
+            mensaje, get_all_products(tienda_id=tienda_id))
+        if hits:
+            real = str(hits[0].get("nombre") or "") or None
+    except Exception as e:
+        log.warning("interpretador_fuera_de_lista_error", error=str(e)[:120])
+    for campo, i in tocados:
+        if campo == "producto_resuelto":
+            resultado["producto_resuelto"] = real
+        else:
+            resultado["productos_consultados"][i]["producto"] = real
+    log.info("interpretador_fuera_de_lista", encontrado=bool(real),
+             producto=real, tienda_id=tienda_id)
+    if not real:
+        # nadie lo tiene: se limpia el consultado vacio para no arrastrar None
+        resultado["productos_consultados"] = [
+            c for c in (resultado.get("productos_consultados") or [])
+            if isinstance(c, dict) and c.get("producto")]
     return resultado
 
 
@@ -532,6 +661,22 @@ def validar_schema(resultado: dict) -> tuple[bool, str]:
     except Exception:
         _cats = []
     resultado["categorias"] = _cats
+    # specs_preguntadas (28-jul): la TRADUCCION del modelo, filtrada a los ids
+    # reales de la fuente. Se distingue "no declaro nada" (None, cae la red de
+    # palabras) de "declaro que no pregunta ninguna" (lista vacia, manda eso).
+    _sp = resultado.get("specs_preguntadas", None)
+    if _sp is not None:
+        if isinstance(_sp, str):
+            _sp = [_sp]
+        if not isinstance(_sp, list):
+            _sp = []
+        try:
+            from app.core.fuente_producto import specs_config
+            _validos = {s["id"] for s in specs_config()}
+            _sp = [s for s in _sp if isinstance(s, str) and s in _validos]
+        except Exception:
+            _sp = []
+        resultado["specs_preguntadas"] = _sp
     return True, ""
 
 
@@ -590,8 +735,39 @@ def parsear_respuesta_llm(raw: str) -> dict | None:
         return reparado
 
 
+def modelos_del_catalogo(tienda_id: str | None = None) -> list[str]:
+    """Los MODELOS reales de la tienda, 'Marca Modelo', uno por modelo y no por
+    producto: 482 en verifika_prod para 880 productos.
+
+    Es el vocabulario cerrado con el que el interprete puede nombrar un
+    producto que TODAVIA no se mostro. Antes el enum de producto_resuelto eran
+    solo los productos mostrados, o sea que en el primer mensaje estaba vacio y
+    el modelo no tenia donde poner lo que habia entendido perfecto: devolvia
+    texto libre y el codigo quedaba adivinando por substring. Todas las fallas
+    de identidad de la charla del 28-jul salen de ese hueco.
+    """
+    try:
+        from app.storage.firestore_client import get_all_products
+        vistos, out = set(), []
+        for p in (get_all_products(tienda_id=tienda_id) or []):
+            marca = str(p.get("marca") or "").strip()
+            modelo = str(p.get("modelo") or "").strip()
+            if not modelo:
+                continue
+            etiqueta = f"{marca} {modelo}".strip()
+            if etiqueta.lower() not in vistos:
+                vistos.add(etiqueta.lower())
+                out.append(etiqueta)
+        return out
+    except Exception as e:
+        log.warning("interpretador_modelos_catalogo_error", error=str(e)[:120])
+        return []
+
+
 def _schema_interprete(nombres_mostrados: list[str],
-                       categorias: list[str] | None = None) -> dict:
+                       categorias: list[str] | None = None,
+                       modelos: list[str] | None = None,
+                       specs: list[str] | None = None) -> dict:
     """Schema estricto para constrained generation DURA: Structured Outputs de
     OpenAI y el response_format json_schema del endpoint compatible de Gemini.
     intencion y estado atados a su enum; producto_resuelto atado al enum de
@@ -600,7 +776,12 @@ def _schema_interprete(nombres_mostrados: list[str],
     schema solo evita que emita un valor fuera de la fuente. En los demas
     providers el schema se ignora y queda el parseo + validacion de siempre."""
     nombres = list(dict.fromkeys(n for n in nombres_mostrados if n))
-    prod_enum = ([None] + nombres) if nombres else [None]
+    pedido_enum = ([None] + nombres) if nombres else [None]
+    # el enum de producto son los MOSTRADOS mas los MODELOS del catalogo: el
+    # cliente puede nombrar por primera vez algo que existe y el interprete
+    # tiene donde ponerlo, atado, sin poder inventarlo.
+    nombres = list(dict.fromkeys(nombres + [m for m in (modelos or []) if m]))
+    prod_enum = ([None, FUERA_DE_LISTA] + nombres) if nombres else [None, FUERA_DE_LISTA]
     consulta_enum = ["precio", "ficha", "stock", "opinion",
                      "comparacion", "envio", "otra"]
     # Enum de CATEGORIAS reales de la tienda (lista cerrada y conocida): ata la
@@ -652,7 +833,11 @@ def _schema_interprete(nombres_mostrados: list[str],
             "pedido": {"type": ["array", "null"], "items": {
                 "type": "object", "additionalProperties": False,
                 "properties": {
-                    "producto": {"type": ["string", "null"], "enum": prod_enum},
+                    # el PEDIDO se arma sobre lo MOSTRADO, no sobre el catalogo
+                    # entero: se compra lo que se le ofrecio y quedo certificado.
+                    # Ademas evita repetir el enum de 482 modelos una tercera vez
+                    # en el schema, que son varios miles de tokens por turno.
+                    "producto": {"type": ["string", "null"], "enum": pedido_enum},
                     "cantidad": {"type": "integer"},
                     "destino": {"type": ["string", "null"]},
                 },
@@ -682,6 +867,15 @@ def _schema_interprete(nombres_mostrados: list[str],
             # venta). Es el disparador que enruta a criterio o a tool.
             "categorias": {"type": "array",
                            "items": {"type": "string", "enum": conoc_enum}},
+            # SPECS PREGUNTADAS (28-jul): la TRADUCCION que solo el modelo sabe
+            # hacer. El cliente dice "resiste que se me caiga el cafe" o "son
+            # resistentes al agua" y el modelo lo declara como resistencia_agua,
+            # atado al enum de specs_preguntables.json. Antes esto lo resolvia
+            # una lista de palabras escrita a mano que fallaba con cada
+            # redaccion nueva: el dato estaba cargado y la pregunta no llegaba.
+            "specs_preguntadas": {"type": "array", "items": {
+                "type": "string",
+                "enum": (specs or ["otra"])}},
             # PREFERENCIAS (16-jul): tope solo con CIFRA; exclusiones por origen
             # o marca; uso en una o dos palabras. Consumidas por el generador.
             "tope_presupuesto": {"type": ["integer", "null"]},
@@ -699,7 +893,7 @@ def _schema_interprete(nombres_mostrados: list[str],
         "required": ["respondiendo_a", "productos_consultados",
                      "producto_resuelto", "candidatos", "ofrecer_opciones",
                      "intencion", "estado_conversacion", "criterio", "pedido",
-                     "solicitud_nueva", "categorias",
+                     "solicitud_nueva", "categorias", "specs_preguntadas",
                      "tope_presupuesto", "exclusiones", "uso_previsto",
                      "confianza"],
     }
@@ -826,15 +1020,31 @@ async def interpretar_mensaje(mensaje: str,
         except Exception:
             _categorias = []
 
-        prompt = construir_prompt_interpretador(
-            mensaje, contexto_conv, productos, _categorias)
+        # El VOCABULARIO CERRADO de la fuente con el que el interprete traduce
+        # lo que dijo el cliente: los modelos reales del catalogo y los ids de
+        # spec. El modelo razona y traduce; el codigo de abajo solo ejecuta
+        # sobre estos valores, que es lo unico que sabe hacer.
+        _modelos = candidatos_modelo(mensaje, modelos_del_catalogo(tienda_id),
+                                     contexto_conv)
+        try:
+            from app.core.fuente_producto import specs_config
+            _specs = [s["id"] for s in specs_config()]
+        except Exception:
+            _specs = []
 
-        # Constrained generation dura (solo OpenAI): el enum de producto_resuelto
-        # se arma con los productos que el bot REALMENTE mostro este contexto.
+        prompt = construir_prompt_interpretador(
+            mensaje, contexto_conv, productos, _categorias, _modelos)
+
+        # Constrained generation dura: el enum de producto_resuelto son los
+        # productos mostrados MAS los modelos del catalogo, y el de
+        # specs_preguntadas los ids de la fuente. El modelo no puede emitir un
+        # valor que la fuente no tenga, y ya no le falta donde poner lo que
+        # entendio bien.
         _nombres = [p.get("nombre") for p in productos if p.get("nombre")]
         _rf = {"type": "json_schema", "json_schema": {
             "name": "interpretacion", "strict": True,
-            "schema": _schema_interprete(_nombres, _categorias)}}
+            "schema": _schema_interprete(_nombres, _categorias, _modelos,
+                                         _specs)}}
 
         # Primera llamada al LLM
         raw = await _llamar_llm(prompt, response_format=_rf)
@@ -901,6 +1111,7 @@ async def interpretar_mensaje(mensaje: str,
             resultado["pedido"] = []
         coercionar_preferencias(resultado)
         coercionar_destinos(resultado, mensaje)
+        _resolver_fuera_de_lista(resultado, mensaje, tienda_id)
 
         # Sesgo medido del modelo en referencias comparativas ('el barato no,
         # el otro'): la comparacion de precios la corrige el CODIGO.
