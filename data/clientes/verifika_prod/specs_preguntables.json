@@ -99,7 +99,7 @@
     },
     {
       "id": "resistencia_agua",
-      "claves": ["resistente al agua", "sumergible", "impermeable", "resistencia al agua"],
+      "claves": ["resistente al agua", "sumergible", "impermeable", "resistencia al agua", "derrame", "salpicadura", "cafe", "liquido", "mojar", "se moja", "a prueba de agua", "aguanta el agua"],
       "etiqueta": "la resistencia al agua",
       "aplica_a": ["auriculares", "parlante", "mouse", "teclado"],
       "extraer": ["(ipx?\\d{1,2})", "(resistente al agua)", "(sumergible)", "(impermeable)"],

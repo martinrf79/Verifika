@@ -105,9 +105,15 @@ def test_specs_del_catalogo_real(catalogo):
     assert "ssd" in note["specs"]["almacenamiento"].lower()
     assert note["specs"]["procesador"].lower().startswith("ryzen")
     tablet = next(p for p in por_id.values() if p["categoria"] == "tablet")
-    # la tablet informa disco pero NO ram: el hueco tiene que quedar vacio
+    # el disco lo dice la ficha; la RAM NO, y desde que se cargo la planilla por
+    # modelo la contesta esa capa. Lo que ninguna capa trae sigue sin aparecer.
     assert "almacenamiento" in tablet["specs"]
-    assert "ram" not in tablet["specs"], "la ficha no dice la RAM: no se inventa"
+    assert tablet["specs"].get("ram"), "la planilla por modelo tiene que dar la RAM"
+    sin_dato = normalizar_producto({"id": "Z1", "categoria": "tablet",
+                                    "nombre": "Tablet Marca Inexistente 99",
+                                    "marca": "Nadie", "modelo": "No Existe",
+                                    "precio_ars": "1", "stock": "1"})
+    assert "ram" not in sin_dato["specs"], "sin dato en ninguna capa no se inventa"
     monitor = next(p for p in por_id.values() if p["categoria"] == "monitor")
     assert monitor["specs"]["hz"].lower().endswith("hz")
 
@@ -256,3 +262,77 @@ def test_un_lote_que_falla_se_reintenta_y_no_deja_la_carga_a_medias(monkeypatch)
     prods = [{"id": f"P{i}", "nombre": f"prod {i}"} for i in range(10)]
     assert fc.upsert_products_batch(prods, tienda_id="t1") == 10
     assert registro["commits"] == 1
+
+
+# ── 6. LAS TRES CAPAS DE LA FUENTE ──────────────────────────────────────────
+# ficha del producto > tabla por modelo > default de categoria > regla.
+
+def test_la_categoria_completa_lo_que_es_cierto_para_todas():
+    note = normalizar_producto({"id": "N9", "categoria": "notebook",
+                                "nombre": "Notebook Generica Core i5 8GB 256GB SSD",
+                                "precio_ars": "1", "stock": "1"})
+    # nadie cargo nada de esta notebook y sin embargo esto ya se puede contestar
+    assert "bateria" in note["specs"] and "camara" in note["specs"]
+    assert note["specs"]["bluetooth"].startswith("si")
+    # lo que varia de un modelo a otro NO se afirma por categoria
+    for varia in ("lector_huella", "thunderbolt", "ram_ampliable"):
+        assert varia not in note["specs"], f"{varia} no se puede dar por categoria"
+
+
+def test_con_cable_es_una_respuesta_no_un_dato_que_falta():
+    aur = normalizar_producto({"id": "A9", "categoria": "auriculares",
+                               "nombre": "Auriculares HyperX Cloud II",
+                               "precio_ars": "1", "stock": "1",
+                               "caracteristicas_extra": "con cable"})
+    assert aur["specs"]["bluetooth"].startswith("no")
+    assert "cable" in aur["specs"]["bateria"]
+    salida = estampar_honestidad_specs("Suenan muy bien.", "tienen bluetooth?", aur)
+    assert "la ficha no lo especifica" not in salida.lower()
+    assert "no" in salida.lower()
+
+
+def test_la_ficha_del_producto_le_gana_a_la_categoria():
+    # la ficha dice el wifi exacto: la capa de categoria no lo pisa con 'si'
+    note = normalizar_producto({"id": "N8", "categoria": "notebook",
+                                "nombre": "Notebook X WiFi 6",
+                                "precio_ars": "1", "stock": "1",
+                                "caracteristicas_extra": "WiFi 6"})
+    assert note["specs"]["wifi"].lower().replace("-", "") == "wifi 6"
+
+
+def test_la_planilla_por_modelo_se_carga_y_completa(tmp_path, monkeypatch):
+    import app.core.fuente_producto as fp
+    csv_modelo = tmp_path / "specs_por_modelo.csv"
+    csv_modelo.write_text(
+        "marca,modelo,categoria,lector_huella,thunderbolt\n"
+        "Asus,TUF Gaming F15,notebook,si con lector en el touchpad,\n",
+        encoding="utf-8")
+    monkeypatch.setattr(fp, "_ruta_dato", lambda tid, arch: (
+        str(csv_modelo) if arch == "specs_por_modelo.csv" else None))
+    fp._CACHE_MODELO.clear()
+    fp._CACHE_CATEGORIA.clear()
+    try:
+        prod = fp.normalizar_producto({"id": "N7", "categoria": "notebook",
+                                       "marca": "Asus", "modelo": "TUF Gaming F15",
+                                       "nombre": "Notebook Asus TUF Gaming F15",
+                                       "precio_ars": "1", "stock": "1"})
+        assert prod["specs"]["lector_huella"].startswith("si")
+        # la celda vacia de la planilla NO inventa nada
+        assert "thunderbolt" not in prod["specs"]
+    finally:
+        fp._CACHE_MODELO.clear()
+        fp._CACHE_CATEGORIA.clear()
+
+
+def test_la_pregunta_en_plural_llega_al_dato():
+    """Bug real cazado al probar: el cliente escribe 'son resistentes al agua'
+    y el match literal contra 'resistente al agua' lo dejaba pasar con el dato
+    cargado. Las claves toleran plural y espaciado."""
+    aur = normalizar_producto({"id": "A7", "categoria": "auriculares",
+                               "nombre": "Auriculares HyperX Cloud II",
+                               "marca": "HyperX", "modelo": "Cloud II",
+                               "precio_ars": "1", "stock": "1",
+                               "caracteristicas_extra": "con cable"})
+    aur["specs"]["resistencia_agua"] = "no, no es resistente al agua"
+    resp, _faltan = _specs_del_turno("son resistentes al agua?", aur)
+    assert [e for e, _v, _a, _b in resp] == ["la resistencia al agua"]

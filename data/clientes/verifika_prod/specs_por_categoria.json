@@ -1,0 +1,59 @@
+{
+  "_doc": "CAPA 2 de la fuente de specs: lo que es cierto para TODA una categoria y por eso no hace falta cargarlo producto por producto. Una notebook tiene bateria y camara; una tablet es tactil. Aca SOLO va lo que vale para la categoria entera como clase. Lo que varia de un modelo a otro -si esa notebook trae lector de huella o thunderbolt- NO va aca: va en specs_por_modelo.csv, porque afirmarlo por categoria seria inventar. Precedencia: lo que dice la ficha del producto manda sobre el modelo, y el modelo manda sobre la categoria.",
+  "categorias": {
+    "notebook": {
+      "bateria": "si, bateria recargable integrada",
+      "camara": "si, camara web integrada",
+      "wifi": "si, wifi integrado",
+      "bluetooth": "si, bluetooth integrado"
+    },
+    "tablet": {
+      "bateria": "si, bateria recargable integrada",
+      "camara": "si, camara integrada",
+      "wifi": "si, wifi integrado",
+      "bluetooth": "si, bluetooth integrado",
+      "tactil": "si, pantalla tactil"
+    },
+    "webcam": {
+      "camara": "si, es una camara web",
+      "bateria": "no usa bateria, se alimenta por el cable USB"
+    },
+    "monitor": {
+      "bateria": "no usa bateria, se alimenta de la red electrica"
+    },
+    "impresora": {
+      "bateria": "no usa bateria, se alimenta de la red electrica"
+    },
+    "router": {
+      "bateria": "no usa bateria, se alimenta de la red electrica",
+      "wifi": "si, es un router wifi"
+    },
+    "silla gamer": {
+      "retroiluminacion": "no, es una silla sin iluminacion"
+    }
+  },
+  "_doc_reglas": "Reglas condicionales: cuando la propia ficha ya dice algo que RESUELVE otra spec. Un auricular que la fuente declara 'con cable' no tiene bluetooth ni bateria, y eso es una respuesta real, no un dato que falte. 'si' filtra por categoria y por el valor de una spec ya resuelta; 'entonces' completa las que estan vacias, nunca pisa un dato de la ficha.",
+  "reglas": [
+    {
+      "si": {
+        "categorias": ["auriculares", "mouse", "teclado", "microfono", "parlante", "webcam"],
+        "spec": "conexion",
+        "contiene": ["con cable", "usb"]
+      },
+      "entonces": {
+        "bluetooth": "no, este modelo es con cable",
+        "bateria": "no usa bateria, se alimenta por el cable"
+      }
+    },
+    {
+      "si": {
+        "categorias": ["auriculares", "mouse", "teclado", "parlante"],
+        "spec": "conexion",
+        "contiene": ["inalambric", "wireless"]
+      },
+      "entonces": {
+        "bateria": "si, bateria recargable"
+      }
+    }
+  ]
+}
