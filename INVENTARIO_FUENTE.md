@@ -24,11 +24,9 @@ Firestore vivo: **880** productos.
 | caracteristicas_extra | ficha: specs | 880/880 | 880/880 |
 | marca | buscador | 880/880 | 880/880 |
 | modelo | certificador de modelo puntual | 880/880 | 880/880 |
-| color | buscador, variantes | 861/880 | 861/880 |
-| tags | buscador: sinonimos | 880/880 | 0/880 |
-| descripcion_rica | buscador: score | 880/880 | 0/880 |
-
-**HUECO:** el CSV trae tags, descripcion_rica y Firestore NO. El codigo los lee y le vuelve vacio. Se cierra recargando el catalogo por la ingesta normalizada.
+| color | buscador, variantes | 861/880 | 880/880 |
+| tags | buscador: sinonimos | 880/880 | 880/880 |
+| descripcion_rica | buscador: score | 880/880 | 880/880 |
 
 ## 2. Specs preguntables: que puede contestar la fuente
 

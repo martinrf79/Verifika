@@ -73,12 +73,29 @@ Se saco el cache de structlog (`app/logger.py`): con cache el logger de un
 modulo quedaba pegado a la primera config y el observador del banco se quedaba
 SORDO a los radares del camino vivo segun el orden de los tests.
 
-**PENDIENTE PARA MARTIN (un solo paso, cierra el hueco 2):** recargar el
-catalogo por la ingesta normalizada para que Firestore reciba `tags`,
-`descripcion_rica`, la ficha depurada y el mapa `specs` guardado:
-`python scripts/crear_cliente.py cargar_catalogo --tienda_id verifika_prod
---catalogo data/clientes/verifika_prod/productos.csv`. Sin eso el bot igual
-responde specs (se completan al leer), pero el buscador sigue sin sinonimos.
+**CARGA HECHA Y VERIFICADA (27-jul, noche).** El catalogo se recargo por la
+ingesta normalizada desde Cloud Shell: 880/880 escritos en lotes de 200, cero
+filas ignoradas. Verificado con `scripts/inventario_fuente.py --verificar`
+desde dos lados distintos: los 20 campos dan 880/880 identicos al CSV
+normalizado, el mapa `specs` incluido, y 0 fichas con la capacidad de otro
+producto. Firestore quedo con `tags` y `descripcion_rica` (antes 0/880, el
+buscador puntuaba con campos vacios) y con la descripcion RICA del repo (peso,
+medidas, material y specs, que la generacion vieja no tenia).
+
+Comprobado end-to-end contra los datos VIVOS: la tablet contesta
+"Almacenamiento: 128GB" y es honesta con la RAM que la ficha no trae -el turno
+exacto que fallo el 24-jul-; en la notebook, si el modelo tira "8GB", la linea
+se cae y queda "Memoria RAM: 16GB" de la fuente; el monitor contesta "Hercios
+de la pantalla: 75Hz".
+
+**PARA CARGAR EL CATALOGO DESDE CLOUD SHELL (receta que funciona):** el
+`pip install --user` rompe el namespace `google.cloud` de Cloud Shell y la
+carga muere con `cannot import name 'firestore'`. Va en venv propio:
+`python3 -m venv .venv-shell` y `pip install google-cloud-firestore structlog
+pydantic requests google-auth`. NUNCA `-r requirements.txt` ahi.
+
+**LO UNICO QUE QUEDA DE ESTE TRACK:** mirar en trafico real si el radar
+`generador_v2_prosa_podada` dispara de mas ahora que la ficha trae mas numero.
 
 ---
 
