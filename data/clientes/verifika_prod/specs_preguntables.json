@@ -128,6 +128,15 @@
       "claves_ficha": ["almacenamiento", "disco", "ssd", "emmc", "hdd"]
     },
     {
+      "id": "garantia",
+      "claves": ["garantia", "cuanto tiempo de garantia", "que garantia tiene", "cuanta garantia", "garantia oficial", "cubre la garantia"],
+      "etiqueta": "la garantia",
+      "extraer": [
+        {"patron": "(\\d+\\s*meses)", "campos": ["garantia_detalle", "descripcion"]}
+      ],
+      "claves_ficha": ["garantia"]
+    },
+    {
       "id": "procesador",
       "claves": ["procesador", "cpu", "que micro", "microprocesador", "core i", "ryzen", "nucleos", "que chip"],
       "etiqueta": "el procesador",
