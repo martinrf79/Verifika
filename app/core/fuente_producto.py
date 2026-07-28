@@ -355,6 +355,109 @@ def _completar_capas(out: dict, prod: dict, categoria: str,
     return out
 
 
+# ── ATRIBUTOS ORDENABLES ────────────────────────────────────────────────────
+# "la mas grande", "la mas liviana", "la de mas hercios", "la mas barata" son la
+# MISMA operacion con distinto atributo. Por eso el criterio no se enumera a
+# mano -habria que editar codigo por cada forma nueva de preguntar-: se parte en
+# direccion (max o min, dos valores para siempre) y ATRIBUTO, y el enum de
+# atributos se DERIVA de la fuente. Columna numerica del catalogo o spec con
+# valor numerico = atributo preguntable. Si manana la tienda suma una columna,
+# esa columna queda preguntable sola, sin tocar una linea.
+
+# columnas numericas del catalogo y como se las nombra al cliente
+COLUMNAS_ORDENABLES = {
+    "precio_ars": "el precio",
+    "peso_gramos": "el peso",
+    "garantia_meses": "la garantia",
+    "stock": "el stock",
+}
+
+# multiplicadores para comparar magnitudes de la misma familia
+_UNIDADES = {"tb": 1024.0, "gb": 1.0, "mb": 1 / 1024.0,
+             "kg": 1000.0, "g": 1.0,
+             "hz": 1.0, "w": 1.0, "mah": 1.0, "wh": 1.0,
+             "mp": 1.0, "meses": 1.0, "horas": 1.0, "h": 1.0}
+_RE_MAGNITUD = re.compile(
+    r"(\d+(?:[.,]\d+)?)\s*(tb|gb|mb|kg|g|hz|w|mah|wh|mp|meses|horas|h)\b",
+    re.IGNORECASE)
+
+
+def valor_numerico(texto) -> float | None:
+    """El numero comparable de un valor de spec. '512GB SSD' -> 512,
+    '2TB' -> 2048, '75Hz' -> 75, '550W' -> 550. Devuelve None si el valor no es
+    una magnitud (por ejemplo 'si, lector de huella integrado'), y esa spec
+    simplemente no entra como atributo ordenable."""
+    if isinstance(texto, (int, float)):
+        return float(texto)
+    m = _RE_MAGNITUD.search(str(texto or ""))
+    if m:
+        try:
+            return float(m.group(1).replace(",", ".")) * _UNIDADES[m.group(2).lower()]
+        except (ValueError, KeyError):
+            return None
+    solo = re.fullmatch(r"\s*(\d+(?:[.,]\d+)?)\s*", str(texto or ""))
+    return float(solo.group(1).replace(",", ".")) if solo else None
+
+
+def atributo_de(prod: dict, atributo: str) -> float | None:
+    """El valor comparable de un producto para un atributo, venga de una
+    columna del catalogo o del mapa de specs. Una sola puerta."""
+    if not isinstance(prod, dict) or not atributo:
+        return None
+    if atributo in COLUMNAS_ORDENABLES:
+        return valor_numerico(prod.get(atributo))
+    specs = prod.get("specs")
+    if isinstance(specs, dict):
+        return valor_numerico(specs.get(atributo))
+    return None
+
+
+def atributos_ordenables(productos: list, tienda_id: str | None = None,
+                         minimo: int = 5) -> dict:
+    """{atributo: etiqueta} de todo lo que se puede pedir "el que mas/menos".
+
+    DERIVADO de la fuente, no escrito a mano: una columna numerica o una spec
+    con magnitud, siempre que la tenga un minimo de productos. Es el enum que
+    consume el schema del interprete.
+    """
+    etq = {s["id"]: s["etiqueta"] for s in specs_config(tienda_id)}
+    num: dict[str, int] = {}
+    tot: dict[str, int] = {}
+    for p in (productos or []):
+        if not isinstance(p, dict):
+            continue
+        for col in COLUMNAS_ORDENABLES:
+            if p.get(col) not in (None, ""):
+                tot[col] = tot.get(col, 0) + 1
+                if valor_numerico(p.get(col)) is not None:
+                    num[col] = num.get(col, 0) + 1
+        specs = p.get("specs")
+        if isinstance(specs, dict):
+            for sid, val in specs.items():
+                if not val:
+                    continue
+                tot[sid] = tot.get(sid, 0) + 1
+                if valor_numerico(val) is not None:
+                    num[sid] = num.get(sid, 0) + 1
+    out = {}
+    for k, n in num.items():
+        # el atributo tiene que ser una MAGNITUD, no un texto con un numero
+        # suelto adentro: 'si, 4 slots DDR4 hasta 128GB' no es una capacidad
+        # ordenable. Se mide por proporcion, asi no hace falta lista a mano.
+        if n >= minimo and n / max(1, tot.get(k, 1)) >= 0.7:
+            out[k] = COLUMNAS_ORDENABLES.get(k) or etq.get(k, k)
+    return out
+
+
+def ordenar_por(productos: list, atributo: str, direccion: str = "max") -> list:
+    """Los productos que TIENEN ese atributo, ordenados. Los que no lo tienen
+    quedan afuera: no se los puede comparar y meterlos seria adivinar."""
+    con = [(atributo_de(p, atributo), p) for p in (productos or [])]
+    con = [(v, p) for v, p in con if v is not None]
+    con.sort(key=lambda t: t[0], reverse=(str(direccion).lower() != "min"))
+    return [p for _v, p in con]
+
+
 def consenso_specs(productos: list) -> tuple[dict, dict]:
     """(comunes, difieren) entre las VARIANTES de un mismo modelo.
 

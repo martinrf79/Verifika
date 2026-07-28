@@ -271,7 +271,8 @@ def construir_prompt_interpretador(mensaje: str,
                                      contexto_conversacional: str,
                                      productos_mostrados: list[dict],
                                      categorias: list[str] | None = None,
-                                     modelos: list[str] | None = None) -> str:
+                                     modelos: list[str] | None = None,
+                                     atributos: dict | None = None) -> str:
     """Prompt liberado v4. Da al LLM contexto y libertad para entender.
     Verifika valida abajo, asi que el Interpretador puede interpretar."""
 
@@ -307,6 +308,11 @@ def construir_prompt_interpretador(mensaje: str,
     except Exception:
         specs_str = "sin specs"
 
+    # los ATRIBUTOS ordenables, derivados del catalogo. Es lo que le permite al
+    # modelo traducir cualquier superlativo -"la mas grande", "la mas liviana",
+    # "la de mas garantia"- a una operacion que el codigo sabe ejecutar.
+    atributos_str = "; ".join(f"{k} = {v}" for k, v in
+                              sorted((atributos or {}).items())) or "sin atributos"
 
     prompt = f"""Sos el INTÉRPRETE de un bot de ventas argentino. Tu única tarea es ENTENDER qué quiere el cliente en el contexto de la charla y devolver datos estructurados. No le escribís al cliente y no inventás nada: abajo tuyo hay herramientas que traen el dato real del catálogo y una verificación que controla productos y números. Por eso podés interpretar con criterio y confianza, ese sistema te respalda.
 
@@ -340,6 +346,7 @@ Devolvé SOLO este JSON, sin texto alrededor. Antes de responder, validá que cu
   "intencion": "saludo|exploracion|pregunta_especifica|aporta_dato|decision_compra|otra",
   "estado_conversacion": "saludo|explorando|esperando_confirmacion|esperando_datos|derivar_humano|posventa",
   "criterio": "mas_barato|intermedio|null",
+  "orden": "null, o {{\\"direccion\\": \\"max|min\\", \\"atributo\\": \\"uno EXACTO de la lista de atributos de abajo\\"}} cuando el cliente pide un SUPERLATIVO: la que MAS capacidad, la MAS liviana, la de MAS hercios, la MAS barata, la de MAS garantia. Traducí la frase al atributo, no importa cómo la escriba",
   "pedido": [{{"producto": "nombre EXACTO de un producto mostrado", "cantidad": número, "destino": "localidad tal cual la dijo, o null"}}],
   "solicitud_nueva": [{{"categoria": "categoria EXACTA de la lista de abajo", "cantidad": número o null, "criterio": "mas_barato|intermedio|null"}}],
   "categorias": ["una o varias categorias EXACTAS de la lista de categorias de la charla, las que toque el mensaje; vacía si ninguna"],
@@ -379,6 +386,10 @@ confianza. alta 0.85 a 1.0 lectura inequívoca; media 0.6 a 0.85 parcial; baja m
 specs_preguntadas. TRADUCÍ lo que el cliente pregunta al id de la spec, no matchees su palabra. Esta es tu tarea más importante después de entender la intención: el código de abajo NO razona, sólo sabe ejecutar sobre estos ids, y el dato real ya está cargado esperando. Si el cliente pregunta algo que ninguno de estos ids cubre, dejá la lista vacía; no fuerces uno parecido.
 Ids disponibles con lo que significan: {specs_str}
 Ejemplos de traducción, es criterio y no lista cerrada. "resiste que se me caiga el café encima" y "son resistentes al agua" y "lo puedo meter en la pileta" van todos a resistencia_agua. "cuánto dura sin enchufar" va a bateria. "se le puede poner más memoria" va a ram_ampliable. "tiene lucecitas" va a retroiluminacion. "cuánto guarda" va a almacenamiento. "qué micro trae" va a procesador. "cuántos cuadros por segundo tira la pantalla" va a hz.
+
+orden. Cuando el cliente pide un SUPERLATIVO, traducilo a dirección más atributo. "la que más capacidad tenga" es max + almacenamiento. "la más liviana" es min + peso_gramos. "la de más garantía" es max + garantia_meses. "la más barata" es min + precio_ars. "la más potente" elegí el atributo que mejor represente potencia en esa categoría. Es la misma operación siempre, sólo cambia el atributo: no te limites a los ejemplos.
+Atributos disponibles con lo que significan: {atributos_str}
+Si el cliente no pide ningún superlativo, va null. Y ojo: "barato" a secas no es un superlativo, eso es criterio mas_barato; orden es para cuando compara contra TODO el catálogo, "la que más", "la mejor en", "el más grande de todos".
 
 producto_resuelto y productos_consultados. El nombre va EXACTO de la lista de productos mostrados o de la lista de modelos del catálogo. Si el cliente nombra un producto que nunca se mostró pero está en el catálogo, usá el nombre del catálogo: para eso está la lista. Si nombra una variante, por ejemplo un color o un procesador, elegí el modelo e igual dejá la variante escrita tal cual la dijo el cliente en respondiendo_a. Si lo que nombra no está en ninguna de las dos listas, va null: no lo inventes ni lo acomodes al más parecido.
 
@@ -767,7 +778,8 @@ def modelos_del_catalogo(tienda_id: str | None = None) -> list[str]:
 def _schema_interprete(nombres_mostrados: list[str],
                        categorias: list[str] | None = None,
                        modelos: list[str] | None = None,
-                       specs: list[str] | None = None) -> dict:
+                       specs: list[str] | None = None,
+                       atributos: list[str] | None = None) -> dict:
     """Schema estricto para constrained generation DURA: Structured Outputs de
     OpenAI y el response_format json_schema del endpoint compatible de Gemini.
     intencion y estado atados a su enum; producto_resuelto atado al enum de
@@ -793,6 +805,10 @@ def _schema_interprete(nombres_mostrados: list[str],
     # una con su criterio (prosa) o su tool. Cubre la pregunta compleja multi-tema.
     from app.core.guia_venta_prosa import categorias_conocimiento
     conoc_enum = categorias_conocimiento() or ["otra"]
+    # ATRIBUTOS ordenables, DERIVADOS del catalogo (columnas numericas + specs
+    # con magnitud). No es una lista escrita a mano: el dia que la tienda suma
+    # una columna, esa columna queda preguntable sin tocar codigo.
+    atrib_enum = list(atributos or []) or ["precio_ars"]
     return {
         "type": "object",
         "additionalProperties": False,
@@ -826,6 +842,22 @@ def _schema_interprete(nombres_mostrados: list[str],
             # "intermedio" (11-jul): rechazar el minimo es un criterio propio.
             "criterio": {"type": ["string", "null"],
                          "enum": ["mas_barato", "intermedio", None]},
+            # ORDEN (28-jul, charla real): "la que mas capacidad tenga", "la mas
+            # liviana", "la de mas hercios" y "la mas barata" son la MISMA
+            # operacion con distinto atributo. Antes solo existian mas_barato e
+            # intermedio, asi que un superlativo del otro lado no tenia donde
+            # caer: el cliente pidio la de mas capacidad y el codigo, por
+            # default, le mostro las cuatro mas baratas teniendo 57 de 1TB.
+            # Por eso no se enumeran los criterios: se parte en DIRECCION (dos
+            # valores, fijos) y ATRIBUTO, y el enum de atributos se DERIVA de la
+            # fuente. Columna nueva en el catalogo = atributo preguntable, sin
+            # tocar codigo.
+            "orden": {"type": ["object", "null"], "additionalProperties": False,
+                      "properties": {
+                          "direccion": {"type": "string", "enum": ["max", "min"]},
+                          "atributo": {"type": "string", "enum": atrib_enum},
+                      },
+                      "required": ["direccion", "atributo"]},
             # PEDIDO estructurado (8-jul): productos MOSTRADOS con cantidad,
             # atado por enum. Alimenta la guia determinista de pedido; el solver
             # no elige ids. destino por renglon, plano (Firestore prohibe listas
@@ -892,7 +924,8 @@ def _schema_interprete(nombres_mostrados: list[str],
         },
         "required": ["respondiendo_a", "productos_consultados",
                      "producto_resuelto", "candidatos", "ofrecer_opciones",
-                     "intencion", "estado_conversacion", "criterio", "pedido",
+                     "intencion", "estado_conversacion", "criterio", "orden",
+                     "pedido",
                      "solicitud_nueva", "categorias", "specs_preguntadas",
                      "tope_presupuesto", "exclusiones", "uso_previsto",
                      "confianza"],
@@ -1031,9 +1064,20 @@ async def interpretar_mensaje(mensaje: str,
             _specs = [s["id"] for s in specs_config()]
         except Exception:
             _specs = []
+        # atributos ordenables DERIVADOS del catalogo: con esto "la que mas
+        # capacidad" y "la mas liviana" tienen donde caer sin enumerar criterios.
+        try:
+            from app.core.fuente_producto import atributos_ordenables
+            from app.storage.firestore_client import get_all_products
+            _atrib_map = atributos_ordenables(
+                get_all_products(tienda_id=tienda_id), tienda_id)
+            _atributos = sorted(_atrib_map)
+        except Exception:
+            _atrib_map, _atributos = {}, []
 
         prompt = construir_prompt_interpretador(
-            mensaje, contexto_conv, productos, _categorias, _modelos)
+            mensaje, contexto_conv, productos, _categorias, _modelos,
+            _atrib_map)
 
         # Constrained generation dura: el enum de producto_resuelto son los
         # productos mostrados MAS los modelos del catalogo, y el de
@@ -1044,7 +1088,7 @@ async def interpretar_mensaje(mensaje: str,
         _rf = {"type": "json_schema", "json_schema": {
             "name": "interpretacion", "strict": True,
             "schema": _schema_interprete(_nombres, _categorias, _modelos,
-                                         _specs)}}
+                                         _specs, _atributos)}}
 
         # Primera llamada al LLM
         raw = await _llamar_llm(prompt, response_format=_rf)
