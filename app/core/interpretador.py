@@ -1175,6 +1175,12 @@ async def interpretar_mensaje(mensaje: str,
                  respondiendo_a=resultado.get("respondiendo_a"),
                  candidatos_count=len(resultado.get("candidatos", [])),
                  pedido=resultado.get("pedido"),
+                 # sin estos dos campos en el log, los campos nuevos del
+                 # contactor son invisibles: se leia None en los logs y no se
+                 # sabia si el interprete no los emitio o si nadie los mostraba.
+                 orden=resultado.get("orden"),
+                 specs_preguntadas=resultado.get("specs_preguntadas"),
+                 criterio=resultado.get("criterio"),
                  productos_contexto=len(productos))
 
         return resultado

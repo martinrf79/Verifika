@@ -54,8 +54,11 @@ _GENERICAS = {"notebook", "note", "laptop", "mouse", "mause", "raton", "teclado"
 
 
 def _tokens_producto(s: str) -> set:
+    # el numero de un solo digito NO se descarta: "IdeaPad 3" y "IdeaPad Slim 5"
+    # se distinguen justo por ese caracter, y tirarlo hacia que el 3 matcheara
+    # tambien al Slim 5 (visto en el universo del 28-jul).
     return {t for t in _norm_txt(s).replace("-", " ").split()
-            if len(t) >= 2 and t not in _GENERICAS}
+            if (len(t) >= 2 or t.isdigit()) and t not in _GENERICAS}
 
 
 def certificar_producto(resuelto: str, catalogo: list) -> tuple[str, list]:

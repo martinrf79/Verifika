@@ -97,3 +97,46 @@ def test_magnitudes_comparables_entre_unidades():
     assert valor_numerico("75Hz") == 75
     assert valor_numerico("550W") == 550
     assert valor_numerico("si, lector de huella integrado") is None
+
+
+# ── LO QUE SALIO DE LA CHARLA REAL DEL 28-jul ───────────────────────────────
+
+def test_el_orden_corre_aunque_haya_un_producto_en_foco(catalogo):
+    """"y la mas liviana cual es" no nombra la categoria y sigue una charla
+    sobre una notebook puntual. Antes el universo se cortaba en lo mostrado y
+    el bot esquivaba el peso: "mas alla del peso, esta es muy versatil"."""
+    from app.core.fuente_producto import ordenar_por
+    nb = [p for p in catalogo if p["categoria"] == "notebook"]
+    estado = {"productos_vistos": [{"id": nb[0]["id"], "nombre": nb[0]["nombre"]}]}
+    universo = universo_productos(
+        "y la mas liviana cual es", estado, "verifika_prod",
+        {"producto_resuelto": nb[0]["nombre"],
+         "orden": {"direccion": "min", "atributo": "peso_gramos"}})
+    liviana = ordenar_por([p for p in nb if int(p.get("stock") or 0) > 0],
+                          "peso_gramos", "min")[0]
+    assert universo[0]["id"] == liviana["id"], (
+        "la cabeza del orden tiene que ENCABEZAR el universo, no estar al final")
+
+
+def test_la_garantia_la_contesta_el_producto_no_la_faq(catalogo):
+    """Caso real: el bot dijo "6 meses" (el minimo generico de la FAQ) para una
+    notebook cuya ficha dice 12."""
+    from app.core.generador_v2 import estampar_honestidad_specs
+    note = next(p for p in catalogo
+                if "IdeaPad 3 Core i5" in p["nombre"])
+    assert note["specs"].get("garantia"), "la garantia tiene que ser preguntable"
+    salida = estampar_honestidad_specs(
+        "Todos nuestros productos tienen garantia oficial de 6 meses.\n"
+        "¿Querés que la reservemos?",
+        "de que tiempo es la garantia?", note)
+    assert "6 meses" not in salida, "la linea con el dato falso tiene que caerse"
+    assert "12 meses" in salida
+    assert salida.strip().endswith("?"), "el dato va ANTES del cierre"
+
+
+def test_los_monitores_no_tienen_todos_los_mismos_hercios(catalogo):
+    """La ficha del CSV decia 75Hz en los 24 monitores, que es un valor de
+    plantilla. La planilla por modelo, que es dato curado, tiene que ganarle."""
+    mons = [p for p in catalogo if p["categoria"] == "monitor"]
+    valores = {p["specs"].get("hz") for p in mons}
+    assert len(valores) > 3, f"todos los monitores con el mismo hz: {valores}"

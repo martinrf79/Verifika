@@ -32,7 +32,12 @@ log = get_logger(__name__)
 # Campos del CSV donde vive el texto de la ficha, en orden de confianza: la
 # spec compacta de fabrica (caracteristicas_extra) manda sobre la prosa.
 CAMPOS_TEXTO = ("caracteristicas_extra", "nombre", "modelo", "descripcion",
-                "descripcion_rica", "contenido_caja", "uso_recomendado")
+                "descripcion_rica", "contenido_caja", "uso_recomendado",
+                # ultimo, menor prioridad: de aca sale la garantia REAL del
+                # producto. Sin este campo, "de cuanto es la garantia" lo
+                # contestaba la FAQ con su minimo generico -"6 meses"- para una
+                # notebook que tiene 12 (charla real 28-jul).
+                "garantia_detalle")
 
 # Columnas numericas del catalogo: se coercionan al ingerir para que el mismo
 # CSV cargue igual por el endpoint y por el script.
@@ -333,8 +338,13 @@ def _completar_capas(out: dict, prod: dict, categoria: str,
     ids_validos = {s["id"] for s in specs_config(tienda_id)}
     del_modelo = specs_por_modelo(tienda_id).get(
         (_norm(prod.get("marca")), _norm(prod.get("modelo")), categoria)) or {}
+    # LO CARGADO A MANO GANA SOBRE LO INFERIDO DEL TEXTO. La planilla por modelo
+    # es dato curado; el mapa de arriba sale de una expresion regular sobre la
+    # prosa del catalogo, que a veces trae un valor de plantilla igual para toda
+    # la categoria -los 24 monitores decian 75Hz-. Si no, un dato mal puesto en
+    # la ficha no habria forma de corregirlo sin tocar el CSV de productos.
     for sid, valor in del_modelo.items():
-        if sid in ids_validos and sid not in out and valor:
+        if sid in ids_validos and valor:
             out[sid] = valor
     cfg = specs_por_categoria(tienda_id)
     for sid, valor in (cfg["categorias"].get(categoria) or {}).items():

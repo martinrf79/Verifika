@@ -241,6 +241,23 @@ def universo_productos(mensaje, estado, tienda_id, interp=None):
                 and int(p.get("stock") or 0) > 0]
         return ordenar_por(dela, _orden["atributo"], _orden.get("direccion"))[:4]
 
+    # la categoria sobre la que ordenar, cuando el cliente NO la nombra. "y la
+    # mas liviana cual es" no dice notebook: viene del contexto. Sin esto el
+    # orden se interpretaba bien y no corria sobre nada (charla real 28-jul).
+    _cats_orden = []
+    if _orden and isinstance(interp, dict):
+        _cats_orden = [str(s["categoria"]) for s in (interp.get("solicitud_nueva") or [])
+                       if isinstance(s, dict) and s.get("categoria")]
+        if not _cats_orden:
+            _cats_orden = list(dict.fromkeys(
+                str(p.get("categoria")) for p in por_id.values()
+                if p.get("categoria")))
+        if not _cats_orden:
+            from app.storage.firestore_client import get_categories
+            _reales = {str(c).lower() for c in (get_categories(tienda_id=tienda_id) or [])}
+            _cats_orden = [str(c) for c in (interp.get("categorias") or [])
+                           if str(c).lower() in _reales]
+
     if isinstance(interp, dict):
         for s in (interp.get("solicitud_nueva") or []):
             if isinstance(s, dict) and s.get("categoria"):
@@ -274,12 +291,33 @@ def universo_productos(mensaje, estado, tienda_id, interp=None):
     # RAM en vez de contestar por la tablet. El disparo es mutuamente excluyente
     # -seguimiento de lo mostrado vs pedido nuevo- y lo decide el INTERPRETE
     # (Contactor), no un regex sobre el texto.
-    if (isinstance(interp, dict)
+    # ... salvo que pida un ORDEN. "y la mas liviana cual es" sigue hablando de
+    # notebooks pero compara contra TODO el catalogo, no contra lo mostrado: si
+    # se corta aca, el universo queda con la unica notebook del turno anterior y
+    # el bot contesta "la que estamos trabajando es esta" esquivando el peso
+    # (charla real 28-jul, turnos 3 y 4).
+    if (isinstance(interp, dict) and not _orden
             and (interp.get("producto_resuelto")
                  or interp.get("productos_consultados"))
             and not (interp.get("solicitud_nueva") or [])
             and not (interp.get("pedido") or [])):
         return list(por_id.values())[:16]
+
+    # ORDEN sobre la categoria del contexto. Va PRIMERO en la lista: el modelo
+    # lee de arriba hacia abajo y, si la cabeza del orden queda al final, elige
+    # el producto del turno anterior y contesta al lado de la pregunta. No
+    # alcanza con que este en el universo, tiene que encabezarlo.
+    if _orden and _cats_orden:
+        cabeza = []
+        for cat in _cats_orden:
+            cabeza += _cabeza_de_categoria(cat)
+        vistos, ordenados = set(), []
+        for p in cabeza + list(por_id.values()):
+            pid = str(p.get("id", "")).upper()
+            if pid and pid not in vistos:
+                vistos.add(pid)
+                ordenados.append(p)
+        return ordenados[:16]
 
     # categorias mencionadas: 4 mas baratas + el intermedio de cada una
     cats = cantidades_por_categoria(mensaje or "", tienda_id)
@@ -1070,7 +1108,15 @@ def estampar_honestidad_specs(texto, mensaje, prod, variantes=None,
     honesto_n = _norm(honesto)[:40]
     # una linea "habla" de una spec respondida si la nombra; es FIEL si ademas
     # trae alguna parte del valor de la fuente ('512GB SSD' -> '512gb' o 'ssd').
-    tokens_ok = [(rx_p, rx_f, [t for t in re.split(r"[^a-z0-9]+", _norm(valor)) if t])
+    def _tokens_clave(valor):
+        """Lo que hace RECONOCIBLE al valor. Si tiene numero, manda el numero:
+        con 'meses' alcanzaba para dar por buena una linea que decia 6 cuando la
+        ficha dice 12, y la mentira pasaba (charla real 28-jul)."""
+        toks = [t for t in re.split(r"[^a-z0-9]+", _norm(valor)) if t]
+        numericos = [t for t in toks if any(c.isdigit() for c in t)]
+        return numericos or toks
+
+    tokens_ok = [(rx_p, rx_f, _tokens_clave(valor))
                  for _et, valor, rx_p, rx_f in respondidas]
     out = []
     for linea in texto.split("\n"):
@@ -1093,12 +1139,22 @@ def estampar_honestidad_specs(texto, mensaje, prod, variantes=None,
             continue
         out.append(linea)
     nuevo = re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()
+    pendientes = []
     for etiqueta, valor, _rx_p, _rx_f in respondidas:
-        toks = [t for t in re.split(r"[^a-z0-9]+", _norm(valor)) if t]
+        toks = _tokens_clave(valor)
         if toks and not all(t in _norm(nuevo) for t in toks):
             et = re.sub(r"^(?:el|la|los|las|si)\s+", "", etiqueta).strip()
-            linea = f"{et[0].upper()}{et[1:]}: {valor}."
-            nuevo = (nuevo + "\n" + linea).strip() if nuevo else linea
+            pendientes.append(f"{et[0].upper()}{et[1:]}: {valor}.")
+    if pendientes:
+        # el dato va ANTES del cierre, no colgado al final. Estampado despues de
+        # "¿avanzamos?" quedaba como una posdata suelta (charla real 28-jul).
+        lineas = [x for x in nuevo.split("\n")] if nuevo else []
+        corte = len(lineas)
+        for i in range(len(lineas) - 1, -1, -1):
+            if lineas[i].strip():
+                corte = i if "?" in lineas[i] else i + 1
+                break
+        nuevo = "\n".join(lineas[:corte] + pendientes + lineas[corte:]).strip()
     if honesto and honesto_n not in _norm(nuevo):
         nuevo = (nuevo + "\n\n" + honesto).strip() if nuevo else honesto
     return nuevo

@@ -476,6 +476,8 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
                        for it in (interp.get("pedido") or [])
                        if isinstance(it, dict)],
              i_criterio=interp.get("criterio"),
+             i_orden=interp.get("orden"),
+             i_specs=interp.get("specs_preguntadas"),
              i_categorias=interp.get("categorias"),
              # 2. SEÑALES DE ATADURA que alimentan el ENUM del universo
              i_solicitud_nueva=[s.get("categoria")
