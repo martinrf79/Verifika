@@ -115,6 +115,34 @@ _RE_BIENVENIDA_SOLVER = re.compile(
     re.IGNORECASE)
 
 
+# Aperturas de saludo a mitad de charla, mas anchas que las del turno 1. Estas
+# EXIGEN un cierre de puntuacion, para no comerse una frase legitima: "¡Qué tal!"
+# se recorta, "Qué tal te parece este mouse" no.
+_RE_SALUDO_MEDIO = re.compile(
+    r"^[¡!]*\s*(?:hola+|buen(?:as)?\s+(?:tardes|noches|d[ií]as?)|"
+    r"qu[eé]\s+tal|c[oó]mo\s+(?:va|and[aá]s|est[aá]s)|"
+    r"buenas)\s*[!.,:¡]+\s*",
+    re.IGNORECASE)
+
+
+def sin_saludo_del_modelo(respuesta: str) -> str:
+    """Recorta el saludo que el modelo escribe por su cuenta a mitad de charla.
+
+    En el turno 1 el saludo lo pone el CODIGO (con_saludo_inicial, abajo) y ahi
+    se recorta el del modelo para no saludar dos veces. Del turno 2 en adelante
+    no se recortaba nada, y el modelo abre igual: "¡Hola! Entiendo
+    perfectamente...", "¡Qué tal! Te entiendo..." en el turno 2, 3 y 5 (banco
+    29-jul, guiones 03 y 54). Un vendedor no te saluda cinco veces en la misma
+    charla; suena a bot y es de lo que Martin viene marcando hace meses.
+    """
+    cuerpo = _RE_SALUDO_MEDIO.sub("", (respuesta or "").strip(), count=1).strip()
+    if not cuerpo:
+        return respuesta
+    if cuerpo != (respuesta or "").strip():
+        cuerpo = cuerpo[0].upper() + cuerpo[1:]
+    return cuerpo
+
+
 def con_saludo_inicial(respuesta: str, business_name: str) -> str:
     """Primer mensaje de la charla: linea FIJA de saludo con el aviso de que es
     una herramienta automatica, y abajo la respuesta del turno."""

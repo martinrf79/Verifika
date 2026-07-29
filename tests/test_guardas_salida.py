@@ -189,3 +189,77 @@ def test_las_guardas_corren_despues_de_la_red(monkeypatch, firestore_doble):
     _turno_out = _correr(H.procesar_atado("u_orden", "hola que tenes", TIENDA,
                                           "sim", "t_orden"))
     assert orden == ["red", "guardas"], orden
+
+
+# ── HALLAZGOS DEL BANCO VIVO DEL 29-jul ────────────────────────────────────
+def test_el_juez_no_puede_borrar_un_numero_de_la_fuente(firestore_doble):
+    """LA falla del guion 68 turno 2. El codigo estampo "Memoria RAM: 4GB"
+    desde el catalogo, el juez no veia el mapa de specs en su evidencia, lo
+    marco sin respaldo y su reescritura lo borro: al cliente le llego
+    "Memoria RAM." pelado. Un numero que esta en la evidencia lo puso el
+    codigo desde la fuente; el reescritor no lo puede tocar."""
+    from app.core.checker_afirmaciones import rewrite_segura
+    original = "Memoria RAM: 4GB. Almacenamiento: 128GB. Es ideal para vos."
+    corregida = "Memoria RAM. Almacenamiento. Es ideal para vos."
+    evidencia = 'FICHA: {"specs": {"ram": "4GB", "almacenamiento": "128GB"}}'
+    assert rewrite_segura(original, corregida, evidencia) is None
+
+
+def test_el_juez_si_puede_sacar_un_numero_que_invento(firestore_doble):
+    """La otra direccion: "sumergible hasta 3 metros" no esta en la ficha, asi
+    que sacarlo es exactamente lo que el juez tiene que hacer."""
+    from app.core.checker_afirmaciones import rewrite_segura
+    original = "Es comodo y es sumergible hasta 3 metros de profundidad."
+    corregida = "Es comodo para el uso diario en tu escritorio."
+    evidencia = 'FICHA: {"material": "plastico", "garantia_meses": 24}'
+    assert rewrite_segura(original, corregida, evidencia) == corregida
+
+
+def test_la_ficha_que_ve_el_juez_lleva_las_specs(firestore_doble):
+    """Causa raiz del caso anterior: la evidencia llevaba once campos curados y
+    el mapa `specs` no estaba entre ellos. Va la ficha ENTERA."""
+    from app.core.checker_afirmaciones import evidencia_de_meta
+    from app.storage.firestore_client import get_all_products
+    p = next(x for x in get_all_products(tienda_id=TIENDA) if x.get("specs"))
+    meta = {"tools_called": [{"name": "get_product_details",
+                              "result": {"encontrado": True, "producto": p}}]}
+    ev = evidencia_de_meta(meta, TIENDA)
+    assert "specs" in ev, "el juez sigue sin ver lo que el codigo estampa"
+
+
+def test_una_consulta_simple_no_dispara_la_guarda_del_presupuesto(
+        firestore_doble):
+    """Guion 54 turno 1: "busco un mouse para gaming" recibia "¡Buena compra la
+    que estas armando! Necesito que me digas los modelos", cuando el cliente
+    todavia no estaba armando nada. Solo es un pedido por categorias si pide
+    VARIAS unidades o VARIAS categorias."""
+    import app.core.hub_atado as H
+    from app.core.guia_pedido import cantidades_por_categoria
+    cats = cantidades_por_categoria("hola, busco un mouse para gaming", TIENDA) or []
+    assert len(cats) < 2 and not any(n > 1 for n, _c in cats), (
+        "el mensaje simple trae categorias como si fuera un pedido multiple")
+
+
+def test_preguntar_compatibilidad_no_es_pedir_ese_producto(firestore_doble):
+    """Guion 54 turno 2: "el mas barato sirve para PS5?" pregunta por el mouse.
+    Contestarle "PS5 no trabajamos" es un despropósito y encima tapa la
+    respuesta real."""
+    from app.core.guia_compra import categoria_no_vendida
+    assert categoria_no_vendida("el mas barato que tengas sirve para PS5?",
+                                TIENDA) is None
+    assert categoria_no_vendida("anda con la play?", TIENDA) is None
+    # pero pedirla SI dispara el no honesto
+    assert categoria_no_vendida("tenes PS5?", TIENDA) is not None
+
+
+def test_no_saluda_de_nuevo_en_el_turno_5(firestore_doble):
+    """Un vendedor no te saluda cinco veces en la misma charla."""
+    from app.core.guardas_salida import sin_saludo_del_modelo
+    assert not sin_saludo_del_modelo(
+        "¡Hola! Entiendo perfectamente, el M170 anda bien.").startswith("¡Hola")
+    assert sin_saludo_del_modelo(
+        "¡Qué tal! Te entiendo, el blanco queda impecable."
+    ).startswith("Te entiendo")
+    # y no se come una frase que arranca parecido pero no es saludo
+    assert sin_saludo_del_modelo(
+        "Buenas noticias: volvio el stock.").startswith("Buenas noticias")

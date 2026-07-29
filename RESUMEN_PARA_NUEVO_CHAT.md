@@ -237,6 +237,46 @@ El `/admin/diag-latencia` tambien mentia: media el solver viejo con tools y
 `tool_choice required`, y con el cliente de `agent`. Ahora mide la forma REAL
 del camino vivo -salida estructurada con el responseSchema de fragmentos-.
 
+**==== 29-jul (6a tanda) — BANCO VIVO DE CHARLAS: SEIS FALLAS, TODAS ARREGLADAS ====**
+
+Se corrieron guiones multiturno REALES contra el camino vivo con Gemini pago
+(68, 54, 52, 03). El juez determinista del banco dio "tanda limpia" -cero
+alucinacion de plata, stock o promesas- pero leer las charlas destapo seis
+cosas que ningun test unitario podia ver:
+
+1. **EL JUEZ BORRABA LA VERDAD DEL CODIGO.** Guion 68 turno 2: el codigo
+   estampo "Memoria RAM: 4GB" y "Almacenamiento: 128GB" desde la fuente, el
+   juez no vio esos campos en su evidencia -viajaba un subconjunto curado de
+   once campos, sin el mapa `specs`-, los marco sin respaldo y su reescritura
+   los borro. Al cliente le llego "Tablet Samsung Galaxy Tab A9 Gris. Memoria
+   RAM." Ahora la ficha va ENTERA.
+2. **Y NO SOLO LAS SPECS.** La evidencia solo traia los productos que venian de
+   una TOOL, y el camino atado estampa mucho mas que eso. El juez marcaba sin
+   respaldo lineas escritas por el CODIGO: "Teclado Logitech K120 Blanco -
+   $14.500 (22 en stock)", "garantia: 12 meses", "hercios: 60Hz". Ahora entran
+   tambien los productos que el turno NOMBRO. **Medido: los turnos que el juez
+   toca bajaron de 11 sobre 20 a 7, y los limpios subieron de 8 a 12.**
+3. **`rewrite_segura` ahora corta en las DOS direcciones.** Que no invente una
+   cifra estuvo siempre; que no BORRE una que la evidencia respalda es nuevo.
+   Un numero que esta en la evidencia lo puso el codigo desde el catalogo.
+4. **UN FRAGMENTO SE RENDIA EN SILENCIO.** El modelo emitio opciones con
+   categoria "tablets Samsung"; `_cat_real` exigia match exacto por singular,
+   devolvio None y el fragmento se renderizo VACIO. El turno 1 salio sin un
+   solo producto y, sin contexto, el turno 2 contesto con modulos de memoria
+   RAM a alguien que preguntaba por la RAM de una tablet. Una palabra de mas
+   del modelo tumbaba la charla entera. Arreglado el mapeo + radar nuevo
+   `generador_v2_fragmento_perdido`.
+5. **"El mas barato sirve para PS5?" contestaba "PS5 no trabajamos".** El
+   cliente preguntaba por el mouse, no pedia una consola.
+6. **El bot saludaba en el turno 2, 3 y 5.** Ahora el saludo del modelo se
+   recorta de ahi en adelante; el aviso oficial va UNA vez.
+   Y mi propia guarda de presupuesto disparaba con "busco un mouse para
+   gaming": ahora exige varias unidades o varias categorias.
+
+**LATENCIA MEDIDA, 20 turnos reales: mediana 8,0 s, maximo 12,4 s.** Es lo que
+va a sentir el cliente en WhatsApp. El juez pone 1,6 s de eso; el resto es
+interprete + solver.
+
 **LO QUE FALTA, y ya no es codigo nuestro:** las relaciones de compatibilidad
 producto por producto y los datos reales de cobro. Mientras no esten, la
 compatibilidad es OPINION y hay que decirlo asi, no venderla como verificada.
