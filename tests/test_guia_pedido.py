@@ -170,25 +170,6 @@ def test_opciones_por_categoria_son_reales_y_con_stock(firestore_doble):
     assert ops[0]["precio_ars"] <= ops[-1]["precio_ars"]
 
 
-def test_guarda_reemplaza_presupuesto_inventado(firestore_doble):
-    from app.core.guardas_salida import forzar_opciones_si_presupuesto
-    r = ("Aqui tienes el presupuesto detallado:\n"
-         "- 1x Notebook HP: $693.000\nTotal: $2.179.500")
-    out = forzar_opciones_si_presupuesto(
-        r, [(4, "notebook"), (3, "teclado"), (5, "mouse")], "verifika_prod")
-    assert out is not None
-    assert "modelos" in out.lower() or "modelo" in out.lower()
-    assert "opciones con stock" in out
-    assert "$2.179.500" not in out
-
-
-def test_guarda_no_toca_respuesta_sin_presupuesto(firestore_doble):
-    from app.core.guardas_salida import forzar_opciones_si_presupuesto
-    r = "Te muestro opciones de notebooks para que elijas modelos."
-    assert forzar_opciones_si_presupuesto(
-        r, [(4, "notebook")], "verifika_prod") is None
-
-
 def test_sello_con_envio_y_transferencia_del_mensaje(firestore_doble):
     # "total con envio a Rosario por transferencia": el sello ya trae flete y
     # descuento (antes salia el total pelado aunque el cliente pidio ambos).
@@ -298,3 +279,15 @@ def test_categorias_nombradas_detecta_con_y_sin_cantidad(firestore_doble):
     assert categorias_nombradas("lo mas eco", "verifika_prod") == []
     assert categorias_nombradas(
         "cuanto sale el envio a rosario?", "verifika_prod") == []
+
+
+# Los dos tests de la GUARDA de "presupuesto sin modelos" se borraron con la
+# guarda, el 29-jul. Rompio una charla real: el cliente pidio "2 notebooks 2
+# auriculares y 2 mauses" con dos destinos, el sistema armo el presupuesto
+# CORRECTO -seis productos reales, quince numeros verificados, juez limpio- y
+# la guarda lo reemplazo por "necesito que me digas los modelos". Curaba una
+# enfermedad del camino viejo, el solver eligiendo productos de su cabeza con
+# precios inventados, que en el camino atado es imposible: los items de un
+# calculo son ids del universo y el precio lo estampa el codigo desde la
+# fuente. Quedaba solo el efecto secundario. El caso vive ahora, al reves, en
+# tests/test_guardas_salida.py: el presupuesto por categorias TIENE que llegar.

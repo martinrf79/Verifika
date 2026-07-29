@@ -110,48 +110,29 @@ def test_un_hola_pelado_no_exige_sustancia(monkeypatch, firestore_doble):
 
 
 # ── 4. PRESUPUESTO SIN MODELOS ─────────────────────────────────────────────
-def test_no_arma_presupuesto_si_el_cliente_no_dijo_los_modelos(firestore_doble):
-    """Caso real de WhatsApp del 8-jul: pidio N por categoria sin decir cuales
-    y el modelo armo un total eligiendo productos por su cuenta, con un teclado
-    al precio de una notebook. En vez del total inventado, opciones REALES."""
-    from app.core.guardas_salida import forzar_opciones_si_presupuesto
-    out = forzar_opciones_si_presupuesto(
-        "Presupuesto:\n- 2x Teclado: $50.000\n- 3x Mouse: $30.000\n"
-        "Total: $80.000",
-        [(2, "teclado"), (3, "mouse")], TIENDA)
-    assert out, "la guarda dejo pasar el presupuesto sin modelos"
-    assert "Total: $80.000" not in out
-    assert "modelo" in out.lower(), "no le pidio los modelos al cliente"
-    assert "$" in out, "no le mostro opciones reales con precio"
+def test_el_presupuesto_por_categorias_LLEGA_al_cliente(firestore_doble):
+    """LA falla de la charla real de Martin del 29-jul (trace a2d0a5dc).
+
+    Escribio "Dame precio de 2 notebooks 2 auriculares y 2 mauses, 1 notebook y
+    un auricular en Concordia". El sistema lo resolvio bien -seis productos
+    reales, dos destinos, quince numeros verificados sin uno solo sin respaldo,
+    juez limpio- y la guarda de "presupuesto sin modelos" tiro todo eso y lo
+    reemplazo por "necesito que me digas los modelos".
+
+    La guarda nacio en el camino viejo, donde el solver elegia productos de su
+    cabeza. En el atado eso es imposible: los items son ids del universo y el
+    precio lo estampa el codigo. Se borro. Que el modelo ELIJA cuando el cliente
+    no dijo modelos no es un error, es lo que hace un vendedor.
+
+    Este test existe para que nadie la vuelva a poner."""
+    import app.core.hub_atado as H
+    import app.core.guardas_salida as GS
+    assert not hasattr(GS, "forzar_opciones_si_presupuesto"), (
+        "volvio la guarda que le negaba al cliente un presupuesto correcto")
+    fuente = __import__("inspect").getsource(H.procesar_atado)
+    assert "forzar_opciones_si_presupuesto" not in fuente
 
 
-def test_si_el_cliente_ya_dijo_los_modelos_el_presupuesto_sale(firestore_doble):
-    """La guarda es quirurgica: sin categorias pendientes no toca nada."""
-    from app.core.guardas_salida import forzar_opciones_si_presupuesto
-    assert forzar_opciones_si_presupuesto(
-        "Presupuesto:\nTotal: $80.000", [], TIENDA) is None
-
-
-def test_el_hub_llama_a_la_guarda_del_presupuesto(monkeypatch, firestore_doble):
-    from app.storage.firestore_client import reset_conversation
-    from app.core import guardas_salida as GS
-    llamado = {}
-
-    def _espia(respuesta, cats, tienda_id):
-        llamado["cats"] = cats
-        return None
-
-    monkeypatch.setattr(GS, "forzar_opciones_si_presupuesto", _espia)
-    reset_conversation("u_presu", tienda_id=TIENDA)
-    _turno(monkeypatch, "u_presu", "necesito 2 teclados y 3 mouse",
-           "Te paso opciones.",
-           interp={"solicitud_nueva": [
-               {"categoria": "teclado", "cantidad": 2, "criterio": None},
-               {"categoria": "mouse", "cantidad": 3, "criterio": None}]})
-    assert llamado.get("cats"), "el hub no le pasa las categorias pendientes"
-
-
-# ── 5. QUE EL HUB LAS LLAME, no solo que existan ───────────────────────────
 def test_las_guardas_corren_despues_de_la_red(monkeypatch, firestore_doble):
     """El orden importa: las guardas van DESPUES de la red de verificadores,
     para que ninguna correccion de la red se lleve puesto el aviso de bot."""

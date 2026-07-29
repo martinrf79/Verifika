@@ -32,7 +32,17 @@ _faq_cache: dict[str, dict] = {}
 _faq_cache_ts: dict[str, float] = {}
 # Cache de resolución phone_id → tienda_id (no expira; se invalida al alta)
 _phone_to_tienda: dict[str, str] = {}
-_CACHE_TTL_SECONDS = 300  # 5 minutos
+# UNA HORA, no cinco minutos. Medido en la charla REAL de Martin del 29-jul
+# (trace a2d0a5dc): el turno tardo 12,9 segundos y adentro de esos segundos se
+# releyeron los 880 productos de Firestore y se reconstruyo el indice de recall.
+# En WhatsApp los mensajes vienen espaciados: con TTL de 5 minutos casi TODOS
+# los turnos pagaban esa recarga, y el cliente la espera.
+#
+# Subirlo es seguro porque el cache NO depende del reloj para enterarse de un
+# cambio: `invalidate_cache` se llama en cada upsert, en el borrado y en el
+# endpoint /admin/upload-catalog. El TTL es solo la red por si algo escribe
+# Firestore por fuera de la app.
+_CACHE_TTL_SECONDS = 3600  # 1 hora
 
 
 def _get_db() -> firestore.Client:

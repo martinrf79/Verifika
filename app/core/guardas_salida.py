@@ -292,37 +292,14 @@ def anuncio_sin_contenido(respuesta: str, tope: int = 340) -> bool:
     return not any(rx.search(r) for rx in _RE_ENTREGA)
 
 
-# ── 4. PRESUPUESTO SIN MODELOS ──────────────────────────────────────────────
-_RE_PRESUPUESTO_EN_TEXTO = re.compile(
-    r"\bpresupuesto\b|\btotal\b[^\n]{0,20}\$", re.IGNORECASE)
-
-
-def forzar_opciones_si_presupuesto(respuesta: str, cats_pedido: list,
-                                   tienda_id: str) -> str | None:
-    """El cliente pidio N unidades por CATEGORIA sin decir modelos y el modelo
-    armo igual un presupuesto, eligiendo productos por su cuenta -con un teclado
-    al precio de una notebook, caso real del 8-jul-. Se reemplaza por las
-    opciones reales con stock. None si la respuesta no armo presupuesto."""
-    if not cats_pedido or not respuesta:
-        return None
-    if not _RE_PRESUPUESTO_EN_TEXTO.search(respuesta):
-        return None
-    from app.core.guia_pedido import opciones_por_categoria
-    bloques = []
-    for n, cat in cats_pedido:
-        ops = opciones_por_categoria(cat, tienda_id)
-        if not ops:
-            continue
-        lineas = "\n".join("- " + _linea_producto(p) for p in ops)
-        bloques.append(f"Para {'las' if n > 1 else 'la'} {n} de {cat}, "
-                       f"opciones con stock:\n{lineas}")
-    if not bloques:
-        return None
-    return ("¡Buena compra la que estás armando! Para pasarte el precio exacto "
-            "necesito que me digas los modelos.\n\n"
-            + "\n\n".join(bloques)
-            + "\n\n¿Qué modelo elegís de cada categoría? Con eso te armo el "
-            "total con los envíos al instante.")
+# ── 4. (VACANTE) — aca vivia PRESUPUESTO SIN MODELOS, y se borro el 29-jul.
+# Rompio una charla REAL: el cliente pidio "2 notebooks 2 auriculares y 2
+# mauses" con dos destinos, el sistema armo el presupuesto CORRECTO con seis
+# productos reales y quince numeros verificados, y la guarda lo reemplazo por
+# "necesito que me digas los modelos". Curaba una enfermedad del camino viejo
+# -el solver eligiendo productos de su cabeza, con precios inventados- que en el
+# camino atado es imposible por construccion. Solo quedaba el efecto secundario.
+# El detalle completo, en el comentario de hub_atado donde estaba cableada.
 
 
 # ── 5. FALLBACK CON CURADA ──────────────────────────────────────────────────

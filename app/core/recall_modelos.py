@@ -103,8 +103,10 @@ _CAPAS = (
 )
 
 # Mismo TTL que el cache del catalogo (firestore_client._CACHE_TTL_SECONDS): el
-# indice se reconstruye cuando el catalogo se pudo haber movido abajo.
-_TTL_S = 300
+# indice se reconstruye cuando el catalogo se pudo haber movido abajo. Subio a
+# una hora por el mismo motivo medido: en la charla real del 29-jul el indice se
+# reconstruia en medio del turno y el cliente esperaba.
+_TTL_S = 3600
 _CACHE: dict[str, dict] = {}
 _CACHE_TS: dict[str, float] = {}
 
