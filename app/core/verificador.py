@@ -67,6 +67,8 @@ _PRECIO_PRE_RE = re.compile(
     r"queda|quedan|precio|total|subtotal)\s*(?:de\s+)?\$?\s*$",
     re.IGNORECASE)
 _TOTAL_POST_RE = re.compile(r"\s*(?:en\s+)?(?:sub)?total\b", re.IGNORECASE)
+# el unico verbo de la lista de arriba que es tanto de plata como de STOCK
+_QUEDAR_RE = re.compile(r"^queda[ns]?$", re.IGNORECASE)
 
 
 def _es_monto(texto: str, match) -> bool:
@@ -91,7 +93,20 @@ def _es_monto(texto: str, match) -> bool:
         return True
     # Numero sin formato en contexto de plata: verbo de precio antes, o 'total'
     # despues. Cubre el precio pelado (999999) que si no se colaba sin verificar.
-    if _PRECIO_PRE_RE.search(texto[max(0, start - 24):start]):
+    m_pre = _PRECIO_PRE_RE.search(texto[max(0, start - 24):start])
+    if m_pre:
+        # ...salvo "quedan 5". "quedar" es verbo de precio ("te queda 594.000")
+        # y TAMBIEN el verbo natural del stock, que es lo que el solver escribe
+        # todo el tiempo. Un numero de hasta tres digitos pelado detras de
+        # "queda/quedan" es un conteo, no plata: en este catalogo no hay nada de
+        # cinco pesos, y un monto de verdad viene con separador de miles o con
+        # signo, que ya se resolvieron arriba.
+        # Bug real cazado por la red nueva: "El Mouse G203 está disponible,
+        # quedan 5." salia "corregido" a "quedan 37500", o sea que la guarda del
+        # dinero le pisaba el stock verdadero con el precio.
+        if (_QUEDAR_RE.match(m_pre.group(1) or "")
+                and len(re.sub(r"\D", "", token)) <= 3):
+            return False
         return True
     if _TOTAL_POST_RE.match(texto[end:end + 12]):
         return True

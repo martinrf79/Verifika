@@ -27,15 +27,20 @@ def _correr(coro):
 
 def _fiscalizar(monkeypatch, texto, veredicto, meta=None):
     """Corre el fiscal del hub con un veredicto del juez ya decidido."""
-    import app.core.hub_atado as H
     import app.core.checker_afirmaciones as CH
+    import app.core.hub_atado as H
+    import app.core.red_verificadores as R
 
     async def _fake_chequear(respuesta, meta, tienda_id=None, trace_id=None):
         return veredicto
 
     monkeypatch.setattr(CH, "chequear", _fake_chequear)
-    return _correr(H._fiscalizar_prosa(texto, meta if meta is not None else {},
-                                       [], {}, "hola", TIENDA, "t_juez"))
+    return _correr(R._juez(texto, {
+        "meta": meta if meta is not None else {}, "universo": [], "interp": {},
+        "mensaje": "hola", "tienda_id": TIENDA, "trace_id": "t_juez",
+        "evidencia_juez": lambda: H._evidencia_del_turno(
+            meta if meta is not None else {}, [], {}, "hola", TIENDA, "t_juez"),
+    }))
 
 
 # ── el juez corta lo que no tiene respaldo ─────────────────────────────────
@@ -113,16 +118,19 @@ def test_sin_juez_el_turno_sale_igual(monkeypatch, firestore_doble):
 
 
 def test_si_el_juez_explota_el_turno_sale_igual(monkeypatch, firestore_doble):
-    import app.core.hub_atado as H
     import app.core.checker_afirmaciones as CH
+    import app.core.hub_atado as H
+    import app.core.red_verificadores as R
 
     async def _explota(*a, **k):
         raise RuntimeError("gemini caido")
 
     monkeypatch.setattr(CH, "chequear", _explota)
     texto = "Te sirve para gaming."
-    assert _correr(H._fiscalizar_prosa(texto, {}, [], {}, "hola", TIENDA,
-                                       "t_x")) == texto
+    assert _correr(R._juez(texto, {
+        "meta": {}, "universo": [], "interp": {}, "mensaje": "hola",
+        "tienda_id": TIENDA, "trace_id": "t_x",
+        "evidencia_juez": lambda: None})) == texto
 
 
 def test_no_corre_sobre_el_fallback(monkeypatch, firestore_doble):
@@ -160,9 +168,10 @@ def test_la_evidencia_entra_al_texto_que_ve_el_juez(firestore_doble):
 def test_el_hub_llama_al_juez_en_un_turno_real(monkeypatch, firestore_doble):
     """El pecado de este repo fue tener el modulo escrito y no llamarlo. Este
     test corre un turno COMPLETO del hub y exige que el fiscal haya corrido."""
-    import app.core.hub_atado as H
-    import app.core.generador_v2 as G
     import app.core.cierre as C
+    import app.core.generador_v2 as G
+    import app.core.hub_atado as H
+    import app.core.red_verificadores as R
     from app.storage.firestore_client import reset_conversation
 
     llamado = {}
@@ -176,14 +185,14 @@ def test_el_hub_llama_al_juez_en_un_turno_real(monkeypatch, firestore_doble):
         return ([{"tipo": "prosa", "texto": "Te sirve para la oficina."}],
                 [], "", [], {})
 
-    async def _espia(texto, meta, universo, interp, mensaje, tienda_id, trace_id):
+    async def _espia(texto, ctx):
         llamado["si"] = True
         return texto
 
     monkeypatch.setattr(C, "extraer_datos_cliente", lambda *a, **k: {})
     monkeypatch.setattr(H, "interpretar_mensaje", _fake_interpretar)
     monkeypatch.setattr(G, "generar_fragmentos", _fake_fragmentos)
-    monkeypatch.setattr(H, "_fiscalizar_prosa", _espia)
+    monkeypatch.setattr(R, "_juez", _espia)
 
     reset_conversation("u_juez", tienda_id=TIENDA)
     _correr(H.procesar_atado("u_juez", "sirve para la oficina?", TIENDA,
