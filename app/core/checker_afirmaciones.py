@@ -176,13 +176,17 @@ async def chequear(respuesta: str, meta: dict, tienda_id: str | None = None,
     prompt = _prompt(respuesta, evidencia)
 
     def _call():
-        import os
-        from openai import OpenAI
-        key = (settings.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY") or "")
-        key = key.split()[0] if key else ""
-        if not key:
+        # EL MISMO CLIENTE QUE REDACTA. Este modulo se armaba su propio OpenAI()
+        # con la clave leida a mano, que es exactamente la indireccion que ya
+        # mato dos veces a la guardia de promesas: cada vez que el sistema cambia
+        # de provider, el cliente duplicado queda apuntando al anterior y el
+        # verificador muere en silencio, con sus tests en verde. Se toma el
+        # cliente de quien SI redacta hoy, asi no puede divergir sin que se rompa
+        # antes el camino principal.
+        from app.core.generador_v2 import _cliente_gemini
+        c = _cliente_gemini()
+        if c is None:
             return None
-        c = OpenAI(api_key=key, base_url=settings.GEMINI_BASE_URL, timeout=_TIMEOUT_S)
         r = c.chat.completions.create(
             model=(settings.GEMINI_MODEL or "gemini-3.1-flash-lite"),
             messages=[{"role": "user", "content": prompt}],

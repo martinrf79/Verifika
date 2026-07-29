@@ -758,10 +758,17 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
 
 
 def _cliente_gemini():
+    """EL cliente del camino vivo. Lo usan el solver, el juez, las reescrituras
+    de las guardias y el resumen de memoria: una sola puerta, para que un cambio
+    de provider no pueda dejar a uno apuntando al anterior. Devuelve None sin
+    clave, y cada consumidor degrada a no-op."""
     from openai import OpenAI
     import os
     key = (settings.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY")
-           or os.environ.get("GEMINI_APY_KEY"))
+           or os.environ.get("GEMINI_APY_KEY") or "")
+    key = key.split()[0] if key else ""
+    if not key:
+        return None
     return OpenAI(api_key=key, base_url=settings.GEMINI_BASE_URL)
 
 

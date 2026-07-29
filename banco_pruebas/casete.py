@@ -1,0 +1,263 @@
+"""
+CASETE — el modelo grabado, para que el TURNO COMPLETO corra en CI, gratis.
+
+POR QUE EXISTE. El 29-jul la bateria tenia 630 verdes mientras el webhook de
+Telegram estaba muerto y 57 fichas le mentian al cliente. Medido ese dia: de 666
+tests, 31 tocaban el turno entero, y la cobertura del camino vivo era 61%, con
+`app/main.py` en 16%. Ese es el motivo mecanico del loop: cada sesion escribe la
+verificacion de su propio trabajo, con su mismo punto ciego, y el error nuevo lo
+descubre la sesion siguiente. Lo unico que corta eso es que el turno COMPLETO
+-interprete, solver, la red de verificadores, las guardas y la memoria- corra
+solo, en cada push, sin depender de que alguien se acuerde de correr un banco.
+
+QUE SE GRABA Y QUE NO. Se graba la SALIDA CRUDA del modelo en cada etapa del
+turno. Todo lo demas -el universo del turno, la atadura por enum, el render que
+estampa precio y stock desde la fuente, los siete verificadores, las cinco
+guardas, la memoria- corre de verdad, con el catalogo real. O sea que esto NO
+prueba si el modelo mejoro o empeoro; eso es el banco vivo pago, que se corre a
+proposito. Prueba las 18 reescrituras encadenadas del texto, que es donde
+vivieron TODOS los bugs de esta semana.
+
+POR QUE SE INDEXA POR TURNO Y NO POR PROMPT. La tentacion es cachear por hash
+del prompt. Con eso, el dia que alguien toca una linea del prompt -y se toca en
+casi todas las sesiones- fallan los 65 casetes y el CI queda rojo hasta
+regrabar. Aca la clave es (turno, etapa, orden): una salida grabada del modelo
+sigue siendo una salida PLAUSIBLE del modelo aunque el prompt haya cambiado, y
+lo que se esta probando es el codigo que la rodea. Regrabar pasa a ser algo que
+se hace cuando cambia el CONTRATO -el schema, los fragmentos-, no cada vez que
+se ajusta una frase.
+
+USO
+    # grabar, una vez, con la clave paga
+    python banco_pruebas/grabar_casetes.py 54_compatibilidad_honestidad_memoria.txt
+
+    # reproducir, gratis, en CI (lo hace tests/test_charlas_grabadas.py)
+    with reproducir(casete):
+        respuesta = await procesar_atado(...)
+"""
+import json
+import sys
+from contextlib import contextmanager
+from pathlib import Path
+
+CASETES = Path(__file__).resolve().parent / "casetes"
+
+# Cada etapa del turno que llama al modelo. La clave para identificarla es el
+# nombre del json_schema, que es parte del CONTRATO con el modelo y no cambia
+# cuando se ajusta una frase del prompt. Las dos que no llevan schema se
+# resuelven por el modulo que llama.
+_POR_SCHEMA = {"interpretacion": "interprete", "respuesta": "solver",
+               "fiscal": "juez"}
+_POR_MODULO = {"guardia_promesas": "guardia", "memoria_larga": "memoria",
+               "checker_afirmaciones": "juez", "generador_v2": "solver",
+               "interpretador": "interprete"}
+
+
+def _etapa(kwargs: dict) -> str:
+    """De que etapa del turno es esta llamada al modelo."""
+    rf = kwargs.get("response_format") or {}
+    nombre = ((rf.get("json_schema") or {}).get("name")
+              if isinstance(rf, dict) else None)
+    if nombre in _POR_SCHEMA:
+        return _POR_SCHEMA[nombre]
+    # sin schema: se mira quien llama. Es un arnes de test, la introspeccion
+    # cuesta microsegundos y se lee mucho mejor que adivinar por temperature.
+    f = sys._getframe(1)
+    while f:
+        mod = (f.f_globals.get("__name__") or "").rsplit(".", 1)[-1]
+        if mod in _POR_MODULO:
+            return _POR_MODULO[mod]
+        f = f.f_back
+    return "otra"
+
+
+class _Mensaje:
+    def __init__(self, content):
+        self.content = content
+        self.role = "assistant"
+
+
+class _Choice:
+    def __init__(self, content):
+        self.message = _Mensaje(content)
+        self.finish_reason = "stop"
+
+
+class _Respuesta:
+    """Lo unico que los consumidores leen es choices[0].message.content."""
+    def __init__(self, content):
+        self.choices = [_Choice(content)]
+        self.usage = None
+
+
+class Casete:
+    """Las salidas del modelo de una charla, turno por turno."""
+
+    def __init__(self, nombre: str, turnos: list | None = None):
+        self.nombre = nombre
+        self.turnos: list[dict] = turnos or []
+        self.i = -1              # turno en curso
+        self.fallas: list[str] = []
+
+    # ── grabacion ──
+    def abrir_turno(self, mensaje: str) -> None:
+        self.i += 1
+        if len(self.turnos) <= self.i:
+            self.turnos.append({"mensaje": mensaje, "llamadas": []})
+
+    def grabar(self, etapa: str, contenido: str) -> None:
+        self.turnos[self.i]["llamadas"].append(
+            {"etapa": etapa, "salida": contenido})
+
+    # ── reproduccion ──
+    def leer(self, etapa: str) -> str | None:
+        """La proxima salida grabada de esa etapa en este turno.
+
+        Un HUECO no revienta la corrida: se anota y se devuelve None, y el
+        consumidor degrada como degradaria en produccion ante un timeout. Que el
+        turno siga es lo que permite ver el efecto completo, en vez de cortar en
+        el primer desvio."""
+        if not (0 <= self.i < len(self.turnos)):
+            self.fallas.append(f"turno fuera de rango para {etapa}")
+            return None
+        for llamada in self.turnos[self.i]["llamadas"]:
+            if llamada["etapa"] == etapa and not llamada.get("_usada"):
+                llamada["_usada"] = True
+                return llamada["salida"]
+        self.fallas.append(f"turno {self.i + 1}: falta grabacion de {etapa}")
+        return None
+
+    def reiniciar_lectura(self) -> None:
+        self.i = -1
+        self.fallas = []
+        for t in self.turnos:
+            for ll in t["llamadas"]:
+                ll.pop("_usada", None)
+
+    # ── disco ──
+    @property
+    def ruta(self) -> Path:
+        return CASETES / f"{self.nombre}.json"
+
+    def guardar(self) -> Path:
+        CASETES.mkdir(parents=True, exist_ok=True)
+        limpio = [{"mensaje": t["mensaje"],
+                   "llamadas": [{"etapa": ll["etapa"], "salida": ll["salida"]}
+                                for ll in t["llamadas"]]}
+                  for t in self.turnos]
+        self.ruta.write_text(
+            json.dumps({"guion": self.nombre, "turnos": limpio},
+                       ensure_ascii=False, indent=1), encoding="utf-8")
+        return self.ruta
+
+    @classmethod
+    def cargar(cls, nombre: str) -> "Casete":
+        ruta = CASETES / f"{nombre}.json"
+        datos = json.loads(ruta.read_text(encoding="utf-8"))
+        return cls(nombre, datos.get("turnos") or [])
+
+    @classmethod
+    def todos(cls) -> list["Casete"]:
+        if not CASETES.exists():
+            return []
+        # el guion bajo adelante marca lo que NO es un casete (_piso.json)
+        return [cls.cargar(p.stem) for p in sorted(CASETES.glob("*.json"))
+                if not p.name.startswith("_")]
+
+
+class _ClienteFalso:
+    """Se hace pasar por el cliente OpenAI. En grabacion delega en el real y
+    guarda la salida; en reproduccion la devuelve del casete."""
+
+    def __init__(self, casete: Casete, real=None):
+        self.casete = casete
+        self.real = real
+        self.chat = self
+        self.completions = self
+
+    def create(self, **kwargs):
+        etapa = _etapa(kwargs)
+        if self.real is not None:
+            r = self.real.chat.completions.create(**kwargs)
+            contenido = r.choices[0].message.content or ""
+            self.casete.grabar(etapa, contenido)
+            return r
+        salida = self.casete.leer(etapa)
+        if salida is None:
+            # mismo efecto que un timeout del provider: el consumidor lo atrapa
+            # y degrada. Queda anotado en casete.fallas y baja el puntaje.
+            raise TimeoutError(f"sin grabacion para {etapa}")
+        return _Respuesta(salida)
+
+
+@contextmanager
+def _parchar(casete: Casete, grabando: bool):
+    """Intercepta las TRES puertas por las que el sistema habla con el modelo.
+
+    Dos son clientes: `interpretador._get_client` y `generador_v2._cliente_gemini`
+    -por esta ultima pasan el solver, el juez, las reescrituras de las guardias y
+    el resumen de memoria, que es justamente para lo que se consolido-.
+
+    La tercera es una funcion, `verifika.llm_adapter.llm_complete`, y la encontro
+    el candado de `tests/test_casete_candado.py` despues de que yo mismo la tapara
+    en la lista de permitidos: la usan `cierre.extraer_datos_cliente` y
+    `tools.query_faq`, o sea que corre en turnos reales. Sin interceptarla, en CI
+    esas llamadas se irian a la red de verdad y el test quedaria verde probando
+    de menos, que es exactamente el modo de falla que esta maquina viene a matar.
+    """
+    from app.core import cierre, generador_v2, interpretador
+    from app.verifika import llm_adapter
+    real_i = interpretador._get_client
+    real_g = generador_v2._cliente_gemini
+    real_a = llm_adapter.llm_complete
+    # `cierre` importa llm_complete a nivel de MODULO, asi que parchear solo el
+    # adapter no lo alcanza: hay que pisarle su propia referencia.
+    real_c = getattr(cierre, "llm_complete", None)
+
+    def _fake_i():
+        return _ClienteFalso(casete, real_i() if grabando else None)
+
+    def _fake_g():
+        return _ClienteFalso(casete, real_g() if grabando else None)
+
+    def _fake_adapter(messages, role="solver", **kw):
+        etapa = f"adapter_{role}"
+        if grabando:
+            r = real_a(messages, role=role, **kw)
+            casete.grabar(etapa, json.dumps(r, ensure_ascii=False, default=str))
+            return r
+        salida = casete.leer(etapa)
+        if salida is None:
+            raise TimeoutError(f"sin grabacion para {etapa}")
+        return json.loads(salida)
+
+    interpretador._get_client = _fake_i
+    generador_v2._cliente_gemini = _fake_g
+    llm_adapter.llm_complete = _fake_adapter
+    if real_c is not None:
+        cierre.llm_complete = _fake_adapter
+    try:
+        yield casete
+    finally:
+        interpretador._get_client = real_i
+        generador_v2._cliente_gemini = real_g
+        llm_adapter.llm_complete = real_a
+        if real_c is not None:
+            cierre.llm_complete = real_c
+
+
+@contextmanager
+def grabando(nombre: str):
+    """Corre contra el modelo REAL y guarda todo lo que devuelve."""
+    casete = Casete(nombre)
+    with _parchar(casete, grabando=True):
+        yield casete
+
+
+@contextmanager
+def reproducir(casete: Casete):
+    """Corre el turno completo con el modelo grabado. Sin red, sin clave, sin
+    costo: es lo que corre en cada push."""
+    casete.reiniciar_lectura()
+    with _parchar(casete, grabando=False):
+        yield casete

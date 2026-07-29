@@ -4,6 +4,93 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 29-jul-2026 (noche) — EL NUMERO: EL TURNO COMPLETO CORRE EN CADA PUSH ====**
+
+Rama: `claude/system-verification-csv-table-jjal0l`. Esto NO es una feature, es
+la red que faltaba. Nace de una pregunta de Martin que hay que dejar contestada:
+por que cada chat nuevo encuentra errores nuevos y nunca se llega a piso firme.
+
+**EL DIAGNOSTICO, MEDIDO, no opinado.** Tres causas, en orden de peso:
+
+1. **Cada sesion escribia la verificacion de su propio trabajo, con su mismo
+   punto ciego.** Por eso el error nuevo lo encuentra siempre la sesion
+   siguiente. Numeros del 29-jul: de 666 tests, **31 tocaban el turno entero**, y
+   la cobertura del camino vivo era **61%**, con `app/main.py` en **16%** -por ahi
+   se colo el webhook de Telegram muerto-, `interpretador` en 52% y `leads`, que
+   es donde se cierra la venta, en 48%. Verde no significa funciona: ese dia
+   habia 630 verdes con Telegram caido y 57 fichas mintiendo.
+2. **El turno es una cadena de 18 reescrituras del texto**, una atras de la otra.
+   Cada verificador y cada guarda recibe lo que dejo el anterior. Con eso no se
+   puede predecir la salida: se descubre en produccion, y arreglar una guarda
+   rompe otra. Esa es la mecanica del loop.
+3. **No existia un numero.** Los 65 guiones estaban escritos pero el banco se
+   corria a mano. Sin numero, "robusto" es una opinion.
+
+**LO QUE SE HIZO (pasos 1 y 2 del plan).**
+
+**EL CASETE (`banco_pruebas/casete.py`).** Se graba UNA vez la salida cruda del
+modelo en cada etapa del turno -interprete, solver, juez, reescrituras de las
+guardias, resumen de memoria- y despues el turno COMPLETO se reproduce offline:
+catalogo real, universo, atadura por enum, render que estampa desde la fuente,
+los siete verificadores, las cinco guardas, el cierre y la memoria. Sin clave,
+sin red, sin costo, en segundos.
+
+Se indexa por **(turno, etapa)**, NO por hash del prompt. Es la decision que lo
+hace sostenible: cachear por prompt significa que el dia que alguien toca una
+frase -o sea, casi todas las sesiones- fallan los 65 casetes y el CI queda rojo
+hasta regrabar. Una salida grabada sigue siendo una salida PLAUSIBLE del modelo
+aunque el prompt cambie, y lo que se prueba es el codigo que la rodea. Regrabar
+pasa a ser algo que se hace cuando cambia el CONTRATO -el schema del interprete,
+los tipos de fragmento, el schema del juez-, no por un ajuste de redaccion.
+
+Las DOS puertas al modelo se interceptan solas: `interpretador._get_client` y
+`generador_v2._cliente_gemini`. Para eso se consolido `checker_afirmaciones`, que
+se armaba su propio cliente OpenAI con la clave leida a mano: exactamente la
+indireccion que ya mato dos veces a la guardia de promesas, cada vez que el
+sistema cambio de provider. Ahora el juez usa el cliente de quien SI redacta.
+
+**EL NUMERO (`banco_pruebas/puntaje.py`).** Un puntaje de 0 a 100 sobre todas las
+charlas, sumado por punto y no por promedio de porcentajes. Tres criterios
+deterministas, sin LLM:
+  - **no miente (peso 3)**: reusa `banco_pruebas/juez.py`, que ya existia y se
+    corria a mano. Stock contradicho contra el catalogo, plata sin respaldo,
+    promesas prohibidas, marcadores sin estampar.
+  - **contesta (peso 2)**: que no sea vacia, ni el enlatado, ni un acuse pelado.
+  - **lo que el guion pide (peso 2)**: expectativas OPCIONALES escritas en el
+    propio guion (`> contiene:` / `> no_contiene:`). El guion sin expectativas
+    puntua igual por los dos primeros, asi el numero existe HOY sobre los 65 y se
+    afila solo a medida que se escriben. No bloquea nada.
+
+**LA REGLA, que es lo que corta el loop: el numero no baja.** El piso vive en
+`banco_pruebas/casetes/_piso.json`, lo escribe el grabador cuando se regraba la
+tanda entera, y lo defiende `tests/test_charlas_grabadas.py` en cada push. El
+workflow `tests` ya corria en cada push, asi que esto entro solo; ademas el
+numero queda impreso en el resumen de la corrida de Actions, sin abrir el log.
+
+**COMO SE REGRABA** (unico paso que gasta y necesita clave):
+`GEMINI_API_KEY=$GEMINI_API_KEY_PROD BANCO_PAUSA_S=3 python banco_pruebas/grabar_casetes.py`
+Con la clave del tier gratis se comen 429 y quedan turnos degradados grabados
+adentro del casete; se probo y se descarto esa tanda.
+
+**LO QUE ESTO NO MIDE, dicho claro:** con el modelo grabado no se mide si el
+modelo mejoro o empeoro. Para eso esta el banco vivo pago (`banco_deepeval`,
+nocturno). Aca se miden las 18 reescrituras encadenadas, que es donde vivieron
+TODOS los bugs de esta semana.
+
+**LO QUE SIGUE, en orden, acordado con Martin:**
+  3. **Aplanar las 18 reescrituras a una sola pasada.** Cada verificador OPINA
+     sobre el texto original y devuelve un dictamen; un solo lugar los aplica
+     todos, en orden fijo, y decide. Es la causa mecanica de la fragilidad. Va
+     tercero a proposito: con la red de los pasos 1 y 2 puesta, se hace sin
+     riesgo. Dos sesiones.
+  4. **Cerrar la canilla de datos falsos.** Un chequeo sobre los DATOS que falla
+     si una ficha se contradice con su modelo o con la planilla curada. Lo de las
+     57 fichas no fue un bug de codigo, fue el catalogo. Media sesion.
+  5. **Cero features nuevas hasta que 3 y 4 esten.** Cada capa nueva sin la red
+     puesta es un lugar mas donde romper.
+
+---
+
 **==== 29-jul-2026 (tarde) — LA TABLA DE COMPATIBILIDAD + DOS BUGS REALES ====**
 
 Rama: `claude/system-verification-csv-table-jjal0l`. Orden de Martin: verificar
