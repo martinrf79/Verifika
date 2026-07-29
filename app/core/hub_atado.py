@@ -130,6 +130,100 @@ def _verificar_montos(texto: str, meta: dict, estado: dict,
     return texto
 
 
+def _evidencia_del_turno(meta: dict, universo, interp, mensaje, tienda_id,
+                         trace_id) -> None:
+    """Carga en `meta` TODO lo que el codigo le paso al solver este turno, para
+    que el juez de abajo mire exactamente la misma evidencia.
+
+    Esto es lo que hace que el juez sirva. Un juez con menos evidencia que el
+    redactor no detecta alucinacion: PODA prosa fundada, que es peor. Por eso no
+    se recupera nada nuevo aca -no es una busqueda propia del fiscal- sino que se
+    llama a las MISMAS funciones de `generador_v2` con las MISMAS entradas. Son
+    deterministas, asi que devuelven el mismo paquete que armo el prompt.
+
+    Las fichas de los productos y la FAQ que el modelo SI emitio ya viajan en
+    `meta['tools_called']` desde `renderizar`. Lo que falta, y es justo lo que
+    hace podar de mas, es el grounding que el modelo tuvo delante y no cito.
+    """
+    import re as _re
+    from app.core import generador_v2
+    try:
+        _ids, menu = generador_v2._criterios_del_turno(mensaje, universo, interp)
+        ya = {t.get("id") for t in (meta.get("prosa_evidencia") or [])}
+        bloques = []
+        for linea in (menu or "").split("\n"):
+            m = _re.match(r"\s*\[([^\]]+)\]\s*(.+)", linea)
+            if m and m.group(1) not in ya:
+                bloques.append({"id": m.group(1), "texto": m.group(2)})
+        if bloques:
+            meta["prosa_evidencia"] = (meta.get("prosa_evidencia") or []) + bloques
+    except Exception as e:
+        log.warning("hub_atado_evidencia_criterio_error", trace_id=trace_id,
+                    error=str(e)[:120])
+    try:
+        menu_faq, _temas = generador_v2._faq_del_turno(mensaje, interp, tienda_id)
+        bloques = []
+        for linea in (menu_faq or "").split("\n"):
+            m = _re.match(r"\s*\[([^\]]+)\]\s*(.+)", linea)
+            if m:
+                bloques.append({"tema": m.group(1), "texto": m.group(2)})
+        if bloques:
+            meta["faq_evidencia"] = bloques
+    except Exception as e:
+        log.warning("hub_atado_evidencia_faq_error", trace_id=trace_id,
+                    error=str(e)[:120])
+
+
+async def _fiscalizar_prosa(texto: str, meta: dict, universo, interp,
+                            mensaje: str, tienda_id: str, trace_id: str) -> str:
+    """EL JUEZ. Lo unico que puede chequear la mitad blanda de la respuesta.
+
+    El codigo ata el dato duro: el precio, el stock y la spec los estampa la
+    fuente y el verificador de montos los audita. Pero "es ideal para gaming" o
+    "te sirve para esa notebook" no tienen numero que auditar, y hasta hoy salian
+    sin que nada los mirara. Un modelo chico SI puede juzgarlo -chequear es mucho
+    mas facil que redactar- contra la evidencia del turno.
+
+    El reparto de poder no cambia: el juez OPINA con veredicto atado por enum, el
+    CODIGO decide. Una afirmacion sin respaldo se poda solo si aparece como
+    oracion completa, no tiene digitos (esos ya los goberno el verificador de
+    plata) y no es una frase de honestidad. Lo demas queda MARCADO en el log, que
+    es el radar. Ante error, timeout o falta de clave, no-op: el turno sale igual.
+
+    Estaba escrito desde el 17-jul y no lo llamaba nadie: quedo huerfano cuando
+    el orchestrator paso de `interprete_libre` al hub.
+    """
+    if not texto or texto == settings.VERIFIKA_FALLBACK_MESSAGE:
+        return texto
+    try:
+        from app.core.checker_afirmaciones import (chequear, podar_sin_respaldo,
+                                                   rewrite_segura)
+        _evidencia_del_turno(meta, universo, interp, mensaje, tienda_id, trace_id)
+        chk = await chequear(texto, meta, tienda_id, trace_id)
+        if not chk:
+            return texto
+        if not chk["sin_respaldo"]:
+            log.info("hub_atado_juez_ok", trace_id=trace_id,
+                     afirmaciones=len(chk["afirmaciones"]))
+            return texto
+        # CRITICO-REESCRITOR: la misma llamada ya trajo la version corregida. Se
+        # usa si pasa la red de codigo (no inventa numeros ni marcadores, no deja
+        # muñon); si no, se cae a la poda determinista. Cero llamada extra.
+        reescrita = rewrite_segura(texto, chk.get("corregida") or "")
+        if reescrita and reescrita != texto:
+            log.info("hub_atado_juez_reescribio", trace_id=trace_id,
+                     sin_respaldo=chk["sin_respaldo"][:6])
+            return reescrita
+        nuevo, podadas = podar_sin_respaldo(texto, chk["sin_respaldo"])
+        log.warning("hub_atado_juez_sin_respaldo", trace_id=trace_id,
+                    sin_respaldo=chk["sin_respaldo"][:6], podadas=len(podadas))
+        return nuevo
+    except Exception as e:
+        log.warning("hub_atado_juez_error", trace_id=trace_id,
+                    error=f"{type(e).__name__}: {str(e)[:120]}")
+        return texto
+
+
 async def _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
                           trace_id, interp, present):
     """Cablea el CIERRE y COBRO al hub reusando la MISMA funcion del camino vivo
@@ -359,6 +453,15 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     # y se chequea aca contra la evidencia del turno (antes se protegia solo por
     # el estampado). Determinista, conservador: corrige lo inequivoco.
     texto = _verificar_montos(texto, meta, estado, tienda_id, trace_id)
+
+    # ── EL JUEZ: fiscal de la prosa que el codigo no puede chequear ─────
+    # Corre DESPUES del verificador de montos a proposito: los numeros ya estan
+    # auditados y estampados desde la fuente, asi el juez se ocupa solo de lo
+    # blando -criterio, comparacion, compatibilidad, uso- que es lo unico que
+    # hasta hoy salia sin que nada lo mirara. Antes del dedup y de la memoria,
+    # para que lo que se guarda sea exactamente lo que se manda.
+    texto = await _fiscalizar_prosa(texto, meta, universo, interp, raw_message,
+                                    tienda_id, trace_id)
 
     # ── FILTRO ANTI-DUPLICADO (refuerzo final, determinista) ────────────
     # Ultima red antes de mandar y de guardar en memoria: saca cualquier

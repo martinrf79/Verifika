@@ -77,9 +77,41 @@ estaba cortado era elegir CUAL teclado, y eso se resuelve con el vocabulario
 propio de la tienda, que es determinista y se testea offline. Si el banco
 mostrara fallas semanticas residuales, el camino de Gemini esta probado.
 
-**LO QUE FALTA DE ESTE TRACK:** re-enchufar o borrar, modulo por modulo, los
-5.429 lineas huerfanas. Primero el juez (`checker_afirmaciones`) con la
-evidencia del turno, despues stock, cita y FAQ.
+**EL JUEZ, ENCHUFADO (2a tanda del 29-jul).** `checker_afirmaciones` estaba
+escrito desde el 17-jul y no lo llamaba nadie. Ahora corre en el hub
+(`_fiscalizar_prosa`), DESPUES del verificador de montos -los numeros ya estan
+auditados- y ANTES del dedup y la memoria, asi lo que se guarda es lo que se
+manda. Cubre la mitad blanda de la respuesta -criterio, comparacion,
+compatibilidad, uso-, que es lo unico que el codigo no puede chequear con un
+numero y que hasta hoy salia sin que nada la mirara.
+
+El reparto de poder no cambia: el juez OPINA con veredicto atado por enum
+(respaldada / sin_respaldo / neutral), el CODIGO decide. Se poda solo la oracion
+completa sin digitos y que no sea una frase de honestidad; el resto queda
+MARCADO en el log (`hub_atado_juez_sin_respaldo` es el radar). Ante error,
+timeout o falta de clave, no-op.
+
+**LA EVIDENCIA es lo que lo hace servir (`_evidencia_del_turno`).** El juez mira
+EXACTAMENTE lo mismo que vio el solver: no hace una busqueda propia, se llama a
+las mismas funciones de `generador_v2` (`_criterios_del_turno`, `_faq_del_turno`)
+con las mismas entradas, que son deterministas. Un juez con menos evidencia que
+el redactor no detecta alucinacion: PODA prosa fundada, que es peor que no
+tenerlo. Las fichas ya viajaban en `meta['tools_called']`; faltaba el grounding
+que el modelo tuvo delante y no cito.
+
+**PROBADO VIVO contra Gemini** (gemini-3.1-flash-lite, la clave que ya esta):
+sobre "ideal para gaming por su tasa de refresco / resistente al agua y
+sumergible hasta 3 metros / celulares no vendemos", devolvio respaldada,
+sin_respaldo y neutral respectivamente, y la reescritura saco SOLO la inventada
+manteniendo el tono de venta. Y caza el caso de compatibilidad que no tiene dato
+duro cargado ("es compatible con cualquier notebook"). Latencia medida: 1,62 s
+promedio sobre 3 turnos.
+
+**LO QUE FALTA DE ESTE TRACK:** re-enchufar o borrar, modulo por modulo, el
+resto de las lineas huerfanas: `verificador_stock`, `verificador_cita`,
+`verificador_faq`, `guardia_promesas`, `verificador_intencion`, y decidir que se
+hace con la red de degradacion determinista (`selector` + `compositor` +
+`redactor`), hoy reemplazada por un mensaje de fallback enlatado.
 
 ---
 
