@@ -1,19 +1,27 @@
 """
-HUB ATADO — el turno completo con los DOS atados y SIN la pila de guardas.
+HUB ATADO — el turno completo. Es EL camino vivo: el orchestrator entra aca y
+no hay otro. El camino viejo (interprete_libre + solver de prosa libre) se
+borro el 29-jul, con todo lo que colgaba de el.
 
-Camino:
-  1. INTERPRETE (Gemini, schema estricto): entiende y devuelve datos.
-  2. SOLVER (solver_gemini): LLAMA las tools de area; el dato duro sale de la
-     tool, no de la cabeza del modelo.
-  3. ESTAMPADO por codigo del numero sellado y el producto real.
-  4. MEMORIA: se persiste el estado esencial para que la charla recuerde entre
+Camino del turno:
+  1. INTERPRETE (`interpretador`, Gemini con schema estricto): traduce el
+     mensaje a estructura atada a enums de la fuente. Lo que puede nombrar sale
+     del recall de `recall_modelos`.
+  2. SOLVER (`generador_v2`): emite FRAGMENTOS atados a enums del universo del
+     turno; el CODIGO estampa cada dato -precio, stock, total- desde la fuente.
+  3. RED DE VERIFICADORES (`_red_de_verificadores`): montos, stock, FAQ
+     numerica, intencion, cita, promesas y el juez de prosa, en ese orden.
+  4. GUARDAS DE SALIDA (`guardas_salida`): presupuesto sin modelos, respuesta
+     hueca, honestidad de bot y saludo con aviso.
+  5. MEMORIA: se persiste el estado esencial para que la charla recuerde entre
      turnos (history, resumen largo, productos vistos, carrito, destinos,
-     criterio, provincia).
+     criterio, provincia, preferencias, ancla y grupos de envio).
 
-NO corre ninguna de las ~40 guardas/parches de interprete_libre. Reusa solo las
-funciones PURAS de estado y estampado. Es candidato a reemplazar interprete_libre
-en el camino vivo una vez medido en la bateria; hoy convive solo para medirse,
-el orchestrator sigue en interprete_libre hasta que el numero lo justifique.
+REGLA que este archivo aprendio a la mala: si un modulo deja de estar en este
+camino, no queda "al lado por las dudas". Entre el corte al hub y el 29-jul,
+5.429 lineas -el juez, cinco verificadores y cinco guardas- quedaron escritas,
+con sus tests en verde, sin que las llamara nadie. Verde sobre codigo muerto es
+peor que rojo: da confianza falsa.
 """
 import re
 import time
@@ -692,6 +700,71 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     # para que lo que se guarda sea exactamente lo que se manda.
     texto = await _red_de_verificadores(texto, meta, estado, conv, universo,
                                         interp, raw_message, tienda_id, trace_id)
+
+    # ── GUARDAS DE SALIDA (deterministas, sin modelo) ───────────────────
+    # Las cinco que vivian en interprete_libre y se perdieron al cortar. Ver
+    # app/core/guardas_salida.py: por que existe cada una y cual fue el caso
+    # real que la parió.
+    from app.core import guardas_salida as _gs
+    _negocio = _gs.business_name(tienda_id)
+
+    # PRESUPUESTO SIN MODELOS: pidio "2 teclados y 3 mouse" sin decir cuales y
+    # el modelo armo un total eligiendo productos por su cuenta.
+    try:
+        from app.core.guia_pedido import cantidades_por_categoria
+        _cats_ped = cantidades_por_categoria(raw_message, tienda_id) or []
+        if not _cats_ped and isinstance(interp, dict):
+            _cats_ped = [(int(s.get("cantidad") or 0), str(s.get("categoria")))
+                         for s in (interp.get("solicitud_nueva") or [])
+                         if isinstance(s, dict) and s.get("categoria")
+                         and (s.get("cantidad") or 0) > 1]
+        if _cats_ped and not (estado.get("carrito") or []):
+            _forzado = _gs.forzar_opciones_si_presupuesto(texto, _cats_ped,
+                                                          tienda_id)
+            if _forzado:
+                texto = _forzado
+                log.warning("hub_atado_presupuesto_sin_modelos",
+                            trace_id=trace_id,
+                            categorias=[c for _n, c in _cats_ped])
+    except Exception as e:
+        log.warning("hub_atado_forzar_opciones_error", trace_id=trace_id,
+                    error=str(e)[:120])
+
+    # RESPUESTA HUECA: vacia o sin nada que conteste ni mueva la charla. Se le
+    # pasa si el turno emitio algun fragmento de DATO: con eso la respuesta
+    # contesta algo por construccion y no se la juzga por su largo.
+    _hubo_datos = any(
+        (f or {}).get("tipo") in ("producto", "opciones", "ficha", "faq",
+                                  "criterio", "calculo", "presupuesto", "envio")
+        for f in (frags or []))
+    try:
+        if (_gs.mensaje_con_contenido(raw_message)
+                and _gs.sin_sustancia(texto, hubo_datos=_hubo_datos)
+                and texto != settings.VERIFIKA_FALLBACK_MESSAGE):
+            texto = _gs.fallback_o_curada(raw_message, interp, tienda_id,
+                                          trace_id)
+            log.warning("hub_atado_respuesta_hueca", trace_id=trace_id)
+    except Exception as e:
+        log.warning("hub_atado_sustancia_error", trace_id=trace_id,
+                    error=str(e)[:120])
+
+    # HONESTIDAD DE BOT: preguntan si es una maquina, se dice la verdad. El
+    # prompt solo no alcanza; en el banco el solver esquivaba la pregunta.
+    try:
+        texto = _gs.asegurar_honestidad_bot(raw_message, texto, _negocio)
+    except Exception as e:
+        log.warning("hub_atado_honestidad_bot_error", trace_id=trace_id,
+                    error=str(e)[:120])
+
+    # SALUDO Y AVISO: primer mensaje de la charla, una sola vez. Va al FINAL
+    # para que ninguna guarda de arriba se lleve puesto el aviso.
+    try:
+        if not history:
+            texto = _gs.con_saludo_inicial(texto, _negocio)
+            log.info("hub_atado_saludo_inicial", trace_id=trace_id)
+    except Exception as e:
+        log.warning("hub_atado_saludo_error", trace_id=trace_id,
+                    error=str(e)[:120])
 
     # ── FILTRO ANTI-DUPLICADO (refuerzo final, determinista) ────────────
     # Ultima red antes de mandar y de guardar en memoria: saca cualquier

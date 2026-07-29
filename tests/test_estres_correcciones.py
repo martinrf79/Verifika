@@ -175,25 +175,6 @@ def test_dos_cifras_solo_se_corrige_la_anclada_sin_ambiguedad():
 
 # ── D: estampado con ids sucios (el marcador no puede romper el texto) ───────
 
-def test_estampado_id_inexistente_se_quita_limpio(firestore_doble):
-    from app.core.interprete_libre import _estampar_productos
-    r = "Te recomiendo [[PROD:NOEXISTE99]] que es excelente."
-    out = _estampar_productos(r, "verifika_prod")
-    assert "[[" not in out and "]]" not in out
-    assert "excelente" in out
-
-
-def test_estampado_id_en_minuscula_igual_estampa(firestore_doble):
-    from app.core.interprete_libre import _estampar_productos
-    from app.core.tools import get_all_products
-    p = get_all_products()[0]
-    r = f"Mira [[PROD:{p['id'].lower()}]] esta buenisimo."
-    out = _estampar_productos(r, "verifika_prod")
-    assert p["nombre"] in out
-
-
-# ── E: la verificacion pura nunca da falso OK en frases dificiles ────────────
-
 def test_numero_inventado_entre_dos_verdaderos_no_pasa():
     evidencia = [
         _prod("A1", "Producto Alfa Uno", 50000),
@@ -202,3 +183,10 @@ def test_numero_inventado_entre_dos_verdaderos_no_pasa():
     r = "El Alfa sale $50.000, el Beta $80.000 y el combo $115.000."
     v = verificar_respuesta(r, evidencia)
     assert not v["ok"], "El 'combo' inventado no tiene respaldo: no pasa."
+
+
+# Los dos tests del ESTAMPADO POR MARCADOR ([[PROD:id]] -> linea real) se
+# borraron con el camino viejo. No se perdio la garantia: en el camino atado
+# `generador_v2.renderizar` construye cada linea de producto DESDE la fuente, asi
+# que no hay marcador que estampar ni id que pueda quedar sin resolver; y el hub
+# ademas limpia cualquier id que se filtre al texto (_RE_ID_FILTRADO).

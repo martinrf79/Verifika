@@ -12,7 +12,7 @@ preguntas reales) con tres causas de cableado:
   3. TYPOS EN EL UNIVERSO: 'mause', 'auris' matchean su categoria real; sin
      eso el universo quedaba vacio y el modelo sin nada que ofrecer.
 """
-from app.core.interprete_libre import _mensaje_con_contenido, _sin_sustancia
+from app.core.guardas_salida import mensaje_con_contenido, sin_sustancia
 
 # guia_compra y generador_v2 se importan DENTRO de cada test: un import a
 # nivel de modulo corre en la recoleccion, antes de que la fixture instale el
@@ -23,29 +23,29 @@ from app.core.interprete_libre import _mensaje_con_contenido, _sin_sustancia
 # ── 1. Piso de composicion ───────────────────────────────────────────────────
 
 def test_mensaje_con_contenido():
-    assert _mensaje_con_contenido("hola, busco una notebook para editar video")
-    assert _mensaje_con_contenido("qiero un mause inalambrico")
-    assert not _mensaje_con_contenido("hola")
-    assert not _mensaje_con_contenido("¡Buenas tardes!")
-    assert not _mensaje_con_contenido("buen dia")
-    assert not _mensaje_con_contenido("")
+    assert mensaje_con_contenido("hola, busco una notebook para editar video")
+    assert mensaje_con_contenido("qiero un mause inalambrico")
+    assert not mensaje_con_contenido("hola")
+    assert not mensaje_con_contenido("¡Buenas tardes!")
+    assert not mensaje_con_contenido("buen dia")
+    assert not mensaje_con_contenido("")
 
 
 def test_sin_sustancia_caza_residuos_de_poda():
     # Los residuos reales que dejo la consigna:
-    assert _sin_sustancia("¡Qué hacés! Te cuento,")
-    assert _sin_sustancia("Te cuento cómo nos manejamos")
-    assert _sin_sustancia("")
-    assert _sin_sustancia("   ")
+    assert sin_sustancia("¡Qué hacés! Te cuento,")
+    assert sin_sustancia("Te cuento cómo nos manejamos")
+    assert sin_sustancia("")
+    assert sin_sustancia("   ")
 
 
 def test_sin_sustancia_respeta_respuestas_validas():
     # Corta pero con pregunta que mueve la charla: valida.
-    assert not _sin_sustancia("¿Qué estás buscando?")
+    assert not sin_sustancia("¿Qué estás buscando?")
     # Con dato estampado: valida.
-    assert not _sin_sustancia("El M170 sale $12.000.")
+    assert not sin_sustancia("El M170 sale $12.000.")
     # Larga y con contenido: valida.
-    assert not _sin_sustancia(
+    assert not sin_sustancia(
         "Eso puntual no lo tengo confirmado ahora, lo consulto con el "
         "equipo y te escribo apenas lo tenga.")
 
@@ -221,10 +221,10 @@ def test_cierre_no_repregunta_forma_de_pago_dada(firestore_doble):
 def test_piso_composicion_coletilla_sola_no_es_sustancia(firestore_doble):
     """Una respuesta que es SOLO la coletilla enlatada queda hueca: el piso
     de composicion tiene que dispararse (visto vivo 20-jul, guion 40)."""
-    from app.core.interprete_libre import _sin_sustancia
-    assert _sin_sustancia(
+    from app.core.guardas_salida import sin_sustancia
+    assert sin_sustancia(
         "¿Querés que avancemos con alguno? Te armo el total al instante.")
-    assert _sin_sustancia(
+    assert sin_sustancia(
         "¿Seguimos adelante con tu pedido así te lo dejo preparado?")
-    assert not _sin_sustancia(
+    assert not sin_sustancia(
         "El envío a cordoba sale $7.500 y llega en 4 a 7 días hábiles.")

@@ -229,51 +229,13 @@ def hybrid_search_relajada(query: str | None = None,
             "categorias_disponibles": cats_reales}
 
 
-def buscar_con_score(query: str | None,
-                     productos: list[dict]) -> list[tuple[float, dict]]:
-    """
-    Igual que hybrid_search pero sobre una lista de productos YA dada (no relee
-    Firestore) y devuelve [(score, producto)] ordenado de mayor a menor.
-
-    Comparte el scoring con hybrid_search via _keyword_score, asi la busqueda de
-    productos y el anclaje del Interpretador usan el MISMO criterio. Cuando se
-    agreguen embeddings (flag), el blend semantico entra aca igual que en
-    hybrid_search, y los dos caminos lo aprovechan sin duplicar logica.
-
-    Lo usa el anclaje del Interpretador para decidir, por el catalogo y no por el
-    modelo, si una referencia resuelve a un producto unico o a varios. Escala a
-    catalogos chicos y grandes porque la decision sale de los puntajes, no de una
-    lista fija de categorias.
-    """
-    if not query or not query.strip():
-        return []
-    q = query.lower().strip()
-    pares: list[list] = []  # [score, producto] (mutable para reescalar)
-    for p in productos:
-        s = _keyword_score(p, q)
-        if s > 0:
-            pares.append([s, p])
-
-    # Blend semantico (flag EMBEDDINGS_ON). Mezcla palabras 60% + significado
-    # 40%, igual que hybrid_search. Suma tambien productos que NO matchearon por
-    # palabras pero estan semanticamente cerca, para cubrir sinonimos.
-    s = get_settings()
-    if s.EMBEDDINGS_ON and any(p.get("embedding") for p in productos):
-        qemb = generate_embedding(q)
-        if qemb:
-            con_kw = {id(p) for _, p in pares}
-            for par in pares:
-                kw, p = par
-                sem = cosine_similarity(qemb, p["embedding"]) if p.get("embedding") else 0.0
-                par[0] = 0.6 * (kw / 10.0) + 0.4 * sem
-            for p in productos:
-                if p.get("embedding") and id(p) not in con_kw:
-                    sem = cosine_similarity(qemb, p["embedding"])
-                    if sem > 0.45:
-                        pares.append([0.4 * sem, p])
-
-    pares.sort(key=lambda t: t[0], reverse=True)
-    return [(score, p) for score, p in pares]
+# `buscar_con_score` se BORRO el 29-jul. Era el anclaje del interpretador por
+# puntaje de palabras, y ese trabajo lo hace ahora `app/core/recall_modelos.py`,
+# que puntua contra la ficha ENTERA -nombre, tags, uso, descripcion- con peso
+# por capa e idf, y se mide con su banco. Ademas la funcion tenia una bomba:
+# leia `settings.EMBEDDINGS_ON`, que NO existe en config.py, asi que si alguna
+# vez se la hubiera llamado reventaba con AttributeError. Que llevara meses sin
+# explotar era la prueba de que no la llamaba nadie.
 
 
 def _keyword_score(producto: dict, query_lower: str) -> float:

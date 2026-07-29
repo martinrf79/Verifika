@@ -152,13 +152,63 @@ de pago oficiales por este canal".
 
 Bateria: 744 verdes, 27 tests nuevos entre el juez y la red.
 
-**LO QUE FALTA DE ESTE TRACK:** decidir que se hace con lo que sigue huerfano y
-YA NO tiene destino en el camino vivo: `interprete_libre` (2236),
-`compositor` (704), `solver_gemini` (500), `selector` (241), `redactor` (193),
-`ruteo_venta` (281). Son ~4150 lineas de camino viejo. La regla de
-consolidacion dice borrarlas; el unico punto a resolver antes es la red de
-degradacion determinista (selector + compositor + redactor), hoy reemplazada por
-un mensaje de fallback enlatado cuando Gemini no contesta.
+**EL CAMINO VIEJO SE BORRO (4a tanda del 29-jul). CERO HUERFANOS.** La misma
+auditoria que abrio el dia daba 5.429 lineas sin alcanzar; ahora da **1**, el
+`__init__.py` vacio. Todo lo que esta escrito, corre.
+
+Borrados: `interprete_libre` (2236), `compositor` (704), `solver_gemini` (500),
+`ruteo_venta` (281), `selector` (241), `redactor` (193), `ensamblador` (59) =
+**4.214 lineas**. Mas 10 archivos de test que probaban SOLO ese codigo (~128
+tests) y 4 bancos del camino viejo. La bateria pasa de 744 a 626 verdes: los
+118 que faltan no se perdieron, nunca probaron produccion.
+
+**ANTES DE BORRAR SE RESCATO LO QUE SEGUIA SIRVIENDO** (`app/core/
+guardas_salida.py`, modulo nuevo). Cinco guardas deterministas que se habian
+caido con el corte y que NADIE estaba corriendo:
+  1. **honestidad de bot** — preguntan si es una maquina, se dice la verdad. El
+     prompt solo no alcanza: en el banco el solver esquivaba la pregunta.
+  2. **saludo con aviso** — el primer mensaje declara que es un asistente
+     automatico. Una sola vez en toda la charla.
+  3. **respuesta hueca** — el turno que no contesta nada no sale.
+  4. **presupuesto sin modelos** — pidio "2 teclados y 3 mouse" sin decir
+     cuales; en vez del total inventado, opciones REALES con stock.
+  5. **fallback con curada** — si el turno se bloquea y el cliente pregunto una
+     politica que SI tenemos escrita, sale esa, no el enlatado.
+
+**LA GUARDA 3 SE ARREGLO AL RESCATARLA, y es la que mas dano hacia.** Media por
+LARGO: menos de 60 caracteres sin cifra ni signo de pregunta = hueca. Con eso,
+"Tenemos mouse, teclados y notebooks." -36 caracteres, una respuesta perfecta-
+se reemplazaba por "no tengo esa informacion": la guarda contra respuestas
+vacias borraba respuestas buenas. En el camino viejo casi no se notaba porque
+la prosa libre siempre era larga; con fragmentos, contestar corto y bien es lo
+normal. Ahora el criterio es cualitativo -acuse de recibo pelado, o anuncio sin
+entrega tipo "te cuento como nos manejamos"- y ademas el hub le pasa si el
+turno emitio algun fragmento de DATO, en cuyo caso no se juzga por largo.
+
+**LO QUE NO SE RESCATO, y por que** (no fue descuido, quedo sin sentido con el
+diseno atado): la guarda del "mas barato divergente" y la confirmacion del
+criterio por regex -el interprete ya devuelve `criterio` atado a enum y
+`universo_productos` computa el minimo con stock por codigo-; el estampado por
+marcador `[[PROD:id]]` -`renderizar` construye cada linea desde la fuente-; y
+el "destino unico" por regex -nadie en el camino vivo leia su flag, y el
+interprete pone la localidad en CADA renglon del pedido por schema.
+
+Tambien se borro `buscar_con_score` de `app/storage/search.py`: leia
+`settings.EMBEDDINGS_ON`, que NO existe en `config.py`, o sea que si alguna vez
+se la hubiera llamado reventaba con AttributeError. Que llevara meses sin
+explotar era la prueba de que no la llamaba nadie.
+
+`ARQUITECTURA.md` quedo actualizado: daba por VIVA la red de degradacion
+determinista, que no lo estaba. Esa clase de mentira en la documentacion es la
+que hace perder los dias.
+
+**LO QUE FALTA, y ya no es codigo nuestro:** las relaciones de compatibilidad
+producto por producto y los datos reales de cobro. Mientras no esten, la
+compatibilidad es OPINION y hay que decirlo asi, no venderla como verificada.
+Del lado del codigo queda una sola cosa suelta: `tools.search_products` y la
+busqueda hibrida de `app/storage/search.py` no las llama nadie desde que se
+borro el camino viejo. La recuperacion viva es `recall_modelos` para el enum y
+`universo_productos` para el turno. Decidir con Martin si se borran.
 
 ---
 

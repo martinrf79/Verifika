@@ -7,8 +7,11 @@ dato duro nace de la fuente por construccion: imposible alucinar un precio, stoc
 o spec. El cierre y el cobro (modo lead o venta con CBU/link) los resuelve la capa
 de leads reusada. Lo unico que queda antes es el filtro de entrada anti-jailbreak.
 
-El camino viejo (interprete_libre, solver de prosa libre + ~40 guardas) queda en
-el repo por si hay que volver (revert), pero NO es el que corre.
+El camino viejo (interprete_libre, solver de prosa libre, compositor, selector,
+redactor, ruteo_venta, ensamblador) se BORRO el 29-jul: 4.155 lineas. Lo que de
+ahi seguia sirviendo se rescato al camino vivo -los verificadores a la red del
+hub, las guardas puras a `guardas_salida`-; el resto quedo sin sentido con el
+diseno atado. La red para volver atras es git, no un modulo dormido al lado.
 """
 import uuid
 
