@@ -39,7 +39,11 @@ settings = get_settings()
 # originales cortaban la llamada y el turno quedaba sin fiscal (radar
 # checker_afirmaciones_error con error vacio = TimeoutError, 20-jul).
 _TIMEOUT_S = 8
-_MAX_EVIDENCIA = 4000
+# 6000 y no 4000: al enchufarlo al hub, la evidencia lleva ademas el grounding
+# de FAQ y de criterio que el CODIGO le paso al solver este turno. Con el tope
+# viejo eso truncaba y el juez terminaba juzgando contra media evidencia, que es
+# la peor version posible: poda prosa legitima por no haber visto su respaldo.
+_MAX_EVIDENCIA = 6000
 
 _SCHEMA = {
     "type": "object", "additionalProperties": False,
@@ -87,6 +91,12 @@ def evidencia_de_meta(meta: dict, tienda_id: str | None = None) -> str:
     for pr in (meta or {}).get("prosa_evidencia", []) or []:
         if isinstance(pr, dict) and pr.get("texto"):
             partes.append(f"CRITERIO JURADO {pr.get('id')}: {pr['texto']}")
+    # FAQ que el CODIGO le paso al solver como grounding aunque el modelo no la
+    # emitiera como fragmento. Misma razon que la de arriba: el juez tiene que
+    # ver TODO lo que el solver vio, si no poda por ciego lo que estaba fundado.
+    for fq in (meta or {}).get("faq_evidencia", []) or []:
+        if isinstance(fq, dict) and fq.get("texto"):
+            partes.append(f"FAQ {fq.get('tema')}: {fq['texto']}")
     return "\n".join(partes)[:_MAX_EVIDENCIA]
 
 
