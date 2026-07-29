@@ -297,18 +297,44 @@ def depurar_ficha(prod: dict) -> dict:
 
 
 _RE_TOKEN_VALOR = re.compile(r"\b([a-z]*)(\d+(?:[.,]\d+)?)\s*([a-z]{0,4})\b")
+# unidades que de verdad miden algo. Una letra suelta detras de un numero solo
+# cuenta como unidad si esta aca: sin la lista, la 'W1' de 'EVGA 500 W1' y la
+# 'X' de 'Ventus 2X' se leian como magnitudes y chocaban contra las reales.
+_UNIDADES_FAMILIA = {"tb", "gb", "mb", "kb", "kg", "g", "mg", "hz", "khz",
+                     "mhz", "ghz", "w", "kw", "mah", "wh", "mp", "cm", "mm",
+                     "m", "km", "v", "a", "dpi", "fps", "rpm", "nits", "px",
+                     "pu", "meses", "anos", "horas", "h", "min", "seg"}
 
 
 def _valores_de(texto: str) -> set:
     """{(familia, numero)} de un texto. La FAMILIA es la parte de letras que
     acompaña al numero: 'ddr4' -> ('ddr','4'), '550W' -> ('w','550'), '16GB' ->
     ('gb','16'). Dos valores de la misma familia con distinto numero son el
-    mismo dato dicho de dos maneras, o sea que uno de los dos miente."""
+    mismo dato dicho de dos maneras, o sea que uno de los dos miente.
+
+    DOS COSAS QUE APRENDIO A LA MALA, las dos cazadas por el chequeo de
+    coherencia de datos apenas se lo apunto contra el catalogo real:
+
+    1. El cero final NO se recorta en un entero. Estaba normalizando decimales
+       ('1.50' -> '1.5') con un rstrip suelto, y de paso convertia '500W' en 5W y
+       '80GB' en 8GB. O sea que la guarda daba por IGUALES 8GB y 80GB, y dejaba
+       pasar justo la contradiccion que tiene que cazar.
+    2. Una sola letra solo vale como unidad si va DESPUES del numero. Con la
+       letra de adelante, la 'W1' de la fuente 'EVGA 500 W1' se leia como 1 watt
+       y chocaba contra sus 500W reales, y el '2X' del 'Ventus 2X' contra el
+       'GDDR6X'. Los prefijos de verdad -DDR, GDDR- tienen dos letras o mas.
+    """
     out = set()
     for pre, num, suf in _RE_TOKEN_VALOR.findall(_norm(texto)):
-        fam = (suf or pre).strip()
-        if fam:
-            out.add((fam, num.replace(",", ".").rstrip("0").rstrip(".") or num))
+        if suf and suf in _UNIDADES_FAMILIA:
+            fam = suf
+        elif len(pre) >= 2:
+            fam = pre
+        else:
+            continue
+        if "." in num or "," in num:
+            num = num.replace(",", ".").rstrip("0").rstrip(".") or num
+        out.add((fam, num))
     return out
 
 

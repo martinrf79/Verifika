@@ -119,17 +119,58 @@ resolver un caso, no de entregar-. La reescritura no lo limpia y la poda tampoco
 asi que cae al enlatado. Es la misma familia que el bug 2: una guarda demasiado
 roma. Se arregla en el paso 3.
 
-**LO QUE SIGUE, en orden, acordado con Martin:**
-  3. **Aplanar las 18 reescrituras a una sola pasada.** Cada verificador OPINA
-     sobre el texto original y devuelve un dictamen; un solo lugar los aplica
-     todos, en orden fijo, y decide. Es la causa mecanica de la fragilidad. Va
-     tercero a proposito: con la red de los pasos 1 y 2 puesta, se hace sin
-     riesgo. Dos sesiones.
-  4. **Cerrar la canilla de datos falsos.** Un chequeo sobre los DATOS que falla
-     si una ficha se contradice con su modelo o con la planilla curada. Lo de las
-     57 fichas no fue un bug de codigo, fue el catalogo. Media sesion.
-  5. **Cero features nuevas hasta que 3 y 4 esten.** Cada capa nueva sin la red
-     puesta es un lugar mas donde romper.
+**PASO 3, HECHO: LA RED DEJO DE SER UNA CADENA** (`app/core/red_verificadores.py`).
+Cinco fases: DIAGNOSTICO (todos miran el MISMO texto y devuelven un Dictamen,
+nadie muta), APLICACION (un solo lugar, orden fijo, cada corrector ubica su
+cifra), REESCRITURA (UNA llamada al modelo con todas las reglas juntas, antes
+eran hasta dos que se pisaban), EL JUEZ, y VEREDICTO (se re-diagnostica TODO
+sobre el resultado). La fase 5 hace IMPOSIBLE por construccion el bug del guion
+17, y para todos los verificadores, no solo las promesas. Se borraron las 261
+lineas de la cadena vieja del hub. De yapa: la poda saca la ORACION y recien
+despues la linea, y un verificador que revienta ya no tapa a los siguientes.
+
+**DOS BUGS MAS, los dos cazados por el gate:**
+  - **Pre-existente, vivo en produccion.** El verificador de plata tomaba
+    "quedan 5" por un precio sin respaldo y lo reescribia a "quedan 37500": le
+    pisaba el stock verdadero con el precio. "quedar" es a la vez verbo de precio
+    y el verbo natural del stock. Ahora un numero pelado de hasta tres digitos
+    detras de "quedan" es un conteo.
+  - **Metido en la propia refactorizacion.** Junte los reemplazos de todos los
+    verificadores y los aplique con `str.replace`, pero `correcciones` trae
+    NUMEROS: reemplazar el "5" pelado pisaba todos los cinco y "$8.500" salia
+    "$8.3750000". El numero bajo de 1654 a 1651 y el test se cayo con la charla y
+    el precio exactos. NO se bajo el piso: se arreglo la causa.
+
+**PASO 4, HECHO: LOS DATOS CONTRA SI MISMOS** (`app/core/coherencia_datos.py` +
+`tests/test_coherencia_datos.py`). Seis chequeos sobre los datos REALES, en
+segundos y sin LLM, todos en CERO hoy: el modelo contra su planilla; la prosa
+despues de ingerir (se pregunta con el criterio de PRODUCCION, corriendo la purga
+de nuevo y exigiendo que no saque nada); la tabla de compatibilidad contra su
+vocabulario cerrado; las dos planillas entre si; filas huerfanas; y columnas
+cargadas a mano que no lee nadie. Mas la cobertura de compatibilidad, 469 de 482
+-los 13 que faltan son las sillas, que no se conectan a nada-.
+
+**Y ESE GATE ENCONTRO DOS DEFECTOS EN `_valores_de`, que es su propia base:**
+  1. Recortaba el cero final de los ENTEROS al normalizar decimales, asi que
+     daba por iguales 8GB y 80GB y leia 500W como 5W: dejaba pasar justo la
+     contradiccion que tiene que cazar.
+  2. Tomaba una letra suelta ADELANTE como unidad, asi que la "W1" de la fuente
+     "EVGA 500 W1" era 1 watt y chocaba contra sus 500W reales.
+
+**EL LIMITE DEL CHEQUEO, escrito para que nadie confie de mas:** compara
+MAGNITUDES, un numero con su unidad. Una potencia escondida en un codigo -"RM850e"
+son 850W- NO la ve, y no la puede ver. Ese caso igual esta cubierto, pero por la
+purga de ingesta, no por el chequeo. Hay un test que fija ese limite a proposito.
+
+**LO QUE SIGUE:**
+  5. **Cero features nuevas hasta revisar y deployar** lo de esta tanda.
+  - Queda UN rojo anotado: `21_posventa_seguimiento` T4, la guardia de promesas
+    mata un turno bueno por un "lo resolvemos hoy mismo", falso positivo de
+    dia_entrega. Con la red nueva es un arreglo chico y acotado.
+  - Afilar el numero: hoy mide sobre todo "no mintio y contesto", porque solo dos
+    guiones tienen expectativas escritas. Es un buen detector de REGRESIONES; para
+    que sea una medida de CALIDAD hay que escribir expectativas guion por guion.
+    Incremental, no bloquea nada.
 
 ---
 
