@@ -39,11 +39,12 @@ settings = get_settings()
 # originales cortaban la llamada y el turno quedaba sin fiscal (radar
 # checker_afirmaciones_error con error vacio = TimeoutError, 20-jul).
 _TIMEOUT_S = 8
-# 6000 y no 4000: al enchufarlo al hub, la evidencia lleva ademas el grounding
-# de FAQ y de criterio que el CODIGO le paso al solver este turno. Con el tope
-# viejo eso truncaba y el juez terminaba juzgando contra media evidencia, que es
-# la peor version posible: poda prosa legitima por no haber visto su respaldo.
-_MAX_EVIDENCIA = 6000
+# El tope subio dos veces el 29-jul, y las dos por el mismo motivo medido: cada
+# vez que la evidencia se trunca, el juez juzga contra media verdad y poda
+# contenido legitimo, que es peor que no tenerlo. Ahora entran las fichas
+# COMPLETAS de los productos del turno mas el grounding de FAQ y de criterio.
+# Son tokens de una llamada corta a flash-lite: la mas barata del sistema.
+_MAX_EVIDENCIA = 14000
 
 _SCHEMA = {
     "type": "object", "additionalProperties": False,
@@ -59,21 +60,55 @@ _SCHEMA = {
     "required": ["afirmaciones", "respuesta_corregida"]}
 
 
+# Lo unico que NO viaja de la ficha: ruido interno que no dice nada del producto.
+# TODO lo demas va, y esto es una regla, no una lista: al juez se le manda el
+# REGISTRO COMPLETO, no un subconjunto curado.
+_NO_VAN = {"_id", "created_at", "updated_at", "embedding", "tags",
+           "descripcion_rica"}
+
+
 def evidencia_de_meta(meta: dict, tienda_id: str | None = None) -> str:
-    """Junta la evidencia REAL del turno: ficha completa de cada producto que
+    """Junta la evidencia REAL del turno: ficha COMPLETA de cada producto que
     las tools mostraron, respuestas de FAQ consultadas y bloques de prosa
-    jurada citados. Es lo unico contra lo que se juzga la respuesta."""
+    jurada citados. Es lo unico contra lo que se juzga la respuesta.
+
+    LA FICHA VA ENTERA, y esta es la correccion mas importante de todo el
+    fiscal. Antes viajaba un subconjunto curado de once campos: nombre,
+    categoria, marca, color, material, origen, uso, caracteristicas, garantia,
+    contenido de la caja y descripcion. Faltaba, entre otras cosas, el mapa
+    `specs` que arma `fuente_producto` -almacenamiento, RAM, procesador,
+    hercios- que es justo lo que el CODIGO estampa en la respuesta cuando el
+    cliente pregunta una spec.
+
+    Resultado medido en el banco del 29-jul, guion 68 turno 2: el codigo
+    estampo "Memoria RAM: 4GB" y "Características: 128GB" desde la fuente, el
+    juez no vio esos campos en su evidencia, los marco SIN RESPALDO y su
+    reescritura los borro. Al cliente le llego "Tablet Samsung Galaxy Tab A9
+    Gris. Tablet Lenovo Tab M10 Plata. Memoria RAM." -las etiquetas sin los
+    valores-. O sea: el fiscal borrando la verdad que el propio codigo acababa
+    de estampar de la fuente, que es la peor falla posible de este diseno.
+
+    La leccion es general y vale para cualquier campo que se sume manana: al
+    juez se le da el registro COMPLETO. Un juez con menos evidencia que el
+    sistema que audita no detecta alucinacion, fabrica una."""
     from app.core.estado_venta import productos_de_meta
     from app.storage.firestore_client import get_product_by_id
     partes = []
     try:
-        for p in productos_de_meta(meta):
-            ficha = get_product_by_id(p["id"], tienda_id=tienda_id) or {}
-            campos = {k: ficha.get(k) for k in
-                      ("nombre", "categoria", "marca", "color", "material",
-                       "origen", "uso_recomendado", "caracteristicas_extra",
-                       "garantia_detalle", "contenido_caja", "descripcion")
-                      if ficha.get(k)}
+        ids = [str(p["id"]).upper() for p in productos_de_meta(meta)
+               if p.get("id")]
+        # Los productos que el turno NOMBRO aunque no vengan de una tool: los
+        # estampa el codigo desde la fuente igual (linea de producto, ficha,
+        # spec honesta). Sin ellos el juez marcaba sin respaldo la linea
+        # "Teclado Logitech K120 Blanco - $14.500 (22 en stock)", que la
+        # escribio el CODIGO desde el catalogo (banco 29-jul).
+        for pid in (meta or {}).get("productos_evidencia", []) or []:
+            if str(pid).upper() not in ids:
+                ids.append(str(pid).upper())
+        for pid in ids[:12]:
+            ficha = get_product_by_id(pid, tienda_id=tienda_id) or {}
+            campos = {k: v for k, v in ficha.items()
+                      if k not in _NO_VAN and v not in (None, "", [], {})}
             if campos:
                 partes.append("FICHA: " + json.dumps(campos, ensure_ascii=False))
     except Exception:
@@ -177,8 +212,10 @@ async def chequear(respuesta: str, meta: dict, tienda_id: str | None = None,
         sin_respaldo = [a["texto"] for a in afirmaciones
                         if a.get("veredicto") == "sin_respaldo"]
         corregida = str(data.get("respuesta_corregida") or "").strip()
+        # la evidencia vuelve con el veredicto: `rewrite_segura` la necesita
+        # para saber que numero es de la fuente y por lo tanto intocable.
         return {"afirmaciones": afirmaciones, "sin_respaldo": sin_respaldo,
-                "corregida": corregida}
+                "corregida": corregida, "evidencia": evidencia}
     except Exception as e:
         # El TIPO va siempre: un TimeoutError tiene str vacio y el radar
         # quedaba mudo sobre la causa (visto 20-jul).
@@ -190,22 +227,36 @@ async def chequear(respuesta: str, meta: dict, tienda_id: str | None = None,
 _RE_NUM = re.compile(r"\d+")
 
 
-def rewrite_segura(original: str, corregida: str) -> str | None:
+def rewrite_segura(original: str, corregida: str,
+                   evidencia: str = "") -> str | None:
     """RED DE CODIGO sobre la reescritura del critico (manera 3). Acepta la
-    version corregida SOLO si: no esta vacia ni es un muñon (largo razonable),
-    no trae un marcador sin estampar, y NO introduce ningun numero que no
-    estuviera ya en el original (los numeros son territorio del verificador de
-    plata y del estampado; el reescritor jamas inventa una cifra). Asi la
-    correccion toca prosa, nunca dato duro. Devuelve la corregida si es segura,
-    None si hay que caer a la poda determinista."""
+    version corregida SOLO si: no esta vacia ni es un muñon, no trae un
+    marcador sin estampar, NO introduce ningun numero nuevo, y NO BORRA un
+    numero que la EVIDENCIA respalda. Devuelve la corregida si es segura, None
+    si hay que caer a la poda determinista.
+
+    LAS DOS DIRECCIONES, y por que hacen falta las dos. Que no invente una
+    cifra estuvo desde el principio. Que no BORRE una se agrego el 29-jul,
+    despues de verlo en el banco: el codigo estampa "Memoria RAM: 4GB" desde la
+    fuente y el reescritor lo saca, dejando "Memoria RAM." pelado. Un numero
+    que esta en la evidencia NO es del reescritor: lo puso el codigo desde el
+    catalogo. Solo puede sacar cifras que la fuente no respalda -por ejemplo
+    "sumergible hasta 3 metros"-, que es exactamente lo que tiene que hacer."""
     c = (corregida or "").strip()
     if len(re.sub(r"\s", "", c)) < 15:
         return None
     if "[[" in c or "]]" in c:
         return None
     nums_orig = set(_RE_NUM.findall(original or ""))
-    if any(n not in nums_orig for n in _RE_NUM.findall(c)):
+    nums_new = set(_RE_NUM.findall(c))
+    if nums_new - nums_orig:
         return None
+    # lo que se borro y la fuente respalda: no era del reescritor, lo estampo
+    # el codigo desde el catalogo.
+    if evidencia:
+        respaldados = set(_RE_NUM.findall(evidencia))
+        if (nums_orig - nums_new) & respaldados:
+            return None
     return c
 
 

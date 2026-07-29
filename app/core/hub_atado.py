@@ -373,6 +373,41 @@ async def _red_de_verificadores(texto: str, meta: dict, estado: dict, conv: dict
                                    tienda_id, trace_id)
 
 
+def _productos_del_turno(texto: str, meta: dict, universo, tienda_id,
+                         trace_id) -> None:
+    """Los ids de los productos que el turno NOMBRO, para que sus fichas entren
+    a la evidencia del juez.
+
+    Sin esto, el juez marcaba sin respaldo lineas que habia escrito el CODIGO
+    desde el catalogo: "Teclado Logitech K120 Blanco - $14.500 (22 en stock)",
+    "garantia: 12 meses", "hercios de la pantalla: 60Hz". Su evidencia solo
+    traia los productos que venian de una TOOL, y el camino atado estampa
+    mucho mas que eso: la linea de producto, la ficha por campos y la spec
+    honesta salen del renderizador o del hub, no de una tool. Medido en el
+    banco del 29-jul: 11 de 20 turnos reescritos, y varios de esos "arreglos"
+    borraban dato REAL de la fuente."""
+    try:
+        from app.core.evidencia import productos_nombrados_en
+        ids = []
+        for pn in productos_nombrados_en(texto, tienda_id):
+            pid = str(pn.get("id") or "").upper()
+            if pid and pid not in ids:
+                ids.append(pid)
+        # los del universo que aparezcan por nombre: el render los estampa por
+        # id y el detector de arriba puede no pescarlos si el nombre viene
+        # cortado.
+        for p in (universo or []):
+            pid = str((p or {}).get("id") or "").upper()
+            nom = str((p or {}).get("nombre") or "")
+            if pid and pid not in ids and nom and nom[:28].lower() in (texto or "").lower():
+                ids.append(pid)
+        if ids:
+            meta["productos_evidencia"] = ids[:12]
+    except Exception as e:
+        log.warning("hub_atado_evidencia_productos_error", trace_id=trace_id,
+                    error=str(e)[:120])
+
+
 def _evidencia_del_turno(meta: dict, universo, interp, mensaje, tienda_id,
                          trace_id) -> None:
     """Carga en `meta` TODO lo que el codigo le paso al solver este turno, para
@@ -442,6 +477,7 @@ async def _fiscalizar_prosa(texto: str, meta: dict, universo, interp,
         from app.core.checker_afirmaciones import (chequear, podar_sin_respaldo,
                                                    rewrite_segura)
         _evidencia_del_turno(meta, universo, interp, mensaje, tienda_id, trace_id)
+        _productos_del_turno(texto, meta, universo, tienda_id, trace_id)
         chk = await chequear(texto, meta, tienda_id, trace_id)
         if not chk:
             return texto
@@ -452,7 +488,8 @@ async def _fiscalizar_prosa(texto: str, meta: dict, universo, interp,
         # CRITICO-REESCRITOR: la misma llamada ya trajo la version corregida. Se
         # usa si pasa la red de codigo (no inventa numeros ni marcadores, no deja
         # muñon); si no, se cae a la poda determinista. Cero llamada extra.
-        reescrita = rewrite_segura(texto, chk.get("corregida") or "")
+        reescrita = rewrite_segura(texto, chk.get("corregida") or "",
+                                   chk.get("evidencia") or "")
         if reescrita and reescrita != texto:
             log.info("hub_atado_juez_reescribio", trace_id=trace_id,
                      sin_respaldo=chk["sin_respaldo"][:6])
@@ -731,6 +768,13 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
                          for s in (interp.get("solicitud_nueva") or [])
                          if isinstance(s, dict) and s.get("categoria")
                          and (s.get("cantidad") or 0) > 1]
+        # Solo es un PEDIDO por categorias si pide VARIAS unidades o VARIAS
+        # categorias. "busco un mouse para gaming" es una consulta comun y
+        # corriente, y sin este filtro la guarda le contestaba "¡Buena compra
+        # la que estas armando! Necesito que me digas los modelos" a alguien
+        # que todavia no estaba armando nada (banco 29-jul, guion 54 turno 1).
+        if len(_cats_ped) < 2 and not any(n > 1 for n, _c in _cats_ped):
+            _cats_ped = []
         if _cats_ped and not (estado.get("carrito") or []):
             _forzado = _gs.forzar_opciones_si_presupuesto(texto, _cats_ped,
                                                           tienda_id)
@@ -775,6 +819,13 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         if not history:
             texto = _gs.con_saludo_inicial(texto, _negocio)
             log.info("hub_atado_saludo_inicial", trace_id=trace_id)
+        else:
+            # de acá en adelante no se saluda mas: el saludo del modelo se
+            # recorta, para que no abra con "¡Hola!" en el turno 2, 3 y 5.
+            _antes_s = texto
+            texto = _gs.sin_saludo_del_modelo(texto)
+            if texto != _antes_s:
+                log.info("hub_atado_saludo_repetido_podado", trace_id=trace_id)
     except Exception as e:
         log.warning("hub_atado_saludo_error", trace_id=trace_id,
                     error=str(e)[:120])

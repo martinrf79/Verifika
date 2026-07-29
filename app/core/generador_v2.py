@@ -1141,15 +1141,39 @@ def _poda_prosa(texto, nombres_universo=None):
 
 def _cat_real(nombre, tienda_id):
     """Mapea lo que diga el modelo (plural, idioma) a una categoria REAL de la
-    tienda por singular normalizado. None si no matchea ninguna."""
+    tienda. None si no matchea ninguna.
+
+    El match EXACTO por singular no alcanzaba, y fallaba en silencio: el modelo
+    emite "tablets Samsung" o "mouse gamer" -la categoria con un adjetivo
+    pegado- y el fragmento de opciones se renderizaba VACIO. En el banco del
+    29-jul eso dejo el turno 1 sin un solo producto, y como no se mostro nada,
+    el turno 2 quedo sin contexto y el bot le contesto con modulos de memoria
+    RAM a alguien que preguntaba por la RAM de una tablet. Una palabra de mas
+    del modelo tumbaba la charla entera.
+    """
     from app.storage.firestore_client import get_categories
     n = _norm(nombre)
+    if not n:
+        return None
     ns = n[:-1] if n.endswith("s") else n
-    for c in (get_categories(tienda_id=tienda_id) or []):
+    reales = [str(c) for c in (get_categories(tienda_id=tienda_id) or [])]
+    for c in reales:
         cn = _norm(c)
         cs = cn[:-1] if cn.endswith("s") else cn
         if cn == n or cs == ns or cs == n or cn == ns:
-            return str(c)
+            return c
+    # la categoria REAL nombrada adentro de la etiqueta del modelo. Se toma la
+    # mas larga, asi "memoria ram" le gana a "memoria" si las dos existen.
+    palabras = set(re.findall(r"\w+", n))
+    candidatas = []
+    for c in reales:
+        cn = _norm(c)
+        cs = cn[:-1] if cn.endswith("s") else cn
+        toks = set(re.findall(r"\w+", cn))
+        if toks <= palabras or cs in palabras or cn in n:
+            candidatas.append((len(cn), c))
+    if candidatas:
+        return max(candidatas)[1]
     return None
 
 
@@ -1480,4 +1504,22 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
     texto = "\n\n".join(x for x in partes if x)
     log.info("generador_v2_render", trace_id=trace_id,
              fragmentos=len(fragmentos or []), partes=len(partes))
+    # RADAR de fragmento PERDIDO. Hasta hoy la unica pista de que un fragmento
+    # se habia rendido vacio era comparar dos numeros de la linea de arriba, y
+    # nadie los compara. Un fragmento que el modelo emitio y el render descarto
+    # es contenido que el cliente NO recibio: tiene que gritar, no susurrar.
+    # `presupuesto` y `cierre` son POSICIONALES: le dicen al render donde va el
+    # total precalculado o la invitacion, y si no hay total no rinden nada. Eso
+    # es correcto, no es contenido perdido, y contarlos dejaba el radar lleno de
+    # falsas alarmas -que es como se muere un radar-.
+    _CONTENIDO = {"prosa", "producto", "opciones", "ficha", "faq", "envio",
+                  "criterio", "calculo"}
+    _esperados = [f.get("tipo") for f in (fragmentos or [])
+                  if f and f.get("tipo") in _CONTENIDO]
+    if len(partes) < len(_esperados):
+        log.warning("generador_v2_fragmento_perdido", trace_id=trace_id,
+                    emitidos=[f.get("tipo") for f in (fragmentos or []) if f],
+                    esperados=len(_esperados), partes=len(partes),
+                    categorias=[f.get("categoria") for f in (fragmentos or [])
+                                if f and f.get("categoria")])
     return texto, tools

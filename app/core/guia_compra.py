@@ -187,6 +187,16 @@ def _no_vendidas() -> dict[str, str | None]:
     return _NO_VENDIDAS_CACHE
 
 
+# El cliente nombra algo que no vendemos para preguntar si lo NUESTRO le sirve
+# con eso. Es una pregunta de compatibilidad, no un pedido de compra.
+_RE_COMPATIBILIDAD = re.compile(
+    r"\b(?:sirve|sirven|anda|andan|funciona|funcionan|va|van|compatible|"
+    r"compatibles|conecta|conectan|entra|entran)\b[^.?!]{0,25}?"
+    r"\b(?:para|con|en)\b"
+    r"|\bcompatibilidad\b|\bse\s+puede\s+usar\b|\blo\s+puedo\s+usar\b",
+    re.IGNORECASE)
+
+
 def categoria_no_vendida(mensaje: str,
                          tienda_id: str | None = None) -> tuple[str, str | None] | None:
     """(palabra pedida, categoria alternativa REAL o None) si el mensaje pide
@@ -199,6 +209,12 @@ def categoria_no_vendida(mensaje: str,
     no_vendidas = _no_vendidas()
     pedida = next((p for p in no_vendidas if f" {p} " in m), None)
     if not pedida:
+        return None
+    # NO es un pedido de compra si lo nombra para preguntar COMPATIBILIDAD:
+    # "el mas barato sirve para PS5?" pregunta por el mouse, no pide una PS5.
+    # Contestarle "PS5 no trabajamos" es un despropósito y encima tapa la
+    # respuesta real (banco 29-jul, guion 54 turno 2).
+    if _RE_COMPATIBILIDAD.search(m):
         return None
     reales = [str(c) for c in (get_categories(tienda_id=tienda_id) or [])]
     for c in reales:

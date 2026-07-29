@@ -258,3 +258,41 @@ def test_el_hub_llama_a_la_red_en_un_turno_real(monkeypatch, firestore_doble):
     _correr(H.procesar_atado("u_red", "sirve para la oficina?", TIENDA, "sim",
                              "t_red"))
     assert llamado.get("si"), "el hub NO llama a la red: sigue huerfana"
+
+
+# ── HALLAZGO DEL BANCO VIVO: el fragmento que se rinde en silencio ─────────
+def test_la_categoria_con_adjetivo_pegado_igual_mapea(firestore_doble):
+    """Banco 29-jul, guion 68 turno 1. El modelo emitio el fragmento de
+    opciones con categoria "tablets Samsung"; el mapeo exigia match exacto por
+    singular, devolvio None y el fragmento se renderizo VACIO. El turno salio
+    sin un solo producto, y como no se mostro nada, el turno 2 quedo sin
+    contexto y el bot contesto con modulos de memoria RAM a alguien que
+    preguntaba por la RAM de una tablet. Una palabra de mas del modelo tumbaba
+    la charla entera."""
+    from app.core.generador_v2 import _cat_real
+    assert _cat_real("tablets Samsung", TIENDA) == "tablet"
+    assert _cat_real("mouse gamer", TIENDA) == "mouse"
+    assert _cat_real("notebooks para diseño", TIENDA) == "notebook"
+    # y la mas especifica gana: "memoria ram" no cae en "memoria"
+    assert _cat_real("memoria ram", TIENDA) == "memoria ram"
+    # lo que no existe sigue siendo None: el mapeo no inventa
+    assert _cat_real("zapatillas", TIENDA) is None
+    assert _cat_real("", TIENDA) is None
+
+
+def test_un_fragmento_perdido_deja_radar(firestore_doble):
+    """Un fragmento que el modelo emitio y el render descarto es contenido que
+    el cliente NO recibio. Hasta hoy la unica pista era comparar dos numeros de
+    una linea de log, y nadie los compara.
+
+    Se captura con structlog y no con la salida estandar: leyendo stdout el
+    test pasaba solo y fallaba en la bateria, porque el logger queda pegado a
+    la configuracion del primer test que lo toca."""
+    from structlog.testing import capture_logs
+    from app.core.generador_v2 import renderizar
+    with capture_logs() as eventos:
+        texto, _ = renderizar([{"tipo": "opciones", "categoria": "zapatillas"}],
+                              [], {}, TIENDA, "t_perdido")
+    assert not texto, "renderizo algo de una categoria que no existe"
+    assert any(e.get("event") == "generador_v2_fragmento_perdido"
+               for e in eventos), "el fragmento se perdio en silencio"
