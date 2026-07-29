@@ -690,6 +690,25 @@ async def upload_catalog(
                  cargados=cargados, borrados=borrados,
                  errores=len(errores) + len(errores_carga))
 
+        # COHERENCIA DE LOS DATOS, en la puerta por donde entran. Lo de las 57
+        # fichas que le mentian al cliente no fue un bug de codigo, fue el
+        # catalogo, y no habia nada mirandolo. Se AVISA, no se bloquea: el
+        # catalogo ya quedo cargado y la purga de ingesta neutraliza la prosa
+        # contradicha, asi que rechazar la carga entera seria peor. Lo que no
+        # puede pasar es que entre en silencio.
+        incoherencias = []
+        try:
+            from app.core.coherencia_datos import revisar_todo
+            for nombre, problemas in revisar_todo(tienda_id).items():
+                if problemas:
+                    incoherencias.append(f"{nombre}: {len(problemas)}")
+                    log.warning("catalog_incoherente", tienda_id=tienda_id,
+                                chequeo=nombre, cuantos=len(problemas),
+                                ejemplos=[str(p)[:160] for p in problemas[:3]])
+        except Exception as e:
+            log.warning("catalog_coherencia_error", tienda_id=tienda_id,
+                        error=str(e)[:150])
+
         return {
             "ok": True,
             "tienda_id": tienda_id,
@@ -699,6 +718,7 @@ async def upload_catalog(
             "filas_invalidas": len(errores),
             "errores_validacion": errores[:20],
             "errores_carga": errores_carga[:20],
+            "incoherencias": incoherencias,
         }
 
     except Exception as e:
