@@ -805,6 +805,17 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         log.warning("hub_atado_sustancia_error", trace_id=trace_id,
                     error=str(e)[:120])
 
+    # ANUNCIO SIN CONTENIDO: radar, no poda. La respuesta promete contar algo
+    # y no lo cuenta. No es falsa, es incompleta: reemplazarla por el enlatado
+    # seria empeorarla, asi que se MARCA para poder medirla en trafico real.
+    try:
+        if _gs.anuncio_sin_contenido(texto):
+            log.warning("hub_atado_anuncio_sin_contenido", trace_id=trace_id,
+                        respuesta_preview=texto[:200])
+    except Exception as e:
+        log.warning("hub_atado_anuncio_error", trace_id=trace_id,
+                    error=str(e)[:120])
+
     # HONESTIDAD DE BOT: preguntan si es una maquina, se dice la verdad. El
     # prompt solo no alcanza; en el banco el solver esquivaba la pregunta.
     try:

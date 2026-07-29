@@ -228,25 +228,16 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod",
     if re.search(r"([^,.\n]{12,}?)\s*[,.]\s*\1(?=[,.\s]|$)", respuesta):
         problemas.append("bloque duplicado consecutivo: volcado de datos roto")
 
-    # 13. ANUNCIO SIN CONTENIDO (guiones 40 y 45, 19-jul): la respuesta
-    #     CORTA anuncia que va a contar/confirmar/explicar y despues no hay
-    #     ni producto, ni cifra, ni un no honesto, ni pregunta de dato.
-    #     Conservador: solo respuestas cortas, la prosa larga de criterio es
-    #     contenido aunque no traiga cifras.
-    if len(respuesta) < 340 and re.search(
-            r"(?i)te (?:cuento|explico|detallo)|te l[oa] confirmo"
-            r"|la disponibilidad te la confirmo|como viene la mano", respuesta):
-        _sustancia = bool(
-            re.search(r"\$\s?\d", respuesta)
-            or re.search(r"(?m)^\s*-\s+\S", respuesta)
-            or re.search(r"(?i)\bno\b[^.\n]{0,60}(vend|trabaj|tenemos|tengo"
-                         r"|contamos|cat[aá]logo|confirmar|especifica|figura"
-                         r"|llegamos)", respuesta)
-            or re.search(r"(?i)(cu[aá]l|qu[eé] uso|d[oó]nde|provincia"
-                         r"|c[oó]digo postal|localidad)[^?]*\?", respuesta))
-        if not _sustancia:
-            problemas.append("anuncio sin contenido: promete contar o "
-                             "confirmar y no da dato, opcion ni no honesto")
+    # 13. ANUNCIO SIN CONTENIDO (guiones 40 y 45, 19-jul): la respuesta CORTA
+    #     anuncia que va a contar/confirmar/explicar y despues no hay ni
+    #     producto, ni cifra, ni un no honesto, ni pregunta de dato.
+    #     La REGLA vive en app/core/guardas_salida.py, donde produccion la usa
+    #     como radar: una sola regla, dos consumidores. Antes esta medicion
+    #     existia solo del lado de los tests y el bot vivo no la tenia.
+    from app.core.guardas_salida import anuncio_sin_contenido
+    if anuncio_sin_contenido(respuesta):
+        problemas.append("anuncio sin contenido: promete contar o "
+                         "confirmar y no da dato, opcion ni no honesto")
 
     # 11. ENVIOS PERDIDOS (charla real 19-jul, trace 8507a0b6): el cliente
     #     declaro N destinos REALES (validados contra la tabla geo) y el

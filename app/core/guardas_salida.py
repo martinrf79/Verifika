@@ -248,6 +248,50 @@ def sin_sustancia(respuesta: str, hubo_datos: bool = False) -> bool:
     return len(r) < 25 and not tiene_dato
 
 
+# ── 3-bis. ANUNCIO SIN CONTENIDO (radar, no poda) ───────────────────────────
+# La respuesta corta ANUNCIA que va a contar, explicar o confirmar algo, y
+# despues no hay ni producto, ni cifra, ni un no honesto, ni una pregunta que
+# pida el dato que falta. Caso real del banco 29-jul, guion 45 turno 2: el
+# cliente pide un HDD mecanico a 7000 MB/s -que no existe- y el bot contesta
+# "te cuento como viene la mano con los discos" y no cuenta nada.
+#
+# ESTO NO PODA, MARCA. La respuesta no es falsa, es incompleta, y reemplazarla
+# por el enlatado seria empeorarla. El radar convierte una fuga de calidad
+# silenciosa en un numero que se puede mirar en trafico real.
+#
+# La regla vivia en el juez del banco (banco_pruebas/juez.py) y produccion no
+# la tenia: otra vez lo mismo, una medicion que solo existia del lado de los
+# tests. Ahora vive aca y el banco la importa: una sola regla, dos consumidores.
+_RE_ANUNCIA = re.compile(
+    r"te\s+(?:cuento|explico|detallo)|te\s+l[oa]\s+confirmo"
+    r"|la\s+disponibilidad\s+te\s+la\s+confirmo|como\s+viene\s+la\s+mano",
+    re.IGNORECASE)
+_RE_ENTREGA = (
+    re.compile(r"\$\s?\d"),                       # una cifra de plata
+    re.compile(r"(?m)^\s*-\s+\S"),                # una lista de opciones
+    re.compile(r"(?i)\bno\b[^.\n]{0,60}(vend|trabaj|tenemos|tengo|contamos"
+               r"|cat[aá]logo|confirmar|especifica|figura|llegamos)"),  # no honesto
+    re.compile(r"(?i)(cu[aá]l|qu[eé] uso|d[oó]nde|provincia|c[oó]digo postal"
+               r"|localidad)[^?]*\?"),            # pregunta que pide el dato
+)
+# NOTA de un error propio, para que no se repita: al mover la regla la ensanche
+# -"que uso" pasaba a "que <lo que sea>"- pensando que asi cubria mas casos. Lo
+# que hizo fue lo contrario: "¿Querés QUE AVANCEMOS con alguno?" pasaba a contar
+# como pregunta de dato y el detector se quedaba mudo justo en el turno hueco
+# que lo estrenó. Una regla que se mueve se mueve IGUAL; si hay que ampliarla,
+# se amplia despues y con un caso que lo justifique.
+
+
+def anuncio_sin_contenido(respuesta: str, tope: int = 340) -> bool:
+    """True si la respuesta promete contar algo y no lo cuenta. Conservador:
+    solo respuestas CORTAS, porque la prosa larga de criterio es contenido
+    aunque no traiga cifras."""
+    r = (respuesta or "").strip()
+    if len(r) >= tope or not _RE_ANUNCIA.search(r):
+        return False
+    return not any(rx.search(r) for rx in _RE_ENTREGA)
+
+
 # ── 4. PRESUPUESTO SIN MODELOS ──────────────────────────────────────────────
 _RE_PRESUPUESTO_EN_TEXTO = re.compile(
     r"\bpresupuesto\b|\btotal\b[^\n]{0,20}\$", re.IGNORECASE)
