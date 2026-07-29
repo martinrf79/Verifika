@@ -227,13 +227,29 @@ _INSTR = {
 }
 
 def _get_client():
-    """CONSOLIDADO (7-jul): el reescritor usa el MISMO cliente y provider que el
-    solver (LLM_PROVIDER), un solo camino. Antes quedo DeepSeek hardcodeado
-    cuando el sistema paso a OpenAI, y corria deepseek-v4-flash SIN apagar el
-    thinking: el razonamiento se comia el presupuesto de tokens y la reescritura
-    volvia VACIA (visto en real el 4-jul, salio una promesa al cliente)."""
-    from app.core.agent import _get_client as _cliente_solver
-    return _cliente_solver()
+    """El reescritor usa el cliente del solver VIVO. Un solo camino.
+
+    Historia de este bug, que se repitio dos veces: cada vez que el sistema
+    cambia de provider, este cliente queda apuntando al anterior y la
+    reescritura muere en silencio. Primero fue DeepSeek hardcodeado cuando se
+    paso a OpenAI (4-jul, salio una promesa al cliente). Despues quedo colgado
+    de `agent._get_client`, que sigue el flag LLM_PROVIDER -por default openai-
+    mientras el camino vivo entero se mudaba a Gemini: medido el 29-jul, la
+    reescritura de stock devolvia 401 con la clave de OpenAI vencida, o sea que
+    la guardia de promesas y la de stock estaban MUERTAS en produccion aunque
+    detectaran bien.
+
+    La raiz del problema era la indireccion: `agent` es el solver viejo, que ya
+    no conduce ningun turno. Ahora se toma el cliente de quien SI redacta hoy,
+    `generador_v2`, asi no puede volver a divergir sin que se rompa el camino
+    principal primero."""
+    from app.core.generador_v2 import _cliente_gemini
+    return _cliente_gemini()
+
+
+def _modelo() -> str:
+    """El modelo del solver vivo. Mismo motivo que el cliente de arriba."""
+    return settings.GEMINI_MODEL or "gemini-3.1-flash-lite"
 
 
 async def reescribir_con_reglas(respuesta: str, reglas: str,
@@ -250,23 +266,14 @@ async def reescribir_con_reglas(respuesta: str, reglas: str,
         f"reescrito, sin comillas ni explicacion.\n\nMensaje:\n{respuesta}")
 
     def _call() -> str:
-        from app.core.agent import modelo_solver
-        from app.config import (deepseek_extra_body, gemini_thinking_off,
-                                nvidia_thinking_off, openrouter_reasoning_off)
-        modelo = modelo_solver()
-        # Si el provider razonador vuelve algun dia (deepseek v4, NIM, gemini
-        # 2.5), el thinking se apaga igual que en el solver: sin esto el
-        # razonamiento consume max_tokens y la reescritura sale vacia.
-        extra = (nvidia_thinking_off(settings.LLM_PROVIDER, modelo)
-                 or openrouter_reasoning_off(settings.LLM_PROVIDER, modelo)
-                 or gemini_thinking_off(settings.LLM_PROVIDER, modelo)
-                 or (deepseek_extra_body(modelo)
-                     if settings.LLM_PROVIDER == "deepseek" else {}))
+        modelo = _modelo()
+        # El thinking se apaga igual que en el solver: sin esto el razonamiento
+        # consume max_tokens y la reescritura sale VACIA, que es el peor caso
+        # -la promesa prohibida sale intacta al cliente (visto en real 4-jul).
         kwargs = {"model": modelo,
                   "messages": [{"role": "user", "content": prompt}],
-                  "temperature": 0.2, "max_tokens": settings.MAX_OUTPUT_TOKENS}
-        if extra:
-            kwargs["extra_body"] = extra
+                  "temperature": 0.2, "max_tokens": settings.MAX_OUTPUT_TOKENS,
+                  "extra_body": {"reasoning_effort": "none"}}
         try:
             r = _get_client().chat.completions.create(**kwargs)
         except Exception:
