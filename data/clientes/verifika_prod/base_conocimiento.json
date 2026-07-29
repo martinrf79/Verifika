@@ -638,7 +638,7 @@
    "necesita_martin": null
   },
   {
-   "id": "envio_costo",
+   "id": "costo_envio",
    "grupo": "politica_faq",
    "pilar": "dato",
    "descripcion": "Cuanto sale el envio.",
@@ -652,7 +652,7 @@
    "necesita_martin": null
   },
   {
-   "id": "envio_plazo",
+   "id": "plazo_envio",
    "grupo": "politica_faq",
    "pilar": "politica",
    "descripcion": "En cuanto llega.",
@@ -683,7 +683,7 @@
    "necesita_martin": null
   },
   {
-   "id": "seguimiento_tracking",
+   "id": "seguimiento_pedido",
    "grupo": "politica_faq",
    "pilar": "politica",
    "descripcion": "Numero de seguimiento del envio.",
@@ -1318,6 +1318,126 @@
     "punto de retiro"
    ],
    "criterio": "Al ser tienda online no hay punto de retiro: todo va por envio a la direccion que indique el cliente, a todo el pais. Se dice honesto y se ofrece cotizar el envio a su zona en el momento.",
+   "necesita_martin": null
+  },
+  {
+   "id": "precios_iva",
+   "grupo": "politica_faq",
+   "pilar": "politica",
+   "descripcion": "Si el precio publicado es final e incluye IVA.",
+   "disparadores": [
+    "el precio incluye iva",
+    "es precio final",
+    "tiene impuestos",
+    "el precio final",
+    "pago algo mas aparte"
+   ],
+   "criterio": "Los precios publicados son finales: ya incluyen los impuestos, sin sorpresas ni recargos ocultos al pagar. Se aprovecha para ofrecer el total del producto que mira, con el envio incluido.",
+   "necesita_martin": null
+  },
+  {
+   "id": "monedas_aceptadas",
+   "grupo": "politica_faq",
+   "pilar": "politica",
+   "descripcion": "En que moneda se paga: solo pesos, no dolares ni cripto.",
+   "disparadores": [
+    "aceptan dolares",
+    "pagar en dolares",
+    "reciben cripto",
+    "aceptan criptomonedas",
+    "pagar con cripto"
+   ],
+   "criterio": "Se opera solo en pesos argentinos, por transferencia o Mercado Pago. No se toman dolares en efectivo ni criptomonedas. Se aclara con naturalidad y se ofrece pasar el total en pesos de lo que el cliente este viendo.",
+   "necesita_martin": null
+  },
+  {
+   "id": "promociones",
+   "grupo": "politica_faq",
+   "pilar": "politica",
+   "descripcion": "Si hay promociones u ofertas vigentes.",
+   "disparadores": [
+    "hay promociones",
+    "tenes alguna promo",
+    "hay ofertas",
+    "que ofertas hay",
+    "promo vigente"
+   ],
+   "criterio": "Se cuentan solo las promociones que existen de verdad, nunca se inventan ofertas, cupones ni combos. Los beneficios vigentes son los medios de pago con descuento o cuotas; las promos puntuales por producto se confirman segun lo que el cliente este mirando.",
+   "necesita_martin": null
+  },
+  {
+   "id": "reposicion_stock",
+   "grupo": "politica_faq",
+   "pilar": "politica",
+   "descripcion": "Cuando se repone un producto sin stock.",
+   "disparadores": [
+    "cuando reponen",
+    "cuando vuelve a haber",
+    "cuando reingresa",
+    "van a tener de nuevo",
+    "avisame cuando haya"
+   ],
+   "criterio": "Cuando un producto no tiene stock, no se promete una fecha de reingreso que no esta confirmada: se es honesto con que no hay dia cierto. Se ofrece tomar el contacto para avisar apenas reingrese, o proponer una alternativa equivalente que si este disponible.",
+   "necesita_martin": null
+  },
+  {
+   "id": "verificacion_pagos",
+   "grupo": "politica_faq",
+   "pilar": "politica",
+   "descripcion": "Como se verifica y acredita un pago ya hecho.",
+   "disparadores": [
+    "ya transferi",
+    "ya te pague",
+    "te mando el comprobante",
+    "cuando se acredita",
+    "ya hice el pago"
+   ],
+   "criterio": "Cuando el cliente avisa que ya pago o manda un comprobante, se agradece y se explica que el pago se confirma contra la acreditacion real en la cuenta, no por la foto del comprobante. Apenas impacta el dinero, el pedido queda liberado y se despacha. Se transmite tranquilidad, sin exigirle nada.",
+   "necesita_martin": null
+  },
+  {
+   "id": "cancelacion_pedido",
+   "grupo": "postventa",
+   "pilar": "politica",
+   "descripcion": "Cancelar o anular un pedido.",
+   "disparadores": [
+    "quiero cancelar",
+    "cancelar el pedido",
+    "anular la compra",
+    "dar de baja el pedido",
+    "como cancelo"
+   ],
+   "criterio": "Se puede cancelar sin costo mientras el pedido no haya salido; se pide el numero de pedido y que escriba cuanto antes. Si ya se despacho, se encauza como una devolucion en lugar de una cancelacion. Se resuelve con buena predisposicion, sin trabas.",
+   "necesita_martin": null
+  },
+  {
+   "id": "contacto_humano",
+   "grupo": "conversacion",
+   "pilar": "conversacion",
+   "descripcion": "Derivar la charla a una persona del equipo.",
+   "disparadores": [
+    "hablar con un humano",
+    "hablar con una persona",
+    "con un asesor",
+    "atiende una persona",
+    "pasame con alguien"
+   ],
+   "criterio": "Si el cliente pide hablar con una persona, un asesor o el encargado, no se lo frena: se le confirma que se lo puede derivar y se le pide un resumen breve de su consulta para pasarla con contexto. Igual, cuando la duda se puede resolver aca mismo, primero se intenta ayudar sin obligarlo a esperar.",
+   "necesita_martin": null
+  },
+  {
+   "id": "envoltorio_regalo",
+   "grupo": "politica_faq",
+   "pilar": "politica",
+   "descripcion": "Si se hace envoltorio para regalo.",
+   "disparadores": [
+    "envoltorio para regalo",
+    "lo envuelven para regalo",
+    "papel de regalo",
+    "viene con moño",
+    "es para regalo"
+   ],
+   "criterio": "No hay servicio de envoltorio de regalo, pero se dice con gracia: el producto viaja en su caja original sellada, prolijo para regalar. Si el cliente aclara que es un regalo, se ofrece despacharlo sin el remito con el precio a la vista.",
    "necesita_martin": null
   }
  ]

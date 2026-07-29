@@ -329,14 +329,18 @@ def _sin_coletillas(texto: str) -> str:
     el seguimiento salio con la invitacion a avanzar y nada mas)."""
     t = texto or ""
     try:
-        from app.core.generador_v2 import _CIERRES_SUAVES
         from app.core.leads import PREGUNTA_CIERRE
-        for c in (*_CIERRES_SUAVES, PREGUNTA_CIERRE,
-                  "¿Te paso el total o querés la ficha completa?"):
-            t = t.replace(c, " ")
+        t = t.replace(PREGUNTA_CIERRE, " ")
     except Exception:
         pass
-    return t.strip()
+    # La invitacion a avanzar ya no es un enlatado fijo (el solver la redacta):
+    # se descuenta generico una ultima linea que sea una invitacion de cierre
+    # -pregunta larga, 40-90 chars-. Una pregunta corta legitima ("¿Que buscas?")
+    # queda: mueve la charla, es sustancia.
+    lineas = [l for l in t.splitlines() if l.strip()]
+    if lineas and "?" in lineas[-1] and 40 < len(lineas[-1].strip()) < 90:
+        lineas = lineas[:-1]
+    return "\n".join(lineas).strip()
 
 
 def _sin_sustancia(respuesta: str) -> bool:
@@ -1185,7 +1189,7 @@ async def procesar_interprete_libre(user_id: str, raw_message: str,
                         list(_tools_precalc))
                 except (KeyError, IndexError, AttributeError):
                     _presu_ext = None
-            _frags, _uni, _presu, _presu_tools = await generar_fragmentos(
+            _frags, _uni, _presu, _presu_tools, _rpc = await generar_fragmentos(
                 raw_message, history, estado, tienda_id, interp, trace_id,
                 presupuesto_externo=_presu_ext)
             if _frags:

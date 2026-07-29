@@ -36,7 +36,12 @@ def setup_logging():
         ],
         wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
         logger_factory=structlog.PrintLoggerFactory(),
-        cache_logger_on_first_use=True,
+        # SIN cache: con cache, el logger de un modulo queda pegado a la
+        # configuracion del primer uso y ya no escucha una reconfiguracion. Eso
+        # dejaba SORDO al observador del banco (los radares del camino vivo no
+        # se capturaban) segun que test importara app.main antes. El ahorro que
+        # daba el cache son microsegundos contra una llamada al LLM.
+        cache_logger_on_first_use=False,
     )
 
 

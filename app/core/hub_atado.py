@@ -72,6 +72,64 @@ def _carrito_traza(carrito) -> list:
             for c in (carrito or []) if isinstance(c, dict)]
 
 
+def _verificar_montos(texto: str, meta: dict, estado: dict,
+                      tienda_id: str, trace_id: str) -> str:
+    """RED DE NUMEROS del camino atado. Hasta hoy el numero se protegia solo
+    porque el CODIGO lo estampaba; al pasar la FAQ y la venta a redaccion del
+    solver, el numero lo teje el LLM y necesita verificacion. Reusa el mismo
+    verificador determinista del camino viejo: arma la evidencia del turno
+    (tools, productos vistos y nombrados, FAQ entera con valores) y autocorrige
+    cualquier cifra sin respaldo por el valor real de la fuente. Sin LLM,
+    conservador: solo reemplaza lo inequivoco. Gateado por AUTOCORRIGE_MONTOS."""
+    if not texto or texto == settings.VERIFIKA_FALLBACK_MESSAGE:
+        return texto
+    if not settings.AUTOCORRIGE_MONTOS:
+        return texto
+    try:
+        from app.core.evidencia import (build_evidence_from_tools,
+                                        productos_nombrados_en)
+        from app.core.verificador import autocorregir_montos
+        from app.storage.firestore_client import get_product_by_id
+        vistos = []
+        for p in (estado.get("productos_vistos") or []):
+            if not isinstance(p, dict):
+                continue
+            vivo = None
+            pid = str(p.get("id") or "").upper()
+            if pid:
+                try:
+                    vivo = get_product_by_id(pid, tienda_id=tienda_id)
+                except Exception:
+                    vivo = None
+            vistos.append(vivo if isinstance(vivo, dict) and vivo.get("precio_ars")
+                          is not None else
+                          {**p, "precio_ars": p.get("precio_ars", p.get("precio"))})
+        evidencia = build_evidence_from_tools(
+            meta.get("tools_called", []) or [], tienda_id, productos_vistos=vistos)
+        _ids = {str(i.get("id") or "").upper() for i in evidencia
+                if i.get("tipo") == "producto"}
+        for pn in productos_nombrados_en(texto, tienda_id):
+            if str(pn.get("id") or "").upper() not in _ids:
+                evidencia.append({"tipo": "producto", **pn})
+        for i in evidencia:
+            if (i.get("tipo") == "producto" and i.get("precio_ars") is None
+                    and isinstance(i.get("precio"), (int, float))):
+                i["precio_ars"] = i["precio"]
+        precios_validos = {int(i["precio_ars"]) for i in evidencia
+                           if i.get("tipo") == "producto"
+                           and isinstance(i.get("precio_ars"), (int, float))}
+        fix = autocorregir_montos(texto, evidencia, trace_id,
+                                  precios_validos=precios_validos)
+        if fix.get("cambiada"):
+            log.warning("hub_atado_monto_corregido", trace_id=trace_id,
+                        correcciones=(fix.get("correcciones") or [])[:8])
+            return fix.get("respuesta") or texto
+    except Exception as e:
+        log.warning("hub_atado_verificar_montos_error", trace_id=trace_id,
+                    error=str(e)[:150])
+    return texto
+
+
 async def _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
                           trace_id, interp, present):
     """Cablea el CIERRE y COBRO al hub reusando la MISMA funcion del camino vivo
@@ -193,13 +251,15 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     # texto final estampado; el unico texto libre es el pegamento, podado de dato.
     from app.core import generador_v2
     _primer_turno = not (estado.get("productos_vistos") or estado.get("carrito"))
-    frags, universo, presu_txt, presu_tools = await generador_v2.generar_fragmentos(
-        raw_message, history, estado, tienda_id, interp, trace_id)
+    frags, universo, presu_txt, presu_tools, respuestas_cat = \
+        await generador_v2.generar_fragmentos(
+            raw_message, history, estado, tienda_id, interp, trace_id)
     if frags:
         texto, _tools_called = generador_v2.renderizar(
             frags, universo, estado, tienda_id, trace_id,
             presupuesto_pre=presu_txt, presupuesto_tools=presu_tools,
-            mensaje=raw_message, primer_turno=_primer_turno)
+            mensaje=raw_message, primer_turno=_primer_turno,
+            respuestas_cat=respuestas_cat)
         meta = {"tools_called": _tools_called, "secciones": [],
                 "prosa_citada": [], "turno_criterio": False}
         log.info("hub_atado_generador_v2", trace_id=trace_id,
@@ -234,23 +294,45 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     # del que el interprete resolvio o del unico mostrado este turno.
     try:
         from app.core.generador_v2 import estampar_honestidad_specs
-        _prod_spec = None
-        _pr = interp.get("producto_resuelto") if isinstance(interp, dict) else None
-        if _pr:
-            from app.core.pedido_helpers import _resolver_nombre_a_producto
+        from app.core.pedido_helpers import certificar_producto
+        _prod_spec, _variantes = None, []
+        # el FOCO del turno: lo que el interprete resolvio o lo que el cliente
+        # pregunto. Antes solo servia un producto UNICO y, como el catalogo
+        # tiene variantes de color y de CPU, casi nunca habia uno solo: el
+        # guardia no corria nunca y el modelo contestaba la spec por su cuenta.
+        _nombres = []
+        if isinstance(interp, dict):
+            if interp.get("producto_resuelto"):
+                _nombres.append(str(interp["producto_resuelto"]))
+            _nombres += [str(c.get("producto")) for c in
+                         (interp.get("productos_consultados") or [])
+                         if isinstance(c, dict) and c.get("producto")]
+        if _nombres:
             from app.storage.firestore_client import get_all_products
-            _prod_spec = _resolver_nombre_a_producto(
-                _pr, get_all_products(tienda_id=tienda_id))
+            _todos = get_all_products(tienda_id=tienda_id)
+            for _n in _nombres:
+                _v, _hits = certificar_producto(_n, _todos)
+                if _hits:
+                    _variantes, _prod_spec = _hits, _hits[0]
+                    break
         if not _prod_spec:
             _sh = productos_de_meta(meta)
             if len(_sh) == 1 and _sh[0].get("id"):
                 _prod_spec = get_product_by_id(str(_sh[0]["id"]).upper(),
                                                tienda_id=tienda_id)
+                _variantes = [_prod_spec] if _prod_spec else []
         if isinstance(_prod_spec, dict):
             _antes_sp = texto
-            texto = estampar_honestidad_specs(texto, raw_message, _prod_spec)
+            # las specs que preguntó el cliente las TRADUJO el interprete al
+            # enum de la fuente; el regex sobre el mensaje queda solo de red.
+            _decl = (interp.get("specs_preguntadas")
+                     if isinstance(interp, dict) else None)
+            texto = estampar_honestidad_specs(texto, raw_message, _prod_spec,
+                                              _variantes, _decl)
             if texto != _antes_sp:
-                log.info("hub_atado_spec_honesta", trace_id=trace_id)
+                log.info("hub_atado_spec_honesta", trace_id=trace_id,
+                         producto=_prod_spec.get("nombre"),
+                         variantes=len(_variantes), declaradas=_decl)
     except Exception as e:
         log.warning("hub_atado_spec_error", trace_id=trace_id,
                     error=str(e)[:120])
@@ -271,6 +353,12 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     texto, datos_cli_parciales, pregunta_cierre_hecha, presupuesto_str = \
         await _aplicar_cierre(conv, user_id, canal, tienda_id, raw_message, texto,
                               trace_id, interp, present)
+
+    # ── RED DE NUMEROS: verificacion de montos contra la fuente ─────────
+    # Ahora que la FAQ y la venta las REDACTA el solver, el numero lo teje el LLM
+    # y se chequea aca contra la evidencia del turno (antes se protegia solo por
+    # el estampado). Determinista, conservador: corrige lo inequivoco.
+    texto = _verificar_montos(texto, meta, estado, tienda_id, trace_id)
 
     # ── FILTRO ANTI-DUPLICADO (refuerzo final, determinista) ────────────
     # Ultima red antes de mandar y de guardar en memoria: saca cualquier
@@ -323,6 +411,37 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         or (conv.get("criterio_cliente") or ""))
     provincia_envio = _prov_msg or (conv.get("provincia_envio") or "")
 
+    # MEMORIA STICKY que el camino viejo persistia y el atado NO estaba
+    # guardando (27-jul): al pasar produccion al hub, estas tres se leian en
+    # construir_estado pero nunca se escribian, asi que se perdian TODOS los
+    # turnos. Eran memoria muerta:
+    #   - preferencias: "no quiero de China", tope de plata, uso previsto. El
+    #     generador filtra el universo con ellas; sin persistir, valian un turno.
+    #   - producto_anotado: el ancla de "me gusta ese, anotalo", que resuelve
+    #     "el que te dije al principio".
+    #   - grupos_envio: que item va a cada destino, que usa el reprecio del cierre.
+    try:
+        from app.core.estado_venta import (producto_anotado_actualizado,
+                                           preferencias_actualizadas,
+                                           get_current_estado)
+        from app.storage.firestore_client import get_all_products
+        producto_anotado = producto_anotado_actualizado(
+            conv.get("producto_anotado"), interp, raw_message,
+            get_all_products(tienda_id=tienda_id))
+        preferencias_cliente = preferencias_actualizadas(
+            conv.get("preferencias_cliente"), interp, raw_message)
+        grupos_envio = ((get_current_estado() or {}).get("grupos_envio")
+                        or conv.get("grupos_envio") or [])
+        if preferencias_cliente != (conv.get("preferencias_cliente") or {}):
+            log.info("hub_atado_preferencias", trace_id=trace_id,
+                     preferencias=preferencias_cliente)
+    except Exception as e:
+        log.warning("hub_atado_sticky_error", trace_id=trace_id,
+                    error=str(e)[:150])
+        producto_anotado = conv.get("producto_anotado") or {}
+        preferencias_cliente = conv.get("preferencias_cliente") or {}
+        grupos_envio = conv.get("grupos_envio") or []
+
     try:
         save_conversation(
             user_id, history, resumen_charla, tienda_id=tienda_id,
@@ -333,7 +452,10 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
             criterio_cliente=criterio_cliente, provincia_envio=provincia_envio,
             datos_cliente_parciales=datos_cli_parciales,
             pregunta_cierre_hecha=pregunta_cierre_hecha,
-            ultimo_presupuesto=(presupuesto_str or None))
+            ultimo_presupuesto=(presupuesto_str or None),
+            producto_anotado=producto_anotado,
+            preferencias_cliente=preferencias_cliente,
+            grupos_envio=grupos_envio)
     except Exception as e:
         log.warning("hub_atado_save_error", trace_id=trace_id, error=str(e)[:150])
 
@@ -354,6 +476,8 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
                        for it in (interp.get("pedido") or [])
                        if isinstance(it, dict)],
              i_criterio=interp.get("criterio"),
+             i_orden=interp.get("orden"),
+             i_specs=interp.get("specs_preguntadas"),
              i_categorias=interp.get("categorias"),
              # 2. SEÑALES DE ATADURA que alimentan el ENUM del universo
              i_solicitud_nueva=[s.get("categoria")

@@ -125,6 +125,16 @@ def get_all_products(force_refresh: bool = False, tienda_id: str | None = None) 
         data["id"] = doc.id
         productos[doc.id] = data
 
+    # FUENTE COMPLETA: al producto que viene sin el mapa `specs` se lo completa
+    # aca, una sola vez por refresco de cache (880 productos = milisegundos).
+    # Asi el catalogo YA cargado responde specs sin re-subirlo, y sale depurada
+    # la spec fantasma que el CSV le pega a cada ficha.
+    try:
+        from app.core.fuente_producto import enriquecer
+        enriquecer(list(productos.values()), tienda_id=tid)
+    except Exception as e:
+        log.warning("catalog_enriquecer_failed", tienda_id=tid, error=str(e)[:150])
+
     _catalog_cache[tid] = productos
     _catalog_cache_ts[tid] = now
     log.info("catalog_loaded_from_firestore", tienda_id=tid, count=len(productos))
@@ -148,6 +158,52 @@ def upsert_product(product_id: str, data: dict, tienda_id: str | None = None):
     """Crea o actualiza un producto."""
     _tienda_ref(tienda_id).collection("productos").document(product_id).set(data, merge=True)
     invalidate_cache(tienda_id)
+
+
+def upsert_products_batch(productos: list, tienda_id: str | None = None,
+                          tam_lote: int = 200, progreso=None) -> int:
+    """Carga el catalogo por LOTES. Devuelve cuantos se escribieron.
+
+    880 escrituras de a una son 880 viajes de red: lento y, si se corta la
+    conexion a la mitad, queda medio catalogo cargado sin que nadie lo sepa.
+    Por lote son unos pocos viajes. El lote de Firestore admite 500
+    operaciones y cada producto usa dos, asi que van de a 200. Un lote que
+    falla se reintenta una vez y, si vuelve a fallar, corta con excepcion:
+    mejor parar y avisar que dejar un catalogo a medias en silencio.
+
+    El mapa `specs` se BORRA antes de escribirlo. `merge=True` fusiona mapas,
+    o sea que una spec vieja sobreviviria a una recarga aunque la fuente ya no
+    la diga; borrando primero, lo que queda en Firestore es exactamente lo que
+    calculo la ingesta. El resto de los campos si se mergea, para no pisar lo
+    que el catalogo no maneja (por ejemplo el embedding).
+    """
+    col = _tienda_ref(tienda_id).collection("productos")
+    escritos = 0
+    for i in range(0, len(productos), tam_lote):
+        lote = productos[i:i + tam_lote]
+        for intento in (1, 2):
+            try:
+                batch = _get_db().batch()
+                for prod in lote:
+                    ref = col.document(str(prod["id"]).strip())
+                    batch.set(ref, {"specs": firestore.DELETE_FIELD},
+                              merge=True)
+                    batch.set(ref, prod, merge=True)
+                batch.commit()
+                break
+            except Exception as e:
+                if intento == 2:
+                    log.error("catalog_batch_failed", tienda_id=tienda_id,
+                              desde=i, error=str(e)[:200])
+                    raise
+                log.warning("catalog_batch_retry", tienda_id=tienda_id,
+                            desde=i, error=str(e)[:150])
+        escritos += len(lote)
+        if progreso:
+            progreso(escritos, len(productos))
+    invalidate_cache(tienda_id)
+    log.info("catalog_batch_upserted", tienda_id=tienda_id, count=escritos)
+    return escritos
 
 
 def delete_all_products(tienda_id: str | None = None) -> int:

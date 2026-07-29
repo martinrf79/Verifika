@@ -4,6 +4,319 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 29-jul-2026 — AUDITORIA DE ALCANCE + INTERPRETACION: EL RECALL DEL
+INTERPRETE ====**
+
+Rama: `claude/architecture-hallucination-review-sx8g28`. Orden de Martin: dejar
+firme PRIMERO la interpretacion, y recien despues tocar el resto.
+
+**AUDITORIA DE ALCANCE (lo primero, porque cambia el diagnostico).** Se siguio
+el grafo de imports desde `app.main` y `orchestrator`, incluidos los imports
+dentro de funciones. Resultado: **5.429 lineas de `app/core` no las alcanza
+nadie.** No estan colgando del camino viejo: `interprete_libre` MISMO quedo
+huerfano cuando el orchestrator paso a `hub_atado`, y se llevo puesto todo lo
+que tenia enchufado.
+
+Huerfanos: `interprete_libre` (2236), `compositor` (704), `solver_gemini` (500),
+`verificador_stock` (311), `guardia_promesas` (285), `ruteo_venta` (281),
+`checker_afirmaciones` (258, el LLM juez), `selector` (241), `redactor` (193),
+`verificador_faq` (188), `verificador_intencion` (105), `verificador_cita` (67).
+
+Tres consecuencias que NO estaban en ningun documento:
+1. `ARQUITECTURA.md` dice que la red de degradacion determinista (selector +
+   compositor + redactor) esta viva. NO lo esta: si Gemini falla, `hub_atado`
+   manda el mensaje de fallback enlatado y nada mas.
+2. No hay verificacion de stock en produccion.
+3. `search.py:261` usa `settings.EMBEDDINGS_ON`, que NO existe en `config.py`.
+   Si esa linea corriera, revienta con AttributeError. No revienta porque
+   `buscar_con_score` tampoco se llama: prueba dura de que ese codigo esta
+   muerto. **La busqueda hibrida NO corre en produccion**: `search_products`
+   solo lo llaman los tres modulos huerfanos. La recuperacion viva es
+   `generador_v2.universo_productos`, determinista por categoria y por id.
+
+**LO QUE SE ARREGLO: EL RECALL DEL INTERPRETE (`app/core/recall_modelos.py`,
+modulo nuevo que REEMPLAZA el cuerpo de `candidatos_modelo`).**
+El enum de `producto_resuelto` no lleva los 482 modelos -no entran en el limite
+de structured outputs-: lleva los que recupera la etapa 1. O sea que **lo que no
+entra ahi, el interprete no lo puede nombrar aunque lo haya entendido perfecto**.
+Y la etapa 1 comparaba las palabras del cliente contra la etiqueta "Marca
+Modelo" y NADA MAS: ni el nombre completo, ni los `tags` con los sinonimos que
+la propia tienda cargo ("mause", "raton", "puntero"), ni uso, material o
+descripcion. Estaban en Firestore desde el 27-jul y nadie los consultaba.
+
+Ahora cada MODELO es un documento con los tokens de todas sus variantes, con
+capas de peso (identidad 3, nombre y tags 2, resto de la ficha 1), descuento por
+frecuencia (idf), correccion por largo y corte relativo al mejor puntaje. El
+pase por typo corrige el TOKEN del mensaje en vez de sumar modelos al fondo.
+Tokenizador propio: `_tokens_producto` borra "pro", "plus", "gaming" y los
+colores, que son parte de nombres REALES ("Logitech G Pro X"); el idf hace ese
+trabajo mejor y con el dato de ESTA tienda.
+
+**MEDIDO, no opinado (`banco_pruebas/banco_recall_modelos.py`, 1552 casos sobre
+el catalogo real, offline y sin LLM; corre dentro de la bateria):**
+
+| tipo de mensaje            | casos | recall@30 viejo | nuevo  |
+|----------------------------|-------|-----------------|--------|
+| describe sin nombrar (tags)|  237  |     19,4%       | 100%   |
+| formas reales que fallaron |    7  |     42,9%       | 100%   |
+| nombre sin la marca        |  454  |     99,8%       | 100%   |
+| typo en el modelo          |  375  |    100%         | 100%   |
+| TOTAL                      | 1552  |     87,4%       | 100%   |
+
+recall@5 71,2% -> 87,6%. La lista de candidatos BAJA de 23 a 11 modelos, o sea
+menos tokens por turno y menos lugar donde el modelo se equivoque. Costo: 3,3 ms
+por llamada mas 90 ms de indice una vez cada cinco minutos.
+
+**DECISION SOBRE EMBEDDINGS: NO van, y no por falta de clave.** Se probaron las
+dos: `OPENAI_API_KEY` esta cargada pero devuelve 401 (vencida); los embeddings
+de Gemini SI funcionan con la `GEMINI_API_KEY` que ya esta (modelo
+`gemini-embedding-001`, header `x-goog-api-key`). No se usan porque el problema
+no era semantico: la lista de categorias va COMPLETA al prompt, asi que llegar
+de "algo para escribir comodo" a la categoria teclado ya funcionaba; lo que
+estaba cortado era elegir CUAL teclado, y eso se resuelve con el vocabulario
+propio de la tienda, que es determinista y se testea offline. Si el banco
+mostrara fallas semanticas residuales, el camino de Gemini esta probado.
+
+**LO QUE FALTA DE ESTE TRACK:** re-enchufar o borrar, modulo por modulo, los
+5.429 lineas huerfanas. Primero el juez (`checker_afirmaciones`) con la
+evidencia del turno, despues stock, cita y FAQ.
+
+---
+
+**==== 27-jul-2026 (2a tanda) — FUENTE DE VERDAD COMPLETA: INVENTARIO + INGESTA
+UNICA + MAPA DE SPECS ====**
+
+Rama: `claude/fuente-verdad-inventory-0yocb2`. Orden de Martin: completar la
+fuente teniendo en cuenta lo que ya hay, con un proceso que sirva para tiendas
+de 880 productos o mas. Se midio primero, se arreglo despues.
+
+**PASO 1 — INVENTARIO (`scripts/inventario_fuente.py`, reporte en
+`INVENTARIO_FUENTE.md`).** Mide, no opina: corre offline sobre el repo y con
+`--vivo` compara contra el Firestore de produccion por REST (clave lectora).
+Es por CATEGORIA y por CAMPO, nunca por producto, asi 880 o 20.000 se leen
+igual. Lo que destapo:
+1. **Dos ingestas que no coinciden.** `/admin/upload-catalog` se quedaba con 6
+   de las 20 columnas del CSV: si Martin recargaba el catalogo por ahi, la
+   ficha perdia procedencia, garantia, contenido de la caja, medidas, marca,
+   modelo y specs. `scripts/crear_cliente.py` guardaba todo. Bomba de tiempo.
+2. **Firestore vivo NO tiene `tags` ni `descripcion_rica`** (880/880 sin
+   ellos), y el buscador puntua con los dos: los sinonimos del CSV ("mause",
+   "raton", "puntero") nunca llegaron a produccion.
+3. **SPEC FANTASMA en 399 de 880 fichas.** El CSV le pega a cada producto,
+   ademas de su spec, la del PRIMERO de su categoria: el SSD de 2TB dice
+   "2TB, 500GB" y la notebook Ryzen dice "Ryzen 7 16GB 512GB SSD, Core i5 16GB
+   512GB SSD". No es una repeticion inofensiva: son dos valores DISTINTOS en la
+   misma ficha, o sea capacidad de otro producto lista para salir al cliente.
+4. **La deteccion de specs era por substring** y fallaba de los dos lados: el
+   'gb' de la RAM hacia pasar por respondido el almacenamiento (el modelo
+   quedaba libre de inventarlo) y una spec escrita distinto se daba por ausente.
+
+**PASO 2 — COMPLETAR (`app/core/fuente_producto.py`, modulo nuevo, UNA puerta).**
+`normalizar_producto` es ahora la unica ingesta: conserva TODAS las columnas,
+coerciona numeros, completa `tags` si la fuente no los trae, DEPURA la spec
+fantasma (se queda con el segmento avalado por el nombre o el modelo del propio
+producto; si ninguno esta avalado no descarta nada) y estampa el mapa `specs`
+del producto. La usan el endpoint admin, `crear_cliente.py` y el doble offline
+del banco. `get_all_products` completa en memoria al producto que venga sin
+mapa: **el catalogo YA cargado responde specs sin re-subir nada** (880 = 90 ms,
+10.000 = ~1,7 s, una vez por refresco de cache).
+Las specs viven en `specs_preguntables.json`, que paso de 15 a 24 entradas y
+ahora ata, por spec: `aplica_a` (a que categorias tiene sentido), `extraer`
+(patrones que SACAN el valor, con acotacion por categoria y por campo) y las
+claves de pregunta. **Sumar una spec o una categoria es editar ese json; el
+codigo no se toca y las 880 filas tampoco.**
+Cobertura medida sobre el catalogo real: almacenamiento 330/330, ram 267/309
+(las tablets no la informan: queda honesto), procesador 190/232, switch 48/48,
+sensor 52/52, memoria de video 18/18, monitor completo (hz, panel, resolucion).
+Y el reporte lista lo que la fuente NO responde en NINGUN producto — bateria
+(404), tactil (244), lector de tarjetas (230), thunderbolt (210), lector de
+huella (198), ram ampliable (186), resistencia al agua (182): eso es dato del
+proveedor, no codigo, y hasta que llegue el bot es honesto.
+
+**LA ATADURA QUE SE ADAPTA (parrafo corto).** La atadura de honestidad de spec
+del hub deja de leer prosa y pasa a leer el mapa `specs`: si el cliente
+pregunta algo que la fuente responde, el CODIGO estampa el valor de la fuente y
+BORRA la linea del modelo que diga otro valor; si la fuente no lo trae, borra
+la afirmacion y estampa "la ficha no lo especifica". Es la misma pinza de
+siempre —enum del universo, ficha estampada, verificador de montos— pero ahora
+tambien sobre la spec, que era el ultimo dato duro que viajaba como texto libre.
+El modelo sigue eligiendo que decir y con que tono; el numero y la spec los
+pone la fuente.
+
+**VERIFICADO:** 679 tests offline verdes, 12 nuevos en
+`tests/test_fuente_producto.py`. Sobre el turno REAL que fallo el 24-jul
+("cuanta memoria ram y espacio de disco tiene"): la tablet contesta
+"Almacenamiento: 128GB" y es honesta con la RAM; y si el modelo tira "8GB" en
+una notebook de 16GB, la linea se cae y se estampa el 16GB de la fuente.
+Se saco el cache de structlog (`app/logger.py`): con cache el logger de un
+modulo quedaba pegado a la primera config y el observador del banco se quedaba
+SORDO a los radares del camino vivo segun el orden de los tests.
+
+**CARGA HECHA Y VERIFICADA (27-jul, noche).** El catalogo se recargo por la
+ingesta normalizada desde Cloud Shell: 880/880 escritos en lotes de 200, cero
+filas ignoradas. Verificado con `scripts/inventario_fuente.py --verificar`
+desde dos lados distintos: los 20 campos dan 880/880 identicos al CSV
+normalizado, el mapa `specs` incluido, y 0 fichas con la capacidad de otro
+producto. Firestore quedo con `tags` y `descripcion_rica` (antes 0/880, el
+buscador puntuaba con campos vacios) y con la descripcion RICA del repo (peso,
+medidas, material y specs, que la generacion vieja no tenia).
+
+Comprobado end-to-end contra los datos VIVOS: la tablet contesta
+"Almacenamiento: 128GB" y es honesta con la RAM que la ficha no trae -el turno
+exacto que fallo el 24-jul-; en la notebook, si el modelo tira "8GB", la linea
+se cae y queda "Memoria RAM: 16GB" de la fuente; el monitor contesta "Hercios
+de la pantalla: 75Hz".
+
+**PARA CARGAR EL CATALOGO DESDE CLOUD SHELL (receta que funciona):** el
+`pip install --user` rompe el namespace `google.cloud` de Cloud Shell y la
+carga muere con `cannot import name 'firestore'`. Va en venv propio:
+`python3 -m venv .venv-shell` y `pip install google-cloud-firestore structlog
+pydantic requests google-auth`. NUNCA `-r requirements.txt` ahi.
+
+**LO UNICO QUE QUEDA DE ESTE TRACK:** mirar en trafico real si el radar
+`generador_v2_prosa_podada` dispara de mas ahora que la ficha trae mas numero.
+
+---
+
+**==== 27-jul-2026 — CONTEXTO Y MEMORIA, ARREGLADO SOBRE UNA CHARLA REAL ====**
+
+Rama: `claude/context-memory-review-1x5n7n`. Diagnostico hecho sobre la ULTIMA
+charla real de Martin por WhatsApp (24-jul 16:42), leida de los logs de Cloud
+Run y del Firestore vivo, no de un banco.
+
+**COMO SE LEE UNA CHARLA REAL SIN GCLOUD (el camino indirecto, dejarlo a mano):**
+la env `GCP_SA_KEY_B64` trae la clave de `claude-lector@memory-engine-v1`
+(logging.viewer + datastore.viewer). Se decodifica al SCRATCHPAD, nunca al repo,
+y se le pega por REST con `REQUESTS_CA_BUNDLE=/root/.ccr/ca-bundle.crt`:
+- logs: POST `logging.googleapis.com/v2/entries:list`, filtro
+  `resource.labels.service_name="agente-bot"`. El evento `message_received` trae
+  el mensaje del cliente y el `trace_id` para seguir todo el turno.
+- memoria viva: GET `firestore.googleapis.com/v1/projects/memory-engine-v1/
+  databases/(default)/documents/tiendas/verifika_prod/conversaciones/<user_id>`.
+  Ahi estan `history` y `summary` tal cual los ve el bot.
+
+**LA FALLA:** "Decime precio de tablet samsung" -> el bot ofrece bien la Tablet
+Lenovo Tab M10. Siguiente mensaje: "Cuanta memoria ram y espacio de disco tiene"
+-> el bot contesta ofreciendo MODULOS DE MEMORIA RAM para notebook. El
+INTERPRETE habia resuelto BIEN (`producto_resuelto = Tablet Lenovo Tab M10`,
+`productos_consultados = [{tablet, ficha}]`): el contexto se rompia DESPUES, en
+cuatro costuras del generador, y cada una sola ya alcanzaba para arruinar el
+turno.
+
+1. **UNIVERSO contaminado por palabra suelta.** `universo_productos` sumaba las
+   categorias que detectaba en el TEXTO del mensaje, y "memoria ram" es una
+   categoria del catalogo: los modulos entraban al enum y el solver los ofrecia.
+   Ahora, si el interprete resolvio producto o lo puso en `productos_consultados`
+   y NO hay `solicitud_nueva` ni `pedido`, el rastreo por palabra NO corre. El
+   disparo es mutuamente excluyente y lo decide el interprete, no un regex.
+2. **El solver no veia la charla.** El prompt llevaba 4 mensajes recortados a 160
+   caracteres, sin resumen largo, sin los productos ya mostrados y sin el FOCO
+   que el interprete ya habia resuelto. Ahora lleva las tres cosas y 8 mensajes
+   a 300 caracteres.
+3. **La poda de prosa borraba la respuesta.** `_poda_prosa` descartaba el
+   fragmento entero si tenia CUALQUIER digito, asi que una respuesta de spec
+   ("128GB") desaparecia en silencio y al cliente le llegaba solo el cierre
+   colgado. Ahora poda PLATA (precio, total, monto, porcentaje) y deja pasar el
+   numero chico, que audita `_verificar_montos`. Se sumo el warning
+   `generador_v2_prosa_podada` como radar.
+4. **La ficha no podia contestar una spec.** `CAMPOS_FICHA` solo tenia
+   procedencia/garantia/material/descripcion. Suma `caracteristicas`, `medidas`,
+   `contenido_caja` y `uso`, estampados desde el catalogo.
+
+**MEMORIA MUERTA EN EL CAMINO VIVO (lo mas grave del chequeo):** desde que
+produccion paso al hub atado, `hub_atado` dejo de persistir tres campos que
+`interprete_libre` si guardaba y que `construir_estado` LEE cada turno:
+`preferencias_cliente` (no quiero de China, tope de plata, uso previsto),
+`producto_anotado` (el ancla de "ese me gusta, anotalo") y `grupos_envio`. Se
+leian y no se escribian nunca: valian un solo turno. Ya se persisten, con lock
+en `tests/test_memoria_sticky_atado.py`.
+
+Ademas `banco_pruebas/sim_firestore.py` ahora reengancha tambien `hub_atado` al
+doble: funcionaba de casualidad, solo porque el banco lo importa despues.
+
+**VERIFICADO VIVO** (banco atado, guion 68 = la charla real lockeada): el turno
+de la repregunta contesta "128GB" desde la ficha y es honesto con la RAM que la
+ficha no trae; el siguiente contesta peso y medidas. Guion 09 (memoria larga, 14
+turnos) juez limpio, con el ancla y el destino recordados al cerrar. 667 tests
+offline verdes.
+
+**PENDIENTE / A MIRAR:** en la corrida larga dos turnos cayeron al fallback por
+throttle de la cuota gratis de Gemini (`_TIMEOUT_S = 12` + reintentos). Con la
+clave paga no se vio. Vale mirar en logs cuantos `generador_v2_error` y
+`hub_atado_generador_v2_sin_fragmentos` aparecen en trafico real.
+
+---
+
+**==== 24-jul-2026 — ATAR LA RESPUESTA DEL SOLVER (WIP, rama sin mergear) ====**
+
+Rama: `claude/sistema-cableado-robustecimiento-xph8m7`. NO está en `main`. El
+chat nuevo debe ramificar DESDE esta rama para tener este código; NO mergear a
+main todavía (deploya WIP). Fuente de este banner: sesión 23/24-jul con Martín.
+
+**EL DIAGNÓSTICO QUE MANDA (por qué el sistema entraba en loops):** el sistema
+ataba el DATO (precio/stock/total: el código los estampa, no se inventan) pero
+dejaba LIBRE la RESPUESTA (qué contesta el solver). Por eso cada respuesta era
+una tirada de dados: la misma pregunta, un run contesta bien, otro whiffea /
+asume / desvía. "Pasó 32/32" era una muestra afortunada, no una garantía. Los
+parches de prosa (coletilla, ancla) fueron whack-a-mole sobre eso. Confirmado en
+el commit `27de5a9`: la "atadura del criterio" ató el CONTENIDO (grounding
+citado) pero dejó el fragmento OPCIONAL — el solver podía saltarse la respuesta.
+
+**DECISIÓN DE MARTÍN (firme, tras 2500+ pruebas):** el estampado de curadas es
+repetitivo y sin contexto; **el SOLVER redacta TODO — FAQ y todas las categorías —
+desde la fuente como GROUNDING (no pegar texto), con memoria.** El número lo teje
+el LLM pero se VERIFICA contra la fuente (no se estampa en hueco).
+
+**HECHO Y VALIDADO ESTA SESIÓN (3 piezas, con clave paga `GEMINI_API_KEY_PROD`):**
+1. **FAQ como grounding + el solver la redacta** (`generador_v2._faq_del_turno`,
+   prompt, y flip del render `faq`: usa `f.texto`, no la curada estampada). IVA,
+   cuotas, garantía, envío, dólares, factura A salen en la voz del solver,
+   distintos, con memoria. Fallback a curada solo si el solver no redactó.
+2. **KEYSTONE — red de números en el camino atado** (`hub_atado._verificar_montos`).
+   El atado NO tenía verificación (el "no miente" venía solo del estampado). Se
+   portó `autocorregir_montos` + `build_evidence_from_tools` del camino viejo.
+   Gateado por `AUTOCORRIGE_MONTOS`. 0 correcciones espurias, no rompe lo correcto.
+3. **Corroboración N-corridas** (`banco_pruebas/banco_nrun.py`): corre cada probe
+   N veces y mide COBERTURA (whiff) + VARIANZA de wording (robótico). **N=20:
+   6/6 probes 20/20 cobertura, wording ~20/20 distinto** (incluido el caso que
+   whiffeaba). Atado Y no robótico, MEDIDO. Vara: `N=20 GEMINI_API_KEY=$GEMINI_API_KEY_PROD
+   INTERPRETER_PROVIDER=gemini LLM_PROVIDER=gemini python banco_pruebas/banco_nrun.py`.
+
+**CAPSTONE HECHO Y VALIDADO — la obligación ESTRUCTURAL (propuesta de Martín):**
+el schema del solver ahora lleva `respuestas_por_categoria`, un OBJETO con una
+clave `required` por categoría ruteada de prosa (`_cats_obligatorias`: grupos
+politica_faq/objeciones/compat/asesoramiento/postventa/etc con grounding, NO
+producto ni conversacion). Como son propiedades required de un objeto, el schema
+strict OBLIGA al solver a emitir un texto por cada una (el array no podía forzar
+eso). `renderizar` hace coverage-append: la que el solver no ubicó en un
+fragmento se inserta desde el objeto, antes del cierre, sin el marcador de cita.
+Validado con clave paga (banco_nrun N=10): Gemini strict ACEPTA el schema (0
+errores); cobertura 10/10 en las 6; el append cazó la tendencia al whiff en
+compat (9/10); multi-categoría anda (garantía+factura A juntas). El whiff es
+imposible por construcción, no por medición.
+
+**GUARDAS DE PROSA BORRADAS Y MEDIDAS (no volvió el síntoma):** se eliminaron
+`_exige_eleccion_de_producto` (ancla) y toda la coletilla (`_cierre_suave`,
+`_variar_cierre`, `_CIERRES_SUAVES/_PAGO`). El cierre lo redacta el solver
+(campo texto del fragmento cierre; líneas fijas solo fallback). Medido tras
+borrar: N-run 6/6 al 100%, charlas 09/52 limpias, cierres del solver todos
+distintos.
+
+**ESTADO: las TRES ataduras en su lugar** — ruteo (enum, 18/18), cobertura (el
+schema required de este chat), dato (verificador `_verificar_montos` en el
+atado). La fidelidad de la prosa se MIDE (banco_nrun / DeepEval), no se ata: es
+el techo honesto. **PENDIENTE:** correr banco_nrun a N alto sobre más categorías
+(sobre todo objeciones/compat/postventa) para firmar la cobertura estructural en
+todo el enum, y evaluar si `criterio_producto` debería sumarse a
+`_PROSE_GRUPOS`. Nada urgente; el diseño está cerrado.
+
+**COMMITS DE LA SESIÓN** (en la rama): reconciliación de colisiones del cableado
+→ categorías espejo (contactor 85→93) → fiscalización estática + conductual →
+reintento LLM con backoff → fix coletilla/ancla (a revisar si se borran) →
+GROUNDWORK FAQ → keystone verificador → flip FAQ redactada → banco_nrun. El
+cableado determinista se auditó y está LIMPIO (fuente completa); eso NO es el
+cuello de botella, la atadura de la respuesta SÍ.
+
 **==== CORRECCIÓN 23-jul-2026 — EL FLUJO ATADO YA ESTÁ EN PRODUCCIÓN. ====**
 Los banners de abajo del 22-jul dicen "NO en producción todavía" y "el
 orchestrator NO cambió": eso quedó VIEJO. En `main`, el commit `34f6457`

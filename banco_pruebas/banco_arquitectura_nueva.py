@@ -80,7 +80,7 @@ async def main():
     for nombre, guion in CASOS:
         conv, estado, hist = await _estado_tras(guion)
         try:
-            frags, universo, presu, presu_tools = await generar_fragmentos(
+            frags, universo, presu, presu_tools, _rpc = await generar_fragmentos(
                 guion[-1], hist, estado, "verifika_prod", trace_id="nv")
         except Exception as e:
             resumen.append((nombre, "ERROR", str(e)[:70])); continue

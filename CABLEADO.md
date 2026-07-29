@@ -62,6 +62,20 @@ mensaje
   verificador). Matiz de prosa/política ("automático" vs "tabla por localidad") =
   se acepta. Perseguir el matiz es lo que robotiza.
 
+## Robustez ante el hipo transitorio del LLM (23-jul)
+
+Un banco end-to-end destapó que ni el intérprete ni el solver reintentaban ante
+un error transitorio del proveedor. Un 429 en RÁFAGA de Gemini hacía que el
+solver (`generar_fragmentos`) devolviera cero fragmentos y el hub emitiera el
+`VERIFIKA_FALLBACK_MESSAGE` ("dejame consultar y te confirmo"), una **promesa
+falsa** que nunca cumple; en el intérprete, el mismo 429 dejaba las `categorias`
+vacías y el ruteo mudo. Se agregó `app/core/llm_reintento.py`: UN helper de
+backoff acotado que reintenta SOLO el error transitorio (429/5xx/timeout), usado
+por las dos llamadas LLM (una red, no dos copias). El camino feliz no paga nada;
+solo suma la suma de los backoffs cuando de verdad hay hipo. En producción
+(clave paga) los 429 son ráfagas que se recuperan en <1s: el backoff los absorbe
+sin que el cliente vea el fallback. Verificado re-corriendo el guion 09.
+
 ## Checklist de cableado correcto (para agregar o robustecer un área)
 
 Para CADA área (envío, garantía, financiación, postventa, fiscal, etc.):
@@ -84,19 +98,51 @@ Para CADA área (envío, garantía, financiación, postventa, fiscal, etc.):
   `python3 banco_pruebas/fiscalizador.py [tienda]`
   Cruza los dos namespaces y marca temas sin categoría espejo + colisiones de
   nombre. Sobre-reporta a propósito: algunos temas van por ficha o herramienta.
-- **Capa 2, conductual (la verdad):** correr el fraseo por
-  `app.core.interpretador.interpretar_mensaje` y mirar el campo `categorias`.
-  Es lo ÚNICO que confirma si un hueco es real. Ojo cuota: Gemini free throttlea
-  (429); usar pausas o clave paga para tandas largas.
+- **Capa 2, conductual (la verdad):**
+  `INTERPRETER_PROVIDER=gemini BANCO_PAUSA_S=22 python banco_pruebas/fiscalizador_conductual.py`
+  Corre fraseos NATURALES (que NO copian los disparadores) por el intérprete REAL
+  y verifica que cada uno rutee a la categoría que puede contestarlo, sin que un
+  vecino confundible se lo robe. Es lo ÚNICO que confirma si un hueco es real.
+  Ojo cuota: Gemini free throttlea (429); el script reintenta con backoff y marca
+  "sin evaluar" lo que no pudo, sin contarlo como fallo.
 
 ## Deuda de plomería conocida (snapshot — actualizar al cerrarla)
 
-- **3 colisiones de nombre a reconciliar:** `envio_costo`↔`costo_envio`,
-  `envio_plazo`↔`plazo_envio`, `seguimiento`↔`seguimiento_pedido`.
-- **4 temas sin confirmar (cuota Gemini):** `monedas_aceptadas`, `datos_fiscales`,
-  `promociones`, `reposicion_stock`.
-- **Falsos positivos del pre-scan** (ya cubiertos, o van por ficha/tool): specs,
-  material, origen, contenido_caja, stock, mayoristas, reembolso, confianza.
+- **Colisiones de nombre — reconciliadas (23-jul):** `envio_costo` y
+  `envio_plazo` del contactor se renombraron a `costo_envio` y `plazo_envio`
+  para calzar con la clave FAQ, que es la load-bearing en código. El fix tocó
+  solo `base_conocimiento.json` (las categorías no se referencian en código) más
+  el lock del enum en `tests/test_contactor_categorias.py`.
+- **Falso positivo del pre-scan:** `seguimiento` (contactor) ↔ `seguimiento_pedido`
+  (FAQ) NO es colisión: el primero es re-enganche conversacional del cliente que
+  quedó en pensarlo, el segundo es rastreo del envío. Conceptos distintos, no se
+  fusionan.
+- **Categorías espejo agregadas (23-jul):** el contactor pasó de 85 a 93
+  categorías. Se renombró `seguimiento_tracking` → `seguimiento_pedido` (calza con
+  la clave FAQ, mismo concepto) y se sumaron 7 espejos que no tenían categoría
+  rueteable: `precios_iva`, `monedas_aceptadas`, `promociones`, `reposicion_stock`,
+  `verificacion_pagos`, `cancelacion_pedido`, `contacto_humano`, más
+  `envoltorio_regalo`. Todas con criterio sin dígitos y disparadores desde los
+  keywords de la FAQ. **Confirmación conductual (Capa 2) HECHA (23-jul): 18/18.**
+  Las 8 espejos rutean a su id con fraseos naturales, ningún vecino confundible
+  se las roba (ej. "aceptan usdt" → monedas_aceptadas; "quiero dar de baja lo que
+  pedí" → cancelacion_pedido; "rastreo el paquete" → seguimiento_pedido). El set
+  vive en `banco_pruebas/fiscalizador_conductual.py`.
+
+- **Auditoría de cableado determinista (23-jul) — LIMPIA.** Se cruzaron todos los
+  ejes duros offline: los 93 criterios sin dígitos (todos entran a GUIA_VENTA), las
+  50 respuestas_curadas estampan sin fallar (ningún placeholder `{{x}}` sin su
+  valor), FAQ sin temas huérfanos (todos con keywords y curada), no_vendidas con
+  alternativas que validan contra el catálogo real, y las ataduras de código
+  (`faq_tema`/`concepto` en tools) resuelven o degradan sin romper. La Capa 1
+  estructural está sólida; el riesgo residual es solo conductual (Capa 2).
+- **Cubiertos por categoría-concepto bajo otra clave** (el pre-scan los marca por
+  token pero SÍ rutean): `reembolso` ← `cambios_devoluciones`, `confianza_seguridad`
+  ← `desconfianza_online`, `datos_fiscales` ← `factura`, `mayoristas` ←
+  `mayorista_cantidad`.
+- **Falsos positivos del pre-scan** (van por ficha o tool, no por categoría):
+  `especificaciones`, `material_composicion`, `origen_procedencia`,
+  `contenido_caja`, `stock_disponibilidad`.
 
 ## Cuándo empezar con pruebas exigentes (DeepEval u otra)
 

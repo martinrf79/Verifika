@@ -36,31 +36,96 @@ def _linea_producto(p: dict) -> str:
     return " ".join(partes).strip()
 
 
-def _resolver_nombre_a_producto(resuelto: str, catalogo: list) -> dict | None:
-    """Reconcilia el NOMBRE que resolvio el interprete con UN producto del
-    catalogo, por contencion de nombre completo: el nombre del catalogo esta
-    contenido en el resuelto o al reves (matchear por token suelto daria
-    'mouse' contra medio catalogo; por eso el viejo certificador de queries no
-    servia aca y se retiro en la limpieza del 10-jul). Devuelve el producto
-    SOLO si matchea uno unico; ante cero o varios, None (no se pisa la
-    respuesta). Un termino vago como 'mouse' matchea muchos y cae a None, que
-    es lo que queremos."""
+def _norm_txt(s) -> str:
     import unicodedata
+    s = unicodedata.normalize("NFKD", str(s or "").lower())
+    return "".join(c for c in s if not unicodedata.combining(c)).strip()
 
-    def _n(s):
-        s = unicodedata.normalize("NFKD", str(s or "").lower())
-        return "".join(c for c in s if not unicodedata.combining(c)).strip()
 
-    r = _n(resuelto)
-    if not r:
-        return None
-    hits: dict[str, dict] = {}
-    for p in catalogo or []:
-        nom = _n(p.get("nombre"))
-        pid = str(p.get("id") or "")
-        if nom and pid and (nom in r or r in nom):
-            hits[pid] = p
-    return next(iter(hits.values())) if len(hits) == 1 else None
+# palabras que no distinguen un producto de otro: si el cliente solo dice una
+# de estas, no nombro un producto, nombro una categoria.
+_GENERICAS = {"notebook", "note", "laptop", "mouse", "mause", "raton", "teclado",
+              "monitor", "tablet", "auricular", "auriculares", "auris", "parlante",
+              "microfono", "webcam", "camara", "router", "impresora", "gabinete",
+              "fuente", "cooler", "silla", "ssd", "disco", "memoria", "ram",
+              "procesador", "placa", "motherboard", "cargador", "de", "la", "el",
+              "con", "y", "para", "un", "una", "los", "las", "gaming", "gamer",
+              "pro", "plus", "color", "negro", "blanco", "gris", "azul", "rojo"}
+
+
+def _tokens_producto(s: str) -> set:
+    # el numero de un solo digito NO se descarta: "IdeaPad 3" y "IdeaPad Slim 5"
+    # se distinguen justo por ese caracter, y tirarlo hacia que el 3 matcheara
+    # tambien al Slim 5 (visto en el universo del 28-jul).
+    return {t for t in _norm_txt(s).replace("-", " ").split()
+            if (len(t) >= 2 or t.isdigit()) and t not in _GENERICAS}
+
+
+def certificar_producto(resuelto: str, catalogo: list) -> tuple[str, list]:
+    """CERTIFICADOR de identidad: (veredicto, productos). Regla cero del
+    proyecto: quien decide si un producto existe es el CODIGO.
+
+    veredicto:
+      exists    -> un solo MODELO real; `productos` trae sus variantes (colores,
+                   CPU). Todo lo que las variantes comparten se puede contestar.
+      ambiguous -> varios MODELOS distintos; hay que preguntar cual.
+      not_found -> nada del catalogo matchea.
+
+    El match es por TOKENS significativos, no por substring contiguo. El
+    substring era la falla estructural que dejaba ciega a toda la cadena: el
+    cliente escribe "la asus tuf f15" y el catalogo dice "Notebook Asus TUF
+    Gaming F15 Core i5 16GB 512GB SSD Gris", asi que no habia contencion en
+    ningun sentido y salia None; y "zenbook 14" pegaba en las 9 variantes, que
+    tambien caia a None por ambiguo. Con None, el universo se quedaba sin el
+    producto, el prompt no llevaba un solo dato y el guardia de specs ni corria:
+    el bot terminaba prometiendo chequear, negando que el producto exista o
+    hablando del dato sin decirlo. Un catalogo con variantes de color y de CPU
+    cae en esto casi siempre.
+    """
+    toks = _tokens_producto(resuelto)
+    if not toks:
+        return "not_found", []
+    hits, laxos = [], []
+    for p in (catalogo or []):
+        if not (p.get("nombre") and p.get("id")):
+            continue
+        nom = _tokens_producto(f"{p.get('nombre')} {p.get('marca') or ''} "
+                               f"{p.get('modelo') or ''}")
+        # DOS DIRECCIONES, porque entran dos cosas distintas por aca:
+        # 1) el nombre limpio que resolvio el interprete -"asus tuf f15"-, que
+        #    tiene que estar contenido en el del catalogo;
+        # 2) el MENSAJE crudo del cliente -"tenes la acer nitro 5?"-, al que le
+        #    sobran palabras, y ahi lo que tiene que estar contenido es la marca
+        #    y el modelo del producto dentro del mensaje.
+        # En el catalogo real el campo modelo arrastra el CPU y la RAM
+        # ("Nitro 5 Core i5 16GB 512GB SSD"), asi que pedir el modelo entero
+        # dentro del mensaje no matchea nunca. La marca si tiene que estar
+        # completa, y del modelo alcanza con que el cliente haya dicho al menos
+        # una palabra propia: "acer nitro 5" pega, "algo de acer" no.
+        marca = _tokens_producto(p.get("marca"))
+        modelo = _tokens_producto(p.get("modelo"))
+        if toks <= nom:
+            hits.append(p)
+        elif marca and marca <= toks and (modelo & toks):
+            laxos.append(p)
+    # La estricta MANDA: si el nombre limpio pego, la laxa no se usa. Sin esta
+    # precedencia, "asus tuf f15" se llevaba puestos los monitores Asus TUF,
+    # porque comparten marca y la palabra TUF.
+    hits = hits or laxos
+    if not hits:
+        return "not_found", []
+    modelos = {(_norm_txt(p.get("marca")), _norm_txt(p.get("modelo")),
+                _norm_txt(p.get("categoria"))) for p in hits}
+    return ("exists" if len(modelos) == 1 else "ambiguous"), hits
+
+
+def _resolver_nombre_a_producto(resuelto: str, catalogo: list) -> dict | None:
+    """UN producto del catalogo para el nombre que resolvio el interprete, o
+    None si no se puede decidir. Se apoya en certificar_producto: si las
+    variantes son del MISMO modelo, devuelve la primera -comparten ficha, specs
+    y casi siempre precio-; si son modelos distintos o no hay ninguno, None."""
+    veredicto, hits = certificar_producto(resuelto, catalogo)
+    return hits[0] if veredicto == "exists" else None
 
 
 def _presupuesto_de_meta(meta: dict) -> str:

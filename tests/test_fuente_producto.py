@@ -1,0 +1,389 @@
+"""
+LOCK de la FUENTE DE VERDAD del producto (fuente_producto).
+
+Tres cosas que no se pueden volver a romper:
+  1. la ingesta conserva TODA la fuente (el endpoint viejo se quedaba con 6 de
+     20 columnas y dejaba la ficha en hueco),
+  2. la spec FANTASMA que el CSV le pega a cada ficha se depura (el SSD de 2TB
+     decia tambien 500GB: dos valores distintos en la misma ficha),
+  3. la spec preguntada se contesta con el valor de la FUENTE y, si la fuente
+     no la trae, con el honesto — nunca con lo que dijo el modelo.
+"""
+import csv
+
+import pytest
+
+from app.core.fuente_producto import (
+    depurar_ficha, derivar_tags, extraer_specs, normalizar_producto,
+    specs_config,
+)
+from app.core.generador_v2 import _specs_del_turno, estampar_honestidad_specs
+
+RUTA_CSV = "data/clientes/verifika_prod/productos.csv"
+
+
+@pytest.fixture(scope="module")
+def catalogo():
+    with open(RUTA_CSV, encoding="utf-8") as f:
+        return [dict(r) for r in csv.DictReader(f)]
+
+
+# ── 1. LA INGESTA NO PIERDE FUENTE ──────────────────────────────────────────
+
+def test_normalizar_conserva_todas_las_columnas(catalogo):
+    fila = catalogo[0]
+    prod = normalizar_producto(dict(fila))
+    for col in fila:
+        assert col in prod, f"la ingesta perdio la columna {col}"
+    assert isinstance(prod["precio_ars"], int)
+    assert isinstance(prod["stock"], int)
+    assert prod["categoria"] == prod["categoria"].lower()
+
+
+def test_validate_producto_row_del_endpoint_no_recorta(catalogo):
+    from app.main import _validate_producto_row
+    prod, err = _validate_producto_row(dict(catalogo[0]))
+    assert err is None
+    # los campos que la ficha lee y el endpoint viejo tiraba a la basura
+    for campo in ("origen", "garantia_detalle", "contenido_caja",
+                  "uso_recomendado", "dimensiones", "peso_gramos", "tags"):
+        assert prod.get(campo), f"la ingesta dejo sin {campo} a la ficha"
+    assert isinstance(prod.get("specs"), dict)
+
+
+def test_tags_se_derivan_si_la_fuente_no_los_trae():
+    prod = normalizar_producto({"id": "X1", "nombre": "Mouse Logitech G203",
+                                "categoria": "mouse", "marca": "Logitech",
+                                "precio_ars": "1000", "stock": "1"})
+    assert "logitech" in prod["tags"] and "mouse" in prod["tags"]
+
+
+# ── 2. LA SPEC FANTASMA ─────────────────────────────────────────────────────
+
+def test_depura_la_spec_de_otro_producto():
+    prod = depurar_ficha({
+        "nombre": "Notebook Asus TUF Gaming F15 Ryzen 7 16GB 512GB SSD Gris",
+        "modelo": "TUF Gaming F15",
+        "caracteristicas_extra": "Ryzen 7 16GB 512GB SSD, Core i5 16GB 512GB SSD",
+        "descripcion": ("Notebook Asus TUF Gaming F15 Ryzen 7 16GB 512GB SSD, "
+                        "color Gris. Ryzen 7 16GB 512GB SSD, Core i5 16GB 512GB "
+                        "SSD. peso 2300g."),
+    })
+    assert prod["caracteristicas_extra"] == "Ryzen 7 16GB 512GB SSD"
+    assert "Core i5" not in prod["descripcion"]
+
+
+def test_depurar_es_idempotente_y_no_borra_la_spec_unica():
+    # 'sensor optico' no figura en el nombre y NO se puede tirar: es la unica.
+    prod = {"nombre": "Mouse Logitech G203 Lightsync Negro",
+            "modelo": "G203 Lightsync", "caracteristicas_extra": "sensor optico"}
+    assert depurar_ficha(dict(prod))["caracteristicas_extra"] == "sensor optico"
+    dos = depurar_ficha({"nombre": "Ssd ADATA Legend 800 2TB",
+                         "modelo": "Legend 800 2TB",
+                         "caracteristicas_extra": "2TB, 500GB"})
+    assert dos["caracteristicas_extra"] == "2TB"
+    assert depurar_ficha(dos)["caracteristicas_extra"] == "2TB"
+
+
+def test_el_catalogo_entero_queda_sin_spec_cruzada(catalogo):
+    """Ningun producto puede quedar con la capacidad de OTRO en la ficha."""
+    for fila in catalogo:
+        if fila["categoria"] not in ("ssd", "memoria ram", "almacenamiento externo"):
+            continue
+        prod = normalizar_producto(dict(fila))
+        valores = [s.strip() for s in prod["caracteristicas_extra"].split(",")]
+        assert len(valores) == 1, f"{prod['id']} quedo con dos capacidades"
+
+
+# ── 3. LAS SPECS SALEN DE LA FUENTE ─────────────────────────────────────────
+
+def test_specs_del_catalogo_real(catalogo):
+    por_id = {f["id"]: normalizar_producto(dict(f)) for f in catalogo}
+    note = next(p for p in por_id.values()
+                if p["categoria"] == "notebook" and "Ryzen 7" in p["nombre"])
+    assert note["specs"]["ram"].lower() == "16gb"
+    assert "ssd" in note["specs"]["almacenamiento"].lower()
+    assert note["specs"]["procesador"].lower().startswith("ryzen")
+    tablet = next(p for p in por_id.values() if p["categoria"] == "tablet")
+    # el disco lo dice la ficha; la RAM NO, y desde que se cargo la planilla por
+    # modelo la contesta esa capa. Lo que ninguna capa trae sigue sin aparecer.
+    assert "almacenamiento" in tablet["specs"]
+    assert tablet["specs"].get("ram"), "la planilla por modelo tiene que dar la RAM"
+    sin_dato = normalizar_producto({"id": "Z1", "categoria": "tablet",
+                                    "nombre": "Tablet Marca Inexistente 99",
+                                    "marca": "Nadie", "modelo": "No Existe",
+                                    "precio_ars": "1", "stock": "1"})
+    assert "ram" not in sin_dato["specs"], "sin dato en ninguna capa no se inventa"
+    monitor = next(p for p in por_id.values() if p["categoria"] == "monitor")
+    assert monitor["specs"]["hz"].lower().endswith("hz")
+
+
+def test_ram_no_se_lee_de_una_capacidad_de_disco():
+    prod = normalizar_producto({"id": "T1", "nombre": "Tablet Lenovo Tab M10",
+                                "categoria": "tablet", "precio_ars": "1",
+                                "stock": "1", "caracteristicas_extra": "128GB"})
+    assert prod["specs"].get("almacenamiento", "").lower() == "128gb"
+    assert "ram" not in prod["specs"], "128GB es disco, no RAM"
+
+
+def test_config_de_specs_es_la_fuente():
+    ids = [s["id"] for s in specs_config()]
+    assert len(ids) == len(set(ids)), "ids de spec duplicados en el json"
+    for s in specs_config():
+        assert s["etiqueta"] and s["rx_pregunta"]
+
+
+# ── 4. LA ATADURA: lo que sale al cliente ───────────────────────────────────
+
+def test_el_valor_de_la_fuente_se_estampa_y_pisa_al_modelo():
+    prod = normalizar_producto({"id": "N1", "categoria": "notebook",
+                                "nombre": "Notebook Asus TUF F15 Ryzen 7 16GB 512GB SSD",
+                                "precio_ars": "1", "stock": "1",
+                                "caracteristicas_extra": "Ryzen 7 16GB 512GB SSD"})
+    resp, faltan = _specs_del_turno("cuanta memoria ram tiene?", prod)
+    assert [e for e, _v, _a, _b in resp] == ["la memoria RAM"]
+    assert faltan == []
+    # el modelo tira 8GB; la fuente dice 16GB: se cae la linea y se estampa
+    texto = "Viene con 8GB de RAM, alcanza bien.\n¿Avanzamos?"
+    salida = estampar_honestidad_specs(texto, "cuanta memoria ram tiene?", prod)
+    assert "8GB" not in salida
+    assert "16GB" in salida
+    assert "¿Avanzamos?" in salida
+
+
+def test_spec_que_la_fuente_no_trae_sale_honesta():
+    prod = normalizar_producto({"id": "T2", "categoria": "tablet",
+                                "nombre": "Tablet Lenovo Tab M10",
+                                "precio_ars": "1", "stock": "1",
+                                "caracteristicas_extra": "128GB"})
+    resp, faltan = _specs_del_turno("cuanta ram y cuanto disco tiene?", prod)
+    assert [e for e, _rx in faltan] == ["la memoria RAM"]
+    assert [e for e, _v, _a, _b in resp] == ["el almacenamiento"]
+    salida = estampar_honestidad_specs(
+        "Tiene 4GB de RAM.\n¿Te la reservo?", "cuanta ram y cuanto disco tiene?",
+        prod)
+    assert "4GB" not in salida
+    assert "la ficha no lo especifica" in salida.lower()
+    assert "128GB" in salida
+
+
+def test_no_estampa_dos_veces():
+    prod = normalizar_producto({"id": "M1", "categoria": "monitor",
+                                "nombre": "Monitor LG 24MK430H",
+                                "precio_ars": "1", "stock": "1",
+                                "caracteristicas_extra": "IPS Full HD 75Hz"})
+    msg = "cuantos hz tiene?"
+    uno = estampar_honestidad_specs("Es un monitor muy comodo.", msg, prod)
+    assert "75Hz" in uno
+    assert estampar_honestidad_specs(uno, msg, prod) == uno
+
+
+# ── 5. LA CARGA A FIRESTORE ─────────────────────────────────────────────────
+
+def test_descripcion_sin_la_spec_repetida():
+    prod = depurar_ficha({
+        "nombre": "Notebook Lenovo IdeaPad 3 Core i5 16GB 512GB SSD Gris",
+        "modelo": "IdeaPad 3 Core i5 16GB 512GB SSD",
+        "caracteristicas_extra": "Core i5 16GB 512GB SSD, Core i5 16GB 512GB SSD",
+        "descripcion": ("Notebook Lenovo IdeaPad 3 Core i5 16GB 512GB SSD, color "
+                        "Gris. Core i5 16GB 512GB SSD, Core i5 16GB 512GB SSD. "
+                        "peso 2547g."),
+    })
+    assert prod["caracteristicas_extra"] == "Core i5 16GB 512GB SSD"
+    assert prod["descripcion"].count("Core i5 16GB 512GB SSD") == 2  # nombre + spec
+    assert ", Core i5 16GB 512GB SSD." not in prod["descripcion"]
+
+
+class _FakeBatch:
+    def __init__(self, registro, fallar_una_vez):
+        self.registro = registro
+        self.ops = []
+        self._fallar = fallar_una_vez
+
+    def set(self, ref, data, merge=False):
+        self.ops.append((ref, data, merge))
+
+    def commit(self):
+        if self._fallar and not self.registro["fallo"]:
+            self.registro["fallo"] = True
+            raise RuntimeError("conexion cortada")
+        self.registro["ops"].extend(self.ops)
+        self.registro["commits"] += 1
+
+
+def _fake_db(registro, fallar_una_vez=False):
+    class _Doc:
+        def __init__(self, pid):
+            self.pid = pid
+
+    class _Col:
+        def document(self, pid):
+            return _Doc(pid)
+
+    class _Tienda:
+        def collection(self, _n):
+            return _Col()
+
+    class _DB:
+        def batch(self):
+            return _FakeBatch(registro, fallar_una_vez)
+
+        def collection(self, _n):
+            class _C:
+                def document(self, _t):
+                    return _Tienda()
+            return _C()
+
+    return _DB()
+
+
+def test_la_carga_va_por_lotes_y_borra_el_mapa_specs_viejo(monkeypatch):
+    from app.storage import firestore_client as fc
+    from google.cloud import firestore as gfs
+    registro = {"ops": [], "commits": 0, "fallo": False}
+    monkeypatch.setattr(fc, "_get_db", lambda: _fake_db(registro))
+    monkeypatch.setattr(fc, "invalidate_cache", lambda *a, **k: None)
+    prods = [{"id": f"P{i}", "nombre": f"prod {i}", "specs": {"ram": "8GB"}}
+             for i in range(450)]
+    escritos = fc.upsert_products_batch(prods, tienda_id="t1")
+    assert escritos == 450
+    assert registro["commits"] == 3          # 200 + 200 + 50
+    assert len(registro["ops"]) == 900       # dos operaciones por producto
+    borrados = [o for o in registro["ops"]
+                if o[1].get("specs") is gfs.DELETE_FIELD]
+    assert len(borrados) == 450, "el mapa specs viejo tiene que borrarse antes"
+
+
+def test_un_lote_que_falla_se_reintenta_y_no_deja_la_carga_a_medias(monkeypatch):
+    from app.storage import firestore_client as fc
+    registro = {"ops": [], "commits": 0, "fallo": False}
+    monkeypatch.setattr(fc, "_get_db", lambda: _fake_db(registro, True))
+    monkeypatch.setattr(fc, "invalidate_cache", lambda *a, **k: None)
+    prods = [{"id": f"P{i}", "nombre": f"prod {i}"} for i in range(10)]
+    assert fc.upsert_products_batch(prods, tienda_id="t1") == 10
+    assert registro["commits"] == 1
+
+
+# ── 6. LAS TRES CAPAS DE LA FUENTE ──────────────────────────────────────────
+# ficha del producto > tabla por modelo > default de categoria > regla.
+
+def test_la_categoria_completa_lo_que_es_cierto_para_todas():
+    note = normalizar_producto({"id": "N9", "categoria": "notebook",
+                                "nombre": "Notebook Generica Core i5 8GB 256GB SSD",
+                                "precio_ars": "1", "stock": "1"})
+    # nadie cargo nada de esta notebook y sin embargo esto ya se puede contestar
+    assert "bateria" in note["specs"] and "camara" in note["specs"]
+    assert note["specs"]["bluetooth"].startswith("si")
+    # lo que varia de un modelo a otro NO se afirma por categoria
+    for varia in ("lector_huella", "thunderbolt", "ram_ampliable"):
+        assert varia not in note["specs"], f"{varia} no se puede dar por categoria"
+
+
+def test_con_cable_es_una_respuesta_no_un_dato_que_falta():
+    aur = normalizar_producto({"id": "A9", "categoria": "auriculares",
+                               "nombre": "Auriculares HyperX Cloud II",
+                               "precio_ars": "1", "stock": "1",
+                               "caracteristicas_extra": "con cable"})
+    assert aur["specs"]["bluetooth"].startswith("no")
+    assert "cable" in aur["specs"]["bateria"]
+    salida = estampar_honestidad_specs("Suenan muy bien.", "tienen bluetooth?", aur)
+    assert "la ficha no lo especifica" not in salida.lower()
+    assert "no" in salida.lower()
+
+
+def test_la_ficha_del_producto_le_gana_a_la_categoria():
+    # la ficha dice el wifi exacto: la capa de categoria no lo pisa con 'si'
+    note = normalizar_producto({"id": "N8", "categoria": "notebook",
+                                "nombre": "Notebook X WiFi 6",
+                                "precio_ars": "1", "stock": "1",
+                                "caracteristicas_extra": "WiFi 6"})
+    assert note["specs"]["wifi"].lower().replace("-", "") == "wifi 6"
+
+
+def test_la_planilla_por_modelo_se_carga_y_completa(tmp_path, monkeypatch):
+    import app.core.fuente_producto as fp
+    csv_modelo = tmp_path / "specs_por_modelo.csv"
+    csv_modelo.write_text(
+        "marca,modelo,categoria,lector_huella,thunderbolt\n"
+        "Asus,TUF Gaming F15,notebook,si con lector en el touchpad,\n",
+        encoding="utf-8")
+    monkeypatch.setattr(fp, "_ruta_dato", lambda tid, arch: (
+        str(csv_modelo) if arch == "specs_por_modelo.csv" else None))
+    fp._CACHE_MODELO.clear()
+    fp._CACHE_CATEGORIA.clear()
+    try:
+        prod = fp.normalizar_producto({"id": "N7", "categoria": "notebook",
+                                       "marca": "Asus", "modelo": "TUF Gaming F15",
+                                       "nombre": "Notebook Asus TUF Gaming F15",
+                                       "precio_ars": "1", "stock": "1"})
+        assert prod["specs"]["lector_huella"].startswith("si")
+        # la celda vacia de la planilla NO inventa nada
+        assert "thunderbolt" not in prod["specs"]
+    finally:
+        fp._CACHE_MODELO.clear()
+        fp._CACHE_CATEGORIA.clear()
+
+
+def test_la_pregunta_en_plural_llega_al_dato():
+    """Bug real cazado al probar: el cliente escribe 'son resistentes al agua'
+    y el match literal contra 'resistente al agua' lo dejaba pasar con el dato
+    cargado. Las claves toleran plural y espaciado."""
+    aur = normalizar_producto({"id": "A7", "categoria": "auriculares",
+                               "nombre": "Auriculares HyperX Cloud II",
+                               "marca": "HyperX", "modelo": "Cloud II",
+                               "precio_ars": "1", "stock": "1",
+                               "caracteristicas_extra": "con cable"})
+    aur["specs"]["resistencia_agua"] = "no, no es resistente al agua"
+    resp, _faltan = _specs_del_turno("son resistentes al agua?", aur)
+    assert [e for e, _v, _a, _b in resp] == ["la resistencia al agua"]
+
+
+# ── 7. EL MODELO TRADUCE, EL CODIGO EJECUTA ─────────────────────────────────
+
+def test_la_spec_la_declara_el_interprete_no_el_regex():
+    """El cliente escribe cualquier cosa; el que traduce es el LLM. El codigo
+    ejecuta sobre el id que le declararon, sin matchear una sola palabra."""
+    aur = normalizar_producto({"id": "A5", "categoria": "auriculares",
+                               "nombre": "Auriculares HyperX Cloud II",
+                               "marca": "HyperX", "modelo": "Cloud II",
+                               "precio_ars": "1", "stock": "1",
+                               "caracteristicas_extra": "con cable"})
+    # ni "bluetooth" ni ninguna clave aparecen en el mensaje
+    msg = "che, los puedo enganchar al celu sin cables?"
+    assert _specs_del_turno(msg, aur)[0] == [], "sin declarar, el regex no pesca"
+    resp, _f = _specs_del_turno(msg, aur, [aur], ["bluetooth"])
+    assert [e for e, _v, _a, _b in resp] == ["el Bluetooth"]
+    salida = estampar_honestidad_specs("Suenan muy bien.", msg, aur, [aur],
+                                       ["bluetooth"])
+    assert "con cable" in salida.lower()
+
+
+def test_lista_vacia_del_interprete_manda_sobre_el_regex():
+    """Declarar [] es 'no pregunta ninguna spec' y gana: no es lo mismo que no
+    declarar. Sin esto, la palabra suelta del mensaje volvia a decidir."""
+    note = normalizar_producto({"id": "N5", "categoria": "notebook",
+                                "nombre": "Notebook X Core i5 16GB 512GB SSD",
+                                "precio_ars": "1", "stock": "1",
+                                "caracteristicas_extra": "Core i5 16GB 512GB SSD"})
+    # nombra la memoria ram pero NO esta preguntando por ella: esta cerrando
+    msg = "me gusta la memoria ram que tiene, la llevo"
+    assert _specs_del_turno(msg, note)[0], "sin declarar, el regex la pesca"
+    assert _specs_del_turno(msg, note, [note], [])[0] == []
+    assert estampar_honestidad_specs("Genial.", msg, note, [note], []) == "Genial."
+
+
+def test_el_enum_del_interprete_trae_los_modelos_del_catalogo(firestore_doble):
+    """El interprete tiene que poder nombrar un producto NO mostrado: sin esto,
+    en el primer mensaje el enum estaba vacio y no habia donde poner lo que el
+    modelo entendio bien."""
+    from app.core.interpretador import modelos_del_catalogo, _schema_interprete
+    modelos = modelos_del_catalogo("verifika_prod")
+    assert len(modelos) > 400
+    assert any("TUF Gaming F15" in m for m in modelos)
+    sch = _schema_interprete([], ["notebook"], modelos, ["hz", "bateria"])
+    enum_prod = sch["properties"]["producto_resuelto"]["enum"]
+    assert any("Zenbook" in str(e) for e in enum_prod)
+    # el pedido sigue atado a lo MOSTRADO, no al catalogo entero
+    enum_ped = sch["properties"]["pedido"]["items"]["properties"]["producto"]["enum"]
+    assert enum_ped == [None]
+    assert sch["properties"]["specs_preguntadas"]["items"]["enum"] == ["hz", "bateria"]
