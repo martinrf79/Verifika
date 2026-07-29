@@ -124,21 +124,6 @@ def extraer_telefono(texto: str) -> str:
     return ""
 
 
-def extraer_nombre(texto: str) -> str:
-    if not texto:
-        return ""
-    patrones = [
-        r"soy\s+([A-Z\u00c1\u00c9\u00cd\u00d3\u00da\u00d1][a-z\u00e1\u00e9\u00ed\u00f3\u00fa\u00f1]+(?:\s+[A-Z\u00c1\u00c9\u00cd\u00d3\u00da\u00d1][a-z\u00e1\u00e9\u00ed\u00f3\u00fa\u00f1]+)?)",
-        r"me llamo\s+([A-Z\u00c1\u00c9\u00cd\u00d3\u00da\u00d1][a-z\u00e1\u00e9\u00ed\u00f3\u00fa\u00f1]+(?:\s+[A-Z\u00c1\u00c9\u00cd\u00d3\u00da\u00d1][a-z\u00e1\u00e9\u00ed\u00f3\u00fa\u00f1]+)?)",
-        r"mi nombre es\s+([A-Z\u00c1\u00c9\u00cd\u00d3\u00da\u00d1][a-z\u00e1\u00e9\u00ed\u00f3\u00fa\u00f1]+(?:\s+[A-Z\u00c1\u00c9\u00cd\u00d3\u00da\u00d1][a-z\u00e1\u00e9\u00ed\u00f3\u00fa\u00f1]+)?)",
-    ]
-    for pat in patrones:
-        m = re.search(pat, texto, re.IGNORECASE)
-        if m:
-            return m.group(1).strip().title()
-    return ""
-
-
 def get_lead_activo(user_id: str, canal: str, tienda_id: str) -> dict | None:
     try:
         leads_ref = _tienda_ref(tienda_id).collection("leads")

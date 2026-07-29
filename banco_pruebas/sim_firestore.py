@@ -143,9 +143,6 @@ def install():
     def reset_conversation(user_id, tienda_id=None):
         _CONV.pop((tienda_id, user_id), None)
 
-    def log_message(*a, **k):
-        return None
-
     def already_processed(message_id):
         return False
 
@@ -157,7 +154,7 @@ def install():
         "get_categories": get_categories, "get_all_faq": get_all_faq,
         "get_config": get_config, "set_config": set_config,
         "get_conversation": get_conversation, "save_conversation": save_conversation,
-        "reset_conversation": reset_conversation, "log_message": log_message,
+        "reset_conversation": reset_conversation,
         "already_processed": already_processed, "invalidate_cache": invalidate_cache,
     }
     for nombre, fn in _patches.items():
@@ -168,8 +165,6 @@ def install():
     import app.core.tools as tools
     for n in ("get_all_products", "get_product_by_id", "get_categories", "get_all_faq"):
         setattr(tools, n, _patches[n])
-    import app.storage.search as search
-    search.get_all_products = get_all_products
     import app.core.evidencia as evidencia
     evidencia.get_all_faq = get_all_faq
     # hub_atado es el camino VIVO y tambien importa los nombres arriba. Antes de

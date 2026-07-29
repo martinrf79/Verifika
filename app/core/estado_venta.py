@@ -134,13 +134,6 @@ def set_envio_localidad(localidad: str | None):
     _envio_localidades.set(locs)
 
 
-def get_envio_localidad() -> str | None:
-    """Ultima localidad cotizada este turno, o None. Compatibilidad para quien
-    necesita UNA sola (pedido de un destino)."""
-    locs = _envio_localidades.get() or []
-    return locs[-1] if locs else None
-
-
 def get_envio_localidades() -> list[str]:
     """Todas las localidades cotizadas con exito este turno, en orden. Las lee
     calculate_total para cobrar cada destino de un multi-destino con su tarifa."""
@@ -498,70 +491,8 @@ _RE_RECHAZO = re.compile(
     r"|no l[oa]s? quiero|ya no quiero|dejal[oa]s\b", re.IGNORECASE)
 
 
-def es_rechazo(mensaje: str) -> bool:
-    """True si el mensaje descarta algo. 'Dejalo anotado' NO es rechazo."""
-    m = str(mensaje or "")
-    if _RE_ANOTAR.search(m) and "anotado" in _norm_ancla(m):
-        return False
-    return bool(_RE_RECHAZO.search(m))
-
-
-def rechazados_del_carrito(carrito: list, mensaje: str,
-                           catalogo: list) -> tuple[list, list]:
-    """Separa el carrito en (quitados, restantes) segun el rechazo del
-    mensaje. Un item se quita si el mensaje nombra un token distintivo de su
-    NOMBRE o su CATEGORIA (singular). Sin rechazo detectado devuelve
-    ([], carrito) intacto."""
-    carrito = [c for c in (carrito or []) if isinstance(c, dict)]
-    if not carrito or not es_rechazo(mensaje):
-        return [], carrito
-    m = _norm_ancla(mensaje)
-    cat_por_id = {str(p.get("id") or "").upper(): _norm_ancla(p.get("categoria"))
-                  for p in (catalogo or []) if isinstance(p, dict)}
-    quitados, restantes = [], []
-    for it in carrito:
-        nombre = str(it.get("nombre") or "")
-        cat = cat_por_id.get(str(it.get("id") or "").upper(), "")
-        hit = _nombre_en_mensaje(nombre, mensaje) or (
-            cat and any(v in m for v in _variantes_singular(cat)))
-        (quitados if hit else restantes).append(it)
-    return quitados, restantes
-
-
 # Asignacion PARCIAL de destino (11-jul, guion 29: "una parte va a Rafaela,
 # un teclado y un mouse van ahi" pisaba el pedido de 3+2 con uno de 1+1).
 _RE_ASIGNA_DESTINO = re.compile(
     r"una parte|el resto|van? ah[ií]\b|van? all[aá]\b|parte va", re.IGNORECASE)
 
-
-def es_asignacion_destino(mensaje: str) -> bool:
-    """True si el mensaje reparte el pedido vigente entre destinos, en vez de
-    pedir productos nuevos."""
-    return bool(_RE_ASIGNA_DESTINO.search(mensaje or ""))
-
-
-def cantidades_vigentes_por_categoria(carrito: list, pendiente_cats: list,
-                                      catalogo: list) -> dict:
-    """{categoria: cantidad} del pedido vigente: el carrito (con la categoria
-    real del catalogo por id) o, sin carrito, el pendiente de categorias."""
-    out: dict[str, int] = {}
-    cat_por_id = {str(p.get("id") or "").upper(): _norm_ancla(p.get("categoria"))
-                  for p in (catalogo or []) if isinstance(p, dict)}
-    for it in (carrito or []):
-        if not isinstance(it, dict):
-            continue
-        cat = cat_por_id.get(str(it.get("id") or "").upper())
-        if cat:
-            try:
-                out[cat] = out.get(cat, 0) + int(it.get("cantidad") or 1)
-            except (TypeError, ValueError):
-                continue
-    if out:
-        return out
-    for c in (pendiente_cats or []):
-        if isinstance(c, dict) and c.get("categoria"):
-            try:
-                out[_norm_ancla(c["categoria"])] = int(c.get("cantidad") or 0)
-            except (TypeError, ValueError):
-                continue
-    return out

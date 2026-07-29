@@ -424,23 +424,8 @@ def reset_conversation(user_id: str, tienda_id: str | None = None):
 # MENSAJES (log para análisis)
 # ────────────────────────────────────────────────────────────
 
-def log_message(user_id: str, mensaje_usuario: str, respuesta_bot: str,
-                tools_called: list, latency_ms: int, trace_id: str,
-                tienda_id: str | None = None):
-    """Guarda cada interacción para análisis posterior."""
-    try:
-        _tienda_ref(tienda_id).collection("mensajes").add({
-            "user_id": user_id,
-            "mensaje_usuario": mensaje_usuario[:500],
-            "respuesta_bot": respuesta_bot[:500],
-            "tools_called": tools_called,
-            "latency_ms": latency_ms,
-            "trace_id": trace_id,
-            "timestamp": firestore.SERVER_TIMESTAMP,
-        })
-    except Exception as e:
-        log.warning("log_message_failed", error=str(e)[:100])
-
+# log_message se borro: escribia una coleccion de mensajes que no lee nadie. La
+# trazabilidad del turno vive en los logs de Cloud Run con trace_id.
 
 # ────────────────────────────────────────────────────────────
 # IDEMPOTENCIA (evitar procesar mismo mensaje 2 veces)

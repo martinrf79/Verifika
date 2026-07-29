@@ -134,18 +134,6 @@ def calcular_categorias_baratas(cats_pedido: list, estado: dict | None,
         elegir=mas_barato_con_stock)
 
 
-def calcular_categorias_intermedias(cats_pedido: list, estado: dict | None,
-                                    tienda_id: str,
-                                    trace_id: str | None = None,
-                                    mensaje: str = "") -> list[dict] | None:
-    """Criterio INTERMEDIO confirmado (11-jul): mismo camino sellado que los
-    baratos pero eligiendo la opcion del medio por precio de cada categoria."""
-    from app.core.guia_compra import intermedio_con_stock
-    return _calcular_categorias_criterio(
-        cats_pedido, estado, tienda_id, trace_id, mensaje,
-        elegir=intermedio_con_stock)
-
-
 def _calcular_categorias_criterio(cats_pedido: list, estado: dict | None,
                                   tienda_id: str, trace_id: str | None,
                                   mensaje: str, elegir) -> list[dict] | None:
@@ -481,16 +469,6 @@ def mensaje_presupuesto_sellado(presentacion: str, reparto: str = "",
             + cierre)
 
 
-def instruccion_categorias(cats_pedido: list[tuple]) -> str:
-    """Brief para el solver cuando el pedido es por categorias sin modelos."""
-    pedido_txt = ", ".join(f"{n} de {c}" for n, c in cats_pedido)
-    return (f"\n\n[PEDIDO POR CATEGORIAS SIN MODELOS: el cliente pide {pedido_txt} "
-            "pero NO eligio modelos. PROHIBIDO armar un presupuesto o un total: "
-            "todavia no hay pedido cerrado. Mostra 2-3 opciones con stock por "
-            "categoria usando [[PROD:id]] y pregunta que modelos quiere de cada "
-            "una. Si dio destinos de envio, confirmalos sin cotizar de mas.]")
-
-
 # Instruccion para el solver cuando la guia calculo el pedido: redacta la
 # venta alrededor del bloque sellado, sin tocar un numero.
 INSTRUCCION_SOLVER = (
@@ -753,118 +731,3 @@ def reparto_envios_detalle(mensaje: str, cats_pedido: list,
 # cien, destinos que resuelven zona. Cualquier argumento que no valida ->
 # (None, []) y el turno cae a la cascada: el selector jamas inventa un valor,
 # porque ningun valor sale de el.
-
-def ejecutar_calculo_plan(seccion: dict, mensaje: str, estado: dict | None,
-                          tienda_id: str,
-                          trace_id: str | None = None) -> tuple[str | None, list]:
-    """(texto sellado del presupuesto, tools con proof) o (None, [])."""
-    estado = estado if isinstance(estado, dict) else {}
-    seccion = seccion if isinstance(seccion, dict) else {}
-    items_arg = seccion.get("items")
-    destinos_arg = seccion.get("destinos")
-    pago_arg = seccion.get("pago")
-
-    # 1. ITEMS: nombres del selector reconciliados a ids REALES del carrito
-    #    o de lo mostrado. Todo o nada.
-    fuentes: dict[str, str] = {}
-    for src in ((estado.get("carrito") or [])
-                + (estado.get("productos_vistos") or [])):
-        if isinstance(src, dict) and src.get("id") and src.get("nombre"):
-            fuentes.setdefault(_norm(src["nombre"]), str(src["id"]).upper())
-    items: list[dict] = []
-    grupos: list[tuple] = []  # (destino, cantidad, nombre) por renglon
-    if items_arg:
-        for it in items_arg:
-            if not isinstance(it, dict):
-                return None, []
-            nom = _norm(it.get("producto"))
-            pid = fuentes.get(nom)
-            if not pid and nom:
-                hits = {v for k, v in fuentes.items() if nom in k or k in nom}
-                pid = hits.pop() if len(hits) == 1 else None
-            try:
-                cant = int(it.get("cantidad"))
-            except (TypeError, ValueError):
-                return None, []
-            if not pid or not (1 <= cant <= _MAX_CANTIDAD):
-                return None, []
-            previo = next((x for x in items if x["product_id"] == pid), None)
-            if previo:
-                previo["cantidad"] += cant
-            else:
-                items.append({"product_id": pid, "cantidad": cant})
-            if it.get("destino"):
-                grupos.append((str(it["destino"]).strip(), cant,
-                               str(it.get("producto") or "")))
-    else:
-        items = [{"product_id": str(c.get("id") or "").upper(),
-                  "cantidad": int(c.get("cantidad") or 1)}
-                 for c in (estado.get("carrito") or []) if c.get("id")]
-    if not items:
-        return None, []
-
-    # 2. PAGO: porcentajes que suman cien o nada.
-    pago = None
-    if pago_arg:
-        try:
-            total_pct = sum(float(p.get("porcentaje") or 0)
-                            for p in pago_arg if isinstance(p, dict))
-        except (TypeError, ValueError):
-            return None, []
-        if abs(total_pct - 100) > 1:
-            return None, []
-        pago = [{"medio": str(p.get("medio") or ""),
-                 "porcentaje": float(p.get("porcentaje") or 0)}
-                for p in pago_arg if isinstance(p, dict)]
-
-    # 3. DESTINOS: los explicitos (o los de los renglones) tienen que
-    #    resolver TODOS; sin explicitos, se re-cotizan los de memoria.
-    from app.core.tools import cotizar_envio, calculate_total
-    from app.core.tools_context import set_current_tienda
-    set_current_tienda(tienda_id)
-    tools_env: list[dict] = []
-    locs: list[str] = []
-    for l in list(destinos_arg or []) + [g[0] for g in grupos]:
-        ln = _norm(l)
-        if ln and ln not in {_norm(x) for x in locs}:
-            locs.append(str(l).strip())
-    explicitos = bool(locs)
-    if not explicitos:
-        locs = [l for l in (estado.get("localidades_envio") or []) if l]
-    for l in list(locs):
-        q = cotizar_envio(localidad=l)
-        if not q.get("ok"):
-            if explicitos:
-                return None, []  # un destino elegido que no resuelve: escape
-            locs.remove(l)
-            continue
-        e = {"name": "cotizar_envio", "args": {"localidad": l}, "result": q}
-        if q.get("proof"):
-            e["proof"] = q["proof"]
-        tools_env.append(e)
-
-    extra = ([{"faq_tema": "costo_envio", "concepto": "envio"}]
-             if locs else None)
-    _grupos = grupos_para_calculo(mensaje or "", locs, tienda_id)
-    args = {"items": items, "destinos": max(1, len(locs)),
-            **({"items_extra": extra} if extra else {}),
-            **({"grupos": _grupos} if _grupos else {}),
-            **({"pago": pago} if pago else {})}
-    try:
-        res = calculate_total(**args)
-    except Exception as e:
-        log.warning("ejecutar_calculo_plan_error", trace_id=trace_id,
-                    error=str(e)[:120])
-        return None, []
-    if not isinstance(res, dict) or not res.get("ok") \
-            or not res.get("presentacion"):
-        return None, []
-    entrada = {"name": "calculate_total", "args": args, "result": res}
-    if res.get("proof"):
-        entrada["proof"] = res["proof"]
-    log.info("ejecutar_calculo_plan_ok", trace_id=trace_id,
-             items=len(items), destinos=len(locs), con_pago=bool(pago))
-    texto = ("Así queda tu pedido:\n\n" + res["presentacion"].strip()
-             + "\n\nEnvío orientativo, puede variar al confirmar la compra."
-               "\n¿Lo dejamos confirmado así?")
-    return texto, [entrada] + tools_env

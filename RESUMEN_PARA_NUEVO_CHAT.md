@@ -202,13 +202,44 @@ explotar era la prueba de que no la llamaba nadie.
 determinista, que no lo estaba. Esa clase de mentira en la documentacion es la
 que hace perder los dias.
 
+**==== 29-jul (5a tanda) — CERO CODIGO MUERTO, Y DOS BUGS MAS DEL MISMO LINAJE ====**
+
+Se paso el barrido fino: no solo modulos huerfanos, tambien FUNCIONES que no
+llama nadie. Quedo en **0 modulos y 0 funciones muertas** en `app/`.
+
+Se borraron ademas: el contrato de TOOL CALLING del solver viejo
+(`TOOLS_REGISTRY`, `get_tools_schema`, `_build_schema` con sus 354 lineas de
+schema, `search_products`, `find_within_budget`, `compare_products`,
+`recommend_product`, `list_catalog`, `calcular_entrega`); la busqueda hibrida
+entera (`app/storage/search.py` + `embeddings.py`), que NUNCA corrio en
+produccion; `app/core/agent.py`, el solver viejo; `entrega.py`; los scripts
+legacy de carga (`cargar_firestore.py`, `generar_embeddings.py`, del tiempo de
+"100 productos desde data/productos.json"); `banco_gemini_tools.py`; y una
+decena de funciones sueltas (`notificar_derivacion`, `log_message`,
+`rechazados_del_carrito`, `es_rechazo`, `ejecutar_calculo_plan`, etc).
+
+**DOS BUGS MAS, del mismo linaje que el de la reescritura:** todo lo auxiliar
+colgaba de `agent._get_client`, que sigue el flag `LLM_PROVIDER` -por default
+`openai`- mientras el camino vivo entero es Gemini.
+1. **La MEMORIA LARGA estaba rota, y en silencio.** `actualizar_resumen` tiraba
+   401 con la clave de OpenAI vencida, el `except` la dejaba en "" y el turno
+   seguia: el resumen de la charla NUNCA se actualizaba. O sea que la memoria
+   fallaba justo donde mas importa, en la charla larga. Verificado vivo despues
+   del arreglo: sobre cuatro turnos devuelve "Cliente busca notebook para
+   diseño, excluyendo marcas chinas. Eligió modelo ASUS. Destino: Salta."
+2. **UNA CHARLA EN CURSO PODIA VOLVER A "SALUDO".** `corregir_estado_regresion`
+   existia y no la llamaba nadie: el hub guardaba el estado del interprete tal
+   cual. Si el interprete leia mal un turno de mitad de charla como saludo
+   -caso real: el cliente putea por el envio en el turno 11-, el bot le
+   contestaba "¡Hola! Soy el asistente...". Ya esta cableada.
+
+El `/admin/diag-latencia` tambien mentia: media el solver viejo con tools y
+`tool_choice required`, y con el cliente de `agent`. Ahora mide la forma REAL
+del camino vivo -salida estructurada con el responseSchema de fragmentos-.
+
 **LO QUE FALTA, y ya no es codigo nuestro:** las relaciones de compatibilidad
 producto por producto y los datos reales de cobro. Mientras no esten, la
 compatibilidad es OPINION y hay que decirlo asi, no venderla como verificada.
-Del lado del codigo queda una sola cosa suelta: `tools.search_products` y la
-busqueda hibrida de `app/storage/search.py` no las llama nadie desde que se
-borro el camino viejo. La recuperacion viva es `recall_modelos` para el enum y
-`universo_productos` para el turno. Decidir con Martin si se borran.
 
 ---
 

@@ -567,6 +567,19 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         resumen=resumen)
     estado_nuevo = (interp.get("estado_conversacion") or estado_anterior
                     if isinstance(interp, dict) else estado_anterior)
+    # UNA CHARLA EN CURSO NO VUELVE A "SALUDO". El prompt lo dice, pero el
+    # prompt solo no alcanza y por eso existe esta correccion determinista: si
+    # el interprete lee mal un turno de mitad de charla como saludo -caso real:
+    # el cliente putea por el envio en el turno 11-, el estado se reinicia y el
+    # bot le contesta "¡Hola! Soy el asistente...". El hub venia guardando el
+    # estado del interprete tal cual: la funcion existia y no la llamaba nadie.
+    from app.core.interpretador import corregir_estado_regresion
+    _corregido = corregir_estado_regresion(estado_nuevo, estado_anterior,
+                                           bool(history))
+    if _corregido != estado_nuevo:
+        log.warning("hub_atado_estado_regresion", trace_id=trace_id,
+                    leido=estado_nuevo, corregido=_corregido)
+        estado_nuevo = _corregido
     log.info("hub_atado_interp", trace_id=trace_id,
              intencion=interp.get("intencion"),
              producto=interp.get("producto_resuelto"),

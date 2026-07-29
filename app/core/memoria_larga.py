@@ -70,25 +70,24 @@ async def actualizar_resumen(resumen_previo: str, descartados: list[dict],
         f"TURNOS VIEJOS A INTEGRAR:\n{viejos}")
 
     def _call() -> str:
-        from app.core.agent import _get_client, modelo_solver
-        from app.config import (deepseek_extra_body, gemini_thinking_off,
-                                nvidia_thinking_off, openrouter_reasoning_off)
-        modelo = modelo_solver()
-        extra = (nvidia_thinking_off(settings.LLM_PROVIDER, modelo)
-                 or openrouter_reasoning_off(settings.LLM_PROVIDER, modelo)
-                 or gemini_thinking_off(settings.LLM_PROVIDER, modelo)
-                 or (deepseek_extra_body(modelo)
-                     if settings.LLM_PROVIDER == "deepseek" else {}))
+        # MISMO cliente que el solver VIVO. Colgaba de `agent._get_client`, que
+        # sigue el flag LLM_PROVIDER -por default openai- mientras el camino
+        # vivo entero es Gemini: con la clave de OpenAI vencida esta llamada
+        # tiraba 401 y el resumen NUNCA se actualizaba. O sea que la memoria
+        # larga estaba rota justo donde mas importa, en la charla larga, y en
+        # silencio: el except de abajo la deja en "" y el turno sigue. Es la
+        # misma falla que tenia la reescritura de la guardia de promesas.
+        from app.core.generador_v2 import _cliente_gemini
+        modelo = settings.GEMINI_MODEL or "gemini-3.1-flash-lite"
         kwargs = {"model": modelo,
                   "messages": [{"role": "user", "content": prompt}],
-                  "temperature": 0.2, "max_tokens": 350}
-        if extra:
-            kwargs["extra_body"] = extra
+                  "temperature": 0.2, "max_tokens": 350,
+                  "extra_body": {"reasoning_effort": "none"}}
         try:
-            r = _get_client().chat.completions.create(**kwargs)
+            r = _cliente_gemini().chat.completions.create(**kwargs)
         except Exception:
             kwargs.pop("extra_body", None)
-            r = _get_client().chat.completions.create(**kwargs)
+            r = _cliente_gemini().chat.completions.create(**kwargs)
         return (r.choices[0].message.content or "").strip()
 
     try:
