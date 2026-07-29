@@ -1,0 +1,56 @@
+{
+ "guion": "68_repregunta_spec_memoria",
+ "turnos": [
+  {
+   "mensaje": "Decime precio de tablet samsung",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [\n    {\n      \"producto\": \"no_esta_en_la_lista\",\n      \"consulta\": \"precio\"\n    }\n  ],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"exploracion\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [],\n  \"solicitud_nueva\": [\n    {\n      \"categoria\": \"tablet\",\n      \"cantidad\": null,\n      \"criterio\": null\n    }\n  ],\n  \"categorias\": [\n    \"tablet\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [\n    {\n      \"tipo\": \"marca\",\n      \"valor\": \"samsung\"\n    }\n  ],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"Hola, ¿cómo estás? Te cuento que en Verifika Tech no trabajamos con Samsung, pero tengo una opción de Lenovo que te va a encantar y que rinde excelente para lo que buscás.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"producto\",\n      \"texto\": null,\n      \"producto_id\": \"TAB0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"Esta Lenovo es ideal si buscás algo cómodo para consumir contenido, navegar o estudiar. Es súper práctica y versátil para el día a día.\",\n      \"producto_id\": \"TAB0020\",\n      \"criterio_id\": \"tablet\",\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Si te convence, avisame y coordinamos el envío. ¿Preferís abonar por transferencia con descuento o mediante Mercado Pago?\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    }\n  ]\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Te cuento que en Verifika Tech no trabajamos con Samsung\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"tengo una opción de Lenovo que te va a encantar y que rinde excelente para lo que buscás.\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"Tablet Lenovo Tab M10 Plata - $223.000 (18 en stock)\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Esta Lenovo es ideal si buscás algo cómodo para consumir contenido, navegar o estudiar.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Es súper práctica y versátil para el día a día.\",\n      \"veredicto\": \"neutral\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "Cuanta memoria ram y espacio de disco tiene",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [\n    {\n      \"producto\": \"Tablet Lenovo Tab M10 Plata\",\n      \"consulta\": \"ficha\"\n    }\n  ],\n  \"producto_resuelto\": \"Tablet Lenovo Tab M10 Plata\",\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [],\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"tablet\"\n  ],\n  \"specs_preguntadas\": [\n    \"ram\",\n    \"almacenamiento\"\n  ],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Hola! Qué bueno que preguntes, es fundamental conocer bien estos detalles antes de decidirte por tu próxima tablet.\",\n      \"producto_id\": \"TAB0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"ficha\",\n      \"texto\": null,\n      \"producto_id\": \"TAB0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [\n        \"specs\"\n      ],\n      \"tema\": \"especificaciones\",\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Es una excelente opción para el uso diario. ¿Te gustaría que avancemos con la reserva de esta Lenovo o tenés alguna otra duda sobre sus funciones?\",\n      \"producto_id\": \"TAB0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    }\n  ]\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"almacenamiento: 128GB.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"garantia: 12 meses.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"puertos exactos: 1 USB-C, lector microSD y jack 3.5.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"hercios de la pantalla: 60Hz.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"lector de huella: no trae lector de huella.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"lector de tarjetas: si, lector microSD.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"resolucion de pantalla: Full HD 1920x1200.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"tipo de panel: IPS\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Memoria RAM: 4GB.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Es una excelente opción para el uso diario.\",\n      \"veredicto\": \"neutral\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "y cuanto pesa? entra en una mochila?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [\n    {\n      \"producto\": \"Tablet Lenovo Tab M10 Plata\",\n      \"consulta\": \"ficha\"\n    }\n  ],\n  \"producto_resuelto\": \"Tablet Lenovo Tab M10 Plata\",\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [],\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"tablet\"\n  ],\n  \"specs_preguntadas\": [\n    \"ram\",\n    \"almacenamiento\",\n    \"formato\"\n  ],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Qué buena pregunta! Es ideal para llevarla a todos lados, así que te cuento los detalles que necesitás saber sobre la Lenovo.\",\n      \"producto_id\": \"TAB0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"ficha\",\n      \"texto\": \"Sobre el peso y la portabilidad, te comento que no contamos con el dato exacto del peso en gramos, pero por su diseño y tamaño es súper cómoda para llevar en cualquier mochila sin problemas.\",\n      \"producto_id\": \"TAB0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": [\n        \"medidas\"\n      ],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"Es una tablet excelente para llevarla encima, ya que es muy práctica para navegar y consumir contenido multimedia donde sea que estés.\",\n      \"producto_id\": \"TAB0020\",\n      \"criterio_id\": \"tablet\",\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Si te convence para tu día a día, avisame y coordinamos el envío. ¿Preferís abonar por transferencia con descuento o te queda mejor Mercado Pago?\",\n      \"producto_id\": \"TAB0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": [\n        {\n          \"medio\": \"transferencia\",\n          \"porcentaje\": 10\n        },\n        {\n          \"medio\": \"mercado pago\",\n          \"porcentaje\": 0\n        }\n      ]\n    }\n  ]\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Es ideal para llevarla a todos lados\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"Peso 469 g.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Medidas 19.8x16.0x0.7 cm\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Es una tablet excelente para llevarla encima, ya que es muy práctica para navegar y consumir contenido multimedia donde sea que estés.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Memoria RAM: 4GB.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Almacenamiento: 128GB.\",\n      \"veredicto\": \"respaldada\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  }
+ ]
+}

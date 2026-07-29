@@ -365,8 +365,20 @@ def estampar_veredicto(texto: str, productos, plataformas,
     jurado, porque podar toda afirmacion sin fila en la tabla se llevaria puesta
     prosa legitima de productos que todavia no estan cargados.
 
-    Devuelve (texto, eventos) con eventos para el log. Idempotente: si el no ya
-    esta estampado, no se vuelve a agregar.
+    Devuelve (texto, eventos) con eventos para el log.
+
+    DOS COSAS QUE APRENDIO A LA MALA, las dos cazadas por las charlas grabadas
+    (guiones 35 y 28, primera corrida de la maquina de casetes):
+
+    1. SE AGRUPA POR MOTIVO, no por producto. Cuando el universo trae cuatro
+       variantes del mismo modelo negado, pegar el aviso una vez por cada una
+       daba cuatro veces la misma frase, y el recorte a 400 caracteres la cortaba
+       a mitad de palabra: "andan en la compu,". Una respuesta cortada es una
+       falla dura del juez del banco, y con razon.
+    2. SI EL MODELO YA LO DIJO, NO SE ESTAMPA NADA. Con el grounding de
+       compatibilidad en el prompt, el solver ya suele negar bien y con mejor
+       prosa que la enlatada. Este estampado es la RED para cuando no lo dice,
+       no una coletilla que se suma a lo que ya esta bien dicho.
     """
     if not (texto or "").strip() or not productos or not plataformas:
         return texto, []
@@ -381,6 +393,7 @@ def estampar_veredicto(texto: str, productos, plataformas,
     if not negados:
         return texto, []
     eventos = [f"{p.get('nombre')}!={plat}" for p, plat, _m in negados]
+
     # se podan las oraciones que AFIRMAN que anda y nombran al producto negado
     lineas = []
     for linea in texto.split("\n"):
@@ -393,11 +406,70 @@ def estampar_veredicto(texto: str, productos, plataformas,
         if conservar:
             lineas.append(linea)
     limpio = "\n".join(lineas).strip()
-    motivos = [m for _p, _pl, m in negados if m]
-    aviso = " ".join(dict.fromkeys(motivos))[:400]
-    if _norm(aviso)[:40] and _norm(aviso)[:40] in _norm(limpio):
+
+    # ¿el texto YA niega, por su cuenta, para cada plataforma negada? Si si, no
+    # se le agrega nada: la prosa del modelo es mejor que la enlatada.
+    faltan_plats = [p for p in dict.fromkeys(pl for _p, pl, _m in negados)
+                    if not _ya_negada(limpio, p, tienda_id)]
+    if not faltan_plats:
         return limpio or texto, eventos
+
+    # UN aviso por motivo distinto, nombrando los productos que lo comparten.
+    por_motivo: dict[str, list[str]] = {}
+    for prod, plat, motivo in negados:
+        if plat not in faltan_plats or not motivo:
+            continue
+        # el motivo trae el nombre del producto adelante; se guarda solo la
+        # explicacion, que es la parte que comparten las variantes.
+        nota = (compat_de(prod, tienda_id).get("nota") or "").strip()
+        etq = etiqueta_plataforma(plat, tienda_id)
+        clave = f"{etq}||{nota}"
+        nom = str(prod.get("nombre") or "")
+        if nom not in por_motivo.setdefault(clave, []):
+            por_motivo[clave].append(nom)
+    if not por_motivo:
+        return limpio or texto, eventos
+    frases = []
+    for clave, nombres in list(por_motivo.items())[:2]:
+        etq, _, nota = clave.partition("||")
+        quienes = _lista(nombres[:2]) + (" y sus variantes"
+                                         if len(nombres) > 2 else "")
+        frases.append(f"Te aviso para que no te lleves un chasco: {quienes} no "
+                      f"es compatible con {etq}." + (f" {nota}" if nota else ""))
+    aviso = " ".join(frases)
     return ((limpio + "\n\n" + aviso).strip() if limpio else aviso), eventos
+
+
+def _lista(nombres: list[str]) -> str:
+    """'A', 'A y B' — sin la coma colgada que deja un join pelado."""
+    nombres = [n for n in nombres if n]
+    if len(nombres) <= 1:
+        return nombres[0] if nombres else "ese producto"
+    return " y ".join(nombres)
+
+
+_RE_NIEGA = re.compile(
+    r"\bno\s+(?:es|son|va|van|anda|andan|funciona|funcionan|sirve|sirven|"
+    r"se\s+conecta|se\s+conectan|te\s+sirve|te\s+van)\b|\bno\s+compatible|"
+    r"\bincompatible", re.IGNORECASE)
+
+
+def _ya_negada(texto: str, plataforma: str, tienda_id: str | None) -> bool:
+    """El texto YA le dice al cliente que no anda con ese equipo.
+
+    Se pide que la negacion y el nombre del equipo esten en la MISMA oracion:
+    un "no" suelto en otro parrafo no es una negacion de compatibilidad, y darlo
+    por bueno dejaria pasar justo el caso que hay que cubrir."""
+    v = vocabulario(tienda_id)
+    alias = {a for a, ids in v["alias_plataforma"].items() if plataforma in ids}
+    if not alias:
+        return False
+    for oracion in re.split(r"[.!?\n]", _norm(texto)):
+        if not _RE_NIEGA.search(oracion):
+            continue
+        if any(re.search(r"\b" + re.escape(a) + r"\b", oracion) for a in alias):
+            return True
+    return False
 
 
 def bloque_prompt(universo, plataformas, tienda_id: str | None = None) -> str:

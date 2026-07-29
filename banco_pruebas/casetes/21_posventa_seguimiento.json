@@ -1,0 +1,90 @@
+{
+ "guion": "21_posventa_seguimiento",
+ "turnos": [
+  {
+   "mensaje": "hola, compre un teclado la semana pasada, como hago el seguimiento del envio?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"posventa\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [],\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"seguimiento_pedido\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"Hola, ¿cómo estás? Qué bueno que te contactes, entiendo perfectamente que quieras saber cómo viene tu pedido para quedarte tranquilo.\",\n      \"producto_id\": null,\n      \"criterio_id\": \"saludo_apertura\",\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"faq\",\n      \"texto\": \"Apenas despachamos, te enviamos el número de seguimiento de Andreani u OCA para que puedas rastrearlo online. Si todavía no te llegó, pasame tu número de pedido y lo busco ahora mismo en el sistema para reenviártelo.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": \"seguimiento_pedido\",\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Quedo atento a que me pases el número así te doy una mano con esto, ¿dale?\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    }\n  ],\n  \"respuestas_por_categoria\": {\n    \"seguimiento_pedido\": {\n      \"texto\": \"Cuando realizamos el despacho te enviamos el código de seguimiento de Andreani u OCA. Si no lo tenés a mano, facilitame tu número de pedido y te lo verifico enseguida.\",\n      \"cita_id\": \"seguimiento_pedido\"\n    }\n  }\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Apenas despachamos, te enviamos el número de seguimiento de Andreani u OCA para que puedas rastrearlo online.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Si todavía no te llegó, pasame tu número de pedido y lo busco ahora mismo en el sistema para reenviártelo.\",\n      \"veredicto\": \"respaldada\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "me llego ayer, pero el cable USB vino sin la ficha, que hago?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": \"el cliente informa que recibió su pedido pero el cable USB está incompleto (sin la ficha)\",\n  \"productos_consultados\": [],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"posventa\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [],\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"producto_defectuoso\",\n    \"proceso_cambio\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Hola! Qué bajón que te haya llegado así, entiendo perfectamente la frustración de querer estrenar y encontrarte con eso. Quédate tranquilo que lo resolvemos rápido.\",\n      \"producto_id\": \"_none_\",\n      \"criterio_id\": \"producto_defectuoso\",\n      \"categoria\": \"producto_defectuoso\",\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": \"defectuoso\",\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"Para que podamos gestionar el cambio o la solución por el cable, necesito que me pases el número de tu pedido así lo ubicamos en el sistema y activamos la garantía enseguida.\",\n      \"producto_id\": \"_none_\",\n      \"criterio_id\": \"producto_defectuoso\",\n      \"categoria\": \"producto_defectuoso\",\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": \"defectuoso\",\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Pasame el número de pedido cuando puedas y te doy una mano para que tengas tu teclado funcionando como corresponde lo antes posible.\",\n      \"producto_id\": \"_none_\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    }\n  ],\n  \"respuestas_por_categoria\": {\n    \"producto_defectuoso\": {\n      \"texto\": \"Lamento mucho el inconveniente con tu producto. Vamos a revisar el estado del pedido en nuestro sistema para ver cuál es el inconveniente y aplicar la garantía correspondiente para darte una solución rápida.\",\n      \"cita_id\": \"producto_defectuoso\"\n    },\n    \"proceso_cambio\": {\n      \"texto\": \"Una vez confirmado el inconveniente, te indicaremos los pasos para que nos envíes el producto. En cuanto el correo nos confirme la recepción, estaremos despachando el reemplazo para que lo tengas cuanto antes.\",\n      \"cita_id\": \"proceso_cambio\"\n    }\n  }\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Para que podamos gestionar el cambio o la solución por el cable, necesito que me pases el número de tu pedido así lo ubicamos en el sistema y activamos la garantía enseguida.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Una vez confirmado el inconveniente, te indicaremos los pasos para que nos envíes el producto.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"En cuanto el correo nos confirme la recepción, estaremos despachando el reemplazo para que lo tengas cuanto antes.\",\n      \"veredicto\": \"respaldada\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "cuanto tarda el cambio si lo mando?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": \"el cliente pregunta por el tiempo de demora del cambio de un producto defectuoso\",\n  \"productos_consultados\": [],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"posventa\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": null,\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"proceso_cambio\",\n    \"producto_defectuoso\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"Te entiendo perfectamente, querés tener tu equipo funcionando cuanto antes y es lógico que quieras saber los tiempos.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"Para el cambio, apenas despachas el producto y el correo nos confirma la recepción, nosotros enviamos el reemplazo enseguida para que no pierdas tiempo.\",\n      \"producto_id\": null,\n      \"criterio_id\": \"proceso_cambio\",\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Pasame tu número de pedido así le doy prioridad a tu caso y lo resolvemos ya mismo, ¿te parece?\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    }\n  ],\n  \"respuestas_por_categoria\": {\n    \"proceso_cambio\": {\n      \"texto\": \"Generamos el proceso de cambio donde despachas el producto y, al confirmar el correo la entrega, enviamos el reemplazo de forma prioritaria.\",\n      \"cita_id\": \"proceso_cambio\"\n    },\n    \"producto_defectuoso\": {\n      \"texto\": \"Ante una falla, lo primero es ubicar tu compra en el sistema con tu número de pedido para aplicar la garantía y gestionar el cambio o devolución correspondiente.\",\n      \"cita_id\": \"producto_defectuoso\"\n    }\n  }\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Te entiendo perfectamente, querés tener tu equipo funcionando cuanto antes y es lógico que quieras saber los tiempos.\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"Para el cambio, apenas despachas el producto y el correo nos confirma la recepción, nosotros enviamos el reemplazo enseguida para que no pierdas tiempo.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Ante una falla, lo primero es ubicar tu compra en el sistema con tu número de pedido para aplicar la garantía y gestionar el cambio o devolución correspondiente.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Pasame tu número de pedido así le doy prioridad a tu caso y lo resolvemos ya mismo, ¿te parece?\",\n      \"veredicto\": \"neutral\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "y mientras tanto puedo usar la garantia para pedir otro?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": \"el cliente pregunta si puede usar la garantía para pedir otro producto mientras espera el cambio del cable\",\n  \"productos_consultados\": [],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"posventa\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [],\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"garantia\",\n    \"producto_defectuoso\",\n    \"proceso_cambio\"\n  ],\n  \"specs_preguntadas\": [\n    \"garantia\"\n  ],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"Te entiendo perfectamente, lo que querés es tener tu equipo funcionando cuanto antes y es lógico que quieras agilizar el proceso.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"La garantía es justamente para cubrir fallas de fábrica como la que tuviste. No hace falta que pidas 'otra' garantía, porque el proceso de cambio por producto defectuoso ya activa la cobertura oficial para que te llevemos un equipo en perfectas condiciones.\",\n      \"producto_id\": null,\n      \"criterio_id\": \"garantia\",\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Si ya tenés a mano el número de pedido que te pedí antes, pasámelo así le doy prioridad máxima a tu caso y lo resolvemos hoy mismo.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    }\n  ],\n  \"respuestas_por_categoria\": {\n    \"garantia\": {\n      \"texto\": \"Nuestros productos cuentan con garantía oficial por fallas de fábrica, la cual gestionamos directamente para que no tengas problemas.\",\n      \"cita_id\": \"garantia\"\n    },\n    \"producto_defectuoso\": {\n      \"texto\": \"Si el producto llegó con un faltante o falla, lo gestionamos como un cambio por producto defectuoso una vez que verifiquemos tu número de pedido en el sistema.\",\n      \"cita_id\": \"producto_defectuoso\"\n    },\n    \"proceso_cambio\": {\n      \"texto\": \"El proceso de cambio es sencillo: despachás el producto, el correo nos confirma la entrega y nosotros te enviamos el reemplazo de inmediato.\",\n      \"cita_id\": \"proceso_cambio\"\n    }\n  }\n}"
+    },
+    {
+     "etapa": "guardia",
+     "salida": "Te entiendo perfectamente, lo que querés es tener tu equipo funcionando cuanto antes y es lógico que quieras agilizar el proceso.\n\nLa garantía es justamente para cubrir fallas de fábrica como la que tuviste. No hace falta que pidas otra garantía, porque el proceso de cambio por producto defectuoso ya activa la cobertura oficial para que te llevemos un equipo en perfectas condiciones.\n\nSi ya tenés a mano el número de pedido que te pedí antes, pasámelo así le doy prioridad máxima a tu caso y lo gestionamos hoy mismo.\n\nSi el producto llegó con un faltante o falla, lo gestionamos como un cambio por producto defectuoso una vez que verifiquemos tu número de pedido en el sistema.\n\nEl proceso de cambio es sencillo: despachás el producto, el correo nos confirma la entrega y nosotros te enviamos el reemplazo. Una vez despachado, el plazo de entrega es de 3 a 5 días hábiles, sujeto a los tiempos de la logística."
+    }
+   ]
+  },
+  {
+   "mensaje": "bueno gracias, y ya que estoy, tienen pads para mouse?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": \"el cliente pregunta por pads para mouse tras consultar por la garantía de su compra anterior\",\n  \"productos_consultados\": [],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"exploracion\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [],\n  \"solicitud_nueva\": [\n    {\n      \"categoria\": \"mouse\",\n      \"cantidad\": null,\n      \"criterio\": null\n    }\n  ],\n  \"categorias\": [\n    \"mouse\",\n    \"consulta_algo_mas\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡De nada! Es un placer ayudarte con eso. Respecto a tu consulta, te cuento que por el momento no contamos con mousepads en nuestro catálogo, pero sí tenemos una excelente variedad de mouses para que elijas el que mejor se adapte a lo que necesitás.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"Si buscás algo para el día a día, un mouse óptico cómodo te va a andar bárbaro sin tener que gastar de más. Si preferís olvidarte de los cables, los inalámbricos son súper prácticos, aunque recordá que usan una pila. ¿Tenés alguna preferencia entre cable o inalámbrico?\",\n      \"producto_id\": null,\n      \"criterio_id\": \"mouse\",\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"opciones\",\n      \"texto\": null,\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": \"mouse\",\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Avísame si te tienta alguno de estos o si querés que te ayude a elegir según el uso que le vas a dar. ¡Quedo a tu disposición!\",\n      \"producto_id\": null,\n      \"criterio_id\": \"despedida_cordial\",\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    }\n  ]\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"por el momento no contamos con mousepads en nuestro catálogo\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"si buscás algo para el día a día, un mouse óptico cómodo te va a andar bárbaro sin tener que gastar de más\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"si preferís olvidarte de los cables, los inalámbricos son súper prácticos, aunque recordá que usan una pila\",\n      \"veredicto\": \"respaldada\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  }
+ ]
+}

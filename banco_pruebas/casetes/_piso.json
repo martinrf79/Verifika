@@ -1,0 +1,6 @@
+{
+ "piso": 99,
+ "charlas": 65,
+ "grabado": "2026-07-29",
+ "_doc": "El puntaje que defiende tests/test_charlas_grabadas.py. Si un cambio lo baja, el CI se cae. Si lo sube, se actualiza en el mismo commit."
+}

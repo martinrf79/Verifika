@@ -1,0 +1,56 @@
+{
+ "guion": "67_catalogo",
+ "turnos": [
+  {
+   "mensaje": "catalogo",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"exploracion\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": null,\n  \"solicitud_nueva\": [],\n  \"categorias\": [],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": null,\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Hola! Qué bueno que nos escribas. En Verifika Tech tenemos de todo para armar o mejorar tu setup. Te paso las categorías que trabajamos para que chusmees lo que necesites: almacenamiento externo, auriculares, cargador, cooler, fuente, gabinete, impresora, memoria ram, microfono, monitor, motherboard, mouse, notebook, parlante, placa de video, procesador, router, silla gamer, ssd, tablet, teclado y webcam.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Contame qué estás buscando o en qué categoría querés profundizar y te muestro los modelos que tenemos disponibles.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    }\n  ]\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"En Verifika Tech tenemos de todo para armar o mejorar tu setup.\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"Te paso las categorías que trabajamos para que chusmees lo que necesites: almacenamiento externo, auriculares, cargador, cooler, fuente, gabinete, impresora, memoria ram, microfono, monitor, motherboard, mouse, notebook, parlante, placa de video, procesador, router, silla gamer, ssd, tablet, teclado y webcam.\",\n      \"veredicto\": \"sin_respaldo\"\n    },\n    {\n      \"texto\": \"Contame qué estás buscando o en qué categoría querés profundizar y te muestro los modelos que tenemos disponibles.\",\n      \"veredicto\": \"neutral\"\n    }\n  ],\n  \"respuesta_corregida\": \"¡Hola! Qué bueno que nos escribas. En Verifika Tech tenemos de todo para armar o mejorar tu setup. Contame qué estás buscando y te muestro los modelos que tenemos disponibles.\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "que productos tenes?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"exploracion\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": null,\n  \"solicitud_nueva\": [],\n  \"categorias\": [\"gaming_setup\"],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Qué hacés! Qué bueno que preguntes, tenemos de todo para que armes tu setup ideal. Trabajamos con almacenamiento externo, auriculares, cargadores, coolers, fuentes, gabinetes, impresoras, memorias RAM, micrófonos, monitores, motherboards, mouse, notebooks, parlantes, placas de video, procesadores, routers, sillas gamer, SSDs, tablets, teclados y webcams.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Decime qué categoría te interesa más y te paso los modelos con sus precios así elegimos lo que mejor te rinda.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    }\n  ]\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Trabajamos con almacenamiento externo, auriculares, cargadores, coolers, fuentes, gabinetes, impresoras, memorias RAM, micrófonos, monitores, motherboards, mouse, notebooks, parlantes, placas de video, procesadores, routers, sillas gamer, SSDs, tablets, teclados y webcams.\",\n      \"veredicto\": \"sin_respaldo\"\n    }\n  ],\n  \"respuesta_corregida\": \"¡Qué hacés! Qué bueno que preguntes, tenemos de todo para que armes tu setup ideal. Decime qué categoría te interesa más y te paso los modelos con sus precios así elegimos lo que mejor te rinda.\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "me pasas el catalogo?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"exploracion\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": null,\n  \"solicitud_nueva\": [],\n  \"categorias\": [\"asesoramiento_metodo\"],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": null,\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Hola! Qué bueno que quieras ver lo que tenemos. En Verifika Tech manejamos de todo para que tu setup quede impecable.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"Contamos con: almacenamiento externo, auriculares, cargador, cooler, fuente, gabinete, impresora, memoria ram, microfono, monitor, motherboard, mouse, notebook, parlante, placa de video, procesador, router, silla gamer, ssd, tablet, teclado y webcam.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"Para ayudarte mejor y no marearte con tantas opciones, contame para qué vas a usar el equipo o si tenés alguna idea de presupuesto. Así te recomiendo lo que realmente te va a servir.\",\n      \"producto_id\": null,\n      \"criterio_id\": \"asesoramiento_metodo\",\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": \"asesoramiento\",\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Decime qué categoría te tienta más y empezamos a filtrar para encontrar tu próximo equipo. ¿Por dónde querés arrancar?\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    }\n  ],\n  \"respuestas_por_categoria\": {\n    \"asesoramiento_metodo\": {\n      \"texto\": \"La mejor forma de comprar es entendiendo qué necesitás realmente: uso, presupuesto y compatibilidad con lo que ya tenés. Así elegimos pocas opciones, pero bien precisas para vos.\",\n      \"cita_id\": \"asesoramiento_metodo\"\n    }\n  }\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"En Verifika Tech manejamos de todo para que tu setup quede impecable.\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"Contamos con: almacenamiento externo, auriculares, cargador, cooler, fuente, gabinete, impresora, memoria ram, microfono, monitor, motherboard, mouse, notebook, parlante, placa de video, procesador, router, silla gamer, ssd, tablet, teclado y webcam.\",\n      \"veredicto\": \"sin_respaldo\"\n    },\n    {\n      \"texto\": \"Para ayudarte mejor y no marearte con tantas opciones, contame para qué vas a usar el equipo o si tenés alguna idea de presupuesto.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Así te recomiendo lo que realmente te va a servir.\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"Decime qué categoría te tienta más y empezamos a filtrar para encontrar tu próximo equipo.\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"¿Por dónde querés arrancar?\",\n      \"veredicto\": \"neutral\"\n    }\n  ],\n  \"respuesta_corregida\": \"¡Hola! Qué bueno que quieras ver lo que tenemos. En Verifika Tech estamos para que tu setup quede impecable. Para ayudarte mejor y no marearte con tantas opciones, contame para qué vas a usar el equipo o si tenés alguna idea de presupuesto. Así te recomiendo lo que realmente te va a servir. Decime qué categoría te tienta más y empezamos a filtrar para encontrar tu próximo equipo. ¿Por dónde querés arrancar?\"\n}"
+    }
+   ]
+  }
+ ]
+}

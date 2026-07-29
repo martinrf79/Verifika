@@ -1,0 +1,85 @@
+{
+ "guion": "03_stock",
+ "turnos": [
+  {
+   "mensaje": "hola, tenes el mouse genius dx-110?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [\n    {\n      \"producto\": \"Genius DX-110\",\n      \"consulta\": \"stock\"\n    }\n  ],\n  \"producto_resuelto\": \"Genius DX-110\",\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [],\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"mouse\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Hola! Qué bueno que nos escribas, te ayudo enseguida con eso.\",\n      \"producto_id\": null,\n      \"criterio_id\": \"saludo_apertura\",\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": \"asesoramiento\",\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"producto\",\n      \"texto\": \"Te cuento, del Genius DX-110 nos queda disponible únicamente en color negro. Te paso los detalles:\",\n      \"producto_id\": \"MOU0023\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": \"stock_disponibilidad\",\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"Es un mouse óptico muy confiable para el uso diario en la oficina o escritorio, donde el cable no molesta para nada y te olvidás de andar cambiando pilas.\",\n      \"producto_id\": \"MOU0023\",\n      \"criterio_id\": \"mouse\",\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": \"asesoramiento\",\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Si te sirve para tu equipo, avisame y lo dejamos reservado para vos. ¿Preferís abonarlo por transferencia con descuento o por Mercado Pago?\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": \"formas_pago\",\n      \"destino\": null,\n      \"pago\": null\n    }\n  ]\n}"
+    },
+    {
+     "etapa": "adapter_proposer",
+     "salida": "{\"content\": \"{\\\"nombre\\\": \\\"\\\", \\\"telefono\\\": \\\"\\\", \\\"direccion\\\": \\\"\\\", \\\"forma_pago\\\": \\\"\\\"}\", \"tool_calls\": null, \"raw_message\": \"ChatCompletionMessage(content='{\\\"nombre\\\": \\\"\\\", \\\"telefono\\\": \\\"\\\", \\\"direccion\\\": \\\"\\\", \\\"forma_pago\\\": \\\"\\\"}', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None, extra_content={'google': {'thought_signature': 'EjQKMgERTTIPL/DpIwwwU6p5UFTni6LbUX3nMDve9uggxCne+/juX5StVDecBoqnviv18Xot'}})\", \"provider\": \"gemini\", \"model\": \"gemini-3.1-flash-lite\"}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Es un mouse óptico muy confiable para el uso diario en la oficina o escritorio, donde el cable no molesta para nada y te olvidás de andar cambiando pilas.\",\n      \"veredicto\": \"respaldada\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "lo quiero en blanco, tenes?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": \"El cliente consulta por la disponibilidad del Mouse Genius DX-110 en color blanco.\",\n  \"productos_consultados\": [\n    {\n      \"producto\": \"Mouse Genius DX-110 Negro\",\n      \"consulta\": \"otra\"\n    }\n  ],\n  \"producto_resuelto\": \"Mouse Genius DX-110 Negro\",\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": null,\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"mouse\",\n    \"producto_ajeno_modelo\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 0.95\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Hola! Te cuento que el modelo en blanco lamentablemente no lo tenemos disponible en este momento, solo contamos con el negro en stock.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"Si buscás algo funcional y confiable para el día a día, el modelo negro que tenemos te va a dar el mismo excelente resultado que el blanco, ya que las prestaciones son idénticas.\",\n      \"producto_id\": \"MOU0023\",\n      \"criterio_id\": \"producto_ajeno_modelo\",\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"producto\",\n      \"texto\": \"Acá te dejo los detalles del que sí tenemos para entrega inmediata:\",\n      \"producto_id\": \"MOU0023\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Si te sirve el negro, avisame y coordinamos el envío o el retiro. ¿Cómo preferís seguir?\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    }\n  ],\n  \"respuestas_por_categoria\": {\n    \"producto_ajeno_modelo\": {\n      \"texto\": \"No contamos con el modelo en color blanco en este momento, pero el modelo en negro que trabajamos es la alternativa directa ya que mantiene exactamente las mismas características técnicas y calidad.\",\n      \"cita_id\": \"producto_ajeno_modelo\"\n    }\n  }\n}"
+    },
+    {
+     "etapa": "guardia",
+     "salida": "¡Hola! Te cuento que el modelo en blanco lamentablemente no lo tenemos disponible en este momento, solo contamos con el negro en stock.\n\nSi buscás algo funcional y confiable para el día a día, el modelo negro que tenemos te va a dar el mismo excelente resultado que el blanco, ya que las prestaciones son idénticas.\n\nMouse Genius DX-110 Negro - $8.500 (11 en stock)\n\nSi te sirve el negro, avisame y coordinamos el envío a tu domicilio. ¿Cómo preferís seguir?"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"el modelo en blanco lamentablemente no lo tenemos disponible en este momento\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"solo contamos con el negro en stock\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"el modelo negro que tenemos te va a dar el mismo excelente resultado que el blanco, ya que las prestaciones son idénticas\",\n      \"veredicto\": \"sin_respaldo\"\n    }\n  ],\n  \"respuesta_corregida\": \"¡Hola! Te cuento que el modelo en blanco lamentablemente no lo tenemos disponible en este momento, solo contamos con el negro en stock. Si buscás algo funcional y confiable para el día a día, el modelo negro que tenemos es una excelente opción. Mouse Genius DX-110 Negro - $8.500 (11 en stock) Si te sirve el negro, avisame y coordinamos el envío a tu domicilio. ¿Cómo preferís seguir?\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "y los auriculares redragon zeus x, hay stock?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [\n    {\n      \"producto\": \"Redragon Zeus X\",\n      \"consulta\": \"stock\"\n    }\n  ],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": null,\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"auriculares\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Claro! Te confirmo enseguida la disponibilidad de los Redragon Zeus X para que te quedes tranquilo.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"faq\",\n      \"texto\": \"Contamos con stock tanto del modelo en negro como del blanco, ambos listos para salir. [stock_disponibilidad]\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": \"stock_disponibilidad\",\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"producto\",\n      \"texto\": null,\n      \"producto_id\": \"AUR0019\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"producto\",\n      \"texto\": null,\n      \"producto_id\": \"AUR0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"Si buscas una experiencia inmersiva para gaming, estos Redragon son ideales por su sonido posicional y la comodidad de sus almohadillas, fundamentales para esas sesiones largas frente a la pantalla.\",\n      \"producto_id\": \"AUR0019\",\n      \"criterio_id\": \"auriculares\",\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"¿Te gustaría avanzar con alguno de los dos colores? Decime cuál preferís y te paso el total con el envío.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    }\n  ]\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Contamos con stock tanto del modelo en negro como del blanco, ambos listos para salir.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Si buscas una experiencia inmersiva para gaming, estos Redragon son ideales por su sonido posicional y la comodidad de sus almohadillas, fundamentales para esas sesiones largas frente a la pantalla.\",\n      \"veredicto\": \"respaldada\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "bueno dame el dx-110 negro entonces",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": \"el cliente confirma la compra del Mouse Genius DX-110 Negro tras la consulta previa\",\n  \"productos_consultados\": [],\n  \"producto_resuelto\": \"Mouse Genius DX-110 Negro\",\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"decision_compra\",\n  \"estado_conversacion\": \"esperando_datos\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [\n    {\n      \"producto\": \"Mouse Genius DX-110 Negro\",\n      \"cantidad\": 1,\n      \"destino\": null\n    }\n  ],\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"mouse\",\n    \"cierre_venta\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"Excelente elección, el Genius DX-110 negro es un caballito de batalla infalible para el escritorio.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"calculo\",\n      \"texto\": null,\n      \"producto_id\": \"MOU0023\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [\n        {\n          \"producto_id\": \"MOU0023\",\n          \"cantidad\": 1,\n          \"destino\": \"no definido\"\n        }\n      ],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": [\n        {\n          \"medio\": \"transferencia\",\n          \"porcentaje\": 10.0\n        },\n        {\n          \"medio\": \"mercado pago\",\n          \"porcentaje\": 0.0\n        }\n      ]\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Para avanzar con tu pedido, confirmame por favor tus datos de envío y qué medio de pago preferís, así te paso el total actualizado con el descuento si elegís transferencia.\",\n      \"producto_id\": null,\n      \"criterio_id\": \"cierre_venta\",\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    }\n  ]\n}"
+    },
+    {
+     "etapa": "adapter_proposer",
+     "salida": "{\"content\": \"{\\\"nombre\\\": \\\"\\\", \\\"telefono\\\": \\\"\\\", \\\"direccion\\\": \\\"\\\", \\\"forma_pago\\\": \\\"\\\"}\", \"tool_calls\": null, \"raw_message\": \"ChatCompletionMessage(content='{\\\"nombre\\\": \\\"\\\", \\\"telefono\\\": \\\"\\\", \\\"direccion\\\": \\\"\\\", \\\"forma_pago\\\": \\\"\\\"}', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None, extra_content={'google': {'thought_signature': 'EjQKMgERTTIPto3Yl/oo1tLXNrB1fgg7Gi1+cEsFSBc9CYXGjFxWJtmqEd6XKCtAqT13i6Da'}})\", \"provider\": \"gemini\", \"model\": \"gemini-3.1-flash-lite\"}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Excelente elección, el Genius DX-110 negro es un caballito de batalla infalible para el escritorio.\",\n      \"veredicto\": \"neutral\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  }
+ ]
+}

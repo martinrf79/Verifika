@@ -369,8 +369,50 @@ async def _red_de_verificadores(texto: str, meta: dict, estado: dict, conv: dict
                                  trace_id)
     _verificar_cita(meta, texto, trace_id)
     texto = await _guardia_promesas(texto, trace_id)
-    return await _fiscalizar_prosa(texto, meta, universo, interp, mensaje,
-                                   tienda_id, trace_id)
+    pre_juez = texto
+    texto = await _fiscalizar_prosa(texto, meta, universo, interp, mensaje,
+                                    tienda_id, trace_id)
+    return _revertir_juez_si_promete(pre_juez, texto, trace_id)
+
+
+def _revertir_juez_si_promete(pre_juez: str, texto: str, trace_id: str) -> str:
+    """EL AGUJERO QUE DEJA LA CADENA: lo que el juez REESCRIBE no lo mira nadie.
+
+    Caso real, cazado por las charlas grabadas (guion 17, turno 3). La guardia de
+    promesas corre en el escalon 6 y el juez en el 7, y el juez no solo poda:
+    cuando encuentra una afirmacion sin respaldo REESCRIBE el mensaje entero. En
+    esa reescritura metio "cerremos la operacion hoy mismo" -promesa de dia- y
+    salio al cliente sin que la guardia la volviera a ver. La guardia estaba
+    bien: `detectar()` sobre el texto FINAL devuelve dia_entrega. El problema era
+    el ORDEN.
+
+    LA REPARACION ES REVERTIR, NO PODAR. El primer intento fue pasarle la poda y
+    el fallback de la guardia al texto del juez, y salio peor: por una frase se
+    perdia un presupuesto correcto entero, con sus numeros ya auditados, y el
+    cliente recibia el enlatado. Aca hay algo mejor a mano, y es el texto de
+    ANTES del juez: ya paso los siete escalones y esta limpio de promesas. Si la
+    reescritura del juez introdujo una promesa que el texto anterior no tenia, se
+    tira la reescritura y se manda el anterior. Se pierde una mejora de prosa; no
+    se pierde la venta.
+
+    Parche puntual sobre un problema estructural -18 reescrituras encadenadas,
+    cada una capaz de romper lo que hizo la anterior-. Se arregla de raiz cuando
+    la red pase a dictamenes sobre el texto original en una sola pasada.
+    """
+    if not texto or texto == pre_juez:
+        return texto
+    try:
+        from app.core.guardia_promesas import detectar
+        nuevas = set(detectar(texto)) - set(detectar(pre_juez))
+        if not nuevas:
+            return texto
+        log.warning("hub_atado_juez_metio_promesa", trace_id=trace_id,
+                    clases=sorted(nuevas), revertido=True)
+        return pre_juez
+    except Exception as e:
+        log.warning("hub_atado_post_juez_error", trace_id=trace_id,
+                    error=str(e)[:120])
+        return texto
 
 
 def _productos_del_turno(texto: str, meta: dict, universo, tienda_id,
