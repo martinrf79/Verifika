@@ -54,8 +54,15 @@ def leer_guion(texto: str) -> list[dict]:
             clave, _, valor = cuerpo.partition(":")
             clave = clave.strip().lower()
             if clave in ("contiene", "no_contiene") and valor.strip():
-                turnos[-1][clave] += [v.strip() for v in valor.split("|")
-                                      if v.strip()]
+                # `|` son ALTERNATIVAS: alcanza con que aparezca una. Lo escribi
+                # primero como "tienen que estar todas" y me dio un rojo falso a
+                # la primera corrida: el bot contesto "no comercializamos
+                # celulares", que es perfecto, y la expectativa pedia la palabra
+                # "no trabajamos". Un rojo falso es peor que no tener la
+                # expectativa, porque ensena a ignorar el tablero. Para exigir
+                # DOS cosas se ponen dos lineas.
+                alternativas = [v.strip() for v in valor.split("|") if v.strip()]
+                turnos[-1][clave].append(alternativas)
             continue
         turnos.append({"mensaje": cruda, "contiene": [], "no_contiene": []})
     return turnos
@@ -97,8 +104,10 @@ def puntuar_turno(turno: dict, respuesta: str, tienda_id: str,
         return {"puntos": obtenido, "total": PESOS["no_miente"] + PESOS["contesta"],
                 "fallas": fallas}
     r = _norm(respuesta)
-    faltan = [e for e in esperadas if _norm(e) not in r]
-    sobran = [p for p in prohibidas if _norm(p) in r]
+    # cada grupo es un OR; que falten TODAS las alternativas de un grupo es la falla
+    faltan = [" o ".join(g) for g in esperadas
+              if not any(_norm(v) in r for v in g)]
+    sobran = [v for g in prohibidas for v in g if _norm(v) in r]
     if faltan:
         fallas.append("falta en la respuesta: " + ", ".join(faltan[:3]))
     if sobran:

@@ -8,8 +8,8 @@
 # PASA si dice honesto que no lo tiene y ofrece alternativa real SIN dejar caer
 # la venta, y si ante una spec ausente contesta honesto sin inventar.
 hola tenes celulares samsung o iphone?
-  > contiene: no trabajamos
+  > contiene: no trabajamos|no comercializamos|no vendemos|no manejamos|no tenemos
 y una play 5 tenes?
-  > contiene: no trabajamos
+  > contiene: no trabajamos|no comercializamos|no vendemos|no manejamos|no tenemos
 bueno, dame la notebook mas barata que tengas para trabajar
 esa notebook tiene lector de huella digital?

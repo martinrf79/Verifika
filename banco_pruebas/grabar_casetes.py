@@ -96,11 +96,17 @@ async def _main(nombres: list[str]) -> int:
     if not nombres:
         _PISO.parent.mkdir(parents=True, exist_ok=True)
         _PISO.write_text(json.dumps(
-            {"piso": numero, "charlas": len(resultados),
+            {"piso": numero,
+             "puntos": sum(r["puntos"] for r in resultados),
+             "total": sum(r["total"] for r in resultados),
+             "charlas": len(resultados),
              "grabado": _dt.date.today().isoformat(),
              "_doc": "El puntaje que defiende tests/test_charlas_grabadas.py. "
-                     "Si un cambio lo baja, el CI se cae. Si lo sube, se "
-                     "actualiza en el mismo commit."},
+                     "Manda `puntos`, que es el crudo: `piso` esta redondeado y "
+                     "una regresion de un par de turnos podia seguir "
+                     "redondeando igual y pasar el gate. Si un cambio lo baja, "
+                     "el CI se cae. Si lo sube, se actualiza en el mismo "
+                     "commit."},
             ensure_ascii=False, indent=1), encoding="utf-8")
         print(f"piso actualizado en {_PISO}")
     else:

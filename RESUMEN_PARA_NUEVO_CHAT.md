@@ -77,6 +77,48 @@ modelo mejoro o empeoro. Para eso esta el banco vivo pago (`banco_deepeval`,
 nocturno). Aca se miden las 18 reescrituras encadenadas, que es donde vivieron
 TODOS los bugs de esta semana.
 
+**LA PRIMERA CORRIDA YA SE PAGO SOLA.** Reprodujo las 65 charlas offline en dos
+minutos y encontro TRES con fallas duras. Las tres ya venian fallando en la
+grabacion EN VIVO (89, 94 y 80 sobre 100), o sea que eran bugs reales de
+produccion y no artefactos del arnes: la reproduccion replica fiel.
+
+  1. **El estampado de compatibilidad, mio, de esa misma tarde.** Pegaba el
+     mismo aviso una vez por CADA variante negada -cuatro Redragon, cuatro veces
+     la misma frase- y el recorte a 400 caracteres la cortaba a mitad de
+     palabra: "andan en la compu,". Ademas lo pegaba aunque el modelo ya lo
+     hubiera dicho bien y con mejor prosa. Ahora agrupa por MOTIVO y, si el
+     texto ya niega esa plataforma en la misma oracion, no agrega nada: el
+     estampado es la RED para cuando el modelo no lo dice, no una coletilla.
+  2. **El juez metia promesas que nadie volvia a mirar.** No solo poda: cuando
+     encuentra una afirmacion sin respaldo REESCRIBE el mensaje entero, y corre
+     DESPUES de la guardia de promesas. En una reescritura metio "cerremos la
+     operacion hoy mismo" y salio al cliente. La guardia estaba perfecta
+     -`detectar()` sobre el texto FINAL devuelve dia_entrega-; el problema era el
+     ORDEN. Es el caso concreto de las 18 reescrituras encadenadas.
+     **La reparacion es REVERTIR, no podar.** El primer intento fue pasarle la
+     poda y el fallback de la guardia al texto del juez y SALIO PEOR: por una
+     frase se perdia un presupuesto correcto entero y el cliente recibia el
+     enlatado. Se descarto. Ahora, si la reescritura introduce una promesa que el
+     texto anterior no tenia, se tira la reescritura y sale el texto pre-juez,
+     que ya paso los siete escalones limpio. Se pierde prosa, no la venta.
+  3. **Una expectativa mal escrita, tambien mia.** Pedia la palabra literal "no
+     trabajamos" y el bot contesto "no comercializamos celulares", que es
+     perfecto: rojo falso. Por eso `|` en las expectativas son ALTERNATIVAS y no
+     una lista que tiene que estar entera. Un rojo falso es peor que no tener la
+     expectativa, porque ensena a ignorar el tablero.
+
+**EL PISO MANDA POR PUNTOS, NO POR PORCENTAJE.** 100/100 esta redondeado: con el
+porcentaje, una regresion de un par de turnos podia seguir redondeando a 100 y
+pasar el gate. El piso guarda los puntos crudos. Hoy: **1654 de 1656**.
+
+**LO UNICO QUE QUEDA ROJO, anotado y sin tapar:** `21_posventa_seguimiento` T4,
+"puedo usar la garantia para pedir otro?". El solver contesta bien desde el
+criterio de garantia y la guardia de promesas mata el turno entero por un
+"lo resolvemos hoy mismo", que es un falso positivo de `dia_entrega` -habla de
+resolver un caso, no de entregar-. La reescritura no lo limpia y la poda tampoco,
+asi que cae al enlatado. Es la misma familia que el bug 2: una guarda demasiado
+roma. Se arregla en el paso 3.
+
 **LO QUE SIGUE, en orden, acordado con Martin:**
   3. **Aplanar las 18 reescrituras a una sola pasada.** Cada verificador OPINA
      sobre el texto original y devuelve un dictamen; un solo lugar los aplica

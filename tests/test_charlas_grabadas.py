@@ -38,13 +38,20 @@ _PISO_JSON = (Path(__file__).resolve().parent.parent / "banco_pruebas"
               / "casetes" / "_piso.json")
 
 
-def _piso() -> int:
+def _piso() -> dict:
     """El puntaje a defender. Vive al lado de los casetes y se actualiza en el
-    mismo commit que los regraba."""
+    mismo commit que los regraba.
+
+    Se guardan los PUNTOS exactos, no el porcentaje: 100/100 esta redondeado, y
+    con el porcentaje una regresion de un par de turnos podia seguir redondeando
+    a 100 y pasar el gate sin que nadie se entere. El numero lindo es para leer;
+    el que manda es el crudo."""
     try:
-        return int(json.loads(_PISO_JSON.read_text(encoding="utf-8"))["piso"])
+        d = json.loads(_PISO_JSON.read_text(encoding="utf-8"))
+        return {"piso": int(d.get("piso") or 0),
+                "puntos": int(d.get("puntos") or 0)}
     except Exception:
-        return 0
+        return {"piso": 0, "puntos": 0}
 
 
 def _correr_casete(casete: Casete, firestore_doble) -> dict:
@@ -111,14 +118,21 @@ def test_el_numero_no_baja(firestore_doble, capsys):
     mejoro, por mas tests de unidad que se hayan sumado."""
     resultados = [_correr_casete(c, firestore_doble) for c in _CASETES]
     numero = puntaje_global(resultados)
+    puntos = sum(r["puntos"] for r in resultados)
+    total = sum(r["total"] for r in resultados)
+    piso = _piso()
     with capsys.disabled():
         print(f"\n\n{'=' * 62}\nEL NUMERO: {numero}/100 sobre "
-              f"{len(resultados)} charlas (piso {_piso()})")
+              f"{len(resultados)} charlas  ({puntos}/{total} puntos, "
+              f"piso {piso['puntos']})")
         for r in sorted(resultados, key=lambda x: x["puntaje"])[:8]:
+            if r["puntaje"] >= 100 and not r["fallas"]:
+                continue
             print(f"  {r['puntaje']:3}/100  {r['nombre']}")
             for f in r["fallas"][:3]:
                 print(f"          ! {f}")
         print("=" * 62)
-    assert numero >= _piso(), (
-        f"el numero BAJO: {numero} contra un piso de {_piso()}. "
-        f"Algun cambio empeoro las charlas; mirar el detalle de arriba.")
+    assert puntos >= piso["puntos"], (
+        f"el numero BAJO: {puntos} puntos contra un piso de {piso['puntos']} "
+        f"({numero}/100 contra {piso['piso']}/100). Algun cambio empeoro las "
+        f"charlas; mirar el detalle de arriba.")
