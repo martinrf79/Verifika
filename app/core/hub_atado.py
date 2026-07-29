@@ -758,33 +758,38 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     from app.core import guardas_salida as _gs
     _negocio = _gs.business_name(tienda_id)
 
-    # PRESUPUESTO SIN MODELOS: pidio "2 teclados y 3 mouse" sin decir cuales y
-    # el modelo armo un total eligiendo productos por su cuenta.
+    # PRESUPUESTO SIN MODELOS: se BORRO el 29-jul, despues de romper una charla
+    # REAL de Martin por WhatsApp (trace a2d0a5dc).
+    #
+    # QUE PASO. El cliente escribio "Dame precio de 2 notebooks 2 auriculares y
+    # 2 mauses, 1 notebook y un auricular en Concordia...". El sistema lo
+    # resolvio BIEN: calculo con seis productos reales del catalogo, dos
+    # destinos, el verificador de montos reviso quince numeros sin encontrar uno
+    # solo sin respaldo, y el juez paso. Y despues esta guarda tiro todo eso a
+    # la basura y lo reemplazo por "necesito que me digas los modelos".
+    #
+    # POR QUE NO VA MAS. La guarda nacio en el camino viejo, donde el solver
+    # elegia productos de su cabeza y podia poner un teclado al precio de una
+    # notebook. En el camino atado eso es IMPOSIBLE por construccion: los items
+    # de un fragmento calculo son ids del universo del turno y el precio lo
+    # estampa el codigo desde la fuente. O sea que la enfermedad que curaba ya
+    # no existe, y lo unico que quedaba era el efecto secundario: negarle al
+    # cliente un presupuesto correcto que el sistema ya habia armado.
+    #
+    # Que el modelo ELIJA por el cliente cuando no dijo modelos no es un error:
+    # es lo que hace un vendedor. Le muestra una propuesta concreta con precios
+    # reales y el cliente ajusta. Negarse es peor venta y peor experiencia.
+    #
+    # Queda el RADAR, que es lo unico que valia: saber cuando se armo un total
+    # sobre categorias que el cliente pidio sin nombrar modelo.
     try:
         from app.core.guia_pedido import cantidades_por_categoria
         _cats_ped = cantidades_por_categoria(raw_message, tienda_id) or []
-        if not _cats_ped and isinstance(interp, dict):
-            _cats_ped = [(int(s.get("cantidad") or 0), str(s.get("categoria")))
-                         for s in (interp.get("solicitud_nueva") or [])
-                         if isinstance(s, dict) and s.get("categoria")
-                         and (s.get("cantidad") or 0) > 1]
-        # Solo es un PEDIDO por categorias si pide VARIAS unidades o VARIAS
-        # categorias. "busco un mouse para gaming" es una consulta comun y
-        # corriente, y sin este filtro la guarda le contestaba "¡Buena compra
-        # la que estas armando! Necesito que me digas los modelos" a alguien
-        # que todavia no estaba armando nada (banco 29-jul, guion 54 turno 1).
-        if len(_cats_ped) < 2 and not any(n > 1 for n, _c in _cats_ped):
-            _cats_ped = []
-        if _cats_ped and not (estado.get("carrito") or []):
-            _forzado = _gs.forzar_opciones_si_presupuesto(texto, _cats_ped,
-                                                          tienda_id)
-            if _forzado:
-                texto = _forzado
-                log.warning("hub_atado_presupuesto_sin_modelos",
-                            trace_id=trace_id,
-                            categorias=[c for _n, c in _cats_ped])
+        if _cats_ped and _RE_TOTAL.search(texto or ""):
+            log.info("hub_atado_total_sobre_categorias", trace_id=trace_id,
+                     categorias=[c for _n, c in _cats_ped])
     except Exception as e:
-        log.warning("hub_atado_forzar_opciones_error", trace_id=trace_id,
+        log.warning("hub_atado_total_categorias_error", trace_id=trace_id,
                     error=str(e)[:120])
 
     # RESPUESTA HUECA: vacia o sin nada que conteste ni mueva la charla. Se le
