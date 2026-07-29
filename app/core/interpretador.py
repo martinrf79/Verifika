@@ -220,44 +220,25 @@ FUERA_DE_LISTA = "no_esta_en_la_lista"
 
 
 def candidatos_modelo(mensaje: str, modelos: list[str] | None,
-                      contexto: str = "", tope: int = 30) -> list[str]:
+                      contexto: str = "", tope: int = 30,
+                      tienda_id: str | None = None) -> list[str]:
     """Lista CORTA de modelos del catalogo para que el interprete elija.
 
     Etapa 1 de las dos etapas: recuperar candidatos por texto. Es a proposito
-    GENEROSA -alcanza con que comparta una palabra significativa, y tolera el
-    typo por parecido- porque el que decide es el modelo en la etapa 2, no
-    esto. Un enum con los 482 modelos son 11.000 caracteres por campo y el
-    limite documentado de structured outputs es 15.000 en TODO el schema: no
-    entra, y ademas degrada. Con la lista corta el enum baja a menos de mil.
+    GENEROSA -alcanza con que roce una palabra significativa, y tolera el typo
+    por parecido- porque el que decide es el modelo en la etapa 2, no esto. Un
+    enum con los 482 modelos son 11.000 caracteres por campo y el limite
+    documentado de structured outputs es 15.000 en TODO el schema: no entra, y
+    ademas degrada. Con la lista corta el enum baja a menos de mil.
 
-    Mira el mensaje Y el contexto de la charla, porque la repregunta suele no
-    repetir el nombre ("y esa cuanto pesa?").
+    El COMO vive en `app/core/recall_modelos.py`: recall sobre la ficha entera
+    (nombre, tags, uso, material, descripcion), con peso por capa y descuento
+    por frecuencia. Antes se comparaba solo contra la etiqueta 'Marca Modelo',
+    y todo lo que el cliente decia con otras palabras quedaba afuera del enum.
     """
-    from difflib import get_close_matches
-    from app.core.pedido_helpers import _tokens_producto
-    todos = [m for m in (modelos or []) if m]
-    if not todos:
-        return []
-    toks = _tokens_producto(mensaje) | _tokens_producto(contexto)
-    if not toks:
-        return []
-    porton = {}
-    for m in todos:
-        comunes = toks & _tokens_producto(m)
-        if comunes:
-            porton[m] = len(comunes)
-    # typos: para cada palabra del mensaje que no pego en nada, se busca la mas
-    # parecida entre las palabras de los modelos ('zenbok' -> 'zenbook').
-    if len(porton) < tope:
-        vocab = {t for m in todos for t in _tokens_producto(m)}
-        for t in toks:
-            if t in vocab or len(t) < 4:
-                continue
-            for parecida in get_close_matches(t, vocab, n=2, cutoff=0.8):
-                for m in todos:
-                    if parecida in _tokens_producto(m):
-                        porton.setdefault(m, 0.5)
-    return [m for m, _s in sorted(porton.items(), key=lambda x: -x[1])][:tope]
+    from app.core.recall_modelos import candidatos as _recall
+    return _recall(mensaje, modelos, contexto=contexto, tope=tope,
+                   tienda_id=tienda_id)
 
 
 def _texto_candidatos(candidatos: list[str]) -> str:
@@ -1058,7 +1039,7 @@ async def interpretar_mensaje(mensaje: str,
         # spec. El modelo razona y traduce; el codigo de abajo solo ejecuta
         # sobre estos valores, que es lo unico que sabe hacer.
         _modelos = candidatos_modelo(mensaje, modelos_del_catalogo(tienda_id),
-                                     contexto_conv)
+                                     contexto_conv, tienda_id=tienda_id)
         try:
             from app.core.fuente_producto import specs_config
             _specs = [s["id"] for s in specs_config()]

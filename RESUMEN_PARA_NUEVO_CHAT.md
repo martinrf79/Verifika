@@ -4,6 +4,85 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 29-jul-2026 — AUDITORIA DE ALCANCE + INTERPRETACION: EL RECALL DEL
+INTERPRETE ====**
+
+Rama: `claude/architecture-hallucination-review-sx8g28`. Orden de Martin: dejar
+firme PRIMERO la interpretacion, y recien despues tocar el resto.
+
+**AUDITORIA DE ALCANCE (lo primero, porque cambia el diagnostico).** Se siguio
+el grafo de imports desde `app.main` y `orchestrator`, incluidos los imports
+dentro de funciones. Resultado: **5.429 lineas de `app/core` no las alcanza
+nadie.** No estan colgando del camino viejo: `interprete_libre` MISMO quedo
+huerfano cuando el orchestrator paso a `hub_atado`, y se llevo puesto todo lo
+que tenia enchufado.
+
+Huerfanos: `interprete_libre` (2236), `compositor` (704), `solver_gemini` (500),
+`verificador_stock` (311), `guardia_promesas` (285), `ruteo_venta` (281),
+`checker_afirmaciones` (258, el LLM juez), `selector` (241), `redactor` (193),
+`verificador_faq` (188), `verificador_intencion` (105), `verificador_cita` (67).
+
+Tres consecuencias que NO estaban en ningun documento:
+1. `ARQUITECTURA.md` dice que la red de degradacion determinista (selector +
+   compositor + redactor) esta viva. NO lo esta: si Gemini falla, `hub_atado`
+   manda el mensaje de fallback enlatado y nada mas.
+2. No hay verificacion de stock en produccion.
+3. `search.py:261` usa `settings.EMBEDDINGS_ON`, que NO existe en `config.py`.
+   Si esa linea corriera, revienta con AttributeError. No revienta porque
+   `buscar_con_score` tampoco se llama: prueba dura de que ese codigo esta
+   muerto. **La busqueda hibrida NO corre en produccion**: `search_products`
+   solo lo llaman los tres modulos huerfanos. La recuperacion viva es
+   `generador_v2.universo_productos`, determinista por categoria y por id.
+
+**LO QUE SE ARREGLO: EL RECALL DEL INTERPRETE (`app/core/recall_modelos.py`,
+modulo nuevo que REEMPLAZA el cuerpo de `candidatos_modelo`).**
+El enum de `producto_resuelto` no lleva los 482 modelos -no entran en el limite
+de structured outputs-: lleva los que recupera la etapa 1. O sea que **lo que no
+entra ahi, el interprete no lo puede nombrar aunque lo haya entendido perfecto**.
+Y la etapa 1 comparaba las palabras del cliente contra la etiqueta "Marca
+Modelo" y NADA MAS: ni el nombre completo, ni los `tags` con los sinonimos que
+la propia tienda cargo ("mause", "raton", "puntero"), ni uso, material o
+descripcion. Estaban en Firestore desde el 27-jul y nadie los consultaba.
+
+Ahora cada MODELO es un documento con los tokens de todas sus variantes, con
+capas de peso (identidad 3, nombre y tags 2, resto de la ficha 1), descuento por
+frecuencia (idf), correccion por largo y corte relativo al mejor puntaje. El
+pase por typo corrige el TOKEN del mensaje en vez de sumar modelos al fondo.
+Tokenizador propio: `_tokens_producto` borra "pro", "plus", "gaming" y los
+colores, que son parte de nombres REALES ("Logitech G Pro X"); el idf hace ese
+trabajo mejor y con el dato de ESTA tienda.
+
+**MEDIDO, no opinado (`banco_pruebas/banco_recall_modelos.py`, 1552 casos sobre
+el catalogo real, offline y sin LLM; corre dentro de la bateria):**
+
+| tipo de mensaje            | casos | recall@30 viejo | nuevo  |
+|----------------------------|-------|-----------------|--------|
+| describe sin nombrar (tags)|  237  |     19,4%       | 100%   |
+| formas reales que fallaron |    7  |     42,9%       | 100%   |
+| nombre sin la marca        |  454  |     99,8%       | 100%   |
+| typo en el modelo          |  375  |    100%         | 100%   |
+| TOTAL                      | 1552  |     87,4%       | 100%   |
+
+recall@5 71,2% -> 87,6%. La lista de candidatos BAJA de 23 a 11 modelos, o sea
+menos tokens por turno y menos lugar donde el modelo se equivoque. Costo: 3,3 ms
+por llamada mas 90 ms de indice una vez cada cinco minutos.
+
+**DECISION SOBRE EMBEDDINGS: NO van, y no por falta de clave.** Se probaron las
+dos: `OPENAI_API_KEY` esta cargada pero devuelve 401 (vencida); los embeddings
+de Gemini SI funcionan con la `GEMINI_API_KEY` que ya esta (modelo
+`gemini-embedding-001`, header `x-goog-api-key`). No se usan porque el problema
+no era semantico: la lista de categorias va COMPLETA al prompt, asi que llegar
+de "algo para escribir comodo" a la categoria teclado ya funcionaba; lo que
+estaba cortado era elegir CUAL teclado, y eso se resuelve con el vocabulario
+propio de la tienda, que es determinista y se testea offline. Si el banco
+mostrara fallas semanticas residuales, el camino de Gemini esta probado.
+
+**LO QUE FALTA DE ESTE TRACK:** re-enchufar o borrar, modulo por modulo, los
+5.429 lineas huerfanas. Primero el juez (`checker_afirmaciones`) con la
+evidencia del turno, despues stock, cita y FAQ.
+
+---
+
 **==== 27-jul-2026 (2a tanda) — FUENTE DE VERDAD COMPLETA: INVENTARIO + INGESTA
 UNICA + MAPA DE SPECS ====**
 
