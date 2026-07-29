@@ -72,49 +72,57 @@ def _carrito_traza(carrito) -> list:
             for c in (carrito or []) if isinstance(c, dict)]
 
 
-def _verificar_montos(texto: str, meta: dict, estado: dict,
-                      tienda_id: str, trace_id: str) -> str:
+def _evidencia_del_texto(texto: str, meta: dict, estado: dict,
+                         tienda_id: str, trace_id: str) -> list:
+    """La EVIDENCIA del turno: tools llamadas, productos vistos releidos vivos,
+    productos nombrados en el texto y la FAQ con sus valores. Es la fuente
+    contra la que juzga TODA la red determinista de abajo.
+
+    Se arma UNA sola vez y se comparte. Antes vivia adentro del verificador de
+    montos, y cada verificador que se enchufaba la re-armaba: tres recorridas
+    del catalogo por turno y, peor, tres versiones de "la verdad" que podian
+    diferir entre si."""
+    from app.core.evidencia import (build_evidence_from_tools,
+                                    productos_nombrados_en)
+    from app.storage.firestore_client import get_product_by_id
+    vistos = []
+    for p in (estado.get("productos_vistos") or []):
+        if not isinstance(p, dict):
+            continue
+        vivo = None
+        pid = str(p.get("id") or "").upper()
+        if pid:
+            try:
+                vivo = get_product_by_id(pid, tienda_id=tienda_id)
+            except Exception:
+                vivo = None
+        vistos.append(vivo if isinstance(vivo, dict) and vivo.get("precio_ars")
+                      is not None else
+                      {**p, "precio_ars": p.get("precio_ars", p.get("precio"))})
+    evidencia = build_evidence_from_tools(
+        meta.get("tools_called", []) or [], tienda_id, productos_vistos=vistos)
+    _ids = {str(i.get("id") or "").upper() for i in evidencia
+            if i.get("tipo") == "producto"}
+    for pn in productos_nombrados_en(texto, tienda_id):
+        if str(pn.get("id") or "").upper() not in _ids:
+            evidencia.append({"tipo": "producto", **pn})
+    for i in evidencia:
+        if (i.get("tipo") == "producto" and i.get("precio_ars") is None
+                and isinstance(i.get("precio"), (int, float))):
+            i["precio_ars"] = i["precio"]
+    return evidencia
+
+
+def _verificar_montos(texto: str, evidencia: list, trace_id: str) -> str:
     """RED DE NUMEROS del camino atado. Hasta hoy el numero se protegia solo
     porque el CODIGO lo estampaba; al pasar la FAQ y la venta a redaccion del
-    solver, el numero lo teje el LLM y necesita verificacion. Reusa el mismo
-    verificador determinista del camino viejo: arma la evidencia del turno
-    (tools, productos vistos y nombrados, FAQ entera con valores) y autocorrige
+    solver, el numero lo teje el LLM y necesita verificacion. Autocorrige
     cualquier cifra sin respaldo por el valor real de la fuente. Sin LLM,
     conservador: solo reemplaza lo inequivoco. Gateado por AUTOCORRIGE_MONTOS."""
-    if not texto or texto == settings.VERIFIKA_FALLBACK_MESSAGE:
-        return texto
     if not settings.AUTOCORRIGE_MONTOS:
         return texto
     try:
-        from app.core.evidencia import (build_evidence_from_tools,
-                                        productos_nombrados_en)
         from app.core.verificador import autocorregir_montos
-        from app.storage.firestore_client import get_product_by_id
-        vistos = []
-        for p in (estado.get("productos_vistos") or []):
-            if not isinstance(p, dict):
-                continue
-            vivo = None
-            pid = str(p.get("id") or "").upper()
-            if pid:
-                try:
-                    vivo = get_product_by_id(pid, tienda_id=tienda_id)
-                except Exception:
-                    vivo = None
-            vistos.append(vivo if isinstance(vivo, dict) and vivo.get("precio_ars")
-                          is not None else
-                          {**p, "precio_ars": p.get("precio_ars", p.get("precio"))})
-        evidencia = build_evidence_from_tools(
-            meta.get("tools_called", []) or [], tienda_id, productos_vistos=vistos)
-        _ids = {str(i.get("id") or "").upper() for i in evidencia
-                if i.get("tipo") == "producto"}
-        for pn in productos_nombrados_en(texto, tienda_id):
-            if str(pn.get("id") or "").upper() not in _ids:
-                evidencia.append({"tipo": "producto", **pn})
-        for i in evidencia:
-            if (i.get("tipo") == "producto" and i.get("precio_ars") is None
-                    and isinstance(i.get("precio"), (int, float))):
-                i["precio_ars"] = i["precio"]
         precios_validos = {int(i["precio_ars"]) for i in evidencia
                            if i.get("tipo") == "producto"
                            and isinstance(i.get("precio_ars"), (int, float))}
@@ -128,6 +136,233 @@ def _verificar_montos(texto: str, meta: dict, estado: dict,
         log.warning("hub_atado_verificar_montos_error", trace_id=trace_id,
                     error=str(e)[:150])
     return texto
+
+
+async def _verificar_stock(texto: str, evidencia: list, trace_id: str) -> str:
+    """STOCK: el campo por donde se filtro la alucinacion real del 2-jul, cuando
+    el solver invento un faltante ("DX-110 no tiene stock", falso) y upselleo a
+    lo caro. Mismo patron que la plata, en tres escalones de dureza creciente:
+
+      1. la CIFRA de unidades que contradice el catalogo se reescribe sola;
+      2. la CONTRADICCION de texto ("no tiene stock" de uno que si tiene) no se
+         arregla con un numero: se reescribe con una regla explicita;
+      3. si despues de reescribir la mentira SIGUE ahi, se poda la linea. Y si
+         ni podando queda algo decente, sale el fallback: preferimos un turno
+         soso a decirle al cliente que no tenemos algo que si tenemos.
+
+    Solo juzga productos cuyo stock REAL esta en la evidencia DE ESTE turno: el
+    stock cambia, y un dato viejo no acusa a nadie.
+    """
+    if not evidencia:
+        return texto
+    try:
+        from app.core.verificador_stock import (corregir_unidades_stock,
+                                                detectar_stock_contradicho,
+                                                instruccion_stock,
+                                                cuarentena_stock)
+        fix = corregir_unidades_stock(texto, evidencia)
+        if fix["correcciones"]:
+            log.warning("hub_atado_stock_cifra_corregida", trace_id=trace_id,
+                        correcciones=fix["correcciones"][:8])
+            texto = fix["respuesta"]
+        contradicho = detectar_stock_contradicho(texto, evidencia)
+        if not contradicho:
+            return texto
+        log.warning("hub_atado_stock_contradicho", trace_id=trace_id,
+                    casos=contradicho[:6], respuesta_preview=texto[:200])
+        # La reescritura va en SU PROPIO try. Si revienta -clave vencida,
+        # timeout, provider caido- el turno NO se puede quedar con la mentira:
+        # tiene que seguir de largo hasta la cuarentena determinista de abajo,
+        # que no necesita modelo. Medido el 29-jul: con la clave de OpenAI
+        # vencida esta llamada tiraba 401 y, atrapada por el try grande, el
+        # "no tiene stock" falso salia intacto al cliente.
+        try:
+            from app.core.guardia_promesas import reescribir_con_reglas
+            nueva = await reescribir_con_reglas(
+                texto, instruccion_stock(contradicho), trace_id)
+            if nueva:
+                texto = nueva
+        except Exception as e:
+            log.warning("hub_atado_stock_reescritura_error", trace_id=trace_id,
+                        error=f"{type(e).__name__}: {str(e)[:120]}")
+        quedan = detectar_stock_contradicho(texto, evidencia)
+        if not quedan:
+            log.info("hub_atado_stock_reescrito", trace_id=trace_id)
+            return texto
+        poda = cuarentena_stock(texto, evidencia)
+        if poda and not detectar_stock_contradicho(poda, evidencia):
+            log.warning("hub_atado_stock_cuarentena", trace_id=trace_id,
+                        casos=quedan[:6])
+            return poda
+        log.warning("hub_atado_stock_bloqueado", trace_id=trace_id,
+                    casos=quedan[:6])
+        return settings.VERIFIKA_FALLBACK_MESSAGE
+    except Exception as e:
+        log.warning("hub_atado_stock_error", trace_id=trace_id,
+                    error=f"{type(e).__name__}: {str(e)[:140]}")
+        return texto
+
+
+def _verificar_faq_numerica(texto: str, evidencia: list, meta: dict,
+                            trace_id: str) -> str:
+    """Los numeros CHICOS de politica que el verificador de plata no mira: un
+    "25% de descuento" cuando es 20, "24 cuotas" cuando son 6, "45 dias" cuando
+    son de 2 a 7, "36 meses de garantia" cuando son 24. Mienten igual que un
+    precio, y con la FAQ REDACTADA por el solver los teje el modelo.
+
+    Corrige solo anclado al tema consultado este turno y con pool univoco; sin
+    ancla clara marca y no toca, mismo criterio conservador que la plata."""
+    if not evidencia:
+        return texto
+    try:
+        from app.core.verificador_faq import (autocorregir_faq_numerica,
+                                              temas_de_meta)
+        fix = autocorregir_faq_numerica(
+            texto, evidencia, temas_consultados=set(temas_de_meta(meta)),
+            trace_id=trace_id)
+        if fix["cambiada"] and fix["verificacion"]["ok"]:
+            log.warning("hub_atado_faq_numerica_corregida", trace_id=trace_id,
+                        correcciones=fix["correcciones"][:8])
+            return fix["respuesta"]
+        if not fix["verificacion"]["ok"]:
+            log.warning("hub_atado_faq_numerica_sin_respaldo", trace_id=trace_id,
+                        sin_respaldo=fix["verificacion"]["sin_respaldo"][:8],
+                        respuesta_preview=texto[:200])
+    except Exception as e:
+        log.warning("hub_atado_faq_numerica_error", trace_id=trace_id,
+                    error=str(e)[:150])
+    return texto
+
+
+def _verificar_intencion(texto: str, meta: dict, conv: dict, interp,
+                         mensaje: str, tienda_id: str, trace_id: str) -> str:
+    """ESTRUCTURA contra ESTRUCTURA, sin LLM: lo que el interprete leyo del
+    cliente (exclusiones, tope) contra lo que la respuesta ofrece. Un producto
+    de una marca u origen que el cliente EXCLUYO se saca quirurgico; ofrecer
+    todo arriba del tope se marca, no se corrige, porque avisar puede ser venta
+    legitima. Aguas arriba el filtro de universo ya lo previene: esta es la red
+    para lo que no pasa por ese filtro."""
+    try:
+        from app.core.verificador_intencion import verificar_intencion
+        from app.core.estado_venta import preferencias_actualizadas
+        prefs = preferencias_actualizadas(
+            conv.get("preferencias_cliente"), interp, mensaje)
+        if not prefs:
+            return texto
+        vi = verificar_intencion(texto, meta, prefs, tienda_id)
+        if vi["eventos"]:
+            log.warning("hub_atado_intencion_fiscal", trace_id=trace_id,
+                        eventos=vi["eventos"],
+                        corrigio=vi["respuesta"] != texto)
+            return vi["respuesta"]
+    except Exception as e:
+        log.warning("hub_atado_intencion_error", trace_id=trace_id,
+                    error=str(e)[:150])
+    return texto
+
+
+def _verificar_cita(meta: dict, texto: str, trace_id: str) -> None:
+    """CANDADO Y SONDA de la cita de prosa: cada bloque de criterio que el
+    solver dice haber usado tiene que existir de verdad en el corpus jurado.
+    No reescribe nada -la prosa buena sale igual-, solo loguea: en el camino
+    sano los ids salen del propio corpus y siempre validan, asi que un rojo aca
+    significa que el contrato se rompio."""
+    try:
+        from app.core.verificador_cita import verificar_meta
+        vc = verificar_meta(meta)
+        if vc["citas"]:
+            (log.warning if not vc["ok"] else log.info)(
+                "hub_atado_cita_prosa", trace_id=trace_id,
+                validas=vc["validas"], invalidas=vc["invalidas"])
+    except Exception as e:
+        log.warning("hub_atado_cita_error", trace_id=trace_id,
+                    error=str(e)[:150])
+
+
+async def _guardia_promesas(texto: str, trace_id: str) -> str:
+    """LINEA CERO DEL TEXTO: un conjunto cerrado de promesas que el bot no puede
+    hacer aunque el cliente insista -dia exacto de entrega, retiro en local,
+    servicios fuera de la FAQ-. La deteccion es determinista; solo los turnos
+    que disparan pagan una llamada de reescritura. Si la reescritura no limpia,
+    se poda por codigo."""
+    if not texto or texto == settings.VERIFIKA_FALLBACK_MESSAGE:
+        return texto
+    try:
+        from app.core.guardia_promesas import (detectar, reescribir_sin_promesas,
+                                               cuarentena_prohibidas)
+        clases = detectar(texto)
+        if not clases:
+            return texto
+        log.warning("hub_atado_promesa_prohibida", trace_id=trace_id,
+                    clases=clases, respuesta_preview=texto[:200])
+        nueva = ""
+        try:
+            nueva = await reescribir_sin_promesas(texto, clases, trace_id)
+        except Exception as e:
+            log.warning("hub_atado_promesa_reescritura_error", trace_id=trace_id,
+                        error=str(e)[:120])
+        if nueva and not detectar(nueva):
+            return nueva
+        poda = cuarentena_prohibidas(nueva or texto)
+        if poda and not detectar(poda):
+            log.warning("hub_atado_promesa_cuarentena", trace_id=trace_id,
+                        clases=clases)
+            return poda
+        # TERCER ESCALON, el que faltaba. Si el mensaje ENTERO era la promesa
+        # -"te llega el martes sin falta"- la poda no deja nada en pie, y hasta
+        # recien eso devolvia el texto original CON la promesa adentro. Un turno
+        # soso es mucho mejor que prometerle al cliente un dia de entrega que no
+        # podemos cumplir. Mismo criterio que el escalon final de stock.
+        log.warning("hub_atado_promesa_bloqueada", trace_id=trace_id,
+                    clases=clases)
+        return settings.VERIFIKA_FALLBACK_MESSAGE
+    except Exception as e:
+        log.warning("hub_atado_promesa_error", trace_id=trace_id,
+                    error=str(e)[:150])
+    return texto
+
+
+async def _red_de_verificadores(texto: str, meta: dict, estado: dict, conv: dict,
+                                universo, interp, mensaje: str, tienda_id: str,
+                                trace_id: str) -> str:
+    """LA RED, en un solo lugar y en un solo orden.
+
+    Hasta el 29-jul el camino vivo corria UNA sola de estas: la de montos. Las
+    otras cinco estaban escritas y no las llamaba nadie -quedaron huerfanas al
+    pasar el orchestrator de `interprete_libre` al hub-, asi que en produccion
+    no habia nada mirando stock, numeros de politica, citas, exclusiones del
+    cliente, promesas prohibidas ni prosa.
+
+    El ORDEN no es casual, va de lo mas duro a lo mas blando y cada escalon
+    entrega su salida al siguiente:
+      1. montos      dato duro, determinista, corrige con la fuente
+      2. stock       dato duro, determinista + reescritura si hace falta
+      3. faq numerica  dato duro chico, determinista
+      4. intencion   estructura contra estructura, sin LLM
+      5. cita        candado del corpus, solo loguea
+      6. promesas    lista cerrada de lo que no se puede prometer
+      7. el JUEZ     lo blando, lo unico que necesita un modelo
+    Asi el juez recibe un texto con TODO el dato duro ya auditado y se ocupa
+    solo de lo que ninguna regla puede chequear. Ninguno rompe el turno: cada
+    uno degrada a devolver el texto que recibio.
+    """
+    if not texto or texto == settings.VERIFIKA_FALLBACK_MESSAGE:
+        return texto
+    try:
+        evidencia = _evidencia_del_texto(texto, meta, estado, tienda_id, trace_id)
+    except Exception as e:
+        log.warning("hub_atado_evidencia_error", trace_id=trace_id,
+                    error=str(e)[:150])
+        evidencia = []
+    texto = _verificar_montos(texto, evidencia, trace_id)
+    texto = await _verificar_stock(texto, evidencia, trace_id)
+    texto = _verificar_faq_numerica(texto, evidencia, meta, trace_id)
+    texto = _verificar_intencion(texto, meta, conv, interp, mensaje, tienda_id,
+                                 trace_id)
+    _verificar_cita(meta, texto, trace_id)
+    texto = await _guardia_promesas(texto, trace_id)
+    return await _fiscalizar_prosa(texto, meta, universo, interp, mensaje,
+                                   tienda_id, trace_id)
 
 
 def _evidencia_del_turno(meta: dict, universo, interp, mensaje, tienda_id,
@@ -452,16 +687,11 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     # Ahora que la FAQ y la venta las REDACTA el solver, el numero lo teje el LLM
     # y se chequea aca contra la evidencia del turno (antes se protegia solo por
     # el estampado). Determinista, conservador: corrige lo inequivoco.
-    texto = _verificar_montos(texto, meta, estado, tienda_id, trace_id)
-
-    # ── EL JUEZ: fiscal de la prosa que el codigo no puede chequear ─────
-    # Corre DESPUES del verificador de montos a proposito: los numeros ya estan
-    # auditados y estampados desde la fuente, asi el juez se ocupa solo de lo
-    # blando -criterio, comparacion, compatibilidad, uso- que es lo unico que
-    # hasta hoy salia sin que nada lo mirara. Antes del dedup y de la memoria,
+    # La red entera, en orden de dureza: montos, stock, FAQ numerica,
+    # intencion, cita, promesas y el juez. Antes del dedup y de la memoria,
     # para que lo que se guarda sea exactamente lo que se manda.
-    texto = await _fiscalizar_prosa(texto, meta, universo, interp, raw_message,
-                                    tienda_id, trace_id)
+    texto = await _red_de_verificadores(texto, meta, estado, conv, universo,
+                                        interp, raw_message, tienda_id, trace_id)
 
     # ── FILTRO ANTI-DUPLICADO (refuerzo final, determinista) ────────────
     # Ultima red antes de mandar y de guardar en memoria: saca cualquier

@@ -107,11 +107,58 @@ manteniendo el tono de venta. Y caza el caso de compatibilidad que no tiene dato
 duro cargado ("es compatible con cualquier notebook"). Latencia medida: 1,62 s
 promedio sobre 3 turnos.
 
-**LO QUE FALTA DE ESTE TRACK:** re-enchufar o borrar, modulo por modulo, el
-resto de las lineas huerfanas: `verificador_stock`, `verificador_cita`,
-`verificador_faq`, `guardia_promesas`, `verificador_intencion`, y decidir que se
-hace con la red de degradacion determinista (`selector` + `compositor` +
-`redactor`), hoy reemplazada por un mensaje de fallback enlatado.
+**LA RED ENTERA, ENCHUFADA (3a tanda del 29-jul) — `_red_de_verificadores`.**
+Los cinco verificadores que faltaban vuelven al camino vivo, en UN solo lugar y
+en un solo orden, de lo mas duro a lo mas blando, cada escalon entregando su
+salida al siguiente:
+
+  1. montos        dato duro, determinista
+  2. stock         determinista + reescritura + cuarentena + fallback
+  3. faq numerica  porcentajes, cuotas, plazos, garantia
+  4. intencion     estructura contra estructura, sin LLM
+  5. cita          candado del corpus jurado, solo loguea
+  6. promesas      lista cerrada de lo que no se puede prometer
+  7. el JUEZ       lo blando, lo unico que necesita un modelo
+
+La EVIDENCIA se arma UNA vez (`_evidencia_del_texto`) y se comparte. Antes vivia
+adentro del verificador de montos: cada verificador que se enchufaba la
+re-armaba, tres recorridas del catalogo por turno y tres versiones de "la
+verdad" que podian diferir.
+
+**DOS BUGS REALES QUE ESTO DESTAPO, los dos medidos, no supuestos:**
+
+1. **La maquinaria de reescritura estaba MUERTA en produccion.**
+   `guardia_promesas._get_client` colgaba de `agent._get_client`, que sigue el
+   flag `LLM_PROVIDER` -por default `openai`- mientras el camino vivo entero se
+   mudaba a Gemini. Con la clave de OpenAI vencida, la llamada tiraba 401. O sea
+   que la guardia de promesas y la de stock DETECTABAN bien y despues no podian
+   corregir nada. La raiz era la indireccion: `agent` es el solver viejo, que ya
+   no conduce ningun turno. Ahora se toma el cliente de quien SI redacta hoy,
+   `generador_v2._cliente_gemini`, asi no puede volver a divergir sin que se
+   rompa antes el camino principal.
+2. **Faltaba el escalon final en las dos guardias.** Si la reescritura moria y
+   la poda no dejaba nada en pie -porque el mensaje ENTERO era la mentira-, el
+   codigo devolvia el texto original CON la mentira adentro. Ahora las dos caen
+   al mensaje enlatado: un turno soso es mucho mejor que negar stock que existe
+   o prometer un dia de entrega que no podemos cumplir.
+
+**PROBADO VIVO** (catalogo real + Gemini): la cifra de stock inventada "quedan
+47" se corrige a 5; el faltante falso se reescribe a "tenemos disponible, nos
+quedan 5 unidades"; con el modelo caido a proposito, el faltante falso NO sale
+-cae al enlatado-; y las tres promesas prohibidas se limpian manteniendo el tono
+("te llega el martes" -> "en los proximos dias habiles, la fecha depende de la
+logistica"), incluido el CBU inventado, que se reemplaza por "te envio los datos
+de pago oficiales por este canal".
+
+Bateria: 744 verdes, 27 tests nuevos entre el juez y la red.
+
+**LO QUE FALTA DE ESTE TRACK:** decidir que se hace con lo que sigue huerfano y
+YA NO tiene destino en el camino vivo: `interprete_libre` (2236),
+`compositor` (704), `solver_gemini` (500), `selector` (241), `redactor` (193),
+`ruteo_venta` (281). Son ~4150 lineas de camino viejo. La regla de
+consolidacion dice borrarlas; el unico punto a resolver antes es la red de
+degradacion determinista (selector + compositor + redactor), hoy reemplazada por
+un mensaje de fallback enlatado cuando Gemini no contesta.
 
 ---
 
