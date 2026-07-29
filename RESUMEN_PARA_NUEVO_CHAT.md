@@ -4,6 +4,82 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 29-jul-2026 (tarde) — LA TABLA DE COMPATIBILIDAD + DOS BUGS REALES ====**
+
+Rama: `claude/system-verification-csv-table-jjal0l`. Orden de Martin: verificar
+el sistema, cargar la tabla de compatibilidades y despues arrancar las pruebas.
+Bateria: **666 verdes** (eran 630), 36 tests nuevos.
+
+**BUG 1, EL PEOR: TELEGRAM ESTABA MUERTO.** El barrido de codigo muerto de la
+manana (commit a0cd2f9) borro `_process_and_reply_telegram` y dejo el webhook
+llamandolo igual: cualquier mensaje por Telegram tiraba NameError y el cliente
+no recibia NADA. No se noto porque el canal vivo es WhatsApp, y 630 tests en
+verde no lo vieron porque nadie testeaba el webhook. Restaurada la funcion tal
+cual estaba, mas `tests/test_webhooks_definidos.py`, un candado que recorre
+`app/main.py` y falla si se referencia un nombre que no existe. Probado: con la
+funcion borrada a proposito, el test se cae.
+
+**BUG 2: 57 FICHAS LE MENTIAN AL CLIENTE, Y NO POR EL MODELO.** El catalogo trae
+`caracteristicas_extra` como PLANTILLA por categoria: las 15 fuentes dicen
+"550W", las 15 motherboards "DDR4", las 18 placas de video "8GB GDDR6", los 14
+coolers "aire", los 24 monitores "75Hz". O sea que la Corsair RM850e le decia
+550 al cliente y la B650 con ranuras DDR5 le decia DDR4, contradiciendo a la
+planilla curada del propio repo. Esa prosa viaja al cliente por el campo
+`caracteristicas` de la ficha Y al prompt del solver: el sistema entero razonaba
+sobre un dato falso, y ningun verificador lo miraba porque no es plata.
+Arreglado en `fuente_producto.purgar_prosa_contradicha`, en la puerta de
+ingesta: si el EXTRACTOR de una spec saca de la prosa un valor distinto al de
+`specs_por_modelo.csv`, se borra ese valor. Manda la planilla, igual que en
+`_completar_capas`. **No se toco `productos.csv`.**
+  - Usa el extractor de cada spec, no la unidad suelta: los 128GB de
+    almacenamiento de una tablet chocaban contra los 4GB de RAM de la planilla
+    -misma unidad, otro dato- y borraban un valor correcto. Medido: con la
+    unidad suelta purgaba 84 productos, 27 de ellos mal; con el extractor, 57 y
+    ninguno mal.
+  - Borra el VALOR, no el segmento: "IPS Full HD 75Hz" con los hercios mentidos
+    queda "IPS Full HD", que es cierto. Purgar de mas tambien es perder dato.
+  - Los pares que no son numeros (aire contra liquida) viven en
+    `specs_preguntables.json`, campo nuevo `excluyentes`. Sumar uno es editar el
+    json.
+  - Se CARGO el dato que faltaba para poder comparar: `potencia` de las 15
+    fuentes y la columna nueva `memoria_video` de las 18 placas, en
+    `specs_por_modelo.csv`. 33 celdas.
+
+**LA TABLA DE COMPATIBILIDAD (lo que pidio Martin).** Era el ultimo eje grande
+que el sistema contestaba SIN dato: el criterio jurado dice "se responde con la
+ficha", pero la ficha no traia ni conector, ni zocalo, ni sistema, asi que el
+modelo razonaba de memoria. De ahi salio la alucinacion que cazo el juez, "es
+compatible con cualquier notebook", dicha sobre una RAM de escritorio.
+
+  - `data/clientes/verifika_prod/compatibilidad.csv` — **482 modelos, uno por
+    fila**, con 5 campos: `conecta_por`, `plataformas`, `requiere`, `provee`,
+    `no_compatible`, mas una nota de vendedor. 469 con dato; las 13 sillas solo
+    llevan nota, no se enchufan a nada.
+  - `compatibilidad_vocabulario.json` — la lista CERRADA (12 plataformas, 22
+    conectores con FAMILIA, alias de como lo dice el cliente). Sumar un equipo
+    es editar el json.
+  - `app/core/compatibilidad.py` — tres veredictos de primera clase, como el
+    certificador: `compatible`, `incompatible`, `sin_dato`. `sin_dato` NO es
+    error: es el honesto, y es lo que impide que el hueco lo llene el modelo.
+    `evaluar(prod, plataforma)` para "¿anda con lo que yo tengo?" y
+    `evaluar_par(a, b)` para "¿este va con este otro?", que cruza REQUIERE
+    contra PROVEE. **La regla de incompatible es por FAMILIA**: misma familia,
+    valores distintos, no entra. Sin eso habria que cargar 482x482 pares.
+  - Enchufado al camino VIVO, en los cinco lugares: la fuente lo estampa en
+    `prod["compat"]` al ingerir y al leer (880 de 880 productos lo traen); el
+    fragmento `ficha` tiene campo nuevo `compatibilidad`; el prompt del solver
+    lleva el veredicto YA RESUELTO; el interprete declara
+    `plataformas_cliente` atado al enum del vocabulario; y el hub ESTAMPA el
+    NO (`hub_atado._compat`, al lado de la honestidad de specs).
+  - `scripts/planilla_compatibilidad.py` genera la tabla y **no pisa lo cargado
+    a mano**, igual que `planilla_specs.py`.
+  - Probado de punta a punta sobre el catalogo real: "esta memoria sirve para mi
+    notebook?" con el solver diciendo que si -> sale el NO de la fuente.
+
+**PENDIENTE, y es lo que sigue:** las pruebas. Martin las quiere en dos tandas,
+primero INTERPRETACION al maximo y recien despues lo determinista. Nada de esto
+se probo VIVO contra Gemini todavia: los 36 tests nuevos son offline.
+
 **==== 29-jul-2026 — AUDITORIA DE ALCANCE + INTERPRETACION: EL RECALL DEL
 INTERPRETE ====**
 

@@ -679,10 +679,13 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     # pregunto una spec que la ficha NO trae, el CODIGO saca la afirmacion del
     # modelo y estampa "la ficha no lo especifica". El producto en cuestion sale
     # del que el interprete resolvio o del unico mostrado este turno.
+    # se inicializan FUERA del try: los relee el estampado de compatibilidad de
+    # abajo, y si el bloque de specs cortara antes de asignarlos quedarian sin
+    # definir y se llevarian puesto el turno entero.
+    _prod_spec, _variantes = None, []
     try:
         from app.core.generador_v2 import estampar_honestidad_specs
         from app.core.pedido_helpers import certificar_producto
-        _prod_spec, _variantes = None, []
         # el FOCO del turno: lo que el interprete resolvio o lo que el cliente
         # pregunto. Antes solo servia un producto UNICO y, como el catalogo
         # tiene variantes de color y de CPU, casi nunca habia uno solo: el
@@ -723,6 +726,41 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     except Exception as e:
         log.warning("hub_atado_spec_error", trace_id=trace_id,
                     error=str(e)[:120])
+
+    # ── HONESTIDAD DE COMPATIBILIDAD (fuente compatibilidad.csv). Mismo lugar y
+    # mismo mecanismo que la spec, porque es el mismo problema: el cliente
+    # pregunta si algo le sirve para SU equipo y hasta hoy eso lo contestaba el
+    # modelo de memoria. Ahora la tabla dice con que anda cada modelo, el
+    # interprete declara que equipo tiene el cliente -atado al enum del
+    # vocabulario- y el CODIGO estampa el NO cuando la fuente dice que no entra.
+    # El caso que lo pario: "es compatible con cualquier notebook", dicho sobre
+    # una memoria RAM de escritorio, que en una notebook no entra.
+    try:
+        from app.core.compatibilidad import (estampar_veredicto,
+                                             plataformas_de_interp,
+                                             plataformas_del_mensaje)
+        _plats = (plataformas_de_interp(interp)
+                  or plataformas_del_mensaje(raw_message, tienda_id))
+        if _plats:
+            # los productos del turno: el foco resuelto y sus variantes, mas lo
+            # que se mostro. Son los unicos sobre los que se puede juzgar.
+            _prods_compat = list(_variantes or [])
+            if isinstance(_prod_spec, dict) and _prod_spec not in _prods_compat:
+                _prods_compat.append(_prod_spec)
+            for _p in (universo or [])[:8]:
+                if isinstance(_p, dict) and _p not in _prods_compat:
+                    _prods_compat.append(_p)
+            texto, _ev_compat = estampar_veredicto(texto, _prods_compat, _plats,
+                                                   tienda_id)
+            if _ev_compat:
+                log.warning("hub_atado_compat_negada", trace_id=trace_id,
+                            casos=_ev_compat[:6], plataformas=_plats[:3])
+            else:
+                log.info("hub_atado_compat", trace_id=trace_id,
+                         plataformas=_plats[:3])
+    except Exception as e:
+        log.warning("hub_atado_compat_error", trace_id=trace_id,
+                    error=f"{type(e).__name__}: {str(e)[:120]}")
 
     # ── El dato ya lo estampo renderizar desde la fuente. Aca solo se leen el
     # presupuesto y los productos mostrados para el cierre y la memoria; NO se

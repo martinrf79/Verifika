@@ -41,7 +41,12 @@ CAMPOS_FICHA = ["procedencia", "garantia", "material", "descripcion",
                 # 28-jul: la ficha no llegaba al mapa `specs` de la fuente, asi
                 # que thunderbolt, lector de huella, hercios o puertos no tenian
                 # por donde salir aunque estuvieran cargados.
-                "specs"]
+                "specs",
+                # 29-jul: con QUE anda. Era el unico eje grande que no tenia
+                # dato y lo contestaba el modelo de memoria (de ahi salio "es
+                # compatible con cualquier notebook" sobre una RAM de
+                # escritorio). Lo estampa el codigo desde compatibilidad.csv.
+                "compatibilidad"]
 
 def _criterios_del_turno(mensaje, universo=None, interp=None):
     """El enum del fragmento criterio para ESTE turno: (ids jurados relevantes,
@@ -598,6 +603,19 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
                     + "\n".join(lineas))
     except Exception as e:
         log.warning("generador_v2_ficha_prompt_error", error=str(e)[:120])
+    # COMPATIBILIDAD del turno: la fila de la tabla de cada producto del universo
+    # mas el veredicto YA RESUELTO contra los equipos que declaro el cliente. Va
+    # al prompt para que el modelo REDACTE desde el dato en vez de deducirlo; el
+    # veredicto que sale al cliente igual lo estampa el codigo en el hub.
+    compat_txt = ""
+    try:
+        from app.core.compatibilidad import (bloque_prompt,
+                                             plataformas_de_interp,
+                                             plataformas_del_mensaje)
+        _plats = plataformas_de_interp(interp) or plataformas_del_mensaje(mensaje)
+        compat_txt = bloque_prompt(universo, _plats)
+    except Exception as e:
+        log.warning("generador_v2_compat_prompt_error", error=str(e)[:120])
     prefs = prefs if isinstance(prefs, dict) else {}
     pref_lineas = []
     if prefs.get("tope_presupuesto"):
@@ -688,11 +706,14 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
         "armado.\n"
         "- ficha: datos reales de un producto -> producto_id + campos "
         "(procedencia/garantia/material/descripcion/caracteristicas/medidas/"
-        "contenido_caja/uso). ES EL FRAGMENTO PARA CONTESTAR UNA SPEC: si el "
-        "cliente pregunta cuanto pesa, cuanta memoria o disco tiene, que trae, "
-        "de que material es o para que sirve, va ficha con ese producto_id y "
-        "los campos que lo respondan; el sistema estampa el dato de la fuente. "
-        "NO escribas vos la spec en prosa.\n"
+        "contenido_caja/uso/compatibilidad). ES EL FRAGMENTO PARA CONTESTAR UNA "
+        "SPEC: si el cliente pregunta cuanto pesa, cuanta memoria o disco tiene, "
+        "que trae, de que material es o para que sirve, va ficha con ese "
+        "producto_id y los campos que lo respondan; el sistema estampa el dato "
+        "de la fuente. TAMBIEN es el fragmento de la COMPATIBILIDAD: si pregunta "
+        "si algo le sirve para su equipo, si se conecta, si anda con la Mac o "
+        "con la consola, va ficha con el campo compatibilidad, NUNCA tu opinion "
+        "en prosa. NO escribas vos la spec en prosa.\n"
         "- faq: politica de la tienda (envio, pago, garantia, factura, IVA, "
         "cuotas, seguimiento, etc). REDACTA VOS la respuesta en el campo texto, "
         "en tu voz, con el contexto de la charla, apoyandote en el bloque de FAQ "
@@ -713,7 +734,7 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
            f"literal; los numeros salen de aca):\n{faq_menu}\n" if faq_menu else "")
         + f"CRITERIO jurado para apoyarte (para el fragmento criterio: adapta "
         f"esto a tu frase y cita el id entre corchetes):\n{criterios_menu}\n"
-        f"{car_txt}{dest_txt}{vis_txt}{res_txt}{prefs_txt}{ficha_txt}\n\n"
+        f"{car_txt}{dest_txt}{vis_txt}{res_txt}{prefs_txt}{ficha_txt}{compat_txt}\n\n"
         + (f"\n\nPRESUPUESTO YA ARMADO por el sistema (ponelo con un "
            f"fragmento tipo 'presupuesto'):\n{presupuesto_pre}" if presupuesto_pre else "")
         + (("\n\nOBLIGATORIO — respuestas_por_categoria: DEBÉS escribir un texto "
@@ -944,6 +965,9 @@ def _campo_ficha(prod, campo):
             nombre = re.sub(r"^(?:el|la|los|las|si)\s+", "", etq.get(sid, sid))
             partes.append(f"{nombre}: {valor}")
         return ". ".join(partes[:8])
+    if campo == "compatibilidad":
+        from app.core.compatibilidad import bloque_ficha
+        return bloque_ficha(prod)
     if campo == "uso":
         v = str(prod.get("uso_recomendado") or "").strip()
         return ("Recomendado para " + v) if v else ""

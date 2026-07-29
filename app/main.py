@@ -210,6 +210,50 @@ async def diag_latencia(request: Request):
     return out
 
 
+async def _process_and_reply_telegram(chat_id: str, text: str):
+    """Un turno por Telegram. Se BORRO por error en el barrido de codigo muerto
+    del 29-jul (commit a0cd2f9) y el webhook quedo llamando a un nombre que ya no
+    existia: cualquier mensaje por Telegram tiraba NameError y el cliente no
+    recibia nada. No se noto porque el canal vivo es WhatsApp. Restaurado tal
+    cual estaba."""
+    try:
+        connector = get_telegram_connector()
+
+        if text.startswith("__AUDIO__:"):
+            file_id = text.split(":", 1)[1]
+            log.info("telegram_audio_received", chat_id=chat_id, file_id=file_id)
+            audio_bytes = await connector.download_file(file_id)
+            if not audio_bytes:
+                await connector.send_message(
+                    chat_id, "No pude descargar el audio, mandalo de nuevo por favor.")
+                return
+            from app.core.transcriber import transcribir_audio
+            text = transcribir_audio(audio_bytes)
+            if not text:
+                await connector.send_message(
+                    chat_id, "No pude entender el audio, podes escribirlo o mandarlo de nuevo?")
+                return
+            log.info("telegram_audio_transcribed", chat_id=chat_id, chars=len(text))
+
+        # Telegram solo soporta tienda default (no hay multi-tenant nativo)
+        response = await process_message(chat_id, text, canal="telegram")
+        await connector.send_message(chat_id, response)
+    except Exception as e:
+        log.error("telegram_processing_error", error=str(e), chat_id=chat_id)
+        if SENTRY_DSN:
+            import sentry_sdk
+            sentry_sdk.capture_exception(e)
+        # Mismo criterio que WhatsApp: no dejar al cliente sin respuesta ante un
+        # blip transitorio del LLM. Envio en su propio try.
+        try:
+            await get_telegram_connector().send_message(
+                chat_id,
+                "Perdón, estoy con mucha demanda en este momento. "
+                "Probá de nuevo en un ratito y te respondo. 🙏")
+        except Exception:
+            pass
+
+
 @app.post("/webhook/telegram")
 async def telegram_webhook(request: Request, background: BackgroundTasks):
     payload = await request.json()
