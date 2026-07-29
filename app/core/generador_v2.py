@@ -970,44 +970,8 @@ _SPECS_FALLBACK = [
 _SPECS_CACHE = None
 
 
-def _specs_preguntables():
-    """[(regex de la PREGUNTA, etiqueta, regex de la FICHA)] desde el config,
-    cacheado; fallback al codigo. La forma de PREGUNTAR una spec y la forma en
-    que la ficha la ESCRIBE no son la misma: el cliente dice 'espacio de disco'
-    y la ficha dice '128GB'. Por eso una entrada puede traer claves_ficha; si no
-    las trae, se busca con las mismas claves (comportamiento previo). El match
-    en la ficha es por substring -'gb' tiene que pescar dentro de '128GB'-."""
-    global _SPECS_CACHE
-    if _SPECS_CACHE is not None:
-        return _SPECS_CACHE
-    entradas = None
-    try:
-        import json
-        import os
-        ruta = os.path.join(os.path.dirname(__file__), "..", "..", "data",
-                            "clientes", "verifika_prod", "specs_preguntables.json")
-        with open(ruta, encoding="utf-8") as f:
-            data = json.load(f)
-        entradas = [(s.get("claves") or [], s.get("etiqueta") or "",
-                     s.get("claves_ficha") or [])
-                    for s in (data.get("specs") or []) if s.get("etiqueta")]
-    except Exception:
-        entradas = None
-    compiladas = []
-    for entrada in (entradas or _SPECS_FALLBACK):
-        claves, etiqueta = entrada[0], entrada[1]
-        claves_ficha = entrada[2] if len(entrada) > 2 else []
-        cl = [_norm(c) for c in claves if c]
-        pat = "|".join(r"\b" + re.escape(c) + r"\b" for c in cl)
-        if not (pat and etiqueta):
-            continue
-        cf = [_norm(c) for c in claves_ficha if c]
-        rx_ficha = (re.compile("|".join(re.escape(c) for c in cf))
-                    if cf else re.compile(pat))
-        compiladas.append((re.compile(pat), etiqueta, rx_ficha))
-    _SPECS_CACHE = compiladas
-    return _SPECS_CACHE
-
+# _specs_preguntables se borro: duplicaba el cache de fuente_producto.specs_config,
+# que es la fuente unica de las specs preguntables. Nadie la llamaba.
 
 def _specs_del_turno(mensaje, prod, variantes=None, declaradas=None):
     """(respondidas, faltantes) de las specs que el cliente PREGUNTO este turno.

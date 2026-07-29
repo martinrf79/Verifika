@@ -31,12 +31,3 @@ def get_current_tienda() -> str:
         return tid
     return _settings.TIENDA_ID
 
-
-def set_current_destino(categoria: str | None):
-    """Setea la categoria de destino del request (caba_gba | interior | None)."""
-    _current_destino.set(categoria)
-
-
-def get_current_destino() -> str | None:
-    """Devuelve la categoria de destino actual, o None si no se resolvio."""
-    return _current_destino.get()

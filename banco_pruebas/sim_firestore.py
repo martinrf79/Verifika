@@ -143,9 +143,6 @@ def install():
     def reset_conversation(user_id, tienda_id=None):
         _CONV.pop((tienda_id, user_id), None)
 
-    def log_message(*a, **k):
-        return None
-
     def already_processed(message_id):
         return False
 
@@ -157,7 +154,7 @@ def install():
         "get_categories": get_categories, "get_all_faq": get_all_faq,
         "get_config": get_config, "set_config": set_config,
         "get_conversation": get_conversation, "save_conversation": save_conversation,
-        "reset_conversation": reset_conversation, "log_message": log_message,
+        "reset_conversation": reset_conversation,
         "already_processed": already_processed, "invalidate_cache": invalidate_cache,
     }
     for nombre, fn in _patches.items():
@@ -168,24 +165,16 @@ def install():
     import app.core.tools as tools
     for n in ("get_all_products", "get_product_by_id", "get_categories", "get_all_faq"):
         setattr(tools, n, _patches[n])
-    import app.storage.search as search
-    search.get_all_products = get_all_products
     import app.core.evidencia as evidencia
     evidencia.get_all_faq = get_all_faq
-    import app.core.interprete_libre as il
-    for n in ("get_conversation", "save_conversation", "reset_conversation", "get_config"):
-        setattr(il, n, _patches[n])
-    # hub_atado es el camino VIVO y tambien importa los nombres arriba: hasta hoy
-    # solo funcionaba de casualidad, porque el banco lo importa DESPUES de
-    # install(). Un test que lo importe antes (o el orchestrator, que lo trae al
-    # colectar) quedaba clavado al Firestore real.
-    try:
-        import app.core.hub_atado as ha
-        for n in ("get_conversation", "save_conversation", "get_config",
-                  "get_product_by_id"):
-            setattr(ha, n, _patches[n])
-    except Exception:
-        pass
+    # hub_atado es el camino VIVO y tambien importa los nombres arriba. Antes de
+    # este parche solo funcionaba de casualidad, porque el banco lo importaba
+    # DESPUES de install(); un test que lo importe antes -o el orchestrator, que
+    # lo trae al colectar- quedaba clavado al Firestore real.
+    import app.core.hub_atado as ha
+    for n in ("get_conversation", "save_conversation", "get_config",
+              "get_product_by_id"):
+        setattr(ha, n, _patches[n])
     # guia_compra tambien importa los nombres arriba: si alguien lo importo
     # ANTES de install() (un test que lo importa a nivel de modulo), quedaba
     # clavado al Firestore real y media bateria caia con DefaultCredentials.
@@ -258,11 +247,9 @@ def install():
     leads.crear_lead = crear_lead
     leads.actualizar_lead = actualizar_lead
     leads.notificar_lead = notificar_lead
-    # interprete_libre importo estos nombres arriba: reenganche al doble y al
-    # camino REAL del cierre.
-    il.get_lead_activo = get_lead_activo
-    il.descartar_leads_activos = descartar_leads_activos
-    il.procesar_mensaje_para_lead = leads.procesar_mensaje_para_lead
+    # hub_atado importa `procesar_mensaje_para_lead` arriba: reenganche al doble
+    # para que el cierre corra su camino REAL contra los leads en RAM.
+    ha.procesar_mensaje_para_lead = leads.procesar_mensaje_para_lead
 
     return {"productos": len(productos), "faq": len(faq),
             "leads_ram": _leads_ram, "avisos": _avisos}

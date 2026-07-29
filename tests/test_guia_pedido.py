@@ -171,10 +171,10 @@ def test_opciones_por_categoria_son_reales_y_con_stock(firestore_doble):
 
 
 def test_guarda_reemplaza_presupuesto_inventado(firestore_doble):
-    from app.core.interprete_libre import _forzar_opciones_si_presupuesto
+    from app.core.guardas_salida import forzar_opciones_si_presupuesto
     r = ("Aqui tienes el presupuesto detallado:\n"
          "- 1x Notebook HP: $693.000\nTotal: $2.179.500")
-    out = _forzar_opciones_si_presupuesto(
+    out = forzar_opciones_si_presupuesto(
         r, [(4, "notebook"), (3, "teclado"), (5, "mouse")], "verifika_prod")
     assert out is not None
     assert "modelos" in out.lower() or "modelo" in out.lower()
@@ -183,9 +183,9 @@ def test_guarda_reemplaza_presupuesto_inventado(firestore_doble):
 
 
 def test_guarda_no_toca_respuesta_sin_presupuesto(firestore_doble):
-    from app.core.interprete_libre import _forzar_opciones_si_presupuesto
+    from app.core.guardas_salida import forzar_opciones_si_presupuesto
     r = "Te muestro opciones de notebooks para que elijas modelos."
-    assert _forzar_opciones_si_presupuesto(
+    assert forzar_opciones_si_presupuesto(
         r, [(4, "notebook")], "verifika_prod") is None
 
 

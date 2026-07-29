@@ -27,10 +27,13 @@ ironía, cambios de decisión o pedidos enredados.
 
 - **Módulos vivos:** `interpretador.py` (una llamada LLM con salida estructurada
   atada por enum: intención, producto, pedido, criterio, destino) y
-  `interprete_libre.py` (orquesta el turno entero).
-- **Estado:** sólido. Bancos de interpretación 29/29 en casos sueltos y 23/23
-  en multiturno con Gemini.
-- **Ladrillos que faltan:** nada grande; está afinado.
+  `recall_modelos.py` (qué modelos del catálogo PUEDE nombrar el intérprete).
+- **Estado:** sólido y MEDIDO. `banco_recall_modelos.py`, 1552 casos sobre el
+  catálogo real: recall@30 100%, recall@5 87,6%.
+- **Ojo con el recall, que es el techo de esta capa:** el enum de
+  `producto_resuelto` no lleva los 482 modelos, lleva los que recupera la etapa
+  1. Lo que no entra ahí, el intérprete no lo puede nombrar aunque lo haya
+  entendido perfecto.
 
 ## Capa 2 — Recuperación y grounding
 
@@ -44,27 +47,28 @@ modelo. Es la capa anti-alucinación por construcción.
   su id, y `texto_de()` para chequear la cita.
 - **Estado:** dato duro completo. Prosa: corpus recién ampliado, groundeado al
   catálogo real, con recuperación top-K andando.
-- **Ladrillo HECHO (15-jul):** la CITA. El solver declara en `meta['prosa_citada']`
-  los ids de los chunks de prosa que consultó (`solver_gemini._prosa_citada`);
-  determinista, los ids salen del resultado de `consultar_guia_venta`. Es el
-  "Citador" de la Capa A aplicado a la prosa.
+- **La CITA.** Cuando `renderizar` emite un fragmento de criterio, deja el
+  bloque jurado que lo respalda en `meta['tools_called']`; de ahí la deriva
+  `verificador_cita.citas_de_meta`. Determinista: los ids salen del propio
+  corpus, nunca del modelo. Es el "Citador" de la Capa A aplicado a la prosa.
 
 ## Capa 3 — Orquestación
 
 Decide, en cada turno, si responde, repregunta o dispara un flujo, y compone la
 respuesta uniendo dato duro y prosa.
 
-- **Módulo vivo primario:** `solver_gemini.py` — el modelo llama las tools, el
-  código las ejecuta contra la fuente, y compone. Conduce el caso general.
-- **Red de degradación determinista:** `selector.py`, `compositor.py`,
-  `redactor.py` — si el solver falla, el código arma la respuesta sin él. El
-  peor caso es un mensaje soso, nunca un dato falso.
+- **Módulo vivo primario:** `generador_v2.py` — el modelo emite FRAGMENTOS
+  atados a enums del universo del turno y el código estampa cada dato desde la
+  fuente. Conduce el caso general.
+- **Si el modelo falla:** sale el mensaje de fallback enlatado. La red de
+  degradación determinista (`selector` + `compositor` + `redactor`) se BORRÓ el
+  29-jul: llevaba desde el corte al hub sin que la llamara nadie, y una segunda
+  maquinaria de composición en paralelo es la clase de camino doble que costó
+  los 70 flags. Si un día el modelo se cae seguido, se ataca con reintento.
 - **Estado y memoria:** `estado_venta.py`, `memoria_larga.py`, `guia_pedido.py`,
-  `ruteo_venta.py`, `cierre.py`.
-- **Estado:** vivo y deployado. El solver es primario salvo el pedido ya sellado
-  por la calculadora.
-- **Ladrillos que faltan:** medir en el tier gratis que el modelo obedece:
-  llamado de tools consistente y memoria de contexto en turnos largos.
+  `cierre.py`.
+- **Estado:** vivo y deployado. `hub_atado.py` conduce el turno entero y es el
+  ÚNICO camino: el orchestrator entra ahí y no hay otro.
 
 ## Capa 4 — Acción y guardrails
 
@@ -73,28 +77,37 @@ las capas. Es el diferencial de Verifika.
 
 - **Acción:** `calculate_total` que sella, carrito, `pago.py`, `pago_split.py`,
   `envio.py`, `entrega.py`, `leads.py`, `notificador.py`, `posventa.py`.
-- **Guardrails de salida:** `verificador.py` para la plata, `verificador_stock.py`,
-  `verificador_faq.py`, `guardia_promesas.py`, `antijailbreak.py`,
-  `calc_defensiva.py`.
+- **Guardrails de salida:** todos en `hub_atado._red_de_verificadores`, en un
+  solo orden, de lo más duro a lo más blando: montos (`verificador.py`), stock
+  (`verificador_stock.py`), FAQ numérica (`verificador_faq.py`), intención
+  (`verificador_intencion.py`), cita (`verificador_cita.py`), promesas
+  (`guardia_promesas.py`) y el LLM juez (`checker_afirmaciones.py`). Después
+  las guardas deterministas de `guardas_salida.py`. Más `antijailbreak.py` a la
+  entrada y `calc_defensiva.py` en la calculadora.
 - **Observabilidad y evaluación:** logs con `trace_id`, `tests/` y `banco_pruebas/`.
 - **Estado:** robusto. La red de verificadores es lo que más te distingue.
-- **Ladrillo HECHO (15-jul):** el verificador de cita de la prosa
-  (`verificador_cita.py`): resuelve cada id citado con `texto_de(id)` y marca el
-  que no exista; cableado vivo en `interprete_libre` como red tras el solver,
-  loguea `interprete_libre_cita_prosa`. **Falta** decidir qué filtros de prosa se
-  aflojan según la regla de las dos mitades (mejora determinista pendiente).
+- **El verificador de cita** resuelve cada id citado con `texto_de(id)` y marca
+  el que no exista; loguea `hub_atado_cita_prosa`.
 
 ---
 
 ## Resumen de dónde estamos
 
-Las cuatro capas existen y corren en producción. Lo que separaba a Verifika de un
-bot profesional eran tres ladrillos concretos; los dos primeros ya están HECHOS
-(15-jul):
+Las cuatro capas existen y corren en producción, y desde el 29-jul TODO lo que
+está escrito corre: la auditoría de alcance (partir de `app.main` y seguir los
+imports, también los que están dentro de funciones) da CERO módulos huérfanos.
 
-1. La cita sobre la prosa recuperada, capa 2. HECHO (`meta['prosa_citada']`).
-2. El verificador de esa cita, capa 4. HECHO (`verificador_cita.py`, vivo).
-3. Una suite de evaluación que no deje pasar regresiones, capa 4, ya a medias.
+Cómo se llegó a eso, que es la lección que este documento tiene que conservar:
+el 29-jul esa misma auditoría daba **5.429 líneas que no alcanzaba nadie**. Al
+pasar el orchestrator de `interprete_libre` al hub, todo lo que colgaba del
+camino viejo se cayó con él —el LLM juez, cinco verificadores, cinco guardas—
+y siguió meses con sus tests en verde, probando código muerto. Este documento
+mismo daba por viva la red de degradación determinista, que no lo estaba.
 
-El corpus de prosa jurado, base de la capa 2 para la venta, ya está cargado; la
-prosa queda ATADA a la fuente por la cita, igual que el número por la tool.
+**Verde sobre código muerto es peor que rojo: da confianza falsa.** Por eso hoy
+cada pieza tiene un test que exige que el hub la LLAME, no solo que funcione.
+
+Lo que falta ya no es código nuestro, son DATOS de la tienda: las relaciones de
+compatibilidad producto por producto, y los datos reales de cobro. Mientras no
+estén, la compatibilidad es opinión y hay que decirlo así, no venderla como
+verificada.

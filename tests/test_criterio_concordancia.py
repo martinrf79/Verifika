@@ -6,12 +6,11 @@ LLM si (campo 'criterio' del schema). concordancia_criterio los cruza:
   - ambos coinciden -> 'actuar'    (se arma el total sin preguntar)
   - solo uno lo ve  -> 'confirmar' (pregunta corta '¿los mas baratos?')
   - ninguno         -> ''          (no es turno de criterio)
-Y _es_afirmacion_barato resuelve la confirmacion del turno siguiente. Logica
+Logica
 pura, sin LLM.
 """
 from app.core.estado_venta import (detectar_criterio, criterio_del_interprete,
-                                    concordancia_criterio)
-from app.core.interprete_libre import _es_afirmacion_barato
+                                    concordancia_criterio, criterio_llm)
 
 
 def test_regex_no_entiende_eco():
@@ -48,27 +47,6 @@ def test_solo_codigo_confirmar():
 def test_ninguno_vacio():
     assert concordancia_criterio("quiero un mouse", {"criterio": None}) == ""
     assert concordancia_criterio("hola", {}) == ""
-
-
-def test_afirmacion_confirma_barato():
-    assert _es_afirmacion_barato("si dale", {}) is True
-    assert _es_afirmacion_barato("eso", {}) is True
-    assert _es_afirmacion_barato("los mas baratos", {}) is True
-    # el LLM re-lee el criterio en la respuesta: tambien cuenta.
-    assert _es_afirmacion_barato("ponele", {"criterio": "mas_barato"}) is True
-
-
-def test_negacion_cancela_barato():
-    assert _es_afirmacion_barato("no, mejor los mejores", {}) is False
-    assert _es_afirmacion_barato("no gracias", {}) is False
-    # una negacion explicita manda sobre el criterio que lea el LLM.
-    assert _es_afirmacion_barato("no", {"criterio": "mas_barato"}) is False
-
-
-# --- Criterio INTERMEDIO (11-jul, caso real del banco: "economicos pero no
-# lo mas barato que haya" armaba los MAS baratos, lo contrario de lo pedido) ---
-
-from app.core.estado_venta import criterio_llm
 
 
 def test_detectar_intermedio_gana_sobre_barato():
@@ -117,3 +95,9 @@ def test_intermedio_con_stock_elige_el_del_medio(firestore_doble):
     # de mouse tiene mas de dos precios distintos).
     assert medio["precio_ars"] >= barato["precio_ars"]
     assert medio["id"] != barato["id"]
+
+
+# La confirmacion del criterio por regex (_es_afirmacion_barato) se BORRO con el
+# camino viejo: el interprete ya devuelve `criterio` atado a enum leyendo el turno
+# entero, y `concordancia_criterio` de arriba cruza las dos lecturas. Una regla de
+# texto adivinando 'si'/'dale' competia con una atadura estructural que ya acierta.

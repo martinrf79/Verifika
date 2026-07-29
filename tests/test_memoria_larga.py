@@ -34,10 +34,14 @@ def test_actualizar_sin_descartados_devuelve_el_previo():
 
 def test_fallo_del_llm_cae_a_la_red_determinista(monkeypatch):
     # Sin proveedor real: el cliente explota y el resumen sale igual (red).
-    import app.core.agent as agent
+    # El cliente es el del solver VIVO. Colgaba de `agent`, que seguia el flag
+    # LLM_PROVIDER -openai por default- mientras el camino vivo es Gemini: con
+    # la clave vencida el resumen NUNCA se actualizaba, en silencio, y este
+    # test pasaba igual porque solo probaba la red de abajo.
+    import app.core.generador_v2 as G
     def _boom():
         raise RuntimeError("sin LLM en offline")
-    monkeypatch.setattr(agent, "_get_client", _boom)
+    monkeypatch.setattr(G, "_cliente_gemini", _boom)
     r = asyncio.run(actualizar_resumen("ya hablado", [
         {"role": "user", "content": "mi direccion es Falsa 123, Cordoba"}]))
     assert "ya hablado" in r

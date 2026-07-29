@@ -412,11 +412,6 @@ def llm_complete(
     return result
 
 
-def get_role_config(role: str) -> dict:
-    """Inspección: qué modelo está usando cada rol."""
-    return _ROLE_CONFIG.get(role, {}).copy()
-
-
 def list_roles_config() -> dict:
     """Inspección: configuración completa."""
     return {role: cfg.copy() for role, cfg in _ROLE_CONFIG.items()}

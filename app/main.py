@@ -134,137 +134,80 @@ async def health_tienda(tienda_id: str, request: Request):
 @app.post("/admin/diag-latencia")
 async def diag_latencia(request: Request):
     """
-    Botón de diagnóstico: mide una llamada PELADA al modelo desde adentro de
-    Cloud Run, sin tools y sin historial, para aislar la causa de la demora.
-    - minima_1 / minima_2: llamada mínima. Es el tiempo puro de red + arranque
-      del proveedor desde Cloud Run. Si da 1-2s, la red está bien y la demora
-      es la cantidad de llamadas/capas del flujo. Si da ~7s, es el entorno/red.
-    - con_tools: misma llamada pero mandando el esquema de herramientas, para
-      ver si las tools por sí solas agregan tiempo.
-    No toca el flujo del bot. Requiere X-Admin-Token.
+    Boton de diagnostico: mide llamadas PELADAS al modelo desde adentro de Cloud
+    Run para aislar de donde sale la demora de un turno. No toca el flujo del
+    bot. Requiere X-Admin-Token.
+
+    Mide la forma REAL del camino vivo, que es salida estructurada con un
+    responseSchema, no tool calling. Antes media el solver viejo -tools,
+    tool_choice required, system prompt grande- y encima con el cliente de
+    `agent`, que sigue el flag LLM_PROVIDER: con LLM_PROVIDER=openai y la clave
+    vencida, este diagnostico devolvia 401 mientras el bot andaba bien. Un
+    diagnostico que miente es peor que no tenerlo.
+
+    Comparar los ms entre pruebas:
+      1 vs 2 = costo de mandar el schema estricto
+      2 vs 3 = costo del prompt grande
+      3 vs 4 = costo del historial acumulado
     """
     token = request.headers.get("X-Admin-Token", "")
     if token != os.getenv("ADMIN_TOKEN", "cargar2026"):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
 
-    from app.core.agent import _get_client, _get_schema
-    from app.core.tools_context import set_current_tienda
+    from app.core.generador_v2 import _cliente_gemini, _schema
 
-    if settings.LLM_PROVIDER == "groq":
-        modelo = settings.GROQ_MODEL
-    elif settings.LLM_PROVIDER == "gemini":
-        modelo = settings.GEMINI_MODEL
-    elif settings.LLM_PROVIDER == "openai":
-        modelo = settings.OPENAI_MODEL
-    elif settings.LLM_PROVIDER == "anthropic":
-        modelo = settings.ANTHROPIC_MODEL
-    elif settings.LLM_PROVIDER == "nemotron":
-        modelo = settings.NEMOTRON_MODEL
-    else:
-        modelo = settings.DEEPSEEK_MODEL
-
-    out = {"provider": settings.LLM_PROVIDER, "modelo": modelo}
-
+    modelo = settings.GEMINI_MODEL
+    out = {"camino": "atado (generador_v2)", "modelo": modelo}
     try:
-        client = _get_client()
+        client = _cliente_gemini()
     except Exception as e:
         return JSONResponse({"error": f"cliente: {str(e)[:200]}"},
                             status_code=500)
 
-    from app.core.agent import _build_system_prompt
+    # Schema representativo del turno: unos pocos ids y temas, como un turno real.
     try:
-        set_current_tienda(settings.TIENDA_ID)
-        sys_prompt = _build_system_prompt(settings.TIENDA_ID)
-    except Exception:
-        sys_prompt = "Sos un vendedor."
-    try:
-        schema = _get_schema()
+        schema = _schema([f"PRD{i:04d}" for i in range(12)],
+                         ["envio", "garantia", "pago"], ["gaming", "oficina"])
     except Exception:
         schema = None
 
-    # Historial simulado pesado (10 mensajes con listados) para medir el efecto
-    # del contexto acumulado, como en una charla real.
+    prompt_grande = ("Sos un vendedor argentino. " + ("Regla de venta. " * 400))
+    # Historial simulado pesado, como una charla de diez turnos.
     hist_sim = []
     for i in range(5):
         hist_sim.append({"role": "user",
                          "content": f"Consulta {i} sobre productos y precios"})
         hist_sim.append({"role": "assistant", "content": (
             "Te muestro opciones: Mouse Genius DX-110 $8.500, Teclado Genius "
-            "KB-110X $12.000, Monitor Samsung 24 $165.000, Auriculares Sony "
-            "$685.000. Hacemos envios a todo el pais por Andreani y OCA. ") * 3})
+            "KB-110X $12.000, Monitor Samsung 24 $165.000. ") * 3})
 
-    def _llamar(messages, tools=None, tc="auto", max_t=5):
+    def _llamar(messages, usar_schema, max_t):
         t0 = _time.perf_counter()
         kw = dict(model=modelo, messages=messages, max_tokens=max_t,
-                  temperature=0)
-        if tools:
-            kw["tools"] = tools
-            kw["tool_choice"] = tc
+                  temperature=0, extra_body={"reasoning_effort": "none"})
+        if usar_schema and schema:
+            kw["response_format"] = {"type": "json_schema", "json_schema": {
+                "name": "fragmentos", "strict": True, "schema": schema}}
         r = client.chat.completions.create(**kw)
         ms = int((_time.perf_counter() - t0) * 1000)
         u = getattr(r, "usage", None)
         return {"ms": ms, "prompt_tokens": getattr(u, "prompt_tokens", None)}
 
     _ok = [{"role": "user", "content": "Responde solo: ok"}]
-    _sys = [{"role": "system", "content": sys_prompt}]
-    # Cada prueba aisla un factor; comparar los ms entre ellas:
-    #  1 vs 2 = costo de mandar el esquema de herramientas
-    #  2 vs 3 = costo de forzar el uso de herramienta (tool_choice required)
-    #  2 vs 4 = costo del system prompt grande + max_tokens alto
-    #  4 vs 5 = costo del historial acumulado
+    _sys = [{"role": "system", "content": prompt_grande}]
     pruebas = {
-        "1_minima": (_ok, None, "auto", 5),
-        "2_tools_auto": (_ok, schema, "auto", 5),
-        "3_tools_required": (_ok, schema, "required", 5),
-        "4_system_grande": (_sys + _ok, schema, "auto", 800),
-        "5_historial_grande": (_sys + hist_sim + _ok, schema, "auto", 800),
+        "1_minima": (_ok, False, 5),
+        "2_con_schema": (_ok, True, 400),
+        "3_prompt_grande": (_sys + _ok, True, 400),
+        "4_historial_grande": (_sys + hist_sim + _ok, True, 400),
     }
-    for nombre, (msgs, tools, tc, max_t) in pruebas.items():
+    for nombre, (msgs, usar, max_t) in pruebas.items():
         try:
-            out[nombre] = await asyncio.to_thread(_llamar, msgs, tools, tc, max_t)
+            out[nombre] = await asyncio.to_thread(_llamar, msgs, usar, max_t)
         except Exception as e:
             out[nombre] = {"error": str(e)[:150]}
 
     return out
-
-
-# ───────────────────────── TELEGRAM ─────────────────────────
-
-async def _process_and_reply_telegram(chat_id: str, text: str):
-    try:
-        connector = get_telegram_connector()
-
-        if text.startswith("__AUDIO__:"):
-            file_id = text.split(":", 1)[1]
-            log.info("telegram_audio_received", chat_id=chat_id, file_id=file_id)
-            audio_bytes = await connector.download_file(file_id)
-            if not audio_bytes:
-                await connector.send_message(chat_id, "No pude descargar el audio, mandalo de nuevo por favor.")
-                return
-            from app.core.transcriber import transcribir_audio
-            text = transcribir_audio(audio_bytes)
-            if not text:
-                await connector.send_message(chat_id, "No pude entender el audio, podes escribirlo o mandarlo de nuevo?")
-                return
-            log.info("telegram_audio_transcribed", chat_id=chat_id, chars=len(text))
-
-        # Telegram solo soporta tienda default (no hay multi-tenant nativo)
-        response = await process_message(chat_id, text, canal="telegram")
-        await connector.send_message(chat_id, response)
-    except Exception as e:
-        log.error("telegram_processing_error", error=str(e), chat_id=chat_id)
-        if SENTRY_DSN:
-            import sentry_sdk
-            sentry_sdk.capture_exception(e)
-        # Mismo criterio que WhatsApp: no dejar al cliente sin respuesta ante un
-        # blip transitorio del LLM. Envio en su propio try.
-        try:
-            await get_telegram_connector().send_message(
-                chat_id,
-                "Perdón, estoy con mucha demanda en este momento. "
-                "Probá de nuevo en un ratito y te respondo. 🙏")
-        except Exception:
-            pass
 
 
 @app.post("/webhook/telegram")

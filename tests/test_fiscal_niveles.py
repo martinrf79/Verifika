@@ -174,15 +174,15 @@ def test_poda_por_oracion_completa_sin_munones():
 
 
 def test_saludo_inicial_recorta_bienvenida_doble():
-    from app.core.interprete_libre import _con_saludo_inicial
+    from app.core.guardas_salida import con_saludo_inicial
     r = ("¡Hola! Bienvenido a Verifika Tech, soy tu asistente. Qué bueno que "
          "nos contactes, te ayudo enseguida a elegir ese mouse.\n\n"
          "Para gaming te recomiendo el M170.")
-    out = _con_saludo_inicial(r, "Verifika")
+    out = con_saludo_inicial(r, "Verifika")
     assert out.count("asistente") == 1  # solo la linea oficial
     assert "Bienvenido a Verifika Tech" not in out
     assert "M170" in out
     # Un cuerpo sin bienvenida redundante queda intacto.
-    out2 = _con_saludo_inicial("Tengo el M170 a buen precio. ¿Te lo muestro?",
+    out2 = con_saludo_inicial("Tengo el M170 a buen precio. ¿Te lo muestro?",
                                "Verifika")
     assert "Tengo el M170" in out2
