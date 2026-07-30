@@ -4,11 +4,76 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
-**==== 30-jul-2026 — DIAGNOSTICO: POR QUE LO SIMPLE SE VUELVE COMPLEJO ====**
+**==== 30-jul-2026 (noche) — EL INDICE. DEPLOYADO Y VERIFICADO ====**
 
-ESTO ES EL PUNTO DE PARTIDA DEL PROXIMO CHAT. Es un diagnostico, NO una solucion:
-Martin pidio expresamente entender la causa antes de planificar el arreglo. No
-tocar codigo por esto hasta acordar el plan con el.
+ESTO ES EL ESTADO. Lo de abajo -el diagnostico de la mañana- ya se ejecuto; se
+deja como historia, no como pendiente.
+
+**QUE ERA LA DESCONEXION, medida y cerrada.** Habia DOS listas de nombres para el
+mismo eje: las 93 categorias de `base_conocimiento`, unico enum que el interprete
+podia nombrar, y los 50 temas de FAQ que la fuente sabe contestar. Coincidian en
+27. Los 23 restantes -cuotas, envios, devoluciones, marcas_originales,
+garantia_como_usar...- el interprete **NO LOS PODIA DECIR**: su schema se lo
+prohibia, asi que un regex de palabras sobre el mensaje crudo era el unico que
+los pescaba. Medido sobre las 66 charlas: en 107 de 282 turnos el tema lo aportaba
+ese regex. **Esa era la razon por la que los 116 regex no se podian borrar por
+disciplina: no sobraban, tapaban un vocabulario que faltaba.**
+
+**QUE SE HIZO (4 commits, `a0f8061..15ed054`, en main y en produccion).**
+1. `app/core/indice.py`: el VOCABULARIO UNICO, 116 nombres, y la celda de cada
+   uno con su material. Tres tipos: **dato** (la respuesta esta escrita),
+   **calculo** (funcion determinista de la fuente) y **criterio** (NO hay
+   respuesta guardada ni la va a haber; hay material y el modelo redacta). Forzar
+   respuesta enlatada en las de criterio es lo que robotiza y mata la venta.
+   Las tres funciones de `generador_v2` que decidian el material -criterio, FAQ y
+   cobertura- eran el mismo indice escrito tres veces; ahora son vistas de una
+   sola consulta.
+2. GEMELAS: la misma pregunta con dos nombres. `cuotas_financiacion` traia solo
+   "depende de tu tarjeta" mientras las 6 cuotas reales vivian en `cuotas`. Se
+   LINKEAN, no se fusionan.
+3. Se borraron los DOS ruteos por palabras sobre el mensaje crudo. Medido en vivo
+   con la clave paga sobre 291 turnos: el de criterio aportaba en 103 y hacia
+   falta en 4; el de FAQ aportaba en 80 y en 64 el indice ya contestaba mejor
+   ("tienen local para retirar" -> regex `ubicacion`, indice `retiro_local`).
+   Perdida genuina: 2 de 291. `recuperar` quedo muerta y se borro.
+4. EL NUMERO DE POLITICA LO ESTAMPA EL CODIGO. El solver redacta la politica en
+   SU voz y deja los huecos `{{concepto}}`; el codigo pone el valor desde la
+   fuente. Mismo mecanismo que ya protegia los precios. No es pegar la curada:
+   la voz sigue siendo del solver, lo unico que deja de ser suyo es el dato.
+
+**VERIFICADO, no supuesto.** CI verde con el gate de tests corrido, revision
+**agente-bot-00386-jm6** sirviendo con `/health` en 200. Bateria 758 verdes.
+
+**LO QUE NO SE HIZO, dicho claro.** Las lineas NO bajaron: `app` esta en ~17.100
+contra 16.950. Lo de hoy es la instalacion, no la poda. **La poda esta en los
+verificadores, el juez y las reescrituras -tres de las cinco llamadas al modelo
+por turno existen solo para corregir lo que el solver escribio-.** Ahi hay miles
+de lineas y recien ahora se pueden sacar. Lo primero: medir cuantas veces sigue
+disparando `verificador_faq` ahora que el numero lo estampa el codigo, y borrarlo
+si el numero da. Tampoco se enchufo `confianza` (el "no se / preguntá"): sigue sin
+leerlo nadie.
+
+**LAS DOS LECCIONES DEL DIA, que valen mas que el codigo.**
+- Las dos fallas reales las encontro CORRER, no pensar. (a) Fusionar las gemelas
+  por solape de palabras iba a unir `marcas_originales` con `marcas` y
+  `stock_disponibilidad` con `urgencia_honesta`: dos respuestas del bot borradas
+  en silencio, **con el CI en verde**. Lo freno leer los textos uno por uno; los
+  pares RECHAZADOS quedaron anotados en `indice.py` para que nadie los reproponga
+  por puntaje. (b) El estampado dejaba salir `{{` crudo al cliente en 2 de 8, por
+  el append de `respuestas_por_categoria`, un camino que no estaba mirado.
+- **El banco NO ve al modelo.** Los casetes congelan su salida, asi que estos
+  cambios daban verde pasara lo que pasara. Lo unico que probo algo fue la
+  corrida viva con `GEMINI_API_KEY_PROD` (la clave paga esta en el entorno; la
+  otra, `GEMINI_API_KEY`, esta con la cuota agotada). Cuando algo no se puede
+  correr en vivo, tratarlo como NO VERIFICADO.
+
+---
+
+**==== 30-jul-2026 (mañana) — DIAGNOSTICO: POR QUE LO SIMPLE SE VUELVE COMPLEJO ====**
+
+HISTORIA, ya ejecutado. Ver la seccion de arriba. Se deja porque explica el
+mecanismo; el campo `consulta` que se menciona abajo sigue siendo la llave del
+indice y todavia viaja como sugerencia en prosa, no como orden.
 
 **LA PREGUNTA.** Hace semanas que pasa lo mismo: se arregla una pregunta de
 WhatsApp -la que combina envios a varios destinos- y al tiempo falla otra. Cosas
