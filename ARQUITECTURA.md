@@ -35,6 +35,28 @@ ironía, cambios de decisión o pedidos enredados.
   1. Lo que no entra ahí, el intérprete no lo puede nombrar aunque lo haya
   entendido perfecto.
 
+## ⚠ LA COSTURA QUE HAY QUE ARREGLAR (diagnostico 30-jul-2026)
+
+Entre la Capa 1 y la Capa 2 hay un corte medido: **la lectura estructurada del
+interprete se usa solo para armar el MENU de lo que el modelo PUEDE decir, nunca
+como ORDEN de lo que el sistema DEBE contestar.**
+
+El caso mas claro: el interprete emite, por cada producto consultado, un campo
+`consulta` -precio, ficha, stock, opinion, comparacion, envio- atado por enum y
+bien resuelto. **No lo lee nadie: cero usos en todo `app/core`.** Lo mismo con
+`specs_preguntadas`, que el solver no recibe y solo se usa despues para corregir
+lo ya escrito, y con `intencion`, `criterio` y `confianza`.
+
+Consecuencia: como la lectura no ordena la respuesta, hay que suplirla con un
+prompt que anticipe cualquier combinacion. Hoy se arma con 11 entradas y 42 ramas
+en `universo_productos`. Cada capacidad nueva engorda ESE prompt en vez de sumar
+una pieza al lado, y por eso arreglar un caso rompe otro.
+
+El detalle completo, con la tabla campo por campo y la medicion en vivo, esta al
+tope de `RESUMEN_PARA_NUEVO_CHAT.md`. **Es el punto de partida del proximo
+trabajo, y es un diagnostico: la solucion se planifica con Martin antes de tocar
+codigo.**
+
 ## Capa 2 — Recuperación y grounding
 
 Trae el contexto real desde la fuente de verdad, nunca desde la memoria del

@@ -4,6 +4,86 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 30-jul-2026 — DIAGNOSTICO: POR QUE LO SIMPLE SE VUELVE COMPLEJO ====**
+
+ESTO ES EL PUNTO DE PARTIDA DEL PROXIMO CHAT. Es un diagnostico, NO una solucion:
+Martin pidio expresamente entender la causa antes de planificar el arreglo. No
+tocar codigo por esto hasta acordar el plan con el.
+
+**LA PREGUNTA.** Hace semanas que pasa lo mismo: se arregla una pregunta de
+WhatsApp -la que combina envios a varios destinos- y al tiempo falla otra. Cosas
+simples se vuelven complejas. Martin planteo la hipotesis de que el interprete
+lee bien y que el problema esta en la costura hacia el solver. Se midio. Tenia
+razon, y el mecanismo exacto es este.
+
+**LA INTERPRETACION FUNCIONA.** Medido en vivo el 30-jul con el caso real:
+  T1 "necesito 2 notebooks y 3 auriculares"      -> las dos categorias, con cantidades
+  T2 "una notebook y un auricular van a Concordia, EL RESTO a Mendoza capital"
+     -> los cuatro renglones exactos, resolviendo "el resto" por resta
+  T3 "no, mejor SACAME un auricular y EN VEZ DE ESO poneme un teclado"
+     -> baja auriculares de 3 a 2 y suma el teclado
+Todo con confianza 1.0. Negacion, cambio de decision y referencia implicita:
+correctos. El techo del sistema NO esta en entender.
+
+**LA CAUSA, EN UNA LINEA.** El interprete emite 18 campos estructurados, y esa
+lectura se usa SOLO para armar el MENU de lo que el modelo PUEDE decir, nunca
+como ORDEN de lo que el sistema DEBE contestar.
+
+**LA EVIDENCIA, campo por campo.** Lo que el solver (`generador_v2`) lee:
+
+| campo del interprete   | lo lee el solver | para que lo usa                    |
+|------------------------|------------------|------------------------------------|
+| producto_resuelto      | si (4)           | sumarlo al universo                |
+| productos_consultados  | si (2)           | sumarlos al universo               |
+| pedido                 | si (1)           | sumarlos al universo               |
+| solicitud_nueva        | si (3)           | sumar la categoria al universo     |
+| categorias             | si (4)           | elegir bloques de criterio y FAQ   |
+| orden                  | si (1)           | encabezar el universo              |
+| tope/exclusiones/uso   | si (7)           | filtrar el universo                |
+| **consulta**           | **NADIE, 0**     | —                                  |
+| **specs_preguntadas**  | **no**           | solo el hub, DESPUES, para corregir|
+| **plataformas_cliente**| **no**           | solo bloque de prompt y estampado  |
+| **intencion**          | **no**           | —                                  |
+| **criterio**           | **no**           | —                                  |
+| **confianza**          | **no**           | —                                  |
+
+**LA PIEZA MAS FILOSA: el campo `consulta`.** El interprete dice, por cada
+producto, QUE quiere el cliente de el: precio, ficha, stock, opinion,
+comparacion o envio. Esta atado por enum, sale bien, y **no lo lee NADIE**: cero
+usos en todo `app/core`. O sea que "quiere el precio del Logitech y una opinion
+del Genius" se degrada a "estos dos productos se pueden nombrar", y el modelo
+decide solo si da precio o da opinion.
+
+**LO MISMO CON LAS SPECS.** El interprete traduce "resiste que se me caiga el
+cafe" al id `resistencia_agua` -su tarea mas dificil, y la hace bien-. El solver
+NO lo recibe. Se usa despues, en el hub, para CORREGIR lo que el modelo ya
+escribio. El sistema sabe que le preguntaron y no se lo dice al que redacta.
+
+**POR QUE ESO ACOMPLEJA TODO.** Si la lectura estructurada no ordena la
+respuesta, alguien tiene que suplirla: un prompt que anticipe cualquier
+combinacion. Hoy ese prompt se arma con 11 entradas y el universo se decide con
+42 ramas en `universo_productos`. Cada capacidad nueva no agrega una pieza al
+lado: engorda ESE prompt y suma ramas a ESE constructor. La complejidad se
+concentra y se multiplica en un solo punto, en vez de repartirse.
+
+De ahi salen los sintomas que se ven en WhatsApp:
+  - el reparto por ciudad se lee perfecto y NUNCA se le muestra al cliente
+  - se arregla un caso y se rompe otro, porque todos comparten el mismo prompt
+  - el formato se desarma en turnos largos (visto el 30-jul, T4 del caso real)
+
+**LO QUE ESTE DIAGNOSTICO NO DICE.** No dice que el solver este mal escrito ni
+que haya que tirarlo. Dice DONDE esta la costura que multiplica: entre una
+lectura estructurada que ya existe y un redactor que no la recibe como
+instruccion. El proximo paso es planificar con Martin como cerrar esa costura;
+el tiene una idea propia que quiere plantear.
+
+**LO QUE YA ESTA A FAVOR.** Las 65 charlas grabadas corren en 3 minutos con un
+numero que no puede bajar (1656/1656), y los datos se chequean solos. Cualquier
+cambio estructural que se haga ahora es medible en el acto. Esa red no existia
+hace dos dias y es lo que hace que este rediseño se pueda intentar sin miedo.
+
+---
+
 **==== 30-jul-2026 — DEPLOYADO Y VERDE. EL NUMERO: 1656/1656 ====**
 
 Mergeado a `main` (b48ac83) y deployado por CI. Verificado, no supuesto:
