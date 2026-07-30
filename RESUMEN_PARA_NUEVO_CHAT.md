@@ -4,6 +4,33 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 30-jul-2026 — DEPLOYADO Y VERDE. EL NUMERO: 1656/1656 ====**
+
+Mergeado a `main` (b48ac83) y deployado por CI. Verificado, no supuesto:
+tests #448 verde, "Deploy a Cloud Run" #152 verde con el job de deploy corrido de
+verdad, y en los logs de Cloud Run la revision nueva **agente-bot-00384-mdd**
+sirviendo con `/health` en 200.
+
+**EL NUMERO: 1656 de 1656. Las 65 charlas en cien, cero rojos.** El piso quedo en
+ese valor: de aca en mas, cualquier cambio que empeore UNA sola charla tira el CI.
+Bateria: 753 verdes, contra 630 con las que arranco el dia.
+
+**EL ULTIMO ROJO, cerrado.** Era `21_posventa_seguimiento` T4: el bot contestaba
+bien sobre garantia y la guardia de promesas le mataba el turno entero. El
+detector de dia_entrega buscaba verbo de entrega y dia a menos de 40 caracteres
+con DOTALL, o sea que el hueco cruzaba puntos y saltos de linea. El match real
+era `'hoy mismo.\n\nSi el producto llegó'`: el "hoy mismo" de un parrafo pegado
+con el "llegó" del siguiente. Dos frases sin relacion convertidas en una promesa
+que nadie hizo, y como no existia, ni la reescritura ni la poda podian sacarla.
+Arreglo de una linea: el dia y el verbo tienen que estar en la MISMA oracion.
+
+**LOS OCHO BUGS REALES DEL DIA**, todos con su caso y su medicion: Telegram
+muerto, 57 fichas mintiendo, el juez metiendo promesas, la plata pisando el
+stock, los dos defectos de `_valores_de`, el falso positivo de dia_entrega, y
+DOS MIOS que el gate freno antes de que salieran del branch.
+
+---
+
 **==== 29-jul-2026 (noche) — EL NUMERO: EL TURNO COMPLETO CORRE EN CADA PUSH ====**
 
 Rama: `claude/system-verification-csv-table-jjal0l`. Esto NO es una feature, es
