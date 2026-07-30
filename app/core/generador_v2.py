@@ -48,102 +48,83 @@ CAMPOS_FICHA = ["procedencia", "garantia", "material", "descripcion",
                 # escritorio). Lo estampa el codigo desde compatibilidad.csv.
                 "compatibilidad"]
 
+# ── EL INDICE DEL TURNO ──────────────────────────────────────────────────────
+# Las tres funciones que vivian aca -criterio, FAQ y cobertura obligatoria- eran
+# el mismo indice escrito tres veces: cada una recorria por su cuenta las
+# categorias del interprete y decidia con que material se contesta. Ahora hay UN
+# solo lugar donde vive esa tabla, `app/core/indice.py`, y estas tres son vistas
+# de la misma consulta. Sumar una capacidad es cargar texto en la fuente, no
+# tocar tres funciones que se pisan.
+def _celdas(interp, tienda_id=None):
+    from app.core.indice import celdas
+    cats = (interp or {}).get("categorias") if isinstance(interp, dict) else None
+    return celdas(cats, tienda_id)
+
+
 def _criterios_del_turno(mensaje, universo=None, interp=None):
     """El enum del fragmento criterio para ESTE turno: (ids jurados relevantes,
     menu con su texto para groundear). El modelo redacta la frase para el
     cliente apoyandose en estos textos y cita el id; el codigo NO copia verbatim
     (leia a manual), el verificador de cita chequea que el id sea real. Sumar un
-    tema es cargar texto en GUIA_VENTA, no tocar aca.
+    tema es cargar texto en la fuente, no tocar aca.
 
-    DOS fuentes, ambas atadas al mismo enum de ids de GUIA_VENTA:
-    1) CONTACTOR: las CATEGORIAS que el interprete DECLARO (atadas al enum de las
-       76 de base_conocimiento) traen su criterio DIRECTO. Asi objecion,
-       compatibilidad, financiacion, garantia, regalo -cualquiera de las 76-
-       razona desde SU fuente cuando el interprete la ve, sin depender del RAG.
-    2) RAG del corpus (recuperar) sobre el mensaje + las categorias del universo:
-       la red que pesca el tema aunque el interprete no lo declare (ej 'el mas
-       barato sirve para la oficina?' sin nombrar producto ni categoria).
-    Sin match por ninguna via, no hay criterio: el turno se responde con prosa/faq."""
-    from app.core.guia_venta_prosa import recuperar, texto_de
-    menu_items: dict[str, str] = {}
-    # 1) las categorias declaradas por el interprete (enum de la fuente)
-    cats_interp = (interp or {}).get("categorias") if isinstance(interp, dict) else None
-    for cat in (cats_interp or [])[:5]:
-        cid = str(cat).strip()
-        t = texto_de(cid)
-        if t and cid not in menu_items:
-            menu_items[cid] = t
-    # 2) el RAG sobre mensaje + categorias del universo
+    El material sale del INDICE, o sea de lo que el interprete declaro. El RAG
+    sobre el mensaje queda de red mientras se mide en vivo si el vocabulario
+    unido ya lo hace innecesario; el dia que se confirme, se borra y esta funcion
+    queda en una sola consulta al indice."""
+    from app.core.guia_venta_prosa import recuperar
+    from app.core.indice import menu as _menu_indice
+    celdas_turno = [c for c in _celdas(interp)[:5] if c.get("texto_criterio")]
+    menu_items = {c["nombre"]: c["texto_criterio"] for c in celdas_turno}
     cats_uni = " ".join(str(p.get("categoria") or "") for p in (universo or []))
     for b in recuperar((mensaje or "") + " " + cats_uni, k=4):
         if b["id"] not in menu_items:
             menu_items[b["id"]] = b["texto"]
     if not menu_items:
         return ["_ninguno_"], ""
-    ids = list(menu_items)
     menu = "\n".join(f"  [{cid}] {txt}" for cid, txt in menu_items.items())
-    return ids, menu
+    return list(menu_items), menu
 
 
 def _faq_del_turno(mensaje, interp, tienda_id):
-    """GROUNDING de FAQ del turno: la respuesta_curada YA estampada (con los
-    numeros reales) de los temas que el interprete ruteo -categorias que son temas
-    de FAQ- mas los que pesca el ruteo por keywords del mensaje. El solver REDACTA
-    la politica desde este texto en su voz y con memoria; NO se pega la curada
-    (eso robotizaba, 2500 pruebas). El numero que teje sale de aca y el
-    verificador lo chequea contra los mismos valores. Devuelve (menu, temas)."""
+    """GROUNDING de FAQ del turno: la respuesta_curada YA estampada, con los
+    numeros reales, de los temas que trae el INDICE. El solver REDACTA la
+    politica desde este texto en su voz y con memoria; NO se pega la curada, que
+    robotizaba. El numero que teje sale de aca y el verificador lo chequea contra
+    los mismos valores. Devuelve (menu, temas).
+
+    30-jul: hasta hoy el interprete no podia nombrar 23 de los 50 temas -su enum
+    eran solo las 93 categorias- y el ruteo por palabras del mensaje era el unico
+    que los pescaba. Con el vocabulario unido el interprete los DECLARA. El ruteo
+    por palabras queda de red hasta que la medicion viva lo confirme; en la
+    muestra ya se ve que buena parte de lo que agregaba era ruido, no cobertura:
+    en 'en la pagina estaba a $20' ruteaba `redes` por la palabra pagina."""
     from app.storage.firestore_client import get_all_faq
     from app.core.tools import _faq_temas_multi
-    from app.core.curadas import estampar_valores
+    from app.core.indice import celda
     faq = get_all_faq(tienda_id=tienda_id) or {}
     if not faq:
         return "", []
-    temas: list[str] = []
-    cats = (interp or {}).get("categorias") if isinstance(interp, dict) else None
-    for c in (cats or []):
-        cid = str(c).strip()
-        if cid in faq and cid not in temas:
-            temas.append(cid)
+    temas = [c["nombre"] for c in _celdas(interp, tienda_id)
+             if c.get("texto_faq")]
     for t in _faq_temas_multi(mensaje or "", faq):
         if t not in temas:
             temas.append(t)
+    temas = temas[:5]
     lineas = []
-    for t in temas[:5]:
-        d = faq.get(t) or {}
-        txt = str(d.get("respuesta_curada") or d.get("respuesta") or "").strip()
-        if not txt:
-            continue
-        lineas.append(f"  [{t}] {estampar_valores(txt, d) or txt}")
-    return "\n".join(lineas), [t for t in temas[:5] if faq.get(t)]
-
-
-# Grupos cuyas categorias se contestan con PROSA (no producto ni conversacion):
-# son las que, si el solver las saltea, dan whiff en una pregunta simple/media.
-_PROSE_GRUPOS = {"politica_faq", "objeciones", "comparacion_compatibilidad",
-                 "asesoramiento", "postventa", "seguridad", "casos_borde",
-                 "identidad_dato"}
+    for t in temas:
+        c = celda(t, tienda_id)
+        if c and c.get("texto_faq"):
+            lineas.append(f"  [{t}] {c['texto_faq']}")
+    return "\n".join(lineas), [t for t in temas if faq.get(t)]
 
 
 def _cats_obligatorias(interp, faq_ground) -> list:
-    """Las categorias ruteadas que DEBEN contestarse con prosa este turno: grupo
-    de prosa (no producto/conversacion) y con grounding disponible (criterio o
-    FAQ). Son los slots requeridos del schema. Tope de 5 para no inflar el JSON."""
-    from app.core.guia_venta_prosa import meta_categoria, texto_de
-    faqset = set(faq_ground or [])
-    out: list = []
-    cats = (interp or {}).get("categorias") if isinstance(interp, dict) else None
-    for c in (cats or []):
-        cid = str(c).strip()
-        if cid in out:
-            continue
-        if meta_categoria(cid).get("grupo", "") not in _PROSE_GRUPOS:
-            continue
-        if not (texto_de(cid) or cid in faqset):
-            continue
-        out.append(cid)
-        if len(out) >= 5:
-            break
-    return out
+    """Las celdas que el turno DEBE contestar con prosa: son los slots requeridos
+    del schema, asi que saltearlas es imposible a nivel API. Tope de 5 para no
+    inflar el JSON. La regla de que celda obliga vive en el indice."""
+    from app.core.indice import obligatorias
+    return obligatorias(_celdas(interp))
 
 
 def _norm(s):

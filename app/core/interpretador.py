@@ -274,11 +274,11 @@ def construir_prompt_interpretador(mensaje: str,
     modelos_str = _texto_candidatos(
         modelos if isinstance(modelos, list) else [])
 
-    # EL ENUM DEL CONTACTOR: la lista cerrada de categorias de la charla, de la
-    # fuente de verdad. El modelo DECLARA cual/cuales toca el mensaje; el codigo
-    # engancha cada una con su criterio o su tool. No puede inventar una.
-    from app.core.guia_venta_prosa import categorias_conocimiento
-    conoc_str = ", ".join(categorias_conocimiento()) or "sin categorias"
+    # EL ENUM DEL CONTACTOR: el VOCABULARIO del indice, o sea la lista cerrada de
+    # nombres que la fuente sabe contestar. El modelo DECLARA cual/cuales toca el
+    # mensaje; el codigo engancha cada uno con su celda. No puede inventar uno.
+    from app.core.indice import vocabulario
+    conoc_str = ", ".join(vocabulario()) or "sin categorias"
 
     # el vocabulario de specs de la fuente, con su etiqueta, para que el modelo
     # TRADUZCA la pregunta del cliente en vez de que el codigo matchee palabras.
@@ -680,8 +680,8 @@ def validar_schema(resultado: dict) -> tuple[bool, str]:
     if not isinstance(_cats, list):
         _cats = []
     try:
-        from app.core.guia_venta_prosa import categorias_conocimiento
-        _validas = set(categorias_conocimiento())
+        from app.core.indice import vocabulario
+        _validas = set(vocabulario())
         _cats = [c for c in _cats if isinstance(c, str) and c in _validas]
     except Exception:
         _cats = []
@@ -838,12 +838,18 @@ def _schema_interprete(nombres_mostrados: list[str],
     # Enum de CATEGORIAS reales de la tienda (lista cerrada y conocida): ata la
     # solicitud de una categoria AUN NO mostrada sin poder inventarla.
     cat_enum = list(dict.fromkeys(c for c in (categorias or []) if c)) or ["otra"]
-    # EL ENUM DEL CONTACTOR: las categorias de la charla de la fuente de verdad
-    # (base_conocimiento). El interprete DECLARA cual/cuales toca el mensaje,
-    # atado a nivel token; no puede inventar una categoria. El hub engancha cada
-    # una con su criterio (prosa) o su tool. Cubre la pregunta compleja multi-tema.
-    from app.core.guia_venta_prosa import categorias_conocimiento
-    conoc_enum = categorias_conocimiento() or ["otra"]
+    # EL ENUM DEL CONTACTOR: el VOCABULARIO del indice. El interprete DECLARA
+    # cual/cuales toca el mensaje, atado a nivel token; no puede inventar uno. El
+    # solver engancha cada uno con su celda.
+    # 30-jul: antes esto eran solo las 93 categorias de base_conocimiento, y los
+    # 23 temas de FAQ que no figuraban ahi -cuotas, envios, devoluciones,
+    # marcas_originales...- el interprete NO LOS PODIA NOMBRAR. Los ruteaba un
+    # regex de palabras sobre el mensaje: en 107 de 282 turnos grabados el tema
+    # lo aportaba ese regex y no el interprete. Con el vocabulario unido, lo que
+    # el sistema sabe contestar y lo que el interprete puede decir son la MISMA
+    # lista.
+    from app.core.indice import vocabulario
+    conoc_enum = vocabulario() or ["otra"]
     # ATRIBUTOS ordenables, DERIVADOS del catalogo (columnas numericas + specs
     # con magnitud). No es una lista escrita a mano: el dia que la tienda suma
     # una columna, esa columna queda preguntable sin tocar codigo.

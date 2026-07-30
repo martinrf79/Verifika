@@ -28,12 +28,29 @@ def test_meta_categoria_trae_grupo_y_pilar_para_enrutar():
     assert meta_categoria("no_existe") == {}
 
 
-def test_schema_ata_categorias_al_enum_y_las_exige():
+def test_schema_ata_categorias_al_vocabulario_del_indice(firestore_doble):
+    """El enum de `categorias` es el VOCABULARIO del indice, no solo las 93 de
+    base_conocimiento.
+
+    30-jul: hasta hoy eran las 93, y los 23 temas de FAQ que no figuran entre
+    ellas -cuotas, envios, devoluciones, marcas_originales...- el interprete NO
+    LOS PODIA NOMBRAR. Medido sobre las 66 charlas grabadas: en 107 de 282 turnos
+    el tema lo aportaba un regex de palabras sobre el mensaje crudo, porque el
+    schema le prohibia decirlo. Este test fija el contrato nuevo: lo que la
+    fuente sabe contestar y lo que el interprete puede declarar son la MISMA
+    lista."""
+    from app.core.indice import vocabulario
     sch = _schema_interprete(["Mouse X"], ["mouse", "teclado"])
     props = sch["properties"]
     assert "categorias" in props
     enum = props["categorias"]["items"]["enum"]
-    assert len(enum) == 93
+    assert enum == vocabulario()
+    # las 93 de base_conocimiento siguen enteras
+    for c in categorias_conocimiento():
+        assert c in enum
+    # y ademas los temas que antes eran innombrables
+    for tema in ("cuotas", "envios", "marcas_originales", "devoluciones"):
+        assert tema in enum, f"{tema} sigue fuera del vocabulario del interprete"
     assert "objecion_precio" in enum
     # required para el strict de Gemini/OpenAI
     assert "categorias" in sch["required"]
