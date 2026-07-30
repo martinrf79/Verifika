@@ -130,9 +130,20 @@ def test_criterio_atado_a_categorias_del_interprete(firestore_doble):
     assert "[objecion_precio]" in menu
 
 
-def test_criterio_rag_sigue_como_red_sin_categorias(firestore_doble):
-    # sin categorias declaradas, el RAG del mensaje sigue trayendo criterio.
-    ids, _ = _criterios_del_turno("puedo pagar en cuotas", None, {})
+def test_sin_categorias_declaradas_no_hay_criterio(firestore_doble):
+    """CONTRATO NUEVO, 30-jul: el material sale de lo que el INTERPRETE declaro y
+    de nada mas. Antes, si el interprete no declaraba nada, un RAG sobre el
+    mensaje crudo salia a buscar criterio por palabras. Se borro: medido en vivo
+    sobre 291 turnos agregaba un bloque en 103 y el indice estaba vacio solo en
+    4, o sea que en 99 diluia el prompt con material que el turno no pidio.
+
+    Sin declaracion no hay criterio, y eso es correcto: el turno se responde
+    honesto en vez de razonar desde un bloque que nadie pidio."""
+    ids, menu = _criterios_del_turno("puedo pagar en cuotas", None, {})
+    assert ids == ["_ninguno_"] and menu == ""
+    # y con la categoria declarada, el material aparece
+    ids, _ = _criterios_del_turno("puedo pagar en cuotas", None,
+                                  {"categorias": ["cuotas_financiacion"]})
     assert "cuotas_financiacion" in ids
 
 

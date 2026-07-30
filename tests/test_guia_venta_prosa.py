@@ -11,7 +11,7 @@ Locks:
 import re
 
 from app.core.guia_venta_prosa import (
-    GUIA_VENTA, consultar_guia_venta, recuperar, texto_de, tool_schema)
+    GUIA_VENTA, consultar_guia_venta, texto_de, tool_schema)
 
 
 def test_guia_sin_digitos():
@@ -77,23 +77,6 @@ def test_match_por_alias_y_literal():
 def test_tema_inexistente_es_honesto():
     r = consultar_guia_venta("garrafa de gas")
     assert r["tema"] is None and "temas" in r
-
-
-def test_recuperar_devuelve_top_k_con_ids():
-    r = recuperar("quiero una memoria ram para mi notebook, anda?", k=3)
-    assert all("id" in c and "texto" in c for c in r)
-    assert "memoria_ram" in [c["id"] for c in r]
-    assert len(r) <= 3
-
-
-def test_recuperar_multitema_trae_varios():
-    ids = [c["id"] for c in recuperar("un mouse y un teclado para gaming", k=3)]
-    assert "mouse" in ids and "teclado" in ids
-
-
-def test_recuperar_sin_match_es_vacio():
-    # Sin criterio en el corpus: lista vacia, no un chunk equivocado.
-    assert recuperar("garrafa de gas") == []
 
 
 def test_consultar_incluye_id_para_cita():

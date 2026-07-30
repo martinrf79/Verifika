@@ -68,22 +68,16 @@ def _criterios_del_turno(mensaje, universo=None, interp=None):
     (leia a manual), el verificador de cita chequea que el id sea real. Sumar un
     tema es cargar texto en la fuente, no tocar aca.
 
-    El material sale del INDICE, o sea de lo que el interprete declaro. El RAG
-    sobre el mensaje queda de red mientras se mide en vivo si el vocabulario
-    unido ya lo hace innecesario; el dia que se confirme, se borra y esta funcion
-    queda en una sola consulta al indice."""
-    from app.core.guia_venta_prosa import recuperar
+    El material sale del INDICE y nada mas: de lo que el interprete DECLARO. El
+    RAG sobre el mensaje crudo se borro el 30-jul, medido en vivo sobre 291
+    turnos: agregaba un bloque en 103 y el indice estaba vacio en 4. En los otros
+    99 solo diluia el prompt con material que el turno no pidio."""
     from app.core.indice import menu as _menu_indice
     celdas_turno = [c for c in _celdas(interp)[:5] if c.get("texto_criterio")]
-    menu_items = {c["nombre"]: c["texto_criterio"] for c in celdas_turno}
-    cats_uni = " ".join(str(p.get("categoria") or "") for p in (universo or []))
-    for b in recuperar((mensaje or "") + " " + cats_uni, k=4):
-        if b["id"] not in menu_items:
-            menu_items[b["id"]] = b["texto"]
-    if not menu_items:
+    if not celdas_turno:
         return ["_ninguno_"], ""
-    menu = "\n".join(f"  [{cid}] {txt}" for cid, txt in menu_items.items())
-    return list(menu_items), menu
+    return ([c["nombre"] for c in celdas_turno],
+            _menu_indice(celdas_turno, "texto_criterio"))
 
 
 def _faq_del_turno(mensaje, interp, tienda_id):
@@ -93,30 +87,25 @@ def _faq_del_turno(mensaje, interp, tienda_id):
     robotizaba. El numero que teje sale de aca y el verificador lo chequea contra
     los mismos valores. Devuelve (menu, temas).
 
-    30-jul: hasta hoy el interprete no podia nombrar 23 de los 50 temas -su enum
-    eran solo las 93 categorias- y el ruteo por palabras del mensaje era el unico
-    que los pescaba. Con el vocabulario unido el interprete los DECLARA. El ruteo
-    por palabras queda de red hasta que la medicion viva lo confirme; en la
-    muestra ya se ve que buena parte de lo que agregaba era ruido, no cobertura:
-    en 'en la pagina estaba a $20' ruteaba `redes` por la palabra pagina."""
+    30-jul: el ruteo por palabras sobre el mensaje crudo SE BORRO. Existia porque
+    el interprete no podia nombrar 23 de los 50 temas -su enum eran solo las 93
+    categorias- y era el unico que los pescaba. Con el vocabulario unido y las
+    gemelas linkeadas, el interprete los DECLARA. Medido en vivo sobre 291
+    turnos: el regex agregaba un tema en 80, y en 64 de esos el indice YA
+    contestaba, casi siempre mejor -ante 'tienen local para retirar' el regex
+    ruteaba `ubicacion` y el indice `retiro_local`-. De los 16 restantes, cuatro
+    son de compatibilidad, que contesta la tabla por otro camino, y cuatro son
+    mensajes de ataque donde el regex le servia la FAQ del descuento a quien
+    intentaba extorsionar. Perdida genuina: dos turnos de 291."""
     from app.storage.firestore_client import get_all_faq
-    from app.core.tools import _faq_temas_multi
-    from app.core.indice import celda
+    from app.core.indice import menu as _menu_indice
     faq = get_all_faq(tienda_id=tienda_id) or {}
     if not faq:
         return "", []
-    temas = [c["nombre"] for c in _celdas(interp, tienda_id)
-             if c.get("texto_faq")]
-    for t in _faq_temas_multi(mensaje or "", faq):
-        if t not in temas:
-            temas.append(t)
-    temas = temas[:5]
-    lineas = []
-    for t in temas:
-        c = celda(t, tienda_id)
-        if c and c.get("texto_faq"):
-            lineas.append(f"  [{t}] {c['texto_faq']}")
-    return "\n".join(lineas), [t for t in temas if faq.get(t)]
+    celdas_turno = [c for c in _celdas(interp, tienda_id)
+                    if c.get("texto_faq")][:5]
+    return (_menu_indice(celdas_turno, "texto_faq"),
+            [c["nombre"] for c in celdas_turno])
 
 
 def _cats_obligatorias(interp, faq_ground) -> list:
