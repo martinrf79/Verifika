@@ -102,9 +102,15 @@ async def health():
         "telegram_configured": bool(settings.TELEGRAM_TOKEN),
         "deepseek_configured": bool(settings.DEEPSEEK_API_KEY),
         "groq_configured": bool(settings.GROQ_API_KEY),
-        "llm_provider": settings.LLM_PROVIDER,
-        "model": (settings.DEEPSEEK_MODEL if settings.LLM_PROVIDER == "deepseek"
-                  else settings.GROQ_MODEL),
+        # LA VERDAD, no el flag. Hasta el 30-jul esto declaraba
+        # "llm_provider: openai" y el modelo de Groq, mientras el turno entero
+        # corria en Gemini: el health del sistema mintiendo sobre en que corre.
+        # El solver, las guardias y la memoria entran por `_cliente_gemini`; el
+        # interprete por INTERPRETER_PROVIDER. Se reportan los DOS, porque son
+        # las dos piezas que pueden cambiar de proveedor.
+        "solver_provider": "gemini",
+        "solver_model": settings.GEMINI_MODEL,
+        "interpreter_provider": settings.INTERPRETER_PROVIDER,
         "sentry_enabled": bool(SENTRY_DSN),
         "default_tienda": settings.TIENDA_ID,
     }

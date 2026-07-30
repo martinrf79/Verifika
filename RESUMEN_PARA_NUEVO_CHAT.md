@@ -4,6 +4,43 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 30-jul-2026 (cierre) — LO QUE SIGUE, PRIMERO ====**
+
+**EL PROXIMO PASO, y no hay que discutirlo de nuevo:** medir cuantas veces sigue
+disparando `verificador_faq` AHORA que el numero de politica lo estampa el
+codigo, y borrarlo si el numero da. Detras vienen el juez y las reescrituras:
+**tres de las cinco llamadas al modelo por turno existen solo para corregir lo que
+el solver escribio**. Ahi estan las miles de lineas que faltan podar. Esa medicion
+NECESITA trafico real con lo de hoy adentro; los casetes NO sirven porque tienen
+la salida del modelo congelada de antes del estampado.
+
+**LA CLAVE PAGA es `GEMINI_API_KEY_PROD`** (esta en el entorno). La otra,
+`GEMINI_API_KEY`, quedo sin cuota el 30-jul y da 429. Para cualquier medicion
+viva, usar la PROD.
+
+**CONFIG, cerrado el 30-jul.** `LLM_PROVIDER` tenia default "openai" desde el
+7-jul y ya no ruteaba NADA: el solver, las guardias y la memoria entran por
+`_cliente_gemini` cableado y el interprete por `INTERPRETER_PROVIDER=gemini`. Lo
+unico que hacia era que `/health` declarara "llm_provider: openai" -el sistema
+mintiendo sobre en que corre- y dejar la trampa de que una sesion futura creyera
+que esto anda con OpenAI, que cuesta plata. Default ahora en gemini, `/health`
+reporta solver e interprete por separado, y `EMBEDDINGS_PROVIDER` se borro porque
+no lo leia nadie.
+
+**PENDIENTE SIN CERRAR:** hubo un `BadRequestError 400 INVALID_ARGUMENT` en
+Sentry. NO se pudo ubicar: cero errores de LLM en `agente-bot` en 14 h, el turno
+completo reproducido con la clave paga corre limpio, y el schema del interprete
+aguanta hasta 24 productos mostrados (33 KB, 1188 valores de enum). Candidatos:
+un issue viejo de Sentry, o los workflows programados `diagnostico`/`deepeval`,
+que llaman al modelo y reportan a Sentry SIN pasar por los logs de Cloud Run.
+Para cerrarlo hace falta la FECHA y el SERVICIO del evento en Sentry.
+
+**TAMBIEN ABIERTO:** `confianza` sigue sin leerlo nadie. Es el "no se / preguntá"
+que pidio Martin. Y el campo `consulta` sigue viajando como sugerencia en prosa
+dentro del prompt, no como orden: es la llave del indice y todavia no manda.
+
+---
+
 **==== 30-jul-2026 (noche) — EL INDICE. DEPLOYADO Y VERIFICADO ====**
 
 ESTO ES EL ESTADO. Lo de abajo -el diagnostico de la mañana- ya se ejecuto; se

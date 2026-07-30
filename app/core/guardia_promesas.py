@@ -242,7 +242,7 @@ def _get_client():
     cambia de provider, este cliente queda apuntando al anterior y la
     reescritura muere en silencio. Primero fue DeepSeek hardcodeado cuando se
     paso a OpenAI (4-jul, salio una promesa al cliente). Despues quedo colgado
-    de `agent._get_client`, que sigue el flag LLM_PROVIDER -por default openai-
+    de `agent._get_client`, que seguia el flag LLM_PROVIDER -entonces en openai-
     mientras el camino vivo entero se mudaba a Gemini: medido el 29-jul, la
     reescritura de stock devolvia 401 con la clave de OpenAI vencida, o sea que
     la guardia de promesas y la de stock estaban MUERTAS en produccion aunque

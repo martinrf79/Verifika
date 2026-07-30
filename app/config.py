@@ -22,13 +22,16 @@ class Settings(BaseModel):
     WHATSAPP_TOKEN: str = os.getenv("WHATSAPP_TOKEN", "")
     WHATSAPP_VERIFY_TOKEN: str = os.getenv("WHATSAPP_VERIFY_TOKEN", "")
 
-    # LLM provider — soportamos deepseek (default) y groq (fallback)
-    # NOTA: Verifika tiene su propia config por rol en llm_adapter.py.
-    # Estos settings son SOLO para el Solver del agente v4 (legacy).
-    # Provider del SOLVER. OK explicito de Martin (7-jul-2026): se pasa a OpenAI
-    # gpt-4o-mini para correr la constrained generation dura de punta a punta.
-    # Es config, no camino apagado; se vuelve a deepseek cambiando este default.
-    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "openai").lower()
+    # EL PROVIDER DEL CAMINO VIVO. Default GEMINI, que es lo que corre de verdad
+    # (30-jul). Estaba en "openai" desde el 7-jul y ya no rutea ninguna llamada:
+    # el solver, las guardias y la memoria entran por `_cliente_gemini` cableado,
+    # y el interprete por INTERPRETER_PROVIDER, que tambien es gemini. Lo unico
+    # que hacia el default viejo era que /health declarara "llm_provider: openai"
+    # -o sea, el sistema mintiendo sobre en que corre- y dejar la trampa de que
+    # una sesion futura leyera el repo y creyera que esto anda con OpenAI, que
+    # cuesta plata y necesita OK de Martin. La config manda desde el codigo: el
+    # default tiene que ser lo que efectivamente corre, no lo que corria antes.
+    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "gemini").lower()
 
     # DeepSeek
     DEEPSEEK_API_KEY: str = os.getenv("DEEPSEEK_API_KEY", "")
@@ -176,8 +179,9 @@ class Settings(BaseModel):
     # NOTA: el matcheo de FAQ por palabras (ex flag FAQ_MATCH_PALABRAS) ya es el
     # UNICO camino de query_faq, cableado en app/core/tools.py: el tema especifico
     # gana al generico y la respuesta lleva temas relacionados. Consolidado 24-jun.
-    # Proveedor del embedding: openai (con OPENAI_API_KEY) o deepseek (legacy).
-    EMBEDDINGS_PROVIDER: str = os.getenv("EMBEDDINGS_PROVIDER", "openai").lower()
+    # EMBEDDINGS_PROVIDER se borro el 30-jul: no lo leia NADIE en todo `app`, y
+    # su default "openai" era otra config muerta declarando un proveedor que no
+    # se usa. El recall de modelos es determinista, sin embeddings.
     EMBEDDINGS_MODEL: str = os.getenv("EMBEDDINGS_MODEL", "text-embedding-3-small")
 
     # ────────────────────────────────────────────────────────

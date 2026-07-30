@@ -71,7 +71,7 @@ async def actualizar_resumen(resumen_previo: str, descartados: list[dict],
 
     def _call() -> str:
         # MISMO cliente que el solver VIVO. Colgaba de `agent._get_client`, que
-        # sigue el flag LLM_PROVIDER -por default openai- mientras el camino
+        # seguia el flag LLM_PROVIDER -entonces en openai- mientras el camino
         # vivo entero es Gemini: con la clave de OpenAI vencida esta llamada
         # tiraba 401 y el resumen NUNCA se actualizaba. O sea que la memoria
         # larga estaba rota justo donde mas importa, en la charla larga, y en
