@@ -129,14 +129,21 @@ def celda(nombre: str, tienda_id=None) -> dict | None:
         return None
     from app.core.guia_venta_prosa import meta_categoria, texto_de
     from app.core.curadas import estampar_valores
-    texto_faq = ""
+    texto_faq, texto_faq_crudo, faq_tema = "", "", ""
     try:
         faq = _faq_dict(tienda_id)
         # el nombre propio, y si no tiene politica escrita, la de su GEMELO: la
         # misma pregunta guardada con el otro nombre.
-        d = faq.get(cid) or faq.get(GEMELOS.get(cid, ""), {}) or {}
+        gem = GEMELOS.get(cid, "")
+        d = faq.get(cid) or faq.get(gem, {}) or {}
         crudo = str(d.get("respuesta_curada") or d.get("respuesta") or "").strip()
         if crudo:
+            faq_tema = cid if faq.get(cid) else gem
+            # CRUDO = con los huecos {{concepto}} intactos. Es lo que ve el
+            # SOLVER: asi redacta la politica en su voz pero el NUMERO no lo
+            # escribe el, lo estampa el codigo desde la fuente al renderizar.
+            # Mismo mecanismo que los precios, que el modelo tampoco escribe.
+            texto_faq_crudo = crudo
             texto_faq = estampar_valores(crudo, d) or crudo
     except Exception as e:
         log.warning("indice_celda_faq_error", nombre=cid, error=str(e)[:120])
@@ -150,7 +157,9 @@ def celda(nombre: str, tienda_id=None) -> dict | None:
     return {"nombre": cid,
             "tipo": "dato" if texto_faq else "criterio",
             "grupo": grupo,
+            "faq_tema": faq_tema,
             "texto_faq": texto_faq,
+            "texto_faq_crudo": texto_faq_crudo,
             "texto_criterio": texto_criterio}
 
 

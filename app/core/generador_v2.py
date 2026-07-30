@@ -108,6 +108,20 @@ def _faq_del_turno(mensaje, interp, tienda_id):
             [c["nombre"] for c in celdas_turno])
 
 
+def _faq_menu_crudo(interp, tienda_id):
+    """El mismo material de FAQ pero CON LOS HUECOS {{concepto}} intactos: es lo
+    que ve el SOLVER. Redacta la politica en su voz y deja el hueco donde va el
+    numero; el codigo lo estampa desde la fuente al renderizar.
+
+    Asi el numero de politica deja de ser algo que el modelo TEJE y despues hay
+    que auditarle, y pasa a ser dato estampado, igual que el precio. La version
+    ya estampada sigue yendo a la evidencia, que es contra lo que juzga la red."""
+    from app.core.indice import menu as _menu_indice
+    celdas_turno = [c for c in _celdas(interp, tienda_id)
+                    if c.get("texto_faq_crudo")][:5]
+    return _menu_indice(celdas_turno, "texto_faq_crudo")
+
+
 def _cats_obligatorias(interp, faq_ground) -> list:
     """Las celdas que el turno DEBE contestar con prosa: son los slots requeridos
     del schema, asi que saltearlas es imposible a nivel API. Tope de 5 para no
@@ -701,7 +715,11 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
         f"TEMAS de FAQ disponibles: {faq_list}\n"
         + (f"FAQ para REDACTAR (para el fragmento faq: adapta esto a tu voz con "
            f"el contexto de la charla, cita el id entre corchetes, NO lo copies "
-           f"literal; los numeros salen de aca):\n{faq_menu}\n" if faq_menu else "")
+           f"literal). LOS HUECOS {{{{asi}}}} SE COPIAN TAL CUAL, con las dos "
+           f"llaves y el nombre exacto, en el lugar de tu frase donde va ese "
+           f"dato. NO los reemplaces por un numero ni los inventes: el sistema "
+           f"pone el valor real ahi. Si no sabes un dato y no hay hueco para el, "
+           f"no lo escribas.\n{faq_menu}\n" if faq_menu else "")
         + f"CRITERIO jurado para apoyarte (para el fragmento criterio: adapta "
         f"esto a tu frase y cita el id entre corchetes):\n{criterios_menu}\n"
         f"{car_txt}{dest_txt}{vis_txt}{res_txt}{prefs_txt}{ficha_txt}{compat_txt}\n\n"
@@ -771,7 +789,9 @@ async def generar_fragmentos(mensaje, historial, estado, tienda_id,
     criterios, criterios_menu = _criterios_del_turno(mensaje, universo, interp)
     # GROUNDING de FAQ: la curada estampada de los temas ruteados, para que el
     # SOLVER redacte la politica en su voz (no se pega la curada, que robotizaba).
-    faq_menu, _faq_ground = _faq_del_turno(mensaje, interp, tienda_id)
+    _faq_menu_stamp, _faq_ground = _faq_del_turno(mensaje, interp, tienda_id)
+    # al SOLVER le va el material CON los huecos: redacta la voz, no el numero.
+    faq_menu = _faq_menu_crudo(interp, tienda_id) or _faq_menu_stamp
     # OBLIGACION ESTRUCTURAL DE COBERTURA: las categorias ruteadas que se contestan
     # con PROSA (politica/objecion/compatibilidad/asesoramiento/postventa/etc, no
     # las de producto ni conversacion) y que tienen grounding entran como SLOTS
@@ -1242,6 +1262,32 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             return get_product_by_id(str(pid).upper(), tienda_id=tienda_id)
         return None
 
+    def _estampar_huecos(txt, tema):
+        """EL NUMERO LO PONE EL CODIGO. El solver redacta la politica en su voz y
+        deja los huecos {{concepto}}; aca se estampan desde los valores de la
+        MISMA FAQ. Si un hueco no resuelve, NO puede salir al cliente: cae a la
+        curada de la fuente, ya estampada.
+
+        Corre en los DOS lugares que emiten politica -el fragmento faq y el
+        append de respuestas_por_categoria-. En la corrida viva del 30-jul las
+        dos unicas fugas de `{{` al cliente salieron por el append, que era el
+        camino sin estampar."""
+        if not txt or "{{" not in txt:
+            return txt
+        # el tema propio o el de su GEMELA: la celda `cambios_devoluciones`
+        # redacta con los huecos de `devoluciones`, que es donde vive el valor.
+        from app.core.indice import GEMELOS
+        t = str(tema or "")
+        data = faq.get(t) or faq.get(GEMELOS.get(t, "")) or {}
+        est = estampar_valores(txt, data) if data else None
+        if est and "{{" not in est:
+            return est
+        crudo = str(data.get("respuesta_curada")
+                    or data.get("respuesta") or "").strip()
+        log.warning("generador_v2_faq_hueco_sin_valor", trace_id=trace_id,
+                    tema=tema)
+        return (estampar_valores(crudo, data) or "") if crudo else ""
+
     for f in (fragmentos or []):
         t = f.get("tipo")
         if t == "prosa":
@@ -1382,12 +1428,13 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 log.info("generador_v2_faq_excedente", trace_id=trace_id,
                          tema=f.get("tema"))
                 continue
-            _txt_faq = str(f.get("texto") or "").strip()
+            _txt_faq = _estampar_huecos(str(f.get("texto") or "").strip(),
+                                        f.get("tema"))
             if not _txt_faq and f.get("tema"):
-                data = faq.get(f["tema"]) or {}
-                txt = str(data.get("respuesta_curada")
-                          or data.get("respuesta") or "").strip()
-                _txt_faq = (estampar_valores(txt, data) or txt) if txt else ""
+                _data = faq.get(f["tema"]) or {}
+                txt = str(_data.get("respuesta_curada")
+                          or _data.get("respuesta") or "").strip()
+                _txt_faq = (estampar_valores(txt, _data) or txt) if txt else ""
             if _txt_faq:
                 from app.core.curadas import podar_muletillas_contra_estado
                 _txt_faq = podar_muletillas_contra_estado(_txt_faq, estado)
@@ -1488,8 +1535,9 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                     _cub.add(str(f[_k]))
         faltantes = [t for c, r in respuestas_cat.items()
                      if c not in _cub
-                     and (t := re.sub(r"\s*\[[a-z_]+\]", "",
-                                      str((r or {}).get("texto") or "")).strip())]
+                     and (t := _estampar_huecos(
+                         re.sub(r"\s*\[[a-z_]+\]", "",
+                                str((r or {}).get("texto") or "")).strip(), c))]
         if faltantes:
             _pos = len(partes) - (1 if partes and partes[-1].rstrip()
                                   .endswith("?") else 0)
