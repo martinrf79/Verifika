@@ -1299,6 +1299,39 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             return get_product_by_id(str(pid).upper(), tienda_id=tienda_id)
         return None
 
+    _PCT_OK = set()
+    for _d in faq.values():
+        for _v in ((_d or {}).get("valores") or []):
+            if (str(_v.get("unidad") or "").lower() == "porcentaje"
+                    and isinstance(_v.get("monto"), (int, float))):
+                _PCT_OK.add(int(_v["monto"]))
+
+    def _sin_porcentaje_inventado(txt):
+        """Un porcentaje que el modelo escribe tiene que EXISTIR en la fuente.
+
+        30-jul, charla real de Martin: el bot escribio "al elegir transferencia
+        bancaria para el 80% de tu compra, vas a ver un ahorro importante". El 80
+        no sale de ningun lado -el descuento es 10-. El verificador de FAQ lo
+        marco sin respaldo y NO lo toco, porque es conservador a proposito, asi
+        que la frase le llego al cliente.
+
+        No se prohiben los porcentajes: se prohiben los INVENTADOS. El 10% de
+        transferencia es dato de la fuente y tiene que poder decirse, que es lo
+        que vende. Se descarta la ORACION con el porcentaje que la fuente no
+        tiene, no el bloque entero."""
+        if not txt or "%" not in txt or not _PCT_OK:
+            return txt
+        out = []
+        for o in re.split(r"(?<=[.!?])\s+", txt):
+            pcts = [int(m) for m in re.findall(r"(\d{1,3})\s*%", o)]
+            if pcts and not all(p in _PCT_OK for p in pcts):
+                log.warning("generador_v2_porcentaje_inventado",
+                            trace_id=trace_id, pcts=pcts,
+                            validos=sorted(_PCT_OK)[:6], frase=o[:120])
+                continue
+            out.append(o)
+        return " ".join(out).strip()
+
     def _estampar_huecos(txt, tema):
         """EL NUMERO LO PONE EL CODIGO. El solver redacta la politica en su voz y
         deja los huecos {{concepto}}; aca se estampan desde los valores de la
@@ -1545,7 +1578,8 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 # son solo FALLBACK si el solver no escribio el cierre. Sin total, NO
                 # se pega nada enlatado: la prosa del solver ya cierra. Se borraron
                 # las coletillas rotativas; la repeticion se mide con banco_nrun.
-                _cierre_solver = str(f.get("texto") or "").strip()
+                _cierre_solver = _sin_porcentaje_inventado(
+                    str(f.get("texto") or "").strip())
                 if _cierre_solver:
                     partes.append(_cierre_solver)
                 elif total_mostrado and primer_turno:
@@ -1572,9 +1606,9 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                     _cub.add(str(f[_k]))
         faltantes = [t for c, r in respuestas_cat.items()
                      if c not in _cub
-                     and (t := _estampar_huecos(
+                     and (t := _sin_porcentaje_inventado(_estampar_huecos(
                          re.sub(r"\s*\[[a-z_]+\]", "",
-                                str((r or {}).get("texto") or "")).strip(), c))]
+                                str((r or {}).get("texto") or "")).strip(), c)))]
         if faltantes:
             _pos = len(partes) - (1 if partes and partes[-1].rstrip()
                                   .endswith("?") else 0)

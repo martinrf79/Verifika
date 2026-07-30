@@ -237,7 +237,8 @@ async def _process_and_reply_telegram(chat_id: str, text: str):
 
         # Telegram solo soporta tienda default (no hay multi-tenant nativo)
         response = await process_message(chat_id, text, canal="telegram")
-        await connector.send_message(chat_id, response)
+        from app.connectors.base import enviar_respuesta
+        await enviar_respuesta(connector, chat_id, response)
     except Exception as e:
         log.error("telegram_processing_error", error=str(e), chat_id=chat_id)
         if SENTRY_DSN:
@@ -305,7 +306,11 @@ async def _process_and_reply_whatsapp(tienda_id: str, user_id: str,
             log.info("whatsapp_audio_transcribed", user_id=user_id, chars=len(text))
 
         response = await process_message(user_id, text, tienda_id=tienda_id, canal="whatsapp")
-        await connector.send_message(user_id, response)
+        # EN PARTES, no en un bloque: el cliente empieza a leer antes. La memoria
+        # ya guardo el texto completo adentro de process_message, asi que partir
+        # el ENVIO no cambia lo que la charla recuerda.
+        from app.connectors.base import enviar_respuesta
+        await enviar_respuesta(connector, user_id, response)
     except Exception as e:
         log.error("whatsapp_processing_error", error=str(e),
                   user_id=user_id, tienda_id=tienda_id)
