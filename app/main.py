@@ -210,6 +210,50 @@ async def diag_latencia(request: Request):
     return out
 
 
+async def _process_and_reply_telegram(chat_id: str, text: str):
+    """Un turno por Telegram. Se BORRO por error en el barrido de codigo muerto
+    del 29-jul (commit a0cd2f9) y el webhook quedo llamando a un nombre que ya no
+    existia: cualquier mensaje por Telegram tiraba NameError y el cliente no
+    recibia nada. No se noto porque el canal vivo es WhatsApp. Restaurado tal
+    cual estaba."""
+    try:
+        connector = get_telegram_connector()
+
+        if text.startswith("__AUDIO__:"):
+            file_id = text.split(":", 1)[1]
+            log.info("telegram_audio_received", chat_id=chat_id, file_id=file_id)
+            audio_bytes = await connector.download_file(file_id)
+            if not audio_bytes:
+                await connector.send_message(
+                    chat_id, "No pude descargar el audio, mandalo de nuevo por favor.")
+                return
+            from app.core.transcriber import transcribir_audio
+            text = transcribir_audio(audio_bytes)
+            if not text:
+                await connector.send_message(
+                    chat_id, "No pude entender el audio, podes escribirlo o mandarlo de nuevo?")
+                return
+            log.info("telegram_audio_transcribed", chat_id=chat_id, chars=len(text))
+
+        # Telegram solo soporta tienda default (no hay multi-tenant nativo)
+        response = await process_message(chat_id, text, canal="telegram")
+        await connector.send_message(chat_id, response)
+    except Exception as e:
+        log.error("telegram_processing_error", error=str(e), chat_id=chat_id)
+        if SENTRY_DSN:
+            import sentry_sdk
+            sentry_sdk.capture_exception(e)
+        # Mismo criterio que WhatsApp: no dejar al cliente sin respuesta ante un
+        # blip transitorio del LLM. Envio en su propio try.
+        try:
+            await get_telegram_connector().send_message(
+                chat_id,
+                "Perdón, estoy con mucha demanda en este momento. "
+                "Probá de nuevo en un ratito y te respondo. 🙏")
+        except Exception:
+            pass
+
+
 @app.post("/webhook/telegram")
 async def telegram_webhook(request: Request, background: BackgroundTasks):
     payload = await request.json()
@@ -646,6 +690,25 @@ async def upload_catalog(
                  cargados=cargados, borrados=borrados,
                  errores=len(errores) + len(errores_carga))
 
+        # COHERENCIA DE LOS DATOS, en la puerta por donde entran. Lo de las 57
+        # fichas que le mentian al cliente no fue un bug de codigo, fue el
+        # catalogo, y no habia nada mirandolo. Se AVISA, no se bloquea: el
+        # catalogo ya quedo cargado y la purga de ingesta neutraliza la prosa
+        # contradicha, asi que rechazar la carga entera seria peor. Lo que no
+        # puede pasar es que entre en silencio.
+        incoherencias = []
+        try:
+            from app.core.coherencia_datos import revisar_todo
+            for nombre, problemas in revisar_todo(tienda_id).items():
+                if problemas:
+                    incoherencias.append(f"{nombre}: {len(problemas)}")
+                    log.warning("catalog_incoherente", tienda_id=tienda_id,
+                                chequeo=nombre, cuantos=len(problemas),
+                                ejemplos=[str(p)[:160] for p in problemas[:3]])
+        except Exception as e:
+            log.warning("catalog_coherencia_error", tienda_id=tienda_id,
+                        error=str(e)[:150])
+
         return {
             "ok": True,
             "tienda_id": tienda_id,
@@ -655,6 +718,7 @@ async def upload_catalog(
             "filas_invalidas": len(errores),
             "errores_validacion": errores[:20],
             "errores_carga": errores_carga[:20],
+            "incoherencias": incoherencias,
         }
 
     except Exception as e:

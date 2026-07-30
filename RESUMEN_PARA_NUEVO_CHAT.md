@@ -4,6 +4,252 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 29-jul-2026 (noche) — EL NUMERO: EL TURNO COMPLETO CORRE EN CADA PUSH ====**
+
+Rama: `claude/system-verification-csv-table-jjal0l`. Esto NO es una feature, es
+la red que faltaba. Nace de una pregunta de Martin que hay que dejar contestada:
+por que cada chat nuevo encuentra errores nuevos y nunca se llega a piso firme.
+
+**EL DIAGNOSTICO, MEDIDO, no opinado.** Tres causas, en orden de peso:
+
+1. **Cada sesion escribia la verificacion de su propio trabajo, con su mismo
+   punto ciego.** Por eso el error nuevo lo encuentra siempre la sesion
+   siguiente. Numeros del 29-jul: de 666 tests, **31 tocaban el turno entero**, y
+   la cobertura del camino vivo era **61%**, con `app/main.py` en **16%** -por ahi
+   se colo el webhook de Telegram muerto-, `interpretador` en 52% y `leads`, que
+   es donde se cierra la venta, en 48%. Verde no significa funciona: ese dia
+   habia 630 verdes con Telegram caido y 57 fichas mintiendo.
+2. **El turno es una cadena de 18 reescrituras del texto**, una atras de la otra.
+   Cada verificador y cada guarda recibe lo que dejo el anterior. Con eso no se
+   puede predecir la salida: se descubre en produccion, y arreglar una guarda
+   rompe otra. Esa es la mecanica del loop.
+3. **No existia un numero.** Los 65 guiones estaban escritos pero el banco se
+   corria a mano. Sin numero, "robusto" es una opinion.
+
+**LO QUE SE HIZO (pasos 1 y 2 del plan).**
+
+**EL CASETE (`banco_pruebas/casete.py`).** Se graba UNA vez la salida cruda del
+modelo en cada etapa del turno -interprete, solver, juez, reescrituras de las
+guardias, resumen de memoria- y despues el turno COMPLETO se reproduce offline:
+catalogo real, universo, atadura por enum, render que estampa desde la fuente,
+los siete verificadores, las cinco guardas, el cierre y la memoria. Sin clave,
+sin red, sin costo, en segundos.
+
+Se indexa por **(turno, etapa)**, NO por hash del prompt. Es la decision que lo
+hace sostenible: cachear por prompt significa que el dia que alguien toca una
+frase -o sea, casi todas las sesiones- fallan los 65 casetes y el CI queda rojo
+hasta regrabar. Una salida grabada sigue siendo una salida PLAUSIBLE del modelo
+aunque el prompt cambie, y lo que se prueba es el codigo que la rodea. Regrabar
+pasa a ser algo que se hace cuando cambia el CONTRATO -el schema del interprete,
+los tipos de fragmento, el schema del juez-, no por un ajuste de redaccion.
+
+Las DOS puertas al modelo se interceptan solas: `interpretador._get_client` y
+`generador_v2._cliente_gemini`. Para eso se consolido `checker_afirmaciones`, que
+se armaba su propio cliente OpenAI con la clave leida a mano: exactamente la
+indireccion que ya mato dos veces a la guardia de promesas, cada vez que el
+sistema cambio de provider. Ahora el juez usa el cliente de quien SI redacta.
+
+**EL NUMERO (`banco_pruebas/puntaje.py`).** Un puntaje de 0 a 100 sobre todas las
+charlas, sumado por punto y no por promedio de porcentajes. Tres criterios
+deterministas, sin LLM:
+  - **no miente (peso 3)**: reusa `banco_pruebas/juez.py`, que ya existia y se
+    corria a mano. Stock contradicho contra el catalogo, plata sin respaldo,
+    promesas prohibidas, marcadores sin estampar.
+  - **contesta (peso 2)**: que no sea vacia, ni el enlatado, ni un acuse pelado.
+  - **lo que el guion pide (peso 2)**: expectativas OPCIONALES escritas en el
+    propio guion (`> contiene:` / `> no_contiene:`). El guion sin expectativas
+    puntua igual por los dos primeros, asi el numero existe HOY sobre los 65 y se
+    afila solo a medida que se escriben. No bloquea nada.
+
+**LA REGLA, que es lo que corta el loop: el numero no baja.** El piso vive en
+`banco_pruebas/casetes/_piso.json`, lo escribe el grabador cuando se regraba la
+tanda entera, y lo defiende `tests/test_charlas_grabadas.py` en cada push. El
+workflow `tests` ya corria en cada push, asi que esto entro solo; ademas el
+numero queda impreso en el resumen de la corrida de Actions, sin abrir el log.
+
+**COMO SE REGRABA** (unico paso que gasta y necesita clave):
+`GEMINI_API_KEY=$GEMINI_API_KEY_PROD BANCO_PAUSA_S=3 python banco_pruebas/grabar_casetes.py`
+Con la clave del tier gratis se comen 429 y quedan turnos degradados grabados
+adentro del casete; se probo y se descarto esa tanda.
+
+**LO QUE ESTO NO MIDE, dicho claro:** con el modelo grabado no se mide si el
+modelo mejoro o empeoro. Para eso esta el banco vivo pago (`banco_deepeval`,
+nocturno). Aca se miden las 18 reescrituras encadenadas, que es donde vivieron
+TODOS los bugs de esta semana.
+
+**LA PRIMERA CORRIDA YA SE PAGO SOLA.** Reprodujo las 65 charlas offline en dos
+minutos y encontro TRES con fallas duras. Las tres ya venian fallando en la
+grabacion EN VIVO (89, 94 y 80 sobre 100), o sea que eran bugs reales de
+produccion y no artefactos del arnes: la reproduccion replica fiel.
+
+  1. **El estampado de compatibilidad, mio, de esa misma tarde.** Pegaba el
+     mismo aviso una vez por CADA variante negada -cuatro Redragon, cuatro veces
+     la misma frase- y el recorte a 400 caracteres la cortaba a mitad de
+     palabra: "andan en la compu,". Ademas lo pegaba aunque el modelo ya lo
+     hubiera dicho bien y con mejor prosa. Ahora agrupa por MOTIVO y, si el
+     texto ya niega esa plataforma en la misma oracion, no agrega nada: el
+     estampado es la RED para cuando el modelo no lo dice, no una coletilla.
+  2. **El juez metia promesas que nadie volvia a mirar.** No solo poda: cuando
+     encuentra una afirmacion sin respaldo REESCRIBE el mensaje entero, y corre
+     DESPUES de la guardia de promesas. En una reescritura metio "cerremos la
+     operacion hoy mismo" y salio al cliente. La guardia estaba perfecta
+     -`detectar()` sobre el texto FINAL devuelve dia_entrega-; el problema era el
+     ORDEN. Es el caso concreto de las 18 reescrituras encadenadas.
+     **La reparacion es REVERTIR, no podar.** El primer intento fue pasarle la
+     poda y el fallback de la guardia al texto del juez y SALIO PEOR: por una
+     frase se perdia un presupuesto correcto entero y el cliente recibia el
+     enlatado. Se descarto. Ahora, si la reescritura introduce una promesa que el
+     texto anterior no tenia, se tira la reescritura y sale el texto pre-juez,
+     que ya paso los siete escalones limpio. Se pierde prosa, no la venta.
+  3. **Una expectativa mal escrita, tambien mia.** Pedia la palabra literal "no
+     trabajamos" y el bot contesto "no comercializamos celulares", que es
+     perfecto: rojo falso. Por eso `|` en las expectativas son ALTERNATIVAS y no
+     una lista que tiene que estar entera. Un rojo falso es peor que no tener la
+     expectativa, porque ensena a ignorar el tablero.
+
+**EL PISO MANDA POR PUNTOS, NO POR PORCENTAJE.** 100/100 esta redondeado: con el
+porcentaje, una regresion de un par de turnos podia seguir redondeando a 100 y
+pasar el gate. El piso guarda los puntos crudos. Hoy: **1654 de 1656**.
+
+**LO UNICO QUE QUEDA ROJO, anotado y sin tapar:** `21_posventa_seguimiento` T4,
+"puedo usar la garantia para pedir otro?". El solver contesta bien desde el
+criterio de garantia y la guardia de promesas mata el turno entero por un
+"lo resolvemos hoy mismo", que es un falso positivo de `dia_entrega` -habla de
+resolver un caso, no de entregar-. La reescritura no lo limpia y la poda tampoco,
+asi que cae al enlatado. Es la misma familia que el bug 2: una guarda demasiado
+roma. Se arregla en el paso 3.
+
+**PASO 3, HECHO: LA RED DEJO DE SER UNA CADENA** (`app/core/red_verificadores.py`).
+Cinco fases: DIAGNOSTICO (todos miran el MISMO texto y devuelven un Dictamen,
+nadie muta), APLICACION (un solo lugar, orden fijo, cada corrector ubica su
+cifra), REESCRITURA (UNA llamada al modelo con todas las reglas juntas, antes
+eran hasta dos que se pisaban), EL JUEZ, y VEREDICTO (se re-diagnostica TODO
+sobre el resultado). La fase 5 hace IMPOSIBLE por construccion el bug del guion
+17, y para todos los verificadores, no solo las promesas. Se borraron las 261
+lineas de la cadena vieja del hub. De yapa: la poda saca la ORACION y recien
+despues la linea, y un verificador que revienta ya no tapa a los siguientes.
+
+**DOS BUGS MAS, los dos cazados por el gate:**
+  - **Pre-existente, vivo en produccion.** El verificador de plata tomaba
+    "quedan 5" por un precio sin respaldo y lo reescribia a "quedan 37500": le
+    pisaba el stock verdadero con el precio. "quedar" es a la vez verbo de precio
+    y el verbo natural del stock. Ahora un numero pelado de hasta tres digitos
+    detras de "quedan" es un conteo.
+  - **Metido en la propia refactorizacion.** Junte los reemplazos de todos los
+    verificadores y los aplique con `str.replace`, pero `correcciones` trae
+    NUMEROS: reemplazar el "5" pelado pisaba todos los cinco y "$8.500" salia
+    "$8.3750000". El numero bajo de 1654 a 1651 y el test se cayo con la charla y
+    el precio exactos. NO se bajo el piso: se arreglo la causa.
+
+**PASO 4, HECHO: LOS DATOS CONTRA SI MISMOS** (`app/core/coherencia_datos.py` +
+`tests/test_coherencia_datos.py`). Seis chequeos sobre los datos REALES, en
+segundos y sin LLM, todos en CERO hoy: el modelo contra su planilla; la prosa
+despues de ingerir (se pregunta con el criterio de PRODUCCION, corriendo la purga
+de nuevo y exigiendo que no saque nada); la tabla de compatibilidad contra su
+vocabulario cerrado; las dos planillas entre si; filas huerfanas; y columnas
+cargadas a mano que no lee nadie. Mas la cobertura de compatibilidad, 469 de 482
+-los 13 que faltan son las sillas, que no se conectan a nada-.
+
+**Y ESE GATE ENCONTRO DOS DEFECTOS EN `_valores_de`, que es su propia base:**
+  1. Recortaba el cero final de los ENTEROS al normalizar decimales, asi que
+     daba por iguales 8GB y 80GB y leia 500W como 5W: dejaba pasar justo la
+     contradiccion que tiene que cazar.
+  2. Tomaba una letra suelta ADELANTE como unidad, asi que la "W1" de la fuente
+     "EVGA 500 W1" era 1 watt y chocaba contra sus 500W reales.
+
+**EL LIMITE DEL CHEQUEO, escrito para que nadie confie de mas:** compara
+MAGNITUDES, un numero con su unidad. Una potencia escondida en un codigo -"RM850e"
+son 850W- NO la ve, y no la puede ver. Ese caso igual esta cubierto, pero por la
+purga de ingesta, no por el chequeo. Hay un test que fija ese limite a proposito.
+
+**LO QUE SIGUE:**
+  5. **Cero features nuevas hasta revisar y deployar** lo de esta tanda.
+  - Queda UN rojo anotado: `21_posventa_seguimiento` T4, la guardia de promesas
+    mata un turno bueno por un "lo resolvemos hoy mismo", falso positivo de
+    dia_entrega. Con la red nueva es un arreglo chico y acotado.
+  - Afilar el numero: hoy mide sobre todo "no mintio y contesto", porque solo dos
+    guiones tienen expectativas escritas. Es un buen detector de REGRESIONES; para
+    que sea una medida de CALIDAD hay que escribir expectativas guion por guion.
+    Incremental, no bloquea nada.
+
+---
+
+**==== 29-jul-2026 (tarde) — LA TABLA DE COMPATIBILIDAD + DOS BUGS REALES ====**
+
+Rama: `claude/system-verification-csv-table-jjal0l`. Orden de Martin: verificar
+el sistema, cargar la tabla de compatibilidades y despues arrancar las pruebas.
+Bateria: **666 verdes** (eran 630), 36 tests nuevos.
+
+**BUG 1, EL PEOR: TELEGRAM ESTABA MUERTO.** El barrido de codigo muerto de la
+manana (commit a0cd2f9) borro `_process_and_reply_telegram` y dejo el webhook
+llamandolo igual: cualquier mensaje por Telegram tiraba NameError y el cliente
+no recibia NADA. No se noto porque el canal vivo es WhatsApp, y 630 tests en
+verde no lo vieron porque nadie testeaba el webhook. Restaurada la funcion tal
+cual estaba, mas `tests/test_webhooks_definidos.py`, un candado que recorre
+`app/main.py` y falla si se referencia un nombre que no existe. Probado: con la
+funcion borrada a proposito, el test se cae.
+
+**BUG 2: 57 FICHAS LE MENTIAN AL CLIENTE, Y NO POR EL MODELO.** El catalogo trae
+`caracteristicas_extra` como PLANTILLA por categoria: las 15 fuentes dicen
+"550W", las 15 motherboards "DDR4", las 18 placas de video "8GB GDDR6", los 14
+coolers "aire", los 24 monitores "75Hz". O sea que la Corsair RM850e le decia
+550 al cliente y la B650 con ranuras DDR5 le decia DDR4, contradiciendo a la
+planilla curada del propio repo. Esa prosa viaja al cliente por el campo
+`caracteristicas` de la ficha Y al prompt del solver: el sistema entero razonaba
+sobre un dato falso, y ningun verificador lo miraba porque no es plata.
+Arreglado en `fuente_producto.purgar_prosa_contradicha`, en la puerta de
+ingesta: si el EXTRACTOR de una spec saca de la prosa un valor distinto al de
+`specs_por_modelo.csv`, se borra ese valor. Manda la planilla, igual que en
+`_completar_capas`. **No se toco `productos.csv`.**
+  - Usa el extractor de cada spec, no la unidad suelta: los 128GB de
+    almacenamiento de una tablet chocaban contra los 4GB de RAM de la planilla
+    -misma unidad, otro dato- y borraban un valor correcto. Medido: con la
+    unidad suelta purgaba 84 productos, 27 de ellos mal; con el extractor, 57 y
+    ninguno mal.
+  - Borra el VALOR, no el segmento: "IPS Full HD 75Hz" con los hercios mentidos
+    queda "IPS Full HD", que es cierto. Purgar de mas tambien es perder dato.
+  - Los pares que no son numeros (aire contra liquida) viven en
+    `specs_preguntables.json`, campo nuevo `excluyentes`. Sumar uno es editar el
+    json.
+  - Se CARGO el dato que faltaba para poder comparar: `potencia` de las 15
+    fuentes y la columna nueva `memoria_video` de las 18 placas, en
+    `specs_por_modelo.csv`. 33 celdas.
+
+**LA TABLA DE COMPATIBILIDAD (lo que pidio Martin).** Era el ultimo eje grande
+que el sistema contestaba SIN dato: el criterio jurado dice "se responde con la
+ficha", pero la ficha no traia ni conector, ni zocalo, ni sistema, asi que el
+modelo razonaba de memoria. De ahi salio la alucinacion que cazo el juez, "es
+compatible con cualquier notebook", dicha sobre una RAM de escritorio.
+
+  - `data/clientes/verifika_prod/compatibilidad.csv` — **482 modelos, uno por
+    fila**, con 5 campos: `conecta_por`, `plataformas`, `requiere`, `provee`,
+    `no_compatible`, mas una nota de vendedor. 469 con dato; las 13 sillas solo
+    llevan nota, no se enchufan a nada.
+  - `compatibilidad_vocabulario.json` — la lista CERRADA (12 plataformas, 22
+    conectores con FAMILIA, alias de como lo dice el cliente). Sumar un equipo
+    es editar el json.
+  - `app/core/compatibilidad.py` — tres veredictos de primera clase, como el
+    certificador: `compatible`, `incompatible`, `sin_dato`. `sin_dato` NO es
+    error: es el honesto, y es lo que impide que el hueco lo llene el modelo.
+    `evaluar(prod, plataforma)` para "¿anda con lo que yo tengo?" y
+    `evaluar_par(a, b)` para "¿este va con este otro?", que cruza REQUIERE
+    contra PROVEE. **La regla de incompatible es por FAMILIA**: misma familia,
+    valores distintos, no entra. Sin eso habria que cargar 482x482 pares.
+  - Enchufado al camino VIVO, en los cinco lugares: la fuente lo estampa en
+    `prod["compat"]` al ingerir y al leer (880 de 880 productos lo traen); el
+    fragmento `ficha` tiene campo nuevo `compatibilidad`; el prompt del solver
+    lleva el veredicto YA RESUELTO; el interprete declara
+    `plataformas_cliente` atado al enum del vocabulario; y el hub ESTAMPA el
+    NO (`hub_atado._compat`, al lado de la honestidad de specs).
+  - `scripts/planilla_compatibilidad.py` genera la tabla y **no pisa lo cargado
+    a mano**, igual que `planilla_specs.py`.
+  - Probado de punta a punta sobre el catalogo real: "esta memoria sirve para mi
+    notebook?" con el solver diciendo que si -> sale el NO de la fuente.
+
+**PENDIENTE, y es lo que sigue:** las pruebas. Martin las quiere en dos tandas,
+primero INTERPRETACION al maximo y recien despues lo determinista. Nada de esto
+se probo VIVO contra Gemini todavia: los 36 tests nuevos son offline.
+
 **==== 29-jul-2026 — AUDITORIA DE ALCANCE + INTERPRETACION: EL RECALL DEL
 INTERPRETE ====**
 

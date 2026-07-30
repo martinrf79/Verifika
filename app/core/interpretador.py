@@ -289,6 +289,18 @@ def construir_prompt_interpretador(mensaje: str,
     except Exception:
         specs_str = "sin specs"
 
+    # el vocabulario de EQUIPOS del cliente, la otra mitad de una pregunta de
+    # compatibilidad: sin saber contra QUE se pregunta, la tabla no puede dar
+    # veredicto. El modelo traduce "la compu del laburo, que es una Mac" al id;
+    # una lista de alias no llega a eso.
+    try:
+        from app.core.compatibilidad import vocabulario as _vocab_compat
+        _plats = _vocab_compat()["plataformas"]
+        plataformas_str = "; ".join(f"{k} = {v['etiqueta']}"
+                                    for k, v in _plats.items()) or "sin plataformas"
+    except Exception:
+        plataformas_str = "sin plataformas"
+
     # los ATRIBUTOS ordenables, derivados del catalogo. Es lo que le permite al
     # modelo traducir cualquier superlativo -"la mas grande", "la mas liviana",
     # "la de mas garantia"- a una operacion que el codigo sabe ejecutar.
@@ -332,6 +344,7 @@ Devolvé SOLO este JSON, sin texto alrededor. Antes de responder, validá que cu
   "solicitud_nueva": [{{"categoria": "categoria EXACTA de la lista de abajo", "cantidad": número o null, "criterio": "mas_barato|intermedio|null"}}],
   "categorias": ["una o varias categorias EXACTAS de la lista de categorias de la charla, las que toque el mensaje; vacía si ninguna"],
   "specs_preguntadas": ["los ids EXACTOS de las specs por las que el cliente pregunta, de la lista de abajo; vacía si no pregunta ninguna"],
+  "plataformas_cliente": ["los ids EXACTOS de los equipos que el cliente YA TIENE y con los que quiere usar el producto, de la lista de abajo; vacía si no nombra ninguno"],
   "tope_presupuesto": número entero en pesos o null,
   "exclusiones": [{{"tipo": "origen|marca", "valor": "texto"}}],
   "uso_previsto": "una o dos palabras o null",
@@ -366,7 +379,12 @@ confianza. alta 0.85 a 1.0 lectura inequívoca; media 0.6 a 0.85 parcial; baja m
 
 specs_preguntadas. TRADUCÍ lo que el cliente pregunta al id de la spec, no matchees su palabra. Esta es tu tarea más importante después de entender la intención: el código de abajo NO razona, sólo sabe ejecutar sobre estos ids, y el dato real ya está cargado esperando. Si el cliente pregunta algo que ninguno de estos ids cubre, dejá la lista vacía; no fuerces uno parecido.
 Ids disponibles con lo que significan: {specs_str}
+
 Ejemplos de traducción, es criterio y no lista cerrada. "resiste que se me caiga el café encima" y "son resistentes al agua" y "lo puedo meter en la pileta" van todos a resistencia_agua. "cuánto dura sin enchufar" va a bateria. "se le puede poner más memoria" va a ram_ampliable. "tiene lucecitas" va a retroiluminacion. "cuánto guarda" va a almacenamiento. "qué micro trae" va a procesador. "cuántos cuadros por segundo tira la pantalla" va a hz.
+
+plataformas_cliente. Los equipos que el cliente YA TIENE y con los que quiere usar lo que está mirando. Es la otra mitad de una pregunta de compatibilidad: el sistema tiene cargado con qué anda cada producto, pero sin saber contra QUÉ preguntan no puede responder. Traducí lo que dice a los ids, no matchees su palabra.
+Ids disponibles con lo que significan: {plataformas_str}
+Ejemplos. "¿esta memoria sirve para mi notebook?" va notebook. "lo quiero para la compu del laburo, que es una Mac" va macos. "¿anda con la play?" va ps5. "para el televisor del living" va smart_tv. "tengo una PC armada con Windows" van pc_escritorio y windows, los dos. Si nombra un equipo que ninguno de los ids cubre, o no nombra ninguno, dejá la lista vacía: el sistema contesta honesto que no lo tiene confirmado, que es mejor que arriesgar un sí.
 
 orden. Cuando el cliente pide un SUPERLATIVO, traducilo a dirección más atributo. "la que más capacidad tenga" es max + almacenamiento. "la más liviana" es min + peso_gramos. "la de más garantía" es max + garantia_meses. "la más barata" es min + precio_ars. "la más potente" elegí el atributo que mejor represente potencia en esa categoría. Es la misma operación siempre, sólo cambia el atributo: no te limites a los ejemplos.
 Atributos disponibles con lo que significan: {atributos_str}
@@ -669,6 +687,23 @@ def validar_schema(resultado: dict) -> tuple[bool, str]:
         except Exception:
             _sp = []
         resultado["specs_preguntadas"] = _sp
+    # plataformas_cliente (29-jul): los equipos que declaro el cliente, filtrados
+    # al vocabulario cerrado. Mismo criterio que specs: None es "no declaro" y
+    # cae la red de alias sobre el mensaje; lista vacia es "no nombro ninguno",
+    # y eso manda -de ahi sale el honesto en vez de un si sin respaldo-.
+    _pc = resultado.get("plataformas_cliente", None)
+    if _pc is not None:
+        if isinstance(_pc, str):
+            _pc = [_pc]
+        if not isinstance(_pc, list):
+            _pc = []
+        try:
+            from app.core.compatibilidad import vocabulario
+            _validas_p = set(vocabulario()["plataformas"])
+            _pc = [p for p in _pc if isinstance(p, str) and p in _validas_p]
+        except Exception:
+            _pc = []
+        resultado["plataformas_cliente"] = _pc
     return True, ""
 
 
@@ -760,7 +795,8 @@ def _schema_interprete(nombres_mostrados: list[str],
                        categorias: list[str] | None = None,
                        modelos: list[str] | None = None,
                        specs: list[str] | None = None,
-                       atributos: list[str] | None = None) -> dict:
+                       atributos: list[str] | None = None,
+                       plataformas: list[str] | None = None) -> dict:
     """Schema estricto para constrained generation DURA: Structured Outputs de
     OpenAI y el response_format json_schema del endpoint compatible de Gemini.
     intencion y estado atados a su enum; producto_resuelto atado al enum de
@@ -889,6 +925,15 @@ def _schema_interprete(nombres_mostrados: list[str],
             "specs_preguntadas": {"type": "array", "items": {
                 "type": "string",
                 "enum": (specs or ["otra"])}},
+            # PLATAFORMAS DEL CLIENTE (29-jul): con QUE equipo quiere usarlo.
+            # Es la otra mitad de una pregunta de compatibilidad: la tabla dice
+            # con que anda cada producto, pero sin saber contra que se pregunta
+            # no hay veredicto posible. Atado al enum del vocabulario cerrado,
+            # asi el modelo traduce ("la compu del laburo, que es una Mac") sin
+            # poder inventar un equipo.
+            "plataformas_cliente": {"type": "array", "items": {
+                "type": "string",
+                "enum": (plataformas or ["otra"])}},
             # PREFERENCIAS (16-jul): tope solo con CIFRA; exclusiones por origen
             # o marca; uso en una o dos palabras. Consumidas por el generador.
             "tope_presupuesto": {"type": ["integer", "null"]},
@@ -908,6 +953,7 @@ def _schema_interprete(nombres_mostrados: list[str],
                      "intencion", "estado_conversacion", "criterio", "orden",
                      "pedido",
                      "solicitud_nueva", "categorias", "specs_preguntadas",
+                     "plataformas_cliente",
                      "tope_presupuesto", "exclusiones", "uso_previsto",
                      "confianza"],
     }
@@ -1045,6 +1091,12 @@ async def interpretar_mensaje(mensaje: str,
             _specs = [s["id"] for s in specs_config()]
         except Exception:
             _specs = []
+        # el enum de EQUIPOS del cliente, del vocabulario de compatibilidad
+        try:
+            from app.core.compatibilidad import vocabulario as _vc
+            _plataformas = list(_vc()["plataformas"])
+        except Exception:
+            _plataformas = []
         # atributos ordenables DERIVADOS del catalogo: con esto "la que mas
         # capacidad" y "la mas liviana" tienen donde caer sin enumerar criterios.
         try:
@@ -1069,7 +1121,7 @@ async def interpretar_mensaje(mensaje: str,
         _rf = {"type": "json_schema", "json_schema": {
             "name": "interpretacion", "strict": True,
             "schema": _schema_interprete(_nombres, _categorias, _modelos,
-                                         _specs, _atributos)}}
+                                         _specs, _atributos, _plataformas)}}
 
         # Primera llamada al LLM
         raw = await _llamar_llm(prompt, response_format=_rf)
@@ -1161,6 +1213,7 @@ async def interpretar_mensaje(mensaje: str,
                  # sabia si el interprete no los emitio o si nadie los mostraba.
                  orden=resultado.get("orden"),
                  specs_preguntadas=resultado.get("specs_preguntadas"),
+                 plataformas_cliente=resultado.get("plataformas_cliente"),
                  criterio=resultado.get("criterio"),
                  productos_contexto=len(productos))
 

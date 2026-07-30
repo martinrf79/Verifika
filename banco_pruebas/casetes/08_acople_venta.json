@@ -1,0 +1,81 @@
+{
+ "guion": "08_acople_venta",
+ "turnos": [
+  {
+   "mensaje": "hola, tenes el teclado genius kb-110x blanco?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [\n    {\n      \"producto\": \"Genius KB-110X\",\n      \"consulta\": \"stock\"\n    }\n  ],\n  \"producto_resuelto\": \"Genius KB-110X\",\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [],\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"teclado\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Hola! Qué bueno que nos escribas. Te cuento enseguida cómo viene el tema del stock para ese modelo que buscás.\",\n      \"producto_id\": \"TEC0020\",\n      \"criterio_id\": \"saludo_apertura\",\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": \"stock_disponibilidad\",\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"producto\",\n      \"texto\": \"Aquí tenés la disponibilidad del Genius KB-110X en color blanco.\",\n      \"producto_id\": \"TEC0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": \"stock_disponibilidad\",\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Si te sirve, avisame y lo dejamos reservado para vos. ¿Cómo preferirías abonarlo, por transferencia con descuento o Mercado Pago?\",\n      \"producto_id\": \"TEC0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    }\n  ]\n}"
+    },
+    {
+     "etapa": "adapter_proposer",
+     "salida": "{\"content\": \"{\\\"nombre\\\": \\\"\\\", \\\"telefono\\\": \\\"\\\", \\\"direccion\\\": \\\"\\\", \\\"forma_pago\\\": \\\"\\\"}\", \"tool_calls\": null, \"raw_message\": \"ChatCompletionMessage(content='{\\\"nombre\\\": \\\"\\\", \\\"telefono\\\": \\\"\\\", \\\"direccion\\\": \\\"\\\", \\\"forma_pago\\\": \\\"\\\"}', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None, extra_content={'google': {'thought_signature': 'EjQKMgERTTIPgmehRqcv7sbpkYRMRBYATfXuh1kiXscFqduMgBpO0Sp4Zo6XV1hdg1/+l72P'}})\", \"provider\": \"gemini\", \"model\": \"gemini-3.1-flash-lite\"}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Teclado Genius KB-110X Blanco\",\n      \"veredicto\": \"respaldada\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "se puede pagar en cuotas sin interes?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": \"El cliente consulta por la posibilidad de pagar en cuotas sin interés tras haber recibido información sobre el Teclado Genius KB-110X Blanco.\",\n  \"productos_consultados\": [\n    {\n      \"producto\": \"Teclado Genius KB-110X Blanco\",\n      \"consulta\": \"otra\"\n    }\n  ],\n  \"producto_resuelto\": \"Teclado Genius KB-110X Blanco\",\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [],\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"cuotas_financiacion\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Hola! Qué buena consulta, es una de las dudas más frecuentes cuando están por renovar el equipo.\",\n      \"producto_id\": \"TEC0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"faq\",\n      \"texto\": \"Sobre tu consulta, te cuento que podés pagar hasta en 6 cuotas sin interés con tarjetas Visa y Mastercard. Si preferís extenderlo, también tenemos opciones de hasta 12 cuotas con interés. Es un golazo para que el pago no se sienta tanto en el mes.\",\n      \"producto_id\": \"TEC0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": \"cuotas\",\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"Si tenés alguna tarjeta en particular o querés ver cómo queda el plan con tu banco, avisame y nos fijamos qué promociones hay vigentes para que elijas la que más te convenga.\",\n      \"producto_id\": \"TEC0020\",\n      \"criterio_id\": \"cuotas_financiacion\",\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Si te parece bien, confirmame si querés avanzar con la compra del Genius blanco así te paso el link de pago y lo reservamos ahora mismo.\",\n      \"producto_id\": \"TEC0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    }\n  ],\n  \"respuestas_por_categoria\": {\n    \"cuotas_financiacion\": {\n      \"texto\": \"Podes financiar tu compra en cuotas con tarjeta de crédito. Hasta 6 cuotas sin interés con Visa y Mastercard, o hasta 12 cuotas con interés según la promoción de tu banco.\",\n      \"cita_id\": \"cuotas_financiacion\"\n    }\n  }\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"¡Hola! Qué buena consulta, es una de las dudas más frecuentes cuando están por renovar el equipo.\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"Sobre tu consulta, te cuento que podés pagar hasta en 6 cuotas sin interés con tarjetas Visa y Mastercard.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Si preferís extenderlo, también tenemos opciones de hasta 12 cuotas con interés.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Es un golazo para que el pago no se sienta tanto en el mes.\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"Si tenés alguna tarjeta en particular o querés ver cómo queda el plan con tu banco, avisame y nos fijamos qué promociones hay vigentes para que elijas la que más te convenga.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Si te parece bien, confirmame si querés avanzar con la compra del Genius blanco así te paso el link de pago y lo reservamos ahora mismo.\",\n      \"veredicto\": \"sin_respaldo\"\n    }\n  ],\n  \"respuesta_corregida\": \"¡Hola! Qué buena consulta, es una de las dudas más frecuentes cuando están por renovar el equipo. Sobre tu consulta, te cuento que podés pagar hasta en 6 cuotas sin interés con tarjetas Visa y Mastercard. Si preferís extenderlo, también tenemos opciones de hasta 12 cuotas con interés. Es un golazo para que el pago no se sienta tanto en el mes. Si tenés alguna tarjeta en particular o querés ver cómo queda el plan con tu banco, avisame y nos fijamos qué promociones hay vigentes para que elijas la que más te convenga. Si te parece bien, confirmame si querés avanzar con la compra así te paso el link de pago y lo reservamos ahora mismo.\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "y hacen factura A?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": \"el cliente consulta sobre la emisión de factura A tras haber preguntado por cuotas\",\n  \"productos_consultados\": [],\n  \"producto_resuelto\": \"Teclado Genius KB-110X Blanco\",\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [],\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"factura\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Totalmente! En Verifika Tech emitimos factura A para que puedas respaldar tu compra sin problemas.\",\n      \"producto_id\": \"TEC0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"faq\",\n      \"texto\": \"Como te comentaba, emitimos factura A o B según lo que necesites y todos nuestros precios ya incluyen IVA. Si querés la factura A, simplemente pasame tu CUIT cuando definamos la compra y la preparamos al toque.\",\n      \"producto_id\": \"TEC0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": \"factura\",\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Si ya estás decidido con el teclado, pasame tu CUIT y avanzamos. ¿Preferís abonar por transferencia con descuento o por Mercado Pago?\",\n      \"producto_id\": \"TEC0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    }\n  ],\n  \"respuestas_por_categoria\": {\n    \"factura\": {\n      \"texto\": \"Emitimos factura A o B, y todos los precios publicados ya incluyen el IVA. Si precisás factura A, solo tenés que pasarnos tu CUIT al momento de concretar la compra.\",\n      \"cita_id\": \"factura\"\n    }\n  }\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"En Verifika Tech emitimos factura A para que puedas respaldar tu compra sin problemas.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Como te comentaba, emitimos factura A o B según lo que necesites y todos nuestros precios ya incluyen IVA.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Si querés la factura A, simplemente pasame tu CUIT cuando definamos la compra y la preparamos al toque.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Si ya estás decidido con el teclado, pasame tu CUIT y avanzamos.\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"¿Preferís abonar por transferencia con descuento o por Mercado Pago?\",\n      \"veredicto\": \"neutral\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "dale, sumalo",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": \"el cliente confirma la compra del teclado tras consultar por cuotas y factura A\",\n  \"productos_consultados\": [],\n  \"producto_resuelto\": \"Teclado Genius KB-110X Blanco\",\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"decision_compra\",\n  \"estado_conversacion\": \"esperando_datos\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [\n    {\n      \"producto\": \"Teclado Genius KB-110X Blanco\",\n      \"cantidad\": 1,\n      \"destino\": null\n    }\n  ],\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"cierre_venta\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Excelente elección! Es un teclado super confiable para el día a día.\",\n      \"producto_id\": \"TEC0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    },\n    {\n      \"tipo\": \"calculo\",\n      \"texto\": \"Aquí te preparé el presupuesto por tu teclado.\",\n      \"producto_id\": \"TEC0020\",\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": [\n        {\n          \"producto_id\": \"TEC0020\",\n          \"cantidad\": 1,\n          \"destino\": null\n        }\n      ],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": [\n        {\n          \"medio\": \"transferencia\",\n          \"porcentaje\": 10.0\n        },\n        {\n          \"medio\": \"mercado pago\",\n          \"porcentaje\": 0.0\n        }\n      ]\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Si estás de acuerdo con el total, decime si preferís abonar por transferencia para aprovechar el descuento o si te queda más cómodo hacerlo por Mercado Pago. ¡Quedo atento para coordinar el envío!\",\n      \"producto_id\": \"TEC0020\",\n      \"criterio_id\": \"cierre_venta\",\n      \"categoria\": null,\n      \"items\": [],\n      \"campos\": [],\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": []\n    }\n  ]\n}"
+    },
+    {
+     "etapa": "adapter_proposer",
+     "salida": "{\"content\": \"{\\\"nombre\\\": \\\"\\\", \\\"telefono\\\": \\\"\\\", \\\"direccion\\\": \\\"\\\", \\\"forma_pago\\\": \\\"\\\"}\", \"tool_calls\": null, \"raw_message\": \"ChatCompletionMessage(content='{\\\"nombre\\\": \\\"\\\", \\\"telefono\\\": \\\"\\\", \\\"direccion\\\": \\\"\\\", \\\"forma_pago\\\": \\\"\\\"}', refusal=None, role='assistant', annotations=None, audio=None, function_call=None, tool_calls=None, extra_content={'google': {'thought_signature': 'EjQKMgERTTIPArQrd6rc4b22CZiJ9NTIT1E6Od0+mz8BjwpnVrvAxGmwgPPu1PhYTljIbNbi'}})\", \"provider\": \"gemini\", \"model\": \"gemini-3.1-flash-lite\"}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Es un teclado super confiable para el día a día.\",\n      \"veredicto\": \"neutral\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  }
+ ]
+}

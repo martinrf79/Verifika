@@ -142,6 +142,11 @@ def specs_config(tienda_id: str | None = None) -> list[dict]:
                 "rx_pregunta": re.compile(pat_preg),
                 "extraer": extraer,
                 "rx_ficha": rx_ficha,
+                # pares de valores que no pueden convivir, para purgar la prosa
+                # que contradice a la planilla curada (ver purgar_prosa_contradicha)
+                "excluyentes": [[_norm(v) for v in par if v]
+                                for par in (s.get("excluyentes") or [])
+                                if isinstance(par, list) and len(par) >= 2],
             })
     except FileNotFoundError:
         log.warning("fuente_producto_sin_config", tienda_id=tid)
@@ -288,6 +293,133 @@ def depurar_ficha(prod: dict) -> dict:
         # la misma frase dos veces seguidas: se deja una.
         desc = re.sub(r"([^,.\n]{8,}?)\s*[,.]\s*\1(?=[,.\s]|$)", r"\1", desc)
         prod["descripcion"] = re.sub(r"\s{2,}", " ", desc).strip()
+    return prod
+
+
+_RE_TOKEN_VALOR = re.compile(r"\b([a-z]*)(\d+(?:[.,]\d+)?)\s*([a-z]{0,4})\b")
+# unidades que de verdad miden algo. Una letra suelta detras de un numero solo
+# cuenta como unidad si esta aca: sin la lista, la 'W1' de 'EVGA 500 W1' y la
+# 'X' de 'Ventus 2X' se leian como magnitudes y chocaban contra las reales.
+_UNIDADES_FAMILIA = {"tb", "gb", "mb", "kb", "kg", "g", "mg", "hz", "khz",
+                     "mhz", "ghz", "w", "kw", "mah", "wh", "mp", "cm", "mm",
+                     "m", "km", "v", "a", "dpi", "fps", "rpm", "nits", "px",
+                     "pu", "meses", "anos", "horas", "h", "min", "seg"}
+
+
+def _valores_de(texto: str) -> set:
+    """{(familia, numero)} de un texto. La FAMILIA es la parte de letras que
+    acompaña al numero: 'ddr4' -> ('ddr','4'), '550W' -> ('w','550'), '16GB' ->
+    ('gb','16'). Dos valores de la misma familia con distinto numero son el
+    mismo dato dicho de dos maneras, o sea que uno de los dos miente.
+
+    DOS COSAS QUE APRENDIO A LA MALA, las dos cazadas por el chequeo de
+    coherencia de datos apenas se lo apunto contra el catalogo real:
+
+    1. El cero final NO se recorta en un entero. Estaba normalizando decimales
+       ('1.50' -> '1.5') con un rstrip suelto, y de paso convertia '500W' en 5W y
+       '80GB' en 8GB. O sea que la guarda daba por IGUALES 8GB y 80GB, y dejaba
+       pasar justo la contradiccion que tiene que cazar.
+    2. Una sola letra solo vale como unidad si va DESPUES del numero. Con la
+       letra de adelante, la 'W1' de la fuente 'EVGA 500 W1' se leia como 1 watt
+       y chocaba contra sus 500W reales, y el '2X' del 'Ventus 2X' contra el
+       'GDDR6X'. Los prefijos de verdad -DDR, GDDR- tienen dos letras o mas.
+    """
+    out = set()
+    for pre, num, suf in _RE_TOKEN_VALOR.findall(_norm(texto)):
+        if suf and suf in _UNIDADES_FAMILIA:
+            fam = suf
+        elif len(pre) >= 2:
+            fam = pre
+        else:
+            continue
+        if "." in num or "," in num:
+            num = num.replace(",", ".").rstrip("0").rstrip(".") or num
+        out.add((fam, num))
+    return out
+
+
+def purgar_prosa_contradicha(prod: dict, tienda_id: str | None = None) -> dict:
+    """Saca de la prosa de la ficha el dato que CONTRADICE la planilla curada.
+
+    Es el hermano de `depurar_ficha`. Aquella saca la spec de OTRO producto que
+    el CSV pega a cada ficha; esta saca la que es directamente falsa. El catalogo
+    trae `caracteristicas_extra` como PLANTILLA por categoria: las quince fuentes
+    dicen '550W', las quince motherboards dicen 'DDR4' y las dieciocho placas de
+    video dicen '8GB GDDR6'. O sea que la Corsair RM850e le dice 550 al cliente,
+    y la B650 con ranuras DDR5 le dice DDR4, contradiciendo a la planilla del
+    propio repo, que para esa placa tiene cargado 'DDR5'.
+
+    No es un detalle de redaccion: esa prosa viaja al cliente por el campo
+    `caracteristicas` de la ficha y al prompt del solver, o sea que el sistema
+    entero razona sobre un dato falso. Y con la tabla de compatibilidad encima
+    es peor: la ficha diria DDR4 donde la compatibilidad dice DDR5.
+
+    La regla no adivina: compara contra `specs_por_modelo.csv`, que es dato
+    CURADO. Si un segmento de la prosa trae un valor de la misma familia con
+    distinto numero que el de la planilla, el segmento se va -manda la planilla,
+    igual que en `_completar_capas`-. Lo que la planilla no cubre no se toca.
+    Idempotente.
+    """
+    if not isinstance(prod, dict):
+        return prod
+    extra = str(prod.get("caracteristicas_extra") or "").strip()
+    if not extra:
+        return prod
+    curado = specs_por_modelo(tienda_id).get(
+        (_norm(prod.get("marca")), _norm(prod.get("modelo")),
+         _norm(prod.get("categoria")))) or {}
+    if not curado:
+        return prod
+    categoria = _norm(prod.get("categoria"))
+    # QUIEN decide que el segmento habla de esa spec: el EXTRACTOR de la propia
+    # spec, no una comparacion de unidades. Sin eso, los '128GB' de almacenamiento
+    # de una tablet chocaban contra los '4GB' de RAM de la planilla -misma unidad,
+    # otro dato- y se borraba un valor correcto. El extractor ya sabe distinguir.
+    falsos: list[tuple] = []
+    for spec in specs_config(tienda_id):
+        valor_curado = curado.get(spec["id"], "")
+        if not valor_curado or not aplica(spec, categoria):
+            continue
+        ciertos = _valores_de(valor_curado)
+        for rx, solo_cats, solo_campos in spec["extraer"]:
+            if solo_cats and categoria not in solo_cats:
+                continue
+            if solo_campos and "caracteristicas_extra" not in solo_campos:
+                continue
+            for m in rx.finditer(extra):
+                dicho = (m.group(1) if m.groups() else m.group(0)).strip(" ,.;:")
+                vals = _valores_de(dicho)
+                if vals and not (vals & ciertos):
+                    falsos.append((m.start(), m.end(), dicho))
+        # EXCLUYENTES: lo que no es un numero. Una refrigeracion es por aire o es
+        # liquida, nunca las dos, y las quince fichas de cooler dicen 'aire'
+        # aunque la planilla tenga cargada 'liquida'. Los pares viven en
+        # specs_preguntables.json, no aca: sumar uno es editar el json.
+        curado_n = _norm(valor_curado)
+        for par in (spec.get("excluyentes") or []):
+            if not any(v in curado_n for v in par):
+                continue
+            for prohibida in [v for v in par if v not in curado_n]:
+                for m in re.finditer(r"\b" + re.escape(prohibida) + r"\b",
+                                     _norm(extra)):
+                    falsos.append((m.start(), m.end(), extra[m.start():m.end()]))
+    if not falsos:
+        return prod
+    # se borra el VALOR falso, no el segmento entero: 'IPS Full HD 75Hz' con 75
+    # mentido tiene que quedar en 'IPS Full HD', que es cierto.
+    limpio = extra
+    for ini, fin, _d in sorted(set(falsos), reverse=True):
+        limpio = limpio[:ini] + limpio[fin:]
+    segs = [re.sub(r"\s{2,}", " ", s).strip(" -–")
+            for s in limpio.split(",")]
+    prod["caracteristicas_extra"] = ", ".join(s for s in segs if s)
+    desc = str(prod.get("descripcion") or "")
+    for _i, _f, falso in sorted(set(falsos), key=lambda t: -len(t[2])):
+        desc = re.sub(r"\s*" + re.escape(falso) + r"\s*", " ", desc,
+                      flags=re.IGNORECASE)
+    desc = re.sub(r"\s*,\s*(?=[,.])|(?<=\.)\s*,\s*", "", desc)
+    desc = re.sub(r"\.\s*\.", ".", re.sub(r"\s{2,}", " ", desc))
+    prod["descripcion"] = desc.replace(" ,", ",").replace(" .", ".").strip()
     return prod
 
 
@@ -533,10 +665,24 @@ def normalizar_producto(row: dict, tienda_id: str | None = None) -> dict:
             except ValueError:
                 pass
     depurar_ficha(prod)
+    purgar_prosa_contradicha(prod, tienda_id)
     if not prod.get("tags"):
         prod["tags"] = derivar_tags(prod)
     prod["specs"] = extraer_specs(prod, tienda_id)
+    prod["compat"] = _compat_de(prod, tienda_id)
     return prod
+
+
+def _compat_de(prod: dict, tienda_id: str | None) -> dict:
+    """CAPA 4: la fila de `compatibilidad.csv` de este modelo. Import adentro
+    para no atar la ingesta al modulo: si falta la tabla, el producto queda sin
+    compat y la compatibilidad se contesta honesta, igual que una spec vacia."""
+    try:
+        from app.core.compatibilidad import compat_de
+        return compat_de({**prod, "compat": None}, tienda_id) or {}
+    except Exception as e:
+        log.warning("fuente_producto_compat_error", error=str(e)[:120])
+        return {}
 
 
 def enriquecer(productos: list, tienda_id: str | None = None) -> list:
@@ -550,6 +696,10 @@ def enriquecer(productos: list, tienda_id: str | None = None) -> list:
     for p in productos:
         if not isinstance(p, dict):
             continue
+        # la prosa contradicha se purga SIEMPRE, tambien sobre el producto que ya
+        # trae su mapa specs: el que esta cargado en Firestore se subio con la
+        # plantilla falsa adentro, y la planilla curada vive en el repo.
+        purgar_prosa_contradicha(p, tienda_id)
         if not p.get("specs"):
             depurar_ficha(p)
             if not p.get("tags"):
@@ -561,6 +711,11 @@ def enriquecer(productos: list, tienda_id: str | None = None) -> list:
             # categoria viven en el repo: se aplican al leer para que cargar
             # una spec nueva sea editar el csv y deployar, sin resubir las 880.
             _completar_capas(p["specs"], p, _norm(p.get("categoria")), tienda_id)
+        # la COMPATIBILIDAD se estampa siempre al leer, tambien sobre el catalogo
+        # ya cargado en Firestore: la tabla vive en el repo, asi que sumar una
+        # fila es editar el csv y deployar, sin resubir las 880 fichas.
+        if not p.get("compat"):
+            p["compat"] = _compat_de(p, tienda_id)
     if completados:
         log.info("fuente_producto_enriquecida", tienda_id=tienda_id,
                  productos=completados)

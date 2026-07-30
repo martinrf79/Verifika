@@ -1,5 +1,5 @@
 {
-  "_doc": "FUENTE DE VERDAD de las specs que el cliente pregunta. Sumar una spec es agregar una entrada aca, NUNCA tocar codigo. Cada entrada: id (clave de la spec en el mapa specs del producto); claves (como lo PREGUNTA el cliente); etiqueta (como lo nombra el bot al ser honesto); aplica_a (categorias donde la spec tiene sentido, vacio = todas); extraer (patrones que SACAN el valor del texto de la ficha, en orden, gana el primero que matchea; un patron puede acotarse con su propio aplica_a); claves_ficha (deteccion por substring, red de compatibilidad para productos sin mapa specs). El valor extraido se guarda en producto['specs'][id] y lo ESTAMPA el codigo: si esta, se contesta con el dato de la fuente; si no esta, se estampa 'la ficha no lo especifica' y se saca cualquier afirmacion del modelo sobre esa spec. El dato manda; el modelo no afirma lo que la fuente no dice.",
+  "_doc": "FUENTE DE VERDAD de las specs que el cliente pregunta. Sumar una spec es agregar una entrada aca, NUNCA tocar codigo. Cada entrada: id (clave de la spec en el mapa specs del producto); claves (como lo PREGUNTA el cliente); etiqueta (como lo nombra el bot al ser honesto); aplica_a (categorias donde la spec tiene sentido, vacio = todas); extraer (patrones que SACAN el valor del texto de la ficha, en orden, gana el primero que matchea; un patron puede acotarse con su propio aplica_a); claves_ficha (deteccion por substring, red de compatibilidad para productos sin mapa specs). El valor extraido se guarda en producto['specs'][id] y lo ESTAMPA el codigo: si esta, se contesta con el dato de la fuente; si no esta, se estampa 'la ficha no lo especifica' y se saca cualquier afirmacion del modelo sobre esa spec. El dato manda; el modelo no afirma lo que la fuente no dice. Opcional `excluyentes`: pares de valores que no pueden convivir (una refrigeracion es por aire o es liquida). Si la planilla curada de ese modelo trae uno y la prosa del catalogo trae el otro, la prosa se purga al ingerir: manda la planilla.",
   "specs": [
     {
       "id": "hz",
@@ -112,7 +112,8 @@
       "aplica_a": ["notebook", "tablet", "memoria ram", "motherboard"],
       "extraer": [
         {"patron": "(\\d{1,3}\\s*gb)", "aplica_a": ["memoria ram"]},
-        "(?<![\\d.])(\\d{1,2}\\s*gb)(?!\\s*(?:ssd|hdd|emmc|nvme|m\\.2))"
+        "(?<![\\d.])(\\d{1,2}\\s*gb)(?!\\s*(?:ssd|hdd|emmc|nvme|m\\.2))",
+        {"patron": "\\b(ddr\\d)\\b", "aplica_a": ["motherboard"]}
       ],
       "claves_ficha": ["ram"]
     },
@@ -194,6 +195,7 @@
       "etiqueta": "la potencia",
       "aplica_a": ["fuente", "parlante", "cargador", "cooler"],
       "extraer": ["(\\d+\\s*w\\b)"],
+      "excluyentes": [["aire", "liquida"]],
       "claves_ficha": ["w"]
     },
     {

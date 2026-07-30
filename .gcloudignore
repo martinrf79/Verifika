@@ -29,6 +29,12 @@ data/preguntas_*.jsonl
 data/mini_*.jsonl
 **/embeddings.json
 
+# Bateria y bancos: el Dockerfile solo copia app/ y data/, asi que nunca entran
+# a la imagen, pero SI se suben a Cloud Build y lo hacen mas lento de gusto. Los
+# casetes de las charlas grabadas solos son 1,5 MB.
+tests/
+banco_pruebas/
+
 # Scripts de diagnostico y parches locales
 _*
 *.bak*

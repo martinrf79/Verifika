@@ -1,0 +1,73 @@
+{
+ "guion": "01_curada_pura",
+ "turnos": [
+  {
+   "mensaje": "hola, hacen envios a todo el pais?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": null,\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"envio_zonas\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": null,\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Hola! Qué bueno que nos escribas, estamos acá para ayudarte a que te llegue lo que buscás de la mejor forma.\",\n      \"producto_id\": null,\n      \"criterio_id\": \"saludo_apertura\",\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"faq\",\n      \"texto\": \"¡Totalmente! Hacemos envíos a todo el país trabajando con Andreani y OCA. Para poder pasarte el costo exacto y decirte cuánto tardaría en llegar, ¿me pasarías tu provincia o código postal?\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": \"envios\",\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Pasame esos datos así lo chequeamos y ya te queda todo listo para avanzar.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    }\n  ],\n  \"respuestas_por_categoria\": {\n    \"envio_zonas\": {\n      \"texto\": \"Llegamos a todo el territorio nacional a través de nuestros correos aliados; solo necesito tu ubicación para confirmarte la tarifa y el plazo exacto hasta tu puerta.\",\n      \"cita_id\": \"envio_zonas\"\n    }\n  }\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Llegamos a todo el territorio nacional a través de nuestros correos aliados\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Hacemos envíos a todo el país trabajando con Andreani y OCA.\",\n      \"veredicto\": \"respaldada\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "puedo pagar en cuotas?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [],\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"cuotas_financiacion\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Hola! Qué buena pregunta. Te cuento que podés financiar tus compras sin problemas para que te sea mucho más cómodo llevarte lo que necesitás.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"Para las cuotas, tenés la opción de usar tu tarjeta de crédito. Dependiendo de las promociones vigentes de tu banco, podemos ver qué plan te conviene más para que aproveches al máximo.\",\n      \"producto_id\": null,\n      \"criterio_id\": \"cuotas_financiacion\",\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"faq\",\n      \"texto\": \"Trabajamos con Visa y Mastercard: podés pagar hasta en 6 cuotas sin interés, o si preferís estirarte un poquito más, tenés hasta 12 cuotas con interés. Avisame qué tenías ganas de comprar y te voy contando cómo quedarían los planes.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": \"cuotas\",\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Si ya tenés algún producto en vista, decime cuál es así te paso el detalle y definimos cómo lo pagamos, ¿te parece?\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    }\n  ],\n  \"respuestas_por_categoria\": {\n    \"cuotas_financiacion\": {\n      \"texto\": \"Contamos con financiación mediante tarjeta de crédito. La cantidad de cuotas y el interés dependen directamente de tu banco y las promociones vigentes al momento de la compra. Si tenés una tarjeta en particular, consultame y lo revisamos.\",\n      \"cita_id\": \"cuotas_financiacion\"\n    }\n  }\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Te cuento que podés financiar tus compras sin problemas para que te sea mucho más cómodo llevarte lo que necesitás.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Para las cuotas, tenés la opción de usar tu tarjeta de crédito.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Dependiendo de las promociones vigentes de tu banco, podemos ver qué plan te conviene más para que aproveches al máximo.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Trabajamos con Visa y Mastercard: podés pagar hasta en 6 cuotas sin interés, o si preferís estirarte un poquito más, tenés hasta 12 cuotas con interés.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Avisame qué tenías ganas de comprar y te voy contando cómo quedarían los planes.\",\n      \"veredicto\": \"neutral\"\n    },\n    {\n      \"texto\": \"Si ya tenés algún producto en vista, decime cuál es así te paso el detalle y definimos cómo lo pagamos, ¿te parece?\",\n      \"veredicto\": \"neutral\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "tienen local para retirar la compra?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": [],\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"retiro_local\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": [],\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Hola! Te cuento que somos una tienda 100% online, así que no contamos con un local físico para que pases a retirar.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"Como operamos de forma digital para llegar a todo el país, despachamos directamente desde nuestro centro en Buenos Aires hasta la puerta de tu casa. Si querés, pasame tu zona y te cotizo el envío ahora mismo.\",\n      \"producto_id\": null,\n      \"criterio_id\": \"retiro_local\",\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"Avisame si te parece bien y avanzamos con el envío a tu domicilio, ¿dale?\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    }\n  ],\n  \"respuestas_por_categoria\": {\n    \"retiro_local\": {\n      \"texto\": \"Somos una tienda 100% online, no contamos con local físico para retiro. Despachamos todos nuestros pedidos directamente a tu domicilio a través de correos aliados a todo el país.\",\n      \"cita_id\": \"retiro_local\"\n    }\n  }\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Como operamos de forma digital para llegar a todo el país, despachamos directamente desde nuestro centro en Buenos Aires hasta la puerta de tu casa.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Si querés, pasame tu zona y te cotizo el envío ahora mismo.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Avisame si te parece bien y avanzamos con el envío a tu domicilio, ¿dale?\",\n      \"veredicto\": \"neutral\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  },
+  {
+   "mensaje": "son productos originales?",
+   "llamadas": [
+    {
+     "etapa": "interprete",
+     "salida": "{\n  \"respondiendo_a\": null,\n  \"productos_consultados\": [],\n  \"producto_resuelto\": null,\n  \"candidatos\": [],\n  \"ofrecer_opciones\": null,\n  \"intencion\": \"pregunta_especifica\",\n  \"estado_conversacion\": \"explorando\",\n  \"criterio\": null,\n  \"orden\": null,\n  \"pedido\": null,\n  \"solicitud_nueva\": [],\n  \"categorias\": [\n    \"prueba_social_confianza\"\n  ],\n  \"specs_preguntadas\": [],\n  \"plataformas_cliente\": [],\n  \"tope_presupuesto\": null,\n  \"exclusiones\": null,\n  \"uso_previsto\": null,\n  \"confianza\": 1.0\n}"
+    },
+    {
+     "etapa": "solver",
+     "salida": "{\n  \"fragmentos\": [\n    {\n      \"tipo\": \"prosa\",\n      \"texto\": \"¡Qué buena pregunta! Es fundamental que sepas qué estás comprando.\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"faq\",\n      \"texto\": \"Te confirmo que todos nuestros productos son 100% originales, con garantía oficial de cada marca. No trabajamos con réplicas ni genéricos, así que podés comprar con total tranquilidad [marcas_originales].\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": \"marcas_originales\",\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"criterio\",\n      \"texto\": \"Elegir equipos originales no solo es una cuestión de calidad, sino de respaldo real con garantía oficial, que es lo que realmente te da seguridad al momento de invertir en tecnología [prueba_social_confianza].\",\n      \"producto_id\": null,\n      \"criterio_id\": \"prueba_social_confianza\",\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    },\n    {\n      \"tipo\": \"cierre\",\n      \"texto\": \"¿Hay algún producto en particular que estés mirando para que te pase más detalles?\",\n      \"producto_id\": null,\n      \"criterio_id\": null,\n      \"categoria\": null,\n      \"items\": null,\n      \"campos\": null,\n      \"tema\": null,\n      \"destino\": null,\n      \"pago\": null\n    }\n  ]\n}"
+    },
+    {
+     "etapa": "juez",
+     "salida": "{\n  \"afirmaciones\": [\n    {\n      \"texto\": \"Te confirmo que todos nuestros productos son 100% originales, con garantía oficial de cada marca.\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"No trabajamos con réplicas ni genéricos, así que podés comprar con total tranquilidad [marcas_originales].\",\n      \"veredicto\": \"respaldada\"\n    },\n    {\n      \"texto\": \"Elegir equipos originales no solo es una cuestión de calidad, sino de respaldo real con garantía oficial, que es lo que realmente te da seguridad al momento de invertir en tecnología [prueba_social_confianza].\",\n      \"veredicto\": \"respaldada\"\n    }\n  ],\n  \"respuesta_corregida\": \"\"\n}"
+    }
+   ]
+  }
+ ]
+}

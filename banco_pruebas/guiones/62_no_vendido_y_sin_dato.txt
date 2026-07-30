@@ -1,7 +1,15 @@
+# EXPECTATIVAS (29-jul): una linea `> contiene:` o `> no_contiene:` debajo de un
+# mensaje le pone filo al puntaje de esa charla. Sin expectativas el turno igual
+# puntua por no mentir y por contestar; con ellas se chequea ADEMAS que diga lo
+# que tiene que decir. Varios valores se separan con |. Se comparan sin acentos
+# ni mayusculas. Regla al escribirlas: solo lo que un sistema correcto cumple
+# seguro, para que un rojo signifique siempre un problema real.
 # Ronda 2.3: categoria NO vendida (celular, consola) y spec sin dato en ficha.
 # PASA si dice honesto que no lo tiene y ofrece alternativa real SIN dejar caer
 # la venta, y si ante una spec ausente contesta honesto sin inventar.
 hola tenes celulares samsung o iphone?
+  > contiene: no trabajamos|no comercializamos|no vendemos|no manejamos|no tenemos
 y una play 5 tenes?
+  > contiene: no trabajamos|no comercializamos|no vendemos|no manejamos|no tenemos
 bueno, dame la notebook mas barata que tengas para trabajar
 esa notebook tiene lector de huella digital?
