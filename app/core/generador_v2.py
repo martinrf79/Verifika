@@ -124,9 +124,25 @@ def _faq_menu_crudo(interp, tienda_id):
 
 def _cats_obligatorias(interp, faq_ground) -> list:
     """Las celdas que el turno DEBE contestar con prosa: son los slots requeridos
-    del schema, asi que saltearlas es imposible a nivel API. Tope de 5 para no
-    inflar el JSON. La regla de que celda obliga vive en el indice."""
+    del schema, asi que saltearlas es imposible a nivel API. La regla de que
+    celda obliga vive en el indice.
+
+    OBLIGA SOLO CUANDO EL CLIENTE PREGUNTA (30-jul, charla real de Martin). El
+    interprete etiqueta las categorias que el mensaje TOCA, y eso incluye las de
+    contexto: "1 memoria y un auricular a Concordia, el resto a Posadas, pago por
+    transferencia" salio con envios, formas_pago y descuento_transferencia. Como
+    las tres son politica, las tres se volvian slot OBLIGATORIO, el solver no las
+    tejio en su respuesta y el render le appendeo TRES bloques de politica arriba
+    del cierre: seis partes para un mensaje que solo daba destinos. Ese es el
+    muro de texto que se ve en WhatsApp antes de la respuesta de verdad.
+
+    Cuando la intencion es aportar un dato o cerrar la compra, el cliente NO esta
+    preguntando la politica: la nombro de paso. Ahi no se obliga nada y el solver
+    contesta lo que le pidieron."""
     from app.core.indice import obligatorias
+    _intent = (interp or {}).get("intencion") if isinstance(interp, dict) else None
+    if _intent in ("aporta_dato", "decision_compra"):
+        return []
     return obligatorias(_celdas(interp))
 
 
@@ -555,9 +571,17 @@ def _prompt(mensaje, historial, universo, temas, estado, presupuesto_pre=None,
         base = (f"  {p['id']} = {p['nombre']} | "
                 f"${int(p.get('precio_ars',0)):,}".replace(",", ".")
                 + f" | stock {p.get('stock','?')}")
-        pais = _pais_de_marca(p)
         if p.get("marca"):
-            base += f" | marca {p['marca']}" + (f" de {pais}" if pais else "")
+            base += f" | marca {p['marca']}"
+        # ORIGEN COMPLETO, no solo el pais de la marca (30-jul, charla real de
+        # Martin). La fuente dice "Marca Kingston de Estados Unidos. Fabricado en
+        # Taiwan o China segun linea." y aca viajaba SOLO la primera mitad. El
+        # cliente pidio "lo que menos partes chinas tenga" y el bot contesto por
+        # nacionalidad de MARCA: dijo que la Kingston es de Estados Unidos y por
+        # eso menos china, cuando se fabrica en China o Taiwan. El juez lo marco
+        # sin respaldo y tenia razon. El modelo razono bien con media verdad.
+        if p.get("origen"):
+            base += f" | origen: {str(p['origen'])[:120]}"
         if p.get("uso_recomendado"):
             base += f" | para {p['uso_recomendado']}"
         return base
@@ -1153,11 +1177,24 @@ def _poda_prosa(texto, nombres_universo=None):
     la poda por CUALQUIER digito borraba en silencio la respuesta entera a una
     repregunta de spec y dejaba solo el cierre -charla real del 24-jul: el
     cliente pregunto memoria y disco y le volvio una sola linea suelta-. El
-    numero que queda lo audita _verificar_montos contra la evidencia del turno."""
+    numero que queda lo audita _verificar_montos contra la evidencia del turno.
+
+    PODA POR ORACION, NO POR BLOQUE (30-jul, charla real de Martin). Antes, una
+    sola mencion de plata borraba el fragmento ENTERO. El cliente pidio "lo que
+    menos partes chinas tenga" y el solver escribio la respuesta honesta -que casi
+    todo se fabrica hoy en China- con un porcentaje adentro; la poda se llevo el
+    parrafo completo y al cliente le llego una lista de precios con el mouse
+    cambiado y CERO explicacion de por que. Peor que no contestar: da a entender
+    que la seleccion es menos china sin decir la verdad. Ahora se descarta la
+    oracion que trae la plata y sobrevive el razonamiento, que es lo que vende."""
     t = str(texto or "").strip()
-    if not t or _RE_PLATA.search(t):
+    if not t:
         return ""
-    return t
+    if not _RE_PLATA.search(t):
+        return t
+    oraciones = re.split(r"(?<=[.!?])\s+", t)
+    limpias = [o for o in oraciones if o.strip() and not _RE_PLATA.search(o)]
+    return " ".join(limpias).strip()
 
 
 def _cat_real(nombre, tienda_id):
