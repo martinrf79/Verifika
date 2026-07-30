@@ -52,6 +52,42 @@ GRUPOS_PROSA = {"politica_faq", "objeciones", "comparacion_compatibilidad",
 
 _VOCAB_CACHE: dict = {}
 
+# GEMELOS — la misma pregunta con dos nombres.
+#
+# El vocabulario junta dos listas que crecieron por separado, asi que hay
+# preguntas que quedaron con nombre en las dos: el interprete declara una y la
+# respuesta concreta esta guardada bajo la otra. Caso medido: ante "se puede
+# pagar en cuotas sin interes?" el interprete declara `cuotas_financiacion`, que
+# solo tiene el criterio vago "depende de tu tarjeta", mientras la cantidad REAL
+# de cuotas vive en el tema de FAQ `cuotas`. En la corrida viva de 291 turnos eso
+# explica los 24 en que el indice quedaba sin material.
+#
+# Se LINKEAN, no se fusionan: la celda suma el texto del gemelo y no se pierde
+# ninguno de los dos. Fusionar borraria una de las dos respuestas.
+#
+# CADA PAR DE ACA SE VERIFICO LEYENDO LOS DOS TEXTOS, uno por uno. NO se armo por
+# solape de palabras: ese metodo proponia cuatro pares que son preguntas
+# DISTINTAS, y unirlos habria borrado una respuesta del bot sin que ningun test
+# se pusiera en rojo. Quedan anotados abajo para que no se vuelvan a proponer.
+#
+# RECHAZADOS, y por que:
+#   marcas_originales / marcas          -> "son originales?" no es "que marca me
+#                                          conviene". Son dos respuestas.
+#   stock_disponibilidad / urgencia_honesta -> "hay stock?" no es como transmitir
+#                                          urgencia sin mentir. No se tocan.
+#   formas_contacto / producto_no_vendido   -> no tienen nada que ver; el solape
+#                                          de palabras fue casualidad.
+GEMELOS = {
+    "cuotas_financiacion": "cuotas",
+    "cambios_devoluciones": "devoluciones",
+    "mayorista_cantidad": "mayoristas",
+    "producto_defectuoso": "defectuoso",
+    "asesoramiento_metodo": "asesoramiento",
+    "desconfianza_online": "confianza_seguridad",
+    "envio_zonas": "envios",
+    "teclado": "teclado_mecanico_membrana",
+}
+
 
 def _faq_dict(tienda_id):
     from app.storage.firestore_client import get_all_faq
@@ -95,7 +131,10 @@ def celda(nombre: str, tienda_id=None) -> dict | None:
     from app.core.curadas import estampar_valores
     texto_faq = ""
     try:
-        d = _faq_dict(tienda_id).get(cid) or {}
+        faq = _faq_dict(tienda_id)
+        # el nombre propio, y si no tiene politica escrita, la de su GEMELO: la
+        # misma pregunta guardada con el otro nombre.
+        d = faq.get(cid) or faq.get(GEMELOS.get(cid, ""), {}) or {}
         crudo = str(d.get("respuesta_curada") or d.get("respuesta") or "").strip()
         if crudo:
             texto_faq = estampar_valores(crudo, d) or crudo
