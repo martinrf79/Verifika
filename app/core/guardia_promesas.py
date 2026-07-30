@@ -50,9 +50,18 @@ _DIA = (r"(?:lunes|lunecito|martes|martecito|mi[eé]rcoles|jueves|juevecito|"
         r"semana\s+pr[oó]xima|ma[ñn]ana|pasado\s+ma[ñn]ana|hoy\s+mismo|"
         rf"\d{{1,2}}\s+de\s+(?:{_MESES})|"
         r"\b\d{1,2}/\d{1,2}\b)")
+# El dia y el verbo de entrega tienen que estar en la MISMA oracion. El hueco
+# era `.{0,40}` con DOTALL, o sea que cruzaba puntos y saltos de linea y pegaba
+# dos frases que no tenian nada que ver. Caso real, guion 21 turno 4: "...lo
+# resolvemos hoy mismo.\n\nSi el producto llegó con un faltante..." disparaba
+# dia_entrega uniendo el "hoy mismo" de un parrafo con el "llegó" del siguiente.
+# Ni la reescritura ni la poda podian arreglar una promesa que no existia, asi
+# que el turno entero -una respuesta correcta sobre garantia- caia al enlatado.
+# Prometer un dia sigue siendo imposible: "te llega el martes" esta en una sola
+# oracion, que es como se prometen las cosas de verdad.
 _RE_DIA_ENTREGA = re.compile(
-    rf"(?:{_ENTREGA}.{{0,40}}?{_DIA}|{_DIA}.{{0,40}}?{_ENTREGA})",
-    re.IGNORECASE | re.DOTALL)
+    rf"(?:{_ENTREGA}[^.!?\n]{{0,40}}?{_DIA}|{_DIA}[^.!?\n]{{0,40}}?{_ENTREGA})",
+    re.IGNORECASE)
 
 _RE_RETIRO = re.compile(
     r"(?:retir[aoáe]\w*|pas\w*\s+a\s+(?:buscar|retirar)|"

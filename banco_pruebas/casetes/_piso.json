@@ -1,8 +1,8 @@
 {
  "piso": 100,
  "charlas": 65,
- "grabado": "2026-07-29",
+ "grabado": "2026-07-30",
  "_doc": "El puntaje que defiende tests/test_charlas_grabadas.py. Manda `puntos`, que es el crudo: `piso` esta redondeado y una regresion de un par de turnos podia seguir redondeando igual y pasar el gate. Si un cambio lo baja, el CI se cae. Si lo sube, se actualiza en el mismo commit.",
- "puntos": 1654,
+ "puntos": 1656,
  "total": 1656
 }

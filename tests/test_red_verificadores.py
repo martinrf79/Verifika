@@ -410,3 +410,34 @@ def test_un_fragmento_perdido_deja_radar(firestore_doble):
     assert not texto, "renderizo algo de una categoria que no existe"
     assert any(e.get("event") == "generador_v2_fragmento_perdido"
                for e in eventos), "el fragmento se perdio en silencio"
+
+
+# ── EL ULTIMO ROJO DE LAS CHARLAS GRABADAS (guion 21 turno 4) ──────────────
+def test_el_dia_y_la_entrega_tienen_que_estar_en_la_misma_oracion(
+        firestore_doble):
+    """La promesa de dia se detectaba con un hueco de 40 caracteres que cruzaba
+    puntos y saltos de linea. Con eso, "...lo resolvemos hoy mismo.\\n\\nSi el
+    producto llegó con un faltante..." disparaba dia_entrega pegando el "hoy
+    mismo" de un parrafo con el "llegó" del siguiente: dos frases sin relacion.
+
+    No habia reescritura ni poda que arreglara una promesa que no existia, asi
+    que el turno entero -una respuesta correcta sobre garantia- caia al
+    enlatado. Era el ultimo rojo de las 65 charlas.
+
+    Prometer un dia sigue siendo imposible: eso se dice en UNA oracion."""
+    from app.core.guardia_promesas import detectar
+
+    # las promesas de verdad se siguen cazando
+    for t in ("Te llega el martes sin falta a tu casa.",
+              "El viernes lo tenés en tu puerta.",
+              "Lo recibís mañana.",
+              "Te lo entregamos el 25 de junio.",
+              "Llega hoy mismo a tu domicilio."):
+        assert "dia_entrega" in detectar(t), t
+
+    # y dos oraciones distintas ya no se pegan
+    for t in ("Lo resolvemos hoy mismo.\n\nSi el producto llegó con un "
+              "faltante, lo gestionamos como cambio.",
+              "Te lo despachamos hoy mismo.\n\nEl envío llega en 2 a 7 días "
+              "hábiles."):
+        assert not detectar(t), t
