@@ -214,3 +214,53 @@ def test_fuera_de_lista_dispara_la_segunda_vuelta(monkeypatch):
     r2 = {"producto_resuelto": FUERA_DE_LISTA, "productos_consultados": []}
     it._resolver_fuera_de_lista(r2, "tenes la macbook pro?", "t1")
     assert r2["producto_resuelto"] is None
+
+
+# ── EL TRUNCADO POR TECHO DE TOKENS (produccion, 30-jul) ───────────────────
+# Los casetes NO cubren esto: replican una salida GRABADA del modelo, y una
+# salida grabada nunca viene cortada. Es un hueco honesto de esa maquina, y
+# estos tests son lo que lo tapa.
+
+def test_la_confianza_que_falta_no_tira_la_interpretacion():
+    """EL BUG QUE ROMPIA CHARLAS REALES DE WHATSAPP.
+
+    `confianza` es el ULTIMO campo del schema -va ahi a proposito, para que
+    refleje lo ya resuelto-, o sea que es la primera victima de un truncado por
+    max_tokens. Y su ausencia invalidaba la interpretacion ENTERA: turnos
+    reales perdian la lectura completa del mensaje, el bot seguia a ciegas con
+    intencion 'otra', y costaba tres llamadas al modelo y 17 segundos.
+
+    Es un auto-reporte del modelo sobre si mismo, no un dato del cliente:
+    descartar por eso una lectura que trae bien la intencion y el producto es
+    tirar la parte cara para salvar la barata. Se completa BAJO, que es lo
+    honesto cuando el modelo no llego a decir cuanta tenia."""
+    from app.core.interpretador import validar_schema
+    r = {"intencion": "pregunta_especifica", "producto_resuelto": "Mouse X",
+         "candidatos": [], "productos_consultados": []}
+    ok, err = validar_schema(r)
+    assert ok, f"la interpretacion se descarto por la confianza: {err}"
+    assert r["confianza"] == 0.5, "se completa bajo, no alto"
+    assert r["producto_resuelto"] == "Mouse X", "se conservo lo que importa"
+
+
+def test_la_confianza_fuera_de_rango_sigue_siendo_invalida():
+    """Completar la que FALTA no es lo mismo que aceptar cualquier cosa: un
+    valor presente y absurdo sigue siendo una lectura rota."""
+    from app.core.interpretador import validar_schema
+    ok, err = validar_schema({"intencion": "saludo", "confianza": 7,
+                              "candidatos": [], "productos_consultados": []})
+    assert not ok and "rango" in err
+
+
+def test_el_techo_de_tokens_le_da_lugar_al_schema_entero():
+    """El schema tiene 18 campos obligatorios y el JSON crudo medido en
+    produccion llegaba a 1030 caracteres. Con el techo en 400 tokens se cortaba
+    solo. Si alguien lo vuelve a bajar, esto se cae."""
+    import re as _re
+    from pathlib import Path
+    src = Path("app/core/interpretador.py").read_text(encoding="utf-8")
+    m = _re.search(r"max_tok = \d+ if .*? else (\d+)", src)
+    assert m, "no se encontro el techo de tokens del interprete"
+    assert int(m.group(1)) >= 1000, (
+        f"el techo del interprete bajo a {m.group(1)}: con el schema actual "
+        f"eso corta la respuesta y la interpretacion se pierde entera")

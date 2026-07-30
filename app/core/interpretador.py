@@ -642,7 +642,22 @@ def validar_schema(resultado: dict) -> tuple[bool, str]:
         return False, f"intencion invalida, recibido {intencion}, esperado {INTENCIONES_VALIDAS}"
     confianza = resultado.get("confianza")
     if not isinstance(confianza, (int, float)):
-        return False, "confianza no es numero"
+        # LA CONFIANZA QUE FALTA NO PUEDE TIRAR LA INTERPRETACION ENTERA.
+        # Es lo ULTIMO del schema, o sea la primera victima de un truncado, y
+        # es un auto-reporte del modelo sobre si mismo: no es un dato del
+        # cliente. Descartar por eso una lectura que trae bien la intencion, el
+        # producto y el pedido es tirar la parte cara para salvar la barata.
+        # Medido en produccion el 30-jul: turnos REALES de WhatsApp perdian la
+        # interpretacion completa por esto -tres llamadas al modelo y 17
+        # segundos para terminar con intencion 'otra'-, y el bot seguia la
+        # charla a ciegas.
+        # Se completa BAJO, no alto: media confianza es lo honesto cuando el
+        # modelo no llego a decir cuanta tenia, y deja que aguas abajo se
+        # pregunte en vez de asumir.
+        resultado["confianza"] = 0.5
+        confianza = 0.5
+        log.warning("interpretador_confianza_ausente_completada",
+                    intencion=intencion)
     if confianza < 0 or confianza > 1:
         return False, f"confianza fuera de rango, recibido {confianza}"
     # candidatos: el LLM a veces lo manda null o como string suelto en vez de
@@ -757,8 +772,15 @@ def parsear_respuesta_llm(raw: str) -> dict | None:
     except json.JSONDecodeError:
         reparado = _reparar_json_truncado(cleaned)
         if reparado is not None:
+            # El largo crudo es el RADAR del techo de tokens: si esto empieza a
+            # aparecer seguido, el schema crecio y hay que subir max_tokens
+            # otra vez. Sin este dato, el 30-jul hubo que ir a buscarlo a los
+            # logs de produccion a mano para entender por que el interprete se
+            # caia; ahora el numero esta en la misma linea.
             log.warning("interpretador_json_truncado_reparado",
-                        largo_raw=len(raw))
+                        largo_raw=len(raw),
+                        campos=len(reparado),
+                        falta_confianza="confianza" not in reparado)
         return reparado
 
 
@@ -995,9 +1017,18 @@ async def _llamar_llm(prompt: str, response_format: dict | None = None) -> str:
         orr = openrouter_reasoning_off(settings.INTERPRETER_PROVIDER, modelo)
         gm = gemini_thinking_off(settings.INTERPRETER_PROVIDER, modelo)
         extra = nv or orr or gm or (deepseek_extra_body(modelo) if es_deepseek else {})
-        # En modo razonador el thinking consume tokens antes del JSON: le damos
-        # mas presupuesto para que la respuesta no salga vacia.
-        max_tok = 2000 if (es_deepseek and deepseek_pensando(modelo)) else 400
+        # EL TECHO DE TOKENS, subido de 400 a 1200 el 30-jul. Estaba cortando
+        # interpretaciones REALES de WhatsApp: medido en produccion, el JSON
+        # crudo llegaba a 1030 caracteres y se cortaba, o sea que el modelo se
+        # quedaba sin presupuesto antes de terminar. El schema estricto tiene 18
+        # campos obligatorios y `confianza` va ULTIMO a proposito -para que
+        # refleje lo ya resuelto-, asi que el truncado se la lleva SIEMPRE y la
+        # interpretacion entera se descarta por "confianza no es numero".
+        # El costo de subirlo es cero cuando no se usa: max_tokens es un techo,
+        # no un consumo. Lo que costaba caro era lo otro: tres llamadas al
+        # modelo por turno -la primera y dos reintentos- para terminar
+        # igual sin interpretacion, y 17 segundos de latencia.
+        max_tok = 2000 if (es_deepseek and deepseek_pensando(modelo)) else 1200
         kwargs = {"model": modelo,
                   "messages": [{"role": "user", "content": prompt}],
                   "temperature": 0.0, "max_tokens": max_tok}
