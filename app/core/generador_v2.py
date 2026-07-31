@@ -1390,11 +1390,27 @@ def _sin_lo_ya_dicho(texto: str, dichos: str) -> tuple:
 
 def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                presupuesto_pre=None, presupuesto_tools=None, mensaje=None,
-               primer_turno=False, respuestas_cat=None, historial=None):
+               primer_turno=False, respuestas_cat=None, historial=None,
+               meta=None):
     """(texto final, tools_called con proof). El texto lo arma el codigo desde
     los fragmentos; cada dato nace de la fuente."""
     from app.core.tools_context import set_current_tienda
-    from app.core.tools import calculate_total, cotizar_envio
+    # LAS CALCULADORAS SALEN DEL INDICE. La celda `costo_envio` declara que la
+    # resuelve `cotizar_envio` y la celda `total` que la resuelve
+    # `calculate_total`; aca solo se piden. Antes este modulo las importaba por su
+    # cuenta y el indice solo las nombraba en un string, o sea que la relacion
+    # celda-funcion no vivia en ningun lado. Si el indice no las tiene se cae al
+    # import directo: la cuenta del cliente no se pierde por un problema de tabla.
+    from app.core.indice import resolver as _resolver_celda, registrar as _reg
+    from app.core.tools import (calculate_total as _ct_directo,
+                                cotizar_envio as _ce_directo)
+    calculate_total = _resolver_celda("total") or _ct_directo
+    cotizar_envio = _resolver_celda("costo_envio") or _ce_directo
+
+    def _registrar(nombre):
+        """Anota en el turno que esta celda contesto. Es lo que despues permite
+        preguntar que quedo sin contestar sin comparar texto."""
+        _reg(meta if isinstance(meta, dict) else {}, nombre)
     from app.core.guia_pedido import opciones_por_categoria
     from app.core.pedido_helpers import _linea_producto
     from app.storage.firestore_client import get_product_by_id, get_all_faq
@@ -1575,6 +1591,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                     if q.get("proof"):
                         e["proof"] = q["proof"]
                     tools.append(e)
+                    _registrar("costo_envio")
             pago = None
             if f.get("pago"):
                 try:
@@ -1598,6 +1615,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 if res.get("proof"):
                     e["proof"] = res["proof"]
                 tools.append(e)
+                _registrar("total")
         elif t == "ficha":
             p = _prod(f.get("producto_id"))
             if p:
@@ -1668,6 +1686,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 if q.get("proof"):
                     e["proof"] = q["proof"]
                 tools.append(e)
+                _registrar("costo_envio")
         elif t == "criterio":
             # El razonamiento de venta ATADO por grounding mas cita: el modelo
             # redacta la frase para el cliente (natural, no verbatim) apoyado en

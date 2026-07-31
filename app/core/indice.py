@@ -149,7 +149,41 @@ CALCULOS = {
         "calculadora": "tools.cotizar_envio",
         # "2 a 3 dias habiles", tal cual sale de la tarifa
         "marca": r"\d+\s*(?:a\s*\d+\s*)?d[ií]as?\s+h[aá]biles"},
+    "total": {
+        "calculadora": "tools.calculate_total",
+        # "Total: $26.500", el renglon que sella la cuenta
+        "marca": r"total\s*:\s*\$\s?\d"},
 }
+
+# De que modulo sale cada calculadora. Un solo lugar donde el nombre de la celda
+# se convierte en la funcion que la resuelve. Hasta hoy el indice la NOMBRABA en
+# un string y cada consumidor la importaba por su cuenta, o sea que la relacion
+# celda-funcion no vivia en ningun lado: estaba repartida entre el que nombraba y
+# el que importaba, que es la misma forma de los dos errores de ayer.
+_MODULOS = {"tools": "app.core.tools"}
+
+
+def resolver(nombre: str):
+    """La FUNCION que resuelve una celda de calculo. None si la celda no es de
+    calculo o si su modulo no carga.
+
+    El indice no ejecuta: devuelve CON QUE se ejecuta. Quien la corre sigue
+    siendo el renderizador, que es el unico que tiene los items, el destino y el
+    estado del turno. Esa division es a proposito: si el indice ejecutara,
+    necesitaria el contexto del turno y volveria a ser un segundo orquestador."""
+    c = CALCULOS.get(str(nombre or ""))
+    if not c:
+        return None
+    mod, _, fn = str(c.get("calculadora") or "").partition(".")
+    ruta = _MODULOS.get(mod)
+    if not ruta or not fn:
+        return None
+    try:
+        import importlib
+        return getattr(importlib.import_module(ruta), fn, None)
+    except Exception as e:
+        log.warning("indice_resolver_error", celda=nombre, error=str(e)[:120])
+        return None
 
 
 # ── POR PRODUCTO — el otro eje de la fuente ─────────────────────────────────

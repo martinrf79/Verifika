@@ -4,6 +4,82 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 31-jul-2026 — EL NUMERO MIDE SI SIRVE, Y LA FUENTE SE UNIFICA ====**
+
+Rama `claude/sales-bot-no-hallucinations-4fcxk6`. NO deployado todavia.
+
+**LO QUE ABRIO EL DIA.** Martin planteo que apenas la pregunta sale de lo simple
+el bot falla. Se corrio EN VIVO con la clave paga un guion nuevo, el 70, con
+cuatro preguntas faciles pero COMPUESTAS. **El juez las dio limpias las cuatro y
+las cuatro respuestas estaban mal.** Verde en todo y roto en WhatsApp no era una
+contradiccion: nadie medía si la respuesta SERVIA.
+
+**EL CRITERIO NUEVO: SIRVE, peso 2.** Determinista, sin LLM. Tres defectos, los
+tres vistos saliendo al cliente: da el dato y lo niega; pregunta lo que ya sabe;
+repite un bloque entero de otro turno. Sumar un criterio no puede tirar el gate
+-el test compara puntos crudos y un criterio nuevo solo agrega posibles- pero el
+PORCENTAJE bajo de 100 a 99 y mostro los 18 puntos que estaban tapados.
+
+**EL NUMERO HOY: 2364 de 2368.** El piso anterior era 1656 de 1656.
+
+**LOS CUATRO DEFECTOS CERRADOS**, cada uno medido antes y despues:
+1. La prosa generica no se pega encima del numero estampado. El fragmento de
+   calculo no lleva `tema`, asi que `costo_envio` figuraba sin cubrir y se
+   appendeaba "depende de tu localidad" ENCIMA del "Envio: $6.000".
+2. El bot no repite lo que ya dijo. Por ORACION y no por campo: dos fichas de
+   productos distintos comparten la frase de plataformas y difieren en la de
+   conexion. Valvula: si se va todo, no se poda nada, asi una repregunta nunca
+   queda muda.
+3. La muletilla que pide lo que ya sabe. `podar_muletillas_contra_estado` ya
+   existia y hacia exactamente esto; el append de cobertura no pasaba por ella.
+   No faltaba mecanismo, faltaba el cable.
+4. La contradiccion del envio. **Perseguir la redaccion es perder: el modelo
+   escribio CINCO redacciones distintas del mismo defecto en un dia.** Se corta
+   contra el DATO DURO, que es lo unico que no cambia de palabras, y sobre el
+   texto FINAL, porque despues del render pasan el cierre, la compatibilidad y
+   la reescritura del juez.
+
+**LA FUENTE UNICA, primer tramo (pedido de Martin).** El razonamiento ya estaba
+cubierto por el indice -es el tipo criterio-; faltaba dato duro.
+- **OPERATIVAS**: "tu pedido ya quedo tomado", el handoff y el "no" al cierre
+  eran constantes sueltas de `leads.py` que salian sin pasar por ninguna puerta.
+  Ahora son celdas con id. NO entran al vocabulario del interprete: son salidas
+  que decide el flujo, no temas que el cliente pregunta.
+- **EL REGISTRO** (`registrar` / `usadas`): el turno anota que celda contesto.
+  Verificado en vivo: en el guion 15 T3 el log dice `celdas=[costo_envio, total]`.
+  Con eso se cerro la primera repeticion SIN un parche por caso.
+- **EL TIPO `calculo` EXISTE.** Estaba declarado en el docstring desde que nacio
+  el indice y `celda()` solo devolvia dato o criterio. Ahora la celda trae la
+  calculadora y la `marca` de su valor ya estampado, y `resolver()` devuelve la
+  funcion. El renderizador las pide al indice en vez de importarlas por su
+  cuenta. **Se borro `_YA_ESTAMPADO`, que era la segunda copia de lo mismo.**
+- **EL EJE POR PRODUCTO**: 25 ids de spec mas compatibilidad, declarados con su
+  resolutor. El indice dice de donde sale el dato, no lo va a buscar.
+- **`/health` reporta el inventario**: 116 vocabulario, 50 FAQ, 93 criterio, 3
+  operativas, 3 calculos, 25 specs. Si una fuente deja de cargar se ve el cero
+  ahi, en vez de descubrirlo semanas despues por una respuesta vacia.
+
+**LO QUE FALTA DE LA FUENTE UNICA:** que la ficha y la compatibilidad se
+resuelvan POR el indice y no solo se declaren ahi, y que el registro cubra
+tambien las celdas de dato y criterio, no solo las de calculo.
+
+**LOS 4 PUNTOS QUE QUEDAN, con la causa VERIFICADA:**
+- `57_cierre_continuidad`: **no es un defecto vivo.** El casete tiene grabada la
+  salida de la guardia con el texto anterior a los arreglos, y la guardia
+  reescribe el mensaje entero, asi que reinyecta lo viejo. Se cierra REGRABANDO
+  los casetes con la clave paga.
+- `53_multidestino_presupuesto_memoria`: el modelo repite su propia pregunta de
+  cierre en dos turnos. Es prosa suya, esta en la grabacion del solver. Se
+  arregla diciendole en el prompt que ya la hizo, no podando.
+
+**LA LECCION DEL DIA, que vale mas que el codigo.** Dos veces escribi la misma
+regla en dos lugares -el criterio del banco y la poda del codigo- y quedaron
+distintas: uno marcaba y el otro no podaba, la peor combinacion posible. Las dos
+veces lo cazo el gate. Por eso ahora `puntaje.py` IMPORTA el patron de
+`generador_v2` y `generador_v2` le pregunta al indice. Una definicion sola.
+
+---
+
 **==== 30-jul-2026 (cierre) — LO QUE SIGUE, PRIMERO ====**
 
 **EL PROXIMO PASO, y no hay que discutirlo de nuevo:** medir cuantas veces sigue

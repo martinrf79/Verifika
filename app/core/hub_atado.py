@@ -380,15 +380,19 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         await generador_v2.generar_fragmentos(
             raw_message, history, estado, tienda_id, interp, trace_id)
     if frags:
+        # el meta se arma ANTES del render para que el registro de celdas se
+        # llene mientras se compone, no despues por deduccion sobre el texto.
+        meta = {"tools_called": [], "secciones": [],
+                "prosa_citada": [], "turno_criterio": False}
         texto, _tools_called = generador_v2.renderizar(
             frags, universo, estado, tienda_id, trace_id,
             presupuesto_pre=presu_txt, presupuesto_tools=presu_tools,
             mensaje=raw_message, primer_turno=_primer_turno,
-            respuestas_cat=respuestas_cat, historial=history)
-        meta = {"tools_called": _tools_called, "secciones": [],
-                "prosa_citada": [], "turno_criterio": False}
+            respuestas_cat=respuestas_cat, historial=history, meta=meta)
+        meta["tools_called"] = _tools_called
         log.info("hub_atado_generador_v2", trace_id=trace_id,
-                 fragmentos=len(frags), tools=len(_tools_called))
+                 fragmentos=len(frags), tools=len(_tools_called),
+                 celdas=meta.get("celdas_usadas") or [])
     else:
         texto, meta = settings.VERIFIKA_FALLBACK_MESSAGE, {"tools_called": []}
         log.warning("hub_atado_generador_v2_sin_fragmentos", trace_id=trace_id)
