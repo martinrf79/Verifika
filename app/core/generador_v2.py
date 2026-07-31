@@ -1292,6 +1292,61 @@ def _ya_dicho(historial) -> str:
     return " \n ".join(dicho)
 
 
+# EL COSTO DE ENVIO POSTERGADO. El costo CALIFICADO como exacto o final y
+# postergado a despues. Es correcto cuando el codigo no cotizo, y falso cuando ya
+# estampo el numero real. Se compara sobre texto NORMALIZADO -sin acentos, en
+# minuscula- porque el mismo patron lo usa el criterio SIRVE del banco y los dos
+# tienen que ver exactamente lo mismo: escritos por separado, uno marcaba y el
+# otro no podaba, que es la peor combinacion posible.
+_POSTERGA = (r"(?:se\s+calcula|lo\s+calcula|se\s+confirma|se\s+define|"
+             r"depende|dependen|confirma|confirmamos|al\s+avanzar|"
+             r"al\s+momento\s+de|una\s+vez\s+que)")
+_RE_ENVIO_POSTERGADO = re.compile(
+    # el costo CALIFICADO como exacto o final, postergado
+    r"\b(?:costo|precio|valor)\s+(?:exacto|final|definitivo)\b[^.\n]{0,70}"
+    r"\b" + _POSTERGA + r"\b"
+    # ...o directamente el costo DEL ENVIO postergado, sin calificarlo. Quinta
+    # redaccion vista en vivo el 31-jul: "El costo del envio a Rosario lo calcula
+    # el sistema automaticamente segun tu codigo postal", en el mismo mensaje que
+    # ya decia "Envio: $6.000".
+    r"|\b(?:costo|precio|valor)\s+(?:del?\s+)?(?:env[ii]o|flete)\b"
+    r"[^.\n]{0,70}\b" + _POSTERGA + r"\b")
+_RE_ENVIO_COTIZADO = re.compile(r"env[ii]o[^.\n]{0,20}\$\s?\d")
+
+
+def _sin_negar_lo_estampado(texto: str, trace_id=None) -> str:
+    """Si el codigo YA estampo el costo real del envio, se va la ORACION que dice
+    que ese costo todavia no se sabe.
+
+    POR QUE ACA Y NO POR PALABRA EN EL PROMPT. Medido tres veces el 31-jul.
+    Primera: "Envio: $6.000 ... el costo exacto y el plazo dependen de tu
+    localidad, una vez que cerremos el pedido el sistema te va a confirmar el
+    detalle final". Se corto por categoria y el modelo lo reescribio: "El costo
+    exacto se calcula desde la plataforma al momento de avanzar". Se corto esa y
+    en las charlas grabadas aparecio una tercera: "el costo exacto y el plazo de
+    entrega te los confirma el sistema al momento de...". Perseguir la redaccion
+    es perder: la contradiccion se corta donde se compone, contra el dato duro,
+    que es lo unico que no cambia de palabras.
+
+    No toca el "envio gratis superando X" ni el plazo solo: ahi no hay
+    contradiccion, son condiciones reales de la fuente."""
+    if not texto or not _RE_ENVIO_COTIZADO.search(_norm(texto)):
+        return texto
+    partes = re.split(r"(?<=[.!?])\s+", texto)
+    quedan = [o for o in partes if not _RE_ENVIO_POSTERGADO.search(_norm(o))]
+    if len(quedan) == len(partes):
+        return texto
+    nuevo = re.sub(r"[ \t]{2,}", " ", " ".join(quedan))
+    nuevo = re.sub(r"\n{3,}", "\n\n", nuevo).strip()
+    # si la poda se llevo el mensaje entero, no se poda: mejor la frase de mas
+    # que dejar al cliente sin respuesta.
+    if len(nuevo) < 40:
+        return texto
+    log.info("generador_v2_envio_no_negado", trace_id=trace_id,
+             quito=len(texto) - len(nuevo))
+    return nuevo
+
+
 def _sin_lo_ya_dicho(texto: str, dichos: str) -> tuple:
     """Saca de un campo estampado las ORACIONES que ya salieron en la charla.
 
@@ -1715,6 +1770,14 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
         for e in (presupuesto_tools or []):
             tools.append(e)
     texto = "\n\n".join(x for x in partes if x)
+    texto = _sin_negar_lo_estampado(texto, trace_id)
+    # El modelo copia del menu el rotulo entre corchetes ("... sin cargo.
+    # [costo_envio]") y salia CRUDO al cliente. La cobertura ya lo sacaba de su
+    # propio texto; el fragmento de FAQ no. Se saca del texto entero, una vez.
+    _con_rotulo = texto
+    texto = re.sub(r"\s*\[[a-z_]{3,40}\]", "", texto).strip()
+    if texto != _con_rotulo:
+        log.info("generador_v2_rotulo_filtrado", trace_id=trace_id)
     log.info("generador_v2_render", trace_id=trace_id,
              fragmentos=len(fragmentos or []), partes=len(partes))
     # RADAR de fragmento PERDIDO. Hasta hoy la unica pista de que un fragmento

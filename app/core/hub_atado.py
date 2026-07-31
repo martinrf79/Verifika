@@ -633,6 +633,16 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         log.info("hub_atado_dedup", trace_id=trace_id,
                  quito=len(_antes) - len(texto))
 
+    # ── Y LA CONTRADICCION DEL ENVIO, sobre el texto FINAL ──────────────
+    # Corre aca y no solo en el render porque despues del render pasan el cierre,
+    # el estampado de compatibilidad, la red de verificadores -que REESCRIBE- y
+    # las guardas. Podado en el render, la frase volvia a entrar por alguno de
+    # esos pasos: medido el 31-jul en los guiones 15, 18 y 19, donde el numero de
+    # envio ya estaba estampado y el mensaje igual terminaba diciendo que el
+    # costo exacto lo calcula el sistema despues. Es determinista y contra el
+    # dato duro; no le pregunta nada al modelo.
+    texto = generador_v2._sin_negar_lo_estampado(texto, trace_id)
+
     # ── MEMORIA ─────────────────────────────────────────────────────────
     history = history + [
         {"role": "user", "content": raw_message},

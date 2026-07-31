@@ -54,10 +54,17 @@ _RE_ENVIO_ESTAMPADO = re.compile(r"env[ií]o[^.\n]{0,20}\$\s?\d")
 # ...y la frase que dice que ese mismo costo todavia no se sabe. Solo formas
 # inequivocas: "el costo exacto depende", "depende de tu localidad", "te vamos
 # a confirmar el detalle final". Una que hable de otra cosa no entra.
-_RE_COSTO_INDEFINIDO = re.compile(
-    r"(costo|precio)\s+(exacto|final)[^.\n]{0,40}depend"
-    r"|depende de (tu|la) localidad"
-    r"|confirmar? el detalle final")
+# El primer corte listaba tres frases y el modelo escribio una cuarta: se corto
+# "el costo exacto depende de tu localidad" y volvio con "el costo exacto se
+# calcula desde la plataforma al momento de avanzar". Perseguir la redaccion es
+# perder, asi que se persigue la FORMA: el costo CALIFICADO como exacto o final
+# y postergado. El primer intento fue mas ancho -cualquier "costo/valor/monto"
+# cerca de un verbo de postergar- y dio rojo falso sobre prosa de cierre normal
+# ("confirmame asi te paso los datos"). Un rojo falso ensena a ignorar el tablero.
+# Es el MISMO patron que poda `generador_v2._sin_negar_lo_estampado`, importado
+# de ahi a proposito: escritos por separado, uno marcaba y el otro no podaba.
+from app.core.generador_v2 import _RE_ENVIO_POSTERGADO as _RE_COSTO_INDEFINIDO
+
 # (b) preguntar por el producto cuando el mismo mensaje ya lo nombra con precio
 _RE_PREGUNTA_QUE_PRODUCTO = re.compile(
     r"dec[ií]me qu[eé] (producto|modelo)|qu[eé] (producto|modelo) est[aá]s "
