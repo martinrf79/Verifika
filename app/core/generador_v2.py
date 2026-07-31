@@ -48,6 +48,19 @@ CAMPOS_FICHA = ["procedencia", "garantia", "material", "descripcion",
                 # escritorio). Lo estampa el codigo desde compatibilidad.csv.
                 "compatibilidad"]
 
+# EL DATO YA ESTAMPADO. Por categoria, la marca de que el CODIGO ya contesto ese
+# dato en este mismo mensaje con el numero real de la fuente. Cuando aparece, la
+# prosa generica de esa categoria NO se appendea: es el fallback de cuando no hay
+# dato, y pegada encima del numero lo contradice. Se busca sobre el texto ya
+# compuesto porque el fragmento de calculo no viaja rotulado con su `tema`.
+# Conservador a proposito: entra solo el patron que estampa el codigo.
+_YA_ESTAMPADO = {
+    # "Envio: $6.000" / "el envio te sale $6.000"
+    "costo_envio": re.compile(r"env[ií]o[^.\n]{0,20}\$\s?\d", re.I),
+    # "2 a 3 dias habiles" / "4 a 7 dias habiles", tal cual sale de la fuente
+    "plazo_envio": re.compile(r"\d+\s*(?:a\s*\d+\s*)?d[ií]as?\s+h[aá]biles", re.I),
+}
+
 # ── EL INDICE DEL TURNO ──────────────────────────────────────────────────────
 # Las tres funciones que vivian aca -criterio, FAQ y cobertura obligatoria- eran
 # el mismo indice escrito tres veces: cada una recorria por su cuenta las
@@ -1604,6 +1617,18 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             for _k in ("criterio_id", "tema", "categoria"):
                 if f.get(_k):
                     _cub.add(str(f[_k]))
+        # ...y tambien esta CUBIERTA la categoria cuyo dato el codigo YA estampo
+        # en este mismo mensaje, aunque ningun fragmento la lleve rotulada. El
+        # fragmento de calculo no tiene `tema`, asi que `costo_envio` figuraba
+        # sin cubrir y se appendeaba su prosa generica ENCIMA del numero real.
+        # Salida medida el 31-jul, guion 70 T3: "Envio: $6.000 ... Total:
+        # $26.500. El costo exacto y el plazo dependen de tu localidad, una vez
+        # que cerremos el pedido el sistema te va a confirmar el detalle final."
+        # Le da el numero y en la oracion siguiente le dice que no se lo puede
+        # dar. Esa prosa es el FALLBACK de cuando el codigo no tiene el dato; si
+        # lo tiene, sobra.
+        _escrito = "\n".join(partes)
+        _cub |= {c for c, rx in _YA_ESTAMPADO.items() if rx.search(_escrito)}
         faltantes = [t for c, r in respuestas_cat.items()
                      if c not in _cub
                      and (t := _sin_porcentaje_inventado(_estampar_huecos(
