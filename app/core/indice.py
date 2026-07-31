@@ -89,6 +89,63 @@ GEMELOS = {
 }
 
 
+# ── OPERATIVAS — el texto que emite el CODIGO, no el modelo ─────────────────
+#
+# Son las respuestas que dispara una decision del flujo y no una pregunta del
+# cliente: el pedido ya tomado, el handoff a una persona, el "no" al cierre.
+# Hasta hoy vivian como constantes sueltas adentro de `leads.py` y salian al
+# cliente sin pasar por ninguna puerta, asi que NADA en el sistema sabia que se
+# habian dicho. Medido el 31-jul en los guiones 28 y 52: la misma frase salio
+# textual en dos turnos seguidos y ninguna de las podas la vio, porque se pega
+# DESPUES del render.
+#
+# Entran al indice como celdas de tipo `dato`, grupo `operativa`. Con id se las
+# puede registrar, y registrado se sabe si ya se dijeron.
+#
+# NO entran al `vocabulario()`: el interprete no las declara nunca. No son temas
+# que el cliente pregunta, son salidas que el flujo decide. Meterlas en su enum
+# seria darle al modelo la posibilidad de disparar un handoff.
+OPERATIVAS = {
+    "pedido_ya_tomado": (
+        "Tu pedido ya quedó tomado. Una persona del equipo te contacta a la "
+        "brevedad para coordinar el pago y el envío. ¿Te ayudo con algo más?"),
+    "no_interesado": (
+        "Perfecto, sin problema. Cuando quieras retomar, acá estoy. "
+        "Igual le paso el dato a una persona del equipo por si te puede dar "
+        "una mano."),
+    "handoff_humano": (
+        "Buenisimo, gracias por la decision. En un momento te contacta "
+        "una persona del equipo para coordinar tu compra. Para que pueda "
+        "hablarte directo, pasame por favor tu nombre y un telefono "
+        "donde ubicarte."),
+}
+
+
+def texto_operativo(nombre: str) -> str:
+    """El texto de una celda operativa. Un solo lugar donde vive."""
+    return OPERATIVAS.get(str(nombre or ""), "")
+
+
+def registrar(meta: dict, nombre: str) -> None:
+    """Anota que ESTA celda contesto en este turno.
+
+    Es el registro que no existia: hasta hoy cada fuente entraba por su puerta y
+    no dejaba rastro, asi que preguntas como "¿esto ya se dijo?" o "¿se contesto
+    todo lo que pregunto?" habia que responderlas comparando TEXTO, una por una y
+    con un parche distinto cada vez. Con el id anotado se responden una sola vez
+    y valen para toda la fuente."""
+    if not isinstance(meta, dict) or not nombre:
+        return
+    usadas = meta.setdefault("celdas_usadas", [])
+    if nombre not in usadas:
+        usadas.append(str(nombre))
+
+
+def usadas(meta: dict) -> list:
+    """Las celdas que contestaron en este turno, en orden."""
+    return list((meta or {}).get("celdas_usadas") or [])
+
+
 def _faq_dict(tienda_id):
     from app.storage.firestore_client import get_all_faq
     return get_all_faq(tienda_id=tienda_id) or {}
@@ -127,6 +184,10 @@ def celda(nombre: str, tienda_id=None) -> dict | None:
     cid = str(nombre or "").strip()
     if not cid:
         return None
+    if cid in OPERATIVAS:
+        return {"nombre": cid, "tipo": "dato", "grupo": "operativa",
+                "faq_tema": "", "texto_faq": OPERATIVAS[cid],
+                "texto_faq_crudo": OPERATIVAS[cid], "texto_criterio": ""}
     from app.core.guia_venta_prosa import meta_categoria, texto_de
     from app.core.curadas import estampar_valores
     texto_faq, texto_faq_crudo, faq_tema = "", "", ""

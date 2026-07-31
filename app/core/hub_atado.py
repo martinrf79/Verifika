@@ -643,6 +643,32 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
     # dato duro; no le pregunta nada al modelo.
     texto = generador_v2._sin_negar_lo_estampado(texto, trace_id)
 
+    # ── UNA CELDA OPERATIVA NO SALE DOS VECES ───────────────────────────
+    # Las respuestas que dispara el flujo -pedido ya tomado, handoff, el "no" al
+    # cierre- se pegan DESPUES del render, asi que ninguna de las podas de
+    # `generador_v2` las ve. Medido el 31-jul, guiones 28 y 52: "una persona del
+    # equipo te contacta a la brevedad" salio textual en dos turnos seguidos.
+    # Ahora que viven en el indice con un id, alcanza con mirar si esa misma
+    # celda ya salio en la charla. Es la primera cosa que se resuelve con el
+    # REGISTRO en vez de con un parche por caso.
+    try:
+        from app.core.indice import OPERATIVAS
+        _dicho_antes = "\n".join(str(m.get("content") or "") for m in history
+                                 if isinstance(m, dict)
+                                 and m.get("role") == "assistant")
+        for _celda, _txt in OPERATIVAS.items():
+            if _txt and _txt in texto and _txt in _dicho_antes:
+                _sin = texto.replace(_txt, "").strip()
+                # si la celda era TODO el mensaje no se saca: mejor repetir que
+                # dejar al cliente sin respuesta.
+                if len(_sin) >= 40:
+                    texto = re.sub(r"\n{3,}", "\n\n", _sin)
+                    log.info("hub_atado_operativa_no_repetida",
+                             trace_id=trace_id, celda=_celda)
+    except Exception as e:
+        log.warning("hub_atado_operativa_error", trace_id=trace_id,
+                    error=str(e)[:120])
+
     # ── MEMORIA ─────────────────────────────────────────────────────────
     history = history + [
         {"role": "user", "content": raw_message},

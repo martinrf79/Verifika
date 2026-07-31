@@ -19,6 +19,7 @@ from app.config import get_settings
 from app.logger import get_logger
 from app.storage.firestore_client import _tienda_ref
 from app.core.notificador import notificar_lead
+from app.core.indice import texto_operativo
 
 log = get_logger(__name__)
 settings = get_settings()
@@ -45,20 +46,21 @@ _RE_CIERRE_YA_PREGUNTADO = re.compile(
     r"(?i)¿[^¿?]*(?:confirm|seguimos|avanzamos|cerramos|lo dejamos|"
     r"lo preparo|reserv|lo pedimos|hacemos el pedido)[^¿?]*\?")
 
-# Respuesta cuando el cliente dice que no a la pregunta de cierre: se cierra suave
-# y lo toma un humano, sin insistir (arreglo D).
-MENSAJE_NO_INTERESADO = (
-    "Perfecto, sin problema. Cuando quieras retomar, acá estoy. "
-    "Igual le paso el dato a una persona del equipo por si te puede dar una mano."
-)
-
-# Cierre corto para el lead YA captado. Nace del loop real (charla Monte Ralo):
-# el cliente confirmaba, el lead ya estaba tomado, el cierre no devolvia nada y
-# el solver re-mandaba el presupuesto en cada "si". Este mensaje corta el loop.
-MENSAJE_PEDIDO_YA_TOMADO = (
-    "Tu pedido ya quedó tomado. Una persona del equipo te contacta a la "
-    "brevedad para coordinar el pago y el envío. ¿Te ayudo con algo más?"
-)
+# EL TEXTO YA NO VIVE ACA. Estas tres respuestas las emite el CODIGO cuando el
+# flujo lo decide -el cliente dice que no, el pedido ya estaba tomado, se deriva
+# a una persona- y hasta hoy eran constantes sueltas de este modulo que salian al
+# cliente sin pasar por ninguna puerta. Ahora son celdas del indice, con id, asi
+# que el turno puede REGISTRAR que se dijeron. Los nombres se conservan para no
+# romper a quien las importa.
+#
+#   no_interesado    : el "no" al cierre, suave y sin insistir (arreglo D).
+#   pedido_ya_tomado : corta el loop real de la charla Monte Ralo, donde el
+#                      cliente confirmaba, el lead ya estaba tomado y el solver
+#                      re-mandaba el presupuesto en cada "si".
+#   handoff_humano   : la decision de compra que toma una persona.
+MENSAJE_NO_INTERESADO = texto_operativo("no_interesado")
+MENSAJE_PEDIDO_YA_TOMADO = texto_operativo("pedido_ya_tomado")
+MENSAJE_HANDOFF_HUMANO = texto_operativo("handoff_humano")
 
 # El cliente pide explicitamente el link o los datos para pagar.
 _RE_PIDE_COBRO = re.compile(
@@ -628,12 +630,7 @@ async def procesar_mensaje_para_lead(
             log.warning("notificar_lead_failed", error=str(e)[:120])
         meta["accion"] = "handoff_humano"
         meta["lead_id"] = lead_id
-        meta["respuesta_directa"] = (
-            "Buenisimo, gracias por la decision. En un momento te contacta "
-            "una persona del equipo para coordinar tu compra. Para que pueda "
-            "hablarte directo, pasame por favor tu nombre y un telefono "
-            "donde ubicarte."
-        )
+        meta["respuesta_directa"] = MENSAJE_HANDOFF_HUMANO
         return None, meta
 
     return None, {"accion": "ninguna"}
