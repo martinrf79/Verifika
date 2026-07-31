@@ -160,7 +160,9 @@ CALCULOS = {
 # un string y cada consumidor la importaba por su cuenta, o sea que la relacion
 # celda-funcion no vivia en ningun lado: estaba repartida entre el que nombraba y
 # el que importaba, que es la misma forma de los dos errores de ayer.
-_MODULOS = {"tools": "app.core.tools"}
+_MODULOS = {"tools": "app.core.tools",
+            "fuente_producto": "app.core.fuente_producto",
+            "compatibilidad": "app.core.compatibilidad"}
 
 
 def resolver(nombre: str):
@@ -201,6 +203,26 @@ _RESOLUTORES_PRODUCTO = {
     "spec": "fuente_producto.extraer_specs",
     "compatibilidad": "compatibilidad.bloque_ficha",
 }
+
+
+def resolver_producto(nombre: str):
+    """La FUNCION que resuelve una celda por producto. Mismo contrato que
+    `resolver` para las de calculo: devuelve con que se resuelve, no el valor,
+    porque el producto lo tiene el renderizador y no el indice."""
+    c = celda_producto(nombre)
+    if not c:
+        return None
+    mod, _, fn = str(c.get("resolutor") or "").partition(".")
+    ruta = _MODULOS.get(mod)
+    if not ruta or not fn:
+        return None
+    try:
+        import importlib
+        return getattr(importlib.import_module(ruta), fn, None)
+    except Exception as e:
+        log.warning("indice_resolver_producto_error", celda=nombre,
+                    error=str(e)[:120])
+        return None
 
 
 def _specs_ids() -> set:

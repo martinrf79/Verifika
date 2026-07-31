@@ -1018,8 +1018,12 @@ def _campo_ficha(prod, campo):
             partes.append(f"{nombre}: {valor}")
         return ". ".join(partes[:8])
     if campo == "compatibilidad":
+        # la trae el INDICE, que es donde esta declarado que esta celda se
+        # resuelve con un producto adelante y con que funcion. Fallback al
+        # import directo: la ficha del cliente no se pierde por la tabla.
+        from app.core.indice import resolver_producto
         from app.core.compatibilidad import bloque_ficha
-        return bloque_ficha(prod)
+        return (resolver_producto("compatibilidad") or bloque_ficha)(prod)
     if campo == "uso":
         v = str(prod.get("uso_recomendado") or "").strip()
         return ("Recomendado para " + v) if v else ""
@@ -1518,12 +1522,18 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             p = _prod(f.get("producto_id"))
             if p:
                 partes.append(_linea_producto(p))
+                # la categoria del producto mostrado queda CONTESTADA por la
+                # linea, no por una celda de texto. Sin esto el radar de celdas
+                # sin contestar marcaba "mouse" y "teclado" en turnos donde el
+                # mouse y el teclado se habian listado con precio y stock.
+                _registrar(f.get("categoria") or _norm(p.get("categoria")))
                 tools.append({"name": "get_product_details",
                               "result": {"encontrado": True, "producto": p}})
         elif t == "opciones" and f.get("categoria"):
             cat = _cat_real(str(f["categoria"]), tienda_id)
             ops = opciones_por_categoria(cat, tienda_id, k=4) if cat else []
             if ops:
+                _registrar(str(f["categoria"]))
                 partes.append(f"De {f['categoria']} tengo, de lo más "
                               "económico para arriba:\n"
                               + "\n".join("- " + _linea_producto(p) for p in ops))
@@ -1616,6 +1626,14 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                     e["proof"] = res["proof"]
                 tools.append(e)
                 _registrar("total")
+                # el presupuesto NOMBRA cada producto con su precio, asi que
+                # tambien deja contestada la categoria de cada uno. Sin esto el
+                # radar marcaba "teclado" y "mouse" sin contestar en el turno
+                # donde el cliente pidio justamente el presupuesto de los dos.
+                for _it in (items or []):
+                    _p = _prod((_it or {}).get("product_id"))
+                    if _p:
+                        _registrar(_norm(_p.get("categoria")))
         elif t == "ficha":
             p = _prod(f.get("producto_id"))
             if p:
@@ -1633,6 +1651,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                                      trace_id=trace_id, campo=c, oraciones=_saco)
                     if v:
                         linea.append("  " + v)
+                        _registrar(c)
                 if len(linea) > 1:
                     partes.append("\n".join(linea))
                 # La ficha CONTESTA: si la spec preguntada no figura en la
@@ -1666,6 +1685,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 _txt_faq = podar_muletillas_contra_estado(_txt_faq, estado)
             if _txt_faq:
                 partes.append(_txt_faq)
+                _registrar(f.get("tema"))
                 faqs_pegadas += 1
                 tools.append({"name": "query_faq",
                               "result": {"encontrada": True,
@@ -1711,6 +1731,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             if not txt:
                 continue
             partes.append(txt)
+            _registrar(cid)
             if jurado is not None:
                 tools.append({"name": "consultar_guia_venta",
                               "result": {"id": cid, "tema": cid,
@@ -1798,6 +1819,9 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             _pos = len(partes) - (1 if partes and partes[-1].rstrip()
                                   .endswith("?") else 0)
             partes[_pos:_pos] = faltantes
+            for _c in respuestas_cat:
+                if _c not in _cub:
+                    _registrar(_c)
             log.info("generador_v2_cobertura_append", trace_id=trace_id,
                      faltantes=len(faltantes))
     if presupuesto_pre and not total_mostrado:

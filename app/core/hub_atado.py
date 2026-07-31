@@ -393,6 +393,24 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
         log.info("hub_atado_generador_v2", trace_id=trace_id,
                  fragmentos=len(frags), tools=len(_tools_called),
                  celdas=meta.get("celdas_usadas") or [])
+        # LO QUE PREGUNTO Y NO SE CONTESTO, sin comparar texto. Es el pago de
+        # todo el registro: hasta hoy saber si un turno dejo algo sin responder
+        # obligaba a leer la respuesta y buscar palabras. Ahora es una resta
+        # entre lo que el interprete DECLARO y las celdas que efectivamente
+        # contestaron. Es un RADAR: se loguea, no se corrige, porque una celda
+        # sin contestar puede ser legitima -el solver la resolvio dentro de otra
+        # prosa- y podar por esto seria volver al parche.
+        try:
+            from app.core.indice import usadas
+            _pedidas = [str(c) for c in (interp.get("categorias") or [])
+                        if isinstance(interp, dict)]
+            _sin = [c for c in _pedidas if c not in usadas(meta)]
+            if _sin:
+                log.info("hub_atado_celdas_sin_contestar", trace_id=trace_id,
+                         pidio=_pedidas[:8], sin_contestar=_sin[:8])
+        except Exception as e:
+            log.warning("hub_atado_celdas_error", trace_id=trace_id,
+                        error=str(e)[:120])
     else:
         texto, meta = settings.VERIFIKA_FALLBACK_MESSAGE, {"tools_called": []}
         log.warning("hub_atado_generador_v2_sin_fragmentos", trace_id=trace_id)
