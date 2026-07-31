@@ -66,6 +66,31 @@ app = FastAPI(title="Agente Multi-Canal", version="4.0.0")
 
 
 @app.on_event("startup")
+async def _declarar_config_efectiva():
+    """QUE CONFIGURACION CORRE DE VERDAD, escrito en el log al arrancar.
+
+    Las envs del servicio en Cloud Run no se pueden leer desde afuera sin
+    permiso de administrador, asi que hasta hoy nadie podia confirmar en que
+    modo de cierre corre el bot vivo ni con que modelo, salvo entrando a la
+    consola. Los logs SI se leen. Con esta linea, cada revision deja escrito
+    con que arranco, y el banco imprime lo mismo en su banner: si las dos no
+    coinciden, el banco esta probando otro sistema. No expone secretos, solo
+    dice si estan puestos."""
+    try:
+        from app.core.leads import modo_cierre
+        log.info("config_efectiva",
+                 tienda_id=settings.TIENDA_ID,
+                 modo_cierre=modo_cierre(settings.TIENDA_ID),
+                 solver_model=settings.GEMINI_MODEL,
+                 interprete=settings.INTERPRETER_PROVIDER,
+                 gemini_key=bool(settings.GEMINI_API_KEY),
+                 procesar_en_request=PROCESAR_EN_REQUEST,
+                 fuente=_inventario_fuente())
+    except Exception as e:
+        log.warning("config_efectiva_error", error=str(e)[:150])
+
+
+@app.on_event("startup")
 async def _precalentar_cache():
     """
     Precarga catálogo y FAQ de la tienda default al arrancar la instancia, así
@@ -113,6 +138,12 @@ async def health():
         "interpreter_provider": settings.INTERPRETER_PROVIDER,
         "sentry_enabled": bool(SENTRY_DSN),
         "default_tienda": settings.TIENDA_ID,
+        # QUE MODO DE CIERRE CORRE DE VERDAD. La env del servicio no se puede
+        # leer desde afuera y la config de tienda la pisa, asi que hasta hoy
+        # nadie sabia si el bot vivo capta lead (A) o cobra (B). El banco
+        # imprime el suyo en cada corrida: si los dos no dicen lo mismo, el
+        # banco esta probando otro cierre que el que atiende a los clientes.
+        "modo_cierre": _modo_cierre_efectivo(),
         # QUE SABE CONTESTAR EL SISTEMA, contado por fuente. Mismo criterio que
         # arriba: el health dice la verdad de lo que hay cargado. Si una fuente
         # deja de cargar se ve el cero aca, en vez de descubrirlo semanas
@@ -120,6 +151,15 @@ async def health():
         # los 23 temas de FAQ que el interprete no podia nombrar-.
         "fuente": _inventario_fuente(),
     }
+
+
+def _modo_cierre_efectivo() -> str:
+    """El modo de cierre que corre, tolerante: el health nunca se cae por esto."""
+    try:
+        from app.core.leads import modo_cierre
+        return modo_cierre(settings.TIENDA_ID)
+    except Exception as e:
+        return f"error: {str(e)[:60]}"
 
 
 def _inventario_fuente() -> dict:

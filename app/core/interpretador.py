@@ -278,7 +278,17 @@ def construir_prompt_interpretador(mensaje: str,
     # nombres que la fuente sabe contestar. El modelo DECLARA cual/cuales toca el
     # mensaje; el codigo engancha cada uno con su celda. No puede inventar uno.
     from app.core.indice import vocabulario
-    conoc_str = ", ".join(vocabulario()) or "sin categorias"
+    _conoc = vocabulario()
+    # El mismo corte que en el schema: venta de un lado, politica del otro. Las
+    # dos listas del prompt tienen que ser las MISMAS que los dos enums, o el
+    # modelo lee una lista y el schema le ata otra.
+    try:
+        from app.core.guia_venta_prosa import categorias_conocimiento
+        _venta_p = list(categorias_conocimiento())
+    except Exception:
+        _venta_p = []
+    conoc_venta_str = ", ".join(c for c in _conoc if c in _venta_p) or "sin categorias"
+    conoc_politica_str = ", ".join(c for c in _conoc if c not in _venta_p) or "sin temas"
 
     # el vocabulario de specs de la fuente, con su etiqueta, para que el modelo
     # TRADUZCA la pregunta del cliente en vez de que el codigo matchee palabras.
@@ -343,6 +353,7 @@ Devolvé SOLO este JSON, sin texto alrededor. Antes de responder, validá que cu
   "pedido": [{{"producto": "nombre EXACTO de un producto mostrado", "cantidad": número, "destino": "localidad tal cual la dijo, o null"}}],
   "solicitud_nueva": [{{"categoria": "categoria EXACTA de la lista de abajo", "cantidad": número o null, "criterio": "mas_barato|intermedio|null"}}],
   "categorias": ["una o varias categorias EXACTAS de la lista de categorias de la charla, las que toque el mensaje; vacía si ninguna"],
+  "temas_politica": ["los temas EXACTOS de la lista de politicas de la tienda que toque el mensaje; vacía si ninguno"],
   "specs_preguntadas": ["los ids EXACTOS de las specs por las que el cliente pregunta, de la lista de abajo; vacía si no pregunta ninguna"],
   "plataformas_cliente": ["los ids EXACTOS de los equipos que el cliente YA TIENE y con los que quiere usar el producto, de la lista de abajo; vacía si no nombra ninguno"],
   "tope_presupuesto": número entero en pesos o null,
@@ -371,7 +382,9 @@ pedido. SOLO cuando arma un pedido concreto, productos mostrados con cantidad, n
 
 solicitud_nueva. Cuando el cliente pide una CATEGORÍA de producto que TODAVÍA no se mostró en la charla, por ejemplo pide "2 teclados baratos" y todavía no se mostró ningún teclado. Va la categoría EXACTA de esta lista: {cats_str}. Más la cantidad si la dice y el criterio si lo expresa. Es para lo que hay que traer y mostrar recién ahora, tanto un producto AGREGADO como un CAMBIO a otra categoría. NO uses este campo para algo que ya se mostró, eso va en pedido o en productos_consultados con su nombre exacto. Si no pide ninguna categoría nueva, lista vacía.
 
-categorias. La o las categorías de la charla que toca el mensaje, tomadas EXACTAS de esta lista cerrada: {conoc_str}. Un mensaje puede tocar VARIAS a la vez, por ejemplo pregunta el precio y además objeta que es caro y pide envío: van las tres. Es lo que le dice al sistema desde qué criterio o política responder cada parte. Si el mensaje no encaja en NINGUNA de la lista, dejala vacía, no fuerces una; el sistema responde honesto que no tiene ese dato sin cortar la venta. Elegí por lo que el cliente QUIERE, no por palabras sueltas.
+categorias. La o las categorías de la charla que toca el mensaje, tomadas EXACTAS de esta lista cerrada: {conoc_venta_str}. Un mensaje puede tocar VARIAS a la vez, por ejemplo pregunta el precio y además objeta que es caro y pide envío: van las tres. Es lo que le dice al sistema desde qué criterio o política responder cada parte. Si el mensaje no encaja en NINGUNA de la lista, dejala vacía, no fuerces una; el sistema responde honesto que no tiene ese dato sin cortar la venta. Elegí por lo que el cliente QUIERE, no por palabras sueltas.
+
+temas_politica. La otra mitad de la misma lista: los temas de POLÍTICA de la tienda, tomados EXACTOS de esta lista cerrada: {conoc_politica_str}. Van acá y no en categorias, pero valen igual: si el cliente pregunta por cuotas, envíos, devoluciones o garantía, el tema va en este campo. Los dos campos se completan juntos cuando el mensaje toca las dos cosas, por ejemplo pregunta el precio de un teclado y además si tiene cuotas. Vacía si el mensaje no toca ninguna política.
 
 preferencias. tope_presupuesto solo si dice una CIFRA. exclusiones si descarta por origen o marca, sin partes chinas, nada de Redragon. uso_previsto si dice para qué lo quiere. Llená lo que el mensaje diga, el resto null o vacío.
 
@@ -674,11 +687,19 @@ def validar_schema(resultado: dict) -> tuple[bool, str]:
     # categorias (Contactor): null/str -> lista; se filtran a las ids reales de
     # la fuente (el enum ya lo garantiza en el schema estricto, esto es la red
     # para providers sin strict). Nunca falla: si viene raro, queda vacia.
+    # Los DOS campos del vocabulario se juntan aca: el interprete los declara
+    # separados porque el enum no entra en uno solo (ver _schema_interprete),
+    # pero aguas abajo son una sola lista y nada cambia.
     _cats = resultado.get("categorias", [])
     if isinstance(_cats, str):
         _cats = [_cats]
     if not isinstance(_cats, list):
         _cats = []
+    _pol = resultado.get("temas_politica", [])
+    if isinstance(_pol, str):
+        _pol = [_pol]
+    if isinstance(_pol, list):
+        _cats = list(_cats) + [p for p in _pol if p not in _cats]
     try:
         from app.core.indice import vocabulario
         _validas = set(vocabulario())
@@ -850,6 +871,28 @@ def _schema_interprete(nombres_mostrados: list[str],
     # lista.
     from app.core.indice import vocabulario
     conoc_enum = vocabulario() or ["otra"]
+    # EL VOCABULARIO VIAJA EN DOS CAMPOS, y no es una preferencia de estilo.
+    # Medido en vivo el 31-jul con la clave paga: Gemini RECHAZA el schema con
+    # 400 INVALID_ARGUMENT cuando un solo enum lleva estos 116 valores. El techo
+    # medido con estas palabras es 112. No es cantidad ni largo -200 valores
+    # sinteticos con prefijo comun pasan-: es la complejidad del automata de
+    # decodificacion atada.
+    # El precio de no verlo era altisimo. El `except` de _llamar_llm reintentaba
+    # SIN response_format, asi que la interpretacion de CADA turno corria sin
+    # schema: el atado no ataba nada y nadie se enteraba, porque el reintento
+    # devolvia 200. Este era el 400 de Sentry que no se podia ubicar.
+    # El corte es el que ya existe en la fuente: las categorias de venta de
+    # base_conocimiento por un lado, los temas de politica que solo viven en la
+    # FAQ por el otro. La union sigue siendo el MISMO vocabulario y el codigo
+    # las vuelve a juntar en `categorias` al normalizar, asi que aguas abajo no
+    # cambia nada.
+    try:
+        from app.core.guia_venta_prosa import categorias_conocimiento
+        _venta = list(categorias_conocimiento())
+    except Exception:
+        _venta = []
+    conoc_venta = [c for c in conoc_enum if c in _venta] or ["otra"]
+    conoc_politica = [c for c in conoc_enum if c not in _venta] or ["otra"]
     # ATRIBUTOS ordenables, DERIVADOS del catalogo (columnas numericas + specs
     # con magnitud). No es una lista escrita a mano: el dia que la tienda suma
     # una columna, esa columna queda preguntable sin tocar codigo.
@@ -943,7 +986,13 @@ def _schema_interprete(nombres_mostrados: list[str],
             # Vacia si ninguna encaja (el sistema responde honesto sin cortar la
             # venta). Es el disparador que enruta a criterio o a tool.
             "categorias": {"type": "array",
-                           "items": {"type": "string", "enum": conoc_enum}},
+                           "items": {"type": "string", "enum": conoc_venta}},
+            # La otra mitad del vocabulario: los temas que solo estan en la FAQ.
+            # Se declara aparte por el techo del enum (ver arriba); el codigo
+            # los junta con `categorias` y aguas abajo son una sola lista.
+            "temas_politica": {"type": "array",
+                               "items": {"type": "string",
+                                         "enum": conoc_politica}},
             # SPECS PREGUNTADAS (28-jul): la TRADUCCION que solo el modelo sabe
             # hacer. El cliente dice "resiste que se me caiga el cafe" o "son
             # resistentes al agua" y el modelo lo declara como resistencia_agua,
@@ -980,7 +1029,8 @@ def _schema_interprete(nombres_mostrados: list[str],
                      "producto_resuelto", "candidatos", "ofrecer_opciones",
                      "intencion", "estado_conversacion", "criterio", "orden",
                      "pedido",
-                     "solicitud_nueva", "categorias", "specs_preguntadas",
+                     "solicitud_nueva", "categorias", "temas_politica",
+                     "specs_preguntadas",
                      "plataformas_cliente",
                      "tope_presupuesto", "exclusiones", "uso_previsto",
                      "confianza"],
@@ -1058,11 +1108,26 @@ async def _llamar_llm(prompt: str, response_format: dict | None = None) -> str:
                 response = client.chat.completions.create(response_format=rf, **kwargs)
             else:
                 response = client.chat.completions.create(**kwargs)
-        except Exception:
-            # Si el schema estricto o el extra no lo acepta el modelo, se reintenta
-            # sin ellos: cae al parseo + validacion de siempre. La red no se cae.
+        except Exception as e:
+            # EL REINTENTO NO PUEDE TIRAR EL SCHEMA EN SILENCIO. Hasta el 31-jul
+            # este except soltaba el `extra_body` Y el `response_format` juntos,
+            # devolvia 200, y el turno seguia como si nada: el interprete corria
+            # DESATADO en todos los turnos y el unico rastro era un 400 suelto en
+            # Sentry que nadie podia ubicar. Ahora se reintenta en dos escalones y
+            # el que pierde la atadura se loguea como ERROR, que es lo que es.
+            log.warning("interprete_reintento_sin_extra", error=str(e)[:160])
             kwargs.pop("extra_body", None)
-            response = client.chat.completions.create(**kwargs)
+            try:
+                if rf:
+                    response = client.chat.completions.create(
+                        response_format=rf, **kwargs)
+                else:
+                    response = client.chat.completions.create(**kwargs)
+            except Exception as e2:
+                log.error("interprete_sin_schema", error=str(e2)[:200],
+                          modelo=modelo,
+                          aviso="la interpretacion de este turno corre DESATADA")
+                response = client.chat.completions.create(**kwargs)
         return response.choices[0].message.content or ""
 
     # El cliente OpenAI es sincrono: este create() bloquearia el event loop

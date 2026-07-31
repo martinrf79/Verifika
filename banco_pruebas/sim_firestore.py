@@ -3,22 +3,30 @@ SIMULADOR DE FIRESTORE — doble local cargado con los DATOS REALES del repo.
 
 No reimplementa nada del bot: parchea SOLO la capa de almacenamiento
 (firestore_client) para que lea del catalogo real (data/clientes/verifika_prod/
-productos.csv, 880 productos) y la FAQ real (faq.json, 44 temas). Todo el codigo
+productos.csv, 880 productos) y la FAQ real (faq.json, 50 temas). Todo el codigo
 de produccion -interprete, solver, calculate_total, cotizar_envio, query_faq,
-verificador, guardia- corre TAL CUAL encima, con DeepSeek vivo.
+verificador, guardia- corre TAL CUAL encima, con el modelo vivo.
 
 Asi se puede probar el camino completo de punta a punta sin credenciales de
 Google. La memoria de conversacion vive en un dict en RAM (se borra al salir).
 
 install() debe llamarse ANTES de procesar el primer mensaje.
 
-LIMITES honestos del doble:
-- tarifas_envio por provincia: NO esta en el repo (vive solo en Firestore real).
-  Se siembra abajo un valor ASUMIDO (cordoba=7500) para reproducir lo visto en
-  prod; confirmalo contra Firestore. Si lo dejas vacio, cotizar_envio cae al
-  rango de la FAQ, que es el comportamiento honesto sin esa tabla.
-- El cierre/lead (link de Mercado Pago) se stubea a no-op: este doble apunta a la
-  INTERPRETACION y la anti-alucinacion, no al pago.
+LA CONFIG DE TIENDA NO SE INVENTA (31-jul-2026). Antes se sembraba a mano
+-cordoba=7500 "ASUMIDO", business_name "Verifika", modo_cierre "A"- y el banco
+probaba una tienda que no existe: produccion tiene 24 destinos de envio, se
+llama "Verifika Tech" y NO tiene doc de modo_cierre, asi que cae al default de
+config.py. Ahora la config sale de `fixtures/config_prod.json`, que es el
+volcado literal de `tiendas/verifika_prod/config`. Si falta un doc en el
+volcado, aca tambien falta, y `get_config` devuelve el mismo default que en la
+nube. Para refrescar el volcado y confirmar que no derivo:
+    python3 banco_pruebas/verificar_clon.py            # compara
+    python3 banco_pruebas/verificar_clon.py --exportar # actualiza el volcado
+
+LIMITE que queda, dicho claro: el cobro real de Mercado Pago no se ejecuta,
+porque produccion tampoco tiene `mp_access_token` cargado. El dia que la tienda
+lo cargue, el volcado lo va a traer y hay que decidir si el banco cobra de
+verdad o corta ahi.
 """
 import csv
 import json
@@ -27,24 +35,20 @@ from pathlib import Path
 
 _RAIZ = Path(__file__).resolve().parent.parent
 _DATA = _RAIZ / "data" / "clientes" / "verifika_prod"
+_FIXTURE_CONFIG = Path(__file__).resolve().parent / "fixtures" / "config_prod.json"
 
 # Memoria de conversacion en RAM: {(tid, user_id): doc}
 _CONV: dict = {}
 
-# Config simulada de la tienda. tarifas_envio: ver LIMITES arriba.
-_CONFIG = {
-    "business_name": "Verifika",
-    # Igual que produccion (config.py MODO_CIERRE default "A"): el camino del
-    # cierre/lead corre REAL sobre el doble de leads en RAM de abajo. Antes se
-    # simulaba "off" y el cierre no se probaba nunca antes de la charla real.
-    "modo_cierre": "A",
-    "mp_access_token": "",
-    "tarifas_envio": {
-        "provincias": {
-            "cordoba": 7500,        # ASUMIDO, confirmar contra Firestore real
-        }
-    },
-}
+
+def _cargar_config() -> dict:
+    """La coleccion `config` de la tienda, tal cual esta en Firestore real."""
+    datos = json.loads(_FIXTURE_CONFIG.read_text(encoding="utf-8"))
+    return dict(datos.get("docs") or {})
+
+
+# Config de la tienda: volcado real, no invento. Ver docstring de arriba.
+_CONFIG = _cargar_config()
 
 
 def _cargar_productos() -> dict:
@@ -143,7 +147,18 @@ def install():
     def reset_conversation(user_id, tienda_id=None):
         _CONV.pop((tienda_id, user_id), None)
 
+    _vistos: set = set()
+
     def already_processed(message_id):
+        """Idempotencia REAL, como en la nube: el mismo message_id dos veces se
+        procesa una sola. Antes devolvia False siempre y el banco no podia ver
+        un reintento de Meta, que en produccion pasa."""
+        mid = str(message_id or "")
+        if not mid:
+            return False
+        if mid in _vistos:
+            return True
+        _vistos.add(mid)
         return False
 
     def invalidate_cache(tienda_id=None):

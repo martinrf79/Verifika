@@ -38,13 +38,28 @@ def test_schema_ata_categorias_al_vocabulario_del_indice(firestore_doble):
     el tema lo aportaba un regex de palabras sobre el mensaje crudo, porque el
     schema le prohibia decirlo. Este test fija el contrato nuevo: lo que la
     fuente sabe contestar y lo que el interprete puede declarar son la MISMA
-    lista."""
+    lista.
+
+    31-jul: el vocabulario viaja en DOS campos, `categorias` y `temas_politica`.
+    No es un cambio de contrato sino de transporte: Gemini rechaza el schema con
+    400 cuando un solo enum lleva los 116 valores -medido en vivo, el techo con
+    estas palabras es 112-, y el reintento lo mandaba SIN schema, o sea que el
+    interprete corria desatado en cada turno. La UNION de los dos campos sigue
+    siendo el vocabulario entero."""
     from app.core.indice import vocabulario
     sch = _schema_interprete(["Mouse X"], ["mouse", "teclado"])
     props = sch["properties"]
-    assert "categorias" in props
-    enum = props["categorias"]["items"]["enum"]
-    assert enum == vocabulario()
+    assert "categorias" in props and "temas_politica" in props
+    venta = props["categorias"]["items"]["enum"]
+    politica = props["temas_politica"]["items"]["enum"]
+    enum = venta + politica
+    assert sorted(enum) == sorted(vocabulario())
+    assert not set(venta) & set(politica), "un nombre no puede estar en los dos"
+    # EL TECHO MEDIDO CONTRA GEMINI: 112 valores con estas palabras. Si el
+    # vocabulario crece y un enum lo pasa, el schema se rechaza y el interprete
+    # vuelve a correr sin atar. Que se rompa aca y no en la charla del cliente.
+    assert len(venta) <= 110, f"el enum de venta llego a {len(venta)}, se acerca al techo"
+    assert len(politica) <= 110, f"el enum de politica llego a {len(politica)}"
     # las 93 de base_conocimiento siguen enteras
     for c in categorias_conocimiento():
         assert c in enum
@@ -54,6 +69,7 @@ def test_schema_ata_categorias_al_vocabulario_del_indice(firestore_doble):
     assert "objecion_precio" in enum
     # required para el strict de Gemini/OpenAI
     assert "categorias" in sch["required"]
+    assert "temas_politica" in sch["required"]
 
 
 def test_validar_schema_coacciona_string_a_lista():

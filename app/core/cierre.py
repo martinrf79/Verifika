@@ -236,14 +236,29 @@ def faltantes(lead: dict) -> list[str]:
     return [c for c in CAMPOS_REQUERIDOS if not str(lead.get(c, "")).strip()]
 
 
-def mensaje_pedir_datos(falt: list[str]) -> str:
+def mensaje_pedir_datos(falt: list[str], insistencia: int = 0) -> str:
+    """El pedido de datos del cierre.
+
+    `insistencia` es cuantas veces YA se pidieron estos mismos campos. La
+    primera vez se pide entero; de la segunda en adelante se dice distinto y
+    mas corto. Antes esta funcion devolvia siempre el mismo bloque, asi que un
+    cliente que tardaba dos turnos en pasar sus datos recibia el parrafo
+    identico dos y tres veces seguidas: la repeticion mas visible que tenia el
+    bot, y el banco no la veia porque probaba el otro modo de cierre.
+    """
     pend = [_ETIQUETAS[c] for c in falt if c in _ETIQUETAS]
     if not pend:
         return "Genial, ya tengo todo para cerrar tu pedido."
-    if len(pend) == 1:
-        return f"Genial. Para cerrar el pedido me falta {pend[0]}. Me lo pasas?"
-    cuerpo = ", ".join(pend[:-1]) + " y " + pend[-1]
-    return f"Genial. Para cerrar el pedido me faltan {cuerpo}. Me los pasas?"
+    uno = len(pend) == 1
+    cuerpo = pend[0] if uno else ", ".join(pend[:-1]) + " y " + pend[-1]
+    if insistencia <= 0:
+        if uno:
+            return f"Genial. Para cerrar el pedido me falta {cuerpo}. Me lo pasas?"
+        return f"Genial. Para cerrar el pedido me faltan {cuerpo}. Me los pasas?"
+    if insistencia == 1:
+        return (f"Me queda pendiente {cuerpo} y lo dejo tomado."
+                if uno else f"Me quedan pendientes {cuerpo} y lo dejo tomado.")
+    return f"Apenas me pases {cuerpo} lo cierro."
 
 
 def mensaje_confirmacion(lead: dict, presupuesto: str = "") -> str:

@@ -4,6 +4,70 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 31-jul-2026 (noche) — EL BANCO ES EL CLON, Y EL ATADO NO ATABA ====**
+
+Rama `claude/gemini-pago-deployment-looping-x6o19s`.
+
+**LO QUE ABRIO EL DIA.** Martin lo dijo sin vueltas: decenas de deploys verdes y
+la PRIMERA charla real con errores y alucinaciones. Ya cansó. La causa no era el
+modelo: **el banco probaba OTRO sistema.**
+
+**LAS CINCO MENTIRAS DEL BANCO, medidas contra el Firestore real:**
+1. Entraba por `procesar_atado` directo. Se salteaba el antijailbreak, el
+   RESET_CODE y **la particion del mensaje**: el juez leia un bloque entero que
+   el cliente nunca recibe entero.
+2. **UNA sola provincia de envio**, cordoba 7500, sembrada a mano con un
+   comentario que decia "ASUMIDO". Produccion tiene **24 destinos**. Todo lo de
+   envio multidestino se validaba contra una tabla que no existe.
+3. Forzaba `modo_cierre` "A". Produccion NO tiene ese doc, asi que corre el
+   default de `config.py`, que es **"B"**. El banco probaba otro cierre.
+4. La tienda se llamaba "Verifika" y en produccion es **"Verifika Tech"**.
+5. `already_processed` devolvia False siempre: un reintento de Meta no se veia.
+
+**QUE SE HIZO.** `banco_pruebas/clon_produccion.py`: el turno entra por
+`app.main._process_and_reply_whatsapp`, la MISMA funcion del webhook, con un
+conector que en vez de pegarle a Meta guarda los mensajes. No hay una linea
+reescrita del camino. La config sale de `fixtures/config_prod.json`, volcado
+literal de `tiendas/verifika_prod/config`. `banco_pruebas/verificar_clon.py`
+compara contra Firestore real y hoy dice **CLON FIEL**: config, 880 productos y
+50 temas de FAQ identicos. Nueve tests en `tests/test_clon_produccion.py` son el
+candado para que nadie vuelva a atajar por el medio.
+
+**LO QUE EL CLON ENCONTRO EN LA PRIMERA CORRIDA VIVA, y es lo mas grave del
+mes.** En cada turno, la PRIMERA llamada al modelo daba **400 INVALID_ARGUMENT**
+-el error que estaba en Sentry desde el 30-jul y no se podia ubicar-. El
+`except` de `_llamar_llm` reintentaba **sin `response_format`**, devolvia 200, y
+el turno seguia como si nada: **el interprete corria SIN SCHEMA en todos los
+turnos. El atado no ataba nada, y el sistema no lo decia.**
+
+Causa, medida con la clave paga, no supuesta: Gemini rechaza el schema cuando un
+solo enum lleva los 116 nombres del vocabulario. **El techo con estas palabras es
+112.** No es cantidad ni largo: 200 valores sinteticos con prefijo comun pasan;
+son 90 palabras distintas las que lo revientan.
+
+**EL ARREGLO.** El vocabulario viaja en DOS campos, `categorias` (las 93 de
+venta) y `temas_politica` (los 23 de FAQ), y el codigo los vuelve a juntar al
+normalizar: aguas abajo no cambia nada. Verificado en vivo: sin 400, con schema
+estricto, y el tema `cuotas` -que vive en la mitad de FAQ- llega a su celda.
+**Ademas se ahorra una llamada al modelo por turno.** Y si algun dia vuelve a
+fallar, el reintento conserva el schema y la perdida se loguea como ERROR
+(`interprete_sin_schema`): nunca mas silenciosa.
+
+**LO OTRO QUE APARECIO AL CORRER EL CIERRE REAL (modo B):** el bot repetia el
+bloque "para cerrar el pedido me faltan tu nombre y la forma de pago" identico en
+dos turnos seguidos. `mensaje_pedir_datos` ahora sabe cuantas veces pidio los
+MISMOS campos y lo dice distinto y mas corto. El numero se mantiene en 2364.
+
+**LO QUE NO SE PUEDE VERIFICAR DESDE ACA:** las envs de Cloud Run. La cuenta
+lectora no tiene `run.services.get`. Por eso `/health` ahora reporta
+`modo_cierre`: si no coincide con el que imprime el banner del banco, el banco
+esta probando otro cierre. **Confirmar despues del deploy.**
+
+**Estado: 773 tests verdes, numero 2364/2368, corrida viva limpia. NO deployado
+todavia.**
+
+---
+
 **==== 31-jul-2026 — EL NUMERO MIDE SI SIRVE, Y LA FUENTE SE UNIFICA ====**
 
 Rama `claude/sales-bot-no-hallucinations-4fcxk6`. NO deployado todavia.
