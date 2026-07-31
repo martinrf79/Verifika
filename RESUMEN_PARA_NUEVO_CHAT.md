@@ -4,6 +4,56 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 31-jul-2026 (cierre) — DEPLOYADO Y MEDIDO: QUE ES FIRME Y QUE NO ====**
+
+**DEPLOYADO Y VERIFICADO.** Revision **agente-bot-00392-wxr**, cero errores, dos
+corridas de CI en verde con el gate de tests. Fue todo lo de la seccion de
+abajo mas el arreglo del indice.
+
+**LO QUE YA NO HAY QUE ADIVINAR NUNCA MAS.** El servicio escribe `config_efectiva`
+al arrancar, y se lee de los logs sin permiso de admin. Produccion corre:
+**modo_cierre venta** (era la incognita: NO es lead), solver gemini-3.1-flash-lite,
+interprete gemini, fuente 116/50/93/3/3/25. El banco imprime lo mismo en su
+banner; si no coinciden, el banco esta probando otro sistema.
+
+**LA INTERPRETACION ES FIRME, medida en vivo sobre el codigo deployado:**
+- Un turno: **32 de 32, 100%** (piso 80). Ironia, doble negacion, correccion a
+  mitad de frase, referencia ordinal, jerga, tres productos en una frase.
+- Multiturno: **22 de 23, 96%**. Unica falla: "el primero que te dije" con
+  historial largo, vuelve al producto equivocado.
+- El numero vale porque el interprete ya corre ATADO. Los anteriores se sacaron
+  con el schema caido sin que nadie lo supiera.
+
+**LA FUENTE: unificada en el eje TEMA, partida en el eje PRODUCTO.**
+- Unificado: 116 nombres, los 116 con celda, **cero huerfanos**. 58 criterio,
+  56 dato, 3 calculo. 8 pares gemelos linkeados. Coherencia de datos sobre el
+  catalogo real: 6 chequeos, 0 problemas.
+- Partido: el material vive en 12 lugares y solo 5 entran por el indice (FAQ,
+  base_conocimiento, operativas, calculos, specs por producto). Los otros 7
+  tienen puerta propia: catalogo de 880, compatibilidad, specs_preguntables,
+  specs por categoria y por modelo, no_vendidas, 16.164 localidades, 24 tarifas.
+- El segundo interprete casi murio: queda UNA sola puerta de palabras sobre el
+  mensaje crudo en el camino vivo, `fallback_o_curada`, y solo actua cuando una
+  guarda bloquea la respuesta.
+
+**EL ARREGLO DEL INDICE:** `celda()` cortaba antes de mirar CALCULOS, asi que
+`total` -calculo puro, sin texto escrito- devolvia None. El indice declaraba 3
+calculos, /health decia 3, y entregaba 2.
+
+**EL NUMERO DE LA SOBRE-INGENIERIA, medido con traza sobre 8 turnos reales:**
+- `app/` son 17.955 lineas. Sin ejecutar en ningun turno: 1.907, y casi todo es
+  condicional legitimo (pago, posventa, memoria larga, audio, aviso al dueño).
+- El peso NO esta en lineas muertas: en 8 turnos, **geo_cp 605.000 llamadas,
+  recall_modelos 526.000, pedido_helpers 440.000**. Es barrer 16.164 localidades
+  y 880 productos varias veces por turno.
+- **43 funciones VIVAS reciben el mensaje crudo del cliente.** Ese es el numero a
+  bajar para tener un solo interprete. Es el proximo tema: el bibliotecario.
+
+**LO QUE FALTA VERIFICAR:** desde el deploy no entro ninguna charla real. El
+comportamiento con trafico se mira en los logs cuando alguien escriba.
+
+---
+
 **==== 31-jul-2026 (noche) — EL BANCO ES EL CLON, Y EL ATADO NO ATABA ====**
 
 Rama `claude/gemini-pago-deployment-looping-x6o19s`.
