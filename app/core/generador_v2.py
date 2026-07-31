@@ -48,18 +48,26 @@ CAMPOS_FICHA = ["procedencia", "garantia", "material", "descripcion",
                 # escritorio). Lo estampa el codigo desde compatibilidad.csv.
                 "compatibilidad"]
 
-# EL DATO YA ESTAMPADO. Por categoria, la marca de que el CODIGO ya contesto ese
-# dato en este mismo mensaje con el numero real de la fuente. Cuando aparece, la
-# prosa generica de esa categoria NO se appendea: es el fallback de cuando no hay
-# dato, y pegada encima del numero lo contradice. Se busca sobre el texto ya
-# compuesto porque el fragmento de calculo no viaja rotulado con su `tema`.
-# Conservador a proposito: entra solo el patron que estampa el codigo.
-_YA_ESTAMPADO = {
-    # "Envio: $6.000" / "el envio te sale $6.000"
-    "costo_envio": re.compile(r"env[ií]o[^.\n]{0,20}\$\s?\d", re.I),
-    # "2 a 3 dias habiles" / "4 a 7 dias habiles", tal cual sale de la fuente
-    "plazo_envio": re.compile(r"\d+\s*(?:a\s*\d+\s*)?d[ií]as?\s+h[aá]biles", re.I),
-}
+# EL DATO YA ESTAMPADO. La marca de que el CODIGO ya contesto una celda con el
+# numero real de la fuente. Cuando aparece, la prosa generica de esa celda NO se
+# appendea: es el fallback de cuando no hay dato, y pegada encima del numero lo
+# contradice. Se busca sobre el texto ya compuesto porque el fragmento de calculo
+# no viaja rotulado con su nombre.
+#
+# La tabla ya no vive aca: la trae el INDICE, junto a la calculadora de cada
+# celda. Nacio aca el 31-jul como una lista a mano y era la segunda copia del
+# mismo conocimiento; ese mismo dia una copia divergente -el criterio del banco
+# contra la poda del codigo- costo una corrida entera. Una sola definicion.
+def _ya_estampado() -> dict:
+    from app.core.indice import marcas_de_calculo
+    global _YA_ESTAMPADO_CACHE
+    if _YA_ESTAMPADO_CACHE is None:
+        _YA_ESTAMPADO_CACHE = {n: re.compile(p, re.I)
+                               for n, p in marcas_de_calculo().items()}
+    return _YA_ESTAMPADO_CACHE
+
+
+_YA_ESTAMPADO_CACHE = None
 
 # ── EL INDICE DEL TURNO ──────────────────────────────────────────────────────
 # Las tres funciones que vivian aca -criterio, FAQ y cobertura obligatoria- eran
@@ -959,6 +967,16 @@ def _texto_ficha_limpio(texto, tope=220):
 
 
 def _campo_ficha(prod, campo):
+    # El indice es el que sabe si este nombre se contesta con un producto
+    # adelante. No cambia el resultado: avisa cuando el solver pide un campo que
+    # la fuente no reconoce, que es el hueco por donde antes se colaba una spec
+    # inventada. Radar, no filtro.
+    try:
+        from app.core.indice import celda_producto
+        if campo not in CAMPOS_FICHA and not celda_producto(campo):
+            log.warning("generador_v2_campo_sin_celda", campo=str(campo)[:40])
+    except Exception:
+        pass
     if campo == "procedencia":
         return str(prod.get("origen") or "").strip()
     if campo == "garantia":
@@ -1742,7 +1760,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
         # dar. Esa prosa es el FALLBACK de cuando el codigo no tiene el dato; si
         # lo tiene, sobra.
         _escrito = "\n".join(partes)
-        _cub |= {c for c, rx in _YA_ESTAMPADO.items() if rx.search(_escrito)}
+        _cub |= {c for c, rx in _ya_estampado().items() if rx.search(_escrito)}
         # Se poda la muletilla que pide un dato que el estado YA tiene, igual que
         # en el fragmento de FAQ. El append no pasaba por esta poda y por eso
         # salia al cliente "decime que producto estas mirando y te paso el total

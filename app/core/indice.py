@@ -121,6 +121,112 @@ OPERATIVAS = {
 }
 
 
+# ── CALCULOS — la celda guarda la FUNCION, no el valor ──────────────────────
+#
+# El tipo `calculo` estaba declarado arriba desde que nacio el indice y NO existia
+# en el codigo: `celda()` solo sabia devolver dato o criterio. Por eso el costo de
+# envio, que es una cuenta contra la tarifa de la fuente, viajaba como si fuera
+# una politica escrita, y su texto generico -"depende de tu localidad"- se pegaba
+# ENCIMA del numero que la calculadora acababa de estampar.
+#
+# Cada celda de calculo trae dos cosas:
+#   `calculadora` : que funcion la resuelve. Es documentacion ejecutable de donde
+#                   sale el numero; el que la corre sigue siendo el renderizador.
+#   `marca`       : como se reconoce que ese valor YA esta en el mensaje. Sin
+#                   esto no se puede saber si la celda quedo contestada, porque
+#                   el fragmento de calculo no viaja rotulado con su nombre.
+#
+# La `marca` vivia hasta hoy como una tabla aparte adentro de `generador_v2`. Dos
+# listas de lo mismo escritas a mano ya se cobraron un error hoy -el criterio del
+# banco marcaba y la poda del codigo no podaba, porque estaban escritos por
+# separado-. Una sola definicion, aca.
+CALCULOS = {
+    "costo_envio": {
+        "calculadora": "tools.cotizar_envio",
+        # "Envio: $6.000" / "el envio te sale $6.000"
+        "marca": r"env[ií]o[^.\n]{0,20}\$\s?\d"},
+    "plazo_envio": {
+        "calculadora": "tools.cotizar_envio",
+        # "2 a 3 dias habiles", tal cual sale de la tarifa
+        "marca": r"\d+\s*(?:a\s*\d+\s*)?d[ií]as?\s+h[aá]biles"},
+}
+
+
+# ── POR PRODUCTO — el otro eje de la fuente ─────────────────────────────────
+#
+# La FAQ, el criterio y las operativas se resuelven con el nombre solo. La ficha
+# y la compatibilidad NO: necesitan ademas de que producto se habla. Es el mismo
+# indice pero con un argumento mas, y por eso la celda lo declara en vez de que
+# cada consumidor lo sepa de memoria.
+#
+# Los ids de spec ya los declara el interprete en `specs_preguntadas`, atados a
+# esta misma fuente. Lo que faltaba era que el indice supiera que existen y con
+# que se contestan: hasta hoy `fuente_producto` y `compatibilidad` las servian
+# cada una por su lado y ninguna dejaba rastro de haber contestado.
+_RESOLUTORES_PRODUCTO = {
+    "spec": "fuente_producto.extraer_specs",
+    "compatibilidad": "compatibilidad.bloque_ficha",
+}
+
+
+def _specs_ids() -> set:
+    try:
+        from app.core.fuente_producto import specs_config
+        return {str(s["id"]) for s in (specs_config() or []) if s.get("id")}
+    except Exception as e:
+        log.warning("indice_specs_error", error=str(e)[:120])
+        return set()
+
+
+def celda_producto(nombre: str) -> dict | None:
+    """La celda de un eje que se contesta CON un producto adelante. None si el
+    nombre no es uno de esos.
+
+    Devuelve el resolutor, no el valor: el indice dice de donde sale el dato, no
+    lo va a buscar. Igual que en `calculo`, quien lo corre sigue siendo el
+    renderizador, que es el unico que tiene el producto del turno."""
+    cid = str(nombre or "").strip()
+    if not cid:
+        return None
+    if cid == "compatibilidad":
+        return {"nombre": cid, "tipo": "dato", "grupo": "producto",
+                "necesita": "producto",
+                "resolutor": _RESOLUTORES_PRODUCTO["compatibilidad"]}
+    if cid in _specs_ids():
+        return {"nombre": cid, "tipo": "dato", "grupo": "producto",
+                "necesita": "producto",
+                "resolutor": _RESOLUTORES_PRODUCTO["spec"]}
+    return None
+
+
+def inventario(tienda_id=None) -> dict:
+    """QUE SABE CONTESTAR EL SISTEMA, contado por fuente. Es el mapa de la fuente
+    unica: si una fuente deja de cargar, se ve el cero acá en vez de descubrirlo
+    seis semanas despues por una respuesta vacia.
+
+    Nace de la falla que costo mas cara del proyecto: los 23 temas de FAQ que el
+    interprete no podia nombrar estuvieron tapados por un regex durante meses
+    porque nadie tenia el numero de cuantos temas sabia contestar cada fuente."""
+    from app.core.guia_venta_prosa import categorias_conocimiento
+    try:
+        faq = len(_faq_dict(tienda_id))
+    except Exception:
+        faq = 0
+    return {"vocabulario": len(vocabulario(tienda_id)),
+            "faq": faq,
+            "criterio": len(list(categorias_conocimiento())),
+            "operativas": len(OPERATIVAS),
+            "calculos": len(CALCULOS),
+            "specs": len(_specs_ids())}
+
+
+def marcas_de_calculo() -> dict:
+    """{celda: patron} de las celdas de calculo. El renderizador pregunta esto
+    para saber si el codigo ya contesto la celda con el numero real, y en ese
+    caso no pegar la prosa generica encima."""
+    return {n: c["marca"] for n, c in CALCULOS.items() if c.get("marca")}
+
+
 def texto_operativo(nombre: str) -> str:
     """El texto de una celda operativa. Un solo lugar donde vive."""
     return OPERATIVAS.get(str(nombre or ""), "")
@@ -215,6 +321,17 @@ def celda(nombre: str, tienda_id=None) -> dict | None:
     # los temas que vienen SOLO de la FAQ no estan en base_conocimiento, asi que
     # no tienen grupo. Son politica de la tienda por definicion.
     grupo = meta.get("grupo") or ("politica_faq" if texto_faq else "")
+    # una celda de CALCULO igual conserva su texto: la politica escrita sigue
+    # siendo la respuesta valida cuando la cuenta no se puede hacer -sin destino
+    # no hay tarifa-. Lo que cambia es que el que la consume sabe que hay una
+    # funcion que manda por encima del texto.
+    if cid in CALCULOS:
+        return {"nombre": cid, "tipo": "calculo", "grupo": grupo,
+                "calculadora": CALCULOS[cid]["calculadora"],
+                "marca": CALCULOS[cid].get("marca", ""),
+                "faq_tema": faq_tema, "texto_faq": texto_faq,
+                "texto_faq_crudo": texto_faq_crudo,
+                "texto_criterio": texto_criterio}
     return {"nombre": cid,
             "tipo": "dato" if texto_faq else "criterio",
             "grupo": grupo,

@@ -113,7 +113,22 @@ async def health():
         "interpreter_provider": settings.INTERPRETER_PROVIDER,
         "sentry_enabled": bool(SENTRY_DSN),
         "default_tienda": settings.TIENDA_ID,
+        # QUE SABE CONTESTAR EL SISTEMA, contado por fuente. Mismo criterio que
+        # arriba: el health dice la verdad de lo que hay cargado. Si una fuente
+        # deja de cargar se ve el cero aca, en vez de descubrirlo semanas
+        # despues por una respuesta vacia -que es exactamente lo que paso con
+        # los 23 temas de FAQ que el interprete no podia nombrar-.
+        "fuente": _inventario_fuente(),
     }
+
+
+def _inventario_fuente() -> dict:
+    """El inventario del indice, tolerante: el health nunca se cae por esto."""
+    try:
+        from app.core.indice import inventario
+        return inventario(settings.TIENDA_ID)
+    except Exception as e:
+        return {"error": str(e)[:120]}
 
 
 @app.get("/admin/health/{tienda_id}")
