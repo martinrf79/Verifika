@@ -1273,9 +1273,51 @@ def _destino_respaldado(destino: str, mensaje: str, estado: dict) -> bool:
     return False
 
 
+def _ya_dicho(historial) -> str:
+    """Todo lo que el bot YA le mando al cliente en esta charla, normalizado y
+    en una sola cadena, para preguntarle si un bloque es repetido.
+
+    Es una cadena y no un conjunto de lineas a proposito: las guardas de salida
+    juntan parrafos, asi que el bloque que aca se estampa en su renglon al
+    cliente le llega dentro de una parrafada y por linea no matchea.
+
+    Medido el 31-jul, guion 70: el bloque de compatibilidad -puertos USB y
+    sistemas operativos- salio identico en el turno 1 y en el 2, y en el 2 el
+    cliente habia dicho "de ese SOLO quiero saber si sirve para jugar"."""
+    dicho = []
+    for m in (historial or []):
+        if not isinstance(m, dict) or m.get("role") == "user":
+            continue
+        dicho.append(re.sub(r"\s+", " ", _norm(m.get("content"))))
+    return " \n ".join(dicho)
+
+
+def _sin_lo_ya_dicho(texto: str, dichos: str) -> tuple:
+    """Saca de un campo estampado las ORACIONES que ya salieron en la charla.
+
+    Por oracion y no por campo entero: medido el 31-jul en el guion 54, dos
+    fichas de productos distintos comparten la frase de plataformas -"anda con
+    una PC con Windows, una Mac..."- y difieren en la de conexion. Comparando el
+    campo completo no matchea ninguna y el cliente recibe la parrafada dos
+    veces; comparando por oracion se va la repetida y queda la nueva.
+
+    Devuelve (texto podado, cuantas oraciones se sacaron)."""
+    partes = [o for o in re.split(r"(?<=[.!?])\s+", str(texto or "")) if o.strip()]
+    quedan = [o for o in partes
+              if len(_norm(o)) < 40
+              or re.sub(r"\s+", " ", _norm(o)) not in dichos]
+    # SI SE VA TODO, NO SE PODA NADA. Es la garantia de que una repregunta
+    # legitima -el cliente vuelve a preguntar lo mismo- nunca queda muda: ahi la
+    # repeticion es la respuesta correcta y se contesta igual. Lo que esta poda
+    # persigue es la parrafada que nadie pidio pegada al lado de la que si.
+    if not quedan or len(quedan) == len(partes):
+        return texto, 0
+    return " ".join(quedan).strip(), len(partes) - len(quedan)
+
+
 def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                presupuesto_pre=None, presupuesto_tools=None, mensaje=None,
-               primer_turno=False, respuestas_cat=None):
+               primer_turno=False, respuestas_cat=None, historial=None):
     """(texto final, tools_called con proof). El texto lo arma el codigo desde
     los fragmentos; cada dato nace de la fuente."""
     from app.core.tools_context import set_current_tienda
@@ -1295,6 +1337,7 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
     set_current_estado(estado if isinstance(estado, dict) else {},
                        inicio_turno=False)
     estado = estado if isinstance(estado, dict) else {}
+    _dichos = _ya_dicho(historial)
     nombres = [p.get("nombre") for p in universo if p.get("nombre")]
     ids_validos = {str(p["id"]).upper() for p in universo}
     faq = get_all_faq(tienda_id=tienda_id) or {}
@@ -1488,6 +1531,15 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 linea = [p.get("nombre") + ":"]
                 for c in (f.get("campos") or []):
                     v = _campo_ficha(p, c)
+                    # NO se re-estampa textual lo que ya salio en la charla. Si
+                    # el cliente lo vuelve a preguntar se contesta igual: la
+                    # valvula de `_sin_lo_ya_dicho` es que si se va TODO no se
+                    # poda nada, asi una repregunta nunca queda muda.
+                    if v:
+                        v, _saco = _sin_lo_ya_dicho(v, _dichos)
+                        if _saco:
+                            log.info("generador_v2_ficha_no_repetida",
+                                     trace_id=trace_id, campo=c, oraciones=_saco)
                     if v:
                         linea.append("  " + v)
                 if len(linea) > 1:
@@ -1557,6 +1609,13 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             cid = str(f.get("criterio_id") or "").strip()
             jurado = texto_de(cid) if cid else None
             txt = _poda_prosa(f.get("texto"), nombres)
+            # el mismo bloque jurado delante en dos turnos hace que el modelo
+            # repita la frase textual: la oracion ya dicha se va, salvo que sea
+            # todo lo que hay (ahi el cliente la volvio a pedir).
+            txt, _saco = _sin_lo_ya_dicho(txt, _dichos)
+            if _saco:
+                log.info("generador_v2_criterio_no_repetido",
+                         trace_id=trace_id, id=cid or None, oraciones=_saco)
             if not txt:
                 continue
             partes.append(txt)
