@@ -1688,11 +1688,20 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
         # lo tiene, sobra.
         _escrito = "\n".join(partes)
         _cub |= {c for c, rx in _YA_ESTAMPADO.items() if rx.search(_escrito)}
+        # Se poda la muletilla que pide un dato que el estado YA tiene, igual que
+        # en el fragmento de FAQ. El append no pasaba por esta poda y por eso
+        # salia al cliente "decime que producto estas mirando y te paso el total
+        # con envio incluido" en el mismo mensaje donde acababa de listar dos
+        # productos con su precio, un turno despues de haberle pasado el total
+        # (guion 70 T4, medido el 31-jul).
+        from app.core.curadas import podar_muletillas_contra_estado
         faltantes = [t for c, r in respuestas_cat.items()
                      if c not in _cub
-                     and (t := _sin_porcentaje_inventado(_estampar_huecos(
-                         re.sub(r"\s*\[[a-z_]+\]", "",
-                                str((r or {}).get("texto") or "")).strip(), c)))]
+                     and (t := podar_muletillas_contra_estado(
+                         _sin_porcentaje_inventado(_estampar_huecos(
+                             re.sub(r"\s*\[[a-z_]+\]", "",
+                                    str((r or {}).get("texto") or "")).strip(),
+                             c)), estado))]
         if faltantes:
             _pos = len(partes) - (1 if partes and partes[-1].rstrip()
                                   .endswith("?") else 0)
