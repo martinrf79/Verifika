@@ -96,6 +96,17 @@ def _normalizar_modo(v: str) -> str:
     return _ALIAS_MODO.get(clave, "")
 
 
+def _insistencia(lead: dict, falt: list) -> int:
+    """Veces que ya se pidieron EXACTAMENTE estos campos en turnos anteriores."""
+    previos = list(lead.get("datos_pedidos_campos") or [])
+    if previos != list(falt):
+        return 0
+    try:
+        return max(0, int(lead.get("datos_pedidos_veces") or 0))
+    except (TypeError, ValueError):
+        return 0
+
+
 def modo_cierre(tienda_id: str) -> str:
     """Modalidad del cierre para la tienda. La config por tienda en Firestore
     ('modo_cierre') pisa el default de config.py. Se setea con el switch de version:
@@ -361,12 +372,20 @@ async def procesar_mensaje_para_lead(
         merged = {**lead_activo, **cambios}
         falt = cierre.faltantes(merged)
         if falt:
+            # Cuantas veces ya se pidieron ESTOS mismos campos. Si la lista
+            # cambio -el cliente aporto algo- el pedido arranca de cero otra
+            # vez; si es la misma, el texto se dice distinto y mas corto en vez
+            # de repetir el bloque entero (ver cierre.mensaje_pedir_datos).
+            insistencia = _insistencia(lead_activo, falt)
+            cambios["datos_pedidos_campos"] = list(falt)
+            cambios["datos_pedidos_veces"] = insistencia + 1
             actualizar_lead(lead_activo["lead_id"], tienda_id, cambios)
             log.info("lead_pidiendo_datos", lead_id=lead_activo["lead_id"],
-                     faltan=falt, trace_id=trace_id)
+                     faltan=falt, insistencia=insistencia, trace_id=trace_id)
             return None, {"accion": "pidiendo_datos",
                           "lead_id": lead_activo["lead_id"],
-                          "respuesta_directa": cierre.mensaje_pedir_datos(falt)}
+                          "respuesta_directa": cierre.mensaje_pedir_datos(
+                              falt, insistencia)}
         cambios["estado"] = "capturado"
         actualizar_lead(lead_activo["lead_id"], tienda_id, cambios)
         log.info("lead_capturado_completo", lead_id=lead_activo["lead_id"],
@@ -618,6 +637,9 @@ async def procesar_mensaje_para_lead(
                     ultimo_mensaje=mensaje)
             except Exception as e:
                 log.warning("notificar_lead_failed", error=str(e)[:120])
+            actualizar_lead(lead_id, tienda_id,
+                            {"datos_pedidos_campos": list(falt),
+                             "datos_pedidos_veces": 1})
             return None, {"accion": "pidiendo_datos", "lead_id": lead_id,
                           "respuesta_directa": cierre.mensaje_pedir_datos(falt)}
         try:

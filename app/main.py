@@ -113,6 +113,12 @@ async def health():
         "interpreter_provider": settings.INTERPRETER_PROVIDER,
         "sentry_enabled": bool(SENTRY_DSN),
         "default_tienda": settings.TIENDA_ID,
+        # QUE MODO DE CIERRE CORRE DE VERDAD. La env del servicio no se puede
+        # leer desde afuera y la config de tienda la pisa, asi que hasta hoy
+        # nadie sabia si el bot vivo capta lead (A) o cobra (B). El banco
+        # imprime el suyo en cada corrida: si los dos no dicen lo mismo, el
+        # banco esta probando otro cierre que el que atiende a los clientes.
+        "modo_cierre": _modo_cierre_efectivo(),
         # QUE SABE CONTESTAR EL SISTEMA, contado por fuente. Mismo criterio que
         # arriba: el health dice la verdad de lo que hay cargado. Si una fuente
         # deja de cargar se ve el cero aca, en vez de descubrirlo semanas
@@ -120,6 +126,15 @@ async def health():
         # los 23 temas de FAQ que el interprete no podia nombrar-.
         "fuente": _inventario_fuente(),
     }
+
+
+def _modo_cierre_efectivo() -> str:
+    """El modo de cierre que corre, tolerante: el health nunca se cae por esto."""
+    try:
+        from app.core.leads import modo_cierre
+        return modo_cierre(settings.TIENDA_ID)
+    except Exception as e:
+        return f"error: {str(e)[:60]}"
 
 
 def _inventario_fuente() -> dict:
