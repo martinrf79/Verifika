@@ -280,7 +280,11 @@ def test_mudanza_destinos_de_mas_no_duplican_tarifa(firestore_doble):
             items_extra=[{"faq_tema": "costo_envio", "concepto": "envio"}],
             destinos=1)
         assert bien["ok"] is True
-        assert bien["total_ars"] == 8500 + 14500 + 9000  # UN envio a Salta
+        # 10500 es la tarifa REAL de Salta, la que cobra produccion. Este test
+        # decia 9000 porque el doble tenia una sola provincia sembrada a mano y
+        # Salta caia al rango generico: el banco validaba un precio que no
+        # existe. Desde el 31-jul la tabla sale del volcado de Firestore.
+        assert bien["total_ars"] == 8500 + 14500 + 10500  # UN envio a Salta
     finally:
         set_current_estado({})
 
@@ -307,7 +311,7 @@ def test_destino_unico_no_cobra_el_destino_obsoleto(firestore_doble):
             items_extra=[{"faq_tema": "costo_envio", "concepto": "envio"}],
             destinos=2)
         assert r["ok"] is True
-        assert r["total_ars"] == 8500 + 9000  # UN envio, tarifa de Salta
+        assert r["total_ars"] == 8500 + 10500  # UN envio, tarifa REAL de Salta
     finally:
         estado_venta._envio_localidades.set([])
         set_current_estado({})

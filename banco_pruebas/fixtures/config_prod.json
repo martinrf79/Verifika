@@ -1,0 +1,36 @@
+{
+ "como_se_actualiza": "python3 banco_pruebas/verificar_clon.py --exportar",
+ "docs": {
+  "business_name": "Verifika Tech",
+  "nombre": "Verifika Tech",
+  "tarifas_envio": {
+   "provincias": {
+    "buenos_aires": 6000,
+    "catamarca": 9500,
+    "chaco": 9000,
+    "chubut": 11000,
+    "cordoba": 7500,
+    "corrientes": 8500,
+    "entre rios": 6500,
+    "formosa": 10500,
+    "jujuy": 11000,
+    "la pampa": 7500,
+    "la rioja": 9500,
+    "mendoza": 9000,
+    "misiones": 10000,
+    "neuquen": 9500,
+    "rio negro": 10000,
+    "salta": 10500,
+    "san juan": 9000,
+    "san luis": 8000,
+    "santa cruz": 11500,
+    "santa fe": 7000,
+    "santiago del estero": 9000,
+    "tierra del fuego": 12000,
+    "tucuman": 9500
+   }
+  }
+ },
+ "exportado_de": "Firestore real: tiendas/verifika_prod/config",
+ "exportado_el": "2026-07-31"
+}

@@ -1,18 +1,23 @@
 """
-BANCO ATADO — CHARLAS MULTI-TURNO por el FLUJO ATADO (21-jul).
+BANCO ATADO — CHARLAS MULTI-TURNO por el CAMINO VIVO DE PRODUCCION.
 
-Corre guiones de varios turnos por app.core.hub_atado (interprete + solver
-atados, SIN la pila de guardas de interprete_libre), con la memoria persistida
-entre turnos en el Firestore simulado. Cada respuesta pasa por el JUEZ
-determinista (banco_pruebas/juez.py): si alucina plata, stock, promesa o deja
-un marcador sin estampar, la corrida lo marca.
+Corre guiones de varios turnos por la MISMA funcion que atiende el webhook de
+WhatsApp (`app.main._process_and_reply_whatsapp`, via banco_pruebas/
+clon_produccion.py), con la memoria persistida entre turnos en el Firestore
+doble cargado con el catalogo, la FAQ y la config REALES. Cada respuesta pasa
+por el JUEZ determinista (banco_pruebas/juez.py): si alucina plata, stock,
+promesa o deja un marcador sin estampar, la corrida lo marca.
 
-Foco de esta tanda: guiones que COMBINAN dificultad y memoria en una misma
-charla (52, 53, 54), que es lo que de verdad rompe.
+CAMBIO DEL 31-jul: antes esto llamaba a `procesar_atado` directo y se salteaba
+tres cosas que en produccion SI pasan -el antijailbreak, el RESET_CODE y la
+particion del mensaje en partes-. El banco daba verde y la primera charla real
+rompia. Ahora el turno entra y sale por donde entra y sale en la nube, y el
+reporte muestra las PARTES tal como las recibe el cliente.
 
 Uso:
     python3 banco_pruebas/banco_atado_charlas.py g1.txt [g2.txt ...]
     BANCO_PAUSA_S=22 controla la pausa entre turnos (tier gratis de Gemini).
+    Con GEMINI_API_KEY_PROD en el entorno usa la clave paga sola.
 Deja el reporte de cada charla en banco_pruebas/corridas/.
 """
 import asyncio
@@ -23,7 +28,11 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from banco_pruebas.sim_firestore import install
+from banco_pruebas import clon_produccion
+
+# El entorno se prepara ANTES de importar nada de app: app.config lee las envs
+# al importarse y despues ya es tarde.
+clon_produccion.preparar_entorno()
 
 TIENDA = "verifika_prod"
 _CORRIDAS = Path(__file__).resolve().parent / "corridas"
@@ -36,15 +45,10 @@ def _leer_guion(path: Path) -> list[str]:
 
 async def _correr(nombre: str, mensajes: list[str], pausa_s: float,
                   reporte: list[str]) -> int:
-    from app.core.hub_atado import procesar_atado
-    from app.storage.firestore_client import reset_conversation
     from banco_pruebas.juez import juzgar, juzgar_charla
 
     user = f"atado_{nombre}_{int(time.time())}"
-    try:
-        reset_conversation(user, tienda_id=TIENDA)
-    except Exception:
-        pass
+    clon_produccion.reiniciar_cliente(user)
 
     problemas = 0
     respuestas: list[str] = []
@@ -53,18 +57,32 @@ async def _correr(nombre: str, mensajes: list[str], pausa_s: float,
         reporte.append(f"\n## Turno {i}\n\nCLIENTE: {msg}\n")
         t0 = time.time()
         try:
-            resp = await procesar_atado(user, msg, TIENDA, "sim", f"a{i:02d}")
+            partes = await clon_produccion.turno(user, msg)
         except Exception as e:
             import traceback
-            resp = f"<<ERROR {type(e).__name__}: {e}>>"
+            partes = [f"<<ERROR {type(e).__name__}: {e}>>"]
             traceback.print_exc()
         ms = int((time.time() - t0) * 1000)
+        # El cliente recibe partes; el juez lee el texto entero. Las dos cosas
+        # importan: un corte malo se ve en las partes, una contradiccion entre
+        # partes solo se ve leyendolas juntas.
+        resp = "\n\n".join(partes)
         respuestas.append(resp)
-        print(f"    BOT ({ms} ms): {resp}\n")
-        reporte.append(f"BOT ({ms} ms):\n\n```\n{resp}\n```\n")
+        print(f"    BOT ({ms} ms, {len(partes)} parte/s): {resp}\n")
+        reporte.append(f"BOT ({ms} ms) — {len(partes)} mensaje/s como los recibe "
+                       f"el cliente:\n")
+        for n, p in enumerate(partes, 1):
+            reporte.append(f"\nmensaje {n}:\n\n```\n{p}\n```\n")
         if resp.startswith("<<ERROR"):
             problemas += 1
             reporte.append("- **JUEZ: ERROR de ejecucion**")
+        elif clon_produccion.es_fallback(resp):
+            # Produccion tapa la excepcion con una disculpa. Sin esto, el banco
+            # contaba como respuesta limpia lo que en la vida real es una caida.
+            problemas += 1
+            print("    [JUEZ] FALLBACK de produccion: el turno exploto")
+            reporte.append("- **JUEZ: FALLBACK de produccion, el turno exploto "
+                           "y el cliente recibio una disculpa**")
         else:
             fallas = juzgar(resp, tienda_id=TIENDA, mensaje=msg)
             for p in fallas:
@@ -87,7 +105,7 @@ async def _correr(nombre: str, mensajes: list[str], pausa_s: float,
 
 
 async def main() -> int:
-    info = install()
+    info = clon_produccion.instalar()
     guiones = []
     for arg in sys.argv[1:]:
         p = Path(arg)
@@ -98,15 +116,18 @@ async def main() -> int:
         return 1
 
     pausa_s = float(os.environ.get("BANCO_PAUSA_S", "22") or 0)
-    print(f"[atado] sim: {info['productos']} prod, {info['faq']} FAQ. "
-          f"Flujo ATADO por hub_atado, sin guardas. Pausa {pausa_s}s.\n")
+    banner = (f"[clon] {info['productos']} productos, {info['faq']} FAQ, config "
+              f"{info['config_tienda']}. Camino VIVO de WhatsApp. "
+              f"Solver {info['solver_model']}, interprete {info['interprete']}, "
+              f"clave {info['clave']}, cierre modo {info['modo_cierre']}. "
+              f"Pausa {pausa_s}s.")
+    print(banner + "\n")
     _CORRIDAS.mkdir(exist_ok=True)
     fecha = _dt.datetime.now()
     total = 0
     for nombre, mensajes in guiones:
         reporte = [f"# Corrida ATADA {nombre} — {fecha:%Y-%m-%d %H:%M}",
-                   f"\nEntorno: sim_firestore, flujo atado (hub_atado, sin "
-                   f"guardas), pausa {pausa_s}s.\n"]
+                   f"\nEntorno: {banner}\n"]
         problemas = await _correr(nombre, mensajes, pausa_s, reporte)
         total += problemas
         salida = _CORRIDAS / f"{fecha:%Y%m%d}_atado_{nombre}.md"
