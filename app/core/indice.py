@@ -371,7 +371,14 @@ def celda(nombre: str, tienda_id=None) -> dict | None:
     except Exception as e:
         log.warning("indice_celda_faq_error", nombre=cid, error=str(e)[:120])
     texto_criterio = texto_de(cid) or ""
-    if not texto_faq and not texto_criterio:
+    if not texto_faq and not texto_criterio and cid not in CALCULOS:
+        # Sin texto Y sin calculadora, la fuente no sabe nada de este nombre.
+        # La excepcion de CALCULOS no es un detalle: `total` es una celda de
+        # calculo PURA -no tiene politica escrita ni criterio de venta, la
+        # respuesta es la cuenta- y este corte la devolvia None, o sea que el
+        # indice declaraba tres calculos y solo podia entregar dos. El
+        # inventario de /health decia 3. La fuente unica tiene que devolver lo
+        # que dice que tiene.
         return None
     meta = meta_categoria(cid)
     # los temas que vienen SOLO de la FAQ no estan en base_conocimiento, asi que
