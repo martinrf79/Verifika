@@ -118,7 +118,11 @@ pidas nada mas.
 Pedi mas herramientas SOLO si ahora podes hacer algo que antes no: tipico, ya
 tenes los ids de los productos y recien ahora podes armar el presupuesto con
 armar_presupuesto, ver una ficha completa o chequear compatibilidad. Nunca
-escribas vos un precio ni un total: eso lo arma la herramienta."""
+escribas vos un precio ni un total: eso lo arma la herramienta.
+
+Y si el cliente pregunto cuanto sale algo, LLAMA a armar_presupuesto por lo que
+ya esta definido, aunque falte elegir otra cosa. Cotiza lo que se puede y pedi
+lo que falta: dejarlo sin ningun numero es peor que cotizar de a partes."""
 
 _INSTRUCCION_DOS = """Escribile ahora la respuesta al cliente usando SOLO los
 datos de abajo.
@@ -544,7 +548,8 @@ def _sin_descuento_inventado(texto: str, trace_id: str) -> str:
 _RE_NARRACION = re.compile(
     r"(?im)^[^.!?\n]*\b(?:el\s+sistema\s+(?:me|dice|indica|marca|tir[oó])|"
     r"la\s+herramienta|mi\s+sistema|en\s+mi\s+base\s+de\s+datos|"
-    r"seg[uú]n\s+el\s+sistema)\b[^.!?\n]*[.!?]?")
+    r"seg[uú]n\s+el\s+sistema|el\s+estado\s+es\s+ambiguo|"
+    r"me\s+aparecen?\s+(?:varios|en\s+el\s+sistema))\b[^.!?\n]*[.!?]?")
 
 
 _RE_NIEGA = re.compile(
@@ -583,10 +588,17 @@ def _sin_negar_lo_traido(texto: str, llamadas: list, trace_id: str) -> str:
         frase = m.group(0)
         if not _RE_NIEGA.search(frase):
             continue
-        baja = H._norm(frase)
+        palabras = set(H._norm(frase).replace(",", " ").split())
         for cat in categorias:
-            # la categoria entera o su singular: "memoria ram", "memorias ram"
-            if cat in baja or cat.rstrip("s") in baja:
+            # POR TOKEN, no por la frase pegada. El plural de una categoria de
+            # dos palabras cae en la PRIMERA -"memorias ram"-, asi que buscar
+            # "memoria ram" como substring no matcheaba y la negacion pasaba
+            # igual: medido en la tercera tanda, el bot volvio a decir "no
+            # vendemos memorias RAM por separado" con las memorias delante.
+            fichas = [t for t in cat.split() if len(t) > 2]
+            if fichas and all(any(t == w or t == w.rstrip("s")
+                                  or w == t.rstrip("s") for w in palabras)
+                              for t in fichas):
                 fuera.append(frase)
                 break
     if not fuera:

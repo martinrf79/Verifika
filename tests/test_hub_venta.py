@@ -391,3 +391,26 @@ def test_el_renglon_escrito_a_mano_tambien_cuenta_como_cuenta():
     salida = HV._cuenta_no_retipeada(texto, hubo_calculo=False, previo="",
                                      trace_id="t1")
     assert "$12.000" not in salida
+
+
+def test_el_candado_de_negacion_ve_el_plural_de_la_categoria():
+    """Tercera tanda: el bot volvio a decir "no vendemos memorias RAM por
+    separado" con las memorias delante. El candado comparaba la frase pegada y
+    el plural de una categoria de dos palabras cae en la PRIMERA."""
+    llamadas = [{"herramienta": "buscar_productos", "pedido": {},
+                 "resultado": {"estado": "ambiguo", "productos": [
+                     {"id": "RAM0001", "nombre": "Kingston",
+                      "categoria": "memoria ram", "precio_ars": 34500}]}}]
+    texto = ("Te cuento que no vendemos memorias RAM por separado. "
+             "Tengo equipos que ya vienen con 16GB.")
+    salida = HV._sin_negar_lo_traido(texto, llamadas, "t1")
+    assert "no vendemos" not in salida.lower()
+    assert "Tengo equipos" in salida
+
+
+def test_el_estado_de_la_herramienta_no_se_le_cuenta_al_cliente():
+    texto = ("Tenemos varias opciones y como el estado es ambiguo, te paso los "
+             "que tenemos.\n¿Cual preferis?")
+    salida = HV._sin_narracion_interna(texto, "t1")
+    assert "estado es ambiguo" not in salida
+    assert "¿Cual preferis?" in salida
