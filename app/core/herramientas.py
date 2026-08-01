@@ -322,6 +322,30 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
         if veredicto == "exists":
             prods = hits
         elif not a.categoria:
+            # NO ENCONTRADO NO ES "NO VENDEMOS ESO". Si la descripcion nombra
+            # una categoria que SI tenemos -"memoria ram de 16gb", y las
+            # nuestras son de 8- se devuelven las reales de esa categoria. Sin
+            # esto el modelo generaliza el no: medido el 1-ago, ante "tenes
+            # memoria ram de 16gb" contesto "no estamos vendiendo modulos de
+            # RAM sueltos", con el catalogo lleno de memorias.
+            alternativas = []
+            try:
+                from app.core.guia_pedido import (categorias_nombradas,
+                                                  opciones_por_categoria)
+                for cat in (categorias_nombradas(a.descripcion, tienda_id)
+                            or [])[:1]:
+                    alternativas = [_ficha(p, tienda_id) for p in
+                                    opciones_por_categoria(cat, tienda_id, k=3)]
+            except Exception as e:
+                log.warning("buscar_alternativas_error", error=str(e)[:120])
+            if alternativas:
+                return {"estado": "no_encontrado", "buscado": a.descripcion,
+                        "hay_en_la_categoria": alternativas,
+                        "instruccion": "Ese exacto no lo tenemos, pero la "
+                                       "categoria SI la vendemos. Decile que "
+                                       "eso puntual no, y mostrale estas que si "
+                                       "tenemos. NO digas que no vendemos el "
+                                       "rubro."}
             return {"estado": "no_encontrado", "buscado": a.descripcion}
 
     if not prods:

@@ -485,6 +485,97 @@ def _sin_json_filtrado(texto: str, trace_id: str) -> str:
     return re.sub(r"\n{3,}", "\n\n", limpio).strip()
 
 
+_RE_ORACIONES = re.compile(r"[^.!?\n]+[.!?]?")
+# La oracion habla de un beneficio de precio...
+_RE_BENEFICIO = re.compile(
+    r"descuento|rebaja|precio especial|bonificaci[oó]n|"
+    r"mejor(?:ar|amos|o|arte)\s+(?:el\s+)?precio|hacer(?:te)?\s+(?:un\s+)?precio",
+    re.IGNORECASE)
+# ...y lo OFRECE o lo deja abierto. El orden de las dos piezas no importa: "puedo
+# consultar que descuento aplicarte" y "el descuento lo puedo consultar" son la
+# misma promesa, y la primera version del candado solo veia una de las dos.
+_RE_GESTION = re.compile(
+    r"consult|averigu|gestion|puedo|podemos|podr[ií]a|veamos|vemos|"
+    r"area comercial|te lo hago|te lo dejo|para vos|aplicart|ofrecert",
+    re.IGNORECASE)
+# Los descuentos REALES de la tienda. Si la oracion nombra uno, es politica.
+_RE_DESCUENTO_REAL = re.compile(
+    r"transferenc|mayorist|cuotas sin inter[eé]s", re.IGNORECASE)
+
+
+def _sin_descuento_inventado(texto: str, trace_id: str) -> str:
+    """NO SE OFRECE UN DESCUENTO QUE NO EXISTE. Ni siquiera como posibilidad.
+
+    Banco repetido del 1-ago, guion de objecion de precio: ante "si te llevo dos
+    me haces precio?" el bot contesto que iba a "consultar con el area comercial
+    que descuento especial podemos aplicarte". Dos mentiras en una linea: no hay
+    area comercial que consultar, y el descuento no existe. Es la puerta por la
+    que se cuela una promesa comercial que despues alguien tiene que sostener.
+
+    Los descuentos REALES de la tienda -transferencia, mayorista, cuotas- salen
+    de consultar_politica y no los toca esta regla."""
+    fuera = []
+    for m in _RE_ORACIONES.finditer(texto or ""):
+        frase = m.group(0)
+        if (_RE_BENEFICIO.search(frase) and _RE_GESTION.search(frase)
+                and not _RE_DESCUENTO_REAL.search(frase)):
+            fuera.append(frase)
+    if not fuera:
+        return texto
+    limpio = texto
+    for frase in fuera:
+        limpio = limpio.replace(frase, "")
+    log.warning("hub_venta_descuento_inventado", trace_id=trace_id,
+                frases=[f[:70] for f in fuera[:3]])
+    return re.sub(r"\n{3,}", "\n\n", limpio).strip()
+
+
+_RE_NARRACION = re.compile(
+    r"(?im)^[^.!?\n]*\b(?:el\s+sistema\s+(?:me|dice|indica|marca|tir[oó])|"
+    r"la\s+herramienta|mi\s+sistema|en\s+mi\s+base\s+de\s+datos|"
+    r"seg[uú]n\s+el\s+sistema)\b[^.!?\n]*[.!?]?")
+
+
+def _sin_narracion_interna(texto: str, trace_id: str) -> str:
+    """El cliente no ve la cocina. La regla esta en el prompt y el modelo igual
+    la rompe: "encontre varias opciones y el sistema me indica que hay modelos
+    distintos". Medido en el banco repetido."""
+    limpio = _RE_NARRACION.sub("", texto or "")
+    if limpio != (texto or ""):
+        log.warning("hub_venta_narracion_interna", trace_id=trace_id)
+    return re.sub(r"\n{3,}", "\n\n", limpio).strip()
+
+
+_RE_ANUNCIO = re.compile(
+    r"(?im)^[^\n]*\b(?:te\s+(?:paso|pas[eé]|dejo|armo|comparto)|aqu[ií]\s+"
+    r"(?:ten[eé]s|va)|ac[aá]\s+(?:ten[eé]s|va))\b[^\n]*"
+    r"(?:presupuesto|cotizaci[oó]n|detalle|total)[^\n]*:\s*$")
+
+
+def _sin_anuncio_vacio(texto: str, trace_id: str) -> str:
+    """Un anuncio de presupuesto sin presupuesto abajo se va con lo que
+    anunciaba. Pasa cuando el modelo promete la cuenta sin haberla calculado y
+    los renglones inventados se podan: al cliente le llega "Te paso el
+    presupuesto por los dos mouse:" y despues nada."""
+    lineas = (texto or "").splitlines()
+    fuera = []
+    for i, l in enumerate(lineas):
+        if not _RE_ANUNCIO.match(l):
+            continue
+        if not next((x for x in lineas[i + 1:] if x.strip()), ""):
+            fuera.append(i)
+            continue
+        # lo que sigue tiene que ser la cuenta, no otra frase de prosa
+        siguiente = next(x for x in lineas[i + 1:] if x.strip())
+        if not _RE_RENGLON_CUENTA.match(siguiente):
+            fuera.append(i)
+    if not fuera:
+        return texto
+    log.warning("hub_venta_anuncio_vacio", trace_id=trace_id, lineas=len(fuera))
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(
+        l for i, l in enumerate(lineas) if i not in fuera)).strip()
+
+
 def _sin_markdown(texto: str) -> str:
     """WhatsApp no renderiza markdown: los asteriscos dobles salen como
     asteriscos. El prompt lo pide y el modelo igual los pone."""
@@ -725,6 +816,9 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     texto = _cuenta_no_retipeada(
         texto, hubo_calculo=bool(bloque),
         previo=conv.get("ultimo_presupuesto") or "", trace_id=trace_id)
+    texto = _sin_descuento_inventado(texto, trace_id)
+    texto = _sin_narracion_interna(texto, trace_id)
+    texto = _sin_anuncio_vacio(texto, trace_id)
     # La cuenta se manda entera: si el modelo la reescribio o se la comio, el
     # bloque del codigo vuelve al final. No se negocia, es la unica parte del
     # mensaje que el modelo no redacta.

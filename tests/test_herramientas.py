@@ -302,3 +302,15 @@ def test_un_tema_sin_criterio_no_lo_inventa():
     r = H.ejecutar("consultar_criterio", {"tema": "brujeria"}, TIENDA)
     assert r["estado"] == "no_encontrado"
     assert "honesto" in r["instruccion"]
+
+
+def test_no_encontrado_no_se_convierte_en_no_vendemos_la_categoria():
+    """Banco repetido del 1-ago: ante "tenes memoria ram de 16gb" el bot
+    contesto "no estamos vendiendo modulos de RAM sueltos", con el catalogo
+    lleno de memorias. La herramienta ahora devuelve las reales de esa
+    categoria para que el no sea del MODELO puntual, no del rubro."""
+    r = H.buscar_productos(
+        H.BuscarProductos(descripcion="memoria ram de 16gb"), TIENDA)
+    if r["estado"] == "no_encontrado":
+        assert r.get("hay_en_la_categoria"), r
+        assert "NO digas que no vendemos el rubro" in r["instruccion"]

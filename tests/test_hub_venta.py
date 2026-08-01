@@ -305,3 +305,46 @@ def test_el_recorte_de_herramientas_se_loguea_no_es_silencioso(monkeypatch,
                for i in range(12)]
     r = asyncio.run(HV._ejecutar_en_paralelo(pedidos, TIENDA, "t1"))
     assert len(r) == HV._MAX_HERRAMIENTAS
+
+
+# ── 8. LO QUE CAZO EL BANCO REPETIDO ────────────────────────────────────────
+def test_no_se_ofrece_un_descuento_que_no_existe():
+    """Guion de objecion de precio: ante "si te llevo dos me haces precio?" el
+    bot dijo que iba a consultar con el area comercial que descuento especial
+    aplicar. Dos mentiras: no hay area comercial y el descuento no existe."""
+    texto = ("Contame cuantas unidades queres. Puedo consultar con el area "
+             "comercial que descuento especial podemos aplicarte por el par. "
+             "Quedo a la espera.")
+    salida = HV._sin_descuento_inventado(texto, "t1")
+    assert "descuento especial" not in salida
+    assert "Quedo a la espera." in salida
+
+
+def test_el_descuento_real_de_la_tienda_no_se_toca():
+    texto = "Con transferencia tenés un descuento del 10% sobre el total."
+    assert HV._sin_descuento_inventado(texto, "t1") == texto
+
+
+def test_la_narracion_interna_no_llega_al_cliente():
+    texto = ("Tengo los dos mouse en stock.\n"
+             "Encontre varias opciones y el sistema me indica que hay modelos "
+             "distintos.\n¿Cual preferis?")
+    salida = HV._sin_narracion_interna(texto, "t1")
+    assert "el sistema me indica" not in salida
+    assert "¿Cual preferis?" in salida
+
+
+def test_un_anuncio_de_presupuesto_sin_presupuesto_se_va():
+    """El modelo promete la cuenta sin haberla calculado, los renglones
+    inventados se podan y al cliente le llega el anuncio solo."""
+    texto = ("Tengo los dos mouse.\nTe paso el presupuesto por los dos mouse:\n"
+             "\nQuedo atento a que teclado te interesa.")
+    salida = HV._sin_anuncio_vacio(texto, "t1")
+    assert "Te paso el presupuesto" not in salida
+    assert "Quedo atento" in salida
+
+
+def test_el_anuncio_con_su_cuenta_abajo_se_respeta():
+    texto = ("Te paso el presupuesto:\n"
+             "Presupuesto:\n- 1x Mouse: $8.500 c/u = $8.500\nTotal: $8.500")
+    assert HV._sin_anuncio_vacio(texto, "t1") == texto
