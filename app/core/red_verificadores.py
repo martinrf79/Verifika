@@ -54,6 +54,28 @@ settings = get_settings()
 # abreviaturas cortas, para no partir una linea de precio al medio
 _RE_ORACION = re.compile(r"(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÑ¡¿])|\n")
 
+# Los montos en pesos del texto. Es el dato duro que el codigo estampa desde la
+# fuente y que ninguna reescritura puede llevarse (ver fase 5 de `revisar`).
+# El cierre en \d evita comerse el punto final de la oracion: "$9.000." tiene
+# que contar como el monto $9.000, o el mismo numero parece distinto antes y
+# despues de la reescritura y el control se vuelve ruido.
+_RE_MONTO = re.compile(r"\$\s?\d[\d.]*\d|\$\s?\d")
+
+
+def _montos_perdidos(antes: str, despues: str) -> list:
+    """Montos que estaban en el texto auditado y que la reescritura se llevo.
+
+    Se cuentan por VALOR y por cantidad: si el presupuesto llevaba dos veces
+    $8.500 -dos unidades- y vuelve una sola, falta uno."""
+    def _cuenta(t):
+        d = {}
+        for m in _RE_MONTO.findall(str(t or "")):
+            k = m.replace(" ", "")
+            d[k] = d.get(k, 0) + 1
+        return d
+    a, b = _cuenta(antes), _cuenta(despues)
+    return [m for m, n in a.items() if b.get(m, 0) < n]
+
 
 @dataclass
 class Dictamen:
@@ -322,6 +344,23 @@ async def revisar(texto: str, ctx: dict) -> str:
     # una reescritura -del modelo o del juez- y no sale. Esta fase es la que
     # cierra el agujero, y lo cierra para todos los verificadores a la vez.
     if texto_juez and texto_juez != limpio:
+        # EL JUEZ NO PUEDE BORRAR UN DATO QUE ESTAMPO EL CODIGO. La fase 5
+        # miraba solo lo que el juez ENSUCIA, no lo que se LLEVA, y por ese
+        # hueco salio una respuesta sin el dato que el cliente pidio.
+        # Medido el 31-jul en el loop del solver: ante "2 almacenamientos y 1
+        # auricular, cuanto es todo con envio a mendoza", el codigo estampo
+        # "El envio a mendoza sale $9.000" desde la tabla real de tarifas y el
+        # juez lo marco SIN RESPALDO y lo borro. Al cliente le llego una pared
+        # de prosa generica sin un solo numero, justo en la pregunta donde el
+        # numero ERA la respuesta.
+        # Se corta contra el dato duro -los montos-, no contra la redaccion: el
+        # juez puede reescribir todo lo que quiera mientras no se lleve una
+        # cifra que la fuente ya habia puesto.
+        perdidos = _montos_perdidos(limpio, texto_juez)
+        if perdidos:
+            log.warning("red_juez_borro_dato_estampado", trace_id=trace_id,
+                        montos=perdidos[:4])
+            return seguro
         nuevos = diagnosticar(texto_juez, ctx)
         if nuevos:
             reparado = aplicar(texto_juez, nuevos)
