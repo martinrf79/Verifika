@@ -62,6 +62,33 @@ _RE_ORACION = re.compile(r"(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÑ¡¿])|\n")
 _RE_MONTO = re.compile(r"\$\s?\d[\d.]*\d|\$\s?\d")
 
 
+# Las lineas que ESTAMPA el codigo: renglon de item, subtotal, envio, totales y
+# el reparto del pago. Son la cuenta, no prosa, y ninguna reescritura las toca.
+_RE_LINEA_ESTAMPADA = re.compile(
+    r"^\s*(?:-\s*\d+x\s|subtotal\s*:|env[ií]o?\s*\(|env[ií]o\s*:|total\s*:"
+    r"|total final\s*:|presupuesto\s*:|pago dividido\s*:)",
+    re.IGNORECASE)
+
+
+def _lineas_estampadas(texto: str) -> list:
+    return [l.strip() for l in str(texto or "").splitlines()
+            if _RE_LINEA_ESTAMPADA.match(l)]
+
+
+def _estampado_roto(antes: str, despues: str) -> list:
+    """Lineas estampadas que la reescritura se llevo o aplasto.
+
+    No alcanza con mirar los montos: en la charla real del 1-ago el juez
+    reescribio el mensaje ENTERO y devolvio el presupuesto y el pago dividido
+    en un solo parrafo corrido -"Presupuesto: - 2x Memoria... Subtotal:
+    $86.000 Envio..."-. Los numeros seguian todos, asi que el control de
+    montos no vio nada, y al cliente le llego un bloque ilegible en WhatsApp.
+    La cuenta la arma el codigo con sus renglones; el juez escribe prosa."""
+    a, b = _lineas_estampadas(antes), _lineas_estampadas(despues)
+    faltan = [l for l in a if l not in b]
+    return faltan
+
+
 def _montos_perdidos(antes: str, despues: str) -> list:
     """Montos que estaban en el texto auditado y que la reescritura se llevo.
 
@@ -360,6 +387,11 @@ async def revisar(texto: str, ctx: dict) -> str:
         if perdidos:
             log.warning("red_juez_borro_dato_estampado", trace_id=trace_id,
                         montos=perdidos[:4])
+            return seguro
+        rotas = _estampado_roto(limpio, texto_juez)
+        if rotas:
+            log.warning("red_juez_aplasto_el_estampado", trace_id=trace_id,
+                        lineas=rotas[:4])
             return seguro
         nuevos = diagnosticar(texto_juez, ctx)
         if nuevos:

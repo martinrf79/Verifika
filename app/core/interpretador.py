@@ -351,7 +351,7 @@ Devolvé SOLO este JSON, sin texto alrededor. Antes de responder, validá que cu
   "criterio": "mas_barato|intermedio|null",
   "orden": "null, o {{\\"direccion\\": \\"max|min\\", \\"atributo\\": \\"uno EXACTO de la lista de atributos de abajo\\"}} cuando el cliente pide un SUPERLATIVO: la que MAS capacidad, la MAS liviana, la de MAS hercios, la MAS barata, la de MAS garantia. Traducí la frase al atributo, no importa cómo la escriba",
   "pedido": [{{"producto": "nombre EXACTO de un producto mostrado", "cantidad": número, "destino": "localidad tal cual la dijo, o null"}}],
-  "solicitud_nueva": [{{"categoria": "categoria EXACTA de la lista de abajo", "cantidad": número o null, "criterio": "mas_barato|intermedio|null"}}],
+  "solicitud_nueva": [{{"categoria": "categoria EXACTA de la lista de abajo", "cantidad": número o null, "criterio": "mas_barato|intermedio|null", "destino": "localidad tal cual la dijo, o null"}}],
   "categorias": ["una o varias categorias EXACTAS de la lista de categorias de la charla, las que toque el mensaje; vacía si ninguna"],
   "temas_politica": ["los temas EXACTOS de la lista de politicas de la tienda que toque el mensaje; vacía si ninguno"],
   "specs_preguntadas": ["los ids EXACTOS de las specs por las que el cliente pregunta, de la lista de abajo; vacía si no pregunta ninguna"],
@@ -381,7 +381,7 @@ criterio. mas_barato cuando pide lo más económico en cualquier forma, lo más 
 
 pedido. SOLO cuando arma un pedido concreto, productos mostrados con cantidad, nombre exacto del mostrado, sin inventar cantidades. Si reparte entre destinos, cada renglón con su destino y las cantidades desglosadas; con un solo destino o sin decirlo, destino null. Un destino tiene que aparecer en el mensaje o en la memoria de la charla. REGLA DURA del destino: cada renglón lleva UNA sola localidad, nunca dos juntas. Si un set va a una ciudad y otro a otra, hacé un renglón por ciudad con sus cantidades; jamás pongas "Mendoza y Neuquén" en el mismo destino.
 
-solicitud_nueva. Cuando el cliente pide una CATEGORÍA de producto que TODAVÍA no se mostró en la charla, por ejemplo pide "2 teclados baratos" y todavía no se mostró ningún teclado. Va la categoría EXACTA de esta lista: {cats_str}. Más la cantidad si la dice y el criterio si lo expresa. Es para lo que hay que traer y mostrar recién ahora, tanto un producto AGREGADO como un CAMBIO a otra categoría. NO uses este campo para algo que ya se mostró, eso va en pedido o en productos_consultados con su nombre exacto. Si no pide ninguna categoría nueva, lista vacía.
+solicitud_nueva. Cuando el cliente pide una CATEGORÍA de producto que TODAVÍA no se mostró en la charla, por ejemplo pide "2 teclados baratos" y todavía no se mostró ningún teclado. Va la categoría EXACTA de esta lista: {cats_str}. Más la cantidad si la dice y el criterio si lo expresa. Es para lo que hay que traer y mostrar recién ahora, tanto un producto AGREGADO como un CAMBIO a otra categoría. NO uses este campo para algo que ya se mostró, eso va en pedido o en productos_consultados con su nombre exacto. Si no pide ninguna categoría nueva, lista vacía. Si REPARTE el pedido entre lugares, poné el destino en CADA renglón y abrí un renglón por lugar: "1 memoria y un auricular a Berrotarán, 1 auricular y 1 mouse a Concordia, el resto a Posadas" son cinco renglones, y "el resto" lo resolvés vos por resta contra el total que pidió. El renglón sin destino es el que no repartió.
 
 categorias. La o las categorías de la charla que toca el mensaje, tomadas EXACTAS de esta lista cerrada: {conoc_venta_str}. Un mensaje puede tocar VARIAS a la vez, por ejemplo pregunta el precio y además objeta que es caro y pide envío: van las tres. Es lo que le dice al sistema desde qué criterio o política responder cada parte. Si el mensaje no encaja en NINGUNA de la lista, dejala vacía, no fuerces una; el sistema responde honesto que no tiene ese dato sin cortar la venta. Elegí por lo que el cliente QUIERE, no por palabras sueltas.
 
@@ -998,8 +998,19 @@ def _schema_interprete(nombres_mostrados: list[str],
                     "cantidad": {"type": ["integer", "null"]},
                     "criterio": {"type": ["string", "null"],
                                  "enum": ["mas_barato", "intermedio", None]},
+                    # EL DESTINO DE CADA RENGLON (1-ago). Sin esto, cuando el
+                    # cliente reparte productos que TODAVIA no se mostraron
+                    # -"1 memoria y un auricular a Berrotaran, 1 auricular y 1
+                    # mouse a Concordia, el resto a Posadas"- no habia ningun
+                    # campo donde decir que va a cada lado: `pedido` solo
+                    # nombra productos ya mostrados y `solicitud_nueva` no
+                    # tenia destino. El reparto lo terminaba adivinando un
+                    # regex sobre el mensaje crudo, que en la charla real leyo
+                    # 2 auriculares y perdio las memorias, los mouses y un
+                    # destino entero.
+                    "destino": {"type": ["string", "null"]},
                 },
-                "required": ["categoria", "cantidad", "criterio"],
+                "required": ["categoria", "cantidad", "criterio", "destino"],
             }},
             # CATEGORIAS (Contactor, 22-jul): la o las categorias de la charla
             # que toca el mensaje, atadas al enum de la fuente de verdad. Lista

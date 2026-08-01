@@ -653,7 +653,8 @@ def grupos_para_calculo(mensaje: str, locs: list,
 
 def reparto_envios_detalle(mensaje: str, cats_pedido: list,
                            tienda_id: str,
-                           detalle_items: list | None = None) -> tuple[str, list]:
+                           detalle_items: list | None = None,
+                           grupos_dados: list | None = None) -> tuple[str, list]:
     """(bloque de texto 'Reparto de envios', tools de cotizar_envio con su
     proof) o ("", []). El texto detalla que items van a cada destino con la
     tarifa REAL de cada tramo; los proofs respaldan cada monto ante el
@@ -664,7 +665,11 @@ def reparto_envios_detalle(mensaje: str, cats_pedido: list,
     de su paquete y el gratis por umbral sale IGUAL que en el total (19-jul:
     el total decia $7.500 y el reparto mostraba las tarifas crudas)."""
     from app.core.tools import cotizar_envio
-    grupos = grupos_envio_del_mensaje(mensaje, cats_pedido, tienda_id)
+    # `grupos_dados` es el reparto que ya resolvio el INTERPRETE. Manda sobre
+    # el parseo del mensaje: en la charla real del 1-ago el regex leyo "2
+    # auriculares" de un pedido de seis productos a tres destinos.
+    grupos = grupos_dados or grupos_envio_del_mensaje(
+        mensaje, cats_pedido, tienda_id)
     if not grupos:
         return "", []
 

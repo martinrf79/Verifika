@@ -63,7 +63,12 @@ def test_solicitud_nueva_atada_a_categorias():
     sn = s["properties"]["solicitud_nueva"]["items"]
     assert sn["properties"]["categoria"]["enum"] == ["mouse", "teclado", "monitor"]
     assert sn["properties"]["criterio"]["enum"] == ["mas_barato", "intermedio", None]
-    assert set(sn["required"]) == {"categoria", "cantidad", "criterio"}
+    # DESTINO POR RENGLON (1-ago): sin este campo, un pedido repartido entre
+    # lugares con productos que todavia no se mostraron no tenia donde decir
+    # que va a cada lado, y el reparto lo terminaba adivinando un regex sobre
+    # el mensaje crudo. En la charla real ese regex leyo 2 auriculares de un
+    # pedido de seis productos a tres destinos.
+    assert set(sn["required"]) == {"categoria", "cantidad", "criterio", "destino"}
     assert "solicitud_nueva" in s["required"]
 
 

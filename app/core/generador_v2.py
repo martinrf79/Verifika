@@ -404,16 +404,31 @@ def filtrar_por_preferencias(universo, prefs):
     if not exclusiones and not tope:
         return universo
 
+    def _stems(valor):
+        """Las raices de CADA palabra del valor, no solo del principio.
+
+        El corte anterior tomaba los primeros 4 caracteres de la frase entera:
+        con "partes chinas" buscaba "part" contra el pais de la marca y no
+        matcheaba NUNCA. Charla real de Martin, 1-ago: pidio "lo que menos
+        partes chinas tenga" y recibio el MISMO presupuesto, con las mismas
+        marcas, sin una palabra de por que. El catalogo tiene 162 productos de
+        marca china sobre 880: habia con que cambiar y el filtro no filtro
+        nada. Con las raices por palabra, "partes chinas" trae "chin" y el
+        filtro funciona escriba como escriba el cliente."""
+        return [w[:4] for w in _norm(valor).split() if len(w) >= 4]
+
     def _pasa(p):
         for e in exclusiones:
-            stem = _norm(e["valor"])[:4]
-            if not stem:
+            stems = _stems(e["valor"])
+            if not stems:
                 continue
-            if e.get("tipo") == "marca" and stem in _norm(p.get("marca")):
-                return False
+            if e.get("tipo") == "marca":
+                marca = _norm(p.get("marca"))
+                if any(s in marca for s in stems):
+                    return False
             if e.get("tipo") == "origen":
                 pais = _pais_de_marca(p) or _norm(p.get("origen"))
-                if stem in pais:
+                if any(s in pais for s in stems):
                     return False
         if tope:
             try:
@@ -1356,6 +1371,68 @@ def _cat_real(nombre, tienda_id):
 
 
 
+def _reparto_cierra(grupos, items, tienda_id, trace_id=None) -> bool:
+    """El reparto por destino tiene que SUMAR lo mismo que el presupuesto.
+
+    "El resto va a Posadas" se resuelve por resta, y el modelo a veces la hace
+    mal: en una corrida repartio siete unidades de un pedido de seis. Un
+    detalle que contradice la cuenta es peor que no mostrarlo, porque el
+    cliente ve dos numeros distintos para lo mismo y ninguno le sirve. Si no
+    cierra, se calla el detalle y queda el radar para verlo."""
+    try:
+        from app.storage.firestore_client import get_product_by_id
+        pedido: dict = {}
+        for it in (items or []):
+            p = get_product_by_id(str(it.get("product_id")), tienda_id=tienda_id)
+            cat = _norm((p or {}).get("categoria"))
+            if not cat:
+                return False
+            pedido[cat] = pedido.get(cat, 0) + int(it.get("cantidad") or 1)
+        repartido: dict = {}
+        for g in (grupos or []):
+            for c in (g.get("cats") or []):
+                cat = _norm(c.get("cat"))
+                repartido[cat] = repartido.get(cat, 0) + int(c.get("n") or 0)
+        if pedido != repartido:
+            log.warning("render_reparto_no_cierra", trace_id=trace_id,
+                        pedido=pedido, repartido=repartido)
+            return False
+        return True
+    except Exception as e:
+        log.warning("render_reparto_chequeo_error", trace_id=trace_id,
+                    error=str(e)[:140])
+        return False
+
+
+def _items_de_interp(interp, universo) -> list:
+    """Los items del pedido tal como los leyo el interprete: producto y
+    cantidad, sumando los renglones repetidos del mismo producto.
+
+    Solo cuenta cuando el interprete nombro productos REALES -si la charla
+    todavia no mostro nada, sus renglones vienen sin producto y ahi elige el
+    modelo, que es lo que hace un vendedor-. Los que el universo del turno ya
+    no tiene (excluidos por preferencia del cliente) no vuelven a entrar."""
+    porid: dict = {}
+    idx = {_norm(p.get("nombre")): str(p.get("id") or "").upper()
+           for p in (universo or []) if p.get("nombre") and p.get("id")}
+    for it in (interp or {}).get("pedido") or []:
+        if not isinstance(it, dict):
+            continue
+        nom = _norm(it.get("producto"))
+        if not nom or nom == "no_esta_en_la_lista":
+            continue
+        pid = idx.get(nom)
+        if not pid:
+            continue
+        try:
+            n = int(it.get("cantidad") or 1)
+        except (TypeError, ValueError):
+            n = 1
+        if n > 0:
+            porid[pid] = porid.get(pid, 0) + n
+    return [{"product_id": p, "cantidad": n} for p, n in porid.items()]
+
+
 def _destino_respaldado(destino: str, mensaje: str, estado: dict) -> bool:
     """Un destino que emite el MODELO en un fragmento calculo solo vale si el
     cliente lo dijo: en el mensaje ACTUAL o en la memoria de destinos del
@@ -1653,6 +1730,18 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                 log.warning("generador_v2_destino_fantasma",
                             trace_id=trace_id,
                             destinos=destinos_fantasma[:4])
+            # LAS CANTIDADES TAMBIEN SON DEL INTERPRETE. Charla real del 1-ago,
+            # turno 2: el cliente pidio 2 memorias, 2 auriculares y 2 mouses, y
+            # al excluir la marca china el modelo rehizo el pedido con UNA de
+            # cada cosa. El cliente no cambio cantidades; el modelo si. El
+            # interprete las tenia bien -seis renglones, dos de cada producto- y
+            # nadie las usaba. Los productos excluidos por preferencia NO
+            # vuelven a entrar: el universo del turno ya los saco y eso manda.
+            items_interp = _items_de_interp(interp, universo)
+            if items_interp and items_interp != items:
+                log.info("render_items_del_interprete", trace_id=trace_id,
+                         interprete=items_interp[:6], modelo=items[:6])
+                items = items_interp
             if not items and (estado.get("carrito") or []):
                 # El modelo pidio calcular (ej. split) sin re-listar los items:
                 # se usa el pedido VIGENTE del carrito.
@@ -1703,7 +1792,18 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                         _norm(l), [_norm(x) for x in _dedup]):
                     _dedup.append(l)
             locs = _dedup
-            grupos_arg = grupos_para_calculo(mensaje or "", locs, tienda_id)
+            # EL REPARTO SALE DEL INTERPRETE. `grupos_para_calculo` lo deduce
+            # con un regex sobre el mensaje crudo, y en la charla real del
+            # 1-ago ese regex leyo "2 auriculares" de un pedido de seis
+            # productos a tres destinos: perdio las memorias, los mouses y un
+            # destino. El interprete lo habia leido entero en el mismo turno.
+            from app.core.pedido_helpers import grupos_de_interp
+            grupos_arg = grupos_de_interp(interp, tienda_id)
+            if grupos_arg:
+                log.info("render_grupos_del_interprete", trace_id=trace_id,
+                         grupos=[g["destino"] for g in grupos_arg])
+            else:
+                grupos_arg = grupos_para_calculo(mensaje or "", locs, tienda_id)
             for l in locs:
                 q = cotizar_envio(localidad=l)
                 if q.get("ok"):
@@ -1755,6 +1855,30 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             res = calculate_total(**args)
             if res.get("ok") and res.get("presentacion"):
                 partes.append(res["presentacion"])
+                # QUE VA A CADA LADO. El cliente que reparte un pedido entre
+                # tres lugares esta preguntando eso; hasta hoy recibia una lista
+                # plana y un "Envio (3 envios)" sin decir que sale para donde.
+                # El detalle sale del MISMO reparto que uso la cuenta, asi que
+                # no puede contradecirla.
+                if grupos_arg and len(grupos_arg) > 1 and _reparto_cierra(
+                        grupos_arg, items, tienda_id, trace_id):
+                    try:
+                        from app.core.guia_pedido import reparto_envios_detalle
+                        _g = [(g["destino"],
+                               [(c["n"], c["cat"]) for c in g.get("cats") or []])
+                              for g in grupos_arg]
+                        _rep, _rep_tools = reparto_envios_detalle(
+                            mensaje or "", [], tienda_id,
+                            detalle_items=res.get("detalle"), grupos_dados=_g)
+                        if _rep:
+                            partes.append(_rep.strip())
+                            tools.extend(_rep_tools)
+                            log.info("render_reparto_por_destino",
+                                     trace_id=trace_id,
+                                     destinos=[d for d, _ in _g])
+                    except Exception as e:
+                        log.warning("render_reparto_error", trace_id=trace_id,
+                                    error=str(e)[:140])
                 total_mostrado = True
                 e = {"name": "calculate_total", "args": args, "result": res}
                 if res.get("proof"):

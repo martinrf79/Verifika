@@ -128,6 +128,20 @@ def verificar_faq_numerica(respuesta: str, evidencia: list[dict]) -> dict:
     return {"ok": not sin_respaldo, "sin_respaldo": sin_respaldo}
 
 
+# Los bloques que ESTAMPA el codigo desde la fuente: el presupuesto y el
+# reparto del pago. Sus cifras no son afirmaciones del modelo, son la cuenta.
+_BLOQUES_ESTAMPADOS = ("presupuesto:", "pago dividido:")
+
+
+def _en_bloque_estampado(texto: str, pos: int) -> bool:
+    """True si la cifra que esta en `pos` cae dentro de un bloque que armo el
+    codigo. Se mira el parrafo -hasta la linea en blanco anterior- porque el
+    bloque entero es una sola unidad de dato."""
+    inicio = (texto or "").rfind("\n\n", 0, pos) + 2
+    parrafo = (texto or "")[inicio:pos].lower()
+    return any(b in parrafo for b in _BLOQUES_ESTAMPADOS)
+
+
 def autocorregir_faq_numerica(respuesta: str, evidencia: list[dict],
                               temas_consultados: set[str] | None = None,
                               trace_id: str | None = None) -> dict:
@@ -154,6 +168,17 @@ def autocorregir_faq_numerica(respuesta: str, evidencia: list[dict],
             if (clase, n) not in malos or n == bueno:
                 continue
             s, e = m.span(1)
+            if _en_bloque_estampado(respuesta, s):
+                # NO SE PISA UN NUMERO QUE ESTAMPO EL CODIGO. Charla real del
+                # 1-ago: el cliente pidio 20% Mercado Pago y 80% transferencia,
+                # el codigo estampo el bloque "Pago dividido" con los dos
+                # porcentajes REALES, y este corrector vio un 80 sin respaldo
+                # en la FAQ y lo cambio por el 10 del descuento: al cliente le
+                # llego "transferencia (10%): $88.000". Un verificador rompiendo
+                # un dato correcto es peor que el defecto que cura.
+                log.info("faq_numerica_respeta_estampado", trace_id=trace_id,
+                         clase=clase, valor=n)
+                continue
             reemplazos.append((s, e, str(bueno)))
             correcciones.append({"de": n, "a": bueno, "concepto": clase})
     if not reemplazos:
