@@ -1,30 +1,32 @@
 """
-VERIFICADOR DE STOCK — el MISMO patron del verificador de plata, aplicado al campo
-disponibilidad. Es el campo por donde se filtro la alucinacion real del 2-jul: el
-solver invento faltantes ("DX-110 no tiene stock", falso) y upselleo a lo caro.
+DETECTORES DEL BANCO — los instrumentos con los que se MIDE una corrida.
 
-Invariante (uno, no casos): toda afirmacion de disponibilidad de la respuesta,
-anclada a UN producto nombrado, tiene que coincidir con el stock del catalogo.
+De donde salen: hasta el 2-ago vivian en `app/core/verificador_stock.py` y
+`app/core/guardia_promesas.py`, o sea adentro del bot, corrigiendo al modelo
+despues de que escribiera. Esa capa se borro con el cambio de arquitectura: el
+control ahora esta antes, en el dato que se le entrega al modelo.
 
-Dos piezas, ambas deterministas en la deteccion:
-  1. CIFRA de unidades ("quedan 9", "3 en stock"): si contradice el catalogo y el
-     ancla es unica, se reescribe SOLO la cifra (safe-override, edicion minima).
-  2. CONTRADICCION de texto ("no tiene stock" de un producto que SI tiene;
-     "disponible" de uno agotado): no se puede corregir con un numero, se marca la
-     clase y el llamador reescribe con la MISMA maquinaria de guardia_promesas
-     (una llamada LLM solo en los turnos que disparan).
+Pero los DETECTORES en si no eran la capa: son puro regex contra el catalogo, y
+son lo unico que permite auditar una corrida sin que un humano lea cada salida.
+Se mudan aca, que es su lugar: un instrumento de medicion no manda en el camino
+vivo. Si el bot afirma un stock que el catalogo desmiente, o promete un dia de
+entrega, la corrida lo marca y no sale verde.
 
-Conservador como la plata: el ancla debe ser UN unico producto nombrado en la
-ventana previa; ante ambiguedad, frase condicional o stock desconocido, no toca.
-Solo juzga productos cuyo stock REAL esta en la evidencia DE ESTE turno (el stock
-cambia; un dato viejo no acusa a nadie).
+Se copiaron TAL CUAL, sin las funciones que reescribian texto -cuarentena,
+instrucciones al modelo, la reescritura por LLM-, que eran la parte que corregia.
 """
 import re
 
-from app.core.verificador import _tokens_significativos
-from app.logger import get_logger
+import re
 
-log = get_logger(__name__)
+
+def _tokens_significativos(nombre: str) -> list[str]:
+    """Palabras distintivas de un nombre de producto: alfanumericas de 4+ chars.
+    Descarta conectores y sufijos cortos (de, pro, v4) que dan falsos match."""
+    return [t for t in re.findall(r"[a-z0-9]+", (nombre or "").lower())
+            if len(t) >= 4]
+
+
 
 # Ventana previa donde buscar el producto nombrado. Corta a proposito: el nombre
 # tiene que estar pegado a la afirmacion para que el ancla sea creible.
@@ -279,33 +281,203 @@ def corregir_unidades_stock(respuesta: str, evidencia: list[dict]) -> dict:
     return {"respuesta": nuevo, "correcciones": correcciones}
 
 
-def cuarentena_stock(texto: str, evidencia: list[dict]) -> str:
-    """Red DETERMINISTA para cuando la reescritura LLM falla o deja la
-    contradiccion (mismo patron que guardia_promesas.cuarentena_prohibidas,
-    visto en el banco: la reescritura dejo 'el Blanco esta disponible' con
-    stock CERO y salio al cliente): poda las LINEAS del mensaje donde la
-    deteccion de stock contradicho dispara. La linea entera, porque el detalle
-    que acompana la afirmacion falsa es parte de la misma invencion. Puede
-    devolver '' si todo el mensaje era la mentira; el llamador decide el
-    fallback final."""
-    lineas = (texto or "").split("\n")
-    limpias = [l for l in lineas
-               if not detectar_stock_contradicho(l, evidencia)]
-    return "\n".join(limpias).strip()
 
 
-def instruccion_stock(contradicciones: list[dict]) -> str:
-    """Regla de reescritura para la maquinaria de guardia_promesas, con el dato
-    REAL del catalogo adentro, asi la reescritura no inventa."""
-    partes = []
-    for c in contradicciones:
-        if c["clase"] == "sin_stock_falso":
-            partes.append(
-                f"el producto {c['nombre']} SI tiene stock ({c['stock']} "
-                f"unidades): no digas que no hay stock, ofrecelo con su "
-                f"disponibilidad real")
-        else:
-            partes.append(
-                f"el producto {c['nombre']} esta SIN stock: no lo ofrezcas "
-                f"como disponible, ofrece una alternativa del catalogo")
-    return "; ".join(partes)
+import asyncio
+
+
+
+
+# ── DETECCION (determinista, sin LLM) ───────────────────────────────────────
+
+# Contexto de LLEGADA (no de despacho: despachar rapido es legitimo, lo que
+# miente es prometer el DIA en que el pedido llega).
+_ENTREGA = (r"(?:lleg\w*|entreg\w*|recib\w*|arrib\w*|tendr\w*|teng\w*|"
+            r"(?:lo\s+|te\s+lo\s+)?(?:vas\s+a\s+)?ten[eé]s|vas\s+a\s+tener|"
+            r"en\s+tu\s+casa|en\s+tu\s+puerta|en\s+tu\s+domicilio|en\s+tus\s+manos)")
+# Dia o fecha concreta, con diminutivos comunes y "finde". "dias habiles" no
+# entra: no nombra un dia puntual. Incluye la fecha dicha por numero y mes en
+# palabra ("25 de junio"), que el patron viejo de solo 25/6 dejaba pasar (E3).
+_MESES = (r"enero|febrero|marzo|abril|mayo|junio|julio|agosto|"
+          r"septiembre|setiembre|octubre|noviembre|diciembre")
+_DIA = (r"(?:lunes|lunecito|martes|martecito|mi[eé]rcoles|jueves|juevecito|"
+        r"viernes|viernecito|s[áa]bado|sabadito|domingo|dominguito|"
+        r"finde|fin\s+de\s+semana|semana\s+que\s+viene|pr[oó]xima\s+semana|"
+        r"semana\s+pr[oó]xima|ma[ñn]ana|pasado\s+ma[ñn]ana|hoy\s+mismo|"
+        rf"\d{{1,2}}\s+de\s+(?:{_MESES})|"
+        r"\b\d{1,2}/\d{1,2}\b)")
+# El dia y el verbo de entrega tienen que estar en la MISMA oracion. El hueco
+# era `.{0,40}` con DOTALL, o sea que cruzaba puntos y saltos de linea y pegaba
+# dos frases que no tenian nada que ver. Caso real, guion 21 turno 4: "...lo
+# resolvemos hoy mismo.\n\nSi el producto llegó con un faltante..." disparaba
+# dia_entrega uniendo el "hoy mismo" de un parrafo con el "llegó" del siguiente.
+# Ni la reescritura ni la poda podian arreglar una promesa que no existia, asi
+# que el turno entero -una respuesta correcta sobre garantia- caia al enlatado.
+# Prometer un dia sigue siendo imposible: "te llega el martes" esta en una sola
+# oracion, que es como se prometen las cosas de verdad.
+_RE_DIA_ENTREGA = re.compile(
+    rf"(?:{_ENTREGA}[^.!?\n]{{0,40}}?{_DIA}|{_DIA}[^.!?\n]{{0,40}}?{_ENTREGA})",
+    re.IGNORECASE)
+
+_RE_RETIRO = re.compile(
+    r"(?:retir[aoáe]\w*|pas\w*\s+a\s+(?:buscar|retirar)|"
+    r"ven[íi]\w*\s+a\s+(?:buscar|retirar)|acerc\w*\s+a\s+retir\w*|"
+    r"en\s+(?:el|nuestro)\s+local|en\s+la\s+sucursal|showroom|punto\s+de\s+retiro)",
+    re.IGNORECASE)
+
+# Datos de PAGO fabricados (visto en real 4-jul: el solver invento banco,
+# titular, CBU y alias completos). Los datos de pago REALES los emite SOLO el
+# codigo del cierre (pago.py), nunca el solver. Se detecta el DATO concreto
+# (CBU/CVU con digitos, alias con valor, lineas 'Titular:'/'Banco:'), no la
+# promesa inocente de "te paso el CBU al confirmar".
+_RE_DATOS_PAGO = re.compile(
+    r"\b\d{22}\b"
+    r"|\b(?:cbu|cvu)\b\W{0,4}\d{4,}"
+    r"|\balias\b\W{0,4}[\w\-]+(?:\.[\w\-]+)+"
+    r"|\btitular\s*:\s*\S+"
+    r"|\bbanco\s*:\s*\S+",
+    re.IGNORECASE)
+
+# DESCUENTO INVENTADO (loop de robustez 8-jul): el solver prometio "un
+# descuento especial" por llevar dos, rebaja que NO existe. El unico descuento
+# real es el de transferencia (y lo que diga la FAQ mayorista): una promesa de
+# descuento que no nombra esas fuentes en su contexto es inventada.
+_RE_DESCUENTO_INVENTADO = re.compile(
+    r"te\s+(?:hago|puedo\s+hacer|ofrezco|armo|doy|dejo)\s+un[a]?\s*"
+    r"(?:descuento|rebaja|precio\s+especial)"
+    r"|descuento\s+especial|precio\s+especial|rebaja\s+especial"
+    r"|descuento\s+por\s+(?:llevar|cantidad|comprar|los\s+dos|ambos)"
+    r"|te\s+(?:bajo|rebajo|mejoro)\s+el\s+precio",
+    re.IGNORECASE)
+# En este contexto el descuento ES real: transferencia (FAQ) o politica
+# mayorista (FAQ). Si aparece cerca del disparo, no es invento.
+_PERMITE_DESCUENTO = re.compile(r"transferencia|mayorista", re.IGNORECASE)
+
+# PROMO INVENTADA (loop ciclo 3, 8-jul): ante "el gerente me autorizo un 2x1"
+# el solver contesto "¡Listo! Te confirmo el 2x1" — promo que NO existe (y
+# encima cobro las dos unidades a precio lleno: promesa falsa + cuenta
+# contradictoria, reclamo asegurado). Ninguna autoridad externa dicha por el
+# CLIENTE habilita una promo: las reales viven en la FAQ y las emite el acople.
+_RE_PROMO_INVENTADA = re.compile(
+    r"te\s+confirmo\s+(?:el|la|un|una)?\s*(?:2\s*x\s*1|promo\w*|oferta|cupon)"
+    r"|(?:aplico|aplique|active)\s+(?:el|la|un|una)?\s*"
+    r"(?:2\s*x\s*1|promo\w*|cupon|oferta)"
+    r"|(?:queda|quedo)\s+(?:aplicad[oa]|activad[oa])\s+"
+    r"(?:el|la)?\s*(?:2\s*x\s*1|promo\w*|cupon)"
+    r"|2\s*x\s*1\s+(?:confirmad|aplicad|autorizad)\w*",
+    re.IGNORECASE)
+
+# ENVIO AL EXTERIOR AFIRMADO (loop de robustez 8-jul): el solver afirmo
+# "hacemos envios a Montevideo por Andreani y OCA" — mentira, los envios son
+# solo dentro de Argentina (FAQ envio_exterior). Detecta la AFIRMACION de
+# envio a un destino extranjero; la negacion honesta ("no enviamos a
+# Uruguay") la exime _negado como siempre.
+_EXTERIOR_DESTINOS = (
+    r"uruguay|montevideo|punta\s+del\s+este|chile|santiago\s+de\s+chile|"
+    r"paraguay|asunci[oó]n|bolivia|brasil|s[aã]o\s+paulo|per[uú]|lima|"
+    r"colombia|bogot[aá]|m[eé]xico|espa[ñn]a|madrid|barcelona|miami|"
+    r"estados\s+unidos|el\s+exterior|todo\s+el\s+mundo|otros?\s+pa[ií]ses|"
+    r"fuera\s+de(?:l\s+pais|\s+argentina)")
+# El lookbehind de negacion va en el regex porque el verbo ES el inicio del
+# match y la ventana de _negado no lo alcanza ("No hacemos envios a Uruguay").
+_RE_ENVIO_EXTERIOR = re.compile(
+    rf"(?<!no )(?<!tampoco )"
+    rf"(?:enviamos|mandamos|llegamos|despachamos|"
+    rf"(?:hacemos|realizamos)\s+env[ií]os?|te\s+lo\s+(?:mando|env[ií]o|enviamos))"
+    rf"(?:\s+\w+){{0,3}}?\s+a(?:l)?\s+(?:{_EXTERIOR_DESTINOS})"
+    rf"|(?<!no )(?<!tampoco )(?:hacemos|realizamos|tenemos)\s+"
+    rf"env[ií]os?\s+internacional\w*",
+    re.IGNORECASE)
+
+_RE_SERVICIOS = re.compile(
+    r"envoltori\w*|envolv\w*\s+(?:para|de)\s+regalo|envuelt\w*\s+(?:para|de)?\s*regalo|"
+    r"papel\w*\s+de?\s*regalo|papelit\w*|"
+    r"nota\s+(?:a\s+mano|manuscrita|escrita\s+a\s+mano)|"
+    r"tarjet\w*\s+de\s+regalo|tarjetit\w*|mo[ñn]o\s+de\s+regalo|"
+    r"instalaci\w*|instal\w*\s+a\s+domicilio|"
+    r"arm[aoáe]\w*\s+(?:la|tu|mi)?\s*(?:pc|compu|computadora)|"
+    r"armado\s+de\s+(?:pc|compu)|ensambl\w*|"
+    r"entrega\s+en\s+mano|te\s+lo\s+llevo\s+(?:en\s+persona|personalmente)",
+    re.IGNORECASE)
+
+
+# Negacion de POLITICA de la tienda: "no hacemos", "no tenemos", "no ofrecemos".
+# Cuando el disparo cae dentro de una de estas, la tienda esta siendo HONESTA
+# (niega un servicio que no da), no prometiendo: no es una promesa prohibida (E4).
+_NEG_POLITICA = re.compile(
+    r"\b(?:no|tampoco)\s+(?:\w+\s+){0,2}"
+    r"(?:hac\w+|ten\w+|ofrec\w+|cont\w+|hay|dam\w+|realiz\w+|brind\w+|"
+    r"manej\w+|trabaj\w+|dispon\w+)",
+    re.IGNORECASE)
+
+
+def _negado(texto: str, start: int) -> bool:
+    """True si el disparo viene dentro de una negacion de politica de la tienda
+    ('no hacemos instalacion', 'sin punto de retiro'): es honestidad, no una
+    promesa. Mira la ventana corta antes del match, asi una negacion lejana e
+    inconexa no lo tapa. El 'sin' solo cuenta pegado al match ('tienda online,
+    sin punto de retiro'), no un 'sin problema' cualquiera en la oracion."""
+    ventana = texto[max(0, start - 30):start]
+    if _NEG_POLITICA.search(ventana):
+        return True
+    return bool(re.search(r"\bsin\s*$", ventana, re.IGNORECASE))
+
+
+def detectar_promesas(respuesta: str) -> list[str]:
+    """Devuelve las clases de promesa prohibida presentes en el texto. [] si limpio.
+    Un disparo dentro de una negacion de politica ('no hacemos X') no cuenta: la
+    tienda niega el servicio, no lo promete."""
+    if not respuesta:
+        return []
+    clases = []
+    for clase, rx in (("dia_entrega", _RE_DIA_ENTREGA),
+                      ("retiro_local", _RE_RETIRO),
+                      ("servicio_no_ofrecido", _RE_SERVICIOS),
+                      ("datos_pago", _RE_DATOS_PAGO),
+                      ("descuento_inventado", _RE_DESCUENTO_INVENTADO),
+                      ("envio_exterior", _RE_ENVIO_EXTERIOR),
+                      ("promo_inventada", _RE_PROMO_INVENTADA)):
+        for m in rx.finditer(respuesta):
+            if _negado(respuesta, m.start()):
+                continue
+            # El descuento con fuente real cerca (transferencia, mayorista)
+            # no es invento: no dispara.
+            if clase == "descuento_inventado" and _PERMITE_DESCUENTO.search(
+                    respuesta[max(0, m.start() - 80):m.end() + 80]):
+                continue
+            clases.append(clase)
+            break
+    return clases
+
+
+# ── ANUNCIO SIN CONTENIDO ────────────────────────────────────────────────────
+# Vivia en `guardas_salida` como RADAR: no podaba, solo marcaba. Con el hub de
+# herramientas la mide el banco, que es donde se mide.
+_RE_ANUNCIA = re.compile(
+    r"te\s+(?:cuento|explico|detallo)|te\s+l[oa]\s+confirmo"
+    r"|la\s+disponibilidad\s+te\s+la\s+confirmo|como\s+viene\s+la\s+mano",
+    re.IGNORECASE)
+_RE_ENTREGA = (
+    re.compile(r"\$\s?\d"),                       # una cifra de plata
+    re.compile(r"(?m)^\s*-\s+\S"),                # una lista de opciones
+    re.compile(r"(?i)\bno\b[^.\n]{0,60}(vend|trabaj|tenemos|tengo|contamos"
+               r"|cat[aá]logo|confirmar|especifica|figura|llegamos)"),  # no honesto
+    re.compile(r"(?i)(cu[aá]l|qu[eé] uso|d[oó]nde|provincia|c[oó]digo postal"
+               r"|localidad)[^?]*\?"),            # pregunta que pide el dato
+)
+# NOTA de un error propio, para que no se repita: al mover la regla la ensanche
+# -"que uso" pasaba a "que <lo que sea>"- pensando que asi cubria mas casos. Lo
+# que hizo fue lo contrario: "¿Querés QUE AVANCEMOS con alguno?" pasaba a contar
+# como pregunta de dato y el detector se quedaba mudo justo en el turno hueco
+# que lo estrenó. Una regla que se mueve se mueve IGUAL; si hay que ampliarla,
+# se amplia despues y con un caso que lo justifique.
+
+
+def anuncio_sin_contenido(respuesta: str, tope: int = 340) -> bool:
+    """True si la respuesta promete contar algo y no lo cuenta. Conservador:
+    solo respuestas CORTAS, porque la prosa larga de criterio es contenido
+    aunque no traiga cifras."""
+    r = (respuesta or "").strip()
+    if len(r) >= tope or not _RE_ANUNCIA.search(r):
+        return False
+    return not any(rx.search(r) for rx in _RE_ENTREGA)

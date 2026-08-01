@@ -1,17 +1,16 @@
 """
 ORCHESTRATOR — despachador minimo.
 
-El turno entero lo maneja el FLUJO ATADO: app/core/hub_atado.py (interprete y
-solver AMBOS atados por enum a la fuente de verdad, sin la pila de guardas). El
-dato duro nace de la fuente por construccion: imposible alucinar un precio, stock
-o spec. El cierre y el cobro (modo lead o venta con CBU/link) los resuelve la capa
-de leads reusada. Lo unico que queda antes es el filtro de entrada anti-jailbreak.
+El turno entero lo maneja el HUB DE VENTA: app/core/hub_venta.py. Dos llamadas
+al modelo -que buscar, y redactar con el dato delante- y las herramientas
+corriendo en paralelo en el medio. El dato duro sale de la fuente porque lo trae
+una herramienta; lo que la herramienta no trajo, no existe para el modelo. El
+cierre y el cobro los resuelve la capa de leads reusada. Lo unico que queda antes
+es el filtro de entrada anti-jailbreak.
 
-El camino viejo (interprete_libre, solver de prosa libre, compositor, selector,
-redactor, ruteo_venta, ensamblador) se BORRO el 29-jul: 4.155 lineas. Lo que de
-ahi seguia sirviendo se rescato al camino vivo -los verificadores a la red del
-hub, las guardas puras a `guardas_salida`-; el resto quedo sin sentido con el
-diseno atado. La red para volver atras es git, no un modulo dormido al lado.
+El camino atado -interprete de veinte campos, solver de fragmentos, render, juez,
+red de verificadores y guardas de salida- se BORRO el 2-ago. No convive apagado
+al lado: la red para volver atras es git.
 """
 import uuid
 
@@ -19,7 +18,7 @@ import structlog
 
 from app.config import get_settings
 from app.logger import get_logger
-from app.core.hub_atado import procesar_atado
+from app.core.hub_venta import procesar_venta
 
 log = get_logger(__name__)
 settings = get_settings()
@@ -50,9 +49,8 @@ async def process_message(user_id: str, raw_message: str,
                       error=str(e)[:160])
 
         # ── RESET_CODE: palabra clave de PRUEBA para arrancar de cero ────────
-        # Vive ACA, en el orchestrator, para que funcione con CUALQUIER camino
-        # (antes estaba dentro de interprete_libre y el switch al flujo atado lo
-        # dejo sin efecto). El bot mantiene continuidad siempre; solo el RESET_CODE
+        # Vive ACA, en el orchestrator, para que funcione con CUALQUIER camino.
+        # El bot mantiene continuidad siempre; solo el RESET_CODE
         # exacto (ej "verifika2026") borra la conversacion y descarta los leads,
         # para testear desde el mismo numero sin tocar el entorno.
         _rc = (settings.RESET_CODE or "").strip().lower()
@@ -68,7 +66,7 @@ async def process_message(user_id: str, raw_message: str,
             log.info("reset_code", trace_id=trace_id, user_id=user_id)
             return "Listo, conversacion reiniciada. Empezamos de cero."
 
-        return await procesar_atado(
+        return await procesar_venta(
             user_id, raw_message, tid, canal, trace_id)
     finally:
         structlog.contextvars.clear_contextvars()

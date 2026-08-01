@@ -199,15 +199,15 @@ async def diag_latencia(request: Request):
     Run para aislar de donde sale la demora de un turno. No toca el flujo del
     bot. Requiere X-Admin-Token.
 
-    Mide la forma REAL del camino vivo, que es salida estructurada con un
-    responseSchema, no tool calling. Antes media el solver viejo -tools,
+    Mide la forma REAL del camino vivo, que es tool calling con las siete
+    herramientas. Antes media el solver viejo -tools,
     tool_choice required, system prompt grande- y encima con el cliente de
     `agent`, que sigue el flag LLM_PROVIDER: con LLM_PROVIDER=openai y la clave
     vencida, este diagnostico devolvia 401 mientras el bot andaba bien. Un
     diagnostico que miente es peor que no tenerlo.
 
     Comparar los ms entre pruebas:
-      1 vs 2 = costo de mandar el schema estricto
+      1 vs 2 = costo de mandar las herramientas
       2 vs 3 = costo del prompt grande
       3 vs 4 = costo del historial acumulado
     """
@@ -215,22 +215,22 @@ async def diag_latencia(request: Request):
     if token != os.getenv("ADMIN_TOKEN", "cargar2026"):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
 
-    from app.core.generador_v2 import _cliente_gemini, _schema
+    from app.core.hub_venta import _cliente
+    from app.core import herramientas as _H
 
     modelo = settings.GEMINI_MODEL
-    out = {"camino": "atado (generador_v2)", "modelo": modelo}
+    out = {"camino": "herramientas (hub_venta)", "modelo": modelo}
     try:
-        client = _cliente_gemini()
+        client = _cliente()
     except Exception as e:
         return JSONResponse({"error": f"cliente: {str(e)[:200]}"},
                             status_code=500)
 
-    # Schema representativo del turno: unos pocos ids y temas, como un turno real.
+    # Las herramientas REALES del turno: es lo que viaja en la llamada uno.
     try:
-        schema = _schema([f"PRD{i:04d}" for i in range(12)],
-                         ["envio", "garantia", "pago"], ["gaming", "oficina"])
+        tools = _H.esquemas(settings.TIENDA_ID)
     except Exception:
-        schema = None
+        tools = None
 
     prompt_grande = ("Sos un vendedor argentino. " + ("Regla de venta. " * 400))
     # Historial simulado pesado, como una charla de diez turnos.
@@ -246,9 +246,9 @@ async def diag_latencia(request: Request):
         t0 = _time.perf_counter()
         kw = dict(model=modelo, messages=messages, max_tokens=max_t,
                   temperature=0, extra_body={"reasoning_effort": "none"})
-        if usar_schema and schema:
-            kw["response_format"] = {"type": "json_schema", "json_schema": {
-                "name": "fragmentos", "strict": True, "schema": schema}}
+        if usar_schema and tools:
+            kw["tools"] = tools
+            kw["tool_choice"] = "auto"
         r = client.chat.completions.create(**kw)
         ms = int((_time.perf_counter() - t0) * 1000)
         u = getattr(r, "usage", None)
@@ -258,7 +258,7 @@ async def diag_latencia(request: Request):
     _sys = [{"role": "system", "content": prompt_grande}]
     pruebas = {
         "1_minima": (_ok, False, 5),
-        "2_con_schema": (_ok, True, 400),
+        "2_con_herramientas": (_ok, True, 400),
         "3_prompt_grande": (_sys + _ok, True, 400),
         "4_historial_grande": (_sys + hist_sim + _ok, True, 400),
     }

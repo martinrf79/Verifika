@@ -46,22 +46,17 @@ CASETES = Path(__file__).resolve().parent / "casetes"
 # nombre del json_schema, que es parte del CONTRATO con el modelo y no cambia
 # cuando se ajusta una frase del prompt. Las dos que no llevan schema se
 # resuelven por el modulo que llama.
-_POR_SCHEMA = {"interpretacion": "interprete", "respuesta": "solver",
-               "fiscal": "juez"}
-_POR_MODULO = {"guardia_promesas": "guardia", "memoria_larga": "memoria",
-               "checker_afirmaciones": "juez", "generador_v2": "solver",
-               "interpretador": "interprete"}
+# La llamada UNO lleva las herramientas; la DOS no. Es parte del contrato con el
+# modelo y no cambia cuando se ajusta una frase del prompt.
+_POR_MODULO = {"memoria_larga": "memoria", "hub_venta": "redaccion"}
 
 
 def _etapa(kwargs: dict) -> str:
     """De que etapa del turno es esta llamada al modelo."""
-    rf = kwargs.get("response_format") or {}
-    nombre = ((rf.get("json_schema") or {}).get("name")
-              if isinstance(rf, dict) else None)
-    if nombre in _POR_SCHEMA:
-        return _POR_SCHEMA[nombre]
-    # sin schema: se mira quien llama. Es un arnes de test, la introspeccion
-    # cuesta microsegundos y se lee mucho mejor que adivinar por temperature.
+    if kwargs.get("tools"):
+        return "herramientas"
+    # sin herramientas: se mira quien llama. Es un arnes de test, la
+    # introspeccion cuesta microsegundos y se lee mucho mejor que adivinar.
     f = sys._getframe(1)
     while f:
         mod = (f.f_globals.get("__name__") or "").rsplit(".", 1)[-1]
@@ -71,22 +66,38 @@ def _etapa(kwargs: dict) -> str:
     return "otra"
 
 
+class _Funcion:
+    def __init__(self, name, arguments):
+        self.name = name
+        self.arguments = arguments
+
+
+class _ToolCall:
+    def __init__(self, d):
+        self.id = d.get("id") or d.get("name")
+        self.type = "function"
+        self.function = _Funcion(d.get("name"), d.get("arguments") or "{}")
+
+
 class _Mensaje:
-    def __init__(self, content):
+    def __init__(self, content, tool_calls=None):
         self.content = content
         self.role = "assistant"
+        self.tool_calls = [_ToolCall(t) for t in (tool_calls or [])] or None
 
 
 class _Choice:
-    def __init__(self, content):
-        self.message = _Mensaje(content)
+    def __init__(self, content, tool_calls=None):
+        self.message = _Mensaje(content, tool_calls)
         self.finish_reason = "stop"
 
 
 class _Respuesta:
-    """Lo unico que los consumidores leen es choices[0].message.content."""
-    def __init__(self, content):
-        self.choices = [_Choice(content)]
+    """Los consumidores leen choices[0].message.content y, en la llamada uno,
+    tambien message.tool_calls: el casete tiene que devolver las DOS cosas o la
+    grabacion de un turno con herramientas no reproduce nada."""
+    def __init__(self, content, tool_calls=None):
+        self.choices = [_Choice(content, tool_calls)]
         self.usage = None
 
 
@@ -179,43 +190,50 @@ class _ClienteFalso:
         etapa = _etapa(kwargs)
         if self.real is not None:
             r = self.real.chat.completions.create(**kwargs)
-            contenido = r.choices[0].message.content or ""
-            self.casete.grabar(etapa, contenido)
+            m = r.choices[0].message
+            tcs = [{"name": t.function.name, "arguments": t.function.arguments}
+                   for t in (getattr(m, "tool_calls", None) or [])]
+            self.casete.grabar(etapa, json.dumps(
+                {"content": m.content or "", "tool_calls": tcs},
+                ensure_ascii=False))
             return r
         salida = self.casete.leer(etapa)
         if salida is None:
             # mismo efecto que un timeout del provider: el consumidor lo atrapa
             # y degrada. Queda anotado en casete.fallas y baja el puntaje.
             raise TimeoutError(f"sin grabacion para {etapa}")
+        try:
+            d = json.loads(salida)
+        except (ValueError, TypeError):
+            d = None
+        if isinstance(d, dict) and ("content" in d or "tool_calls" in d):
+            return _Respuesta(d.get("content") or "", d.get("tool_calls"))
         return _Respuesta(salida)
 
 
 @contextmanager
 def _parchar(casete: Casete, grabando: bool):
-    """Intercepta las TRES puertas por las que el sistema habla con el modelo.
+    """Intercepta las DOS puertas por las que el sistema habla con el modelo.
 
-    Dos son clientes: `interpretador._get_client` y `generador_v2._cliente_gemini`
-    -por esta ultima pasan el solver, el juez, las reescrituras de las guardias y
-    el resumen de memoria, que es justamente para lo que se consolido-.
+    La primera es el cliente: `hub_venta._cliente`. Por ahi pasan las dos
+    llamadas del turno -que buscar y redactar- y el resumen de memoria. Antes
+    eran dos clientes, uno del interprete y otro del solver; con el hub de
+    herramientas quedo uno solo, y una sola puerta es mas dificil de esquivar.
 
-    La tercera es una funcion, `verifika.llm_adapter.llm_complete`, y la encontro
+    La segunda es una funcion, `verifika.llm_adapter.llm_complete`, y la encontro
     el candado de `tests/test_casete_candado.py` despues de que yo mismo la tapara
     en la lista de permitidos: la usan `cierre.extraer_datos_cliente` y
     `tools.query_faq`, o sea que corre en turnos reales. Sin interceptarla, en CI
     esas llamadas se irian a la red de verdad y el test quedaria verde probando
     de menos, que es exactamente el modo de falla que esta maquina viene a matar.
     """
-    from app.core import cierre, generador_v2, interpretador
+    from app.core import cierre, hub_venta
     from app.verifika import llm_adapter
-    real_i = interpretador._get_client
-    real_g = generador_v2._cliente_gemini
+    real_g = hub_venta._cliente
     real_a = llm_adapter.llm_complete
     # `cierre` importa llm_complete a nivel de MODULO, asi que parchear solo el
     # adapter no lo alcanza: hay que pisarle su propia referencia.
     real_c = getattr(cierre, "llm_complete", None)
-
-    def _fake_i():
-        return _ClienteFalso(casete, real_i() if grabando else None)
 
     def _fake_g():
         return _ClienteFalso(casete, real_g() if grabando else None)
@@ -231,16 +249,14 @@ def _parchar(casete: Casete, grabando: bool):
             raise TimeoutError(f"sin grabacion para {etapa}")
         return json.loads(salida)
 
-    interpretador._get_client = _fake_i
-    generador_v2._cliente_gemini = _fake_g
+    hub_venta._cliente = _fake_g
     llm_adapter.llm_complete = _fake_adapter
     if real_c is not None:
         cierre.llm_complete = _fake_adapter
     try:
         yield casete
     finally:
-        interpretador._get_client = real_i
-        generador_v2._cliente_gemini = real_g
+        hub_venta._cliente = real_g
         llm_adapter.llm_complete = real_a
         if real_c is not None:
             cierre.llm_complete = real_c

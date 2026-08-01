@@ -32,10 +32,10 @@ def test_mensaje_normal_no_dispara_reset(monkeypatch, firestore_doble):
     # un mensaje que NO es el codigo no resetea: se despacha al flujo (mockeado).
     import app.core.orchestrator as O
 
-    async def _fake_atado(user_id, raw_message, tid, canal, trace_id):
+    async def _fake_venta(user_id, raw_message, tid, canal, trace_id):
         return "RESPUESTA_DEL_FLUJO"
 
-    monkeypatch.setattr(O, "procesar_atado", _fake_atado)
+    monkeypatch.setattr(O, "procesar_venta", _fake_venta)
     assert _correr("hola tenes mouse?") == "RESPUESTA_DEL_FLUJO"
     # y "nueva compra" (frase natural) tampoco resetea: el bot mantiene continuidad.
     assert _correr("quiero hacer una nueva compra") == "RESPUESTA_DEL_FLUJO"

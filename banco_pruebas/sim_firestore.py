@@ -180,16 +180,13 @@ def install():
     import app.core.tools as tools
     for n in ("get_all_products", "get_product_by_id", "get_categories", "get_all_faq"):
         setattr(tools, n, _patches[n])
-    import app.core.evidencia as evidencia
-    evidencia.get_all_faq = get_all_faq
-    # hub_atado es el camino VIVO y tambien importa los nombres arriba. Antes de
+    # hub_venta es el camino VIVO y tambien importa los nombres arriba. Antes de
     # este parche solo funcionaba de casualidad, porque el banco lo importaba
     # DESPUES de install(); un test que lo importe antes -o el orchestrator, que
     # lo trae al colectar- quedaba clavado al Firestore real.
-    import app.core.hub_atado as ha
-    for n in ("get_conversation", "save_conversation", "get_config",
-              "get_product_by_id"):
-        setattr(ha, n, _patches[n])
+    import app.core.hub_venta as hv
+    for n in ("get_conversation", "save_conversation"):
+        setattr(hv, n, _patches[n])
     # guia_compra tambien importa los nombres arriba: si alguien lo importo
     # ANTES de install() (un test que lo importa a nivel de modulo), quedaba
     # clavado al Firestore real y media bateria caia con DefaultCredentials.
@@ -262,9 +259,8 @@ def install():
     leads.crear_lead = crear_lead
     leads.actualizar_lead = actualizar_lead
     leads.notificar_lead = notificar_lead
-    # hub_atado importa `procesar_mensaje_para_lead` arriba: reenganche al doble
-    # para que el cierre corra su camino REAL contra los leads en RAM.
-    ha.procesar_mensaje_para_lead = leads.procesar_mensaje_para_lead
+    # `hub_venta` importa el cierre ADENTRO de la funcion, asi que agarra el
+    # doble por si mismo: no hace falta reengancharlo en el modulo.
 
     return {"productos": len(productos), "faq": len(faq),
             "leads_ram": _leads_ram, "avisos": _avisos}

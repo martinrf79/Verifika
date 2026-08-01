@@ -3,7 +3,7 @@ EL CLON DE PRODUCCION. El banco corre el MISMO codigo que el bot vivo.
 
 POR QUE EXISTE (Martin, 31-jul-2026). Decenas de veces el deploy salio verde y
 la PRIMERA charla real trajo errores y alucinaciones. La causa no era el modelo:
-era que el banco probaba OTRO camino. Llamaba a `procesar_atado` directo, asi
+era que el banco probaba OTRO camino. Llamaba a `procesar_venta` directo, asi
 que se salteaba el antijailbreak, el RESET_CODE y, sobre todo, el PARTIDO del
 mensaje: el juez leia un bloque entero que el cliente nunca recibe entero.
 

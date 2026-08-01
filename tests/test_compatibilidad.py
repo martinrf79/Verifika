@@ -191,13 +191,6 @@ def test_sin_equipo_declarado_no_se_estampa_nada():
 
 
 # ── 4. LA FICHA Y EL PROMPT LO LLEVAN ────────────────────────────────────────
-def test_la_ficha_estampa_la_compatibilidad_desde_la_fuente():
-    from app.core.generador_v2 import _campo_ficha
-    ram = normalizar_producto({"marca": "Kingston", "categoria": "memoria ram",
-                               "modelo": "Fury Beast DDR4 3200 8GB",
-                               "nombre": "Memoria ram Kingston Fury Beast DDR4 3200 8GB"})
-    texto = _campo_ficha(ram, "compatibilidad")
-    assert "DDR4" in texto and "notebook" in texto.lower()
 
 
 def test_el_producto_normalizado_trae_su_fila_de_compatibilidad():
@@ -277,19 +270,5 @@ def test_la_purga_es_idempotente():
 
 
 # ── 6. EL INTERPRETE LO DECLARA ATADO ────────────────────────────────────────
-def test_el_schema_del_interprete_ata_las_plataformas_al_vocabulario():
-    from app.core.interpretador import _schema_interprete
-    plats = list(C.vocabulario("verifika_prod")["plataformas"])
-    schema = _schema_interprete([], None, None, None, None, plats)
-    campo = schema["properties"]["plataformas_cliente"]
-    assert campo["items"]["enum"] == plats
-    assert "plataformas_cliente" in schema["required"]
 
 
-def test_la_validacion_filtra_una_plataforma_inventada():
-    from app.core.interpretador import validar_schema
-    resultado = {"intencion": "pregunta_especifica", "producto_resuelto": None,
-                 "candidatos": [], "confianza": 0.9,
-                 "plataformas_cliente": ["macos", "una_commodore_64"]}
-    validar_schema(resultado)
-    assert resultado["plataformas_cliente"] == ["macos"]

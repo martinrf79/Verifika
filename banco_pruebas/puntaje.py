@@ -61,9 +61,13 @@ _RE_ENVIO_ESTAMPADO = re.compile(r"env[ií]o[^.\n]{0,20}\$\s?\d")
 # y postergado. El primer intento fue mas ancho -cualquier "costo/valor/monto"
 # cerca de un verbo de postergar- y dio rojo falso sobre prosa de cierre normal
 # ("confirmame asi te paso los datos"). Un rojo falso ensena a ignorar el tablero.
-# Es el MISMO patron que poda `generador_v2._sin_negar_lo_estampado`, importado
+# El patron que detecta el costo prometido "para despues", importado
 # de ahi a proposito: escritos por separado, uno marcaba y el otro no podaba.
-from app.core.generador_v2 import _RE_ENVIO_POSTERGADO as _RE_COSTO_INDEFINIDO
+_RE_COSTO_INDEFINIDO = re.compile(
+    r"[^.!?\n]*\b(?:el\s+)?(?:costo|precio|valor|monto)\b[^.!?\n]*"
+    r"\b(?:lo\s+)?(?:calcul|confirm|defin|determin|cotiz|inform)\w*"
+    r"[^.!?\n]*(?:despu[eé]s|luego|al\s+confirmar|al\s+cerrar|m[aá]s\s+adelante)"
+    r"[^.!?\n]*[.!?]?", re.IGNORECASE)
 
 # (b) preguntar por el producto cuando el mismo mensaje ya lo nombra con precio
 _RE_PREGUNTA_QUE_PRODUCTO = re.compile(

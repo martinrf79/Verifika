@@ -1,5 +1,10 @@
 # MATRIZ DE COBERTURA — el espacio de respuestas, cerrado
 
+> **Nota al 2-ago-2026.** Las familias de situación y qué fuente responde cada
+> una siguen vigentes. Lo que quedó viejo es la columna de CÓMO va atado el
+> modelo: el intérprete y el solver de fragmentos se borraron, y ahora el modelo
+> pide los datos con herramientas. Ver `ARQUITECTURA.md`.
+
 Fuente de verdad de los CASOS del sistema (16-jul-2026). Las preguntas posibles
 son infinitas; lo que se cierra acá es el conjunto FINITO de familias de
 situación y, para cada una, cinco cosas: qué fuente responde, cómo va atado el

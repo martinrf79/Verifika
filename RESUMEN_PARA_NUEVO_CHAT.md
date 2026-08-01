@@ -2,7 +2,89 @@
 
 Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instrucciones
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
-El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
+El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
+
+**==== 2-ago-2026 — CAMBIO DE ARQUITECTURA: HERRAMIENTAS EN PARALELO ====**
+
+Martín lo decidió y lo aprobó de una pasada y un solo deploy. Se fue el
+intérprete, se fue el solver de fragmentos y se fueron las once capas que
+corregían al modelo después de escribir.
+
+**EL TURNO AHORA.** `orchestrator` -> `app/core/hub_venta.py`:
+
+1. **Llamada uno.** El modelo ve la charla y las SIETE herramientas y decide QUÉ
+   BUSCAR. No traduce el mensaje a ninguna taxonomía nuestra: pide datos.
+2. **Ejecución en paralelo** con `asyncio.gather`. Hasta dos rondas: la segunda
+   existe solo para lo que se desbloquea con lo que trajo la primera, que en la
+   práctica es armar el presupuesto con los ids ya certificados.
+3. **Llamada dos.** El modelo redacta con el JSON de resultados delante. Lo que
+   la herramienta no trajo, no existe para él.
+4. **Una sola regla determinista de salida:** todo peso que aparezca tiene que
+   venir de lo que calculó el código, o se poda la oración.
+
+**LAS SIETE HERRAMIENTAS** (`app/core/herramientas.py`), moldes Pydantic y el
+esquema generado de ellos: `buscar_productos`, `ficha_producto`,
+`consultar_politica`, `cotizar_envio`, `armar_presupuesto`, `ver_compatibilidad`,
+`tomar_pedido`. El cuerpo de cada una es la función determinista que ya existía y
+estaba probada: no se reescribió la lógica, se le puso un molde adelante.
+
+**LO QUE SIGUE ATADO, que es lo único que hace falta atar:**
+- La IDENTIDAD la decide `certificar_producto`, nunca el modelo (regla cero).
+  Sus tres veredictos viajan tal cual: encontrado, ambiguo, no_encontrado.
+- Los enums de `categoria` y `tema` salen de la fuente viva: el modelo no puede
+  pedir una categoría que no vendemos ni un tema de política que no existe.
+- La PLATA la arma `armar_presupuesto` y vuelve como bloque ya escrito, renglón
+  por renglón. El modelo lo pega, no lo recompone.
+
+**SE BORRARON 7.494 líneas en 14 módulos:** `interpretador`, `generador_v2`,
+`hub_atado`, `red_verificadores`, `verificador`, `verificador_cita`,
+`verificador_faq`, `verificador_intencion`, `verificador_stock`,
+`checker_afirmaciones`, `guardia_promesas`, `evidencia`, `dedup`,
+`recall_modelos`. Más los bancos que probaban ese camino. `guardas_salida` quedó
+en dos funciones: honestidad de bot y saludo inicial. Los detectores de stock y
+promesas se mudaron a `banco_pruebas/detectores.py`: son instrumentos de
+medición del banco, no capas del bot.
+
+**MEDIDO EN VIVO** con la clave paga, once turnos reales por el webhook
+(`clon_produccion`), juez del banco limpio en todos:
+- Latencia 1,2 a 5,5 segundos. Antes 5 a 9, con p90 de 9,4.
+- El presupuesto de tres destinos con reparto y pago dividido sale entero y
+  correcto. Es el caso que rompía el camino viejo.
+- 393 tests verdes.
+
+**LOS SEIS DEFECTOS QUE CAZÓ LA CORRIDA VIVA Y ESTÁN CERRADOS.** Ninguno salió
+de un banco: salieron de leer las charlas.
+1. El modelo escribía "8500 ARS" y la regla de plata, que miraba solo el signo
+   peso, no lo veía. Ahora el precio viaja ya escrito y la regla ve la plata sin
+   signo, sin comerse specs como "1600 DPI".
+2. En una sola ronda no podía encadenar: armaba la cuenta sin ids, inventaba los
+   precios y la regla se los podaba enteros. Al cliente le llegaba "Productos:"
+   y nada abajo. De ahí salió la segunda ronda.
+3. **El peor: se inventó un CBU.** Pidieron los datos para transferir sin
+   presupuesto sobre la mesa, el cierre no los entregó y el modelo se inventó
+   CBU, alias y banco. Ahora `tomar_pedido` le entrega los datos REALES y hay un
+   candado que borra cualquier dato de cobro que no coincida con la fuente.
+4. Copió el JSON crudo de una herramienta al medio del mensaje.
+5. Decía no tener el origen ni las specs de lo que ya estaba en el pedido. Los
+   tenía: faltaba que la ficha del carrito viajara con la memoria del turno.
+6. Prometía que un humano iba a llamar y narraba fallas internas al cliente.
+
+**DEFECTO CONOCIDO ABIERTO.** Cuando el reparto por destino no cierra contra los
+items, el detalle no se muestra (la cuenta y los envíos salen bien). Es
+deliberado: mejor sin detalle que con un detalle que contradice la cuenta.
+
+**CÓMO SE PRUEBA.** `python -m pytest -q` para la batería offline.
+`banco_pruebas/clon_produccion.py` corre el MISMO camino que el webhook.
+`banco_pruebas/banco_atado_charlas.py` corre guiones multiturno por ahí.
+La clave paga es `GEMINI_API_KEY_PROD` y el código lee `GEMINI_API_KEY`.
+Para ver charlas reales sin gcloud: `GCP_SA_KEY_B64` + REST a
+logging.googleapis.com y firestore.googleapis.com.
+
+**LO QUE SIGUE.** Usarlo por WhatsApp y ajustar sobre lo que aparezca de verdad.
+Lo que se mide en los logs: `hub_venta_plata_inventada` (plata podada),
+`hub_venta_cobro_inventado` (candado del CBU, es ERROR y no debería aparecer
+nunca), `hub_venta_json_filtrado`, `hub_venta_pedidos` (qué herramientas pidió
+en cada ronda) y `hub_venta_ok` (latencia).
 
 **==== 1-ago-2026 (noche) — LO QUE EL INTERPRETE RESUELVE, LO EJECUTA EL CODIGO ====**
 

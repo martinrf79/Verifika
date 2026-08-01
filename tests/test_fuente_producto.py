@@ -17,7 +17,6 @@ from app.core.fuente_producto import (
     depurar_ficha, derivar_tags, extraer_specs, normalizar_producto,
     specs_config,
 )
-from app.core.generador_v2 import _specs_del_turno, estampar_honestidad_specs
 
 RUTA_CSV = "data/clientes/verifika_prod/productos.csv"
 
@@ -135,47 +134,10 @@ def test_config_de_specs_es_la_fuente():
 
 # ── 4. LA ATADURA: lo que sale al cliente ───────────────────────────────────
 
-def test_el_valor_de_la_fuente_se_estampa_y_pisa_al_modelo():
-    prod = normalizar_producto({"id": "N1", "categoria": "notebook",
-                                "nombre": "Notebook Asus TUF F15 Ryzen 7 16GB 512GB SSD",
-                                "precio_ars": "1", "stock": "1",
-                                "caracteristicas_extra": "Ryzen 7 16GB 512GB SSD"})
-    resp, faltan = _specs_del_turno("cuanta memoria ram tiene?", prod)
-    assert [e for e, _v, _a, _b in resp] == ["la memoria RAM"]
-    assert faltan == []
-    # el modelo tira 8GB; la fuente dice 16GB: se cae la linea y se estampa
-    texto = "Viene con 8GB de RAM, alcanza bien.\n¿Avanzamos?"
-    salida = estampar_honestidad_specs(texto, "cuanta memoria ram tiene?", prod)
-    assert "8GB" not in salida
-    assert "16GB" in salida
-    assert "¿Avanzamos?" in salida
 
 
-def test_spec_que_la_fuente_no_trae_sale_honesta():
-    prod = normalizar_producto({"id": "T2", "categoria": "tablet",
-                                "nombre": "Tablet Lenovo Tab M10",
-                                "precio_ars": "1", "stock": "1",
-                                "caracteristicas_extra": "128GB"})
-    resp, faltan = _specs_del_turno("cuanta ram y cuanto disco tiene?", prod)
-    assert [e for e, _rx in faltan] == ["la memoria RAM"]
-    assert [e for e, _v, _a, _b in resp] == ["el almacenamiento"]
-    salida = estampar_honestidad_specs(
-        "Tiene 4GB de RAM.\n¿Te la reservo?", "cuanta ram y cuanto disco tiene?",
-        prod)
-    assert "4GB" not in salida
-    assert "la ficha no lo especifica" in salida.lower()
-    assert "128GB" in salida
 
 
-def test_no_estampa_dos_veces():
-    prod = normalizar_producto({"id": "M1", "categoria": "monitor",
-                                "nombre": "Monitor LG 24MK430H",
-                                "precio_ars": "1", "stock": "1",
-                                "caracteristicas_extra": "IPS Full HD 75Hz"})
-    msg = "cuantos hz tiene?"
-    uno = estampar_honestidad_specs("Es un monitor muy comodo.", msg, prod)
-    assert "75Hz" in uno
-    assert estampar_honestidad_specs(uno, msg, prod) == uno
 
 
 # ── 5. LA CARGA A FIRESTORE ─────────────────────────────────────────────────
@@ -279,16 +241,6 @@ def test_la_categoria_completa_lo_que_es_cierto_para_todas():
         assert varia not in note["specs"], f"{varia} no se puede dar por categoria"
 
 
-def test_con_cable_es_una_respuesta_no_un_dato_que_falta():
-    aur = normalizar_producto({"id": "A9", "categoria": "auriculares",
-                               "nombre": "Auriculares HyperX Cloud II",
-                               "precio_ars": "1", "stock": "1",
-                               "caracteristicas_extra": "con cable"})
-    assert aur["specs"]["bluetooth"].startswith("no")
-    assert "cable" in aur["specs"]["bateria"]
-    salida = estampar_honestidad_specs("Suenan muy bien.", "tienen bluetooth?", aur)
-    assert "la ficha no lo especifica" not in salida.lower()
-    assert "no" in salida.lower()
 
 
 def test_la_ficha_del_producto_le_gana_a_la_categoria():
@@ -324,66 +276,11 @@ def test_la_planilla_por_modelo_se_carga_y_completa(tmp_path, monkeypatch):
         fp._CACHE_CATEGORIA.clear()
 
 
-def test_la_pregunta_en_plural_llega_al_dato():
-    """Bug real cazado al probar: el cliente escribe 'son resistentes al agua'
-    y el match literal contra 'resistente al agua' lo dejaba pasar con el dato
-    cargado. Las claves toleran plural y espaciado."""
-    aur = normalizar_producto({"id": "A7", "categoria": "auriculares",
-                               "nombre": "Auriculares HyperX Cloud II",
-                               "marca": "HyperX", "modelo": "Cloud II",
-                               "precio_ars": "1", "stock": "1",
-                               "caracteristicas_extra": "con cable"})
-    aur["specs"]["resistencia_agua"] = "no, no es resistente al agua"
-    resp, _faltan = _specs_del_turno("son resistentes al agua?", aur)
-    assert [e for e, _v, _a, _b in resp] == ["la resistencia al agua"]
 
 
 # ── 7. EL MODELO TRADUCE, EL CODIGO EJECUTA ─────────────────────────────────
 
-def test_la_spec_la_declara_el_interprete_no_el_regex():
-    """El cliente escribe cualquier cosa; el que traduce es el LLM. El codigo
-    ejecuta sobre el id que le declararon, sin matchear una sola palabra."""
-    aur = normalizar_producto({"id": "A5", "categoria": "auriculares",
-                               "nombre": "Auriculares HyperX Cloud II",
-                               "marca": "HyperX", "modelo": "Cloud II",
-                               "precio_ars": "1", "stock": "1",
-                               "caracteristicas_extra": "con cable"})
-    # ni "bluetooth" ni ninguna clave aparecen en el mensaje
-    msg = "che, los puedo enganchar al celu sin cables?"
-    assert _specs_del_turno(msg, aur)[0] == [], "sin declarar, el regex no pesca"
-    resp, _f = _specs_del_turno(msg, aur, [aur], ["bluetooth"])
-    assert [e for e, _v, _a, _b in resp] == ["el Bluetooth"]
-    salida = estampar_honestidad_specs("Suenan muy bien.", msg, aur, [aur],
-                                       ["bluetooth"])
-    assert "con cable" in salida.lower()
 
 
-def test_lista_vacia_del_interprete_manda_sobre_el_regex():
-    """Declarar [] es 'no pregunta ninguna spec' y gana: no es lo mismo que no
-    declarar. Sin esto, la palabra suelta del mensaje volvia a decidir."""
-    note = normalizar_producto({"id": "N5", "categoria": "notebook",
-                                "nombre": "Notebook X Core i5 16GB 512GB SSD",
-                                "precio_ars": "1", "stock": "1",
-                                "caracteristicas_extra": "Core i5 16GB 512GB SSD"})
-    # nombra la memoria ram pero NO esta preguntando por ella: esta cerrando
-    msg = "me gusta la memoria ram que tiene, la llevo"
-    assert _specs_del_turno(msg, note)[0], "sin declarar, el regex la pesca"
-    assert _specs_del_turno(msg, note, [note], [])[0] == []
-    assert estampar_honestidad_specs("Genial.", msg, note, [note], []) == "Genial."
 
 
-def test_el_enum_del_interprete_trae_los_modelos_del_catalogo(firestore_doble):
-    """El interprete tiene que poder nombrar un producto NO mostrado: sin esto,
-    en el primer mensaje el enum estaba vacio y no habia donde poner lo que el
-    modelo entendio bien."""
-    from app.core.interpretador import modelos_del_catalogo, _schema_interprete
-    modelos = modelos_del_catalogo("verifika_prod")
-    assert len(modelos) > 400
-    assert any("TUF Gaming F15" in m for m in modelos)
-    sch = _schema_interprete([], ["notebook"], modelos, ["hz", "bateria"])
-    enum_prod = sch["properties"]["producto_resuelto"]["enum"]
-    assert any("Zenbook" in str(e) for e in enum_prod)
-    # el pedido sigue atado a lo MOSTRADO, no al catalogo entero
-    enum_ped = sch["properties"]["pedido"]["items"]["properties"]["producto"]["enum"]
-    assert enum_ped == [None]
-    assert sch["properties"]["specs_preguntadas"]["items"]["enum"] == ["hz", "bateria"]

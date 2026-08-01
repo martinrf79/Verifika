@@ -1,5 +1,12 @@
 # CABLEADO.md — Mapa de plomería y checklist del sistema
 
+> **⚠ DESACTUALIZADO AL 2-ago-2026.** Este documento describe el cableado del
+> camino ATADO -intérprete, solver de fragmentos, render, red de verificadores-,
+> que se BORRÓ con el cambio de arquitectura. El mapa vigente del turno está en
+> `ARQUITECTURA.md` y el estado en `RESUMEN_PARA_NUEVO_CHAT.md`. Se conserva por
+> la casuística de dominio que documenta -qué fuente contesta cada cosa-, que
+> sigue siendo válida; la plomería que describe ya no existe.
+
 > Panorama del CABLEADO (conectores, contactores, enums, y la conexión entre
 > fuentes). Las PARTES del sistema (intérprete, solver, tools) viven en
 > `ARQUITECTURA.md`; el ESTADO vivo en `RESUMEN_PARA_NUEVO_CHAT.md`; las REGLAS

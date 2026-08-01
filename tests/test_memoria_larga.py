@@ -32,20 +32,6 @@ def test_actualizar_sin_descartados_devuelve_el_previo():
     assert r == "resumen previo"
 
 
-def test_fallo_del_llm_cae_a_la_red_determinista(monkeypatch):
-    # Sin proveedor real: el cliente explota y el resumen sale igual (red).
-    # El cliente es el del solver VIVO. Colgaba de `agent`, que seguia el flag
-    # LLM_PROVIDER -openai por default- mientras el camino vivo es Gemini: con
-    # la clave vencida el resumen NUNCA se actualizaba, en silencio, y este
-    # test pasaba igual porque solo probaba la red de abajo.
-    import app.core.generador_v2 as G
-    def _boom():
-        raise RuntimeError("sin LLM en offline")
-    monkeypatch.setattr(G, "_cliente_gemini", _boom)
-    r = asyncio.run(actualizar_resumen("ya hablado", [
-        {"role": "user", "content": "mi direccion es Falsa 123, Cordoba"}]))
-    assert "ya hablado" in r
-    assert "Falsa 123" in r
 
 
 # ── Cableado: el resumen viaja al estado y al interprete ─────────────────────
@@ -56,20 +42,8 @@ def test_estado_lleva_el_resumen():
     assert estado["resumen_charla"] == "El cliente ya dio su direccion en Rio Tercero."
 
 
-def test_contexto_del_interprete_incluye_el_resumen():
-    from app.core.interpretador import construir_contexto_conversacional
-    ctx = construir_contexto_conversacional(
-        [{"role": "user", "content": "hola"}],
-        resumen="Cliente eligio el DX-110 y rechazo el blanco.")
-    assert "LO HABLADO ANTES" in ctx
-    assert "rechazo el blanco" in ctx
 
 
-def test_sin_historial_pero_con_resumen_no_dice_sin_historial():
-    from app.core.interpretador import construir_contexto_conversacional
-    ctx = construir_contexto_conversacional([], resumen="Charla previa: mouse.")
-    assert "Sin historial previo" not in ctx
-    assert "Charla previa: mouse." in ctx
 
 
 # ── Vacuna del bug real 8-jul: el doble valida tipos como Firestore real ─────

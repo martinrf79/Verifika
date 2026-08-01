@@ -1,50 +1,34 @@
 """
-GUARDAS DE SALIDA — las cinco guardas deterministas que el camino vivo perdio.
+GUARDAS DE SALIDA — las DOS unicas cosas que no pueden depender del prompt.
 
-DE DONDE SALEN. Vivian dentro de `interprete_libre`, que era el camino vivo
-hasta que el orchestrator paso al hub. Al cortar, se fueron con el modulo, igual
-que los verificadores: quedaron escritas, con sus tests en verde, probando codigo
-que ya no corria. Un test que no corre sobre el codigo de produccion no vale.
-
-Se rescatan ACA, puras y sin dependencias del legado, para poder borrar
-`interprete_libre` sin perder comportamiento. Las cinco:
+De las cinco que vivian aca quedaron dos, y no por recorte de tiempo: con el hub
+de herramientas las otras tres perdieron sentido.
 
   1. HONESTIDAD DE BOT. Si el cliente pregunta si habla con una maquina, la
-     respuesta lo dice. El prompt solo no alcanza -en el banco el solver
-     esquivaba la pregunta-, asi que el codigo antepone la verdad. Esto no es
-     una mejora de venta, es lo minimo que le debemos al que escribe.
+     respuesta lo dice. El prompt solo no alcanzo nunca -en el banco el modelo
+     esquivaba la pregunta-, asi que el codigo antepone la verdad. No es una
+     mejora de venta, es lo minimo que le debemos al que escribe.
   2. SALUDO Y AVISO. El primer mensaje de la charla abre con una linea fija que
-     dice que es un asistente automatico. Determinista, no depende del prompt, y
-     va UNA sola vez en toda la conversacion. Ademas recorta el saludo y la
-     bienvenida que el modelo escribe por su cuenta, para no saludar dos veces.
-  3. RESPUESTA HUECA. Una respuesta vacia, o corta y sin ningun dato ni pregunta
-     que mueva la charla, no contesta nada. Las coletillas enlatadas no cuentan
-     como sustancia: en real salio un turno que era SOLO la invitacion a avanzar.
-  4. PRESUPUESTO SIN MODELOS. El cliente pide "2 teclados y 3 mouse" sin decir
-     cuales y el modelo arma igual un presupuesto inventado, eligiendo el
-     producto que se le ocurre. Caso real de WhatsApp del 8-jul. Si la respuesta
-     trae un total, se reemplaza por opciones REALES con stock por categoria.
-  5. FALLBACK CON CURADA. Cuando una guarda bloquea el turno, el enlatado
-     generico es la peor salida si el cliente pregunto una politica que SI
-     tenemos escrita: '¿como es la seña?' terminaba en 'no tengo esa
-     informacion'. Si el ruteo matchea un tema curado, sale la respuesta oficial.
+     avisa que es un asistente automatico. Es una obligacion, no un criterio de
+     redaccion, asi que la pone el codigo y va UNA sola vez. Ademas recorta el
+     saludo que el modelo escribe por su cuenta, para no saludar dos veces ni
+     abrir con "hola" en el turno cinco.
 
-LO QUE NO SE RESCATO, y por que. Tres guardas del camino viejo quedaron sin
-sentido con el diseno atado, no por descuido:
-  - la del "mas barato divergente" y la de confirmacion del criterio: el
-    criterio ahora lo traduce el interprete a un enum y `universo_productos`
-    computa el minimo con stock por codigo; el solver solo puede referenciar
-    ids del universo, asi que la divergencia que vigilaban es imposible por
-    construccion.
-  - el estampado de productos: `renderizar` estampa cada linea desde la fuente.
-  - el destino unico por regex: lo resuelven `coercionar_destinos` y la tabla
-    de CP del interpretador.
+LAS QUE SE BORRARON el 2-ago, con su motivo:
+  - RESPUESTA HUECA y ANUNCIO SIN CONTENIDO: juzgaban el texto DESPUES de
+    escrito, midiendo largo y coletillas. Eran la capa que corrige al modelo, que
+    es justo lo que el diseno nuevo saca: si la herramienta trajo el dato, esta
+    en el JSON delante del modelo; si no lo trajo, la respuesta honesta ES corta.
+  - PRESUPUESTO SIN MODELOS: ya se habia borrado el 29-jul por romper una charla
+    real; su fallback vivia aca.
+  - FALLBACK CON CURADA: existia para cuando una guarda bloqueaba el turno. Sin
+    guardas que bloqueen, no hay turno que rescatar. La politica curada sale
+    ahora por la herramienta `consultar_politica`, que es su lugar.
 """
 import re
 import unicodedata
 
 from app.config import get_settings
-from app.core.pedido_helpers import _linea_producto
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -157,164 +141,3 @@ def con_saludo_inicial(respuesta: str, business_name: str) -> str:
     linea = (f"¡Hola! Soy el asistente automático de {business_name}. "
              "Te ayudo con precios, stock y envíos al instante.")
     return linea + ("\n\n" + cuerpo if cuerpo else "")
-
-
-# ── 3. RESPUESTA HUECA ──────────────────────────────────────────────────────
-_RE_SOLO_SALUDO = re.compile(
-    r"^[\s¡!¿?.,]*(hola+|buenas+(\s+(tardes|noches))?|buen\s+d[ií]as?|"
-    r"buenos\s+d[ií]as|que\s+tal|como\s+va|hey|hi)[\s!.,¿?]*$",
-    re.IGNORECASE)
-
-
-def mensaje_con_contenido(mensaje: str) -> bool:
-    """True si el mensaje trae algo mas que un saludo pelado. Un 'hola' solo NO
-    exige sustancia -el saludo de vuelta alcanza-; 'hola, busco una notebook' SI."""
-    m = _norm(mensaje).strip()
-    return bool(m) and not _RE_SOLO_SALUDO.match(m)
-
-
-def _sin_coletillas(texto: str) -> str:
-    """Saca las coletillas enlatadas para medir la sustancia real: una respuesta
-    que es SOLO la invitacion a avanzar no contesta nada."""
-    t = texto or ""
-    try:
-        from app.core.leads import PREGUNTA_CIERRE
-        t = t.replace(PREGUNTA_CIERRE, " ")
-    except Exception:
-        pass
-    # La invitacion a avanzar la redacta el solver, no es un enlatado fijo: se
-    # descuenta generico una ultima linea que sea invitacion de cierre -pregunta
-    # larga, 40 a 90 caracteres-. Una pregunta corta legitima ("¿Que buscas?")
-    # queda: mueve la charla, es sustancia.
-    lineas = [l for l in t.splitlines() if l.strip()]
-    if lineas and "?" in lineas[-1] and 40 < len(lineas[-1].strip()) < 90:
-        lineas = lineas[:-1]
-    return "\n".join(lineas).strip()
-
-
-# ACUSE DE RECIBO puro: el turno que no contesta nada, solo asiente. Es lo que
-# esta guarda tiene que cazar, y nada mas que eso.
-_RE_SOLO_ACUSE = re.compile(
-    r"^(?:[\s¡!.,]*(?:claro|perfecto|dale|listo|genial|buenisimo|barbaro|"
-    r"joya|ok|okey|entiendo|entendido|por supuesto|obvio|de una|excelente|"
-    r"muy bien|bien|si|sip|correcto|exacto|dale si)[\s¡!.,:;-]*)+$",
-    re.IGNORECASE)
-
-
-# El arranque que ANUNCIA informacion. Si la frase es solo esto y nada mas, lo
-# que quedo es el residuo de una poda, no una respuesta.
-_RE_ANUNCIO_VACIO = re.compile(
-    r"^[\s¡!¿?]*(?:[^.!?\n]{0,25}?\b)?"
-    r"te\s+(?:cuento|comento|explico|paso|digo|aviso)\b",
-    re.IGNORECASE)
-
-
-def sin_sustancia(respuesta: str, hubo_datos: bool = False) -> bool:
-    """True si la respuesta no CONTESTA nada: vacia, un acuse de recibo pelado
-    ("Claro.", "Perfecto, dale.") o un resto de dos palabras.
-
-    POR QUE NO SE MIDE POR LARGO, que era como estaba. La regla vieja daba
-    hueca a lo que midiera menos de 60 caracteres y no tuviera cifra ni signo
-    de pregunta. Con eso, "Tenemos mouse, teclados y notebooks." -36
-    caracteres, una respuesta perfectamente buena- se reemplazaba por el
-    enlatado: la guarda contra respuestas vacias borraba respuestas buenas. En
-    el camino viejo casi no se notaba porque la prosa libre siempre era larga;
-    con fragmentos, contestar corto y bien es lo normal.
-
-    El criterio ahora es cualitativo y el error se inclina a propósito para el
-    lado seguro: ante la duda NO se poda. Es preferible dejar pasar un turno
-    flojo que borrar uno bueno y contestarle al cliente que no tenemos el dato.
-
-    `hubo_datos`: si el turno emitio un fragmento de dato -producto, ficha,
-    FAQ, criterio, calculo, envio- la respuesta contesta algo por construccion
-    y no se juzga.
-    """
-    r = _sin_coletillas((respuesta or "").strip())
-    if not r:
-        return True
-    if hubo_datos:
-        return False
-    if _RE_SOLO_ACUSE.match(r):
-        return True
-    tiene_dato = bool(re.search(r"[\d$?¿]", r))
-    # ANUNCIO SIN ENTREGA: el residuo tipico de una poda. "Te cuento," "Te
-    # cuento como nos manejamos": promete la informacion y ahi termina. Es el
-    # caso que hay que cazar, y se caza por lo que la frase HACE -anunciar- y
-    # no por cuanto mide. Medir por largo confundia esto con "Si, hacemos
-    # envios a todo el pais", que contesta perfecto en 34 caracteres.
-    if not tiene_dato and len(r) < 60 and _RE_ANUNCIO_VACIO.match(r):
-        return True
-    # resto muy corto y sin dato ni pregunta: no llega a ser una respuesta.
-    return len(r) < 25 and not tiene_dato
-
-
-# ── 3-bis. ANUNCIO SIN CONTENIDO (radar, no poda) ───────────────────────────
-# La respuesta corta ANUNCIA que va a contar, explicar o confirmar algo, y
-# despues no hay ni producto, ni cifra, ni un no honesto, ni una pregunta que
-# pida el dato que falta. Caso real del banco 29-jul, guion 45 turno 2: el
-# cliente pide un HDD mecanico a 7000 MB/s -que no existe- y el bot contesta
-# "te cuento como viene la mano con los discos" y no cuenta nada.
-#
-# ESTO NO PODA, MARCA. La respuesta no es falsa, es incompleta, y reemplazarla
-# por el enlatado seria empeorarla. El radar convierte una fuga de calidad
-# silenciosa en un numero que se puede mirar en trafico real.
-#
-# La regla vivia en el juez del banco (banco_pruebas/juez.py) y produccion no
-# la tenia: otra vez lo mismo, una medicion que solo existia del lado de los
-# tests. Ahora vive aca y el banco la importa: una sola regla, dos consumidores.
-_RE_ANUNCIA = re.compile(
-    r"te\s+(?:cuento|explico|detallo)|te\s+l[oa]\s+confirmo"
-    r"|la\s+disponibilidad\s+te\s+la\s+confirmo|como\s+viene\s+la\s+mano",
-    re.IGNORECASE)
-_RE_ENTREGA = (
-    re.compile(r"\$\s?\d"),                       # una cifra de plata
-    re.compile(r"(?m)^\s*-\s+\S"),                # una lista de opciones
-    re.compile(r"(?i)\bno\b[^.\n]{0,60}(vend|trabaj|tenemos|tengo|contamos"
-               r"|cat[aá]logo|confirmar|especifica|figura|llegamos)"),  # no honesto
-    re.compile(r"(?i)(cu[aá]l|qu[eé] uso|d[oó]nde|provincia|c[oó]digo postal"
-               r"|localidad)[^?]*\?"),            # pregunta que pide el dato
-)
-# NOTA de un error propio, para que no se repita: al mover la regla la ensanche
-# -"que uso" pasaba a "que <lo que sea>"- pensando que asi cubria mas casos. Lo
-# que hizo fue lo contrario: "¿Querés QUE AVANCEMOS con alguno?" pasaba a contar
-# como pregunta de dato y el detector se quedaba mudo justo en el turno hueco
-# que lo estrenó. Una regla que se mueve se mueve IGUAL; si hay que ampliarla,
-# se amplia despues y con un caso que lo justifique.
-
-
-def anuncio_sin_contenido(respuesta: str, tope: int = 340) -> bool:
-    """True si la respuesta promete contar algo y no lo cuenta. Conservador:
-    solo respuestas CORTAS, porque la prosa larga de criterio es contenido
-    aunque no traiga cifras."""
-    r = (respuesta or "").strip()
-    if len(r) >= tope or not _RE_ANUNCIA.search(r):
-        return False
-    return not any(rx.search(r) for rx in _RE_ENTREGA)
-
-
-# ── 4. (VACANTE) — aca vivia PRESUPUESTO SIN MODELOS, y se borro el 29-jul.
-# Rompio una charla REAL: el cliente pidio "2 notebooks 2 auriculares y 2
-# mauses" con dos destinos, el sistema armo el presupuesto CORRECTO con seis
-# productos reales y quince numeros verificados, y la guarda lo reemplazo por
-# "necesito que me digas los modelos". Curaba una enfermedad del camino viejo
-# -el solver eligiendo productos de su cabeza, con precios inventados- que en el
-# camino atado es imposible por construccion. Solo quedaba el efecto secundario.
-# El detalle completo, en el comentario de hub_atado donde estaba cableada.
-
-
-# ── 5. FALLBACK CON CURADA ──────────────────────────────────────────────────
-def fallback_o_curada(mensaje: str, interp, tienda_id: str,
-                      trace_id: str | None = None) -> str:
-    """Cuando una guarda BLOQUEA la respuesta, el enlatado generico es la peor
-    salida si el cliente pregunto una politica que SI tenemos escrita. Si el
-    ruteo matchea un tema curado, sale esa respuesta oficial."""
-    try:
-        from app.core.curadas import bloque_curado_por_mensaje
-        bc = bloque_curado_por_mensaje(mensaje, interp, tienda_id)
-        if bc:
-            log.info("guarda_fallback_curada", trace_id=trace_id, tema=bc[0])
-            return bc[1]
-    except Exception as e:
-        log.warning("guarda_fallback_curada_error", trace_id=trace_id,
-                    error=str(e)[:120])
-    return settings.VERIFIKA_FALLBACK_MESSAGE

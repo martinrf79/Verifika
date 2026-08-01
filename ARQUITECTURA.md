@@ -1,135 +1,122 @@
-# Arquitectura de Verifika — las cuatro capas del bot profesional
+# Arquitectura de Verifika — el turno en dos llamadas
 
-Mapa de referencia permanente. Muestra las CUATRO capas que usan los sistemas
-de venta profesionales, adaptadas a Verifika: qué módulo real cumple cada capa,
-qué está VIVO y qué LADRILLO falta. El estado del día vive en
-`RESUMEN_PARA_NUEVO_CHAT.md`; esto es el mapa estable de cómo se ordena todo.
+Mapa de referencia permanente. El estado del día vive en
+`RESUMEN_PARA_NUEVO_CHAT.md`; esto es cómo se ordena el sistema.
 
-## El principio que cruza todo: las dos mitades
+## El principio
 
-Cada respuesta se parte en dos, y cada mitad se ata distinto:
+**El control está ANTES de que el modelo escriba, no después.**
 
-- **Dato duro** — precio, stock, total, envío, política. Se ata por herramienta:
-  el código estampa el número desde la fuente. Garantía total. Ya resuelto.
-- **Prosa de venta** — criterio, comparación, compatibilidad, por qué conviene.
-  Se ata por grounding más cita: el modelo responde SOLO desde el corpus jurado
-  y dice qué bloque usó. Garantía alta, en construcción.
+Durante meses el diseño fue el contrario: el modelo escribía y once módulos lo
+corregían -un juez, una red de verificadores, ocho guardas de salida-. Cada capa
+juzgaba con evidencia distinta, y la que ganaba borraba a las otras. Lo medido
+en producción el 1-ago: el juez declaró sin respaldo seis renglones que había
+estampado el propio código. El problema no era que el modelo alucinara; era que
+tres capas peleaban por la misma verdad.
 
-El modelo nunca inventa un dato; a lo sumo elige mal un texto, y para eso está
-la red de verificadores.
-
----
-
-## Capa 1 — Interpretación
-
-Entiende en lenguaje natural qué quiere el cliente, aunque haya negaciones,
-ironía, cambios de decisión o pedidos enredados.
-
-- **Módulos vivos:** `interpretador.py` (una llamada LLM con salida estructurada
-  atada por enum: intención, producto, pedido, criterio, destino) y
-  `recall_modelos.py` (qué modelos del catálogo PUEDE nombrar el intérprete).
-- **Estado:** sólido y MEDIDO. `banco_recall_modelos.py`, 1552 casos sobre el
-  catálogo real: recall@30 100%, recall@5 87,6%.
-- **Ojo con el recall, que es el techo de esta capa:** el enum de
-  `producto_resuelto` no lleva los 482 modelos, lleva los que recupera la etapa
-  1. Lo que no entra ahí, el intérprete no lo puede nombrar aunque lo haya
-  entendido perfecto.
-
-## ⚠ LA COSTURA QUE HAY QUE ARREGLAR (diagnostico 30-jul-2026)
-
-Entre la Capa 1 y la Capa 2 hay un corte medido: **la lectura estructurada del
-interprete se usa solo para armar el MENU de lo que el modelo PUEDE decir, nunca
-como ORDEN de lo que el sistema DEBE contestar.**
-
-El caso mas claro: el interprete emite, por cada producto consultado, un campo
-`consulta` -precio, ficha, stock, opinion, comparacion, envio- atado por enum y
-bien resuelto. **No lo lee nadie: cero usos en todo `app/core`.** Lo mismo con
-`specs_preguntadas`, que el solver no recibe y solo se usa despues para corregir
-lo ya escrito, y con `intencion`, `criterio` y `confianza`.
-
-Consecuencia: como la lectura no ordena la respuesta, hay que suplirla con un
-prompt que anticipe cualquier combinacion. Hoy se arma con 11 entradas y 42 ramas
-en `universo_productos`. Cada capacidad nueva engorda ESE prompt en vez de sumar
-una pieza al lado, y por eso arreglar un caso rompe otro.
-
-El detalle completo, con la tabla campo por campo y la medicion en vivo, esta al
-tope de `RESUMEN_PARA_NUEVO_CHAT.md`. **Es el punto de partida del proximo
-trabajo, y es un diagnostico: la solucion se planifica con Martin antes de tocar
-codigo.**
-
-## Capa 2 — Recuperación y grounding
-
-Trae el contexto real desde la fuente de verdad, nunca desde la memoria del
-modelo. Es la capa anti-alucinación por construcción.
-
-- **Módulos vivos, dato duro:** `tools.py` — búsqueda, ficha, FAQ,
-  `cotizar_envio`, `calculate_total`; y la evidencia en `evidencia.py`.
-- **Módulos vivos, prosa:** `guia_venta_prosa.py` — corpus de 33 temas jurados
-  de criterio de venta, con `recuperar()` que devuelve los mejores bloques con
-  su id, y `texto_de()` para chequear la cita.
-- **Estado:** dato duro completo. Prosa: corpus recién ampliado, groundeado al
-  catálogo real, con recuperación top-K andando.
-- **La CITA.** Cuando `renderizar` emite un fragmento de criterio, deja el
-  bloque jurado que lo respalda en `meta['tools_called']`; de ahí la deriva
-  `verificador_cita.citas_de_meta`. Determinista: los ids salen del propio
-  corpus, nunca del modelo. Es el "Citador" de la Capa A aplicado a la prosa.
-
-## Capa 3 — Orquestación
-
-Decide, en cada turno, si responde, repregunta o dispara un flujo, y compone la
-respuesta uniendo dato duro y prosa.
-
-- **Módulo vivo primario:** `generador_v2.py` — el modelo emite FRAGMENTOS
-  atados a enums del universo del turno y el código estampa cada dato desde la
-  fuente. Conduce el caso general.
-- **Si el modelo falla:** sale el mensaje de fallback enlatado. La red de
-  degradación determinista (`selector` + `compositor` + `redactor`) se BORRÓ el
-  29-jul: llevaba desde el corte al hub sin que la llamara nadie, y una segunda
-  maquinaria de composición en paralelo es la clase de camino doble que costó
-  los 70 flags. Si un día el modelo se cae seguido, se ataca con reintento.
-- **Estado y memoria:** `estado_venta.py`, `memoria_larga.py`, `guia_pedido.py`,
-  `cierre.py`.
-- **Estado:** vivo y deployado. `hub_atado.py` conduce el turno entero y es el
-  ÚNICO camino: el orchestrator entra ahí y no hay otro.
-
-## Capa 4 — Acción y guardrails
-
-Ejecuta las tareas estructuradas y verifica todo lo que sale, con logs cruzando
-las capas. Es el diferencial de Verifika.
-
-- **Acción:** `calculate_total` que sella, carrito, `pago.py`, `pago_split.py`,
-  `envio.py`, `entrega.py`, `leads.py`, `notificador.py`, `posventa.py`.
-- **Guardrails de salida:** todos en `hub_atado._red_de_verificadores`, en un
-  solo orden, de lo más duro a lo más blando: montos (`verificador.py`), stock
-  (`verificador_stock.py`), FAQ numérica (`verificador_faq.py`), intención
-  (`verificador_intencion.py`), cita (`verificador_cita.py`), promesas
-  (`guardia_promesas.py`) y el LLM juez (`checker_afirmaciones.py`). Después
-  las guardas deterministas de `guardas_salida.py`. Más `antijailbreak.py` a la
-  entrada y `calc_defensiva.py` en la calculadora.
-- **Observabilidad y evaluación:** logs con `trace_id`, `tests/` y `banco_pruebas/`.
-- **Estado:** robusto. La red de verificadores es lo que más te distingue.
-- **El verificador de cita** resuelve cada id citado con `texto_de(id)` y marca
-  el que no exista; loguea `hub_atado_cita_prosa`.
+Ahora el modelo no puede alucinar un dato porque no lo tiene: lo pide con una
+herramienta y redacta con el resultado delante. Lo que la herramienta no trajo,
+no existe para él.
 
 ---
 
-## Resumen de dónde estamos
+## El turno, de punta a punta
 
-Las cuatro capas existen y corren en producción, y desde el 29-jul TODO lo que
-está escrito corre: la auditoría de alcance (partir de `app.main` y seguir los
-imports, también los que están dentro de funciones) da CERO módulos huérfanos.
+```
+webhook -> orchestrator -> hub_venta
+                             |
+       1. LLAMADA UNO  ------+  el modelo ve la charla + las 7 herramientas
+          "que buscar"        |  y devuelve tool calls. No traduce nada.
+                              |
+       2. PARALELO -----------+  asyncio.gather. Hasta 2 rondas: la segunda
+          "todo junto"        |  solo para lo que desbloquea la primera.
+                              |
+       3. LLAMADA DOS --------+  redacta con el JSON de resultados delante
+          "redactar"          |
+                              |
+       4. LA REGLA -----------+  toda la plata del texto tiene que venir de
+          determinista        |  lo que calculo el codigo, o se poda
+                              |
+       5. CIERRE Y COBRO -----+  leads.py, la misma funcion de siempre
+                              |
+       6. MEMORIA ------------+  history, resumen, vistos, carrito, destinos
+```
 
-Cómo se llegó a eso, que es la lección que este documento tiene que conservar:
-el 29-jul esa misma auditoría daba **5.429 líneas que no alcanzaba nadie**. Al
-pasar el orchestrator de `interprete_libre` al hub, todo lo que colgaba del
-camino viejo se cayó con él —el LLM juez, cinco verificadores, cinco guardas—
-y siguió meses con sus tests en verde, probando código muerto. Este documento
-mismo daba por viva la red de degradación determinista, que no lo estaba.
+Dos llamadas al modelo en el caso común, tres cuando hace falta la segunda ronda
+de herramientas. Antes eran cuatro encadenadas.
 
-**Verde sobre código muerto es peor que rojo: da confianza falsa.** Por eso hoy
-cada pieza tiene un test que exige que el hub la LLAME, no solo que funcione.
+---
 
-Lo que falta ya no es código nuestro, son DATOS de la tienda: las relaciones de
-compatibilidad producto por producto, y los datos reales de cobro. Mientras no
-estén, la compatibilidad es opinión y hay que decirlo así, no venderla como
-verificada.
+## Las siete herramientas
+
+`app/core/herramientas.py`. Molde Pydantic + una función determinista que ya
+existía y estaba probada. La lógica no se reescribió: se le puso un molde
+adelante y el esquema que ve el modelo se GENERA del molde, así no hay dos
+definiciones que puedan divergir.
+
+| herramienta | qué resuelve | de dónde sale el dato |
+|---|---|---|
+| `buscar_productos` | identidad y catálogo | certificador + catálogo Firestore |
+| `ficha_producto` | la ficha completa por id | catálogo + specs + compatibilidad |
+| `consultar_politica` | política de la tienda | FAQ curada, con sus valores estampados |
+| `cotizar_envio` | costo a un destino | tabla de tarifas + geo de códigos postales |
+| `armar_presupuesto` | LA CUENTA | calculadora; devuelve el bloque ya escrito |
+| `ver_compatibilidad` | si sirve para su equipo | tabla de compatibilidad |
+| `tomar_pedido` | decisión de compra y cobro | marca el cierre; trae los datos de pago |
+
+---
+
+## Lo que sigue atado, y es lo único que hace falta atar
+
+1. **La identidad la decide el código.** Regla cero del proyecto.
+   `certificar_producto` devuelve encontrado, ambiguo o no_encontrado. Con
+   ambiguo el modelo está obligado a preguntar; no puede elegir.
+2. **Los enums salen de la fuente viva.** `categoria` y `tema` se inyectan en el
+   esquema desde el catálogo y la FAQ. El modelo no puede pedir una categoría que
+   no vendemos ni un tema de política que no existe.
+3. **La plata la arma el código.** `armar_presupuesto` devuelve el presupuesto
+   renglón por renglón. El modelo lo pega, no lo recompone. Es la única parte del
+   mensaje que el modelo no redacta.
+
+---
+
+## Los candados deterministas de salida
+
+Son cuatro y ninguno reescribe prosa: borran lo que no puede salir.
+
+- **Plata inventada.** Todo monto del texto tiene que estar en lo que trajeron
+  las herramientas, o en el presupuesto de un turno anterior, que también lo
+  calculó el código. Ve la plata con signo y sin signo, y no confunde una spec
+  -1600 DPI, 3200 MHz- con un monto.
+- **Cobro inventado.** Un CBU, alias, titular o banco que no coincida con la
+  config de la tienda no sale. Nació de que el modelo se inventó un CBU de 22
+  dígitos en una charla viva.
+- **JSON filtrado.** El volcado crudo de una herramienta no es parte del mensaje.
+- **Honestidad de bot y saludo inicial** (`guardas_salida.py`, dos funciones). Lo
+  único que no puede depender del prompt: si preguntan si es una máquina, se dice
+  la verdad, y el primer mensaje avisa que es un asistente automático.
+
+---
+
+## Qué NO existe más, y por qué
+
+- **El intérprete.** Traducía el mensaje a una taxonomía nuestra de veinte
+  campos con un vocabulario de 116 términos. Se caía por JSON truncado, y cuando
+  se caía todo lo de abajo trabajaba a ciegas. El modelo ya entiende la charla:
+  no hace falta que la traduzca a nuestro diccionario, hace falta que pida datos.
+- **El solver de fragmentos y su render.** El modelo emitía fragmentos atados a
+  enums y el código los estampaba. El render descartaba lo que no encajaba: en
+  un turno real quedaron seis de ocho preguntas sin contestar.
+- **El juez y la red de verificadores.** Corregían al modelo después de escribir,
+  con evidencia distinta a la suya. Borraban dato real.
+- **Los detectores** de stock contradicho y promesas prohibidas siguen vivos,
+  pero en `banco_pruebas/detectores.py`: son instrumentos para MEDIR una corrida,
+  no capas del bot.
+
+---
+
+## Multi-tenant
+
+`tienda_id` lo resuelve el backend por `phone_number_id`, nunca el modelo. Viaja
+por contextvar a todas las herramientas. Cada tienda tiene su catálogo, su FAQ,
+sus tarifas y sus datos de cobro.

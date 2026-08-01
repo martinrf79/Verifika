@@ -39,7 +39,7 @@ _PISO = CASETES / "_piso.json"
 
 async def _grabar_una(path: Path, pausa_s: float) -> dict:
     from app.config import get_settings
-    from app.core.hub_atado import procesar_atado
+    from app.core.hub_venta import procesar_venta
     from app.storage.firestore_client import reset_conversation
 
     nombre = path.stem
@@ -57,7 +57,7 @@ async def _grabar_una(path: Path, pausa_s: float) -> dict:
             casete.abrir_turno(turno["mensaje"])
             print(f"  [{i}] {turno['mensaje'][:70]}")
             try:
-                r = await procesar_atado(user, turno["mensaje"], TIENDA,
+                r = await procesar_venta(user, turno["mensaje"], TIENDA,
                                          "casete", f"grab_{nombre}_{i}")
             except Exception as e:
                 r = ""

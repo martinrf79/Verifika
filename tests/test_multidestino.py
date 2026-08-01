@@ -215,19 +215,8 @@ def test_umbral_de_gratis_por_grupo_charla_real(firestore_doble):
     assert res["total_ars"] == 1_525_000 + 7500
 
 
-def test_juez_envios_perdidos_acusa(firestore_doble):
-    """Presupuesto que cobra 2 envios cuando el mensaje declara 3 destinos."""
-    from banco_pruebas.juez import juzgar
-    r = "Presupuesto:\n- 2x Algo: $10 c/u = $20\nEnvio (2 envios): gratis\nTotal: $20"
-    assert any("envios perdidos" in p
-               for p in juzgar(r, mensaje=_MSG_REAL_3DEST))
 
 
-def test_juez_envios_completos_no_acusa(firestore_doble):
-    from banco_pruebas.juez import juzgar
-    r = "Presupuesto:\n- 2x Algo: $10 c/u = $20\nEnvio (3 envios): $7.500\nTotal: $27.520"
-    assert not any("envios perdidos" in p
-                   for p in juzgar(r, mensaje=_MSG_REAL_3DEST))
 
 
 def test_reparto_detalle_gratis_por_grupo_consistente(firestore_doble):

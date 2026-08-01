@@ -2,18 +2,22 @@
 JUEZ DE INVARIANTES — chequeo determinista de cada respuesta del banco.
 
 La tanda de charlas no depende de que un humano LEA cada salida: el juez
-aplica los MISMOS detectores del camino vivo (verificador_stock, guardia de
-promesas, ancla de precio del verificador) contra el catalogo completo del
-doble, mas invariantes de salida (marcador sin estampar, narracion interna).
-Si una respuesta viola un invariante, la tanda falla sola.
+aplica los detectores de `banco_pruebas/detectores.py` -stock contradicho y
+promesas prohibidas- contra el catalogo completo del doble, mas invariantes de
+salida (marcador sin estampar, narracion interna). Si una respuesta viola un
+invariante, la tanda falla sola.
+
+Los detectores vivian adentro del bot hasta el 2-ago, corrigiendo al modelo
+despues de escribir. Con el cambio de arquitectura esa capa se borro: el control
+esta antes, en el dato que se le entrega. Los detectores se mudaron al banco, que
+es donde corresponde que viva un instrumento de medicion.
 
 No trae casos hardcodeados: son invariantes, no ejemplos. Conservador como
 los verificadores que reusa: ancla unica o no acusa.
 """
 import re
 
-from app.core import verificador_stock as VS
-from app.core import guardia_promesas as GP
+from banco_pruebas import detectores as D
 
 # Monto en pesos con separador de miles argentino, o entero pelado tras $.
 _RE_MONTO = re.compile(r"\$\s?(\d{1,3}(?:\.\d{3})+|\d+)")
@@ -91,15 +95,15 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod",
     ev = _catalogo_evidencia(tienda_id)
 
     # 1. Disponibilidad contradicha contra el stock real del catalogo.
-    for d in VS.detectar_stock_contradicho(respuesta, ev):
+    for d in D.detectar_stock_contradicho(respuesta, ev):
         problemas.append(
             f"stock {d['clase']}: {d['nombre']} tiene stock real {d['stock']}")
-    for c in VS.corregir_unidades_stock(respuesta, ev)["correcciones"]:
+    for c in D.corregir_unidades_stock(respuesta, ev)["correcciones"]:
         problemas.append(
             f"cifra de stock {c['de']} distinta del real {c['a']} ({c['id']})")
 
     # 2. Promesas prohibidas (dia de entrega, retiro en local, servicio no
-    #    ofrecido): el mismo detector de la guardia. Excepcion: los DATOS DE
+    #    ofrecido): el detector de promesas. Excepcion: los DATOS DE
     #    PAGO que salen de la config de la tienda (CBU/alias reales o demo)
     #    son el cobro del modo venta, no un invento del modelo (20-jul).
     _datos_pago_fuente = False
@@ -111,7 +115,7 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod",
             for v in (_dt.get("cbu"), _dt.get("alias")))
     except Exception:
         pass
-    for clase in GP.detectar(respuesta):
+    for clase in D.detectar_promesas(respuesta):
         if clase == "datos_pago" and _datos_pago_fuente:
             continue
         problemas.append(f"promesa prohibida en la salida: {clase}")
@@ -231,11 +235,9 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod",
     # 13. ANUNCIO SIN CONTENIDO (guiones 40 y 45, 19-jul): la respuesta CORTA
     #     anuncia que va a contar/confirmar/explicar y despues no hay ni
     #     producto, ni cifra, ni un no honesto, ni pregunta de dato.
-    #     La REGLA vive en app/core/guardas_salida.py, donde produccion la usa
-    #     como radar: una sola regla, dos consumidores. Antes esta medicion
-    #     existia solo del lado de los tests y el bot vivo no la tenia.
-    from app.core.guardas_salida import anuncio_sin_contenido
-    if anuncio_sin_contenido(respuesta):
+    #     La REGLA vive en banco_pruebas/detectores.py junto a las otras dos:
+    #     es una medicion de la corrida, no una capa del bot.
+    if D.anuncio_sin_contenido(respuesta):
         problemas.append("anuncio sin contenido: promete contar o "
                          "confirmar y no da dato, opcion ni no honesto")
 
