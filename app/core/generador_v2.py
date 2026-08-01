@@ -1479,7 +1479,7 @@ def _sin_lo_ya_dicho(texto: str, dichos: str) -> tuple:
 def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                presupuesto_pre=None, presupuesto_tools=None, mensaje=None,
                primer_turno=False, respuestas_cat=None, historial=None,
-               meta=None):
+               meta=None, interp=None):
     """(texto final, tools_called con proof). El texto lo arma el codigo desde
     los fragmentos; cada dato nace de la fuente."""
     from app.core.tools_context import set_current_tienda
@@ -1669,8 +1669,33 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             from app.core.estado_venta import get_envio_localidades
             from app.core.guia_pedido import (_mismo_destino_ya_visto,
                                               grupos_para_calculo)
+            from app.core.pedido_helpers import _destinos_de_interp
             locs_turno = [l for l in (get_envio_localidades() or []) if l]
-            locs = (locs_turno or destinos
+            # EL REPARTO LO MANDA EL INTERPRETE, NO EL MODELO (1-ago).
+            #
+            # Charla REAL de Martin, trace 308d61c5: "1 memoria y un auricular
+            # envio a berrotaran, 1 auricular y 1 mouse a concordia, el resto a
+            # posadas". El interprete los leyo BIEN, los tres, y quedo escrito
+            # en el log (`destinos_forzados`). El solver emitio items con dos
+            # destinos y el codigo le hizo caso: cotizo dos, cobro "Envio (2
+            # envios): $16.500" y Berrotaran desaparecio. Al cliente le faltaron
+            # $7.500 y un envio. En el turno siguiente, como el destino nunca
+            # entro a la memoria, la guardia lo trato de invento y lo borro tres
+            # veces mas.
+            #
+            # `_destinos_de_interp` ya existia y su docstring decia que era "la
+            # SEÑAL para forzar cotizar_envio". No forzaba nada: se usaba SOLO
+            # para escribir una linea de log. Esto lo convierte en orden.
+            #
+            # Es la regla C aplicada a la ESTRUCTURA y no solo al texto: el
+            # reparto del pedido es un DATO, y el dato no lo escribe el modelo.
+            locs_interp = [l for l in _destinos_de_interp(interp) if l]
+            if locs_interp and set(_norm(x) for x in locs_interp) != set(
+                    _norm(x) for x in (locs_turno or destinos or [])):
+                log.info("render_destinos_del_interprete", trace_id=trace_id,
+                         interprete=locs_interp[:6],
+                         modelo=(locs_turno or destinos)[:6])
+            locs = (locs_interp or locs_turno or destinos
                     or [l for l in (estado.get("localidades_envio") or []) if l])
             _dedup: list = []
             for l in dict.fromkeys(locs):
@@ -1698,6 +1723,30 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                                 for x in f["pago"]]
                 except (TypeError, ValueError, KeyError):
                     pago = None
+            if not pago:
+                # EL REPARTO DEL PAGO TAMPOCO ES DEL MODELO. Misma charla real:
+                # "Abonaria un 20% con mercado y el resto transferencis", y el
+                # turno corrio con pago=None -el solver no lleno el campo- asi
+                # que el presupuesto salio sin el split y el cierre encima le
+                # pregunto como queria pagar, cuando el cliente acababa de
+                # decirlo. Manda el INTERPRETE, que lo declara atado a los dos
+                # medios reales; el regex sobre el mensaje queda de respaldo,
+                # porque pide las palabras exactas y con "mercado" a secas y
+                # una `s` de mas no lo pesca.
+                try:
+                    pago = list((interp or {}).get("pago_reparto") or []) or None
+                    if pago:
+                        log.info("render_pago_del_interprete",
+                                 trace_id=trace_id, pago=pago)
+                    else:
+                        from app.core.pago_split import pago_de_mensaje
+                        pago = pago_de_mensaje(mensaje or "")
+                        if pago:
+                            log.info("render_pago_del_mensaje",
+                                     trace_id=trace_id, pago=pago)
+                except Exception as e:
+                    log.warning("render_pago_error", trace_id=trace_id,
+                                error=str(e)[:120])
             args = {"items": items, "destinos": max(1, len(locs)),
                     **({"items_extra": [{"faq_tema": "costo_envio",
                                          "concepto": "envio"}]} if locs else {}),

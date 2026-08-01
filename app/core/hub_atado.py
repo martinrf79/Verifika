@@ -388,7 +388,10 @@ async def procesar_atado(user_id: str, raw_message: str, tienda_id: str,
             frags, universo, estado, tienda_id, trace_id,
             presupuesto_pre=presu_txt, presupuesto_tools=presu_tools,
             mensaje=raw_message, primer_turno=_primer_turno,
-            respuestas_cat=respuestas_cat, historial=history, meta=meta)
+            respuestas_cat=respuestas_cat, historial=history, meta=meta,
+            # La lectura del interprete viaja al render: el reparto del pedido
+            # -destinos y cantidades- lo manda el, no el modelo.
+            interp=interp)
         meta["tools_called"] = _tools_called
         log.info("hub_atado_generador_v2", trace_id=trace_id,
                  fragmentos=len(frags), tools=len(_tools_called),

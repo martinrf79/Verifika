@@ -359,6 +359,7 @@ Devolvé SOLO este JSON, sin texto alrededor. Antes de responder, validá que cu
   "tope_presupuesto": número entero en pesos o null,
   "exclusiones": [{{"tipo": "origen|marca", "valor": "texto"}}],
   "uso_previsto": "una o dos palabras o null",
+  "pago_reparto": [{{"medio": "transferencia|mercado pago", "porcentaje": número}}],
   "confianza": 0.0 a 1.0
 }}
 
@@ -387,6 +388,8 @@ categorias. La o las categorías de la charla que toca el mensaje, tomadas EXACT
 temas_politica. La otra mitad de la misma lista: los temas de POLÍTICA de la tienda, tomados EXACTOS de esta lista cerrada: {conoc_politica_str}. Van acá y no en categorias, pero valen igual: si el cliente pregunta por cuotas, envíos, devoluciones o garantía, el tema va en este campo. Los dos campos se completan juntos cuando el mensaje toca las dos cosas, por ejemplo pregunta el precio de un teclado y además si tiene cuotas. Vacía si el mensaje no toca ninguna política.
 
 preferencias. tope_presupuesto solo si dice una CIFRA. exclusiones si descarta por origen o marca, sin partes chinas, nada de Redragon. uso_previsto si dice para qué lo quiere. Llená lo que el mensaje diga, el resto null o vacío.
+
+pago_reparto. Cuando el cliente dice CÓMO reparte el pago entre los dos medios, aunque lo escriba mal o abreviado: "un 20% con mercado y el resto transferencis" son 20 mercado pago y 80 transferencia; "mitad y mitad" son 50 y 50; "70 por transferencia" son 70 transferencia y 30 mercado pago. Los porcentajes tienen que sumar 100. Si el mensaje no reparte el pago, lista vacía.
 
 confianza. alta 0.85 a 1.0 lectura inequívoca; media 0.6 a 0.85 parcial; baja menor a 0.6 ambigüedad real que pide preguntar. Si dudás entre dos, bajá la confianza y poné candidatos.
 
@@ -708,6 +711,24 @@ def validar_schema(resultado: dict) -> tuple[bool, str]:
         _cats = []
     resultado["categorias"] = _cats
     # specs_preguntadas (28-jul): la TRADUCCION del modelo, filtrada a los ids
+    # PAGO_REPARTO: solo vale si nombra los dos medios validos y suma 100. No
+    # se corrige ni se completa: un reparto que no cierra es un reparto que no
+    # se entendio, y cobrar con un porcentaje inventado es peor que preguntar.
+    _pg = resultado.get("pago_reparto") or []
+    _limpio = []
+    try:
+        for x in _pg if isinstance(_pg, list) else []:
+            if (isinstance(x, dict)
+                    and x.get("medio") in ("transferencia", "mercado pago")):
+                _limpio.append({"medio": x["medio"],
+                                "porcentaje": float(x.get("porcentaje") or 0)})
+        if not (len(_limpio) == 2
+                and abs(sum(x["porcentaje"] for x in _limpio) - 100) <= 1
+                and len({x["medio"] for x in _limpio}) == 2):
+            _limpio = []
+    except (TypeError, ValueError):
+        _limpio = []
+    resultado["pago_reparto"] = _limpio
     # reales de la fuente. Se distingue "no declaro nada" (None, cae la red de
     # palabras) de "declaro que no pregunta ninguna" (lista vacia, manda eso).
     _sp = resultado.get("specs_preguntadas", None)
@@ -1023,6 +1044,24 @@ def _schema_interprete(nombres_mostrados: list[str],
                 "required": ["tipo", "valor"],
             }},
             "uso_previsto": {"type": ["string", "null"]},
+            # EL REPARTO DEL PAGO (1-ago). Charla real de Martin: "Abonaria un
+            # 20% con mercado y el resto transferencis". Lo unico que sabia
+            # leerlo era un regex sobre el mensaje crudo, y ese regex pide las
+            # palabras exactas "transferencia" y "mercado pago": con "mercado"
+            # a secas y una `s` de mas se cayo, el presupuesto salio sin el
+            # split y el cierre encima le pregunto como queria pagar, cuando el
+            # cliente acababa de decirlo. Traducir eso es trabajo del modelo,
+            # que lee bien; aplicarlo es del codigo. Atado a los dos medios que
+            # la tienda acepta: no puede inventar uno.
+            "pago_reparto": {"type": ["array", "null"], "items": {
+                "type": "object", "additionalProperties": False,
+                "properties": {
+                    "medio": {"type": "string",
+                              "enum": ["transferencia", "mercado pago"]},
+                    "porcentaje": {"type": "number"},
+                },
+                "required": ["medio", "porcentaje"],
+            }},
             "confianza": {"type": "number"},
         },
         "required": ["respondiendo_a", "productos_consultados",
@@ -1033,6 +1072,7 @@ def _schema_interprete(nombres_mostrados: list[str],
                      "specs_preguntadas",
                      "plataformas_cliente",
                      "tope_presupuesto", "exclusiones", "uso_previsto",
+                     "pago_reparto",
                      "confianza"],
     }
 
