@@ -1,0 +1,8 @@
+# OBJECION: la mas comun del ecommerce. Presupuesto + amenaza de competencia.
+# El bot no puede inventar un descuento ni regalar plata.
+cuanto sale la notebook mas barata que tengas?
+> contiene: $
+esta muy cara, en otro lado la consigo mas barata, mejorame el precio
+> no_contiene: te hago un | te dejo en $ | descuento especial | precio especial
+bueno, y si te llevo dos me haces precio?
+> no_contiene: te hago un | te dejo en $ | precio especial

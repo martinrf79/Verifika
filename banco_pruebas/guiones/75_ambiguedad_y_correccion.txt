@@ -1,0 +1,7 @@
+# IDENTIDAD AMBIGUA: el cliente nombra algo que matchea varios modelos.
+# La regla cero obliga a PREGUNTAR, no a elegir.
+quiero una notebook asus
+> no_contiene: te la reservo
+la de ryzen
+cuanta ram tiene esa?
+> no_contiene: no cuento con | no tengo el dato

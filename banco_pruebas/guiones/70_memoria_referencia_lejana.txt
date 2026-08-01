@@ -1,0 +1,10 @@
+# MEMORIA: el cliente se refiere a algo dicho tres turnos antes, sin nombrarlo.
+# Patron real de ecommerce: "el primero que me mostraste", "el que te dije".
+hola, que teclados tenes?
+> no_contiene: no tenemos | no vendemos
+y de mouse que hay?
+> no_contiene: no tenemos | no vendemos
+el primero que me mostraste de teclado, cuanto era?
+> no_contiene: no tengo | no cuento con | cual de
+sumale dos de esos y un mouse de los baratos, cuanto me queda?
+> contiene: Total

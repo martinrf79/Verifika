@@ -283,3 +283,22 @@ def test_para_cerrar_solo_se_pide_el_nombre():
     assert faltantes({"nombre": "Martin"}) == []
     # los opcionales se siguen guardando si el cliente los dice
     assert "direccion" in CAMPOS_EXTRAIBLES
+
+
+# ── EL RAZONAMIENTO TAMBIEN VA ATADO ─────────────────────────────────────────
+def test_el_criterio_de_venta_sale_de_la_fuente_y_esta_atado_por_enum():
+    """El hueco que quedo al pasar a herramientas: el dato duro quedo atado y la
+    prosa de criterio quedo suelta, o sea inventada por el modelo. En el repo
+    viven 93 bloques escritos para esta tienda que no usaba nadie."""
+    esq = {e["function"]["name"]: e["function"]["parameters"]
+           for e in H.esquemas(TIENDA)}
+    criterios = esq["consultar_criterio"]["properties"]["tema"]["enum"]
+    assert len(criterios) > 50
+    r = H.ejecutar("consultar_criterio", {"tema": "memoria_ram"}, TIENDA)
+    assert r["estado"] == "encontrado" and len(r["criterio"]) > 80
+
+
+def test_un_tema_sin_criterio_no_lo_inventa():
+    r = H.ejecutar("consultar_criterio", {"tema": "brujeria"}, TIENDA)
+    assert r["estado"] == "no_encontrado"
+    assert "honesto" in r["instruccion"]

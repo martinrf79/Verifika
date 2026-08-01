@@ -1,0 +1,7 @@
+# CRITERIO: pide recomendacion y comparacion. Sin consultar_criterio el modelo
+# opina de su entrenamiento y no del criterio de la casa.
+tengo una notebook vieja y va lenta, que me conviene comprar?
+> no_contiene: no puedo ayudarte | no tengo informacion
+y entre esas dos que me dijiste, cual dura mas y por que?
+> no_contiene: no tengo | no cuento con
+me sirve para jugar tambien?

@@ -77,6 +77,13 @@ class ConsultarPolitica(BaseModel):
     tema: str = Field(description="El tema exacto de la lista.")
 
 
+class ConsultarCriterio(BaseModel):
+    """Trae el CRITERIO de venta de la casa sobre un tema: para que sirve cada
+    cosa, que conviene segun el uso, como se comparan, que mirar antes de
+    elegir. Es la base para razonar y recomendar."""
+    tema: str = Field(description="El tema exacto de la lista.")
+
+
 class CotizarEnvio(BaseModel):
     """Cotiza el envio a un destino concreto."""
     localidad: str = Field(
@@ -128,6 +135,7 @@ _MOLDES = {
     "buscar_productos": BuscarProductos,
     "ficha_producto": FichaProducto,
     "consultar_politica": ConsultarPolitica,
+    "consultar_criterio": ConsultarCriterio,
     "cotizar_envio": CotizarEnvio,
     "armar_presupuesto": ArmarPresupuesto,
     "ver_compatibilidad": VerCompatibilidad,
@@ -177,8 +185,10 @@ def esquemas(tienda_id: str) -> list[dict]:
     lado del modelo: no puede pedir una categoria que no vendemos ni un tema de
     politica que no existe."""
     from app.storage.firestore_client import get_categories, get_all_faq
+    from app.core.guia_venta_prosa import GUIA_VENTA
     cats = [str(c) for c in (get_categories(tienda_id=tienda_id) or [])]
     temas = sorted((get_all_faq(tienda_id=tienda_id) or {}).keys())
+    criterios = list(GUIA_VENTA)
     fuera = []
     for nombre, modelo in _MOLDES.items():
         esq = _esquema_de(modelo)
@@ -187,6 +197,8 @@ def esquemas(tienda_id: str) -> list[dict]:
             props["categoria"]["enum"] = cats
         if nombre == "consultar_politica" and temas and "tema" in props:
             props["tema"]["enum"] = temas
+        if nombre == "consultar_criterio" and criterios and "tema" in props:
+            props["tema"]["enum"] = criterios
         fuera.append({"type": "function", "function": {
             "name": nombre,
             "description": (modelo.__doc__ or "").strip(),
@@ -378,6 +390,28 @@ def consultar_politica(a: ConsultarPolitica, tienda_id: str) -> dict:
             "valores": data.get("valores") or []}
 
 
+def consultar_criterio(a: ConsultarCriterio, tienda_id: str) -> dict:
+    """EL RAZONAMIENTO TAMBIEN VA ATADO. Es el hueco que quedo abierto al pasar
+    a herramientas: el dato duro quedo atado a la fuente y la prosa de criterio
+    -para que sirve, que conviene, como se comparan- quedo suelta, o sea que la
+    inventaba el modelo de su entrenamiento.
+
+    En el repo viven 93 bloques de criterio escritos para esta tienda
+    (`base_conocimiento.json`, via `guia_venta_prosa`), y desde el cambio de
+    arquitectura no los usaba NADIE. Esta herramienta se los devuelve: el modelo
+    razona desde el criterio de la casa, no desde el suyo. Mismo mecanismo que
+    `consultar_politica`, un eje distinto."""
+    from app.core.guia_venta_prosa import consultar_guia_venta
+    r = consultar_guia_venta(a.tema) or {}
+    if not r.get("texto"):
+        return {"estado": "no_encontrado", "tema": a.tema,
+                "instruccion": "No hay criterio escrito para eso. Razona desde "
+                               "la ficha del producto o decilo honesto; no lo "
+                               "completes de memoria."}
+    return {"estado": "encontrado", "tema": r.get("tema") or a.tema,
+            "criterio": r["texto"]}
+
+
 def cotizar_envio(a: CotizarEnvio, tienda_id: str) -> dict:
     from app.core import tools as T
     r = T.cotizar_envio(localidad=a.localidad)
@@ -516,6 +550,7 @@ _CUERPOS = {
     "buscar_productos": buscar_productos,
     "ficha_producto": ficha_producto,
     "consultar_politica": consultar_politica,
+    "consultar_criterio": consultar_criterio,
     "cotizar_envio": cotizar_envio,
     "armar_presupuesto": armar_presupuesto,
     "ver_compatibilidad": ver_compatibilidad,

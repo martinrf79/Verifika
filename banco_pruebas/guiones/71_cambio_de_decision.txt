@@ -1,0 +1,9 @@
+# MEMORIA + NEGACION: el cliente arma, cambia de idea y despues vuelve atras.
+# Es donde el bot suele quedarse con el pedido viejo o perder el nuevo.
+quiero 2 mouse genius dx-110 negro y 1 teclado, cuanto sale?
+> contiene: Total
+no, el teclado sacalo, dejame solo los mouse
+> no_contiene: teclado Genius | 1x Teclado
+mejor volve a ponerlo, pero uno solo
+cuantas unidades de cada cosa quedaron?
+> no_contiene: no tengo | no cuento con

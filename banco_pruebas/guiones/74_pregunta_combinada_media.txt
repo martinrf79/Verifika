@@ -1,0 +1,8 @@
+# DIFICULTAD MEDIA COMBINADA: producto + spec + envio + pago en un solo mensaje.
+# Es el mensaje tipico de Martin que rompe el turno 1 o 2.
+hola, tenes memoria ram de 16gb? cuanto sale, cuanto tarda a rosario y aceptan transferencia?
+> no_contiene: no tengo | no cuento con
+dale, y si llevo dos con envio a rosario cuanto es todo?
+> contiene: Total
+me lo mandas hoy?
+> no_contiene: hoy mismo | llega hoy
