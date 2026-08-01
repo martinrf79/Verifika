@@ -319,10 +319,17 @@ _RE_DIA_ENTREGA = re.compile(
     rf"(?:{_ENTREGA}[^.!?\n]{{0,40}}?{_DIA}|{_DIA}[^.!?\n]{{0,40}}?{_ENTREGA})",
     re.IGNORECASE)
 
+# RETIRO EN LOCAL. El verbo suelto NO alcanza: "retiro el teclado del pedido" es
+# sacar un item, no invitar a buscarlo por el local. Ese falso positivo aparecio
+# en la cuarta tanda del banco repetido sobre una respuesta perfecta, y un rojo
+# falso ensena a ignorar el tablero. El verbo ahora exige el LUGAR cerca.
 _RE_RETIRO = re.compile(
     r"(?:retir[aoáe]\w*|pas\w*\s+a\s+(?:buscar|retirar)|"
-    r"ven[íi]\w*\s+a\s+(?:buscar|retirar)|acerc\w*\s+a\s+retir\w*|"
-    r"en\s+(?:el|nuestro)\s+local|en\s+la\s+sucursal|showroom|punto\s+de\s+retiro)",
+    r"ven[íi]\w*\s+a\s+(?:buscar|retirar)|acerc\w*\s+a\s+retir\w*)"
+    r"[^.!?\n]{0,40}?"
+    r"(?:local|sucursal|showroom|dep[oó]sito|oficina|direcci[oó]n)"
+    r"|en\s+(?:el|nuestro)\s+local|en\s+la\s+sucursal|showroom"
+    r"|punto\s+de\s+retiro",
     re.IGNORECASE)
 
 # Datos de PAGO fabricados (visto en real 4-jul: el solver invento banco,

@@ -314,3 +314,18 @@ def test_no_encontrado_no_se_convierte_en_no_vendemos_la_categoria():
     if r["estado"] == "no_encontrado":
         assert r.get("hay_en_la_categoria"), r
         assert "NO digas que no vendemos el rubro" in r["instruccion"]
+
+
+def test_una_correccion_del_pedido_no_es_un_no_a_la_venta():
+    """Banco repetido, cuarta tanda: "no, el teclado sacalo, dejame solo los
+    mouse" arranca con "no" y es lo contrario a un rechazo. El cierre lo leia
+    como desinteres, le avisaba al dueño que el lead estaba tibio, y le pegaba
+    al cliente "cuando quieras retomar, aca estoy" abajo del presupuesto que le
+    acababa de pasar."""
+    from app.core.cierre import es_no_interesado
+    assert not es_no_interesado("no, el teclado sacalo, dejame solo los mouse")
+    assert not es_no_interesado("no, mejor agregame dos mouse")
+    # los NO de verdad siguen siendo no
+    assert es_no_interesado("no gracias")
+    assert es_no_interesado("no por ahora")
+    assert es_no_interesado("lo voy a pensar")

@@ -50,12 +50,29 @@ _NEG_FRASES_RE = re.compile(
     re.IGNORECASE)
 
 
+# UNA CORRECCION DEL PEDIDO NO ES UN NO A LA VENTA. "no, el teclado sacalo,
+# dejame solo los mouse" empieza con "no" y es exactamente lo contrario a un
+# rechazo: el cliente esta ajustando lo que va a comprar. Cazado por el banco
+# repetido, cuarta tanda: el cierre lo leia como desinteres, le avisaba al dueño
+# que el lead estaba tibio y le pegaba al cliente "cuando quieras retomar, aca
+# estoy" abajo del presupuesto que le acababa de pasar.
+_CORRIGE_PEDIDO_RE = re.compile(
+    r"\b(?:sac[aá]\w*|quit[aá]\w*|elimin[aá]\w*|borr[aá]\w*|agreg[aá]\w*|"
+    r"sum[aá]\w*|pon[eé]\w*|cambi[aá]\w*|dej[aá]\w*|mejor|en\s+vez\s+de|"
+    r"en\s+lugar\s+de|solo\s+(?:el|la|los|las)|nada\s+m[aá]s\s+(?:el|la))\b",
+    re.IGNORECASE)
+
+
 def es_no_interesado(respuesta: str) -> bool:
     """True si la respuesta del cliente denota un no o falta de interes. Determinista:
     detecta la negacion al inicio ('no', 'no gracias') o frases de postergacion
-    ('todavia no', 'mas adelante', 'lo pienso'). Todo lo demas NO es un no."""
+    ('todavia no', 'mas adelante', 'lo pienso'). Todo lo demas NO es un no.
+
+    Y una correccion del pedido NUNCA es un no, aunque arranque con "no"."""
     t = (respuesta or "").strip()
     if not t:
+        return False
+    if _CORRIGE_PEDIDO_RE.search(t):
         return False
     if _NEG_INICIO_RE.match(t):
         return True
