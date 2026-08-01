@@ -49,9 +49,14 @@ TIENDA = "verifika_prod"
 _CORRIDAS = Path(__file__).resolve().parent / "corridas"
 
 # Lo que el modelo NO puede escribir de su cabeza en prosa libre.
-RE_PLATA = re.compile(
-    r"\$|%|\bpesos\b|\bd[oó]lares\b|\b\d[\d.]{3,}\b|\b\d+\s*(?:mil|lucas|palos)\b",
-    re.IGNORECASE)
+# LA PLATA SE IMPORTA, NO SE COPIA. La leccion del 31-jul: la misma regla
+# escrita en dos lugares -el banco y la poda del codigo- quedo distinta, y la
+# peor combinacion posible es que uno marque y el otro no pode. Este banco
+# audita EXACTAMENTE lo que el codigo vivo considera plata. Se cazo aca mismo:
+# el banco marcaba "100% originales" que el codigo ya no poda.
+def _re_plata():
+    from app.core.generador_v2 import _RE_PLATA
+    return _RE_PLATA
 RE_STOCK = re.compile(
     r"\b\d+\s*(?:unidades?|en stock|disponibles?)\b|\bstock\s*:?\s*\d+", re.IGNORECASE)
 RE_PLAZO = re.compile(
@@ -59,8 +64,9 @@ RE_PLAZO = re.compile(
 RE_SPEC_CIFRA = re.compile(
     r"\b\d+\s*(?:gb|tb|mb|hz|dpi|mah|w|pulgadas|\"|cm|kg|g)\b", re.IGNORECASE)
 
-REGLAS = (("plata", RE_PLATA), ("stock", RE_STOCK),
-          ("plazo", RE_PLAZO), ("spec", RE_SPEC_CIFRA))
+def _reglas():
+    return (("plata", _re_plata()), ("stock", RE_STOCK),
+            ("plazo", RE_PLAZO), ("spec", RE_SPEC_CIFRA))
 
 # Los dos unicos tipos que redacta el modelo. El resto lo escribe el codigo.
 TIPOS_DEL_MODELO = ("prosa", "criterio")
@@ -141,7 +147,7 @@ def _violaciones_regla_c(fragmentos: list, universo=None) -> list[str]:
         if not txt:
             continue
         auditable = _sin_nombres(txt, universo)
-        for nombre, patron in REGLAS:
+        for nombre, patron in _reglas():
             if patron.search(auditable):
                 frase = next((o for o in re.split(r"(?<=[.!?])\s+", txt)
                               if patron.search(_sin_nombres(o, universo))), txt)
