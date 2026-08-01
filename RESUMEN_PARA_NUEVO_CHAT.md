@@ -4,6 +4,55 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 1-ago-2026 — LA REGLA C, AUDITADA CORRIENDO (EL LOOP) ====**
+
+**LA REGLA C, acordada con Martin y ya vigente:**
+    EL DATO LO ESCRIBE SIEMPRE EL CODIGO.
+    LA VENTA LA ESCRIBE SIEMPRE EL MODELO.
+    LA FUENTE APORTA MATERIAL, NUNCA LA REDACCION FINAL.
+
+**EL METODO: LOOP, NO PROMPT.** `banco_pruebas/loop_solver.py` arma preguntas
+desde la fuente real, las corre por el camino VIVO con la clave paga y audita
+CADA FRAGMENTO que el solver emitio -no la respuesta final-: en `prosa` y
+`criterio`, los dos unicos que redacta el modelo, no puede haber plata, stock,
+plazo ni cifra de spec. Se corre, se arregla, se vuelve a correr.
+    `python3 banco_pruebas/loop_solver.py 20`
+Tres vueltas corridas (12, 20, 20 preguntas): **cero caidas, cero alucinaciones**.
+
+**LO QUE ENCONTRO, todo deployado en la revision agente-bot-00393-q52:**
+1. **EL JUEZ BORRABA UN NUMERO QUE ESTAMPO EL CODIGO.** El peor. Ante "2
+   almacenamientos y 1 auricular, cuanto es todo con envio a mendoza" el codigo
+   armo el presupuesto con el envio desde la tabla real y **el juez lo marco sin
+   respaldo y lo borro**: al cliente le llegaba prosa generica sin un numero,
+   justo donde el numero ERA la respuesta. La fase 5 miraba lo que el juez
+   ENSUCIA, nunca lo que se LLEVA. Ahora se corta contra los montos.
+2. **La ficha contestaba y el codigo le pegaba prosa generica encima**: estampaba
+   las medidas y el contenido de la caja y abajo decia "decime el modelo y el
+   dato que te importa". El fragmento ficha no lleva `tema`, asi que la celda
+   figuraba sin cubrir. Se corta contra el REGISTRO del turno.
+3. **"100% conforme" se podaba como si fuera plata** y la frase que tranquiliza
+   antes de una devolucion desaparecia en silencio.
+4. **El banco tenia su propia definicion de plata** y quedo distinta de la del
+   codigo: la misma leccion del 31-jul, otra vez. Ahora la importa.
+
+**EL INFORME DE LO QUE SOBRA, medido:**
+- **3.535 lineas en 11 modulos existen para CORREGIR lo que escribio el modelo**,
+  contra 8.073 que construyen la respuesta. Casi un tercio es correccion.
+- **Son 3 llamadas al modelo por turno**, no 5: interprete, solver y juez. Una se
+  fue sola al arreglar el 400 del schema; la reescritura solo dispara si hay algo
+  que arreglar.
+- **El candidato a salir es el JUEZ.** Con el dato estampado y ahora protegido de
+  que nadie lo borre, su trabajo real se reduce a prosa. El loop puede medir si
+  la respuesta empeora sin el.
+
+**LO QUE FALTA PARA QUE C ESTE COMPLETO, y es de codigo, no de prompt:** hoy
+`_poda_prosa` saca SOLO plata. Specs, plazos y stock escritos por el modelo
+pasan. Cerrar ese hueco es extender la poda a los tres; el loop ya esta armado
+para probar que no rompe las respuestas de spec, que es lo que se rompio cuando
+se intento en julio. **Pendiente del OK de Martin.**
+
+---
+
 **==== 31-jul-2026 (cierre) — DEPLOYADO Y MEDIDO: QUE ES FIRME Y QUE NO ====**
 
 **DEPLOYADO Y VERIFICADO.** Revision **agente-bot-00392-wxr**, cero errores, dos
