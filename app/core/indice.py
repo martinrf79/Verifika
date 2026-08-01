@@ -255,6 +255,30 @@ def celda_producto(nombre: str) -> dict | None:
     return None
 
 
+# QUE CELDA CONTESTA CADA CAMPO DE LA FICHA. La ficha estampa el dato del
+# producto desde la fuente; esta tabla dice QUE PREGUNTA quedo contestada con
+# eso, para que el turno no vuelva a pegar la prosa generica de esa misma
+# pregunta abajo. Vive aca y no en el renderizador porque es conocimiento de la
+# fuente -que responde que-, no de como se arma el texto.
+# Conservador a proposito: solo los campos donde la ficha contesta LA MISMA
+# pregunta. `garantia` queda afuera: la ficha dice cuantos meses, y la politica
+# agrega como se gestiona, que es otra cosa y suma.
+CELDA_DE_CAMPO_FICHA = {
+    "caracteristicas": "especificaciones",
+    "specs": "especificaciones",
+    "medidas": "especificaciones",
+    "contenido_caja": "contenido_caja",
+    "material": "material_composicion",
+    "procedencia": "origen_procedencia",
+    "compatibilidad": "compatibilidad",
+}
+
+
+def celda_de_campo(campo: str) -> str:
+    """La celda que queda contestada cuando la ficha estampa este campo."""
+    return CELDA_DE_CAMPO_FICHA.get(str(campo or "").strip(), "")
+
+
 def inventario(tienda_id=None) -> dict:
     """QUE SABE CONTESTAR EL SISTEMA, contado por fuente. Es el mapa de la fuente
     unica: si una fuente deja de cargar, se ve el cero acá en vez de descubrirlo

@@ -943,8 +943,14 @@ _RE_DIGITO = re.compile(r"\d")
 # PLATA en la prosa: precio, total, monto o porcentaje. Un numero de 4 o mas
 # digitos (con o sin puntos) es plata en este catalogo; uno chico (12 meses,
 # 128GB, 2 unidades) no lo es y se deja pasar.
+# El `%` cuenta como plata salvo el 100%, que no es un descuento sino la
+# muletilla de confianza ("que estés 100% conforme", "100% originales"). El loop
+# del solver del 31-jul lo cazo saliendo al cliente: la poda por ORACION se
+# llevaba entera la frase que tranquiliza antes de una devolucion, sin que nadie
+# lo viera salvo por el radar. Ningun descuento real de esta tienda es del 100%.
 _RE_PLATA = re.compile(
-    r"\$|%|\bpesos\b|\bd[oó]lares\b|\b\d[\d.]{3,}\b|\b\d+\s*(?:mil|lucas|palos)\b",
+    r"\$|\b(?!100\b)\d{1,3}\s*%|\bpesos\b|\bd[oó]lares\b|\b\d[\d.]{3,}\b"
+    r"|\b\d+\s*(?:mil|lucas|palos)\b",
     re.IGNORECASE)
 
 
@@ -1405,7 +1411,9 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
     # cuenta y el indice solo las nombraba en un string, o sea que la relacion
     # celda-funcion no vivia en ningun lado. Si el indice no las tiene se cae al
     # import directo: la cuenta del cliente no se pierde por un problema de tabla.
-    from app.core.indice import resolver as _resolver_celda, registrar as _reg
+    from app.core.indice import (resolver as _resolver_celda,
+                                 registrar as _reg, usadas as _usadas,
+                                 celda_de_campo as _celda_de_campo)
     from app.core.tools import (calculate_total as _ct_directo,
                                 cotizar_envio as _ce_directo)
     calculate_total = _resolver_celda("total") or _ct_directo
@@ -1652,6 +1660,14 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
                     if v:
                         linea.append("  " + v)
                         _registrar(c)
+                        # ...y la CELDA que ese campo contesta, que no siempre
+                        # se llama igual: el campo `material` contesta
+                        # `material_composicion` y `medidas` contesta
+                        # `especificaciones`. Sin esto el turno estampa el dato
+                        # y abajo le pega la prosa generica de la misma
+                        # pregunta.
+                        if (_cel := _celda_de_campo(c)):
+                            _registrar(_cel)
                 if len(linea) > 1:
                     partes.append("\n".join(linea))
                 # La ficha CONTESTA: si la spec preguntada no figura en la
@@ -1789,6 +1805,17 @@ def renderizar(fragmentos, universo, estado, tienda_id, trace_id=None,
             for _k in ("criterio_id", "tema", "categoria"):
                 if f.get(_k):
                     _cub.add(str(f[_k]))
+        # LA FICHA CUBRE LO QUE CONTESTO. Un fragmento ficha no lleva `tema` ni
+        # `categoria` -lleva campos-, asi que la celda que acaba de contestar
+        # figuraba SIN CUBRIR y se le appendeaba la prosa generica encima.
+        # Salida medida el 31-jul en el loop del solver: el bot estampo las
+        # medidas y el contenido de la caja desde la fuente, y abajo le pego
+        # "las especificaciones completas estan en la ficha de cada producto,
+        # decime el modelo y el dato que te importa". Le contesta y en el mismo
+        # mensaje le pide lo que ya contesto. Se corta contra el REGISTRO del
+        # turno, que es dato duro -que celda contesto-, no contra la redaccion:
+        # perseguir la frase es perder, el modelo la escribe distinta cada vez.
+        _cub |= set(_usadas(meta if isinstance(meta, dict) else {}))
         # ...y tambien esta CUBIERTA la categoria cuyo dato el codigo YA estampo
         # en este mismo mensaje, aunque ningun fragmento la lleve rotulada. El
         # fragmento de calculo no tiene `tema`, asi que `costo_envio` figuraba
