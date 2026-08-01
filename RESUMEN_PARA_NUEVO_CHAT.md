@@ -45,11 +45,38 @@ Tres vueltas corridas (12, 20, 20 preguntas): **cero caidas, cero alucinaciones*
   que nadie lo borre, su trabajo real se reduce a prosa. El loop puede medir si
   la respuesta empeora sin el.
 
-**LO QUE FALTA PARA QUE C ESTE COMPLETO, y es de codigo, no de prompt:** hoy
-`_poda_prosa` saca SOLO plata. Specs, plazos y stock escritos por el modelo
-pasan. Cerrar ese hueco es extender la poda a los tres; el loop ya esta armado
-para probar que no rompe las respuestas de spec, que es lo que se rompio cuando
-se intento en julio. **Pendiente del OK de Martin.**
+**LA REGLA C QUEDO COMPLETA Y DEPLOYADA (revision agente-bot-00394-x2n).** La
+prosa del modelo ya no escribe NINGUN dato duro: ni plata, ni stock, ni plazo,
+ni cifra de spec. Cada uno sale por su fragmento -la ficha estampa la spec, la
+linea de producto el stock, la calculadora el plazo-.
+
+**DOS PASADAS, y la diferencia es la que evita repetir el error del 24-jul:**
+- **La PLATA se va SIEMPRE**, sin valvula: su fragmento la estampa en el mismo
+  mensaje, asi que el numero llega igual.
+- **El resto tiene VALVULA**: si podarlo se lleva todo lo que quedaba, se
+  devuelve lo que habia. Una spec puede no tener fragmento en ese turno, y ahi
+  podar deja la respuesta MUDA, que es lo que rompio en julio.
+- **El nombre del producto no es un dato**: "DataTraveler Exodia 1TB" lleva
+  cifra en el nombre y nombrarlo es lo que hace un vendedor. Los nombres del
+  turno se descuentan antes de mirar, con un regex compilado una vez.
+
+**VERIFICADO EN LOS DOS PISOS:** 773 tests verdes con el numero en 2364, y
+corrida VIVA de 8 preguntas con **cero violaciones y cero caidas**, con la ficha
+contestando las medidas, el stock saliendo como "10 en stock" del catalogo y la
+prosa diciendo "tenemos stock disponible" sin numero.
+
+**LA LECCION:** la primera version tenia la valvula mal puesta y dejaba pasar la
+plata cuando ocupaba toda la frase. La cazaron CINCO tests del gate, no un
+cliente.
+
+**LO SIGUIENTE, ya sin discutir:** medir si el JUEZ sigue haciendo falta. Con el
+dato protegido de que nadie lo escriba (regla C) ni lo borre (fase 5), su
+trabajo se redujo a prosa. El loop puede decir si la respuesta empeora sin el.
+
+**DEFECTO NUEVO ANOTADO, visto en la corrida viva:** ante "envio a Rosario" el
+bot da los $7.000 correctos de Santa Fe y en la frase siguiente pide el codigo
+postal para confirmar la tarifa exacta. Da el dato y lo relativiza; es la
+familia que ya mide el criterio SIRVE, con una redaccion nueva.
 
 ---
 
