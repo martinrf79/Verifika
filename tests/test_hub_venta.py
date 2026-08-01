@@ -348,3 +348,46 @@ def test_el_anuncio_con_su_cuenta_abajo_se_respeta():
     texto = ("Te paso el presupuesto:\n"
              "Presupuesto:\n- 1x Mouse: $8.500 c/u = $8.500\nTotal: $8.500")
     assert HV._sin_anuncio_vacio(texto, "t1") == texto
+
+
+def test_no_se_niega_una_categoria_que_la_herramienta_acaba_de_traer():
+    """La alucinacion mas cara que hay: la herramienta devolvio memorias RAM
+    reales del catalogo y el bot contesto "no vendemos modulos de memoria RAM
+    sueltos". Le cierra la puerta a un cliente que queria comprar algo que
+    tenemos."""
+    llamadas = [{"herramienta": "buscar_productos", "pedido": {},
+                 "resultado": {"estado": "encontrado", "productos": [
+                     {"id": "RAM0001", "nombre": "Kingston Fury",
+                      "categoria": "memoria ram", "precio_ars": 34500}]}}]
+    texto = ("Te cuento que no vendemos modulos de memoria ram sueltos. "
+             "Tengo notebooks que ya vienen con 16GB.")
+    salida = HV._sin_negar_lo_traido(texto, llamadas, "t1")
+    assert "no vendemos" not in salida.lower()
+    assert "Tengo notebooks" in salida
+
+
+def test_el_no_honesto_de_lo_que_no_trajo_ninguna_herramienta_se_respeta():
+    llamadas = [{"herramienta": "buscar_productos", "pedido": {},
+                 "resultado": {"estado": "no_vendemos", "pedido": "heladera"}}]
+    texto = "No vendemos heladeras, nuestro rubro es tecnologia."
+    assert HV._sin_negar_lo_traido(texto, llamadas, "t1") == texto
+
+
+def test_el_precio_de_lo_ya_mostrado_no_se_poda():
+    """Turno mudo del banco repetido: "el primero que me mostraste, cuanto era?"
+    terminaba con el precio podado y al cliente le llegaba solo "¿Querés que
+    avancemos?". El numero era real, lo trajo una herramienta en un turno
+    anterior; lo que faltaba era reconocerlo como respaldado."""
+    vistos = [{"id": "TEC0019", "nombre": "Teclado Genius", "precio": 12000}]
+    texto = "El primero que te mostre es el Teclado Genius, sale $12.000."
+    salida = HV._sin_plata_inventada(texto, [], "", "t1", vistos=vistos)
+    assert "$12.000" in salida
+
+
+def test_el_renglon_escrito_a_mano_tambien_cuenta_como_cuenta():
+    """El modelo escribio "1 x Teclado Genius KB-110X Blanco: $12.000" a mano.
+    La primera version del patron pedia el guion y la equis pegada."""
+    texto = "Te preparé esto:\n1 x Teclado Genius KB-110X Blanco: $12.000"
+    salida = HV._cuenta_no_retipeada(texto, hubo_calculo=False, previo="",
+                                     trace_id="t1")
+    assert "$12.000" not in salida

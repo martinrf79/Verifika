@@ -354,7 +354,8 @@ _RE_ID_INTERNO = re.compile(
 
 
 def _sin_plata_inventada(texto: str, llamadas: list, bloque: str,
-                         trace_id: str, previo: str = "") -> str:
+                         trace_id: str, previo: str = "",
+                         vistos: list | None = None) -> str:
     """LA REGLA. Todo peso que salga tiene que haberlo calculado el codigo.
 
     Es una sola, y reemplaza a los once verificadores del camino anterior. Con
@@ -373,6 +374,16 @@ def _sin_plata_inventada(texto: str, llamadas: list, bloque: str,
     # precios (charla viva del 2-ago, turnos 3, 4 y 6).
     if previo:
         respaldados |= H.montos_respaldados([previo])
+    # LO YA MOSTRADO TAMBIEN ESTA RESPALDADO. Esos precios los trajo una
+    # herramienta en un turno anterior y los estampo el codigo desde el
+    # catalogo. Sin esto, "el primero que me mostraste, cuanto era?" terminaba
+    # con el precio podado y el turno MUDO: al cliente le llego solo "¿Querés
+    # que avancemos?" (banco repetido, guion 70). El numero era real; lo que
+    # faltaba era reconocerlo.
+    if vistos:
+        respaldados |= {int(p["precio"]) for p in vistos
+                        if isinstance(p, dict)
+                        and isinstance(p.get("precio"), (int, float))}
     fuera = H.plata_inventada(texto, respaldados)
     if not fuera:
         return texto
@@ -536,6 +547,59 @@ _RE_NARRACION = re.compile(
     r"seg[uú]n\s+el\s+sistema)\b[^.!?\n]*[.!?]?")
 
 
+_RE_NIEGA = re.compile(
+    r"no\s+(?:vendemos|trabajamos|manejamos|comercializamos|tenemos|"
+    r"contamos\s+con|ofrecemos|dispon)", re.IGNORECASE)
+
+
+def _sin_negar_lo_traido(texto: str, llamadas: list, trace_id: str) -> str:
+    """NO SE NIEGA UNA CATEGORIA QUE LA HERRAMIENTA ACABA DE TRAER.
+
+    Banco repetido del 1-ago, guion de pregunta combinada: el cliente pregunto
+    por memoria RAM de 16GB, la herramienta devolvio memorias REALES del
+    catalogo -las nuestras son de 8- y el bot contesto "no vendemos modulos de
+    memoria RAM sueltos". Con las memorias delante. Es la alucinacion mas cara
+    que hay: le cierra la puerta a un cliente que queria comprar algo que
+    tenemos.
+
+    Es la misma familia que la regla de la plata: se contrasta la salida contra
+    exactamente lo que se le inyecto. Si el texto niega el rubro de un producto
+    que vino en los resultados, esa oracion se va."""
+    categorias = set()
+    for l in (llamadas or []):
+        r = l.get("resultado") or {}
+        if r.get("estado") in ("no_vendemos", "no_encontrado"):
+            continue
+        for p in (r.get("productos") or []):
+            if isinstance(p, dict) and p.get("categoria"):
+                categorias.add(H._norm(p["categoria"]))
+        prod = r.get("producto")
+        if isinstance(prod, dict) and prod.get("categoria"):
+            categorias.add(H._norm(prod["categoria"]))
+    if not categorias:
+        return texto
+    fuera = []
+    for m in _RE_ORACIONES.finditer(texto or ""):
+        frase = m.group(0)
+        if not _RE_NIEGA.search(frase):
+            continue
+        baja = H._norm(frase)
+        for cat in categorias:
+            # la categoria entera o su singular: "memoria ram", "memorias ram"
+            if cat in baja or cat.rstrip("s") in baja:
+                fuera.append(frase)
+                break
+    if not fuera:
+        return texto
+    limpio = texto
+    for frase in fuera:
+        limpio = limpio.replace(frase, "")
+    log.error("hub_venta_nego_lo_traido", trace_id=trace_id,
+              categorias=sorted(categorias)[:4],
+              frases=[f[:70] for f in fuera[:3]])
+    return re.sub(r"\n{3,}", "\n\n", limpio).strip()
+
+
 def _sin_narracion_interna(texto: str, trace_id: str) -> str:
     """El cliente no ve la cocina. La regla esta en el prompt y el modelo igual
     la rompe: "encontre varias opciones y el sistema me indica que hay modelos
@@ -584,10 +648,15 @@ def _sin_markdown(texto: str) -> str:
     return t
 
 
+# Un renglon de cuenta, lo escriba como lo escriba: con guion o sin el, "2x" o
+# "1 x". La primera version pedia el guion y la equis pegada, y se le escapo
+# "1 x Teclado Genius KB-110X Blanco: $12.000" escrito a mano por el modelo
+# (banco repetido, guion 71).
 _RE_RENGLON_CUENTA = re.compile(
-    r"(?im)^\s*(?:presupuesto\s*:|-\s*\d+x\s|subtotal\s*:|env[ií]o?\s*[(:]|"
-    r"total\s*:|total final\s*:|pago dividido\s*:|-\s*(?:mercado pago|"
-    r"transferencia)\s*\()")
+    r"(?im)^\s*(?:presupuesto\s*:|subtotal\s*:|env[ií]o?\s*[(:]|"
+    r"total\s*:|total final\s*:|pago dividido\s*:"
+    r"|-?\s*\d+\s*x\s+.+:\s*\$"
+    r"|-\s*(?:mercado pago|transferencia)\s*\()")
 
 
 def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
@@ -811,11 +880,13 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     texto = _sin_json_filtrado(texto, trace_id)
     texto = _sin_markdown(texto)
     texto = _sin_plata_inventada(texto, llamadas, bloque, trace_id,
-                                 previo=conv.get("ultimo_presupuesto") or "")
+                                 previo=conv.get("ultimo_presupuesto") or "",
+                                 vistos=estado.get("productos_vistos") or [])
     texto = _sin_cobro_inventado(texto, tienda_id, trace_id)
     texto = _cuenta_no_retipeada(
         texto, hubo_calculo=bool(bloque),
         previo=conv.get("ultimo_presupuesto") or "", trace_id=trace_id)
+    texto = _sin_negar_lo_traido(texto, llamadas, trace_id)
     texto = _sin_descuento_inventado(texto, trace_id)
     texto = _sin_narracion_interna(texto, trace_id)
     texto = _sin_anuncio_vacio(texto, trace_id)
