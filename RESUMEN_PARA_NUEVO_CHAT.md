@@ -4,6 +4,60 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las cuatro capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 1-ago-2026 (noche) — LO QUE EL INTERPRETE RESUELVE, LO EJECUTA EL CODIGO ====**
+
+Revision **agente-bot-00396-kv8**, cero errores. 773 tests, numero 2364.
+
+**LA CAUSA, y es UNA sola disfrazada de muchas.** Martin lo planteo asi: cada
+sesion aparece una "causa raiz" distinta. La causa es que **el sistema le pide
+al modelo que decida cosas que el codigo ya sabe**, y los controles miran si lo
+que el modelo escribio esta respaldado, nunca si USO lo que ya estaba resuelto.
+Por eso el sintoma cambia de lugar y parece un problema nuevo cada vez.
+
+**LA CHARLA REAL que lo mostro (trace 308d61c5).** "2 memorias 2 auriculares y 2
+mauses, 1 memoria y un auricular a berrotaran, 1 auricular y 1 mouse a
+concordia, el resto a posadas. Abonaria un 20% con mercado y el resto
+transferencis." **Cinco errores en dos turnos**, con cero errores de ejecucion y
+el juez dando limpio las dos veces.
+
+**LOS SIETE ARREGLOS (5 de la charla + 2 que apareceron al probarla):**
+1. **El envio perdido.** El interprete leyo los TRES destinos y quedo escrito en
+   el log; el solver emitio dos y el codigo le hizo caso. Cobro 2 envios de 3:
+   $7.500 de menos. `_destinos_de_interp` existia y **solo escribia un log**.
+2. **El pago.** Corria con `pago=None` y el cierre le preguntaba como pagaba,
+   cuando el cliente acababa de decirlo. Ahora lo declara el INTERPRETE, atado a
+   los dos medios: el regex pedia las palabras exactas y con "mercado" a secas y
+   una `s` de mas no lo pescaba.
+3. **El desglose por destino.** Lo armaba un regex sobre el mensaje crudo que de
+   seis productos a tres destinos leyo "2 auriculares". `solicitud_nueva` ahora
+   tiene campo `destino` por renglon: sin el, un pedido repartido con productos
+   AUN NO MOSTRADOS no tenia donde decir que va a cada lado.
+4. **La exclusion por origen.** El filtro tomaba los primeros 4 caracteres de la
+   frase: con "partes chinas" buscaba "part" contra el pais de la marca y no
+   matcheaba NUNCA. El cliente recibia el MISMO presupuesto. Hay 162 productos
+   de marca china sobre 880: habia con que cambiar.
+5. **Las cantidades.** Al aplicar la exclusion el modelo rehizo el pedido con UNA
+   de cada cosa; el cliente habia pedido dos.
+6. **El verificador de FAQ pisaba un numero ESTAMPADO.** Vio el 80% del reparto
+   de pago como cifra sin respaldo y lo cambio por el 10% del descuento: salio
+   "transferencia (10%): $88.000".
+7. **El juez APLASTABA el presupuesto.** Reescribia el mensaje entero y devolvia
+   la cuenta en un parrafo corrido. Los montos seguian todos, asi que el control
+   de montos no vio nada y al cliente le llego ilegible.
+
+**MAS UN CONTROL NUEVO:** el detalle no puede contradecir la cuenta. "El resto va
+a Posadas" se resuelve por resta y el modelo a veces la hace mal -en una corrida
+repartio SIETE unidades de un pedido de seis-. Si no cierra, no se muestra.
+
+**LA LECCION DE METODO, dicha por Martin:** se deployo con 2 de 5 errores
+arreglados. Eso esta mal y no se repite: se cierran todos y se deploya UNA vez.
+
+**LO QUE QUEDA ABIERTO:** cuando el interprete resuelve mal "el resto" (2 de 4
+corridas), el desglose no sale. La cuenta y los envios quedan bien; falta el
+detalle. Es del interprete, no del codigo.
+
+---
+
 **==== 1-ago-2026 — LA REGLA C, AUDITADA CORRIENDO (EL LOOP) ====**
 
 **LA REGLA C, acordada con Martin y ya vigente:**
