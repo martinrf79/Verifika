@@ -54,19 +54,9 @@ _CORRIDAS = Path(__file__).resolve().parent / "corridas"
 # peor combinacion posible es que uno marque y el otro no pode. Este banco
 # audita EXACTAMENTE lo que el codigo vivo considera plata. Se cazo aca mismo:
 # el banco marcaba "100% originales" que el codigo ya no poda.
-def _re_plata():
-    from app.core.generador_v2 import _RE_PLATA
-    return _RE_PLATA
-RE_STOCK = re.compile(
-    r"\b\d+\s*(?:unidades?|en stock|disponibles?)\b|\bstock\s*:?\s*\d+", re.IGNORECASE)
-RE_PLAZO = re.compile(
-    r"\b\d+\s*(?:a|-)?\s*\d*\s*(?:d[ií]as?|horas?|semanas?|meses)\b", re.IGNORECASE)
-RE_SPEC_CIFRA = re.compile(
-    r"\b\d+\s*(?:gb|tb|mb|hz|dpi|mah|w|pulgadas|\"|cm|kg|g)\b", re.IGNORECASE)
-
 def _reglas():
-    return (("plata", _re_plata()), ("stock", RE_STOCK),
-            ("plazo", RE_PLAZO), ("spec", RE_SPEC_CIFRA))
+    from app.core.generador_v2 import _RE_PLATA, _RE_DATO_DURO
+    return (("plata", _RE_PLATA), ("dato duro", _RE_DATO_DURO))
 
 # Los dos unicos tipos que redacta el modelo. El resto lo escribe el codigo.
 TIPOS_DEL_MODELO = ("prosa", "criterio")

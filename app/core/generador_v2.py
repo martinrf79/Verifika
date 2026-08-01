@@ -953,6 +953,18 @@ _RE_PLATA = re.compile(
     r"|\b\d+\s*(?:mil|lucas|palos)\b",
     re.IGNORECASE)
 
+# EL RESTO DEL DATO DURO que la prosa del modelo tampoco escribe (regla C
+# completa, 1-ago). Cada uno tiene su fragmento y su fuente:
+#   stock -> la linea de producto, desde el catalogo
+#   plazo -> la calculadora de envio, desde la tabla de tarifas
+#   spec  -> la ficha, desde el mapa de specs del producto
+# El banco los audita con esta MISMA definicion, importada, no copiada.
+_RE_DATO_DURO = re.compile(
+    r"\b\d+\s*(?:unidades?|en stock|disponibles?)\b|\bstock\s*:?\s*\d+"
+    r"|\b\d+\s*(?:a|-)?\s*\d*\s*(?:d[ií]as?|horas?|semanas?|meses)\b"
+    r"|\b\d+\s*(?:gb|tb|mb|hz|dpi|mah|w|pulgadas|cm|kg)\b",
+    re.IGNORECASE)
+
 
 def _texto_ficha_limpio(texto, tope=220):
     """Descripcion apta cliente: sin cortes a mitad de palabra ('Uso rec',
@@ -1210,6 +1222,29 @@ def estampar_honestidad_specs(texto, mensaje, prod, variantes=None,
     return nuevo
 
 
+def _regex_nombres(nombres):
+    """UN regex con los nombres de producto del turno y sus tramos con cifra.
+
+    Se arma una sola vez por fragmento y se cachea por turno: el universo puede
+    traer decenas de productos y esta poda corre en cada respuesta. Los nombres
+    van de mas largo a mas corto para que el nombre completo gane sobre su
+    tramo, y se topea en 60 para que un listado grande no arme un regex enorme.
+    """
+    partes = []
+    for nom in list(nombres or [])[:60]:
+        n = str(nom or "").strip()
+        if len(n) <= 3:
+            continue
+        partes.append(re.escape(n))
+        for tramo in re.findall(r"\S*\d\S*", n):
+            if len(tramo) > 1:
+                partes.append(re.escape(tramo))
+    if not partes:
+        return None
+    partes.sort(key=len, reverse=True)
+    return re.compile("|".join(partes), re.IGNORECASE)
+
+
 def _poda_prosa(texto, nombres_universo=None):
     """La prosa no puede traer PLATA: precio, total, porcentaje o monto se
     descartan (van por su fragmento, estampados desde la fuente). SI puede
@@ -1227,15 +1262,58 @@ def _poda_prosa(texto, nombres_universo=None):
     parrafo completo y al cliente le llego una lista de precios con el mouse
     cambiado y CERO explicacion de por que. Peor que no contestar: da a entender
     que la seleccion es menos china sin decir la verdad. Ahora se descarta la
-    oracion que trae la plata y sobrevive el razonamiento, que es lo que vende."""
+    oracion que trae la plata y sobrevive el razonamiento, que es lo que vende.
+
+    LA REGLA C, COMPLETA (1-ago). Hasta hoy esta poda sacaba SOLO plata, asi que
+    el stock, el plazo y la cifra de spec escritos por el modelo pasaban
+    derecho, y para atraparlos despues existian tres verificadores y una
+    reescritura. Ahora tambien salen por su fragmento: la ficha estampa la spec
+    desde la fuente, la linea de producto estampa el stock y la calculadora el
+    plazo. Lo que el modelo escriba de eso es memoria suya, y la memoria del
+    modelo es exactamente lo que alucina.
+
+    LA PLATA SE VA SIEMPRE; EL RESTO TIENE VALVULA, y la diferencia importa.
+    Un precio SIEMPRE tiene su fragmento -el codigo lo estampa desde la fuente
+    en el mismo mensaje-, asi que podarlo entero no deja al cliente sin nada:
+    el numero llega igual, estampado. Una spec o un plazo pueden no tener
+    fragmento en ese turno, y ahi podar todo deja la respuesta MUDA: es
+    exactamente lo que paso el 24-jul, cuando el cliente pregunto memoria y
+    disco y le volvio una linea suelta. Por eso, si podar el dato duro se lleva
+    TODO lo que quedaba, se devuelve lo que habia: peor que un dato que el turno
+    igual audita es un cliente sin respuesta.
+
+    EL NOMBRE DEL PRODUCTO NO ES UN DATO. "Kingston DataTraveler Exodia 1TB" o
+    "Redragon K552 RGB" llevan cifras en el nombre: llamar al producto por su
+    nombre es lo que hace un vendedor, no inventar una spec. Por eso los
+    nombres del universo se descuentan ANTES de mirar."""
     t = str(texto or "").strip()
     if not t:
         return ""
-    if not _RE_PLATA.search(t):
-        return t
-    oraciones = re.split(r"(?<=[.!?])\s+", t)
-    limpias = [o for o in oraciones if o.strip() and not _RE_PLATA.search(o)]
-    return " ".join(limpias).strip()
+    # Los nombres se compilan UNA vez por fragmento, no por oracion: el universo
+    # puede traer decenas de productos y esto corre en cada turno.
+    _rx_nombres = _regex_nombres(nombres_universo)
+
+    def _auditable(s):
+        """El texto sin los nombres de producto del turno."""
+        out = str(s or "")
+        return _rx_nombres.sub(" ", out) if _rx_nombres else out
+
+    def _oraciones(s):
+        return [o for o in re.split(r"(?<=[.!?])\s+", s) if o.strip()]
+
+    # 1. LA PLATA, sin valvula.
+    if _RE_PLATA.search(_auditable(t)):
+        t = " ".join(o for o in _oraciones(t)
+                     if not _RE_PLATA.search(_auditable(o))).strip()
+        if not t:
+            return ""
+    # 2. EL RESTO DEL DATO DURO, con valvula.
+    if _RE_DATO_DURO.search(_auditable(t)):
+        quedan = [o for o in _oraciones(t)
+                  if not _RE_DATO_DURO.search(_auditable(o))]
+        if quedan:
+            t = " ".join(quedan).strip()
+    return t
 
 
 def _cat_real(nombre, tienda_id):
