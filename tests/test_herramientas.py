@@ -270,3 +270,16 @@ def test_el_contexto_va_por_herramienta_y_no_se_pisa():
         {"herramienta": "consultar_politica", "pedido": {}, "resultado":
             {"estado": "encontrado", "politica": "Envio gratis"}}])
     assert "no_encontrado" in ctx and "Envio gratis" in ctx
+
+
+def test_para_cerrar_solo_se_pide_el_nombre():
+    """Charla real del 1-ago: el bot pidio nombre completo, DNI y una direccion
+    por destino en el PRIMER mensaje. El DNI nunca estuvo en la lista, se lo
+    invento el modelo; y de la lista salieron telefono, direccion y forma de
+    pago, que se coordinan despues y no pueden frenar la venta."""
+    from app.core.cierre import CAMPOS_REQUERIDOS, CAMPOS_EXTRAIBLES, faltantes
+    assert CAMPOS_REQUERIDOS == ["nombre"]
+    assert "dni" not in CAMPOS_EXTRAIBLES
+    assert faltantes({"nombre": "Martin"}) == []
+    # los opcionales se siguen guardando si el cliente los dice
+    assert "direccion" in CAMPOS_EXTRAIBLES

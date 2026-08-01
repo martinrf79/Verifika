@@ -258,3 +258,50 @@ def test_el_dato_real_convive_con_el_inventado_sin_perder_el_bueno():
     assert "Banco Industrial Inventado" not in salida
     # con un dato real presente NO se pega la muletilla de "necesito el total"
     assert "necesito confirmarte" not in salida
+
+
+# ── 7. LO QUE CAZO LA CHARLA REAL POR WHATSAPP DEL 1-AGO ────────────────────
+def test_la_cuenta_no_se_puede_retipear_a_mano():
+    """El error visible de la charla real: el turno NO llamo a armar_presupuesto
+    y el modelo re-tipeo de memoria el presupuesto del turno anterior cambiando
+    el producto -donde iba la Kingston NEGRA escribio la BLANCA-. Los montos
+    eran los mismos y estaban respaldados, asi que la regla de la plata lo dejo
+    pasar con razon: no era plata inventada, era una CUENTA inventada alrededor
+    de plata real."""
+    previo = ("Presupuesto:\n"
+              "- 2x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: "
+              "$34.500 c/u = $69.000\nSubtotal: $69.000\nTotal: $69.000")
+    texto = ("Aca va:\n"
+             "- 2x Memoria ram Kingston Fury Beast DDR4 3200 8GB Blanco: "
+             "$34.500 c/u = $69.000\nSubtotal: $69.000\nTotal: $69.000\n"
+             "Quedo a la espera.")
+    salida = HV._cuenta_no_retipeada(texto, hubo_calculo=False, previo=previo,
+                                     trace_id="t1")
+    assert "Blanco" not in salida
+    assert "Negro" in salida and "Total: $69.000" in salida
+    assert "Quedo a la espera." in salida
+
+
+def test_la_cuenta_calculada_este_turno_no_se_toca():
+    texto = "Presupuesto:\n- 1x Mouse: $8.500 c/u = $8.500\nTotal: $8.500"
+    assert HV._cuenta_no_retipeada(
+        texto, hubo_calculo=True, previo="", trace_id="t1") == texto
+
+
+def test_la_cuenta_pegada_igual_al_previo_pasa_intacta():
+    previo = "Presupuesto:\n- 1x Mouse: $8.500 c/u = $8.500\nTotal: $8.500"
+    texto = "Te la repito:\n" + previo
+    salida = HV._cuenta_no_retipeada(texto, hubo_calculo=False, previo=previo,
+                                     trace_id="t1")
+    assert salida == texto
+
+
+def test_el_recorte_de_herramientas_se_loguea_no_es_silencioso(monkeypatch,
+                                                               caplog):
+    """Pidio ocho fichas, corrieron seis, y las dos que faltaron no aparecian en
+    ningun lado. Un corte en silencio es peor que el problema que evita."""
+    monkeypatch.setattr(H, "ejecutar", lambda n, a, t: {"estado": "ok"})
+    pedidos = [{"nombre": f"ficha_producto", "args": {"product_id": f"X{i}"}}
+               for i in range(12)]
+    r = asyncio.run(HV._ejecutar_en_paralelo(pedidos, TIENDA, "t1"))
+    assert len(r) == HV._MAX_HERRAMIENTAS

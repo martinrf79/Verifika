@@ -363,7 +363,7 @@ async def procesar_mensaje_para_lead(
         # Datos acumulados de turnos anteriores: se guardan junto con los de este
         # turno, asi el lead queda completo y no se re-pregunta lo ya dicho.
         prev = {k: v for k, v in (datos_previos or {}).items()
-                if v and k in cierre.CAMPOS_REQUERIDOS}
+                if v and k in cierre.CAMPOS_EXTRAIBLES}
         cambios = {**prev, **cambios}
         cambios["ultimo_mensaje"] = mensaje[:500]
         # El telefono es el contacto del canal, no un dato que el cliente tipea.
@@ -557,7 +557,7 @@ async def procesar_mensaje_para_lead(
                 return None, {"accion": "lead_fuerte_ya_captado",
                               "respuesta_directa": MENSAJE_PEDIDO_YA_TOMADO}
             prev = {k: v for k, v in (datos_previos or {}).items()
-                    if v and k in cierre.CAMPOS_REQUERIDOS}
+                    if v and k in cierre.CAMPOS_EXTRAIBLES}
             sembrados = {**prev, **{k: v for k, v in (datos_turno or {}).items() if v}}
             sembrados.setdefault("telefono", _contacto_del_canal(user_id, canal))
             lead_id = crear_lead(
@@ -611,7 +611,7 @@ async def procesar_mensaje_para_lead(
         # asi una direccion o un pago dados ANTES de la decision de compra ya estan
         # y no se vuelven a pedir.
         prev = {k: v for k, v in (datos_previos or {}).items()
-                if v and k in cierre.CAMPOS_REQUERIDOS}
+                if v and k in cierre.CAMPOS_EXTRAIBLES}
         sembrados = {**prev, **{k: v for k, v in (datos_turno or {}).items() if v}}
         # El telefono es el contacto del canal: se siembra siempre, asi el cierre
         # no lo pide aparte (ver _contacto_del_canal).

@@ -42,13 +42,15 @@ log = get_logger(__name__)
 settings = get_settings()
 
 _TIMEOUT_S = 14
+_MAX_HERRAMIENTAS = 8
 
 # ── LOS CANDADOS ─────────────────────────────────────────────────────────────
 # Las reglas viven en UN solo lugar y valen para las dos llamadas. Antes estaban
 # repartidas entre el prompt del interprete, el del solver y ocho guardas que
 # corrian despues sobre el texto ya escrito.
 SISTEMA = """Sos el asistente de ventas de {negocio}, una tienda argentina de
-tecnologia e informatica. Hablas en español argentino, de vos, calido y directo,
+tecnologia e informatica. Hablas en español argentino y de VOS: nunca "tu",
+"contigo" ni "tienes". Calido y directo,
 como un buen vendedor de mostrador: escuchas, recomendas y ayudas a decidir.
 
 REGLAS ABSOLUTAS:
@@ -67,9 +69,12 @@ REGLAS ABSOLUTAS:
 5. Si te preguntan si sos una persona, decis la verdad: sos un asistente
    automatico.
 6. No prometas nada que no puedas cumplir vos ahora: ni que un humano lo va a
-   llamar, ni que le vas a mandar algo despues, ni un dia de entrega. Si el
-   cliente decide comprar, pedile los datos que faltan y segui vos.
-7. Nunca le cuentes al cliente la cocina: ni que una herramienta fallo, ni que
+   llamar, ni que le vas a mandar algo despues, ni un dia de entrega.
+7. NUNCA le pidas datos personales por tu cuenta, y menos todavia un DNI: no
+   los necesitamos. Cuando el cliente quiera avanzar, llamas a tomar_pedido y el
+   sistema se encarga de pedir lo que falte. Vos no inventes que dato hace
+   falta.
+8. Nunca le cuentes al cliente la cocina: ni que una herramienta fallo, ni que
    el sistema no reconocio un id, ni que hubo un problema tecnico. Si algo no
    salio, pedile con naturalidad el dato que falta y segui la venta.
 
@@ -78,6 +83,11 @@ COMO ESCRIBIS:
   el bloque de presupuesto: "$8.500". Nunca los reescribas como "8500 ARS" ni
   "8500 pesos" ni los redondees.
 - Para WhatsApp: parrafos cortos, sin markdown, sin titulos, sin asteriscos.
+- CORTO. Fuera del presupuesto, tres o cuatro oraciones alcanzan. No repitas lo
+  que ya dice el presupuesto ni expliques lo que es evidente.
+- NO vuelvas a pegar el presupuesto entero en cada turno. Se pega cuando recien
+  se calcula, cuando el cliente lo pide o cuando cambio. Si ya se lo mandaste y
+  no cambio, referite a el en una linea y contesta lo que te preguntaron.
 - No repitas lo que ya dijiste en turnos anteriores.
 - Cerra siempre moviendo la venta: una pregunta util o el paso que sigue.
 - No nombres ids internos del catalogo como TEC0019. El cliente no los ve.
@@ -191,6 +201,11 @@ def _memoria_texto(estado: dict, history: list, tienda_id: str = "") -> str:
         if fichas:
             partes.append("Ficha de lo que ya esta en el pedido (dato REAL de "
                           "la fuente, contestá con esto):\n" + "\n".join(fichas))
+    presu = str(estado.get("presupuesto") or "").strip()
+    if presu:
+        partes.append("Presupuesto vigente, calculado por el codigo. Si lo "
+                      "volves a mostrar, pegalo TAL CUAL, no lo reescribas ni "
+                      "cambies un producto:\n" + presu)
     locs = estado.get("localidades_envio") or []
     if locs:
         partes.append("Destinos ya dados: " + ", ".join(locs))
@@ -273,12 +288,21 @@ async def _ejecutar_en_paralelo(pedidos: list, tienda_id: str,
     era una fila y el turno pagaba la suma de todas."""
     if not pedidos:
         return []
+    # El tope existe para que un modelo desbocado no dispare veinte consultas,
+    # pero CORTAR EN SILENCIO es peor que el problema que evita: el 1-ago pidio
+    # ocho fichas, se ejecutaron seis y las dos que faltaron no aparecian en
+    # ningun lado. Si se corta, se dice.
+    if len(pedidos) > _MAX_HERRAMIENTAS:
+        log.warning("hub_venta_pedidos_recortados", trace_id=trace_id,
+                    pidio=len(pedidos), corre=_MAX_HERRAMIENTAS,
+                    descartadas=[p["nombre"] for p in pedidos[_MAX_HERRAMIENTAS:]])
+    pedidos = pedidos[:_MAX_HERRAMIENTAS]
     tareas = [asyncio.to_thread(H.ejecutar, p["nombre"], p.get("args") or {},
                                 tienda_id)
-              for p in pedidos[:6]]
+              for p in pedidos]
     resultados = await asyncio.gather(*tareas, return_exceptions=True)
     llamadas = []
-    for p, r in zip(pedidos[:6], resultados):
+    for p, r in zip(pedidos, resultados):
         if isinstance(r, BaseException):
             log.warning("hub_venta_herramienta_excepcion", trace_id=trace_id,
                         herramienta=p["nombre"], error=str(r)[:160])
@@ -458,6 +482,53 @@ def _sin_markdown(texto: str) -> str:
     t = re.sub(r"\*\*(.+?)\*\*", r"\1", texto or "")
     t = re.sub(r"(?m)^\s*#{1,6}\s*", "", t)
     return t
+
+
+_RE_RENGLON_CUENTA = re.compile(
+    r"(?im)^\s*(?:presupuesto\s*:|-\s*\d+x\s|subtotal\s*:|env[ií]o?\s*[(:]|"
+    r"total\s*:|total final\s*:|pago dividido\s*:|-\s*(?:mercado pago|"
+    r"transferencia)\s*\()")
+
+
+def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
+                         trace_id: str) -> str:
+    """LA CUENTA NO SE ESCRIBE A MANO. Si el turno no la calculo, el modelo NO
+    puede redactarla: se le pone la del codigo, tal cual quedo.
+
+    Charla real del 1-ago por WhatsApp. El cliente pidio rearmar el precio, el
+    turno no llamo a `armar_presupuesto`, y el modelo re-tipeo de memoria el
+    presupuesto del turno anterior... cambiando el producto: donde iba la
+    Kingston Fury Beast NEGRA escribio la BLANCA. Los montos eran los mismos y
+    estaban respaldados, asi que la regla de la plata lo dejo pasar con razon:
+    no era plata inventada, era una CUENTA inventada alrededor de plata real.
+
+    Es el mismo principio que ya vale para el dinero, un escalon mas arriba: el
+    bloque lo arma el codigo, el modelo lo pega. Si no hay bloque de este turno
+    ni de un turno anterior, los renglones se van: mejor sin cuenta que con una
+    cuenta que el modelo se acuerda mal."""
+    if hubo_calculo:
+        return texto
+    renglones = [l for l in (texto or "").splitlines()
+                 if _RE_RENGLON_CUENTA.match(l)]
+    if not renglones:
+        return texto
+    previo_lineas = {l.strip() for l in (previo or "").splitlines() if l.strip()}
+    if all(l.strip() in previo_lineas for l in renglones):
+        return texto
+    salida, reemplazado = [], False
+    for linea in (texto or "").splitlines():
+        if not _RE_RENGLON_CUENTA.match(linea):
+            salida.append(linea)
+            continue
+        if linea.strip() in previo_lineas:
+            salida.append(linea)
+            continue
+        if previo and not reemplazado:
+            salida.append(previo.strip())
+            reemplazado = True
+    log.warning("hub_venta_cuenta_retipeada", trace_id=trace_id,
+                renglones=len(renglones), repuesta=bool(previo))
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip()
 
 
 def _bloque_presupuesto(llamadas: list) -> str:
@@ -642,6 +713,9 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     texto = _sin_plata_inventada(texto, llamadas, bloque, trace_id,
                                  previo=conv.get("ultimo_presupuesto") or "")
     texto = _sin_cobro_inventado(texto, tienda_id, trace_id)
+    texto = _cuenta_no_retipeada(
+        texto, hubo_calculo=bool(bloque),
+        previo=conv.get("ultimo_presupuesto") or "", trace_id=trace_id)
     # La cuenta se manda entera: si el modelo la reescribio o se la comio, el
     # bloque del codigo vuelve al final. No se negocia, es la unica parte del
     # mensaje que el modelo no redacta.

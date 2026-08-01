@@ -92,7 +92,7 @@ _RE_SALUDO_SOLVER = re.compile(
 # saludo oficial y el modelo ademas abre con "Bienvenido a X, soy tu asistente".
 _RE_BIENVENIDA_SOLVER = re.compile(
     r"^(?:[¡!]\s*)?[^.!?\n]{0,80}?"
-    r"(?:bienvenid[oa]s?\b|soy\s+(?:tu|su|el|la)\s+asistente|"
+    r"(?:bienvenid[oa]s?\b|soy\s+(?:tu|su|el|la|un|una)\s+asistente|"
     r"qu[eé]\s+bueno\s+que\s+nos\s+(?:contactes|escribas)|"
     r"gracias\s+por\s+(?:contactarnos|escribirnos))"
     r"[^.!?\n]*[.!?]\s*",

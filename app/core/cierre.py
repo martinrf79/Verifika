@@ -21,7 +21,21 @@ from app.core.leads import extraer_telefono
 log = get_logger(__name__)
 settings = get_settings()
 
-CAMPOS_REQUERIDOS = ["nombre", "telefono", "direccion", "forma_pago"]
+# LO QUE SE LE PIDE AL CLIENTE PARA CERRAR. Solo el NOMBRE (Martin, 1-ago,
+# sobre la charla real donde el bot pidio nombre completo, DNI y una direccion
+# por destino en el PRIMER mensaje). Pedir un formulario antes de que el cliente
+# se decida espanta la venta, y el DNI ni siquiera lo necesitamos: el modelo se
+# lo invento, nunca estuvo en esta lista.
+#
+# El telefono ya lo tenemos del canal y se completa solo. La direccion y la
+# forma de pago se coordinan en el contacto, no se exigen de entrada: por eso
+# salen de aca. Se siguen GUARDANDO si el cliente las dice -el extractor las
+# sigue leyendo-, pero ya no frenan el cierre.
+CAMPOS_REQUERIDOS = ["nombre"]
+
+# Los datos que igual se leen y se guardan cuando aparecen, aunque no se pidan.
+CAMPOS_OPCIONALES = ["telefono", "direccion", "forma_pago"]
+CAMPOS_EXTRAIBLES = CAMPOS_REQUERIDOS + CAMPOS_OPCIONALES
 
 # ── GATILLO DE CIERRE (arreglo D) ────────────────────────────────────────────
 # El sistema hace UNA pregunta de cierre cuando ya hay intencion suficiente. La
@@ -200,7 +214,7 @@ def extraer_determinista(mensaje: str) -> dict:
 def extraer_datos_cliente(mensaje: str, trace_id=None) -> dict:
     """Extrae los datos presentes en el mensaje. Devuelve dict con los cuatro
     campos, vacios los que no esten."""
-    datos = {c: "" for c in CAMPOS_REQUERIDOS}
+    datos = {c: "" for c in CAMPOS_EXTRAIBLES}
     try:
         r = llm_complete(
             messages=[
@@ -216,7 +230,7 @@ def extraer_datos_cliente(mensaje: str, trace_id=None) -> dict:
                 content = content[4:]
             content = content.strip()
         parsed = json.loads(content)
-        for c in CAMPOS_REQUERIDOS:
+        for c in CAMPOS_EXTRAIBLES:
             v = str(parsed.get(c, "") or "").strip()
             if v:
                 datos[c] = v
