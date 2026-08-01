@@ -4,6 +4,59 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 2-ago-2026 (tarde) — EL RAZONAMIENTO ATADO Y EL BANCO QUE MIDE ====**
+
+**LA CAUSA DEL ABISMO banco contra WhatsApp, resuelta.** No eran dos sistemas
+distintos: el banco corria UNA vez y el modelo no es determinista. La misma
+pregunta elige otras herramientas en cada pasada, asi que una corrida salia
+perfecta y la siguiente rompia. Ademas, de los 465 tests, 398 NUNCA le hablan al
+modelo: prueban las piezas deterministas y su verde jamas dijo nada sobre como
+contesta el bot.
+
+**EL PORTON NUEVO: `banco_pruebas/banco_repetido.py`.** Corre cada guion N veces
+por el camino REAL del webhook y reporta TASA DE FALLO POR TURNO, no un verde.
+Juzga en tres capas: el juez de invariantes, los candados del hub leidos del log
+del turno, y las expectativas del guion. Uso:
+
+    export GEMINI_API_KEY=$GEMINI_API_KEY_PROD
+    python3 banco_pruebas/banco_repetido.py 3 '7?_*.txt'
+
+Seis guiones nuevos de dificultad media sobre patrones reales de ecommerce:
+referencia lejana, cambio de decision, comparativa con criterio, objecion de
+precio, mensaje combinado y ambiguedad.
+
+**LA MEDICION, cinco tandas de 72 turnos cada una: 5% -> 4% -> 1% -> 0%.**
+
+**LA OCTAVA HERRAMIENTA, `consultar_criterio`.** Al pasar a herramientas el dato
+duro quedo atado y la prosa de RAZONAMIENTO quedo suelta: el bot recomendaba
+desde su entrenamiento. Los 93 bloques de criterio escritos para esta tienda
+estaban en el repo sin que los llamara nadie. Ahora son una herramienta con su
+enum atado a la fuente.
+
+**LOS NUEVE DEFECTOS QUE CAZO EL BANCO, todos cerrados con su test:**
+1. Anuncio de cuenta sin cuenta abajo.
+2. Narracion interna al cliente, incluido el estado de la herramienta.
+3. Descuento inventado: "consulto con el area comercial que descuento aplicarte".
+4. El "no encontrado" que se volvia "no vendemos el rubro".
+5. Turno mudo: el precio de lo ya mostrado se podaba por no estar respaldado.
+6. Renglon de cuenta escrito a mano que el candado no veia.
+7. **Nego una categoria que la herramienta acababa de traer.** La mas cara: le
+   cierra la puerta a un cliente que queria comprar algo que tenemos.
+8. Falso positivo del juez: "retiro el teclado del pedido" leido como retiro en
+   local.
+9. **"no, el teclado sacalo, dejame solo los mouse" leido como rechazo a la
+   venta.** El dueño recibia aviso de lead tibio sobre un cliente que estaba
+   comprando, y al cliente le quedaba "cuando quieras retomar, aca estoy" abajo
+   del presupuesto. Venia de antes del cambio de arquitectura.
+
+**LOS CANDADOS DE SALIDA, siete, ninguno reescribe prosa:** plata inventada,
+cuenta retipeada, cobro inventado, negacion de lo traido, descuento inventado,
+narracion interna, anuncio vacio. Todos se loguean; `hub_venta_cobro_inventado` y
+`hub_venta_nego_lo_traido` son ERROR y no deberian aparecer nunca.
+
+**PARA CERRAR SE PIDE SOLO EL NOMBRE** (Martin, 1-ago). El DNI nunca estuvo en
+el sistema: se lo invento el modelo.
+
 **==== 2-ago-2026 — CAMBIO DE ARQUITECTURA: HERRAMIENTAS EN PARALELO ====**
 
 Martín lo decidió y lo aprobó de una pasada y un solo deploy. Se fue el
