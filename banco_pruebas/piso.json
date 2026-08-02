@@ -1,0 +1,33 @@
+{
+  "turnos": 78,
+  "sin_caida": 100.0,
+  "sin_invento": 93.6,
+  "completa": 97.4,
+  "avanza": 98.7,
+  "latencia_p50_ms": 4918,
+  "latencia_p95_ms": 8134,
+  "_guiones": [
+    "70_borde_simple",
+    "70_memoria_referencia_lejana",
+    "71_cambio_de_decision",
+    "72_comparativa_criterio",
+    "73_objecion_precio_y_competencia",
+    "74_pregunta_combinada_media",
+    "75_ambiguedad_y_correccion",
+    "76_pedido_multiple_criterio_no_binario"
+  ],
+  "fecha": "2026-08-02 23:50",
+  "commit": "3f1c8cc",
+  "modelo": "gemini-3.1-flash-lite",
+  "vueltas": 3,
+  "guiones": [
+    "70_borde_simple",
+    "70_memoria_referencia_lejana",
+    "71_cambio_de_decision",
+    "72_comparativa_criterio",
+    "73_objecion_precio_y_competencia",
+    "74_pregunta_combinada_media",
+    "75_ambiguedad_y_correccion",
+    "76_pedido_multiple_criterio_no_binario"
+  ]
+}
