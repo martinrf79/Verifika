@@ -1,90 +1,183 @@
-# Banco de pruebas — herramienta reutilizable
+# EL BANCO — cómo se mide Verifika
 
-Permite probar el **camino vivo del bot** de punta a punta sin credenciales de
-Google. Corre el código de producción real (intérprete, solver Gemini,
-calculate_total, cotizar_envio, query_faq, verificadores, guardia) sobre un
-doble local de Firestore cargado con el catálogo y la FAQ reales del repo.
+Referencia única de cómo se prueba el bot. Si un documento viejo dice otra cosa,
+manda este.
 
-Es una herramienta genérica: **no trae casos ni errores hardcodeados**. Quien la
-usa carga sus propios casos en un guion y saca sus propias conclusiones.
+**La regla que nació el 2-ago-2026, después de cinco sesiones seguidas
+declarando "ahora sí anda":** ninguna sesión declara verde sin un número que
+salga de una charla real, y el número se reporta **con su control al lado**. Un
+número solo, sin el antes, no dice nada.
 
-## Piezas
+---
 
-| Archivo | Qué hace |
-|---|---|
-| `sim_firestore.py` | Doble local de Firestore con el catálogo real (880) y la FAQ real. Parchea SOLO el almacenamiento; el resto del bot corre tal cual. |
-| `charla_sim.py` | Corre una charla de punta a punta sobre el doble + LLM vivo, con juez y observador. Deja el reporte de la corrida en `corridas/`. |
-| `juez.py` | Invariantes deterministas sobre cada respuesta: no mintió + contestó completo. |
-| `observador.py` | Captura los eventos radar de structlog (los mismos que en prod se leen en Cloud Logging), por turno. |
-| `guiones/` | Los casos: un mensaje del cliente por línea. Los 39-46 son la consigna de preproducción (verbatim, no se editan). |
-| `corridas/` | El registro de avances: un reporte por corrida, con respuestas, veredictos del juez y radares. Se commitea: es la evidencia. |
+## Las tres capas, y qué prueba cada una
 
-## Cómo correr
+### 1. Offline — `python3 -m pytest tests/ -q`
+Sin LLM, sin credenciales, sin red. 413 tests sobre las piezas deterministas:
+calculadora, envío, stock, compatibilidad, certificador, pagos, memoria,
+multi-tenant, contratos de herramientas.
+
+**Lo que NO prueba, y hay que tenerlo claro:** no le habla al modelo. Su verde
+nunca dijo nada sobre cómo contesta el bot. Un verde acá no autoriza un deploy.
+
+### 2. Vivo — `banco_atado_charlas.py`
+Una pasada por guion contra el modelo real, para mirar una charla entera con los
+ojos.
 
 ```bash
-python3 banco_pruebas/charla_sim.py                          # guion de ejemplo
-python3 banco_pruebas/charla_sim.py banco_pruebas/guiones/05_multidestino.txt
-BANCO_PAUSA_S=25 python3 banco_pruebas/charla_sim.py guion.txt   # tier gratis
+export GEMINI_API_KEY=$GEMINI_API_KEY_PROD
+python3 banco_pruebas/banco_atado_charlas.py banco_pruebas/guiones/07_*.txt
 ```
 
-Cada línea del guion es un mensaje del cliente; el bot responde turno a turno
-manteniendo la memoria de la conversación. El proceso termina con código
-distinto de cero si el juez marca algún problema.
+**No sirve para concluir.** El modelo no es determinista: la misma pregunta
+elige otras herramientas en cada pasada. Una corrida buena y la siguiente rota
+es lo normal, no la excepción.
 
-## Qué hace fidedigna una corrida
+### 3. Repetido, con compuerta — `banco_repetido.py`
+**El único que autoriza a decir que algo mejoró.** Corre cada guion N veces por
+el camino real del webhook, calcula las cuatro métricas y las compara contra el
+piso histórico.
 
-1. **Mismo código:** `process_message` entero, el pipeline de producción, no una
-   copia.
-2. **Mismos datos:** catálogo y FAQ reales del repo (la fuente que se sube a
-   Firestore).
-3. **Mismos instrumentos:** el juez reusa los detectores del camino vivo, y el
-   observador captura los MISMOS eventos radar que en producción se consultan
-   en Cloud Logging con severity>=WARNING. Un radar que dispara acá, dispara
-   igual en prod.
-4. **Evidencia persistente:** el reporte en `corridas/` queda commiteado; el
-   avance se mide comparando corridas, no de memoria.
+```bash
+export GEMINI_API_KEY=$GEMINI_API_KEY_PROD
+python3 banco_pruebas/banco_repetido.py 5 '7?_*.txt'               # compara
+python3 banco_pruebas/banco_repetido.py 5 '7?_*.txt' --fijar-piso  # graba piso
+```
 
-## Límites honestos del doble
-- La tarifa por provincia (`tarifas_envio`) NO está en el repo: vive solo en
-  Firestore real. En `sim_firestore.py` se siembra como **asunción** (Córdoba
-  7.500); confirmá el valor contra Firestore.
-- El link de pago de Mercado Pago está stubeado; el flujo de cierre/lead corre
-  real sobre un doble en RAM.
-- El LLM del banco es la clave GRATIS de Gemini (15 req/min): usar
-  `BANCO_PAUSA_S` para no comer 429. La clave paga es de producción.
+Sale con código 1 si una métrica **dura** empeoró. Sirve para CI.
 
-## Requisitos
-- `GEMINI_API_KEY` en el entorno (sin clave, el solver cae al compositor:
-  sirve para probar la red, no el camino primario).
-- No requiere credenciales de Google: la base es local.
+---
 
-## Métrica de calidad con DeepEval (`banco_deepeval.py`)
+## El clon: por qué el banco es fiel
 
-El juez de invariantes dice pasa/no pasa. `banco_deepeval.py` le pone NÚMERO a
-cada respuesta, que es lo que un comprador entiende y pide. Corre los MISMOS
-guiones por el camino vivo (`hub_atado`, Gemini 3.1 flash lite) y mide con
-DeepEval:
+`clon_produccion.py` no llama a `procesar_venta` por atajo: entra por
+`app.main._process_and_reply_whatsapp`, **la función real del webhook de
+WhatsApp**. Adentro corre el mismo código que la nube: orchestrator,
+antijailbreak, `hub_venta`, herramientas, reconciliador, memoria, persistencia,
+cierre, partición del mensaje en partes y hasta el fallback de "estoy con mucha
+demanda".
 
-- **faithfulness** (gatea, >= 0.85): la respuesta no contradice la evidencia
-  dura de las tools. Es la métrica anti-alucinación de la atadura por enum.
-- **venta_verificada** (gatea, >= 0.70): G-Eval a medida. Premia la técnica de
-  venta (calidez, cierre) y castiga SOLO inventar dato o ignorar la pregunta.
-  Reemplaza a `answer_relevancy` genérico, que da falso negativo porque penaliza
-  el saludo y la pregunta de cierre.
-- **hallucination** (gatea, <= 0.25): cruce inverso contra la misma evidencia.
-- **answer_relevancy**: informativo, no gatea.
+Solo se doblan los bordes externos:
 
-El contexto que juzga la faithfulness es la SALIDA REAL de las tools de ese
-turno, no un texto inventado: se captura envolviendo `generador_v2.renderizar`.
-El JUEZ es DeepSeek (`juez_deepeval.py`), independiente del modelo evaluado
-(Gemini) para que no se autocalifique, y default barato del repo.
+| Borde | En producción | En el banco |
+|---|---|---|
+| Meta | HTTP a la API de WhatsApp | `ConectorBanco` guarda los mensajes |
+| Firestore | Firestore real | `sim_firestore` en RAM, con el catálogo de 880 y la FAQ **reales** del repo |
+| Audio | transcripción | no se ejercita, el banco manda texto |
+
+`verificar_clon.py` confirma que el doble no derivó del repo.
+
+**Por qué importa:** hasta el 31-jul el banco llamaba a `procesar_venta` directo
+y se salteaba el partido del mensaje, así que el juez leía un bloque entero que
+el cliente nunca recibe entero. Ese era el abismo entre "el banco da verde" y
+"en WhatsApp falla".
+
+---
+
+## Las cuatro métricas — `piso.py`
+
+Se calculan sobre todos los turnos de todas las vueltas.
+
+**Duras. La compuerta frena si empeoran más de 5 puntos:**
+
+- `sin_caida` — el turno no explotó ni cayó al fallback.
+- `sin_invento` — ningún invariante del juez violado: stock contradicho, precio
+  falso, promesa prohibida, cobro inventado.
+
+**Blandas. Avisan, no frenan, porque son más ruidosas:**
+
+- `completa` — cumplió las expectativas escritas en el guion.
+- `avanza` — la respuesta mueve la venta: trae un precio o pregunta algo. Un
+  muro honesto tipo "no tenemos nada" **no avanza**.
+
+Más latencia p50 y p95.
+
+### Por qué hicieron falta las blandas
+El juez sólo tenía invariantes negativos: mide que no mienta sobre el catálogo,
+que es justo lo que ya estaba resuelto. Medido el 2-ago sobre un pedido real de
+seis ítems: el bot cotizó cuatro categorías sobre un pedido de tres, inventó un
+teclado, borró un auricular e ignoró la condición que el cliente puso, y el juez
+dijo **LIMPIO**, porque ninguna de esas cuatro fallas es una mentira sobre el
+catálogo. Por eso "0% de fallo" convivía con "en WhatsApp se cae la venta".
+
+---
+
+## El piso histórico — `piso.json`
+
+Guarda el mejor número alcanzado, con fecha, commit, modelo, guiones y cuántas
+vueltas se usaron.
+
+Se graba **a mano** con `--fijar-piso`, y eso es a propósito: si el piso se
+moviera solo en cada corrida, una regresión lenta se volvería el piso nuevo y
+nadie la vería nunca.
+
+**El ruido es real y no se tapa.** Con 5 vueltas, un turno de diferencia son 20
+puntos. Por eso la compuerta tiene 5 puntos de tolerancia y el reporte avisa
+cuando el piso se fijó con menos de 5 vueltas. Un piso de 3 vueltas no autoriza
+a nadie a declarar nada.
+
+---
+
+## Los guiones
+
+En `guiones/`. Un mensaje del cliente por línea, y las expectativas del turno
+con `>`:
+
+```
+quiero 2 mouse genius dx-110 negro y 1 teclado, cuanto sale?
+> contiene: Total
+no, el teclado sacalo, dejame solo los mouse
+> no_contiene: teclado Genius | 1x Teclado
+```
+
+En `contiene`, el `|` son alternativas: alcanza con que aparezca una.
+
+El más duro es `76_pedido_multiple_criterio_no_binario.txt`: un mensaje real de
+Martín con cuatro trampas juntas, seis ítems en tres categorías, una
+contradicción a propósito entre lo pedido y los envíos, un criterio que no es
+binario, y una frase que invita a malinterpretar el precio.
+
+**Lo que falta, dicho:** guiones de dificultad alta hay uno solo. Sin más, la
+dificultad alta no se puede medir, y lo que no se mide no se mejora.
+
+---
+
+## Métrica con DeepEval — `banco_deepeval.py`
+
+Le pone número a cada respuesta en vez de pasa/no pasa. Gatea con
+`faithfulness >= 0.85`, `venta_verificada >= 0.70` y `hallucination <= 0.25`.
+El juez es DeepSeek, independiente del modelo evaluado para que no se
+autocalifique.
 
 ```bash
 pip install -r ../requirements-eval.txt
-BANCO_PAUSA_S=22 python3 banco_deepeval.py 01_curada_pura.txt 04_mas_barato.txt
+BANCO_PAUSA_S=22 python3 banco_deepeval.py 01_curada_pura.txt
 ```
 
-Deja el reporte en `corridas/deepeval_*.md` y sale con código != 0 si algún
-promedio cae del umbral (gatea el CI). El workflow `deepeval.yml` lo corre a
-mano y una vez por noche; NO en cada push, porque llama a los modelos vivos.
-Necesita los secretos `GEMINI_API_KEY` y `DEEPSEEK_API_KEY` en el repo.
+El workflow `deepeval.yml` lo corre a mano y una vez por noche, nunca en cada
+push, porque llama a los modelos vivos.
+
+---
+
+## Límites honestos
+
+- La tarifa por provincia no está en el repo, vive solo en Firestore real. En
+  `sim_firestore.py` se siembra como **asunción**; confirmalo contra Firestore.
+- El link de pago de Mercado Pago está stubeado.
+- La clave gratis de Gemini son 15 pedidos por minuto: usar `BANCO_PAUSA_S` para
+  no comer 429, o la clave paga vía `GEMINI_API_KEY_PROD`.
+- El audio no se ejercita.
+
+---
+
+## Lo aprendido, para no repetirlo
+
+- **Agregar reglas al prompt no agrega control.** El 2-ago se agregó una regla
+  para tapar un caso: `avanza` bajó de 3/5 a 2/5 y `sin_invento` de 5/5 a 4/5.
+  Se revirtió. Después se sacaron 14 reglas y `avanza` subió a 5/5. De las 20
+  reglas viejas, 19 no compraban nada y una sí.
+- **El modelo no era el cuello de botella.** `gemini-3.6-flash` contra
+  `gemini-3.1-flash-lite`, 5 pasadas cada uno: idénticos en las tres columnas.
+  `gemini-3.1-pro-preview` razona mejor pero tarda 94 segundos: descartado para
+  WhatsApp.
+- **Un run no es un veredicto.** Nunca. Ni el bueno ni el malo.

@@ -91,6 +91,17 @@ def _universo_de_busquedas(llamadas: list) -> str:
         if prod:
             partes.append(_norm(prod.get("nombre")))
             partes.append(_norm(prod.get("categoria")))
+
+    # LO YA COTIZADO TAMBIEN CUENTA COMO ATENDIDO. Sin esto el reconciliador
+    # daba un FALSO POSITIVO caro, visto en la corrida del 2-ago: el cliente
+    # pidio "los dos juntos", el modelo armo el presupuesto con los ids que ya
+    # tenia de un turno anterior sin volver a buscar -que es lo correcto- y el
+    # reconciliador le exigia buscar de nuevo lo que ya estaba en la cuenta.
+    # Una vuelta entera del bucle al pedo, en tokens y en latencia.
+    for l in (llamadas or []):
+        if l.get("herramienta") != "armar_presupuesto":
+            continue
+        partes.append(_norm((l.get("resultado") or {}).get("bloque")))
     return " ".join(x for x in partes if x)
 
 
