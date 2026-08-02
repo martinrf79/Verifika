@@ -72,6 +72,37 @@ pregunto por el teclado, y ofrecio lo que menos incumple en vez del muro.**
 Guiones 03 y 07 como control: **3 problemas -> 2 -> 1.** Latencia 6,7s a 7,1s,
 por debajo de los 8,6s del arranque.
 
+**EL PROMPT CHICO GANO, Y EL MODELO GRANDE NO (Martin, 2-ago, ultima tanda).**
+Dos experimentos medidos con 5 pasadas y control, sobre el guion 76:
+
+1. MODELO. `gemini-3.1-pro-preview` razona visiblemente mejor en una pasada
+   suelta -es el unico que noto que al reparto de envios le sobra un auricular y
+   que el 70/30 necesita saber los medios de pago- pero tarda **94 segundos**:
+   descartado para WhatsApp. `gemini-3.6-flash` contra `flash-lite`, 5 pasadas
+   cada uno: **identicos en las tres columnas**. El modelo NO era el cuello de
+   botella. La hipotesis del "decisor chico" queda descartada con datos.
+2. PROMPT. El SISTEMA tenia 3278 caracteres, 8 reglas absolutas y 12 de estilo.
+   Se reemplazo por uno de 1351 que NO lista reglas de dato duro -de eso ya se
+   encargan las herramientas y el codigo- sino que ESTIMULA EL RAZONAMIENTO:
+   entender que necesita de verdad, fijarse si el pedido cierra antes de
+   contestar, y nunca cerrar con un no teniendo el dato en la mano.
+   Resultado: **vende paso de 3/5 a 5/5**, repetido en dos mediciones, sin
+   perder las otras dos columnas. razona 5/5, no-alucina 4-5/5 (±1 es ruido a
+   n=5).
+
+**LA LECCION, y contradice el reflejo de todo el proyecto:** un intento anterior
+de la MISMA tarde fue AGREGAR una regla al prompt para prohibir el muro. Bajo
+vende de 3/5 a 2/5 y no-alucina de 5/5 a 4/5. Se revirtio en el acto. Agregar
+reglas a un prompt largo no agrega control: agrega competencia entre reglas y el
+modelo elige mal cual gana. SACAR reglas y pedir razonamiento funciono; agregar
+una, no.
+
+**LO UNICO QUE HUBO QUE REPONER, y se repuso solo:** al sacar las 20 reglas
+aparecieron 3 "promesa prohibida: retiro_local" en los guiones 03/06/07. Una
+sola linea sobre servicios que la tienda no ofrece los bajo a 1, que es el mismo
+numero que daba el prompt largo. O sea: de 20 reglas, 19 no estaban comprando
+nada y una si.
+
 **LO QUE FALTA.** Contexto: siguen siendo 10 mensajes cortados a 900 caracteres.
 Guiones dificiles con expectativas: hay uno, el 76. `DECISOR_MODEL` sigue vacio,
 o sea todo corre en flash-lite; ese es el techo cuando la plomeria ya no alcance.
