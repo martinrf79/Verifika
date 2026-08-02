@@ -4,6 +4,78 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 2-ago-2026 (noche) — EL DECISOR PIENSA. Y EL MAPA DE LO QUE FALTA ====**
+
+Martin puso el objetivo en una frase y manda sobre todo lo de abajo: **un bot
+que RAZONE para vender, sin alucinar.** No se arregla mas caso por caso.
+
+**EL DIAGNOSTICO ESTRUCTURAL, y explica los meses de loop.** El sistema tiene
+diecinueve controles: nueve invariantes en `banco_pruebas/juez.py` y diez
+funciones `_sin_algo` en `hub_venta.py`. Los diecinueve miran la PROSA ya
+escrita. Cero miran la DECISION. La prosa es un espacio infinito, asi que cada
+error nuevo llega con otras palabras y cada arreglo es un caso mas. La decision
+es un objeto chico y tipado -una lista de tool_calls validada por Pydantic- y se
+chequea de forma general, una vez, para todos los casos. Todo arreglo futuro va
+del lado de la decision, no del lado del texto.
+
+**LO QUE SE HIZO HOY, etapa 1 de 3: EL DECISOR PIENSA.** La llamada uno de
+`hub_venta.py` corria con `reasoning_effort: "none"`, heredado del bug del
+10-jun en que el thinking se comia los `max_tokens` y el JSON salia vacio. Se
+prendio con `DECISOR_REASONING`, default `low`, y se subio `max_tokens` de 900 a
+3000 para que el pensamiento no se coma el JSON. El REDACTOR sigue sin pensar:
+escribe con el dato delante y no decide nada. Ademas `DECISOR_MODEL` permite
+ponerle un modelo mas grande SOLO al decisor sin encarecer el turno entero.
+
+**MEDIDO, mismo mensaje real, antes y despues** (guion 76):
+- Sin pensar: cotizo 4 categorias sobre un pedido de 3, invento un teclado como
+  item, borro un auricular, ignoro `excluir` que el esquema ofrece y ordeno por
+  `caro` a partir de "el precio no seria tan importante". 2,2 millones. Juez:
+  LIMPIO.
+- Pensando: 3 categorias correctas, `excluir: ["china"]` en las tres, sin
+  teclado fantasma. Latencia 6,4s contra 8,6s: mas rapido, porque resuelve en
+  una ronda en vez de dos.
+- Control sobre los guiones 03 y 07: sin pensar 3 problemas, pensando 2. El
+  cambio no rompio nada.
+
+**LO QUE EL PENSAMIENTO NO ARREGLA, y es la etapa 2.** Sigue sin preguntar por
+la contradiccion del pedido, y ante un criterio por GRADOS -"las menos partes
+chinas posibles"- el `excluir` booleano lo convierte en un muro: contesto "no
+contamos con nada de origen no chino", que es VERDAD segun el catalogo y aun asi
+mata la venta.
+
+**LAS TRES ETAPAS, en orden. No empezar la siguiente sin el numero de la anterior.**
+1. HECHA. El decisor piensa.
+2. EL PEDIDO COMO OBJETO + RECONCILIADOR. Hoy no existe en ningun lado una
+   estructura con lo que el cliente pidio, asi que nada puede compararla contra
+   el plan. Se crea, y un chequeo determinista compara: categorias nombradas
+   contra buscadas, cantidades, toda restriccion declarada viajando en algun
+   argumento, todo destino cotizado. Ante desajuste el codigo hace UNA de dos
+   cosas y nunca una tercera: le vuelve a pedir al modelo la pieza que falta, o
+   fuerza preguntarle al cliente. Es el mismo mecanismo del veredicto `ambiguo`
+   del certificador, que YA funciona para la identidad del producto, extendido
+   al pedido entero.
+3. EL BUCLE ACOTADO reemplaza las dos rondas fijas: hasta 4 o 5 vueltas que
+   cortan cuando el modelo puede contestar. Recien ahi se BORRAN las guardas de
+   prosa que quedan sin trabajo. Ahi bajan las capas de verdad.
+
+**REGLA DE HONESTIDAD, nacida de cinco sesiones seguidas diciendo "ahora si
+anda".** Cada chat nuevo llega sin memoria, encuentra un agujero real, lo tapa y
+declara verde. Las cinco dijeron la verdad sobre su propio parche y las cinco se
+equivocaron sobre el todo. Desde ahora: **ninguna sesion declara verde sin un
+numero que salga de una charla REAL, y el numero se reporta con el control al
+lado.** El "0% sobre 72 turnos" del 2-ago a la tarde era `banco_repetido.py 3
+'7?_*.txt'`, o sea SOLO los guiones que empiezan con 7, tres pasadas. Los
+guiones 03 y 07 fallan hoy con el codigo deployado. El numero era cierto y el
+alcance no era el que parecia.
+
+**LO QUE NO SE PUEDE COPIAR de un asistente agentico, dicho para no perder
+tiempo.** La latencia: un turno con bucle y pensamiento se va a 15-25s contra
+los 8 de hoy, y eso es decision de producto. El cliente no corrige: se va, asi
+que hay que acertar o preguntar a la primera. Y el techo del modelo: la plomeria
+sube el piso, no el techo. `gemini-3.1-flash-lite` con las tres etapas puestas
+resuelve dificultad media; lo verdaderamente dificil va a pedir `DECISOR_MODEL`
+mas grande, que son centavos por mensaje porque solo encarece la llamada uno.
+
 **==== 2-ago-2026 (tarde) — EL RAZONAMIENTO ATADO Y EL BANCO QUE MIDE ====**
 
 **LA CAUSA DEL ABISMO banco contra WhatsApp, resuelta.** No eran dos sistemas

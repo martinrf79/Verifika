@@ -149,6 +149,12 @@ def _modelo() -> str:
     return settings.GEMINI_MODEL or "gemini-3.1-flash-lite"
 
 
+def _modelo_decisor() -> str:
+    """El modelo de la llamada UNO. Por default el mismo que redacta; se le
+    puede poner uno mas grande SOLO acá, que es donde se decide."""
+    return settings.DECISOR_MODEL or _modelo()
+
+
 def _memoria_texto(estado: dict, history: list, tienda_id: str = "") -> str:
     """Lo que el modelo tiene que recordar de la charla. Reemplaza a los campos
     que el interprete rellenaba a mano: el foco, lo ya mostrado y el criterio no
@@ -267,10 +273,14 @@ async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
         msgs = _mensajes(negocio, memoria, history, mensaje, _INSTRUCCION_UNO)
 
     def _call():
+        # max_tokens ALTO a proposito: el pensamiento se descuenta de acá. Con
+        # 900 y thinking prendido el JSON de tool_calls sale cortado o vacío,
+        # que es el bug del 10-jun por el que se apagó el thinking en su
+        # momento. El tope alto no se cobra si no se usa: se cobra lo generado.
         r = cli.chat.completions.create(
-            model=_modelo(), messages=msgs, tools=esquemas,
-            tool_choice="auto", temperature=0.3, max_tokens=900,
-            extra_body={"reasoning_effort": "none"})
+            model=_modelo_decisor(), messages=msgs, tools=esquemas,
+            tool_choice="auto", temperature=0.3, max_tokens=3000,
+            extra_body={"reasoning_effort": settings.DECISOR_REASONING})
         m = r.choices[0].message
         pedidos = []
         for tc in (getattr(m, "tool_calls", None) or []):
