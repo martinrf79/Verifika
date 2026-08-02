@@ -78,15 +78,23 @@ def test_si_la_exclusion_no_deja_nada_se_dice_no_se_devuelve_lo_mismo():
     """Charla real del 1-ago: el cliente pidio "lo que menos partes chinas
     tenga" y recibio el MISMO presupuesto, con las mismas marcas y sin una
     palabra de por que. Con una exclusion imposible la herramienta tiene que
-    decir que no hay, nunca devolver el listado como si nada."""
+    decir que no hay, nunca devolver el listado como si nada.
+
+    ACTUALIZADO 2-ago: decir que no hay ya NO es cortar con un muro. La
+    condicion casi nunca es binaria aunque el argumento lo sea -"las menos
+    partes chinas posibles" sobre un catalogo 100% fabricado en China-, asi que
+    la herramienta avisa que ninguno cumple del todo Y devuelve los que menos
+    incumplen. Ninguna herramienta devuelve vacio."""
     r = H.buscar_productos(
         H.BuscarProductos(categoria="mouse", excluir=["mouse", "gaming",
                                                       "china", "taiwan",
                                                       "estados", "suiza"]),
         TIENDA)
-    assert r["estado"] in ("nada_cumple_la_exclusion", "encontrado")
-    if r["estado"] == "nada_cumple_la_exclusion":
-        assert "honesto" in r["instruccion"]
+    assert r["estado"] in ("ninguno_cumple_del_todo", "encontrado")
+    if r["estado"] == "ninguno_cumple_del_todo":
+        # Honesto sobre el grado, pero con algo para ofrecer: las dos cosas.
+        assert "del todo" in r["instruccion"]
+        assert r["lo_que_menos_incumple"]
 
 
 def test_la_exclusion_por_origen_filtra_de_verdad():

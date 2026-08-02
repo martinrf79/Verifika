@@ -131,7 +131,43 @@ class TomarPedido(BaseModel):
         description="Que hizo el cliente exactamente.")
 
 
+class ItemDeclarado(BaseModel):
+    que: str = Field(description="Que pidio, tal cual: 'auriculares', "
+                                 "'la asus tuf f15', 'memoria ram'.")
+    cantidad: int = Field(1, description="Cuantas unidades de eso.")
+
+
+class RegistrarPedido(BaseModel):
+    """DECLARA lo que entendiste del mensaje ANTES de buscar. Llamala SIEMPRE
+    que el cliente pida productos, precios, un presupuesto o un envio, junto
+    con las demas herramientas y en la misma tanda. No busca nada: deja
+    asentado que entendiste, y el sistema compara eso contra lo que pediste. Si
+    lo que declaras y lo que buscas no coinciden, te lo va a devolver."""
+    items: list[ItemDeclarado] = Field(
+        description="Un renglon por cada cosa que el cliente quiere COTIZAR o "
+                    "ver. Solo lo que pidio de verdad; si nombro algo al pasar "
+                    "y no queda claro que lo quiera, no lo pongas aca: ponelo "
+                    "en contradicciones.")
+    restricciones: list[str] | None = Field(
+        None, description="Condiciones que puso el cliente, tal cual las dijo: "
+                          "['sin partes chinas'], ['hasta 100 mil'], ['que sea "
+                          "inalambrico']. Vacio si no puso ninguna.")
+    destinos: list[str] | None = Field(
+        None, description="Todas las localidades de envio que nombro.")
+    pide_precio: bool = Field(
+        False, description="True si espera un numero: precio, total, cuanto "
+                           "sale, presupuesto.")
+    contradicciones: list[str] | None = Field(
+        None, description="Lo que NO cierra en el mensaje y no podes resolver "
+                          "vos sin elegir por el cliente: cantidades que no dan, "
+                          "un producto nombrado en el envio que no esta en el "
+                          "pedido, dos cosas incompatibles. Escribi cada una "
+                          "como la duda concreta que le harias al cliente. Si "
+                          "todo cierra, vacio.")
+
+
 _MOLDES = {
+    "registrar_pedido": RegistrarPedido,
     "buscar_productos": BuscarProductos,
     "ficha_producto": FichaProducto,
     "consultar_politica": ConsultarPolitica,
@@ -267,6 +303,31 @@ def _stems(valor: str) -> list[str]:
     return [w[:4] for w in _norm(valor).split() if len(w) >= 4]
 
 
+def _grado(prod: dict, excluir: list[str]) -> int:
+    """CUANTO incumple, no SI incumple. Sirve para ordenar cuando la exclusion
+    vacia el resultado y hay que ofrecer lo que menos la incumple.
+
+    La marca pesa mas que la fabricacion: una marca china fabricada en China
+    esta mas lejos del pedido que una suiza fabricada en China. Y un origen que
+    nombra alternativas -"Taiwan o China segun linea"- esta mas cerca que uno
+    que dice China a secas, porque no siempre es del pais excluido.
+    """
+    marca, origen = _norm(prod.get("marca")), _norm(prod.get("origen"))
+    nombre = _norm(prod.get("nombre"))
+    g = 0
+    for valor in (excluir or []):
+        for s in _stems(valor):
+            if s in marca:
+                g += 3
+            if s in nombre:
+                g += 2
+            if s in origen:
+                g += 2
+    if g and ("segun linea" in origen or " o " in origen):
+        g -= 1
+    return g
+
+
 def _excluido(prod: dict, excluir: list[str]) -> bool:
     campos = " ".join([_norm(prod.get("marca")), _norm(prod.get("origen")),
                        _norm(prod.get("nombre"))])
@@ -367,10 +428,26 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
         # listado como si nada: el 1-ago el cliente pidio menos partes chinas y
         # recibio identico presupuesto, sin una palabra de por que.
         if not filtrados:
-            return {"estado": "nada_cumple_la_exclusion",
+            # NINGUNA HERRAMIENTA DEVUELVE VACIO (Martin, 2-ago). Antes esto
+            # cortaba con "no tenemos nada" y era un MURO: verdad literal que
+            # mata la venta. El caso real: "las menos partes chinas posibles"
+            # sobre un catalogo donde los 46 auriculares, los 52 mouse y las 96
+            # memorias se fabrican en China. Cero chino no existe; MENOS chino
+            # si, y es lo que el cliente pidio. La condicion casi nunca es
+            # binaria aunque el argumento lo sea, asi que el codigo devuelve
+            # los que MENOS la incumplen, ordenados, y le dice al modelo que
+            # sea honesto sobre el grado.
+            cercanos = sorted(prods, key=lambda p: _grado(p, a.excluir))
+            return {"estado": "ninguno_cumple_del_todo",
                     "excluido": a.excluir, "categoria": a.categoria,
-                    "instruccion": "Decile honesto que con esa condicion no "
-                                   "tenemos nada en esa categoria."}
+                    "lo_que_menos_incumple": [_ficha(p, tienda_id)
+                                              for p in cercanos[:3]],
+                    "instruccion": "NINGUNO cumple esa condicion del todo, y "
+                                   "hay que decirlo derecho, sin adornar. Pero "
+                                   "no cierres con un no: mostrale estos, que "
+                                   "son los que MENOS la incumplen, y explicale "
+                                   "en una linea por que -mira el campo origen-. "
+                                   "Despues preguntale si con eso avanza."}
         prods = filtrados
     if a.tope_precio:
         dentro = [p for p in prods if p["precio_ars"] <= a.tope_precio]
@@ -570,7 +647,16 @@ def tomar_pedido(a: TomarPedido, tienda_id: str) -> dict:
     return out
 
 
+def registrar_pedido(a: RegistrarPedido, tienda_id: str) -> dict:
+    """No busca nada: devuelve lo declarado para que el RECONCILIADOR lo compare
+    contra lo que el plan efectivamente pidio. Es la unica herramienta que no
+    toca la fuente, y existe porque hasta hoy no habia en el sistema NINGUNA
+    estructura con lo que el cliente pidio, asi que nada podia compararla."""
+    return {"estado": "registrado", "pedido": a.model_dump()}
+
+
 _CUERPOS = {
+    "registrar_pedido": registrar_pedido,
     "buscar_productos": buscar_productos,
     "ficha_producto": ficha_producto,
     "consultar_politica": consultar_politica,

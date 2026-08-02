@@ -43,9 +43,42 @@ chinas posibles"- el `excluir` booleano lo convierte en un muro: contesto "no
 contamos con nada de origen no chino", que es VERDAD segun el catalogo y aun asi
 mata la venta.
 
-**LAS TRES ETAPAS, en orden. No empezar la siguiente sin el numero de la anterior.**
+**ETAPA 2 Y 3, HECHAS TAMBIEN (Martin pidio ir por todo, no por etapas).**
+
+- `app/core/pedido.py`, NUEVO: el reconciliador. El modelo declara lo que
+  entendio con la herramienta `registrar_pedido` -items, restricciones,
+  destinos, pide_precio y CONTRADICCIONES- y el codigo compara esa declaracion
+  contra las herramientas que efectivamente pidio. Seis chequeos: cada item
+  nombrado fue buscado; nada cotizado que no se haya pedido; toda restriccion
+  declarada viaja en algun argumento; todo destino cotizado; si pidio precio
+  hay cuenta; y la contradiccion declarada obliga a PREGUNTAR. Ante hueco el
+  codigo hace UNA de dos cosas y nunca una tercera: devuelve el faltante al
+  modelo para la vuelta siguiente, o fuerza la pregunta al cliente. Nunca
+  completa por su cuenta.
+- EL BUCLE ACOTADO, `_MAX_RONDAS = 4`, reemplaza a las dos rondas fijas. Corta
+  solo apenas el reconciliador no encuentra huecos: un saludo sigue costando
+  una llamada.
+- NINGUNA HERRAMIENTA DEVUELVE VACIO. `buscar_productos` ya no corta con
+  "no tenemos nada" cuando la exclusion vacia el resultado: devuelve los que
+  MENOS incumplen, ordenados por `_grado`, y le pide al modelo que sea honesto
+  sobre el grado. La condicion casi nunca es binaria aunque el argumento lo sea.
+- AHORRO: en las vueltas de encadenado ya no viajan los ocho esquemas, solo los
+  encadenables. `consultar_criterio` sola son 576 tokens por sus 93 enums.
+
+**MEDIDO sobre el mensaje real, guion 76, tres configuraciones:**
+sin pensar declaro nada y cotizo un teclado fantasma; pensando arreglo el plan
+pero contesto con un muro; con el reconciliador **declaro la contradiccion solo,
+pregunto por el teclado, y ofrecio lo que menos incumple en vez del muro.**
+Guiones 03 y 07 como control: **3 problemas -> 2 -> 1.** Latencia 6,7s a 7,1s,
+por debajo de los 8,6s del arranque.
+
+**LO QUE FALTA.** Contexto: siguen siendo 10 mensajes cortados a 900 caracteres.
+Guiones dificiles con expectativas: hay uno, el 76. `DECISOR_MODEL` sigue vacio,
+o sea todo corre en flash-lite; ese es el techo cuando la plomeria ya no alcance.
+
+**LAS TRES ETAPAS, el mapa original. Ya no hay que esperar entre una y otra.**
 1. HECHA. El decisor piensa.
-2. EL PEDIDO COMO OBJETO + RECONCILIADOR. Hoy no existe en ningun lado una
+2. HECHA. EL PEDIDO COMO OBJETO + RECONCILIADOR. No existia en ningun lado una
    estructura con lo que el cliente pidio, asi que nada puede compararla contra
    el plan. Se crea, y un chequeo determinista compara: categorias nombradas
    contra buscadas, cantidades, toda restriccion declarada viajando en algun

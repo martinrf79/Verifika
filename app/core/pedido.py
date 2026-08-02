@@ -1,0 +1,239 @@
+"""
+EL PEDIDO COMO OBJETO, Y EL RECONCILIADOR.
+
+POR QUE EXISTE (Martin, 2-ago-2026). El sistema tenia diecinueve controles
+-nueve invariantes en el juez, diez funciones `_sin_algo` en el hub- y los
+diecinueve miraban la PROSA ya escrita. Cero miraban la DECISION. La prosa es
+un espacio infinito: cada error nuevo llega con otras palabras y obliga a un
+parche nuevo, para siempre. Eso fue el loop de meses.
+
+La decision, en cambio, es un objeto chico y tipado. Se chequea de forma
+general, UNA vez, para todos los casos.
+
+EL CASO QUE LO PARIO, medido el 2-ago sobre un mensaje real:
+  "Dame precio de dos auriculares, dos mouse y dos memorias... que lleven las
+   menos partes chinas posibles... un auricular y un mouse a Cordoba capital,
+   un teclado y un mouse a Concordia, los otros dos a posadas... divide el
+   presupuesto en setenta treinta."
+El bot cotizo CUATRO categorias sobre un pedido de tres, metio un teclado que
+el cliente solo habia nombrado al hablar del envio, borro un auricular para
+hacerle lugar, ignoro el filtro de origen que la herramienta ofrece, y ordeno
+por el mas caro a partir de "el precio no seria tan importante". Los nueve
+invariantes dijeron LIMPIO, porque ninguna de las cuatro fallas es una mentira
+sobre el catalogo. Son fallas de DECISION.
+
+COMO FUNCIONA. El modelo declara lo que entendio llamando a `registrar_pedido`
+-una herramienta mas, con su esquema- y despues pide las herramientas que le
+parecen. El codigo compara las dos cosas:
+
+    lo que dijo que entendio   contra   lo que efectivamente pidió
+
+Cuando no coinciden, el codigo hace UNA de dos cosas y nunca una tercera:
+  1. le devuelve al modelo el faltante concreto para la vuelta siguiente, o
+  2. si el pedido tiene una CONTRADICCION, obliga a preguntarle al cliente.
+
+Nunca inventa la pieza que falta ni deja pasar. Es el mismo mecanismo del
+veredicto `ambiguo` del certificador -que ya funciona hace meses para la
+identidad del producto- extendido al pedido entero.
+
+El reconciliador NO sabe de teclados ni de China. Sabe que el cliente nombro
+tres categorias y el plan busco cuatro, y que una restriccion declarada no
+viaja en ningun argumento. Por eso caza la CLASE y no el caso.
+"""
+import re
+import unicodedata
+
+from app.logger import get_logger
+
+log = get_logger(__name__)
+
+
+def _norm(s) -> str:
+    s = unicodedata.normalize("NFKD", str(s or "").lower())
+    return "".join(c for c in s if not unicodedata.combining(c)).strip()
+
+
+def _stems(valor: str) -> list[str]:
+    """Mismas raices que usa `herramientas._excluido`, para que lo que el
+    reconciliador considera 'presente' sea lo mismo que el filtro considera
+    aplicado. Si las dos definiciones divergen, el chequeo miente."""
+    return [w[:4] for w in _norm(valor).split() if len(w) >= 4]
+
+
+def _cubierto(texto: str, universo: str) -> bool:
+    """Una raiz alcanza. Conservador a proposito: preferimos NO acusar un
+    faltante falso antes que mandar al modelo a buscar de nuevo al pedo."""
+    st = _stems(texto)
+    return bool(st) and any(s in universo for s in st)
+
+
+# Las herramientas que TRAEN productos. Un item del pedido se considera
+# atendido si alguna de estas lo nombra.
+_TRAEN_PRODUCTOS = ("buscar_productos", "ficha_producto", "ver_compatibilidad")
+
+
+def _universo_de_busquedas(llamadas: list) -> str:
+    """Todo lo que el plan efectivamente busco, en un solo texto normalizado:
+    categorias, descripciones y los nombres de lo que volvio. Contra esto se
+    chequea si cada item del pedido fue atendido."""
+    partes = []
+    for l in llamadas or []:
+        if l.get("herramienta") not in _TRAEN_PRODUCTOS:
+            continue
+        ped = l.get("pedido") or {}
+        partes.append(_norm(ped.get("categoria")))
+        partes.append(_norm(ped.get("descripcion")))
+        res = l.get("resultado") or {}
+        for p in (res.get("productos") or []):
+            partes.append(_norm(p.get("nombre")))
+            partes.append(_norm(p.get("categoria")))
+        prod = res.get("producto") or {}
+        if prod:
+            partes.append(_norm(prod.get("nombre")))
+            partes.append(_norm(prod.get("categoria")))
+    return " ".join(x for x in partes if x)
+
+
+def _universo_de_restricciones(llamadas: list) -> str:
+    """Donde puede viajar una restriccion declarada por el cliente: el `excluir`
+    y el `tope_precio` de la busqueda, y el tema del criterio consultado."""
+    partes = []
+    for l in llamadas or []:
+        ped = l.get("pedido") or {}
+        for v in (ped.get("excluir") or []):
+            partes.append(_norm(v))
+        if ped.get("tope_precio"):
+            partes.append("presupuesto tope precio maximo gastar")
+        if ped.get("orden"):
+            partes.append(_norm(ped["orden"]))
+        if l.get("herramienta") == "consultar_criterio":
+            partes.append(_norm(ped.get("tema")))
+    return " ".join(x for x in partes if x)
+
+
+def _universo_de_destinos(llamadas: list) -> str:
+    partes = []
+    for l in llamadas or []:
+        ped = l.get("pedido") or {}
+        if l.get("herramienta") == "cotizar_envio":
+            partes.append(_norm(ped.get("localidad")))
+        for d in (ped.get("destinos") or []):
+            partes.append(_norm(d))
+        for it in (ped.get("items") or []):
+            partes.append(_norm(it.get("destino")))
+    return " ".join(x for x in partes if x)
+
+
+def reconciliar(pedido: dict, llamadas: list, trace_id: str = "") -> dict:
+    """Compara lo que el modelo DECLARO que entendio contra lo que PIDIO.
+
+    Devuelve:
+      faltantes: lista de frases imperativas para la vuelta siguiente. Vacia =
+                 el plan cubre el pedido.
+      preguntar: lista de contradicciones que el modelo NO puede resolver solo.
+                 Si viene con algo, el turno termina preguntandole al cliente.
+
+    No inventa nada ni completa por su cuenta: solo dice que falta.
+    """
+    faltantes: list[str] = []
+    preguntar: list[str] = []
+    if not pedido:
+        return {"faltantes": [], "preguntar": []}
+
+    uni_prod = _universo_de_busquedas(llamadas)
+    uni_rest = _universo_de_restricciones(llamadas)
+    uni_dest = _universo_de_destinos(llamadas)
+    nombres = [l.get("herramienta") for l in (llamadas or [])]
+
+    # 1. CADA ITEM NOMBRADO TIENE QUE HABER SIDO BUSCADO. Es el chequeo que
+    #    caza el auricular que se perdio: el cliente nombro tres categorias y
+    #    el plan trajo otras.
+    for it in (pedido.get("items") or []):
+        que = str(it.get("que") or "").strip()
+        if not que:
+            continue
+        if not _cubierto(que, uni_prod):
+            faltantes.append(
+                f"El cliente pidio '{que}' y no lo buscaste. Buscalo.")
+
+    # 2. AL REVES: NADA COTIZADO QUE EL CLIENTE NO HAYA PEDIDO. Caza el item
+    #    fantasma, el teclado que aparecio de la nada en la cuenta.
+    pedido_txt = " ".join(_norm(it.get("que")) for it in
+                          (pedido.get("items") or []))
+    for l in (llamadas or []):
+        if l.get("herramienta") != "armar_presupuesto":
+            continue
+        for it in ((l.get("pedido") or {}).get("items") or []):
+            pid = str(it.get("product_id") or "")
+            nom = ""
+            for l2 in (llamadas or []):
+                for p in ((l2.get("resultado") or {}).get("productos") or []):
+                    if str(p.get("id")) == pid:
+                        nom = _norm(p.get("categoria")) or _norm(p.get("nombre"))
+            if nom and pedido_txt and not _cubierto(nom, pedido_txt):
+                preguntar.append(
+                    f"El cliente no pidio '{nom}' entre los productos a "
+                    f"cotizar, pero lo nombro en otra parte del mensaje. "
+                    f"Preguntale si lo suma o si reemplaza a otra cosa.")
+
+    # 3. TODA RESTRICCION DECLARADA TIENE QUE VIAJAR EN ALGUN ARGUMENTO. Caza
+    #    el "sin partes chinas" que el modelo entendio y despues no aplico.
+    for r in (pedido.get("restricciones") or []):
+        if not _cubierto(r, uni_rest):
+            faltantes.append(
+                f"El cliente puso la condicion '{r}' y no la aplicaste en "
+                f"ninguna busqueda. Usala en el argumento que corresponda.")
+
+    # 4. TODO DESTINO NOMBRADO TIENE QUE ESTAR COTIZADO.
+    for d in (pedido.get("destinos") or []):
+        if not _cubierto(d, uni_dest):
+            faltantes.append(
+                f"El cliente nombro el destino '{d}' y no lo cotizaste.")
+
+    # 5. SI PIDIO PRECIO, TIENE QUE HABER CUENTA. La regla del negocio: dejar
+    #    un pedido de precio sin ningun numero es peor que cotizar de a partes.
+    if pedido.get("pide_precio") and "armar_presupuesto" not in nombres:
+        if uni_prod:
+            faltantes.append(
+                "El cliente pidio precio y todavia no armaste la cuenta. "
+                "Llama a armar_presupuesto con los ids que ya tenes.")
+
+    # 6. LA CONTRADICCION QUE EL MODELO MISMO DECLARO. No se resuelve
+    #    eligiendo: se pregunta. Es el `ambiguo` del certificador, aplicado al
+    #    pedido entero.
+    for c in (pedido.get("contradicciones") or []):
+        c = str(c).strip()
+        if c:
+            preguntar.append(f"Preguntale al cliente por esto antes de "
+                             f"avanzar: {c}")
+
+    if faltantes or preguntar:
+        log.info("reconciliador", trace_id=trace_id,
+                 faltantes=faltantes[:4], preguntar=preguntar[:4])
+    return {"faltantes": faltantes, "preguntar": preguntar}
+
+
+def instruccion_de_faltantes(rec: dict) -> str:
+    """El faltante convertido en instruccion para la vuelta siguiente del
+    bucle. Le decimos QUE falta, nunca COMO resolverlo: el modelo elige la
+    herramienta, el codigo solo marca el hueco."""
+    lineas = list(rec.get("faltantes") or [])
+    if not lineas:
+        return ""
+    return ("REVISION DEL PLAN. Comparé lo que el cliente pidió contra lo que "
+            "buscaste y falta esto:\n- " + "\n- ".join(lineas) +
+            "\nPedí ahora las herramientas que resuelvan lo que falta. Si algo "
+            "no se puede resolver con una herramienta, no lo inventes.")
+
+
+def instruccion_de_preguntas(rec: dict) -> str:
+    """Cuando el pedido no cierra, el turno NO elige por el cliente: pregunta.
+    Esto entra en el prompt del redactor y manda sobre el resto."""
+    lineas = list(rec.get("preguntar") or [])
+    if not lineas:
+        return ""
+    return ("EL PEDIDO NO CIERRA Y NO PODES ELEGIR VOS. Antes de cerrar la "
+            "respuesta, preguntale al cliente lo siguiente, con naturalidad y "
+            "en una sola pregunta si se puede:\n- " + "\n- ".join(lineas) +
+            "\nCotizá igual lo que sí está definido: dejarlo sin ningún número "
+            "es peor. Pero la pregunta va sí o sí.")

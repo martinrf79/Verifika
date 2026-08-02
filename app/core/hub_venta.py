@@ -35,6 +35,7 @@ import time
 
 from app.config import get_settings
 from app.core import herramientas as H
+from app.core import pedido as P
 from app.logger import get_logger
 from app.storage.firestore_client import get_conversation, save_conversation
 
@@ -42,7 +43,14 @@ log = get_logger(__name__)
 settings = get_settings()
 
 _TIMEOUT_S = 14
-_MAX_HERRAMIENTAS = 8
+_MAX_HERRAMIENTAS = 10
+# EL BUCLE ACOTADO reemplaza a las dos rondas fijas (Martin, 2-ago). Una
+# pregunta dificil tiene profundidad desconocida de antemano: buscar, mirar lo
+# que volvio, darse cuenta de que falta algo, buscar distinto, y recien ahi
+# contestar. Con dos rondas clavadas eso era imposible por diseño. Corta solo,
+# apenas el reconciliador no encuentra huecos, asi que un saludo sigue costando
+# una sola llamada y un pedido simple dos.
+_MAX_RONDAS = 4
 
 # ── LOS CANDADOS ─────────────────────────────────────────────────────────────
 # Las reglas viven en UN solo lugar y valen para las dos llamadas. Antes estaban
@@ -101,7 +109,14 @@ COMO ESCRIBIS:
 - Los datos de pago -CBU, alias, titular, banco- salen SOLO de la herramienta.
   Si no los tenes, no los escribas: pedile el dato que falte para pasarselos."""
 
-_INSTRUCCION_UNO = """Mira la charla y decidi que datos necesitas para
+_INSTRUCCION_UNO = """Si el cliente pide productos, precios, un presupuesto o un
+envio, lo PRIMERO es llamar a registrar_pedido declarando lo que entendiste, en
+la misma tanda que las demas herramientas. Contá los items uno por uno como los
+pidio el cliente, y si algo del mensaje no cierra -cantidades que no dan, algo
+nombrado en el envio que no esta en el pedido- va en contradicciones, NO lo
+resuelvas vos.
+
+Despues mira la charla y decidi que datos necesitas para
 contestar el ultimo mensaje. Podes pedir varias herramientas a la vez y
 conviene: si el cliente pregunta por un producto Y por el envio, pedi las dos
 juntas. Si el mensaje no necesita ningun dato -un saludo, un gracias, una
@@ -252,7 +267,7 @@ def _mensajes(negocio: str, memoria: str, history: list, mensaje: str,
 
 
 async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
-                              trace_id, llamadas=None):
+                              trace_id, llamadas=None, revision=""):
     """QUE BUSCAR. Devuelve (lista de pedidos, texto directo si no pidio nada).
 
     Con `llamadas` es la SEGUNDA ronda: el modelo ve lo que ya trajo y puede
@@ -267,8 +282,18 @@ async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
         return [], ""
     esquemas = H.esquemas(tienda_id)
     if llamadas:
-        msgs = _mensajes(negocio, memoria, history, mensaje,
-                         _INSTRUCCION_RONDA_DOS, H.contexto_json(llamadas))
+        # AHORRO MEDIDO: en las vueltas de encadenado el modelo ya declaró el
+        # pedido y ya buscó. Mandarle otra vez los ocho esquemas cuesta ~1200
+        # tokens por turno al pedo, y los 93 enums de consultar_criterio son el
+        # 28% de eso. Van solo las que puede encadenar de verdad.
+        encadenables = {"buscar_productos", "ficha_producto", "cotizar_envio",
+                        "armar_presupuesto", "ver_compatibilidad",
+                        "tomar_pedido", "consultar_politica"}
+        esquemas = [e for e in esquemas
+                    if e.get("function", e).get("name") in encadenables]
+        instr = _INSTRUCCION_RONDA_DOS + (("\n\n" + revision) if revision else "")
+        msgs = _mensajes(negocio, memoria, history, mensaje, instr,
+                         H.contexto_json(llamadas))
     else:
         msgs = _mensajes(negocio, memoria, history, mensaje, _INSTRUCCION_UNO)
 
@@ -335,13 +360,19 @@ async def _ejecutar_en_paralelo(pedidos: list, tienda_id: str,
     return llamadas
 
 
-async def _redactar(negocio, memoria, history, mensaje, llamadas, trace_id):
-    """LLAMADA DOS. El modelo escribe con el JSON delante."""
+async def _redactar(negocio, memoria, history, mensaje, llamadas, trace_id,
+                    obligacion=""):
+    """LLAMADA FINAL. El modelo escribe con el JSON delante.
+
+    `obligacion` es lo que el RECONCILIADOR encontró que no cierra y el modelo
+    no puede resolver eligiendo. Va al final del prompt, que es donde más pesa.
+    """
     cli = _cliente()
     if cli is None:
         return ""
     datos = H.contexto_json(llamadas)
-    msgs = _mensajes(negocio, memoria, history, mensaje, _INSTRUCCION_DOS, datos)
+    instr = _INSTRUCCION_DOS + (("\n\n" + obligacion) if obligacion else "")
+    msgs = _mensajes(negocio, memoria, history, mensaje, instr, datos)
 
     def _call():
         r = cli.chat.completions.create(
@@ -870,10 +901,13 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # ya certificados. Mas rondas no: seria volver a una cadena larga.
     llamadas: list = []
     texto_directo = ""
-    for ronda in (1, 2):
+    revision = ""
+    obligacion = ""
+    declarado: dict = {}
+    for ronda in range(1, _MAX_RONDAS + 1):
         pedidos, texto_directo = await _pedir_herramientas(
             negocio, memoria, history, raw_message, tienda_id, trace_id,
-            llamadas if ronda == 2 else None)
+            llamadas if ronda > 1 else None, revision=revision)
         log.info("hub_venta_pedidos", trace_id=trace_id, ronda=ronda,
                  herramientas=[p["nombre"] for p in pedidos],
                  args=[p.get("args") for p in pedidos][:4])
@@ -885,10 +919,34 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                            (l["resultado"] or {}).get("estado"))
                           for l in llamadas])
 
+        # ── RECONCILIAR: lo declarado contra lo hecho ───────────────────
+        # Acá está el control que faltaba. Los diecinueve que había miraban la
+        # prosa ya escrita; este mira la DECISION, antes de escribir. Si algo
+        # falta se lo devolvemos al modelo para la vuelta siguiente; si el
+        # pedido tiene una contradicción, el turno termina PREGUNTANDO y no
+        # eligiendo por el cliente.
+        for l in llamadas:
+            if l.get("herramienta") == "registrar_pedido":
+                declarado = (l.get("resultado") or {}).get("pedido") or declarado
+        rec = P.reconciliar(declarado, llamadas, trace_id)
+        obligacion = P.instruccion_de_preguntas(rec)
+        revision = P.instruccion_de_faltantes(rec)
+        if not revision:
+            break
+        if ronda == _MAX_RONDAS:
+            # Se agotaron las vueltas con el hueco abierto. NO se completa por
+            # nuestra cuenta: se le dice al redactor que pregunte lo que falta.
+            log.warning("hub_venta_faltantes_sin_resolver", trace_id=trace_id,
+                        faltantes=rec.get("faltantes", [])[:4])
+            obligacion = (obligacion + "\n\n" if obligacion else "") + (
+                "No pudiste conseguir todo lo que el cliente pidió. Contá "
+                "honesto qué falta y pedile el dato que haga falta. No "
+                "completes de memoria lo que no trajo ninguna herramienta.")
+
     # ── 3. REDACTAR CON EL DATO DELANTE ─────────────────────────────────
     if llamadas:
         texto = await _redactar(negocio, memoria, history, raw_message,
-                                llamadas, trace_id)
+                                llamadas, trace_id, obligacion=obligacion)
     else:
         # Sin herramientas el modelo ya contesto en la llamada uno: es un
         # saludo, un gracias o una respuesta a algo que preguntamos nosotros.
