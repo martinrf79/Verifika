@@ -173,6 +173,21 @@ def _modelo_decisor() -> str:
             or _modelo())
 
 
+def _loguear_tokens(rol: str, modelo: str, respuesta, trace_id: str) -> None:
+    """LO QUE CUESTA EL TURNO. Sin esto el costo de cambiar de modelo se estima
+    de memoria, y el decisor y el redactor se cobran distinto: el decisor paga
+    los ocho esquemas de herramientas en CADA ronda. Nunca rompe el turno."""
+    try:
+        u = getattr(respuesta, "usage", None)
+        if u is None:
+            return
+        log.info("hub_venta_tokens", trace_id=trace_id, rol=rol, modelo=modelo,
+                 entrada=getattr(u, "prompt_tokens", 0),
+                 salida=getattr(u, "completion_tokens", 0))
+    except Exception:  # noqa: BLE001 — medir no puede tumbar la venta
+        pass
+
+
 def _extra_decisor() -> dict:
     """`reasoning_effort: none` es de Gemini. Otro proveedor lo rechaza con 400,
     asi que solo viaja cuando el decisor sigue siendo el de casa."""
@@ -304,6 +319,7 @@ async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
             model=_modelo_decisor(), messages=msgs, tools=esquemas,
             tool_choice="auto", temperature=0.3, max_tokens=900,
             extra_body=_extra_decisor())
+        _loguear_tokens("decisor", _modelo_decisor(), r, trace_id)
         m = r.choices[0].message
         pedidos = []
         for tc in (getattr(m, "tool_calls", None) or []):
@@ -370,6 +386,7 @@ async def _redactar(negocio, memoria, history, mensaje, llamadas, trace_id):
         r = cli.chat.completions.create(
             model=_modelo(), messages=msgs, temperature=0.6, max_tokens=1200,
             extra_body={"reasoning_effort": "none"})
+        _loguear_tokens("redactor", _modelo(), r, trace_id)
         return r.choices[0].message.content or ""
 
     from app.core.llm_reintento import llamar_con_reintento
