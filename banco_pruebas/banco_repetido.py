@@ -201,6 +201,11 @@ def _reporte(informe: dict, vueltas: int) -> str:
 
 def main():
     args = [a for a in sys.argv[1:]]
+    # --fijar-piso graba ESTE resultado como la referencia contra la que se van
+    # a comparar las corridas siguientes. Es a mano y a proposito: si el piso se
+    # moviera solo, una regresion lenta se volveria el piso nuevo.
+    fijar_piso = "--fijar-piso" in args
+    args = [a for a in args if a != "--fijar-piso"]
     vueltas = 3
     if args and re.fullmatch(r"\d+", args[0]):
         vueltas = int(args.pop(0))
@@ -229,7 +234,29 @@ def main():
     todos = sum(1 for c in informe.values() for corrida in c for _ in corrida)
     print(f"TASA DE FALLO GLOBAL: {int(100 * malos / max(1, todos))}% "
           f"({malos} de {todos} turnos)")
-    return 0
+
+    # ── LA COMPUERTA ────────────────────────────────────────────────────
+    # La tasa de fallo de arriba dice CUANTO fallo; esto dice si empeoro
+    # contra el mejor numero que alcanzamos. Sin esta comparacion, cada
+    # sesion vuelve a declarar verde sobre su propio parche.
+    from banco_pruebas import piso as P
+    from app.config import get_settings
+    m = P.metricas(informe)
+    m["_guiones"] = [Path(n).stem for n in nombres]
+    _s = get_settings()
+    # getattr porque DECISOR_MODEL puede no existir todavia: el banco
+    # tiene que correr contra cualquier version del config, no al reves.
+    modelo = getattr(_s, "DECISOR_MODEL", "") or _s.GEMINI_MODEL
+    referencia = P.leer()
+    print(P.reporte(m, referencia))
+    with open(destino, "a", encoding="utf-8") as fh:
+        fh.write("\n\n## Metricas y piso\n\n```\n"
+                 + P.reporte(m, referencia) + "\n```\n")
+    if fijar_piso:
+        nuevo = P.fijar(m, m["_guiones"], vueltas, modelo)
+        print(f"\nPISO FIJADO en {P.ARCHIVO} (commit {nuevo['commit']}).")
+        return 0
+    return 1 if P.comparar(m, referencia)["frena"] else 0
 
 
 if __name__ == "__main__":

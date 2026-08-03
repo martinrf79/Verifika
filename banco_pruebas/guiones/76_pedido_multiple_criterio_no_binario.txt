@@ -1,0 +1,26 @@
+# EL MENSAJE REAL DE MARTIN, 2-ago-2026. Dificultad media-alta en UN solo turno.
+# Tiene cuatro trampas juntas, y cada una es una CLASE de falla, no un caso:
+#   1. Seis items en tres categorias, con cantidades explicitas.
+#   2. Una CONTRADICCION a proposito: pide precio de auriculares, mouse y
+#      memorias, pero despues manda un TECLADO a Concordia. Los items no cierran
+#      con los envios. Lo correcto es PREGUNTAR, no elegir en silencio.
+#   3. Un criterio NO BINARIO: "las menos partes chinas posibles". El catalogo
+#      real dice que los 46 auriculares, los 52 mouse y las 96 memorias se
+#      fabrican en China; las memorias dicen "Taiwan o China segun linea". O sea
+#      que "cero chino" no existe pero "menos chino" SI. Contestar "no tenemos
+#      nada" es literal y mata la venta; ignorar el criterio y cotizar lo mas
+#      caro es peor todavia.
+#   4. "El precio no seria tan importante" NO significa "dame lo mas caro".
+#
+# MEDIDO EL 2-ago con el decisor SIN pensar: cotizo 4 categorias, invento el
+# teclado como item, borro un auricular, ignoro el excluir que el esquema ofrece
+# y ordeno por caro. Total 2,2 millones. El juez de invariantes dijo LIMPIO,
+# porque ninguna de las cuatro fallas es una mentira sobre el catalogo.
+# Con el decisor PENSANDO: tres categorias correctas, excluir=china en las tres,
+# sin teclado fantasma. Pero contesto "no contamos con nada de origen no chino"
+# y no pregunto por la contradiccion. Falta el plan verificado y el criterio
+# por grados.
+Dame precio de dos auriculares, dos mouse y dos memorias. El precio no seria tan importante. Lo que si que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse sera envio a Cordoba capital. Un teclado y un mouse sera envio a Concordia. Los otros dos articulos seran con envio a posadas. Divide el presupuesto en setenta treinta, ya que vere en la fase siguiente como seguimos.
+> no_contiene: no puedo armarte | no contamos con auriculares | no contamos con productos
+el teclado sumalo aparte. y si todo se fabrica en china, mostrame lo menos chino que tengas
+> contiene: Total
