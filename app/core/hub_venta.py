@@ -648,6 +648,43 @@ def _sin_negar_lo_traido(texto: str, llamadas: list, trace_id: str) -> str:
     return re.sub(r"\n{3,}", "\n\n", limpio).strip()
 
 
+_RE_RENGLON_CUENTA = re.compile(
+    r"(?im)^\s*(?:presupuesto:|subtotal:|total:|env[ií]o|- ?\d+\s*x\s).*$")
+
+
+def _norm_renglon(s: str) -> str:
+    """Compara renglones sin que un espacio de mas los haga distintos."""
+    return re.sub(r"\s+", " ", str(s or "")).strip().lower()
+
+
+def _bloque_entero_o_repuesto(texto: str, bloque: str, trace_id: str) -> str:
+    """LA CUENTA VIAJA ENTERA O NO VIAJA.
+
+    El bug que esto cierra: la guarda vieja daba por pegado el bloque con solo
+    encontrar su PRIMERA linea, y esa linea es el literal "Presupuesto:". Al
+    modelo le alcanzaba con escribir esa palabra para que el codigo no repusiera
+    nada. Medido el 3-ago en 56_ronda_dificil: el modelo anuncio "incluyendo el
+    microfono", listo un solo renglon, el candado de plata le podo el resto por
+    no estar respaldado, y el cliente recibio un presupuesto SIN el microfono y
+    SIN Total. El turno se logueo hub_venta_ok.
+
+    Ahora se exige el bloque COMPLETO, renglon por renglon. Si falta uno solo,
+    se barren los renglones de cuenta que escribio el modelo -para no dejar la
+    version mutilada al lado de la buena- y se pega el bloque del codigo."""
+    if not bloque:
+        return texto
+    esperados = [ln for ln in bloque.splitlines() if ln.strip()]
+    presentes = {_norm_renglon(ln) for ln in (texto or "").splitlines()}
+    if all(_norm_renglon(ln) in presentes for ln in esperados):
+        return texto
+    limpio = _RE_RENGLON_CUENTA.sub("", texto or "")
+    limpio = re.sub(r"\n{3,}", "\n\n", limpio).strip()
+    log.warning("hub_venta_bloque_repuesto", trace_id=trace_id,
+                faltaban=[ln[:40] for ln in esperados
+                          if _norm_renglon(ln) not in presentes][:3])
+    return (limpio + "\n\n" + bloque).strip()
+
+
 def _sin_narracion_interna(texto: str, trace_id: str) -> str:
     """El cliente no ve la cocina. La regla esta en el prompt y el modelo igual
     la rompe: "encontre varias opciones y el sistema me indica que hay modelos
@@ -941,9 +978,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # La cuenta se manda entera: si el modelo la reescribio o se la comio, el
     # bloque del codigo vuelve al final. No se negocia, es la unica parte del
     # mensaje que el modelo no redacta.
-    if bloque and bloque.splitlines()[0].strip() not in texto:
-        texto = (texto + "\n\n" + bloque).strip()
-        log.warning("hub_venta_bloque_repuesto", trace_id=trace_id)
+    texto = _bloque_entero_o_repuesto(texto, bloque, trace_id)
     texto = _RE_ID_INTERNO.sub("", texto).strip()
 
     # ── 5. CIERRE Y COBRO ───────────────────────────────────────────────

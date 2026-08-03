@@ -414,3 +414,46 @@ def test_el_estado_de_la_herramienta_no_se_le_cuenta_al_cliente():
     salida = HV._sin_narracion_interna(texto, "t1")
     assert "estado es ambiguo" not in salida
     assert "¿Cual preferis?" in salida
+
+
+def test_el_bloque_mutilado_se_repone_entero():
+    """EL BUG DEL 3-ago. La guarda vieja daba por pegado el bloque con solo ver
+    su primera linea, que es el literal "Presupuesto:". Al modelo le alcanzaba
+    con escribir esa palabra para que el codigo no repusiera nada, y el cliente
+    se quedaba sin el Total.
+
+    Caso real de 56_ronda_dificil_memoria_razonamiento vuelta 3 turno 3: el bot
+    anuncio "incluyendo el microfono", listo un solo renglon y no cerro la
+    cuenta."""
+    from app.core.hub_venta import _bloque_entero_o_repuesto
+
+    bloque = ("Presupuesto:\n"
+              "- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n"
+              "- 1x Microfono FIFINE K669B Negro: $69.000 c/u = $69.000\n"
+              "Subtotal: $184.000\n"
+              "Total: $184.000")
+    mutilado = ("He ajustado el presupuesto incluyendo el microfono.\n\n"
+                "Presupuesto:\n\n"
+                "- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n\n"
+                "Te gustaria avanzar?")
+
+    salida = _bloque_entero_o_repuesto(mutilado, bloque, "t")
+    assert "Total: $184.000" in salida, "el cliente tiene que recibir el Total"
+    assert "Microfono FIFINE K669B" in salida, "faltaba el item anunciado"
+    # y no queda la version mutilada al lado de la buena
+    assert salida.count("Auriculares Redragon Zeus X Negro") == 1
+    assert "He ajustado el presupuesto" in salida, "la prosa del modelo se conserva"
+
+
+def test_el_bloque_ya_pegado_no_se_duplica():
+    """Si el modelo pego la cuenta entera y bien, no se toca nada."""
+    from app.core.hub_venta import _bloque_entero_o_repuesto
+
+    bloque = ("Presupuesto:\n"
+              "- 1x Mouse: $10.000 c/u = $10.000\n"
+              "Subtotal: $10.000\n"
+              "Total: $10.000")
+    texto = "Mira lo que te queda:\n\n" + bloque + "\n\nTe sirve?"
+    salida = _bloque_entero_o_repuesto(texto, bloque, "t")
+    assert salida == texto
+    assert salida.count("Total: $10.000") == 1
