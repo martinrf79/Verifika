@@ -170,12 +170,33 @@ tiene billing, la Billing API esta deshabilitada, Monitoring da 403):**
 6. La cuenta fuera del prompt: el modelo escribe `{cuenta}` y el codigo estampa.
    Mata `plata_inventada`, `cuenta_retipeada` y `bloque_repuesto` de una.
 
-**PENDIENTE DE CONSOLA, Martin no pudo entrar el 3-ago:**
-- Cleanup policy en Artifact Registry `cloud-run-source-deploy` y en el bucket
-  `run-sources-*`. 153 builds en 7 semanas, revision viva 399, nada se borra.
-  Es el candidato principal del aviso de gasto sin cambios.
-- `firestore-backup-daily` falla con 404 todos los dias a las 06:00. HACE DIAS
-  QUE NO SE RESPALDA NADA.
+**CONSOLA, HECHO EL 3-ago POR MARTIN. Los cuatro cerrados:**
+- BACKUP DE FIRESTORE, ANDANDO. Se creo la politica NATIVA de Firestore:
+  `gcloud firestore backups schedules create --database='(default)'
+  --recurrence=daily --retention=7d`. No usa Cloud Scheduler ni bucket.
+- EL SCHEDULER ROTO, BORRADO. `firestore-backup-daily` daba 404 todos los dias
+  a las 06:00. EL DATO QUE LO CIERRA: el bucket `memory-engine-v1-firestore-
+  exports` mide 0 BYTES, o sea NUNCA hizo un backup exitoso desde que se creo.
+  No fallaba hace poco: no funciono nunca. Se estuvo sin respaldo todo el tiempo.
+- ARTIFACT REGISTRY, LIMPIANDO. `cloud-run-source-deploy` pesaba 13.796 MB, unos
+  13,8 GB acumulados desde el 23-mar. Politica activa, dry run disabled:
+  conservar las 5 versiones mas recientes + borrar lo de mas de 30 dias.
+- BUCKET DE SOURCES, CON CICLO DE VIDA. `run-sources-memory-engine-v1-
+  southamerica-east1` pesaba 4,03 GB de tarballs de codigo, uno por deploy.
+  Regla de borrado a los 30 dias aplicada.
+- TOTAL A LIBERAR ~18 GB. En plata es modesto, ~1,50 USD/mes, pero era
+  recurrente y crecia ~2,8 GB por mes.
+
+**LO QUE DISPARO EL AVISO DE BILLING NO FUE CLOUD RUN: FUE LA API DE GEMINI.**
+La Gemini API paga factura contra la MISMA cuenta de facturacion de GCP, asi que
+suma al presupuesto que dispara los avisos del 50 y del 90 por ciento. Medido:
+produccion consume 0 a 67 llamadas por dia, nada; una sola sesion de bancos con
+`GEMINI_API_KEY_PROD` hizo 1991 llamadas, unas 30 veces el consumo diario del
+bot real, y cada llamada del decisor arrastra 2586 tokens SOLO de los esquemas
+de las 8 herramientas, dos rondas por turno.
+REGLA PRACTICA: los bancos van con la clave GRATIS y `BANCO_PAUSA_S` alto salvo
+que lo que se mida sea la latencia. La clave paga solo cuando el numero tiene
+que ser fiel. Cloud Run esta sano: escala a cero, sin min-instances.
 
 **==== 3-ago-2026 — TODO MERGEADO A MAIN, Y LA REGLA DE RAMAS ====**
 
