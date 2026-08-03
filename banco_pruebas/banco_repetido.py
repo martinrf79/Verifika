@@ -162,6 +162,25 @@ async def correr(nombres: list[str], vueltas: int) -> dict:
     return informe
 
 
+def _percentil(valores: list, p: float) -> int:
+    """Percentil por el metodo del vecino mas cercano. Sin numpy: el banco no
+    tiene por que arrastrar una dependencia para sacar dos numeros."""
+    if not valores:
+        return 0
+    ordenados = sorted(valores)
+    i = min(len(ordenados) - 1, max(0, round(p * (len(ordenados) - 1))))
+    return int(ordenados[i])
+
+
+def _bloque_latencia(informe: dict) -> str:
+    ms = [t["ms"] for c in informe.values() for corrida in c for t in corrida
+          if t.get("ms")]
+    if not ms:
+        return ""
+    return (f"**LATENCIA por turno: p50 {_percentil(ms, .50)}ms | "
+            f"p95 {_percentil(ms, .95)}ms | n {len(ms)}**\n")
+
+
 def _reporte(informe: dict, vueltas: int) -> str:
     lineas = ["# BANCO REPETIDO — " + _dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
               "", f"{vueltas} vueltas por guion, camino vivo de produccion.", ""]
@@ -184,6 +203,10 @@ def _reporte(informe: dict, vueltas: int) -> str:
     pct_total = int(100 * total_malos / max(1, total_turnos))
     lineas += ["", f"**TASA DE FALLO GLOBAL: {pct_total}% "
                    f"({total_malos} de {total_turnos} turnos)**", ""]
+    # LATENCIA. El ms por turno ya se medía y se tiraba. Se reporta p50 y p95
+    # porque comparar decisores sin el tiempo es media medición: un modelo que
+    # falla igual pero tarda el doble no sirve, y al revés tampoco.
+    lineas.append(_bloque_latencia(informe))
     lineas.append("## Turnos con problema, texto completo")
     for nombre, corridas in informe.items():
         for v, corrida in enumerate(corridas, 1):
@@ -229,6 +252,7 @@ def main():
     todos = sum(1 for c in informe.values() for corrida in c for _ in corrida)
     print(f"TASA DE FALLO GLOBAL: {int(100 * malos / max(1, todos))}% "
           f"({malos} de {todos} turnos)")
+    print(_bloque_latencia(informe).replace("**", "").strip())
     return 0
 
 

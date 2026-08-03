@@ -72,6 +72,17 @@ class Settings(BaseModel):
     # que el modelo ve. Se refresca solo al expirar. Config operativa.
     GEMINI_CACHE_TTL_S: int = int(os.getenv("GEMINI_CACHE_TTL_S", "1800"))
 
+    # DECISOR — la llamada UNO de hub_venta, la que elige herramientas. Es config
+    # operativa, no un camino nuevo: con DECISOR_BASE_URL vacio el decisor sigue
+    # yendo por Gemini exactamente como antes, mismo cliente y mismo modelo. Solo
+    # si se setea la base_url el decisor apunta a otro provider compatible con la
+    # API de OpenAI (Groq: https://api.groq.com/openai/v1, OpenAI:
+    # https://api.openai.com/v1). El REDACTOR, la llamada DOS, NO se toca nunca:
+    # sigue en Gemini pase lo que pase.
+    DECISOR_BASE_URL: str = os.getenv("DECISOR_BASE_URL", "")
+    DECISOR_API_KEY: str = os.getenv("DECISOR_API_KEY", "")
+    DECISOR_MODEL: str = os.getenv("DECISOR_MODEL", "")
+
     # OpenAI nativo (servidores en EEUU, tool calling solido). Se activa con
     # LLM_PROVIDER=openai o INTERPRETER_PROVIDER=openai. Usa el mismo cliente
     # OpenAI con la base_url default (api.openai.com). gpt-4o-mini es economico
