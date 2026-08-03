@@ -191,6 +191,14 @@ def inventario(tienda_id, vivo=False):
     esc(f"- FAQ: **{n_faq}** temas")
     cat_bc = bc.get("categorias") if isinstance(bc, dict) else None
     esc(f"- Base de conocimiento: **{len(cat_bc or [])}** categorias de criterio")
+    # La prosa que se unifico el 3-ago: antes vivia en markdowns y en constantes
+    # de Python, y por eso no se contaba en ningun inventario.
+    con_movida = [c for c in (cat_bc or []) if c.get("movida")]
+    esc(f"- Movidas de venta escritas: **{len(con_movida)}**")
+    esc(f"- Mensajes fijos al cliente: "
+        f"**{len([k for k in (bc.get('mensajes') or {}) if not k.startswith('_')])}**")
+    esc(f"- Identidad del vendedor en la fuente: "
+        f"**{'si' if bc.get('identidad') else 'no'}**")
     lista_nv = nv.get("no_vendidas") if isinstance(nv, dict) else nv
     esc(f"- Categorias no vendidas: **{len(lista_nv or [])}**")
     esc(f"- Specs preguntables: **{len(cfg)}**")

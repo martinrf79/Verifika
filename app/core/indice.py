@@ -105,15 +105,29 @@ GEMELOS = {
 # NO entran al `vocabulario()`: el interprete no las declara nunca. No son temas
 # que el cliente pregunta, son salidas que el flujo decide. Meterlas en su enum
 # seria darle al modelo la posibilidad de disparar un handoff.
+#
+# El TEXTO de cada una vive en la fuente (`base_conocimiento.json`, bloque
+# `mensajes`): son mensajes de marca que salen tal cual al cliente, y desde el
+# 3-ago toda la prosa esta en un solo archivo. Lo que queda aca es CUALES son
+# las operativas, que es cableado, no texto. El segundo argumento es la red por
+# si el archivo faltara.
+def _msj(clave: str, defecto: str) -> str:
+    from app.core.guia_venta_prosa import mensaje
+    return mensaje(clave, defecto)
+
+
 OPERATIVAS = {
-    "pedido_ya_tomado": (
+    "pedido_ya_tomado": _msj(
+        "pedido_ya_tomado",
         "Tu pedido ya quedó tomado. Una persona del equipo te contacta a la "
         "brevedad para coordinar el pago y el envío. ¿Te ayudo con algo más?"),
-    "no_interesado": (
+    "no_interesado": _msj(
+        "no_interesado",
         "Perfecto, sin problema. Cuando quieras retomar, acá estoy. "
         "Igual le paso el dato a una persona del equipo por si te puede dar "
         "una mano."),
-    "handoff_humano": (
+    "handoff_humano": _msj(
+        "handoff_humano",
         "Buenisimo, gracias por la decision. En un momento te contacta "
         "una persona del equipo para coordinar tu compra. Para que pueda "
         "hablarte directo, pasame por favor tu nombre y un telefono "

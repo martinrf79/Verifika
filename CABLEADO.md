@@ -23,10 +23,22 @@ no repetir eso, y el checklist para robustecer área por área.
 
 ## Las dos fuentes de verdad (y el problema de namespace)
 
-1. **CONTACTOR** — `data/clientes/<tienda>/base_conocimiento.json`. Las
-   CATEGORÍAS (el enum) al que el INTÉRPRETE clasifica cada mensaje. Cada una:
-   `id`, `grupo`, `pilar`, `descripcion`, `disparadores`, `criterio` (el "desde
-   dónde contestar" del modelo, **sin un solo dígito**).
+1. **CONTACTOR** — `data/clientes/<tienda>/base_conocimiento.json`. Desde el
+   3-ago es la fuente ÚNICA de toda la prosa que no es dato duro. Trae:
+   - `identidad`: la voz del vendedor (rol, registro, dato duro, oficio). Es lo
+     que el hub manda como prompt de sistema; antes era una constante en
+     `hub_venta.py`.
+   - `categorias`: el enum al que se ata el modelo. Cada una con `id`, `grupo`,
+     `pilar`, `descripcion`, `disparadores`, `criterio` (el "desde dónde
+     contestar") y, donde aplica, la MOVIDA de venta: `objetivo`, `movida` y
+     `escape` (el "cómo se conduce" y "cuándo NO"). Las movidas son las curadas
+     B1 a B31 que Martín aprobó y que quedaron huérfanas al borrarse el
+     compositor; volvieron acá y llegan al modelo por `consultar_criterio`.
+   - `mensajes`: los textos que salen TAL CUAL al cliente (bloqueo de jailbreak,
+     fallback, sobrecarga, operativas de cierre). Estaban en cinco módulos.
+
+   **Sin un solo dígito** en `criterio`, `objetivo`, `movida` ni `escape`: el
+   número lo trae la herramienta. Lo lockea `tests/test_fuente_unica.py`.
 2. **FAQ** — `data/clientes/<tienda>/faq.json`. Las `respuesta_curada` de cara al
    cliente y el DATO DURO (`valores` con placeholders como `{{envio_gratis}}`).
 

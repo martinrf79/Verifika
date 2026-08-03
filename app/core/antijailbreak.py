@@ -21,6 +21,7 @@ app/core/orchestrator.py, al inicio de process_message.
 import re
 import unicodedata
 
+from app.core.guia_venta_prosa import mensaje as _mensaje_fuente
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -33,10 +34,14 @@ LARGO_SOSPECHOSO = 4000
 
 # Respuesta estatica de marca cuando se detecta un ataque. Cordial, no acusatoria
 # (un cliente curioso no es un enemigo), reencauza a la venta.
-RESPUESTA_BLOQUEO = (
+#
+# El TEXTO vive en la fuente (`base_conocimiento.json`, bloque `mensajes`), como
+# toda la prosa desde el 3-ago: es un mensaje de marca que Martin puede limar sin
+# tocar Python. Lo de abajo es la red por si el archivo faltara.
+RESPUESTA_BLOQUEO = _mensaje_fuente(
+    "bloqueo_jailbreak",
     "Disculpa, con eso no te puedo ayudar. Estoy para asesorarte con productos, "
-    "precios, envios y formas de pago. Que estas buscando?"
-)
+    "precios, envios y formas de pago. Que estas buscando?")
 
 # Patrones de manipulacion. Se evaluan sobre el texto NORMALIZADO (minusculas,
 # sin acentos), asi "ignorá" e "ignora" matchean igual. Cada patron apunta a una

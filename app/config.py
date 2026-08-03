@@ -3,6 +3,18 @@ import os
 from functools import lru_cache
 from pydantic import BaseModel
 
+
+def _mensaje_de_la_fuente(clave: str, defecto: str) -> str:
+    """Un mensaje fijo al cliente, leido de `base_conocimiento.json`. Va
+    envuelto porque config se importa antes que casi todo y un fallo de lectura
+    no puede tumbar el arranque: sin fuente vale el literal de al lado."""
+    try:
+        from app.core.guia_venta_prosa import mensaje
+        return mensaje(clave, defecto)
+    except Exception:
+        return defecto
+
+
 class Settings(BaseModel):
     # NOTA: el cartel de interpretacion (ex flag INTERPRETE_DEBUG) se quito del
     # mensaje al cliente. La interpretacion ahora va al log (evento
@@ -173,12 +185,16 @@ class Settings(BaseModel):
     # VERIFIKA — núcleo verificable
     # ────────────────────────────────────────────────────────
 
-    # Mensaje cuando Verifika decide no mandar la respuesta del Solver
+    # Mensaje cuando el turno no puede contestar y sale el fallback. El TEXTO
+    # vive en la fuente (`base_conocimiento.json`, bloque `mensajes`), donde
+    # vive toda la prosa desde el 3-ago; la env sigue existiendo para pisarlo
+    # en una prueba puntual, y el literal es la red si el archivo faltara.
     VERIFIKA_FALLBACK_MESSAGE: str = os.getenv(
         "VERIFIKA_FALLBACK_MESSAGE",
-        "No tengo esa información confirmada en el catálogo. "
-        "Dejame consultar y te confirmo en breve."
-    )
+        _mensaje_de_la_fuente(
+            "sin_dato_confirmado",
+            "No tengo esa información confirmada en el catálogo. "
+            "Dejame consultar y te confirmo en breve."))
 
     # ────────────────────────────────────────────────────────
     # CAPA DE PRODUCTO — herramientas del agente de ventas

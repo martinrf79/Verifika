@@ -78,9 +78,13 @@ class ConsultarPolitica(BaseModel):
 
 
 class ConsultarCriterio(BaseModel):
-    """Trae el CRITERIO de venta de la casa sobre un tema: para que sirve cada
-    cosa, que conviene segun el uso, como se comparan, que mirar antes de
-    elegir. Es la base para razonar y recomendar."""
+    """Trae lo que la casa tiene escrito sobre un tema, en dos mitades. El
+    CRITERIO: para que sirve cada cosa, que conviene segun el uso, como se
+    comparan, que mirar antes de elegir. Y la MOVIDA: que se busca en esa
+    situacion, como se arma el mensaje y cuando NO se usa. Pedila para
+    recomendar y comparar, y tambien para manejar una objecion de precio, un
+    regateo, una desconfianza, una queja, un apuro, una postergacion, un
+    reclamo, una cancelacion o una despedida."""
     tema: str = Field(description="El tema exacto de la lista.")
 
 
@@ -221,10 +225,13 @@ def esquemas(tienda_id: str) -> list[dict]:
     lado del modelo: no puede pedir una categoria que no vendemos ni un tema de
     politica que no existe."""
     from app.storage.firestore_client import get_categories, get_all_faq
-    from app.core.guia_venta_prosa import GUIA_VENTA
+    from app.core.guia_venta_prosa import temas as temas_criterio
     cats = [str(c) for c in (get_categories(tienda_id=tienda_id) or [])]
     temas = sorted((get_all_faq(tienda_id=tienda_id) or {}).keys())
-    criterios = list(GUIA_VENTA)
+    # Los temas de criterio incluyen los que solo tienen MOVIDA -queja,
+    # despedida, postergacion-: sin ellos en el enum el modelo no puede pedir
+    # lo unico que la fuente escribio para esas situaciones.
+    criterios = temas_criterio()
     fuera = []
     for nombre, modelo in _MOLDES.items():
         esq = _esquema_de(modelo)
@@ -507,25 +514,33 @@ def consultar_politica(a: ConsultarPolitica, tienda_id: str) -> dict:
 
 
 def consultar_criterio(a: ConsultarCriterio, tienda_id: str) -> dict:
-    """EL RAZONAMIENTO TAMBIEN VA ATADO. Es el hueco que quedo abierto al pasar
-    a herramientas: el dato duro quedo atado a la fuente y la prosa de criterio
-    -para que sirve, que conviene, como se comparan- quedo suelta, o sea que la
-    inventaba el modelo de su entrenamiento.
+    """EL RAZONAMIENTO Y LA MOVIDA, TAMBIEN ATADOS. Es el hueco que quedo
+    abierto al pasar a herramientas: el dato duro quedo atado a la fuente y la
+    prosa quedo suelta, o sea que la inventaba el modelo de su entrenamiento.
 
-    En el repo viven 93 bloques de criterio escritos para esta tienda
-    (`base_conocimiento.json`, via `guia_venta_prosa`), y desde el cambio de
-    arquitectura no los usaba NADIE. Esta herramienta se los devuelve: el modelo
-    razona desde el criterio de la casa, no desde el suyo. Mismo mecanismo que
-    `consultar_politica`, un eje distinto."""
+    Devuelve las dos mitades que la fuente tiene escritas para el tema:
+      - `criterio`: desde donde razonar. Para que sirve, que conviene segun el
+        uso, como se comparan.
+      - `objetivo` / `movida` / `escape`: como se conduce esa situacion de
+        venta. Que se busca, como se arma el mensaje, y cuando NO se usa.
+
+    Las dos salen del mismo `base_conocimiento.json` y viajan juntas a
+    proposito: son los dos lados de una sola pregunta -desde donde razono y
+    como lo digo-, y partirlas en dos herramientas seria pedirle al modelo que
+    adivine cual necesita. Mismo mecanismo que `consultar_politica`, otro eje."""
     from app.core.guia_venta_prosa import consultar_guia_venta
     r = consultar_guia_venta(a.tema) or {}
-    if not r.get("texto"):
+    campos = {k: r[k] for k in ("objetivo", "movida", "escape") if r.get(k)}
+    if not r.get("texto") and not campos:
         return {"estado": "no_encontrado", "tema": a.tema,
                 "instruccion": "No hay criterio escrito para eso. Razona desde "
                                "la ficha del producto o decilo honesto; no lo "
                                "completes de memoria."}
-    return {"estado": "encontrado", "tema": r.get("tema") or a.tema,
-            "criterio": r["texto"]}
+    fuera = {"estado": "encontrado", "tema": r.get("tema") or a.tema}
+    if r.get("texto"):
+        fuera["criterio"] = r["texto"]
+    fuera.update(campos)
+    return fuera
 
 
 def cotizar_envio(a: CotizarEnvio, tienda_id: str) -> dict:

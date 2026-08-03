@@ -113,6 +113,16 @@ async def _precalentar_cache():
         log.warning("precalentar_cache_failed", error=str(e)[:150])
 
 
+def _sobrecarga() -> str:
+    """Lo que se le dice al cliente cuando el turno se cayo por un blip del LLM.
+    El texto vive en la fuente, como toda la prosa desde el 3-ago; el literal es
+    la red si el archivo faltara, porque este es justo el camino de los fallos."""
+    from app.core.guia_venta_prosa import mensaje
+    return mensaje("sobrecarga",
+                   "Perdón, estoy con mucha demanda en este momento. "
+                   "Probá de nuevo en un ratito y te respondo. 🙏")
+
+
 @app.get("/")
 async def root():
     return {"status": "ok", "service": "agente-multicanal", "version": "4.0.0"}
@@ -309,8 +319,7 @@ async def _process_and_reply_telegram(chat_id: str, text: str):
         try:
             await get_telegram_connector().send_message(
                 chat_id,
-                "Perdón, estoy con mucha demanda en este momento. "
-                "Probá de nuevo en un ratito y te respondo. 🙏")
+                _sobrecarga())
         except Exception:
             pass
 
@@ -384,8 +393,7 @@ async def _process_and_reply_whatsapp(tienda_id: str, user_id: str,
             await get_whatsapp_connector_for_tienda(
                 whatsapp_token, phone_number_id).send_message(
                 user_id,
-                "Perdón, estoy con mucha demanda en este momento. "
-                "Probá de nuevo en un ratito y te respondo. 🙏")
+                _sobrecarga())
         except Exception:
             pass
 

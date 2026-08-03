@@ -56,34 +56,26 @@ _MAX_RONDAS = 4
 # Las reglas viven en UN solo lugar y valen para las dos llamadas. Antes estaban
 # repartidas entre el prompt del interprete, el del solver y ocho guardas que
 # corrian despues sobre el texto ya escrito.
-SISTEMA = """Sos el vendedor de {negocio}, una tienda argentina de tecnologia e
-informatica. Escribis en español argentino, de vos, para WhatsApp: parrafos
-cortos, sin markdown, sin titulos, sin asteriscos.
+#
+# LA VOZ NO VIVE ACA (3-ago). El texto que define quien es el vendedor, como
+# escribe y como piensa salio a `base_conocimiento.json`, junto al criterio, las
+# movidas y los mensajes fijos. Era la ultima prosa clavada en codigo: limarle
+# una linea al vendedor obligaba a tocar un modulo de Python y deployar. Ahora
+# es una edicion de la fuente. Lo que queda aca es la INSTRUCCION de cada
+# llamada, que es mecanica del turno, no voz.
+_SISTEMA_MINIMO = ("Sos el vendedor de {negocio}. Contesta en español "
+                   "argentino, de vos, corto y sin markdown. Los datos duros "
+                   "te los traen las herramientas: lo que no trajeron, no lo "
+                   "sabes.")
 
-Los datos duros -precio, stock, specs, politicas, totales- te los traen las
-herramientas, ya escritos. Copialos tal cual. Lo que no te trajeron, no lo
-sabes, y no se completa de memoria. Eso incluye los SERVICIOS: no ofrezcas
-retiro en el local, dia de entrega, ni que alguien lo va a llamar despues. Si
-una herramienta no lo trajo, esta tienda no lo hace.
 
-Todo lo demas es tu trabajo, y tu trabajo es PENSAR como piensa un buen vendedor
-de mostrador:
+def sistema(negocio: str = "") -> str:
+    """La voz del vendedor, leida de la fuente. El minimo de arriba es la red
+    por si el archivo faltara: un prompt vacio dejaria al modelo sin ninguna
+    atadura, que es peor que uno corto."""
+    from app.core.guia_venta_prosa import identidad
+    return identidad(negocio) or _SISTEMA_MINIMO.format(negocio=negocio)
 
-Entende que necesita de verdad, no solo lo que escribio. Si te dice que el
-precio no es lo importante no te esta pidiendo lo mas caro; te esta diciendo que
-mires otra cosa. Si pone una condicion, esa condicion manda sobre el resto.
-
-Fijate si el pedido CIERRA antes de contestar. Si las cuentas no dan, si nombra
-algo que no habia pedido, si falta un dato para poder cotizar: preguntalo.
-Elegir por el cliente es la peor forma de equivocarse, peor que no saber.
-
-Cuando no tengas exactamente lo que pide, no cierres con un no. Deci la verdad
-de lo que no se cumple Y mostrale lo mas parecido que si tenes, con su precio,
-explicando en una linea por que se lo ofreces. Un no seco con el dato en la mano
-es una venta perdida, no honestidad.
-
-Contesta TODO lo que te preguntaron, no una parte. Y cerra moviendo la venta:
-una pregunta util o el paso que sigue."""
 
 _INSTRUCCION_UNO = """Si el cliente pide productos, precios, un presupuesto o un
 envio, lo PRIMERO es llamar a registrar_pedido declarando lo que entendiste, en
@@ -98,9 +90,13 @@ conviene: si el cliente pregunta por un producto Y por el envio, pedi las dos
 juntas. Si el mensaje no necesita ningun dato -un saludo, un gracias, una
 respuesta a algo que vos preguntaste- contesta directamente sin herramientas.
 
-Si el cliente pide una recomendacion, una comparacion o para que sirve algo,
-sumale consultar_criterio: sin eso vas a opinar de tu cabeza y no con el
-criterio de la casa."""
+Sumale consultar_criterio en dos casos. Uno, si pide una recomendacion, una
+comparacion o para que sirve algo: sin eso vas a opinar de tu cabeza y no con
+el criterio de la casa. Dos, si el turno no es un pedido de datos sino una
+SITUACION de venta -dice que esta caro, pide descuento, desconfia, se queja,
+apura, lo posterga, cancela, se despide, pide hablar con una persona, o afirma
+un precio que no es el nuestro-: ahi la casa tiene escrita la movida, con que
+se busca y que no se promete. Pedila antes de improvisar."""
 
 _INSTRUCCION_RONDA_DOS = """Estos son los datos que trajeron las herramientas
 que pediste. Si con esto ya podes contestar todo lo que el cliente pregunto, no
@@ -259,7 +255,7 @@ def _memoria_texto(estado: dict, history: list, tienda_id: str = "") -> str:
 
 def _mensajes(negocio: str, memoria: str, history: list, mensaje: str,
               instruccion: str, datos: str = "") -> list:
-    msgs = [{"role": "system", "content": SISTEMA.format(negocio=negocio)}]
+    msgs = [{"role": "system", "content": sistema(negocio)}]
     if memoria:
         msgs.append({"role": "system", "content": memoria})
     for h in (history or [])[-10:]:

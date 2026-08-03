@@ -4,6 +4,51 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 3-ago-2026 (tarde) — LA PROSA TAMBIEN ES FUENTE: se unifico la mitad que faltaba ====**
+
+El inventario de mas abajo decia, con razon, que la fuente de verdad estaba
+unificada al 100%. Eso era cierto del DATO: catalogo, FAQ, compatibilidad y
+specs, todo en `data/clientes/verifika_prod`, sincronizado con Firestore. La
+PROSA no: estaba partida en tres, y una de las tres el modelo no la veia.
+
+**Lo que estaba mal, con nombre y apellido:**
+1. Las 31 movidas de venta que Martin aprobo -como se contesta "esta caro", un
+   regateo, una queja, una postergacion, una despedida- vivian en
+   `BORRADORES_CURADAS_VENTA.md` y las servia `compositor.py`. El compositor se
+   borro el 2-ago con el camino atado, y el markdown quedo HUERFANO: treinta y
+   siete kilobytes de texto aprobado que hacia semanas no llegaba al bot. El
+   modelo improvisaba esas situaciones de memoria.
+2. La identidad del vendedor -quien es, como escribe, como piensa- era la
+   constante `SISTEMA` clavada en `hub_venta.py`. Limarle una linea a la voz
+   obligaba a editar Python.
+3. Los mensajes que salen tal cual al cliente estaban en cinco modulos
+   distintos: `antijailbreak`, `config`, `indice`, `main`.
+4. `BORRADORES_CURADAS_FAQ.md` decia "nada de esto esta cargado en faq.json"
+   cuando las 50 respuestas curadas SI estaban cargadas. Un documento mintiendo
+   sobre el estado es exactamente lo que costo el dia del 3-ago.
+
+**Lo que se hizo:** `base_conocimiento.json` es ahora la fuente UNICA de la
+prosa. Trae `identidad` (la voz), `categorias` (criterio + movida, 106 con las
+13 situaciones que no tenian casilla) y `mensajes` (los 6 textos fijos).
+`guia_venta_prosa.py` es el unico modulo que lo lee y expone `identidad()`,
+`GUIA_VENTA`, `MOVIDAS`, `temas()` y `mensaje()`.
+
+La movida LLEGA al modelo: `consultar_criterio` devuelve criterio y movida
+juntos, su enum paso de 93 a 106 temas -entran las situaciones que solo tienen
+movida, como una queja o una despedida- y el prompt de la llamada uno le dice
+que la pida cuando el turno es una SITUACION de venta y no un pedido de datos.
+
+**Lo que se borro** (regla de consolidar, no agregar): los cuatro markdown
+absorbidos -`BORRADORES_CURADAS_VENTA.md`, `BORRADORES_CURADAS_FAQ.md`,
+`BASE_CONOCIMIENTO.md` (copia vieja del json, 76 categorias contra 93) y
+`CATEGORIAS_PREGUNTAS_VENTA.md`- y la copia entera de `no_vendidas` que estaba
+duplicada en `guia_compra.py` "por si falta el archivo".
+
+**Lock:** `tests/test_fuente_unica.py`, 11 tests. Bateria completa 429 verdes.
+Chequea que la prosa salga de la fuente, que no haya digitos en criterio ni en
+movida, que las movidas esten en el enum de la herramienta, que ningun mensaje
+fijo quede duplicado en codigo y que los markdown no vuelvan.
+
 **==== 3-ago-2026 — INVENTARIO COMPLETO, TODO VERIFICADO CONTRA EL REPO Y CONTRA PRODUCCION ====**
 
 Cada punto de abajo se comprobo con el codigo, con Firestore real o con una

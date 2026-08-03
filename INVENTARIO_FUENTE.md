@@ -71,9 +71,16 @@ Cada celda = productos de esa categoria con el dato / productos donde la spec ap
 ## 3. El resto de la fuente
 
 - FAQ: **50** temas
-- Base de conocimiento: **93** categorias de criterio
+- Base de conocimiento: **106** categorias de criterio
+- Movidas de venta escritas: **32**
+- Mensajes fijos al cliente: **6**
+- Identidad del vendedor en la fuente: **si**
 - Categorias no vendidas: **29**
 - Specs preguntables: **24**
+
+La prosa se unifico el 3-ago: la identidad del vendedor, las movidas de venta y
+los mensajes fijos al cliente vivian en markdowns y en constantes de Python, y
+ahora estan todas en `base_conocimiento.json`, la misma fuente que el criterio.
 
 ## 4. Calidad del dato: spec fantasma depurada
 

@@ -151,24 +151,19 @@ def guia_mas_barato(mensaje: str,
 # dato de contacto) quedan AFUERA a proposito.
 #
 # FUENTE DE VERDAD: la lista vive en data/clientes/verifika_prod/no_vendidas.json.
-# Sumar un caso es agregar una linea a ESE json, no tocar codigo. El dict de abajo
-# es solo el fallback minimo si el archivo faltara; el archivo, si esta, manda.
-_NO_VENDIDAS_FALLBACK: dict[str, str | None] = {
-    "celular": "tablet", "celulares": "tablet", "smartphone": "tablet",
-    "smartphones": "tablet", "iphone": "tablet", "iphones": "tablet",
-    "televisor": "monitor", "televisores": "monitor", "smart tv": "monitor",
-    "consola": None, "consolas": None, "playstation": None, "xbox": None,
-    "nintendo": None, "drone": None, "drones": None,
-    "smartwatch": "tablet", "smartwatches": "tablet",
-    "heladera": None, "heladeras": None, "lavarropas": None,
-    "microondas": None, "aire acondicionado": None,
-}
+# Sumar un caso es agregar una linea a ESE json, no tocar codigo.
+#
+# La copia entera que estaba aca abajo como "fallback minimo" se BORRO el 3-ago:
+# eran las mismas veintitres entradas escritas dos veces, y una lista de esas
+# nunca queda igual a la otra por mucho tiempo. Si el archivo falta, el mapa
+# queda vacio y el bot no niega una categoria por un dato que no leyo, que es la
+# salida honesta; una copia vieja en codigo le haria negar mal y con confianza.
 _NO_VENDIDAS_CACHE: dict[str, str | None] | None = None
 
 
 def _no_vendidas() -> dict[str, str | None]:
-    """Lee la fuente de verdad (no_vendidas.json) una vez y la cachea; si el
-    archivo falta o esta roto, cae al fallback en codigo."""
+    """Lee la fuente de verdad (no_vendidas.json) una vez y la cachea. Si el
+    archivo falta o esta roto devuelve vacio: sin fuente no se niega nada."""
     global _NO_VENDIDAS_CACHE
     if _NO_VENDIDAS_CACHE is not None:
         return _NO_VENDIDAS_CACHE
@@ -179,11 +174,12 @@ def _no_vendidas() -> dict[str, str | None]:
     try:
         with open(ruta, encoding="utf-8") as f:
             data = json.load(f)
-        mapa = {str(k).strip().lower(): v
-                for k, v in (data.get("no_vendidas") or {}).items() if k}
-        _NO_VENDIDAS_CACHE = mapa or dict(_NO_VENDIDAS_FALLBACK)
+        _NO_VENDIDAS_CACHE = {str(k).strip().lower(): v
+                              for k, v in (data.get("no_vendidas") or {}).items()
+                              if k}
     except Exception:
-        _NO_VENDIDAS_CACHE = dict(_NO_VENDIDAS_FALLBACK)
+        log.warning("no_vendidas_sin_fuente", ruta=ruta)
+        _NO_VENDIDAS_CACHE = {}
     return _NO_VENDIDAS_CACHE
 
 
