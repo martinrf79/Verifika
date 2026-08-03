@@ -63,6 +63,18 @@ class Settings(BaseModel):
     # diarios). NUNCA el alias -latest, que FLOTA y te cambia modelo y costo sin
     # avisar el dia que Google mueve el alias. Se repinea a mano si hace falta.
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
+    # EL DECISOR PIENSA (Martin, 2-ago). La llamada UNO -que decide que
+    # herramienta y con que argumentos- es el paso mas dificil del turno y
+    # corria con el pensamiento APAGADO, heredado de cuando el thinking se comia
+    # los max_tokens del JSON. Medido el 2-ago: con thinking off el decisor
+    # tradujo "el precio no seria tan importante" a orden=caro, ignoro el
+    # excluir=china que el esquema ofrece, y cotizo 4 categorias sobre un pedido
+    # de 3. Ahora piensa. El REDACTOR sigue sin pensar: escribe con el dato
+    # delante y no decide nada.
+    # Vacio = mismo modelo que el redactor. Se le pone otro -ej gemini-3-pro-
+    # SOLO para el decisor, sin encarecer el turno entero.
+    DECISOR_MODEL: str = os.getenv("DECISOR_MODEL", "")
+    DECISOR_REASONING: str = os.getenv("DECISOR_REASONING", "low")
     GEMINI_BASE_URL: str = os.getenv(
         "GEMINI_BASE_URL",
         "https://generativelanguage.googleapis.com/v1beta/openai/")
@@ -79,9 +91,9 @@ class Settings(BaseModel):
     # API de OpenAI (Groq: https://api.groq.com/openai/v1, OpenAI:
     # https://api.openai.com/v1). El REDACTOR, la llamada DOS, NO se toca nunca:
     # sigue en Gemini pase lo que pase.
+    # DECISOR_MODEL ya esta declarado arriba, junto al reasoning del decisor.
     DECISOR_BASE_URL: str = os.getenv("DECISOR_BASE_URL", "")
     DECISOR_API_KEY: str = os.getenv("DECISOR_API_KEY", "")
-    DECISOR_MODEL: str = os.getenv("DECISOR_MODEL", "")
 
     # OpenAI nativo (servidores en EEUU, tool calling solido). Se activa con
     # LLM_PROVIDER=openai o INTERPRETER_PROVIDER=openai. Usa el mismo cliente

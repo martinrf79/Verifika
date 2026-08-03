@@ -35,6 +35,7 @@ import time
 
 from app.config import get_settings
 from app.core import herramientas as H
+from app.core import pedido as P
 from app.logger import get_logger
 from app.storage.firestore_client import get_conversation, save_conversation
 
@@ -42,66 +43,56 @@ log = get_logger(__name__)
 settings = get_settings()
 
 _TIMEOUT_S = 14
-_MAX_HERRAMIENTAS = 8
+_MAX_HERRAMIENTAS = 10
+# EL BUCLE ACOTADO reemplaza a las dos rondas fijas (Martin, 2-ago). Una
+# pregunta dificil tiene profundidad desconocida de antemano: buscar, mirar lo
+# que volvio, darse cuenta de que falta algo, buscar distinto, y recien ahi
+# contestar. Con dos rondas clavadas eso era imposible por diseño. Corta solo,
+# apenas el reconciliador no encuentra huecos, asi que un saludo sigue costando
+# una sola llamada y un pedido simple dos.
+_MAX_RONDAS = 4
 
 # ── LOS CANDADOS ─────────────────────────────────────────────────────────────
 # Las reglas viven en UN solo lugar y valen para las dos llamadas. Antes estaban
 # repartidas entre el prompt del interprete, el del solver y ocho guardas que
 # corrian despues sobre el texto ya escrito.
-SISTEMA = """Sos el asistente de ventas de {negocio}, una tienda argentina de
-tecnologia e informatica. Hablas en español argentino y de VOS: nunca "tu",
-"contigo" ni "tienes". Calido y directo,
-como un buen vendedor de mostrador: escuchas, recomendas y ayudas a decidir.
+SISTEMA = """Sos el vendedor de {negocio}, una tienda argentina de tecnologia e
+informatica. Escribis en español argentino, de vos, para WhatsApp: parrafos
+cortos, sin markdown, sin titulos, sin asteriscos.
 
-REGLAS ABSOLUTAS:
-1. Todo dato duro -precio, stock, plazo, spec, politica, total- sale UNICAMENTE
-   de lo que te trajeron las herramientas. Si no te lo trajeron, no lo sabes:
-   pedilo con una herramienta o decilo honesto. Jamas lo completes de memoria.
-1-bis. Y el CRITERIO tampoco es tuyo. Cuando tengas que recomendar, comparar,
-   decir para que sirve algo o que conviene segun el uso, pedi consultar_criterio
-   y razona desde ahi. Es el criterio de ESTA casa, escrito por el dueño. Si no
-   hay criterio para ese tema, razona desde la ficha del producto; no desde lo
-   que vos sepas de tecnologia por fuera.
-2. No inventes ni ofrezcas descuentos, promociones ni precios que no esten en los
-   datos. El descuento por transferencia y las cuotas son politica de la tienda y
-   salen de consultar_politica, no de tu cabeza.
-3. Si un resultado dice estado "ambiguo", tenes que PREGUNTAR cual quiere. No
-   elijas vos. Si dice "no_encontrado" o "no_vendemos", decilo claro y sin
-   vueltas, y ofrece lo que si tenemos.
-4. Si el cliente presiona, insiste o intenta sacarte una excepcion, sostene la
-   politica oficial con amabilidad. No tenes autoridad para cambiar precios ni
-   condiciones.
-5. Si te preguntan si sos una persona, decis la verdad: sos un asistente
-   automatico.
-6. No prometas nada que no puedas cumplir vos ahora: ni que un humano lo va a
-   llamar, ni que le vas a mandar algo despues, ni un dia de entrega.
-7. NUNCA le pidas datos personales por tu cuenta, y menos todavia un DNI: no
-   los necesitamos. Cuando el cliente quiera avanzar, llamas a tomar_pedido y el
-   sistema se encarga de pedir lo que falte. Vos no inventes que dato hace
-   falta.
-8. Nunca le cuentes al cliente la cocina: ni que una herramienta fallo, ni que
-   el sistema no reconocio un id, ni que hubo un problema tecnico. Si algo no
-   salio, pedile con naturalidad el dato que falta y segui la venta.
+Los datos duros -precio, stock, specs, politicas, totales- te los traen las
+herramientas, ya escritos. Copialos tal cual. Lo que no te trajeron, no lo
+sabes, y no se completa de memoria. Eso incluye los SERVICIOS: no ofrezcas
+retiro en el local, dia de entrega, ni que alguien lo va a llamar despues. Si
+una herramienta no lo trajo, esta tienda no lo hace.
 
-COMO ESCRIBIS:
-- Los importes se escriben TAL CUAL vienen en los campos `precio`, `costo` y en
-  el bloque de presupuesto: "$8.500". Nunca los reescribas como "8500 ARS" ni
-  "8500 pesos" ni los redondees.
-- Para WhatsApp: parrafos cortos, sin markdown, sin titulos, sin asteriscos.
-- CORTO. Fuera del presupuesto, tres o cuatro oraciones alcanzan. No repitas lo
-  que ya dice el presupuesto ni expliques lo que es evidente.
-- NO vuelvas a pegar el presupuesto entero en cada turno. Se pega cuando recien
-  se calcula, cuando el cliente lo pide o cuando cambio. Si ya se lo mandaste y
-  no cambio, referite a el en una linea y contesta lo que te preguntaron.
-- No repitas lo que ya dijiste en turnos anteriores.
-- Cerra siempre moviendo la venta: una pregunta util o el paso que sigue.
-- No nombres ids internos del catalogo como TEC0019. El cliente no los ve.
-- Nunca copies el JSON de las herramientas en el mensaje: el cliente lee prosa,
-  no datos crudos.
-- Los datos de pago -CBU, alias, titular, banco- salen SOLO de la herramienta.
-  Si no los tenes, no los escribas: pedile el dato que falte para pasarselos."""
+Todo lo demas es tu trabajo, y tu trabajo es PENSAR como piensa un buen vendedor
+de mostrador:
 
-_INSTRUCCION_UNO = """Mira la charla y decidi que datos necesitas para
+Entende que necesita de verdad, no solo lo que escribio. Si te dice que el
+precio no es lo importante no te esta pidiendo lo mas caro; te esta diciendo que
+mires otra cosa. Si pone una condicion, esa condicion manda sobre el resto.
+
+Fijate si el pedido CIERRA antes de contestar. Si las cuentas no dan, si nombra
+algo que no habia pedido, si falta un dato para poder cotizar: preguntalo.
+Elegir por el cliente es la peor forma de equivocarse, peor que no saber.
+
+Cuando no tengas exactamente lo que pide, no cierres con un no. Deci la verdad
+de lo que no se cumple Y mostrale lo mas parecido que si tenes, con su precio,
+explicando en una linea por que se lo ofreces. Un no seco con el dato en la mano
+es una venta perdida, no honestidad.
+
+Contesta TODO lo que te preguntaron, no una parte. Y cerra moviendo la venta:
+una pregunta util o el paso que sigue."""
+
+_INSTRUCCION_UNO = """Si el cliente pide productos, precios, un presupuesto o un
+envio, lo PRIMERO es llamar a registrar_pedido declarando lo que entendiste, en
+la misma tanda que las demas herramientas. Contá los items uno por uno como los
+pidio el cliente, y si algo del mensaje no cierra -cantidades que no dan, algo
+nombrado en el envio que no esta en el pedido- va en contradicciones, NO lo
+resuelvas vos.
+
+Despues mira la charla y decidi que datos necesitas para
 contestar el ultimo mensaje. Podes pedir varias herramientas a la vez y
 conviene: si el cliente pregunta por un producto Y por el envio, pedi las dos
 juntas. Si el mensaje no necesita ningun dato -un saludo, un gracias, una
@@ -174,17 +165,18 @@ def _cliente_decisor():
 
 
 def _modelo_decisor() -> str:
+    """El modelo de la llamada UNO. Por default el mismo que redacta; se le
+    puede poner uno mas grande SOLO acá, que es donde se decide."""
     return settings.DECISOR_MODEL or _modelo()
 
 
 def _extra_decisor() -> dict:
-    """`reasoning_effort: none` es de Gemini. Mandarselo a Groq o a OpenAI hace
-    saltar la llamada con 400, asi que solo viaja cuando el decisor es Gemini."""
+    """`reasoning_effort` es de Gemini. Mandarselo a Groq o a OpenAI hace saltar
+    la llamada con 400, asi que solo viaja cuando el decisor va por Gemini. Con
+    Gemini manda DECISOR_REASONING, o sea el decisor sigue PENSANDO."""
     if (settings.DECISOR_BASE_URL or "").strip():
         return {}
-    return {"reasoning_effort": "none"}
-
-
+    return {"reasoning_effort": settings.DECISOR_REASONING}
 def _memoria_texto(estado: dict, history: list, tienda_id: str = "") -> str:
     """Lo que el modelo tiene que recordar de la charla. Reemplaza a los campos
     que el interprete rellenaba a mano: el foco, lo ya mostrado y el criterio no
@@ -282,7 +274,7 @@ def _mensajes(negocio: str, memoria: str, history: list, mensaje: str,
 
 
 async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
-                              trace_id, llamadas=None):
+                              trace_id, llamadas=None, revision=""):
     """QUE BUSCAR. Devuelve (lista de pedidos, texto directo si no pidio nada).
 
     Con `llamadas` es la SEGUNDA ronda: el modelo ve lo que ya trajo y puede
@@ -297,15 +289,29 @@ async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
         return [], ""
     esquemas = H.esquemas(tienda_id)
     if llamadas:
-        msgs = _mensajes(negocio, memoria, history, mensaje,
-                         _INSTRUCCION_RONDA_DOS, H.contexto_json(llamadas))
+        # AHORRO MEDIDO: en las vueltas de encadenado el modelo ya declaró el
+        # pedido y ya buscó. Mandarle otra vez los ocho esquemas cuesta ~1200
+        # tokens por turno al pedo, y los 93 enums de consultar_criterio son el
+        # 28% de eso. Van solo las que puede encadenar de verdad.
+        encadenables = {"buscar_productos", "ficha_producto", "cotizar_envio",
+                        "armar_presupuesto", "ver_compatibilidad",
+                        "tomar_pedido", "consultar_politica"}
+        esquemas = [e for e in esquemas
+                    if e.get("function", e).get("name") in encadenables]
+        instr = _INSTRUCCION_RONDA_DOS + (("\n\n" + revision) if revision else "")
+        msgs = _mensajes(negocio, memoria, history, mensaje, instr,
+                         H.contexto_json(llamadas))
     else:
         msgs = _mensajes(negocio, memoria, history, mensaje, _INSTRUCCION_UNO)
 
     def _call():
+        # max_tokens ALTO a proposito: el pensamiento se descuenta de acá. Con
+        # 900 y thinking prendido el JSON de tool_calls sale cortado o vacío,
+        # que es el bug del 10-jun por el que se apagó el thinking en su
+        # momento. El tope alto no se cobra si no se usa: se cobra lo generado.
         r = cli.chat.completions.create(
             model=_modelo_decisor(), messages=msgs, tools=esquemas,
-            tool_choice="auto", temperature=0.3, max_tokens=900,
+            tool_choice="auto", temperature=0.3, max_tokens=3000,
             extra_body=_extra_decisor())
         m = r.choices[0].message
         pedidos = []
@@ -361,13 +367,19 @@ async def _ejecutar_en_paralelo(pedidos: list, tienda_id: str,
     return llamadas
 
 
-async def _redactar(negocio, memoria, history, mensaje, llamadas, trace_id):
-    """LLAMADA DOS. El modelo escribe con el JSON delante."""
+async def _redactar(negocio, memoria, history, mensaje, llamadas, trace_id,
+                    obligacion=""):
+    """LLAMADA FINAL. El modelo escribe con el JSON delante.
+
+    `obligacion` es lo que el RECONCILIADOR encontró que no cierra y el modelo
+    no puede resolver eligiendo. Va al final del prompt, que es donde más pesa.
+    """
     cli = _cliente()
     if cli is None:
         return ""
     datos = H.contexto_json(llamadas)
-    msgs = _mensajes(negocio, memoria, history, mensaje, _INSTRUCCION_DOS, datos)
+    instr = _INSTRUCCION_DOS + (("\n\n" + obligacion) if obligacion else "")
+    msgs = _mensajes(negocio, memoria, history, mensaje, instr, datos)
 
     def _call():
         r = cli.chat.completions.create(
@@ -933,10 +945,13 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # ya certificados. Mas rondas no: seria volver a una cadena larga.
     llamadas: list = []
     texto_directo = ""
-    for ronda in (1, 2):
+    revision = ""
+    obligacion = ""
+    declarado: dict = {}
+    for ronda in range(1, _MAX_RONDAS + 1):
         pedidos, texto_directo = await _pedir_herramientas(
             negocio, memoria, history, raw_message, tienda_id, trace_id,
-            llamadas if ronda == 2 else None)
+            llamadas if ronda > 1 else None, revision=revision)
         log.info("hub_venta_pedidos", trace_id=trace_id, ronda=ronda,
                  herramientas=[p["nombre"] for p in pedidos],
                  args=[p.get("args") for p in pedidos][:4])
@@ -948,10 +963,34 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                            (l["resultado"] or {}).get("estado"))
                           for l in llamadas])
 
+        # ── RECONCILIAR: lo declarado contra lo hecho ───────────────────
+        # Acá está el control que faltaba. Los diecinueve que había miraban la
+        # prosa ya escrita; este mira la DECISION, antes de escribir. Si algo
+        # falta se lo devolvemos al modelo para la vuelta siguiente; si el
+        # pedido tiene una contradicción, el turno termina PREGUNTANDO y no
+        # eligiendo por el cliente.
+        for l in llamadas:
+            if l.get("herramienta") == "registrar_pedido":
+                declarado = (l.get("resultado") or {}).get("pedido") or declarado
+        rec = P.reconciliar(declarado, llamadas, trace_id)
+        obligacion = P.instruccion_de_preguntas(rec)
+        revision = P.instruccion_de_faltantes(rec)
+        if not revision:
+            break
+        if ronda == _MAX_RONDAS:
+            # Se agotaron las vueltas con el hueco abierto. NO se completa por
+            # nuestra cuenta: se le dice al redactor que pregunte lo que falta.
+            log.warning("hub_venta_faltantes_sin_resolver", trace_id=trace_id,
+                        faltantes=rec.get("faltantes", [])[:4])
+            obligacion = (obligacion + "\n\n" if obligacion else "") + (
+                "No pudiste conseguir todo lo que el cliente pidió. Contá "
+                "honesto qué falta y pedile el dato que haga falta. No "
+                "completes de memoria lo que no trajo ninguna herramienta.")
+
     # ── 3. REDACTAR CON EL DATO DELANTE ─────────────────────────────────
     if llamadas:
         texto = await _redactar(negocio, memoria, history, raw_message,
-                                llamadas, trace_id)
+                                llamadas, trace_id, obligacion=obligacion)
     else:
         # Sin herramientas el modelo ya contesto en la llamada uno: es un
         # saludo, un gracias o una respuesta a algo que preguntamos nosotros.

@@ -20,12 +20,20 @@ corrida del banco. Lo que no se pudo comprobar esta marcado como tal.
 - EL MODELO NO ES EL PROBLEMA. Medido hoy: Gemini 2%, gpt-4.1-mini 2% y mas
   lento, gpt-4.1-nano 8%. Cambiar de modelo no mueve la aguja.
 
+CORRECCION IMPORTANTE (mismo dia, despues del merge con main): los dos primeros
+puntos del bloque 1 se escribieron sobre una rama que habia divergido de `main`.
+`main` YA TRAE `banco_pruebas/piso.py` con las cuatro metricas y la compuerta, y
+tambien el decisor pensando (`DECISOR_REASONING=low`), el reconciliador y el
+prompt chico. Lo que sigue vigente de ese bloque esta marcado VIGENTE abajo.
+
 **1. LO QUE NO EXISTE PERO EL PROYECTO CREE QUE SI:**
-- `banco_pruebas/piso.json`: NO EXISTE. El unico piso es `casetes/_piso.json`,
-  que es otra cosa.
-- Las metricas `sin_caida`, `sin_invento`, `completa`, `avanza`: NO EXISTEN en
-  ningun archivo. El banco mide UNA cosa, tasa de fallo por turno.
-- `tests/test_charlas_grabadas.py`: NO EXISTE. Es el test que segun
+- ~~`banco_pruebas/piso.json`~~ CORREGIDO: `piso.py` existe en main. Pero
+  `piso.json` NO ESTA COMMITEADO y NO esta en `.gitignore`: simplemente nunca
+  viajo. VIGENTE: en un clon fresco la compuerta no tiene contra que comparar,
+  asi que el piso de "78 turnos" no defiende a nadie mas que a quien lo genero.
+- ~~Las metricas `sin_caida`, `sin_invento`, `completa`, `avanza`~~ CORREGIDO:
+  existen en `banco_pruebas/piso.py`, con dos duras y dos blandas.
+- VIGENTE. `tests/test_charlas_grabadas.py`: NO EXISTE. Es el test que segun
   `casetes/_piso.json` defiende el puntaje 2364/2368 en cada push. Las 65
   charlas grabadas del 31-jul NO las corre nadie.
 - La capa Verifika del `CLAUDE.md` (Proposer, Checker, Citador, Router de
@@ -119,6 +127,170 @@ tiene billing, la Billing API esta deshabilitada, Monitoring da 403):**
    atado a las columnas reales. Es lo unico que ataca las infinitas preguntas
    sobre atributos en vez de la proxima cuatro. Cambia la pendiente, no un punto.
 5. Despues: la cuenta fuera del prompt, que mata 3 candados de una.
+
+**==== 3-ago-2026 — TODO MERGEADO A MAIN, Y LA REGLA DE RAMAS ====**
+
+**LEER ESTO PRIMERO SI VAS A DIAGNOSTICAR ALGO.** El 3-ago se perdio un dia
+entero asi: una sesion construyo el reconciliador, el prompt chico y la
+compuerta del banco, y los pusheo a SU rama. La sesion siguiente leyo `main`,
+donde no estaba nada de eso, y armo un inventario diciendo que no existia. Las
+dos tenian razon. Nadie mintio.
+
+**Desde hoy todo eso esta en `main`** y la regla de ramas esta escrita en
+`CLAUDE.md`, seccion "REGLA DE RAMAS". Resumen: se sale de `main` fresco, se
+cierra mergeado o descartado por escrito, alcance chico de una sesion, y
+cualquier afirmacion sobre "que existe" se hace mirando `main`. Si no esta en
+`main`, no existe.
+
+**LO QUE ENTRO EN ESTE MERGE:**
+- El reconciliador (`app/core/pedido.py`) y la herramienta `registrar_pedido`.
+- El bucle acotado de 4 rondas, que reemplazo a las dos fijas.
+- El prompt chico: de 3278 caracteres y 20 reglas a 1351 que piden RAZONAR.
+- `buscar_productos` ya no devuelve vacio: si la exclusion limpia todo, trae lo
+  que MENOS incumple ordenado por grado.
+- El banco con las cuatro metricas, `banco_pruebas/piso.py`, y la compuerta.
+
+**LO QUE NO ENTRO, y es lo unico:** `piso.json`. El unico piso medido salio
+sobre codigo que en ese momento no estaba en `main`, asi que era una referencia
+falsa. **PRIMERA TAREA DE LA PROXIMA SESION: fijar el piso sobre `main` con 5
+vueltas**, `python3 banco_pruebas/banco_repetido.py 5 '7?_*.txt' --fijar-piso`.
+Hasta que eso pase, la compuerta avisa que no tiene contra que comparar.
+
+**==== 2-ago-2026 (noche) — EL DECISOR PIENSA. Y EL MAPA DE LO QUE FALTA ====**
+
+Martin puso el objetivo en una frase y manda sobre todo lo de abajo: **un bot
+que RAZONE para vender, sin alucinar.** No se arregla mas caso por caso.
+
+**EL DIAGNOSTICO ESTRUCTURAL, y explica los meses de loop.** El sistema tiene
+diecinueve controles: nueve invariantes en `banco_pruebas/juez.py` y diez
+funciones `_sin_algo` en `hub_venta.py`. Los diecinueve miran la PROSA ya
+escrita. Cero miran la DECISION. La prosa es un espacio infinito, asi que cada
+error nuevo llega con otras palabras y cada arreglo es un caso mas. La decision
+es un objeto chico y tipado -una lista de tool_calls validada por Pydantic- y se
+chequea de forma general, una vez, para todos los casos. Todo arreglo futuro va
+del lado de la decision, no del lado del texto.
+
+**LO QUE SE HIZO HOY, etapa 1 de 3: EL DECISOR PIENSA.** La llamada uno de
+`hub_venta.py` corria con `reasoning_effort: "none"`, heredado del bug del
+10-jun en que el thinking se comia los `max_tokens` y el JSON salia vacio. Se
+prendio con `DECISOR_REASONING`, default `low`, y se subio `max_tokens` de 900 a
+3000 para que el pensamiento no se coma el JSON. El REDACTOR sigue sin pensar:
+escribe con el dato delante y no decide nada. Ademas `DECISOR_MODEL` permite
+ponerle un modelo mas grande SOLO al decisor sin encarecer el turno entero.
+
+**MEDIDO, mismo mensaje real, antes y despues** (guion 76):
+- Sin pensar: cotizo 4 categorias sobre un pedido de 3, invento un teclado como
+  item, borro un auricular, ignoro `excluir` que el esquema ofrece y ordeno por
+  `caro` a partir de "el precio no seria tan importante". 2,2 millones. Juez:
+  LIMPIO.
+- Pensando: 3 categorias correctas, `excluir: ["china"]` en las tres, sin
+  teclado fantasma. Latencia 6,4s contra 8,6s: mas rapido, porque resuelve en
+  una ronda en vez de dos.
+- Control sobre los guiones 03 y 07: sin pensar 3 problemas, pensando 2. El
+  cambio no rompio nada.
+
+**LO QUE EL PENSAMIENTO NO ARREGLA, y es la etapa 2.** Sigue sin preguntar por
+la contradiccion del pedido, y ante un criterio por GRADOS -"las menos partes
+chinas posibles"- el `excluir` booleano lo convierte en un muro: contesto "no
+contamos con nada de origen no chino", que es VERDAD segun el catalogo y aun asi
+mata la venta.
+
+**ETAPA 2 Y 3, HECHAS TAMBIEN (Martin pidio ir por todo, no por etapas).**
+
+- `app/core/pedido.py`, NUEVO: el reconciliador. El modelo declara lo que
+  entendio con la herramienta `registrar_pedido` -items, restricciones,
+  destinos, pide_precio y CONTRADICCIONES- y el codigo compara esa declaracion
+  contra las herramientas que efectivamente pidio. Seis chequeos: cada item
+  nombrado fue buscado; nada cotizado que no se haya pedido; toda restriccion
+  declarada viaja en algun argumento; todo destino cotizado; si pidio precio
+  hay cuenta; y la contradiccion declarada obliga a PREGUNTAR. Ante hueco el
+  codigo hace UNA de dos cosas y nunca una tercera: devuelve el faltante al
+  modelo para la vuelta siguiente, o fuerza la pregunta al cliente. Nunca
+  completa por su cuenta.
+- EL BUCLE ACOTADO, `_MAX_RONDAS = 4`, reemplaza a las dos rondas fijas. Corta
+  solo apenas el reconciliador no encuentra huecos: un saludo sigue costando
+  una llamada.
+- NINGUNA HERRAMIENTA DEVUELVE VACIO. `buscar_productos` ya no corta con
+  "no tenemos nada" cuando la exclusion vacia el resultado: devuelve los que
+  MENOS incumplen, ordenados por `_grado`, y le pide al modelo que sea honesto
+  sobre el grado. La condicion casi nunca es binaria aunque el argumento lo sea.
+- AHORRO: en las vueltas de encadenado ya no viajan los ocho esquemas, solo los
+  encadenables. `consultar_criterio` sola son 576 tokens por sus 93 enums.
+
+**MEDIDO sobre el mensaje real, guion 76, tres configuraciones:**
+sin pensar declaro nada y cotizo un teclado fantasma; pensando arreglo el plan
+pero contesto con un muro; con el reconciliador **declaro la contradiccion solo,
+pregunto por el teclado, y ofrecio lo que menos incumple en vez del muro.**
+Guiones 03 y 07 como control: **3 problemas -> 2 -> 1.** Latencia 6,7s a 7,1s,
+por debajo de los 8,6s del arranque.
+
+**EL PROMPT CHICO GANO, Y EL MODELO GRANDE NO (Martin, 2-ago, ultima tanda).**
+Dos experimentos medidos con 5 pasadas y control, sobre el guion 76:
+
+1. MODELO. `gemini-3.1-pro-preview` razona visiblemente mejor en una pasada
+   suelta -es el unico que noto que al reparto de envios le sobra un auricular y
+   que el 70/30 necesita saber los medios de pago- pero tarda **94 segundos**:
+   descartado para WhatsApp. `gemini-3.6-flash` contra `flash-lite`, 5 pasadas
+   cada uno: **identicos en las tres columnas**. El modelo NO era el cuello de
+   botella. La hipotesis del "decisor chico" queda descartada con datos.
+2. PROMPT. El SISTEMA tenia 3278 caracteres, 8 reglas absolutas y 12 de estilo.
+   Se reemplazo por uno de 1351 que NO lista reglas de dato duro -de eso ya se
+   encargan las herramientas y el codigo- sino que ESTIMULA EL RAZONAMIENTO:
+   entender que necesita de verdad, fijarse si el pedido cierra antes de
+   contestar, y nunca cerrar con un no teniendo el dato en la mano.
+   Resultado: **vende paso de 3/5 a 5/5**, repetido en dos mediciones, sin
+   perder las otras dos columnas. razona 5/5, no-alucina 4-5/5 (±1 es ruido a
+   n=5).
+
+**LA LECCION, y contradice el reflejo de todo el proyecto:** un intento anterior
+de la MISMA tarde fue AGREGAR una regla al prompt para prohibir el muro. Bajo
+vende de 3/5 a 2/5 y no-alucina de 5/5 a 4/5. Se revirtio en el acto. Agregar
+reglas a un prompt largo no agrega control: agrega competencia entre reglas y el
+modelo elige mal cual gana. SACAR reglas y pedir razonamiento funciono; agregar
+una, no.
+
+**LO UNICO QUE HUBO QUE REPONER, y se repuso solo:** al sacar las 20 reglas
+aparecieron 3 "promesa prohibida: retiro_local" en los guiones 03/06/07. Una
+sola linea sobre servicios que la tienda no ofrece los bajo a 1, que es el mismo
+numero que daba el prompt largo. O sea: de 20 reglas, 19 no estaban comprando
+nada y una si.
+
+**LO QUE FALTA.** Contexto: siguen siendo 10 mensajes cortados a 900 caracteres.
+Guiones dificiles con expectativas: hay uno, el 76. `DECISOR_MODEL` sigue vacio,
+o sea todo corre en flash-lite; ese es el techo cuando la plomeria ya no alcance.
+
+**LAS TRES ETAPAS, el mapa original. Ya no hay que esperar entre una y otra.**
+1. HECHA. El decisor piensa.
+2. HECHA. EL PEDIDO COMO OBJETO + RECONCILIADOR. No existia en ningun lado una
+   estructura con lo que el cliente pidio, asi que nada puede compararla contra
+   el plan. Se crea, y un chequeo determinista compara: categorias nombradas
+   contra buscadas, cantidades, toda restriccion declarada viajando en algun
+   argumento, todo destino cotizado. Ante desajuste el codigo hace UNA de dos
+   cosas y nunca una tercera: le vuelve a pedir al modelo la pieza que falta, o
+   fuerza preguntarle al cliente. Es el mismo mecanismo del veredicto `ambiguo`
+   del certificador, que YA funciona para la identidad del producto, extendido
+   al pedido entero.
+3. EL BUCLE ACOTADO reemplaza las dos rondas fijas: hasta 4 o 5 vueltas que
+   cortan cuando el modelo puede contestar. Recien ahi se BORRAN las guardas de
+   prosa que quedan sin trabajo. Ahi bajan las capas de verdad.
+
+**REGLA DE HONESTIDAD, nacida de cinco sesiones seguidas diciendo "ahora si
+anda".** Cada chat nuevo llega sin memoria, encuentra un agujero real, lo tapa y
+declara verde. Las cinco dijeron la verdad sobre su propio parche y las cinco se
+equivocaron sobre el todo. Desde ahora: **ninguna sesion declara verde sin un
+numero que salga de una charla REAL, y el numero se reporta con el control al
+lado.** El "0% sobre 72 turnos" del 2-ago a la tarde era `banco_repetido.py 3
+'7?_*.txt'`, o sea SOLO los guiones que empiezan con 7, tres pasadas. Los
+guiones 03 y 07 fallan hoy con el codigo deployado. El numero era cierto y el
+alcance no era el que parecia.
+
+**LO QUE NO SE PUEDE COPIAR de un asistente agentico, dicho para no perder
+tiempo.** La latencia: un turno con bucle y pensamiento se va a 15-25s contra
+los 8 de hoy, y eso es decision de producto. El cliente no corrige: se va, asi
+que hay que acertar o preguntar a la primera. Y el techo del modelo: la plomeria
+sube el piso, no el techo. `gemini-3.1-flash-lite` con las tres etapas puestas
+resuelve dificultad media; lo verdaderamente dificil va a pedir `DECISOR_MODEL`
+mas grande, que son centavos por mensaje porque solo encarece la llamada uno.
 
 **==== 2-ago-2026 (tarde) — EL RAZONAMIENTO ATADO Y EL BANCO QUE MIDE ====**
 
