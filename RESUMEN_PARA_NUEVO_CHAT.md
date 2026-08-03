@@ -4,6 +4,122 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 3-ago-2026 — INVENTARIO COMPLETO, TODO VERIFICADO CONTRA EL REPO Y CONTRA PRODUCCION ====**
+
+Cada punto de abajo se comprobo con el codigo, con Firestore real o con una
+corrida del banco. Lo que no se pudo comprobar esta marcado como tal.
+
+**LO BUENO, y hay que decirlo porque se creia lo contrario:**
+- LA FUENTE DE VERDAD ESTA UNIFICADA Y SINCRONIZADA AL 100%. Comparado producto
+  por producto y campo por campo contra Firestore de produccion: 880 = 880,
+  cero ids de diferencia, cero precios distintos, cero stock distinto, ninguna
+  columna ausente. La FAQ igual: 50 = 50, cero diferencias. NO hay dos fuentes.
+- EL DESORDEN DE INGENIERIA YA SE LIMPIO. Quedan 2 booleanos en `config.py`, no
+  70 flags. CERO modulos muertos. UN solo camino: webhook -> orchestrator (72
+  lineas) -> `hub_venta`. El interprete atado se borro, no convive apagado.
+- EL MODELO NO ES EL PROBLEMA. Medido hoy: Gemini 2%, gpt-4.1-mini 2% y mas
+  lento, gpt-4.1-nano 8%. Cambiar de modelo no mueve la aguja.
+
+**1. LO QUE NO EXISTE PERO EL PROYECTO CREE QUE SI:**
+- `banco_pruebas/piso.json`: NO EXISTE. El unico piso es `casetes/_piso.json`,
+  que es otra cosa.
+- Las metricas `sin_caida`, `sin_invento`, `completa`, `avanza`: NO EXISTEN en
+  ningun archivo. El banco mide UNA cosa, tasa de fallo por turno.
+- `tests/test_charlas_grabadas.py`: NO EXISTE. Es el test que segun
+  `casetes/_piso.json` defiende el puntaje 2364/2368 en cada push. Las 65
+  charlas grabadas del 31-jul NO las corre nadie.
+- La capa Verifika del `CLAUDE.md` (Proposer, Checker, Citador, Router de
+  Confianza): NO EXISTE. `app/verifika/` tiene UN archivo, el adaptador. El
+  checker se borro el 25-jun y en su lugar quedaron 21 candados ad-hoc.
+- `banco_repetido.main()` termina en `return 0` fijo: NUNCA falla, no gatea.
+
+**2. LA MEDICION CUBRE EL 7,6% DE LO QUE HAY:**
+- Existen 72 guiones con 315 turnos. El banco corre 7 guiones, 24 turnos.
+- Los 7 guiones `7?_*` no tienen casete grabado.
+- `test_vivo_charlas.py` y `test_vivo_interpretacion.py` no corren en CI.
+
+**3. LA FUENTE ESTA BIEN PERO EL MODELO NO PUEDE BUSCAR EN ELLA:**
+- `buscar_productos` filtra por 3 ejes -categoria, precio, marca/origen- sobre
+  27 disponibles (20 columnas + 7 claves de specs).
+- No se puede pedir: `peso_gramos`, `dimensiones`, `garantia_meses`, `color`,
+  `material`, `contenido_caja`, `uso_recomendado`, ni las specs `bluetooth`,
+  `conexion`, `bateria`, `resistencia_agua`, `retroiluminacion`, `sensor`.
+- CONSECUENCIA MEDIDA: cuando no puede pedir el filtro, el modelo trae 3 por
+  precio y razona de su cabeza sobre el resto. Ahi alucina. No por tonto: le
+  pedimos que conteste lo que no lo dejamos consultar.
+- `_CAMPOS_FICHA` pide 3 nombres QUE NO EXISTEN en la fuente: `garantia`,
+  `medidas`, `caracteristicas`. Los reales son `garantia_meses`, `dimensiones`,
+  `caracteristicas_extra`. No traen nada y el filtro los descarta en silencio.
+- 8 campos no viajan estructurados al modelo: `color`, `peso_gramos`,
+  `dimensiones`, `garantia_meses`, `garantia_detalle`, `caracteristicas_extra`,
+  `tags`, `descripcion_rica`. Su contenido llega en prosa dentro de
+  `descripcion`, o sea NO es comparable ni filtrable.
+
+**4. LA BOMBA CON LA MECHA PUESTA:**
+- `POST /admin/load-data` esta VIVO y carga 100 productos SINTETICOS de
+  `data/productos.json` (ids `MON-001`) mas una FAQ de 8 temas escrita a mano
+  dentro de `main.py`. Token `cargar2026` hardcodeado como default en el repo.
+- VERIFICADO EN FIRESTORE: nadie lo llamo, los 880 estan intactos. Pero una
+  llamada pisa el catalogo real.
+- `CLAUDE.md` afirma que esos fixtures se borraron. NO se borraron.
+
+**5. LOS CANDADOS TAPAN MUCHO MAS DE LO QUE EL NUMERO MUESTRA:**
+- Guiones faciles, 120 turnos: fallo 2%, pero los candados dispararon 17%.
+- Guiones dificiles, 165 turnos: fallo 3%, candados 26%.
+- `plata_inventada` dispara 22 veces cada 165 turnos. `nego_lo_traido`, marcado
+  como ERROR que no deberia aparecer nunca, aparece.
+- Los candados BORRAN la frase (`texto.replace(frase, "")`), no corrigen. Dejan
+  texto mutilado.
+- EL JUEZ TIENE FALSOS POSITIVOS: 3 de 5 fallos de una corrida lo eran. Leyo el
+  envio de $18.500 como precio del auricular, "opciones disponibles en el local"
+  como retiro, y "las transferencias se acreditan en el dia" como promesa de
+  entrega.
+
+**6. GASTO DE GOOGLE CLOUD (la factura NO se pudo leer: la SA claude-lector no
+tiene billing, la Billing API esta deshabilitada, Monitoring da 403):**
+- Produccion NO consume: 0 a 67 llamadas a Gemini por dia, el servicio escala a
+  cero y arranca 10 a 28 veces diarias, o sea no hay min-instances.
+- LO QUE CRECE SOLO: cada deploy usa `gcloud run deploy --source .` y deja un
+  tarball en el bucket de sources y una imagen en Artifact Registry
+  `cloud-run-source-deploy`. Nada se borra. 153 builds en 7 semanas, revision
+  viva 399. ES EL CANDIDATO PRINCIPAL del aviso sin cambios.
+- Cloud Scheduler `firestore-backup-daily` FALLA con 404 todos los dias a las
+  06:00. EL BACKUP DE FIRESTORE NO SE ESTA HACIENDO.
+- UptimeRobot pega a `/health` cada 5 minutos, 288 veces por dia.
+- Falta poner cleanup policy en Artifact Registry y en el bucket `run-sources-*`.
+  Requiere consola, no se hizo.
+
+**7. DOCUMENTACION QUE MIENTE:**
+- `CLAUDE.md` dice FAQ de 44 temas: son 50.
+- `CLAUDE.md` dice que los fixtures se borraron: no.
+- El hook de arranque menciona `hub_atado.py`: no existe, es `hub_venta.py`.
+
+**LO QUE SE ARREGLO Y MIDIO EN ESTA SESION:**
+- EL BUG QUE ROMPIA PRESUPUESTOS. La guarda que repone la cuenta preguntaba si
+  la PRIMERA linea del bloque estaba en el texto, y esa linea es el literal
+  "Presupuesto:". Al modelo le alcanzaba con escribir esa palabra para que el
+  codigo diera por pegada una cuenta que no pego. Caso real: anuncio "incluyendo
+  el microfono", listo un renglon, el candado de plata podo el resto y el
+  cliente recibio el presupuesto SIN el microfono y SIN Total, logueado
+  `hub_venta_ok`. Ahora se exige el bloque COMPLETO renglon por renglon.
+  MEDIDO: 3% -> 1% en los 165 turnos dificiles; los dos turnos que fallaban
+  pasaron de 33% a 0%. Dos tests con el caso real.
+- `_cliente_decisor()` + `DECISOR_BASE_URL/API_KEY/MODEL`: permite medir otro
+  provider en la llamada UNO sin tocar el redactor. Con la env vacia todo sigue
+  por Gemini igual que antes.
+- El casete ahora intercepta la puerta del decisor, con su candado. Sin eso, en
+  CI la llamada UNO se iba a la red de verdad.
+- p50/p95 en el reporte del banco: el ms por turno ya se medía y se tiraba.
+
+**EL PROXIMO PASO, en orden:**
+1. Borrar `/admin/load-data`, `data/productos.json` y la FAQ hardcodeada.
+2. Arreglar los 3 nombres muertos de `_CAMPOS_FICHA` y sumar los 8 campos.
+3. Recrear `tests/test_charlas_grabadas.py`: 65 charlas gratis en cada push.
+4. LA CONSULTA GENERAL: filtro `campo`/`operador`/`valor` con `campo` como enum
+   atado a las columnas reales. Es lo unico que ataca las infinitas preguntas
+   sobre atributos en vez de la proxima cuatro. Cambia la pendiente, no un punto.
+5. Despues: la cuenta fuera del prompt, que mata 3 candados de una.
+
 **==== 2-ago-2026 (tarde) — EL RAZONAMIENTO ATADO Y EL BANCO QUE MIDE ====**
 
 **LA CAUSA DEL ABISMO banco contra WhatsApp, resuelta.** No eran dos sistemas
