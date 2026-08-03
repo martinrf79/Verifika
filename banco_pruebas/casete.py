@@ -234,9 +234,18 @@ def _parchar(casete: Casete, grabando: bool):
     # `cierre` importa llm_complete a nivel de MODULO, asi que parchear solo el
     # adapter no lo alcanza: hay que pisarle su propia referencia.
     real_c = getattr(cierre, "llm_complete", None)
+    # La puerta del DECISOR. Con DECISOR_BASE_URL vacio devuelve `_cliente()` y
+    # el parche de abajo ya la cubria; con la base_url puesta se arma su propio
+    # cliente y la llamada UNO se le escapaba al casete, o sea salia a la red de
+    # verdad en CI. Se intercepta aca por la regla del candado: puerta nueva,
+    # parche nuevo, mismo commit.
+    real_d = hub_venta._cliente_decisor
 
     def _fake_g():
         return _ClienteFalso(casete, real_g() if grabando else None)
+
+    def _fake_d():
+        return _ClienteFalso(casete, real_d() if grabando else None)
 
     def _fake_adapter(messages, role="solver", **kw):
         etapa = f"adapter_{role}"
@@ -250,6 +259,7 @@ def _parchar(casete: Casete, grabando: bool):
         return json.loads(salida)
 
     hub_venta._cliente = _fake_g
+    hub_venta._cliente_decisor = _fake_d
     llm_adapter.llm_complete = _fake_adapter
     if real_c is not None:
         cierre.llm_complete = _fake_adapter
@@ -257,6 +267,7 @@ def _parchar(casete: Casete, grabando: bool):
         yield casete
     finally:
         hub_venta._cliente = real_g
+        hub_venta._cliente_decisor = real_d
         llm_adapter.llm_complete = real_a
         if real_c is not None:
             cierre.llm_complete = real_c

@@ -25,6 +25,21 @@ def test_la_puerta_al_modelo_existe():
     assert callable(hub_venta._cliente)
 
 
+def test_la_puerta_del_decisor_existe_y_el_casete_la_intercepta():
+    """La llamada UNO puede apuntar a otro provider por DECISOR_BASE_URL. Si esa
+    puerta se renombra o el casete deja de parchearla, la llamada se va a la red
+    de verdad en CI y el verde pasa a probar de menos, que es el modo de falla
+    que esta maquina viene a matar."""
+    import inspect
+
+    from banco_pruebas import casete
+    from app.core import hub_venta
+    assert callable(hub_venta._cliente_decisor)
+    fuente = inspect.getsource(casete._parchar)
+    assert "_cliente_decisor" in fuente, (
+        "casete._parchar no intercepta hub_venta._cliente_decisor")
+
+
 def test_no_hay_una_tercera_puerta_al_modelo():
     """Nadie construye su propio cliente OpenAI por fuera de las dos puertas.
 
