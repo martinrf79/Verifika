@@ -16,7 +16,7 @@ cliente pidio lo mas barato, la guia viaja SIEMPRE en el turno.
 import re
 import unicodedata
 
-from app.core.tools_context import get_current_tienda
+from app.core.contexto_turno import get_current_tienda
 from app.storage.firestore_client import (
     get_all_products, get_product_by_id, get_categories)
 from app.logger import get_logger

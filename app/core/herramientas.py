@@ -575,7 +575,7 @@ def consultar_criterio(a: ConsultarCriterio, tienda_id: str) -> dict:
 
 
 def cotizar_envio(a: CotizarEnvio, tienda_id: str) -> dict:
-    from app.core import tools as T
+    from app.core import calculadora as T
     r = T.cotizar_envio(localidad=a.localidad)
     r.pop("mensaje_para_llm", None)
     # Todas las herramientas contestan con `estado`: la regla 3 del prompt se
@@ -597,7 +597,7 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     calculadora lee las localidades cotizadas del turno por contextvar, y una
     escritura hecha en otro hilo no vuelve al que suma.
     """
-    from app.core import tools as T
+    from app.core import calculadora as T
     items = [{"product_id": str(i.product_id).upper(), "cantidad": max(1, i.cantidad)}
              for i in (a.items or [])]
     if not items:

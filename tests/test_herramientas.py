@@ -9,7 +9,7 @@ que se le entrega.
 import pytest
 
 from app.core import herramientas as H
-from app.core.tools_context import set_current_tienda
+from app.core.contexto_turno import set_current_tienda
 
 TIENDA = "verifika_prod"
 

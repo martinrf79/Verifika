@@ -1,8 +1,21 @@
 """
-TOOLS v4 — funciones que el LLM puede invocar.
+LA CALCULADORA — la cuenta y la tarifa de envio, selladas por codigo.
 
-Multi-tenant: cada tool resuelve la tienda actual desde tools_context (ContextVar).
-El LLM no ve este parámetro. El orchestrator lo setea antes de invocar al agente.
+Se llamaba `tools.py` hasta el 3-ago y ese nombre era una trampa: al lado vive
+`herramientas.py`, que es la MISMA palabra en el otro idioma, y no son lo mismo.
+`herramientas.py` es el menu que ve el modelo -moldes Pydantic, enums de la
+fuente, validacion de argumentos-. Esto de aca es la cuenta: `calculate_total`
+arma el presupuesto renglon por renglon y `cotizar_envio` resuelve la tarifa por
+zona. Es el unico lugar donde nace un peso.
+
+No se fusionaron en un solo archivo a proposito. No son dos capas que compiten:
+una es el adaptador de cara al modelo y la otra es la aritmetica, y meter
+quinientas lineas de calculo adentro del menu de herramientas no haria que el
+bot venda mejor ni que alucine menos. Lo que si costaba caro era el nombre, que
+invitaba a editar el archivo equivocado; eso se arreglo.
+
+Multi-tenant: cada funcion resuelve la tienda actual desde `contexto_turno`
+(ContextVar). El LLM no ve ese parametro; lo setea el hub antes del turno.
 """
 from app.storage.firestore_client import (
     get_all_products,
@@ -14,7 +27,7 @@ import re
 
 from app.config import get_settings
 from app.logger import get_logger
-from app.core.tools_context import get_current_tienda
+from app.core.contexto_turno import get_current_tienda
 
 log = get_logger(__name__)
 settings = get_settings()
@@ -966,25 +979,10 @@ def cotizar_envio(localidad: str | None = None,
     }
 
 
-def plazo_devolucion(fecha_compra: str | None = None) -> dict:
-    """Plazo de devolucion por arrepentimiento. Con fecha de compra (ISO
-    YYYY-MM-DD) calcula hasta cuando puede devolver y si esta en termino."""
-    from app.core.posventa import plazo_devolucion as _pd
-    return _pd(fecha_compra)
 
 
-def garantia_vigente(fecha_compra: str | None = None,
-                     meses: int | None = None) -> dict:
-    """Calcula hasta cuando cubre la garantia de un producto. Necesita la fecha de
-    compra (ISO) y los meses de garantia del producto (de get_product_details)."""
-    from app.core.posventa import garantia_vigente as _gv
-    return _gv(fecha_compra, meses)
 
 
-def validar_cuit(cuit: str | None = None) -> dict:
-    """Valida un CUIT/CUIL argentino por su digito verificador."""
-    from app.core.posventa import validar_cuit as _vc
-    return _vc(cuit)
 
 
 # TOOLS_REGISTRY y get_tools_schema se borraron el 29-jul: eran el contrato de

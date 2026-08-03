@@ -57,7 +57,7 @@ def test_zona_por_localidad(texto, zona, firestore_doble):
 def test_cotiza_tarifa_exacta_con_localidad(firestore_doble):
     """Con localidad del interior, la tarifa sale por la provincia que deduce la
     tabla. Villa Maria -> Cordoba -> 7500 (sembrado en el doble)."""
-    from app.core.tools import cotizar_envio
+    from app.core.calculadora import cotizar_envio
     q = cotizar_envio(localidad="Villa Maria, Cordoba", subtotal=1000)
     assert q.get("ok") is True
     assert q.get("zona") == "interior"

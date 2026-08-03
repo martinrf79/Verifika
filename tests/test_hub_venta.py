@@ -23,7 +23,7 @@ USUARIO = "test_hub_venta"
 
 @pytest.fixture(autouse=True)
 def _doble(firestore_doble):
-    from app.core.tools_context import set_current_tienda
+    from app.core.contexto_turno import set_current_tienda
     from app.storage.firestore_client import reset_conversation
     set_current_tienda(TIENDA)
     reset_conversation(USUARIO, tienda_id=TIENDA)

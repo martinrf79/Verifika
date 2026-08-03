@@ -185,16 +185,15 @@ class Settings(BaseModel):
     # VERIFIKA — núcleo verificable
     # ────────────────────────────────────────────────────────
 
-    # Mensaje cuando el turno no puede contestar y sale el fallback. El TEXTO
-    # vive en la fuente (`base_conocimiento.json`, bloque `mensajes`), donde
-    # vive toda la prosa desde el 3-ago; la env sigue existiendo para pisarlo
-    # en una prueba puntual, y el literal es la red si el archivo faltara.
-    VERIFIKA_FALLBACK_MESSAGE: str = os.getenv(
-        "VERIFIKA_FALLBACK_MESSAGE",
-        _mensaje_de_la_fuente(
-            "sin_dato_confirmado",
-            "No tengo esa información confirmada en el catálogo. "
-            "Dejame consultar y te confirmo en breve."))
+    # Lo que se le dice al cliente cuando el turno no pudo contestar. SIN env
+    # que lo pise: la tenia, y una env seteada en Cloud Run habria dejado a la
+    # fuente mandando en el repo y sin efecto en produccion, en silencio y sin
+    # que ningun test lo notara. El texto sale de la fuente y de ningun otro
+    # lado; el literal es la red si el archivo faltara.
+    VERIFIKA_FALLBACK_MESSAGE: str = _mensaje_de_la_fuente(
+        "sin_dato_confirmado",
+        "No tengo esa información confirmada en el catálogo. "
+        "Dejame consultar y te confirmo en breve.")
 
     # ────────────────────────────────────────────────────────
     # CAPA DE PRODUCTO — herramientas del agente de ventas
@@ -208,15 +207,15 @@ class Settings(BaseModel):
     UMBRAL_ENVIO_GRATIS: int = int(os.getenv("UMBRAL_ENVIO_GRATIS", "250000"))
 
     # NOTA: la calculadora defensiva (ex flag CALC_DEFENSIVA) ya es el UNICO camino
-    # de calculate_total, cableada en app/core/tools.py (normaliza y valida inputs
+    # de calculate_total, cableada en app/core/calculadora.py (normaliza y valida inputs
     # del modelo antes de calcular). Consolidada 24-jun: dejo de ser flag.
 
     # NOTA: la busqueda relajada (ex flag BUSQUEDA_RELAJADA) ya es el UNICO camino
-    # de search_products, cableada en app/core/tools.py. Tapaba "0 ventas por negar
+    # de search_products, cableada en app/core/calculadora.py. Tapaba "0 ventas por negar
     # stock que existe". Consolidada 24-jun: dejo de ser flag.
 
     # NOTA: el matcheo de FAQ por palabras (ex flag FAQ_MATCH_PALABRAS) ya es el
-    # UNICO camino de query_faq, cableado en app/core/tools.py: el tema especifico
+    # UNICO camino de query_faq, cableado en app/core/calculadora.py: el tema especifico
     # gana al generico y la respuesta lleva temas relacionados. Consolidado 24-jun.
     # EMBEDDINGS_PROVIDER se borro el 30-jul: no lo leia NADIE en todo `app`, y
     # su default "openai" era otra config muerta declarando un proveedor que no

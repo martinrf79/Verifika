@@ -174,7 +174,7 @@ CALCULOS = {
 # un string y cada consumidor la importaba por su cuenta, o sea que la relacion
 # celda-funcion no vivia en ningun lado: estaba repartida entre el que nombraba y
 # el que importaba, que es la misma forma de los dos errores de ayer.
-_MODULOS = {"tools": "app.core.tools",
+_MODULOS = {"tools": "app.core.calculadora",
             "fuente_producto": "app.core.fuente_producto",
             "compatibilidad": "app.core.compatibilidad"}
 

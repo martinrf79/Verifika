@@ -84,7 +84,7 @@ def test_concordancia_barato_sigue_igual():
 
 
 def test_intermedio_con_stock_elige_el_del_medio(firestore_doble):
-    from app.core.tools_context import set_current_tienda
+    from app.core.contexto_turno import set_current_tienda
     from app.core.guia_compra import (intermedio_con_stock,
                                       mas_barato_con_stock)
     set_current_tienda("verifika_prod")

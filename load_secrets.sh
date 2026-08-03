@@ -14,4 +14,5 @@ export VERIFIKA_CHECKER_PROVIDER=deepseek
 export VERIFIKA_CHECKER_MODEL=deepseek-chat
 export VERIFIKA_UMBRAL_CONFIANZA=0.7
 export VERIFIKA_BLOQUEAR_CONTRADICHAS=true
-export VERIFIKA_FALLBACK_MESSAGE="No tengo esa información confirmada en el catálogo. Dejame consultar y te confirmo en breve."
+# VERIFIKA_FALLBACK_MESSAGE se saco el 3-ago: el texto vive en la fuente
+# (base_conocimiento.json, bloque mensajes) y no se pisa por env.

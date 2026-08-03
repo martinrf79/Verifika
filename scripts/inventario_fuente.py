@@ -204,6 +204,48 @@ def inventario(tienda_id, vivo=False):
     esc(f"- Specs preguntables: **{len(cfg)}**")
     esc("")
 
+    # ── 3-bis. COBERTURA: que fuente contesta cada cosa ──────────────────
+    # Reemplaza a MATRIZ_COBERTURA.md, que se mantenia A MANO y por eso se
+    # pudrio: describia el camino atado que se borro el 2-ago. Esto se GENERA
+    # de la fuente, asi que no puede quedar viejo.
+    esc("## 3-bis. Cobertura: que fuente contesta cada cosa")
+    esc("")
+    esc("Generado de `base_conocimiento.json`. El `pilar` dice de donde sale la "
+        "respuesta: `criterio` la razona el modelo desde la prosa de la casa, "
+        "`politica` sale de la FAQ por `consultar_politica`, `dato` lo estampa "
+        "una herramienta, `conversacion` y `seguridad` son la conduccion.")
+    esc("")
+    temas_faq = {t.get("tema") for t in faq} if isinstance(faq, list) else set(faq)
+    grupos = {}
+    for c in (cat_bc or []):
+        grupos.setdefault(c.get("grupo", "sin_grupo"), []).append(c)
+    esc("| grupo | pilar | categorias | con criterio | con movida | con FAQ propia |")
+    esc("|---|---|---|---|---|---|")
+    for g in sorted(grupos):
+        cs = grupos[g]
+        pilares = sorted({c.get("pilar", "") for c in cs})
+        esc(f"| {g} | {', '.join(pilares)} | {len(cs)} | "
+            f"{sum(1 for c in cs if (c.get('criterio') or '').strip())} | "
+            f"{sum(1 for c in cs if c.get('movida'))} | "
+            f"{sum(1 for c in cs if c.get('id') in temas_faq)} |")
+    esc("")
+    sin_nada = sorted(c["id"] for c in (cat_bc or [])
+                      if not (c.get("criterio") or "").strip()
+                      and not c.get("movida") and c.get("id") not in temas_faq)
+    if sin_nada:
+        esc(f"**Categorias sin nada escrito** (el bot improvisa): {', '.join(sin_nada)}")
+    else:
+        esc("**Cero categorias sin nada escrito:** toda categoria tiene criterio, "
+            "movida o su tema de FAQ.")
+    esc("")
+    huerfanos = sorted(t for t in temas_faq
+                       if t not in {c["id"] for c in (cat_bc or [])})
+    esc(f"Temas de FAQ sin categoria espejo: **{len(huerfanos)}**. NO es un hueco: "
+        "el modelo los pide por nombre en el enum de `consultar_politica`. La "
+        "vieja regla de oro que exigia el espejo era del interprete atado, que "
+        "se borro el 2-ago.")
+    esc("")
+
     # ── 4. Fichas con la spec fantasma (calidad del dato) ────────────────
     esc("## 4. Calidad del dato: spec fantasma depurada")
     esc("")

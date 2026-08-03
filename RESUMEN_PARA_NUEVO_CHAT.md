@@ -4,6 +4,68 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 3-ago-2026 (noche) — LAS SEIS MEJORAS: menos codigo, menos documentos, mas fuente ====**
+
+Segunda tanda del mismo objetivo. El criterio de cada paso fue uno: ¿esto hace
+que el bot venda mejor o alucine menos? Lo que no pasaba ese filtro no se hizo.
+
+**1. El escombro del camino atado, borrado — pero rescatando primero.** Se
+sacaron 552 lineas muertas: las 12 funciones del ACOPLE en `curadas.py` y el
+buscador de FAQ por LLM completo en `tools.py`, mas 50 tests que probaban ese
+codigo que el bot no corre. ANTES de borrar se rescataron las cinco lecciones de
+charlas reales que ese codigo encerraba -no repetir el enlatado, un solo cierre
+por mensaje, no pedir un dato que la charla ya tiene, la politica general no
+tapa el dato exacto, con pedido en juego la politica acompaña-: viven en
+`identidad.charla` y ahora se le DICEN al modelo en cada turno, en vez de
+corregirlo despues.
+
+CORRECCION de un diagnostico previo: `_render_presentacion`,
+`_subtotales_por_grupo`, `_label_extra`, `_efecto_porcentaje` y
+`_umbral_envio_gratis` NO estaban muertas. Las llaman `calculate_total` y
+`cotizar_envio` desde adentro del mismo archivo; el barrido que las marco solo
+miraba llamadas desde otros modulos. Borrarlas hubiera roto la cuenta.
+
+**2. `tools.py` es ahora `calculadora.py`, y `tools_context.py` es
+`contexto_turno.py`.** NO se fusionaron las dos capas: no compiten, una es el
+menu que ve el modelo -`herramientas.py`- y la otra la aritmetica, y meter 500
+lineas de calculo adentro del menu no haria vender mas. Lo que si costaba caro
+era el nombre: `tools.py` y `herramientas.py` son la misma palabra en dos
+idiomas, una invitacion a editar el archivo equivocado, que es la clase de error
+que ya costo dias en este proyecto. Se borraron ademas tres pass-through muertos
+a `posventa`.
+
+**3. El inventario no puede volver a mentir.** Se descubrio que
+`INVENTARIO_FUENTE.md` estaba viejo contra el propio repo. En vez de
+regenerarlo en el CI -que ensucia con commits automaticos- hay un test que
+CUENTA la fuente y exige que el documento diga lo mismo, con el comando a correr
+en el mensaje de error.
+
+**4. Se borraron `MATRIZ_COBERTURA.md` y `CABLEADO.md`.** Los dos se declaraban
+viejos en su propia cabecera. Peor: la REGLA DE ORO de `CABLEADO` -"todo tema de
+FAQ tiene que tener categoria espejo"- ya no aplica y habria mandado a una
+sesion a "arreglar" 23 huecos falsos. Era una restriccion del interprete atado,
+que clasificaba al enum de categorias; hoy el modelo pide los 50 temas por
+nombre en el enum de `consultar_politica`. Lo que si valia -que fuente contesta
+cada cosa- ahora se GENERA de la fuente en la seccion 3-bis del inventario, asi
+que no puede pudrirse. El mapa vivo del turno sigue siendo `ARQUITECTURA.md`.
+
+**5. La env que pisaba la fuente en silencio.** `VERIFIKA_FALLBACK_MESSAGE` se
+leia de entorno. Si alguien la seteaba en Cloud Run, el texto del json quedaba
+mandando en el repo y sin efecto en produccion, sin que ningun test lo notara.
+Se saco la env, del codigo y de `load_secrets.sh`: el mensaje sale de la fuente
+y de ningun otro lado.
+
+**6. Ahora se puede MEDIR si el modelo usa las movidas.** Log nuevo
+`hub_venta_fuente`: por turno, que tema de politica se sirvio y, por cada
+criterio, si trajo `movida` o `solo_criterio`. Un turno de objecion de precio
+sin `movida` en esa linea es el modelo vendiendo de memoria con la movida
+escrita al lado. Dos guiones nuevos de banco para provocarlo: `74_situaciones_de
+_venta` (esta caro, me haces precio, desconfianza, lo pienso) y
+`75_situaciones_dificiles` (llego fallado, enojo, pasame con una persona, sos un
+bot, chau). Correrlos necesita la clave paga.
+
+Bateria: 381 verdes.
+
 **==== 3-ago-2026 (tarde) — LA PROSA TAMBIEN ES FUENTE: se unifico la mitad que faltaba ====**
 
 El inventario de mas abajo decia, con razon, que la fuente de verdad estaba
@@ -2909,7 +2971,7 @@ sigue atado a la fuente porque el DATO sale de la tool, no del modelo. Se
 prueba en el banco; si anda, se piensa deploy.
 
 **Banco nuevo `banco_pruebas/banco_gemini_tools.py`:** Gemini recibe las
-MISMAS tools del sistema (`app.core.tools.get_tools_schema`), decide cuál
+MISMAS tools del sistema (`app.core.calculadora.get_tools_schema`), decide cuál
 llamar, el CÓDIGO la ejecuta contra Firestore/FAQ/calculadora deterministas y
 le devuelve el resultado, en loop, hasta que redacta. Reporta la SECUENCIA de
 tool calls (cómo las usa) y mide la salida con los verificadores reales.

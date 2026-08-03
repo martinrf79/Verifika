@@ -253,6 +253,30 @@ def _memoria_texto(estado: dict, history: list, tienda_id: str = "") -> str:
     return "\n".join(partes)
 
 
+def _log_fuente(llamadas: list, trace_id: str, ronda: int) -> None:
+    """QUE TRAJO LA FUENTE ESTE TURNO. Una linea, para poder medir lo que hasta
+    hoy no se medía: si el modelo pide la MOVIDA cuando el turno es una
+    situacion de venta -esta caro, una queja, una despedida- o si la improvisa.
+
+    `hub_venta_pedidos` ya dice que herramienta se pidio; esto dice que volvio:
+    el tema de politica servido, y por cada criterio si traia movida escrita o
+    solo criterio. Un turno de objecion sin `movida` en esta linea es el modelo
+    vendiendo de memoria con la movida escrita al lado, sin usarla."""
+    politica, criterio = [], []
+    for l in llamadas:
+        r = l.get("resultado") or {}
+        if r.get("estado") != "encontrado":
+            continue
+        if l.get("herramienta") == "consultar_politica":
+            politica.append(r.get("tema"))
+        elif l.get("herramienta") == "consultar_criterio":
+            criterio.append((r.get("tema"),
+                             "movida" if r.get("movida") else "solo_criterio"))
+    if politica or criterio:
+        log.info("hub_venta_fuente", trace_id=trace_id, ronda=ronda,
+                 politica=politica, criterio=criterio)
+
+
 def _mensajes(negocio: str, memoria: str, history: list, mensaje: str,
               instruccion: str, datos: str = "") -> list:
     msgs = [{"role": "system", "content": sistema(negocio)}]
@@ -922,7 +946,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     t0 = time.time()
     from app.core.estado_venta import (construir_estado, set_current_estado,
                                        get_envio_localidades, merge_productos)
-    from app.core.tools_context import set_current_tienda
+    from app.core.contexto_turno import set_current_tienda
     from app.core import guardas_salida as gs
 
     conv = get_conversation(user_id, tienda_id=tienda_id)
@@ -958,6 +982,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                  estados=[(l["herramienta"],
                            (l["resultado"] or {}).get("estado"))
                           for l in llamadas])
+        _log_fuente(llamadas, trace_id, ronda)
 
         # ── RECONCILIAR: lo declarado contra lo hecho ───────────────────
         # Acá está el control que faltaba. Los diecinueve que había miraban la

@@ -1,7 +1,7 @@
 """
 AREA: Calculadora y total del pedido.
 
-Herramientas del bot cubiertas: calculate_total (app/core/tools.py) y su capa
+Herramientas del bot cubiertas: calculate_total (app/core/calculadora.py) y su capa
 defensiva de normalizacion (app/core/calc_defensiva.py).
 
 Casos sembrados desde errores reales confirmados:
@@ -58,7 +58,7 @@ def test_e13_destinos_sin_cotizar_ni_se_capan_ni_se_duplican(firestore_doble):
     (caso mudanza: "mandalo todo a Salta" + destinos=2 del solver = dos envios
     de $9.000). Ahora la calculadora ni capa en silencio ni inventa: devuelve
     ok False pidiendo cotizar cada destino."""
-    from app.core.tools import calculate_total, get_all_products
+    from app.core.calculadora import calculate_total, get_all_products
     from app.core import estado_venta
 
     prods = sorted(get_all_products(), key=lambda p: p.get("precio_ars", 0))
@@ -85,7 +85,7 @@ def test_e13_destinos_sin_cotizar_ni_se_capan_ni_se_duplican(firestore_doble):
 # es conservador: solo libera el envio si el reparto claramente supera el umbral.
 
 def _producto_para_umbral(min_precio, cantidad):
-    from app.core.tools import get_all_products
+    from app.core.calculadora import get_all_products
     return next(p for p in sorted(get_all_products(),
                                   key=lambda x: x.get("precio_ars", 0))
                 if p.get("precio_ars", 0) > min_precio
@@ -95,7 +95,7 @@ def _producto_para_umbral(min_precio, cantidad):
 def test_multidestino_no_regala_envio_por_la_suma(firestore_doble):
     """4 destinos cuya SUMA supera el umbral pero cada destino no: el envio se
     COBRA (4 tarifas), no sale gratis por mirar la suma."""
-    from app.core.tools import calculate_total
+    from app.core.calculadora import calculate_total
     from app.core import estado_venta
 
     p = _producto_para_umbral(min_precio=250000 // 4, cantidad=4)
@@ -121,7 +121,7 @@ def test_multidestino_no_regala_envio_por_la_suma(firestore_doble):
 def test_un_destino_sobre_el_umbral_sigue_gratis(firestore_doble):
     """Lock del camino que ya andaba: UN destino cuya compra supera el umbral
     mantiene el envio gratis."""
-    from app.core.tools import calculate_total
+    from app.core.calculadora import calculate_total
     from app.core import estado_venta
 
     p = _producto_para_umbral(min_precio=250000 // 4, cantidad=4)
@@ -143,7 +143,7 @@ def test_un_destino_sobre_el_umbral_sigue_gratis(firestore_doble):
 def test_multidestino_tarifas_distintas_suman_cada_una(firestore_doble):
     """Dos destinos en provincias distintas cotizados el mismo turno: el envio
     del total es la SUMA de las dos tarifas reales, no dos veces la ultima."""
-    from app.core.tools import calculate_total, cotizar_envio, get_all_products
+    from app.core.calculadora import calculate_total, cotizar_envio, get_all_products
     from app.core import estado_venta
 
     estado_venta.set_current_estado({})  # arranca el turno sin arrastre
@@ -171,7 +171,7 @@ def test_multidestino_recuerda_destinos_de_turnos_anteriores(firestore_doble):
     localidades ya cotizadas viajan en el estado (memoria del pedido) y
     calculate_total las usa sin volver a pedir el CP. Visto en el banco: el bot
     re-pedia el codigo postal de Cordoba que el cliente ya habia dado."""
-    from app.core.tools import calculate_total, cotizar_envio, get_all_products
+    from app.core.calculadora import calculate_total, cotizar_envio, get_all_products
     from app.core import estado_venta
 
     # Turno 1: se cotizan los dos destinos (esto llena las localidades del turno).
@@ -205,7 +205,7 @@ def test_carrito_vigente_rechaza_id_inferido_de_memoria(firestore_doble):
     carrito, ni de lo mostrado, ni de una tool del turno se rechaza con la
     instruccion del pedido real (banco: el solver pidio el total con el
     NX-7000 cuando el carrito era el DX-110)."""
-    from app.core.tools import calculate_total
+    from app.core.calculadora import calculate_total
     from app.core import estado_venta
 
     estado_venta.set_current_estado({"carrito": [
@@ -219,7 +219,7 @@ def test_carrito_vigente_rechaza_id_inferido_de_memoria(firestore_doble):
 
 def test_carrito_vigente_acepta_id_certificado_del_turno(firestore_doble):
     """El mismo id pasa si una tool del turno lo devolvio (certificado)."""
-    from app.core.tools import calculate_total
+    from app.core.calculadora import calculate_total
     from app.core import herramientas as H
     from app.core import estado_venta
     from app.core.estado_venta import certificar_ids_de_resultado
@@ -235,7 +235,7 @@ def test_carrito_vigente_acepta_id_certificado_del_turno(firestore_doble):
 
 
 def test_carrito_vigente_acepta_ids_del_propio_carrito(firestore_doble):
-    from app.core.tools import calculate_total
+    from app.core.calculadora import calculate_total
     from app.core import estado_venta
 
     estado_venta.set_current_estado({"carrito": [
@@ -248,7 +248,7 @@ def test_carrito_vigente_acepta_ids_del_propio_carrito(firestore_doble):
 
 def test_sin_carrito_no_se_restringe(firestore_doble):
     """Primer turno sin pedido vigente: el flujo normal no se toca."""
-    from app.core.tools import calculate_total
+    from app.core.calculadora import calculate_total
     from app.core import estado_venta
 
     estado_venta.set_current_estado({})
@@ -263,8 +263,8 @@ def test_mudanza_destinos_de_mas_no_duplican_tarifa(firestore_doble):
     # de $9.000. Ahora se rechaza pidiendo cotizar; con destinos=1 sale bien.
     from app.core.estado_venta import set_current_estado
     from app.core import estado_venta
-    from app.core.tools import calculate_total
-    from app.core.tools_context import set_current_tienda
+    from app.core.calculadora import calculate_total
+    from app.core.contexto_turno import set_current_tienda
     set_current_tienda("verifika_prod")
     estado_venta._envio_localidades.set([])
     set_current_estado({"carrito": [], "productos_vistos": [],
@@ -298,8 +298,8 @@ def test_destino_unico_no_cobra_el_destino_obsoleto(firestore_doble):
     # UNA vez y al destino de la memoria (Salta), no al obsoleto.
     from app.core.estado_venta import set_current_estado
     from app.core import estado_venta
-    from app.core.tools import calculate_total
-    from app.core.tools_context import set_current_tienda
+    from app.core.calculadora import calculate_total
+    from app.core.contexto_turno import set_current_tienda
     set_current_tienda("verifika_prod")
     estado_venta._envio_localidades.set([])
     set_current_estado({"carrito": [], "productos_vistos": [],
@@ -324,9 +324,9 @@ def test_split_proof_respalda_envio_y_renglones(firestore_doble):
     # Bug real 11-jul: el proof del split solo traia los montos del reparto;
     # el envio cotizado ($6.000 La Plata) quedaba sin respaldo y el
     # verificador lo "autocorregia" a un valor de la FAQ ($5.000).
-    from app.core.tools_context import set_current_tienda
+    from app.core.contexto_turno import set_current_tienda
     from app.core.estado_venta import set_current_estado
-    from app.core.tools import cotizar_envio, calculate_total
+    from app.core.calculadora import cotizar_envio, calculate_total
     set_current_tienda("verifika_prod")
     set_current_estado({})
     q = cotizar_envio(localidad="La Plata")

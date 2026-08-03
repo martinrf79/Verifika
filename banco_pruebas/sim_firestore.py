@@ -177,7 +177,7 @@ def install():
 
     # Reenganche en los consumidores que importaron los nombres ARRIBA (mantienen
     # su propia referencia; un setattr en fc no los alcanza).
-    import app.core.tools as tools
+    import app.core.calculadora as tools
     for n in ("get_all_products", "get_product_by_id", "get_categories", "get_all_faq"):
         setattr(tools, n, _patches[n])
     # hub_venta es el camino VIVO y tambien importa los nombres arriba. Antes de

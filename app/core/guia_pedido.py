@@ -139,7 +139,7 @@ def _calcular_categorias_criterio(cats_pedido: list, estado: dict | None,
                                   mensaje: str, elegir) -> list[dict] | None:
     if not cats_pedido:
         return None
-    from app.core.tools_context import set_current_tienda
+    from app.core.contexto_turno import set_current_tienda
     set_current_tienda(tienda_id)
     items = []
     for n, cat in cats_pedido:
@@ -157,8 +157,8 @@ def _calcular_items_sellados(items: list[dict], estado: dict | None,
     """Nucleo compartido: corre calculate_total sellado para unos items ya
     decididos por el CODIGO (de calcular_pedido o de las categorias baratas)."""
     estado = estado if isinstance(estado, dict) else {}
-    from app.core.tools_context import set_current_tienda
-    from app.core.tools import calculate_total
+    from app.core.contexto_turno import set_current_tienda
+    from app.core.calculadora import calculate_total
     set_current_tienda(tienda_id)
     msg = _norm(mensaje or "")
     # MULTI-DESTINO (charla real 10-jul, dos veces: "un teclado y un mouse a
@@ -172,7 +172,7 @@ def _calcular_items_sellados(items: list[dict], estado: dict | None,
     if not locs:
         _menv = _RE_ENVIO_A.search(msg)
         if _menv:
-            from app.core.tools import cotizar_envio
+            from app.core.calculadora import cotizar_envio
             _q = cotizar_envio(localidad=_menv.group(1).strip())
             if _q.get("ok"):
                 from app.core.estado_venta import get_envio_localidades
@@ -387,7 +387,7 @@ def cotizar_destinos_del_mensaje(mensaje: str) -> list[str]:
     del turno (set_envio_localidad, via cotizar_envio) para que el sello y la
     persistencia las vean. Las que no resuelven se ignoran (el solver pide el
     dato como siempre)."""
-    from app.core.tools import cotizar_envio
+    from app.core.calculadora import cotizar_envio
     ok: list[str] = []
     for m in list(_RE_DESTINOS_MSG.finditer(_norm(mensaje or "")))[:6]:
         cand = m.group(1).strip(" .,-")
@@ -664,7 +664,7 @@ def reparto_envios_detalle(mensaje: str, cats_pedido: list,
     precio_unitario, ...}]). Con el, cada tramo cotiza con el subtotal REAL
     de su paquete y el gratis por umbral sale IGUAL que en el total (19-jul:
     el total decia $7.500 y el reparto mostraba las tarifas crudas)."""
-    from app.core.tools import cotizar_envio
+    from app.core.calculadora import cotizar_envio
     # `grupos_dados` es el reparto que ya resolvio el INTERPRETE. Manda sobre
     # el parseo del mensaje: en la charla real del 1-ago el regex leyo "2
     # auriculares" de un pedido de seis productos a tres destinos.

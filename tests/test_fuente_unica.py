@@ -154,6 +154,43 @@ def test_no_vendidas_no_tiene_copia_en_codigo():
     assert not hasattr(guia_compra, "_NO_VENDIDAS_FALLBACK")
 
 
+def test_el_inventario_no_puede_mentir_sobre_la_fuente(fuente):
+    """INVENTARIO_FUENTE.md es lo primero que lee una sesion nueva para saber
+    que hay. El 3-ago se descubrio que estaba viejo contra el propio repo, que es
+    exactamente como se pierde un dia: alguien decide desde un numero que ya no
+    es cierto. Este lock cuenta la fuente de verdad y exige que el documento diga
+    lo mismo. Si falla, no se edita el numero a mano: se corre
+    `python3 scripts/inventario_fuente.py --vivo --md INVENTARIO_FUENTE.md`."""
+    raiz = _RUTA.parent.parent.parent.parent
+    doc = (raiz / "INVENTARIO_FUENTE.md").read_text(encoding="utf-8")
+
+    faq = json.loads((_RUTA.parent / "faq.json").read_text(encoding="utf-8"))
+    nv = json.loads((_RUTA.parent / "no_vendidas.json").read_text(encoding="utf-8"))
+    productos = (_RUTA.parent / "productos.csv").read_text(encoding="utf-8")
+
+    real = {
+        r"Productos en el repo: \*\*(\d+)\*\*": len(
+            [l for l in productos.splitlines() if l.strip()]) - 1,
+        r"- FAQ: \*\*(\d+)\*\* temas": len(faq),
+        r"- Base de conocimiento: \*\*(\d+)\*\*": len(fuente["categorias"]),
+        r"- Movidas de venta escritas: \*\*(\d+)\*\*": len(
+            [c for c in fuente["categorias"] if c.get("movida")]),
+        r"- Mensajes fijos al cliente: \*\*(\d+)\*\*": len(
+            [k for k in fuente["mensajes"] if not k.startswith("_")]),
+        r"- Categorias no vendidas: \*\*(\d+)\*\*": len(fuente.get("no_vendidas")
+                                                        or nv["no_vendidas"]),
+    }
+    desfasados = {}
+    for patron, esperado in real.items():
+        m = re.search(patron, doc)
+        assert m, f"el inventario perdio la linea {patron}"
+        if int(m.group(1)) != esperado:
+            desfasados[patron.split("*")[0].strip()] = (int(m.group(1)), esperado)
+    assert desfasados == {}, (
+        f"INVENTARIO_FUENTE.md dice una cosa y la fuente otra "
+        f"(dice, es): {desfasados}. Correr scripts/inventario_fuente.py")
+
+
 def test_los_markdown_de_borradores_ya_no_son_una_segunda_fuente():
     # Se absorbieron a la fuente. Si vuelven, vuelve el problema: dos textos
     # distintos para la misma movida y nadie sabe cual corre.

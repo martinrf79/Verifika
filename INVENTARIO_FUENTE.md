@@ -82,6 +82,27 @@ La prosa se unifico el 3-ago: la identidad del vendedor, las movidas de venta y
 los mensajes fijos al cliente vivian en markdowns y en constantes de Python, y
 ahora estan todas en `base_conocimiento.json`, la misma fuente que el criterio.
 
+## 3-bis. Cobertura: que fuente contesta cada cosa
+
+Generado de `base_conocimiento.json`. El `pilar` dice de donde sale la respuesta: `criterio` la razona el modelo desde la prosa de la casa, `politica` sale de la FAQ por `consultar_politica`, `dato` lo estampa una herramienta, `conversacion` y `seguridad` son la conduccion.
+
+| grupo | pilar | categorias | con criterio | con movida | con FAQ propia |
+|---|---|---|---|---|---|
+| asesoramiento | criterio | 6 | 5 | 3 | 0 |
+| casos_borde | conversacion, criterio, dato | 4 | 2 | 2 | 0 |
+| comparacion_compatibilidad | criterio, dato | 4 | 3 | 2 | 1 |
+| conversacion | conversacion | 19 | 14 | 7 | 1 |
+| criterio_producto | criterio | 28 | 28 | 0 | 0 |
+| identidad_dato | criterio, dato | 3 | 2 | 3 | 0 |
+| objeciones | criterio, politica | 4 | 4 | 4 | 0 |
+| politica_faq | dato, politica | 27 | 26 | 6 | 23 |
+| postventa | conversacion, criterio, dato, politica | 6 | 5 | 4 | 2 |
+| seguridad | seguridad | 5 | 4 | 1 | 0 |
+
+**Cero categorias sin nada escrito:** toda categoria tiene criterio, movida o su tema de FAQ.
+
+Temas de FAQ sin categoria espejo: **23**. NO es un hueco: el modelo los pide por nombre en el enum de `consultar_politica`. La vieja regla de oro que exigia el espejo era del interprete atado, que se borro el 2-ago.
+
 ## 4. Calidad del dato: spec fantasma depurada
 
 Fichas del CSV que traian una spec de OTRO producto pegada: **399/880**. La ingesta las depura dejando la spec avalada por el nombre del propio producto.

@@ -12,7 +12,7 @@ import pytest
 from app.core.guia_pedido import (cotizar_destinos_del_mensaje,
                                   pregunta_destinos_pendientes,
                                   calcular_categorias_baratas)
-from app.core.tools_context import set_current_tienda
+from app.core.contexto_turno import set_current_tienda
 
 _M_1215 = ("Dame precio de dos teclados dos Mouse y dos auriculares los mas "
            "baratos que tengas de colores en distinto un teclado y un mouse "
@@ -77,7 +77,7 @@ def test_un_solo_destino_no_regresiona():
 # --- REPARTO DE ENVIOS POR GRUPO (charla real de Martin, 11-jul 10:42) ---
 
 def test_reparto_charla_real_de_martin(firestore_doble):
-    from app.core.tools_context import set_current_tienda
+    from app.core.contexto_turno import set_current_tienda
     from app.core.estado_venta import set_current_estado
     from app.core.guia_pedido import reparto_envios_detalle
     set_current_tienda("verifika_prod")
@@ -99,7 +99,7 @@ def test_reparto_charla_real_de_martin(firestore_doble):
 
 
 def test_reparto_que_no_reconcilia_no_sale(firestore_doble):
-    from app.core.tools_context import set_current_tienda
+    from app.core.contexto_turno import set_current_tienda
     from app.core.estado_venta import set_current_estado
     from app.core.guia_pedido import reparto_envios_detalle
     set_current_tienda("verifika_prod")
@@ -151,8 +151,8 @@ def test_destino_referencia_y_no_lugar_no_valen(firestore_doble):
 
 def test_provincia_sticky_no_completa_basura(firestore_doble):
     """'la otra direccion' + provincia en memoria ya NO cotiza."""
-    from app.core.tools import cotizar_envio
-    from app.core.tools_context import set_current_tienda
+    from app.core.calculadora import cotizar_envio
+    from app.core.contexto_turno import set_current_tienda
     from app.core.estado_venta import set_current_estado
     set_current_tienda("verifika_prod")
     set_current_estado({"provincia_envio": "santa fe"})
@@ -189,8 +189,8 @@ def test_umbral_de_gratis_por_grupo_charla_real(firestore_doble):
     """La plata del caso real: Jujuy ($750.500) y Correa ($705.000) superan
     el umbral de $250.000 y van gratis; San Francisco ($69.500) NO lo supera
     y paga la tarifa de Cordoba. Antes el promedio regalaba los tres."""
-    from app.core.tools import calculate_total, cotizar_envio
-    from app.core.tools_context import set_current_tienda
+    from app.core.calculadora import calculate_total, cotizar_envio
+    from app.core.contexto_turno import set_current_tienda
     from app.core.estado_venta import set_current_estado
     set_current_tienda("verifika_prod")
     set_current_estado({})  # resetea las localidades del turno
@@ -224,7 +224,7 @@ def test_reparto_detalle_gratis_por_grupo_consistente(firestore_doble):
     los grupos que superan el umbral dicen gratis, el chico dice su tarifa.
     Asi el reparto y el total del presupuesto cuentan la misma plata."""
     from app.core.guia_pedido import reparto_envios_detalle
-    from app.core.tools_context import set_current_tienda
+    from app.core.contexto_turno import set_current_tienda
     from app.core.estado_venta import set_current_estado
     set_current_tienda("verifika_prod")
     set_current_estado({})

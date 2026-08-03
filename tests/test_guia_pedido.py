@@ -126,8 +126,8 @@ def test_pedido_sellado_rechaza_items_agregados(firestore_doble):
     # que AGREGA un producto no pedido (el microfono fantasma del banco) se
     # rechaza; el mismo pedido o un subconjunto pasa.
     from app.core.estado_venta import set_current_estado
-    from app.core.tools import calculate_total
-    from app.core.tools_context import set_current_tienda
+    from app.core.calculadora import calculate_total
+    from app.core.contexto_turno import set_current_tienda
     set_current_tienda("verifika_prod")
     set_current_estado({"carrito": [], "productos_vistos": _VISTOS,
                         "pedido_sellado_turno": ["MOU0023"]})
@@ -227,7 +227,7 @@ def test_cotizar_destinos_del_mensaje(firestore_doble):
     from app.core.estado_venta import set_current_estado
     from app.core import estado_venta
     from app.core.guia_pedido import cotizar_destinos_del_mensaje
-    from app.core.tools_context import set_current_tienda
+    from app.core.contexto_turno import set_current_tienda
     set_current_tienda("verifika_prod")
     estado_venta._envio_localidades.set([])
     set_current_estado({"provincia_envio": "cordoba"})

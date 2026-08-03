@@ -85,7 +85,7 @@ def test_calculate_total_con_split_integrado(firestore_doble):
     """La calculadora dueña TODA la cuenta del pedido real de la charla 6-jul:
     productos + split 50/50, descuento del 10% de la FAQ a la parte que no es
     Mercado Pago. El solver no calcula nada, pasa 'pago' y recibe el bloque."""
-    from app.core.tools import calculate_total
+    from app.core.calculadora import calculate_total
     from app.core.estado_venta import set_current_estado, construir_estado
     set_current_estado(construir_estado({}, None))
     items = [{"product_id": "NOT0065", "cantidad": 2},
@@ -103,7 +103,7 @@ def test_calculate_total_con_split_integrado(firestore_doble):
 def test_split_no_duplica_descuento_si_solver_pasa_extra(firestore_doble):
     """Si el solver pasa ademas un items_extra de descuento_transferencia junto
     con 'pago', el split lo saca para no aplicar el descuento dos veces."""
-    from app.core.tools import calculate_total
+    from app.core.calculadora import calculate_total
     from app.core.estado_venta import set_current_estado, construir_estado
     set_current_estado(construir_estado({}, None))
     items = [{"product_id": "TEC0015", "cantidad": 1}]  # $36.000
