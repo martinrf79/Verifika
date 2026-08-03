@@ -118,15 +118,64 @@ tiene billing, la Billing API esta deshabilitada, Monitoring da 403):**
 - El casete ahora intercepta la puerta del decisor, con su candado. Sin eso, en
   CI la llamada UNO se iba a la red de verdad.
 - p50/p95 en el reporte del banco: el ms por turno ya se medía y se tiraba.
+- PUNTO 1, `piso.json` AL REPO. Estaba fijado desde el 2-ago pero el archivo
+  nunca viajo -no esta en `.gitignore`, simplemente no se commiteo-, asi que en
+  un clon fresco `piso.leer()` devolvia {} y la compuerta no comparaba contra
+  nada. El gate existia en el codigo y no en el repo.
+  PISO VIGENTE, 8 guiones x 26 turnos x 3 vueltas = 78 turnos:
+    DURA sin_caida 100.0% | DURA sin_invento 97.4%
+    blanda completa 93.6% | blanda avanza 96.2%
+    p50 5283ms | p95 9453ms | gemini-3.1-flash-lite
+  SALVEDAD: el campo `commit` dice 3c18608 pero la corrida arranco antes de los
+  puntos 2 y 3, o sea midio 883fc53. NO se refijo a proposito: las duras dan
+  identicas con el codigo nuevo y las blandas del piso son mas BAJAS, o sea mas
+  conservadoras. Un piso inflado -avanza en 100%- haria saltar avisos por ruido.
+- PUNTO 2, LA BOMBA DESACTIVADA. Borrados `POST /admin/load-data`,
+  `data/productos.json` y `scripts/cargar_firestore.py`, que aparecio al
+  verificar y cargaba lo mismo. Escribian 100 productos SINTETICOS (ids
+  `MON-001`) y una FAQ de 8 temas sobre la tienda default, con el token
+  `cargar2026` hardcodeado. Quedan 4 endpoints admin, todos legitimos.
+- PUNTO 3, EL CONTRATO ROTO CON LA FUENTE. `_CAMPOS_FICHA` pedia `garantia`,
+  `medidas` y `caracteristicas`: NINGUNO existe. Se llaman `garantia_meses`,
+  `dimensiones` y `caracteristicas_extra`. Como `_ficha` descarta lo que no
+  encuentra, los tres se caian EN SILENCIO. Corregidos, y sumados `color` y
+  `peso_gramos`, que existian y viajaban sueltos dentro de la prosa de
+  `descripcion`, o sea el modelo no los podia comparar entre productos. Fuera
+  `tags` (terminos internos) y `descripcion_rica` (identica a `descripcion`,
+  medido: mismos 161 caracteres). Dos tests: uno prohibe pedir un campo que no
+  este en la fuente, otro exige que peso, medidas, color y garantia lleguen.
+- MEDICION DE LOS PUNTOS 2 y 3 CONTRA EL PISO: compuerta VERDE, exit 0.
+  sin_caida 100.0 = 100.0 | sin_invento 97.4 = 97.4 | completa 93.6 -> 94.9 |
+  avanza 96.2 -> 100.0. NINGUNA dura empeoro.
+  LO QUE SI EMPEORO Y NO SE TAPA: p95 de 9453 a 12246ms, casi 3 segundos. No es
+  dura y no frena, pero es real. Puede ser el costo en tokens de los campos
+  nuevos o ruido de 3 vueltas; con una corrida no se distingue. El banco avisa
+  solo: "el piso se fijo con solo 3 vueltas, ruido alto, no declarar nada".
 
 **EL PROXIMO PASO, en orden:**
-1. Borrar `/admin/load-data`, `data/productos.json` y la FAQ hardcodeada.
-2. Arreglar los 3 nombres muertos de `_CAMPOS_FICHA` y sumar los 8 campos.
-3. Recrear `tests/test_charlas_grabadas.py`: 65 charlas gratis en cada push.
-4. LA CONSULTA GENERAL: filtro `campo`/`operador`/`valor` con `campo` como enum
-   atado a las columnas reales. Es lo unico que ataca las infinitas preguntas
-   sobre atributos en vez de la proxima cuatro. Cambia la pendiente, no un punto.
-5. Despues: la cuenta fuera del prompt, que mata 3 candados de una.
+1. ~~`piso.json` al repo~~ HECHO.
+2. ~~Borrar `/admin/load-data` y los fixtures sinteticos~~ HECHO.
+3. ~~Los 3 nombres muertos de `_CAMPOS_FICHA`~~ HECHO.
+4. PENDIENTE, y es lo que cambia la pendiente. LA CONSULTA GENERAL: filtro
+   `campo`/`operador`/`valor` con `campo` como enum atado a las columnas reales.
+   HOY `buscar_productos` filtra por 3 ejes -categoria, precio, marca/origen-
+   sobre 27 disponibles. No se puede pedir `peso_gramos`, `dimensiones`,
+   `garantia_meses`, `color`, `material`, `contenido_caja`, `uso_recomendado`,
+   ni las specs `bluetooth`, `conexion`, `bateria`, `resistencia_agua`,
+   `retroiluminacion`, `sensor`. Cuando no puede pedir el filtro, el modelo trae
+   3 por precio y razona de su cabeza sobre el resto: AHI alucina. Con la
+   consulta general las infinitas preguntas sobre atributos se contestan sin
+   codigo nuevo. Es lo unico que ataca la clase en vez del caso.
+5. `tests/test_charlas_grabadas.py`: sigue sin existir, 65 charlas sin gate.
+6. La cuenta fuera del prompt: el modelo escribe `{cuenta}` y el codigo estampa.
+   Mata `plata_inventada`, `cuenta_retipeada` y `bloque_repuesto` de una.
+
+**PENDIENTE DE CONSOLA, Martin no pudo entrar el 3-ago:**
+- Cleanup policy en Artifact Registry `cloud-run-source-deploy` y en el bucket
+  `run-sources-*`. 153 builds en 7 semanas, revision viva 399, nada se borra.
+  Es el candidato principal del aviso de gasto sin cambios.
+- `firestore-backup-daily` falla con 404 todos los dias a las 06:00. HACE DIAS
+  QUE NO SE RESPALDA NADA.
 
 **==== 3-ago-2026 — TODO MERGEADO A MAIN, Y LA REGLA DE RAMAS ====**
 
