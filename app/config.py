@@ -54,6 +54,16 @@ class Settings(BaseModel):
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
+    # EL DECISOR, la llamada UNO del hub, la que elige herramientas. Config, no
+    # camino nuevo: si DECISOR_BASE_URL esta vacio -el default- el decisor usa
+    # el mismo cliente y el mismo modelo que el redactor, o sea Gemini, y no
+    # cambia nada. Con base_url puesta se lo apunta a otro proveedor compatible
+    # con OpenAI, por ejemplo Groq en https://api.groq.com/openai/v1, para medir
+    # si otro modelo elige igual de bien mas rapido. El REDACTOR nunca se mueve.
+    DECISOR_BASE_URL: str = os.getenv("DECISOR_BASE_URL", "")
+    DECISOR_API_KEY: str = os.getenv("DECISOR_API_KEY", "")
+    DECISOR_MODEL: str = os.getenv("DECISOR_MODEL", "")
+
     # Gemini (alternativa rapida con tool calling solido y limite gratis enorme).
     # Usa el endpoint compatible con OpenAI de Google, asi entra con el mismo
     # cliente. Se activa con LLM_PROVIDER=gemini.

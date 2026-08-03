@@ -149,6 +149,39 @@ def _modelo() -> str:
     return settings.GEMINI_MODEL or "gemini-3.1-flash-lite"
 
 
+def _cliente_decisor():
+    """La puerta del DECISOR, la llamada uno. Por default es la misma puerta que
+    la del redactor: sin DECISOR_BASE_URL esto devuelve `_cliente()` y no hay
+    ningun camino nuevo. Con DECISOR_BASE_URL apunta al otro proveedor
+    compatible con OpenAI para medirlo contra el piso. El redactor no se toca."""
+    import os
+    base = (settings.DECISOR_BASE_URL or os.environ.get("DECISOR_BASE_URL") or "").strip()
+    if not base:
+        return _cliente()
+    from openai import OpenAI
+    key = (settings.DECISOR_API_KEY or os.environ.get("DECISOR_API_KEY")
+           or settings.GROQ_API_KEY or os.environ.get("GROQ_API_KEY") or "")
+    key = key.split()[0] if key else ""
+    if not key:
+        return _cliente()
+    return OpenAI(api_key=key, base_url=base)
+
+
+def _modelo_decisor() -> str:
+    import os
+    return ((settings.DECISOR_MODEL or os.environ.get("DECISOR_MODEL") or "").strip()
+            or _modelo())
+
+
+def _extra_decisor() -> dict:
+    """`reasoning_effort: none` es de Gemini. Otro proveedor lo rechaza con 400,
+    asi que solo viaja cuando el decisor sigue siendo el de casa."""
+    import os
+    if (settings.DECISOR_BASE_URL or os.environ.get("DECISOR_BASE_URL") or "").strip():
+        return {}
+    return {"reasoning_effort": "none"}
+
+
 def _memoria_texto(estado: dict, history: list, tienda_id: str = "") -> str:
     """Lo que el modelo tiene que recordar de la charla. Reemplaza a los campos
     que el interprete rellenaba a mano: el foco, lo ya mostrado y el criterio no
@@ -256,7 +289,7 @@ async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
     herramienta. Medido en la primera charla viva: el modelo pidio los envios,
     no pidio los productos, escribio los precios de memoria y la regla de plata
     se los podo enteros. El cliente recibio "Productos:" y nada abajo."""
-    cli = _cliente()
+    cli = _cliente_decisor()
     if cli is None:
         return [], ""
     esquemas = H.esquemas(tienda_id)
@@ -268,9 +301,9 @@ async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
 
     def _call():
         r = cli.chat.completions.create(
-            model=_modelo(), messages=msgs, tools=esquemas,
+            model=_modelo_decisor(), messages=msgs, tools=esquemas,
             tool_choice="auto", temperature=0.3, max_tokens=900,
-            extra_body={"reasoning_effort": "none"})
+            extra_body=_extra_decisor())
         m = r.choices[0].message
         pedidos = []
         for tc in (getattr(m, "tool_calls", None) or []):

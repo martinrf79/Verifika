@@ -162,6 +162,19 @@ async def correr(nombres: list[str], vueltas: int) -> dict:
     return informe
 
 
+def _percentil(valores: list[int], p: float) -> int:
+    """p50 y p95 de la latencia por turno. Sin numpy: son cuatrocientos numeros."""
+    if not valores:
+        return 0
+    ord_ = sorted(valores)
+    i = min(len(ord_) - 1, int(round(p * (len(ord_) - 1))))
+    return ord_[i]
+
+
+def _latencias(informe: dict) -> list[int]:
+    return [t["ms"] for c in informe.values() for corrida in c for t in corrida]
+
+
 def _reporte(informe: dict, vueltas: int) -> str:
     lineas = ["# BANCO REPETIDO — " + _dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
               "", f"{vueltas} vueltas por guion, camino vivo de produccion.", ""]
@@ -182,8 +195,11 @@ def _reporte(informe: dict, vueltas: int) -> str:
             marca = "" if pct == 0 else (" ⚠" if pct < 50 else " ✗")
             lineas.append(f"| {nombre} | T{n} | {pct}%{marca} | {detalle} |")
     pct_total = int(100 * total_malos / max(1, total_turnos))
+    ms = _latencias(informe)
     lineas += ["", f"**TASA DE FALLO GLOBAL: {pct_total}% "
-                   f"({total_malos} de {total_turnos} turnos)**", ""]
+                   f"({total_malos} de {total_turnos} turnos)**", "",
+               f"**LATENCIA por turno: p50 {_percentil(ms, .50)}ms, "
+               f"p95 {_percentil(ms, .95)}ms**", ""]
     lineas.append("## Turnos con problema, texto completo")
     for nombre, corridas in informe.items():
         for v, corrida in enumerate(corridas, 1):
@@ -229,6 +245,8 @@ def main():
     todos = sum(1 for c in informe.values() for corrida in c for _ in corrida)
     print(f"TASA DE FALLO GLOBAL: {int(100 * malos / max(1, todos))}% "
           f"({malos} de {todos} turnos)")
+    ms = _latencias(informe)
+    print(f"LATENCIA: p50 {_percentil(ms, .50)}ms, p95 {_percentil(ms, .95)}ms")
     return 0
 
 
