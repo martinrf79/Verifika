@@ -243,7 +243,10 @@ def main():
     from app.config import get_settings
     m = P.metricas(informe)
     m["_guiones"] = [Path(n).stem for n in nombres]
-    modelo = (get_settings().DECISOR_MODEL or get_settings().GEMINI_MODEL)
+    _s = get_settings()
+    # getattr porque DECISOR_MODEL puede no existir todavia: el banco
+    # tiene que correr contra cualquier version del config, no al reves.
+    modelo = getattr(_s, "DECISOR_MODEL", "") or _s.GEMINI_MODEL
     referencia = P.leer()
     print(P.reporte(m, referencia))
     with open(destino, "a", encoding="utf-8") as fh:

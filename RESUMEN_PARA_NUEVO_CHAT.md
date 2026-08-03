@@ -4,6 +4,34 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 3-ago-2026 — TODO MERGEADO A MAIN, Y LA REGLA DE RAMAS ====**
+
+**LEER ESTO PRIMERO SI VAS A DIAGNOSTICAR ALGO.** El 3-ago se perdio un dia
+entero asi: una sesion construyo el reconciliador, el prompt chico y la
+compuerta del banco, y los pusheo a SU rama. La sesion siguiente leyo `main`,
+donde no estaba nada de eso, y armo un inventario diciendo que no existia. Las
+dos tenian razon. Nadie mintio.
+
+**Desde hoy todo eso esta en `main`** y la regla de ramas esta escrita en
+`CLAUDE.md`, seccion "REGLA DE RAMAS". Resumen: se sale de `main` fresco, se
+cierra mergeado o descartado por escrito, alcance chico de una sesion, y
+cualquier afirmacion sobre "que existe" se hace mirando `main`. Si no esta en
+`main`, no existe.
+
+**LO QUE ENTRO EN ESTE MERGE:**
+- El reconciliador (`app/core/pedido.py`) y la herramienta `registrar_pedido`.
+- El bucle acotado de 4 rondas, que reemplazo a las dos fijas.
+- El prompt chico: de 3278 caracteres y 20 reglas a 1351 que piden RAZONAR.
+- `buscar_productos` ya no devuelve vacio: si la exclusion limpia todo, trae lo
+  que MENOS incumple ordenado por grado.
+- El banco con las cuatro metricas, `banco_pruebas/piso.py`, y la compuerta.
+
+**LO QUE NO ENTRO, y es lo unico:** `piso.json`. El unico piso medido salio
+sobre codigo que en ese momento no estaba en `main`, asi que era una referencia
+falsa. **PRIMERA TAREA DE LA PROXIMA SESION: fijar el piso sobre `main` con 5
+vueltas**, `python3 banco_pruebas/banco_repetido.py 5 '7?_*.txt' --fijar-piso`.
+Hasta que eso pase, la compuerta avisa que no tiene contra que comparar.
+
 **==== 2-ago-2026 (noche) — EL DECISOR PIENSA. Y EL MAPA DE LO QUE FALTA ====**
 
 Martin puso el objetivo en una frase y manda sobre todo lo de abajo: **un bot

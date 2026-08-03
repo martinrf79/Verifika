@@ -104,7 +104,13 @@ catálogo. Por eso "0% de fallo" convivía con "en WhatsApp se cae la venta".
 
 ## El piso histórico — `piso.json`
 
-Guarda el mejor número alcanzado, con fecha, commit, modelo, guiones y cuántas
+**Todavía no existe, y es a propósito.** El único piso medido hasta ahora se
+sacó sobre una rama que no llegó a `main`, así que sería una referencia falsa.
+La primera corrida con `--fijar-piso` sobre `main` lo graba, y hacerla con 5
+vueltas, no con 3. Hasta entonces la compuerta avisa que no tiene contra qué
+comparar.
+
+Cuando exista, guarda el mejor número alcanzado, con fecha, commit, modelo, guiones y cuántas
 vueltas se usaron.
 
 Se graba **a mano** con `--fijar-piso`, y eso es a propósito: si el piso se

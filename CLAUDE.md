@@ -54,6 +54,40 @@ reflejo anterior de "todo detrás de feature flag". Se acabó el camino apagado
   o "lo dejamos en false para medir", está MAL por defecto. Proponer el cambio
   vivo, marcar el riesgo en una línea, y deployar si Martín da el OK.
 
+## 🌿 REGLA DE RAMAS — nació del 3-ago-2026, un día entero perdido
+
+**El problema, con nombre y apellido.** Una sesión construyó el reconciliador,
+el prompt chico y la compuerta del banco, lo commiteó y lo pusheó a su rama. La
+sesión siguiente abrió el repo, leyó `main`, y armó un inventario diciendo que
+nada de eso existía. **Las dos tenían razón**: existía en la rama, no existía en
+`main`. Nadie mintió y se perdió el día igual.
+
+La causa no fue que hubiera muchas ramas. Fue que **ninguna se mergeó**.
+
+**Las cuatro reglas, y no tienen excepción:**
+
+1. **Cada sesión sale de `main` fresco.** `git fetch origin main` y se trabaja
+   sobre eso. Nunca sobre la rama de otra sesión, nunca sobre una rama vieja que
+   quedó dando vueltas.
+2. **Ninguna sesión termina con trabajo sin mergear.** Se cierra de UNA de dos
+   formas: mergeada a `main`, o declarada DESCARTADA por escrito con el motivo.
+   No existe "queda pendiente en la rama": eso es exactamente lo que costó el
+   día. Si algo no está listo para mergear, no se empieza.
+3. **Alcance chico, de una sesión.** El 3-ago se mezclaron banco, prompt,
+   reconciliador y bucle en una sola rama, y Martín tuvo que separar a mano lo
+   que servía de lo que no. Cuatro ramas chicas se mergean o se tiran de a una
+   sin pensarlo; una rama grande obliga a una cirugía.
+4. **`main` es la única verdad y el único lugar del que se LEE.** Cualquier
+   inventario, diagnóstico o afirmación sobre "qué existe" se hace sobre `main`.
+   Si algo no está en `main`, para el proyecto no existe.
+
+**Lo que lo hace seguro:** la compuerta del banco. Con el piso fijado, el banco
+sale con código distinto de cero si una métrica dura empeora, así que mergear
+deja de ser un acto de fe. Sin piso fijado, la compuerta avisa que no tiene
+contra qué comparar: fijarlo es la primera tarea después de un merge grande.
+
+---
+
 ## 🧭 PROTOCOLO DE ORDEN — repo GitHub + Cloud Run (seguir SIEMPRE)
 
 Nació del día que se perdió por deployar al servicio equivocado y por 70 flags
