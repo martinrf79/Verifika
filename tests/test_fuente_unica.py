@@ -117,6 +117,26 @@ def test_las_movidas_llegan_al_modelo(firestore_doble):
     assert r2.get("criterio"), "el criterio de producto no puede haberse perdido"
 
 
+def test_el_modelo_sabe_que_cubre_cada_tema_de_politica(firestore_doble):
+    # Reemplaza lo que lockeaba test_faq.py, que probaba el ruteo determinista
+    # `query_faq` -muerto desde el 2-ago-. La leccion es la misma y sigue viva:
+    # un tema generico no puede ganarle al especifico, porque el bot terminaria
+    # afirmando una politica que no es la que preguntaron.
+    from app.core import herramientas as H
+    esq = {e["function"]["name"]: e for e in H.esquemas("verifika_prod")}
+    d = esq["consultar_politica"]["function"]["parameters"]["properties"]["tema"]
+    assert "envio_exterior" in d["enum"] and "envios" in d["enum"]
+    # La regla de especificidad, explicita.
+    assert "mas especifico" in d["description"]
+    # Y las palabras del cliente de cada tema, tomadas de faq.json.
+    for pista in ("exterior", "cuanto tarda", "cancelar"):
+        assert pista in d["description"], f"falta la pista '{pista}'"
+    # Los pares que se confundian, cada uno con su seña propia.
+    for tema in ("envio_exterior", "plazo_envio", "costo_envio", "envios"):
+        assert tema + " (" in d["description"] or tema + ";" in d["description"], (
+            f"{tema} quedo sin decir que cubre")
+
+
 def test_el_enum_cubre_criterios_y_movidas():
     assert set(temas()) == set(GUIA_VENTA) | set(MOVIDAS)
     assert len(temas()) == len(set(temas())), "temas duplicados en el enum"

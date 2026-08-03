@@ -1,13 +1,19 @@
 """
-AREA: Respuestas curadas — el atajo determinista de FAQ (curadas.py).
+AREA: ESTAMPADO de la FAQ curada (`app/core/curadas.py`).
 
-Dos pisos:
-  1. LOCK DE FORMATO sobre el faq.json REAL: toda respuesta_curada cargada debe
-     estampar TODOS sus huecos contra los valores de su tema. Un typo en la
-     curacion rompe este test y el gate del CI lo frena antes del deploy.
-  2. COMPORTAMIENTO: el atajo solo actua en pregunta PURA de politica; con
-     producto, carrito, cierre pendiente o intencion de compra, cae al camino
-     normal (None). Conservador: ante la duda, no ataja.
+Lock unico y load-bearing: TODA curada del repo con huecos estampa completa
+contra los `valores` de su propio tema. Si un hueco no resuelve, la curada NO se
+sirve: una politica a medias -"tenes {{dias}} dias para el cambio"- es peor que
+no contestarla. Es lo que impide que una tarifa cambiada en el valor deje el
+texto viejo, o que un hueco mal escrito salga literal al cliente.
+
+Los otros trece tests de este archivo se BORRARON el 3-ago con el codigo que
+probaban: el atajo `servir_curada` y la poda de muletillas eran del ACOPLE, que
+murio el 2-ago junto con la tool `query_faq` y el interprete de veinte campos.
+Probaban codigo que el bot no corre, que es lo mismo que no probar nada. Las
+lecciones que encerraban -no repetir el enlatado, no pedir un dato que la charla
+ya tiene- pasaron a `identidad.charla` en la fuente y ahora se las dice al modelo
+en cada turno.
 """
 from app.core import curadas as C
 
@@ -49,89 +55,24 @@ def _interp(intencion="pregunta_especifica", **kw):
     return {"intencion": intencion, "confianza": 0.9, **kw}
 
 
-def test_pregunta_pura_de_envio_sirve_la_curada(firestore_doble):
-    r = C.servir_curada("cuanto sale el envio?", _interp(), {},
-                        pregunta_cierre_previa=False, tienda_id="verifika_prod")
-    assert r is not None
-    tema, texto = r
-    assert tema == "costo_envio"
-    assert "$3.000" in texto and "$250.000" in texto
-    assert "{{" not in texto
 
 
-def test_descuento_sirve_con_porcentaje_real(firestore_doble):
-    r = C.servir_curada("hay descuento por transferencia?", _interp(), {},
-                        pregunta_cierre_previa=False, tienda_id="verifika_prod")
-    assert r is not None and "10%" in r[1]
 
 
-def test_con_carrito_no_ataja(firestore_doble):
-    r = C.servir_curada("cuanto sale el envio?", _interp(),
-                        {"carrito": [{"id": "X", "cantidad": 1}]},
-                        pregunta_cierre_previa=False, tienda_id="verifika_prod")
-    assert r is None
 
 
-def test_con_producto_resuelto_no_ataja(firestore_doble):
-    r = C.servir_curada("cuanto sale el envio del teclado?",
-                        _interp(producto_resuelto="TEC0010"), {},
-                        pregunta_cierre_previa=False, tienda_id="verifika_prod")
-    assert r is None
 
 
-def test_con_cierre_pendiente_no_ataja(firestore_doble):
-    r = C.servir_curada("cuanto sale el envio?", _interp(), {},
-                        pregunta_cierre_previa=True, tienda_id="verifika_prod")
-    assert r is None
 
 
-def test_intencion_de_compra_no_ataja(firestore_doble):
-    r = C.servir_curada("dale lo quiero, cuanto el envio?",
-                        _interp("decision_compra"), {},
-                        pregunta_cierre_previa=False, tienda_id="verifika_prod")
-    assert r is None
 
 
-def test_interp_caido_no_ataja(firestore_doble):
-    r = C.servir_curada("cuanto sale el envio?", {}, {},
-                        pregunta_cierre_previa=False, tienda_id="verifika_prod")
-    assert r is None
 
 
-def test_pedido_por_categorias_no_ataja(firestore_doble):
-    # Bug real 9-jul: "4 notebooks, 3 teclados y 5 mouse... dime el precio con
-    # envio" servia la curada de envio y salteaba las opciones por categoria; el
-    # pedido pendiente nunca se persistia. Con cantidades por categoria en el
-    # mensaje NO es pregunta pura de politica: no ataja.
-    r = C.servir_curada(
-        "necesito 4 notebooks 3 teclados y 5 mouse, dame el precio con envio",
-        _interp("pregunta_especifica"), {},
-        pregunta_cierre_previa=False, tienda_id="verifika_prod")
-    assert r is None
 
 
-def test_pedido_en_interp_no_ataja(firestore_doble):
-    # Mismo caso pero via el campo pedido del interprete (cantidades sin modelo).
-    r = C.servir_curada(
-        "y el envio cuanto sale?",
-        _interp("pregunta_especifica",
-                pedido=[{"producto": None, "cantidad": 4}]), {},
-        pregunta_cierre_previa=False, tienda_id="verifika_prod")
-    assert r is None
 
 
-def test_tema_sin_curada_no_ataja(firestore_doble, monkeypatch):
-    # Un tema SIN respuesta_curada va al camino normal. Desde el 4-jul los 44
-    # temas reales estan curados, asi que el caso se arma con una FAQ sintetica.
-    import app.storage.firestore_client as fc
-    sin_curada = {"horarios": {"tema": "horarios",
-                               "keywords": ["horarios", "horario"],
-                               "respuesta": "de 9 a 18", "tipo": "informativo",
-                               "valores": []}}
-    monkeypatch.setattr(fc, "get_all_faq", lambda tienda_id=None: sin_curada)
-    r = C.servir_curada("que horarios tienen?", _interp(), {},
-                        pregunta_cierre_previa=False, tienda_id="verifika_prod")
-    assert r is None
 
 
 
@@ -140,27 +81,7 @@ def test_tema_sin_curada_no_ataja(firestore_doble, monkeypatch):
 
 # ── PODA DE MULETILLAS CONTRA ESTADO (charla real 20-jul) ────────────────────
 
-def test_muletilla_zona_se_poda_con_zona_conocida():
-    from app.core.curadas import podar_muletillas_contra_estado
-    txt = ("Al interior llega en 4 a 7 dias habiles. "
-           "Decime tu zona y te confirmo tambien el costo del envio.")
-    out = podar_muletillas_contra_estado(
-        txt, {"localidades_envio": ["correa santa fe"]})
-    assert "Decime tu zona" not in out
-    assert "4 a 7 dias" in out
 
 
-def test_muletilla_producto_se_poda_con_pedido_en_mesa():
-    from app.core.curadas import podar_muletillas_contra_estado
-    txt = ("Con transferencia tenes 10% de descuento. Si queres, decime que "
-           "producto estas mirando y te paso el total con el descuento.")
-    out = podar_muletillas_contra_estado(
-        txt, {"presupuesto": "Total: $1.525.000"})
-    assert "que producto" not in out.lower()
-    assert "10% de descuento" in out
 
 
-def test_muletillas_quedan_si_el_dato_no_se_conoce():
-    from app.core.curadas import podar_muletillas_contra_estado
-    txt = "Decime tu zona y te confirmo el costo del envio."
-    assert podar_muletillas_contra_estado(txt, {}) == txt

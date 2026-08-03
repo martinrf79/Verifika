@@ -219,6 +219,35 @@ def _esquema_de(modelo) -> dict:
     return _aplanar(bruto, bruto.get("$defs") or {})
 
 
+def _guia_de_temas(faq: dict, temas: list[str]) -> str:
+    """QUE CUBRE CADA TEMA DE POLITICA, en las palabras del cliente.
+
+    Hasta el 3-ago el enum eran cincuenta nombres pelados y el modelo tenia que
+    adivinar la frontera entre `envios`, `envio_exterior`, `costo_envio` y
+    `plazo_envio`. Elegir mal ahi no es un matiz: el bot afirma una politica que
+    no es la que pregunto el cliente, que es la peor forma de alucinar porque
+    suena bien y viene de la fuente.
+
+    Esto lo cubria antes un ruteo determinista por keywords (`query_faq`), que
+    murio con el camino atado. Las keywords SIGUEN en `faq.json`, escritas como
+    las dice el cliente; ahora se las pasamos al modelo, que es quien elige. No
+    es codigo nuevo: es usar el dato que ya estaba y nadie leia.
+
+    Cuesta unos setecientos tokens por llamada. Se paga: una politica
+    equivocada le sale mas cara a la venta que el token."""
+    partes = []
+    for tema in temas:
+        propias = set(_norm(tema).replace("_", " ").split())
+        # Una keyword que solo repite el nombre del tema no aporta nada.
+        kws = [k for k in (faq.get(tema, {}).get("keywords") or [])
+               if k and not set(_norm(k).split()) <= propias]
+        partes.append(f"{tema} ({', '.join(kws[:3])})" if kws else tema)
+    return ("El tema exacto de la lista. Elegi SIEMPRE el mas especifico que "
+            "cubra la pregunta: si pregunta por el exterior es envio_exterior y "
+            "no envios, si pregunta cuanto tarda es plazo_envio y no "
+            "costo_envio. Que cubre cada uno: " + "; ".join(partes))
+
+
 def esquemas(tienda_id: str) -> list[dict]:
     """Los esquemas de las siete herramientas, en formato function calling, con
     los ENUMS de la fuente viva inyectados. Es la unica atadura que queda del
@@ -227,7 +256,8 @@ def esquemas(tienda_id: str) -> list[dict]:
     from app.storage.firestore_client import get_categories, get_all_faq
     from app.core.guia_venta_prosa import temas as temas_criterio
     cats = [str(c) for c in (get_categories(tienda_id=tienda_id) or [])]
-    temas = sorted((get_all_faq(tienda_id=tienda_id) or {}).keys())
+    faq = get_all_faq(tienda_id=tienda_id) or {}
+    temas = sorted(faq.keys())
     # Los temas de criterio incluyen los que solo tienen MOVIDA -queja,
     # despedida, postergacion-: sin ellos en el enum el modelo no puede pedir
     # lo unico que la fuente escribio para esas situaciones.
@@ -240,6 +270,7 @@ def esquemas(tienda_id: str) -> list[dict]:
             props["categoria"]["enum"] = cats
         if nombre == "consultar_politica" and temas and "tema" in props:
             props["tema"]["enum"] = temas
+            props["tema"]["description"] = _guia_de_temas(faq, temas)
         if nombre == "consultar_criterio" and criterios and "tema" in props:
             props["tema"]["enum"] = criterios
         fuera.append({"type": "function", "function": {

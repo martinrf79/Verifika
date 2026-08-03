@@ -34,15 +34,6 @@ settings = get_settings()
 # 2) DETALLE
 # ────────────────────────────────────────────────────────────
 
-def get_product_details(product_id: str) -> dict:
-    tid = get_current_tienda()
-    p = get_product_by_id(product_id, tienda_id=tid)
-    if not p:
-        return {
-            "encontrado": False,
-            "mensaje_para_llm": f"No existe producto con ID {product_id}.",
-        }
-    return {"encontrado": True, "producto": _resumir(p)}
 
 
 # ────────────────────────────────────────────────────────────
@@ -733,9 +724,6 @@ def _norm_txt(s: str) -> str:
     return _re.sub(r"[^\w\s]", " ", s)
 
 
-def _canon_palabra(w: str) -> str:
-    """saca una s final para tolerar plurales (envios->envio, cuotas->cuota)."""
-    return w[:-1] if len(w) > 3 and w.endswith("s") else w
 
 
 # Senal determinista de PLAZO de entrega (charla real 10-jul: "cuanto demoran
@@ -750,238 +738,16 @@ _RE_SENAL_PLAZO = _re_plazo.compile(
     r"en cuanto (tiempo )?(llega\w*|esta\w*|tengo)|cuando (llega\w*|estaria))\b")
 
 
-def _faq_ranking_palabras(consulta: str, faq: dict) -> list[tuple[int, str]]:
-    """Rankea temas de FAQ: una keyword matchea si TODAS sus palabras aparecen
-    en la consulta (normalizadas, tolerantes a plural), aunque haya palabras en
-    el medio. Asi 'costo envio' engancha 'costo de envio a cordoba' y el tema
-    especifico con el numero le gana al generico. Devuelve [(score, tema)]
-    de mayor a menor, solo los que matchean."""
-    consulta_norm = _norm_txt(consulta)
-    palabras_consulta = {_canon_palabra(w) for w in consulta_norm.split()}
-    ranking = []
-    for tema, data in faq.items():
-        score = 0
-        for kw in data.get("keywords", []) or []:
-            k = _norm_txt(kw)
-            kws = {_canon_palabra(w) for w in k.split()}
-            if kws and kws <= palabras_consulta:
-                # La keyword MAS especifica que matchea decide, no la suma de
-                # todas. Sumar premiaba al tema generico con muchas keywords
-                # cortas ('envio'+'envios') por encima del especifico con una
-                # keyword larga ('exterior'): 'hacen envios al exterior' caia en
-                # 'envios' en vez de 'envio_exterior'. El largo del match ES la
-                # senal de especificidad, que es justo lo que se quiere premiar.
-                score = max(score, len(k))
-        if score > 0:
-            ranking.append((score, tema))
-    # Senal de plazo: manda arriba de cualquier keyword generica.
-    if "plazo_envio" in faq and _RE_SENAL_PLAZO.search(consulta_norm):
-        tope = (max(s for s, _ in ranking) if ranking else 0) + 1
-        ranking = [(s, t) for s, t in ranking if t != "plazo_envio"]
-        ranking.append((tope, "plazo_envio"))
-    ranking.sort(key=lambda t: (-t[0], t[1]))
-    return ranking
 
 
-def _faq_temas_multi(consulta: str, faq: dict, max_n: int = 3) -> list[str]:
-    """Temas a servir en UN turno multi-pregunta (charla real 10-jul: 'es
-    segura la compra, cuanto demoran los envios y si tienen garantia' recibia
-    UNA sola respuesta y el cliente re-preguntaba). Recorre el ranking y suma
-    un tema SOLO si sus palabras matcheadas no se solapan con las de los temas
-    ya elegidos: preguntas DISTINTAS suman, sinonimos del mismo eje no (evita
-    servir costo_envio + envios generico por la misma palabra 'envio')."""
-    consulta_norm = _norm_txt(consulta)
-    palabras_consulta = {_canon_palabra(w) for w in consulta_norm.split()}
-
-    def _palabras_match(tema: str) -> set:
-        mejor, mejor_len = set(), 0
-        for kw in (faq.get(tema, {}).get("keywords") or []):
-            k = _norm_txt(kw)
-            kws = {_canon_palabra(w) for w in k.split()}
-            if kws and kws <= palabras_consulta and len(k) > mejor_len:
-                mejor, mejor_len = kws, len(k)
-        if tema == "plazo_envio" and not mejor:
-            m = _RE_SENAL_PLAZO.search(consulta_norm)
-            if m:
-                mejor = {_canon_palabra(w) for w in m.group(0).split()}
-        return mejor
-
-    elegidos: list[str] = []
-    usadas: set = set()
-    for _, tema in _faq_ranking_palabras(consulta, faq):
-        pal = _palabras_match(tema)
-        if not pal or (pal & usadas):
-            continue
-        # El generico 'envios' (Andreani y OCA) no suma nada si ya salio un
-        # tema especifico de envio (plazo, costo, exterior).
-        if tema == "envios" and any("envio" in e for e in elegidos):
-            continue
-        # 'asesoramiento' ("Claro, para eso estoy...") solo vale como respuesta
-        # UNICA; de cola tras otro tema es el "Claro, para eso estoy" suelto
-        # de la charla real 10-jul.
-        if tema == "asesoramiento" and elegidos:
-            continue
-        elegidos.append(tema)
-        usadas |= pal
-        if len(elegidos) >= max_n:
-            break
-    return elegidos
 
 
-def _faq_keyword_match(consulta: str, faq: dict):
-    """Elige el tema de FAQ por keywords, sin modelo. Puntua por largo de las
-    keywords que matchean, asi las frases mas especificas, costo envio, ganan
-    a las generales, envio. Devuelve None si no matchea, para caer al modelo."""
-    c = _norm_txt(consulta)
-    mejor, mejor_score = None, 0
-    for tema, data in faq.items():
-        score = 0
-        for kw in data.get("keywords", []) or []:
-            k = _norm_txt(kw)
-            if k and k in c:
-                score += len(k)
-        if score > mejor_score:
-            mejor_score, mejor = score, tema
-    return mejor if mejor_score > 0 else None
 
 
-def _faq_candidatos(consulta: str, faq: dict, n: int = 5) -> list[str]:
-    """Preselecciona los N temas mas plausibles para el fallback del LLM, cuando
-    el match estricto fallo. Score = palabras de la consulta que aparecen en las
-    keywords o en el nombre del tema (solapamiento PARCIAL, basta una palabra).
-    Asi el LLM recibe pocos candidatos en vez de los 44 temas enteros: mismo
-    rescate semantico, mucho menos prompt. Devuelve los temas de mayor a menor."""
-    palabras = {_canon_palabra(w) for w in _norm_txt(consulta).split() if len(w) > 2}
-    if not palabras:
-        return list(faq.keys())[:n]
-    puntajes = []
-    for tema, data in faq.items():
-        vocab = {_canon_palabra(w) for w in _norm_txt(tema).split()}
-        for kw in data.get("keywords", []) or []:
-            vocab |= {_canon_palabra(w) for w in _norm_txt(kw).split()}
-        score = len(palabras & vocab)
-        if score > 0:
-            puntajes.append((score, tema))
-    if not puntajes:
-        return list(faq.keys())[:n]
-    puntajes.sort(key=lambda t: (-t[0], t[1]))
-    return [tema for _, tema in puntajes[:n]]
 
 
-def _faq_resp(tema: str, data: dict) -> dict:
-    resp = {
-        "encontrada": True,
-        "tema": tema,
-        "respuesta": data.get("respuesta", ""),
-        "tipo": data.get("tipo", "informativo"),
-    }
-    if data.get("tipo") == "cuantitativo":
-        resp["conceptos_disponibles"] = [
-            v.get("concepto") for v in data.get("valores", []) if v.get("concepto")
-        ]
-    return resp
 
 
-def query_faq(consulta: str) -> dict:
-    """
-    Busca FAQ relevante usando el LLM como retriever semantico.
-    Le pasa al LLM la lista de temas con sus respuestas y el LLM decide
-    cual aplica. Resuelve reformulaciones, sinonimos, errores de tipeo.
-    """
-    from app.verifika.llm_adapter import llm_complete
-    import json as _json
-
-    tid = get_current_tienda()
-    faq = get_all_faq(tienda_id=tid)
-    if not faq:
-        return {"encontrada": False, "mensaje_para_llm": "FAQ vacia"}
-
-    # Matcheo por palabras (unico camino, sin flag): el tema especifico gana al
-    # generico y la respuesta lleva hasta dos temas relacionados, asi el Solver ve
-    # el cajon con el numero (costo_envio) y no solo el informativo (envios).
-    ranking = _faq_ranking_palabras(consulta, faq)
-    if ranking:
-        principal = ranking[0][1]
-        log.info("query_faq_palabras_hit", tema=principal,
-                 relacionadas=[t for _, t in ranking[1:3]])
-        resp = _faq_resp(principal, faq[principal])
-        relacionadas = []
-        for _, tema in ranking[1:3]:
-            rel = _faq_resp(tema, faq[tema])
-            rel.pop("encontrada", None)
-            relacionadas.append(rel)
-        if relacionadas:
-            resp["relacionadas"] = relacionadas
-        return resp
-
-    # Keyword-first: si matchea, resolvemos sin llamar al modelo.
-    tema_kw = _faq_keyword_match(consulta, faq)
-    if tema_kw:
-        log.info("query_faq_keyword_hit", tema=tema_kw)
-        return _faq_resp(tema_kw, faq[tema_kw])
-
-    # Fallback semantico: solo los temas candidatos y solo su nombre + keywords,
-    # no la respuesta entera de los 44. Recorta el prompt sin perder la eleccion:
-    # el LLM elige el TEMA y la respuesta completa la trae el codigo despues.
-    candidatos = _faq_candidatos(consulta, faq)
-    temas_texto = ""
-    for tema in candidatos:
-        kws = ", ".join((faq[tema].get("keywords") or [])[:8])
-        temas_texto += "\n- tema: " + tema + "\n  cubre: " + kws + "\n"
-
-    system_prompt = (
-        "Sos un buscador de FAQ. Recibis una consulta y una lista de temas con las "
-        "palabras que cubre cada uno. Elegi UN tema que responda directamente, o deci "
-        "que ninguno aplica.\n"
-        "REGLAS:\n"
-        "1. Solo elegi un tema si claramente cubre lo que pide el cliente.\n"
-        "2. Si la consulta menciona costos, plazos, pagos, envios, garantia, devoluciones, "
-        "buscá el tema que cubra eso.\n"
-        "3. Si ningun tema aplica, devolve tema vacio.\n"
-        "4. Devolve SOLO JSON estricto: "
-        '{\"tema\": \"nombre\" o \"\"}'
-    )
-
-    user_message = "CONSULTA:\n" + consulta + "\n\nTEMAS DISPONIBLES:" + temas_texto + "\n\nDevolve el JSON."
-
-    try:
-        result = llm_complete(
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
-            ],
-            role="proposer",
-            temperature=0.0,
-            max_tokens=80,
-        )
-    except Exception as e:
-        log.warning("query_faq_llm_error", error=str(e)[:150])
-        return {"encontrada": False, "mensaje_para_llm": "error de busqueda"}
-
-    content = result.get("content", "").strip()
-    if content.startswith("```"):
-        content = content.split("```")[1] if "```" in content[3:] else content[3:]
-        if content.startswith("json"):
-            content = content[4:]
-        content = content.strip()
-
-    try:
-        parsed = _json.loads(content)
-        tema_elegido = parsed.get("tema", "").strip()
-    except Exception:
-        tema_elegido = ""
-
-    if tema_elegido and tema_elegido in faq:
-        log.info("query_faq_hit", tema=tema_elegido)
-        return _faq_resp(tema_elegido, faq[tema_elegido])
-
-    return {
-        "encontrada": False,
-        "mensaje_para_llm": (
-            "No hay FAQ que responda a esto. Decile al cliente que vas a "
-            "consultar y le confirmas, o pedile que reformule."
-        ),
-    }
 
 
 # ────────────────────────────────────────────────────────────
@@ -991,15 +757,6 @@ def query_faq(consulta: str) -> dict:
 # Helper
 # ────────────────────────────────────────────────────────────
 
-def _resumir(p: dict) -> dict:
-    """
-    Devuelve TODOS los campos del producto (excepto embedding y campos internos)
-    para que el Solver y Verifika puedan ver toda la informacion del catalogo.
-    Esto resuelve alucinaciones tipo "todos hechos en China" o "es de aluminio"
-    cuando el cliente extendio el CSV con campos como origen, material, garantia, etc.
-    """
-    EXCLUIR = {"embedding", "_id", "created_at", "updated_at"}
-    return {k: v for k, v in p.items() if k not in EXCLUIR and not k.startswith("_")}
 
 
 # ────────────────────────────────────────────────────────────

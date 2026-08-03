@@ -77,10 +77,14 @@ def temas() -> list[str]:
 def identidad(negocio: str = "") -> str:
     """La voz del vendedor, armada desde la fuente. Es lo que hasta hoy era la
     constante SISTEMA del hub. Sin fuente devuelve texto vacio y el llamador
-    decide: preferimos que se note, no un prompt inventado por default."""
-    partes = [_IDENTIDAD.get(k, "") for k in
-              ("rol", "registro", "dato_duro", "oficio")]
-    texto = "\n\n".join(p.strip() for p in partes if p and p.strip())
+    decide: preferimos que se note, no un prompt inventado por default.
+
+    Los bloques salen en el ORDEN del archivo, no en una lista escrita aca:
+    sumar un bloque a la voz tiene que ser editar el json y nada mas. Si el
+    orden importase y hubiera que tocar Python, la fuente volveria a estar a
+    medias, que es justo lo que se termino."""
+    partes = [str(v) for k, v in _IDENTIDAD.items() if not k.startswith("_")]
+    texto = "\n\n".join(p.strip() for p in partes if p.strip())
     return texto.replace("{negocio}", str(negocio or "")).strip()
 
 
