@@ -258,9 +258,24 @@ def validar(nombre: str, args: dict):
 
 
 # ── FICHA: lo que el modelo ve de un producto ────────────────────────────────
+# LOS CAMPOS QUE EL MODELO VE DE CADA PRODUCTO. Tienen que llamarse EXACTAMENTE
+# como en la fuente: el `if prod.get(k)` de `_ficha` descarta en silencio un
+# nombre que no existe, asi que un campo mal escrito no se nota nunca.
+#
+# 3-ago-2026: habia tres nombres INVENTADOS que no traian nada -"garantia",
+# "medidas" y "caracteristicas"-. En la fuente se llaman garantia_meses,
+# dimensiones y caracteristicas_extra. Se corrigieron y se sumaron color y
+# peso_gramos, que existian en el catalogo y no llegaban estructurados: su
+# contenido viajaba suelto adentro de la prosa de `descripcion`, o sea el modelo
+# no podia compararlos entre productos.
+#
+# NO entran a proposito: `tags` son terminos de busqueda internos, no info para
+# el cliente; y `descripcion_rica` es identica a `descripcion` -medido, mismos
+# 161 caracteres-, asi que solo duplicaria tokens.
 _CAMPOS_FICHA = ("id", "nombre", "categoria", "marca", "modelo", "precio_ars",
-                 "stock", "origen", "garantia", "material", "medidas",
-                 "contenido_caja", "uso_recomendado", "caracteristicas",
+                 "stock", "origen", "material", "color", "peso_gramos",
+                 "dimensiones", "garantia_meses", "garantia_detalle",
+                 "contenido_caja", "uso_recomendado", "caracteristicas_extra",
                  "descripcion", "specs")
 
 

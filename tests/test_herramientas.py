@@ -337,3 +337,38 @@ def test_una_correccion_del_pedido_no_es_un_no_a_la_venta():
     assert es_no_interesado("no gracias")
     assert es_no_interesado("no por ahora")
     assert es_no_interesado("lo voy a pensar")
+
+
+def test_todos_los_campos_de_la_ficha_existen_en_la_fuente(firestore_doble):
+    """EL BUG DEL 3-ago. `_CAMPOS_FICHA` pedia "garantia", "medidas" y
+    "caracteristicas", que en la fuente se llaman garantia_meses, dimensiones y
+    caracteristicas_extra. `_ficha` descarta con `if prod.get(k)` cualquier
+    nombre que no exista, asi que los tres se caian EN SILENCIO y el modelo
+    nunca vio esos datos. Un campo mal escrito no se puede volver a colar."""
+    from app.core.herramientas import _CAMPOS_FICHA
+    from app.storage.firestore_client import get_all_products
+
+    productos = get_all_products(tienda_id="verifika_prod") or []
+    assert productos, "el doble tiene que traer el catalogo real"
+    # La union de claves sobre una muestra amplia: un campo puede venir vacio en
+    # un producto suelto y existir igual en la fuente.
+    reales = set()
+    for p in productos[:200]:
+        reales |= set(p.keys())
+    inventados = [c for c in _CAMPOS_FICHA if c not in reales]
+    assert not inventados, (
+        f"campos pedidos que NO existen en la fuente: {inventados}. "
+        f"Se descartarian en silencio. Disponibles: {sorted(reales)}")
+
+
+def test_la_ficha_lleva_los_datos_comparables(firestore_doble):
+    """Peso, medidas, color y garantia tienen que viajar como CAMPO, no sueltos
+    adentro de la prosa: si no, el modelo no los puede comparar entre productos
+    y termina razonando de su cabeza sobre datos que tenemos."""
+    from app.core.herramientas import _ficha
+    from app.storage.firestore_client import get_all_products
+
+    p = get_all_products(tienda_id="verifika_prod")[0]
+    f = _ficha(p, "verifika_prod")
+    for campo in ("peso_gramos", "dimensiones", "color", "garantia_meses"):
+        assert campo in f, f"{campo} no llega al modelo"

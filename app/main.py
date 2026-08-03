@@ -8,7 +8,6 @@ Endpoints:
 - POST /webhook/telegram    → recibe mensajes de Telegram (tienda default)
 - POST /webhook/whatsapp    → recibe mensajes de WhatsApp Cloud API (Meta)
 - GET  /webhook/whatsapp    → verificación inicial Meta
-- POST /admin/load-data     → carga inicial datos (tienda default)
 """
 import os
 import asyncio
@@ -469,115 +468,15 @@ async def whatsapp_webhook(request: Request, background: BackgroundTasks):
     return {"ok": True}
 
 
-# ───────────────────── ADMIN: cargar datos a tienda default ─────────────────
-
-@app.post("/admin/load-data")
-async def admin_load_data(request: Request):
-    """Carga inicial de productos y FAQ para la tienda DEFAULT."""
-    token = request.headers.get("X-Admin-Token", "")
-    if token != os.getenv("ADMIN_TOKEN", "cargar2026"):
-        return JSONResponse({"error": "unauthorized"}, status_code=401)
-
-    try:
-        import json
-        from app.storage.firestore_client import (
-            upsert_product, upsert_faq, set_config,
-        )
-
-        productos_path = "/app/data/productos.json"
-        if not os.path.exists(productos_path):
-            productos_path = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                "data", "productos.json"
-            )
-
-        with open(productos_path, "r", encoding="utf-8") as f:
-            productos = json.load(f)
-
-        productos_ok = 0
-        for p in productos:
-            try:
-                upsert_product(p["id"], p)
-                productos_ok += 1
-            except Exception as e:
-                log.error("product_load_error", id=p.get("id"), error=str(e)[:100])
-
-        FAQ = {
-            "envios": {
-                "keywords": ["envío", "envio", "envían", "envian", "mandan", "interior",
-                             "ciudad", "domicilio", "entrega", "llega", "correo"],
-                "respuesta": (
-                    "Hacemos envíos a todo el país por correo (Andreani / OCA). "
-                    "Capital y GBA: 24-48hs hábiles. Interior: 3-7 días hábiles."
-                ),
-            },
-            "pago": {
-                "keywords": ["pago", "pagar", "tarjeta", "efectivo", "transferencia",
-                             "mercado pago", "mercadopago", "cuotas", "débito", "crédito"],
-                "respuesta": (
-                    "Aceptamos: transferencia bancaria, Mercado Pago (tarjetas crédito/débito), "
-                    "y efectivo en local. Hasta 3 cuotas sin interés con tarjetas seleccionadas."
-                ),
-            },
-            "garantia": {
-                "keywords": ["garantía", "garantia", "rotura", "falla", "defecto", "se rompe"],
-                "respuesta": "Todos nuestros productos tienen 6 meses de garantía oficial.",
-            },
-            "devolucion": {
-                "keywords": ["devolución", "devolucion", "devolver", "cambio",
-                             "arrepentido", "arrepentir"],
-                "respuesta": (
-                    "Tenés 10 días corridos desde la recepción para devolver el producto, "
-                    "siempre que esté en empaque original sin uso."
-                ),
-            },
-            "horarios": {
-                "keywords": ["horario", "horarios", "abren", "atienden", "disponible",
-                             "atención", "atencion"],
-                "respuesta": "Atendemos de lunes a viernes de 9 a 19hs. Sábados de 9 a 13hs.",
-            },
-            "ubicacion": {
-                "keywords": ["dirección", "direccion", "local", "dónde están", "donde estan",
-                             "sucursal", "ubicación", "ubicacion", "retirar"],
-                "respuesta": (
-                    "Trabajamos online con envío a todo el país. "
-                    "Para retirar coordinamos en CABA con cita."
-                ),
-            },
-            "factura": {
-                "keywords": ["factura", "comprobante", "iva", "responsable inscripto"],
-                "respuesta": "Emitimos factura A o B según corresponda.",
-            },
-            "stock": {
-                "keywords": ["disponibilidad general", "tenes stock", "tenés stock"],
-                "respuesta": "Sí, tenemos stock. Consultá por modelo específico.",
-            },
-        }
-
-        faq_ok = 0
-        for tema, data in FAQ.items():
-            try:
-                upsert_faq(tema, data)
-                faq_ok += 1
-            except Exception as e:
-                log.error("faq_load_error", tema=tema, error=str(e)[:100])
-
-        try:
-            set_config("nombre", "Tienda Tecno")
-            set_config("contacto_humano", "Si necesitás hablar con un humano, escribinos")
-        except Exception as e:
-            log.error("config_load_error", error=str(e)[:100])
-
-        return {
-            "ok": True,
-            "productos_cargados": productos_ok,
-            "productos_total": len(productos),
-            "faq_cargada": faq_ok,
-        }
-
-    except Exception as e:
-        log.error("admin_load_data_error", error=str(e)[:200])
-        return JSONResponse({"error": str(e)[:200]}, status_code=500)
+# ADMIN: la carga inicial vivia aca y se BORRO el 3-ago-2026.
+# `POST /admin/load-data` escribia 100 productos SINTETICOS de
+# data/productos.json -ids MON-001- y una FAQ de 8 temas escrita a mano,
+# sobre la tienda default, con el token 'cargar2026' hardcodeado como
+# valor por defecto. Firestore estaba intacto -verificado el 3-ago: 880
+# productos y 50 temas de FAQ, cero diferencias contra el repo- pero una
+# sola llamada pisaba el catalogo real. La carga se hace por
+# /admin/upload-catalog/{tienda_id} y /admin/upload-faq/{tienda_id}, que
+# reciben la fuente del repo y piden la tienda explicita.
 
 
 # ────────────────── ADMIN: subir catálogo y FAQ por tienda (HTTP, sin redeploy) ──────────────────
