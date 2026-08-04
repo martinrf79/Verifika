@@ -522,11 +522,19 @@ def anuncio_sin_contenido(respuesta: str, tope: int = 340) -> bool:
 #   - la positiva universal sobre el surtido: todo lo que trabajo/vendo/tengo es
 # Una universal de POLITICA -"todos los productos tienen 12 meses de garantia"-
 # NO entra: esa sale de la FAQ, que si es fuente, y no matchea ninguna de las dos.
+# EL SUSTANTIVO TIENE QUE SER EL DEL CATALOGO ENTERO, y esto es la mitad del
+# detector. Medido el 4-ago sobre 130 turnos: con `ninguno` adentro del patron,
+# marcaba como muro la frase "el teclado no tengo ninguno en color negro que sea
+# Genius, solo me queda el Logitech K1", que es una respuesta honesta, precisa y
+# de las buenas. `ninguno`, `ninguna` y `ningun` son ANAFORICOS: se refieren a un
+# conjunto que la charla ya acoto, no al catalogo. Quedan afuera.
+# `nada` sobrevive SOLO con un `que` detras -"no tengo nada QUE cumpla"-, que es
+# la forma de la afirmacion universal; "no tengo nada en negro" no la tiene.
 _RE_UNIVERSAL_NEG = re.compile(
     r"\bno\s+(?:tengo|tenemos|hay|manejo|manejamos|trabajo|trabajamos|"
     r"cuento\s+con|contamos\s+con|dispongo\s+de|disponemos\s+de)\s+"
     r"(?:\w+\s+){0,2}"
-    r"(?:productos?|art[ií]culos?|nada|ninguno|ninguna|ning[uú]n)\b",
+    r"(?:productos?\b|art[ií]culos?\b|nada\s+que\b)",
     re.IGNORECASE)
 
 _RE_UNIVERSAL_POS = re.compile(

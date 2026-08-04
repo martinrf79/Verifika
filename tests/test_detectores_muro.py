@@ -54,14 +54,40 @@ def test_el_universal_sobre_el_catalogo_se_marca(texto):
 
 
 @pytest.mark.parametrize("texto", [
+    # las SIETE redacciones del muro medidas sobre 130 turnos el 4-ago. Ninguna
+    # coincide con las tres frases literales que el guion chequeaba: el modelo
+    # no repite la frase, repite la conducta.
+    "te comento que no contamos con productos que no tengan componentes o fabricacion en China",
+    "te comento que no tenemos productos que no tengan partes chinas, ya que trabajamos marcas",
+    "te cuento que no tengo productos que no tengan partes chinas, ya que los modelos",
+    "te cuento que no tenemos productos que no tengan componentes fabricados en China",
+    "asi que no tengo nada que cumpla estrictamente con tu pedido de evitar ese origen",
+    "para ser sincero, todos los productos que trabajamos tienen componentes de China",
+    "todos los productos que manejamos, aunque pertenezcan a marcas estadounidenses",
+])
+def test_las_redacciones_reales_del_muro_se_marcan_todas(texto):
+    assert D.detectar_universal_de_catalogo(texto), texto
+
+
+@pytest.mark.parametrize("texto", [
     # una universal de POLITICA sale de la FAQ, que SI es fuente
     "Todos los productos tienen garantia oficial de 12 meses.",
     "Todos los envios salen por correo con seguimiento.",
     # el no honesto sobre una VARIANTE no es una universal
     "Ese modelo puntual no lo tengo, pero mira estos que si.",
     "No tengo esa memoria de 32GB, tengo de 8 y de 16.",
+    # EL FALSO POSITIVO REAL, cazado el 4-ago sobre los 130 turnos. La primera
+    # version del patron marcaba esta frase como muro por el "no tengo ...
+    # ninguno", y es una respuesta honesta, precisa y de las buenas. `ninguno`,
+    # `ninguna` y `ningun` son ANAFORICOS: hablan de un conjunto que la charla
+    # ya acoto, no del catalogo.
+    "el teclado no tengo ninguno en color negro que sea Genius, solo me queda "
+    "el Logitech K120",
+    "no tengo ninguna memoria de 32GB, tengo de 8 y de 16",
+    # y `nada` solo cuenta con un `que` detras: esto es un no acotado
+    "no tengo nada en negro de esa marca, pero tengo blanco",
 ])
-def test_una_universal_legitima_o_un_no_puntual_no_se_marcan(texto):
+def test_una_universal_legitima_o_un_no_acotado_no_se_marcan(texto):
     assert not D.detectar_universal_de_catalogo(texto), texto
 
 
