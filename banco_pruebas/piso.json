@@ -1,11 +1,11 @@
 {
-  "turnos": 78,
+  "turnos": 130,
   "sin_caida": 100.0,
-  "sin_invento": 97.4,
-  "completa": 93.6,
-  "avanza": 96.2,
-  "latencia_p50_ms": 5283,
-  "latencia_p95_ms": 9453,
+  "sin_invento": 93.8,
+  "completa": 98.5,
+  "avanza": 98.5,
+  "latencia_p50_ms": 5488,
+  "latencia_p95_ms": 11654,
   "_guiones": [
     "70_borde_simple",
     "70_memoria_referencia_lejana",
@@ -16,10 +16,10 @@
     "75_ambiguedad_y_correccion",
     "76_pedido_multiple_criterio_no_binario"
   ],
-  "fecha": "2026-08-03 14:23",
-  "commit": "3c18608",
+  "fecha": "2026-08-04 20:17",
+  "commit": "3a34e38",
   "modelo": "gemini-3.1-flash-lite",
-  "vueltas": 3,
+  "vueltas": 5,
   "guiones": [
     "70_borde_simple",
     "70_memoria_referencia_lejana",
