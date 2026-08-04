@@ -446,29 +446,93 @@ def _stems(valor: str) -> list[str]:
     return [w[:4] for w in _norm(valor).split() if len(w) >= 4]
 
 
+# EL ORIGEN TIENE DOS PAISES Y HAY QUE SEPARARLOS. La fuente los escribe en una
+# sola linea con forma fija: "Marca Logitech de Suiza. Fabricado en China." El
+# primero es el pais de la MARCA, el segundo el de FABRICACION, y para un cliente
+# que pide "lo menos chino" no valen lo mismo.
+_RE_PAIS_MARCA = re.compile(r"marca\s+\S+(?:\s+\S+)?\s+de\s+([^.]+)")
+_RE_PAIS_FAB = re.compile(r"fabricad\w*\s+en\s+([^.]+)")
+
+
+def _paises_de(origen: str) -> tuple[str, str]:
+    """(pais de la marca, pais de fabricacion) desde el texto de `origen`."""
+    o = _norm(origen)
+    m = _RE_PAIS_MARCA.search(o)
+    f = _RE_PAIS_FAB.search(o)
+    return (m.group(1).strip() if m else "", f.group(1).strip() if f else "")
+
+
 def _grado(prod: dict, excluir: list[str]) -> int:
-    """CUANTO incumple, no SI incumple. Sirve para ordenar cuando la exclusion
-    vacia el resultado y hay que ofrecer lo que menos la incumple.
+    """CUANTO incumple, no SI incumple. Ordena cuando la exclusion vacia el
+    resultado y hay que ofrecer lo que menos la incumple.
 
     La marca pesa mas que la fabricacion: una marca china fabricada en China
     esta mas lejos del pedido que una suiza fabricada en China. Y un origen que
     nombra alternativas -"Taiwan o China segun linea"- esta mas cerca que uno
     que dice China a secas, porque no siempre es del pais excluido.
+
+    ESO ERA LO QUE PROMETIA Y NO HACIA, hasta el 4-ago-2026. Buscaba la raiz
+    "chin" adentro del campo `marca`, que dice "Redragon" a secas: el pais de la
+    marca NO vive ahi, vive adentro del texto de `origen`. Asi que el +3 no se
+    aplicaba NUNCA y lo unico que quedaba era "aparece China en el origen", que
+    es verdad para rubros enteros. MEDIDO: los auriculares HyperX de Estados
+    Unidos y los Redragon DE CHINA daban los dos grado 2; los 52 mouse daban 2 y
+    las 96 memorias daban 1. El gradiente era un booleano disfrazado, y por eso
+    "lo menos chino" nunca funciono en ninguna charla.
+
+    Ahora los dos paises se leen del origen por separado.
     """
-    marca, origen = _norm(prod.get("marca")), _norm(prod.get("origen"))
+    origen = _norm(prod.get("origen"))
     nombre = _norm(prod.get("nombre"))
+    pais_marca, pais_fab = _paises_de(origen)
     g = 0
     for valor in (excluir or []):
         for s in _stems(valor):
-            if s in marca:
+            if s in pais_marca:
                 g += 3
+            if s in pais_fab:
+                g += 2
             if s in nombre:
                 g += 2
-            if s in origen:
-                g += 2
+            # la marca puede nombrar el pais sin que el origen lo declare
+            if s in _norm(prod.get("marca")):
+                g += 3
+    # Un origen que nombra alternativas -"Taiwan o China segun linea"- esta mas
+    # cerca del pedido que uno que dice China a secas.
     if g and ("segun linea" in origen or " o " in origen):
         g -= 1
     return g
+
+
+def _categorias_que_cumplen(excluir: list[str], tienda_id: str,
+                            salvo: str | None = None) -> list[str]:
+    """EL AGREGADO. En que categorias del catalogo SI se cumple del todo la
+    condicion que el cliente puso.
+
+    Por que existe (4-ago-2026). "Tenes algo sin China?" es una pregunta sobre
+    los 880, no una busqueda: no la resuelve traer seis productos ni mandarle el
+    catalogo al modelo. La calcula el codigo, exacta, en milisegundos y sin un
+    solo token. La respuesta real es 91 de 880 -los 72 de almacenamiento externo
+    y los 19 procesadores-, y el bot en produccion contesto que no tenia
+    ninguno. Nunca se lo habiamos pedido al codigo, asi que el modelo relleno el
+    hueco inventando un universal, que es lo unico que podia hacer.
+
+    Se excluye la categoria que ya se busco: no se le ofrece al cliente el mismo
+    rubro del que se le acaba de decir que no cumple.
+    """
+    from app.storage.firestore_client import get_all_products
+    if not excluir:
+        return []
+    cats: dict[str, int] = {}
+    for p in (get_all_products(tienda_id=tienda_id) or []):
+        if (p.get("stock") or 0) <= 0 or _grado(p, excluir) > 0:
+            continue
+        cat = str(p.get("categoria") or "").strip()
+        if cat and _norm(cat) != _norm(salvo):
+            cats[cat] = cats.get(cat, 0) + 1
+    # Solo las que tienen surtido de verdad: ofrecer un rubro con un producto
+    # suelto no es una alternativa comercial, es un consuelo.
+    return sorted(c for c, n in cats.items() if n >= 3)
 
 
 def _excluido(prod: dict, excluir: list[str]) -> bool:
@@ -580,17 +644,45 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
             # binaria aunque el argumento lo sea, asi que el codigo devuelve
             # los que MENOS la incumplen, ordenados, y le dice al modelo que
             # sea honesto sobre el grado.
+            #
+            # 4-AGO: LA INSTRUCCION ERA LA QUE ESCRIBIA EL MURO. Decia "NINGUNO
+            # cumple esa condicion del todo, y hay que decirlo derecho, sin
+            # adornar", asi que el modelo ARRANCABA por el negativo y de ahi
+            # generalizaba al catalogo entero. Medido sobre 130 turnos: el mismo
+            # muro salio en SIETE redacciones -"no tengo productos que no tengan
+            # partes chinas", "todos los productos que manejamos..."- y la
+            # afirmacion era FALSA, porque 91 de los 880 no tienen China.
+            #
+            # "Lo que menos X tenga" no es un filtro, es un RANKING: presupone
+            # que todo tiene algo y pide el minimo. Excluir da cero y de ahi nace
+            # el muro; ORDENAR siempre devuelve un primero y nunca puede
+            # producirlo. Asi que se ordena, se entrega el grado, y se dice
+            # DONDE del catalogo si se cumple del todo -que es un agregado sobre
+            # los 880, exacto y sin tokens, y es lo que el modelo inventaba-.
             cercanos = sorted(prods, key=lambda p: _grado(p, a.excluir))
-            return {"estado": "ninguno_cumple_del_todo",
-                    "excluido": a.excluir, "categoria": a.categoria,
-                    "lo_que_menos_incumple": [_ficha(p, tienda_id)
-                                              for p in cercanos[:3]],
-                    "instruccion": "NINGUNO cumple esa condicion del todo, y "
-                                   "hay que decirlo derecho, sin adornar. Pero "
-                                   "no cierres con un no: mostrale estos, que "
-                                   "son los que MENOS la incumplen, y explicale "
-                                   "en una linea por que -mira el campo origen-. "
-                                   "Despues preguntale si con eso avanza."}
+            fichas = []
+            for p in cercanos[:3]:
+                f = _ficha(p, tienda_id)
+                f["cuanto_incumple"] = _grado(p, a.excluir)
+                fichas.append(f)
+            return {"estado": "ordenados_de_menos_a_mas",
+                    "condicion": a.excluir, "categoria": a.categoria,
+                    "productos": fichas,
+                    "donde_si_se_cumple": _categorias_que_cumplen(
+                        a.excluir, tienda_id, a.categoria),
+                    "instruccion": "El cliente pidio lo que MENOS tenga esa "
+                                   "condicion, no lo que no la tenga. Estos son "
+                                   "los que menos la tienen, EN ORDEN: arranca "
+                                   "por ellos, no por un no. Mira `origen` y "
+                                   "`cuanto_incumple` y decile en una linea por "
+                                   "que el primero esta mejor que el ultimo. "
+                                   "PROHIBIDO afirmar nada sobre el catalogo "
+                                   "entero: vos viste tres productos de UNA "
+                                   "categoria, no los 880. Si "
+                                   "`donde_si_se_cumple` trae algo, ofrecelo "
+                                   "como el rubro donde la condicion SI se "
+                                   "cumple del todo. Despues preguntale si con "
+                                   "eso avanza."}
         prods = filtrados
     if a.tope_precio:
         dentro = [p for p in prods if p["precio_ars"] <= a.tope_precio]

@@ -84,17 +84,28 @@ def test_si_la_exclusion_no_deja_nada_se_dice_no_se_devuelve_lo_mismo():
     condicion casi nunca es binaria aunque el argumento lo sea -"las menos
     partes chinas posibles" sobre un catalogo 100% fabricado en China-, asi que
     la herramienta avisa que ninguno cumple del todo Y devuelve los que menos
-    incumplen. Ninguna herramienta devuelve vacio."""
+    incumplen. Ninguna herramienta devuelve vacio.
+
+    ACTUALIZADO 4-ago: el estado dejo de llamarse `ninguno_cumple_del_todo` y la
+    instruccion dejo de arrancar por el negativo, porque ERA ELLA la que
+    escribia el muro: decia "hay que decirlo derecho, sin adornar" y el modelo
+    generalizaba al catalogo entero. "Lo que menos X tenga" no es un filtro, es
+    un RANKING. Ordenar siempre devuelve un primero y NUNCA puede producir un
+    muro."""
     r = H.buscar_productos(
         H.BuscarProductos(categoria="mouse", excluir=["mouse", "gaming",
                                                       "china", "taiwan",
                                                       "estados", "suiza"]),
         TIENDA)
-    assert r["estado"] in ("ninguno_cumple_del_todo", "encontrado")
-    if r["estado"] == "ninguno_cumple_del_todo":
-        # Honesto sobre el grado, pero con algo para ofrecer: las dos cosas.
-        assert "del todo" in r["instruccion"]
-        assert r["lo_que_menos_incumple"]
+    assert r["estado"] in ("ordenados_de_menos_a_mas", "encontrado")
+    if r["estado"] == "ordenados_de_menos_a_mas":
+        # Con algo para ofrecer, EN ORDEN, y con el grado de cada uno.
+        assert r["productos"]
+        assert all("cuanto_incumple" in p for p in r["productos"])
+        grados = [p["cuanto_incumple"] for p in r["productos"]]
+        assert grados == sorted(grados), "el que menos incumple va primero"
+        # y la instruccion prohibe el universal, que es de donde salia el muro
+        assert "catalogo entero" in r["instruccion"]
 
 
 def test_la_exclusion_por_origen_filtra_de_verdad():

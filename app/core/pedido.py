@@ -258,8 +258,31 @@ def instruccion_de_faltantes(rec: dict) -> str:
     lineas = list(rec.get("faltantes") or [])
     if not lineas:
         return ""
-    return ("REVISION DEL PLAN. Comparé lo que el cliente pidió contra lo que "
-            "buscaste y falta esto:\n- " + "\n- ".join(lineas) +
+    # LA CUENTA VA PRIMERA Y NO LA FRENA UNA PREGUNTA PENDIENTE (4-ago-2026).
+    # Medido tres veces seguidas con el modelo vivo sobre el mensaje real de
+    # Martin: el reconciliador dijo "pedio precio y no armaste la cuenta", y la
+    # ronda dos devolvio CERO herramientas en 2 de 3. El modelo entiende que si
+    # tiene que preguntar algo, todavia no puede cotizar, y el cliente que pidio
+    # precio de seis items se queda sin un solo numero. Mismo defecto medido en
+    # 71_cambio_de_decision, 3 de 3 vueltas: no es de un guion, es sistemico.
+    #
+    # `instruccion_de_preguntas` ya decia "cotiza igual lo que si esta
+    # definido", pero eso le llega al REDACTOR, que para entonces no tiene
+    # numeros y tiene prohibido inventarlos. Tiene que llegarle al DECISOR, que
+    # es la unica etapa que todavia puede llamar a armar_presupuesto.
+    plata = [l for l in lineas if "armar_presupuesto" in l]
+    resto = [l for l in lineas if l not in plata]
+    cabeza = ""
+    if plata:
+        cabeza = ("PRIMERO LA CUENTA, y va aunque falte aclarar algo: " +
+                  " ".join(plata) + " Cotizá lo que YA está definido con los "
+                  "ids que tenés; que haya una contradicción por preguntar NO "
+                  "te frena la cuenta. Dejar al cliente sin un solo número es "
+                  "peor que cotizar de a partes.\n\n")
+    if not resto:
+        return cabeza.strip()
+    return (cabeza + "REVISION DEL PLAN. Comparé lo que el cliente pidió "
+            "contra lo que buscaste y falta esto:\n- " + "\n- ".join(resto) +
             "\nPedí ahora las herramientas que resuelvan lo que falta. Si algo "
             "no se puede resolver con una herramienta, no lo inventes.")
 
