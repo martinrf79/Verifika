@@ -154,8 +154,45 @@ los de presupuesto multidestino con tres rondas, los que se estiraron. Con 3
 vueltas y n=78 el p95 es el cuarto peor turno de la corrida y tiene ruido alto;
 no se declara nada con eso, pero queda anotado para mirar.
 
-**NO SE DEPLOYO.** Decision de Martin: se mide primero, el deploy se decide
-aparte.
+**==== 4-ago-2026 (tarde) — EL TOKEN DE ADMIN QUE ESTABA ESCRITO EN EL REPO ====**
+
+El segundo agujero real que encontro la auditoria del indice. Los **cuatro**
+endpoints de admin de `app/main.py` leian `ADMIN_TOKEN` del entorno **con un
+valor por defecto**: un token fuerte escrito en el repo, sirviendo de contraseña
+real en produccion si la env no estaba puesta.
+
+**Por que importaba de verdad:** dos de esos cuatro ESCRIBEN -`upload-catalog` y
+`upload-faq`-. Con esa palabra, que estaba en el codigo, se pisaba el catalogo
+de 880 productos y la FAQ entera.
+
+**QUE SE HIZO.** Una sola puerta, `_rechazo_admin(request)`, y los cuatro
+endpoints pasan por ella. La comprobacion copiada en cuatro lugares era la mitad
+del problema: arreglar tres y olvidarse de uno deja el agujero igual.
+
+- **Sin `ADMIN_TOKEN` configurado la puerta queda CERRADA, no abierta**: se
+  contesta 503 y no se atiende a nadie, ni al que manda el token viejo. Un admin
+  que no anda se nota y se arregla; uno que atiende con la contraseña del repo
+  no se nota nunca.
+- Comparacion con `secrets.compare_digest`: la comparacion con `!=` se corta en
+  el primer byte distinto y filtra el token por tiempo de respuesta.
+- `tests/test_admin_auth.py` (nuevo, 8 tests) no deja que vuelva: escanea la
+  FUENTE ademas del comportamiento, porque el literal puede reaparecer en un
+  endpoint nuevo que no pase por la puerta comun.
+
+**⚠️ AVISO PARA EL DEPLOY, leer antes de deployar.** El secreto `admin-token`
+existe en Secret Manager y el `README` documenta cablearlo como
+`ADMIN_TOKEN=admin-token:latest`. **Lo que NO se pudo verificar desde esta
+sesion es si el servicio `agente-bot` lo tiene cableado hoy** -hace falta
+`run.services.get` y la clave de lectura solo tiene logging y datastore-. Si no
+lo tiene, despues del deploy los cuatro endpoints de admin contestan **503**.
+El bot y los webhooks NO se ven afectados: la puerta de admin es aparte.
+Confirmarlo antes de deployar, o tenerlo a mano para cablearlo si aparece el 503.
+
+**417 tests offline verdes** (eran 409).
+
+**NO SE DEPLOYO NADA DE ESTA SESION.** Decision de Martin: se mide primero, el
+deploy se decide aparte. El trabajo esta en la rama
+`claude/verifika-engineering-index-ak7d30`, sin mergear a `main` todavia.
 
 **==== 4-ago-2026 — UN TEMA ES UN TEMA: se fusionaron los dos enums que se pisaban ====**
 

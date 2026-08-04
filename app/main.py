@@ -11,6 +11,7 @@ Endpoints:
 """
 import os
 import asyncio
+import secrets
 import time as _time
 from fastapi import FastAPI, Request, BackgroundTasks, UploadFile, File, Query
 from fastapi.responses import PlainTextResponse, JSONResponse
@@ -180,12 +181,44 @@ def _inventario_fuente() -> dict:
         return {"error": str(e)[:120]}
 
 
+def _rechazo_admin(request: Request):
+    """LA PUERTA DE ADMIN, una sola. Devuelve la respuesta de rechazo, o None
+    si el pedido pasa.
+
+    Hasta el 4-ago-2026 los cuatro endpoints de admin leian ADMIN_TOKEN del
+    entorno CON UN VALOR POR DEFECTO: un token fuerte escrito en el repo,
+    sirviendo de contraseña real en produccion si la env no estaba puesta. Dos
+    de esos endpoints ESCRIBEN -upload-catalog y upload-faq-, o sea que con esa
+    palabra, que estaba en el codigo, se pisaba el catalogo de 880 productos y
+    la FAQ entera. `tests/test_admin_auth.py` no deja que vuelva.
+
+    Ahora si `ADMIN_TOKEN` no esta configurado la puerta queda CERRADA, no
+    abierta con una clave conocida: se contesta 503 y no se atiende. Un admin
+    que no anda se nota y se arregla; uno que atiende con la contraseña del
+    repo no se nota nunca.
+
+    Ojo al deployar: si `agente-bot` no tiene `ADMIN_TOKEN` cableado desde el
+    secreto `admin-token`, estos cuatro endpoints pasan a contestar 503.
+    """
+    esperado = os.getenv("ADMIN_TOKEN", "")
+    if not esperado:
+        log.error("admin_sin_token_configurado", ruta=str(request.url.path))
+        return JSONResponse(
+            {"error": "admin deshabilitado: falta ADMIN_TOKEN"},
+            status_code=503)
+    recibido = request.headers.get("X-Admin-Token", "")
+    # compare_digest: la comparacion con != se corta en el primer byte
+    # distinto y filtra el token por tiempo de respuesta.
+    if not secrets.compare_digest(recibido, esperado):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    return None
+
+
 @app.get("/admin/health/{tienda_id}")
 async def health_tienda(tienda_id: str, request: Request):
     """Health por tienda. Verifica config + datos cargados."""
-    token = request.headers.get("X-Admin-Token", "")
-    if token != os.getenv("ADMIN_TOKEN", "cargar2026"):
-        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    if (rechazo := _rechazo_admin(request)) is not None:
+        return rechazo
 
     from app.storage.firestore_client import get_all_products, get_all_faq
     try:
@@ -220,9 +253,8 @@ async def diag_latencia(request: Request):
       2 vs 3 = costo del prompt grande
       3 vs 4 = costo del historial acumulado
     """
-    token = request.headers.get("X-Admin-Token", "")
-    if token != os.getenv("ADMIN_TOKEN", "cargar2026"):
-        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    if (rechazo := _rechazo_admin(request)) is not None:
+        return rechazo
 
     from app.core.hub_venta import _cliente
     from app.core import herramientas as _H
@@ -600,9 +632,8 @@ async def upload_catalog(
     Body: multipart/form-data, field 'file' = archivo .csv
     CSV columns: id,nombre,categoria,precio_ars,stock,descripcion
     """
-    token = request.headers.get("X-Admin-Token", "")
-    if token != os.getenv("ADMIN_TOKEN", "cargar2026"):
-        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    if (rechazo := _rechazo_admin(request)) is not None:
+        return rechazo
 
     if not file.filename.lower().endswith(".csv"):
         return JSONResponse({"error": "El archivo debe ser .csv"}, status_code=400)
@@ -713,9 +744,8 @@ async def upload_faq(
     CSV columns: tema,keywords,respuesta
     keywords: palabras separadas por coma dentro de la misma celda
     """
-    token = request.headers.get("X-Admin-Token", "")
-    if token != os.getenv("ADMIN_TOKEN", "cargar2026"):
-        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    if (rechazo := _rechazo_admin(request)) is not None:
+        return rechazo
 
     if not file.filename.lower().endswith(".csv"):
         return JSONResponse({"error": "El archivo debe ser .csv"}, status_code=400)
