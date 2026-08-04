@@ -23,7 +23,8 @@ QUE JUZGA, en tres capas, de la mas dura a la mas blanda:
   3. las EXPECTATIVAS del guion (`> contiene:` / `> no_contiene:`).
 
 Uso:
-    export GEMINI_API_KEY=$GEMINI_API_KEY_PROD
+    python3 banco_pruebas/banco_repetido.py            # clave GRATIS (default)
+    BANCO_CLAVE_PAGA=true python3 banco_pruebas/banco_repetido.py   # clave paga
     python3 banco_pruebas/banco_repetido.py            # el set del piso, 3 vueltas
     python3 banco_pruebas/banco_repetido.py 5 70_*.txt # 5 vueltas, guiones elegidos
 

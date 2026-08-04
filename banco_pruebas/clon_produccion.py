@@ -70,16 +70,40 @@ def preparar_entorno() -> dict:
 
     Lo unico que toca:
       - GEMINI_API_KEY: el codigo lee SOLO ese nombre. La clave paga viaja en
-        GEMINI_API_KEY_PROD, asi que sin este puente el banco corre con la
-        agotada y devuelve 429 disfrazado de respuesta pobre.
+        GEMINI_API_KEY_PROD.
       - TIENDA_ID: la tienda viva.
+
+    LA CLAVE PAGA AHORA SE PIDE, NO SE TOMA (Martin, 4-ago-2026). Hasta hoy esto
+    cambiaba SOLO a la paga con que `GEMINI_API_KEY_PROD` estuviera en el
+    entorno, y en las maquinas de trabajo esa env esta siempre puesta: o sea que
+    TODA corrida de banco iba a la clave paga sin que nadie lo pidiera. Con
+    varias corridas de 130 turnos por dia eso se llevo mas de diez dolares en
+    unos dias, y ninguna de esas corridas NECESITABA la paga: el banco mide
+    comportamiento, no cuota.
+
+    Ahora el default es la clave GRATIS y la paga entra solo con
+    `BANCO_CLAVE_PAGA=true`. Si el limite gratis se agota la corrida lo va a
+    mostrar como 429 y ahi se decide gastar, que es una decision y no un
+    accidente.
     """
     global _preparado
-    detalle = {"clave": "GEMINI_API_KEY (la del entorno)"}
     paga = (os.environ.get("GEMINI_API_KEY_PROD") or "").strip()
-    if paga:
+    quiere_paga = os.environ.get("BANCO_CLAVE_PAGA", "").lower() == "true"
+    if paga and quiere_paga:
         os.environ["GEMINI_API_KEY"] = paga
-        detalle["clave"] = "GEMINI_API_KEY_PROD (paga)"
+        detalle = {"clave": "GEMINI_API_KEY_PROD (PAGA, pedida a proposito)"}
+    else:
+        # No alcanza con no pisarla: si el proceso hereda la paga en
+        # GEMINI_API_KEY, seguiria gastando. Se fuerza la gratis.
+        gratis = (os.environ.get("GEMINI_API_KEY_FREE")
+                  or os.environ.get("GEMINI_API_KEY") or "").strip()
+        if gratis and gratis == paga:
+            log_msg = ("GEMINI_API_KEY es la MISMA que la paga: no hay clave "
+                       "gratis distinta en el entorno")
+            detalle = {"clave": f"gratis NO disponible ({log_msg})"}
+        else:
+            os.environ["GEMINI_API_KEY"] = gratis
+            detalle = {"clave": "GEMINI_API_KEY (gratis, default)"}
     os.environ.setdefault("TIENDA_ID", TIENDA)
     _preparado = True
     return detalle
