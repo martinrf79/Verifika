@@ -488,3 +488,152 @@ def anuncio_sin_contenido(respuesta: str, tope: int = 340) -> bool:
     if len(r) >= tope or not _RE_ANUNCIA.search(r):
         return False
     return not any(rx.search(r) for rx in _RE_ENTREGA)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LOS DOS DETECTORES DEL 4-AGO. Nacieron de una charla REAL de Martin por
+# WhatsApp que el banco daba por buena.
+#
+# EL MENSAJE: "Dame precio de dos auriculares, dos mouse y dos memorias... que
+# lleven las menos partes chinas posibles..." -el guion 76, palabra por palabra-.
+# LA RESPUESTA: una lista de productos, y arriba de todo "no tengo productos que
+# no sean fabricados en China, ya que todo lo que trabajo es de marcas
+# internacionales pero con produccion en ese origen". Sin total, sin envios, sin
+# el reparto 70/30 que habia pedido.
+#
+# POR QUE EL BANCO NO LO VIO. El guion chequeaba el turno con tres frases
+# LITERALES que no debian aparecer -"no puedo armarte", "no contamos con
+# auriculares", "no contamos con productos"-. El modelo dijo el mismo muro con
+# otras palabras y paso limpio. Mientras la medida sea por frases, cada arreglo
+# mueve las palabras y no el problema.
+#
+# Estos dos NO miran frases: miran hechos que se verifican contra la fuente.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# UNIVERSAL SOBRE EL CATALOGO. El modelo solo puede hablar de lo que la
+# herramienta le trajo, y ninguna le trae el universo: `buscar_productos`
+# devuelve seis como mucho. Entonces CUALQUIER afirmacion sobre la totalidad del
+# catalogo -"no tengo productos que...", "todo lo que trabajo es..."- no la
+# respalda ningun dato que el modelo haya tenido delante. Es la misma logica que
+# el candado de plata: lo que no calculo el codigo, no se dice.
+#
+# Se acotan a proposito a DOS formas, las que hacen de muro:
+#   - la negativa universal: no tengo/no hay/no manejo + producto|nada|ninguno
+#   - la positiva universal sobre el surtido: todo lo que trabajo/vendo/tengo es
+# Una universal de POLITICA -"todos los productos tienen 12 meses de garantia"-
+# NO entra: esa sale de la FAQ, que si es fuente, y no matchea ninguna de las dos.
+_RE_UNIVERSAL_NEG = re.compile(
+    r"\bno\s+(?:tengo|tenemos|hay|manejo|manejamos|trabajo|trabajamos|"
+    r"cuento\s+con|contamos\s+con|dispongo\s+de|disponemos\s+de)\s+"
+    r"(?:\w+\s+){0,2}"
+    r"(?:productos?|art[ií]culos?|nada|ninguno|ninguna|ning[uú]n)\b",
+    re.IGNORECASE)
+
+_RE_UNIVERSAL_POS = re.compile(
+    r"\b(?:todo|todos)\s+(?:lo\s+que|los\s+(?:productos?|art[ií]culos?)\s+que)\s+"
+    r"(?:\w+\s+){0,2}"
+    r"(?:trabajo|trabajamos|vendo|vendemos|tengo|tenemos|manejo|manejamos|"
+    r"ofrezco|ofrecemos)\b",
+    re.IGNORECASE)
+
+
+def detectar_universal_de_catalogo(respuesta: str) -> list[str]:
+    """Afirmaciones sobre la TOTALIDAD del catalogo. Ninguna herramienta
+    devuelve el universo, asi que ninguna de estas tiene respaldo.
+
+    Devuelve la frase recortada de cada una, para que el reporte muestre QUE
+    dijo y no solo que fallo."""
+    fuera = []
+    for rx in (_RE_UNIVERSAL_NEG, _RE_UNIVERSAL_POS):
+        for m in rx.finditer(respuesta or ""):
+            ini = max(0, m.start() - 10)
+            fuera.append(re.sub(r"\s+", " ",
+                                (respuesta or "")[ini:m.end() + 60]).strip())
+    return fuera
+
+
+# NEGACION DE UNA CATEGORIA QUE SI VENDEMOS. La forma mas dura del muro y la
+# unica que se puede verificar contra el catalogo sin interpretar nada: si el
+# texto dice que no tenemos auriculares y hay 46 con stock, es falso y punto.
+_RE_NIEGA = re.compile(
+    r"\bno\s+(?:tengo|tenemos|hay|manejo|manejamos|trabajo|trabajamos|"
+    r"vendo|vendemos|cuento\s+con|contamos\s+con|dispongo\s+de|"
+    r"disponemos\s+de)\b",
+    re.IGNORECASE)
+
+
+def detectar_categoria_negada(respuesta: str, productos: list[dict]) -> list[str]:
+    """Categorias que el texto niega y el catalogo SI tiene con stock.
+
+    Conservador, como todo el modulo: la categoria tiene que caer en la ventana
+    corta que sigue a la negacion, no en cualquier parte del mensaje. Sin eso,
+    un "no tenemos ese modelo puntual, pero mira estos mouse" acusaria en falso.
+
+    Y SOLO LA NEGACION PELADA, que es la mitad del detector. Un "no cuento con
+    auriculares BLUETOOTH" es el no honesto que queremos -los 46 son con cable-
+    y acusarlo seria castigar justo lo que el sistema hace bien: medido el
+    4-ago, esta funcion marcaba esa respuesta como falla. Si despues de la
+    categoria viene algo que la ACOTA -un atributo, un color, un "que..."- la
+    negacion es sobre esa variante, no sobre el rubro, y no se toca. Se acusa
+    solo cuando la categoria cierra la frase.
+    """
+    texto = _norm_txt(respuesta or "")
+    con_stock = {}
+    for p in (productos or []):
+        cat = _norm_txt(p.get("categoria"))
+        if cat and (p.get("stock") or 0) > 0:
+            con_stock[cat] = con_stock.get(cat, 0) + 1
+    # Lo que puede seguir a la categoria sin acotarla: fin de frase, o una
+    # conjuncion que abre una oracion nueva.
+    cierre = r"(?:\s*(?:[.,;:!?]|$)|\s+(?:pero|aunque|asi|porque|ya\s+que)\b)"
+    fuera = []
+    for m in _RE_NIEGA.finditer(texto):
+        ventana = texto[m.end():m.end() + 45]
+        for cat, n in con_stock.items():
+            if re.search(rf"\b{re.escape(cat)}\b{cierre}", ventana):
+                fuera.append(f"{cat} (hay {n} con stock)")
+    return sorted(set(fuera))
+
+
+# PRECIO PEDIDO SIN TOTAL. El caso real: pidio precio de seis items y el turno
+# cerro sin un solo numero de cuenta. El total lo imprime SIEMPRE la calculadora
+# como renglon "Total:", asi que su ausencia se mide sin interpretar nada.
+_RE_PIDE_PRECIO = re.compile(
+    r"(?:dame\s+(?:el\s+)?precio|qu[eé]\s+precio|precio\s+de|precios?\s+de\s+"
+    r"(?:los?|las?|dos|tres)|cu[aá]nto\s+(?:sale|cuesta|vale|ser[ií]a|me\s+sale)|"
+    r"cu[aá]nto\s+me\s+(?:sale|saldr[ií]a|costar[ií]a)|presupuest\w+|"
+    r"cotiz[aá]\w*|pas[aá]me\s+(?:el\s+)?(?:precio|presupuesto))",
+    re.IGNORECASE)
+
+_RE_TIENE_TOTAL = re.compile(r"(?im)^\s*total\s*:", re.MULTILINE)
+
+# Cantidades explicitas en el mensaje: "dos auriculares", "2 mouse". Son la
+# diferencia entre un PEDIDO y una exploracion.
+_RE_CANTIDAD = re.compile(
+    r"\b(?:un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|\d{1,3})\s+"
+    r"[a-zñáéíóú]{4,}", re.IGNORECASE)
+
+
+def precio_pedido_sin_total(mensaje: str, respuesta: str) -> bool:
+    """True si el cliente pidio LA CUENTA de un pedido concreto y el turno no
+    la trajo. El renglon "Total:" lo imprime siempre la calculadora, asi que su
+    ausencia se mide sin interpretar nada.
+
+    NO se acusa la exploracion. "Cuanto sale un mouse?" contestado con tres
+    opciones y sus precios es lo correcto, y no lleva total: pedir uno ahi seria
+    obligar al bot a elegir por el cliente, que es justo lo que no queremos. Por
+    eso hace falta ademas una seña de PEDIDO: la palabra presupuesto, o dos o
+    mas cantidades explicitas -"dos auriculares, dos mouse y dos memorias"-.
+
+    El caso real que lo pario (4-ago, WhatsApp): seis items, tres destinos y un
+    reparto 70/30 pedido, y la respuesta fue una lista de nueve precios
+    unitarios sin una sola cuenta. El cliente se queda sumando a mano.
+    """
+    msg = mensaje or ""
+    if not _RE_PIDE_PRECIO.search(msg):
+        return False
+    es_pedido = (re.search(r"presupuest\w+", msg, re.IGNORECASE)
+                 or len(_RE_CANTIDAD.findall(msg)) >= 2)
+    if not es_pedido:
+        return False
+    return not _RE_TIENE_TOTAL.search(respuesta or "")

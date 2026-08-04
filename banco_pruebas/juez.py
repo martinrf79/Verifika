@@ -258,6 +258,22 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod",
                     f"envios perdidos: el mensaje declara {n_decl} destinos "
                     f"y el presupuesto cobra {n_resp}")
 
+    # 12. EL MURO, y 13. LA CUENTA QUE NO LLEGO (4-ago-2026).
+    #     Nacieron de una charla REAL de Martin que este juez daba por limpia,
+    #     porque el guion la chequeaba con tres frases LITERALES y el modelo
+    #     dijo el mismo muro con otras palabras. Estos dos no miran frases:
+    #     miran hechos verificables contra la fuente. Ver el bloque de comentario
+    #     en `detectores.py` para la charla completa.
+    for frase in D.detectar_universal_de_catalogo(respuesta):
+        problemas.append(
+            f"universal sobre el catalogo, sin respaldo de ninguna "
+            f"herramienta: \"{frase[:90]}\"")
+    for cat in D.detectar_categoria_negada(respuesta, ev):
+        problemas.append(f"niega una categoria que SI vendemos: {cat}")
+    if mensaje and D.precio_pedido_sin_total(mensaje, respuesta):
+        problemas.append(
+            "pidio la cuenta de un pedido concreto y el turno cerro sin Total")
+
     return problemas
 
 
