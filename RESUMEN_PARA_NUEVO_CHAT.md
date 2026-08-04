@@ -4,6 +4,159 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== DECISION PERMANENTE DE MARTIN — NO PEDIR MAS MERCADO PAGO NI CBU ====**
+
+**Esto va arriba de todo porque Martin lo repitio demasiadas veces y cada sesion
+nueva se lo vuelve a pedir.** Estamos en VALIDACION DE PRODUCTO: todavia no hay
+cliente real confirmado. Por lo tanto:
+
+- **NO hace falta el link real de Mercado Pago. NO hace falta el CBU real.** Los
+  DEMO de `config.py` estan bien y alcanzan. Que el modo venta mande datos demo
+  NO es un pendiente, es lo correcto para esta etapa.
+- **NO se le pide a Martin el `mp_access_token`, ni el `cbu`, ni el `alias`.** El
+  dia que haga falta, lo va a pedir EL, y ahi se editan. Hasta entonces no se
+  nombra como bloqueante, no se lista como "condicion de salida" y no se propone
+  integrarlo.
+- Lo que sigue mas abajo en este documento sobre "CBU real y token de Mercado
+  Pago" y sobre "condicion de salida del cobro" queda SUBORDINADO a esto. Si
+  algo viejo lo contradice, manda esta seccion.
+
+Lo mismo aplica a cualquier plan de ingenieria que llegue de afuera: si trae una
+fase de "completar Mercado Pago", esa fase NO se hace hasta que Martin lo pida.
+
+**DOS COSAS DESACTUALIZADAS QUE CONFUNDEN A CADA SESION NUEVA:**
+
+1. `CLAUDE.md` dice "DeepSeek en todo". **Produccion corre `gemini-3.1-flash-lite`**
+   (`LLM_PROVIDER` default `gemini` en `config.py:46`). La regla de no gastar en
+   modelos caros sigue viva; el nombre del modelo en `CLAUDE.md` no.
+2. Circula un texto de arranque que dice que el camino vivo es `app/core/hub_atado.py`
+   con interprete y solver por fragmentos. **Ese archivo NO EXISTE en `main`.** El
+   camino vivo es `app/core/hub_venta.py`, dos llamadas al modelo con herramientas
+   en paralelo, tal como lo describe `ARQUITECTURA.md`.
+
+---
+
+**==== 4-ago-2026 (tarde) — LOS FILTROS ESTRUCTURADOS: la manija que le faltaba al modelo ====**
+
+**De donde salio.** Martin trajo un indice de ingenieria de veinte secciones
+escrito afuera. Se verifico funcion por funcion contra `main`: de unos ciento
+diez nombres que lista, **casi todos ya existian y andaban**. Sus pasos 1 y 2 del
+orden de implementacion -"convertir el pedido en objeto" y "terminar el
+reconciliador"- estaban hechos desde el 3-ago (`RegistrarPedido`,
+`app/core/pedido.py`). Tambien listaba `consultar_politica` y `consultar_criterio`
+por separado, que se habian fusionado esa misma manana. **Sirvio como auditoria,
+no como hoja de ruta**, y encontro UN agujero real, que es este.
+
+**EL AGUJERO, con numero.** El catalogo tiene **veinte columnas llenas al cien por
+ciento en los 880 productos** -color, material, peso_gramos, dimensiones,
+garantia_meses, origen, contenido_caja- y ademas **veinticuatro claves de `specs`**
+-bluetooth, conexion, bateria, resistencia_agua, hz, ram, procesador-. De todo
+eso, `buscar_productos` le dejaba pedir al modelo **seis cosas**: descripcion,
+categoria, orden, tope_precio, excluir y cuantos.
+
+O sea: ante "tenes alguno blanco", "cual pesa menos de 500 gramos" o "que sea
+resistente al agua", **el modelo no tenia como preguntarselo al codigo**. Le
+llegaban tres fichas elegidas por una descripcion difusa y tenia que razonar sobre
+la prosa que venia adentro. Ese es el mecanismo de alucinacion, con el dato ya
+cargado en la fuente esperando.
+
+**QUE SE HIZO.** `app/core/filtros_catalogo.py` (nuevo) y un argumento `filtros`
+en `buscar_productos`: lista de `campo` + `operador` + `valor`. Cuatro
+operadores: contiene, igual, mayor, menor.
+
+- **El enum de `campo` SALE DE LA FUENTE VIVA**, igual que `categoria` y `temas`.
+  Se derivan las columnas del catalogo real mas las claves de `specs`: quedaron
+  **38 campos**, dos numericos. El modelo no puede inventar un nombre de campo.
+- **El tipo se infiere del dato**, no se declara a mano. Un campo mitad numero
+  mitad texto se trata como texto: comparar "24" contra "24 meses" con `mayor` da
+  un resultado que parece bien y esta mal.
+- **`mayor` y `menor` incluyen el borde**: "hasta 500 gramos" es lo que dice el
+  cliente, no la desigualdad estricta.
+- **El silencio de la ficha NO es un no.** Si el producto no tiene el campo, no
+  incumple: no se sabe. Va a un tercer balde y se informa cuantos quedaron afuera
+  por falta de dato.
+- **Ninguna herramienta devuelve vacio** (regla de Martin, 2-ago). Si los filtros
+  no dejan nada se devuelve lo que MAS condiciones cumple, con `no_cumple` por
+  producto diciendo cual falla.
+- **Un filtro que se cae se REPORTA.** Campo inexistente u operador imposible
+  vuelven en `filtros_no_aplicados` con el motivo. Sin eso el modelo presenta
+  como filtrada una lista que no lo esta.
+
+**MEDIDO CON EL MODELO VIVO, ocho mensajes, llamada uno:** pidio el filtro en
+**8 de 8**, con el campo y el operador correctos.
+
+| le preguntaron | que pidio |
+|---|---|
+| tenes algun mouse blanco? | `color contiene blanco` |
+| un mouse que pese menos de 100 gramos | `peso_gramos menor 100` |
+| auriculares con bluetooth | `bluetooth igual si` |
+| notebooks con 16gb de ram | `ram contiene 16` |
+| teclado resistente al agua | `resistencia_agua contiene si` |
+| silla gamer de material tela | `material contiene tela` |
+| monitores de 144hz | `hz contiene 144` |
+| mouse inalambrico negro de menos de 120 gramos | `color contiene negro` **+** `peso_gramos menor 120` |
+
+**DOS DEFECTOS QUE APARECIERON AL MEDIR EN VIVO, los dos arreglados:**
+
+1. **`igual` sobre una spec de si o no no matcheaba NUNCA.** El modelo pidio
+   `bluetooth igual si`, que es lo natural para un campo binario, y con igualdad
+   estricta eso da cero: las specs estan escritas "veredicto, detalle" y 234
+   productos dicen "si, bluetooth 5.0". El filtro daba vacio y el bot contestaba
+   que no hay, con el catalogo lleno. Ahora `igual` sobre texto vale contra el
+   string entero **o contra su primer segmento**.
+2. **El reconciliador no conocia el argumento nuevo y acusaba en falso.** Ante
+   "tenes algun mouse blanco?" el modelo pidio -bien- `color contiene blanco`, y
+   `_universo_de_restricciones`, que solo miraba `excluir`, contesto que la
+   condicion no se habia aplicado. **El turno se comia una segunda ronda de
+   modelo al pedo.** Un chequeo que no conoce el argumento nuevo no protege:
+   acusa, y cuesta una llamada por turno.
+
+**LA LATENCIA, antes y despues del arreglo 2, mismo turno completo:**
+
+| mensaje | antes | despues |
+|---|---|---|
+| mouse blanco | 10.671 ms | **4.474 ms** |
+| auriculares con bluetooth | 5.060 ms | **3.209 ms** |
+| teclado resistente al agua | 5.767 ms | **2.943 ms** |
+| mouse inalambrico negro <120g | 5.646 ms | 8.739 ms |
+
+El cuarto SIGUE disparando la segunda ronda y esta bien: "inalambrico" de verdad
+no se aplico en ningun filtro -falta `conexion`-, asi que el reconciliador acusa
+con razon. Los otros tres perdieron una llamada entera de modelo.
+
+**LO QUE COSTO, dicho:** el esquema paso de 14.204 a **15.868 caracteres**, unos
+1.664 mas, doce por ciento. Es el precio de los 38 campos en el enum y se paga
+por turno. **El prompt del hub NO se toco**: la descripcion de la herramienta ya
+dice cuando usarla, y repetirlo en el prompt es exactamente el error que se
+corrigio esa misma manana.
+
+**Tambien se descubrio que `pedido.reconciliar` no tenia NI UN test** en la
+bateria. Se sumaron los que cubren la parte que se movio; el resto del
+reconciliador sigue sin cobertura y es un hueco abierto.
+
+**409 tests offline verdes** (eran 384; se sumaron 25).
+
+**EL NUMERO CONTRA EL PISO: VERDE, exit 0.** `banco_repetido` con la clave paga,
+los 8 guiones del piso, 3 vueltas, 78 turnos. Tasa de fallo global **6% (5 de
+78)**, la misma que el piso.
+
+| metrica | piso 3-ago | ahora |
+|---|---|---|
+| sin_caida (dura) | 100.0% | **100.0%** |
+| sin_invento (dura) | 97.4% | **97.4%** |
+| completa (blanda) | 93.6% | **96.2%** (+2.6) |
+| avanza (blanda) | 96.2% | **100.0%** (+3.8) |
+
+Las dos duras se mantienen y las dos blandas suben. **Lo que NO mejoro, dicho:**
+la latencia p95 paso de 9.453 a **13.542 ms**. El p50 quedo plano -5.283 contra
+5.324-, asi que no es que todos los turnos tarden mas: son los turnos pesados,
+los de presupuesto multidestino con tres rondas, los que se estiraron. Con 3
+vueltas y n=78 el p95 es el cuarto peor turno de la corrida y tiene ruido alto;
+no se declara nada con eso, pero queda anotado para mirar.
+
+**NO SE DEPLOYO.** Decision de Martin: se mide primero, el deploy se decide
+aparte.
+
 **==== 4-ago-2026 — UN TEMA ES UN TEMA: se fusionaron los dos enums que se pisaban ====**
 
 **Lo que reporto Martin:** el bot contesta atado al enum de UN area y no es

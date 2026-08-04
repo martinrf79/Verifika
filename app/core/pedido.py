@@ -105,12 +105,39 @@ def _universo_de_busquedas(llamadas: list) -> str:
     return " ".join(x for x in partes if x)
 
 
+# Como se dice en castellano cada operador. Sin esto "menos de 120 gramos" no
+# se reconoce en un filtro `peso_gramos menor 120`: el reconciliador acusa un
+# faltante falso y quema una ronda entera de modelo.
+_PALABRAS_OPERADOR = {
+    "contiene": "contiene tiene con",
+    "igual": "igual exacto",
+    "mayor": "mayor mas desde minimo",
+    "menor": "menor menos hasta maximo",
+}
+
+
 def _universo_de_restricciones(llamadas: list) -> str:
-    """Donde puede viajar una restriccion declarada por el cliente: el `excluir`
-    y el `tope_precio` de la busqueda, y los temas consultados."""
+    """Donde puede viajar una restriccion declarada por el cliente: los
+    `filtros` estructurados, el `excluir` y el `tope_precio` de la busqueda, y
+    los temas consultados.
+
+    LOS FILTROS ENTRAN ACA DESDE EL 4-AGO, y no es un detalle: son la via
+    principal por la que una condicion se aplica. Medido con el modelo vivo el
+    mismo dia, ante "tenes algun mouse blanco?" el modelo pidio -bien-
+    `color contiene blanco`, y el reconciliador, que solo miraba `excluir`,
+    contesto que la condicion 'blanco' no se habia aplicado. El turno se comio
+    una segunda ronda al pedo: 10.671 ms contra 5.060 de los que no la
+    disparaban. Un chequeo que no conoce el argumento nuevo no protege: acusa.
+    """
     partes = []
     for l in llamadas or []:
         ped = l.get("pedido") or {}
+        for f in (ped.get("filtros") or []):
+            if not isinstance(f, dict):
+                continue
+            partes.append(_norm(f.get("campo")).replace("_", " "))
+            partes.append(_norm(f.get("valor")))
+            partes.append(_PALABRAS_OPERADOR.get(_norm(f.get("operador")), ""))
         for v in (ped.get("excluir") or []):
             partes.append(_norm(v))
         if ped.get("tope_precio"):

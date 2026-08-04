@@ -47,6 +47,19 @@ def _norm(s) -> str:
 # Pydantic manda: valida y coacciona lo que el modelo devuelve. Un argumento
 # fuera de molde no llega a la funcion, se descarta con su motivo.
 
+class Filtro(BaseModel):
+    """Una condicion estructurada sobre un campo real del catalogo."""
+    campo: str = Field(
+        description="El campo exacto de la lista. No inventes nombres.")
+    operador: Literal["contiene", "igual", "mayor", "menor"] = Field(
+        description="'contiene' para texto -color contiene blanco-. 'igual' "
+                    "para un valor exacto. 'mayor' y 'menor' SOLO para campos "
+                    "numericos, e incluyen el borde: menor 500 es hasta 500.")
+    valor: str = Field(
+        description="Lo que tiene que valer. Para numeros mandalo pelado: 500, "
+                    "no '500 gramos'.")
+
+
 class BuscarProductos(BaseModel):
     """Busca productos en el catalogo real."""
     descripcion: str | None = Field(
@@ -64,6 +77,14 @@ class BuscarProductos(BaseModel):
     excluir: list[str] | None = Field(
         None, description="Marcas u origenes que el cliente NO quiere: "
                           "['china'], ['logitech']. Tal cual lo dijo.")
+    filtros: list[Filtro] | None = Field(
+        None, description="CONDICIONES CONCRETAS sobre los campos del "
+                          "catalogo. Usalas SIEMPRE que el cliente pida un "
+                          "atributo -que sea blanco, que pese menos de 500 "
+                          "gramos, que tenga bluetooth, que sea resistente al "
+                          "agua, que tenga dos anios de garantia-. No lo "
+                          "resuelvas leyendo las descripciones: pedilo aca y "
+                          "el codigo filtra sobre los 880.")
     cuantos: int = Field(3, description="Cuantas opciones traer, 1 a 6.")
 
 
@@ -296,6 +317,32 @@ def temas_consultables(tienda_id: str) -> list[str]:
     return sorted(set(faq.keys()) | set(temas_criterio()))
 
 
+def _atar_filtros(prop: dict, tienda_id: str) -> None:
+    """El enum de `campo` SALE DEL CATALOGO VIVO, igual que `categoria` y que
+    `temas`. Sin esto el modelo inventa nombres de campo -`peso`, `garantia`,
+    `medidas`- que la fuente no tiene, y el filtro no filtra nada en silencio.
+
+    Se le dice ademas cuales son numericos: es el unico dato que no se puede
+    deducir del nombre y sin el pide `mayor` sobre `color`."""
+    from app.core.filtros_catalogo import campos_filtrables
+    registro = campos_filtrables(tienda_id)
+    if not registro:
+        return
+    items = prop.get("items")
+    if not isinstance(items, dict):
+        return
+    campo = (items.get("properties") or {}).get("campo")
+    if not isinstance(campo, dict):
+        return
+    campo["enum"] = list(registro)
+    numericos = [c for c, t in registro.items() if t == "numero"]
+    if numericos:
+        campo["description"] = (
+            "El campo exacto de la lista. Numericos, los unicos que aceptan "
+            "mayor y menor: " + ", ".join(numericos) + ". El resto es texto y "
+            "va con contiene.")
+
+
 def esquemas(tienda_id: str) -> list[dict]:
     """Los esquemas de las herramientas, en formato function calling, con los
     ENUMS de la fuente viva inyectados. Es la unica atadura que queda del lado
@@ -311,6 +358,8 @@ def esquemas(tienda_id: str) -> list[dict]:
         props = esq.get("properties") or {}
         if nombre == "buscar_productos" and cats and "categoria" in props:
             props["categoria"]["enum"] = cats
+        if nombre == "buscar_productos" and "filtros" in props:
+            _atar_filtros(props["filtros"], tienda_id)
         if nombre == "consultar_temas" and temas and "temas" in props:
             props["temas"]["items"] = {"type": "string", "enum": temas}
             props["temas"]["description"] = _guia_de_temas(faq, temas)
@@ -552,12 +601,62 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
                     "lo_mas_cercano": [_ficha(p, tienda_id) for p in baratos]}
         prods = dentro
 
+    # LOS FILTROS ESTRUCTURADOS. Van al final a proposito: primero la identidad
+    # y el rubro, que los decide el codigo, y recien despues las condiciones
+    # sobre los campos. Asi un filtro imposible no puede disfrazar de "no
+    # tenemos eso" algo que en realidad si vendemos.
+    filtrado = None
+    if a.filtros:
+        from app.core import filtros_catalogo as FC
+        filtrado = FC.aplicar(prods, a.filtros, tienda_id)
+        if filtrado["descartados"]:
+            log.warning("filtros_descartados", trace=[
+                d["motivo"] for d in filtrado["descartados"]][:3])
+        if not filtrado["productos"]:
+            # MISMA REGLA QUE `excluir` (Martin, 2-ago): ninguna herramienta
+            # devuelve vacio. Un filtro que no deja nada casi nunca significa
+            # que no tenemos el producto; significa que ESA condicion no se
+            # cumple. Se devuelve lo que MAS condiciones cumple y se dice cual
+            # falla, para que el modelo no cierre con un no que es mentira.
+            cercanos = sorted(
+                prods, key=lambda p: -FC.cuantos_cumple(p, a.filtros, tienda_id))
+            return {"estado": "ninguno_cumple_del_todo",
+                    "filtros_pedidos": filtrado["aplicados"],
+                    "filtros_descartados": filtrado["descartados"] or None,
+                    "lo_mas_parecido": [
+                        {**_ficha(p, tienda_id),
+                         "no_cumple": FC.incumplidos(p, a.filtros, tienda_id)}
+                        for p in cercanos[:3]],
+                    "instruccion": "NINGUNO cumple todas esas condiciones. "
+                                   "Decilo derecho y decile CUAL condicion es "
+                                   "la que no se cumple -esta en no_cumple de "
+                                   "cada uno-. No digas que no tenemos el "
+                                   "producto: tenemos estos, que es lo mas "
+                                   "parecido. Si dice que la ficha no lo "
+                                   "especifica, no afirmes ni que si ni que "
+                                   "no. Despues preguntale si con eso avanza."}
+        prods = filtrado["productos"]
+
     prods.sort(key=lambda p: p["precio_ars"], reverse=(a.orden == "caro"))
     if not prods:
         return {"estado": "no_encontrado", "buscado": pedido_txt}
     cuantos = max(1, min(int(a.cuantos or 3), 6))
-    return {"estado": "encontrado",
-            "productos": [_ficha(p, tienda_id) for p in prods[:cuantos]]}
+    salida = {"estado": "encontrado",
+              "productos": [_ficha(p, tienda_id) for p in prods[:cuantos]]}
+    if filtrado:
+        # QUE SE FILTRO Y QUE NO, dicho. Sin esto el modelo no puede saber que
+        # una condicion se cayo -campo inexistente, operador imposible- y
+        # presenta como filtrada una lista que no lo esta.
+        salida["filtros_aplicados"] = filtrado["aplicados"]
+        salida["hay_en_total"] = len(prods)
+        if filtrado["descartados"]:
+            salida["filtros_no_aplicados"] = filtrado["descartados"]
+            salida["instruccion"] = (
+                "OJO: esas condiciones NO se pudieron aplicar. No digas que "
+                "los productos las cumplen. Si hace falta, preguntale.")
+        if filtrado["sin_dato"]:
+            salida["sin_dato_en_la_ficha"] = filtrado["sin_dato"]
+    return salida
 
 
 def ficha_producto(a: FichaProducto, tienda_id: str) -> dict:

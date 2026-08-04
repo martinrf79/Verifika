@@ -72,9 +72,16 @@ definiciones que puedan divergir.
 1. **La identidad la decide el código.** Regla cero del proyecto.
    `certificar_producto` devuelve encontrado, ambiguo o no_encontrado. Con
    ambiguo el modelo está obligado a preguntar; no puede elegir.
-2. **Los enums salen de la fuente viva.** `categoria` y `temas` se inyectan en el
-   esquema desde el catálogo y la FAQ. El modelo no puede pedir una categoría que
-   no vendemos ni un tema de política que no existe.
+2. **Los enums salen de la fuente viva.** `categoria`, `temas` y los `campo` de
+   los filtros se inyectan en el esquema desde el catálogo y la FAQ. El modelo no
+   puede pedir una categoría que no vendemos, ni un tema de política que no
+   existe, ni filtrar por un campo que la fuente no tiene.
+2-bis. **Los atributos se CONSULTAN, no se razonan.** `buscar_productos` recibe
+   `filtros` estructurados -campo, operador, valor- sobre los 38 campos reales
+   del catálogo, columnas y `specs`. Antes el modelo recibía tres fichas y tenía
+   que deducir de la prosa cuál era blanco o cuál pesaba menos: eso es adivinar
+   con el dato cargado al lado. Si la ficha no dice, el filtro devuelve "no se
+   sabe", que no es lo mismo que "no".
 3. **La plata la arma el código.** `armar_presupuesto` devuelve el presupuesto
    renglón por renglón. El modelo lo pega, no lo recompone. Es la única parte del
    mensaje que el modelo no redacta.
