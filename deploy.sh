@@ -31,6 +31,11 @@ if [ ! -f app/logger.py ]; then
 fi
 
 echo "==> Deployando al servicio $SERVICIO en $REGION..."
-gcloud run deploy "$SERVICIO" --region "$REGION" --source .
+# ADMIN_TOKEN va en el deploy, igual que en el CI (.github/workflows/deploy.yml).
+# Desde el 4-ago los endpoints de admin no tienen token por defecto: sin la env
+# contestan 503. --update-secrets es idempotente y solo toca la que se nombra,
+# no pisa telegram-token ni deepseek-key ni sentry-dsn.
+gcloud run deploy "$SERVICIO" --region "$REGION" --source . \
+  --update-secrets=ADMIN_TOKEN=admin-token:latest
 
 echo "==> Listo. Deploy a $SERVICIO completo. Probá el bot."

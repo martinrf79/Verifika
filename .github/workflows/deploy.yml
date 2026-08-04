@@ -57,10 +57,29 @@ jobs:
         with:
           project_id: memory-engine-v1
 
+      # ADMIN_TOKEN VIAJA EN EL DEPLOY, no se cablea a mano (4-ago-2026).
+      #
+      # Hasta hoy los endpoints de admin tenian un token por defecto escrito en
+      # el codigo, asi que daba igual si la env estaba puesta: siempre habia
+      # contraseña. Ahora, sin `ADMIN_TOKEN`, la puerta contesta 503. Si el
+      # cableado dependiera de que alguien se acuerde de correr un `gcloud`
+      # suelto, se pierde entre sesiones y el admin queda muerto sin que nadie
+      # sepa por que.
+      #
+      # `--update-secrets` es IDEMPOTENTE y solo toca la que se nombra: agrega
+      # ADMIN_TOKEN si falta, la deja igual si ya esta, y NO pisa las otras
+      # -telegram-token, deepseek-key, sentry-dsn-. Correrlo de mas no rompe nada.
+      #
+      # Si el deploy falla aca por permisos, es que `github-deployer` no puede
+      # leer el secreto. Se arregla con:
+      #   gcloud secrets add-iam-policy-binding admin-token \
+      #     --member=serviceAccount:github-deployer@memory-engine-v1.iam.gserviceaccount.com \
+      #     --role=roles/secretmanager.secretAccessor --project=memory-engine-v1
       - name: Deploy a Cloud Run
         run: |
           gcloud run deploy agente-bot \
             --region southamerica-east1 \
             --source . \
             --project memory-engine-v1 \
+            --update-secrets=ADMIN_TOKEN=admin-token:latest \
             --quiet

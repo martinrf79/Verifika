@@ -179,14 +179,36 @@ del problema: arreglar tres y olvidarse de uno deja el agujero igual.
   FUENTE ademas del comportamiento, porque el literal puede reaparecer en un
   endpoint nuevo que no pase por la puerta comun.
 
-**⚠️ AVISO PARA EL DEPLOY, leer antes de deployar.** El secreto `admin-token`
-existe en Secret Manager y el `README` documenta cablearlo como
-`ADMIN_TOKEN=admin-token:latest`. **Lo que NO se pudo verificar desde esta
-sesion es si el servicio `agente-bot` lo tiene cableado hoy** -hace falta
-`run.services.get` y la clave de lectura solo tiene logging y datastore-. Si no
-lo tiene, despues del deploy los cuatro endpoints de admin contestan **503**.
-El bot y los webhooks NO se ven afectados: la puerta de admin es aparte.
-Confirmarlo antes de deployar, o tenerlo a mano para cablearlo si aparece el 503.
+**EL CABLEADO DEL SECRETO VIAJA EN EL DEPLOY, no se hace a mano.** Como sin
+`ADMIN_TOKEN` la puerta ahora contesta 503, el cableado no puede depender de que
+alguien se acuerde de correr un `gcloud` suelto: eso se pierde entre sesiones y
+el admin queda muerto sin que nadie sepa por que. Se sumo
+`--update-secrets=ADMIN_TOKEN=admin-token:latest` **al CI (`deploy.yml`) y a
+`deploy.sh`**, que son los dos unicos caminos de deploy.
+
+`--update-secrets` es **idempotente y solo toca la que se nombra**: agrega
+`ADMIN_TOKEN` si falta, la deja igual si ya estaba, y NO pisa `telegram-token`,
+`deepseek-key` ni `sentry-dsn`. Antes el deploy corria con `--source .` pelado y
+preservaba lo que hubiera; ahora ademas garantiza esta.
+
+**No se pudo verificar desde la sesion si `agente-bot` ya lo tenia cableado**:
+`run.services.get` y `secretmanager.secrets.list` dan 403 con la clave de
+lectura, que solo tiene logging y datastore. Por eso se hizo declarativo en vez
+de condicional. **Si el deploy falla por permisos del secreto**, es que
+`github-deployer` no lo puede leer, y se arregla con:
+
+```
+gcloud secrets add-iam-policy-binding admin-token \
+  --member=serviceAccount:github-deployer@memory-engine-v1.iam.gserviceaccount.com \
+  --role=roles/secretmanager.secretAccessor --project=memory-engine-v1
+```
+
+Y si el secreto no existiera todavia:
+
+```
+printf 'UN-TOKEN-FUERTE' | gcloud secrets create admin-token \
+  --data-file=- --project=memory-engine-v1
+```
 
 **417 tests offline verdes** (eran 409).
 
