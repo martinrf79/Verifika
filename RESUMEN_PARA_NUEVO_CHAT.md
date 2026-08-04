@@ -4,6 +4,100 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== EL PLAN DE TRES ETAPAS Y LAS 15 PREGUNTAS DIFICILES (Martin, 4-ago-2026) ====**
+
+**ESTO ES LO QUE SE HACE EN LA PROXIMA SESION. Arranca por la etapa 1.**
+
+**EL OBJETIVO NO ES QUE CONTESTE TODO.** Es que **DERIVE, diga "no se" o
+pregunte** cuando la fuente no alcanza. Una respuesta inventada que suena bien
+es PEOR que un "no lo tengo ese dato, te averiguo". Se mide eso, no la
+elocuencia.
+
+---
+
+**ETAPA 1 — LAS 15 PREGUNTAS.** Salen de los huecos REALES del catalogo de 880 y
+de las fallas medidas el 4-ago, no de una lista generica. Al lado va que prueba
+cada una y que seria contestar bien.
+
+*Gradiente y superlativo — donde nacio el muro de "la menos china"*
+
+1. **"Necesito el mouse que menos partes chinas tenga, pero que no sea
+   Logitech."** Saca de la lista la marca mejor rankeada -Logitech de Suiza-,
+   asi el orden tiene que importar de verdad. BIEN: ordena las que quedan y dice
+   el grado.
+2. **"¿Cual es el mas liviano que tengas para viajar?"** Ranking por
+   `peso_gramos` sin categoria. BIEN: pregunta de que producto, o rankea el
+   rubro que infiere y lo dice.
+
+*Agregado sobre el catalogo entero*
+
+3. **"¿Cuantos productos tenes que no se fabriquen en China?"** BIEN: 86 con
+   stock -91 en el catalogo-, y son almacenamiento externo y procesadores. MAL:
+   "ninguno", que es lo que contesto en produccion.
+4. **"¿Cual es el producto mas caro de toda la tienda, y cual el mas barato?"**
+   BIEN: abajo el Mouse Genius DX-110 a $8.500.
+5. **"¿Tenes algo mas barato que el Genius DX-110?"** Presupone que hay. BIEN:
+   no, ese ES el mas barato.
+6. **"¿Que marcas manejas?"** Son 75 distintas. BIEN: las principales y aclarar
+   que hay mas. MAL: una lista corta presentada como si fuera todo.
+
+*Criterio difuso sin anclaje — el tipo 3, el realmente abierto*
+
+7. **"Mi hijo estudia diseño grafico, necesito una notebook que le dure años.
+   Presupuesto flexible."** Ninguna palabra mapea a un campo. BIEN: pregunta que
+   programas usa, o razona sobre RAM y procesador diciendo en que se basa.
+8. **"Quiero armar una PC gamer completa, ¿que necesito y cuanto sale todo?"** El
+   combo no existe en la fuente. BIEN: no inventa un bundle.
+9. **"Busco un regalo para mi viejo, que labura en el campo."** BIEN: pregunta o
+   deriva. MAL: inventar que algo es resistente.
+
+*Donde la fuente NO sabe — aca el "no se" es la respuesta correcta*
+
+10. **"¿Los HyperX Cloud II tienen cancelacion de ruido activa?"** BIEN: la ficha
+    no lo especifica.
+11. **"Tengo una notebook Lenovo IdeaPad 3, ¿que memoria le sirve?"** Producto
+    contra producto: la tabla existe -`requiere`/`provee`- y la herramienta no.
+    BIEN HOY: dice que no puede confirmarlo.
+12. **"¿Que garantia tiene la Asus TUF F15 y que pasa si se rompe a los 18
+    meses?"** Las 171 notebooks son de 12 meses. BIEN: a los 18 esta fuera,
+    dicho derecho.
+
+*Comercial y plata*
+
+13. **"Vi el mismo mouse a $30.000 en otro lado, ¿me lo haces a ese precio?"**
+    BIEN: usa la movida de la fuente. MAL: inventa un descuento.
+14. **"Necesito 10 notebooks para una empresa, ¿hacen precio por cantidad y
+    factura A?"** BIEN: consulta politica. MAL: inventa descuento mayorista.
+15. **"Quiero 2 auriculares, pero si el envio a Posadas sale mas de 8 mil
+    mandame uno solo y el otro lo retiro."** Condicional sobre un valor
+    CALCULADO, mas un retiro que no ofrecemos. BIEN: cotiza, aplica la condicion
+    y dice que no hay retiro en local.
+
+---
+
+**ETAPA 2 — LOS CANDIDATOS, OFFLINE Y SIN LLM.** Para cada una de las 15, probar
+QUE le trae el codigo al modelo antes de que redacte nada. Corre en segundos, no
+gasta un token y no necesita clave. **No se pasa a la etapa 3 hasta que las 15
+traigan los candidatos correctos.** Es la etapa mas importante y la mas barata:
+el 4-ago se midio que las CUATRO fallas del dia fueron de codigo, ninguna de
+razonamiento.
+
+**ETAPA 3 — EL LLM.** Recien con la etapa 2 cerrada. Aca se optimizan y se
+dividen las llamadas para que entren en la clave GRATIS, que desde el 4-ago es
+el default del banco (`BANCO_CLAVE_PAGA=true` para la paga, a proposito).
+
+---
+
+**LA DECISION DE LA PUERTA — el metodo lo puso Martin y es el correcto.** NO se
+colapsan las cuatro puertas a ciegas. Como la etapa 2 es **gratis y offline**, se
+PRUEBAN las formas contra las 15 preguntas y se elige con el numero delante:
+cual resuelve mas casos, cual deja huecos, cual obliga a inventar un argumento
+nuevo. Recien despues se arma UNA puerta con lo mejor de las cuatro, o se deja
+la que gane. Medir antes de unificar; si no, se unifica sobre una corazonada y
+en dos semanas hay una quinta puerta.
+
+---
+
 **==== LAS CUATRO PUERTAS AL MISMO CUARTO — el diagnostico que ordena lo que falta ====**
 
 **No sobran herramientas: sobran PUERTAS a la misma operacion.** `buscar_productos`
