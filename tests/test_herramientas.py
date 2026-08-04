@@ -31,7 +31,7 @@ def test_el_esquema_ata_categoria_y_tema_a_la_fuente_viva():
     esq = {e["function"]["name"]: e["function"]["parameters"]
            for e in H.esquemas(TIENDA)}
     cats = esq["buscar_productos"]["properties"]["categoria"]["enum"]
-    temas = esq["consultar_politica"]["properties"]["tema"]["enum"]
+    temas = esq["consultar_temas"]["properties"]["temas"]["items"]["enum"]
     assert len(cats) > 5 and len(temas) > 20
     assert "heladeras" not in cats
     assert "descuento_transferencia" in temas
@@ -130,17 +130,45 @@ def test_la_politica_vuelve_con_los_valores_estampados():
     """El texto es el que escribio Martin; los numeros los pone el codigo desde
     los valores estructurados del mismo tema. Sin esto el modelo teje el numero
     de memoria, que es de donde salio el 10 por ciento puesto donde iba el 80."""
-    r = H.consultar_politica(
-        H.ConsultarPolitica(tema="descuento_transferencia"), TIENDA)
-    assert r["estado"] == "encontrado"
-    assert "{{" not in r["politica"]
-    assert r["politica"].strip()
+    r = H.ejecutar("consultar_temas",
+                   {"temas": ["descuento_transferencia"]}, TIENDA)
+    t = r["temas"][0]
+    assert t["estado"] == "encontrado"
+    assert "{{" not in t["politica"]
+    assert t["politica"].strip()
 
 
 def test_un_tema_que_no_existe_no_inventa_politica():
-    r = H.consultar_politica(H.ConsultarPolitica(tema="descuento_secreto"),
-                             TIENDA)
-    assert r["estado"] == "no_encontrado"
+    r = H.ejecutar("consultar_temas", {"temas": ["descuento_secreto"]}, TIENDA)
+    assert r["temas"][0]["estado"] == "no_encontrado"
+
+
+def test_un_tema_compartido_vuelve_con_LAS_DOS_MITADES():
+    """EL BUG QUE PARIO LA FUSION (4-ago). `descuento_transferencia` estaba en
+    los dos enums: por `consultar_politica` traia el diez por ciento real y por
+    `consultar_criterio` una prosa sin un solo digito que literalmente dice que
+    el numero lo trae la otra. El modelo elegia un area y contestaba con la
+    mitad que le tocaba. Ahora un tema es UN tema y vuelve entero."""
+    r = H.ejecutar("consultar_temas",
+                   {"temas": ["descuento_transferencia"]}, TIENDA)
+    t = r["temas"][0]
+    assert t.get("politica") and t.get("criterio"), (
+        "el tema compartido tiene que traer politica Y criterio en una sola "
+        "llamada, que es el punto entero de la fusion")
+    assert any(v.get("monto") for v in (t.get("valores") or [])), (
+        "el numero real es lo que la mitad de criterio no puede tener")
+
+
+def test_varias_preguntas_se_contestan_en_UNA_llamada():
+    """Medido con el modelo vivo el 4-ago: ante "hacen envios al exterior?
+    cuanto tarda a uruguay y cuanto sale" pidio UN tema y contesto una de las
+    tres. Con un tema por llamada, pedir tres era pedir tres herramientas."""
+    r = H.ejecutar("consultar_temas",
+                   {"temas": ["envio_exterior", "plazo_envio", "costo_envio"]},
+                   TIENDA)
+    assert [t["tema"] for t in r["temas"]] == ["envio_exterior", "plazo_envio",
+                                               "costo_envio"]
+    assert all(t["estado"] == "encontrado" for t in r["temas"])
 
 
 # ── LA CUENTA ────────────────────────────────────────────────────────────────
@@ -275,7 +303,7 @@ def test_el_contexto_va_por_herramienta_y_no_se_pisa():
     ctx = H.contexto_json([
         {"herramienta": "buscar_productos", "pedido": {}, "resultado":
             {"estado": "no_encontrado"}},
-        {"herramienta": "consultar_politica", "pedido": {}, "resultado":
+        {"herramienta": "consultar_temas", "pedido": {}, "resultado":
             {"estado": "encontrado", "politica": "Envio gratis"}}])
     assert "no_encontrado" in ctx and "Envio gratis" in ctx
 
@@ -300,16 +328,31 @@ def test_el_criterio_de_venta_sale_de_la_fuente_y_esta_atado_por_enum():
     viven 93 bloques escritos para esta tienda que no usaba nadie."""
     esq = {e["function"]["name"]: e["function"]["parameters"]
            for e in H.esquemas(TIENDA)}
-    criterios = esq["consultar_criterio"]["properties"]["tema"]["enum"]
+    criterios = esq["consultar_temas"]["properties"]["temas"]["items"]["enum"]
     assert len(criterios) > 50
-    r = H.ejecutar("consultar_criterio", {"tema": "memoria_ram"}, TIENDA)
-    assert r["estado"] == "encontrado" and len(r["criterio"]) > 80
+    r = H.ejecutar("consultar_temas", {"temas": ["memoria_ram"]}, TIENDA)
+    t = r["temas"][0]
+    assert t["estado"] == "encontrado" and len(t["criterio"]) > 80
 
 
 def test_un_tema_sin_criterio_no_lo_inventa():
-    r = H.ejecutar("consultar_criterio", {"tema": "brujeria"}, TIENDA)
-    assert r["estado"] == "no_encontrado"
-    assert "honesto" in r["instruccion"]
+    r = H.ejecutar("consultar_temas", {"temas": ["brujeria"]}, TIENDA)
+    t = r["temas"][0]
+    assert t["estado"] == "no_encontrado"
+    assert "honesto" in t["instruccion"]
+
+
+def test_el_criterio_de_OTRO_tema_no_se_cuela_por_parecido():
+    """`consultar_guia_venta` matchea aproximado, y sobre el enum unido eso
+    traia criterio ajeno: medido el 4-ago, `especificaciones` caia en
+    `verificacion_pagos`, `fabricacion` en `ubicacion` y `formas_contacto` en
+    `formas_pago`. Un criterio del tema equivocado es peor que ninguno, porque
+    suena fundado."""
+    for tema in ("especificaciones", "fabricacion", "formas_contacto"):
+        t = H.ejecutar("consultar_temas", {"temas": [tema]}, TIENDA)["temas"][0]
+        assert not t.get("criterio"), (
+            f"{tema} se trajo criterio de otro tema por parecido de nombre")
+        assert t.get("politica"), f"{tema} perdio su politica de la FAQ"
 
 
 def test_no_encontrado_no_se_convierte_en_no_vendemos_la_categoria():

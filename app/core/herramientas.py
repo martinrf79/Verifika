@@ -72,20 +72,24 @@ class FichaProducto(BaseModel):
     product_id: str = Field(description="El id exacto del catalogo, ej TEC0019.")
 
 
-class ConsultarPolitica(BaseModel):
-    """Trae la politica oficial de la tienda sobre un tema."""
-    tema: str = Field(description="El tema exacto de la lista.")
+class ConsultarTemas(BaseModel):
+    """Trae TODO lo que la casa tiene escrito sobre uno o varios temas. De cada
+    tema vuelve lo que exista: la POLITICA oficial ya redactada con sus numeros
+    reales, el CRITERIO desde donde razonar -para que sirve cada cosa, que
+    conviene segun el uso, como se comparan- y la MOVIDA de esa situacion -que
+    se busca, como se arma el mensaje y cuando NO se usa-.
 
+    Pedila para contestar una politica (envios, pagos, garantia, factura), para
+    recomendar o comparar, y para conducir una situacion de venta: dice que
+    esta caro, pide descuento, desconfia, se queja, apura, posterga, cancela,
+    se despide, pide hablar con una persona o afirma un precio que no es el
+    nuestro.
 
-class ConsultarCriterio(BaseModel):
-    """Trae lo que la casa tiene escrito sobre un tema, en dos mitades. El
-    CRITERIO: para que sirve cada cosa, que conviene segun el uso, como se
-    comparan, que mirar antes de elegir. Y la MOVIDA: que se busca en esa
-    situacion, como se arma el mensaje y cuando NO se usa. Pedila para
-    recomendar y comparar, y tambien para manejar una objecion de precio, un
-    regateo, una desconfianza, una queja, un apuro, una postergacion, un
-    reclamo, una cancelacion o una despedida."""
-    tema: str = Field(description="El tema exacto de la lista.")
+    UN TEMA POR CADA COSA QUE PREGUNTO EL CLIENTE. Si pregunto tres cosas van
+    los tres temas juntos en esta misma llamada, no uno solo."""
+    temas: list[str] = Field(
+        description="Los temas exactos de la lista, uno por cada cosa que "
+                    "pregunto el cliente.")
 
 
 class CotizarEnvio(BaseModel):
@@ -174,8 +178,7 @@ _MOLDES = {
     "registrar_pedido": RegistrarPedido,
     "buscar_productos": BuscarProductos,
     "ficha_producto": FichaProducto,
-    "consultar_politica": ConsultarPolitica,
-    "consultar_criterio": ConsultarCriterio,
+    "consultar_temas": ConsultarTemas,
     "cotizar_envio": CotizarEnvio,
     "armar_presupuesto": ArmarPresupuesto,
     "ver_compatibilidad": VerCompatibilidad,
@@ -220,59 +223,97 @@ def _esquema_de(modelo) -> dict:
 
 
 def _guia_de_temas(faq: dict, temas: list[str]) -> str:
-    """QUE CUBRE CADA TEMA DE POLITICA, en las palabras del cliente.
+    """QUE CUBRE CADA TEMA, en las palabras del cliente.
 
-    Hasta el 3-ago el enum eran cincuenta nombres pelados y el modelo tenia que
-    adivinar la frontera entre `envios`, `envio_exterior`, `costo_envio` y
-    `plazo_envio`. Elegir mal ahi no es un matiz: el bot afirma una politica que
-    no es la que pregunto el cliente, que es la peor forma de alucinar porque
-    suena bien y viene de la fuente.
+    Hasta el 3-ago el enum eran nombres pelados y el modelo tenia que adivinar
+    la frontera entre `envios`, `envio_exterior`, `costo_envio` y `plazo_envio`.
+    Elegir mal ahi no es un matiz: el bot afirma una politica que no es la que
+    pregunto el cliente, que es la peor forma de alucinar porque suena bien y
+    viene de la fuente.
 
     Esto lo cubria antes un ruteo determinista por keywords (`query_faq`), que
-    murio con el camino atado. Las keywords SIGUEN en `faq.json`, escritas como
-    las dice el cliente; ahora se las pasamos al modelo, que es quien elige. No
-    es codigo nuevo: es usar el dato que ya estaba y nadie leia.
+    murio con el camino atado. Las keywords SIGUEN en `faq.json` y los
+    disparadores en `base_conocimiento.json`, escritos como los dice el cliente;
+    ahora se los pasamos al modelo, que es quien elige. No es codigo nuevo: es
+    usar el dato que ya estaba y nadie leia.
 
-    Cuesta unos setecientos tokens por llamada. Se paga: una politica
-    equivocada le sale mas cara a la venta que el token."""
+    La seña de cada tema sale de la fuente que lo define: keywords si es de la
+    FAQ, disparadores si es de la base de conocimiento.
+
+    SE ACLARAN LOS DE POLITICA, que es donde el error esta MEDIDO. Elegir mal
+    entre `envios`, `envio_exterior`, `costo_envio` y `plazo_envio` hace que el
+    bot afirme una politica que no es la que preguntaron. Los temas de criterio
+    -`mouse`, `queja_enojo`, `objecion_precio`- no tienen esa frontera, nunca
+    tuvieron guia y no hizo falta: el nombre alcanza. Describirlos igual costaba
+    once mil caracteres de esquema, mas que las dos herramientas que esto
+    reemplazo juntas, para repetir lo que el enum ya dice.
+
+    Y SOLO SE NOMBRA AL QUE LLEVA SEÑA. El enum ya lista los ciento
+    veintinueve; repetirlos aca abajo era pagarlos dos veces por llamada.
+    """
+    from app.core.guia_venta_prosa import disparadores_de
     partes = []
     for tema in temas:
+        if tema not in faq:
+            continue
         propias = set(_norm(tema).replace("_", " ").split())
-        # Una keyword que solo repite el nombre del tema no aporta nada.
-        kws = [k for k in (faq.get(tema, {}).get("keywords") or [])
-               if k and not set(_norm(k).split()) <= propias]
-        partes.append(f"{tema} ({', '.join(kws[:3])})" if kws else tema)
-    return ("El tema exacto de la lista. Elegi SIEMPRE el mas especifico que "
-            "cubra la pregunta: si pregunta por el exterior es envio_exterior y "
-            "no envios, si pregunta cuanto tarda es plazo_envio y no "
-            "costo_envio. Que cubre cada uno: " + "; ".join(partes))
+        # Una seña que solo repite el nombre del tema no desempata nada.
+        señas = [k for k in ((faq.get(tema, {}).get("keywords") or [])
+                             + disparadores_de(tema))
+                 if k and not set(_norm(k).split()) <= propias]
+        if señas:
+            partes.append(f"{tema} ({', '.join(dict.fromkeys(señas[:3]))})")
+    return ("Los temas exactos de la lista, UNO POR CADA COSA que pregunto el "
+            "cliente: si pregunto si hacen envio al exterior, cuanto tarda y "
+            "cuanto sale, van los tres temas, no uno. Elegi SIEMPRE el mas "
+            "especifico que cubra cada pregunta: si pregunta por el exterior es "
+            "envio_exterior y no envios, si pregunta cuanto tarda es plazo_envio "
+            "y no costo_envio. Que cubren los que se pisan: " + "; ".join(partes))
 
 
-def esquemas(tienda_id: str) -> list[dict]:
-    """Los esquemas de las siete herramientas, en formato function calling, con
-    los ENUMS de la fuente viva inyectados. Es la unica atadura que queda del
-    lado del modelo: no puede pedir una categoria que no vendemos ni un tema de
-    politica que no existe."""
-    from app.storage.firestore_client import get_categories, get_all_faq
+def temas_consultables(tienda_id: str) -> list[str]:
+    """EL ENUM UNICO de temas: la FAQ y la base de conocimiento en UNA lista.
+
+    Hasta el 4-ago eran dos enums en dos herramientas -`consultar_politica` con
+    los cincuenta temas de la FAQ y `consultar_criterio` con los ciento seis de
+    la base-, y VEINTISIETE nombres estaban en las dos. Para esos veintisiete el
+    modelo tenia que adivinar cual de las dos mitades de la casa guardaba la
+    respuesta, y cada mitad devolvia solo la suya: `descuento_transferencia` por
+    politica trae el diez por ciento real, y por criterio trae una prosa sin un
+    solo digito que literalmente dice que el numero lo trae la otra. Medido con
+    el modelo vivo el 4-ago: ante "esta caro, me haces precio si llevo dos? y
+    con transferencia cuanto queda" pidio el criterio, o sea la mitad que NO
+    puede tener el porcentaje.
+
+    Eso no era un error del modelo: era pedirle que aprendiera nuestro
+    archivero. Un tema es un tema; de que archivo sale es asunto del codigo."""
+    from app.storage.firestore_client import get_all_faq
     from app.core.guia_venta_prosa import temas as temas_criterio
-    cats = [str(c) for c in (get_categories(tienda_id=tienda_id) or [])]
     faq = get_all_faq(tienda_id=tienda_id) or {}
-    temas = sorted(faq.keys())
     # Los temas de criterio incluyen los que solo tienen MOVIDA -queja,
     # despedida, postergacion-: sin ellos en el enum el modelo no puede pedir
     # lo unico que la fuente escribio para esas situaciones.
-    criterios = temas_criterio()
+    return sorted(set(faq.keys()) | set(temas_criterio()))
+
+
+def esquemas(tienda_id: str) -> list[dict]:
+    """Los esquemas de las herramientas, en formato function calling, con los
+    ENUMS de la fuente viva inyectados. Es la unica atadura que queda del lado
+    del modelo: no puede pedir una categoria que no vendemos ni un tema que no
+    existe."""
+    from app.storage.firestore_client import get_categories, get_all_faq
+    cats = [str(c) for c in (get_categories(tienda_id=tienda_id) or [])]
+    faq = get_all_faq(tienda_id=tienda_id) or {}
+    temas = temas_consultables(tienda_id)
     fuera = []
     for nombre, modelo in _MOLDES.items():
         esq = _esquema_de(modelo)
         props = esq.get("properties") or {}
         if nombre == "buscar_productos" and cats and "categoria" in props:
             props["categoria"]["enum"] = cats
-        if nombre == "consultar_politica" and temas and "tema" in props:
-            props["tema"]["enum"] = temas
-            props["tema"]["description"] = _guia_de_temas(faq, temas)
-        if nombre == "consultar_criterio" and criterios and "tema" in props:
-            props["tema"]["enum"] = criterios
+        if nombre == "consultar_temas" and temas and "temas" in props:
+            props["temas"]["items"] = {"type": "string", "enum": temas}
+            props["temas"]["description"] = _guia_de_temas(faq, temas)
         fuera.append({"type": "function", "function": {
             "name": nombre,
             "description": (modelo.__doc__ or "").strip(),
@@ -527,51 +568,81 @@ def ficha_producto(a: FichaProducto, tienda_id: str) -> dict:
     return {"estado": "encontrado", "producto": _ficha(p, tienda_id)}
 
 
-def consultar_politica(a: ConsultarPolitica, tienda_id: str) -> dict:
+def _politica_de(tema: str, tienda_id: str) -> dict:
     """La politica de la tienda con sus numeros REALES ya puestos. El texto es
     el que escribio Martin; los huecos los rellena el codigo desde los valores
     estructurados del mismo tema."""
     from app.storage.firestore_client import get_all_faq
     from app.core.curadas import estampar_valores
-    faq = get_all_faq(tienda_id=tienda_id) or {}
-    data = faq.get(a.tema)
+    data = (get_all_faq(tienda_id=tienda_id) or {}).get(tema)
     if not data:
-        return {"estado": "no_encontrado", "tema": a.tema}
+        return {}
     texto = str(data.get("respuesta_curada") or "").strip()
     estampada = estampar_valores(texto, data) if texto else None
-    return {"estado": "encontrado", "tema": a.tema,
-            "politica": estampada or str(data.get("respuesta") or ""),
-            "valores": data.get("valores") or []}
+    politica = estampada or str(data.get("respuesta") or "")
+    if not politica.strip():
+        return {}
+    return {"politica": politica, "valores": data.get("valores") or []}
 
 
-def consultar_criterio(a: ConsultarCriterio, tienda_id: str) -> dict:
-    """EL RAZONAMIENTO Y LA MOVIDA, TAMBIEN ATADOS. Es el hueco que quedo
-    abierto al pasar a herramientas: el dato duro quedo atado a la fuente y la
-    prosa quedo suelta, o sea que la inventaba el modelo de su entrenamiento.
-
-    Devuelve las dos mitades que la fuente tiene escritas para el tema:
+def _criterio_de(tema: str) -> dict:
+    """El criterio y la movida que la fuente tiene escritos para ESE tema:
       - `criterio`: desde donde razonar. Para que sirve, que conviene segun el
         uso, como se comparan.
       - `objetivo` / `movida` / `escape`: como se conduce esa situacion de
         venta. Que se busca, como se arma el mensaje, y cuando NO se usa.
 
-    Las dos salen del mismo `base_conocimiento.json` y viajan juntas a
-    proposito: son los dos lados de una sola pregunta -desde donde razono y
-    como lo digo-, y partirlas en dos herramientas seria pedirle al modelo que
-    adivine cual necesita. Mismo mecanismo que `consultar_politica`, otro eje."""
+    SOLO match exacto, a proposito. `consultar_guia_venta` tambien matchea
+    aproximado, y sobre el enum unido eso trae criterio de OTRO tema: medido el
+    4-ago, `especificaciones` caia en `verificacion_pagos`, `fabricacion` en
+    `ubicacion` y `formas_contacto` en `formas_pago`. Un criterio del tema
+    equivocado es peor que ninguno, porque suena fundado."""
     from app.core.guia_venta_prosa import consultar_guia_venta
-    r = consultar_guia_venta(a.tema) or {}
-    campos = {k: r[k] for k in ("objetivo", "movida", "escape") if r.get(k)}
-    if not r.get("texto") and not campos:
-        return {"estado": "no_encontrado", "tema": a.tema,
-                "instruccion": "No hay criterio escrito para eso. Razona desde "
-                               "la ficha del producto o decilo honesto; no lo "
-                               "completes de memoria."}
-    fuera = {"estado": "encontrado", "tema": r.get("tema") or a.tema}
+    r = consultar_guia_venta(tema) or {}
+    if r.get("id") != tema:
+        return {}
+    fuera = {k: r[k] for k in ("objetivo", "movida", "escape") if r.get(k)}
     if r.get("texto"):
         fuera["criterio"] = r["texto"]
-    fuera.update(campos)
     return fuera
+
+
+def consultar_temas(a: ConsultarTemas, tienda_id: str) -> dict:
+    """LO QUE LA CASA TIENE ESCRITO SOBRE CADA TEMA, entero y de una.
+
+    Reemplaza a `consultar_politica` y `consultar_criterio`, que eran dos
+    puertas al mismo cuarto: veintisiete temas estaban en los dos enums y cada
+    herramienta devolvia solo su mitad, asi que el modelo elegia un area y
+    contestaba con la mitad que le habia tocado. Aca el tema es uno y vuelve
+    completo: la politica con sus numeros y el criterio con la movida, lo que
+    exista de cada uno.
+
+    Recibe VARIOS temas porque las preguntas vienen de a varias. Con un tema por
+    llamada el modelo pedia uno solo y contestaba una de las tres cosas que le
+    preguntaron: medido el 4-ago con "hacen envios al exterior? cuanto tarda a
+    uruguay y cuanto sale", pidio `envio_exterior` y nada mas."""
+    pedidos = list(dict.fromkeys(
+        str(t).strip() for t in (a.temas or []) if str(t).strip()))
+    if not pedidos:
+        return {"estado": "sin_tema"}
+    # El tope existe para que un modelo desbocado no vuelque media fuente en el
+    # contexto, pero CORTAR EN SILENCIO es peor que el problema que evita: es la
+    # misma leccion que dejo `_ejecutar_en_paralelo` el 1-ago. Si se corta, se dice.
+    if len(pedidos) > 6:
+        log.warning("consultar_temas_recortado", pidio=len(pedidos),
+                    descartados=pedidos[6:])
+    fuera = []
+    for tema in pedidos[:6]:
+        datos = {**_politica_de(tema, tienda_id), **_criterio_de(tema)}
+        if datos:
+            fuera.append({"tema": tema, "estado": "encontrado", **datos})
+        else:
+            fuera.append({"tema": tema, "estado": "no_encontrado",
+                          "instruccion": "No hay nada escrito sobre eso. "
+                                         "Razona desde la ficha del producto o "
+                                         "decilo honesto; no lo completes de "
+                                         "memoria."})
+    return {"estado": "ok", "temas": fuera}
 
 
 def cotizar_envio(a: CotizarEnvio, tienda_id: str) -> dict:
@@ -720,8 +791,7 @@ _CUERPOS = {
     "registrar_pedido": registrar_pedido,
     "buscar_productos": buscar_productos,
     "ficha_producto": ficha_producto,
-    "consultar_politica": consultar_politica,
-    "consultar_criterio": consultar_criterio,
+    "consultar_temas": consultar_temas,
     "cotizar_envio": cotizar_envio,
     "armar_presupuesto": armar_presupuesto,
     "ver_compatibilidad": ver_compatibilidad,

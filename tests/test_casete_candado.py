@@ -85,7 +85,7 @@ def test_reproducir_intercepta_de_verdad():
     from app.core import hub_venta
 
     grabado = json.dumps({"content": "", "tool_calls": [
-        {"name": "consultar_politica", "arguments": '{"tema": "envios"}'}]})
+        {"name": "consultar_temas", "arguments": '{"temas": ["envios"]}'}]})
     casete = Casete("_prueba", [{"mensaje": "hola", "llamadas": [
         {"etapa": "herramientas", "salida": grabado}]}])
     with reproducir(casete):
@@ -95,9 +95,9 @@ def test_reproducir_intercepta_de_verdad():
         # herramientas reproduciria vacio y el test quedaria verde de mentira.
         r = hub_venta._cliente().chat.completions.create(
             model="x", messages=[{"role": "user", "content": "hola"}],
-            tools=[{"type": "function", "function": {"name": "consultar_politica"}}])
+            tools=[{"type": "function", "function": {"name": "consultar_temas"}}])
         tc = r.choices[0].message.tool_calls
-        assert tc and tc[0].function.name == "consultar_politica"
+        assert tc and tc[0].function.name == "consultar_temas"
 
         # una etapa sin grabar NO devuelve algo inventado: corta como un timeout
         # del provider, que es lo que el consumidor ya sabe manejar.

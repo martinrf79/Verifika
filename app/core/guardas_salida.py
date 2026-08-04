@@ -23,7 +23,7 @@ LAS QUE SE BORRARON el 2-ago, con su motivo:
     real; su fallback vivia aca.
   - FALLBACK CON CURADA: existia para cuando una guarda bloqueaba el turno. Sin
     guardas que bloqueen, no hay turno que rescatar. La politica curada sale
-    ahora por la herramienta `consultar_politica`, que es su lugar.
+    ahora por la herramienta `consultar_temas`, que es su lugar.
 """
 import re
 import unicodedata

@@ -17,9 +17,10 @@ Ahora el json trae las cuatro cosas y este modulo es el unico que lo lee:
   - `MOVIDAS`             el objetivo, la movida y el escape de cada situacion.
   - `mensaje(id)`         el texto que sale TAL CUAL, sin pasar por el modelo.
 
-La herramienta `consultar_criterio` sirve criterio y movida juntos: son los dos
-lados de la misma pregunta -desde donde razono y como lo digo-, y separarlos en
-dos herramientas seria pedirle al modelo que adivine cual necesita.
+La herramienta `consultar_temas` sirve criterio y movida juntos, y desde el
+4-ago tambien la politica del mismo tema: son las caras de una sola pregunta
+-que dice la casa de esto-, y partirlas obligaba al modelo a adivinar en cual de
+nuestros archivos estaba la respuesta.
 
 INVARIANTE: cero digitos en criterio, objetivo, movida y escape. Un numero aca
 seria un dato sin fuente. El dato duro lo trae la herramienta, siempre.
@@ -43,6 +44,10 @@ _MENSAJES: dict[str, str] = {}
 # (get_close_matches con temas parecidos devolvia cualquier cosa: 'ram' caia
 # en 'streaming', 'router' en 'mouse').
 _ALIAS: dict[str, str] = {}
+
+# Como nombra el cliente a cada tema, tal cual lo escribio la fuente. Se sirve
+# entero a la guia del enum; los de una sola palabra ademas alimentan `_ALIAS`.
+_DISPARADORES: dict[str, list[str]] = {}
 
 # EL ENUM DEL CONTACTOR — la lista CERRADA de categorias de la fuente de verdad
 # (base_conocimiento.json). Es el universo unico al que se ata el interprete:
@@ -68,10 +73,18 @@ def meta_categoria(cat_id: str) -> dict:
 
 def temas() -> list[str]:
     """Todo lo que se puede consultar: los temas con criterio Y los que solo
-    tienen movida. Es el enum de `consultar_criterio`. Una situacion sin
+    tienen movida. Entra al enum de `consultar_temas`. Una situacion sin
     criterio escrito -una queja, una despedida- igual se puede pedir: lo que
     tiene para dar es el COMO, no el desde donde."""
     return list(_ORDEN_TEMAS)
+
+
+def disparadores_de(tema: str) -> list[str]:
+    """Como nombra el cliente a ese tema, segun la fuente. Es la mitad que le
+    faltaba a la guia del enum: la FAQ trae sus `keywords` y la base de
+    conocimiento trae estos, asi que ahora los dos lados del enum unico pueden
+    decir que cubren sin que nadie escriba una lista a mano."""
+    return list(_DISPARADORES.get(str(tema).strip(), []))
 
 
 def identidad(negocio: str = "") -> str:
@@ -217,9 +230,13 @@ def _cargar_base_conocimiento() -> None:
     # Los disparadores de una sola palabra como alias, sin pisar un alias ya
     # puesto ni un id de tema (por eso va despues de armar la lista de temas).
     _ALIAS.clear()
+    _DISPARADORES.clear()
     for c in todas:
         if c["id"] not in _ORDEN_TEMAS:
             continue
+        _DISPARADORES[c["id"]] = [str(d).strip()
+                                  for d in (c.get("disparadores") or [])
+                                  if str(d).strip()]
         for disp in c.get("disparadores", []):
             d = str(disp).strip().lower()
             if d and " " not in d and d not in _ALIAS and d not in _ORDEN_TEMAS:

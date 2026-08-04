@@ -17,7 +17,7 @@ el unico que lo lee. Estos locks son para que no se vuelva a partir:
 - Toda la prosa sale de la fuente: identidad, mensajes, criterio y movidas.
 - Cero digitos en criterio, objetivo, movida y escape (el numero lo trae la
   herramienta; un numero en la prosa seria un dato sin fuente).
-- Las movidas LLEGAN al modelo: estan en el enum de consultar_criterio y la
+- Las movidas LLEGAN al modelo: estan en el enum de consultar_temas y la
   herramienta las devuelve. Ese es el punto entero del cambio; sin esto la
   prosa esta prolija en un json y el bot sigue improvisando.
 - Ningun mensaje fijo al cliente queda duplicado en codigo con otro texto.
@@ -103,18 +103,19 @@ def test_las_movidas_llegan_al_modelo(firestore_doble):
     # tambien tiene que poder pedirse: lo que tiene para dar es el COMO.
     from app.core import herramientas as H
     esq = {e["function"]["name"]: e for e in H.esquemas("verifika_prod")}
-    enum = esq["consultar_criterio"]["function"]["parameters"]["properties"]["tema"]["enum"]
+    enum = (esq["consultar_temas"]["function"]["parameters"]["properties"]
+            ["temas"]["items"]["enum"])
     for tema in ("queja_enojo", "postergacion", "despedida_cordial",
                  "objecion_precio", "notebook"):
         assert tema in enum, f"el modelo no puede pedir {tema}"
 
-    r = H.ejecutar("consultar_criterio", {"tema": "queja_enojo"}, "verifika_prod")
-    assert r["estado"] == "encontrado"
-    assert r.get("movida") and r.get("escape"), (
+    r = H.ejecutar("consultar_temas", {"temas": ["queja_enojo", "notebook"]},
+                   "verifika_prod")
+    queja, note = r["temas"]
+    assert queja["estado"] == "encontrado"
+    assert queja.get("movida") and queja.get("escape"), (
         "un tema que solo tiene movida tiene que servirse igual")
-
-    r2 = H.ejecutar("consultar_criterio", {"tema": "notebook"}, "verifika_prod")
-    assert r2.get("criterio"), "el criterio de producto no puede haberse perdido"
+    assert note.get("criterio"), "el criterio de producto no puede haberse perdido"
 
 
 def test_el_modelo_sabe_que_cubre_cada_tema_de_politica(firestore_doble):
@@ -124,8 +125,8 @@ def test_el_modelo_sabe_que_cubre_cada_tema_de_politica(firestore_doble):
     # afirmando una politica que no es la que preguntaron.
     from app.core import herramientas as H
     esq = {e["function"]["name"]: e for e in H.esquemas("verifika_prod")}
-    d = esq["consultar_politica"]["function"]["parameters"]["properties"]["tema"]
-    assert "envio_exterior" in d["enum"] and "envios" in d["enum"]
+    d = (esq["consultar_temas"]["function"]["parameters"]["properties"]["temas"])
+    assert "envio_exterior" in d["items"]["enum"] and "envios" in d["items"]["enum"]
     # La regla de especificidad, explicita.
     assert "mas especifico" in d["description"]
     # Y las palabras del cliente de cada tema, tomadas de faq.json.

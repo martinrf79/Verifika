@@ -84,7 +84,7 @@ ahora estan todas en `base_conocimiento.json`, la misma fuente que el criterio.
 
 ## 3-bis. Cobertura: que fuente contesta cada cosa
 
-Generado de `base_conocimiento.json`. El `pilar` dice de donde sale la respuesta: `criterio` la razona el modelo desde la prosa de la casa, `politica` sale de la FAQ por `consultar_politica`, `dato` lo estampa una herramienta, `conversacion` y `seguridad` son la conduccion.
+Generado de `base_conocimiento.json`. El `pilar` dice de donde sale la respuesta: `criterio` la razona el modelo desde la prosa de la casa, `politica` sale de la FAQ por `consultar_temas`, `dato` lo estampa una herramienta, `conversacion` y `seguridad` son la conduccion.
 
 | grupo | pilar | categorias | con criterio | con movida | con FAQ propia |
 |---|---|---|---|---|---|
@@ -101,7 +101,7 @@ Generado de `base_conocimiento.json`. El `pilar` dice de donde sale la respuesta
 
 **Cero categorias sin nada escrito:** toda categoria tiene criterio, movida o su tema de FAQ.
 
-Temas de FAQ sin categoria espejo: **23**. NO es un hueco: el modelo los pide por nombre en el enum de `consultar_politica`. La vieja regla de oro que exigia el espejo era del interprete atado, que se borro el 2-ago.
+Temas de FAQ sin categoria espejo: **23**. NO es un hueco: el modelo los pide por nombre en el enum de `consultar_temas`. La vieja regla de oro que exigia el espejo era del interprete atado, que se borro el 2-ago.
 
 ## 4. Calidad del dato: spec fantasma depurada
 

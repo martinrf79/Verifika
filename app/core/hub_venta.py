@@ -9,7 +9,7 @@ misma verdad, y la que ganaba borraba a las otras.
 
 Aca el control esta ANTES de que el modelo escriba:
 
-  1. LLAMADA UNO. El modelo ve la charla y las siete herramientas, y decide QUE
+  1. LLAMADA UNO. El modelo ve la charla y las ocho herramientas, y decide QUE
      BUSCAR. No traduce el mensaje a nada nuestro: pide datos.
   2. EJECUCION EN PARALELO. Todas las herramientas que pidio salen juntas con
      asyncio.gather. Antes cada llamada esperaba a la anterior y el turno tardaba
@@ -90,13 +90,9 @@ conviene: si el cliente pregunta por un producto Y por el envio, pedi las dos
 juntas. Si el mensaje no necesita ningun dato -un saludo, un gracias, una
 respuesta a algo que vos preguntaste- contesta directamente sin herramientas.
 
-Sumale consultar_criterio en dos casos. Uno, si pide una recomendacion, una
-comparacion o para que sirve algo: sin eso vas a opinar de tu cabeza y no con
-el criterio de la casa. Dos, si el turno no es un pedido de datos sino una
-SITUACION de venta -dice que esta caro, pide descuento, desconfia, se queja,
-apura, lo posterga, cancela, se despide, pide hablar con una persona, o afirma
-un precio que no es el nuestro-: ahi la casa tiene escrita la movida, con que
-se busca y que no se promete. Pedila antes de improvisar."""
+Contesta cada cosa que te preguntaron con lo que la casa tiene escrito, no de
+tu cabeza: sumale consultar_temas con UN TEMA POR CADA COSA. Si preguntaron
+tres, van tres temas en la misma llamada."""
 
 _INSTRUCCION_RONDA_DOS = """Estos son los datos que trajeron las herramientas
 que pediste. Si con esto ya podes contestar todo lo que el cliente pregunto, no
@@ -259,22 +255,20 @@ def _log_fuente(llamadas: list, trace_id: str, ronda: int) -> None:
     situacion de venta -esta caro, una queja, una despedida- o si la improvisa.
 
     `hub_venta_pedidos` ya dice que herramienta se pidio; esto dice que volvio:
-    el tema de politica servido, y por cada criterio si traia movida escrita o
-    solo criterio. Un turno de objecion sin `movida` en esta linea es el modelo
-    vendiendo de memoria con la movida escrita al lado, sin usarla."""
-    politica, criterio = [], []
+    por cada tema servido, con QUE mitades vino. Un turno de objecion sin
+    `movida` en esta linea es el modelo vendiendo de memoria con la movida
+    escrita al lado, sin usarla; y un tema que vuelve `sin_nada` es un agujero
+    de la fuente, no del modelo."""
+    servidos = []
     for l in llamadas:
-        r = l.get("resultado") or {}
-        if r.get("estado") != "encontrado":
+        if l.get("herramienta") != "consultar_temas":
             continue
-        if l.get("herramienta") == "consultar_politica":
-            politica.append(r.get("tema"))
-        elif l.get("herramienta") == "consultar_criterio":
-            criterio.append((r.get("tema"),
-                             "movida" if r.get("movida") else "solo_criterio"))
-    if politica or criterio:
+        for t in ((l.get("resultado") or {}).get("temas") or []):
+            mitades = [k for k in ("politica", "criterio", "movida") if t.get(k)]
+            servidos.append((t.get("tema"), "+".join(mitades) or "sin_nada"))
+    if servidos:
         log.info("hub_venta_fuente", trace_id=trace_id, ronda=ronda,
-                 politica=politica, criterio=criterio)
+                 temas=servidos)
 
 
 def _mensajes(negocio: str, memoria: str, history: list, mensaje: str,
@@ -311,11 +305,10 @@ async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
     if llamadas:
         # AHORRO MEDIDO: en las vueltas de encadenado el modelo ya declaró el
         # pedido y ya buscó. Mandarle otra vez los ocho esquemas cuesta ~1200
-        # tokens por turno al pedo, y los 93 enums de consultar_criterio son el
-        # 28% de eso. Van solo las que puede encadenar de verdad.
+        # tokens por turno al pedo. Van solo las que puede encadenar de verdad.
         encadenables = {"buscar_productos", "ficha_producto", "cotizar_envio",
                         "armar_presupuesto", "ver_compatibilidad",
-                        "tomar_pedido", "consultar_politica"}
+                        "tomar_pedido", "consultar_temas"}
         esquemas = [e for e in esquemas
                     if e.get("function", e).get("name") in encadenables]
         instr = _INSTRUCCION_RONDA_DOS + (("\n\n" + revision) if revision else "")
@@ -596,7 +589,7 @@ def _sin_descuento_inventado(texto: str, trace_id: str) -> str:
     que se cuela una promesa comercial que despues alguien tiene que sostener.
 
     Los descuentos REALES de la tienda -transferencia, mayorista, cuotas- salen
-    de consultar_politica y no los toca esta regla."""
+    de consultar_temas y no los toca esta regla."""
     fuera = []
     for m in _RE_ORACIONES.finditer(texto or ""):
         frase = m.group(0)

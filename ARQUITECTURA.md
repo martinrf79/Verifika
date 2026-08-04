@@ -47,7 +47,7 @@ de herramientas. Antes eran cuatro encadenadas.
 
 ---
 
-## Las siete herramientas
+## Las ocho herramientas
 
 `app/core/herramientas.py`. Molde Pydantic + una función determinista que ya
 existía y estaba probada. La lógica no se reescribió: se le puso un molde
@@ -56,9 +56,10 @@ definiciones que puedan divergir.
 
 | herramienta | qué resuelve | de dónde sale el dato |
 |---|---|---|
+| `registrar_pedido` | DECLARA lo que entendió, antes de buscar | no toca la fuente; es lo que el reconciliador compara contra lo que pidió |
 | `buscar_productos` | identidad y catálogo | certificador + catálogo Firestore |
 | `ficha_producto` | la ficha completa por id | catálogo + specs + compatibilidad |
-| `consultar_politica` | política de la tienda | FAQ curada, con sus valores estampados |
+| `consultar_temas` | qué dice la casa de cada tema | FAQ curada con sus valores estampados **+** criterio y movida de `base_conocimiento.json` |
 | `cotizar_envio` | costo a un destino | tabla de tarifas + geo de códigos postales |
 | `armar_presupuesto` | LA CUENTA | calculadora; devuelve el bloque ya escrito |
 | `ver_compatibilidad` | si sirve para su equipo | tabla de compatibilidad |
@@ -71,7 +72,7 @@ definiciones que puedan divergir.
 1. **La identidad la decide el código.** Regla cero del proyecto.
    `certificar_producto` devuelve encontrado, ambiguo o no_encontrado. Con
    ambiguo el modelo está obligado a preguntar; no puede elegir.
-2. **Los enums salen de la fuente viva.** `categoria` y `tema` se inyectan en el
+2. **Los enums salen de la fuente viva.** `categoria` y `temas` se inyectan en el
    esquema desde el catálogo y la FAQ. El modelo no puede pedir una categoría que
    no vendemos ni un tema de política que no existe.
 3. **La plata la arma el código.** `armar_presupuesto` devuelve el presupuesto

@@ -54,7 +54,7 @@ def test_las_herramientas_corren_en_paralelo_no_en_fila(monkeypatch):
 
     monkeypatch.setattr(H, "ejecutar", _lenta)
     pedidos = [{"nombre": "buscar_productos", "args": {}},
-               {"nombre": "consultar_politica", "args": {}},
+               {"nombre": "consultar_temas", "args": {}},
                {"nombre": "cotizar_envio", "args": {}}]
     t0 = time.time()
     r = asyncio.run(HV._ejecutar_en_paralelo(pedidos, TIENDA, "t1"))

@@ -4,6 +4,64 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 4-ago-2026 — UN TEMA ES UN TEMA: se fusionaron los dos enums que se pisaban ====**
+
+**Lo que reporto Martin:** el bot contesta atado al enum de UN area y no es
+abarcativo. No era una impresion, y no era el modelo.
+
+**LA CAUSA, con numero.** Habia DOS enums cerrados en dos herramientas:
+`consultar_politica` con los 50 temas de la FAQ y `consultar_criterio` con los
+106 de `base_conocimiento.json`. **VEINTISIETE nombres estaban en los dos.**
+Para esos 27 el modelo tenia que adivinar cual de las dos mitades de la casa
+guardaba la respuesta, y cada herramienta devolvia solo la suya.
+
+El caso que lo pinta entero es `descuento_transferencia`. Por politica trae "10%
+de descuento por transferencia" con el valor estructurado al lado. Por criterio
+trae una prosa que, por el invariante de cero digitos, NO puede tener el
+porcentaje, y que literalmente dice *"el vendedor no dice el numero de memoria:
+lo trae la herramienta desde la politica"*. La fuente sabia que era un reenvio;
+el modelo no podia saberlo.
+
+**MEDIDO CON EL MODELO VIVO, seis mensajes, antes y despues:**
+
+| le preguntaron | pedia antes | pide ahora |
+|---|---|---|
+| exterior + cuanto tarda + cuanto sale | `envio_exterior` y nada mas: 1 de 3 preguntas | `envio_exterior, plazo_envio, costo_envio` |
+| garantia + si sale fallado | dos temas de politica, sin la movida del defecto | `garantia, producto_defectuoso` |
+| esta caro + con transferencia cuanto queda | `descuento_transferencia` por CRITERIO, la mitad sin el numero | el mismo tema, ahora con el 10% real |
+| dpi + factura A | `mouse` (criterio generico) + `factura` | `mouse_dpi` (el especifico) + `factura` |
+
+**QUE SE HIZO.** Las dos herramientas son ahora UNA, `consultar_temas`, con un
+enum unico de 129 temas que recibe VARIOS temas por llamada. De cada tema vuelve
+lo que exista: la politica con sus numeros y el criterio con la movida. El
+modelo ya no elige area, elige tema; de que archivo sale es asunto del codigo.
+La lista de temas por llamada nacio del segundo defecto medido: con un tema por
+llamada pedia uno solo y contestaba una de las tres cosas que le preguntaron.
+
+**UN AGUJERO QUE APARECIO AL UNIR Y QUEDO TAPADO.** `consultar_guia_venta`
+matchea aproximado, y sobre el enum unido eso traia criterio de OTRO tema:
+`especificaciones` caia en `verificacion_pagos`, `fabricacion` en `ubicacion` y
+`formas_contacto` en `formas_pago`. Un criterio del tema equivocado es peor que
+ninguno, porque suena fundado. En el camino vivo ahora se acepta SOLO match
+exacto; el difuso queda para el que llama con texto libre.
+
+**LO QUE NO SE LOGRO, dicho:** alivianar en TOKENS. El esquema quedo en 14.204
+caracteres contra 14.143, o sea igual. Lo que se aliviano es la ATADURA, no el
+peso: una lista en vez de dos, sin el cruce de 27. Del prompt del hub si se fue
+la duplicacion real -las siete lineas que repetian la lista de situaciones que
+ya estaba en la descripcion de la herramienta-.
+
+**Tambien se corrigio la tabla de `ARQUITECTURA.md`**, que anunciaba siete
+herramientas y listaba seis: faltaba `registrar_pedido`.
+
+384 tests offline verdes (eran 381; se sumaron 3 que lockean lo de arriba).
+
+**EL NUMERO CONTRA EL PISO: PENDIENTE al momento de commitear.** La corrida de
+`banco_repetido` con la clave paga -8 guiones, 78 turnos- estaba a mitad de
+camino. Se commiteo igual, con el metodo del repo: se hace, se deploya, y si el
+numero vuelve peor se revierte con git. Si esta seccion sigue diciendo
+"pendiente", el numero no se miro: mirarlo es la primera tarea.
+
 **==== 4-ago-2026 — EL NOCTURNO EN ROJO: el workflow llamaba a un archivo borrado ====**
 
 **El error que llegó al mail de Martín.** El workflow `deepeval` venía rojo

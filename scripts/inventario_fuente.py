@@ -212,7 +212,7 @@ def inventario(tienda_id, vivo=False):
     esc("")
     esc("Generado de `base_conocimiento.json`. El `pilar` dice de donde sale la "
         "respuesta: `criterio` la razona el modelo desde la prosa de la casa, "
-        "`politica` sale de la FAQ por `consultar_politica`, `dato` lo estampa "
+        "`politica` sale de la FAQ por `consultar_temas`, `dato` lo estampa "
         "una herramienta, `conversacion` y `seguridad` son la conduccion.")
     esc("")
     temas_faq = {t.get("tema") for t in faq} if isinstance(faq, list) else set(faq)
@@ -241,7 +241,7 @@ def inventario(tienda_id, vivo=False):
     huerfanos = sorted(t for t in temas_faq
                        if t not in {c["id"] for c in (cat_bc or [])})
     esc(f"Temas de FAQ sin categoria espejo: **{len(huerfanos)}**. NO es un hueco: "
-        "el modelo los pide por nombre en el enum de `consultar_politica`. La "
+        "el modelo los pide por nombre en el enum de `consultar_temas`. La "
         "vieja regla de oro que exigia el espejo era del interprete atado, que "
         "se borro el 2-ago.")
     esc("")

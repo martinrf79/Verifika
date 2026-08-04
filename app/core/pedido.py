@@ -107,7 +107,7 @@ def _universo_de_busquedas(llamadas: list) -> str:
 
 def _universo_de_restricciones(llamadas: list) -> str:
     """Donde puede viajar una restriccion declarada por el cliente: el `excluir`
-    y el `tope_precio` de la busqueda, y el tema del criterio consultado."""
+    y el `tope_precio` de la busqueda, y los temas consultados."""
     partes = []
     for l in llamadas or []:
         ped = l.get("pedido") or {}
@@ -117,8 +117,8 @@ def _universo_de_restricciones(llamadas: list) -> str:
             partes.append("presupuesto tope precio maximo gastar")
         if ped.get("orden"):
             partes.append(_norm(ped["orden"]))
-        if l.get("herramienta") == "consultar_criterio":
-            partes.append(_norm(ped.get("tema")))
+        if l.get("herramienta") == "consultar_temas":
+            partes += [_norm(t) for t in (ped.get("temas") or [])]
     return " ".join(x for x in partes if x)
 
 
