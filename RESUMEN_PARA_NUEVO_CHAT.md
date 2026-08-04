@@ -191,11 +191,25 @@ el admin queda muerto sin que nadie sepa por que. Se sumo
 `deepseek-key` ni `sentry-dsn`. Antes el deploy corria con `--source .` pelado y
 preservaba lo que hubiera; ahora ademas garantiza esta.
 
-**No se pudo verificar desde la sesion si `agente-bot` ya lo tenia cableado**:
-`run.services.get` y `secretmanager.secrets.list` dan 403 con la clave de
-lectura, que solo tiene logging y datastore. Por eso se hizo declarativo en vez
-de condicional. **Si el deploy falla por permisos del secreto**, es que
-`github-deployer` no lo puede leer, y se arregla con:
+**RESUELTO EN EL DEPLOY: el secreto existe y quedo cableado.** No se pudo
+verificar por API antes -`run.services.get` y `secretmanager.secrets.list` dan
+403 con la clave de lectura, que solo tiene logging y datastore-, pero el paso
+`gcloud run deploy --update-secrets=ADMIN_TOKEN=admin-token:latest` **termino en
+verde**. Si el secreto no existiera, o `github-deployer` no lo pudiera leer, ese
+paso falla. Termino bien, o sea que la env esta montada en `agente-bot`.
+
+Lo unico que NO se pudo comprobar desde la sesion es la respuesta del endpoint,
+porque el proxy del entorno bloquea la salida a `run.app`. Para confirmarlo a
+mano: con un token invalido tiene que contestar **401**. Si contestara **503**,
+falta la env.
+
+```
+curl -s -o /dev/null -w "%{http_code}\n" -H "X-Admin-Token: invalido" \
+  https://agente-bot-1000939441597.southamerica-east1.run.app/admin/health/verifika_prod
+```
+
+**Si alguna vez falla por permisos del secreto**, es que `github-deployer` no lo
+puede leer, y se arregla con:
 
 ```
 gcloud secrets add-iam-policy-binding admin-token \
@@ -212,9 +226,26 @@ printf 'UN-TOKEN-FUERTE' | gcloud secrets create admin-token \
 
 **417 tests offline verdes** (eran 409).
 
-**NO SE DEPLOYO NADA DE ESTA SESION.** Decision de Martin: se mide primero, el
-deploy se decide aparte. El trabajo esta en la rama
-`claude/verifika-engineering-index-ak7d30`, sin mergear a `main` todavia.
+**==== 4-ago-2026 (tarde) — MERGEADO A MAIN Y DEPLOYADO. VERDE. ====**
+
+Los tres commits de la sesion se mergearon a `main` en fast-forward y el CI
+deployo solo. **Corrida 174, los dos jobs en verde:**
+
+- `test`: los **417 tests offline** corrieron en el CI antes del deploy. El gate
+  hace su trabajo: si eso hubiera quedado rojo, el deploy ni arranca.
+- `deploy`: verde a las **14:58:10**. Revision viva **`agente-bot-00406-vm8`**.
+
+**Verificado en los logs de produccion, no asumido:** la revision nueva arranco,
+logueo `config_efectiva` con `modo_cierre venta`, `solver_model
+gemini-3.1-flash-lite` e `interprete gemini`, y `cache_precalentado` con **880
+productos y 50 temas de FAQ**. Cero entradas de severidad ERROR desde el deploy.
+Todavia no entro ningun mensaje real, asi que el comportamiento con clientes de
+verdad esta sin medir: **lo primero de la proxima sesion es leer una charla real
+de los logs** y mirar si el modelo pide `filtros` en produccion como los pidio en
+el banco -8 de 8-.
+
+Commits: `0dd54a2` filtros estructurados, `169488a` puerta de admin, `98a054e`
+el secreto en el deploy.
 
 **==== 4-ago-2026 — UN TEMA ES UN TEMA: se fusionaron los dos enums que se pisaban ====**
 
