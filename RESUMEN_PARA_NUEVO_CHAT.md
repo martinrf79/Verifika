@@ -4,6 +4,112 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 4-ago-2026 (noche) — LA MEDIDA DEJO DE MIRAR FRASES Y MIRA HECHOS ====**
+
+**⚠️ EL PISO SE REFIJO Y NO SE COMPARA CON EL VIEJO. LEER ESTO ANTES DE
+CELEBRAR O DE ASUSTARSE.** El `piso.json` anterior -sin_invento 97,4%- se midio
+con un juez que NO tenia los detectores del muro ni el de la cuenta faltante. El
+piso nuevo se midio CON ellos. **Son dos reglas distintas: el numero bajo porque
+cambio el instrumento, NO porque el bot empeorara.** No se toco una linea del bot
+entre una medicion y la otra. Cualquier comparacion contra el 97,4% viejo es
+contra una regla que ya no existe.
+
+**DE DONDE SALIO.** Martin probo produccion por WhatsApp y mando el guion 76
+palabra por palabra. Recibio una lista de nueve precios unitarios encabezada por
+"no tengo productos que no sean fabricados en China, ya que todo lo que trabajo
+es de marcas internacionales pero con produccion en ese origen". Sin total, sin
+envios y sin el reparto 70/30 que habia pedido. **El banco lo daba por BUENO**,
+porque chequeaba ese turno con tres frases LITERALES -"no puedo armarte", "no
+contamos con auriculares", "no contamos con productos"- y el modelo dijo el
+mismo muro con otras palabras.
+
+Ademas la afirmacion era FALSA: **91 de los 880 productos no tienen China en el
+origen** -los 72 de almacenamiento externo y los 19 procesadores-.
+
+**LOS TRES DETECTORES NUEVOS** (`banco_pruebas/detectores.py`, cableados al
+`juez.py`). Ninguno mira frases: miran hechos verificables contra la fuente.
+
+1. **Universal sobre el catalogo.** Ninguna herramienta devuelve el universo
+   -`buscar_productos` trae seis como mucho-, asi que toda afirmacion sobre la
+   TOTALIDAD del catalogo no la respalda ningun dato que el modelo haya tenido
+   delante. Misma logica que el candado de plata. Se acota a dos formas, las que
+   hacen de muro; una universal de POLITICA -"todos tienen 12 meses de
+   garantia"- sale de la FAQ y no entra.
+2. **Niega una categoria que SI vendemos**, verificada contra el catalogo con
+   stock. **Solo la negacion PELADA**: "no cuento con auriculares BLUETOOTH" es
+   el no honesto que queremos -los 46 son con cable- y NO se acusa. La primera
+   version marcaba esa respuesta como falla, o sea castigaba lo que el sistema
+   hace bien.
+3. **Pidio la cuenta y el turno cerro sin Total.** No se acusa la exploracion:
+   "cuanto sale un mouse?" contestado con tres opciones no lleva total y esta
+   bien. Hace falta seña de PEDIDO: la palabra presupuesto, o dos o mas
+   cantidades explicitas.
+
+**LA PRUEBA DE QUE LA MEDIDA SIRVE.** El guion 76 turno 1 paso de verde a **100%
+de fallo, 3 de 3 vueltas**, y el muro salio en CUATRO redacciones distintas:
+
+- "no tengo productos que no tengan partes fabricadas en China, ya que toda la te"
+- "no tengo productos que no tengan partes chinas, ya que los modelos que trabajo"
+- ", asi que no tengo nada que cumpla estrictamente con tu pedido de evitar ese origen"
+- "sincero, no tengo ningun producto que no sea fabricado en China"
+
+**Ninguna coincide con las tres frases que el guion chequeaba.** El modelo no
+repite la frase, repite la CONDUCTA. Por eso la medida por frases reportaba 96%
+sobre algo que en el telefono estaba roto.
+
+**HALLAZGO QUE NADIE BUSCABA:** `71_cambio_de_decision` tambien falla "pidio la
+cuenta y cerro sin Total" en 3 de 3 vueltas. La cuenta que no llega **no es cosa
+del guion 76: es sistemica** y estaba invisible.
+
+**EL PISO NUEVO SE MIDIO CON 5 VUELTAS, no 3.** El propio `piso.py` dice que un
+piso de 3 vueltas no autoriza a declarar nada: con pocas vueltas un turno de
+diferencia mueve varios puntos. Y `verificar_clon.py` confirmo antes de medir
+que el banco es FIEL a produccion: 880 productos, 50 temas de FAQ y la misma
+config.
+
+**LAS TRES COSAS CON NOMBRE QUE QUEDAN ABIERTAS**, todas chicas y verificables,
+ninguna tocada todavia:
+
+1. **`_grado` lee el campo equivocado.** Su comentario promete que "una marca
+   china fabricada en China esta mas lejos que una suiza fabricada en China", y
+   es FALSO en la practica: busca la raiz "chin" dentro del campo `marca`, que
+   dice "Redragon" a secas. El pais de la marca vive adentro del texto de
+   `origen`. Medido: HyperX de Estados Unidos y Redragon **de China** puntuan
+   IGUAL, grado 2 los dos. Todos los mouse dan 2 y todas las memorias dan 1. El
+   gradiente es un booleano disfrazado, y por eso "lo menos chino" nunca anduvo.
+2. **La herramienta ofrece EXCLUSION donde la pregunta era ORDEN.** "Lo que
+   menos partes chinas tenga" no es un filtro, es un ranking: presupone que todo
+   tiene algo y pide el minimo. Excluir da cero y de ahi nace el muro; ordenar
+   siempre devuelve un primero y NUNCA puede producir un muro.
+3. **No existe ninguna herramienta de AGREGADO.** "Tenes algo sin China?" es una
+   pregunta sobre los 880, no una busqueda: no la resuelve el retrieval ni los
+   embeddings ni mandarle el catalogo al modelo. La calcula el codigo, exacta y
+   con cero tokens. La respuesta era 91 de 880. Nunca se lo pedimos al codigo y
+   el modelo relleno el hueco inventando un universal.
+
+**EL PRINCIPIO QUE ORDENA LAS TRES (Martin, 4-ago).** Preguntó: si el codigo no
+puede razonar para responder, como va a razonar para corregir al modelo. La
+respuesta es que NO puede y no tiene que intentarlo. El error de Verifika fue
+pedirle al codigo que hiciera JUICIOS: `excluir` es un juicio -es aceptable
+este producto-, `_grado` es un juicio -que tan chino es-. **Se atan HECHOS, no
+JUICIOS.** Los hechos son del codigo al cien por ciento y verificarlos es
+comparar, no razonar; por eso el candado de plata funciona. El juicio es del
+modelo al cien por ciento. El trabajo del codigo frente al juicio no es revisar
+si esta bien -no puede-: es entregarle el conjunto correcto y chico, y despues
+verificar que cada dato citado exista en la fuente.
+
+**LA FORMA, en una linea:** el codigo REDUCE o AGREGA, el modelo ORDENA y
+REDACTA, el codigo VERIFICA la procedencia.
+
+**Y EL COSTO YA NO ES EL FRENO (medido, agosto 2026).** El catalogo compacto de
+los 880 son ~67.000 tokens; una sola categoria son ~3.300. Con Gemini 3.1
+Flash-Lite eso es 1,7 centavos de dolar por turno sin cache y 0,17 con cache.
+**Lo que impide mandar los 880 no es la plata: es la latencia y sobre todo la
+precision** -un modelo eligiendo entre 880 en contexto largo se pierde en el
+medio, que es justo donde vuelve a inventar-. Sobre 46 auriculares no se pierde.
+
+---
+
 **==== DECISION PERMANENTE DE MARTIN — NO PEDIR MAS MERCADO PAGO NI CBU ====**
 
 **Esto va arriba de todo porque Martin lo repitio demasiadas veces y cada sesion
