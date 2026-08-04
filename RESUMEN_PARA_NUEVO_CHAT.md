@@ -4,6 +4,43 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 4-ago-2026 — EL NOCTURNO EN ROJO: el workflow llamaba a un archivo borrado ====**
+
+**El error que llegó al mail de Martín.** El workflow `deepeval` venía rojo
+cuatro noches seguidas (corridas 9 a 12, del 1 al 4 de agosto). No era el
+modelo, ni una métrica caída, ni los secretos. Era una línea:
+
+```
+python3: can't open file '/home/runner/work/Verifika/Verifika/banco_pruebas/banco_deepeval.py': [Errno 2] No such file or directory
+```
+
+**La causa, con fecha.** El 1-ago el commit `f56c094` cambió la arquitectura
+—se fue el intérprete, se fue el solver por fragmentos, entró `hub_venta`— y
+borró los bancos que probaban ese camino, `banco_deepeval.py` entre ellos. El
+workflow siguió apuntando ahí. Nadie mintió: el archivo tenía que irse, y el
+workflow tenía que irse con él.
+
+**Lo que se hizo, consolidando en vez de agregar.** `deepeval.yml` pasó a ser
+`calidad.yml` y el nocturno corre lo único que hoy mide el camino vivo:
+`banco_repetido.py` contra el piso de `piso.json`. Si `sin_caida` o
+`sin_invento` caen más de 5 puntos, sale con código 1 y la corrida queda roja.
+Se borraron `juez_deepeval.py` y `requirements-eval.txt`, que después del 1-ago
+no los usaba nadie. El nocturno ya no necesita `DEEPSEEK_API_KEY`: el juez del
+banco es determinista, no llama a ningún modelo. Sigue con la clave GRATIS de
+Gemini y pausa de 10 segundos: 8 guiones, 78 turnos, unos 20 minutos, costo cero.
+
+**Un arreglo de fondo, no solo el nombre del archivo.** Sin guiones,
+`banco_repetido.py` corría el glob `7?_*.txt`, que hoy son 10 guiones, contra un
+piso medido sobre 8. La comparación se volvía "orientativa" sola en cuanto se
+agregaba un guion, y la compuerta dejaba de gatear sin que nadie se enterara.
+Ahora, sin argumentos, corre los guiones que grabó el piso. Los argumentos
+explícitos mandan igual que antes.
+
+**Pendiente dicho:** el piso vigente se fijó con 3 vueltas, no con 5. Arrastra
+ruido y el propio reporte lo avisa. Refijarlo con 5 sigue abierto.
+
+381 tests offline verdes.
+
 **==== 3-ago-2026 (noche) — LAS SEIS MEJORAS: menos codigo, menos documentos, mas fuente ====**
 
 Segunda tanda del mismo objetivo. El criterio de cada paso fue uno: ¿esto hace
@@ -951,7 +988,7 @@ no lo leia nadie.
 Sentry. NO se pudo ubicar: cero errores de LLM en `agente-bot` en 14 h, el turno
 completo reproducido con la clave paga corre limpio, y el schema del interprete
 aguanta hasta 24 productos mostrados (33 KB, 1188 valores de enum). Candidatos:
-un issue viejo de Sentry, o los workflows programados `diagnostico`/`deepeval`,
+un issue viejo de Sentry, o los workflows programados `diagnostico`/`calidad`,
 que llaman al modelo y reportan a Sentry SIN pasar por los logs de Cloud Run.
 Para cerrarlo hace falta la FECHA y el SERVICIO del evento en Sentry.
 

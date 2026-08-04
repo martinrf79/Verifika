@@ -1,0 +1,85 @@
+name: calidad
+
+# LA COMPUERTA NOCTURNA sobre el camino VIVO. Corre banco_repetido.py: cada
+# guion N veces por la MISMA funcion que atiende el webhook de WhatsApp
+# (app.main._process_and_reply_whatsapp via banco_pruebas/clon_produccion.py),
+# con el catalogo y la FAQ reales del repo en el Firestore doble. Calcula las
+# cuatro metricas de banco_pruebas/piso.py y las compara contra el piso
+# historico (banco_pruebas/piso.json): si una metrica DURA -sin_caida o
+# sin_invento- cae mas de 5 puntos, el script sale con codigo 1 y la corrida
+# queda en rojo.
+#
+# POR QUE ASI Y NO CON DEEPEVAL. Hasta el 1-ago esto corria banco_deepeval.py,
+# que media el flujo atado (interprete + solver por fragmentos). Ese camino se
+# borro entero con el cambio de arquitectura a hub_venta, el runner se fue con
+# el, y el nocturno quedo cuatro noches en rojo llamando a un archivo que ya no
+# existe. La medicion de calidad hoy vive en banco_repetido + piso: una sola
+# compuerta, sobre el codigo que de verdad corre.
+#
+# NO corre en cada push: llama al modelo VIVO. Se dispara a mano
+# (workflow_dispatch) y una vez por noche (schedule). Necesita el secreto
+# GEMINI_API_KEY; si falta, el job avisa y corta.
+
+on:
+  workflow_dispatch:
+    inputs:
+      guiones:
+        description: "Guiones a correr (ej: 70_*.txt 76_*.txt). Vacio = los del piso."
+        required: false
+        default: ""
+      vueltas:
+        description: "Vueltas por guion. El piso se fijo con 3; menos no compara."
+        required: false
+        default: "3"
+  schedule:
+    - cron: "0 6 * * *"  # 06:00 UTC, una vez por dia
+
+jobs:
+  compuerta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      # Clave GRATIS de Gemini a proposito: el nocturno corre el set del piso (8
+      # guiones, 26 turnos x 3 vueltas = 78 turnos), que entra en el tier gratis
+      # con la pausa de abajo. Costo del nocturno: CERO. La clave paga
+      # (GEMINI_API_KEY_PROD) queda para produccion y para las corridas a
+      # demanda, que si gastan y no deben correr solas de noche.
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      TIENDA_ID: verifika_prod
+      BANCO_PAUSA_S: "10"  # pausa holgada: el tier gratis son 15 pedidos/minuto
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Chequear secretos
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "Falta GEMINI_API_KEY en los secretos del repo."
+            echo "Cargalo en Settings > Secrets para correr la compuerta viva."
+            exit 1
+          fi
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Los inputs viajan por env y NO interpolados en la linea de comando: son
+      # texto libre de quien dispara el workflow, y ahi se inyecta cualquier cosa.
+      - name: Correr la compuerta contra el piso
+        env:
+          GUIONES: ${{ github.event.inputs.guiones }}
+          VUELTAS: ${{ github.event.inputs.vueltas || '3' }}
+        run: python3 banco_pruebas/banco_repetido.py "$VUELTAS" $GUIONES
+
+      - name: Guardar el reporte
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-calidad
+          path: banco_pruebas/corridas/*_repetido.md

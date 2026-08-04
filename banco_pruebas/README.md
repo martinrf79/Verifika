@@ -40,11 +40,19 @@ piso histórico.
 
 ```bash
 export GEMINI_API_KEY=$GEMINI_API_KEY_PROD
+python3 banco_pruebas/banco_repetido.py                            # el set del piso
 python3 banco_pruebas/banco_repetido.py 5 '7?_*.txt'               # compara
 python3 banco_pruebas/banco_repetido.py 5 '7?_*.txt' --fijar-piso  # graba piso
 ```
 
-Sale con código 1 si una métrica **dura** empeoró. Sirve para CI.
+Sin guiones corre **los que grabó el piso**, que es contra lo que compara la
+compuerta. Si el default fuera el glob, cada guion nuevo movería el set y la
+comparación pasaría a ser orientativa sin que nadie se entere.
+
+Sale con código 1 si una métrica **dura** empeoró. Es lo que corre el CI: el
+workflow `calidad.yml` lo dispara todas las noches a las 06:00 UTC con la clave
+gratis de Gemini y a mano desde Actions. Un rojo ahí es una regresión medida, no
+un aviso.
 
 ---
 
@@ -104,14 +112,15 @@ catálogo. Por eso "0% de fallo" convivía con "en WhatsApp se cae la venta".
 
 ## El piso histórico — `piso.json`
 
-**Todavía no existe, y es a propósito.** El único piso medido hasta ahora se
-sacó sobre una rama que no llegó a `main`, así que sería una referencia falsa.
-La primera corrida con `--fijar-piso` sobre `main` lo graba, y hacerla con 5
-vueltas, no con 3. Hasta entonces la compuerta avisa que no tiene contra qué
-comparar.
-
-Cuando exista, guarda el mejor número alcanzado, con fecha, commit, modelo, guiones y cuántas
+Guarda el mejor número alcanzado, con fecha, commit, modelo, guiones y cuántas
 vueltas se usaron.
+
+**El piso vigente se fijó el 3-ago-2026 sobre `main`, commit `3c18608`, modelo
+`gemini-3.1-flash-lite`:** 78 turnos, `sin_caida` 100%, `sin_invento` 97,4%,
+`completa` 93,6%, `avanza` 96,2%, latencia p50 5283 ms y p95 9453 ms, sobre los
+ocho guiones `70` a `76`. **Se fijó con 3 vueltas, no con 5, así que arrastra
+ruido:** el propio reporte lo avisa, y volver a fijarlo con 5 vueltas sigue
+pendiente.
 
 Se graba **a mano** con `--fijar-piso`, y eso es a propósito: si el piso se
 moviera solo en cada corrida, una regresión lenta se volvería el piso nuevo y
@@ -148,20 +157,18 @@ dificultad alta no se puede medir, y lo que no se mide no se mejora.
 
 ---
 
-## Métrica con DeepEval — `banco_deepeval.py`
+## DeepEval: se fue con el flujo atado (4-ago-2026)
 
-Le pone número a cada respuesta en vez de pasa/no pasa. Gatea con
-`faithfulness >= 0.85`, `venta_verificada >= 0.70` y `hallucination <= 0.25`.
-El juez es DeepSeek, independiente del modelo evaluado para que no se
-autocalifique.
+Existía `banco_deepeval.py`, que le ponía número a cada respuesta con juez
+DeepSeek, y el workflow `deepeval.yml` que lo corría de noche. El runner se
+borró el 1-ago junto con el flujo atado que medía, pero el workflow siguió
+llamándolo: **cuatro noches en rojo por `No such file or directory`**, y el
+correo del rojo llegando igual.
 
-```bash
-pip install -r ../requirements-eval.txt
-BANCO_PAUSA_S=22 python3 banco_deepeval.py 01_curada_pura.txt
-```
-
-El workflow `deepeval.yml` lo corre a mano y una vez por noche, nunca en cada
-push, porque llama a los modelos vivos.
+Se consolidó en una sola compuerta: el nocturno es ahora `calidad.yml` y corre
+`banco_repetido.py` contra el piso, que es la medición del camino que de verdad
+corre. Se fueron con él `juez_deepeval.py` y `requirements-eval.txt`, que ya no
+los usaba nadie.
 
 ---
 

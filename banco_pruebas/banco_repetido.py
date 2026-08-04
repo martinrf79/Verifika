@@ -24,8 +24,11 @@ QUE JUZGA, en tres capas, de la mas dura a la mas blanda:
 
 Uso:
     export GEMINI_API_KEY=$GEMINI_API_KEY_PROD
-    python3 banco_pruebas/banco_repetido.py            # los guiones 70 al 79, 3 vueltas
+    python3 banco_pruebas/banco_repetido.py            # el set del piso, 3 vueltas
     python3 banco_pruebas/banco_repetido.py 5 70_*.txt # 5 vueltas, guiones elegidos
+
+Sin guiones corre los que grabo el piso (`piso.json`), que es contra lo que
+compara la compuerta. El workflow `calidad.yml` lo corre asi todas las noches.
 
 Deja el reporte en banco_pruebas/corridas/.
 """
@@ -242,7 +245,18 @@ def main():
             else:
                 nombres += [str(p) for p in sorted(GUIONES.glob(a))]
     else:
-        nombres = [str(p) for p in sorted(GUIONES.glob("7?_*.txt"))]
+        # SIN ARGUMENTOS SE CORRE EL SET DEL PISO, no todos los 7x. La compuerta
+        # compara contra un piso que se midio sobre una lista concreta de
+        # guiones: si el default fuera el glob, cada guion nuevo que se agrega
+        # mueve el set, la comparacion pasa a ser orientativa y la compuerta deja
+        # de gatear sin que nadie se entere. Sin piso todavia, el glob.
+        from banco_pruebas import piso as _P
+        del_piso = (_P.leer() or {}).get("guiones") or []
+        if del_piso:
+            nombres = [str(GUIONES / f"{g}.txt") for g in sorted(del_piso)
+                       if (GUIONES / f"{g}.txt").exists()]
+        else:
+            nombres = [str(p) for p in sorted(GUIONES.glob("7?_*.txt"))]
     if not nombres:
         print("sin guiones que correr")
         return 1
