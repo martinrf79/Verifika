@@ -88,6 +88,41 @@ class BuscarProductos(BaseModel):
     cuantos: int = Field(3, description="Cuantas opciones traer, 1 a 6.")
 
 
+class ConsultarCatalogo(BaseModel):
+    """RESPONDE SOBRE EL CATALOGO ENTERO, no sobre unos pocos productos.
+
+    Usala cuando la pregunta es sobre TODO lo que vendemos y no sobre un
+    producto puntual: si tenemos algo que cumpla una condicion, cuantos hay,
+    cual es el mas barato o el mas caro de todo, que marcas manejamos, en que
+    rubros se cumple algo. `buscar_productos` te trae seis productos; esta te
+    da el numero exacto sobre los 880.
+
+    ES OBLIGATORIA antes de afirmar cualquier cosa sobre el catalogo entero. Si
+    vas a decir "no tenemos nada que...", "todo lo que trabajamos es..." o
+    "ninguno de nuestros productos...", primero preguntalo aca. Sin este dato
+    NO podes afirmarlo: no lo sabes."""
+    operacion: Literal["contar", "mas_barato", "mas_caro", "valores",
+                       "donde_se_cumple"] = Field(
+        description="'contar' cuantos hay. 'mas_barato' y 'mas_caro' el de "
+                    "todo el catalogo. 'valores' que valores distintos existen "
+                    "de un campo, por ejemplo que marcas manejamos. "
+                    "'donde_se_cumple' en que categorias SI se cumple del todo "
+                    "lo que el cliente pide evitar.")
+    campo: str | None = Field(
+        None, description="Solo para 'valores': de que campo querés la lista.")
+    categoria: str | None = Field(
+        None, description="Acotá a una categoria si la pregunta es de un rubro.")
+    excluir: list[str] | None = Field(
+        None, description="Lo que el cliente NO quiere. Para "
+                          "'donde_se_cumple' es el argumento principal.")
+    # A PROPOSITO NO LLEVA `filtros`. Medido el 4-ago: repetir aca el enum de
+    # los 38 campos costaba 2.500 caracteres de esquema en CADA turno, y las
+    # preguntas de agregado que aparecen de verdad -cuantos hay, cual es el mas
+    # barato, que marcas manejamos, donde se cumple- se resuelven con
+    # `categoria` y `excluir`. Si algun dia hace falta filtrar un agregado, se
+    # suma; hoy seria pagar por adelantado una capacidad sin caso.
+
+
 class FichaProducto(BaseModel):
     """Trae la ficha completa de un producto ya identificado, por su id."""
     product_id: str = Field(description="El id exacto del catalogo, ej TEC0019.")
@@ -198,6 +233,7 @@ class RegistrarPedido(BaseModel):
 _MOLDES = {
     "registrar_pedido": RegistrarPedido,
     "buscar_productos": BuscarProductos,
+    "consultar_catalogo": ConsultarCatalogo,
     "ficha_producto": FichaProducto,
     "consultar_temas": ConsultarTemas,
     "cotizar_envio": CotizarEnvio,
@@ -360,6 +396,16 @@ def esquemas(tienda_id: str) -> list[dict]:
             props["categoria"]["enum"] = cats
         if nombre == "buscar_productos" and "filtros" in props:
             _atar_filtros(props["filtros"], tienda_id)
+        if nombre == "consultar_catalogo":
+            # MISMA ATADURA que buscar_productos: los campos y las categorias
+            # salen de la fuente viva, asi que el agregado no puede contar sobre
+            # una columna ni un rubro que no existe.
+            if cats and "categoria" in props:
+                props["categoria"]["enum"] = cats
+            from app.core.filtros_catalogo import campos_filtrables
+            reg = campos_filtrables(tienda_id)
+            if reg and "campo" in props:
+                props["campo"]["enum"] = list(reg)
         if nombre == "consultar_temas" and temas and "temas" in props:
             props["temas"]["items"] = {"type": "string", "enum": temas}
             props["temas"]["description"] = _guia_de_temas(faq, temas)
@@ -751,6 +797,82 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
     return salida
 
 
+def consultar_catalogo(a: ConsultarCatalogo, tienda_id: str) -> dict:
+    """EL AGREGADO SOBRE LOS 880. La clase de pregunta que el modelo no podia
+    ni formular, y por eso la inventaba.
+
+    Medido el 4-ago en produccion: ante "las menos partes chinas posibles" el
+    bot contesto "no tengo productos que no sean fabricados en China". Es FALSO
+    -91 de los 880 no tienen China, los 72 de almacenamiento externo y los 19
+    procesadores- y no habia forma de que lo supiera: `buscar_productos` le
+    trae seis productos de UNA categoria, nunca el universo. El unico modo de
+    llenar ese hueco era inventarlo.
+
+    ESCALA A CUALQUIER CATALOGO, y es lo que la hace viable: contar sobre 5.000
+    productos cuesta lo mismo que sobre 880 y NO gasta un solo token, porque lo
+    resuelve el codigo y al modelo le vuelve un numero. La alternativa -mandarle
+    el catalogo al modelo- se cae con el tamaño; esta no.
+
+    No trae logica nueva: reusa el registro de campos de `filtros_catalogo` y el
+    `_grado` del origen, que ya estaban.
+    """
+    from app.storage.firestore_client import get_all_products
+    from app.core import filtros_catalogo as FC
+
+    prods = [p for p in (get_all_products(tienda_id=tienda_id) or [])
+             if (p.get("stock") or 0) > 0]
+    if a.categoria:
+        cat = _norm(a.categoria)
+        prods = [p for p in prods if _norm(p.get("categoria")) == cat]
+    if a.excluir:
+        prods = [p for p in prods if _grado(p, a.excluir) == 0]
+
+    total = len(prods)
+    if a.operacion == "contar":
+        return {"estado": "ok", "cuantos": total,
+                "de_un_total_de": len(get_all_products(tienda_id=tienda_id) or []),
+                "categoria": a.categoria}
+
+    if a.operacion in ("mas_barato", "mas_caro"):
+        conp = [p for p in prods if isinstance(p.get("precio_ars"), (int, float))]
+        if not conp:
+            return {"estado": "sin_resultados", "cuantos": 0}
+        p = (min if a.operacion == "mas_barato" else max)(
+            conp, key=lambda x: x["precio_ars"])
+        return {"estado": "ok", "cuantos": total,
+                "producto": _ficha(p, tienda_id)}
+
+    if a.operacion == "valores":
+        campo = _norm(a.campo)
+        if campo not in FC.campos_filtrables(tienda_id):
+            return {"estado": "campo_desconocido", "campo": a.campo}
+        vistos: dict[str, int] = {}
+        for p in prods:
+            v = FC._valor_crudo(p, campo)
+            if v in (None, "", [], {}):
+                continue
+            vistos[str(v)] = vistos.get(str(v), 0) + 1
+        orden = sorted(vistos.items(), key=lambda t: -t[1])
+        return {"estado": "ok", "campo": campo, "cuantos_distintos": len(orden),
+                "valores": [{"valor": v, "productos": n} for v, n in orden[:25]]}
+
+    # donde_se_cumple: en que categorias la condicion se cumple DEL TODO. Se
+    # descarta la categoria ya consultada -no se le ofrece al cliente el mismo
+    # rubro del que se le acaba de decir que no cumple- y los rubros con menos
+    # de tres, que no son una alternativa comercial sino un consuelo.
+    cats: dict[str, int] = {}
+    for p in prods:
+        c = str(p.get("categoria") or "").strip()
+        if c and _norm(c) != _norm(a.categoria):
+            cats[c] = cats.get(c, 0) + 1
+    return {"estado": "ok", "cuantos": total,
+            "categorias": sorted(c for c, n in cats.items() if n >= 3),
+            "instruccion": "Estas son las categorias donde la condicion SI se "
+                           "cumple del todo. Si la lista viene vacia, decilo "
+                           "acotado a lo que consultaste; NUNCA generalices a "
+                           "todo el catalogo."}
+
+
 def ficha_producto(a: FichaProducto, tienda_id: str) -> dict:
     from app.storage.firestore_client import get_product_by_id
     p = get_product_by_id(str(a.product_id).upper(), tienda_id=tienda_id)
@@ -981,6 +1103,7 @@ def registrar_pedido(a: RegistrarPedido, tienda_id: str) -> dict:
 _CUERPOS = {
     "registrar_pedido": registrar_pedido,
     "buscar_productos": buscar_productos,
+    "consultar_catalogo": consultar_catalogo,
     "ficha_producto": ficha_producto,
     "consultar_temas": consultar_temas,
     "cotizar_envio": cotizar_envio,

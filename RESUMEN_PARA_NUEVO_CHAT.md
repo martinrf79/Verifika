@@ -4,6 +4,65 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== LAS CUATRO PUERTAS AL MISMO CUARTO — el diagnostico que ordena lo que falta ====**
+
+**No sobran herramientas: sobran PUERTAS a la misma operacion.** `buscar_productos`
+tiene hoy CUATRO argumentos que hacen todos lo mismo -acotar el conjunto de una
+consulta sobre los mismos 38 campos-, cada uno con su sintaxis y su borde:
+
+| puerta | que hace | como se pisa con las otras |
+|---|---|---|
+| `orden: barato\|caro` | ordena por precio | es `ordenar_por` con un solo campo |
+| `tope_precio` | corta por precio maximo | es un `filtro` de precio con operador menor |
+| `excluir` | saca por marca u origen | es un `filtro` negativo, con su propio `_grado` aparte |
+| `filtros` | condicion campo/operador/valor | la forma general de las tres de arriba |
+
+Por eso el modelo elige mal y por eso cada arreglo hubo que hacerlo cuatro
+veces: el 4-ago el reconciliador aprendio a ver `filtros` pero ya sabia ver
+`excluir`, y `_grado` vive solo dentro de `excluir` aunque el ranking sirva para
+cualquier campo. **La direccion NO es sumar herramientas: es COLAPSAR las cuatro
+puertas en una sola que filtre, ordene y cuente sobre un unico registro de
+campos.** Eso deja menos superficie que hoy, no mas.
+
+**ACLARACION QUE HAY QUE DEJAR FIJA (Martin, 4-ago):** cuando se dice "achicar
+el catalogo" se habla SIEMPRE de achicar el CONJUNTO DE CANDIDATOS DE UNA
+CONSULTA -de 880 a los 20 que aplican-, nunca de reducir el catalogo. **El
+sistema tiene que soportar 880, 2.000, 3.000 y 5.000 productos, y eso no se
+negocia.** Y es justamente lo que hace viable esa escala: filtrar, ordenar y
+contar en codigo cuesta CERO TOKENS sea cual sea el tamaño, mientras que
+mandarle el catalogo al modelo se cae con el tamaño -por plata no, por
+precision: se pierde en el medio-.
+
+**LO QUE ESTA ESCRITO Y DESCONECTADO, auditado el 4-ago.** El patron que se
+repitio CUATRO veces en un dia: la capacidad existe en el codigo, probada, y
+ninguna herramienta la expone al modelo.
+
+1. `_grado` leia el campo equivocado — **ARREGLADO 4-ago**.
+2. Los filtros estructurados no existian como argumento — **ARREGLADO 4-ago**.
+3. `fuente_producto.ordenar_por` + `atributos_ordenables` — **10 atributos
+   ordenables derivados de la fuente** (precio, peso, garantia, stock, hz, ram,
+   almacenamiento, memoria_video, potencia). Su docstring dice "es el enum que
+   consume el schema del INTERPRETE": se construyeron para el interprete, que
+   murio el 1-ago, y nunca se reconectaron. **PENDIENTE.**
+4. `compatibilidad.evaluar_par` — cruza `requiere` contra `provee` en las dos
+   direcciones, o sea producto contra producto. Las aristas estan cargadas:
+   `requiere` 388/482, `provee` 111/482, `no_compatible` 149/482. Probado:
+   "Mouse G203 + Notebook Lenovo -> compatible, el mouse pide un puerto USB tipo
+   A y la notebook lo tiene". `ver_compatibilidad` solo hace producto contra
+   PLATAFORMA. **PENDIENTE.**
+
+**SOBRE GRAPHRAG Y AIRTABLE (consulta de Martin, 4-ago).** Verifika **ya es** un
+grafo de conocimiento: nodos -880 productos, 50 temas, 106 criterios, 482 filas
+de compatibilidad-, aristas -`conecta_por`, `plataformas`, `requiere`, `provee`,
+`no_compatible`-, recuperacion exacta -las herramientas devuelven el paquete
+pre-filtrado- y el modelo redactando solo con eso. Mudarlo a Airtable seria
+sacar la fuente del repo a un SaaS, sumar latencia y costo, y perder la
+calculadora -un grafo relaciona, no suma-. **Y no habria arreglado la falla
+medida:** "lo que menos partes chinas tenga" es un RANKING y "tenes algo sin
+China?" es un AGREGADO; ninguna de las dos es una travesia de grafo.
+
+---
+
 **==== 4-ago-2026 (noche) — LA MEDIDA DEJO DE MIRAR FRASES Y MIRA HECHOS ====**
 
 **⚠️ EL PISO SE REFIJO Y NO SE COMPARA CON EL VIEJO. LEER ESTO ANTES DE
