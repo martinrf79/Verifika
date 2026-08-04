@@ -56,11 +56,35 @@ herramientas y listaba seis: faltaba `registrar_pedido`.
 
 384 tests offline verdes (eran 381; se sumaron 3 que lockean lo de arriba).
 
-**EL NUMERO CONTRA EL PISO: PENDIENTE al momento de commitear.** La corrida de
-`banco_repetido` con la clave paga -8 guiones, 78 turnos- estaba a mitad de
-camino. Se commiteo igual, con el metodo del repo: se hace, se deploya, y si el
-numero vuelve peor se revierte con git. Si esta seccion sigue diciendo
-"pendiente", el numero no se miro: mirarlo es la primera tarea.
+**EL NUMERO CONTRA EL PISO: VERDE, exit 0.** `banco_repetido` con la clave paga,
+los 8 guiones del piso, 3 vueltas, 78 turnos. Tasa de fallo global 6% (5 de 78):
+
+```
+  DURA   sin_caida    piso 100.0%  ahora 100.0%  (+0.0)
+  DURA   sin_invento  piso  97.4%  ahora  97.4%  (+0.0)
+  blanda completa     piso  93.6%  ahora  96.2%  (+2.6)
+  blanda avanza       piso  96.2%  ahora  98.7%  (+2.5)
+  latencia p50 5600ms  p95 13073ms   (piso: p50 5283  p95 9453)
+```
+
+**Como se lee esto, sin maquillar.** Las dos DURAS quedaron clavadas: la fusion
+no rompio nada, que era el riesgo real de tocar las herramientas del camino
+vivo. Las dos blandas subieron 2,6 y 2,5 puntos, y eso **NO alcanza para
+declarar una mejora**: el piso se fijo con 3 vueltas y con esa muestra un turno
+de diferencia son mas puntos que eso. Es ruido a favor, no una victoria medida.
+Lo que si esta medido, con el modelo vivo y antes/despues, es el cambio de
+conducta de la tabla de arriba.
+
+**Lo que si conviene mirar: la latencia p95 subio de 9.453 a 13.073 ms.** El p50
+casi no se movio (5.283 a 5.600), asi que no es que todo el turno se puso lento:
+es la cola. Candidato mas probable: los turnos que ahora piden tres temas en vez
+de uno traen mas contexto al redactor. Con 3 vueltas tambien puede ser ruido de
+una corrida. **No se toco nada por esto**; queda anotado para mirarlo con 5
+vueltas.
+
+**PENDIENTE QUE SIGUE ABIERTO, el mismo de antes:** refijar el piso con 5
+vueltas. Hasta que eso pase, ninguna corrida de 3 vueltas autoriza a nadie a
+declarar una mejora, ni esta.
 
 **==== 4-ago-2026 — EL NOCTURNO EN ROJO: el workflow llamaba a un archivo borrado ====**
 
