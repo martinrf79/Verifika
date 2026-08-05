@@ -1057,10 +1057,17 @@ def ver_compatibilidad(a: VerCompatibilidad, tienda_id: str) -> dict:
                 "producto": _ficha(p, tienda_id)}
     veredictos = []
     for pl in plats[:3]:
-        v = evaluar(p, pl, tienda_id)
+        # `evaluar` devuelve una TUPLA (veredicto, motivo), no un dict. Acá se
+        # la leía como dict y la herramienta reventaba con AttributeError en
+        # TODAS sus llamadas: el hub atrapaba la excepción, devolvía
+        # {estado: error} y el modelo contestaba sin el dato de compatibilidad.
+        # Se veía como que el bot "no supo", nunca como una herramienta rota,
+        # porque ningún test tocaba las herramientas. Cazado el 5-ago por el
+        # banco de candidatos; la prueba de humo de las nueve puertas queda en
+        # `tests/test_puertas_humo.py` para que no pueda repetirse.
+        veredicto, motivo = evaluar(p, pl, tienda_id)
         veredictos.append({"equipo": etiqueta_plataforma(pl, tienda_id),
-                           "veredicto": v.get("veredicto"),
-                           "motivo": v.get("motivo")})
+                           "veredicto": veredicto, "motivo": motivo})
     return {"estado": "ok", "producto": p.get("nombre"),
             "compatibilidad": veredictos}
 
