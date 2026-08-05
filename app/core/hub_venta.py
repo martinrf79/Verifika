@@ -186,11 +186,33 @@ def _memoria_texto(estado: dict, history: list, tienda_id: str = "") -> str:
     for p in (estado.get("productos_vistos") or [])[-8:]:
         if isinstance(p, dict) and p.get("nombre"):
             pid = str(p.get("id") or "").upper()
-            vistos.append(f"{p['nombre']} [{pid}]" if pid else str(p["nombre"]))
+            linea = f"{p['nombre']} [{pid}]" if pid else str(p["nombre"])
+            # EL ORDEN EN QUE SE MOSTRARON, que es lo que el ordinal usa. "El
+            # segundo teclado que me mostraste" no se puede resolver contra una
+            # lista plana de nombres; con el turno y la posicion por categoria,
+            # si.
+            if p.get("posicion"):
+                linea += f" (fue la opcion {p['posicion']}"
+                if p.get("categoria"):
+                    linea += f" de {p['categoria']}"
+                if p.get("turno"):
+                    linea += f", turno {p['turno']}"
+                linea += ")"
+            vistos.append(linea)
     if vistos:
         partes.append("Productos que ya le mostraste, con su id entre corchetes "
                       "para que puedas usarlos en las herramientas (el id NUNCA "
-                      "se escribe en el mensaje): " + ", ".join(dict.fromkeys(vistos)))
+                      "se escribe en el mensaje) y en que orden se los "
+                      "mostraste, para cuando diga 'el primero' o 'el segundo "
+                      "teclado': " + ", ".join(dict.fromkeys(vistos)))
+    # LO QUE EL CLIENTE SACO. Va explicito porque es lo primero que se pierde
+    # cuando la charla se comprime, y volver a meter un producto retractado es
+    # de los errores que mas enojan al cliente.
+    fuera = [str(d) for d in (estado.get("descartados") or []) if d]
+    if fuera:
+        partes.append("El cliente SACO estos del pedido o dijo que no los "
+                      "queria. NO los vuelvas a sumar salvo que los pida de "
+                      "nuevo explicitamente: " + ", ".join(fuera))
     carrito = estado.get("carrito") or []
     if carrito:
         partes.append("Pedido vigente: " + ", ".join(
@@ -276,7 +298,12 @@ def _mensajes(negocio: str, memoria: str, history: list, mensaje: str,
     msgs = [{"role": "system", "content": sistema(negocio)}]
     if memoria:
         msgs.append({"role": "system", "content": memoria})
-    for h in (history or [])[-10:]:
+    # TODO EL HISTORIAL QUE EL SISTEMA GUARDA, no la mitad. Estaba clavado en
+    # `[-10:]`, que son MENSAJES y no turnos: en el turno 12 el modelo veia
+    # SIETE turnos mientras Firestore tenia DIEZ guardados y pagos. La memoria
+    # ya estaba comprada y el prompt la tiraba. `HISTORY_LIMIT` manda en los dos
+    # lados: lo que se guarda es lo que se muestra.
+    for h in (history or [])[-(settings.HISTORY_LIMIT * 2):]:
         rol = h.get("role")
         if rol in ("user", "assistant") and h.get("content"):
             msgs.append({"role": rol, "content": str(h["content"])[:900]})
@@ -818,28 +845,42 @@ def _bloque_presupuesto(llamadas: list) -> str:
     return ""
 
 
-def _productos_del_turno(llamadas: list) -> list:
+def _productos_del_turno(llamadas: list, turno: int = 0) -> list:
     """Los productos que el turno mostro, para la memoria. Salen de lo que
-    devolvieron las herramientas, no de buscar nombres en el texto."""
+    devolvieron las herramientas, no de buscar nombres en el texto.
+
+    CADA UNO CON SU TURNO, SU POSICION Y SU CATEGORIA. Sin eso "el primero que
+    me mostraste", "el segundo teclado" y "la ultima opcion" no tienen contra
+    que resolverse: se guardaba id, nombre y precio en una lista plana, y el
+    orden en que se mostraron -que es toda la informacion que el ordinal usa- se
+    perdia en cuanto un turno mostraba dos categorias. Medido el 5-ago: seis
+    productos vistos, cero forma de saber cual era el segundo teclado.
+    """
     out, vistos = [], set()
 
-    def _add(p):
+    def _add(p, pos):
         pid = str((p or {}).get("id") or "").upper()
         if pid and pid not in vistos and p.get("nombre"):
             vistos.add(pid)
             precio = p.get("precio_ars")
             out.append({"id": pid, "nombre": p["nombre"],
                         "precio": int(precio) if isinstance(precio, (int, float))
-                        else 0})
+                        else 0,
+                        "turno": turno, "posicion": pos,
+                        "categoria": str(p.get("categoria") or "")})
 
     for l in llamadas:
         r = l.get("resultado") or {}
-        for p in (r.get("productos") or []):
-            _add(p)
-        for p in (r.get("lo_mas_cercano") or []):
-            _add(p)
+        # La posicion se cuenta POR CATEGORIA y por lista: "el segundo teclado"
+        # es el segundo de los teclados, no el segundo de todo lo que se mostro.
+        por_cat: dict = {}
+        for clave in ("productos", "lo_mas_cercano", "hay_en_la_categoria"):
+            for p in (r.get(clave) or []):
+                cat = str((p or {}).get("categoria") or "")
+                por_cat[cat] = por_cat.get(cat, 0) + 1
+                _add(p, por_cat[cat])
         if isinstance(r.get("producto"), dict):
-            _add(r["producto"])
+            _add(r["producto"], 1)
     return out
 
 
@@ -903,27 +944,108 @@ def _carrito_podado(previo: list, declarado: dict) -> list:
     items = [i for i in ((declarado or {}).get("items") or [])
              if isinstance(i, dict) and str(i.get("que") or "").strip()]
     if not previo or not items:
-        return previo or []
-    palabras = set()
-    for i in items:
-        palabras |= {w for w in P._norm(i["que"]).split() if len(w) >= 4}
-    if not palabras:
-        return previo
-    quedan = []
+        return previo or [], []
+
+    def _palabras(txt):
+        return {w[:5] for w in P._norm(txt).split() if len(w) >= 4}
+
+    quedan, fuera = [], []
     for c in previo:
         texto = P._norm(f"{c.get('nombre', '')} {c.get('categoria', '')}")
-        if any(w[:5] in texto for w in palabras):
-            quedan.append(c)
-    # Si la poda deja el carrito VACIO no se aplica: significa que el cliente
-    # declaro algo que no matchea nada -otra categoria, un producto nuevo-, no
-    # que haya dado de baja todo. Vaciar el pedido por un no-match es el error
-    # caro; que quede uno de mas lo corrige la proxima cotizacion.
-    if not quedan:
-        return previo
+        # el item declarado que habla de ESTE producto del carrito
+        decl = next((i for i in items
+                     if any(w in texto for w in _palabras(i["que"]))), None)
+        if decl is None:
+            fuera.append(c)
+            continue
+        nuevo = dict(c)
+        # LA CANTIDAD TAMBIEN SE LEE. Medido: "uno de los auriculares era solo
+        # una consulta" bajaba de 2 a 1 en la declaracion y el carrito seguia
+        # con 2, porque la poda sacaba items enteros y nunca ajustaba unidades.
+        # La mitad de las correcciones del cliente son de cantidad, no de alta
+        # o baja.
+        cant = int(decl.get("cantidad") or 1)
+        if cant > 0 and cant != nuevo.get("cantidad"):
+            nuevo["cantidad"] = cant
+        quedan.append(nuevo)
+        if decl.get("destino") and not nuevo.get("destino"):
+            nuevo["destino"] = str(decl["destino"]).strip()
+
+    # SI NO QUEDA NADA, EL PEDIDO SE REEMPLAZO. Antes esto se trataba como un
+    # no-match y se conservaba el carrito entero "por las dudas", y medido en la
+    # Serie 1 eso hacia fallar el caso central: "dejá el teclado y sacá el
+    # mouse" declaraba teclado, no matcheaba con el mouse guardado y el mouse
+    # se quedaba adentro. La declaracion es el pedido COMPLETO del cliente: si
+    # no nombra nada de lo que habia, lo que habia ya no esta.
     if len(quedan) != len(previo):
-        log.info("carrito_podado_por_declaracion",
-                 antes=len(previo), despues=len(quedan))
-    return quedan
+        log.info("carrito_podado_por_declaracion", antes=len(previo),
+                 despues=len(quedan), saco=[c.get("nombre") for c in fuera][:4])
+    return quedan, fuera
+
+
+def _declarados(declarado: dict) -> list:
+    """Lo que el cliente declaro querer este turno, en sus palabras."""
+    return [str(i.get("que")).strip()
+            for i in ((declarado or {}).get("items") or [])
+            if isinstance(i, dict) and str(i.get("que") or "").strip()]
+
+
+def _descartados_nuevos(previos: list, dados_de_baja: list, carrito: list,
+                        declarado_antes: list | None = None,
+                        declarado_ahora: list | None = None) -> list:
+    """LA MEMORIA NEGATIVA. Lo que el cliente SACO del pedido, anotado.
+
+    EL AGUJERO, medido el 5-ago sobre las series de doce turnos. El estado tiene
+    doce campos y los doce guardan lo que el cliente QUIERE: el carrito, los
+    vistos, el presupuesto, los destinos, el producto anotado, las preferencias.
+    NINGUNO guarda lo que dijo que NO. Asi que "los auriculares los nombre como
+    posibilidad, no los sumes" vivia unicamente en la prosa del historial, y la
+    prosa se trunca a diez mensajes y despues se resume a mil quinientos
+    caracteres. Lo primero que pierde un resumen son las negaciones.
+
+    Un chat de IA no necesita esto porque relee el hilo entero. Verifika
+    comprime, asi que lo necesita.
+
+    Se guarda el NOMBRE, no el id: el cliente descarta "los auriculares", no un
+    id. Y si el producto vuelve a entrar al carrito, sale de la lista: el
+    cliente cambio de idea otra vez y eso tambien hay que respetarlo.
+    """
+    nombres_en_carrito = [P._norm(c.get("nombre") or "") for c in (carrito or [])]
+
+    def _sigue_en_el_pedido(txt: str) -> bool:
+        raices = {w[:5] for w in P._norm(txt).split() if len(w) >= 4}
+        return any(any(r in n for r in raices) for n in nombres_en_carrito)
+
+    fuera = [d for d in (previos or []) if not _sigue_en_el_pedido(str(d))]
+
+    for c in (dados_de_baja or []):
+        n = str(c.get("nombre") or "").strip()
+        if n and n not in fuera and not _sigue_en_el_pedido(n):
+            fuera.append(n)
+
+    # LO QUE SE NOMBRO Y NUNCA LLEGO AL CARRITO. El caso central de la Serie 15
+    # y de la pregunta 9: "los auriculares solo los nombre como posibilidad, no
+    # los sumes". Ese producto nunca estuvo en el pedido -el turno solo busco-,
+    # asi que comparar contra el carrito no lo ve. Se ve comparando DOS
+    # declaraciones: el turno 1 declaro mouse, teclado y auriculares; el turno 3
+    # declaro mouse y teclado. Lo que se cayo de la declaracion es lo que el
+    # cliente saco.
+    #
+    # NO ES UN DELTA: son dos fotos completas del pedido, que es lo que el
+    # modelo ya emite en cada turno, y la resta la hace el codigo. Solo se
+    # compara cuando el turno declaro algo; un turno sin declaracion -"cuanto
+    # tarda el envio?"- no puede dar de baja nada.
+    if declarado_ahora:
+        ahora = [P._norm(x) for x in declarado_ahora]
+        for antes in (declarado_antes or []):
+            raices = {w[:5] for w in P._norm(antes).split() if len(w) >= 4}
+            if not raices:
+                continue
+            sigue = any(any(r in a for r in raices) for a in ahora)
+            if not sigue and not _sigue_en_el_pedido(antes) \
+                    and antes not in fuera:
+                fuera.append(antes)
+    return fuera[-10:]
 
 
 def _senal_de_cierre(llamadas: list, mensaje: str) -> dict:
@@ -1138,19 +1260,30 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     history = history[-(settings.HISTORY_LIMIT * 2):]
 
     productos_vistos = merge_productos(conv.get("productos_vistos") or [],
-                                       _productos_del_turno(llamadas))
+                                       _productos_del_turno(
+                                           llamadas, turno=len(history) // 2))
     # EL CARRITO. Si el turno cotizo, manda la cuenta. Si no cotizo pero el
     # modelo DECLARO el pedido, se poda el anterior con esa declaracion: es la
     # unica forma de que "sacá el teclado" baje algo sin obligar a recotizar.
     carrito = _carrito_del_turno(llamadas)
+    dados_de_baja = []
     if not carrito:
-        carrito = _carrito_podado(conv.get("carrito_vigente") or [], declarado)
+        carrito, dados_de_baja = _carrito_podado(
+            conv.get("carrito_vigente") or [], declarado)
+    declarado_ahora = _declarados(declarado)
+    descartados = _descartados_nuevos(
+        conv.get("descartados") or [], dados_de_baja, carrito,
+        declarado_antes=conv.get("ultimo_declarado") or [],
+        declarado_ahora=declarado_ahora)
     localidades = get_envio_localidades() or (conv.get("ultimas_localidades") or [])
     try:
         save_conversation(
             user_id, history, resumen, tienda_id=tienda_id,
             estado_conversacion="en_curso",
             productos_vistos=productos_vistos, carrito_vigente=carrito,
+            descartados=descartados,
+            ultimo_declarado=(declarado_ahora or
+                              conv.get("ultimo_declarado") or []),
             ultima_localidad=(localidades[-1] if localidades else
                               (conv.get("ultima_localidad") or "")),
             ultimas_localidades=localidades,

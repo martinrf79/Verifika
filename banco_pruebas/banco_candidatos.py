@@ -415,14 +415,17 @@ def c18():
     del_turno = _carrito_del_turno([
         {"herramienta": "registrar_pedido", "pedido": {},
          "resultado": {"pedido": {}}}])
-    quedan = _carrito_podado(previo, {"items": [{"que": "mouse",
-                                                 "cantidad": 2}]})
+    quedan, bajas = _carrito_podado(previo, {"items": [{"que": "mouse",
+                                                        "cantidad": 2}]})
     nombres_ = [c["nombre"] for c in quedan]
-    ok = del_turno == [] and len(quedan) == 1 and "eclado" not in nombres_[0]
+    ok = (del_turno == [] and len(quedan) == 1
+          and "eclado" not in nombres_[0]
+          and any("eclado" in c.get("nombre", "") for c in bajas))
     caso(18, "pregunta 7 y Serie 1: 'el teclado sacalo', sin pedir precio",
          "turno sin armar_presupuesto, con el pedido declarado",
-         "que el carrito refleje la baja sin obligar a recotizar",
-         f"de {len(previo)} items quedan {len(quedan)}: {nombres_}", ok,
+         "que el carrito refleje la baja y que la baja quede anotada",
+         f"de {len(previo)} items quedan {len(quedan)}: {nombres_}; dado de "
+         f"baja: {[c.get('nombre') for c in bajas]}", ok,
          "" if ok else "EL CARRITO SOLO SE ESCRIBE RECOTIZANDO: no hay "
                        "operacion de quitar")
 

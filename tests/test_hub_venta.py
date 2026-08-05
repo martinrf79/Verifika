@@ -153,9 +153,33 @@ def test_lo_mostrado_se_recuerda_desde_las_herramientas_no_del_texto():
     vistos = HV._productos_del_turno([{
         "herramienta": "buscar_productos", "pedido": {},
         "resultado": {"estado": "encontrado", "productos": [
-            {"id": "MOU0001", "nombre": "Mouse Genius", "precio_ars": 8500}]}}])
-    assert vistos == [{"id": "MOU0001", "nombre": "Mouse Genius",
-                       "precio": 8500}]
+            {"id": "MOU0001", "nombre": "Mouse Genius", "precio_ars": 8500,
+             "categoria": "mouse"},
+            {"id": "MOU0002", "nombre": "Mouse Logitech", "precio_ars": 12000,
+             "categoria": "mouse"}]}}], turno=4)
+    assert [v["id"] for v in vistos] == ["MOU0001", "MOU0002"]
+    assert vistos[0]["precio"] == 8500
+    # CON SU ORDEN, desde el 5-ago. Sin turno ni posicion, "el segundo mouse
+    # que me mostraste" no tiene contra que resolverse: la memoria guardaba una
+    # lista plana de nombres y el orden en que se mostraron -que es toda la
+    # informacion que usa el ordinal- se perdia.
+    assert [v["posicion"] for v in vistos] == [1, 2]
+    assert all(v["turno"] == 4 for v in vistos)
+    assert all(v["categoria"] == "mouse" for v in vistos)
+
+
+def test_la_posicion_se_cuenta_por_categoria_no_por_turno():
+    """"El segundo teclado" es el segundo de los TECLADOS, no el segundo de
+    todo lo que se mostro en el turno. Un turno que muestra dos categorias
+    tiene dos primeros."""
+    vistos = HV._productos_del_turno([{
+        "herramienta": "buscar_productos", "pedido": {},
+        "resultado": {"productos": [
+            {"id": "MOU0001", "nombre": "Mouse A", "categoria": "mouse"},
+            {"id": "TEC0001", "nombre": "Teclado A", "categoria": "teclado"},
+            {"id": "TEC0002", "nombre": "Teclado B", "categoria": "teclado"}]}}])
+    por_id = {v["id"]: v["posicion"] for v in vistos}
+    assert por_id == {"MOU0001": 1, "TEC0001": 1, "TEC0002": 2}
 
 
 def test_el_carrito_sale_del_detalle_de_la_cuenta():

@@ -1018,6 +1018,12 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     # EL REPARTO POR DESTINO. Solo sale si CIERRA contra los items: el modelo a
     # veces resuelve mal "el resto" y reparte mas unidades de las que hay.
     reparto = ""
+    # CON UN SOLO DESTINO SE NOMBRA IGUAL. El bloque decia "Envio: $7.500" a
+    # secas: el cliente daba la ciudad y la cuenta no se la confirmaba nunca,
+    # asi que no tenia como saber si el numero era del destino que pidio. Con
+    # varios destinos ya se nombraban; con uno, no. Medido el 5-ago, Serie 1.
+    if len(destinos) == 1:
+        reparto = f"Envio a {destinos[0]}."
     if len(destinos) > 1:
         por_destino: dict = {}
         for i in a.items:
