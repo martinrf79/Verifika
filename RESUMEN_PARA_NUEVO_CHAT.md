@@ -95,6 +95,68 @@ bancos, antes y despues, siempre.
 
 ---
 
+**==== 5-AGO-2026 (noche, 2a tanda) — EL MAPA: EL 47% DEL CAMINO VIVO ESTA A CIEGAS ====**
+
+**DE DONDE SALE.** Pedido de Martin, textual: "son X conexiones, cuales
+funcionan para todas las preguntas, cuales para algunas y cuales no se usan
+nunca". Nace del loop que se repite hace semanas: se arregla algo, en el camino
+aparecen piezas desconectadas o a medias, los arreglos se pisan y se pierde el
+objetivo. Eso no se arregla leyendo mejor: se mide.
+
+**EL INSTRUMENTO: `banco_pruebas/mapa.py`.** Cruza dos medidas.
+
+1. **ALCANCE**, estatico: a que funciones se llega desde los webhooks.
+2. **EJERCICIO**, dinamico: se corren LAS 40 una por una con un contexto de
+   cobertura distinto por pregunta, y queda la matriz funcion x pregunta.
+
+**EL NUMERO DEL MAPA, primera medicion: 143 de 304 funciones del camino vivo no
+las toca NINGUNA de las 40. El 47%.** Reparto: 26 troncales -8 preguntas o
+mas-, 135 de algunas, 143 a ciegas, 94 sin alcance desde ningun webhook y 21 de
+admin.
+
+**LO QUE ENCONTRO EN LA PRIMERA CORRIDA, y es el hallazgo de la semana.** El
+hub -el cerebro del turno- tiene **26 de sus 38 funciones a ciegas**:
+
+- `procesar_venta`, o sea el turno entero.
+- El bucle completo: `_pedir_herramientas`, `_ejecutar_en_paralelo`,
+  `_redactar`, `_cerrar`.
+- **LAS ONCE GUARDAS DE SALIDA, todas en cero**: `_sin_plata_inventada`,
+  `_sin_negar_lo_traido`, `_sin_descuento_inventado`, `_sin_cobro_inventado`,
+  `_sin_json_filtrado`, `_sin_markdown`, `_sin_narracion_interna`,
+  `_sin_titulos_huerfanos`, `_sin_anuncio_vacio`, `_cuenta_no_retipeada` y
+  `_bloque_entero_o_repuesto`.
+
+**Lo que el cliente LEE lo deciden once guardas que ninguna prueba toca.** Y
+las tres fallas del turno real del 5-ago -las memorias que faltaron en la
+cuenta, la ronda de 8 segundos al pedo y la respuesta de 2.400 caracteres- viven
+exactamente ahi. Por eso 40 de 40 no movio la aguja: medía otra capa.
+
+**EL CANDADO: `tests/test_mapa.py` y `mapa_piso.json`.** El piso no exige cero
+-seria mentir sobre el estado y dejar el CI rojo para siempre-: exige que **lo
+que entra al camino vivo nazca con una pregunta que lo ejercite**. Si aparece
+una funcion ciega nueva, el test la nombra. Bajar el piso es tarea de cada
+sesion.
+
+**UN BUG DE MEDICION QUE APARECIO SOLO, y vale anotarlo.** Corrido adentro de la
+bateria, el mapa daba tres funciones ciegas de mas, y cambiaban segun el orden
+de los tests: medio sistema cachea -catalogo, FAQ, registro de campos, geo de
+CP- y una funcion ya cacheada no se vuelve a ejecutar. El mapa se mide ahora en
+un **proceso limpio**, siempre.
+
+**PENDIENTE DE INFRA, dicho para que no sorprenda:** el mapa necesita
+`coverage`, que se agrego al `pip install` de los dos workflows. NO se toco
+`requirements.txt`: es una herramienta de medicion, no una dependencia del
+servicio.
+
+**LO QUE SIGUE, decidido con Martin:** el mapa primero -hecho-, y despues las
+opciones A y C: A es poner al dia la maquina de casetes, que corre el TURNO
+COMPLETO gratis en cada push y hoy esta apagada con 65 casetes del flujo viejo y
+sin el test que los reproduce; C es sacarle trabajo al modelo -que el codigo
+arme la cuenta desde el pedido ya declarado, corte el bucle cuando no hay
+faltante ejecutable y componga el mensaje en un solo lugar-.
+
+---
+
 **==== 5-AGO-2026 (noche) — EL MARCADOR DEJO DE SER UNA ESTIMACION: 12 -> 40 ====**
 
 **LO QUE SE HIZO, en una linea:** se escribio la lista de las 40 con nombre y
