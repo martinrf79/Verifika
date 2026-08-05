@@ -4,6 +4,90 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 5-AGO-2026 — LAS CUATRO PUERTAS COLAPSADAS, Y LOS TRES BANCOS QUE LO MIDEN ====**
+
+**RAMA `claude/search-system-robustness-analysis-eub6c6`, PUSHEADA Y SIN MERGEAR.**
+Hasta que se mergee, para el proyecto NO existe: produccion sigue con el codigo
+viejo. Es lo primero que hay que resolver.
+
+**LOS TRES BANCOS NUEVOS, y separan lo que antes se confundia.** Los bancos
+viejos miden la PROSA FINAL, donde un fallo de codigo y uno de criterio se ven
+igual. De ahi salieron meses de parches al lugar equivocado.
+
+| banco | que mide | costo | estado |
+|---|---|---|---|
+| `banco_candidatos.py` | el TECHO DE CODIGO: se simula el modelo perfecto -la llamada ideal escrita a mano- y solo se mira que devuelve el codigo | cero tokens, 3 s | **21 de 21** |
+| `banco_memoria.py` | que SOBREVIVE de un turno al siguiente, corriendo el pipeline de memoria real sobre las series de Martin | cero tokens | **15 de 15** |
+| `banco_llamada_uno.py` | que llamada PIDE el modelo con el esquema nuevo. Una request por mensaje | ~12 requests | **12 de 12** |
+
+Arrancaron en 11/21 y 8/15. La verdad esperada se calcula a fuerza bruta por un
+camino independiente, sin pasar por los modulos que se prueban.
+
+**LO QUE SE COLAPSO.** `buscar_productos` tenia cuatro argumentos para lo mismo.
+`orden`, `tope_precio` y `excluir` DEJARON DE EXISTIR: todo es `filtros`
+-campo/operador/valor, con `no_contiene`- mas `ordenar_por` sobre cualquier
+campo. Se borraron `_grado`, `_excluido`, `_paises_de` y `_categorias_que_cumplen`,
+99 lineas. `origen` se parte en `pais_marca` y `pais_fabricacion`, que son dos
+hechos, no un juicio pesado 3 y 2.
+
+**LO QUE APARECIO AL MEDIR, y ninguna era visible antes:**
+
+1. **`ver_compatibilidad` estaba ROTA, siempre.** Leia como dict la tupla de
+   `compatibilidad.evaluar`. El hub atrapaba la excepcion y devolvia
+   `estado: error`, asi que se veia como que el bot no supo contestar. Ninguno
+   de los 409 tests offline llamaba a una sola herramienta. Arreglada, y con
+   `tests/test_puertas_humo.py`, que corre las nueve puertas por el ejecutor
+   real del hub.
+2. **`ram contiene 16` daba CERO** contra fichas que dicen "16GB": la regla de
+   palabra entera exigia que no viniera letra ni digito detras. 148 notebooks
+   invisibles, y "16" es lo que el modelo pide.
+3. **El precio era el UNICO criterio de orden del sistema.** La descripcion se
+   descartaba entera: "notebook para diseño grafico" devolvia las 3 mas baratas
+   de 171. Ahora ordena por RELEVANCIA con peso por rareza y raiz de palabra.
+4. **El prompt tiraba memoria ya pagada.** `history[-10:]` son MENSAJES: el
+   modelo veia 7 turnos con 10 guardados en Firestore.
+5. **No existia memoria negativa.** Doce campos guardaban lo que el cliente
+   quiere y ninguno lo que dijo que NO. Ahora `descartados`, alimentado por la
+   baja del carrito Y por comparar dos declaraciones completas seguidas -que es
+   lo unico que ve un producto que se nombro y nunca entro al pedido-.
+6. **Los ordinales no tenian contra que resolverse.** `productos_vistos` ahora
+   lleva turno, categoria y posicion CONTADA POR CATEGORIA.
+7. **El destino por item se calculaba bien y no se guardaba.**
+
+**EL RAZONAMIENTO DEL REDACTOR: MEDIDO Y DESCARTADO.** Estaba clavado en `none`,
+se saco a config y se probo en `low` con la clave paga: la falla salio IGUAL y
+costo entre 0,6 y 3,1 segundos por turno. Default de vuelta en `none`.
+**No repetir este experimento sin un motivo nuevo.**
+
+**LO QUE NO SE PUDO ARREGLAR CON PROSA, y quedo escrito para no repetirlo.** Ante
+"el mouse que menos partes chinas tenga": el modelo declara la restriccion, no
+la aplica, el reconciliador la caza bien, y en la ronda dos pide CERO
+herramientas, 3 de 3 vueltas. Tres redacciones distintas de la instruccion no
+movieron el numero. Se resolvio por codigo: `resolver_exclusion` busca en QUE
+CAMPO aparece esa palabra como VALOR y rehace la busqueda, cero tokens. Y el
+`bloque` de hallazgo lo escribe el codigo y el modelo lo pega, igual que la
+cuenta. Medido, tres vueltas: bloque pegado 0/3 -> **3/3**, ofrece el rubro
+donde SI se cumple 0/3 -> **3/3**.
+
+**LO QUE SIGUE ABIERTO, sin maquillar:**
+
+- **Abre por el negativo, 3 de 3.** La diferencia con el 4-ago es que la frase
+  ahora es VERDADERA y acotada -los 45 mouse se fabrican en China- y viene
+  seguida del ranking y del rubro alternativo. Paso de mentira universal a
+  verdad acotada mal presentada.
+- **El proximo experimento es `DECISOR_MODEL`**, que es config y se mide solo
+  con la llamada uno. `gemini-3.1-flash-lite` no traduce "menos partes chinas"
+  al campo de forma confiable.
+- **LA FUENTE ES EL TECHO DE VARIAS PREGUNTAS, y eso no lo arregla el codigo.**
+  Medido: los 148 notebooks con stock tienen TODOS 16GB de RAM y el mismo
+  `uso_recomendado`; 39 teclados empatan en 24 meses; `sensor` y
+  `switch_teclado` tienen UN solo valor distinto en todo el catalogo. Ninguna
+  herramienta puede elegir "la mejor notebook para diseño" con esa fuente.
+- **Cobertura:** de las 40 pruebas de Martin -25 sueltas y 15 series-, hay
+  medida la parte determinista de unas 12. El resto no esta medido.
+
+---
+
 **==== EL PLAN DE TRES ETAPAS Y LAS 15 PREGUNTAS DIFICILES (Martin, 4-ago-2026) ====**
 
 **ESTO ES LO QUE SE HACE EN LA PROXIMA SESION. Arranca por la etapa 1.**

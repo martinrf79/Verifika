@@ -117,9 +117,14 @@ _PALABRAS_OPERADOR = {
 
 
 def _universo_de_restricciones(llamadas: list) -> str:
-    """Donde puede viajar una restriccion declarada por el cliente: los
-    `filtros` estructurados, el `excluir` y el `tope_precio` de la busqueda, y
-    los temas consultados.
+    """Donde puede viajar una restriccion declarada por el cliente: las
+    condiciones estructuradas de la busqueda, el criterio de orden y los temas
+    consultados.
+
+    5-AGO: `excluir`, `tope_precio` y `orden` DEJARON DE EXISTIR como argumentos
+    sueltos -se colapsaron en `filtros` y `ordenar_por`-, asi que este universo
+    se arma de esos dos. Se siguen leyendo los viejos por si quedara una llamada
+    en vuelo: no cuesta nada y evita acusar en falso durante el deploy.
 
     LOS FILTROS ENTRAN ACA DESDE EL 4-AGO, y no es un detalle: son la via
     principal por la que una condicion se aplica. Medido con el modelo vivo el
@@ -144,6 +149,23 @@ def _universo_de_restricciones(llamadas: list) -> str:
             partes.append("presupuesto tope precio maximo gastar")
         if ped.get("orden"):
             partes.append(_norm(ped["orden"]))
+        if ped.get("ordenar_por"):
+            # SOLO EL NOMBRE DEL CAMPO. La primera version agregaba tambien una
+            # bolsa de palabras -"el mas mejor menor mayor barato caro
+            # liviano"- para que un superlativo contara como aplicado. Fue un
+            # error y se cobro caro el mismo dia: la restriccion "MENOS partes
+            # chinas" empezaba con "menos", "meno" pegaba dentro de "menor" de
+            # la bolsa, y el reconciliador daba la condicion por APLICADA cuando
+            # el modelo solo habia ordenado por pais_fabricacion. Nunca disparaba
+            # la ronda dos y el turno terminaba en el muro. Medido: 3 de 3.
+            #
+            # Una bolsa de palabras genericas cubre cualquier cosa, y un chequeo
+            # que cubre cualquier cosa no chequea nada. El costo de sacarla es
+            # que "el mas barato" resuelto con `ordenar_por precio_ars` puede
+            # acusarse en falso y costar una ronda. Se elige ese costo: una
+            # ronda de mas se paga en segundos, una condicion que se pierde se
+            # paga con la venta.
+            partes.append(_norm(ped["ordenar_por"]).replace("_", " "))
         if l.get("herramienta") == "consultar_temas":
             partes += [_norm(t) for t in (ped.get("temas") or [])]
     return " ".join(x for x in partes if x)
@@ -281,10 +303,13 @@ def instruccion_de_faltantes(rec: dict) -> str:
                   "peor que cotizar de a partes.\n\n")
     if not resto:
         return cabeza.strip()
-    return (cabeza + "REVISION DEL PLAN. Comparé lo que el cliente pidió "
-            "contra lo que buscaste y falta esto:\n- " + "\n- ".join(resto) +
-            "\nPedí ahora las herramientas que resuelvan lo que falta. Si algo "
-            "no se puede resolver con una herramienta, no lo inventes.")
+    return (cabeza + "REVISION DEL PLAN, y esto MANDA sobre todo lo demás que "
+            "leas abajo. Comparé lo que el cliente pidió contra lo que "
+            "buscaste y falta esto:\n- " + "\n- ".join(resto) +
+            "\nTenés que pedir AHORA las herramientas que resuelvan esto. No "
+            "contestes sin resolverlo: el dato existe y no lo pediste. Si de "
+            "verdad ninguna herramienta puede resolverlo, recién ahí contestá "
+            "sin inventarlo.")
 
 
 def instruccion_de_preguntas(rec: dict) -> str:

@@ -86,54 +86,172 @@ def test_si_la_exclusion_no_deja_nada_se_dice_no_se_devuelve_lo_mismo():
     la herramienta avisa que ninguno cumple del todo Y devuelve los que menos
     incumplen. Ninguna herramienta devuelve vacio.
 
-    ACTUALIZADO 4-ago: el estado dejo de llamarse `ninguno_cumple_del_todo` y la
-    instruccion dejo de arrancar por el negativo, porque ERA ELLA la que
-    escribia el muro: decia "hay que decirlo derecho, sin adornar" y el modelo
-    generalizaba al catalogo entero. "Lo que menos X tenga" no es un filtro, es
-    un RANKING. Ordenar siempre devuelve un primero y NUNCA puede producir un
-    muro."""
+    ACTUALIZADO 4-ago: la instruccion dejo de arrancar por el negativo, porque
+    ERA ELLA la que escribia el muro: decia "hay que decirlo derecho, sin
+    adornar" y el modelo generalizaba al catalogo entero. "Lo que menos X tenga"
+    no es un filtro, es un RANKING. Ordenar siempre devuelve un primero y NUNCA
+    puede producir un muro.
+
+    ACTUALIZADO 5-ago: `excluir` DEJO DE EXISTIR como argumento. Era la tercera
+    de cuatro puertas al mismo cuarto y llevaba su propio `_grado` aparte, que
+    ademas puntuaba un JUICIO -3 por la marca, 2 por la fabricacion-. Ahora es
+    una condicion mas, `no_contiene`, y el orden de los que menos se alejan sale
+    del mismo mecanismo que el resto: contar cuantas condiciones incumple cada
+    uno."""
     r = H.buscar_productos(
-        H.BuscarProductos(categoria="mouse", excluir=["mouse", "gaming",
-                                                      "china", "taiwan",
-                                                      "estados", "suiza"]),
+        H.BuscarProductos(categoria="mouse", filtros=[
+            {"campo": "pais_fabricacion", "operador": "no_contiene",
+             "valor": "china"},
+            {"campo": "marca", "operador": "no_contiene", "valor": "logitech"},
+            {"campo": "pais_marca", "operador": "no_contiene",
+             "valor": "china"}]),
         TIENDA)
-    assert r["estado"] in ("ordenados_de_menos_a_mas", "encontrado")
-    if r["estado"] == "ordenados_de_menos_a_mas":
-        # Con algo para ofrecer, EN ORDEN, y con el grado de cada uno.
+    assert r["estado"] in ("ninguno_cumple_del_todo", "encontrado")
+    if r["estado"] == "ninguno_cumple_del_todo":
+        # Con algo para ofrecer, EN ORDEN, y diciendo cual condicion falla.
         assert r["productos"]
-        assert all("cuanto_incumple" in p for p in r["productos"])
-        grados = [p["cuanto_incumple"] for p in r["productos"]]
-        assert grados == sorted(grados), "el que menos incumple va primero"
+        assert all("no_cumple" in p for p in r["productos"])
+        cuantas = [len(p["no_cumple"]) for p in r["productos"]]
+        assert cuantas == sorted(cuantas), "el que menos incumple va primero"
         # y la instruccion prohibe el universal, que es de donde salia el muro
-        assert "catalogo entero" in r["instruccion"]
+        assert "catálogo entero" in r["instruccion"]
+        # el hecho lo escribe el CODIGO, no se le pide al modelo en prosa
+        assert "Lo que más se acerca" in r["bloque"]
+
+
+def test_el_empate_se_informa_no_se_disimula():
+    """MEDIDO EL 5-AGO, y es lo que hacia inutil al gradiente viejo: pidiendo
+    "el mouse que menos partes chinas tenga, que no sea Logitech", DIECINUEVE
+    mouse quedaban exactamente igual de lejos, y el codigo devolvia tres
+    arbitrarios presentados como si fueran los menos chinos.
+
+    La fuente distingue dos hechos -pais de la marca y pais de fabricacion-, asi
+    que ese empate es REAL. La respuesta honesta no es inventar un gradiente mas
+    fino para que salga un ganador: es decir el empate y desempatar por un
+    criterio declarado. Un orden que la ficha no respalda es alucinacion."""
+    r = H.buscar_productos(
+        H.BuscarProductos(categoria="mouse", filtros=[
+            {"campo": "pais_fabricacion", "operador": "no_contiene",
+             "valor": "china"},
+            {"campo": "marca", "operador": "no_contiene",
+             "valor": "logitech"}]), TIENDA)
+    assert r["estado"] == "ninguno_cumple_del_todo"
+    assert r["empatados_igual_de_cerca"] > len(r["productos"])
+    assert r["desempate"], "el criterio de desempate se declara"
+    # el empate viaja ESCRITO en el bloque que el modelo pega, no como un dato
+    # suelto que tenga que acordarse de mencionar
+    assert "igual de cerca" in r["bloque"]
+    # el desempate declarado es el precio: de menor a mayor entre los empatados
+    precios = [p["precio_ars"] for p in r["productos"]]
+    assert precios == sorted(precios)
 
 
 def test_la_exclusion_por_origen_filtra_de_verdad():
     """El filtro viejo tomaba los primeros 4 caracteres de la FRASE entera: con
     'partes chinas' buscaba 'part' y no matcheaba nunca. Ahora son las raices de
-    cada palabra."""
-    sin_filtro = H.buscar_productos(
-        H.BuscarProductos(categoria="mouse", cuantos=6), TIENDA)
+    cada palabra, y viven en el operador `no_contiene`."""
     con_filtro = H.buscar_productos(
-        H.BuscarProductos(categoria="mouse", cuantos=6,
-                          excluir=["partes chinas"]), TIENDA)
-    if con_filtro["estado"] == "encontrado" and sin_filtro["estado"] == "encontrado":
+        H.BuscarProductos(categoria="mouse", cuantos=6, filtros=[
+            {"campo": "origen", "operador": "no_contiene",
+             "valor": "partes chinas"}]), TIENDA)
+    if con_filtro["estado"] == "encontrado":
         for p in con_filtro["productos"]:
             assert "chin" not in str(p.get("origen", "")).lower()
 
 
-def test_nada_dentro_del_presupuesto_ofrece_lo_mas_cercano():
+def test_el_presupuesto_maximo_es_una_condicion_mas():
     """Un tope imposible NO es lo mismo que no tener el producto: se ofrece lo
     mas cercano real. Con la categoria vacia, en cambio, el veredicto es
     no_encontrado: si no, el modelo dice que es cuestion de plata cuando en
-    realidad no tenemos el rubro."""
+    realidad no tenemos el rubro.
+
+    5-ago: `tope_precio` dejo de ser un argumento propio. Era la segunda de las
+    cuatro puertas y es exactamente `precio_ars menor X`, con la ventaja de que
+    ahora se puede combinar con cualquier otra condicion en la misma llamada."""
     r = H.buscar_productos(
-        H.BuscarProductos(categoria="notebook", tope_precio=100), TIENDA)
-    assert r["estado"] == "nada_dentro_del_presupuesto"
-    assert r["lo_mas_cercano"]
+        H.BuscarProductos(categoria="notebook", filtros=[
+            {"campo": "precio_ars", "operador": "menor", "valor": "100"}]),
+        TIENDA)
+    assert r["estado"] == "ninguno_cumple_del_todo"
+    assert r["productos"], "nunca se devuelve vacio"
     vacia = H.buscar_productos(
-        H.BuscarProductos(categoria="lavarropas", tope_precio=100), TIENDA)
+        H.BuscarProductos(categoria="lavarropas", filtros=[
+            {"campo": "precio_ars", "operador": "menor", "valor": "100"}]),
+        TIENDA)
     assert vacia["estado"] in ("no_encontrado", "no_vendemos")
+
+
+def test_el_orden_por_defecto_es_la_relevancia_no_el_precio():
+    """LA FALLA MAS CARA DEL SISTEMA, medida el 5-ago. `descripcion` se usaba
+    para UNA sola cosa, el certificador de identidad. Si no certificaba un
+    modelo puntual se descartaba ENTERA y el resultado salia de ordenar por
+    precio, que era el unico criterio de orden que existia en todo el sistema.
+
+    Medido: "notebook para diseño grafico que le dure años" devolvia las TRES
+    MAS BARATAS de 171, y "mouse gamer inalambrico" devolvia el Genius de
+    $8.500 con cable. Las palabras del cliente no tocaban un solo campo, con
+    `tags`, `descripcion_rica` y `uso_recomendado` llenos en 880 de 880."""
+    baratos = H.buscar_productos(
+        H.BuscarProductos(categoria="teclado", cuantos=3), TIENDA)
+    con_desc = H.buscar_productos(
+        H.BuscarProductos(categoria="teclado", cuantos=3,
+                          descripcion="teclado inalambrico"), TIENDA)
+    assert baratos["ordenados_por"].startswith("precio")
+    assert con_desc["ordenados_por"] == "lo que mas se parece a lo que pidio"
+    assert [p["id"] for p in con_desc["productos"]] != \
+           [p["id"] for p in baratos["productos"]], \
+        "la descripcion tiene que cambiar el orden, no ser decorativa"
+    # y lo que trae es lo que el cliente pidio, no lo mas barato
+    for p in con_desc["productos"]:
+        assert "inalambr" in str(p.get("specs", {}).get("conexion", "")).lower()
+
+
+def test_cuando_la_prosa_no_discrimina_se_cae_al_precio_Y_SE_DICE():
+    """El limite honesto de la relevancia, medido sobre la fuente real: los 171
+    notebooks tienen el MISMO `uso_recomendado` -"Trabajo y estudio"-, los
+    mismos tags y la misma descripcion salvo el modelo. Ante "notebook para
+    diseño grafico que le dure años" ninguna palabra separa a una de otra,
+    porque lo que las diferencia es estructurado -ram, procesador, precio-, no
+    esta en la prosa.
+
+    Ahi el codigo NO puede elegir y no tiene que fingir que eligio: cae al
+    precio y lo DICE en `ordenados_por`. Sin ese aviso el modelo presenta las
+    tres mas baratas como si fueran las mejores para diseñar, que es la
+    alucinacion exacta que se midio el 5-ago. Con el aviso, el modelo sabe que
+    para responder bien tiene que pedir `ordenar_por ram` o una condicion."""
+    r = H.buscar_productos(
+        H.BuscarProductos(categoria="notebook", cuantos=3,
+                          descripcion="notebook para diseño grafico que le "
+                                      "dure años"), TIENDA)
+    assert r["ordenados_por"].startswith("precio")
+    # y la puerta para contestarla bien EXISTE: es el orden por un campo real
+    mejor = H.buscar_productos(
+        H.BuscarProductos(categoria="notebook", cuantos=3,
+                          ordenar_por="ram", direccion="max"), TIENDA)
+    assert mejor["ordenados_por"] == "ram max"
+    assert mejor["productos"][0]["id"] != r["productos"][0]["id"]
+
+
+def test_se_ordena_por_cualquier_campo_no_solo_por_precio():
+    """"El mas liviano" no tenia llamada posible: `orden` aceptaba barato o
+    caro y nada mas, con `ordenar_por` y `atributos_ordenables` escritos en
+    fuente_producto desde el interprete que murio el 1-ago y sin ninguna
+    herramienta que los expusiera. Diez atributos ordenables derivados de la
+    fuente, cero puertas."""
+    r = H.buscar_productos(
+        H.BuscarProductos(categoria="mouse", cuantos=3,
+                          ordenar_por="peso_gramos", direccion="min"), TIENDA)
+    assert r["estado"] == "encontrado"
+    assert r["ordenados_por"] == "peso_gramos min"
+    pesos = [p["peso_gramos"] for p in r["productos"]]
+    assert pesos == sorted(pesos)
+    # y el mas pesado es el mismo mecanismo con la direccion al reves
+    caro = H.buscar_productos(
+        H.BuscarProductos(categoria="mouse", cuantos=3,
+                          ordenar_por="garantia_meses", direccion="max"),
+        TIENDA)
+    garantias = [p["garantia_meses"] for p in caro["productos"]]
+    assert garantias == sorted(garantias, reverse=True)
 
 
 # ── LA POLITICA CON SUS NUMEROS REALES ───────────────────────────────────────

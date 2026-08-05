@@ -273,6 +273,11 @@ def construir_estado(conv: dict | None, lead: dict | None) -> dict:
     return {
         "productos_vistos": conv.get("productos_vistos") or [],
         "carrito": conv.get("carrito_vigente") or [],
+        # MEMORIA NEGATIVA (5-ago): lo que el cliente saco del pedido. Los
+        # demas campos guardan lo que quiere; este es el unico que guarda lo
+        # que dijo que NO, para que un producto retractado no reaparezca
+        # cuando la charla se comprime y la negacion se pierde.
+        "descartados": conv.get("descartados") or [],
         "presupuesto": (conv.get("ultimo_presupuesto") or "").strip(),
         "localidad_envio": (conv.get("ultima_localidad") or "").strip(),
         "localidades_envio": conv.get("ultimas_localidades") or [],

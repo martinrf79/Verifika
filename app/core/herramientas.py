@@ -51,40 +51,59 @@ class Filtro(BaseModel):
     """Una condicion estructurada sobre un campo real del catalogo."""
     campo: str = Field(
         description="El campo exacto de la lista. No inventes nombres.")
-    operador: Literal["contiene", "igual", "mayor", "menor"] = Field(
-        description="'contiene' para texto -color contiene blanco-. 'igual' "
-                    "para un valor exacto. 'mayor' y 'menor' SOLO para campos "
-                    "numericos, e incluyen el borde: menor 500 es hasta 500.")
+    operador: Literal["contiene", "no_contiene", "igual", "mayor",
+                      "menor"] = Field(
+        description="'contiene' para texto -color contiene blanco-. "
+                    "'no_contiene' para lo que el cliente NO quiere -pais_"
+                    "fabricacion no_contiene china, marca no_contiene "
+                    "logitech-. 'igual' para un valor exacto. 'mayor' y "
+                    "'menor' SOLO para campos numericos, e incluyen el borde: "
+                    "menor 500 es hasta 500, y precio_ars menor 100000 es el "
+                    "presupuesto maximo.")
     valor: str = Field(
         description="Lo que tiene que valer. Para numeros mandalo pelado: 500, "
                     "no '500 gramos'.")
 
 
 class BuscarProductos(BaseModel):
-    """Busca productos en el catalogo real."""
+    """Busca productos en el catalogo real.
+
+    UNA sola forma de acotar y ordenar. Todo lo que el cliente pida sobre un
+    atributo va en `filtros`, incluido el presupuesto -precio_ars menor X- y lo
+    que NO quiere -no_contiene-. Todo lo que sea "el mas algo" va en
+    `ordenar_por`."""
     descripcion: str | None = Field(
         None, description="Como lo nombro el cliente, tal cual: 'la asus tuf "
-                          "f15', 'un mouse gamer barato'. Vacio si solo pide "
-                          "una categoria entera.")
+                          "f15', 'un mouse gamer inalambrico para viajar'. "
+                          "Mandala SIEMPRE que el cliente haya descrito lo que "
+                          "busca, aunque tambien pases categoria: con esto se "
+                          "ordenan los candidatos por lo que mas se le parece.")
     categoria: str | None = Field(
         None, description="Categoria del catalogo, si el cliente pidio un "
                           "rubro y no un modelo puntual.")
-    orden: Literal["barato", "caro"] | None = Field(
-        None, description="'barato' si pide lo mas economico, 'caro' si pide "
-                          "lo mejor o mas premium.")
-    tope_precio: int | None = Field(
-        None, description="Presupuesto maximo en pesos, si lo dijo.")
-    excluir: list[str] | None = Field(
-        None, description="Marcas u origenes que el cliente NO quiere: "
-                          "['china'], ['logitech']. Tal cual lo dijo.")
     filtros: list[Filtro] | None = Field(
         None, description="CONDICIONES CONCRETAS sobre los campos del "
                           "catalogo. Usalas SIEMPRE que el cliente pida un "
                           "atributo -que sea blanco, que pese menos de 500 "
-                          "gramos, que tenga bluetooth, que sea resistente al "
-                          "agua, que tenga dos anios de garantia-. No lo "
-                          "resuelvas leyendo las descripciones: pedilo aca y "
-                          "el codigo filtra sobre los 880.")
+                          "gramos, que tenga bluetooth, que no sea de una "
+                          "marca, que salga menos de tanto-. No lo resuelvas "
+                          "leyendo las descripciones: pedilo aca y el codigo "
+                          "filtra sobre los 880. EL ORIGEN TAMBIEN ES UN CAMPO: "
+                          "'que no sea chino' o 'lo menos chino posible' es "
+                          "pais_fabricacion no_contiene china mas pais_marca "
+                          "no_contiene china. NUNCA contestes que no sabes de "
+                          "donde viene un producto: la fuente lo tiene y estos "
+                          "campos te lo dan.")
+    ordenar_por: str | None = Field(
+        None, description="Campo por el que ordenar cuando el cliente pide un "
+                          "extremo: 'el mas barato' es precio_ars con "
+                          "direccion min, 'el mas liviano' es peso_gramos con "
+                          "min, 'el de mas garantia' es garantia_meses con "
+                          "max. Vacio si no pidio ningun extremo: por defecto "
+                          "se ordena por lo que mas se parece a lo que pidio.")
+    direccion: Literal["min", "max"] = Field(
+        "min", description="'min' para el menor -el mas barato, el mas "
+                           "liviano-, 'max' para el mayor.")
     cuantos: int = Field(3, description="Cuantas opciones traer, 1 a 6.")
 
 
@@ -101,26 +120,35 @@ class ConsultarCatalogo(BaseModel):
     vas a decir "no tenemos nada que...", "todo lo que trabajamos es..." o
     "ninguno de nuestros productos...", primero preguntalo aca. Sin este dato
     NO podes afirmarlo: no lo sabes."""
-    operacion: Literal["contar", "mas_barato", "mas_caro", "valores",
-                       "donde_se_cumple"] = Field(
+    operacion: Literal["contar", "mas_barato", "mas_caro", "el_mayor",
+                       "el_menor", "valores", "donde_se_cumple"] = Field(
         description="'contar' cuantos hay. 'mas_barato' y 'mas_caro' el de "
-                    "todo el catalogo. 'valores' que valores distintos existen "
-                    "de un campo, por ejemplo que marcas manejamos. "
-                    "'donde_se_cumple' en que categorias SI se cumple del todo "
-                    "lo que el cliente pide evitar.")
+                    "todo el catalogo por precio. 'el_mayor' y 'el_menor' el "
+                    "extremo de CUALQUIER otro campo: el de mas garantia es "
+                    "el_mayor con campo garantia_meses, el mas liviano es "
+                    "el_menor con campo peso_gramos. 'valores' que valores "
+                    "distintos existen de un campo, por ejemplo que marcas "
+                    "manejamos. 'donde_se_cumple' en que categorias SI se "
+                    "cumple del todo lo que el cliente pide evitar.")
     campo: str | None = Field(
-        None, description="Solo para 'valores': de que campo querés la lista.")
+        None, description="De que campo. Obligatorio para 'valores', "
+                          "'el_mayor' y 'el_menor'.")
     categoria: str | None = Field(
         None, description="Acotá a una categoria si la pregunta es de un rubro.")
-    excluir: list[str] | None = Field(
-        None, description="Lo que el cliente NO quiere. Para "
-                          "'donde_se_cumple' es el argumento principal.")
-    # A PROPOSITO NO LLEVA `filtros`. Medido el 4-ago: repetir aca el enum de
-    # los 38 campos costaba 2.500 caracteres de esquema en CADA turno, y las
-    # preguntas de agregado que aparecen de verdad -cuantos hay, cual es el mas
-    # barato, que marcas manejamos, donde se cumple- se resuelven con
-    # `categoria` y `excluir`. Si algun dia hace falta filtrar un agregado, se
-    # suma; hoy seria pagar por adelantado una capacidad sin caso.
+    filtros: list[Filtro] | None = Field(
+        None, description="Condiciones que acotan la cuenta, con la MISMA "
+                          "forma que en buscar_productos: 'cuantos mouse "
+                          "blancos hay' es contar con color contiene blanco; "
+                          "'cuantos no se fabrican en China' es contar con "
+                          "pais_fabricacion no_contiene china; 'la notebook "
+                          "mas barata con 16GB' es mas_barato con ram "
+                          "contiene 16.")
+    # 5-AGO: `filtros` ENTRA. Antes no estaba, con el argumento de que costaba
+    # 2.500 caracteres de esquema por turno. Medido: sin esto no habia forma de
+    # cruzar un agregado con una condicion -"cuantos mouse blancos tenes", "la
+    # mas barata con 16GB"-, o sea 38 campos en una puerta y cero en la otra, y
+    # el hueco lo llenaba el modelo inventando. El esquema se comparte con
+    # buscar_productos, asi que el enum de campos ya estaba pago.
 
 
 class FichaProducto(BaseModel):
@@ -181,11 +209,22 @@ class ArmarPresupuesto(BaseModel):
 
 
 class VerCompatibilidad(BaseModel):
-    """Dice si un producto sirve para el equipo que tiene el cliente."""
+    """Dice si un producto sirve para lo que tiene el cliente.
+
+    Dos formas, se usa la que corresponda:
+      - contra una PLATAFORMA generica, con `equipo`: 'mi notebook', 'la ps5'.
+      - contra OTRO PRODUCTO del catalogo, con `contra_product_id`: 'tengo la
+        Lenovo IdeaPad 3, que memoria le sirve'. Cruza lo que uno REQUIERE
+        contra lo que el otro PROVEE, en las dos direcciones. Es mas preciso:
+        compara las fichas de los dos."""
     product_id: str = Field(description="Id del producto en duda.")
-    equipo: str = Field(
-        description="Lo que tiene el cliente, tal cual lo dijo: 'notebook', "
-                    "'ps5', 'pc de escritorio'.")
+    equipo: str | None = Field(
+        None, description="Lo que tiene el cliente, tal cual lo dijo: "
+                          "'notebook', 'ps5', 'pc de escritorio'.")
+    contra_product_id: str | None = Field(
+        None, description="Id del OTRO producto, cuando el equipo del cliente "
+                          "es algo que nosotros vendemos y ya lo certificaste "
+                          "con buscar_productos.")
 
 
 class TomarPedido(BaseModel):
@@ -199,6 +238,16 @@ class ItemDeclarado(BaseModel):
     que: str = Field(description="Que pidio, tal cual: 'auriculares', "
                                  "'la asus tuf f15', 'memoria ram'.")
     cantidad: int = Field(1, description="Cuantas unidades de eso.")
+    # EL DESTINO VA PEGADO AL ITEM, no en una lista suelta al costado. Hasta el
+    # 5-ago `destinos` viajaba aparte, sin ninguna atadura con los items, asi
+    # que "un mouse a Cordoba y el otro a Concordia" NO SE PODIA DECLARAR: el
+    # reconciliador veia "2 mouse" y "Cordoba, Concordia" sin saber cual iba a
+    # donde, y por lo tanto un reparto mal hecho no lo podia detectar. Es la
+    # familia mas grande de las preguntas de prueba.
+    destino: str | None = Field(
+        None, description="A donde va ESTE item, si el pedido se reparte entre "
+                          "varios lugares. Si todo va a un solo lado, dejalo "
+                          "vacio y usá `destinos`.")
 
 
 class RegistrarPedido(BaseModel):
@@ -396,6 +445,18 @@ def esquemas(tienda_id: str) -> list[dict]:
             props["categoria"]["enum"] = cats
         if nombre == "buscar_productos" and "filtros" in props:
             _atar_filtros(props["filtros"], tienda_id)
+        if nombre == "buscar_productos" and "ordenar_por" in props:
+            # MISMA ATADURA que los campos de condicion, y por el mismo motivo:
+            # el enum sale de la fuente viva. `fuente_producto.ordenar_por` y
+            # `atributos_ordenables` estaban escritos desde el interprete que
+            # murio el 1-ago y ninguna herramienta los exponia, asi que "el mas
+            # liviano" no tenia como llegar al codigo con el dato cargado.
+            from app.core.filtros_catalogo import campos_filtrables
+            reg = campos_filtrables(tienda_id)
+            if reg:
+                props["ordenar_por"]["enum"] = list(reg)
+        if nombre == "consultar_catalogo" and "filtros" in props:
+            _atar_filtros(props["filtros"], tienda_id)
         if nombre == "consultar_catalogo":
             # MISMA ATADURA que buscar_productos: los campos y las categorias
             # salen de la fuente viva, asi que el agregado no puede contar sobre
@@ -486,112 +547,97 @@ def _ficha(prod: dict, tienda_id: str | None = None) -> dict:
     return out
 
 
-def _stems(valor: str) -> list[str]:
-    """Raices por palabra. 'partes chinas' -> ['chin'], y filtra escriba como
-    escriba el cliente. El corte por frase entera no matcheaba nunca."""
-    return [w[:4] for w in _norm(valor).split() if len(w) >= 4]
-
-
-# EL ORIGEN TIENE DOS PAISES Y HAY QUE SEPARARLOS. La fuente los escribe en una
-# sola linea con forma fija: "Marca Logitech de Suiza. Fabricado en China." El
-# primero es el pais de la MARCA, el segundo el de FABRICACION, y para un cliente
-# que pide "lo menos chino" no valen lo mismo.
-_RE_PAIS_MARCA = re.compile(r"marca\s+\S+(?:\s+\S+)?\s+de\s+([^.]+)")
-_RE_PAIS_FAB = re.compile(r"fabricad\w*\s+en\s+([^.]+)")
-
-
-def _paises_de(origen: str) -> tuple[str, str]:
-    """(pais de la marca, pais de fabricacion) desde el texto de `origen`."""
-    o = _norm(origen)
-    m = _RE_PAIS_MARCA.search(o)
-    f = _RE_PAIS_FAB.search(o)
-    return (m.group(1).strip() if m else "", f.group(1).strip() if f else "")
-
-
-def _grado(prod: dict, excluir: list[str]) -> int:
-    """CUANTO incumple, no SI incumple. Ordena cuando la exclusion vacia el
-    resultado y hay que ofrecer lo que menos la incumple.
-
-    La marca pesa mas que la fabricacion: una marca china fabricada en China
-    esta mas lejos del pedido que una suiza fabricada en China. Y un origen que
-    nombra alternativas -"Taiwan o China segun linea"- esta mas cerca que uno
-    que dice China a secas, porque no siempre es del pais excluido.
-
-    ESO ERA LO QUE PROMETIA Y NO HACIA, hasta el 4-ago-2026. Buscaba la raiz
-    "chin" adentro del campo `marca`, que dice "Redragon" a secas: el pais de la
-    marca NO vive ahi, vive adentro del texto de `origen`. Asi que el +3 no se
-    aplicaba NUNCA y lo unico que quedaba era "aparece China en el origen", que
-    es verdad para rubros enteros. MEDIDO: los auriculares HyperX de Estados
-    Unidos y los Redragon DE CHINA daban los dos grado 2; los 52 mouse daban 2 y
-    las 96 memorias daban 1. El gradiente era un booleano disfrazado, y por eso
-    "lo menos chino" nunca funciono en ninguna charla.
-
-    Ahora los dos paises se leen del origen por separado.
-    """
-    origen = _norm(prod.get("origen"))
-    nombre = _norm(prod.get("nombre"))
-    pais_marca, pais_fab = _paises_de(origen)
-    g = 0
-    for valor in (excluir or []):
-        for s in _stems(valor):
-            if s in pais_marca:
-                g += 3
-            if s in pais_fab:
-                g += 2
-            if s in nombre:
-                g += 2
-            # la marca puede nombrar el pais sin que el origen lo declare
-            if s in _norm(prod.get("marca")):
-                g += 3
-    # Un origen que nombra alternativas -"Taiwan o China segun linea"- esta mas
-    # cerca del pedido que uno que dice China a secas.
-    if g and ("segun linea" in origen or " o " in origen):
-        g -= 1
-    return g
-
-
-def _categorias_que_cumplen(excluir: list[str], tienda_id: str,
-                            salvo: str | None = None) -> list[str]:
-    """EL AGREGADO. En que categorias del catalogo SI se cumple del todo la
-    condicion que el cliente puso.
+def _categorias_donde_se_cumple(filtros: list, tienda_id: str,
+                                salvo: str | None = None) -> list[str]:
+    """EL AGREGADO. En que categorias del catalogo SI se cumplen del todo las
+    condiciones que el cliente puso.
 
     Por que existe (4-ago-2026). "Tenes algo sin China?" es una pregunta sobre
     los 880, no una busqueda: no la resuelve traer seis productos ni mandarle el
     catalogo al modelo. La calcula el codigo, exacta, en milisegundos y sin un
-    solo token. La respuesta real es 91 de 880 -los 72 de almacenamiento externo
-    y los 19 procesadores-, y el bot en produccion contesto que no tenia
-    ninguno. Nunca se lo habiamos pedido al codigo, asi que el modelo relleno el
-    hueco inventando un universal, que es lo unico que podia hacer.
+    solo token. La respuesta real es 86 con stock, y el bot en produccion
+    contesto que no tenia ninguno. Nunca se lo habiamos pedido al codigo, asi
+    que el modelo relleno el hueco inventando un universal.
 
-    Se excluye la categoria que ya se busco: no se le ofrece al cliente el mismo
-    rubro del que se le acaba de decir que no cumple.
+    5-ago: corre sobre las CONDICIONES generales, no sobre el viejo `excluir`.
     """
     from app.storage.firestore_client import get_all_products
-    if not excluir:
+    from app.core import filtros_catalogo as FC
+    if not filtros:
         return []
+    n = len(filtros)
     cats: dict[str, int] = {}
     for p in (get_all_products(tienda_id=tienda_id) or []):
-        if (p.get("stock") or 0) <= 0 or _grado(p, excluir) > 0:
+        if (p.get("stock") or 0) <= 0:
+            continue
+        if FC.cuantos_cumple(p, filtros, tienda_id) < n:
             continue
         cat = str(p.get("categoria") or "").strip()
         if cat and _norm(cat) != _norm(salvo):
             cats[cat] = cats.get(cat, 0) + 1
     # Solo las que tienen surtido de verdad: ofrecer un rubro con un producto
     # suelto no es una alternativa comercial, es un consuelo.
-    return sorted(c for c, n in cats.items() if n >= 3)
-
-
-def _excluido(prod: dict, excluir: list[str]) -> bool:
-    campos = " ".join([_norm(prod.get("marca")), _norm(prod.get("origen")),
-                       _norm(prod.get("nombre"))])
-    for valor in excluir:
-        st = _stems(valor)
-        if st and any(s in campos for s in st):
-            return True
-    return False
+    return sorted(c for c, n_ in cats.items() if n_ >= 3)
 
 
 # ── LOS CUERPOS ──────────────────────────────────────────────────────────────
+def cuantos_pedidos(a: BuscarProductos) -> int:
+    return max(1, min(int(a.cuantos or 3), 6))
+
+
+def _bloque_hallazgo(fichas: list, empatados: int, donde: list,
+                     categoria: str | None) -> str:
+    """EL RENGLON DE LOS HECHOS CUANDO NINGUNO CUMPLE DEL TODO, escrito por el
+    CODIGO y pegado tal cual, igual que la cuenta.
+
+    POR QUE DEJA DE SER UNA INSTRUCCION. La herramienta ya le decia al modelo
+    "arranca por ellos, no por un no", le pasaba el orden, el empate y en que
+    rubros SI se cumple. Medido el 5-ago con la clave paga, con razonamiento
+    prendido y apagado: el modelo igual abria con el muro -"no tengo ningun
+    mouse que no sea de origen chino"- y no usaba `donde_si_se_cumple` ni una
+    vez. Cada vez que se perdio esa pelea se le agregaron palabras a la
+    instruccion, y esa es exactamente la rueda que hay que cortar.
+
+    En este repo ya existe el mecanismo que gana: la CUENTA. `armar_presupuesto`
+    devuelve el bloque ya escrito, el modelo lo pega y si lo reescribe el codigo
+    se lo repone. Es la unica parte del mensaje que nunca se distorsiona,
+    justamente porque el modelo no la redacta. Esto es lo mismo, aplicado al
+    segundo lugar donde el codigo sabe la verdad y el modelo la tuerce.
+
+    NO ES EL CODIGO OPINANDO. Son hechos: cuales son, en que orden, que
+    condicion no cumplen, cuantos empatan y en que rubros se cumple del todo. El
+    juicio -si le conviene, como convencerlo- sigue siendo del modelo, que
+    escribe antes y despues.
+    """
+    if not fichas:
+        return ""
+    lineas = []
+    for f in fichas:
+        renglon = f"- {f.get('nombre')}"
+        if f.get("precio"):
+            renglon += f": {f['precio']}"
+        # EL HECHO, NO LA CONDICION. La primera version pegaba el filtro crudo
+        # y al cliente le llegaba "no cumple: origen no_contiene chin", con la
+        # sintaxis interna y la raiz truncada. Se muestra el VALOR REAL del
+        # campo que falla -"Marca Genius de Taiwan. Fabricado en China."-, que
+        # ademas es mas util: el cliente ve el dato y decide.
+        dato = f.get("por_que")
+        if dato:
+            renglon += f" — {dato}"
+        lineas.append(renglon)
+    cabeza = "Lo que más se acerca a lo que pediste"
+    if categoria:
+        cabeza += f", entre los {categoria}"
+    partes = [cabeza + ":", "\n".join(lineas)]
+    if empatados > len(fichas):
+        partes.append(f"Hay {empatados} igual de cerca: ninguno está mejor que "
+                      f"otro, te muestro los más baratos de ese grupo.")
+    if donde:
+        partes.append("Donde sí se cumple del todo lo que pedís es en: "
+                      + ", ".join(donde) + ".")
+    return "\n".join(partes)
+
+
 def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
     """Identidad y catalogo. El veredicto lo da el CODIGO, siempre."""
     from app.storage.firestore_client import get_all_products
@@ -660,7 +706,27 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
                                        "eso puntual no, y mostrale estas que si "
                                        "tenemos. NO digas que no vendemos el "
                                        "rubro."}
-            return {"estado": "no_encontrado", "buscado": a.descripcion}
+            # LA SALIDA MUDA ERA EL GENERADOR DE MURO. Este era el unico de los
+            # estados de salida que volvia SIN instruccion, sin cuantos habia y
+            # sin alternativa: el modelo recibia "no_encontrado" pelado y de ahi
+            # generalizaba al catalogo entero. Medido el 5-ago con "un regalo
+            # para mi viejo que labura en el campo": estado no_encontrado,
+            # instruccion False, nada mas.
+            #
+            # No se inventa un candidato: se le da al modelo con QUE preguntar.
+            from app.storage.firestore_client import get_categories
+            return {"estado": "no_encontrado", "buscado": a.descripcion,
+                    "categorias_que_vendemos": [
+                        str(c) for c in (get_categories(tienda_id=tienda_id)
+                                         or [])],
+                    "instruccion": "No se pudo identificar un producto con eso. "
+                                   "NO digas que no tenemos nada ni afirmes "
+                                   "nada sobre el catalogo entero: lo que pasa "
+                                   "es que la descripcion no alcanza para "
+                                   "elegir. Preguntale lo minimo que te falta "
+                                   "para poder buscar, o proponele un rubro de "
+                                   "`categorias_que_vendemos` que le pueda "
+                                   "servir y confirmá con él antes de seguir."}
 
     if not prods:
         cat = _norm(a.categoria)
@@ -675,120 +741,147 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
     # modelo que es cuestion de plata cuando en realidad no tenemos el rubro.
     if not prods:
         return {"estado": "no_encontrado", "buscado": pedido_txt}
-    if a.excluir:
-        filtrados = [p for p in prods if not _excluido(p, a.excluir)]
-        # Si la exclusion vacia el resultado se DICE, no se devuelve el mismo
-        # listado como si nada: el 1-ago el cliente pidio menos partes chinas y
-        # recibio identico presupuesto, sin una palabra de por que.
-        if not filtrados:
-            # NINGUNA HERRAMIENTA DEVUELVE VACIO (Martin, 2-ago). Antes esto
-            # cortaba con "no tenemos nada" y era un MURO: verdad literal que
-            # mata la venta. El caso real: "las menos partes chinas posibles"
-            # sobre un catalogo donde los 46 auriculares, los 52 mouse y las 96
-            # memorias se fabrican en China. Cero chino no existe; MENOS chino
-            # si, y es lo que el cliente pidio. La condicion casi nunca es
-            # binaria aunque el argumento lo sea, asi que el codigo devuelve
-            # los que MENOS la incumplen, ordenados, y le dice al modelo que
-            # sea honesto sobre el grado.
-            #
-            # 4-AGO: LA INSTRUCCION ERA LA QUE ESCRIBIA EL MURO. Decia "NINGUNO
-            # cumple esa condicion del todo, y hay que decirlo derecho, sin
-            # adornar", asi que el modelo ARRANCABA por el negativo y de ahi
-            # generalizaba al catalogo entero. Medido sobre 130 turnos: el mismo
-            # muro salio en SIETE redacciones -"no tengo productos que no tengan
-            # partes chinas", "todos los productos que manejamos..."- y la
-            # afirmacion era FALSA, porque 91 de los 880 no tienen China.
-            #
-            # "Lo que menos X tenga" no es un filtro, es un RANKING: presupone
-            # que todo tiene algo y pide el minimo. Excluir da cero y de ahi nace
-            # el muro; ORDENAR siempre devuelve un primero y nunca puede
-            # producirlo. Asi que se ordena, se entrega el grado, y se dice
-            # DONDE del catalogo si se cumple del todo -que es un agregado sobre
-            # los 880, exacto y sin tokens, y es lo que el modelo inventaba-.
-            cercanos = sorted(prods, key=lambda p: _grado(p, a.excluir))
-            fichas = []
-            for p in cercanos[:3]:
-                f = _ficha(p, tienda_id)
-                f["cuanto_incumple"] = _grado(p, a.excluir)
-                fichas.append(f)
-            return {"estado": "ordenados_de_menos_a_mas",
-                    "condicion": a.excluir, "categoria": a.categoria,
-                    "productos": fichas,
-                    "donde_si_se_cumple": _categorias_que_cumplen(
-                        a.excluir, tienda_id, a.categoria),
-                    "instruccion": "El cliente pidio lo que MENOS tenga esa "
-                                   "condicion, no lo que no la tenga. Estos son "
-                                   "los que menos la tienen, EN ORDEN: arranca "
-                                   "por ellos, no por un no. Mira `origen` y "
-                                   "`cuanto_incumple` y decile en una linea por "
-                                   "que el primero esta mejor que el ultimo. "
-                                   "PROHIBIDO afirmar nada sobre el catalogo "
-                                   "entero: vos viste tres productos de UNA "
-                                   "categoria, no los 880. Si "
-                                   "`donde_si_se_cumple` trae algo, ofrecelo "
-                                   "como el rubro donde la condicion SI se "
-                                   "cumple del todo. Despues preguntale si con "
-                                   "eso avanza."}
-        prods = filtrados
-    if a.tope_precio:
-        dentro = [p for p in prods if p["precio_ars"] <= a.tope_precio]
-        if not dentro:
-            baratos = sorted(prods, key=lambda p: p["precio_ars"])[:2]
-            return {"estado": "nada_dentro_del_presupuesto",
-                    "tope": a.tope_precio,
-                    "lo_mas_cercano": [_ficha(p, tienda_id) for p in baratos]}
-        prods = dentro
-
-    # LOS FILTROS ESTRUCTURADOS. Van al final a proposito: primero la identidad
-    # y el rubro, que los decide el codigo, y recien despues las condiciones
-    # sobre los campos. Asi un filtro imposible no puede disfrazar de "no
-    # tenemos eso" algo que en realidad si vendemos.
+    # ── UNA SOLA PUERTA: condiciones, degradacion, orden ────────────────
+    # Antes habia TRES bloques aca -excluir, tope_precio y filtros-, cada uno
+    # con su propio estado de salida y su propia instruccion escrita a mano.
+    # Cuatro contratos distintos que el modelo tenia que aprender por separado,
+    # y cada arreglo habia que hacerlo cuatro veces. Ahora es uno.
+    from app.core import filtros_catalogo as FC
     filtrado = None
+    empatados = 0
     if a.filtros:
-        from app.core import filtros_catalogo as FC
         filtrado = FC.aplicar(prods, a.filtros, tienda_id)
         if filtrado["descartados"]:
             log.warning("filtros_descartados", trace=[
                 d["motivo"] for d in filtrado["descartados"]][:3])
         if not filtrado["productos"]:
-            # MISMA REGLA QUE `excluir` (Martin, 2-ago): ninguna herramienta
-            # devuelve vacio. Un filtro que no deja nada casi nunca significa
-            # que no tenemos el producto; significa que ESA condicion no se
-            # cumple. Se devuelve lo que MAS condiciones cumple y se dice cual
-            # falla, para que el modelo no cierre con un no que es mentira.
-            cercanos = sorted(
-                prods, key=lambda p: -FC.cuantos_cumple(p, a.filtros, tienda_id))
+            # NINGUNA HERRAMIENTA DEVUELVE VACIO (Martin, 2-ago). Un conjunto
+            # de condiciones que no deja nada casi nunca significa que no
+            # tenemos el producto: significa que ESA condicion no se cumple.
+            #
+            # EL CASO QUE LO PARIO: "las menos partes chinas posibles" sobre un
+            # catalogo donde los 46 auriculares, los 52 mouse y las 96 memorias
+            # se fabrican en China. Cero chino no existe; MENOS chino si, y es
+            # lo que el cliente pidio. "Lo que menos X tenga" no es un filtro,
+            # es un RANKING: presupone que todo tiene algo y pide el minimo.
+            # Filtrar da cero y de ahi nace el muro; ordenar siempre devuelve un
+            # primero y nunca puede producirlo.
+            #
+            # 5-AGO, LO QUE SE AGREGA: el EMPATE se dice. Medido, 19 mouse
+            # estaban igual de lejos y el codigo devolvia tres arbitrarios como
+            # si fueran "los menos chinos". Ahora vuelve `empatados` y el
+            # criterio de desempate, para que el modelo pueda ser honesto en
+            # vez de inventar un orden que la fuente no tiene.
+            cercanos, empatados, faltan = FC.rankear_por_cercania(
+                prods, a.filtros, tienda_id)
+            fichas = []
+            for p in cercanos[:max(3, cuantos_pedidos(a))]:
+                f = _ficha(p, tienda_id)
+                f["no_cumple"] = FC.incumplidos(p, a.filtros, tienda_id)
+                # El VALOR real del primer campo que falla, para que el bloque
+                # le muestre al cliente el dato y no la sintaxis del filtro.
+                f["por_que"] = FC.dato_que_falla(p, a.filtros, tienda_id)
+                fichas.append(f)
+            donde = _categorias_donde_se_cumple(a.filtros, tienda_id,
+                                                a.categoria)
             return {"estado": "ninguno_cumple_del_todo",
-                    "filtros_pedidos": filtrado["aplicados"],
-                    "filtros_descartados": filtrado["descartados"] or None,
-                    "lo_mas_parecido": [
-                        {**_ficha(p, tienda_id),
-                         "no_cumple": FC.incumplidos(p, a.filtros, tienda_id)}
-                        for p in cercanos[:3]],
-                    "instruccion": "NINGUNO cumple todas esas condiciones. "
-                                   "Decilo derecho y decile CUAL condicion es "
-                                   "la que no se cumple -esta en no_cumple de "
-                                   "cada uno-. No digas que no tenemos el "
-                                   "producto: tenemos estos, que es lo mas "
-                                   "parecido. Si dice que la ficha no lo "
-                                   "especifica, no afirmes ni que si ni que "
-                                   "no. Despues preguntale si con eso avanza."}
+                    "bloque": _bloque_hallazgo(fichas, empatados, donde,
+                                               a.categoria),
+                    "condiciones": filtrado["aplicados"],
+                    "condiciones_no_aplicadas": filtrado["descartados"] or None,
+                    "categoria": a.categoria,
+                    "productos": fichas,
+                    "empatados_igual_de_cerca": empatados,
+                    "desempate": "entre los que estan igual de cerca, primero "
+                                 "el mas barato",
+                    "cuantas_condiciones_incumple_el_mejor": faltan,
+                    "donde_si_se_cumple": _categorias_donde_se_cumple(
+                        a.filtros, tienda_id, a.categoria),
+                    # LA INSTRUCCION SE ACHICO A LA MITAD y no es un descuido:
+                    # todo lo que decia -el orden, el empate, cual condicion
+                    # falla, donde si se cumple- ahora VIENE ESCRITO en
+                    # `bloque`, que se pega tal cual. Pedirselo ademas en prosa
+                    # seria escribir dos veces lo mismo, que es el error que
+                    # este repo ya pago con los enums duplicados.
+                    "instruccion": "Pegá el bloque TAL CUAL, sin cambiar un "
+                                   "renglon. Escribí vos lo de antes y lo de "
+                                   "después: por qué le puede servir el "
+                                   "primero y una pregunta para avanzar. NO "
+                                   "abras con un no. PROHIBIDO afirmar nada "
+                                   "sobre el catálogo entero: viste unos pocos "
+                                   "productos, no los 880."}
         prods = filtrado["productos"]
 
-    prods.sort(key=lambda p: p["precio_ars"], reverse=(a.orden == "caro"))
+    # EL ORDEN. Por el campo que pidio el cliente si pidio un extremo; si no,
+    # por lo que MAS SE PARECE a lo que describio. El precio dejo de ser el
+    # unico criterio que existia: medido el 5-ago, "notebook para diseño
+    # grafico" devolvia las 3 mas baratas de 171 porque la descripcion se
+    # descartaba entera.
+    orden_usado = ""
+    orden_rechazado = None
+    registro = FC.campos_filtrables(tienda_id)
+    campo_orden = _norm(a.ordenar_por) if a.ordenar_por else ""
+    if campo_orden and registro.get(campo_orden) == "texto" \
+            and not FC.orden_tiene_sentido(prods, campo_orden, tienda_id):
+        # ORDENAR POR UN CAMPO DE TEXTO NO ORDENA NADA, y hay que decirlo. El
+        # caso medido el 5-ago, 3 de 3 vueltas: ante "el mouse que menos partes
+        # chinas tenga" el modelo pidio `ordenar_por pais_fabricacion`. Alfabetico
+        # por pais no es un ranking de nada: el resultado volvia `encontrado`,
+        # con la condicion sin aplicar, y el modelo escribia el muro de su
+        # cabeza. El reconciliador lo cazaba y en la ronda dos el modelo no
+        # pedia nada, porque desde su punto de vista YA lo habia resuelto.
+        #
+        # Se rechaza con el motivo Y con la alternativa concreta, en el punto de
+        # uso. Es la misma regla que ya tenian los filtros: el que se cae se
+        # REPORTA. Un campo de texto cuyos valores SI son magnitudes -"512GB",
+        # "24 meses"- se sigue ordenando: ahi el orden significa algo.
+        orden_rechazado = {
+            "campo": campo_orden,
+            "motivo": f"'{campo_orden}' es un campo de texto: ordenar por el "
+                      f"no ordena por nada. Si el cliente quiere EVITAR un "
+                      f"valor, pedilo como condicion con no_contiene; si "
+                      f"quiere el mayor o el menor de algo, ordena por un "
+                      f"campo numerico."}
+        log.warning("orden_rechazado", campo=campo_orden)
+        campo_orden = ""
+    if campo_orden and campo_orden in registro:
+        prods = FC.ordenar(prods, campo_orden, a.direccion, tienda_id)
+        orden_usado = f"{campo_orden} {a.direccion}"
+    elif a.descripcion:
+        # El peso por rareza se calcula sobre los CANDIDATOS de esta consulta,
+        # no sobre el catalogo entero: dentro de una categoria, la palabra del
+        # rubro no separa nada y la que el cliente agrego es la que elige.
+        raras = FC.pesos_por_rareza(prods, a.descripcion)
+        puntuados = [(FC.relevancia(p, a.descripcion, raras), p["precio_ars"], p)
+                     for p in prods]
+        if any(s > 0 for s, _, _ in puntuados):
+            puntuados.sort(key=lambda t: (-t[0], t[1]))
+            prods = [p for _, _, p in puntuados]
+            orden_usado = "lo que mas se parece a lo que pidio"
+    if not orden_usado:
+        prods = sorted(prods, key=lambda p: p["precio_ars"])
+        orden_usado = "precio, del mas barato al mas caro"
+
     if not prods:
         return {"estado": "no_encontrado", "buscado": pedido_txt}
-    cuantos = max(1, min(int(a.cuantos or 3), 6))
-    salida = {"estado": "encontrado",
+    cuantos = cuantos_pedidos(a)
+    salida = {"estado": "encontrado", "hay_en_total": len(prods),
+              "ordenados_por": orden_usado,
               "productos": [_ficha(p, tienda_id) for p in prods[:cuantos]]}
+    if orden_rechazado:
+        salida["orden_no_aplicado"] = orden_rechazado
+        salida["instruccion"] = (
+            "OJO: el orden que pediste NO se aplico, por el motivo de "
+            "`orden_no_aplicado`. Esta lista NO responde a esa condicion, asi "
+            "que NO afirmes nada sobre ella. Volvé a pedir la busqueda como "
+            "dice el motivo.")
     if filtrado:
         # QUE SE FILTRO Y QUE NO, dicho. Sin esto el modelo no puede saber que
         # una condicion se cayo -campo inexistente, operador imposible- y
         # presenta como filtrada una lista que no lo esta.
-        salida["filtros_aplicados"] = filtrado["aplicados"]
-        salida["hay_en_total"] = len(prods)
+        salida["condiciones_aplicadas"] = filtrado["aplicados"]
         if filtrado["descartados"]:
-            salida["filtros_no_aplicados"] = filtrado["descartados"]
+            salida["condiciones_no_aplicadas"] = filtrado["descartados"]
             salida["instruccion"] = (
                 "OJO: esas condiciones NO se pudieron aplicar. No digas que "
                 "los productos las cumplen. Si hace falta, preguntale.")
@@ -813,34 +906,73 @@ def consultar_catalogo(a: ConsultarCatalogo, tienda_id: str) -> dict:
     resuelve el codigo y al modelo le vuelve un numero. La alternativa -mandarle
     el catalogo al modelo- se cae con el tamaño; esta no.
 
-    No trae logica nueva: reusa el registro de campos de `filtros_catalogo` y el
-    `_grado` del origen, que ya estaban.
+    No trae logica nueva: reusa el registro de campos y las condiciones de
+    `filtros_catalogo`, las MISMAS que usa `buscar_productos`. Una sola forma de
+    decir una condicion en todo el sistema.
     """
     from app.storage.firestore_client import get_all_products
     from app.core import filtros_catalogo as FC
 
-    prods = [p for p in (get_all_products(tienda_id=tienda_id) or [])
-             if (p.get("stock") or 0) > 0]
+    todos = get_all_products(tienda_id=tienda_id) or []
+    prods = [p for p in todos if (p.get("stock") or 0) > 0]
     if a.categoria:
         cat = _norm(a.categoria)
         prods = [p for p in prods if _norm(p.get("categoria")) == cat]
-    if a.excluir:
-        prods = [p for p in prods if _grado(p, a.excluir) == 0]
+    descartadas = []
+    if a.filtros:
+        res = FC.aplicar(prods, a.filtros, tienda_id)
+        prods = res["productos"]
+        descartadas = res["descartados"]
 
     total = len(prods)
     if a.operacion == "contar":
-        return {"estado": "ok", "cuantos": total,
-                "de_un_total_de": len(get_all_products(tienda_id=tienda_id) or []),
-                "categoria": a.categoria}
+        out = {"estado": "ok", "cuantos": total,
+               "de_un_total_de": len(todos), "categoria": a.categoria}
+        if descartadas:
+            # Una condicion que no se pudo aplicar cambia el numero. Si no se
+            # dice, el modelo presenta como filtrada una cuenta que no lo esta.
+            out["condiciones_no_aplicadas"] = descartadas
+            out["instruccion"] = ("Esa condicion NO se pudo aplicar, asi que "
+                                  "el numero NO la tiene en cuenta. No lo "
+                                  "presentes como si la cumpliera.")
+        return out
 
-    if a.operacion in ("mas_barato", "mas_caro"):
-        conp = [p for p in prods if isinstance(p.get("precio_ars"), (int, float))]
+    if a.operacion in ("mas_barato", "mas_caro", "el_mayor", "el_menor"):
+        # EL EXTREMO DE CUALQUIER CAMPO, no solo del precio. La asimetria que
+        # habia -`buscar_productos` ordenaba por los 40 campos y el agregado
+        # solo por plata- la encontro el modelo VIVO el 5-ago: ante "que teclado
+        # tiene la garantia mas larga" pidio `mas_caro` con `campo=
+        # garantia_meses`, doblando la operacion de precio para pedir un extremo
+        # de otro campo. El campo se ignoraba y devolvia el mas caro. Cuando el
+        # modelo tuerce un argumento es que le falta la puerta.
+        campo = _norm(a.campo) if a.operacion in ("el_mayor", "el_menor") \
+            else "precio_ars"
+        if campo not in FC.campos_filtrables(tienda_id):
+            return {"estado": "campo_desconocido", "campo": a.campo,
+                    "instruccion": "Ese campo no existe en el catalogo. No "
+                                   "inventes el dato: preguntale o usá uno de "
+                                   "los campos reales."}
+        direccion = "min" if a.operacion in ("mas_barato", "el_menor") else "max"
+        ordenados = FC.ordenar(prods, campo, direccion, tienda_id)
+        conp = [p for p in ordenados
+                if FC.clave_de_orden(p, campo, tienda_id) is not None]
         if not conp:
-            return {"estado": "sin_resultados", "cuantos": 0}
-        p = (min if a.operacion == "mas_barato" else max)(
-            conp, key=lambda x: x["precio_ars"])
-        return {"estado": "ok", "cuantos": total,
-                "producto": _ficha(p, tienda_id)}
+            return {"estado": "sin_resultados", "cuantos": 0, "campo": campo}
+        # EL EMPATE, otra vez. "El de mas garantia" con 171 productos de 12
+        # meses no tiene un ganador: tiene un grupo. Misma regla que en la
+        # busqueda, no se disimula.
+        mejor = FC.clave_de_orden(conp[0], campo, tienda_id)
+        empatados = sum(1 for p in conp
+                        if FC.clave_de_orden(p, campo, tienda_id) == mejor)
+        out = {"estado": "ok", "cuantos": total, "campo": campo,
+               "valor": mejor, "producto": _ficha(conp[0], tienda_id)}
+        if empatados > 1:
+            out["empatados_en_el_primer_puesto"] = empatados
+            out["instruccion"] = (
+                f"Hay {empatados} productos con el mismo valor de {campo}: no "
+                f"hay UNO que gane. Decilo asi y ofrecé el que te paso como "
+                f"uno de ellos, no como el unico.")
+        return out
 
     if a.operacion == "valores":
         campo = _norm(a.campo)
@@ -1010,6 +1142,12 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     # EL REPARTO POR DESTINO. Solo sale si CIERRA contra los items: el modelo a
     # veces resuelve mal "el resto" y reparte mas unidades de las que hay.
     reparto = ""
+    # CON UN SOLO DESTINO SE NOMBRA IGUAL. El bloque decia "Envio: $7.500" a
+    # secas: el cliente daba la ciudad y la cuenta no se la confirmaba nunca,
+    # asi que no tenia como saber si el numero era del destino que pidio. Con
+    # varios destinos ya se nombraban; con uno, no. Medido el 5-ago, Serie 1.
+    if len(destinos) == 1:
+        reparto = f"Envio a {destinos[0]}."
     if len(destinos) > 1:
         por_destino: dict = {}
         for i in a.items:
@@ -1051,16 +1189,93 @@ def ver_compatibilidad(a: VerCompatibilidad, tienda_id: str) -> dict:
     p = get_product_by_id(str(a.product_id).upper(), tienda_id=tienda_id)
     if not p:
         return {"estado": "no_encontrado", "product_id": a.product_id}
-    plats = plataformas_del_mensaje(a.equipo, tienda_id)
+
+    # PRODUCTO CONTRA PRODUCTO. `compatibilidad.evaluar_par` cruza `requiere`
+    # contra `provee` en las dos direcciones y estaba escrita, probada y SIN
+    # NINGUNA PUERTA que la expusiera: la unica forma era contra plataforma
+    # generica, asi que "tengo la Lenovo IdeaPad 3, que memoria le sirve" no
+    # tenia como resolverse aunque las aristas estuvieran cargadas -`requiere`
+    # en 388 de 482 filas, `provee` en 111-. Cazado el 5-ago por el banco.
+    if a.contra_product_id:
+        from app.core.compatibilidad import evaluar_par
+        otro = get_product_by_id(str(a.contra_product_id).upper(),
+                                 tienda_id=tienda_id)
+        if not otro:
+            return {"estado": "no_encontrado",
+                    "product_id": a.contra_product_id}
+        veredicto, motivo = evaluar_par(p, otro, tienda_id)
+        return {"estado": "ok", "producto": p.get("nombre"),
+                "contra": otro.get("nombre"),
+                "compatibilidad": [{"equipo": otro.get("nombre"),
+                                    "veredicto": veredicto, "motivo": motivo}],
+                "instruccion": ("Si el veredicto es sin_dato, decile honesto "
+                                "que no lo podes confirmar con la ficha. No "
+                                "supongas que sirve porque son de la misma "
+                                "categoria.")}
+
+    plats = plataformas_del_mensaje(a.equipo or "", tienda_id)
+    if not plats and (a.equipo or "").strip():
+        # EL EQUIPO TAMBIEN SE CERTIFICA, y es regla cero: la identidad la
+        # decide el CODIGO. Si lo que el cliente tiene es un producto de
+        # NUESTRO catalogo -"tengo una Lenovo IdeaPad 3"- no hace falta que el
+        # modelo lo busque primero y despues llame aca con el id: eso es una
+        # cadena de dos pasos que el modelo puede no encadenar, y medido el
+        # 5-ago con el modelo vivo NO la encadeno -llamo a consultar_temas y
+        # nunca busco el producto-. La herramienta lo resuelve sola.
+        from app.core.pedido_helpers import certificar_producto
+        from app.storage.firestore_client import get_all_products
+        from app.core.compatibilidad import evaluar_par
+        veredicto, hits = certificar_producto(
+            a.equipo, get_all_products(tienda_id=tienda_id) or [])
+        if hits:
+            # CON VARIANTES, SE EVALUAN TODAS. "Lenovo IdeaPad 3" certifica
+            # AMBIGUO -hay version Core i5 y version Ryzen 7-, y ahi el
+            # certificador manda preguntar. Pero para compatibilidad la
+            # ambiguedad muchas veces no cambia la respuesta: si las dos
+            # variantes dan el mismo veredicto, preguntar cual tiene es hacerle
+            # perder el tiempo al cliente por una diferencia que no existe.
+            # Se evaluan todas y solo se pregunta si difieren. Eso es comparar,
+            # no opinar.
+            pares = [evaluar_par(p, h, tienda_id) for h in hits[:6]]
+            distintos = {v for v, _ in pares}
+            if len(distintos) == 1:
+                v, motivo = pares[0]
+                return {"estado": "ok", "producto": p.get("nombre"),
+                        "contra": hits[0].get("nombre"),
+                        "variantes_evaluadas": len(pares),
+                        "compatibilidad": [{"equipo": hits[0].get("nombre"),
+                                            "veredicto": v, "motivo": motivo}],
+                        "instruccion": ("Si el veredicto es sin_dato, decile "
+                                        "honesto que no lo podes confirmar con "
+                                        "la ficha. No supongas que sirve.")}
+            return {"estado": "depende_de_la_variante",
+                    "producto": p.get("nombre"),
+                    "compatibilidad": [
+                        {"equipo": h.get("nombre"), "veredicto": v,
+                         "motivo": m}
+                        for h, (v, m) in zip(hits, pares)],
+                    "instruccion": "La respuesta CAMBIA segun la version que "
+                                   "tenga el cliente. Preguntale cual es; no "
+                                   "elijas vos."}
     if not plats:
         return {"estado": "equipo_desconocido", "equipo": a.equipo,
-                "producto": _ficha(p, tienda_id)}
+                "producto": _ficha(p, tienda_id),
+                "instruccion": "No se pudo identificar ese equipo. Preguntale "
+                               "que tiene exactamente; NO afirmes que sirve ni "
+                               "que no sirve."}
     veredictos = []
     for pl in plats[:3]:
-        v = evaluar(p, pl, tienda_id)
+        # `evaluar` devuelve una TUPLA (veredicto, motivo), no un dict. Acá se
+        # la leía como dict y la herramienta reventaba con AttributeError en
+        # TODAS sus llamadas: el hub atrapaba la excepción, devolvía
+        # {estado: error} y el modelo contestaba sin el dato de compatibilidad.
+        # Se veía como que el bot "no supo", nunca como una herramienta rota,
+        # porque ningún test tocaba las herramientas. Cazado el 5-ago por el
+        # banco de candidatos; la prueba de humo de las nueve puertas queda en
+        # `tests/test_puertas_humo.py` para que no pueda repetirse.
+        veredicto, motivo = evaluar(p, pl, tienda_id)
         veredictos.append({"equipo": etiqueta_plataforma(pl, tienda_id),
-                           "veredicto": v.get("veredicto"),
-                           "motivo": v.get("motivo")})
+                           "veredicto": veredicto, "motivo": motivo})
     return {"estado": "ok", "producto": p.get("nombre"),
             "compatibilidad": veredictos}
 

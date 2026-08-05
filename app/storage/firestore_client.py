@@ -327,6 +327,17 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       ultimas_localidades: list | None = None,
                       grupos_envio: list | None = None,
                       carrito_vigente: list | None = None,
+                      # MEMORIA NEGATIVA: lo que el cliente saco del pedido.
+                      # Los otros doce campos guardan lo que quiere; este es el
+                      # unico que guarda lo que dijo que NO, para que un
+                      # producto retractado no vuelva cuando la charla se
+                      # comprime.
+                      descartados: list | None = None,
+                      # La ultima declaracion completa del pedido. Comparar dos
+                      # declaraciones seguidas es lo unico que detecta que el
+                      # cliente saco algo que NUNCA llego al carrito, como un
+                      # producto que solo se nombro y se mostro.
+                      ultimo_declarado: list | None = None,
                       pedido_pendiente: dict | None = None,
                       criterio_cliente: str | None = None,
                       provincia_envio: str | None = None,
@@ -391,6 +402,10 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
     # cantidad}, para que el pedido no mute de identidad entre turnos.
     if carrito_vigente is not None:
         datos["carrito_vigente"] = carrito_vigente
+    if descartados is not None:
+        datos["descartados"] = descartados
+    if ultimo_declarado is not None:
+        datos["ultimo_declarado"] = ultimo_declarado
     # PEDIDO PENDIENTE: el pedido a medio armar (items resueltos + terminos
     # ambiguos con cantidad) esperando el criterio del cliente. {} = limpiar.
     if pedido_pendiente is not None:
