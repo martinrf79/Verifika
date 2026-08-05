@@ -86,10 +86,14 @@ class BuscarProductos(BaseModel):
                           "catalogo. Usalas SIEMPRE que el cliente pida un "
                           "atributo -que sea blanco, que pese menos de 500 "
                           "gramos, que tenga bluetooth, que no sea de una "
-                          "marca, que no se fabrique en un pais, que salga "
-                          "menos de tanto-. No lo resuelvas leyendo las "
-                          "descripciones: pedilo aca y el codigo filtra sobre "
-                          "los 880.")
+                          "marca, que salga menos de tanto-. No lo resuelvas "
+                          "leyendo las descripciones: pedilo aca y el codigo "
+                          "filtra sobre los 880. EL ORIGEN TAMBIEN ES UN CAMPO: "
+                          "'que no sea chino' o 'lo menos chino posible' es "
+                          "pais_fabricacion no_contiene china mas pais_marca "
+                          "no_contiene china. NUNCA contestes que no sabes de "
+                          "donde viene un producto: la fuente lo tiene y estos "
+                          "campos te lo dan.")
     ordenar_por: str | None = Field(
         None, description="Campo por el que ordenar cuando el cliente pide un "
                           "extremo: 'el mas barato' es precio_ars con "
@@ -116,15 +120,19 @@ class ConsultarCatalogo(BaseModel):
     vas a decir "no tenemos nada que...", "todo lo que trabajamos es..." o
     "ninguno de nuestros productos...", primero preguntalo aca. Sin este dato
     NO podes afirmarlo: no lo sabes."""
-    operacion: Literal["contar", "mas_barato", "mas_caro", "valores",
-                       "donde_se_cumple"] = Field(
+    operacion: Literal["contar", "mas_barato", "mas_caro", "el_mayor",
+                       "el_menor", "valores", "donde_se_cumple"] = Field(
         description="'contar' cuantos hay. 'mas_barato' y 'mas_caro' el de "
-                    "todo el catalogo. 'valores' que valores distintos existen "
-                    "de un campo, por ejemplo que marcas manejamos. "
-                    "'donde_se_cumple' en que categorias SI se cumple del todo "
-                    "lo que el cliente pide evitar.")
+                    "todo el catalogo por precio. 'el_mayor' y 'el_menor' el "
+                    "extremo de CUALQUIER otro campo: el de mas garantia es "
+                    "el_mayor con campo garantia_meses, el mas liviano es "
+                    "el_menor con campo peso_gramos. 'valores' que valores "
+                    "distintos existen de un campo, por ejemplo que marcas "
+                    "manejamos. 'donde_se_cumple' en que categorias SI se "
+                    "cumple del todo lo que el cliente pide evitar.")
     campo: str | None = Field(
-        None, description="Solo para 'valores': de que campo querés la lista.")
+        None, description="De que campo. Obligatorio para 'valores', "
+                          "'el_mayor' y 'el_menor'.")
     categoria: str | None = Field(
         None, description="Acotá a una categoria si la pregunta es de un rubro.")
     filtros: list[Filtro] | None = Field(
@@ -841,14 +849,42 @@ def consultar_catalogo(a: ConsultarCatalogo, tienda_id: str) -> dict:
                                   "presentes como si la cumpliera.")
         return out
 
-    if a.operacion in ("mas_barato", "mas_caro"):
-        conp = [p for p in prods if isinstance(p.get("precio_ars"), (int, float))]
+    if a.operacion in ("mas_barato", "mas_caro", "el_mayor", "el_menor"):
+        # EL EXTREMO DE CUALQUIER CAMPO, no solo del precio. La asimetria que
+        # habia -`buscar_productos` ordenaba por los 40 campos y el agregado
+        # solo por plata- la encontro el modelo VIVO el 5-ago: ante "que teclado
+        # tiene la garantia mas larga" pidio `mas_caro` con `campo=
+        # garantia_meses`, doblando la operacion de precio para pedir un extremo
+        # de otro campo. El campo se ignoraba y devolvia el mas caro. Cuando el
+        # modelo tuerce un argumento es que le falta la puerta.
+        campo = _norm(a.campo) if a.operacion in ("el_mayor", "el_menor") \
+            else "precio_ars"
+        if campo not in FC.campos_filtrables(tienda_id):
+            return {"estado": "campo_desconocido", "campo": a.campo,
+                    "instruccion": "Ese campo no existe en el catalogo. No "
+                                   "inventes el dato: preguntale o usá uno de "
+                                   "los campos reales."}
+        direccion = "min" if a.operacion in ("mas_barato", "el_menor") else "max"
+        ordenados = FC.ordenar(prods, campo, direccion, tienda_id)
+        conp = [p for p in ordenados
+                if FC.clave_de_orden(p, campo, tienda_id) is not None]
         if not conp:
-            return {"estado": "sin_resultados", "cuantos": 0}
-        p = (min if a.operacion == "mas_barato" else max)(
-            conp, key=lambda x: x["precio_ars"])
-        return {"estado": "ok", "cuantos": total,
-                "producto": _ficha(p, tienda_id)}
+            return {"estado": "sin_resultados", "cuantos": 0, "campo": campo}
+        # EL EMPATE, otra vez. "El de mas garantia" con 171 productos de 12
+        # meses no tiene un ganador: tiene un grupo. Misma regla que en la
+        # busqueda, no se disimula.
+        mejor = FC.clave_de_orden(conp[0], campo, tienda_id)
+        empatados = sum(1 for p in conp
+                        if FC.clave_de_orden(p, campo, tienda_id) == mejor)
+        out = {"estado": "ok", "cuantos": total, "campo": campo,
+               "valor": mejor, "producto": _ficha(conp[0], tienda_id)}
+        if empatados > 1:
+            out["empatados_en_el_primer_puesto"] = empatados
+            out["instruccion"] = (
+                f"Hay {empatados} productos con el mismo valor de {campo}: no "
+                f"hay UNO que gane. Decilo asi y ofrecé el que te paso como "
+                f"uno de ellos, no como el unico.")
+        return out
 
     if a.operacion == "valores":
         campo = _norm(a.campo)
@@ -1090,9 +1126,55 @@ def ver_compatibilidad(a: VerCompatibilidad, tienda_id: str) -> dict:
                                 "categoria.")}
 
     plats = plataformas_del_mensaje(a.equipo or "", tienda_id)
+    if not plats and (a.equipo or "").strip():
+        # EL EQUIPO TAMBIEN SE CERTIFICA, y es regla cero: la identidad la
+        # decide el CODIGO. Si lo que el cliente tiene es un producto de
+        # NUESTRO catalogo -"tengo una Lenovo IdeaPad 3"- no hace falta que el
+        # modelo lo busque primero y despues llame aca con el id: eso es una
+        # cadena de dos pasos que el modelo puede no encadenar, y medido el
+        # 5-ago con el modelo vivo NO la encadeno -llamo a consultar_temas y
+        # nunca busco el producto-. La herramienta lo resuelve sola.
+        from app.core.pedido_helpers import certificar_producto
+        from app.storage.firestore_client import get_all_products
+        from app.core.compatibilidad import evaluar_par
+        veredicto, hits = certificar_producto(
+            a.equipo, get_all_products(tienda_id=tienda_id) or [])
+        if hits:
+            # CON VARIANTES, SE EVALUAN TODAS. "Lenovo IdeaPad 3" certifica
+            # AMBIGUO -hay version Core i5 y version Ryzen 7-, y ahi el
+            # certificador manda preguntar. Pero para compatibilidad la
+            # ambiguedad muchas veces no cambia la respuesta: si las dos
+            # variantes dan el mismo veredicto, preguntar cual tiene es hacerle
+            # perder el tiempo al cliente por una diferencia que no existe.
+            # Se evaluan todas y solo se pregunta si difieren. Eso es comparar,
+            # no opinar.
+            pares = [evaluar_par(p, h, tienda_id) for h in hits[:6]]
+            distintos = {v for v, _ in pares}
+            if len(distintos) == 1:
+                v, motivo = pares[0]
+                return {"estado": "ok", "producto": p.get("nombre"),
+                        "contra": hits[0].get("nombre"),
+                        "variantes_evaluadas": len(pares),
+                        "compatibilidad": [{"equipo": hits[0].get("nombre"),
+                                            "veredicto": v, "motivo": motivo}],
+                        "instruccion": ("Si el veredicto es sin_dato, decile "
+                                        "honesto que no lo podes confirmar con "
+                                        "la ficha. No supongas que sirve.")}
+            return {"estado": "depende_de_la_variante",
+                    "producto": p.get("nombre"),
+                    "compatibilidad": [
+                        {"equipo": h.get("nombre"), "veredicto": v,
+                         "motivo": m}
+                        for h, (v, m) in zip(hits, pares)],
+                    "instruccion": "La respuesta CAMBIA segun la version que "
+                                   "tenga el cliente. Preguntale cual es; no "
+                                   "elijas vos."}
     if not plats:
         return {"estado": "equipo_desconocido", "equipo": a.equipo,
-                "producto": _ficha(p, tienda_id)}
+                "producto": _ficha(p, tienda_id),
+                "instruccion": "No se pudo identificar ese equipo. Preguntale "
+                               "que tiene exactamente; NO afirmes que sirve ni "
+                               "que no sirve."}
     veredictos = []
     for pl in plats[:3]:
         # `evaluar` devuelve una TUPLA (veredicto, motivo), no un dict. Acá se

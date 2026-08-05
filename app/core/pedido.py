@@ -289,10 +289,13 @@ def instruccion_de_faltantes(rec: dict) -> str:
                   "peor que cotizar de a partes.\n\n")
     if not resto:
         return cabeza.strip()
-    return (cabeza + "REVISION DEL PLAN. Comparé lo que el cliente pidió "
-            "contra lo que buscaste y falta esto:\n- " + "\n- ".join(resto) +
-            "\nPedí ahora las herramientas que resuelvan lo que falta. Si algo "
-            "no se puede resolver con una herramienta, no lo inventes.")
+    return (cabeza + "REVISION DEL PLAN, y esto MANDA sobre todo lo demás que "
+            "leas abajo. Comparé lo que el cliente pidió contra lo que "
+            "buscaste y falta esto:\n- " + "\n- ".join(resto) +
+            "\nTenés que pedir AHORA las herramientas que resuelvan esto. No "
+            "contestes sin resolverlo: el dato existe y no lo pediste. Si de "
+            "verdad ninguna herramienta puede resolverlo, recién ahí contestá "
+            "sin inventarlo.")
 
 
 def instruccion_de_preguntas(rec: dict) -> str:

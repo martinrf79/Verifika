@@ -87,6 +87,21 @@ class Settings(BaseModel):
     # SOLO para el decisor, sin encarecer el turno entero.
     DECISOR_MODEL: str = os.getenv("DECISOR_MODEL", "")
     DECISOR_REASONING: str = os.getenv("DECISOR_REASONING", "low")
+    # EL RAZONAMIENTO DEL REDACTOR. Estaba CLAVADO en "none" adentro de
+    # `_redactar`. Se saco a config para poder MEDIRLO, y se midio con la clave
+    # paga el 5-ago sobre las tres preguntas mas duras.
+    #
+    # RESULTADO: NO ARREGLO NADA Y COSTO LATENCIA. La falla que se queria
+    # atacar -el modelo no aplica la condicion de origen y arranca la respuesta
+    # por el muro- salio IGUAL con `low` que con `none`. Lo que cambio fue el
+    # tiempo: 7.673 -> 10.098 ms en la pregunta del origen, 4.046 -> 7.161 en la
+    # de la notebook, 5.306 -> 5.909 en la difusa. Entre medio segundo y tres
+    # segundos por turno, sin mejora medible.
+    #
+    # Por eso el default vuelve a "none". Queda como config para volver a
+    # medirlo cuando cambie el modelo, no como un camino apagado: el valor vivo
+    # es el que corre.
+    REDACTOR_REASONING: str = os.getenv("REDACTOR_REASONING", "none")
     GEMINI_BASE_URL: str = os.getenv(
         "GEMINI_BASE_URL",
         "https://generativelanguage.googleapis.com/v1beta/openai/")

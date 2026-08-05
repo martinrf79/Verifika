@@ -338,7 +338,16 @@ async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
                         "tomar_pedido", "consultar_temas"}
         esquemas = [e for e in esquemas
                     if e.get("function", e).get("name") in encadenables]
-        instr = _INSTRUCCION_RONDA_DOS + (("\n\n" + revision) if revision else "")
+        # EL FALTANTE VA PRIMERO, NO AL FINAL. `_INSTRUCCION_RONDA_DOS` abre con
+        # "si con esto ya podes contestar, no pidas nada mas", y la correccion
+        # del reconciliador se pegaba DESPUES. Medido el 5-ago con el modelo
+        # vivo, con y sin razonamiento: el reconciliador cazo bien que la
+        # condicion de origen no se habia aplicado, y en la ronda dos el modelo
+        # no pidio NADA las dos veces. El desaliento le ganaba a la correccion,
+        # asi que el turno terminaba en el muro que el reconciliador acababa de
+        # detectar. Un chequeo que detecta y no corrige no sirve de nada.
+        instr = ((revision + "\n\n" + _INSTRUCCION_RONDA_DOS) if revision
+                 else _INSTRUCCION_RONDA_DOS)
         msgs = _mensajes(negocio, memoria, history, mensaje, instr,
                          H.contexto_json(llamadas))
     else:
@@ -424,7 +433,7 @@ async def _redactar(negocio, memoria, history, mensaje, llamadas, trace_id,
     def _call():
         r = cli.chat.completions.create(
             model=_modelo(), messages=msgs, temperature=0.6, max_tokens=1200,
-            extra_body={"reasoning_effort": "none"})
+            extra_body={"reasoning_effort": settings.REDACTOR_REASONING})
         return r.choices[0].message.content or ""
 
     from app.core.llm_reintento import llamar_con_reintento
