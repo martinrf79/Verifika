@@ -661,6 +661,24 @@ _RE_NIEGA = re.compile(
     r"no\s+(?:vendemos|trabajamos|manejamos|comercializamos|tenemos|"
     r"contamos\s+con|ofrecemos|dispon)", re.IGNORECASE)
 
+# NEGAR EL RUBRO NO ES LO MISMO QUE NO TENER UN DATO, y esta guardia no las
+# distinguia. Medido el 5-ago, con el estado `sin_dato_en_la_fuente` recien
+# puesto: ante "auriculares con cancelacion de ruido activa" el bot contestaba
+# bien -"no tenemos ese dato de los auriculares en la ficha"- y esta funcion le
+# BORRABA esa oracion, porque dice "no tenemos" y nombra una categoria que
+# acabamos de traer. Quedaba "te muestro los que sí tengo", sin decir nunca que
+# el dato faltaba. La guardia contra la alucinacion se comia la honestidad, en
+# silencio y sin log.
+#
+# Es la misma familia que la poda de prosa que borraba la respuesta de spec por
+# tener digitos: una guardia escrita para un caso que muerde a su vecino. La
+# frase se salva cuando habla del DATO -la ficha, la especificacion, lo que no
+# esta confirmado-, porque ahi no esta negando que vendamos el rubro.
+_RE_ES_SOBRE_EL_DATO = re.compile(
+    r"\b(?:ese|este|esa|esta|el|la)\s+(?:dato|detalle|especificaci|info)|"
+    r"\bfichas?\b|\bespecifica|\bconfirmad|\bno\s+figura|\bno\s+lo\s+dice",
+    re.IGNORECASE)
+
 
 def _sin_negar_lo_traido(texto: str, llamadas: list, trace_id: str) -> str:
     """NO SE NIEGA UNA CATEGORIA QUE LA HERRAMIENTA ACABA DE TRAER.
@@ -692,6 +710,10 @@ def _sin_negar_lo_traido(texto: str, llamadas: list, trace_id: str) -> str:
     for m in _RE_ORACIONES.finditer(texto or ""):
         frase = m.group(0)
         if not _RE_NIEGA.search(frase):
+            continue
+        if _RE_ES_SOBRE_EL_DATO.search(frase):
+            # Habla del dato que falta, no del rubro. Se deja: es justamente la
+            # respuesta honesta que queremos.
             continue
         palabras = set(H._norm(frase).replace(",", " ").split())
         for cat in categorias:

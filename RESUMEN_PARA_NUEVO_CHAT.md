@@ -4,11 +4,79 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== 5-AGO-2026 (tarde) — LA FUENTE MUDA DEJA DE DISFRAZARSE DE RESPUESTA ====**
+
+**SE TRABAJA EN `main` Y EL PUSH SE CONSULTA.** Orden de Martin, ya escrita en
+`CLAUDE.md`. Nada de ramas por sesion. Y el push se pregunta SIEMPRE porque
+`deploy.yml` dispara con cada push a `main`: pushear ES deployar, salvo que el
+cambio toque solo `.md` o `tests/`.
+
+**EL AGUJERO, Y ES DE PLOMERIA.** Simulado el caso "auriculares con cancelacion
+de ruido activa": el campo `sensor` esta vacio en los 43 de 43, y el codigo
+bajaba igual por la rama del ranking y devolvia los tres mas baratos encabezados
+por **"Lo que más se acerca a lo que pediste"**. La fuente no sabia NADA del
+tema y el codigo entregaba una cercania inventada, YA REDACTADA, para que el
+modelo la pegara. **La alucinacion no era del modelo: se la dabamos escrita.**
+
+El dato para no hacerlo ya se calculaba -`sin_dato`- y nadie lo leia. Es el
+patron de siempre en este repo: la capacidad escrita y desconectada.
+
+**EL TAMAÑO:** de 902 pares categoria-campo, **428 estan vacios en el 100%, el
+47%**. El enum le ofrece los 41 campos al modelo sin importar la categoria, asi
+que casi la mitad de sus elecciones legales caian en ese pozo.
+
+**LO QUE SE HIZO, y son tres piezas de la misma tuberia:**
+
+1. **La ENTRADA: escapatoria en el enum.** Un enum cerrado y obligatorio no
+   previene el invento, **lo fabrica**: si ninguna opcion sirve, el modelo esta
+   obligado a elegir, elige la mas parecida y lo hace con confianza total. Ahora
+   `campo` acepta `sin_campo_en_la_fuente` y el cliente deja sus palabras en
+   `valor`. El codigo no filtra por nada, lo dice, y avisa al modelo que NO lo
+   busque de nuevo por otro campo.
+2. **La SALIDA: la abstencion es un estado.** `filtros_catalogo.aplicar` devuelve
+   ahora `evaluados` al lado de `sin_dato`, que es lo unico que distingue 43 de
+   200 -dato incompleto- de 43 de 43 -fuente muda-. Con eso, `buscar_productos`
+   devuelve `sin_dato_en_la_fuente`: sin ranking, con el bloque escrito por el
+   codigo que arranca "Ese dato no lo tengo". **No devuelve vacio**: saca las
+   condiciones ciegas, rehace la busqueda con las que SI se pueden contestar y
+   dice cual quedo sin responder.
+3. **El REGISTRO: `app/core/huecos.py`.** Cada hueco deja el evento
+   `hueco_de_fuente` con lo que pidio el cliente. Es mineria de consultas con
+   cero resultados, la practica vieja de los buscadores, con los dos huecos que
+   el sistema detecta solo. **El codigo no razona, acumula evidencia.** Limite
+   dicho sin maquillar: el contador en memoria es para los bancos; entre
+   instancias solo sobreviven los logs. Persistirlo en Firestore es el paso
+   siguiente, no este.
+
+**LO QUE APARECIO EN EL CAMINO, y es la mejor parte.** Con el estado nuevo
+puesto, la guardia `_sin_negar_lo_traido` del hub **se comia la respuesta
+honesta**. El bot contestaba bien -"no tenemos ese dato de los auriculares en la
+ficha"- y la guardia le borraba la oracion, porque dice "no tenemos" y nombra
+una categoria recien traida. Quedaba "te muestro los que sí tengo", sin decir
+nunca que el dato faltaba. **La guardia contra la alucinacion se comia la
+honestidad, en silencio y sin log.** Es la misma familia que la poda de prosa
+que borraba la respuesta de spec por tener digitos. Arreglado: negar el RUBRO y
+no tener un DATO son dos cosas distintas, y la frase que habla de la ficha se
+salva. Clavado con test.
+
+**MEDIDO, antes y despues:** tests offline **461 -> 462**, banco_candidatos
+**21/21 -> 25/25**, banco_memoria **15/15 -> 15/15**. Los casos nuevos 22 a 25
+son la fuente muda, la condicion ciega que no se come a la buena, la escapatoria
+y el contador.
+
+**LO QUE QUEDA DE LA SESION ANTERIOR Y NO SE HIZO:** el enum de `ordenar_por`
+ofrece 41 campos y solo 8 ordenan por algo; `resolucion` no ordena y la fuente
+tiene el dato en 203 productos; `bateria` mezcla horas con meses y si se
+ordenara daria un ranking mentiroso. Es el proximo paso chico. El grande es el
+enum por CATEGORIA, que es lo que mata el 47% de arriba de raiz.
+
+---
+
 **==== 5-AGO-2026 — LAS CUATRO PUERTAS COLAPSADAS, Y LOS TRES BANCOS QUE LO MIDEN ====**
 
-**RAMA `claude/search-system-robustness-analysis-eub6c6`, PUSHEADA Y SIN MERGEAR.**
-Hasta que se mergee, para el proyecto NO existe: produccion sigue con el codigo
-viejo. Es lo primero que hay que resolver.
+**YA MERGEADO A `main` en `c7b8a53`.** El parrafo que decia "pusheada y sin
+mergear" quedo viejo y costo una revision entera volver a verificarlo: todo lo
+de esta seccion ESTA en produccion.
 
 **LOS TRES BANCOS NUEVOS, y separan lo que antes se confundia.** Los bancos
 viejos miden la PROSA FINAL, donde un fallo de codigo y uno de criterio se ven

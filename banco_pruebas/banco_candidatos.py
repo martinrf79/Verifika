@@ -33,6 +33,8 @@ from banco_pruebas import sim_firestore  # noqa: E402
 sim_firestore.install()
 
 from app.core import herramientas as H  # noqa: E402
+from app.core import huecos  # noqa: E402
+from app.core.filtros_catalogo import SIN_CAMPO as FC_SIN_CAMPO  # noqa: E402
 from app.storage.firestore_client import get_all_products  # noqa: E402
 
 TIENDA = "verifika_prod"
@@ -511,9 +513,138 @@ def c21():
                               "contesta sin ese dato. Cero tests la cubren")
 
 
+def c22():
+    """LA FUENTE MUDA NO SE DISFRAZA DE RANKING.
+
+    El agujero, medido el 5-ago: `sensor` esta vacio en los 43 auriculares de
+    43, y ante "cancelacion de ruido activa" el codigo bajaba igual por la rama
+    del ranking y devolvia los tres mas baratos encabezados por "Lo que más se
+    acerca a lo que pediste". La fuente no sabia nada y el codigo entregaba la
+    cercania inventada YA REDACTADA para que el modelo la pegara.
+
+    La verdad, por el camino independiente: se cuenta a mano cuantos auriculares
+    traen el campo. Si es cero, la unica respuesta correcta es no saber."""
+    aur = [p for p in CON_STOCK if norm(p.get("categoria")) == "auriculares"]
+    con_dato = [p for p in aur
+                if str((p.get("specs") or {}).get("sensor") or
+                       p.get("sensor") or "").strip()]
+    r = H.buscar_productos(H.validar("buscar_productos", {
+        "categoria": "auriculares", "cuantos": 3,
+        "filtros": [{"campo": "sensor", "operador": "contiene",
+                     "valor": "cancelacion de ruido activa"}]}), TIENDA)
+    bloque = r.get("bloque") or ""
+    ok = (len(con_dato) == 0
+          and r.get("estado") == "sin_dato_en_la_fuente"
+          and "se acerca" not in bloque
+          and "no lo tengo" in bloque)
+    caso(22, "auriculares con cancelacion de ruido activa, dato que no existe",
+         "buscar_productos categoria=auriculares + filtro sensor",
+         f"los {len(aur)} auriculares tienen el campo vacio: la respuesta es "
+         f"NO SE, no un ranking",
+         f"con el dato en la ficha: {len(con_dato)} de {len(aur)}; "
+         f"estado={r.get('estado')}; bloque abre con "
+         f"{bloque.splitlines()[0][:58] if bloque else '(vacio)'!r}", ok,
+         "" if ok else "LA FUENTE MUDA SALE COMO CERCANIA: el codigo redacta "
+                       "'lo que mas se acerca' sobre un criterio que la fuente "
+                       "no tiene, y el modelo lo pega")
+
+
+def c23():
+    """LA CONDICION QUE SI SE PUEDE CONTESTAR NO SE PIERDE.
+
+    Ninguna herramienta devuelve vacio, regla dura. Si una condicion es ciega y
+    la otra no, se saca la ciega, se rehace la busqueda con la que queda y se
+    dice cual quedo sin responder. Sin esto, la abstencion se comeria el filtro
+    bueno y el cliente perderia el unico dato que la fuente SI tenia."""
+    negros = [p for p in CON_STOCK
+              if norm(p.get("categoria")) == "auriculares"
+              and "negro" in norm(p.get("color"))]
+    r = H.buscar_productos(H.validar("buscar_productos", {
+        "categoria": "auriculares", "cuantos": 3,
+        "filtros": [{"campo": "sensor", "operador": "contiene",
+                     "valor": "cancelacion"},
+                    {"campo": "color", "operador": "contiene",
+                     "valor": "negro"}]}), TIENDA)
+    aplicadas = r.get("condiciones_que_si_se_aplicaron") or []
+    devueltos = [p.get("nombre", "") for p in (r.get("productos") or [])]
+    ok = (r.get("estado") == "sin_dato_en_la_fuente"
+          and any(x.get("campo") == "color" for x in aplicadas)
+          and devueltos and all("negro" in norm(n) for n in devueltos))
+    caso(23, "cancelacion de ruido Y que sean negros: una ciega, una posible",
+         "buscar_productos con dos filtros, uno sin dato en la fuente",
+         f"abstiene del sensor y IGUAL filtra por color: los {len(negros)} "
+         f"negros son la base",
+         f"estado={r.get('estado')}; condiciones que si se aplicaron="
+         f"{[x.get('campo') for x in aplicadas]}; devuelve={devueltos}", ok,
+         "" if ok else "la abstencion se comio la condicion que SI se podia "
+                       "contestar: el cliente pierde el filtro bueno")
+
+
+def c24():
+    """LA ESCAPATORIA DEL ENUM EXISTE Y ESTA ATADA.
+
+    Un enum cerrado y obligatorio no previene el invento: lo fabrica. Si nada de
+    la lista sirve, el modelo esta obligado a elegir, elige el mas parecido y lo
+    hace con confianza total. Se mide que el valor de escape este en el esquema
+    que ve el modelo Y que el codigo lo trate distinto de un campo roto."""
+    esqs = {e["function"]["name"]: e["function"]["parameters"]
+            for e in H.esquemas(TIENDA)}
+    campo = (esqs["buscar_productos"]["properties"]["filtros"]["items"]
+             ["properties"]["campo"])
+    en_el_enum = FC_SIN_CAMPO in (campo.get("enum") or [])
+    r = H.buscar_productos(H.validar("buscar_productos", {
+        "categoria": "auriculares", "cuantos": 3,
+        "filtros": [{"campo": FC_SIN_CAMPO, "operador": "contiene",
+                     "valor": "que sean comodos para usar 8 horas"}]}), TIENDA)
+    no_aplicadas = r.get("condiciones_no_aplicadas") or []
+    instruccion = r.get("instruccion") or ""
+    ok = (en_el_enum
+          and r.get("estado") == "encontrado"
+          and any(d.get("campo") == FC_SIN_CAMPO for d in no_aplicadas)
+          and "existe como dato en el catálogo" in instruccion)
+    caso(24, "'que sean comodos para usar 8 horas': no hay campo para eso",
+         f"buscar_productos con campo={FC_SIN_CAMPO}",
+         "el valor de escape esta en el enum y el codigo NO filtra ni afirma",
+         f"en el enum del esquema: {en_el_enum}; estado={r.get('estado')}; "
+         f"reportado como no aplicado: "
+         f"{[d.get('campo') for d in no_aplicadas]}", ok,
+         "" if ok else "sin escapatoria el modelo elige el campo mas parecido "
+                       "y el resultado sale como si la fuente hubiera "
+                       "contestado")
+
+
+def c25():
+    """EL CONTADOR DE HUECOS ACUMULA, que es la unica experiencia que un codigo
+    que no razona puede ganar.
+
+    No cambia una sola respuesta: deja la marca. Es mineria de consultas con
+    cero resultados, la practica vieja de los buscadores de e-commerce, con los
+    dos huecos que este sistema detecta solo -campo inexistente y campo vacio en
+    el 100%-. La lista ordenada por frecuencia dice que le falta al catalogo."""
+    huecos.limpiar()
+    H.buscar_productos(H.validar("buscar_productos", {
+        "categoria": "auriculares", "filtros": [
+            {"campo": "sensor", "operador": "contiene",
+             "valor": "cancelacion de ruido"}]}), TIENDA)
+    H.buscar_productos(H.validar("buscar_productos", {
+        "categoria": "mouse", "filtros": [
+            {"campo": FC_SIN_CAMPO, "operador": "contiene",
+             "valor": "que no haga ruido al clickear"}]}), TIENDA)
+    res = huecos.resumen(TIENDA)
+    tipos = sorted(h["tipo"] for h in res)
+    ok = tipos == ["sin_campo", "sin_dato"] and all(h["ejemplos"] for h in res)
+    caso(25, "cada hueco de la fuente queda anotado con lo que pidio el cliente",
+         "dos busquedas: una con campo vacio en el 100%, otra sin campo",
+         "los dos tipos de hueco quedan registrados, con el ejemplo del cliente",
+         f"{[(h['tipo'], h['campo'], h['veces'], h['ejemplos']) for h in res]}",
+         ok,
+         "" if ok else "el hueco no queda anotado: cada sesion vuelve a "
+                       "descubrirlo a mano leyendo una charla")
+
+
 def main():
     for f in (c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14,
-              c15, c16, c17, c18, c19, c20, c21):
+              c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25):
         try:
             f()
         except Exception as e:

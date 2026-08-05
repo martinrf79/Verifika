@@ -88,6 +88,7 @@ COMO SE ATA, que es lo que importa:
 import re
 import unicodedata
 
+from app.core import huecos
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -121,6 +122,22 @@ _SPECS_DUPLICADAS = frozenset({"garantia"})
 _MINIMO_PRODUCTOS = 10
 
 OPERADORES = ("contiene", "no_contiene", "igual", "mayor", "menor")
+
+# LA ESCAPATORIA DEL ENUM, y es lo contrario de lo que parece.
+#
+# El CONTACTOR ata `campo` a un enum cerrado de los campos de la fuente, y eso
+# esta bien: sin el, el modelo inventa `peso`, `medidas`, `garantia`. Pero un
+# enum cerrado y OBLIGATORIO tiene un borde que este repo no tenia cubierto: si
+# lo que el cliente pide no lo expresa NINGUN campo -"con cancelacion de ruido
+# activa", "que sea silencioso", "resistente para el campo"-, el modelo no puede
+# decirlo. Esta obligado a elegir, asi que elige el mas parecido y lo elige con
+# confianza total. El esquema deja de prevenir el invento y pasa a fabricarlo.
+#
+# Con este valor el modelo tiene por fin como decir "esto no es un campo". El
+# codigo entonces NO filtra por nada, lo dice, y anota el hueco. Es la unica
+# forma de que un pedido que la fuente no expresa se vea como lo que es en vez
+# de disfrazarse de filtro que no encontro nada.
+SIN_CAMPO = "sin_campo_en_la_fuente"
 
 _cache: dict = {}
 
@@ -312,6 +329,17 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
         valor = getattr(f, "valor", "")
         tipo = registro.get(campo)
 
+        if campo == SIN_CAMPO:
+            # EL MODELO USO LA ESCAPATORIA. No es un error: es el unico caso en
+            # que sabemos que el pedido del cliente no lo expresa la fuente. No
+            # se filtra por nada y se dice, para que el modelo no afirme sobre
+            # eso ni lo de por cumplido.
+            huecos.anotar(tienda_id, "sin_campo", SIN_CAMPO, str(valor))
+            descartados.append({
+                "campo": SIN_CAMPO, "valor": str(valor),
+                "motivo": "el catalogo no tiene ningun campo para eso: no se "
+                          "puede filtrar por ahi ni afirmar que se cumple"})
+            continue
         if tipo is None:
             descartados.append({"campo": getattr(f, "campo", ""),
                                 "motivo": "ese campo no existe en el catalogo"})
@@ -330,14 +358,21 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
                                 "motivo": f"'{valor}' no es un numero"})
             continue
 
+        # CONTRA CUANTOS SE EVALUO. Sin este numero, `sin_dato: 43` no se puede
+        # interpretar: no se sabe si son 43 de 200 -un dato incompleto- o 43 de
+        # 43 -la fuente no sabe NADA del tema-. Son dos respuestas distintas y
+        # hasta hoy salian iguales.
+        evaluados = len(quedan)
         cumplen = [p for p in quedan
                    if evaluar(p, campo, operador, valor, tipo) is True]
         sin_dato = sum(1 for p in quedan
                        if evaluar(p, campo, operador, valor, tipo) is None)
         sin_dato_total += sin_dato
+        if evaluados and sin_dato == evaluados:
+            huecos.anotar(tienda_id, "sin_dato", campo, str(valor))
         aplicados.append({"campo": campo, "operador": operador,
                           "valor": valor, "quedaron": len(cumplen),
-                          "sin_dato": sin_dato})
+                          "sin_dato": sin_dato, "evaluados": evaluados})
         quedan = cumplen
 
     return {"productos": quedan, "aplicados": aplicados,

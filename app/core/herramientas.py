@@ -409,7 +409,7 @@ def _atar_filtros(prop: dict, tienda_id: str) -> None:
 
     Se le dice ademas cuales son numericos: es el unico dato que no se puede
     deducir del nombre y sin el pide `mayor` sobre `color`."""
-    from app.core.filtros_catalogo import campos_filtrables
+    from app.core.filtros_catalogo import campos_filtrables, SIN_CAMPO
     registro = campos_filtrables(tienda_id)
     if not registro:
         return
@@ -419,13 +419,22 @@ def _atar_filtros(prop: dict, tienda_id: str) -> None:
     campo = (items.get("properties") or {}).get("campo")
     if not isinstance(campo, dict):
         return
-    campo["enum"] = list(registro)
+    # LA ESCAPATORIA ENTRA AL ENUM. Ver el comentario largo en
+    # `filtros_catalogo.SIN_CAMPO`: un enum cerrado sin salida no previene el
+    # invento, lo fabrica, porque obliga a elegir el campo mas parecido cuando
+    # ninguno sirve.
+    campo["enum"] = list(registro) + [SIN_CAMPO]
     numericos = [c for c, t in registro.items() if t == "numero"]
-    if numericos:
-        campo["description"] = (
-            "El campo exacto de la lista. Numericos, los unicos que aceptan "
-            "mayor y menor: " + ", ".join(numericos) + ". El resto es texto y "
-            "va con contiene.")
+    campo["description"] = (
+        "El campo exacto de la lista. Numericos, los unicos que aceptan mayor "
+        "y menor: " + ", ".join(numericos) + ". El resto es texto y va con "
+        "contiene. "
+        f"Si lo que pide el cliente NO lo expresa ninguno de estos campos "
+        f"-'que tenga cancelacion de ruido activa', 'que sea silencioso', "
+        f"'resistente para el campo'-, usa '{SIN_CAMPO}' y deja en `valor` lo "
+        f"que pidio con sus palabras. NO elijas el campo mas parecido: si "
+        f"elegis uno que no es, el resultado sale como si la fuente hubiera "
+        f"contestado y no contesto nada.")
 
 
 def esquemas(tienda_id: str) -> list[dict]:
@@ -638,6 +647,31 @@ def _bloque_hallazgo(fichas: list, empatados: int, donde: list,
     return "\n".join(partes)
 
 
+def _bloque_sin_dato(campos: list, fichas: list, categoria: str | None) -> str:
+    """EL RENGLON DE LA ABSTENCION, escrito por el codigo por el mismo motivo
+    que `_bloque_hallazgo`: cuando la verdad la sabe el codigo y al modelo le
+    conviene torcerla, se la damos escrita y el modelo la pega.
+
+    La diferencia con el bloque de al lado es toda: aquel dice "esto es lo que
+    MAS SE ACERCA", y presupone que hay una cercania medible. Aca no la hay. La
+    fuente no tiene el dato en una sola ficha, asi que cualquier orden que
+    mostremos es por precio y por nada mas, y eso se dice con todas las letras
+    para que no se lea como un ranking del criterio que pidio el cliente."""
+    if not fichas:
+        return ""
+    etiqueta = " ni ".join(str(c).replace("_", " ") for c in campos)
+    partes = [f"Ese dato no lo tengo: la ficha no especifica {etiqueta} en "
+              f"ninguno de los productos, así que no te lo puedo confirmar."]
+    cabeza = "Lo que sí te puedo mostrar"
+    if categoria:
+        cabeza += f", entre los {categoria}"
+    partes.append(cabeza + ", ordenado por precio:")
+    partes.append("\n".join(
+        f"- {f.get('nombre')}" + (f": {f['precio']}" if f.get("precio") else "")
+        for f in fichas))
+    return "\n".join(partes)
+
+
 def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
     """Identidad y catalogo. El veredicto lo da el CODIGO, siempre."""
     from app.storage.firestore_client import get_all_products
@@ -754,6 +788,54 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
         if filtrado["descartados"]:
             log.warning("filtros_descartados", trace=[
                 d["motivo"] for d in filtrado["descartados"]][:3])
+        # ── LA FUENTE NO SABE ≠ NINGUNO CUMPLE ──────────────────────────────
+        # EL AGUJERO QUE ESTO TAPA, medido el 5-ago. Ante "auriculares con
+        # cancelacion de ruido activa" el campo quedaba vacio en los 43 de 43,
+        # y el codigo igual bajaba por la rama del ranking y devolvia los tres
+        # mas baratos encabezados por "Lo que más se acerca a lo que pediste".
+        # La fuente no sabia NADA del tema y el codigo entregaba una cercania
+        # inventada, ya redactada, para que el modelo la pegara. La alucinacion
+        # no era del modelo: se la dabamos escrita.
+        #
+        # El dato para no hacerlo ya se calculaba -`sin_dato`- y nadie lo leia.
+        # Con `evaluados` al lado se puede distinguir 43 de 200, que es un dato
+        # incompleto, de 43 de 43, que es la fuente muda.
+        #
+        # NO DEVUELVE VACIO, que es regla dura de este repo: se sacan las
+        # condiciones ciegas, se rehace la busqueda con las que SI se pueden
+        # contestar, y se dice derecho cual quedo sin responder.
+        ciegos = [x for x in filtrado["aplicados"]
+                  if x.get("evaluados") and x["sin_dato"] == x["evaluados"]]
+        if ciegos:
+            nombres = [x["campo"] for x in ciegos]
+            resto = [f for f in a.filtros
+                     if _norm(getattr(f, "campo", "")) not in nombres]
+            base, aplicados_ok = prods, []
+            if resto:
+                rehecho = FC.aplicar(prods, resto, tienda_id)
+                if rehecho["productos"]:
+                    base = rehecho["productos"]
+                    aplicados_ok = rehecho["aplicados"]
+            base = sorted(base, key=lambda p: p["precio_ars"])
+            fichas = [_ficha(p, tienda_id) for p in base[:cuantos_pedidos(a)]]
+            return {
+                "estado": "sin_dato_en_la_fuente",
+                "sin_dato": [{"campo": x["campo"], "pedia": x["valor"],
+                              "fichas_sin_ese_dato": x["evaluados"]}
+                             for x in ciegos],
+                "bloque": _bloque_sin_dato(nombres, fichas, a.categoria),
+                "categoria": a.categoria,
+                "condiciones_que_si_se_aplicaron": aplicados_ok or None,
+                "productos": fichas,
+                "instruccion":
+                    "La ficha NO trae ese dato en NINGUNO de los productos, "
+                    "asi que no se sabe: no es que no cumplan. Pegá el bloque "
+                    "TAL CUAL. PROHIBIDO decir que estos se acercan a esa "
+                    "condicion, que la cumplen o que no la cumplen, y "
+                    "PROHIBIDO afirmar nada sobre el catalogo entero. Decile "
+                    "que ese dato no lo tenés confirmado y ofrecele "
+                    "averiguarlo, o preguntale otra cosa que sí puedas filtrar "
+                    "para avanzar."}
         if not filtrado["productos"]:
             # NINGUNA HERRAMIENTA DEVUELVE VACIO (Martin, 2-ago). Un conjunto
             # de condiciones que no deja nada casi nunca significa que no
@@ -885,6 +967,20 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
             salida["instruccion"] = (
                 "OJO: esas condiciones NO se pudieron aplicar. No digas que "
                 "los productos las cumplen. Si hace falta, preguntale.")
+            # LA ESCAPATORIA MERECE SU PROPIO AVISO. "no se pudo aplicar" suena
+            # a falla tecnica y se puede reintentar; esto es otra cosa y no se
+            # arregla pidiendo de nuevo: la fuente NO TIENE como expresar eso.
+            # Si el aviso no lo dice, el modelo vuelve a buscar, elige el campo
+            # mas parecido, y volvemos al invento que la escapatoria evito.
+            if any(d.get("campo") == FC.SIN_CAMPO
+                   for d in filtrado["descartados"]):
+                salida["instruccion"] = (
+                    "Eso que pidió el cliente NO existe como dato en el "
+                    "catálogo: no hay campo que lo diga. NO lo busques de "
+                    "nuevo por otro campo ni elijas el más parecido. Estos "
+                    "productos son de lo que pidió, pero sobre ESA condición "
+                    "no se sabe nada: decíselo derecho y ofrecele averiguarlo. "
+                    "PROHIBIDO decir que la cumplen o que no la cumplen.")
         if filtrado["sin_dato"]:
             salida["sin_dato_en_la_ficha"] = filtrado["sin_dato"]
     return salida

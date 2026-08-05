@@ -397,6 +397,31 @@ def test_el_no_honesto_de_lo_que_no_trajo_ninguna_herramienta_se_respeta():
     assert HV._sin_negar_lo_traido(texto, llamadas, "t1") == texto
 
 
+def test_el_candado_de_negacion_no_se_come_la_abstencion_honesta():
+    """5-AGO. El estado `sin_dato_en_la_fuente` hace que el bot conteste bien
+    -"no tenemos ese dato de los auriculares en la ficha"- y este candado le
+    BORRABA la oracion, porque dice "no tenemos" y nombra una categoria que la
+    herramienta acababa de traer. Quedaba "te muestro los que sí tengo", sin
+    decir nunca que el dato faltaba: la guardia contra la alucinacion se comia
+    la honestidad, en silencio.
+
+    Negar el RUBRO y no tener un DATO son dos cosas distintas."""
+    llamadas = [{"herramienta": "buscar_productos", "pedido": {},
+                 "resultado": {"estado": "sin_dato_en_la_fuente",
+                               "productos": [
+                                   {"id": "AUR0001", "nombre": "Redragon Zeus",
+                                    "categoria": "auriculares",
+                                    "precio_ars": 57500}]}}]
+    texto = ("No tenemos ese dato de los auriculares en la ficha. "
+             "Te muestro los que sí tengo.")
+    assert HV._sin_negar_lo_traido(texto, llamadas, "t1") == texto
+
+    # Y la negacion del RUBRO, con el mismo resultado delante, se sigue yendo.
+    niega = "No contamos con auriculares por ahora."
+    assert "no contamos" not in HV._sin_negar_lo_traido(
+        niega, llamadas, "t1").lower()
+
+
 def test_el_precio_de_lo_ya_mostrado_no_se_poda():
     """Turno mudo del banco repetido: "el primero que me mostraste, cuanto era?"
     terminaba con el precio podado y al cliente le llegaba solo "¿Querés que
