@@ -14,25 +14,35 @@ echo "entorno de prueba listo: el app importa y la logica pura corre offline"
 cat <<'ESTADO'
 
 ========================= ESTADO ACTUAL — LEER =========================
-PRODUCCION corre el FLUJO ATADO: orchestrator -> app/core/hub_atado.py
-(interprete Gemini con schema strict + solver generador_v2 por fragmentos
-atados a enums de la fuente). interprete_libre YA NO es el camino vivo.
+SE TRABAJA EN main. El push se CONSULTA siempre: pushear a main deploya
+agente-bot, salvo que el cambio toque solo .md o tests/.
 
-EL CONTACTOR = la config declarativa (enums/campos del schema atados a listas
-cerradas de la fuente) que ata y enruta al modelo SIN decidir por el. Cada
-contacto: 1) trigger mutuamente excluyente; 2) solo ata el dato, nunca
-reescribe la prosa.
+PRODUCCION corre el HUB DE VENTA: orchestrator -> app/core/hub_venta.py, con
+HERRAMIENTAS en paralelo (function calling atado a enums de la fuente viva) y
+un reconciliador que compara lo DECLARADO contra lo EJECUTADO. El flujo atado
+-hub_atado, interprete, generador_v2- MURIO el 1-ago y el archivo ya no
+existe: si un documento viejo lo nombra, el documento esta vencido.
 
-ULTIMO TRACK (27-jul, rama claude/context-memory-review-1x5n7n): CONTEXTO Y
-MEMORIA, diagnosticado sobre la charla REAL del 24-jul leida de los logs.
-Arreglado: 1) el universo ya no se contamina por palabra suelta del mensaje
-cuando el interprete resolvio el producto en foco; 2) el prompt del solver
-lleva resumen de la charla, productos mostrados, FOCO del interprete e
-historial mas ancho; 3) la poda de prosa poda PLATA, no cualquier digito
-(antes borraba la respuesta de spec en silencio); 4) la ficha contesta specs
-(caracteristicas, medidas, contenido_caja, uso); 5) el hub vuelve a
-PERSISTIR preferencias_cliente, producto_anotado y grupos_envio, que se
-leian y no se guardaban desde el pase al atado.
+LOS DOS NUMEROS QUE MANDAN, y se calculan solos:
+  python3 banco_pruebas/las_40.py   -> LAS 40 preguntas de Martin, parte de
+     CODIGO. Hoy 40 de 40. Es UNA capa: la herramienta con la llamada ideal.
+  python3 banco_pruebas/mapa.py     -> EL MAPA: que funcion trabaja para que
+     pregunta. Hoy 143 de 304 funciones del camino vivo NO las toca ninguna
+     de las 40, el 47%. El hub tiene 26 de 38 a ciegas, incluidas las once
+     guardas de salida. AHI viven las fallas que se ven en WhatsApp.
+Los dos tienen candado en tests/ y corren en cada push.
+
+PROXIMO PASO, acordado con Martin el 5-ago:
+  A) Poner al dia la maquina de CASETES. banco_pruebas/casete.py apunta bien
+     al hub vivo, pero los 65 casetes grabados son del flujo muerto y el test
+     que los reproducia -tests/test_charlas_grabadas.py- NO EXISTE; el CI lo
+     llama con "|| true" y dice "sin casetes grabados". Regrabar con el flujo
+     vivo y escribir el test: el TURNO COMPLETO gratis en cada push.
+  B) Sacarle trabajo al modelo: que el codigo arme la cuenta desde el pedido
+     ya declarado, corte el bucle cuando no hay faltante ejecutable, y
+     componga el mensaje en un solo lugar. Medido en produccion el 5-ago: 26,6
+     segundos por turno, 4 llamadas al modelo, una ronda entera al pedo, un
+     rubro entero afuera de la cuenta.
 
 COMO VER UNA CHARLA REAL SIN GCLOUD: la env GCP_SA_KEY_B64 trae la clave de
 claude-lector (logging.viewer + datastore.viewer). Decodificar al scratchpad,
@@ -41,11 +51,6 @@ logging.googleapis.com/v2/entries:list (filtro service_name agente-bot) y a
 firestore.googleapis.com (tiendas/verifika_prod/conversaciones/<user_id>:
 ahi vive el history y el summary vivos).
 
-PROXIMO PASO: correr bancos VIVOS de memoria multiturno (52, 53, 56, 59) con
-la clave paga y mirar en logs generador_v2_prosa_podada y los tipos de
-fragmento (generador_v2_ok tipos=[...]) para cazar lo que el render descarte.
-
-Detalle completo: tope de RESUMEN_PARA_NUEVO_CHAT.md (seccion 27-jul).
-Bancos: BANCO_PAUSA_S=8 python banco_pruebas/banco_atado_charlas.py banco_pruebas/guiones/68_*.txt
+Detalle completo: tope de RESUMEN_PARA_NUEVO_CHAT.md.
 ========================================================================
 ESTADO

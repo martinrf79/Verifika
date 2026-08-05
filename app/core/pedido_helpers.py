@@ -2,11 +2,10 @@
 PEDIDO_HELPERS — funciones PURAS compartidas de pedido/producto.
 
 Fuente ÚNICA de estos helpers. Nacieron dentro de interprete_libre (2296 líneas,
-legado), pero el camino vivo (hub_atado, generador_v2, compositor, estado_venta,
-guia_pedido) los reusa sin necesitar nada del resto de ese módulo. Se extraen acá
-para que el camino vivo NO dependa del legado y para tener una sola copia (sin
-duplicar la lógica). interprete_libre y solver_gemini los re-importan desde acá,
-así lo que aún los usa por el nombre viejo sigue funcionando.
+legado), que se borró con el cambio de arquitectura del 1-ago junto con
+solver_gemini: hoy los usa el camino vivo -hub_venta, herramientas,
+estado_venta, guia_pedido- y nadie más. Acá vive `certificar_producto`, que es
+la regla cero del proyecto: quién decide si un producto existe es el CÓDIGO.
 
 Sin dependencias de app.*: son puras, operan sobre los datos que reciben.
 """
