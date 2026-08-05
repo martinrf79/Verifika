@@ -4,6 +4,38 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== LA CONSIGNA VIGENTE (Martin, 5-ago-2026). LEER ANTES DE PROPONER NADA ====**
+
+**EN QUE ETAPA ESTAMOS.** Se esta probando **EL CODIGO**, suponiendo que el
+modelo llama las herramientas adecuadas. **Si el modelo pide bien o pide mal es
+OTRA FASE**, y no se mezcla: cuando una prueba falla, primero hay que saber si
+fallo el codigo o el criterio. Para eso existe `banco_candidatos.py`, que simula
+la llamada perfecta escrita a mano y solo mira que devuelve el codigo. Lo que
+falle ahi no lo arregla ningun prompt ni ningun modelo mas grande.
+
+**EL UNIVERSO DE PRUEBA son las 40 de Martin**, 25 sueltas mas 15 series con
+turnos encadenados. De esas, la parte determinista de unas 12 esta medida. **Si
+una pregunta solo se puede evaluar por como REDACTA el modelo, se corre de la
+lista de esta etapa** y se pasa a otra que si tenga parte de codigo.
+
+**QUE CUENTA COMO AVANCE.** Cada sesion cierra con **UN logro medible y
+marcado**, con el numero antes y despues. No vale "quedo mejor". El logro se
+mide contra el objetivo unico: **un bot que VENDA y que NO ALUCINE**. Todo lo
+demas es ruido.
+
+**LA DIRECCION DE FONDO.** El codigo no razona y no va a razonar. Lo que SI
+puede hacer es **acumular experiencia**: registrar los casos, los huecos y lo
+que el cliente pide y la fuente no tiene, para que cada sesion arranque de lo
+que la anterior descubrio en vez de volver a encontrarlo a mano leyendo una
+charla. Ese es el sentido de `app/core/huecos.py` y es la linea a seguir.
+
+**EL RECLAMO, dicho por Martin y anotado tal cual:** el sistema viene cometiendo
+errores muy basicos, y cada sesion aparecen errores nuevos. Cuando se toque algo
+que anda, hay que **probar que sigue andando**: la bateria offline y los tres
+bancos, antes y despues, siempre.
+
+---
+
 **==== 5-AGO-2026 (tarde) — LA FUENTE MUDA DEJA DE DISFRAZARSE DE RESPUESTA ====**
 
 **SE TRABAJA EN `main` Y EL PUSH SE CONSULTA.** Orden de Martin, ya escrita en
