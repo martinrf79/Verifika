@@ -15,8 +15,10 @@ disparar. Ante la duda, NO marca: un falso bloqueo le corta la charla a un
 cliente real, peor que dejar pasar un intento raro que igual cae en los gates de
 salida.
 
-Detras del flag ANTI_JAILBREAK (off/shadow/on, default off). El wiring vive en
-app/core/orchestrator.py, al inicio de process_message.
+CORRE VIVO Y SIN FLAG, al inicio de `process_message` en
+app/core/orchestrator.py. El docstring decia "detras del flag ANTI_JAILBREAK,
+default off" y era falso desde el cambio de arquitectura: no queda ninguna flag,
+y el corte pasa siempre.
 """
 import re
 import unicodedata

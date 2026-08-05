@@ -18,6 +18,12 @@ puede detectar solo:
                hueco se vuelve invisible.
   `sin_dato`   el campo existe, pero esta VACIO en el 100% de los candidatos.
                Medido el 5-ago: 428 de los 902 pares categoria-campo estan asi.
+  `sin_rubro`  el cliente escribio algo que el codigo no pudo llevar a ningun
+               producto ni a ninguna categoria: "qiero un mause", "tenes auris".
+               Es el hueco del IDIOMA, no el de la fuente, y es el unico que se
+               arregla con una linea -el alias en `guia_pedido`-. Sin la marca,
+               cada palabra nueva del cliente se descubre leyendo una charla a
+               mano, que es exactamente lo que este modulo viene a terminar.
 
 EL CODIGO NO RAZONA, ACUMULA EVIDENCIA. No decide nada con esto y no cambia una
 sola respuesta: solo deja la marca. La decision -enriquecer el CSV con ese campo

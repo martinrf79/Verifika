@@ -66,10 +66,14 @@ def certificar_producto(resuelto: str, catalogo: list) -> tuple[str, list]:
     proyecto: quien decide si un producto existe es el CODIGO.
 
     veredicto:
-      exists    -> un solo MODELO real; `productos` trae sus variantes (colores,
-                   CPU). Todo lo que las variantes comparten se puede contestar.
-      ambiguous -> varios MODELOS distintos; hay que preguntar cual.
-      not_found -> nada del catalogo matchea.
+      exists      -> un solo MODELO real; `productos` trae sus variantes
+                     (colores, CPU). Todo lo que comparten se puede contestar.
+      ambiguous   -> varios MODELOS distintos; hay que preguntar cual.
+      otro_modelo -> el cliente nombro un DESIGNADOR que no existe en la fuente
+                     -pide la ROG Strix G15 y tenemos la G16-. `productos` trae
+                     los de esa linea, para ofrecerlos SIN confirmar el que
+                     pidio. No es exists disfrazado: el que pidio NO lo tenemos.
+      not_found   -> nada del catalogo matchea.
 
     El match es por TOKENS significativos, no por substring contiguo. El
     substring era la falla estructural que dejaba ciega a toda la cadena: el
@@ -85,12 +89,44 @@ def certificar_producto(resuelto: str, catalogo: list) -> tuple[str, list]:
     toks = _tokens_producto(resuelto)
     if not toks:
         return "not_found", []
-    hits, laxos = [], []
+    # EL VOCABULARIO DE LA FUENTE, en la misma pasada. Sirve para las dos reglas
+    # de abajo, que separan la palabra que sobra del modelo que no existe.
+    fichas, vocabulario = [], set()
     for p in (catalogo or []):
         if not (p.get("nombre") and p.get("id")):
             continue
         nom = _tokens_producto(f"{p.get('nombre')} {p.get('marca') or ''} "
                                f"{p.get('modelo') or ''}")
+        vocabulario |= nom
+        fichas.append((p, nom))
+
+    # ── REGLA 1: LA PALABRA QUE NO EXISTE EN NINGUN PRODUCTO ES CHARLA ───────
+    # El esquema le pide al modelo la descripcion "tal cual la dijo el cliente",
+    # asi que entra con verbos y muletillas: "quiero una notebook asus". Con el
+    # match estricto -toks <= nombre- una sola palabra de mas tira todo abajo, y
+    # medido el 5-ago "quiero una notebook asus" daba not_found mientras
+    # "notebook asus" daba ambiguo. Lo que no esta en el vocabulario de los 880
+    # no distingue un producto de otro: se ignora.
+    # ── REGLA 2: EL DESIGNADOR ES LA PARTE QUE IDENTIFICA EL MODELO ──────────
+    # "g15" no es una muletilla: es lo que distingue una notebook de otra, y es
+    # el caso de la consigna -piden la ROG Strix G15, tenemos la G16 y le
+    # pegabamos las specs de esa-. Se reconoce por la forma, letras y digitos
+    # juntos. Una cantidad suelta ("2 auriculares") o una medida ("27
+    # pulgadas") no entra: son digitos pelados, no designadores. Y no alcanza
+    # con que exista en el catalogo -"g15" existe, es una Dell-: tiene que
+    # estar en el producto que matchea.
+    designadores = {t for t in toks
+                    if any(c.isdigit() for c in t) and any(c.isalpha() for c in t)}
+    toks = toks - ({t for t in toks if t not in vocabulario} - designadores)
+    pedido = toks - designadores
+    # Una sola palabra corta no identifica nada: "un regalo para mi viejo" deja
+    # 'mi', que es la linea Mi de Xiaomi, y devolvia un cargador como si el
+    # cliente lo hubiera pedido.
+    if not pedido or all(len(t) < 3 for t in pedido):
+        return "not_found", []
+
+    hits, laxos, linea = [], [], []
+    for p, nom in fichas:
         # DOS DIRECCIONES, porque entran dos cosas distintas por aca:
         # 1) el nombre limpio que resolvio el interprete -"asus tuf f15"-, que
         #    tiene que estar contenido en el del catalogo;
@@ -104,15 +140,21 @@ def certificar_producto(resuelto: str, catalogo: list) -> tuple[str, list]:
         # una palabra propia: "acer nitro 5" pega, "algo de acer" no.
         marca = _tokens_producto(p.get("marca"))
         modelo = _tokens_producto(p.get("modelo"))
-        if toks <= nom:
-            hits.append(p)
-        elif marca and marca <= toks and (modelo & toks):
-            laxos.append(p)
+        # El match se hace SIN el designador y se mira aparte si el producto lo
+        # tiene. Asi el que lo tiene es el producto pedido, y el que no lo tiene
+        # pero comparte todo lo demas es la LINEA: lo que hay que ofrecer sin
+        # confirmar el modelo que no existe.
+        if pedido <= nom:
+            (hits if designadores <= nom else linea).append(p)
+        elif marca and marca <= pedido and (modelo & pedido):
+            (laxos if designadores <= nom else linea).append(p)
     # La estricta MANDA: si el nombre limpio pego, la laxa no se usa. Sin esta
     # precedencia, "asus tuf f15" se llevaba puestos los monitores Asus TUF,
     # porque comparten marca y la palabra TUF.
     hits = hits or laxos
     if not hits:
+        if designadores and linea:
+            return "otro_modelo", linea
         return "not_found", []
     modelos = {(_norm_txt(p.get("marca")), _norm_txt(p.get("modelo")),
                 _norm_txt(p.get("categoria"))) for p in hits}

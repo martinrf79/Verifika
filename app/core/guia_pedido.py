@@ -263,6 +263,45 @@ def cantidades_por_categoria(mensaje: str, tienda_id: str) -> list[tuple]:
     return out
 
 
+# COMO LO ESCRIBE EL CLIENTE REAL -> el rubro del catalogo. Sale de los
+# mensajes de Martin y de las charlas de WhatsApp, no de una lista imaginada:
+# "qiero un mause inalambrico", "tenes auris tmbn". Si el codigo no reconoce el
+# rubro, la busqueda vuelve sin un solo producto y no hay prompt que lo salve:
+# el modelo ya no tiene nada que redactar.
+#
+# ACA SE ACUMULA LA EXPERIENCIA: cuando una charla real traiga una palabra
+# nueva, se agrega el renglon y queda para siempre. La lista se valida contra
+# las categorias REALES antes de usarse, asi que un alias hacia un rubro que no
+# existe no hace nada.
+_COMO_LO_DICE_EL_CLIENTE = {
+    "mause": "mouse", "mauses": "mouse", "maus": "mouse", "raton": "mouse",
+    "auris": "auriculares", "auricular": "auriculares",
+    "cascos": "auriculares", "vincha": "auriculares",
+    "note": "notebook", "notebok": "notebook", "laptop": "notebook",
+    "compu": "notebook", "computadora": "notebook", "portatil": "notebook",
+    "ram": "memoria ram", "memorias": "memoria ram", "memoria": "memoria ram",
+    "gpu": "placa de video", "placa de video": "placa de video",
+    "tecaldo": "teclado", "teclao": "teclado",
+    "pantalla": "monitor", "pantallas": "monitor",
+    "silla": "silla gamer", "sillas": "silla gamer",
+    "mother": "motherboard", "board": "motherboard",
+    "micro": "procesador", "cpu": "procesador",
+    "parlantes": "parlante", "auriculares bluetooth": "auriculares",
+}
+
+
+def _rubros_por_como_lo_dice(msg: str, reales: set) -> list[str]:
+    """Los rubros que el cliente nombro con SU palabra. `msg` ya viene
+    normalizado; `reales` son las categorias del catalogo, en minuscula."""
+    out = []
+    for alias, cat in _COMO_LO_DICE_EL_CLIENTE.items():
+        if cat not in reales or cat in out:
+            continue
+        if re.search(r"\b" + re.escape(alias) + r"\b", msg):
+            out.append(cat)
+    return out
+
+
 def categorias_nombradas(mensaje: str, tienda_id: str) -> list[str]:
     """Categorias REALES de la tienda nombradas en el mensaje, con o sin
     cantidad ('el mas barato de esos auriculares' -> ['auriculares']).
@@ -296,7 +335,13 @@ def categorias_nombradas(mensaje: str, tienda_id: str) -> list[str]:
         if any(re.search(r"\b" + re.escape(v) + r"\b", msg)
                for v in variantes):
             out.append(str(c))
-    return out
+    if out:
+        return out
+    # Recien si el cliente NO uso el nombre del catalogo se prueba con el suyo.
+    # En ese orden: el nombre real manda, el alias es la red.
+    reales = {_norm(c): str(c) for c in categorias if c}
+    return [reales[c] for c in _rubros_por_como_lo_dice(msg, set(reales))
+            if c in reales]
 
 
 def opciones_por_categoria(categoria: str, tienda_id: str,

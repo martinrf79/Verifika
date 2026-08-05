@@ -412,7 +412,10 @@ def medidas_de_contexto():
                               "contra que resolverse")
 
 
-def main():
+def correr() -> list:
+    """Corre las series y devuelve los resultados, sin imprimir nada. Lo usa el
+    marcador de `las_40.py`, que necesita los mismos casos sin el volcado."""
+    RESULTADOS.clear()
     for f in (serie_1, serie_3, serie_15, medidas_de_contexto):
         try:
             f()
@@ -421,7 +424,11 @@ def main():
             caso(f.__name__, 0, f.__name__, "-",
                  f"EXCEPCION {type(e).__name__}: {str(e)[:200]}", False,
                  traceback.format_exc().splitlines()[-3][:120])
+    return RESULTADOS
 
+
+def main():
+    correr()
     verdes = [r for r in RESULTADOS if r["ok"]]
     print("=" * 78)
     print(f"BANCO DE MEMORIA — {len(verdes)} de {len(RESULTADOS)} en verde")

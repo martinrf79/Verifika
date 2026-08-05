@@ -7,8 +7,22 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 **==== EL MARCADOR — UN SOLO NUMERO, Y ES EL QUE MANDA ====**
 
 > ## De las 40 preguntas de Martin, cuantas tienen la parte de CODIGO medida y en verde
-> # 12 de 40
-> *ultima medicion: 5-ago-2026. Antes de tocar nada, ver la nota de abajo.*
+> # 40 de 40
+> *ultima medicion: 5-ago-2026 (noche). **Ya no es una estimacion: lo calcula
+> `python3 banco_pruebas/las_40.py` en dos segundos, y `tests/test_las_40.py` lo
+> corre en cada push.** Antes de festejar, leer las dos advertencias de abajo.*
+
+**LAS DOS ADVERTENCIAS, sin maquillar.**
+
+1. **40 de 40 es la parte de CODIGO, no el bot terminado.** Mide que la
+   herramienta le entregue al modelo el conjunto correcto, el numero exacto o el
+   "no se" honesto. **Como REDACTA el modelo no se mide aca**: esa es la fase
+   siguiente, y esta entera por delante.
+2. **La lista original de las 40 no estaba escrita en el repo.** El 12 heredado
+   era una estimacion sobre una lista que nadie tenia. Ahora la lista existe,
+   con nombre y fuente por pregunta, en `banco_pruebas/las_40.py`. Si Martin
+   pasa su lista numerada, se reemplazan los nombres y el marcador sigue
+   contando igual.
 
 **POR QUE UN SOLO NUMERO.** Habia tres bancos con tres numeros sueltos y un
 `piso.json`, y ninguno decia si el proyecto avanzo. Este si: sale de las 40
@@ -35,11 +49,11 @@ pregunta entera al banco obliga a cruzar todas las costuras, asi que las cazas
 sin armar un proyecto aparte. Medido el 5-ago: se sumaron 4 casos y aparecio
 sola la guardia que borraba la respuesta honesta.
 
-**PRIMERA TAREA DE LA PROXIMA SESION, y es corta.** El 12 es una estimacion
-heredada de la auditoria del 5-ago, no una cuenta fina. **Fijarlo con
-precision:** listar las 40 con nombre, marcar cuales estan cubiertas hoy por
-`banco_candidatos.py` y cuales no, y dejar la lista escrita aca. Sin esa lista
-el marcador no se puede mover de forma honesta.
+**PRIMERA TAREA DE LA PROXIMA SESION.** La parte de codigo esta en 40 de 40, asi
+que la etapa que sigue es **LA PROSA: que el modelo PIDA bien y REDACTE bien**.
+El instrumento para eso ya existe y es `banco_llamada_uno.py` -que llamada pide
+el modelo- mas los guiones vivos. **El marcador de codigo no se toca mas para
+subirlo: se toca para que no baje**, que es lo que hace el test en cada push.
 
 **LO QUE NO ENTRA EN ESTA ETAPA.** Si una pregunta solo se puede evaluar por
 como REDACTA el modelo, se saca de la lista y se anota aparte: es la fase
@@ -78,6 +92,85 @@ charla. Ese es el sentido de `app/core/huecos.py` y es la linea a seguir.
 errores muy basicos, y cada sesion aparecen errores nuevos. Cuando se toque algo
 que anda, hay que **probar que sigue andando**: la bateria offline y los tres
 bancos, antes y despues, siempre.
+
+---
+
+**==== 5-AGO-2026 (noche) — EL MARCADOR DEJO DE SER UNA ESTIMACION: 12 -> 40 ====**
+
+**LO QUE SE HIZO, en una linea:** se escribio la lista de las 40 con nombre y
+fuente, se le puso una prueba de CODIGO a cada una, y las que estaban rotas se
+arreglaron. **El marcador ahora se calcula, no se estima.**
+
+**EL NUMERO, antes y despues.**
+
+| medida | antes | despues |
+|---|---|---|
+| **LAS 40 (parte de codigo)** | 12 estimadas | **40 de 40, calculadas** |
+| tests offline | 462 | **472** |
+| banco_candidatos | 25/25 | 25/25 |
+| banco_memoria | 15/15 | 15/15 |
+
+**EL INSTRUMENTO: `banco_pruebas/las_40.py`.** Las 40 con nombre, la fuente de
+cada una -RESUMEN etapa 1, CONSIGNA, o el guion que Martin mando- y la prueba de
+su parte determinista. Los casos que ya vivian en `banco_candidatos.py` y
+`banco_memoria.py` **no se copiaron: se delegan**, asi cada prueba tiene un solo
+lugar donde se define. Corre en 2 segundos, cero tokens, y
+`tests/test_las_40.py` lo mete en el CI: **la pregunta que se rompa vuelve con
+nombre y apellido en la corrida, no tres semanas despues leyendo una charla.**
+
+**PRIMERA MEDICION HONESTA: 31 de 40**, no 12. La diferencia no es que el bot
+mejorara de golpe: **habia capacidad construida y nunca medida** -las politicas
+de la FAQ, el envio, la cuenta, el antijailbreak-. El 12 era una estimacion
+sobre una lista que no existia.
+
+**LAS CINCO FALLAS REALES QUE APARECIERON AL MEDIR, y las cinco eran de codigo.
+Cuatro de ellas son la MISMA: el certificador de identidad.**
+
+1. **El rubro que dijo el cliente se tiraba.** "Tenes memoria ram de 16gb"
+   devolvia **NOTEBOOKS** -'16gb' esta en el nombre de las notebooks-; "decime
+   precio de tablet samsung" devolvia el **monitor** Samsung; "quiero una
+   notebook asus" preguntaba entre un **teclado** y dos monitores. El nombre del
+   rubro no sirve para elegir un modelo, y por eso se descartaba; pero si sirve
+   para saber **en que estante buscar**. Ahora acota.
+2. **La palabra de mas rompia la identidad.** El esquema le pide al modelo la
+   descripcion "tal cual la dijo el cliente", y con el match estricto una
+   muletilla tiraba todo: "notebook asus" daba ambiguo y **"quiero una notebook
+   asus" daba not_found**. Lo que no existe en el vocabulario de los 880 no
+   distingue nada: se ignora. Con su contracara clavada con test: en "un regalo
+   para mi viejo" queda 'mi', que es la linea **Mi de Xiaomi**, y devolvia un
+   cargador como si el cliente lo hubiera pedido.
+3. **El modelo que no existe se confirmaba.** Piden la **Asus ROG Strix G15** y
+   tenemos la G16: el codigo la daba por ambigua y el modelo le pegaba specs y
+   stock de otra. Es la falla numero uno de la consigna. Ahora el designador
+   -letras y digitos juntos, 'g15'- se mira contra el producto que matchea, no
+   contra el catalogo: **existe, pero es una Dell**. Vuelve `no_encontrado` con
+   la linea real al lado, que es honesto sin tirar la venta.
+4. **"Que productos tenes" no tenia puerta.** `valores campo=categoria` volvia
+   `campo_desconocido` porque el rubro no entra al registro de campos
+   filtrables. La pregunta mas comun de un ecommerce se contestaba de memoria
+   del modelo, que es un universal inventado sobre los 880. Ahora devuelve los
+   22 rubros reales.
+5. **"Mi tablet" era un equipo desconocido** con 27 tablets en el catalogo. Se
+   sumo al vocabulario de compatibilidad, que es donde va -el archivo dice
+   "sumar un equipo del cliente es agregar una entrada aca, NUNCA tocar
+   codigo"-. Contesta desde la ficha, y si la ficha no lo dice, `sin_dato`.
+
+**EL IDIOMA DEL CLIENTE, que es plata que se pierde en el turno uno.** "qiero un
+mause", "tenes auris tmbn" son de la consigna 44, textuales. Si el codigo no
+reconoce el rubro, **la busqueda vuelve vacia y no hay prompt que lo salve**: el
+modelo ya no tiene nada que redactar. Se agrego el mapa de como lo dice el
+cliente en `guia_pedido`, validado contra los rubros reales.
+
+**Y EL HUECO QUEDA ANOTADO SOLO: `sin_rubro`.** Tercer tipo en `huecos.py`. Lo
+que el codigo no pudo llevar ni a un producto ni a un rubro queda con **las
+palabras del cliente**. Es la linea de la consigna: el codigo no razona,
+**acumula**. La proxima sesion arranca de la lista, no de leer una charla a
+mano; agregar el alias es un renglon.
+
+**LO QUE NO ENTRA EN ESTE 40 DE 40, dicho derecho.** Es la parte determinista:
+que la herramienta entregue el conjunto correcto, el numero exacto o el "no se"
+honesto. **Como redacta el modelo no se mide aca.** Y de cada serie de 8 turnos
+se miden los 2 a 4 turnos que tienen parte de codigo; los otros son prosa.
 
 ---
 
@@ -228,8 +321,9 @@ donde SI se cumple 0/3 -> **3/3**.
   `uso_recomendado`; 39 teclados empatan en 24 meses; `sensor` y
   `switch_teclado` tienen UN solo valor distinto en todo el catalogo. Ninguna
   herramienta puede elegir "la mejor notebook para diseño" con esa fuente.
-- **Cobertura:** de las 40 pruebas de Martin -25 sueltas y 15 series-, hay
-  medida la parte determinista de unas 12. El resto no esta medido.
+- **Cobertura:** ~~unas 12 medidas~~. **VIEJO: el 5-ago a la noche se listaron
+  las 40 con nombre en `banco_pruebas/las_40.py` y quedaron las 40 medidas, en
+  verde. Ver la seccion de esa noche.**
 
 ---
 

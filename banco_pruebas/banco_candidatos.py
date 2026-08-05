@@ -642,16 +642,26 @@ def c25():
                        "descubrirlo a mano leyendo una charla")
 
 
-def main():
-    for f in (c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14,
-              c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25):
+CASOS = (c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14,
+         c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25)
+
+
+def correr() -> list:
+    """Corre los 25 casos y devuelve los resultados, sin imprimir nada. Lo usa
+    el marcador de `las_40.py`: los mismos casos, sin el volcado."""
+    RESULTADOS.clear()
+    for f in CASOS:
         try:
             f()
         except Exception as e:
             caso(f.__name__, f.__name__, "-", "-",
                  f"EXCEPCION {type(e).__name__}: {str(e)[:160]}", False,
                  "la llamada ideal ni siquiera corre")
+    return RESULTADOS
 
+
+def main():
+    correr()
     verdes = [r for r in RESULTADOS if r["ok"]]
     print("=" * 78)
     print(f"BANCO DE CANDIDATOS — {len(verdes)} de {len(RESULTADOS)} en verde")

@@ -10,6 +10,21 @@ número solo, sin el antes, no dice nada.
 
 ---
 
+## EL MARCADOR, antes que las capas — `python3 banco_pruebas/las_40.py`
+
+**El único número que dice si el proyecto avanzó.** Las 40 pruebas reales de
+Martín —25 sueltas y 15 series— listadas con nombre y con la fuente de cada una,
+y por cada una la prueba de su parte de **CÓDIGO**: que la herramienta entregue
+el conjunto correcto, el número exacto o el "no sé" honesto. Cero tokens, dos
+segundos, y `tests/test_las_40.py` lo corre en cada push, así que la pregunta
+que se rompa vuelve con nombre y apellido.
+
+No mide cómo **redacta** el modelo: eso es la fase siguiente. Los casos no se
+duplican, se delegan a `banco_candidatos.py` y `banco_memoria.py`, que siguen
+siendo el lugar donde se define cada uno.
+
+---
+
 ## Las tres capas, y qué prueba cada una
 
 ### 1. Offline — `python3 -m pytest tests/ -q`

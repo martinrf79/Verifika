@@ -475,7 +475,9 @@ def esquemas(tienda_id: str) -> list[dict]:
             from app.core.filtros_catalogo import campos_filtrables
             reg = campos_filtrables(tienda_id)
             if reg and "campo" in props:
-                props["campo"]["enum"] = list(reg)
+                # `categoria` entra SOLO aca: es el campo de "que rubros
+                # manejas", que se contesta con `valores`.
+                props["campo"]["enum"] = list(reg) + ["categoria"]
         if nombre == "consultar_temas" and temas and "temas" in props:
             props["temas"]["items"] = {"type": "string", "enum": temas}
             props["temas"]["description"] = _guia_de_temas(faq, temas)
@@ -672,6 +674,41 @@ def _bloque_sin_dato(campos: list, fichas: list, categoria: str | None) -> str:
     return "\n".join(partes)
 
 
+def _acotado_al_rubro(a: BuscarProductos, catalogo: list,
+                      tienda_id: str) -> list:
+    """El catalogo ACOTADO al rubro que nombro el cliente, para certificar.
+
+    EL CABLE SUELTO QUE ESTO ATA, medido el 5-ago. El certificador matchea por
+    tokens significativos, y el nombre del rubro no distingue un producto de
+    otro, asi que se descarta: bien. Pero despues nadie lo usaba para ACOTAR, y
+    de ahi salian tres respuestas absurdas con el dato en la mano:
+
+      - "tenes memoria ram de 16gb" devolvia NOTEBOOKS, porque '16gb' esta en el
+        nombre de las notebooks y en el de las memorias.
+      - "decime precio de tablet samsung" devolvia el monitor Samsung.
+      - "quiero una notebook asus" preguntaba entre un teclado y dos monitores.
+
+    El rubro no sirve para elegir un modelo, pero sirve para saber en QUE
+    estante buscar. Es un hecho de la fuente, no un juicio: la categoria existe
+    en el catalogo y el cliente la nombro.
+    """
+    from app.core.guia_pedido import categorias_nombradas
+    try:
+        cats = categorias_nombradas(a.descripcion or "", tienda_id)
+    except Exception as e:
+        log.warning("rubro_del_mensaje_error", error=str(e)[:120])
+        cats = []
+    if not cats and a.categoria:
+        cats = [a.categoria]
+    if not cats:
+        return catalogo
+    quiere = {_norm(c) for c in cats}
+    acotado = [p for p in catalogo if _norm(p.get("categoria")) in quiere]
+    # Si el rubro nombrado no deja nada -no deberia pasar, la lista sale del
+    # catalogo vivo- se sigue con todo antes que devolver vacio.
+    return acotado or catalogo
+
+
 def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
     """Identidad y catalogo. El veredicto lo da el CODIGO, siempre."""
     from app.storage.firestore_client import get_all_products
@@ -701,7 +738,8 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
 
     prods: list[dict] = []
     if a.descripcion:
-        veredicto, hits = certificar_producto(a.descripcion, catalogo)
+        veredicto, hits = certificar_producto(
+            a.descripcion, _acotado_al_rubro(a, catalogo, tienda_id))
         if veredicto == "ambiguous":
             vistos, opciones = set(), []
             for p in hits:
@@ -713,6 +751,22 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
             return {"estado": "ambiguo", "productos": opciones[:6],
                     "instruccion": "Hay varios modelos distintos. Preguntale "
                                    "cual quiere. No elijas vos."}
+        if veredicto == "otro_modelo":
+            # EL MODELO QUE NO EXISTE NO SE CONFIRMA, Y LA LINEA REAL NO SE
+            # PIERDE. Piden la ROG Strix G15 y tenemos la G16: decir que si es
+            # inventar stock y specs de un producto ajeno -la falla numero uno
+            # de la consigna-, y decir un no pelado tira la venta teniendo el
+            # equivalente en gondola. Se devuelve el estado que el modelo ya
+            # sabe leer, con los de esa linea al lado.
+            return {"estado": "no_encontrado", "buscado": a.descripcion,
+                    "hay_en_la_categoria": [_ficha(p, tienda_id)
+                                            for p in hits[:3]],
+                    "instruccion": "Ese modelo EXACTO no existe en el catalogo. "
+                                   "NO confirmes que lo tenemos ni le pegues "
+                                   "specs, precio ni stock: los de abajo son "
+                                   "otros modelos de esa linea. Decile que ese "
+                                   "puntual no lo trabajamos y mostrale estos, "
+                                   "que si son reales."}
         if veredicto == "exists":
             prods = hits
         elif not a.categoria:
@@ -749,6 +803,13 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
             #
             # No se inventa un candidato: se le da al modelo con QUE preguntar.
             from app.storage.firestore_client import get_categories
+            # LA MARCA DEL HUECO DE IDIOMA. Aca llega lo que el codigo no pudo
+            # llevar ni a un producto ni a un rubro, o sea la palabra del
+            # cliente que todavia no entendemos. Queda anotada con sus palabras
+            # para que la proxima sesion arranque de la lista y no de leer una
+            # charla a mano. No cambia esta respuesta: solo deja evidencia.
+            from app.core import huecos
+            huecos.anotar(tienda_id, "sin_rubro", "descripcion", a.descripcion)
             return {"estado": "no_encontrado", "buscado": a.descripcion,
                     "categorias_que_vendemos": [
                         str(c) for c in (get_categories(tienda_id=tienda_id)
@@ -1072,7 +1133,13 @@ def consultar_catalogo(a: ConsultarCatalogo, tienda_id: str) -> dict:
 
     if a.operacion == "valores":
         campo = _norm(a.campo)
-        if campo not in FC.campos_filtrables(tienda_id):
+        # EL RUBRO ES UN VALOR CONSULTABLE. "Que productos tenes", "pasame el
+        # catalogo" es la pregunta mas comun de todas y NO tenia puerta:
+        # `categoria` no entra al registro de campos filtrables porque tiene su
+        # propio argumento, asi que `valores campo=categoria` volvia
+        # `campo_desconocido` y la lista de rubros la ponia el modelo de
+        # memoria, que es un universal inventado sobre los 880.
+        if campo != "categoria" and campo not in FC.campos_filtrables(tienda_id):
             return {"estado": "campo_desconocido", "campo": a.campo}
         vistos: dict[str, int] = {}
         for p in prods:
@@ -1323,6 +1390,10 @@ def ver_compatibilidad(a: VerCompatibilidad, tienda_id: str) -> dict:
         from app.core.compatibilidad import evaluar_par
         veredicto, hits = certificar_producto(
             a.equipo, get_all_products(tienda_id=tienda_id) or [])
+        # Si el equipo que dice tener es un modelo que NO existe en la fuente,
+        # no se evalua contra el parecido: seria contestar por otro aparato.
+        if veredicto == "otro_modelo":
+            hits = []
         if hits:
             # CON VARIANTES, SE EVALUAN TODAS. "Lenovo IdeaPad 3" certifica
             # AMBIGUO -hay version Core i5 y version Ryzen 7-, y ahi el

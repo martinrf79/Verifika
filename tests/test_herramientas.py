@@ -544,3 +544,111 @@ def test_la_ficha_lleva_los_datos_comparables(firestore_doble):
     f = _ficha(p, "verifika_prod")
     for campo in ("peso_gramos", "dimensiones", "color", "garantia_meses"):
         assert campo in f, f"{campo} no llega al modelo"
+
+
+# ── EL RUBRO QUE DIJO EL CLIENTE, Y EL MODELO QUE NO EXISTE ──────────────────
+# Cuatro fallas medidas el 5-ago-2026 sobre las 40 pruebas de Martin. Las cuatro
+# eran del certificador, y las cuatro se veian como un error del modelo.
+def test_el_rubro_nombrado_acota_la_busqueda():
+    """'tenes memoria ram de 16gb' devolvia NOTEBOOKS: '16gb' esta en el nombre
+    de las notebooks, y el rubro que el cliente dijo se tiraba. El nombre del
+    rubro no sirve para elegir un modelo, pero si para saber en que estante
+    buscar."""
+    r = H.buscar_productos(H.BuscarProductos(descripcion="memoria ram de 16gb"),
+                           TIENDA)
+    devueltos = (r.get("productos") or []) + (r.get("hay_en_la_categoria") or [])
+    assert devueltos
+    assert {p["categoria"] for p in devueltos} == {"memoria ram"}
+
+
+def test_la_tablet_no_devuelve_un_monitor():
+    """Charla real del 24-jul: 'decime precio de tablet samsung' traia el
+    Monitor Samsung Odyssey."""
+    r = H.buscar_productos(H.BuscarProductos(descripcion="tablet samsung"),
+                           TIENDA)
+    assert {p["categoria"] for p in (r.get("productos") or [])} == {"tablet"}
+
+
+def test_el_modelo_que_no_existe_no_se_confirma():
+    """Piden la Asus ROG Strix G15 y tenemos la G16. Confirmarla es inventarle
+    stock y specs a un producto ajeno, que es la falla numero uno de la
+    consigna. Y un no pelado tira la venta teniendo la linea en gondola."""
+    r = H.buscar_productos(
+        H.BuscarProductos(descripcion="notebook Asus ROG Strix G15"), TIENDA)
+    assert r["estado"] == "no_encontrado"
+    linea = r.get("hay_en_la_categoria") or []
+    assert linea and all("g15" not in p["nombre"].lower() for p in linea)
+    assert all(p["categoria"] == "notebook" for p in linea)
+
+
+def test_la_charla_del_cliente_no_rompe_la_identidad():
+    """El esquema pide la descripcion 'tal cual la dijo el cliente', asi que
+    entra con verbos: 'quiero una notebook asus' daba not_found mientras
+    'notebook asus' daba ambiguo. La palabra que no existe en ningun producto no
+    distingue nada."""
+    r = H.buscar_productos(
+        H.BuscarProductos(descripcion="quiero una notebook asus"), TIENDA)
+    assert r["estado"] == "ambiguo"
+    assert {p["categoria"] for p in r["productos"]} == {"notebook"}
+
+
+def test_una_palabra_corta_no_certifica_un_producto():
+    """La contracara de la regla de arriba: en 'un regalo para mi viejo' queda
+    'mi', que es la linea Mi de Xiaomi, y devolvia un cargador como si el
+    cliente lo hubiera pedido."""
+    r = H.buscar_productos(
+        H.BuscarProductos(descripcion="un regalo para mi viejo que labura en "
+                                      "el campo"), TIENDA)
+    assert r["estado"] == "no_encontrado"
+    assert r.get("categorias_que_vendemos")
+
+
+def test_el_cliente_escribe_como_habla():
+    """'qiero un mause', 'tenes auris tmbn': si el codigo no reconoce el rubro,
+    la busqueda vuelve vacia y no hay prompt que lo arregle."""
+    from app.core.guia_pedido import categorias_nombradas
+    assert categorias_nombradas("qiero un mause barato", TIENDA) == ["mouse"]
+    assert categorias_nombradas("tenes auris tmbn", TIENDA) == ["auriculares"]
+
+
+def test_que_productos_tenes_tiene_puerta():
+    """La pregunta mas comun de todas -'que vendes', 'pasame el catalogo'- no
+    tenia forma de contestarse con dato: `valores campo=categoria` volvia
+    campo_desconocido y la lista la ponia el modelo de memoria."""
+    from app.storage.firestore_client import get_all_products
+    r = H.consultar_catalogo(
+        H.ConsultarCatalogo(operacion="valores", campo="categoria"), TIENDA)
+    reales = {p["categoria"] for p in get_all_products(tienda_id=TIENDA)
+              if (p.get("stock") or 0) > 0}
+    assert r["estado"] == "ok"
+    assert r["cuantos_distintos"] == len(reales)
+    esq = {e["function"]["name"]: e["function"]["parameters"]
+           for e in H.esquemas(TIENDA)}
+    assert "categoria" in esq["consultar_catalogo"]["properties"]["campo"]["enum"]
+
+
+def test_la_tablet_del_cliente_es_un_equipo_conocido():
+    """'lo enchufo a mi tablet' devolvia equipo_desconocido con 27 tablets en
+    el catalogo. Se contesta desde la ficha, y si la ficha no lo dice, sin_dato
+    honesto."""
+    from app.storage.firestore_client import get_all_products
+    ssd = next(p for p in get_all_products(tienda_id=TIENDA)
+               if p["categoria"] == "ssd" and (p.get("stock") or 0) > 0)
+    r = H.ejecutar("ver_compatibilidad",
+                   {"product_id": ssd["id"], "equipo": "mi tablet"}, TIENDA)
+    assert r["estado"] == "ok"
+    veredictos = [c["veredicto"] for c in r["compatibilidad"]]
+    assert veredictos and all(
+        v in ("compatible", "incompatible", "sin_dato") for v in veredictos)
+
+
+def test_el_hueco_de_idioma_queda_anotado():
+    """El codigo no razona: acumula. Lo que no pudo llevar ni a un producto ni a
+    un rubro queda con las palabras del cliente, para que la proxima sesion
+    arranque de la lista y no de leer una charla a mano."""
+    from app.core import huecos
+    huecos.limpiar()
+    H.buscar_productos(
+        H.BuscarProductos(descripcion="tenes un joystick inalambrico"), TIENDA)
+    res = [h for h in huecos.resumen(TIENDA) if h["tipo"] == "sin_rubro"]
+    assert res and res[0]["ejemplos"]
