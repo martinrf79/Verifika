@@ -4,6 +4,51 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+**==== EL MARCADOR — UN SOLO NUMERO, Y ES EL QUE MANDA ====**
+
+> ## De las 40 preguntas de Martin, cuantas tienen la parte de CODIGO medida y en verde
+> # 12 de 40
+> *ultima medicion: 5-ago-2026. Antes de tocar nada, ver la nota de abajo.*
+
+**POR QUE UN SOLO NUMERO.** Habia tres bancos con tres numeros sueltos y un
+`piso.json`, y ninguno decia si el proyecto avanzo. Este si: sale de las 40
+pruebas REALES de Martin -25 sueltas y 15 series- y se mide contra el objetivo
+unico, un bot que venda y no alucine. **Cada sesion lo mueve o no hizo nada.**
+
+**EL METODO, POR SESION. Esto es lo que se hace, en este orden:**
+
+1. Agarrar **tres o cuatro** preguntas de las que faltan. No mas: alcance chico.
+2. Hacerlas pasar de punta a punta -herramienta, guarda, hub, estado-. **Lo que
+   se rompa en el camino, arreglarlo**, que es donde aparecen los errores de
+   verdad.
+3. Correr la bateria offline y los tres bancos, **antes y despues**, y dejar los
+   dos numeros escritos.
+4. Mover el marcador de arriba y cerrar la sesion aca.
+
+**POR QUE ESTE METODO Y NO UN PROYECTO DE REFACTOR.** El patron de TODAS las
+fallas caras de este repo es el mismo: no hay un error de diseño, hay un cable
+suelto entre dos piezas que funcionan. `_grado` leia el campo equivocado,
+`ver_compatibilidad` estaba rota desde siempre, `ordenar_por` no llegaba al
+modelo, `sin_dato` se calculaba y nadie lo leia, la guardia se comia la
+abstencion. Cada pieza se probo sola y **nunca contra su vecina**. Meter una
+pregunta entera al banco obliga a cruzar todas las costuras, asi que las cazas
+sin armar un proyecto aparte. Medido el 5-ago: se sumaron 4 casos y aparecio
+sola la guardia que borraba la respuesta honesta.
+
+**PRIMERA TAREA DE LA PROXIMA SESION, y es corta.** El 12 es una estimacion
+heredada de la auditoria del 5-ago, no una cuenta fina. **Fijarlo con
+precision:** listar las 40 con nombre, marcar cuales estan cubiertas hoy por
+`banco_candidatos.py` y cuales no, y dejar la lista escrita aca. Sin esa lista
+el marcador no se puede mover de forma honesta.
+
+**LO QUE NO ENTRA EN ESTA ETAPA.** Si una pregunta solo se puede evaluar por
+como REDACTA el modelo, se saca de la lista y se anota aparte: es la fase
+siguiente. Y las mejoras de busqueda pendientes -el enum por categoria, el orden
+por 8 campos, resolucion, bateria- **no son un paso propio**: salen cuando una
+de las 40 las necesite. Si no las necesita ninguna, no eran prioritarias.
+
+---
+
 **==== LA CONSIGNA VIGENTE (Martin, 5-ago-2026). LEER ANTES DE PROPONER NADA ====**
 
 **EN QUE ETAPA ESTAMOS.** Se esta probando **EL CODIGO**, suponiendo que el
