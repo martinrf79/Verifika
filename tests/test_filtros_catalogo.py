@@ -224,7 +224,18 @@ def test_si_el_filtro_no_deja_nada_se_ofrece_lo_mas_parecido_y_se_dice_cual_fall
     # y se dice CUAL condicion es la que falla, producto por producto
     assert r["productos"][0]["no_cumple"]
     assert "bluetooth" in r["productos"][0]["no_cumple"][0]
-    assert "no digas que no tenemos el producto" in r["instruccion"].lower()
+    # EL HECHO YA NO VIAJA COMO INSTRUCCION, VIAJA COMO BLOQUE. Se le pedia al
+    # modelo en prosa que no dijera que no tenemos el producto, y medido con la
+    # clave paga el 5-ago abria con el muro igual. Ahora el codigo escribe el
+    # renglon y el modelo lo pega, como ya pasa con la cuenta.
+    assert "Lo que más se acerca" in r["bloque"]
+    assert r["productos"][0]["nombre"] in r["bloque"]
+    # EL DATO, NO LA CONDICION. Al cliente le llega el valor real de la ficha
+    # -"bluetooth: no, este modelo es con cable"-, no la sintaxis del filtro.
+    # La primera version pegaba "no cumple: bluetooth contiene si" y esa
+    # cañeria interna salio en el mensaje al cliente, medido con la clave paga.
+    assert "bluetooth" in r["bloque"]
+    assert "contiene" not in r["bloque"] and "_" not in r["bloque"]
 
 
 def test_el_rescate_ordena_por_cuantas_condiciones_cumple():

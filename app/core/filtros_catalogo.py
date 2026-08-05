@@ -485,6 +485,83 @@ def clave_de_orden(prod: dict, campo: str, tienda_id: str):
     return n if n is not None else _norm(crudo)
 
 
+# Marcas de NEGACION en las palabras del propio cliente. Es una lista chica y
+# cerrada, y solo se usa para decidir si una restriccion que el modelo declaro y
+# no aplico es una EXCLUSION. Sin marca de negacion no se hace nada: aplicar al
+# reves una condicion -filtrar POR chino a alguien que no lo quiere- es mucho
+# peor que no aplicarla.
+_NEGACIONES = ("sin", "no", "menos", "evitar", "excluir", "salvo", "excepto",
+               "nada de", "que no")
+
+
+def resolver_exclusion(restriccion: str, tienda_id: str) -> dict | None:
+    """La restriccion del cliente convertida en una condicion, SIN semantica.
+
+    POR QUE EXISTE, medido el 5-ago con la clave paga, nueve corridas. Ante "el
+    mouse que menos partes chinas tenga" el modelo declara la restriccion en
+    `registrar_pedido` y NO la aplica en la busqueda; el reconciliador lo caza
+    bien; y en la ronda dos el modelo pide CERO herramientas, 3 de 3 vueltas,
+    con la correccion primera en el prompt y con el orden rechazado a la vista.
+    Desde su punto de vista ya lo resolvio. Tres redacciones distintas de la
+    instruccion no movieron el numero.
+
+    Lo que hace el codigo NO es interpretar: es BUSCAR EN QUE CAMPO aparece esa
+    palabra como VALOR. "chin" aparece en los valores de `pais_fabricacion`;
+    "logitech" en los de `marca`; "blanco" en los de `color`. Resolver un
+    termino al campo donde vive es lo que hace cualquier indice de busqueda, y
+    es un hecho verificable, no un juicio.
+
+    SOLO RESUELVE EXCLUSIONES, y a proposito. Hace falta una marca de negacion
+    en las palabras del propio cliente; si no la hay, devuelve None y no se toca
+    nada. Aplicar una condicion al reves seria peor que no aplicarla.
+    """
+    txt = _norm(restriccion)
+    if not any(re.search(rf"(?<![a-z]){n}(?![a-z])", txt) for n in _NEGACIONES):
+        return None
+    registro = campos_filtrables(tienda_id)
+    from app.storage.firestore_client import get_all_products
+    prods = get_all_products(tienda_id=tienda_id) or []
+    # Las palabras del cliente que no son de relleno ni la negacion misma.
+    palabras = [w for w in txt.split()
+                if len(w) >= 4 and w not in _VACIAS
+                and w not in _NEGACIONES]
+    mejor = None
+    for w in palabras:
+        raiz = w[:4]
+        for campo in registro:
+            if campo in ("descripcion", "nombre", "contenido_caja",
+                         "descripcion_rica", "caracteristicas_extra",
+                         "garantia_detalle", "uso_recomendado"):
+                # PROSA. Ahi cualquier palabra pega y encima gana por volumen:
+                # medido, "no Logitech" resolvia a `garantia_detalle` -que
+                # nombra la marca en cada renglon- en vez de a `marca`. Excluir
+                # la prosa deja que gane el campo donde el termino ES el valor.
+                continue
+            n = sum(1 for p in prods[:400]
+                    if _texto_contiene(_valor_crudo(p, campo), raiz))
+            if n and (mejor is None or n > mejor[2]):
+                mejor = (campo, raiz, n)
+    if not mejor:
+        return None
+    return {"campo": mejor[0], "operador": "no_contiene", "valor": mejor[1]}
+
+
+def orden_tiene_sentido(prods: list[dict], campo: str, tienda_id: str) -> bool:
+    """¿Ordenar por este campo ordena por ALGO?
+
+    Un campo de texto puede igual traer magnitudes -"512GB", "24 meses", "75Hz"-
+    y ahi el orden significa algo real. Si sus valores son etiquetas -"China",
+    "Negro", "Plastico"-, el orden es alfabetico y no responde a ninguna
+    pregunta que un cliente pueda hacer. Se mira el dato, no el nombre."""
+    from app.core.fuente_producto import valor_numerico
+    con_dato = [_valor_crudo(p, campo) for p in (prods or [])[:60]]
+    con_dato = [v for v in con_dato if v not in (None, "", [], {})]
+    if not con_dato:
+        return False
+    numericos = sum(1 for v in con_dato if valor_numerico(v) is not None)
+    return numericos >= len(con_dato) * 0.8
+
+
 def ordenar(prods: list[dict], campo: str, direccion: str,
             tienda_id: str) -> list[dict]:
     """Ordena por cualquier campo del registro. Reemplaza al `orden`
@@ -551,6 +628,52 @@ def rankear_por_cercania(prods: list[dict], filtros: list, tienda_id: str,
     # orden arbitrario presentado como ranking.
     puntuados.sort(key=lambda t: (t[0], t[1].get(desempate) or 0))
     return [p for _, p in puntuados], empatados, mejor
+
+
+# Como se nombra cada campo cuando el texto sale AL CLIENTE. Solo los que
+# aparecen de verdad en una condicion incumplida; para el resto se usa el nombre
+# del campo con los guiones bajos sacados, que se lee bien igual.
+_ETIQUETAS = {
+    "origen": "origen", "pais_marca": "país de la marca",
+    "pais_fabricacion": "país de fabricación", "marca": "marca",
+    "color": "color", "material": "material", "peso_gramos": "peso",
+    "garantia_meses": "garantía", "precio_ars": "precio",
+    "dimensiones": "medidas", "conexion": "conexión",
+}
+
+
+def dato_que_falla(prod: dict, filtros: list, tienda_id: str) -> str:
+    """El VALOR REAL del primer campo que hace que este producto no cumpla, ya
+    escrito para el cliente.
+
+    Nace de un error que llego hasta el mensaje: el bloque pegaba la condicion
+    cruda y al cliente le llegaba "no cumple: origen no_contiene chin", con la
+    sintaxis interna y la raiz truncada adentro. Mostrar el dato en vez de la
+    condicion no solo saca la sintaxis: es mas util, porque el cliente ve la
+    ficha real y decide por su cuenta si le sirve.
+    """
+    registro = campos_filtrables(tienda_id)
+    for f in (filtros or []):
+        campo = _norm(getattr(f, "campo", "") if not isinstance(f, dict)
+                      else f.get("campo"))
+        tipo = registro.get(campo)
+        if tipo is None:
+            continue
+        operador = _norm(getattr(f, "operador", "") if not isinstance(f, dict)
+                         else f.get("operador"))
+        valor = (getattr(f, "valor", "") if not isinstance(f, dict)
+                 else f.get("valor"))
+        r = evaluar(prod, campo, operador, valor, tipo)
+        if r is True:
+            continue
+        etq = _ETIQUETAS.get(campo, campo.replace("_", " "))
+        crudo = _valor_crudo(prod, campo)
+        if r is None:
+            return f"la ficha no dice el {etq}"
+        if crudo in (None, "", [], {}):
+            return f"la ficha no dice el {etq}"
+        return f"{etq}: {str(crudo)[:90]}"
+    return ""
 
 
 def incumplidos(prod: dict, filtros: list, tienda_id: str) -> list[str]:

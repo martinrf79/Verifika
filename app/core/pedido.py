@@ -150,8 +150,22 @@ def _universo_de_restricciones(llamadas: list) -> str:
         if ped.get("orden"):
             partes.append(_norm(ped["orden"]))
         if ped.get("ordenar_por"):
+            # SOLO EL NOMBRE DEL CAMPO. La primera version agregaba tambien una
+            # bolsa de palabras -"el mas mejor menor mayor barato caro
+            # liviano"- para que un superlativo contara como aplicado. Fue un
+            # error y se cobro caro el mismo dia: la restriccion "MENOS partes
+            # chinas" empezaba con "menos", "meno" pegaba dentro de "menor" de
+            # la bolsa, y el reconciliador daba la condicion por APLICADA cuando
+            # el modelo solo habia ordenado por pais_fabricacion. Nunca disparaba
+            # la ronda dos y el turno terminaba en el muro. Medido: 3 de 3.
+            #
+            # Una bolsa de palabras genericas cubre cualquier cosa, y un chequeo
+            # que cubre cualquier cosa no chequea nada. El costo de sacarla es
+            # que "el mas barato" resuelto con `ordenar_por precio_ars` puede
+            # acusarse en falso y costar una ronda. Se elige ese costo: una
+            # ronda de mas se paga en segundos, una condicion que se pierde se
+            # paga con la venta.
             partes.append(_norm(ped["ordenar_por"]).replace("_", " "))
-            partes.append("el mas mejor menor mayor barato caro liviano")
         if l.get("herramienta") == "consultar_temas":
             partes += [_norm(t) for t in (ped.get("temas") or [])]
     return " ".join(x for x in partes if x)

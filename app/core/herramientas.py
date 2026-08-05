@@ -585,6 +585,59 @@ def cuantos_pedidos(a: BuscarProductos) -> int:
     return max(1, min(int(a.cuantos or 3), 6))
 
 
+def _bloque_hallazgo(fichas: list, empatados: int, donde: list,
+                     categoria: str | None) -> str:
+    """EL RENGLON DE LOS HECHOS CUANDO NINGUNO CUMPLE DEL TODO, escrito por el
+    CODIGO y pegado tal cual, igual que la cuenta.
+
+    POR QUE DEJA DE SER UNA INSTRUCCION. La herramienta ya le decia al modelo
+    "arranca por ellos, no por un no", le pasaba el orden, el empate y en que
+    rubros SI se cumple. Medido el 5-ago con la clave paga, con razonamiento
+    prendido y apagado: el modelo igual abria con el muro -"no tengo ningun
+    mouse que no sea de origen chino"- y no usaba `donde_si_se_cumple` ni una
+    vez. Cada vez que se perdio esa pelea se le agregaron palabras a la
+    instruccion, y esa es exactamente la rueda que hay que cortar.
+
+    En este repo ya existe el mecanismo que gana: la CUENTA. `armar_presupuesto`
+    devuelve el bloque ya escrito, el modelo lo pega y si lo reescribe el codigo
+    se lo repone. Es la unica parte del mensaje que nunca se distorsiona,
+    justamente porque el modelo no la redacta. Esto es lo mismo, aplicado al
+    segundo lugar donde el codigo sabe la verdad y el modelo la tuerce.
+
+    NO ES EL CODIGO OPINANDO. Son hechos: cuales son, en que orden, que
+    condicion no cumplen, cuantos empatan y en que rubros se cumple del todo. El
+    juicio -si le conviene, como convencerlo- sigue siendo del modelo, que
+    escribe antes y despues.
+    """
+    if not fichas:
+        return ""
+    lineas = []
+    for f in fichas:
+        renglon = f"- {f.get('nombre')}"
+        if f.get("precio"):
+            renglon += f": {f['precio']}"
+        # EL HECHO, NO LA CONDICION. La primera version pegaba el filtro crudo
+        # y al cliente le llegaba "no cumple: origen no_contiene chin", con la
+        # sintaxis interna y la raiz truncada. Se muestra el VALOR REAL del
+        # campo que falla -"Marca Genius de Taiwan. Fabricado en China."-, que
+        # ademas es mas util: el cliente ve el dato y decide.
+        dato = f.get("por_que")
+        if dato:
+            renglon += f" — {dato}"
+        lineas.append(renglon)
+    cabeza = "Lo que más se acerca a lo que pediste"
+    if categoria:
+        cabeza += f", entre los {categoria}"
+    partes = [cabeza + ":", "\n".join(lineas)]
+    if empatados > len(fichas):
+        partes.append(f"Hay {empatados} igual de cerca: ninguno está mejor que "
+                      f"otro, te muestro los más baratos de ese grupo.")
+    if donde:
+        partes.append("Donde sí se cumple del todo lo que pedís es en: "
+                      + ", ".join(donde) + ".")
+    return "\n".join(partes)
+
+
 def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
     """Identidad y catalogo. El veredicto lo da el CODIGO, siempre."""
     from app.storage.firestore_client import get_all_products
@@ -725,8 +778,15 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
             for p in cercanos[:max(3, cuantos_pedidos(a))]:
                 f = _ficha(p, tienda_id)
                 f["no_cumple"] = FC.incumplidos(p, a.filtros, tienda_id)
+                # El VALOR real del primer campo que falla, para que el bloque
+                # le muestre al cliente el dato y no la sintaxis del filtro.
+                f["por_que"] = FC.dato_que_falla(p, a.filtros, tienda_id)
                 fichas.append(f)
+            donde = _categorias_donde_se_cumple(a.filtros, tienda_id,
+                                                a.categoria)
             return {"estado": "ninguno_cumple_del_todo",
+                    "bloque": _bloque_hallazgo(fichas, empatados, donde,
+                                               a.categoria),
                     "condiciones": filtrado["aplicados"],
                     "condiciones_no_aplicadas": filtrado["descartados"] or None,
                     "categoria": a.categoria,
@@ -737,24 +797,19 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
                     "cuantas_condiciones_incumple_el_mejor": faltan,
                     "donde_si_se_cumple": _categorias_donde_se_cumple(
                         a.filtros, tienda_id, a.categoria),
-                    "instruccion": "NINGUNO cumple todas las condiciones, pero "
-                                   "estos son los que MENOS se alejan, en "
-                                   "orden: arranca por ellos, no por un no. No "
-                                   "digas que no tenemos el producto: tenemos "
-                                   "estos, que es lo mas parecido. "
-                                   "Decile cual condicion es la que no se "
-                                   "cumple, esta en `no_cumple` de cada uno. Si "
-                                   "`empatados_igual_de_cerca` es mayor que los "
-                                   "que ves, decilo: estan TODOS igual de "
-                                   "lejos y no hay uno mejor, se te muestran "
-                                   "los mas baratos de ese grupo. No inventes "
-                                   "un orden que la ficha no respalda. "
-                                   "PROHIBIDO afirmar nada sobre el catalogo "
-                                   "entero: viste unos pocos productos, no los "
-                                   "880. Si `donde_si_se_cumple` trae algo, "
-                                   "ofrecelo como el rubro donde la condicion "
-                                   "SI se cumple del todo. Despues preguntale "
-                                   "si con eso avanza."}
+                    # LA INSTRUCCION SE ACHICO A LA MITAD y no es un descuido:
+                    # todo lo que decia -el orden, el empate, cual condicion
+                    # falla, donde si se cumple- ahora VIENE ESCRITO en
+                    # `bloque`, que se pega tal cual. Pedirselo ademas en prosa
+                    # seria escribir dos veces lo mismo, que es el error que
+                    # este repo ya pago con los enums duplicados.
+                    "instruccion": "Pegá el bloque TAL CUAL, sin cambiar un "
+                                   "renglon. Escribí vos lo de antes y lo de "
+                                   "después: por qué le puede servir el "
+                                   "primero y una pregunta para avanzar. NO "
+                                   "abras con un no. PROHIBIDO afirmar nada "
+                                   "sobre el catálogo entero: viste unos pocos "
+                                   "productos, no los 880."}
         prods = filtrado["productos"]
 
     # EL ORDEN. Por el campo que pidio el cliente si pidio un extremo; si no,
@@ -763,9 +818,35 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
     # grafico" devolvia las 3 mas baratas de 171 porque la descripcion se
     # descartaba entera.
     orden_usado = ""
-    if a.ordenar_por and _norm(a.ordenar_por) in FC.campos_filtrables(tienda_id):
-        prods = FC.ordenar(prods, _norm(a.ordenar_por), a.direccion, tienda_id)
-        orden_usado = f"{_norm(a.ordenar_por)} {a.direccion}"
+    orden_rechazado = None
+    registro = FC.campos_filtrables(tienda_id)
+    campo_orden = _norm(a.ordenar_por) if a.ordenar_por else ""
+    if campo_orden and registro.get(campo_orden) == "texto" \
+            and not FC.orden_tiene_sentido(prods, campo_orden, tienda_id):
+        # ORDENAR POR UN CAMPO DE TEXTO NO ORDENA NADA, y hay que decirlo. El
+        # caso medido el 5-ago, 3 de 3 vueltas: ante "el mouse que menos partes
+        # chinas tenga" el modelo pidio `ordenar_por pais_fabricacion`. Alfabetico
+        # por pais no es un ranking de nada: el resultado volvia `encontrado`,
+        # con la condicion sin aplicar, y el modelo escribia el muro de su
+        # cabeza. El reconciliador lo cazaba y en la ronda dos el modelo no
+        # pedia nada, porque desde su punto de vista YA lo habia resuelto.
+        #
+        # Se rechaza con el motivo Y con la alternativa concreta, en el punto de
+        # uso. Es la misma regla que ya tenian los filtros: el que se cae se
+        # REPORTA. Un campo de texto cuyos valores SI son magnitudes -"512GB",
+        # "24 meses"- se sigue ordenando: ahi el orden significa algo.
+        orden_rechazado = {
+            "campo": campo_orden,
+            "motivo": f"'{campo_orden}' es un campo de texto: ordenar por el "
+                      f"no ordena por nada. Si el cliente quiere EVITAR un "
+                      f"valor, pedilo como condicion con no_contiene; si "
+                      f"quiere el mayor o el menor de algo, ordena por un "
+                      f"campo numerico."}
+        log.warning("orden_rechazado", campo=campo_orden)
+        campo_orden = ""
+    if campo_orden and campo_orden in registro:
+        prods = FC.ordenar(prods, campo_orden, a.direccion, tienda_id)
+        orden_usado = f"{campo_orden} {a.direccion}"
     elif a.descripcion:
         # El peso por rareza se calcula sobre los CANDIDATOS de esta consulta,
         # no sobre el catalogo entero: dentro de una categoria, la palabra del
@@ -787,6 +868,13 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
     salida = {"estado": "encontrado", "hay_en_total": len(prods),
               "ordenados_por": orden_usado,
               "productos": [_ficha(p, tienda_id) for p in prods[:cuantos]]}
+    if orden_rechazado:
+        salida["orden_no_aplicado"] = orden_rechazado
+        salida["instruccion"] = (
+            "OJO: el orden que pediste NO se aplico, por el motivo de "
+            "`orden_no_aplicado`. Esta lista NO responde a esa condicion, asi "
+            "que NO afirmes nada sobre ella. Volvé a pedir la busqueda como "
+            "dice el motivo.")
     if filtrado:
         # QUE SE FILTRO Y QUE NO, dicho. Sin esto el modelo no puede saber que
         # una condicion se cayo -campo inexistente, operador imposible- y

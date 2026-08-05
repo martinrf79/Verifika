@@ -114,7 +114,9 @@ def test_si_la_exclusion_no_deja_nada_se_dice_no_se_devuelve_lo_mismo():
         cuantas = [len(p["no_cumple"]) for p in r["productos"]]
         assert cuantas == sorted(cuantas), "el que menos incumple va primero"
         # y la instruccion prohibe el universal, que es de donde salia el muro
-        assert "catalogo entero" in r["instruccion"]
+        assert "catálogo entero" in r["instruccion"]
+        # el hecho lo escribe el CODIGO, no se le pide al modelo en prosa
+        assert "Lo que más se acerca" in r["bloque"]
 
 
 def test_el_empate_se_informa_no_se_disimula():
@@ -136,7 +138,9 @@ def test_el_empate_se_informa_no_se_disimula():
     assert r["estado"] == "ninguno_cumple_del_todo"
     assert r["empatados_igual_de_cerca"] > len(r["productos"])
     assert r["desempate"], "el criterio de desempate se declara"
-    assert "empatados_igual_de_cerca" in r["instruccion"]
+    # el empate viaja ESCRITO en el bloque que el modelo pega, no como un dato
+    # suelto que tenga que acordarse de mencionar
+    assert "igual de cerca" in r["bloque"]
     # el desempate declarado es el precio: de menor a mayor entre los empatados
     precios = [p["precio_ars"] for p in r["productos"]]
     assert precios == sorted(precios)

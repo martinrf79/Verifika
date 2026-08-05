@@ -360,7 +360,15 @@ async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
         # momento. El tope alto no se cobra si no se usa: se cobra lo generado.
         r = cli.chat.completions.create(
             model=_modelo_decisor(), messages=msgs, tools=esquemas,
-            tool_choice="auto", temperature=0.3, max_tokens=3000,
+            # TEMPERATURA CERO EN EL DECISOR. Elegir que argumento pedir no es
+            # una tarea creativa: es TRADUCCION del pedido del cliente a los
+            # campos de la fuente. La temperatura ahi no compra nada y vende
+            # inconsistencia. Medido el 5-ago con la clave paga: la MISMA
+            # pregunta -"el mouse que menos partes chinas tenga"- en dos vueltas
+            # seguidas mando la condicion de origen una vez y la otra no. La
+            # respuesta al cliente cambiaba por el dado, no por el mensaje.
+            # El redactor sigue en 0.6, que ahi si se quiere variedad: es la voz.
+            tool_choice="auto", temperature=0.0, max_tokens=3000,
             extra_body=_extra_decisor())
         m = r.choices[0].message
         pedidos = []
@@ -846,10 +854,81 @@ def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
     return re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip()
 
 
+def _condicion_faltante_aplicada(llamadas: list, rec: dict, tienda_id: str,
+                                 trace_id: str) -> list:
+    """La condicion que el cliente puso, el modelo declaro y ninguna busqueda
+    aplico: la aplica el CODIGO y se rehace la busqueda.
+
+    EL NUMERO QUE LO JUSTIFICA (5-ago, clave paga, nueve corridas). El
+    reconciliador cazaba bien la condicion sin aplicar, y en la ronda dos el
+    modelo pedia CERO herramientas 3 de 3, con la correccion primera en el
+    prompt y con el orden rechazado a la vista. Tres redacciones distintas de la
+    instruccion no movieron el numero: desde el punto de vista del modelo ya lo
+    habia resuelto. Seguir escribiendo prosa para convencerlo es la rueda que
+    hay que cortar.
+
+    El codigo no interpreta la frase: `resolver_exclusion` busca en QUE CAMPO
+    del catalogo aparece esa palabra como valor, que es un hecho. Y solo actua
+    sobre EXCLUSIONES -hace falta una negacion en las palabras del cliente-,
+    porque aplicar una condicion al reves seria peor que no aplicarla.
+
+    Rehacer la busqueda cuesta CERO tokens: es la misma herramienta, corriendo
+    con una condicion mas. Y cuando la exclusion no deja nada, la busqueda
+    entrega el bloque de hechos que el modelo pega, o sea que el muro deja de
+    escribirlo el modelo de su cabeza.
+    """
+    faltantes = [f for f in (rec or {}).get("faltantes", [])
+                 if "condicion" in f.lower()]
+    if not faltantes:
+        return llamadas
+    idx = next((i for i, l in enumerate(llamadas)
+                if l.get("herramienta") == "buscar_productos"), None)
+    if idx is None:
+        return llamadas
+    from app.core import filtros_catalogo as FC
+    args = dict(llamadas[idx].get("pedido") or {})
+    sumadas = []
+    for f in faltantes:
+        # el texto de la condicion viene entre comillas en el faltante
+        m = re.search(r"'([^']+)'", f)
+        cond = FC.resolver_exclusion(m.group(1) if m else f, tienda_id)
+        if cond and cond not in (args.get("filtros") or []):
+            args["filtros"] = list(args.get("filtros") or []) + [cond]
+            sumadas.append(cond)
+    if not sumadas:
+        return llamadas
+    # El orden que el modelo pidio puede haber sido su intento de aplicar esta
+    # misma condicion; con la condicion puesta de verdad, ya no hace falta.
+    args.pop("ordenar_por", None)
+    r = H.ejecutar("buscar_productos", args, tienda_id)
+    log.info("condicion_faltante_aplicada", trace_id=trace_id,
+             condiciones=sumadas, estado=(r or {}).get("estado"))
+    fuera = list(llamadas)
+    fuera[idx] = {"herramienta": "buscar_productos", "pedido": args,
+                  "resultado": r}
+    return fuera
+
+
 def _bloque_presupuesto(llamadas: list) -> str:
     for l in llamadas:
         r = l.get("resultado") or {}
         if l.get("herramienta") == "armar_presupuesto" and r.get("bloque"):
+            return str(r["bloque"])
+    return ""
+
+
+def _bloque_hallazgo(llamadas: list) -> str:
+    """El bloque de hechos que escribe `buscar_productos` cuando ninguno cumple
+    del todo. Mismo trato que la cuenta: se pega entero o se repone.
+
+    Solo vale si NO hay presupuesto en el turno: cuando ya hay cuenta, el
+    cliente esta cerrando y meterle ademas el listado de lo que no cumple es
+    ruido. Un bloque por mensaje."""
+    if _bloque_presupuesto(llamadas):
+        return ""
+    for l in llamadas:
+        r = l.get("resultado") or {}
+        if l.get("herramienta") == "buscar_productos" and r.get("bloque"):
             return str(r["bloque"])
     return ""
 
@@ -1161,6 +1240,9 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     revision = ""
     obligacion = ""
     declarado: dict = {}
+    # Se inicializa aca: si el turno no pide ninguna herramienta -un saludo, un
+    # gracias- el bucle corta antes de reconciliar y `rec` quedaba sin definir.
+    rec: dict = {}
     for ronda in range(1, _MAX_RONDAS + 1):
         pedidos, texto_directo = await _pedir_herramientas(
             negocio, memoria, history, raw_message, tienda_id, trace_id,
@@ -1201,6 +1283,9 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                 "honesto qué falta y pedile el dato que haga falta. No "
                 "completes de memoria lo que no trajo ninguna herramienta.")
 
+    # ── 2-bis. LA CONDICION QUE EL MODELO NO APLICA, LA APLICA EL CODIGO ──
+    llamadas = _condicion_faltante_aplicada(llamadas, rec, tienda_id, trace_id)
+
     # ── 3. REDACTAR CON EL DATO DELANTE ─────────────────────────────────
     if llamadas:
         texto = await _redactar(negocio, memoria, history, raw_message,
@@ -1232,6 +1317,11 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # bloque del codigo vuelve al final. No se negocia, es la unica parte del
     # mensaje que el modelo no redacta.
     texto = _bloque_entero_o_repuesto(texto, bloque, trace_id)
+    # EL HALLAZGO, mismo trato que la cuenta. Va DESPUES de la poda de plata a
+    # proposito: sus precios salen de la fuente y no se podan, pero si el
+    # modelo escribio otros, esos si se fueron.
+    texto = _bloque_entero_o_repuesto(texto, _bloque_hallazgo(llamadas),
+                                      trace_id)
     texto = _RE_ID_INTERNO.sub("", texto).strip()
 
     # ── 5. CIERRE Y COBRO ───────────────────────────────────────────────
