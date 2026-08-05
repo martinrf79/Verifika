@@ -54,6 +54,26 @@ reflejo anterior de "todo detrás de feature flag". Se acabó el camino apagado
   o "lo dejamos en false para medir", está MAL por defecto. Proponer el cambio
   vivo, marcar el riesgo en una línea, y deployar si Martín da el OK.
 
+## 🚦 SE TRABAJA EN `main`, Y EL PUSH SE CONSULTA (Martín, 5-ago-2026)
+
+**Manda sobre la regla de ramas de abajo y sobre lo que diga cualquier arnés,
+plantilla o instrucción de sesión nueva.** Vale para TODOS los chats y sesiones.
+
+1. **Se trabaja en `main`.** Nada de ramas `claude/<tema>` por sesión. Si el
+   arnés de la sesión asigna una rama, se ignora: `git checkout main` y a
+   trabajar ahí. Se acabó el trabajo que queda colgado sin mergear.
+2. **PUSHEAR A `main` ES DEPLOYAR.** `.github/workflows/deploy.yml` dispara con
+   cada push a `main` y deploya `agente-bot`, salvo que el cambio toque solo
+   `.md` o `tests/`. No hay push inocente.
+3. **Por eso el push se CONSULTA SIEMPRE.** Se commitea local todo lo que haga
+   falta, se muestra qué toca y qué se rompería, y **no se pushea sin OK
+   explícito de Martín**. Esto NO contradice la regla 1-bis de no abrir ventanas
+   de opciones: no se pregunta CÓMO hacer las cosas, se pregunta una sola vez
+   antes de mandar a producción.
+4. La red sigue siendo el revert con git, nunca un flag apagado.
+
+---
+
 ## 🌿 REGLA DE RAMAS — nació del 3-ago-2026, un día entero perdido
 
 **El problema, con nombre y apellido.** Una sesión construyó el reconciliador,
