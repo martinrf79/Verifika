@@ -117,9 +117,14 @@ _PALABRAS_OPERADOR = {
 
 
 def _universo_de_restricciones(llamadas: list) -> str:
-    """Donde puede viajar una restriccion declarada por el cliente: los
-    `filtros` estructurados, el `excluir` y el `tope_precio` de la busqueda, y
-    los temas consultados.
+    """Donde puede viajar una restriccion declarada por el cliente: las
+    condiciones estructuradas de la busqueda, el criterio de orden y los temas
+    consultados.
+
+    5-AGO: `excluir`, `tope_precio` y `orden` DEJARON DE EXISTIR como argumentos
+    sueltos -se colapsaron en `filtros` y `ordenar_por`-, asi que este universo
+    se arma de esos dos. Se siguen leyendo los viejos por si quedara una llamada
+    en vuelo: no cuesta nada y evita acusar en falso durante el deploy.
 
     LOS FILTROS ENTRAN ACA DESDE EL 4-AGO, y no es un detalle: son la via
     principal por la que una condicion se aplica. Medido con el modelo vivo el
@@ -144,6 +149,9 @@ def _universo_de_restricciones(llamadas: list) -> str:
             partes.append("presupuesto tope precio maximo gastar")
         if ped.get("orden"):
             partes.append(_norm(ped["orden"]))
+        if ped.get("ordenar_por"):
+            partes.append(_norm(ped["ordenar_por"]).replace("_", " "))
+            partes.append("el mas mejor menor mayor barato caro liviano")
         if l.get("herramienta") == "consultar_temas":
             partes += [_norm(t) for t in (ped.get("temas") or [])]
     return " ".join(x for x in partes if x)

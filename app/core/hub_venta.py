@@ -848,13 +848,82 @@ def _carrito_del_turno(llamadas: list) -> list:
         if l.get("herramienta") != "armar_presupuesto":
             continue
         detalle = (l.get("resultado") or {}).get("detalle") or []
-        carrito = [{"id": str(d.get("id") or "").upper(),
+        # EL DESTINO POR ITEM SE CALCULABA Y NO SE GUARDABA. `armar_presupuesto`
+        # lo recibe, lo cotiza y lo escribe bien en el bloque -medido 3 de 3
+        # destinos correctos-, pero el carrito que se persiste guardaba solo id,
+        # nombre y cantidad. Al turno siguiente el reparto no existia y el
+        # cliente tenia que volver a decir a donde iba cada cosa. Se recupera
+        # del pedido que hizo el modelo, que es donde viaja.
+        por_id: dict = {}
+        for it in ((l.get("pedido") or {}).get("items") or []):
+            if isinstance(it, dict) and it.get("destino"):
+                por_id.setdefault(str(it.get("product_id") or "").upper(),
+                                  str(it["destino"]).strip())
+        carrito = []
+        for d in detalle:
+            if not d.get("id"):
+                continue
+            item = {"id": str(d.get("id") or "").upper(),
                     "nombre": d.get("nombre"),
                     "cantidad": int(d.get("cantidad") or 1)}
-                   for d in detalle if d.get("id")]
+            destino = por_id.get(item["id"])
+            if destino:
+                item["destino"] = destino
+            carrito.append(item)
         if carrito:
             return carrito
     return []
+
+
+def _carrito_podado(previo: list, declarado: dict) -> list:
+    """EL PEDIDO QUE BAJA, sin tener que recotizar.
+
+    EL AGUJERO, medido el 5-ago. El carrito se escribia UNICAMENTE como efecto
+    de `armar_presupuesto`: `_carrito_del_turno` lee su detalle y si el turno no
+    cotizo devuelve vacio, con lo cual el hub conservaba el carrito anterior
+    INTACTO. O sea que "el teclado sacalo, dejame los dos mouse" -sin pedir la
+    cuenta- dejaba el teclado adentro, y reaparecia en el presupuesto siguiente.
+    No habia operacion de quitar en ningun lado.
+
+    ESTO NO ES UN DELTA y la distincion importa, porque el delta ya se probo y
+    no funciono. El modelo no declara "sacá el teclado": declara, como declara
+    siempre y en cada turno, el pedido COMPLETO tal como lo entendio. Eso ya
+    existe y ya viaja -es `registrar_pedido`, que el prompt obliga a llamar
+    ante cualquier pedido de productos, precio o envio-. Lo unico que se agrega
+    es LEERLO: lo que estaba en el carrito y ya no aparece en la declaracion,
+    sale.
+
+    Se poda por PALABRA, no por id, porque la declaracion es la del cliente
+    -"los dos mouse"- y no trae ids. Un item sobrevive si alguna palabra de lo
+    declarado aparece en su nombre o en su categoria. Conservador a proposito:
+    ante la duda el item se queda, porque borrar del carrito algo que el cliente
+    si queria es peor que dejar de mas, y lo de mas se corrige solo en cuanto
+    vuelva a cotizar.
+    """
+    items = [i for i in ((declarado or {}).get("items") or [])
+             if isinstance(i, dict) and str(i.get("que") or "").strip()]
+    if not previo or not items:
+        return previo or []
+    palabras = set()
+    for i in items:
+        palabras |= {w for w in P._norm(i["que"]).split() if len(w) >= 4}
+    if not palabras:
+        return previo
+    quedan = []
+    for c in previo:
+        texto = P._norm(f"{c.get('nombre', '')} {c.get('categoria', '')}")
+        if any(w[:5] in texto for w in palabras):
+            quedan.append(c)
+    # Si la poda deja el carrito VACIO no se aplica: significa que el cliente
+    # declaro algo que no matchea nada -otra categoria, un producto nuevo-, no
+    # que haya dado de baja todo. Vaciar el pedido por un no-match es el error
+    # caro; que quede uno de mas lo corrige la proxima cotizacion.
+    if not quedan:
+        return previo
+    if len(quedan) != len(previo):
+        log.info("carrito_podado_por_declaracion",
+                 antes=len(previo), despues=len(quedan))
+    return quedan
 
 
 def _senal_de_cierre(llamadas: list, mensaje: str) -> dict:
@@ -1070,7 +1139,12 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
 
     productos_vistos = merge_productos(conv.get("productos_vistos") or [],
                                        _productos_del_turno(llamadas))
-    carrito = _carrito_del_turno(llamadas) or (conv.get("carrito_vigente") or [])
+    # EL CARRITO. Si el turno cotizo, manda la cuenta. Si no cotizo pero el
+    # modelo DECLARO el pedido, se poda el anterior con esa declaracion: es la
+    # unica forma de que "sacá el teclado" baje algo sin obligar a recotizar.
+    carrito = _carrito_del_turno(llamadas)
+    if not carrito:
+        carrito = _carrito_podado(conv.get("carrito_vigente") or [], declarado)
     localidades = get_envio_localidades() or (conv.get("ultimas_localidades") or [])
     try:
         save_conversation(

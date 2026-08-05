@@ -39,9 +39,18 @@ def test_los_campos_filtrables_salen_del_catalogo_vivo():
     # claves de specs, que es donde viven las que mas pregunta el cliente
     for c in ("bluetooth", "conexion", "bateria", "resistencia_agua", "wifi"):
         assert c in campos, c
+    # el PRECIO entra al registro desde el 5-ago: tenia su propia puerta
+    # -`tope_precio` y `orden`- y era la cuarta forma de decir lo mismo. Ahora
+    # es una condicion mas -`precio_ars menor X`- y un criterio de orden mas.
+    assert campos["precio_ars"] == "numero"
+    # y los dos paises que el origen escondia, derivados de la fuente: el
+    # cliente que no quiere marca china no esta pidiendo lo mismo que el que no
+    # quiere fabricacion china, y pegados no habia forma de pedir uno solo.
+    assert campos["pais_marca"] == "texto"
+    assert campos["pais_fabricacion"] == "texto"
     # lo que NO se ofrece, cada uno por su motivo
     for c in ("id", "tags", "descripcion_rica", "specs", "compat",
-              "categoria", "precio_ars", "stock"):
+              "categoria", "stock"):
         assert c not in campos, c
 
 
@@ -108,7 +117,7 @@ def test_filtra_por_una_spec_que_no_es_columna():
         filtros=[{"campo": "ram", "operador": "contiene",
                   "valor": "16GB"}]), TIENDA)
     assert r["estado"] == "encontrado"
-    assert r["filtros_aplicados"][0]["quedaron"] > 0
+    assert r["condiciones_aplicadas"][0]["quedaron"] > 0
 
 
 def test_dos_filtros_se_encadenan():
@@ -185,7 +194,7 @@ def test_un_campo_inventado_no_filtra_en_silencio_se_reporta():
         filtros=[{"campo": "medidas", "operador": "contiene",
                   "valor": "chico"}]), TIENDA)
     assert r["estado"] == "encontrado"
-    assert r["filtros_no_aplicados"][0]["campo"] == "medidas"
+    assert r["condiciones_no_aplicadas"][0]["campo"] == "medidas"
     assert "NO se pudieron aplicar" in r["instruccion"]
 
 
@@ -195,7 +204,7 @@ def test_mayor_sobre_un_campo_de_texto_se_rechaza_con_motivo():
         filtros=[{"campo": "color", "operador": "mayor",
                   "valor": "5"}]), TIENDA)
     assert r["estado"] == "encontrado"
-    assert "texto" in r["filtros_no_aplicados"][0]["motivo"]
+    assert "texto" in r["condiciones_no_aplicadas"][0]["motivo"]
 
 
 # ── NINGUNA HERRAMIENTA DEVUELVE VACIO (Martin, 2-ago) ───────────────────────
@@ -211,10 +220,10 @@ def test_si_el_filtro_no_deja_nada_se_ofrece_lo_mas_parecido_y_se_dice_cual_fall
         filtros=[{"campo": "bluetooth", "operador": "contiene",
                   "valor": "si"}]), TIENDA)
     assert r["estado"] == "ninguno_cumple_del_todo"
-    assert r["lo_mas_parecido"], "nunca se devuelve vacio"
+    assert r["productos"], "nunca se devuelve vacio"
     # y se dice CUAL condicion es la que falla, producto por producto
-    assert r["lo_mas_parecido"][0]["no_cumple"]
-    assert "bluetooth" in r["lo_mas_parecido"][0]["no_cumple"][0]
+    assert r["productos"][0]["no_cumple"]
+    assert "bluetooth" in r["productos"][0]["no_cumple"][0]
     assert "no digas que no tenemos el producto" in r["instruccion"].lower()
 
 
@@ -227,18 +236,26 @@ def test_el_rescate_ordena_por_cuantas_condiciones_cumple():
                  {"campo": "garantia_meses", "operador": "mayor",
                   "valor": "24"}]), TIENDA)
     assert r["estado"] == "ninguno_cumple_del_todo"
-    grados = [len(p["no_cumple"]) for p in r["lo_mas_parecido"]]
+    grados = [len(p["no_cumple"]) for p in r["productos"]]
     assert grados == sorted(grados), "el que menos incumple va primero"
 
 
 # ── QUE NO SE ROMPA LO QUE YA ANDABA ─────────────────────────────────────────
-def test_sin_filtros_la_busqueda_es_identica_a_la_de_siempre():
-    """El camino viejo no puede cambiar de forma: `filtros` es opcional y sin
-    el la respuesta no lleva ni una clave de mas."""
+def test_sin_condiciones_la_busqueda_dice_cuantos_habia_y_con_que_criterio():
+    """`filtros` sigue siendo opcional, pero desde el 5-ago toda busqueda vuelve
+    con DOS datos que antes no viajaban, y los dos son anti-muro:
+
+      `hay_en_total`  : cuantos habia de verdad. Sin esto el modelo ve tres
+                        productos y habla como si fueran todo el rubro.
+      `ordenados_por` : con que criterio se ordenaron. Sin esto no puede decir
+                        "estos son los mas baratos" sin adivinar, ni saber que
+                        la lista responde a lo que el cliente describio."""
     r = H.buscar_productos(
         H.BuscarProductos(categoria="mouse", cuantos=3), TIENDA)
     assert r["estado"] == "encontrado"
-    assert set(r) == {"estado", "productos"}
+    assert set(r) == {"estado", "productos", "hay_en_total", "ordenados_por"}
+    assert r["hay_en_total"] > 3, "hay 45 mouse con stock, no 3"
+    assert "precio" in r["ordenados_por"]
 
 
 # ── EL RECONCILIADOR TIENE QUE CONOCER EL ARGUMENTO NUEVO ────────────────────

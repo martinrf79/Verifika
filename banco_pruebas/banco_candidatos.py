@@ -102,22 +102,27 @@ def c1():
         m, f = paises(p)
         clave = ("chin" in m, "chin" in f)
         escalones.setdefault(clave, []).append(p["nombre"])
-    r = buscar(categoria="mouse", excluir=["china", "logitech"])
-    grados = [p.get("cuanto_incumple") for p in (r.get("productos") or [])]
-    # cuantos empatan con el primero que devuelve, sobre el universo entero
-    todos = [(H._grado(p, ["china", "logitech"]), p["nombre"])
-             for p in CON_STOCK if p.get("categoria") == "mouse"]
-    mejor = min(g for g, _ in todos)
-    empatados = sum(1 for g, _ in todos if g == mejor)
-    ok = empatados <= 3
+    r = buscar(categoria="mouse", filtros=[
+        {"campo": "pais_fabricacion", "operador": "no_contiene",
+         "valor": "china"},
+        {"campo": "pais_marca", "operador": "no_contiene", "valor": "china"},
+        {"campo": "marca", "operador": "no_contiene", "valor": "logitech"}])
+    # EL CRITERIO CORRECTO NO ES QUE NO HAYA EMPATE. La fuente distingue dos
+    # hechos, asi que 19 mouse estan REALMENTE igual de lejos: exigir un ganador
+    # seria exigir que el codigo invente un orden. Lo que se mide es que el
+    # empate se DIGA y que el desempate este declarado.
+    empatados = r.get("empatados_igual_de_cerca") or 0
+    ok = (r.get("estado") == "ninguno_cumple_del_todo"
+          and empatados > 0 and bool(r.get("desempate"))
+          and all(p.get("no_cumple") for p in (r.get("productos") or [])))
     caso(1, "el mouse que menos partes chinas tenga, que no sea Logitech",
-         "buscar_productos categoria=mouse excluir=[china, logitech]",
-         f"un orden que discrimine; escalones reales en la fuente: "
-         f"{len(escalones)}",
-         f"grados devueltos {grados}; {empatados} mouse empatan en el "
-         f"grado minimo {mejor}",
-         ok, "" if ok else "EMPATE MASIVO: el orden no discrimina, "
-                           "los primeros 3 son arbitrarios entre los empatados")
+         "buscar_productos categoria=mouse + 3 condiciones no_contiene",
+         f"orden por cuantas condiciones incumple, el empate dicho y el "
+         f"desempate declarado; escalones reales en la fuente: {len(escalones)}",
+         f"estado={r.get('estado')}, empatados={empatados}, "
+         f"desempate={r.get('desempate')!r}, "
+         f"incumple el mejor={r.get('cuantas_condiciones_incumple_el_mejor')}",
+         ok, "" if ok else "el empate no se informa")
 
 
 # ── 2. RANKING POR UN ATRIBUTO QUE NO ES PRECIO ────────────────────────────
@@ -125,27 +130,32 @@ def c2():
     livianos = sorted([p for p in CON_STOCK if isinstance(p.get("peso_gramos"),
                                                           (int, float))],
                       key=lambda p: p["peso_gramos"])[:3]
-    tiene_arg = "peso" in str(H.BuscarProductos.model_fields["orden"])
-    r = buscar(descripcion="el mas liviano que tengas para viajar")
+    r = buscar(categoria="mouse", ordenar_por="peso_gramos", direccion="min")
+    pesos = [p.get("peso_gramos") for p in (r.get("productos") or [])]
+    real = sorted(p["peso_gramos"] for p in CON_STOCK
+                  if p.get("categoria") == "mouse"
+                  and isinstance(p.get("peso_gramos"), (int, float)))[:3]
+    ok = bool(pesos) and pesos == sorted(pesos) and pesos == real
     caso(2, "cual es el mas liviano que tengas para viajar",
-         "no existe la llamada: `orden` solo acepta barato|caro",
-         f"ranking por peso; el mas liviano real es "
-         f"{livianos[0]['nombre']} con {livianos[0]['peso_gramos']}g",
-         f"orden acepta peso: {tiene_arg}; sin categoria devuelve "
-         f"estado={r.get('estado')}",
-         False, "NO HAY PUERTA: ordenar_por y atributos_ordenables existen en "
-                "fuente_producto y ninguna herramienta los expone")
+         "buscar_productos ordenar_por=peso_gramos direccion=min",
+         f"ranking por peso; los 3 mas livianos del rubro son {real}. El mas "
+         f"liviano del catalogo entero es {livianos[0]['nombre']} con "
+         f"{livianos[0]['peso_gramos']}g",
+         f"devuelve {pesos}, ordenados_por={r.get('ordenados_por')!r}", ok,
+         "" if ok else "el orden por atributo no llega")
 
 
 # ── 3. AGREGADO: cuantos NO se fabrican en China ───────────────────────────
 def c3():
     verdad_fab = sum(1 for p in CON_STOCK if no_fabricado_en_china(p))
     verdad_nada = sum(1 for p in CON_STOCK if sin_china_en_nada(p))
-    r = catalogo(operacion="contar", excluir=["china"])
+    r = catalogo(operacion="contar", filtros=[
+        {"campo": "pais_fabricacion", "operador": "no_contiene",
+         "valor": "china"}])
     obt = r.get("cuantos")
     ok = obt in (verdad_fab, verdad_nada)
     caso(3, "cuantos productos tenes que no se fabriquen en China",
-         "consultar_catalogo operacion=contar excluir=[china]",
+         "consultar_catalogo contar + pais_fabricacion no_contiene china",
          f"sin China en la FABRICACION: {verdad_fab}. Sin China en nada: "
          f"{verdad_nada}",
          f"devuelve {obt}", ok,
@@ -172,12 +182,15 @@ def c4():
 def c5():
     conp = [p for p in CON_STOCK if isinstance(p.get("precio_ars"), (int, float))]
     piso = min(p["precio_ars"] for p in conp)
-    r = buscar(categoria="mouse", tope_precio=piso - 1)
-    ok = r.get("estado") == "nada_dentro_del_presupuesto"
+    r = buscar(categoria="mouse", filtros=[
+        {"campo": "precio_ars", "operador": "menor", "valor": str(piso - 1)}])
+    ok = (r.get("estado") == "ninguno_cumple_del_todo"
+          and bool(r.get("productos")))
     caso(5, "tenes algo mas barato que el Genius DX-110",
-         f"buscar_productos categoria=mouse tope_precio={piso - 1}",
+         f"buscar_productos categoria=mouse precio_ars menor {piso - 1}",
          "un estado que diga que no hay nada por debajo, con el piso real",
-         f"estado={r.get('estado')}, tope={r.get('tope')}", ok,
+         f"estado={r.get('estado')}, ofrece {len(r.get('productos') or [])} "
+         f"alternativas reales", ok,
          "" if ok else "no distingue 'no hay mas barato' de 'no tenemos'")
 
 
@@ -202,16 +215,21 @@ def c7():
     top = sorted(nbs, key=lambda p: -(p.get("precio_ars") or 0))[:3]
     r = buscar(descripcion="notebook para diseño grafico que le dure años",
                categoria="notebook")
-    dev = nombres(r)
-    baratas = [p["nombre"] for p in
-               sorted(nbs, key=lambda p: p["precio_ars"])[:3]]
-    ok = dev != baratas
+    # Los 171 notebooks tienen el MISMO uso_recomendado, los mismos tags y la
+    # misma descripcion salvo el modelo: la prosa no separa a una de otra. El
+    # codigo no puede elegir y no tiene que fingirlo. Lo que se exige es que lo
+    # DIGA, y que exista la puerta para contestarla bien.
+    ram = buscar(categoria="notebook", ordenar_por="ram", direccion="max")
+    ok = (bool(r.get("ordenados_por"))
+          and ram.get("ordenados_por") == "ram max"
+          and nombres(ram) != nombres(r))
     caso(7, "notebook para diseño grafico que le dure años, presupuesto flexible",
-         "buscar_productos descripcion=... categoria=notebook",
-         f"candidatos pertinentes; las de gama alta son p.ej. {top[0]['nombre']}",
-         f"devuelve {dev}", ok,
-         "" if ok else "SIN RELEVANCIA: devuelve las 3 mas baratas de 171; la "
-                       "descripcion se descarta entera")
+         "buscar_productos descripcion=... / ordenar_por=ram direccion=max",
+         f"que el criterio de orden se declare y que exista la puerta para el "
+         f"extremo; la de gama alta es {top[0]['nombre']}",
+         f"con descripcion ordenados_por={r.get('ordenados_por')!r}; por ram "
+         f"trae {nombres(ram)[:2]}", ok,
+         "" if ok else "el criterio de orden no se declara")
 
 
 # ── 8. COMBO QUE NO EXISTE EN LA FUENTE ────────────────────────────────────
@@ -229,12 +247,14 @@ def c8():
 # ── 9. SIN ANCLA NINGUNA ───────────────────────────────────────────────────
 def c9():
     r = buscar(descripcion="un regalo para mi viejo que labura en el campo")
-    ok = bool(r.get("instruccion") or r.get("hay_en_la_categoria"))
+    ok = bool(r.get("instruccion")) and bool(
+        r.get("categorias_que_vendemos") or r.get("hay_en_la_categoria"))
     caso(9, "busco un regalo para mi viejo, que labura en el campo",
          "buscar_productos descripcion=...",
          "una salida que le permita al modelo preguntar, con contexto",
          f"estado={r.get('estado')}, instruccion: "
-         f"{bool(r.get('instruccion'))}", ok,
+         f"{bool(r.get('instruccion'))}, rubros para preguntar: "
+         f"{len(r.get('categorias_que_vendemos') or [])}", ok,
          "" if ok else "SALIDA MUDA: no_encontrado vuelve sin instruccion, sin "
                        "cuantos habia y sin alternativa. Es el generador de muro")
 
@@ -250,7 +270,7 @@ def c10():
     r2 = buscar(categoria="auriculares",
                 filtros=[H.Filtro(campo="cancelacion_ruido", operador="igual",
                                   valor="si")])
-    avisa = bool(r2.get("filtros_no_aplicados"))
+    avisa = bool(r2.get("condiciones_no_aplicadas"))
     caso(10, "los HyperX Cloud II tienen cancelacion de ruido activa",
          "ficha via buscar_productos / o filtro campo=cancelacion_ruido",
          "que el modelo pueda ver que ese dato NO esta",
@@ -265,18 +285,15 @@ def c11():
     rams = [p for p in CON_STOCK if p.get("categoria") == "memoria ram"]
     r = H.ejecutar("ver_compatibilidad",
                    {"product_id": (rams[0]["id"] if rams else "X"),
-                    "equipo": (nb["nombre"] if nb else "notebook Lenovo")},
-                   TIENDA)
-    from app.core import compatibilidad as C
-    tiene_par = hasattr(C, "evaluar_par")
-    ok = r.get("estado") not in (None, "no_encontrado") and "compatible" in str(r)
+                    "contra_product_id": (nb["id"] if nb else "X")}, TIENDA)
+    ver = (r.get("compatibilidad") or [{}])[0]
+    ok = (r.get("estado") == "ok"
+          and ver.get("veredicto") in ("compatible", "incompatible", "sin_dato"))
     caso(11, "tengo una notebook Lenovo IdeaPad 3, que memoria le sirve",
-         "ver_compatibilidad product_id=<ram> equipo='Lenovo IdeaPad 3'",
+         "ver_compatibilidad product_id=<ram> contra_product_id=<notebook>",
          "cruzar requiere/provee entre los DOS productos del catalogo",
-         f"evaluar_par existe: {tiene_par}; ver_compatibilidad devuelve "
-         f"{str(r)[:90]}", False,
-         "ESCRITA Y DESCONECTADA: evaluar_par cruza producto contra producto y "
-         "ninguna herramienta lo expone; ver_compatibilidad es contra PLATAFORMA")
+         f"veredicto={ver.get('veredicto')!r} motivo={str(ver.get('motivo'))[:70]!r}",
+         ok, "" if ok else "producto contra producto sigue sin puerta")
 
 
 # ── 12. GARANTIA DE UN MODELO PUNTUAL ──────────────────────────────────────
@@ -352,8 +369,13 @@ def c16():
     tres = sum(1 for d in ("ordoba", "oncordia", "osadas") if d in pres)
     # y ahora: que queda guardado del turno
     from app.core.hub_venta import _carrito_del_turno
-    carrito = _carrito_del_turno([{"herramienta": "armar_presupuesto",
-                                   "resultado": r}])
+    carrito = _carrito_del_turno([{
+        "herramienta": "armar_presupuesto",
+        "pedido": {"items": [{"product_id": mouse["id"], "cantidad": 1,
+                              "destino": "Cordoba capital"},
+                             {"product_id": tec["id"], "cantidad": 1,
+                              "destino": "Posadas"}]},
+        "resultado": r}])
     guarda_destino = any("destino" in c for c in carrito)
     caso(16, "pregunta 1: 2 mouse a dos ciudades y 1 teclado a otra, pago 30/70",
          "armar_presupuesto con destino por item + pago dividido",
@@ -383,20 +405,26 @@ def c17():
 
 # ── 18. SACAR UN ITEM SIN RECOTIZAR ────────────────────────────────────────
 def c18():
-    from app.core.hub_venta import _carrito_del_turno
-    # turno donde el cliente saca el teclado y NO pide precio
-    carrito = _carrito_del_turno([
-        {"herramienta": "buscar_productos", "resultado": {"productos": []}},
-        {"herramienta": "registrar_pedido", "resultado": {"pedido": {}}}])
-    ok = carrito != []
+    from app.core.hub_venta import _carrito_del_turno, _carrito_podado
+    mouse = next(p for p in CON_STOCK if p.get("categoria") == "mouse")
+    tec = next(p for p in CON_STOCK if p.get("categoria") == "teclado")
+    previo = [{"id": mouse["id"], "nombre": mouse["nombre"], "cantidad": 2},
+              {"id": tec["id"], "nombre": tec["nombre"], "cantidad": 1}]
+    # turno donde el cliente saca el teclado y NO pide precio: el modelo declara
+    # el pedido completo tal como quedo, que es lo que ya hace en cada turno
+    del_turno = _carrito_del_turno([
+        {"herramienta": "registrar_pedido", "pedido": {},
+         "resultado": {"pedido": {}}}])
+    quedan = _carrito_podado(previo, {"items": [{"que": "mouse",
+                                                 "cantidad": 2}]})
+    nombres_ = [c["nombre"] for c in quedan]
+    ok = del_turno == [] and len(quedan) == 1 and "eclado" not in nombres_[0]
     caso(18, "pregunta 7 y Serie 1: 'el teclado sacalo', sin pedir precio",
-         "cualquier turno que no llame armar_presupuesto",
-         "que el carrito refleje la baja",
-         f"_carrito_del_turno devuelve {carrito}; si esta vacio, el hub "
-         f"conserva el carrito ANTERIOR intacto", ok,
+         "turno sin armar_presupuesto, con el pedido declarado",
+         "que el carrito refleje la baja sin obligar a recotizar",
+         f"de {len(previo)} items quedan {len(quedan)}: {nombres_}", ok,
          "" if ok else "EL CARRITO SOLO SE ESCRIBE RECOTIZANDO: no hay "
-                       "operacion de quitar. Un turno que saca un producto sin "
-                       "pedir la cuenta deja el producto adentro")
+                       "operacion de quitar")
 
 
 # ── 19. LAS LOCALIDADES QUE USAN TUS PREGUNTAS ─────────────────────────────
@@ -421,13 +449,17 @@ def c19():
 def c20():
     blancos = sum(1 for p in CON_STOCK if p.get("categoria") == "mouse"
                   and "blanco" in norm(p.get("color")))
-    campos = set(H.ConsultarCatalogo.model_fields)
-    ok = "filtros" in campos
+    r = catalogo(operacion="contar", categoria="mouse", filtros=[
+        {"campo": "color", "operador": "contiene", "valor": "blanco"}])
+    r2 = catalogo(operacion="mas_barato", categoria="notebook", filtros=[
+        {"campo": "ram", "operador": "contiene", "valor": "16"}])
+    ok = r.get("cuantos") == blancos and bool(r2.get("producto"))
     caso(20, "cuantos mouse blancos tenes / cual es la notebook mas barata con "
              "16GB",
-         "consultar_catalogo operacion=contar + un filtro",
+         "consultar_catalogo contar + color contiene blanco",
          f"la verdad es {blancos} mouse blancos con stock",
-         f"campos de consultar_catalogo: {sorted(campos)}", ok,
+         f"devuelve {r.get('cuantos')}; la mas barata con 16GB de ram es "
+         f"{(r2.get('producto') or {}).get('nombre')}", ok,
          "" if ok else "EL AGREGADO NO ACEPTA CONDICIONES: 38 campos "
                        "filtrables en buscar_productos y cero en el agregado. "
                        "Cruzar cuantos-hay con una condicion no tiene puerta")
