@@ -36,14 +36,21 @@ LOS TRES NUMEROS QUE MANDAN, y se calculan solos:
      medida sin reloj.
 Los tres tienen candado en tests/ y corren en cada push.
 
-PROXIMO PASO, acordado con Martin:
-  A) HECHO el 6-ago: los casetes al dia, el test que los reproduce y el mapa
-     contandolos. Zona ciega 47% -> 12%.
-  B) LO QUE SIGUE. Sacarle trabajo al modelo: que el codigo arme la cuenta
-     desde el pedido ya declarado, corte el bucle cuando no hay faltante, y
-     componga el mensaje en un solo lugar. Medido en produccion el 5-ago: 26,6
-     segundos por turno, 4 llamadas al modelo, una ronda entera al pedo, un
-     rubro entero afuera de la cuenta.
+OJO CON EL CI: desde el 6-ago los push a main NO disparan tests ni deploy -el
+job queda en cola sin runner-. Mientras dure, el deploy es A MANO:
+  cd ~/verifika && ./deploy.sh
+
+PROXIMO PASO, acordado con Martin (detalle en la seccion 6-ago cierre del
+RESUMEN):
+  1) LA ALUCINACION que queda: "todos los productos que trabajo tienen
+     componentes chinos" es FALSO -91 no tienen- y el propio bloque del codigo
+     lo desmiente tres renglones abajo. El detector mira universales sobre EL
+     CATALOGO y esta se escapa hablando de "los productos que trabajo".
+  2) SIN APLICAR, espera decision: cerrar la excepcion de _cuenta_no_retipeada,
+     que deja pasar la cuenta anterior copiada textual cuando el cliente pidio
+     precio ahora.
+  3) La latencia es inestable -8,9 a 27,7 segundos-: la palanca que queda es que
+     el codigo arme la cuenta sin esperar la ronda 2.
 
 COMO VER UNA CHARLA REAL SIN GCLOUD: la env GCP_SA_KEY_B64 trae la clave de
 claude-lector (logging.viewer + datastore.viewer). Decodificar al scratchpad,

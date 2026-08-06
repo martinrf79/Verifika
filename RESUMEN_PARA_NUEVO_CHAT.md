@@ -111,6 +111,62 @@ bancos, antes y despues, siempre.
 
 ---
 
+**==== 6-AGO-2026 (cierre) — EL TURNO REAL, ARREGLADO DE A UNO Y MEDIDO ====**
+
+**ESTO ES LO PRIMERO QUE TIENE QUE LEER LA SESION QUE SIGUE.** El dia se trabajo
+sobre UN mensaje real de Martin -el del guion 76- probado por WhatsApp cinco
+veces, arreglando lo que aparecia en cada vuelta. Asi quedo:
+
+| | 5-ago 18:41 | 6-ago 20:34 |
+|---|---|---|
+| espera | 26,7 s | 27,7 s (vario entre 8,9 y 27,7) |
+| largo del mensaje | 2.977 caracteres | **1.829** |
+| bloques de rubro | 3 calcados, 1.476 car. | **1 solo, 792 car.** |
+| las memorias en la cuenta | **faltaban** | estan |
+| cantidades | **1x auriculares de 2** | 2, 2 y 2 |
+| la cuenta | $181.000, mal | $250.000, exacta |
+
+**LOS SEIS ARREGLOS DEL DIA, todos de codigo y todos con test:**
+
+1. **La cuenta no pierde un rubro** que el modelo declaro y no cotizo.
+2. **Ni una unidad**: si pidio 2 y cotizo 1, se completa sobre el renglon que el
+   modelo eligio. Se suma por rubro, no por renglon, porque el mismo producto
+   puede venir partido en dos destinos.
+3. **La ronda imposible se termino**: el reconciliador ya no exige aplicar un
+   reparto de pago como filtro de producto.
+4. **El reparto que no cierra se dice**: la cuenta avisa cuantas unidades
+   quedaron sin destino en vez de cobrar tres envios y callarse.
+5. **El supuesto de pago se declara**: "dijiste 70/30 y no aclaraste que medio
+   lleva cada parte, lo arme asi; si va al reves, decime".
+6. **Un bloque por mensaje**: el codigo fusiona los rubros en uno, dos productos
+   cada uno y la cola una sola vez.
+
+**LO QUE QUEDA ABIERTO, en orden:**
+
+1. **LA ALUCINACION, y es la unica que queda en ese turno.** Dice "todos los
+   productos que trabajo tienen componentes de origen chino" -falso, 91 no
+   tienen- y **tres renglones abajo su propio bloque lo desmiente**: "donde si
+   se cumple del todo es en almacenamiento externo, procesador". El detector de
+   universales mira afirmaciones sobre EL CATALOGO y esta se escapa hablando de
+   "los productos que trabajo" o "el mercado". Es de PROSA, y Martin la dejo
+   para el final a proposito.
+2. **PENDIENTE DE DECISION DE MARTIN, sin aplicar:** cerrar la excepcion de
+   `_cuenta_no_retipeada`. Hoy deja pasar la cuenta del turno anterior copiada
+   TEXTUAL aunque el cliente haya pedido precio ahora. Medido el 6-ago 20:25: la
+   cuenta del turno se cayo -id no certificado- y el modelo presento la anterior
+   como si fuera la de ese turno. La causa raiz ya esta arreglada -el codigo
+   rehace la cuenta caida-, esto es la red de atras.
+3. **EL CI NO CREA CORRIDAS.** Desde el 6-ago los push a `main` no disparan
+   `tests` ni `Deploy a Cloud Run`: la corrida de a19fd44 quedo con el job en
+   cola SIN RUNNER 15 minutos y cancelada, y las siguientes ni se crearon.
+   **Mientras dure, el deploy es a mano: `cd ~/verifika && ./deploy.sh`.** No es
+   la bateria: el job nunca arranco.
+4. **La latencia es INESTABLE, no baja parejo**: 8,9 / 19,0 / 27,7 segundos en
+   el mismo mensaje. Depende de cuantas rondas pida el modelo. La palanca que
+   queda es que el codigo arme la cuenta SIN esperar la ronda 2.
+
+---
+
 **==== 6-AGO-2026 (2a tanda) — LA OPCION B: LA CUENTA NO PIERDE UN RUBRO ====**
 
 **LAS TRES FALLAS DEL MENSAJE REAL DE MARTIN, del 5-ago por WhatsApp, atacadas
