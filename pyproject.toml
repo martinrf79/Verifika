@@ -44,5 +44,6 @@ python_files = ["test_*.py", "prueba_*.py"]
 # Los tests marcados 'vivo' llaman a DeepSeek y se corren a proposito: pytest -m vivo
 markers = [
     "vivo: test que llama al LLM (DeepSeek); no corre por default, gasta tokens",
+    "lento: test de minutos, no de segundos. No corre en el push porque bloquearia el deploy; si corre en el nocturno. Hoy es uno solo: el candado del mapa.",
 ]
-addopts = "-m 'not vivo'"
+addopts = "-m 'not vivo and not lento'"

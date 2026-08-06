@@ -68,6 +68,15 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest coverage
+
+      # EL CANDADO DEL MAPA VIVE ACA, no en el push. Mide las 40 y las 10
+      # charlas bajo cobertura y en un proceso aparte: son minutos, no segundos.
+      # El 6-ago corriendo en cada push dejo la corrida de deploy CANCELADA a
+      # los 15 minutos, con el deploy en skipped, y el arreglo de la cuenta
+      # nunca llego a produccion. Un candado que frena el deploy no protege.
+      - name: El candado del mapa, la zona ciega no crece
+        run: pytest tests/test_mapa.py -m lento -q -p no:randomly
 
       # Los inputs viajan por env y NO interpolados en la linea de comando: son
       # texto libre de quien dispara el workflow, y ahi se inyecta cualquier cosa.

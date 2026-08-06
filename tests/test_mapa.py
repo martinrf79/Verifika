@@ -15,6 +15,16 @@ de cobertura: una capa que no se ejercita no puntua.
 COMO SE BAJA EL PISO. Se le escribe la prueba a una funcion ciega, se corre
 `python3 banco_pruebas/mapa.py --fijar` y se commitea el piso nuevo. Cada
 sesion deberia bajarlo, aunque sea de a poco.
+
+POR QUE ESTA MARCADO `lento` Y NO CORRE EN CADA PUSH. Costo real, y se pago
+caro: mide las 40 y las 10 charlas BAJO COBERTURA y en un proceso aparte, o sea
+casi dos minutos en esta maquina y varias veces mas en un runner. El 6-ago la
+corrida de deploy quedo CANCELADA a los 15 minutos con el job de test colgado y
+el deploy en skipped: el arreglo de la cuenta nunca llego a produccion, y Martin
+probo por WhatsApp contra codigo viejo creyendo que probaba el nuevo. Un candado
+que frena el deploy no protege: estorba. Corre en el nocturno y a mano:
+
+    python3 -m pytest tests/test_mapa.py -m lento
 """
 import json
 import sys
@@ -46,6 +56,7 @@ def _mapa_en_proceso_limpio(tmp_path) -> dict:
     return json.loads(salida.read_text(encoding="utf-8"))
 
 
+@pytest.mark.lento
 def test_la_zona_ciega_no_crece(tmp_path):
     pytest.importorskip("coverage",
                         reason="el mapa necesita coverage para medir que "
