@@ -102,6 +102,7 @@ def _escribir_piso(resultados: list) -> None:
     numero = puntaje_global(resultados)
     llamadas = [n for r in resultados
                 for n in (r.get("llamadas_por_turno") or [])]
+    largos = [len(t) for r in resultados for t in (r.get("respuestas") or [])]
     _PISO.parent.mkdir(parents=True, exist_ok=True)
     _PISO.write_text(json.dumps(
         {"piso": numero,
@@ -110,6 +111,8 @@ def _escribir_piso(resultados: list) -> None:
          "charlas": len(resultados),
          "llamadas_max": max(llamadas) if llamadas else 0,
          "llamadas_total": sum(llamadas),
+         "largo_max": max(largos) if largos else 0,
+         "largo_promedio": sum(largos) // len(largos) if largos else 0,
          "grabado": _dt.date.today().isoformat(),
          "_doc": "El piso que defiende tests/test_charlas_grabadas.py. Manda "
                  "`puntos`, que es el crudo: `piso` esta redondeado y una "
@@ -120,7 +123,8 @@ def _escribir_piso(resultados: list) -> None:
                  "no gasta la clave."},
         ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"\npiso: {numero}/100, {sum(r['puntos'] for r in resultados)} puntos, "
-          f"hasta {max(llamadas) if llamadas else 0} llamadas por turno")
+          f"hasta {max(llamadas) if llamadas else 0} llamadas por turno, "
+          f"mensaje mas largo {max(largos) if largos else 0} caracteres")
 
 
 async def _main(nombres: list[str]) -> int:

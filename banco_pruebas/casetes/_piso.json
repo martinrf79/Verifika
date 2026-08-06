@@ -5,6 +5,8 @@
  "charlas": 10,
  "llamadas_max": 5,
  "llamadas_total": 119,
+ "largo_max": 2810,
+ "largo_promedio": 631,
  "grabado": "2026-08-06",
  "_doc": "El piso que defiende tests/test_charlas_grabadas.py. Manda `puntos`, que es el crudo: `piso` esta redondeado y una regresion de un par de turnos podia seguir redondeando igual y pasar el gate. `llamadas_max` es la LATENCIA medida sin reloj: cada llamada al modelo son entre 3 y 8 segundos, y no puede crecer. Se refija con `grabar_casetes.py --piso`, que no gasta la clave."
 }

@@ -650,3 +650,54 @@ def test_el_setenta_treinta_sin_medio_declara_el_supuesto(firestore_doble):
     # ruido, y el ruido ensena a ignorar los avisos.
     claro = {"restricciones": ["70% por transferencia y 30% con mercado pago"]}
     assert _supuesto_de_pago(llamadas, claro, TIENDA, "t") == llamadas
+
+
+def test_la_cuenta_no_cotiza_menos_unidades_de_las_pedidas(firestore_doble):
+    """Medido en produccion el 6-ago: el cliente pidio DOS auriculares y la
+    cuenta salio con '1x Auriculares: $70.000'. La regla de reponer el rubro no
+    lo veia porque el rubro estaba; faltaba una unidad, que es la mitad de ese
+    renglon en plata. Se completa sobre el renglon que el modelo ya eligio."""
+    from app.core import herramientas as H
+    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.storage.firestore_client import get_all_products
+
+    cat = [p for p in get_all_products(tienda_id=TIENDA)
+           if (p.get("stock") or 0) > 0]
+    aur = next(p for p in cat if p["categoria"] == "auriculares")
+    args = {"items": [{"product_id": aur["id"], "cantidad": 1}],
+            "destinos": ["Rosario"]}
+    llamadas = [
+        {"herramienta": "buscar_productos", "pedido": {"categoria": "auriculares"},
+         "resultado": {"estado": "encontrado", "productos": [H._ficha(aur, TIENDA)]}},
+        {"herramienta": "armar_presupuesto", "pedido": args,
+         "resultado": H.ejecutar("armar_presupuesto", args, TIENDA)}]
+    declarado = {"items": [{"que": "auriculares", "cantidad": 2}]}
+    fuera = _cuenta_con_lo_declarado(llamadas, declarado, TIENDA, "t")
+    items = fuera[-1]["pedido"]["items"]
+    assert sum(i["cantidad"] for i in items) == 2, items
+    assert fuera[-1]["resultado"]["total_ars"] >= 2 * aur["precio_ars"]
+
+
+def test_el_mismo_producto_partido_en_dos_destinos_no_se_duplica(firestore_doble):
+    """La contracara: dos renglones de 1 con destinos distintos SON las dos
+    unidades pedidas. Sumar de nuevo seria cobrarle cuatro."""
+    from app.core import herramientas as H
+    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.storage.firestore_client import get_all_products
+
+    cat = [p for p in get_all_products(tienda_id=TIENDA)
+           if (p.get("stock") or 0) > 0]
+    aur = next(p for p in cat if p["categoria"] == "auriculares")
+    args = {"items": [{"product_id": aur["id"], "cantidad": 1,
+                       "destino": "Rosario"},
+                      {"product_id": aur["id"], "cantidad": 1,
+                       "destino": "Posadas"}],
+            "destinos": ["Rosario", "Posadas"]}
+    llamadas = [
+        {"herramienta": "buscar_productos", "pedido": {"categoria": "auriculares"},
+         "resultado": {"estado": "encontrado", "productos": [H._ficha(aur, TIENDA)]}},
+        {"herramienta": "armar_presupuesto", "pedido": args,
+         "resultado": H.ejecutar("armar_presupuesto", args, TIENDA)}]
+    fuera = _cuenta_con_lo_declarado(
+        llamadas, {"items": [{"que": "auriculares", "cantidad": 2}]}, TIENDA, "t")
+    assert sum(i["cantidad"] for i in fuera[-1]["pedido"]["items"]) == 2

@@ -107,6 +107,24 @@ def test_la_latencia_no_crece(firestore_doble):
 
 @pytest.mark.skipif(not _casetes() or not PISO.exists(),
                     reason="no hay casetes o piso grabado")
+def test_el_mensaje_no_se_alarga(firestore_doble):
+    """EL LARGO, COMO NUMERO. El turno real del 6-ago salio en 2.977 caracteres
+    y tres mensajes de WhatsApp, y la MITAD eran tres bloques calcados que
+    escribe nuestro codigo. Con el largo en el piso, un mensaje que crece se ve
+    en el CI y no leyendo una charla."""
+    piso = json.loads(PISO.read_text(encoding="utf-8"))
+    tope = piso.get("largo_max")
+    if not tope:
+        pytest.skip("el piso no tiene el largo maximo: refijalo")
+    largos = [(r["nombre"], i, len(t))
+              for p in _casetes() for r in [_correr(p)]
+              for i, t in enumerate(r["respuestas"], 1)]
+    peores = [f"{n} turno {i}: {x} caracteres" for n, i, x in largos if x > tope]
+    assert not peores, (f"EL MENSAJE CRECIO (tope {tope}): " + "; ".join(peores))
+
+
+@pytest.mark.skipif(not _casetes() or not PISO.exists(),
+                    reason="no hay casetes o piso grabado")
 def test_el_numero_no_baja(firestore_doble):
     """VARA 2, el numero. Manda `puntos`, el crudo: `piso` esta redondeado y una
     regresion de un par de turnos podia seguir redondeando igual y colarse."""

@@ -986,7 +986,34 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
     sumados = []
     for it in (declarado.get("items") or []):
         que = H._norm(it.get("que"))
-        if not que or P._cubierto(que, ya):
+        if not que:
+            continue
+        # ── LA CANTIDAD TAMBIEN CUENTA, no solo el rubro ────────────────────
+        # Medido en produccion el 6-ago, mismo mensaje: el cliente pidio DOS
+        # auriculares y la cuenta salio con "1x Auriculares HyperX: $70.000".
+        # La regla de reponer el rubro que falta no lo veia, porque el rubro
+        # estaba: lo que faltaba era una unidad. Es plata igual, la mitad de
+        # ese renglon.
+        #
+        # Se suma por RUBRO y no por renglon: el mismo producto puede venir
+        # partido en dos renglones con destinos distintos, y eso esta bien.
+        if P._cubierto(que, ya):
+            pedidas = max(1, int(it.get("cantidad") or 1))
+            iguales = [i for i in items
+                       if P._cubierto(que, H._norm(
+                           por_id.get(str(i.get("product_id")), {})
+                           .get("categoria")) + " " + H._norm(
+                           por_id.get(str(i.get("product_id")), {})
+                           .get("nombre")))]
+            tiene = sum(max(1, int(i.get("cantidad") or 1)) for i in iguales)
+            if iguales and tiene < pedidas:
+                # Se completa sobre el PRIMER renglon de ese rubro, que es el
+                # que el modelo eligio: no se elige otro producto ni se abre uno
+                # nuevo, solo se lleva la cantidad a la que el cliente pidio.
+                iguales[0]["cantidad"] = (max(1, int(iguales[0].get("cantidad")
+                                                     or 1)) + pedidas - tiene)
+                sumados.append(f"+{pedidas - tiene}x "
+                               f"{por_id.get(str(iguales[0]['product_id']), {}).get('nombre')}")
             continue
         # El primero que se le mostro de ese rubro. Si no se le mostro ninguno,
         # no se inventa: eso es un faltante de verdad y lo cuenta el redactor.
@@ -1086,6 +1113,89 @@ def _bloque_presupuesto(llamadas: list) -> str:
         if l.get("herramienta") == "armar_presupuesto" and r.get("bloque"):
             return str(r["bloque"])
     return ""
+
+
+def _bloques_a_uno(llamadas: list, trace_id: str) -> list:
+    """TRES RUBROS, UN SOLO BLOQUE. El recorte mas grande del mensaje, y no lo
+    hace el modelo: lo hace el codigo, que es quien lo escribe.
+
+    LA MEDICION, sobre el turno real del 6-ago: la respuesta salio en 2.977
+    caracteres y 3 mensajes de WhatsApp. De esos, 1.476 -la MITAD- eran tres
+    bloques calcados, uno por rubro, cada uno con su cabecera, su linea de
+    empate y la MISMA cola "donde si se cumple del todo: almacenamiento externo,
+    procesador", repetida textual tres veces.
+
+    No es culpa del modelo: cada busqueda devuelve su bloque y la instruccion le
+    dice que lo pegue tal cual, asi que pego tres. La solucion no es pedirle que
+    resuma -eso es rogarle a la prosa- sino entregarle UNO.
+
+    Se arma de los DATOS, no pegando textos: rubro, dos productos con su precio
+    y el dato que falla, el empate en una linea y la cola una sola vez.
+    """
+    candidatos = [i for i, l in enumerate(llamadas)
+                  if l.get("herramienta") == "buscar_productos"
+                  and (l.get("resultado") or {}).get("bloque")
+                  and (l.get("resultado") or {}).get("productos")]
+    # UN RUBRO, UNA VEZ. Cuando el turno da varias vueltas, el modelo vuelve a
+    # buscar la misma categoria y se acumulan los resultados: medido en el
+    # guion 76, ocho busquedas para tres rubros. Se queda la ULTIMA de cada
+    # rubro, que es la mas afinada, y se descartan las anteriores.
+    por_rubro: dict = {}
+    for i in candidatos:
+        r = llamadas[i]["resultado"]
+        cat = H._norm(r.get("categoria")
+                      or (r.get("productos") or [{}])[0].get("categoria"))
+        por_rubro[cat] = i
+    idx = sorted(por_rubro.values())
+    if len(idx) < 2:
+        return llamadas
+
+    lineas, empatados, donde = [], 0, []
+    for i in idx:
+        r = llamadas[i]["resultado"]
+        cat = r.get("categoria") or (r["productos"][0].get("categoria") or "")
+        lineas.append(f"{str(cat).capitalize()}:")
+        for f in (r.get("productos") or [])[:2]:
+            renglon = f"- {f.get('nombre')}"
+            if f.get("precio"):
+                renglon += f": {f['precio']}"
+            if f.get("por_que"):
+                renglon += f" — {f['por_que']}"
+            lineas.append(renglon)
+        empatados += int(r.get("empatados_igual_de_cerca") or 0)
+        for d in (r.get("donde_si_se_cumple") or []):
+            if d not in donde:
+                donde.append(d)
+
+    partes = ["Lo que más se acerca a lo que pediste:", "\n".join(lineas)]
+    if empatados:
+        partes.append(f"En cada rubro hay varios igual de cerca -{empatados} en "
+                      f"total-: ninguno está mejor que otro, te muestro los más "
+                      f"baratos.")
+    if donde:
+        partes.append("Donde sí se cumple del todo lo que pedís es en: "
+                      + ", ".join(donde) + ".")
+    unico = "\n\n".join(partes)
+
+    fuera = list(llamadas)
+    for n, i in enumerate(candidatos):
+        r = dict(llamadas[i]["resultado"])
+        if i == idx[0]:
+            r["bloque"] = unico
+            r["instruccion"] = (
+                "Pegá el bloque TAL CUAL, sin cambiar un renglón: ya trae los "
+                "rubros juntos. Escribí vos lo de antes y lo de después, corto. "
+                "NO repitas los productos afuera del bloque y PROHIBIDO afirmar "
+                "nada sobre el catálogo entero.")
+        else:
+            # El resto se queda SIN bloque: si no, el modelo pega los tres.
+            r.pop("bloque", None)
+            r["instruccion"] = ("Estos productos ya están en el bloque del "
+                                "primer resultado. NO los vuelvas a listar.")
+        fuera[i] = {**llamadas[i], "resultado": r}
+    log.info("bloques_fusionados", trace_id=trace_id, rubros=len(idx),
+             largo=len(unico))
+    return fuera
 
 
 def _bloque_hallazgo(llamadas: list) -> str:
@@ -1468,6 +1578,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     llamadas = _condicion_faltante_aplicada(llamadas, rec, tienda_id, trace_id)
     llamadas = _cuenta_con_lo_declarado(llamadas, declarado, tienda_id, trace_id)
     llamadas = _supuesto_de_pago(llamadas, declarado, tienda_id, trace_id)
+    llamadas = _bloques_a_uno(llamadas, trace_id)
 
     # ── 3. REDACTAR CON EL DATO DELANTE ─────────────────────────────────
     if llamadas:
