@@ -598,3 +598,55 @@ def test_el_reparto_de_pago_no_se_exige_como_filtro_de_busqueda(firestore_doble)
                          "restricciones": ["presupuesto 70/30"],
                          "pide_precio": True}, llamadas, "t")
     assert not [f for f in rec["faltantes"] if "70/30" in f], rec["faltantes"]
+
+
+def test_el_reparto_que_no_cierra_se_dice_en_la_cuenta(firestore_doble):
+    """Medido en produccion el 6-ago: el modelo mando los items sin destino, el
+    codigo cobro TRES envios y en el mismo mensaje pregunto a donde iban las
+    memorias. Cobrar un reparto que se acaba de decir que no se sabe es lo peor
+    de los dos mundos. Ahora la cuenta lo declara y nombra cuanto falta."""
+    from app.core import herramientas as H
+    from app.storage.firestore_client import get_all_products
+
+    cat = [p for p in get_all_products(tienda_id=TIENDA)
+           if (p.get("stock") or 0) > 0]
+    mou = next(p for p in cat if p["categoria"] == "mouse")
+    r = H.ejecutar("armar_presupuesto", {
+        "items": [{"product_id": mou["id"], "cantidad": 2}],
+        "destinos": ["Cordoba capital", "Posadas"]}, TIENDA)
+    bloque = r["bloque"]
+    assert "sin destino" in bloque and "confirmame" in bloque, bloque
+    # y cuando SI cierra, la cuenta muestra el reparto y no la advertencia
+    r2 = H.ejecutar("armar_presupuesto", {
+        "items": [{"product_id": mou["id"], "cantidad": 1,
+                   "destino": "Cordoba capital"},
+                  {"product_id": mou["id"], "cantidad": 1,
+                   "destino": "Posadas"}],
+        "destinos": ["Cordoba capital", "Posadas"]}, TIENDA)
+    assert "Reparto de los envios" in r2["bloque"]
+    assert "sin destino" not in r2["bloque"]
+
+
+def test_el_setenta_treinta_sin_medio_declara_el_supuesto(firestore_doble):
+    """El cliente dijo 'setenta treinta' y no dijo que medio lleva cada parte.
+    El modelo eligio distinto dos dias seguidos, y como la transferencia tiene
+    10% de descuento, ese silencio le cambia al cliente lo que paga. Se aplica
+    el reparto -no se frena la venta- y se declara el supuesto en la cuenta."""
+    from app.core.hub_venta import _supuesto_de_pago
+
+    llamadas = [{"herramienta": "armar_presupuesto",
+                 "pedido": {"items": [{"product_id": "MOU0023", "cantidad": 1}],
+                            "pago": [{"medio": "transferencia",
+                                      "porcentaje": 70},
+                                     {"medio": "mercado pago",
+                                      "porcentaje": 30}]},
+                 "resultado": {"estado": "ok", "bloque": "Total: $8.500"}}]
+    declarado = {"restricciones": ["dividir el presupuesto en 70/30"]}
+    fuera = _supuesto_de_pago(llamadas, declarado, TIENDA, "t")
+    bloque = fuera[0]["resultado"]["bloque"]
+    assert "no me aclaraste" in bloque and "transferencia 70%" in bloque
+
+    # Si el cliente SI dijo el medio, no se declara ningun supuesto: seria
+    # ruido, y el ruido ensena a ignorar los avisos.
+    claro = {"restricciones": ["70% por transferencia y 30% con mercado pago"]}
+    assert _supuesto_de_pago(llamadas, claro, TIENDA, "t") == llamadas

@@ -1331,8 +1331,36 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
                 lineas.append(f"- A {dest}: " + ", ".join(nombres))
             reparto = "Reparto de los envios:\n" + "\n".join(lineas)
         else:
+            # EL REPARTO QUE NO CIERRA SE DICE, NO SE TAPA.
+            #
+            # LA FALLA, medida en produccion el 6-ago con el mensaje real de
+            # Martin: el modelo mando los items sin destino, el codigo cobro
+            # TRES envios -$24.000- y en el mismo mensaje le pregunto al cliente
+            # a que destino mandaba las memorias. O sea: le cobro un reparto que
+            # acababa de decir que no sabia. Este `else` existia desde siempre y
+            # solo escribia una linea de log que nadie lee.
+            #
+            # No se deja de cobrar el envio: los destinos los dio el cliente y
+            # las tarifas son reales. Lo que cambia es que la cuenta DECLARA que
+            # el detalle de que va a donde todavia no esta cerrado, y nombra
+            # cuantas unidades quedaron sin asignar. Es el mismo principio que
+            # el bloque de hallazgo y el de la fuente muda: el codigo entrega el
+            # hecho escrito y el modelo no lo puede torcer.
+            sin_asignar = totales - repartidas
             log.warning("presupuesto_reparto_no_cierra",
                         repartidas=repartidas, totales=totales)
+            try:
+                from app.core import huecos
+                huecos.anotar(tienda_id, "supuesto", "destino_por_item",
+                              f"{sin_asignar} de {totales} unidades sin destino "
+                              f"con {len(destinos)} envios cotizados")
+            except Exception:
+                pass
+            reparto = (
+                f"Los {len(destinos)} envios estan cotizados sobre los destinos "
+                f"que me diste. Lo que todavia no tengo cerrado es que va a "
+                f"cada uno: {sin_asignar} de {totales} unidades quedaron sin "
+                f"destino asignado, asi que confirmame eso antes de cerrar.")
 
     bloque = r.get("presentacion") or ""
     if reparto:

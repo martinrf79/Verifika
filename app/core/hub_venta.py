@@ -995,8 +995,15 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
                                     + H._norm(p.get("nombre")))), None)
         if not cand:
             continue
-        items.append({"product_id": cand["id"],
-                      "cantidad": max(1, int(it.get("cantidad") or 1))})
+        # EL DESTINO VIAJA CON EL ITEM. Sin esto el renglon repuesto entra
+        # huerfano y el reparto de envios sigue sin cerrar, o sea que se arregla
+        # la plata y se rompe el envio. Medido el 6-ago en produccion: la cuenta
+        # cobro tres envios y no pudo decir que iba a donde.
+        nuevo = {"product_id": cand["id"],
+                 "cantidad": max(1, int(it.get("cantidad") or 1))}
+        if it.get("destino"):
+            nuevo["destino"] = it["destino"]
+        items.append(nuevo)
         sumados.append(f"{it.get('cantidad') or 1}x {cand.get('nombre')}")
     if not sumados:
         return llamadas
@@ -1012,6 +1019,64 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
     fuera = list(llamadas)
     fuera[idx] = {"herramienta": "armar_presupuesto", "pedido": args,
                   "resultado": r}
+    return fuera
+
+
+_RE_DOS_PORCENTAJES = re.compile(r"\b(\d{1,3})\s*(?:/|-|y|,| )\s*(\d{1,3})\b")
+_MEDIOS = ("transferencia", "mercado pago", "mercadopago", "mp", "efectivo",
+           "tarjeta", "credito", "debito")
+
+
+def _supuesto_de_pago(llamadas: list, declarado: dict, tienda_id: str,
+                      trace_id: str) -> list:
+    """EL REPARTO DE PAGO QUE EL CLIENTE NO ASIGNO A NINGUN MEDIO.
+
+    LA FALLA, medida en produccion sobre el mismo mensaje dos dias seguidos.
+    "Divide el presupuesto en setenta treinta" no dice QUE medio lleva el 70 ni
+    cual el 30. El modelo eligio, en silencio, y eligio DISTINTO cada vez: el
+    5-ago puso Mercado Pago 70 y transferencia 30; el 6-ago al reves. Como la
+    transferencia tiene 10% de descuento, ese silencio le cambia al cliente lo
+    que paga.
+
+    ES LA REGLA CERO APLICADA AL PAGO: ante lo ambiguo el sistema no elige por
+    el cliente. Pero tampoco frena la venta preguntando y dejandolo sin numero:
+    aplica el reparto, y DECLARA el supuesto en la cuenta, que es la parte que
+    el modelo no puede reescribir. El cliente ve lo que se asumio y lo corrige
+    en una linea.
+
+    El hecho lo mira sobre lo DECLARADO, no sobre el mensaje crudo: si una
+    restriccion trae dos porcentajes y no nombra ningun medio de pago, el que
+    despues aparece en la cuenta lo puso el modelo, no el cliente.
+    """
+    idx = next((i for i, l in enumerate(llamadas)
+                if l.get("herramienta") == "armar_presupuesto"
+                and (l.get("resultado") or {}).get("bloque")), None)
+    if idx is None:
+        return llamadas
+    partes = ((llamadas[idx].get("pedido") or {}).get("pago") or [])
+    if len(partes) < 2:
+        return llamadas
+    ambigua = ""
+    for r in (declarado.get("restricciones") or []):
+        t = H._norm(r)
+        if _RE_DOS_PORCENTAJES.search(t) and not any(m in t for m in _MEDIOS):
+            ambigua = str(r)
+            break
+    if not ambigua:
+        return llamadas
+    dicho = ", ".join(f"{p.get('medio')} {int(float(p.get('porcentaje') or 0))}%"
+                      for p in partes)
+    from app.core import huecos
+    huecos.anotar(tienda_id, "supuesto", "medio_de_pago", ambigua)
+    log.info("supuesto_de_pago_declarado", trace_id=trace_id, pedido=ambigua,
+             asumido=dicho)
+    fuera = list(llamadas)
+    res = dict(llamadas[idx]["resultado"])
+    res["bloque"] = (res["bloque"] + "\n\nDijiste " + ambigua +
+                     " y no me aclaraste que medio lleva cada parte: lo arme "
+                     "con " + dicho + ". Si va al reves, decimelo y lo doy "
+                     "vuelta.")
+    fuera[idx] = {**llamadas[idx], "resultado": res}
     return fuera
 
 
@@ -1402,6 +1467,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # ── 2-bis. LO QUE EL MODELO NO APLICA, LO APLICA EL CODIGO ───────────
     llamadas = _condicion_faltante_aplicada(llamadas, rec, tienda_id, trace_id)
     llamadas = _cuenta_con_lo_declarado(llamadas, declarado, tienda_id, trace_id)
+    llamadas = _supuesto_de_pago(llamadas, declarado, tienda_id, trace_id)
 
     # ── 3. REDACTAR CON EL DATO DELANTE ─────────────────────────────────
     if llamadas:
