@@ -23,23 +23,24 @@ un reconciliador que compara lo DECLARADO contra lo EJECUTADO. El flujo atado
 -hub_atado, interprete, generador_v2- MURIO el 1-ago y el archivo ya no
 existe: si un documento viejo lo nombra, el documento esta vencido.
 
-LOS DOS NUMEROS QUE MANDAN, y se calculan solos:
+LOS TRES NUMEROS QUE MANDAN, y se calculan solos:
   python3 banco_pruebas/las_40.py   -> LAS 40 preguntas de Martin, parte de
      CODIGO. Hoy 40 de 40. Es UNA capa: la herramienta con la llamada ideal.
   python3 banco_pruebas/mapa.py     -> EL MAPA: que funcion trabaja para que
-     pregunta. Hoy 143 de 304 funciones del camino vivo NO las toca ninguna
-     de las 40, el 47%. El hub tiene 26 de 38 a ciegas, incluidas las once
-     guardas de salida. AHI viven las fallas que se ven en WhatsApp.
-Los dos tienen candado en tests/ y corren en cada push.
+     prueba. Hoy 37 de 315 funciones del camino vivo no las toca ninguna
+     prueba, el 12%; venia de 143, el 47%, y bajo cuando entraron las charlas
+     grabadas.
+  pytest tests/test_charlas_grabadas.py -> EL TURNO COMPLETO: 10 charlas
+     reproducidas enteras por el camino del webhook con el modelo grabado.
+     Piso 94/100 y hasta 5 llamadas al modelo por turno, que es la LATENCIA
+     medida sin reloj.
+Los tres tienen candado en tests/ y corren en cada push.
 
-PROXIMO PASO, acordado con Martin el 5-ago:
-  A) Poner al dia la maquina de CASETES. banco_pruebas/casete.py apunta bien
-     al hub vivo, pero los 65 casetes grabados son del flujo muerto y el test
-     que los reproducia -tests/test_charlas_grabadas.py- NO EXISTE; el CI lo
-     llama con "|| true" y dice "sin casetes grabados". Regrabar con el flujo
-     vivo y escribir el test: el TURNO COMPLETO gratis en cada push.
-  B) Sacarle trabajo al modelo: que el codigo arme la cuenta desde el pedido
-     ya declarado, corte el bucle cuando no hay faltante ejecutable, y
+PROXIMO PASO, acordado con Martin:
+  A) HECHO el 6-ago: los casetes al dia, el test que los reproduce y el mapa
+     contandolos. Zona ciega 47% -> 12%.
+  B) LO QUE SIGUE. Sacarle trabajo al modelo: que el codigo arme la cuenta
+     desde el pedido ya declarado, corte el bucle cuando no hay faltante, y
      componga el mensaje en un solo lugar. Medido en produccion el 5-ago: 26,6
      segundos por turno, 4 llamadas al modelo, una ronda entera al pedo, un
      rubro entero afuera de la cuenta.

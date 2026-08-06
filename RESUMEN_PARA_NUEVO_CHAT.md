@@ -95,6 +95,68 @@ bancos, antes y despues, siempre.
 
 ---
 
+**==== 6-AGO-2026 — LA OPCION A: EL TURNO COMPLETO CORRE EN CADA PUSH. 47% -> 12% ====**
+
+**EL NUMERO DE LA SESION, y es el que pidio Martin: la zona ciega del camino
+vivo paso de 143 de 304 -el 47%- a 37 de 315 -el 12%-.** El hub, que tenia 26 de
+sus 38 funciones sin una sola prueba, quedo con 2, y son las dos puertas al
+modelo, que en reproduccion se parchean a proposito. **Las once guardas de
+salida pasaron de CERO a diez charlas cada una.**
+
+| medida | antes | despues |
+|---|---|---|
+| zona ciega del camino vivo | 143 de 304 (47%) | **37 de 315 (12%)** |
+| funciones del hub sin prueba | 26 de 38 | **2 de 38** |
+| tests offline | 473 | **485** |
+| casetes vivos | 0 (65 del flujo muerto) | **10** |
+
+**QUE SE HIZO.** La maquina de casetes existia desde el 29-jul y estaba apagada:
+`casete.py` apuntaba bien al hub vivo, pero los 65 casetes eran del flujo atado
+-etapas interprete, solver, proposer, juez, muertas desde el 1-ago- y el test que
+los reproducia, `tests/test_charlas_grabadas.py`, NO EXISTIA. El CI lo llamaba
+con `|| true`, asi que imprimia "sin casetes grabados" en verde. **Cinco dias.**
+
+1. **Se borraron los 65 casetes muertos** y se grabaron **10 charlas nuevas**
+   contra el flujo vivo, con la clave gratis.
+2. **El grabador dejo de llamar a `procesar_venta`** y graba por
+   `clon_produccion`, o sea por `app.main._process_and_reply_whatsapp`, que es
+   lo que atiende el webhook. Es la leccion mas cara del repo y ya se habia
+   pagado dos veces: un banco que prueba OTRO camino da verde mientras el
+   cliente recibe cualquier cosa.
+3. **`tests/test_charlas_grabadas.py`, con TRES varas.** Los invariantes duros
+   por turno -plata sin respaldo, el enlatado de disculpa, la respuesta vacia-;
+   EL NUMERO contra `casetes/_piso.json`, hoy **94 de 100 sobre 10 charlas**; y
+   **LA LATENCIA**, que ahora es un numero y no una sensacion.
+4. **EL MAPA SUMO LAS CHARLAS COMO COLUMNAS.** Sin eso, A no se veia: las 40
+   miden la herramienta, los casetes miden el turno. Por eso el numero de arriba
+   se movio tanto.
+5. **El `|| true` del CI se fue**, con el comentario de por que estaba.
+
+**LA LATENCIA, MEDIDA SIN RELOJ.** Cada entrada del casete que el codigo consume
+es una llamada al modelo, y cada llamada son entre 3 y 8 segundos en produccion.
+Medido ahora: **de 4 a 5 llamadas por turno, 119 en 10 charlas**. El piso guarda
+el maximo y no lo deja crecer. Cuando entre la opcion B, este numero TIENE que
+bajar; es la forma de probar que sirvio.
+
+**LO QUE EL CASETE CAZO EN LA PRIMERA CORRIDA**, sin buscarlo: el guion 76
+**repite bloques enteros de un turno al otro** -tres renglones de auriculares con
+su precio, textuales-, y el 62 no dice el "no vendemos" honesto ante la play 5.
+Los dos estan adentro del piso, medidos y a la vista, en vez de aparecer dentro
+de un mes leyendo una charla.
+
+**COMO SE OPERA, para la proxima sesion:**
+
+```bash
+python3 banco_pruebas/grabar_casetes.py 76_*.txt   # regrabar, con clave
+python3 banco_pruebas/grabar_casetes.py --piso     # refijar el piso, GRATIS
+python3 banco_pruebas/mapa.py --fijar              # refijar la zona ciega
+```
+
+Regrabar es solo cuando cambia el CONTRATO con el modelo -esquema de
+herramientas, enums-, no cuando se ajusta una frase del prompt.
+
+---
+
 **==== 5-AGO-2026 (noche, 2a tanda) — EL MAPA: EL 47% DEL CAMINO VIVO ESTA A CIEGAS ====**
 
 **DE DONDE SALE.** Pedido de Martin, textual: "son X conexiones, cuales

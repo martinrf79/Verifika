@@ -23,6 +23,34 @@ No mide cómo **redacta** el modelo: eso es la fase siguiente. Los casos no se
 duplican, se delegan a `banco_candidatos.py` y `banco_memoria.py`, que siguen
 siendo el lugar donde se define cada uno.
 
+## EL MAPA — `python3 banco_pruebas/mapa.py`
+
+Qué parte del código trabaja para qué prueba. Cruza el **alcance** —a qué
+funciones se llega desde los webhooks— con el **ejercicio** —qué prueba ejecuta
+cada línea, vía contextos de cobertura—, y las reparte en cuatro cubetas:
+troncal, de algunas, **zona ciega** y sin alcance. La zona ciega es código que
+corre en producción y que ninguna prueba toca: ahí vivieron todas las sorpresas.
+`tests/test_mapa.py` no la deja crecer.
+
+## EL TURNO COMPLETO — los casetes
+
+`banco_pruebas/casetes/` guarda lo que el modelo contestó en una charla, grabado
+una vez con la clave. `tests/test_charlas_grabadas.py` vuelve a correr esas
+charlas **enteras** por el camino del webhook, con el modelo reemplazado por su
+grabación: sin red, sin clave, en segundos, en cada push. Es lo único que
+ejercita el bucle de rondas, el reconciliador, las once guardas de salida y el
+corte en partes.
+
+```bash
+python3 banco_pruebas/grabar_casetes.py                    # regrabar todo
+python3 banco_pruebas/grabar_casetes.py 76_*.txt 70_*.txt  # una tanda
+```
+
+Se regraba cuando cambia el **contrato** con el modelo —el esquema de las
+herramientas, los enums—, no cuando se ajusta una frase de un prompt. Tres
+varas: los invariantes duros por turno, el número contra `casetes/_piso.json`, y
+**las llamadas al modelo por turno**, que es la latencia medida sin reloj.
+
 ---
 
 ## Las tres capas, y qué prueba cada una

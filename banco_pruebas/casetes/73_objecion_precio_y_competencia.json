@@ -1,0 +1,88 @@
+{
+ "guion": "73_objecion_precio_y_competencia",
+ "turnos": [
+  {
+   "mensaje": "cuanto sale la notebook mas barata que tengas?",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"notebook\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"consultar_catalogo\", \"arguments\": \"{\\\"operacion\\\":\\\"mas_barato\\\",\\\"categoria\\\":\\\"notebook\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"notebook\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"notebook\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"consultar_catalogo\", \"arguments\": \"{\\\"operacion\\\":\\\"mas_barato\\\",\\\"categoria\\\":\\\"notebook\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"notebook\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"La notebook más económica que tenemos hoy está $693.000. Es una HP 245 G9 con procesador Core i5, 16GB de RAM y 512GB de SSD.\\n\\nTe cuento que hay otro modelo que está al mismo precio, así que no es la única opción. Para asegurarme de recomendarte la que mejor te sirva, ¿la necesitás para trabajar, estudiar o algún uso más específico?\", \"tool_calls\": []}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"La notebook más económica que tenemos hoy está $693.000. Es una HP 245 G9 con procesador Core i5, 16GB de RAM y 512GB de SSD.\\n\\nTe cuento que hay otro modelo que está al mismo precio, así que no es la única opción. Para asegurarme de recomendarte la que mejor te sirva, ¿la necesitás para trabajar, estudiar o algún uso más específico?\", \"tool_calls\": []}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Hola, ¿cómo estás? Te cuento que hoy tenemos dos modelos que comparten el precio más bajo de nuestro catálogo. Te paso los detalles de uno de ellos para que lo veas:\\n\\nNotebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\nPrecio: $693.000\\nStock: 19 unidades\\nSpecs: Core i5, 16GB RAM, 512GB SSD, pantalla Full HD 1920x1080 IPS, 1 USB-C, 2 USB-A, HDMI, RJ-45 y jack 3.5. Garantía oficial de 12 meses.\\n\\nPara saber si esta es la mejor opción para vos, ¿me contás para qué tipo de tareas la estarías necesitando principalmente?\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "esta muy cara, en otro lado la consigo mas barata, mejorame el precio",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"notebook mas barata\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"objecion_precio\\\",\\\"pedir_descuento\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"notebook mas barata\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"objecion_precio\\\",\\\"pedir_descuento\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"buscar_productos\", \"arguments\": \"{\\\"cuantos\\\":1,\\\"direccion\\\":\\\"min\\\",\\\"categoria\\\":\\\"notebook\\\",\\\"ordenar_por\\\":\\\"precio_ars\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"objecion_precio\\\",\\\"pedir_descuento\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"buscar_productos\", \"arguments\": \"{\\\"cuantos\\\":1,\\\"direccion\\\":\\\"min\\\",\\\"categoria\\\":\\\"notebook\\\",\\\"ordenar_por\\\":\\\"precio_ars\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"objecion_precio\\\",\\\"pedir_descuento\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"Entiendo perfectamente, siempre es bueno comparar para asegurarse de hacer la mejor compra.\\n\\nMás allá del precio, lo que te garantiza este equipo es el respaldo de una garantía oficial de 12 meses y un rendimiento sólido con sus 16GB de RAM y el procesador i5, que es lo que realmente hace que la inversión valga la pena a largo plazo.\\n\\nSobre el precio, lo que sí puedo ofrecerte es el **descuento por pago mediante transferencia**, que es la forma real de bajar el costo final. Si querés, puedo armarte el presupuesto detallado aplicando ese beneficio para que veas cómo queda el número final. ¿Te parece que lo hagamos así?\", \"tool_calls\": []}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"Entiendo perfectamente, siempre es bueno comparar para asegurarse de hacer la mejor compra.\\n\\nMás allá del precio, lo que te garantiza este equipo es el respaldo de una garantía oficial de 12 meses y un rendimiento sólido con sus 16GB de RAM y el procesador i5, que es lo que realmente hace que la inversión valga la pena a largo plazo.\\n\\nSobre el precio, lo que sí puedo ofrecerte es el **descuento por pago mediante transferencia**, que es la forma real de bajar el costo final. Si querés, puedo armarte el presupuesto detallado aplicando ese beneficio para que veas cómo queda el número final. ¿Te parece que lo hagamos así?\", \"tool_calls\": []}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Entiendo perfectamente que busques la mejor opción para tu bolsillo. En Verifika Tech, el precio de este modelo es el más competitivo que podemos ofrecer, respaldado por la garantía oficial de 12 meses de HP, lo cual te asegura un equipo nuevo y con soporte técnico autorizado en Argentina ante cualquier inconveniente.\\n\\nAunque no puedo modificar el precio, la forma real de pagar menos por esta notebook es a través de nuestra promoción por transferencia bancaria.\\n\\nAquí te detallo el valor:\\n\\nNotebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\nPrecio de lista: $693.000\\nPrecio final con descuento por transferencia: $658.350\\n\\nSi te parece bien, puedo armarte el presupuesto final con este descuento aplicado para que puedas avanzar con la compra. ¿Te gustaría que lo hagamos así?\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "bueno, y si te llevo dos me haces precio?",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\\",\\\"cantidad\\\":2}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mayorista_cantidad\\\",\\\"pedir_descuento\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\\",\\\"cantidad\\\":2}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mayorista_cantidad\\\",\\\"pedir_descuento\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"¡Qué buena iniciativa! Comprar por cantidad siempre es una excelente oportunidad para optimizar la inversión.\\n\\nTe cuento cómo lo manejamos: en Verifika Tech, nuestros precios ya están ajustados al máximo para ser competitivos, por lo que no aplicamos descuentos adicionales por volumen de forma manual. Sin embargo, el beneficio real y concreto que tenemos para compras de este tipo es el **descuento por transferencia bancaria**, que se aplica sobre el total de la operación.\\n\\nSi te parece bien, puedo armarte el presupuesto formal por las dos unidades aplicando ese beneficio, para que veas el número final y cómo quedaría la cuenta. ¿Te gustaría que lo prepare así?\", \"tool_calls\": []}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"¡Qué buena iniciativa! Comprar por cantidad siempre es una excelente oportunidad para optimizar la inversión.\\n\\nTe cuento cómo lo manejamos: en Verifika Tech, nuestros precios ya están ajustados al máximo para ser competitivos, por lo que no aplicamos descuentos adicionales por volumen de forma manual. Sin embargo, el beneficio real y concreto que tenemos para compras de este tipo es el **descuento por transferencia bancaria**, que se aplica sobre el total de la operación.\\n\\nSi te parece bien, puedo armarte el presupuesto formal por las dos unidades aplicando ese beneficio, para que veas el número final y cómo quedaría la cuenta. ¿Te gustaría que lo prepare así?\", \"tool_calls\": []}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Qué bueno que te interese llevarte dos unidades! El interés por comprar varias siempre lo atendemos con la mejor predisposición para buscarte la mejor condición posible.\\n\\nPara este caso, el sistema ha registrado tu interés por dos unidades de la Notebook HP 245 G9. Te comento que en Verifika Tech, el precio ya es muy competitivo y nuestra política real de ahorro es el descuento por pago mediante transferencia bancaria, el cual se aplica automáticamente al cerrar la operación. No manejamos rebajas adicionales por fuera de las promociones vigentes, pero sí podemos encauzar tu compra para que obtengas el mejor valor posible.\\n\\nSi buscas comprar un volumen mayor o necesitas una atención más personalizada para esta operación, contame si tenés pensado sumar más unidades o si querés que derivemos tu caso a nuestro sector mayorista para ver si calificás para una condición especial. \\n\\n¿Cómo preferís avanzar? Si querés, confirmame y te armo el presupuesto total con el descuento por transferencia aplicado para estas dos unidades.\", \"tool_calls\": []}"
+    }
+   ]
+  }
+ ]
+}

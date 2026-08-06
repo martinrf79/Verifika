@@ -38,17 +38,21 @@ _PISO = CASETES / "_piso.json"
 
 
 async def _grabar_una(path: Path, pausa_s: float) -> dict:
+    """Graba UNA charla por el camino VIVO.
+
+    POR QUE POR EL CLON Y NO POR `procesar_venta`. Es la leccion mas cara de
+    este repo, y se pago dos veces: el banco llamaba directo al hub y se
+    salteaba `app.main._process_and_reply_whatsapp`, que es lo que de verdad
+    atiende el webhook -antijailbreak, RESET_CODE, el corte en partes-. Un
+    banco que prueba OTRO camino da verde mientras el cliente recibe cualquier
+    cosa. El casete se graba y se reproduce por donde entra el mensaje real."""
     from app.config import get_settings
-    from app.core.hub_venta import procesar_venta
-    from app.storage.firestore_client import reset_conversation
+    from banco_pruebas import clon_produccion as clon
 
     nombre = path.stem
     turnos = leer_guion(path.read_text(encoding="utf-8"))
     user = f"casete_{nombre}"
-    try:
-        reset_conversation(user, tienda_id=TIENDA)
-    except Exception:
-        pass
+    clon.reiniciar_cliente(user)
 
     respuestas: list[str] = []
     print(f"\n=== {nombre} ({len(turnos)} turnos) ===")
@@ -57,8 +61,8 @@ async def _grabar_una(path: Path, pausa_s: float) -> dict:
             casete.abrir_turno(turno["mensaje"])
             print(f"  [{i}] {turno['mensaje'][:70]}")
             try:
-                r = await procesar_venta(user, turno["mensaje"], TIENDA,
-                                         "casete", f"grab_{nombre}_{i}")
+                partes = await clon.turno(user, turno["mensaje"])
+                r = "\n".join(partes)
             except Exception as e:
                 r = ""
                 print(f"      ERROR: {type(e).__name__}: {str(e)[:120]}")
@@ -76,8 +80,56 @@ async def _grabar_una(path: Path, pausa_s: float) -> dict:
     return res
 
 
+def _fijar_piso() -> int:
+    """Refija el piso SIN gastar un token: reproduce los casetes que ya estan y
+    escribe el numero. Hace falta cuando se grabo en tandas -la clave gratis
+    obliga- o cuando un arreglo del CODIGO sube el puntaje sin tocar el modelo,
+    que es justo lo que se quiere ver."""
+    from banco_pruebas import clon_produccion as clon
+    from banco_pruebas.casete import reproducir_charla
+    clon.instalar()
+    casetes = [p for p in sorted(CASETES.glob("*.json"))
+               if not p.name.startswith("_")]
+    if not casetes:
+        print("no hay casetes")
+        return 2
+    resultados = [reproducir_charla(p) for p in casetes]
+    _escribir_piso(resultados)
+    return 0
+
+
+def _escribir_piso(resultados: list) -> None:
+    numero = puntaje_global(resultados)
+    llamadas = [n for r in resultados
+                for n in (r.get("llamadas_por_turno") or [])]
+    _PISO.parent.mkdir(parents=True, exist_ok=True)
+    _PISO.write_text(json.dumps(
+        {"piso": numero,
+         "puntos": sum(r["puntos"] for r in resultados),
+         "total": sum(r["total"] for r in resultados),
+         "charlas": len(resultados),
+         "llamadas_max": max(llamadas) if llamadas else 0,
+         "llamadas_total": sum(llamadas),
+         "grabado": _dt.date.today().isoformat(),
+         "_doc": "El piso que defiende tests/test_charlas_grabadas.py. Manda "
+                 "`puntos`, que es el crudo: `piso` esta redondeado y una "
+                 "regresion de un par de turnos podia seguir redondeando igual "
+                 "y pasar el gate. `llamadas_max` es la LATENCIA medida sin "
+                 "reloj: cada llamada al modelo son entre 3 y 8 segundos, y no "
+                 "puede crecer. Se refija con `grabar_casetes.py --piso`, que "
+                 "no gasta la clave."},
+        ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"\npiso: {numero}/100, {sum(r['puntos'] for r in resultados)} puntos, "
+          f"hasta {max(llamadas) if llamadas else 0} llamadas por turno")
+
+
 async def _main(nombres: list[str]) -> int:
-    install()
+    # El clon instala el doble de Firestore Y engancha el conector de banco en
+    # `app.main`, que es lo que hace que el camino del webhook corra entero.
+    from banco_pruebas import clon_produccion as clon
+    info = clon.instalar()
+    print(f"clon: {info.get('clave')} | modelo {info.get('solver_model')} | "
+          f"{info.get('productos', '?')} productos")
     pausa_s = float(os.getenv("BANCO_PAUSA_S", "0") or 0)
     paths = ([GUIONES / n for n in nombres] if nombres
              else sorted(GUIONES.glob("*.txt")))
@@ -89,30 +141,29 @@ async def _main(nombres: list[str]) -> int:
     numero = puntaje_global(resultados)
     print(f"\n{'=' * 60}\nEL NUMERO: {numero}/100 sobre {len(resultados)} charlas")
 
-    # EL PISO se escribe solo, y solo cuando se regrabo TODO. Si se regraba un
-    # guion suelto el numero no es comparable y tocarlo seria bajar la vara sin
-    # querer: el piso lo defiende el test en cada push, asi que un piso mal
-    # puesto es peor que no tener piso.
-    if not nombres:
-        _PISO.parent.mkdir(parents=True, exist_ok=True)
-        _PISO.write_text(json.dumps(
-            {"piso": numero,
-             "puntos": sum(r["puntos"] for r in resultados),
-             "total": sum(r["total"] for r in resultados),
-             "charlas": len(resultados),
-             "grabado": _dt.date.today().isoformat(),
-             "_doc": "El puntaje que defiende tests/test_charlas_grabadas.py. "
-                     "Manda `puntos`, que es el crudo: `piso` esta redondeado y "
-                     "una regresion de un par de turnos podia seguir "
-                     "redondeando igual y pasar el gate. Si un cambio lo baja, "
-                     "el CI se cae. Si lo sube, se actualiza en el mismo "
-                     "commit."},
-            ensure_ascii=False, indent=1), encoding="utf-8")
-        print(f"piso actualizado en {_PISO}")
+    # EL PISO se escribe cuando lo grabado cubre TODOS los casetes que hay. Si
+    # se regraba un guion suelto y quedan otros viejos al lado, el numero no es
+    # comparable y tocarlo seria bajar la vara sin querer.
+    #
+    # Y SE MIDE POR REPRODUCCION, no por la grabacion: el CI reproduce, y un
+    # piso medido con otra vara no defiende nada. Puede dar distinto -un hueco
+    # de casete descuenta al reproducir y no al grabar-, y esa diferencia es
+    # justamente lo que hay que ver.
+    grabados = {p.stem for p in CASETES.glob("*.json")
+                if not p.name.startswith("_")}
+    pedidos = {Path(n).stem for n in nombres} if nombres else grabados
+    if grabados and grabados <= pedidos:
+        from banco_pruebas.casete import reproducir_charla
+        _escribir_piso([reproducir_charla(p)
+                        for p in sorted(CASETES.glob("*.json"))
+                        if not p.name.startswith("_")])
     else:
         print("piso NO tocado: se regrabaron guiones sueltos, no la tanda entera")
     return 0
 
 
 if __name__ == "__main__":
+    if "--piso" in sys.argv:
+        # Refijar el piso con lo ya grabado, sin llamar al modelo.
+        raise SystemExit(_fijar_piso())
     raise SystemExit(asyncio.run(_main(sys.argv[1:])))

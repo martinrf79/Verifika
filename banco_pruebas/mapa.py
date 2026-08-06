@@ -12,20 +12,22 @@ COMO SE CONTESTA, y son dos medidas que se cruzan:
   1. ALCANCE, estatico. Desde el webhook de WhatsApp y el de Telegram, a que
      funciones se puede llegar. Lo que no se alcanza no corre en produccion,
      por mas que este escrito y tenga tests.
-  2. EJERCICIO, dinamico. Se corren LAS 40 una por una con un contexto de
-     cobertura distinto por pregunta -`coverage.py` guarda que test ejecuto
-     cada linea- y queda la matriz funcion x pregunta.
+  2. EJERCICIO, dinamico. Se corren LAS 40 -la parte de codigo de cada pregunta
+     de Martin- y LAS CHARLAS GRABADAS -el turno completo por el camino del
+     webhook, con el modelo reemplazado por su casete-, cada una con su propio
+     contexto de cobertura. Queda la matriz funcion x prueba.
 
 Del cruce salen las cuatro cubetas:
 
-  TRONCAL             la usan muchas preguntas. Tocarla es caro: si se rompe,
-                      se cae medio sistema y hay que mirarla con cuidado.
+  TRONCAL             la usan muchas pruebas. Tocarla es caro: si se rompe, se
+                      cae medio sistema y hay que mirarla con cuidado.
   DE ALGUNAS          la usan una o dos. Se puede tocar, con la lista de
-                      preguntas dependientes delante.
-  VIVA Y SIN EJERCITAR  corre en produccion y NINGUNA de las 40 la toca. Es LA
+                      dependientes delante.
+  VIVA Y SIN EJERCITAR  corre en produccion y NINGUNA prueba la toca. Es LA
                       ZONA CIEGA: de aca salieron todas las sorpresas de cada
-                      sesion. El bucle de rondas y el armado del mensaje viven
-                      aca.
+                      sesion. Medida el 5-ago daba 143 de 304, el 47%, con el
+                      hub entero adentro; con las charlas grabadas al dia bajo
+                      a 37 de 315, el 12%.
   SIN ALCANCE         no se llega desde ningun webhook. Candidata a borrar, con
                       el ojo puesto: puede ser de un endpoint de admin o de un
                       banco.
@@ -129,12 +131,22 @@ def alcanzables(inv: dict, raices: tuple) -> set:
 
 # ── 2. EL EJERCICIO: LAS 40, una por una, con su propio contexto ────────────
 def _corredores() -> list:
-    """(id de la pregunta, funcion que la ejercita). Las que delegan se
-    resuelven al caso real del banco que las mide, para que la cobertura quede
-    a nombre de la pregunta y no del banco."""
+    """(id de la prueba, funcion que la ejercita). Dos familias, y hacen falta
+    las dos:
+
+      LAS 40   la parte de codigo de cada pregunta de Martin, con la llamada
+               ideal escrita a mano. Miden la HERRAMIENTA.
+      CASETES  las charlas grabadas, corridas enteras por el camino del webhook
+               con el modelo reemplazado por su grabacion. Miden EL TURNO: el
+               bucle, el reconciliador, las guardas de salida y el corte en
+               partes, que es todo lo que las 40 no tocan.
+
+    Sin los casetes, el mapa marcaba el hub entero como zona ciega y tenia
+    razon. Con ellos, lo que quede ciego es lo que de verdad no prueba nadie."""
     from banco_pruebas.las_40 import LAS_40
     from banco_pruebas import banco_candidatos as BC
     from banco_pruebas import banco_memoria as BM
+    from banco_pruebas.casete import CASETES as DIR_CASETES, reproducir_charla
 
     series = {"Serie 1": BM.serie_1, "Serie 3": BM.serie_3,
               "Serie 15": BM.serie_15, "Contexto": BM.medidas_de_contexto}
@@ -146,6 +158,11 @@ def _corredores() -> list:
             fuera.append((id_, BC.CASOS[mide[1] - 1]))
         else:
             fuera.append((id_, series.get(mide[1], lambda: None)))
+    for casete in sorted(DIR_CASETES.glob("*.json")):
+        if casete.name.startswith("_"):
+            continue
+        fuera.append((f"casete:{casete.stem}",
+                      lambda p=casete: reproducir_charla(p)))
     return fuera
 
 
@@ -251,18 +268,18 @@ def main() -> int:
     print(f"MAPA DE CONEXIONES — {total} funciones en app/")
     print("=" * 78)
     for nombre, titulo in (
-            ("troncal", f"TRONCAL — la usan {TRONCAL} preguntas o mas"),
+            ("troncal", f"TRONCAL — la usan {TRONCAL} pruebas o mas"),
             ("de_algunas", "DE ALGUNAS — la usan entre 1 y "
-                           f"{TRONCAL - 1} preguntas"),
-            ("zona_ciega", "ZONA CIEGA — corre en produccion y NINGUNA de las "
-                           "40 la toca"),
+                           f"{TRONCAL - 1} pruebas"),
+            ("zona_ciega", "ZONA CIEGA — corre en produccion y NINGUNA prueba "
+                           "la toca, ni las 40 ni las charlas grabadas"),
             ("sin_alcance", "SIN ALCANCE — no se llega desde ningun webhook"),
             ("admin", "ADMIN — endpoints de carga y salud, fuera del camino "
                       "del cliente")):
         filas = sorted(c[nombre], key=lambda t: (-t[1], t[0]))
         print(f"\n{titulo}: {len(filas)}")
         for clave, n in filas[:25]:
-            print(f"   {n:>3} preguntas  {clave}")
+            print(f"   {n:>3} pruebas  {clave}")
         if len(filas) > 25:
             print(f"   ... y {len(filas) - 25} mas")
 
@@ -270,7 +287,7 @@ def main() -> int:
     vivas = len(c["troncal"]) + len(c["de_algunas"]) + len(c["zona_ciega"])
     ciega = len(c["zona_ciega"])
     print(f"EL NUMERO DEL MAPA: {ciega} de {vivas} funciones del camino vivo "
-          f"NO las toca ninguna de las 40 "
+          f"NO las toca ninguna prueba "
           f"({100 * ciega / max(1, vivas):.0f}% a ciegas)")
     print("=" * 78)
 

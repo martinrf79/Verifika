@@ -1,8 +1,10 @@
 {
- "piso": 100,
- "charlas": 65,
- "grabado": "2026-07-31",
- "_doc": "El puntaje que defiende tests/test_charlas_grabadas.py. Manda `puntos`, que es el crudo: `piso` esta redondeado y una regresion de un par de turnos podia seguir redondeando igual y pasar el gate. Si un cambio lo baja, el CI se cae. Si lo sube, se actualiza en el mismo commit. El 31-jul entro el criterio SIRVE y por eso el total subio de 1656 a 2368: los puntos obtenidos no bajaron -un criterio nuevo solo suma posibles- pero el porcentaje dejo de ser 100 y muestra los 18 puntos que estaban tapados.",
- "puntos": 2364,
- "total": 2368
+ "piso": 94,
+ "puntos": 294,
+ "total": 314,
+ "charlas": 10,
+ "llamadas_max": 5,
+ "llamadas_total": 119,
+ "grabado": "2026-08-06",
+ "_doc": "El piso que defiende tests/test_charlas_grabadas.py. Manda `puntos`, que es el crudo: `piso` esta redondeado y una regresion de un par de turnos podia seguir redondeando igual y pasar el gate. `llamadas_max` es la LATENCIA medida sin reloj: cada llamada al modelo son entre 3 y 8 segundos, y no puede crecer. Se refija con `grabar_casetes.py --piso`, que no gasta la clave."
 }

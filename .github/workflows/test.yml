@@ -41,14 +41,23 @@ jobs:
 
       # EL NUMERO a la vista, sin tener que abrir el log: queda en el resumen de
       # la corrida, que es lo primero que se ve al entrar a Actions.
+      #
+      # EL `|| true` SE FUE, y con el una historia que hay que dejar escrita:
+      # este paso llamaba a `tests/test_charlas_grabadas.py`, un archivo que NO
+      # EXISTIA, y como el fallo estaba tragado imprimia "sin casetes grabados"
+      # en verde. Cinco dias de corridas verdes sobre la red que mide el turno
+      # completo, apagada. El paso de arriba ya corre el test junto con toda la
+      # bateria; este solo repite la salida en el resumen, asi que el pipefail
+      # queda del lado del paso que manda.
       - name: El numero de las charlas grabadas
         if: always()
         run: |
           pytest tests/test_charlas_grabadas.py::test_el_numero_no_baja \
-            -q -p no:randomly 2>&1 | tee /tmp/numero.txt || true
+            -q -p no:randomly -s 2>&1 | tee /tmp/numero.txt
           {
             echo "## Charlas grabadas"
             echo '```'
-            grep -A 12 "EL NUMERO" /tmp/numero.txt || echo "sin casetes grabados"
+            grep -A 12 "EL NUMERO" /tmp/numero.txt \
+              || echo "el test no imprimio el numero: mirar el log"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"

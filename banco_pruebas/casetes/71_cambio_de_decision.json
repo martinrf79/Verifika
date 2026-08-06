@@ -1,0 +1,105 @@
+{
+ "guion": "71_cambio_de_decision",
+ "turnos": [
+  {
+   "mensaje": "quiero 2 mouse genius dx-110 negro y 1 teclado, cuanto sale?",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"mouse genius dx-110 negro\\\",\\\"cantidad\\\":2},{\\\"cantidad\\\":1,\\\"que\\\":\\\"teclado\\\"}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse genius dx-110 negro\\\"}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"categoria\\\":\\\"teclado\\\",\\\"descripcion\\\":\\\"teclado\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse\\\",\\\"teclado\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"mouse genius dx-110 negro\\\",\\\"cantidad\\\":2},{\\\"cantidad\\\":1,\\\"que\\\":\\\"teclado\\\"}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse genius dx-110 negro\\\"}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"categoria\\\":\\\"teclado\\\",\\\"descripcion\\\":\\\"teclado\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse\\\",\\\"teclado\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"product_id\\\":\\\"MOU0023\\\"},{\\\"cantidad\\\":1,\\\"product_id\\\":\\\"TEC0020\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"product_id\\\":\\\"MOU0023\\\"},{\\\"cantidad\\\":1,\\\"product_id\\\":\\\"TEC0020\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Hola, ¿cómo estás? Te cuento que de los mouse Genius DX-110 negro tengo stock. Como no me especificaste un modelo de teclado, te armé el presupuesto con el Genius KB-110X que es el que mejor combina por marca, pero también tengo opciones de Logitech K120 en negro o blanco si preferís otra marca.\\n\\nPresupuesto:\\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\\nSubtotal: $29.000\\nTotal: $29.000\\n\\n¿Te sirve el teclado Genius o preferís que te pase el precio de los Logitech?\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "no, el teclado sacalo, dejame solo los mouse",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\",\\\"cantidad\\\":2}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"continuacion_presupuesto\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\",\\\"cantidad\\\":2}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"continuacion_presupuesto\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"product_id\\\":\\\"MOU0023\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"product_id\\\":\\\"MOU0023\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Perfecto, ya retiré el teclado de tu pedido. Aquí te queda el presupuesto actualizado solo con los mouse:\\n\\nPresupuesto:\\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\\nSubtotal: $17.000\\nTotal: $17.000\\n\\n¿Te gustaría avanzar con la compra de estos dos mouse o necesitas algo más?\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "mejor volve a ponerlo, pero uno solo",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\",\\\"cantidad\\\":2},{\\\"cantidad\\\":1,\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"cierre_venta\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\",\\\"cantidad\\\":2},{\\\"cantidad\\\":1,\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"cierre_venta\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"product_id\\\":\\\"MOU0023\\\"},{\\\"cantidad\\\":1,\\\"product_id\\\":\\\"TEC0020\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"product_id\\\":\\\"MOU0023\\\"},{\\\"cantidad\\\":1,\\\"product_id\\\":\\\"TEC0020\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Excelente! He vuelto a incluir el teclado Genius KB-110X Blanco en tu pedido, quedando entonces los dos mouse y el teclado. Aquí tienes el presupuesto actualizado:\\n\\nPresupuesto:\\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\\nSubtotal: $29.000\\nTotal: $29.000\\n\\n¿Te gustaría confirmar este pedido para avanzar con los detalles de pago y envío? Quedo atento a lo que decidas.\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "cuantas unidades de cada cosa quedaron?",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"},{\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\",\\\"cantidad\\\":1}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"stock_disponibilidad\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"},{\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\",\\\"cantidad\\\":1}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"stock_disponibilidad\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"¡Claro! En tu pedido actual quedaron cargadas las siguientes unidades:\\n\\n*   **2** Mouse Genius DX-110 Negro\\n*   **1** Teclado Genius KB-110X Blanco\\n\\n¿Querés modificar alguna de estas cantidades o preferís avanzar con el pedido así como está?\", \"tool_calls\": []}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"¡Claro! En tu pedido actual quedaron cargadas las siguientes unidades:\\n\\n*   **2** Mouse Genius DX-110 Negro\\n*   **1** Teclado Genius KB-110X Blanco\\n\\n¿Querés modificar alguna de estas cantidades o preferís avanzar con el pedido así como está?\", \"tool_calls\": []}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"En tu pedido actual quedaron registradas las siguientes cantidades: 2 unidades del Mouse Genius DX-110 Negro y 1 unidad del Teclado Genius KB-110X Blanco.\\n\\nAquí te comparto el detalle del presupuesto:\\n\\nPresupuesto:\\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\\nSubtotal: $29.000\\nTotal: $29.000\\n\\n¿Deseas confirmar este pedido o necesitas realizar algún otro ajuste?\", \"tool_calls\": []}"
+    }
+   ]
+  }
+ ]
+}

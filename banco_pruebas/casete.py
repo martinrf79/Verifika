@@ -288,3 +288,60 @@ def reproducir(casete: Casete):
     casete.reiniciar_lectura()
     with _parchar(casete, grabando=False):
         yield casete
+
+
+def reproducir_charla(path) -> dict:
+    """Una charla grabada, corrida ENTERA por el camino vivo y puntuada.
+
+    UNA SOLA DEFINICION, dos consumidores: `tests/test_charlas_grabadas.py`, que
+    es el gate de cada push, y `grabar_casetes.py`, que fija el piso. Si cada
+    uno midiera a su manera, el piso y el gate compararian cosas distintas y el
+    numero no querria decir nada. El piso se mide POR REPRODUCCION, no por la
+    grabacion: es lo que va a correr el CI.
+    """
+    import asyncio
+    import json
+    from pathlib import Path
+
+    from banco_pruebas import clon_produccion as clon
+    from banco_pruebas.puntaje import leer_guion, puntuar_charla
+    from app.config import get_settings
+
+    path = Path(path)
+    datos = json.loads(path.read_text(encoding="utf-8"))
+    casete = Casete(path.stem, datos.get("turnos") or [])
+    guion = path.resolve().parent.parent / "guiones" / f"{path.stem}.txt"
+    turnos = (leer_guion(guion.read_text(encoding="utf-8")) if guion.exists()
+              else [{"mensaje": t.get("mensaje", ""), "espera": []}
+                    for t in casete.turnos])
+
+    clon.instalar()
+    user = f"casete_{path.stem}"
+    clon.reiniciar_cliente(user)
+
+    async def _charla() -> list:
+        # Un solo loop para la charla entera: abrir y cerrar uno por turno deja
+        # a los clientes http atados a un loop muerto.
+        fuera = []
+        for t in turnos:
+            casete.abrir_turno(t["mensaje"])
+            fuera.append("\n".join(await clon.turno(user, t["mensaje"])))
+        return fuera
+
+    with reproducir(casete):
+        respuestas = asyncio.run(_charla())
+    res = puntuar_charla(turnos, respuestas, "verifika_prod",
+                         get_settings().VERIFIKA_FALLBACK_MESSAGE,
+                         huecos=list(casete.fallas))
+    # LA LATENCIA, COMO NUMERO Y NO COMO SENSACION. Cada entrada consumida del
+    # casete es una llamada al modelo que el codigo HIZO en este turno, y cada
+    # llamada son entre 3 y 8 segundos en produccion. Medido el 5-ago por
+    # WhatsApp: 26,6 segundos, cuatro llamadas, una ronda entera al pedo. Con
+    # esto la latencia deja de discutirse: se cuenta, y el piso no la deja
+    # crecer.
+    llamadas = [sum(1 for l in t["llamadas"] if l.get("_usada"))
+                for t in casete.turnos]
+    res.update({"nombre": path.stem, "respuestas": respuestas,
+                "turnos": turnos, "huecos": list(casete.fallas),
+                "llamadas_por_turno": llamadas})
+    return res
