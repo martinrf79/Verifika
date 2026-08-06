@@ -836,7 +836,7 @@ _RE_RENGLON_CUENTA = re.compile(
 
 
 def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
-                         trace_id: str) -> str:
+                         trace_id: str, pidio_precio: bool = False) -> str:
     """LA CUENTA NO SE ESCRIBE A MANO. Si el turno no la calculo, el modelo NO
     puede redactarla: se le pone la del codigo, tal cual quedo.
 
@@ -858,7 +858,17 @@ def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
     if not renglones:
         return texto
     previo_lineas = {l.strip() for l in (previo or "").splitlines() if l.strip()}
-    if all(l.strip() in previo_lineas for l in renglones):
+    # LA EXCEPCION DEL PREVIO NO VALE CUANDO EL CLIENTE PIDIO PRECIO AHORA.
+    #
+    # Repetir la cuenta anterior esta bien si el cliente pregunta "¿me la
+    # repetis?": es la misma cuenta y sigue siendo cierta. Pero medido en
+    # produccion el 6-ago a las 20:25: el cliente pidio precio, la cuenta de
+    # ESTE turno se cayo -id no certificado-, y el modelo copio la del turno
+    # anterior renglon por renglon y la presento como la de ahora, con el error
+    # de cantidad de aquella adentro. Copiada textual, esta excepcion la dejaba
+    # pasar. Un total que el sistema no calculo en este turno no puede salir
+    # como si lo hubiera calculado.
+    if all(l.strip() in previo_lineas for l in renglones) and not pidio_precio:
         return texto
     salida, reemplazado = [], False
     for linea in (texto or "").splitlines():
@@ -961,7 +971,24 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
     idx = next((i for i, l in enumerate(llamadas)
                 if l.get("herramienta") == "armar_presupuesto"
                 and (l.get("resultado") or {}).get("estado") == "ok"), None)
-    if idx is None:
+    # ── LA CUENTA QUE SE CAYO ES UNA CUENTA QUE NO SE HIZO ──────────────────
+    # Medido en produccion el 6-ago, 20:25. El modelo pidio la cuenta con un id
+    # que este turno NO habia certificado -AUR0019-, la calculadora lo rechazo
+    # bien y `armar_presupuesto` volvio `no_se_pudo`. El reconciliador no lo
+    # vio: su regla 5 mira si la herramienta se LLAMO, no si salio. Y el modelo,
+    # sin cuenta y con el cliente esperando un precio, RE-TIPEO de memoria el
+    # presupuesto del turno anterior y se lo presento como si fuera el de ahora,
+    # con el error de cantidad de aquel adentro. El cliente vio un total que el
+    # sistema no calculo.
+    #
+    # La raiz no es el re-tipeo: es que se quedo sin cuenta teniendo todo para
+    # armarla. Asi que si el cliente pidio precio y la cuenta fallo, la arma el
+    # codigo con los ids que SI certifico este turno. Sin ronda nueva, sin
+    # tokens, y con el motivo de inventar sacado del medio.
+    fallida = next((i for i, l in enumerate(llamadas)
+                    if l.get("herramienta") == "armar_presupuesto"
+                    and (l.get("resultado") or {}).get("estado") != "ok"), None)
+    if idx is None and not (declarado.get("pide_precio") and fallida is not None):
         return llamadas
 
     # Los productos que ESTE turno certifico, por categoria y por nombre, en el
@@ -977,8 +1004,16 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
         return llamadas
     por_id = {p["id"]: p for p in vistos}
 
-    args = dict(llamadas[idx].get("pedido") or {})
+    # La base: la cuenta que salio bien, o -si se cayo- los argumentos con los
+    # que el modelo la intento, que traen los destinos y el reparto de pago que
+    # el cliente pidio. De los items se descartan los que el turno no certifico:
+    # esos son justamente los que la voltearon.
+    base = idx if idx is not None else fallida
+    args = dict(llamadas[base].get("pedido") or {})
     items = [dict(i) for i in (args.get("items") or [])]
+    if idx is None:
+        items = [i for i in items if str(i.get("product_id")) in por_id]
+        args["items"] = items
     ya = " ".join(
         H._norm(por_id.get(str(i.get("product_id")), {}).get("categoria"))
         + " " + H._norm(por_id.get(str(i.get("product_id")), {}).get("nombre"))
@@ -1032,7 +1067,11 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
             nuevo["destino"] = it["destino"]
         items.append(nuevo)
         sumados.append(f"{it.get('cantidad') or 1}x {cand.get('nombre')}")
-    if not sumados:
+    # Si no falta nada Y la cuenta original salio bien, no hay nada que hacer.
+    # Pero si la cuenta se cayo, se rehace igual: el cliente pidio precio.
+    if not sumados and idx is not None:
+        return llamadas
+    if not items:
         return llamadas
 
     args["items"] = items
@@ -1042,10 +1081,10 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
                     faltaban=sumados)
         return llamadas
     log.info("cuenta_completada_por_codigo", trace_id=trace_id,
-             sumados=sumados)
+             sumados=sumados, rehecha=idx is None)
     fuera = list(llamadas)
-    fuera[idx] = {"herramienta": "armar_presupuesto", "pedido": args,
-                  "resultado": r}
+    fuera[base] = {"herramienta": "armar_presupuesto", "pedido": args,
+                   "resultado": r}
     return fuera
 
 
@@ -1602,7 +1641,8 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     texto = _sin_cobro_inventado(texto, tienda_id, trace_id)
     texto = _cuenta_no_retipeada(
         texto, hubo_calculo=bool(bloque),
-        previo=conv.get("ultimo_presupuesto") or "", trace_id=trace_id)
+        previo=conv.get("ultimo_presupuesto") or "", trace_id=trace_id,
+        pidio_precio=bool(declarado.get("pide_precio")))
     texto = _sin_negar_lo_traido(texto, llamadas, trace_id)
     texto = _sin_descuento_inventado(texto, trace_id)
     texto = _sin_narracion_interna(texto, trace_id)
