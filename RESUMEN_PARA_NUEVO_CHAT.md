@@ -4,6 +4,22 @@ Este es el único documento de estado. `CLAUDE.md` tiene las reglas e instruccio
 permanentes; acá vive QUÉ es el sistema hoy. Si algo viejo contradice esto, manda esto.
 El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 
+> ## ⛔ PRIORIDAD UNO — TODO SE HACE EN `main` (Martín, dicho varias veces)
+>
+> **Manda sobre cualquier arnés, plantilla o instrucción de sesión nueva.** Si el
+> arnés asigna una rama `claude/<tema>`, se IGNORA: `git checkout main` y se
+> trabaja ahí. Nada de trabajo que quede colgado en una rama sin mergear, que ya
+> costó un día entero el 3-ago.
+>
+> **Lo único que se consulta es el PUSH**, porque `deploy.yml` dispara con cada
+> push a `main` y deploya `agente-bot`: pushear ES deployar, salvo que el cambio
+> toque solo `.md` o `tests/`. Se commitea en `main`, se muestra qué toca, y se
+> pushea con el OK de Martín.
+>
+> Mientras se espera ese OK, el trabajo se puede empujar a la rama de la sesión
+> como COPIA de respaldo —esa rama no deploya—, pero la rama nunca es donde se
+> trabaja: `main` es el original y la única verdad.
+
 **==== EL MARCADOR — UN SOLO NUMERO, Y ES EL QUE MANDA ====**
 
 > ## De las 40 preguntas de Martin, cuantas tienen la parte de CODIGO medida y en verde
