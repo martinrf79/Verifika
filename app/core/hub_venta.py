@@ -931,6 +931,90 @@ def _condicion_faltante_aplicada(llamadas: list, rec: dict, tienda_id: str,
     return fuera
 
 
+def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
+                             trace_id: str) -> list:
+    """EL RUBRO QUE EL CLIENTE PIDIO Y LA CUENTA PERDIO, lo repone el CODIGO.
+
+    LA FALLA, medida en produccion el 5-ago con el mensaje real de Martin. Pidio
+    "dos auriculares, dos mouse y dos memorias". El modelo declaro los TRES
+    rubros, busco los TRES, y despues llamo a `armar_presupuesto` con DOS: las
+    memorias se cayeron en el camino. El cliente recibio un total de $181.000
+    que le faltaban $69.000 de mercaderia que habia pedido. El reconciliador no
+    lo vio porque su regla 5 chequea que la cuenta EXISTA, no que lo declarado
+    este ADENTRO de la cuenta.
+
+    POR QUE LO ARREGLA EL CODIGO Y NO OTRA RONDA. Devolverselo al modelo cuesta
+    una vuelta entera -entre 3 y 8 segundos- y no garantiza nada: medido el
+    5-ago, ante una correccion del reconciliador el modelo pidio CERO
+    herramientas 3 de 3 veces. Rehacer la cuenta cuesta CERO tokens y
+    milisegundos, y es la misma herramienta con un item mas.
+
+    NO ES EL CODIGO DECIDIENDO POR EL CLIENTE. Se repone solo lo que el modelo
+    MISMO declaro que el cliente pidio, y solo con un producto que ESTE MISMO
+    TURNO ya certifico y le mostro. El producto elegido es el primero que se le
+    mostro, que es el orden que ya calculo el codigo. Y no queda escondido: el
+    renglon sale en la cuenta con su nombre y su precio, que es como el cliente
+    lo ve.
+    """
+    if not declarado:
+        return llamadas
+    idx = next((i for i, l in enumerate(llamadas)
+                if l.get("herramienta") == "armar_presupuesto"
+                and (l.get("resultado") or {}).get("estado") == "ok"), None)
+    if idx is None:
+        return llamadas
+
+    # Los productos que ESTE turno certifico, por categoria y por nombre, en el
+    # orden en que se los mostro al cliente.
+    vistos: list = []
+    for l in llamadas:
+        r = l.get("resultado") or {}
+        for p in (r.get("productos") or []) + ([r["producto"]]
+                                               if r.get("producto") else []):
+            if p.get("id") and p not in vistos:
+                vistos.append(p)
+    if not vistos:
+        return llamadas
+    por_id = {p["id"]: p for p in vistos}
+
+    args = dict(llamadas[idx].get("pedido") or {})
+    items = [dict(i) for i in (args.get("items") or [])]
+    ya = " ".join(
+        H._norm(por_id.get(str(i.get("product_id")), {}).get("categoria"))
+        + " " + H._norm(por_id.get(str(i.get("product_id")), {}).get("nombre"))
+        for i in items)
+    sumados = []
+    for it in (declarado.get("items") or []):
+        que = H._norm(it.get("que"))
+        if not que or P._cubierto(que, ya):
+            continue
+        # El primero que se le mostro de ese rubro. Si no se le mostro ninguno,
+        # no se inventa: eso es un faltante de verdad y lo cuenta el redactor.
+        cand = next((p for p in vistos
+                     if P._cubierto(que, H._norm(p.get("categoria")) + " "
+                                    + H._norm(p.get("nombre")))), None)
+        if not cand:
+            continue
+        items.append({"product_id": cand["id"],
+                      "cantidad": max(1, int(it.get("cantidad") or 1))})
+        sumados.append(f"{it.get('cantidad') or 1}x {cand.get('nombre')}")
+    if not sumados:
+        return llamadas
+
+    args["items"] = items
+    r = H.ejecutar("armar_presupuesto", args, tienda_id)
+    if (r or {}).get("estado") != "ok":
+        log.warning("cuenta_no_se_pudo_completar", trace_id=trace_id,
+                    faltaban=sumados)
+        return llamadas
+    log.info("cuenta_completada_por_codigo", trace_id=trace_id,
+             sumados=sumados)
+    fuera = list(llamadas)
+    fuera[idx] = {"herramienta": "armar_presupuesto", "pedido": args,
+                  "resultado": r}
+    return fuera
+
+
 def _bloque_presupuesto(llamadas: list) -> str:
     for l in llamadas:
         r = l.get("resultado") or {}
@@ -1295,6 +1379,16 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         revision = P.instruccion_de_faltantes(rec)
         if not revision:
             break
+        # NO SE CORTA EL BUCLE POR REPETICION, y esta medido. Se probaron las
+        # dos formas sobre las 10 charlas grabadas: cortar cuando el faltante se
+        # repite UNA vez baja las llamadas al modelo de 119 a 90 -un 24% de
+        # latencia- pero el numero cae de 94 a 89, porque en el guion 76 el
+        # modelo estaba yendo a buscar de verdad y le sacabamos la cuenta al
+        # cliente; cortar a las DOS repeticiones no ahorra una sola llamada, o
+        # sea que es una capa que no hace nada. Se deja el tope de rondas, que
+        # ya acota. La ronda al pedo que se midio en produccion el 5-ago se
+        # arreglo en la raiz: era un faltante IMPOSIBLE -pedirle que aplicara un
+        # reparto de pago como filtro de busqueda-, y eso ya no pasa.
         if ronda == _MAX_RONDAS:
             # Se agotaron las vueltas con el hueco abierto. NO se completa por
             # nuestra cuenta: se le dice al redactor que pregunte lo que falta.
@@ -1305,8 +1399,9 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                 "honesto qué falta y pedile el dato que haga falta. No "
                 "completes de memoria lo que no trajo ninguna herramienta.")
 
-    # ── 2-bis. LA CONDICION QUE EL MODELO NO APLICA, LA APLICA EL CODIGO ──
+    # ── 2-bis. LO QUE EL MODELO NO APLICA, LO APLICA EL CODIGO ───────────
     llamadas = _condicion_faltante_aplicada(llamadas, rec, tienda_id, trace_id)
+    llamadas = _cuenta_con_lo_declarado(llamadas, declarado, tienda_id, trace_id)
 
     # ── 3. REDACTAR CON EL DATO DELANTE ─────────────────────────────────
     if llamadas:

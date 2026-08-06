@@ -111,6 +111,52 @@ bancos, antes y despues, siempre.
 
 ---
 
+**==== 6-AGO-2026 (2a tanda) — LA OPCION B: LA CUENTA NO PIERDE UN RUBRO ====**
+
+**LAS TRES FALLAS DEL MENSAJE REAL DE MARTIN, del 5-ago por WhatsApp, atacadas
+en la RAIZ y clavadas con test.**
+
+**1. LA CUENTA PERDIA UN RUBRO ENTERO.** Pidio dos auriculares, dos mouse y DOS
+MEMORIAS; el modelo declaro los tres, busco los tres, y armo la cuenta con dos.
+Al cliente le llego un total al que le faltaban **$69.000 de mercaderia que
+habia pedido**. El reconciliador no lo veia: su regla 5 chequea que la cuenta
+EXISTA, no que lo declarado este ADENTRO.
+
+Lo arregla el CODIGO, no otra ronda: `_cuenta_con_lo_declarado` repone el item
+con un producto que ESE MISMO TURNO ya certifico y le mostro, rehace la cuenta
+-cero tokens, milisegundos- y el renglon sale en el bloque con su nombre y su
+precio. **No decide por el cliente:** solo repone lo que el modelo mismo declaro
+que el cliente pidio, y si el turno no le mostro nada de ese rubro no inventa
+nada, que es el segundo test.
+
+**2. LA RONDA IMPOSIBLE.** "Divide el presupuesto en setenta treinta" se declaro
+como restriccion y el modelo la aplico donde va: en el argumento `pago`. El
+reconciliador miraba solo los argumentos de busqueda y le exigia aplicar un
+reparto de pago **como filtro de producto**, que no se puede. El turno gasto una
+ronda entera de 8 segundos en la que el modelo pidio CERO herramientas, y tenia
+razon. Ahora el universo de restricciones incluye el pago.
+
+**3. LA LATENCIA: lo que se midio y por que NO se agrego una capa.** Se probaron
+las dos formas de cortar el bucle cuando el faltante se repite, sobre las 10
+charlas grabadas:
+
+| forma | llamadas al modelo | el numero |
+|---|---|---|
+| cortar a la 1a repeticion | 119 -> **90**, un 24% menos | 94 -> **89** |
+| cortar a las 2 repeticiones | 119 -> 119, **cero ahorro** | 94 |
+
+La primera le sacaba la cuenta al cliente en el guion 76 -el modelo estaba
+yendo a buscar de verdad-; la segunda es una capa que no hace nada. **Se
+descarto el corte y quedo escrito el numero**, porque una cuenta que no llega se
+paga con la venta y la latencia se paga en segundos. El ahorro real de la ronda
+al pedo ya lo da el arreglo 2, que la mata en la raiz.
+
+**MEDIDO, antes y despues:** tests offline 485 -> **488**; charlas grabadas
+**94/100, 294 puntos**, igual que el piso; las 40 en **40 de 40**; zona ciega
+**37 de 315**.
+
+---
+
 **==== 6-AGO-2026 — LA OPCION A: EL TURNO COMPLETO CORRE EN CADA PUSH. 47% -> 12% ====**
 
 **EL NUMERO DE LA SESION, y es el que pidio Martin: la zona ciega del camino

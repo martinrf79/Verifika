@@ -506,3 +506,95 @@ def test_el_bloque_ya_pegado_no_se_duplica():
     salida = _bloque_entero_o_repuesto(texto, bloque, "t")
     assert salida == texto
     assert salida.count("Total: $10.000") == 1
+
+
+# ── LO QUE SE MIDIO EN PRODUCCION EL 5-AGO, CLAVADO ──────────────────────────
+# Las tres fallas del mensaje real de Martin por WhatsApp: un rubro entero
+# afuera de la cuenta, una ronda al pedo por una exigencia imposible, y 26,6
+# segundos de espera. Cada una vuelve como test.
+def test_la_cuenta_no_pierde_un_rubro_que_el_cliente_pidio(firestore_doble):
+    """Pidio dos auriculares, dos mouse y DOS MEMORIAS. El modelo declaro los
+    tres rubros, busco los tres, y armo la cuenta con dos: al cliente le llego
+    un total al que le faltaban $69.000 de mercaderia que habia pedido. El
+    codigo lo repone con lo que el mismo turno ya certifico."""
+    from app.core import herramientas as H
+    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.storage.firestore_client import get_all_products
+
+    cat = [p for p in get_all_products(tienda_id=TIENDA)
+           if (p.get("stock") or 0) > 0]
+    aur = next(p for p in cat if p["categoria"] == "auriculares")
+    mou = next(p for p in cat if p["categoria"] == "mouse")
+    mem = next(p for p in cat if p["categoria"] == "memoria ram")
+
+    declarado = {"items": [{"que": "auriculares", "cantidad": 2},
+                           {"que": "mouse", "cantidad": 2},
+                           {"que": "memoria ram", "cantidad": 2}],
+                 "pide_precio": True}
+    args = {"items": [{"product_id": aur["id"], "cantidad": 2},
+                      {"product_id": mou["id"], "cantidad": 2}],
+            "destinos": ["Cordoba capital"]}
+    llamadas = [
+        {"herramienta": "buscar_productos", "pedido": {"categoria": "auriculares"},
+         "resultado": {"estado": "encontrado", "productos": [H._ficha(aur, TIENDA)]}},
+        {"herramienta": "buscar_productos", "pedido": {"categoria": "mouse"},
+         "resultado": {"estado": "encontrado", "productos": [H._ficha(mou, TIENDA)]}},
+        {"herramienta": "buscar_productos", "pedido": {"categoria": "memoria ram"},
+         "resultado": {"estado": "encontrado", "productos": [H._ficha(mem, TIENDA)]}},
+        {"herramienta": "armar_presupuesto", "pedido": args,
+         "resultado": H.ejecutar("armar_presupuesto", args, TIENDA)},
+    ]
+    antes = llamadas[-1]["resultado"]["total_ars"]
+    fuera = _cuenta_con_lo_declarado(llamadas, declarado, TIENDA, "t")
+    cuenta = fuera[-1]
+    ids = [i["product_id"] for i in cuenta["pedido"]["items"]]
+    assert mem["id"] in ids, "las memorias siguen afuera de la cuenta"
+    assert mem["nombre"] in cuenta["resultado"]["bloque"], (
+        "el renglon nuevo tiene que verse en la cuenta, no sumarse en silencio")
+    assert cuenta["resultado"]["total_ars"] == antes + 2 * mem["precio_ars"]
+
+
+def test_no_se_inventa_un_rubro_que_el_turno_no_certifico(firestore_doble):
+    """La contracara, y es la que evita que esto se vuelva un invento: si el
+    turno NO le mostro ningun producto de ese rubro, el codigo no elige uno de
+    la nada. Eso es un faltante de verdad y lo cuenta el redactor."""
+    from app.core import herramientas as H
+    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.storage.firestore_client import get_all_products
+
+    cat = [p for p in get_all_products(tienda_id=TIENDA)
+           if (p.get("stock") or 0) > 0]
+    mou = next(p for p in cat if p["categoria"] == "mouse")
+    args = {"items": [{"product_id": mou["id"], "cantidad": 1}],
+            "destinos": ["Rosario"]}
+    llamadas = [{"herramienta": "armar_presupuesto", "pedido": args,
+                 "resultado": H.ejecutar("armar_presupuesto", args, TIENDA)}]
+    declarado = {"items": [{"que": "mouse", "cantidad": 1},
+                           {"que": "notebook", "cantidad": 1}]}
+    fuera = _cuenta_con_lo_declarado(llamadas, declarado, TIENDA, "t")
+    assert len(fuera[-1]["pedido"]["items"]) == 1
+
+
+def test_el_reparto_de_pago_no_se_exige_como_filtro_de_busqueda(firestore_doble):
+    """'Divide el presupuesto en setenta treinta' se declara como restriccion, y
+    el modelo la aplica donde va: en el argumento `pago` de la cuenta. El
+    reconciliador le pedia aplicarla 'en alguna busqueda', que es imposible, y
+    el turno gastaba una ronda entera de 8 segundos en la que el modelo pedia
+    CERO herramientas."""
+    from app.core import pedido as P
+
+    llamadas = [{"herramienta": "armar_presupuesto",
+                 "pedido": {"items": [{"product_id": "MOU0023", "cantidad": 1}],
+                            "pago": [{"medio": "mercado pago", "porcentaje": 70},
+                                     {"medio": "transferencia",
+                                      "porcentaje": 30}]},
+                 "resultado": {"estado": "ok"}},
+                {"herramienta": "buscar_productos",
+                 "pedido": {"categoria": "mouse"},
+                 "resultado": {"estado": "encontrado",
+                               "productos": [{"nombre": "Mouse Genius DX-110",
+                                              "categoria": "mouse"}]}}]
+    rec = P.reconciliar({"items": [{"que": "mouse", "cantidad": 1}],
+                         "restricciones": ["presupuesto 70/30"],
+                         "pide_precio": True}, llamadas, "t")
+    assert not [f for f in rec["faltantes"] if "70/30" in f], rec["faltantes"]

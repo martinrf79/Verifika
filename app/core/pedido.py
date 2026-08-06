@@ -168,6 +168,29 @@ def _universo_de_restricciones(llamadas: list) -> str:
             partes.append(_norm(ped["ordenar_por"]).replace("_", " "))
         if l.get("herramienta") == "consultar_temas":
             partes += [_norm(t) for t in (ped.get("temas") or [])]
+        # EL REPARTO DE PAGO TAMBIEN ES UN LUGAR DONDE UNA CONDICION VIAJA.
+        #
+        # LA RONDA PERDIDA, medida en produccion el 5-ago con el mensaje real de
+        # Martin: declaro la restriccion "presupuesto 70/30" -que es como pidio
+        # dividir el pago-, el modelo la aplico donde corresponde, en el
+        # argumento `pago` de la cuenta, y este universo no lo miraba. El
+        # reconciliador le contesto "pusiste la condicion 'presupuesto 70/30' y
+        # no la aplicaste en ninguna busqueda, usala en el argumento que
+        # corresponda". Es una exigencia IMPOSIBLE: un reparto de pago no es un
+        # filtro de producto y no hay busqueda donde meterlo. El turno dio una
+        # ronda entera de mas -8 segundos- y en esa ronda el modelo pidio CERO
+        # herramientas, porque desde su lado ya estaba resuelto. Y tenia razon.
+        for parte in (ped.get("pago") or []):
+            if not isinstance(parte, dict):
+                continue
+            partes.append(_norm(parte.get("medio")))
+            pct = parte.get("porcentaje")
+            if pct is not None:
+                # El numero pelado y sin decimales: el cliente escribe "70/30",
+                # no "70.0".
+                partes.append(str(int(float(pct))))
+        if ped.get("pago"):
+            partes.append("presupuesto pago dividido reparto porcentaje")
     return " ".join(x for x in partes if x)
 
 
