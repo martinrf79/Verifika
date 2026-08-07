@@ -31,16 +31,19 @@ python3 banco_pruebas/objetivo.py --vivo     # las 5 redacciones, con el modelo
 python3 banco_pruebas/objetivo.py --anotar "qué cambié"
 ```
 
-## La medición de hoy — vara `codigo`
+## La medición de hoy — vara `vivo`
 
-| vara | resultado |
-|---|---|
-| estado final | 8/8 |
-| comunicación | 6/6 |
-| **NOTA** | **100/100** |
+| redacción | promedio de 3 | peor | mejor | largo |
+|---|---|---|---|---|
+| 1_textual_de_martin | **96** | 88 | 100 | 1862 |
+| 2_porcentajes_en_digitos | **62** | 50 | 75 | 2056 |
+| 3_orden_invertido | **37** | 12 | 50 | 1636 |
+| 4_criterio_dicho_distinto | **67** | 50 | 100 | 1763 |
+| 5_coloquial | **43** | 38 | 50 | 1774 |
 
-**Lo que falla hoy:**
-- nada: la vara de código está en verde.
+**Promedio: 61/100 — PEOR CASO: 12/100**
+
+El que manda para vender es el PEOR, no el promedio: es el que le puede tocar a un cliente real.
 
 ## Bifurcaciones abiertas
 
@@ -53,3 +56,4 @@ _Cuando aparezcan dos caminos, se anotan acá con su razón y su costo, para que
 | 2026-08-07 | codigo | 62 | paso 0: nace el instrumento. Primera medicion honesta. |
 | 2026-08-07 | vivo | 47 | paso 2: numeros en letras + compuerta del reparto |
 | 2026-08-07 | vivo | 57 | paso 2 medido con 3 repeticiones por redaccion |
+| 2026-08-07 | vivo | 61 | paso 3: el codigo CREA la cuenta cuando el modelo no la armo |
