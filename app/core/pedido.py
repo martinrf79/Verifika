@@ -60,6 +60,44 @@ def _stems(valor: str) -> list[str]:
     return [w[:4] for w in _norm(valor).split() if len(w) >= 4]
 
 
+# ── EL REPARTO DE PAGO, UNA SOLA DEFINICION ─────────────────────────────────
+# La vivian dos modulos con la misma regex escrita dos veces: el reconciliador
+# tenia que saber que un reparto NO es una condicion de busqueda, y el hub tenia
+# que saber cual reparto puede aplicar solo. Con dos copias, la del hub se
+# arreglo el 6-ago y la del reconciliador no, y el turno se comio una ronda
+# entera. Es exactamente la leccion del 31-jul con el patron de la poda: una
+# regla escrita en dos lugares termina distinta.
+_RE_DOS_PORCENTAJES = re.compile(r"\b(\d{1,3})\s*(?:/|-|y|,| )\s*(\d{1,3})\b")
+_MEDIOS = ("transferencia", "mercado pago", "mercadopago", "mp", "efectivo",
+           "tarjeta", "credito", "debito")
+
+
+def reparto_ambiguo(restricciones) -> tuple:
+    """La restriccion que es UN REPARTO DE PAGO y no dice que medio lleva cada
+    parte. Devuelve (texto_tal_cual, mayor, menor) o ().
+
+    "Divide el presupuesto en setenta treinta" es dos porcentajes que suman 100
+    y ningun medio nombrado. No es un filtro de producto, no es un orden y no es
+    un tema de la FAQ: es el argumento `pago` de la cuenta, y el unico lugar
+    donde puede viajar.
+    """
+    for r in (restricciones or []):
+        t = _norm(r)
+        if any(m in t for m in _MEDIOS):
+            # El cliente SI dijo el medio. Cual porcentaje va con cual es
+            # interpretacion del texto, y eso no lo hace el codigo: sigue
+            # siendo del modelo, y si no lo aplica el reconciliador lo reclama.
+            continue
+        m = _RE_DOS_PORCENTAJES.search(t)
+        if not m:
+            continue
+        a, b = int(m.group(1)), int(m.group(2))
+        if a + b != 100 or min(a, b) <= 0:
+            continue
+        return (str(r), max(a, b), min(a, b))
+    return ()
+
+
 def _cubierto(texto: str, universo: str) -> bool:
     """Una raiz alcanza. Conservador a proposito: preferimos NO acusar un
     faltante falso antes que mandar al modelo a buscar de nuevo al pedo."""
@@ -261,7 +299,21 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "") -> dict:
 
     # 3. TODA RESTRICCION DECLARADA TIENE QUE VIAJAR EN ALGUN ARGUMENTO. Caza
     #    el "sin partes chinas" que el modelo entendio y despues no aplico.
+    #
+    #    SALVO EL REPARTO DE PAGO AMBIGUO, y esto se midio dos veces. "Divide el
+    #    presupuesto en setenta treinta" no tiene ningun argumento de busqueda
+    #    donde entrar: pedirselo es un faltante IMPOSIBLE. El 6-ago se creyo
+    #    arreglado sumando el argumento `pago` al universo de arriba, pero eso
+    #    solo tapa el caso en que el modelo SI lo aplico. Cuando no lo aplica
+    #    -medido en produccion el 6-ago, 3 rondas seguidas- el reclamo vuelve a
+    #    ser imposible, el modelo pide CERO herramientas porque tiene razon, y
+    #    el turno paga 8 segundos por nada. Y encima el reparto se perdia igual.
+    #    Ahora no se reclama: lo aplica el CODIGO despues del bucle, con el
+    #    supuesto declarado en la cuenta. Ver `_reparto_de_pago_declarado`.
+    ambiguo = reparto_ambiguo(pedido.get("restricciones"))
     for r in (pedido.get("restricciones") or []):
+        if ambiguo and str(r) == ambiguo[0]:
+            continue
         if not _cubierto(r, uni_rest):
             faltantes.append(
                 f"El cliente puso la condicion '{r}' y no la aplicaste en "
@@ -289,6 +341,29 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "") -> dict:
         if c:
             preguntar.append(f"Preguntale al cliente por esto antes de "
                              f"avanzar: {c}")
+
+    # 7. VARIOS DESTINOS Y NINGUN ITEM CON DESTINO: el reparto no se declaro.
+    #
+    #    LA FALLA, medida en produccion el 6-ago. El cliente reparte seis
+    #    unidades entre tres localidades -"un auricular y un mouse a Cordoba, un
+    #    teclado y un mouse a Concordia, los otros dos a Posadas"- y el modelo
+    #    declaro los tres destinos en la lista suelta `destinos` y NINGUN item
+    #    con su `destino`. El campo existe desde el 5-ago justamente para esto.
+    #    Sin el, la cuenta cobra tres envios y no puede decir que va a cada uno:
+    #    salio "2 de 6 unidades quedaron sin destino asignado", que es honesto
+    #    pero es un pedido que no cierra y una venta que no se toma.
+    #
+    #    Es la misma clase que la regla 1 -lo nombrado tiene que viajar- movida
+    #    del QUE al ADONDE. No inventa el reparto: dice que falta declararlo.
+    destinos = [d for d in (pedido.get("destinos") or []) if str(d).strip()]
+    items = pedido.get("items") or []
+    if len(destinos) >= 2 and items and not any(
+            str(it.get("destino") or "").strip() for it in items):
+        faltantes.append(
+            f"El cliente nombro {len(destinos)} destinos distintos y no "
+            f"dijiste que va a cada uno. Volve a declarar el pedido con "
+            f"registrar_pedido poniendo el `destino` en CADA item, y despues "
+            f"armá la cuenta con ese mismo destino en cada renglon.")
 
     if faltantes or preguntar:
         log.info("reconciliador", trace_id=trace_id,

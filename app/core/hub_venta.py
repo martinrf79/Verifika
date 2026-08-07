@@ -739,8 +739,130 @@ def _sin_negar_lo_traido(texto: str, llamadas: list, trace_id: str) -> str:
     return re.sub(r"\n{3,}", "\n\n", limpio).strip()
 
 
-_RE_RENGLON_CUENTA = re.compile(
-    r"(?im)^\s*(?:presupuesto:|subtotal:|total:|env[ií]o|- ?\d+\s*x\s).*$")
+# ── LA AFIRMACION SOBRE LOS 880 ─────────────────────────────────────────────
+# LA ALUCINACION, textual, medida en produccion el 6-ago: "todos los productos
+# que trabajo en este momento tienen componentes de origen chino, por lo que no
+# puedo cumplir con esa restriccion especifica". Es falso, y lo desmiente el
+# bloque que el propio mensaje pega DOS RENGLONES MAS ABAJO: "donde si se cumple
+# del todo lo que pedis es en: almacenamiento externo, procesador". El bot se
+# contradijo a si mismo dentro del mismo mensaje y le cerro la puerta a un
+# cliente que estaba comprando.
+#
+# La prohibicion ya estaba escrita en la instruccion de la herramienta -"PROHIBIDO
+# afirmar nada sobre el catalogo entero: viste unos pocos productos, no los
+# 880"- y el modelo la piso igual. Es literalmente la rueda que `_bloque_hallazgo`
+# describe: cada vez que se pierde la pelea se le agregan palabras al prompt. Se
+# corta como se cortaron las otras dos, contra un HECHO que el codigo ya calculo.
+#
+# EL HECHO ES PROVABLE, no es criterio: `donde_si_se_cumple` sale de recorrer los
+# 880 y devuelve las categorias donde las condiciones SI se cumplen del todo. Si
+# esa lista tiene algo, "ninguno de mis productos cumple" es demostrablemente
+# falso y la oracion se va. Si esta vacia, esta guardia no toca nada.
+_RE_UNIVERSAL = re.compile(
+    r"todos?\s+(?:los|las|mis)|ningun[oa]?\s+de\s+(?:los|las|mis)|"
+    r"no\s+(?:tengo|tenemos|hay|manejo|manejamos|trabajo|trabajamos|"
+    r"vendo|vendemos)\s+(?:ningun|ninguna|nada|nigun)|"
+    r"(?:todo|nada)\s+(?:el|mi)\s+cat[aá]logo|la\s+totalidad",
+    re.IGNORECASE)
+# El sustantivo GLOBAL. Sin esto la guardia se comeria "todos los auriculares
+# que tengo se fabrican en China", que es un hecho VERDADERO, util y acotado al
+# rubro: exactamente la honestidad que queremos. Solo cae la frase que habla del
+# catalogo entero.
+_RE_TODO_EL_CATALOGO = re.compile(
+    r"\b(?:productos?|art[ií]culos?|[ií]tems?|mercader[ií]a|cat[aá]logo|"
+    r"stock|marcas?)\b|lo\s+que\s+(?:trabajo|manejo|tengo|vendo|vendemos|"
+    r"trabajamos|manejamos)", re.IGNORECASE)
+
+
+def _sin_afirmar_sobre_el_catalogo(texto: str, llamadas: list,
+                                   trace_id: str) -> str:
+    """NO SE AFIRMA NADA SOBRE LOS 880 CUANDO EL CODIGO SABE QUE ES FALSO.
+
+    Misma familia que `_sin_plata_inventada` y `_sin_negar_lo_traido`: se
+    contrasta la salida contra un dato que el codigo YA calculo sobre la fuente
+    entera, no contra una opinion. Ver el comentario de arriba.
+    """
+    cumplen: list = []
+    categorias: set = set()
+    for l in (llamadas or []):
+        r = l.get("resultado") or {}
+        for d in (r.get("donde_si_se_cumple") or []):
+            if d not in cumplen:
+                cumplen.append(d)
+        for p in (r.get("productos") or []):
+            if isinstance(p, dict) and p.get("categoria"):
+                categorias.add(H._norm(p["categoria"]))
+    if not cumplen:
+        return texto
+    fuera = []
+    for m in _RE_ORACIONES.finditer(texto or ""):
+        frase = m.group(0)
+        if not _RE_UNIVERSAL.search(frase):
+            continue
+        if not _RE_TODO_EL_CATALOGO.search(frase):
+            continue
+        # Acotada a un rubro que trajimos: es un hecho del rubro, no del
+        # catalogo. Se deja, por el mismo motivo que `_RE_ES_SOBRE_EL_DATO`
+        # salva la abstencion honesta en la guardia de al lado.
+        palabras = set(H._norm(frase).replace(",", " ").split())
+        acotada = False
+        for cat in categorias:
+            fichas = [t for t in cat.split() if len(t) > 2]
+            if fichas and all(any(t == w or t == w.rstrip("s")
+                                  or w == t.rstrip("s") for w in palabras)
+                              for t in fichas):
+                acotada = True
+                break
+        if not acotada:
+            fuera.append(frase)
+    if not fuera:
+        return texto
+    limpio = texto
+    for frase in fuera:
+        limpio = limpio.replace(frase, "")
+    log.error("hub_venta_afirmo_sobre_el_catalogo", trace_id=trace_id,
+              se_cumple_en=cumplen[:4], frases=[f[:80] for f in fuera[:3]])
+    return re.sub(r"\n{3,}", "\n\n", limpio).strip()
+
+
+# ── EL RENGLON DE CUENTA, UNA SOLA DEFINICION Y DOS USOS ────────────────────
+#
+# EL BUG QUE ESTO CIERRA, y es de los caros. Este modulo definia `_RE_RENGLON_CUENTA`
+# DOS VECES a nivel de modulo: aca, con `.*$` al final para poder BORRAR el
+# renglon entero, y otra vez 90 lineas mas abajo, mas estricta pero SIN `.*$`,
+# para poder MATCHEAR el arranque. La segunda pisa a la primera al importar, asi
+# que `_bloque_entero_o_repuesto` -escrito contra la primera- terminaba corriendo
+# con la segunda y su `.sub("")` borraba solo el ARRANQUE del renglon.
+#
+# Lo que le llegaba al cliente, medido sobre el guion 76 reproducido entero:
+#
+#     57.500 c/u = $115.000
+#      $201.000
+#     3 envios): $24.000
+#      $225.000
+#     70%): $157.500
+#
+# Una cuenta descuartizada, con parentesis huerfanos y sin la palabra Total, y
+# abajo el bloque bueno pegado al lado. Nadie lo vio porque el piso lo absorbia
+# y el chequeo de "Total" del guion matcheaba de casualidad con la frase "hay
+# varios igual de cerca -210 en TOTAL-" del otro bloque. Dos casualidades tapando
+# un renglon roto.
+#
+# Ahora hay UNA regla y dos formas de la misma: `_ARRANQUE` para preguntar si un
+# renglon es de cuenta, `_ENTERO` para borrarlo. Derivada, no copiada: si se
+# edita el patron, las dos se mueven juntas.
+_RE_ARRANQUE_CUENTA = re.compile(
+    r"(?im)^\s*(?:presupuesto\s*:|subtotal\s*:|env[ií]o?\s*[(:]|"
+    r"total\s*:|total final\s*:|pago dividido\s*:"
+    r"|-?\s*\d+\s*x\s+.+:\s*\$"
+    r"|-\s*(?:mercado pago|transferencia)\s*\()")
+_RE_RENGLON_CUENTA_ENTERO = re.compile(_RE_ARRANQUE_CUENTA.pattern + r".*$",
+                                       re.IGNORECASE | re.MULTILINE)
+# "¿Este mensaje ya lleva una cuenta?". Solo los marcadores que NO aparecen en
+# otra cosa: un total, un subtotal o el encabezado. Deliberadamente mas angosta
+# que las dos de arriba.
+_RE_HAY_CUENTA = re.compile(
+    r"(?im)^\s*(?:presupuesto\s*:|subtotal\s*:|total(?:\s+final)?\s*:)")
 
 
 def _norm_renglon(s: str) -> str:
@@ -748,7 +870,8 @@ def _norm_renglon(s: str) -> str:
     return re.sub(r"\s+", " ", str(s or "")).strip().lower()
 
 
-def _bloque_entero_o_repuesto(texto: str, bloque: str, trace_id: str) -> str:
+def _bloque_entero_o_repuesto(texto: str, bloque: str, trace_id: str,
+                              barrer_cuenta: bool = True) -> str:
     """LA CUENTA VIAJA ENTERA O NO VIAJA.
 
     El bug que esto cierra: la guarda vieja daba por pegado el bloque con solo
@@ -761,14 +884,24 @@ def _bloque_entero_o_repuesto(texto: str, bloque: str, trace_id: str) -> str:
 
     Ahora se exige el bloque COMPLETO, renglon por renglon. Si falta uno solo,
     se barren los renglones de cuenta que escribio el modelo -para no dejar la
-    version mutilada al lado de la buena- y se pega el bloque del codigo."""
+    version mutilada al lado de la buena- y se pega el bloque del codigo.
+
+    `barrer_cuenta` EXISTE PORQUE ESTA FUNCION ATIENDE DOS BLOQUES DISTINTOS.
+    Barrer los renglones de cuenta tiene sentido cuando el bloque que se repone
+    ES la cuenta: se saca la version mutilada del modelo y se pega la buena.
+    Cuando el bloque es el HALLAZGO -la lista de lo que mas se acerca-, barrer
+    la cuenta no tiene nada que ver, y hacia daño: medido sobre el guion 76 T2,
+    `_cuenta_no_retipeada` habia repuesto -bien- el presupuesto del turno
+    anterior, y este barrido se lo comia entero porque el hallazgo no estaba
+    pegado. Al cliente le llegaba la charla sin un solo numero."""
     if not bloque:
         return texto
     esperados = [ln for ln in bloque.splitlines() if ln.strip()]
     presentes = {_norm_renglon(ln) for ln in (texto or "").splitlines()}
     if all(_norm_renglon(ln) in presentes for ln in esperados):
         return texto
-    limpio = _RE_RENGLON_CUENTA.sub("", texto or "")
+    limpio = (_RE_RENGLON_CUENTA_ENTERO.sub("", texto or "") if barrer_cuenta
+              else (texto or ""))
     limpio = re.sub(r"\n{3,}", "\n\n", limpio).strip()
     log.warning("hub_venta_bloque_repuesto", trace_id=trace_id,
                 faltaban=[ln[:40] for ln in esperados
@@ -807,7 +940,7 @@ def _sin_anuncio_vacio(texto: str, trace_id: str) -> str:
             continue
         # lo que sigue tiene que ser la cuenta, no otra frase de prosa
         siguiente = next(x for x in lineas[i + 1:] if x.strip())
-        if not _RE_RENGLON_CUENTA.match(siguiente):
+        if not _RE_ARRANQUE_CUENTA.match(siguiente):
             fuera.append(i)
     if not fuera:
         return texto
@@ -822,17 +955,6 @@ def _sin_markdown(texto: str) -> str:
     t = re.sub(r"\*\*(.+?)\*\*", r"\1", texto or "")
     t = re.sub(r"(?m)^\s*#{1,6}\s*", "", t)
     return t
-
-
-# Un renglon de cuenta, lo escriba como lo escriba: con guion o sin el, "2x" o
-# "1 x". La primera version pedia el guion y la equis pegada, y se le escapo
-# "1 x Teclado Genius KB-110X Blanco: $12.000" escrito a mano por el modelo
-# (banco repetido, guion 71).
-_RE_RENGLON_CUENTA = re.compile(
-    r"(?im)^\s*(?:presupuesto\s*:|subtotal\s*:|env[ií]o?\s*[(:]|"
-    r"total\s*:|total final\s*:|pago dividido\s*:"
-    r"|-?\s*\d+\s*x\s+.+:\s*\$"
-    r"|-\s*(?:mercado pago|transferencia)\s*\()")
 
 
 def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
@@ -854,7 +976,7 @@ def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
     if hubo_calculo:
         return texto
     renglones = [l for l in (texto or "").splitlines()
-                 if _RE_RENGLON_CUENTA.match(l)]
+                 if _RE_ARRANQUE_CUENTA.match(l)]
     if not renglones:
         return texto
     previo_lineas = {l.strip() for l in (previo or "").splitlines() if l.strip()}
@@ -862,7 +984,7 @@ def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
         return texto
     salida, reemplazado = [], False
     for linea in (texto or "").splitlines():
-        if not _RE_RENGLON_CUENTA.match(linea):
+        if not _RE_ARRANQUE_CUENTA.match(linea):
             salida.append(linea)
             continue
         if linea.strip() in previo_lineas:
@@ -1049,9 +1171,63 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
     return fuera
 
 
-_RE_DOS_PORCENTAJES = re.compile(r"\b(\d{1,3})\s*(?:/|-|y|,| )\s*(\d{1,3})\b")
-_MEDIOS = ("transferencia", "mercado pago", "mercadopago", "mp", "efectivo",
-           "tarjeta", "credito", "debito")
+def _reparto_de_pago_declarado(llamadas: list, declarado: dict, tienda_id: str,
+                               trace_id: str) -> list:
+    """EL REPARTO QUE EL CLIENTE PIDIO Y LA CUENTA NO LLEVA: lo aplica el CODIGO.
+
+    LA FALLA, medida en produccion el 6-ago sobre el mensaje real de Martin.
+    Cerro con "divide el presupuesto en setenta treinta". El modelo lo declaro
+    bien como restriccion, el reconciliador lo reclamo TRES rondas seguidas, y
+    `armar_presupuesto` salio con `pago=None` las tres veces. Al cliente le
+    llego la cuenta sin una palabra del reparto que habia pedido.
+
+    Y no es solo que falte un renglon: la parte que va por transferencia lleva
+    10% de descuento. Sobre ese mismo total, el reparto declarado da $232.500 en
+    vez de $250.000. **El silencio le costo $17.500 al cliente**, en un turno
+    donde el precio era lo unico que el habia dicho que no le importaba.
+
+    POR QUE LO ARREGLA EL CODIGO Y NO OTRA RONDA. Es la misma cuenta que ya se
+    hizo para el rubro perdido: devolverselo al modelo cuesta entre 3 y 8
+    segundos y no garantiza nada -esta medido, 3 de 3 rondas sin resultado-,
+    mientras que rehacer la cuenta cuesta CERO tokens y milisegundos. Ademas el
+    reclamo era IMPOSIBLE de resolver por busqueda, que es lo que lo hacia
+    eterno; eso se corto en `reconciliar`, regla 3.
+
+    NO ELIGE POR EL CLIENTE. El reparto es del cliente: 70 y 30 los dijo el. Lo
+    unico que el codigo asume es CUAL medio lleva cada parte, porque el cliente
+    no lo dijo, y lo asume siempre para el mismo lado -la parte grande por
+    transferencia, que es la que tiene descuento, o sea la que le conviene al
+    cliente- en vez de que el modelo elija distinto cada vez, que es lo que
+    hacia. Y no queda escondido: `_supuesto_de_pago`, que corre justo despues,
+    escribe el supuesto adentro de la cuenta para que el cliente lo de vuelta en
+    una linea si va al reves.
+    """
+    idx = next((i for i, l in enumerate(llamadas)
+                if l.get("herramienta") == "armar_presupuesto"
+                and (l.get("resultado") or {}).get("estado") == "ok"), None)
+    if idx is None:
+        return llamadas
+    args = dict(llamadas[idx].get("pedido") or {})
+    if args.get("pago"):
+        # El modelo ya lo aplico. `_supuesto_de_pago` se encarga de declararlo.
+        return llamadas
+    amb = P.reparto_ambiguo((declarado or {}).get("restricciones"))
+    if not amb:
+        return llamadas
+    _, mayor, menor = amb
+    args["pago"] = [{"medio": "transferencia", "porcentaje": mayor},
+                    {"medio": "mercado pago", "porcentaje": menor}]
+    r = H.ejecutar("armar_presupuesto", args, tienda_id)
+    if (r or {}).get("estado") != "ok":
+        log.warning("reparto_de_pago_no_se_pudo", trace_id=trace_id,
+                    pedido=amb[0])
+        return llamadas
+    log.info("reparto_de_pago_por_codigo", trace_id=trace_id, pedido=amb[0],
+             aplicado=f"transferencia {mayor}%, mercado pago {menor}%")
+    fuera = list(llamadas)
+    fuera[idx] = {"herramienta": "armar_presupuesto", "pedido": args,
+                  "resultado": r}
+    return fuera
 
 
 def _supuesto_de_pago(llamadas: list, declarado: dict, tienda_id: str,
@@ -1083,14 +1259,10 @@ def _supuesto_de_pago(llamadas: list, declarado: dict, tienda_id: str,
     partes = ((llamadas[idx].get("pedido") or {}).get("pago") or [])
     if len(partes) < 2:
         return llamadas
-    ambigua = ""
-    for r in (declarado.get("restricciones") or []):
-        t = H._norm(r)
-        if _RE_DOS_PORCENTAJES.search(t) and not any(m in t for m in _MEDIOS):
-            ambigua = str(r)
-            break
-    if not ambigua:
+    amb = P.reparto_ambiguo((declarado or {}).get("restricciones"))
+    if not amb:
         return llamadas
+    ambigua = amb[0]
     dicho = ", ".join(f"{p.get('medio')} {int(float(p.get('porcentaje') or 0))}%"
                       for p in partes)
     from app.core import huecos
@@ -1150,31 +1322,54 @@ def _bloques_a_uno(llamadas: list, trace_id: str) -> list:
     if len(idx) < 2:
         return llamadas
 
-    lineas, empatados, donde = [], 0, []
+    lineas, hubo_empate = [], False
     for i in idx:
         r = llamadas[i]["resultado"]
         cat = r.get("categoria") or (r["productos"][0].get("categoria") or "")
-        lineas.append(f"{str(cat).capitalize()}:")
-        for f in (r.get("productos") or [])[:2]:
+        fichas = (r.get("productos") or [])[:2]
+        # ── EL DATO QUE FALLA VA EN LA CABECERA CUANDO ES EL MISMO ──────────
+        # Medido sobre el turno del 6-ago: los seis renglones terminaban en
+        # "— país de fabricación: china", el mismo texto seis veces. Es un
+        # hecho del RUBRO, no de cada producto, y repetirlo por renglon no
+        # agrega un dato: agrega 190 caracteres y hace que la respuesta se lea
+        # como una excusa repetida en vez de un hallazgo.
+        motivos = {f.get("por_que") for f in fichas if f.get("por_que")}
+        comun = motivos.pop() if len(motivos) == 1 else ""
+        # EL EMPATE, POR RUBRO Y SIN LA FRASE QUE CONTRADICE AL CLIENTE. Antes
+        # se sumaban los tres y salia "hay varios igual de cerca -160 en total-:
+        # ninguno está mejor que otro, te muestro los más baratos". Ese 160 no
+        # significa nada -son tres universos distintos sumados- y "te muestro
+        # los más baratos" le contesta con el precio a un cliente que acababa de
+        # decir que el precio no era lo importante. El numero por rubro SI es un
+        # hecho: dice cuanto surtido hay atras.
+        n = int(r.get("empatados_igual_de_cerca") or 0)
+        cabeza = str(cat).capitalize()
+        detalle = []
+        if n > len(fichas):
+            detalle.append(f"{n} igual de cerca")
+            hubo_empate = True
+        if comun:
+            detalle.append(comun)
+        lineas.append(cabeza + (f" ({', '.join(detalle)})" if detalle else "")
+                      + ":")
+        for f in fichas:
             renglon = f"- {f.get('nombre')}"
             if f.get("precio"):
                 renglon += f": {f['precio']}"
-            if f.get("por_que"):
+            if f.get("por_que") and not comun:
                 renglon += f" — {f['por_que']}"
             lineas.append(renglon)
-        empatados += int(r.get("empatados_igual_de_cerca") or 0)
-        for d in (r.get("donde_si_se_cumple") or []):
-            if d not in donde:
-                donde.append(d)
 
     partes = ["Lo que más se acerca a lo que pediste:", "\n".join(lineas)]
-    if empatados:
-        partes.append(f"En cada rubro hay varios igual de cerca -{empatados} en "
-                      f"total-: ninguno está mejor que otro, te muestro los más "
-                      f"baratos.")
-    if donde:
-        partes.append("Donde sí se cumple del todo lo que pedís es en: "
-                      + ", ".join(donde) + ".")
+    if hubo_empate:
+        partes.append("Dentro de cada rubro la ficha no los distingue entre "
+                      "sí, así que te muestro dos de cada uno y te paso el "
+                      "resto si querés comparar.")
+    # `donde_si_se_cumple` NO ENTRA EN UN PEDIDO DE VARIOS RUBROS. Sirve para
+    # "tenés algo sin China?", que es una pregunta sobre el catalogo. Acá el
+    # cliente pidió auriculares, mouse y memorias: contestarle "donde sí se
+    # cumple es en almacenamiento externo y procesador" no le resuelve nada,
+    # le cambia el pedido, y ocupa un renglón en un mensaje que ya sobra.
     unico = "\n\n".join(partes)
 
     fuera = list(llamadas)
@@ -1198,20 +1393,49 @@ def _bloques_a_uno(llamadas: list, trace_id: str) -> list:
     return fuera
 
 
-def _bloque_hallazgo(llamadas: list) -> str:
+def _bloque_hallazgo(llamadas: list, texto: str = "") -> str:
     """El bloque de hechos que escribe `buscar_productos` cuando ninguno cumple
     del todo. Mismo trato que la cuenta: se pega entero o se repone.
 
-    Solo vale si NO hay presupuesto en el turno: cuando ya hay cuenta, el
-    cliente esta cerrando y meterle ademas el listado de lo que no cumple es
-    ruido. Un bloque por mensaje."""
+    UN BLOQUE POR MENSAJE, Y SE MIDE SOBRE LO QUE EL CLIENTE LEE. La primera
+    version preguntaba si ESTE TURNO habia calculado un presupuesto, y eso deja
+    un agujero que se vio en el guion 76 T2: el turno no cotizo, pero
+    `_cuenta_no_retipeada` repuso -bien- la cuenta del turno anterior, asi que
+    el mensaje SI llevaba cuenta y encima se le pego el listado. Dos bloques,
+    2.910 caracteres, tres mensajes de WhatsApp. La regla es sobre el mensaje,
+    no sobre la lista de llamadas.
+
+    Y NO SE REPONE LO QUE YA ESTA DICHO. `_bloque_entero_o_repuesto` exige el
+    bloque textual, renglon por renglon, que es lo correcto para la cuenta -ahi
+    un numero distinto es plata mal contada-. Para el hallazgo es demasiado
+    duro: si el modelo ya nombro los mismos productos con otro formato, los
+    HECHOS le llegaron al cliente, y pegar la version del codigo abajo es
+    escribir dos veces lo mismo. Es la falla `bloque repetido en 2 turnos` que
+    el piso ya venia contando en este mismo guion.
+    """
     if _bloque_presupuesto(llamadas):
         return ""
+    # Los marcadores DUROS de una cuenta, no `_RE_ARRANQUE_CUENTA`: aquella
+    # matchea tambien "Envio:" a secas, que el modelo escribe en cualquier
+    # respuesta de politica, y con eso el hallazgo se habria callado de mas.
+    if texto and _RE_HAY_CUENTA.search(texto):
+        return ""
+    bloque = ""
     for l in llamadas:
         r = l.get("resultado") or {}
         if l.get("herramienta") == "buscar_productos" and r.get("bloque"):
-            return str(r["bloque"])
-    return ""
+            bloque = str(r["bloque"])
+            break
+    if not bloque or not texto:
+        return bloque
+    # Los nombres de producto del bloque, que son el hecho. Si estan todos en
+    # el texto, el cliente ya los tiene.
+    nombres = [ln.lstrip("- ").split(":")[0].strip()
+               for ln in bloque.splitlines() if ln.strip().startswith("-")]
+    plano = _norm_renglon(texto)
+    if nombres and all(_norm_renglon(n) in plano for n in nombres):
+        return ""
+    return bloque
 
 
 def _productos_del_turno(llamadas: list, turno: int = 0) -> list:
@@ -1577,6 +1801,10 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # ── 2-bis. LO QUE EL MODELO NO APLICA, LO APLICA EL CODIGO ───────────
     llamadas = _condicion_faltante_aplicada(llamadas, rec, tienda_id, trace_id)
     llamadas = _cuenta_con_lo_declarado(llamadas, declarado, tienda_id, trace_id)
+    # EL ORDEN IMPORTA: primero se aplica el reparto que falta, y despues se
+    # declara el supuesto sobre la cuenta que ya lo tiene adentro.
+    llamadas = _reparto_de_pago_declarado(llamadas, declarado, tienda_id,
+                                          trace_id)
     llamadas = _supuesto_de_pago(llamadas, declarado, tienda_id, trace_id)
     llamadas = _bloques_a_uno(llamadas, trace_id)
 
@@ -1604,6 +1832,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         texto, hubo_calculo=bool(bloque),
         previo=conv.get("ultimo_presupuesto") or "", trace_id=trace_id)
     texto = _sin_negar_lo_traido(texto, llamadas, trace_id)
+    texto = _sin_afirmar_sobre_el_catalogo(texto, llamadas, trace_id)
     texto = _sin_descuento_inventado(texto, trace_id)
     texto = _sin_narracion_interna(texto, trace_id)
     texto = _sin_anuncio_vacio(texto, trace_id)
@@ -1614,8 +1843,8 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # EL HALLAZGO, mismo trato que la cuenta. Va DESPUES de la poda de plata a
     # proposito: sus precios salen de la fuente y no se podan, pero si el
     # modelo escribio otros, esos si se fueron.
-    texto = _bloque_entero_o_repuesto(texto, _bloque_hallazgo(llamadas),
-                                      trace_id)
+    texto = _bloque_entero_o_repuesto(texto, _bloque_hallazgo(llamadas, texto),
+                                      trace_id, barrer_cuenta=False)
     texto = _RE_ID_INTERNO.sub("", texto).strip()
 
     # ── 5. CIERRE Y COBRO ───────────────────────────────────────────────

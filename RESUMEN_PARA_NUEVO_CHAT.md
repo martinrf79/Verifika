@@ -111,6 +111,109 @@ bancos, antes y despues, siempre.
 
 ---
 
+**==== 7-AGO-2026 — LA PREGUNTA DE MARTIN, ENTERA. Y UN RENGLON DESCUARTIZADO ====**
+
+**LA CONSIGNA DE LA SESION, textual de Martin:** una sola pregunta, la del
+mensaje real, y que el bot la conteste BIEN. Los errores que venia mostrando:
+respuesta muy larga, alucina, y se equivoca sobre FAQ o catalogo. **La latencia
+NO es la prioridad uno**: primero que conteste bien, despues se mira el reloj.
+
+**EL TURNO REAL QUE SE DIAGNOSTICO**, leido de los logs de Cloud Run, no
+supuesto: `trace_id 87421e52`, 6-ago 23:34:25, **27,7 segundos, 4 llamadas al
+modelo, 1.900 caracteres en 3 mensajes de WhatsApp**. La respuesta entera y la
+conversacion salieron de `logging.googleapis.com` y de Firestore con la clave
+lectora. **LAS SEIS FALLAS, cada una con su causa y su candado:**
+
+**1. EL 70/30 DESAPARECIO, y es la mas cara.** El modelo declaro "presupuesto
+70/30" como restriccion, el reconciliador se lo reclamo TRES rondas, y
+`armar_presupuesto` salio con `pago=None` las tres veces. Al cliente le llego la
+cuenta sin una palabra del reparto que habia pedido. Y no es solo un renglon
+que falta: la parte por transferencia lleva 10% de descuento, asi que **el
+silencio le costo $17.500** -$232.500 contra $250.000- en el mismo turno donde
+el precio era lo unico que el habia dicho que no le importaba. `pago_split.py`
+funcionaba perfecto; nunca lo llamaron. Lo aplica ahora
+`_reparto_de_pago_declarado`, cero tokens, con el supuesto del medio declarado
+adentro de la cuenta como ya hacia `_supuesto_de_pago`.
+
+**2. LA RONDA IMPOSIBLE SEGUIA VIVA.** El 6-ago se dio por arreglada sumando el
+argumento `pago` al universo de restricciones, pero eso solo tapa el caso en que
+el modelo SI lo aplica. Cuando no lo aplica, el reclamo vuelve a ser imposible
+-no hay busqueda donde meter un reparto de pago-, el modelo pide CERO
+herramientas porque tiene razon, y el turno paga 8 segundos por nada. Ahora la
+regla 3 del reconciliador no lo reclama: lo aplica el codigo. La deteccion vive
+en UN solo lugar, `pedido.reparto_ambiguo`, que leen los dos.
+
+**3. LA ALUCINACION, textual:** *"todos los productos que trabajo en este momento
+tienen componentes de origen chino, por lo que no puedo cumplir con esa
+restriccion especifica"*. Es **falso** -son 86 los que cumplen- y lo desmiente el
+bloque que el mismo mensaje pega DOS RENGLONES MAS ABAJO: "donde si se cumple del
+todo lo que pedis es en: almacenamiento externo, procesador". El bot se
+contradijo solo dentro del mismo mensaje y le cerro la puerta a un cliente que
+estaba comprando. La prohibicion ya estaba escrita en la instruccion de la
+herramienta y el modelo la piso igual: es la rueda de agregarle palabras al
+prompt. Se corta como se cortaron las otras dos, contra un HECHO calculado:
+`_sin_afirmar_sobre_el_catalogo` borra la oracion universal cuando
+`donde_si_se_cumple` prueba que es mentira. **Y no se come la verdad acotada**:
+"todos los auriculares que tengo se fabrican en China" sobrevive, con test.
+
+**4. EL BLOQUE LE CONTESTABA CON EL PRECIO.** Salia "hay varios igual de cerca
+**-160 en total-**: ninguno esta mejor que otro, **te muestro los mas baratos**".
+El 160 son tres universos distintos sumados, o sea que no significa nada; y "los
+mas baratos" es responderle con el precio a un cliente que acababa de decir que
+el precio no importaba. Ademas el mismo motivo -"pais de fabricacion: china"- se
+repetia en los SEIS renglones. Ahora el empate va por rubro, el motivo va una
+vez en la cabecera del rubro, y `donde_si_se_cumple` no entra en un pedido de
+varios rubros: ofrecerle un procesador a quien pidio auriculares, mouse y
+memorias no le resuelve nada. **Bloque de 792 a 674 caracteres.**
+
+**5. EL DESTINO POR ITEM NO SE DECLARABA.** El cliente reparte seis unidades
+entre tres localidades y el modelo declaro los tres destinos en la lista suelta
+y NINGUN item con su `destino` -campo que existe desde el 5-ago justo para
+esto-. La cuenta cobro tres envios sin poder decir que va a cada uno: "2 de 6
+unidades quedaron sin destino". Regla 7 del reconciliador, nueva.
+
+**6. LA CUENTA SALIA DESCUARTIZADA, y esto es lo peor que aparecio.** El modulo
+definia **`_RE_RENGLON_CUENTA` DOS VECES a nivel de modulo**. La segunda pisa a
+la primera al importar y no lleva `.*$`, asi que el `sub()` de
+`_bloque_entero_o_repuesto` -escrito contra la primera- borraba solo el ARRANQUE
+del renglon. Lo que le llegaba al cliente:
+
+```
+57.500 c/u = $115.000
+ $201.000
+3 envios): $24.000
+ $225.000
+70%): $157.500
+```
+
+Parentesis huerfanos, sin la palabra Total, y abajo el bloque bueno pegado al
+lado. **Nadie lo vio por DOS casualidades encimadas**: el piso lo absorbia, y el
+chequeo "contiene Total" del guion 76 matcheaba con la frase *"hay varios igual
+de cerca -210 en TOTAL-"* del otro bloque. Al sacar esa frase por el arreglo 4,
+el gate lo escupio solo. Ahora hay UNA regla con dos formas derivadas -`_ARRANQUE`
+para preguntar, `_ENTERO` para borrar- y el barrido de cuenta se acoto al bloque
+que le corresponde: cuando el bloque repuesto era el HALLAZGO, el barrido se
+comia la cuenta legitima que `_cuenta_no_retipeada` acababa de reponer.
+
+**MEDIDO, ANTES Y DESPUES.** tests offline 492 -> **501**; las 40 en **40 de
+40**; charlas grabadas **294 puntos**, igual que el piso, pero el "Total" del
+guion 76 ahora sale de la cuenta de verdad y no de una coincidencia; largo del
+T2 del 76 dentro del tope; zona ciega **37 de 321 (12%)**.
+
+**LO QUE QUEDA ABIERTO DE ESTA PREGUNTA, sin maquillar:**
+- **El reparto de los seis items entre los tres destinos lo sigue decidiendo el
+  modelo.** La regla 7 le avisa que falta, pero si vuelve a repartir mal, el
+  codigo no lo corrige: solo el aviso honesto de "2 de 6 sin destino".
+- **La venta que no se hizo:** el subtotal quedo en $226.000 y el envio gratis
+  arranca en $250.000. Sumando una memoria mas -$34.500- los tres envios se
+  liberaban. La FAQ tiene el gancho escrito y nadie lo dispara. En multidestino
+  el umbral se mira POR ENVIO, asi que la cuenta no es directa: por eso no se
+  toco, pero es plata sobre la mesa.
+- **La latencia sigue en 27,7 segundos.** El arreglo 2 mata una ronda entera de
+  8 segundos; el resto es la fase siguiente, como pidio Martin.
+
+---
+
 **==== 6-AGO-2026 (2a tanda) — LA OPCION B: LA CUENTA NO PIERDE UN RUBRO ====**
 
 **LAS TRES FALLAS DEL MENSAJE REAL DE MARTIN, del 5-ago por WhatsApp, atacadas

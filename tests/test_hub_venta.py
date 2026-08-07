@@ -701,3 +701,228 @@ def test_el_mismo_producto_partido_en_dos_destinos_no_se_duplica(firestore_doble
     fuera = _cuenta_con_lo_declarado(
         llamadas, {"items": [{"que": "auriculares", "cantidad": 2}]}, TIENDA, "t")
     assert sum(i["cantidad"] for i in fuera[-1]["pedido"]["items"]) == 2
+
+
+# ── EL MENSAJE REAL DE MARTIN, 6-ago-2026, y las cuatro fallas que dejo ──────
+#
+# "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no seria
+#  tan importante. Lo que si que necesito que lleven las menos partes chinas
+#  posibles. Un auricular y un mouse sera envio a Cordoba capital. Un teclado y
+#  un mouse sera envio a Concordia. Los otros dos articulos seran con envio a
+#  posadas. Divide el presupuesto en setenta treinta."
+#
+# Corrido en produccion, trace 87421e52: 27,7 segundos, 4 llamadas al modelo,
+# una ronda entera pidiendo CERO herramientas, y el cliente recibio una cuenta
+# sin una palabra del reparto que habia pedido. Cada test de abajo clava una de
+# las fallas medidas en ese turno.
+
+def test_el_setenta_treinta_lo_aplica_el_codigo_si_el_modelo_no_lo_hizo(
+        firestore_doble):
+    """LA FALLA MAS CARA DEL TURNO REAL. El modelo declaro 'presupuesto 70/30'
+    como restriccion, el reconciliador se lo reclamo TRES rondas, y
+    `armar_presupuesto` salio con pago=None las tres veces. La parte por
+    transferencia lleva 10% de descuento: el silencio le costo $17.500 sobre un
+    total de $250.000. Lo aplica el codigo, cero tokens, y queda declarado."""
+    args = {"items": [{"product_id": "AUR0003", "cantidad": 2},
+                      {"product_id": "MOU0023", "cantidad": 2}]}
+    llamadas = [{"herramienta": "armar_presupuesto", "pedido": args,
+                 "resultado": H.ejecutar("armar_presupuesto", args, TIENDA)}]
+    declarado = {"restricciones": ["menos partes chinas posibles",
+                                   "presupuesto 70/30"]}
+    sin_reparto = HV._bloque_presupuesto(llamadas)
+    assert "Pago dividido" not in sin_reparto
+
+    fuera = HV._reparto_de_pago_declarado(llamadas, declarado, TIENDA, "t")
+    con_reparto = HV._bloque_presupuesto(fuera)
+    assert "Pago dividido" in con_reparto
+    assert "transferencia (70%)" in con_reparto
+    assert "mercado pago (30%)" in con_reparto
+    # La parte grande va por transferencia, que es la que TIENE descuento: el
+    # codigo asume siempre para el lado que le conviene al cliente.
+    assert "descuento" in con_reparto
+    # Y el supuesto se declara, para que el cliente lo de vuelta en una linea.
+    declarada = HV._supuesto_de_pago(fuera, declarado, TIENDA, "t")
+    assert "no me aclaraste" in HV._bloque_presupuesto(declarada)
+
+
+def test_el_reparto_que_el_modelo_si_aplico_no_se_pisa(firestore_doble):
+    """Si el modelo ya lo puso, el codigo no lo toca: reponer sobre lo que ya
+    esta es la clase de capa que este repo no suma."""
+    args = {"items": [{"product_id": "MOU0023", "cantidad": 1}],
+            "pago": [{"medio": "mercado pago", "porcentaje": 70},
+                     {"medio": "transferencia", "porcentaje": 30}]}
+    llamadas = [{"herramienta": "armar_presupuesto", "pedido": args,
+                 "resultado": H.ejecutar("armar_presupuesto", args, TIENDA)}]
+    declarado = {"restricciones": ["presupuesto 70/30"]}
+    assert HV._reparto_de_pago_declarado(
+        llamadas, declarado, TIENDA, "t") == llamadas
+
+
+def test_el_reparto_de_pago_no_se_reclama_como_filtro_de_busqueda():
+    """LA RONDA IMPOSIBLE, medida en produccion. Un reparto de pago no entra en
+    ningun argumento de busqueda, asi que pedirselo al modelo es un faltante que
+    no se puede resolver: gasto 8 segundos en una ronda donde el modelo pidio
+    CERO herramientas, y tenia razon. Lo aplica el codigo despues del bucle."""
+    from app.core import pedido as P
+
+    pedido = {"items": [{"que": "mouse", "cantidad": 1}],
+              "restricciones": ["presupuesto 70/30"]}
+    llamadas = [{"herramienta": "buscar_productos",
+                 "pedido": {"categoria": "mouse"},
+                 "resultado": {"estado": "encontrado",
+                               "productos": [{"id": "MOU0023",
+                                              "categoria": "mouse",
+                                              "nombre": "Mouse Genius"}]}}]
+    rec = P.reconciliar(pedido, llamadas, "t")
+    assert not [f for f in rec["faltantes"] if "70/30" in f], rec["faltantes"]
+
+    # Una restriccion que SI es de producto se sigue reclamando igual que antes.
+    pedido["restricciones"] = ["presupuesto 70/30", "que sea inalambrico"]
+    rec2 = P.reconciliar(pedido, llamadas, "t")
+    assert any("inalambrico" in f for f in rec2["faltantes"])
+    assert not [f for f in rec2["faltantes"] if "70/30" in f]
+
+
+def test_varios_destinos_y_ningun_item_con_destino_es_un_faltante():
+    """El cliente reparte seis unidades entre tres localidades y el modelo
+    declara los tres destinos en la lista suelta, sin decir que va a cada uno.
+    La cuenta cobra tres envios y no puede armar el reparto: salio '2 de 6
+    unidades quedaron sin destino'. El campo `destino` del item existe para
+    esto desde el 5-ago."""
+    from app.core import pedido as P
+
+    llamadas = [{"herramienta": "buscar_productos",
+                 "pedido": {"categoria": "mouse"},
+                 "resultado": {"estado": "encontrado",
+                               "productos": [{"id": "MOU0023",
+                                              "categoria": "mouse",
+                                              "nombre": "Mouse Genius"}]}}]
+    suelto = {"items": [{"que": "mouse", "cantidad": 2}],
+              "destinos": ["Cordoba capital", "Posadas"]}
+    rec = P.reconciliar(suelto, llamadas, "t")
+    assert any("no dijiste que va a cada uno" in f for f in rec["faltantes"])
+
+    # Con el destino en el item, no hay faltante.
+    atado = {"items": [{"que": "mouse", "cantidad": 1,
+                        "destino": "Cordoba capital"},
+                       {"que": "mouse", "cantidad": 1, "destino": "Posadas"}],
+             "destinos": ["Cordoba capital", "Posadas"]}
+    rec2 = P.reconciliar(atado, llamadas, "t")
+    assert not any("va a cada uno" in f for f in rec2["faltantes"])
+
+    # Y con UN solo destino tampoco: no hay nada que repartir.
+    uno = {"items": [{"que": "mouse", "cantidad": 2}],
+           "destinos": ["Cordoba capital"]}
+    assert not any("va a cada uno" in f
+                   for f in P.reconciliar(uno, llamadas, "t")["faltantes"])
+
+
+def test_no_se_afirma_que_ningun_producto_cumple_cuando_es_falso(
+        firestore_doble):
+    """LA ALUCINACION DEL TURNO REAL, textual: 'todos los productos que trabajo
+    en este momento tienen componentes de origen chino, por lo que no puedo
+    cumplir con esa restriccion especifica'. Es falso, y lo desmiente el bloque
+    que el mismo mensaje pega dos renglones mas abajo. La prohibicion estaba
+    escrita en la instruccion de la herramienta y el modelo la piso igual."""
+    a = {"categoria": "auriculares", "cuantos": 2,
+         "filtros": [{"campo": "pais_fabricacion", "valor": "china",
+                      "operador": "no_contiene"}]}
+    r = H.ejecutar("buscar_productos", a, TIENDA)
+    assert r["estado"] == "ninguno_cumple_del_todo"
+    assert r["donde_si_se_cumple"], "sin este hecho la guardia no puede actuar"
+    llamadas = [{"herramienta": "buscar_productos", "pedido": a,
+                 "resultado": r}]
+
+    texto = ("Todos los productos que trabajo tienen componentes de origen "
+             "chino, asi que no puedo cumplir con eso. Te paso lo que mas se "
+             "acerca.")
+    limpio = HV._sin_afirmar_sobre_el_catalogo(texto, llamadas, "t")
+    assert "Todos los productos" not in limpio
+    assert "Te paso lo que mas se acerca." in limpio
+
+
+def test_el_hecho_acotado_al_rubro_sobrevive(firestore_doble):
+    """La guardia de arriba NO puede comerse la verdad. 'Todos los auriculares
+    que tengo se fabrican en China' es un hecho de la fuente, acotado al rubro,
+    y es exactamente la honestidad que queremos que salga. Es la misma leccion
+    que ya se pago con `_sin_negar_lo_traido`, que borraba la abstencion."""
+    a = {"categoria": "auriculares", "cuantos": 2,
+         "filtros": [{"campo": "pais_fabricacion", "valor": "china",
+                      "operador": "no_contiene"}]}
+    llamadas = [{"herramienta": "buscar_productos", "pedido": a,
+                 "resultado": H.ejecutar("buscar_productos", a, TIENDA)}]
+    texto = "Todos los auriculares que tengo se fabrican en China."
+    assert HV._sin_afirmar_sobre_el_catalogo(texto, llamadas, "t") == texto
+
+
+def test_el_bloque_fusionado_no_contesta_con_el_precio_ni_suma_universos(
+        firestore_doble):
+    """El turno real salio con 'hay varios igual de cerca -160 en total-:
+    ninguno esta mejor que otro, te muestro los mas baratos'. El 160 son tres
+    universos distintos sumados, y 'te muestro los mas baratos' le contesta con
+    el precio a un cliente que acababa de decir que el precio no era lo
+    importante. Ademas repetia el mismo motivo en los seis renglones."""
+    llamadas = []
+    for cat in ("auriculares", "mouse", "memoria ram"):
+        a = {"categoria": cat, "cuantos": 2,
+             "filtros": [{"campo": "pais_fabricacion", "valor": "china",
+                          "operador": "no_contiene"}]}
+        llamadas.append({"herramienta": "buscar_productos", "pedido": a,
+                         "resultado": H.ejecutar("buscar_productos", a,
+                                                 TIENDA)})
+    fuera = HV._bloques_a_uno(llamadas, "t")
+    bloque = next(l["resultado"]["bloque"] for l in fuera
+                  if (l.get("resultado") or {}).get("bloque"))
+
+    assert "los más baratos" not in bloque
+    assert "en total" not in bloque
+    # el motivo va UNA vez por rubro, en la cabecera, no en cada renglon
+    assert bloque.count("país de fabricación: china") <= 2
+    assert "Auriculares (" in bloque and "Mouse (" in bloque
+    # y el rubro donde SI se cumple no se ofrece en un pedido de varios rubros:
+    # el cliente pidio estos tres, no un procesador.
+    assert "Donde sí se cumple" not in bloque
+    # un solo bloque para los tres: los demas se quedan sin el
+    assert sum(1 for l in fuera
+               if (l.get("resultado") or {}).get("bloque")) == 1
+
+
+def test_la_cuenta_no_sale_descuartizada(firestore_doble):
+    """EL BUG DE LOS DOS NOMBRES. `_RE_RENGLON_CUENTA` estaba definida DOS veces
+    en el modulo; la segunda pisaba a la primera y no llevaba `.*$`, asi que el
+    `sub()` de `_bloque_entero_o_repuesto` borraba solo el ARRANQUE del renglon
+    y al cliente le llegaba ' $201.000' y '3 envios): $24.000'. Reproducido
+    entero sobre el guion 76."""
+    texto = ("Te paso la cuenta.\n"
+             "Presupuesto:\n"
+             "- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\n"
+             "Subtotal: $17.000\n"
+             "Envio (3 envios): $24.000\n"
+             "Total: $41.000\n"
+             "- mercado pago (30%): $12.300\n")
+    limpio = HV._bloque_entero_o_repuesto(texto, "Presupuesto:\nTotal: $99", "t")
+    # ni un renglon a medias: o esta entero o no esta
+    for resto in (" $17.000", "3 envios): $24.000", "30%): $12.300",
+                  " $41.000"):
+        assert resto not in limpio.replace("Total: $99", ""), limpio
+    assert "Te paso la cuenta." in limpio
+    assert limpio.endswith("Presupuesto:\nTotal: $99")
+
+
+def test_el_hallazgo_no_se_repone_sobre_una_cuenta_ni_se_escribe_dos_veces(
+        firestore_doble):
+    """UN BLOQUE POR MENSAJE, medido sobre lo que el cliente LEE. El guion 76 T2
+    salio con la cuenta repuesta del turno anterior Y el listado pegado abajo:
+    2.910 caracteres, tres mensajes de WhatsApp."""
+    a = {"categoria": "mouse", "cuantos": 2,
+         "filtros": [{"campo": "pais_fabricacion", "valor": "china",
+                      "operador": "no_contiene"}]}
+    llamadas = [{"herramienta": "buscar_productos", "pedido": a,
+                 "resultado": H.ejecutar("buscar_productos", a, TIENDA)}]
+    assert HV._bloque_hallazgo(llamadas), "sin cuenta el hallazgo va"
+    # con una cuenta en el texto, no va
+    assert not HV._bloque_hallazgo(llamadas, "Total: $8.500\nlisto")
+    # y si el modelo ya nombro esos productos, tampoco se repone
+    nombres = "\n".join(p["nombre"] for p in
+                        llamadas[0]["resultado"]["productos"])
+    assert not HV._bloque_hallazgo(llamadas, "Mira estos:\n" + nombres)
