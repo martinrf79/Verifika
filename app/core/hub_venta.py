@@ -1773,7 +1773,14 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         for l in llamadas:
             if l.get("herramienta") == "registrar_pedido":
                 declarado = (l.get("resultado") or {}).get("pedido") or declarado
-        rec = P.reconciliar(declarado, llamadas, trace_id)
+        # LA MEMORIA DEL RECONCILIADOR: lo que la charla ya resolvio. Sin
+        # esto le exige buscar de nuevo algo que se certifico dos turnos atras.
+        ya = " ".join([str(p.get("nombre") or "") + " " +
+                       str(p.get("categoria") or "")
+                       for p in (estado.get("productos_vistos") or [])] +
+                      [str(c.get("nombre") or "")
+                       for c in (conv.get("carrito_vigente") or [])])
+        rec = P.reconciliar(declarado, llamadas, trace_id, ya_resuelto=ya)
         obligacion = P.instruccion_de_preguntas(rec)
         revision = P.instruccion_de_faltantes(rec)
         if not revision:

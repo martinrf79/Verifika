@@ -232,6 +232,33 @@ def _universo_de_restricciones(llamadas: list) -> str:
     return " ".join(x for x in partes if x)
 
 
+# Los estados de herramienta que significan "se busco de verdad y la fuente no
+# tiene nada que dar". Son resultados VALIDOS, no fallas: la respuesta honesta
+# -"eso no lo tenemos"- es la respuesta, no un paso pendiente.
+_SE_BUSCO_Y_NO_HAY = ("no_encontrado", "no_vendemos", "sin_stock",
+                      "nada_dentro_del_presupuesto")
+
+
+def _se_busco_y_no_hay(que: str, llamadas: list) -> bool:
+    """EL TERCER ESTADO. ¿Para este item se llamo a una herramienta que trae
+    productos, y volvio diciendo que no hay?
+
+    Se ata al item por lo que se PIDIO -la categoria y la descripcion de esa
+    misma llamada-, no por lo que volvio, porque justamente no volvio nada.
+    """
+    for l in (llamadas or []):
+        if l.get("herramienta") not in _TRAEN_PRODUCTOS:
+            continue
+        if (l.get("resultado") or {}).get("estado") not in _SE_BUSCO_Y_NO_HAY:
+            continue
+        ped = l.get("pedido") or {}
+        pedido_txt = " ".join(_norm(ped.get(k)) for k in
+                              ("categoria", "descripcion", "product_id"))
+        if pedido_txt.strip() and _cubierto(que, pedido_txt):
+            return True
+    return False
+
+
 def _universo_de_destinos(llamadas: list) -> str:
     partes = []
     for l in llamadas or []:
@@ -245,7 +272,8 @@ def _universo_de_destinos(llamadas: list) -> str:
     return " ".join(x for x in partes if x)
 
 
-def reconciliar(pedido: dict, llamadas: list, trace_id: str = "") -> dict:
+def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
+                ya_resuelto: str = "") -> dict:
     """Compara lo que el modelo DECLARO que entendio contra lo que PIDIO.
 
     Devuelve:
@@ -261,21 +289,67 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "") -> dict:
     if not pedido:
         return {"faltantes": [], "preguntar": []}
 
-    uni_prod = _universo_de_busquedas(llamadas)
+    # LO QUE YA SE RESOLVIO EN TURNOS ANTERIORES TAMBIEN CUENTA COMO ATENDIDO.
+    #
+    # EL TERCER ESTADO, segunda mitad. Medido el 7-ago sobre las 10 charlas: de
+    # los 41 faltantes que se repetian sin resolverse, 25 eran "no lo buscaste"
+    # sobre items que el modelo NO volvio a buscar -y hacia bien-. El caso mas
+    # claro: el cliente dice "acordate que los quiero negros" sobre un mouse que
+    # ya se le habia mostrado y certificado dos turnos antes. El modelo declara
+    # el item, no busca nada porque no hace falta, y el reconciliador le exige
+    # buscar. Otra ronda quemada, y el reclamo es imposible: no hay nada que
+    # buscar.
+    #
+    # La causa es que el reconciliador NO TENIA MEMORIA: comparaba el pedido
+    # -que se acumula turno a turno- contra las llamadas de ESTE turno solo. El
+    # dato ya existe en la conversacion, en `productos_vistos` y en el carrito;
+    # solo habia que pasarselo.
+    uni_prod = " ".join(x for x in
+                        (_universo_de_busquedas(llamadas), _norm(ya_resuelto))
+                        if x)
     uni_rest = _universo_de_restricciones(llamadas)
     uni_dest = _universo_de_destinos(llamadas)
     nombres = [l.get("herramienta") for l in (llamadas or [])]
 
-    # 1. CADA ITEM NOMBRADO TIENE QUE HABER SIDO BUSCADO. Es el chequeo que
-    #    caza el auricular que se perdio: el cliente nombro tres categorias y
-    #    el plan trajo otras.
+    # 1. CADA ITEM NOMBRADO TIENE QUE HABER SIDO ATENDIDO, y ATENDIDO SON TRES
+    #    ESTADOS, NO DOS. Es el chequeo que caza el auricular que se perdio.
+    #
+    #    EL BUG, medido el 7-ago sobre las 10 charlas: de 88 faltantes emitidos,
+    #    41 se repitieron en dos o mas rondas del MISMO turno. 25 de esos 41
+    #    eran este reclamo. Y NO eran falsos: el modelo habia declarado el item
+    #    y de verdad no trajo nada, porque el producto NO EXISTE -"iPhone 15 Pro
+    #    con Android", "disco HDD de 7000 MB/s"-. El reconciliador le decia
+    #    "buscalo", el modelo lo buscaba, no encontraba, y se le volvia a decir
+    #    "buscalo". Un reclamo IMPOSIBLE de satisfacer, y una ronda quemada cada
+    #    vez.
+    #
+    #    LA CAUSA ES QUE FALTABA UN ESTADO. Para un item habia dos: buscado o no
+    #    buscado. "Lo busque y no hay" caia en la misma bolsa que "no lo
+    #    busque". No es un descuido nuestro: `rasa-sdk` tiene el mismo bug -su
+    #    formulario decide con `tracker.get_slot(x) is None`, asi que un slot
+    #    cuya extraccion fallo se vuelve a pedir para siempre- y la literatura
+    #    de seguimiento de estado conversacional resuelve justamente con un
+    #    TERCER valor para "no se puede completar".
+    #
+    #    Y ESTE REPO YA LO INVENTO. La regla cero de `CLAUDE.md` dice, textual:
+    #    "not_found NO es un error, es un resultado valido y exitoso". El
+    #    certificador tiene tres veredictos hace meses. Nunca se habia aplicado
+    #    al ITEM del pedido, solo a la identidad del producto. Esto es esa misma
+    #    regla, un nivel mas arriba.
+    #
+    #    Se mira el ESTADO que devolvio la herramienta, no las palabras: es el
+    #    principio de tau-bench, juzgar por el estado observado y no por lo que
+    #    el agente cuenta que hizo.
     for it in (pedido.get("items") or []):
         que = str(it.get("que") or "").strip()
         if not que:
             continue
-        if not _cubierto(que, uni_prod):
-            faltantes.append(
-                f"El cliente pidio '{que}' y no lo buscaste. Buscalo.")
+        if _cubierto(que, uni_prod):
+            continue                                    # atendido: trajo algo
+        if _se_busco_y_no_hay(que, llamadas):
+            continue                                    # atendido: no existe
+        faltantes.append(
+            f"El cliente pidio '{que}' y no lo buscaste. Buscalo.")
 
     # 2. AL REVES: NADA COTIZADO QUE EL CLIENTE NO HAYA PEDIDO. Caza el item
     #    fantasma, el teclado que aparecio de la nada en la cuenta.

@@ -926,3 +926,50 @@ def test_el_hallazgo_no_se_repone_sobre_una_cuenta_ni_se_escribe_dos_veces(
     nombres = "\n".join(p["nombre"] for p in
                         llamadas[0]["resultado"]["productos"])
     assert not HV._bloque_hallazgo(llamadas, "Mira estos:\n" + nombres)
+
+
+# ── EL TERCER ESTADO: atendido no es solo "buscado" (Martin, 7-ago-2026) ─────
+#
+# MEDIDO sobre las 10 charlas grabadas: de 88 faltantes emitidos, 41 se repetian
+# en dos o mas rondas del MISMO turno sin resolverse nunca, y 25 de esos eran
+# "no lo buscaste". No eran falsos: eran IMPOSIBLES. Con el tercer estado: 88 ->
+# 68 faltantes, 41 -> 29 repetidos, y los "no lo buscaste" de 25 a 8.
+
+def test_lo_ya_resuelto_en_turnos_anteriores_no_se_vuelve_a_reclamar():
+    """El caso real del guion 44: el cliente dice 'acordate que los quiero
+    negros' sobre un mouse que ya se le certifico dos turnos antes. El modelo
+    declara el item y no busca nada, y hace bien. El reconciliador le exigia
+    buscar: una ronda quemada sobre un reclamo que no se puede satisfacer.
+
+    La causa era que el reconciliador NO TENIA MEMORIA: comparaba el pedido, que
+    se acumula turno a turno, contra las llamadas de ESTE turno solo."""
+    from app.core import pedido as P
+
+    pedido = {"items": [{"que": "Mouse Logitech M170 Negro", "cantidad": 2}]}
+    # sin memoria, reclama
+    rec = P.reconciliar(pedido, [], "t")
+    assert any("no lo buscaste" in f for f in rec["faltantes"])
+    # con lo que la charla ya resolvio, no
+    rec2 = P.reconciliar(pedido, [], "t",
+                         ya_resuelto="Mouse Logitech M170 Negro mouse")
+    assert not [f for f in rec2["faltantes"] if "no lo buscaste" in f]
+
+
+def test_buscado_y_no_hay_es_una_respuesta_valida_no_un_paso_pendiente():
+    """La regla cero de CLAUDE.md dice que `not_found` NO es un error sino un
+    resultado valido y exitoso. El certificador lo cumple hace meses para la
+    identidad del producto; nunca se habia aplicado al ITEM del pedido, asi que
+    'lo busque y no hay' caia en la misma bolsa que 'no lo busque'."""
+    from app.core import pedido as P
+
+    pedido = {"items": [{"que": "iPhone 15 Pro", "cantidad": 1}]}
+    vacio = [{"herramienta": "buscar_productos",
+              "pedido": {"categoria": "celulares", "descripcion": "iPhone 15 Pro"},
+              "resultado": {"estado": "no_encontrado", "productos": []}}]
+    assert not [f for f in P.reconciliar(pedido, vacio, "t")["faltantes"]
+                if "no lo buscaste" in f]
+
+    # Pero si NO se busco nada, el reclamo sigue vivo: el tercer estado no es
+    # una amnistia, es un estado que hay que haberse ganado.
+    assert [f for f in P.reconciliar(pedido, [], "t")["faltantes"]
+            if "no lo buscaste" in f]
