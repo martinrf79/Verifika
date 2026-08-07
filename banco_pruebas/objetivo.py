@@ -274,7 +274,24 @@ def correr_codigo(tienda_id: str = TIENDA) -> dict:
 
 
 # ── LA CORRIDA VIVA: las cinco redacciones por el camino del webhook ────────
-def correr_vivo(tienda_id: str = TIENDA) -> dict:
+def correr_vivo(tienda_id: str = TIENDA, repeticiones: int = 3) -> dict:
+    """LA VARA VIVA, Y POR QUE SE REPITE.
+
+    LA TRAMPA, medida el 7-ago y casi me la como. Con UNA corrida por redaccion
+    el promedio dio 33 y despues 47, y parecia una mejora de catorce puntos.
+    Mirando celda por celda: la redaccion textual de Martin dio 12 y despues
+    100; la tercera dio 62 y despues 12. **El ruido entre corridas es mas
+    grande que la diferencia que se queria medir.** Ese 47 no significaba nada.
+
+    Es exactamente el error que este chat pago dos veces en el dia: dar algo
+    por bueno con una sola prueba. Con el modelo de por medio, una corrida no
+    es una medicion, es una anecdota. Por eso se repite y se reporta el
+    promedio, el minimo y el maximo: el minimo es el que manda para vender,
+    porque es lo que le puede tocar a un cliente real.
+
+    tau-bench hace lo mismo y por lo mismo: su resultado principal se replica
+    sobre un set de quince semillas distintas antes de afirmar nada.
+    """
     import asyncio
     import os
     if os.environ.get("GEMINI_API_KEY_PROD"):
@@ -284,20 +301,29 @@ def correr_vivo(tienda_id: str = TIENDA) -> dict:
 
     filas = []
     for nombre, msg in VARIANTES.items():
-        usuario = f"objetivo_{nombre}"
-        clon.reiniciar_cliente(usuario)
-        partes = asyncio.get_event_loop().run_until_complete(
-            clon.turno(usuario, msg))
-        texto = "\n".join(partes)
-        # El estado se lee del texto final, que es lo unico que el cliente ve.
-        est = medir_estado(texto, _cuenta_del_texto(texto))
-        com = medir_comunicacion(texto)
-        filas.append({"variante": nombre, "nota": nota(est, com),
-                      "estado": est, "comunicacion": com,
-                      "largo": len(texto), "partes": len(partes),
-                      "texto": texto})
-    prom = round(sum(f["nota"]["nota"] for f in filas) / max(1, len(filas)))
-    return {"modo": "vivo", "variantes": filas, "nota": {"nota": prom}}
+        notas, corridas = [], []
+        for i in range(max(1, repeticiones)):
+            usuario = f"objetivo_{nombre}_{i}"
+            clon.reiniciar_cliente(usuario)
+            partes = asyncio.get_event_loop().run_until_complete(
+                clon.turno(usuario, msg))
+            texto = "\n".join(partes)
+            # El estado se lee del texto final: es lo unico que el cliente ve.
+            est = medir_estado(texto, _cuenta_del_texto(texto))
+            com = medir_comunicacion(texto)
+            n = nota(est, com)
+            notas.append(n["nota"])
+            corridas.append({"nota": n, "estado": est, "comunicacion": com,
+                             "largo": len(texto), "texto": texto})
+        filas.append({"variante": nombre, "corridas": corridas,
+                      "prom": round(sum(notas) / len(notas)),
+                      "min": min(notas), "max": max(notas),
+                      "largo": round(sum(c["largo"] for c in corridas)
+                                     / len(corridas))})
+    prom = round(sum(f["prom"] for f in filas) / max(1, len(filas)))
+    peor = min(f["min"] for f in filas) if filas else 0
+    return {"modo": "vivo", "variantes": filas, "repeticiones": repeticiones,
+            "nota": {"nota": prom, "peor": peor}}
 
 
 def _cuenta_del_texto(texto: str) -> dict:
@@ -368,14 +394,16 @@ def _tabla(res: dict) -> str:
                  (res["estado"] + res["comunicacion"]) if not ok]
         lineas += malas or ["- nada: la vara de código está en verde."]
     else:
-        lineas = ["| redacción | nota | estado | comunicación | largo |",
+        r = res.get("repeticiones", 1)
+        lineas = [f"| redacción | promedio de {r} | peor | mejor | largo |",
                   "|---|---|---|---|---|"]
         for f in res["variantes"]:
-            n = f["nota"]
-            lineas.append(f"| {f['variante']} | **{n['nota']}** | "
-                          f"{n['estado']} | {n['comunicacion']} | "
-                          f"{f['largo']} |")
-        lineas.append(f"\n**Promedio: {res['nota']['nota']}/100**")
+            lineas.append(f"| {f['variante']} | **{f['prom']}** | {f['min']} | "
+                          f"{f['max']} | {f['largo']} |")
+        lineas.append(f"\n**Promedio: {res['nota']['nota']}/100 — "
+                      f"PEOR CASO: {res['nota']['peor']}/100**")
+        lineas.append("\nEl que manda para vender es el PEOR, no el promedio: "
+                      "es el que le puede tocar a un cliente real.")
     return "\n".join(lineas)
 
 
@@ -410,7 +438,10 @@ def main(argv: list) -> int:
     if "--anotar" in argv:
         i = argv.index("--anotar")
         anotar = argv[i + 1] if len(argv) > i + 1 else "sin nota"
-    res = correr_vivo() if vivo else correr_codigo()
+    reps = 3
+    if "--repeticiones" in argv:
+        reps = int(argv[argv.index("--repeticiones") + 1])
+    res = correr_vivo(repeticiones=reps) if vivo else correr_codigo()
     print("=" * 78)
     print(f"OBJETIVO — vara {res['modo']}")
     print("=" * 78)

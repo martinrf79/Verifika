@@ -51,3 +51,4 @@ _Cuando aparezcan dos caminos, se anotan acá con su razón y su costo, para que
 | fecha | vara | nota | qué se cambió |
 |---|---|---|---|
 | 2026-08-07 | codigo | 62 | paso 0: nace el instrumento. Primera medicion honesta. |
+| 2026-08-07 | vivo | 47 | paso 2: numeros en letras + compuerta del reparto |
