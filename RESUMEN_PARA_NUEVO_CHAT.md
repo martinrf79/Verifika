@@ -11,14 +11,22 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > trabaja ahí. Nada de trabajo que quede colgado en una rama sin mergear, que ya
 > costó un día entero el 3-ago.
 >
+> **YA NO HAY QUE PEDIRLO NI LEERLO: LO HACE EL HOOK.** `scripts/setup_test_env.sh`
+> corre en cada SessionStart y hace `git checkout main` solo, después de que el
+> arnés asignó lo que haya asignado. Si el árbol viene sucio avisa y no toca
+> nada. Escribir la regla en tres documentos no alcanzó —Martín tuvo que
+> repetirla sesión por sesión—, así que ahora es una acción y no un pedido.
+>
 > **Lo único que se consulta es el PUSH**, porque `deploy.yml` dispara con cada
 > push a `main` y deploya `agente-bot`: pushear ES deployar, salvo que el cambio
 > toque solo `.md` o `tests/`. Se commitea en `main`, se muestra qué toca, y se
-> pushea con el OK de Martín.
+> pushea con el OK de Martín. **Se pide UNA vez, al final.**
 >
-> Mientras se espera ese OK, el trabajo se puede empujar a la rama de la sesión
-> como COPIA de respaldo —esa rama no deploya—, pero la rama nunca es donde se
-> trabaja: `main` es el original y la única verdad.
+> **NADA DE RAMAS, TAMPOCO "DE RESPALDO" (Martín, 7-ago).** Mientras se espera el
+> OK no se empuja una copia a la rama de la sesión ni a ninguna otra, y no se
+> abre un PR. Un commit local en `main` ya es el respaldo; una rama paralela es
+> exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
+> reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
 **==== EL MARCADOR — UN SOLO NUMERO, Y ES EL QUE MANDA ====**
 
@@ -108,6 +116,49 @@ charla. Ese es el sentido de `app/core/huecos.py` y es la linea a seguir.
 errores muy basicos, y cada sesion aparecen errores nuevos. Cuando se toque algo
 que anda, hay que **probar que sigue andando**: la bateria offline y los tres
 bancos, antes y despues, siempre.
+
+---
+
+**==== LAS DOS COSAS QUE PIDIO MARTIN EL 7-AGO, Y DONDE ESTAN PARADAS ====**
+
+**A. QUE EL CODIGO ACUMULE EXPERIENCIA sobre los casos, para que a preguntas
+parecidas conteste bien.** Ya existe el modulo y ya esta anotando:
+`app/core/huecos.py`, con tres tipos -`sin_campo`, `sin_dato`, `sin_rubro`- mas
+`supuesto`, que es el que se usa cuando el codigo asume algo por el cliente. En
+el turno del 6-ago dejo dos marcas solo: `destino_por_item` y `medio_de_pago`.
+Es mineria de consultas sin resultado, vieja y determinista, no IA.
+
+**LO QUE LE FALTA, dicho sin maquillar, y es la unica parte que importa:** hoy
+la marca vive en un ring EN MEMORIA de 500 filas y en el log de Cloud Run, y
+**NADIE LA LEE**. Se pierde cuando la instancia se recicla y no se comparte
+entre instancias, asi que no acumula nada entre sesiones: es un cuaderno que se
+borra. Los dos pasos, en orden y sin mezclarlos:
+  1. **Persistir en Firestore** -`tiendas/<id>/huecos/<tipo>_<campo>` con
+     contador y ejemplos-. Ahi recien empieza a ser experiencia.
+  2. **Que alguien la LEA.** El unico lector honesto al principio es Martin, con
+     la lista ordenada por frecuencia: dice que le falta al catalogo y que
+     supuesto se esta repitiendo. Que el codigo cambie una respuesta con eso es
+     el paso DOS, no el uno, y no se hace hasta que la lista tenga volumen.
+
+**B. QUE UN ARREGLO NO ROMPA OTRO.** Los tres numeros ya cubren lo que se puede
+correr, y son la red: se pasan ANTES y DESPUES, siempre. Lo que NO cubrian es la
+familia de conflictos que no rompe nada donde se toca. Se sumo el candado que
+falta, `tests/test_sin_nombres_pisados.py`: **ningun modulo puede definir el
+mismo nombre dos veces a nivel de modulo.**
+
+Nace del bug del 7-ago y lo caza contra el codigo viejo, verificado: la segunda
+definicion de `_RE_RENGLON_CUENTA` -una MEJORA legitima, mas estricta- piso a la
+primera al importar y cambio en silencio lo que hacia una funcion a noventa
+lineas de distancia. Cero tests en rojo, y al cliente le llegaba la cuenta
+descuartizada. Es la misma clase que las dos que ya se pagaron -el patron de la
+poda escrito dos veces el 31-jul, la regex del reparto duplicada el 6-ago- pero
+peor, porque con el MISMO nombre no se ve ni leyendo el archivo entero.
+
+**LA LECCION QUE DEJO ESTA SESION, y vale anotarla:** el piso puede TAPAR un bug
+en vez de mostrarlo. El "Total" del guion 76 daba verde porque matcheaba con la
+frase "-210 en total-" de otro bloque, no porque la cuenta llegara. Dos
+casualidades encimadas. Cuando un arreglo hace BAJAR el numero, la primera
+pregunta no es "que rompi": es **"que estaba tapando lo que saque"**.
 
 ---
 

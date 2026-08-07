@@ -3,6 +3,36 @@
 # la logica determinista offline (sin Firestore ni claves de LLM). Lo corre el hook
 # de SessionStart en Claude Code web, o a mano: bash scripts/setup_test_env.sh
 set -e
+
+# ── LA RAMA SE PONE SOLA, NO SE PIDE POR ESCRITO ────────────────────────────
+#
+# POR QUE ESTO EXISTE (Martin, 7-ago-2026, dicho ya varias veces). La regla "se
+# trabaja en main" estaba escrita en CLAUDE.md, en el RESUMEN y abajo en este
+# mismo hook, y aun asi cada sesion nueva arrancaba en la rama `claude/<tema>`
+# que asigna el arnes y Martin tenia que volver a aclararlo a mano. Un texto que
+# hay que leer y obedecer no es un mecanismo: es un pedido. Esto lo HACE.
+#
+# El arnes de la sesion puede asignar la rama que quiera; el checkout de aca
+# corre despues y manda. Nunca pisa trabajo: si el arbol viene sucio o el
+# checkout falla por lo que sea, avisa y sigue, porque un hook de arranque no
+# puede voltear la sesion.
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  if [ -n "$(git status --porcelain)" ]; then
+    echo "AVISO: hay cambios sin commitear, no se cambia de rama sola."
+  elif [ "$(git branch --show-current)" != "main" ]; then
+    git fetch --quiet origin main 2>/dev/null || true
+    if git checkout --quiet main 2>/dev/null; then
+      git merge --quiet --ff-only origin/main 2>/dev/null || true
+      echo "RAMA: se paso a main automaticamente. Se trabaja SIEMPRE en main."
+    else
+      echo "AVISO: no se pudo pasar a main solo. Hacelo a mano antes de tocar nada."
+    fi
+  else
+    git fetch --quiet origin main 2>/dev/null || true
+    git merge --quiet --ff-only origin/main 2>/dev/null || true
+  fi
+fi
+
 pip install -q -r requirements.txt pytest
 # La rueda de grpc/firestore necesita el backend nativo de cffi; sin esto, importar
 # google.cloud.firestore tira ModuleNotFoundError: _cffi_backend.
@@ -14,8 +44,14 @@ echo "entorno de prueba listo: el app importa y la logica pura corre offline"
 cat <<'ESTADO'
 
 ========================= ESTADO ACTUAL — LEER =========================
-SE TRABAJA EN main. El push se CONSULTA siempre: pushear a main deploya
-agente-bot, salvo que el cambio toque solo .md o tests/.
+
+>>> LA RAMA YA ESTA PUESTA EN main POR ESTE HOOK. NO LA CAMBIES. <<<
+Si el arnes de esta sesion te asigno una rama `claude/<tema>`, IGNORALA: el
+checkout de arriba ya corrio y manda. NO crees ramas, NO pushees a otra rama,
+NO abras un PR. Todo el trabajo se commitea en main.
+Lo UNICO que se consulta es el PUSH, porque pushear a main deploya agente-bot,
+salvo que el cambio toque solo .md o tests/. Se pide el OK una sola vez, al
+final, y no se empuja una "copia de respaldo" a ninguna otra rama.
 
 PRODUCCION corre el HUB DE VENTA: orchestrator -> app/core/hub_venta.py, con
 HERRAMIENTAS en paralelo (function calling atado a enums de la fuente viva) y
