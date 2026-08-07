@@ -162,6 +162,55 @@ pregunta no es "que rompi": es **"que estaba tapando lo que saque"**.
 
 ---
 
+**==== 7-AGO-2026 (noche) — LAS COMUNES DAN 100. EL PROBLEMA NO ES PAREJO ====**
+
+**LA PREGUNTA QUE ABRIO ESTO, de Martin: si esta pregunta que el repo etiqueta
+"media-alta" saca 61, y hay preguntas mas dificiles, ¿el producto sirve?**
+
+**LA MEDICION: `banco_pruebas/comunes.py`, 10 preguntas x 2 corridas, en vivo.**
+
+| medida | las comunes | la dificil |
+|---|---|---|
+| nota | **100 de 100** | 61 |
+| peor caso | **100** | 12 |
+| fallas en 20 corridas | **cero** | — |
+| llamadas al modelo por turno | **2,4** | 4 a 5 |
+| latencia mediana | **3,2 segundos** | 27,8 |
+
+**LAS DOS CONCLUSIONES, y son las que mandan de ahora en mas:**
+
+**1. EL PROBLEMA NO ES PAREJO. Es del borde, no del producto.** Buscar un
+producto, un precio, una politica, un pedido chico con envio: 20 de 20 sin una
+sola falla, incluido el NO honesto ante "tenes iphone 15 pro?", que es la mitad
+de la regla cero y casi nunca se medía. Lo que se rompe son los mensajes con
+varias restricciones a la vez.
+
+**2. LA ATADURA ANDA EN LO SIMPLE.** El modelo pidio las herramientas correctas
+**20 de 20**. Culpa `atadura` 0, culpa `codigo` 0. O sea que la atadura no esta
+rota en general: se rompe cuando el mensaje trae seis items, tres destinos, un
+criterio no binario y un reparto de pago juntos.
+
+**LO QUE ESTO LE CONTESTA A LA HIPOTESIS DE "HAY DEMASIADA INGENIERIA".** En el
+camino comun la maquinaria NO estorba: 2,4 llamadas y 3,2 segundos. Pero la
+otra mitad de la intuicion de Martin queda en pie: **toda la complejidad se
+paga en la pregunta dificil y no compra nada en la comun.**
+
+**LA HONESTIDAD DE LA MEDICION, sin la cual el 100 no vale.** La vara de las
+comunes es MAS BAJA que la de la dificil a proposito: chequea que la respuesta
+traiga el dato pedido y que no aparezca ninguna de las tres alucinaciones
+conocidas. **NO mide si la redaccion es buena ni si vende.** Un 100 aca
+significa "cero fallas gruesas", no "contesta perfecto". Subir esa vara es
+tarea de la sesion siguiente, y recien ahi el numero va a costar.
+
+**EL UNICO PUNTO FLOJO QUE APARECIO:** hasta las respuestas simples salen en 2 o
+3 mensajes de WhatsApp. Para "tenes mouse inalambrico?" eso es largo.
+
+**LA DECISION QUE HABILITA, y es de Martin, no tecnica:** con el camino comun en
+verde, seguir puliendo la pregunta dificil es una eleccion comercial, no una
+urgencia. El producto contesta bien lo que una tienda recibe todos los dias.
+
+---
+
 **==== 7-AGO-2026 — LA PREGUNTA DE MARTIN, ENTERA. Y UN RENGLON DESCUARTIZADO ====**
 
 **LA CONSIGNA DE LA SESION, textual de Martin:** una sola pregunta, la del
