@@ -745,17 +745,64 @@ def test_el_setenta_treinta_lo_aplica_el_codigo_si_el_modelo_no_lo_hizo(
     assert "no me aclaraste" in HV._bloque_presupuesto(declarada)
 
 
-def test_el_reparto_que_el_modelo_si_aplico_no_se_pisa(firestore_doble):
-    """Si el modelo ya lo puso, el codigo no lo toca: reponer sobre lo que ya
-    esta es la clase de capa que este repo no suma."""
-    args = {"items": [{"product_id": "MOU0023", "cantidad": 1}],
-            "pago": [{"medio": "mercado pago", "porcentaje": 70},
-                     {"medio": "transferencia", "porcentaje": 30}]}
-    llamadas = [{"herramienta": "armar_presupuesto", "pedido": args,
-                 "resultado": H.ejecutar("armar_presupuesto", args, TIENDA)}]
+def test_el_reparto_no_queda_del_lado_que_le_cuesta_mas_al_cliente(
+        firestore_doble):
+    """LA COMPUERTA, medida en vivo el 7-ago. El modelo SI mando el reparto,
+    pero puso el 70 en Mercado Pago, que es el medio sin descuento: $9.140 de
+    mas para el cliente sobre esa cuenta. El turno anterior lo habia puesto al
+    reves. El modelo tira una moneda en silencio y la moneda decide lo que el
+    cliente paga.
+
+    No se le corrige una decision al cliente: el cliente NUNCA dijo que medio
+    lleva cada parte, por eso el reparto es ambiguo. Se reemplaza el volado por
+    una eleccion deterministica, siempre para el lado que le conviene, y se
+    declara en la cuenta."""
+    base = {"items": [{"product_id": "MOU0023", "cantidad": 1}]}
     declarado = {"restricciones": ["presupuesto 70/30"]}
+
+    # al reves: la parte grande en el medio SIN descuento -> se da vuelta
+    al_reves = {**base, "pago": [{"medio": "mercado pago", "porcentaje": 70},
+                                 {"medio": "transferencia", "porcentaje": 30}]}
+    llamadas = [{"herramienta": "armar_presupuesto", "pedido": al_reves,
+                 "resultado": H.ejecutar("armar_presupuesto", al_reves,
+                                         TIENDA)}]
+    fuera = HV._reparto_de_pago_declarado(llamadas, declarado, TIENDA, "t")
+    bloque = HV._bloque_presupuesto(fuera)
+    assert "transferencia (70%)" in bloque, bloque
+    assert "mercado pago (30%)" in bloque
+
+    # ya del lado que conviene: NO se toca. Reponer sobre lo que ya esta bien
+    # es la clase de capa que este repo no suma.
+    bien = {**base, "pago": [{"medio": "transferencia", "porcentaje": 70},
+                             {"medio": "mercado pago", "porcentaje": 30}]}
+    ok = [{"herramienta": "armar_presupuesto", "pedido": bien,
+           "resultado": H.ejecutar("armar_presupuesto", bien, TIENDA)}]
+    assert HV._reparto_de_pago_declarado(ok, declarado, TIENDA, "t") == ok
+
+    # y si el cliente SI dijo que medio lleva cada parte, no se toca nada:
+    # ahi el reparto no es ambiguo y la eleccion es suya.
+    suyo = {"restricciones": ["70% con mercado pago y 30 por transferencia"]}
     assert HV._reparto_de_pago_declarado(
-        llamadas, declarado, TIENDA, "t") == llamadas
+        llamadas, suyo, TIENDA, "t") == llamadas
+
+
+def test_el_setenta_treinta_se_lee_tambien_en_letras():
+    """LA FALLA QUE LE PUSO NOMBRE A LA ETAPA. El 7-ago se arreglo el reparto
+    leyendo '70/30' y se deployo. Corrido en vivo con la redaccion REAL de
+    Martin -'divide el presupuesto en SETENTA TREINTA'- quedo mudo. El arreglo
+    del dia anterior habia funcionado por casualidad: esa vez el modelo
+    transcribio la frase a digitos."""
+    from app.core import pedido as P
+
+    for frase in ("divide el presupuesto en setenta treinta",
+                  "el presupuesto partilo setenta treinta",
+                  "en dos partes, setenta y treinta",
+                  "presupuesto 70/30", "dividilo sesenta cuarenta"):
+        assert P.reparto_ambiguo([frase]), frase
+    # Con el medio nombrado sigue siendo del modelo, no del codigo.
+    assert not P.reparto_ambiguo(["70% por transferencia y 30 con mercado pago"])
+    # Y dos numeros que no son un reparto no lo son.
+    assert not P.reparto_ambiguo(["quiero veinte teclados y treinta mouse"])
 
 
 def test_el_reparto_de_pago_no_se_reclama_como_filtro_de_busqueda():

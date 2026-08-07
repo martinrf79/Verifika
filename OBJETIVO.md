@@ -35,14 +35,12 @@ python3 banco_pruebas/objetivo.py --anotar "qué cambié"
 
 | vara | resultado |
 |---|---|
-| estado final | 5/8 |
+| estado final | 8/8 |
 | comunicación | 6/6 |
-| **NOTA** | **62/100** |
+| **NOTA** | **100/100** |
 
 **Lo que falla hoy:**
-- `reparto_de_pago_aplicado` — 70/30 en el argumento pago, hoy nada
-- `la_parte_grande_por_transferencia` — la parte grande va por el medio CON descuento, que es lo que le conviene al cliente
-- `descuento_en_la_cuenta` — el descuento por transferencia sale escrito
+- nada: la vara de código está en verde.
 
 ## Bifurcaciones abiertas
 

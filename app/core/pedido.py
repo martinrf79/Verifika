@@ -71,6 +71,39 @@ _RE_DOS_PORCENTAJES = re.compile(r"\b(\d{1,3})\s*(?:/|-|y|,| )\s*(\d{1,3})\b")
 _MEDIOS = ("transferencia", "mercado pago", "mercadopago", "mp", "efectivo",
            "tarjeta", "credito", "debito")
 
+# ── LOS NUMEROS EN LETRAS ───────────────────────────────────────────────────
+#
+# LA FALLA, y es la que le puso nombre a esta etapa. El 7-ago se arreglo el
+# reparto de pago leyendo "70/30" y se deployo. Corrido en vivo con la redaccion
+# REAL de Martin -"divide el presupuesto en SETENTA TREINTA"- el mecanismo quedo
+# mudo: no aplico el reparto y no declaro el supuesto. El modelo eligio solo, y
+# eligio el 70 por Mercado Pago, que es el medio SIN descuento: $9.140 en contra
+# del cliente. El arreglo del dia anterior habia funcionado por casualidad,
+# porque esa vez el modelo transcribio la frase a digitos.
+#
+# La leccion no es "faltaba esta tabla": es que una regla que lee CASTELLANO
+# depende de como el modelo transcriba, o sea de una loteria. Por eso la salida
+# de fondo es el campo TIPADO de abajo, y esta tabla es la red para cuando el
+# modelo no lo llena. Solo las decenas: un reparto de pago se dice "setenta
+# treinta", nunca "setenta y tres coma cinco".
+_DECENAS = {"diez": 10, "veinte": 20, "treinta": 30, "cuarenta": 40,
+            "cincuenta": 50, "sesenta": 60, "setenta": 70, "ochenta": 80,
+            "noventa": 90}
+_RE_DOS_EN_LETRAS = re.compile(
+    r"\b(" + "|".join(_DECENAS) + r")\b(?:\s+(?:y|por|,|-))?\s+\b("
+    + "|".join(_DECENAS) + r")\b")
+
+
+def _dos_porcentajes(texto: str):
+    """Los dos porcentajes de un reparto, vengan en digitos o en letras."""
+    m = _RE_DOS_PORCENTAJES.search(texto)
+    if m:
+        return int(m.group(1)), int(m.group(2))
+    m = _RE_DOS_EN_LETRAS.search(texto)
+    if m:
+        return _DECENAS[m.group(1)], _DECENAS[m.group(2)]
+    return None
+
 
 def reparto_ambiguo(restricciones) -> tuple:
     """La restriccion que es UN REPARTO DE PAGO y no dice que medio lleva cada
@@ -88,10 +121,10 @@ def reparto_ambiguo(restricciones) -> tuple:
             # interpretacion del texto, y eso no lo hace el codigo: sigue
             # siendo del modelo, y si no lo aplica el reconciliador lo reclama.
             continue
-        m = _RE_DOS_PORCENTAJES.search(t)
-        if not m:
+        par = _dos_porcentajes(t)
+        if not par:
             continue
-        a, b = int(m.group(1)), int(m.group(2))
+        a, b = par
         if a + b != 100 or min(a, b) <= 0:
             continue
         return (str(r), max(a, b), min(a, b))

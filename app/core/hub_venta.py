@@ -1208,13 +1208,37 @@ def _reparto_de_pago_declarado(llamadas: list, declarado: dict, tienda_id: str,
     if idx is None:
         return llamadas
     args = dict(llamadas[idx].get("pedido") or {})
-    if args.get("pago"):
-        # El modelo ya lo aplico. `_supuesto_de_pago` se encarga de declararlo.
-        return llamadas
     amb = P.reparto_ambiguo((declarado or {}).get("restricciones"))
     if not amb:
         return llamadas
     _, mayor, menor = amb
+    puesto = list(args.get("pago") or [])
+    if puesto:
+        # ── LA COMPUERTA: EL REPARTO NO SE DEJA DEL LADO QUE LE CUESTA MAS ───
+        #
+        # Medido en vivo el 7-ago, y es la unica falla de estado que sobrevivio
+        # a todo lo demas: el modelo SI mando el reparto, pero puso el 70 en
+        # Mercado Pago, que es el medio SIN descuento. Sobre esa cuenta son
+        # $9.140 de mas para el cliente. El turno anterior lo habia puesto al
+        # reves. O sea: el modelo tira una moneda, en silencio, y la moneda
+        # decide lo que el cliente paga.
+        #
+        # NO SE LE ESTA CORRIGIENDO UNA DECISION AL CLIENTE: el cliente NUNCA
+        # dijo que medio lleva cada parte -por eso el reparto es `ambiguo`-. Lo
+        # unico que se reemplaza es el volado del modelo por una eleccion
+        # deterministica y siempre para el mismo lado, el que le conviene al
+        # cliente. Y se declara: `_supuesto_de_pago` corre despues y lo escribe
+        # en la cuenta para que lo de vuelta en una linea.
+        #
+        # Es el patron de "Reason Less, Verify More": una compuerta determinista
+        # que mira la llamada propuesta ANTES de ejecutarla y la corrige con una
+        # razon, en vez de escribirle otra instruccion al prompt.
+        grande = max(puesto, key=lambda x: float(x.get("porcentaje") or 0))
+        if "transferencia" in H._norm(grande.get("medio")):
+            return llamadas                      # ya esta del lado que conviene
+        log.warning("reparto_de_pago_al_reves", trace_id=trace_id,
+                    tenia=[(p.get("medio"), p.get("porcentaje"))
+                           for p in puesto])
     args["pago"] = [{"medio": "transferencia", "porcentaje": mayor},
                     {"medio": "mercado pago", "porcentaje": menor}]
     r = H.ejecutar("armar_presupuesto", args, tienda_id)
