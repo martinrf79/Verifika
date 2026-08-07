@@ -1083,7 +1083,7 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
     idx = next((i for i, l in enumerate(llamadas)
                 if l.get("herramienta") == "armar_presupuesto"
                 and (l.get("resultado") or {}).get("estado") == "ok"), None)
-    if idx is None:
+    if idx is None and not declarado.get("pide_precio"):
         return llamadas
 
     # Los productos que ESTE turno certifico, por categoria y por nombre, en el
@@ -1098,6 +1098,54 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
     if not vistos:
         return llamadas
     por_id = {p["id"]: p for p in vistos}
+
+    # ── LA CUENTA QUE NO EXISTE, y es la falla que mas puntos cuesta ────────
+    #
+    # MEDIDO EL 7-AGO EN VIVO, 15 corridas de la pregunta de Martin en cinco
+    # redacciones: CUATRO terminaron sin ninguna cuenta. El cliente pidio precio
+    # de seis productos y no recibio un solo numero. Son exactamente las
+    # corridas de 10 y 12 puntos sobre 100, o sea el PEOR CASO, que es el que
+    # decide si esto se puede vender.
+    #
+    # La reparacion de abajo existia desde el 6-ago pero exigia que YA hubiera
+    # una cuenta a la cual reponerle el rubro que falto. Cuando el modelo no
+    # llama a `armar_presupuesto` ni una vez, no habia nada que reparar y el
+    # turno salia sin numeros.
+    #
+    # Es el mismo principio que ya se aplico dos veces con resultado: la
+    # compuerta determinista que arregla la LLAMADA en vez de pedirle al modelo
+    # otra ronda. Aca la compuerta no completa una cuenta: la crea, con los
+    # productos que el turno -o la charla- ya certifico, y solo cuando el modelo
+    # mismo declaro que el cliente pidio precio. Si no hay ningun producto
+    # certificado para lo declarado, no inventa nada y el turno sigue sin cuenta,
+    # que es el comportamiento honesto.
+    if idx is None:
+        nuevos = []
+        for it in (declarado.get("items") or []):
+            que = H._norm(it.get("que"))
+            cand = next((p for p in vistos
+                         if P._cubierto(que, H._norm(p.get("categoria")) + " "
+                                        + H._norm(p.get("nombre")))), None)
+            if not cand:
+                continue
+            fila = {"product_id": cand["id"],
+                    "cantidad": max(1, int(it.get("cantidad") or 1))}
+            if it.get("destino"):
+                fila["destino"] = it["destino"]
+            nuevos.append(fila)
+        if not nuevos:
+            return llamadas
+        args = {"items": nuevos}
+        if declarado.get("destinos"):
+            args["destinos"] = list(declarado["destinos"])
+        r = H.ejecutar("armar_presupuesto", args, tienda_id)
+        if (r or {}).get("estado") != "ok":
+            log.warning("cuenta_no_se_pudo_crear", trace_id=trace_id)
+            return llamadas
+        log.info("cuenta_creada_por_codigo", trace_id=trace_id,
+                 items=len(nuevos))
+        return llamadas + [{"herramienta": "armar_presupuesto", "pedido": args,
+                            "resultado": r}]
 
     args = dict(llamadas[idx].get("pedido") or {})
     items = [dict(i) for i in (args.get("items") or [])]
