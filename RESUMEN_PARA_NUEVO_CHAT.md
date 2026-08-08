@@ -109,6 +109,111 @@ piso, que lo mira y no lo deja crecer.
 
 ---
 
+**==== ✅ LA INTERPRETACION ESTA BIEN. CONFIRMADO, 8-AGO, 15 DE 15 ====**
+
+**LA PREGUNTA DE MARTIN, textual: "creo que el interprete o la interpretacion
+de la pregunta ya es correcta por parte del sistema. Quiero que confirmes si eso
+es cierto, ya que asi nos queda menos camino por configurar."**
+
+**ES CIERTO. Medido en vivo el 8-ago con `banco_pruebas/interpretacion.py`,
+cinco redacciones por tres corridas:**
+
+| redaccion | ENTIENDE | CONTESTA |
+|---|---|---|
+| 1 textual de Martin | **100** | 92 |
+| 2 porcentajes en digitos | **100** | 54 |
+| 3 orden invertido | **100** | 79 |
+| 4 criterio dicho distinto | **100** | 84 |
+| 5 coloquial | **100** | 3 |
+| | **100** | **62** |
+
+**EL CRUCE, que es lo que convierte esto en una decision:**
+- Entendio bien -90 o mas- en **15 de 15** corridas. La lista de "que no
+  entiende" quedo **VACIA**.
+- De esas 15, contesto bien -80 o mas- en **7**.
+- **O sea: el 100% de las fallas que quedan estan AGUAS ABAJO de entender.**
+
+**LO QUE ESTO CIERRA, y hay que dejar de discutirlo:** volver al interprete
+tipado NO arregla nada. Ya se habia medido en el duelo del 7-ago -viejo 69,
+hoy 100- y ahora se confirma por el otro lado: el mensaje se entiende perfecto
+en las cinco redacciones y la respuesta se cae igual. **El camino que queda es
+mas corto de lo que parecia: entre entender bien y contestar bien estan las
+herramientas, el bucle y la redaccion, y nada mas.**
+
+**EL CASO QUE LO PRUEBA SOLO:** la redaccion 5, la coloquial. Entiende **100** y
+contesta **3**. Es imposible que eso sea un problema de interpretacion.
+
+---
+
+**==== ⛳ LA RESPUESTA OBJETIVO — ESCRITA POR MARTIN, Y ES LA VARA ====**
+
+> **QUE ES ESTO Y POR QUE MANDA.** El 8-ago Martin mando el ESQUELETO de como
+> quiere que conteste el bot a su pregunta dificil. Hasta hoy el objetivo era
+> "que conteste bien", que cada sesion interpretaba a su manera. **Acá esta
+> escrito, con los datos REALES de la fuente y con el largo medido.** Cualquier
+> sesion que quiera saber si va bien, compara contra esto.
+
+**LO QUE SALE HOY: 1.679 caracteres, 3 mensajes de WhatsApp.**
+**LO QUE TIENE QUE SALIR: 964 caracteres, 2 mensajes.**
+
+```
+¡Hola! Soy el asistente automático de Verifika Tech.
+
+En auriculares, mouse y memorias todo lo que tengo se fabrica en China, así que
+te armo el presupuesto con lo mejor de cada rubro. Donde sí se cumple del todo
+lo que pedís es en almacenamiento externo y procesador.
+
+Presupuesto:
+- 2x Auriculares HyperX Cloud Stinger 2 Negro: $70.000 c/u = $140.000
+- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000
+- 2x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $69.000
+Subtotal: $226.000
+Envio (3 envios): $24.000
+Total: $250.000
+
+Pago dividido:
+- transferencia (70%): $175.000 - 10% descuento = $157.500
+- mercado pago (30%): $75.000
+Total final: $232.500
+
+Dos cosas para cerrar: el teclado que nombrás en el envío a Concordia no estaba
+en el pedido, decime si lo sumo; y confirmame qué va a cada destino, que me
+quedaron 2 de 6 unidades sin asignar. El 70% lo puse por transferencia, que es
+la que tiene descuento: si va al revés, lo doy vuelta.
+```
+
+**DONDE SE VAN LOS 964, y quien escribe cada parte:**
+
+| parte | caracteres | quien la escribe |
+|---|---|---|
+| saludo | 52 | el CODIGO, es obligacion legal, no se toca |
+| criterio | 214 | el MODELO |
+| la cuenta | **403** | el CODIGO, es plata, es intocable |
+| cierre | 289 | hoy son TRES bloques distintos, ~500 |
+
+**LAS TRES DECISIONES QUE ESTA RESPUESTA TOMA, y por que:**
+
+1. **EL ORIGEN SE CONTESTA ACOTADO AL RUBRO, no al catalogo.** "En auriculares,
+   mouse y memorias todo lo que tengo se fabrica en China" es VERDADERO y pasa
+   el candado. "No tenemos productos que no sean fabricados en China" es FALSO
+   -hay 86 de 880 que cumplen-, mata la venta, y es lo que sale hoy.
+2. **SE DICE QUE HAY OTROS ORIGENES, y no es relleno** (pedido de Martin,
+   8-ago). "Donde sí se cumple del todo es en almacenamiento externo y
+   procesador" son 60 caracteres, **no es un invento**: sale de
+   `donde_si_se_cumple`, que recorre los 880. Convierte un "no" en una puerta.
+3. **UN SOLO BLOQUE DE CIERRE, con las tres cosas juntas.** El teclado que no
+   cierra, los destinos sin asignar y el supuesto del pago. Hoy salen como tres
+   bloques separados escritos por tres piezas que no se conocen entre si.
+
+**LO QUE FALTA DECIDIR Y ES DE MARTIN, no tecnico:** la cuenta son 403 de los
+964, o sea el 42%, y es intocable porque es la plata. En el esqueleto original
+el dice "dos auriculares, 2 teclados y dos mouse a X precio", o sea la cuenta
+COLAPSADA en una linea. Si va colapsada el mensaje baja a ~600 caracteres, pero
+el cliente pierde el detalle por renglon. **Esa es una decision de producto y la
+toma Martin.** Hoy corre la version detallada.
+
+---
+
 **==== 8-AGO (cierre) — EL REDACTOR ATADO, MEDIDO Y DESCARTADO. Y LO QUE
 APARECIO DEBAJO: EL MENSAJE PIDE CONFIRMACION TRES VECES ====**
 
