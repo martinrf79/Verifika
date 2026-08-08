@@ -54,3 +54,4 @@ _Cuando aparezcan dos caminos, se anotan acá con su razón y su costo, para que
 | 2026-08-07 | vivo | 47 | paso 2: numeros en letras + compuerta del reparto |
 | 2026-08-07 | vivo | 57 | paso 2 medido con 3 repeticiones por redaccion |
 | 2026-08-07 | vivo | 61 | paso 3: el codigo CREA la cuenta cuando el modelo no la armo |
+| 2026-08-08 | codigo | 100 | El componedor: cuatro reglas lossless que sacan lo repetido, y la voz sin preambulo ni resumen. Vivo 69 y 58 contra un control de 55 corrido el mismo dia; largo promedio 1633 -> 1393. El tope por caracteres se probo y se descarto: tiro la nota a 23. |

@@ -138,6 +138,23 @@ def con_saludo_inicial(respuesta: str, business_name: str) -> str:
         cuerpo = nuevo
     if cuerpo:
         cuerpo = cuerpo[0].upper() + cuerpo[1:]
-    linea = (f"¡Hola! Soy el asistente automático de {business_name}. "
-             "Te ayudo con precios, stock y envíos al instante.")
+    linea = linea_saludo(business_name)
     return linea + ("\n\n" + cuerpo if cuerpo else "")
+
+
+def linea_saludo(business_name: str) -> str:
+    """LA LINEA OBLIGATORIA del primer mensaje, en UNA sola definicion.
+
+    LA OBLIGACION ES DECIR QUE ES UN BOT, NO VENDER EL SERVICIO. La segunda
+    oracion que traia -"Te ayudo con precios, stock y envíos al instante"- eran
+    48 caracteres de folleto en el mensaje donde el cliente todavia no pregunto
+    nada, y encima abajo viene la respuesta que YA le da precios, stock y
+    envios. Martin la marco como lo primero que sobra (7-ago). Lo que no se
+    toca es el aviso de que es automatico: eso es una obligacion.
+
+    ES UNA FUNCION Y NO TEXTO SUELTO ADENTRO porque cualquier cosa que decida
+    sobre el mensaje final tiene que poder preguntar cual es la linea
+    obligatoria, sin volver a escribirla. Escrita en dos lados se despegarian, y
+    esa es la falla que este repo ya pago dos veces -el patron de la poda el
+    31-jul, la regex del reparto el 6-ago-."""
+    return f"¡Hola! Soy el asistente automático de {business_name}."

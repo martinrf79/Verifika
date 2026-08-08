@@ -1949,6 +1949,24 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         log.warning("hub_venta_guardas_error", trace_id=trace_id,
                     error=str(e)[:120])
 
+    # ── 6-bis. EL LARGO, EN UN SOLO LUGAR ───────────────────────────────
+    # Va ULTIMO a proposito. Hasta acá cada pieza pegó lo suyo -la prosa del
+    # modelo, la cuenta, el hallazgo, el cierre, el saludo- y ninguna miró el
+    # total; este es el unico punto del turno donde el mensaje existe entero y
+    # todavia se puede acortar. Adelantarlo aunque sea un paso lo dejaria
+    # midiendo un mensaje que despues crece.
+    try:
+        from app.core.mensaje import componer
+        anterior = next((h.get("content") for h in reversed(history or [])
+                         if h.get("role") == "assistant"), "")
+        texto = componer(texto, anterior=str(anterior or ""),
+                         trace_id=trace_id)
+    except Exception as e:
+        # Un componedor roto NO puede dejar mudo al bot: se manda el mensaje
+        # largo, que es lo que se mandaba ayer.
+        log.warning("hub_venta_componedor_error", trace_id=trace_id,
+                    error=f"{type(e).__name__}: {str(e)[:120]}")
+
     # ── 7. MEMORIA ──────────────────────────────────────────────────────
     history = history + [{"role": "user", "content": raw_message},
                          {"role": "assistant", "content": texto}]

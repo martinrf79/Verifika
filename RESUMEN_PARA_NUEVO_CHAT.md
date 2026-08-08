@@ -28,6 +28,128 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
+**==== 8-AGO — EL MENSAJE SE ACORTA, Y LA NOTA SUBE ====**
+
+**EL PEDIDO ERA ACORTAR SIN PERDER LA NOTA. Se hizo, y se midio de las dos
+formas.** El instrumento vivo se corrio TRES veces: una de CONTROL sobre el
+codigo sin tocar, el mismo dia y con la misma clave, para que la comparacion no
+la ensucie el humor del modelo.
+
+| corrida | nota | largo promedio |
+|---|---|---|
+| CONTROL, codigo de ayer | 55 | 1.633 |
+| con lo de hoy, vuelta 1 | **69** | **1.393** |
+| con lo de hoy, vuelta 2 | **58** | **1.310** |
+
+Y sobre las 10 charlas grabadas, que corren en cada push:
+
+| | antes | despues |
+|---|---|---|
+| largo promedio | 616 | **533** |
+| mensaje mas largo | 2.434 | **1.565** |
+| turnos de 2+ mensajes de WhatsApp | 4 de 34 | **2 de 34** |
+| EL NUMERO | 294 puntos | **296** |
+| llamadas al modelo, total | 119 | **112** |
+
+**LA NOTA NO BAJO: SUBIO en las dos vueltas**, y el turno mas pesado quedo en la
+mitad. En la redaccion 1 -la que Martin mando textual por WhatsApp- paso de 19 a
+88 y 94. Sigue viva la BIMODALIDAD que abrio el chat: la redaccion 5 y a veces
+la 2 se derrumban a 6-14. Eso NO lo toco esta sesion y es lo que sigue.
+
+**LO QUE SE HIZO, y son dos cosas nada mas.**
+
+**1. `app/core/mensaje.py`, EL COMPONEDOR.** El largo no tenia dueño: el modelo
+escribia su prosa, el codigo le pegaba la cuenta, `buscar_productos` el
+hallazgo, el cierre su pregunta y la guarda el saludo. Cada pieza bien sola y
+ninguna mirando el total. Ahora hay UN lugar, al final del turno, con cuatro
+reglas y **todas LOSSLESS**: lo que borra sigue estando en la cuenta, en el
+renglon de al lado o en el mensaje anterior.
+
+  1. Un renglon no se dice dos veces en el mismo mensaje. En el guion 76 la
+     misma frase salia TRES veces, una por rubro.
+  2. Lo que el cliente acaba de leer no se le repite. El turno 2 mandaba el
+     bloque entero del turno 1, textual. `puntaje.py` ya lo contaba como falla
+     hace una semana; lo que faltaba era que alguien lo sacara.
+  3. Un producto no se muestra dos veces: si ya esta en la cuenta con su precio,
+     el renglon del listado sobra. **Salvo que su dato distintivo se vaya con
+     el**, y ahi se queda.
+  3-bis. Con la cuenta sobre la mesa el listado no es la respuesta: queda un
+     ejemplo por rubro. Es lo primero que Martin marco como sobrante. Sin cuenta
+     no se toca nada, porque ahi el listado SI es la respuesta.
+
+**2. LA VOZ, en `base_conocimiento.json`.** Un bloque nuevo, `identidad.largo`:
+sin preambulo, sin resumen al final, y una linea antes y una despues de un
+bloque que ya viene escrito. Con la salvedad escrita al lado, que es lo que la
+hace funcionar: **el dato y la pregunta mandan sobre ser breve.**
+
+**Ademas, dos limpiezas chicas:** el saludo del primer mensaje perdio el folleto
+-"te ayudo con precios, stock y envios"- y quedo solo la obligacion, que es
+avisar que es un bot; y la cola "te muestro los mas baratos" salio del bloque de
+un solo rubro. Estaba arreglada en la version FUSIONADA del mismo bloque desde
+el 6-ago y no en esta: la misma regla escrita en dos lados y despegada, que es
+la falla que este repo ya pago dos veces. Ademas `objetivo.py` la cuenta como
+falla de comunicacion: le contesta con el precio a quien dijo que el precio no
+importa.
+
+**LO QUE SE PROBO Y SE DESCARTO, CON EL NUMERO. Un tope de largo por
+caracteres.** Si el mensaje pasaba los 1.200, se iban bloques enteros de prosa
+"decorativa" -sin plata, sin pregunta, sin renglon-. **Tiro la nota de 55 a 23 y
+a 35.** La causa: "decorativa" era una suposicion. El unico criterio que el
+cliente habia puesto -que las partes no sean chinas- el modelo lo explica en
+PROSA, y esa prosa no lleva plata ni signo de pregunta. El tope se llevaba justo
+la oracion por la que el cliente habia escrito. Queda anotado en el codigo para
+que no se reproponga: **el largo no se arregla borrando prosa del modelo.
+Borrar solo es seguro cuando lo borrado esta demostrablemente REPETIDO.** El
+tope sigue existiendo, pero como MEDIDA y no como actor: es `largo_max` en el
+piso, que lo mira y no lo deja crecer.
+
+**LO QUE SE MIRA EN LOS LOGS:** `mensaje_compuesto` (antes y despues por turno),
+`mensaje_renglon_repetido`, `mensaje_ya_dicho`, `mensaje_producto_duplicado` y
+`mensaje_listado_con_cuenta`.
+
+---
+
+**==== 8-AGO — LO QUE SE FUE A BUSCAR AFUERA, Y QUE SIRVE DE ESO ====**
+
+Pedido de Martin: mirar como resuelven esto los sistemas de afuera -papers,
+repos- y traer lo que le sirva a Verifika para atar el modelo al codigo. Lo
+util, corto, y con el que ya usamos marcado:
+
+- **GENERACION RESTRINGIDA (constrained decoding: Outlines, Guidance, XGrammar,
+  y el survey Awesome-LLM-Constrained-Decoding).** En vez de pedirle al modelo
+  que respete un formato, se le PROHIBE token a token salirse de la gramatica.
+  **Verifika ya lo hace donde importa**: los enums de las herramientas salen de
+  la fuente viva y el modelo no puede pedir una categoria que no vendemos. Lo
+  que NO esta atado es el REDACTOR, que escribe prosa libre. Ahi esta el techo
+  del largo y de la forma, y es el proximo lugar donde mirar.
+- **LA COMPUERTA ANTES DE EJECUTAR, no la correccion despues.** Es lo que la
+  literatura neurosimbolica llama verificacion determinista sobre la propuesta
+  del modelo. **Verifika ya viro para ese lado y le dio resultado**: el
+  reconciliador, `_cuenta_con_lo_declarado`, `_reparto_de_pago_declarado` y la
+  compuerta que no deja el 70% del lado sin descuento. El componedor de hoy es
+  el mismo patron aplicado a la SALIDA, con una condicion mas dura que se
+  aprendio hoy a los golpes: la compuerta de salida solo puede borrar lo que
+  puede PROBAR que esta repetido.
+- **CONCISION MEDIBLE SIN REFERENCIA (ConCISE).** Se mide la redundancia de una
+  respuesta sin tener la respuesta ideal al lado. Es exactamente lo que hacen
+  las reglas 1 y 2 del componedor, en su version determinista: repetido literal.
+  La version difusa -parafraseo- es el paso siguiente y hay que medirla antes de
+  prenderla, porque el parafraseo NO es demostrable.
+- **OPTIMIZAR EL PROMPT CONTRA UNA METRICA (DSPy, MIPROv2, GEPA).** En vez de
+  limar frases a mano, se compila el prompt contra un numero. **Verifika ya
+  tiene el numero** -`objetivo.py`, con las cinco redacciones y el historial en
+  `OBJETIVO.md`-, que es la mitad cara y la que casi nadie tiene. Con eso, el
+  loop "cambio una frase, corro las cinco redacciones, anoto" ya es la version a
+  mano de lo mismo. Lo que falta para automatizarlo es volumen de casos, no
+  framework. **NO se propone meter DSPy hoy**: seria una capa nueva y la regla
+  2-bis manda.
+- **LO QUE NO SIRVE PARA ESTO, dicho para que no se vuelva a evaluar:** los
+  motores simbolicos tipo Z3/SymPy para verificar la salida. Verifika no tiene
+  un problema de demostracion matematica: la cuenta ya la arma el codigo y ya es
+  la unica parte que el modelo no redacta.
+
+---
+
 **==== 7-AGO (ultimo) — ENTIENDE 100. Y LA RESPUESTA ES TODO O NADA ====**
 
 **EL CAMPO TIPADO CERRO EL HUECO. Medido en vivo despues del cambio:**
@@ -60,6 +182,11 @@ localizable.
 
 **LA CONSIGNA COMBINADA PARA EL CHAT NUEVO:** acortar los mensajes **y** cazar
 el derrumbe. Las dos se miden con los instrumentos que ya estan.
+
+> **AL 8-AGO: LA PRIMERA MITAD ESTA HECHA** -ver la seccion de arriba, el
+> mensaje se acorto y la nota subio-. **LA QUE SIGUE ES EL DERRUMBE**, que esta
+> intacto: la redaccion 5 da 13-14 en las tres corridas y la 2 se cae a 6 en una
+> de dos. Ese es el proximo chat.
 
 ---
 

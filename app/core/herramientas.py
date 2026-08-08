@@ -676,13 +676,25 @@ def _bloque_hallazgo(fichas: list, empatados: int, donde: list,
         if dato:
             renglon += f" — {dato}"
         lineas.append(renglon)
+    # EL EMPATE VA EN LA CABECERA, NO EN UN RENGLON APARTE, y la frase que
+    # contradecia al cliente se fue. La version FUSIONADA de este mismo bloque
+    # -`hub_venta._bloques_a_uno`- ya habia tomado las dos decisiones el 6-ago,
+    # y esta, que es la que corre cuando el turno tiene UN solo rubro, se quedo
+    # con la version vieja: la misma regla escrita en dos lados y despegada, que
+    # es la falla que este repo ya pago dos veces.
+    #
+    # Lo que se saca son 60 caracteres por rubro Y una contradiccion: "te
+    # muestro los más baratos de ese grupo" le contesta con el precio a un
+    # cliente que acaba de decir que el precio no es lo que le importa.
+    # `banco_pruebas/objetivo.py` ya lo cuenta como falla de comunicacion, en
+    # `NO_PUEDE_DECIR`. El HECHO -cuantos empatan- se queda: dice cuanto surtido
+    # hay atras y eso es dato, no relleno.
     cabeza = "Lo que más se acerca a lo que pediste"
     if categoria:
         cabeza += f", entre los {categoria}"
-    partes = [cabeza + ":", "\n".join(lineas)]
     if empatados > len(fichas):
-        partes.append(f"Hay {empatados} igual de cerca: ninguno está mejor que "
-                      f"otro, te muestro los más baratos de ese grupo.")
+        cabeza += f" ({empatados} igual de cerca)"
+    partes = [cabeza + ":", "\n".join(lineas)]
     if donde:
         partes.append("Donde sí se cumple del todo lo que pedís es en: "
                       + ", ".join(donde) + ".")

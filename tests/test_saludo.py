@@ -32,8 +32,18 @@ def test_no_se_come_buenas_noticias():
 
 def test_respuesta_vacia_sale_solo_el_saludo():
     out = con_saludo_inicial("", "Tienda Tecno")
-    assert out == ("¡Hola! Soy el asistente automático de Tienda Tecno. "
-                   "Te ayudo con precios, stock y envíos al instante.")
+    assert out == "¡Hola! Soy el asistente automático de Tienda Tecno."
+
+
+def test_el_saludo_dice_que_es_un_bot_y_nada_mas():
+    """El aviso de herramienta automatica es una OBLIGACION y se queda. El
+    folleto que venia pegado -"te ayudo con precios, stock y envios"- no: son 48
+    caracteres de relleno en el mensaje donde el cliente todavia no pregunto
+    nada, y abajo viene la respuesta que ya se los da (Martin, 7-ago)."""
+    out = con_saludo_inicial("El mouse sale $8.500.", "Tienda Tecno")
+    assert "asistente automático" in out
+    assert "precios, stock y envíos al instante" not in out
+    assert len(out.splitlines()[0]) <= 60
 
 
 # ── Honestidad de bot: gatillo determinista sobre "sos un robot?" ────────────
