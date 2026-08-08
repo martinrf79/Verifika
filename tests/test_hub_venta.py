@@ -615,7 +615,12 @@ def test_el_reparto_que_no_cierra_se_dice_en_la_cuenta(firestore_doble):
         "items": [{"product_id": mou["id"], "cantidad": 2}],
         "destinos": ["Cordoba capital", "Posadas"]}, TIENDA)
     bloque = r["bloque"]
-    assert "sin destino" in bloque and "confirmame" in bloque, bloque
+    # El HECHO y UNA sola pedida, en una linea. El texto se acorto el 8-ago
+    # -de 200 caracteres a 130- porque el mensaje ya traia otras dos pedidas de
+    # confirmacion; lo que no puede cambiar es que diga cuantas unidades
+    # quedaron sin asignar y que lo pregunte.
+    assert "sin asignar" in bloque and "2 de 2" in bloque, bloque
+    assert "cada uno" in bloque, bloque
     # y cuando SI cierra, la cuenta muestra el reparto y no la advertencia
     r2 = H.ejecutar("armar_presupuesto", {
         "items": [{"product_id": mou["id"], "cantidad": 1,
@@ -624,7 +629,7 @@ def test_el_reparto_que_no_cierra_se_dice_en_la_cuenta(firestore_doble):
                    "destino": "Posadas"}],
         "destinos": ["Cordoba capital", "Posadas"]}, TIENDA)
     assert "Reparto de los envios" in r2["bloque"]
-    assert "sin destino" not in r2["bloque"]
+    assert "sin asignar" not in r2["bloque"]
 
 
 def test_el_setenta_treinta_sin_medio_declara_el_supuesto(firestore_doble):
@@ -644,7 +649,11 @@ def test_el_setenta_treinta_sin_medio_declara_el_supuesto(firestore_doble):
     declarado = {"restricciones": ["dividir el presupuesto en 70/30"]}
     fuera = _supuesto_de_pago(llamadas, declarado, TIENDA, "t")
     bloque = fuera[0]["resultado"]["bloque"]
-    assert "no me aclaraste" in bloque and "transferencia 70%" in bloque
+    # El supuesto se DECLARA y se puede dar vuelta en una linea. Se acorto el
+    # 8-ago: el bloque de Pago dividido, tres renglones arriba, ya dice el
+    # reparto con los montos, asi que repetirlo dos veces mas era ruido.
+    assert "70%" in bloque and "transferencia" in bloque
+    assert "doy vuelta" in bloque, bloque
 
     # Si el cliente SI dijo el medio, no se declara ningun supuesto: seria
     # ruido, y el ruido ensena a ignorar los avisos.
@@ -742,7 +751,7 @@ def test_el_setenta_treinta_lo_aplica_el_codigo_si_el_modelo_no_lo_hizo(
     assert "descuento" in con_reparto
     # Y el supuesto se declara, para que el cliente lo de vuelta en una linea.
     declarada = HV._supuesto_de_pago(fuera, declarado, TIENDA, "t")
-    assert "no me aclaraste" in HV._bloque_presupuesto(declarada)
+    assert "doy vuelta" in HV._bloque_presupuesto(declarada)
 
 
 def test_el_reparto_no_queda_del_lado_que_le_cuesta_mas_al_cliente(
@@ -1020,3 +1029,58 @@ def test_buscado_y_no_hay_es_una_respuesta_valida_no_un_paso_pendiente():
     # una amnistia, es un estado que hay que haberse ganado.
     assert [f for f in P.reconciliar(pedido, [], "t")["faltantes"]
             if "no lo buscaste" in f]
+
+
+def test_el_muro_cae_en_sus_SEIS_redacciones(firestore_doble):
+    """EL MURO, Y POR QUE SE PERSIGUE LA FORMA Y NO LA FRASE.
+
+    El bot le dijo al cliente, en seis dias y seis redacciones distintas, que no
+    tenemos nada que cumpla su criterio. Es FALSO -el codigo mismo calcula en
+    que rubros SI se cumple, y por eso esta guardia solo actua cuando esa lista
+    trae algo- y le cierra la puerta a alguien que esta comprando.
+
+    La sexta, medida en vivo el 8-ago, PASO el candado: "no tenemos productos
+    que no sean fabricados en China". Es una afirmacion universal escrita al
+    reves y las cinco formas anteriores no la veian. Este test las junta a
+    todas: si aparece una septima, se agrega aca y se arregla la forma, no la
+    frase."""
+    llamadas = [{"herramienta": "buscar_productos", "resultado": {
+        "estado": "ninguno_cumple_del_todo",
+        "productos": [{"nombre": "Mouse Genius", "categoria": "mouse"}],
+        "donde_si_se_cumple": ["almacenamiento externo", "procesador"]}}]
+    for frase in (
+            "Todos los productos que trabajo tienen componentes chinos.",
+            "Ninguno de los articulos que manejo cumple con eso.",
+            "No tenemos ningun producto de otro origen.",
+            "Todo el catalogo se fabrica en China.",
+            "No puedo cumplir con esa restriccion especifica.",
+            "No tenemos productos que no sean fabricados en China."):
+        salida = HV._sin_afirmar_sobre_el_catalogo(frase, llamadas, "t")
+        assert frase not in salida, f"el muro paso: {frase}"
+
+
+def test_el_hecho_acotado_al_rubro_NO_es_muro(firestore_doble):
+    """La contracara, y es la que hace usable a la guardia. "Todos los mouse que
+    tengo se fabrican en China" es VERDADERO, util y acotado al rubro: es
+    exactamente la honestidad que queremos y no se toca. Lo mismo vale para la
+    frase que habla del dato que falta, no del rubro.
+
+    Es la misma leccion que ya se pago dos veces: una guardia escrita para un
+    caso que muerde a su vecino. Un rojo falso ensena a ignorar el tablero."""
+    llamadas = [{"herramienta": "buscar_productos", "resultado": {
+        "productos": [{"nombre": "Mouse Genius", "categoria": "mouse"}],
+        "donde_si_se_cumple": ["procesador"]}}]
+    for frase in ("Todos los mouse que tengo se fabrican en China.",
+                  "No tenemos ese dato en la ficha de los mouse.",
+                  "Puedo cumplir con lo que pediste en otros rubros."):
+        assert frase in HV._sin_afirmar_sobre_el_catalogo(frase, llamadas, "t")
+
+
+def test_sin_el_hecho_calculado_la_guardia_no_toca_nada(firestore_doble):
+    """Si el codigo NO calculo en que rubros se cumple, no tiene con que
+    desmentir y no borra nada. La guardia corta contra un HECHO, no contra una
+    opinion: sin el hecho, se calla."""
+    llamadas = [{"herramienta": "buscar_productos", "resultado": {
+        "productos": [{"nombre": "Mouse Genius", "categoria": "mouse"}]}}]
+    frase = "No tenemos productos que no sean fabricados en China."
+    assert frase in HV._sin_afirmar_sobre_el_catalogo(frase, llamadas, "t")

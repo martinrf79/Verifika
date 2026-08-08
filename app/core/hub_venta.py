@@ -762,8 +762,34 @@ _RE_UNIVERSAL = re.compile(
     r"todos?\s+(?:los|las|mis)|ningun[oa]?\s+de\s+(?:los|las|mis)|"
     r"no\s+(?:tengo|tenemos|hay|manejo|manejamos|trabajo|trabajamos|"
     r"vendo|vendemos)\s+(?:ningun|ninguna|nada|nigun)|"
+    # LA DOBLE NEGACION, y es la SEXTA redaccion del mismo defecto. Medida en
+    # vivo el 8-ago: "no tenemos productos QUE NO SEAN fabricados en China".
+    # Dice exactamente lo mismo que "todos son chinos" y las cinco formas que
+    # el patron ya cubria no la veian, asi que el muro salio al cliente entero.
+    # Es falso -hay 86 de 880 que cumplen- y le cierra la puerta a alguien que
+    # esta comprando.
+    #
+    # No se persigue la redaccion nueva: se agrega la FORMA. "No + verbo de
+    # tener + ... + que no" es una afirmacion universal escrita al reves, y
+    # cualquier redaccion futura de esa idea cae adentro. Las otras dos
+    # condiciones de la guardia no se tocan, asi que sigue haciendo falta que
+    # la frase hable del catalogo entero y NO nombre un rubro que trajimos.
+    r"no\s+(?:tengo|tenemos|hay|manejo|manejamos|trabajo|trabajamos|"
+    r"vendo|vendemos|cuento|contamos)\b[^.!?\n]*\bque\s+no\b|"
     r"(?:todo|nada)\s+(?:el|mi)\s+cat[aá]logo|la\s+totalidad",
     re.IGNORECASE)
+
+# EL MURO SIN SUSTANTIVO, que la condicion del catalogo no puede ver. "No puedo
+# cumplir con esa restriccion" no nombra productos ni catalogo, asi que
+# `_RE_TODO_EL_CATALOGO` no matchea y la frase pasaba. `objetivo.py` ya la
+# cuenta como falla de comunicacion en NO_PUEDE_DECIR -"el muro: mata la venta
+# y ademas es mentira"-, y lo era: se dice justo cuando el codigo YA calculo en
+# que rubros si se cumple. Se juzga sola, sin pedir el sustantivo global, pero
+# con el mismo hecho atras: solo cae si `donde_si_se_cumple` trajo algo.
+_RE_MURO = re.compile(
+    r"no\s+(?:puedo|podemos|logro|logramos|llego|llegamos)\s+"
+    r"(?:a\s+)?(?:cumplir|satisfacer|ofrecerte|darte|conseguirte|"
+    r"cubrir|garantizar)", re.IGNORECASE)
 # El sustantivo GLOBAL. Sin esto la guardia se comeria "todos los auriculares
 # que tengo se fabrican en China", que es un hecho VERDADERO, util y acotado al
 # rubro: exactamente la honestidad que queremos. Solo cae la frase que habla del
@@ -797,10 +823,13 @@ def _sin_afirmar_sobre_el_catalogo(texto: str, llamadas: list,
     fuera = []
     for m in _RE_ORACIONES.finditer(texto or ""):
         frase = m.group(0)
-        if not _RE_UNIVERSAL.search(frase):
-            continue
-        if not _RE_TODO_EL_CATALOGO.search(frase):
-            continue
+        # El muro sin sustantivo entra por su propia puerta: no puede pedirsele
+        # que nombre el catalogo, justamente porque no lo nombra.
+        if not _RE_MURO.search(frase):
+            if not _RE_UNIVERSAL.search(frase):
+                continue
+            if not _RE_TODO_EL_CATALOGO.search(frase):
+                continue
         # Acotada a un rubro que trajimos: es un hecho del rubro, no del
         # catalogo. Se deja, por el mismo motivo que `_RE_ES_SOBRE_EL_DATO`
         # salva la abstencion honesta en la guardia de al lado.
@@ -1346,10 +1375,20 @@ def _supuesto_de_pago(llamadas: list, declarado: dict, tienda_id: str,
              asumido=dicho)
     fuera = list(llamadas)
     res = dict(llamadas[idx]["resultado"])
-    res["bloque"] = (res["bloque"] + "\n\nDijiste " + ambigua +
-                     " y no me aclaraste que medio lleva cada parte: lo arme "
-                     "con " + dicho + ". Si va al reves, decimelo y lo doy "
-                     "vuelta.")
+    # EL SUPUESTO, EN UNA LINEA Y PEGADO A LA POSDATA DE ARRIBA. La version
+    # anterior repetia el reparto DOS veces mas -"Dijiste 70/30" y "lo arme con
+    # transferencia 70%, mercado pago 30%"- cuando el bloque de Pago dividido,
+    # tres renglones mas arriba, ya lo dice con los montos. Tres veces el mismo
+    # numero en el mismo mensaje.
+    #
+    # Lo que la regla cero EXIGE que se diga sigue dicho: que el medio de cada
+    # parte lo asumio el sistema, cual asumio, y que se da vuelta en una linea.
+    # Y va con UN solo salto, no dos, para que quede una posdata sola en vez de
+    # dos bloques seguidos pidiendo lo mismo.
+    mayor = max(partes, key=lambda p: float(p.get("porcentaje") or 0))
+    res["bloque"] = (res["bloque"] + "\n" + f"El {int(float(mayor.get('porcentaje') or 0))}% "
+                     f"lo puse por {mayor.get('medio')}, que es la que tiene "
+                     f"descuento: si va al revés, decime y lo doy vuelta.")
     fuera[idx] = {**llamadas[idx], "resultado": res}
     return fuera
 

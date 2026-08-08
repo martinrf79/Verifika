@@ -1408,11 +1408,20 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
                               f"con {len(destinos)} envios cotizados")
             except Exception:
                 pass
-            reparto = (
-                f"Los {len(destinos)} envios estan cotizados sobre los destinos "
-                f"que me diste. Lo que todavia no tengo cerrado es que va a "
-                f"cada uno: {sin_asignar} de {totales} unidades quedaron sin "
-                f"destino asignado, asi que confirmame eso antes de cerrar.")
+            # DICE EL HECHO Y PIDE UNA COSA, en una linea. La version anterior
+            # eran 200 caracteres para decir lo mismo, y encima el mensaje ya
+            # traia OTRAS DOS pedidas de confirmacion -la del supuesto de pago y
+            # la que escribe el modelo-, o sea 380 caracteres pidiendo tres
+            # veces lo mismo, escritos por tres piezas que no se conocen entre
+            # si. Medido sobre el turno vivo del 8-ago: 1.679 caracteres, tres
+            # mensajes de WhatsApp.
+            #
+            # Lo que NO cambia es lo que importa: que el envio se cobra sobre
+            # destinos reales y que el detalle no esta cerrado sigue dicho, con
+            # el numero exacto de unidades sin asignar.
+            reparto = (f"Los {len(destinos)} envios van sobre los destinos que "
+                       f"me diste, pero me faltan {sin_asignar} de {totales} "
+                       f"unidades sin asignar: decime qué va a cada uno.")
 
     bloque = r.get("presentacion") or ""
     if reparto:

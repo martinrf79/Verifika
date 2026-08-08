@@ -109,6 +109,65 @@ piso, que lo mira y no lo deja crecer.
 
 ---
 
+**==== 8-AGO (ultimo) — EL MURO CAE EN SUS SEIS REDACCIONES, Y EL MENSAJE
+DEJA DE PEDIR CONFIRMACION TRES VECES ====**
+
+**EL ORDEN LO PUSO MARTIN: primero MEJORAR la respuesta, despues BAJARLE el
+largo sacando lo repetido. Se hizo en ese orden y se midio.**
+
+| corrida | nota | largo promedio |
+|---|---|---|
+| control, codigo de ayer | 55 | 1.633 |
+| componedor + voz | 69 y 58 | 1.393 y 1.310 |
+| **muro + posdata unica** | **65** | **1.249** |
+
+**El largo mas bajo medido hasta hoy, con la nota en el techo de la banda
+anterior.** Redaccion 1 -la textual de Martin- dio **96**, la mejor de todas
+las corridas.
+
+**1. EL MURO, prioridad uno, porque es una MENTIRA que cuesta ventas.** El bot
+le venia diciendo al cliente que no tenemos nada que cumpla su criterio. Es
+falso: hay 86 de 880 que cumplen, y el codigo mismo lo calcula en
+`donde_si_se_cumple` -por eso esta guardia solo actua cuando esa lista trae
+algo-. Iban SEIS redacciones distintas del mismo defecto en seis dias, y la
+sexta paso el candado el 8-ago: **"no tenemos productos QUE NO SEAN fabricados
+en China"**, una afirmacion universal escrita al reves.
+
+**NO SE PERSIGUIO LA FRASE, SE AGREGO LA FORMA.** Dos formas nuevas:
+  - `no + verbo de tener + ... + que no`, que cubre la doble negacion y
+    cualquier redaccion futura de esa idea. En la misma corrida cazo una
+    SEPTIMA que nadie habia visto: "no contamos con productos que no tengan
+    componentes de origen chino".
+  - el MURO SIN SUSTANTIVO -"no puedo cumplir con esa restriccion"-, que no
+    nombra el catalogo y por eso ninguna condicion lo veia. Entra por puerta
+    propia, con el mismo hecho atras.
+
+**MEDIDO: el candado cazo 8 muros en la corrida, contra 3 antes.**
+
+**LA CONTRACARA, que es lo que lo hace usable y tiene su test:** "todos los
+mouse que tengo se fabrican en China" es VERDADERO, util y acotado al rubro, y
+NO se toca. Es la misma distincion que Martin escribio solo en su esqueleto
+-"en las categorias mencionadas"-. `tests/test_hub_venta.py` junta las seis
+redacciones en un test: **si aparece una octava, se agrega ahi y se arregla la
+forma, no la frase.**
+
+**2. EL MENSAJE PEDIA CONFIRMACION TRES VECES: 380 caracteres a 130.** El aviso
+del reparto de envios, el supuesto de pago y la pregunta del modelo decian lo
+mismo, escritos por tres piezas que no se conocen entre si. Se acortaron los dos
+que escribe el CODIGO y el supuesto quedo pegado como UNA posdata en vez de un
+bloque aparte. El supuesto ademas repetia el 70/30 dos veces mas, cuando el
+bloque de Pago dividido tres renglones arriba ya lo dice con los montos.
+
+**Lo que no cambio, que es lo que importa:** sigue diciendo cuantas unidades
+quedaron sin destino, sigue declarando que medio asumio el sistema, y sigue
+ofreciendo darlo vuelta en una linea.
+
+**LO QUE SIGUE ABIERTO, sin maquillar.** La BIMODALIDAD no se movio: la
+redaccion 5, la coloquial, da 5 y la 2 se cae a 38. Entiende 100 y contesta 5,
+asi que no es interpretacion. Es el proximo tema y es el unico que queda grande.
+
+---
+
 **==== ✅ LA INTERPRETACION ESTA BIEN. CONFIRMADO, 8-AGO, 15 DE 15 ====**
 
 **LA PREGUNTA DE MARTIN, textual: "creo que el interprete o la interpretacion
