@@ -20,8 +20,8 @@ esta medido y se pierde -el modelo escribio cinco redacciones del mismo defecto
 en un dia-. Acá no se reescribe una sola palabra del modelo: se BORRAN unidades
 enteras que son demostrablemente repetidas, y lo que queda es literal.
 
-LAS CUATRO REGLAS, todas deterministas y todas con la misma forma -un hecho que
-el codigo puede probar-:
+LAS CUATRO REGLAS, todas deterministas, todas LOSSLESS y todas con la misma
+forma -un hecho que el codigo puede probar-:
 
   1. UN RENGLON NO SE DICE DOS VECES EN EL MISMO MENSAJE. Identico es identico.
   2. LO QUE EL CLIENTE ACABA DE LEER NO SE LE REPITE. Contra el mensaje
@@ -33,16 +33,17 @@ el codigo puede probar-:
   3-bis. CON LA CUENTA SOBRE LA MESA, EL LISTADO NO ES LA RESPUESTA. Queda un
      ejemplo por rubro, con el hecho del rubro intacto. Sin cuenta no se toca:
      ahi el listado ES la respuesta.
-  4. EL TOPE. Si el mensaje igual pasa el presupuesto de largo, se van unidades
-     enteras de PROSA decorativa, de la mas larga a la mas corta. Nunca se corta
-     una oracion a la mitad, nunca se toca la cuenta, nunca se toca una pregunta
-     y nunca se toca una linea con plata.
 
 LO QUE ESTE MODULO NO HACE, a proposito. No resume, no reescribe y no decide
 que es importante: las cuatro reglas se apoyan en que el dato SIGUE ESTANDO en
 algun lado -en la cuenta, en el renglon de al lado o en el mensaje anterior-.
 Un componedor que resume seria una capa mas opinando sobre la verdad, que es
 exactamente lo que se saco del sistema el 1-ago.
+
+LOS DOS CAMINOS QUE SE PROBARON Y SE FUERON, cada uno con su numero, estan
+anotados abajo: un TOPE por caracteres sobre el mensaje entero, y el REDACTOR
+ATADO por molde. Los dos parecian la solucion obvia y los dos empeoraron la
+nota. Leer eso antes de reproponerlos.
 
 LA VALVULA, que es la leccion del 24-jul escrita en codigo: si aplicar una
 regla se lleva casi todo, no se aplica nada. Podar hasta dejar el mensaje mudo
@@ -324,6 +325,36 @@ def sin_encabezados_huerfanos(texto: str) -> str:
 # con una tijera al final. El tope sigue existiendo, pero como MEDIDA y no como
 # actor: es `largo_max` en el piso de las charlas grabadas, que lo mira y no lo
 # deja crecer.
+
+
+# ── EL REDACTOR ATADO POR MOLDE, PROBADO Y DESCARTADO (8-ago) ───────────────
+# LA IDEA, que la pidio Martin y es la buena pregunta: si el largo no se puede
+# arreglar borrando, se arregla no generando. El redactor deja de devolver prosa
+# libre y devuelve CUATRO CAMPOS con molde -apertura, cuerpo, pregunta, cierre-,
+# cada uno con su presupuesto de caracteres, y el codigo arma el mensaje en el
+# orden del esqueleto que escribio Martin: apertura, bloque, pregunta, cierre.
+# No ata las PALABRAS -eso es lo que murio el 1-ago con generador_v2-, ata la
+# FORMA.
+#
+# SE IMPLEMENTO ENTERO Y SE MIDIO EN VIVO, tres corridas de las cinco
+# redacciones, contra el mismo control del dia:
+#
+#   control, codigo de ayer .......... nota 55, largo 1.633
+#   componedor + voz (lo que quedo) .. nota 69 y 58, largo 1.393 y 1.310
+#   REDACTOR ATADO POR MOLDE ......... nota 56, largo 1.366
+#
+# EL VEREDICTO: no paga. Empata con el control y pierde contra lo que ya estaba
+# puesto, sin acortar mas. Y cuesta caro: cambia el CONTRATO con el modelo, o
+# sea que obliga a regrabar los diez casetes con la clave paga cada vez, y deja
+# el mensaje con una forma rigida de cuatro partes.
+#
+# LO QUE SI FUNCIONO, y vale anotarlo porque es la mitad rescatable: el molde
+# NO se cayo ni una vez -cero errores de schema en toda la corrida- y el turno
+# SIN bloque quedo garantizado en 417 a 465 caracteres, un solo mensaje de
+# WhatsApp, sin depender de que el modelo obedezca. Si algun dia el problema
+# vuelve a ser el turno simple y no el pesado, ESE es el camino, y esta medido.
+# Lo que no arregla es el turno con cuenta, porque ahi el largo lo pone el
+# bloque que escribe el codigo, no la prosa del modelo.
 
 
 def componer(texto: str, anterior: str = "",

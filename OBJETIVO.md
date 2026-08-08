@@ -55,3 +55,4 @@ _Cuando aparezcan dos caminos, se anotan acá con su razón y su costo, para que
 | 2026-08-07 | vivo | 57 | paso 2 medido con 3 repeticiones por redaccion |
 | 2026-08-07 | vivo | 61 | paso 3: el codigo CREA la cuenta cuando el modelo no la armo |
 | 2026-08-08 | codigo | 100 | El componedor: cuatro reglas lossless que sacan lo repetido, y la voz sin preambulo ni resumen. Vivo 69 y 58 contra un control de 55 corrido el mismo dia; largo promedio 1633 -> 1393. El tope por caracteres se probo y se descarto: tiro la nota a 23. |
+| 2026-08-08 | codigo | 100 | REDACTOR ATADO POR MOLDE: probado y descartado. Vivo 56 contra control 55 y contra 69/58 de lo que ya estaba puesto, sin acortar mas (largo 1.366). El molde no se cayo ni una vez y el turno SIN bloque quedo garantizado en 417-465, pero cuesta regrabar los casetes en cada cambio de contrato. Se revierte. |

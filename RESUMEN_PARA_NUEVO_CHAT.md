@@ -109,6 +109,65 @@ piso, que lo mira y no lo deja crecer.
 
 ---
 
+**==== 8-AGO (cierre) — EL REDACTOR ATADO, MEDIDO Y DESCARTADO. Y LO QUE
+APARECIO DEBAJO: EL MENSAJE PIDE CONFIRMACION TRES VECES ====**
+
+**LA PREGUNTA DE MARTIN, textual: "como atamos a la prosa por codigo, que
+sucederia". Se implemento entero y se midio, no se opino.**
+
+El redactor dejo de devolver prosa libre y devolvio CUATRO CAMPOS con molde
+-apertura, cuerpo, pregunta, cierre-, cada uno con su presupuesto de
+caracteres, y el codigo armo el mensaje en el orden del esqueleto que escribio
+Martin. **No ata las palabras -eso murio el 1-ago-, ata la FORMA.**
+
+| | nota | largo |
+|---|---|---|
+| control, codigo de ayer | 55 | 1.633 |
+| componedor + voz, lo que QUEDO | **69 y 58** | 1.393 y 1.310 |
+| redactor atado por molde | 56 | 1.366 |
+
+**VEREDICTO: no paga y se revirtio.** Empata con el control, pierde contra lo
+que ya estaba puesto y no acorta mas. Ademas cambia el CONTRATO con el modelo,
+o sea que obliga a regrabar los diez casetes con la clave paga cada vez.
+
+**LA MITAD RESCATABLE, y esta medida:** el molde NO se cayo ni una vez -cero
+errores de schema en 15 corridas- y **el turno SIN bloque quedo garantizado en
+417 a 465 caracteres**, un solo mensaje de WhatsApp, sin depender de que el
+modelo obedezca. Si algun dia el problema vuelve a ser el turno SIMPLE, ese es
+el camino y ya esta probado. Lo que no arregla es el turno con cuenta, porque
+ahi el largo lo pone el bloque que escribe el CODIGO, no la prosa del modelo.
+Queda escrito en `app/core/mensaje.py` con su numero.
+
+**LO QUE APARECIO AL LEER LA RESPUESTA REAL, y es lo que sigue.** Se saco un
+turno vivo de la pregunta de Martin con el codigo que quedo: **1.679 caracteres,
+3 mensajes de WhatsApp**. Contra los ~450 de su esqueleto. El exceso NO es
+prosa suelta, son tres cosas concretas:
+
+1. **EL MENSAJE PIDE CONFIRMACION TRES VECES, en tres bloques distintos.** La
+   pregunta del modelo -"¿me confirmas que productos van a cada lugar?"-, el
+   aviso del reparto -"2 de 6 unidades quedaron sin destino, confirmame eso"- y
+   el supuesto de pago -"si va al reves, decimelo"-. **Son ~500 caracteres
+   diciendo tres veces lo mismo, escritos por TRES piezas que no se conocen
+   entre si.** Es exactamente el mismo patron que el largo: nadie es dueño del
+   total. Y es demostrable, o sea que se puede cortar como se corto lo repetido.
+2. **El listado sigue arriba de la cuenta**, que es lo primero que Martin marco
+   como sobrante. La regla 3-bis lo bajo a un renglon por rubro, pero encima los
+   productos del listado son OTROS que los de la cuenta -Blanco contra Negro,
+   HyperX contra Genius- asi que confunde en vez de ayudar.
+3. **EL MURO VOLVIO CON OTRA REDACCION, y esta vez pasa el candado.** Salio "no
+   tenemos productos que no sean fabricados en China", que es FALSO -hay 86 de
+   880 que cumplen- y ademas mata la venta. `_sin_afirmar_sobre_el_catalogo`
+   busca "todos los", "ninguno de los" o "no tengo ningun"; esta forma -"no
+   tenemos productos QUE NO SEAN"- no matchea. Es la sexta redaccion del mismo
+   defecto. **Perseguir la redaccion pierde: hay que cortarlo contra el hecho,
+   que el codigo ya calcula en `donde_si_se_cumple`.**
+
+**LO QUE HARIA LA SESION QUE SIGUE, en ese orden:** primero el punto 3, que es
+una alucinacion que cuesta ventas; despues el punto 1, que son 500 caracteres
+demostrablemente repetidos; y el 2 al final.
+
+---
+
 **==== 8-AGO — LO QUE SE FUE A BUSCAR AFUERA, Y QUE SIRVE DE ESO ====**
 
 Pedido de Martin: mirar como resuelven esto los sistemas de afuera -papers,
