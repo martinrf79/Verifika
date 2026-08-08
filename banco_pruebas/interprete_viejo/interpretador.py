@@ -1,0 +1,1387 @@
+"""
+INTERPRETADOR - capa de interpretacion previa al Solver.
+
+Recibe el mensaje del cliente mas contexto enriquecido y devuelve JSON
+estructurado para que el orchestrator decida el flujo.
+
+v3: rediseño profundo. Sin listas hardcodeadas. Prompt minimalista
+    que confia en el LLM con contexto enriquecido de siete turnos.
+    Tres capas de filtro al final: validacion de schema, filtro de
+    negacion, downgrade por baja confianza sin candidatos.
+
+v4: prompt liberado. Intencion aporta_dato agregada para respuestas
+    con datos concretos. Campo respondiendo_a agregado para detectar
+    respuestas a preguntas previas del bot.
+"""
+import os
+import json
+import re
+import asyncio
+from openai import OpenAI
+from app.config import get_settings
+from app.logger import get_logger
+
+log = get_logger(__name__)
+settings = get_settings()
+
+UMBRAL_CONFIANZA_MEDIA = float(os.getenv("INTERPRETER_UMBRAL_MEDIA", "0.6"))
+
+INTENCIONES_VALIDAS = {"saludo", "exploracion", "pregunta_especifica", "aporta_dato",
+                        "decision_compra", "otra"}
+
+# Estados validos del embudo. Lista (no set) para que el enum del schema estricto
+# sea estable entre llamadas.
+ESTADOS_VALIDOS = ["saludo", "explorando", "esperando_confirmacion",
+                   "esperando_datos", "derivar_humano", "posventa"]
+
+# Estados que indican una charla YA en curso. Si la conversacion llego a
+# cualquiera de estos, no puede "volver" a saludo sin perder el hilo.
+ESTADOS_EN_CURSO = {"explorando", "esperando_confirmacion", "esperando_datos",
+                    "derivar_humano", "posventa"}
+
+
+def corregir_estado_regresion(estado_nuevo: str | None,
+                              estado_anterior: str | None,
+                              hay_historial: bool) -> str | None:
+    """Una conversacion en curso NO puede volver a 'saludo'.
+
+    El estado lo fija el LLM-interpretador y el orchestrator se lo inyecta al
+    solver, cuya Regla #0 dice 'saludo, devolve el saludo y ofrece ayuda corta'.
+    Si el interpretador lee mal un turno de mitad de charla como saludo (caso
+    real: el cliente putea por el envio en el turno 11 y el bot contesta
+    '¡Hola! Soy vendedor...'), el solver se reinicia y pierde el hilo. Esto es
+    la falla (e), contradiccion entre turnos.
+
+    Regla determinista: si ya hubo historial y el interpretador devuelve saludo,
+    degradamos al estado anterior si era en curso, o a 'explorando'. El saludo
+    solo es valido al arranque, cuando todavia no hay turnos previos.
+    """
+    if estado_nuevo == "saludo" and hay_historial:
+        if estado_anterior in ESTADOS_EN_CURSO:
+            return estado_anterior
+        return "explorando"
+    return estado_nuevo
+
+
+_client = None
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        if settings.INTERPRETER_PROVIDER == "groq":
+            from groq import Groq
+            _client = Groq(api_key=settings.GROQ_API_KEY,
+                           timeout=settings.LLM_TIMEOUT_SECONDS)
+        elif settings.INTERPRETER_PROVIDER == "openai":
+            _client = OpenAI(
+                api_key=settings.OPENAI_API_KEY,
+                timeout=settings.LLM_TIMEOUT_SECONDS,
+            )
+        elif settings.INTERPRETER_PROVIDER == "anthropic":
+            _client = OpenAI(
+                api_key=settings.ANTHROPIC_API_KEY,
+                base_url=settings.ANTHROPIC_BASE_URL,
+                timeout=settings.LLM_TIMEOUT_SECONDS,
+            )
+        elif settings.INTERPRETER_PROVIDER == "nemotron":
+            # Nemotron via NIM (OpenAI-compatible). Permite correr todo el
+            # pipeline sobre la key gratis de NVIDIA, sin DeepSeek.
+            _client = OpenAI(
+                api_key=settings.NEMOTRON_API_KEY,
+                base_url=settings.NEMOTRON_BASE_URL,
+                timeout=settings.LLM_TIMEOUT_SECONDS,
+            )
+        elif settings.INTERPRETER_PROVIDER == "kimi":
+            # Kimi (Moonshot) via NIM de NVIDIA (OpenAI-compatible). Gratis y
+            # obediente. Misma key nvapi- que Nemotron si no hay KIMI_API_KEY propia.
+            _client = OpenAI(
+                api_key=settings.KIMI_API_KEY,
+                base_url=settings.KIMI_BASE_URL,
+                timeout=settings.LLM_TIMEOUT_SECONDS,
+            )
+        elif settings.INTERPRETER_PROVIDER == "openrouter":
+            _client = OpenAI(
+                api_key=settings.OPENROUTER_API_KEY,
+                base_url=settings.OPENROUTER_BASE_URL,
+                timeout=settings.LLM_TIMEOUT_SECONDS,
+            )
+        elif settings.INTERPRETER_PROVIDER == "gemini":
+            # Gemini directo via endpoint compatible OpenAI. SIN esta rama el
+            # provider gemini caia al else (DeepSeek): el interpretador de los
+            # -AllGemini corria en secreto sobre DeepSeek (visto 10-jun).
+            _client = OpenAI(
+                api_key=settings.GEMINI_API_KEY,
+                base_url=settings.GEMINI_BASE_URL,
+                timeout=settings.LLM_TIMEOUT_SECONDS,
+            )
+        else:
+            # DeepSeek V4 soporta STRICT (enum a nivel schema) en el endpoint
+            # beta. Se usa /beta por default para que el response_format
+            # json_schema estricto del interprete ate igual que en Gemini; si el
+            # provider lo rechaza, el except de _llamar_llm cae al parseo + retry.
+            _client = OpenAI(
+                api_key=settings.DEEPSEEK_API_KEY,
+                base_url=os.getenv("DEEPSEEK_BASE_URL",
+                                   "https://api.deepseek.com/beta"),
+                timeout=settings.LLM_TIMEOUT_SECONDS,
+            )
+    return _client
+
+
+RE_PRODUCTO_PRECIO = re.compile(
+    r"\*\*([^*]+)\*\*[^$]*?\$\s*([\d.]+)"
+)
+
+
+def extraer_productos_mostrados(history: list[dict],
+                                  ultimos_n_turnos: int = 4) -> list[dict]:
+    """Extrae productos mencionados en los ultimos turnos del bot."""
+    productos = []
+    turnos_bot = [h for h in history[-ultimos_n_turnos*2:]
+                  if h.get("role") == "assistant"]
+
+    for turno in turnos_bot[-ultimos_n_turnos:]:
+        contenido = turno.get("content", "")
+        matches = RE_PRODUCTO_PRECIO.findall(contenido)
+        for nombre, precio_str in matches:
+            try:
+                precio = int(precio_str.replace(".", "").replace(",", ""))
+                productos.append({
+                    "nombre": nombre.strip(),
+                    "precio": precio,
+                })
+            except ValueError:
+                continue
+
+    vistos = set()
+    productos_unicos = []
+    for p in productos:
+        clave = p["nombre"]
+        if clave not in vistos:
+            vistos.add(clave)
+            productos_unicos.append(p)
+
+    return productos_unicos
+
+
+def truncar_listado(texto: str, max_chars: int = 250) -> str:
+    """Trunca listados largos del bot conservando inicio mas indicacion."""
+    if len(texto) <= max_chars:
+        return texto
+    return texto[:max_chars] + "... (listado truncado)"
+
+
+def construir_contexto_conversacional(history: list[dict],
+                                       n_turnos_completos: int = 7,
+                                       resumen: str = "") -> str:
+    """Arma contexto conversacional con turnos recientes completos
+    y resumen de turnos viejos. Trunca listados largos del bot."""
+    if not history and not (resumen or "").strip():
+        return "Sin historial previo"
+
+    n_mensajes = n_turnos_completos * 2
+    recientes = history[-n_mensajes:]
+    viejos = history[:-n_mensajes] if len(history) > n_mensajes else []
+
+    lineas = []
+
+    # MEMORIA LARGA: el resumen acumulado de la charla vieja (turnos que ya no
+    # estan en el historial vivo) entra primero, asi el interprete puede leer
+    # una referencia a algo dicho muchos turnos atras (C2-C4).
+    if (resumen or "").strip():
+        lineas.append("LO HABLADO ANTES EN ESTA CHARLA (resumen acumulado de "
+                      "turnos viejos):\n" + resumen.strip())
+    if viejos:
+        lineas.append(f"Resumen de {len(viejos)} mensajes previos: "
+                       "conversacion en curso, ver mensajes recientes para contexto actual.")
+
+    for msg in recientes:
+        rol = msg.get("role", "")
+        contenido = msg.get("content", "")
+        if rol == "assistant":
+            contenido = truncar_listado(contenido)
+            lineas.append(f"Bot: {contenido}")
+        elif rol == "user":
+            lineas.append(f"Cliente: {contenido}")
+
+    return "\n".join(lineas)
+
+
+
+
+
+
+# El modelo puede declarar que lo que el cliente nombro NO esta en la lista
+# corta que se le dio. Es la valvula de escape de las dos etapas: sin ella, un
+# candidato que la recuperacion no pesco se convierte en un "no lo tenemos"
+# falso, que es justo el error de la charla del 28-jul.
+FUERA_DE_LISTA = "no_esta_en_la_lista"
+
+
+def candidatos_modelo(mensaje: str, modelos: list[str] | None,
+                      contexto: str = "", tope: int = 30,
+                      tienda_id: str | None = None) -> list[str]:
+    """Lista CORTA de modelos del catalogo para que el interprete elija.
+
+    Etapa 1 de las dos etapas: recuperar candidatos por texto. Es a proposito
+    GENEROSA -alcanza con que roce una palabra significativa, y tolera el typo
+    por parecido- porque el que decide es el modelo en la etapa 2, no esto. Un
+    enum con los 482 modelos son 11.000 caracteres por campo y el limite
+    documentado de structured outputs es 15.000 en TODO el schema: no entra, y
+    ademas degrada. Con la lista corta el enum baja a menos de mil.
+
+    El COMO vive en `app/core/recall_modelos.py`: recall sobre la ficha entera
+    (nombre, tags, uso, material, descripcion), con peso por capa y descuento
+    por frecuencia. Antes se comparaba solo contra la etiqueta 'Marca Modelo',
+    y todo lo que el cliente decia con otras palabras quedaba afuera del enum.
+    """
+    from banco_pruebas.interprete_viejo.recall_modelos import candidatos as _recall
+    return _recall(mensaje, modelos, contexto=contexto, tope=tope,
+                   tienda_id=tienda_id)
+
+
+def _texto_candidatos(candidatos: list[str]) -> str:
+    if not candidatos:
+        return ("(ninguno del catalogo roza lo que escribio; si igual nombra un "
+                "producto, poné " + FUERA_DE_LISTA + ")")
+    return "\n".join(f"- {m}" for m in candidatos)
+
+
+def construir_prompt_interpretador(mensaje: str,
+                                     contexto_conversacional: str,
+                                     productos_mostrados: list[dict],
+                                     categorias: list[str] | None = None,
+                                     modelos: list[str] | None = None,
+                                     atributos: dict | None = None) -> str:
+    """Prompt liberado v4. Da al LLM contexto y libertad para entender.
+    Verifika valida abajo, asi que el Interpretador puede interpretar."""
+
+    productos_str = "\n".join([
+        f"- {p['nombre']} a ${p['precio']:,}"
+        for p in productos_mostrados
+    ]) or "Sin productos mostrados aun"
+
+    cats_str = ", ".join(c for c in (categorias or []) if c) or "sin categorias"
+
+    # LOS MODELOS DEL CATALOGO que rozan el mensaje. El enum del schema lleva
+    # los 482 completos -el modelo no puede emitir uno que no exista-, pero
+    # meterlos todos tambien en el prompt son seis mil tokens por turno para
+    # nada: aca van solo los candidatos que comparten alguna palabra con lo que
+    # escribio el cliente, que es lo que necesita mirar de cerca. No es un
+    # pre-filtro que decide: si el candidato correcto no esta en esta lista, el
+    # enum se lo sigue permitiendo.
+    modelos_str = _texto_candidatos(
+        modelos if isinstance(modelos, list) else [])
+
+    # EL ENUM DEL CONTACTOR: el VOCABULARIO del indice, o sea la lista cerrada de
+    # nombres que la fuente sabe contestar. El modelo DECLARA cual/cuales toca el
+    # mensaje; el codigo engancha cada uno con su celda. No puede inventar uno.
+    from app.core.indice import vocabulario
+    _conoc = vocabulario()
+    # El mismo corte que en el schema: venta de un lado, politica del otro. Las
+    # dos listas del prompt tienen que ser las MISMAS que los dos enums, o el
+    # modelo lee una lista y el schema le ata otra.
+    try:
+        from app.core.guia_venta_prosa import categorias_conocimiento
+        _venta_p = list(categorias_conocimiento())
+    except Exception:
+        _venta_p = []
+    conoc_venta_str = ", ".join(c for c in _conoc if c in _venta_p) or "sin categorias"
+    conoc_politica_str = ", ".join(c for c in _conoc if c not in _venta_p) or "sin temas"
+
+    # el vocabulario de specs de la fuente, con su etiqueta, para que el modelo
+    # TRADUZCA la pregunta del cliente en vez de que el codigo matchee palabras.
+    try:
+        from app.core.fuente_producto import specs_config
+        specs_str = "; ".join(f"{s['id']} = {s['etiqueta']}"
+                              for s in specs_config()) or "sin specs"
+    except Exception:
+        specs_str = "sin specs"
+
+    # el vocabulario de EQUIPOS del cliente, la otra mitad de una pregunta de
+    # compatibilidad: sin saber contra QUE se pregunta, la tabla no puede dar
+    # veredicto. El modelo traduce "la compu del laburo, que es una Mac" al id;
+    # una lista de alias no llega a eso.
+    try:
+        from app.core.compatibilidad import vocabulario as _vocab_compat
+        _plats = _vocab_compat()["plataformas"]
+        plataformas_str = "; ".join(f"{k} = {v['etiqueta']}"
+                                    for k, v in _plats.items()) or "sin plataformas"
+    except Exception:
+        plataformas_str = "sin plataformas"
+
+    # los ATRIBUTOS ordenables, derivados del catalogo. Es lo que le permite al
+    # modelo traducir cualquier superlativo -"la mas grande", "la mas liviana",
+    # "la de mas garantia"- a una operacion que el codigo sabe ejecutar.
+    atributos_str = "; ".join(f"{k} = {v}" for k, v in
+                              sorted((atributos or {}).items())) or "sin atributos"
+
+    prompt = f"""Sos el INTÉRPRETE de un bot de ventas argentino. Tu única tarea es ENTENDER qué quiere el cliente en el contexto de la charla y devolver datos estructurados. No le escribís al cliente y no inventás nada: abajo tuyo hay herramientas que traen el dato real del catálogo y una verificación que controla productos y números. Por eso podés interpretar con criterio y confianza, ese sistema te respalda.
+
+Trabajás por PRINCIPIOS, no por recetas:
+- El eje es el ÚLTIMO mensaje del cliente, leído contra lo que el bot dijo en su turno anterior. El historial es contexto, no protagonista. Leé lo que pasa AHORA, no predigas a futuro.
+- El cliente dice lo mismo de mil formas. Normalizá al campo que corresponde, no matchees palabras sueltas.
+- Ante DUDA REAL de cuál de dos productos quiso decir, no elijas ni promedies: bajá la confianza y poné los candidatos. Preguntar es mejor que adivinar.
+- Si el cliente pregunta por VARIOS productos a la vez, eso NO es duda: es una consulta múltiple. Listá cada producto con lo que pide de él.
+- El TONO manda sobre las palabras. Un "sí", "claro", "seguro", "obvio", "dale" IRÓNICO o sarcástico, o una promesa imposible tipo "seguro que mañana lo tengo gratis", NO es una decisión ni una afirmación real: es lo contrario.
+
+CONTEXTO DE LA CHARLA (turnos recientes + memoria de lo hablado antes):
+{contexto_conversacional}
+
+PRODUCTOS QUE EL BOT YA MOSTRÓ AL CLIENTE:
+{productos_str}
+
+MODELOS DEL CATÁLOGO QUE SE PARECEN A LO QUE ESCRIBIÓ (si nombra uno de acá, EXISTE aunque no se le haya mostrado todavía. Si nombra un producto que NO está en esta lista, no digas que no lo tenemos: poné no_esta_en_la_lista y el sistema lo busca en el catálogo completo):
+{modelos_str}
+
+MENSAJE ACTUAL DEL CLIENTE:
+{mensaje}
+
+Devolvé SOLO este JSON, sin texto alrededor. Antes de responder, validá que cumpla el schema.
+
+{{
+  "respondiendo_a": "si el bot preguntó o pidió algo en su último turno y el cliente responde a eso, describilo corto; si no, null",
+  "productos_consultados": [{{"producto": "nombre EXACTO de un producto mostrado", "consulta": "precio|ficha|stock|opinion|comparacion|envio|otra"}}],
+  "producto_resuelto": "nombre EXACTO del ÚNICO producto foco de una decisión o pedido, o null",
+  "candidatos": ["opción A", "opción B"],
+  "ofrecer_opciones": "null, o lista de dos opciones [A, B] cuando hay dos caminos y no se puede elegir uno con certeza",
+  "intencion": "saludo|exploracion|pregunta_especifica|aporta_dato|decision_compra|otra",
+  "estado_conversacion": "saludo|explorando|esperando_confirmacion|esperando_datos|derivar_humano|posventa",
+  "criterio": "mas_barato|intermedio|null",
+  "orden": "null, o {{\\"direccion\\": \\"max|min\\", \\"atributo\\": \\"uno EXACTO de la lista de atributos de abajo\\"}} cuando el cliente pide un SUPERLATIVO: la que MAS capacidad, la MAS liviana, la de MAS hercios, la MAS barata, la de MAS garantia. Traducí la frase al atributo, no importa cómo la escriba",
+  "pedido": [{{"producto": "nombre EXACTO de un producto mostrado", "cantidad": número, "destino": "localidad tal cual la dijo, o null"}}],
+  "solicitud_nueva": [{{"categoria": "categoria EXACTA de la lista de abajo", "cantidad": número o null, "criterio": "mas_barato|intermedio|null", "destino": "localidad tal cual la dijo, o null"}}],
+  "categorias": ["una o varias categorias EXACTAS de la lista de categorias de la charla, las que toque el mensaje; vacía si ninguna"],
+  "temas_politica": ["los temas EXACTOS de la lista de politicas de la tienda que toque el mensaje; vacía si ninguno"],
+  "specs_preguntadas": ["los ids EXACTOS de las specs por las que el cliente pregunta, de la lista de abajo; vacía si no pregunta ninguna"],
+  "plataformas_cliente": ["los ids EXACTOS de los equipos que el cliente YA TIENE y con los que quiere usar el producto, de la lista de abajo; vacía si no nombra ninguno"],
+  "tope_presupuesto": número entero en pesos o null,
+  "exclusiones": [{{"tipo": "origen|marca", "valor": "texto"}}],
+  "uso_previsto": "una o dos palabras o null",
+  "pago_reparto": [{{"medio": "transferencia|mercado pago", "porcentaje": número}}],
+  "confianza": 0.0 a 1.0
+}}
+
+CÓMO LLENARLO, por principios.
+
+productos_consultados. Todos los productos MOSTRADOS por los que el cliente pregunta en este mensaje, cada uno con qué quiere saber. Uno solo si pregunta por uno; dos o más si nombra varios. Ejemplo: "precio del Logitech y decime si el Genius anda bien" son dos ítems, Logitech consulta precio y Genius consulta opinion. Vacía si no pregunta por ningún producto puntual.
+
+producto_resuelto. El ÚNICO producto foco de una decisión o pedido, para que total y cierre operen sobre uno certificado. Si pregunta por varios sin decidir, va null y los productos van en productos_consultados. Referencias comparativas u ordinales, el más barato, el otro, el segundo, se resuelven comparando precio y orden de lo mostrado, no adivinando.
+
+candidatos. SOLO para DUDA real, no se sabe a cuál de dos se refiere. No lo uses para una consulta múltiple legítima, eso va en productos_consultados.
+
+ofrecer_opciones. Solo cuando hay dos caminos posibles y no se puede elegir uno con certeza, poné los dos como A y B con su detalle; si el caso es claro, null. Suele ir con estado esperando_confirmacion.
+
+intencion. saludo, inicia o saluda. exploracion, quiere ver qué hay sin algo concreto. pregunta_especifica, pregunta puntual, producto, precio, envío, pago, garantía, stock, o interés tipo me gusta, me sirve, son evaluación, no decisión. aporta_dato, da un dato para avanzar, dirección, CP, teléfono, mail, pago, cantidad; si el bot lo pidió en su turno anterior, casi seguro es esta. decision_compra, decisión INEQUÍVOCA y afirmativa, o un sí o dale a una propuesta de cierre; PROHIBIDO si hay negación, postergación o duda, aunque diga comprar o quiero. otra, rechazos o fuera de tema.
+
+estado_conversacion. saludo, recién llega. explorando, pregunta o compara sin decidirse. esperando_confirmacion, el bot ofreció algo concreto y el cliente no dijo sí ni no. esperando_datos, ya confirmó avanzar y faltan sus datos. derivar_humano, dio todos los datos o pidió una persona. posventa, algo posterior a la compra o consulta suelta. Una charla en curso NO vuelve a saludo.
+
+criterio. mas_barato cuando pide lo más económico en cualquier forma, lo más barato, lo más eco, lo más conveniente, lo de menor precio. intermedio cuando pide precio medio o RECHAZA lo más barato, algo intermedio, gama media, ni el más barato ni el más caro. null si no hay criterio. Cubrí modismos argentinos, no solo la palabra exacta.
+
+pedido. SOLO cuando arma un pedido concreto, productos mostrados con cantidad, nombre exacto del mostrado, sin inventar cantidades. Si reparte entre destinos, cada renglón con su destino y las cantidades desglosadas; con un solo destino o sin decirlo, destino null. Un destino tiene que aparecer en el mensaje o en la memoria de la charla. REGLA DURA del destino: cada renglón lleva UNA sola localidad, nunca dos juntas. Si un set va a una ciudad y otro a otra, hacé un renglón por ciudad con sus cantidades; jamás pongas "Mendoza y Neuquén" en el mismo destino.
+
+solicitud_nueva. Cuando el cliente pide una CATEGORÍA de producto que TODAVÍA no se mostró en la charla, por ejemplo pide "2 teclados baratos" y todavía no se mostró ningún teclado. Va la categoría EXACTA de esta lista: {cats_str}. Más la cantidad si la dice y el criterio si lo expresa. Es para lo que hay que traer y mostrar recién ahora, tanto un producto AGREGADO como un CAMBIO a otra categoría. NO uses este campo para algo que ya se mostró, eso va en pedido o en productos_consultados con su nombre exacto. Si no pide ninguna categoría nueva, lista vacía. Si REPARTE el pedido entre lugares, poné el destino en CADA renglón y abrí un renglón por lugar: "1 memoria y un auricular a Berrotarán, 1 auricular y 1 mouse a Concordia, el resto a Posadas" son cinco renglones, y "el resto" lo resolvés vos por resta contra el total que pidió. El renglón sin destino es el que no repartió.
+
+categorias. La o las categorías de la charla que toca el mensaje, tomadas EXACTAS de esta lista cerrada: {conoc_venta_str}. Un mensaje puede tocar VARIAS a la vez, por ejemplo pregunta el precio y además objeta que es caro y pide envío: van las tres. Es lo que le dice al sistema desde qué criterio o política responder cada parte. Si el mensaje no encaja en NINGUNA de la lista, dejala vacía, no fuerces una; el sistema responde honesto que no tiene ese dato sin cortar la venta. Elegí por lo que el cliente QUIERE, no por palabras sueltas.
+
+temas_politica. La otra mitad de la misma lista: los temas de POLÍTICA de la tienda, tomados EXACTOS de esta lista cerrada: {conoc_politica_str}. Van acá y no en categorias, pero valen igual: si el cliente pregunta por cuotas, envíos, devoluciones o garantía, el tema va en este campo. Los dos campos se completan juntos cuando el mensaje toca las dos cosas, por ejemplo pregunta el precio de un teclado y además si tiene cuotas. Vacía si el mensaje no toca ninguna política.
+
+preferencias. tope_presupuesto solo si dice una CIFRA. exclusiones si descarta por origen o marca, sin partes chinas, nada de Redragon. uso_previsto si dice para qué lo quiere. Llená lo que el mensaje diga, el resto null o vacío.
+
+pago_reparto. Cuando el cliente dice CÓMO reparte el pago entre los dos medios, aunque lo escriba mal o abreviado: "un 20% con mercado y el resto transferencis" son 20 mercado pago y 80 transferencia; "mitad y mitad" son 50 y 50; "70 por transferencia" son 70 transferencia y 30 mercado pago. Los porcentajes tienen que sumar 100. Si el mensaje no reparte el pago, lista vacía.
+
+confianza. alta 0.85 a 1.0 lectura inequívoca; media 0.6 a 0.85 parcial; baja menor a 0.6 ambigüedad real que pide preguntar. Si dudás entre dos, bajá la confianza y poné candidatos.
+
+specs_preguntadas. TRADUCÍ lo que el cliente pregunta al id de la spec, no matchees su palabra. Esta es tu tarea más importante después de entender la intención: el código de abajo NO razona, sólo sabe ejecutar sobre estos ids, y el dato real ya está cargado esperando. Si el cliente pregunta algo que ninguno de estos ids cubre, dejá la lista vacía; no fuerces uno parecido.
+Ids disponibles con lo que significan: {specs_str}
+
+Ejemplos de traducción, es criterio y no lista cerrada. "resiste que se me caiga el café encima" y "son resistentes al agua" y "lo puedo meter en la pileta" van todos a resistencia_agua. "cuánto dura sin enchufar" va a bateria. "se le puede poner más memoria" va a ram_ampliable. "tiene lucecitas" va a retroiluminacion. "cuánto guarda" va a almacenamiento. "qué micro trae" va a procesador. "cuántos cuadros por segundo tira la pantalla" va a hz.
+
+plataformas_cliente. Los equipos que el cliente YA TIENE y con los que quiere usar lo que está mirando. Es la otra mitad de una pregunta de compatibilidad: el sistema tiene cargado con qué anda cada producto, pero sin saber contra QUÉ preguntan no puede responder. Traducí lo que dice a los ids, no matchees su palabra.
+Ids disponibles con lo que significan: {plataformas_str}
+Ejemplos. "¿esta memoria sirve para mi notebook?" va notebook. "lo quiero para la compu del laburo, que es una Mac" va macos. "¿anda con la play?" va ps5. "para el televisor del living" va smart_tv. "tengo una PC armada con Windows" van pc_escritorio y windows, los dos. Si nombra un equipo que ninguno de los ids cubre, o no nombra ninguno, dejá la lista vacía: el sistema contesta honesto que no lo tiene confirmado, que es mejor que arriesgar un sí.
+
+orden. Cuando el cliente pide un SUPERLATIVO, traducilo a dirección más atributo. "la que más capacidad tenga" es max + almacenamiento. "la más liviana" es min + peso_gramos. "la de más garantía" es max + garantia_meses. "la más barata" es min + precio_ars. "la más potente" elegí el atributo que mejor represente potencia en esa categoría. Es la misma operación siempre, sólo cambia el atributo: no te limites a los ejemplos.
+Atributos disponibles con lo que significan: {atributos_str}
+Si el cliente no pide ningún superlativo, va null. Y ojo: "barato" a secas no es un superlativo, eso es criterio mas_barato; orden es para cuando compara contra TODO el catálogo, "la que más", "la mejor en", "el más grande de todos".
+
+producto_resuelto y productos_consultados. El nombre va EXACTO de la lista de productos mostrados o de la lista de modelos del catálogo. Si el cliente nombra un producto que nunca se mostró pero está en el catálogo, usá el nombre del catálogo: para eso está la lista. Si nombra una variante, por ejemplo un color o un procesador, elegí el modelo e igual dejá la variante escrita tal cual la dijo el cliente en respondiendo_a. Si lo que nombra no está en ninguna de las dos listas, va null: no lo inventes ni lo acomodes al más parecido.
+
+EJEMPLOS de lo difícil, refuerzo del criterio, no lista cerrada.
+"no el negro, el blanco": producto_resuelto el blanco, no es compra.
+"dale, pero antes la garantía": NO es decision_compra, hay condición.
+"2 del DX-110... no, mejor 3": pedido final 3, la corrección manda.
+"jaja sí, seguro que mañana lo tengo gratis": ironía, NO es compra aunque diga sí.
+"precio del Logitech y decime si el Genius anda bien": productos_consultados con los dos, producto_resuelto null.
+"el segundo": se resuelve por el orden de lo mostrado.
+"ponele que sí": sí tibio, no rechazo.
+
+RESPUESTA: SOLO el JSON válido, sin preámbulo ni explicación."""
+
+    return prompt
+
+
+_RE_BARATO_NO = re.compile(
+    r"\b(?:el|la) barat[oa] no\b|\bno (?:quiero |me sirve )?(?:el|la) barat[oa]\b")
+
+
+def _corregir_referencia_comparativa(resultado: dict, mensaje: str,
+                                     productos_vistos: list[dict] | None) -> dict:
+    """Filtro DETERMINISTA de un sesgo medido del modelo (banco de
+    interpretacion, 8-jul): ante 'el barato no, el otro' con dos variantes
+    baratas empatadas, GPT-4 mini resuelve confiado la OTRA variante barata en
+    vez del que no es barato. La comparacion de precios es un problema CERRADO:
+    si el cliente NEGO el barato y el interprete resolvio un producto con el
+    precio MINIMO de los vistos, el codigo lo corrige: al unico mas caro si hay
+    uno, o a candidatos con confianza baja si hay varios."""
+    import unicodedata
+
+    def _n(s):
+        s = unicodedata.normalize("NFKD", str(s or "").lower())
+        return "".join(c for c in s if not unicodedata.combining(c))
+
+    if not isinstance(resultado, dict) or not _RE_BARATO_NO.search(_n(mensaje)):
+        return resultado
+    vistos = [v for v in (productos_vistos or [])
+              if isinstance(v, dict) and v.get("nombre")
+              and isinstance(v.get("precio", v.get("precio_ars")), (int, float))]
+    if len(vistos) < 2:
+        return resultado
+    precio_de = {_n(v["nombre"]): int(v.get("precio", v.get("precio_ars")))
+                 for v in vistos}
+    pmin = min(precio_de.values())
+    caros = [v["nombre"] for v in vistos
+             if precio_de[_n(v["nombre"])] > pmin]
+    if not caros:
+        return resultado  # todos empatados: no hay "otro" que computar
+    resuelto = _n(resultado.get("producto_resuelto"))
+    if resuelto and precio_de.get(resuelto, pmin + 1) > pmin:
+        return resultado  # ya resolvio uno NO barato: lectura coherente
+    log.info("interpretador_comparativa_corregida",
+             de=resultado.get("producto_resuelto"), caros=caros[:3])
+    if len(caros) == 1:
+        resultado["producto_resuelto"] = caros[0]
+        # El pedido que arrastre el barato negado se re-apunta al correcto.
+        for it in (resultado.get("pedido") or []):
+            if isinstance(it, dict) and precio_de.get(
+                    _n(it.get("producto")), pmin + 1) == pmin:
+                it["producto"] = caros[0]
+    else:
+        resultado["producto_resuelto"] = None
+        resultado["candidatos"] = caros[:3]
+        resultado["confianza"] = min(
+            float(resultado.get("confianza") or 0), 0.5)
+        resultado["pedido"] = []
+    return resultado
+
+
+def _resolver_fuera_de_lista(resultado: dict, mensaje: str,
+                             tienda_id: str | None = None) -> dict:
+    """SEGUNDA VUELTA cuando el modelo dice que lo que nombro el cliente no
+    estaba en la lista corta.
+
+    Es la red de las dos etapas: la recuperacion por texto es generosa pero no
+    infalible, y sin esta vuelta un candidato que no pesco se convertia en un
+    "no lo tenemos" falso teniendolo en stock. Aca se busca en el catalogo
+    COMPLETO con el certificador; si aparece, se usa el nombre real; si no
+    aparece, queda en None y el bot es honesto de verdad, no por error.
+    """
+    tocados = []
+    if resultado.get("producto_resuelto") == FUERA_DE_LISTA:
+        tocados.append(("producto_resuelto", None))
+    for i, c in enumerate(resultado.get("productos_consultados") or []):
+        if isinstance(c, dict) and c.get("producto") == FUERA_DE_LISTA:
+            tocados.append(("productos_consultados", i))
+    if not tocados:
+        return resultado
+    real = None
+    try:
+        from app.core.pedido_helpers import certificar_producto
+        from app.storage.firestore_client import get_all_products
+        veredicto, hits = certificar_producto(
+            mensaje, get_all_products(tienda_id=tienda_id))
+        if hits:
+            real = str(hits[0].get("nombre") or "") or None
+    except Exception as e:
+        log.warning("interpretador_fuera_de_lista_error", error=str(e)[:120])
+    for campo, i in tocados:
+        if campo == "producto_resuelto":
+            resultado["producto_resuelto"] = real
+        else:
+            resultado["productos_consultados"][i]["producto"] = real
+    log.info("interpretador_fuera_de_lista", encontrado=bool(real),
+             producto=real, tienda_id=tienda_id)
+    if not real:
+        # nadie lo tiene: se limpia el consultado vacio para no arrastrar None
+        resultado["productos_consultados"] = [
+            c for c in (resultado.get("productos_consultados") or [])
+            if isinstance(c, dict) and c.get("producto")]
+    return resultado
+
+
+def coercionar_destinos(resultado: dict, mensaje: str) -> dict:
+    """DESTINO FANTASMA (caso real WhatsApp 17-jul): el interprete metio
+    'Rosario' en el pedido cuando el cliente jamas nombro una localidad
+    (contaminacion de los ejemplos del prompt). Invariante determinista: un
+    destino del pedido tiene que APARECER en el mensaje del cliente O en la
+    MEMORIA de destinos de la charla (localidades cotizadas, provincia
+    sticky). Lo segundo cierra el pendiente del 18-jul: el cliente daba los
+    destinos en un turno y al confirmar en el siguiente ('dale, confirmalo')
+    el guardia los anulaba como fantasmas y el envio se caia del total
+    (visto de nuevo en el banco 20-jul, guion 48). Muta y devuelve."""
+    import unicodedata
+
+    def _n(s):
+        s = unicodedata.normalize("NFKD", str(s or "").lower())
+        s = "".join(c for c in s if not unicodedata.combining(c))
+        return s.replace(",", " ").strip()
+
+    m = _n(mensaje)
+    memoria: list[str] = []
+    try:
+        from app.core.estado_venta import get_current_estado
+        est = get_current_estado() or {}
+        memoria = [_n(x) for x in (est.get("localidades_envio") or []) if x]
+        for k in ("localidad_envio", "provincia_envio"):
+            v = _n(est.get(k) or "")
+            if v:
+                memoria.append(v)
+    except Exception:
+        memoria = []
+
+    def _en_memoria(dn: str) -> bool:
+        pd = set(dn.split())
+        for mv in memoria:
+            pm = set(mv.split())
+            if pd <= pm or pm <= pd:
+                return True
+        return False
+
+    fantasmas = []
+    for it in (resultado.get("pedido") or []):
+        if not isinstance(it, dict):
+            continue
+        d = it.get("destino")
+        if not d:
+            continue
+        dn = _n(d)
+        if dn in m or _en_memoria(dn):
+            continue
+        fantasmas.append(str(d))
+        it["destino"] = None
+    if fantasmas:
+        log.warning("interpretador_destino_fantasma", destinos=fantasmas[:4])
+    _canonizar_destinos_cp(resultado)
+    return resultado
+
+
+def _canonizar_destinos_cp(resultado: dict) -> dict:
+    """CONTACTOR del destino a la tabla del CP (multidestino robusto para 2, 3, 4
+    localidades): cada renglon del pedido tiene que llevar UNA sola localidad REAL
+    de la tabla geo. Si el destino nombra UNA, se canoniza a esa; si nombra VARIAS
+    ('Mendoza y Neuquen' en un mismo campo, la falla del multidestino), se PARTE el
+    renglon en uno por localidad, repartiendo la cantidad. Asi cotizar_envio corre
+    una vez por destino real y calculate_total agrupa bien. No decide ni recalcula:
+    solo ata el destino a la fuente y deja las cantidades desglosadas."""
+    try:
+        from app.core import geo_cp
+        geo_cp._cargar()  # la tabla se carga lazy; _localidades_en_texto no la dispara
+    except Exception:
+        return resultado
+    pedido = resultado.get("pedido")
+    if not isinstance(pedido, list) or not pedido:
+        return resultado
+    nuevo, partido = [], False
+    for it in pedido:
+        if not isinstance(it, dict) or not it.get("destino"):
+            nuevo.append(it)
+            continue
+        _, hits = geo_cp._localidades_en_texto(geo_cp._norm(str(it["destino"])))
+        locs = list(dict.fromkeys(h[0] for h in hits))  # localidades reales, dedup
+        if len(locs) <= 1:
+            # Un solo destino (o ninguno reconocido): se deja TAL CUAL, con su
+            # provincia si la trae, para no perder la desambiguacion. Solo se
+            # parten las concatenaciones, que son la falla del multidestino.
+            nuevo.append(it)
+            continue
+        # Varias localidades en un mismo destino: se parte, una por renglon.
+        partido = True
+        try:
+            cant = int(it.get("cantidad") or 1)
+        except (TypeError, ValueError):
+            cant = 1
+        k = len(locs)
+        base, rem = divmod(max(cant, 1), k)
+        for i, loc in enumerate(locs):
+            c = base + (1 if i < rem else 0)
+            if c <= 0:
+                continue
+            nuevo.append({**it, "cantidad": c, "destino": loc})
+    if partido:
+        log.warning("interpretador_destino_multiple",
+                    pedido=[(i.get("producto"), i.get("cantidad"), i.get("destino"))
+                            for i in nuevo])
+    resultado["pedido"] = nuevo
+    return resultado
+
+
+def coercionar_preferencias(resultado: dict) -> dict:
+    """Coercion defensiva de los campos de preferencias para providers sin
+    schema estricto: tope solo entero positivo; exclusiones solo dicts con tipo
+    origen/marca y valor no vacio; uso string corto o None. Muta y devuelve."""
+    _tope = resultado.get("tope_presupuesto")
+    try:
+        resultado["tope_presupuesto"] = (
+            int(_tope) if _tope and int(_tope) > 0 else None)
+    except (TypeError, ValueError):
+        resultado["tope_presupuesto"] = None
+    _exc = resultado.get("exclusiones")
+    resultado["exclusiones"] = [
+        {"tipo": str(e["tipo"]), "valor": str(e["valor"]).strip()}
+        for e in (_exc if isinstance(_exc, list) else [])
+        if isinstance(e, dict) and e.get("tipo") in ("origen", "marca")
+        and str(e.get("valor") or "").strip()]
+    _uso = resultado.get("uso_previsto")
+    resultado["uso_previsto"] = (
+        str(_uso).strip()[:60] if _uso and str(_uso).strip() else None)
+    return resultado
+
+
+def validar_schema(resultado: dict) -> tuple[bool, str]:
+    """Valida que el JSON tenga los campos requeridos con tipos correctos.
+    Devuelve tupla valido mas mensaje de error."""
+    if not isinstance(resultado, dict):
+        return False, "resultado no es dict"
+    intencion = resultado.get("intencion")
+    if intencion not in INTENCIONES_VALIDAS:
+        return False, f"intencion invalida, recibido {intencion}, esperado {INTENCIONES_VALIDAS}"
+    confianza = resultado.get("confianza")
+    if not isinstance(confianza, (int, float)):
+        # LA CONFIANZA QUE FALTA NO PUEDE TIRAR LA INTERPRETACION ENTERA.
+        # Es lo ULTIMO del schema, o sea la primera victima de un truncado, y
+        # es un auto-reporte del modelo sobre si mismo: no es un dato del
+        # cliente. Descartar por eso una lectura que trae bien la intencion, el
+        # producto y el pedido es tirar la parte cara para salvar la barata.
+        # Medido en produccion el 30-jul: turnos REALES de WhatsApp perdian la
+        # interpretacion completa por esto -tres llamadas al modelo y 17
+        # segundos para terminar con intencion 'otra'-, y el bot seguia la
+        # charla a ciegas.
+        # Se completa BAJO, no alto: media confianza es lo honesto cuando el
+        # modelo no llego a decir cuanta tenia, y deja que aguas abajo se
+        # pregunte en vez de asumir.
+        resultado["confianza"] = 0.5
+        confianza = 0.5
+        log.warning("interpretador_confianza_ausente_completada",
+                    intencion=intencion)
+    if confianza < 0 or confianza > 1:
+        return False, f"confianza fuera de rango, recibido {confianza}"
+    # candidatos: el LLM a veces lo manda null o como string suelto en vez de
+    # lista. Antes eso fallaba la validacion y disparaba un RETRY al modelo
+    # (latencia y costo de gusto). Lo coercionamos en el lugar: null/vacio -> [],
+    # string -> [string]. Solo un tipo realmente raro (dict, numero) falla.
+    candidatos = resultado.get("candidatos", [])
+    if candidatos is None:
+        resultado["candidatos"] = []
+    elif isinstance(candidatos, str):
+        resultado["candidatos"] = [candidatos.strip()] if candidatos.strip() else []
+    elif not isinstance(candidatos, list):
+        return False, "candidatos no es lista"
+    # categorias (Contactor): null/str -> lista; se filtran a las ids reales de
+    # la fuente (el enum ya lo garantiza en el schema estricto, esto es la red
+    # para providers sin strict). Nunca falla: si viene raro, queda vacia.
+    # Los DOS campos del vocabulario se juntan aca: el interprete los declara
+    # separados porque el enum no entra en uno solo (ver _schema_interprete),
+    # pero aguas abajo son una sola lista y nada cambia.
+    _cats = resultado.get("categorias", [])
+    if isinstance(_cats, str):
+        _cats = [_cats]
+    if not isinstance(_cats, list):
+        _cats = []
+    _pol = resultado.get("temas_politica", [])
+    if isinstance(_pol, str):
+        _pol = [_pol]
+    if isinstance(_pol, list):
+        _cats = list(_cats) + [p for p in _pol if p not in _cats]
+    try:
+        from app.core.indice import vocabulario
+        _validas = set(vocabulario())
+        _cats = [c for c in _cats if isinstance(c, str) and c in _validas]
+    except Exception:
+        _cats = []
+    resultado["categorias"] = _cats
+    # specs_preguntadas (28-jul): la TRADUCCION del modelo, filtrada a los ids
+    # PAGO_REPARTO: solo vale si nombra los dos medios validos y suma 100. No
+    # se corrige ni se completa: un reparto que no cierra es un reparto que no
+    # se entendio, y cobrar con un porcentaje inventado es peor que preguntar.
+    _pg = resultado.get("pago_reparto") or []
+    _limpio = []
+    try:
+        for x in _pg if isinstance(_pg, list) else []:
+            if (isinstance(x, dict)
+                    and x.get("medio") in ("transferencia", "mercado pago")):
+                _limpio.append({"medio": x["medio"],
+                                "porcentaje": float(x.get("porcentaje") or 0)})
+        if not (len(_limpio) == 2
+                and abs(sum(x["porcentaje"] for x in _limpio) - 100) <= 1
+                and len({x["medio"] for x in _limpio}) == 2):
+            _limpio = []
+    except (TypeError, ValueError):
+        _limpio = []
+    resultado["pago_reparto"] = _limpio
+    # reales de la fuente. Se distingue "no declaro nada" (None, cae la red de
+    # palabras) de "declaro que no pregunta ninguna" (lista vacia, manda eso).
+    _sp = resultado.get("specs_preguntadas", None)
+    if _sp is not None:
+        if isinstance(_sp, str):
+            _sp = [_sp]
+        if not isinstance(_sp, list):
+            _sp = []
+        try:
+            from app.core.fuente_producto import specs_config
+            _validos = {s["id"] for s in specs_config()}
+            _sp = [s for s in _sp if isinstance(s, str) and s in _validos]
+        except Exception:
+            _sp = []
+        resultado["specs_preguntadas"] = _sp
+    # plataformas_cliente (29-jul): los equipos que declaro el cliente, filtrados
+    # al vocabulario cerrado. Mismo criterio que specs: None es "no declaro" y
+    # cae la red de alias sobre el mensaje; lista vacia es "no nombro ninguno",
+    # y eso manda -de ahi sale el honesto en vez de un si sin respaldo-.
+    _pc = resultado.get("plataformas_cliente", None)
+    if _pc is not None:
+        if isinstance(_pc, str):
+            _pc = [_pc]
+        if not isinstance(_pc, list):
+            _pc = []
+        try:
+            from app.core.compatibilidad import vocabulario
+            _validas_p = set(vocabulario()["plataformas"])
+            _pc = [p for p in _pc if isinstance(p, str) and p in _validas_p]
+        except Exception:
+            _pc = []
+        resultado["plataformas_cliente"] = _pc
+    return True, ""
+
+
+def _reparar_json_truncado(cleaned: str) -> dict | None:
+    """Red determinista contra el JSON cortado por max_tokens. Caso real
+    (banco 11-jul, gpt-4o-mini): la gramatica del schema estricto obliga el
+    proximo campo requerido, el modelo prefiere cerrar el objeto, y como el
+    cierre esta prohibido emite espacios en blanco hasta agotar los tokens.
+    Queda un JSON valido a medio cerrar y el turno caia al fallback de
+    intencion 'otra' confianza 0. Aca se cierra lo que quedo abierto (string,
+    llaves, corchetes) y se reintenta el parseo; si ni asi parsea, None."""
+    s = cleaned.rstrip().rstrip(",")
+    pila = []
+    en_string = False
+    escape = False
+    for ch in s:
+        if en_string:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                en_string = False
+        elif ch == '"':
+            en_string = True
+        elif ch in "{[":
+            pila.append(ch)
+        elif ch in "}]":
+            if pila:
+                pila.pop()
+    if en_string:
+        s += '"'
+        s = s.rstrip().rstrip(",")
+    s += "".join("}" if c == "{" else "]" for c in reversed(pila))
+    try:
+        out = json.loads(s)
+    except json.JSONDecodeError:
+        return None
+    return out if isinstance(out, dict) else None
+
+
+def parsear_respuesta_llm(raw: str) -> dict | None:
+    """Limpia y parsea JSON de la respuesta cruda del LLM. Si no parsea,
+    intenta la reparacion determinista del truncado por max_tokens."""
+    cleaned = raw.strip()
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+        cleaned = re.sub(r"\s*```$", "", cleaned)
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        reparado = _reparar_json_truncado(cleaned)
+        if reparado is not None:
+            # El largo crudo es el RADAR del techo de tokens: si esto empieza a
+            # aparecer seguido, el schema crecio y hay que subir max_tokens
+            # otra vez. Sin este dato, el 30-jul hubo que ir a buscarlo a los
+            # logs de produccion a mano para entender por que el interprete se
+            # caia; ahora el numero esta en la misma linea.
+            log.warning("interpretador_json_truncado_reparado",
+                        largo_raw=len(raw),
+                        campos=len(reparado),
+                        falta_confianza="confianza" not in reparado)
+        return reparado
+
+
+def modelos_del_catalogo(tienda_id: str | None = None) -> list[str]:
+    """Los MODELOS reales de la tienda, 'Marca Modelo', uno por modelo y no por
+    producto: 482 en verifika_prod para 880 productos.
+
+    Es el vocabulario cerrado con el que el interprete puede nombrar un
+    producto que TODAVIA no se mostro. Antes el enum de producto_resuelto eran
+    solo los productos mostrados, o sea que en el primer mensaje estaba vacio y
+    el modelo no tenia donde poner lo que habia entendido perfecto: devolvia
+    texto libre y el codigo quedaba adivinando por substring. Todas las fallas
+    de identidad de la charla del 28-jul salen de ese hueco.
+    """
+    try:
+        from app.storage.firestore_client import get_all_products
+        vistos, out = set(), []
+        for p in (get_all_products(tienda_id=tienda_id) or []):
+            marca = str(p.get("marca") or "").strip()
+            modelo = str(p.get("modelo") or "").strip()
+            if not modelo:
+                continue
+            etiqueta = f"{marca} {modelo}".strip()
+            if etiqueta.lower() not in vistos:
+                vistos.add(etiqueta.lower())
+                out.append(etiqueta)
+        return out
+    except Exception as e:
+        log.warning("interpretador_modelos_catalogo_error", error=str(e)[:120])
+        return []
+
+
+def _schema_interprete(nombres_mostrados: list[str],
+                       categorias: list[str] | None = None,
+                       modelos: list[str] | None = None,
+                       specs: list[str] | None = None,
+                       atributos: list[str] | None = None,
+                       plataformas: list[str] | None = None) -> dict:
+    """Schema estricto para constrained generation DURA: Structured Outputs de
+    OpenAI y el response_format json_schema del endpoint compatible de Gemini.
+    intencion y estado atados a su enum; producto_resuelto atado al enum de
+    los productos REALMENTE mostrados (o null): el interprete no puede referenciar
+    a nivel token un producto que no se mostro. El LLM sigue INTERPRETANDO; el
+    schema solo evita que emita un valor fuera de la fuente. En los demas
+    providers el schema se ignora y queda el parseo + validacion de siempre."""
+    nombres = list(dict.fromkeys(n for n in nombres_mostrados if n))
+    pedido_enum = ([None] + nombres) if nombres else [None]
+    # el enum de producto son los MOSTRADOS mas los MODELOS del catalogo: el
+    # cliente puede nombrar por primera vez algo que existe y el interprete
+    # tiene donde ponerlo, atado, sin poder inventarlo.
+    nombres = list(dict.fromkeys(nombres + [m for m in (modelos or []) if m]))
+    prod_enum = ([None, FUERA_DE_LISTA] + nombres) if nombres else [None, FUERA_DE_LISTA]
+    consulta_enum = ["precio", "ficha", "stock", "opinion",
+                     "comparacion", "envio", "otra"]
+    # Enum de CATEGORIAS reales de la tienda (lista cerrada y conocida): ata la
+    # solicitud de una categoria AUN NO mostrada sin poder inventarla.
+    cat_enum = list(dict.fromkeys(c for c in (categorias or []) if c)) or ["otra"]
+    # EL ENUM DEL CONTACTOR: el VOCABULARIO del indice. El interprete DECLARA
+    # cual/cuales toca el mensaje, atado a nivel token; no puede inventar uno. El
+    # solver engancha cada uno con su celda.
+    # 30-jul: antes esto eran solo las 93 categorias de base_conocimiento, y los
+    # 23 temas de FAQ que no figuraban ahi -cuotas, envios, devoluciones,
+    # marcas_originales...- el interprete NO LOS PODIA NOMBRAR. Los ruteaba un
+    # regex de palabras sobre el mensaje: en 107 de 282 turnos grabados el tema
+    # lo aportaba ese regex y no el interprete. Con el vocabulario unido, lo que
+    # el sistema sabe contestar y lo que el interprete puede decir son la MISMA
+    # lista.
+    from app.core.indice import vocabulario
+    conoc_enum = vocabulario() or ["otra"]
+    # EL VOCABULARIO VIAJA EN DOS CAMPOS, y no es una preferencia de estilo.
+    # Medido en vivo el 31-jul con la clave paga: Gemini RECHAZA el schema con
+    # 400 INVALID_ARGUMENT cuando un solo enum lleva estos 116 valores. El techo
+    # medido con estas palabras es 112. No es cantidad ni largo -200 valores
+    # sinteticos con prefijo comun pasan-: es la complejidad del automata de
+    # decodificacion atada.
+    # El precio de no verlo era altisimo. El `except` de _llamar_llm reintentaba
+    # SIN response_format, asi que la interpretacion de CADA turno corria sin
+    # schema: el atado no ataba nada y nadie se enteraba, porque el reintento
+    # devolvia 200. Este era el 400 de Sentry que no se podia ubicar.
+    # El corte es el que ya existe en la fuente: las categorias de venta de
+    # base_conocimiento por un lado, los temas de politica que solo viven en la
+    # FAQ por el otro. La union sigue siendo el MISMO vocabulario y el codigo
+    # las vuelve a juntar en `categorias` al normalizar, asi que aguas abajo no
+    # cambia nada.
+    try:
+        from app.core.guia_venta_prosa import categorias_conocimiento
+        _venta = list(categorias_conocimiento())
+    except Exception:
+        _venta = []
+    conoc_venta = [c for c in conoc_enum if c in _venta] or ["otra"]
+    conoc_politica = [c for c in conoc_enum if c not in _venta] or ["otra"]
+    # ATRIBUTOS ordenables, DERIVADOS del catalogo (columnas numericas + specs
+    # con magnitud). No es una lista escrita a mano: el dia que la tienda suma
+    # una columna, esa columna queda preguntable sin tocar codigo.
+    atrib_enum = list(atributos or []) or ["precio_ars"]
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        # Orden pensado para la generacion de Gemini: primero los campos de
+        # interpretacion (a que responde, que productos consulta), despues las
+        # decisiones (intencion, estado), y la confianza al FINAL para que
+        # refleje lo ya resuelto, no al reves.
+        "properties": {
+            "respondiendo_a": {"type": ["string", "null"]},
+            # PRODUCTOS CONSULTADOS (21-jul): el cliente puede preguntar por DOS
+            # o MAS productos en el mismo mensaje, uno para precio y otro para
+            # opinion. Antes solo habia producto_resuelto (uno) o candidatos
+            # (duda), y una consulta multiple legitima caia a null (caso 17 del
+            # banco). Cada item es un producto MOSTRADO (enum) mas que pide de el.
+            "productos_consultados": {"type": "array", "items": {
+                "type": "object", "additionalProperties": False,
+                "properties": {
+                    "producto": {"type": ["string", "null"], "enum": prod_enum},
+                    "consulta": {"type": "string", "enum": consulta_enum},
+                },
+                "required": ["producto", "consulta"],
+            }},
+            "producto_resuelto": {"type": ["string", "null"], "enum": prod_enum},
+            "candidatos": {"type": "array", "items": {"type": "string"}},
+            "ofrecer_opciones": {"type": ["array", "null"],
+                                 "items": {"type": "string"}},
+            "intencion": {"type": "string", "enum": sorted(INTENCIONES_VALIDAS)},
+            "estado_conversacion": {"type": "string", "enum": ESTADOS_VALIDOS},
+            # CRITERIO de eleccion por precio (9-jul): el LLM cubre "eco" y
+            # abreviaturas que el regex del codigo no. Enum acotado.
+            # "intermedio" (11-jul): rechazar el minimo es un criterio propio.
+            "criterio": {"type": ["string", "null"],
+                         "enum": ["mas_barato", "intermedio", None]},
+            # ORDEN (28-jul, charla real): "la que mas capacidad tenga", "la mas
+            # liviana", "la de mas hercios" y "la mas barata" son la MISMA
+            # operacion con distinto atributo. Antes solo existian mas_barato e
+            # intermedio, asi que un superlativo del otro lado no tenia donde
+            # caer: el cliente pidio la de mas capacidad y el codigo, por
+            # default, le mostro las cuatro mas baratas teniendo 57 de 1TB.
+            # Por eso no se enumeran los criterios: se parte en DIRECCION (dos
+            # valores, fijos) y ATRIBUTO, y el enum de atributos se DERIVA de la
+            # fuente. Columna nueva en el catalogo = atributo preguntable, sin
+            # tocar codigo.
+            "orden": {"type": ["object", "null"], "additionalProperties": False,
+                      "properties": {
+                          "direccion": {"type": "string", "enum": ["max", "min"]},
+                          "atributo": {"type": "string", "enum": atrib_enum},
+                      },
+                      "required": ["direccion", "atributo"]},
+            # PEDIDO estructurado (8-jul): productos MOSTRADOS con cantidad,
+            # atado por enum. Alimenta la guia determinista de pedido; el solver
+            # no elige ids. destino por renglon, plano (Firestore prohibe listas
+            # anidadas, bug real 8-jul). null = destino unico o sin decir.
+            "pedido": {"type": ["array", "null"], "items": {
+                "type": "object", "additionalProperties": False,
+                "properties": {
+                    # el PEDIDO se arma sobre lo MOSTRADO, no sobre el catalogo
+                    # entero: se compra lo que se le ofrecio y quedo certificado.
+                    # Ademas evita repetir el enum de 482 modelos una tercera vez
+                    # en el schema, que son varios miles de tokens por turno.
+                    "producto": {"type": ["string", "null"], "enum": pedido_enum},
+                    "cantidad": {"type": "integer"},
+                    "destino": {"type": ["string", "null"]},
+                },
+                "required": ["producto", "cantidad", "destino"],
+            }},
+            # SOLICITUD NUEVA (22-jul): el cliente pide una CATEGORIA que TODAVIA
+            # no se mostro en la charla (ej "2 teclados" y aun no hubo teclado).
+            # No cabe en pedido/consultados, que estan atados al enum de lo visto,
+            # asi que se perdia (lado B de la atadura). Aca se registra atada al
+            # enum de CATEGORIAS reales (no se inventa la categoria); el hub la
+            # usa para buscar y mostrar esa categoria, que recien ahi entra a
+            # vistos y se ancla. Cubre productos AGREGADOS y CAMBIOS de categoria.
+            "solicitud_nueva": {"type": "array", "items": {
+                "type": "object", "additionalProperties": False,
+                "properties": {
+                    "categoria": {"type": "string", "enum": cat_enum},
+                    "cantidad": {"type": ["integer", "null"]},
+                    "criterio": {"type": ["string", "null"],
+                                 "enum": ["mas_barato", "intermedio", None]},
+                    # EL DESTINO DE CADA RENGLON (1-ago). Sin esto, cuando el
+                    # cliente reparte productos que TODAVIA no se mostraron
+                    # -"1 memoria y un auricular a Berrotaran, 1 auricular y 1
+                    # mouse a Concordia, el resto a Posadas"- no habia ningun
+                    # campo donde decir que va a cada lado: `pedido` solo
+                    # nombra productos ya mostrados y `solicitud_nueva` no
+                    # tenia destino. El reparto lo terminaba adivinando un
+                    # regex sobre el mensaje crudo, que en la charla real leyo
+                    # 2 auriculares y perdio las memorias, los mouses y un
+                    # destino entero.
+                    "destino": {"type": ["string", "null"]},
+                },
+                "required": ["categoria", "cantidad", "criterio", "destino"],
+            }},
+            # CATEGORIAS (Contactor, 22-jul): la o las categorias de la charla
+            # que toca el mensaje, atadas al enum de la fuente de verdad. Lista
+            # porque un mensaje complejo toca varias (precio + objecion + envio).
+            # Vacia si ninguna encaja (el sistema responde honesto sin cortar la
+            # venta). Es el disparador que enruta a criterio o a tool.
+            "categorias": {"type": "array",
+                           "items": {"type": "string", "enum": conoc_venta}},
+            # La otra mitad del vocabulario: los temas que solo estan en la FAQ.
+            # Se declara aparte por el techo del enum (ver arriba); el codigo
+            # los junta con `categorias` y aguas abajo son una sola lista.
+            "temas_politica": {"type": "array",
+                               "items": {"type": "string",
+                                         "enum": conoc_politica}},
+            # SPECS PREGUNTADAS (28-jul): la TRADUCCION que solo el modelo sabe
+            # hacer. El cliente dice "resiste que se me caiga el cafe" o "son
+            # resistentes al agua" y el modelo lo declara como resistencia_agua,
+            # atado al enum de specs_preguntables.json. Antes esto lo resolvia
+            # una lista de palabras escrita a mano que fallaba con cada
+            # redaccion nueva: el dato estaba cargado y la pregunta no llegaba.
+            "specs_preguntadas": {"type": "array", "items": {
+                "type": "string",
+                "enum": (specs or ["otra"])}},
+            # PLATAFORMAS DEL CLIENTE (29-jul): con QUE equipo quiere usarlo.
+            # Es la otra mitad de una pregunta de compatibilidad: la tabla dice
+            # con que anda cada producto, pero sin saber contra que se pregunta
+            # no hay veredicto posible. Atado al enum del vocabulario cerrado,
+            # asi el modelo traduce ("la compu del laburo, que es una Mac") sin
+            # poder inventar un equipo.
+            "plataformas_cliente": {"type": "array", "items": {
+                "type": "string",
+                "enum": (plataformas or ["otra"])}},
+            # PREFERENCIAS (16-jul): tope solo con CIFRA; exclusiones por origen
+            # o marca; uso en una o dos palabras. Consumidas por el generador.
+            "tope_presupuesto": {"type": ["integer", "null"]},
+            "exclusiones": {"type": ["array", "null"], "items": {
+                "type": "object", "additionalProperties": False,
+                "properties": {
+                    "tipo": {"type": "string", "enum": ["origen", "marca"]},
+                    "valor": {"type": "string"},
+                },
+                "required": ["tipo", "valor"],
+            }},
+            "uso_previsto": {"type": ["string", "null"]},
+            # EL REPARTO DEL PAGO (1-ago). Charla real de Martin: "Abonaria un
+            # 20% con mercado y el resto transferencis". Lo unico que sabia
+            # leerlo era un regex sobre el mensaje crudo, y ese regex pide las
+            # palabras exactas "transferencia" y "mercado pago": con "mercado"
+            # a secas y una `s` de mas se cayo, el presupuesto salio sin el
+            # split y el cierre encima le pregunto como queria pagar, cuando el
+            # cliente acababa de decirlo. Traducir eso es trabajo del modelo,
+            # que lee bien; aplicarlo es del codigo. Atado a los dos medios que
+            # la tienda acepta: no puede inventar uno.
+            "pago_reparto": {"type": ["array", "null"], "items": {
+                "type": "object", "additionalProperties": False,
+                "properties": {
+                    "medio": {"type": "string",
+                              "enum": ["transferencia", "mercado pago"]},
+                    "porcentaje": {"type": "number"},
+                },
+                "required": ["medio", "porcentaje"],
+            }},
+            "confianza": {"type": "number"},
+        },
+        "required": ["respondiendo_a", "productos_consultados",
+                     "producto_resuelto", "candidatos", "ofrecer_opciones",
+                     "intencion", "estado_conversacion", "criterio", "orden",
+                     "pedido",
+                     "solicitud_nueva", "categorias", "temas_politica",
+                     "specs_preguntadas",
+                     "plataformas_cliente",
+                     "tope_presupuesto", "exclusiones", "uso_previsto",
+                     "pago_reparto",
+                     "confianza"],
+    }
+
+
+async def _llamar_llm(prompt: str, response_format: dict | None = None) -> str:
+    """Llamada al LLM con parametros fijos. response_format (json_schema strict)
+    se aplica en OpenAI y Gemini; en otros providers se ignora y cae al parseo
+    normal."""
+    client = _get_client()
+
+    def _do_call() -> str:
+        if settings.INTERPRETER_PROVIDER == "groq":
+            modelo = settings.GROQ_MODEL
+        elif settings.INTERPRETER_PROVIDER == "openai":
+            modelo = settings.OPENAI_MODEL
+        elif settings.INTERPRETER_PROVIDER == "anthropic":
+            modelo = settings.ANTHROPIC_MODEL
+        elif settings.INTERPRETER_PROVIDER == "nemotron":
+            modelo = settings.NEMOTRON_MODEL
+        elif settings.INTERPRETER_PROVIDER == "kimi":
+            modelo = settings.KIMI_MODEL
+        elif settings.INTERPRETER_PROVIDER == "openrouter":
+            modelo = settings.OPENROUTER_MODEL
+        elif settings.INTERPRETER_PROVIDER == "gemini":
+            modelo = settings.GEMINI_MODEL
+        else:
+            modelo = settings.DEEPSEEK_MODEL
+        from app.config import (deepseek_extra_body, deepseek_pensando,
+                                gemini_thinking_off, nvidia_thinking_off,
+                                openrouter_reasoning_off)
+        es_deepseek = settings.INTERPRETER_PROVIDER not in (
+            "groq", "openai", "anthropic", "nemotron", "kimi", "openrouter",
+            "gemini")
+        # NVIDIA (nemotron/kimi) apaga thinking con chat_template_kwargs;
+        # OpenRouter con reasoning; Gemini directo con reasoning_effort;
+        # DeepSeek directo con su extra_body.
+        nv = nvidia_thinking_off(settings.INTERPRETER_PROVIDER, modelo)
+        orr = openrouter_reasoning_off(settings.INTERPRETER_PROVIDER, modelo)
+        gm = gemini_thinking_off(settings.INTERPRETER_PROVIDER, modelo)
+        extra = nv or orr or gm or (deepseek_extra_body(modelo) if es_deepseek else {})
+        # EL TECHO DE TOKENS, subido de 400 a 1200 el 30-jul. Estaba cortando
+        # interpretaciones REALES de WhatsApp: medido en produccion, el JSON
+        # crudo llegaba a 1030 caracteres y se cortaba, o sea que el modelo se
+        # quedaba sin presupuesto antes de terminar. El schema estricto tiene 18
+        # campos obligatorios y `confianza` va ULTIMO a proposito -para que
+        # refleje lo ya resuelto-, asi que el truncado se la lleva SIEMPRE y la
+        # interpretacion entera se descarta por "confianza no es numero".
+        # El costo de subirlo es cero cuando no se usa: max_tokens es un techo,
+        # no un consumo. Lo que costaba caro era lo otro: tres llamadas al
+        # modelo por turno -la primera y dos reintentos- para terminar
+        # igual sin interpretacion, y 17 segundos de latencia.
+        max_tok = 2000 if (es_deepseek and deepseek_pensando(modelo)) else 1200
+        kwargs = {"model": modelo,
+                  "messages": [{"role": "user", "content": prompt}],
+                  "temperature": 0.0, "max_tokens": max_tok}
+        if extra:
+            kwargs["extra_body"] = extra
+        # Atadura del schema segun lo que soporta cada API (medido, no supuesto):
+        # OpenAI y Gemini aceptan response_format json_schema STRICT (enum a nivel
+        # token, atadura dura). DeepSeek V4 NO lo soporta por response_format
+        # (400 "response_format type unavailable"); su strict va por tool calling.
+        # Para DeepSeek se usa json_object (garantiza JSON valido) y el enum lo
+        # asegura validar_schema + retry del lado del codigo: atadura BLANDA.
+        prov = settings.INTERPRETER_PROVIDER
+        if prov in ("openai", "gemini") and response_format:
+            rf = response_format
+        elif prov == "deepseek":
+            rf = {"type": "json_object"}
+        else:
+            rf = None
+        try:
+            if rf:
+                response = client.chat.completions.create(response_format=rf, **kwargs)
+            else:
+                response = client.chat.completions.create(**kwargs)
+        except Exception as e:
+            # EL REINTENTO NO PUEDE TIRAR EL SCHEMA EN SILENCIO. Hasta el 31-jul
+            # este except soltaba el `extra_body` Y el `response_format` juntos,
+            # devolvia 200, y el turno seguia como si nada: el interprete corria
+            # DESATADO en todos los turnos y el unico rastro era un 400 suelto en
+            # Sentry que nadie podia ubicar. Ahora se reintenta en dos escalones y
+            # el que pierde la atadura se loguea como ERROR, que es lo que es.
+            log.warning("interprete_reintento_sin_extra", error=str(e)[:160])
+            kwargs.pop("extra_body", None)
+            try:
+                if rf:
+                    response = client.chat.completions.create(
+                        response_format=rf, **kwargs)
+                else:
+                    response = client.chat.completions.create(**kwargs)
+            except Exception as e2:
+                log.error("interprete_sin_schema", error=str(e2)[:200],
+                          modelo=modelo,
+                          aviso="la interpretacion de este turno corre DESATADA")
+                response = client.chat.completions.create(**kwargs)
+        return response.choices[0].message.content or ""
+
+    # El cliente OpenAI es sincrono: este create() bloquearia el event loop
+    # pese a estar en una funcion async, asi que lo mandamos a un thread. El
+    # helper suma reintento con backoff ante hipo transitorio (429/5xx/timeout):
+    # sin el, un 429 en rafaga dejaba las categorias vacias y el ruteo mudo.
+    from app.core.llm_reintento import llamar_con_reintento
+    return await llamar_con_reintento(_do_call, timeout_s=None)
+
+
+async def interpretar_mensaje(mensaje: str,
+                                history: list[dict],
+                                trace_id: str,
+                                estado_anterior: str | None = None,
+                                tienda_id: str | None = None,
+                                productos_vistos: list[dict] | None = None,
+                                resumen: str = "") -> dict:
+    log.info("interpretar_mensaje_inicio")
+    """Funcion principal del Interpretador.
+    Prompt liberado mas tres capas de filtro al final."""
+    try:
+        productos = extraer_productos_mostrados(history)
+        # Los productos VISTOS del estado (ids reales persistidos por las tools y
+        # los [[PROD:]] estampados) enriquecen el contexto y el ENUM del schema:
+        # son mas confiables que el regex sobre el historial (el solver no
+        # siempre lista en negrita). Dedup por nombre, los del regex primero.
+        _nombres_regex = {p.get("nombre") for p in productos}
+        for pv in (productos_vistos or []):
+            if not isinstance(pv, dict) or not pv.get("nombre"):
+                continue
+            if pv["nombre"] in _nombres_regex:
+                continue
+            _precio = pv.get("precio", pv.get("precio_ars"))
+            if isinstance(_precio, (int, float)):
+                productos.append({"nombre": pv["nombre"], "precio": int(_precio)})
+                _nombres_regex.add(pv["nombre"])
+        contexto_conv = construir_contexto_conversacional(
+            history, n_turnos_completos=7, resumen=resumen)
+
+        if estado_anterior:
+            contexto_conv = (
+                f"ESTADO ACTUAL DE LA CONVERSACION segun el turno anterior: "
+                f"{estado_anterior}. Usalo como contexto, pero determina el "
+                f"estado real leyendo el ultimo mensaje del cliente.\n\n"
+                + contexto_conv
+            )
+        # Categorias reales de la tienda: lista cerrada para atar la solicitud
+        # de una categoria aun no mostrada sin poder inventarla.
+        try:
+            from app.storage.firestore_client import get_categories
+            _categorias = list(get_categories(tienda_id=tienda_id) or [])
+        except Exception:
+            _categorias = []
+
+        # El VOCABULARIO CERRADO de la fuente con el que el interprete traduce
+        # lo que dijo el cliente: los modelos reales del catalogo y los ids de
+        # spec. El modelo razona y traduce; el codigo de abajo solo ejecuta
+        # sobre estos valores, que es lo unico que sabe hacer.
+        _modelos = candidatos_modelo(mensaje, modelos_del_catalogo(tienda_id),
+                                     contexto_conv, tienda_id=tienda_id)
+        try:
+            from app.core.fuente_producto import specs_config
+            _specs = [s["id"] for s in specs_config()]
+        except Exception:
+            _specs = []
+        # el enum de EQUIPOS del cliente, del vocabulario de compatibilidad
+        try:
+            from app.core.compatibilidad import vocabulario as _vc
+            _plataformas = list(_vc()["plataformas"])
+        except Exception:
+            _plataformas = []
+        # atributos ordenables DERIVADOS del catalogo: con esto "la que mas
+        # capacidad" y "la mas liviana" tienen donde caer sin enumerar criterios.
+        try:
+            from app.core.fuente_producto import atributos_ordenables
+            from app.storage.firestore_client import get_all_products
+            _atrib_map = atributos_ordenables(
+                get_all_products(tienda_id=tienda_id), tienda_id)
+            _atributos = sorted(_atrib_map)
+        except Exception:
+            _atrib_map, _atributos = {}, []
+
+        prompt = construir_prompt_interpretador(
+            mensaje, contexto_conv, productos, _categorias, _modelos,
+            _atrib_map)
+
+        # Constrained generation dura: el enum de producto_resuelto son los
+        # productos mostrados MAS los modelos del catalogo, y el de
+        # specs_preguntadas los ids de la fuente. El modelo no puede emitir un
+        # valor que la fuente no tenga, y ya no le falta donde poner lo que
+        # entendio bien.
+        _nombres = [p.get("nombre") for p in productos if p.get("nombre")]
+        _rf = {"type": "json_schema", "json_schema": {
+            "name": "interpretacion", "strict": True,
+            "schema": _schema_interprete(_nombres, _categorias, _modelos,
+                                         _specs, _atributos, _plataformas)}}
+
+        # Primera llamada al LLM
+        raw = await _llamar_llm(prompt, response_format=_rf)
+        resultado = parsear_respuesta_llm(raw)
+
+        # Capa uno, validacion de schema con retry una vez
+        if resultado is None:
+            log.warning("interpretador_json_invalido_retry", trace_id=trace_id,
+                        raw=raw[:200])
+            prompt_retry = (prompt +
+                            "\n\nTU RESPUESTA ANTERIOR NO FUE JSON VALIDO. "
+                            "DEVOLVE SOLO EL JSON, SIN BACKTICKS NI EXPLICACION.")
+            raw = await _llamar_llm(prompt_retry, response_format=_rf)
+            resultado = parsear_respuesta_llm(raw)
+            if resultado is None:
+                log.error("interpretador_json_invalido_final", trace_id=trace_id)
+                return {
+                    "intencion": "otra",
+                    "producto_resuelto": None,
+                    "candidatos": [],
+                    "productos_consultados": [],
+                    "confianza": 0.0,
+                    "respondiendo_a": None,
+                    "error": "json_invalido",
+                }
+
+        valido, error_msg = validar_schema(resultado)
+        if not valido:
+            log.warning("interpretador_schema_invalido_retry", trace_id=trace_id,
+                        error=error_msg)
+            prompt_retry = (prompt +
+                            f"\n\nTU RESPUESTA ANTERIOR FALLO VALIDACION, {error_msg}. "
+                            "DEVOLVE SOLO EL JSON CON TODOS LOS CAMPOS CORRECTOS.")
+            raw = await _llamar_llm(prompt_retry, response_format=_rf)
+            resultado = parsear_respuesta_llm(raw)
+            if resultado is None:
+                resultado = {}
+            valido, error_msg = validar_schema(resultado)
+            if not valido:
+                log.error("interpretador_schema_invalido_final", trace_id=trace_id,
+                          error=error_msg)
+                return {
+                    "intencion": "otra",
+                    "producto_resuelto": None,
+                    "candidatos": [],
+                    "productos_consultados": [],
+                    "confianza": 0.0,
+                    "respondiendo_a": None,
+                    "error": f"schema_invalido_{error_msg}",
+                }
+
+        # Asegurar campos opcionales presentes
+        if "producto_resuelto" not in resultado:
+            resultado["producto_resuelto"] = None
+        if "candidatos" not in resultado:
+            resultado["candidatos"] = []
+        if not isinstance(resultado.get("productos_consultados"), list):
+            resultado["productos_consultados"] = []
+        if not isinstance(resultado.get("solicitud_nueva"), list):
+            resultado["solicitud_nueva"] = []
+        if "respondiendo_a" not in resultado:
+            resultado["respondiendo_a"] = None
+        if not isinstance(resultado.get("pedido"), list):
+            resultado["pedido"] = []
+        coercionar_preferencias(resultado)
+        coercionar_destinos(resultado, mensaje)
+        _resolver_fuera_de_lista(resultado, mensaje, tienda_id)
+
+        # Sesgo medido del modelo en referencias comparativas ('el barato no,
+        # el otro'): la comparacion de precios la corrige el CODIGO.
+        resultado = _corregir_referencia_comparativa(
+            resultado, mensaje, productos_vistos)
+
+        # El interprete tiene LIBERTAD para interpretar: el codigo NO cambia su
+        # intencion. Se quitaron las capas que la pisaban (veto de negacion y
+        # downgrade por baja confianza); negacion, duda y ambiguedad ya las maneja
+        # el prompt del LLM (baja la confianza y pobla candidatos). El codigo solo
+        # valida que el JSON tenga forma; lo que el LLM entendio, queda.
+
+        log.info("interpretador_ok", trace_id=trace_id,
+                 intencion=resultado.get("intencion"),
+                 confianza=resultado.get("confianza"),
+                 producto_resuelto=resultado.get("producto_resuelto"),
+                 respondiendo_a=resultado.get("respondiendo_a"),
+                 candidatos_count=len(resultado.get("candidatos", [])),
+                 pedido=resultado.get("pedido"),
+                 # sin estos dos campos en el log, los campos nuevos del
+                 # contactor son invisibles: se leia None en los logs y no se
+                 # sabia si el interprete no los emitio o si nadie los mostraba.
+                 orden=resultado.get("orden"),
+                 specs_preguntadas=resultado.get("specs_preguntadas"),
+                 plataformas_cliente=resultado.get("plataformas_cliente"),
+                 criterio=resultado.get("criterio"),
+                 productos_contexto=len(productos))
+
+        return resultado
+
+    except Exception as e:
+        log.error("interpretador_error", trace_id=trace_id,
+                  error=str(e)[:200])
+        return {
+            "intencion": "otra",
+            "producto_resuelto": None,
+            "candidatos": [],
+            "productos_consultados": [],
+            "confianza": 0.0,
+            "respondiendo_a": None,
+            "tipo_confirmacion": None,
+            "error": str(e)[:100],
+        }
