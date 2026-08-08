@@ -28,6 +28,41 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
+**==== 7-AGO (ultimo) — ENTIENDE 100. Y LA RESPUESTA ES TODO O NADA ====**
+
+**EL CAMPO TIPADO CERRO EL HUECO. Medido en vivo despues del cambio:**
+
+| redaccion | ENTIENDE | CONTESTA |
+|---|---|---|
+| 1 textual de Martin | **100** | 7 |
+| 2 porcentajes en digitos | **100** | 84 |
+| 3 orden invertido | **100** | 88 |
+| 4 criterio dicho distinto | **100** | 83 |
+| 5 coloquial | **100** | 13 |
+| | **100** (era 91) | 55 |
+
+**LO QUE SI SE PUEDE AFIRMAR:**
+- **ENTIENDE 91 -> 100, y la lista de "que no entiende" quedo VACIA.** El
+  reparto de pago, que fallaba 15 de 15, ahora sale siempre. Era el unico hueco
+  y lo tapo un campo del esquema, no un parche de codigo.
+- **Corridas que CONTESTARON bien -80 o mas-: 2 de 15 -> 7 de 15.** Es un
+  conteo, no un puntaje ruidoso, asi que es la parte confiable de la mejora.
+
+**LO QUE NO SE PUEDE AFIRMAR:** que la respuesta mejoro en promedio. Bajo de 61
+a 55, y eso esta dentro del ruido ya medido en este mismo instrumento.
+
+**Y EL HALLAZGO QUE ABRE EL CHAT QUE VIENE: LA RESPUESTA ES BIMODAL.** Mira la
+columna: 7, 84, 88, 83, 13. **O sale en 83-88, o se derrumba a 7-13. No hay
+term medio.** Eso es un problema DISTINTO de "contesta mas o menos": no hay que
+mejorar una respuesta mediocre, hay que encontrar por que a veces se cae entera.
+Con el mensaje entendido al 100 por delante, la causa esta aguas abajo y es
+localizable.
+
+**LA CONSIGNA COMBINADA PARA EL CHAT NUEVO:** acortar los mensajes **y** cazar
+el derrumbe. Las dos se miden con los instrumentos que ya estan.
+
+---
+
 **==== ⛳ EL OBJETIVO DEL CHAT NUEVO (Martin, 7-ago-2026, cierre) ====**
 
 > ## REDUCIR DRASTICAMENTE EL TAMAÑO DE LOS MENSAJES
