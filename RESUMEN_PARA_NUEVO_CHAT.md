@@ -162,6 +162,58 @@ pregunta no es "que rompi": es **"que estaba tapando lo que saque"**.
 
 ---
 
+**==== 7-AGO-2026 (cierre 2) — EL DUELO: VIEJO 69, HOY 91. LA ESPINA, CERRADA ====**
+
+**LA PREGUNTA DE MARTIN, textual: "me quedo esa espina de una decision que tome
+y quiero asegurarme de que la interpretacion antigua era mas propensa a entender
+mensajes complejos. O nos sorprendemos de los numeros o lo descartamos."**
+
+**SE MIDIO.** El interprete viejo se desenterro de git -`f56c094^`, 1387 lineas-,
+quedo congelado en `banco_pruebas/interprete_viejo/` sin tocar produccion, y se
+le paso la MISMA vara que al de hoy: los once hechos del mensaje de Martin, cinco
+redacciones por tres corridas.
+
+| redaccion | VIEJO | HOY |
+|---|---|---|
+| 1 textual de Martin | 64 | **91** |
+| 2 porcentajes en digitos | 73 | **91** |
+| 3 orden invertido | 82 | **91** |
+| 4 criterio dicho distinto | 45 | **91** |
+| 5 coloquial | 82 | **91** |
+| | **69** | **91** |
+
+**EL VEREDICTO: LA DECISION DEL 1-AGO NO FUE UN ERROR.** El de hoy entiende
+mejor -91 contra 69- y, sobre todo, **es ESTABLE**: exactamente 91 en las cinco
+redacciones, mientras el viejo va de 45 a 82 segun como este escrito el mensaje.
+Para un cliente real, que escribe distinto cada vez, esa estabilidad vale mas
+que el promedio.
+
+**LO QUE EL VIEJO PIERDE, contado:**
+- **la contradiccion del teclado, 15 de 15.** Su esquema NO TIENE campo para
+  "esto no cierra, pregunta". El de hoy la agarra 15 de 15. Es la mitad de la
+  regla cero y el viejo no la podia expresar.
+- **los destinos por item**: Cordoba y Posadas 9 de 15, Concordia 6 de 15.
+- **las cantidades de a dos: 9 de 15.** Con los campos disponibles en su propio
+  esquema. No es un problema de traduccion: se equivoca.
+- el rubro memorias, 3 de 15.
+
+**PERO GANA EN UNA, Y ES LA QUE HOY FALLA 15 DE 15: `pago_reparto` tipado.** El
+viejo lo entiende SIEMPRE, `[{medio, porcentaje}]`, al primer intento. **La
+intuicion de Martin era correcta en el punto concreto, y equivocada en el
+general.** Ese campo, y solo ese, es lo que hay que traer de vuelta.
+
+**UNA TRAMPA QUE CASI SE COME EL RESULTADO:** la primera corrida del viejo dio
+CERO en todo, y era PLOMERIA -le faltaba `app.core.recall_modelos`, borrado el
+1-ago-, no calidad. Reportar ese cero como "el viejo es malo" habria sido la
+cuarta vez en el dia de dar por bueno un numero sin mirarlo.
+
+**LA LIMITACION, dicha:** entre los dos esquemas hay un traductor de nombres de
+campo, y es lo unico que puede mentir en esta medicion. Esta a la vista y es
+corto. Las fallas de cantidades y de rubro no son suyas: el viejo tiene esos
+campos y los llena mal.
+
+---
+
 **==== 7-AGO-2026 (cierre) — LA INTERPRETACION ENTIENDE 91 Y ES ESTABLE ====**
 
 **LA PREGUNTA DE MARTIN: ¿la interpretacion, que era lo que funcionaba bien,
