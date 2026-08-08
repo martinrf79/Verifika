@@ -1256,7 +1256,9 @@ def _reparto_de_pago_declarado(llamadas: list, declarado: dict, tienda_id: str,
     if idx is None:
         return llamadas
     args = dict(llamadas[idx].get("pedido") or {})
-    amb = P.reparto_ambiguo((declarado or {}).get("restricciones"))
+    # EL CAMPO TIPADO PRIMERO, la lectura de castellano como red.
+    amb = (P.reparto_declarado(declarado)
+           or P.reparto_ambiguo((declarado or {}).get("restricciones")))
     if not amb:
         return llamadas
     _, mayor, menor = amb
@@ -1331,7 +1333,8 @@ def _supuesto_de_pago(llamadas: list, declarado: dict, tienda_id: str,
     partes = ((llamadas[idx].get("pedido") or {}).get("pago") or [])
     if len(partes) < 2:
         return llamadas
-    amb = P.reparto_ambiguo((declarado or {}).get("restricciones"))
+    amb = (P.reparto_declarado(declarado)
+           or P.reparto_ambiguo((declarado or {}).get("restricciones")))
     if not amb:
         return llamadas
     ambigua = amb[0]

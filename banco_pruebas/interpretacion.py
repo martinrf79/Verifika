@@ -75,8 +75,12 @@ def medir_declaracion(d: dict) -> list:
         ("destino_posadas", "posadas" in dest_txt, "Posadas"),
         ("criterio_de_origen", "chin" in restr or "chin" in _n(str(d)),
          "las menos partes chinas posibles"),
+        # Se acepta por el campo TIPADO -el camino bueno- o por la frase en
+        # restricciones, que es la red. Lo que se mide es si ENTENDIO el
+        # reparto, no por que puerta lo declaro.
         ("reparto_de_pago",
-         any(x in restr for x in ("70", "setenta", "30", "treinta")),
+         bool(d.get("reparto_pago"))
+         or any(x in restr for x in ("70", "setenta", "30", "treinta")),
          "el reparto 70/30"),
         ("contradiccion_del_teclado", "teclado" in contra,
          "el teclado nombrado en el envio y no en el pedido"),

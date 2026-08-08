@@ -191,8 +191,15 @@ class ItemPedido(BaseModel):
 
 
 class PartePago(BaseModel):
-    medio: Literal["transferencia", "mercado pago"] = Field(
-        description="Con que paga esta parte.")
+    # EL MEDIO PUEDE VENIR VACIO, y es a proposito. Medido en produccion dos
+    # dias seguidos: "divide el presupuesto en setenta treinta" NO dice que
+    # medio lleva cada parte, y cuando el modelo elegia en silencio elegia
+    # DISTINTO cada vez -y como la transferencia tiene descuento, ese silencio
+    # le cambiaba al cliente lo que paga-. Ahora puede declarar el reparto sin
+    # inventar el medio, y el supuesto lo pone el codigo, declarado en la cuenta.
+    medio: Literal["transferencia", "mercado pago", ""] = Field(
+        "", description="Con que paga esta parte. Vacio si el cliente no lo "
+                        "dijo: NO lo elijas vos.")
     porcentaje: float = Field(description="Que porcentaje del total va por ahi.")
 
 
@@ -277,6 +284,39 @@ class RegistrarPedido(BaseModel):
                           "pedido, dos cosas incompatibles. Escribi cada una "
                           "como la duda concreta que le harias al cliente. Si "
                           "todo cierra, vacio.")
+    # ── EL CAMPO QUE VOLVIO DEL INTERPRETE VIEJO (Martin, 7-ago-2026) ────────
+    #
+    # ES EL UNICO QUE VOLVIO, y no es una corazonada: salio de medir los dos
+    # interpretes con la misma vara, cinco redacciones por tres corridas.
+    #
+    #   ENTIENDE el mensaje    interprete viejo 69    el de hoy 91
+    #
+    # O sea que la decision del 1-ago de matar el interprete NO fue un error: el
+    # de hoy entiende mejor y sobre todo es ESTABLE -exactamente 91 en las cinco
+    # redacciones, mientras el viejo va de 45 a 82 segun como este escrito el
+    # mensaje-. Pero el viejo GANA EN UNA SOLA COSA, y es la que hoy falla
+    # SIEMPRE: tenia `pago_reparto` tipado y entendia el reparto 15 de 15.
+    #
+    # EL AGUJERO QUE ESTO TAPA, medido: `RegistrarPedido` no tenia DONDE poner
+    # un reparto de pago. Sus campos eran items, restricciones, destinos,
+    # pide_precio y contradicciones, y un reparto no entra en ninguno, asi que
+    # el modelo lo tiraba: 15 de 15 corridas sin declararlo. En la charla real
+    # del 6-ago eso costo $17.500 la primera vez -la cuenta salio sin reparto- y
+    # $9.140 la segunda -el modelo lo puso al reves, con la parte grande en el
+    # medio SIN descuento-.
+    #
+    # POR QUE TIPADO Y NO UNA FRASE. Mientras viajaba como texto libre en
+    # `restricciones`, el codigo tenia que leer castellano: la primera version
+    # leia "70/30" y se caia con "setenta treinta", que es como lo escribio
+    # Martin. Traducir la frase a dos numeros es lo unico que un modelo hace
+    # mejor que cualquier regex. Con el campo tipado esa clase de falla no puede
+    # existir, y se BORRA codigo en vez de agregar.
+    reparto_pago: list[PartePago] | None = Field(
+        None, description="Si el cliente pidio dividir el pago, el reparto ya "
+                          "resuelto en numeros: 'setenta treinta', '70/30' o "
+                          "'mitad y mitad' se declaran acá como porcentajes que "
+                          "suman 100. Si no dijo con qué medio paga cada parte, "
+                          "poné el medio en null y lo resuelve el sistema.")
 
 
 _MOLDES = {

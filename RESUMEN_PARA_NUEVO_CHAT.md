@@ -28,6 +28,31 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
+**==== ⛳ EL OBJETIVO DEL CHAT NUEVO (Martin, 7-ago-2026, cierre) ====**
+
+> ## REDUCIR DRASTICAMENTE EL TAMAÑO DE LOS MENSAJES
+>
+> Y **sin dejar de insistir con preguntas dificiles**, que siguen siendo el
+> borde donde se pierde la venta.
+>
+> **EL NUMERO DE ARRANQUE, medido el 7-ago en vivo:** hasta "tenes mouse
+> inalambrico?" sale en **2 o 3 mensajes de WhatsApp**. La pregunta dificil sale
+> en **1.800 a 2.000 caracteres y 3 mensajes**. Para un cliente real eso es un
+> muro, y es de lo primero que se nota contra la competencia.
+>
+> **CON QUE SE MIDE, y ya existe:** `banco_pruebas/objetivo.py --vivo` reporta
+> el largo de cada respuesta, y `tests/test_charlas_grabadas.py` tiene el tope
+> `largo_max` en el piso. **Bajar ese tope es la tarea.** No se toca la nota:
+> si el mensaje se acorta y la nota baja, no sirvio.
+>
+> **LO QUE YA SE SABE QUE SOBRA**, de leer las respuestas de hoy:
+> el saludo institucional en cada primer mensaje, el bloque de hallazgo pegado
+> ENTERO cuando ya hay cuenta, la coletilla de formas de pago que nadie pidio,
+> y la advertencia del reparto de envios repetida en prosa despues de estar en
+> el bloque.
+
+---
+
 **==== EL MARCADOR — UN SOLO NUMERO, Y ES EL QUE MANDA ====**
 
 > ## De las 40 preguntas de Martin, cuantas tienen la parte de CODIGO medida y en verde

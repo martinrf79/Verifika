@@ -105,14 +105,46 @@ def _dos_porcentajes(texto: str):
     return None
 
 
-def reparto_ambiguo(restricciones) -> tuple:
-    """La restriccion que es UN REPARTO DE PAGO y no dice que medio lleva cada
-    parte. Devuelve (texto_tal_cual, mayor, menor) o ().
+def reparto_declarado(pedido: dict) -> tuple:
+    """EL REPARTO DE PAGO, LEIDO DEL CAMPO TIPADO. Devuelve (texto, mayor,
+    menor) o ().
 
-    "Divide el presupuesto en setenta treinta" es dos porcentajes que suman 100
-    y ningun medio nombrado. No es un filtro de producto, no es un orden y no es
-    un tema de la FAQ: es el argumento `pago` de la cuenta, y el unico lugar
-    donde puede viajar.
+    ESTE ES EL CAMINO BUENO, y desde el 7-ago es el primero que se mira.
+    `registrar_pedido.reparto_pago` es una lista de {medio, porcentaje} que
+    llena el MODELO, que es quien sabe traducir "setenta treinta" a dos numeros.
+    El codigo no lee castellano: lee dos enteros.
+
+    Solo devuelve algo cuando el reparto es AMBIGUO en el medio -ninguna parte
+    dice con que se paga-, porque ese es el unico caso que el codigo resuelve
+    solo, asumiendo y declarando el supuesto. Si el cliente SI dijo el medio, el
+    reparto viaja tal cual y no hay nada que asumir.
+    """
+    partes = [p for p in (pedido or {}).get("reparto_pago") or []
+              if isinstance(p, dict)]
+    if len(partes) != 2:
+        return ()
+    try:
+        pcts = [float(p.get("porcentaje") or 0) for p in partes]
+    except (TypeError, ValueError):
+        return ()
+    if abs(sum(pcts) - 100) > 1 or min(pcts) <= 0:
+        return ()
+    if any(_norm(p.get("medio")) for p in partes):
+        return ()                      # el cliente dijo el medio: nada que asumir
+    a, b = int(max(pcts)), int(min(pcts))
+    return (f"reparto {a}/{b}", a, b)
+
+
+def reparto_ambiguo(restricciones) -> tuple:
+    """LA RED, para cuando el modelo no llena el campo tipado. Lee los
+    porcentajes de una restriccion escrita en castellano.
+
+    QUEDA COMO SEGUNDA OPCION, no como la primera. Nacio el 7-ago leyendo solo
+    digitos, se cayo con "setenta treinta" -que es como lo escribio Martin-, y
+    se le agregaron las letras. Esa rueda es exactamente la que el campo tipado
+    viene a cortar: mientras el codigo tenga que leer castellano, siempre va a
+    haber una forma de decirlo que no contemple. Si `reparto_declarado` empieza
+    a acertar siempre, esta funcion se borra.
     """
     for r in (restricciones or []):
         t = _norm(r)
@@ -417,7 +449,8 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
     #    el turno paga 8 segundos por nada. Y encima el reparto se perdia igual.
     #    Ahora no se reclama: lo aplica el CODIGO despues del bucle, con el
     #    supuesto declarado en la cuenta. Ver `_reparto_de_pago_declarado`.
-    ambiguo = reparto_ambiguo(pedido.get("restricciones"))
+    ambiguo = (reparto_declarado(pedido)
+               or reparto_ambiguo(pedido.get("restricciones")))
     for r in (pedido.get("restricciones") or []):
         if ambiguo and str(r) == ambiguo[0]:
             continue

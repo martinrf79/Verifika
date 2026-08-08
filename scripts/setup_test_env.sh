@@ -72,6 +72,25 @@ LOS TRES NUMEROS QUE MANDAN, y se calculan solos:
      medida sin reloj.
 Los tres tienen candado en tests/ y corren en cada push.
 
+>>> OBJETIVO DEL CHAT NUEVO: REDUCIR DRASTICAMENTE EL LARGO DE LOS MENSAJES,
+    sin dejar de insistir con preguntas dificiles. Hoy hasta "tenes mouse
+    inalambrico?" sale en 2 o 3 mensajes de WhatsApp, y la dificil en 1.800 a
+    2.000 caracteres. Se mide con objetivo.py --vivo (reporta largo) y con el
+    tope largo_max del piso de las charlas. La nota NO puede bajar.
+
+LOS INSTRUMENTOS NUEVOS DEL 7-AGO, y son lo que mas dura:
+  python3 banco_pruebas/objetivo.py [--vivo] -> la nota contra el objetivo, 5
+     redacciones x 3 corridas. Genera OBJETIVO.md con historial ENTRE SESIONES.
+     Regla de tau-bench: estado final x comunicacion. No se gana hablando.
+  python3 banco_pruebas/comunes.py    -> las 10 de todos los dias. Hoy 100/100,
+     y clasifica cada falla en culpa `atadura` o culpa `codigo`.
+  python3 banco_pruebas/interpretacion.py -> separa ENTENDER de CONTESTAR. El
+     7-ago: entiende 91 y es estable en las 5 redacciones; contesta 61. La
+     perdida esta AGUAS ABAJO de entender.
+  python3 banco_pruebas/duelo_interprete.py -> el interprete viejo, congelado y
+     medido: 69 contra 91. Matarlo NO fue un error; solo se recupero su campo
+     `pago_reparto` tipado.
+
 PROXIMO PASO, acordado con Martin:
   A) HECHO el 6-ago: los casetes al dia, el test que los reproduce y el mapa
      contandolos. Zona ciega 47% -> 12%.
