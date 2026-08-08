@@ -162,6 +162,61 @@ pregunta no es "que rompi": es **"que estaba tapando lo que saque"**.
 
 ---
 
+**==== 7-AGO-2026 (cierre) — LA INTERPRETACION ENTIENDE 91 Y ES ESTABLE ====**
+
+**LA PREGUNTA DE MARTIN: ¿la interpretacion, que era lo que funcionaba bien,
+sigue funcionando? Porque si es asi, a lo mejor no estamos lejos de algo que se
+diferencie.** Medido con `banco_pruebas/interpretacion.py`, 5 redacciones x 3.
+
+| redaccion | ENTIENDE | CONTESTA |
+|---|---|---|
+| 1 textual de Martin | **91** | 83 |
+| 2 porcentajes en digitos | **91** | 62 |
+| 3 orden invertido | **91** | 47 |
+| 4 criterio dicho distinto | **91** | 64 |
+| 5 coloquial | **91** | 49 |
+| | **91** | **61** |
+
+**LOS TRES HALLAZGOS, y deciden la discusion de arquitectura del dia.**
+
+**1. LA INTERPRETACION ES LA PIEZA FUERTE, Y ES ESTABLE.** 91 sobre 100, y
+**EXACTAMENTE 91 en las cinco redacciones y en las quince corridas**. No se
+mueve un punto segun como este escrito el mensaje. La respuesta, en cambio, va
+de 47 a 83 con el mismo contenido. **La estabilidad esta en entender; la
+inestabilidad esta despues.** Entiende los tres rubros, las cantidades de a dos,
+los tres destinos, el criterio de origen y **la contradiccion del teclado**, 15
+de 15, con el mensaje escrito de cinco formas distintas. Eso es lo que Martin
+buscaba como diferencial, y esta medido.
+
+**2. EL CRUCE CIERRA LA DISCUSION: VOLVER AL INTERPRETE NO ARREGLA EL PROBLEMA
+PRINCIPAL.** De las 15 corridas, **las 15 entendieron bien** -90 o mas-. De
+esas, **solo 2 contestaron bien**. La nota media de respuesta CUANDO ENTENDIO
+BIEN es 61. O sea: el sistema entiende y despues pierde lo entendido. El
+problema esta **aguas abajo** de la interpretacion -el bucle, las herramientas,
+la redaccion-, no en ella. Reconstruir el interprete tipado entero seria
+trabajar donde no esta la falla.
+
+**3. PERO HAY UN CAMPO, UNO SOLO, QUE SI HAY QUE TRAER DE VUELTA.** Lo unico que
+la interpretacion NO entiende es el **reparto de pago: 15 de 15**. Y no es que
+el modelo sea torpe: **`RegistrarPedido` NO TIENE DONDE PONERLO.** Sus campos
+son items, restricciones, destinos, pide_precio y contradicciones. El reparto no
+entra en ninguno, asi que el modelo lo tira. El interprete viejo SI lo tenia, y
+tipado: `pago_reparto: [{medio, porcentaje}]`. **Es el campo que se perdio el
+1-ago al matar el interprete, y es exactamente la falla que costo $9.140 en la
+charla real del 6-ago.**
+
+**LO QUE ESTO CONVIERTE EN DECISION, y ya no en intuicion:** no se vuelve al
+interprete. Se le devuelve UN CAMPO TIPADO a `registrar_pedido`, que es
+quirurgico, y despues se trabaja aguas abajo, que es donde el cruce dice que
+esta la perdida. **Toda la sesion se discutio esto sin datos; ahora hay un
+numero que lo resuelve.**
+
+**LA LIMITACION, dicha:** la vara de interpretacion son 11 hechos de UNA
+pregunta. Que de 91 aca no garantiza 91 en otra. El instrumento queda para
+sumarle preguntas.
+
+---
+
 **==== 7-AGO-2026 (noche) — LAS COMUNES DAN 100. EL PROBLEMA NO ES PAREJO ====**
 
 **LA PREGUNTA QUE ABRIO ESTO, de Martin: si esta pregunta que el repo etiqueta
