@@ -110,8 +110,14 @@ def main(argv: list) -> int:
     reps = 3
     if "--repeticiones" in argv:
         reps = int(argv[argv.index("--repeticiones") + 1])
-    if os.environ.get("GEMINI_API_KEY_PROD"):
-        os.environ["GEMINI_API_KEY"] = os.environ["GEMINI_API_KEY_PROD"]
+    # LA CLAVE LA ELIGE UN SOLO LUGAR: `clon_produccion.preparar_entorno`,
+    # que desde el 4-ago tiene el default en la GRATIS y pide
+    # BANCO_CLAVE_PAGA=true para gastar. Aca habia dos lineas que la
+    # pisaban con la paga ANTES de que esa guarda corriera, asi que la
+    # guarda veia la paga puesta, decidia que "no hay clave gratis
+    # distinta" y la dejaba. La regla existia y cuatro scripts la
+    # esquivaban: la misma falla que este repo ya pago dos veces, una
+    # regla escrita en dos lados que quedaron distintas.
     from banco_pruebas import sim_firestore
     sim_firestore.install()
 

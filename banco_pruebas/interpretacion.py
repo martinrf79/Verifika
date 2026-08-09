@@ -90,8 +90,14 @@ def medir_declaracion(d: dict) -> list:
 def correr(repeticiones: int = 3) -> dict:
     import asyncio
     import os
-    if os.environ.get("GEMINI_API_KEY_PROD"):
-        os.environ["GEMINI_API_KEY"] = os.environ["GEMINI_API_KEY_PROD"]
+    # LA CLAVE LA ELIGE UN SOLO LUGAR: `clon_produccion.preparar_entorno`,
+    # que desde el 4-ago tiene el default en la GRATIS y pide
+    # BANCO_CLAVE_PAGA=true para gastar. Aca habia dos lineas que la
+    # pisaban con la paga ANTES de que esa guarda corriera, asi que la
+    # guarda veia la paga puesta, decidia que "no hay clave gratis
+    # distinta" y la dejaba. La regla existia y cuatro scripts la
+    # esquivaban: la misma falla que este repo ya pago dos veces, una
+    # regla escrita en dos lados que quedaron distintas.
     from banco_pruebas import clon_produccion as clon
     from app.core import hub_venta as HV
     clon.instalar()
@@ -124,7 +130,7 @@ def correr(repeticiones: int = 3) -> dict:
                 n_dec = round(100 * sum(1 for _, ok, _ in dec if ok)
                               / max(1, len(dec)))
                 n_res = nota(medir_estado(texto, _cuenta_del_texto(texto)),
-                             medir_comunicacion(texto))["nota"]
+                             medir_comunicacion(texto, msg))["nota"]
                 corridas.append({"entiende": n_dec, "contesta": n_res,
                                  "fallas": [k for k, ok, _ in dec if not ok],
                                  "declaro": declarado[0] if declarado else {}})

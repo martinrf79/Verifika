@@ -25,11 +25,11 @@ LAS DOS VARAS, y son distintas a proposito:
               IDEALES, las que el modelo tendria que pedir, y se mide QUE
               PRODUCE. Contesta: si el modelo pide bien, ¿el codigo entrega
               bien? Lo que falle aca no lo arregla ningun prompt.
-  `--vivo`    (con clave, a mano). Las CINCO REDACCIONES de la misma pregunta
+  `--vivo`    (con clave, a mano). Las SEIS REDACCIONES de la misma pregunta
               corren por `_process_and_reply_whatsapp`, el camino del webhook,
               con el modelo de verdad.
 
-POR QUE CINCO REDACCIONES Y NO UNA. Es la falla que Martin viene senalando hace
+POR QUE VARIAS REDACCIONES Y NO UNA. Es la falla que Martin viene senalando hace
 semanas: se arregla un caso, cambia una palabra, y se cae. Medido el 7-ago: el
 reparto de pago se arreglo leyendo "70/30" y se cayo con "setenta treinta",
 que es como lo escribio el. **Una sola redaccion no prueba nada.**
@@ -65,10 +65,10 @@ OBJETIVO = ("Que el bot conteste BIEN la pregunta real de Martin: seis "
             "contradiccion a proposito -un teclado que no estaba en el "
             "pedido- y un reparto de pago 70/30.")
 
-# LAS CINCO REDACCIONES. La misma pregunta, dicha distinto. La 1 es TEXTUAL la
-# que Martin mando por WhatsApp el 6-ago; las otras cuatro cambian lo que
-# historicamente rompio: numeros en letras contra digitos, el orden de las
-# clausulas, y las palabras del criterio de origen.
+# LAS REDACCIONES. La misma pregunta, dicha distinto. La 1 es TEXTUAL la que
+# Martin mando por WhatsApp el 6-ago y la 6 la que mando el 9-ago; las del medio
+# cambian lo que historicamente rompio: numeros en letras contra digitos, el
+# orden de las clausulas, y las palabras del criterio de origen.
 VARIANTES = {
     "1_textual_de_martin":
         "Dame precio de dos auriculares, dos mouse y dos memorias. El precio "
@@ -100,6 +100,24 @@ VARIANTES = {
         "partes chinas posible. un auricular y un mouse me los mandas a "
         "cordoba capital, un teclado y un mouse a concordia y los otros dos a "
         "posadas. el presupuesto partilo setenta treinta asi despues veo",
+    # LA SEXTA, Y ES LA QUE MARTIN MANDO POR WHATSAPP EL 9-AGO A LAS 14:13.
+    # Es la misma pregunta con la contradiccion SACADA a proposito: donde antes
+    # decia "un teclado y un mouse a Concordia" ahora dice "una memoria y un
+    # mouse". Con eso los seis cierran por resta y no queda una sola arista:
+    # Cordoba se lleva un auricular y un mouse, Concordia una memoria y un
+    # mouse, y a Posadas van el auricular y la memoria que sobran.
+    #
+    # POR QUE IMPORTA MEDIRLA APARTE. Es el caso limpio: si el bot falla aca no
+    # se puede echar la culpa a la ambiguedad del mensaje. Corrida en
+    # produccion -trace 57ad6a0d- el modelo la dedujo PERFECTO y el turno salio
+    # mal igual, por tres cables del codigo.
+    "6_sin_teclado_los_seis_cierran":
+        "Dame precio de dos auriculares, dos mouse y dos memorias. El precio "
+        "no sería tan importante. Lo que sí que necesito que lleven las menos "
+        "partes chinas posibles. Un auricular y un mouse será envío a Córdoba "
+        "capital. Una memoria y un mouse será envío a Concordia. Los otros dos "
+        "artículos serán con envío a posadas. Divide el presupuesto en setenta "
+        "treinta, ya que veré en la fase siguiente cómo seguimos.",
 }
 
 
@@ -164,10 +182,20 @@ NO_PUEDE_DECIR = [
 ]
 
 
-def medir_comunicacion(texto: str) -> list:
+def medir_comunicacion(texto: str, mensaje: str = "") -> list:
+    """LO QUE HAY QUE DECIR DEPENDE DE LO QUE EL CLIENTE DIJO.
+
+    "Preguntar por el teclado" es obligatorio solo cuando el cliente nombro un
+    teclado. La sexta redaccion -la que Martin mando el 9-ago- lo saco a
+    proposito, y exigirle igual esa pregunta seria pedirle al bot que invente
+    una duda que nadie planteo. Sin `mensaje` la vara queda como estaba, asi que
+    ningun banco viejo cambia de numero por esto.
+    """
     t = _n(texto)
     fuera = []
     for alt, por_que in DEBE_DECIR:
+        if mensaje and alt[0] == "teclado" and "teclado" not in _n(mensaje):
+            continue
         fuera.append((f"dice: {alt[0]}", any(_n(a) in t for a in alt), por_que))
     for alt, por_que in NO_PUEDE_DECIR:
         malas = [a for a in alt if _n(a) in t]
@@ -294,35 +322,62 @@ def correr_vivo(tienda_id: str = TIENDA, repeticiones: int = 3) -> dict:
     """
     import asyncio
     import os
-    if os.environ.get("GEMINI_API_KEY_PROD"):
-        os.environ["GEMINI_API_KEY"] = os.environ["GEMINI_API_KEY_PROD"]
+    # LA CLAVE LA ELIGE UN SOLO LUGAR: `clon_produccion.preparar_entorno`,
+    # que desde el 4-ago tiene el default en la GRATIS y pide
+    # BANCO_CLAVE_PAGA=true para gastar. Aca habia dos lineas que la
+    # pisaban con la paga ANTES de que esa guarda corriera, asi que la
+    # guarda veia la paga puesta, decidia que "no hay clave gratis
+    # distinta" y la dejaba. La regla existia y cuatro scripts la
+    # esquivaban: la misma falla que este repo ya pago dos veces, una
+    # regla escrita en dos lados que quedaron distintas.
     from banco_pruebas import clon_produccion as clon
     clon.instalar()
 
-    filas = []
+    from app.core import llm_reintento as LR
+
+    filas, invalidas = [], 0
     for nombre, msg in VARIANTES.items():
         notas, corridas = [], []
         for i in range(max(1, repeticiones)):
             usuario = f"objetivo_{nombre}_{i}"
             clon.reiniciar_cliente(usuario)
+            # EL CUPO SE MIDE POR TURNO. Si el proveedor nego la llamada, esta
+            # corrida no probo el codigo: no se puntua, se descarta. Ver el
+            # comentario largo en `app/core/llm_reintento.py`.
+            LR.reiniciar_cupo()
             partes = asyncio.get_event_loop().run_until_complete(
                 clon.turno(usuario, msg))
             texto = "\n".join(partes)
+            cupo = LR.sin_cupo()
+            if cupo["veces"]:
+                invalidas += 1
+                corridas.append({"invalida": True, "largo": len(texto),
+                                 "texto": texto, "motivo": cupo["ultimo"],
+                                 "estado": [], "comunicacion": [],
+                                 "nota": {"nota": None}})
+                continue
             # El estado se lee del texto final: es lo unico que el cliente ve.
             est = medir_estado(texto, _cuenta_del_texto(texto))
-            com = medir_comunicacion(texto)
+            com = medir_comunicacion(texto, msg)
             n = nota(est, com)
             notas.append(n["nota"])
             corridas.append({"nota": n, "estado": est, "comunicacion": com,
-                             "largo": len(texto), "texto": texto})
+                             "largo": len(texto), "texto": texto,
+                             "invalida": False})
+        validas = [c for c in corridas if not c.get("invalida")]
         filas.append({"variante": nombre, "corridas": corridas,
-                      "prom": round(sum(notas) / len(notas)),
-                      "min": min(notas), "max": max(notas),
-                      "largo": round(sum(c["largo"] for c in corridas)
-                                     / len(corridas))})
-    prom = round(sum(f["prom"] for f in filas) / max(1, len(filas)))
-    peor = min(f["min"] for f in filas) if filas else 0
+                      "medidas": len(validas), "de": len(corridas),
+                      "prom": round(sum(notas) / len(notas)) if notas else None,
+                      "min": min(notas) if notas else None,
+                      "max": max(notas) if notas else None,
+                      "largo": (round(sum(c["largo"] for c in validas)
+                                      / len(validas)) if validas else None)})
+    con_nota = [f for f in filas if f["prom"] is not None]
+    prom = (round(sum(f["prom"] for f in con_nota) / len(con_nota))
+            if con_nota else None)
+    peor = min((f["min"] for f in con_nota), default=None)
     return {"modo": "vivo", "variantes": filas, "repeticiones": repeticiones,
+            "invalidas": invalidas,
             "nota": {"nota": prom, "peor": peor}}
 
 
@@ -369,13 +424,13 @@ Sierra, que está probado:
    había que decir vale cero, y un mensaje lindo con la cuenta mal, también.
    **No se gana hablando.**
 
-Y se mide sobre **cinco redacciones** de la misma pregunta, no una. Ésa es la
+Y se mide sobre **varias redacciones** de la misma pregunta, no una. Ésa es la
 falla que más costó: el reparto de pago se arregló leyendo `70/30` y se cayó con
 `setenta treinta`, que es como lo escribió Martín.
 
 ```bash
 python3 banco_pruebas/objetivo.py            # la nota de código, gratis
-python3 banco_pruebas/objetivo.py --vivo     # las 5 redacciones, con el modelo
+python3 banco_pruebas/objetivo.py --vivo     # las redacciones, con el modelo
 python3 banco_pruebas/objetivo.py --anotar "qué cambié"
 ```
 """
@@ -397,11 +452,22 @@ def _tabla(res: dict) -> str:
         r = res.get("repeticiones", 1)
         lineas = [f"| redacción | promedio de {r} | peor | mejor | largo |",
                   "|---|---|---|---|---|"]
+        def _v(x):
+            return "sin medir" if x is None else x
         for f in res["variantes"]:
-            lineas.append(f"| {f['variante']} | **{f['prom']}** | {f['min']} | "
-                          f"{f['max']} | {f['largo']} |")
-        lineas.append(f"\n**Promedio: {res['nota']['nota']}/100 — "
-                      f"PEOR CASO: {res['nota']['peor']}/100**")
+            marca = ("" if f.get("medidas") == f.get("de")
+                     else f" — {f.get('medidas')} de {f.get('de')} medidas")
+            lineas.append(f"| {f['variante']} | **{_v(f['prom'])}**{marca} | "
+                          f"{_v(f['min'])} | {_v(f['max'])} | {_v(f['largo'])} |")
+        lineas.append(f"\n**Promedio: {_v(res['nota']['nota'])}/100 — "
+                      f"PEOR CASO: {_v(res['nota']['peor'])}/100**")
+        # LA CORRIDA QUE EL PROVEEDOR NEGO NO ES UN CERO: NO SE MIDIO.
+        if res.get("invalidas"):
+            lineas.append(
+                f"\n> ⚠️ **{res['invalidas']} corridas quedaron SIN MEDIR** "
+                f"porque el proveedor negó la llamada por cuota. No cuentan "
+                f"como nota. Si son muchas, el número de arriba vale poco: "
+                f"conseguí cupo y volvé a correr.")
         lineas.append("\nEl que manda para vender es el PEOR, no el promedio: "
                       "es el que le puede tocar a un cliente real.")
         # QUE FALLA, NO SOLO CUANTO. La vara viva daba el numero y nada mas, y
@@ -414,12 +480,14 @@ def _tabla(res: dict) -> str:
         total = 0
         for f in res["variantes"]:
             for c in f["corridas"]:
+                if c.get("invalida"):
+                    continue
                 total += 1
                 for nombre, ok, _ in c["estado"] + c["comunicacion"]:
                     if not ok:
                         conteo[nombre] = conteo.get(nombre, 0) + 1
-        if conteo:
-            lineas.append(f"\n**Lo que falla, sobre {total} corridas:**")
+        if conteo and total:
+            lineas.append(f"\n**Lo que falla, sobre {total} corridas medidas:**")
             for nombre, veces in sorted(conteo.items(), key=lambda x: -x[1]):
                 lineas.append(f"- {veces}/{total} — {nombre}")
     return "\n".join(lineas)
@@ -479,7 +547,12 @@ def main(argv: list) -> int:
         f = d / f"{datetime.datetime.now():%Y%m%d_%H%M}_objetivo.md"
         partes = [f"# La peor corrida de cada redaccion\n\n{_tabla(res)}\n"]
         for fila in res["variantes"]:
-            peor = min(fila["corridas"], key=lambda c: c["nota"]["nota"])
+            medidas = [c for c in fila["corridas"] if not c.get("invalida")]
+            if not medidas:
+                partes.append(f"\n## {fila['variante']} — SIN MEDIR: el "
+                              f"proveedor negó todas las llamadas por cuota\n")
+                continue
+            peor = min(medidas, key=lambda c: c["nota"]["nota"])
             fallas = [n for n, ok, _ in peor["estado"] + peor["comunicacion"]
                       if not ok]
             partes.append(f"\n## {fila['variante']} — {peor['nota']['nota']}"

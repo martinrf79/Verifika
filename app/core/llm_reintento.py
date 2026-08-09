@@ -25,6 +25,45 @@ _TRANSITORIO = ("429", "500", "502", "503", "504", "overloaded",
                 "unavailable", "timeout", "timed out", "quota", "rate limit")
 
 
+# ── EL CUPO AGOTADO, PARA QUE UNA MEDICION NO MIENTA ────────────────────────
+#
+# POR QUE EXISTE (9-ago-2026, y costo una corrida entera). La clave paga se
+# quedo sin credito a mitad de una corrida de `objetivo.py --vivo`. Cinco de
+# quince turnos nunca le hablaron al modelo y salieron con el fallback "dejame
+# consultar", que la vara puntua CERO. El resultado -promedio 54, peor caso 0-
+# se leia como una regresion enorme del codigo, y no habia ninguna: el codigo
+# de esas cinco corridas jamas corrio.
+#
+# Una vara que confunde "el proveedor no contesto" con "el bot contesto mal"
+# manda a arreglar lo que no esta roto, que es la forma mas cara de perder un
+# dia. Aca se anota el hecho UNA vez, en el unico lugar por donde pasan las dos
+# llamadas al modelo, y el banco lo lee para marcar la corrida como INVALIDA en
+# vez de puntuarla.
+#
+# NO cambia el comportamiento del bot: solo cuenta. En produccion el contador
+# sube y nadie lo mira, que es exactamente lo que tiene que pasar.
+_SIN_CUPO = ("credits are depleted", "quota", "resource_exhausted",
+             "resource exhausted", "rate limit", "429")
+
+_cupo: dict = {"veces": 0, "ultimo": ""}
+
+
+def anotar_sin_cupo(e: BaseException) -> None:
+    s = str(e).lower()
+    if any(m in s for m in _SIN_CUPO):
+        _cupo["veces"] += 1
+        _cupo["ultimo"] = str(e)[:160]
+
+
+def sin_cupo() -> dict:
+    """Cuantas veces el proveedor nego la llamada por cuota, y con que texto."""
+    return dict(_cupo)
+
+
+def reiniciar_cupo() -> None:
+    _cupo["veces"], _cupo["ultimo"] = 0, ""
+
+
 def es_transitorio(e: BaseException) -> bool:
     if isinstance(e, (asyncio.TimeoutError, TimeoutError)):
         return True
@@ -53,6 +92,10 @@ async def llamar_con_reintento(fn, *, timeout_s: float | None = None,
                             error=str(e)[:80], trace_id=trace_id)
                 await asyncio.sleep(base_s * (2 ** i))
                 continue
+            # Se anota SOLO cuando los reintentos se agotaron: una rafaga de
+            # 429 que el backoff absorbe no ensucia nada y no tiene que
+            # invalidar una medicion que salio bien.
+            anotar_sin_cupo(e)
             raise
     assert ultimo is not None
     raise ultimo
