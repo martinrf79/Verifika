@@ -92,9 +92,55 @@ que no aplicarla. "La menor cantidad de partes chinas posible" no la tiene, asi
 que en la busqueda repuesta el criterio de origen NO viaja como filtro. Queda
 en el test con su motivo. Es candidato a proximo paso, con numero.
 
-**LOS CONTROLES:** 531 tests verdes -2 nuevos-, las 40 en 40 de 40, el mapa en
+**CAUSA TRES: LA MINIMIZACION ES UNA FORMA, NO UNA PALABRA.** "menos partes
+chinas posibles" resolvia a un filtro y "la MENOR cantidad de partes chinas
+posible" -como lo dijo Martin en la coloquial- devolvia None: el unico criterio
+que el cliente puso, y la unica razon por la que escribio, se perdia entero.
+Faltaban `menor`, `minima` y `minimo` al lado de `menos`, que estaba desde el
+5-ago. **La contracara tiene test:** "quiero productos chinos", "mouse chino",
+"para mi hijo menor" y "el precio menor posible" siguen sin resolver a nada.
+
+**CAUSA CUATRO, Y FUE UN DEFECTO PROPIO DE ESTA SESION: EL ITEM EN DUDA SE
+PREGUNTA, NO SE COTIZA.** Con la busqueda repuesta puesta, la coloquial cotizo
+SIETE unidades: el modelo declaro el teclado como item Y como contradiccion a
+la vez, el codigo lo busco y la cuenta le sumo $12.000 que el cliente no pidio.
+Declararlo en los dos lados es el modelo diciendo que no esta seguro. Con
+salvaguarda y test: una contradiccion que nombra TODOS los items no descarta
+nada. **Lo cazo el instrumento nuevo en la misma sesion en que nacio.**
+
+**LAS TRES CORRIDAS VIVAS DEL DIA, mismo dia y misma clave:**
+
+| | arranque | +busqueda | +minimizacion y duda |
+|---|---|---|---|
+| promedio | 65 | 82 y 86 | **89** |
+| peor caso | 0 | 62 y 73 | 62 |
+| redaccion 5 | 8 | 71 y 75 | **79**, con un 100 |
+| `seis_unidades` | — | 4/15 | **2/15** |
+
+El promedio subio parejo -82, 86, 89-. **El peor caso oscila 62-73 entre
+corridas, asi que de ese numero no se puede afirmar mejora desde la corrida
+anterior; si desde el arranque, que era 0.**
+
+**EL TECHO AHORA TIENE NOMBRE Y NUMERO, Y ES EL PROXIMO PASO:
+`cada_unidad_con_destino` falla 10 de 15.** El cliente dice a donde va cada
+cosa, el modelo declara los destinos en una lista SUELTA y no los pega a cada
+item, el reconciliador se lo pide y no obedece -la misma historia de siempre-.
+El codigo no puede repartirlo sin interpretar la frase del cliente, y eso seria
+inventar. **La palanca es la ATADURA: que el destino solo pueda declararse
+pegado al item, sacando la lista suelta de `RegistrarPedido`.** No se hizo acá
+a proposito: es de otro tamaño y mezclarlo con lo medido dejaba sin saber cual
+movio el numero.
+
+**LOS CONTROLES:** 535 tests verdes -6 nuevos-, las 40 en 40 de 40, el mapa en
 37 de 337 a ciegas -11%, venia de 37 de 315-, o sea que el codigo nuevo entro
 cubierto.
+
+**EL INSTRUMENTO, MEJORADO, Y ES LO QUE MAS DURA.** `objetivo.py --vivo` daba
+el numero y nada mas: enterarse de en que se pierde costaba una corrida entera
+de la clave paga. Ahora cuenta cada vara por las corridas en que fallo -la que
+aparece en las quince es un defecto del sistema, la que aparece en una es ruido
+del modelo- y guarda en `banco_pruebas/corridas/` el texto de la PEOR corrida
+de cada redaccion con sus fallas. Las causas tres y cuatro salieron de ahi.
 
 ---
 

@@ -31,25 +31,16 @@ python3 banco_pruebas/objetivo.py --vivo     # las 5 redacciones, con el modelo
 python3 banco_pruebas/objetivo.py --anotar "qué cambié"
 ```
 
-## La medición de hoy — vara `vivo`
+## La medición de hoy — vara `codigo`
 
-| redacción | promedio de 3 | peor | mejor | largo |
-|---|---|---|---|---|
-| 1_textual_de_martin | **88** | 75 | 100 | 1457 |
-| 2_porcentajes_en_digitos | **83** | 73 | 88 | 1591 |
-| 3_orden_invertido | **92** | 88 | 100 | 1572 |
-| 4_criterio_dicho_distinto | **92** | 88 | 100 | 1529 |
-| 5_coloquial | **75** | 75 | 75 | 1585 |
+| vara | resultado |
+|---|---|
+| estado final | 8/8 |
+| comunicación | 6/6 |
+| **NOTA** | **100/100** |
 
-**Promedio: 86/100 — PEOR CASO: 73/100**
-
-El que manda para vender es el PEOR, no el promedio: es el que le puede tocar a un cliente real.
-
-**Lo que falla, sobre 15 corridas:**
-- 11/15 — cada_unidad_con_destino
-- 4/15 — seis_unidades
-- 1/15 — tres_envios_cotizados
-- 1/15 — dice: china
+**Lo que falla hoy:**
+- nada: la vara de código está en verde.
 
 ## Bifurcaciones abiertas
 
@@ -67,3 +58,4 @@ _Cuando aparezcan dos caminos, se anotan acá con su razón y su costo, para que
 | 2026-08-08 | codigo | 100 | REDACTOR ATADO POR MOLDE: probado y descartado. Vivo 56 contra control 55 y contra 69/58 de lo que ya estaba puesto, sin acortar mas (largo 1.366). El molde no se cayo ni una vez y el turno SIN bloque quedo garantizado en 417-465, pero cuesta regrabar los casetes en cada cambio de contrato. Se revierte. |
 | 2026-08-08 | codigo | 100 | El muro cae en sus SEIS redacciones -se persigue la FORMA, no la frase- y las tres pedidas de confirmacion bajan de 380 a 130 caracteres. Vivo 65, largo 1.249: el largo mas bajo medido y la nota en el techo de la banda anterior. El candado cazo 8 muros en la corrida contra 3 antes, incluida una SEPTIMA redaccion nueva. |
 | 2026-08-09 | codigo | 100 | LA BIMODALIDAD, CERRADA. Dos causas, las dos deterministas y ninguna de redaccion. 1) El null que el molde PEDIA y RECHAZABA: registrar_pedido volvia pedido_mal_formado y el turno salia mudo. Saneado en la puerta unica, con barrido que cubre TODOS los moldes. 2) El rubro declarado y nunca buscado: el modelo declara los tres rubros y no busca ninguno; el reconciliador se lo pide y la ronda dos vuelve VACIA. Ahora lo busca el codigo, la tercera cara de la moneda que ya estaba escrita dos veces en hub_venta. VIVO: la redaccion 5 de 6 a 71, la 2 de 50 a 78, promedio 64 a 82 y el PEOR CASO de 0 a 62, que es el que manda. Largo 1.487: subio, porque el mensaje que antes no cotizaba nada ahora entrega el presupuesto entero. |
+| 2026-08-09 | codigo | 100 | A FONDO: cerrada la bimodalidad y dos defectos mas. 3) La MINIMIZACION es una forma, no una palabra: 'menos' resolvia a filtro y 'la MENOR cantidad de partes chinas posible' -como lo dijo Martin- no, asi que el unico criterio del cliente se perdia. 4) El item EN DUDA se pregunta, no se cotiza: el modelo declaraba el teclado como item Y como contradiccion, el codigo lo buscaba y la cuenta le sumaba $12.000 que el cliente no pidio. VIVO, tres corridas del dia: promedio 82, 86 y 89 contra 65 al arrancar; la redaccion 5 de 8 a 79 con un 100 en su mejor corrida; seis_unidades fallando 2 de 15 contra 4. El peor caso oscila 62-73 entre corridas. EL TECHO AHORA TIENE NOMBRE Y NUMERO: cada_unidad_con_destino falla 10 de 15 y es el proximo paso. |
