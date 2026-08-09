@@ -37,8 +37,25 @@ def test_el_cupo_agotado_se_anota_solo_cuando_se_agotan_los_reintentos():
     assert LR.sin_cupo()["veces"] == 1
     assert "depleted" in LR.sin_cupo()["ultimo"]
 
-    # Un error que NO es de cuota no se cuenta como cupo: es un defecto de
-    # verdad y tiene que puntuar.
+    # UN TIMEOUT TAMBIEN INVALIDA, y esta es la segunda vuelta de la misma
+    # leccion: `str(TimeoutError())` es la cadena VACIA, asi que buscar la
+    # palabra "429" en el texto lo dejaba pasar y esa corrida se puntuaba 0.
+    # Lo que importa no es como se llama el error: es que el modelo nunca
+    # contesto, asi que el codigo que se queria medir no corrio.
+    LR.reiniciar_cupo()
+
+    def siempre_timeout():
+        raise TimeoutError()
+
+    try:
+        asyncio.run(LR.llamar_con_reintento(siempre_timeout, base_s=0))
+    except TimeoutError:
+        pass
+    assert LR.sin_cupo()["veces"] == 1
+    assert LR.sin_cupo()["ultimo"], "sin texto igual hay que decir cual fue"
+
+    # Un error que NO es transitorio no se descarta: es un defecto de verdad y
+    # tiene que puntuar.
     LR.reiniciar_cupo()
 
     def rota_de_verdad():

@@ -21,26 +21,43 @@ Sierra, que está probado:
    había que decir vale cero, y un mensaje lindo con la cuenta mal, también.
    **No se gana hablando.**
 
-Y se mide sobre **cinco redacciones** de la misma pregunta, no una. Ésa es la
+Y se mide sobre **varias redacciones** de la misma pregunta, no una. Ésa es la
 falla que más costó: el reparto de pago se arregló leyendo `70/30` y se cayó con
 `setenta treinta`, que es como lo escribió Martín.
 
 ```bash
 python3 banco_pruebas/objetivo.py            # la nota de código, gratis
-python3 banco_pruebas/objetivo.py --vivo     # las 5 redacciones, con el modelo
+python3 banco_pruebas/objetivo.py --vivo     # las redacciones, con el modelo
 python3 banco_pruebas/objetivo.py --anotar "qué cambié"
 ```
 
-## La medición de hoy — vara `codigo`
+## La medición de hoy — vara `vivo`
 
-| vara | resultado |
-|---|---|
-| estado final | 8/8 |
-| comunicación | 6/6 |
-| **NOTA** | **100/100** |
+| redacción | promedio de 3 | peor | mejor | largo |
+|---|---|---|---|---|
+| 1_textual_de_martin | **92** | 88 | 100 | 1447 |
+| 2_porcentajes_en_digitos | **92** | 88 | 100 | 1956 |
+| 3_orden_invertido | **79** | 75 | 88 | 1542 |
+| 4_criterio_dicho_distinto | **54** | 0 | 88 | 965 |
+| 5_coloquial | **75** | 75 | 75 | 1744 |
+| 6_sin_teclado_los_seis_cierran | **96** | 88 | 100 | 1535 |
 
-**Lo que falla hoy:**
-- nada: la vara de código está en verde.
+**Promedio: 81/100 — PEOR CASO: 0/100**
+
+El que manda para vender es el PEOR, no el promedio: es el que le puede tocar a un cliente real.
+
+**Lo que falla, sobre 18 corridas medidas:**
+- 13/18 — cada_unidad_con_destino
+- 5/18 — seis_unidades
+- 3/18 — tres_envios_cotizados
+- 2/18 — la_parte_grande_por_transferencia
+- 1/18 — los_tres_rubros_en_la_cuenta
+- 1/18 — hay_total
+- 1/18 — reparto_de_pago_aplicado
+- 1/18 — descuento_en_la_cuenta
+- 1/18 — dice: china
+- 1/18 — dice: teclado
+- 1/18 — dice: 70
 
 ## Bifurcaciones abiertas
 

@@ -25,7 +25,7 @@ _TRANSITORIO = ("429", "500", "502", "503", "504", "overloaded",
                 "unavailable", "timeout", "timed out", "quota", "rate limit")
 
 
-# ── EL CUPO AGOTADO, PARA QUE UNA MEDICION NO MIENTA ────────────────────────
+# ── LA LLAMADA NEGADA, PARA QUE UNA MEDICION NO MIENTA ─────────────────────
 #
 # POR QUE EXISTE (9-ago-2026, y costo una corrida entera). La clave paga se
 # quedo sin credito a mitad de una corrida de `objetivo.py --vivo`. Cinco de
@@ -42,21 +42,28 @@ _TRANSITORIO = ("429", "500", "502", "503", "504", "overloaded",
 #
 # NO cambia el comportamiento del bot: solo cuenta. En produccion el contador
 # sube y nadie lo mira, que es exactamente lo que tiene que pasar.
-_SIN_CUPO = ("credits are depleted", "quota", "resource_exhausted",
-             "resource exhausted", "rate limit", "429")
-
+# NO ALCANZA CON MIRAR EL TEXTO "429", y se vio en la corrida siguiente. La
+# primera version buscaba palabras de cuota -"credits are depleted", "quota",
+# "429"- y dejo pasar un cero: `str(asyncio.TimeoutError())` es la cadena VACIA,
+# asi que el timeout no matcheaba nada y esa corrida se puntuo 0 igual que
+# antes. El hecho que importa no es COMO se llamo el error: es que la llamada al
+# modelo fallo definitivamente, y entonces el codigo que se queria medir nunca
+# corrio. Por eso se anota cuando se agotan los reintentos de un error
+# TRANSITORIO -cuota, 5xx, saturacion, timeout-, que es la misma definicion que
+# ya usa el reintento. Un error NO transitorio es un defecto de verdad y tiene
+# que puntuar como lo que es.
 _cupo: dict = {"veces": 0, "ultimo": ""}
 
 
-def anotar_sin_cupo(e: BaseException) -> None:
-    s = str(e).lower()
-    if any(m in s for m in _SIN_CUPO):
+def anotar_llamada_negada(e: BaseException) -> None:
+    if es_transitorio(e):
         _cupo["veces"] += 1
-        _cupo["ultimo"] = str(e)[:160]
+        _cupo["ultimo"] = (str(e)[:160] or f"{type(e).__name__} sin detalle")
 
 
 def sin_cupo() -> dict:
-    """Cuantas veces el proveedor nego la llamada por cuota, y con que texto."""
+    """Cuantas veces la llamada al modelo se cayo sin recuperarse, y con que
+    texto. El banco lo lee para marcar esa corrida como SIN MEDIR."""
     return dict(_cupo)
 
 
@@ -95,7 +102,7 @@ async def llamar_con_reintento(fn, *, timeout_s: float | None = None,
             # Se anota SOLO cuando los reintentos se agotaron: una rafaga de
             # 429 que el backoff absorbe no ensucia nada y no tiene que
             # invalidar una medicion que salio bien.
-            anotar_sin_cupo(e)
+            anotar_llamada_negada(e)
             raise
     assert ultimo is not None
     raise ultimo
