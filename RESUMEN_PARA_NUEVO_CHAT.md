@@ -28,6 +28,76 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
+**==== 9-AGO — LA BIMODALIDAD ESTABA CERRADA CON DOS CANDADOS, NO CON UNO ====**
+
+**EL PEOR CASO, QUE ES EL QUE MANDA PARA VENDER, PASO DE 0 A 62.**
+
+| redacción | 8-ago | 9-ago |
+|---|---|---|
+| 1 textual de Martin | 84 | 84 |
+| 2 porcentajes en digitos | 55 | **78** |
+| 3 orden invertido | 84 | 83 |
+| 4 criterio dicho distinto | 92 | 92 |
+| **5 coloquial** | **8 y 6** | **71** |
+| promedio | 65 | **82** |
+| **PEOR CASO** | **0** | **62** |
+
+La banda entre la mejor y la peor redaccion era de 6 a 92; hoy es de 71 a 92.
+**Las dos causas eran DETERMINISTAS y ninguna era de redaccion.** La 5 daba el
+mismo numero las tres corridas, que es lo que la delato: el modelo no es
+determinista, un bug si.
+
+**CAUSA UNO: EL NULL QUE EL MOLDE PEDIA Y DESPUES RECHAZABA.**
+
+    registrar_pedido -> pedido_mal_formado
+    reparto_pago.0.medio -- Input should be 'transferencia', 'mercado pago'
+    or '' [input_value=None]
+
+El modelo hizo EXACTAMENTE lo que la descripcion del campo le pedia -"si no
+dijo con que medio paga cada parte, pone el medio en null"- y el tipo, que
+acepta la cadena vacia pero no el null, lo tiro. Como `registrar_pedido` es lo
+primero del turno, se cayo todo lo de atras. Arreglado en la PUERTA UNICA,
+`herramientas.validar`, y no campo por campo: un campo que TIENE default no se
+rompe porque llegue null. **El barrido nuevo lo prueba en TODOS los moldes,
+incluidos los que se agreguen despues**, que es lo que lo convierte en
+experiencia y no en un parche.
+
+**CAUSA DOS, la que de verdad explicaba el 8: EL RUBRO DECLARADO Y NUNCA
+BUSCADO.** Con el null arreglado la 5 seguia en 6. El log, igual las tres veces:
+
+    ronda 1 -> ['registrar_pedido', 'consultar_temas']
+    reconciliador: "El cliente pidio 'auriculares' y no lo buscaste" + mouse
+                   + memorias ram
+    ronda 2 -> []
+
+El modelo DECLARA bien los tres rubros -entiende 100, ya estaba medido- y
+despues no busca ninguno. Se lo pedimos y la ronda dos vuelve VACIA: 717
+caracteres que no cotizan nada. **Ese hecho ya estaba escrito DOS VECES en
+`hub_venta.py`** -"ante una correccion del reconciliador el modelo pide CERO
+herramientas 3 de 3 veces"- y las dos veces la salida fue la misma: que lo haga
+el codigo. Esta es la tercera cara de esa moneda y la mas cara, porque las
+otras dos rompian una parte del turno y esta lo rompe entero.
+
+`_busqueda_de_lo_declarado` corre ANTES de las dos reposiciones que ya estaban,
+porque sin producto no tienen sobre que trabajar. **Se disparo 3 veces en las
+15 corridas, solo en la 5:** cuando el modelo hace su trabajo, no actua.
+
+**LO QUE NO SE MAQUILLA: EL LARGO SUBIO,** de 1.249 a 1.487. La comparacion no
+es limpia -el 1.249 incluia el mensaje mudo de 717 que bajaba el promedio- pero
+el hecho es que hoy el mensaje es mas largo. Acortar sigue pendiente.
+
+**HUECO CONOCIDO, ANOTADO Y NO TAPADO.** `resolver_exclusion` solo resuelve
+frases CON negacion, a proposito, porque aplicar una condicion al reves es peor
+que no aplicarla. "La menor cantidad de partes chinas posible" no la tiene, asi
+que en la busqueda repuesta el criterio de origen NO viaja como filtro. Queda
+en el test con su motivo. Es candidato a proximo paso, con numero.
+
+**LOS CONTROLES:** 531 tests verdes -2 nuevos-, las 40 en 40 de 40, el mapa en
+37 de 337 a ciegas -11%, venia de 37 de 315-, o sea que el codigo nuevo entro
+cubierto.
+
+---
+
 **==== 8-AGO — EL MENSAJE SE ACORTA, Y LA NOTA SUBE ====**
 
 **EL PEDIDO ERA ACORTAR SIN PERDER LA NOTA. Se hizo, y se midio de las dos

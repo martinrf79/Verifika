@@ -31,19 +31,16 @@ python3 banco_pruebas/objetivo.py --vivo     # las 5 redacciones, con el modelo
 python3 banco_pruebas/objetivo.py --anotar "qué cambié"
 ```
 
-## La medición de hoy — vara `vivo`
+## La medición de hoy — vara `codigo`
 
-| redacción | promedio de 3 | peor | mejor | largo |
-|---|---|---|---|---|
-| 1_textual_de_martin | **92** | 88 | 100 | 1416 |
-| 2_porcentajes_en_digitos | **50** | 0 | 88 | 1306 |
-| 3_orden_invertido | **84** | 75 | 88 | 1515 |
-| 4_criterio_dicho_distinto | **88** | 88 | 88 | 1428 |
-| 5_coloquial | **6** | 0 | 17 | 717 |
+| vara | resultado |
+|---|---|
+| estado final | 8/8 |
+| comunicación | 6/6 |
+| **NOTA** | **100/100** |
 
-**Promedio: 64/100 — PEOR CASO: 0/100**
-
-El que manda para vender es el PEOR, no el promedio: es el que le puede tocar a un cliente real.
+**Lo que falla hoy:**
+- nada: la vara de código está en verde.
 
 ## Bifurcaciones abiertas
 
@@ -60,3 +57,4 @@ _Cuando aparezcan dos caminos, se anotan acá con su razón y su costo, para que
 | 2026-08-08 | codigo | 100 | El componedor: cuatro reglas lossless que sacan lo repetido, y la voz sin preambulo ni resumen. Vivo 69 y 58 contra un control de 55 corrido el mismo dia; largo promedio 1633 -> 1393. El tope por caracteres se probo y se descarto: tiro la nota a 23. |
 | 2026-08-08 | codigo | 100 | REDACTOR ATADO POR MOLDE: probado y descartado. Vivo 56 contra control 55 y contra 69/58 de lo que ya estaba puesto, sin acortar mas (largo 1.366). El molde no se cayo ni una vez y el turno SIN bloque quedo garantizado en 417-465, pero cuesta regrabar los casetes en cada cambio de contrato. Se revierte. |
 | 2026-08-08 | codigo | 100 | El muro cae en sus SEIS redacciones -se persigue la FORMA, no la frase- y las tres pedidas de confirmacion bajan de 380 a 130 caracteres. Vivo 65, largo 1.249: el largo mas bajo medido y la nota en el techo de la banda anterior. El candado cazo 8 muros en la corrida contra 3 antes, incluida una SEPTIMA redaccion nueva. |
+| 2026-08-09 | codigo | 100 | LA BIMODALIDAD, CERRADA. Dos causas, las dos deterministas y ninguna de redaccion. 1) El null que el molde PEDIA y RECHAZABA: registrar_pedido volvia pedido_mal_formado y el turno salia mudo. Saneado en la puerta unica, con barrido que cubre TODOS los moldes. 2) El rubro declarado y nunca buscado: el modelo declara los tres rubros y no busca ninguno; el reconciliador se lo pide y la ronda dos vuelve VACIA. Ahora lo busca el codigo, la tercera cara de la moneda que ya estaba escrita dos veces en hub_venta. VIVO: la redaccion 5 de 6 a 71, la 2 de 50 a 78, promedio 64 a 82 y el PEOR CASO de 0 a 62, que es el que manda. Largo 1.487: subio, porque el mensaje que antes no cotizaba nada ahora entrega el presupuesto entero. |
