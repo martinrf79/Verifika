@@ -28,6 +28,115 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
+**==== 9-AGO (ULTIMO) — EL SISTEMA YA DEDUCIA, Y LA CLAVE SE GASTABA SOLA ====**
+
+> ## 🔑 LA CLAVE: EL DEFAULT ES LA GRATIS, Y NO SE TOCA
+> `GEMINI_API_KEY` -la GRATIS- contesta 200 y su cuota se renueva sola. La
+> nota del 30-jul que decia "usar la PAGA porque la gratis esta sin cuota"
+> **vencio el mismo dia** y quedo escrita como si fuera permanente: por eso
+> cuatro bancos la pisaban. **NO vuelvas a poner `export
+> GEMINI_API_KEY=$GEMINI_API_KEY_PROD` en ningun lado.** La clave la elige UN
+> solo lugar, `clon_produccion.preparar_entorno`, y la paga entra solo con
+> `BANCO_CLAVE_PAGA=true`. Martin ya puso esa guarda el 4-ago y no se cumplia.
+
+**LO QUE ABRIO EL DIA. Martin cambio la pregunta dificil para sacarle las
+aristas** y ver si el sistema deduce solo. Mando por WhatsApp, 14:13:33, trace
+`57ad6a0d`: donde antes decia "un teclado y un mouse a Concordia" ahora dice
+"UNA MEMORIA y un mouse". Con eso los seis articulos cierran por resta -Cordoba
+un auricular y un mouse, Concordia una memoria y un mouse, y a Posadas el
+auricular y la memoria que sobran- y no queda ambiguedad ninguna.
+
+**LA RESPUESTA, Y ESTA EN EL LOG: EL SISTEMA DEDUJO PERFECTO.** Desde la ronda
+2 el modelo llamo a `armar_presupuesto` con los SEIS renglones, cada uno con su
+destino, incluidos los dos de Posadas que salian de restar. Identico en las
+rondas 2, 3 y 4. **No hay que enseñarle a razonar: ya razono.** Y el turno
+salio mal igual, por TRES CABLES aguas abajo, los tres con su test:
+
+1. **EL RECONCILIADOR MIRABA EL LUGAR EQUIVOCADO.** La regla 7 preguntaba si
+   los items de `registrar_pedido` tenian destino; el modelo los habia puesto
+   en `armar_presupuesto`, que es donde el reparto hace falta. Como no lo veia,
+   pidio "volve a declarar el pedido" en las rondas 2, 3 y 4. **Tres rondas
+   quemadas, 37,7 segundos, y el hub cerro en `faltantes_sin_resolver` sobre
+   algo que estaba hecho.** Ahora el destino vale venga de donde venga.
+2. **LA CONTRADICCION ESTABA MAL CONTADA Y NADIE LA CONTABA.** El modelo
+   declaro, textual: "pidio 6 articulos, pero al detallar los envios solo
+   menciono 5". Nombra cuatro y "los otros dos", que son seis. La regla 6
+   convertia cualquier contradiccion en pregunta sin verificarla, asi que al
+   cliente le llego **"confirmame el destino del sexto articulo" DEBAJO de un
+   presupuesto donde los seis ya tenian destino**. Contar es del CODIGO.
+   Se descarta solo si el reparto cierra Y no nombra un rubro ajeno al pedido
+   -esa es la salvaguarda del teclado, que se pregunta siempre- Y no señala a
+   unos pocos items. Queda en el log como `contradiccion_desmentida`.
+3. **EL COMPONEDOR SE COMIA EL REPARTO.** Al cliente le llego solo Cordoba. La
+   regla 3-bis lee el renglon sin raya de hecho distintivo como "el mismo hecho
+   que el anterior" y borro Concordia y Posadas creyendo que repetian. Era
+   informacion UNICA, no repeticion: lo contrario de lo unico que ese modulo
+   promete. El bloque que escribe el CODIGO es intocable, igual que la cuenta.
+   Y ademas nombra el RUBRO en vez del producto entero cuando ese rubro tiene un
+   solo producto en la cuenta: el nombre y su precio estan tres renglones
+   arriba, asi que no se pierde nada y el bloque baja de ~270 a ~130.
+
+**LA MEDICION VIVA, 18 turnos con la clave GRATIS, contra el control del mismo
+dia:**
+
+| redacción | control (mañana) | ahora | largo antes | largo ahora |
+|---|---|---|---|---|
+| 1 textual | 92 | 92 | 1.476 | 1.447 |
+| 2 dígitos | 88 | 92 | 1.781 | 1.956 |
+| 3 invertido | 92 | 79 | 1.550 | 1.542 |
+| 4 criterio distinto | 92 | 92 * | 1.428 | 1.434 |
+| 5 coloquial | 75 | 75 | 1.723 | 1.744 |
+| **6 SIN TECLADO, la de hoy** | — | **96** | — | 1.535 |
+
+\* en la corrida grande dio 54 con un cero; corrida sola de nuevo, 92 con peor
+caso 88. El cero era un TIMEOUT del proveedor, no el bot. Ver abajo.
+
+**LO QUE SE PUEDE AFIRMAR Y LO QUE NO.** La redaccion 6 -el mensaje que Martin
+quiere contestado- da **96 con peor caso 88, y `cada_unidad_con_destino` pasa**.
+Sobre las cinco viejas el promedio se mueve dentro del ruido ya medido en este
+mismo instrumento -la banda documentada es 82 a 89-, asi que **de ahi no se
+puede afirmar mejora ni empeoramiento**. Lo que si es duro: una ronda menos en
+los casetes, y tres rondas menos en el turno real que las tenia.
+
+**UN 429 -O UN TIMEOUT- YA NO PUNTUA CERO.** La clave paga se quedo sin credito
+a mitad de una corrida y cinco de quince turnos nunca le hablaron al modelo:
+salieron con el fallback "dejame consultar", que la vara puntuaba CERO. El
+numero -promedio 54, peor caso 0- se leia como una regresion enorme del codigo,
+y el codigo de esas cinco corridas jamas corrio. Ahora `llm_reintento` anota la
+llamada negada -solo cuando se agotan los reintentos de un error transitorio- y
+`objetivo.py` marca esa corrida **SIN MEDIR**. La primera version miraba las
+palabras "429" y "quota" y dejo pasar un timeout, porque `str(TimeoutError())`
+es la cadena VACIA: **lo que invalida no es como se llamo el error, es que el
+modelo no contesto.**
+
+**LA SEXTA REDACCION ENTRO AL INSTRUMENTO**, con su regla: lo que hay que decir
+depende de lo que el cliente dijo, asi que "preguntar por el teclado" se exige
+solo cuando el cliente nombro un teclado.
+
+**EL PISO, REFIJADO Y CON LOS CUATRO NUMEROS A LA VISTA:** puntos 296 -> 296
+-identico, no se tapo nada-, llamadas_total 112 -> 111, largo_max 1.565 ->
+1.591, largo_prom 533 -> 540. Los dos largos suben porque el reparto ahora sale
+con sus TRES destinos y antes salia con uno. Son 26 caracteres a cambio de dos
+destinos que el cliente pedia y no recibia.
+
+**LO QUE SIGUE, y es lo mismo que dice el numero: `cada_unidad_con_destino`
+falla 13 de 18.** El reconciliador ya no lo reclama de mas y el reparto ya
+llega entero cuando existe, pero el modelo muchas veces NO pega el destino a
+cada renglon de la cuenta, y ahi no hay reparto que mostrar. **La palanca es la
+ATADURA: que el destino solo pueda declararse pegado al item, sacando la lista
+suelta `destinos` del molde.** No se hizo en esta sesion a proposito, para no
+mezclarlo con lo que se estaba midiendo.
+
+**Y EL LARGO SIGUE SIN RESOLVERSE: 1.535 en la pregunta de hoy contra los 500
+que pide Martin.** La cuenta detallada son 403 de los 964 del esqueleto, y
+colapsarla es una decision de producto que sigue pendiente desde el 8-ago.
+
+**Estado: 550 tests verdes, las 40 en 40 de 40, vara de codigo 100/100. Cinco
+commits en `main` local, SIN PUSHEAR: `8a5bf14`, `8fd2551`, `24da4d9`,
+`fa891b0` y el de este estado.**
+
+---
+
 **==== 9-AGO (noche) — EL INDICE DEL TURNO: EL NEXO QUE FALTABA ====**
 
 **LO QUE MARTIN VENIA PIDIENDO HACE SESIONES Y NO ESTABA HECHO.** Textual:
