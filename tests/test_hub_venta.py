@@ -1340,3 +1340,36 @@ def test_el_reparto_nombra_el_rubro_y_el_producto_cuando_hace_falta(
     bloque2 = H.ejecutar("armar_presupuesto", args, TIENDA).get("bloque") or ""
     assert aur["nombre"] in bloque2.split("Reparto")[-1], bloque2
     assert otro["nombre"] in bloque2.split("Reparto")[-1], bloque2
+
+
+def test_los_destinos_se_derivan_de_los_renglones(firestore_doble):
+    """LA ATADURA. El destino va pegado al renglon y la lista de destinos la
+    arma el CODIGO. Pedirle al modelo las dos cosas le daba un lugar comodo
+    donde tirar las tres ciudades sin decir cual va con cual, y ahi se perdia
+    el reparto: `cada_unidad_con_destino` fallaba 13 de 18 corridas."""
+    from app.core import herramientas as H
+
+    r = H.ejecutar("registrar_pedido", {
+        "items": [{"que": "auriculares", "cantidad": 1,
+                   "destino": "Córdoba capital"},
+                  {"que": "mouse", "cantidad": 1, "destino": "Córdoba capital"},
+                  {"que": "memoria ram", "cantidad": 1, "destino": "Concordia"},
+                  {"que": "mouse", "cantidad": 1, "destino": "Concordia"},
+                  {"que": "auriculares", "cantidad": 1, "destino": "Posadas"},
+                  {"que": "memoria ram", "cantidad": 1, "destino": "Posadas"}],
+        "pide_precio": True}, TIENDA)
+    assert r["pedido"]["destinos"] == ["Córdoba capital", "Concordia", "Posadas"]
+
+    # Una ciudad que el modelo nombro y no pego a ningun renglon NO se pierde:
+    # el envio hay que cotizarlo igual y el reconciliador tiene que verla.
+    r2 = H.ejecutar("registrar_pedido", {
+        "items": [{"que": "mouse", "cantidad": 1, "destino": "Posadas"}],
+        "destinos": ["Posadas", "Rosario"]}, TIENDA)
+    assert r2["pedido"]["destinos"] == ["Posadas", "Rosario"]
+
+    # Un pedido a un solo lugar sigue declarandose con la lista, sin partir
+    # nada: es el caso simple y no se le agrega trabajo.
+    r3 = H.ejecutar("registrar_pedido", {
+        "items": [{"que": "mouse", "cantidad": 2}],
+        "destinos": ["Mendoza"]}, TIENDA)
+    assert r3["pedido"]["destinos"] == ["Mendoza"]

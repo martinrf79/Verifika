@@ -261,6 +261,29 @@ class ItemDeclarado(BaseModel):
     # reconciliador veia "2 mouse" y "Cordoba, Concordia" sin saber cual iba a
     # donde, y por lo tanto un reparto mal hecho no lo podia detectar. Es la
     # familia mas grande de las preguntas de prueba.
+    # ── LA ATADURA FUERTE, PROBADA Y REVERTIDA CON SU NUMERO (9-ago) ────────
+    # Se probo cerrarle al modelo la puerta de la lista suelta: esta descripcion
+    # pasaba a "ES OBLIGATORIO partir el item en un renglon por destino" y la de
+    # `destinos` a "SOLO cuando todo va a un mismo lugar". La idea era buena en
+    # el papel -un solo lugar donde declarar el reparto- y midio PEOR:
+    #
+    #   redaccion 1, la del teclado ....... 92 -> 31, peor caso 88 -> 8
+    #   redaccion 5, coloquial ............ 75 -> 69
+    #   redaccion 6, la limpia ............ 96 -> 100
+    #   `tres_envios_cotizados` ........... fallo 5 de 9, antes 3 de 18
+    #   y el MURO volvio a salir en una corrida
+    #
+    # LA CAUSA, y es la leccion: la lista suelta no era solo un lugar comodo
+    # para tirar las ciudades, era tambien una RED. Cuando el mensaje tiene una
+    # arista -el teclado que no esta en el pedido- el modelo no logra pegar los
+    # tres destinos a los renglones, y sin la lista las ciudades que no pego se
+    # PIERDEN enteras: el envio ni siquiera se cotiza. Antes quedaban en la
+    # lista y al menos se cobraban los tres envios.
+    #
+    # Cerrarle una puerta al modelo solo sirve si la que queda le alcanza para
+    # todos los casos. Aca no le alcanzaba, y el precio lo pago el mensaje mas
+    # dificil. Lo que SI quedo de este intento es la derivacion de `destinos`
+    # desde los renglones en `registrar_pedido`, que solo suma y nunca pierde.
     destino: str | None = Field(
         None, description="A donde va ESTE item, si el pedido se reparte entre "
                           "varios lugares. Si todo va a un solo lado, dejalo "
@@ -1677,8 +1700,27 @@ def registrar_pedido(a: RegistrarPedido, tienda_id: str) -> dict:
     """No busca nada: devuelve lo declarado para que el RECONCILIADOR lo compare
     contra lo que el plan efectivamente pidio. Es la unica herramienta que no
     toca la fuente, y existe porque hasta hoy no habia en el sistema NINGUNA
-    estructura con lo que el cliente pidio, asi que nada podia compararla."""
-    return {"estado": "registrado", "pedido": a.model_dump()}
+    estructura con lo que el cliente pidio, asi que nada podia compararla.
+
+    LA LISTA DE DESTINOS SE DERIVA, NO SE PIDE DOS VECES. Desde que el destino
+    va pegado al renglon, `destinos` es redundante cuando el pedido se reparte:
+    el modelo ya dijo todo lo que hace falta y volver a pedirle la lista es
+    justamente lo que le daba un lugar comodo para tirar las ciudades sueltas.
+    La arma el codigo, que no se equivoca al juntarlas, y aguas abajo -la
+    cotizacion de cada envio, el indice del turno- nada cambia."""
+    pedido = a.model_dump()
+    de_los_items = list(dict.fromkeys(
+        str(i.get("destino")).strip() for i in (pedido.get("items") or [])
+        if str(i.get("destino") or "").strip()))
+    if de_los_items:
+        sueltos = [d for d in (pedido.get("destinos") or []) if str(d).strip()]
+        # Los que el modelo nombro y no pego a ningun renglon se conservan: si
+        # el cliente nombro una ciudad, el envio hay que cotizarlo igual, y el
+        # reconciliador tiene que poder ver que quedo sin repartir.
+        pedido["destinos"] = de_los_items + [
+            d for d in sueltos
+            if _norm(d) not in {_norm(x) for x in de_los_items}]
+    return {"estado": "registrado", "pedido": pedido}
 
 
 _CUERPOS = {
