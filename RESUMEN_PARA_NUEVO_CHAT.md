@@ -131,9 +131,69 @@ mezclarlo con lo que se estaba midiendo.
 que pide Martin.** La cuenta detallada son 403 de los 964 del esqueleto, y
 colapsarla es una decision de producto que sigue pendiente desde el 8-ago.
 
-**Estado: 550 tests verdes, las 40 en 40 de 40, vara de codigo 100/100. Cinco
-commits en `main` local, SIN PUSHEAR: `8a5bf14`, `8fd2551`, `24da4d9`,
-`fa891b0` y el de este estado.**
+**==== EL LARGO, POR FIN: LA VIDRIERA SE VA CUANDO HAY CUENTA ====**
+
+**ERA EL BLOQUE MAS GRANDE DEL MENSAJE, y no era la cuenta.** En el mensaje del
+9-ago el hallazgo son **640 caracteres de 1.731**, mas que el presupuesto, y
+encima lista productos que NO son los que cotiza: mostraba el Zeus X Blanco y
+cobraba el Negro, mostraba el Logitech y cobraba el Genius.
+
+**POR QUE ESTE CORTE SI, Y EL DEL 9-AGO A LA MAÑANA NO.** Ese dia se borro el
+grupo entero y la nota cayo de 89 a 77, porque con los renglones se iba el
+HECHO -"pais de fabricacion: china"-, el unico criterio que el cliente puso.
+**Aca el hecho NO se borra: se conserva en una linea por rubro, y lo que se va
+son los renglones de producto**, que si estan demostrablemente repetidos porque
+lo que el cliente compra esta en la cuenta con su nombre y su precio. Y el
+hecho que sobrevive es el del producto COTIZADO, con lo que se cierra de raiz
+la vidriera que contradecia a la factura.
+
+    Auriculares: pais de fabricacion: china
+    Mouse: pais de fabricacion: china
+    Memoria ram: pais de fabricacion: taiwan o china segun linea
+
+**LA ATADURA FUERTE DEL DESTINO: PROBADA, MEDIDA PEOR Y REVERTIDA.** Era la
+palanca que quedaba anotada. Se le cerro al modelo la puerta de la lista suelta
+`destinos` para que el reparto solo se pudiera declarar pegado al renglon.
+
+| | antes | con la atadura |
+|---|---|---|
+| redaccion 1, la del teclado | 92 | **31**, peor caso 8 |
+| redaccion 5, coloquial | 75 | 69 |
+| redaccion 6, la limpia | 96 | 100 |
+| `tres_envios_cotizados` | fallaba 3 de 18 | **5 de 9** |
+
+Y el MURO volvio a salir en una corrida. **LA CAUSA: la lista suelta no era
+solo un lugar comodo, era tambien una RED.** Con una arista en el mensaje el
+modelo no logra pegar los tres destinos a los renglones, y sin la lista las
+ciudades que no pego se PIERDEN enteras: el envio ni siquiera se cotiza.
+**Cerrarle una puerta al modelo solo sirve si la que queda le alcanza para
+TODOS los casos.** Revertido; queda escrito en `herramientas.py` con su numero
+para que no se reproponga. Lo unico que sobrevivio: `registrar_pedido` deriva
+`destinos` de los renglones y lo une con los sueltos. Solo suma, nunca pierde.
+
+**EL LARGO, MEDIDO EN VIVO CON LA CLAVE GRATIS, punta a punta del dia:**
+
+| | mañana | al cierre |
+|---|---|---|
+| redaccion 1 | 1.476, nota 92 | **1.228, nota 100** |
+| **redaccion 6, la de Martin** | 1.535, nota 96 | **1.018, nota 92-100** |
+| mejor corrida de la 6 | — | **947** |
+
+**Del muro de 1.731 caracteres a 947 en la mejor corrida, sin perder un punto.**
+
+**LOS 500 NO SE ALCANZAN SIN UNA DECISION DE MARTIN, y ahora se sabe por que.**
+Con la vidriera afuera, **la cuenta es el UNICO lugar donde el cliente ve QUE
+producto compra**: antes el nombre salia dos veces y una sobraba. Colapsarla ya
+no seria acortar, seria mandar un presupuesto sin decir que se vende. El
+reparto del mensaje de 1.018: saludo 52, origen por rubro 130, la pregunta por
+lo que falta asignar 200, **la cuenta 403**, pago dividido 152, cierre 90. El
+esqueleto que escribio Martin el 8-ago son 964: **ya estamos ahi**.
+
+**EL MECANISMO DEL 429 SE GANO EL LUGAR EN LA MISMA SESION:** en la corrida de
+control una corrida salio marcada SIN MEDIR en vez de puntuar cero.
+
+**Estado: 551 tests verdes, las 40 en 40 de 40, vara de codigo 100/100. Ocho
+commits en `main` local, SIN PUSHEAR.**
 
 ---
 
