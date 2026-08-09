@@ -28,6 +28,62 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
+**==== 9-AGO (tarde) — LEIDO DEL WHATSAPP REAL: LA OCTAVA DEL MURO ====**
+
+**MARTIN LO RECLAMO CON RAZON: el mensaje que le llego a las 09:39, DESPUES
+del deploy del mismo dia, arrancaba con el muro otra vez.** Se leyo la charla
+real -logging + el `history` de Firestore- y salieron cuatro defectos:
+
+1. **EL MURO, OCTAVA REDACCION: "no trabajamos productos SIN componentes de
+   origen chino".** La forma ya estaba cubierta -negacion mas carencia- pero
+   escrita solo con `que no`, y esta la dice con `sin`. Son la misma oracion.
+   **ARREGLADO**, sumando la preposicion a la MISMA rama del patron. El test
+   junta las OCHO redacciones.
+2. **La vidriera que contradice la factura.** Listado con Zeus X BLANCO,
+   Logitech M170 y Kingston BLANCO; la cuenta abajo con Zeus X NEGRO, Genius
+   DX-110 y Kingston NEGRO. **Le muestra un producto y le cotiza otro, en tres
+   rubros y con precios distintos.** SIGUE ABIERTO, ver abajo.
+3. Jerga interna al cliente: "Auriculares (43 igual de cerca, país de
+   fabricación: china)". "43 igual de cerca" no significa nada para quien
+   compra.
+4. El reparto de envios sale CORTADO: muestra Cordoba y se come Concordia y
+   Posadas. Peor que no mostrarlo.
+
+Ademas: **21,5 segundos, 3 rondas al modelo -la tercera vacia- y 3 mensajes de
+WhatsApp.** La latencia es lo que mas hace sentir roto al bot.
+
+**EL INTENTO QUE SE MIDIO PEOR Y SE REVIRTIO, con su numero.** Para el punto 2
+se probo borrar el grupo del listado cuando el rubro ya esta en la cuenta.
+**La nota cayo de 89 a 77 y el peor caso de 62 a 12**, porque `dice: china`
+paso de fallar 1 de 15 a **5 de 15**: con el renglon se iba el hecho "país de
+fabricación: china", el UNICO criterio que el cliente puso. Revertido, y con el
+revert `dice: china` volvio a **0 de 15**.
+
+**Es la misma leccion que el tope por caracteres del 8-ago, pagada DOS VECES:
+borrar solo es seguro cuando lo borrado esta demostrablemente REPETIDO**, y el
+producto que sobra en el listado no es una repeticion, es OTRO producto. **El
+arreglo verdadero es que el ejemplo que sobrevive sea EL DE LA CUENTA** —
+reordenar cual gana entre la regla 3 y la 3-bis—, no borrar mas. Queda fijado
+en un test que describe lo que HOY hace, no disfrazado de verde.
+
+**EL RUIDO DEL PEOR CASO, y hay que tenerlo en cuenta para no volverse loco:**
+sobre el MISMO codigo, cinco corridas dieron peor caso 62, 73, 62, 12 y 25. **El
+promedio es estable -82 a 89- y el peor caso NO alcanza para decidir con una
+sola corrida.**
+
+**SOBRE EL PLAN DE HERRAMIENTAS que propuso Martin -multi-tenant, hybrid
+retrieval con embeddings, confidence gate, LLM-judge-: NINGUNA de las cuatro
+toca los defectos medidos hoy.** La busqueda TRAJO los productos correctos, con
+el filtro de origen aplicado: el recall no es el problema. Un juez al final
+agrega una CUARTA llamada al modelo sobre un turno que ya tarda 21,5 segundos, y
+este repo ya midio dos veces que pedirle al modelo que corrija al modelo no
+funciona. Lo unico que se rescata tal cual es el **handoff humano**: barato, no
+toca el nucleo. Lo que sigue primero, por impacto medido: **la latencia**, **el
+reparto por destino** -`cada_unidad_con_destino`, que falla 9 a 12 de 15 en
+todas las corridas- y el handoff.
+
+---
+
 **==== 9-AGO — LA BIMODALIDAD ESTABA CERRADA CON DOS CANDADOS, NO CON UNO ====**
 
 **EL PEOR CASO, QUE ES EL QUE MANDA PARA VENDER, PASO DE 0 A 62.**
