@@ -404,6 +404,24 @@ def _tabla(res: dict) -> str:
                       f"PEOR CASO: {res['nota']['peor']}/100**")
         lineas.append("\nEl que manda para vender es el PEOR, no el promedio: "
                       "es el que le puede tocar a un cliente real.")
+        # QUE FALLA, NO SOLO CUANTO. La vara viva daba el numero y nada mas, y
+        # el 9-ago costo una corrida entera de la clave paga -diez minutos- solo
+        # para enterarse de en que se pierde. Se cuenta cada vara por las
+        # cuentas en que fallo, sobre el total de corridas: la que aparece en
+        # las quince es un defecto del sistema, la que aparece en una es ruido
+        # del modelo, y esa diferencia es la que dice donde conviene tocar.
+        conteo: dict = {}
+        total = 0
+        for f in res["variantes"]:
+            for c in f["corridas"]:
+                total += 1
+                for nombre, ok, _ in c["estado"] + c["comunicacion"]:
+                    if not ok:
+                        conteo[nombre] = conteo.get(nombre, 0) + 1
+        if conteo:
+            lineas.append(f"\n**Lo que falla, sobre {total} corridas:**")
+            for nombre, veces in sorted(conteo.items(), key=lambda x: -x[1]):
+                lineas.append(f"- {veces}/{total} — {nombre}")
     return "\n".join(lineas)
 
 
@@ -449,6 +467,27 @@ def main(argv: list) -> int:
     print("=" * 78)
     escribir(res, anotar)
     print(f"escrito en {DOC.relative_to(_RAIZ)}")
+    if vivo:
+        # LA PEOR CORRIDA DE CADA REDACCION, GUARDADA. El numero dice cuanto se
+        # pierde y el conteo dice en que; para saber POR QUE hay que leer el
+        # mensaje que le llego al cliente, y hasta hoy eso vivia diez minutos en
+        # una terminal y se perdia. La PEOR y no todas: es la que le puede tocar
+        # a un cliente real, y quince textos enteros no los lee nadie.
+        import datetime
+        d = _RAIZ / "banco_pruebas" / "corridas"
+        d.mkdir(parents=True, exist_ok=True)
+        f = d / f"{datetime.datetime.now():%Y%m%d_%H%M}_objetivo.md"
+        partes = [f"# La peor corrida de cada redaccion\n\n{_tabla(res)}\n"]
+        for fila in res["variantes"]:
+            peor = min(fila["corridas"], key=lambda c: c["nota"]["nota"])
+            fallas = [n for n, ok, _ in peor["estado"] + peor["comunicacion"]
+                      if not ok]
+            partes.append(f"\n## {fila['variante']} — {peor['nota']['nota']}"
+                          f"/100, {peor['largo']} caracteres\n\n"
+                          f"**Falla:** {', '.join(fallas) or 'nada'}\n\n"
+                          f"```\n{peor['texto']}\n```\n")
+        f.write_text("\n".join(partes), encoding="utf-8")
+        print(f"la peor de cada una, en {f.relative_to(_RAIZ)}")
     return 0
 
 
