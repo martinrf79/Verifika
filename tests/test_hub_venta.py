@@ -1142,3 +1142,48 @@ def test_si_el_modelo_ya_busco_el_codigo_no_toca_nada(firestore_doble):
     fuera = HV._busqueda_de_lo_declarado(llamadas, declarado, rec,
                                          "verifika_prod", "t")
     assert fuera == llamadas
+
+
+def test_el_item_en_duda_se_pregunta_pero_no_se_cotiza(firestore_doble):
+    """DEFECTO PROPIO, medido el 9-ago. Con la busqueda repuesta por codigo la
+    redaccion coloquial cotizo SIETE unidades: el modelo declaro el teclado
+    como item Y como contradiccion a la vez, el codigo lo busco y la cuenta lo
+    sumo. Al cliente le llegaron $12.000 que no pidio. Ante la duda se pregunta,
+    no se cotiza: es la regla cero aplicada al item del pedido."""
+    from app.core import pedido as P
+    declarado = {"items": [{"que": "auriculares", "cantidad": 2},
+                           {"que": "mouse", "cantidad": 2},
+                           {"que": "memorias ram", "cantidad": 2},
+                           {"que": "teclado", "cantidad": 1}],
+                 "contradicciones": ["Mencionaste un teclado en el envio a "
+                                     "Concordia que no estaba en tu pedido"],
+                 "pide_precio": True}
+    llamadas = [{"herramienta": "registrar_pedido",
+                 "resultado": {"estado": "registrado", "pedido": declarado}}]
+    rec = P.reconciliar(declarado, llamadas, "t")
+    assert "teclado" not in rec["sin_buscar"]
+    assert len(rec["sin_buscar"]) == 3
+    assert rec["preguntar"], "la duda tiene que seguir viajando como pregunta"
+
+    fuera = HV._busqueda_de_lo_declarado(llamadas, declarado, rec,
+                                         "verifika_prod", "t")
+    cotizados = [l["pedido"].get("categoria") for l in fuera
+                 if l["herramienta"] == "buscar_productos"]
+    assert "teclado" not in cotizados
+
+
+def test_la_contradiccion_que_nombra_TODO_no_descarta_nada(firestore_doble):
+    """LA SALVAGUARDA, sin la cual el arreglo de arriba haria mas daño que
+    bien. Una contradiccion sobre el pedido entero -"pediste esto y esto pero
+    la distribucion no cierra"- no senala a ningun item en particular, asi que
+    no puede dejar al cliente sin cotizacion de nada."""
+    from app.core import pedido as P
+    declarado = {"items": [{"que": "auriculares", "cantidad": 2},
+                           {"que": "mouse", "cantidad": 2}],
+                 "contradicciones": ["Pediste 2 auriculares y 2 mouse pero la "
+                                     "distribucion entre destinos no cierra"],
+                 "pide_precio": True}
+    llamadas = [{"herramienta": "registrar_pedido",
+                 "resultado": {"estado": "registrado", "pedido": declarado}}]
+    rec = P.reconciliar(declarado, llamadas, "t")
+    assert sorted(rec["sin_buscar"]) == ["auriculares", "mouse"]

@@ -337,6 +337,39 @@ def _universo_de_destinos(llamadas: list) -> str:
     return " ".join(x for x in partes if x)
 
 
+def _en_duda(que: str, pedido: dict) -> bool:
+    """¿El modelo MISMO marco este item como dudoso?
+
+    NACE DE UN DEFECTO PROPIO, medido el 9-ago. Con la busqueda repuesta por
+    codigo, la redaccion coloquial cotizo SIETE unidades: el cliente pidio dos
+    auriculares, dos mouse y dos memorias, nombro un teclado al repartir los
+    envios, y el modelo lo declaro en los DOS lados a la vez -como item y como
+    contradiccion-. El codigo lo busco, la cuenta lo sumo y al cliente le
+    llegaron $12.000 de mercaderia que no pidio.
+
+    El molde ya dice cual es la regla: "si nombro algo al pasar y no queda claro
+    que lo quiera, no lo pongas en items: ponelo en contradicciones". Declararlo
+    en los dos lados es el propio modelo diciendo que no esta seguro, y ante la
+    duda se PREGUNTA, no se cotiza. Es la regla cero del proyecto -el `ambiguo`
+    del certificador- aplicada al item del pedido.
+
+    LA SALVAGUARDA, sin la cual esto haria mas daño que bien: una contradiccion
+    que nombra TODOS los items -"pediste 2 auriculares, 2 mouse y 2 memorias,
+    pero la distribucion no cierra"- habla del pedido entero y no marca a
+    ninguno en particular. Ahi no se descarta nada. Solo cuenta cuando la
+    contradiccion senala a UNOS POCOS y no a todos.
+    """
+    dudas = [_norm(c) for c in (pedido.get("contradicciones") or []) if c]
+    if not dudas:
+        return False
+    items = [str(i.get("que") or "") for i in (pedido.get("items") or [])]
+    for duda in dudas:
+        nombrados = [i for i in items if i and _cubierto(i, duda)]
+        if nombrados and len(nombrados) < len(items) and _cubierto(que, duda):
+            return True
+    return False
+
+
 def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
                 ya_resuelto: str = "") -> dict:
     """Compara lo que el modelo DECLARO que entendio contra lo que PIDIO.
@@ -421,7 +454,8 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
             continue                                    # atendido: no existe
         faltantes.append(
             f"El cliente pidio '{que}' y no lo buscaste. Buscalo.")
-        sin_buscar.append(que)
+        if not _en_duda(que, pedido):
+            sin_buscar.append(que)
 
     # 2. AL REVES: NADA COTIZADO QUE EL CLIENTE NO HAYA PEDIDO. Caza el item
     #    fantasma, el teclado que aparecio de la nada en la cuenta.
