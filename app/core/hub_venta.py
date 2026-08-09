@@ -774,8 +774,13 @@ _RE_UNIVERSAL = re.compile(
     # cualquier redaccion futura de esa idea cae adentro. Las otras dos
     # condiciones de la guardia no se tocan, asi que sigue haciendo falta que
     # la frase hable del catalogo entero y NO nombre un rubro que trajimos.
+    # LA OCTAVA, leida de la charla REAL de Martin por WhatsApp el 9-ago:
+    # "no trabajamos productos SIN componentes de origen chino". La forma ya
+    # estaba -negacion mas carencia- pero escrita solo con "que no", y esta la
+    # dice con "sin". Son la misma oracion: "sin X" es "que no tienen X". Se
+    # suma la preposicion a la MISMA rama, no una regla nueva.
     r"no\s+(?:tengo|tenemos|hay|manejo|manejamos|trabajo|trabajamos|"
-    r"vendo|vendemos|cuento|contamos)\b[^.!?\n]*\bque\s+no\b|"
+    r"vendo|vendemos|cuento|contamos)\b[^.!?\n]*\b(?:que\s+no|sin)\b|"
     r"(?:todo|nada)\s+(?:el|mi)\s+cat[aá]logo|la\s+totalidad",
     re.IGNORECASE)
 

@@ -203,3 +203,44 @@ def test_componer_no_toca_un_mensaje_corto_y_limpio():
 def test_componer_nunca_devuelve_vacio():
     for t in ("", "   ", "ok", "Hola."):
         assert componer(t, anterior=t) == t
+
+
+# ── LA VIDRIERA QUE CONTRADECIA LA FACTURA (9-ago-2026) ──────────────────────
+
+def test_el_rubro_ya_cotizado_no_deja_ejemplo():
+    """DE LA CHARLA REAL DE MARTIN POR WHATSAPP. Le llegaron tres rubros
+    mostrados en BLANCO arriba y cotizados en NEGRO abajo, con precios
+    distintos: le mostraban un producto y le cobraban otro.
+
+    No fue una regla fallando sino DOS pisandose: la regla 3 saca del listado lo
+    que ya esta en la cuenta y esta dejaba un ejemplo de lo que sobraba, o sea
+    justo el que NO se cotizo."""
+    from app.core import mensaje as M
+    texto = ("Auriculares (43 igual de cerca):\n"
+             "- Auriculares Redragon Zeus X Blanco: $57.500\n"
+             "\n"
+             "Presupuesto:\n"
+             "- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n"
+             "Total: $115.000")
+    salida = M.un_ejemplo_por_rubro_con_cuenta(texto)
+    assert "Blanco" not in salida, "le muestra uno y le cotiza otro"
+    assert "43 igual de cerca" not in salida
+    assert "2x Auriculares Redragon Zeus X Negro" in salida
+    assert "Total: $115.000" in salida
+
+
+def test_el_rubro_que_NO_esta_en_la_cuenta_conserva_su_ejemplo():
+    """LA CONTRACARA. Si el cliente pregunta por algo que no cotizamos todavia,
+    el ejemplo ES la respuesta y sacarlo seria contestarle peor. Solo se va el
+    grupo cuyo rubro ya tiene renglon en la cuenta."""
+    from app.core import mensaje as M
+    texto = ("Teclados (12 igual de cerca):\n"
+             "- Teclado Genius KB-110X Blanco: $12.000\n"
+             "- Teclado Logitech K120 Negro: $15.000\n"
+             "\n"
+             "Presupuesto:\n"
+             "- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\n"
+             "Total: $17.000")
+    salida = M.un_ejemplo_por_rubro_con_cuenta(texto)
+    assert "Teclados (12 igual de cerca)" in salida
+    assert "Teclado Genius KB-110X Blanco" in salida

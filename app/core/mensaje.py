@@ -240,29 +240,70 @@ def un_ejemplo_por_rubro_con_cuenta(texto: str) -> str:
         trae un dato distinto, se queda: misma condicion que la regla 3.
       - cuantos hay atras ya lo dice la cabecera -"(43 igual de cerca)"-.
       - el precio de lo que el cliente SI eligio esta en la cuenta, entero.
+
+    EL RUBRO YA COTIZADO NO DEJA EJEMPLO, y esto nacio de la charla REAL de
+    Martin por WhatsApp el 9-ago. Le llego esto:
+
+        - Auriculares Redragon Zeus X BLANCO: $57.500      <- listado
+        ...
+        - 2x Auriculares Redragon Zeus X NEGRO: $115.000   <- la cuenta
+
+    Le mostro un producto y le cotizo OTRO, en tres rubros a la vez y con
+    precios distintos. No fue una regla fallando sino DOS pisandose: la regla 3
+    saca del listado lo que ya esta en la cuenta, y esta dejaba "un ejemplo por
+    rubro" de lo que sobraba, o sea justo el producto que NO se cotizo. Cada
+    una hacia bien su parte y juntas armaban una vidriera que contradice la
+    factura.
+
+    Con el rubro ya en la cuenta el ejemplo no informa: confunde. Se va el
+    grupo entero. Los rubros que NO estan cotizados siguen dejando su ejemplo,
+    que es el caso para el que esta regla se escribio.
     """
     lineas = (texto or "").splitlines()
     if not any(_es_cuenta(l) for l in lineas):
         return texto
+    en_la_cuenta = " ".join(_norm(l) for l in lineas if _es_cuenta(l))
 
     def _dato(linea: str) -> str:
         _, _, cola = linea.partition("—")
         return _norm(cola)
 
+    def _ya_cotizado(encabezado: str) -> bool:
+        """¿La cuenta ya tiene renglones de este rubro? El encabezado lo nombra
+        -"Auriculares (43 igual de cerca):"- y la cuenta lo repite adentro del
+        nombre del producto -"2x Auriculares Redragon...". Se compara la palabra
+        del rubro, sin plural, que es un hecho del texto y no una inferencia."""
+        cabeza = _norm(encabezado).split("(")[0].replace(":", "").strip()
+        palabras = [w for w in cabeza.split() if len(w) >= 4]
+        return bool(palabras) and all(
+            w in en_la_cuenta or w.rstrip("s") in en_la_cuenta
+            for w in palabras)
+
     salida, fuera = [], 0
     vistos_del_grupo: list = []
+    grupo_cotizado = False
     for l in lineas:
         if _es_cuenta(l):
             salida.append(l)
             vistos_del_grupo = []
+            grupo_cotizado = False
             continue
         if _RE_ENCABEZADO.match(l):
-            salida.append(l)
+            grupo_cotizado = _ya_cotizado(l)
             vistos_del_grupo = []
+            if grupo_cotizado:
+                fuera += 1
+                continue
+            salida.append(l)
             continue
         m = _RE_RENGLON_LISTADO.match(l)
         if not m:
             salida.append(l)
+            continue
+        if grupo_cotizado:
+            # El rubro ya esta en la cuenta: el ejemplo mostraria un producto
+            # distinto del que se cotizo, que es peor que no mostrar ninguno.
+            fuera += 1
             continue
         d = _dato(l)
         if vistos_del_grupo and (not d or d in vistos_del_grupo):

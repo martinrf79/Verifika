@@ -1031,7 +1031,7 @@ def test_buscado_y_no_hay_es_una_respuesta_valida_no_un_paso_pendiente():
             if "no lo buscaste" in f]
 
 
-def test_el_muro_cae_en_sus_SEIS_redacciones(firestore_doble):
+def test_el_muro_cae_en_sus_OCHO_redacciones(firestore_doble):
     """EL MURO, Y POR QUE SE PERSIGUE LA FORMA Y NO LA FRASE.
 
     El bot le dijo al cliente, en seis dias y seis redacciones distintas, que no
@@ -1054,7 +1054,13 @@ def test_el_muro_cae_en_sus_SEIS_redacciones(firestore_doble):
             "No tenemos ningun producto de otro origen.",
             "Todo el catalogo se fabrica en China.",
             "No puedo cumplir con esa restriccion especifica.",
-            "No tenemos productos que no sean fabricados en China."):
+            "No tenemos productos que no sean fabricados en China.",
+            # LA OCTAVA, leida de la charla REAL de Martin por WhatsApp el
+            # 9-ago, y la primera que llego a un cliente despues de un deploy
+            # del mismo dia. Dice la misma oracion que la sexta cambiando "que
+            # no" por "sin". Ese es el punto entero del test: la idea se puede
+            # escribir de infinitas formas, asi que se cubre la FORMA.
+            "No trabajamos productos sin componentes de origen chino."):
         salida = HV._sin_afirmar_sobre_el_catalogo(frase, llamadas, "t")
         assert frase not in salida, f"el muro paso: {frase}"
 
