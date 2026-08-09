@@ -332,3 +332,33 @@ def test_los_filtros_no_pisan_al_certificador_de_rubro():
         filtros=[{"campo": "color", "operador": "contiene",
                   "valor": "blanco"}]), TIENDA)
     assert r["estado"] == "no_vendemos"
+
+
+# ── PEDIR MENOS DE ALGO ES UNA FORMA, NO UNA PALABRA (9-ago-2026) ────────────
+
+def test_la_minimizacion_se_resuelve_se_diga_como_se_diga():
+    """"menos partes chinas posibles" resolvia y "la MENOR cantidad de partes
+    chinas posible" -como lo dijo Martin en la redaccion coloquial- devolvia
+    None: el unico criterio que el cliente puso se perdia entero, y con el la
+    unica razon por la que escribio. Se cubre la FORMA, no la palabra con que
+    se dijo esta vez."""
+    from app.core import filtros_catalogo as FC
+    for frase in ("menos partes chinas posibles",
+                  "menor cantidad de partes chinas posible",
+                  "la minima cantidad de componentes chinos",
+                  "lo menos chino posible",
+                  "que no sean chinos"):
+        cond = FC.resolver_exclusion(frase, TIENDA)
+        assert cond and cond["operador"] == "no_contiene", frase
+        assert cond["valor"] == "chin", frase
+
+
+def test_lo_que_NO_es_una_exclusion_sigue_sin_tocarse():
+    """LA CONTRACARA, y es la que hace seguro el cambio de arriba. Aplicar una
+    condicion al reves es peor que no aplicarla: quien PIDE algo chino no puede
+    terminar con un filtro que se lo saca, y una palabra suelta como 'menor' en
+    otro contexto no puede inventar una condicion."""
+    from app.core import filtros_catalogo as FC
+    for frase in ("quiero productos chinos", "mouse chino",
+                  "para mi hijo menor", "el precio menor posible"):
+        assert FC.resolver_exclusion(frase, TIENDA) is None, frase

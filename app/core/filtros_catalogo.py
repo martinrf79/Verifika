@@ -525,8 +525,14 @@ def clave_de_orden(prod: dict, campo: str, tienda_id: str):
 # no aplico es una EXCLUSION. Sin marca de negacion no se hace nada: aplicar al
 # reves una condicion -filtrar POR chino a alguien que no lo quiere- es mucho
 # peor que no aplicarla.
-_NEGACIONES = ("sin", "no", "menos", "evitar", "excluir", "salvo", "excepto",
-               "nada de", "que no")
+# LAS MARCAS DE MINIMIZACION SON LA MISMA FORMA DICHA DISTINTO, y faltaban
+# tres. Medido el 9-ago: "menos partes chinas posibles" resolvia y "la MENOR
+# cantidad de partes chinas posible" -que es como lo dijo Martin en la
+# redaccion coloquial- devolvia None, asi que el unico criterio que el cliente
+# puso se perdia entero. Es la leccion del muro otra vez: se cubre la FORMA
+# -pedir menos de algo- y no la palabra exacta con la que se dijo esta vez.
+_NEGACIONES = ("sin", "no", "menos", "menor", "minima", "minimo", "evitar",
+               "excluir", "salvo", "excepto", "nada de", "que no")
 
 
 def resolver_exclusion(restriccion: str, tienda_id: str) -> dict | None:
