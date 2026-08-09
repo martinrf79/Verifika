@@ -1976,7 +1976,8 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                        for p in (estado.get("productos_vistos") or [])] +
                       [str(c.get("nombre") or "")
                        for c in (conv.get("carrito_vigente") or [])])
-        rec = P.reconciliar(declarado, llamadas, trace_id, ya_resuelto=ya)
+        rec = P.reconciliar(declarado, llamadas, trace_id, ya_resuelto=ya,
+                            tienda_id=tienda_id)
         obligacion = P.instruccion_de_preguntas(rec)
         revision = P.instruccion_de_faltantes(rec)
         if not revision:

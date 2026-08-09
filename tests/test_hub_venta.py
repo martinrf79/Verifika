@@ -1193,3 +1193,150 @@ def test_la_contradiccion_que_nombra_TODO_no_descarta_nada(firestore_doble):
                  "resultado": {"estado": "registrado", "pedido": declarado}}]
     rec = P.reconciliar(declarado, llamadas, "t")
     assert sorted(rec["sin_buscar"]) == ["auriculares", "mouse"]
+
+
+# ── EL TURNO REAL DEL 9-AGO, trace 57ad6a0d: SE DEDUJO BIEN Y NO LLEGO ──────
+# Martin mando por WhatsApp la version SIN teclado: "un auricular y un mouse a
+# Cordoba capital, una memoria y un mouse a Concordia, los otros dos a
+# Posadas". Los seis cierran por resta y no hay ambiguedad ninguna.
+#
+# EL MODELO LO RESOLVIO PERFECTO y quedo escrito en el log: desde la ronda 2
+# llamo a `armar_presupuesto` con los seis renglones, cada uno con su destino,
+# incluidos los dos de Posadas que salian de restar. Y el turno igual salio
+# mal, por tres cables sueltos aguas abajo. Estos tests son esos tres.
+
+def _seis_unidades_con_destino():
+    """Las llamadas tal como las hizo el modelo en produccion."""
+    declarado = {"items": [{"que": "auriculares", "cantidad": 2},
+                           {"que": "mouse", "cantidad": 2},
+                           {"que": "memoria ram", "cantidad": 2}],
+                 "destinos": ["Córdoba capital", "Concordia", "Posadas"],
+                 "pide_precio": True}
+    cuenta = {"herramienta": "armar_presupuesto",
+              "pedido": {"destinos": ["Córdoba capital", "Concordia",
+                                      "Posadas"],
+                         "items": [
+                             {"product_id": "AUR0019", "cantidad": 1,
+                              "destino": "Córdoba capital"},
+                             {"product_id": "MOU0023", "cantidad": 1,
+                              "destino": "Córdoba capital"},
+                             {"product_id": "RAM0001", "cantidad": 1,
+                              "destino": "Concordia"},
+                             {"product_id": "MOU0023", "cantidad": 1,
+                              "destino": "Concordia"},
+                             {"product_id": "AUR0019", "cantidad": 1,
+                              "destino": "Posadas"},
+                             {"product_id": "RAM0001", "cantidad": 1,
+                              "destino": "Posadas"}]},
+              "resultado": {"estado": "ok", "bloque": "Total: $225.000"}}
+    return declarado, cuenta
+
+
+def test_el_destino_vale_venga_de_la_cuenta_y_no_solo_del_pedido(firestore_doble):
+    """CABLE UNO: el reconciliador miraba SOLO los items de registrar_pedido.
+
+    Medido en produccion, trace 57ad6a0d: el reparto estaba entero en los
+    renglones de la cuenta y la regla 7 no lo veia, asi que pidio 'volve a
+    declarar el pedido' en las rondas 2, 3 y 4. Tres rondas quemadas, 37,7
+    segundos de turno, y el hub cerro en `faltantes_sin_resolver` sobre algo
+    que estaba hecho."""
+    from app.core import pedido as P
+    declarado, cuenta = _seis_unidades_con_destino()
+    rec = P.reconciliar(declarado, [cuenta], "t", tienda_id="verifika_prod")
+    assert not [f for f in rec["faltantes"] if "va a cada uno" in f], \
+        rec["faltantes"]
+
+    # Y si la cuenta reparte SOLO una parte, el reclamo vuelve: lo que se
+    # acepta es el reparto COMPLETO, no cualquier destino suelto.
+    a_medias = {**cuenta, "pedido": {**cuenta["pedido"],
+                                     "items": cuenta["pedido"]["items"][:2]}}
+    rec2 = P.reconciliar(declarado, [a_medias], "t", tienda_id="verifika_prod")
+    assert any("va a cada uno" in f for f in rec2["faltantes"])
+
+
+def test_no_se_pregunta_lo_que_el_sistema_ya_resolvio(firestore_doble):
+    """CABLE DOS: la contradiccion que el modelo declaro estaba MAL CONTADA.
+
+    Textual del log: "pidio 6 articulos, pero al detallar los envios solo
+    menciono 5". Nombra cuatro y "los otros dos", que son seis. La regla 6
+    tomaba cualquier contradiccion y la volvia pregunta sin contar nada, asi
+    que al cliente le llego "confirmame el destino del sexto articulo" DEBAJO
+    de un presupuesto donde los seis ya tenian destino."""
+    from app.core import pedido as P
+    declarado, cuenta = _seis_unidades_con_destino()
+    declarado["contradicciones"] = [
+        "El cliente pidió 2 auriculares, 2 mouse y 2 memorias (6 artículos en "
+        "total), pero al detallar los envíos solo mencionó 5 artículos: 1 "
+        "auricular y 1 mouse a Córdoba, 1 memoria y 1 mouse a Concordia, y "
+        "\"los otros dos artículos\" a Posadas. Falta aclarar el destino de 1 "
+        "artículo."]
+    rec = P.reconciliar(declarado, [cuenta], "t", tienda_id="verifika_prod")
+    assert not rec["preguntar"], rec["preguntar"]
+
+    # SALVAGUARDA UNA: sin el reparto cerrado, la pregunta se hace igual. El
+    # default es preguntar; lo que la calla es el hecho, no la redaccion.
+    a_medias = {**cuenta, "pedido": {**cuenta["pedido"],
+                                     "items": cuenta["pedido"]["items"][:3]}}
+    assert P.reconciliar(declarado, [a_medias], "t",
+                         tienda_id="verifika_prod")["preguntar"]
+
+
+def test_el_teclado_se_pregunta_aunque_la_cuenta_cierre(firestore_doble):
+    """SALVAGUARDA DOS, y es la que hace usable a la de arriba. En la version
+    con teclado el reparto TAMBIEN cierra -los seis del pedido tienen destino-
+    y la contradiccion sigue siendo legitima, porque nombra un rubro que el
+    cliente NO pidio. Esa pregunta es la que hay que hacer siempre."""
+    from app.core import pedido as P
+    declarado, cuenta = _seis_unidades_con_destino()
+    declarado["contradicciones"] = [
+        "Nombró un teclado en el envío a Concordia que no estaba en el pedido."]
+    rec = P.reconciliar(declarado, [cuenta], "t", tienda_id="verifika_prod")
+    assert any("teclado" in p for p in rec["preguntar"]), rec["preguntar"]
+
+    # Y una que senala a UNOS POCOS items tampoco se calla: habla de un
+    # producto concreto, no del reparto.
+    declarado["contradicciones"] = [
+        "Pidió 2 memorias pero no aclaró si las quiere de 8GB o de 16GB."]
+    assert P.reconciliar(declarado, [cuenta], "t",
+                         tienda_id="verifika_prod")["preguntar"]
+
+
+def test_el_reparto_nombra_el_rubro_y_el_producto_cuando_hace_falta(
+        firestore_doble):
+    """CABLE TRES, la mitad de largo. El reparto repetia el nombre completo de
+    cada producto -"1x Auriculares Redragon Zeus X Negro"- cuando ese nombre y
+    su precio estan tres renglones arriba, en la cuenta. Nombrar el rubro no
+    pierde nada y baja el bloque a menos de la mitad.
+
+    LA CONDICION, y sin ella esto SI perderia un dato: el rubro alcanza solo
+    cuando ese rubro viaja con UN producto en esta cuenta. Con dos modelos
+    distintos del mismo rubro, el rubro no los distingue y vuelve el nombre
+    entero."""
+    from app.core import herramientas as H
+    from app.storage.firestore_client import get_all_products
+
+    cat = [p for p in get_all_products(tienda_id=TIENDA)
+           if (p.get("stock") or 0) > 0]
+    aur = next(p for p in cat if p["categoria"] == "auriculares")
+    otro = next(p for p in cat
+                if p["categoria"] == "auriculares" and p["id"] != aur["id"])
+    mou = next(p for p in cat if p["categoria"] == "mouse")
+
+    args = {"items": [{"product_id": aur["id"], "cantidad": 1,
+                       "destino": "Concordia"},
+                      {"product_id": mou["id"], "cantidad": 1,
+                       "destino": "Posadas"}],
+            "destinos": ["Concordia", "Posadas"]}
+    bloque = H.ejecutar("armar_presupuesto", args, TIENDA).get("bloque") or ""
+    assert "- A Concordia: 1x auriculares" in bloque, bloque
+    assert "- A Posadas: 1x mouse" in bloque, bloque
+    assert aur["nombre"] not in bloque.split("Reparto")[-1]
+
+    # Dos auriculares DISTINTOS: el rubro ya no alcanza y vuelve el nombre.
+    args["items"] = [{"product_id": aur["id"], "cantidad": 1,
+                      "destino": "Concordia"},
+                     {"product_id": otro["id"], "cantidad": 1,
+                      "destino": "Posadas"}]
+    bloque2 = H.ejecutar("armar_presupuesto", args, TIENDA).get("bloque") or ""
+    assert aur["nombre"] in bloque2.split("Reparto")[-1], bloque2
+    assert otro["nombre"] in bloque2.split("Reparto")[-1], bloque2

@@ -44,6 +44,15 @@ def _norm(s) -> str:
     return "".join(c for c in s if not unicodedata.combining(c)).strip()
 
 
+# EL BLOQUE DE REPARTO, escrito por el CODIGO. El titulo y el arranque del
+# renglon viven ACA y `app/core/mensaje.py` los importa para reconocerlos y no
+# tocarlos. Una definicion sola, dos usos: es la misma disciplina con la que el
+# componedor importa el patron de la cuenta del hub, y nace de la misma falla
+# pagada dos veces -la misma regla escrita en dos lados que quedaron distintas-.
+TITULO_REPARTO = "Reparto de los envios:"
+RENGLON_REPARTO = "- A "
+
+
 # ── LOS MOLDES ───────────────────────────────────────────────────────────────
 # Pydantic manda: valida y coacciona lo que el modelo devuelve. Un argumento
 # fuera de molde no llega a la funcion, se descarta con su motivo.
@@ -1444,16 +1453,45 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
         totales = sum(max(1, i.cantidad) for i in a.items)
         if por_destino and repartidas == totales:
             from app.storage.firestore_client import get_product_by_id
-            lineas = []
-            for dest, its in por_destino.items():
-                nombres = []
-                for i in its:
-                    p = get_product_by_id(str(i.product_id).upper(),
-                                          tienda_id=tienda_id) or {}
-                    nombres.append(f"{max(1, i.cantidad)}x "
-                                   f"{p.get('nombre', i.product_id)}")
-                lineas.append(f"- A {dest}: " + ", ".join(nombres))
-            reparto = "Reparto de los envios:\n" + "\n".join(lineas)
+            fichas = {}
+            for i in a.items:
+                pid = str(i.product_id).upper()
+                if pid not in fichas:
+                    fichas[pid] = get_product_by_id(pid,
+                                                    tienda_id=tienda_id) or {}
+            # EL REPARTO NOMBRA EL RUBRO, NO EL PRODUCTO ENTERO, cuando el
+            # rubro tiene UN solo producto en esta cuenta. "1 auricular" en vez
+            # de "1x Auriculares Redragon Zeus X Negro": el nombre completo con
+            # su precio esta tres renglones arriba, en la cuenta, asi que no se
+            # pierde nada y el bloque baja de ~270 caracteres a ~120. Si el
+            # mismo rubro viaja con DOS productos distintos, el rubro no
+            # alcanza para distinguirlos y se escribe el nombre entero: ahi
+            # acortar seria perder el dato, que es la linea que este repo ya
+            # cruzo dos veces y pago las dos.
+            ids_por_rubro: dict = {}
+            for pid, p in fichas.items():
+                ids_por_rubro.setdefault(_norm(p.get("categoria")) or pid,
+                                         set()).add(pid)
+
+            # SE USA LA MISMA FORMA "Nx" QUE LA CUENTA y el nombre del rubro tal
+            # como lo escribe la fuente. Se probo singularizar -"1 auricular"- y
+            # sale "1 auriculare": conjugar en castellano es inventar, y este
+            # bloque no esta para eso. "1x auriculares" no tiene genero ni
+            # numero que errarle, y es la forma que el cliente ya viene leyendo
+            # en los renglones de arriba.
+            def _como_se_nombra(i) -> str:
+                pid = str(i.product_id).upper()
+                p = fichas.get(pid) or {}
+                cat = _norm(p.get("categoria")) or pid
+                cant = max(1, i.cantidad)
+                if len(ids_por_rubro.get(cat, set())) == 1 and p.get("categoria"):
+                    return f"{cant}x {str(p['categoria']).lower()}"
+                return f"{cant}x {p.get('nombre', i.product_id)}"
+
+            lineas = [f"{RENGLON_REPARTO}{dest}: " +
+                      ", ".join(_como_se_nombra(i) for i in its)
+                      for dest, its in por_destino.items()]
+            reparto = TITULO_REPARTO + "\n" + "\n".join(lineas)
         else:
             # EL REPARTO QUE NO CIERRA SE DICE, NO SE TAPA.
             #

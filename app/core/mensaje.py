@@ -60,6 +60,9 @@ log = get_logger(__name__)
 # -el patron de la poda escrito dos veces el 31-jul, la regex del reparto
 # duplicada el 6-ago-. Una definicion sola, dos usos.
 from app.core.hub_venta import _RE_ARRANQUE_CUENTA, _RE_HAY_CUENTA
+# El bloque de reparto, con su titulo y su renglon, tal como lo escribe la
+# calculadora. Se importa por el mismo motivo que el patron de la cuenta.
+from app.core.herramientas import RENGLON_REPARTO, TITULO_REPARTO
 
 # Una linea de listado: "- Mouse Logitech M170 Negro: $12.000 — origen: china".
 _RE_RENGLON_LISTADO = re.compile(r"^\s*-\s+(.+?)(?::\s*\$|\s*—|\s*$)")
@@ -88,6 +91,23 @@ def _es_cuenta(linea: str) -> bool:
     el codigo, es plata, y repetirlo cuando el cliente reconfirma el pedido es
     lo correcto, no una coletilla."""
     return bool(_RE_ARRANQUE_CUENTA.match(linea or ""))
+
+
+def _es_titulo_de_reparto(linea: str) -> bool:
+    return _norm(linea).startswith(_norm(TITULO_REPARTO))
+
+
+# "- A Concordia: 1 memoria, 1 mouse". La "A" tiene que ser palabra suelta: con
+# un simple startswith, "- Auriculares Redragon..." tambien empezaria con "- A"
+# y el renglon de listado se colaria como si fuera reparto.
+_RE_RENGLON_REPARTO = re.compile(
+    r"^\s*" + re.escape(RENGLON_REPARTO.strip()) + r"\s+\S", re.IGNORECASE)
+
+
+def _es_renglon_de_reparto(linea: str) -> bool:
+    """Lo escribio el codigo desde la cuenta y NO es un listado: cada renglon
+    dice adonde va OTRA cosa."""
+    return bool(_RE_RENGLON_REPARTO.match(linea or ""))
 
 
 def _valvula(texto: str, limpio: str) -> str:
@@ -234,6 +254,19 @@ def un_ejemplo_por_rubro_con_cuenta(texto: str) -> str:
     Sin cuenta el listado SI es la respuesta y esta funcion no toca nada: ahi el
     cliente esta comparando y sacarle opciones seria contestarle peor.
 
+    EL BLOQUE DE REPARTO NO ES UN LISTADO, y confundirlo costo el turno del
+    9-ago. Leido del WhatsApp real, trace 57ad6a0d: la cuenta traia los tres
+    destinos y al cliente le llego SOLO Cordoba. La causa esta en el `_dato` de
+    abajo: un renglon de reparto no tiene raya de hecho distintivo, asi que su
+    dato da vacio, y esta regla lee el vacio como "el mismo hecho que el
+    renglon anterior" y borra los que siguen. O sea que borro Concordia y
+    Posadas creyendo que repetian a Cordoba, cuando cada uno decia adonde va
+    OTRA cosa. Es justo lo contrario de lo que este modulo promete: no era
+    demostrablemente repetido, era informacion unica.
+
+    Por eso el bloque que escribe el CODIGO se declara intocable, igual que la
+    cuenta: sobre un bloque generado no hay nada que probar repetido.
+
     LO QUE NO SE PIERDE, que es lo que la hace aplicable:
       - el HECHO del rubro -"país de fabricación: china"- es el mismo en todos
         los renglones, asi que viaja en el que queda. Si el renglon que se iria
@@ -278,18 +311,25 @@ def un_ejemplo_por_rubro_con_cuenta(texto: str) -> str:
 
     salida, fuera = [], 0
     vistos_del_grupo: list = []
+    en_reparto = False
     for l in lineas:
         if _es_cuenta(l):
             salida.append(l)
             vistos_del_grupo = []
+            en_reparto = False
             continue
         if _RE_ENCABEZADO.match(l):
             salida.append(l)
             vistos_del_grupo = []
+            en_reparto = _es_titulo_de_reparto(l)
+            continue
+        if en_reparto and _es_renglon_de_reparto(l):
+            salida.append(l)
             continue
         m = _RE_RENGLON_LISTADO.match(l)
         if not m:
             salida.append(l)
+            en_reparto = False
             continue
         d = _dato(l)
         if vistos_del_grupo and (not d or d in vistos_del_grupo):

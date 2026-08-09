@@ -337,6 +337,107 @@ def _universo_de_destinos(llamadas: list) -> str:
     return " ".join(x for x in partes if x)
 
 
+def _unidades_declaradas(pedido: dict) -> int:
+    return sum(max(1, int(i.get("cantidad") or 1))
+               for i in (pedido.get("items") or []) if str(i.get("que") or "").strip())
+
+
+def _unidades_con_destino(llamadas: list) -> int:
+    """Las unidades que YA tienen su destino pegado en una cuenta armada.
+
+    EL REPARTO NO VIVE DONDE LO BUSCABAMOS, y esto costo tres rondas en
+    produccion. Trace 57ad6a0d, 9-ago, 14:13:33: el modelo resolvio el reparto
+    PERFECTO -"los otros dos articulos" por resta- y lo declaro en los seis
+    renglones de `armar_presupuesto`, que es donde el reparto hace falta porque
+    es lo que cobra los envios. La regla 7 miraba unicamente los items de
+    `registrar_pedido`, no lo encontraba, y le pedia al modelo que volviera a
+    declarar algo que acababa de declarar bien. Se repitio en las rondas 2, 3 y
+    4, el turno tardo 37,7 segundos y cerro en `faltantes_sin_resolver` sobre
+    algo que estaba hecho.
+
+    Es la misma clase de falla que las otras caras de esta moneda: no habia un
+    error de diseño, habia un cable mirando el lugar equivocado.
+    """
+    mejor = 0
+    for l in llamadas or []:
+        if l.get("herramienta") != "armar_presupuesto":
+            continue
+        items = (l.get("pedido") or {}).get("items") or []
+        mejor = max(mejor, sum(max(1, int(i.get("cantidad") or 1))
+                               for i in items
+                               if str(i.get("destino") or "").strip()))
+    return mejor
+
+
+def _reparto_cerrado(pedido: dict, llamadas: list) -> bool:
+    """Todas las unidades que el cliente pidio tienen destino en la cuenta."""
+    declaradas = _unidades_declaradas(pedido)
+    return bool(declaradas) and _unidades_con_destino(llamadas) >= declaradas
+
+
+def _senala_a_unos_pocos(c: str, pedido: dict) -> bool:
+    """¿La contradiccion apunta a ALGUNOS items y no al pedido entero?
+
+    Es la misma salvaguarda que ya usa `_en_duda`, mirada desde el otro lado:
+    una contradiccion que nombra TODOS los rubros -o ninguno- habla del pedido
+    como conjunto; una que nombra unos pocos senala a un producto concreto.
+    """
+    items = [str(i.get("que") or "") for i in (pedido.get("items") or [])]
+    nombrados = [i for i in items if i and _cubierto(i, _norm(c))]
+    return bool(nombrados) and len(nombrados) < len(items)
+
+
+def _nombra_rubro_ajeno(c: str, pedido: dict, tienda_id: str) -> bool:
+    """¿La contradiccion nombra un rubro de la tienda que NO esta en el pedido?
+
+    Es el caso del teclado: "nombro un teclado en el envio a Concordia que no
+    estaba en el pedido". Esa contradiccion es LEGITIMA y se pregunta siempre,
+    cierre o no cierre la aritmetica del reparto. Sin tienda no se puede saber,
+    y ante la duda se pregunta: el default conservador es preguntar.
+    """
+    if not tienda_id:
+        return True
+    try:
+        from app.core.guia_pedido import categorias_nombradas
+        nombradas = categorias_nombradas(c, tienda_id) or []
+    except Exception:
+        return True
+    pedido_txt = " ".join(_norm(i.get("que")) for i in (pedido.get("items") or []))
+    return any(not _cubierto(cat, pedido_txt) for cat in nombradas)
+
+
+def _contradiccion_desmentida(c: str, pedido: dict, llamadas: list,
+                              tienda_id: str) -> bool:
+    """¿El propio sistema ya resolvio lo que el modelo dice que no cierra?
+
+    EL CASO, medido en produccion el 9-ago, trace 57ad6a0d. El cliente escribio
+    seis articulos y repartio cuatro por su nombre mas "los otros dos". El
+    modelo declaro esta contradiccion: "pidio 6 articulos, pero al detallar los
+    envios solo menciono 5". **Es un error de aritmetica suyo**: nombra cuatro y
+    "los otros dos", que son seis. La regla 6 tomaba cualquier contradiccion
+    declarada y la convertia en pregunta sin contar nada, asi que al cliente le
+    llego "confirmame el destino del sexto articulo" DEBAJO de un presupuesto
+    donde los seis ya tenian su destino. El bot le pregunta algo que el mismo
+    acababa de resolver, que es la falla que `objetivo.py` castiga como
+    "pregunta lo que ya sabe".
+
+    CONTAR ES DEL CODIGO, NO DEL MODELO. Esto no persigue la redaccion de la
+    contradiccion: la contrasta con el hecho duro -cuantas unidades tienen
+    destino-, que es lo unico que no cambia de palabras.
+
+    LAS DOS SALVAGUARDAS, sin las cuales esto haria mas daño que bien:
+      - si nombra un rubro que no esta en el pedido, se pregunta igual. Ese es
+        el teclado, y es la contradiccion que SI hay que hacer.
+      - si senala a unos pocos items y no al pedido entero, se pregunta igual:
+        habla de un producto, no del reparto.
+    """
+    if _nombra_rubro_ajeno(c, pedido, tienda_id):
+        return False
+    if _senala_a_unos_pocos(c, pedido):
+        return False
+    return _reparto_cerrado(pedido, llamadas)
+
+
 def _en_duda(que: str, pedido: dict) -> bool:
     """¿El modelo MISMO marco este item como dudoso?
 
@@ -371,7 +472,7 @@ def _en_duda(que: str, pedido: dict) -> bool:
 
 
 def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
-                ya_resuelto: str = "") -> dict:
+                ya_resuelto: str = "", tienda_id: str = "") -> dict:
     """Compara lo que el modelo DECLARO que entendio contra lo que PIDIO.
 
     Devuelve:
@@ -517,11 +618,21 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
     # 6. LA CONTRADICCION QUE EL MODELO MISMO DECLARO. No se resuelve
     #    eligiendo: se pregunta. Es el `ambiguo` del certificador, aplicado al
     #    pedido entero.
+    #    SALVO QUE EL SISTEMA YA LA HAYA RESUELTO. Ver
+    #    `_contradiccion_desmentida`: el modelo cuenta mal, el codigo cuenta
+    #    bien, y preguntar lo que uno mismo acaba de resolver cuesta la venta.
     for c in (pedido.get("contradicciones") or []):
         c = str(c).strip()
-        if c:
-            preguntar.append(f"Preguntale al cliente por esto antes de "
-                             f"avanzar: {c}")
+        if not c:
+            continue
+        if _contradiccion_desmentida(c, pedido, llamadas, tienda_id):
+            log.info("contradiccion_desmentida", trace_id=trace_id,
+                     unidades=_unidades_declaradas(pedido),
+                     con_destino=_unidades_con_destino(llamadas),
+                     decia=c[:120])
+            continue
+        preguntar.append(f"Preguntale al cliente por esto antes de "
+                         f"avanzar: {c}")
 
     # 7. VARIOS DESTINOS Y NINGUN ITEM CON DESTINO: el reparto no se declaro.
     #
@@ -536,10 +647,17 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
     #
     #    Es la misma clase que la regla 1 -lo nombrado tiene que viajar- movida
     #    del QUE al ADONDE. No inventa el reparto: dice que falta declararlo.
+    #
+    #    EL DESTINO VALE VENGA DE DONDE VENGA (9-ago). Esta regla miraba SOLO
+    #    los items de `registrar_pedido` y por eso no veia el reparto cuando el
+    #    modelo lo pegaba en los renglones de la cuenta, que es donde de verdad
+    #    hace falta. Costo tres rondas y 37,7 segundos en produccion; el detalle
+    #    y el trace estan en `_unidades_con_destino`.
     destinos = [d for d in (pedido.get("destinos") or []) if str(d).strip()]
     items = pedido.get("items") or []
     if len(destinos) >= 2 and items and not any(
-            str(it.get("destino") or "").strip() for it in items):
+            str(it.get("destino") or "").strip() for it in items) \
+            and not _reparto_cerrado(pedido, llamadas):
         faltantes.append(
             f"El cliente nombro {len(destinos)} destinos distintos y no "
             f"dijiste que va a cada uno. Volve a declarar el pedido con "

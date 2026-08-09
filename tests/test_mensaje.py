@@ -229,3 +229,48 @@ def test_hoy_el_ejemplo_que_queda_puede_no_ser_el_cotizado():
     assert "Blanco" in salida, "hoy sobrevive el que NO se cotizo"
     # y lo que NO puede perderse nunca, que es por lo que se revirtio el intento
     assert "país de fabricación: china" in salida
+
+
+def test_el_reparto_por_destino_llega_entero():
+    """EL BLOQUE DE REPARTO NO ES UN LISTADO, y confundirlo costo el turno real
+    del 9-ago -trace 57ad6a0d-. La cuenta traia los tres destinos y al cliente
+    le llego SOLO Cordoba.
+
+    LA CAUSA, exacta: un renglon de reparto no tiene raya de hecho distintivo,
+    asi que `_dato` da vacio, y la regla 3-bis lee el vacio como "el mismo
+    hecho que el renglon anterior" y borra los que siguen. Borro Concordia y
+    Posadas creyendo que repetian a Cordoba, cuando cada uno decia adonde va
+    OTRA cosa: informacion unica, no repeticion. Es justo lo contrario de lo
+    unico que este modulo promete."""
+    from app.core.mensaje import componer
+
+    texto = ("Auriculares (43 igual de cerca):\n"
+             "- Auriculares Redragon Zeus X Negro: $57.500 — origen: china\n"
+             "- Auriculares Redragon Zeus X Blanco: $57.500 — origen: china\n"
+             "\n"
+             "Presupuesto:\n"
+             "- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n"
+             "Total: $225.000\n"
+             "\n"
+             "Reparto de los envios:\n"
+             "- A Córdoba capital: 1x auriculares, 1x mouse\n"
+             "- A Concordia: 1x memoria ram, 1x mouse\n"
+             "- A Posadas: 1x auriculares, 1x memoria ram\n")
+    salida = componer(texto)
+    for destino in ("Córdoba capital", "Concordia", "Posadas"):
+        assert destino in salida, f"se perdio {destino}:\n{salida}"
+
+    # Y el listado de arriba se sigue podando igual que antes: proteger el
+    # reparto no puede apagar la regla para lo que si es un listado.
+    assert "Zeus X Negro: $57.500 — origen" not in salida
+
+
+def test_un_listado_que_empieza_con_A_no_se_confunde_con_el_reparto():
+    """La guarda del reparto mira "- A " con la A como palabra suelta. Con un
+    startswith pelado, "- Auriculares..." tambien empieza con "- A" y el
+    listado entero se colaria como intocable."""
+    from app.core.mensaje import _es_renglon_de_reparto
+
+    assert _es_renglon_de_reparto("- A Concordia: 1x mouse")
+    assert not _es_renglon_de_reparto("- Auriculares Redragon Zeus X: $57.500")
+    assert not _es_renglon_de_reparto("- A4Tech Mouse Negro: $9.000")
