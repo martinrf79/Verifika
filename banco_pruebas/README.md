@@ -68,7 +68,6 @@ Una pasada por guion contra el modelo real, para mirar una charla entera con los
 ojos.
 
 ```bash
-export GEMINI_API_KEY=$GEMINI_API_KEY_PROD
 python3 banco_pruebas/banco_atado_charlas.py banco_pruebas/guiones/07_*.txt
 ```
 
@@ -82,7 +81,6 @@ el camino real del webhook, calcula las cuatro métricas y las compara contra el
 piso histórico.
 
 ```bash
-export GEMINI_API_KEY=$GEMINI_API_KEY_PROD
 python3 banco_pruebas/banco_repetido.py                            # el set del piso
 python3 banco_pruebas/banco_repetido.py 5 '7?_*.txt'               # compara
 python3 banco_pruebas/banco_repetido.py 5 '7?_*.txt' --fijar-piso  # graba piso
@@ -220,8 +218,15 @@ los usaba nadie.
 - La tarifa por provincia no está en el repo, vive solo en Firestore real. En
   `sim_firestore.py` se siembra como **asunción**; confirmalo contra Firestore.
 - El link de pago de Mercado Pago está stubeado.
-- La clave gratis de Gemini son 15 pedidos por minuto: usar `BANCO_PAUSA_S` para
-  no comer 429, o la clave paga vía `GEMINI_API_KEY_PROD`.
+- **La clave por defecto es la GRATIS y no se cambia sola.** La elige un solo
+  lugar, `clon_produccion.preparar_entorno`, y la paga entra únicamente con
+  `BANCO_CLAVE_PAGA=true`, que es una decisión y no un accidente. El 9-ago se
+  encontró que cuatro bancos pisaban `GEMINI_API_KEY` con la paga antes de que
+  esa guarda corriera, así que la regla estaba escrita y no se cumplía: no
+  vuelvas a poner `export GEMINI_API_KEY=$GEMINI_API_KEY_PROD` en ningún lado.
+- La gratis son 15 pedidos por minuto: si aparecen 429, subí `BANCO_PAUSA_S`.
+  Un 429 ya **no** puntúa cero: `objetivo.py` marca esa corrida como SIN MEDIR
+  y avisa cuántas fueron. Si son muchas, el número vale poco.
 - El audio no se ejercita.
 
 ---
