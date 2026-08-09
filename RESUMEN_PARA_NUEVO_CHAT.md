@@ -28,6 +28,64 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
+**==== 9-AGO (noche) — EL INDICE DEL TURNO: EL NEXO QUE FALTABA ====**
+
+**LO QUE MARTIN VENIA PIDIENDO HACE SESIONES Y NO ESTABA HECHO.** Textual:
+"cada parte de la pregunta que se interpretó tendría que tener un valor para
+que la siguiente fase responda en concreto a esa parte".
+
+**EL AGUJERO, con nombre:** el reconciliador compara lo declarado contra las
+**LLAMADAS** —sabe si buscaste el rubro y si armaste la cuenta— y **NADIE
+miraba si el punto llego al TEXTO**. Un punto puede estar perfectamente
+ejecutado y no salir dicho. Eso es exactamente lo que se medía fallando:
+`cada_unidad_con_destino`, 9 a 13 de cada 15 corridas.
+
+**`app/core/indice_turno.py`.** Cada cosa que el cliente pidio es un punto con
+id estable: `item:1`, `condicion:1`, `destino:1..3`, `duda:1`, `pago:1`,
+`precio:1`. Sobre el mensaje REAL que le llego a Martin por WhatsApp, marca
+exactamente `destino:2`, `destino:3` y `duda:1` —Concordia, Posadas y la
+pregunta por el teclado— y ni un punto de mas.
+
+**DOS PASADAS Y CERO LLAMADAS NUEVAS AL MODELO**, que importa con 21,5 segundos
+medidos en produccion:
+- **antes de redactar**, sobre el material que el codigo ya tiene: los puntos
+  sin cubrir se vuelven instruccion CONCRETA —"envio a Concordia", no "te falto
+  algo"— dentro del prompt de redaccion que ya se iba a hacer.
+- **despues**, sobre el texto final, solo para el log: cada turno de produccion
+  queda registrado con que se interpreto y que llego al mensaje.
+
+**LO QUE SE MOVIO ES LA ROBUSTEZ, que era el pedido:**
+
+| | sin indice, 5 corridas | con indice, 2 corridas |
+|---|---|---|
+| promedio | 82 a 89 | 85 y **89** |
+| **peor caso** | 62, 73, 62, **12**, 25 | **75 y 75** |
+| tipos de falla | 6 a 8 | **3 y 2** |
+
+**Ninguna redaccion baja de 75, en dos corridas seguidas.** Desaparecieron
+`dice: china`, `hay_total`, `reparto_de_pago_aplicado` y
+`descuento_en_la_cuenta`.
+
+**LO QUE QUEDA EN PIE, y ahora esta medido turno a turno en vez de descubrirse
+leyendo una charla a mano: `cada_unidad_con_destino`, 11 a 13 de 15.** El
+indice confirma que ese punto se interpreta bien y no llega al texto. **El paso
+siguiente es corto: el codigo tiene el reparto calculado y el punto marcado como
+faltante, asi que pega el renglon el mismo en vez de pedirselo al modelo** —lo
+que ya funciono tres veces en este repo.
+
+**LOS NOMBRES VIEJOS NO SE RESUCITAN.** `interprete` y `generador_v2` se
+borraron en agosto; un modulo con nombre muerto manda a la sesion siguiente a
+buscar un archivo que no existe. Hoy **el interprete es `registrar_pedido`** y
+**el solver es la redaccion final**; lo nuevo se llama `indice_turno` porque es
+lo que hace: atarlos.
+
+**PENDIENTE QUE SIGUE ABIERTO: ACORTAR.** Martin tiene un esqueleto de menos de
+500 caracteres con la respuesta correcta a esta pregunta. Pedirselo y usarlo de
+vara: es mucho mejor que adivinar cuanto podar, y el 8-ago ya se pago que
+borrar a ojo tira la nota.
+
+---
+
 **==== 9-AGO (tarde) — LEIDO DEL WHATSAPP REAL: LA OCTAVA DEL MURO ====**
 
 **MARTIN LO RECLAMO CON RAZON: el mensaje que le llego a las 09:39, DESPUES

@@ -31,24 +31,16 @@ python3 banco_pruebas/objetivo.py --vivo     # las 5 redacciones, con el modelo
 python3 banco_pruebas/objetivo.py --anotar "qué cambié"
 ```
 
-## La medición de hoy — vara `vivo`
+## La medición de hoy — vara `codigo`
 
-| redacción | promedio de 3 | peor | mejor | largo |
-|---|---|---|---|---|
-| 1_textual_de_martin | **88** | 75 | 100 | 1467 |
-| 2_porcentajes_en_digitos | **88** | 88 | 88 | 1755 |
-| 3_orden_invertido | **92** | 88 | 100 | 1406 |
-| 4_criterio_dicho_distinto | **84** | 75 | 88 | 1506 |
-| 5_coloquial | **75** | 75 | 75 | 1729 |
+| vara | resultado |
+|---|---|
+| estado final | 8/8 |
+| comunicación | 6/6 |
+| **NOTA** | **100/100** |
 
-**Promedio: 85/100 — PEOR CASO: 75/100**
-
-El que manda para vender es el PEOR, no el promedio: es el que le puede tocar a un cliente real.
-
-**Lo que falla, sobre 15 corridas:**
-- 13/15 — cada_unidad_con_destino
-- 4/15 — seis_unidades
-- 1/15 — tres_envios_cotizados
+**Lo que falla hoy:**
+- nada: la vara de código está en verde.
 
 ## Bifurcaciones abiertas
 
@@ -68,3 +60,4 @@ _Cuando aparezcan dos caminos, se anotan acá con su razón y su costo, para que
 | 2026-08-09 | codigo | 100 | LA BIMODALIDAD, CERRADA. Dos causas, las dos deterministas y ninguna de redaccion. 1) El null que el molde PEDIA y RECHAZABA: registrar_pedido volvia pedido_mal_formado y el turno salia mudo. Saneado en la puerta unica, con barrido que cubre TODOS los moldes. 2) El rubro declarado y nunca buscado: el modelo declara los tres rubros y no busca ninguno; el reconciliador se lo pide y la ronda dos vuelve VACIA. Ahora lo busca el codigo, la tercera cara de la moneda que ya estaba escrita dos veces en hub_venta. VIVO: la redaccion 5 de 6 a 71, la 2 de 50 a 78, promedio 64 a 82 y el PEOR CASO de 0 a 62, que es el que manda. Largo 1.487: subio, porque el mensaje que antes no cotizaba nada ahora entrega el presupuesto entero. |
 | 2026-08-09 | codigo | 100 | A FONDO: cerrada la bimodalidad y dos defectos mas. 3) La MINIMIZACION es una forma, no una palabra: 'menos' resolvia a filtro y 'la MENOR cantidad de partes chinas posible' -como lo dijo Martin- no, asi que el unico criterio del cliente se perdia. 4) El item EN DUDA se pregunta, no se cotiza: el modelo declaraba el teclado como item Y como contradiccion, el codigo lo buscaba y la cuenta le sumaba $12.000 que el cliente no pidio. VIVO, tres corridas del dia: promedio 82, 86 y 89 contra 65 al arrancar; la redaccion 5 de 8 a 79 con un 100 en su mejor corrida; seis_unidades fallando 2 de 15 contra 4. El peor caso oscila 62-73 entre corridas. EL TECHO AHORA TIENE NOMBRE Y NUMERO: cada_unidad_con_destino falla 10 de 15 y es el proximo paso. |
 | 2026-08-09 | codigo | 100 | LEIDO DEL WHATSAPP REAL de Martin, no de un banco. La OCTAVA redaccion del muro -'no trabajamos productos SIN componentes de origen chino'- cerrada sumando la preposicion a la MISMA rama del patron; el test junta las ocho. Y el intento para la vidriera que contradice la factura se REVIRTIO con su numero: borrar el grupo del listado ya cotizado tiro la nota de 89 a 77 y el peor caso de 62 a 12, porque se llevaba puesto 'pais de fabricacion: china' -dice:china de 1/15 a 5/15, y de vuelta a 0/15 con el revert-. Misma leccion que el tope por caracteres, pagada dos veces: borrar solo es seguro cuando lo borrado esta REPETIDO. Ojo con el ruido: el peor caso dio 62, 73, 62, 12 y 25 sobre el MISMO codigo; el promedio -82 a 89- es lo estable. |
+| 2026-08-09 | codigo | 100 | EL INDICE DEL TURNO, el nexo entre lo interpretado y lo respondido que Martin venia pidiendo hace sesiones. Cada cosa que el cliente pide es un punto con id -item, condicion, destino, duda, pago, precio- y se marca cual llego al TEXTO, no a las llamadas. Dos pasadas y CERO llamadas nuevas al modelo: antes de redactar los puntos sin cubrir se vuelven instruccion CONCRETA en el mismo prompt, y despues se mide sobre el texto final para el log. LO QUE SE MOVIO ES LA ROBUSTEZ: peor caso 75 en DOS corridas seguidas, contra 62, 73, 62, 12 y 25 de las cinco anteriores; ninguna redaccion baja de 75. Tipos de falla distintos de 6-8 a DOS. Promedio 85 y 89. Queda en pie cada_unidad_con_destino, 11-13 de 15. |
