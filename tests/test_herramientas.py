@@ -652,3 +652,76 @@ def test_el_hueco_de_idioma_queda_anotado():
         H.BuscarProductos(descripcion="tenes un joystick inalambrico"), TIENDA)
     res = [h for h in huecos.resumen(TIENDA) if h["tipo"] == "sin_rubro"]
     assert res and res[0]["ejemplos"]
+
+
+# ── EL NULL QUE EL MOLDE PEDIA Y RECHAZABA (9-ago-2026) ──────────────────────
+# La redaccion coloquial de la pregunta de Martin daba 8 sobre 100 en las TRES
+# corridas: `registrar_pedido` volvia `pedido_mal_formado` y el turno se caia
+# entero, sin cuenta y sin la pregunta por el teclado. No era la redaccion: el
+# modelo mandaba `medio: null` porque la descripcion del campo se lo pedia, y
+# el tipo aceptaba la cadena vacia pero no el null.
+
+def test_el_pedido_con_medio_en_null_se_registra():
+    """LOS ARGUMENTOS SON LOS REALES, copiados del log de la corrida viva del
+    9-ago -trace dcf5dda0-. Si este test se pone rojo, volvio el turno mudo."""
+    args = {
+        "items": [{"que": "auriculares", "cantidad": 2},
+                  {"que": "mouse", "cantidad": 2},
+                  {"que": "memorias ram", "cantidad": 2},
+                  {"que": "teclado", "cantidad": 1}],
+        "restricciones": ["menor cantidad de partes chinas posible"],
+        "destinos": ["Córdoba Capital", "Concordia", "Posadas"],
+        "pide_precio": True,
+        "reparto_pago": [{"porcentaje": 70, "medio": None},
+                         {"porcentaje": 30, "medio": None}],
+    }
+    r = H.ejecutar("registrar_pedido", args, TIENDA)
+    assert r["estado"] == "registrado"
+    # y el reparto llega entero, que es lo que despues repone el codigo
+    partes = r["pedido"]["reparto_pago"]
+    assert [p["porcentaje"] for p in partes] == [70, 30]
+    assert all(p["medio"] == "" for p in partes)
+
+
+def test_ningun_molde_se_rompe_con_un_null_en_un_campo_con_default():
+    """EL BARRIDO, y es lo que convierte el arreglo en experiencia.
+
+    Arreglar `medio` a mano tapaba ESTE caso y dejaba viva la clase entera: hoy
+    hay 9 moldes y cualquiera de ellos vuelve a tirar el turno si el modelo
+    manda null en un campo que tiene default. Un campo con default no se rompe
+    porque llegue null: null ahi significa 'no lo dije', que es justo lo que el
+    default resuelve. El barrido lo prueba en TODOS los moldes, incluidos los
+    que se agreguen despues de esta sesion."""
+    def _relleno(modelo):
+        """Lo minimo que el molde exige, para que la unica cosa que se este
+        midiendo sea el null y no un campo que falta."""
+        fuera = {}
+        for campo, info in modelo.model_fields.items():
+            if not info.is_required():
+                continue
+            hijo = H._submodelo(info.annotation)
+            uno = _relleno(hijo) if hijo is not None else "x"
+            if hijo is None and info.annotation in (int, float):
+                uno = 1
+            fuera[campo] = [uno] if "list" in str(info.annotation) else uno
+        return fuera
+
+    for nombre, modelo in H._MOLDES.items():
+        base = _relleno(modelo)
+        for campo, info in modelo.model_fields.items():
+            if info.is_required() or info.get_default() is None:
+                continue
+            assert H.validar(nombre, {**base, campo: None}) is not None, (
+                f"{nombre}.{campo} tira el turno entero con null")
+        # y un renglon adentro de cada submodelo, que es donde estaba el de hoy
+        for campo, info in modelo.model_fields.items():
+            hijo = H._submodelo(info.annotation)
+            if hijo is None:
+                continue
+            nulos = {c: None for c, i in hijo.model_fields.items()
+                     if not i.is_required() and i.get_default() is not None}
+            if not nulos:
+                continue
+            renglon = {**_relleno(hijo), **nulos}
+            assert H.validar(nombre, {**base, campo: [renglon]}) is not None, \
+                f"{nombre}.{campo}[] tira el turno con null"

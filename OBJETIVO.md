@@ -31,16 +31,19 @@ python3 banco_pruebas/objetivo.py --vivo     # las 5 redacciones, con el modelo
 python3 banco_pruebas/objetivo.py --anotar "qué cambié"
 ```
 
-## La medición de hoy — vara `codigo`
+## La medición de hoy — vara `vivo`
 
-| vara | resultado |
-|---|---|
-| estado final | 8/8 |
-| comunicación | 6/6 |
-| **NOTA** | **100/100** |
+| redacción | promedio de 3 | peor | mejor | largo |
+|---|---|---|---|---|
+| 1_textual_de_martin | **84** | 75 | 88 | 1292 |
+| 2_porcentajes_en_digitos | **55** | 8 | 83 | 1417 |
+| 3_orden_invertido | **84** | 75 | 88 | 1482 |
+| 4_criterio_dicho_distinto | **92** | 88 | 100 | 1521 |
+| 5_coloquial | **8** | 8 | 8 | 740 |
 
-**Lo que falla hoy:**
-- nada: la vara de código está en verde.
+**Promedio: 65/100 — PEOR CASO: 8/100**
+
+El que manda para vender es el PEOR, no el promedio: es el que le puede tocar a un cliente real.
 
 ## Bifurcaciones abiertas
 

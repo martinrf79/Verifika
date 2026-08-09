@@ -28,6 +28,7 @@ sola definicion. Si un molde cambia, el esquema cambia solo.
 """
 import json
 import re
+import typing
 import unicodedata
 from typing import Literal
 
@@ -528,6 +529,73 @@ def esquemas(tienda_id: str) -> list[dict]:
     return fuera
 
 
+def _submodelo(anotacion):
+    """El molde que hay ADENTRO de una anotacion, si lo hay. Se busca en
+    profundidad porque el campo que rompio el turno del 9-ago se declara
+    `list[PartePago] | None`: el submodelo esta a dos niveles, y una sola vuelta
+    de `get_args` devuelve `list[PartePago]`, que no es un molde."""
+    if isinstance(anotacion, type) and issubclass(anotacion, BaseModel):
+        return anotacion
+    for hijo in typing.get_args(anotacion) or ():
+        hallado = _submodelo(hijo)
+        if hallado is not None:
+            return hallado
+    return None
+
+
+def _sin_nulos(modelo, datos):
+    """EL NULL QUE EL MOLDE PEDIA Y DESPUES RECHAZABA (medido el 9-ago).
+
+    La redaccion coloquial de la pregunta de Martin daba 8 sobre 100, tres
+    corridas de tres, y no era la redaccion: `registrar_pedido` volvia
+    `pedido_mal_formado` y el turno entero se caia sin cuenta, sin busqueda y
+    sin la pregunta por el teclado. El motivo, textual del log:
+
+        reparto_pago.0.medio -- Input should be 'transferencia',
+        'mercado pago' or '' [input_value=None]
+
+    El modelo habia hecho EXACTAMENTE lo que la descripcion del campo le pedia
+    -"si no dijo con que medio paga cada parte, pone el medio en null"- y el
+    tipo, que acepta la cadena vacia pero no el null, lo tiro. Un turno entero
+    perdido por la distancia entre lo que el molde PIDE y lo que ACEPTA.
+
+    LA REGLA, y vale para todos los moldes y para siempre: un campo que TIENE
+    default no se rompe porque llegue null. Null ahi significa "no lo dije", y
+    eso es justo lo que el default resuelve, asi que se saca la clave y el
+    default hace su trabajo. Los campos que ya son `X | None` no se tocan: ahi
+    el null es un valor legitimo y significa algo.
+
+    Va en la puerta unica -`validar`- y no campo por campo, a proposito: un
+    saneo repetido en quince moldes es la misma regla escrita en quince lados,
+    que es la falla que este repo ya pago dos veces."""
+    if not isinstance(datos, dict):
+        return datos
+    limpio = {}
+    for clave, valor in datos.items():
+        campo = getattr(modelo, "model_fields", {}).get(clave)
+        if campo is None:
+            limpio[clave] = valor
+            continue
+        # El default es lo que decide. `is_required()` es falso solo cuando el
+        # campo tiene uno; si ademas ese default es None, el campo ya acepta
+        # null por su cuenta y no hay nada que sanear.
+        if valor is None:
+            if not campo.is_required() and campo.get_default() is not None:
+                continue
+            limpio[clave] = None
+            continue
+        # Y hacia adentro: `reparto_pago` es una lista de PartePago, y el null
+        # que rompio el turno vivia en el submodelo, no en el molde de arriba.
+        anidado = _submodelo(campo.annotation)
+        if anidado is not None:
+            if isinstance(valor, list):
+                valor = [_sin_nulos(anidado, v) for v in valor]
+            else:
+                valor = _sin_nulos(anidado, valor)
+        limpio[clave] = valor
+    return limpio
+
+
 def validar(nombre: str, args: dict):
     """Coaccion Pydantic de los argumentos que devolvio el modelo. Devuelve el
     objeto validado, o None con el motivo logueado: un argumento fuera de molde
@@ -535,8 +603,12 @@ def validar(nombre: str, args: dict):
     modelo = _MOLDES.get(nombre)
     if modelo is None:
         return None
+    crudo = args if isinstance(args, dict) else {}
+    limpio = _sin_nulos(modelo, crudo)
+    if limpio != crudo:
+        log.info("herramienta_null_saneado", herramienta=nombre)
     try:
-        return modelo(**(args if isinstance(args, dict) else {}))
+        return modelo(**limpio)
     except Exception as e:
         log.warning("herramienta_args_invalidos", herramienta=nombre,
                     error=str(e)[:160])
