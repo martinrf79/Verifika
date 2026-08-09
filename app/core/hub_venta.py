@@ -1518,6 +1518,64 @@ def _bloques_a_uno(llamadas: list, trace_id: str) -> list:
     if len(idx) < 2:
         return llamadas
 
+    # ── CON LA CUENTA SOBRE LA MESA, LA VIDRIERA NO VA ──────────────────────
+    #
+    # ES EL RECORTE MAS GRANDE QUE QUEDABA, y Martin lo viene marcando desde el
+    # 7-ago: "el bloque de hallazgo pegado ENTERO cuando ya hay cuenta". Medido
+    # sobre su mensaje del 9-ago: el bloque son 640 caracteres de 1.731, MAS
+    # que la cuenta, y lista productos que NO son los que se cotizan -mostraba
+    # el Zeus X Blanco y cobraba el Negro, mostraba el Logitech y cobraba el
+    # Genius-. O sea que los 640 no solo sobran: confunden.
+    #
+    # POR QUE ESTE CORTE SI Y EL DEL 9-AGO NO. Ese dia se probo borrar el grupo
+    # entero y la nota cayo de 89 a 77, porque con los renglones se iba el
+    # HECHO -"pais de fabricacion: china"-, que es el unico criterio que el
+    # cliente puso. La leccion quedo escrita: borrar solo es seguro cuando lo
+    # borrado esta demostrablemente repetido. Aca no se borra el hecho: se
+    # CONSERVA, en una linea por rubro, y lo que se va son los renglones de
+    # producto, que si estan repetidos -el producto que el cliente compra esta
+    # en la cuenta, con su nombre y su precio, tres renglones mas abajo-.
+    #
+    # Y EL HECHO QUE SOBREVIVE ES EL DEL PRODUCTO COTIZADO, no el del primero
+    # de la lista. Con eso se cierra de raiz la vidriera que contradecia a la
+    # factura, que estaba abierta desde el 9-ago a la mañana.
+    ids_cotizados, hay_cuenta = set(), False
+    for l in llamadas:
+        if (l.get("herramienta") == "armar_presupuesto"
+                and (l.get("resultado") or {}).get("bloque")):
+            hay_cuenta = True
+            for it in ((l.get("pedido") or {}).get("items") or []):
+                ids_cotizados.add(str(it.get("product_id") or "").upper())
+
+    if hay_cuenta:
+        cortas = []
+        for i in idx:
+            r = llamadas[i]["resultado"]
+            cat = r.get("categoria") or (r["productos"][0].get("categoria") or "")
+            prods = r.get("productos") or []
+            elegida = next((f for f in prods
+                            if str(f.get("id") or "").upper() in ids_cotizados),
+                           prods[0] if prods else {})
+            hecho = str(elegida.get("por_que") or "").strip()
+            if hecho:
+                cortas.append(f"{str(cat).capitalize()}: {hecho}")
+        if cortas:
+            fuera = list(llamadas)
+            for n, i in enumerate(candidatos):
+                r = dict(llamadas[i]["resultado"])
+                r["bloque"] = "\n".join(cortas) if i == idx[0] else ""
+                r["instruccion"] = (
+                    "Pegá el bloque TAL CUAL, sin cambiar un renglón: es el "
+                    "origen de cada rubro y es el criterio que el cliente puso. "
+                    "NO listes productos: los que compra ya están en la cuenta "
+                    "con su nombre y su precio. PROHIBIDO afirmar nada sobre el "
+                    "catálogo entero." if i == idx[0] else
+                    "Ya está dicho en el bloque de arriba: no lo repitas.")
+                fuera[i] = {**llamadas[i], "resultado": r}
+            log.info("bloques_a_uno_con_cuenta", trace_id=trace_id,
+                     rubros=len(cortas), largo=len("\n".join(cortas)))
+            return fuera
+
     lineas, hubo_empate = [], False
     for i in idx:
         r = llamadas[i]["resultado"]
