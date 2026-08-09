@@ -346,13 +346,19 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
                  el plan cubre el pedido.
       preguntar: lista de contradicciones que el modelo NO puede resolver solo.
                  Si viene con algo, el turno termina preguntandole al cliente.
+      sin_buscar: los mismos items de la regla 1, pero TIPADOS. El texto es
+                 para el modelo; esta lista es para el codigo, que con ella
+                 ejecuta la busqueda en vez de volver a pedirsela. Es el mismo
+                 hecho dicho una sola vez: sacarlo del texto con una expresion
+                 regular seria la misma regla escrita en dos lados.
 
     No inventa nada ni completa por su cuenta: solo dice que falta.
     """
     faltantes: list[str] = []
     preguntar: list[str] = []
+    sin_buscar: list[str] = []
     if not pedido:
-        return {"faltantes": [], "preguntar": []}
+        return {"faltantes": [], "preguntar": [], "sin_buscar": []}
 
     # LO QUE YA SE RESOLVIO EN TURNOS ANTERIORES TAMBIEN CUENTA COMO ATENDIDO.
     #
@@ -415,6 +421,7 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
             continue                                    # atendido: no existe
         faltantes.append(
             f"El cliente pidio '{que}' y no lo buscaste. Buscalo.")
+        sin_buscar.append(que)
 
     # 2. AL REVES: NADA COTIZADO QUE EL CLIENTE NO HAYA PEDIDO. Caza el item
     #    fantasma, el teclado que aparecio de la nada en la cuenta.
@@ -508,7 +515,8 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
     if faltantes or preguntar:
         log.info("reconciliador", trace_id=trace_id,
                  faltantes=faltantes[:4], preguntar=preguntar[:4])
-    return {"faltantes": faltantes, "preguntar": preguntar}
+    return {"faltantes": faltantes, "preguntar": preguntar,
+            "sin_buscar": sin_buscar}
 
 
 def instruccion_de_faltantes(rec: dict) -> str:

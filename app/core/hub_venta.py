@@ -1027,6 +1027,82 @@ def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
     return re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip()
 
 
+def _busqueda_de_lo_declarado(llamadas: list, declarado: dict, rec: dict,
+                              tienda_id: str, trace_id: str) -> list:
+    """EL RUBRO QUE EL MODELO DECLARO Y NUNCA BUSCO, lo busca el CODIGO.
+
+    LA FALLA, medida el 9-ago con `objetivo.py --vivo`. La redaccion coloquial
+    de la pregunta de Martin daba 6 sobre 100 -y 8 el dia anterior-, siempre el
+    mismo numero, mientras las otras cuatro daban 84, 88 y 92. El log de las
+    tres corridas, identico:
+
+        ronda 1 -> ['registrar_pedido', 'consultar_temas']
+        reconciliador faltan: "El cliente pidio 'auriculares' y no lo
+        buscaste. Buscalo." + mouse + memorias ram
+        ronda 2 -> []
+
+    El modelo DECLARA bien los tres rubros -entiende perfecto, ya estaba
+    medido en 100 sobre 15 de 15- y despues no busca ninguno. El reconciliador
+    lo caza, se lo pide, y en la ronda dos el modelo pide CERO herramientas. Sin
+    productos no hay cuenta, no hay precio y no hay respuesta: el cliente recibe
+    un mensaje de 717 caracteres que no cotiza nada.
+
+    ES EL MISMO HECHO QUE YA ESTABA ESCRITO DOS VECES EN ESTE ARCHIVO: ante una
+    correccion del reconciliador el modelo pide CERO herramientas 3 de 3 veces
+    -medido el 5-ago para la condicion sin aplicar, y otra vez para el rubro que
+    la cuenta perdia-. Las dos veces la salida fue la misma y funciono: que lo
+    haga el codigo. Esta es la tercera cara de esa misma moneda, y la mas cara,
+    porque las otras dos rompian una parte del turno y esta lo rompe entero.
+
+    NO ES EL CODIGO DECIDIENDO POR EL CLIENTE. Busca lo que el modelo MISMO
+    declaro que el cliente pidio, con las palabras del cliente, y le suma la
+    exclusion que el cliente puso, resuelta por `resolver_exclusion`, que no
+    interpreta la frase: mira en que campo del catalogo esa palabra aparece como
+    valor, que es un hecho. Traer un dato no es elegir por nadie; lo que no se
+    hace es cotizar solo, y por eso esto corre ANTES de las reposiciones que ya
+    estaban: primero existe el producto, y recien despues la cuenta se arma con
+    lo declarado, con sus reglas de siempre.
+
+    Y CUESTA CERO TOKENS: es la misma herramienta con los argumentos que el
+    reconciliador ya tenia tipados. La ronda vacia que hoy se quema esperando
+    que el modelo obedezca, se ahorra.
+    """
+    faltan = [q for q in (rec or {}).get("sin_buscar") or [] if str(q).strip()]
+    if not faltan:
+        return llamadas
+    from app.core import filtros_catalogo as FC
+    from app.core.guia_pedido import categorias_nombradas
+
+    # La exclusion que el cliente puso, una sola vez para todos los rubros.
+    filtros: list = []
+    for r in (declarado or {}).get("restricciones") or []:
+        cond = FC.resolver_exclusion(str(r), tienda_id)
+        if cond and cond not in filtros:
+            filtros.append(cond)
+
+    fuera = list(llamadas)
+    hechas = []
+    for que in faltan:
+        # LA CATEGORIA VA SI Y SOLO SI ES UNA DE LA TIENDA, y la resuelve
+        # `categorias_nombradas` contra la fuente viva. Con la descripcion sola
+        # -"auriculares", "memorias ram"- la busqueda vuelve `no_encontrado`:
+        # esta pensada para lo que el cliente describe, no para un rubro pelado.
+        # El test lo cazo antes de que llegara a produccion.
+        args = {"descripcion": que, "cuantos": 3}
+        cats = categorias_nombradas(que, tienda_id)
+        if cats:
+            args["categoria"] = cats[0]
+        if filtros:
+            args["filtros"] = list(filtros)
+        r = H.ejecutar("buscar_productos", args, tienda_id)
+        fuera.append({"herramienta": "buscar_productos", "pedido": args,
+                      "resultado": r})
+        hechas.append((que, (r or {}).get("estado")))
+    log.info("busqueda_de_lo_declarado", trace_id=trace_id, hechas=hechas,
+             filtros=[f.get("campo") for f in filtros])
+    return fuera
+
+
 def _condicion_faltante_aplicada(llamadas: list, rec: dict, tienda_id: str,
                                  trace_id: str) -> list:
     """La condicion que el cliente puso, el modelo declaro y ninguna busqueda
@@ -1920,6 +1996,12 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                 "completes de memoria lo que no trajo ninguna herramienta.")
 
     # ── 2-bis. LO QUE EL MODELO NO APLICA, LO APLICA EL CODIGO ───────────
+    # EL ORDEN ES EL DE LA DEPENDENCIA: primero que el producto EXISTA -si el
+    # modelo no busco nada, las tres reposiciones de abajo no tienen sobre que
+    # trabajar y el turno sale mudo-, despues la condicion, y al final la
+    # cuenta con lo declarado.
+    llamadas = _busqueda_de_lo_declarado(llamadas, declarado, rec, tienda_id,
+                                         trace_id)
     llamadas = _condicion_faltante_aplicada(llamadas, rec, tienda_id, trace_id)
     llamadas = _cuenta_con_lo_declarado(llamadas, declarado, tienda_id, trace_id)
     # EL ORDEN IMPORTA: primero se aplica el reparto que falta, y despues se

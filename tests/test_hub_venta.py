@@ -1084,3 +1084,61 @@ def test_sin_el_hecho_calculado_la_guardia_no_toca_nada(firestore_doble):
         "productos": [{"nombre": "Mouse Genius", "categoria": "mouse"}]}}]
     frase = "No tenemos productos que no sean fabricados en China."
     assert frase in HV._sin_afirmar_sobre_el_catalogo(frase, llamadas, "t")
+
+
+# ── EL RUBRO DECLARADO Y NUNCA BUSCADO (9-ago-2026) ──────────────────────────
+# La redaccion coloquial daba 6 sobre 100 mientras las otras cuatro daban 84 a
+# 92, y el log era el mismo las tres corridas: el modelo declara los tres
+# rubros, no busca ninguno, el reconciliador se lo pide y la ronda dos vuelve
+# VACIA. Sin productos no hay cuenta: 717 caracteres que no cotizan nada.
+
+def test_el_rubro_declarado_y_nunca_buscado_lo_busca_el_codigo(firestore_doble):
+    """El caso real: `registrar_pedido` solo, sin una sola busqueda. El codigo
+    trae los tres rubros con las palabras del cliente."""
+    from app.core import pedido as P
+    declarado = {"items": [{"que": "auriculares", "cantidad": 2},
+                           {"que": "mouse", "cantidad": 2},
+                           {"que": "memorias ram", "cantidad": 2}],
+                 "restricciones": ["menor cantidad de partes chinas posible"],
+                 "pide_precio": True}
+    llamadas = [{"herramienta": "registrar_pedido",
+                 "resultado": {"estado": "registrado", "pedido": declarado}}]
+    rec = P.reconciliar(declarado, llamadas, "t")
+    assert len(rec["sin_buscar"]) == 3, "el reconciliador tiene que verlos"
+
+    fuera = HV._busqueda_de_lo_declarado(llamadas, declarado, rec,
+                                         "verifika_prod", "t")
+    busquedas = [l for l in fuera if l["herramienta"] == "buscar_productos"]
+    assert len(busquedas) == 3
+    assert any((b["resultado"] or {}).get("productos") for b in busquedas), \
+        "sin un solo producto el turno vuelve a salir mudo"
+    # HUECO CONOCIDO, y queda anotado con su numero en vez de tapado: la
+    # restriccion de esta redaccion viene SIN negacion -"la menor cantidad de
+    # partes chinas posible"- y `resolver_exclusion` solo resuelve exclusiones,
+    # a proposito, porque aplicar una condicion al reves seria peor que no
+    # aplicarla. Con negacion, la exclusion SI viaja en la busqueda repuesta:
+    con_negacion = dict(declarado, restricciones=["que no sean chinos"])
+    otra = HV._busqueda_de_lo_declarado(llamadas, con_negacion, rec,
+                                        "verifika_prod", "t")
+    campos = [f["campo"] for l in otra if l["herramienta"] == "buscar_productos"
+              for f in (l["pedido"].get("filtros") or [])]
+    assert campos, "la condicion del cliente no puede perderse en el camino"
+
+
+def test_si_el_modelo_ya_busco_el_codigo_no_toca_nada(firestore_doble):
+    """LA CONTRACARA, que es la que lo hace seguro. Cuando el modelo hizo su
+    trabajo el reconciliador no deja faltantes, y sin faltantes esto no corre:
+    no duplica busquedas ni le pisa la decision al modelo."""
+    from app.core import pedido as P
+    declarado = {"items": [{"que": "mouse", "cantidad": 1}], "pide_precio": True}
+    llamadas = [
+        {"herramienta": "registrar_pedido",
+         "resultado": {"estado": "registrado", "pedido": declarado}},
+        {"herramienta": "buscar_productos", "pedido": {"descripcion": "mouse"},
+         "resultado": {"estado": "ok", "productos": [
+             {"id": "MOU0023", "nombre": "Mouse Logitech", "categoria": "mouse"}]}}]
+    rec = P.reconciliar(declarado, llamadas, "t")
+    assert rec["sin_buscar"] == []
+    fuera = HV._busqueda_de_lo_declarado(llamadas, declarado, rec,
+                                         "verifika_prod", "t")
+    assert fuera == llamadas

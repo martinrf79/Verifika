@@ -35,13 +35,13 @@ python3 banco_pruebas/objetivo.py --anotar "qué cambié"
 
 | redacción | promedio de 3 | peor | mejor | largo |
 |---|---|---|---|---|
-| 1_textual_de_martin | **84** | 75 | 88 | 1292 |
-| 2_porcentajes_en_digitos | **55** | 8 | 83 | 1417 |
-| 3_orden_invertido | **84** | 75 | 88 | 1482 |
-| 4_criterio_dicho_distinto | **92** | 88 | 100 | 1521 |
-| 5_coloquial | **8** | 8 | 8 | 740 |
+| 1_textual_de_martin | **92** | 88 | 100 | 1416 |
+| 2_porcentajes_en_digitos | **50** | 0 | 88 | 1306 |
+| 3_orden_invertido | **84** | 75 | 88 | 1515 |
+| 4_criterio_dicho_distinto | **88** | 88 | 88 | 1428 |
+| 5_coloquial | **6** | 0 | 17 | 717 |
 
-**Promedio: 65/100 — PEOR CASO: 8/100**
+**Promedio: 64/100 — PEOR CASO: 0/100**
 
 El que manda para vender es el PEOR, no el promedio: es el que le puede tocar a un cliente real.
 
