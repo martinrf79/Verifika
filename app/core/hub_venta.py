@@ -35,6 +35,7 @@ import time
 
 from app.config import get_settings
 from app.core import herramientas as H
+from app.core import indice_turno as IT
 from app.core import pedido as P
 from app.logger import get_logger
 from app.storage.firestore_client import get_conversation, save_conversation
@@ -2016,6 +2017,25 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     llamadas = _supuesto_de_pago(llamadas, declarado, tienda_id, trace_id)
     llamadas = _bloques_a_uno(llamadas, trace_id)
 
+    # ── 2-ter. EL INDICE DEL TURNO: lo interpretado, punto por punto ─────
+    # EL NEXO QUE FALTABA (Martin, 9-ago). La interpretacion entiende 100 y la
+    # respuesta se cae igual, porque entre las dos no habia nadie: el
+    # reconciliador compara lo declarado contra las LLAMADAS, y ningun control
+    # mira si el punto llego al TEXTO. Aca se desarma lo interpretado en puntos
+    # con id y se marca cuales tienen con que contestarse, ANTES de redactar.
+    #
+    # VA EN LA MISMA LLAMADA, no en una vuelta nueva: la obligacion se suma al
+    # prompt de redaccion que ya se iba a hacer. Cuesta CERO latencia, que es la
+    # queja mas fuerte hoy -21,5 segundos medidos en produccion-.
+    material = " ".join(
+        [str((l.get("resultado") or {}).get("bloque") or "") for l in llamadas]
+        + [str(l.get("pedido") or "") for l in llamadas
+           if l.get("herramienta") == "armar_presupuesto"])
+    idx = IT.cobertura(declarado, material, trace_id)
+    pendiente = IT.instruccion(idx["faltan"])
+    if pendiente:
+        obligacion = (obligacion + "\n\n" if obligacion else "") + pendiente
+
     # ── 3. REDACTAR CON EL DATO DELANTE ─────────────────────────────────
     if llamadas:
         texto = await _redactar(negocio, memoria, history, raw_message,
@@ -2140,6 +2160,13 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
             ultimo_presupuesto=(bloque or conv.get("ultimo_presupuesto") or None))
     except Exception as e:
         log.warning("hub_venta_save_error", trace_id=trace_id, error=str(e)[:150])
+
+    # EL INDICE, MEDIDO SOBRE LO QUE EL CLIENTE VA A LEER. La pasada de arriba
+    # mira el material y sirve para PEDIR; esta mira el texto final y sirve para
+    # SABER. Es la regla de tau-bench: se juzga por lo observado, no por lo que
+    # el agente cuenta que hizo. Sin esto, "el destino no llego al mensaje" solo
+    # se descubre leyendo una charla a mano, que es como se descubrio hoy.
+    IT.cobertura(declarado, texto, trace_id + "|final")
 
     log.info("hub_venta_ok", trace_id=trace_id,
              latency_ms=int((time.time() - t0) * 1000),
