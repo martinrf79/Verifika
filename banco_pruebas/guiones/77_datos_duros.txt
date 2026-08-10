@@ -1,0 +1,21 @@
+# DATOS DUROS QUE NO SON PLATA — el guion de la ATADURA DE LA PROSA (10-ago).
+#
+# POR QUE EXISTE. Las diez charlas grabadas cubren buscar, cotizar, cambiar de
+# opinion y cerrar, o sea el eje de la PLATA, que ya estaba atado: el bloque de
+# la cuenta lo escribe el codigo y todo peso sin respaldo se poda. Ninguna
+# preguntaba por una garantia, un peso, un origen o que trae la caja, que es
+# justo donde el modelo puede contestar de memoria sin que nada lo desmienta.
+#
+# Cada turno de aca tiene la respuesta ESCRITA campo por campo en el catalogo,
+# asi que una respuesta inventada es demostrable, no opinable. Y como el
+# redactor ahora tiene que MARCAR de donde saco cada dato, esta charla es la que
+# hace correr esa verificacion en cada push, gratis y con el modelo grabado.
+que garantia tiene el mouse logitech g203?
+> contiene: 24|garantia|garantía
+> no_contiene: no puedo cumplir
+de donde viene, es chino?
+> contiene: china|logitech|suiza
+que trae la caja?
+> contiene: caja|manual|cable|receptor
+y cuanto pesa ese mouse?
+> contiene: 144|gramos|g

@@ -28,7 +28,92 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
-**==== 9-AGO (ULTIMO) — EL SISTEMA YA DEDUCIA, Y LA CLAVE SE GASTABA SOLA ====**
+**==== 10-AGO (ULTIMO) — LA SEGUNDA ATADURA, Y EL RELOJ QUE FALTABA ====**
+
+**LO QUE PIDIO MARTIN.** Dos ataduras, no una: la de los NUMEROS, que ya
+existia, y otra **por prosa, y expresamente NO por enums**. Mas separar cuando
+el modelo usa la fuente de verdad y cuando contesta de memoria. Y bajar la
+latencia.
+
+**EL HUECO QUE SE CERRO.** El sistema ataba la PLATA y nada mas: el bloque de la
+cuenta lo escribe el codigo y `_sin_plata_inventada` poda todo peso sin
+respaldo. Fuera de la plata **no habia nada**. Una garantia, un peso o un origen
+inventados salian limpios; la unica guardia que miraba afirmaciones,
+`_sin_afirmar_sobre_el_catalogo`, caza universales del tipo "ninguno del
+catalogo cumple" y una spec falsa le pasa por al lado.
+
+**COMO ATA, y por que no con un JSON de dos campos.** El redactor envuelve cada
+dato que afirma en `<d ID>lo que afirma</d>` con el id de donde lo saco, y
+`app/core/atadura_prosa.py` lo contrasta contra lo que trajeron las herramientas
+ESE turno, poda lo que no cierra y saca las etiquetas. El JSON con
+`prosa_fija` y `prosa_generada` se descarto a proposito: le pide al MODELO que
+declare que es cada cosa, o sea le pide al que alucina que avise si esta
+alucinando. La etiqueta no pide un juicio, pide una REFERENCIA, y la referencia
+se verifica sin preguntarle nada.
+
+**LOS DOS ANILLOS DE LA PODA, que es lo que la hace segura.** Primero se busca
+el numero en la fuente que el modelo NOMBRO; si no esta, se busca en TODO lo que
+trajo el turno. Si aparece en otra fuente es **rotulo equivocado** -tipico, los
+dias de envio colgados del id del producto- y NO se borra, porque borrarlo seria
+borrar una respuesta correcta. Se poda solo lo que **no dijo ninguna fuente**,
+que es lo que salio del entrenamiento. Queda en el log como
+`atadura_prosa_rotulo_equivocado` contra `atadura_prosa_dato_sin_respaldo`.
+
+**MEDIDO VIVO con la clave gratis, `python3 banco_pruebas/atadura.py`:**
+**el modelo OBEDECE la marca.** 60% de las afirmaciones con dato duro salieron
+atadas, y **0 etiquetas se fugaron al cliente**, que es la unica falla
+inaceptable. Lo que queda sin marcar se CUENTA y se loguea
+-`con_dato_sin_marcar`-: esa es la medida de cuanta prosa sigue viniendo del
+entrenamiento, y ya da señal sobre las charlas grabadas, por ejemplo "viene con
+24 meses de garantia" y "su procesador Core i5 y sus 16GB".
+
+**NO MOVIO LA NOTA, y se midio en A/B, no se supuso.** Las comunes con el cambio
+dieron 95 y 96; el MISMO codigo de antes, con las mismas dos corridas, dio 96 y
+fallo el mismo caso 09. Esta adentro del ruido conocido del instrumento.
+
+**EL RELOJ POR ETAPA — el turno logueaba UN solo `latency_ms`.** Por eso "tarda
+26 segundos" no se podia repartir y cualquier cambio de proveedor se medía a
+ciegas. Ahora `hub_venta_ok` sale con `etapas_ms`, que acumula y CUENTA decisor,
+herramientas, redactor, cierre y memoria. Primer reparto medido, preguntas
+simples de una ronda:
+
+| etapa | ms | veces |
+|---|---|---|
+| decisor | 2.530 | 1 |
+| redactor | 1.781 | 1 |
+| herramientas | **11** | 1 |
+| cierre | 2 | 1 |
+
+**LAS HERRAMIENTAS NO CUESTAN NADA: 11 milisegundos contra 4.300 de los dos
+modelos.** Toda la latencia son las llamadas al modelo, y se parte 59% decisor
+contra 41% redactor. Bajar la latencia es bajar llamadas o cambiar QUIEN decide;
+optimizar el codigo de las herramientas no compra un segundo.
+
+**GROQ SE PRUEBA SIN TOCAR CODIGO Y SIN CARGAR SALDO.** `DECISOR_BASE_URL`,
+`DECISOR_API_KEY` y `DECISOR_MODEL` ya existen y solo desvian la llamada UNO; el
+redactor nunca se mueve de Gemini. Groq tiene capa GRATIS que no pide prepago,
+asi que la comparacion sale sin plata: se corre `atadura.py` dos veces y se mira
+si baja la fila `decisor` sin que caiga la columna `marcadas`. OpenRouter
+tambien rutea a Groq, fijando el proveedor, pero **desde el contenedor de Claude
+esta bloqueado por politica de proxy**, asi que no se pudo verificar desde aca.
+
+**EL CASETE 77 y el guion nuevo.** Ninguna de las diez charlas grabadas
+preguntaba por una garantia, un peso o un origen, o sea que el eje que no es
+plata no se reproducia nunca. `77_datos_duros` lo cubre, saco 100/100 y **quedo
+grabado CON las etiquetas adentro**, asi que la verificacion corre en cada push,
+gratis. Piso refijado: 94 -> 95, puntos 296 -> 337 sobre 11 charlas, y **los dos
+topes que importan no se aflojaron**: `llamadas_max` sigue en 5 y `largo_max` en
+1.591.
+
+**LO QUE QUEDA ROJO Y NO ES MIO.** El candado del mapa -nocturno, marcado
+`lento`, NO corre en el push- ya estaba en rojo antes de este cambio por
+`app/core/calculadora.py:_n`. Con la atadura suma `_borrar_oracion_de`, que
+solo se ejecuta cuando el modelo contradice a la fuente: ninguna charla grabada
+lo hace, porque no se puede grabar una alucinacion a pedido. Tiene su prueba en
+`tests/test_atadura_prosa.py`, pero el mapa cuenta las 40 y los casetes, no la
+bateria.
+
+**==== 9-AGO — EL SISTEMA YA DEDUCIA, Y LA CLAVE SE GASTABA SOLA ====**
 
 > ## 🔑 LA CLAVE: EL DEFAULT ES LA GRATIS, Y NO SE TOCA
 > `GEMINI_API_KEY` -la GRATIS- contesta 200 y su cuota se renueva sola. La

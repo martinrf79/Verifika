@@ -29,11 +29,13 @@ interprete ahora sale de una herramienta que el modelo llama explicitamente,
 `tomar_pedido`, y queda en la traza.
 """
 import asyncio
+import contextlib
 import json
 import re
 import time
 
 from app.config import get_settings
+from app.core import atadura_prosa as AP
 from app.core import herramientas as H
 from app.core import indice_turno as IT
 from app.core import pedido as P
@@ -436,7 +438,11 @@ async def _redactar(negocio, memoria, history, mensaje, llamadas, trace_id,
     if cli is None:
         return ""
     datos = H.contexto_json(llamadas)
-    instr = _INSTRUCCION_DOS + (("\n\n" + obligacion) if obligacion else "")
+    # LA ATADURA DE LA PROSA viaja con la instruccion de redactar, no en una
+    # llamada aparte: marcar de donde sale cada dato es parte de escribir, y
+    # una vuelta mas al modelo costaria los segundos que estamos peleando.
+    instr = _INSTRUCCION_DOS + "\n\n" + AP.INSTRUCCION
+    instr += ("\n\n" + obligacion) if obligacion else ""
     msgs = _mensajes(negocio, memoria, history, mensaje, instr, datos)
 
     def _call():
@@ -1971,10 +1977,30 @@ async def _cerrar(conv, user_id, canal, tienda_id, mensaje, texto, trace_id,
     return texto, datos_acumulados, hecha
 
 
+@contextlib.contextmanager
+def _reloj(etapas: dict, nombre: str):
+    """EL RELOJ POR ETAPA. El turno logueaba UN solo `latency_ms` total, asi que
+    "tarda 26 segundos" no se podia repartir entre el decisor, las herramientas
+    y el redactor: cualquier cambio de modelo o de proveedor se medía a ciegas y
+    la discusion terminaba en opinion. Acumula por nombre y ademas CUENTA las
+    veces, porque el decisor entra una vez por ronda y el reparto entre "tarda
+    mucho" y "entra muchas veces" es justamente lo que hay que separar.
+
+    No decide nada ni puede romper el turno: solo mide."""
+    t = time.perf_counter()
+    try:
+        yield
+    finally:
+        ms = int((time.perf_counter() - t) * 1000)
+        etapas[nombre] = etapas.get(nombre, 0) + ms
+        etapas[nombre + "_n"] = etapas.get(nombre + "_n", 0) + 1
+
+
 async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                          canal: str, trace_id: str) -> str:
     """Un turno completo. Devuelve el texto para el cliente."""
     t0 = time.time()
+    etapas: dict = {}
     from app.core.estado_venta import (construir_estado, set_current_estado,
                                        get_envio_localidades, merge_productos)
     from app.core.contexto_turno import set_current_tienda
@@ -2003,15 +2029,17 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # gracias- el bucle corta antes de reconciliar y `rec` quedaba sin definir.
     rec: dict = {}
     for ronda in range(1, _MAX_RONDAS + 1):
-        pedidos, texto_directo = await _pedir_herramientas(
-            negocio, memoria, history, raw_message, tienda_id, trace_id,
-            llamadas if ronda > 1 else None, revision=revision)
+        with _reloj(etapas, "decisor"):
+            pedidos, texto_directo = await _pedir_herramientas(
+                negocio, memoria, history, raw_message, tienda_id, trace_id,
+                llamadas if ronda > 1 else None, revision=revision)
         log.info("hub_venta_pedidos", trace_id=trace_id, ronda=ronda,
                  herramientas=[p["nombre"] for p in pedidos],
                  args=[p.get("args") for p in pedidos][:4])
         if not pedidos:
             break
-        llamadas += await _ejecutar_en_paralelo(pedidos, tienda_id, trace_id)
+        with _reloj(etapas, "herramientas"):
+            llamadas += await _ejecutar_en_paralelo(pedidos, tienda_id, trace_id)
         log.info("hub_venta_resultados", trace_id=trace_id, ronda=ronda,
                  estados=[(l["herramienta"],
                            (l["resultado"] or {}).get("estado"))
@@ -2097,12 +2125,21 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
 
     # ── 3. REDACTAR CON EL DATO DELANTE ─────────────────────────────────
     if llamadas:
-        texto = await _redactar(negocio, memoria, history, raw_message,
-                                llamadas, trace_id, obligacion=obligacion)
+        with _reloj(etapas, "redactor"):
+            texto = await _redactar(negocio, memoria, history, raw_message,
+                                    llamadas, trace_id, obligacion=obligacion)
     else:
         # Sin herramientas el modelo ya contesto en la llamada uno: es un
         # saludo, un gracias o una respuesta a algo que preguntamos nosotros.
         texto = texto_directo
+
+    # ── 3-bis. LA ATADURA DE LA PROSA ───────────────────────────────────
+    # Va PRIMERA, apenas el modelo escribe y antes que cualquier otra guardia:
+    # las etiquetas son sintaxis nuestra y las guardias de abajo cuentan
+    # oraciones y buscan cifras, asi que tienen que ver la prosa ya limpia,
+    # exactamente igual que antes de que esto existiera.
+    texto = AP.verificar(texto, llamadas, trace_id)
+
     if not (texto or "").strip():
         texto = settings.VERIFIKA_FALLBACK_MESSAGE
         log.warning("hub_venta_sin_texto", trace_id=trace_id)
@@ -2136,9 +2173,10 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
 
     # ── 5. CIERRE Y COBRO ───────────────────────────────────────────────
     senal = _senal_de_cierre(llamadas, raw_message)
-    texto, datos_cliente, pregunta_cierre_hecha = await _cerrar(
-        conv, user_id, canal, tienda_id, raw_message, texto, trace_id,
-        senal, bloque)
+    with _reloj(etapas, "cierre"):
+        texto, datos_cliente, pregunta_cierre_hecha = await _cerrar(
+            conv, user_id, canal, tienda_id, raw_message, texto, trace_id,
+            senal, bloque)
 
     # ── 6. LO QUE NO PUEDE DEPENDER DEL PROMPT ──────────────────────────
     # Dos cosas, y solo dos. La honestidad de bot porque el prompt solo no
@@ -2180,7 +2218,9 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     if descartados:
         try:
             from app.core.memoria_larga import actualizar_resumen
-            resumen = await actualizar_resumen(resumen, descartados, trace_id)
+            with _reloj(etapas, "memoria"):
+                resumen = await actualizar_resumen(resumen, descartados,
+                                                   trace_id)
         except Exception as e:
             log.warning("hub_venta_memoria_error", trace_id=trace_id,
                         error=str(e)[:120])
@@ -2229,5 +2269,6 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
 
     log.info("hub_venta_ok", trace_id=trace_id,
              latency_ms=int((time.time() - t0) * 1000),
+             etapas_ms=etapas, largo=len(texto or ""),
              herramientas=len(llamadas), con_presupuesto=bool(bloque))
     return texto
