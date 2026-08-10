@@ -28,7 +28,83 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
-**==== 10-AGO (ULTIMO) — EL LARGO: LA CUENTA REPETIDA, MEDIDA EN LA CHARLA REAL ====**
+**==== 10-AGO (ULTIMO) — LOS INVARIANTES: CUALQUIER CHARLA ES UN TEST ====**
+
+> ## 🧭 LA TERCERA VARA, Y CONTESTA LA PREGUNTA DE MARTIN: "¿POR QUE TE DA
+> VERDE Y EN LA PRUEBA REAL APARECEN ERRORES NUEVOS?"
+>
+> **NO ERA INDISCIPLINA, ES UNA PROPIEDAD DEL METODO.** Un test con respuesta
+> esperada solo encuentra el error que alguien ANTICIPO. Los tres numeros del
+> repo miden el aparato contra casos escritos a mano, y el cliente real no saca
+> sus preguntas de esa lista. Las tres cegueras, cada una con su prueba del dia:
+>
+>   1. **DE ESCENARIOS.** Las reglas nuevas del componedor se dispararon CERO
+>      veces en los 176 turnos de las 13 charlas grabadas, y en la charla REAL
+>      cortaron 500 caracteres por turno. Ninguna charla grabada tenia un
+>      cliente confirmando en varios turnos sin cambiar nada.
+>   2. **DE COSTURAS.** El error de plata vivia ENTRE dos modulos: la
+>      calculadora repartia bien y el cobro leia el total. Los dos con test, los
+>      dos en verde. El mapa la daba por cubierta porque cuenta funciones
+>      tocadas, no datos que cruzan.
+>   3. **DE ANTICIPACION.** Los "8000 DPI" pasaron con el tablero en verde.
+>
+> **LO QUE SE CONSTRUYO: `banco_pruebas/invariantes.py`.** Nueve propiedades que
+> ninguna respuesta correcta viola -que la cuenta cierre, que lo cobrado sea lo
+> facturado, que el reparto cubra el pedido, que nada se diga dos veces, que no
+> se fugue una etiqueta interna-. **No saben cual es la respuesta correcta**, y
+> por eso corren sobre una conversacion que nadie escribio. Es aritmetica y
+> texto: no llaman al modelo, no gastan clave, corren offline.
+>
+> **`banco_pruebas/produccion.py` — CADA CHARLA REAL SE VUELVE UN TEST, SOLA.**
+> Baja las conversaciones de Firestore con la clave de lectura y les pasa los
+> invariantes. Solo lectura, sin clave de LLM.
+>
+> **LA PRUEBA DE QUE SIRVE, y es del mismo dia.** Corrido sobre **30 charlas
+> reales, 101 turnos**, sin decirle que buscar:
+>   - encontro **el error de plata** que habia costado una hora de leer logs;
+>   - encontro **6 defectos mas que nadie habia visto**, entre ellos un
+>     `Resumen:` huerfano repetido en TRES charlas distintas;
+>   - corrido sobre las **charlas grabadas** -las que puntuan 95 y estan en
+>     verde en cada push desde hace una semana- encontro **3 defectos mas**: en
+>     el guion 70 el cliente leia el mismo renglon dos veces y la cuenta NO
+>     cerraba sola, los renglones sumaban $24.000 y el Subtotal decia $12.000.
+>     **Eso es exactamente lo que Martin venia diciendo.**
+>
+> **EL NUMERO QUE CONTESTA "¿CUANDO ES ROBUSTO?": defectos por charla real.**
+> Hoy **0,43** sobre 30 charlas, con el 20% de las charlas con al menos una
+> falla. Robusto es que de CERO sobre quince o veinte seguidas. Ahora hay una
+> curva y no una sensacion.
+>
+> **ENCHUFADO AL CI**: `test_los_invariantes_valen_en_toda_charla` corre sobre
+> los casetes en cada push, gratis. Es la VARA 3.
+>
+> **SOBRE SI ESTO ES UN PRODUCTO APARTE (lo pregunto Martin).** Hoy NO se saca a
+> otro repo: un sistema de invariantes sin un sistema real al que enchufarse no
+> vale nada, y extraerlo antes de que se pruebe es armar un producto sin
+> usuario. Pero el nucleo se escribio PURO -ninguna funcion de `invariantes.py`
+> importa `app.*`; recibe texto y datos y devuelve violaciones- y el adaptador
+> que sabe de Verifika vive aparte, en `produccion.py`. Si algun dia se extrae,
+> es una MUDANZA y no una reescritura. Cero costo hoy, opcion abierta mañana.
+
+> ## 🔧 LOS DEFECTOS QUE ENCONTRARON, YA ARREGLADOS
+>
+> **1. EL ERROR DE PLATA.** Se cobraba el TOTAL por cada medio en vez de la
+> parte. Con 65/35, al cliente se le pedian **$225.000 por transferencia cuando
+> le tocaban $131.625** -71% de mas, y mas que el total final de $210.375-, y el
+> link de Mercado Pago tambien cobraba el total: entre las dos vias, **$450.000
+> por un pedido de $210.375**. Arreglado en los tres lugares que cobran, leyendo
+> el bloque YA ESCRITO en vez de recalcular. Con descuento se cobra el monto de
+> DESPUES del descuento. Invariante: lo cobrado por los dos medios SUMA el total
+> final.
+>
+> **2. LA CUENTA A MEDIAS ARRIBA DE LA BUENA.** El modelo escribe una cuenta
+> incompleta, el codigo pega la suya, y al cliente le llega "Presupuesto:" dos
+> veces con el renglon repetido. Se poda **por ARITMETICA, no por parecido**: se
+> prueba el recorte y se aplica SOLO si despues los renglones suman el Subtotal.
+> Si no cierra, no se toca la plata. El mismo producto a dos destinos suma bien
+> y por eso nunca entra.
+
+**==== 10-AGO — EL LARGO: LA CUENTA REPETIDA, MEDIDA EN LA CHARLA REAL ====**
 
 > ## ✂️ EL MENSAJE SE ACORTO 37% EN LA CHARLA REAL DE WHATSAPP, Y NO ERA LA
 > PROSA DEL MODELO: ERA LA CUENTA REESTAMPADA.

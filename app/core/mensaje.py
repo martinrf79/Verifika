@@ -501,6 +501,59 @@ def sin_cuenta_dos_veces(texto: str) -> str:
         l for i, l in enumerate(lineas) if i not in fuera)).strip())
 
 
+_RE_CABECERA_CUENTA = re.compile(r"^\s*presupuesto\s*:\s*$", re.IGNORECASE)
+_RE_ITEM_CUENTA = re.compile(
+    r"^\s*-\s*(\d+)\s*x\s+.+:\s*\$[\d\.]+\s*c/u\s*=\s*\$([\d\.]+)\s*$",
+    re.IGNORECASE)
+_RE_SUBTOTAL_CUENTA = re.compile(r"^\s*subtotal\s*:\s*\$([\d\.]+)\s*$",
+                                 re.IGNORECASE)
+
+
+def sin_cuenta_mutilada_arriba(texto: str) -> str:
+    """REGLA 7. LA CABECERA DE LA CUENTA NO SE ESCRIBE DOS VECES.
+
+    LOS DOS CASOS, y los encontraron los INVARIANTES corriendo sobre las
+    charlas grabadas -las mismas que puntuan 95 y estan en verde en cada push
+    desde hace una semana-. Salio asi al cliente:
+
+        guion 70          |  guion 44
+        Presupuesto:      |  Presupuesto:
+        - 1x Teclado...   |  Presupuesto:
+        Presupuesto:      |  - 1x Mouse...
+        - 1x Teclado...   |  Subtotal: $8.500
+        Subtotal: $12.000 |  Total: $8.500
+        Total: $12.000    |
+
+    En el 70 el cliente lee el mismo renglon dos veces y **la cuenta no cierra
+    sola**: los renglones suman $24.000 y el Subtotal dice $12.000. En el 44 la
+    palabra "Presupuesto:" aparece pegada dos veces. Los dos son el modelo
+    escribiendo una cuenta a medias que despues se junta con la del codigo.
+
+    LO QUE LA HACE SEGURA, y es la parte que importa: **no se poda por
+    parecido, se poda por ARITMETICA**. Se prueba sacar todo lo que hay desde
+    la primera cabecera hasta la ultima, y el recorte se aplica SOLO si despues
+    los renglones suman exactamente el Subtotal. Si no cierra, no se toca nada:
+    ahi el codigo no puede probar cual sobra, y ante la duda la plata se queda
+    entera. Un mismo producto repetido en dos destinos -que es legitimo y tiene
+    su test- suma bien y por eso nunca entra aca."""
+    lineas = (texto or "").splitlines()
+    cabeceras = [i for i, l in enumerate(lineas) if _RE_CABECERA_CUENTA.match(l)]
+    if len(cabeceras) < 2:
+        return texto
+    quedan = lineas[:cabeceras[0]] + lineas[cabeceras[-1]:]
+
+    sub = next((_RE_SUBTOTAL_CUENTA.match(l) for l in quedan
+                if _RE_SUBTOTAL_CUENTA.match(l)), None)
+    items = [_RE_ITEM_CUENTA.match(l) for l in quedan if _RE_ITEM_CUENTA.match(l)]
+    if sub and items:
+        suma = sum(int(m.group(2).replace(".", "")) for m in items)
+        if suma != int(sub.group(1).replace(".", "")):
+            # el recorte no hace cerrar la cuenta: no se toca la plata
+            return texto
+    log.info("mensaje_cuenta_mutilada", renglones=cabeceras[-1] - cabeceras[0])
+    return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(quedan)).strip())
+
+
 def sin_cuenta_que_no_cambio(texto: str, anterior: str = "",
                              pregunta: str = "") -> str:
     """REGLA 6. LA CUENTA QUE NO CAMBIO NO SE VUELVE A ESTAMPAR ENTERA.
@@ -674,7 +727,8 @@ def componer(texto: str, anterior: str = "",
     if not (texto or "").strip():
         return texto
     antes = len(texto)
-    t = sin_cuenta_dos_veces(texto)
+    t = sin_cuenta_mutilada_arriba(texto)
+    t = sin_cuenta_dos_veces(t)
     t = sin_cuenta_que_no_cambio(t, anterior, pregunta)
     t = sin_repeticion_interna(t)
     t = sin_lo_ya_dicho(t, anterior)

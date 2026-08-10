@@ -144,3 +144,36 @@ def test_el_numero_no_baja(firestore_doble):
     assert puntos >= piso["puntos"], (
         f"EL NUMERO BAJO: {puntos} puntos contra un piso de {piso['puntos']}.\n"
         + "\n".join(f"  ! {f}" for f in fallas))
+
+
+@pytest.mark.skipif(not _casetes(), reason="no hay casetes grabados")
+def test_los_invariantes_valen_en_toda_charla(firestore_doble):
+    """VARA 3, LA NUEVA: las propiedades que NINGUNA respuesta correcta viola.
+
+    POR QUE HACIA FALTA UNA TERCERA VARA. Las otras dos comparan contra algo que
+    alguien escribio: la vara 1 contra lo que el codigo garantiza, la 2 contra
+    el puntaje de un guion. Las dos encuentran el error que alguien ANTICIPO.
+    El 10-ago Martin lo dijo con todas las letras -"en cada prueba en real
+    aparecen nuevos errores"- y tenia razon, y la causa es esa.
+
+    Esta vara no sabe cual es la respuesta correcta. Afirma que la cuenta cierre,
+    que lo cobrado sea lo facturado, que el reparto cubra el pedido, que nada se
+    diga dos veces y que no se fugue nada interno. Por eso corre sobre CUALQUIER
+    conversacion, incluida una que nadie escribio.
+
+    LA PRUEBA DE QUE SIRVE, medida el mismo dia: corrida sobre las charlas
+    REALES de produccion, sin decirle que buscar, encontro el error de plata que
+    habia costado una hora de leer logs a mano -cobrarle $225.000 a un cliente
+    que debia $131.625- mas seis defectos que nadie habia visto.
+
+    Corre sobre los casetes en cada push, gratis y sin clave: los invariantes
+    son aritmetica y texto, no llaman al modelo."""
+    from banco_pruebas.invariantes import revisar_charla
+
+    sucias = []
+    for path in _casetes():
+        fallas = revisar_charla(_correr(path)["respuestas"])
+        for f in fallas:
+            sucias.append(f"{path.stem} turno {f['turno']}: {f['regla']} — "
+                          f"{f['detalle']}")
+    assert not sucias, ("INVARIANTES VIOLADOS:\n  " + "\n  ".join(sucias))

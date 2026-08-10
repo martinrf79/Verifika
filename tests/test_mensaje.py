@@ -442,3 +442,50 @@ def test_la_frase_de_OTRO_rubro_no_se_borra_por_parecerse():
         anterior=parrafo("auriculares"))
     assert "mouse" in salida, f"se perdio el rubro del turno:\n{salida}"
     assert "China" in salida, f"se perdio el criterio del cliente:\n{salida}"
+
+
+# ── REGLA 7: la cabecera de la cuenta, dos veces ────────────────────────────
+def test_la_cuenta_a_medias_de_arriba_se_va_si_la_aritmetica_lo_prueba():
+    """LO ENCONTRARON LOS INVARIANTES sobre las charlas grabadas, las mismas
+    que puntuan 95 y estan en verde en cada push desde hace una semana. Al
+    cliente le llegaba el mismo renglon dos veces y la cuenta NO cerraba sola:
+    los renglones sumaban $24.000 y el Subtotal decia $12.000."""
+    from app.core.mensaje import sin_cuenta_mutilada_arriba
+
+    texto = ("El teclado más barato es el Genius KB-110X.\n"
+             "Presupuesto:\n"
+             "- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n"
+             "Presupuesto:\n"
+             "- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n"
+             "Subtotal: $12.000\n"
+             "Total: $12.000")
+    out = sin_cuenta_mutilada_arriba(texto)
+    assert out.count("Presupuesto:") == 1
+    assert out.count("KB-110X Blanco") == 1
+    assert "Total: $12.000" in out
+    assert "El teclado más barato" in out
+
+
+def test_la_cabecera_pegada_dos_veces_sin_nada_en_el_medio():
+    from app.core.mensaje import sin_cuenta_mutilada_arriba
+
+    texto = ("Te armé esto:\nPresupuesto:\nPresupuesto:\n"
+             "- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n"
+             "Subtotal: $8.500\nTotal: $8.500")
+    assert sin_cuenta_mutilada_arriba(texto).count("Presupuesto:") == 1
+
+
+def test_si_la_aritmetica_NO_cierra_no_se_toca_la_plata():
+    """LA SALVAGUARDA, y es la razon de que la regla mire la suma y no el
+    parecido: un mismo producto repetido en dos destinos es LEGITIMO, suma
+    bien, y no tiene que entrar nunca. Si el recorte no hace cerrar la cuenta,
+    el codigo no puede probar cual sobra y no toca nada."""
+    from app.core.mensaje import sin_cuenta_mutilada_arriba
+
+    texto = ("Presupuesto:\n"
+             "- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n"
+             "Presupuesto:\n"
+             "- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n"
+             "Subtotal: $17.000\n"
+             "Total: $17.000")
+    assert sin_cuenta_mutilada_arriba(texto) == texto
