@@ -59,6 +59,50 @@ def test_varios_modelos_devuelven_ambiguo_y_el_modelo_no_puede_elegir():
         assert r["estado"] in ("encontrado", "no_encontrado")
 
 
+@pytest.mark.parametrize("como_lo_escribe_el_cliente,esperado", [
+    ("g203", "Logitech G203"),
+    ("m170", "Logitech M170"),
+    ("G203", "Logitech G203"),
+    ("kb-110x", "Genius KB-110X"),
+])
+def test_el_codigo_de_modelo_solo_encuentra_el_producto(
+        como_lo_escribe_el_cliente, esperado):
+    """EL CLIENTE ESCRIBE EL CODIGO PELADO, sin la marca adelante.
+
+    Medido el 10-ago: "tenes el g203?" daba `no_encontrado` con el Mouse
+    Logitech G203 Lightsync en gondola, y "logitech g203" lo encontraba
+    siempre. La causa estaba en `certificar_producto`: el codigo de modelo es
+    un DESIGNADOR, se restaba del pedido, el pedido quedaba vacio y se cortaba
+    antes de mirar el catalogo. O sea que la falla aparecia solo cuando el
+    cliente escribe como escribe de verdad.
+
+    Es la falla numero uno del negocio -negar stock que existe-, asi que tiene
+    candado."""
+    r = H.buscar_productos(
+        H.BuscarProductos(descripcion=como_lo_escribe_el_cliente), TIENDA)
+    assert r["estado"] == "encontrado", f"{como_lo_escribe_el_cliente}: {r}"
+    nombres = " ".join(p.get("nombre", "") for p in r["productos"])
+    assert esperado.lower() in nombres.lower()
+
+
+def test_el_modelo_inventado_sigue_sin_existir():
+    """La contracara del test de arriba, y es la que lo hace seguro: aflojar el
+    corte no puede volver permisivo al certificador. Un codigo que NO esta en el
+    vocabulario de los 880 sigue sin confirmarse."""
+    r = H.buscar_productos(H.BuscarProductos(descripcion="g999"), TIENDA)
+    assert r["estado"] == "no_encontrado"
+
+
+def test_la_muletilla_corta_sigue_sin_traer_un_producto():
+    """El caso que puso el corte original: 'un regalo para mi viejo' deja 'mi',
+    que es la linea Mi de Xiaomi, y devolvia un cargador como si lo hubiera
+    pedido. Eso no puede volver."""
+    r = H.buscar_productos(
+        H.BuscarProductos(descripcion="un regalo para mi viejo que labura "
+                                      "en el campo"), TIENDA)
+    assert r["estado"] != "encontrado"
+
+
 def test_lo_que_no_existe_vuelve_como_no_encontrado_no_como_error():
     r = H.buscar_productos(
         H.BuscarProductos(descripcion="notebook cuantica xyz9000"), TIENDA)

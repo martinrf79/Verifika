@@ -19,3 +19,10 @@ que trae la caja?
 > contiene: caja|manual|cable|receptor
 y cuanto pesa ese mouse?
 > contiene: 144|gramos|g
+# EL TURNO DE LA TENTACION. El catalogo dice "sensor optico" y NADA de dpi ni
+# de botones, pero cualquier modelo sabe de entrenamiento que un G203 tiene
+# 8000 dpi y 6 botones. Si los escribe, ningun dato del turno los respalda y la
+# poda de `atadura_prosa` tiene que borrarlos. Si contesta honesto que no lo
+# tiene, mejor todavia. Las dos salidas son correctas; la que no se acepta es
+# que salga un numero que no dijo ninguna herramienta.
+cuantos dpi tiene y cuantos botones?

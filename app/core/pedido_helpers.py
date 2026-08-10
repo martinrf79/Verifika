@@ -121,8 +121,25 @@ def certificar_producto(resuelto: str, catalogo: list) -> tuple[str, list]:
     # Una sola palabra corta no identifica nada: "un regalo para mi viejo" deja
     # 'mi', que es la linea Mi de Xiaomi, y devolvia un cargador como si el
     # cliente lo hubiera pedido.
+    #
+    # PERO EL CODIGO DE MODELO SOLO SI IDENTIFICA, y este corte lo mataba
+    # (medido el 10-ago). "tenes el g203?" deja toks={'g203'}, que es TODO
+    # designador, asi que `pedido` quedaba vacio y se devolvia not_found **sin
+    # mirar el catalogo**, con el Mouse Logitech G203 Lightsync en gondola. Lo
+    # mismo con "m170". Con la marca adelante -"logitech g203"- funcionaba
+    # siempre, o sea que la falla se veia solo cuando el cliente escribe como
+    # escribe de verdad: el codigo pelado. Es la falla numero uno del negocio,
+    # negar stock que existe.
+    #
+    # La proteccion de arriba se conserva entera: se sigue con el designador
+    # SOLO si esa palabra existe en el vocabulario de los 880. Un modelo
+    # inventado -"g999"- no esta, y sale not_found como antes. Y abajo el match
+    # ya hace lo correcto sin tocar nada: con `pedido` vacio, el que tiene el
+    # designador en el nombre es HIT y el que no lo tiene es LINEA, que es
+    # justo la distincion entre el producto pedido y su familia.
     if not pedido or all(len(t) < 3 for t in pedido):
-        return "not_found", []
+        if not (designadores & vocabulario):
+            return "not_found", []
 
     hits, laxos, linea = [], [], []
     for p, nom in fichas:

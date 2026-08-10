@@ -28,7 +28,72 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
-**==== 10-AGO (ULTIMO) — LA SEGUNDA ATADURA, Y EL RELOJ QUE FALTABA ====**
+**==== 10-AGO (ULTIMO) — LA SEGUNDA ATADURA, EL RELOJ, Y GROQ MEDIDO ====**
+
+> ## 🔴 GROQ NO CONVIENE, Y ESTA MEDIDO CON SU CLAVE. NO VOLVER A PROPONERLO
+> SIN UN DATO NUEVO.
+>
+> Martin consiguio una clave gratis de Groq y se probo el 10-ago con
+> `llama-3.3-70b-versatile` como DECISOR, que es para lo que estaban puestos
+> `DECISOR_BASE_URL` y compania. Tres resultados, y los tres van en contra:
+>
+> **1. ES MAS LENTO, no mas rapido.** Sobre el MISMO prompt de decision:
+> Gemini flash-lite mediana **1.249 ms** en tres tiros; Groq **2.624 ms** en su
+> unico tiro limpio. Groq es rapido GENERANDO tokens, y nuestro decisor genera
+> poquisimos -111 a 163 de salida-: todo el tiempo se va en procesar el prompt
+> de entrada, que es enorme. La ventaja de Groq no aplica a esta llamada.
+>
+> **2. NO HACE LAS HERRAMIENTAS EN PARALELO, y eso es peor que la latencia.**
+> Ante el mismo mensaje Gemini devolvio CUATRO tool calls juntas
+> -registrar_pedido, buscar_productos, cotizar_envio, consultar_temas- y Llama
+> devolvio UNA. El hub explota el paralelismo: con una sola herramienta por
+> ronda harian falta mas rondas, o sea MAS latencia total, no menos.
+>
+> **3. LA CAPA GRATIS NO DA NI UN TURNO POR MINUTO.** El limite es
+> `x-ratelimit-limit-tokens: 12000` por minuto, y **una sola llamada del
+> decisor consume 8.834 tokens**, el 74% del minuto. En la corrida del banco
+> salieron **42 respuestas 429 contra 5 llamadas buenas**, y los turnos se
+> fueron a 44 segundos que son puro reintento. Ninguna medicion de esa corrida
+> vale.
+>
+> Con OpenRouter tampoco se pudo probar: el proxy del contenedor de Claude lo
+> bloquea por politica. Pero el punto 1 y el 2 no dependen del proveedor de
+> acceso, dependen del modelo, asi que cargar saldo no cambiaria el resultado.
+
+> ## 🎯 LA PALANCA REAL DE LATENCIA, MEDIDA: EL PROMPT PESA 8.834 TOKENS Y EL
+> 86% SON LOS ESQUEMAS DE LAS HERRAMIENTAS.
+>
+> Sin tools el prompt son ~1.027 tokens; los nueve esquemas suman ~6.328. Y se
+> concentra en tres, que son los que llevan enums grandes de la fuente viva:
+>
+> | herramienta | tokens aprox |
+> |---|---|
+> | consultar_temas | 1.854 |
+> | consultar_catalogo | 1.370 |
+> | buscar_productos | 1.279 |
+> | registrar_pedido | 761 |
+> | las otras cinco, juntas | ~1.056 |
+>
+> Ahi esta el tiempo y ahi esta la factura, en CUALQUIER proveedor. El ahorro
+> del 1-ago -mandar solo las encadenables en la ronda dos- ataca la ronda dos;
+> la ronda UNO se sigue pagando entera todos los turnos. **Este es el proximo
+> trabajo de latencia, no cambiar de modelo.**
+
+**LA BUSQUEDA POR CODIGO DE MODELO ESTABA ROTA, y es la falla numero uno del
+negocio.** Salio de investigar por que en una corrida viva el bot no resolvio
+un G203. `"tenes el g203?"` devolvia **`no_encontrado` con el Mouse Logitech
+G203 Lightsync en gondola**, y lo mismo `"m170"` y `"kb-110x"`. Con la marca
+adelante -`"logitech g203"`- funcionaba SIEMPRE, o sea que la falla aparecia
+solo cuando el cliente escribe como escribe de verdad: el codigo pelado.
+
+La causa estaba en `certificar_producto`: el codigo de modelo se reconoce como
+DESIGNADOR, se resta del pedido, el pedido quedaba VACIO y se cortaba con
+not_found **sin mirar el catalogo**. Ahora, si el pedido queda vacio pero el
+designador existe en el vocabulario de los 880, se sigue. La proteccion se
+conserva entera y tiene candado: `"g999"` inventado sigue dando no_encontrado, y
+`"un regalo para mi viejo"` sigue sin traer un cargador.
+
+
 
 **LO QUE PIDIO MARTIN.** Dos ataduras, no una: la de los NUMEROS, que ya
 existia, y otra **por prosa, y expresamente NO por enums**. Mas separar cuando
@@ -105,13 +170,25 @@ gratis. Piso refijado: 94 -> 95, puntos 296 -> 337 sobre 11 charlas, y **los dos
 topes que importan no se aflojaron**: `llamadas_max` sigue en 5 y `largo_max` en
 1.591.
 
-**LO QUE QUEDA ROJO Y NO ES MIO.** El candado del mapa -nocturno, marcado
-`lento`, NO corre en el push- ya estaba en rojo antes de este cambio por
-`app/core/calculadora.py:_n`. Con la atadura suma `_borrar_oracion_de`, que
-solo se ejecuta cuando el modelo contradice a la fuente: ninguna charla grabada
-lo hace, porque no se puede grabar una alucinacion a pedido. Tiene su prueba en
-`tests/test_atadura_prosa.py`, pero el mapa cuenta las 40 y los casetes, no la
-bateria.
+**LO UNICO QUE QUEDA ABIERTO, y esta acotado.** El candado del mapa -nocturno,
+marcado `lento`, **NO corre en el push y no frena el deploy**- lista dos
+funciones ciegas:
+
+  - `app/core/calculadora.py:_n`. **Ya estaba en rojo ANTES de esta sesion.** Es
+    una funcion anidada adentro de `_subtotales_por_grupo` que solo corre con
+    envio agrupado por localidad; ninguna de las 10 charlas grabadas llega ahi.
+  - `app/core/atadura_prosa.py:_borrar_oracion_de`. Solo se ejecuta cuando el
+    modelo contradice a la fuente. **Se intento grabarlo a proposito**: el turno
+    5 del guion 77 le pregunta los dpi y los botones del G203, que el catalogo
+    NO tiene y que cualquier modelo sabe de entrenamiento. El modelo contesto
+    HONESTO -"cuenta con un sensor optico, respecto a los dpi exactos..."- asi
+    que no hubo nada que podar. Buena noticia para el producto, casete que no
+    ejercita la rama. Tiene su prueba en `tests/test_atadura_prosa.py`, pero el
+    mapa cuenta las 40 y los casetes, no la bateria.
+
+No se toco ninguna de las dos: cambiar la forma del codigo para que un contador
+lo vea seria falsear el instrumento, que es lo unico que este repo no puede
+permitirse.
 
 **==== 9-AGO — EL SISTEMA YA DEDUCIA, Y LA CLAVE SE GASTABA SOLA ====**
 
