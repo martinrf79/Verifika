@@ -16,16 +16,26 @@ set -e
 # corre despues y manda. Nunca pisa trabajo: si el arbol viene sucio o el
 # checkout falla por lo que sea, avisa y sigue, porque un hook de arranque no
 # puede voltear la sesion.
+# EL AGUJERO QUE TENIA ESTO, Y POR EL QUE MARTIN LO TUVO QUE REPETIR UNA DECIMA
+# VEZ (10-ago). La version anterior se rendia ante CUALQUIER arbol sucio: si el
+# arnes dejaba un archivo tocado -o la sesion se reanudaba con trabajo a medio
+# hacer-, el hook imprimia "no se cambia de rama sola" y la sesion se quedaba en
+# la rama `claude/<tema>` del arnes. O sea que el mecanismo se apagaba solo justo
+# en el caso mas comun, y volvia a depender de que Martin lo dijera a mano.
+#
+# Ahora se INTENTA siempre. `git checkout main` con cambios sin commitear los
+# ARRASTRA a main cuando no hay conflicto, que es lo que queremos; y cuando si
+# hay conflicto git se niega solo y no pisa nada. La proteccion la da git, no
+# una condicion nuestra de mas.
 if git rev-parse --git-dir >/dev/null 2>&1; then
-  if [ -n "$(git status --porcelain)" ]; then
-    echo "AVISO: hay cambios sin commitear, no se cambia de rama sola."
-  elif [ "$(git branch --show-current)" != "main" ]; then
+  if [ "$(git branch --show-current)" != "main" ]; then
     git fetch --quiet origin main 2>/dev/null || true
     if git checkout --quiet main 2>/dev/null; then
       git merge --quiet --ff-only origin/main 2>/dev/null || true
       echo "RAMA: se paso a main automaticamente. Se trabaja SIEMPRE en main."
     else
-      echo "AVISO: no se pudo pasar a main solo. Hacelo a mano antes de tocar nada."
+      echo "AVISO: no se pudo pasar a main solo -git se nego, hay conflicto real-."
+      echo "       NO se trabaja en esta rama: resolvelo y volve a main a mano."
     fi
   else
     git fetch --quiet origin main 2>/dev/null || true

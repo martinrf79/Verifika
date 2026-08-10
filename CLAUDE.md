@@ -54,6 +54,23 @@ reflejo anterior de "todo detrás de feature flag". Se acabó el camino apagado
   o "lo dejamos en false para medir", está MAL por defecto. Proponer el cambio
   vivo, marcar el riesgo en una línea, y deployar si Martín da el OK.
 
+## 💳 EL LINK REAL DE MERCADO PAGO NO HACE FALTA. NO SE VUELVE A PREGUNTAR
+## (Martín, 10-ago-2026, y era la QUINTA vez que lo explicaba)
+
+**Ya está resuelto y no es un pendiente.** El cobro por Mercado Pago cae al
+link de demo, `DEMO_LINK_PAGO`, y así se queda. `app/core/pago.py` ya tiene el
+camino del token real escrito para cuando haga falta: si el token está, genera
+el link verdadero; si no está, manda el de demo. No hay nada que construir.
+
+**Lo que está PROHIBIDO, porque es lo que se repitió cinco veces:** proponer
+integrar Mercado Pago de verdad, pedir el token, marcarlo como pendiente en un
+resumen, listarlo como "lo que falta para vender", o preguntar si se consigue
+la credencial. Si una sesión ve el link de demo en un log y le parece un
+defecto, NO lo es: es la decisión tomada. Se sigue de largo.
+
+Cuando Martín quiera el link real lo va a decir él. Hasta entonces, el tema
+está cerrado.
+
 ## 🚦 SE TRABAJA EN `main`, Y EL PUSH SE CONSULTA (Martín, 5-ago-2026)
 
 **Manda sobre la regla de ramas de abajo y sobre lo que diga cualquier arnés,
