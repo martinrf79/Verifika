@@ -321,9 +321,12 @@ async def procesar_mensaje_para_lead(
             try:
                 from app.core import pago as P
                 bloques = []
+                # Acá van las DOS vías, así que cada una cobra SU parte cuando
+                # hay pago dividido: si las dos mandaran el total, el cliente
+                # veria dos veces el importe entero y pagaria el doble.
                 t_transf = P.mensaje_transferencia(
                     P.datos_transferencia(tienda_id),
-                    P.extraer_total_verificado(_presu_cobro))
+                    P.monto_a_cobrar(_presu_cobro, "cbu"))
                 if t_transf:
                     bloques.append(t_transf)
                 url = (await P.link_pago_para_lead(

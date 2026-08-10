@@ -31,8 +31,67 @@ log = get_logger(__name__)
 _MP_API = "https://api.mercadopago.com/checkout/preferences"
 
 # Ultima linea "Total: $1.234.567" de la presentacion (codigo, formato estable).
-_TOTAL_RE = re.compile(r"total:?\s*\$?\s*([\d\.]+)\s*$",
+# "Total FINAL" entra a proposito: cuando hay pago dividido con descuento, el
+# total final es lo que el cliente paga de verdad, y el "Total" de arriba es el
+# de antes del descuento. Cobrar el de arriba es cobrar de mas.
+_TOTAL_RE = re.compile(r"total(?:\s+final)?:?\s*\$?\s*([\d\.]+)\s*$",
                        re.IGNORECASE | re.MULTILINE)
+
+# Un renglon del bloque "Pago dividido:" tal como lo escribe `render_split`:
+#   "- transferencia (65%): $146.250 - 10% descuento = $131.625"
+#   "- mercado pago (35%): $78.750"
+# Se captura el medio y el ULTIMO monto del renglon, que es el que se cobra:
+# con descuento el que vale es el de despues del "=".
+_RE_RENGLON_SPLIT = re.compile(
+    r"^\s*-\s*(?P<medio>[^(]+?)\s*\(\s*[\d.,]+\s*%\s*\)\s*:\s*"
+    r"(?P<montos>.*\S)\s*$", re.IGNORECASE | re.MULTILINE)
+_RE_PLATA = re.compile(r"\$\s*([\d\.]+)")
+
+
+def montos_por_medio(presentacion: str) -> dict:
+    """{medio: monto a cobrar} leido del bloque "Pago dividido:" que escribe el
+    codigo. {} si no hay pago dividido.
+
+    EL ERROR QUE ESTO CIERRA, y es de PLATA, leido del WhatsApp real del
+    10-ago. Martin pidio el pago 65% transferencia y 35% Mercado Pago, la
+    cuenta lo hizo bien -"transferencia (65%): $146.250 - 10% descuento =
+    $131.625"- y abajo, en los datos para transferir, el bot le puso
+    **"Monto: $225.000"**. O sea que le pidio el TOTAL ENTERO por
+    transferencia: un 71% de mas sobre lo que le correspondia, y ademas mas que
+    el total final de $210.375.
+
+    La causa: el cobro se armaba con `extraer_total_verificado`, que lee la
+    ultima linea "Total" y no sabe nada del reparto. El reparto lo calculaba
+    bien `pago_split` y despues nadie lo miraba a la hora de cobrar.
+
+    Se lee del bloque YA ESCRITO, no se recalcula: si se recalculara habria dos
+    cuentas del mismo numero y podrian diferir, que es la falla que este repo ya
+    pago con el patron de la cuenta escrito dos veces."""
+    out: dict = {}
+    for m in _RE_RENGLON_SPLIT.finditer(str(presentacion or "")):
+        plata = _RE_PLATA.findall(m.group("montos"))
+        if not plata:
+            continue
+        try:
+            out[m.group("medio").strip().lower()] = int(plata[-1].replace(".", ""))
+        except ValueError:
+            continue
+    return out
+
+
+def monto_a_cobrar(presentacion: str, medio: str) -> int | None:
+    """Lo que hay que cobrar POR ESTE MEDIO. Con pago dividido, la parte que le
+    toca; sin pago dividido, el total. None si no hay numero confiable.
+
+    `medio` es el del cliente: 'cbu' o 'mp', como los devuelve
+    `elegir_medio_pago`."""
+    partes = montos_por_medio(presentacion)
+    if partes:
+        for nombre, monto in partes.items():
+            es_mp = "mercado" in nombre or nombre == "mp"
+            if (medio == "mp") == es_mp:
+                return monto
+    return extraer_total_verificado(presentacion)
 
 
 def extraer_total_verificado(presentacion: str) -> int | None:
@@ -100,8 +159,12 @@ async def crear_link_pago(monto_ars: int, titulo: str,
 async def link_pago_para_lead(presupuesto: str, lead: dict,
                               tienda_id: str | None,
                               trace_id: str | None = None) -> str | None:
-    """Punto unico que usa el cierre: total verificado -> link, o None."""
-    total = extraer_total_verificado(presupuesto)
+    """Punto unico que usa el cierre: monto verificado -> link, o None.
+
+    CON PAGO DIVIDIDO EL LINK COBRA LA PARTE DE MERCADO PAGO, no el total: es
+    el mismo error de plata que tenia la transferencia, del otro lado del
+    reparto. Sin pago dividido, el total, como siempre."""
+    total = monto_a_cobrar(presupuesto, "mp")
     if not total:
         # Motivo al log: sin presupuesto en memoria, o total en rango (envio
         # sin zona exacta). Con el PROVIDER on esto deberia ser raro: el total
@@ -198,7 +261,9 @@ async def instruccion_cobro(presupuesto: str, lead: dict,
     dos vias, para que ambos puntos del cierre cobren igual."""
     medio = elegir_medio_pago(lead.get("forma_pago", ""))
     if medio == "cbu":
-        total = extraer_total_verificado(presupuesto or lead.get("orden", ""))
+        # LA PARTE QUE VA POR TRANSFERENCIA, no el total. Ver `montos_por_medio`:
+        # el 10-ago esto le pidio $225.000 a un cliente que debia $131.625.
+        total = monto_a_cobrar(presupuesto or lead.get("orden", ""), "cbu")
         return mensaje_transferencia(datos_transferencia(tienda_id), total)
     if medio == "efectivo":
         return ""  # el efectivo lo coordina una persona, sin link ni CBU

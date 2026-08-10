@@ -92,3 +92,89 @@ def test_pregunta_de_datos_de_producto_no_entrega_cobro(monkeypatch,
     assert _RE_PIDE_COBRO.search("dame el cbu")
     assert _RE_PIDE_COBRO.search("mandame el link de pago")
     assert _RE_PIDE_COBRO.search("datos para transferir")
+
+
+# ── EL ERROR DE PLATA DEL 10-AGO: SE COBRABA EL TOTAL POR CADA MEDIO ─────────
+# Leido del WhatsApp real de Martin. Pidio el pago 65% transferencia y 35%
+# Mercado Pago, la cuenta lo repartio bien, y abajo -en los datos para
+# transferir- el bot le puso "Monto: $225.000". Le pidio el TOTAL ENTERO por
+# transferencia: 71% de mas sobre lo que le correspondia, y ademas mas que el
+# total final de $210.375.
+#
+# La causa no era el reparto, que estaba bien calculado: era que el cobro se
+# armaba con `extraer_total_verificado`, que lee la ultima linea "Total" y no
+# sabe nada del reparto. Dos modulos correctos y nadie mirando al otro.
+
+CUENTA_CON_SPLIT = (
+    "Presupuesto:\n"
+    "- 2x Auriculares Redragon Zeus X Blanco: $57.500 c/u = $115.000\n"
+    "- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\n"
+    "- 2x Memoria ram Kingston Fury Beast: $34.500 c/u = $69.000\n"
+    "Subtotal: $201.000\n"
+    "Envio (3 envios): $24.000\n"
+    "Total: $225.000\n"
+    "\n"
+    "Pago dividido:\n"
+    "- transferencia (65%): $146.250 - 10% descuento = $131.625\n"
+    "- mercado pago (35%): $78.750\n"
+    "Total final: $210.375"
+)
+
+
+def test_la_transferencia_cobra_SU_parte_y_no_el_total():
+    """El caso exacto de Martin: $131.625, no $225.000."""
+    from app.core.pago import monto_a_cobrar
+
+    assert monto_a_cobrar(CUENTA_CON_SPLIT, "cbu") == 131625
+
+
+def test_el_link_de_mercado_pago_cobra_SU_parte():
+    """El mismo error, del otro lado del reparto."""
+    from app.core.pago import monto_a_cobrar
+
+    assert monto_a_cobrar(CUENTA_CON_SPLIT, "mp") == 78750
+
+
+def test_lo_que_se_cobra_por_los_dos_medios_SUMA_el_total_final():
+    """LA INVARIANTE QUE IMPORTA, y la que estaba rota: la plata que se le pide
+    al cliente tiene que ser exactamente la que dice la cuenta. Antes se le
+    pedia $225.000 por cada via, o sea $450.000 por un pedido de $210.375."""
+    from app.core.pago import extraer_total_verificado, monto_a_cobrar
+
+    cobrado = (monto_a_cobrar(CUENTA_CON_SPLIT, "cbu")
+               + monto_a_cobrar(CUENTA_CON_SPLIT, "mp"))
+    assert cobrado == extraer_total_verificado(CUENTA_CON_SPLIT) == 210375
+
+
+def test_con_descuento_se_cobra_lo_de_DESPUES_del_descuento():
+    """El renglon trae dos numeros: $146.250 antes y $131.625 despues. Se cobra
+    el de despues; cobrar el de antes es no darle el descuento prometido."""
+    from app.core.pago import montos_por_medio
+
+    assert montos_por_medio(CUENTA_CON_SPLIT)["transferencia"] == 131625
+
+
+def test_sin_pago_dividido_no_cambia_nada():
+    """La salvaguarda: sin reparto se sigue cobrando el total, como siempre."""
+    from app.core.pago import monto_a_cobrar
+
+    simple = ("Presupuesto:\n- 1x Mouse Genius: $8.500 c/u = $8.500\n"
+              "Envio: $7.000\nTotal: $15.500")
+    assert monto_a_cobrar(simple, "cbu") == 15500
+    assert monto_a_cobrar(simple, "mp") == 15500
+
+
+def test_el_total_FINAL_le_gana_al_total_de_arriba():
+    """Cuando hay descuento hay dos totales. El que se cobra es el final: el de
+    arriba es el de antes del descuento y cobrarlo es cobrar de mas."""
+    from app.core.pago import extraer_total_verificado
+
+    assert extraer_total_verificado(CUENTA_CON_SPLIT) == 210375
+
+
+def test_un_total_en_rango_sigue_sin_cobrarse():
+    """No se adivina el monto de un cobro: es la regla vieja y no se afloja."""
+    from app.core.pago import monto_a_cobrar
+
+    rango = "Presupuesto:\n- 1x Mouse: $8.500\nTotal: entre $15.500 y $18.000"
+    assert monto_a_cobrar(rango, "cbu") is None
