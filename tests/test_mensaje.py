@@ -415,42 +415,30 @@ def test_una_cuenta_chica_no_paga_el_riesgo():
     assert sin_cuenta_que_no_cambio(texto, texto, pregunta="dale") == texto
 
 
-# ── REGLA 2-bis: la misma oracion con otro conector ─────────────────────────
-def test_el_parrafo_del_origen_no_se_repite_con_otro_arranque():
-    """El defecto que mas se repite en la charla del 10-ago: el bot explico el
-    ORIGEN de los tres productos en CUATRO turnos seguidos, y se lo preguntaron
-    UNA vez. Son 230 caracteres identicos con otro conector adelante, y la
-    regla 2 los dejaba pasar porque compara la oracion entera."""
-    from app.core.mensaje import sin_lo_ya_dicho_con_otro_conector
+def test_la_frase_de_OTRO_rubro_no_se_borra_por_parecerse():
+    """EL CANDADO DE LA REVERSION DEL 10-AGO, y la razon de que exista el
+    bloque de comentario de arriba.
 
-    hecho = ("los Auriculares Redragon Zeus X Blanco son fabricados en China, "
-             "el Mouse Genius DX-110 Negro es fabricado en China (marca de "
-             "Taiwan) y la Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro "
-             "es fabricada en Taiwan o China según línea")
-    anterior = f"¡Excelente! Te confirmo que {hecho}."
-    texto = (f"Como me consultaste por el origen, te informo que {hecho}. "
-             f"Para avanzar necesito tu nombre y apellido.")
-    out = sin_lo_ya_dicho_con_otro_conector(texto, anterior)
-    assert "fabricados en China" not in out
-    assert "nombre y apellido" in out
+    Se escribio una regla que borraba la oracion cuando el 75% de su texto ya
+    estaba LITERAL en el mensaje anterior, para cazar el origen repetido cuatro
+    turnos. Y borraba esto: el mensaje anterior habla de los AURICULARES, el de
+    ahora dice lo mismo pero de los MOUSE, y la oracion del mouse desaparecia
+    entera. Al cliente le quedaba la pregunta sola, sin el dato del rubro por el
+    que habia escrito.
 
+    Es la misma falla que el tope por caracteres, que tiro la nota de 55 a 23:
+    la unica condicion que el cliente puso la explica el modelo en PROSA, y esa
+    prosa se repite en la FORMA para cada rubro. Parecerse no es repetirse.
 
-def test_la_oracion_que_agrega_un_dato_nuevo_se_queda():
-    """La salvaguarda: el 75% tiene que ser calce LITERAL. Si la oracion trae
-    algo que el mensaje anterior no decia, se queda entera."""
-    from app.core.mensaje import sin_lo_ya_dicho_con_otro_conector
+    Si alguien vuelve a proponer la regla, tiene que pasar este test primero."""
+    def parrafo(rubro):
+        return (f"Sobre los {rubro}, te cuento que todo lo que trabajo de ese "
+                f"rubro se fabrica en China, que es justo lo que me pediste "
+                f"evitar, así que te marco cuál se acerca más y por qué.")
 
-    anterior = ("Te confirmo que el Mouse Genius DX-110 Negro es fabricado en "
-                "China y la memoria es de Taiwan o China según línea.")
-    texto = ("El Mouse Genius DX-110 Negro es fabricado en China y tiene "
-             "garantía de 12 meses del fabricante, con cambio en el local.")
-    assert sin_lo_ya_dicho_con_otro_conector(texto, anterior) == texto
-
-
-def test_la_valvula_tambien_protege_a_la_2bis():
-    """Si el calce se lleva el mensaje entero, no se poda: mudo es peor."""
-    from app.core.mensaje import sin_lo_ya_dicho_con_otro_conector
-
-    frase = ("El envío a Córdoba capital te sale igual para cualquiera de los "
-             "tres modelos que estuvimos viendo recién.")
-    assert sin_lo_ya_dicho_con_otro_conector(frase, frase) == frase
+    salida = componer(
+        parrafo("mouse") + " Decime si avanzamos con alguno y te armo el "
+        "presupuesto completo con el envío incluido.",
+        anterior=parrafo("auriculares"))
+    assert "mouse" in salida, f"se perdio el rubro del turno:\n{salida}"
+    assert "China" in salida, f"se perdio el criterio del cliente:\n{salida}"

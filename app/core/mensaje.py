@@ -238,59 +238,57 @@ def sin_lo_ya_dicho(texto: str, anterior: str) -> str:
     return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip())
 
 
-def sin_lo_ya_dicho_con_otro_conector(texto: str, anterior: str) -> str:
-    """REGLA 2-bis. LA ORACION QUE YA ESTA CASI ENTERA EN EL MENSAJE ANTERIOR.
-
-    EL CASO, del WhatsApp real del 10-ago, y es el defecto que mas se repite en
-    esa charla: el bot explico el ORIGEN de los tres productos en CUATRO turnos
-    seguidos, y se lo preguntaron UNA vez. Textual de los turnos 3, 4 y 5:
-
-        "Te confirmo que los Auriculares Redragon Zeus X Blanco son fabricados
-         en China, el Mouse Genius DX-110 Negro es fabricado en China (marca de
-         Taiwan) y la Memoria ram ... es fabricada en Taiwan o China segun linea."
-        "Como me consultaste por el origen, te informo que los Auriculares
-         Redragon Zeus X Blanco son fabricados en China, el Mouse ..."
-
-    Son 230 caracteres IDENTICOS con otro arranque adelante. La regla 2 los deja
-    pasar los tres turnos porque compara la oracion ENTERA: le cambia el
-    conector -"Te confirmo que" contra "Como me consultaste por el origen, te
-    informo que"- y el match exacto falla. O sea que la regla estaba bien
-    pensada y se la esquivaba con siete palabras.
-
-    LO QUE MIDE, y por que no es un juicio de significado: el pedazo mas largo
-    que esta LITERAL en el mensaje anterior. Si ese pedazo se lleva el 75% de la
-    oracion, lo que queda afuera es el conector, no informacion. No se compara
-    sentido ni se resume: se compara texto contra texto, igual que las demas.
-
-    LOS DOS PISOS. El pedazo tiene que ser de 70 caracteres para arriba -el
-    mismo umbral con el que `banco_pruebas/puntaje.py` cuenta un bloque
-    repetido- y tiene que cubrir el 75% de la oracion. Con eso, la frase corta
-    que reconfirma y la oracion que agrega un dato nuevo se quedan enteras."""
-    from difflib import SequenceMatcher
-    previo = _norm(anterior)
-    if len(previo) < _MIN_REPETIDO_ENTRE_TURNOS:
-        return texto
-    salida, fuera = [], 0
-    for linea in (texto or "").splitlines():
-        if _es_de_codigo(linea):
-            salida.append(linea)
-            continue
-        quedan = []
-        for trozo in _RE_ORACION.split(linea):
-            n = _norm(trozo)
-            if len(n) >= _MIN_REPETIDO_ENTRE_TURNOS:
-                m = SequenceMatcher(None, n, previo, autojunk=False)
-                calce = m.find_longest_match(0, len(n), 0, len(previo)).size
-                if calce >= _MIN_REPETIDO_ENTRE_TURNOS and calce / len(n) >= 0.75:
-                    fuera += 1
-                    continue
-            quedan.append(trozo)
-        salida.append(" ".join(t for t in quedan if t.strip()))
-    if not fuera:
-        return texto
-    log.info("mensaje_ya_dicho_reformulado", oraciones=fuera)
-    return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip())
-
+# ── LA MISMA ORACION CON OTRO CONECTOR: PROBADA, MEDIDA Y REVERTIDA (10-ago) ─
+# LA IDEA, y el defecto real que la pario. Leido del WhatsApp de Martin: el bot
+# explico el ORIGEN de los tres productos en CUATRO turnos seguidos y se lo
+# preguntaron UNA vez. Son 230 caracteres identicos con otro arranque adelante:
+#
+#   turno 3: "Te confirmo que los Auriculares ... es fabricada en Taiwan o
+#             China segun linea."
+#   turno 4: "Como me consultaste por el origen, te informo que los Auriculares
+#             ... es fabricada en Taiwan o China segun linea."
+#
+# La regla 2 no los caza porque compara la oracion ENTERA y el conector la
+# cambia. Se escribio una regla que mide el pedazo LITERAL mas largo que ya
+# estaba dicho y borra la oracion si ese pedazo se lleva el 75%. Se escribio
+# tambien la hermana para el MISMO mensaje -la FAQ pegada dos veces en un
+# parrafo, "En nuestra politica de trabajamos productos importados..."-.
+#
+# POR QUE SE FUERON LAS DOS, y esta MEDIDO, no supuesto. Borran la oracion que
+# habla de OTRO PRODUCTO cuando la redaccion coincide. Caso reproducido:
+#
+#   anterior: "Sobre los AURICULARES, te cuento que todo lo que trabajo de ese
+#              rubro se fabrica en China, que es justo lo que me pediste
+#              evitar, asi que te marco cual se acerca mas y por que."
+#   ahora:    la misma oracion pero de los MOUSE, mas una pregunta.
+#   resultado: la oracion del mouse DESAPARECE. Al cliente le queda la
+#              pregunta sola y pierde el dato del rubro por el que escribio.
+#
+# Es exactamente la falla que ya costo la nota de 55 a 23 con el tope por
+# caracteres, y la que el candado `test_el_componedor_no_borra_prosa_por_largo`
+# existe para frenar: **la unica condicion que el cliente puso la explica el
+# modelo en PROSA**, y esa prosa se repite en la forma para cada rubro.
+#
+# LO QUE SEPARA UN CASO DEL OTRO, y por que no alcanza una regla lexica: en el
+# origen los sujetos -los tres productos- estan DENTRO del pedazo repetido y lo
+# unico distinto es el conector; en el rubro el sujeto esta AFUERA, en la parte
+# que no calza. O sea que hay que saber si lo que sobra NOMBRA algo, y eso no
+# se decide contando caracteres. Se probaron y no separan: el umbral de calce
+# -86% contra 93%, se pisan-, el largo del resto -48 contra 15 caracteres, el
+# peligroso es el mas CORTO- y la novedad de palabras -la rompen los dos-.
+#
+# EL CAMINO QUE SI PODRIA ANDAR, para la sesion que lo tome con tiempo: mirar
+# si lo que sobra contiene una palabra del VOCABULARIO VIVO -una categoria o un
+# producto del catalogo- o un numero. Si nombra un dato, la oracion se queda.
+# Es el mismo principio que la atadura de prosa: contra la fuente, no contra el
+# largo. Cuesta traerle el vocabulario al componedor, que hoy es puro texto, y
+# hay que medirlo con `objetivo.py --vivo` antes de prenderlo.
+#
+# LO QUE SE PIERDE MIENTRAS TANTO, dicho con el numero: en la charla real del
+# 10-ago esto valia 143 caracteres de un turno de 1.361. La cuenta repetida,
+# que si es segura, vale 504 por turno. Se dejo lo grande y seguro, y se
+# resigno lo chico y riesgoso, que es el orden que pidio Martin: entre un
+# mensaje mas corto y uno correcto, gana el correcto.
 
 def sin_producto_duplicado(texto: str) -> str:
     """REGLA 3. Un producto no se muestra dos veces en el mismo mensaje.
@@ -680,7 +678,6 @@ def componer(texto: str, anterior: str = "",
     t = sin_cuenta_que_no_cambio(t, anterior, pregunta)
     t = sin_repeticion_interna(t)
     t = sin_lo_ya_dicho(t, anterior)
-    t = sin_lo_ya_dicho_con_otro_conector(t, anterior)
     t = sin_producto_duplicado(t)
     t = un_ejemplo_por_rubro_con_cuenta(t)
     t = sin_encabezados_huerfanos(t)

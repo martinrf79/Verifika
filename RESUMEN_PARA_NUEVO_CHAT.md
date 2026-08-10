@@ -62,17 +62,58 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 >     vuelven uno: "Sin cambios en la cuenta. Total final: $210.375". **La plata
 >     nunca desaparece.** Tres ataduras: firma IDENTICA -si cambio un peso sale
 >     entera-, no corre si el cliente PIDE la cuenta, y piso de 200 caracteres.
->   - **2-bis. La misma oracion con otro conector.** El bot explico el ORIGEN de
->     los tres productos en CUATRO turnos seguidos y se lo preguntaron UNA vez:
->     230 caracteres identicos con otro arranque adelante, que la regla 2 dejaba
->     pasar porque comparaba la oracion entera. Se mide el calce LITERAL mas
->     largo; se va si se lleva el 75% de la oracion.
->
 > **EL RESULTADO, replicando los cinco turnos reales por el componedor:**
-> turno 3 **1.203 -> 360**, turno 4 **1.115 -> 361**, turno 5 **1.876 -> 665**.
+> turno 3 **1.203 -> 699**, turno 4 **1.115 -> 611**, turno 5 **1.876 -> 950**.
 > Los turnos 1 y 2 no se tocan, que es lo correcto: ahi la cuenta es nueva.
-> **La charla entera: 6.591 -> 4.122 caracteres, 37% menos.**
+> **La charla entera: 6.591 -> 4.657 caracteres, 29% menos.**
 >
+> **DOS CORRECCIONES DE NUMEROS QUE YO MISMO PUSE MAL EN ESTE DOCUMENTO**, y van
+> escritas porque una sesion que lea un numero inflado va a creer que perdio
+> terreno cuando no lo perdio:
+>   - Decia "turno 3: 1.203 -> 360". Era error de lectura: el 361 es el turno 4
+>     y lo atribui a los dos. El turno 3 da **699**, porque ahi el origen de
+>     cada producto aparece por PRIMERA vez -~340 caracteres de prosa nueva, no
+>     repetida- y por eso no se poda. Asi tiene que ser.
+>   - Decia **37% menos**. Ese numero incluia una TERCERA regla que despues se
+>     reverti por un bug de calidad -ver abajo-. Con las dos reglas seguras el
+>     numero real es **29%**, y ese es el que vale.
+>
+> ## ⚠️ LA TERCERA REGLA SE ESCRIBIO, SE MIDIO Y SE REVIRTIO EL MISMO DIA.
+> Borraba la oracion de OTRO producto.
+>
+> La regla `2-bis` borraba una oracion cuando el 75% de su texto ya estaba
+> LITERAL en el mensaje anterior, para cazar el origen repetido cuatro turnos.
+> Cazaba eso, y tambien esto, reproducido:
+>
+>     anterior: "Sobre los AURICULARES, te cuento que todo lo que trabajo de
+>                ese rubro se fabrica en China, que es justo lo que me pediste
+>                evitar..."
+>     ahora:    la misma oracion pero de los MOUSE, mas una pregunta.
+>     resultado: la oracion del mouse DESAPARECE entera.
+>
+> Al cliente le quedaba la pregunta sola, sin el dato del rubro por el que
+> escribio. **Es la misma falla que el tope por caracteres, que tiro la nota de
+> 55 a 23.** Parecerse no es repetirse.
+>
+> Lo que separa un caso del otro: en el origen los sujetos estan DENTRO del
+> pedazo repetido y lo unico distinto es el conector; en el rubro el sujeto esta
+> AFUERA. O sea que hay que saber si lo que sobra NOMBRA algo, y eso no se
+> decide contando caracteres. Se probaron y NO separan: el umbral de calce -86%
+> contra 93%, se pisan-, el largo del resto -48 contra 15, el peligroso es el
+> mas CORTO- y la novedad de palabras -la rompen los dos-.
+>
+> **EL CAMINO QUE SI PODRIA ANDAR**, anotado para quien lo tome con tiempo:
+> mirar si lo que sobra contiene una palabra del VOCABULARIO VIVO -una categoria
+> o un producto del catalogo- o un numero; si nombra un dato, la oracion se
+> queda. Mismo principio que la atadura de prosa: contra la fuente, no contra el
+> largo. Hay que traerle el vocabulario al componedor y medirlo con
+> `objetivo.py --vivo` antes de prenderlo.
+>
+> **LO QUE SE RESIGNA, con el numero:** 143 caracteres de un turno de 1.361. La
+> cuenta repetida, que si es segura, vale 504 por turno. Se dejo lo grande y
+> seguro y se resigno lo chico y riesgoso, que es el orden que pidio Martin.
+> Queda con candado propio: `test_la_frase_de_OTRO_rubro_no_se_borra_por_parecerse`.
+
 > **NO SE TOCO UNA PALABRA DE LA PROSA DEL MODELO**, que es lo que fallo dos
 > veces -el tope por caracteres tiro la nota de 55 a 23, el prompt corto la
 > subio el largo a 1.673-. Aca no hay criterio de que es importante: se borran
