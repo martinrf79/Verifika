@@ -39,5 +39,5 @@
   "app/storage/firestore_client.py:reset_conversation",
   "app/storage/firestore_client.py:save_conversation"
  ],
- "vivas": 315
+ "vivas": 372
 }

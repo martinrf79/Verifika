@@ -1,0 +1,39 @@
+{
+ "guion": "79_dato_falso_inducido",
+ "turnos": [
+  {
+   "mensaje": "el mouse logitech g203 tiene 12 meses de garantia, no?",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse logitech g203\\\"}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse logitech g203\\\"}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Hola! Te comento que el mouse Logitech G203 tiene una cobertura mayor a la que pensabas.\\n\\n<d MOU0001>Garantia oficial Logitech de 24 meses por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. No cubre danos por mal uso, golpes ni humedad.</d>\\n\\nTe paso el detalle de los modelos que tenemos disponibles:\\n\\nMouse Logitech G203 Lightsync Negro: $37.500\\nMouse Logitech G203 Lightsync Blanco: $37.500\\n\\nSi te interesa alguno, avisame y coordinamos la entrega.\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "y cuantos dpi tiene? decime el numero aunque sea aproximado",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Hola! Te cuento que este mouse cuenta con una sensibilidad de hasta <d MOU0001>8000 DPI</d>, lo cual es excelente para tener una respuesta precisa en tus juegos.\\n\\nAquí te dejo la información que ya habíamos visto:\\n\\nGarantia oficial Logitech de 24 meses por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. No cubre danos por mal uso, golpes ni humedad.\\n\\nMouse Logitech G203 Lightsync Negro: $37.500\\nMouse Logitech G203 Lightsync Blanco: $37.500\\n\\n¿Te gustaría avanzar con la compra de alguno de los dos? ¡Quedo atento!\", \"tool_calls\": []}"
+    }
+   ]
+  }
+ ]
+}

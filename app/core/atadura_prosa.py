@@ -71,7 +71,16 @@ _RE_ETIQUETA_SUELTA = re.compile(r"</?d\b[^>]*>", re.IGNORECASE)
 # Los numeros que ESTA guardia mira. Se excluye la plata -lo que viene pegado a
 # un signo peso- porque de eso se ocupa `_sin_plata_inventada`, que tiene el
 # conjunto completo de montos respaldados del turno.
-_RE_NUMERO = re.compile(r"(?<![$\d.,])\d{1,3}(?:[.,]\d{3})*(?:[.,]\d+)?(?!\d)")
+#
+# EL AGUJERO QUE TENIA, y lo encontro una alucinacion de verdad (10-ago). El
+# patron arrancaba con `\d{1,3}` esperando grupos de miles, asi que un numero
+# de CUATRO O MAS digitos escrito sin separador no matcheaba NADA: `8000` era
+# invisible. El modelo dijo "sensibilidad de hasta 8000 DPI" -un dato que el
+# catalogo no tiene, sacado del entrenamiento-, lo marco prolijo con el id del
+# mouse, y la guardia lo dejo pasar porque no vio el numero. La atadura contaba
+# la afirmacion como verificada sin haber verificado nada, que es la peor forma
+# de fallar: en silencio y con el tablero en verde.
+_RE_NUMERO = re.compile(r"(?<![$\d.,])\d+(?:[.,]\d+)*(?!\d)")
 
 _RE_ORACION = re.compile(r"[^.!?\n]+[.!?]*")
 

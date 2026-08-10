@@ -1447,6 +1447,42 @@ def cotizar_envio(a: CotizarEnvio, tienda_id: str) -> dict:
     return r
 
 
+def _grupos_de_los_items(items: list, destinos: list, tienda_id: str) -> list:
+    """Los grupos de envio armados desde lo que el modelo YA declaro: que va a
+    cada destino, contado por categoria. [] ante cualquier hueco.
+
+    Alimenta el umbral por paquete de `calculate_total`. Ver el comentario en
+    `armar_presupuesto`: sin esto el envio gratis de un pedido repartido se
+    decide con el promedio y se regala el envio del paquete chico."""
+    from app.storage.firestore_client import get_product_by_id
+    if len(destinos) < 2 or not items:
+        return []
+    # Todo-o-nada: un item sin destino deja el reparto incompleto y un grupo
+    # incompleto miente el subtotal de su paquete, que es peor que el promedio.
+    if any(not str(getattr(i, "destino", "") or "").strip() for i in items):
+        return []
+    por_destino: dict = {}
+    for i in items:
+        d = str(i.destino).strip()
+        p = get_product_by_id(str(i.product_id).upper(), tienda_id=tienda_id)
+        cat = str((p or {}).get("categoria") or "").strip().lower()
+        if not cat:
+            return []
+        cuenta = por_destino.setdefault(d, {})
+        cuenta[cat] = cuenta.get(cat, 0) + max(1, int(i.cantidad or 1))
+    # EN EL ORDEN EN QUE SE COTIZO. `calculate_total` mapea grupo con localidad
+    # por posicion, asi que un orden distinto le pone el paquete de Cordoba al
+    # envio de Rosario.
+    grupos = []
+    for d in destinos:
+        cuenta = por_destino.get(d)
+        if not cuenta:
+            return []
+        grupos.append({"destino": d,
+                       "cats": [{"n": n, "cat": c} for c, n in cuenta.items()]})
+    return grupos if len(grupos) == len(destinos) else []
+
+
 def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     """LA CUENTA. Cotiza cada destino y suma, y devuelve el presupuesto ya
     escrito renglon por renglon.
@@ -1476,8 +1512,25 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     extras = [{"faq_tema": "costo_envio", "concepto": "envio"}] if destinos else []
     pago = [{"medio": p.medio, "porcentaje": float(p.porcentaje)}
             for p in (a.pago or [])]
+    # EL UMBRAL POR PAQUETE, RECONECTADO (10-ago). `calculate_total` sabe desde
+    # el 19-jul decidir el envio gratis con el subtotal REAL de cada paquete en
+    # vez del promedio -que regalaba el envio del paquete chico-, pero pide los
+    # `grupos` y esta herramienta NUNCA se los pasaba: el unico que los pasaba
+    # era `guia_pedido`, por otra puerta. O sea que desde que el hub llama
+    # `armar_presupuesto` la pieza quedo INALCANZABLE y el envio de un pedido
+    # repartido volvio a decidirse por el promedio, sin que nadie lo notara.
+    # Lo descubrio el mapa: `_subtotales_por_grupo` no la tocaba ninguna prueba
+    # porque no la tocaba ningun camino.
+    #
+    # No hace falta parsear nada: el reparto YA viene declarado item por item.
+    # El codigo lo agrupa por destino, en el mismo orden en que se cotizo, y
+    # cuenta unidades por categoria. TODO-O-NADA, igual que el parser viejo: si
+    # a un item le falta el destino no se manda ningun grupo y la cuenta sigue
+    # con el promedio de siempre.
+    grupos = _grupos_de_los_items(a.items, destinos, tienda_id)
     r = T.calculate_total(items=items, items_extra=extras,
-                          destinos=max(1, len(destinos)), pago=pago or None)
+                          destinos=max(1, len(destinos)), pago=pago or None,
+                          grupos=grupos or None)
     if not r.get("ok"):
         return {"estado": "no_se_pudo", "motivo": r.get("mensaje_para_llm")}
 

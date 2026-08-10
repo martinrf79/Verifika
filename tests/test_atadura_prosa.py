@@ -172,3 +172,22 @@ def test_no_levanta_con_llamadas_basura():
     salida = AP.verificar("Hola <d MOU0001>144 gramos</d>.", "no soy una lista", "t")
     assert "<d" not in salida
     assert "Hola" in salida
+
+
+# ── EL AGUJERO DE LOS CUATRO DIGITOS (10-ago) ───────────────────────────────
+def test_un_numero_de_cuatro_digitos_sin_separador_no_es_invisible():
+    """LO ENCONTRO UNA ALUCINACION DE VERDAD, grabada en el casete 79.
+
+    El patron de numeros arrancaba con `\\d{1,3}` esperando grupos de miles, y
+    un numero de cuatro digitos sin separador no matcheaba nada. El modelo dijo
+    "sensibilidad de hasta 8000 DPI" -que el catalogo no tiene-, lo marco
+    prolijo con el id del mouse, y la guardia lo dejo pasar porque no vio el
+    numero: contaba la afirmacion como verificada sin verificar nada.
+    """
+    assert AP._numeros("hasta 8000 DPI") == ["8000"]
+    assert AP._numeros("1.500 gramos") == ["1500"]
+    assert AP._numeros("144 gramos y 12 meses") == ["144", "12"]
+
+    texto = "Este mouse tiene <d MOU0001>8000 DPI</d> de sensibilidad."
+    salida = AP.verificar(texto, _llamadas_con_mouse(), "t")
+    assert "8000" not in salida

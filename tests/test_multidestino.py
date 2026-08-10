@@ -275,3 +275,63 @@ def test_grupos_para_calculo_reusa_la_memoria(firestore_doble):
     assert g == g_mem
     assert get_current_estado()["grupos_envio"] == g_mem
     set_current_estado(None)
+
+
+# ── EL UMBRAL POR PAQUETE, RECONECTADO (10-ago) ──────────────────────────────
+def test_el_envio_gratis_se_decide_por_paquete_y_no_por_el_promedio(
+        firestore_doble):
+    """LA PIEZA QUE ESTABA DESENCHUFADA, y es plata en cada venta repartida.
+
+    `calculate_total` sabe desde el 19-jul decidir el envio gratis con el
+    subtotal REAL de cada paquete, pero pide los `grupos` y `armar_presupuesto`
+    -la herramienta que el hub llama de verdad- nunca se los pasaba. La pieza
+    quedo inalcanzable y el envio volvio a decidirse por el PROMEDIO.
+
+    Medido: una notebook de $727.500 a Cordoba y un mouse de $37.500 a Rosario
+    dan un promedio que pasa el umbral, asi que la tienda regalaba los DOS
+    envios. Con el umbral por paquete el mouse paga el suyo.
+    """
+    from app.core import herramientas as H
+    from app.core.estado_venta import set_current_estado
+    from app.storage.firestore_client import get_all_products
+    set_current_tienda("verifika_prod")
+    set_current_estado({})
+
+    prods = get_all_products(tienda_id="verifika_prod")
+    con_stock = [p for p in prods if int(p.get("stock") or 0) > 0]
+    cara = next(p for p in con_stock
+                if p["categoria"] == "notebook" and int(p["precio_ars"]) > 600000)
+    barata = next(p for p in con_stock
+                  if p["categoria"] == "mouse" and int(p["precio_ars"]) < 50000)
+
+    items = [H.ItemPedido(product_id=cara["id"], cantidad=1, destino="Cordoba"),
+             H.ItemPedido(product_id=barata["id"], cantidad=1, destino="Rosario")]
+
+    # 1. El codigo arma los grupos desde el reparto YA declarado, en el orden
+    #    en que se cotiza. Sin esto la cuenta le pone un paquete al otro envio.
+    grupos = H._grupos_de_los_items(items, ["Cordoba", "Rosario"],
+                                    "verifika_prod")
+    assert [g["destino"] for g in grupos] == ["Cordoba", "Rosario"]
+    assert grupos[0]["cats"] == [{"n": 1, "cat": "notebook"}]
+    assert grupos[1]["cats"] == [{"n": 1, "cat": "mouse"}]
+
+    # 2. Y el envio del paquete chico se COBRA.
+    r = H.armar_presupuesto(H.ArmarPresupuesto(items=items), "verifika_prod")
+    assert r["estado"] == "ok", r
+    assert "gratis" not in r["bloque"].lower(), (
+        "el envio del paquete chico se regalo otra vez:\n" + r["bloque"])
+
+
+def test_sin_reparto_declarado_no_se_inventan_grupos(firestore_doble):
+    """TODO-O-NADA. Un item sin destino deja el reparto incompleto, y un grupo
+    incompleto miente el subtotal de su paquete: peor que el promedio. Ahi no
+    se manda ningun grupo y la cuenta sigue como siempre."""
+    from app.core import herramientas as H
+    set_current_tienda("verifika_prod")
+    items = [H.ItemPedido(product_id="MOU0001", cantidad=1, destino="Cordoba"),
+             H.ItemPedido(product_id="MOU0002", cantidad=1)]
+    assert H._grupos_de_los_items(items, ["Cordoba", "Rosario"],
+                                  "verifika_prod") == []
+    # Y con un solo destino tampoco: no hay paquetes que separar.
+    uno = [H.ItemPedido(product_id="MOU0001", cantidad=1, destino="Cordoba")]
+    assert H._grupos_de_los_items(uno, ["Cordoba"], "verifika_prod") == []
