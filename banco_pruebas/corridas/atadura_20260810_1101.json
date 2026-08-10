@@ -1,0 +1,142 @@
+{
+ "decisor": "gemini (el mismo que redacta)",
+ "clave": "GEMINI_API_KEY (gratis, default)",
+ "reloj_ms": {
+  "cierre": 3,
+  "cierre_n": 1,
+  "decisor": 1907,
+  "decisor_n": 1,
+  "herramientas": 21,
+  "herramientas_n": 1,
+  "redactor": 1530,
+  "redactor_n": 1
+ },
+ "filas": [
+  {
+   "caso": "garantia_de_uno",
+   "msg": "que garantia tiene el mouse logitech g203?",
+   "marcadas": 1,
+   "sin_marcar": 1,
+   "largo": 501,
+   "etapas": {
+    "decisor": 3202,
+    "decisor_n": 1,
+    "herramientas": 11,
+    "herramientas_n": 1,
+    "redactor": 1555,
+    "redactor_n": 1,
+    "cierre": 16,
+    "cierre_n": 1
+   },
+   "crudo": "Hola, ¿cómo estás? Te cuento que el Logitech G203 tiene una <d MOU0001>garantia oficial Logitech de 24 meses por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. No cubre danos por mal uso, golpes ni humedad.</d>\n\nTe paso los precios de los que tenemos disponibles:\n\nMouse Logitech G203 Lightsync Negro: $37.500\nMouse Logitech G203 Lightsync Blanco: $37.500\n\n¿Te gustaría que te reserve alguno? Avisame cualquier otra duda que tengas.",
+   "final": "¡Hola! Soy el asistente automático de Verifika Tech.\n\n¿cómo estás? Te cuento que el Logitech G203 tiene una garantia oficial Logitech de 24 meses por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. No cubre danos por mal uso, golpes ni humedad.\nTe paso los precios de los que tenemos disponibles:\n\nMouse Logitech G203 Lightsync Negro: $37.500\nMouse Logitech G203 Lightsync Blanco: $37.500\n¿Te gustaría que te reserve alguno? Avisame cualquier otra duda que tengas.",
+   "ejemplo": "<d MOU0001>garantia oficial Logitech de 24 meses por defectos de fabricacion, gestionada c",
+   "fugada": false
+  },
+  {
+   "caso": "peso_y_medidas",
+   "msg": "cuanto pesa el g203 y que medidas tiene?",
+   "marcadas": 4,
+   "sin_marcar": 4,
+   "largo": 350,
+   "etapas": {
+    "decisor": 1418,
+    "decisor_n": 1,
+    "herramientas": 20,
+    "herramientas_n": 1,
+    "redactor": 1580,
+    "redactor_n": 1,
+    "cierre": 0,
+    "cierre_n": 1
+   },
+   "crudo": "Hola! Como tenemos dos variantes del G203, te paso la info de cada uno para que te fijes cuál buscabas.\n\nPara el modelo negro:\nEl mouse <d MOU0001>pesa 144 gramos</d> y tiene unas <d MOU0001>dimensiones de 10.9x6.9x3.7 cm</d>.\n\nPara el modelo blanco:\nEste <d MOU0002>pesa 100 gramos</d> y tiene unas <d MOU0002>dimensiones de 11.3x6.0x3.9 cm</d>.\n\nAcá te dejo el precio de ambos:\n\nMouse Logitech G203 Lightsync Negro: $37.500\nMouse Logitech G203 Lightsync Blanco: $37.500\n\n¿Te interesa alguno de los dos para avanzar? Avisame y te reservo el tuyo.",
+   "final": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nComo tenemos dos variantes del G203, te paso la info de cada uno para que te fijes cuál buscabas.\nAcá te dejo el precio de ambos:\n\nMouse Logitech G203 Lightsync Negro: $37.500\nMouse Logitech G203 Lightsync Blanco: $37.500\n¿Te interesa alguno de los dos para avanzar? Avisame y te reservo el tuyo.",
+   "ejemplo": "<d MOU0001>pesa 144 gramos</d>",
+   "fugada": false
+  },
+  {
+   "caso": "origen",
+   "msg": "de donde viene el logitech g203, es chino?",
+   "marcadas": 1,
+   "sin_marcar": 0,
+   "largo": 305,
+   "etapas": {
+    "decisor": 1780,
+    "decisor_n": 1,
+    "herramientas": 31,
+    "herramientas_n": 1,
+    "redactor": 1361,
+    "redactor_n": 1,
+    "cierre": 0,
+    "cierre_n": 1
+   },
+   "crudo": "¡Hola! Cómo estás. Te cuento que el Logitech G203 es <d MOU0001>Marca Logitech de Suiza. Fabricado en China.</d>\n\nTe paso los detalles de los que tenemos en stock:\n\nMouse Logitech G203 Lightsync Negro: $37.500\nMouse Logitech G203 Lightsync Blanco: $37.500\n\n¿Te sirve alguno de estos o buscabas otra cosa? Avisame y avanzamos.",
+   "final": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nCómo estás. Te cuento que el Logitech G203 es Marca Logitech de Suiza. Fabricado en China.\nMouse Logitech G203 Lightsync Negro: $37.500\nMouse Logitech G203 Lightsync Blanco: $37.500\n\n¿Te sirve alguno de estos o buscabas otra cosa? Avisame y avanzamos.",
+   "ejemplo": "<d MOU0001>Marca Logitech de Suiza. Fabricado en China.</d>",
+   "fugada": false
+  },
+  {
+   "caso": "contenido_caja",
+   "msg": "que trae la caja del g203?",
+   "marcadas": 1,
+   "sin_marcar": 0,
+   "largo": 298,
+   "etapas": {
+    "decisor": 1472,
+    "decisor_n": 1,
+    "herramientas": 22,
+    "herramientas_n": 1,
+    "redactor": 1285,
+    "redactor_n": 1,
+    "cierre": 0,
+    "cierre_n": 1
+   },
+   "crudo": "Hola, cómo estás? Te cuento que dentro de la caja del G203 vas a encontrar lo siguiente:\n\n<d MOU0001>Mouse, cable o receptor USB segun version, manual de garantia</d>\n\nTe sirve para lo que estabas buscando o tenés alguna otra duda sobre el mouse? Avisame y lo vemos.",
+   "final": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nCómo estás? Te cuento que dentro de la caja del G203 vas a encontrar lo siguiente:\nMouse, cable o receptor USB segun version, manual de garantia\n\nTe sirve para lo que estabas buscando o tenés alguna otra duda sobre el mouse? Avisame y lo vemos.",
+   "ejemplo": "<d MOU0001>Mouse, cable o receptor USB segun version, manual de garantia</d>",
+   "fugada": false
+  },
+  {
+   "caso": "specs_notebook",
+   "msg": "que procesador y cuanta ram tiene la notebook hp 245 g9?",
+   "marcadas": 3,
+   "sin_marcar": 1,
+   "largo": 493,
+   "etapas": {
+    "decisor": 1741,
+    "decisor_n": 1,
+    "herramientas": 6,
+    "herramientas_n": 1,
+    "redactor": 1659,
+    "redactor_n": 1,
+    "cierre": 0,
+    "cierre_n": 1
+   },
+   "crudo": "Hola! Cómo estás? Te cuento que tenemos varios modelos de la notebook HP 245 G9 disponibles, todos con 16GB de memoria RAM.\n\nPara poder pasarte la info exacta, me podrías confirmar cuál de estos modelos te interesa?\n\n1. Notebook HP 245 G9 con procesador <d NOT0019>Core i5</d>\n2. Notebook HP 245 G9 con procesador <d NOT0022>Ryzen 7</d>\n3. Notebook HP 245 G9 con procesador <d NOT0025>Core i7</d>\n\nQuedo atento a cuál preferís así te confirmo el precio y cualquier otro detalle que necesites!",
+   "final": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nCómo estás? Te cuento que tenemos varios modelos de la notebook HP 245 G9 disponibles, todos con 16GB de memoria RAM.\nPara poder pasarte la info exacta, me podrías confirmar cuál de estos modelos te interesa?\n\n1. Notebook HP 245 G9 con procesador Core i5\n2. Notebook HP 245 G9 con procesador Ryzen 7\n3. Notebook HP 245 G9 con procesador Core i7\nQuedo atento a cuál preferís así te confirmo el precio y cualquier otro detalle que necesites!",
+   "ejemplo": "<d NOT0019>Core i5</d>",
+   "fugada": false
+  },
+  {
+   "caso": "comparacion",
+   "msg": "entre el g203 y el m170, cual conviene y por que?",
+   "marcadas": 4,
+   "sin_marcar": 1,
+   "largo": 696,
+   "etapas": {
+    "decisor": 1831,
+    "decisor_n": 1,
+    "herramientas": 37,
+    "herramientas_n": 1,
+    "redactor": 1742,
+    "redactor_n": 1,
+    "cierre": 0,
+    "cierre_n": 1
+   },
+   "crudo": "Todo depende de para qué lo necesites. El G203 es un mouse con cable, pensado para gaming, que cuenta con <d MOU0001>retroiluminacion RGB</d> y se conecta por <d MOU0001>cable USB</d>.\n\nPor otro lado, el M170 es una opción inalámbrica que <d MOU0009>funciona con 1 pila AA</d> y usa un <d MOU0009>receptor USB de 2.4GHz</d>, por lo que no tiene retroiluminación.\n\nAcá te dejo los precios:\n\nMouse Logitech G203 Lightsync Negro: $37.500\nMouse Logitech M170 Negro: $12.000\n\nSi buscás algo para jugar con luces, el G203 es la opción. Si preferís comodidad inalámbrica para el uso diario, el M170 te va a resultar más práctico. ¿Para qué uso puntual lo estarías buscando? Así te confirmo cuál te conviene más.",
+   "final": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nTodo depende de para qué lo necesites. El G203 es un mouse con cable, pensado para gaming, que cuenta con retroiluminacion RGB y se conecta por cable USB.\nPor otro lado, el M170 es una opción inalámbrica que funciona con 1 pila AA y usa un receptor USB de 2.4GHz, por lo que no tiene retroiluminación.\nAcá te dejo los precios:\n\nMouse Logitech G203 Lightsync Negro: $37.500\nMouse Logitech M170 Negro: $12.000\n\nSi buscás algo para jugar con luces, el G203 es la opción. Si preferís comodidad inalámbrica para el uso diario, el M170 te va a resultar más práctico. ¿Para qué uso puntual lo estarías buscando? Así te confirmo cuál te conviene más.",
+   "ejemplo": "<d MOU0001>retroiluminacion RGB</d>",
+   "fugada": false
+  }
+ ]
+}

@@ -1,0 +1,55 @@
+{
+ "guion": "78_reparto_por_destino",
+ "turnos": [
+  {
+   "mensaje": "quiero 2 teclados y 1 mouse a rosario, y 1 auricular a cordoba. cuanto me sale todo con envio?",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"teclado\\\",\\\"destino\\\":\\\"Rosario\\\",\\\"cantidad\\\":2},{\\\"cantidad\\\":1,\\\"que\\\":\\\"mouse\\\",\\\"destino\\\":\\\"Rosario\\\"},{\\\"destino\\\":\\\"Cordoba\\\",\\\"que\\\":\\\"auricular\\\",\\\"cantidad\\\":1}],\\\"destinos\\\":[\\\"Rosario\\\",\\\"Cordoba\\\"]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"cuantos\\\":3,\\\"descripcion\\\":\\\"teclado\\\",\\\"categoria\\\":\\\"teclado\\\"}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse\\\",\\\"categoria\\\":\\\"mouse\\\",\\\"cuantos\\\":3}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"auricular\\\",\\\"categoria\\\":\\\"auriculares\\\",\\\"cuantos\\\":3}\"}, {\"name\": \"cotizar_envio\", \"arguments\": \"{\\\"localidad\\\":\\\"Rosario\\\"}\"}, {\"name\": \"cotizar_envio\", \"arguments\": \"{\\\"localidad\\\":\\\"Cordoba\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"envios\\\",\\\"costo_envio\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"teclado\\\",\\\"destino\\\":\\\"Rosario\\\",\\\"cantidad\\\":2},{\\\"cantidad\\\":1,\\\"que\\\":\\\"mouse\\\",\\\"destino\\\":\\\"Rosario\\\"},{\\\"destino\\\":\\\"Cordoba\\\",\\\"que\\\":\\\"auricular\\\",\\\"cantidad\\\":1}],\\\"destinos\\\":[\\\"Rosario\\\",\\\"Cordoba\\\"]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"cuantos\\\":3,\\\"descripcion\\\":\\\"teclado\\\",\\\"categoria\\\":\\\"teclado\\\"}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse\\\",\\\"categoria\\\":\\\"mouse\\\",\\\"cuantos\\\":3}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"auricular\\\",\\\"categoria\\\":\\\"auriculares\\\",\\\"cuantos\\\":3}\"}, {\"name\": \"cotizar_envio\", \"arguments\": \"{\\\"localidad\\\":\\\"Rosario\\\"}\"}, {\"name\": \"cotizar_envio\", \"arguments\": \"{\\\"localidad\\\":\\\"Cordoba\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"envios\\\",\\\"costo_envio\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"destino\\\":\\\"Rosario\\\",\\\"product_id\\\":\\\"TEC0020\\\",\\\"cantidad\\\":2},{\\\"cantidad\\\":1,\\\"destino\\\":\\\"Rosario\\\",\\\"product_id\\\":\\\"MOU0023\\\"},{\\\"product_id\\\":\\\"AUR0019\\\",\\\"cantidad\\\":1,\\\"destino\\\":\\\"Cordoba\\\"}],\\\"destinos\\\":[\\\"Rosario\\\",\\\"Cordoba\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"destino\\\":\\\"Rosario\\\",\\\"product_id\\\":\\\"TEC0020\\\",\\\"cantidad\\\":2},{\\\"cantidad\\\":1,\\\"destino\\\":\\\"Rosario\\\",\\\"product_id\\\":\\\"MOU0023\\\"},{\\\"product_id\\\":\\\"AUR0019\\\",\\\"cantidad\\\":1,\\\"destino\\\":\\\"Cordoba\\\"}],\\\"destinos\\\":[\\\"Rosario\\\",\\\"Cordoba\\\"]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Para los teclados y el mouse que van a Rosario te coticé el Genius KB-110X y el mouse Genius DX-110, que son las opciones más económicas que tenemos hoy. Como no especificaste modelos, tomé los Redragon Zeus X para el auricular de Córdoba.\\n\\n2 x Teclado Genius KB-110X: $24.000\\n1 x Mouse Genius DX-110: $8.500\\n1 x Auricular Redragon Zeus X: $57.500\\nEnvío a Rosario: $7.000\\nEnvío a Córdoba: $7.500\\nTotal: $104.500\\n\\n<d TEC0020>El teclado tiene 24 meses de garantía</d>, <d MOU0023>el mouse tiene 24 meses de garantía</d> y <d AUR0019>los auriculares tienen 12 meses de garantía</d>. <d envios>Llegamos a todo el país por Andreani y OCA</d>.\\n\\n¿Querés que avancemos con estos modelos o preferís cambiar alguno por otra marca?\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "dale, confirmame el total",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"destino\\\":\\\"Rosario\\\",\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\"},{\\\"destino\\\":\\\"Rosario\\\",\\\"cantidad\\\":1,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"},{\\\"cantidad\\\":1,\\\"destino\\\":\\\"Cordoba\\\",\\\"que\\\":\\\"Auriculares Redragon Zeus X Negro\\\"}],\\\"pide_precio\\\":true,\\\"destinos\\\":[\\\"Rosario\\\",\\\"Cordoba\\\"]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"cierre_venta\\\",\\\"formas_pago\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"destino\\\":\\\"Rosario\\\",\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\"},{\\\"destino\\\":\\\"Rosario\\\",\\\"cantidad\\\":1,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"},{\\\"cantidad\\\":1,\\\"destino\\\":\\\"Cordoba\\\",\\\"que\\\":\\\"Auriculares Redragon Zeus X Negro\\\"}],\\\"pide_precio\\\":true,\\\"destinos\\\":[\\\"Rosario\\\",\\\"Cordoba\\\"]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"cierre_venta\\\",\\\"formas_pago\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"destinos\\\":[\\\"Rosario\\\",\\\"Cordoba\\\"],\\\"items\\\":[{\\\"cantidad\\\":2,\\\"product_id\\\":\\\"TEC0029\\\",\\\"destino\\\":\\\"Rosario\\\"},{\\\"destino\\\":\\\"Rosario\\\",\\\"cantidad\\\":1,\\\"product_id\\\":\\\"MOU0023\\\"},{\\\"destino\\\":\\\"Cordoba\\\",\\\"product_id\\\":\\\"AUR0019\\\",\\\"cantidad\\\":1}]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"destinos\\\":[\\\"Rosario\\\",\\\"Cordoba\\\"],\\\"items\\\":[{\\\"cantidad\\\":2,\\\"product_id\\\":\\\"TEC0029\\\",\\\"destino\\\":\\\"Rosario\\\"},{\\\"destino\\\":\\\"Rosario\\\",\\\"cantidad\\\":1,\\\"product_id\\\":\\\"MOU0023\\\"},{\\\"destino\\\":\\\"Cordoba\\\",\\\"product_id\\\":\\\"AUR0019\\\",\\\"cantidad\\\":1}]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Excelente elección! Te confirmo el pedido de los 2 Teclados Genius KB-110X Blanco, el Mouse Genius DX-110 Negro y los Auriculares Redragon Zeus X Negro.\\n\\nAquí tenés el detalle del presupuesto:\\n\\nPresupuesto:\\n- 2x Teclado Logitech K120 Negro: $14.500 c/u = $29.000\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\\nSubtotal: $95.000\\nEnvio (2 envios): $14.500\\nTotal: $109.500\\n\\nReparto de los envios:\\n- A Rosario: 2x teclado, 1x mouse\\n- A Cordoba: 1x auriculares\\n\\nTe recuerdo que el <d TEC0029>Teclado Logitech K120 Negro cuenta con una garantía de 24 meses</d>, el <d MOU0023>Mouse Genius DX-110 Negro tiene 24 meses de garantía</d> y los <d AUR0019>Auriculares Redragon Zeus X Negro tienen 12 meses de garantía</d>. <d costo_envio>Realizamos envíos a todo el país</d>.\\n\\nPara avanzar con la compra, podés pagar con tarjeta de crédito o por transferencia bancaria; recordá que por transferencia tenés un beneficio especial. ¿Cómo preferís realizar el pago para enviarte los datos?\", \"tool_calls\": []}"
+    }
+   ]
+  }
+ ]
+}

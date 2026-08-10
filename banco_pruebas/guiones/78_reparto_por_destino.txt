@@ -1,0 +1,17 @@
+# EL UMBRAL POR PAQUETE — el cliente dice QUE va a cada destino (10-ago).
+#
+# POR QUE EXISTE. `_subtotales_por_grupo` decide el envio gratis con el
+# subtotal REAL de cada paquete en vez del promedio, que regalaba el envio del
+# paquete chico (charla real del 19-jul). Es plata. Y el mapa mostraba que
+# NINGUNA de las 10 charlas grabadas lo ejercitaba: la 76 es multidestino pero
+# no dice que va a cada lado, asi que el parser de grupos no engancha y la
+# funcion no corre nunca en el replay.
+#
+# La forma que el parser entiende es la natural: los items ANTES del destino,
+# dos destinos o mas en el mismo mensaje.
+quiero 2 teclados y 1 mouse a rosario, y 1 auricular a cordoba. cuanto me sale todo con envio?
+> contiene: rosario
+> contiene: cordoba
+> contiene: $
+dale, confirmame el total
+> contiene: $
