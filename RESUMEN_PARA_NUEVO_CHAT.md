@@ -28,7 +28,56 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
-**==== 10-AGO (ULTIMO) — LA SEGUNDA ATADURA, EL RELOJ, Y GROQ MEDIDO ====**
+**==== 10-AGO (ULTIMO) — LA SEGUNDA ATADURA, EL RELOJ, GROQ Y LOS ROJOS ====**
+
+> ## ✅ LOS DOS ROJOS DEL MAPA, CERRADOS. Y ninguno era falta de test.
+>
+> **1. EL ENVIO QUE SE REGALABA. `calculate_total` sabe desde el 19-jul decidir
+> el envio gratis con el subtotal REAL de cada paquete en vez del promedio,
+> pero pide `grupos` y `armar_presupuesto` -la herramienta que el hub llama de
+> verdad- NUNCA se los pasaba.** El unico que los pasaba era `guia_pedido`, por
+> una puerta que el hub ya no usa. La pieza quedo inalcanzable y el envio de un
+> pedido repartido volvio a decidirse por el promedio. El mapa la marcaba como
+> funcion sin prueba y no era eso: no la tocaba ninguna prueba porque **no la
+> tocaba ningun camino**.
+> Medido: notebook de $727.500 a Cordoba + mouse de $37.500 a Rosario daban un
+> promedio que pasaba el umbral y **la tienda regalaba los DOS envios**. Ahora
+> el paquete chico paga sus $7.000. Candado en `tests/test_multidestino.py`.
+>
+> **2. LA ALUCINACION INVISIBLE, y era un bug de la atadura nueva.** Se grabo el
+> guion 79 para inducir al modelo a inventar, y mordio: "sensibilidad de hasta
+> 8000 DPI", que el catalogo no tiene. **La marco prolijo con el id del mouse y
+> la guardia la dejo pasar igual**, porque el patron de numeros arrancaba con
+> `\d{1,3}` esperando grupos de miles y un numero de cuatro digitos SIN
+> separador no matcheaba nada: `8000` era invisible. La atadura contaba la
+> afirmacion como verificada sin haber verificado nada, en silencio y con el
+> tablero en verde. Arreglado; la poda corre, el cliente no lee los DPI
+> inventados y el turno no queda mudo.
+>
+> Zona ciega: 41 de 370 al abrir el dia, **37 de 372**, piso refijado, y el
+> candado nocturno `pytest tests/test_mapa.py -m lento` pasa EN VERDE.
+
+> ## 🧪 EL PROMPT CORTO SE PROBO Y SE REVIRTIO. No volver a proponerlo sin
+> devolverle la linea de brevedad.
+>
+> Martin pidio probar un prompt minimo de dos ideas -la plata no la escribe el
+> modelo, y la prosa sale solo de la fuente o se pregunta-, apoyado en que los
+> filtros deterministas ya protegen los precios. Se probo de verdad: el texto
+> del prompt bajo de 1.027 a 255 tokens.
+>
+> **Y salio PEOR en lo que es el objetivo del chat.** Una respuesta se fue a
+> **1.673 caracteres contra 501**, y el atado cayo de 67% a 55%. La causa es
+> clara: la voz larga de `base_conocimiento.json` traia "sin preambulo, lo que
+> se recorta es el relleno, el bloque habla solo", y el corto no lo tiene.
+> Ademas rompia el candado `test_el_hub_usa_la_identidad_de_la_fuente`, que
+> exige que la voz salga de la fuente y no del codigo.
+>
+> Revertido con git, que es la red. **Si se retoma: el texto corto va a
+> `base_conocimiento.json`, no al codigo, y tiene que conservar la instruccion
+> de brevedad.** Bajar el prompt no es la palanca de latencia igual: son 772
+> tokens de 8.834.
+
+
 
 > ## 🔴 GROQ NO CONVIENE, Y ESTA MEDIDO CON SU CLAVE. NO VOLVER A PROPONERLO
 > SIN UN DATO NUEVO.
