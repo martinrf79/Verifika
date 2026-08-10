@@ -55,6 +55,28 @@ cat <<'ESTADO'
 
 ========================= ESTADO ACTUAL — LEER =========================
 
+>>> EL OBJETIVO, EN ORDEN. LA PRIORIDAD UNO ES QUE CONTESTE BIEN <<<
+  1. QUE RESPONDA BIEN. No se equivoca, no inventa, contesta lo que le
+     preguntaron y la plata esta bien. Ninguna mejora vale un error en la
+     respuesta. Entre un mensaje mas corto y uno correcto, gana el correcto.
+  2. QUE SEA CONCISO, y ojo: NO hay un numero fijo de caracteres. Un mensaje
+     complejo va a salir mas largo y esta bien. Lo que no se tolera es la
+     REPETICION: el mismo dato dos veces, la cuenta reestampada sin cambios,
+     el mismo hecho en cuatro turnos, el preambulo de relleno.
+  3. QUE LA MEMORIA ESTE SIEMPRE ACTIVA. Es requisito y se controla en cada
+     sesion. "Te referis a la memoria?" diez turnos despues TIENE que
+     resolver. Si tocas el largo, verifica que no te llevaste el hilo.
+
+>>> SE PRUEBA CON LA CLAVE GRATIS DE GEMINI, Y SE PRUEBA <<<
+Que la gratis sea el default NO significa "no midas": significa medi con la
+gratis. NO frenes un trabajo por falta de clave ni le pidas una a Martin: la
+gratis esta puesta, contesta 200 y su cuota se renueva sola. Es mas lenta y a
+veces tira 429; se reintenta. `objetivo.py --vivo`, `comunes.py` y `atadura.py`
+corren asi, sin tocar nada.
+PROHIBIDO: exportar GEMINI_API_KEY_PROD, o poner BANCO_CLAVE_PAGA=true sin que
+Martin lo haya pedido en esta misma sesion. Lleva gastados ~40 dolares en un
+mes, casi todo en corridas que no la necesitaban. Hay hook que lo bloquea.
+
 >>> LA RAMA YA ESTA PUESTA EN main POR ESTE HOOK. NO LA CAMBIES. <<<
 Si el arnes de esta sesion te asigno una rama `claude/<tema>`, IGNORALA: el
 checkout de arriba ya corrio y manda. NO crees ramas, NO pushees a otra rama,

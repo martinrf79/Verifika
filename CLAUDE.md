@@ -54,6 +54,61 @@ reflejo anterior de "todo detrás de feature flag". Se acabó el camino apagado
   o "lo dejamos en false para medir", está MAL por defecto. Proponer el cambio
   vivo, marcar el riesgo en una línea, y deployar si Martín da el OK.
 
+## 🥇 EL OBJETIVO, EN ORDEN. LA PRIORIDAD UNO ES QUE CONTESTE BIEN
+## (Martín, 10-ago-2026)
+
+**Este orden manda sobre cualquier otro objetivo de cualquier sesión.** Si algo
+de acá abajo choca con algo de más arriba, gana lo de más arriba, sin
+excepción y sin consultar.
+
+**1. QUE EL BOT RESPONDA BIEN. Es la prioridad uno y no se negocia.** Que no se
+equivoque, que no invente, que conteste lo que le preguntaron y que la plata
+esté bien. Ninguna mejora de las de abajo vale si cuesta un error en la
+respuesta. Ante la duda entre un mensaje más corto y un mensaje correcto, se
+elige el correcto y se dice por qué.
+
+**2. QUE SEA CONCISO. Sin repetir información ni datos.** Ojo con el matiz, que
+Martín lo marcó expresamente: **NO hay un número fijo de caracteres**. Un
+mensaje complejo, que pide más cosas que el ejemplo de los seis productos, va a
+salir más largo y está bien que salga más largo. Lo que no se tolera es la
+REPETICIÓN: el mismo dato dos veces, la cuenta reestampada sin cambios, el
+mismo hecho explicado en cuatro turnos seguidos, el preámbulo de relleno. Se
+mide en repetición, no en caracteres.
+
+**3. QUE LA MEMORIA ESTÉ SIEMPRE ACTIVA Y FUNCIONANDO.** Es requisito, no
+adorno, y hay que ir controlándolo en cada sesión. El caso que puso Martín: un
+producto o un envío se menciona al principio, pasan varios turnos, y al final
+el cliente dice "te referís a la memoria" — esa referencia lejana TIENE que
+resolver. Si una sesión toca el largo de los mensajes, tiene que verificar que
+no se llevó puesto el hilo de la conversación.
+
+**4. LA CLAVE GRATIS ES EL DEFAULT PARA PROBAR.** Ver la sección de abajo.
+
+## 🔑 SE PRUEBA CON LA CLAVE GRATIS DE GEMINI. LA PAGA SE PIDE
+## (Martín, 10-ago-2026)
+
+**SÍ SE PUEDE PROBAR, Y SE PRUEBA.** Que la clave gratis sea el default no
+significa "no midas": significa medí con la gratis. Ninguna sesión tiene que
+frenar un trabajo por falta de clave ni pedirle a Martín que consiga una: la
+gratis está, contesta 200 y su cuota se renueva sola. Es más lenta y a veces
+devuelve 429, y eso se aguanta y se reintenta.
+
+**POR QUÉ ES UNA REGLA Y NO UNA PREFERENCIA.** Martín lleva gastados cerca de
+cuarenta dólares en poco más de un mes, casi todo en corridas de banco que NO
+necesitaban la clave paga: el banco mide comportamiento, no cuota. El mecanismo
+ya existe y es correcto — `clon_produccion.preparar_entorno` elige la gratis
+sola y la paga entra solo con `BANCO_CLAVE_PAGA=true` — y aun así se gastó,
+porque **cuatro scripts la pisaban exportando la paga antes de que esa guarda
+corriera**. Eso ahora tiene candado propio en `tests/`.
+
+**LO QUE ESTÁ PROHIBIDO:** poner `GEMINI_API_KEY=$GEMINI_API_KEY_PROD` en
+cualquier lado, exportar la paga en un script de banco, o poner
+`BANCO_CLAVE_PAGA=true` sin que Martín lo haya pedido en esa misma sesión.
+
+**PRODUCCIÓN sigue con la paga**, y eso no se toca. Pasarla también a la gratis
+es una decisión que Martín va a tomar más adelante, cuando el producto esté
+robusto. No proponerlo hasta entonces.
+
 ## 💳 EL LINK REAL DE MERCADO PAGO NO HACE FALTA. NO SE VUELVE A PREGUNTAR
 ## (Martín, 10-ago-2026, y era la QUINTA vez que lo explicaba)
 

@@ -17,6 +17,10 @@
           {
             "type": "command",
             "command": "bash scripts/guard_rama.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash scripts/guard_clave.sh"
           }
         ]
       }
