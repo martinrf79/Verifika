@@ -63,13 +63,11 @@ class Filtro(BaseModel):
         description="El campo exacto de la lista. No inventes nombres.")
     operador: Literal["contiene", "no_contiene", "igual", "mayor",
                       "menor"] = Field(
-        description="'contiene' para texto -color contiene blanco-. "
-                    "'no_contiene' para lo que el cliente NO quiere -pais_"
-                    "fabricacion no_contiene china, marca no_contiene "
-                    "logitech-. 'igual' para un valor exacto. 'mayor' y "
-                    "'menor' SOLO para campos numericos, e incluyen el borde: "
-                    "menor 500 es hasta 500, y precio_ars menor 100000 es el "
-                    "presupuesto maximo.")
+        description="'contiene' para texto. 'no_contiene' para lo que el "
+                    "cliente NO quiere -pais_fabricacion no_contiene china-. "
+                    "'igual' para un valor exacto. 'mayor' y 'menor' SOLO "
+                    "numericos, e incluyen el borde: precio_ars menor 100000 "
+                    "es el presupuesto maximo.")
     valor: str = Field(
         description="Lo que tiene que valer. Para numeros mandalo pelado: 500, "
                     "no '500 gramos'.")
@@ -431,9 +429,33 @@ def _guia_de_temas(faq: dict, temas: list[str]) -> str:
     veintinueve; repetirlos aca abajo era pagarlos dos veces por llamada.
     """
     from app.core.guia_venta_prosa import disparadores_de
+
+    # Y SOLO SE GUIA AL QUE TIENE FRONTERA (10-ago). El docstring dice que esto
+    # existe para "los que se pisan", pero la seña salia para los CUARENTA Y
+    # CUATRO temas de la FAQ, incluidos los que no se pisan con ninguno:
+    # `cuotas`, `horarios`, `mayoristas`, `monedas_aceptadas`. Para esos el
+    # enum ya dice todo, y describirlos costaba 4.500 caracteres por llamada,
+    # el bloque mas grande de todo el esquema.
+    #
+    # Tener frontera es compartir una palabra con OTRO tema de la lista: la
+    # familia `envios`/`envio_exterior`/`costo_envio`/`plazo_envio`, que es el
+    # error medido; `garantia` contra `garantia_como_usar`; `cambios` contra
+    # `cambio_direccion`; `formas_pago` contra `formas_contacto`. Un nombre que
+    # no comparte con nadie no tiene con quien confundirse.
+    def _raices(t: str) -> set:
+        return {w.rstrip("s") for w in _norm(t).replace("_", " ").split()
+                if len(w) >= 4}
+
+    vecinas: dict = {}
+    for t in temas:
+        for r in _raices(t):
+            vecinas.setdefault(r, set()).add(t)
+    con_frontera = {t for t in temas
+                    if any(len(vecinas[r]) > 1 for r in _raices(t))}
+
     partes = []
     for tema in temas:
-        if tema not in faq:
+        if tema not in faq or tema not in con_frontera:
             continue
         propias = set(_norm(tema).replace("_", " ").split())
         # Una seña que solo repite el nombre del tema no desempata nada.
@@ -498,16 +520,17 @@ def _atar_filtros(prop: dict, tienda_id: str) -> None:
     # ninguno sirve.
     campo["enum"] = list(registro) + [SIN_CAMPO]
     numericos = [c for c, t in registro.items() if t == "numero"]
+    # ESTA DESCRIPCION VIAJA DOS VECES POR LLAMADA -en buscar_productos y en
+    # consultar_catalogo-, asi que cada palabra se paga doble. Se dejan las dos
+    # reglas que el modelo no puede deducir -cuales son numericos y que hacer
+    # cuando ninguno sirve- y se van los tres ejemplos, que decian lo mismo que
+    # la regla.
     campo["description"] = (
         "El campo exacto de la lista. Numericos, los unicos que aceptan mayor "
-        "y menor: " + ", ".join(numericos) + ". El resto es texto y va con "
-        "contiene. "
-        f"Si lo que pide el cliente NO lo expresa ninguno de estos campos "
-        f"-'que tenga cancelacion de ruido activa', 'que sea silencioso', "
-        f"'resistente para el campo'-, usa '{SIN_CAMPO}' y deja en `valor` lo "
-        f"que pidio con sus palabras. NO elijas el campo mas parecido: si "
-        f"elegis uno que no es, el resultado sale como si la fuente hubiera "
-        f"contestado y no contesto nada.")
+        "y menor: " + ", ".join(numericos) + ". El resto va con contiene. "
+        f"Si ningun campo expresa lo que pide el cliente, usa '{SIN_CAMPO}' y "
+        f"deja en `valor` sus palabras. NO elijas el mas parecido: sale como "
+        f"si la fuente hubiera contestado, y no contesto.")
 
 
 def esquemas(tienda_id: str) -> list[dict]:
