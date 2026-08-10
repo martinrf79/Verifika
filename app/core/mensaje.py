@@ -110,6 +110,60 @@ def _es_renglon_de_reparto(linea: str) -> bool:
     return bool(_RE_RENGLON_REPARTO.match(linea or ""))
 
 
+def _es_de_codigo(linea: str) -> bool:
+    """El renglon lo escribio el CODIGO: la cuenta o el reparto. Es la union de
+    los tres de arriba y existe para poder tratar el bloque como una UNIDAD, que
+    es lo que las reglas 5 y 6 necesitan."""
+    return (_es_cuenta(linea) or _es_titulo_de_reparto(linea)
+            or _es_renglon_de_reparto(linea))
+
+
+def _grupos_de_codigo(lineas: list) -> list:
+    """Los bloques que escribio el codigo, cada uno como lista de indices.
+
+    Un renglon en blanco NO corta el bloque -la cuenta trae blancos entre la
+    tabla y el reparto-; una linea de prosa SI lo corta, que es lo que separa
+    los dos presupuestos del turno del cierre."""
+    grupos, actual, blancos = [], [], []
+    for i, l in enumerate(lineas):
+        if _es_de_codigo(l):
+            actual.extend(blancos)
+            blancos = []
+            actual.append(i)
+        elif not l.strip():
+            if actual:
+                blancos.append(i)
+        elif actual:
+            grupos.append(actual)
+            actual, blancos = [], []
+    if actual:
+        grupos.append(actual)
+    return grupos
+
+
+def _firma(lineas: list, indices) -> str:
+    """Lo que dice un bloque, sin blancos ni mayusculas. Dos bloques con la
+    misma firma dicen EXACTAMENTE lo mismo: ahi no hay nada que juzgar."""
+    return _norm(" ".join(_norm(lineas[i]) for i in indices if lineas[i].strip()))
+
+
+# El renglon de plata que sobrevive cuando la cuenta entera no se reestampa.
+# Se prefiere el Total FINAL -el que el cliente va a pagar- sobre el subtotal.
+_RE_TOTAL = re.compile(r"(?im)^\s*total\s+final\s*:.*$")
+_RE_TOTAL_PELADO = re.compile(r"(?im)^\s*total\s*:.*$")
+
+# El minimo de cuenta que justifica no reestamparla. Debajo de esto la poda no
+# compra nada y el riesgo no vale.
+_MIN_CUENTA_REPETIDA = 200
+
+# El cliente PIDIENDO la cuenta de nuevo. Con esto puesto, la regla 6 no corre:
+# reestampar es exactamente lo que pidio, y ahi repetir no es una coletilla.
+_RE_PIDE_LA_CUENTA = re.compile(
+    r"(?i)\b(present?upuesto|resum(?:en|ime|ilo)|de nuevo|nuevamente|otra vez|"
+    r"repet[íi]|repetir|mand[áa]?me|pas[áa]?me|reenvi|total(?:es)?|cuenta|"
+    r"c[óo]mo qued[óo]|detalle)\b")
+
+
 def _valvula(texto: str, limpio: str) -> str:
     """Si podar se lleva casi todo, no se poda. La leccion del 24-jul: la
     primera version de una poda dejo el mensaje MUDO cuando el dato ocupaba toda
@@ -181,6 +235,60 @@ def sin_lo_ya_dicho(texto: str, anterior: str) -> str:
     if not fuera:
         return texto
     log.info("mensaje_ya_dicho", oraciones=fuera)
+    return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip())
+
+
+def sin_lo_ya_dicho_con_otro_conector(texto: str, anterior: str) -> str:
+    """REGLA 2-bis. LA ORACION QUE YA ESTA CASI ENTERA EN EL MENSAJE ANTERIOR.
+
+    EL CASO, del WhatsApp real del 10-ago, y es el defecto que mas se repite en
+    esa charla: el bot explico el ORIGEN de los tres productos en CUATRO turnos
+    seguidos, y se lo preguntaron UNA vez. Textual de los turnos 3, 4 y 5:
+
+        "Te confirmo que los Auriculares Redragon Zeus X Blanco son fabricados
+         en China, el Mouse Genius DX-110 Negro es fabricado en China (marca de
+         Taiwan) y la Memoria ram ... es fabricada en Taiwan o China segun linea."
+        "Como me consultaste por el origen, te informo que los Auriculares
+         Redragon Zeus X Blanco son fabricados en China, el Mouse ..."
+
+    Son 230 caracteres IDENTICOS con otro arranque adelante. La regla 2 los deja
+    pasar los tres turnos porque compara la oracion ENTERA: le cambia el
+    conector -"Te confirmo que" contra "Como me consultaste por el origen, te
+    informo que"- y el match exacto falla. O sea que la regla estaba bien
+    pensada y se la esquivaba con siete palabras.
+
+    LO QUE MIDE, y por que no es un juicio de significado: el pedazo mas largo
+    que esta LITERAL en el mensaje anterior. Si ese pedazo se lleva el 75% de la
+    oracion, lo que queda afuera es el conector, no informacion. No se compara
+    sentido ni se resume: se compara texto contra texto, igual que las demas.
+
+    LOS DOS PISOS. El pedazo tiene que ser de 70 caracteres para arriba -el
+    mismo umbral con el que `banco_pruebas/puntaje.py` cuenta un bloque
+    repetido- y tiene que cubrir el 75% de la oracion. Con eso, la frase corta
+    que reconfirma y la oracion que agrega un dato nuevo se quedan enteras."""
+    from difflib import SequenceMatcher
+    previo = _norm(anterior)
+    if len(previo) < _MIN_REPETIDO_ENTRE_TURNOS:
+        return texto
+    salida, fuera = [], 0
+    for linea in (texto or "").splitlines():
+        if _es_de_codigo(linea):
+            salida.append(linea)
+            continue
+        quedan = []
+        for trozo in _RE_ORACION.split(linea):
+            n = _norm(trozo)
+            if len(n) >= _MIN_REPETIDO_ENTRE_TURNOS:
+                m = SequenceMatcher(None, n, previo, autojunk=False)
+                calce = m.find_longest_match(0, len(n), 0, len(previo)).size
+                if calce >= _MIN_REPETIDO_ENTRE_TURNOS and calce / len(n) >= 0.75:
+                    fuera += 1
+                    continue
+            quedan.append(trozo)
+        salida.append(" ".join(t for t in quedan if t.strip()))
+    if not fuera:
+        return texto
+    log.info("mensaje_ya_dicho_reformulado", oraciones=fuera)
     return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip())
 
 
@@ -343,6 +451,131 @@ def un_ejemplo_por_rubro_con_cuenta(texto: str) -> str:
     return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip())
 
 
+def sin_cuenta_dos_veces(texto: str) -> str:
+    """REGLA 5. LA CUENTA NO SE IMPRIME DOS VECES EN EL MISMO MENSAJE.
+
+    EL CASO, y es del WhatsApp real de Martin del 10-ago, trace fbff43be, el
+    turno donde el cliente contesta su nombre: el mensaje salio con **27
+    renglones de cuenta, 970 caracteres**, o sea el presupuesto entero DOS
+    VECES. Uno lo pego el redactor y el otro el cierre, y ninguno de los dos
+    mira lo que hizo el otro. El cliente leyo el mismo total, el mismo reparto
+    de pago y los mismos tres destinos, dos veces, en un solo mensaje.
+
+    POR QUE NO LO CAZABA LA REGLA 1. Esa regla saltea a proposito todo renglon
+    de cuenta -`_es_cuenta` corta el bucle-, porque cuando el cliente
+    reconfirma el pedido reestampar la plata es lo correcto. La exencion era
+    justa para el renglon suelto y falsa para el BLOQUE: un presupuesto entero
+    calcado abajo del anterior no es plata reestampada, es el mismo bloque dos
+    veces.
+
+    Y HACIA UN DAÑO EXTRA, que se ve en ese mismo mensaje. Los renglones de
+    reparto NO son cuenta, asi que la regla 1 si los borraba, y el titulo
+    "Reparto de los envios:" quedaba solo, sin nada abajo. Al cliente le llego
+    un encabezado que promete tres destinos y no muestra ninguno. Sacando el
+    bloque entero como unidad, el titulo se va con sus renglones.
+
+    SE BORRA POR CONTENCION, NO POR IGUALDAD, y esto no es una licencia: el
+    bloque de abajo se va cuando todo lo que dice **ya esta escrito literal**
+    en uno de arriba. Igualdad sola no alcanzaba y el mensaje de arriba lo
+    prueba: la regla 1 ya le habia comido los tres renglones de reparto al
+    segundo bloque, asi que los dos presupuestos no eran identicos -uno tenia
+    27 renglones y el otro 24- y por dos renglones de diferencia el duplicado
+    sobrevivia entero. Contencion sobre texto normalizado sigue siendo una
+    comparacion mecanica, sin juzgar significado, y sigue sin perder un dato:
+    lo que se borra esta arriba, palabra por palabra."""
+    lineas = (texto or "").splitlines()
+    grupos = _grupos_de_codigo(lineas)
+    if len(grupos) < 2:
+        return texto
+    vistas, fuera = [], set()
+    for g in grupos:
+        f = _firma(lineas, g)
+        if not f:
+            continue
+        if any(f in v for v in vistas):
+            fuera.update(g)
+            continue
+        vistas.append(f)
+    if not fuera:
+        return texto
+    log.info("mensaje_cuenta_dos_veces", renglones=len(fuera))
+    return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(
+        l for i, l in enumerate(lineas) if i not in fuera)).strip())
+
+
+def sin_cuenta_que_no_cambio(texto: str, anterior: str = "",
+                             pregunta: str = "") -> str:
+    """REGLA 6. LA CUENTA QUE NO CAMBIO NO SE VUELVE A ESTAMPAR ENTERA.
+
+    ES LA PODA MAS GRANDE QUE HAY, Y ESTA MEDIDA sobre la charla real de Martin
+    del 10-ago, los cinco turnos leidos de Firestore:
+
+        turno 1 .. 1.036 caracteres, cuenta de 549 .. cuenta NUEVA
+        turno 2 .. 1.361 caracteres, cuenta de 550 .. cuenta NUEVA (65/35)
+        turno 3 .. 1.203 caracteres, cuenta de 550 .. **IDENTICA a la anterior**
+        turno 4 .. 1.115 caracteres, cuenta de 550 .. **IDENTICA a la anterior**
+        turno 5 .. 1.876 caracteres, cuenta de 970 .. el bloque, dos veces
+
+    En los turnos 3 y 4 el cliente dijo "Me parece bien asi" y "Okay te confirmo
+    entonces". No cambio un producto, ni un destino, ni un porcentaje: la cuenta
+    salio calcada, renglon por renglon, y **es el 45% y el 49% del mensaje**.
+    Eso es lo que hace que una confirmacion de dos palabras se conteste con un
+    muro de mil caracteres.
+
+    POR QUE ES LOSSLESS, que es la unica licencia que este modulo se permite: el
+    bloque completo esta en el mensaje que el cliente ACABA DE LEER, arriba en
+    la misma pantalla de WhatsApp. Es exactamente la premisa de la regla 2, que
+    ya borra prosa por ese motivo desde el 8-ago; lo unico que cambia es que la
+    cuenta dejo de estar exenta cuando NO CAMBIO NADA.
+
+    Y LA PLATA NO DESAPARECE NUNCA. No se borra el bloque a secas: queda el
+    renglon del total, que es el numero que el cliente va a pagar. Quince
+    renglones se vuelven uno; la cifra sigue en pantalla.
+
+    LAS TRES ATADURAS QUE LA HACEN SEGURA:
+      1. Firma IDENTICA. Si cambio un producto, un destino, un porcentaje o un
+         peso, la firma cambia y la cuenta sale ENTERA. Una cuenta nueva jamas
+         se poda: la regla no puede esconder un cambio de plata ni queriendo.
+      2. Si el cliente PIDE la cuenta -"pasame el presupuesto", "como quedo",
+         "el total"-, no corre. Ahi reestampar es contestar lo que preguntaron.
+      3. Piso de 200 caracteres. Una cuenta chica no paga el riesgo.
+
+    LO QUE NO HACE, y es el limite del modulo entero: no toca la prosa del
+    modelo. Bajar lo que el modelo GENERA se resuelve aguas arriba, y el tope
+    por caracteres que lo intento esta anotado abajo con el numero de por que
+    se fue."""
+    if _RE_PIDE_LA_CUENTA.search(pregunta or ""):
+        return texto
+    lineas = (texto or "").splitlines()
+    grupos = _grupos_de_codigo(lineas)
+    if not grupos:
+        return texto
+    indices = [i for g in grupos for i in g]
+    ahora = _firma(lineas, indices)
+    prev_lineas = (anterior or "").splitlines()
+    antes = _firma(prev_lineas, [i for g in _grupos_de_codigo(prev_lineas)
+                                 for i in g])
+    if not ahora or ahora != antes or len(ahora) < _MIN_CUENTA_REPETIDA:
+        return texto
+
+    bloque = "\n".join(lineas[i] for i in indices)
+    m = _RE_TOTAL.search(bloque) or _RE_TOTAL_PELADO.search(bloque)
+    resumen = f"Sin cambios en la cuenta. {m.group(0).strip()}" if m else ""
+
+    salida, puesto = [], False
+    fuera = set(indices)
+    for i, l in enumerate(lineas):
+        if i not in fuera:
+            salida.append(l)
+            continue
+        if resumen and not puesto:
+            salida.append(resumen)
+            puesto = True
+    log.info("mensaje_cuenta_sin_cambios", renglones=len(fuera),
+             ahorro=len(bloque) - len(resumen))
+    return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip())
+
+
 def sin_encabezados_huerfanos(texto: str) -> str:
     """Un encabezado que se quedo sin nada abajo se va con lo que anunciaba.
 
@@ -425,19 +658,29 @@ def sin_encabezados_huerfanos(texto: str) -> str:
 
 
 def componer(texto: str, anterior: str = "",
-             trace_id: str = "") -> str:
+             trace_id: str = "", pregunta: str = "") -> str:
     """EL UNICO LUGAR donde se decide el largo del mensaje.
 
-    LAS CUATRO REGLAS SON LOSSLESS, y esa es toda la garantia que da este
+    LAS SEIS REGLAS SON LOSSLESS, y esa es toda la garantia que da este
     modulo: cada cosa que borra sigue estando en algun lado -en la cuenta, en el
     renglon de al lado o en el mensaje anterior-. Lo que se probo y NO cumple esa
     condicion esta anotado arriba, con su numero: un tope que borraba prosa por
-    largo tiro la nota de 55 a 23."""
+    largo tiro la nota de 55 a 23.
+
+    EL ORDEN NO ES CASUAL. La regla 5 va PRIMERA porque trabaja sobre bloques
+    enteros: si la 1 corre antes, le come los renglones de reparto del bloque
+    repetido -que no son cuenta y por lo tanto no estan exentos- y deja el
+    titulo colgado, que es exactamente lo que le llego a Martin el 10-ago. Y la
+    6 va despues de la 5: primero se saca la cuenta duplicada de ESTE mensaje y
+    recien ahi se compara contra la del anterior."""
     if not (texto or "").strip():
         return texto
     antes = len(texto)
-    t = sin_repeticion_interna(texto)
+    t = sin_cuenta_dos_veces(texto)
+    t = sin_cuenta_que_no_cambio(t, anterior, pregunta)
+    t = sin_repeticion_interna(t)
     t = sin_lo_ya_dicho(t, anterior)
+    t = sin_lo_ya_dicho_con_otro_conector(t, anterior)
     t = sin_producto_duplicado(t)
     t = un_ejemplo_por_rubro_con_cuenta(t)
     t = sin_encabezados_huerfanos(t)

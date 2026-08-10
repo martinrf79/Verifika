@@ -28,7 +28,106 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
-**==== 10-AGO (ULTIMO) — LA SEGUNDA ATADURA, EL RELOJ, GROQ Y LOS ROJOS ====**
+**==== 10-AGO (ULTIMO) — EL LARGO: LA CUENTA REPETIDA, MEDIDA EN LA CHARLA REAL ====**
+
+> ## ✂️ EL MENSAJE SE ACORTO 37% EN LA CHARLA REAL DE WHATSAPP, Y NO ERA LA
+> PROSA DEL MODELO: ERA LA CUENTA REESTAMPADA.
+>
+> **DE DONDE SALIO.** Se leyeron los cinco turnos de la charla del 10-ago
+> directo de Firestore, con el largo y el bloque de codigo medido en cada uno:
+>
+> | turno | lo que dijo el cliente | largo | cuenta | |
+> |---|---|---|---|---|
+> | 1 | el pedido de seis articulos | 1.036 | 549 | cuenta NUEVA |
+> | 2 | "dividilo 65 y 35" | 1.361 | 550 | cuenta NUEVA |
+> | 3 | "Me parece bien asi" | 1.203 | 550 | **IDENTICA a la anterior** |
+> | 4 | "Okay te confirmo entonces" | 1.115 | 550 | **IDENTICA a la anterior** |
+> | 5 | "Jorge Campos" | 1.876 | 970 | **el bloque, DOS VECES** |
+>
+> A una confirmacion de dos palabras se le contesta con mil doscientos
+> caracteres, y **el 45% y el 49% de esos dos mensajes es la cuenta calcada**,
+> renglon por renglon, sin que cambiara un producto, un destino ni un
+> porcentaje. En el turno del nombre el presupuesto entero sale dos veces: uno
+> lo pega el redactor y el otro el cierre, y ninguno mira lo que hizo el otro.
+>
+> **LAS TRES REGLAS NUEVAS, todas dentro de la doctrina que ya tenia el modulo
+> -borrar solo lo demostrablemente REPETIDO-:**
+>   - **5. La cuenta no se imprime dos veces en el mismo mensaje.** Por
+>     CONTENCION, no por igualdad: la regla 1 ya le comia los renglones de
+>     reparto al segundo bloque -no son cuenta, no estaban exentos-, asi que los
+>     dos presupuestos no eran identicos y el duplicado sobrevivia por dos
+>     renglones de diferencia, dejando ademas el titulo "Reparto de los envios:"
+>     colgado sin un solo destino abajo. Eso le llego a Martin.
+>   - **6. La cuenta que no cambio no se reestampa entera.** Quince renglones se
+>     vuelven uno: "Sin cambios en la cuenta. Total final: $210.375". **La plata
+>     nunca desaparece.** Tres ataduras: firma IDENTICA -si cambio un peso sale
+>     entera-, no corre si el cliente PIDE la cuenta, y piso de 200 caracteres.
+>   - **2-bis. La misma oracion con otro conector.** El bot explico el ORIGEN de
+>     los tres productos en CUATRO turnos seguidos y se lo preguntaron UNA vez:
+>     230 caracteres identicos con otro arranque adelante, que la regla 2 dejaba
+>     pasar porque comparaba la oracion entera. Se mide el calce LITERAL mas
+>     largo; se va si se lleva el 75% de la oracion.
+>
+> **EL RESULTADO, replicando los cinco turnos reales por el componedor:**
+> turno 3 **1.203 -> 360**, turno 4 **1.115 -> 361**, turno 5 **1.876 -> 665**.
+> Los turnos 1 y 2 no se tocan, que es lo correcto: ahi la cuenta es nueva.
+> **La charla entera: 6.591 -> 4.122 caracteres, 37% menos.**
+>
+> **NO SE TOCO UNA PALABRA DE LA PROSA DEL MODELO**, que es lo que fallo dos
+> veces -el tope por caracteres tiro la nota de 55 a 23, el prompt corto la
+> subio el largo a 1.673-. Aca no hay criterio de que es importante: se borran
+> bloques que el codigo puede probar repetidos.
+>
+> **LO QUE NO SE MOVIO, y esta verificado:** las 40 en 40/40, el piso de las
+> charlas en 95/100, comunes 95/100 con el mismo caso 09 fallando ANTES y
+> DESPUES -es la falla conocida de atadura, no la toque-, y 592 tests en verde.
+> El mapa: **37 de 379 ciegas, 10%**, que venia de 37 de 372, 12%.
+
+> ## 🕳️ EL BANCO NO VE ESTE DEFECTO, Y ESO ES EL HALLAZGO MAS IMPORTANTE DEL DIA
+>
+> Se midio el largo de los **176 turnos** de las 13 charlas grabadas, antes y
+> despues del cambio: **promedio 528 -> 528, maximo 1.593 -> 1.593, suma
+> identica, CERO turnos movidos.** Las reglas 5 y 6 no se disparan ni una sola
+> vez en todo el banco.
+>
+> No es que el cambio no sirva -en la charla real corta el 37%-: es que
+> **ninguna de las 13 charlas grabadas tiene a un cliente confirmando un pedido
+> en varios turnos sin cambiar nada**, que es exactamente lo que hace un cliente
+> de verdad y lo que Martin hizo hoy. El banco mide preguntas; el defecto vive
+> en las confirmaciones.
+>
+> **LO QUE FALTA, y es la proxima tarea concreta:** grabar un guion de
+> confirmacion multiturno -el pedido, el cambio de porcentaje, "me parece bien",
+> "te confirmo", el nombre- que es la charla del 10-ago tal cual. Necesita la
+> clave para grabar el casete. Mientras tanto el candado son los tests de
+> `tests/test_mensaje.py`, que reproducen los textos reales de esa charla.
+
+> ## 📱 LO QUE SE SACO DEL ASISTENTE DE MERCADO PAGO (Martin lo compartio hoy)
+>
+> Martin compartio una charla con el asistente de Mercado Pago porque le gusta
+> como responde. Lo que hace distinto, y es medible:
+>
+> 1. **Contesta UNA cosa por mensaje, en una o dos oraciones.** Ninguna de sus
+>    respuestas pasa los 250 caracteres. Nosotros veniamos de 1.036 a 1.876.
+> 2. **No re-explica lo que ya contesto.** Es exactamente el defecto del origen
+>    repetido cuatro turnos, y es lo que ataca la regla 2-bis.
+> 3. **No abre con relleno.** Cero "¡Excelente! Me alegra mucho que estemos de
+>    acuerdo", que es como abrimos los turnos 3, 4 y 5.
+> 4. **Dice que es IA recien a la tercera o cuarta pregunta**, cuando se lo
+>    preguntan derecho, y contesta sin vueltas: "si, soy un sistema de
+>    inteligencia artificial de Mercado Pago, no una persona". **Martin marco
+>    que para el mercado latino eso esta bien.** Nosotros lo anunciamos en el
+>    primer mensaje -`con_saludo_inicial`-. NO SE TOCO: es una decision de
+>    politica de la tienda, no una de redaccion, y la decide Martin.
+>
+> Los puntos 1 y 3 son prosa del modelo y **no se atacan con una tijera al
+> final** -esta medido dos veces que eso tira la nota-. Se atacan en la voz de
+> `base_conocimiento.json`, que ya tiene la linea `identidad/largo` diciendo
+> "sin preambulo y sin resumen" y el modelo la desobedece en los turnos de
+> confirmacion. Cambiarla se mide con `objetivo.py --vivo`, y es trabajo de la
+> proxima sesion, no se toco a ciegas.
+
+**==== 10-AGO — LA SEGUNDA ATADURA, EL RELOJ, GROQ Y LOS ROJOS ====**
 
 > ## ✅ LOS DOS ROJOS DEL MAPA, CERRADOS. Y ninguno era falta de test.
 >

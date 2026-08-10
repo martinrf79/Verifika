@@ -274,3 +274,183 @@ def test_un_listado_que_empieza_con_A_no_se_confunde_con_el_reparto():
     assert _es_renglon_de_reparto("- A Concordia: 1x mouse")
     assert not _es_renglon_de_reparto("- Auriculares Redragon Zeus X: $57.500")
     assert not _es_renglon_de_reparto("- A4Tech Mouse Negro: $9.000")
+
+
+# ── REGLAS 5 y 6: LA CUENTA REPETIDA ────────────────────────────────────────
+# LOS CASOS SON LA CHARLA REAL DE MARTIN DEL 10-AGO, leida de Firestore, no un
+# invento. Los cinco turnos, con su largo y su bloque de codigo medido:
+#
+#   turno 1 .. 1.036 caracteres, cuenta de 549 .. cuenta NUEVA
+#   turno 2 .. 1.361 caracteres, cuenta de 550 .. cuenta NUEVA (paso a 65/35)
+#   turno 3 .. 1.203 caracteres, cuenta de 550 .. IDENTICA a la anterior
+#   turno 4 .. 1.115 caracteres, cuenta de 550 .. IDENTICA a la anterior
+#   turno 5 .. 1.876 caracteres, cuenta de 970 .. el bloque entero, DOS VECES
+#
+# En los turnos 3 y 4 el cliente dijo "Me parece bien asi" y "Okay te confirmo
+# entonces", o sea que no cambio nada, y la cuenta calcada es el 45% y el 49%
+# del mensaje.
+#
+# POR QUE ESTOS TESTS Y NO UN CASETE: se midio, y las 13 charlas grabadas NO
+# ejercitan ni una sola vez estas dos reglas -el largo de los 176 turnos dio
+# identico antes y despues del cambio-. O sea que el defecto que Martin ve en
+# WhatsApp todos los dias es zona ciega del banco. Hasta que haya un guion
+# grabado de una confirmacion en varios turnos, el candado son estos tests.
+
+CUENTA_REAL = (
+    "Presupuesto:\n"
+    "- 2x Auriculares Redragon Zeus X Blanco: $57.500 c/u = $115.000\n"
+    "- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\n"
+    "- 2x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: "
+    "$34.500 c/u = $69.000\n"
+    "Subtotal: $201.000\n"
+    "Envio (3 envios): $24.000\n"
+    "Total: $225.000\n"
+    "\n"
+    "Pago dividido:\n"
+    "- transferencia (65%): $146.250 - 10% descuento = $131.625\n"
+    "- mercado pago (35%): $78.750\n"
+    "Total final: $210.375\n"
+    "\n"
+    "Reparto de los envios:\n"
+    "- A Córdoba capital: 1x auriculares, 1x mouse\n"
+    "- A Concordia: 1x memoria ram, 1x mouse\n"
+    "- A Posadas: 1x auriculares, 1x memoria ram"
+)
+
+
+def test_la_cuenta_no_sale_dos_veces_en_el_mismo_mensaje():
+    """El turno del 10-ago donde el cliente contesta su nombre: 27 renglones de
+    cuenta, 970 caracteres, el presupuesto entero dos veces. Uno lo pego el
+    redactor y el otro el cierre."""
+    from app.core.mensaje import sin_cuenta_dos_veces
+
+    texto = (f"Hola Jorge Campos, registre tu pedido.\n\n{CUENTA_REAL}\n\n"
+             f"Listo Jorge, tomamos tu pedido.\n{CUENTA_REAL}\n"
+             f"Para pagar por transferencia:\nCBU: 0000000000000000000000")
+    out = sin_cuenta_dos_veces(texto)
+    assert out.count("Total final: $210.375") == 1
+    assert out.count("Presupuesto:") == 1
+    # y no se perdio nada de lo que estaba UNA sola vez
+    assert "CBU: 0000000000000000000000" in out
+    assert "Listo Jorge, tomamos tu pedido." in out
+    assert "A Posadas" in out
+
+
+def test_el_segundo_bloque_mutilado_igual_se_va():
+    """CONTENCION, NO IGUALDAD, y este es el caso que lo obligo. En produccion
+    la regla 1 ya le habia comido los tres renglones de reparto al segundo
+    bloque -no son cuenta, asi que no estaban exentos-, con lo cual los dos
+    presupuestos no eran identicos y el duplicado sobrevivia por dos renglones
+    de diferencia. Ademas dejaba el titulo "Reparto de los envios:" colgado,
+    prometiendo tres destinos y sin mostrar ninguno."""
+    from app.core.mensaje import sin_cuenta_dos_veces
+
+    mutilado = CUENTA_REAL.split("Reparto de los envios:")[0] + \
+        "Reparto de los envios:"
+    texto = f"Registre tu pedido.\n\n{CUENTA_REAL}\n\nListo.\n{mutilado}\nGracias."
+    out = sin_cuenta_dos_veces(texto)
+    assert out.count("Presupuesto:") == 1
+    assert out.count("Reparto de los envios:") == 1
+    # el titulo que queda tiene sus tres destinos abajo, no esta huerfano
+    assert "A Córdoba capital" in out and "A Posadas" in out
+
+
+def test_dos_cuentas_DISTINTAS_en_un_mensaje_se_quedan_las_dos():
+    """La salvaguarda. Si el segundo bloque dice algo que el primero no dice,
+    no es una repeticion y no se toca: podria ser el pedido partido en dos."""
+    from app.core.mensaje import sin_cuenta_dos_veces
+
+    otra = CUENTA_REAL.replace("$210.375", "$999.999")
+    texto = f"Opcion A:\n{CUENTA_REAL}\n\nOpcion B:\n{otra}"
+    out = sin_cuenta_dos_veces(texto)
+    assert "$210.375" in out and "$999.999" in out
+
+
+def test_la_cuenta_que_no_cambio_no_se_reestampa_pero_la_plata_queda():
+    """Turnos 3 y 4 del 10-ago: el cliente dijo "Me parece bien asi" y la
+    cuenta salio calcada, 550 caracteres. Se va el bloque; el total NO."""
+    from app.core.mensaje import sin_cuenta_que_no_cambio
+
+    anterior = f"Ahi va tu presupuesto.\n\n{CUENTA_REAL}"
+    texto = f"¡Excelente!\n\n{CUENTA_REAL}\n\nQuedo a la espera."
+    out = sin_cuenta_que_no_cambio(texto, anterior, pregunta="Me parece bien así")
+    assert "Presupuesto:" not in out
+    assert "- 2x Mouse Genius" not in out
+    # LA PLATA NO DESAPARECE NUNCA: el numero que va a pagar sigue en pantalla
+    assert "$210.375" in out
+    assert "Quedo a la espera." in out
+    assert len(out) < len(texto) / 2
+
+
+def test_una_cuenta_que_CAMBIO_sale_entera():
+    """La atadura que hace segura a la regla 6: si cambio un peso, un producto,
+    un destino o un porcentaje, la firma cambia y el bloque va completo. La
+    regla no puede esconder un cambio de plata ni queriendo."""
+    from app.core.mensaje import sin_cuenta_que_no_cambio
+
+    anterior = f"Ahi va.\n\n{CUENTA_REAL}"
+    nueva = CUENTA_REAL.replace("(65%)", "(70%)").replace("$131.625", "$141.750")
+    texto = f"Te lo doy vuelta.\n\n{nueva}"
+    assert sin_cuenta_que_no_cambio(texto, anterior, pregunta="dale 70/30") == texto
+
+
+def test_si_el_cliente_PIDE_la_cuenta_sale_entera():
+    """Reestampar es contestar lo que preguntaron, no una coletilla."""
+    from app.core.mensaje import sin_cuenta_que_no_cambio
+
+    anterior = f"Ahi va.\n\n{CUENTA_REAL}"
+    texto = f"Claro.\n\n{CUENTA_REAL}"
+    for pedido in ("pasame el presupuesto de nuevo", "¿cómo quedó?",
+                   "mandame el total", "repetime la cuenta"):
+        out = sin_cuenta_que_no_cambio(texto, anterior, pregunta=pedido)
+        assert "Presupuesto:" in out, f"se podo con: {pedido}"
+
+
+def test_una_cuenta_chica_no_paga_el_riesgo():
+    """Piso de 200 caracteres: abajo de eso podar no compra nada."""
+    from app.core.mensaje import sin_cuenta_que_no_cambio
+
+    chica = "Presupuesto:\n- 1x Mouse Genius: $8.500 c/u = $8.500\nTotal: $8.500"
+    texto = f"Listo.\n{chica}"
+    assert sin_cuenta_que_no_cambio(texto, texto, pregunta="dale") == texto
+
+
+# ── REGLA 2-bis: la misma oracion con otro conector ─────────────────────────
+def test_el_parrafo_del_origen_no_se_repite_con_otro_arranque():
+    """El defecto que mas se repite en la charla del 10-ago: el bot explico el
+    ORIGEN de los tres productos en CUATRO turnos seguidos, y se lo preguntaron
+    UNA vez. Son 230 caracteres identicos con otro conector adelante, y la
+    regla 2 los dejaba pasar porque compara la oracion entera."""
+    from app.core.mensaje import sin_lo_ya_dicho_con_otro_conector
+
+    hecho = ("los Auriculares Redragon Zeus X Blanco son fabricados en China, "
+             "el Mouse Genius DX-110 Negro es fabricado en China (marca de "
+             "Taiwan) y la Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro "
+             "es fabricada en Taiwan o China según línea")
+    anterior = f"¡Excelente! Te confirmo que {hecho}."
+    texto = (f"Como me consultaste por el origen, te informo que {hecho}. "
+             f"Para avanzar necesito tu nombre y apellido.")
+    out = sin_lo_ya_dicho_con_otro_conector(texto, anterior)
+    assert "fabricados en China" not in out
+    assert "nombre y apellido" in out
+
+
+def test_la_oracion_que_agrega_un_dato_nuevo_se_queda():
+    """La salvaguarda: el 75% tiene que ser calce LITERAL. Si la oracion trae
+    algo que el mensaje anterior no decia, se queda entera."""
+    from app.core.mensaje import sin_lo_ya_dicho_con_otro_conector
+
+    anterior = ("Te confirmo que el Mouse Genius DX-110 Negro es fabricado en "
+                "China y la memoria es de Taiwan o China según línea.")
+    texto = ("El Mouse Genius DX-110 Negro es fabricado en China y tiene "
+             "garantía de 12 meses del fabricante, con cambio en el local.")
+    assert sin_lo_ya_dicho_con_otro_conector(texto, anterior) == texto
+
+
+def test_la_valvula_tambien_protege_a_la_2bis():
+    """Si el calce se lleva el mensaje entero, no se poda: mudo es peor."""
+    from app.core.mensaje import sin_lo_ya_dicho_con_otro_conector
+
+    frase = ("El envío a Córdoba capital te sale igual para cualquiera de los "
+             "tres modelos que estuvimos viendo recién.")
+    assert sin_lo_ya_dicho_con_otro_conector(frase, frase) == frase

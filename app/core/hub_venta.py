@@ -2203,7 +2203,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         anterior = next((h.get("content") for h in reversed(history or [])
                          if h.get("role") == "assistant"), "")
         texto = componer(texto, anterior=str(anterior or ""),
-                         trace_id=trace_id)
+                         trace_id=trace_id, pregunta=raw_message)
     except Exception as e:
         # Un componedor roto NO puede dejar mudo al bot: se manda el mensaje
         # largo, que es lo que se mandaba ayer.
