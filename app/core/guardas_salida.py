@@ -76,8 +76,11 @@ def asegurar_honestidad_bot(mensaje: str, respuesta: str,
     if ("asistente automatico" in r or "asistente virtual" in r
             or "soy un bot" in r or "soy un robot" in r):
         return respuesta
-    return (f"Sí, te lo digo derecho: soy el asistente automático de "
-            f"{business_name}.\n\n" + (respuesta or "").strip()).strip()
+    from app.core.guia_venta_prosa import mensaje
+    linea = mensaje("honestidad_bot",
+                    "Sí, te lo digo derecho: soy el asistente automático de "
+                    "{negocio}.").format(negocio=business_name)
+    return (linea + "\n\n" + (respuesta or "").strip()).strip()
 
 
 # ── 2. SALUDO Y AVISO DEL PRIMER MENSAJE ────────────────────────────────────
@@ -157,4 +160,7 @@ def linea_saludo(business_name: str) -> str:
     obligatoria, sin volver a escribirla. Escrita en dos lados se despegarian, y
     esa es la falla que este repo ya pago dos veces -el patron de la poda el
     31-jul, la regex del reparto el 6-ago-."""
-    return f"¡Hola! Soy el asistente automático de {business_name}."
+    from app.core.guia_venta_prosa import mensaje
+    return mensaje("saludo_inicial",
+                   "¡Hola! Soy el asistente automático de {negocio}."
+                   ).format(negocio=business_name)

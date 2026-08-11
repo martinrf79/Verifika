@@ -30,6 +30,10 @@ import os
 import re
 from difflib import get_close_matches
 
+from app.logger import get_logger
+
+log = get_logger(__name__)
+
 # Cada tema es criterio de venta en prosa, sin un solo numero.
 GUIA_VENTA: dict[str, str] = {}
 
@@ -39,6 +43,7 @@ MOVIDAS: dict[str, dict] = {}
 # La voz del vendedor y los textos que salen tal cual, de la misma fuente.
 _IDENTIDAD: dict[str, str] = {}
 _MENSAJES: dict[str, str] = {}
+_ETIQUETAS_DATOS: dict[str, str] = {}
 
 # Palabras del cliente -> tema de la guia. Se consulta ANTES del match difuso
 # (get_close_matches con temas parecidos devolvia cualquier cosa: 'ram' caia
@@ -101,10 +106,29 @@ def identidad(negocio: str = "") -> str:
     return texto.replace("{negocio}", str(negocio or "")).strip()
 
 
-def mensaje(clave: str, defecto: str = "") -> str:
+def mensaje(clave: str, defecto: str = "", **llaves) -> str:
     """Un texto fijo al cliente, de la fuente. `defecto` es la red por si el
-    archivo falta: un mensaje vacio al cliente es peor que uno viejo."""
-    return str(_MENSAJES.get(str(clave), "") or defecto)
+    archivo falta: un mensaje vacio al cliente es peor que uno viejo.
+
+    Las `llaves` rellenan los huecos `{cosas}`, `{negocio}` del texto. Se
+    rellenan ACA y no en el llamador para que el que edita la fuente pueda
+    mover un hueco de lugar sin que nadie toque Python. Si el texto pide una
+    llave que no se paso, se devuelve tal cual en vez de explotar: un mensaje
+    con una llave a la vista es feo, uno que tumba el turno es un bug."""
+    texto = str(_MENSAJES.get(str(clave), "") or defecto)
+    if not llaves:
+        return texto
+    try:
+        return texto.format(**llaves)
+    except (KeyError, IndexError, ValueError):
+        log.warning("mensaje_llave_faltante", clave=clave, llaves=list(llaves))
+        return texto
+
+
+def etiqueta_dato(clave: str, defecto: str = "") -> str:
+    """Como se nombra un dato que falta -'tu nombre y apellido'- adentro de la
+    frase de cierre. Sale de la fuente, igual que la frase que lo contiene."""
+    return str(_ETIQUETAS_DATOS.get(str(clave), "") or defecto)
 
 
 def _resultado(tema: str) -> dict:
@@ -200,6 +224,10 @@ def _cargar_base_conocimiento() -> None:
     _MENSAJES.clear()
     _MENSAJES.update({k: str(v) for k, v in (base.get("mensajes") or {}).items()
                       if not k.startswith("_")})
+    _ETIQUETAS_DATOS.clear()
+    _ETIQUETAS_DATOS.update({k: str(v) for k, v in
+                             (base.get("etiquetas_datos") or {}).items()
+                             if not k.startswith("_")})
 
     todas = [c for c in base.get("categorias", []) if c.get("id")]
     # EL ENUM del Contactor: TODAS las categorias reales de la fuente (con o sin

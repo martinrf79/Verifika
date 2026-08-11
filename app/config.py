@@ -198,10 +198,11 @@ class Settings(BaseModel):
     # un cliente esperando no puede quedar colgado un minuto.
     LLM_ESPERA_MAX_S: float = float(os.getenv("LLM_ESPERA_MAX_S", "20"))
 
-    # Mensaje fallback cuando algo falla
-    FALLBACK_MESSAGE: str = (
-        "Disculpá, tuve un problema técnico. ¿Podés repetirme tu consulta?"
-    )
+    # Mensaje fallback cuando algo falla. Sale de la FUENTE, igual que el de
+    # abajo: el literal es solo la red por si el archivo faltara.
+    FALLBACK_MESSAGE: str = _mensaje_de_la_fuente(
+        "problema_tecnico",
+        "Disculpá, tuve un problema técnico. ¿Podés repetirme tu consulta?")
 
     # ────────────────────────────────────────────────────────
     # VERIFIKA — núcleo verificable

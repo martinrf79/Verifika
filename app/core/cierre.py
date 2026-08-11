@@ -107,12 +107,21 @@ def dispara_lead_fuerte(pregunta_hecha: bool, respuesta: str) -> bool:
     return (bool(pregunta_hecha) and not es_no_interesado(respuesta)
             and not parece_pregunta(respuesta))
 
-_ETIQUETAS = {
+# COMO SE NOMBRA CADA DATO QUE FALTA. Sale de la fuente, igual que la frase que
+# lo contiene: si Martin quiere pedir "un celular" en vez de "un telefono de
+# contacto", lo cambia en el json y nadie toca Python. El literal de al lado es
+# la red por si el archivo faltara.
+_ETIQUETAS_RESPALDO = {
     "nombre": "tu nombre y apellido",
     "telefono": "un telefono de contacto",
     "direccion": "la direccion de envio",
     "forma_pago": "la forma de pago",
 }
+
+
+def _etiqueta(clave: str) -> str:
+    from app.core.guia_venta_prosa import etiqueta_dato
+    return etiqueta_dato(clave, _ETIQUETAS_RESPALDO.get(clave, ""))
 
 _EXTRACTOR_PROMPT = """Sos un extractor de datos para cerrar una venta. Del mensaje del cliente saca SOLO los datos que esten presentes, no inventes nada.
 
@@ -277,34 +286,47 @@ def mensaje_pedir_datos(falt: list[str], insistencia: int = 0) -> str:
     identico dos y tres veces seguidas: la repeticion mas visible que tenia el
     bot, y el banco no la veia porque probaba el otro modo de cierre.
     """
-    pend = [_ETIQUETAS[c] for c in falt if c in _ETIQUETAS]
+    from app.core.guia_venta_prosa import mensaje
+    pend = [_etiqueta(c) for c in falt if c in _ETIQUETAS_RESPALDO]
+    pend = [p for p in pend if p]
     if not pend:
-        return "Genial, ya tengo todo para cerrar tu pedido."
+        return mensaje("cierre_tengo_todo",
+                       "Genial, ya tengo todo para cerrar tu pedido.")
     uno = len(pend) == 1
     cuerpo = pend[0] if uno else ", ".join(pend[:-1]) + " y " + pend[-1]
     if insistencia <= 0:
-        if uno:
-            return f"Genial. Para cerrar el pedido me falta {cuerpo}. Me lo pasas?"
-        return f"Genial. Para cerrar el pedido me faltan {cuerpo}. Me los pasas?"
+        clave = "cierre_falta_uno_completo" if uno else "cierre_faltan_varios_completo"
+        respaldo = ("Genial. Para cerrar el pedido me falta {cosas}. Me lo pasas?"
+                    if uno else
+                    "Genial. Para cerrar el pedido me faltan {cosas}. Me los pasas?")
+        return mensaje(clave, respaldo, cosas=cuerpo)
     if insistencia == 1:
-        return (f"Me queda pendiente {cuerpo} y lo dejo tomado."
-                if uno else f"Me quedan pendientes {cuerpo} y lo dejo tomado.")
-    return f"Apenas me pases {cuerpo} lo cierro."
+        clave = "cierre_pendiente_uno" if uno else "cierre_pendiente_varios"
+        respaldo = ("Me queda pendiente {cosas} y lo dejo tomado." if uno else
+                    "Me quedan pendientes {cosas} y lo dejo tomado.")
+        return mensaje(clave, respaldo, cosas=cuerpo)
+    return mensaje("cierre_apenas_me_pases", "Apenas me pases {cosas} lo cierro.",
+                   cosas=cuerpo)
 
 
 def mensaje_confirmacion(lead: dict, presupuesto: str = "") -> str:
+    from app.core.guia_venta_prosa import mensaje
     nombre = str(lead.get("nombre", "")).split(" ")[0] if lead.get("nombre") else ""
-    saludo = f"Listo {nombre}, " if nombre else "Listo, "
-    partes = [saludo + "tomamos tu pedido."]
-    if presupuesto:
-        partes.append("Resumen:\n" + presupuesto)
+    partes = [mensaje("cierre_tomamos_pedido", "Listo{nombre}, tomamos tu pedido.",
+                      nombre=(f" {nombre}" if nombre else ""))]
+    # EL TITULO SOLO SI HAY CUENTA. De aca nacio el "Resumen:" huerfano que le
+    # llego a Martin en TRES charlas: el titulo se pegaba y el bloque se podaba
+    # despues, dejando la promesa sin nada abajo.
+    if (presupuesto or "").strip():
+        partes.append(mensaje("cierre_titulo_resumen", "Resumen:") + "\n" + presupuesto)
     direccion = str(lead.get("direccion", "")).strip()
     pago = str(lead.get("forma_pago", "")).strip()
-    cola = "El equipo te contacta para coordinar"
+    cola = mensaje("cierre_equipo_contacta", "El equipo te contacta para coordinar")
     if pago:
-        cola += f" el pago por {pago}"
+        cola += mensaje("cierre_coordina_pago", " el pago por {pago}", pago=pago)
     if direccion:
-        cola += f" y el envio a {direccion}"
-    cola += ". Gracias por tu compra."
+        cola += mensaje("cierre_coordina_envio", " y el envio a {direccion}",
+                        direccion=direccion)
+    cola += mensaje("cierre_gracias", ". Gracias por tu compra.")
     partes.append(cola)
     return "\n".join(partes)

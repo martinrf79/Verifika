@@ -36,7 +36,13 @@ UMBRAL_LEAD_FUERTE = float(os.getenv("INTERPRETER_UMBRAL_ALTA", "0.85"))
 # confirmada y recien se mostro un precio, el bot hace UNA pregunta suave de
 # cierre; un "si" a esa pregunta vuelve como decision_compra y cierra. Asi todo
 # conflicto cae en la pregunta, no en un juez paralelo.
-PREGUNTA_CIERRE = "¿Seguimos adelante con tu pedido así te lo dejo preparado?"
+def _pregunta_cierre() -> str:
+    from app.core.guia_venta_prosa import mensaje
+    return mensaje("cierre_pregunta_seguimos",
+                   "¿Seguimos adelante con tu pedido así te lo dejo preparado?")
+
+
+PREGUNTA_CIERRE = _pregunta_cierre()
 
 # La respuesta del solver YA trae una pregunta de CONFIRMACION propia (no una
 # pregunta de dato): la enlatada no se pega encima. Se busca en TODA la
@@ -333,11 +339,16 @@ async def procesar_mensaje_para_lead(
                     _presu_cobro, lead_activo or {}, tienda_id, trace_id)
                     or get_settings().DEMO_LINK_PAGO)
                 if url:
-                    bloques.append(f"Para pagar con Mercado Pago: {url}")
+                    from app.core.guia_venta_prosa import mensaje
+                    bloques.append(mensaje(
+                        "pago_titulo_mercadopago",
+                        "Para pagar con Mercado Pago: {url}", url=url))
                 if bloques:
                     log.info("cobro_datos_a_pedido", trace_id=trace_id)
-                    bloques.append("Cualquier duda con el pago, avisame "
-                                   "y te ayudo.")
+                    from app.core.guia_venta_prosa import mensaje
+                    bloques.append(mensaje(
+                        "cierre_duda_pago",
+                        "Cualquier duda con el pago, avisame y te ayudo."))
                     return None, {"accion": "cobro_datos",
                                   "respuesta_directa": "\n\n".join(bloques)}
             except Exception as e:

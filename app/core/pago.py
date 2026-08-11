@@ -237,7 +237,8 @@ def mensaje_transferencia(datos: dict, monto=None) -> str:
     datos = datos or {}
     if not datos.get("cbu") and not datos.get("alias"):
         return ""
-    lineas = ["Para pagar por transferencia:"]
+    from app.core.guia_venta_prosa import mensaje
+    lineas = [mensaje("pago_titulo_transferencia", "Para pagar por transferencia:")]
     if datos.get("cbu"):
         lineas.append(f"CBU: {datos['cbu']}")
     if datos.get("alias"):
@@ -248,7 +249,10 @@ def mensaje_transferencia(datos: dict, monto=None) -> str:
         lineas.append(f"Banco: {datos['banco']}")
     if monto:
         lineas.append(f"Monto: ${_money(monto)}")
-    lineas.append("Cuando transfieras, mandame el comprobante y coordinamos el envío.")
+    from app.core.guia_venta_prosa import mensaje
+    lineas.append(mensaje(
+        "pago_mandar_comprobante",
+        "Cuando transfieras, mandame el comprobante y coordinamos el envío."))
     return "\n".join(lineas)
 
 

@@ -28,7 +28,72 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
-**==== 11-AGO (ULTIMO) — EL ERROR SE DIAGNOSTICA ANTES, NO SE CUENTA DESPUES ====**
+**==== 11-AGO (ULTIMO) — LA FUENTE, UNIFICADA DE VERDAD Y CON CANDADO ====**
+
+> ## 🔒 "LA FUENTE ESTA UNIFICADA" ERA MEDIA VERDAD. AHORA SE SABE CUAL MITAD,
+> Y HAY UN TEST QUE NO DEJA QUE VUELVA A PASAR.
+>
+> **LA BRONCA DE MARTIN, y era la mas justa de todas.** Paso dias pidiendo que
+> se unificara la fuente de verdad, se le dijo mas de una vez que ya estaba, y
+> el 11-ago se descubrio que no. Sus palabras: "si en todo lo que hacemos va a
+> haber verdades a medias, no terminariamos nunca mas".
+>
+> **CUAL MITAD ERA CIERTA.** El **DATO** si se habia unificado -catalogo, FAQ,
+> compatibilidad, specs, localidades, no vendidas, todo en
+> `data/clientes/verifika_prod/`-. De la **PROSA** se mudaron CINCO mensajes el
+> 3-ago y nada mas: todo texto escrito despues quedo en el codigo. Quien
+> contesto "si, esta unificada" miro el dato. Nadie mintio a proposito:
+> **faltaba con que mirar.** El candado que existia verificaba una lista blanca
+> de cinco claves, asi que un texto NUEVO en el codigo no rompia nada.
+>
+> **LO QUE SE HIZO HOY, y el numero:**
+>   - **La prosa al cliente se mudo entera a `base_conocimiento.json`.**
+>     Mensajes fijos: **de 6 a 54**. Entraron el cierre de la venta, las
+>     preguntas de confirmacion, los datos de pago, el reparto de envios, los
+>     avisos de compatibilidad, los errores de audio, el saludo y la honestidad
+>     de bot. Se leen con `mensaje("clave", "respaldo")`, que ahora tambien
+>     rellena los huecos `{cosas}` desde la fuente.
+>   - **El candado nuevo: `tests/test_prosa_en_la_fuente.py`.** Barre los nueve
+>     modulos por donde sale texto al cliente y **se pone rojo si alguien
+>     escribe una frase adentro del codigo**. Distingue prosa de instruccion al
+>     modelo por ESTRUCTURA, no adivinando el idioma: el respaldo de un
+>     `mensaje()`, una constante `_INSTRUCCION*`/`_NOTA*`, o una lista corta de
+>     texto operativo declarado uno por uno con su motivo.
+>   - **Tres candados mas, que son los que cierran las puertas de al lado:** el
+>     respaldo del codigo tiene que ser IDENTICO al de la fuente -asi no se
+>     despegan las copias-; toda clave que el codigo pide tiene que existir en
+>     la fuente -una clave mal escrita caia al respaldo y nadie se enteraba-; y
+>     el mismo texto no puede estar escrito en dos archivos -habia DOS copias de
+>     "Perdón, estoy con mucha demanda" y dos de "No pude entender el audio"-.
+>   - **Se probo que el candado FRENA**, plantandole una violacion a proposito
+>     en las dos direcciones: texto nuevo en el codigo -> rojo; respaldo
+>     cambiado a mano -> rojo.
+>
+> **EL 44 QUE LE PASE MAL A MARTIN, y su causa exacta.** Le dije "44 temas de
+> FAQ" teniendo el archivo delante: son **50**. El 44 sale de `CLAUDE.md`, que
+> se carga solo en cada sesion y **no tiene ningun candado**, mientras el
+> numero correcto estaba en `INVENTARIO_FUENTE.md`, que si lo tiene. Lei el
+> documento que nadie verifica existiendo uno verificado al lado. Peor: en este
+> mismo RESUMEN ya habia una linea que decia "CLAUDE.md dice FAQ de 44 temas:
+> son 50". Alguien lo vio, lo anoto, y siguio ahi.
+>   - Se saco el numero de `CLAUDE.md` y se apunta al inventario.
+>   - **Candado nuevo `test_ningun_documento_vivo_miente_sobre_la_fuente`:**
+>     `CLAUDE.md` entero y el encabezado vivo de este RESUMEN no pueden decir un
+>     numero de la fuente que no coincida con los archivos. El historico del
+>     RESUMEN queda afuera a proposito: es bitacora fechada y reescribirla seria
+>     mentir sobre lo que se sabia cada dia.
+>
+> **DONDE VIVE CADA COSA, para no volver a preguntarlo:** las **curadas** en
+> `faq.json` (`respuesta_curada` + `valores`); la **prosa de venta** en
+> `base_conocimiento.json` (categorias, identidad); los **mensajes fijos y las
+> preguntas de confirmacion** en `base_conocimiento.json` -> `mensajes`; las
+> **etiquetas de los datos que faltan** en `etiquetas_datos`. El **dato** en sus
+> CSV y JSON. La **logica** -cuando se dice cada cosa- en el codigo, y ahi se
+> queda: meterla en un JSON seria programar en JSON.
+>
+> **665 tests en verde.**
+
+**==== 11-AGO — EL ERROR SE DIAGNOSTICA ANTES, NO SE CUENTA DESPUES ====**
 
 > ## 🛃 LA ADUANA: LOS INVARIANTES CORREN AHORA **ANTES** DE QUE EL MENSAJE
 > SALGA A WHATSAPP. `app/core/aduana.py`.

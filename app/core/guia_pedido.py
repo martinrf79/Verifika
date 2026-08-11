@@ -421,9 +421,12 @@ def pregunta_destinos_pendientes(mensaje: str) -> str:
     if not pendientes:
         return ""
     lista = " y ".join(p.title() for p in pendientes)
-    return (f"\n\nOjo: para el envío a {lista} necesito la provincia o el "
-            f"código postal, porque hay más de una localidad con ese nombre. "
-            f"Pasámelo y te ajusto el total con ese envío incluido.")
+    from app.core.guia_venta_prosa import mensaje
+    return mensaje("envio_localidad_repetida",
+                   "\n\nOjo: para el envío a {destinos} necesito la provincia o el "
+                   "código postal, porque hay más de una localidad con ese nombre. "
+                   "Pasámelo y te ajusto el total con ese envío incluido.",
+                   destinos=lista)
 
 
 def cotizar_destinos_del_mensaje(mensaje: str) -> list[str]:
@@ -465,19 +468,25 @@ def mensaje_opciones_categorias(cats_pedido: list[tuple], tienda_id: str,
         if not ops:
             continue
         lineas = "\n".join("- " + _linea_producto(p) for p in ops)
-        bloques.append(f"Para {'las' if n > 1 else 'la'} {n} de {cat}, "
-                       f"opciones con stock:\n{lineas}")
+        from app.core.guia_venta_prosa import mensaje
+        bloques.append(mensaje("pedido_opciones_de_categoria",
+                               "Para {cuantas} de {categoria}, opciones con stock:",
+                               cuantas=f"{'las' if n > 1 else 'la'} {n}",
+                               categoria=cat) + "\n" + lineas)
     if not bloques:
         return None
-    partes = ["¡Buena compra la que estás armando! Para pasarte el precio "
-              "exacto necesito que elijas los modelos.",
+    partes = [mensaje("pedido_elegir_modelos",
+                      "¡Buena compra la que estás armando! Para pasarte el "
+                      "precio exacto necesito que elijas los modelos."),
               "\n\n".join(bloques)]
     if destinos:
-        partes.append("Los envíos van a: " + ", ".join(destinos)
-                      + ". Ya los tengo cotizados.")
-    partes.append("¿Qué modelo elegís de cada categoría? Si querés vamos por "
-                  "los más económicos: decime \"los más baratos\" y te armo "
-                  "el total al instante.")
+        partes.append(mensaje("pedido_envios_van_a",
+                              "Los envíos van a: {destinos}. Ya los tengo cotizados.",
+                              destinos=", ".join(destinos)))
+    partes.append(mensaje("pedido_que_modelo",
+                          "¿Qué modelo elegís de cada categoría? Si querés vamos por "
+                          "los más económicos: decime \"los más baratos\" y te armo "
+                          "el total al instante."))
     return "\n\n".join(partes)
 
 
@@ -498,19 +507,26 @@ def mensaje_presupuesto_sellado(presentacion: str, reparto: str = "",
     pago_ya_elegido = (pago_conocido
                        or "Pago dividido" in presentacion
                        or "Total final" in presentacion)
+    # Frase que AVANZA, sin re-pedir el pago y SIN pregunta (asi no choca
+    # con la pregunta de cierre del lead, '¿Seguimos adelante...?', ni
+    # repite su 'te lo dejo preparado').
+    from app.core.guia_venta_prosa import mensaje
     if pago_ya_elegido:
-        # Frase que AVANZA, sin re-pedir el pago y SIN pregunta (asi no choca
-        # con la pregunta de cierre del lead, '¿Seguimos adelante...?', ni
-        # repite su 'te lo dejo preparado').
-        cierre = ("Si me pasás la localidad, coordino el envío y lo dejamos "
-                  "listo.")
+        cierre = mensaje("pedido_falta_localidad",
+                         "Si me pasás la localidad, coordino el envío y lo "
+                         "dejamos listo.")
     else:
-        cierre = ("¿Lo dejamos confirmado? Decime la forma de pago: "
-                  "transferencia (10% de descuento) o Mercado Pago.")
-    return ((titulo or "Listo, te armé el pedido con los más económicos de "
-             "cada categoría:") + "\n\n" + presentacion.strip()
+        cierre = mensaje("pedido_confirmar_pago",
+                         "¿Lo dejamos confirmado? Decime la forma de pago: "
+                         "transferencia (10% de descuento) o Mercado Pago.")
+    return ((titulo or mensaje("pedido_armado_mas_baratos",
+                               "Listo, te armé el pedido con los más económicos "
+                               "de cada categoría:"))
+            + "\n\n" + presentacion.strip()
             + (("\n" + reparto.strip("\n") + "\n") if reparto else "")
-            + "\n\nEnvío orientativo, puede variar al confirmar la compra.\n"
+            + "\n\n" + mensaje("envio_orientativo",
+                                "Envío orientativo, puede variar al confirmar "
+                                "la compra.") + "\n"
             + cierre)
 
 
@@ -770,7 +786,8 @@ def reparto_envios_detalle(mensaje: str, cats_pedido: list,
         lineas.append(f"- A {destino.title()}: {det} — envío {costo}")
     if not lineas:
         return "", []
-    return ("\nReparto de envíos, como lo pediste:\n"
+    from app.core.guia_venta_prosa import mensaje
+    return (mensaje("pedido_reparto_envios", "\nReparto de envíos, como lo pediste:\n")
             + "\n".join(lineas)), tools
 
 

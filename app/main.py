@@ -114,6 +114,15 @@ async def _precalentar_cache():
         log.warning("precalentar_cache_failed", error=str(e)[:150])
 
 
+def _prosa(clave: str, respaldo: str) -> str:
+    """Un texto fijo al cliente, de la FUENTE. Mismo criterio que `_sobrecarga`:
+    el literal que va al lado es la red por si el archivo faltara, y el candado
+    de `tests/test_prosa_en_la_fuente.py` exige que sea identico al de la
+    fuente para que no se despeguen."""
+    from app.core.guia_venta_prosa import mensaje
+    return mensaje(clave, respaldo)
+
+
 def _sobrecarga() -> str:
     """Lo que se le dice al cliente cuando el turno se cayo por un blip del LLM.
     El texto vive en la fuente, como toda la prosa desde el 3-ago; el literal es
@@ -326,14 +335,16 @@ async def _process_and_reply_telegram(chat_id: str, text: str):
             log.info("telegram_audio_received", chat_id=chat_id, file_id=file_id)
             audio_bytes = await connector.download_file(file_id)
             if not audio_bytes:
-                await connector.send_message(
-                    chat_id, "No pude descargar el audio, mandalo de nuevo por favor.")
+                await connector.send_message(chat_id, _prosa(
+                    "audio_no_descargado",
+                    "No pude descargar el audio, mandalo de nuevo por favor."))
                 return
             from app.core.transcriber import transcribir_audio
             text = transcribir_audio(audio_bytes)
             if not text:
-                await connector.send_message(
-                    chat_id, "No pude entender el audio, podes escribirlo o mandarlo de nuevo?")
+                await connector.send_message(chat_id, _prosa(
+                    "audio_no_entendido",
+                    "No pude entender el audio, podes escribirlo o mandarlo de nuevo?"))
                 return
             log.info("telegram_audio_transcribed", chat_id=chat_id, chars=len(text))
 
@@ -397,12 +408,16 @@ async def _process_and_reply_whatsapp(tienda_id: str, user_id: str,
             log.info("whatsapp_audio_received", user_id=user_id, media_id=media_id)
             audio_bytes = await connector.download_media(media_id)
             if not audio_bytes:
-                await connector.send_message(user_id, "No pude descargar el audio, mandalo de nuevo por favor.")
+                await connector.send_message(user_id, _prosa(
+                    "audio_no_descargado",
+                    "No pude descargar el audio, mandalo de nuevo por favor."))
                 return
             from app.core.transcriber import transcribir_audio
             text = transcribir_audio(audio_bytes)
             if not text:
-                await connector.send_message(user_id, "No pude entender el audio, podes escribirlo o mandarlo de nuevo?")
+                await connector.send_message(user_id, _prosa(
+                    "audio_no_entendido",
+                    "No pude entender el audio, podes escribirlo o mandarlo de nuevo?"))
                 return
             log.info("whatsapp_audio_transcribed", user_id=user_id, chars=len(text))
 

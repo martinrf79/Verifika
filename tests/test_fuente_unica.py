@@ -200,3 +200,60 @@ def test_los_markdown_de_borradores_ya_no_son_una_segunda_fuente():
                    "BASE_CONOCIMIENTO.md", "CATEGORIAS_PREGUNTAS_VENTA.md"):
         assert not (raiz / nombre).exists(), (
             f"{nombre} volvio a existir: la prosa va a base_conocimiento.json")
+
+
+def test_ningun_documento_vivo_miente_sobre_la_fuente(fuente):
+    """UN NUMERO, UN LUGAR, Y ES EL QUE SE VERIFICA (Martin, 11-ago-2026).
+
+    `CLAUDE.md` decia "faq.json de 44 temas" desde junio; el 11-ago eran 50. El
+    numero correcto estaba en `INVENTARIO_FUENTE.md`, que si tiene candado,
+    pero una sesion leyo el otro -que es el que se carga SOLO al arrancar- y le
+    paso a Martin un dato viejo con cara de dato bueno. Peor: en el propio
+    RESUMEN ya habia una linea que decia "CLAUDE.md dice FAQ de 44 temas: son
+    50". Alguien lo vio, lo anoto, y siguio ahi.
+
+    QUE CUBRE Y QUE NO. `CLAUDE.md` entero, porque se carga en cada sesion, y
+    el ENCABEZADO vivo del RESUMEN. El historico del RESUMEN queda afuera a
+    proposito: es una bitacora fechada y reescribirla seria mentir sobre lo que
+    se sabia cada dia. Lo que no puede pasar es que lo que una sesion lee HOY
+    como estado actual contradiga a los archivos."""
+    raiz = _RUTA.parent.parent.parent.parent
+    faq = json.loads((_RUTA.parent / "faq.json").read_text(encoding="utf-8"))
+    productos = (_RUTA.parent / "productos.csv").read_text(encoding="utf-8")
+    real = {
+        "faq": len(faq),
+        "productos": len([l for l in productos.splitlines() if l.strip()]) - 1,
+        "categorias": len(fuente["categorias"]),
+        "movidas": len([c for c in fuente["categorias"] if c.get("movida")]),
+    }
+    patrones = [
+        (re.compile(r"faq\.?j?s?o?n?\s*(?:de|con)\s*\*{0,2}(\d{2,4})\*{0,2}\s*temas?",
+                    re.IGNORECASE), "faq"),
+        (re.compile(r"faq de\s*\*{0,2}(\d{2,4})\*{0,2}\b", re.IGNORECASE), "faq"),
+        (re.compile(r"\*{0,2}(\d{2,4})\*{0,2}\s*temas de (?:la )?faq", re.IGNORECASE), "faq"),
+        (re.compile(r"\*{0,2}(\d{3,4})\*{0,2}\s*productos", re.IGNORECASE), "productos"),
+        (re.compile(r"\*{0,2}(\d{2,4})\*{0,2}\s*movidas de venta", re.IGNORECASE), "movidas"),
+        (re.compile(r"\*{0,2}(\d{2,4})\*{0,2}\s*categorias de criterio", re.IGNORECASE),
+         "categorias"),
+    ]
+    # CLAUDE.md entero + el encabezado vivo del RESUMEN (hasta la primera
+    # seccion fechada, que es donde arranca la bitacora).
+    vivos = [("CLAUDE.md", (raiz / "CLAUDE.md").read_text(encoding="utf-8"))]
+    resumen = (raiz / "RESUMEN_PARA_NUEVO_CHAT.md").read_text(encoding="utf-8")
+    corte = resumen.find("**==== ")
+    vivos.append(("RESUMEN_PARA_NUEVO_CHAT.md (encabezado)",
+                  resumen[:corte if corte > 0 else 4000]))
+
+    mentiras = []
+    for doc, texto in vivos:
+        for i, linea in enumerate(texto.splitlines(), 1):
+            for patron, cual in patrones:
+                for m in patron.finditer(linea):
+                    if int(m.group(1)) != real[cual]:
+                        mentiras.append(
+                            f"{doc}:{i} dice {m.group(1)} de {cual} y son "
+                            f"{real[cual]}: {linea.strip()[:70]}")
+    assert not mentiras, (
+        "un documento VIVO contradice a la fuente. El numero va en "
+        "INVENTARIO_FUENTE.md, que tiene candado; aca se apunta a el:\n  "
+        + "\n  ".join(mentiras))

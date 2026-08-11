@@ -64,7 +64,9 @@ async def process_message(user_id: str, raw_message: str,
                 log.warning("reset_code_error", trace_id=trace_id,
                             error=str(e)[:120])
             log.info("reset_code", trace_id=trace_id, user_id=user_id)
-            return "Listo, conversacion reiniciada. Empezamos de cero."
+            from app.core.guia_venta_prosa import mensaje
+            return mensaje("conversacion_reiniciada",
+                           "Listo, conversacion reiniciada. Empezamos de cero.")
 
         return await procesar_venta(
             user_id, raw_message, tid, canal, trace_id)

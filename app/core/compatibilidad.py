@@ -245,8 +245,12 @@ def evaluar(prod: dict, plataforma: str,
     nombre = str(prod.get("nombre") or "el producto")
     etq = etiqueta_plataforma(plataforma, tienda_id)
     if plataforma in (compat.get("no_compatible") or []):
-        return "incompatible", (f"{nombre} no es compatible con {etq}. "
-                                + (compat.get("nota") or ""))
+        from app.core.guia_venta_prosa import mensaje
+        return "incompatible", (
+            mensaje("compat_no_va_con",
+                    "{producto} no es compatible con {plataforma}. ",
+                    producto=nombre, plataforma=etq)
+            + (compat.get("nota") or ""))
     if plataforma in (compat.get("plataformas") or []):
         conectores = compat.get("conecta_por") or []
         via = ", ".join(etiqueta_conector(c, tienda_id) for c in conectores[:2])
@@ -283,9 +287,13 @@ def evaluar_par(prod_a: dict, prod_b: dict,
                                            (cb, prod_a, nb, na)):
         cat_otro = _norm(otro_prod.get("categoria")).replace(" ", "_")
         if cat_otro and cat_otro in (compat.get("no_compatible") or []):
-            return "incompatible", (f"No van juntos: {quien} no es compatible con "
-                                    f"{etiqueta_plataforma(cat_otro, tienda_id)}. "
-                                    + (compat.get("nota") or "")).strip()
+            from app.core.guia_venta_prosa import mensaje
+            return "incompatible", (
+                mensaje("compat_no_van_juntos",
+                        "No van juntos: {producto} no es compatible con "
+                        "{plataforma}. ", producto=quien,
+                        plataforma=etiqueta_plataforma(cat_otro, tienda_id))
+                + (compat.get("nota") or "")).strip()
 
     def _por_familia(ids):
         d: dict = {}
@@ -313,8 +321,18 @@ def evaluar_par(prod_a: dict, prod_b: dict,
                 return "incompatible", (f"No van juntos: {quien} necesita {pide} "
                                         f"y {otro} tiene {tiene}.")
     if veredicto == "compatible":
-        return "compatible", "Van juntos sin problema: " + "; ".join(motivos[:2]) + "."
+        from app.core.guia_venta_prosa import mensaje
+        return "compatible", (mensaje("compat_van_juntos", "Van juntos sin problema: ")
+                              + "; ".join(motivos[:2]) + ".")
     return "sin_dato", ""
+
+
+# INSTRUCCIONES AL MODELO, no prosa al cliente: viajan en el JSON que se le
+# inyecta al redactor. El candado de tests/test_prosa_en_la_fuente.py las
+# reconoce por el prefijo _NOTA.
+_NOTA_SIN_DATO = ("deci honesto que no lo tenes confirmado y que lo verificas")
+_NOTA_BLOQUE_COMPAT = ("\n\nCOMPATIBILIDAD (dato REAL de la fuente, contestá "
+                       "con esto y NO afirmes nada que no figure aca):\n")
 
 
 # ── LO QUE CONSUME EL SOLVER Y EL JUEZ ───────────────────────────────────────
@@ -434,8 +452,12 @@ def estampar_veredicto(texto: str, productos, plataformas,
         etq, _, nota = clave.partition("||")
         quienes = _lista(nombres[:2]) + (" y sus variantes"
                                          if len(nombres) > 2 else "")
-        frases.append(f"Te aviso para que no te lleves un chasco: {quienes} no "
-                      f"es compatible con {etq}." + (f" {nota}" if nota else ""))
+        from app.core.guia_venta_prosa import mensaje
+        frases.append(mensaje("compat_aviso_chasco",
+                              "Te aviso para que no te lleves un chasco: ")
+                      + quienes
+                      + mensaje("compat_no_es_compatible", " no es compatible con ")
+                      + f"{etq}." + (f" {nota}" if nota else ""))
     aviso = " ".join(frases)
     return ((limpio + "\n\n" + aviso).strip() if limpio else aviso), eventos
 
@@ -492,10 +514,9 @@ def bloque_prompt(universo, plataformas, tienda_id: str | None = None) -> str:
             else:
                 veredictos.append(
                     f"SIN DATO sobre {etiqueta_plataforma(plat, tienda_id)}: "
-                    f"deci honesto que no lo tenes confirmado y que lo verificas")
+                    + _NOTA_SIN_DATO)
         lineas.append(f"  {p.get('nombre')}: {ficha}"
                       + (" || " + "; ".join(veredictos) if veredictos else ""))
     if not lineas:
         return ""
-    return ("\n\nCOMPATIBILIDAD (dato REAL de la fuente, contestá con esto y NO "
-            "afirmes nada que no figure aca):\n" + "\n".join(lineas))
+    return (_NOTA_BLOQUE_COMPAT + "\n".join(lineas))
