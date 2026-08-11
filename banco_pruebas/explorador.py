@@ -206,8 +206,19 @@ def armar_charla(rnd: random.Random, catalogo: list, guion: str) -> dict:
 # ── CORRER Y JUZGAR ─────────────────────────────────────────────────────────
 async def correr(charla: dict, uid: str) -> dict:
     """La charla entera por el camino VIVO del webhook. Devuelve lo que el
-    cliente recibio, turno por turno, y el reloj de cada uno."""
+    cliente recibio, turno por turno, el reloj de cada uno, lo que la ADUANA
+    atajo y si la corrida quedo SIN MEDIR por cuota.
+
+    LO DE "SIN MEDIR" NO ES UN DETALLE, y es la leccion del 9-ago: si una
+    corrida donde el modelo nunca contesto se promedia con las demas, el numero
+    manda a arreglar codigo que ni siquiera corrio. Con la clave gratis y su
+    cuota de 250.000 tokens por minuto eso pasa seguido, asi que se separa."""
+    from app.core import aduana
+    from app.core.llm_reintento import reiniciar_cupo, sin_cupo
+
     clon_produccion.reiniciar_cliente(uid)
+    aduana.reiniciar_marcador()
+    reiniciar_cupo()
     respuestas, tiempos = [], []
     for texto in charla["turnos"]:
         t0 = time.time()
@@ -217,7 +228,11 @@ async def correr(charla: dict, uid: str) -> dict:
             partes = [f"[EXPLOTO] {type(e).__name__}: {e}"]
         tiempos.append(int((time.time() - t0) * 1000))
         respuestas.append("\n".join(partes))
-    return {**charla, "respuestas": respuestas, "ms": tiempos}
+    negadas = sin_cupo()
+    return {**charla, "respuestas": respuestas, "ms": tiempos,
+            "aduana": aduana.marcador(),
+            "sin_medir": int(negadas["veces"]),
+            "motivo": negadas["ultimo"][:80]}
 
 
 def juzgar(corrida: dict, vocabulario: set) -> list:
@@ -240,24 +255,44 @@ def informe(corridas: list) -> str:
     fallback = sum(1 for c in corridas for r in c["respuestas"]
                    if clon_produccion.es_fallback(r) or "[EXPLOTO]" in r)
 
+    medidas = [c for c in corridas if not c.get("sin_medir")]
     for c in corridas:
         estado = f"{len(c['fallas'])} violaciones" if c["fallas"] else "limpia"
+        if c.get("sin_medir"):
+            estado += f"  ⚠ SIN MEDIR ({c['sin_medir']} llamadas negadas)"
+        ad = c.get("aduana") or {}
+        if ad.get("reparadas"):
+            estado += f"  [aduana atajo {ad['reparadas']}]"
         lineas.append(f"── {c['guion']:<26} {len(c['respuestas'])} turnos, "
                       f"{estado}")
         for f in c["fallas"]:
             lineas.append(f"   turno {f['turno']:>2} [{f['paso']}] "
                           f"'{f['dijo'][:38]}'")
             lineas.append(f"      {f['regla']:<34} {f['detalle'][:90]}")
+            # EL TEXTO QUE FALLO, o el hallazgo no se puede arreglar. Un numero
+            # dice que algo esta mal; el mensaje dice QUE. Va sangrado y entero
+            # hasta 600 caracteres, que alcanza para ver la cuenta duplicada.
+            culpable = c["respuestas"][f["turno"] - 1]
+            lineas += ["      ── lo que le llego al cliente:"] + [
+                f"      | {l}" for l in culpable[:600].splitlines()]
     lineas.append("")
 
     largos = [len(r) for c in corridas for r in c["respuestas"]]
     todos_ms = [m for c in corridas for m in c["ms"]]
+    atajadas = sum((c.get("aduana") or {}).get("reparadas", 0) for c in corridas)
+    rojas = sum((c.get("aduana") or {}).get("rojas", 0) for c in corridas)
+    medidas_f = [f for c in medidas for f in c["fallas"]]
     lineas += [
         "=" * 78,
         f"CHARLAS: {len(corridas)}   TURNOS: {turnos}   "
         f"VIOLACIONES: {len(todas)}",
+        f"CHARLAS MEDIDAS: {len(medidas)} de {len(corridas)} "
+        f"(las otras quedaron SIN MEDIR: al modelo no se le pudo hablar)",
         f"EL NUMERO — DEFECTOS POR CHARLA INVENTADA: "
-        f"{(len(todas) / len(corridas)) if corridas else 0:.2f}",
+        f"{(len(medidas_f) / len(medidas)) if medidas else 0:.2f}"
+        f"   (solo sobre las medidas)",
+        f"LA ADUANA ATAJO {atajadas} defectos antes de mandar, y marco "
+        f"{rojas} en ROJO",
         f"LARGO: promedio {sum(largos) // len(largos) if largos else 0}, "
         f"maximo {max(largos) if largos else 0} caracteres",
         f"RELOJ: mediana {sorted(todos_ms)[len(todos_ms) // 2] if todos_ms else 0} ms "
@@ -279,6 +314,9 @@ def main(argv: list) -> int:
     ap.add_argument("--charlas", type=int, default=4)
     ap.add_argument("--semilla", type=int, default=11)
     ap.add_argument("--guion", default="", choices=[""] + list(GUIONES))
+    ap.add_argument("--pausa", type=int, default=70,
+                    help="segundos a esperar y repetir cuando la cuota gratis "
+                         "corta una charla. 0 para no repetir.")
     args = ap.parse_args(argv)
 
     detalle = clon_produccion.preparar_entorno()
@@ -304,12 +342,41 @@ def main(argv: list) -> int:
         print(f"\n[{i}/{len(guiones)}] {g}: "
               + " | ".join(t[:34] for t in charla["turnos"]), flush=True)
         corrida = asyncio.run(correr(charla, f"explorador_{args.semilla}_{i}"))
+        # LA CUOTA DE LA GRATIS SE ESPERA, NO SE PAGA. Son 250.000 tokens de
+        # entrada por minuto y un turno consume entre 18.000 y 35.000: correr
+        # charlas pegadas la agota siempre. Si al modelo no se le pudo hablar,
+        # se espera a que la ventana se renueve y se corre la charla de nuevo,
+        # UNA vez. Es la diferencia entre una corrida que mide y una que no.
+        if corrida["sin_medir"] and args.pausa:
+            print(f"      cuota agotada ({corrida['sin_medir']} llamadas "
+                  f"negadas). Espero {args.pausa}s y la repito.", flush=True)
+            time.sleep(args.pausa)
+            corrida = asyncio.run(correr(charla,
+                                         f"explorador_{args.semilla}_{i}b"))
         corrida["fallas"] = juzgar(corrida, vocabulario)
         corridas.append(corrida)
         print(f"      {len(corrida['fallas'])} violaciones, "
-              f"{sum(corrida['ms']) // 1000}s", flush=True)
+              f"{sum(corrida['ms']) // 1000}s"
+              + ("  SIN MEDIR" if corrida["sin_medir"] else ""), flush=True)
 
-    print(informe(corridas))
+    salida = informe(corridas)
+    print(salida)
+
+    # EL REPORTE QUEDA EN DISCO, como el de la compuerta. El explorador corre
+    # en el nocturno y su hallazgo tiene que sobrevivir al log del runner: sin
+    # el archivo, el defecto se ve una vez y se pierde.
+    corridas_dir = _RAIZ / "banco_pruebas" / "corridas"
+    corridas_dir.mkdir(exist_ok=True)
+    marca = time.strftime("%Y%m%d_%H%M")
+    destino = corridas_dir / f"{marca}_explorador.md"
+    detalle = ["", "## LAS CHARLAS, COMPLETAS", ""]
+    for i, c in enumerate(corridas, 1):
+        detalle.append(f"### {i}. {c['guion']}")
+        for j, (dijo, dice) in enumerate(zip(c["turnos"], c["respuestas"]), 1):
+            detalle += [f"**T{j} cliente:** {dijo}", "", f"```\n{dice}\n```", ""]
+    destino.write_text("```\n" + salida + "\n```\n" + "\n".join(detalle),
+                       encoding="utf-8")
+    print(f"\nReporte: {destino}")
     return 0
 
 

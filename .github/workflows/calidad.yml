@@ -86,6 +86,17 @@ jobs:
           VUELTAS: ${{ github.event.inputs.vueltas || '3' }}
         run: python3 banco_pruebas/banco_repetido.py "$VUELTAS" $GUIONES
 
+      # EL EXPLORADOR, y va DESPUES de la compuerta a proposito: la compuerta
+      # es la que puede poner la corrida en rojo, y el explorador no juzga
+      # -busca-. Corre charlas que nadie escribio, con productos sorteados del
+      # catalogo real, y las audita con los invariantes. Lo que encuentre sale
+      # en el log del nocturno con el turno y la conducta del cliente, que es
+      # un diagnostico y no un numero. `|| true`: un hallazgo suyo no frena
+      # nada, se lee y se arregla al dia siguiente.
+      - name: El explorador, charlas que nadie escribio
+        if: always()
+        run: python3 banco_pruebas/explorador.py --charlas 5 --pausa 70 || true
+
       - name: Guardar el reporte
         if: always()
         uses: actions/upload-artifact@v4

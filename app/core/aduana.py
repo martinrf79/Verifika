@@ -65,6 +65,24 @@ _ROJAS = frozenset({
 _RE_IMPORTE = re.compile(r"\$\s*[\d\.]+")
 _RE_TITULO = re.compile(r"^\s*[^\n]{3,60}:\s*$")
 
+# EL MARCADOR, para que el banco pueda ver lo que la aduana ATAJO.
+#
+# Sin esto pasa algo que confunde: desde que la aduana corre en el camino vivo,
+# el explorador puede dar CERO violaciones porque no habia ninguna o porque la
+# aduana las arreglo antes de que el mensaje saliera, y los dos casos se leen
+# igual. Con el marcador se distinguen. En produccion sube y nadie lo mira, que
+# es exactamente lo que tiene que pasar; el log es el que manda ahi.
+_marcador: dict = {"reparadas": 0, "rojas": 0, "defectos": 0, "detalle": []}
+
+
+def marcador() -> dict:
+    """Lo que la aduana atajo desde el ultimo reinicio."""
+    return {**_marcador, "detalle": list(_marcador["detalle"])}
+
+
+def reiniciar_marcador() -> None:
+    _marcador.update({"reparadas": 0, "rojas": 0, "defectos": 0, "detalle": []})
+
 
 def _importes(texto: str) -> list:
     """Todos los importes del mensaje, en orden. Es la huella de la plata: si
@@ -202,9 +220,15 @@ def revisar_salida(texto: str, anterior: str = "", trace_id: str = "",
     if reparadas:
         log.info("aduana_reparado", trace_id=trace_id, reglas=reparadas,
                  largo_antes=len(original), largo_despues=len(texto_ok))
+        _marcador["reparadas"] += len(reparadas)
+        _marcador["detalle"] += [f"reparada:{r}" for r in reparadas]
 
     rojas = [f for f in fallas if f.get("regla") in _ROJAS]
     quedan = [f for f in fallas if f.get("regla") not in _ROJAS]
+    _marcador["rojas"] += len(rojas)
+    _marcador["defectos"] += len(quedan)
+    _marcador["detalle"] += [f"{'roja' if f in rojas else 'defecto'}:"
+                             f"{f['regla']}" for f in fallas]
     if rojas:
         # ROJO: plata que no cierra o producto que no existe. No se repara -no
         # se inventa una cuenta- pero se ve en el segundo en que pasa, con el

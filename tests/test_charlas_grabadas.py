@@ -184,11 +184,19 @@ def test_los_invariantes_valen_en_toda_charla(firestore_doble):
 
     Corre sobre los casetes en cada push, gratis y sin clave: los invariantes
     son aritmetica y texto, no llaman al modelo."""
+    from app.storage.firestore_client import get_all_products
     from app.verifika.invariantes import revisar_charla
 
+    # CON EL CATALOGO DELANTE, que es el decimo invariante: todo producto que
+    # se COTIZA tiene que existir entre los 880. Se le pasa desde el 11-ago,
+    # cuando la aduana empezo a pasarselo tambien en produccion; verificado el
+    # mismo dia sobre las 13 charlas, cero falsos positivos.
+    vocabulario = {str(p.get("nombre") or "") for p in
+                   get_all_products(tienda_id="verifika_prod") if p.get("nombre")}
     sucias = []
     for path in _casetes():
-        fallas = revisar_charla(_correr(path)["respuestas"])
+        fallas = revisar_charla(_correr(path)["respuestas"],
+                                vocabulario=vocabulario)
         for f in fallas:
             sucias.append(f"{path.stem} turno {f['turno']}: {f['regla']} — "
                           f"{f['detalle']}")

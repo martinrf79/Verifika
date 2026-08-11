@@ -95,8 +95,32 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > puede juzgar una charla inventada al vuelo. Y deja dicho EN QUE turno y con
 > QUE dijo el cliente, o sea un diagnostico y no un numero.
 >
-> Corre con la clave GRATIS, un turno por vez. `python3
-> banco_pruebas/explorador.py --charlas 8 --semilla 7`.
+> Corre con la clave GRATIS, un turno por vez, y **se banca la cuota**: si el
+> 429 le corta una charla, la marca SIN MEDIR, espera 70 segundos y la repite.
+> Una charla donde el modelo no hablo no se promedia con las demas — la leccion
+> del 9-ago, cuando cinco corridas negadas se leyeron como una regresion que no
+> existia. Enchufado al nocturno de `calidad.yml`, con `|| true`: busca, no
+> juzga. `python3 banco_pruebas/explorador.py --charlas 8 --semilla 7`.
+>
+> **YA ENCONTRO UNO, EL MISMO DIA, Y NADIE LO HABIA ESCRITO.** Sobre 5 charlas
+> inventadas: el cliente suma una notebook al pedido y le llega
+>
+>     Presupuesto:
+>     - 1x Gabinete Corsair 5000D Airflow Negro: $320.500 c/u = $320.500
+>     Subtotal: $320.500
+>     Total: $320.500
+>     Subtotal: $320.500
+>     Total: $320.500
+>
+> **El pie de la cuenta, dos veces.** Ninguna regla lo cazaba y el motivo es
+> claro: la regla 5 pide DOS bloques y habia uno solo, la 7 pide dos cabeceras
+> `Presupuesto:` y habia una. El duplicado no era el bloque ni la cabecera, era
+> la COLA. Arreglado como **REGLA 8, `sin_pie_de_cuenta_repetido`**, con la
+> misma doctrina de siempre: se borra solo lo repetido LITERAL e inmediatamente
+> arriba, solo lineas de pie -nunca un renglon de producto, que el mismo
+> producto a dos destinos repite con razon- y **despues del recorte se
+> comprueba que los renglones sigan sumando el Subtotal**; si no cierra, no se
+> toca la plata. Tres candados en `tests/test_mensaje.py`, uno por cada cosa.
 
 > ## 💸 LA CLAVE GRATIS: SI AGUANTA WHATSAPP REAL. EL LIMITE REAL, MEDIDO.
 >

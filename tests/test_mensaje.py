@@ -489,3 +489,55 @@ def test_si_la_aritmetica_NO_cierra_no_se_toca_la_plata():
              "Subtotal: $17.000\n"
              "Total: $17.000")
     assert sin_cuenta_mutilada_arriba(texto) == texto
+
+
+# ── REGLA 8: EL PIE DE LA CUENTA (11-ago-2026) ──────────────────────────────
+def test_el_pie_de_la_cuenta_no_sale_dos_veces():
+    """LO ENCONTRO EL EXPLORADOR, en una charla que NADIE escribio: el cliente
+    sumaba una notebook al pedido y le llegaron el Subtotal y el Total dos
+    veces seguidos. Ni la regla 5 -que pide dos bloques- ni la 7 -que pide dos
+    cabeceras- lo veian: el duplicado no era el bloque ni la cabecera, era la
+    COLA. Este es el texto real, recortado."""
+    from app.core.mensaje import componer
+
+    real = ("Con gusto te ayudo a actualizar tu pedido.\n\n"
+            "Presupuesto:\n"
+            "- 1x Gabinete Corsair 5000D Airflow Negro: $320.500 c/u = $320.500\n"
+            "Subtotal: $320.500\n"
+            "Total: $320.500\n"
+            "Subtotal: $320.500\n"
+            "Total: $320.500\n"
+            "Como verás, el precio figura ahí.")
+    salida = componer(real)
+    assert salida.count("Subtotal: $320.500") == 1
+    assert salida.count("Total: $320.500") == 1
+    assert "$320.500" in salida
+    assert "Como verás, el precio figura ahí." in salida
+
+
+def test_el_mismo_producto_a_dos_destinos_conserva_su_plata():
+    """La contracara, y es la que evita el desastre: el mismo renglon repetido
+    porque el pedido va partido a dos destinos NO es un duplicado. La regla 8
+    solo mira lineas de PIE, nunca renglones de producto."""
+    from app.core.mensaje import componer
+
+    dos = ("Presupuesto:\n"
+           "- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n"
+           "- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n"
+           "Subtotal: $17.000\n"
+           "Total: $17.000")
+    assert componer(dos) == dos
+
+
+def test_si_el_recorte_deja_la_cuenta_sin_cerrar_no_se_toca():
+    """La atadura aritmetica, igual que en la regla 7: se prueba el recorte y
+    se aplica SOLO si despues los renglones siguen sumando el Subtotal. Aca el
+    pie repetido trae OTRO subtotal, asi que sacar el de abajo dejaria una
+    cuenta que no cierra: ante la duda, la plata se queda entera."""
+    from app.core.mensaje import componer
+
+    raro = ("Presupuesto:\n"
+            "- 1x Teclado Logitech K120: $12.000 c/u = $12.000\n"
+            "Subtotal: $9.000\n"
+            "Subtotal: $9.000")
+    assert componer(raro) == raro

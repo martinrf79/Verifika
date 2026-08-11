@@ -554,6 +554,68 @@ def sin_cuenta_mutilada_arriba(texto: str) -> str:
     return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(quedan)).strip())
 
 
+_RE_PIE_CUENTA = re.compile(
+    r"^\s*(?:sub\s*total|subtotal|total(?:\s+final)?|env[ií]o|descuento|"
+    r"se[ñn]a)\s*:\s*-?\s*\$?[\d\.]+\s*(?:\(pago parcial\))?\s*$",
+    re.IGNORECASE)
+
+
+def sin_pie_de_cuenta_repetido(texto: str) -> str:
+    """REGLA 8. EL PIE DE LA CUENTA NO SE ESTAMPA DOS VECES.
+
+    LO ENCONTRO EL EXPLORADOR el 11-ago, en una charla que **nadie escribio**:
+    el cliente sumaba una notebook a un pedido y le llego esto, tal cual —
+
+        Presupuesto:
+        - 1x Gabinete Corsair 5000D Airflow Negro: $320.500 c/u = $320.500
+        Subtotal: $320.500
+        Total: $320.500
+        Subtotal: $320.500
+        Total: $320.500
+
+    Ninguna de las reglas de arriba lo cazaba, y por un motivo entendible: la 5
+    pide DOS bloques de codigo y aca hay uno solo; la 7 pide dos cabeceras
+    `Presupuesto:` y aca hay una. El duplicado no es el bloque ni la cabecera,
+    es la COLA. Es el modelo escribiendo el pie de la cuenta y el codigo
+    pegando el suyo abajo, sin que ninguno mire lo que hizo el otro.
+
+    LO QUE LA HACE SEGURA, misma doctrina que la 7: se borra solo lo que esta
+    **repetido literal e inmediatamente arriba** -las ultimas K lineas son
+    identicas a las K anteriores-, solo si son lineas de PIE -Subtotal, Total,
+    Envio, Descuento, Seña- y nunca un renglon de producto, que el mismo
+    producto a dos destinos repite con razon. Y despues del recorte se
+    comprueba la aritmetica: si los renglones ya no suman el Subtotal, no se
+    toca nada. Lo que se borra sigue escrito una linea mas arriba, palabra por
+    palabra: no se pierde un peso."""
+    lineas = (texto or "").splitlines()
+    for g in _grupos_de_codigo(lineas):
+        pies = [i for i in g if _RE_PIE_CUENTA.match(lineas[i])]
+        if len(pies) < 2:
+            continue
+        for k in range(len(g) // 2, 0, -1):
+            cola, previa = g[-k:], g[-2 * k:-k]
+            if len(previa) < k:
+                continue
+            if not all(i in pies for i in cola):
+                continue
+            if [_norm(lineas[i]) for i in cola] != [_norm(lineas[i])
+                                                    for i in previa]:
+                continue
+            quedan = [l for i, l in enumerate(lineas) if i not in set(cola)]
+            sub = next((_RE_SUBTOTAL_CUENTA.match(l) for l in quedan
+                        if _RE_SUBTOTAL_CUENTA.match(l)), None)
+            items = [_RE_ITEM_CUENTA.match(l) for l in quedan
+                     if _RE_ITEM_CUENTA.match(l)]
+            if sub and items:
+                suma = sum(int(m.group(2).replace(".", "")) for m in items)
+                if suma != int(sub.group(1).replace(".", "")):
+                    return texto
+            log.info("mensaje_pie_repetido", renglones=k)
+            return _valvula(texto, re.sub(r"\n{3,}", "\n\n",
+                                          "\n".join(quedan)).strip())
+    return texto
+
+
 def sin_cuenta_que_no_cambio(texto: str, anterior: str = "",
                              pregunta: str = "") -> str:
     """REGLA 6. LA CUENTA QUE NO CAMBIO NO SE VUELVE A ESTAMPAR ENTERA.
@@ -728,6 +790,11 @@ def componer(texto: str, anterior: str = "",
         return texto
     antes = len(texto)
     t = sin_cuenta_mutilada_arriba(texto)
+    # La 8 va pegada a la 7 y por el mismo motivo: las dos limpian una cuenta
+    # que salio escrita a medias por el modelo y completada por el codigo. Si
+    # corriera despues de la 6, esa compararia contra el mensaje anterior una
+    # cuenta que todavia tiene el pie duplicado.
+    t = sin_pie_de_cuenta_repetido(t)
     t = sin_cuenta_dos_veces(t)
     t = sin_cuenta_que_no_cambio(t, anterior, pregunta)
     t = sin_repeticion_interna(t)
