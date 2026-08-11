@@ -1465,3 +1465,30 @@ def test_si_el_decisor_se_cae_tampoco_le_echa_la_culpa_al_catalogo(
     assert "catálogo" not in salida and "catalogo" not in salida, salida
     assert "demanda" in salida.lower()
     assert "t-decisor" not in HV._SIN_MODELO, "la marca del turno no se limpio"
+
+
+def test_no_afirma_sobre_el_catalogo_cuando_no_pudo_buscar():
+    """LA GUARDIA SE APAGABA JUSTO CUANDO MAS FALTA HACIA (charla real,
+    11-ago). Martin pidio "productos que no sean fabricados en china",
+    `buscar_productos` volvio no_encontrado porque el pedido no traia rubro, y
+    como ninguna herramienta trajo `donde_si_se_cumple` la guardia se rendia y
+    salia: "hoy no tengo ningun producto en stock que no sea de origen chino".
+    Una afirmacion sobre los 880, dicha sin haber mirado uno solo."""
+    fallida = [{"herramienta": "buscar_productos", "pedido": {},
+                "resultado": {"estado": "no_encontrado"}}]
+    texto = ("Te cuento que hoy no tengo ningun producto en stock que no sea "
+             "de origen chino. ¿Buscamos en alguna categoria?")
+    salida = HV._sin_afirmar_sobre_el_catalogo(texto, fallida, "t")
+    assert "no tengo ningun producto" not in salida
+    assert "¿Buscamos en alguna categoria?" in salida
+
+
+def test_el_hecho_acotado_a_un_rubro_no_se_toca():
+    """La contracara, y es la que evita romper la honestidad: "todos los
+    auriculares que tengo se fabrican en China" es un hecho VERDADERO, util y
+    acotado al rubro que si se trajo. Ese se queda."""
+    ok = [{"herramienta": "buscar_productos",
+           "resultado": {"estado": "encontrado",
+                         "productos": [{"id": "AUR1", "categoria": "auriculares"}]}}]
+    frase = "Todos los auriculares que tengo se fabrican en China, te soy honesto."
+    assert HV._sin_afirmar_sobre_el_catalogo(frase, ok, "t") == frase

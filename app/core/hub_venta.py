@@ -853,6 +853,9 @@ def _sin_afirmar_sobre_el_catalogo(texto: str, llamadas: list,
     """
     cumplen: list = []
     categorias: set = set()
+    # LA BUSQUEDA QUE NO SE PUDO HACER. Ver el comentario de abajo: es la otra
+    # puerta por la que esta guardia tiene que actuar.
+    busqueda_fallida = False
     for l in (llamadas or []):
         r = l.get("resultado") or {}
         for d in (r.get("donde_si_se_cumple") or []):
@@ -861,7 +864,26 @@ def _sin_afirmar_sobre_el_catalogo(texto: str, llamadas: list,
         for p in (r.get("productos") or []):
             if isinstance(p, dict) and p.get("categoria"):
                 categorias.add(H._norm(p["categoria"]))
-    if not cumplen:
+        if (l.get("herramienta") in ("buscar_productos", "consultar_catalogo")
+                and str(r.get("estado") or "") in
+                ("no_encontrado", "no_se_pudo", "error")):
+            busqueda_fallida = True
+    # LA GUARDIA SE APAGABA JUSTO CUANDO MAS FALTA HACIA (11-ago-2026).
+    #
+    # EL CASO REAL. Martin pidio "productos que no sean fabricados en china".
+    # `buscar_productos` volvio `no_encontrado` -el pedido no traia rubro, y el
+    # log lo dijo: `hueco_de_fuente sin_rubro`-, asi que NINGUNA herramienta
+    # trajo `donde_si_se_cumple`, la guardia salio por este return y al cliente
+    # le llego: **"hoy no tengo ningun producto en stock que no sea de origen
+    # chino"**. Una afirmacion sobre los 880 productos, dicha sin haber mirado
+    # uno solo.
+    #
+    # La guardia pedia evidencia para poder podar, y sin evidencia se rendia.
+    # Pero el caso "no buscamos nada" es al REVES: sin haber mirado el
+    # catalogo, un universal sobre el catalogo no puede salir por definicion.
+    # No hace falta saber cual es la respuesta correcta para saber que esa esta
+    # mal, que es la misma idea de los invariantes.
+    if not cumplen and not busqueda_fallida:
         return texto
     fuera = []
     for m in _RE_ORACIONES.finditer(texto or ""):
@@ -893,7 +915,8 @@ def _sin_afirmar_sobre_el_catalogo(texto: str, llamadas: list,
     for frase in fuera:
         limpio = limpio.replace(frase, "")
     log.error("hub_venta_afirmo_sobre_el_catalogo", trace_id=trace_id,
-              se_cumple_en=cumplen[:4], frases=[f[:80] for f in fuera[:3]])
+              se_cumple_en=cumplen[:4], frases=[f[:80] for f in fuera[:3]],
+              motivo=("sin_buscar" if not cumplen else "contra_la_fuente"))
     return re.sub(r"\n{3,}", "\n\n", limpio).strip()
 
 
@@ -2171,7 +2194,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # las etiquetas son sintaxis nuestra y las guardias de abajo cuentan
     # oraciones y buscan cifras, asi que tienen que ver la prosa ya limpia,
     # exactamente igual que antes de que esto existiera.
-    texto = AP.verificar(texto, llamadas, trace_id)
+    texto = AP.verificar(texto, llamadas, trace_id, tienda_id=tienda_id)
 
     if not (texto or "").strip():
         # LA MENTIRA QUE SE ARREGLO EL 11-AGO, y salio de medir la clave

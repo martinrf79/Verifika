@@ -172,23 +172,67 @@ def sin_etiquetas(texto: str) -> str:
     return re.sub(r"[ \t]{2,}", " ", limpio).strip()
 
 
-def verificar(texto: str, llamadas: list, trace_id: str = "") -> str:
+def verificar(texto: str, llamadas: list, trace_id: str = "",
+              tienda_id: str = "") -> str:
     """Contrasta lo afirmado contra la fuente, poda lo que no cierra y devuelve
     la prosa limpia, sin una sola etiqueta.
 
     Nunca levanta: si algo sale mal, saca las etiquetas y devuelve el texto tal
     como estaba. Una atadura rota no puede dejar mudo al bot."""
     try:
-        return _verificar(texto, llamadas, trace_id)
+        return _verificar(texto, llamadas, trace_id, tienda_id)
     except Exception as e:
         log.warning("atadura_prosa_error", trace_id=trace_id,
                     error=f"{type(e).__name__}: {str(e)[:120]}")
         return sin_etiquetas(texto)
 
 
-def _verificar(texto: str, llamadas: list, trace_id: str) -> str:
+def _ficha_del_catalogo(fuente_id: str, tienda_id: str) -> str:
+    """La ficha REAL del producto, para los ids que este turno no trajo.
+
+    POR QUE EXISTE (11-ago-2026, charla real de Martin). El indice se armaba
+    SOLO con lo que las herramientas trajeron en el turno, con este argumento
+    escrito: "un id que el modelo nombre y no este aca no tiene respaldo,
+    aunque el producto exista en los 880: no lo trajimos, asi que el modelo no
+    lo leyo". La premisa es cierta y la CONSECUENCIA estaba mal: esas
+    afirmaciones se contaban como huerfanas y **salian sin verificar**.
+
+    En la charla del 11-ago el cliente ya tenia tres microfonos sobre la mesa y
+    pregunto por los envios; ese turno no volvio a buscar productos, asi que
+    las tres afirmaciones sobre origen y marca -"marca Razer de Estados Unidos,
+    fabricado en China"- salieron con CERO control. Y no es un caso raro: en
+    una charla de verdad casi todos los turnos son de seguimiento, o sea que
+    la atadura se apagaba justo donde mas se usa.
+
+    Lo que corresponde no es dejar pasar ni podar a ciegas: es **verificar
+    contra el catalogo**, que es la fuente de verdad y esta a un id de
+    distancia. Es MAS estricto que antes, no menos. Si el id tampoco existe en
+    los 880, ahi si es huerfana de verdad -un id inventado- y se cuenta como
+    tal."""
+    if not fuente_id or not re.fullmatch(r"[A-Z]{2,5}\d{2,}", fuente_id or ""):
+        return ""
+    try:
+        from app.storage.firestore_client import get_product_by_id
+        p = get_product_by_id(fuente_id, tienda_id=tienda_id or None)
+    except Exception:
+        return ""
+    return _texto_de(p) if p else ""
+
+
+def _verificar(texto: str, llamadas: list, trace_id: str,
+               tienda_id: str = "") -> str:
     marcas = list(_RE_MARCA.finditer(texto or ""))
     idx = fuentes(llamadas)
+
+    # LOS IDS QUE VIENEN DE TURNOS ANTERIORES SE VERIFICAN CONTRA EL CATALOGO.
+    # Ver `_ficha_del_catalogo`: sin esto, todo turno de seguimiento salia sin
+    # una sola afirmacion controlada.
+    for m in marcas:
+        fid = m.group(1).strip().upper()
+        if fid not in idx:
+            ficha = _ficha_del_catalogo(fid, tienda_id)
+            if ficha:
+                idx[fid] = ficha
 
     # EL RESPALDO SE BUSCA EN DOS ANILLOS, y el segundo es el que evita el daño.
     # Primero en la fuente que el modelo NOMBRO. Si el numero no esta ahi, se

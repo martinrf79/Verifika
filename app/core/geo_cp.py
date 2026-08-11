@@ -126,6 +126,43 @@ def _localidades_en_texto(t: str):
     return palabras, hits
 
 
+def _por_prefijo(t: str, prov: str):
+    """CP de la unica localidad de `prov` cuyo nombre EMPIEZA con lo que
+    escribio el cliente, o None si no hay exactamente una.
+
+    Es el nombre de uso comun contra el nombre oficial: 'san nicolas' contra
+    'san nicolas de los arroyos'. Se prueban los fragmentos del mensaje de mas
+    largo a mas corto —asi 'san nicolas' le gana a 'san'— y se exige:
+      - al menos DOS palabras, porque con una sola el prefijo caza cualquier
+        cosa ('san' abre docenas de localidades);
+      - que el prefijo termine en palabra completa, para no cortar al medio;
+      - UN solo candidato en esa provincia. Con dos o mas no se elige: ahi
+        preguntar es lo correcto.
+    """
+    # EL NOMBRE DE LA PROVINCIA SALE DEL TEXTO ANTES DE BUSCAR, y esto no es
+    # cosmetico: sin sacarlo, "villa, Buenos Aires" -que nombra la provincia y
+    # ninguna localidad- encontraba una localidad que EMPIEZA con "buenos
+    # aires" y le estampaba su CP. O sea, le inventaba el destino al cliente,
+    # que es lo unico que este sistema no puede hacer. Se vio en la prueba del
+    # arreglo, antes de que saliera.
+    limpio = t
+    for frase in sorted(_PROV_ALIASES, key=len, reverse=True):
+        limpio = re.sub(r"(^| )" + re.escape(frase) + r"( |$)", " ", limpio)
+    palabras = [p for p in limpio.replace(",", " ").split() if p]
+    if len(palabras) < 2:
+        return None
+    for n in range(min(_MAX_NGRAM, len(palabras)), 1, -1):
+        for i in range(0, len(palabras) - n + 1):
+            frag = " ".join(palabras[i:i + n])
+            if frag in _LOC and prov in _LOC[frag]:
+                return _LOC[frag][prov]
+            candidatos = [v[prov] for k, v in _LOC.items()
+                          if prov in v and k.startswith(frag + " ")]
+            if len(set(candidatos)) == 1:
+                return candidatos[0]
+    return None
+
+
 def es_lugar_conocido(texto: str) -> bool:
     """True si el texto nombra una localidad de la tabla o una provincia.
     Puerta para los candidatos a destino que salen por regex del mensaje
@@ -160,6 +197,30 @@ def resolver(texto: str):
         for loc, ini, fin in hits:
             if prov in _LOC[loc]:
                 return prov, _LOC[loc][prov]
+        # EL NOMBRE CORTO, que es como habla el cliente (11-ago-2026).
+        #
+        # EL CASO REAL, de la charla de Martin: pidio un envio a "San Nicolás,
+        # Buenos Aires" y el turno entero se cayo —no cotizo, no armo el
+        # presupuesto, y le pidio el CODIGO POSTAL de una ciudad que esta en la
+        # tabla—. La causa: en las 16.164 localidades la de Buenos Aires figura
+        # con su nombre oficial, "san nicolas de los arroyos", y "san nicolas"
+        # a secas existe pero en OTRAS SIETE provincias, ninguna Buenos Aires.
+        #
+        # POR QUE SOLO SE VE EN BUENOS AIRES. En el resto del pais la provincia
+        # sola ya alcanza para la tarifa y el fallback de abajo salva el turno.
+        # Buenos Aires es la unica donde la tarifa depende de la zona —CABA y
+        # GBA contra interior— asi que sin localidad no se puede cotizar. Es la
+        # provincia mas poblada: el error pega justo donde mas duele.
+        #
+        # LO QUE LO HACE SEGURO: se acepta solo si el prefijo resuelve a UNA
+        # sola localidad de esa provincia. Con dos o mas no se elige ninguna y
+        # el turno pregunta, que es cuando preguntar esta bien. Medido con un
+        # barrido sobre la tabla entera: los nombres cortos ambiguos se
+        # descartan solos y "san nicolas"/"san martin" en Buenos Aires dan un
+        # unico candidato.
+        cp = _por_prefijo(t, prov)
+        if cp is not None:
+            return prov, cp
         # Provincia nombrada pero sin localidad de esa provincia: la provincia
         # sola ya sirve para la tarifa.
         return prov, None

@@ -191,3 +191,34 @@ def test_un_numero_de_cuatro_digitos_sin_separador_no_es_invisible():
     texto = "Este mouse tiene <d MOU0001>8000 DPI</d> de sensibilidad."
     salida = AP.verificar(texto, _llamadas_con_mouse(), "t")
     assert "8000" not in salida
+
+
+# ── EL TURNO DE SEGUIMIENTO (11-ago-2026) ───────────────────────────────────
+def test_el_producto_de_un_turno_anterior_igual_se_verifica(firestore_doble):
+    """LA ATADURA SE APAGABA EN LOS TURNOS DE SEGUIMIENTO, que son casi todos.
+
+    El indice se armaba SOLO con lo que las herramientas trajeron ESE turno.
+    En la charla real del 11-ago el cliente ya tenia tres microfonos sobre la
+    mesa y pregunto por los envios: ese turno no volvio a buscar productos, asi
+    que las tres afirmaciones sobre marca y origen salieron **sin un solo
+    control**, contadas como huerfanas. Ahora el id que no vino en el turno se
+    verifica contra el catalogo, que es la fuente de verdad y esta a un id de
+    distancia. Es MAS estricto que antes, no menos."""
+    from app.core import atadura_prosa as AP
+
+    texto = ("<d MOU0023>El Genius DX-110 tiene 48 meses de garantia</d>. "
+             "¿Te lo despacho?")
+    salida = AP.verificar(texto, [], "t", tienda_id="verifika_prod")
+    assert "48 meses" not in salida, "dejo pasar una garantia inventada"
+    assert "¿Te lo despacho?" in salida, "se llevo puesta la pregunta"
+
+
+def test_un_id_que_no_existe_sigue_siendo_huerfano(firestore_doble):
+    """La otra mitad: si el id tampoco esta en el catalogo, no hay contra que
+    verificar y la afirmacion queda huerfana, como antes. El arreglo agrega una
+    fuente, no afloja el criterio."""
+    from app.core import atadura_prosa as AP
+
+    texto = "<d MOU9999>Este sale $1</d>."
+    assert "Este sale $1" in AP.verificar(texto, [], "t",
+                                          tienda_id="verifika_prod")
