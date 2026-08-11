@@ -1,5 +1,5 @@
 """
-AREA: LOS INVARIANTES (`banco_pruebas/invariantes.py`).
+AREA: LOS INVARIANTES (`app/verifika/invariantes.py`).
 
 Cada test de aca es un defecto REAL que salio al cliente, no un caso inventado.
 Los textos son de la charla de Martin del 10-ago leida de Firestore y de las
@@ -9,7 +9,7 @@ alguien afloja una regla, se cae el caso que la pario.
 LA SEGUNDA MITAD, que importa igual: que NO griten de mas. Un invariante con
 falsos positivos se apaga a la semana y entonces no sirvio para nada.
 """
-from banco_pruebas.invariantes import revisar, revisar_charla
+from app.verifika.invariantes import revisar, revisar_charla
 
 CUENTA = (
     "Presupuesto:\n"

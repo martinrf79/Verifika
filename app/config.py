@@ -191,6 +191,13 @@ class Settings(BaseModel):
     # Búsqueda: cuántos productos devolver al LLM por consulta
     SEARCH_TOP_N: int = int(os.getenv("SEARCH_TOP_N", "10"))
 
+    # CUANTO SE ESPERA CUANDO EL PROVEEDOR PIDE ESPERAR. El 429 de la clave
+    # gratis de Gemini viene con `retryDelay` -medido el 11-ago: 18 segundos,
+    # cuota de 250.000 tokens de entrada por minuto-. Hasta ese tope se respeta
+    # el numero que manda el proveedor; mas que eso se corta al toque, porque
+    # un cliente esperando no puede quedar colgado un minuto.
+    LLM_ESPERA_MAX_S: float = float(os.getenv("LLM_ESPERA_MAX_S", "20"))
+
     # Mensaje fallback cuando algo falla
     FALLBACK_MESSAGE: str = (
         "Disculpá, tuve un problema técnico. ¿Podés repetirme tu consulta?"

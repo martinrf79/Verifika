@@ -10,7 +10,7 @@ LO QUE CAMBIA ESTE ARCHIVO. Hasta hoy, para saber si una charla real salio bien
 habia que LEERLA a mano. Asi se encontro el error de plata del 10-ago -cobrarle
 $225.000 a un cliente que debia $131.625- y llevo una hora de leer logs. Con
 esto, la misma charla se audita sola en dos segundos, y **sin que nadie escriba
-la respuesta esperada**: los invariantes de `invariantes.py` no comparan contra
+la respuesta esperada**: los invariantes de `app/verifika/invariantes.py` no comparan contra
 un texto, afirman propiedades que ninguna respuesta correcta viola.
 
 O sea que cada vez que Martin prueba por WhatsApp, el sistema se mide gratis
@@ -48,7 +48,7 @@ _RAIZ = Path(__file__).resolve().parent.parent
 if str(_RAIZ) not in sys.path:
     sys.path.insert(0, str(_RAIZ))
 
-from banco_pruebas.invariantes import revisar_charla  # noqa: E402
+from app.verifika.invariantes import revisar_charla  # noqa: E402
 
 TIENDA = "verifika_prod"
 _BASE = ("https://firestore.googleapis.com/v1/projects/memory-engine-v1/"

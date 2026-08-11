@@ -428,15 +428,20 @@ async def _ejecutar_en_paralelo(pedidos: list, tienda_id: str,
 
 
 async def _redactar(negocio, memoria, history, mensaje, llamadas, trace_id,
-                    obligacion=""):
+                    obligacion="") -> tuple[str, bool]:
     """LLAMADA FINAL. El modelo escribe con el JSON delante.
 
     `obligacion` es lo que el RECONCILIADOR encontró que no cierra y el modelo
     no puede resolver eligiendo. Va al final del prompt, que es donde más pesa.
+
+    Devuelve `(texto, sin_modelo)`. `sin_modelo` en True significa que la
+    llamada NO se pudo hacer -sin cliente, o 429 y timeouts hasta agotar los
+    reintentos-, que es distinto de que el modelo haya contestado vacio. Ver el
+    fallback del turno: al cliente se le dice una cosa o la otra.
     """
     cli = _cliente()
     if cli is None:
-        return ""
+        return "", True
     datos = H.contexto_json(llamadas)
     # LA ATADURA DE LA PROSA viaja con la instruccion de redactar, no en una
     # llamada aparte: marcar de donde sale cada dato es parte de escribir, y
@@ -454,11 +459,13 @@ async def _redactar(negocio, memoria, history, mensaje, llamadas, trace_id,
     from app.core.llm_reintento import llamar_con_reintento
     try:
         return await llamar_con_reintento(_call, timeout_s=_TIMEOUT_S,
-                                          trace_id=trace_id)
+                                          trace_id=trace_id), False
     except Exception as e:
         log.warning("hub_venta_llamada_dos_error", trace_id=trace_id,
                     error=f"{type(e).__name__}: {str(e)[:160]}")
-        return ""
+        # EL SEGUNDO VALOR ES "el modelo NO contesto", y no es un detalle: de
+        # el depende que se le diga al cliente. Ver el fallback del turno.
+        return "", True
 
 
 _RE_ORACION = re.compile(r"(?<=[.!?])\s+|\n")
@@ -2124,10 +2131,12 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         obligacion = (obligacion + "\n\n" if obligacion else "") + pendiente
 
     # ── 3. REDACTAR CON EL DATO DELANTE ─────────────────────────────────
+    sin_modelo = False
     if llamadas:
         with _reloj(etapas, "redactor"):
-            texto = await _redactar(negocio, memoria, history, raw_message,
-                                    llamadas, trace_id, obligacion=obligacion)
+            texto, sin_modelo = await _redactar(
+                negocio, memoria, history, raw_message, llamadas, trace_id,
+                obligacion=obligacion)
     else:
         # Sin herramientas el modelo ya contesto en la llamada uno: es un
         # saludo, un gracias o una respuesta a algo que preguntamos nosotros.
@@ -2141,8 +2150,26 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     texto = AP.verificar(texto, llamadas, trace_id)
 
     if not (texto or "").strip():
-        texto = settings.VERIFIKA_FALLBACK_MESSAGE
-        log.warning("hub_venta_sin_texto", trace_id=trace_id)
+        # LA MENTIRA QUE SE ARREGLO EL 11-AGO, y salio de medir la clave
+        # gratis. Cuando el 429 tumbaba la llamada del redactor, al cliente le
+        # llegaba "No tengo esa información confirmada en el catálogo" —
+        # medido: pregunto por auriculares con microfono, la herramienta los
+        # habia ENCONTRADO, y se le contesto que no habia dato. El proveedor se
+        # cayo y el bot le echo la culpa al catalogo: es una afirmacion FALSA
+        # sobre el stock, que es justo lo que el sistema entero existe para
+        # evitar, y ademas se lee como una respuesta normal y no como una
+        # falla. Si no hubo modelo se dice que hay demanda y se pide que
+        # reintente; el "no tengo el dato" queda solo para cuando el modelo SI
+        # contesto y no trajo nada.
+        if sin_modelo:
+            from app.core.guia_venta_prosa import mensaje as _prosa
+            texto = _prosa("sobrecarga",
+                           "Perdón, estoy con mucha demanda en este momento. "
+                           "Probá de nuevo en un ratito y te respondo. 🙏")
+            log.warning("hub_venta_sin_modelo", trace_id=trace_id)
+        else:
+            texto = settings.VERIFIKA_FALLBACK_MESSAGE
+            log.warning("hub_venta_sin_texto", trace_id=trace_id)
 
     # ── 4. LA REGLA ─────────────────────────────────────────────────────
     bloque = _bloque_presupuesto(llamadas)
@@ -2208,6 +2235,23 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         # Un componedor roto NO puede dejar mudo al bot: se manda el mensaje
         # largo, que es lo que se mandaba ayer.
         log.warning("hub_venta_componedor_error", trace_id=trace_id,
+                    error=f"{type(e).__name__}: {str(e)[:120]}")
+
+    # ── 6-ter. LA ADUANA: LOS INVARIANTES, ANTES DE MANDAR ──────────────
+    # Los invariantes del 10-ago encontraron el error de plata y seis defectos
+    # mas, pero corrian DESPUES, sobre lo que el cliente ya habia leido. Aca
+    # corren en el ultimo metro: el mensaje existe entero y todavia no salio.
+    # Repara lo que puede probar -etiqueta fugada, titulo sin lista, renglon
+    # calcado- sin tocar un peso, y lo que no puede reparar lo grita con el
+    # trace_id en vez de esperar a que alguien lea la charla.
+    try:
+        from app.core.aduana import revisar_salida
+        anterior_bot = next((h.get("content") for h in reversed(history or [])
+                             if h.get("role") == "assistant"), "")
+        texto = revisar_salida(texto, anterior=str(anterior_bot or ""),
+                               trace_id=trace_id, tienda_id=tienda_id)
+    except Exception as e:
+        log.warning("hub_venta_aduana_error", trace_id=trace_id,
                     error=f"{type(e).__name__}: {str(e)[:120]}")
 
     # ── 7. MEMORIA ──────────────────────────────────────────────────────

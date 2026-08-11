@@ -33,15 +33,24 @@ charla REAL que Martin tuvo hace diez minutos.
 Ese es el punto: **convierte cualquier conversacion en un test, sin que nadie
 escriba la respuesta esperada.** Es lo que faltaba.
 
-EL NUCLEO ES PURO A PROPOSITO. Ninguna funcion de aca importa `app.*`. Reciben
-texto y datos sueltos y devuelven violaciones. El adaptador que sabe de Verifika
--de donde sale el catalogo, de donde salen las conversaciones- vive afuera, en
-`produccion.py`. Martin pregunto si esto podria ser un producto aparte: si algun
-dia lo es, esto se MUDA, no se reescribe. Hoy no se saca, porque un sistema de
-invariantes sin un sistema real al que enchufarse no vale nada.
+EL NUCLEO ES PURO A PROPOSITO. Ninguna funcion de aca importa nada del bot.
+Reciben texto y datos sueltos y devuelven violaciones. El adaptador que sabe de
+Verifika -de donde sale el catalogo, de donde salen las conversaciones- vive
+afuera, en `banco_pruebas/produccion.py`. Martin pregunto si esto podria ser un
+producto aparte: si algun dia lo es, esto se MUDA, no se reescribe. Hoy no se
+saca, porque un sistema de invariantes sin un sistema real al que enchufarse no
+vale nada.
+
+POR QUE VIVE EN `app/verifika/` Y NO EN `banco_pruebas/` (Martin, 11-ago-2026).
+Se mudo el 11-ago porque `banco_pruebas/` NO viaja en la imagen de Docker -el
+Dockerfile copia `app/` y `data/`- y estas reglas dejaron de ser solo de banco:
+`app/core/aduana.py` las corre EN VIVO, sobre el mensaje ya compuesto, antes de
+que salga a WhatsApp. Un invariante que solo corre despues cuenta errores; el
+mismo invariante corrido antes los evita. Es el mismo archivo, un solo camino,
+y el banco lo importa desde aca.
 
 USO:
-    from banco_pruebas.invariantes import revisar
+    from app.verifika.invariantes import revisar
     fallas = revisar(mensaje, anterior=mensaje_anterior)
     # -> [{'regla': 'la_cuenta_cierra', 'detalle': 'subtotal ...'}]
 """

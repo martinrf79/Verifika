@@ -32,6 +32,7 @@ una frase de un prompt NO obliga a regrabar: el casete se indexa por turno y
 etapa, no por el texto del prompt.
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -68,8 +69,23 @@ def test_la_charla_no_miente_ni_se_cae(path, firestore_doble):
     from banco_pruebas import clon_produccion as clon
 
     res = _correr(path)
+    # LOS TURNOS CON HUECO NO SE JUZGAN POR EL TEXTO, y el 11-ago se vio por
+    # que. Un hueco es que al casete le FALTA la grabacion del redactor: el
+    # modelo nunca hablo en ese turno, asi que lo que salga no lo escribio el
+    # bot. Hasta hoy ese turno emitia "No tengo esa informacion confirmada en
+    # el catalogo" y pasaba como respuesta buena — o sea que dos de las trece
+    # charlas se puntuaban sobre un turno donde el modelo no dijo una palabra.
+    # Desde que el codigo distingue "no hubo modelo" de "el modelo no trajo
+    # nada", ese turno sale con el enlatado de sobrecarga, que es la respuesta
+    # HONESTA y no una explosion. El hueco ya se castiga en el puntaje
+    # (`puntuar_charla`), que es donde tiene que doler; lo que hay que hacer es
+    # regrabar el casete, no aflojar la regla del enlatado.
+    con_hueco = {int(m.group(1)) for h in (res.get("huecos") or [])
+                 if (m := re.match(r"turno (\d+)", str(h)))}
     for i, texto in enumerate(res["respuestas"], 1):
         assert texto.strip(), f"turno {i}: el cliente no recibio NADA"
+        if i in con_hueco:
+            continue
         assert not clon.es_fallback(texto), (
             f"turno {i}: salio el enlatado de produccion, o sea que el turno "
             f"exploto:\n{texto[:200]}")
@@ -168,7 +184,7 @@ def test_los_invariantes_valen_en_toda_charla(firestore_doble):
 
     Corre sobre los casetes en cada push, gratis y sin clave: los invariantes
     son aritmetica y texto, no llaman al modelo."""
-    from banco_pruebas.invariantes import revisar_charla
+    from app.verifika.invariantes import revisar_charla
 
     sucias = []
     for path in _casetes():

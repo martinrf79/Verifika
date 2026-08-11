@@ -28,7 +28,133 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
-**==== 10-AGO (ULTIMO) — LOS INVARIANTES: CUALQUIER CHARLA ES UN TEST ====**
+**==== 11-AGO (ULTIMO) — EL ERROR SE DIAGNOSTICA ANTES, NO SE CUENTA DESPUES ====**
+
+> ## 🛃 LA ADUANA: LOS INVARIANTES CORREN AHORA **ANTES** DE QUE EL MENSAJE
+> SALGA A WHATSAPP. `app/core/aduana.py`.
+>
+> **LO QUE PIDIO MARTIN, textual:** "los errores se contabilizan, se miden,
+> pero luego de que pasan; hay que crear un sistema para que se diagnostiquen
+> de antemano y no se cometan". Los invariantes del 10-ago eran buenisimos y
+> llegaban tarde: bajaban las charlas de Firestore y contaban lo que el cliente
+> YA habia leido.
+>
+> Ahora el mismo archivo de reglas corre en el ultimo metro del turno, entre el
+> componedor y la memoria, cuando el mensaje existe entero y todavia no salio.
+> **Un invariante corrido despues cuenta errores; corrido antes, los evita.**
+>
+> **HACE DOS COSAS Y NINGUNA MAS:**
+>   1. **REPARA lo que puede PROBAR**: la etiqueta interna `<d ...>` fugada, el
+>      titulo que promete una lista y no muestra ninguna -el `Resumen:`
+>      huerfano que aparecio en TRES charlas reales-, y el renglon largo
+>      calcado dentro del mismo mensaje.
+>   2. **GRITA lo que no puede reparar**, en el segundo en que pasa y con el
+>      `trace_id`: sale `aduana_rojo` en el log de Cloud Run con la regla y el
+>      detalle. El error de plata del 10-ago costo una hora de leer logs porque
+>      nadie sabia que estaba ahi.
+>
+> **LAS DOS ATADURAS QUE LA HACEN SEGURA**, y son la razon de que esto no sea
+> otra tijera al final -que ya fallo dos veces, el tope por caracteres tiro la
+> nota de 55 a 23 y la regla 2-bis borro la oracion de otro producto-:
+>   - **A. LA PLATA NO SE TOCA.** Despues de cada reparacion se comparan TODOS
+>     los importes, uno por uno. Si cambio aunque sea uno, la reparacion se
+>     descarta entera. Una aduana que corrige un peso es peor que el defecto.
+>   - **B. SOLO SE APLICA SI DEJA EL MENSAJE MEJOR.** Se vuelven a correr los
+>     invariantes sobre el texto reparado y se acepta unicamente si quedan
+>     MENOS violaciones y ninguna NUEVA. Si rompe otra cosa, se revierte sola.
+>
+> **LA CUENTA QUE NO CIERRA NO SE REESCRIBE NUNCA.** Se loguea en rojo y sale
+> como esta: inventar la cuenta que el codigo no supo armar es exactamente la
+> alucinacion que el sistema entero existe para evitar.
+>
+> **LA MUDANZA:** `invariantes.py` paso de `banco_pruebas/` a
+> `app/verifika/invariantes.py`, porque `banco_pruebas/` NO viaja en la imagen
+> de Docker. Es el MISMO archivo, un solo camino; el banco lo importa desde ahi.
+> Candado: `tests/test_aduana.py`, nueve casos, y
+> `test_la_aduana_corre_en_el_camino_vivo` en `test_hub_venta.py`, que prueba
+> que esta ENCHUFADA y no es un modulo suelto.
+
+> ## 🔎 EL EXPLORADOR: CHARLAS QUE NADIE ESCRIBIO, POR EL CAMINO VIVO.
+> `banco_pruebas/explorador.py`.
+>
+> **LA OTRA MITAD DE "DIAGNOSTICAR ANTES".** La aduana ataja el defecto en el
+> ultimo metro; el explorador lo busca antes de deployar. Ataca la CEGUERA DE
+> ESCENARIOS, que esta medida: las reglas nuevas del componedor se dispararon
+> CERO veces en los 176 turnos de las 13 charlas grabadas y en la charla REAL
+> cortaron 500 caracteres por turno, **porque ninguna charla grabada tenia a un
+> cliente confirmando un pedido en varios turnos sin cambiar nada**.
+>
+> **COMO FUNCIONA.** No escribe preguntas: encadena CONDUCTAS de cliente
+> -pedir, agregar, sacar, repartir a dos destinos, dividir el pago, confirmar
+> dos veces sin cambiar nada, pedir descuento, dar el nombre, tirar un codigo
+> de modelo pelado- sobre productos sorteados del catalogo REAL de 880. La
+> charla que sale no la escribio nadie. Cinco guiones de conducta, y el primero
+> es `confirmacion_multiturno`, que es la charla del 10-ago tal cual.
+>
+> **SE JUZGA SIN RESPUESTA ESPERADA**, con los mismos invariantes. Por eso
+> puede juzgar una charla inventada al vuelo. Y deja dicho EN QUE turno y con
+> QUE dijo el cliente, o sea un diagnostico y no un numero.
+>
+> Corre con la clave GRATIS, un turno por vez. `python3
+> banco_pruebas/explorador.py --charlas 8 --semilla 7`.
+
+> ## 💸 LA CLAVE GRATIS: SI AGUANTA WHATSAPP REAL. EL LIMITE REAL, MEDIDO.
+>
+> Martin pregunto si la gratis soporta preguntas aisladas en produccion, para
+> dejar de gastar. **La respuesta es SI, con un numero y un cuidado.**
+>
+> **EL LIMITE QUE MANDA, medido el 11-ago pegandole a la API hasta romperla:**
+> no son las llamadas por minuto, son los **250.000 tokens de ENTRADA por
+> minuto** (`GenerateContentInputTokensPerModelPerMinute-FreeTier`, modelo
+> `gemini-3.1-flash-lite`). Nuestro turno consume entre 18.000 y 35.000 -el
+> prompt pesa 8.834 tokens y el turno hace de 2 a 4 llamadas-, o sea **entre 7
+> y 13 turnos por minuto**. Un cliente escribiendo solo por WhatsApp no llega
+> ni cerca. Ocho preguntas aisladas seguidas por el camino vivo: **siete
+> limpias, la octava choco contra la cuota**, con la latencia normal, mediana
+> 3,0 a 3,8 segundos por turno.
+>
+> **LO QUE NO AGUANTA:** una corrida de banco de 130 turnos, o varios clientes
+> a la vez. Para eso esta la paga, y se pide.
+>
+> **EL DEFECTO QUE APARECIO MIDIENDO, y es lo mas importante de todo esto.**
+> Cuando el 429 tumbaba la llamada del redactor, al cliente le llegaba:
+> **"No tengo esa información confirmada en el catálogo"** — y la herramienta
+> HABIA encontrado el producto. El proveedor se cayo y el bot le echo la culpa
+> al stock: una afirmacion FALSA sobre el catalogo, que es la unica cosa que
+> este sistema existe para que no pase, y encima se lee como una respuesta
+> normal y no como una falla. Arreglado: el redactor devuelve ahora
+> `(texto, sin_modelo)` y el turno distingue "el modelo no contesto" -se dice
+> que hay demanda- de "el modelo contesto y no trajo nada" -ahi si va el "no
+> tengo el dato"-. Candados en `test_hub_venta.py`, los dos lados.
+>
+> **Y EL 429 SE ESPERA COMO PIDE EL PROVEEDOR.** El error trae `retryDelay`
+> -medido: 18 segundos- y el backoff ciego de 0,6 + 1,2 gastaba tres llamadas
+> para fallar igual. Ahora se respeta ese numero hasta `LLM_ESPERA_MAX_S`
+> (20 s); si pide mas, se corta al toque en vez de regalar llamadas.
+>
+> **PARA PASAR PRODUCCION A LA GRATIS falta UNA cosa que no puedo hacer yo**,
+> porque la clave vive en Cloud Run y desde aca solo tengo lectura. Lo corre
+> Martin, es una linea:
+>
+> ```bash
+> gcloud run services update agente-bot --region southamerica-east1 \
+>   --project memory-engine-v1 --update-env-vars GEMINI_API_KEY=<la clave gratis>
+> ```
+> Para volver a la paga, el mismo comando con la otra clave. El revert es eso.
+
+> ## 🕳️ LO QUE ENCONTRO ESTE TRABAJO EN EL PROPIO BANCO: DOS CASETES TENIAN UN
+> TURNO DONDE EL MODELO NUNCA HABLO, Y SE PUNTUABA IGUAL.
+>
+> Al distinguir "no hubo modelo" salio a la luz que a `44_consigna_desprolijo`
+> (turno 4) y a `46_consigna_manipulacion` (turno 3) les **falta la grabacion
+> del redactor**. Esos turnos venian emitiendo "No tengo esa informacion
+> confirmada en el catalogo" y pasaban como respuesta valida: **dos de las
+> trece charlas se puntuaban sobre un turno donde el modelo no dijo una
+> palabra.** El hueco ya se castiga en `puntuar_charla`; lo que corresponde es
+> **regrabar esos dos casetes** con la clave gratis, y queda anotado como la
+> proxima tarea concreta.
+
+**==== 10-AGO — LOS INVARIANTES: CUALQUIER CHARLA ES UN TEST ====**
 
 > ## 🧭 LA TERCERA VARA, Y CONTESTA LA PREGUNTA DE MARTIN: "¿POR QUE TE DA
 > VERDE Y EN LA PRUEBA REAL APARECEN ERRORES NUEVOS?"

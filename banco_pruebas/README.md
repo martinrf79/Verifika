@@ -23,6 +23,36 @@ No mide cómo **redacta** el modelo: eso es la fase siguiente. Los casos no se
 duplican, se delegan a `banco_candidatos.py` y `banco_memoria.py`, que siguen
 siendo el lugar donde se define cada uno.
 
+## ANTES DE QUE PASE — la aduana y el explorador (11-ago-2026)
+
+Todo lo que sigue en este documento mide errores **después** de cometidos. Estas
+dos piezas los atacan antes, y son la respuesta a lo que pidió Martín: "que se
+diagnostiquen de antemano y no se cometan".
+
+- **La aduana, `app/core/aduana.py`.** No es del banco: corre en PRODUCCIÓN, en
+  el último metro del turno, entre el componedor y la memoria. Pasa los
+  invariantes sobre el mensaje ya compuesto y todavía no enviado: repara lo que
+  puede probar —etiqueta interna fugada, título sin lista abajo, renglón
+  calcado— sin mover un peso, y lo que no puede reparar lo grita como
+  `aduana_rojo` con el `trace_id`. La cuenta que no cierra nunca se reescribe.
+- **El explorador, `python3 banco_pruebas/explorador.py`.** Charlas que **nadie
+  escribió**: encadena conductas de cliente —pedir, agregar, sacar, repartir a
+  dos destinos, dividir el pago, confirmar dos veces sin cambiar nada, dar el
+  nombre— sobre productos sorteados del catálogo real, las corre por el camino
+  vivo con la clave gratis y las juzga con los invariantes, que no necesitan
+  respuesta esperada. Deja **defectos por charla inventada**, el mismo número
+  que `produccion.py` deja sobre las charlas reales.
+
+```bash
+python3 banco_pruebas/explorador.py --charlas 8 --semilla 7
+python3 banco_pruebas/explorador.py --guion confirmacion_multiturno
+```
+
+Los tres hermanos, y conviene tenerlos separados en la cabeza: `explorador.py`
+inventa la charla **antes**, la **aduana** ataja el defecto en el momento, y
+`produccion.py` audita las charlas reales **después**. Los tres corren los
+mismos invariantes de `app/verifika/invariantes.py`.
+
 ## EL MAPA — `python3 banco_pruebas/mapa.py`
 
 Qué parte del código trabaja para qué prueba. Cruza el **alcance** —a qué

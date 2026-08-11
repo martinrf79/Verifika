@@ -36,7 +36,9 @@ def _turno(monkeypatch, pedidos, texto, mensaje="hola", texto_directo=""):
         return pedidos, texto_directo
 
     async def _fake_dos(*a, **kw):
-        return texto
+        # (texto, sin_modelo). El doble siempre CONTESTA: el caso de "no hubo
+        # modelo" tiene su propio test, `test_si_el_modelo_no_contesta_...`.
+        return texto, False
 
     monkeypatch.setattr(HV, "_pedir_herramientas", _fake_uno)
     monkeypatch.setattr(HV, "_redactar", _fake_dos)
@@ -1373,3 +1375,74 @@ def test_los_destinos_se_derivan_de_los_renglones(firestore_doble):
         "items": [{"que": "mouse", "cantidad": 2}],
         "destinos": ["Mendoza"]}, TIENDA)
     assert r3["pedido"]["destinos"] == ["Mendoza"]
+
+
+# ── CUANDO EL MODELO NO CONTESTA (11-ago-2026) ──────────────────────────────
+def test_si_el_modelo_no_contesta_no_le_echa_la_culpa_al_catalogo(
+        monkeypatch, firestore_doble):
+    """LA MENTIRA QUE SALIO DE MEDIR LA CLAVE GRATIS.
+
+    Con el 429 tumbando la llamada del redactor, al cliente le llegaba "No
+    tengo esa información confirmada en el catálogo" — y la herramienta HABIA
+    encontrado el producto. El proveedor se cayo y el bot le echo la culpa al
+    stock: es una afirmacion FALSA sobre el catalogo, la unica cosa que este
+    sistema entero existe para que no pase, y ademas se lee como una respuesta
+    normal en vez de como una falla. Ahora se dice que hay demanda."""
+    async def _fake_uno(*a, **kw):
+        return [{"nombre": "buscar_productos", "args": {"categoria": "mouse"}}], ""
+
+    async def _sin_modelo(*a, **kw):
+        return "", True
+
+    monkeypatch.setattr(HV, "_pedir_herramientas", _fake_uno)
+    monkeypatch.setattr(HV, "_redactar", _sin_modelo)
+    salida = asyncio.run(HV.procesar_venta(USUARIO, "tenes mouse?", TIENDA,
+                                           "test", "t1"))
+    assert "catálogo" not in salida and "catalogo" not in salida, (
+        f"le echo la culpa al catalogo cuando el que fallo fue el modelo:\n{salida}")
+    assert "demanda" in salida.lower()
+
+
+def test_si_el_modelo_contesta_vacio_si_dice_que_no_tiene_el_dato(
+        monkeypatch, firestore_doble):
+    """La otra mitad, que es la que distingue una cosa de la otra: si el modelo
+    SI contesto y no trajo nada, el enlatado honesto sigue siendo el de siempre.
+    Sin esto, el arreglo de arriba taparia una respuesta hueca con una excusa
+    tecnica que no es cierta."""
+    async def _fake_uno(*a, **kw):
+        return [{"nombre": "buscar_productos", "args": {"categoria": "mouse"}}], ""
+
+    async def _vacio(*a, **kw):
+        return "", False
+
+    monkeypatch.setattr(HV, "_pedir_herramientas", _fake_uno)
+    monkeypatch.setattr(HV, "_redactar", _vacio)
+    salida = asyncio.run(HV.procesar_venta(USUARIO, "tenes mouse?", TIENDA,
+                                           "test", "t1"))
+    assert "demanda" not in salida.lower()
+
+
+def test_la_aduana_corre_en_el_camino_vivo(monkeypatch, firestore_doble):
+    """LA ADUANA ESTA ENCHUFADA, no es un modulo suelto. Se hace fugar una
+    etiqueta de la atadura por una via que las guardas de arriba no miran y se
+    verifica que igual no le llega al cliente. Sin este candado, la aduana
+    podria quedar desconectada del hub sin que ningun test lo notara."""
+    from app.core import aduana
+
+    llamada = {"veces": 0}
+    real = aduana.revisar_salida
+
+    def _espia(texto, **kw):
+        llamada["veces"] += 1
+        return real(texto, **kw)
+
+    monkeypatch.setattr(aduana, "revisar_salida", _espia)
+
+    async def _fake_uno(*a, **kw):
+        return [], "Te confirmo el pedido para manana.\n\nResumen:\n"
+
+    monkeypatch.setattr(HV, "_pedir_herramientas", _fake_uno)
+    salida = asyncio.run(HV.procesar_venta(USUARIO, "listo", TIENDA,
+                                           "test", "t1"))
+    assert llamada["veces"] == 1, "la aduana no corrio en el turno"
+    assert "Resumen:" not in salida

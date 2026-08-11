@@ -14,6 +14,7 @@ cualquier otro se re-lanza al toque, igual que antes. Acotado: agrega a lo sumo
 la suma de los backoffs cuando de verdad hay hipo, cero en el camino feliz.
 """
 import asyncio
+import re
 
 from app.logger import get_logger
 
@@ -78,13 +79,41 @@ def es_transitorio(e: BaseException) -> bool:
     return any(t in s for t in _TRANSITORIO)
 
 
+_RE_ESPERA = re.compile(r"retry(?:Delay)?[\"'\s:]*in?[\"'\s:]*([\d.]+)\s*s",
+                        re.IGNORECASE)
+
+
+def espera_sugerida(e: BaseException) -> float | None:
+    """Los segundos que el PROVEEDOR pide esperar, si los dice.
+
+    Nacio de medir la clave gratis de Gemini el 11-ago. Su 429 no es una rafaga
+    de un segundo como el de la clave paga: es la cuota de tokens por minuto
+    -250.000 de entrada- y el propio error trae `retryDelay: 18s`. Contra eso
+    el backoff ciego de 0,6 + 1,2 segundos no sirve de nada: gasta tres
+    llamadas, falla igual y el turno se cae. El numero esta en el error; se usa
+    ese en vez de adivinar."""
+    m = _RE_ESPERA.search(str(e) or "")
+    if not m:
+        return None
+    try:
+        return float(m.group(1))
+    except ValueError:
+        return None
+
+
 async def llamar_con_reintento(fn, *, timeout_s: float | None = None,
                                intentos: int = 3, base_s: float = 0.6,
                                trace_id: str = "") -> str:
     """Corre fn() (bloqueante) en un thread; si falla con error transitorio,
-    reintenta con backoff exponencial (base_s, 2*base_s, ...). Re-lanza el ultimo
-    error si se agotan los intentos o el error NO es transitorio. Con timeout_s
-    cada intento tiene su propio tope; sin el, no se impone timeout."""
+    reintenta con backoff exponencial (base_s, 2*base_s, ...). Re-lanza el
+    ultimo error si se agotan los intentos o el error NO es transitorio. Con
+    timeout_s cada intento tiene su propio tope; sin el, no se impone timeout.
+
+    Si el proveedor dice cuanto hay que esperar, manda ese numero y no el
+    backoff, siempre que entre en el tope `LLM_ESPERA_MAX_S`. Si pide mas que
+    el tope se corta al toque: reintentar sin respetarlo es regalar llamadas."""
+    from app.config import get_settings
+    tope = float(get_settings().LLM_ESPERA_MAX_S)
     ultimo: BaseException | None = None
     for i in range(intentos):
         try:
@@ -94,10 +123,17 @@ async def llamar_con_reintento(fn, *, timeout_s: float | None = None,
             return await tarea
         except Exception as e:  # noqa: BLE001 — se re-lanza abajo si no es transitorio
             ultimo = e
+            pedida = espera_sugerida(e)
+            if pedida is not None and pedida > tope:
+                log.warning("llm_espera_muy_larga", trace_id=trace_id,
+                            pedida_s=pedida, tope_s=tope)
+                anotar_llamada_negada(e)
+                raise
             if i < intentos - 1 and es_transitorio(e):
-                log.warning("llm_reintento", intento=i + 1,
+                espera = pedida if pedida is not None else base_s * (2 ** i)
+                log.warning("llm_reintento", intento=i + 1, espera_s=espera,
                             error=str(e)[:80], trace_id=trace_id)
-                await asyncio.sleep(base_s * (2 ** i))
+                await asyncio.sleep(espera)
                 continue
             # Se anota SOLO cuando los reintentos se agotaron: una rafaga de
             # 429 que el backoff absorbe no ensucia nada y no tiene que
