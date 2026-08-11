@@ -209,15 +209,23 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > de siempre, y sin la fecha tampoco pasa. Candado del candado en
 > `tests/test_guard_rama.py`.
 >
-> **PARA PASAR PRODUCCION A LA GRATIS falta UNA cosa que no puedo hacer yo**,
-> porque la clave vive en Cloud Run y desde aca solo tengo lectura. Lo corre
-> Martin, es una linea:
+> **PRODUCCION YA QUEDA EN LA GRATIS, y viaja en el DEPLOY.** Martin lo pidio
+> el 11-ago. El secreto del repo `GEMINI_API_KEY` ya ES la gratis -es la que
+> usa el nocturno-, asi que `deploy.yml` la manda con
+> `--update-env-vars GEMINI_API_KEY=...` en cada deploy: no depende de que
+> alguien se acuerde de correr un `gcloud` suelto, que es como se pierde entre
+> sesiones. **Si el secreto faltara, la env NO se toca** -sin esa guarda un
+> secreto vacio dejaba al bot mudo, que es peor que cualquier factura-.
+>
+> **EL RIESGO, en una linea:** con varios clientes a la vez se puede pegar
+> contra los 250.000 tokens por minuto, y ahi el turno contesta que hay demanda
+> y pide reintentar. Es honesto y ya NO le echa la culpa al catalogo, que era
+> lo grave. **Volver a la paga es una linea, y esa es la red:**
 >
 > ```bash
 > gcloud run services update agente-bot --region southamerica-east1 \
->   --project memory-engine-v1 --update-env-vars GEMINI_API_KEY=<la clave gratis>
+>   --project memory-engine-v1 --update-env-vars GEMINI_API_KEY=<la clave paga>
 > ```
-> Para volver a la paga, el mismo comando con la otra clave. El revert es eso.
 
 > ## 🕳️ LO QUE ENCONTRO ESTE TRABAJO EN EL PROPIO BANCO: DOS CASETES TENIAN UN
 > TURNO DONDE EL MODELO NUNCA HABLO, Y SE PUNTUABA IGUAL.

@@ -75,11 +75,42 @@ jobs:
       #   gcloud secrets add-iam-policy-binding admin-token \
       #     --member=serviceAccount:github-deployer@memory-engine-v1.iam.gserviceaccount.com \
       #     --role=roles/secretmanager.secretAccessor --project=memory-engine-v1
+      # PRODUCCION PASA A LA CLAVE GRATIS (Martin, 11-ago-2026). Venia con la
+      # paga y Martin pidio la gratis para dejar de gastar. El secreto del repo
+      # `GEMINI_API_KEY` YA es la gratis -es la que usa el nocturno de
+      # calidad.yml- asi que la clave viaja en el deploy y no depende de que
+      # alguien se acuerde de correr un gcloud suelto, que es como se pierde
+      # entre sesiones.
+      #
+      # LO QUE HAY QUE SABER, con el numero medido el 11-ago: la gratis tiene un
+      # techo de 250.000 tokens de ENTRADA por minuto y un turno consume entre
+      # 18.000 y 35.000, o sea entre 7 y 13 turnos por minuto. Un cliente
+      # escribiendo solo no llega ni cerca; varios a la vez, si. Cuando pega, el
+      # turno contesta que hay demanda y pide reintentar —honesto, y desde hoy
+      # ya NO le echa la culpa al catalogo—.
+      #
+      # SI EL SECRETO FALTA NO SE TOCA LA ENV. Sin esta guarda, un secreto vacio
+      # dejaria a produccion con GEMINI_API_KEY="" y el bot mudo: peor que
+      # cualquier factura.
+      #
+      # VOLVER A LA PAGA es una linea, y esa es la red:
+      #   gcloud run services update agente-bot --region southamerica-east1 \
+      #     --project memory-engine-v1 --update-env-vars GEMINI_API_KEY=<paga>
       - name: Deploy a Cloud Run
+        env:
+          GEMINI_GRATIS: ${{ secrets.GEMINI_API_KEY }}
         run: |
+          CLAVE=""
+          if [ -n "$GEMINI_GRATIS" ]; then
+            CLAVE="--update-env-vars=GEMINI_API_KEY=$GEMINI_GRATIS"
+            echo "Deploy con la clave GRATIS de Gemini en produccion."
+          else
+            echo "Sin secreto GEMINI_API_KEY: la env de produccion queda como esta."
+          fi
           gcloud run deploy agente-bot \
             --region southamerica-east1 \
             --source . \
             --project memory-engine-v1 \
             --update-secrets=ADMIN_TOKEN=admin-token:latest \
+            $CLAVE \
             --quiet

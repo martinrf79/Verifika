@@ -17,7 +17,10 @@ reporte muestra las PARTES tal como las recibe el cliente.
 Uso:
     python3 banco_pruebas/banco_atado_charlas.py g1.txt [g2.txt ...]
     BANCO_PAUSA_S=22 controla la pausa entre turnos (tier gratis de Gemini).
-    Con GEMINI_API_KEY_PROD en el entorno usa la clave paga sola.
+    La clave la elige UN solo lugar, `clon_produccion.preparar_entorno`, y el
+    default es la GRATIS. Esta linea decia que con GEMINI_API_KEY_PROD en el
+    entorno tomaba la paga sola: era verdad hasta el 4-ago y es exactamente el
+    reflejo que gasto ~40 dolares, asi que se corrige acá también.
 Deja el reporte de cada charla en banco_pruebas/corridas/.
 """
 import asyncio
