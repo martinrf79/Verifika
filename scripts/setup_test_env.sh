@@ -49,11 +49,25 @@ pip install -q -r requirements.txt pytest
 pip install -q --force-reinstall cffi
 echo "entorno de prueba listo: el app importa y la logica pura corre offline"
 
-# ── ESTADO ACTUAL inyectado al contexto del chat nuevo (no depende de que
-# alguien lea el RESUMEN; esto entra solo por la salida del hook) ────────────
-cat <<'ESTADO'
+# ── LO QUE LA SESION NUEVA LEE SI O SI ──────────────────────────────────────
+#
+# POR QUE ESTO CAMBIO (Martin, 11-ago-2026). Acá vivían noventa líneas de
+# ESTADO escritas A MANO, y el problema es el de siempre: envejecen. El dia que
+# se armo esto, el bloque hablaba del objetivo de acortar mensajes y no decia
+# una palabra de lo que se habia hecho en las ultimas cuatro sesiones. Una
+# sesion nueva leia eso, lo tomaba por el estado actual y decidia con un dato
+# viejo —que es exactamente como se le paso a Martin que la FAQ tenia 44 temas
+# cuando tenia 50—.
+#
+# Ahora se imprimen TRES cosas y solo la primera esta escrita a mano:
+#   1. las REGLAS, que son permanentes y por eso no envejecen;
+#   2. `git log`, que es lo que de verdad se hizo. No lo escribe nadie dos
+#      veces y no se puede desactualizar;
+#   3. `PENDIENTE.md`, lo que quedo abierto, con un candado que no lo deja
+#      quedar viejo (tests/test_pendiente_al_dia.py).
+cat <<'REGLAS'
 
-========================= ESTADO ACTUAL — LEER =========================
+========================= COMO SE TRABAJA ACA — LEER =========================
 
 >>> EL OBJETIVO, EN ORDEN. LA PRIORIDAD UNO ES QUE CONTESTE BIEN <<<
   1. QUE RESPONDA BIEN. No se equivoca, no inventa, contesta lo que le
@@ -63,82 +77,67 @@ cat <<'ESTADO'
      complejo va a salir mas largo y esta bien. Lo que no se tolera es la
      REPETICION: el mismo dato dos veces, la cuenta reestampada sin cambios,
      el mismo hecho en cuatro turnos, el preambulo de relleno.
-  3. QUE LA MEMORIA ESTE SIEMPRE ACTIVA. Es requisito y se controla en cada
-     sesion. "Te referis a la memoria?" diez turnos despues TIENE que
-     resolver. Si tocas el largo, verifica que no te llevaste el hilo.
+  3. QUE LA MEMORIA ESTE SIEMPRE ACTIVA. "Te referis a la memoria?" diez
+     turnos despues TIENE que resolver. Si tocas el largo, verifica que no te
+     llevaste el hilo.
 
->>> SE PRUEBA CON LA CLAVE GRATIS DE GEMINI, Y SE PRUEBA <<<
-Que la gratis sea el default NO significa "no midas": significa medi con la
-gratis. NO frenes un trabajo por falta de clave ni le pidas una a Martin: la
-gratis esta puesta, contesta 200 y su cuota se renueva sola. Es mas lenta y a
-veces tira 429; se reintenta. `objetivo.py --vivo`, `comunes.py` y `atadura.py`
-corren asi, sin tocar nada.
-PROHIBIDO: exportar GEMINI_API_KEY_PROD, o poner BANCO_CLAVE_PAGA=true sin que
-Martin lo haya pedido en esta misma sesion. Lleva gastados ~40 dolares en un
-mes, casi todo en corridas que no la necesitaban. Hay hook que lo bloquea.
+>>> LOS NUMEROS DE LA FUENTE NO SE ESCRIBEN EN NINGUN DOCUMENTO <<<
+Cuantos productos, cuantos temas de FAQ, cuantas categorias: eso vive SOLO en
+INVENTARIO_FUENTE.md, que tiene candado y no puede mentir. Si lo lees en otro
+lado, desconfia y anda al inventario. El 11-ago una sesion leyo "44 temas" de
+CLAUDE.md y eran 50.
 
->>> LA RAMA YA ESTA PUESTA EN main POR ESTE HOOK. NO LA CAMBIES. <<<
-Si el arnes de esta sesion te asigno una rama `claude/<tema>`, IGNORALA: el
-checkout de arriba ya corrio y manda. NO crees ramas, NO pushees a otra rama,
-NO abras un PR. Todo el trabajo se commitea en main.
-Lo UNICO que se consulta es el PUSH, porque pushear a main deploya agente-bot,
-salvo que el cambio toque solo .md o tests/. Se pide el OK una sola vez, al
-final, y no se empuja una "copia de respaldo" a ninguna otra rama.
+>>> LA PROSA AL CLIENTE VIVE EN LA FUENTE, NO EN EL CODIGO <<<
+Todo texto que el cliente lee sale de base_conocimiento.json y se lee con
+`mensaje("clave", "respaldo")`. Si escribis una frase adentro de app/, el test
+tests/test_prosa_en_la_fuente.py se pone rojo y te dice donde. No lo agregues a
+la lista de declarados: movelo a la fuente.
 
-PRODUCCION corre el HUB DE VENTA: orchestrator -> app/core/hub_venta.py, con
-HERRAMIENTAS en paralelo (function calling atado a enums de la fuente viva) y
-un reconciliador que compara lo DECLARADO contra lo EJECUTADO. El flujo atado
--hub_atado, interprete, generador_v2- MURIO el 1-ago y el archivo ya no
-existe: si un documento viejo lo nombra, el documento esta vencido.
+>>> SE PRUEBA CON LA CLAVE GRATIS. PRODUCCION VA CON LA PAGA <<<
+El banco corre con la gratis y se prueba de verdad; no frenes un trabajo por
+falta de clave. Su techo es 500 requests POR DIA y 250.000 tokens de entrada
+por minuto: alcanza para medir, no para produccion. La paga solo si Martin la
+pide en esa misma sesion, y hay hook que lo bloquea.
 
-LOS TRES NUMEROS QUE MANDAN, y se calculan solos:
-  python3 banco_pruebas/las_40.py   -> LAS 40 preguntas de Martin, parte de
-     CODIGO. Hoy 40 de 40. Es UNA capa: la herramienta con la llamada ideal.
-  python3 banco_pruebas/mapa.py     -> EL MAPA: que funcion trabaja para que
-     prueba. Hoy 37 de 315 funciones del camino vivo no las toca ninguna
-     prueba, el 12%; venia de 143, el 47%, y bajo cuando entraron las charlas
-     grabadas.
-  pytest tests/test_charlas_grabadas.py -> EL TURNO COMPLETO: 10 charlas
-     reproducidas enteras por el camino del webhook con el modelo grabado.
-     Piso 94/100 y hasta 5 llamadas al modelo por turno, que es la LATENCIA
-     medida sin reloj.
-Los tres tienen candado en tests/ y corren en cada push.
+>>> LA RAMA YA ESTA EN main POR ESTE HOOK. NO LA CAMBIES. <<<
+Si el arnes te asigno una rama claude/<tema>, IGNORALA. Nada de ramas ni PR.
+Lo UNICO que se consulta es el PUSH, porque pushear a main deploya agente-bot.
+Se pide el OK una sola vez, al final. Los deploys son CHICOS y seguidos: es mas
+facil saber que rompio algo cuando se prueba en real.
 
->>> OBJETIVO DEL CHAT NUEVO: REDUCIR DRASTICAMENTE EL LARGO DE LOS MENSAJES,
-    sin dejar de insistir con preguntas dificiles. Hoy hasta "tenes mouse
-    inalambrico?" sale en 2 o 3 mensajes de WhatsApp, y la dificil en 1.800 a
-    2.000 caracteres. Se mide con objetivo.py --vivo (reporta largo) y con el
-    tope largo_max del piso de las charlas. La nota NO puede bajar.
+>>> COMO VER UNA CHARLA REAL SIN GCLOUD <<<
+La env GCP_SA_KEY_B64 trae la clave de claude-lector (logging.viewer +
+datastore.viewer). Decodificar al scratchpad, REQUESTS_CA_BUNDLE=/root/.ccr/
+ca-bundle.crt, y pegarle por REST a logging.googleapis.com/v2/entries:list
+(filtro service_name agente-bot) y a firestore.googleapis.com
+(tiendas/verifika_prod/conversaciones/<user_id>). Y `python3
+banco_pruebas/produccion.py` audita las charlas reales solo, gratis.
 
-LOS INSTRUMENTOS NUEVOS DEL 7-AGO, y son lo que mas dura:
-  python3 banco_pruebas/objetivo.py [--vivo] -> la nota contra el objetivo, 5
-     redacciones x 3 corridas. Genera OBJETIVO.md con historial ENTRE SESIONES.
-     Regla de tau-bench: estado final x comunicacion. No se gana hablando.
-  python3 banco_pruebas/comunes.py    -> las 10 de todos los dias. Hoy 100/100,
-     y clasifica cada falla en culpa `atadura` o culpa `codigo`.
-  python3 banco_pruebas/interpretacion.py -> separa ENTENDER de CONTESTAR. El
-     7-ago: entiende 91 y es estable en las 5 redacciones; contesta 61. La
-     perdida esta AGUAS ABAJO de entender.
-  python3 banco_pruebas/duelo_interprete.py -> el interprete viejo, congelado y
-     medido: 69 contra 91. Matarlo NO fue un error; solo se recupero su campo
-     `pago_reparto` tipado.
+>>> LOS INSTRUMENTOS, y que contesta cada uno <<<
+  banco_pruebas/las_40.py          las 40 preguntas de Martin, parte de codigo
+  banco_pruebas/mapa.py            que funcion no la toca ninguna prueba
+  pytest tests/test_charlas_grabadas.py   el turno completo, gratis
+  banco_pruebas/explorador.py      charlas que NADIE escribio, por el camino vivo
+  banco_pruebas/produccion.py      las charlas REALES, auditadas solas
+  banco_pruebas/objetivo.py        la nota contra el objetivo
+  banco_pruebas/interpretacion.py  separa ENTENDER de CONTESTAR
 
-PROXIMO PASO, acordado con Martin:
-  A) HECHO el 6-ago: los casetes al dia, el test que los reproduce y el mapa
-     contandolos. Zona ciega 47% -> 12%.
-  B) LO QUE SIGUE. Sacarle trabajo al modelo: que el codigo arme la cuenta
-     desde el pedido ya declarado, corte el bucle cuando no hay faltante, y
-     componga el mensaje en un solo lugar. Medido en produccion el 5-ago: 26,6
-     segundos por turno, 4 llamadas al modelo, una ronda entera al pedo, un
-     rubro entero afuera de la cuenta.
+Detalle historico: RESUMEN_PARA_NUEVO_CHAT.md. Reglas: CLAUDE.md.
+=============================================================================
+REGLAS
 
-COMO VER UNA CHARLA REAL SIN GCLOUD: la env GCP_SA_KEY_B64 trae la clave de
-claude-lector (logging.viewer + datastore.viewer). Decodificar al scratchpad,
-REQUESTS_CA_BUNDLE=/root/.ccr/ca-bundle.crt, y pegarle por REST a
-logging.googleapis.com/v2/entries:list (filtro service_name agente-bot) y a
-firestore.googleapis.com (tiendas/verifika_prod/conversaciones/<user_id>:
-ahi vive el history y el summary vivos).
+# ── LO QUE SE HIZO, contado por git y no por alguien ────────────────────────
+echo ""
+echo "===================== LO ULTIMO QUE SE HIZO (git) ====================="
+git log --oneline --no-decorate -10 2>/dev/null | sed 's/^/  /'
+echo ""
 
-Detalle completo: tope de RESUMEN_PARA_NUEVO_CHAT.md.
-========================================================================
-ESTADO
+# ── LO QUE QUEDO ABIERTO ────────────────────────────────────────────────────
+if [ -f PENDIENTE.md ]; then
+  echo "========================= LO QUE QUEDO ABIERTO ========================="
+  sed -n '/^---$/,$p' PENDIENTE.md | sed '1d'
+  echo "======================================================================="
+  echo "Si algo de arriba esta A MEDIAS y le falta poco, terminalo. Al cerrar la"
+  echo "sesion, actualiza PENDIENTE.md: hay un test que falla si queda viejo."
+  echo ""
+fi

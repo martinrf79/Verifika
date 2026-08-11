@@ -11,6 +11,38 @@ El estado del sistema (qué camino corre, infra, pendientes) vive en UN solo
 lugar: `RESUMEN_PARA_NUEVO_CHAT.md`. Es la fuente única de verdad. Este
 `CLAUDE.md` tiene solo las reglas e instrucciones permanentes.
 
+## 📌 COMO ARRANCA Y COMO CIERRA UNA SESION (Martín, 11-ago-2026)
+
+**El problema que esto resuelve, y es el que más caro salió:** una sesión nueva
+llega con el contexto lleno, lee un bloque de estado escrito a mano hace tres
+sesiones, lo toma por cierto y decide con datos viejos. Así se le pasó a Martín
+que la FAQ tenía 44 temas cuando tenía 50.
+
+**AL ARRANCAR**, el hook `scripts/setup_test_env.sh` imprime tres cosas, y solo
+la primera está escrita a mano porque es la única que no envejece:
+1. **Las reglas** de cómo se trabaja acá.
+2. **`git log` de los últimos diez commits**, que es lo que de verdad se hizo.
+   Nadie lo escribe dos veces y nadie lo puede desactualizar.
+3. **`PENDIENTE.md`**, lo que quedó abierto, con el estado de cada cosa:
+   `ABIERTO`, `A MEDIAS` con lo que falta, o `ESPERA A MARTIN`.
+
+**Si algo está A MEDIAS y le falta poco, se termina.** Para eso está el estado.
+
+**AL CERRAR**, se actualiza `PENDIENTE.md`: qué se cerró, qué quedó abierto.
+No es un pedido, es un candado: `tests/test_pendiente_al_dia.py` falla si hay
+commits que tocan `app/` más nuevos que ese archivo. Máximo veinte ítems: si no
+entra en una pantalla, la sesión siguiente no lo lee.
+
+**Lo que se HIZO no se escribe en ningún lado.** Lo cuenta `git log`, así que
+los mensajes de commit se escriben para que se entiendan solos.
+
+**DEPLOYS CHICOS Y SEGUIDOS.** Cada push a `main` deploya, y está bien: cuanto
+más se junta, más difícil es saber cuál cambio rompió algo al probar en real.
+Si hace falta commitear trabajo a medio terminar sin que salga a producción, se
+pone **`[sin deploy]`** en el mensaje del commit: llega a `main`, queda
+respaldado y visible, los tests corren igual, y el deploy no. El push se sigue
+consultando SIEMPRE.
+
 ## 🔒 DOS REGLAS QUE MANDAN SOBRE TODO LO DEMÁS (Martín, 27-jun-2026)
 
 **1. La orden directa de Martín se ejecuta. Punto.** Martín es el dueño y maneja

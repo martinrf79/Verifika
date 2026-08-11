@@ -35,8 +35,22 @@ jobs:
       - name: Correr tests offline (sin LLM, sin credenciales)
         run: pytest -v
 
+  # EL FRENO DE MANO, para juntar cambios y deployar cuando Martin diga
+  # (11-ago-2026). Los deploys siguen siendo CHICOS y SEGUIDOS, que es lo que
+  # conviene -cuanto mas se junta, mas dificil es saber cual de los cambios
+  # rompio algo cuando se prueba en real-. Pero a veces hace falta commitear
+  # trabajo a medio terminar sin que salga a produccion, y hasta hoy la unica
+  # forma era no pushear, o sea dejar el trabajo colgado en local: justo lo que
+  # costo el dia del 3-ago.
+  #
+  # Con [sin deploy] en el mensaje del commit, el trabajo llega a main -queda
+  # respaldado y visible para la sesion siguiente- y el deploy NO corre. Los
+  # tests SI corren igual: un commit sin deployar tampoco puede romper el piso.
+  # El deploy sale despues, solo, con el primer commit que no lleve la marca, o
+  # a mano desde Actions con workflow_dispatch.
   deploy:
     needs: test
+    if: "!contains(github.event.head_commit.message, '[sin deploy]')"
     runs-on: ubuntu-latest
     permissions:
       contents: read
