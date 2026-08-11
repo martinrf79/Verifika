@@ -75,37 +75,48 @@ jobs:
       #   gcloud secrets add-iam-policy-binding admin-token \
       #     --member=serviceAccount:github-deployer@memory-engine-v1.iam.gserviceaccount.com \
       #     --role=roles/secretmanager.secretAccessor --project=memory-engine-v1
-      # PRODUCCION PASA A LA CLAVE GRATIS (Martin, 11-ago-2026). Venia con la
-      # paga y Martin pidio la gratis para dejar de gastar. El secreto del repo
-      # `GEMINI_API_KEY` YA es la gratis -es la que usa el nocturno de
-      # calidad.yml- asi que la clave viaja en el deploy y no depende de que
-      # alguien se acuerde de correr un gcloud suelto, que es como se pierde
-      # entre sesiones.
+      # PRODUCCION VA CON LA CLAVE PAGA. EL BANCO, CON LA GRATIS.
+      # (Martin, 11-ago-2026, y esto duro medio dia en la otra posicion.)
       #
-      # LO QUE HAY QUE SABER, con el numero medido el 11-ago: la gratis tiene un
-      # techo de 250.000 tokens de ENTRADA por minuto y un turno consume entre
-      # 18.000 y 35.000, o sea entre 7 y 13 turnos por minuto. Un cliente
-      # escribiendo solo no llega ni cerca; varios a la vez, si. Cuando pega, el
-      # turno contesta que hay demanda y pide reintentar —honesto, y desde hoy
-      # ya NO le echa la culpa al catalogo—.
+      # A la mañana se puso la GRATIS en produccion para dejar de gastar, con
+      # el numero que yo habia medido: 250.000 tokens de entrada por minuto.
+      # ESE NUMERO ERA EL TECHO EQUIVOCADO. El que rompe el servicio es el
+      # DIARIO -`GenerateRequestsPerDayPerProjectPerModel-FreeTier`, 500
+      # requests por dia-, y a la tarde el bot le contestaba a Martin "estoy
+      # con mucha demanda" en 2 de 4 mensajes.
       #
-      # SI EL SECRETO FALTA NO SE TOCA LA ENV. Sin esta guarda, un secreto vacio
-      # dejaria a produccion con GEMINI_API_KEY="" y el bot mudo: peor que
-      # cualquier factura.
+      # Y hay una razon peor, que es la que decide: **el banco y produccion
+      # compartian la misma clave gratis**. Las corridas de banco del dia se
+      # comieron las 500 requests y le sacaron la cuota al bot vivo. Un banco
+      # que deja mudo al producto no es un banco: es una caida.
       #
-      # VOLVER A LA PAGA es una linea, y esa es la red:
-      #   gcloud run services update agente-bot --region southamerica-east1 \
-      #     --project memory-engine-v1 --update-env-vars GEMINI_API_KEY=<paga>
+      # LAS CUENTAS, para que nadie lo vuelva a invertir sin datos: un turno
+      # gasta de 2 a 4 requests, o sea que la gratis da entre 125 y 250 turnos
+      # por dia CONTANDO TODO. Produccion sola en la paga cuesta centavos -son
+      # 40.000 tokens de un modelo barato por turno-; los ~40 dolares que
+      # Martin gasto en un mes fueron corridas de banco, no charlas de
+      # clientes.
+      #
+      # SI EL SECRETO DE LA PAGA NO ESTA, NO SE TOCA LA ENV y el log lo grita.
+      # Sin esa guarda, un secreto vacio dejaria a produccion con
+      # GEMINI_API_KEY="" y el bot mudo, que es peor que cualquier factura.
       - name: Deploy a Cloud Run
         env:
-          GEMINI_GRATIS: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_PAGA: ${{ secrets.GEMINI_API_KEY_PROD }}
         run: |
           CLAVE=""
-          if [ -n "$GEMINI_GRATIS" ]; then
-            CLAVE="--update-env-vars=GEMINI_API_KEY=$GEMINI_GRATIS"
-            echo "Deploy con la clave GRATIS de Gemini en produccion."
+          if [ -n "$GEMINI_PAGA" ]; then
+            CLAVE="--update-env-vars=GEMINI_API_KEY=$GEMINI_PAGA"
+            echo "Deploy con la clave PAGA de Gemini en produccion (lo que corresponde)."
           else
-            echo "Sin secreto GEMINI_API_KEY: la env de produccion queda como esta."
+            echo "AVISO: no hay secreto GEMINI_API_KEY_PROD en el repo."
+            echo "La env de produccion queda COMO ESTA, sin tocar."
+            echo "Si el bot viene contestando 'estoy con mucha demanda', es que"
+            echo "quedo con la clave gratis y su cuota diaria de 500 requests"
+            echo "esta agotada. Se arregla cargando ese secreto en el repo, o a"
+            echo "mano:  gcloud run services update agente-bot \\"
+            echo "         --region southamerica-east1 --project memory-engine-v1 \\"
+            echo "         --update-env-vars GEMINI_API_KEY=LA_CLAVE_PAGA"
           fi
           gcloud run deploy agente-bot \
             --region southamerica-east1 \
