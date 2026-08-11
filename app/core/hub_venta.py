@@ -317,6 +317,24 @@ def _mensajes(negocio: str, memoria: str, history: list, mensaje: str,
     return msgs
 
 
+# LOS TURNOS EN LOS QUE NO SE LE PUDO HABLAR AL MODELO, por trace_id. Es un
+# conjunto y no una variable porque el decisor se llama en un bucle de rondas y
+# el turno entero tiene que enterarse; se limpia al terminar el turno, asi que
+# nunca crece. No cambia el comportamiento del bot mas que en UNA cosa: que se
+# le dice al cliente cuando el turno no pudo contestar.
+_SIN_MODELO: set = set()
+
+
+def _marcar_sin_modelo(trace_id: str) -> None:
+    """Anota el turno y NO deja crecer el conjunto. El turno lo borra al
+    terminar, pero si explota antes el id quedaria adentro para siempre: un
+    tope hace que la peor consecuencia sea olvidar una marca, nunca una fuga de
+    memoria en un proceso que vive dias."""
+    if len(_SIN_MODELO) > 200:
+        _SIN_MODELO.clear()
+    _SIN_MODELO.add(trace_id)
+
+
 async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
                               trace_id, llamadas=None, revision=""):
     """QUE BUSCAR. Devuelve (lista de pedidos, texto directo si no pidio nada).
@@ -393,6 +411,12 @@ async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
     except Exception as e:
         log.warning("hub_venta_llamada_uno_error", trace_id=trace_id,
                     error=f"{type(e).__name__}: {str(e)[:160]}")
+        # LA MISMA PUERTA QUE EL REDACTOR, y se descubrio el 11-ago intentando
+        # regrabar dos casetes con la clave gratis: si el que se cae es el
+        # DECISOR, el turno se queda sin herramientas y sin texto, y terminaba
+        # igual en "No tengo esa información confirmada en el catálogo". Cerrar
+        # una sola de las dos puertas no cerraba nada.
+        _marcar_sin_modelo(trace_id)
         return [], ""
 
 
@@ -2161,7 +2185,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         # falla. Si no hubo modelo se dice que hay demanda y se pide que
         # reintente; el "no tengo el dato" queda solo para cuando el modelo SI
         # contesto y no trajo nada.
-        if sin_modelo:
+        if sin_modelo or trace_id in _SIN_MODELO:
             from app.core.guia_venta_prosa import mensaje as _prosa
             texto = _prosa("sobrecarga",
                            "Perdón, estoy con mucha demanda en este momento. "
@@ -2311,6 +2335,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # se descubre leyendo una charla a mano, que es como se descubrio hoy.
     IT.cobertura(declarado, texto, trace_id + "|final")
 
+    _SIN_MODELO.discard(trace_id)
     log.info("hub_venta_ok", trace_id=trace_id,
              latency_ms=int((time.time() - t0) * 1000),
              etapas_ms=etapas, largo=len(texto or ""),

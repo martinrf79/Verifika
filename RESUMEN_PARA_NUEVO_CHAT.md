@@ -156,6 +156,20 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > para fallar igual. Ahora se respeta ese numero hasta `LLM_ESPERA_MAX_S`
 > (20 s); si pide mas, se corta al toque en vez de regalar llamadas.
 >
+> **LA MISMA MENTIRA TENIA DOS PUERTAS, y la segunda aparecio al intentar
+> regrabar los casetes.** Si el que se cae por cuota es el DECISOR -la llamada
+> uno- el turno se queda sin herramientas y sin texto, y terminaba igual en "No
+> tengo esa información confirmada en el catálogo". Cerrar solo la del redactor
+> no cerraba nada. Las dos estan cerradas y las dos tienen candado.
+>
+> **EL REGRABADO DE LOS DOS CASETES CON HUECO NO SE PUDO HACER HOY, y queda
+> anotado con su motivo:** se intento con la gratis y salio envenenado -la
+> cuota corto casi todos los turnos y las respuestas grabadas eran el enlatado-,
+> asi que se REVIRTIO con git y los casetes quedaron como estaban. Regrabar
+> necesita cuota libre: o `BANCO_PAUSA_S` grande y correr los dos guiones
+> solos, sin nada mas usando la clave ese minuto, o la clave paga, que la pide
+> Martin. No es urgente: el hueco ya se castiga en el puntaje.
+>
 > **PARA PASAR PRODUCCION A LA GRATIS falta UNA cosa que no puedo hacer yo**,
 > porque la clave vive en Cloud Run y desde aca solo tengo lectura. Lo corre
 > Martin, es una linea:

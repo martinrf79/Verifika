@@ -1446,3 +1446,22 @@ def test_la_aduana_corre_en_el_camino_vivo(monkeypatch, firestore_doble):
                                            "test", "t1"))
     assert llamada["veces"] == 1, "la aduana no corrio en el turno"
     assert "Resumen:" not in salida
+
+
+def test_si_el_decisor_se_cae_tampoco_le_echa_la_culpa_al_catalogo(
+        monkeypatch, firestore_doble):
+    """LA SEGUNDA PUERTA DE LA MISMA MENTIRA, y aparecio intentando regrabar
+    dos casetes con la clave gratis: si el que se cae por cuota es el DECISOR
+    -la llamada uno- el turno se queda sin herramientas y sin texto, y
+    terminaba igual en "No tengo esa información confirmada en el catálogo".
+    Cerrar solo la puerta del redactor no cerraba nada."""
+    async def _decisor_muerto(*a, **kw):
+        HV._marcar_sin_modelo("t-decisor")
+        return [], ""
+
+    monkeypatch.setattr(HV, "_pedir_herramientas", _decisor_muerto)
+    salida = asyncio.run(HV.procesar_venta(USUARIO, "tenes mouse?", TIENDA,
+                                           "test", "t-decisor"))
+    assert "catálogo" not in salida and "catalogo" not in salida, salida
+    assert "demanda" in salida.lower()
+    assert "t-decisor" not in HV._SIN_MODELO, "la marca del turno no se limpio"
