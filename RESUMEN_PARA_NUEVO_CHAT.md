@@ -67,6 +67,29 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > como esta: inventar la cuenta que el codigo no supo armar es exactamente la
 > alucinacion que el sistema entero existe para evitar.
 >
+> ## 📏 EL NUMERO QUE MIDE LA ADUANA, y esta sacado de las charlas REALES, no
+> de un ejemplo: **6 defectos → 0.**
+>
+> Se bajaron las **30 conversaciones reales de produccion, 102 turnos**, se les
+> pasaron los invariantes -6 violaciones, 0,20 defectos por charla, el 17% de
+> las charlas con al menos una- y despues se paso cada mensaje sucio por la
+> aduana. **Las 6 quedan en 0**: tres `encabezado_huerfano` -el `Resumen:` sin
+> nada abajo, en tres charlas distintas- y tres `renglon_repetido_en_el_mensaje`
+> -el mismo `- envio a cordoba capital: $7.500` calcado-. O sea que **todos los
+> defectos que hoy le llegan al cliente en una charla real, la aduana los ataja
+> antes de que salgan.**
+>
+> **LA ATADURA DE LA PLATA SE AFINO POR ESE NUMERO, y vale contarlo porque es
+> como se corrige un instrumento sin aflojarlo.** Con la primera version la
+> cuenta daba 6 → 2, y las dos que sobrevivian eran la linea de envio calcada:
+> la reparacion se descartaba porque borrar la copia **cambia la cantidad de
+> importes**, aunque el importe siguiera escrito dos lineas mas arriba. Ahora
+> la atadura se cumple de UNA de dos formas, las dos verificables sin creerle
+> nada al que repara: **los importes quedan identicos**, o **todo lo borrado
+> sigue escrito**, linea por linea, en el texto que queda. Con eso, 6 → 0, y
+> sigue descartando cualquier recorte que se lleve plata que no este en otro
+> lado -tiene su candado con una reparacion dopada a proposito-.
+
 > **LA MUDANZA:** `invariantes.py` paso de `banco_pruebas/` a
 > `app/verifika/invariantes.py`, porque `banco_pruebas/` NO viaja en la imagen
 > de Docker. Es el MISMO archivo, un solo camino; el banco lo importa desde ahi.

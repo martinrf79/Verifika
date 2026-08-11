@@ -90,6 +90,35 @@ def _importes(texto: str) -> list:
     return [re.sub(r"\s+", "", x) for x in _RE_IMPORTE.findall(texto or "")]
 
 
+def _no_perdio_nada(antes: str, despues: str) -> bool:
+    """La plata sigue entera. Se cumple de UNA de dos formas, y las dos son
+    verificables sin creerle nada a la reparacion:
+
+      1. **Los importes quedaron identicos**, uno por uno y en orden. Es el
+         caso general y el que protege de una tijera que se lleve un numero.
+      2. **Todo lo que se borro sigue escrito**, linea por linea, en el texto
+         que queda. Ahi el importe aparece una vez menos y no se perdio nada:
+         estaba duplicado y quedo su copia.
+
+    LA SEGUNDA SE AGREGO EL 11-AGO CON EL NUMERO EN LA MANO. Con solo la
+    primera, la aduana bajaba las violaciones de las 30 charlas REALES de 6 a
+    2, y las 2 que sobrevivian eran la MISMA linea calcada -"- envio a cordoba
+    capital: $7.500"- en dos turnos: se descartaba la reparacion porque borrar
+    una copia cambia la cuenta de importes, aunque el importe siguiera escrito
+    dos lineas mas arriba. Con las dos formas, 6 a 0. La regla sigue sin
+    confiar en el que repara: se comprueba que el texto borrado este."""
+    if _importes(antes) == _importes(despues):
+        return True
+    quedan = {_n_linea(l) for l in (despues or "").splitlines() if l.strip()}
+    borradas = [_n_linea(l) for l in (antes or "").splitlines()
+                if l.strip() and _n_linea(l) not in quedan]
+    return not borradas
+
+
+def _n_linea(l: str) -> str:
+    return re.sub(r"\s+", " ", str(l or "")).strip().lower()
+
+
 def _reglas(fallas: list) -> list:
     return [f.get("regla", "") for f in fallas]
 
@@ -201,8 +230,9 @@ def revisar_salida(texto: str, anterior: str = "", trace_id: str = "",
             continue
         if not (candidato or "").strip() or candidato == texto_ok:
             continue
-        # ATADURA A: la plata tiene que quedar identica, importe por importe.
-        if _importes(candidato) != _importes(texto_ok):
+        # ATADURA A: la plata sigue entera —importes identicos, o todo lo
+        # borrado sigue escrito mas arriba—.
+        if not _no_perdio_nada(texto_ok, candidato):
             log.warning("aduana_reparacion_descartada", trace_id=trace_id,
                         regla=regla, motivo="movia_la_plata")
             continue

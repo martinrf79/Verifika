@@ -69,15 +69,37 @@ def test_la_cuenta_que_no_cierra_no_se_reescribe():
     assert revisar_salida(texto, trace_id="t") == texto
 
 
-def test_no_se_mueve_un_solo_importe():
-    """La atadura A: despues de cada reparacion se comparan TODOS los importes,
-    uno por uno. Aca la reparacion del renglon calcado se llevaria una linea
-    con plata, asi que se descarta entera y el mensaje sale como entro."""
-    linea = "El envio a Cordoba sale $7.000 y tarda entre 4 y 7 dias habiles."
-    texto = f"Mira:\n{linea}\nY al interior lo mismo.\n{linea}"
+def test_la_linea_con_plata_calcada_se_deduplica_porque_queda_su_copia():
+    """La atadura A tiene DOS formas de cumplirse y esta es la segunda: el
+    importe aparece una vez menos y no se perdio nada, porque la linea borrada
+    sigue escrita mas arriba, palabra por palabra.
+
+    SE AGREGO CON EL NUMERO EN LA MANO: con solo la comparacion de importes, la
+    aduana bajaba las violaciones de las 30 charlas REALES de 6 a 2, y las dos
+    que sobrevivian eran esta misma linea calcada, '- envio a cordoba capital:
+    $7.500', que se negaba a deduplicar por miedo a mover la plata que seguia
+    escrita dos lineas arriba."""
+    linea = "- envio a cordoba capital: $7.500 (4 a 7 dias habiles)"
+    texto = f"Te paso el detalle:\n{linea}\nY el resumen del envio.\n{linea}"
     salida = revisar_salida(texto, trace_id="t")
-    assert salida.count("$7.000") == 2
-    assert salida == texto
+    assert salida.count(linea) == 1
+    assert "$7.500" in salida
+
+
+def test_una_reparacion_que_se_lleva_plata_no_escrita_se_descarta(monkeypatch):
+    """La atadura A, primera forma, y es la que importa: si lo que se borra NO
+    esta escrito en ningun otro lado, la reparacion se descarta aunque haya
+    hecho desaparecer la violacion. Una aduana que corrige un peso es peor que
+    el defecto que arregla."""
+    from app.core import aduana
+
+    def _se_lleva_la_plata(texto):
+        return "El Mouse Genius DX-110 esta disponible."
+
+    monkeypatch.setattr(aduana, "_REPARACIONES",
+                        (("etiqueta_interna_fugada", _se_lleva_la_plata),))
+    texto = "El <d MOU0023>Mouse Genius DX-110</d> sale $8.500."
+    assert aduana.revisar_salida(texto, trace_id="t") == texto
 
 
 def test_el_mismo_producto_a_dos_destinos_no_es_repeticion():
