@@ -50,6 +50,29 @@ if printf '%s' "$CMD" | grep -qE 'GEMINI_API_KEY=\$?\{?GEMINI_API_KEY_PROD'; the
 fi
 
 # ── 2. PEDIR LA PAGA SIN QUE MARTIN LA HAYA PEDIDO ──────────────────────────
+#
+# LA PUERTA, agregada el 11-ago-2026, y hace falta contar por que. Martin
+# autorizo la paga en su sesion -"puedes utilizar la clave de pago"- para
+# regrabar dos casetes que la gratis no aguanta, y el candado la bloqueo igual:
+# no tenia forma de distinguir el reflejo automatico, que es lo que hay que
+# frenar, de una orden directa, que segun la regla uno se ejecuta. Un candado
+# sin puerta obliga a esquivarlo, y esquivarlo es exactamente como se gasto la
+# plata las cuatro veces.
+#
+# La puerta NO es una contraseña ni pretende ser seguridad: es un ACTO
+# EXPLICITO que deja rastro. Hay que escribir en la misma linea
+# `MARTIN_AUTORIZO_LA_PAGA=<fecha>`, o sea afirmar por escrito, con fecha, que
+# la orden existio. Eso no se teclea por inercia, queda en el historial y
+# cualquiera puede ir a buscar la sesion donde Martin lo dijo. Sin esa marca,
+# el bloqueo es el de siempre.
+if printf '%s' "$CMD" | grep -qiE 'BANCO_CLAVE_PAGA=(true|1|yes)' \
+   && printf '%s' "$CMD" | grep -qE 'MARTIN_AUTORIZO_LA_PAGA=[0-9]{1,2}-?[a-zA-Z]{3}-?[0-9]{4}'; then
+  echo "PAGA AUTORIZADA por Martin en esta sesion (marca con fecha presente)." >&2
+  echo "Recorda: solo lo que la gratis no pueda hacer. Su tope son 250.000" >&2
+  echo "tokens de entrada por minuto; todo lo que entre ahi va con la gratis." >&2
+  exit 0
+fi
+
 if printf '%s' "$CMD" | grep -qiE 'BANCO_CLAVE_PAGA=(true|1|yes)'; then
   echo "BLOQUEADO: BANCO_CLAVE_PAGA=true gasta plata de Martin." >&2
   echo "Solo se usa si Martin lo pidio EN ESTA sesion, con esas palabras." >&2

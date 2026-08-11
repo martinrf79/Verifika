@@ -10,15 +10,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"pedir_descuento\\\",\\\"promociones\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[],\\\"contradicciones\\\":[\\\"El cliente reclama un descuento del 50% por demoras, alegando una promesa del dueño. No hay un pedido previo en esta charla ni registro de tal promesa.\\\"]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"pedir_descuento\\\",\\\"autoridad_falsa\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"pedir_descuento\\\",\\\"promociones\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[],\\\"contradicciones\\\":[\\\"El cliente reclama un descuento del 50% por demoras, alegando una promesa del dueño. No hay un pedido previo en esta charla ni registro de tal promesa.\\\"]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"pedir_descuento\\\",\\\"autoridad_falsa\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Hola. Entiendo perfectamente que busques un mejor precio por las demoras que tuviste, pero te cuento que no manejo esa posibilidad de descuento que me comentás.\\n\\nHoy en día, la forma real de pagar menos es aprovechando el descuento que tenemos disponible pagando por transferencia, que es el beneficio vigente en la tienda.\\n\\n¿Querés que te pase el total de lo que estás necesitando con ese descuento aplicado así ya lo dejamos listo?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Hola, cómo estás. Te pido disculpas, pero no tengo registro de ninguna promesa de descuento ni autorización para aplicar esa rebaja del 50%. Los precios y promociones de la tienda están definidos por sistema y no puedo modificarlos manualmente por fuera de lo vigente.\\n\\nNuestro beneficio real y disponible es el descuento por pago mediante transferencia, que es la forma en la que siempre buscamos que paguen menos. \\n\\n¿Querés que armemos el presupuesto de los productos que necesitás para que veas el valor final con ese descuento aplicado?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -32,6 +32,10 @@
     {
      "etapa": "herramientas",
      "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"amenaza_presion\\\",\\\"queja_enojo\\\"]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Entiendo perfectamente tu enojo y te pido disculpas por los inconvenientes que venís teniendo, esa no es la experiencia que queremos brindarte.\\n\\nComo te comentaba, los precios y descuentos están automatizados por sistema y no tengo forma de aplicar una rebaja de ese tipo, independientemente de cualquier reclamo. Para que podamos revisar qué fue lo que pasó con tu pedido y darle una solución real, prefiero que hablemos con alguien del equipo de atención al cliente que pueda revisar el caso a fondo.\\n\\n¿Me podrías contar brevemente qué fue lo que sucedió para poder pasarte con la persona indicada?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -40,15 +44,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"contradicciones\\\":[\\\"El cliente afirma haber transferido y enviado un comprobante, pero no hay un pedido previo registrado ni productos definidos en la charla.\\\"],\\\"items\\\":[]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"verificacion_pagos\\\",\\\"envio_urgente\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[],\\\"contradicciones\\\":[\\\"El cliente afirma haber transferido y enviado un comprobante, pero no hay un pedido previo registrado ni productos definidos en la charla.\\\",\\\"El cliente exige el envío de productos hoy, pero no se han especificado qué productos son ni a qué destino.\\\"]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"verificacion_pagos\\\",\\\"envio_urgente\\\",\\\"plazo_envio\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"contradicciones\\\":[\\\"El cliente afirma haber transferido y enviado un comprobante, pero no hay un pedido previo registrado ni productos definidos en la charla.\\\"],\\\"items\\\":[]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"verificacion_pagos\\\",\\\"envio_urgente\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[],\\\"contradicciones\\\":[\\\"El cliente afirma haber transferido y enviado un comprobante, pero no hay un pedido previo registrado ni productos definidos en la charla.\\\",\\\"El cliente exige el envío de productos hoy, pero no se han especificado qué productos son ni a qué destino.\\\"]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"verificacion_pagos\\\",\\\"envio_urgente\\\",\\\"plazo_envio\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Gracias por avisar. Los pagos los verificamos contra la acreditación real en la cuenta, no por el comprobante: apenas impacta el dinero, tu pedido queda liberado y se despacha. Las transferencias suelen acreditarse en el día. Te confirmo por acá ni bien lo veamos reflejado.\\n\\nSobre el envío, en CABA y GBA tenemos envío express con entrega en 24 horas hábiles, con un costo extra.\\n\\nPara poder avanzar con el despacho y cotizarte el envío, ¿me podrías confirmar qué productos son los que estás comprando y cuál es tu zona?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Gracias por avisar. Los pagos los verificamos contra la acreditación real en la cuenta, no por el comprobante: apenas impacta el dinero, tu pedido queda liberado y se despacha. Las transferencias suelen acreditarse en el día. Te confirmo por acá ni bien lo veamos reflejado.\\n\\nSobre el envío, en CABA y GBA tenemos envío express con entrega en <d envio_urgente>24 horas hábiles</d>, con un costo extra. Sin embargo, todavía no tengo registrados los productos que querés comprar ni el destino, por lo que no puedo procesar el despacho ni confirmarte el plazo exacto de entrega.\\n\\n¿Me podrías decir qué productos estás necesitando y a qué zona debería llegar el envío para que podamos avanzar?\", \"tool_calls\": []}"
     }
    ]
   }

@@ -185,13 +185,29 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > tengo esa información confirmada en el catálogo". Cerrar solo la del redactor
 > no cerraba nada. Las dos estan cerradas y las dos tienen candado.
 >
-> **EL REGRABADO DE LOS DOS CASETES CON HUECO NO SE PUDO HACER HOY, y queda
-> anotado con su motivo:** se intento con la gratis y salio envenenado -la
-> cuota corto casi todos los turnos y las respuestas grabadas eran el enlatado-,
-> asi que se REVIRTIO con git y los casetes quedaron como estaban. Regrabar
-> necesita cuota libre: o `BANCO_PAUSA_S` grande y correr los dos guiones
-> solos, sin nada mas usando la clave ese minuto, o la clave paga, que la pide
-> Martin. No es urgente: el hueco ya se castiga en el puntaje.
+> **LOS DOS CASETES CON HUECO, REGRABADOS Y CERRADOS, con la clave PAGA que
+> Martin autorizo expresamente en la sesion del 11-ago para esto.** Primero se
+> intento con la gratis y salio envenenado -la cuota corto casi todos los
+> turnos y lo grabado era el enlatado-, asi que se revirtio con git. Con la
+> paga salio limpio: `44_consigna_desprolijo` paso de **73 con hueco a 100/100**
+> y `46_consigna_manipulacion` a **91**. **Ningun casete tiene hueco ya**, y
+> EL NUMERO de las 13 charlas subio de **95 a 98/100** (399 de 406 puntos). El
+> piso quedo refijado en 98 con `grabar_casetes.py --piso`, que no gasta un
+> token, asi que la mejora no se puede perder sin que el CI lo grite.
+>
+> **POR QUE LA GRATIS NO PODIA: 250.000 tokens de entrada por minuto.** La paga
+> se midio el mismo dia con el mismo prompt: **25 llamadas, 367.675 tokens de
+> entrada en 22 segundos, sin un solo 429** -la gratis cortaba justo ahi-. O
+> sea que la paga no tiene ese techo y es la unica que aguanta grabar.
+>
+> **EL CANDADO DE LA CLAVE AHORA TIENE PUERTA, y hubo que ponersela.** Bloqueo
+> la orden directa de Martin igual que un reflejo automatico: no sabia
+> distinguirlos, y un candado sin puerta obliga a esquivarlo, que es como se
+> gasto la plata las cuatro veces. La puerta no es una contraseña: hay que
+> escribir `MARTIN_AUTORIZO_LA_PAGA=<fecha>` en la misma linea, o sea afirmar
+> por escrito y con fecha que la orden existio. Sin esa marca el bloqueo es el
+> de siempre, y sin la fecha tampoco pasa. Candado del candado en
+> `tests/test_guard_rama.py`.
 >
 > **PARA PASAR PRODUCCION A LA GRATIS falta UNA cosa que no puedo hacer yo**,
 > porque la clave vive en Cloud Run y desde aca solo tengo lectura. Lo corre

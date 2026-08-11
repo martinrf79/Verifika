@@ -6,23 +6,23 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse inalámbrico para jugar\\\"}],\\\"pide_precio\\\":true,\\\"restricciones\\\":[\\\"barato\\\",\\\"para jugar\\\"]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"categoria\\\":\\\"mouse\\\",\\\"descripcion\\\":\\\"mouse inalámbrico gamer barato\\\",\\\"filtros\\\":[{\\\"operador\\\":\\\"contiene\\\",\\\"campo\\\":\\\"caracteristicas_extra\\\",\\\"valor\\\":\\\"inalámbrico\\\"}],\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"direccion\\\":\\\"min\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse\\\",\\\"gaming_setup\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"restricciones\\\":[\\\"inalambrico\\\",\\\"para jugar\\\",\\\"barato\\\"],\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"mouse inalambrico para jugar\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"categoria\\\":\\\"mouse\\\",\\\"descripcion\\\":\\\"mouse inalambrico gamer barato\\\",\\\"direccion\\\":\\\"min\\\",\\\"filtros\\\":[{\\\"operador\\\":\\\"contiene\\\",\\\"campo\\\":\\\"conexion\\\",\\\"valor\\\":\\\"inalambrico\\\"},{\\\"campo\\\":\\\"uso_recomendado\\\",\\\"operador\\\":\\\"contiene\\\",\\\"valor\\\":\\\"gaming\\\"}],\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"cuantos\\\":3}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse\\\",\\\"mouse_dpi\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse inalámbrico para jugar\\\"}],\\\"pide_precio\\\":true,\\\"restricciones\\\":[\\\"barato\\\",\\\"para jugar\\\"]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"categoria\\\":\\\"mouse\\\",\\\"descripcion\\\":\\\"mouse inalámbrico gamer barato\\\",\\\"filtros\\\":[{\\\"operador\\\":\\\"contiene\\\",\\\"campo\\\":\\\"caracteristicas_extra\\\",\\\"valor\\\":\\\"inalámbrico\\\"}],\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"direccion\\\":\\\"min\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse\\\",\\\"gaming_setup\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"restricciones\\\":[\\\"inalambrico\\\",\\\"para jugar\\\",\\\"barato\\\"],\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"mouse inalambrico para jugar\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"categoria\\\":\\\"mouse\\\",\\\"descripcion\\\":\\\"mouse inalambrico gamer barato\\\",\\\"direccion\\\":\\\"min\\\",\\\"filtros\\\":[{\\\"operador\\\":\\\"contiene\\\",\\\"campo\\\":\\\"conexion\\\",\\\"valor\\\":\\\"inalambrico\\\"},{\\\"campo\\\":\\\"uso_recomendado\\\",\\\"operador\\\":\\\"contiene\\\",\\\"valor\\\":\\\"gaming\\\"}],\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"cuantos\\\":3}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse\\\",\\\"mouse_dpi\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"Hola, cómo va. Para jugar, lo ideal es un mouse que responda bien y sea cómodo, y si buscás algo inalámbrico para tener libertad de movimiento, el Logitech M170 es una excelente opción para arrancar sin gastar de más.\\n\\nTe paso las opciones que tengo disponibles:\\n\\nLo que más se acerca a lo que pediste, entre los mouse:\\n- Mouse Genius DX-110 Negro: $8.500 — caracteristicas extra: sensor optico\\n- Mouse Logitech M170 Negro: $12.000 — caracteristicas extra: sensor optico\\n- Mouse Logitech M170 Blanco: $12.000 — caracteristicas extra: sensor optico\\nHay 45 igual de cerca: ninguno está mejor que otro, te muestro los más baratos de ese grupo.\\n\\nEl Logitech es inalámbrico, mientras que el Genius es con cable, por si preferís ahorrar esa diferencia. ¿Te sirve alguno de estos o buscabas algo con más botones para juegos específicos?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Tengo estas opciones económicas que te sirven para empezar a jugar, son inalámbricos y los más accesibles que tenemos hoy.\\n\\narmar_presupuesto(items=[{\\\"product_id\\\": \\\"MOU0009\\\", \\\"cantidad\\\": 1}, {\\\"product_id\\\": \\\"MOU0010\\\", \\\"cantidad\\\": 1}, {\\\"product_id\\\": \\\"MOU0049\\\", \\\"cantidad\\\": 1}])\\n\\nPara gaming competitivo lo ideal es buscar sensores con más precisión y menos peso, pero para arrancar o un uso casual estos andan muy bien. ¿Te interesa alguno de estos o buscabas algo con más prestaciones?\", \"tool_calls\": []}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"Hola, cómo va. Para jugar, lo ideal es un mouse que responda bien y sea cómodo, y si buscás algo inalámbrico para tener libertad de movimiento, el Logitech M170 es una excelente opción para arrancar sin gastar de más.\\n\\nTe paso las opciones que tengo disponibles:\\n\\nLo que más se acerca a lo que pediste, entre los mouse:\\n- Mouse Genius DX-110 Negro: $8.500 — caracteristicas extra: sensor optico\\n- Mouse Logitech M170 Negro: $12.000 — caracteristicas extra: sensor optico\\n- Mouse Logitech M170 Blanco: $12.000 — caracteristicas extra: sensor optico\\nHay 45 igual de cerca: ninguno está mejor que otro, te muestro los más baratos de ese grupo.\\n\\nEl Logitech es inalámbrico, mientras que el Genius es con cable, por si preferís ahorrar esa diferencia. ¿Te sirve alguno de estos o buscabas algo con más botones para juegos específicos?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Tengo estas opciones económicas que te sirven para empezar a jugar, son inalámbricos y los más accesibles que tenemos hoy.\\n\\narmar_presupuesto(items=[{\\\"product_id\\\": \\\"MOU0009\\\", \\\"cantidad\\\": 1}, {\\\"product_id\\\": \\\"MOU0010\\\", \\\"cantidad\\\": 1}, {\\\"product_id\\\": \\\"MOU0049\\\", \\\"cantidad\\\": 1}])\\n\\nPara gaming competitivo lo ideal es buscar sensores con más precisión y menos peso, pero para arrancar o un uso casual estos andan muy bien. ¿Te interesa alguno de estos o buscabas algo con más prestaciones?\", \"tool_calls\": []}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Hola, te cuento que no tengo modelos que cumplan estrictamente con ser inalámbricos y a la vez económicos para gaming, pero tengo estos que se acercan a lo que buscas:\\n\\nLo que más se acerca a lo que pediste, entre los mouse:\\n- Mouse Genius DX-110 Negro: $8.500 — caracteristicas extra: sensor optico\\n- Mouse Logitech M170 Negro: $12.000 — caracteristicas extra: sensor optico\\n- Mouse Logitech M170 Blanco: $12.000 — caracteristicas extra: sensor optico\\nHay 45 igual de cerca: ninguno está mejor que otro, te muestro los más baratos de ese grupo.\\n\\nEl Logitech M170 es el único de estos que es inalámbrico y te va a dar esa libertad de movimiento, aunque el Genius es más económico, pero lleva cable. Para juegos, un mouse con buen sensor es clave, así que te pregunto, ¿preferís priorizar que sea inalámbrico o que tenga un sensor más preciso para competir?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Para lo que buscas, el Logitech M170 es la opción más económica. Es <d MOU0009>inalámbrico</d> y, aunque es un modelo básico, el fabricante lo cataloga como <d MOU0009>ideal para gaming</d>. Tiene un <d MOU0009>sensor óptico</d> y <d MOU0009>funciona con 1 pila AA</d>.\\n\\nPresupuesto:\\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\\nSubtotal: $12.000\\nTotal: $12.000\\n\\nTe sirve para <d MOU0009>notebook o PC de escritorio</d> y cuenta con <d MOU0009>24 meses de garantía oficial</d>. ¿Te lo reservo o preferís ver alguna otra opción?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -31,23 +31,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"auriculares\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"direccion\\\":\\\"min\\\",\\\"cuantos\\\":3,\\\"categoria\\\":\\\"auriculares\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"auriculares\\\",\\\"calidad_precio\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\",\\\"cantidad\\\":1},{\\\"que\\\":\\\"auriculares\\\",\\\"cantidad\\\":1}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"direccion\\\":\\\"min\\\",\\\"descripcion\\\":\\\"auriculares baratos\\\",\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"cuantos\\\":3,\\\"categoria\\\":\\\"auriculares\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"auriculares\\\",\\\"calidad_precio\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"auriculares\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"direccion\\\":\\\"min\\\",\\\"cuantos\\\":3,\\\"categoria\\\":\\\"auriculares\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"auriculares\\\",\\\"calidad_precio\\\"]}\"}]}"
-    },
-    {
-     "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"product_id\\\":\\\"MOU0009\\\",\\\"cantidad\\\":1},{\\\"cantidad\\\":1,\\\"product_id\\\":\\\"AUR0019\\\"}]}\"}]}"
-    },
-    {
-     "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"product_id\\\":\\\"MOU0009\\\",\\\"cantidad\\\":1},{\\\"cantidad\\\":1,\\\"product_id\\\":\\\"AUR0019\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\",\\\"cantidad\\\":1},{\\\"que\\\":\\\"auriculares\\\",\\\"cantidad\\\":1}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"direccion\\\":\\\"min\\\",\\\"descripcion\\\":\\\"auriculares baratos\\\",\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"cuantos\\\":3,\\\"categoria\\\":\\\"auriculares\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"auriculares\\\",\\\"calidad_precio\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Claro! Tengo varias opciones de auriculares, todos orientados al gaming. Te comparto los más accesibles que tenemos actualmente:\\n\\n- Auriculares Redragon Zeus X Negro: $57.500\\n- Auriculares Redragon Zeus X Blanco: $57.500\\n- Auriculares Redragon Pandora Negro: $62.500\\n\\nTodos estos modelos son con cable, lo cual es ideal para gaming porque no tenés que preocuparte por la batería. Si te interesa combinar el mouse inalámbrico que vimos antes con uno de estos auriculares, te armé este presupuesto:\\n\\nPresupuesto:\\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\\nSubtotal: $69.500\\nTotal: $69.500\\n\\n¿Te gustaría avanzar con alguno de estos o preferís que busquemos otra cosa?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"¡Hola! Sí, tenemos varias opciones. Para gaming, te recomiendo los Redragon Zeus X, que son una excelente opción. Son <d AUR0019>de cable</d>, están construidos en <d AUR0019>plástico y cuero sintético</d> y cuentan con <d AUR0019>12 meses de garantía oficial</d>.\\n\\nHe actualizado tu pedido sumando los auriculares. Aquí tienes el detalle:\\n\\nPresupuesto:\\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\\nSubtotal: $69.500\\nTotal: $69.500\\n\\nComo me preguntaste por opciones que no sean tan caras, estos son los modelos más accesibles que tenemos actualmente que mantienen una buena relación precio-calidad para jugar. ¿Te gustaría avanzar con estos o preferís que te cuente sobre algún otro modelo?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -56,15 +48,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"product_id\\\":\\\"MOU0009\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\"}]}\"}, {\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"product_id\\\":\\\"MOU0009\\\",\\\"cantidad\\\":2}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"continuacion_presupuesto\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"product_id\\\":\\\"MOU0009\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\"}]}\"}, {\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"product_id\\\":\\\"MOU0009\\\",\\\"cantidad\\\":2}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"continuacion_presupuesto\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Entendido! He quitado los auriculares de tu pedido y he actualizado la cantidad de los mouse a dos unidades del Logitech M170 Negro, tal como me pediste.\\n\\nAquí tenés el presupuesto actualizado:\\n\\nPresupuesto:\\n- 2x Mouse Logitech M170 Negro: $12.000 c/u = $24.000\\nSubtotal: $24.000\\nTotal: $24.000\\n\\n¿Te gustaría confirmar este pedido o necesitas algo más?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"¡Perfecto! Ya eliminé los auriculares de tu pedido y actualicé la cantidad de los mouses. Te comento que el Mouse Logitech M170 Negro tiene <d MOU0009>24 meses de garantía</d>, funciona con <d MOU0009>1 pila AA</d> y utiliza un <d MOU0009>receptor USB de 2.4GHz</d> para la conexión inalámbrica.\\n\\nAquí tenés el presupuesto actualizado:\\n\\nPresupuesto:\\n- 2x Mouse Logitech M170 Negro: $12.000 c/u = $24.000\\nSubtotal: $24.000\\nTotal: $24.000\\n\\n¿Te gustaría confirmar este pedido o necesitas que te ayude con algo más antes de avanzar?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -80,12 +72,8 @@
      "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\"}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"preguntas_confirmacion\\\"]}\"}]}"
     },
     {
-     "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"product_id\\\":\\\"MOU0009\\\",\\\"cantidad\\\":2}]}\"}]}"
-    },
-    {
-     "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"product_id\\\":\\\"MOU0009\\\",\\\"cantidad\\\":2}]}\"}]}"
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Quedate tranquilo! Ya tomé nota de que ambos son en color <d MOU0009>negro</d>. El Mouse Logitech M170 cuenta con <d MOU0009>24 meses de garantía</d>, utiliza <d MOU0009>1 pila AA</d> y su conexión es mediante <d MOU0009>receptor USB de 2.4GHz</d>.\\n\\nPresupuesto:\\n- 2x Mouse Logitech M170 Negro: $12.000 c/u = $24.000\\nSubtotal: $24.000\\nTotal: $24.000\\n\\n¿Te parece bien que avancemos con el pedido así como está?\", \"tool_calls\": []}"
     }
    ]
   }

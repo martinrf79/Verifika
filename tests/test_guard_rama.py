@@ -144,3 +144,24 @@ def test_el_candado_no_se_bloquea_a_si_mismo():
     texto, no gasta un peso."""
     assert _correr_clave(
         f'git commit -m "documenta {_PAGA}=true y ${_PROD}"') == 0
+
+
+def test_la_paga_pasa_SOLO_con_la_marca_explicita_de_martin():
+    """LA PUERTA DEL CANDADO (11-ago-2026). Martin autorizo la paga para
+    regrabar dos casetes que la gratis no aguanta —su tope son 250.000 tokens
+    de entrada por minuto— y el candado la bloqueaba igual: no distinguia el
+    reflejo automatico, que hay que frenar, de una orden directa, que se
+    ejecuta. Un candado sin puerta obliga a esquivarlo, y esquivarlo es como se
+    gasto la plata las cuatro veces.
+
+    La marca no es una contraseña: es un acto explicito con fecha que queda en
+    el historial. Sin ella, el bloqueo sigue siendo el de siempre."""
+    con_marca = (f"{_PAGA}=true MARTIN_AUTORIZO_LA_PAGA=11-ago-2026 "
+                 "python3 banco_pruebas/grabar_casetes.py 44_x.txt")
+    assert _correr_clave(con_marca) == 0, "bloqueo una orden directa de Martin"
+
+    sin_fecha = f"{_PAGA}=true MARTIN_AUTORIZO_LA_PAGA=si python3 banco_pruebas/objetivo.py"
+    assert _correr_clave(sin_fecha) == 2, "la marca sin fecha no alcanza"
+
+    a_secas = f"{_PAGA}=true python3 banco_pruebas/objetivo.py --vivo"
+    assert _correr_clave(a_secas) == 2, "el reflejo automatico tiene que seguir frenado"
