@@ -150,3 +150,115 @@ def test_el_barrido_de_nombres_cortos_no_deja_agujeros():
     assert probados > 500, "el barrido se quedo sin casos: revisar la tabla"
     assert not fallan, (f"{len(fallan)} de {probados} nombres cortos sin "
                         f"resolver, p.ej. {fallan[:5]}")
+
+
+# ── EL BARRIDO COMPLETO DE LA TABLA (12-ago-2026) ───────────────────────────
+#
+# El de arriba barre los nombres CORTOS, que era el agujero del 11-ago. Este
+# barre la tabla ENTERA -las 16.164 localidades, en las dos formas en que un
+# cliente nombra un destino- y encontro lo que aquel no podia ver:
+#
+#     localidad + provincia, 20.542 pares    64 fallas -> 26
+#     localidad sola, las 14.147 inequivocas 96 fallas ->  3
+#
+# UNA SOLA CLASE, y se llevaba las dos: LA PROVINCIA METIDA ADENTRO DE UNA
+# LOCALIDAD. `_provincia_en_texto` buscaba por regex sobre el texto pelado, sin
+# saber donde empieza y termina un pueblo, asi que "aguas corrientes" declaraba
+# Corrientes, "fortin chaco" declaraba Chaco y "cantera san luis" declaraba San
+# Luis. Y el tope de n-gramas estaba clavado a mano en cinco palabras cuando la
+# tabla tiene veintinueve localidades de seis y siete: esas no podian matchear
+# enteras nunca, asi que el segmentador se quedaba con un pedazo.
+#
+# LO QUE QUEDA AFUERA Y NO ES UN DEFECTO: ocho nombres de pueblo que son
+# EXACTAMENTE el nombre de una provincia -Entre Rios, La Pampa, Misiones, Rio
+# Negro, San Juan, San Luis, Santa Cruz- mas 'villa'. El cliente que escribe
+# "misiones" pelado esta nombrando la provincia, y leerlo asi es lo correcto;
+# tratarlos como pueblo seria romper el caso comun para arreglar el raro.
+
+_NOMBRE_ES_UNA_PROVINCIA = {
+    "entre rios", "la pampa", "misiones", "rio negro", "san juan", "san luis",
+    "santa cruz", "villa",
+}
+
+
+def test_el_barrido_completo_de_la_tabla_con_provincia():
+    """Por cada localidad de la tabla y cada provincia donde existe, se la
+    nombra como la nombra el cliente -"<localidad>, <Provincia>"- y tiene que
+    resolver A ESA provincia. Son 20.542 pares y los da la tabla: no hay un solo
+    caso escrito a mano."""
+    from app.core import geo_cp as G
+
+    G._cargar()
+    fallan = set()
+    probados = 0
+    for loc, provs in G._LOC.items():
+        for slug in provs:
+            probados += 1
+            nombre = "Buenos Aires" if slug == "buenos_aires" else slug.title()
+            if G.resolver(f"{loc}, {nombre}")[0] != slug:
+                fallan.add(loc)
+    assert probados > 20000, "el barrido se quedo sin casos: revisar la tabla"
+    assert fallan <= _NOMBRE_ES_UNA_PROVINCIA, (
+        f"localidades nuevas que resuelven a la provincia equivocada: "
+        f"{sorted(fallan - _NOMBRE_ES_UNA_PROVINCIA)[:8]}")
+
+
+def test_el_barrido_completo_de_la_tabla_sin_provincia():
+    """La localidad SOLA, para las que existen en una sola provincia: tiene que
+    resolver a la suya o no resolver, nunca a otra. Inventarle la provincia a un
+    destino es cobrarle al cliente la tarifa de un lugar al que no manda nada."""
+    from app.core import geo_cp as G
+
+    G._cargar()
+    equivocadas = []
+    probados = 0
+    for loc, provs in G._LOC.items():
+        if len(provs) != 1:
+            continue
+        probados += 1
+        (slug, _cp), = provs.items()
+        resuelta = G.resolver(loc)[0]
+        if resuelta is not None and resuelta != slug:
+            equivocadas.append((loc, slug, resuelta))
+    assert probados > 14000, "el barrido se quedo sin casos: revisar la tabla"
+    assert len(equivocadas) <= 3, (
+        f"{len(equivocadas)} localidades declaran una provincia ajena "
+        f"(eran 3), p.ej. {equivocadas[:5]}")
+
+
+def test_la_provincia_adentro_de_un_pueblo_no_es_la_provincia():
+    """LA CLASE, escrita como propiedad y no como lista: por cada localidad
+    cuyo nombre CONTIENE una frase de provincia siendo mas largo que ella, la
+    provincia que gana tiene que ser la del pueblo, no la de adentro del nombre.
+    Son 95 localidades de la tabla y las da ella misma."""
+    from app.core import geo_cp as G
+
+    G._cargar()
+    probados, fallan = 0, []
+    for loc, provs in G._LOC.items():
+        pal = loc.split()
+        contiene = any(
+            len(f.split()) < len(pal)
+            and any(pal[i:i + len(f.split())] == f.split()
+                    for i in range(len(pal) - len(f.split()) + 1))
+            for f in G._PROV_ALIASES)
+        if not contiene:
+            continue
+        for slug in provs:
+            probados += 1
+            nombre = "Buenos Aires" if slug == "buenos_aires" else slug.title()
+            if G.resolver(f"{loc}, {nombre}")[0] != slug:
+                fallan.append((loc, slug))
+    assert probados > 50, "el barrido se quedo sin casos de esta clase"
+    assert not fallan, f"la clase se reabrio: {fallan[:5]}"
+
+
+def test_el_tope_de_ngramas_lo_dice_la_tabla():
+    """El tope estaba clavado en cinco y la tabla tiene localidades de siete: las
+    de seis y siete palabras no podian matchear enteras, y el segmentador se
+    quedaba con un pedazo del nombre. Que salga de la fuente evita que el dia que
+    se cargue una localidad mas larga vuelva a pasar en silencio."""
+    from app.core import geo_cp as G
+
+    G._cargar()
+    assert G._MAX_NGRAM >= max(len(l.split()) for l in G._LOC)

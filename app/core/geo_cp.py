@@ -55,7 +55,14 @@ for _s in _PROV_CSV_A_SLUG.values():
     if _s not in ("caba", "buenos_aires"):
         _PROV_ALIASES[_s] = _s
 
-_MAX_NGRAM = 5  # localidades de hasta 5 palabras (San Miguel de Tucuman, etc.)
+# EL TOPE SALE DE LA TABLA, NO DE UNA CONSTANTE (12-ago-2026, barrido completo).
+# Estaba clavado en 5 "localidades de hasta 5 palabras", y la tabla tiene 27 de
+# SEIS y 2 de SIETE: esas 29 no podian matchear enteras nunca, asi que el
+# segmentador las partia y se quedaba con un pedazo -'san juan junin de los
+# andes' se leia 'san juan' y declaraba la provincia de Cuyo por un pueblo de
+# Neuquen-. Es el mismo criterio que el resto del repo: el limite lo dice la
+# fuente viva, no un numero escrito a mano que envejece cuando la tabla cambia.
+_MAX_NGRAM = 5  # piso; `_cargar` lo sube a lo que diga la tabla
 
 _LOC: dict = {}          # loc_norm -> {prov_slug: cp_int}
 _CARGADO = False
@@ -89,15 +96,50 @@ def _cargar():
                     d[prov_slug] = None
     except Exception as e:
         log.warning("geo_cp_carga_error", error=str(e)[:150])
+    global _MAX_NGRAM
+    if _LOC:
+        _MAX_NGRAM = max(_MAX_NGRAM, max(len(l.split()) for l in _LOC))
     _CARGADO = True
-    log.info("geo_cp_cargado", localidades=len(_LOC))
+    log.info("geo_cp_cargado", localidades=len(_LOC), max_ngram=_MAX_NGRAM)
 
 
-def _provincia_en_texto(t: str):
-    """slug de la provincia nombrada en el texto, o None. Frase mas larga gana."""
+def _provincia_en_texto(t: str, hits=None):
+    """slug de la provincia nombrada en el texto, o None. Frase mas larga gana.
+
+    EL NOMBRE DE PROVINCIA QUE ES PARTE DE UNA LOCALIDAD NO ES UNA PROVINCIA
+    (12-ago-2026, barrido de las 16.164 localidades de la tabla). La busqueda era
+    un regex sobre el texto pelado, sin saber donde empieza y donde termina una
+    localidad, asi que "aguas corrientes" declaraba Corrientes, "fortin chaco"
+    declaraba Chaco, "cantera san luis" declaraba San Luis y "el potrero de los
+    cordoba" declaraba Cordoba. 102 localidades resolvian a una provincia que no
+    es la suya, y las que ademas nombran su provincia de verdad -"campo san juan,
+    Cordoba"- se iban derecho a la tarifa equivocada.
+
+    LA REGLA ES LA MISMA QUE YA GOBIERNA ESTE ARCHIVO: el match mas largo gana.
+    `_localidades_en_texto` ya segmenta por maximal munch para no degradar 'villa
+    maria' a 'maria'; aca se usa esa misma segmentacion para decidir si la
+    palabra 'corrientes' es la provincia o es la segunda mitad de un pueblo.
+
+    Se descarta SOLO cuando la localidad que la contiene es ESTRICTAMENTE mas
+    larga. Con el mismo largo no hay nada que desempatar y manda la provincia:
+    'corrientes', 'misiones' y 'buenos aires' son a la vez el nombre de un pueblo
+    y el de la provincia, y el cliente que los escribe pelados esta nombrando la
+    provincia. Esa lectura no se toca.
+    """
+    if hits is None:
+        _, hits = _localidades_en_texto(t)
+    palabras = t.split()
     for frase in sorted(_PROV_ALIASES, key=len, reverse=True):
-        if re.search(r"(^| )" + re.escape(frase) + r"( |$)", t):
-            return _PROV_ALIASES[frase]
+        partes = frase.split()
+        n = len(partes)
+        for i in range(len(palabras) - n + 1):
+            if palabras[i:i + n] != partes:
+                continue
+            # ¿esta ocurrencia vive adentro de una localidad mas larga?
+            tapada = any(ini <= i and i + n <= fin and (fin - ini) > n
+                         for _loc, ini, fin in hits)
+            if not tapada:
+                return _PROV_ALIASES[frase]
     return None
 
 
@@ -190,8 +232,10 @@ def resolver(texto: str):
     t = _norm(texto)
     if not t:
         return None, None
-    prov = _provincia_en_texto(t)
+    # La segmentacion en localidades va PRIMERO: es la que le dice al detector de
+    # provincia si 'corrientes' es la provincia o la segunda mitad de un pueblo.
     palabras, hits = _localidades_en_texto(t)
+    prov = _provincia_en_texto(t, hits)
 
     if prov:
         for loc, ini, fin in hits:
