@@ -631,8 +631,18 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
                      con_destino=_unidades_con_destino(llamadas),
                      decia=c[:120])
             continue
-        preguntar.append(f"Preguntale al cliente por esto antes de "
-                         f"avanzar: {c}")
+        # LA NOTA ES PARA VOS, NO PARA EL CLIENTE, y hay que decirselo. El
+        # modelo escribe la contradiccion en TERCERA persona -"el cliente pidio
+        # 2 auriculares pero menciono un teclado"- porque se la escribe a si
+        # mismo; despues se la devolviamos con un "preguntale al cliente por
+        # esto" adelante y la pegaba TAL CUAL en el mensaje. Salio a WhatsApp
+        # dos turnos seguidos el 12-ago: el cliente leyendo como el sistema
+        # habla de el. El invariante `le_habla_al_cliente_y_no_de_el` la caza
+        # si igual se filtra; esto ataca el origen.
+        preguntar.append(f"Antes de avanzar preguntaselo al cliente VOS, de "
+                         f"vos a vos, con tus palabras y en una linea. NO "
+                         f"copies esta nota: esta escrita para vos, no para "
+                         f"el. Lo que hay que aclarar: {c}")
 
     # 7. VARIOS DESTINOS Y NINGUN ITEM CON DESTINO: el reparto no se declaro.
     #

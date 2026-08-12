@@ -2543,6 +2543,17 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         declarado_antes=conv.get("ultimo_declarado") or [],
         declarado_ahora=declarado_ahora)
     localidades = get_envio_localidades() or (conv.get("ultimas_localidades") or [])
+    # EL REPARTO DE ENVIOS, PERSISTIDO. Lo escribe en el estado el que lo
+    # resuelve -el parser del mensaje o la cuenta, con el reparto que declaro
+    # el modelo item por item- y hasta hoy moria con el turno: dos turnos
+    # despues, con el mismo carrito, el bloque volvia a pedir "decime que va a
+    # cada uno" (charla real del 12-ago). Se guarda el ultimo que cerro; si el
+    # turno no cerro ninguno, va None y el merge conserva el anterior.
+    try:
+        from app.core.estado_venta import get_current_estado as _gce_grupos
+        _grupos_envio = (_gce_grupos() or {}).get("grupos_envio") or None
+    except Exception:  # noqa: BLE001 — la memoria nunca tumba el save
+        _grupos_envio = None
     try:
         save_conversation(
             user_id, history, resumen, tienda_id=tienda_id,
@@ -2554,6 +2565,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
             ultima_localidad=(localidades[-1] if localidades else
                               (conv.get("ultima_localidad") or "")),
             ultimas_localidades=localidades,
+            grupos_envio=_grupos_envio,
             datos_cliente_parciales=datos_cliente,
             pregunta_cierre_hecha=pregunta_cierre_hecha,
             ultimo_presupuesto=(bloque or conv.get("ultimo_presupuesto") or None))

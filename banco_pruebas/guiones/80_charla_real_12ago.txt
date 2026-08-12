@@ -1,0 +1,31 @@
+# CHARLA REAL de Martin (12-ago-2026, WhatsApp, usuario 5493547504287). Ocho
+# turnos, y es la mas dificil que se probo hasta hoy: arranca con una condicion
+# que el catalogo no cumple -no fabricado en china-, sigue con un pedido de
+# tres categorias repartido entre tres destinos, con un error del propio
+# cliente adentro ("un teclado" en la distribucion de un pedido que no tenia
+# teclado), lo corrige por referencia a su mensaje anterior, y despues agrega
+# un producto nuevo al presupuesto que ya estaba armado.
+#
+# LO QUE SE MIDIO EN LA CORRIDA REAL, con la ficha del turno como prueba
+# (traces a52fb075, a7a11f74, 8e019c43 en Cloud Logging del 12-ago):
+#
+#   1. EL REPARTO SE PERDIO ENTRE TURNOS. En el turno 6 el modelo declaro el
+#      reparto entero y la cuenta salio con su bloque destino por destino. En
+#      el turno 8, con el MISMO carrito, salio "me faltan 6 de 6 unidades sin
+#      asignar: decime que va a cada uno" — le pidio al cliente un dato que ya
+#      habia dado. Arreglado el 12-ago: el reparto se persiste y se repone.
+#   2. LA NOTA INTERNA SE FUGO. Turnos 5 y 6: "te comento que el cliente pidio
+#      2 auriculares..." es la contradiccion que el modelo se escribio a si
+#      mismo, devuelta por el reconciliador y pegada tal cual en el mensaje.
+#   3. LA PLATA SE ESTAMPO DOS VECES en el turno 5: el modelo escribio su
+#      propia tabla con precios y el codigo le pego la cuenta sellada abajo.
+#   4. EL PRODUCTO CAMBIO DE COLOR SOLO entre el turno 5 y el 6 (Redragon Zeus
+#      X Negro -> Blanco) sin que el cliente dijera nada.
+Dame lista de productos que no sean fabricados en china
+Micrófono
+Pasame microfonos marcas estados unidos
+De los tres que mencionas manda el mas barato a correa, el que sigue a rio cuarto y el otro a san nicolas. Dividi el precio 80 20
+Correa santa fe san nicolas bs as
+Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos.
+Sí tienes razón En total son siete artículos cambia el mensaje mi primer mensaje cambia donde dice teclado por memoria y allí te quedará todo resuelto lo demás
+Sí agrega a ese presupuesto que detallaste al último con los seis artículos agrega un teclado con envío a Córdoba

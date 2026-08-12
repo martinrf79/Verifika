@@ -87,6 +87,18 @@ _RE_REPARTO = re.compile(r"^\s*-\s*A\s+(?P<destino>[^:]+):\s*(?P<carga>.+?)\s*$"
                          re.MULTILINE)
 _RE_ETIQUETA_ATADURA = re.compile(r"</?d(\s|>)", re.IGNORECASE)
 
+# EL MODELO NARRANDO AL CLIENTE EN TERCERA PERSONA. Es la forma que toma la
+# nota interna cuando se fuga: "el cliente pidio", "el usuario menciono". Solo
+# verbos de DECIR y PEDIR, que es lo que narra una nota; "el cliente elige
+# desde su casa", que es politica escrita en general, no entra.
+_RE_HABLA_DEL_CLIENTE = re.compile(
+    r"\b(?:el|al|del)\s+(?:cliente|usuario)\s+"
+    r"(?:me\s+|te\s+|ya\s+|no\s+|tambi[eé]n\s+)*"
+    r"(?:pidi[oó]|pide|dijo|dice|mencion[oó]|menciona|aclar[oó]|aclara"
+    r"|solicit[oó]|solicita|indic[oó]|indica|pregunt[oó]|pregunta"
+    r"|declar[oó]|declara|escribi[oó]|nombr[oó]|nombra)\b",
+    re.IGNORECASE)
+
 
 def _n(s) -> str:
     s = unicodedata.normalize("NFKD", re.sub(r"\s+", " ", str(s or "")).strip().lower())
@@ -311,6 +323,30 @@ def sin_etiquetas_ni_marcas_internas(mensaje: str) -> list:
     return []
 
 
+def le_habla_al_cliente_y_no_de_el(mensaje: str) -> list:
+    """El mensaje va DIRIGIDO al cliente: no puede hablar de el en tercera
+    persona, porque cuando lo hace es una nota interna que se fugo.
+
+    LA FALLA, leida en la charla real del 12-ago, dos turnos seguidos: "te
+    comento que el cliente pidió 2 auriculares, 2 mouse y 2 memorias RAM, pero
+    en la distribución de envíos mencionó un 'teclado'". Eso no se lo escribio
+    el vendedor al cliente: es la contradiccion que el modelo declaro para si
+    mismo, que el reconciliador le devolvio para que preguntara, y que el
+    modelo pego tal cual en el mensaje. El dato hasta era correcto; lo que
+    esta mal es a quien le habla.
+
+    Se caza solo el NARRAR lo que el cliente hizo o dijo -pidio, menciono,
+    aclaro-, que es la forma que toma la nota interna. Una frase de politica
+    que nombra al cliente en general ("el cliente elige desde su casa") no
+    entra: no cuenta lo que ESTE cliente dijo."""
+    if _RE_HABLA_DEL_CLIENTE.search(mensaje or ""):
+        m = _RE_HABLA_DEL_CLIENTE.search(mensaje)
+        return [_falla("habla_del_cliente_en_tercera_persona",
+                       f"'{m.group(0).strip()}' — nota interna fugada al "
+                       f"mensaje, que va dirigido al cliente")]
+    return []
+
+
 def sin_encabezado_sin_nada_abajo(mensaje: str) -> list:
     """Un titulo que promete una lista y no muestra ninguna. Le paso a Martin
     el 10-ago: "Reparto de los envios:" y abajo, nada."""
@@ -351,6 +387,7 @@ TODOS = (
     "nada_se_dice_dos_veces",
     "no_repite_el_mensaje_anterior",
     "sin_etiquetas_ni_marcas_internas",
+    "le_habla_al_cliente_y_no_de_el",
     "sin_encabezado_sin_nada_abajo",
     "productos_del_catalogo",
 )
@@ -372,6 +409,7 @@ def revisar(mensaje: str, anterior: str = "", vocabulario: set = None) -> list:
     fallas += nada_se_dice_dos_veces(mensaje)
     fallas += no_repite_el_mensaje_anterior(mensaje, anterior)
     fallas += sin_etiquetas_ni_marcas_internas(mensaje)
+    fallas += le_habla_al_cliente_y_no_de_el(mensaje)
     fallas += sin_encabezado_sin_nada_abajo(mensaje)
     fallas += productos_del_catalogo(mensaje, vocabulario or set())
     return fallas

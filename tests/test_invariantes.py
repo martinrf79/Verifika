@@ -148,3 +148,26 @@ def test_revisar_charla_marca_el_turno():
     fallas = revisar_charla(["Ahi va.\n" + CUENTA, "Dale.\n" + CUENTA])
     assert any(f["turno"] == 2 for f in fallas)
     assert not any(f["turno"] == 1 for f in fallas)
+
+
+# ── LA NOTA INTERNA QUE SE FUGA (charla real del 12-ago) ─────────────────────
+def test_caza_la_nota_interna_que_habla_del_cliente_en_tercera_persona():
+    """El texto es de la charla real del 12-ago, tal cual salio a WhatsApp: la
+    contradiccion que el modelo declaro para si mismo, que el reconciliador le
+    devolvio para que la preguntara, pegada tal cual en el mensaje. El dato era
+    correcto; lo que esta mal es a quien le habla."""
+    real = ("Entiendo perfectamente tu pedido. Sobre los artículos, te comento "
+            "que el cliente pidió 2 auriculares, 2 mouse y 2 memorias RAM, "
+            "pero en la distribución de envíos mencionó un 'teclado' que no "
+            "estaba en la lista original.")
+    reglas = [f["regla"] for f in revisar(real)]
+    assert "habla_del_cliente_en_tercera_persona" in reglas
+
+
+def test_la_politica_que_nombra_al_cliente_en_general_no_es_una_fuga():
+    """La FAQ habla del cliente en tercera persona a proposito -es politica
+    escrita en general- y eso no narra lo que ESTE cliente dijo. Si esto
+    disparara, la regla castigaria respuestas correctas."""
+    assert revisar("Somos una tienda cien por cien online: el cliente elige "
+                   "desde su casa y le llega a la puerta.") == []
+    assert revisar("Te confirmo que el envío a Córdoba sale $7.500.") == []

@@ -170,6 +170,24 @@ def get_current_estado() -> dict:
     return _current_estado.get() or {}
 
 
+def anotar_grupos_envio(grupos: list | None) -> None:
+    """Deja el reparto de envios YA resuelto en el estado del turno, para que
+    el hub lo persista y el turno siguiente no lo vuelva a pedir.
+
+    ESCRIBE POR ACA Y NO A MANO, y el motivo es una trampa real: quien anotaba
+    `get_current_estado()['grupos_envio'] = g` perdia la anotacion cuando el
+    estado estaba vacio, porque el getter devuelve `_current_estado.get() or
+    {}` y un dict vacio es falso — o sea que devolvia OTRO dict, y el reparto
+    se escribia en un objeto que nadie volvia a leer."""
+    if not grupos:
+        return
+    est = _current_estado.get()
+    if not isinstance(est, dict):
+        est = {}
+        _current_estado.set(est)
+    est["grupos_envio"] = list(grupos)
+
+
 def _money(n: Any) -> str:
     """Entero a formato argentino con separador de miles: 48000 -> '48.000'."""
     try:

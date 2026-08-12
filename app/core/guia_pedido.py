@@ -703,10 +703,10 @@ def grupos_para_calculo(mensaje: str, locs: list,
             g = None
     if g:
         try:
-            from app.core.estado_venta import get_current_estado
-            est = get_current_estado()
-            if isinstance(est, dict):
-                est["grupos_envio"] = g
+            # Por `anotar_grupos_envio` y no a mano: con el estado vacio, el
+            # getter devuelve otro dict y la anotacion se perdia.
+            from app.core.estado_venta import anotar_grupos_envio
+            anotar_grupos_envio(g)
         except Exception:
             pass
     return g

@@ -335,3 +335,124 @@ def test_sin_reparto_declarado_no_se_inventan_grupos(firestore_doble):
     # Y con un solo destino tampoco: no hay paquetes que separar.
     uno = [H.ItemPedido(product_id="MOU0001", cantidad=1, destino="Cordoba")]
     assert H._grupos_de_los_items(uno, ["Cordoba"], "verifika_prod") == []
+
+
+# ── EL REPARTO NO SE VUELVE A PEDIR (charla real del 12-ago) ─────────────────
+def _items_de_la_charla_del_12ago():
+    """Los tres productos de la charla real: 2 auriculares, 2 mouse, 2 memorias,
+    repartidos de a dos entre Cordoba Capital, Concordia y Posadas."""
+    from app.core import herramientas as H
+    return [H.ItemPedido(product_id="AUR0020", cantidad=2),
+            H.ItemPedido(product_id="MOU0023", cantidad=2),
+            H.ItemPedido(product_id="RAM0001", cantidad=2)]
+
+
+_DESTINOS_12AGO = ["Córdoba Capital", "Concordia", "Posadas"]
+_MEMORIA_12AGO = [
+    {"destino": "Córdoba Capital",
+     "cats": [{"n": 1, "cat": "auriculares"}, {"n": 1, "cat": "mouse"}]},
+    {"destino": "Concordia",
+     "cats": [{"n": 1, "cat": "memoria ram"}, {"n": 1, "cat": "mouse"}]},
+    {"destino": "Posadas",
+     "cats": [{"n": 1, "cat": "auriculares"}, {"n": 1, "cat": "memoria ram"}]},
+]
+
+
+def test_el_reparto_ya_cerrado_no_se_vuelve_a_pedir(firestore_doble):
+    """LA FALLA REAL, medida en produccion el 12-ago sobre la charla de Martin.
+
+    Turno 14: el modelo declara el reparto entero y la cuenta sale con su
+    bloque escrito, destino por destino. Turno 16: MISMO carrito, el modelo se
+    olvida de repetir el destino de cada item, y el bloque salio 'me faltan 6
+    de 6 unidades sin asignar: decime que va a cada uno'. Le pidio al cliente
+    un dato que el cliente ya habia dado dos turnos antes.
+
+    Con el reparto en la memoria de la charla, la cuenta lo repone sola.
+    """
+    from app.core import herramientas as H
+    from app.core.estado_venta import set_current_estado
+    set_current_tienda("verifika_prod")
+    set_current_estado({"grupos_envio": _MEMORIA_12AGO})
+    try:
+        r = H.armar_presupuesto(
+            H.ArmarPresupuesto(items=_items_de_la_charla_del_12ago(),
+                               destinos=_DESTINOS_12AGO),
+            "verifika_prod")
+        assert r["estado"] == "ok", r
+        bloque = r["bloque"]
+        assert "sin asignar" not in bloque, (
+            "volvio a pedir el reparto que la charla ya cerro:\n" + bloque)
+        for d in _DESTINOS_12AGO:
+            assert d in bloque, f"falta el destino {d} en el reparto:\n{bloque}"
+    finally:
+        set_current_estado(None)
+
+
+def test_el_reparto_repuesto_manda_los_grupos_al_umbral_por_paquete(
+        firestore_doble):
+    """No es solo texto: el reparto repuesto es el que decide el envio gratis
+    por paquete. Si se repusiera solo para escribirlo, la plata seguiria
+    saliendo del promedio."""
+    from app.core import herramientas as H
+    from app.core.estado_venta import set_current_estado
+    set_current_tienda("verifika_prod")
+    set_current_estado({"grupos_envio": _MEMORIA_12AGO})
+    try:
+        repuestos = H._items_con_destino_de_memoria(
+            _items_de_la_charla_del_12ago(), _DESTINOS_12AGO, "verifika_prod")
+        assert repuestos, "no repuso el reparto"
+        grupos = H._grupos_de_los_items(repuestos, _DESTINOS_12AGO,
+                                        "verifika_prod")
+        assert [g["destino"] for g in grupos] == _DESTINOS_12AGO
+        assert sum(c["n"] for g in grupos for c in g["cats"]) == 6
+    finally:
+        set_current_estado(None)
+
+
+def test_no_se_repone_el_reparto_si_el_pedido_cambio(firestore_doble):
+    """TODO-O-NADA, igual que el resto del reparto. Si el pedido ya no es el
+    mismo -se sumo un producto- la memoria no cuadra y no se repone nada:
+    inventarle al cliente a donde va lo que agrego seria peor que preguntarle.
+    """
+    from app.core import herramientas as H
+    from app.core.estado_venta import set_current_estado
+    set_current_tienda("verifika_prod")
+    set_current_estado({"grupos_envio": _MEMORIA_12AGO})
+    try:
+        items = _items_de_la_charla_del_12ago() + [
+            H.ItemPedido(product_id="TEC0020", cantidad=1)]
+        assert H._items_con_destino_de_memoria(
+            items, _DESTINOS_12AGO, "verifika_prod") == []
+        # Y si el modelo SI declaro un destino, manda el modelo: el cliente
+        # puede estar cambiando el reparto justo en este turno.
+        propios = _items_de_la_charla_del_12ago()
+        propios[0].destino = "Rosario"
+        assert H._items_con_destino_de_memoria(
+            propios, _DESTINOS_12AGO, "verifika_prod") == []
+    finally:
+        set_current_estado(None)
+
+
+def test_la_cuenta_deja_el_reparto_en_el_estado_para_persistir(firestore_doble):
+    """El reparto que declara el MODELO item por item -el camino vivo desde el
+    5-ago- no lo guardaba nadie: `grupos_envio` solo lo escribia el parser del
+    mensaje. Por eso el turno siguiente arrancaba sin memoria del reparto."""
+    from app.core import herramientas as H
+    from app.core.estado_venta import set_current_estado, get_current_estado
+    set_current_tienda("verifika_prod")
+    set_current_estado({})
+    try:
+        items = [H.ItemPedido(product_id="AUR0020", cantidad=1,
+                              destino="Córdoba Capital"),
+                 H.ItemPedido(product_id="MOU0023", cantidad=1,
+                              destino="Concordia")]
+        r = H.armar_presupuesto(
+            H.ArmarPresupuesto(items=items,
+                               destinos=["Córdoba Capital", "Concordia"]),
+            "verifika_prod")
+        assert r["estado"] == "ok", r
+        guardado = get_current_estado().get("grupos_envio")
+        assert [g["destino"] for g in guardado] == ["Córdoba Capital",
+                                                    "Concordia"]
+    finally:
+        set_current_estado(None)

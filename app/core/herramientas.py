@@ -1531,6 +1531,98 @@ def _grupos_de_los_items(items: list, destinos: list, tienda_id: str) -> list:
     return grupos if len(grupos) == len(destinos) else []
 
 
+def _items_con_destino_de_memoria(items: list, destinos: list,
+                                  tienda_id: str) -> list:
+    """Los MISMOS items, uno por unidad y con su destino repuesto desde el
+    reparto que la charla YA cerro. [] si no se puede reponer sin adivinar.
+
+    LA FALLA, medida en produccion el 12-ago sobre la charla de Martin. En un
+    turno el modelo declaro el reparto entero -1 auricular y 1 mouse a Cordoba,
+    1 memoria y 1 mouse a Concordia, 1 auricular y 1 memoria a Posadas- y la
+    cuenta salio con su reparto escrito. Dos turnos despues, con el MISMO
+    carrito, el modelo volvio a declarar los items sin `destino`, y el bloque
+    salio "me faltan 6 de 6 unidades sin asignar: decime que va a cada uno".
+    O sea: le pidio al cliente un dato que el cliente ya habia dado y que el
+    sistema habia usado. Es exactamente la prioridad 3 -la memoria- fallando
+    donde mas se nota, porque el reparto vivia SOLO en la declaracion del
+    modelo de ese turno y no se guardaba en ningun lado.
+
+    TODO-O-NADA, como el resto del reparto. Se repone unicamente si el reparto
+    de la memoria cuadra unidad por unidad con lo que hay en la cuenta de
+    ahora, por categoria, y sobre los mismos destinos. Si el pedido cambio -se
+    sumo un producto, se saco otro, cambio un destino- no cuadra, no se repone
+    nada, y la cuenta vuelve a decir honesto que el detalle no esta cerrado.
+    Reponer a medias seria inventarle al cliente a donde va su compra.
+    """
+    from app.core.estado_venta import get_current_estado
+    from app.storage.firestore_client import get_product_by_id
+    if len(destinos) < 2 or not items:
+        return []
+    # Si el modelo declaro aunque sea un destino, manda el, no la memoria: el
+    # cliente puede estar cambiando el reparto justo en este turno.
+    if any(str(getattr(i, "destino", "") or "").strip() for i in items):
+        return []
+    mem = (get_current_estado() or {}).get("grupos_envio") or []
+    if not isinstance(mem, list) or len(mem) != len(destinos):
+        return []
+    por_destino: dict = {}
+    for g in mem:
+        if not isinstance(g, dict):
+            return []
+        d = str(g.get("destino") or "").strip()
+        cuenta: dict = {}
+        for c in (g.get("cats") or []):
+            if not isinstance(c, dict):
+                return []
+            cat = _norm(c.get("cat"))
+            try:
+                n = int(c.get("n") or 0)
+            except (TypeError, ValueError):
+                return []
+            if not d or not cat or n <= 0:
+                return []
+            cuenta[cat] = cuenta.get(cat, 0) + n
+        if not cuenta:
+            return []
+        por_destino[d] = cuenta
+    # Los destinos de la memoria tienen que ser los que se cotizan ahora.
+    quiere = {_norm(d) for d in destinos}
+    if {_norm(d) for d in por_destino} != quiere or len(por_destino) != len(destinos):
+        return []
+    # Las unidades por categoria tienen que cuadrar exactas contra la cuenta.
+    unidades: dict = {}
+    for i in items:
+        p = get_product_by_id(str(i.product_id).upper(), tienda_id=tienda_id)
+        cat = _norm((p or {}).get("categoria"))
+        if not cat:
+            return []
+        unidades.setdefault(cat, []).extend(
+            [str(i.product_id).upper()] * max(1, int(i.cantidad or 1)))
+    pide: dict = {}
+    for cuenta in por_destino.values():
+        for cat, n in cuenta.items():
+            pide[cat] = pide.get(cat, 0) + n
+    if pide != {c: len(v) for c, v in unidades.items()}:
+        return []
+    # Se reparte unidad por unidad, EN EL ORDEN EN QUE SE COTIZA cada destino:
+    # `calculate_total` mapea grupo con localidad por posicion. Las unidades
+    # del mismo producto que van al mismo lugar salen en UN renglon ("2x
+    # auriculares"), como las escribiria el modelo.
+    repuestos = []
+    for d in destinos:
+        cuenta = por_destino[next(k for k in por_destino if _norm(k) == _norm(d))]
+        junta: dict = {}
+        for cat, n in cuenta.items():
+            for _ in range(n):
+                pid = unidades[cat].pop(0)
+                junta[pid] = junta.get(pid, 0) + 1
+        for pid, n in junta.items():
+            repuestos.append(ItemPedido(product_id=pid, cantidad=n, destino=d))
+    log.info("reparto_repuesto_de_memoria", destinos=len(destinos),
+             unidades=len(repuestos))
+    return repuestos
+
+
 def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     """LA CUENTA. Cotiza cada destino y suma, y devuelve el presupuesto ya
     escrito renglon por renglon.
@@ -1550,6 +1642,13 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     if not destinos:
         destinos = list(dict.fromkeys(
             [str(i.destino).strip() for i in a.items if i.destino]))
+    # EL REPARTO QUE LA CHARLA YA CERRO NO SE VUELVE A PEDIR. Si el modelo se
+    # olvido de repetir el destino de cada item pero el pedido es el mismo, el
+    # reparto sale de la memoria. Ver `_items_con_destino_de_memoria`.
+    pedido_items = list(a.items or [])
+    repuestos = _items_con_destino_de_memoria(pedido_items, destinos, tienda_id)
+    if repuestos:
+        pedido_items = repuestos
     envios = []
     for d in destinos:
         try:
@@ -1575,7 +1674,18 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     # cuenta unidades por categoria. TODO-O-NADA, igual que el parser viejo: si
     # a un item le falta el destino no se manda ningun grupo y la cuenta sigue
     # con el promedio de siempre.
-    grupos = _grupos_de_los_items(a.items, destinos, tienda_id)
+    grupos = _grupos_de_los_items(pedido_items, destinos, tienda_id)
+    # EL REPARTO SE GUARDA, y por eso el turno siguiente no lo vuelve a pedir.
+    # El campo `grupos_envio` de la conversacion existia desde el 20-jul y lo
+    # escribia solo el parser del mensaje (`guia_pedido.grupos_para_calculo`);
+    # cuando el reparto lo declara el modelo item por item -que es el camino
+    # vivo desde el 5-ago- no lo guardaba nadie. El hub lo persiste al cerrar.
+    if grupos:
+        try:
+            from app.core.estado_venta import anotar_grupos_envio
+            anotar_grupos_envio(grupos)
+        except Exception:  # noqa: BLE001 — la memoria nunca tumba una cuenta
+            pass
     r = T.calculate_total(items=items, items_extra=extras,
                           destinos=max(1, len(destinos)), pago=pago or None,
                           grupos=grupos or None)
@@ -1593,15 +1703,15 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
         reparto = f"Envio a {destinos[0]}."
     if len(destinos) > 1:
         por_destino: dict = {}
-        for i in a.items:
+        for i in pedido_items:
             if i.destino:
                 por_destino.setdefault(str(i.destino).strip(), []).append(i)
-        repartidas = sum(max(1, i.cantidad) for i in a.items if i.destino)
-        totales = sum(max(1, i.cantidad) for i in a.items)
+        repartidas = sum(max(1, i.cantidad) for i in pedido_items if i.destino)
+        totales = sum(max(1, i.cantidad) for i in pedido_items)
         if por_destino and repartidas == totales:
             from app.storage.firestore_client import get_product_by_id
             fichas = {}
-            for i in a.items:
+            for i in pedido_items:
                 pid = str(i.product_id).upper()
                 if pid not in fichas:
                     fichas[pid] = get_product_by_id(pid,
