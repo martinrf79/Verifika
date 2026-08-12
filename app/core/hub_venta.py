@@ -1246,7 +1246,7 @@ def _condicion_faltante_aplicada(llamadas: list, rec: dict, tienda_id: str,
 
 
 def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
-                             trace_id: str) -> list:
+                             trace_id: str, memoria: list | None = None) -> list:
     """EL RUBRO QUE EL CLIENTE PIDIO Y LA CUENTA PERDIO, lo repone el CODIGO.
 
     LA FALLA, medida en produccion el 5-ago con el mensaje real de Martin. Pidio
@@ -1287,6 +1287,25 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
                                                if r.get("producto") else []):
             if p.get("id") and p not in vistos:
                 vistos.append(p)
+    # LA CHARLA TAMBIEN CERTIFICA, no solo el turno. Esta funcion decia "el
+    # turno -o la charla-" desde que nacio y miraba unicamente el turno, y esa
+    # distancia entre la intencion y el codigo costo un caso real: el cliente
+    # pide el precio de DOS unidades de la notebook que venia mirando, el turno
+    # no llama a ninguna herramienta porque no hace falta -el producto ya esta
+    # certificado y en el carrito-, `vistos` sale vacio y la reparacion se
+    # apaga. Al cliente le llego una frase de venta sin un solo numero.
+    #
+    # NO AFLOJA LA REGLA CERO: lo que entra son ids que YA fueron certificados
+    # cuando entraron al carrito o se mostraron, que son los mismos que
+    # `calculate_total` acepta. Van DESPUES de los del turno, asi que si este
+    # turno mostro algo, ese gana.
+    ya = {str(p.get("id") or "").upper() for p in vistos}
+    for p in (memoria or []):
+        pid = str((p or {}).get("id") or "").upper()
+        if pid and pid not in ya and p.get("nombre"):
+            ya.add(pid)
+            vistos.append({"id": pid, "nombre": p["nombre"],
+                           "categoria": str(p.get("categoria") or "")})
     if not vistos:
         return llamadas
     por_id = {p["id"]: p for p in vistos}
@@ -1976,6 +1995,54 @@ def _descartados_nuevos(previos: list, dados_de_baja: list, carrito: list,
     return fuera[-10:]
 
 
+def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
+                            memoria: list, tienda_id: str,
+                            trace_id: str) -> str:
+    """EL CONTRATO NO_OMITE: un punto que el cliente pidio y que el sistema
+    SABE contestar no puede salir sin contestar.
+
+    POR QUE ES EL QUE FALTABA (Martin, 12-ago-2026). Las diecisiete guardias de
+    salida son todas RESTAS: podan lo inventado, lo repetido, lo no respaldado.
+    Ninguna SUMA. Por eso una omision las atraviesa a las diecisiete sin que
+    nadie la vea: no hay nada mal escrito, hay algo que no esta. El mensaje que
+    lo mostro es real y esta en los casetes — el cliente pregunta cuanto sale
+    llevar DOS unidades de la notebook que venia mirando, y le llega una frase
+    de venta entera, sin un solo numero.
+
+    POR QUE ACA Y NO ANTES DE REDACTAR. Se probaron las dos y esta gano con el
+    numero en la mano. Reponer antes obliga a adivinar si el modelo va a decir
+    el precio, y adivinar de mas cuesta caro: en un turno medido, la ficha ya
+    decia "Precio: $693.000" y la cuenta repuesta lo estampo dos veces mas. El
+    mismo numero TRES veces, que es la repeticion que la prioridad 2 no tolera.
+    Aca el texto ya existe, asi que no se adivina: se mira. Solo se repone lo
+    que de verdad falta.
+
+    LO QUE PEGA NO LO ESCRIBE NADIE: es el bloque SELLADO de la calculadora,
+    con ids ya certificados —los del turno o los del carrito, que se
+    certificaron cuando entraron—. No inventa un producto, no inventa un
+    numero, y si no puede armar la cuenta no toca el mensaje."""
+    if not declarado or not (texto or "").strip():
+        return texto
+    try:
+        faltan = IT.cobertura(declarado, texto, trace_id + "|guardia",
+                              llamadas=llamadas, memoria=memoria)["faltan"]
+    except Exception as e:  # noqa: BLE001 — un control no puede tumbar el turno
+        log.warning("punto_omitido_error", trace_id=trace_id, error=str(e)[:120])
+        return texto
+    if not any(p.get("tipo") == "precio" for p in faltan):
+        return texto
+    repuestas = _cuenta_con_lo_declarado(llamadas, declarado, tienda_id,
+                                         trace_id, memoria=memoria)
+    bloque = _bloque_presupuesto(repuestas)
+    if not bloque or _norm_renglon(bloque) in _norm_renglon(texto):
+        log.warning("punto_omitido_sin_reponer", trace_id=trace_id,
+                    puntos=[p["texto"][:40] for p in faltan][:3])
+        return texto
+    log.info("punto_omitido_repuesto", trace_id=trace_id,
+             puntos=[p["id"] for p in faltan][:3], largo=len(bloque))
+    return (texto.rstrip() + "\n\n" + bloque).strip()
+
+
 def _senal_de_cierre(llamadas: list, mensaje: str) -> dict:
     """La interpretacion MINIMA que necesita el cierre. Antes eran veinte campos
     de un interprete; lo unico que `leads` mira es la intencion y la confianza.
@@ -2169,10 +2236,22 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # modelo no busco nada, las tres reposiciones de abajo no tienen sobre que
     # trabajar y el turno sale mudo-, despues la condicion, y al final la
     # cuenta con lo declarado.
+    # La charla, no solo el turno: el carrito vigente y lo ya mostrado son
+    # productos CERTIFICADOS, y las reposiciones de abajo los necesitan cuando
+    # el turno no volvio a buscar nada porque no hacia falta.
+    _memoria_idx = ((conv.get("carrito_vigente") or [])
+                    + (estado.get("productos_vistos") or []))
     llamadas = _busqueda_de_lo_declarado(llamadas, declarado, rec, tienda_id,
                                          trace_id)
     llamadas = _condicion_faltante_aplicada(llamadas, rec, tienda_id, trace_id)
-    llamadas = _cuenta_con_lo_declarado(llamadas, declarado, tienda_id, trace_id)
+    # SIN LA MEMORIA A PROPOSITO, y esto se midio. Reponer una cuenta ANTES de
+    # redactar con un producto que viene del carrito le agrego el bloque a
+    # turnos que ya contestaban el precio en la ficha, y el mismo numero salio
+    # TRES veces en un mensaje. Aca solo entra lo que el turno certifico. El
+    # caso de la memoria lo atiende `_punto_omitido_repuesto`, que corre DESPUES
+    # de redactar y por eso puede mirar el texto en vez de adivinarlo.
+    llamadas = _cuenta_con_lo_declarado(llamadas, declarado, tienda_id,
+                                        trace_id)
     # EL ORDEN IMPORTA: primero se aplica el reparto que falta, y despues se
     # declara el supuesto sobre la cuenta que ya lo tiene adentro.
     llamadas = _reparto_de_pago_declarado(llamadas, declarado, tienda_id,
@@ -2197,8 +2276,6 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # LA MEMORIA TAMBIEN ES EVIDENCIA: el carrito vigente y lo ya mostrado
     # contestan un punto que este turno no volvio a buscar, y hace bien en no
     # volver a buscarlo.
-    _memoria_idx = ((conv.get('carrito_vigente') or [])
-                    + (estado.get('productos_vistos') or []))
     idx = IT.cobertura(declarado, material, trace_id, llamadas=llamadas,
                        memoria=_memoria_idx)
     pendiente = IT.instruccion(idx["faltan"])
@@ -2310,6 +2387,13 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     except Exception as e:
         log.warning("hub_venta_guardas_error", trace_id=trace_id,
                     error=str(e)[:120])
+
+    # ── 6-ante. EL CONTRATO NO_OMITE ────────────────────────────────────
+    # La unica guardia que SUMA. Va despues de todas las que restan y antes del
+    # componedor, que es quien decide el largo: si lo repuesto sobra, ese lo
+    # poda con sus reglas de siempre.
+    texto = G.paso("punto_omitido", _punto_omitido_repuesto, texto, declarado,
+                   llamadas, _memoria_idx, tienda_id, trace_id)
 
     # ── 6-bis. EL LARGO, EN UN SOLO LUGAR ───────────────────────────────
     # Va ULTIMO a proposito. Hasta acá cada pieza pegó lo suyo -la prosa del

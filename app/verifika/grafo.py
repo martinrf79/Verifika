@@ -296,6 +296,19 @@ NODOS = (
          aplicar=lambda t, c: __import__(
              "app.core.guardas_salida", fromlist=["x"]
          ).sin_saludo_del_modelo(t)),
+    Nodo(id="punto_omitido", etapa="salida",
+         funcion="app.core.hub_venta:_punto_omitido_repuesto",
+         exige="el mensaje entero y los puntos que el cliente pidio",
+         garantiza="ningun punto que el sistema sabe contestar se va sin "
+                   "contestar; lo que repone es el bloque sellado del codigo",
+         # NO declara NO_INVENTA_PLATA y no es un olvido: es el UNICO nodo que
+         # SUMA, y lo que suma es la cuenta sellada de la calculadora, que trae
+         # importes que el texto todavia no tenia. Esa es su razon de existir.
+         contratos=(NO_ENMUDECE, NO_LEVANTA, IDEMPOTENTE),
+         repone=("bloque",),
+         aplicar=lambda t, c: _hub()._punto_omitido_repuesto(
+             t, c.get("declarado") or {}, c["llamadas"], c.get("memoria") or [],
+             c["tienda_id"], c["trace_id"])),
     Nodo(id="componedor", etapa="salida",
          funcion="app.core.mensaje:componer",
          exige="el mensaje entero y el anterior del bot",

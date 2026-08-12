@@ -230,3 +230,72 @@ def test_el_anclaje_nunca_puede_agregar_una_alarma():
                                              memoria=[{"nombre": "Teclado Genius KB-110X"}]
                                              )["faltan"]}
         assert con <= sin, f"el anclaje AGREGO faltantes: {con - sin} en {txt}"
+
+
+# ── EL CONTRATO NO_OMITE (pieza 3, 12-ago-2026) ─────────────────────────────
+
+def test_el_punto_omitido_se_repone_con_la_cuenta_sellada(firestore_doble):
+    """LA UNICA GUARDIA QUE SUMA, y el caso que la hizo nacer es real.
+
+    El cliente pregunta cuanto sale llevar DOS unidades de la notebook que
+    venia mirando. El turno no llama a ninguna herramienta —el producto ya esta
+    certificado en el carrito— y le llega una frase de venta entera, sin un solo
+    numero. Las diecisiete guardias de salida lo dejan pasar porque todas
+    RESTAN: no hay nada mal escrito, hay algo que no esta."""
+    from app.core.contexto_turno import set_current_tienda
+    from app.core import hub_venta as HV
+    from app.storage.firestore_client import get_all_products
+
+    set_current_tienda("verifika_prod")
+    prod = next(p for p in get_all_products(tienda_id="verifika_prod")
+                if p.get("stock", 0) >= 3 and p.get("precio_ars"))
+    declarado = {"items": [{"que": prod["nombre"], "cantidad": 2}],
+                 "pide_precio": True}
+    memoria = [{"id": prod["id"], "nombre": prod["nombre"],
+                "categoria": prod.get("categoria", "")}]
+    sin_numero = (f"Que bueno que te interese llevarte dos unidades de la "
+                  f"{prod['nombre']}. El precio ya es el mas competitivo.")
+
+    salida = HV._punto_omitido_repuesto(sin_numero, declarado, [], memoria,
+                                        "verifika_prod", "t")
+    assert "Presupuesto:" in salida and "Total:" in salida
+    assert sin_numero in salida, "no se toca lo que el modelo escribio"
+    assert f"{prod['precio_ars'] * 2:,}".replace(",", ".") in salida
+
+
+def test_no_toca_el_mensaje_cuando_el_punto_ya_esta_contestado(firestore_doble):
+    """LA CONTRACARA, y es la que evita la repeticion. Se probo reponer ANTES de
+    redactar y en un turno medido la ficha ya decia "Precio: $693.000": la
+    cuenta repuesta lo estampo dos veces mas, el mismo numero TRES veces en un
+    mensaje. Corriendo despues, el texto ya existe y no hay nada que adivinar."""
+    from app.core.contexto_turno import set_current_tienda
+    from app.core import hub_venta as HV
+    from app.storage.firestore_client import get_all_products
+
+    set_current_tienda("verifika_prod")
+    prod = next(p for p in get_all_products(tienda_id="verifika_prod")
+                if p.get("stock", 0) >= 3 and p.get("precio_ars"))
+    declarado = {"items": [{"que": prod["nombre"], "cantidad": 1}],
+                 "pide_precio": True}
+    memoria = [{"id": prod["id"], "nombre": prod["nombre"],
+                "categoria": prod.get("categoria", "")}]
+    precio = f"{prod['precio_ars']:,}".replace(",", ".")
+    con_numero = (f"La {prod['nombre']} sale ${precio}.\n"
+                  f"Total: ${precio}\n¿Te la reservo?")
+    assert HV._punto_omitido_repuesto(con_numero, declarado, [], memoria,
+                                      "verifika_prod", "t") == con_numero
+
+
+def test_sin_nada_certificado_no_inventa_una_cuenta(firestore_doble):
+    """El limite duro: si no hay un producto certificado con el que armar la
+    cuenta, el mensaje sale sin numeros y no se inventa uno. Un punto sin
+    contestar es honesto; un precio inventado es la falla numero uno."""
+    from app.core.contexto_turno import set_current_tienda
+    from app.core import hub_venta as HV
+
+    set_current_tienda("verifika_prod")
+    declarado = {"items": [{"que": "algo que no existe", "cantidad": 2}],
+                 "pide_precio": True}
+    texto = "No tengo ese producto en el catalogo."
+    assert HV._punto_omitido_repuesto(texto, declarado, [], [],
+                                      "verifika_prod", "t") == texto
