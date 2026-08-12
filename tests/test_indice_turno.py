@@ -94,3 +94,139 @@ def test_sin_pedido_declarado_el_indice_se_calla():
     inventa una obligacion."""
     r = IT.cobertura({}, "Hola, ¿en qué te ayudo?", "t")
     assert r["puntos"] == [] and r["faltan"] == []
+
+
+# ── EL ANCLAJE POR EVIDENCIA (12-ago-2026) ──────────────────────────────────
+#
+# EL DEFECTO, medido sobre las charlas grabadas antes de tocar nada: el indice
+# decia que 65 de 515 puntos no llegaban al texto final, y al leerlos uno por
+# uno la MAYORIA eran falsas alarmas suyas. La causa no era un umbral: el
+# vinculo entre lo interpretado y lo respondido se reconstruia al final
+# comparando las PALABRAS DEL CLIENTE contra la prosa del modelo, y esas dos no
+# coinciden nunca porque el modelo escribe con las suyas.
+#
+# EL ARREGLO es atar por identidad: cada punto se mide tambien contra su
+# EVIDENCIA -el producto que devolvio la busqueda, lo que el codigo busco, el
+# precio que trajo la ficha, el producto del carrito-, que el sistema conoce con
+# nombre y apellido. Despues del arreglo: 5 de 515, y los cinco son el MISMO
+# caso, que es real.
+
+_BUSQUEDA_MOUSE = {
+    "herramienta": "buscar_productos",
+    "pedido": {"categoria": "mouse", "descripcion": "mouse inalambrico gamer barato"},
+    "resultado": {"estado": "ok", "productos": [
+        {"nombre": "Mouse Logitech M170 Negro", "precio": "$12.000",
+         "precio_ars": 12000}]},
+}
+
+
+def test_el_sinonimo_del_modelo_no_deja_el_punto_sin_atender():
+    """EL CASO QUE MAS SE REPETIA. El cliente pidio un mouse "para jugar" y
+    "barato"; el bot contesto "es inalambrico, el fabricante lo cataloga como
+    ideal para gaming" y "la opcion mas economica". Estaba contestado y figuraba
+    sin atender, porque el indice buscaba las palabras JUGAR y BARATO.
+
+    Con el anclaje no hay sinonimo que rompa nada: "Logitech M170" es
+    exactamente el producto que la busqueda de ese punto devolvio."""
+    declarado = {"items": [{"que": "mouse inalambrico para jugar", "cantidad": 1}],
+                 "restricciones": ["para jugar", "barato"]}
+    texto = ("Para lo que buscas, el Logitech M170 es la opcion mas economica. "
+             "Es inalambrico y el fabricante lo cataloga como ideal para gaming.")
+    sin_evidencia = IT.cobertura(declarado, texto, "t")
+    assert sin_evidencia["faltan"], "el caso ya no reproduce el defecto viejo"
+    con_evidencia = IT.cobertura(declarado, texto, "t",
+                                 llamadas=[_BUSQUEDA_MOUSE])
+    assert con_evidencia["faltan"] == [], [p["id"] for p in con_evidencia["faltan"]]
+
+
+def test_una_respuesta_correcta_que_no_nombra_ningun_producto_cuenta():
+    """"De Samsung tenemos 38 modelos, de iPhone no trabajamos ninguna linea"
+    contesta el punto sin listar un solo producto. Ancla lo que el codigo
+    BUSCO, que es la otra mitad de la evidencia."""
+    declarado = {"items": [{"que": "celulares samsung", "cantidad": 1}]}
+    llamadas = [{"herramienta": "buscar_productos",
+                 "pedido": {"categoria": "celulares", "descripcion": "samsung"},
+                 "resultado": {"estado": "no_encontrado"}}]
+    texto = ("De Samsung tenemos 38 modelos disponibles en catalogo, pero de "
+             "iPhone no trabajamos ninguna linea en este momento.")
+    r = IT.cobertura(declarado, texto, "t", llamadas=llamadas)
+    assert r["faltan"] == []
+
+
+def test_la_tercera_puerta_de_los_productos_tambien_ancla():
+    """LA PLOMERIA, no la logica: cuando el modelo EXACTO no existe, las
+    alternativas viajan en `hay_en_la_categoria` y no en `productos`. El mismo
+    dato con otro nombre de campo, y el indice no lo veia. Es una respuesta
+    correcta y frecuente: "ese SSD de 7000 MB/s no lo tenemos, pero si estos"."""
+    declarado = {"items": [{"que": "ssd de 7000 MB/s", "cantidad": 1}],
+                 "pide_precio": True}
+    llamadas = [{"herramienta": "buscar_productos",
+                 "pedido": {"categoria": "almacenamiento", "descripcion": "ssd 7000"},
+                 "resultado": {"estado": "no_encontrado", "hay_en_la_categoria": [
+                     {"nombre": "Ssd Kingston A400 SATA 500GB", "precio": "$28.500"}]}}]
+    texto = ("No contamos con un SSD que alcance esa velocidad, pero si "
+             "disponemos de otras opciones:\n- Ssd Kingston A400 SATA 500GB: $28.500")
+    r = IT.cobertura(declarado, texto, "t", llamadas=llamadas)
+    assert r["faltan"] == [], [p["id"] for p in r["faltan"]]
+
+
+def test_la_memoria_es_evidencia_cuando_el_turno_no_busco_nada():
+    """LA EVIDENCIA NO SIEMPRE ESTA EN ESTE TURNO. El cliente pide dos unidades
+    de la notebook que venia mirando; el turno no llama a ninguna herramienta
+    porque no hace falta, y hace bien. El punto se contesta igual, con lo que
+    ya estaba en el carrito."""
+    declarado = {"items": [{"que": "Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris",
+                            "cantidad": 2}]}
+    carrito = [{"nombre": "Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris"}]
+    texto = "Registre tu interes por dos unidades de la Notebook HP 245 G9."
+    assert IT.cobertura(declarado, texto, "t")["faltan"], "ya no reproduce"
+    r = IT.cobertura(declarado, texto, "t", memoria=carrito)
+    assert r["faltan"] == []
+
+
+def test_un_producto_de_la_memoria_no_contesta_un_punto_ajeno():
+    """LA ATADURA QUE HACE SEGURO AL ANCLAJE DE MEMORIA. Si cualquier producto
+    visto contestara cualquier punto, el indice quedaria ciego a la omision que
+    justamente tiene que ver. Solo ancla el producto que el punto NOMBRA."""
+    declarado = {"items": [{"que": "teclado mecanico", "cantidad": 1}]}
+    carrito = [{"nombre": "Notebook HP 245 G9 Core i5"}]
+    texto = "La Notebook HP 245 G9 es una gran eleccion."
+    r = IT.cobertura(declarado, texto, "t", memoria=carrito)
+    assert [p["id"] for p in r["faltan"]] == ["item:1"]
+
+
+def test_una_omision_de_verdad_sigue_saliendo_marcada():
+    """EL CASO QUE QUEDA VIVO despues del arreglo, y es real: el cliente pide el
+    precio de dos unidades y el turno contesta con una frase de venta, sin un
+    solo numero y sin llamar a ninguna herramienta. Si el anclaje tapara esto,
+    habriamos cambiado un indice ruidoso por uno ciego."""
+    declarado = {"items": [{"que": "Notebook HP 245 G9", "cantidad": 2}],
+                 "pide_precio": True}
+    carrito = [{"nombre": "Notebook HP 245 G9 Core i5"}]
+    texto = ("Que bueno que te interese llevarte dos unidades de la Notebook "
+             "HP 245 G9. El precio ya es el mas competitivo que podemos ofrecer.")
+    r = IT.cobertura(declarado, texto, "t", llamadas=[], memoria=carrito)
+    assert [p["id"] for p in r["faltan"]] == ["precio:1"]
+
+
+def test_el_anclaje_nunca_puede_agregar_una_alarma():
+    """LA PROPIEDAD QUE HACE SEGURO EL CAMBIO ENTERO, y por eso se afirma sobre
+    entradas generadas y no sobre un caso: medir con evidencia solo puede SACAR
+    un punto de la lista de faltantes, nunca meter uno nuevo. Sin esto, el
+    arreglo podria estar tapando un defecto en un lado y creando otro en otro."""
+    import itertools
+
+    textos = ["Te paso el Logitech M170 a $12.000.", "No tengo eso.",
+              "Hola, ¿en que te ayudo?", "El mouse gamer mas economico es este."]
+    declarados = [
+        {"items": [{"que": "mouse inalambrico para jugar", "cantidad": 1}]},
+        {"items": [{"que": "teclado", "cantidad": 2}], "pide_precio": True},
+        {"restricciones": ["barato"], "items": [{"que": "mouse", "cantidad": 1}]},
+    ]
+    for dec, txt in itertools.product(declarados, textos):
+        sin = {p["id"] for p in IT.cobertura(dec, txt, "t")["faltan"]}
+        con = {p["id"] for p in IT.cobertura(dec, txt, "t",
+                                             llamadas=[_BUSQUEDA_MOUSE],
+                                             memoria=[{"nombre": "Teclado Genius KB-110X"}]
+                                             )["faltan"]}
+        assert con <= sin, f"el anclaje AGREGO faltantes: {con - sin} en {txt}"

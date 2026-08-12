@@ -2194,7 +2194,13 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         [str((l.get("resultado") or {}).get("bloque") or "") for l in llamadas]
         + [str(l.get("pedido") or "") for l in llamadas
            if l.get("herramienta") == "armar_presupuesto"])
-    idx = IT.cobertura(declarado, material, trace_id)
+    # LA MEMORIA TAMBIEN ES EVIDENCIA: el carrito vigente y lo ya mostrado
+    # contestan un punto que este turno no volvio a buscar, y hace bien en no
+    # volver a buscarlo.
+    _memoria_idx = ((conv.get('carrito_vigente') or [])
+                    + (estado.get('productos_vistos') or []))
+    idx = IT.cobertura(declarado, material, trace_id, llamadas=llamadas,
+                       memoria=_memoria_idx)
     pendiente = IT.instruccion(idx["faltan"])
     if pendiente:
         obligacion = (obligacion + "\n\n" if obligacion else "") + pendiente
@@ -2397,7 +2403,8 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # SABER. Es la regla de tau-bench: se juzga por lo observado, no por lo que
     # el agente cuenta que hizo. Sin esto, "el destino no llego al mensaje" solo
     # se descubre leyendo una charla a mano, que es como se descubrio hoy.
-    IT.cobertura(declarado, texto, trace_id + "|final")
+    IT.cobertura(declarado, texto, trace_id + "|final", llamadas=llamadas,
+                 memoria=_memoria_idx)
 
     _SIN_MODELO.discard(trace_id)
     # EL VEREDICTO DEL TURNO, en la misma linea que ya se lee. Dice QUE
