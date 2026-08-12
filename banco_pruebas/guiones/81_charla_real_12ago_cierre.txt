@@ -1,0 +1,32 @@
+# CHARLA REAL de Martin (12-ago-2026, 18:03 a 18:07, WhatsApp, usuario
+# 5493547504287), la PRIMERA que corrio con los arreglos del mediodia. Cuatro
+# turnos y llega hasta el cierre con datos del cliente y link de pago, que es
+# el tramo que ninguna charla grabada cubria.
+#
+# LOS CUATRO DEFECTOS QUE MOSTRO, con la ficha como prueba (traces ebd9765a,
+# bdf7b8f2, 523c2e00 y 89127ec4 en Cloud Logging):
+#
+#   1. EL ERROR DE PLATA, en el ultimo turno. El cliente anulo el teclado en el
+#      turno 2 y el sistema lo entendio -el carrito lo podo-. En el turno 4 el
+#      modelo re-tipeo de memoria la cuenta del turno 1, CON el teclado y con
+#      el reparto de pago al reves de lo que el cliente acababa de pedir, y la
+#      guardia la dejo pasar porque salia identica a la guardada. El link de
+#      Mercado Pago se genero por $53.850, el 30% del total viejo, cuando el
+#      cliente habia pedido el 70% por Mercado Pago.
+#   2. LA CONTRADICCION LA RESOLVIO EL SISTEMA SOLO. El cliente pidio DOS
+#      auriculares y en el reparto nombro uno solo mas un teclado que no estaba
+#      en la lista. El modelo canto las dos contradicciones, el reconciliador le
+#      ordeno preguntarlas, y en la ronda siguiente re-declaro el pedido SIN
+#      ellas: 1 auricular + 1 teclado. Se le cotizo la mitad de los auriculares
+#      que pidio y nadie se lo dijo. El indice dio 11 de 11 correcto.
+#   3. CUATRO ENVIOS CON TRES DESTINOS. El modelo declaro los dos mouse en un
+#      renglon con destino "Cordoba capital y Concordia". El codigo lo trato
+#      como un destino real, cobro un cuarto envio, y escribio en el reparto un
+#      lugar que no existe. El cliente SACO un producto y el envio le subio de
+#      $24.000 a $31.500.
+#   4. EL SPLIT DESAPARECIO justo en el turno donde el cliente lo cambio: la
+#      cuenta la rehizo el codigo y la rehacia sin el reparto de pago.
+Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos.
+Anula el teclado estaria bien asi solo que va 70 mercado pago
+Ok
+Juan perez

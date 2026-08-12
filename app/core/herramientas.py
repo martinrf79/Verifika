@@ -1623,6 +1623,70 @@ def _items_con_destino_de_memoria(items: list, destinos: list,
     return repuestos
 
 
+_RE_DOS_LUGARES = re.compile(r"\s+y\s+|\s*/\s*|\s*\+\s*", re.IGNORECASE)
+
+
+def _sin_destinos_compuestos(destinos: list) -> list:
+    """La lista de destinos, con los compuestos abiertos en sus lugares y sin
+    repetir. Mismo motivo que `_partir_destinos_compuestos`: un destino con dos
+    lugares pegados cobra un envio a un lugar que no existe, y duplica el de
+    uno que ya estaba."""
+    from app.core.geo_cp import es_lugar_conocido
+    fuera: list = []
+    for d in (destinos or []):
+        partes = [p.strip(" .,") for p in _RE_DOS_LUGARES.split(str(d or ""))]
+        partes = [p for p in partes if p]
+        abiertos = (partes if len(partes) >= 2
+                    and all(es_lugar_conocido(p) for p in partes)
+                    else [str(d).strip()])
+        for p in abiertos:
+            if p and not any(p.lower() == x.lower() for x in fuera):
+                fuera.append(p)
+    return fuera
+
+
+def _partir_destinos_compuestos(items: list) -> list:
+    """Un item declarado con DOS lugares en su destino se parte en dos items,
+    uno por lugar. Los mismos items si no hay ninguno compuesto.
+
+    LA FALLA, de la charla real del 12-ago a las 18:05. El modelo declaro
+    `{"que": "mouse", "cantidad": 2, "destino": "Cordoba capital y Concordia"}`,
+    o sea los dos mouse en un renglon con los dos destinos pegados. El codigo lo
+    trato como UN destino: `geo_cp` lo resuelve a Cordoba -porque encuentra
+    'cordoba' adentro del texto-, asi que ese envio se cobro como un cuarto
+    destino ADEMAS de 'Cordoba capital', que ya estaba en la lista. El cliente
+    saco un producto y el envio le SUBIO de $24.000 a $31.500. Y el reparto
+    salio con el renglon "A Cordoba capital y Concordia: 2x mouse", un lugar
+    que no existe.
+
+    SE PARTE, NO SE ADIVINA. Solo cuando cada mitad es un lugar de la tabla geo
+    y la cantidad es divisible en partes iguales: "2 mouse a A y B" son uno y
+    uno. Si la cantidad no da parejo -3 mouse a dos lugares- no se toca nada y
+    el reparto queda sin cerrar, que es lo honesto: repartir 2 y 1 seria elegir
+    por el cliente cual lugar recibe mas."""
+    from app.core.geo_cp import es_lugar_conocido
+    salida, partido = [], False
+    for i in (items or []):
+        destino = str(getattr(i, "destino", "") or "").strip()
+        partes = [p.strip(" .,") for p in _RE_DOS_LUGARES.split(destino)] \
+            if destino else []
+        partes = [p for p in partes if p]
+        if len(partes) < 2 or not all(es_lugar_conocido(p) for p in partes):
+            salida.append(i)
+            continue
+        cant = max(1, int(getattr(i, "cantidad", 1) or 1))
+        if cant % len(partes) != 0:
+            salida.append(i)
+            continue
+        for p in partes:
+            salida.append(ItemPedido(product_id=i.product_id,
+                                     cantidad=cant // len(partes), destino=p))
+        partido = True
+    if partido:
+        log.info("destino_compuesto_partido", items=len(salida))
+    return salida
+
+
 def _con_el_carrito_que_ya_estaba(items: list, tienda_id: str) -> list:
     """Los items de la cuenta, con el carrito vigente adelante cuando el cliente
     pidio SUMAR algo a lo que ya venia armado. Los mismos items si no.
@@ -1697,6 +1761,13 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     pedido_items = _con_el_carrito_que_ya_estaba(list(a.items or []), tienda_id)
     if len(pedido_items) != len(a.items or []):
         repuso.append("carrito_de_antes")
+    # UN DESTINO CON DOS LUGARES PEGADOS NO ES UN DESTINO. Ver
+    # `_partir_destinos_compuestos`: sin esto se cobra un envio a un lugar que
+    # no existe, y encima duplicado con uno que ya estaba en la lista.
+    _antes = len(pedido_items)
+    pedido_items = _partir_destinos_compuestos(pedido_items)
+    if len(pedido_items) != _antes:
+        repuso.append("destino_compuesto")
     items = [{"product_id": str(i.product_id).upper(), "cantidad": max(1, i.cantidad)}
              for i in pedido_items]
     if not items:
@@ -1707,6 +1778,9 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     if not destinos:
         destinos = list(dict.fromkeys(
             [str(i.destino).strip() for i in pedido_items if i.destino]))
+    # Y LA LISTA SUELTA TAMPOCO PUEDE TRAER UN COMPUESTO: si el modelo declara
+    # "Cordoba capital y Concordia" ahi, se cobra un envio de mas al mismo lugar.
+    destinos = _sin_destinos_compuestos(destinos)
     # EL REPARTO QUE LA CHARLA YA CERRO NO SE VUELVE A PEDIR. Si el modelo se
     # olvido de repetir el destino de cada item pero el pedido es el mismo, el
     # reparto sale de la memoria. Ver `_items_con_destino_de_memoria`.
@@ -1767,10 +1841,24 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     if len(destinos) == 1:
         reparto = f"Envio a {destinos[0]}."
     if len(destinos) > 1:
+        # LAS UNIDADES DEL MISMO PRODUCTO AL MISMO LUGAR VAN EN UN RENGLON.
+        # El modelo declara una fila por unidad -es la forma natural de repartir
+        # "una a cada destino"- y el reparto las escribia una por una: "A
+        # Posadas: 1x memoria ram, 1x memoria ram". Ademas de sonar roto, el
+        # juez lo cuenta como volcado de datos duplicado. Es la misma cuenta,
+        # escrita como la lee una persona.
         por_destino: dict = {}
         for i in pedido_items:
-            if i.destino:
-                por_destino.setdefault(str(i.destino).strip(), []).append(i)
+            if not i.destino:
+                continue
+            dest = str(i.destino).strip()
+            junta = por_destino.setdefault(dest, {})
+            pid = str(i.product_id).upper()
+            junta[pid] = junta.get(pid, 0) + max(1, int(i.cantidad or 1))
+        por_destino = {
+            d: [ItemPedido(product_id=pid, cantidad=n, destino=d)
+                for pid, n in junta.items()]
+            for d, junta in por_destino.items()}
         repartidas = sum(max(1, i.cantidad) for i in pedido_items if i.destino)
         totales = sum(max(1, i.cantidad) for i in pedido_items)
         if por_destino and repartidas == totales:

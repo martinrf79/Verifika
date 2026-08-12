@@ -549,3 +549,92 @@ def test_sacar_no_es_agregar_y_el_carrito_no_se_repone(firestore_doble):
             items, "verifika_prod") == items
     finally:
         set_current_estado(None)
+
+
+# ── EL DESTINO CON DOS LUGARES PEGADOS (charla real 12-ago 18:05) ───────────
+def test_un_destino_con_dos_lugares_se_parte_en_dos(firestore_doble):
+    """LA FALLA, y es plata: el modelo declaro los dos mouse en un renglon con
+    el destino "Córdoba capital y Concordia". El codigo lo trato como UN
+    destino —`geo_cp` lo resuelve a Cordoba porque encuentra 'cordoba' adentro—
+    asi que ese envio se cobro como un CUARTO destino ademas de "Córdoba
+    capital", que ya estaba. El cliente saco un producto y el envio le SUBIO de
+    $24.000 a $31.500."""
+    from app.core import herramientas as H
+    set_current_tienda("verifika_prod")
+    items = [H.ItemPedido(product_id="MOU0023", cantidad=2,
+                          destino="Córdoba capital y Concordia")]
+    salida = H._partir_destinos_compuestos(items)
+    assert len(salida) == 2
+    assert {i.destino for i in salida} == {"Córdoba capital", "Concordia"}
+    assert all(i.cantidad == 1 for i in salida)
+    # Y la lista suelta de destinos tampoco puede traer el compuesto: cobraria
+    # dos veces el mismo lugar.
+    assert H._sin_destinos_compuestos(
+        ["Córdoba capital", "Córdoba capital y Concordia", "Posadas"]) == [
+        "Córdoba capital", "Concordia", "Posadas"]
+
+
+def test_si_la_cantidad_no_da_pareja_no_se_reparte(firestore_doble):
+    """No se adivina. Tres mouse a dos lugares no se parten 2 y 1: elegir cual
+    lugar recibe mas seria decidir por el cliente. Queda como esta y el reparto
+    no cierra, que es lo honesto."""
+    from app.core import herramientas as H
+    set_current_tienda("verifika_prod")
+    items = [H.ItemPedido(product_id="MOU0023", cantidad=3,
+                          destino="Córdoba capital y Concordia")]
+    assert len(H._partir_destinos_compuestos(items)) == 1
+    # Un destino normal no se toca nunca.
+    uno = [H.ItemPedido(product_id="MOU0023", cantidad=2, destino="Rosario")]
+    assert H._partir_destinos_compuestos(uno) == uno
+
+
+def test_la_cuenta_no_cobra_un_envio_al_lugar_inventado(firestore_doble):
+    """De punta a punta: con el destino compuesto, la cuenta cobra DOS envios
+    -Cordoba y Concordia- y no tres, y el reparto nombra lugares que existen."""
+    from app.core import herramientas as H
+    from app.core.estado_venta import set_current_estado
+    set_current_tienda("verifika_prod")
+    set_current_estado({})
+    try:
+        r = H.armar_presupuesto(
+            H.ArmarPresupuesto(
+                items=[H.ItemPedido(product_id="AUR0020", cantidad=1,
+                                    destino="Córdoba capital"),
+                       H.ItemPedido(product_id="MOU0023", cantidad=2,
+                                    destino="Córdoba capital y Concordia")],
+                destinos=["Córdoba capital", "Córdoba capital y Concordia"]),
+            "verifika_prod")
+        assert r["estado"] == "ok", r
+        assert "y Concordia:" not in r["bloque"], (
+            "escribio un destino que no existe:\n" + r["bloque"])
+        assert "3 envios" not in r["bloque"], (
+            "cobro un envio al lugar inventado:\n" + r["bloque"])
+    finally:
+        set_current_estado(None)
+
+
+def test_el_reparto_junta_las_unidades_del_mismo_producto(firestore_doble):
+    """"A Posadas: 1x memoria ram, 1x memoria ram" salio en la charla real del
+    12-ago. El modelo declara una fila por unidad -es la forma natural de
+    repartir "una a cada destino"- y el reparto las escribia una por una. Es la
+    misma cuenta; lo que cambia es que se lee."""
+    from app.core import herramientas as H
+    from app.core.estado_venta import set_current_estado
+    set_current_tienda("verifika_prod")
+    set_current_estado({})
+    try:
+        r = H.armar_presupuesto(
+            H.ArmarPresupuesto(
+                items=[H.ItemPedido(product_id="AUR0020", cantidad=1,
+                                    destino="Córdoba Capital"),
+                       H.ItemPedido(product_id="RAM0001", cantidad=1,
+                                    destino="Posadas"),
+                       H.ItemPedido(product_id="RAM0001", cantidad=1,
+                                    destino="Posadas")],
+                destinos=["Córdoba Capital", "Posadas"]),
+            "verifika_prod")
+        assert r["estado"] == "ok", r
+        assert "1x memoria ram, 1x memoria ram" not in r["bloque"], r["bloque"]
+        assert "2x memoria ram" in r["bloque"], r["bloque"]
+    finally:
+        set_current_estado(None)

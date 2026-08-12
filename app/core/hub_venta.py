@@ -42,6 +42,9 @@ from app.core import pedido as P
 from app.logger import get_logger
 from app.storage.firestore_client import get_conversation, save_conversation
 from app.verifika import grafo as G
+# El patron del renglon de la cuenta, del nucleo de invariantes: una sola
+# definicion, igual que la comparte la aduana.
+from app.verifika import invariantes as INV
 
 log = get_logger(__name__)
 settings = get_settings()
@@ -1117,10 +1120,30 @@ def _sin_markdown(texto: str) -> str:
     return t
 
 
-def _cuenta_de_otro_pedido(previo: str, declarado: dict) -> bool:
-    """True si la cuenta guardada NO es la del pedido que el cliente acaba de
-    declarar. Mecanico: ni uno solo de los rubros declarados se reconoce en los
-    renglones de esa cuenta.
+def _cuenta_de_otro_pedido(previo: str, declarado: dict,
+                           carrito: list | None = None) -> bool:
+    """True si la cuenta guardada NO es la del pedido vigente.
+
+    DOS CONTROLES, y el primero es el que faltaba:
+
+    1. CONTRA EL CARRITO, renglon por renglon. Si la cuenta guardada cotiza un
+       producto que ya no esta en el pedido, es de otro pedido y punto.
+
+       LA FALLA, de la charla real del 12-ago a las 18:07, y es plata: el
+       cliente dijo "anula el teclado" y el sistema lo entendio -el carrito lo
+       podo, el log lo dice-. Dos turnos despues el modelo re-tipeo de memoria
+       la cuenta del turno 1, con el teclado adentro y el reparto de pago al
+       reves de lo que el cliente acababa de pedir, y esta guardia la dejo
+       pasar porque salia IDENTICA a la guardada. El control de rubros no lo
+       veia: auriculares, mouse y memorias seguian estando. El teclado es un
+       item de mas, no un rubro distinto.
+
+       Sacar la cuenta no deja al cliente sin numeros: el contrato NO_OMITE
+       corre despues y arma la cuenta buena con el carrito vigente.
+
+    2. CONTRA LOS RUBROS DECLARADOS, que es el control que ya existia: si ni
+       uno solo de los rubros que el cliente acaba de pedir se reconoce en esa
+       cuenta, tampoco es la suya.
 
     LA FALLA, del turno 6 de `80_charla_real_12ago`. El cliente venia de un
     presupuesto de tres microfonos y en este turno pide OTRA cosa: dos
@@ -1133,13 +1156,26 @@ def _cuenta_de_otro_pedido(previo: str, declarado: dict) -> bool:
     con el total del pedido viejo, presentado como si fuera el de ahora.
 
     La exencion de la guardia es correcta cuando el cliente reconfirma LO MISMO
-    -'dale, confirmalo'- y falsa cuando declaro otro pedido. Se decide con lo
-    que el modelo declaro, que ya viaja en cada turno, no con una adivinanza."""
+    -'dale, confirmalo'- y falsa cuando el pedido cambio. Se decide con el
+    carrito y con lo que el modelo declaro, que ya viajan en cada turno, no con
+    una adivinanza."""
+    if not (previo or "").strip():
+        return False
+    # 1. UN RENGLON QUE YA NO ESTA EN EL PEDIDO. El carrito vigente es la lista
+    #    de lo que el cliente quiere HOY; la cuenta guardada es una foto que
+    #    puede ser de antes.
+    carrito = [c for c in (carrito or []) if isinstance(c, dict) and c.get("nombre")]
+    if carrito:
+        en_el_pedido = " | ".join(P._norm(c["nombre"]) for c in carrito)
+        for m in INV._RE_ITEM.finditer(previo):
+            nombre = P._norm(m.group("nombre"))
+            if nombre and nombre not in en_el_pedido:
+                return True
     items = [str(i.get("que") or "").strip()
              for i in ((declarado or {}).get("items") or [])
              if isinstance(i, dict)]
     items = [q for q in items if q]
-    if not items or not (previo or "").strip():
+    if not items:
         return False
     en_la_cuenta = P._norm(previo)
     for q in items:
@@ -1150,7 +1186,8 @@ def _cuenta_de_otro_pedido(previo: str, declarado: dict) -> bool:
 
 
 def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
-                         trace_id: str, declarado: dict | None = None) -> str:
+                         trace_id: str, declarado: dict | None = None,
+                         carrito: list | None = None) -> str:
     """LA CUENTA NO SE ESCRIBE A MANO. Si el turno no la calculo, el modelo NO
     puede redactarla: se le pone la del codigo, tal cual quedo.
 
@@ -1176,7 +1213,7 @@ def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
     # porque no hay ninguna cuenta buena que poner. El turno cierra sin total y
     # el indice lo marca sin contestar, que es lo honesto: mejor sin cuenta que
     # con el total de otro pedido presentado como si fuera este.
-    if _cuenta_de_otro_pedido(previo, declarado or {}):
+    if _cuenta_de_otro_pedido(previo, declarado or {}, carrito):
         log.warning("hub_venta_cuenta_de_otro_pedido", trace_id=trace_id,
                     renglones=len(renglones))
         return re.sub(r"\n{3,}", "\n\n", "\n".join(
@@ -1436,6 +1473,18 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
         args = {"items": nuevos}
         if declarado.get("destinos"):
             args["destinos"] = list(declarado["destinos"])
+        # EL REPARTO DE PAGO VIAJA CON LA CUENTA, y sin esto se perdia justo en
+        # el turno donde mas importa. Charla real del 12-ago, 18:05: el cliente
+        # dice "anula el teclado, y va 70 mercado pago", la llamada del modelo
+        # se cae por un id no certificado, esta reposicion rehace la cuenta
+        # SIN pago, y el mensaje sale con el total y sin una palabra del
+        # reparto que el cliente acababa de cambiar. El dato estaba declarado
+        # en el mismo turno; lo unico que faltaba era pasarlo.
+        pago = [{"medio": p.get("medio") or "", "porcentaje": p.get("porcentaje")}
+                for p in (declarado.get("reparto_pago") or [])
+                if isinstance(p, dict) and p.get("porcentaje")]
+        if pago:
+            args["pago"] = pago
         r = H.ejecutar("armar_presupuesto", args, tienda_id)
         if (r or {}).get("estado") != "ok":
             log.warning("cuenta_no_se_pudo_crear", trace_id=trace_id)
@@ -2359,6 +2408,23 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # Se inicializa aca: si el turno no pide ninguna herramienta -un saludo, un
     # gracias- el bucle corta antes de reconciliar y `rec` quedaba sin definir.
     rec: dict = {}
+    # LAS CONTRADICCIONES SON DEL TURNO, NO DE LA RONDA. El modelo las declara
+    # en la ronda 1, el reconciliador le ordena preguntarlas, y en la ronda 2
+    # vuelve a declarar el pedido SIN ellas: ya las resolvio a su gusto. Ahi la
+    # orden de preguntar desaparecia y el cliente nunca se enteraba.
+    #
+    # Paso en real el 12-ago: el cliente pidio DOS auriculares y en el reparto
+    # nombro uno solo mas un teclado que no estaba en la lista. El modelo canto
+    # las dos contradicciones, el reconciliador le dijo que preguntara, y en la
+    # ronda siguiente declaro 1 auricular + 1 teclado sin una palabra. Se le
+    # cotizo la mitad de los auriculares que pidio y nadie se lo dijo: el
+    # indice del turno dio 11 de 11 correcto, porque se mide contra lo
+    # declarado y lo declarado ya venia arreglado.
+    #
+    # Una contradiccion se apaga de UNA sola forma: que el sistema demuestre
+    # que no existe -eso lo hace `_contradiccion_desmentida`, que compara con
+    # lo que el codigo conto-. No alcanza con que el modelo deje de nombrarla.
+    contradicciones_del_turno: list = []
     for ronda in range(1, _MAX_RONDAS + 1):
         with _reloj(etapas, "decisor"):
             pedidos, texto_directo = await _pedir_herramientas(
@@ -2393,6 +2459,17 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         # aca, antes de reconciliar: si no, queda fuera de todos los controles.
         # Con red: completar lo declarado es una MEJORA, y una mejora no puede
         # dejar sin respuesta a un cliente. Si falla, el turno sigue como antes.
+        for c in ((declarado or {}).get("contradicciones") or []):
+            c = str(c).strip()
+            if c and c not in contradicciones_del_turno:
+                contradicciones_del_turno.append(c)
+        if contradicciones_del_turno and declarado:
+            if len(contradicciones_del_turno) != len(
+                    declarado.get("contradicciones") or []):
+                log.info("contradiccion_sostenida", trace_id=trace_id,
+                         ronda=ronda, cuantas=len(contradicciones_del_turno))
+            declarado = dict(declarado)
+            declarado["contradicciones"] = list(contradicciones_del_turno)
         try:
             declarado = _restricciones_de_los_filtros(declarado, llamadas,
                                                       trace_id)
@@ -2549,7 +2626,8 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     texto = G.paso("cuenta_no_retipeada", _cuenta_no_retipeada,
                    texto, hubo_calculo=bool(bloque),
                    previo=conv.get("ultimo_presupuesto") or "",
-                   trace_id=trace_id, declarado=declarado)
+                   trace_id=trace_id, declarado=declarado,
+                   carrito=conv.get("carrito_vigente") or [])
     texto = G.paso("sin_negar_lo_traido", _sin_negar_lo_traido,
                    texto, llamadas, trace_id)
     texto = G.paso("sin_afirmar_del_catalogo", _sin_afirmar_sobre_el_catalogo,

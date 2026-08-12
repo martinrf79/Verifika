@@ -1606,3 +1606,82 @@ def test_los_campos_del_estado_los_escribe_alguien():
     assert not faltan, (
         "estos campos del estado los LEE cada turno y no los guarda nadie, "
         f"asi que llegan siempre vacios: {faltan}")
+
+
+# ── LA CHARLA REAL DEL 12-AGO 18:07: LA CUENTA VIEJA REESTAMPADA ────────────
+_CUENTA_CON_TECLADO = (
+    "Presupuesto:\n"
+    "- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\n"
+    "- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\n"
+    "- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n"
+    "- 2x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: "
+    "$34.500 c/u = $69.000\n"
+    "Subtotal: $155.500\nTotal: $179.500")
+
+_CARRITO_SIN_TECLADO = [
+    {"id": "AUR0019", "nombre": "Auriculares Redragon Zeus X Negro", "cantidad": 1},
+    {"id": "MOU0023", "nombre": "Mouse Genius DX-110 Negro", "cantidad": 2},
+    {"id": "RAM0001",
+     "nombre": "Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro",
+     "cantidad": 2},
+]
+
+
+def test_la_cuenta_con_el_producto_anulado_no_se_reestampa():
+    """EL ERROR DE PLATA de la charla real del 12-ago a las 18:07. El cliente
+    dijo "anula el teclado" y el sistema lo entendio: el carrito lo podo. Dos
+    turnos despues el modelo re-tipeo de memoria la cuenta del turno 1, CON el
+    teclado, y la guardia la dejo pasar porque salia identica a la guardada. El
+    control por rubros no lo veia: auriculares, mouse y memorias seguian
+    estando, y el teclado es un item de mas, no un rubro distinto."""
+    from app.core import hub_venta as HV
+    declarado = {"items": [{"que": "auriculares", "cantidad": 1},
+                           {"que": "mouse", "cantidad": 2},
+                           {"que": "memoria ram", "cantidad": 2}]}
+    assert HV._cuenta_de_otro_pedido(_CUENTA_CON_TECLADO, declarado,
+                                     _CARRITO_SIN_TECLADO)
+    texto = "Muchas gracias, Juan Perez.\n\n" + _CUENTA_CON_TECLADO
+    salida = HV._cuenta_no_retipeada(texto, hubo_calculo=False,
+                                     previo=_CUENTA_CON_TECLADO, trace_id="t",
+                                     declarado=declarado,
+                                     carrito=_CARRITO_SIN_TECLADO)
+    assert "Teclado" not in salida, (
+        "le volvio a cobrar el producto que anulo:\n" + salida)
+    assert "$155.500" not in salida
+
+
+def test_la_cuenta_del_pedido_vigente_si_se_reestampa():
+    """El otro lado: mientras la cuenta guardada sea la del pedido vigente,
+    reestamparla al confirmar es lo correcto y no se toca."""
+    from app.core import hub_venta as HV
+    cuenta = (
+        "Presupuesto:\n"
+        "- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\n"
+        "- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\n"
+        "Subtotal: $74.500\nTotal: $74.500")
+    declarado = {"items": [{"que": "auriculares", "cantidad": 1}]}
+    assert not HV._cuenta_de_otro_pedido(cuenta, declarado,
+                                         _CARRITO_SIN_TECLADO)
+    texto = "Como quedo:\n\n" + cuenta
+    assert HV._cuenta_no_retipeada(texto, hubo_calculo=False, previo=cuenta,
+                                   trace_id="t", declarado=declarado,
+                                   carrito=_CARRITO_SIN_TECLADO) == texto
+
+
+# ── LA CONTRADICCION QUE SE EVAPORABA ENTRE RONDAS ──────────────────────────
+def test_una_contradiccion_declarada_no_se_borra_sola(firestore_doble, monkeypatch):
+    """El modelo la canta en la ronda 1, el reconciliador le ordena
+    preguntarla, y en la ronda 2 vuelve a declarar el pedido SIN ella: ya la
+    resolvio a su gusto. Ahi la orden desaparecia y el cliente nunca se
+    enteraba de que le cotizaron la mitad de lo que pidio."""
+    from app.core import pedido as P
+    # La contradiccion sostenida llega igual al reconciliador, y este ordena
+    # preguntarla en vez de dejar que el modelo elija.
+    rec = P.reconciliar(
+        {"items": [{"que": "auriculares", "cantidad": 1}],
+         "contradicciones": ["Pediste 2 auriculares y en el reparto nombraste "
+                             "uno solo mas un teclado que no estaba"]},
+        [], "t", tienda_id="verifika_prod")
+    assert rec.get("preguntar"), "la contradiccion no llego a preguntarse"
+    instruccion = P.instruccion_de_preguntas(rec)
+    assert "2 auriculares" in instruccion

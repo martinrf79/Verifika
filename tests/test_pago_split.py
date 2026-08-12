@@ -144,3 +144,39 @@ def test_split_no_inventa():
     un split."""
     assert pago_de_mensaje("puedo pagar con transferencia o mercado pago?") is None
     assert pago_de_mensaje("transferencia 70 y mercado pago 40") is None
+
+
+def test_el_reparto_de_pago_sobrevive_cuando_el_codigo_rehace_la_cuenta(
+        firestore_doble):
+    """LA FALLA, de la charla real del 12-ago a las 18:05. El cliente dice
+    "anula el teclado, y va 70 mercado pago". La llamada del modelo se cae por
+    un id no certificado, el codigo rehace la cuenta con lo declarado... y la
+    rehacia SIN el reparto de pago. Al cliente le llego el total y ni una
+    palabra del split, en el turno mismo en que lo cambio.
+
+    El dato estaba declarado en ese turno: lo unico que faltaba era pasarlo."""
+    from app.core import hub_venta as HV
+    from app.core.contexto_turno import set_current_tienda
+    from app.core.estado_venta import set_current_estado
+    set_current_tienda("verifika_prod")
+    set_current_estado({})
+    try:
+        declarado = {
+            "pide_precio": True,
+            "items": [{"que": "mouse", "cantidad": 2}],
+            "reparto_pago": [{"medio": "mercado pago", "porcentaje": 70},
+                             {"medio": "transferencia", "porcentaje": 30}],
+        }
+        memoria = [{"id": "MOU0023", "nombre": "Mouse Genius DX-110 Negro",
+                    "categoria": "mouse"}]
+        llamadas = HV._cuenta_con_lo_declarado([], declarado, "verifika_prod",
+                                               "t-split", memoria=memoria)
+        cuenta = next((l for l in llamadas
+                       if l.get("herramienta") == "armar_presupuesto"), None)
+        assert cuenta, "no se rehizo la cuenta"
+        assert cuenta["pedido"].get("pago"), "la cuenta se rehizo sin el split"
+        bloque = (cuenta.get("resultado") or {}).get("bloque") or ""
+        assert "mercado pago (70%)" in bloque.lower() or "70%" in bloque, (
+            "el reparto de pago no salio en la cuenta:\n" + bloque)
+    finally:
+        set_current_estado(None)
