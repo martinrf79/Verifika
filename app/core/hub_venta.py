@@ -268,6 +268,30 @@ def _memoria_texto(estado: dict, history: list, tienda_id: str = "") -> str:
     locs = estado.get("localidades_envio") or []
     if locs:
         partes.append("Destinos ya dados: " + ", ".join(locs))
+    # LO QUE EL CLIENTE DEJO DECIDIDO Y SIGUE VALIENDO. Los tres se guardaban
+    # -desde hoy- y ninguno llegaba hasta aca, asi que el turno siguiente
+    # arrancaba sin la decision tomada y volvia a preguntar lo mismo.
+    prov = str(estado.get("provincia_envio") or "").strip()
+    if prov and not any(prov.lower() in str(l).lower() for l in locs):
+        partes.append(f"Provincia del cliente, ya dada: {prov}. No se la "
+                      f"vuelvas a pedir.")
+    ancla = estado.get("producto_anotado") or {}
+    if ancla.get("nombre"):
+        pid = str(ancla.get("id") or "").upper()
+        partes.append(
+            f"Producto que el cliente ELIGIO y pidio guardar: "
+            f"{ancla['nombre']}" + (f" [{pid}]" if pid else "") +
+            ". Si dice 'el que te dije al principio', 'el anotado' o 'el de "
+            "antes', habla de ESTE.")
+    crit = str(estado.get("criterio") or "").strip()
+    if crit:
+        partes.append(f"Criterio de precio que ya eligio: {crit}. Vale para "
+                      f"todo el pedido; no se lo vuelvas a preguntar.")
+    cond = [str(c) for c in
+            ((estado.get("preferencias") or {}).get("condiciones") or []) if c]
+    if cond:
+        partes.append("Condiciones que puso y siguen valiendo, aplicalas en "
+                      "cada busqueda: " + ", ".join(cond))
     dc = estado.get("datos_cliente") or {}
     if dc:
         partes.append("Datos que ya dio: " + ", ".join(
@@ -2058,6 +2082,41 @@ def _descartados_nuevos(previos: list, dados_de_baja: list, carrito: list,
     return fuera[-10:]
 
 
+def _preferencias_al_dia(previas: dict, declarado: dict, llamadas: list) -> dict:
+    """Las condiciones que el cliente puso y siguen valiendo, acumuladas.
+
+    POR QUE ACUMULA Y NO PISA. El cliente pone una condicion una vez -"las menos
+    partes chinas posibles"- y despues habla de otra cosa: destinos, pago, un
+    producto mas. Si la condicion viviera solo en el turno donde se dijo, la
+    busqueda del turno siguiente ya no la aplicaria. El campo
+    `preferencias_cliente` existia en la conversacion y en el estado desde el
+    16-jul y no lo escribia NADIE: llegaba siempre vacio.
+
+    De donde salen: de las restricciones que viajan en `declarado`, que para
+    cuando el turno cierra ya traen lo que el modelo declaro MAS lo que el
+    codigo dedujo de los filtros de la busqueda. Es la misma lista que ya usan
+    el reconciliador y el indice. No se inventa ninguna condicion nueva.
+
+    `llamadas` entra para completar la union cuando el turno no paso por el
+    enriquecido -un turno sin reconciliador-, que es el mismo dato por la otra
+    puerta."""
+    previas = previas if isinstance(previas, dict) else {}
+    condiciones = [str(c).strip() for c in (previas.get("condiciones") or [])
+                   if str(c or "").strip()]
+    try:
+        completo = _restricciones_de_los_filtros(declarado or {}, llamadas)
+    except Exception:  # noqa: BLE001 — la memoria nunca tumba el turno
+        completo = declarado or {}
+    nuevas = [str(r).strip() for r in (completo.get("restricciones") or [])
+              if str(r or "").strip()]
+    for c in nuevas:
+        if c.lower() not in {x.lower() for x in condiciones}:
+            condiciones.append(c)
+    if not condiciones:
+        return {}
+    return {"condiciones": condiciones[-6:]}
+
+
 def _restricciones_de_los_filtros(declarado: dict, llamadas: list,
                                   trace_id: str = "") -> dict:
     """LO QUE EL MODELO APLICO Y NO DECLARO, entra igual a lo declarado.
@@ -2608,7 +2667,9 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # ya habia: "agrega un teclado" sobre seis articulos dejaba el carrito en un
     # teclado y anotaba los seis en la memoria negativa, o sea que no volvian
     # nunca mas. Es el mismo mensaje real del 12-ago que rompia la cuenta.
-    from app.core.estado_venta import pide_agregar_al_pedido
+    from app.core.estado_venta import (ancla_al_dia, detectar_criterio,
+                                       libera_criterio,
+                                       pide_agregar_al_pedido)
     agrega = pide_agregar_al_pedido(raw_message)
     carrito = _carrito_del_turno(llamadas)
     dados_de_baja = []
@@ -2629,6 +2690,46 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         declarado_antes=(None if agrega else conv.get("ultimo_declarado") or []),
         declarado_ahora=declarado_ahora)
     localidades = get_envio_localidades() or (conv.get("ultimas_localidades") or [])
+    # LOS TRES CAMPOS DE MEMORIA QUE SE LEIAN Y NO ESCRIBIA NADIE (12-ago).
+    #
+    # `construir_estado` levanta de la conversacion `criterio_cliente`,
+    # `provincia_envio` y `preferencias_cliente` en CADA turno, y el hub nunca
+    # los guardaba: los tres llegaban siempre vacios. No es que estuvieran mal
+    # calculados, es que no existian. Lo que costaba cada uno:
+    #   - criterio: "lo mas barato" se perdia al turno siguiente y el bot volvia
+    #     a preguntar modelo y color de algo que el cliente ya habia decidido.
+    #   - provincia: `cotizar_envio` la LEE del estado para resolver un pueblo
+    #     ambiguo sin volver a pedir el CP -y siempre leia ""-. Es el
+    #     "necesito el codigo postal de Correa y San Nicolas" de la charla real.
+    #   - preferencias: "las menos partes chinas posibles" no sobrevivia al
+    #     turno, asi que la busqueda siguiente ya no la aplicaba.
+    # Los tres salen de datos deterministas que el turno ya tiene: el mensaje
+    # del cliente y lo que el modelo declaro. Sticky: si este turno no dice
+    # nada, se conserva lo anterior.
+    # El criterio es STICKY, asi que tiene que poder soltarse: sin eso el
+    # sistema le arrastra al cliente una decision que acaba de aflojar
+    # ("el precio no seria tan importante", charla real del 12-ago).
+    criterio = ("" if libera_criterio(raw_message)
+                else detectar_criterio(raw_message)
+                or (conv.get("criterio_cliente") or ""))
+    provincia = conv.get("provincia_envio") or ""
+    try:
+        from app.core.geo_cp import resolver as _geo_resolver
+        _prov, _ = _geo_resolver(raw_message)
+        if _prov:
+            provincia = str(_prov).replace("_", " ")
+    except Exception as e:  # noqa: BLE001 — la memoria nunca tumba el turno
+        log.warning("hub_venta_provincia_error", trace_id=trace_id,
+                    error=str(e)[:120])
+    preferencias = _preferencias_al_dia(conv.get("preferencias_cliente") or {},
+                                        declarado, llamadas)
+    # EL ANCLA: el producto que el cliente eligio y pidio guardar. Los
+    # candidatos son los que el turno dejo sobre la mesa, en orden: el pedido
+    # vigente si es uno solo, y si no lo que se mostro este turno.
+    _cands = ([{"id": c.get("id"), "nombre": c.get("nombre")}
+               for c in carrito] if len(carrito) == 1
+              else _productos_del_turno(llamadas, turno=len(history) // 2))
+    ancla = ancla_al_dia(conv.get("producto_anotado") or {}, raw_message, _cands)
     # EL REPARTO DE ENVIOS, PERSISTIDO. Lo escribe en el estado el que lo
     # resuelve -el parser del mensaje o la cuenta, con el reparto que declaro
     # el modelo item por item- y hasta hoy moria con el turno: dos turnos
@@ -2652,6 +2753,14 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                               (conv.get("ultima_localidad") or "")),
             ultimas_localidades=localidades,
             grupos_envio=_grupos_envio,
+            # VA EL VALOR, NO `or None`: `None` significa 'no toques lo
+            # guardado', asi que soltar el criterio -que lo deja en ""- no
+            # se hubiera guardado nunca y el sticky no se soltaba mas.
+            criterio_cliente=criterio,
+            producto_anotado=(ancla if ancla != (conv.get("producto_anotado") or {})
+                              else None),
+            provincia_envio=provincia or None,
+            preferencias_cliente=preferencias or None,
             datos_cliente_parciales=datos_cliente,
             pregunta_cierre_hecha=pregunta_cierre_hecha,
             ultimo_presupuesto=(bloque or conv.get("ultimo_presupuesto") or None))
@@ -2666,6 +2775,33 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     _idx_final = IT.cobertura(declarado, texto, trace_id + "|final",
                               llamadas=llamadas, memoria=_memoria_idx)
     G.anotar("sin_contestar", [p["id"] for p in (_idx_final.get("faltan") or [])][:5])
+    # LA MEMORIA, EN LA MISMA FICHA. Era el unico engranaje del turno que no se
+    # veia: lo que el turno RECORDABA y lo que GUARDA solo se podian saber
+    # bajando el documento de Firestore y comparandolo a mano contra el
+    # anterior. Por eso cuatro campos estuvieron muertos sin que nadie lo
+    # notara —el reparto, el criterio, la provincia y las preferencias, leidos
+    # en cada turno y escritos por nadie—. Ahora la linea dice cuantos items
+    # tiene el pedido, si hay ancla, y que decisiones del cliente siguen
+    # vigentes. Un campo que se vacia se ve en el turno en que pasa.
+    G.anotar("memoria", {
+        "carrito": len(carrito or []),
+        "vistos": len(productos_vistos or []),
+        "descartados": len(descartados or []),
+        "destinos": len(localidades or []),
+        "reparto": len(_grupos_envio or []),
+        "ancla": bool((ancla or {}).get("id")),
+        "criterio": criterio or "",
+        "provincia": provincia or "",
+        "condiciones": len((preferencias or {}).get("condiciones") or []),
+        "resumen": len(resumen or ""),
+        # Lo que el CODIGO repuso en la cuenta desde la memoria: el pedido de
+        # antes cuando el cliente pidio agregar, y el reparto que la charla ya
+        # habia cerrado. Son las dos veces que la plata sale de la memoria y no
+        # de lo que el modelo declaro, asi que tienen que verse.
+        "repuso": sorted({r for l in llamadas
+                          for r in ((l.get("resultado") or {}).get("repuso") or [])
+                          if isinstance(l.get("resultado"), dict)}),
+    })
     try:
         from app.core.aduana import marcador as _marcador_aduana
         _m = _marcador_aduana()

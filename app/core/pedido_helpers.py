@@ -304,114 +304,13 @@ def certificar_producto(resuelto: str, catalogo: list) -> tuple[str, list]:
     return "ambiguous", hits
 
 
-def _resolver_nombre_a_producto(resuelto: str, catalogo: list) -> dict | None:
-    """UN producto del catalogo para el nombre que resolvio el interprete, o
-    None si no se puede decidir. Se apoya en certificar_producto: si las
-    variantes son del MISMO modelo, devuelve la primera -comparten ficha, specs
-    y casi siempre precio-; si son modelos distintos o no hay ninguno, None."""
-    veredicto, hits = certificar_producto(resuelto, catalogo)
-    return hits[0] if veredicto == "exists" else None
 
 
-def _presupuesto_de_meta(meta: dict) -> str:
-    """Saca el presupuesto YA VERIFICADO (campo presentacion de calculate_total)
-    del meta del solver, para que el cierre y el link de pago usen el total real
-    de la calculadora, nunca uno inventado. "" si el solver no calculo este turno."""
-    for tc in reversed((meta or {}).get("tools_called", []) or []):
-        if tc.get("name") == "calculate_total":
-            pres = (tc.get("result") or {}).get("presentacion")
-            if pres:
-                return pres
-    return ""
 
 
-def _parece_aportar_dato(mensaje: str) -> bool:
-    """Heuristica barata: el mensaje parece traer un dato de cierre (numero, pago,
-    o cue de domicilio), aunque el interprete no lo haya marcado como aporta_dato.
-    Abre el extractor LLM en cotizaciones que ya mencionan direccion o pago."""
-    if not mensaje:
-        return False
-    t = mensaje.lower()
-    if any(ch.isdigit() for ch in t):
-        return True
-    claves = ("transferenc", "mercado pago", "efectivo", "tarjeta", "debito",
-              "credito", "calle", "avenida", " av ", "direccion", "domicilio",
-              "envio a", "enviar a", "me llamo", "mi nombre")
-    return any(k in t for k in claves)
 
 
-def _destinos_de_interp(interp) -> list[str]:
-    """Destinos DISTINTOS (no null) que leyo el interprete, del pedido y de la
-    solicitud nueva. MANDA sobre los que reescribe el solver: en la charla real
-    del 1-ago el interprete leyo los tres -Berrotaran, Concordia y Posadas- y
-    el modelo emitio dos, asi que se cobro un envio de menos."""
-    dests: list[str] = []
-    for campo in ("pedido", "solicitud_nueva"):
-        for it in (interp or {}).get(campo) or []:
-            if not isinstance(it, dict):
-                continue
-            d = str(it.get("destino") or "").strip()
-            if d and d.lower() not in [x.lower() for x in dests]:
-                dests.append(d)
-    return dests
 
 
-def grupos_de_interp(interp, tienda_id=None) -> list | None:
-    """El REPARTO del pedido tal como lo leyo el interprete: qué cantidad de qué
-    categoria va a cada destino, en el formato que consume `calculate_total`.
-
-    Por que existe (charla real de Martin, 1-ago). El reparto lo armaba un
-    regex sobre el mensaje crudo, y ante "2 memorias 2 auriculares y 2 mauses,
-    1 memoria y un auricular a berrotaran, 1 auricular y 1 mause a concordia,
-    el resto a posadas" ese regex leyo DOS AURICULARES y nada mas: perdio las
-    memorias, los mouses y un destino entero. El interprete, en el mismo turno,
-    lo habia leido completo. Esto usa lo que ya estaba resuelto en vez de
-    volver a adivinarlo.
-
-    Devuelve None si el interprete no repartio nada, y ahi el llamador cae al
-    camino de siempre. No inventa: si un renglon no trae destino, no entra.
-    """
-    grupos: dict = {}
-    for campo in ("pedido", "solicitud_nueva"):
-        for it in (interp or {}).get(campo) or []:
-            if not isinstance(it, dict):
-                continue
-            destino = str(it.get("destino") or "").strip()
-            if not destino:
-                continue
-            # la categoria sale del renglon (solicitud_nueva) o del producto ya
-            # mostrado (pedido); sin ninguna de las dos el renglon no sirve
-            # para agrupar y se descarta.
-            cat = str(it.get("categoria") or "").strip()
-            if not cat and it.get("producto"):
-                cat = _categoria_de_producto(str(it["producto"]), tienda_id)
-            if not cat:
-                continue
-            try:
-                n = int(it.get("cantidad") or 1)
-            except (TypeError, ValueError):
-                n = 1
-            if n <= 0:
-                continue
-            clave = destino.lower()
-            grupos.setdefault(clave, {"destino": destino, "cats": {}})
-            grupos[clave]["cats"][cat] = grupos[clave]["cats"].get(cat, 0) + n
-    if len(grupos) < 2:
-        # con un solo destino no hay reparto que hacer: la cuenta es una sola.
-        return None
-    return [{"destino": g["destino"],
-             "cats": [{"n": n, "cat": c} for c, n in g["cats"].items()]}
-            for g in grupos.values()]
 
 
-def _categoria_de_producto(nombre: str, tienda_id=None) -> str:
-    """La categoria REAL de un producto ya mostrado. Vacio si no se ubica."""
-    try:
-        from app.storage.firestore_client import get_all_products
-        n = _norm_txt(nombre)
-        for p in get_all_products(tienda_id=tienda_id) or []:
-            if _norm_txt(p.get("nombre")) == n:
-                return str(p.get("categoria") or "")
-    except Exception:
-        pass
-    return ""

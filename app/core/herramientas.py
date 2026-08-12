@@ -1690,7 +1690,13 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     # LO QUE EL CLIENTE PIDIO SUMAR SE SUMA A LO QUE YA TENIA. Ver
     # `_con_el_carrito_que_ya_estaba`: cuando el cliente dice "agrega un
     # teclado", su pedido son los seis articulos de antes MAS el teclado.
+    # LO QUE EL CODIGO REPUSO EN ESTA CUENTA, para que se vea en la ficha del
+    # turno. Viaja en el RESULTADO y no por contextvar a proposito: las tools
+    # corren en hilos aparte y una nota escrita en otro hilo no vuelve al turno.
+    repuso = []
     pedido_items = _con_el_carrito_que_ya_estaba(list(a.items or []), tienda_id)
+    if len(pedido_items) != len(a.items or []):
+        repuso.append("carrito_de_antes")
     items = [{"product_id": str(i.product_id).upper(), "cantidad": max(1, i.cantidad)}
              for i in pedido_items]
     if not items:
@@ -1707,6 +1713,7 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     repuestos = _items_con_destino_de_memoria(pedido_items, destinos, tienda_id)
     if repuestos:
         pedido_items = repuestos
+        repuso.append("reparto_de_memoria")
     envios = []
     for d in destinos:
         try:
@@ -1852,6 +1859,7 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     if reparto:
         bloque = bloque + "\n\n" + reparto
     return {"estado": "ok", "bloque": bloque,
+            "repuso": repuso,
             "total_ars": r.get("total_final_ars") or r.get("total_ars"),
             "envios": [{"localidad": e.get("localidad") or e.get("zona"),
                         "costo": e.get("costo")} for e in envios],

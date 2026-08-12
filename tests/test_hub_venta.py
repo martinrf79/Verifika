@@ -1574,3 +1574,35 @@ def test_la_cuenta_del_mismo_pedido_se_reestampa_como_siempre():
     assert HV._cuenta_no_retipeada(texto, hubo_calculo=False,
                                    previo=_CUENTA_MICROFONOS,
                                    trace_id="t", declarado=declarado) == texto
+
+
+# ── LA MEMORIA QUE SE LEIA Y NO ESCRIBIA NADIE (12-ago) ─────────────────────
+def test_los_campos_del_estado_los_escribe_alguien():
+    """EL CANDADO CONTRA LA MEMORIA DE UTILERIA.
+
+    `construir_estado` levanta campos de la conversacion en CADA turno y el
+    turno los usa como si estuvieran. Si el hub no los guarda nunca, llegan
+    siempre vacios y nadie se entera: no hay error, hay una decision del cliente
+    que se pierde en silencio. Paso con CUATRO campos a la vez —el reparto de
+    envios, el criterio de precio, la provincia y las preferencias—, y el mas
+    caro fue la provincia: `cotizar_envio` la lee del estado para resolver un
+    pueblo ambiguo sin volver a pedir el codigo postal, y leia "" siempre.
+
+    Este test compara las dos listas y se pone rojo si alguien agrega un campo
+    de un solo lado. Es texto contra texto a proposito: no depende de correr un
+    turno entero, asi que no se puede saltear."""
+    import re
+    from pathlib import Path
+    raiz = Path(__file__).resolve().parent.parent
+    est = (raiz / "app/core/estado_venta.py").read_text(encoding="utf-8")
+    hub = (raiz / "app/core/hub_venta.py").read_text(encoding="utf-8")
+    cuerpo = est[est.index("def construir_estado"):]
+    lee = set(re.findall(r'conv\.get\("([a-z_]+)"\)', cuerpo))
+    guardado = hub[hub.index("        save_conversation("):]
+    guardado = guardado[:guardado.index("except Exception")]
+    escribe = set(re.findall(r'([a-z_]+)\s*=', guardado))
+    # `history` y `summary` viajan por posicion, no por nombre.
+    faltan = sorted(lee - escribe - {"history", "summary"})
+    assert not faltan, (
+        "estos campos del estado los LEE cada turno y no los guarda nadie, "
+        f"asi que llegan siempre vacios: {faltan}")

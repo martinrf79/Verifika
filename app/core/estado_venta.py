@@ -34,6 +34,24 @@ _CRITERIO_INTERMEDIO_RE = re.compile(
     r"|n[oi] (?:el |lo )?m[aá]s barat|ni tan barat", re.IGNORECASE)
 
 
+# EL CLIENTE SOLTANDO EL CRITERIO. Hace falta porque el criterio es STICKY: se
+# dice una vez y vale para todo el pedido, asi que sin una forma de soltarlo el
+# sistema le arrastra al cliente una decision que acaba de aflojar. Es el mismo
+# mensaje real del 12-ago: pidio "el mas barato" en un turno y dos turnos
+# despues abrio con "el precio no seria tan importante".
+_CRITERIO_LIBRE_RE = re.compile(
+    r"(?:el\s+)?precio\s+no\s+(?:es|ser[ií]a|me)\s+(?:tan\s+|lo\s+)?"
+    r"(?:importa\w*|relevante|problema)"
+    r"|no\s+(?:me\s+)?importa\s+(?:el|tanto el)\s+precio"
+    r"|da\s+igual\s+(?:el\s+)?precio|sin\s+importar\s+(?:el\s+)?precio",
+    re.IGNORECASE)
+
+
+def libera_criterio(mensaje: str) -> bool:
+    """True si el cliente solto el criterio de precio que habia dejado dicho."""
+    return bool(_CRITERIO_LIBRE_RE.search(mensaje or ""))
+
+
 def detectar_criterio(mensaje: str) -> str:
     """Criterio de precio que el cliente dejo dicho en el mensaje: 'más barato'
     o 'intermedio'. Devuelve '' si el mensaje no trae ninguno. Determinista: el
@@ -84,47 +102,10 @@ def pide_agregar_al_pedido(mensaje: str) -> bool:
     return bool(_RE_AGREGAR_AL_PEDIDO.search(m))
 
 
-def criterio_del_interprete(interp) -> bool:
-    """El SEGUNDO interprete del criterio: la lectura del LLM. El regex de arriba
-    no entiende 'eco' ni abreviaturas ni modismos; el interprete si (campo
-    'criterio' del schema). True si el LLM leyo que el cliente quiere lo mas
-    barato."""
-    if not isinstance(interp, dict):
-        return False
-    return str(interp.get("criterio") or "").strip() == "mas_barato"
 
 
-def criterio_llm(interp) -> str:
-    """El criterio crudo que leyo el LLM: 'mas_barato', 'intermedio' o ''."""
-    if not isinstance(interp, dict):
-        return ""
-    v = str(interp.get("criterio") or "").strip()
-    return v if v in ("mas_barato", "intermedio") else ""
 
 
-def concordancia_criterio(mensaje: str, interp) -> str:
-    """DOS interpretes del criterio de precio (decision de Martin, 9-jul):
-    el CODIGO (regex determinista) y el LLM (entiende 'eco', 'lo mas conveniente'
-    y typos que el regex no cubre). Regla:
-      - alguno lee INTERMEDIO -> 'intermedio' (proponer el del medio y
-        confirmar; JAMAS armar los mas baratos: es lo contrario de lo pedido)
-      - ambos leen barato     -> 'actuar'    (se arma sin preguntar)
-      - solo uno lee barato   -> 'confirmar' (pregunta corta '¿los mas baratos?')
-      - ninguno               -> ''          (no es un turno de criterio)
-    Asi 'eco' se entiende sin listar sinonimos a mano, pero un disparo dudoso de
-    UN solo interprete se confirma en vez de sellar un total que el cliente
-    quiza no pidio. Generar > confirmar antes de comprometer plata."""
-    cod = detectar_criterio(mensaje)
-    llm = criterio_llm(interp)
-    if "intermedio" in (cod, llm):
-        return "intermedio"
-    cod_b = cod == "más barato"
-    llm_b = llm == "mas_barato"
-    if cod_b and llm_b:
-        return "actuar"
-    if cod_b or llm_b:
-        return "confirmar"
-    return ""
 
 _current_estado: ContextVar[dict | None] = ContextVar("current_estado", default=None)
 
@@ -235,68 +216,10 @@ def _money(n: Any) -> str:
         return str(n)
 
 
-def productos_de_meta(meta: dict) -> list[dict]:
-    """Productos que las tools mostraron este turno (id, nombre, precio REAL), desde
-    el catalogo y el detalle de la calculadora. El precio sale verbatim de la tool,
-    nunca del texto del solver. Lo escribe la herramienta, no el modelo."""
-    vistos: dict[str, dict] = {}
-    for tc in (meta or {}).get("tools_called", []) or []:
-        res = tc.get("result")
-        if not isinstance(res, dict):
-            continue
-        cands = list(res.get("productos") or [])
-        if isinstance(res.get("producto"), dict):
-            cands.append(res["producto"])
-        cands += list(res.get("detalle") or [])
-        for p in cands:
-            if not isinstance(p, dict):
-                continue
-            pid = str(p.get("id") or "").upper()
-            precio = p.get("precio_ars")
-            if precio is None:
-                precio = p.get("precio_unitario")
-            nombre = p.get("nombre")
-            if pid and nombre and isinstance(precio, (int, float)):
-                vistos[pid] = {"id": pid, "nombre": nombre, "precio": int(precio)}
-    return list(vistos.values())
 
 
-def carrito_de_meta(meta: dict) -> list[dict]:
-    """Items del ultimo calculate_total que cerro bien (id, nombre, cantidad), para
-    que el pedido no pierda identidad entre turnos."""
-    for tc in reversed((meta or {}).get("tools_called", []) or []):
-        if tc.get("name") != "calculate_total":
-            continue
-        res = tc.get("result")
-        if not isinstance(res, dict) or res.get("ok") is False or not res.get("detalle"):
-            continue
-        items = [{"id": d["id"], "nombre": d.get("nombre", ""),
-                  "cantidad": d.get("cantidad", 1)}
-                 for d in res["detalle"] if isinstance(d, dict) and d.get("id")]
-        if items:
-            return items
-    return []
 
 
-def envio_de_meta(meta: dict) -> str:
-    """Zona/provincia y costo del ultimo cotizar_envio que cerro bien, como texto
-    listo para el estado. '' si no se cotizo nada valido este turno."""
-    for tc in reversed((meta or {}).get("tools_called", []) or []):
-        if tc.get("name") != "cotizar_envio":
-            continue
-        res = tc.get("result")
-        if not isinstance(res, dict) or not res.get("ok"):
-            continue
-        zona = res.get("provincia") or res.get("zona") or "esa zona"
-        zona = str(zona).replace("_", " ")
-        if res.get("modalidad") == "rango":
-            costo = (f"entre ${_money(res.get('monto_min'))} y "
-                     f"${_money(res.get('monto_max'))}")
-        else:
-            m = res.get("monto", 0)
-            costo = "gratis" if m in (0, None) else f"${_money(m)}"
-        return f"{zona}: {costo}"
-    return ""
 
 
 def merge_productos(memoria: list[dict], turno: list[dict],
@@ -371,32 +294,6 @@ _RE_LIMPIA_PREFERENCIAS = re.compile(
     r"|me da igual (la marca|el origen)", re.IGNORECASE)
 
 
-def preferencias_actualizadas(previas: dict | None, interp: dict | None,
-                              mensaje: str = "") -> dict:
-    """Merge sticky de las preferencias del cliente: las exclusiones se ACUMULAN
-    (dedup por tipo+valor), tope y uso los pisa el ultimo dicho. Una frase que
-    las suelta ('no importa la marca', 'cualquier marca') limpia las
-    exclusiones. Devuelve dict listo para persistir; {} si no hay nada."""
-    prefs = dict(previas or {}) if isinstance(previas, dict) else {}
-    interp = interp if isinstance(interp, dict) else {}
-    if _RE_LIMPIA_PREFERENCIAS.search(mensaje or ""):
-        prefs.pop("exclusiones", None)
-    exc_prev = [e for e in (prefs.get("exclusiones") or [])
-                if isinstance(e, dict) and e.get("valor")]
-    vistas = {(str(e.get("tipo")), str(e.get("valor")).strip().lower())
-              for e in exc_prev}
-    for e in (interp.get("exclusiones") or []):
-        clave = (str(e.get("tipo")), str(e.get("valor") or "").strip().lower())
-        if clave[1] and clave not in vistas:
-            exc_prev.append({"tipo": clave[0], "valor": str(e["valor"]).strip()})
-            vistas.add(clave)
-    if exc_prev:
-        prefs["exclusiones"] = exc_prev
-    if interp.get("tope_presupuesto"):
-        prefs["tope_presupuesto"] = int(interp["tope_presupuesto"])
-    if interp.get("uso_previsto"):
-        prefs["uso_previsto"] = str(interp["uso_previsto"]).strip()
-    return {k: v for k, v in prefs.items() if v}
 
 
 
@@ -456,90 +353,50 @@ def _nombre_en_mensaje(nombre: str, mensaje: str) -> bool:
     return False
 
 
-def aplicar_ancla_producto(interp: dict, mensaje: str, estado: dict,
-                           catalogo: list) -> str:
-    """Muta interp con el ancla, en dos direcciones. Devuelve el evento ('' si
-    no hizo nada):
-      - 'anotado': el cliente elige/anota este turno y el interprete no
-        resolvio producto pero dejo UN candidato que reconcilia unico ->
-        producto_resuelto se completa (el compositor muestra la ficha en vez
-        del fallback 'no te entendi').
-      - 'referencia': el mensaje referencia lo anotado ('el que te dije al
-        principio') sin resolver producto -> producto_resuelto = el ancla, y
-        si ademas pide total/cierre, el pedido se arma con ese producto para
-        que la guia selle el presupuesto real."""
-    if not isinstance(interp, dict):
-        return ""
-    from app.core.pedido_helpers import _resolver_nombre_a_producto
-    estado = estado if isinstance(estado, dict) else {}
-    m = _norm_ancla(mensaje)
+def ancla_al_dia(previo: dict | None, mensaje: str, candidatos: list) -> dict:
+    """EL ANCLA DEL PRODUCTO ELEGIDO, contra el contrato de HOY.
 
-    # Referencia a lo anotado: el ancla persistida manda.
-    ancla = estado.get("producto_anotado") or {}
-    if (ancla.get("nombre") and _RE_REF_ANOTADO.search(m)
-            and not str(interp.get("producto_resuelto") or "").strip()
-            and not (interp.get("pedido") or [])):
-        interp["producto_resuelto"] = ancla["nombre"]
-        if _RE_PEDIDO_ANOTADO.search(m):
-            interp["pedido"] = [{"producto": ancla["nombre"], "cantidad": 1,
-                                 "destino": None}]
-            try:
-                conf = float(interp.get("confianza") or 0)
-            except (TypeError, ValueError):
-                conf = 0.0
-            interp["confianza"] = max(conf, 0.7)
-        return "referencia"
+    QUE RESUELVE. "El que te dije al principio", "el anotado", "el de antes":
+    la referencia lejana que la prioridad 3 nombra con todas las letras. El
+    campo `producto_anotado` existia en la conversacion, el estado lo levantaba
+    en cada turno y la version vieja de esta pieza dependia del INTERPRETE, que
+    el hub reemplazo el 1-ago: desde entonces no lo escribia nadie, o sea que
+    el ancla nunca existio en produccion. El banco de turno largo la daba por
+    buena porque llamaba a la funcion vieja directo, no al camino vivo.
 
-    # Anotar este turno: candidato unico + palabras de eleccion.
-    if (_RE_ANOTAR.search(m)
-            and not str(interp.get("producto_resuelto") or "").strip()):
-        cands = [str(c) for c in (interp.get("candidatos") or [])
-                 if str(c).strip()]
-        if len(cands) == 1:
-            p = _resolver_nombre_a_producto(cands[0], catalogo)
-            if isinstance(p, dict) and p.get("nombre"):
-                interp["producto_resuelto"] = p["nombre"]
-                return "anotado"
-    return ""
+    LA REGLA, y es deliberadamente conservadora:
+      - el cliente ELIGE ("me quedo con", "anotalo", "me gusta") y el turno
+        dejo UN solo producto sobre la mesa -el pedido vigente de un item, o un
+        unico producto mostrado-: ese es el ancla;
+      - el cliente lo SACA y nombra algo del ancla: se limpia;
+      - cualquier otra cosa: queda la de antes. Un ancla que se mueve sola es
+        peor que no tener ancla.
 
-
-def producto_anotado_actualizado(previo: dict | None, interp: dict,
-                                 mensaje: str, catalogo: list) -> dict:
-    """El ancla que se PERSISTE al final del turno. Regla conservadora:
-      - producto_resuelto del turno (ya pasado por aplicar_ancla_producto)
-        que reconcilia unico con el catalogo -> nuevo ancla, salvo intencion
-        'otra' (rechazo/off-topic no ancla).
-      - negacion sobre el anotado ('el mouse no, sacalo') -> se limpia, SOLO
-        si el mensaje nombra un token distintivo del ancla (no se limpia por
-        rechazar OTRO producto).
-      - si no, queda el previo."""
+    `candidatos` son {id, nombre, precio} del turno, en orden de preferencia.
+    No resuelve nombres contra el catalogo: recibe productos que ya salieron de
+    una herramienta, asi que no puede anclar algo que no existe."""
     previo = previo if isinstance(previo, dict) else {}
-    interp = interp if isinstance(interp, dict) else {}
-    if (previo.get("nombre") and _RE_QUITAR_ANOTADO.search(mensaje or "")
-            and _nombre_en_mensaje(previo["nombre"], mensaje)):
+    m = _norm_ancla(mensaje)
+    if previo.get("nombre") and _RE_QUITAR_ANOTADO.search(m) \
+            and _nombre_en_mensaje(previo["nombre"], mensaje):
         return {}
-    if str(interp.get("intencion") or "") == "otra":
+    if not _RE_ANOTAR.search(m):
         return previo
-    resuelto = str(interp.get("producto_resuelto") or "").strip()
-    if not resuelto:
+    utiles = [c for c in (candidatos or [])
+              if isinstance(c, dict) and c.get("id") and c.get("nombre")]
+    if len(utiles) != 1:
         return previo
-    # Solo ancla una ELECCION: palabras de anotar/elegir en el mensaje o una
-    # intencion de compra/aporte. Una pregunta suelta sobre OTRO producto
-    # ("¿cuanto sale el DX-110?") no pisa el ancla del elegido.
-    if not (_RE_ANOTAR.search(mensaje or "")
-            or str(interp.get("intencion") or "") in
-            ("decision_compra", "aporta_dato")):
-        return previo
-    from app.core.pedido_helpers import _resolver_nombre_a_producto
-    p = _resolver_nombre_a_producto(resuelto, catalogo)
-    if isinstance(p, dict) and p.get("id") and p.get("nombre"):
-        try:
-            precio = int(p.get("precio_ars") or 0)
-        except (TypeError, ValueError):
-            precio = 0
-        return {"id": str(p["id"]).upper(), "nombre": str(p["nombre"]),
-                "precio": precio}
-    return previo
+    c = utiles[0]
+    try:
+        precio = int(c.get("precio") or c.get("precio_ars") or 0)
+    except (TypeError, ValueError):
+        precio = 0
+    return {"id": str(c["id"]).upper(), "nombre": str(c["nombre"]),
+            "precio": precio}
+
+
+
+
 
 
 # ── RECHAZO / EDICION DE PEDIDO (11-jul, banco: guiones 09 y 28) ─────────────

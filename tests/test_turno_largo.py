@@ -25,9 +25,8 @@ en el turno 10 no lo veria nunca.
 import pytest
 
 from app.config import get_settings
-from app.core.estado_venta import (aplicar_ancla_producto, construir_estado,
-                                   merge_productos,
-                                   producto_anotado_actualizado)
+from app.core.estado_venta import (ancla_al_dia, construir_estado,
+                                   merge_productos)
 
 LARGOS = (1, 5, 10, 20, 40)
 
@@ -97,11 +96,14 @@ def test_la_referencia_lejana_resuelve_a_cualquier_distancia(turnos):
     estado = construir_estado(_charla(turnos), None)
     interp = {"intencion": "decision_compra", "producto_resuelto": None,
               "candidatos": [], "confianza": 0.5, "pedido": []}
-    evento = aplicar_ancla_producto(
-        interp, "cerrame la compra con el mouse que te mencione al principio",
-        estado, _CATALOGO)
-    assert evento == "referencia", f"a los {turnos} turnos no resolvio"
-    assert interp["producto_resuelto"] == "Mouse Logitech M170 Negro"
+    estado = construir_estado(_charla(turnos), None)
+    ancla = estado.get("producto_anotado") or {}
+    assert ancla.get("nombre") == "Mouse Logitech M170 Negro", (
+        f"a los {turnos} turnos el ancla no sobrevivio al estado")
+    # Y tiene que llegar al prompt: guardarla y no mostrarla es lo mismo que
+    # no tenerla, que es como estuvo hasta el 12-ago.
+    from app.core.hub_venta import _memoria_texto
+    assert "Mouse Logitech M170 Negro" in _memoria_texto(estado, [])
 
 
 @pytest.mark.parametrize("turnos", LARGOS)
@@ -111,9 +113,9 @@ def test_el_ancla_no_se_borra_por_turnos_que_hablan_de_otra_cosa(turnos):
     previo = {"id": "MOU0009", "nombre": "Mouse Logitech M170 Negro",
               "precio": 12000}
     for _ in range(turnos):
-        previo = producto_anotado_actualizado(
-            previo, {"intencion": "consulta_general", "producto_resuelto": None},
-            "y como es el tema de la garantia?", _CATALOGO)
+        previo = ancla_al_dia(previo, "y como es el tema de la garantia?",
+                              [{"id": "TEC0004",
+                                "nombre": "Teclado Genius KB-110X Blanco"}])
     assert previo and previo.get("id") == "MOU0009", (
         f"el ancla se perdio despues de {turnos} turnos de otra cosa")
 
