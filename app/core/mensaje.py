@@ -213,18 +213,47 @@ def sin_lo_ya_dicho(texto: str, anterior: str) -> str:
 
     SOLO ORACIONES LARGAS, y la cuenta queda afuera. La linea corta que
     reconfirma -"Total: $225.000"- se repite con razon cuando el cliente vuelve
-    sobre el pedido: es plata reestampada por el codigo, no una coletilla."""
+    sobre el pedido: es plata reestampada por el codigo, no una coletilla.
+
+    Y EL REPARTO QUEDA AFUERA POR LA MISMA RAZON, que hasta hoy no estaba. El
+    reparto lo escribe el codigo desde la cuenta, renglon por renglon, y cuando
+    el pedido no cambio de destinos sale IGUAL al del turno anterior: esta regla
+    lo leia como coletilla y se llevaba puestos los renglones repetidos. Medido
+    sobre el turno 8 de `80_charla_real_12ago`: el bloque salio con Cordoba y
+    sin Concordia ni Posadas, o sea un reparto que dice menos unidades de las
+    que cobra. La aduana lo cazo -"la cuenta tiene 8 unidades y el reparto
+    menciona 4"- porque un bloque de codigo podado a medias miente, y entre un
+    mensaje mas corto y uno correcto gana el correcto."""
     previo = set()
     for linea in (anterior or "").splitlines():
         for o in _RE_ORACION.split(linea):
             n = _norm(o)
             if len(n) >= _MIN_REPETIDO_ENTRE_TURNOS:
                 previo.add(n)
-    if not previo:
+    # EL BLOQUE DE CODIGO SE TRATA COMO UNIDAD, no renglon por renglon. Si todo
+    # lo que dice ya estaba en el mensaje anterior, se va ENTERO; si cambio
+    # aunque sea un renglon, se queda ENTERO. Podarlo a medias es lo que dejaba
+    # un reparto con un destino de tres, que dice menos unidades de las que
+    # cobra (turno 8 de `80_charla_real_12ago`, cazado por la aduana).
+    lineas = (texto or "").splitlines()
+    previo_lineas = {_norm(l) for l in (anterior or "").splitlines() if l.strip()}
+    de_codigo, repetidos = set(), set()
+    for g in _grupos_de_codigo(lineas):
+        de_codigo.update(g)
+        vivos = [i for i in g if lineas[i].strip()]
+        if vivos and all(_norm(lineas[i]) in previo_lineas for i in vivos):
+            repetidos.update(g)
+    # El corte por oraciones necesita oraciones largas del mensaje anterior; el
+    # de bloques no, y por eso se decide despues de mirarlos: un bloque calcado
+    # se va aunque el mensaje anterior no tenga una sola oracion larga.
+    if not previo and not repetidos:
         return texto
     salida, fuera = [], 0
-    for linea in (texto or "").splitlines():
-        if _es_cuenta(linea):
+    for i, linea in enumerate(lineas):
+        if i in repetidos:
+            fuera += 1
+            continue
+        if i in de_codigo:
             salida.append(linea)
             continue
         trozos = _RE_ORACION.split(linea)
@@ -502,6 +531,55 @@ def sin_cuenta_dos_veces(texto: str) -> str:
     if not fuera:
         return texto
     log.info("mensaje_cuenta_dos_veces", renglones=len(fuera))
+    return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(
+        l for i, l in enumerate(lineas) if i not in fuera)).strip())
+
+
+def un_solo_reparto(texto: str) -> str:
+    """REGLA 9. EL REPARTO DE ENVIOS SE ESCRIBE UNA VEZ, Y ES EL DE LA CUENTA.
+
+    EL CASO, del turno 8 de `80_charla_real_12ago`, que salio de la charla real
+    de Martin. El cliente suma un teclado a un pedido de siete articulos. El
+    modelo escribe arriba su propio reparto -"Reparto de los envios: - A
+    Cordoba capital: 1x teclado"-, que es verdad para lo que el declaro y
+    MENTIRA para lo que se cobra, y abajo el codigo estampa el reparto real de
+    las ocho unidades entre los tres destinos. El cliente lee dos repartos que
+    se contradicen, y el invariante lo canta: "la cuenta tiene 8 unidades y el
+    reparto menciona 9".
+
+    POR QUE NO LO CAZABA LA REGLA 5. Esa borra un bloque cuando lo que dice ya
+    esta escrito LITERAL en uno de arriba, y aca el bloque incompleto va
+    PRIMERO: el completo no estaba escrito todavia. El orden no puede decidir
+    cual sobrevive cuando uno de los dos es el que lleva la plata.
+
+    LA REGLA, mecanica y sin juzgar contenido: con la CUENTA del codigo en el
+    mensaje, los renglones de reparto que viven FUERA de ese bloque no los
+    escribio el codigo, y se van enteros con su titulo. En el camino vivo el
+    unico reparto que existe es el que `armar_presupuesto` pega abajo de la
+    cuenta: sale de los destinos cotizados y de los items que entraron al
+    total. Cualquier otro es el modelo escribiendolo de memoria, y un reparto
+    sin la cuenta atras es de la misma familia que una cuenta re-tipeada.
+
+    EL SEGUNDO CASO, del turno 2 del guion 76 y es peor que el primero: la
+    cuenta sellada dice 'me faltan 7 de 7 unidades sin asignar' -honesto, el
+    reparto no cerraba- y tres renglones mas arriba el modelo habia escrito un
+    reparto propio, copiado del turno anterior y con seis de las siete
+    unidades. El mensaje se contradecia solo. Ahi no hay dos repartos que
+    comparar: hay uno solo, y es el que no tiene con que respaldarse.
+
+    Si no hay cuenta en el mensaje no se toca nada: sin bloque sellado no hay
+    con que decidir cual reparto es el bueno."""
+    lineas = (texto or "").splitlines()
+    grupos = _grupos_de_codigo(lineas)
+    con_cuenta = [g for g in grupos if any(_es_cuenta(lineas[i]) for i in g)]
+    if len(con_cuenta) != 1:
+        return texto
+    sueltos = [g for g in grupos if g is not con_cuenta[0]
+               and any(_es_renglon_de_reparto(lineas[i]) for i in g)]
+    fuera = {i for g in sueltos for i in g}
+    if not fuera:
+        return texto
+    log.info("mensaje_reparto_dos_veces", renglones=len(fuera))
     return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(
         l for i, l in enumerate(lineas) if i not in fuera)).strip())
 
@@ -801,6 +879,10 @@ def componer(texto: str, anterior: str = "",
     # cuenta que todavia tiene el pie duplicado.
     t = sin_pie_de_cuenta_repetido(t)
     t = sin_cuenta_dos_veces(t)
+    # La 9 va acá, con las de bloque entero y antes de las de renglon: si la 1 o
+    # la 2 corren primero, le comen renglones al reparto incompleto y lo dejan
+    # sin forma de reconocer como bloque.
+    t = un_solo_reparto(t)
     t = sin_cuenta_que_no_cambio(t, anterior, pregunta)
     t = sin_repeticion_interna(t)
     t = sin_lo_ya_dicho(t, anterior)

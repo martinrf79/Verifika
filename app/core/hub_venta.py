@@ -447,6 +447,26 @@ async def _ejecutar_en_paralelo(pedidos: list, tienda_id: str,
             log.warning("hub_venta_herramienta_excepcion", trace_id=trace_id,
                         herramienta=p["nombre"], error=str(r)[:160])
             r = {"estado": "error", "nombre": p["nombre"]}
+        # LOS IDS QUE UNA TOOL DEVOLVIO QUEDAN CERTIFICADOS. Sin esto la regla
+        # cero de la calculadora -con un pedido vigente, un id que no sale del
+        # carrito, de lo ya mostrado o de una tool del turno es un id inferido-
+        # se quedaba con las dos primeras fuentes y NINGUNA tercera:
+        # `certificar_ids_de_resultado` existia, estaba probada y no la llamaba
+        # nadie en el camino vivo -la llamaba el loop del agente viejo, que el
+        # hub reemplazo-. Consecuencia medida en el turno 6 de
+        # `80_charla_real_12ago`: con un carrito de microfonos, el cliente pide
+        # auriculares, mouse y memorias, el turno los BUSCA y encuentra, y la
+        # cuenta rechaza los seis ids recien traidos por "no certificados". O
+        # sea que con un pedido vigente NO se podia cotizar nada nuevo.
+        #
+        # Se certifica ACA, en el hilo del turno: las tools corren en hilos
+        # aparte y una contextvar escrita en otro hilo no vuelve al que suma,
+        # que es la misma trampa que ya tenia anotada `armar_presupuesto`.
+        try:
+            from app.core.estado_venta import certificar_ids_de_resultado
+            certificar_ids_de_resultado(r)
+        except Exception:  # noqa: BLE001 — certificar no puede tumbar un turno
+            pass
         llamadas.append({"herramienta": p["nombre"], "pedido": p.get("args") or {},
                          "resultado": r})
     return llamadas
@@ -1073,8 +1093,40 @@ def _sin_markdown(texto: str) -> str:
     return t
 
 
+def _cuenta_de_otro_pedido(previo: str, declarado: dict) -> bool:
+    """True si la cuenta guardada NO es la del pedido que el cliente acaba de
+    declarar. Mecanico: ni uno solo de los rubros declarados se reconoce en los
+    renglones de esa cuenta.
+
+    LA FALLA, del turno 6 de `80_charla_real_12ago`. El cliente venia de un
+    presupuesto de tres microfonos y en este turno pide OTRA cosa: dos
+    auriculares, dos mouse y dos memorias a tres destinos. El turno no pudo
+    armar la cuenta -el modelo mando un id que no existe y la calculadora lo
+    rechazo, que es lo correcto-, el modelo re-tipeo de memoria la cuenta de
+    los microfonos, y como salia identica a la anterior la guardia la dio por
+    respaldada y la dejo pasar. Encima el componedor la resumio en 'Sin cambios
+    en la cuenta. Total final: $260.820'. O sea: al pedido nuevo se le contesto
+    con el total del pedido viejo, presentado como si fuera el de ahora.
+
+    La exencion de la guardia es correcta cuando el cliente reconfirma LO MISMO
+    -'dale, confirmalo'- y falsa cuando declaro otro pedido. Se decide con lo
+    que el modelo declaro, que ya viaja en cada turno, no con una adivinanza."""
+    items = [str(i.get("que") or "").strip()
+             for i in ((declarado or {}).get("items") or [])
+             if isinstance(i, dict)]
+    items = [q for q in items if q]
+    if not items or not (previo or "").strip():
+        return False
+    en_la_cuenta = P._norm(previo)
+    for q in items:
+        raices = {w[:5] for w in P._norm(q).split() if len(w) >= 4}
+        if raices and any(r in en_la_cuenta for r in raices):
+            return False
+    return True
+
+
 def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
-                         trace_id: str) -> str:
+                         trace_id: str, declarado: dict | None = None) -> str:
     """LA CUENTA NO SE ESCRIBE A MANO. Si el turno no la calculo, el modelo NO
     puede redactarla: se le pone la del codigo, tal cual quedo.
 
@@ -1095,6 +1147,17 @@ def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
                  if _RE_ARRANQUE_CUENTA.match(l)]
     if not renglones:
         return texto
+    # LA CUENTA DE OTRO PEDIDO NO SIRVE DE RESPALDO, ni siquiera identica. Ver
+    # `_cuenta_de_otro_pedido`: ahi los renglones se van y no se repone nada,
+    # porque no hay ninguna cuenta buena que poner. El turno cierra sin total y
+    # el indice lo marca sin contestar, que es lo honesto: mejor sin cuenta que
+    # con el total de otro pedido presentado como si fuera este.
+    if _cuenta_de_otro_pedido(previo, declarado or {}):
+        log.warning("hub_venta_cuenta_de_otro_pedido", trace_id=trace_id,
+                    renglones=len(renglones))
+        return re.sub(r"\n{3,}", "\n\n", "\n".join(
+            l for l in (texto or "").splitlines()
+            if not _RE_ARRANQUE_CUENTA.match(l))).strip()
     previo_lineas = {l.strip() for l in (previo or "").splitlines() if l.strip()}
     if all(l.strip() in previo_lineas for l in renglones):
         return texto
@@ -2211,6 +2274,13 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     conv = get_conversation(user_id, tienda_id=tienda_id)
     history = conv.get("history", []) or []
     estado = construir_estado(conv, None)
+    # EL MENSAJE DEL CLIENTE, EN EL ESTADO. Las herramientas deterministas leen
+    # del estado y no reciben el mensaje por parametro -su firma la ve el
+    # modelo-, asi que sin esto la cuenta no puede saber que el cliente pidio
+    # SUMAR algo a lo que ya tenia en vez de declarar un pedido nuevo. Es la
+    # misma clase de dato que el criterio de precio o los destinos: se lee del
+    # mensaje, con codigo, y no depende de que el modelo lo entienda ese dia.
+    estado["mensaje_del_turno"] = raw_message or ""
     set_current_tienda(tienda_id)
     set_current_estado(estado)
 
@@ -2420,7 +2490,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     texto = G.paso("cuenta_no_retipeada", _cuenta_no_retipeada,
                    texto, hubo_calculo=bool(bloque),
                    previo=conv.get("ultimo_presupuesto") or "",
-                   trace_id=trace_id)
+                   trace_id=trace_id, declarado=declarado)
     texto = G.paso("sin_negar_lo_traido", _sin_negar_lo_traido,
                    texto, llamadas, trace_id)
     texto = G.paso("sin_afirmar_del_catalogo", _sin_afirmar_sobre_el_catalogo,
@@ -2532,15 +2602,31 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # EL CARRITO. Si el turno cotizo, manda la cuenta. Si no cotizo pero el
     # modelo DECLARO el pedido, se poda el anterior con esa declaracion: es la
     # unica forma de que "sacá el teclado" baje algo sin obligar a recotizar.
+    #
+    # SALVO QUE EL CLIENTE HAYA PEDIDO AGREGAR. Ahi la declaracion es de lo que
+    # se SUMA, no del pedido entero, y leerla como pedido completo borra lo que
+    # ya habia: "agrega un teclado" sobre seis articulos dejaba el carrito en un
+    # teclado y anotaba los seis en la memoria negativa, o sea que no volvian
+    # nunca mas. Es el mismo mensaje real del 12-ago que rompia la cuenta.
+    from app.core.estado_venta import pide_agregar_al_pedido
+    agrega = pide_agregar_al_pedido(raw_message)
     carrito = _carrito_del_turno(llamadas)
     dados_de_baja = []
-    if not carrito:
+    if not carrito and not agrega:
         carrito, dados_de_baja = _carrito_podado(
             conv.get("carrito_vigente") or [], declarado)
+    elif not carrito:
+        carrito = conv.get("carrito_vigente") or []
     declarado_ahora = _declarados(declarado)
+    if agrega and declarado_ahora:
+        # La foto del pedido es la de antes MAS lo que se sumo: si se guardara
+        # sola la parte agregada, el turno siguiente compararia contra ella y
+        # daria de baja todo lo anterior.
+        declarado_ahora = list(dict.fromkeys(
+            (conv.get("ultimo_declarado") or []) + declarado_ahora))
     descartados = _descartados_nuevos(
         conv.get("descartados") or [], dados_de_baja, carrito,
-        declarado_antes=conv.get("ultimo_declarado") or [],
+        declarado_antes=(None if agrega else conv.get("ultimo_declarado") or []),
         declarado_ahora=declarado_ahora)
     localidades = get_envio_localidades() or (conv.get("ultimas_localidades") or [])
     # EL REPARTO DE ENVIOS, PERSISTIDO. Lo escribe en el estado el que lo

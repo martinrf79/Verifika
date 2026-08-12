@@ -541,3 +541,73 @@ def test_si_el_recorte_deja_la_cuenta_sin_cerrar_no_se_toca():
             "Subtotal: $9.000\n"
             "Subtotal: $9.000")
     assert componer(raro) == raro
+
+
+# ── REGLA 9: UN SOLO REPARTO, Y ES EL DE LA CUENTA ──────────────────────────
+_CUENTA_SIETE = ("Presupuesto:\n"
+                 "- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n"
+                 "- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\n"
+                 "- 2x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: "
+                 "$34.500 c/u = $69.000\n"
+                 "- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n"
+                 "Subtotal: $213.000\n"
+                 "Envio (3 envios): $24.000\n"
+                 "Total: $237.000")
+
+
+def test_el_reparto_que_escribio_el_modelo_se_va_si_hay_cuenta_sellada():
+    """Turno 2 del guion 76, y el mensaje se contradecia solo: la cuenta
+    sellada decia honesto 'me faltan 7 de 7 unidades sin asignar' y tres
+    renglones mas arriba el modelo habia escrito su propio reparto, copiado del
+    turno anterior, con seis de las siete unidades."""
+    from app.core.mensaje import un_solo_reparto
+    texto = ("Aqui te dejo el detalle.\n\n"
+             "Reparto de los envios:\n"
+             "- A Cordoba capital: 1x Auriculares Redragon Zeus X Negro\n"
+             "- A Concordia: 1x Mouse Genius DX-110 Negro\n\n"
+             "Para cerrar, decime que teclado preferis.\n\n"
+             + _CUENTA_SIETE + "\n\n"
+             "Los 3 envios van sobre los destinos que me diste, pero me faltan "
+             "7 de 7 unidades sin asignar: decime qué va a cada uno.")
+    salida = un_solo_reparto(texto)
+    assert "- A Cordoba capital" not in salida
+    assert "Reparto de los envios:" not in salida
+    # La cuenta queda intacta: la regla saca el reparto suelto, no plata.
+    for renglon in _CUENTA_SIETE.splitlines():
+        assert renglon in salida
+
+
+def test_el_reparto_pegado_a_la_cuenta_no_se_toca():
+    """El unico reparto que escribe el codigo va abajo de la cuenta, en el
+    mismo bloque. Ese no se toca ni aunque se repita el turno siguiente: si
+    saliera a medias diria menos unidades de las que cobra."""
+    from app.core.mensaje import un_solo_reparto, componer
+    texto = ("Ahi va tu pedido.\n\n" + _CUENTA_SIETE + "\n\n"
+             "Reparto de los envios:\n"
+             "- A Córdoba capital: 1x auriculares, 1x mouse, 1x teclado\n"
+             "- A Concordia: 1x memoria ram, 1x mouse\n"
+             "- A Posadas: 1x auriculares, 1x memoria ram")
+    assert un_solo_reparto(texto) == texto
+    # Y sobrevive entero aunque el turno anterior traiga dos de los tres
+    # renglones calcados: el bloque cambio, asi que sale completo.
+    anterior = ("Ahi va.\n\n" + _CUENTA_SIETE + "\n\n"
+                "Reparto de los envios:\n"
+                "- A Concordia: 1x memoria ram, 1x mouse\n"
+                "- A Posadas: 1x auriculares, 1x memoria ram")
+    salida = componer(texto, anterior=anterior)
+    assert "- A Concordia: 1x memoria ram, 1x mouse" in salida
+    assert "- A Posadas: 1x auriculares, 1x memoria ram" in salida
+    assert "- A Córdoba capital: 1x auriculares, 1x mouse, 1x teclado" in salida
+
+
+def test_el_bloque_de_codigo_calcado_entero_si_se_va():
+    """El otro lado de la moneda: si el bloque no cambio NADA respecto del
+    mensaje anterior, se va entero. Lo que no se hace es podarlo a medias."""
+    from app.core.mensaje import sin_lo_ya_dicho
+    bloque = ("Reparto de los envios:\n"
+              "- A Córdoba capital: 1x auriculares, 1x mouse\n"
+              "- A Concordia: 1x memoria ram, 1x mouse")
+    texto = "Como te decia antes, esto es lo que quedo armado.\n\n" + bloque
+    salida = sin_lo_ya_dicho(texto, anterior="Ahi va.\n\n" + bloque)
+    assert "- A Córdoba capital" not in salida
+    assert "- A Concordia" not in salida

@@ -1623,6 +1623,61 @@ def _items_con_destino_de_memoria(items: list, destinos: list,
     return repuestos
 
 
+def _con_el_carrito_que_ya_estaba(items: list, tienda_id: str) -> list:
+    """Los items de la cuenta, con el carrito vigente adelante cuando el cliente
+    pidio SUMAR algo a lo que ya venia armado. Los mismos items si no.
+
+    LA FALLA, del casete `80_charla_real_12ago` turno 8, que salio de la charla
+    real de Martin. Sobre un presupuesto de seis articulos el cliente escribe
+    "agrega a ese presupuesto que detallaste al ultimo con los seis articulos,
+    agrega un teclado con envio a Cordoba". El modelo declara UN teclado -que
+    es literalmente lo que se le pidio agregar- y la cuenta salio con un solo
+    renglon de $12.000, subtotal $12.000, y tres envios de $24.000 encima. Los
+    seis articulos no los saco el cliente: se cayeron solos, y el envio quedo
+    costando el doble que la compra.
+
+    POR QUE NO ALCANZABA EL CONTRATO QUE YA HABIA. `registrar_pedido` declara
+    el pedido COMPLETO en cada turno, y sobre eso se apoya la poda del carrito:
+    lo que ya no aparece, sale. Es la regla correcta para una correccion y la
+    equivocada para un agregado, y el modelo no tiene como distinguirlas por su
+    cuenta. La señal la da el CLIENTE en su mensaje y la lee el codigo, igual
+    que el criterio de precio o los destinos.
+
+    TRES CANDADOS, porque sumar de mas seria cobrarle al cliente algo que no
+    pidio:
+      1. el mensaje tiene que pedir agregar, y no sacar (`pide_agregar_al_pedido`);
+      2. el carrito y lo declarado tienen que ser DISJUNTOS. Si el modelo ya
+         re-declaro el pedido entero -que es lo que hace la mayoria de las
+         veces- hay ids en comun y no se toca nada, para no duplicar renglones;
+      3. cada item del carrito tiene que seguir existiendo en el catalogo.
+    """
+    from app.core.estado_venta import get_current_estado, pide_agregar_al_pedido
+    from app.storage.firestore_client import get_product_by_id
+    est = get_current_estado() or {}
+    if not items or not pide_agregar_al_pedido(est.get("mensaje_del_turno") or ""):
+        return items
+    carrito = [c for c in (est.get("carrito") or [])
+               if isinstance(c, dict) and str(c.get("id") or "").strip()]
+    if not carrito:
+        return items
+    declarados = {str(i.product_id).upper() for i in items}
+    previos = {str(c["id"]).upper() for c in carrito}
+    if declarados & previos:
+        return items
+    suma = []
+    for c in carrito:
+        pid = str(c["id"]).upper()
+        if not get_product_by_id(pid, tienda_id=tienda_id):
+            return items
+        suma.append(ItemPedido(product_id=pid,
+                               cantidad=max(1, int(c.get("cantidad") or 1)),
+                               destino=(str(c.get("destino") or "").strip()
+                                        or None)))
+    log.info("cuenta_con_el_carrito_de_antes", del_carrito=len(suma),
+             declarados=len(items))
+    return suma + list(items)
+
+
 def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     """LA CUENTA. Cotiza cada destino y suma, y devuelve el presupuesto ya
     escrito renglon por renglon.
@@ -1632,8 +1687,12 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     escritura hecha en otro hilo no vuelve al que suma.
     """
     from app.core import calculadora as T
+    # LO QUE EL CLIENTE PIDIO SUMAR SE SUMA A LO QUE YA TENIA. Ver
+    # `_con_el_carrito_que_ya_estaba`: cuando el cliente dice "agrega un
+    # teclado", su pedido son los seis articulos de antes MAS el teclado.
+    pedido_items = _con_el_carrito_que_ya_estaba(list(a.items or []), tienda_id)
     items = [{"product_id": str(i.product_id).upper(), "cantidad": max(1, i.cantidad)}
-             for i in (a.items or [])]
+             for i in pedido_items]
     if not items:
         return {"estado": "sin_items"}
 
@@ -1641,11 +1700,10 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     # Un destino por item si el modelo lo repartio y no declaro la lista aparte.
     if not destinos:
         destinos = list(dict.fromkeys(
-            [str(i.destino).strip() for i in a.items if i.destino]))
+            [str(i.destino).strip() for i in pedido_items if i.destino]))
     # EL REPARTO QUE LA CHARLA YA CERRO NO SE VUELVE A PEDIR. Si el modelo se
     # olvido de repetir el destino de cada item pero el pedido es el mismo, el
     # reparto sale de la memoria. Ver `_items_con_destino_de_memoria`.
-    pedido_items = list(a.items or [])
     repuestos = _items_con_destino_de_memoria(pedido_items, destinos, tienda_id)
     if repuestos:
         pedido_items = repuestos

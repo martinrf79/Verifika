@@ -1492,3 +1492,85 @@ def test_el_hecho_acotado_a_un_rubro_no_se_toca():
                          "productos": [{"id": "AUR1", "categoria": "auriculares"}]}}]
     frase = "Todos los auriculares que tengo se fabrican en China, te soy honesto."
     assert HV._sin_afirmar_sobre_el_catalogo(frase, ok, "t") == frase
+
+
+# ── LA CERTIFICACION DE IDS, QUE NO LA LLAMABA NADIE (12-ago) ────────────────
+def test_las_tools_del_turno_certifican_sus_ids(firestore_doble):
+    """LA PIEZA QUE ESTABA DESENCHUFADA, y con un pedido vigente rompia toda
+    cotizacion nueva.
+
+    La regla cero de la calculadora dice que, con un carrito vigente, un id
+    solo vale si sale del carrito, de lo ya mostrado o de una TOOL DE ESTE
+    TURNO. `certificar_ids_de_resultado` es la que provee esa tercera fuente,
+    existia desde siempre, tenia test propio... y no la llamaba nadie en el
+    camino vivo: la llamaba el loop del agente viejo, que el hub reemplazo.
+
+    Consecuencia medida en el turno 6 de `80_charla_real_12ago`: con un
+    carrito de microfonos, el cliente pide auriculares, mouse y memorias, el
+    turno los BUSCA y los encuentra, y la cuenta rechaza los ids recien
+    traidos por no certificados. O sea que con un pedido vigente no se podia
+    cotizar NADA nuevo, y el modelo terminaba re-tipeando la cuenta vieja.
+    """
+    import asyncio
+    from app.core import hub_venta as HV
+    from app.core.contexto_turno import set_current_tienda
+    from app.core.estado_venta import (set_current_estado,
+                                       get_ids_certificados)
+    set_current_tienda("verifika_prod")
+    set_current_estado({"carrito": [{"id": "MIC0005",
+                                     "nombre": "Microfono FIFINE K669B Negro",
+                                     "cantidad": 1}]})
+    try:
+        pedidos = [{"nombre": "buscar_productos",
+                    "args": {"categoria": "mouse", "cuantos": 2}}]
+        llamadas = asyncio.run(
+            HV._ejecutar_en_paralelo(pedidos, "verifika_prod", "t-cert"))
+        assert llamadas and llamadas[0]["resultado"].get("productos")
+        certificados = get_ids_certificados()
+        for p in llamadas[0]["resultado"]["productos"]:
+            assert str(p["id"]).upper() in certificados, (
+                f"{p['id']} salio de una tool del turno y no quedo certificado")
+    finally:
+        set_current_estado(None)
+
+
+# ── LA CUENTA DE OTRO PEDIDO NO SE ESTAMPA (12-ago) ─────────────────────────
+_CUENTA_MICROFONOS = ("Presupuesto:\n"
+                      "- 1x Microfono Razer Seiren V3 Mini Negro: "
+                      "$81.000 c/u = $81.000\n"
+                      "Subtotal: $81.000\nTotal: $81.000")
+
+
+def test_la_cuenta_del_pedido_viejo_no_contesta_el_pedido_nuevo():
+    """Turno 6 de `80_charla_real_12ago`. El cliente venia de un presupuesto de
+    microfonos y pide otra cosa: auriculares, mouse y memorias. El turno no
+    pudo armar la cuenta, el modelo re-tipeo de memoria la de los microfonos, y
+    como salia identica a la anterior la guardia la daba por respaldada. Al
+    pedido nuevo se le contestaba con el total del viejo."""
+    from app.core import hub_venta as HV
+    declarado = {"items": [{"que": "auriculares", "cantidad": 2},
+                           {"que": "mouse", "cantidad": 2},
+                           {"que": "memorias", "cantidad": 2}]}
+    assert HV._cuenta_de_otro_pedido(_CUENTA_MICROFONOS, declarado)
+    texto = "Ahi va tu presupuesto.\n\n" + _CUENTA_MICROFONOS
+    salida = HV._cuenta_no_retipeada(texto, hubo_calculo=False,
+                                     previo=_CUENTA_MICROFONOS,
+                                     trace_id="t", declarado=declarado)
+    assert "$81.000" not in salida, (
+        "estampo la cuenta del pedido anterior:\n" + salida)
+    assert "Ahi va tu presupuesto." in salida
+
+
+def test_la_cuenta_del_mismo_pedido_se_reestampa_como_siempre():
+    """El otro lado: cuando el cliente reconfirma LO MISMO -'dale, confirmalo'-
+    la cuenta anterior si es la de este pedido y se deja pasar, que es el
+    comportamiento que la guardia ya tenia."""
+    from app.core import hub_venta as HV
+    declarado = {"items": [{"que": "microfono razer", "cantidad": 1}]}
+    assert not HV._cuenta_de_otro_pedido(_CUENTA_MICROFONOS, declarado)
+    # Y sin declaracion tampoco se toca: no hay con que decidir.
+    assert not HV._cuenta_de_otro_pedido(_CUENTA_MICROFONOS, {})
+    texto = "Como quedo:\n\n" + _CUENTA_MICROFONOS
+    assert HV._cuenta_no_retipeada(texto, hubo_calculo=False,
+                                   previo=_CUENTA_MICROFONOS,
+                                   trace_id="t", declarado=declarado) == texto

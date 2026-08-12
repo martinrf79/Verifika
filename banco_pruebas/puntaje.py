@@ -83,7 +83,15 @@ _RE_CORTE_ORACION = re.compile(r"(?<=[.!?])\s+|\n")
 # correcto, no una coletilla. Salieron como rojo falso en la primera corrida
 # -guiones 24 y 48- y un rojo falso ensena a ignorar el tablero. Lo que se
 # persigue es la PROSA repetida, no el dato reestampado.
-_RE_RENGLON_ESTAMPADO = re.compile(r"c/u\s*=|^-?\s*\d+\s*x\s")
+# Y EL RENGLON DEL REPARTO ES DE LA MISMA FAMILIA, y faltaba. Lo estampa el
+# codigo desde la cuenta -"- A Concordia: 1x memoria ram, 1x mouse"- y cuando
+# el pedido suma un articulo sin cambiar de destinos, los renglones de los
+# destinos que no cambiaron salen iguales al turno anterior. Eso no es una
+# coletilla: es el reparto entero, que si sale a medias miente sobre lo que se
+# cobra. Cazado en el turno 8 de `80_charla_real_12ago`, donde el bloque salio
+# con un solo destino de tres y la aduana lo marco.
+_RE_RENGLON_ESTAMPADO = re.compile(
+    r"c/u\s*=|^-?\s*\d+\s*x\s|^-\s*a\s+[^:]{2,40}:\s*\d+\s*x\s")
 
 
 def _no_sirve(respuesta: str) -> list[str]:

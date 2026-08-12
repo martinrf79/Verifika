@@ -456,3 +456,96 @@ def test_la_cuenta_deja_el_reparto_en_el_estado_para_persistir(firestore_doble):
                                                     "Concordia"]
     finally:
         set_current_estado(None)
+
+
+# ── "AGREGA UN TECLADO A ESE PRESUPUESTO" (charla real del 12-ago, turno 8) ──
+_MSG_AGREGAR = ("Sí agrega a ese presupuesto que detallaste al último con los "
+                "seis artículos agrega un teclado con envío a Córdoba")
+
+_CARRITO_12AGO = [
+    {"id": "AUR0020", "nombre": "Auriculares Redragon Zeus X Blanco",
+     "cantidad": 2},
+    {"id": "MOU0023", "nombre": "Mouse Genius DX-110 Negro", "cantidad": 2},
+    {"id": "RAM0001",
+     "nombre": "Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro",
+     "cantidad": 2},
+]
+
+
+def test_agregar_un_producto_no_se_lleva_puesto_el_pedido_de_antes(
+        firestore_doble):
+    """LA FALLA, del casete `80_charla_real_12ago` turno 8. Sobre un
+    presupuesto de seis articulos el cliente pide agregar un teclado; el modelo
+    declara UN teclado -que es lo que se le pidio agregar- y la cuenta salia con
+    un solo renglon de $12.000 y tres envios de $24.000 encima. Los seis
+    articulos no los saco nadie: se cayeron solos, y el envio costaba el doble
+    que la compra."""
+    from app.core import herramientas as H
+    from app.core.estado_venta import set_current_estado
+    set_current_tienda("verifika_prod")
+    set_current_estado({"carrito": _CARRITO_12AGO,
+                        "mensaje_del_turno": _MSG_AGREGAR,
+                        "grupos_envio": _MEMORIA_12AGO})
+    # El turno busco teclados antes de cotizar, como en la charla real: sin eso
+    # la regla cero rechaza el id y la cuenta no se arma, que es correcto.
+    from app.core.estado_venta import certificar_ids_de_resultado
+    certificar_ids_de_resultado({"productos": [{"id": "TEC0020"}]})
+    try:
+        r = H.armar_presupuesto(
+            H.ArmarPresupuesto(
+                items=[H.ItemPedido(product_id="TEC0020", cantidad=1,
+                                    destino="Córdoba Capital")],
+                destinos=_DESTINOS_12AGO),
+            "verifika_prod")
+        assert r["estado"] == "ok", r
+        ids = {str(d.get("id")).upper() for d in r["detalle"]}
+        assert {"AUR0020", "MOU0023", "RAM0001", "TEC0020"} <= ids, (
+            f"la cuenta perdio el pedido de antes: {ids}")
+        # Y la plata cierra: el subtotal es el de los siete articulos, no el
+        # del teclado solo.
+        assert r["total_ars"] and int(r["total_ars"]) > 200000, r["bloque"]
+    finally:
+        set_current_estado(None)
+
+
+def test_si_el_modelo_ya_redeclaro_el_pedido_no_se_duplica_nada(firestore_doble):
+    """El candado que evita cobrar dos veces: la mayoria de las veces el modelo
+    RE-DECLARA el pedido entero. Ahi hay ids en comun con el carrito y no se
+    suma nada, aunque el mensaje diga 'agrega'."""
+    from app.core import herramientas as H
+    from app.core.estado_venta import set_current_estado
+    set_current_tienda("verifika_prod")
+    set_current_estado({"carrito": _CARRITO_12AGO,
+                        "mensaje_del_turno": _MSG_AGREGAR})
+    try:
+        items = [H.ItemPedido(product_id="AUR0020", cantidad=2),
+                 H.ItemPedido(product_id="MOU0023", cantidad=2),
+                 H.ItemPedido(product_id="RAM0001", cantidad=2),
+                 H.ItemPedido(product_id="TEC0020", cantidad=1)]
+        salida = H._con_el_carrito_que_ya_estaba(items, "verifika_prod")
+        assert len(salida) == 4
+        assert sum(i.cantidad for i in salida) == 7
+    finally:
+        set_current_estado(None)
+
+
+def test_sacar_no_es_agregar_y_el_carrito_no_se_repone(firestore_doble):
+    """El otro lado del candado. 'Sacá el teclado y dejame los dos mouse' es una
+    correccion, no un agregado: ahi manda la declaracion completa del modelo y
+    el carrito viejo NO se repone. Reponerlo le volveria a cobrar al cliente
+    justo lo que acaba de sacar."""
+    from app.core import herramientas as H
+    from app.core.estado_venta import (set_current_estado,
+                                       pide_agregar_al_pedido)
+    set_current_tienda("verifika_prod")
+    assert not pide_agregar_al_pedido("sacá el teclado y dejame los dos mouse")
+    assert not pide_agregar_al_pedido("no agregues nada más")
+    assert pide_agregar_al_pedido(_MSG_AGREGAR)
+    set_current_estado({"carrito": _CARRITO_12AGO,
+                        "mensaje_del_turno": "sacá los auriculares"})
+    try:
+        items = [H.ItemPedido(product_id="MOU0023", cantidad=2)]
+        assert H._con_el_carrito_que_ya_estaba(
+            items, "verifika_prod") == items
+    finally:
+        set_current_estado(None)

@@ -45,6 +45,45 @@ def detectar_criterio(mensaje: str) -> str:
     return ""
 
 
+# EL CLIENTE PIDIENDO SUMAR ALGO A LO QUE YA ARMO. Se lee del MENSAJE y con
+# codigo, por el mismo motivo que el criterio de precio: tiene que ser
+# determinista y no depender de que el modelo lo entienda ese dia.
+#
+# POR QUE HACE FALTA UNA SEÑAL PROPIA. El contrato con el modelo dice que
+# `registrar_pedido` declara el pedido COMPLETO en cada turno, y sobre eso se
+# apoya la poda: lo que estaba en el carrito y ya no aparece, sale. Es la regla
+# correcta para una correccion -"dejame los dos mouse"- y es exactamente la
+# equivocada para un agregado: en la charla real del 12-ago el cliente pidio
+# "agrega un teclado" sobre un presupuesto de seis articulos, el modelo declaro
+# UN teclado, y la cuenta salio con un solo renglon de $12.000 y tres envios de
+# $24.000. Los seis articulos no los saco el cliente: se cayeron solos.
+_RE_AGREGAR_AL_PEDIDO = re.compile(
+    r"\b(?:agreg[aá]\w*|agregue\w*|a[ñn]ad[ií]\w*|a[ñn]ade\w*|sumal[eo]\b"
+    r"|sumame\b|incorpor[aá]\w*|met[eé]l[eo]\b"
+    r"|(?:tambi[eé]n|adem[aá]s)\s+(?:quiero|llevo|sumame|necesito|dame))\b",
+    re.IGNORECASE)
+# La negacion y el pedido de sacar mandan sobre el verbo de agregar: "no
+# agregues nada mas", "saca el teclado y agrega el envio a la cuenta".
+_RE_NO_AGREGAR = re.compile(
+    r"\bno\s+(?:me\s+)?(?:agregues|agregue|sumes|a[ñn]adas|incorpores)\b"
+    r"|\b(?:sac[aá]\w*|quit[aá]\w*|elimin[aá]\w*|borr[aá]\w*)\b",
+    re.IGNORECASE)
+
+
+def pide_agregar_al_pedido(mensaje: str) -> bool:
+    """True si el cliente pide SUMAR algo a lo que ya venia armado, en vez de
+    declarar un pedido nuevo. Determinista: el mismo texto da siempre lo mismo.
+
+    Conservador a proposito. Ante una frase que ademas saca algo, devuelve
+    False y el pedido se lee como declaracion completa, que es el
+    comportamiento de siempre: sumar de mas le cobraria al cliente algo que
+    saco, y eso es peor que hacerle repetir el pedido."""
+    m = mensaje or ""
+    if _RE_NO_AGREGAR.search(m):
+        return False
+    return bool(_RE_AGREGAR_AL_PEDIDO.search(m))
+
+
 def criterio_del_interprete(interp) -> bool:
     """El SEGUNDO interprete del criterio: la lectura del LLM. El regex de arriba
     no entiende 'eco' ni abreviaturas ni modismos; el interprete si (campo
