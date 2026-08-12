@@ -453,17 +453,65 @@ def _guia_de_temas(faq: dict, temas: list[str]) -> str:
     con_frontera = {t for t in temas
                     if any(len(vecinas[r]) > 1 for r in _raices(t))}
 
+    # LA FRONTERA REAL SE MIDE POR LA SEÑA, NO POR EL NOMBRE (12-ago, barrido de
+    # la FAQ). El criterio de arriba mira si dos temas comparten una raiz de su
+    # NOMBRE, y con eso solo desambiguaba 1 de los 32 choques que tiene la
+    # fuente. Los otros 31 son dos temas que reclaman la MISMA palabra del
+    # cliente y se llaman distinto: 'direccion' la piden `cambio_direccion` y
+    # `ubicacion`, 'no funciona' la piden `defectuoso` y `producto_defectuoso`,
+    # 'cuotas' la piden `cuotas` y `cuotas_financiacion`. El nombre no los
+    # delata; la palabra del cliente si, y es el dato que ya esta en la fuente.
+    #
+    # Y SE MIRAN LOS DOS LADOS DE LA CASA. El filtro `tema not in faq` dejaba
+    # afuera a toda la base de conocimiento, que es justo la mitad con la que
+    # choca la FAQ: en 27 de los 31 el tema sin seña era el de la base. Un tema
+    # que el modelo no puede distinguir hace que el bot afirme una politica que
+    # no es la que preguntaron, que es la peor forma de alucinar porque suena
+    # bien y viene de la fuente.
+    def _todas(t: str) -> list:
+        return [k for k in ((faq.get(t, {}).get("keywords") or [])
+                            + disparadores_de(t)) if k]
+
+    def _señas_de(t: str) -> list:
+        propias = set(_norm(t).replace("_", " ").split())
+        # Una seña que solo repite el nombre del tema no desempata nada.
+        return [k for k in _todas(t)
+                if not set(_norm(k).split()) <= propias]
+
+    # LA FRONTERA SE DETECTA CON LA SEÑA CRUDA, SE IMPRIME CON LA FILTRADA, y
+    # confundir las dos cosas dejaba tres choques abiertos: `cambio_direccion`
+    # reclama la palabra 'direccion' igual que `ubicacion`, pero el filtro de
+    # arriba la descarta por repetir su propio nombre. Descartarla para IMPRIMIR
+    # es correcto -no desempata-; descartarla para DETECTAR es perder el choque,
+    # que es justo lo que hay que ver.
+    reclaman: dict = {}
+    for t in temas:
+        for k in _todas(t):
+            reclaman.setdefault(_norm(k).strip(), set()).add(t)
+    con_frontera |= {t for t in temas
+                     for k in _todas(t)
+                     if len(reclaman.get(_norm(k).strip(), ())) > 1}
+
     partes = []
     for tema in temas:
-        if tema not in faq or tema not in con_frontera:
+        if tema not in con_frontera:
             continue
-        propias = set(_norm(tema).replace("_", " ").split())
-        # Una seña que solo repite el nombre del tema no desempata nada.
-        señas = [k for k in ((faq.get(tema, {}).get("keywords") or [])
-                             + disparadores_de(tema))
-                 if k and not set(_norm(k).split()) <= propias]
-        if señas:
-            partes.append(f"{tema} ({', '.join(dict.fromkeys(señas[:3]))})")
+        señas = _señas_de(tema)
+        # LA SEÑA QUE DISTINGUE VA PRIMERO. Describir un tema con una palabra
+        # que su vecino tambien reclama no desempata nada: si `cuotas` y
+        # `cuotas_financiacion` piden las dos 'financiacion', esa palabra no le
+        # dice al modelo cual elegir. La propia, si.
+        #
+        # Y VAN DOS, NO TRES. La guia se paga en CADA llamada al decisor, asi
+        # que cada palabra de mas se cobra por turno y por charla. Con la seña
+        # que distingue elegida primero, la tercera ya no agrega: lo medido es
+        # que con dos se desambigua igual y la guia queda mas corta que antes de
+        # este cambio, cubriendo el doble de temas.
+        propias = [k for k in señas
+                   if len(reclaman.get(_norm(k).strip(), ())) == 1]
+        elegidas = list(dict.fromkeys(propias + señas))[:2]
+        if elegidas:
+            partes.append(f"{tema} ({', '.join(elegidas)})")
     return ("Los temas exactos de la lista, UNO POR CADA COSA que pregunto el "
             "cliente: si pregunto si hacen envio al exterior, cuanto tarda y "
             "cuanto sale, van los tres temas, no uno. Elegi SIEMPRE el mas "
