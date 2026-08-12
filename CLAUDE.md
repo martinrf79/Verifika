@@ -36,12 +36,20 @@ entra en una pantalla, la sesión siguiente no lo lee.
 **Lo que se HIZO no se escribe en ningún lado.** Lo cuenta `git log`, así que
 los mensajes de commit se escriben para que se entiendan solos.
 
-**DEPLOYS CHICOS Y SEGUIDOS.** Cada push a `main` deploya, y está bien: cuanto
-más se junta, más difícil es saber cuál cambio rompió algo al probar en real.
-Si hace falta commitear trabajo a medio terminar sin que salga a producción, se
-pone **`[sin deploy]`** en el mensaje del commit: llega a `main`, queda
-respaldado y visible, los tests corren igual, y el deploy no. El push se sigue
-consultando SIEMPRE.
+**DEPLOYS CHICOS Y SEGUIDOS. SIN FRENO** (Martín, 12-ago-2026, hasta nuevo
+aviso). Cada push a `main` que toque código deploya, con el gate de tests
+adelante y nada más. Cuanto más se junta, más difícil es saber cuál cambio
+rompió algo al probar en real. El push se sigue consultando SIEMPRE.
+
+**El freno `[sin deploy]` se SACÓ.** Existió un día. La idea era commitear
+trabajo a medio terminar sin que saliera a producción, y el problema que
+resolvía es real —antes, para no deployar, había que NO pushear, o sea dejar el
+trabajo colgado en local, que es lo que costó el día del 3-ago—. Pero agregaba
+un paso que se pisa con el objetivo, y tenía una trampa medida: soltarlo con un
+commit vacío NO deploya, porque `paths-ignore` mira los archivos que cambiaron y
+un commit vacío no cambia ninguno. **La regla que queda es una sola: una sesión
+no termina con trabajo sin pushear.** Si no está en `origin/main`, para el chat
+siguiente no existe y se pierde cuando el contenedor se recicla.
 
 ## 🔒 DOS REGLAS QUE MANDAN SOBRE TODO LO DEMÁS (Martín, 27-jun-2026)
 

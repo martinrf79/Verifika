@@ -35,22 +35,28 @@ jobs:
       - name: Correr tests offline (sin LLM, sin credenciales)
         run: pytest -v
 
-  # EL FRENO DE MANO, para juntar cambios y deployar cuando Martin diga
-  # (11-ago-2026). Los deploys siguen siendo CHICOS y SEGUIDOS, que es lo que
-  # conviene -cuanto mas se junta, mas dificil es saber cual de los cambios
-  # rompio algo cuando se prueba en real-. Pero a veces hace falta commitear
-  # trabajo a medio terminar sin que salga a produccion, y hasta hoy la unica
-  # forma era no pushear, o sea dejar el trabajo colgado en local: justo lo que
-  # costo el dia del 3-ago.
+  # FRENO DE MANO SACADO (Martin, 12-ago-2026, "hasta nuevo aviso"). Todo push a
+  # main que toque codigo deploya, con el gate de tests adelante y nada mas.
   #
-  # Con [sin deploy] en el mensaje del commit, el trabajo llega a main -queda
-  # respaldado y visible para la sesion siguiente- y el deploy NO corre. Los
-  # tests SI corren igual: un commit sin deployar tampoco puede romper el piso.
-  # El deploy sale despues, solo, con el primer commit que no lleve la marca, o
-  # a mano desde Actions con workflow_dispatch.
+  # QUE ERA Y POR QUE SE VA. El freno era `[sin deploy]` en el mensaje del
+  # commit: el trabajo llegaba a main y el deploy no corria. La intencion era
+  # buena -antes, para no deployar, habia que NO pushear, o sea dejar el trabajo
+  # colgado en local, que es lo que costo el dia del 3-ago- pero en la practica
+  # agrega un paso que se pisa con el objetivo. Los deploys tienen que ser
+  # CHICOS y SEGUIDOS: cuanto mas se junta, mas dificil es saber cual de los
+  # cambios rompio algo al probar en real. Un freno que queda puesto por olvido
+  # hace exactamente lo contrario.
+  #
+  # Y TIENE UNA TRAMPA MEDIDA HOY, que es lo que lo termino de enterrar:
+  # soltar el freno con un commit VACIO no deploya. `paths-ignore` se evalua
+  # sobre los archivos que cambiaron y un commit vacio no cambia ninguno, asi
+  # que el workflow ni arranca. Para soltarlo habia que tocar un archivo de
+  # verdad, o sea que el freno no se podia sacar sin inventar un cambio.
+  #
+  # Si algun dia hace falta de nuevo, esta en git (12-ago-2026). No queda
+  # apagado al lado del camino vivo: esa es la regla 2-bis.
   deploy:
     needs: test
-    if: "!contains(github.event.head_commit.message, '[sin deploy]')"
     runs-on: ubuntu-latest
     permissions:
       contents: read
