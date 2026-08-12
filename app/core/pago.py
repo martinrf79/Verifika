@@ -7,10 +7,12 @@ calculadora y agrega el link al mensaje de confirmacion. El LLM no interviene:
 ni elige el monto ni arma el link, solo se transporta.
 
 Reglas duras:
-- El monto sale EXCLUSIVAMENTE de la linea "Total: $X" de la presentacion de
-  calculate_total (texto generado por codigo, con PROOF). Si el total es un
-  rango ("entre X e Y") NO se genera link: un link con monto adivinado es peor
-  que no mandarlo.
+- El monto sale EXCLUSIVAMENTE del bloque que escribio calculate_total (texto
+  generado por codigo, con PROOF), leido por `monto_a_cobrar`: la parte del
+  reparto si hay pago dividido, la seña si la cuenta marca un pago parcial, y
+  el "Total: $X" si no hay ninguno de los dos. Si el total es un rango ("entre
+  X e Y") NO se genera link: un link con monto adivinado es peor que no
+  mandarlo.
 - El access token de Mercado Pago es dato de la tienda: config/mp_access_token
   en Firestore, o MP_ACCESS_TOKEN por entorno como respaldo. Sin token, el flag
   no hace nada (silencioso).
@@ -25,6 +27,7 @@ import httpx
 from app.config import get_settings
 from app.logger import get_logger
 from app.storage.firestore_client import get_config
+from app.verifika import invariantes as INV
 
 log = get_logger(__name__)
 
@@ -80,8 +83,21 @@ def montos_por_medio(presentacion: str) -> dict:
 
 
 def monto_a_cobrar(presentacion: str, medio: str) -> int | None:
-    """Lo que hay que cobrar POR ESTE MEDIO. Con pago dividido, la parte que le
-    toca; sin pago dividido, el total. None si no hay numero confiable.
+    """Lo que hay que cobrar POR ESTE MEDIO, AHORA. Con pago dividido, la parte
+    que le toca; con seña, la seña; si no, el total. None si no hay numero
+    confiable.
+
+    LA SEÑA SE AGREGO EL 12-AGO, y la encontro el barrido del codigo, no una
+    charla: con "Sena 20%: $42.200 (pago parcial)" escrito en la cuenta, esto
+    devolvia el TOTAL, $211.000. El bot le mandaba al cliente la cuenta que dice
+    que reserva con el 20% y, tres renglones abajo, "Monto: $211.000". Es el
+    mismo error del 10-ago en otra costura: la cuenta decia una cosa y el cobro
+    pedia otra, cada modulo en verde por su lado.
+
+    El orden no es casual. El reparto manda sobre la seña porque es mas
+    especifico: si el cliente reparte el pago entre dos medios, cada via ya
+    tiene su numero. La seña manda sobre el total. Ninguno se recalcula: los
+    tres se LEEN del bloque que ya escribio la calculadora.
 
     `medio` es el del cliente: 'cbu' o 'mp', como los devuelve
     `elegir_medio_pago`."""
@@ -91,6 +107,9 @@ def monto_a_cobrar(presentacion: str, medio: str) -> int | None:
             es_mp = "mercado" in nombre or nombre == "mp"
             if (medio == "mp") == es_mp:
                 return monto
+    sena = INV.pago_parcial(presentacion)
+    if sena:
+        return sena
     return extraer_total_verificado(presentacion)
 
 

@@ -57,6 +57,7 @@ _ROJAS = frozenset({
     "subtotal_no_suma",
     "el_pago_dividido_no_suma_el_total",
     "cobra_distinto_de_lo_que_factura",
+    "cobra_el_total_habiendo_sena",
     "cobra_distinto_del_total",
     "dos_totales_distintos",
     "producto_cotizado_que_no_existe",

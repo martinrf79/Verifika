@@ -78,6 +78,11 @@ _RE_EXTRA = re.compile(
     r"(?P<signo>-?)\s*\$?(?P<monto>[\d\.]+)\s*(?P<cola>\(pago parcial\))?\s*$",
     re.IGNORECASE | re.MULTILINE)
 _RE_PLATA = re.compile(r"\$\s*([\d\.]+)")
+# "Sena 20%: $42.200 (pago parcial)" — lo escribe `_label_extra` de la
+# calculadora y es la marca de que el cliente NO paga el total ahora.
+_RE_PAGO_PARCIAL = re.compile(
+    r"^\s*[^:\n]{2,40}?\s*:\s*\$(?P<monto>[\d\.]+)\s*\(pago parcial\)\s*$",
+    re.IGNORECASE | re.MULTILINE)
 _RE_REPARTO = re.compile(r"^\s*-\s*A\s+(?P<destino>[^:]+):\s*(?P<carga>.+?)\s*$",
                          re.MULTILINE)
 _RE_ETIQUETA_ATADURA = re.compile(r"</?d(\s|>)", re.IGNORECASE)
@@ -149,6 +154,19 @@ def partes_del_pago(mensaje: str) -> dict:
     return out
 
 
+def pago_parcial(mensaje: str) -> int | None:
+    """Lo que el cliente paga AHORA cuando la cuenta lleva una seña. None si la
+    cuenta no marca ningun pago parcial.
+
+    EL PARSER VIVE ACA Y NO EN `pago.py` a proposito: el formato del renglon lo
+    escribe el codigo una sola vez y lo leen dos -el cobro, para saber cuanto
+    pedir, y el invariante de abajo, para gritar si no coinciden-. Escrito dos
+    veces, el dia que cambie el formato uno de los dos deja de ver la seña en
+    silencio, que es exactamente como nacio el error del 10-ago."""
+    m = _RE_PAGO_PARCIAL.search(mensaje or "")
+    return _plata(m.group("monto")) if m else None
+
+
 def lo_cobrado_es_lo_facturado(mensaje: str) -> list:
     """EL INVARIANTE QUE HABRIA CAZADO EL ERROR DEL 10-AGO EN LA PRIMERA
     CORRIDA, sin que nadie lo anticipara.
@@ -160,7 +178,15 @@ def lo_cobrado_es_lo_facturado(mensaje: str) -> list:
 
     La propiedad es obvia una vez escrita: **si el mensaje dice cuanto hay que
     pagar por una via, ese numero tiene que ser el que la cuenta le asigna a esa
-    via.** No hace falta saber cual es la respuesta correcta para exigirla."""
+    via.** No hace falta saber cual es la respuesta correcta para exigirla.
+
+    LA SEGUNDA CARA, encontrada el 12-ago por el barrido del CODIGO y no por
+    una charla: la MISMA propiedad valia para la seña y nadie la miraba. Con
+    "Sena 20%: $42.200 (pago parcial)" en la cuenta, el cobro pedia el total
+    entero, $211.000, cinco veces lo que la cuenta dice que se paga ahora. No
+    hubo que anticipar el caso: salio de enumerar las combinaciones de extras.
+    La cuenta manda sobre el cobro en las tres formas -reparto, seña y total-,
+    que es una sola regla dicha una sola vez."""
     fallas = []
     partes = partes_del_pago(mensaje)
     m = re.search(r"^\s*monto\s*:\s*\$([\d\.]+)\s*$", mensaje or "",
@@ -175,6 +201,14 @@ def lo_cobrado_es_lo_facturado(mensaje: str) -> list:
                 "cobra_distinto_de_lo_que_factura",
                 f"pide transferir ${pedido:,} y la cuenta le asigna a esa via "
                 f"${esperado:,}".replace(",", ".")))
+        return fallas
+    sena = pago_parcial(mensaje)
+    if sena is not None:
+        if pedido != sena:
+            fallas.append(_falla(
+                "cobra_el_total_habiendo_sena",
+                f"pide transferir ${pedido:,} y la cuenta marca como pago "
+                f"parcial ${sena:,}".replace(",", ".")))
         return fallas
     tf = _RE_TOTAL_FINAL.search(mensaje or "") or _RE_TOTAL.search(mensaje or "")
     if tf and pedido != _plata(tf.group(1)):

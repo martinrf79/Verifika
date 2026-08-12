@@ -950,7 +950,17 @@ _RE_ARRANQUE_CUENTA = re.compile(
     r"(?im)^\s*(?:presupuesto\s*:|subtotal\s*:|env[ií]o?\s*[(:]|"
     r"total\s*:|total final\s*:|pago dividido\s*:"
     r"|-?\s*\d+\s*x\s+.+:\s*\$"
-    r"|-\s*(?:mercado pago|transferencia)\s*\()")
+    r"|-\s*(?:mercado pago|transferencia)\s*\("
+    # Los extras que escribe `_label_extra`: seña, descuento, recargo y cuotas.
+    # FALTABAN, y costo plata (12-ago, barrido del codigo): sin la seña acá, el
+    # renglon "Sena 20%: $1.700 (pago parcial)" contaba como PROSA y partia el
+    # bloque de la cuenta en dos, asi que la regla 5 tomaba el "Total: $8.500"
+    # de abajo por un bloque repetido y lo borraba. Al cliente le llegaba un
+    # presupuesto SIN total. Son renglones de plata escritos por el codigo,
+    # como el subtotal: se piden con el importe adelante para no confundirlos
+    # con una frase que empiece igual.
+    r"|(?:se[ñn]a|descuento|recargo)[^:\n]{0,12}:\s*[-+]?\s*\$"
+    r"|cuotas[^:\n]{0,20}:\s*hasta\s+\d)")
 _RE_RENGLON_CUENTA_ENTERO = re.compile(_RE_ARRANQUE_CUENTA.pattern + r".*$",
                                        re.IGNORECASE | re.MULTILINE)
 # "¿Este mensaje ya lleva una cuenta?". Solo los marcadores que NO aparecen en

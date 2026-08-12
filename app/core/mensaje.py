@@ -490,7 +490,12 @@ def sin_cuenta_dos_veces(texto: str) -> str:
         f = _firma(lineas, g)
         if not f:
             continue
-        if any(f in v for v in vistas):
+        # La contencion se mide entre PALABRAS, no entre caracteres. Sin los
+        # espacios de los bordes, "total: $8.500" queda contenido en
+        # "subtotal: $8.500" y un bloque legitimo se borra por una coincidencia
+        # de letras (12-ago, barrido del codigo). El resto de la regla no
+        # cambia: lo que se borra sigue estando escrito arriba.
+        if any(f" {f} " in f" {v} " for v in vistas):
             fuera.update(g)
             continue
         vistas.append(f)
