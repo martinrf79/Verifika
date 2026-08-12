@@ -41,6 +41,7 @@ from app.core import indice_turno as IT
 from app.core import pedido as P
 from app.logger import get_logger
 from app.storage.firestore_client import get_conversation, save_conversation
+from app.verifika import grafo as G
 
 log = get_logger(__name__)
 settings = get_settings()
@@ -1049,9 +1050,19 @@ def _sin_anuncio_vacio(texto: str, trace_id: str) -> str:
             fuera.append(i)
     if not fuera:
         return texto
-    log.warning("hub_venta_anuncio_vacio", trace_id=trace_id, lineas=len(fuera))
-    return re.sub(r"\n{3,}", "\n\n", "\n".join(
+    limpio = re.sub(r"\n{3,}", "\n\n", "\n".join(
         l for i, l in enumerate(lineas) if i not in fuera)).strip()
+    # LA VALVULA, y la encontro el barrido del cableado el 12-ago: cuando el
+    # anuncio es TODO el mensaje —"Te paso el presupuesto por los dos
+    # productos:" y nada mas, que es justo lo que pasa cuando la cuenta se
+    # podo—, esta poda devolvia vacio y el turno salia con el texto de
+    # respaldo. Es la misma leccion del 24-jul escrita en `mensaje.py`: un
+    # turno mudo es peor que un turno feo. Si podar se lleva todo, no se poda.
+    if not limpio:
+        log.warning("hub_venta_anuncio_vacio_descartado", trace_id=trace_id)
+        return texto
+    log.warning("hub_venta_anuncio_vacio", trace_id=trace_id, lineas=len(fuera))
+    return limpio
 
 
 def _sin_markdown(texto: str) -> str:
@@ -2070,6 +2081,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     from app.core.contexto_turno import set_current_tienda
     from app.core import guardas_salida as gs
 
+    G.abrir_turno()
     conv = get_conversation(user_id, tienda_id=tienda_id)
     history = conv.get("history", []) or []
     estado = construir_estado(conv, None)
@@ -2204,7 +2216,8 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # las etiquetas son sintaxis nuestra y las guardias de abajo cuentan
     # oraciones y buscan cifras, asi que tienen que ver la prosa ya limpia,
     # exactamente igual que antes de que esto existiera.
-    texto = AP.verificar(texto, llamadas, trace_id, tienda_id=tienda_id)
+    texto = G.paso("atadura", AP.verificar, texto, llamadas, trace_id,
+                   tienda_id=tienda_id)
 
     if not (texto or "").strip():
         # LA MENTIRA QUE SE ARREGLO EL 11-AGO, y salio de medir la clave
@@ -2229,30 +2242,44 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
             log.warning("hub_venta_sin_texto", trace_id=trace_id)
 
     # ── 4. LA REGLA ─────────────────────────────────────────────────────
+    # CADA GUARDIA PASA POR `G.paso` Y DEJA SU VEREDICTO. No es una capa nueva:
+    # es la misma llamada de siempre, envuelta en el unico lugar que puede
+    # decir si el nodo intervino, y lo dice COMPARANDO el texto que entro con
+    # el que salio. Sin esto, cuando la respuesta sale mal hay que leer la
+    # charla entera para saber cual de los veintipico de engranajes la rompio.
     bloque = _bloque_presupuesto(llamadas)
-    texto = _sin_json_filtrado(texto, trace_id)
-    texto = _sin_markdown(texto)
-    texto = _sin_plata_inventada(texto, llamadas, bloque, trace_id,
-                                 previo=conv.get("ultimo_presupuesto") or "",
-                                 vistos=estado.get("productos_vistos") or [])
-    texto = _sin_cobro_inventado(texto, tienda_id, trace_id)
-    texto = _cuenta_no_retipeada(
-        texto, hubo_calculo=bool(bloque),
-        previo=conv.get("ultimo_presupuesto") or "", trace_id=trace_id)
-    texto = _sin_negar_lo_traido(texto, llamadas, trace_id)
-    texto = _sin_afirmar_sobre_el_catalogo(texto, llamadas, trace_id)
-    texto = _sin_descuento_inventado(texto, trace_id)
-    texto = _sin_narracion_interna(texto, trace_id)
-    texto = _sin_anuncio_vacio(texto, trace_id)
+    texto = G.paso("sin_json", _sin_json_filtrado, texto, trace_id)
+    texto = G.paso("sin_markdown", _sin_markdown, texto)
+    texto = G.paso("sin_plata_inventada", _sin_plata_inventada,
+                   texto, llamadas, bloque, trace_id,
+                   previo=conv.get("ultimo_presupuesto") or "",
+                   vistos=estado.get("productos_vistos") or [])
+    texto = G.paso("sin_cobro_inventado", _sin_cobro_inventado,
+                   texto, tienda_id, trace_id)
+    texto = G.paso("cuenta_no_retipeada", _cuenta_no_retipeada,
+                   texto, hubo_calculo=bool(bloque),
+                   previo=conv.get("ultimo_presupuesto") or "",
+                   trace_id=trace_id)
+    texto = G.paso("sin_negar_lo_traido", _sin_negar_lo_traido,
+                   texto, llamadas, trace_id)
+    texto = G.paso("sin_afirmar_del_catalogo", _sin_afirmar_sobre_el_catalogo,
+                   texto, llamadas, trace_id)
+    texto = G.paso("sin_descuento_inventado", _sin_descuento_inventado,
+                   texto, trace_id)
+    texto = G.paso("sin_narracion_interna", _sin_narracion_interna,
+                   texto, trace_id)
+    texto = G.paso("sin_anuncio_vacio", _sin_anuncio_vacio, texto, trace_id)
     # La cuenta se manda entera: si el modelo la reescribio o se la comio, el
     # bloque del codigo vuelve al final. No se negocia, es la unica parte del
     # mensaje que el modelo no redacta.
-    texto = _bloque_entero_o_repuesto(texto, bloque, trace_id)
+    texto = G.paso("bloque_repuesto", _bloque_entero_o_repuesto,
+                   texto, bloque, trace_id)
     # EL HALLAZGO, mismo trato que la cuenta. Va DESPUES de la poda de plata a
     # proposito: sus precios salen de la fuente y no se podan, pero si el
     # modelo escribio otros, esos si se fueron.
-    texto = _bloque_entero_o_repuesto(texto, _bloque_hallazgo(llamadas, texto),
-                                      trace_id, barrer_cuenta=False)
+    texto = G.paso("hallazgo_repuesto", _bloque_entero_o_repuesto,
+                   texto, _bloque_hallazgo(llamadas, texto), trace_id,
+                   barrer_cuenta=False)
     texto = _RE_ID_INTERNO.sub("", texto).strip()
 
     # ── 5. CIERRE Y COBRO ───────────────────────────────────────────────
@@ -2267,11 +2294,13 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # alcanzo nunca, y el aviso de que es un asistente automatico en el primer
     # mensaje porque es una obligacion, no un criterio de redaccion.
     try:
-        texto = gs.asegurar_honestidad_bot(raw_message, texto, negocio)
+        texto = G.paso("honestidad_bot",
+                       lambda t: gs.asegurar_honestidad_bot(raw_message, t,
+                                                            negocio), texto)
         if not history:
-            texto = gs.con_saludo_inicial(texto, negocio)
+            texto = G.paso("saludo", gs.con_saludo_inicial, texto, negocio)
         else:
-            texto = gs.sin_saludo_del_modelo(texto)
+            texto = G.paso("saludo", gs.sin_saludo_del_modelo, texto)
     except Exception as e:
         log.warning("hub_venta_guardas_error", trace_id=trace_id,
                     error=str(e)[:120])
@@ -2286,8 +2315,9 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         from app.core.mensaje import componer
         anterior = next((h.get("content") for h in reversed(history or [])
                          if h.get("role") == "assistant"), "")
-        texto = componer(texto, anterior=str(anterior or ""),
-                         trace_id=trace_id, pregunta=raw_message)
+        texto = G.paso("componedor", componer, texto,
+                       anterior=str(anterior or ""),
+                       trace_id=trace_id, pregunta=raw_message)
     except Exception as e:
         # Un componedor roto NO puede dejar mudo al bot: se manda el mensaje
         # largo, que es lo que se mandaba ayer.
@@ -2305,8 +2335,9 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         from app.core.aduana import revisar_salida
         anterior_bot = next((h.get("content") for h in reversed(history or [])
                              if h.get("role") == "assistant"), "")
-        texto = revisar_salida(texto, anterior=str(anterior_bot or ""),
-                               trace_id=trace_id, tienda_id=tienda_id)
+        texto = G.paso("aduana", revisar_salida, texto,
+                       anterior=str(anterior_bot or ""),
+                       trace_id=trace_id, tienda_id=tienda_id)
     except Exception as e:
         log.warning("hub_venta_aduana_error", trace_id=trace_id,
                     error=f"{type(e).__name__}: {str(e)[:120]}")
@@ -2369,8 +2400,12 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     IT.cobertura(declarado, texto, trace_id + "|final")
 
     _SIN_MODELO.discard(trace_id)
+    # EL VEREDICTO DEL TURNO, en la misma linea que ya se lee. Dice QUE
+    # engranaje toco el mensaje, medido comparando, no preguntandole a cada
+    # uno. Cuando una respuesta sale mal, este es el primer lugar donde mirar.
     log.info("hub_venta_ok", trace_id=trace_id,
              latency_ms=int((time.time() - t0) * 1000),
              etapas_ms=etapas, largo=len(texto or ""),
-             herramientas=len(llamadas), con_presupuesto=bool(bloque))
+             herramientas=len(llamadas), con_presupuesto=bool(bloque),
+             **G.veredicto_del_turno())
     return texto
