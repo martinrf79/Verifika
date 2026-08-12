@@ -299,3 +299,59 @@ def test_sin_nada_certificado_no_inventa_una_cuenta(firestore_doble):
     texto = "No tengo ese producto en el catalogo."
     assert HV._punto_omitido_repuesto(texto, declarado, [], [],
                                       "verifika_prod", "t") == texto
+
+
+# ── LA CONDICION QUE SE APLICA Y NO SE DECLARA (12-ago-2026) ────────────────
+
+def test_el_filtro_aplicado_se_vuelve_restriccion_declarada():
+    """EL CASO QUE MARTIN VE EN REAL: pide "las menos partes chinas posibles",
+    el sistema SI lo entiende —la busqueda sale con `pais_fabricacion
+    no_contiene china`— y el criterio no aparece en lo declarado. Medido con el
+    banco de interpretacion: falla en 3 de 6 redacciones de la misma pregunta.
+
+    Sin declararlo queda fuera de TODOS los controles: el reconciliador y el
+    indice trabajan sobre lo declarado, asi que nadie puede exigir que se
+    conteste algo que nunca se anoto."""
+    from app.core.hub_venta import _restricciones_de_los_filtros
+
+    declarado = {"items": [{"que": "memoria ram", "cantidad": 2}]}
+    llamadas = [{"herramienta": "buscar_productos",
+                 "pedido": {"categoria": "memoria ram",
+                            "filtros": [{"campo": "pais_fabricacion",
+                                         "operador": "no_contiene",
+                                         "valor": "china"}]},
+                 "resultado": {"estado": "ninguno_cumple_del_todo"}}]
+    salida = _restricciones_de_los_filtros(declarado, llamadas, "t")
+    texto = " ".join(salida["restricciones"]).lower()
+    assert "china" in texto
+    # y con eso el criterio ENTRA al indice como punto propio
+    puntos = IT.puntos(salida)
+    assert any(p["tipo"] == "condicion" and "china" in p["termino"].lower()
+               for p in puntos)
+
+
+def test_no_duplica_una_restriccion_que_el_modelo_ya_declaro():
+    """Si el modelo la declaro bien, no se agrega una segunda copia con otras
+    palabras: seria el mismo punto contado dos veces y el indice pediria que se
+    conteste dos veces."""
+    from app.core.hub_venta import _restricciones_de_los_filtros
+
+    declarado = {"items": [{"que": "memoria ram", "cantidad": 2}],
+                 "restricciones": ["las menos partes chinas posibles"]}
+    llamadas = [{"herramienta": "buscar_productos",
+                 "pedido": {"filtros": [{"campo": "pais_fabricacion",
+                                         "operador": "no_contiene",
+                                         "valor": "china"}]},
+                 "resultado": {}}]
+    salida = _restricciones_de_los_filtros(declarado, llamadas, "t")
+    assert salida["restricciones"] == ["las menos partes chinas posibles"]
+
+
+def test_sin_filtros_no_toca_lo_declarado():
+    """Un turno sin condiciones no gana restricciones de la nada."""
+    from app.core.hub_venta import _restricciones_de_los_filtros
+
+    declarado = {"items": [{"que": "mouse", "cantidad": 1}]}
+    llamadas = [{"herramienta": "buscar_productos",
+                 "pedido": {"categoria": "mouse"}, "resultado": {}}]
+    assert _restricciones_de_los_filtros(declarado, llamadas, "t") == declarado

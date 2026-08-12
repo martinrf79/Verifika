@@ -1995,6 +1995,65 @@ def _descartados_nuevos(previos: list, dados_de_baja: list, carrito: list,
     return fuera[-10:]
 
 
+def _restricciones_de_los_filtros(declarado: dict, llamadas: list,
+                                  trace_id: str = "") -> dict:
+    """LO QUE EL MODELO APLICO Y NO DECLARO, entra igual a lo declarado.
+
+    EL CASO, medido el 12-ago con el banco de interpretacion y es el que Martin
+    ve en real: el cliente pide "las menos partes chinas posibles" y el sistema
+    SI lo entiende — la busqueda sale con `pais_fabricacion no_contiene china` y
+    `pais_marca no_contiene china`, que son dos campos reales del catalogo—.
+    Pero el criterio NO aparece en las restricciones que declara
+    `registrar_pedido`, y falla asi en 3 de 6 redacciones de la misma pregunta.
+
+    POR QUE ESO SOLO YA ROMPE LA RESPUESTA. El reconciliador y el indice del
+    turno trabajan sobre lo DECLARADO. Un criterio que no se declaro queda
+    afuera de todos los controles: nadie puede exigir que se conteste algo que
+    nunca se anoto. El bot busca, no encuentra ninguno que cumpla del todo —y
+    puede ser cierto, si todo el rubro es chino— y contesta el "no tengo esa
+    informacion", teniendo en la mano el bloque de lo que MAS SE ACERCA y la
+    lista de donde SI se cumple, que es la respuesta razonada que hace falta.
+
+    ES LA MISMA FALLA DE PLOMERIA DE TODA LA SEMANA: el mismo hecho existe en
+    una puerta —los filtros de la busqueda— y no en la otra —las restricciones
+    declaradas—. Se completa de la puerta que lo tiene.
+
+    NO ES EL CODIGO INVENTANDO UN CRITERIO: la condicion la escribio el modelo
+    en su propia llamada, sobre un campo real del catalogo. Aca solo se copia al
+    lugar donde los controles la pueden ver."""
+    if not declarado:
+        return declarado
+    from app.core.filtros_catalogo import DERIVADOS
+
+    ya = H._norm(" ".join(str(r) for r in (declarado.get("restricciones") or [])))
+    nuevas = []
+    for l in llamadas or []:
+        for f in ((l.get("pedido") or {}).get("filtros") or []):
+            if not isinstance(f, dict) or not f.get("campo"):
+                continue
+            valor = str(f.get("valor") or "").strip()
+            if not valor:
+                continue
+            campo = str(f["campo"])
+            desc = DERIVADOS.get(campo, campo.replace("_", " "))
+            op = str(f.get("operador") or "").lower()
+            frase = (f"sin {valor} en {desc}" if op == "no_contiene"
+                     else f"{desc} mayor a {valor}" if op == "mayor"
+                     else f"{desc} menor a {valor}" if op == "menor"
+                     else f"{desc} {valor}")
+            if H._norm(valor) in ya or H._norm(frase) in ya:
+                continue
+            ya += " " + H._norm(frase)
+            nuevas.append(frase)
+    if not nuevas:
+        return declarado
+    log.info("restriccion_declarada_por_codigo", trace_id=trace_id,
+             nuevas=nuevas[:4])
+    fuera = dict(declarado)
+    fuera["restricciones"] = list(declarado.get("restricciones") or []) + nuevas
+    return fuera
+
+
 def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
                             memoria: list, tienda_id: str,
                             trace_id: str) -> str:
@@ -2198,6 +2257,16 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         for l in llamadas:
             if l.get("herramienta") == "registrar_pedido":
                 declarado = (l.get("resultado") or {}).get("pedido") or declarado
+        # La condicion que el modelo APLICO en la busqueda y no declaro entra
+        # aca, antes de reconciliar: si no, queda fuera de todos los controles.
+        # Con red: completar lo declarado es una MEJORA, y una mejora no puede
+        # dejar sin respuesta a un cliente. Si falla, el turno sigue como antes.
+        try:
+            declarado = _restricciones_de_los_filtros(declarado, llamadas,
+                                                      trace_id)
+        except Exception as e:  # noqa: BLE001
+            log.warning("restriccion_declarada_error", trace_id=trace_id,
+                        error=f"{type(e).__name__}: {str(e)[:120]}")
         # LA MEMORIA DEL RECONCILIADOR: lo que la charla ya resolvio. Sin
         # esto le exige buscar de nuevo algo que se certifico dos turnos atras.
         ya = " ".join([str(p.get("nombre") or "") + " " +
