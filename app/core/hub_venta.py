@@ -2246,6 +2246,9 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                  estados=[(l["herramienta"],
                            (l["resultado"] or {}).get("estado"))
                           for l in llamadas])
+        G.anotar("rondas", ronda)
+        G.anotar("herramientas_usadas",
+                 sorted({l["herramienta"] for l in llamadas}))
         _log_fuente(llamadas, trace_id, ronda)
 
         # ── RECONCILIAR: lo declarado contra lo hecho ───────────────────
@@ -2278,6 +2281,10 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                             tienda_id=tienda_id)
         obligacion = P.instruccion_de_preguntas(rec)
         revision = P.instruccion_de_faltantes(rec)
+        G.anotar("reconciliador", {
+            "faltantes": len(rec.get("faltantes") or []),
+            "preguntar": len(rec.get("preguntar") or []),
+            "sin_buscar": len(rec.get("sin_buscar") or [])})
         if not revision:
             break
         # NO SE CORTA EL BUCLE POR REPETICION, y esta medido. Se probaron las
@@ -2347,6 +2354,8 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # volver a buscarlo.
     idx = IT.cobertura(declarado, material, trace_id, llamadas=llamadas,
                        memoria=_memoria_idx)
+    G.anotar("puntos_del_pedido", len(idx.get("puntos") or []))
+    G.anotar("sin_material", [p["id"] for p in (idx.get("faltan") or [])][:5])
     pendiente = IT.instruccion(idx["faltan"])
     if pendiente:
         obligacion = (obligacion + "\n\n" if obligacion else "") + pendiente
@@ -2556,8 +2565,15 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # SABER. Es la regla de tau-bench: se juzga por lo observado, no por lo que
     # el agente cuenta que hizo. Sin esto, "el destino no llego al mensaje" solo
     # se descubre leyendo una charla a mano, que es como se descubrio hoy.
-    IT.cobertura(declarado, texto, trace_id + "|final", llamadas=llamadas,
-                 memoria=_memoria_idx)
+    _idx_final = IT.cobertura(declarado, texto, trace_id + "|final",
+                              llamadas=llamadas, memoria=_memoria_idx)
+    G.anotar("sin_contestar", [p["id"] for p in (_idx_final.get("faltan") or [])][:5])
+    try:
+        from app.core.aduana import marcador as _marcador_aduana
+        _m = _marcador_aduana()
+        G.anotar("aduana", {k: _m[k] for k in ("rojas", "defectos", "reparadas")})
+    except Exception:  # noqa: BLE001 — la ficha nunca puede tumbar un turno
+        pass
 
     _SIN_MODELO.discard(trace_id)
     # EL VEREDICTO DEL TURNO, en la misma linea que ya se lee. Dice QUE

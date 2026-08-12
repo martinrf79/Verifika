@@ -387,6 +387,7 @@ _marcas: ContextVar[list | None] = ContextVar("grafo_marcas", default=None)
 def abrir_turno() -> None:
     """Arranca la hoja de veredictos del turno. La llama el hub una sola vez."""
     _marcas.set([])
+    _notas.set({})
 
 
 def registrar(nodo_id: str, intervino: bool, detalle: str = "") -> None:
@@ -399,20 +400,53 @@ def registrar(nodo_id: str, intervino: bool, detalle: str = "") -> None:
                    "detalle": str(detalle or "")[:80]})
 
 
+_notas: ContextVar[dict | None] = ContextVar("grafo_notas", default=None)
+
+
+def anotar(clave: str, valor) -> None:
+    """El veredicto de un engranaje que NO transforma texto: el decisor, el
+    reconciliador, el indice, la aduana.
+
+    POR QUE ESTO Y NO OCHO LINEAS DE LOG (Martin, 12-ago-2026, y es su pedido
+    textual: que todo lo que pasa adentro se pueda revisar). Cada engranaje ya
+    dejaba su marca, pero cada uno en su propio evento y con su propio formato:
+    para revisar UN turno habia que juntar ocho lineas a mano y saber cual
+    buscar. Un sistema que solo se puede auditar por un experto que sabe donde
+    mirar no esta auditado.
+
+    Las marcas no cambian —cada modulo sigue logueando lo suyo, que sirve para
+    el detalle—; lo que se agrega es el RESUMEN en un solo lugar, la ficha del
+    turno, pegada a la linea de cierre que ya se lee siempre."""
+    notas = _notas.get()
+    if notas is None:
+        return
+    notas[str(clave)] = valor
+
+
 def marcas() -> list:
     return list(_marcas.get() or [])
 
 
 def veredicto_del_turno() -> dict:
-    """Lo que se loguea al cerrar: quien toco el mensaje, en orden. Los que no
-    tocaron nada no se nombran; son la mayoria y llenarian el log."""
+    """LA FICHA DEL TURNO: todo lo que paso adentro, en una sola linea.
+
+    Los engranajes que tocaron el mensaje —medido comparando, no
+    preguntandoles— mas el veredicto de los que deciden y no escriben. Los que
+    no tocaron nada no se nombran; son la mayoria y llenarian el log.
+
+    Se lee de arriba abajo como el turno: que se entendio, que se busco, que
+    reclamo el reconciliador, que punto quedo sin contestar, que engranaje
+    intervino y que invariante salto antes de mandar. Si algo salio mal, esta
+    en esta linea o no paso."""
     todas = marcas()
-    return {
+    ficha = {
         "engranajes": len(todas),
         "intervinieron": [m["nodo"] for m in todas if m["intervino"]],
         "detalle": [f"{m['nodo']}:{m['detalle']}" for m in todas
                     if m["intervino"] and m["detalle"]][:6],
     }
+    ficha.update(_notas.get() or {})
+    return ficha
 
 
 def paso(nodo_id: str, funcion, texto: str, *args, **kwargs) -> str:
