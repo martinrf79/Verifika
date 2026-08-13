@@ -56,7 +56,7 @@ DESTINO = _RAIZ / "INVENTARIO_BARRIDO.md"
 # exactamente como nacio el problema que este archivo resuelve — un numero
 # escrito a mano que envejece mientras la realidad sigue.
 BARRIDOS = ("catalogo", "coherencia", "faq", "geo", "codigo", "herramientas",
-            "memoria", "compatibilidad", "filtros")
+            "memoria", "compatibilidad", "filtros", "entrada_cliente", "specs")
 
 # Para escribir el numero con letras en el titulo, sin que nadie lo tipee.
 _EN_LETRAS = {5: "CINCO", 6: "SEIS", 7: "SIETE", 8: "OCHO", 9: "NUEVE",
@@ -234,11 +234,45 @@ def medir_filtros() -> dict:
                        f"la fuente y {cob['torcidos']} torcidos"}
 
 
+def medir_entrada_cliente() -> dict:
+    """Lo que puede llegar por la puerta: el texto crudo que escribio alguien."""
+    from banco_pruebas import barrido_entrada_cliente as BE
+    cob = BE.cobertura()
+    return {"clave": "entrada_cliente", "titulo": "EL MENSAJE DEL CLIENTE",
+            "archivo": "tests/test_barrido_entrada_cliente.py",
+            "que_barre": "el texto crudo que llega por la puerta -vacio, solo "
+                         "emoji, larguisimo, bytes de control, jailbreak, "
+                         "inyeccion, audio- contra el filtro de entrada, y las "
+                         "frases de cliente REAL que se le parecen",
+            "unidad": "casos", "casos": cob["casos"],
+            "cobertura": cob["porcentaje"], "pendientes": cob["pendientes"],
+            "detalle": f"{cob['clases']} clases de entrada, "
+                       f"{cob['cubiertas']} cubiertas, {cob['casos']} casos; "
+                       f"el umbral de largo se lee del codigo vivo, no se tipea"}
+
+
+def medir_specs() -> dict:
+    """Cada spec preguntable de la fuente, y de donde sale su valor."""
+    from banco_pruebas import barrido_specs as BS
+    cob = BS.cobertura()
+    return {"clave": "specs", "titulo": "LAS SPECS PREGUNTABLES",
+            "archivo": "tests/test_barrido_specs.py",
+            "que_barre": "cada spec que la fuente declara preguntable, por su "
+                         "propia seña y por cada producto que la tiene: que la "
+                         "pregunta se reconozca y que el valor salga de la "
+                         "fuente y no de ningun lado",
+            "unidad": "casos", "casos": BS.casos(),
+            "cobertura": cob["porcentaje"], "pendientes": cob["pendientes"],
+            "detalle": f"{cob['specs']} specs de la fuente, "
+                       f"{cob['cubiertas']} con al menos un producto real"}
+
+
 _MEDIDORES = {
     "catalogo": medir_catalogo, "coherencia": medir_coherencia,
     "faq": medir_faq, "geo": medir_geo, "codigo": medir_codigo,
     "herramientas": medir_herramientas, "memoria": medir_memoria,
     "compatibilidad": medir_compatibilidad, "filtros": medir_filtros,
+    "entrada_cliente": medir_entrada_cliente, "specs": medir_specs,
 }
 
 

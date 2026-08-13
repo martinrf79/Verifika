@@ -17,13 +17,13 @@ FAQ, geo y coherencia dejo escrito en `PENDIENTE.md` que faltaba el del codigo
 — y esa linea no aparecio en el resumen que Martin leyo. Asi, "hecho" y "a
 medias" eran objetos distintos con el mismo nombre.
 
-**Hoy son NUEVE (9), y el numero de arriba no lo tipeo nadie: sale de la
+**Hoy son ONCE (11), y el numero de arriba no lo tipeo nadie: sale de la
 lista del generador. La regla que queda: no se dice "el barrido" sin apellido, y
 el estado se lee de acá, no de la memoria de nadie.**
 
 ---
 
-## LOS 9 BARRIDOS
+## LOS 11 BARRIDOS
 
 | barrido | que barre | numero | cobertura |
 |---|---|---|---|
@@ -36,6 +36,8 @@ el estado se lee de acá, no de la memoria de nadie.**
 | **LA MEMORIA ENTRE TURNOS** | la transicion de un turno al siguiente: el carrito, la cuenta guardada… | 72 transiciones | **100.0%** |
 | **LA COMPATIBILIDAD** | los pares de productos que la fuente hace posibles y los que no compar… | 320 pares | — |
 | **LOS FILTROS DE LA FICHA** | cada campo de la ficha por cada operador, con valores leidos de la fic… | 687 casos | **100.0%** |
+| **EL MENSAJE DEL CLIENTE** | el texto crudo que llega por la puerta -vacio, solo emoji, larguisimo,… | 48 casos | **100.0%** |
+| **LAS SPECS PREGUNTABLES** | cada spec que la fuente declara preguntable, por su propia seña y por … | 6958 casos | **100.0%** |
 
 ---
 
@@ -95,6 +97,20 @@ el estado se lee de acá, no de la memoria de nadie.**
 - **Numero:** 687 casos. 41 campos filtrables x 5 operadores = 205 celdas, 205 cubiertas; 677 casos con valores de la fuente y 10 torcidos.
 - **Cobertura de su superficie: 100.0%** — completa.
 - **Lo defiende:** `tests/test_barrido_filtros.py`.
+
+### EL MENSAJE DEL CLIENTE
+
+- **Que barre:** el texto crudo que llega por la puerta -vacio, solo emoji, larguisimo, bytes de control, jailbreak, inyeccion, audio- contra el filtro de entrada, y las frases de cliente REAL que se le parecen.
+- **Numero:** 48 casos. 13 clases de entrada, 13 cubiertas, 48 casos; el umbral de largo se lee del codigo vivo, no se tipea.
+- **Cobertura de su superficie: 100.0%** — completa.
+- **Lo defiende:** `tests/test_barrido_entrada_cliente.py`.
+
+### LAS SPECS PREGUNTABLES
+
+- **Que barre:** cada spec que la fuente declara preguntable, por su propia seña y por cada producto que la tiene: que la pregunta se reconozca y que el valor salga de la fuente y no de ningun lado.
+- **Numero:** 6958 casos. 25 specs de la fuente, 25 con al menos un producto real.
+- **Cobertura de su superficie: 100.0%** — completa.
+- **Lo defiende:** `tests/test_barrido_specs.py`.
 
 
 ---
