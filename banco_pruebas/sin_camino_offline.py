@@ -84,6 +84,23 @@ SIN_CAMINO_OFFLINE = {
     "app/storage/firestore_client.py:get_tienda_by_phone_id":
         "resuelve la tienda por telefono contra Firestore; sin base no hay tienda",
 
+    # ── EL ALMACENAMIENTO DEL LEAD. Misma clase que las de arriba y se
+    # descubrio midiendo, el 13-ago: el mapa las daba por "trabajo pendiente" y
+    # resulta que el doble tambien las reemplaza, con leads en RAM. El camino
+    # REAL del cierre -`procesar_mensaje_para_lead`, `_finalizar_cierre`, los
+    # gatillos y la pregunta suave- corre TAL CUAL y esta probado en
+    # `tests/test_cierre_y_cobro.py`; lo que no corre es la coleccion Firestore.
+    "app/core/leads.py:crear_lead":
+        "escribe el lead en la coleccion Firestore; el doble lo guarda en RAM",
+    "app/core/leads.py:actualizar_lead":
+        "actualiza el lead en Firestore; el doble lo pisa en el dict de RAM",
+    "app/core/leads.py:get_lead_activo":
+        "consulta Firestore por el lead vigente; el doble filtra el dict de RAM",
+    "app/core/leads.py:descartar_leads_activos":
+        "marca descartados en Firestore; el doble los marca en el dict de RAM",
+    "app/core/notificador.py:notificar_lead":
+        "aviso HTTP saliente al dueño de la tienda; el doble lo anota y no sale",
+
     # ── LOS CONECTORES. Mandan y reciben HTTP de Meta y de Telegram. Probarlas
     # de verdad pide un token y un telefono; el turno completo ya se prueba por
     # dentro con los casetes, que entran por la funcion del webhook.
@@ -93,8 +110,6 @@ SIN_CAMINO_OFFLINE = {
         "interfaz del conector: lee el payload que manda el canal",
     "app/connectors/whatsapp.py:send_message":
         "POST real a la Cloud API de Meta con el token de la tienda",
-    "app/connectors/whatsapp.py:parse_whatsapp_payload":
-        "lee el payload que manda Meta al webhook",
     "app/connectors/whatsapp.py:download_media":
         "baja el audio o la imagen desde los servidores de Meta",
     "app/connectors/whatsapp.py:get_whatsapp_connector_for_tienda":

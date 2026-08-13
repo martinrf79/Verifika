@@ -121,11 +121,19 @@ def test_el_doble_de_firestore_no_se_despega_del_real():
             fuera[n.name] = (nombres, a.kwarg is not None)
         return fuera
 
-    real = _firmas(_RAIZ / "app/storage/firestore_client.py")
     doble = _firmas(_RAIZ / "banco_pruebas/sim_firestore.py", adentro_de="install")
+    # Los TRES modulos que el doble pisa. Los leads entraron el 13-ago: el mapa
+    # los daba por trabajo pendiente y midiendo se vio que tambien los reemplaza,
+    # con leads en RAM, asi que corren el mismo riesgo de deriva.
+    real = {}
+    for mod in ("app/storage/firestore_client.py", "app/core/leads.py",
+                "app/core/notificador.py"):
+        for nombre, firma in _firmas(_RAIZ / mod).items():
+            real.setdefault(nombre, firma)
+
     comunes = sorted(set(real) & set(doble))
-    assert len(comunes) >= 10, (
-        f"el doble solo cubre {len(comunes)} funciones del cliente real; algo "
+    assert len(comunes) >= 15, (
+        f"el doble solo cubre {len(comunes)} funciones de las reales; algo "
         "cambio de forma y este candado dejo de mirar lo que miraba")
 
     faltantes = []
@@ -136,8 +144,8 @@ def test_el_doble_de_firestore_no_se_despega_del_real():
         for p in sorted(real[nombre][0] - acepta):
             faltantes.append(f"{nombre}: el real acepta `{p}` y el doble no")
     assert not faltantes, (
-        "EL DOBLE DE FIRESTORE SE DESPEGO DEL CLIENTE REAL. Los 875 tests "
-        "offline estarian midiendo una ficcion:\n  " + "\n  ".join(faltantes))
+        "EL DOBLE SE DESPEGO DE LO REAL. Los tests offline estarian midiendo "
+        "una ficcion:\n  " + "\n  ".join(faltantes))
 
 
 def _mapa_en_proceso_limpio(tmp_path) -> dict:
