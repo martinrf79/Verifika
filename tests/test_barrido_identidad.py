@@ -55,6 +55,11 @@ from app.core.pedido_helpers import certificar_producto
 
 RUTA_CSV = "data/clientes/verifika_prod/productos.csv"
 
+# PESADO: recorre la fuente entera. Corre normal en el push; queda fuera de
+# la pasada de cobertura del mapa, donde el tracing lo vuelve horas.
+pytestmark = pytest.mark.pesado
+
+
 
 @pytest.fixture(scope="module")
 def catalogo():

@@ -45,5 +45,6 @@ python_files = ["test_*.py", "prueba_*.py"]
 markers = [
     "vivo: test que llama al LLM (DeepSeek); no corre por default, gasta tokens",
     "lento: test de minutos, no de segundos. No corre en el push porque bloquearia el deploy; si corre en el nocturno. Hoy es uno solo: el candado del mapa.",
+    "pesado: barrido que recorre la fuente entera -miles de casos-. Corre normal en el push; lo que NO hace es entrar a la pasada de cobertura del mapa, donde el tracing lo vuelve horas. Ninguno de estos toca funciones de la zona ciega: barren certificador, geo, FAQ, compatibilidad y filtros, que ya son troncales.",
 ]
 addopts = "-m 'not vivo and not lento'"

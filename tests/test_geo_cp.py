@@ -18,6 +18,11 @@ import pytest
 from app.core import geo_cp
 from app.core.envio import clasificar_zona, clasificar_provincia
 
+# PESADO: recorre la fuente entera. Corre normal en el push; queda fuera de
+# la pasada de cobertura del mapa, donde el tracing lo vuelve horas.
+pytestmark = pytest.mark.pesado
+
+
 
 # ── geo_cp.resolver: (texto) -> (prov_slug, cp) ──────────────────────────────
 # (texto, prov esperada)  None = no debe resolver (falta provincia o es calle)

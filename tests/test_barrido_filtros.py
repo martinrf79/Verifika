@@ -49,6 +49,11 @@ from banco_pruebas import barrido_filtros as BF  # noqa: E402
 
 TIENDA = BF.TIENDA
 
+# PESADO: recorre la fuente entera. Corre normal en el push; queda fuera de
+# la pasada de cobertura del mapa, donde el tracing lo vuelve horas.
+pytestmark = pytest.mark.pesado
+
+
 
 class _Cond:
     """Una condicion suelta, con la misma forma que el molde Pydantic.

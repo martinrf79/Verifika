@@ -54,6 +54,11 @@ import pytest
 
 TIENDA = "verifika_prod"
 
+# PESADO: recorre la fuente entera. Corre normal en el push; queda fuera de
+# la pasada de cobertura del mapa, donde el tracing lo vuelve horas.
+pytestmark = pytest.mark.pesado
+
+
 
 @pytest.fixture(scope="module")
 def fuente(firestore_doble):

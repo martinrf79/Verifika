@@ -49,6 +49,11 @@ from banco_pruebas import barrido_compatibilidad as BC  # noqa: E402
 
 TIENDA = BC.TIENDA
 
+# PESADO: recorre la fuente entera. Corre normal en el push; queda fuera de
+# la pasada de cobertura del mapa, donde el tracing lo vuelve horas.
+pytestmark = pytest.mark.pesado
+
+
 
 @pytest.fixture(scope="module")
 def barrido(firestore_doble):

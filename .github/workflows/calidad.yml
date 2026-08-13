@@ -37,7 +37,10 @@ on:
 jobs:
   compuerta:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 90 y no 60: el candado del mapa sumo su segunda pasada -la bateria entera
+    # bajo cobertura, que es lo que saco 43 funciones de la zona ciega- y con
+    # los tres pasos juntos el nocturno roza los 60.
+    timeout-minutes: 90
     env:
       # Clave GRATIS de Gemini a proposito: el nocturno corre el set del piso (8
       # guiones, 26 turnos x 3 vueltas = 78 turnos), que entra en el tier gratis

@@ -12,10 +12,15 @@ COMO SE CONTESTA, y son dos medidas que se cruzan:
   1. ALCANCE, estatico. Desde el webhook de WhatsApp y el de Telegram, a que
      funciones se puede llegar. Lo que no se alcanza no corre en produccion,
      por mas que este escrito y tenga tests.
-  2. EJERCICIO, dinamico. Se corren LAS 40 -la parte de codigo de cada pregunta
-     de Martin- y LAS CHARLAS GRABADAS -el turno completo por el camino del
-     webhook, con el modelo reemplazado por su casete-, cada una con su propio
-     contexto de cobertura. Queda la matriz funcion x prueba.
+  2. EJERCICIO, dinamico, y son TRES familias. LAS 40 -la parte de codigo de
+     cada pregunta de Martin- y LAS CHARLAS GRABADAS -el turno completo por el
+     camino del webhook, con el modelo reemplazado por su casete- corren cada
+     una con su propio contexto: de ahi sale la matriz funcion x prueba, que es
+     la que contesta "¿a quien rompo si toco esto?". Y LA BATERIA OFFLINE
+     entera corre aparte, como un solo contexto, porque para la zona ciega la
+     pregunta no es cual test la toca sino si la toca ALGUNO: sin esta tercera
+     pasada, 35 funciones figuraban ciegas teniendo prueba escrita, nueve de
+     ellas en `pago.py`, o sea la plata.
 
 Del cruce salen las cuatro cubetas:
 
@@ -65,7 +70,9 @@ si esta bien: el mapa localiza la zona ciega, no la arregla.
 """
 import ast
 import json
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 _RAIZ = Path(__file__).resolve().parent.parent
@@ -190,7 +197,53 @@ def _corredores() -> list:
     return fuera
 
 
-def ejercicio() -> dict:
+def _la_bateria(tmp: Path) -> dict:
+    """{archivo: {linea: ["bateria"]}} — lo que toca la bateria offline entera.
+
+    LA SEGUNDA PASADA, y es la que faltaba. El mapa preguntaba "¿que funcion
+    usa cada una de las 40?", que es la pregunta fina y sirve para saber a
+    quien rompes si tocas algo. Pero para la ZONA CIEGA la pregunta es otra y
+    mas simple: **¿la toca alguien?**. Con solo las 40 y los casetes, 35
+    funciones figuraban ciegas teniendo prueba escrita — nueve de ellas en
+    `pago.py`, o sea la plata. El mapa decia "nadie la prueba" de codigo que
+    `tests/test_pago.py` prueba desde hace semanas.
+
+    CORRE EN UN SUBPROCESO, con su propio archivo de datos, por la misma razon
+    por la que `tests/test_mapa.py` corre el mapa afuera: medio sistema cachea,
+    y una bateria arrancada despues de las 40 mediria de menos. Aparte, pytest
+    adentro del mismo proceso se pisa con los imports ya hechos.
+
+    SIN LOS `pesado`. Los cinco barridos que recorren la fuente entera -880
+    productos por 7 formas, 16.164 localidades, 41 campos por 5 operadores- bajo
+    el tracing de cobertura pasan de segundos a horas: medido, la corrida quedo
+    en el 17% despues de veinte minutos. No se pierde nada: barren certificador,
+    geo, FAQ, compatibilidad y filtros, que ya son troncales por las 40."""
+    datos_bateria = tmp / "cobertura_bateria"
+    r = subprocess.run(
+        [sys.executable, "-m", "coverage", "run",
+         f"--data-file={datos_bateria}", f"--source={APP}",
+         "-m", "pytest", "-q", "-p", "no:randomly",
+         "-m", "not vivo and not lento and not pesado",
+         # LO QUE LA PASADA 1 YA CORRE NO SE CORRE DOS VECES. `test_las_40` y
+         # `test_charlas_grabadas` son exactamente los corredores de arriba, y
+         # arriba entran con contexto propio, que es mejor: dicen CUAL prueba.
+         # Repetirlos aca no suma un dato y se lleva la mitad del reloj -son
+         # los cuatro tests mas lentos de la bateria y replayan turnos enteros-.
+         "--ignore=tests/test_las_40.py",
+         "--ignore=tests/test_charlas_grabadas.py"],
+        capture_output=True, text=True, timeout=2700, cwd=str(_RAIZ))
+    if not datos_bateria.exists():
+        print(f"AVISO: la bateria no dejo cobertura ({r.returncode}). "
+              f"El mapa mide solo las 40 y los casetes.\n{r.stdout[-800:]}")
+        return {}
+    import coverage
+    d = coverage.CoverageData(str(datos_bateria))
+    d.read()
+    return {arch: {ln: ["bateria"] for ln in (d.lines(arch) or [])}
+            for arch in d.measured_files()}
+
+
+def ejercicio(tmp: Path | None = None) -> dict:
     """{archivo: {linea: [preguntas que la ejecutaron]}}."""
     import coverage
     # LOS CORREDORES SE ARMAN ANTES DE PRENDER LA COBERTURA. Armarlos adentro
@@ -223,6 +276,14 @@ def ejercicio() -> dict:
             fuera[archivo] = datos.contexts_by_lineno(archivo)
         except Exception:
             continue
+    # LA SEGUNDA PASADA SE FUSIONA ACA. La bateria entra como UN contexto,
+    # `bateria`: para la lista de dependientes no aporta -no dice cual test es-
+    # pero para la zona ciega es lo unico que importa, que alguien la toque.
+    with tempfile.TemporaryDirectory() as td:
+        for archivo, lineas in _la_bateria(tmp or Path(td)).items():
+            destino = fuera.setdefault(archivo, {})
+            for ln, ctxs in lineas.items():
+                destino.setdefault(ln, []).extend(ctxs)
     return fuera
 
 
