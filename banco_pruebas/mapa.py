@@ -377,9 +377,20 @@ def main() -> int:
     print("\n" + "=" * 78)
     vivas = len(c["troncal"]) + len(c["de_algunas"]) + len(c["zona_ciega"])
     ciega = len(c["zona_ciega"])
-    print(f"EL NUMERO DEL MAPA: {ciega} de {vivas} funciones del camino vivo "
-          f"NO las toca ninguna prueba "
-          f"({100 * ciega / max(1, vivas):.0f}% a ciegas)")
+    # DOS NUMEROS Y NO UNO, porque son dos cosas distintas: lo que le FALTA la
+    # prueba y lo que no se le puede escribir. Mezclados, el numero no bajaba ni
+    # trabajando bien y dejaba de servir de señal.
+    from banco_pruebas.sin_camino_offline import SIN_CAMINO_OFFLINE
+    declaradas = {k for k, _ in c["zona_ciega"]} & set(SIN_CAMINO_OFFLINE)
+    pendiente = ciega - len(declaradas)
+    print(f"EL NUMERO DEL MAPA: {pendiente} funciones del camino vivo esperan "
+          f"su prueba, de {vivas} "
+          f"({100 * pendiente / max(1, vivas):.0f}% a ciegas)")
+    print(f"   zona ciega medida: {ciega}, menos {len(declaradas)} declaradas "
+          f"SIN CAMINO OFFLINE -el modelo, Firestore y los conectores, que "
+          f"piden credencial y red-.")
+    print(f"   El detalle y el motivo de cada una: "
+          f"banco_pruebas/sin_camino_offline.py")
     print("=" * 78)
 
     if "--fijar" in sys.argv:

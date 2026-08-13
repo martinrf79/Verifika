@@ -48,6 +48,98 @@ if str(_RAIZ) not in sys.path:
 PISO = _RAIZ / "banco_pruebas" / "mapa_piso.json"
 
 
+def test_la_lista_de_sin_camino_offline_no_es_un_atajo():
+    """EL ANTI-TRUCO DE LA LISTA DE EXCUSAS, y corre en cada push.
+
+    `banco_pruebas/sin_camino_offline.py` declara las funciones a las que la
+    prueba no se les puede escribir -el modelo, Firestore, los conectores- para
+    que el numero que queda sea trabajo real y no una mezcla. Una lista asi es
+    util exactamente hasta el dia que alguien mete adentro algo que si se puede
+    probar. Las tres formas de hacer trampa, las tres en rojo:
+
+      1. Una clave que ya no existe en `app/`: quedo podrida y nadie se entera.
+      2. Una funcion declarada que en realidad SI la toca una prueba: que este
+         probada es la buena noticia; esconderla aca seria la mala.
+      3. Un motivo vacio o de menos de veinte caracteres: "no se puede" no es
+         un motivo, es una excusa."""
+    from banco_pruebas.mapa import inventario
+    from banco_pruebas.sin_camino_offline import SIN_CAMINO_OFFLINE
+
+    inv = inventario()
+    fantasmas = sorted(k for k in SIN_CAMINO_OFFLINE if k not in inv)
+    assert not fantasmas, (
+        "declaradas sin camino offline, pero ya no existen en app/. La lista "
+        "quedo podrida:\n  " + "\n  ".join(fantasmas))
+
+    ciega = set(json.loads(PISO.read_text(encoding="utf-8"))["zona_ciega"])
+    probadas = sorted(k for k in SIN_CAMINO_OFFLINE if k not in ciega)
+    assert not probadas, (
+        "estas figuran como 'no se les puede escribir la prueba' y SI las "
+        "ejercita alguien. Sacalas de la lista: la buena noticia es que estan "
+        "probadas.\n  " + "\n  ".join(probadas))
+
+    flojos = sorted(k for k, v in SIN_CAMINO_OFFLINE.items()
+                    if len(str(v).strip()) < 20)
+    assert not flojos, (
+        "sin motivo escrito. 'No se puede' no es un motivo, es una excusa:\n  "
+        + "\n  ".join(flojos))
+
+
+def test_el_doble_de_firestore_no_se_despega_del_real():
+    """EL CANDADO DE LA BASE DEL BANCO ENTERO, y es el mas barato de todos.
+
+    Los 875 tests offline corren contra `banco_pruebas/sim_firestore`, que
+    parchea `app/storage/firestore_client`. Si el doble se despega del cliente
+    real -alguien le agrega un parametro al real y el doble no lo acepta- la
+    bateria entera sigue en verde midiendo una ficcion, y el error aparece
+    recien en produccion. Es el mismo modo de falla que este repo ya pago con
+    los bancos que llamaban por dentro.
+
+    EL CONTRATO: el doble tiene que ACEPTAR todo lo que acepta el real, por
+    nombre de parametro, sea explicito o por `**kw`. Al reves no se exige: el
+    doble puede ignorar lo que quiera, mientras no explote.
+
+    SE LEE POR AST y no importando los modulos, para no depender de si alguien
+    ya corrio `install()` en esta sesion: una vez parcheado, el real ya no esta
+    donde mirar."""
+    import ast
+
+    def _firmas(ruta: Path, adentro_de: str | None = None) -> dict:
+        arbol = ast.parse(ruta.read_text(encoding="utf-8"))
+        if adentro_de:
+            arbol = next(n for n in ast.walk(arbol)
+                         if isinstance(n, ast.FunctionDef)
+                         and n.name == adentro_de)
+            nodos = [n for n in arbol.body if isinstance(n, ast.FunctionDef)]
+        else:
+            nodos = [n for n in arbol.body if isinstance(n, ast.FunctionDef)]
+        fuera = {}
+        for n in nodos:
+            a = n.args
+            nombres = {p.arg for p in
+                       (*a.posonlyargs, *a.args, *a.kwonlyargs)}
+            fuera[n.name] = (nombres, a.kwarg is not None)
+        return fuera
+
+    real = _firmas(_RAIZ / "app/storage/firestore_client.py")
+    doble = _firmas(_RAIZ / "banco_pruebas/sim_firestore.py", adentro_de="install")
+    comunes = sorted(set(real) & set(doble))
+    assert len(comunes) >= 10, (
+        f"el doble solo cubre {len(comunes)} funciones del cliente real; algo "
+        "cambio de forma y este candado dejo de mirar lo que miraba")
+
+    faltantes = []
+    for nombre in comunes:
+        acepta, tiene_kw = doble[nombre]
+        if tiene_kw:
+            continue
+        for p in sorted(real[nombre][0] - acepta):
+            faltantes.append(f"{nombre}: el real acepta `{p}` y el doble no")
+    assert not faltantes, (
+        "EL DOBLE DE FIRESTORE SE DESPEGO DEL CLIENTE REAL. Los 875 tests "
+        "offline estarian midiendo una ficcion:\n  " + "\n  ".join(faltantes))
+
+
 def _mapa_en_proceso_limpio(tmp_path) -> dict:
     """EL MAPA SE MIDE EN UN PROCESO NUEVO. Medio sistema cachea -catalogo,
     FAQ, registro de campos, geo de CP-, asi que una funcion que ya corrio en
