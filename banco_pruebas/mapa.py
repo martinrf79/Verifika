@@ -27,10 +27,26 @@ Del cruce salen las cuatro cubetas:
                       ZONA CIEGA: de aca salieron todas las sorpresas de cada
                       sesion. Medida el 5-ago daba 143 de 304, el 47%, con el
                       hub entero adentro; con las charlas grabadas al dia bajo
-                      a 37 de 315, el 12%.
+                      a 37 de 315, el 12%. El 13-ago ese 12% resulto ser
+                      MENTIRA DEL INSTRUMENTO -ver abajo-. El numero del dia lo
+                      imprime el propio mapa; no se copia a ningun documento.
   SIN ALCANCE         no se llega desde ningun webhook. Candidata a borrar, con
                       el ojo puesto: puede ser de un endpoint de admin o de un
                       banco.
+
+EL 13-AGO EL INSTRUMENTO MEDIA MAL, y conviene saber como para no repetirlo. La
+linea del `def` se EJECUTA al importar el modulo. El mapa contaba cada funcion
+desde esa linea, asi que un modulo que entraba por primera vez con un contexto
+de cobertura prendido quedaba entero marcado como ejercitado sin que nadie lo
+llamara. Quedaban tapados `main.py`, los dos conectores y `pago.py` enteros:
+modulos que las 40 y los casetes IMPORTAN y no ejecutan. Ademas el numero
+dependia del orden de los imports: el dia que `las_40` empezo a importar
+`app.verifika` un poco antes, ocho funciones de `llm_adapter` cayeron fuera de
+todo contexto, aparecieron ciegas de golpe y el nocturno quedo tres noches en
+rojo sin que cambiara una linea de esas funciones. Hoy se mide desde el CUERPO
+de la funcion, los corredores se arman ANTES de prender la cobertura, y
+`tests/test_mapa.py::test_importar_un_modulo_no_lo_da_por_ejercitado` lo
+defiende en cada push.
 
 LA REGLA QUE LO VUELVE UTIL, y sale del paper de evaluacion por capas: una capa
 que no se ejercita NO PUNTUA. Por eso el marcador de 40 de 40 no significaba lo
@@ -75,7 +91,14 @@ TRONCAL = 8
 
 # ── 1. EL INVENTARIO Y EL ALCANCE, por AST ──────────────────────────────────
 def inventario() -> dict:
-    """{clave: {modulo, nombre, ini, fin, llama}} para toda funcion de `app/`."""
+    """{clave: {modulo, nombre, ini, cuerpo, fin, llama}} para toda funcion.
+
+    `ini` es la linea del `def`; `cuerpo`, la primera linea de ADENTRO. La
+    diferencia no es cosmetica y costo tres rojos del nocturno: la linea del
+    `def` se EJECUTA al importar el modulo, asi que si el modulo entra por
+    primera vez mientras hay un contexto de cobertura prendido, TODAS sus
+    funciones quedan marcadas como ejercitadas sin que nadie las llame. La
+    medicion pasa a mirar solo el cuerpo."""
     fuera = {}
     for py in sorted(APP.rglob("*.py")):
         if "__pycache__" in str(py):
@@ -98,6 +121,7 @@ def inventario() -> dict:
                         llama.add(f.attr)
             fuera[f"{mod}:{nodo.name}"] = {
                 "modulo": mod, "nombre": nodo.name, "ini": nodo.lineno,
+                "cuerpo": nodo.body[0].lineno if nodo.body else nodo.lineno,
                 "fin": getattr(nodo, "end_lineno", nodo.lineno),
                 "llama": llama}
     return fuera
@@ -169,6 +193,11 @@ def _corredores() -> list:
 def ejercicio() -> dict:
     """{archivo: {linea: [preguntas que la ejecutaron]}}."""
     import coverage
+    # LOS CORREDORES SE ARMAN ANTES DE PRENDER LA COBERTURA. Armarlos adentro
+    # metia los imports de `banco_pruebas` -que arrastran medio `app/`- en la
+    # ventana de medicion, y de que modulo entrara primero dependia el numero.
+    # Afuera, el punto de partida es el mismo siempre.
+    corredores = _corredores()
     # `check_preimported` apagado a proposito: los modulos ya estan importados
     # cuando esto arranca, asi que las lineas de nivel de modulo no se miden. No
     # importa: lo que se mide aca son los CUERPOS de las funciones, que se
@@ -177,7 +206,7 @@ def ejercicio() -> dict:
                             check_preimported=False)
     cov.start()
     try:
-        for id_, fn in _corredores():
+        for id_, fn in corredores:
             cov.switch_context(id_)
             try:
                 fn()
@@ -207,7 +236,8 @@ def preguntas_por_funcion(inv: dict, cob: dict) -> dict:
         for clave in por_archivo.get(str(Path(archivo).resolve()), []):
             f = inv[clave]
             for ln, ctxs in lineas.items():
-                if f["ini"] <= ln <= f["fin"]:
+                # Desde el CUERPO, no desde el `def`: ver `inventario`.
+                if f["cuerpo"] <= ln <= f["fin"]:
                     fuera[clave] |= {c for c in ctxs if c}
     return fuera
 

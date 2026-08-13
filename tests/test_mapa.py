@@ -16,6 +16,15 @@ COMO SE BAJA EL PISO. Se le escribe la prueba a una funcion ciega, se corre
 `python3 banco_pruebas/mapa.py --fijar` y se commitea el piso nuevo. Cada
 sesion deberia bajarlo, aunque sea de a poco.
 
+EL PISO SUBIO UNA SOLA VEZ, el 13-ago, y no fue porque bajara la cobertura: el
+instrumento medía mal. Contaba la linea del `def` -que corre al importar el
+modulo- como si fuera ejercicio, asi que `main.py`, los dos conectores y
+`pago.py` figuraban probados cuando las 40 y los casetes solo los IMPORTAN.
+Arreglada la cuenta, aparecieron 35 funciones que siempre estuvieron ciegas y
+nadie veia. Se refijo el piso con el numero honesto y esas 35 quedaron anotadas
+en `PENDIENTE.md`. Que quede dicho para la proxima: subir el piso se justifica
+cuando se demuestra que la medida vieja mentia, nunca para pasar un rojo.
+
 POR QUE ESTA MARCADO `lento` Y NO CORRE EN CADA PUSH. Costo real, y se pago
 caro: mide las 40 y las 10 charlas BAJO COBERTURA y en un proceso aparte, o sea
 casi dos minutos en esta maquina y varias veces mas en un runner. El 6-ago la
@@ -54,6 +63,45 @@ def _mapa_en_proceso_limpio(tmp_path) -> dict:
     assert salida.exists(), (
         f"el mapa no corrio: {r.returncode}\n{r.stderr[-2000:]}")
     return json.loads(salida.read_text(encoding="utf-8"))
+
+
+def test_importar_un_modulo_no_lo_da_por_ejercitado():
+    """EL CANDADO DEL 13-AGO, y es rapido a proposito: corre en cada push.
+
+    QUE PASO. La linea del `def` se EJECUTA al importar el modulo. El mapa
+    media cada funcion desde esa linea, asi que si un modulo entraba por
+    primera vez con un contexto de cobertura prendido, TODAS sus funciones
+    quedaban marcadas como ejercitadas sin que nadie las llamara. Ocho
+    funciones de `llm_adapter.py` figuraron ejercitadas por eso durante
+    semanas: el modelo esta parchado en las charlas grabadas, o sea que no las
+    llama nadie. El dia que las_40 empezo a importar `app.verifika` un poquito
+    antes, el import cayo fuera de todo contexto, las ocho aparecieron ciegas
+    de golpe y el nocturno quedo tres noches en rojo por una diferencia de
+    orden de imports, no de codigo.
+
+    LA MEDIDA HONESTA cuenta desde el CUERPO. Esto lo verifica sin correr el
+    mapa entero: una funcion cuyo unico rastro es su propia linea de `def` no
+    cuenta como ejercitada."""
+    from banco_pruebas.mapa import inventario, preguntas_por_funcion
+
+    inv = inventario()
+    assert inv, "el inventario del mapa salio vacio"
+
+    multilinea = {k: f for k, f in inv.items() if f["fin"] > f["ini"] + 1}
+    assert multilinea, "ninguna funcion de app/ tiene mas de una linea"
+    clave, f = next(iter(sorted(multilinea.items())))
+    archivo = str(_RAIZ / f["modulo"])
+
+    solo_el_def = {archivo: {f["ini"]: ["import"]}}
+    assert not preguntas_por_funcion(inv, solo_el_def)[clave], (
+        f"{clave} figura ejercitada por la linea de su `def` ({f['ini']}), "
+        "que corre al importar el modulo y no prueba nada. El mapa tiene que "
+        "medir desde el CUERPO de la funcion.")
+
+    el_cuerpo = {archivo: {f["fin"]: ["una prueba"]}}
+    assert preguntas_por_funcion(inv, el_cuerpo)[clave] == {"una prueba"}, (
+        f"{clave} no figura ejercitada con una linea de su cuerpo corrida: el "
+        "mapa dejo de ver el cuerpo y ahora subestima al reves")
 
 
 @pytest.mark.lento

@@ -62,6 +62,12 @@ troncal, de algunas, **zona ciega** y sin alcance. La zona ciega es código que
 corre en producción y que ninguna prueba toca: ahí vivieron todas las sorpresas.
 `tests/test_mapa.py` no la deja crecer.
 
+El ejercicio se mide desde el **cuerpo** de la función, nunca desde la línea del
+`def`: esa línea corre al importar el módulo, y contarla daba por probado todo
+módulo que las pruebas apenas importan —`main.py`, los conectores, `pago.py`—.
+El candado rápido `test_importar_un_modulo_no_lo_da_por_ejercitado` lo verifica
+en cada push.
+
 ## EL TURNO COMPLETO — los casetes
 
 `banco_pruebas/casetes/` guarda lo que el modelo contestó en una charla, grabado
