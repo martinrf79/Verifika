@@ -1791,7 +1791,13 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     envios = []
     for d in destinos:
         try:
-            envios.append(T.cotizar_envio(localidad=d))
+            # EL DESTINO VIAJA CON SU COTIZACION. `cotizar_envio` devuelve la
+            # ZONA -"interior"- y no la ciudad, asi que el resultado de esta
+            # herramienta rotulaba como `localidad` un "interior" generico: el
+            # modelo lee ese JSON y no tiene como saber a que ciudad se cotizo,
+            # y nadie puede verificar que el reparto nombre los destinos que se
+            # cobraron. Cazado por el barrido de herramientas del 13-ago.
+            envios.append({**T.cotizar_envio(localidad=d), "destino": d})
         except Exception as e:
             log.warning("presupuesto_envio_error", destino=d, error=str(e)[:120])
 
@@ -1861,6 +1867,25 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
             for d, junta in por_destino.items()}
         repartidas = sum(max(1, i.cantidad) for i in pedido_items if i.destino)
         totales = sum(max(1, i.cantidad) for i in pedido_items)
+        # EL REPARTO SOLO PUEDE NOMBRAR LO QUE SE COTIZO, y esto lo encontro el
+        # barrido de herramientas del 13-ago sobre una entrada que ninguna
+        # charla tenia: el modelo declara `destinos` ["Cordoba", "Rosario"] y un
+        # item con destino "caba". Se cobraban los envios de Cordoba y Rosario y
+        # el bloque le escribia al cliente "A caba: 2x mouse". Le decia que su
+        # compra iba a un lado y le cobraba el envio de otro.
+        #
+        # No se agrega el destino huerfano a la cotizacion -serian tres envios
+        # que el cliente no pidio- ni se lo tapa: el reparto no se escribe y la
+        # cuenta declara que el detalle no esta cerrado, que es la misma salida
+        # honesta que ya existe para el reparto que no cuadra.
+        _cotizados = [_norm(d) for d in destinos]
+        _huerfanos = [d for d in por_destino
+                      if not any(_norm(d) in q or q in _norm(d)
+                                 for q in _cotizados if q)]
+        if _huerfanos:
+            log.warning("presupuesto_destino_no_cotizado",
+                        huerfanos=_huerfanos[:3], cotizados=destinos[:3])
+            por_destino = {}
         if por_destino and repartidas == totales:
             from app.storage.firestore_client import get_product_by_id
             fichas = {}
@@ -1949,7 +1974,9 @@ def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     return {"estado": "ok", "bloque": bloque,
             "repuso": repuso,
             "total_ars": r.get("total_final_ars") or r.get("total_ars"),
-            "envios": [{"localidad": e.get("localidad") or e.get("zona"),
+            "envios": [{"localidad": (e.get("destino") or e.get("localidad")
+                                      or e.get("zona")),
+                        "zona": e.get("zona"),
                         "costo": e.get("costo")} for e in envios],
             "detalle": r.get("detalle") or [],
             "proof": r.get("proof") or {}}

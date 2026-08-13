@@ -514,3 +514,109 @@ def test_lo_resuelto_en_turnos_anteriores_cuenta_como_atendido(firestore_doble):
                                 ya_resuelto=" ".join(items), tienda_id=TIENDA)
             assert not rec["sin_buscar"], (
                 f"reclama {rec['sin_buscar']} sobre lo ya resuelto {items}")
+
+
+# ── LOS TRES CAMINOS QUE FALTABAN, y estaban anotados como "A MEDIAS" ────────
+#
+# Este archivo declaro desde el 12-ago que le faltaban tres caminos de la
+# calculadora: `grupos_envio`, el destino unico sticky y el envio cotizado en
+# RANGO. Quedo escrito en PENDIENTE.md como "A MEDIAS" y asi paso una sesion
+# entera, que es exactamente lo que Martin marco: "esta hecho el barrido o no
+# esta hecho". Se cierran aca.
+
+_ENVIO_RANGO = {"faq_tema": "costo_envio", "concepto": "envio_interior"}
+
+
+def test_el_umbral_de_envio_gratis_se_decide_por_paquete_y_no_por_el_promedio(
+        entorno):
+    """CAMINO 1: `grupos_envio`. Con el pedido repartido, el envio gratis se
+    decide con el subtotal REAL de cada paquete. Con el promedio, el paquete
+    caro le regala el envio al barato y la tienda pierde plata en cada venta
+    repartida."""
+    from app.core import estado_venta
+    from app.core.calculadora import calculate_total
+    caro = max(entorno["muestra"], key=lambda p: p["precio_ars"])
+    barato = min(entorno["muestra"], key=lambda p: p["precio_ars"])
+    items = [{"product_id": caro["id"], "cantidad": 1},
+             {"product_id": barato["id"], "cantidad": 1}]
+    grupos = [{"destino": "cordoba capital",
+               "cats": [{"n": 1, "cat": caro["categoria"]}]},
+              {"destino": "rosario",
+               "cats": [{"n": 1, "cat": barato["categoria"]}]}]
+    estado_venta._envio_localidades.set([])
+    for loc in ("cordoba capital", "rosario"):
+        estado_venta.set_envio_localidad(loc)
+    con = calculate_total(items=items, items_extra=[ENVIO], destinos=2,
+                          grupos=grupos)
+    estado_venta._envio_localidades.set([])
+    for loc in ("cordoba capital", "rosario"):
+        estado_venta.set_envio_localidad(loc)
+    sin = calculate_total(items=items, items_extra=[ENVIO], destinos=2)
+    assert con.get("ok") and sin.get("ok")
+    # Con grupos NUNCA se cobra menos envio que con el promedio: el paquete
+    # chico paga el suyo en vez de que se lo regale el grande.
+    assert (con.get("total_ars") or 0) >= (sin.get("total_ars") or 0), (
+        f"con grupos salio {con.get('total_ars')} y sin grupos "
+        f"{sin.get('total_ars')}: el reparto por paquete regalo envio")
+
+
+def test_el_destino_unico_sticky_cobra_un_solo_envio(entorno):
+    """CAMINO 2: el destino unico. "Mandalo todo a Salta" despues de haber
+    cotizado dos destinos no puede cobrar dos envios: el destino viejo quedo
+    obsoleto. Es el bug real del 8-jul, mudanza Mendoza a Salta cobrada doble."""
+    from app.core import estado_venta
+    from app.core.calculadora import calculate_total
+    p = entorno["muestra"][0]
+    items = [{"product_id": p["id"], "cantidad": 1}]
+
+    estado_venta.set_current_estado({"destino_unico": True,
+                                     "localidades_envio": ["salta"]})
+    estado_venta._envio_localidades.set([])
+    for loc in ("cordoba capital", "salta"):
+        estado_venta.set_envio_localidad(loc)
+    uno = calculate_total(items=items, items_extra=[ENVIO], destinos=2)
+
+    estado_venta.set_current_estado({})
+    estado_venta._envio_localidades.set([])
+    for loc in ("cordoba capital", "salta"):
+        estado_venta.set_envio_localidad(loc)
+    dos = calculate_total(items=items, items_extra=[ENVIO], destinos=2)
+    estado_venta.set_current_estado(None)
+
+    assert uno.get("ok") and dos.get("ok")
+    assert (uno.get("total_ars") or 0) < (dos.get("total_ars") or 0), (
+        "con destino unico se cobro lo mismo que con dos destinos: "
+        f"{uno.get('total_ars')} contra {dos.get('total_ars')}")
+
+
+def test_el_envio_en_rango_hoy_no_lo_puede_disparar_la_fuente(entorno):
+    """CAMINO 3: el envio cotizado en RANGO, y la respuesta honesta es que HOY
+    NO SE PUEDE ALCANZAR.
+
+    Estuvo anotado como "falta barrer el envio en rango" y asi paso una sesion.
+    Medido: la calculadora tiene la rama de rango escrita en dos lugares, pero
+    el envio tiene UNA sola fuente -`cotizar_envio`- y el propio codigo declara
+    que el concepto que manda el modelo se IGNORA. Y la tabla de tarifas de la
+    fuente tiene las 24 provincias en modalidad FIJA. Con esos datos, ninguna
+    entrada puede producir un envio en rango: la rama existe y esta muerta.
+
+    En vez de dejarlo como pendiente para siempre, este test lo DECLARA y monta
+    la guardia: cuenta las tarifas en rango que la fuente puede servir por el
+    camino del envio. Mientras sean cero, no hay nada que barrer y esto pasa. El
+    dia que alguien cargue una tarifa en rango, se pone rojo y pide el barrido,
+    en el mismo push que la agrego y no tres sesiones despues."""
+    from app.core.calculadora import cotizar_envio
+    from app.core import estado_venta
+    zonas = ("caba", "gba", "cordoba", "santa fe", "entre rios", "mendoza",
+             "salta", "jujuy", "tucuman", "chaco", "corrientes", "misiones",
+             "neuquen", "rio negro", "chubut", "santa cruz",
+             "tierra del fuego", "la pampa", "san luis", "san juan",
+             "la rioja", "catamarca", "formosa", "santiago del estero")
+    estado_venta._envio_localidades.set([])
+    en_rango = [z for z in zonas
+                if (cotizar_envio(localidad=z) or {}).get("modalidad") == "rango"]
+    assert not en_rango, (
+        "la fuente ya sirve tarifas de envio en RANGO para "
+        f"{en_rango}: el barrido tiene que cubrir ese camino. Agregale al "
+        "generador un caso con esa localidad y afirma que la cuenta sale con "
+        "sus dos extremos, no con un numero solo.")

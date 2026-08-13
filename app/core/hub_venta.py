@@ -1120,6 +1120,36 @@ def _sin_markdown(texto: str) -> str:
     return t
 
 
+def _reparto_que_se_guarda(del_turno, guardado, carrito) -> list | None:
+    """El reparto de envios que queda persistido al cerrar el turno.
+
+    Si el turno resolvio uno, manda ese. Si no, sigue valiendo el guardado...
+    salvo que ya no cuadre con el pedido, y ahi se limpia.
+
+    POR QUE, y lo encontro el barrido de memoria del 13-ago sobre una
+    transicion que ninguna charla tenia: el reparto se guarda por merge, asi
+    que un turno que no calcula ninguno CONSERVA el anterior. Cuando el cliente
+    saca un producto, el carrito baja y el reparto guardado sigue repartiendo
+    las unidades viejas: quedo uno de cinco unidades con un carrito de dos. Hoy
+    el daño lo ataja el todo-o-nada -no se repone un reparto que no cuadra- pero
+    un dato guardado que miente es un error esperando su turno, y es exactamente
+    la familia del 12-ago: la cuenta vieja que se reestampaba.
+
+    Devuelve None para "no toques lo guardado", que es lo que el save entiende.
+    """
+    if del_turno:
+        return del_turno
+    if not guardado:
+        return None
+    reparte = sum(int(c.get("n") or 0) for g in guardado
+                  for c in (g.get("cats") or []) if isinstance(c, dict))
+    tiene = sum(int(c.get("cantidad") or 1) for c in (carrito or []))
+    if reparte == tiene:
+        return None
+    log.info("reparto_guardado_ya_no_cuadra", reparte=reparte, carrito=tiene)
+    return []
+
+
 def _cuenta_de_otro_pedido(previo: str, declarado: dict,
                            carrito: list | None = None) -> bool:
     """True si la cuenta guardada NO es la del pedido vigente.
@@ -2819,6 +2849,8 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         _grupos_envio = (_gce_grupos() or {}).get("grupos_envio") or None
     except Exception:  # noqa: BLE001 — la memoria nunca tumba el save
         _grupos_envio = None
+    _grupos_envio = _reparto_que_se_guarda(
+        _grupos_envio, conv.get("grupos_envio") or [], carrito)
     try:
         save_conversation(
             user_id, history, resumen, tienda_id=tienda_id,
