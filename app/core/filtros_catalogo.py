@@ -246,8 +246,22 @@ def _a_numero(v):
 
 def _raices(valor) -> list[str]:
     """Raices por palabra: 'partes chinas' -> ['chin']. Lo que venia de
-    `herramientas._stems`, que existia solo para `excluir`."""
-    return [w[:4] for w in _norm(valor).split() if len(w) >= 4] or [_norm(valor)]
+    `herramientas._stems`, que existia solo para `excluir`.
+
+    UN NUMERO NO TIENE RAIZ, y recortarlo lo convertia en otro numero. Lo
+    encontro el barrido de filtros el 13-ago: `precio_ars no_contiene 29000`
+    dejaba pasar al producto que sale exactamente 29000. La raiz daba '2900', y
+    como el borde de un numero son OTROS DIGITOS -la misma regla que hace que
+    '16' pegue en '16GB' y no en '160'-, '2900' no puede pegar nunca adentro de
+    '29000'. O sea que la exclusion no excluia nada y lo hacia en silencio:
+    volvia el producto que el cliente pidio no ver. Con menos de cuatro digitos
+    andaba de casualidad, porque no llegaba a recortarse.
+
+    Recortar sirve para las palabras -'chinas' y 'china' tienen que pegar
+    igual-; para un numero, su raiz es el numero entero.
+    """
+    return [w if w.isdigit() else w[:4]
+            for w in _norm(valor).split() if len(w) >= 4] or [_norm(valor)]
 
 
 def _texto_contiene(valor_prod: str, buscado: str) -> bool:

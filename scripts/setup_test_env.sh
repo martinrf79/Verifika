@@ -87,15 +87,17 @@ INVENTARIO_FUENTE.md, que tiene candado y no puede mentir. Si lo lees en otro
 lado, desconfia y anda al inventario. El 11-ago una sesion leyo "44 temas" de
 CLAUDE.md y eran 50.
 
->>> NO EXISTE "EL BARRIDO". HAY SIETE, Y SE LEEN EN UN SOLO LUGAR <<<
-Barrido nombra SIETE cosas distintas: catalogo, coherencia, FAQ, geo, codigo,
-herramientas y memoria. Decir "el barrido esta listo" sin apellido es lo que
-hizo que Martin escuchara "hecho" un dia y "a medias" al otro sobre objetos
-distintos. INVENTARIO_BARRIDO.md los lista a los siete con lo que cubre cada
-uno, lo genera un script midiendo el codigo, y tiene candado doble: si un
-numero no coincide con lo medido se pone rojo, y si aparece un barrido nuevo
-que no esta en la lista, tambien. El estado se LEE de ahi, nunca de memoria.
-Si tocas una herramienta o un campo del estado, corre
+>>> NO EXISTE "EL BARRIDO". SON VARIOS Y SE LEEN EN UN SOLO LUGAR <<<
+Barrido nombra varias cosas distintas: catalogo, coherencia, FAQ, geo, codigo,
+herramientas, memoria, compatibilidad y filtros. Decir "el barrido esta listo"
+sin apellido es lo que hizo que Martin escuchara "hecho" un dia y "a medias" al
+otro sobre objetos distintos. CUANTOS SON HOY NO SE ESCRIBE ACA NI EN NINGUN
+texto -este bloque ya decia SIETE cuando eran nueve, que es el mismo error un
+nivel mas arriba-: el numero sale de la lista del generador y lo imprime
+INVENTARIO_BARRIDO.md, que los lista con lo que cubre cada uno y tiene candado
+doble: si un numero no coincide con lo medido se pone rojo, y si aparece un
+barrido nuevo que no esta en la lista, tambien. El estado se LEE de ahi, nunca
+de memoria. Si tocas una herramienta, un campo del estado o la fuente, corre
 `python3 banco_pruebas/inventario_barrido.py` y volve a medir.
 
 >>> LA PROSA AL CLIENTE VIVE EN LA FUENTE, NO EN EL CODIGO <<<

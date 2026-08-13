@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-EL INVENTARIO DE LOS BARRIDOS — los SIETE en un solo lugar, medidos.
+EL INVENTARIO DE LOS BARRIDOS — todos en un solo lugar, medidos.
 
 POR QUE EXISTE, y es el pedido mas caro de todos (Martin, 12 y 13-ago-2026):
 "siempre se me dice que el barrido esta listo, y despues que esta a medias. Es
 desgastante... no vamos a llegar a ningun lado si seguimos asi".
 
 LA CAUSA, RECONSTRUIDA CON GIT Y NO CON MEMORIA. Nadie mintio nunca. Lo que
-paso es que **la palabra 'barrido' nombra SIETE cosas distintas** en este repo, y
-no habia un lugar donde verlas juntas:
+paso es que **la palabra 'barrido' nombraba siete cosas distintas** en este
+repo, y no habia un lugar donde verlas juntas:
 
     12-ago  c38015a  el barrido del CATALOGO
     12-ago  6409892  el barrido de la FAQ
@@ -16,6 +16,11 @@ no habia un lugar donde verlas juntas:
     12-ago  (mismo)  el barrido de la COHERENCIA de la fuente
     12-ago  978a2c2  el barrido del CODIGO
     13-ago           el barrido de las HERRAMIENTAS y el de la MEMORIA
+    13-ago           el de la COMPATIBILIDAD y el de los FILTROS
+
+Cuantos son HOY no se escribe en ningun texto: sale de `len(BARRIDOS)` y el
+documento lo imprime de ahi. Un numero escrito a mano en dos lugares es la forma
+exacta en que nacio este problema.
 
 La sesion que hizo los primeros cuatro dejo escrito en `PENDIENTE.md` que
 faltaba el del codigo. Estaba en el repo y NO estaba en el resumen que Martin
@@ -42,11 +47,24 @@ if str(_RAIZ) not in sys.path:
 
 DESTINO = _RAIZ / "INVENTARIO_BARRIDO.md"
 
-# Los SIETE barridos, con el archivo que los defiende. La lista es corta a
-# proposito: se lee de un vistazo, que es lo que faltaba. `test_inventario`
-# verifica que no haya ninguno afuera.
+# Los barridos, con el archivo que los defiende. La lista es corta a proposito:
+# se lee de un vistazo, que es lo que faltaba. `test_inventario` verifica que no
+# haya ninguno afuera.
+#
+# EL NUMERO NO SE ESCRIBE EN NINGUN LADO A MANO, ni siquiera aca: sale de
+# `len(BARRIDOS)` y el documento lo imprime de ahi. Escribirlo dos veces es
+# exactamente como nacio el problema que este archivo resuelve — un numero
+# escrito a mano que envejece mientras la realidad sigue.
 BARRIDOS = ("catalogo", "coherencia", "faq", "geo", "codigo", "herramientas",
-            "memoria")
+            "memoria", "compatibilidad", "filtros")
+
+# Para escribir el numero con letras en el titulo, sin que nadie lo tipee.
+_EN_LETRAS = {5: "CINCO", 6: "SEIS", 7: "SIETE", 8: "OCHO", 9: "NUEVE",
+              10: "DIEZ", 11: "ONCE", 12: "DOCE"}
+
+
+def cuantos_son() -> str:
+    return _EN_LETRAS.get(len(BARRIDOS), str(len(BARRIDOS)))
 
 
 def _preparar():
@@ -179,15 +197,53 @@ def medir_memoria() -> dict:
                        f"{len(BM.transiciones())} transiciones generadas"}
 
 
+def medir_compatibilidad() -> dict:
+    """Las respuestas juradas de compatibilidad, por la funcion que las
+    contesta."""
+    from banco_pruebas import barrido_compatibilidad as BCM
+    cob = BCM.cobertura()
+    return {"clave": "compatibilidad", "titulo": "LA COMPATIBILIDAD",
+            "archivo": "tests/test_barrido_compatibilidad.py",
+            "que_barre": "los pares de productos que la fuente hace posibles y "
+                         "los que no comparten nada, mas cada producto contra "
+                         "cada plataforma, por `evaluar_par` y `evaluar`",
+            "unidad": "pares", "casos": cob["pares"] + cob["contra_plataforma"],
+            "detalle": f"{cob['productos_con_compat']} productos con arista "
+                       f"cargada, {cob['familias']} familias de conexion, "
+                       f"{cob['pares']} pares en {len(cob['clases'])} clases y "
+                       f"{cob['contra_plataforma']} casos contra las "
+                       f"{cob['plataformas']} plataformas del vocabulario"}
+
+
+def medir_filtros() -> dict:
+    """La grilla de campo por operador: todo lo que un cliente puede preguntar
+    sobre un atributo de la ficha."""
+    from banco_pruebas import barrido_filtros as BFI
+    cob = BFI.cobertura()
+    return {"clave": "filtros", "titulo": "LOS FILTROS DE LA FICHA",
+            "archivo": "tests/test_barrido_filtros.py",
+            "que_barre": "cada campo de la ficha por cada operador, con valores "
+                         "leidos de la ficha misma, contra `filtros_catalogo` y "
+                         "por la puerta real de `buscar_productos`",
+            "unidad": "casos", "casos": cob["casos"],
+            "cobertura": cob["cobertura"], "pendientes": cob["pendientes"],
+            "detalle": f"{cob['campos']} campos filtrables x "
+                       f"{cob['operadores']} operadores = {cob['celdas']} "
+                       f"celdas, {cob['cubiertas']} cubiertas; "
+                       f"{cob['casos'] - cob['torcidos']} casos con valores de "
+                       f"la fuente y {cob['torcidos']} torcidos"}
+
+
 _MEDIDORES = {
     "catalogo": medir_catalogo, "coherencia": medir_coherencia,
     "faq": medir_faq, "geo": medir_geo, "codigo": medir_codigo,
     "herramientas": medir_herramientas, "memoria": medir_memoria,
+    "compatibilidad": medir_compatibilidad, "filtros": medir_filtros,
 }
 
 
 def medir() -> list:
-    """Los siete barridos, cada uno con su numero medido del codigo vivo."""
+    """Todos los barridos, cada uno con su numero medido del codigo vivo."""
     _preparar()
     return [_MEDIDORES[c]() for c in BARRIDOS]
 
@@ -205,14 +261,15 @@ push: si el documento y la medicion no coinciden, se pone rojo. Y si aparece un
 Martin, 12 y 13-ago-2026: *"siempre se me dice que el barrido esta listo, y
 despues que esta a medias. Es desgastante"*.
 
-Reconstruido con git: **nadie mintio nunca. La palabra "barrido" nombra SIETE
+Reconstruido con git: **nadie mintio nunca. La palabra "barrido" nombraba siete
 cosas distintas** y no habia donde verlas juntas. La sesion que barrio catalogo,
 FAQ, geo y coherencia dejo escrito en `PENDIENTE.md` que faltaba el del codigo
 — y esa linea no aparecio en el resumen que Martin leyo. Asi, "hecho" y "a
 medias" eran objetos distintos con el mismo nombre.
 
-**La regla que queda: no se dice "el barrido" sin apellido, y el estado se lee
-de acá, no de la memoria de nadie.**
+**Hoy son {n_letras} ({n}), y el numero de arriba no lo tipeo nadie: sale de la
+lista del generador. La regla que queda: no se dice "el barrido" sin apellido, y
+el estado se lee de acá, no de la memoria de nadie.**
 
 ---
 
@@ -239,6 +296,16 @@ Para que no aparezca como sorpresa tres sesiones despues:
   alcanzable: las 24 provincias de la fuente tienen tarifa fija. Queda con
   guardia en `test_barrido_codigo.py`: el dia que se cargue una tarifa en rango,
   ese test pide el barrido en el mismo push.
+- **Comparar por MAYOR o MENOR un campo de texto con magnitud adentro.** `ram`
+  dice "16GB", `hz` dice "60Hz", `almacenamiento` dice "512GB SSD": son textos,
+  asi que "de mas de 100Hz" no se puede filtrar y el codigo lo descarta con el
+  motivo escrito, que es lo correcto y no es lo mismo que resolverlo. Se puede
+  ORDENAR por ellos —`orden_tiene_sentido` mira el dato, no el nombre—, y
+  `contiene` alcanza para el valor exacto. Convertirlos a numero es una edicion
+  de la FUENTE, no de codigo.
+- **La PROSA de la compatibilidad.** El barrido cubre el veredicto —compatible,
+  incompatible, sin_dato— y su simetria. Como el modelo redacta ese veredicto
+  para el cliente sigue siendo cosa de los casetes y del explorador.
 
 ---
 
@@ -248,7 +315,7 @@ Para que no aparezca como sorpresa tres sesiones despues:
 
 def escribir(medidos: list) -> str:
     import datetime
-    partes = [_CABECERA]
+    partes = [_CABECERA.format(n=len(BARRIDOS), n_letras=cuantos_son())]
     partes.append(f"## LOS {len(medidos)} BARRIDOS\n\n")
     partes.append("| barrido | que barre | numero | cobertura |\n")
     partes.append("|---|---|---|---|\n")

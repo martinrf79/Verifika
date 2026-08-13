@@ -116,11 +116,12 @@ def test_la_cobertura_declarada_es_la_real(medidos, texto):
             f"inventario dice otra cosa. Regeneralo.")
 
 
-def test_las_dos_superficies_contables_estan_completas(medidos):
-    """LA LINEA QUE SE LEE DE UN VISTAZO. Mientras esto este verde, las dos
-    superficies que se pueden contar entera —lo que el modelo declara y lo que
-    el sistema recuerda— estan al cien por ciento. Si baja, el error nombra el
-    campo que falta, en el mismo push."""
+def test_las_superficies_contables_estan_completas(medidos):
+    """LA LINEA QUE SE LEE DE UN VISTAZO. Mientras esto este verde, todas las
+    superficies que se pueden contar enteras —lo que el modelo declara, lo que
+    el sistema recuerda y lo que el cliente puede preguntar de una ficha— estan
+    al cien por ciento. Si baja, el error nombra la celda que falta, en el mismo
+    push."""
     for m in medidos:
         if "cobertura" not in m:
             continue
@@ -134,12 +135,30 @@ def test_el_inventario_dice_lo_que_NO_cubre(texto):
     sesiones despues. Los limites van escritos adelante."""
     assert "NINGUNO DE ESTOS BARRIDOS CUBRE" in texto
     for limite in ("redaccion del modelo", "campos torcidos a la vez",
-                   "mas de dos turnos", "RANGO"):
+                   "mas de dos turnos", "RANGO", "MAYOR o MENOR un campo de "
+                   "texto", "PROSA de la compatibilidad"):
         assert limite in texto, f"el inventario no declara el limite '{limite}'"
 
 
 def test_el_inventario_explica_por_que_existe(texto):
     """La proxima sesion tiene que entender el malentendido que lo origino, o
     lo repite."""
-    assert "siete cosas distintas" in texto or "SIETE" in texto
+    # Sin los saltos de linea del markdown: la frase que importa cae partida en
+    # dos renglones y buscarla cruda daba un rojo que no era un defecto.
+    plano = " ".join(texto.split())
+    assert "siete cosas distintas" in plano
     assert "PENDIENTE.md" in texto
+
+
+def test_cuantos_son_lo_dice_la_lista_y_no_una_palabra_escrita(texto):
+    """EL MISMO ERROR, UN NIVEL MAS ARRIBA. Este inventario nacio porque un
+    numero escrito a mano envejecio mientras la realidad seguia. Si el propio
+    inventario dijera "los SIETE" en prosa y la lista tuviera nueve, seria el
+    problema otra vez adentro de su propia solucion. El numero sale de
+    `len(BARRIDOS)` y esto lo verifica."""
+    n = len(IB.BARRIDOS)
+    assert f"## LOS {n} BARRIDOS" in texto, (
+        f"la lista tiene {n} barridos y el titulo del inventario dice otra "
+        f"cosa. Regeneralo con `python3 banco_pruebas/inventario_barrido.py`")
+    assert f"Hoy son {IB.cuantos_son()} ({n})" in texto, (
+        f"el inventario no dice en letras que hoy son {n}")

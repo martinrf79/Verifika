@@ -11,18 +11,19 @@ push: si el documento y la medicion no coinciden, se pone rojo. Y si aparece un
 Martin, 12 y 13-ago-2026: *"siempre se me dice que el barrido esta listo, y
 despues que esta a medias. Es desgastante"*.
 
-Reconstruido con git: **nadie mintio nunca. La palabra "barrido" nombra SIETE
+Reconstruido con git: **nadie mintio nunca. La palabra "barrido" nombraba siete
 cosas distintas** y no habia donde verlas juntas. La sesion que barrio catalogo,
 FAQ, geo y coherencia dejo escrito en `PENDIENTE.md` que faltaba el del codigo
 — y esa linea no aparecio en el resumen que Martin leyo. Asi, "hecho" y "a
 medias" eran objetos distintos con el mismo nombre.
 
-**La regla que queda: no se dice "el barrido" sin apellido, y el estado se lee
-de acá, no de la memoria de nadie.**
+**Hoy son NUEVE (9), y el numero de arriba no lo tipeo nadie: sale de la
+lista del generador. La regla que queda: no se dice "el barrido" sin apellido, y
+el estado se lee de acá, no de la memoria de nadie.**
 
 ---
 
-## LOS 7 BARRIDOS
+## LOS 9 BARRIDOS
 
 | barrido | que barre | numero | cobertura |
 |---|---|---|---|
@@ -33,6 +34,8 @@ de acá, no de la memoria de nadie.**
 | **EL CODIGO DE LA CUENTA** | la calculadora, el split de pago, el cobro, el componedor, la aduana y… | 1260 combinaciones | — |
 | **LO QUE EL MODELO DECLARA** | las herramientas que el modelo llama, campo por campo, con valores val… | 359 casos | **100.0%** |
 | **LA MEMORIA ENTRE TURNOS** | la transicion de un turno al siguiente: el carrito, la cuenta guardada… | 72 transiciones | **100.0%** |
+| **LA COMPATIBILIDAD** | los pares de productos que la fuente hace posibles y los que no compar… | 320 pares | — |
+| **LOS FILTROS DE LA FICHA** | cada campo de la ficha por cada operador, con valores leidos de la fic… | 687 casos | **100.0%** |
 
 ---
 
@@ -80,6 +83,19 @@ de acá, no de la memoria de nadie.**
 - **Cobertura de su superficie: 100.0%** — completa.
 - **Lo defiende:** `tests/test_barrido_memoria.py`.
 
+### LA COMPATIBILIDAD
+
+- **Que barre:** los pares de productos que la fuente hace posibles y los que no comparten nada, mas cada producto contra cada plataforma, por `evaluar_par` y `evaluar`.
+- **Numero:** 320 pares. 880 productos con arista cargada, 22 familias de conexion, 240 pares en 4 clases y 80 casos contra las 12 plataformas del vocabulario.
+- **Lo defiende:** `tests/test_barrido_compatibilidad.py`.
+
+### LOS FILTROS DE LA FICHA
+
+- **Que barre:** cada campo de la ficha por cada operador, con valores leidos de la ficha misma, contra `filtros_catalogo` y por la puerta real de `buscar_productos`.
+- **Numero:** 687 casos. 41 campos filtrables x 5 operadores = 205 celdas, 205 cubiertas; 677 casos con valores de la fuente y 10 torcidos.
+- **Cobertura de su superficie: 100.0%** — completa.
+- **Lo defiende:** `tests/test_barrido_filtros.py`.
+
 
 ---
 
@@ -101,6 +117,16 @@ Para que no aparezca como sorpresa tres sesiones despues:
   alcanzable: las 24 provincias de la fuente tienen tarifa fija. Queda con
   guardia en `test_barrido_codigo.py`: el dia que se cargue una tarifa en rango,
   ese test pide el barrido en el mismo push.
+- **Comparar por MAYOR o MENOR un campo de texto con magnitud adentro.** `ram`
+  dice "16GB", `hz` dice "60Hz", `almacenamiento` dice "512GB SSD": son textos,
+  asi que "de mas de 100Hz" no se puede filtrar y el codigo lo descarta con el
+  motivo escrito, que es lo correcto y no es lo mismo que resolverlo. Se puede
+  ORDENAR por ellos —`orden_tiene_sentido` mira el dato, no el nombre—, y
+  `contiene` alcanza para el valor exacto. Convertirlos a numero es una edicion
+  de la FUENTE, no de codigo.
+- **La PROSA de la compatibilidad.** El barrido cubre el veredicto —compatible,
+  incompatible, sin_dato— y su simetria. Como el modelo redacta ese veredicto
+  para el cliente sigue siendo cosa de los casetes y del explorador.
 
 ---
 
