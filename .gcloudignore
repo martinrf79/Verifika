@@ -35,6 +35,10 @@ data/mini_*.jsonl
 tests/
 banco_pruebas/
 
+# Capacidades guardadas sin cablear. Por definicion no corren en produccion:
+# `tests/test_reserva.py` prohibe que app/ las importe. Ver reserva/README.md.
+reserva/
+
 # Scripts de diagnostico y parches locales
 _*
 *.bak*

@@ -1,5 +1,11 @@
 """
-POSVENTA — plazos determinista de devolucion y garantia + validacion de CUIT.
+POSVENTA — plazos deterministas de devolucion y garantia + validacion de CUIT.
+
+EN RESERVA, NO CABLEADO (decision de Martin, 14-ago-2026). Vivia en
+`app/core/posventa.py` y ninguna funcion lo importaba: aparecia en cada barrido
+como codigo muerto y ensuciaba la cuenta de lo que hay que borrar. No se borro
+porque la capacidad sirve; se guardo aca, que es donde no estorba. Como volver
+a enchufarlo esta escrito en `reserva/README.md`.
 
 Motor generico (matematica de fechas, algoritmo CUIT) + dato de tienda (dias de
 devolucion, meses de garantia por producto). El bot no improvisa fechas ni dice
@@ -9,14 +15,11 @@ devolucion, meses de garantia por producto). El bot no improvisa fechas ni dice
 - garantia_vigente(fecha_compra, meses): hasta cuando cubre la garantia.
 - validar_cuit(cuit): digito verificador mod 11 (pieza del modulo de confianza).
 
-Detras del flag POSVENTA_TOOLS. Codigo puro, sin LLM, sin Firestore.
+Codigo puro: sin LLM, sin Firestore y sin un solo import de `app/`. Eso es a
+proposito, para que la reserva no se pudra cuando `app/` se mueve abajo.
 """
 import datetime
 from typing import Optional
-
-from app.logger import get_logger
-
-log = get_logger(__name__)
 
 # Default de plataforma: 10 dias corridos de arrepentimiento (Ley de Defensa del
 # Consumidor argentina). Cada tienda puede sobrescribirlo con su dato.

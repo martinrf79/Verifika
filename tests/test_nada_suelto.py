@@ -81,11 +81,6 @@ DECLARADAS = {
     "plataformas_de_interp": "lee las plataformas que declaro el modelo",
     "es_pregunta_de_compatibilidad": "detecta la pregunta de compatibilidad por texto",
 
-    # ── Posventa: capacidad completa y sin cablear (decision de Martin) ─────
-    "plazo_devolucion": "posventa: hasta cuando puede devolver. Modulo entero sin cablear",
-    "garantia_vigente": "posventa: si la garantia sigue vigente. Modulo entero sin cablear",
-    "validar_cuit": "posventa: valida el CUIT para la factura. Modulo entero sin cablear",
-
     # ── Alta de cliente: las llama scripts/crear_cliente.py ─────────────────
     "dispara_lead_fuerte": "regla del lead fuerte; la verifica su prueba",
     "texto_ficha": "arma el texto de la ficha de un producto desde la fuente",

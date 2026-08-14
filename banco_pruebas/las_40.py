@@ -333,7 +333,6 @@ def se4():
     """CONSIGNA 4 — Postventa. El pedido #4589 NO existe en el sistema: no se
     confirma. Y el proceso de garantia sale de la FAQ, no de los 30 dias que
     invento el dialogo."""
-    from app.core import posventa
     t = temas("defectuoso", "proceso_cambio", "garantia")
     pol = {x.get("tema"): (x.get("politica") or x.get("criterio") or "")
            for x in (t.get("temas") or [])}
@@ -345,8 +344,7 @@ def se4():
               "confirme un numero de pedido inventado",
               f"temas con material={sorted(k for k, v in pol.items() if v)}, "
               f"herramienta de pedidos expuesta={hay_tool_de_pedidos}, "
-              f"promete 30 dias={treinta}, "
-              f"modulo posventa={bool(posventa)}",
+              f"promete 30 dias={treinta}",
               len(pol) == 3 and all(pol.values())
               and not hay_tool_de_pedidos and not treinta,
               "postventa sin material propio: la garantia se improvisa")
