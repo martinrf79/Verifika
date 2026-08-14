@@ -1596,6 +1596,72 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
         + " " + H._norm(por_id.get(str(i.get("product_id")), {}).get("nombre"))
         for i in items)
     sumados = []
+
+    # ── UN RUBRO PEDIDO UNA VEZ, UN SOLO PRODUCTO ──────────────────────────
+    #
+    # EL DEFECTO, de la charla real: el cliente pide "2 mouse" y la cuenta sale
+    # con un Genius y un Logitech. **El cliente no pidio dos modelos distintos:
+    # la variedad la invento el sistema, y se la cobra.** Es mandarle algo que
+    # no pidio en la parte que se paga, o sea la prioridad uno.
+    #
+    # POR QUE SE UNIFICA Y NO SE PREGUNTA. Preguntar seria lo correcto si la
+    # ambiguedad fuera del cliente, y no lo es: el cliente nombro un rubro, una
+    # vez, con una cantidad. El que se contradijo fue el sistema. Preguntar
+    # quema un turno y no vende.
+    #
+    # LAS TRES ATADURAS QUE LO HACEN SEGURO:
+    #   1. Solo cuando el cliente nombro ese rubro UNA sola vez. Si declaro dos
+    #      items del mismo rubro, esta pidiendo dos cosas distintas y no se
+    #      toca.
+    #   2. Se unifica DENTRO de cada destino. El mismo producto a dos ciudades
+    #      repite con razon, y juntarlos romperia el reparto de envios.
+    #   3. El producto que queda lo elige `_producto_para`, o sea el mismo que
+    #      ya venia resuelto en el carrito si sigue sirviendo. No se elige uno
+    #      nuevo: se vuelve al que el cliente ya tenia.
+    #
+    # Y LA PLATA NO SE REESCRIBE: se cambia el ITEM y la cuenta la vuelve a
+    # calcular `armar_presupuesto` unas lineas mas abajo, con los precios de la
+    # fuente. El codigo nunca estampa un total que no calculo la calculadora.
+    for it in (declarado.get("items") or []):
+        que = H._norm(it.get("que"))
+        if not que:
+            continue
+        if sum(1 for x in (declarado.get("items") or [])
+               if H._norm(x.get("que")) == que) != 1:
+            continue
+        elegido = _producto_para(que, vistos, del_carrito)
+        if not elegido:
+            continue
+        # SE AGRUPA POR CATEGORIA, NO POR `_cubierto`. Lo encontro el barrido de
+        # la decision con el contrato de idempotencia, y era grave: `_cubierto`
+        # es LAXO -le alcanza una raiz- asi que dos rubros DISTINTOS caian en el
+        # mismo grupo y se unificaban en uno. O sea que el arreglo contra
+        # cobrarle al cliente algo que no pidio se comia mercaderia que SI habia
+        # pedido, que es peor. La categoria es un dato de la ficha, no una
+        # coincidencia de palabras.
+        cat = H._norm(elegido.get("categoria"))
+        mismos = [i for i in items
+                  if cat and H._norm(por_id.get(str(i.get("product_id")), {})
+                                     .get("categoria")) == cat]
+        if len({str(i.get("product_id")) for i in mismos}) < 2:
+            continue
+        por_destino: dict = {}
+        for i in mismos:
+            d = str(i.get("destino") or "")
+            por_destino.setdefault(d, []).append(i)
+        for d, grupo in por_destino.items():
+            if len({str(i.get("product_id")) for i in grupo}) < 2:
+                continue
+            total = sum(max(1, int(i.get("cantidad") or 1)) for i in grupo)
+            for i in grupo[1:]:
+                items.remove(i)
+            grupo[0]["product_id"] = elegido["id"]
+            grupo[0]["cantidad"] = total
+            sumados.append(f"unificado a {total}x {elegido.get('nombre')}")
+            log.info("rubro_unificado_a_un_producto", trace_id=trace_id,
+                     rubro=que, destino=d or "unico",
+                     quedaba=elegido["id"], era=len(grupo))
+
     for it in (declarado.get("items") or []):
         que = H._norm(it.get("que"))
         if not que:

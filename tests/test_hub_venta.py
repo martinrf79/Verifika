@@ -1768,9 +1768,6 @@ def test_pero_el_cliente_todavia_puede_cambiar_de_producto(firestore_doble):
 # -unificar al primero, o preguntarle al cliente cual quiere- y eso toca la
 # plata de un renglon ya cotizado. La regla de la casa es que la cuenta no se
 # reescribe sola. Es una decision suya, no una omision.
-@pytest.mark.xfail(strict=True, reason="A MEDIAS: el rubro pedido una vez "
-                   "todavia puede salir con dos productos distintos en la "
-                   "cuenta. Falta decidir si se unifica o se pregunta.")
 def test_un_rubro_pedido_una_vez_no_trae_dos_productos_distintos(firestore_doble):
     from app.core.hub_venta import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
@@ -1779,8 +1776,12 @@ def test_un_rubro_pedido_una_vez_no_trae_dos_productos_distintos(firestore_doble
     mice = [p for p in cat if p.get("categoria") == "mouse"][:2]
     assert len(mice) == 2
 
-    # El modelo armo la cuenta con DOS mouse distintos.
-    llamadas = [{"herramienta": "armar_presupuesto",
+    # El turno le mostro los dos -es lo que paso en la charla real- y el modelo
+    # armo la cuenta con uno de cada uno.
+    llamadas = [{"herramienta": "buscar_productos",
+                 "pedido": {"categoria": "mouse"},
+                 "resultado": {"estado": "ok", "productos": mice}},
+                {"herramienta": "armar_presupuesto",
                  "pedido": {"items": [{"product_id": mice[0]["id"], "cantidad": 1},
                                       {"product_id": mice[1]["id"], "cantidad": 1}]},
                  "resultado": {"estado": "ok", "bloque": "x", "total_ars": 1}}]
@@ -1823,3 +1824,59 @@ def test_un_rubro_de_nombre_corto_se_puede_dar_por_atendido(firestore_doble):
                       "t", tienda_id=TIENDA)
     assert not rec.get("sin_buscar"), (
         f"se busco el ssd, se encontro, y lo reclama igual: {rec}")
+
+
+def test_si_el_cliente_pidio_dos_rubros_iguales_no_se_unifican(firestore_doble):
+    """LA PRIMERA ATADURA. Si el cliente declara DOS items del mismo rubro
+    -"un mouse para mi y otro para mi hijo, distintos"- esta pidiendo dos cosas
+    y unificarlas seria comerse la mitad del pedido. La unificacion solo actua
+    cuando el rubro se nombro UNA vez."""
+    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.storage.firestore_client import get_all_products
+
+    mice = [p for p in get_all_products(tienda_id=TIENDA)
+            if p.get("categoria") == "mouse"][:2]
+    llamadas = [{"herramienta": "buscar_productos", "pedido": {},
+                 "resultado": {"estado": "ok", "productos": mice}},
+                {"herramienta": "armar_presupuesto",
+                 "pedido": {"items": [{"product_id": mice[0]["id"], "cantidad": 1},
+                                      {"product_id": mice[1]["id"], "cantidad": 1}]},
+                 "resultado": {"estado": "ok", "bloque": "x", "total_ars": 1}}]
+    declarado = {"items": [{"que": "mouse", "cantidad": 1},
+                           {"que": "mouse", "cantidad": 1}], "pide_precio": True}
+
+    fuera = _cuenta_con_lo_declarado(llamadas, declarado, TIENDA, "t", memoria=[])
+    items = next(l["pedido"]["items"] for l in fuera
+                 if l.get("herramienta") == "armar_presupuesto")
+    assert len({i["product_id"] for i in items}) == 2, (
+        "el cliente pidio dos mouse distintos y se los unifico en uno")
+
+
+def test_el_mismo_producto_a_dos_destinos_no_se_junta(firestore_doble):
+    """LA SEGUNDA ATADURA. El mismo producto a dos ciudades repite CON RAZON, y
+    juntar esos renglones romperia el reparto de envios, que es plata. Se
+    unifica dentro de cada destino, nunca entre destinos."""
+    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.storage.firestore_client import get_all_products
+
+    mice = [p for p in get_all_products(tienda_id=TIENDA)
+            if p.get("categoria") == "mouse"][:2]
+    llamadas = [{"herramienta": "buscar_productos", "pedido": {},
+                 "resultado": {"estado": "ok", "productos": mice}},
+                {"herramienta": "armar_presupuesto",
+                 "pedido": {"items": [
+                     {"product_id": mice[0]["id"], "cantidad": 1,
+                      "destino": "cordoba capital"},
+                     {"product_id": mice[1]["id"], "cantidad": 1,
+                      "destino": "rosario"}]},
+                 "resultado": {"estado": "ok", "bloque": "x", "total_ars": 1}}]
+    declarado = {"items": [{"que": "mouse", "cantidad": 2}], "pide_precio": True}
+
+    fuera = _cuenta_con_lo_declarado(llamadas, declarado, TIENDA, "t", memoria=[])
+    items = next(l["pedido"]["items"] for l in fuera
+                 if l.get("herramienta") == "armar_presupuesto")
+    destinos = {i.get("destino") for i in items}
+    assert destinos == {"cordoba capital", "rosario"}, (
+        f"se perdio un destino al unificar: {items}")
+    assert sum(int(i["cantidad"]) for i in items) == 2, (
+        f"se perdio mercaderia al unificar: {items}")
