@@ -28,7 +28,48 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
-**==== 14-AGO (ULTIMO) — LA MITAD QUE DECIDE, Y EL SISTEMA SIN LLM MEDIDO ====**
+**==== 14-AGO (ULTIMO) — EL PUNTO DE PARTIDA DEL RECORTE, MEDIDO ====**
+
+> ## ✂️ SI ESTA SESION ES LA DEL RECORTE DE ARQUITECTURA, EMPEZA POR ACA.
+> El diagnostico YA ESTA HECHO. No lo repitas: corre
+> `python3 banco_pruebas/peso_de_la_cadena.py` y tenes el numero de hoy.
+>
+> **QUE MIDE.** Corre las piezas que reescriben el mensaje —salen de
+> `grafo.barribles()`, no de una lista— sobre el corpus del barrido del
+> cableado, y dice tres cosas: cuantas veces interviene cada una, cuantos
+> caracteres suma o resta, y **con quien se pisa**.
+>
+> **EL HALLAZGO QUE ORDENA EL RECORTE:** `cuenta_no_retipeada` y
+> `sin_plata_inventada` intervienen sobre los MISMOS mensajes el **81,8%** de
+> las veces. Ese es el primer par a mirar para fusionar, y ya no es una
+> impresion: es un numero que se vuelve a correr antes y despues de fusionar
+> para probar que no se llevo puesto un comportamiento. Los que siguen estan
+> muy por debajo: aduana con componedor 42,9%, aduana con atadura 40%.
+>
+> **Y UN HUECO QUE APARECIO MIDIENDO, y hay que decirlo porque cambia como se
+> lee el barrido del cableado: DIEZ de las dieciocho piezas NO INTERVIENEN NI
+> UNA VEZ sobre ese corpus** —el saludo, la honestidad de bot, el cobro
+> inventado, el JSON filtrado, el anuncio vacio, el descuento, el punto
+> omitido, el hallazgo repuesto, y dos mas—. **NO quiere decir que esten
+> muertas**: el corpus no tiene un CBU falso, ni un "sos un bot?", ni un primer
+> mensaje de charla, asi que nunca las dispara. Lo que si quiere decir es que
+> **sus contratos hoy se verifican por vacio**, y que antes de tocarlas hay que
+> agregarle al corpus el caso que las despierta. Eso es trabajo del recorte, no
+> un defecto nuevo.
+>
+> **EL ORDEN QUE SE RECOMENDO A MARTIN, y el motivo de cada paso:**
+>   1. **Borrar lo muerto** —39 funciones y `posventa.py`—, que es gratis,
+>      esta medido y es lo primero que ve una auditoria.
+>   2. **Fusionar el par del 81,8%**, con el banco corrido antes y despues.
+>   3. **Recien despues el enum**, que ya tiene su plan escrito en PENDIENTE.
+>
+> **LO QUE HACE QUE ESTO SEA SEGURO Y HASTA AYER NO LO FUERA:** las dos mitades
+> del turno tienen barrido. Si una fusion cambia el comportamiento, el push se
+> pone rojo en la misma corrida. Sin eso, simplificar era a ojo, y a ojo ya
+> fallo dos veces —el tope por caracteres tiro una nota de 55 a 23, y una poda
+> borro la oracion de otro producto—.
+
+**==== 14-AGO — LA MITAD QUE DECIDE, Y EL SISTEMA SIN LLM MEDIDO ====**
 
 > ## 🧱 LO QUE HAY, DE VERDAD
 >
