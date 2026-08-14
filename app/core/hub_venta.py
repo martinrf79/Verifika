@@ -1335,6 +1335,17 @@ def _busqueda_de_lo_declarado(llamadas: list, declarado: dict, rec: dict,
             args["categoria"] = cats[0]
         if filtros:
             args["filtros"] = list(filtros)
+        # LA MISMA BUSQUEDA NO SE AGREGA DOS VECES, y no es una optimizacion:
+        # lo encontro el barrido de la decision con el contrato de
+        # idempotencia. El turno puede pasar por aca en dos rondas seguidas con
+        # el MISMO reclamo -que el reconciliador repita un faltante es un
+        # defecto conocido y abierto-, y sin esta guarda la segunda vuelta
+        # agregaba una llamada calcada: el redactor veia el mismo producto dos
+        # veces y lo escribia dos veces. El defecto no se ve aca, se ve en el
+        # mensaje del cliente, que es donde nadie lo iba a atribuir a esto.
+        if any(l.get("herramienta") == "buscar_productos"
+               and (l.get("pedido") or {}) == args for l in fuera):
+            continue
         r = H.ejecutar("buscar_productos", args, tienda_id)
         fuera.append({"herramienta": "buscar_productos", "pedido": args,
                       "resultado": r})
@@ -1734,9 +1745,16 @@ def _supuesto_de_pago(llamadas: list, declarado: dict, tienda_id: str,
     # Y va con UN solo salto, no dos, para que quede una posdata sola en vez de
     # dos bloques seguidos pidiendo lo mismo.
     mayor = max(partes, key=lambda p: float(p.get("porcentaje") or 0))
-    res["bloque"] = (res["bloque"] + "\n" + f"El {int(float(mayor.get('porcentaje') or 0))}% "
-                     f"lo puse por {mayor.get('medio')}, que es la que tiene "
-                     f"descuento: si va al revés, decime y lo doy vuelta.")
+    linea = (f"El {int(float(mayor.get('porcentaje') or 0))}% "
+             f"lo puse por {mayor.get('medio')}, que es la que tiene "
+             f"descuento: si va al revés, decime y lo doy vuelta.")
+    # EL SUPUESTO SE DICE UNA VEZ. Lo encontro el barrido de la decision con el
+    # contrato de idempotencia: si el turno pasa dos veces por aca, el cliente
+    # leia la misma aclaracion dos veces adentro de la misma cuenta. Es
+    # exactamente la repeticion que la prioridad dos no tolera.
+    if linea in str(res.get("bloque") or ""):
+        return llamadas
+    res["bloque"] = res["bloque"] + "\n" + linea
     fuera[idx] = {**llamadas[idx], "resultado": res}
     return fuera
 

@@ -74,6 +74,54 @@ el turno sin respuesta, que es peor que el defecto que venia a arreglar."""
 
 TODOS_LOS_CONTRATOS = (NO_ENMUDECE, NO_INVENTA_PLATA, IDEMPOTENTE, NO_LEVANTA)
 
+# ── LOS CONTRATOS DE LA MITAD QUE DECIDE ───────────────────────────────────
+#
+# Los cuatro de arriba son de los nodos que transforman TEXTO. La mitad de
+# decision y reposicion no toca el texto: mueve DATOS -las llamadas a las
+# herramientas, lo que el modelo declaro, lo que el reconciliador reclama-, asi
+# que sus contratos son otros y hasta el 14-ago no estaban escritos. Eso dejaba
+# quince de los treinta y tres nodos sin una sola propiedad que se pudiera
+# comprobar sobre entradas generadas: la mitad que AMORTIGUA los errores era la
+# que nadie medía.
+#
+# Se comprueban igual que los otros: sin saber cual era la respuesta correcta.
+NO_INVENTA_ID = "no_inventa_id"
+"""Ningun product_id sale de un nodo si no entro, o si no existe en el catalogo
+real. Es la regla cero del proyecto -la identidad la decide el codigo- aplicada
+a los engranajes que reponen: un nodo que completa lo que el modelo no hizo no
+puede completarlo con un producto que no existe."""
+
+NO_PIERDE_EVIDENCIA = "no_pierde_evidencia"
+"""Toda herramienta que entro sigue estando a la salida. Un nodo de reposicion
+puede REEMPLAZAR el resultado de una busqueda -eso es su trabajo- pero no puede
+hacer desaparecer la busqueda entera: lo que se pierde acá deja al redactor sin
+el dato y el bot termina negando lo que el catalogo si tiene."""
+
+NO_AGREGA_LO_NO_PEDIDO = "no_agrega_lo_no_pedido"
+"""Ningun item entra a la cuenta si el cliente no lo pidio. Es el defecto que
+esta ABIERTO en PENDIENTE: en la charla real del 12-ago salio a la cuenta un
+auricular que no estaba en el carrito, y lo freno la regla cero de la
+calculadora, que es la red y no el arreglo."""
+
+NO_RECLAMA_LO_RESUELTO = "no_reclama_lo_resuelto"
+"""Lo que ya esta atendido no se vuelve a reclamar. Cada reclamo imposible
+quema una ronda entera del turno: mas latencia, mas tokens y ninguna respuesta
+mejor. Medido el 7-ago: de 88 faltantes emitidos, 41 se repitieron en dos o mas
+rondas del MISMO turno."""
+
+CONTRATOS_DE_DATOS = (NO_LEVANTA, IDEMPOTENTE, NO_INVENTA_ID,
+                      NO_PIERDE_EVIDENCIA, NO_AGREGA_LO_NO_PEDIDO,
+                      NO_RECLAMA_LO_RESUELTO)
+"""La familia entera. Es el universo de nombres validos para un nodo que mueve
+datos, igual que `TODOS_LOS_CONTRATOS` lo es para los que mueven texto."""
+
+CONTRATOS_DE_REPOSICION = (NO_LEVANTA, IDEMPOTENTE, NO_INVENTA_ID,
+                           NO_PIERDE_EVIDENCIA, NO_AGREGA_LO_NO_PEDIDO)
+"""Los cinco que cumple TODA reposicion. `no_reclama_lo_resuelto` queda afuera
+a proposito y no es un olvido: solo tiene sentido para el reconciliador, que es
+el unico que reclama. Declararselo a una reposicion seria un contrato que se
+cumple por vacio, y un verde por vacio es el que enseña a no mirar el tablero."""
+
 # Las etapas del turno, en orden. Es la unica jerarquia del grafo.
 ETAPAS = ("entrada", "decision", "reposicion", "redaccion", "salida", "memoria")
 
@@ -99,12 +147,34 @@ class Nodo:
     # Sin esto, el nodo que vuelve a pegar la cuenta parece estar inventando
     # plata cuando en realidad esta devolviendo la del codigo.
     repone: tuple = ()
+    # Un nodo de decision o reposicion NO transforma texto: mueve el estado del
+    # turno -las llamadas, lo declarado, lo que reclama el reconciliador-.
+    # `aplicar_datos` lo corre sobre ese estado y devuelve el estado nuevo, que
+    # es lo que permite barrerlo sin pasar por el modelo.
+    aplicar_datos: object = None
+    # POR QUE ESTE NODO NO TIENE CONTRATO MECANICO. Es obligatorio cuando
+    # `contratos` esta vacio, y el candado lo exige: sin esto un nodo sin
+    # contrato no se distingue de un nodo al que nadie le escribio el contrato
+    # todavia, que es exactamente como quedaron quince nodos sin que se notara.
+    sin_contrato: str = ""
 
 
 def _n(fn):
     """Envuelve una funcion del hub en la forma uniforme del grafo: recibe el
     texto y el contexto del turno, devuelve el texto."""
     return fn
+
+
+def _con(ctx: dict, **cambios) -> dict:
+    """El estado del turno con un engranaje aplicado encima.
+
+    Los nodos que mueven datos se declaran asi -estado adentro, estado afuera-
+    para que el barrido pueda correrlos en cadena, compararlos antes y despues,
+    y aplicarlos dos veces para el contrato de idempotencia, sin saber cual de
+    ellos es. Es lo mismo que `aplicar` hace con el texto, un piso mas arriba."""
+    fuera = dict(ctx)
+    fuera.update(cambios)
+    return fuera
 
 
 # ── EL TURNO, NODO POR NODO, EN EL ORDEN EN QUE CORRE ───────────────────────
@@ -114,68 +184,141 @@ NODOS = (
          funcion="app.core.estado_venta:construir_estado",
          exige="la conversacion guardada de Firestore",
          garantiza="el estado del turno: carrito, productos vistos, "
-                   "localidades, preferencias"),
+                   "localidades, preferencias",
+         sin_contrato="lo barre entero LA MEMORIA ENTRE TURNOS, que mide sus "
+                      "campos contra esta misma funcion y llega al 100%: "
+                      "escribirle contratos aca seria la misma prueba dos "
+                      "veces"),
     Nodo(id="memoria_texto", etapa="entrada",
          funcion="app.core.hub_venta:_memoria_texto",
          exige="el estado y el historial",
          garantiza="el bloque de memoria que ve el modelo, sin inventar nada "
-                   "que no este en el estado"),
+                   "que no este en el estado",
+         contratos=(NO_LEVANTA, IDEMPOTENTE, NO_INVENTA_ID),
+         aplicar_datos=lambda c: _con(
+             c, memoria_texto=_hub()._memoria_texto(
+                 c.get("estado") or {}, c.get("history") or [],
+                 c["tienda_id"]))),
 
     # ── decision: que hace falta y que trajo ──────────────────────────────
     Nodo(id="decisor", etapa="decision",
          funcion="app.core.hub_venta:_pedir_herramientas",
          exige="el mensaje del cliente y la memoria",
          garantiza="una lista de herramientas con argumentos validados por el "
-                   "molde, o texto directo si el turno no necesita ninguna"),
+                   "molde, o texto directo si el turno no necesita ninguna",
+         sin_contrato="es el modelo. QUE herramientas elige no es determinista "
+                      "y ningun barrido lo puede comprobar: lo miden los "
+                      "casetes, el explorador e interpretacion.py. Lo que SI "
+                      "es determinista de este nodo -el esquema que le viaja y "
+                      "la validacion de lo que devuelve- lo barren LO QUE EL "
+                      "MODELO DECLARA y el barrido del esquema"),
     Nodo(id="herramientas", etapa="decision",
          funcion="app.core.hub_venta:_ejecutar_en_paralelo",
          exige="pedidos con argumentos validos",
          garantiza="el resultado de cada herramienta, con su estado, sin que "
-                   "una que falla tumbe a las otras"),
+                   "una que falla tumbe a las otras",
+         # SIN IDEMPOTENTE, y no es un olvido: este nodo ACUMULA por diseño.
+         # El turno lo corre una vez por ronda y suma -`llamadas += ...`-, asi
+         # que correrlo dos veces con los mismos pedidos tiene que dar dos
+         # resultados. Exigirle idempotencia seria exigirle que pierda una
+         # ronda.
+         contratos=(NO_LEVANTA, NO_INVENTA_ID, NO_PIERDE_EVIDENCIA,
+                    NO_AGREGA_LO_NO_PEDIDO),
+         aplicar_datos=lambda c: _con(
+             c, llamadas=list(c.get("llamadas") or []) + _ejecutar_sync(
+                 c.get("pedidos") or [], c["tienda_id"], c["trace_id"]))),
     Nodo(id="reconciliador", etapa="decision",
          funcion="app.core.pedido:reconciliar",
          exige="lo que el modelo declaro y lo que efectivamente pidio",
          garantiza="que falta y que hay que preguntar; nunca completa por su "
-                   "cuenta"),
+                   "cuenta",
+         contratos=(NO_LEVANTA, IDEMPOTENTE, NO_RECLAMA_LO_RESUELTO),
+         aplicar_datos=lambda c: _con(
+             c, rec=__import__("app.core.pedido", fromlist=["x"]).reconciliar(
+                 c.get("declarado") or {}, c.get("llamadas") or [],
+                 c["trace_id"], ya_resuelto=c.get("ya_resuelto") or "",
+                 tienda_id=c["tienda_id"]))),
 
     # ── reposicion: lo que el modelo no aplico, lo aplica el codigo ───────
     Nodo(id="busqueda_repuesta", etapa="reposicion",
          funcion="app.core.hub_venta:_busqueda_de_lo_declarado",
          exige="un item declarado que ninguna herramienta busco",
          garantiza="la busqueda hecha por codigo, o nada; no inventa el "
-                   "producto"),
+                   "producto",
+         contratos=CONTRATOS_DE_REPOSICION,
+         aplicar_datos=lambda c: _con(
+             c, llamadas=_hub()._busqueda_de_lo_declarado(
+                 c.get("llamadas") or [], c.get("declarado") or {},
+                 c.get("rec") or {}, c["tienda_id"], c["trace_id"]))),
     Nodo(id="condicion_repuesta", etapa="reposicion",
          funcion="app.core.hub_venta:_condicion_faltante_aplicada",
          exige="una condicion del cliente que el plan no aplico",
-         garantiza="el filtro aplicado sobre lo que ya se trajo"),
+         garantiza="el filtro aplicado sobre lo que ya se trajo",
+         contratos=CONTRATOS_DE_REPOSICION,
+         aplicar_datos=lambda c: _con(
+             c, llamadas=_hub()._condicion_faltante_aplicada(
+                 c.get("llamadas") or [], c.get("rec") or {},
+                 c["tienda_id"], c["trace_id"]))),
     Nodo(id="cuenta_repuesta", etapa="reposicion",
          funcion="app.core.hub_venta:_cuenta_con_lo_declarado",
          exige="un pedido declarado sin cuenta",
          garantiza="la cuenta calculada por la calculadora sobre ids "
-                   "certificados"),
+                   "certificados",
+         contratos=CONTRATOS_DE_REPOSICION,
+         aplicar_datos=lambda c: _con(
+             c, llamadas=_hub()._cuenta_con_lo_declarado(
+                 c.get("llamadas") or [], c.get("declarado") or {},
+                 c["tienda_id"], c["trace_id"],
+                 memoria=c.get("memoria") or []))),
     Nodo(id="reparto_repuesto", etapa="reposicion",
          funcion="app.core.hub_venta:_reparto_de_pago_declarado",
          exige="un reparto de pago declarado y no aplicado",
-         garantiza="el split sellado por el codigo"),
+         garantiza="el split sellado por el codigo",
+         contratos=CONTRATOS_DE_REPOSICION,
+         aplicar_datos=lambda c: _con(
+             c, llamadas=_hub()._reparto_de_pago_declarado(
+                 c.get("llamadas") or [], c.get("declarado") or {},
+                 c["tienda_id"], c["trace_id"]))),
     Nodo(id="supuesto_de_pago", etapa="reposicion",
          funcion="app.core.hub_venta:_supuesto_de_pago",
          exige="una cuenta con un supuesto de pago sin declarar",
          garantiza="el supuesto dicho en el mensaje, para que el cliente sepa "
-                   "sobre que se calculo"),
+                   "sobre que se calculo",
+         contratos=CONTRATOS_DE_REPOSICION,
+         aplicar_datos=lambda c: _con(
+             c, llamadas=_hub()._supuesto_de_pago(
+                 c.get("llamadas") or [], c.get("declarado") or {},
+                 c["tienda_id"], c["trace_id"]))),
     Nodo(id="bloques_a_uno", etapa="reposicion",
          funcion="app.core.hub_venta:_bloques_a_uno",
          exige="varias cuentas parciales del mismo turno",
-         garantiza="UNA sola cuenta, con la aritmetica cerrando"),
+         garantiza="UNA sola cuenta, con la aritmetica cerrando",
+         contratos=CONTRATOS_DE_REPOSICION,
+         aplicar_datos=lambda c: _con(
+             c, llamadas=_hub()._bloques_a_uno(c.get("llamadas") or [],
+                                               c["trace_id"]))),
     Nodo(id="indice_turno", etapa="decision",
          funcion="app.core.indice_turno:cobertura",
          exige="lo interpretado y el material que trajeron las herramientas",
-         garantiza="que punto del pedido tiene con que contestarse y cual no"),
+         garantiza="que punto del pedido tiene con que contestarse y cual no",
+         contratos=(NO_LEVANTA, IDEMPOTENTE),
+         aplicar_datos=lambda c: _con(
+             c, indice=__import__(
+                 "app.core.indice_turno", fromlist=["x"]).cobertura(
+                     c.get("declarado") or {}, c.get("texto") or "",
+                     c["trace_id"], llamadas=c.get("llamadas") or [],
+                     memoria=c.get("memoria") or []))),
 
     # ── redaccion ────────────────────────────────────────────────────────
     Nodo(id="redactor", etapa="redaccion",
          funcion="app.core.hub_venta:_redactar",
          exige="el material de las herramientas y la obligacion del turno",
-         garantiza="prosa del modelo, con las etiquetas de la atadura puestas"),
+         garantiza="prosa del modelo, con las etiquetas de la atadura puestas",
+         sin_contrato="es el modelo escribiendo. La redaccion no es "
+                      "determinista y ningun barrido la puede comprobar: la "
+                      "miden los casetes con su piso, el explorador y los "
+                      "invariantes. Lo que el codigo hace con esa prosa lo "
+                      "barren los diecinueve nodos de salida"),
 
     # ── salida: de aca abajo, todo transforma el texto ───────────────────
     Nodo(id="atadura", etapa="salida",
@@ -279,7 +422,12 @@ NODOS = (
     Nodo(id="cierre", etapa="salida",
          funcion="app.core.hub_venta:_cerrar",
          exige="la señal de cierre y el presupuesto",
-         garantiza="los datos de cobro que salen de la config, o nada"),
+         garantiza="los datos de cobro que salen de la config, o nada",
+         sin_contrato="no transforma el texto: graba el lead y devuelve los "
+                      "datos de cobro. Escribe en el almacenamiento, que es "
+                      "una de las cuatro razones declaradas en "
+                      "sin_camino_offline. Lo que sale al cliente lo ata "
+                      "sin_cobro_inventado, que si tiene los cuatro contratos"),
     Nodo(id="honestidad_bot", etapa="salida",
          funcion="app.core.guardas_salida:asegurar_honestidad_bot",
          exige="el mensaje del cliente y la respuesta",
@@ -335,7 +483,10 @@ NODOS = (
          funcion="app.storage.firestore_client:save_conversation",
          exige="el turno cerrado",
          garantiza="el estado guardado para el turno siguiente; un error de "
-                   "guardado no tumba la respuesta"),
+                   "guardado no tumba la respuesta",
+         sin_contrato="escribe en Firestore, declarado en sin_camino_offline. "
+                      "Lo que se guarda y como vuelve al turno siguiente lo "
+                      "barre entero LA MEMORIA ENTRE TURNOS"),
 )
 
 POR_ID = {n.id: n for n in NODOS}
@@ -368,6 +519,32 @@ def barribles() -> tuple:
     """Los nodos que el barrido puede correr solo, sin modelo y sin red: los
     que transforman texto y saben decir como se los llama."""
     return tuple(n for n in NODOS if n.aplicar and n.contratos)
+
+
+def barribles_de_datos() -> tuple:
+    """Los nodos de la mitad que DECIDE: no tocan el texto, mueven el estado
+    del turno. Se corren igual que los otros, sin modelo y sin red."""
+    return tuple(n for n in NODOS if n.aplicar_datos and n.contratos)
+
+
+def sin_contrato() -> tuple:
+    """Los nodos que NO tienen contrato mecanico, cada uno con su motivo.
+
+    Es una lista corta y tiene que quedar corta: el candado
+    `test_ningun_nodo_queda_sin_contrato_ni_motivo` no deja que un nodo entre
+    al turno sin una cosa o la otra. Un nodo sin contrato y sin motivo es
+    indistinguible de un nodo al que nadie le escribio el contrato, y asi
+    quedaron quince sin que nadie lo notara hasta el 14-ago."""
+    return tuple((n.id, n.sin_contrato) for n in NODOS if not n.contratos)
+
+
+def _ejecutar_sync(pedidos: list, tienda_id: str, trace_id: str) -> list:
+    """El ejecutor paralelo, corrido desde codigo sincronico. Es el MISMO
+    `_ejecutar_en_paralelo` del turno vivo: el barrido no puede tener su propia
+    version, que es la leccion mas cara de este repo."""
+    import asyncio
+    return asyncio.run(_hub()._ejecutar_en_paralelo(pedidos, tienda_id,
+                                                    trace_id))
 
 
 # ── EL VEREDICTO POR ENGRANAJE ─────────────────────────────────────────────

@@ -56,7 +56,8 @@ DESTINO = _RAIZ / "INVENTARIO_BARRIDO.md"
 # exactamente como nacio el problema que este archivo resuelve — un numero
 # escrito a mano que envejece mientras la realidad sigue.
 BARRIDOS = ("catalogo", "coherencia", "faq", "geo", "codigo", "herramientas",
-            "memoria", "compatibilidad", "filtros", "entrada_cliente", "specs")
+            "memoria", "compatibilidad", "filtros", "entrada_cliente", "specs",
+            "decision")
 
 # Para escribir el numero con letras en el titulo, sin que nadie lo tipee.
 _EN_LETRAS = {5: "CINCO", 6: "SEIS", 7: "SIETE", 8: "OCHO", 9: "NUEVE",
@@ -267,12 +268,32 @@ def medir_specs() -> dict:
                        f"{cob['cubiertas']} con al menos un producto real"}
 
 
+def medir_decision() -> dict:
+    """La mitad del turno que decide y repone: la que amortigua al modelo."""
+    from banco_pruebas import barrido_decision as BD
+    cob = BD.cobertura()
+    return {"clave": "decision", "titulo": "LA DECISION Y LA REPOSICION",
+            "archivo": "tests/test_barrido_decision.py",
+            "que_barre": "los nodos que no tocan el texto sino el estado del "
+                         "turno -el ejecutor, el reconciliador, el indice y "
+                         "las reposiciones-, contra los contratos que declara "
+                         "el grafo, sobre estados de turno generados",
+            "unidad": "celdas", "casos": cob["celdas"],
+            "cobertura": cob["porcentaje"], "pendientes": cob["pendientes"],
+            "detalle": f"{cob['nodos']} nodos x {cob['clases']} clases de "
+                       f"estado = {cob['celdas']} celdas, {cob['cubiertas']} "
+                       f"cubiertas; {cob['casos']} estados generados, "
+                       f"{len(cob['contratos'])} contratos, "
+                       f"{len(cob['violaciones'])} violaciones"}
+
+
 _MEDIDORES = {
     "catalogo": medir_catalogo, "coherencia": medir_coherencia,
     "faq": medir_faq, "geo": medir_geo, "codigo": medir_codigo,
     "herramientas": medir_herramientas, "memoria": medir_memoria,
     "compatibilidad": medir_compatibilidad, "filtros": medir_filtros,
     "entrada_cliente": medir_entrada_cliente, "specs": medir_specs,
+    "decision": medir_decision,
 }
 
 
@@ -340,6 +361,14 @@ Para que no aparezca como sorpresa tres sesiones despues:
 - **La PROSA de la compatibilidad.** El barrido cubre el veredicto —compatible,
   incompatible, sin_dato— y su simetria. Como el modelo redacta ese veredicto
   para el cliente sigue siendo cosa de los casetes y del explorador.
+- **QUE herramientas elige el decisor.** Es el modelo decidiendo, y ningun
+  barrido determinista lo puede comprobar. Lo miden `interpretacion.py`, los
+  casetes con su piso y el explorador. Lo que SI es determinista de esa mitad
+  del turno —el ejecutor, el reconciliador, el indice y las seis reposiciones—
+  lo barre LA DECISION Y LA REPOSICION desde el 14-ago. Los nodos que quedan
+  sin contrato mecanico estan declarados uno por uno con su motivo en
+  `grafo.sin_contrato()`, y `test_barrido_decision.py` no deja que entre uno
+  nuevo sin motivo escrito.
 
 ---
 

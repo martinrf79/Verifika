@@ -25,7 +25,7 @@ no existe para él.
 ```
 webhook -> orchestrator -> hub_venta
                              |
-       1. LLAMADA UNO  ------+  el modelo ve la charla + las 7 herramientas
+       1. LLAMADA UNO  ------+  el modelo ve la charla + las herramientas
           "que buscar"        |  y devuelve tool calls. No traduce nada.
                               |
        2. PARALELO -----------+  asyncio.gather. Hasta 2 rondas: la segunda
@@ -47,7 +47,13 @@ de herramientas. Antes eran cuatro encadenadas.
 
 ---
 
-## Las ocho herramientas
+## Las herramientas
+
+**Cuántas son NO se escribe acá.** Este archivo decía siete en el diagrama y
+ocho en la tabla de abajo, y el 14-ago se midieron nueve: dos números viejos en
+el mismo documento, que es la misma enfermedad que el 44 de la FAQ. El número
+lo mide `banco_pruebas/peso_del_turno.py` leyendo los moldes vivos, y la tabla
+de abajo se lee como qué resuelve cada una, no como el censo.
 
 `app/core/herramientas.py`. Molde Pydantic + una función determinista que ya
 existía y estaba probada. La lógica no se reescribió: se le puso un molde
@@ -58,6 +64,7 @@ definiciones que puedan divergir.
 |---|---|---|
 | `registrar_pedido` | DECLARA lo que entendió, antes de buscar | no toca la fuente; es lo que el reconciliador compara contra lo que pidió |
 | `buscar_productos` | identidad y catálogo | certificador + catálogo Firestore |
+| `consultar_catalogo` | contar, extremos, qué valores existen | catálogo entero, recorrido por código |
 | `ficha_producto` | la ficha completa por id | catálogo + specs + compatibilidad |
 | `consultar_temas` | qué dice la casa de cada tema | FAQ curada con sus valores estampados **+** criterio y movida de `base_conocimiento.json` |
 | `cotizar_envio` | costo a un destino | tabla de tarifas + geo de códigos postales |
@@ -105,6 +112,25 @@ Son cuatro y ninguno reescribe prosa: borran lo que no puede salir.
   la verdad, y el primer mensaje avisa que es un asistente automático.
 
 ---
+
+## Los contratos, en dos familias
+
+El turno está declarado nodo por nodo en `app/verifika/grafo.py`, y cada nodo
+dice qué propiedades mecánicas cumple. Son propiedades que se comprueban sin
+saber cuál era la respuesta correcta, que es la única forma de correrlas sobre
+entradas generadas.
+
+- **Los de TEXTO**, para los nodos de salida: no enmudece, no inventa plata,
+  idempotente, no levanta.
+- **Los de DATOS**, para la mitad que decide y repone, escritos el 14-ago: no
+  inventa id, no pierde evidencia, no agrega lo no pedido, no reclama lo ya
+  resuelto, más idempotente y no levanta.
+
+Un nodo sin contrato tiene que declarar POR QUÉ, y hoy son cinco: el decisor y
+el redactor porque son el modelo, el estado y la memoria porque los barre LA
+MEMORIA ENTRE TURNOS, y el cierre porque escribe en el almacenamiento. El
+candado está en `tests/test_barrido_decision.py` y no deja entrar un nodo nuevo
+sin contrato ni motivo.
 
 ## Qué NO existe más, y por qué
 

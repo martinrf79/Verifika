@@ -139,12 +139,21 @@ def test_todo_nodo_de_salida_declara_al_menos_un_contrato():
 
 
 def test_todo_contrato_declarado_existe_y_todo_nodo_barrible_se_barre():
-    """Que no se declare un contrato con un nombre que nadie comprueba."""
+    """Que no se declare un contrato con un nombre que nadie comprueba.
+
+    Los contratos son DOS familias y las dos valen: los de texto, que cumplen
+    los nodos de salida, y los de datos, que cumple la mitad que decide. Un
+    nombre que no este en ninguna de las dos es un contrato que nadie comprueba
+    y que igual figura como cumplido, que es peor que no tenerlo."""
+    universo = set(G.TODOS_LOS_CONTRATOS) | set(G.CONTRATOS_DE_DATOS)
     for n in G.NODOS:
         for c in n.contratos:
-            assert c in G.TODOS_LOS_CONTRATOS, f"{n.id} declara '{c}', que no existe"
+            assert c in universo, f"{n.id} declara '{c}', que no existe"
     assert len(G.barribles()) >= 14, (
         f"solo {len(G.barribles())} nodos son barribles: el barrido se apago")
+    assert len(G.barribles_de_datos()) >= 10, (
+        f"solo {len(G.barribles_de_datos())} nodos de datos son barribles: se "
+        f"apago el barrido de la mitad que decide")
 
 
 # ── 2. EL CORPUS GENERADO ──────────────────────────────────────────────────

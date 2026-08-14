@@ -45,6 +45,8 @@ DECLARADAS = {
     "limpiar_cache": "vacia el cache de filtros entre pruebas",
     "nodos_de": "consulta del grafo declarado, la usa el barrido del cableado",
     "barribles": "consulta del grafo declarado, la usa el barrido del cableado",
+    "barribles_de_datos": "consulta del grafo declarado, la usa el barrido de "
+                          "la decision y la reposicion",
     "aristas": "consulta del grafo declarado, completa la API de las otras dos",
     "obligatorias": "consulta del indice, la usan las pruebas del indice",
     "menu": "consulta del indice: que celdas existen, para armar el menu",
