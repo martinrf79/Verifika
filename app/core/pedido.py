@@ -165,9 +165,32 @@ def reparto_ambiguo(restricciones) -> tuple:
 
 def _cubierto(texto: str, universo: str) -> bool:
     """Una raiz alcanza. Conservador a proposito: preferimos NO acusar un
-    faltante falso antes que mandar al modelo a buscar de nuevo al pedo."""
+    faltante falso antes que mandar al modelo a buscar de nuevo al pedo.
+
+    LAS PALABRAS DE MENOS DE CUATRO LETRAS TIENEN SU PROPIO CAMINO, y sin el
+    esta funcion mentia de la peor manera posible: `_stems` descarta todo lo
+    que tenga menos de cuatro letras, asi que para `ssd` y `ram` devolvia lista
+    vacia y esto daba SIEMPRE False. O sea que un rubro de nombre corto no
+    podia considerarse atendido NUNCA: el reconciliador lo reclamaba, el modelo
+    lo buscaba, lo encontraba, y se lo volvia a reclamar. Un reclamo imposible
+    y una ronda quemada por turno, con su latencia y sus tokens, cada vez que
+    alguien escribia "ssd" o "ram" — y `ssd` es una categoria entera de la
+    tienda.
+
+    Lo encontro el barrido de la decision al subirle los sorteos de 3 a 12: con
+    la muestra chica no aparecia. Es la prueba de que un barrido chico esconde.
+
+    Para las cortas se compara la palabra ENTERA contra las palabras del
+    universo, no por adentro: con `in` a secas, "ram" daria cubierto dentro de
+    "programa" y estariamos cambiando un reclamo imposible por un faltante que
+    se traga en silencio, que es peor.
+    """
     st = _stems(texto)
-    return bool(st) and any(s in universo for s in st)
+    if st:
+        return any(s in universo for s in st)
+    cortas = [w for w in _norm(texto).split() if w]
+    palabras = set(universo.split())
+    return any(w in palabras for w in cortas)
 
 
 # Las herramientas que TRAEN productos. Un item del pedido se considera

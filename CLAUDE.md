@@ -28,6 +28,27 @@ la primera está escrita a mano porque es la única que no envejece:
 
 **Si algo está A MEDIAS y le falta poco, se termina.** Para eso está el estado.
 
+**LO QUE QUEDA A MEDIAS SE ESCRIBE COMO UN TEST QUE FALLA, NO COMO UNA FRASE**
+(Martín, 14-ago-2026, y era su queja más repetida después de la del barrido).
+El problema: se anunciaba una actividad, se hacía a medias, y lo que faltaba se
+contaba en prosa al final del parte. Eso depende de que el que escribe el parte
+se acuerde y quiera decirlo, o sea que es una promesa y no un mecanismo. Martín
+no tenía cómo verificarlo salvo probando en real, que cuesta plata: lleva
+gastados más de cuarenta dólares.
+
+La regla ahora es mecánica y son tres líneas:
+1. Lo que queda a medias se escribe como un test que afirma lo que QUEREMOS y
+   hoy no pasa, marcado `pytest.mark.xfail(strict=True)`.
+2. El motivo empieza con `A MEDIAS:` y dice qué falta para cerrarlo.
+3. **NO SE MARCA LO QUE SE PUEDE CERRAR.** Marcar es para lo que necesita una
+   decisión de Martín o un trabajo que no entra en la sesión.
+
+Con eso, **la cantidad de cosas a medias es el número de `xfailed` al final de
+la batería**, gratis y offline. `tests/test_a_medias.py` lo guarda con techo:
+solo puede bajar. Y `strict=True` hace que si alguien lo arregla sin sacar la
+marca, el test se ponga rojo: no se puede cerrar en silencio ni quedar marcado
+para siempre.
+
 **AL CERRAR**, se actualiza `PENDIENTE.md`: qué se cerró, qué quedó abierto.
 No es un pedido, es un candado: `tests/test_pendiente_al_dia.py` falla si hay
 commits que tocan `app/` más nuevos que ese archivo. Máximo veinte ítems: si no

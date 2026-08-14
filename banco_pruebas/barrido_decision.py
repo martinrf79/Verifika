@@ -63,6 +63,12 @@ if str(_RAIZ) not in sys.path:
 
 TIENDA = "verifika_prod"
 SEMILLA = 14
+# CUANTOS SORTEOS POR CLASE. Nacio en 3 y con eso el barrido quedaba chico al
+# lado de los otros -miden en miles- asi que era un piso y no una barrida. Cada
+# sorteo agarra productos distintos del catalogo real, o sea rubros, precios y
+# fichas distintas: subirlo no es repetir el mismo caso, es cambiar el
+# escenario. El tope lo pone el reloj, no la prolijidad.
+SORTEOS = 12
 
 # Las clases de estado de turno. Cada una existe porque DISPARA algo: si el
 # barrido solo generara turnos completos, las seis reposiciones no correrian
@@ -278,7 +284,7 @@ def estados() -> list:
     defecto que nadie anticipo."""
     fuera = []
     for clase in CLASES:
-        for k in range(3):
+        for k in range(SORTEOS):
             fuera.append((clase, _base(clase, SEMILLA + k * 17)))
     return fuera
 
@@ -384,11 +390,21 @@ def violaciones(nodo, antes: dict, despues: dict, catalogo: set) -> list:
                           f"entraron a la cuenta sin pedirse: {sin_respaldo[:4]}"))
 
     if G.NO_RECLAMA_LO_RESUELTO in nodo.contratos:
-        faltantes = " ".join((despues.get("rec") or {}).get("faltantes") or [])
+        # SE MIRA EL CAMPO TIPADO, NO EL TEXTO DEL RECLAMO. La primera version
+        # buscaba el item entre comillas adentro de `faltantes`, o sea que
+        # dependia de COMO redacta el reconciliador: el dia que alguien cambiara
+        # esa frase, el contrato dejaba de cazar y pasaba en VERDE sin avisar.
+        # `sin_buscar` es la misma informacion ya tipada -el reconciliador la
+        # devuelve para que el codigo la use- y no depende de ninguna redaccion.
+        rec = despues.get("rec") or {}
+        reclamados = {str(q).strip().lower()
+                      for q in (rec.get("sin_buscar") or []) if str(q).strip()}
+        texto = " ".join(rec.get("faltantes") or [])
         for it in ((antes.get("declarado") or {}).get("items") or []):
             que = str((it or {}).get("que") or "")
-            if que and _cubierto_por_evidencia(que, antes) and \
-                    f"'{que}'" in faltantes:
+            if not que or not _cubierto_por_evidencia(que, antes):
+                continue
+            if que.strip().lower() in reclamados or f"'{que}'" in texto:
                 rotos.append((G.NO_RECLAMA_LO_RESUELTO,
                               f"reclama '{que}', que ya estaba atendido"))
     return rotos

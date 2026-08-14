@@ -116,7 +116,7 @@ el estado se lee de acá, no de la memoria de nadie.**
 ### LA DECISION Y LA REPOSICION
 
 - **Que barre:** los nodos que no tocan el texto sino el estado del turno -el ejecutor, el reconciliador, el indice y las reposiciones-, contra los contratos que declara el grafo, sobre estados de turno generados.
-- **Numero:** 90 celdas. 10 nodos x 9 clases de estado = 90 celdas, 90 cubiertas; 27 estados generados, 6 contratos, 0 violaciones.
+- **Numero:** 90 celdas. 10 nodos x 9 clases de estado = 90 celdas, 90 cubiertas; 108 estados generados, 6 contratos, 0 violaciones.
 - **Cobertura de su superficie: 100.0%** — completa.
 - **Lo defiende:** `tests/test_barrido_decision.py`.
 

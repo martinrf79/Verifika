@@ -1748,3 +1748,78 @@ def test_pero_el_cliente_todavia_puede_cambiar_de_producto(firestore_doble):
     assert items and items[0][0]["product_id"] == blanco["id"], (
         "el cliente pidio el blanco y el arreglo lo dejo clavado en el del "
         "carrito")
+
+
+# ── A MEDIAS: UN RUBRO PEDIDO UNA VEZ, DOS PRODUCTOS EN LA CUENTA ──────────
+#
+# ESTE TEST AFIRMA LO QUE QUEREMOS Y HOY FALLA A PROPOSITO. Es el mecanismo que
+# reemplaza a la linea de prosa al final del parte: lo que queda a medias se
+# escribe como un test que hoy no pasa, no como una confesion que hay que
+# creerme. Con `strict=True`, el dia que alguien lo arregle este test se pone
+# ROJO por pasar, y obliga a sacar la marca. O sea que no se puede cerrar en
+# silencio ni quedar marcado para siempre.
+#
+# EL DEFECTO: charla real, "2 mouse" salio con un Genius y un Logitech juntos.
+# El cliente nombro el rubro UNA vez y la cuenta le trajo dos productos
+# distintos de ese rubro.
+#
+# POR QUE NO SE ARREGLA ACA Y ESPERA A MARTIN: sale de la llamada que arma el
+# MODELO, no de la reposicion, asi que arreglarlo es elegir un comportamiento
+# -unificar al primero, o preguntarle al cliente cual quiere- y eso toca la
+# plata de un renglon ya cotizado. La regla de la casa es que la cuenta no se
+# reescribe sola. Es una decision suya, no una omision.
+@pytest.mark.xfail(strict=True, reason="A MEDIAS: el rubro pedido una vez "
+                   "todavia puede salir con dos productos distintos en la "
+                   "cuenta. Falta decidir si se unifica o se pregunta.")
+def test_un_rubro_pedido_una_vez_no_trae_dos_productos_distintos(firestore_doble):
+    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.storage.firestore_client import get_all_products
+
+    cat = get_all_products(tienda_id=TIENDA)
+    mice = [p for p in cat if p.get("categoria") == "mouse"][:2]
+    assert len(mice) == 2
+
+    # El modelo armo la cuenta con DOS mouse distintos.
+    llamadas = [{"herramienta": "armar_presupuesto",
+                 "pedido": {"items": [{"product_id": mice[0]["id"], "cantidad": 1},
+                                      {"product_id": mice[1]["id"], "cantidad": 1}]},
+                 "resultado": {"estado": "ok", "bloque": "x", "total_ars": 1}}]
+    # El cliente nombro el rubro UNA sola vez.
+    declarado = {"items": [{"que": "mouse", "cantidad": 2}], "pide_precio": True}
+
+    fuera = _cuenta_con_lo_declarado(llamadas, declarado, TIENDA, "t",
+                                     memoria=[])
+    items = next(l["pedido"]["items"] for l in fuera
+                 if l.get("herramienta") == "armar_presupuesto")
+    ids = {i["product_id"] for i in items}
+    assert len(ids) == 1, (
+        f"el cliente pidio '2 mouse' y la cuenta trae {len(ids)} productos "
+        f"distintos de ese rubro: {sorted(ids)}")
+
+
+def test_un_rubro_de_nombre_corto_se_puede_dar_por_atendido(firestore_doble):
+    """EL RECLAMO IMPOSIBLE, para los rubros de nombre corto. `_stems` descarta
+    las palabras de menos de cuatro letras, asi que `ssd` y `ram` daban SIEMPRE
+    no-cubierto: el reconciliador los reclamaba, el modelo los buscaba, los
+    encontraba, y se los volvia a reclamar. Una ronda quemada por turno con su
+    latencia y sus tokens, y `ssd` es una categoria entera de la tienda.
+
+    Lo encontro el barrido de la decision recien cuando se le subieron los
+    sorteos: con la muestra chica no aparecia."""
+    from app.core.pedido import _cubierto, reconciliar
+
+    assert _cubierto("ssd", "ssd kingston kc3000 500gb"), (
+        "un rubro de tres letras no se puede dar por atendido nunca")
+    assert not _cubierto("ram", "programa de garantia"), (
+        "la palabra corta matchea por adentro de otra: eso se traga faltantes "
+        "de verdad")
+
+    llamadas = [{"herramienta": "buscar_productos",
+                 "pedido": {"descripcion": "ssd"},
+                 "resultado": {"estado": "encontrado", "productos": [
+                     {"id": "SSD0001", "nombre": "Ssd Kingston KC3000 500GB",
+                      "categoria": "ssd"}]}}]
+    rec = reconciliar({"items": [{"que": "ssd", "cantidad": 1}]}, llamadas,
+                      "t", tienda_id=TIENDA)
+    assert not rec.get("sin_buscar"), (
+        f"se busco el ssd, se encontro, y lo reclama igual: {rec}")
