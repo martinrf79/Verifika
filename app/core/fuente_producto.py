@@ -248,11 +248,6 @@ def campos_ficha(prod: dict) -> list[tuple]:
             if prod.get(c)]
 
 
-def texto_ficha(prod: dict) -> str:
-    """El texto de la ficha, unido. Para deteccion, no para extraer valores."""
-    return " ".join(t for _c, t in campos_ficha(prod))
-
-
 def _tokens(s: str) -> set:
     return {t for t in re.split(r"[^a-z0-9.]+", _norm(s)) if len(t) >= 2}
 
@@ -541,19 +536,6 @@ def valor_numerico(texto) -> float | None:
     return float(solo.group(1).replace(",", ".")) if solo else None
 
 
-def atributo_de(prod: dict, atributo: str) -> float | None:
-    """El valor comparable de un producto para un atributo, venga de una
-    columna del catalogo o del mapa de specs. Una sola puerta."""
-    if not isinstance(prod, dict) or not atributo:
-        return None
-    if atributo in COLUMNAS_ORDENABLES:
-        return valor_numerico(prod.get(atributo))
-    specs = prod.get("specs")
-    if isinstance(specs, dict):
-        return valor_numerico(specs.get(atributo))
-    return None
-
-
 def atributos_ordenables(productos: list, tienda_id: str | None = None,
                          minimo: int = 5) -> dict:
     """{atributo: etiqueta} de todo lo que se puede pedir "el que mas/menos".
@@ -589,45 +571,6 @@ def atributos_ordenables(productos: list, tienda_id: str | None = None,
         if n >= minimo and n / max(1, tot.get(k, 1)) >= 0.7:
             out[k] = COLUMNAS_ORDENABLES.get(k) or etq.get(k, k)
     return out
-
-
-def ordenar_por(productos: list, atributo: str, direccion: str = "max") -> list:
-    """Los productos que TIENEN ese atributo, ordenados. Los que no lo tienen
-    quedan afuera: no se los puede comparar y meterlos seria adivinar."""
-    con = [(atributo_de(p, atributo), p) for p in (productos or [])]
-    con = [(v, p) for v, p in con if v is not None]
-    con.sort(key=lambda t: t[0], reverse=(str(direccion).lower() != "min"))
-    return [p for _v, p in con]
-
-
-def consenso_specs(productos: list) -> tuple[dict, dict]:
-    """(comunes, difieren) entre las VARIANTES de un mismo modelo.
-
-    El cliente dice "la TUF F15" y en el catalogo hay nueve: tres CPU por tres
-    colores. Casi todo lo que pregunta es igual en las nueve -pantalla, puertos,
-    lector de huella- y eso se puede contestar sin pedirle que elija. Lo que
-    cambia entre versiones, como el Thunderbolt del Intel contra el del Ryzen,
-    NO se contesta con una sola respuesta: se devuelve en `difieren` con que
-    variante tiene cada valor, para preguntar con el dato en la mano.
-    """
-    mapas = [p.get("specs") for p in (productos or [])
-             if isinstance(p, dict) and isinstance(p.get("specs"), dict)]
-    if not mapas:
-        return {}, {}
-    if len(mapas) == 1:
-        return dict(mapas[0]), {}
-    comunes, difieren = {}, {}
-    for sid in set().union(*[set(m) for m in mapas]):
-        vistos: dict = {}
-        for p, m in zip(productos, mapas):
-            vistos.setdefault(m.get(sid, ""), []).append(str(p.get("nombre") or ""))
-        if len(vistos) == 1:
-            valor = next(iter(vistos))
-            if valor:
-                comunes[sid] = valor
-        else:
-            difieren[sid] = [(v, n) for v, n in vistos.items() if v]
-    return comunes, difieren
 
 
 def derivar_tags(prod: dict) -> str:

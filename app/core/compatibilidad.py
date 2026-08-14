@@ -174,22 +174,6 @@ def compat_de(prod: dict, tienda_id: str | None = None) -> dict:
 
 
 # ── LECTURA DEL MENSAJE: que equipo declaro el cliente ───────────────────────
-_RE_PREGUNTA = None
-
-
-def es_pregunta_de_compatibilidad(mensaje: str,
-                                  tienda_id: str | None = None) -> bool:
-    """El cliente esta preguntando si algo ANDA con algo. Red determinista: la
-    via principal es el interprete, que lo declara atado al enum."""
-    global _RE_PREGUNTA
-    v = vocabulario(tienda_id)
-    if not v["preguntas"]:
-        return False
-    if _RE_PREGUNTA is None:
-        _RE_PREGUNTA = re.compile("|".join(re.escape(p) for p in v["preguntas"]))
-    return bool(_RE_PREGUNTA.search(_norm(mensaje)))
-
-
 def plataformas_del_mensaje(mensaje: str,
                             tienda_id: str | None = None) -> list[str]:
     """Los equipos que el cliente nombro, por alias del vocabulario. El alias

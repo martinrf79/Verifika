@@ -144,8 +144,11 @@ OPERATIVAS = {
 # ENCIMA del numero que la calculadora acababa de estampar.
 #
 # Cada celda de calculo trae dos cosas:
-#   `calculadora` : que funcion la resuelve. Es documentacion ejecutable de donde
-#                   sale el numero; el que la corre sigue siendo el renderizador.
+#   `calculadora` : que funcion la resuelve. Es la etiqueta de donde sale el
+#                   numero; el que la corre es el renderizador, que la importa
+#                   directo. El indice tuvo un `resolver` que convertia esta
+#                   cadena en la funcion y no lo llamaba nadie: se borro el
+#                   14-ago-2026. Si algun dia hace falta de nuevo, esta en git.
 #   `marca`       : como se reconoce que ese valor YA esta en el mensaje. Sin
 #                   esto no se puede saber si la celda quedo contestada, porque
 #                   el fragmento de calculo no viaja rotulado con su nombre.
@@ -169,75 +172,6 @@ CALCULOS = {
         "marca": r"total\s*:\s*\$\s?\d"},
 }
 
-# De que modulo sale cada calculadora. Un solo lugar donde el nombre de la celda
-# se convierte en la funcion que la resuelve. Hasta hoy el indice la NOMBRABA en
-# un string y cada consumidor la importaba por su cuenta, o sea que la relacion
-# celda-funcion no vivia en ningun lado: estaba repartida entre el que nombraba y
-# el que importaba, que es la misma forma de los dos errores de ayer.
-_MODULOS = {"tools": "app.core.calculadora",
-            "fuente_producto": "app.core.fuente_producto",
-            "compatibilidad": "app.core.compatibilidad"}
-
-
-def resolver(nombre: str):
-    """La FUNCION que resuelve una celda de calculo. None si la celda no es de
-    calculo o si su modulo no carga.
-
-    El indice no ejecuta: devuelve CON QUE se ejecuta. Quien la corre sigue
-    siendo el renderizador, que es el unico que tiene los items, el destino y el
-    estado del turno. Esa division es a proposito: si el indice ejecutara,
-    necesitaria el contexto del turno y volveria a ser un segundo orquestador."""
-    c = CALCULOS.get(str(nombre or ""))
-    if not c:
-        return None
-    mod, _, fn = str(c.get("calculadora") or "").partition(".")
-    ruta = _MODULOS.get(mod)
-    if not ruta or not fn:
-        return None
-    try:
-        import importlib
-        return getattr(importlib.import_module(ruta), fn, None)
-    except Exception as e:
-        log.warning("indice_resolver_error", celda=nombre, error=str(e)[:120])
-        return None
-
-
-# ── POR PRODUCTO — el otro eje de la fuente ─────────────────────────────────
-#
-# La FAQ, el criterio y las operativas se resuelven con el nombre solo. La ficha
-# y la compatibilidad NO: necesitan ademas de que producto se habla. Es el mismo
-# indice pero con un argumento mas, y por eso la celda lo declara en vez de que
-# cada consumidor lo sepa de memoria.
-#
-# Los ids de spec ya los declara el interprete en `specs_preguntadas`, atados a
-# esta misma fuente. Lo que faltaba era que el indice supiera que existen y con
-# que se contestan: hasta hoy `fuente_producto` y `compatibilidad` las servian
-# cada una por su lado y ninguna dejaba rastro de haber contestado.
-_RESOLUTORES_PRODUCTO = {
-    "spec": "fuente_producto.extraer_specs",
-    "compatibilidad": "compatibilidad.bloque_ficha",
-}
-
-
-def resolver_producto(nombre: str):
-    """La FUNCION que resuelve una celda por producto. Mismo contrato que
-    `resolver` para las de calculo: devuelve con que se resuelve, no el valor,
-    porque el producto lo tiene el renderizador y no el indice."""
-    c = celda_producto(nombre)
-    if not c:
-        return None
-    mod, _, fn = str(c.get("resolutor") or "").partition(".")
-    ruta = _MODULOS.get(mod)
-    if not ruta or not fn:
-        return None
-    try:
-        import importlib
-        return getattr(importlib.import_module(ruta), fn, None)
-    except Exception as e:
-        log.warning("indice_resolver_producto_error", celda=nombre,
-                    error=str(e)[:120])
-        return None
-
 
 def _specs_ids() -> set:
     try:
@@ -246,51 +180,6 @@ def _specs_ids() -> set:
     except Exception as e:
         log.warning("indice_specs_error", error=str(e)[:120])
         return set()
-
-
-def celda_producto(nombre: str) -> dict | None:
-    """La celda de un eje que se contesta CON un producto adelante. None si el
-    nombre no es uno de esos.
-
-    Devuelve el resolutor, no el valor: el indice dice de donde sale el dato, no
-    lo va a buscar. Igual que en `calculo`, quien lo corre sigue siendo el
-    renderizador, que es el unico que tiene el producto del turno."""
-    cid = str(nombre or "").strip()
-    if not cid:
-        return None
-    if cid == "compatibilidad":
-        return {"nombre": cid, "tipo": "dato", "grupo": "producto",
-                "necesita": "producto",
-                "resolutor": _RESOLUTORES_PRODUCTO["compatibilidad"]}
-    if cid in _specs_ids():
-        return {"nombre": cid, "tipo": "dato", "grupo": "producto",
-                "necesita": "producto",
-                "resolutor": _RESOLUTORES_PRODUCTO["spec"]}
-    return None
-
-
-# QUE CELDA CONTESTA CADA CAMPO DE LA FICHA. La ficha estampa el dato del
-# producto desde la fuente; esta tabla dice QUE PREGUNTA quedo contestada con
-# eso, para que el turno no vuelva a pegar la prosa generica de esa misma
-# pregunta abajo. Vive aca y no en el renderizador porque es conocimiento de la
-# fuente -que responde que-, no de como se arma el texto.
-# Conservador a proposito: solo los campos donde la ficha contesta LA MISMA
-# pregunta. `garantia` queda afuera: la ficha dice cuantos meses, y la politica
-# agrega como se gestiona, que es otra cosa y suma.
-CELDA_DE_CAMPO_FICHA = {
-    "caracteristicas": "especificaciones",
-    "specs": "especificaciones",
-    "medidas": "especificaciones",
-    "contenido_caja": "contenido_caja",
-    "material": "material_composicion",
-    "procedencia": "origen_procedencia",
-    "compatibilidad": "compatibilidad",
-}
-
-
-def celda_de_campo(campo: str) -> str:
-    """La celda que queda contestada cuando la ficha estampa este campo."""
-    return CELDA_DE_CAMPO_FICHA.get(str(campo or "").strip(), "")
 
 
 def inventario(tienda_id=None) -> dict:
@@ -312,13 +201,6 @@ def inventario(tienda_id=None) -> dict:
             "operativas": len(OPERATIVAS),
             "calculos": len(CALCULOS),
             "specs": len(_specs_ids())}
-
-
-def marcas_de_calculo() -> dict:
-    """{celda: patron} de las celdas de calculo. El renderizador pregunta esto
-    para saber si el codigo ya contesto la celda con el numero real, y en ese
-    caso no pegar la prosa generica encima."""
-    return {n: c["marca"] for n, c in CALCULOS.items() if c.get("marca")}
 
 
 def texto_operativo(nombre: str) -> str:
@@ -463,10 +345,3 @@ def obligatorias(celdas_turno, tope: int = 5) -> list[str]:
     nivel API, no algo que se mida despues."""
     return [c["nombre"] for c in (celdas_turno or [])
             if c.get("grupo") in GRUPOS_PROSA][:tope]
-
-
-def menu(celdas_turno, campo: str) -> str:
-    """El material de las celdas para el prompt, una linea por celda con su id
-    entre corchetes. `campo` es texto_faq o texto_criterio."""
-    return "\n".join(f"  [{c['nombre']}] {c[campo]}"
-                     for c in (celdas_turno or []) if c.get(campo))

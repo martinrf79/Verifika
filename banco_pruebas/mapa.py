@@ -39,6 +39,17 @@ Del cruce salen las cuatro cubetas:
                       el ojo puesto: puede ser de un endpoint de admin o de un
                       banco.
 
+SIN ALCANCE NO QUIERE DECIR MUERTA, Y CASI CUESTA UNA RESPUESTA EL 14-AGO. Ese
+dia se borraron 16 funciones de esta cubeta y `_bloque_sin_dato` estaba en la
+lista: la llama `buscar_productos`, que es la herramienta que mas corre. No la
+alcanza el grafo porque a las herramientas las despacha el MODELO por nombre, y
+un grafo estatico no ve esa arista. Lo mismo pasa con las funciones anidadas
+-`_llamar`, `_call`- y con los `__init__` de los conectores, que los llama la
+clase. La regla que quedo: esta cubeta dice DONDE MIRAR, no que borrar. Antes de
+sacar una, se busca su nombre en app/, scripts/, tests/ y banco_pruebas/ y se
+mira quien la llama de verdad. Las 15 que quedan hoy estan todas vivas por una
+de esas cuatro puertas.
+
 EL 13-AGO EL INSTRUMENTO MEDIA MAL, y conviene saber como para no repetirlo. La
 linea del `def` se EJECUTA al importar el modulo. El mapa contaba cada funcion
 desde esa linea, asi que un modulo que entraba por primera vez con un contexto

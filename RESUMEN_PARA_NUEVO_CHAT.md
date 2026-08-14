@@ -28,7 +28,66 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
-**==== 14-AGO (ULTIMO) — EL PUNTO DE PARTIDA DEL RECORTE, MEDIDO ====**
+**==== 14-AGO (ULTIMO) — EL PASO 1 DEL RECORTE, HECHO: LO MUERTO SE BORRO Y
+POSVENTA SE GUARDO ====**
+
+**LA DECISION DE MARTIN, QUE ES LO QUE ABRIO EL DIA.** El plan decia "borrar lo
+muerto, 39 funciones y `posventa.py`". Martin freno esa mitad: **posventa no se
+borra, aunque no este cableado.** La pregunta fue exacta: *si hay algun sector
+del repo donde se pueda guardar que no estorbe*. Lo hay ahora.
+
+**`reserva/` — el sector nuevo, y por que resuelve el problema.** El problema no
+era que `posventa.py` ocupara lugar: era que **adentro de `app/` todos los
+instrumentos lo contaban como codigo muerto**. El mapa lo marcaba SIN ALCANCE,
+`test_nada_suelto` exigia declararlo con motivo, y cada sesion nueva volvia a
+preguntar si se borraba. Movido a `reserva/`, que esta afuera de `app/`, no lo
+mira ningun instrumento y sigue en el repo. **Y no es un flag apagado —la regla
+2-bis—**, que es la confusion facil: un flag es un camino que corre al lado del
+vivo esperando que lo prendan; esto es codigo que el sistema **no puede
+ejecutar**, porque `tests/test_reserva.py` prohibe que `app/` lo importe.
+
+Cuatro candados, y el tercero es el que evita que la carpeta se vuelva el cajon
+de sastre: lo guardado tiene que importar; `app/` no puede importar la reserva;
+la reserva no puede importar `app/` —si no, se pudre sola el dia que `app/` se
+mueve—; y **cada archivo tiene su fila en `reserva/README.md` diciendo que hace
+y que falta para enchufarlo**, con el test rojo si falta una de las dos mitades.
+
+**LO QUE FALTA PARA ENCHUFAR POSVENTA, ESCRITO PARA NO REDESCUBRIRLO.** El motor
+esta entero y es determinista: plazo de devolucion, garantia vigente y CUIT por
+digito verificador. **Lo que no hay es la FECHA DE COMPRA**, y ese es el punto
+delicado: hoy no existe herramienta de pedidos a proposito, porque `las_40`
+tiene el caso del pedido #4589 que verifica que el bot NO confirme un numero
+inventado. Enchufar posventa sin resolver de donde sale la fecha invita
+exactamente a esa alucinacion.
+
+**LO MUERTO, BORRADO: SIN ALCANCE DE 36 A 15.** Se fueron 16 funciones —seis de
+`indice.py` (`resolver`, `resolver_producto`, `celda_producto`, `celda_de_campo`,
+`marcas_de_calculo`, `menu`), cuatro de `fuente_producto` (`texto_ficha`,
+`consenso_specs`, `ordenar_por`, `atributo_de`), tres de `guia_compra`
+(`guia_mas_barato`, `intermedio_con_stock`, `_categorias_en_juego`), y una de
+compatibilidad, calculadora y grafo—, mas sus tablas huerfanas. `DECLARADAS`
+bajo de 38 a 28, y un motivo que MENTIA se corrigio: `atributos_ordenables`
+decia "la usa el barrido de la fuente" y la usa el interprete viejo del duelo.
+
+**Y ACA ESTA LA TRAMPA DEL DIA, QUE CASI COSTO UNA RESPUESTA AL CLIENTE.** El
+plan decia que borrar era "gratis porque esta medido". **No lo era.** La cubeta
+SIN ALCANCE del mapa traia `_bloque_sin_dato`, y a esa la llama
+`buscar_productos`, que es la herramienta que mas corre: sin ella se rompia la
+respuesta de "ningun producto trae ese dato". El mapa no la ve porque **a las
+herramientas las despacha el MODELO por nombre, y un grafo estatico no ve esa
+arista**; lo mismo pasa con las funciones anidadas y con los `__init__` de los
+conectores. **La regla quedo escrita en el encabezado de `mapa.py`: SIN ALCANCE
+dice DONDE MIRAR, no que borrar.** Antes de sacar una se busca su nombre en las
+cuatro superficies —app, scripts, tests y bancos— y se mira quien la llama de
+verdad. Por eso quedaron 15 y no cero: las 15 estan todas vivas por alguna de
+esas puertas, y borrarlas romperia algo.
+
+**LA VERIFICACION, sin maquillar:** bateria offline entera en verde, 932 tests,
+cero a medias; el candado del mapa —el `lento`, que corre 8 minutos— tambien en
+verde; `INVENTARIO_BARRIDO.md` se volvio a generar y salio identico, o sea que
+ningun barrido perdio cobertura; y ruff no encontro nada nuevo en `app/`.
+
+**==== 14-AGO — EL PUNTO DE PARTIDA DEL RECORTE, MEDIDO ====**
 
 > ## ✂️ SI ESTA SESION ES LA DEL RECORTE DE ARQUITECTURA, EMPEZA POR ACA.
 > El diagnostico YA ESTA HECHO. No lo repitas: corre
@@ -58,9 +117,11 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > un defecto nuevo.
 >
 > **EL ORDEN QUE SE RECOMENDO A MARTIN, y el motivo de cada paso:**
->   1. **Borrar lo muerto** —39 funciones y `posventa.py`—, que es gratis,
->      esta medido y es lo primero que ve una auditoria.
+>   1. ~~**Borrar lo muerto**~~ **HECHO el 14-ago**, y no salio gratis como
+>      decia este plan: ver la entrada de arriba. Posventa no se borro, se
+>      guardo en `reserva/` por decision de Martin.
 >   2. **Fusionar el par del 81,8%**, con el banco corrido antes y despues.
+>      **ES EL PROXIMO PASO.**
 >   3. **Recien despues el enum**, que ya tiene su plan escrito en PENDIENTE.
 >
 > **LO QUE HACE QUE ESTO SEA SEGURO Y HASTA AYER NO LO FUERA:** las dos mitades

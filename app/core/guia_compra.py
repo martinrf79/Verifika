@@ -6,25 +6,25 @@ ELIGIO mal (nego stock que existia y upselleo a lo caro). Elegir el minimo de un
 lista es un problema CERRADO: fuente de verdad + chequeo univoco. Eso es del
 codigo, no del modelo (generar > corregir > verificar).
 
-Este modulo computa el mas barato CON stock de las categorias en juego y arma un
-bloque de GUIA que se inyecta al solver junto con el estado. El solver conserva
-la redaccion y la venta; el QUE producto es exactamente ese ya viene decidido y
-referenciado como [[PROD:id]], que el estampado rellena con nombre+precio+stock
-reales de la fuente. No es una tool opcional que el modelo puede no llamar: si el
-cliente pidio lo mas barato, la guia viaja SIEMPRE en el turno.
+Quedan dos piezas y las dos las llama el codigo vivo: `mas_barato_con_stock`,
+que la usa `guia_pedido` para armar el pedido sellado, y `categoria_no_vendida`,
+que la llama `herramientas` para negar honesto lo que la tienda no vende.
+
+QUE SE BORRO EL 14-AGO-2026 y por que se cuenta. Este modulo tenia ademas
+`guia_mas_barato`, que armaba un bloque de texto para inyectarle al solver, con
+`intermedio_con_stock` y `_categorias_en_juego` de ayudantes. Era el camino
+viejo: el mapa midio que no se llega a ninguna de las tres desde ningun webhook.
+Hoy el que decide el producto es el pedido sellado de `guia_pedido`, no un
+bloque de prompt. Si algun dia hace falta ese bloque, esta en git.
 """
 import re
 import unicodedata
 
 from app.core.contexto_turno import get_current_tienda
-from app.storage.firestore_client import (
-    get_all_products, get_product_by_id, get_categories)
+from app.storage.firestore_client import get_all_products, get_categories
 from app.logger import get_logger
 
 log = get_logger(__name__)
-
-# Tope de categorias por guia: mas que esto ya no es una eleccion, es un listado.
-_MAX_CATEGORIAS = 3
 
 
 def _norm(s: str) -> str:
@@ -51,93 +51,6 @@ def mas_barato_con_stock(categoria: str | None = None) -> dict | None:
     if not productos:
         return None
     return min(productos, key=lambda p: p["precio_ars"])
-
-
-def intermedio_con_stock(categoria: str | None = None) -> dict | None:
-    """La opcion INTERMEDIA con stock (criterio 'intermedio', 11-jul: el
-    cliente que rechaza lo mas barato). Determinista: el ESCALON de precio
-    siguiente al minimo (segundo precio distinto). La mediana de toda la
-    categoria proponia un teclado de $144.000 a quien pidio 'economico pero
-    no lo mas barato' (visto en el banco); el escalon de arriba del minimo
-    es lo que ese cliente pide. None si no hay ninguno con stock."""
-    tid = get_current_tienda()
-    productos = [p for p in get_all_products(tienda_id=tid)
-                 if p.get("stock", 0) > 0
-                 and isinstance(p.get("precio_ars"), (int, float))]
-    if categoria:
-        cat = _norm(categoria)
-        productos = [p for p in productos
-                     if _norm(p.get("categoria", "")) == cat]
-    if not productos:
-        return None
-    productos.sort(key=lambda p: (p["precio_ars"], str(p.get("id"))))
-    minimo = productos[0]["precio_ars"]
-    for p in productos:
-        if p["precio_ars"] > minimo:
-            return p
-    return productos[-1]  # todos al mismo precio: el ultimo estable
-
-
-def _categorias_en_juego(mensaje: str,
-                         productos_vistos: list[dict] | None) -> list[str]:
-    """Las categorias sobre las que el cliente esta eligiendo: las nombradas en
-    el mensaje (contra las categorias reales de la tienda, tolerante a plural) y
-    las de los ultimos productos que el bot ya mostro."""
-    tid = get_current_tienda()
-    try:
-        cats_reales = list(get_categories(tienda_id=tid))
-    except Exception:
-        cats_reales = []
-    palabras = {_singular(w) for w in _norm(mensaje).split()}
-    en_juego: list[str] = []
-    for c in cats_reales:
-        if _singular(_norm(c)) in palabras:
-            en_juego.append(c)
-    if not en_juego:
-        for p in (productos_vistos or [])[-6:]:
-            pid = str(p.get("id") or "")
-            if not pid:
-                continue
-            try:
-                prod = get_product_by_id(pid, tienda_id=tid)
-            except Exception:
-                prod = None
-            cat = (prod or {}).get("categoria")
-            if cat and cat not in en_juego:
-                en_juego.append(cat)
-    return en_juego[:_MAX_CATEGORIAS]
-
-
-def guia_mas_barato(mensaje: str,
-                    productos_vistos: list[dict] | None = None) -> str:
-    """Bloque de guia para el solver cuando el criterio del cliente es "lo mas
-    barato": el codigo ya computo el mas barato CON stock por categoria en juego
-    (o global si no hay categoria) y el solver debe ofrecer EXACTAMENTE ese.
-    '' si no hay nada que guiar (catalogo sin stock)."""
-    lineas: list[str] = []
-    try:
-        cats = _categorias_en_juego(mensaje, productos_vistos)
-        if cats:
-            for c in cats:
-                p = mas_barato_con_stock(categoria=c)
-                if p:
-                    lineas.append(
-                        f"en {c}: [[PROD:{p['id']}]] ({p.get('stock')} en stock)")
-        else:
-            p = mas_barato_con_stock()
-            if p:
-                lineas.append(
-                    f"del catalogo: [[PROD:{p['id']}]] ({p.get('stock')} en stock)")
-    except Exception as e:
-        log.warning("guia_mas_barato_error", error=str(e)[:120])
-        return ""
-    if not lineas:
-        return ""
-    return ("\n\n[GUIA DETERMINISTA, calculada por el codigo desde el catalogo "
-            "real: el mas barato CON STOCK es " + "; ".join(lineas) +
-            ". Si el cliente quiere lo mas barato, ofrece EXACTAMENTE ese, "
-            "usando el marcador [[PROD:id]] tal cual. NO elijas vos otro ni "
-            "digas que no tiene stock.]")
 
 
 # ── CERTIFICADOR DE CATEGORIA (17-jul, consigna 43) ──────────────────────────

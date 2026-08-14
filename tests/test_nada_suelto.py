@@ -47,15 +47,9 @@ DECLARADAS = {
     "barribles": "consulta del grafo declarado, la usa el barrido del cableado",
     "barribles_de_datos": "consulta del grafo declarado, la usa el barrido de "
                           "la decision y la reposicion",
-    "aristas": "consulta del grafo declarado, completa la API de las otras dos",
     "obligatorias": "consulta del indice, la usan las pruebas del indice",
-    "menu": "consulta del indice: que celdas existen, para armar el menu",
-    "celda_de_campo": "consulta del indice: que celda cubre un campo de la ficha",
-    "marcas_de_calculo": "consulta del indice: que patron marca cada celda de calculo",
-    "resolver_producto": "resuelve un nombre a producto dentro del indice",
     "cobertura_compatibilidad": "mide la cobertura de aristas de compatibilidad en la fuente",
-    "atributos_ordenables": "lista los campos por los que se puede ordenar; la usa el barrido de la fuente",
-    "consenso_specs": "cruza las specs de la fuente; la usa el barrido de coherencia",
+    "atributos_ordenables": "lista los campos por los que se puede ordenar; la usa el interprete viejo del duelo, en banco_pruebas",
     "tool_schema": "arma el schema de la guia de venta; lo verifica su prueba",
 
     # ── Config por proveedor: se elige por settings, no por llamada ─────────
@@ -72,18 +66,14 @@ DECLARADAS = {
     "mensaje_presupuesto_sellado": "texto sellado del presupuesto de la guia",
     "pregunta_destinos_pendientes": "pregunta sellada por los destinos que faltan cotizar",
     "reparto_envios_detalle": "reparto con la tarifa real de cada tramo; el reparto vivo lo escribe armar_presupuesto",
-    "guia_mas_barato": "eleccion sellada del mas barato con stock",
-    "intermedio_con_stock": "eleccion sellada del intermedio con stock",
 
     # ── Compatibilidad: piezas del eje que hoy entra por otra puerta ────────
     "bloque_prompt": "bloque de compatibilidad para el prompt",
     "estampar_veredicto": "estampa el veredicto de compatibilidad en el mensaje",
     "plataformas_de_interp": "lee las plataformas que declaro el modelo",
-    "es_pregunta_de_compatibilidad": "detecta la pregunta de compatibilidad por texto",
 
     # ── Alta de cliente: las llama scripts/crear_cliente.py ─────────────────
     "dispara_lead_fuerte": "regla del lead fuerte; la verifica su prueba",
-    "texto_ficha": "arma el texto de la ficha de un producto desde la fuente",
 }
 
 

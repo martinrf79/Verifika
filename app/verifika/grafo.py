@@ -499,13 +499,6 @@ def _hub():
     return hub_venta
 
 
-def aristas() -> tuple:
-    """El cableado como pares. El turno es una cadena: cada nodo recibe lo que
-    dejo el anterior. Las rondas del decisor son el unico ciclo y esta
-    declarado aparte, en `CICLOS`."""
-    return tuple((NODOS[i].id, NODOS[i + 1].id) for i in range(len(NODOS) - 1))
-
-
 CICLOS = (("reconciliador", "decisor"),)
 """El unico ciclo del turno: si el reconciliador encuentra un faltante, se
 vuelve al decisor. Tope de dos rondas, en `_MAX_RONDAS`."""

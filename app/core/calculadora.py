@@ -725,20 +725,6 @@ def calculate_total(items: list[dict] | None = None,
 # 7) FAQ
 # ────────────────────────────────────────────────────────────
 
-def _norm_txt(s: str) -> str:
-    import unicodedata
-    import re as _re
-    s = unicodedata.normalize("NFKD", str(s).lower())
-    s = "".join(c for c in s if not unicodedata.combining(c))
-    # Puntuacion a espacio: sin esto un signo pegado a la palabra ('entrega?')
-    # rompe el match de una keyword multi-palabra ('pago contra entrega') y el
-    # tema especifico pierde contra el generico. Visto en el estres: 'pago contra
-    # entrega?' caia en 'formas_pago' en vez de 'pago_contra_entrega'.
-    return _re.sub(r"[^\w\s]", " ", s)
-
-
-
-
 # Senal determinista de PLAZO de entrega (charla real 10-jul: "cuanto demoran
 # los envios" y "en cuanto tiempo llegan los productos" caian al tema generico
 # 'envios' y el cliente pregunto CINCO veces la demora sin respuesta). Las
