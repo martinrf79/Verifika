@@ -1685,3 +1685,66 @@ def test_una_contradiccion_declarada_no_se_borra_sola(firestore_doble, monkeypat
     assert rec.get("preguntar"), "la contradiccion no llego a preguntarse"
     instruccion = P.instruccion_de_preguntas(rec)
     assert "2 auriculares" in instruccion
+
+
+# ── EL RUBRO YA RESUELTO NO SE VUELVE A ELEGIR ─────────────────────────────
+#
+# Estaba ABIERTO en PENDIENTE con dos sintomas que parecian distintos y son el
+# mismo defecto: "los auriculares pasaron de Negro a Blanco sin que el cliente
+# lo pidiera" y "2 mouse salio Genius y Logitech juntos". Casetes 80 turno 7 y
+# 81 turno 2. Es prioridad UNO: mandarle al cliente algo que no pidio, y
+# cobrarselo, es la alucinacion en la parte que se paga.
+def test_el_producto_del_carrito_gana_cuando_el_cliente_no_pidio_otro(
+        firestore_doble):
+    """El carrito tiene el mouse Negro. El cliente agrega otra cosa, el turno
+    vuelve a buscar "mouse" y la busqueda devuelve el Blanco primero. La cuenta
+    tiene que seguir con el NEGRO: el cliente no pidio cambiar de color."""
+    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.storage.firestore_client import get_all_products
+
+    cat = get_all_products(tienda_id=TIENDA)
+    negro = next(p for p in cat
+                 if p.get("categoria") == "mouse" and "Negro" in p.get("nombre", ""))
+    blanco = next(p for p in cat
+                  if p.get("categoria") == "mouse" and "Blanco" in p.get("nombre", ""))
+
+    llamadas = [{"herramienta": "buscar_productos", "pedido": {},
+                 "resultado": {"estado": "ok", "productos": [blanco]}}]
+    memoria = [{"id": negro["id"], "nombre": negro["nombre"],
+                "categoria": "mouse"}]
+    fuera = _cuenta_con_lo_declarado(
+        llamadas, {"items": [{"que": "mouse", "cantidad": 2}],
+                   "pide_precio": True}, TIENDA, "t", memoria=memoria)
+    items = [l["pedido"]["items"] for l in fuera
+             if l.get("herramienta") == "armar_presupuesto"]
+    assert items, "no se armo la cuenta"
+    assert items[0][0]["product_id"] == negro["id"], (
+        f"la categoria ya resuelta se volvio a elegir: el carrito tenia "
+        f"{negro['id']} y la cuenta salio con {items[0][0]['product_id']}")
+
+
+def test_pero_el_cliente_todavia_puede_cambiar_de_producto(firestore_doble):
+    """LA OTRA MITAD, y sin esto el arreglo de arriba seria peor que el
+    defecto: si el cliente NOMBRA otro -"mouse blanco" con el Negro en el
+    carrito- gana lo que trajo el turno. Un carrito congelado no vende."""
+    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.storage.firestore_client import get_all_products
+
+    cat = get_all_products(tienda_id=TIENDA)
+    negro = next(p for p in cat
+                 if p.get("categoria") == "mouse" and "Negro" in p.get("nombre", ""))
+    blanco = next(p for p in cat
+                  if p.get("categoria") == "mouse" and "Blanco" in p.get("nombre", ""))
+
+    llamadas = [{"herramienta": "buscar_productos", "pedido": {},
+                 "resultado": {"estado": "ok", "productos": [blanco]}}]
+    memoria = [{"id": negro["id"], "nombre": negro["nombre"],
+                "categoria": "mouse"}]
+    fuera = _cuenta_con_lo_declarado(
+        llamadas, {"items": [{"que": "mouse blanco", "cantidad": 1}],
+                   "pide_precio": True}, TIENDA, "t", memoria=memoria)
+    items = [l["pedido"]["items"] for l in fuera
+             if l.get("herramienta") == "armar_presupuesto"]
+    assert items and items[0][0]["product_id"] == blanco["id"], (
+        "el cliente pidio el blanco y el arreglo lo dejo clavado en el del "
+        "carrito")

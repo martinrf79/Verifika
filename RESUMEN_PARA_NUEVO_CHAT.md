@@ -28,7 +28,76 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
-**==== 11-AGO (ULTIMO) — LA FUENTE, UNIFICADA DE VERDAD Y CON CANDADO ====**
+**==== 14-AGO (ULTIMO) — LA MITAD QUE DECIDE, Y EL SISTEMA SIN LLM MEDIDO ====**
+
+> ## 🧱 LO QUE HAY, DE VERDAD
+>
+> **Los contratos mecanicos ahora los declaran 28 de los 33 nodos del turno, y
+> los 5 que no tienen el motivo ESCRITO.** Antes eran 18 y 15. La mitad que no
+> tenia ninguno no era una mitad cualquiera: es la que ATAJA lo que el modelo
+> no hizo -el item declarado que nadie busco, la condicion que no se aplico, la
+> cuenta que perdio un rubro-. Se estaba por experimentar sobre el decisor con
+> ese colchon sin medir.
+>
+> **Cuatro contratos nuevos**, de la familia de DATOS: `no_inventa_id`,
+> `no_pierde_evidencia`, `no_agrega_lo_no_pedido`, `no_reclama_lo_resuelto`.
+> **Se probo que FRENAN**, plantandole una violacion a cada uno
+> -`test_los_contratos_frenan_de_verdad`-, porque un contrato que nunca se pone
+> rojo da la peor sensacion posible: verde tranquilo sobre codigo roto.
+>
+> **DOS DEFECTOS QUE ENCONTRO EL BARRIDO EL PRIMER DIA**, los dos en codigo con
+> tests en verde y los dos llegaban al cliente como repeticion: la busqueda
+> repuesta se agregaba de nuevo si el turno pasaba dos veces con el mismo
+> reclamo, y el supuesto de pago se escribia dos veces adentro de la misma
+> cuenta.
+>
+> **EL RUBRO YA RESUELTO YA NO SE VUELVE A ELEGIR.** Estaba abierto en
+> PENDIENTE. Reproducido antes de tocar: con el mouse Negro en el carrito, si
+> el turno vuelve a buscar "mouse" y la busqueda devuelve el Blanco primero, la
+> cuenta salia con el Blanco. El cliente no habia pedido cambiar nada. Ahora
+> gana el del carrito, **pero solo si sigue satisfaciendo lo que el cliente
+> nombro**: con el Negro en el carrito, "mouse blanco" sigue trayendo el
+> Blanco. Un carrito congelado hubiera sido peor que el defecto, y ese segundo
+> caso tiene su propio test.
+>
+> **EL SISTEMA SIN LLM, MEDIDO POR PRIMERA VEZ.** `puerta_determinista.py`, con
+> piso en `puerta_piso.json`. Los numeros no se escriben aca: se leen de ahi.
+>
+> ## ⚠️ LO QUE ESTA A MEDIAS, Y ESTO ES LO QUE HAY QUE LEER
+>
+> Martin pidio expresamente que esto se diga. Va sin maquillar.
+>
+> 1. **El barrido de la decision es CHICO al lado de los otros.** Cubre sus
+>    celdas al 100% y sus diez nodos intervienen, pero son 3 sorteos por clase.
+>    Los otros barridos miden en miles de casos. Este es un PISO, no una
+>    barrida exhaustiva, y subirle los sorteos es trabajo pendiente.
+> 2. **`no_reclama_lo_resuelto` se comprueba buscando el texto del item entre
+>    comillas dentro del faltante.** Si el reconciliador cambia como redacta el
+>    reclamo, el contrato deja de cazar y pasa en VERDE sin avisar. Es un
+>    contrato atado a un formato de texto, que es exactamente lo fragil.
+> 3. **"2 mouse salio Genius y Logitech juntos" NO esta arreglado.** El
+>    arreglo de hoy cubre el rubro que cambia ENTRE turnos, carrito contra
+>    busqueda. El caso de dos productos distintos para el mismo rubro DENTRO
+>    del turno no se pudo reproducir por esta via: sale de la llamada que arma
+>    el modelo, no de la reposicion. Sigue abierto.
+> 4. **La NEGACION no se arreglo, y hay que entender por que.** "El teclado
+>    sacalo" lo entiende bien el MODELO -lo declara bien en los casetes-; quien
+>    no lo ve es la capa determinista. Como ninguna pieza viva corre sobre el
+>    mensaje crudo, hoy NO es un bug en produccion. Es un hueco de la puerta
+>    determinista, no del bot.
+> 5. **La puerta determinista se mide sobre 51 turnos de 16 casetes.** No es el
+>    universo. Y la marca de "esto lo nombro el cliente hoy" es una heuristica
+>    de palabras escrita en el propio banco, sin barrido propio: puede
+>    clasificar mal y mover los porcentajes.
+> 6. **Lo que sigue sin ninguna pieza determinista:** `pide_precio` y
+>    `contradicciones`. De `contradicciones` conviene no hacer nada: esa es
+>    tarea del modelo y una version determinista seria inventar.
+> 7. **Sigue abierto y sin tocar:** borrar las funciones muertas y
+>    `posventa.py`, y la cadena de piezas que reescriben el mensaje en cascada.
+>    Eso ultimo es la sobre-ingenieria de verdad y AHORA por fin es medible,
+>    que era todo el punto del trabajo de hoy.
+
+**==== 11-AGO — LA FUENTE, UNIFICADA DE VERDAD Y CON CANDADO ====**
 
 > ## 🔒 "LA FUENTE ESTA UNIFICADA" ERA MEDIA VERDAD. AHORA SE SABE CUAL MITAD,
 > Y HAY UN TEST QUE NO DEJA QUE VUELVA A PASAR.

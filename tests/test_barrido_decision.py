@@ -75,3 +75,56 @@ def test_los_contratos_de_datos_estan_todos_en_uso(firestore_doble):
     usados = {c for n in G.NODOS for c in n.contratos}
     sin_usar = [c for c in G.CONTRATOS_DE_DATOS if c not in usados]
     assert not sin_usar, f"contratos declarados que no usa ningun nodo: {sin_usar}"
+
+
+def test_los_contratos_frenan_de_verdad(firestore_doble):
+    """EL CANDADO DEL CANDADO. Un contrato que nunca se pone rojo no protege
+    nada y da la peor sensacion posible: verde tranquilo sobre codigo roto. Se
+    le planta una violacion a proposito a cada uno y se exige que la cace.
+
+    Es el mismo metodo con el que se probo la aduana el 11-ago, dopandole una
+    reparacion, y no es paranoia: el primer `no_inventa_id` de este mismo
+    barrido marcaba como id inventado el `CV550` que era el MODELO de una
+    webcam, o sea que cazaba lo que no era. Un contrato hay que probarlo en las
+    dos direcciones."""
+    from banco_pruebas import barrido_decision as BD
+    from app.verifika import grafo as G
+
+    catalogo = BD._ids_del_catalogo()
+    base = {"llamadas": [{"herramienta": "buscar_productos", "pedido": {},
+                          "resultado": {"estado": "ok",
+                                        "productos": [{"id": "MOU0001",
+                                                       "nombre": "x"}]}}],
+            "declarado": {}, "memoria": [], "estado": {}}
+    nodo = G.POR_ID["cuenta_repuesta"]
+
+    dopadas = {
+        G.NO_INVENTA_ID: base["llamadas"] + [
+            {"herramienta": "ficha_producto",
+             "pedido": {"product_id": "NOEXISTE999"}, "resultado": {}}],
+        G.NO_PIERDE_EVIDENCIA: [],
+        G.NO_AGREGA_LO_NO_PEDIDO: base["llamadas"] + [
+            {"herramienta": "armar_presupuesto",
+             "pedido": {"items": [{"product_id": "TEC0007", "cantidad": 1}]},
+             "resultado": {}}],
+    }
+    for contrato, llamadas in dopadas.items():
+        despues = {**base, "llamadas": llamadas}
+        cazados = [c for c, _ in BD.violaciones(nodo, base, despues, catalogo)]
+        assert contrato in cazados, (
+            f"se le planto una violacion de {contrato} y el barrido no la vio")
+
+    # El del reconciliador va aparte: su violacion no es una llamada de mas,
+    # es reclamar un item que la evidencia ya cubre.
+    antes = {"declarado": {"items": [{"que": "mouse"}]}, "memoria": [],
+             "estado": {}, "ya_resuelto": "",
+             "llamadas": [{"herramienta": "buscar_productos", "pedido": {},
+                           "resultado": {"estado": "ok", "productos": [
+                               {"id": "MOU0001",
+                                "nombre": "Mouse Logitech Negro"}]}}]}
+    despues = {**antes, "rec": {"faltantes":
+                                ["El cliente pidio 'mouse' y no lo buscaste."]}}
+    cazados = [c for c, _ in BD.violaciones(G.POR_ID["reconciliador"], antes,
+                                            despues, catalogo)]
+    assert G.NO_RECLAMA_LO_RESUELTO in cazados, (
+        "se le planto un reclamo sobre un item ya atendido y no lo vio")

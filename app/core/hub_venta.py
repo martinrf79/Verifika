@@ -1410,6 +1410,56 @@ def _condicion_faltante_aplicada(llamadas: list, rec: dict, tienda_id: str,
     return fuera
 
 
+def _producto_para(que: str, vistos: list, del_carrito: set):
+    """EL PRODUCTO QUE UNA CATEGORIA YA TENIA RESUELTO NO SE VUELVE A ELEGIR.
+
+    LA FALLA, y estaba abierta en PENDIENTE con dos sintomas que parecian
+    distintos y son el mismo: "los auriculares pasaron de Negro a Blanco sin
+    que el cliente lo pidiera" y "2 mouse salio Genius y Logitech juntos".
+    Casetes `80` turno 7 y `81` turno 2.
+
+    LA CAUSA, reproducida antes de tocar nada. La reposicion elegia el PRIMER
+    producto de `vistos` que cubriera el rubro, y `vistos` trae primero lo que
+    buscO ESTE turno y despues lo que ya estaba en el carrito. Entonces, con un
+    mouse Negro ya cotizado, si el turno vuelve a buscar "mouse" y la busqueda
+    devuelve el Blanco primero, la cuenta sale con el Blanco. El cliente no
+    pidio cambiar nada: pidio agregar un teclado.
+
+    LA REGLA QUE LO ARREGLA, y es una sola: si el producto que YA estaba en el
+    carrito sigue satisfaciendo lo que el cliente nombro, gana el del carrito.
+    Si no lo satisface -el carrito tiene el Negro y el cliente ahora dice
+    "mouse blanco"- entonces el cliente SI esta pidiendo otro, y gana la
+    busqueda del turno.
+
+    DOS PREDICADOS Y NO UNO, y esto lo encontre probando el otro lado antes de
+    darlo por bueno. `_cubierto` es LAXO a proposito -le alcanza UNA raiz- y
+    esta bien que lo sea, porque su trabajo es decir si el item fue atendido y
+    ahi conviene no acusar faltantes falsos. Pero para decidir si el del
+    carrito sigue siendo el que el cliente nombro, esa laxitud lo rompe: con el
+    Negro en el carrito, "mouse blanco" tambien daba cubierto por la raiz
+    "mouse" y el cliente no podia cambiar de color nunca mas. Un arreglo que
+    congela el carrito es peor que el defecto.
+
+    Asi que el carrito gana solo con el predicado ESTRICTO -todas las raices de
+    lo que dijo el cliente tienen que estar en ese producto-, y la busqueda del
+    turno sigue eligiendo con el laxo de siempre. Si el carrito no tiene nada
+    de ese rubro, el comportamiento es identico al de antes, linea por linea.
+    """
+    def _texto(p):
+        return H._norm(p.get("categoria")) + " " + H._norm(p.get("nombre"))
+
+    raices = P._stems(que)
+
+    def _es_el_mismo(p):
+        """Estricto: todo lo que el cliente nombro esta en este producto."""
+        return bool(raices) and all(s in _texto(p) for s in raices)
+
+    return (next((p for p in vistos
+                  if str(p.get("id") or "").upper() in del_carrito
+                  and _es_el_mismo(p)), None)
+            or next((p for p in vistos if P._cubierto(que, _texto(p))), None))
+
+
 def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
                              trace_id: str, memoria: list | None = None) -> list:
     """EL RUBRO QUE EL CLIENTE PIDIO Y LA CUENTA PERDIO, lo repone el CODIGO.
@@ -1465,9 +1515,15 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
     # `calculate_total` acepta. Van DESPUES de los del turno, asi que si este
     # turno mostro algo, ese gana.
     ya = {str(p.get("id") or "").upper() for p in vistos}
+    # LOS DEL CARRITO, aparte, porque son los que tienen PRIORIDAD cuando el
+    # rubro ya estaba resuelto. Ver `_producto_para`.
+    del_carrito = set()
     for p in (memoria or []):
         pid = str((p or {}).get("id") or "").upper()
-        if pid and pid not in ya and p.get("nombre"):
+        if not pid or not p.get("nombre"):
+            continue
+        del_carrito.add(pid)
+        if pid not in ya:
             ya.add(pid)
             vistos.append({"id": pid, "nombre": p["nombre"],
                            "categoria": str(p.get("categoria") or "")})
@@ -1499,9 +1555,7 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
         nuevos = []
         for it in (declarado.get("items") or []):
             que = H._norm(it.get("que"))
-            cand = next((p for p in vistos
-                         if P._cubierto(que, H._norm(p.get("categoria")) + " "
-                                        + H._norm(p.get("nombre")))), None)
+            cand = _producto_para(que, vistos, del_carrito)
             if not cand:
                 continue
             fila = {"product_id": cand["id"],
@@ -1575,9 +1629,7 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
             continue
         # El primero que se le mostro de ese rubro. Si no se le mostro ninguno,
         # no se inventa: eso es un faltante de verdad y lo cuenta el redactor.
-        cand = next((p for p in vistos
-                     if P._cubierto(que, H._norm(p.get("categoria")) + " "
-                                    + H._norm(p.get("nombre")))), None)
+        cand = _producto_para(que, vistos, del_carrito)
         if not cand:
             continue
         # EL DESTINO VIAJA CON EL ITEM. Sin esto el renglon repuesto entra
