@@ -171,6 +171,30 @@ def _valvula(texto: str, limpio: str) -> str:
     return limpio if len((limpio or "").strip()) >= _MINIMO_UTIL else texto
 
 
+def _sin_oracion_repetida_en_la_linea(linea: str) -> str:
+    """La misma oracion IDENTICA, dos veces en el mismo renglon, se dice una.
+
+    Mismo criterio que la regla de arriba y con el mismo piso de largo: no se
+    juzga parecido, se compara identico normalizado, asi que no se puede perder
+    un dato. La cuenta no se toca -sus renglones los escribe el codigo y dos
+    importes iguales son dos renglones legitimos-."""
+    if _es_cuenta(linea):
+        return linea
+    trozos = _RE_ORACION.split(linea)
+    if len(trozos) < 2:
+        return linea
+    vistas: set = set()
+    quedan = []
+    for t in trozos:
+        clave = _norm(t)
+        if (len(clave) >= _MIN_REPETIDO_INTERNO and clave in vistas):
+            continue
+        if clave:
+            vistas.add(clave)
+        quedan.append(t)
+    return " ".join(quedan) if len(quedan) != len(trozos) else linea
+
+
 def sin_repeticion_interna(texto: str) -> str:
     """REGLA 1. Un renglon identico no se dice dos veces en el mismo mensaje.
 
@@ -181,10 +205,30 @@ def sin_repeticion_interna(texto: str) -> str:
     cola y la instruccion le dice que lo pegue tal cual, asi que pego tres.
 
     Es la regla mas segura que hay: identico es identico, no se pierde un solo
-    dato y no hace falta juzgar nada."""
+    dato y no hace falta juzgar nada.
+
+    Y DESDE EL 15-AGO TAMBIEN ADENTRO DEL RENGLON, que es donde se escapaba.
+    Charla real de Martin por WhatsApp, y era el reclamo mas repetido que tenia:
+    al cliente le llego, en UNA sola linea,
+
+        La garantia es de 120 meses por defectos de fabricacion. La garantia es
+        de 120 meses por defectos de fabricacion. La garantia es de 120 meses
+        por defectos de fabricacion.
+
+    y abajo lo mismo con los 24 meses de los mouse. Tres productos de la misma
+    categoria, cada uno estampando su misma politica, todo pegado en el mismo
+    renglon. Esta regla no lo veia por un detalle de implementacion y no de
+    criterio: **miraba de a lineas enteras**, asi que tres oraciones identicas
+    dentro de una linea eran una linea unica y pasaba de largo. El caso mas
+    facil de cazar que existe -identico, caracter por caracter- se colaba por
+    la unidad de medida, no por la regla."""
     vistas: set = set()
-    salida, fuera = [], 0
+    salida, fuera, adentro = [], 0, 0
     for linea in (texto or "").splitlines():
+        podada = _sin_oracion_repetida_en_la_linea(linea)
+        if podada != linea:
+            adentro += 1
+        linea = podada
         clave = _norm(linea)
         if (len(clave) >= _MIN_REPETIDO_INTERNO and not _es_cuenta(linea)
                 and clave in vistas):
@@ -193,9 +237,13 @@ def sin_repeticion_interna(texto: str) -> str:
         if clave:
             vistas.add(clave)
         salida.append(linea)
-    if not fuera:
+    # LAS DOS MITADES CUENTAN. El corte miraba solo `fuera` -las lineas enteras
+    # borradas- y devolvia el texto de entrada cuando valia cero, asi que se
+    # tiraba la poda de adentro del renglon aunque hubiera limpiado algo. Es la
+    # forma en que un arreglo puede quedar escrito y no correr nunca.
+    if not fuera and not adentro:
         return texto
-    log.info("mensaje_renglon_repetido", renglones=fuera)
+    log.info("mensaje_renglon_repetido", renglones=fuera, en_la_linea=adentro)
     return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip())
 
 

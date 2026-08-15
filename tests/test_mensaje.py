@@ -611,3 +611,38 @@ def test_el_bloque_de_codigo_calcado_entero_si_se_va():
     salida = sin_lo_ya_dicho(texto, anterior="Ahi va.\n\n" + bloque)
     assert "- A Córdoba capital" not in salida
     assert "- A Concordia" not in salida
+
+
+def test_la_misma_oracion_no_sale_tres_veces_en_el_mismo_renglon():
+    """LA CHARLA REAL DE MARTIN POR WHATSAPP (15-ago-2026), y era su reclamo mas
+    repetido. Al cliente le llego, en UNA sola linea:
+
+        La garantia es de 120 meses... La garantia es de 120 meses... La
+        garantia es de 120 meses...
+
+    y abajo lo mismo con los 24 meses de los mouse. Tres productos de la misma
+    categoria, cada uno estampando su misma politica, todo pegado en el mismo
+    renglon.
+
+    La regla del renglon repetido existia y no lo vio por la UNIDAD DE MEDIDA,
+    no por el criterio: miraba de a lineas enteras, asi que tres oraciones
+    identicas adentro de una linea eran una linea unica. El caso mas facil que
+    existe -identico caracter por caracter- se colaba."""
+    frase = "La garantía es de 120 meses por defectos de fabricación."
+    texto = ("Memorias RAM (Garantía de 120 meses)\n"
+             "* Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u\n"
+             + " ".join([frase] * 3))
+    salida = sin_repeticion_interna(texto)
+
+    assert salida.count(frase) == 1, "la frase sigue saliendo repetida:\n" + salida
+    # no se perdio ningun dato: el precio y el producto siguen enteros
+    assert "$34.500" in salida and "Kingston Fury Beast" in salida
+    assert "120 meses" in salida
+    assert sin_repeticion_interna(salida) == salida
+
+
+def test_dos_renglones_de_cuenta_con_el_mismo_importe_no_se_tocan():
+    """El otro lado, que es donde una poda de repetidos se vuelve peligrosa: dos
+    productos al mismo precio son DOS renglones legitimos, no una repeticion."""
+    cuenta = "- 1x Mouse Genius: $8.500 c/u = $8.500. - 1x Mouse Logitech: $8.500 c/u = $8.500."
+    assert sin_repeticion_interna(cuenta) == cuenta
