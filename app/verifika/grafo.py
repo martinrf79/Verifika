@@ -341,12 +341,22 @@ NODOS = (
          garantiza="sin asteriscos de markdown, que WhatsApp no renderiza",
          contratos=TODOS_LOS_CONTRATOS,
          aplicar=lambda t, c: _hub()._sin_markdown(t)),
-    Nodo(id="sin_plata_inventada", etapa="salida",
-         funcion="app.core.hub_venta:_sin_plata_inventada",
-         exige="el texto y las llamadas que respaldan cada cifra",
-         garantiza="ningun importe sin respaldo en la cuenta o en la fuente",
+    # UN NODO Y NO DOS (14-ago-2026). `peso_de_la_cadena.py` midio que la cuenta
+    # y la plata intervenian sobre los MISMOS mensajes el 81,8% de las veces, y
+    # corrian sueltas y en el orden equivocado: la poda de plata se comia los
+    # renglones antes de que la cuenta pudiera reponer el bloque bueno, y al
+    # cliente le llegaba "Presupuesto:" sin nada abajo. Fusionadas, el orden
+    # queda fijo -primero la cuenta del codigo, despues la plata- y no se las
+    # puede volver a separar sin darse cuenta. Ver `_la_cuenta_y_la_plata`.
+    Nodo(id="la_cuenta_y_la_plata", etapa="salida",
+         funcion="app.core.hub_venta:_la_cuenta_y_la_plata",
+         exige="el texto, las llamadas que respaldan cada cifra y si el turno "
+               "calculo",
+         garantiza="la cuenta es la que armo el codigo, y ningun importe sale "
+                   "sin respaldo en ella o en la fuente",
          contratos=TODOS_LOS_CONTRATOS,
-         aplicar=lambda t, c: _hub()._sin_plata_inventada(
+         repone=("previo",),
+         aplicar=lambda t, c: _hub()._la_cuenta_y_la_plata(
              t, c["llamadas"], c["bloque"], c["trace_id"],
              previo=c["previo"], vistos=c["vistos"])),
     Nodo(id="sin_cobro_inventado", etapa="salida",
@@ -356,16 +366,6 @@ NODOS = (
          contratos=TODOS_LOS_CONTRATOS,
          aplicar=lambda t, c: _hub()._sin_cobro_inventado(
              t, c["tienda_id"], c["trace_id"])),
-    Nodo(id="cuenta_no_retipeada", etapa="salida",
-         funcion="app.core.hub_venta:_cuenta_no_retipeada",
-         exige="el texto y si el turno calculo",
-         garantiza="la cuenta del turno anterior repuesta cuando el modelo la "
-                   "retipeo mal",
-         contratos=(NO_ENMUDECE, NO_LEVANTA, IDEMPOTENTE),
-         repone=("previo",),
-         aplicar=lambda t, c: _hub()._cuenta_no_retipeada(
-             t, hubo_calculo=bool(c["bloque"]), previo=c["previo"],
-             trace_id=c["trace_id"])),
     Nodo(id="sin_negar_lo_traido", etapa="salida",
          funcion="app.core.hub_venta:_sin_negar_lo_traido",
          exige="el texto y lo que las herramientas trajeron",

@@ -28,8 +28,64 @@ El mapa estable de las capas del sistema vive en `ARQUITECTURA.md`.
 > exactamente el desorden que costó el día del 3-ago. Si un hook genérico de git
 > reclama que hay commits sin pushear, se le explica esto y se espera el OK.
 
-**==== 14-AGO (ULTIMO) — EL PASO 1 DEL RECORTE, HECHO: LO MUERTO SE BORRO Y
-POSVENTA SE GUARDO ====**
+**==== 14-AGO (ULTIMO) — EL PAR DEL 81,8%, FUSIONADO, Y EL DEFECTO VIVO QUE
+APARECIO AL MIRARLO ====**
+
+**EL PASO 2 DEL RECORTE ESTA HECHO, Y NO ERA UNA LIMPIEZA: ERA UN BUG.**
+`cuenta_no_retipeada` y `sin_plata_inventada` intervenian sobre los MISMOS
+mensajes el 81,8% de las veces. El banco avisa —y esta bien que lo diga asi—
+que ese numero **no prueba que hagan lo mismo, dice DONDE mirar**. Mirando
+aparecio esto:
+
+**LA FALLA, reproducida con el turno armado a mano.** El turno no calcula, el
+modelo re-tipea la cuenta de memoria y le cambia un importe. En el orden viejo
+la plata corria PRIMERO: podaba esos renglones por no tener respaldo —bien
+podados— y cuando le llegaba el turno a la cuenta **ya no quedaba ningun
+renglon que reponer**, asi que se iba sin hacer nada. Al cliente le llegaba,
+textual:
+
+    Te confirmo el pedido.
+    Presupuesto:
+    ¿Avanzamos?
+
+**El titulo, y NADA abajo**, teniendo el sistema la cuenta buena guardada del
+turno anterior. Y el titulo sobrevivia porque debajo quedaba una frase suelta,
+asi que ni la limpieza de titulos huerfanos lo veia. Es la prioridad UNO: no es
+que el mensaje quedara feo, es que no contestaba.
+
+**LA FUSION, y por que el orden es el arreglo.** Ahora es UN nodo,
+`la_cuenta_y_la_plata`: primero entra la cuenta que armo el CODIGO, y recien
+despues se juzga la plata sobre el texto ya corregido. Asi la poda no puede
+comerse el bloque bueno, porque cuando le toca mirar los importes que hay son
+los de la cuenta sellada y estan respaldados por definicion. Las dos mitades
+siguen siendo dos funciones con sus pruebas propias: **lo que se fusiona es el
+paso del turno, para que no se las pueda volver a separar ni reordenar sin
+darse cuenta.**
+
+**Y GANA VERIFICACION EN VEZ DE PERDERLA**, que era el riesgo obvio de fusionar:
+al nodo unico se le cobran los CUATRO contratos con `repone=("previo",)`, y
+`cuenta_no_retipeada` sola **no tenia NO_INVENTA_PLATA**. O sea que la mitad que
+mas toca plata era la menos controlada, y eso no lo veia nadie mientras fueran
+dos nodos con listas de contratos distintas.
+
+**UN SEGUNDO DEFECTO, del mismo tiron.** Cuando el modelo repetia el encabezado
+—"Presupuesto:", que es el caso normal— ese renglon se dejaba en su lugar Y
+ademas se pegaba el bloque previo entero abajo, que lo trae adentro: al cliente
+le llegaba **el titulo dos veces**. Ahora se van todos los renglones de cuenta y
+el bloque del codigo entra entero, una sola vez.
+
+**LOS NUMEROS, antes y despues, del mismo banco:** piezas 18 -> 17; el par del
+81,8% desaparecio y el de arriba pasa a ser aduana con componedor, 42,9%, muy
+abajo. **Y uno que hay que leer bien: el par sacaba 654 caracteres y ahora saca
+475.** El mensaje quedo MAS LARGO, y esta bien: esos 179 caracteres son la
+cuenta real que antes se perdia. Prioridad uno sobre prioridad dos, que es el
+orden escrito en `CLAUDE.md`.
+
+Bateria offline en verde, 933 tests, con la falla vieja escrita como test para
+que no vuelva.
+
+**==== 14-AGO — EL PASO 1 DEL RECORTE: LO MUERTO SE BORRO Y POSVENTA SE
+GUARDO ====**
 
 **LA DECISION DE MARTIN, QUE ES LO QUE ABRIO EL DIA.** El plan decia "borrar lo
 muerto, 39 funciones y `posventa.py`". Martin freno esa mitad: **posventa no se

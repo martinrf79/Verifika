@@ -286,6 +286,36 @@ def test_el_dato_real_convive_con_el_inventado_sin_perder_el_bueno():
     assert "necesito confirmarte" not in salida
 
 
+def test_la_poda_de_plata_no_se_come_la_cuenta_que_habia_que_reponer():
+    """EL DEFECTO QUE ENCONTRO LA FUSION DEL PAR DEL 81,8% (14-ago-2026).
+
+    El turno no calcula, el modelo re-tipea la cuenta de memoria y le cambia un
+    importe. En el orden viejo la plata corria PRIMERO: podaba esos renglones
+    por no tener respaldo -bien podados- y cuando le tocaba a la cuenta ya no
+    quedaba ningun renglon que reponer, asi que se iba sin hacer nada. **Al
+    cliente le llegaba "Presupuesto:" y NADA abajo**, teniendo el sistema la
+    cuenta buena guardada del turno anterior.
+
+    Fusionadas en un nodo, la cuenta del codigo entra primero y la plata la
+    encuentra respaldada. Esto es la prioridad UNO: no es que el mensaje quede
+    mas lindo, es que antes no contestaba."""
+    previo = ("Presupuesto:\n- 2 x Mouse Logitech: $20.000\n"
+              "Subtotal: $20.000\nEnvio (Cordoba): $6.500\nTotal: $26.500")
+    texto = ("Te confirmo el pedido.\nPresupuesto:\n"
+             "- 2 x Mouse Logitech: $24.900\nTotal: $31.900\n¿Avanzamos?")
+    salida = HV._la_cuenta_y_la_plata(texto, [], "", "t1", previo=previo)
+
+    assert "Total: $26.500" in salida, (
+        "se comio la cuenta buena y dejo el turno sin contestar:\n" + salida)
+    # y los importes que el modelo se invento no sobreviven
+    assert "$31.900" not in salida and "$24.900" not in salida
+    # el encabezado del modelo no se suma al del bloque repuesto
+    assert salida.count("Presupuesto:") == 1, (
+        "el titulo salio dos veces:\n" + salida)
+    # el contrato que ahora se le cobra al nodo entero
+    assert HV._la_cuenta_y_la_plata(salida, [], "", "t1", previo=previo) == salida
+
+
 # ── 7. LO QUE CAZO LA CHARLA REAL POR WHATSAPP DEL 1-AGO ────────────────────
 def test_la_cuenta_no_se_puede_retipear_a_mano():
     """El error visible de la charla real: el turno NO llamo a armar_presupuesto

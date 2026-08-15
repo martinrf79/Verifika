@@ -1252,20 +1252,68 @@ def _cuenta_no_retipeada(texto: str, hubo_calculo: bool, previo: str,
     previo_lineas = {l.strip() for l in (previo or "").splitlines() if l.strip()}
     if all(l.strip() in previo_lineas for l in renglones):
         return texto
-    salida, reemplazado = [], False
+    # SE VAN TODOS LOS RENGLONES, tambien los que coinciden con el previo, y el
+    # bloque bueno entra ENTERO en el lugar del primero. Hasta el 14-ago el
+    # renglon que coincidia se dejaba en su lugar Y ademas se pegaba el previo
+    # completo abajo, que trae ese mismo renglon adentro: con el caso normal
+    # -el modelo repite el encabezado "Presupuesto:" y despues inventa los
+    # importes- al cliente le llegaba el titulo DOS VECES. Media cuenta del
+    # modelo mas la cuenta del codigo no es una cuenta: la del codigo va sola.
+    salida, repuesto = [], False
     for linea in (texto or "").splitlines():
         if not _RE_ARRANQUE_CUENTA.match(linea):
             salida.append(linea)
             continue
-        if linea.strip() in previo_lineas:
-            salida.append(linea)
-            continue
-        if previo and not reemplazado:
+        if previo and not repuesto:
             salida.append(previo.strip())
-            reemplazado = True
+            repuesto = True
     log.warning("hub_venta_cuenta_retipeada", trace_id=trace_id,
                 renglones=len(renglones), repuesta=bool(previo))
     return re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip()
+
+
+def _la_cuenta_y_la_plata(texto: str, llamadas: list, bloque: str,
+                          trace_id: str, previo: str = "",
+                          vistos: list | None = None,
+                          declarado: dict | None = None,
+                          carrito: list | None = None) -> str:
+    """LA CUENTA SE RESUELVE PRIMERO, Y RECIEN DESPUES SE PODA LA PLATA.
+
+    UN NODO Y NO DOS (14-ago-2026). `peso_de_la_cadena.py` midio que
+    `cuenta_no_retipeada` y `sin_plata_inventada` intervienen sobre los MISMOS
+    mensajes el 81,8% de las veces, muy por encima de cualquier otro par. No
+    hacen lo mismo —una repone el bloque de la cuenta, la otra borra importes
+    sin respaldo— pero corrian sueltas, en dos nodos, sin saber una de la otra.
+    Eso no era una molestia teorica: costaba la respuesta.
+
+    LA FALLA MEDIDA, con el turno reproducido. El turno no calcula, el modelo
+    re-tipea la cuenta de memoria y le cambia un importe. En el orden viejo la
+    plata corria PRIMERO: podaba esos renglones por no tener respaldo -bien
+    podados- y cuando llegaba la cuenta ya no quedaba ningun renglon que
+    reponer, asi que se iba sin hacer nada. **Al cliente le llegaba "Te
+    confirmo el pedido. Presupuesto:" y NADA abajo**, teniendo el sistema la
+    cuenta buena guardada del turno anterior. El titulo sobrevivia porque abajo
+    quedaba una frase suelta, asi que ni la limpieza de titulos huerfanos lo
+    veia.
+
+    EL ORDEN CORRECTO SALE SOLO DE MIRARLO: primero se pone la cuenta que armo
+    el CODIGO, y despues se juzga la plata sobre el texto ya corregido. Asi la
+    poda nunca puede comerse el bloque bueno, porque cuando le toca mirar, los
+    importes que hay son los de la cuenta sellada y estan respaldados por
+    definicion. Al reves, la poda decide sobre un texto que todavia esta mal.
+
+    Y GANA VERIFICACION, no la pierde. Como nodo unico se le cobran los CUATRO
+    contratos con `repone=("previo",)`; `cuenta_no_retipeada` sola no tenia
+    NO_INVENTA_PLATA, o sea que la mitad que MAS toca plata era la menos
+    controlada. Las dos mitades siguen siendo dos funciones con sus pruebas
+    propias: lo que se fusiona es el paso del turno, para que no se las pueda
+    volver a separar ni reordenar sin darse cuenta.
+    """
+    texto = _cuenta_no_retipeada(texto, hubo_calculo=bool(bloque),
+                                 previo=previo, trace_id=trace_id,
+                                 declarado=declarado, carrito=carrito)
+    return _sin_plata_inventada(texto, llamadas, bloque, trace_id,
+                                previo=previo, vistos=vistos)
 
 
 def _busqueda_de_lo_declarado(llamadas: list, declarado: dict, rec: dict,
@@ -2783,17 +2831,14 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     bloque = _bloque_presupuesto(llamadas)
     texto = G.paso("sin_json", _sin_json_filtrado, texto, trace_id)
     texto = G.paso("sin_markdown", _sin_markdown, texto)
-    texto = G.paso("sin_plata_inventada", _sin_plata_inventada,
+    texto = G.paso("la_cuenta_y_la_plata", _la_cuenta_y_la_plata,
                    texto, llamadas, bloque, trace_id,
                    previo=conv.get("ultimo_presupuesto") or "",
-                   vistos=estado.get("productos_vistos") or [])
+                   vistos=estado.get("productos_vistos") or [],
+                   declarado=declarado,
+                   carrito=conv.get("carrito_vigente") or [])
     texto = G.paso("sin_cobro_inventado", _sin_cobro_inventado,
                    texto, tienda_id, trace_id)
-    texto = G.paso("cuenta_no_retipeada", _cuenta_no_retipeada,
-                   texto, hubo_calculo=bool(bloque),
-                   previo=conv.get("ultimo_presupuesto") or "",
-                   trace_id=trace_id, declarado=declarado,
-                   carrito=conv.get("carrito_vigente") or [])
     texto = G.paso("sin_negar_lo_traido", _sin_negar_lo_traido,
                    texto, llamadas, trace_id)
     texto = G.paso("sin_afirmar_del_catalogo", _sin_afirmar_sobre_el_catalogo,
