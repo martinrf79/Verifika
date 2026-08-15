@@ -1112,12 +1112,41 @@ def _sin_anuncio_vacio(texto: str, trace_id: str) -> str:
     return limpio
 
 
+# Un renglon de TABLA markdown: empieza y termina en pipe. El separador es el
+# de guiones y dos puntos que va debajo del encabezado.
+_RE_FILA_TABLA = re.compile(r"(?m)^\s*\|.*\|\s*$")
+_RE_SEPARADOR_TABLA = re.compile(r"^[\s|:-]+$")
+
+
 def _sin_markdown(texto: str) -> str:
     """WhatsApp no renderiza markdown: los asteriscos dobles salen como
-    asteriscos. El prompt lo pide y el modelo igual los pone."""
+    asteriscos. El prompt lo pide y el modelo igual los pone.
+
+    Y LAS TABLAS TAMBIEN, que es lo que se colaba (charla real del 15-ago). Al
+    cliente le llego una tabla de cuatro columnas -Producto, Cantidad, Destino,
+    Precio- con sus pipes y su renglon de guiones, o sea catorce caracteres de
+    puntuacion por fila que en el telefono se leen como basura. Esta guarda
+    intervino en ese turno y no la vio: miraba asteriscos y almohadillas nada
+    mas.
+
+    Cada fila se pasa a renglon de texto con sus celdas separadas por " - ", y
+    el separador de guiones se va entero porque no dice nada. No se pierde
+    ningun dato: las celdas se conservan todas, en el mismo orden."""
     t = re.sub(r"\*\*(.+?)\*\*", r"\1", texto or "")
     t = re.sub(r"(?m)^\s*#{1,6}\s*", "", t)
-    return t
+    if not _RE_FILA_TABLA.search(t):
+        return t
+
+    def _fila(m):
+        crudo = m.group(0).strip().strip("|")
+        if _RE_SEPARADOR_TABLA.match(crudo):
+            return "\x00"          # marca para borrar el renglon entero
+        celdas = [c.strip() for c in crudo.split("|")]
+        return " - ".join(c for c in celdas if c)
+
+    t = _RE_FILA_TABLA.sub(_fila, t)
+    t = "\n".join(l for l in t.splitlines() if l.strip() != "\x00")
+    return re.sub(r"\n{3,}", "\n\n", t)
 
 
 def _reparto_que_se_guarda(del_turno, guardado, carrito) -> list | None:

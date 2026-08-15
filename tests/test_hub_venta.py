@@ -1910,3 +1910,34 @@ def test_el_mismo_producto_a_dos_destinos_no_se_junta(firestore_doble):
         f"se perdio un destino al unificar: {items}")
     assert sum(int(i["cantidad"]) for i in items) == 2, (
         f"se perdio mercaderia al unificar: {items}")
+
+
+def test_la_tabla_markdown_no_le_llega_al_cliente():
+    """CHARLA REAL DEL 15-AGO. Al cliente le llego una tabla markdown de cuatro
+    columnas con sus pipes y su renglon de guiones. WhatsApp no la renderiza:
+    en el telefono se lee como basura. `_sin_markdown` intervino en ese turno y
+    no la vio, porque miraba asteriscos y almohadillas nada mas.
+
+    Se pasa a renglones de texto SIN perder ninguna celda."""
+    texto = ("Aquí te dejo el resumen:\n\n"
+             "| Producto | Cantidad | Destino | Precio Unitario |\n"
+             "| :--- | :--- | :--- | :--- |\n"
+             "| Memoria RAM | 2 | Monte Ralo | Desde $34.500 |\n"
+             "| Mouse | 2 | Alta Gracia | Desde $8.500 |\n\n"
+             "¿Confirmamos?")
+    salida = HV._sin_markdown(texto)
+
+    assert "|" not in salida, "la tabla sigue saliendo:\n" + salida
+    assert ":---" not in salida
+    # ningun dato se perdio
+    for dato in ("Memoria RAM", "Monte Ralo", "$34.500", "Mouse",
+                 "Alta Gracia", "$8.500", "Cantidad"):
+        assert dato in salida, f"se perdio {dato}:\n{salida}"
+    assert "¿Confirmamos?" in salida
+    assert HV._sin_markdown(salida) == salida
+
+
+def test_un_texto_sin_tabla_no_se_toca():
+    """La guarda no puede inventarse trabajo: un mensaje normal sale igual."""
+    texto = "El mouse Genius sale $8.500 y hay 12 en stock.\n¿Te lo reservo?"
+    assert HV._sin_markdown(texto) == texto

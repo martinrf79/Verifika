@@ -162,4 +162,4 @@ Para que no aparezca como sorpresa tres sesiones despues:
 
 ---
 
-*Generado el 2026-08-14 por `banco_pruebas/inventario_barrido.py`.*
+*Generado el 2026-08-15 por `banco_pruebas/inventario_barrido.py`.*

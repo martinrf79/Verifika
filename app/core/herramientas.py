@@ -2151,9 +2151,107 @@ _CUERPOS = {
 }
 
 
+# Largo minimo para considerar que un campo es PROSA DE POLITICA y no un dato
+# corto del producto. Con este piso, `precio` -"$34.500", 7 caracteres- o un
+# color no pueden salir factorizados ni por casualidad.
+_MIN_COMUN = 40
+
+# Nunca se factorizan, por mas identicos que vengan: son los campos con los que
+# el turno IDENTIFICA y COBRA. Que el precio viaje una sola vez para varios
+# productos es cierto y es peligroso: la regla de la plata y el certificador
+# leen la ficha producto por producto.
+_NUNCA_COMUN = ("id", "nombre", "precio", "precio_ars", "stock", "marca",
+                "modelo", "categoria", "color")
+
+
+def _sin_marca_propia(texto, prod: dict) -> str:
+    """El texto sin la marca ni el modelo de SU producto, para poder comparar
+    dos politicas que solo se diferencian en eso. Los espacios se colapsan para
+    que no quede el hueco de la palabra sacada."""
+    if not isinstance(texto, str):
+        return ""
+    fuera = texto
+    for campo in ("marca", "modelo"):
+        val = str(prod.get(campo) or "").strip()
+        if len(val) >= 3:
+            fuera = re.sub(re.escape(val), " ", fuera, flags=re.IGNORECASE)
+    return re.sub(r"\s{2,}", " ", fuera).strip()
+
+
+def _sin_repetir_lo_comun(res: dict) -> dict:
+    """EL DATO IGUAL EN TODAS LAS FICHAS VIAJA UNA VEZ, NO UNA POR PRODUCTO.
+
+    LA CAUSA DE LA REPETICION QUE VIO MARTIN (15-ago-2026), y no era del modelo.
+    Al cliente le llego "La garantia es de 120 meses por defectos de
+    fabricacion" TRES VECES, una por producto. El modelo hizo lo que se le
+    pidio: `buscar_productos` devolvia cinco fichas y **cada una traia pegada la
+    misma politica de garantia entera**, ~180 caracteres identicos. En un solo
+    resultado de 3.127 caracteres la garantia viajaba 15 veces.
+
+    Se estaba tapando en la salida -una regla borraba las oraciones repetidas
+    despues de escritas- y eso es limpiar el sintoma: el codigo GENERABA la
+    repeticion y otra pieza la barria. Aca se corta en el origen, que es donde
+    ademas es gratis: el modelo ya no puede repetir lo que no recibio repetido.
+
+    ES GENERICO A PROPOSITO, no un parche de garantia: cualquier campo de prosa
+    identico en TODAS las fichas sale una vez a `igual_en_todos`. Si un producto
+    difiere, el campo se queda en cada ficha y no se factoriza nada, que es lo
+    unico que importa para no mentir. Un solo producto tampoco se toca.
+    """
+    prods = res.get("productos")
+    if not isinstance(prods, list) or len(prods) < 2:
+        return res
+    if not all(isinstance(p, dict) for p in prods):
+        return res
+    comunes = {}
+    for k, v in prods[0].items():
+        if k in _NUNCA_COMUN:
+            continue
+        # UN NUMERO IGUAL EN TODAS TAMBIEN ES UN DATO REPETIDO. `garantia_meses`
+        # = 120 en las tres memorias es el hecho que el cliente leyo tres veces;
+        # sin esta rama solo se cazaba la prosa y el caso real se escapaba.
+        if isinstance(v, (int, float, bool)) and not isinstance(v, bool):
+            if all(p.get(k) == v for p in prods):
+                comunes[k] = v
+            continue
+        if not isinstance(v, str) or len(v) < _MIN_COMUN:
+            continue
+        if all(p.get(k) == v for p in prods):
+            comunes[k] = v
+            continue
+        # LA PROSA QUE SOLO CAMBIA EN LA MARCA ES LA MISMA PROSA. "Garantia
+        # oficial Kingston de 120 meses..." y "Garantia oficial Patriot de 120
+        # meses..." son el mismo hecho escrito dos veces, y asi viajaba: el
+        # filtro de identico byte a byte no las veia. Se comparan sin la marca
+        # y sin el modelo de cada producto -que igual siguen en su ficha- y si
+        # coinciden se manda UNA, sin la marca. No se inventa nada: se saca una
+        # palabra que varia, no se agrega ninguna.
+        pelados = {_sin_marca_propia(p.get(k), p) for p in prods}
+        if len(pelados) == 1 and all(isinstance(p.get(k), str) for p in prods):
+            comunes[k] = pelados.pop()
+    if not comunes:
+        return res
+    fuera = dict(res)
+    fuera["productos"] = [{k: v for k, v in p.items() if k not in comunes}
+                          for p in prods]
+    fuera["igual_en_todos"] = comunes
+    fuera["instruccion_igual_en_todos"] = (
+        "Estos datos son IDENTICOS en todos los productos de arriba. Si hacen "
+        "falta, se dicen UNA SOLA VEZ para todo el grupo. No los repitas "
+        "producto por producto.")
+    log.info("herramienta_dato_comun_factorizado",
+             campos=sorted(comunes), productos=len(prods))
+    return fuera
+
+
 def ejecutar(nombre: str, args: dict, tienda_id: str) -> dict:
     """Corre UNA herramienta. Nunca levanta: un fallo vuelve como estado, para
-    que el modelo lo cuente honesto en vez de que se caiga el turno."""
+    que el modelo lo cuente honesto en vez de que se caiga el turno.
+
+    ES LA UNICA PUERTA por la que sale un resultado de herramienta, asi que es
+    el lugar donde se corta lo repetido: sirve para las cuatro listas de fichas
+    que arma este archivo y para la que se escriba mañana. Ver
+    `_sin_repetir_lo_comun`."""
     cuerpo = _CUERPOS.get(nombre)
     if cuerpo is None:
         return {"estado": "herramienta_desconocida", "nombre": nombre}
@@ -2161,7 +2259,7 @@ def ejecutar(nombre: str, args: dict, tienda_id: str) -> dict:
     if validado is None:
         return {"estado": "pedido_mal_formado", "nombre": nombre}
     try:
-        return cuerpo(validado, tienda_id)
+        return _sin_repetir_lo_comun(cuerpo(validado, tienda_id))
     except Exception as e:
         log.warning("herramienta_error", herramienta=nombre,
                     error=f"{type(e).__name__}: {str(e)[:160]}")

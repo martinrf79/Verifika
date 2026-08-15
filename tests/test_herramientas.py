@@ -769,3 +769,51 @@ def test_ningun_molde_se_rompe_con_un_null_en_un_campo_con_default():
             renglon = {**_relleno(hijo), **nulos}
             assert H.validar(nombre, {**base, campo: [renglon]}) is not None, \
                 f"{nombre}.{campo}[] tira el turno con null"
+
+
+# ── LA CAUSA DE LA REPETICION QUE VIO MARTIN (15-ago-2026) ──────────────────
+def test_el_dato_igual_en_todas_las_fichas_viaja_una_sola_vez(firestore_doble):
+    """LA CAUSA, y no era del modelo. Al cliente le llego "La garantia es de 120
+    meses por defectos de fabricacion" TRES VECES, una por producto. El modelo
+    hizo lo que se le pidio: `buscar_productos` devolvia las fichas y CADA UNA
+    traia pegada la misma politica de garantia entera. En un resultado de 3.127
+    caracteres la garantia viajaba 15 veces.
+
+    Se estaba tapando en la SALIDA, borrando las oraciones repetidas despues de
+    escritas. Eso es limpiar el sintoma: el codigo generaba la repeticion y otra
+    pieza la barria. Se corta en el origen, que es donde ademas es gratis."""
+    r = H.ejecutar("buscar_productos", {"categoria": "memoria ram"}, TIENDA)
+    prods = r.get("productos") or []
+    assert len(prods) >= 2, "hace falta mas de un producto para medir esto"
+
+    comunes = r.get("igual_en_todos") or {}
+    assert "garantia_detalle" in comunes, (
+        "la politica de garantia sigue viajando pegada a cada ficha: "
+        f"factorizado={sorted(comunes)}")
+    # y NO quedo ademas en cada producto: una vez es una vez
+    assert not any("garantia_detalle" in p for p in prods)
+    # el hecho sigue estando, no se perdio
+    assert "120" in str(comunes.get("garantia_detalle", "")) or \
+           comunes.get("garantia_meses") == 120
+
+
+def test_lo_que_identifica_y_cobra_nunca_se_factoriza(firestore_doble):
+    """El otro lado, que es donde esto se vuelve peligroso: el precio, el stock
+    y el nombre se leen ficha por ficha -la regla de la plata y el certificador-.
+    Dos productos al mismo precio NO pueden compartir un precio 'comun'."""
+    r = H.ejecutar("buscar_productos", {"categoria": "mouse"}, TIENDA)
+    comunes = r.get("igual_en_todos") or {}
+    for prohibido in ("id", "nombre", "precio", "precio_ars", "stock"):
+        assert prohibido not in comunes, f"se factorizo {prohibido}"
+    for p in (r.get("productos") or []):
+        assert "nombre" in p and "precio" in p
+
+
+def test_con_un_solo_producto_no_se_factoriza_nada(firestore_doble):
+    """Sin dos fichas no hay repeticion que sacar, y mover el dato a otra clave
+    seria cambiar la forma del resultado sin ganar nada."""
+    r = H.ejecutar("buscar_productos",
+                   {"descripcion": "Kingston Fury Beast DDR4 3200 8GB Negro"},
+                   TIENDA)
+    if len(r.get("productos") or []) == 1:
+        assert "igual_en_todos" not in r
