@@ -689,7 +689,29 @@ def _sin_descuento_inventado(texto: str, trace_id: str) -> str:
     que se cuela una promesa comercial que despues alguien tiene que sostener.
 
     Los descuentos REALES de la tienda -transferencia, mayorista, cuotas- salen
-    de consultar_temas y no los toca esta regla."""
+    de consultar_temas y no los toca esta regla.
+
+    EL HUECO QUE QUEDA ABIERTO, y esta declarado con test en
+    `tests/test_bot_sin_modelo.py`: esta regla pide DOS cosas en la misma
+    oracion, el beneficio y la gestion, o sea que caza el descuento OFRECIDO
+    -"puedo consultar que descuento aplicarte"- y deja pasar el AFIRMADO -"te
+    hago un 25% de descuento por ser vos"-, que es la mentira mas cara de las
+    dos porque no deja lugar a duda.
+
+    Y ESTA ESCRITO ACA POR QUE NO SE TAPA CON OTRA REGLA DE PROSA. El 17-ago se
+    intento: se le agrego una segunda mitad que podaba toda oracion con un
+    porcentaje de descuento que ninguna herramienta hubiera traido. Duro veinte
+    minutos. El renglon REAL del pago dividido -"transferencia (30%): $67.500 -
+    10% descuento = $60.750"- se parte en oraciones por los puntos de los miles,
+    y el pedazo que le tocaba a la regla no tenia la palabra "transferencia"
+    adentro, asi que la exencion no lo salvo: le corto el medio y dejo "$67.750".
+    O sea que un candado contra la alucinacion INVENTO UN PRECIO, que es
+    exactamente lo que el sistema entero existe para que no pase, y lo cazo el
+    invariante de que las partes tienen que sumar el total.
+
+    La leccion, que es la del plan de recorte entero: esto se cierra en la
+    ATADURA, contrastando la afirmacion contra la fuente, no sumando la regla
+    numero dieciocho sobre el texto ya escrito."""
     fuera = []
     for m in _RE_ORACIONES.finditer(texto or ""):
         frase = m.group(0)
