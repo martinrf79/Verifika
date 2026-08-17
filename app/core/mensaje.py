@@ -141,6 +141,30 @@ def _grupos_de_codigo(lineas: list) -> list:
     return grupos
 
 
+def _resumen_de_cuenta(lineas: list, indices) -> str:
+    """LA PLATA NO DESAPARECE NUNCA, y ahora vale para las DOS reglas que pueden
+    borrar el mismo bloque.
+
+    Cuando un bloque de cuenta se poda entero -porque no cambio, regla 6, o
+    porque el cliente lo acaba de leer, regla 2- queda el renglon del TOTAL, que
+    es el numero que va a pagar. Quince renglones se vuelven uno y la cifra
+    sigue en pantalla.
+
+    POR QUE ESTA ACA Y NO ADENTRO DE LA REGLA 6. Estaba escrita adentro de la 6
+    nada mas, y la 2 borraba el bloque a secas. Mientras las dos no podaban el
+    mismo bloque en el mismo turno no se noto; el 17-ago, al sacar las rondas,
+    la cuenta de un turno paso a salir IDENTICA a la del anterior y las dos se
+    encontraron: la 6 no disparo -`un_solo_reparto` ya le habia cambiado la
+    firma al bloque- y la 2 se llevo la cuenta entera. Al cliente le llego
+    "Aquí tenés el detalle del presupuesto:" y ni un peso abajo, teniendo el
+    sistema la cuenta buena calculada. Charla 78 turno 2.
+
+    Es una propiedad sola -la plata no se borra- y ahora tiene UNA definicion."""
+    bloque = "\n".join(lineas[i] for i in indices)
+    m = _RE_TOTAL.search(bloque) or _RE_TOTAL_PELADO.search(bloque)
+    return f"Sin cambios en la cuenta. {m.group(0).strip()}" if m else ""
+
+
 def _firma(lineas: list, indices) -> str:
     """Lo que dice un bloque, sin blancos ni mayusculas. Dos bloques con la
     misma firma dicen EXACTAMENTE lo mismo: ahi no hay nada que juzgar."""
@@ -286,11 +310,17 @@ def sin_lo_ya_dicho(texto: str, anterior: str) -> str:
     lineas = (texto or "").splitlines()
     previo_lineas = {_norm(l) for l in (anterior or "").splitlines() if l.strip()}
     de_codigo, repetidos = set(), set()
+    # EL TOTAL DEL BLOQUE QUE SE VA, por indice, para reponerlo en su lugar. Ver
+    # `_resumen_de_cuenta`: un bloque calcado se va entero, pero la plata no.
+    resumen_de = {}
     for g in _grupos_de_codigo(lineas):
         de_codigo.update(g)
         vivos = [i for i in g if lineas[i].strip()]
         if vivos and all(_norm(lineas[i]) in previo_lineas for i in vivos):
             repetidos.update(g)
+            r = _resumen_de_cuenta(lineas, g)
+            if r:
+                resumen_de[min(g)] = r
     # El corte por oraciones necesita oraciones largas del mensaje anterior; el
     # de bloques no, y por eso se decide despues de mirarlos: un bloque calcado
     # se va aunque el mensaje anterior no tenga una sola oracion larga.
@@ -299,6 +329,8 @@ def sin_lo_ya_dicho(texto: str, anterior: str) -> str:
     salida, fuera = [], 0
     for i, linea in enumerate(lineas):
         if i in repetidos:
+            if i in resumen_de:
+                salida.append(resumen_de[i])
             fuera += 1
             continue
         if i in de_codigo:
@@ -802,9 +834,7 @@ def sin_cuenta_que_no_cambio(texto: str, anterior: str = "",
     if not ahora or ahora != antes or len(ahora) < _MIN_CUENTA_REPETIDA:
         return texto
 
-    bloque = "\n".join(lineas[i] for i in indices)
-    m = _RE_TOTAL.search(bloque) or _RE_TOTAL_PELADO.search(bloque)
-    resumen = f"Sin cambios en la cuenta. {m.group(0).strip()}" if m else ""
+    resumen = _resumen_de_cuenta(lineas, indices)
 
     salida, puesto = [], False
     fuera = set(indices)
@@ -816,7 +846,7 @@ def sin_cuenta_que_no_cambio(texto: str, anterior: str = "",
             salida.append(resumen)
             puesto = True
     log.info("mensaje_cuenta_sin_cambios", renglones=len(fuera),
-             ahorro=len(bloque) - len(resumen))
+             ahorro=sum(len(lineas[i]) for i in fuera) - len(resumen))
     return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip())
 
 

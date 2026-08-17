@@ -704,43 +704,14 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
             "sin_buscar": sin_buscar}
 
 
-def instruccion_de_faltantes(rec: dict) -> str:
-    """El faltante convertido en instruccion para la vuelta siguiente del
-    bucle. Le decimos QUE falta, nunca COMO resolverlo: el modelo elige la
-    herramienta, el codigo solo marca el hueco."""
-    lineas = list(rec.get("faltantes") or [])
-    if not lineas:
-        return ""
-    # LA CUENTA VA PRIMERA Y NO LA FRENA UNA PREGUNTA PENDIENTE (4-ago-2026).
-    # Medido tres veces seguidas con el modelo vivo sobre el mensaje real de
-    # Martin: el reconciliador dijo "pedio precio y no armaste la cuenta", y la
-    # ronda dos devolvio CERO herramientas en 2 de 3. El modelo entiende que si
-    # tiene que preguntar algo, todavia no puede cotizar, y el cliente que pidio
-    # precio de seis items se queda sin un solo numero. Mismo defecto medido en
-    # 71_cambio_de_decision, 3 de 3 vueltas: no es de un guion, es sistemico.
-    #
-    # `instruccion_de_preguntas` ya decia "cotiza igual lo que si esta
-    # definido", pero eso le llega al REDACTOR, que para entonces no tiene
-    # numeros y tiene prohibido inventarlos. Tiene que llegarle al DECISOR, que
-    # es la unica etapa que todavia puede llamar a armar_presupuesto.
-    plata = [l for l in lineas if "armar_presupuesto" in l]
-    resto = [l for l in lineas if l not in plata]
-    cabeza = ""
-    if plata:
-        cabeza = ("PRIMERO LA CUENTA, y va aunque falte aclarar algo: " +
-                  " ".join(plata) + " Cotizá lo que YA está definido con los "
-                  "ids que tenés; que haya una contradicción por preguntar NO "
-                  "te frena la cuenta. Dejar al cliente sin un solo número es "
-                  "peor que cotizar de a partes.\n\n")
-    if not resto:
-        return cabeza.strip()
-    return (cabeza + "REVISION DEL PLAN, y esto MANDA sobre todo lo demás que "
-            "leas abajo. Comparé lo que el cliente pidió contra lo que "
-            "buscaste y falta esto:\n- " + "\n- ".join(resto) +
-            "\nTenés que pedir AHORA las herramientas que resuelvan esto. No "
-            "contestes sin resolverlo: el dato existe y no lo pediste. Si de "
-            "verdad ninguna herramienta puede resolverlo, recién ahí contestá "
-            "sin inventarlo.")
+# `instruccion_de_faltantes` SE BORRO EL 17-AGO, con el bucle de rondas. Era la
+# unica consumidora de `rec["faltantes"]` y su unico destino era el DECISOR de la
+# vuelta siguiente: le decia que herramienta le habia faltado pedir. Sin vuelta
+# siguiente no tiene a quien hablarle. Lo que hacia se reparte en dos, y las dos
+# ya existian: lo que se puede resolver sin el modelo lo resuelven las
+# reposiciones del hub, y lo que no, se lo dice el INDICE al redactor mirando el
+# material que quedo. `rec["faltantes"]` se sigue calculando y se sigue logueando,
+# que es donde servia de verdad: para ver cuando una reposicion no alcanzo.
 
 
 def instruccion_de_preguntas(rec: dict) -> str:

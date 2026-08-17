@@ -217,11 +217,14 @@ NODOS = (
          exige="pedidos con argumentos validos",
          garantiza="el resultado de cada herramienta, con su estado, sin que "
                    "una que falla tumbe a las otras",
-         # SIN IDEMPOTENTE, y no es un olvido: este nodo ACUMULA por diseño.
-         # El turno lo corre una vez por ronda y suma -`llamadas += ...`-, asi
-         # que correrlo dos veces con los mismos pedidos tiene que dar dos
-         # resultados. Exigirle idempotencia seria exigirle que pierda una
-         # ronda.
+         # SIN IDEMPOTENTE, y sigue sin serlo aunque las rondas se hayan ido.
+         # El 17-ago se intento cobrarle el contrato de yapa -sin rondas el
+         # turno lo corre una sola vez, asi que parecia gratis- y el barrido lo
+         # freno con 72 violaciones: al dejar de acumular, el nodo perdia las
+         # herramientas que ya venian en el estado, o sea que se ganaba
+         # `idempotente` pagando `no_pierde_evidencia`. Acumular no cuesta nada
+         # -en el turno vivo la lista arranca vacia- y no perder evidencia
+         # importa mucho mas: lo que se pierde aca deja al redactor sin el dato.
          contratos=(NO_LEVANTA, NO_INVENTA_ID, NO_PIERDE_EVIDENCIA,
                     NO_AGREGA_LO_NO_PEDIDO),
          aplicar_datos=lambda c: _con(
@@ -499,9 +502,12 @@ def _hub():
     return hub_venta
 
 
-CICLOS = (("reconciliador", "decisor"),)
-"""El unico ciclo del turno: si el reconciliador encuentra un faltante, se
-vuelve al decisor. Tope de dos rondas, en `_MAX_RONDAS`."""
+CICLOS = ()
+"""EL TURNO NO TIENE CICLOS DESDE EL 17-AGO, y es el cambio que mas latencia
+saco. Habia uno solo: si el reconciliador encontraba un faltante se volvia al
+decisor, hasta cuatro veces. Ahora el faltante lo resuelve el codigo en las
+reposiciones, y lo que ni asi se resuelve se lo dice el indice al redactor. Un
+grafo sin ciclos tiene un numero fijo de llamadas al modelo por turno: dos."""
 
 
 def nodos_de(etapa: str) -> tuple:

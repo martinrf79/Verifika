@@ -51,13 +51,21 @@ settings = get_settings()
 
 _TIMEOUT_S = 14
 _MAX_HERRAMIENTAS = 10
-# EL BUCLE ACOTADO reemplaza a las dos rondas fijas (Martin, 2-ago). Una
-# pregunta dificil tiene profundidad desconocida de antemano: buscar, mirar lo
-# que volvio, darse cuenta de que falta algo, buscar distinto, y recien ahi
-# contestar. Con dos rondas clavadas eso era imposible por diseño. Corta solo,
-# apenas el reconciliador no encuentra huecos, asi que un saludo sigue costando
-# una sola llamada y un pedido simple dos.
-_MAX_RONDAS = 4
+# DOS LLAMADAS AL MODELO POR TURNO, FIJAS. El bucle de hasta cuatro rondas se
+# saco el 17-ago y con el la variable que mas latencia costaba: cada vuelta son
+# entre 3 y 8 segundos y vuelve a pagar los 25.370 bytes del esquema enteros.
+#
+# EL UNICO MOTIVO REAL por el que existia la ronda dos es que para armar la
+# cuenta hacen falta los ids y los ids los trae otra herramienta. Eso es trabajo
+# de CODIGO y ya estaba escrito: las reposiciones del paso 2-bis arman la cuenta
+# con lo declarado sin preguntarle nada al modelo. La ronda le pagaba al modelo
+# por hacer lo que el codigo ya hace.
+#
+# Y lo que costaba esta medido en este mismo repo, en los comentarios de
+# `pedido.py`: ante un reclamo del reconciliador el modelo pidio CERO
+# herramientas 3 de 3 veces, y de 88 faltantes emitidos 41 se repitieron en dos
+# o mas rondas del MISMO turno. O sea que la vuelta extra no solo tardaba: en el
+# caso tipico no traia nada.
 
 # ── LOS CANDADOS ─────────────────────────────────────────────────────────────
 # Las reglas viven en UN solo lugar y valen para las dos llamadas. Antes estaban
@@ -100,19 +108,6 @@ respuesta a algo que vos preguntaste- contesta directamente sin herramientas.
 Contesta cada cosa que te preguntaron con lo que la casa tiene escrito, no de
 tu cabeza: sumale consultar_temas con UN TEMA POR CADA COSA. Si preguntaron
 tres, van tres temas en la misma llamada."""
-
-_INSTRUCCION_RONDA_DOS = """Estos son los datos que trajeron las herramientas
-que pediste. Si con esto ya podes contestar todo lo que el cliente pregunto, no
-pidas nada mas.
-
-Pedi mas herramientas SOLO si ahora podes hacer algo que antes no: tipico, ya
-tenes los ids de los productos y recien ahora podes armar el presupuesto con
-armar_presupuesto, ver una ficha completa o chequear compatibilidad. Nunca
-escribas vos un precio ni un total: eso lo arma la herramienta.
-
-Y si el cliente pregunto cuanto sale algo, LLAMA a armar_presupuesto por lo que
-ya esta definido, aunque falte elegir otra cosa. Cotiza lo que se puede y pedi
-lo que falta: dejarlo sin ningun numero es peor que cotizar de a partes."""
 
 _INSTRUCCION_DOS = """Escribile ahora la respuesta al cliente usando SOLO los
 datos de abajo.
@@ -364,43 +359,18 @@ def _marcar_sin_modelo(trace_id: str) -> None:
 
 
 async def _pedir_herramientas(negocio, memoria, history, mensaje, tienda_id,
-                              trace_id, llamadas=None, revision=""):
+                              trace_id):
     """QUE BUSCAR. Devuelve (lista de pedidos, texto directo si no pidio nada).
 
-    Con `llamadas` es la SEGUNDA ronda: el modelo ve lo que ya trajo y puede
-    pedir lo que recien ahora es posible. Existe porque en una sola tanda no se
-    puede encadenar, y el caso que lo pario es el central del negocio: para
-    armar un presupuesto hacen falta los ids, y los ids los trae otra
-    herramienta. Medido en la primera charla viva: el modelo pidio los envios,
-    no pidio los productos, escribio los precios de memoria y la regla de plata
-    se los podo enteros. El cliente recibio "Productos:" y nada abajo."""
+    Es la LLAMADA UNO y es la unica vez por turno que el modelo elige
+    herramientas. El modo de segunda ronda se saco el 17-ago: lo que hacia
+    -encadenar la cuenta despues de tener los ids- lo hace el codigo en las
+    reposiciones, sin gastar una vuelta al modelo."""
     cli = _cliente_decisor()
     if cli is None:
         return [], ""
     esquemas = H.esquemas(tienda_id)
-    if llamadas:
-        # AHORRO MEDIDO: en las vueltas de encadenado el modelo ya declaró el
-        # pedido y ya buscó. Mandarle otra vez los ocho esquemas cuesta ~1200
-        # tokens por turno al pedo. Van solo las que puede encadenar de verdad.
-        encadenables = {"buscar_productos", "ficha_producto", "cotizar_envio",
-                        "armar_presupuesto", "ver_compatibilidad",
-                        "tomar_pedido", "consultar_temas"}
-        esquemas = [e for e in esquemas
-                    if e.get("function", e).get("name") in encadenables]
-        # EL FALTANTE VA PRIMERO, NO AL FINAL. `_INSTRUCCION_RONDA_DOS` abre con
-        # "si con esto ya podes contestar, no pidas nada mas", y la correccion
-        # del reconciliador se pegaba DESPUES. Medido el 5-ago con el modelo
-        # vivo, con y sin razonamiento: el reconciliador cazo bien que la
-        # condicion de origen no se habia aplicado, y en la ronda dos el modelo
-        # no pidio NADA las dos veces. El desaliento le ganaba a la correccion,
-        # asi que el turno terminaba en el muro que el reconciliador acababa de
-        # detectar. Un chequeo que detecta y no corrige no sirve de nada.
-        instr = ((revision + "\n\n" + _INSTRUCCION_RONDA_DOS) if revision
-                 else _INSTRUCCION_RONDA_DOS)
-        msgs = _mensajes(negocio, memoria, history, mensaje, instr,
-                         H.contexto_json(llamadas))
-    else:
-        msgs = _mensajes(negocio, memoria, history, mensaje, _INSTRUCCION_UNO)
+    msgs = _mensajes(negocio, memoria, history, mensaje, _INSTRUCCION_UNO)
 
     def _call():
         # max_tokens ALTO a proposito: el pensamiento se descuenta de acá. Con
@@ -2645,54 +2615,31 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # ya certificados. Mas rondas no: seria volver a una cadena larga.
     llamadas: list = []
     texto_directo = ""
-    revision = ""
     obligacion = ""
     declarado: dict = {}
     # Se inicializa aca: si el turno no pide ninguna herramienta -un saludo, un
-    # gracias- el bucle corta antes de reconciliar y `rec` quedaba sin definir.
+    # gracias- no se reconcilia y `rec` quedaria sin definir.
     rec: dict = {}
-    # LAS CONTRADICCIONES SON DEL TURNO, NO DE LA RONDA. El modelo las declara
-    # en la ronda 1, el reconciliador le ordena preguntarlas, y en la ronda 2
-    # vuelve a declarar el pedido SIN ellas: ya las resolvio a su gusto. Ahi la
-    # orden de preguntar desaparecia y el cliente nunca se enteraba.
-    #
-    # Paso en real el 12-ago: el cliente pidio DOS auriculares y en el reparto
-    # nombro uno solo mas un teclado que no estaba en la lista. El modelo canto
-    # las dos contradicciones, el reconciliador le dijo que preguntara, y en la
-    # ronda siguiente declaro 1 auricular + 1 teclado sin una palabra. Se le
-    # cotizo la mitad de los auriculares que pidio y nadie se lo dijo: el
-    # indice del turno dio 11 de 11 correcto, porque se mide contra lo
-    # declarado y lo declarado ya venia arreglado.
-    #
-    # Una contradiccion se apaga de UNA sola forma: que el sistema demuestre
-    # que no existe -eso lo hace `_contradiccion_desmentida`, que compara con
-    # lo que el codigo conto-. No alcanza con que el modelo deje de nombrarla.
-    contradicciones_del_turno: list = []
-    for ronda in range(1, _MAX_RONDAS + 1):
-        with _reloj(etapas, "decisor"):
-            pedidos, texto_directo = await _pedir_herramientas(
-                negocio, memoria, history, raw_message, tienda_id, trace_id,
-                llamadas if ronda > 1 else None, revision=revision)
-        log.info("hub_venta_pedidos", trace_id=trace_id, ronda=ronda,
-                 herramientas=[p["nombre"] for p in pedidos],
-                 args=[p.get("args") for p in pedidos][:4])
-        if not pedidos:
-            break
+    with _reloj(etapas, "decisor"):
+        pedidos, texto_directo = await _pedir_herramientas(
+            negocio, memoria, history, raw_message, tienda_id, trace_id)
+    log.info("hub_venta_pedidos", trace_id=trace_id,
+             herramientas=[p["nombre"] for p in pedidos],
+             args=[p.get("args") for p in pedidos][:4])
+    if pedidos:
         with _reloj(etapas, "herramientas"):
-            llamadas += await _ejecutar_en_paralelo(pedidos, tienda_id, trace_id)
-        log.info("hub_venta_resultados", trace_id=trace_id, ronda=ronda,
+            llamadas = await _ejecutar_en_paralelo(pedidos, tienda_id, trace_id)
+        log.info("hub_venta_resultados", trace_id=trace_id,
                  estados=[(l["herramienta"],
                            (l["resultado"] or {}).get("estado"))
                           for l in llamadas])
-        G.anotar("rondas", ronda)
         G.anotar("herramientas_usadas",
                  sorted({l["herramienta"] for l in llamadas}))
-        _log_fuente(llamadas, trace_id, ronda)
+        _log_fuente(llamadas, trace_id, 1)
 
         # ── RECONCILIAR: lo declarado contra lo hecho ───────────────────
         # Acá está el control que faltaba. Los diecinueve que había miraban la
-        # prosa ya escrita; este mira la DECISION, antes de escribir. Si algo
-        # falta se lo devolvemos al modelo para la vuelta siguiente; si el
+        # prosa ya escrita; este mira la DECISION, antes de escribir. Si el
         # pedido tiene una contradicción, el turno termina PREGUNTANDO y no
         # eligiendo por el cliente.
         for l in llamadas:
@@ -2702,17 +2649,6 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         # aca, antes de reconciliar: si no, queda fuera de todos los controles.
         # Con red: completar lo declarado es una MEJORA, y una mejora no puede
         # dejar sin respuesta a un cliente. Si falla, el turno sigue como antes.
-        for c in ((declarado or {}).get("contradicciones") or []):
-            c = str(c).strip()
-            if c and c not in contradicciones_del_turno:
-                contradicciones_del_turno.append(c)
-        if contradicciones_del_turno and declarado:
-            if len(contradicciones_del_turno) != len(
-                    declarado.get("contradicciones") or []):
-                log.info("contradiccion_sostenida", trace_id=trace_id,
-                         ronda=ronda, cuantas=len(contradicciones_del_turno))
-            declarado = dict(declarado)
-            declarado["contradicciones"] = list(contradicciones_del_turno)
         try:
             declarado = _restricciones_de_los_filtros(declarado, llamadas,
                                                       trace_id)
@@ -2729,33 +2665,18 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         rec = P.reconciliar(declarado, llamadas, trace_id, ya_resuelto=ya,
                             tienda_id=tienda_id)
         obligacion = P.instruccion_de_preguntas(rec)
-        revision = P.instruccion_de_faltantes(rec)
         G.anotar("reconciliador", {
             "faltantes": len(rec.get("faltantes") or []),
             "preguntar": len(rec.get("preguntar") or []),
             "sin_buscar": len(rec.get("sin_buscar") or [])})
-        if not revision:
-            break
-        # NO SE CORTA EL BUCLE POR REPETICION, y esta medido. Se probaron las
-        # dos formas sobre las 10 charlas grabadas: cortar cuando el faltante se
-        # repite UNA vez baja las llamadas al modelo de 119 a 90 -un 24% de
-        # latencia- pero el numero cae de 94 a 89, porque en el guion 76 el
-        # modelo estaba yendo a buscar de verdad y le sacabamos la cuenta al
-        # cliente; cortar a las DOS repeticiones no ahorra una sola llamada, o
-        # sea que es una capa que no hace nada. Se deja el tope de rondas, que
-        # ya acota. La ronda al pedo que se midio en produccion el 5-ago se
-        # arreglo en la raiz: era un faltante IMPOSIBLE -pedirle que aplicara un
-        # reparto de pago como filtro de busqueda-, y eso ya no pasa.
-        if ronda == _MAX_RONDAS:
-            # Se agotaron las vueltas con el hueco abierto. NO se completa por
-            # nuestra cuenta: se le dice al redactor que pregunte lo que falta.
-            log.warning("hub_venta_faltantes_sin_resolver", trace_id=trace_id,
-                        faltantes=rec.get("faltantes", [])[:4])
-            obligacion = (obligacion + "\n\n" if obligacion else "") + (
-                "No pudiste conseguir todo lo que el cliente pidió. Contá "
-                "honesto qué falta y pedile el dato que haga falta. No "
-                "completes de memoria lo que no trajo ninguna herramienta.")
-
+        # EL FALTANTE YA NO VUELVE AL DECISOR. Lo que se puede resolver sin el
+        # modelo lo resuelven las reposiciones de abajo; lo que ni asi se puede,
+        # se lo dice el INDICE al redactor, que mira el MATERIAL que quedo y no
+        # la intencion. Se loguea igual: es la señal de que una reposicion no
+        # alcanzo, y es donde hay que mirar cuando una respuesta sale corta.
+        if rec.get("faltantes"):
+            log.info("hub_venta_faltantes", trace_id=trace_id,
+                     faltantes=(rec.get("faltantes") or [])[:4])
     # ── 2-bis. LO QUE EL MODELO NO APLICA, LO APLICA EL CODIGO ───────────
     # EL ORDEN ES EL DE LA DEPENDENCIA: primero que el producto EXISTA -si el
     # modelo no busco nada, las tres reposiciones de abajo no tienen sobre que
@@ -2769,14 +2690,25 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     llamadas = _busqueda_de_lo_declarado(llamadas, declarado, rec, tienda_id,
                                          trace_id)
     llamadas = _condicion_faltante_aplicada(llamadas, rec, tienda_id, trace_id)
-    # SIN LA MEMORIA A PROPOSITO, y esto se midio. Reponer una cuenta ANTES de
-    # redactar con un producto que viene del carrito le agrego el bloque a
-    # turnos que ya contestaban el precio en la ficha, y el mismo numero salio
-    # TRES veces en un mensaje. Aca solo entra lo que el turno certifico. El
-    # caso de la memoria lo atiende `_punto_omitido_repuesto`, que corre DESPUES
-    # de redactar y por eso puede mirar el texto en vez de adivinarlo.
-    llamadas = _cuenta_con_lo_declarado(llamadas, declarado, tienda_id,
-                                        trace_id)
+    # LA MEMORIA ENTRA SOLO SI EL TURNO NO CERTIFICO NADA (17-ago, al sacar las
+    # rondas). Hasta hoy no entraba nunca, y el motivo estaba bien medido: con
+    # un producto del carrito, reponer la cuenta le agregaba el bloque a turnos
+    # que YA contestaban el precio en la ficha, y el mismo numero salia TRES
+    # veces en un mensaje. Pero ese caso necesita que el turno haya traido una
+    # ficha; cuando el turno no certifico NADA no hay con que duplicar.
+    #
+    # Y sin la ronda dos esa es la unica forma de que el cliente reciba un
+    # numero. Medido al sacar el bucle: en el turno 2 de `78_reparto_por_destino`
+    # el modelo declara tres items y tres destinos, no busca nada porque la
+    # charla ya lo tenia resuelto, y el mensaje salia sin un solo peso. Antes lo
+    # tapaba la vuelta extra al modelo; ahora lo resuelve el codigo con ids que
+    # YA estaban certificados, que es mas barato y mas seguro que preguntar.
+    _certifico_algo = any((l.get("resultado") or {}).get("productos")
+                          or (l.get("resultado") or {}).get("producto")
+                          for l in llamadas)
+    llamadas = _cuenta_con_lo_declarado(
+        llamadas, declarado, tienda_id, trace_id,
+        memoria=(None if _certifico_algo else _memoria_idx))
     # EL ORDEN IMPORTA: primero se aplica el reparto que falta, y despues se
     # declara el supuesto sobre la cuenta que ya lo tiene adentro.
     llamadas = _reparto_de_pago_declarado(llamadas, declarado, tienda_id,
@@ -2808,6 +2740,15 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     pendiente = IT.instruccion(idx["faltan"])
     if pendiente:
         obligacion = (obligacion + "\n\n" if obligacion else "") + pendiente
+        # LA HONESTIDAD, QUE ANTES LA DISPARABA AGOTAR LAS RONDAS. Con una sola
+        # ronda no hay vueltas que agotar, asi que la señal pasa a ser la buena:
+        # que despues de las reposiciones TODAVIA falte material. Va pegada al
+        # pedido de completar, porque sin esto "agregalo" sobre un punto sin
+        # material es una invitacion a inventarlo.
+        obligacion += ("\n\nSi para alguno de esos puntos no tenés el dato en "
+                       "lo que trajeron las herramientas, decilo honesto y "
+                       "pedile al cliente lo que falte. No lo completes de "
+                       "memoria ni lo deduzcas.")
 
     # ── 3. REDACTAR CON EL DATO DELANTE ─────────────────────────────────
     sin_modelo = False
