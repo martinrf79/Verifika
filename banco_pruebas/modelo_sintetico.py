@@ -179,7 +179,37 @@ def _decidir(mensaje: str, tienda_id: str, previo: dict | None = None) -> list:
     # mal devuelve `pedido_mal_formado`.
     for d in declarado["destinos"][:4]:
         pedidos.append({"nombre": "cotizar_envio", "args": {"localidad": d}})
+    # LOS TEMAS DE LA CASA. Un modelo real le suma `consultar_temas` a casi
+    # todo mensaje que toque una politica -pago, envio, garantia, devolucion-.
+    # El doble los resuelve por las `keywords` de la FAQ, que es la fuente, no
+    # una lista escrita aca: si un tema cambia de palabras, esto lo sigue.
+    for tema in _temas_del_mensaje(mensaje, tienda_id)[:3]:
+        pedidos.append({"nombre": "consultar_temas", "args": {"temas": [tema]}})
     return pedidos
+
+
+def _temas_del_mensaje(mensaje: str, tienda_id: str) -> list:
+    """Los temas de la FAQ que el mensaje toca, por sus propias keywords."""
+    m = " " + re.sub(r"[^a-z0-9áéíóúñ ]", " ", (mensaje or "").lower()) + " "
+    fuera = []
+    try:
+        from app.storage.firestore_client import get_all_faq
+        faq = get_all_faq(tienda_id=tienda_id) or {}
+    except Exception:  # noqa: BLE001 — sin FAQ, el doble no pide temas
+        return []
+    items = faq.values() if isinstance(faq, dict) else faq
+    for t in items:
+        if not isinstance(t, dict):
+            continue
+        nombre = str(t.get("tema") or "").strip()
+        if not nombre:
+            continue
+        for k in (t.get("keywords") or []):
+            k = str(k).strip().lower()
+            if len(k) >= 4 and f" {k} " in m and nombre not in fuera:
+                fuera.append(nombre)
+                break
+    return fuera
 
 
 # ── LA MITAD QUE ESCRIBE, Y MIENTE ──────────────────────────────────────────
