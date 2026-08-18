@@ -63,14 +63,12 @@ class Filtro(BaseModel):
         description="El campo exacto de la lista. No inventes nombres.")
     operador: Literal["contiene", "no_contiene", "igual", "mayor",
                       "menor"] = Field(
-        description="'contiene' para texto. 'no_contiene' para lo que el "
-                    "cliente NO quiere -pais_fabricacion no_contiene china-. "
-                    "'igual' para un valor exacto. 'mayor' y 'menor' SOLO "
-                    "numericos, e incluyen el borde: precio_ars menor 100000 "
-                    "es el presupuesto maximo.")
+        description="'contiene' texto. 'no_contiene' lo que NO quiere. "
+                    "'igual' exacto. 'mayor'/'menor' solo numeros e INCLUYEN "
+                    "el borde, asi que 'mas de N' se pide como N+1.")
     valor: str = Field(
-        description="Lo que tiene que valer. Para numeros mandalo pelado: 500, "
-                    "no '500 gramos'.")
+        description="Numero pelado, en la UNIDAD DEL CAMPO: garantia_meses en "
+                    "meses, un año es 12. No '500 gramos'.")
 
 
 class BuscarProductos(BaseModel):

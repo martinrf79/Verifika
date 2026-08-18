@@ -1,17 +1,17 @@
 {
  "_doc": "Techo del peso del turno. Puede BAJAR, nunca subir: tests/test_peso_del_turno.py lo defiende. Se refija a mano con `python3 banco_pruebas/peso_del_turno.py --fijar` cuando baja. Es el espejo del piso del mapa.",
- "bytes_por_llamada": 27518,
- "bytes_esquema": 25370,
- "bytes_prompts": 2148,
+ "bytes_por_llamada": 26705,
+ "bytes_esquema": 25230,
+ "bytes_prompts": 1475,
  "detalle": {
   "registrar_pedido": {
    "bytes": 3046
   },
   "buscar_productos": {
-   "bytes": 4844
+   "bytes": 4774
   },
   "consultar_catalogo": {
-   "bytes": 5206
+   "bytes": 5136
   },
   "ficha_producto": {
    "bytes": 397

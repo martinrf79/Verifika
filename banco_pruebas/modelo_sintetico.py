@@ -69,6 +69,7 @@ def _declarar(mensaje: str, tienda_id: str) -> dict:
                                       categorias_nombradas)
     fuera: dict = {"items": [], "destinos": [], "restricciones": [],
                    "reparto_pago": [], "contradicciones": [],
+                   "filtros": _filtros_numericos(mensaje),
                    "pide_precio": bool(_RE_PIDE_PRECIO.search(mensaje or ""))}
     try:
         cant = {c: n for n, c in cantidades_por_categoria(mensaje, tienda_id)}
@@ -99,6 +100,63 @@ def _declarar(mensaje: str, tienda_id: str) -> dict:
             fuera["reparto_pago"] = [{"porcentaje": mayor}, {"porcentaje": menor}]
     except Exception:  # noqa: BLE001
         pass
+    return fuera
+
+
+# EL FILTRO NUMERICO QUE EMITIRIA UN MODELO PERFECTO.
+#
+# ACA SI SE ESCRIBE UN PEDACITO DE INTERPRETACION, y va declarado porque rompe
+# la regla de arriba a proposito. El motivo: el doble simula un modelo que
+# llama BIEN, y un modelo que llama bien traduce "de mas de un ano de garantia"
+# a un filtro sobre `garantia_meses`. Ninguna pieza determinista del camino vivo
+# hace esa traduccion -`resolver_exclusion` solo resuelve exclusiones-, asi que
+# sin esto la clase `filtro_numerico` pasa en verde SIN HABER FILTRADO NADA, que
+# es un verde mentiroso.
+#
+# Se mantiene minimo a proposito: dos operadores, tres campos, y las unidades
+# que el catalogo usa. No es un interprete; es el argumento que el modelo
+# mandaria, escrito para poder medir al codigo que lo recibe.
+_RE_COTA = re.compile(
+    r"(?:(menos|menor|hasta|maximo|max)|(mas|mayor|minimo|min|desde))\s+"
+    r"(?:de\s+)?(un|una|dos|tres|\d+(?:[.,]\d+)?)\s*"
+    r"(mil|millon|millones|anos?|años?|meses?|gb|pesos?|\$)?",
+    re.IGNORECASE)
+_PALABRA_NUMERO = {"un": 1, "una": 1, "dos": 2, "tres": 3}
+
+
+def _filtros_numericos(mensaje: str) -> list:
+    """[{campo, operador, valor}] que un modelo perfecto emitiria."""
+    m = (mensaje or "").lower()
+    fuera = []
+    for menor, mayor, num, unidad in _RE_COTA.findall(m):
+        unidad = (unidad or "").strip()
+        try:
+            valor = float(_PALABRA_NUMERO.get(num, num.replace(".", "")
+                                              .replace(",", ".")))
+        except (TypeError, ValueError):
+            continue
+        # EL CAMPO SALE DE LA UNIDAD Y DEL TEMA QUE NOMBRA EL MENSAJE.
+        if unidad in ("ano", "anos", "año", "años", "mes", "meses") or \
+                "garantia" in m or "garantía" in m:
+            campo = "garantia_meses"
+            if unidad in ("ano", "anos", "año", "años"):
+                valor *= 12          # el catalogo guarda MESES
+        elif unidad in ("peso", "pesos", "$", "mil", "millon", "millones") or \
+                "precio" in m or "sale" in m or "cuesta" in m:
+            campo = "precio_ars"
+            if unidad == "mil":
+                valor *= 1000
+            elif unidad in ("millon", "millones"):
+                valor *= 1000000
+        else:
+            continue
+        # `mayor` y `menor` del sistema INCLUYEN el borde, asi que "mas de N"
+        # -que excluye N- se pide como N+1. Es la traduccion que el modelo tiene
+        # que hacer y que hoy el esquema no le explica.
+        op = "menor" if menor else "mayor"
+        if mayor:
+            valor += 1
+        fuera.append({"campo": campo, "operador": op, "valor": str(int(valor))})
     return fuera
 
 
@@ -158,6 +216,8 @@ def _decidir(mensaje: str, tienda_id: str, previo: dict | None = None) -> list:
         # La condicion que el cliente puso viaja con la busqueda, igual que en
         # el camino vivo: si no, el filtro no se aplica nunca y el punto de la
         # condicion sale sin contestar por culpa del doble.
+        for f in (declarado.get("filtros") or []):
+            args.setdefault("filtros", []).append(dict(f))
         if declarado.get("restricciones"):
             from app.core import filtros_catalogo as FC
             filtros = []
