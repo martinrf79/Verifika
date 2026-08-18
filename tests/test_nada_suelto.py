@@ -43,7 +43,6 @@ DECLARADAS = {
     "sin_cupo": "lo consulta el banco para saber si la clave gratis se agoto",
     "limpiar": "vacia los huecos anotados entre pruebas",
     "limpiar_cache": "vacia el cache de filtros entre pruebas",
-    "nodos_de": "consulta del grafo declarado, la usa el barrido del cableado",
     "barribles": "consulta del grafo declarado, la usa el barrido del cableado",
     "barribles_de_datos": "consulta del grafo declarado, la usa el barrido de "
                           "la decision y la reposicion",

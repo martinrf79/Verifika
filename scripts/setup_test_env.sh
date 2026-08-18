@@ -129,6 +129,8 @@ fi
 # Los numeros salen de los pisos que ya estan en disco, asi que no pueden
 # envejecer ni mentir. Es lo que Martin pidio: que una sesion nueva lea en UN
 # solo lado donde esta parado el sistema, sin ir a buscarlo.
+python3 scripts/areas.py 2>/dev/null
+echo ""
 echo "======================= DONDE ESTAMOS HOY (medido) ===================="
 python3 - <<'PYEOF' 2>/dev/null
 import json, os, subprocess
