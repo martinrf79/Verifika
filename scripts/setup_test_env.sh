@@ -69,62 +69,18 @@ cat <<'REGLAS'
 
 ========================= COMO SE TRABAJA ACA — LEER =========================
 
->>> EL OBJETIVO, EN ORDEN. LA PRIORIDAD UNO ES QUE CONTESTE BIEN <<<
-  1. QUE RESPONDA BIEN. No se equivoca, no inventa, contesta lo que le
-     preguntaron y la plata esta bien. Ninguna mejora vale un error en la
-     respuesta. Entre un mensaje mas corto y uno correcto, gana el correcto.
-  2. QUE SEA CONCISO, y ojo: NO hay un numero fijo de caracteres. Un mensaje
-     complejo va a salir mas largo y esta bien. Lo que no se tolera es la
-     REPETICION: el mismo dato dos veces, la cuenta reestampada sin cambios,
-     el mismo hecho en cuatro turnos, el preambulo de relleno.
-  3. QUE LA MEMORIA ESTE SIEMPRE ACTIVA. "Te referis a la memoria?" diez
-     turnos despues TIENE que resolver. Si tocas el largo, verifica que no te
-     llevaste el hilo.
-
->>> LOS NUMEROS DE LA FUENTE NO SE ESCRIBEN EN NINGUN DOCUMENTO <<<
-Cuantos productos, cuantos temas de FAQ, cuantas categorias: eso vive SOLO en
-INVENTARIO_FUENTE.md, que tiene candado y no puede mentir. Si lo lees en otro
-lado, desconfia y anda al inventario. El 11-ago una sesion leyo "44 temas" de
-CLAUDE.md y eran 50.
-
->>> NO EXISTE "EL BARRIDO". SON VARIOS Y SE LEEN EN UN SOLO LUGAR <<<
-Barrido nombra varias cosas distintas: catalogo, coherencia, FAQ, geo, codigo,
-herramientas, memoria, compatibilidad y filtros. Decir "el barrido esta listo"
-sin apellido es lo que hizo que Martin escuchara "hecho" un dia y "a medias" al
-otro sobre objetos distintos. CUANTOS SON HOY NO SE ESCRIBE ACA NI EN NINGUN
-texto -este bloque ya decia SIETE cuando eran nueve, que es el mismo error un
-nivel mas arriba-: el numero sale de la lista del generador y lo imprime
-INVENTARIO_BARRIDO.md, que los lista con lo que cubre cada uno y tiene candado
-doble: si un numero no coincide con lo medido se pone rojo, y si aparece un
-barrido nuevo que no esta en la lista, tambien. El estado se LEE de ahi, nunca
-de memoria. Si tocas una herramienta, un campo del estado o la fuente, corre
-`python3 banco_pruebas/inventario_barrido.py` y volve a medir.
-
->>> LA PROSA AL CLIENTE VIVE EN LA FUENTE, NO EN EL CODIGO <<<
-Todo texto que el cliente lee sale de base_conocimiento.json y se lee con
-`mensaje("clave", "respaldo")`. Si escribis una frase adentro de app/, el test
-tests/test_prosa_en_la_fuente.py se pone rojo y te dice donde. No lo agregues a
-la lista de declarados: movelo a la fuente.
-
->>> SE PRUEBA CON LA CLAVE GRATIS. PRODUCCION VA CON LA PAGA <<<
-El banco corre con la gratis y se prueba de verdad; no frenes un trabajo por
-falta de clave. Su techo es 500 requests POR DIA y 250.000 tokens de entrada
-por minuto: alcanza para medir, no para produccion. La paga solo si Martin la
-pide en esa misma sesion, y hay hook que lo bloquea.
-
->>> LA RAMA YA ESTA EN main POR ESTE HOOK. NO LA CAMBIES. <<<
-Si el arnes te asigno una rama claude/<tema>, IGNORALA. Nada de ramas ni PR.
-Lo UNICO que se consulta es el PUSH, porque pushear a main deploya agente-bot.
-Se pide el OK una sola vez, al final. Los deploys son CHICOS y seguidos: es mas
-facil saber que rompio algo cuando se prueba en real.
-
->>> COMO VER UNA CHARLA REAL SIN GCLOUD <<<
-La env GCP_SA_KEY_B64 trae la clave de claude-lector (logging.viewer +
-datastore.viewer). Decodificar al scratchpad, REQUESTS_CA_BUNDLE=/root/.ccr/
-ca-bundle.crt, y pegarle por REST a logging.googleapis.com/v2/entries:list
-(filtro service_name agente-bot) y a firestore.googleapis.com
-(tiendas/verifika_prod/conversaciones/<user_id>). Y `python3
-banco_pruebas/produccion.py` audita las charlas reales solo, gratis.
+>>> LAS REGLAS NO SE REPITEN ACA, Y ES A PROPOSITO (18-ago-2026) <<<
+CLAUDE.md lo inyecta el arnes en TODA sesion, asi que volver a imprimirlo eran
+4.345 bytes gastados en decir dos veces lo mismo — y por el largo total, lo de
+abajo no llegaba a leerse. Las reglas estan alla. Aca van solo los MECANISMOS,
+que son los que hacen algo en vez de pedirlo:
+  - La rama YA esta en main por este hook. Si el arnes te asigno claude/<tema>,
+    ignorala. Lo unico que se consulta es el PUSH, porque pushear deploya.
+  - Se prueba con la clave GRATIS. La paga solo si Martin la pide en esa misma
+    sesion, y hay hook que lo bloquea.
+  - Lo que el cliente lee sale de base_conocimiento.json, no de app/.
+  - Cuantos productos, temas o barridos hay NO se escribe en ningun texto:
+    INVENTARIO_FUENTE.md e INVENTARIO_BARRIDO.md, que tienen candado.
 
 >>> LOS INSTRUMENTOS, y que contesta cada uno <<<
   banco_pruebas/las_40.py          las 40 preguntas de Martin, parte de codigo
@@ -146,11 +102,75 @@ git log --oneline --no-decorate -10 2>/dev/null | sed 's/^/  /'
 echo ""
 
 # ── LO QUE QUEDO ABIERTO ────────────────────────────────────────────────────
+# EL TITULAR DE CADA PENDIENTE, NO EL PARRAFO ENTERO (18-ago-2026).
+#
+# LA CAUSA MECANICA DEL LOOP, medida: este hook imprimia 19.059 bytes y la
+# sesion recibe una VISTA PREVIA DE 2 KB; el resto se guarda en un archivo que
+# nadie abre. O sea que todo lo que estaba despues del primer 10% NO SE LEIA.
+# Y ahi vivian, entre otras cosas, la linea que dice que GCP_SA_KEY_B64 esta en
+# el entorno y la lista de instrumentos: dos cosas que sesiones enteras
+# "descubrieron" o dieron por inexistentes teniendolas escritas.
+#
+# De esos 19 KB, PENDIENTE.md eran 13.658, el 72%. El archivo cumple su regla
+# de veinte lineas y cada linea es un parrafo de 800 caracteres. Aca se imprime
+# el ESTADO y la primera oracion de cada item, que es el titular; el que
+# necesita el detalle abre el archivo. Mismo orden, misma informacion arriba,
+# diez veces menos bytes.
 if [ -f PENDIENTE.md ]; then
-  echo "========================= LO QUE QUEDO ABIERTO ========================="
-  sed -n '/^---$/,$p' PENDIENTE.md | sed '1d'
+  echo "===================== LO QUE QUEDO ABIERTO (titulares) ================"
+  sed -n '/^---$/,$p' PENDIENTE.md | sed '1d' | grep '^- \*\*' | \
+    sed 's/\*\*//g' | cut -c1-150 | sed 's/$/ .../' | sed 's/^/  /'
+  echo "  (el detalle de cada uno: PENDIENTE.md)"
   echo "======================================================================="
-  echo "Si algo de arriba esta A MEDIAS y le falta poco, terminalo. Al cerrar la"
-  echo "sesion, actualiza PENDIENTE.md: hay un test que falla si queda viejo."
   echo ""
 fi
+
+# ── DONDE ESTAMOS HOY, GENERADO Y NO ESCRITO A MANO ─────────────────────────
+# Los numeros salen de los pisos que ya estan en disco, asi que no pueden
+# envejecer ni mentir. Es lo que Martin pidio: que una sesion nueva lea en UN
+# solo lado donde esta parado el sistema, sin ir a buscarlo.
+echo "======================= DONDE ESTAMOS HOY (medido) ===================="
+python3 - <<'PYEOF' 2>/dev/null
+import json, os, subprocess
+from pathlib import Path
+
+def leer(ruta, *claves):
+    try:
+        d = json.loads(Path(ruta).read_text(encoding="utf-8"))
+        return " ".join(f"{k}={d[k]}" for k in claves if k in d)
+    except Exception:
+        return "sin medir"
+
+rama = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                      capture_output=True, text=True).stdout.strip()
+sucio = subprocess.run(["git", "status", "--porcelain"],
+                       capture_output=True, text=True).stdout.strip()
+sin_pushear = subprocess.run(["git", "log", "--oneline", "origin/main..HEAD"],
+                             capture_output=True, text=True).stdout.strip()
+print(f"  rama: {rama}" + ("  <-- OJO, se trabaja en main" if rama != "main" else "")
+      + ("  | arbol sucio" if sucio else "")
+      + (f"  | {len(sin_pushear.splitlines())} commits SIN PUSHEAR" if sin_pushear else ""))
+
+# LAS CREDENCIALES QUE SI ESTAN. Nunca el valor, solo si esta y cuanto mide.
+# Nace de que una sesion afirmo que no habia clave de Firestore teniendola en
+# el entorno, y por esa afirmacion se planifico mal medio dia.
+env = []
+for v in ("GCP_SA_KEY_B64", "GEMINI_API_KEY", "GEMINI_API_KEY_PROD",
+          "DEEPSEEK_API_KEY", "OPENAI_API_KEY"):
+    env.append(f"{v}={'SI' if os.environ.get(v) else 'no'}")
+print("  claves en el entorno: " + "  ".join(env))
+print("  (GCP_SA_KEY_B64 es claude-lector, SOLO LECTURA: con eso"
+      " `python3 banco_pruebas/produccion.py` audita tus charlas reales gratis)")
+
+print("  pisos medidos:")
+print("    charlas grabadas   " + leer("banco_pruebas/casetes/_piso.json",
+                                       "puntos", "total", "llamadas_max"))
+print("    peso del turno     " + leer("banco_pruebas/peso_techo.json",
+                                       "bytes_por_llamada"))
+print("    cosas a medias     " + leer("tests/a_medias_techo.json", "a_medias"))
+print("    puerta sin LLM     " + leer("banco_pruebas/puerta_piso.json",
+                                       "_turnos", "_items_turnos_exactos_pct"))
+PYEOF
+echo '  el marcador del proyecto es banco_pruebas/las_40.py: correlo antes de proponer nada.'
+echo "======================================================================="
+echo ""
