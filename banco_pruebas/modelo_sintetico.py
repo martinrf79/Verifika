@@ -102,19 +102,83 @@ def _declarar(mensaje: str, tienda_id: str) -> dict:
     return fuera
 
 
-def _decidir(mensaje: str, tienda_id: str) -> list:
+def acumular(previo: dict, nuevo: dict) -> dict:
+    """EL PEDIDO ES ACUMULADO, y por eso el doble tiene que acumularlo.
+
+    Un modelo real declara en `registrar_pedido` el pedido ENTERO de la charla,
+    no lo que dijo el cliente en ese renglon: si en el turno 1 pidio dos mouse y
+    en el 3 pregunta "cuanto sale todo", en el 3 vuelve a declarar los dos
+    mouse. Sin esto el doble declara vacio, la reposicion de la cuenta no tiene
+    sobre que trabajar y el punto del precio sale sin contestar — culpa del
+    doble, no del codigo. Medido el 18-ago: era la mitad de las fallas.
+
+    LO QUE NO HACE, y queda dicho: la NEGACION. "el teclado sacalo" deberia
+    bajar un item y ninguna pieza deterministica lo resuelve; esta anotado en
+    PENDIENTE como el hueco de la puerta sin LLM. Aca se acumula y punto, asi
+    que una charla con negacion mide de mas y hay que leerla sabiendo eso."""
+    fuera = dict(nuevo)
+    items = {str(i.get("que")): dict(i) for i in (previo or {}).get("items") or []}
+    for i in nuevo.get("items") or []:
+        items[str(i.get("que"))] = dict(i)
+    fuera["items"] = list(items.values())
+    for campo in ("destinos", "restricciones"):
+        vistos = list((previo or {}).get(campo) or [])
+        for v in nuevo.get(campo) or []:
+            if v not in vistos:
+                vistos.append(v)
+        fuera[campo] = vistos
+    if not fuera.get("reparto_pago"):
+        fuera["reparto_pago"] = list((previo or {}).get("reparto_pago") or [])
+    return fuera
+
+
+def _decidir(mensaje: str, tienda_id: str, previo: dict | None = None) -> list:
     """Las herramientas que pide el turno. Deliberadamente NO pide la cuenta:
     para armarla hacen falta los ids y en una sola ronda no los tiene, que es
     exactamente el caso que las reposiciones del hub tienen que cubrir. Si este
     doble se las pidiera, taparia el agujero que viene a medir."""
-    declarado = _declarar(mensaje, tienda_id)
+    from app.core.guia_pedido import categorias_nombradas
+    declarado = acumular(previo or {}, _declarar(mensaje, tienda_id))
     pedidos = [{"nombre": "registrar_pedido", "args": declarado}]
     for it in declarado["items"][:3]:
-        pedidos.append({"nombre": "buscar_productos",
-                        "args": {"descripcion": it["que"], "cuantos": 2}})
-    if declarado["destinos"]:
-        pedidos.append({"nombre": "cotizar_envio",
-                        "args": {"destino": declarado["destinos"][0]}})
+        # LA CATEGORIA VA, y no es un detalle del doble: con la descripcion
+        # sola -"mouse", "memorias ram"- `buscar_productos` devuelve
+        # `no_encontrado`, porque esta pensada para lo que el cliente DESCRIBE
+        # y no para un rubro pelado. El camino vivo ya lo hace asi en
+        # `_busqueda_de_lo_declarado`; si el doble no lo copiara, mediria un
+        # agujero suyo y se lo cobraria al codigo, que es el teléfono
+        # descompuesto que este banco existe para no tener.
+        args = {"descripcion": it["que"], "cuantos": 3}
+        try:
+            cats = categorias_nombradas(it["que"], tienda_id)
+        except Exception:  # noqa: BLE001
+            cats = []
+        if cats:
+            args["categoria"] = cats[0]
+        # La condicion que el cliente puso viaja con la busqueda, igual que en
+        # el camino vivo: si no, el filtro no se aplica nunca y el punto de la
+        # condicion sale sin contestar por culpa del doble.
+        if declarado.get("restricciones"):
+            from app.core import filtros_catalogo as FC
+            filtros = []
+            for r in declarado["restricciones"]:
+                try:
+                    cond = FC.resolver_exclusion(str(r), tienda_id)
+                except Exception:  # noqa: BLE001
+                    cond = None
+                if cond and cond not in filtros:
+                    filtros.append(cond)
+            if filtros:
+                args["filtros"] = filtros
+        pedidos.append({"nombre": "buscar_productos", "args": args})
+    # TODOS los destinos, no el primero. El cliente que nombra tres espera tres
+    # cotizaciones, y un modelo real pide las tres en la misma tanda. Cotizar
+    # solo el primero dejaba los otros dos sin contestar y se lo cobraba al
+    # codigo: era la familia de falla mas grande del banco.
+    # LA CLAVE ES `localidad`, no `destino`: el molde la llama asi y mandarla
+    # mal devuelve `pedido_mal_formado`.
+    for d in declarado["destinos"][:4]:
+        pedidos.append({"nombre": "cotizar_envio", "args": {"localidad": d}})
     return pedidos
 
 
@@ -174,6 +238,55 @@ def mentira_del_turno(turno: int) -> str:
     return MENTIRAS[turno % len(MENTIRAS)][0]
 
 
+
+# ── LA MITAD QUE ESCRIBE, VERSION FIEL ──────────────────────────────────────
+def _redactar_fiel(llamadas: list) -> str:
+    """LO QUE ESCRIBIRIA UN MODELO PERFECTO: todo lo que las herramientas
+    trajeron, sin agregar una palabra propia.
+
+    POR QUE HACE FALTA UN SEGUNDO REDACTOR (Martin, 18-ago-2026). El hostil
+    sirve para preguntar "¿se le cuela una mentira?". Esta pregunta es la otra
+    mitad y es la que importa para vender: "asumiendo que el modelo llama bien
+    y escribe todo lo que le damos, **¿el codigo le pone delante lo que el
+    cliente pidio?**". Si un punto del pedido no aparece ni asi, el modelo no
+    tiene con que contestarlo, y eso es culpa del codigo: o no lo busco, o lo
+    busco y lo perdio en el camino.
+
+    Es a proposito la redaccion mas boba posible. No vende, no ordena, no
+    resume. Cualquier cosa mas linda que esto seria el redactor tapando un
+    hueco del codigo, que es justo lo que no queremos medir."""
+    partes = []
+    for l in llamadas or []:
+        r = l.get("resultado") or {}
+        if not isinstance(r, dict):
+            continue
+        # El bloque que escribio el codigo va TAL CUAL: es la cuenta y el
+        # hallazgo, y el modelo real tiene la orden de pegarlos sin tocar.
+        for clave in ("bloque", "bloque_hallazgo"):
+            if r.get(clave):
+                partes.append(str(r[clave]))
+        for p in (r.get("productos") or []):
+            n = str(p.get("nombre") or "").strip()
+            precio = p.get("precio_ars") or p.get("precio")
+            if n:
+                partes.append(f"{n}: ${precio}" if precio else n)
+        if r.get("producto"):
+            n = str((r["producto"] or {}).get("nombre") or "").strip()
+            if n:
+                partes.append(n)
+        # Las politicas de la casa, tal como las trajo la FAQ.
+        for t_ in (r.get("temas") or []):
+            if isinstance(t_, dict) and t_.get("respuesta"):
+                partes.append(str(t_["respuesta"]))
+        if r.get("respuesta"):
+            partes.append(str(r["respuesta"]))
+        if r.get("costo") is not None:
+            partes.append(f"Envio a {r.get('destino', '')}: ${r['costo']}")
+    if not partes:
+        return "Contame un poco mas y te ayudo."
+    return "\n".join(dict.fromkeys(partes))
+
+
 # ── LA PUERTA AL SISTEMA ────────────────────────────────────────────────────
 class _Funcion:
     def __init__(self, nombre, args):
@@ -211,20 +324,25 @@ class _ClienteSintetico:
     `tools` y la DOS no. Es el mismo contrato y no depende del texto del
     prompt."""
 
-    def __init__(self, estado: dict, tienda_id: str):
+    def __init__(self, estado: dict, tienda_id: str, modo: str = "hostil"):
         self.estado = estado
         self.tienda_id = tienda_id
+        self.modo = modo
         self.chat = self
         self.completions = self
 
     def create(self, **kwargs):
         if kwargs.get("tools"):
             mensaje = self._ultimo_del_cliente(kwargs.get("messages") or [])
-            pedidos = _decidir(mensaje, self.tienda_id)
+            pedidos = _decidir(mensaje, self.tienda_id,
+                               self.estado.get("declarado"))
+            self.estado["declarado"] = pedidos[0]["args"]
             self.estado["turno"] = self.estado.get("turno", -1) + 1
             return _Respuesta(_Mensaje(
                 tool_calls=[_ToolCall(p["nombre"], p["args"]) for p in pedidos]))
         llamadas = self.estado.get("llamadas") or []
+        if self.modo == "fiel":
+            return _Respuesta(_Mensaje(content=_redactar_fiel(llamadas)))
         return _Respuesta(_Mensaje(
             content=_redactar(llamadas, self.estado.get("turno", 0))))
 
@@ -239,7 +357,7 @@ class _ClienteSintetico:
 
 
 @contextmanager
-def sin_modelo(tienda_id: str = TIENDA):
+def sin_modelo(tienda_id: str = TIENDA, modo: str = "hostil"):
     """Corre el turno completo con el modelo reemplazado por codigo.
 
     Intercepta las MISMAS puertas que el casete, y por el mismo motivo: si
@@ -258,7 +376,7 @@ def sin_modelo(tienda_id: str = TIENDA):
     real_ej = H.ejecutar
 
     def _cli():
-        return _ClienteSintetico(estado, tienda_id)
+        return _ClienteSintetico(estado, tienda_id, modo)
 
     def _ejecutar_espia(nombre, args, tid):
         """El redactor sintetico necesita ver lo que trajeron las herramientas,
