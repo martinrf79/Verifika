@@ -82,7 +82,10 @@ _RE_ETIQUETA_SUELTA = re.compile(r"</?d\b[^>]*>", re.IGNORECASE)
 # de fallar: en silencio y con el tablero en verde.
 _RE_NUMERO = re.compile(r"(?<![$\d.,])\d+(?:[.,]\d+)*(?!\d)")
 
-_RE_ORACION = re.compile(r"[^.!?\n]+[.!?]*")
+_RE_ORACION = re.compile(r"(?:[^.!?\n]|(?<=\d)[.,](?=\d))+[.!?]*")
+# El punto de los miles no termina una oracion. Mismo arreglo y mismo motivo
+# que en `hub_venta._RE_ORACIONES`: esta funcion tambien BORRA oraciones, asi
+# que con el patron viejo podia cortar por adentro de una cifra.
 
 # Unidades que delatan un dato duro de producto en una oracion sin marcar. No
 # se poda por esto: se CUENTA, que es lo que hoy no se sabe.
@@ -219,6 +222,74 @@ def _ficha_del_catalogo(fuente_id: str, tienda_id: str) -> str:
     return _texto_de(p) if p else ""
 
 
+# ── EL DESCUENTO AFIRMADO ───────────────────────────────────────────────────
+_RE_PCT_DESCUENTO = re.compile(
+    r"(\d{1,2})\s*%[^\n]{0,40}?(?:descuento|off|rebaja|bonificaci)"
+    r"|(?:descuento|rebaja|bonificaci\w*)[^\n]{0,40}?(\d{1,2})\s*%",
+    re.IGNORECASE)
+# Los descuentos REALES de la casa. Si la frase nombra uno, es politica y se
+# queda: la misma exencion que usa la guardia del hub.
+_RE_DESCUENTO_REAL = re.compile(
+    r"transferenc|mayorist|cuotas sin inter[eé]s", re.IGNORECASE)
+
+
+def _sin_descuento_sin_respaldo(texto: str, fuente: str, trace_id: str) -> str:
+    """UN DESCUENTO QUE NINGUNA HERRAMIENTA TRAJO NO EXISTE.
+
+    POR QUE VIVE ACA Y NO EN EL HUB (17-ago-2026). El hueco es viejo: la
+    guardia del hub pide beneficio Y gestion en la misma oracion, asi que caza
+    el descuento OFRECIDO -"puedo consultar que descuento aplicarte"- y deja
+    pasar el AFIRMADO -"te hago un 25% de descuento por ser vos"-, que es la
+    peor de las dos porque no deja lugar a duda y alguien la tiene que
+    sostener despues.
+
+    Se intento cerrarlo alla, con otra regla de prosa, y salio muy mal: le
+    corto el medio al renglon real del pago dividido y dejo "$67.750" donde
+    iban $67.500 y $60.750. Un candado contra la alucinacion invento un
+    precio. La leccion es la del plan de recorte: esto se cierra contra la
+    FUENTE, no sumando la regla numero dieciocho sobre el texto ya escrito, y
+    la atadura es el lugar donde se contrasta contra la fuente.
+
+    LAS CUATRO ATADURAS QUE LO HACEN SEGURO, y las tres primeras nacen de
+    aquel error:
+      1. No toca un renglon que escribio el CODIGO -la cuenta, el reparto-.
+      2. No toca una linea que lleve plata. Es basto a proposito: preferimos
+         dejar pasar un descuento raro antes que rozar una cifra.
+      3. Corta por oraciones con el patron que ya NO parte los numeros.
+      4. Si el turno no trajo material, no poda: sin con que comparar, no hay
+         nada que probar, y podar por las dudas se come la politica que el bot
+         conto bien dos turnos atras.
+    """
+    if not (texto or "").strip() or not (fuente or "").strip():
+        return texto
+    try:
+        from app.core.mensaje import _es_de_codigo
+    except Exception:  # noqa: BLE001 — sin la pieza, no se poda
+        return texto
+    fuera = []
+    for linea in texto.splitlines():
+        if _es_de_codigo(linea) or "$" in linea:
+            continue
+        for m in _RE_ORACION.finditer(linea):
+            frase = m.group(0)
+            if _RE_DESCUENTO_REAL.search(frase):
+                continue
+            pct = _RE_PCT_DESCUENTO.search(frase)
+            if not pct:
+                continue
+            valor = next((g for g in pct.groups() if g), "")
+            if valor and f"{valor}%" not in fuente and f"{valor} %" not in fuente:
+                fuera.append(frase)
+    if not fuera:
+        return texto
+    limpio = texto
+    for frase in fuera:
+        limpio = limpio.replace(frase, "")
+    log.error("atadura_prosa_descuento_sin_respaldo", trace_id=trace_id,
+              frases=[f.strip()[:80] for f in fuera[:3]])
+    return re.sub(r"\n{3,}", "\n\n", limpio).strip()
+
+
 def _verificar(texto: str, llamadas: list, trace_id: str,
                tienda_id: str = "") -> str:
     marcas = list(_RE_MARCA.finditer(texto or ""))
@@ -297,6 +368,11 @@ def _verificar(texto: str, llamadas: list, trace_id: str,
                     dijo=afirmacion[:120])
 
     limpio = sin_etiquetas(limpio)
+
+    # EL DESCUENTO AFIRMADO, contra la fuente. Va DESPUES de sacar las
+    # etiquetas para trabajar sobre la prosa que va a leer el cliente, que es
+    # la misma que ven las guardias de abajo.
+    limpio = _sin_descuento_sin_respaldo(limpio, todo, trace_id)
 
     # EL NUMERO QUE MANDA: cuanta prosa con dato duro salio SIN marcar. Es la
     # medida de cuanto sigue viniendo del entrenamiento y no de la fuente. No

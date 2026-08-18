@@ -133,22 +133,15 @@ def test_ningun_peso_sin_respaldo(nombre, firestore_doble):
         "EL PESO INVENTADO LLEGO AL CLIENTE en " + ", ".join(coladas))
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "A MEDIAS: el descuento AFIRMADO se le cuela al cliente. `_sin_descuento_"
-    "inventado` pide beneficio Y gestion en la misma oracion, asi que caza "
-    "'puedo consultar que descuento aplicarte' y deja pasar 'te hago un 25% "
-    "de descuento por ser vos'. FALTA cerrarlo en la ATADURA DE PROSA, "
-    "contrastando el porcentaje contra lo que trajeron las herramientas. NO se "
-    "cierra con otra regla de prosa: se probo el 17-ago y el candado nuevo le "
-    "corto el medio al renglon real del pago dividido y dejo un precio "
-    "inventado, $67.750 donde iban $67.500 y $60.750."))
 @pytest.mark.skipif(not _CON_CASETE, reason="no hay guiones")
 def test_el_descuento_afirmado_tampoco_llega(firestore_doble):
-    """EL HUECO, escrito como test y no como frase.
+    """EL DESCUENTO AFIRMADO, cerrado el 17-ago en la atadura.
 
-    El doble afirma un 25% que ninguna politica de la casa respalda. Hoy sale.
-    Cuando la atadura lo cierre, este test pasa, `strict=True` lo pone rojo por
-    pasar y obliga a sacar la marca: no se puede cerrar en silencio."""
+    El doble afirma un 25% que ninguna politica de la casa respalda. Nacio
+    como `xfail` estricto porque salia al cliente; lo cierra
+    `atadura_prosa._sin_descuento_sin_respaldo`, contrastando el porcentaje
+    contra lo que trajeron las herramientas. La marca se saco el mismo dia en
+    que el test empezo a pasar, que es para lo que servia el `strict`."""
     coladas = []
     for nombre in _CON_CASETE:
         _t, respuestas = _charla(nombre)

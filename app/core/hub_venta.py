@@ -661,7 +661,14 @@ def _sin_json_filtrado(texto: str, trace_id: str) -> str:
     return re.sub(r"\n{3,}", "\n\n", limpio).strip()
 
 
-_RE_ORACIONES = re.compile(r"[^.!?\n]+[.!?]?")
+_RE_ORACIONES = re.compile(r"(?:[^.!?\n]|(?<=\d)[.,](?=\d))+[.!?]?")
+# EL PUNTO DE LOS MILES NO TERMINA UNA ORACION (17-ago-2026). Este patron
+# era `[^.!?\n]+[.!?]?` y partia "$67.500 - 10% descuento = $60.750" en tres
+# pedazos, cortando POR ADENTRO de los numeros. Cualquier guardia que borre
+# una "oracion" podia entonces llevarse medio renglon de plata y dejar una
+# cifra que nadie calculo: medido ese dia, quedo "$67.750" donde iban $67.500
+# y $60.750, y lo cazo el invariante de que las partes suman el total. Un
+# punto entre digitos ahora es parte del numero, que es lo que siempre fue.
 # La oracion habla de un beneficio de precio...
 _RE_BENEFICIO = re.compile(
     r"descuento|rebaja|precio especial|bonificaci[oó]n|"

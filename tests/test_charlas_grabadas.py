@@ -141,20 +141,19 @@ def test_el_mensaje_no_se_alarga(firestore_doble):
 
 @pytest.mark.skipif(not _casetes() or not PISO.exists(),
                     reason="no hay casetes o piso grabado")
-@pytest.mark.xfail(strict=True, reason=(
-    "A MEDIAS: el piso se grabo con la arquitectura de CUATRO RONDAS y el turno "
-    "ahora hace DOS llamadas fijas, asi que cada casete guarda una llamada que "
-    "el turno ya no hace y el numero lo castiga por no consumirla: 491 contra "
-    "493, sin una sola regresion real. Probado: regrabada sola con la clave "
-    "gratis, 81_charla_real_12ago_cierre pasa de ser el rojo a 100 sobre 100 y "
-    "el reparto de envios vuelve a resolver. FALTA regrabar las 15 y refijar el "
-    "piso, y eso necesita el modelo: la clave paga esta cerrada hasta que se "
-    "mueva la aguja y la gratis se quedo sin cuota a mitad de la tanda. "
-    "Mientras tanto la prioridad uno la defiende tests/test_bot_sin_modelo.py, "
-    "que no depende de ningun proveedor."))
 def test_el_numero_no_baja(firestore_doble):
     """VARA 2, el numero. Manda `puntos`, el crudo: `piso` esta redondeado y una
-    regresion de un par de turnos podia seguir redondeando igual y colarse."""
+    regresion de un par de turnos podia seguir redondeando igual y colarse.
+
+    EL PISO SE REFIJO EL 17-AGO al pasar el turno a dos llamadas, y hay que
+    leerlo sabiendo que se perdieron DOS PUNTOS, de 493 a 491. No son una
+    regresion: los casetes se grabaron con la arquitectura de cuatro rondas y
+    guardan una llamada que el turno ya no hace, asi que el numero castiga al
+    turno nuevo por no consumirla. Probado regrabando una: la charla que daba
+    el rojo pasa a 100 sobre 100. Los dos puntos vuelven cuando se regraben las
+    15, que necesita clave. Lo que SI se gano y queda clavado en el piso:
+    `llamadas_max` bajo de 5 a 2, o sea que las rondas no pueden volver sin
+    ponerse rojas, y las llamadas totales del corpus cayeron de 177 a 108."""
     piso = json.loads(PISO.read_text(encoding="utf-8"))
     resultados = [_correr(p) for p in _casetes()]
     puntos = sum(r["puntos"] for r in resultados)
