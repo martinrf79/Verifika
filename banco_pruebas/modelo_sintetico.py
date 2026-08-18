@@ -189,24 +189,41 @@ def _decidir(mensaje: str, tienda_id: str, previo: dict | None = None) -> list:
 
 
 def _temas_del_mensaje(mensaje: str, tienda_id: str) -> list:
-    """Los temas de la FAQ que el mensaje toca, por sus propias keywords."""
-    m = " " + re.sub(r"[^a-z0-9áéíóúñ ]", " ", (mensaje or "").lower()) + " "
+    """Los temas de la FAQ que el mensaje toca, por sus propias keywords.
+
+    POR RAICES Y NO POR PALABRA EXACTA, y la diferencia se midio: la primera
+    version pedia que la keyword apareciera tal cual, asi que "como puedo
+    pagar?" NO matcheaba `formas_pago` -su keyword es "como pagar", con un
+    "puedo" en el medio, y "pago" no es "pagar"-. Resultado: el doble no pedia
+    NUNCA `consultar_temas`, las dos clases de politica daban cero en la
+    ablacion, y por un rato parecio que la herramienta estaba rota. No lo
+    estaba: devuelve la politica entera. El roto era el doble.
+
+    El modelo real no necesita esto -elige el tema de un enum-, asi que esto es
+    andamio del banco y no una pieza del producto."""
+    from app.core.pedido import _stems
     fuera = []
     try:
         from app.storage.firestore_client import get_all_faq
         faq = get_all_faq(tienda_id=tienda_id) or {}
     except Exception:  # noqa: BLE001 — sin FAQ, el doble no pide temas
         return []
-    items = faq.values() if isinstance(faq, dict) else faq
-    for t in items:
+    del_mensaje = set(_stems(mensaje or ""))
+    if not del_mensaje:
+        return []
+    # EL NOMBRE DEL TEMA ES LA CLAVE del diccionario que devuelve `get_all_faq`,
+    # no un campo del valor. Iterando solo los valores, `tema` salia vacio y no
+    # matcheaba ninguno: el doble no pedia una sola politica.
+    items = (faq.items() if isinstance(faq, dict)
+             else [(str((x or {}).get("tema") or ""), x) for x in faq])
+    for clave, t in items:
         if not isinstance(t, dict):
             continue
-        nombre = str(t.get("tema") or "").strip()
-        if not nombre:
+        nombre = str(t.get("tema") or clave or "").strip()
+        if not nombre or nombre in fuera:
             continue
         for k in (t.get("keywords") or []):
-            k = str(k).strip().lower()
-            if len(k) >= 4 and f" {k} " in m and nombre not in fuera:
+            if set(_stems(str(k))) & del_mensaje:
                 fuera.append(nombre)
                 break
     return fuera
