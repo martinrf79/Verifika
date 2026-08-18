@@ -35,6 +35,7 @@ USO:
 """
 import argparse
 import asyncio
+import re
 import sys
 from pathlib import Path
 
@@ -66,7 +67,7 @@ ESCALONES = [
 ]
 
 
-def _un_turno(pregunta: str, permitidas) -> dict:
+def _un_turno(pregunta: str, permitidas, espera: list) -> dict:
     """Un turno solo, con el conjunto de herramientas recortado."""
     from banco_pruebas import clon_produccion as clon
     from app.core import herramientas as H
@@ -77,7 +78,6 @@ def _un_turno(pregunta: str, permitidas) -> dict:
     user = "ablacion"
     clon.reiniciar_cliente(user)
 
-    real_ej = H.ejecutar
     usadas = []
 
     def _ej(nombre, args, tid):
@@ -91,6 +91,14 @@ def _un_turno(pregunta: str, permitidas) -> dict:
 
     material = []
     with MS.sin_modelo(TIENDA, modo="fiel"):
+        # SE ENCADENA AL ESPIA, NO SE LO PISA. `sin_modelo` instala su propio
+        # `H.ejecutar` para que el redactor fiel vea lo que trajeron las
+        # herramientas. La primera version capturaba `H.ejecutar` ANTES de
+        # entrar y lo reemplazaba, asi que el espia quedaba fuera del camino y
+        # el redactor escribia siempre "Contame un poco mas": el mensaje salia
+        # vacio en TODOS los escalones y la tabla media cualquier cosa. El
+        # recorte tiene que ser una capa ARRIBA del espia, no en su lugar.
+        real_ej = H.ejecutar
         H.ejecutar = _ej
         try:
             texto = "\n".join(asyncio.run(clon.turno(user, pregunta)))
@@ -100,27 +108,57 @@ def _un_turno(pregunta: str, permitidas) -> dict:
     vocab = {str(p.get("nombre") or "") for p in
              get_all_products(tienda_id=TIENDA) if p.get("nombre")}
     fallas = revisar(texto, vocabulario=vocab)
-    # CONTESTA = LAS HERRAMIENTAS TRAJERON MATERIAL, y nada mas que eso.
+    # LA VARA ES LA QUE DECLARA CADA CLASE, no una sola para todas.
     #
-    # Se probaron dos varas antes y las dos estaban mal, cada una para su lado:
-    # un largo de caracteres -85 caracteres con tres productos encontrados
-    # contaba como "no contesta"- y el indice del turno -una pregunta sin items
-    # declarados no genera puntos, asi que daba 3/3 sin una sola herramienta,
-    # que es un verde por vacio-. La tercera es la unica que no admite lectura:
-    # el redactor fiel escribe SOLO lo que las herramientas devolvieron, asi que
-    # preguntar si trajeron material es preguntar exactamente lo que esta
-    # ablacion quiere saber: **que herramienta le da a cada clase de pregunta
-    # con que contestar**. Sin texto, sin umbrales, sin heuristica.
+    # La version anterior media "las herramientas trajeron material" y trataba
+    # igual a dos cosas opuestas: la pregunta por un producto que vendemos
+    # -donde traer material ES la respuesta- y la pregunta por uno que NO
+    # vendemos, donde la respuesta correcta es no traer nada y decirlo. Con una
+    # vara sola, contestar bien contaba como fallar.
+    #
+    # `preguntas.py` ya declara por clase que se espera. Aca se comprueba:
+    #
+    #   dato_de_fuente      trajo material de la fuente para contestar
+    #   honesto_si_falta    NO invento: sin material, no hay dato duro en el texto
+    #   sin_producto_ajeno  ningun producto de afuera del catalogo
+    #   con_precio          hay un monto, y respaldado por lo que trajo el codigo
+    #   sin_promesa         ningun descuento ni promesa sin respaldo
     con_material = False
     for r in (material or []):
         if not isinstance(r, dict):
             continue
         if (r.get("productos") or r.get("producto") or r.get("temas")
                 or r.get("bloque") or r.get("costo") is not None
-                or r.get("respuesta")):
+                or r.get("politica") or r.get("respuesta")):
             con_material = True
             break
-    contesta = con_material
+
+    from app.core.herramientas import montos_respaldados, plata_inventada
+    respaldados = montos_respaldados(material or [])
+    sin_respaldo = plata_inventada(texto, respaldados)
+    hay_monto = bool(re.search(r"\$\s*\d", texto))
+
+    cumple, faltas = True, []
+    for e in espera:
+        if e == "dato_de_fuente":
+            ok = con_material
+        elif e == "honesto_si_falta":
+            # Sin material no puede haber dato duro inventado en el texto. Con
+            # material, la exigencia ya la cubre `sin_respaldo`.
+            ok = not sin_respaldo
+        elif e == "sin_producto_ajeno":
+            ok = "producto_fuera_del_catalogo" not in [f["regla"] for f in fallas]
+        elif e == "con_precio":
+            ok = hay_monto and not sin_respaldo
+        elif e == "sin_promesa":
+            ok = not sin_respaldo and not re.search(
+                r"\d{1,2}\s*%[^.\n]{0,30}(descuento|off)", texto, re.I)
+        else:
+            ok = True
+        if not ok:
+            cumple = False
+            faltas.append(e)
+    contesta = cumple
     return {"texto": texto, "contesta": contesta,
             "inventa": [f["regla"] for f in fallas], "usadas": usadas}
 
@@ -149,7 +187,7 @@ def main(argv: list) -> int:
         for _nombre, permitidas in ESCALONES:
             ok = 0
             for f in de_la_clase:
-                r = _un_turno(f["pregunta"], permitidas)
+                r = _un_turno(f["pregunta"], permitidas, f["espera"])
                 if r["inventa"]:
                     inventos.append((clase, _nombre, f["pregunta"],
                                      ",".join(sorted(set(r["inventa"])))))
