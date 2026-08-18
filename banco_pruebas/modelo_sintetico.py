@@ -243,6 +243,16 @@ def _decidir(mensaje: str, tienda_id: str, previo: dict | None = None) -> list:
     # todo mensaje que toque una politica -pago, envio, garantia, devolucion-.
     # El doble los resuelve por las `keywords` de la FAQ, que es la fuente, no
     # una lista escrita aca: si un tema cambia de palabras, esto lo sigue.
+    # EL CLIENTE QUE NOMBRA EL MODELO Y NO EL RUBRO. "el redragon zeus x es
+    # inalambrico?" no tiene la palabra "auriculares", asi que
+    # `categorias_nombradas` no devuelve nada y el doble no buscaba: la clase
+    # salia en rojo por culpa del doble. El codigo vivo SI lo encuentra por
+    # `descripcion` sola -verificado: "redragon zeus x" da encontrado, y hasta
+    # "mose jenius dx 110" con los typos-. Un modelo real manda la descripcion
+    # igual, asi que el doble tambien.
+    if not declarado["items"] and len((mensaje or "").split()) >= 2:
+        pedidos.append({"nombre": "buscar_productos",
+                        "args": {"descripcion": mensaje, "cuantos": 3}})
     for tema in _temas_del_mensaje(mensaje, tienda_id)[:3]:
         pedidos.append({"nombre": "consultar_temas", "args": {"temas": [tema]}})
     return pedidos
