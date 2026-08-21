@@ -21,6 +21,13 @@ COMO SE CIERRA UNO. Se hace el trabajo, el test pasa, y `strict=True` lo pone
 ROJO por pasar: eso obliga a sacar la marca en el mismo commit y a bajar el
 techo de `plan_techo.json`. **No se puede cerrar en silencio ni quedar marcado
 para siempre.**
+
+Y COMO SE CAMBIA UN UMBRAL, que es la unica puerta por la que este metodo se
+puede corromper: **en su propio commit, ANTES del trabajo que lo va a hacer
+pasar, con las cuentas escritas.** Si el umbral se mueve en el mismo commit que
+lo hace pasar, no hay forma de distinguir un requisito que cambio de una vara
+que se aflojo. Paso una vez, el 21-ago, con el peso del esquema, y esta anotado
+en el motivo de ese test.
 """
 import re
 import sys
@@ -38,7 +45,7 @@ if str(_RAIZ) not in sys.path:
 @pytest.mark.xfail(strict=True, reason=(
     "PLAN: la etapa de salida se recorta a los candados que impiden una mentira "
     "falsificable o cumplen una obligacion. HOY el grafo declara 18 nodos de "
-    "salida y 8 no intervienen en 54 turnos. OBJETIVO 4 o menos: la plata, el "
+    "salida y 9 no intervienen en 54 turnos. OBJETIVO 4 o menos: la plata, el "
     "dato atado, la obligacion y la higiene. Se cortan JUNTOS, no de a uno: "
     "estan acoplados y cortarlos de a uno ya rompio dos veces."))
 def test_la_salida_tiene_cuatro_nodos_o_menos():
@@ -128,19 +135,28 @@ def test_el_modelo_ve_una_sola_herramienta():
 
 
 @pytest.mark.xfail(strict=True, reason=(
-    "PLAN: el esquema que viaja en la llamada decisora se achica. HOY pesa unos "
-    "25.230 bytes y el 78% son descripciones en prosa metidas adentro del "
-    "esquema, no los enums. OBJETIVO 4.000 o menos, que es `registrar_pedido` "
-    "solo. Es efecto directo del test de arriba, no un trabajo aparte, y hace "
-    "que un simple hola deje de pagar el esquema entero."))
-def test_el_esquema_pesa_menos_de_cuatro_kilobytes():
+    "PLAN: el esquema que viaja en la llamada decisora se achica. HOY pesa "
+    "25.230 bytes repartidos en 9 herramientas, y el 78% son descripciones en "
+    "prosa metidas adentro del esquema, no los enums. OBJETIVO 6.000 o menos, "
+    "que es `registrar_pedido` SOLO, ya enriquecido con las cuatro familias "
+    "nuevas. "
+    "EL UMBRAL SE MOVIO DE 4.000 A 6.000 EL 21-AGO, en su propio commit y ANTES "
+    "del trabajo: el 4.000 asumia que el molde se quedaba en 3.046 bytes, y eso "
+    "era imposible —no puede cargar cuatro familias mas y no pesar mas—. La "
+    "cuenta: 3.046 de hoy + 1.518 del enum de `campo`, que es atadura y no se "
+    "toca, + ~400 de atributos, stock y compatibilidad = ~5.000, mas 20% de "
+    "aire. El enum de TEMAS (2.299) NO entra: el modelo nombra el tema libre y "
+    "el codigo lo certifica contra las 738 señas, que es la regla cero aplicada "
+    "a un tema en vez de a un producto. El umbral de la PARTE sube; el del "
+    "TOTAL baja de 25.230 a ~5.000, que es 80% menos."))
+def test_el_esquema_pesa_menos_de_seis_kilobytes():
     import json
     from banco_pruebas import sim_firestore
     sim_firestore.install()
     from app.core import herramientas as H
     peso = sum(len(json.dumps(e, ensure_ascii=False))
                for e in H.esquemas("verifika_prod"))
-    assert peso <= 4000, f"el esquema pesa {peso} bytes"
+    assert peso <= 6000, f"el esquema pesa {peso} bytes"
 
 
 # ── PASO 3 — EL CONTRATO DEL TURNO ──────────────────────────────────
@@ -149,27 +165,20 @@ def test_se_abre_un_punto_por_cada_familia_respondible():
     """CERRADO el 21-ago-2026 — FICHA 02. La marca se saco porque paso.
 
     ERA: `puntos()` abria SEIS tipos —item, condicion, destino, duda, pago,
-    precio— y los seis salian de los campos de `registrar_pedido`, o sea que
-    el sistema solo sabia abrir puntos sobre la parte transaccional. Si el
-    cliente preguntaba cuantos Hz tiene un monitor NO SE ABRIA NINGUN PUNTO, y
-    entonces no quedaba nada sin contestar: la cobertura era ciega justo en las
-    preguntas informativas, que es donde mas se alucina.
+    precio— y los seis salian de los campos de `registrar_pedido`, o sea que el
+    sistema solo sabia abrir puntos sobre la parte transaccional. Si el cliente
+    preguntaba cuantos Hz tiene un monitor no se abria NINGUN punto, asi que la
+    cobertura era ciega justo en las preguntas informativas.
 
-    ES: diez. Se sumaron ATRIBUTO, STOCK, COMPATIBILIDAD y POLITICA, cada una
-    con su criterio de cobertura escrito —ninguna cae en el `return True` de
-    `_cubierto`, que las habria dado por contestadas siempre— y con anclaje
-    donde el codigo tiene el dato: el valor del campo para el atributo, el
-    numero de la politica para la politica.
+    ES: diez familias. Se suman ATRIBUTO, STOCK, COMPATIBILIDAD y POLITICA.
 
-    LO QUE TODAVIA NO SE PUEDE AFIRMAR, y es la trampa de esta unidad:
-    `registrar_pedido` NO tiene los campos `atributos`, `stock`,
-    `compatibilidad` ni `temas`, asi que en una charla REAL estas cuatro
-    familias no se abren todavia. **Un numero bajo de puntos nuevos en el
-    corpus grabado no quiere decir que la omision bajo: quiere decir que
-    todavia no se puede medir.** Agregarlos al molde cambia el esquema que ve
-    el modelo y es otra unidad.
-
-    ESTE TEST NO SE BORRA: es el candado de que las diez sigan abriendo."""
+    LO QUE ESTE TEST TODAVIA NO PRUEBA, y esta medido: el molde
+    `registrar_pedido` NO tiene esos campos, asi que en las 15 charlas grabadas
+    las cuatro familias nuevas no se abren —190 puntos y 24 sin contestar, los
+    MISMOS que antes del cambio—. La funcion sabe abrirlas; la declaracion
+    todavia no las trae. Eso es la unidad siguiente, y hasta que este hecha
+    **el 13% de puntos sin contestar sigue siendo un PISO y no el numero
+    real.**"""
     from app.core import indice_turno as IT
     declarado = {
         "items": [{"que": "monitor", "cantidad": 1}],
