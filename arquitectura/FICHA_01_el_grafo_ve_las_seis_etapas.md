@@ -1,126 +1,82 @@
 # FICHA 01 — El grafo registra en las seis etapas
 
-> **Va primera por una razón:** no cambia una sola línea del comportamiento del
-> bot, y **hace medible todo lo que viene después.** Hoy el instrumento es ciego
-> justo en la etapa donde está el problema; sin arreglarlo, cada corte posterior
-> hay que medirlo a mano, como hubo que medir la reposición el 18-ago.
+> # ✅ CERRADA — 21-ago-2026, commit `ede944d`
+>
+> Deployada y verde. **Verificada aparte desde Cowork**, no por el parte:
+>
+> ```
+> el diff de tests/   saco la MARCA, no toco el assert
+> app/                puro instrumento, cero cambio de comportamiento
+> bateria             985 passed, 11 xfailed  (era 984 / 12)
+> censo               32 de 32 nodos registran, ninguno ciego
+> ```
+>
+> **La prueba de que el instrumento nuevo sirve, y es la que importa:** los seis
+> numeros de la reposicion que ahora da el grafo — 13%, 4%, 44%, 7%, 7%, 2% —
+> son **identicos** a los que `banco_pruebas/peso_reposicion.py` habia medido el
+> 18-ago envolviendo las funciones a mano desde afuera. Dos instrumentos que no
+> comparten cableado, las mismas 15 charlas, los mismos numeros.
+>
+> Un instrumento que se mide a si mismo no prueba nada. Estos dos no.
+>
+> **Lo que aparecio al encender la luz:** `cierre` sale MUERTO —corre en los 54
+> turnos y no mueve el texto en ninguno—, asi que los nodos de salida que no
+> intervienen pasan de 8 a 9. Y `decisor`, `herramientas`, `redactor` y `memoria`
+> salen ESTRUCTURAL al 100%: **no son guardias que se puedan podar, son piezas
+> del contrato del turno.** Esa distincion no existia antes de esta ficha.
+>
+> El texto de abajo queda como registro de lo que se pidio. No se ejecuta de
+> nuevo: el candado es que el test pasa sin marca, y volver a quedar ciego lo
+> pone rojo.
 
 ---
 
-## QUÉ SE PIDE
+## QUÉ SE PIDIÓ
 
 Que las seis etapas del turno dejen marca en el grafo, no solo `salida`.
 
 ## CÓMO SE VE DESDE EL CLIENTE
 
-**No se ve. Y es a propósito.** Esta unidad no toca el mensaje que recibe el
-cliente: solo agrega observación. Si el texto de salida cambia aunque sea un
-carácter, algo se hizo mal.
+**No se ve. Y era a propósito.** Esta unidad no toca el mensaje que recibe el
+cliente: solo agrega observación.
 
-## EL TEST QUE HOY FALLA
+## EL TEST
 
 ```
 tests/test_plan_del_recorte.py::test_el_grafo_registra_en_las_seis_etapas
 ```
 
-Hoy está marcado `xfail(strict=True)`. Cuando pase, se pone ROJO por pasar: ahí
-se saca la marca y se baja `tests/plan_techo.json` de 11 a 10, **en el mismo
-commit**.
-
 ## EL NÚMERO
 
 ```
-HOY       registran 17 de 32 nodos declarados: solo la etapa `salida`
-OBJETIVO  las seis etapas dejan marca: entrada, decision, reposicion,
-          redaccion, salida, memoria
+ERA       registraban 17 de 32 nodos: solo la etapa `salida`
+QUEDO     32 de 32. `peso_del_censo.py` dejo de imprimir el aviso de ciegos.
 ```
 
-## ARCHIVOS QUE SE TOCAN
-
-```
-app/verifika/grafo.py      la funcion que registra, y como se llama a las
-                           etapas que hoy no lo hacen
-app/core/hub_venta.py      las llamadas a registrar() en las cinco etapas
-                           que faltan
-```
-
-## ARCHIVOS QUE NO SE TOCAN
-
-**Ninguna función que transforme el texto ni los datos.** Esta unidad agrega
-observación, no comportamiento.
-
-```
-app/core/mensaje.py            no se toca
-app/core/herramientas.py       no se toca
-app/verifika/invariantes.py    no se toca
-tests/  (salvo sacar la marca)  no se toca
-```
-
-## QUÉ NO PUEDE ROMPERSE
-
-```
-banco_pruebas/casetes/_piso.json    puntos, llamadas_max, largo_max
-                                    NINGUNO puede empeorar
-la bateria offline                  984 passed
-```
-
-Y una condición propia de esta unidad, porque es la que la hace segura:
-
-> **El texto de salida de las 15 charlas grabadas tiene que ser idéntico,
-> carácter por carácter, antes y después.** Agregar observación no puede mover
-> una coma. Si se movió, se tocó comportamiento sin querer.
-
-## CÓMO SE VERIFICA — offline, sin clave, sin red
+## CÓMO SE VERIFICÓ — offline, sin clave, sin red
 
 ```bash
-# 1. el test de la ficha
-python3 -m pytest tests/test_plan_del_recorte.py::test_el_grafo_registra_en_las_seis_etapas -q
-
-# 2. nada roto
-python3 -m pytest -q
-
-# 3. el censo ahora ve las seis etapas solo, sin envolver nada a mano
-python3 banco_pruebas/peso_del_censo.py
+python3 -m pytest -q                        # 985 passed, 11 xfailed
+python3 banco_pruebas/peso_del_censo.py     # 32/32, sin aviso de ciegos
+python3 banco_pruebas/peso_reposicion.py    # los mismos 6 numeros
 ```
 
-El punto 3 es la prueba real de que la unidad sirvió: hasta hoy
-`peso_del_censo.py` imprime un aviso diciendo que hay nodos declarados que el
-grafo no ve. **Cuando ese aviso desaparezca, la unidad está hecha.**
+## LA TRAMPA CONOCIDA, y cómo se sorteó
 
-## LA TRAMPA CONOCIDA
+**1. Un instrumento no puede tumbar lo que mide.** `paso_datos` serializa para
+comparar y si eso falla cae a `repr`, y si también falla devuelve vacío: medir
+peor es aceptable, tumbar el turno por medir no.
 
-Tres, y las tres ya costaron algo en este repo:
+**2. Los nodos que NO transforman texto no se pueden medir comparándolos.** Se
+resolvió con dos herramientas distintas y el nombre lo dice: `paso_datos` compara
+el estado serializado —y ahí el grafo mide solo—; `veredicto` es para los cinco
+que no devuelven lo que reciben, y su criterio de "intervino" lo escribió una
+persona en una línea al lado de la llamada. **Que se llamen distinto importa:**
+un número medido y un número declarado no valen lo mismo, y ahora se distinguen
+leyendo.
 
-**1. `registrar()` no puede tumbar un turno.** Ya está escrito así —"un registro
-roto no puede tumbar un turno"— y la regla vale para las cinco etapas nuevas. Si
-una marca levanta una excepción, se traga y se sigue. Un instrumento que rompe
-lo que mide no es un instrumento.
-
-**2. `G.paso` compara para decidir si un nodo intervino.** Los nodos que NO
-transforman texto —decisión, memoria, cierre— no se pueden medir comparándolos:
-hay que decidir qué significa "intervino" para cada uno y escribirlo. Para la
-reposición ya está resuelto y se puede copiar de `banco_pruebas/peso_reposicion.py`,
-que compara el estado antes y después serializado.
-
-**3. El detalle que arruina la medición sin que se note.** Si un nodo se registra
-dos veces por turno —por ejemplo en un bucle— el censo cuenta de más y todos los
-porcentajes quedan mal, en silencio. Cada nodo deja **una** marca por turno.
-
-## CÓMO SE VUELVE ATRÁS
-
-`git revert` del commit. No hay flag apagada, no hay camino paralelo. Como esta
-unidad no cambia comportamiento, revertirla no puede afectar a un cliente.
-
----
-
-## LO QUE SE DESCUBRIÓ AL ESCRIBIR ESTA FICHA
-
-**El paso 1 de `PLAN_RECORTE.md` —sacar el bucle de rondas— YA ESTÁ HECHO.**
-
-`hub_venta.py` dice *"DOS LLAMADAS AL MODELO POR TURNO, FIJAS"*, el bucle se
-sacó el 17-ago, y `casetes/_piso.json` lo defiende con `llamadas_max: 2`, así que
-no puede volver sin ponerse rojo.
-
-Eso es exactamente lo que una ficha existe para evitar: **mandar a hacer algo que
-ya está hecho.** El plan en prosa decía que era el primer paso; el código decía
-que estaba cerrado. Gana el código.
+**3. Una diferencia con `G.paso` que está bien que exista.** `G.paso` se traga la
+excepción y devuelve el texto como entró —ninguna guardia puede dejar mudo al
+bot—. `paso_datos` marca y **re-lanza**: una función de datos rota no puede pasar
+datos mal en silencio. Mudo es peor que roto en la salida; en los datos es al
+revés.
