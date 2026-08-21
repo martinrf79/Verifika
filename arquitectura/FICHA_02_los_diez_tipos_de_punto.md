@@ -61,6 +61,7 @@ OBJETIVO  10 tipos. Dada una declaracion que los traiga, se abre un punto
 ```
 app/core/indice_turno.py    la funcion `puntos()` y sus ANCLAJES: que evidencia
                             contesta cada tipo nuevo
+.gitignore                  ver el ADDENDUM al final. Va en el mismo commit.
 ```
 
 ## ARCHIVOS QUE NO SE TOCAN
@@ -102,11 +103,11 @@ atributo, y hoy `registrar_pedido` no tiene ese campo. **Esta ficha NO agrega el
 campo al molde**, porque eso cambia el esquema que ve el modelo y es otra unidad,
 con otro riesgo.
 
-Entonces: el test pasaá —prueba que la función abre los diez dada una declaración
-que los trae— pero **el corpus grabado va a seguir mostrando pocos puntos
-nuevos**, porque los casetes se grabaron con el molde viejo. Eso **no es un
-fracaso de esta ficha**: es que el número real todavía no se puede medir. Lo que
-no se puede hacer es declarar que la omisión bajó mirando ese corpus.
+Entonces: el test va a pasar —prueba que la función abre los diez dada una
+declaración que los trae— pero **el corpus grabado va a seguir mostrando pocos
+puntos nuevos**, porque los casetes se grabaron con el molde viejo. Eso **no es
+un fracaso de esta ficha**: es que el número real todavía no se puede medir. Lo
+que no se puede hacer es declarar que la omisión bajó mirando ese corpus.
 
 **Lo que SÍ hay que dejar hecho:** que el motivo quede escrito donde se vea, para
 que la sesión siguiente no lea un número bajo y crea que está todo bien.
@@ -132,6 +133,53 @@ cobertura sin que nada mejore.
 
 `git revert`. Como la unidad no cambia el mensaje, revertirla no puede afectar a
 un cliente.
+
+---
+
+# ADDENDUM — una regla de `.gitignore` está MUERTA
+
+**Va en el mismo commit que la ficha**, y el motivo es de costo: tocar
+`.gitignore` deploya, y esta ficha deploya igual porque toca `app/`. Un deploy,
+no dos.
+
+## Qué pasa
+
+`.gitignore` **no es un archivo de texto**: `file .gitignore` dice `data`, y git
+lo trata como binario —por eso su diff sale ilegible—. Adentro hay un bloque en
+**UTF-16**, cada carácter seguido de un `\x00`:
+
+```
+linea 21   'd\x00a\x00t\x00a\x00/\x00c\x00l\x00i\x00...'
+           -> se lee como: data/clientes/verifika_2k/embeddings.json
+```
+
+Es la firma de un `>` de PowerShell en Windows, que escribe UTF-16 por default.
+Y `CLAUDE.md` tiene una receta de trabajo desde la notebook con PowerShell, así
+que ahí nació.
+
+**Git lee `.gitignore` como bytes, línea por línea.** Una línea en UTF-16 no
+matchea ninguna ruta, así que **esa regla no está haciendo nada.**
+
+## Cuánto importa
+
+Protege `data/clientes/verifika_2k/embeddings.json`, que según el comentario de
+`.gcloudignore` son **~40 MB**. Verificado: hoy no está commiteado, **así que el
+daño no ocurrió**. Pero la protección es falsa: el día que ese archivo
+reaparezca, entra al repo.
+
+## Qué hay que hacer
+
+1. Reescribir `.gitignore` entero en **UTF-8 sin BOM**, con las mismas reglas.
+   Son tres líneas afectadas —una con contenido y dos vacías—; el resto ya está
+   bien y no se toca.
+2. Agregar el candado en `tests/`, **en el mismo commit** para que nazca verde:
+   ningún archivo de configuración de texto del repo —`.gitignore`,
+   `.gcloudignore`, `requirements.txt`, los `.env` de `config/`— puede contener
+   un byte `\x00`.
+
+**El candado importa más que el arreglo.** Sin él, la próxima vez que alguien
+agregue una línea desde PowerShell vuelve a pasar, y la segunda vez tampoco lo
+va a ver nadie: un `.gitignore` roto no falla, **calla**.
 
 ---
 
