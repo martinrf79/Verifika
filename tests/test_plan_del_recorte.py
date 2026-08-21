@@ -145,15 +145,31 @@ def test_el_esquema_pesa_menos_de_cuatro_kilobytes():
 
 # ── PASO 3 — EL CONTRATO DEL TURNO ──────────────────────────────────
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: `indice_turno.puntos` abre las diez familias. HOY abre SEIS —item, "
-    "condicion, destino, duda, pago, precio— y las seis salen de los campos de "
-    "`registrar_pedido`, o sea que solo ve la parte transaccional. OBJETIVO que "
-    "sume ATRIBUTO, STOCK, COMPATIBILIDAD y POLITICA. Hoy, si el cliente "
-    "pregunta cuantos Hz tiene un monitor, NO SE ABRE NINGUN PUNTO y la "
-    "cobertura es ciega justo donde mas se alucina: por eso el 13% de puntos "
-    "sin contestar es un piso y no el numero real."))
 def test_se_abre_un_punto_por_cada_familia_respondible():
+    """CERRADO el 21-ago-2026 — FICHA 02. La marca se saco porque paso.
+
+    ERA: `puntos()` abria SEIS tipos —item, condicion, destino, duda, pago,
+    precio— y los seis salian de los campos de `registrar_pedido`, o sea que
+    el sistema solo sabia abrir puntos sobre la parte transaccional. Si el
+    cliente preguntaba cuantos Hz tiene un monitor NO SE ABRIA NINGUN PUNTO, y
+    entonces no quedaba nada sin contestar: la cobertura era ciega justo en las
+    preguntas informativas, que es donde mas se alucina.
+
+    ES: diez. Se sumaron ATRIBUTO, STOCK, COMPATIBILIDAD y POLITICA, cada una
+    con su criterio de cobertura escrito —ninguna cae en el `return True` de
+    `_cubierto`, que las habria dado por contestadas siempre— y con anclaje
+    donde el codigo tiene el dato: el valor del campo para el atributo, el
+    numero de la politica para la politica.
+
+    LO QUE TODAVIA NO SE PUEDE AFIRMAR, y es la trampa de esta unidad:
+    `registrar_pedido` NO tiene los campos `atributos`, `stock`,
+    `compatibilidad` ni `temas`, asi que en una charla REAL estas cuatro
+    familias no se abren todavia. **Un numero bajo de puntos nuevos en el
+    corpus grabado no quiere decir que la omision bajo: quiere decir que
+    todavia no se puede medir.** Agregarlos al molde cambia el esquema que ve
+    el modelo y es otra unidad.
+
+    ESTE TEST NO SE BORRA: es el candado de que las diez sigan abriendo."""
     from app.core import indice_turno as IT
     declarado = {
         "items": [{"que": "monitor", "cantidad": 1}],

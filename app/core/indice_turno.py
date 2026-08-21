@@ -134,6 +134,72 @@ def puntos(declarado: dict) -> list:
         fuera.append({"id": "precio:1", "tipo": "precio", "termino": "",
                       "texto": "el precio de lo que pidio"})
 
+    # ── LAS CUATRO FAMILIAS INFORMATIVAS (FICHA 02, 21-ago-2026) ────────
+    #
+    # LAS SEIS DE ARRIBA SALEN TODAS DE `registrar_pedido`, o sea que el
+    # sistema solo sabia abrir puntos sobre la parte TRANSACCIONAL: que
+    # comprar, adonde va, como se paga. Si el cliente preguntaba cuantos Hz
+    # tiene el monitor NO SE ABRIA NINGUN PUNTO, y entonces no quedaba nada
+    # sin contestar —porque nunca se declaro que hubiera algo que contestar—.
+    # El contrato de cobertura era ciego exactamente en las preguntas
+    # informativas, que son la mitad de una conversacion de venta y son donde
+    # mas se alucina.
+    #
+    # POR ESO EL 13% DE PUNTOS SIN CONTESTAR ES UN PISO Y NO EL NUMERO REAL.
+    # El real es peor y no se puede medir hasta que existan las diez.
+    #
+    # EL PUNTO SALE DE LO DECLARADO, NUNCA DE LO BUSCADO. Es tentador abrir un
+    # punto de `politica` porque se llamo a `consultar_temas`, y es circular:
+    # si el punto existe porque se busco, entonces una pregunta que NADIE
+    # busco no abre punto, y la omision —que es justo lo que queremos cazar—
+    # se vuelve invisible. El punto nace de lo que el cliente pidio.
+    #
+    # AVISO PARA LA SESION QUE LEA EL NUMERO, y es la trampa de esta unidad:
+    # hoy `registrar_pedido` NO tiene los campos `atributos`, `stock`,
+    # `compatibilidad` ni `temas`, asi que en una charla real estas cuatro
+    # familias NO SE ABREN TODAVIA. Agregarlos al molde cambia el esquema que
+    # ve el modelo y es otra unidad, con otro riesgo. **Un numero bajo de
+    # puntos nuevos en el corpus grabado no quiere decir que la omision bajo:
+    # quiere decir que todavia no se puede medir.**
+
+    for i, a in enumerate((declarado.get("atributos") or []), 1):
+        de = str((a or {}).get("de") or "").strip()
+        campo = str((a or {}).get("campo") or "").strip()
+        # UN ATRIBUTO SIN CAMPO NO ES UN PUNTO. "el monitor" no se puede
+        # contestar; "los Hz del monitor" si. Un punto que no se contesta con
+        # un dato concreto infla el denominador y hace BAJAR el porcentaje de
+        # omision sin que nada haya mejorado, que es peor que no medirlo.
+        if not de or not campo:
+            continue
+        fuera.append({"id": f"atributo:{i}", "tipo": "atributo",
+                      "termino": de, "campo": campo,
+                      "texto": f"{campo} de {de}"})
+
+    for i, q in enumerate((declarado.get("stock") or []), 1):
+        q = str(q or "").strip()
+        if q:
+            fuera.append({"id": f"stock:{i}", "tipo": "stock", "termino": q,
+                          "texto": f"si hay stock de {q}"})
+
+    for i, c in enumerate((declarado.get("compatibilidad") or []), 1):
+        que = str((c or {}).get("que") or "").strip()
+        para = str((c or {}).get("para") or "").strip()
+        if not que or not para:
+            continue
+        fuera.append({"id": f"compatibilidad:{i}", "tipo": "compatibilidad",
+                      "termino": f"{que} {para}", "que": que, "para": para,
+                      "texto": f"si {que} sirve para {para}"})
+
+    for i, t in enumerate((declarado.get("temas") or []), 1):
+        t = str(t or "").strip()
+        if t:
+            # El tema viene con guion bajo -`costo_envio`, `garantia`- y el
+            # matcher parte por espacios: sin esto `costo_envio` seria una sola
+            # palabra que no aparece jamas en un mensaje escrito por nadie.
+            fuera.append({"id": f"politica:{i}", "tipo": "politica",
+                          "termino": t.replace("_", " "), "tema": t,
+                          "texto": f"la politica de {t.replace('_', ' ')}"})
+
     return fuera
 
 
@@ -267,7 +333,15 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
     if not llamadas:
         return [a for a in dict.fromkeys(fuera) if a.strip()]
     for l in llamadas:
-        if l.get("herramienta") not in _TRAEN:
+        # `ver_compatibilidad` entra SOLO para su propio tipo, y no se suma a
+        # `_TRAEN`: sumarla ahi le daria evidencia nueva a `item` y a
+        # `condicion`, que es un cambio de comportamiento en puntos que ya se
+        # miden hoy. El anclaje solo puede SACAR una alarma, nunca agregarla,
+        # asi que ampliar la fuente de evidencia de un tipo viejo mueve
+        # numeros que esta unidad no tiene que mover.
+        _herr = l.get("herramienta")
+        if _herr not in _TRAEN and not (tipo == "compatibilidad"
+                                        and _herr == "ver_compatibilidad"):
             continue
         r = l.get("resultado") or {}
         ped = l.get("pedido") or {}
@@ -327,12 +401,76 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
                 elif p.get("precio_ars"):
                     fuera.append(f"{int(p['precio_ars']):,}".replace(",", "."))
 
+        # ── ATRIBUTO: el anclaje es EL VALOR, no el nombre del campo ────
+        # Es el mismo razonamiento que el resto del modulo: el codigo TIENE
+        # el dato -la ficha del producto certificado dice `hz: "75Hz"`-, asi
+        # que no hace falta adivinar si el modelo uso la palabra "hz". Si el
+        # valor esta en el mensaje, el atributo esta contestado, y ningun
+        # sinonimo rompe eso. Solo ancla la ficha que el punto NOMBRA.
+        if tipo == "atributo" and propio:
+            campo = str(punto.get("campo") or "").strip()
+            for f in fichas:
+                if not (del_punto & set(_palabras(str(f.get("nombre") or "")))):
+                    continue
+                specs = f.get("specs") if isinstance(f.get("specs"), dict) else {}
+                valor = specs.get(campo, f.get(campo))
+                if valor not in (None, "", []):
+                    fuera.append(str(valor))
+
+        # ── POLITICA: el anclaje son los NUMEROS de la politica ─────────
+        # NO el texto de la FAQ entero: son cuarenta palabras, el modelo lo
+        # reescribe con las suyas, y `_ancla_en` se conforma con dos palabras
+        # presentes —o sea que un parrafo largo anclaria contra casi
+        # cualquier mensaje y el punto saldria contestado siempre—. Los
+        # numeros con su unidad -"6 meses"- son lo unico que identifica.
+        if tipo == "politica" and _herr == "consultar_temas":
+            for t in (r.get("temas") or []):
+                if str(t.get("tema") or "") != str(punto.get("tema") or ""):
+                    continue
+                for v in (t.get("valores") or []):
+                    if v.get("monto") in (None, ""):
+                        continue
+                    unidad = str(v.get("unidad") or "").strip()
+                    fuera.append(f"{v['monto']} {unidad}".strip())
+
+        # STOCK Y COMPATIBILIDAD NO ANCLAN, y es una decision, no un olvido.
+        # Su unica evidencia posible seria el nombre del producto, y nombrar
+        # el producto NO contesta ni "¿hay?" ni "¿me sirve?": anclar ahi los
+        # daria por contestados apenas el bot mencione el equipo. Se miden
+        # contra el texto, que es donde de verdad se ven.
+
     return [a for a in dict.fromkeys(fuera) if a.strip()]
 
 
 # ── LA COBERTURA: que punto llego al texto y cual no ─────────────────────────
 _RE_TOTAL = re.compile(r"(?im)^\s*total(?:\s+final)?\s*:")
 _RE_PREGUNTA = re.compile(r"\?")
+
+# CONTESTAR SI HAY O NO HAY. Estan las dos caras a proposito: "no nos queda"
+# contesta el punto igual de bien que "tenemos 7", y un vocabulario que solo
+# mire la cara buena marcaria sin atender una respuesta correcta.
+_RE_DISPONIBILIDAD = re.compile(
+    r"\b(stock|disponible|disponibles|agotad|tenemos|tengo|hay|queda|quedan|"
+    r"reponer|repone|entrega inmediata|sin unidades)")
+
+# EL VEREDICTO DE COMPATIBILIDAD, tambien en las dos caras, mas la tercera que
+# es la unica honesta cuando la ficha no lo dice: que no se puede confirmar.
+_RE_VEREDICTO = re.compile(
+    r"\b(compatible|incompatible|sirve|no sirve|funciona|anda|calza|encaja|"
+    r"soporta|admite|no puedo confirmar|no figura|sin dato)")
+
+
+def _dice(palabra, texto: str) -> bool:
+    """¿El texto nombra este campo? Sin el minimo de tres letras de
+    `_aparece`, porque los campos son cortos —`hz`, `ram`, `w`, `gb`— y ese
+    minimo los descarta a todos: `_aparece("hz", ...)` da False SIEMPRE.
+
+    Se ancla al arranque de palabra igual que `_aparece`, asi que `hz` no se
+    da por dicho porque el texto diga otra cosa que lo contenga en el medio."""
+    w = _raiz(str(palabra or "").strip())
+    if not w:
+        return False
+    return bool(re.search(rf"\b{re.escape(w)}", _n(texto)))
 
 
 def _cubierto(punto: dict, texto: str) -> bool:
@@ -374,6 +512,38 @@ def _cubierto(punto: dict, texto: str) -> bool:
 
     if tipo == "precio":
         return bool(_RE_TOTAL.search(texto or ""))
+
+    # ── LAS CUATRO INFORMATIVAS (FICHA 02) ──────────────────────────────
+    #
+    # NINGUNA SE CONTESTA NOMBRANDO EL OBJETO, y por eso ninguna alcanza con
+    # `_aparece`: decir "el monitor Samsung" no contesta cuantos Hz tiene, ni
+    # si hay stock, ni si sirve para la notebook. **Las tres exigen el objeto
+    # NOMBRADO mas la RESPUESTA dicha**, igual que `duda` exige el signo de
+    # pregunta. Sin esa segunda mitad, el punto se daria por contestado
+    # apenas el bot mencione el producto, que es exactamente la clase de
+    # verde falso que el modulo entero viene a evitar.
+    #
+    # Y OJO CON EL DEFAULT DE ABAJO: `return True`. Una familia nueva que no
+    # se escriba aca queda marcada como SIEMPRE contestada y su omision se
+    # vuelve invisible en silencio. Por eso las cuatro se escriben, aunque
+    # todavia no puedan abrirse en una charla real.
+
+    if tipo == "atributo":
+        # El campo se pide aparte y sin el minimo de tres letras: `hz`, `ram`
+        # y `w` son campos reales, y `_aparece` descarta las palabras cortas.
+        return bool(_aparece(termino, texto) and _dice(punto.get("campo"), texto))
+
+    if tipo == "stock":
+        return bool(_aparece(termino, texto)
+                    and _RE_DISPONIBILIDAD.search(_n(texto)))
+
+    if tipo == "compatibilidad":
+        return bool(_aparece(punto.get("que") or "", texto)
+                    and _aparece(punto.get("para") or "", texto)
+                    and _RE_VEREDICTO.search(_n(texto)))
+
+    if tipo == "politica":
+        return _aparece(termino, texto)
 
     return True
 
