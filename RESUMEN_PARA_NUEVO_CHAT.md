@@ -19,7 +19,9 @@ Donde vive cada cosa, ahora:
 | como se ORDENA el sistema | `ARQUITECTURA.md` | a mano, y se reescribe cuando cambia |
 | que se DECIDIO y por que | `DECISIONES.md` | a mano, una linea por decision |
 | las reglas de trabajo | `CLAUDE.md` | a mano |
-| los numeros | los bancos y el piso | los scripts |
+| **con que MODELO corre** | **`app/config.py`** | **candado: `tests/test_documentos_no_mienten.py`** |
+| los numeros de la fuente | `INVENTARIO_FUENTE.md` | candado propio |
+| los numeros medidos | los bancos y el piso | los scripts |
 
 **La regla que evita que esto vuelva a crecer: si algo se puede medir con un
 script, no se escribe en un documento.** Un numero medido cuesta cien tokens; el
@@ -42,8 +44,9 @@ ahora es una accion y no un pedido.
 3-ago.
 
 **Lo unico que se consulta es el PUSH**, porque pushear a `main` ES deployar,
-salvo que el cambio toque solo `**.md`, `tests/`, `banco_pruebas/` o `reserva/`.
-Se pide UNA vez, al final.
+salvo que el cambio toque solo carpetas que no llegan a produccion. Cuales son
+lo dice `paths-ignore` en `deploy.yml`, no este archivo. Se pide UNA vez, al
+final.
 
 ---
 
@@ -66,10 +69,11 @@ Estamos en validacion de producto: todavia no hay cliente real confirmado.
 
 ## DOS COSAS QUE CONFUNDEN A CADA SESION NUEVA
 
-1. **El modelo de produccion es `gemini-3.1-flash-lite`**, no DeepSeek
-   (`LLM_PROVIDER` default `gemini` en `config.py`). Si algun texto viejo dice
-   "DeepSeek en todo", el nombre esta desactualizado; la regla de no gastar en
-   modelos caros sigue viva.
+1. **El modelo NO se lee de un documento.** Sale de `app/config.py`, y cualquier
+   `.md` que nombre uno esta violando el candado. Si un texto viejo —de los que
+   circulan afuera del repo— te dice con que modelo corre el bot, esta
+   desactualizado por definicion: **eso ya paso, y estuvo mal escrito en
+   `CLAUDE.md` durante meses.**
 2. **`app/core/hub_atado.py` NO EXISTE.** Circula un texto de arranque que dice
    que el camino vivo es ese archivo, con interprete y solver por fragmentos. El
    camino vivo es **`app/core/hub_venta.py`**.
