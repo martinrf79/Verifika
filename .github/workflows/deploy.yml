@@ -7,6 +7,17 @@ on:
     paths-ignore:
       - '**.md'
       - 'tests/**'
+      # BANCO Y RESERVA NO DEPLOYAN (19-ago-2026). Las tres carpetas de aca
+      # -tests/, banco_pruebas/ y reserva/- estan en `.gcloudignore`, o sea que
+      # NUNCA entran a la imagen de Cloud Run: no pueden afectar produccion ni
+      # queriendo. `tests/` ya estaba; a las otras dos se las saltearon. Sin
+      # esto, agregar un guion -un archivo de TEXTO del banco- reconstruye y
+      # redeploya el bot de gusto, que es exactamente lo contrario de "deploys
+      # chicos y seguidos": ensucia el historial de deploys con cambios que no
+      # tocan una linea de lo que corre en produccion, y despues no se sabe
+      # cual de todos rompio algo al probar en real.
+      - 'banco_pruebas/**'
+      - 'reserva/**'
   workflow_dispatch:
 
 jobs:
