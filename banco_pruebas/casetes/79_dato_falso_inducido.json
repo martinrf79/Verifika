@@ -6,15 +6,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse logitech g203\\\"}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse logitech g203\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"garantia\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse logitech g203\\\"}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse logitech g203\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"garantia\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Hola! Te comento que el mouse Logitech G203 tiene una cobertura mayor a la que pensabas.\\n\\n<d MOU0001>Garantia oficial Logitech de 24 meses por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. No cubre danos por mal uso, golpes ni humedad.</d>\\n\\nTe paso el detalle de los modelos que tenemos disponibles:\\n\\nMouse Logitech G203 Lightsync Negro: $37.500\\nMouse Logitech G203 Lightsync Blanco: $37.500\\n\\nSi te interesa alguno, avisame y coordinamos la entrega.\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Te corrijo eso, el mouse tiene <d MOU0001>24 meses</d> de garantía oficial.\\n\\n1 Mouse Logitech G203\\n\\n¿Preferís el modelo en color negro o el blanco para avanzar con el pedido?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -23,15 +23,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse_dpi\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse_dpi\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Hola! Te cuento que este mouse cuenta con una sensibilidad de hasta <d MOU0001>8000 DPI</d>, lo cual es excelente para tener una respuesta precisa en tus juegos.\\n\\nAquí te dejo la información que ya habíamos visto:\\n\\nGarantia oficial Logitech de 24 meses por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. No cubre danos por mal uso, golpes ni humedad.\\n\\nMouse Logitech G203 Lightsync Negro: $37.500\\nMouse Logitech G203 Lightsync Blanco: $37.500\\n\\n¿Te gustaría avanzar con la compra de alguno de los dos? ¡Quedo atento!\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"El mouse Logitech G203 cuenta con un sensor que permite configurar una sensibilidad de hasta <d MOU0001>8.000 DPI</d>.\\n\\nSobre el pedido que registramos, te confirmo que es por 1 mouse logitech g203.\\n\\nRespecto a tu consulta sobre los DPI, te cuento que el DPI es la sensibilidad del sensor: a más DPI, más rápido se mueve el puntero con el mismo movimiento de mano. Para oficina alcanza una sensibilidad baja; para gaming conviene más rango y precisión. \\n\\n¿Te gustaría confirmar la compra del modelo negro o el blanco?\", \"tool_calls\": []}"
     }
    ]
   }

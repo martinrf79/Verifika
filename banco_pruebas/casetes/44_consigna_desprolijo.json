@@ -6,23 +6,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"restricciones\\\":[\\\"inalambrico\\\",\\\"para jugar\\\",\\\"barato\\\"],\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"mouse inalambrico para jugar\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"categoria\\\":\\\"mouse\\\",\\\"descripcion\\\":\\\"mouse inalambrico gamer barato\\\",\\\"direccion\\\":\\\"min\\\",\\\"filtros\\\":[{\\\"operador\\\":\\\"contiene\\\",\\\"campo\\\":\\\"conexion\\\",\\\"valor\\\":\\\"inalambrico\\\"},{\\\"campo\\\":\\\"uso_recomendado\\\",\\\"operador\\\":\\\"contiene\\\",\\\"valor\\\":\\\"gaming\\\"}],\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"cuantos\\\":3}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse\\\",\\\"mouse_dpi\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"mouse inalambrico para jugar\\\"}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"direccion\\\":\\\"min\\\",\\\"descripcion\\\":\\\"mouse inalambrico gamer barato\\\",\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"categoria\\\":\\\"mouse\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse\\\",\\\"mouse_dpi\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"restricciones\\\":[\\\"inalambrico\\\",\\\"para jugar\\\",\\\"barato\\\"],\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"mouse inalambrico para jugar\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"categoria\\\":\\\"mouse\\\",\\\"descripcion\\\":\\\"mouse inalambrico gamer barato\\\",\\\"direccion\\\":\\\"min\\\",\\\"filtros\\\":[{\\\"operador\\\":\\\"contiene\\\",\\\"campo\\\":\\\"conexion\\\",\\\"valor\\\":\\\"inalambrico\\\"},{\\\"campo\\\":\\\"uso_recomendado\\\",\\\"operador\\\":\\\"contiene\\\",\\\"valor\\\":\\\"gaming\\\"}],\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"cuantos\\\":3}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse\\\",\\\"mouse_dpi\\\"]}\"}]}"
-    },
-    {
-     "etapa": "herramientas",
-     "salida": "{\"content\": \"Tengo estas opciones económicas que te sirven para empezar a jugar, son inalámbricos y los más accesibles que tenemos hoy.\\n\\narmar_presupuesto(items=[{\\\"product_id\\\": \\\"MOU0009\\\", \\\"cantidad\\\": 1}, {\\\"product_id\\\": \\\"MOU0010\\\", \\\"cantidad\\\": 1}, {\\\"product_id\\\": \\\"MOU0049\\\", \\\"cantidad\\\": 1}])\\n\\nPara gaming competitivo lo ideal es buscar sensores con más precisión y menos peso, pero para arrancar o un uso casual estos andan muy bien. ¿Te interesa alguno de estos o buscabas algo con más prestaciones?\", \"tool_calls\": []}"
-    },
-    {
-     "etapa": "herramientas",
-     "salida": "{\"content\": \"Tengo estas opciones económicas que te sirven para empezar a jugar, son inalámbricos y los más accesibles que tenemos hoy.\\n\\narmar_presupuesto(items=[{\\\"product_id\\\": \\\"MOU0009\\\", \\\"cantidad\\\": 1}, {\\\"product_id\\\": \\\"MOU0010\\\", \\\"cantidad\\\": 1}, {\\\"product_id\\\": \\\"MOU0049\\\", \\\"cantidad\\\": 1}])\\n\\nPara gaming competitivo lo ideal es buscar sensores con más precisión y menos peso, pero para arrancar o un uso casual estos andan muy bien. ¿Te interesa alguno de estos o buscabas algo con más prestaciones?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"mouse inalambrico para jugar\\\"}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"direccion\\\":\\\"min\\\",\\\"descripcion\\\":\\\"mouse inalambrico gamer barato\\\",\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"categoria\\\":\\\"mouse\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse\\\",\\\"mouse_dpi\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Para lo que buscas, el Logitech M170 es la opción más económica. Es <d MOU0009>inalámbrico</d> y, aunque es un modelo básico, el fabricante lo cataloga como <d MOU0009>ideal para gaming</d>. Tiene un <d MOU0009>sensor óptico</d> y <d MOU0009>funciona con 1 pila AA</d>.\\n\\nPresupuesto:\\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\\nSubtotal: $12.000\\nTotal: $12.000\\n\\nTe sirve para <d MOU0009>notebook o PC de escritorio</d> y cuenta con <d MOU0009>24 meses de garantía oficial</d>. ¿Te lo reservo o preferís ver alguna otra opción?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Para jugar, lo ideal es un mouse que te dé libertad y buena respuesta. El Genius que encontré es muy económico, pero es con cable, así que si buscás sí o sí inalámbrico te recomiendo el Logitech M170.\\n\\nPresupuesto:\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\nSubtotal: $8.500\\nTotal: $8.500\\n\\nEl Logitech M170 te sale $12.000 y <d MOU0009>funciona con 1 pila AA, hasta 12 meses</d>, además de que <d MOU0009>usa receptor USB de 2.4GHz</d>. Todos nuestros productos tienen <d Garantia oficial>Garantia oficial de 24 meses por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. No cubre danos por mal uso, golpes ni humedad.</d>.\\n\\n¿Te sirve el inalámbrico o preferís avanzar con el Genius que es más barato?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -31,15 +23,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\",\\\"cantidad\\\":1},{\\\"que\\\":\\\"auriculares\\\",\\\"cantidad\\\":1}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"direccion\\\":\\\"min\\\",\\\"descripcion\\\":\\\"auriculares baratos\\\",\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"cuantos\\\":3,\\\"categoria\\\":\\\"auriculares\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"auriculares\\\",\\\"calidad_precio\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\",\\\"cantidad\\\":1},{\\\"cantidad\\\":1,\\\"que\\\":\\\"auriculares\\\"}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"direccion\\\":\\\"min\\\",\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"cuantos\\\":3,\\\"categoria\\\":\\\"auriculares\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"auriculares\\\",\\\"calidad_precio\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\",\\\"cantidad\\\":1},{\\\"que\\\":\\\"auriculares\\\",\\\"cantidad\\\":1}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"direccion\\\":\\\"min\\\",\\\"descripcion\\\":\\\"auriculares baratos\\\",\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"cuantos\\\":3,\\\"categoria\\\":\\\"auriculares\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"auriculares\\\",\\\"calidad_precio\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\",\\\"cantidad\\\":1},{\\\"cantidad\\\":1,\\\"que\\\":\\\"auriculares\\\"}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"direccion\\\":\\\"min\\\",\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"cuantos\\\":3,\\\"categoria\\\":\\\"auriculares\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"auriculares\\\",\\\"calidad_precio\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Hola! Sí, tenemos varias opciones. Para gaming, te recomiendo los Redragon Zeus X, que son una excelente opción. Son <d AUR0019>de cable</d>, están construidos en <d AUR0019>plástico y cuero sintético</d> y cuentan con <d AUR0019>12 meses de garantía oficial</d>.\\n\\nHe actualizado tu pedido sumando los auriculares. Aquí tienes el detalle:\\n\\nPresupuesto:\\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\\nSubtotal: $69.500\\nTotal: $69.500\\n\\nComo me preguntaste por opciones que no sean tan caras, estos son los modelos más accesibles que tenemos actualmente que mantienen una buena relación precio-calidad para jugar. ¿Te gustaría avanzar con estos o preferís que te cuente sobre algún otro modelo?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"¡Buenas! Entiendo, buscás algo para completar el equipo sin gastar de más. Te cuento que los auriculares más económicos que tengo ahora son los Redragon Zeus X (tanto en Negro como en Blanco), que cuestan $57.500.\\n\\nSon auriculares diseñados para Gaming, lo cual te sirve mucho para ubicar sonidos durante las partidas. Están construidos en <d AUR0019>plástico y cuero sintético</d> y tienen una <d AUR0019>garantía oficial de 12 meses</d> por defectos de fabricación. Como dato importante, <d AUR0019>no usan batería</d> ya que funcionan con cable, y <d AUR0019>no son resistentes al agua</d>. Todos los modelos de esta marca vienen de China.\\n\\nHe actualizado tu pedido para incluir ambos productos:\\n\\nPresupuesto:\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\n- 1x Auriculares Redragon Zeus X: $57.500 c/u = $57.500\\nSubtotal: $66.000\\nTotal: $66.000\\n\\n¿Te gustaría avanzar con alguno de estos auriculares o buscabas algo en un rango de precio distinto? Tené en cuenta que para otros modelos no cuento con stock disponible en este momento.\", \"tool_calls\": []}"
     }
    ]
   },
@@ -48,15 +40,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\"}]}\"}, {\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"product_id\\\":\\\"MOU0009\\\",\\\"cantidad\\\":2}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"continuacion_presupuesto\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"}]}\"}, {\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"product_id\\\":\\\"MOU0023\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\"}]}\"}, {\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"product_id\\\":\\\"MOU0009\\\",\\\"cantidad\\\":2}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"continuacion_presupuesto\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"}]}\"}, {\"name\": \"armar_presupuesto\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"product_id\\\":\\\"MOU0023\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Perfecto! Ya eliminé los auriculares de tu pedido y actualicé la cantidad de los mouses. Te comento que el Mouse Logitech M170 Negro tiene <d MOU0009>24 meses de garantía</d>, funciona con <d MOU0009>1 pila AA</d> y utiliza un <d MOU0009>receptor USB de 2.4GHz</d> para la conexión inalámbrica.\\n\\nAquí tenés el presupuesto actualizado:\\n\\nPresupuesto:\\n- 2x Mouse Logitech M170 Negro: $12.000 c/u = $24.000\\nSubtotal: $24.000\\nTotal: $24.000\\n\\n¿Te gustaría confirmar este pedido o necesitas que te ayude con algo más antes de avanzar?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"¡Perfecto! Ya quité los auriculares de tu pedido y actualicé la cantidad de mouses a dos unidades del modelo que elegiste.\\n\\nTe recuerdo que este modelo <d MOU0023>no usa batería, se alimenta por el cable USB</d> y cuenta con una <d MOU0023>garantia de 24 meses</d>.\\n\\nPresupuesto:\\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\\nSubtotal: $17.000\\nTotal: $17.000\\n\\n¿Necesitás algo más o querés que avancemos con la compra así?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -65,15 +57,19 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\"}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"preguntas_confirmacion\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"}],\\\"pide_precio\\\":false,\\\"restricciones\\\":[\\\"que sea negro si o si\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\"}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"preguntas_confirmacion\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"}],\\\"pide_precio\\\":false,\\\"restricciones\\\":[\\\"que sea negro si o si\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Quedate tranquilo! Ya tomé nota de que ambos son en color <d MOU0009>negro</d>. El Mouse Logitech M170 cuenta con <d MOU0009>24 meses de garantía</d>, utiliza <d MOU0009>1 pila AA</d> y su conexión es mediante <d MOU0009>receptor USB de 2.4GHz</d>.\\n\\nPresupuesto:\\n- 2x Mouse Logitech M170 Negro: $12.000 c/u = $24.000\\nSubtotal: $24.000\\nTotal: $24.000\\n\\n¿Te parece bien que avancemos con el pedido así como está?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"¡Perfecto! Ya quité los auriculares del pedido y actualicé la cantidad de mouses. Como me pediste los del principio, te confirmo que el Mouse Genius DX-110 Negro tiene una <d MOU0023>garantia de 24 meses</d> y su <d MOU0023>conexion es con cable USB</d>, por lo que <d MOU0023>no usa bateria</d>.\\n\\nAquí tenés el presupuesto actualizado:\\n\\nPresupuesto:\\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\\nSubtotal: $17.000\\nTotal: $17.000\\n\\n¿Querés que avancemos con la compra de estos dos mouses o necesitás consultar algo más?\", \"tool_calls\": []}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Entendido! Ya tomé nota de tu pedido y confirmé que ambos mouses sean de color negro, tal como me pediste. Te confirmo que el modelo es el <d MOU0023>Mouse Genius DX-110 de color negro</d>.\\n\\nAquí tenés el presupuesto actualizado:\\n\\nPresupuesto:\\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\\nSubtotal: $17.000\\nTotal: $17.000\\n\\n¿Querés que avancemos con el pedido así o necesitás agregar algo más?\", \"tool_calls\": []}"
     }
    ]
   }

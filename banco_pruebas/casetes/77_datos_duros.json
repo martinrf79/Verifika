@@ -6,15 +6,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse logitech g203\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"garantia\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}],\\\"pide_precio\\\":false}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse logitech g203\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"garantia\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse logitech g203\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"garantia\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}],\\\"pide_precio\\\":false}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse logitech g203\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"garantia\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"El mouse Logitech G203 cuenta con una <d MOU0001>garantia oficial Logitech de 24 meses por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. No cubre danos por mal uso, golpes ni humedad</d>.\\n\\nTe paso el detalle del producto que me pediste:\\n\\n1 Mouse Logitech G203 $37.500\\n\\n¿Preferís el modelo en color negro o el blanco para avanzar con la compra?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"El mouse Logitech G203 cuenta con una <d MOU0001>garantia oficial de 24 meses</d> por defectos de fabricacion.\\n\\nTengo disponible el modelo en color negro y en color blanco, ambos al mismo precio. ¿Preferís alguno en particular para avanzar con el pedido?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -23,15 +23,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"origen_procedencia\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"origen_procedencia\\\"]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"origen_procedencia\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"origen_procedencia\\\"]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Hola! Te cuento que sobre el origen del producto, la <d MOU0001>marca Logitech es de Suiza, pero el mouse es fabricado en China</d>.\\n\\nAquí te detallo el producto que consultaste:\\n\\n1 Mouse Logitech G203 $37.500\\n\\n¿Te gustaría avanzar con la compra del modelo en negro o preferís el blanco?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Te cuento que el Logitech G203 es una <d MOU0001>marca Logitech de Suiza, pero fabricado en China</d>.\\n\\nComo te comenté, <d origen_procedencia>trabajamos productos importados y nacionales segun la marca y el modelo; la procedencia figura en la ficha de cada uno</d>.\\n\\n¿Te gustaría que te reserve el modelo negro o el blanco?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -40,15 +40,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"contenido_caja\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"contenido_caja\\\"]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"contenido_caja\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"contenido_caja\\\"]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"La caja del mouse Logitech G203 incluye lo siguiente: <d MOU0001>el mouse y la documentación del usuario</d>.\\n\\nTe confirmo que ya registré tu pedido:\\n\\n1 Mouse Logitech G203 $37.500\\n\\n¿Te gustaría avanzar con la compra del modelo en negro o preferís el blanco?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"La caja contiene: <d MOU0001>Mouse, cable o receptor USB segun version, manual de garantia</d>.\\n\\nTe confirmo que ya registré tu pedido por:\\n- 1 mouse logitech g203\\n\\n¿Querés que avancemos con la compra del modelo negro o el blanco?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -57,15 +57,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"mouse logitech g203\\\"}],\\\"pide_precio\\\":false}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"especificaciones\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"especificaciones\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"mouse logitech g203\\\"}],\\\"pide_precio\\\":false}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"especificaciones\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"especificaciones\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"El mouse Logitech G203 <d MOU0001>pesa 144 gramos</d>.\\n\\nAquí te detallo el producto que estamos gestionando:\\n\\n1 Mouse Logitech G203 $37.500\\n\\n¿Te gustaría avanzar con la compra del modelo en negro o preferís el blanco?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"El mouse Logitech G203 <d MOU0001>pesa 144 gramos</d>.\\n\\nTe confirmo que ya tengo registrado tu pedido por:\\n- 1 mouse logitech g203\\n\\nPara poder finalizar tu reserva, ¿preferís el primero que te mostré (negro) o el segundo (blanco)? Quedo atento para confirmar el color y avanzar.\", \"tool_calls\": []}"
     }
    ]
   },
@@ -74,15 +74,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"especificaciones\\\"]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"mouse logitech g203\\\"}],\\\"pide_precio\\\":false}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse_dpi\\\",\\\"mouse\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"especificaciones\\\"]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"mouse logitech g203\\\"}],\\\"pide_precio\\\":false}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse_dpi\\\",\\\"mouse\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"El mouse Logitech G203 cuenta con un <d MOU0001>sensor óptico</d>. Respecto a la cantidad de botones y los DPI exactos, la ficha técnica no especifica esos valores detallados; si te parece bien, puedo intentar confirmarlos con el proveedor antes de que realices la compra.\\n\\nAquí te detallo el producto que estamos gestionando:\\n\\n1 Mouse Logitech G203 $37.500\\n\\n¿Preferís el modelo en color negro o el blanco para avanzar?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Sobre tu consulta técnica, te cuento que el mouse Logitech G203 cuenta con <d MOU0001>6 botones</d> programables. Respecto a los DPI, lamentablemente no cuento con el dato exacto de cuántos trae en la ficha técnica de este modelo.\\n\\nTe confirmo que ya tengo registrado tu pedido por:\\n- 1 mouse logitech g203\\n\\nPara poder finalizar tu reserva, ¿preferís el primero que te mostré (negro) o el segundo (blanco)? Quedo atento para confirmar el color y avanzar.\", \"tool_calls\": []}"
     }
    ]
   }
