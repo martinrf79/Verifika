@@ -170,6 +170,32 @@ cualquier lado, exportar la paga en un script de banco, o poner
 es una decisión que Martín va a tomar más adelante, cuando el producto esté
 robusto. No proponerlo hasta entonces.
 
+## 🤖 EL NOMBRE DEL MODELO NO SE ESCRIBE ACÁ (21-ago-2026)
+
+**Lo define `app/config.py` y punto: `LLM_PROVIDER`, y el `*_MODEL` del
+proveedor elegido.** Ningún documento escribe el nombre. Si querés saber con qué
+modelo corre el bot, mirás ese archivo; no preguntás y no lo deducís de un `.md`.
+
+**Por qué es una regla y no una preferencia, con nombre y apellido.** Hasta hoy
+este mismo archivo decía CINCO veces que el LLM del proyecto era otro proveedor,
+y dos de esas como orden obligatoria ("no usar los demás sin permiso explícito de
+Martín"). Producción hacía meses que corría con otro. Como `CLAUDE.md` lo lee
+CADA sesión al arrancar, **cada sesión nueva empezaba con el modelo equivocado en
+la cabeza y creyendo que usar el real necesitaba pedir permiso.** Y el archivo se
+contradecía solo: la sección de arriba dice "se prueba con la clave gratis de
+Gemini".
+
+Es el mismo defecto que la FAQ que decía 44 temas cuando tenía 50, y se arregla
+igual: **un dato, un lugar, y el lugar es el que se verifica.**
+
+**LA REGLA VIVA ES DE PLATA, NO DE MARCA**, y eso sí no envejece: no se cambia a
+un modelo más caro sin OK explícito de Martín. Lo barato es el default; el gasto
+se consulta.
+
+Candado: `tests/test_documentos_no_mienten.py` se pone rojo si un `.md` nombra un
+modelo concreto, y también si el lugar al que apuntan los documentos quedara
+vacío.
+
 ## 💳 EL LINK REAL DE MERCADO PAGO NO HACE FALTA. NO SE VUELVE A PREGUNTAR
 ## (Martín, 10-ago-2026, y era la QUINTA vez que lo explicaba)
 
@@ -197,7 +223,7 @@ plantilla o instrucción de sesión nueva.** Vale para TODOS los chats y sesione
    trabajar ahí. Se acabó el trabajo que queda colgado sin mergear.
 2. **PUSHEAR A `main` ES DEPLOYAR.** `.github/workflows/deploy.yml` dispara con
    cada push a `main` y deploya `agente-bot`, salvo que el cambio toque solo
-   `.md` o `tests/`. No hay push inocente.
+   `**.md`, `tests/`, `banco_pruebas/` o `reserva/`. No hay push inocente.
 3. **Por eso el push se CONSULTA SIEMPRE.** Se commitea local todo lo que haga
    falta, se muestra qué toca y qué se rompería, y **no se pushea sin OK
    explícito de Martín**. Esto NO contradice la regla 1-bis de no abrir ventanas
@@ -261,7 +287,10 @@ sueltos. Seguir estos pasos cada sesión para que no se repita.
 7. La config vive en el código (`config.py`), no en variables de la nube. El
    servicio solo lleva secretos + `TIENDA_ID`. Secretos en Secret Manager,
    nunca en texto plano.
-8. LLM: DeepSeek en todo. Gemini u otros solo con OK explícito de Martín.
+8. **El proveedor y el modelo del LLM los define `app/config.py`, y no se
+   escriben en ningún documento** (ver la sección del modelo, más arriba). Lo
+   que se consulta con Martín no es la marca: es el GASTO. No se pasa a un
+   modelo más caro sin su OK.
 
 **C. GitHub — repo limpio**
 9. Commits chicos y mensajes claros. Pushear tras cada cambio cerrado.
@@ -318,8 +347,10 @@ Lenguaje principal: Python 3.11+
 Framework backend: FastAPI
 Deploy: Google Cloud Run, región southamerica-east1
 Base de datos: Google Firestore
-LLM principal: DeepSeek (deepseek-chat) — extremadamente económico
-LLM secundarios: Groq (fallback), Claude/Gemini (solo en Checker cuando haya cliente pagando)
+LLM: el proveedor y el modelo los define `app/config.py` (`LLM_PROVIDER` y el
+`*_MODEL` que corresponda). **No se escriben acá**, porque un nombre escrito a
+mano envejece y este archivo ya nombró durante meses un proveedor que no era el
+que corría. La regla que sí vale: lo barato es el default, y el gasto se consulta.
 
 ---
 
@@ -396,7 +427,7 @@ Núcleo verificable, reutilizable entre productos. Contiene:
 3. **Anti-alucinación vive en dos lados:** prompt (línea uno) + código (línea cero, no negociable). El código siempre puede invalidar lo que dice el modelo.
 4. **Citas verificadas mecánicamente.** Si una afirmación menciona un producto, debe poder mapearse a un ID en Firestore. Si no se puede, se descarta.
 5. **Observabilidad obligatoria.** Cada engranaje loguea con `trace_id` consistente. Sin logs no se hace deploy.
-6. **DeepSeek por default.** No usar Claude/Gemini/OpenAI sin permiso explícito de Martín (cuestan plata, DeepSeek no).
+6. **El modelo lo define `app/config.py`, no un documento, y la regla es de PLATA.** Lo barato es el default; pasar a un modelo más caro se consulta con Martín. **Escribir el nombre del modelo en un `.md` está prohibido** y tiene candado (`tests/test_documentos_no_mienten.py`): este archivo nombró durante meses un proveedor que ya no se usaba, y como lo lee cada sesión al arrancar, cada sesión empezaba equivocada.
 
 ---
 
@@ -477,9 +508,10 @@ REALES del repo, igual que en el celular:
 .venv\Scripts\python -m pytest -q
 ```
 
-Los tests `vivo` (DeepSeek) no corren acá: se prueban por WhatsApp/Telegram o
-leyendo logs de Cloud Run. Para logs/Firestore desde la notebook, usar gcloud
-por Bash (ruta completa, ya autenticado en memory-engine-v1), NO PowerShell.
+Los tests `vivo` no corren acá: llaman al modelo configurado en `app/config.py`
+y se prueban por WhatsApp/Telegram o leyendo logs de Cloud Run. Para
+logs/Firestore desde la notebook, usar gcloud por Bash (ruta completa, ya
+autenticado en memory-engine-v1), NO PowerShell.
 
 ## Infraestructura Cloud Run — UN solo servicio de bot (24-jun-2026)
 
