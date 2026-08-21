@@ -503,6 +503,11 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
                  el plan cubre el pedido.
       preguntar: lista de contradicciones que el modelo NO puede resolver solo.
                  Si viene con algo, el turno termina preguntandole al cliente.
+      falta_la_cuenta: el cliente pidio precio, hay productos sobre la mesa
+                 y NADIE armo la cuenta. Tipado por el mismo motivo que
+                 `sin_buscar`: lo consume el CODIGO, que arma la cuenta, y no
+                 el modelo, que desde el 17-ago no tiene una ronda donde leer
+                 la frase.
       sin_buscar: los mismos items de la regla 1, pero TIPADOS. El texto es
                  para el modelo; esta lista es para el codigo, que con ella
                  ejecuta la busqueda en vez de volver a pedirsela. Es el mismo
@@ -515,7 +520,8 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
     preguntar: list[str] = []
     sin_buscar: list[str] = []
     if not pedido:
-        return {"faltantes": [], "preguntar": [], "sin_buscar": []}
+        return {"faltantes": [], "preguntar": [], "sin_buscar": [],
+                "falta_la_cuenta": False}
 
     # LO QUE YA SE RESOLVIO EN TURNOS ANTERIORES TAMBIEN CUENTA COMO ATENDIDO.
     #
@@ -632,8 +638,18 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
 
     # 5. SI PIDIO PRECIO, TIENE QUE HABER CUENTA. La regla del negocio: dejar
     #    un pedido de precio sin ningun numero es peor que cotizar de a partes.
+    falta_la_cuenta = False
     if pedido.get("pide_precio") and "armar_presupuesto" not in nombres:
         if uni_prod:
+            # LA MARCA TIPADA, aparte de la frase (FICHA 04, 21-ago-2026). La
+            # frase esta escrita PARA EL MODELO y desde el 17-ago no hay ronda
+            # siguiente que se la lea: quedaba un reclamo que nadie atendia, y
+            # eso le costo el Total a dos turnos de la charla real del 12-ago.
+            # El codigo no puede depender de buscar una subcadena adentro de
+            # una prosa que se puede reescribir sin darse cuenta; el hecho se
+            # dice UNA vez y se dice tipado. Es la misma leccion que
+            # `sin_buscar`, tres reglas mas arriba.
+            falta_la_cuenta = True
             faltantes.append(
                 "El cliente pidio precio y todavia no armaste la cuenta. "
                 "Llama a armar_presupuesto con los ids que ya tenes.")
@@ -701,7 +717,7 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
         log.info("reconciliador", trace_id=trace_id,
                  faltantes=faltantes[:4], preguntar=preguntar[:4])
     return {"faltantes": faltantes, "preguntar": preguntar,
-            "sin_buscar": sin_buscar}
+            "sin_buscar": sin_buscar, "falta_la_cuenta": falta_la_cuenta}
 
 
 # `instruccion_de_faltantes` SE BORRO EL 17-AGO, con el bucle de rondas. Era la

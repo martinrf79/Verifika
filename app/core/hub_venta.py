@@ -1344,6 +1344,40 @@ def _la_cuenta_y_la_plata(texto: str, llamadas: list, bloque: str,
                                 previo=previo, vistos=vistos)
 
 
+def _buscar_certificando(args: dict, tienda_id: str):
+    """La busqueda que hace EL CODIGO, con sus ids certificados.
+
+    EL AGUJERO QUE CIERRA (FICHA 04, 21-ago-2026), y es la mitad que faltaba de
+    un arreglo que ya se habia hecho. `_ejecutar_en_paralelo` certifica lo que
+    devuelven las herramientas que pidio EL MODELO, y su comentario nombra el
+    turno 6 de `80_charla_real_12ago` como el caso que lo motivo. Pero las
+    reposiciones buscan por su cuenta —el modelo declaro un rubro y no lo
+    busco, asi que lo busca el codigo— y esos resultados no pasaban por ahi.
+
+    CONSECUENCIA MEDIDA, en ese mismo turno 6: el carrito tiene microfonos, el
+    cliente pide auriculares, mouse y memorias, el CODIGO los busca y los
+    encuentra, el mensaje se los MUESTRA con nombre y precio... y despues
+    `calculate_total` rechaza los tres ids por "no certificados" y el turno
+    cierra sin un solo total. El log lo decia con todas las letras:
+    `id_no_certificado sueltos=['AUR0019', 'MOU0023', 'RAM0001']`.
+
+    NO AFLOJA LA REGLA CERO, y conviene decir por que. La regla es que la
+    IDENTIDAD la decide el codigo y nunca el modelo. Estos ids salen del
+    catalogo, por la misma herramienta, en el mismo turno, y los pidio el
+    codigo: son MAS certificados que los del modelo, no menos. Lo que la regla
+    frena es el id inferido de memoria, y eso sigue frenado igual.
+
+    Se certifica en el hilo del turno, sincronico, que es donde vive la
+    contextvar: la misma trampa que ya tenia anotada `_ejecutar_en_paralelo`."""
+    r = H.ejecutar("buscar_productos", args, tienda_id)
+    try:
+        from app.core.estado_venta import certificar_ids_de_resultado
+        certificar_ids_de_resultado(r)
+    except Exception:  # noqa: BLE001 — certificar no puede tumbar un turno
+        pass
+    return r
+
+
 def _busqueda_de_lo_declarado(llamadas: list, declarado: dict, rec: dict,
                               tienda_id: str, trace_id: str) -> list:
     """EL RUBRO QUE EL MODELO DECLARO Y NUNCA BUSCO, lo busca el CODIGO.
@@ -1422,7 +1456,7 @@ def _busqueda_de_lo_declarado(llamadas: list, declarado: dict, rec: dict,
         if any(l.get("herramienta") == "buscar_productos"
                and (l.get("pedido") or {}) == args for l in fuera):
             continue
-        r = H.ejecutar("buscar_productos", args, tienda_id)
+        r = _buscar_certificando(args, tienda_id)
         fuera.append({"herramienta": "buscar_productos", "pedido": args,
                       "resultado": r})
         hechas.append((que, (r or {}).get("estado")))
@@ -1477,7 +1511,7 @@ def _condicion_faltante_aplicada(llamadas: list, rec: dict, tienda_id: str,
     # El orden que el modelo pidio puede haber sido su intento de aplicar esta
     # misma condicion; con la condicion puesta de verdad, ya no hace falta.
     args.pop("ordenar_por", None)
-    r = H.ejecutar("buscar_productos", args, tienda_id)
+    r = _buscar_certificando(args, tienda_id)
     log.info("condicion_faltante_aplicada", trace_id=trace_id,
              condiciones=sumadas, estado=(r or {}).get("estado"))
     fuera = list(llamadas)
@@ -2764,10 +2798,39 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     _certifico_algo = any((l.get("resultado") or {}).get("productos")
                           or (l.get("resultado") or {}).get("producto")
                           for l in llamadas)
+    # ── EL TOTAL PERDIDO (FICHA 04, 21-ago-2026) ────────────────────────
+    #
+    # EL DEFECTO, VIVO EN PRODUCCION DESDE EL 17-AGO Y TAPADO POR EL CORPUS.
+    # `_certifico_algo` apagaba la memoria ENTERA cuando el turno certificaba
+    # cualquier cosa, y ese todo-o-nada es demasiado grueso: en el turno 8 de
+    # la charla real del 12-ago el cliente dice "agregá un teclado" al
+    # presupuesto de los seis articulos, el turno certifica TECLADOS, y por
+    # eso mismo se le niega el carrito donde viven los otros seis. Sin ellos
+    # `_producto_para` no encuentra nada que cotizar, la cuenta no se arma, y
+    # el cliente que pidio el precio recibe un mensaje sin un solo total.
+    # Regrabado dos veces: fallan los MISMOS turnos 6 y 8, con el mismo motivo.
+    #
+    # EL RECLAMO EXISTIA Y NADIE LO ATENDIA. La regla 5 del reconciliador ya
+    # dice "El cliente pidio precio y todavia no armaste la cuenta", pero esa
+    # frase esta escrita para el MODELO y desde que el turno tiene dos llamadas
+    # fijas no hay ronda siguiente que se la lea.
+    #
+    # LA CONDICION AHORA ES EL RECLAMO, NO LA CERTIFICACION, y esa distincion
+    # es la que lo hace seguro. No se repone "porque hay productos" -eso seria
+    # el codigo decidiendo por el cliente, y ademas alarga el mensaje-: se
+    # repone cuando el reconciliador dice que el cliente PIDIO precio y la
+    # cuenta no esta. `_cuenta_con_lo_declarado` ya pone los productos del
+    # turno ADELANTE de los de la memoria, asi que abrirle la memoria no le
+    # cambia la eleccion cuando el turno si trajo lo que hacia falta.
+    #
+    # NO SUBE LAS LLAMADAS AL MODELO: la cuenta la arma la calculadora, que
+    # cuesta cero tokens. `llamadas_max: 2` sigue defendiendolo.
+    _falta_la_cuenta = bool(rec.get("falta_la_cuenta"))
     llamadas = G.paso_datos(
         "cuenta_repuesta", _cuenta_con_lo_declarado,
         llamadas, declarado, tienda_id, trace_id,
-        memoria=(None if _certifico_algo else _memoria_idx))
+        memoria=(_memoria_idx if (_falta_la_cuenta or not _certifico_algo)
+                 else None))
     # EL ORDEN IMPORTA: primero se aplica el reparto que falta, y despues se
     # declara el supuesto sobre la cuenta que ya lo tiene adentro.
     llamadas = G.paso_datos("reparto_repuesto", _reparto_de_pago_declarado,

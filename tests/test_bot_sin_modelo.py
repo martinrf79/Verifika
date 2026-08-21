@@ -71,22 +71,27 @@ def _charla(nombre: str) -> tuple:
 
 
 # ── LAS AFIRMACIONES ────────────────────────────────────────────────────────
-# EL TITULO HUERFANO QUE SOBREVIVE A UNA COSTURA, declarado en el unico guion
-# donde aparece. Ver el motivo entero en la marca: no se tapa con un quinto
-# parche, se cierra fusionando las cuatro implementaciones en el recorte.
-_CASOS = [
-    pytest.param(n, marks=pytest.mark.xfail(strict=True, reason=(
-        "A MEDIAS: el titulo que promete una lista se salva de las CUATRO "
-        "implementaciones de la regla porque abajo le queda la linea 'Sin "
-        "cambios en la cuenta. Total final: $X'. Las cuatro preguntan si hay "
-        "ALGO abajo, no si abajo esta lo que el titulo anuncio, asi que una "
-        "reparacion -la del 17-ago, que salva el total cuando la cuenta se "
-        "poda- apaga a otra sin que nadie lo note. FALTA fusionar las cuatro "
-        "en UNA que compare el titulo contra lo que sigue; entra en el paso 3 "
-        "del recorte, que es justo el que borra tres de las cuatro.")))
-    if n == "80_charla_real_12ago" else n
-    for n in _CON_CASETE
-]
+# EL TITULO HUERFANO: LA MARCA SE SACO EL 21-ago (FICHA 04), Y CONVIENE SER
+# EXACTO SOBRE QUE SE CERRO Y QUE NO.
+#
+# ERA: en el turno 8 de `80_charla_real_12ago` quedaba un titulo que prometia
+# una lista y abajo, en vez de la lista, la linea "Sin cambios en la cuenta.
+# Total final: $X". Se salvaba de las CUATRO implementaciones de la regla
+# porque las cuatro preguntan si hay ALGO abajo, no si abajo esta lo que el
+# titulo anuncio.
+#
+# LO QUE SE CERRO: el TRIGGER. Ese turno ya no produce esa linea, porque la
+# cuenta ahora se arma de verdad —el cliente pidio agregar un teclado y la
+# cuenta cambia, asi que no hay nada que podar por "sin cambios"—. El caso
+# pasa y `strict=True` obligo a sacar la marca.
+#
+# LO QUE NO SE CERRO, Y NO HAY QUE CREER QUE SI: las cuatro implementaciones
+# siguen siendo cuatro y siguen preguntando lo mismo. Una reparacion todavia
+# puede apagar a otra sin que nadie lo note; lo que cambio es que este corpus
+# ya no tiene el caso que lo mostraba. **Fusionarlas en UNA que compare el
+# titulo contra lo que sigue sigue pendiente**, y entra en el paso 3 del
+# recorte, que es el que borra tres de las cuatro.
+_CASOS = list(_CON_CASETE)
 
 
 @pytest.mark.skipif(not _CON_CASETE, reason="no hay guiones")
