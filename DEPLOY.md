@@ -18,7 +18,10 @@ Un push a la rama `main` dispara el workflow `.github/workflows/deploy.yml`, que
 deploya solo. No hace falta tener `gcloud` en la máquina: la autenticación es por
 Workload Identity Federation desde GitHub.
 
-- Se saltea si el push toca solo archivos `.md` (`paths-ignore: '**.md'`).
+- **Se saltea si el push toca SOLO archivos que no llegan a producción.** Cuáles
+  son no se escribe acá: están en `paths-ignore` de `deploy.yml`, y salen de
+  `.gcloudignore` —son las carpetas que el build ni siquiera sube—. Si hace
+  falta saberlo, se mira el workflow, no este archivo.
 - También se puede disparar a mano desde la pestaña Actions (`workflow_dispatch`).
 - Después de mergear a `main`, verificar la corrida **Deploy a Cloud Run** en
   GitHub: recién con el verde se dice "listo". Si falla, leer el log y arreglar.
@@ -51,7 +54,9 @@ Reglas duras del deploy (de `CLAUDE.md`):
 - UN solo servicio de bot: `agente-bot`. Nunca crear ni deployar a otro.
 - La config vive en el código (`config.py`), no en variables de la nube. El
   servicio solo lleva secretos + `TIENDA_ID`. Secretos en Secret Manager.
-- LLM: DeepSeek. Otros proveedores solo con OK explícito de Martín.
+- **El proveedor y el modelo del LLM los define `app/config.py`**, y no se
+  escriben en ningún documento. Lo que se consulta con Martín no es la marca:
+  es el GASTO. No se pasa a un modelo más caro sin su OK.
 - Después de CADA deploy, verificar el verde en GitHub antes de dar por hecho.
 
 ---
@@ -80,6 +85,11 @@ Método para arrancar barato:
   flujo; se suben a Firestore por los endpoints de admin.
 - Consolidar, no agregar: por cada cosa que se prende, se apaga o borra una
   vieja. No sumar un quinto documento de comportamiento ni flags apagadas.
+- **Un dato que vive en un archivo no se copia a un documento.** Si un `.md` te
+  dice un número o un nombre que el código también dice, gana el código y el
+  `.md` está mal. Ya pasó tres veces: la FAQ que decía 44 temas y tenía 50, el
+  modelo del LLM que estuvo mal nombrado durante meses, y el `paths-ignore` de
+  este mismo archivo.
 
 ---
 
@@ -101,5 +111,5 @@ mirada qué sirve y qué sale:
 
 Ya se sacó en este pase: el virtualenv commiteado `venv-win/` (4345 archivos, no
 lo importa nadie y ya estaba excluido del deploy) y los CSV de resultados de
-benchmark con proveedores que no son DeepSeek (regenerables y contra la regla
-DeepSeek-only). Ambos quedaron ignorados en `.gitignore` para que no vuelvan.
+benchmark de proveedores alternativos, que son regenerables. Ambos quedaron
+ignorados en `.gitignore` para que no vuelvan.
