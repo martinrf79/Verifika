@@ -45,6 +45,7 @@ en silencio es peor que no tener mapa, y este repo ya se comio esa: el 11-ago
 una sesion leyo un numero viejo de un documento y se lo repitio a Martin como
 dato actual.
 """
+import json
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 
@@ -623,6 +624,92 @@ def veredicto_del_turno() -> dict:
     }
     ficha.update(_notas.get() or {})
     return ficha
+
+
+# ── LOS ENGRANAJES QUE NO TRANSFORMAN TEXTO ────────────────────────────────
+#
+# EL AGUJERO QUE CIERRAN (FICHA 01). Hasta hoy el unico que llamaba a
+# `registrar()` era `G.paso`, y `G.paso` envuelve transformaciones de TEXTO: de
+# los 32 nodos declarados registraban 17, todos de la etapa `salida`. Las otras
+# cinco etapas -entrada, decision, reposicion, redaccion, memoria- estaban
+# declaradas con su contrato y NO se observaban. El instrumento era ciego justo
+# en la etapa donde estaba el problema, y por eso la reposicion hubo que medirla
+# a mano el 18-ago envolviendola desde un script.
+#
+# LA PREGUNTA QUE HAY QUE CONTESTAR PARA CADA UNO, y es la trampa conocida:
+# `G.paso` decide "intervino" comparando el texto que entro contra el que salio.
+# Un nodo que NO transforma texto no se puede medir asi, con lo cual hay que
+# DECIR que significa que intervino, nodo por nodo. Se contesta en dos formas y
+# ninguna le pregunta al nodo:
+#
+#   `paso_datos`  el nodo recibe un estado y devuelve el estado nuevo -las seis
+#                 reposiciones-. Intervino si el estado CAMBIO, comparado
+#                 serializado. Es la misma regla de `G.paso` un piso mas arriba,
+#                 y es la que ya usaba `banco_pruebas/peso_reposicion.py`.
+#   `veredicto`   el nodo produce algo que no es su propia entrada -el estado
+#                 inicial, los pedidos del decisor, el texto del redactor, el
+#                 guardado-. Ahi el criterio se escribe en el sitio de la
+#                 llamada, en una linea, y queda a la vista de quien audita.
+#
+# LAS TRES REGLAS QUE LOS HACEN SEGUROS:
+#   1. NINGUNO CAMBIA COMPORTAMIENTO. `paso_datos` devuelve exactamente lo que
+#      devuelve la funcion, y si la funcion levanta, RE-LEVANTA. No se traga la
+#      excepcion como hace `G.paso`: alla tragarla cumple NO_ENMUDECE, aca
+#      tragarla inventaria un camino que hoy no existe.
+#   2. UN REGISTRO ROTO NO PUEDE TUMBAR UN TURNO. `registrar` ya no levanta, y
+#      `_huella` tampoco: ante cualquier cosa rara cae a `repr`.
+#   3. UNA MARCA POR NODO Y POR TURNO. Las llamadas van en el hilo principal de
+#      `procesar_venta`, que corre una vez por turno y no tiene bucle alrededor.
+#      Si un nodo marcara dos veces, el censo contaria de mas y TODOS los
+#      porcentajes quedarian mal en silencio; se verifica mirando que `corrio`
+#      no supere la cantidad de turnos en `peso_del_censo.py`.
+
+
+def _huella(valor) -> str:
+    """La forma estable de un estado, para poder compararlo antes y despues.
+
+    `sort_keys` para que dos dicts iguales con las claves en otro orden den la
+    misma huella, y `default=str` para que un objeto que no sea JSON no levante.
+    Si ni asi se puede serializar, cae a `repr`: medir peor es aceptable, tumbar
+    el turno por medir no lo es."""
+    try:
+        return json.dumps(valor, sort_keys=True, default=str, ensure_ascii=False)
+    except Exception:  # noqa: BLE001 — un instrumento no rompe lo que mide
+        try:
+            return repr(valor)
+        except Exception:  # noqa: BLE001
+            return ""
+
+
+def paso_datos(nodo_id: str, funcion, estado, *args, **kwargs):
+    """Corre un engranaje que mueve DATOS y deja su veredicto.
+
+    El estado entra por el primer parametro y sale como resultado, que es como
+    estan escritas las seis reposiciones. Intervino si la huella cambio.
+
+    NO cambia el comportamiento: devuelve lo mismo que la funcion, y si la
+    funcion levanta, la excepcion sigue viaje despues de dejar la marca."""
+    antes = _huella(estado)
+    try:
+        salida = funcion(estado, *args, **kwargs)
+    except Exception as e:  # noqa: BLE001 — se marca y se re-levanta
+        registrar(nodo_id, True, f"levanto:{type(e).__name__}")
+        raise
+    despues = _huella(salida)
+    registrar(nodo_id, despues != antes,
+              f"{len(antes)}->{len(despues)}" if despues != antes else "")
+    return salida
+
+
+def veredicto(nodo_id: str, intervino, detalle: str = "") -> None:
+    """La marca de un engranaje cuyo 'intervino' NO se puede sacar comparando
+    su entrada con su salida, porque no devuelve lo que recibio.
+
+    Es `registrar` con otro nombre a proposito: el nombre dice que el criterio
+    lo escribio una persona en el sitio de la llamada, y no lo midio el grafo.
+    Los cinco que lo usan -el estado, el decisor, el redactor, el cierre y el
+    guardado- tienen su criterio en una linea al lado, que es lo que se audita."""
+    registrar(nodo_id, bool(intervino), detalle)
 
 
 def paso(nodo_id: str, funcion, texto: str, *args, **kwargs) -> str:

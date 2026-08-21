@@ -1,10 +1,17 @@
 """
 LA ETAPA FANTASMA, medida.
 
-`peso_del_censo.py` solo ve la etapa `salida`, porque `G.paso` es el unico que
-llama a `registrar()`. Las SEIS funciones de REPOSICION -las que reescriben lo
-que el modelo declaro, ANTES de redactar- estan declaradas en el grafo y no se
-observan. Aca se envuelven a mano y se mide cuantas veces cambian el estado.
+YA NO ES FANTASMA, Y ESTE SCRIPT PASO A SER EL TESTIGO INDEPENDIENTE. Hasta el
+21-ago `peso_del_censo.py` solo veia la etapa `salida`, y las SEIS funciones de
+REPOSICION -las que reescriben lo que el modelo declaro, ANTES de redactar-
+estaban declaradas en el grafo y no se observaban: habia que envolverlas a mano,
+que es lo que hace este script. La FICHA 01 las cableo a `registrar()`.
+
+POR QUE NO SE BORRA. Envuelve las funciones DESDE AFUERA, sin depender de que el
+hub este bien cableado, asi que mide lo mismo por otro camino. El 21-ago los dos
+dieron el MISMO 44% para `_cuenta_con_lo_declarado`, y esa coincidencia es lo
+unico que prueba que el instrumento nuevo no se esta midiendo a si mismo. El dia
+que los dos numeros discrepen, hay un nodo cableado en el lugar equivocado.
 
 POR QUE IMPORTA. Si la interpretacion fuera del todo robusta, esta etapa
 deberia estar casi vacia. Cuanto interviene ES la medida de cuan robusta es en

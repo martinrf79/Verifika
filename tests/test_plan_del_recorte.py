@@ -64,14 +64,25 @@ def test_la_reposicion_es_una_sola_funcion():
     assert len(vivas) <= 1, f"siguen vivas {len(vivas)} reposiciones: {vivas}"
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: el grafo tiene que registrar en las SEIS etapas. HOY solo registran "
-    "los nodos de salida, porque el unico que llama a `registrar()` es `G.paso` "
-    "y `G.paso` envuelve transformaciones de TEXTO: 17 de 32 nodos observados. "
-    "OBJETIVO que las seis etapas dejen marca, para que el censo salga solo y no "
-    "haya que envolver la reposicion a mano como el 18-ago. El instrumento es "
-    "ciego justo en la etapa donde estaba el problema."))
 def test_el_grafo_registra_en_las_seis_etapas():
+    """CERRADO el 21-ago-2026 — FICHA 01. La marca se saco porque paso.
+
+    ERA: registraban 17 de 32 nodos, todos de `salida`, porque el unico que
+    llamaba a `registrar()` era `G.paso` y `G.paso` envuelve transformaciones de
+    TEXTO. Las otras cinco etapas estaban declaradas y no se observaban, asi que
+    la reposicion hubo que medirla a mano el 18-ago desde un script.
+
+    ES: 32 de 32, medido por `banco_pruebas/peso_del_censo.py`, que dejo de
+    imprimir el aviso de nodos ciegos. Los que no comparan texto declaran su
+    criterio de 'intervino' en el sitio de la llamada -`G.veredicto`- o lo sacan
+    comparando el estado serializado -`G.paso_datos`-, que es la misma regla de
+    `G.paso` un piso mas arriba.
+
+    LO QUE LO HACE CONFIABLE: `cuenta_repuesta` da 44%, el MISMO numero que
+    `peso_reposicion.py` habia medido a mano envolviendo la funcion desde
+    afuera. Dos instrumentos independientes sobre las mismas 15 charlas.
+
+    ESTE TEST NO SE BORRA: es el candado de que no se vuelva a quedar ciego."""
     from banco_pruebas import sim_firestore
     sim_firestore.install()
     from app.verifika import grafo as G

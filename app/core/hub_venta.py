@@ -2624,6 +2624,14 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     conv = get_conversation(user_id, tienda_id=tienda_id)
     history = conv.get("history", []) or []
     estado = construir_estado(conv, None)
+    # QUE SIGNIFICA QUE EL ESTADO INTERVINO: que trajo algo de la charla
+    # anterior. En el primer turno no hay nada que traer y no interviene, que
+    # es exactamente lo que tiene que decir el instrumento.
+    G.veredicto("estado",
+                any((estado.get(k) or []) for k in
+                    ("carrito", "productos_vistos", "localidades_envio")),
+                f"carrito:{len(estado.get('carrito') or [])} "
+                f"vistos:{len(estado.get('productos_vistos') or [])}")
     # EL MENSAJE DEL CLIENTE, EN EL ESTADO. Las herramientas deterministas leen
     # del estado y no reciben el mensaje por parametro -su firma la ve el
     # modelo-, asi que sin esto la cuenta no puede saber que el cliente pidio
@@ -2636,6 +2644,10 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
 
     negocio = gs.business_name(tienda_id)
     memoria = _memoria_texto(estado, history, tienda_id)
+    # QUE SIGNIFICA QUE INTERVINO: que le puso memoria delante al modelo. Si
+    # sale vacio, el modelo ve la charla sin nada mas, y eso hay que verlo.
+    G.veredicto("memoria_texto", bool((memoria or "").strip()),
+                f"largo:{len(memoria or '')}")
 
     # ── 1 y 2. QUE BUSCAR, y TODO JUNTO ─────────────────────────────────
     # Dos rondas como mucho. Adentro de cada ronda las herramientas corren en
@@ -2652,12 +2664,22 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     with _reloj(etapas, "decisor"):
         pedidos, texto_directo = await _pedir_herramientas(
             negocio, memoria, history, raw_message, tienda_id, trace_id)
+    # QUE SIGNIFICA QUE EL DECISOR INTERVINO: que mando a buscar. Cuando
+    # contesta directo -un saludo, un gracias- no manda a buscar nada, y el
+    # detalle guarda cual de los dos caminos fue.
+    G.veredicto("decisor", bool(pedidos),
+                f"pedidos:{len(pedidos)}" if pedidos
+                else f"directo:{len(texto_directo or '')}")
     log.info("hub_venta_pedidos", trace_id=trace_id,
              herramientas=[p["nombre"] for p in pedidos],
              args=[p.get("args") for p in pedidos][:4])
     if pedidos:
         with _reloj(etapas, "herramientas"):
             llamadas = await _ejecutar_en_paralelo(pedidos, tienda_id, trace_id)
+        # QUE SIGNIFICA QUE INTERVINO: que volvio con evidencia. Un pedido que
+        # vuelve con cero llamadas deja al redactor sin nada, y hasta hoy eso
+        # no dejaba marca en ningun lado.
+        G.veredicto("herramientas", bool(llamadas), f"llamadas:{len(llamadas)}")
         log.info("hub_venta_resultados", trace_id=trace_id,
                  estados=[(l["herramienta"],
                            (l["resultado"] or {}).get("estado"))
@@ -2694,6 +2716,12 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         rec = P.reconciliar(declarado, llamadas, trace_id, ya_resuelto=ya,
                             tienda_id=tienda_id)
         obligacion = P.instruccion_de_preguntas(rec)
+        # QUE SIGNIFICA QUE EL RECONCILIADOR INTERVINO: que RECLAMO algo. Si
+        # no reclama nada, lo declarado y lo hecho coinciden y el turno sigue
+        # igual que si no existiera.
+        _rec_n = sum(len(rec.get(k) or [])
+                     for k in ("faltantes", "preguntar", "sin_buscar"))
+        G.veredicto("reconciliador", _rec_n > 0, f"reclamos:{_rec_n}")
         G.anotar("reconciliador", {
             "faltantes": len(rec.get("faltantes") or []),
             "preguntar": len(rec.get("preguntar") or []),
@@ -2716,9 +2744,10 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # el turno no volvio a buscar nada porque no hacia falta.
     _memoria_idx = ((conv.get("carrito_vigente") or [])
                     + (estado.get("productos_vistos") or []))
-    llamadas = _busqueda_de_lo_declarado(llamadas, declarado, rec, tienda_id,
-                                         trace_id)
-    llamadas = _condicion_faltante_aplicada(llamadas, rec, tienda_id, trace_id)
+    llamadas = G.paso_datos("busqueda_repuesta", _busqueda_de_lo_declarado,
+                            llamadas, declarado, rec, tienda_id, trace_id)
+    llamadas = G.paso_datos("condicion_repuesta", _condicion_faltante_aplicada,
+                            llamadas, rec, tienda_id, trace_id)
     # LA MEMORIA ENTRA SOLO SI EL TURNO NO CERTIFICO NADA (17-ago, al sacar las
     # rondas). Hasta hoy no entraba nunca, y el motivo estaba bien medido: con
     # un producto del carrito, reponer la cuenta le agregaba el bloque a turnos
@@ -2735,15 +2764,18 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     _certifico_algo = any((l.get("resultado") or {}).get("productos")
                           or (l.get("resultado") or {}).get("producto")
                           for l in llamadas)
-    llamadas = _cuenta_con_lo_declarado(
+    llamadas = G.paso_datos(
+        "cuenta_repuesta", _cuenta_con_lo_declarado,
         llamadas, declarado, tienda_id, trace_id,
         memoria=(None if _certifico_algo else _memoria_idx))
     # EL ORDEN IMPORTA: primero se aplica el reparto que falta, y despues se
     # declara el supuesto sobre la cuenta que ya lo tiene adentro.
-    llamadas = _reparto_de_pago_declarado(llamadas, declarado, tienda_id,
-                                          trace_id)
-    llamadas = _supuesto_de_pago(llamadas, declarado, tienda_id, trace_id)
-    llamadas = _bloques_a_uno(llamadas, trace_id)
+    llamadas = G.paso_datos("reparto_repuesto", _reparto_de_pago_declarado,
+                            llamadas, declarado, tienda_id, trace_id)
+    llamadas = G.paso_datos("supuesto_de_pago", _supuesto_de_pago,
+                            llamadas, declarado, tienda_id, trace_id)
+    llamadas = G.paso_datos("bloques_a_uno", _bloques_a_uno,
+                            llamadas, trace_id)
 
     # ── 2-ter. EL INDICE DEL TURNO: lo interpretado, punto por punto ─────
     # EL NEXO QUE FALTABA (Martin, 9-ago). La interpretacion entiende 100 y la
@@ -2764,6 +2796,12 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # volver a buscarlo.
     idx = IT.cobertura(declarado, material, trace_id, llamadas=llamadas,
                        memoria=_memoria_idx)
+    # QUE SIGNIFICA QUE EL INDICE INTERVINO: que encontro un punto SIN
+    # material y por eso le sumo una obligacion al prompt de redaccion. Si
+    # todos los puntos tienen con que contestarse, mira y no toca nada.
+    G.veredicto("indice_turno", bool(idx.get("faltan")),
+                f"puntos:{len(idx.get('puntos') or [])} "
+                f"faltan:{len(idx.get('faltan') or [])}")
     G.anotar("puntos_del_pedido", len(idx.get("puntos") or []))
     G.anotar("sin_material", [p["id"] for p in (idx.get("faltan") or [])][:5])
     pendiente = IT.instruccion(idx["faltan"])
@@ -2786,6 +2824,12 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
             texto, sin_modelo = await _redactar(
                 negocio, memoria, history, raw_message, llamadas, trace_id,
                 obligacion=obligacion)
+        # QUE SIGNIFICA QUE EL REDACTOR INTERVINO: que escribio algo. El
+        # detalle dice si lo escribio el modelo o el respaldo sin modelo, que
+        # es la diferencia que mas importa cuando una respuesta sale rara.
+        G.veredicto("redactor", bool((texto or "").strip()),
+                    f"largo:{len(texto or '')}"
+                    + (" sin_modelo" if sin_modelo else ""))
     else:
         # Sin herramientas el modelo ya contesto en la llamada uno: es un
         # saludo, un gracias o una respuesta a algo que preguntamos nosotros.
@@ -2862,10 +2906,14 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
 
     # ── 5. CIERRE Y COBRO ───────────────────────────────────────────────
     senal = _senal_de_cierre(llamadas, raw_message)
+    _texto_antes_del_cierre = texto
     with _reloj(etapas, "cierre"):
         texto, datos_cliente, pregunta_cierre_hecha = await _cerrar(
             conv, user_id, canal, tienda_id, raw_message, texto, trace_id,
             senal, bloque)
+    G.veredicto("cierre", texto != _texto_antes_del_cierre,
+                f"{len(_texto_antes_del_cierre or '')}->{len(texto or '')}"
+                if texto != _texto_antes_del_cierre else "")
 
     # ── 6. LO QUE NO PUEDE DEPENDER DEL PROMPT ──────────────────────────
     # Dos cosas, y solo dos. La honestidad de bot porque el prompt solo no
@@ -3054,7 +3102,10 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
             datos_cliente_parciales=datos_cliente,
             pregunta_cierre_hecha=pregunta_cierre_hecha,
             ultimo_presupuesto=(bloque or conv.get("ultimo_presupuesto") or None))
+        G.veredicto("memoria", True,
+                    f"turnos:{len(history) // 2} carrito:{len(carrito or [])}")
     except Exception as e:
+        G.veredicto("memoria", False, f"no_guardo:{type(e).__name__}")
         log.warning("hub_venta_save_error", trace_id=trace_id, error=str(e)[:150])
 
     # EL INDICE, MEDIDO SOBRE LO QUE EL CLIENTE VA A LEER. La pasada de arriba

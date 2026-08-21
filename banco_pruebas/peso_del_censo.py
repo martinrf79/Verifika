@@ -10,6 +10,11 @@ intervienen NUNCA en 54 turnos. Sin este script eso es una afirmacion escrita a
 mano, y una afirmacion escrita a mano envejece: es la misma enfermedad del 44 de
 la FAQ que resultaron ser 50. El numero sale de aca o no sale.
 
+QUE VE HOY. Las SEIS etapas del turno, desde la FICHA 01 del 21-ago. Antes de
+ese dia solo veia `salida` -17 de 32 nodos- y el resto habia que envolverlo a
+mano desde `peso_reposicion.py`. CUANTOS son y CUANTO interviene cada uno NO se
+escribe en ningun texto: se corre esto y se mira.
+
 NO TOCA `app/`. Los espias envuelven `grafo.registrar` desde afuera.
 
 CLASIFICACION
@@ -131,14 +136,21 @@ for clase in ORDEN:
 if huerfanos:
     print(f"\nHUERFANOS (registran y no estan en NODOS): {huerfanos}")
 
-# EL AGUJERO DEL INSTRUMENTO, dicho por el propio script para que no se olvide:
-# el grafo declara 32 nodos y solo registran los de `salida`, porque el unico
-# que llama a `registrar()` es `G.paso` y `G.paso` envuelve transformaciones de
-# TEXTO. Las etapas entrada, decision, reposicion, redaccion, memoria y cierre
-# estan declaradas con su contrato y NO se observan. Para esas corre
-# `peso_reposicion.py`, que las envuelve a mano.
+# EL AGUJERO DEL INSTRUMENTO, TAPADO EL 21-ago (FICHA 01). Hasta ese dia el
+# grafo declaraba 32 nodos y registraban 17, todos de `salida`, porque el unico
+# que llamaba a `registrar()` era `G.paso` y `G.paso` envuelve transformaciones
+# de TEXTO: entrada, decision, reposicion, redaccion y memoria estaban
+# declaradas con su contrato y NO se observaban. Ahora las seis dejan marca.
+#
+# EL AVISO SE QUEDA, y no es un resto: si mañana entra un nodo al grafo y nadie
+# lo cablea a `registrar()`, vuelve a salir NUNCA CORRE y el censo lo grita en
+# vez de contarlo como cero en silencio. Un instrumento que no avisa cuando le
+# falta un ojo es el que dejo pasar los 8 nodos muertos.
 sin_registrar = [f["nodo"] for f in filas if f["clase"] == "NUNCA CORRE"]
 if sin_registrar:
     print(f"\nAVISO: {len(sin_registrar)} nodos declarados NO llaman a registrar().")
     print("       No quiere decir que no corran: quiere decir que el grafo NO LOS VE.")
-    print("       Para la etapa de reposicion, corre peso_reposicion.py")
+    print(f"       Los ciegos: {sin_registrar}")
+else:
+    print(f"\nLAS {len(G.ETAPAS)} ETAPAS REGISTRAN: los {len(declarados)} nodos "
+          "declarados dejan marca, ninguno esta ciego.")

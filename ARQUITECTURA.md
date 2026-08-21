@@ -208,16 +208,34 @@ Un nodo sin contrato tiene que declarar POR QUÉ. El candado está en
 `tests/test_barrido_decision.py` y no deja entrar un nodo nuevo sin contrato ni
 motivo.
 
-### El agujero del instrumento, y hay que decirlo
+### El agujero del instrumento, tapado el 21-ago
 
-**El grafo declara treinta y dos nodos y solo registran los diecisiete de
-salida.** El único que llama a `registrar()` es `G.paso`, y `G.paso` envuelve
-transformaciones de TEXTO. Entrada, decisión, reposición, redacción, memoria y
-cierre están declarados con su contrato y **no se observan**.
+**Las seis etapas registran: los treinta y dos nodos declarados dejan marca.**
+Hasta el 21-ago registraban diecisiete, todos de salida, porque el único que
+llamaba a `registrar()` era `G.paso` y `G.paso` envuelve transformaciones de
+TEXTO: **el instrumento era ciego justo en la etapa donde estaba el problema**, y
+por eso la reposición hubo que medirla envolviéndola a mano desde afuera.
 
-Dicho de otro modo: **el instrumento mira exactamente la etapa que hay que
-achicar, y es ciego en la etapa donde estaba el problema.** Por eso la reposición
-hubo que medirla envolviéndola a mano desde afuera.
+Lo que había que resolver para taparlo es que un nodo que NO transforma texto no
+se puede medir comparando lo que entró contra lo que salió, así que **hay que
+decir qué significa que intervino, nodo por nodo**. Se contesta de dos formas y
+ninguna le pregunta al nodo:
+
+- `G.paso_datos` para el que recibe un estado y devuelve el estado nuevo —las
+  seis reposiciones—: intervino si el estado cambió, comparado serializado. Es
+  la regla de `G.paso` un piso más arriba.
+- `G.veredicto` para el que produce algo que no es su propia entrada —el estado
+  inicial, el decisor, el redactor, el cierre, el guardado—: el criterio se
+  escribe en una línea al lado de la llamada, a la vista de quien audita.
+
+Ninguna de las dos cambia comportamiento, y `paso_datos` **re-levanta** la
+excepción en vez de tragarla: tragarla es lo correcto en `G.paso`, donde cumple
+`no_enmudece`, y sería inventar un camino nuevo acá.
+
+**Lo que hace confiable la medición nueva es que coincide con la vieja:**
+`cuenta_repuesta` interviene en el 44% de los turnos, el mismo número que
+`peso_reposicion.py` había sacado el 18-ago envolviendo la función desde afuera.
+Dos instrumentos independientes sobre las mismas quince charlas.
 
 ---
 
