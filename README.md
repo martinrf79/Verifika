@@ -26,6 +26,15 @@ Para el primer cliente real con catálogo propio: deployar Cloud Run aparte con 
 
 ## Variables de entorno
 
+**El nombre del proveedor y del modelo NO se escriben acá.** Los define
+`app/config.py` (`LLM_PROVIDER` y el `*_MODEL` que corresponda), y hay un candado
+que lo verifica: `tests/test_documentos_no_mienten.py`. El motivo no es
+prolijidad — este bloque configuraba durante meses un proveedor que el sistema ya
+no usaba, así que quien seguía estas instrucciones arrancaba mal.
+
+Para ver los valores reales y todas las variables disponibles, mirá
+`app/config.py`: cada una está ahí con su default y su comentario.
+
 ```
 # Negocio (default)
 BUSINESS_NAME=Tienda Tecno
@@ -34,10 +43,10 @@ TIENDA_ID=tienda_principal
 # GCP
 GCP_PROJECT=memory-engine-v1
 
-# LLM
-LLM_PROVIDER=deepseek
-DEEPSEEK_API_KEY=sk-xxx
-DEEPSEEK_MODEL=deepseek-chat
+# LLM — el proveedor y el modelo salen de app/config.py.
+# Acá solo va la CLAVE del proveedor que ese archivo declare.
+LLM_PROVIDER=<ver app/config.py>
+<PROVEEDOR>_API_KEY=xxx
 
 # Telegram (opcional, para tienda default)
 TELEGRAM_TOKEN=xxx
@@ -55,13 +64,14 @@ ENVIRONMENT=production
 
 ## Deploy
 
-```bash
-gcloud run deploy agente-bot \
-  --source . \
-  --region=southamerica-east1 \
-  --project=memory-engine-v1 \
-  --update-secrets=TELEGRAM_TOKEN=telegram-token:latest,DEEPSEEK_API_KEY=deepseek-key:latest,SENTRY_DSN=sentry-dsn:latest,ADMIN_TOKEN=admin-token:latest
-```
+**No se deploya a mano desde acá.** Hay un solo camino y está en `DEPLOY.md`: el
+push a `main` dispara `.github/workflows/deploy.yml`, que corre la batería de
+tests ANTES de deployar, o `./deploy.sh` desde Cloud Shell.
+
+Este README no repite los secretos ni los flags del deploy a propósito: la línea
+de `gcloud` que estaba acá nombraba secretos de un proveedor que ya no se usa, y
+es exactamente el modo de falla que el candado de documentos previene. La lista
+viva de secretos está en `deploy.yml`.
 
 ## Alta de cliente nuevo
 
