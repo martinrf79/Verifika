@@ -9,8 +9,13 @@ mentir ni quedar vieja porque la genera el código corriendo.
 
 ```bash
 pytest            # piso offline: Python puro, sin LLM, sin Google. Gratis y en segundos.
-pytest -m vivo    # piso vivo: llama a DeepSeek. A propósito y en tanda. Gasta tokens.
+pytest -m vivo    # piso vivo: llama al modelo CONFIGURADO en app/config.py.
+                  # A propósito y en tanda. Gasta tokens.
 ```
+
+Con qué proveedor y qué modelo corre el piso vivo **no se escribe acá**: sale de
+`app/config.py`, y `test_documentos_no_mienten.py` se pone rojo si algún
+documento lo nombra. Este archivo lo nombraba, y era el que se dejó de usar.
 
 Por default corre solo el piso offline (`addopts = -m 'not vivo'` en pyproject).
 El CI de GitHub (`.github/workflows/test.yml`) corre ese mismo piso en cada push
@@ -32,6 +37,7 @@ contrato entero de su herramienta, no un bug suelto.
 | Guardia de promesas | `test_guardia_promesas.py` | `detectar` | E3, E4 |
 | Antijailbreak | `test_antijailbreak.py` | `evaluar_mensaje` | E12 |
 | Cobro del cierre | `test_pago.py` | `elegir_medio_pago`, `mensaje_transferencia`, `instruccion_cobro` | CBU / MP |
+| Documentos que no mienten | `test_documentos_no_mienten.py` | los `.md` del repo | el modelo mal nombrado |
 
 Nota 10-jul: `test_certificador.py` se retiró con `certificador.py` (limpieza de
 código muerto: nadie lo llamaba en el camino vivo; la identidad la garantizan la
@@ -71,7 +77,8 @@ está clavado en `test_cierre.py`.
   credenciales. Es el que corre siempre. Cubre los 13 errores confirmados vivos,
   todos en verde.
 - **vivo**: marcado `@pytest.mark.vivo`, usa el doble local de `banco_pruebas`
-  con DeepSeek vivo. Para lo que sí depende de interpretación del modelo.
+  con el modelo configurado en `app/config.py`. Para lo que sí depende de
+  interpretación del modelo.
 
 ## La regla que sostiene todo
 
@@ -98,6 +105,16 @@ pase, o editás el test porque el requisito cambió de verdad. Confundir esas do
 cosas es el momento exacto en que entra la mentira. Una afirmación cambiada en un
 diff SIEMPRE lleva su porqué en el commit.
 
+**El que implementa no reescribe la vara.** Corolario de la regla de oro, y es lo
+que la hace mecánica: si el test lo escribió el diseño y lo pone en verde la
+ingeniería, el punto ciego no se comparte. Un test que se afloja para pasar es un
+test borrado con otro nombre.
+
+**Un test dice sobre CUÁNTOS casos pasó, no solo que pasó.** El 29-jul el CI
+llamaba a los casetes con `|| true`, imprimía "sin casetes grabados" y estuvo en
+**verde cinco días sin correr nada**. Un test que puede quedar verde por vacío no
+prueba nada, así que afirma primero sobre el tamaño de su corpus.
+
 **Archivos que no crecen sin fin.** El archivo crece con contratos nuevos, no con
 variaciones. Muchas formas de decir lo mismo = una TABLA de casos
 (`pytest.mark.parametrize`), no muchas funciones. Ver `test_cierre.py` como
@@ -112,6 +129,12 @@ que se sacó. Un test de código muerto es un test muerto.
 es el mapa (dónde), no describe comportamiento. CLAUDE.md son las reglas. RESUMEN
 es el foco de hoy. No hay un quinto documento que describa comportamiento. Si un
 dato de comportamiento no está en un test, es una opinión, no un hecho.
+
+**Y un dato que vive en un archivo no se copia a un documento.** Si un `.md` dice
+un número o un nombre que el código también dice, gana el código y el `.md` está
+mal. Ya pasó tres veces: la FAQ que decía 44 temas y tenía 50, el modelo del LLM
+mal nombrado durante meses en `CLAUDE.md`, y el `paths-ignore` de `DEPLOY.md`.
+Cada caso tiene ahora su candado.
 
 ## Cómo arranca un chat nuevo
 
