@@ -850,6 +850,89 @@ def sin_cuenta_que_no_cambio(texto: str, anterior: str = "",
     return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip())
 
 
+# UN ANUNCIO es una linea que termina en dos puntos y promete lo que viene
+# abajo. Es `_RE_ENCABEZADO` SIN su techo de 80 caracteres: ese techo existe
+# para no confundir un parrafo con un titulo, y aca no hace falta porque la
+# regla 10 solo borra cuando el bloque prometido esta a la vista.
+_RE_ANUNCIO = re.compile(r"^\s*\**\s*[^\n]{3,200}:\s*\**\s*$")
+
+# Y ademas NOMBRA la cuenta, para la cara 2 de la regla 10.
+_RE_NOMBRA_LA_CUENTA = re.compile(
+    r"(?i)\b(presupuesto|cuenta|total|cotizaci[óo]n)\b")
+
+
+def sin_anuncio_que_el_bloque_repite(texto: str) -> str:
+    """REGLA 10. EL ANUNCIO QUE EL BLOQUE DE ABAJO YA SE HACE SOLO.
+
+    UN SOLO DEFECTO CON DOS CARAS, las dos leidas del turno 2 del guion 76, que
+    es el mensaje mas pesado del corpus:
+
+      1. El modelo escribe "Como me pediste el teclado aparte, aquí te presento
+         las opciones que más se acercan a lo que buscas en esa categoría:" y
+         JUSTO ABAJO el codigo escribe su propio encabezado, "Lo que más se
+         acerca a lo que pediste, entre los teclado (39 igual de cerca):", que
+         dice lo mismo y ademas dice cuantos hay.
+      2. El modelo escribe "Aquí tienes el presupuesto actualizado con los
+         artículos definidos:", despues pregunta algo, y recien al final aparece
+         el bloque de la cuenta con su encabezado "Presupuesto:". El anuncio
+         quedo separado de lo que anunciaba porque el bloque se pega al final.
+
+    POR QUE SE VA EL DE ARRIBA Y NO EL DE ABAJO. El de abajo TRAE la lista o la
+    plata; el de arriba es una promesa sin nada pegado. Sacarlo es LOSSLESS, que
+    es la unica condicion que este modulo acepta para borrar: lo que prometia
+    sigue estando, mejor dicho y con el numero al lado.
+
+    POR QUE NO LO CAZABAN LAS QUE YA ESTABAN. `sin_encabezados_huerfanos` hace
+    justo esto —encabezado seguido de otro encabezado— pero lee los dos con
+    `_RE_ENCABEZADO`, que corta en 80 caracteres para no confundir un parrafo
+    largo terminado en dos puntos con un titulo. El anuncio del caso 1 mide 117,
+    asi que se le escapaba por largo. Y el caso 2 se le escapa por otro motivo,
+    el mismo que quedo anotado en `test_bot_sin_modelo`: esa regla pregunta si
+    abajo hay ALGO, no si abajo esta LO QUE EL TITULO ANUNCIO, y abajo habia una
+    pregunta al cliente.
+
+    NO ES UN TOPE POR LARGO, y la diferencia es la que hace que esto sea seguro:
+    el tope por caracteres se probo el 8-ago y se revirtio con el numero puesto
+    -la nota cayo de 55 a 23- porque borraba prosa por PESAR. Este borra una
+    linea porque el bloque de abajo la repite. Si el bloque no esta, no toca
+    nada."""
+    lineas = (texto or "").splitlines()
+    if not lineas:
+        return texto
+
+    def _promete(l: str) -> bool:
+        """Una linea que ANUNCIA algo: termina en dos puntos y no la escribio el
+        codigo. Sin el techo de 80 de `_RE_ENCABEZADO`, que es lo que dejaba
+        pasar el anuncio de 117."""
+        return bool(_RE_ANUNCIO.match(l)) and not _es_de_codigo(l)
+
+    # El bloque de la cuenta, para la cara 2: su encabezado con al menos un
+    # renglon de plata debajo. Sin renglones no hay bloque y no se borra nada.
+    cuenta_desde = next((i for i, l in enumerate(lineas)
+                         if _RE_CABECERA_CUENTA.match(l)
+                         and any(_es_cuenta(x) for x in lineas[i + 1:])), None)
+
+    fuera = set()
+    for i, l in enumerate(lineas):
+        if not _promete(l):
+            continue
+        siguiente = next((x for x in lineas[i + 1:] if x.strip()), "")
+        # Cara 1: lo que sigue es el encabezado del bloque que este anuncio
+        # prometia, asi que el anuncio sobra.
+        if siguiente and _RE_ENCABEZADO.match(siguiente):
+            fuera.add(i)
+            continue
+        # Cara 2: promete la cuenta y la cuenta esta mas abajo, con su bloque.
+        if (cuenta_desde is not None and i < cuenta_desde
+                and _RE_NOMBRA_LA_CUENTA.search(l)):
+            fuera.add(i)
+    if not fuera:
+        return texto
+    log.info("mensaje_anuncio_repetido_por_el_bloque", lineas=len(fuera))
+    return _valvula(texto, re.sub(r"\n{3,}", "\n\n", "\n".join(
+        l for i, l in enumerate(lineas) if i not in fuera)).strip())
+
+
 def sin_encabezados_huerfanos(texto: str) -> str:
     """Un encabezado que se quedo sin nada abajo se va con lo que anunciaba.
 
@@ -966,6 +1049,7 @@ def componer(texto: str, anterior: str = "",
     t = sin_lo_ya_dicho(t, anterior)
     t = sin_producto_duplicado(t)
     t = un_ejemplo_por_rubro_con_cuenta(t)
+    t = sin_anuncio_que_el_bloque_repite(t)
     t = sin_encabezados_huerfanos(t)
     if len(t) != antes:
         log.info("mensaje_compuesto", trace_id=trace_id, antes=antes,

@@ -120,7 +120,16 @@ def _escribir_piso(resultados: list) -> None:
                  "y pasar el gate. `llamadas_max` es la LATENCIA medida sin "
                  "reloj: cada llamada al modelo son entre 3 y 8 segundos, y no "
                  "puede crecer. Se refija con `grabar_casetes.py --piso`, que "
-                 "no gasta la clave."},
+                 "no gasta la clave. "
+                 "EL TOPE DE LARGO BAJA DE ESCALON Y NO VUELVE A SUBIR "
+                 "(FICHA 05, 22-ago-2026): despues de cada corte se fija en el "
+                 "MAXIMO REAL que quedo, sin aire. Hasta esa fecha el piso solo "
+                 "impedia que el largo creciera, y un tope que solo prohibe "
+                 "empeorar deja el numero donde esta para siempre: 1.882 habia "
+                 "subido dos veces y no habia bajado nunca. Asi la concision es "
+                 "un efecto MEDIDO del recorte y no una tarea aparte que no "
+                 "llega: cada pieza que se saca de la cadena de salida baja el "
+                 "numero un escalon, y el escalon queda."},
         ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"\npiso: {numero}/100, {sum(r['puntos'] for r in resultados)} puntos, "
           f"hasta {max(llamadas) if llamadas else 0} llamadas por turno, "
