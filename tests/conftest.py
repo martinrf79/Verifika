@@ -20,6 +20,17 @@ from pathlib import Path
 import pytest
 import structlog
 
+# La raiz del repo al sys.path para importar app.* sin instalar el paquete.
+_RAIZ = Path(__file__).resolve().parent.parent
+if str(_RAIZ) not in sys.path:
+    sys.path.insert(0, str(_RAIZ))
+
+# EL ORDEN IMPORTA Y COSTO UN DEPLOY (23-ago-2026): este bloque va DESPUES
+# del `sys.path.insert` de arriba, porque importa `app.logger`. Puesto antes
+# anda en local -donde el cwd ya esta en el path- y revienta en el CI con
+# `ModuleNotFoundError: No module named 'app'`, que no es un test rojo sino
+# un error de coleccion: la bateria entera no llega ni a arrancar.
+
 # ── LOS LOGS DEL BOT NO SALEN EN CADA CORRIDA ───────────────────────────────
 #
 # EL PROBLEMA, medido el 22-ago-2026. `app/logger.py` configura structlog con
@@ -76,10 +87,6 @@ if not LOGS_EN_TESTS:
 
     _app_logger.setup_logging = _setup_y_callar
 
-# La raiz del repo al sys.path para importar app.* sin instalar el paquete.
-_RAIZ = Path(__file__).resolve().parent.parent
-if str(_RAIZ) not in sys.path:
-    sys.path.insert(0, str(_RAIZ))
 
 
 @pytest.fixture(scope="session")
