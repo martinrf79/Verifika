@@ -414,8 +414,18 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
                     continue
                 specs = f.get("specs") if isinstance(f.get("specs"), dict) else {}
                 valor = specs.get(campo, f.get(campo))
-                if valor not in (None, "", []):
-                    fuera.append(str(valor))
+                if valor in (None, "", []):
+                    continue
+                fuera.append(str(valor))
+                # UN PRECIO SE ESCRIBE CON PUNTO Y LA FICHA LO GUARDA PELADO
+                # (FICHA 09). `precio_ars: 12000` anclaba contra "12000" y el
+                # mensaje dice "$12.000", asi que el punto salia OMITIDO
+                # habiendo sido contestado en la misma oracion. Medido en las
+                # charlas grabadas: dos de las cuatro omisiones de atributo
+                # eran esto, y la puerta las hubiera frenado sin motivo. Se
+                # agregan las DOS formas, nunca se reemplaza una por la otra.
+                if str(valor).isdigit():
+                    fuera.append(f"{int(valor):,}".replace(",", "."))
 
         # ── POLITICA: el anclaje son los NUMEROS de la politica ─────────
         # NO el texto de la FAQ entero: son cuarenta palabras, el modelo lo
@@ -759,6 +769,107 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
                             for p in marcados if p.get("por_ancla")][:5],
              faltan=[p["texto"][:60] for p in faltan][:5])
     return {"puntos": marcados, "faltan": faltan}
+
+
+# ── LA PUERTA: LA COBERTURA DEJA DE SER UN LOG (FICHA 09, 24-ago-2026) ───────
+#
+# HASTA ACA EL MODULO MIRABA Y ESCRIBIA EN EL LOG. La ficha 08 le puso a cada
+# punto su estado terminal; el que queda con la casilla VACIA es la omision, y
+# esta funcion es la que decide que hacer con ella. Es el contrato de
+# `DECISIONES.md` #3 escrito como codigo: el turno no sale como esta si un
+# punto quedo sin estado.
+#
+# LA PUERTA SOLO FRENA LO QUE PUEDE PROBAR, y esa es toda la idea. Un punto
+# frena cuando pasan LAS DOS COSAS:
+#
+#   1. quedo SIN ESTADO -no se dijo, no se pregunto, y no se dijo que no se
+#      sabia-, y
+#   2. el codigo TENIA con que contestarlo: hay anclaje, o sea evidencia
+#      certificada de este turno o de la memoria.
+#
+# Sin la segunda mitad la puerta seria un adivino. Un punto sin evidencia no
+# demuestra una omision: demuestra que el sistema no lo busco, que es otra
+# falla y se arregla en otro lado. Frenarlo seria frenar al turno por algo que
+# el codigo nunca supo, y eso vende menos que la omision que se quiere evitar.
+#
+# POR QUE LA POLITICA NO FRENA, y esta medido. Un tema de la FAQ se contesta
+# con PROSA y el anclaje de una politica son sus numeros -"6 meses", "3000
+# ars"-. En las charlas grabadas el turno contesta la politica del envio con el
+# numero REAL de la cotizacion -$7.000- en vez del numero generico de la FAQ, y
+# el punto salia sin estado habiendo sido contestado bien. Y el nombre del tema
+# es vocabulario de nuestro archivero -`desconfianza_online`,
+# `concepto_imposible`-: no aparece jamas en un mensaje escrito para un
+# cliente. De las 38 omisiones medidas, 20 son de politica y casi todas son
+# esto. Una politica se sirve entera y el modelo la escribe con sus palabras:
+# no hay forma MECANICA de probar que se omitio, y la regla tecnica 4 dice que
+# lo que no se puede mapear mecanicamente se descarta.
+#
+# STOCK Y COMPATIBILIDAD TAMPOCO FRENAN, por la razon de siempre: no anclan a
+# proposito -el nombre del producto no contesta "¿hay?" ni "¿me sirve?"- asi
+# que nunca tienen con que probar la omision.
+#
+# LO QUE LA PUERTA NO HACE, Y NO ES UN OLVIDO: no le niega el mensaje al
+# cliente. `DECISIONES.md` #14 -un punto sin resolver bloquea su renglon, NUNCA
+# el turno- y #16 -un punto en NO SE SABE jamas frena el cierre-. Frenar la
+# salida entera por un destino sin decir seria cambiar una omision por un
+# silencio, que es peor: un detalle nunca tira una venta. Lo que la puerta hace
+# es RECHAZAR EL TEXTO COMO ESTA: quien la consume repone el renglon que falta
+# con material sellado, y lo que no se puede reponer sale marcado en el turno
+# en vez de perderse.
+
+# LOS TIPOS QUE PUEDEN FRENAR: los que el codigo certifica. Un `item` se
+# certifica con el producto que devolvio la busqueda, un `destino` con la
+# localidad que cotizo el envio, un `atributo` con el valor de la ficha, un
+# `precio` con el total de la calculadora, un `pago` con el reparto declarado.
+# Los tres que faltan -politica, stock, compatibilidad- no tienen prueba
+# mecanica, y arriba esta escrito por que.
+TIPOS_QUE_FRENAN = ("item", "condicion", "destino", "atributo", "precio", "pago")
+
+# EL PRECIO ES LA EXCEPCION, Y LA FUERZA UN CASO REAL. Su evidencia no es un
+# texto que se pueda buscar en el mensaje: es la CUENTA, y la cuenta la arma la
+# calculadora con ids certificados. El caso: el cliente pregunta cuanto sale
+# llevar dos unidades de la notebook que venia mirando, el turno no llama a
+# ninguna herramienta porque el producto ya esta certificado en el carrito, y
+# el punto no tiene un solo anclaje. Exigirle uno seria dejar salir justo el
+# turno que nacio para frenar. Se pregunta de la unica forma honesta: se le
+# pide la cuenta a la calculadora, y si no la puede armar no se pega nada.
+_PRUEBA_POR_CONSTRUCCION = ("precio",)
+
+
+def puede_salir(puntos: list) -> dict:
+    """¿El turno puede salir con este texto? El veredicto de la cobertura,
+    convertido en puerta.
+
+    Devuelve `{puede, omitidos, sin_prueba, motivo}`:
+
+      puede       False si algun punto quedo sin estado TENIENDO con que
+                  contestarse. Es lo unico que frena.
+      omitidos    esos puntos, con su id y su texto. Son los que hay que
+                  reponer antes de mandar.
+      sin_prueba  los que quedaron sin estado y sin evidencia. No frenan, pero
+                  se devuelven para que el turno los deje anotados: sin esto
+                  desaparecerian, y un numero que desaparece es un numero que
+                  nadie arregla.
+      motivo      una linea legible para el log.
+
+    Es PURA: recibe los puntos que ya marco `cobertura` y no vuelve a mirar el
+    texto ni las herramientas. Se la puede correr sobre una charla vieja."""
+    marcados = [p for p in (puntos or []) if isinstance(p, dict)]
+    sin_estado = [p for p in marcados if not (p.get("estado") or "")]
+    omitidos = [p for p in sin_estado
+                if p.get("tipo") in TIPOS_QUE_FRENAN
+                and (p.get("anclajes")
+                     or p.get("tipo") in _PRUEBA_POR_CONSTRUCCION)]
+    # Por IDENTIDAD y no por igualdad: dos puntos distintos pueden tener el
+    # mismo contenido, y `in` sobre diccionarios compara valores.
+    _frenan = {id(p) for p in omitidos}
+    sin_prueba = [p for p in sin_estado if id(p) not in _frenan]
+    motivo = ""
+    if omitidos:
+        motivo = "sin decir, teniendo el dato: " + ", ".join(
+            f"{p.get('id')}={p.get('texto')}" for p in omitidos[:4])
+    return {"puede": not omitidos, "omitidos": omitidos,
+            "sin_prueba": sin_prueba, "motivo": motivo}
 
 
 def instruccion(faltan: list) -> str:

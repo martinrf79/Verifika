@@ -222,13 +222,18 @@ def test_el_punto_tiene_estado_terminal():
     assert set(getattr(IT, "ESTADOS_TERMINALES", ())) == validos
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: la COBERTURA pasa de log a puerta. HOY `indice_turno` calcula que "
-    "puntos quedaron sin contestar y el numero se tira en el log del turno: 22% "
-    "de los turnos cierran con al menos uno. OBJETIVO una funcion que devuelva "
-    "si el turno puede salir, y su gemela PROCEDENCIA —todo dato del texto "
-    "viene de un punto resuelto—. Las dos juntas reemplazan a los 17 candados y "
-    "las dos se comprueban SIN saber cual era la respuesta correcta."))
+# CERRADO POR LA FICHA 09 (24-ago-2026). `puede_salir(puntos)` existe y decide
+# el turno: frena lo que puede PROBAR —el punto quedo sin estado terminal Y el
+# codigo tenia con que contestarlo—, y el actuador repone el renglon con
+# material sellado. Medido sobre las 15 charlas grabadas: las omisiones bajaron
+# de 38 a 28 y los puntos RESUELTOS subieron de 178 a 188, sin mover el piso.
+# Los casos estan en `test_puerta_cobertura.py`.
+#
+# LA GEMELA PROCEDENCIA —que todo dato del texto venga de un punto resuelto—
+# NO la cierra esta ficha. Hoy vive con otro nombre y en otro modulo:
+# `atadura_prosa`, que ata cada afirmacion a su fuente y poda la que no tiene
+# respaldo. Juntarla con el indice, para que la fuente sea el PUNTO y no el
+# producto, es otra unidad de trabajo y esta anotada en `PENDIENTE.md`.
 def test_la_cobertura_es_una_puerta_y_no_un_log():
     from app.core import indice_turno as IT
     assert hasattr(IT, "puede_salir"), (

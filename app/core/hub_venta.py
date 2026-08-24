@@ -2821,27 +2821,74 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
     LO QUE PEGA NO LO ESCRIBE NADIE: es el bloque SELLADO de la calculadora,
     con ids ya certificados —los del turno o los del carrito, que se
     certificaron cuando entraron—. No inventa un producto, no inventa un
-    numero, y si no puede armar la cuenta no toca el mensaje."""
+    numero, y si no puede armar la cuenta no toca el mensaje.
+
+    DESDE LA FICHA 09 ES EL ACTUADOR DE LA PUERTA. Quien decide es
+    `indice_turno.puede_salir`, y decide sobre lo que puede PROBAR: el punto
+    quedo sin estado terminal Y el codigo tenia con que contestarlo. Lo que la
+    puerta frena y esta guardia no puede reponer sale marcado en el turno, no
+    se descarta: el mensaje se manda igual, porque un detalle nunca tira una
+    venta."""
     if not declarado or not (texto or "").strip():
         return texto
     try:
-        faltan = IT.cobertura(declarado, texto, trace_id + "|guardia",
-                              llamadas=llamadas, memoria=memoria)["faltan"]
+        idx = IT.cobertura(declarado, texto, trace_id + "|guardia",
+                           llamadas=llamadas, memoria=memoria)
     except Exception as e:  # noqa: BLE001 — un control no puede tumbar el turno
         log.warning("punto_omitido_error", trace_id=trace_id, error=str(e)[:120])
         return texto
-    if not any(p.get("tipo") == "precio" for p in faltan):
+    # LA PUERTA DECIDE, NO LA BOLSA (FICHA 09, 24-ago-2026). Hasta hoy el
+    # disparador era `faltan`, que mete cuatro cosas distintas en la misma
+    # bolsa y tres no son un defecto: el turno pregunto, no habia con que
+    # contestarlo, o el cliente se contradijo. Pegarle la cuenta sellada a un
+    # turno que PREGUNTO cual de los dos monitores era es afirmar una plata
+    # sobre una identidad que todavia no se certifico, o sea la alucinacion
+    # que este modulo entero existe para evitar. Ahora repone lo que
+    # `puede_salir` puede PROBAR que se omitio: sin estado y con evidencia.
+    puerta = IT.puede_salir(idx.get("puntos") or [])
+    if puerta["puede"]:
         return texto
-    repuestas = _cuenta_con_lo_declarado(llamadas, declarado, tienda_id,
-                                         trace_id, memoria=memoria)
-    bloque = _bloque_presupuesto(repuestas)
-    if not bloque or _norm_renglon(bloque) in _norm_renglon(texto):
+    omitidos = puerta["omitidos"]
+    fuera = texto
+
+    # ── EL DESTINO QUE EL CLIENTE NOMBRO Y EL MENSAJE NO DICE ───────────
+    # ES LA OMISION FUNDADORA DEL MODULO, y sigue siendo la unica con masa:
+    # 10 de las 38 medidas en las charlas grabadas, todas iguales. El cliente
+    # dice a donde va cada cosa, el sistema lo entiende, lo cotiza y lo
+    # guarda, y el mensaje no lo nombra. Lo que se pega no lo inventa nadie:
+    # es la localidad CERTIFICADA -la que el punto tiene como anclaje, o sea
+    # la que la herramienta de envio uso-, y no afirma ni un peso.
+    destinos = []
+    for p in omitidos:
+        if p.get("tipo") != "destino":
+            continue
+        nombre = str(p.get("termino") or "").strip()
+        if nombre and nombre not in destinos:
+            destinos.append(nombre)
+    if destinos:
+        linea = "Envío a " + ", ".join(destinos) + "."
+        fuera = (fuera.rstrip() + "\n\n" + linea).strip()
+        log.info("destino_omitido_repuesto", trace_id=trace_id,
+                 destinos=destinos[:4])
+
+    # ── EL PRECIO: EL BLOQUE SELLADO DE LA CALCULADORA ──────────────────
+    if any(p.get("tipo") == "precio" for p in omitidos):
+        repuestas = _cuenta_con_lo_declarado(llamadas, declarado, tienda_id,
+                                             trace_id, memoria=memoria)
+        bloque = _bloque_presupuesto(repuestas)
+        if bloque and _norm_renglon(bloque) not in _norm_renglon(fuera):
+            log.info("punto_omitido_repuesto", trace_id=trace_id,
+                     puntos=[p["id"] for p in omitidos][:3], largo=len(bloque))
+            fuera = (fuera.rstrip() + "\n\n" + bloque).strip()
+
+    if fuera == texto:
+        # LO QUE LA PUERTA NO PUDO REPONER NO SE PIERDE. Sin esta linea, un
+        # punto que el codigo sabia contestar y no salio dicho se iba con el
+        # turno sin dejar rastro, que es como estuvo doce dias.
         log.warning("punto_omitido_sin_reponer", trace_id=trace_id,
-                    puntos=[p["texto"][:40] for p in faltan][:3])
-        return texto
-    log.info("punto_omitido_repuesto", trace_id=trace_id,
-             puntos=[p["id"] for p in faltan][:3], largo=len(bloque))
-    return (texto.rstrip() + "\n\n" + bloque).strip()
+                    motivo=puerta["motivo"][:160],
+                    puntos=[p["texto"][:40] for p in omitidos][:3])
+    return fuera
 
 
 def _senal_de_cierre(llamadas: list, mensaje: str) -> dict:
@@ -3514,6 +3561,20 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     G.anotar("estados", dict(_censo))
     G.anotar("sin_estado", [p["id"] for p in (_idx_final.get("puntos") or [])
                             if not p.get("estado")][:5])
+    # EL VEREDICTO DE LA PUERTA, SOBRE EL TEXTO QUE EL CLIENTE VA A LEER
+    # (FICHA 09). La guardia de arriba ya repuso lo que sabia reponer, asi que
+    # lo que la puerta marque ACA es lo que se fue sin decir teniendo el dato:
+    # el numero que hasta hoy solo se veia leyendo una charla a mano. `puede`
+    # en False no retiene el mensaje —#14 y #16 de DECISIONES— pero deja el
+    # turno en rojo, que es lo que hace que el numero se pueda perseguir.
+    _puerta = IT.puede_salir(_idx_final.get("puntos") or [])
+    G.veredicto("puerta_cobertura", not _puerta["puede"],
+                f"omitidos:{len(_puerta['omitidos'])} "
+                f"sin_prueba:{len(_puerta['sin_prueba'])}")
+    if not _puerta["puede"]:
+        log.warning("turno_salio_con_omision", trace_id=trace_id,
+                    motivo=_puerta["motivo"][:200],
+                    puntos=[p["id"] for p in _puerta["omitidos"]][:5])
     # LA MEMORIA, EN LA MISMA FICHA. Era el unico engranaje del turno que no se
     # veia: lo que el turno RECORDABA y lo que GUARDA solo se podian saber
     # bajando el documento de Firestore y comparandolo a mano contra el
