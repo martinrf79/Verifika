@@ -32,7 +32,6 @@ verde y el techo bajó.
 
 | # | qué hace | cómo se sabe que está |
 |---|---|---|
-| 08 | cada punto termina en un estado: RESUELTO / AMBIGUO / NO_SE_SABE / CONFLICTO | `estado_terminal` existe y ningún punto sale sin estado |
 | 09 | la cobertura pasa de log a puerta: `indice_turno.puede_salir` | el turno no sale si un punto quedó sin estado |
 | 10 | salida baja de 18 nodos a 4 | `hub_venta.py` pierde ~1.200 líneas, batería verde |
 | 11 | las seis reposiciones se funden en una | `hub_venta.py` queda cerca de 400 líneas |

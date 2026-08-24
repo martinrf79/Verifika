@@ -548,12 +548,179 @@ def _cubierto(punto: dict, texto: str) -> bool:
     return True
 
 
+# ── EL ESTADO TERMINAL DEL PUNTO (FICHA 08, 24-ago-2026) ─────────────────────
+#
+# HASTA ACA EL MODULO SOLO SABIA DECIR SI O NO: `atendido`. Y "no atendido"
+# mete cuatro cosas distintas en la misma bolsa: el bot se lo olvido, el bot
+# pregunto cual de los tres era, la fuente no tiene el dato, y el cliente se
+# contradijo. Las cuatro se leen igual en el log y **tres de las cuatro no son
+# un defecto.** Mientras sean indistinguibles la cobertura no puede ser puerta:
+# frenar el turno por "no atendido" frenaria tambien al bot que hizo bien las
+# cosas —pregunto, o dijo honestamente que no sabe—, y eso es peor que la
+# omision que se quiere evitar.
+#
+# LOS CUATRO ESTADOS SON LOS DE `DECISIONES.md` #3, y son TERMINALES: el punto
+# termino el turno ahi y no espera nada mas de este turno.
+#
+#   RESUELTO     llego al texto que lee el cliente.
+#   AMBIGUO      no se podia cerrar sin elegir por el cliente, y el turno
+#                PREGUNTA. Es el unico final que le pide algo al cliente.
+#   NO_SE_SABE   no hay con que contestarlo. `DECISIONES.md` #16: jamas frena
+#                el cierre, y "no se sabe" nunca se dice como un "no".
+#   CONFLICTO    lo que el cliente pidio no cierra y el turno NO lo pregunto.
+#
+# Y EL QUINTO CASO, QUE A PROPOSITO NO ES UN ESTADO: cadena vacia. El punto
+# tenia con que contestarse y no salio dicho. **Eso es la OMISION**, y es lo
+# unico que la puerta de la ficha 09 va a frenar. Si la omision fuera un estado
+# terminal mas, un turno que se olvida algo estaria tan "terminado" como uno
+# que lo contesta, y la puerta no tendria de que agarrarse.
+#
+# NO SE LE PREGUNTA NADA AL MODELO PARA ESTO. Es la misma regla que los
+# anclajes: la evidencia ya esta del lado del codigo —el estado que devolvio
+# cada herramienta, y el texto final— asi que pedirsela al modelo seria pagar
+# por un dato que ya tenemos, y ademas cambiar el contrato obliga a regrabar
+# los casetes con la clave paga.
+
+ESTADOS_TERMINALES = ("RESUELTO", "AMBIGUO", "NO_SE_SABE", "CONFLICTO")
+
+# LO QUE DEVOLVIERON LAS HERRAMIENTAS. No es un vocabulario nuevo: son los
+# `estado` que `herramientas.py` ya escribe, y los tres veredictos de identidad.
+_EVIDENCIA_AMBIGUA = {"ambiguo", "depende_de_la_variante"}
+_EVIDENCIA_SIN_DATO = {"no_encontrado", "no_vendemos", "sin_dato_en_la_fuente",
+                       "sin_resultados", "sin_tema", "campo_desconocido",
+                       "equipo_desconocido", "no_se_pudo"}
+
+# EL BOT DICIENDO QUE NO SABE. Cortas y literales a proposito: una lista larga
+# de sinonimos convierte cualquier negativa en NO_SE_SABE y tapa omisiones.
+_RE_NO_SE = re.compile(
+    r"(no (lo |la |los |las )?(tengo|tenemos|figura|aparece|dice|se|sabria|"
+    r"puedo confirmar|trabajamos|vendemos|manejamos)|"
+    r"no (tengo|tenemos|hay) (ese |esa |el |la )?(dato|informacion)|"
+    r"sin dato|no me consta|no esta escrito)")
+
+# Los cortes de oracion. El signo de apertura `¿` no corta: abre.
+_RE_CORTE = re.compile(r"[.\n;!]+")
+
+
+def _nombrado(punto: dict, texto: str) -> bool:
+    """¿El texto NOMBRA este punto? Es la mitad barata de `_cubierto`, sin la
+    respuesta dicha. Sirve para saber de que habla una pregunta o un "no lo
+    tengo"."""
+    tipo = punto.get("tipo")
+    if tipo == "compatibilidad":
+        return _aparece(punto.get("que") or "", texto)
+    if tipo == "precio":
+        # El precio no se NOMBRA, se contesta con un numero. Preguntar "¿te
+        # paso el total?" no es contestar el precio ni tampoco preguntarlo.
+        return False
+    claves = [w for w in _n(punto.get("termino") or "").split()
+              if len(w) >= 4 and w not in _VACIAS]
+    return any(_aparece(w, texto) for w in claves) if claves else False
+
+
+def _en_la_misma_oracion(punto: dict, patron, texto: str) -> bool:
+    """¿El patron y el punto caen en la MISMA oracion?
+
+    Es la atadura que hace que esto no sea un colador. Sin ella, un "¿Te lo
+    despacho hoy?" de cortesia al final del mensaje dejaria en AMBIGUO a todo
+    lo que el bot se olvido de contestar, y la omision —que es justo lo que se
+    busca— se escaparia escondida detras de una pregunta amable."""
+    for pedazo in _RE_CORTE.split(texto or ""):
+        if patron.search(_n(pedazo)) and _nombrado(punto, pedazo):
+            return True
+    return False
+
+
+def _evidencia(punto: dict, llamadas: list) -> str:
+    """Que dice de este punto lo que trajeron las herramientas: `AMBIGUO`,
+    `NO_SE_SABE`, o vacio si no dicen nada. No mira el texto del modelo: mira
+    lo que el codigo sabe, que es lo unico que no se puede alucinar."""
+    tipo = punto.get("tipo")
+    fuera = ""
+    for l in (llamadas or []):
+        r = l.get("resultado")
+        if not isinstance(r, dict):
+            continue
+
+        if tipo == "politica":
+            # EL ESTADO DE UNA POLITICA ES POR TEMA. Una sola llamada trae
+            # hasta seis temas, y que cinco esten escritos no dice nada del
+            # sexto: `consultar_temas` devuelve `estado` adentro de cada uno.
+            if l.get("herramienta") != "consultar_temas":
+                continue
+            if str(r.get("estado") or "") in _EVIDENCIA_SIN_DATO:
+                fuera = "NO_SE_SABE"
+            for t in (r.get("temas") or []):
+                if not isinstance(t, dict):
+                    continue
+                if str(t.get("tema") or "") != str(punto.get("tema") or ""):
+                    continue
+                if str(t.get("estado") or "") in _EVIDENCIA_SIN_DATO:
+                    fuera = "NO_SE_SABE"
+            continue
+
+        if not _atiende(punto, l):
+            continue
+        estado = str(r.get("estado") or "")
+        veredicto = str(r.get("veredicto") or "")
+        # PREGUNTAR LE GANA A NO SABER, y se corta aca mismo. Si una busqueda
+        # del punto volvio ambigua, el final correcto es la repregunta aunque
+        # otra llamada del mismo turno no haya encontrado nada.
+        if estado in _EVIDENCIA_AMBIGUA or veredicto == "ambiguous":
+            return "AMBIGUO"
+        if estado in _EVIDENCIA_SIN_DATO or veredicto == "not_found":
+            fuera = "NO_SE_SABE"
+    return fuera
+
+
+def estado_terminal(punto: dict, texto: str, llamadas: list | None = None,
+                    atendido: bool | None = None) -> str:
+    """En que termino este punto: uno de `ESTADOS_TERMINALES`, o CADENA VACIA
+    si no termino en ninguno —y eso es la omision, que es lo que se frena—.
+
+    `atendido` se pasa cuando ya se calculo, que es lo que hace `cobertura`.
+    Es el mismo dato que `_cubierto`, pero calculado tambien con los ANCLAJES,
+    o sea con la evidencia que el texto solo no alcanza a ver. Sin el
+    parametro, un punto contestado por su producto certificado volveria a
+    figurar sin contestar, que es el defecto que los anclajes cerraron."""
+    llego = _cubierto(punto, texto or "") if atendido is None else bool(atendido)
+    tipo = punto.get("tipo")
+
+    # LA CONTRADICCION DECLARADA ES SU PROPIA FAMILIA, y no puede terminar
+    # RESUELTA por el codigo: nace de algo que no cierra sin elegir por el
+    # cliente. O el turno la PREGUNTA —y queda AMBIGUA, esperando al cliente—
+    # o no la pregunta y el conflicto sigue abierto. `_cubierto` de una `duda`
+    # ya exige el signo de pregunta, asi que aca "llego" significa "pregunto".
+    if tipo == "duda":
+        return "AMBIGUO" if llego else "CONFLICTO"
+
+    if llego:
+        return "RESUELTO"
+
+    por_evidencia = _evidencia(punto, llamadas or [])
+    if por_evidencia == "AMBIGUO":
+        return "AMBIGUO"
+    if _en_la_misma_oracion(punto, _RE_PREGUNTA, texto or ""):
+        return "AMBIGUO"
+    if por_evidencia:
+        return por_evidencia
+    if _en_la_misma_oracion(punto, _RE_NO_SE, texto or ""):
+        return "NO_SE_SABE"
+    return ""
+
+
 def cobertura(declarado: dict, texto: str, trace_id: str = "",
               llamadas: list | None = None,
               memoria: list | None = None) -> dict:
     """El indice del turno: cada punto interpretado, con su estado en la
     respuesta. Devuelve `{puntos, faltan}` y lo deja en el log, que es donde se
     puede leer despues sin adivinar.
+
+    CADA PUNTO SALE CON DOS COSAS, y son distintas: `atendido`, que es si llego
+    al texto, y `estado`, que es COMO termino —`ESTADOS_TERMINALES`, o vacio si
+    no termino en ninguno—. Un punto puede no estar atendido y haber terminado
+    bien igual: el turno pregunto por el, o no habia con que contestarlo. Lo
+    que queda con `estado` vacio es la omision, y nada mas que la omision.
 
     `llamadas` son las herramientas del turno, y con ellas el punto se mide
     contra su EVIDENCIA -el producto que la busqueda devolvio, la localidad que
@@ -571,12 +738,22 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
         if not ok:
             por_ancla = next((a for a in anclas if _ancla_en(a, texto or "")), "")
             ok = bool(por_ancla)
-        marcados.append({**p, "atendido": ok, "anclajes": anclas,
+        # NINGUN PUNTO SALE SIN LA CASILLA `estado` (FICHA 08). Puede salir
+        # con la casilla VACIA —eso es la omision— pero nunca sin ella: un
+        # punto sin la clave seria un punto que nadie miro, y la puerta de la
+        # ficha 09 no podria distinguirlo de uno que termino bien.
+        estado = estado_terminal(p, texto or "", llamadas or [], atendido=ok)
+        marcados.append({**p, "atendido": ok, "estado": estado,
+                         "anclajes": anclas,
                          **({"por_ancla": por_ancla} if por_ancla else {})})
     faltan = [p for p in marcados if not p["atendido"]]
+    sin_estado = [p for p in marcados if not p["estado"]]
     log.info("indice_turno", trace_id=trace_id,
              total=len(marcados), sin_atender=len(faltan),
+             sin_estado=len(sin_estado),
              detalle=[f"{p['id']}={'ok' if p['atendido'] else 'FALTA'}"
+                      for p in marcados],
+             estados=[f"{p['id']}={p['estado'] or 'SIN_ESTADO'}"
                       for p in marcados],
              por_evidencia=[f"{p['id']}<-{p['por_ancla'][:30]}"
                             for p in marcados if p.get("por_ancla")][:5],

@@ -33,6 +33,7 @@ import contextlib
 import json
 import re
 import time
+from collections import Counter
 
 from app.config import get_settings
 from app.core import atadura_prosa as AP
@@ -3502,6 +3503,17 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     _idx_final = IT.cobertura(declarado, texto, trace_id + "|final",
                               llamadas=llamadas, memoria=_memoria_idx)
     G.anotar("sin_contestar", [p["id"] for p in (_idx_final.get("faltan") or [])][:5])
+    # EN QUE TERMINO CADA PUNTO (FICHA 08). `sin_contestar` mete cuatro cosas
+    # distintas en la misma bolsa y tres no son un defecto: el turno pregunto,
+    # no habia con que contestarlo, o el cliente se contradijo. Aca se separan,
+    # y lo que queda SIN_ESTADO es la omision pelada —la unica que la puerta de
+    # la ficha 09 va a frenar—. Sin esta linea el numero no se ve en ningun
+    # lado y la puerta se escribiria a ciegas.
+    _censo = Counter(p.get("estado") or "SIN_ESTADO"
+                     for p in (_idx_final.get("puntos") or []))
+    G.anotar("estados", dict(_censo))
+    G.anotar("sin_estado", [p["id"] for p in (_idx_final.get("puntos") or [])
+                            if not p.get("estado")][:5])
     # LA MEMORIA, EN LA MISMA FICHA. Era el unico engranaje del turno que no se
     # veia: lo que el turno RECORDABA y lo que GUARDA solo se podian saber
     # bajando el documento de Firestore y comparandolo a mano contra el

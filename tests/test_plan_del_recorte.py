@@ -209,14 +209,11 @@ def test_se_abre_un_punto_por_cada_familia_respondible():
     assert not faltan, f"no se abre punto para: {sorted(faltan)}"
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: cada punto termina el turno con UN estado terminal: RESUELTO, "
-    "AMBIGUO que obliga a repreguntar, NO SE SABE, o CONFLICTO. HOY `indice_"
-    "turno` solo marca ok/FALTA y el resultado se escribe en una linea de log. "
-    "OBJETIVO que exista `estado_terminal` y que el turno no pueda salir con un "
-    "punto sin estado. Es la diferencia entre observar y ser puerta, y es lo "
-    "que mata la omision: hoy 1 de cada 5 turnos se manda con algo sin "
-    "contestar y `punto_omitido` intervino 0 veces en 54 turnos."))
+# CERRADO POR LA FICHA 08 (24-ago-2026). `estado_terminal` existe y `cobertura`
+# le pone la casilla `estado` a TODOS los puntos. La casilla puede salir vacia
+# —eso es la omision— pero ya no puede faltar, que es lo que la puerta de la
+# ficha 09 necesita para distinguir al turno que pregunto bien del que se
+# olvido algo. Los doce casos de cada final estan en `test_estado_terminal.py`.
 def test_el_punto_tiene_estado_terminal():
     from app.core import indice_turno as IT
     assert hasattr(IT, "estado_terminal"), (
