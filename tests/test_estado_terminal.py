@@ -121,12 +121,23 @@ def test_cada_caso_termina_donde_tiene_que_terminar():
     assert not fallan, "\n  ".join([""] + fallan)
 
 
-def test_los_cuatro_estados_y_nada_mas():
-    """El vocabulario es cerrado. Uno nuevo obliga a decidirlo, no a
-    aparecer."""
+def test_los_seis_estados_y_nada_mas():
+    """El vocabulario es cerrado. Uno nuevo obliga a decidirlo, no a aparecer.
+
+    ERAN CUATRO Y SON SEIS DESDE LA FICHA 15, y el requisito cambio de verdad:
+    los cuatro primeros dicen como termino algo que el CLIENTE pidio, y no hay
+    ninguno que sirva para lo que el BOT tiene que proponer. Una oferta no se
+    "resuelve", no se "sabe" y no entra en "conflicto": o se hizo, o no
+    correspondia hacerla. Meterla a la fuerza en los cuatro viejos hubiera sido
+    ensanchar uno de ellos, que es como se afloja una definicion."""
     assert set(IT.ESTADOS_TERMINALES) == {
-        "RESUELTO", "AMBIGUO", "NO_SE_SABE", "CONFLICTO"}
-    assert len(IT.ESTADOS_TERMINALES) == 4
+        "RESUELTO", "AMBIGUO", "NO_SE_SABE", "CONFLICTO",
+        "OFRECIDO", "NO_CORRESPONDE"}
+    assert len(IT.ESTADOS_TERMINALES) == 6
+    # LOS DOS DE LA OFERTA SON SOLO DE LA OFERTA. Si un punto del cliente
+    # pudiera terminar OFRECIDO, la omision se escaparia por ahi.
+    assert IT.estado_terminal({"tipo": "item", "termino": "mouse"},
+                              "Te cargo el mouse al pedido.") == "RESUELTO"
 
 
 def test_ningun_punto_sale_sin_la_casilla_estado():

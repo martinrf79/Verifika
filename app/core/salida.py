@@ -960,13 +960,28 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
                      puntos=[p["id"] for p in omitidos][:3], largo=len(bloque))
             fuera = (fuera.rstrip() + "\n\n" + bloque).strip()
 
-    if fuera == texto:
+    # ── LA OFERTA NO SE REPONE ACA, Y ES UNA DECISION (FICHA 15) ────────
+    # Los dos renglones de arriba pegan material SELLADO: una localidad que
+    # cotizo el envio, una cuenta que armo la calculadora. Una oferta no es un
+    # dato, es PROSA DE VENTA, y ninguna guardia de este modulo escribe prosa:
+    # pegar "¿te lo cargo?" al final de cualquier mensaje es el interrogatorio
+    # que la ficha prohibe, y ademas gastaria la unica repregunta del turno sin
+    # mirar si el mensaje ya preguntaba algo. La oferta la produce el REDACTOR,
+    # con la linea que `indice_turno.instruccion` le pone delante. Lo que hace
+    # la puerta es dejar el turno en rojo y el numero a la vista, que es lo que
+    # permite perseguirlo.
+    sin_ofrecer = [p for p in omitidos if p.get("tipo") == "oferta"]
+    if sin_ofrecer:
+        log.warning("oferta_no_hecha", trace_id=trace_id,
+                    productos=[p.get("termino", "")[:40] for p in sin_ofrecer])
+    if fuera == texto and len(sin_ofrecer) < len(omitidos):
         # LO QUE LA PUERTA NO PUDO REPONER NO SE PIERDE. Sin esta linea, un
         # punto que el codigo sabia contestar y no salio dicho se iba con el
         # turno sin dejar rastro, que es como estuvo doce dias.
         log.warning("punto_omitido_sin_reponer", trace_id=trace_id,
                     motivo=puerta["motivo"][:160],
-                    puntos=[p["texto"][:40] for p in omitidos][:3])
+                    puntos=[p["texto"][:40] for p in omitidos
+                            if p.get("tipo") != "oferta"][:3])
     return fuera
 
 

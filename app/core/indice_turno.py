@@ -324,6 +324,14 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
     ancla el producto de la memoria que el punto NOMBRA: sin esa atadura,
     cualquier producto visto contestaria cualquier punto."""
     tipo = punto.get("tipo")
+    # LA OFERTA NO ANCLA, y no es un olvido. Su evidencia no es un texto que se
+    # pueda buscar en el mensaje —que el producto este NOMBRADO no prueba que se
+    # haya ofrecido nada, y anclarlo ahi lo daria por ofrecido apenas el bot lo
+    # mencione, que es el verde falso que este modulo entero evita—. Su prueba
+    # es que una herramienta lo certifico, y eso la pone en
+    # `_PRUEBA_POR_CONSTRUCCION`, igual que el precio.
+    if tipo == "oferta":
+        return []
     fuera: list = []
     del_punto = set(_palabras(punto.get("termino") or ""))
     for p in (memoria or []):
@@ -452,6 +460,210 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
     return [a for a in dict.fromkeys(fuera) if a.strip()]
 
 
+# ── EL PUNTO DE OFERTA: LO QUE EL BOT TIENE QUE PROPONER (FICHA 15) ──────────
+#
+# EL HUECO, Y ES EL UNICO DEL MODULO QUE NO NACE DEL CLIENTE. Los diez tipos de
+# arriba representan lo que el cliente PREGUNTO: se abren de lo declarado y se
+# cierran cuando la respuesta llego al texto. Nada representa lo que el bot
+# tiene que PROPONER. Por eso un turno puede contestar la ficha tecnica perfecta
+# y no ofrecer cargar el producto: cumplio la cobertura entera y no habia nada
+# que lo obligara a avanzar. Medido sobre las charlas grabadas: 26 turnos rojos
+# en avance, TODOS con el carrito en cero de punta a punta, y tres charlas
+# enteras sin un solo pedido.
+#
+# LO ABRE EL CODIGO, NUNCA EL MODELO, y es la regla 0 de siempre. El punto nace
+# de dos hechos que el codigo tiene: un producto CERTIFICADO -el que devolvio
+# una herramienta- y un estado -que el pedido todavia no lo tenga-. Si lo
+# abriera el modelo, el turno que no quiere vender se lo saltea, que es
+# exactamente el turno que esto viene a cazar.
+#
+# Y NO PUEDE VOLVERSE INSISTENCIA, que es la unica forma en que este punto
+# empeora el bot. Los frenos son tres y los tres son del codigo:
+#
+#   1. LA AMBIGUEDAD MANDA. Si alguna herramienta del turno volvio ambigua, el
+#      turno esta OBLIGADO a repreguntar, y dos preguntas en el mismo mensaje es
+#      pedirle al cliente que administre una agenda. La oferta ni se abre: cede
+#      y queda para el turno siguiente.
+#   2. LA OFERTA NO ES UNA PREGUNTA. "Te lo cargo al pedido y te paso el total"
+#      propone sin preguntar nada. Por eso el detector NO mira el signo de
+#      pregunta, y por eso la instruccion de redaccion pide la frase, no el
+#      interrogatorio.
+#   3. NO CORRESPONDE, con motivo tipado y cerrado.
+#
+# EL TERCER MOTIVO QUE FALTA, Y POR QUE NO ESTA. "El cliente ya dijo que no lo
+# quiere" es un motivo legitimo y la memoria negativa existe —`descartados`, en
+# el documento de la conversacion— pero NO LLEGA HASTA ACA: `cobertura` recibe
+# el carrito y lo ya mostrado, y el descartado no viaja en ninguno de los dos.
+# Ponerlo pide un argumento mas en las dos llamadas de `hub_venta`, y esta ficha
+# dejo eso fuera de alcance. Mientras tanto el freno real es de hecho: un
+# producto rechazado no lo vuelve a traer ninguna herramienta, porque el turno
+# siguiente no lo busca. Un motivo escrito sin nadie que lo alimente seria una
+# cosa suelta, y de esas no se agregan.
+
+# LAS QUE CERTIFICAN UN PRODUCTO PARA OFRECERLO. `armar_presupuesto` no esta a
+# proposito: lo que pasa por ahi YA es el pedido, asi que no hay nada que
+# ofrecer. `cotizar_envio` y `consultar_temas` no traen producto.
+_CERTIFICAN_PRODUCTO = ("buscar_productos", "ficha_producto",
+                        "comparar_productos")
+
+# LOS DOS MOTIVOS QUE EL CODIGO PUEDE PROBAR. Cerrado a proposito: un motivo
+# libre convierte `NO_CORRESPONDE` en un cajon donde cae todo lo que no se
+# ofrecio, y el punto deja de medir.
+MOTIVOS_NO_CORRESPONDE = ("ya_en_el_pedido", "cerrando")
+
+# PROPONER EL PASO SIGUIENTE. Formas literales y contadas, igual que el resto
+# del modulo: una lista larga de sinonimos convierte cualquier cortesia en una
+# oferta y el numero deja de decir nada. Se escriben las formas, no la raiz
+# pelada, porque `carg` tambien esta en "cargador" y "sum" en "sumado".
+_RE_ACCION = re.compile(
+    r"\b(cargo|cargar|cargarlo|cargarla|cargamos|cargas|"
+    r"sumo|sumar|sumarlo|sumarla|sumamos|sumas|"
+    r"agrego|agregar|agregarlo|agregarla|agregamos|agregas|"
+    r"reservo|reservar|reservarlo|reservarla|reservamos|reservas|reserva|"
+    r"aparto|apartar|apartarlo|apartamos|"
+    r"cotizo|cotizar|cotizarlo|cotizamos|cotizacion|"
+    r"preparo|preparar|prepararlo|preparamos|"
+    r"avanzo|avanzar|avanzamos|avanzas|"
+    r"coordino|coordinar|coordinamos)\b")
+
+# SOBRE QUE CAE LA ACCION. Sin esto "coordinamos por mail" o "avanzamos con la
+# consulta" contarian como oferta: la accion tiene que caer sobre el producto, y
+# el modelo lo nombra o lo pronominaliza —"te lo cargo"—.
+_RE_PRONOMBRE = re.compile(r"\b(lo|la|los|las|te lo|te la)\b")
+
+# EL TURNO QUE YA ESTA CERRANDO. Pedirle el nombre, la direccion o la forma de
+# pago ES el paso siguiente: sumarle una oferta encima seria el interrogatorio
+# que la ficha prohibe.
+_RE_CERRANDO = re.compile(
+    r"(a nombre de quien|tu nombre|como te llamas|a que direccion|"
+    r"a que domicilio|forma de pago|formas de pago|medio de pago|"
+    r"como lo abonas|como abonas|link de pago|pedido confirmado)")
+
+
+def _oraciones(texto: str) -> list:
+    """Las oraciones del mensaje. ACA EL SIGNO DE PREGUNTA CORTA, al reves que
+    `_RE_CORTE`: si no cortara, la accion de una oracion le daria el verde a la
+    siguiente y "¿Te lo reservo? ¿A que direccion?" seria una sola cosa."""
+    return [p for p in re.split(r"[.\n;!?]+", texto or "") if p.strip()]
+
+
+def _productos_certificados(llamadas: list) -> list:
+    """Los productos que una herramienta trajo en ESTE turno, con su id y su
+    nombre, sin repetir y en el orden en que llegaron."""
+    fuera: list = []
+    for l in (llamadas or []):
+        if l.get("herramienta") not in _CERTIFICAN_PRODUCTO:
+            continue
+        for f in _fichas_de(l.get("resultado") or {}):
+            nombre = str(f.get("nombre") or "").strip()
+            if not nombre:
+                continue
+            pid = str(f.get("id") or "").upper()
+            if not any(p["nombre"] == nombre for p in fuera):
+                fuera.append({"id": pid, "nombre": nombre})
+    return fuera
+
+
+def _ya_en_el_pedido(llamadas: list, memoria: list | None) -> set:
+    """Los productos que el pedido YA tiene, por id y por nombre normalizado.
+
+    SON DOS FUENTES Y HACEN FALTA LAS DOS. La cuenta de ESTE turno —lo que
+    `armar_presupuesto` acaba de armar— es la que cubre el caso en que el
+    cliente pide cargarlo y el turno lo carga: el carrito de entrada todavia no
+    lo tenia, y ofrecerselo de nuevo seria preguntarle si quiere lo que acaba de
+    pedir. Y el carrito de la charla, que llega adentro de `memoria`.
+
+    EL CARRITO SE RECONOCE POR `cantidad`, y no es una adivinanza: `memoria` es
+    el carrito vigente mas lo ya mostrado, y un item del carrito es el unico que
+    lleva cuantas unidades son. Un producto del catalogo nunca trae ese campo.
+    Si algun dia lo trajera, la oferta se abriria de menos, que es el lado por
+    el que este punto tiene que fallar: de mas es insistencia."""
+    fuera: set = set()
+
+    def _anotar(pid, nombre):
+        if pid:
+            fuera.add(str(pid).upper())
+        if nombre:
+            fuera.add(_n(nombre))
+
+    for l in (llamadas or []):
+        if l.get("herramienta") != "armar_presupuesto":
+            continue
+        for d in ((l.get("resultado") or {}).get("detalle") or []):
+            if isinstance(d, dict):
+                _anotar(d.get("id"), d.get("nombre"))
+    for p in (memoria or []):
+        if isinstance(p, dict) and p.get("cantidad"):
+            _anotar(p.get("id"), p.get("nombre"))
+    return fuera
+
+
+def _hay_ambiguedad(llamadas: list) -> bool:
+    """¿El turno esta obligado a repreguntar? Es el mismo vocabulario que ya usa
+    `_evidencia`: los estados que `herramientas.py` escribe y el veredicto de
+    identidad. Si alguno dice ambiguo, la oferta cede."""
+    for l in (llamadas or []):
+        r = l.get("resultado")
+        if not isinstance(r, dict):
+            continue
+        if str(r.get("estado") or "") in _EVIDENCIA_AMBIGUA:
+            return True
+        if str(r.get("veredicto") or "") == "ambiguous":
+            return True
+    return False
+
+
+def punto_de_oferta(llamadas: list, memoria: list | None = None,
+                    texto: str = "") -> dict | None:
+    """EL PUNTO SINTETICO `oferta`, o None si en este turno no hay nada que
+    ofrecer. Lo abre el codigo con dos hechos suyos y ninguna opinion del
+    modelo: hay un producto certificado y el pedido no lo tiene.
+
+    Sale con `candidatos` —los productos que se pueden ofrecer— y con
+    `no_corresponde` cuando el turno tiene motivo para no ofrecer nada."""
+    traidos = _productos_certificados(llamadas)
+    if not traidos:
+        return None
+    # LA AMBIGUEDAD MANDA Y NO DEJA RASTRO: el punto no se abre. Marcarlo
+    # `NO_CORRESPONDE` seria decir que se decidio no ofrecer, y lo que pasa es
+    # otra cosa —la oferta queda para el turno siguiente—.
+    if _hay_ambiguedad(llamadas):
+        return None
+    en_pedido = _ya_en_el_pedido(llamadas, memoria)
+    libres = [p for p in traidos
+              if p["id"] not in en_pedido and _n(p["nombre"]) not in en_pedido]
+    motivo = ""
+    if not libres:
+        motivo, libres = "ya_en_el_pedido", traidos
+    elif _RE_CERRANDO.search(_n(texto or "")):
+        motivo = "cerrando"
+    nombres = [p["nombre"] for p in libres][:8]
+    return {"id": "oferta:1", "tipo": "oferta", "termino": nombres[0],
+            "texto": f"proponerle el paso siguiente sobre {nombres[0]}",
+            "candidatos": nombres,
+            **({"no_corresponde": motivo} if motivo else {})}
+
+
+def _ofrecio_el_paso(punto: dict, texto: str) -> bool:
+    """¿El texto propone el paso siguiente sobre ESE producto?
+
+    LAS DOS MITADES EN LA MISMA ORACION, y esa atadura es todo lo que separa
+    esto de un colador. La accion sola deja pasar "coordinamos por mail"; el
+    producto solo deja pasar la ficha tecnica que no ofrece nada. Y no se pide
+    signo de pregunta a proposito: "Te lo cargo al pedido y te paso el total"
+    ofrece sin preguntar, que es justo la forma que no gasta la unica
+    repregunta del turno."""
+    nombres = punto.get("candidatos") or []
+    for pedazo in _oraciones(texto):
+        if not _RE_ACCION.search(_n(pedazo)):
+            continue
+        if _RE_PRONOMBRE.search(_n(pedazo)):
+            return True
+        if any(_ancla_en(nombre, pedazo) for nombre in nombres):
+            return True
+    return False
+
+
 # ── LA COBERTURA: que punto llego al texto y cual no ─────────────────────────
 _RE_TOTAL = re.compile(r"(?im)^\s*total(?:\s+final)?\s*:")
 _RE_PREGUNTA = re.compile(r"\?")
@@ -555,6 +767,16 @@ def _cubierto(punto: dict, texto: str) -> bool:
     if tipo == "politica":
         return _aparece(termino, texto)
 
+    # ── LA OFERTA (FICHA 15) ────────────────────────────────────────────
+    # NO SE CONTESTA: SE PROPONE. Es el unico punto que no mira si algo del
+    # cliente llego al texto, sino si el bot puso sobre la mesa el paso
+    # siguiente. Con motivo para no ofrecer, `atendido` es False y el punto
+    # termina igual: por `NO_CORRESPONDE`, no por el texto.
+    if tipo == "oferta":
+        if punto.get("no_corresponde"):
+            return False
+        return _ofrecio_el_paso(punto, texto or "")
+
     return True
 
 
@@ -591,7 +813,11 @@ def _cubierto(punto: dict, texto: str) -> bool:
 # por un dato que ya tenemos, y ademas cambiar el contrato obliga a regrabar
 # los casetes con la clave paga.
 
-ESTADOS_TERMINALES = ("RESUELTO", "AMBIGUO", "NO_SE_SABE", "CONFLICTO")
+ESTADOS_TERMINALES = ("RESUELTO", "AMBIGUO", "NO_SE_SABE", "CONFLICTO",
+                      # LOS DOS DE LA OFERTA (FICHA 15). Son suyos y de ningun
+                      # otro tipo: un punto del cliente no se "ofrece", y la
+                      # oferta no se "resuelve" ni se "sabe".
+                      "OFRECIDO", "NO_CORRESPONDE")
 
 # LO QUE DEVOLVIERON LAS HERRAMIENTAS. No es un vocabulario nuevo: son los
 # `estado` que `herramientas.py` ya escribe, y los tres veredictos de identidad.
@@ -704,6 +930,16 @@ def estado_terminal(punto: dict, texto: str, llamadas: list | None = None,
     if tipo == "duda":
         return "AMBIGUO" if llego else "CONFLICTO"
 
+    # LA OFERTA TERMINA EN LOS SUYOS Y EN NINGUN OTRO (FICHA 15). No puede
+    # terminar `NO_SE_SABE` —el producto lo trajo una herramienta, o sea que se
+    # sabe— ni `AMBIGUO` —con ambigüedad el punto no se abre—. O el turno
+    # propuso el paso siguiente, o tenia motivo para no proponerlo, o se fue sin
+    # ofrecer: eso ultimo es la casilla vacia, y es lo que la puerta frena.
+    if tipo == "oferta":
+        if llego:
+            return "OFRECIDO"
+        return "NO_CORRESPONDE" if punto.get("no_corresponde") else ""
+
     if llego:
         return "RESUELTO"
 
@@ -738,6 +974,13 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
     palabras del cliente. Sin ellas se mide como antes: el anclaje es una
     mejora que no puede empeorar el resultado, nunca una dependencia."""
     ps = puntos(declarado)
+    # EL PUNTO DE OFERTA VA CON LOS DEL CLIENTE (FICHA 15) Y SE ABRE ACA, que es
+    # el unico lugar del modulo donde estan juntos lo que trajeron las
+    # herramientas y lo que el pedido ya tiene. `puntos()` sigue siendo lo
+    # declarado y nada mas: la oferta no la declara nadie, la abre el codigo.
+    _oferta = punto_de_oferta(llamadas or [], memoria, texto or "")
+    if _oferta:
+        ps = ps + [_oferta]
     if not ps:
         return {"puntos": [], "faltan": []}
     marcados = []
@@ -745,7 +988,10 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
         anclas = anclajes(p, llamadas or [], memoria)
         ok = _cubierto(p, texto or "")
         por_ancla = ""
-        if not ok:
+        # LA OFERTA NO PASA POR EL ANCLAJE: se contesta proponiendo, y el
+        # anclaje mira si algo esta DICHO. Sin esta guarda el punto se daria por
+        # ofrecido con solo nombrar el producto.
+        if not ok and p.get("tipo") != "oferta":
             por_ancla = next((a for a in anclas if _ancla_en(a, texto or "")), "")
             ok = bool(por_ancla)
         # NINGUN PUNTO SALE SIN LA CASILLA `estado` (FICHA 08). Puede salir
@@ -823,7 +1069,12 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
 # `precio` con el total de la calculadora, un `pago` con el reparto declarado.
 # Los tres que faltan -politica, stock, compatibilidad- no tienen prueba
 # mecanica, y arriba esta escrito por que.
-TIPOS_QUE_FRENAN = ("item", "condicion", "destino", "atributo", "precio", "pago")
+# LA OFERTA FRENA IGUAL QUE LOS DEMAS (FICHA 15), y es el unico que frena por
+# algo que el bot no hizo en vez de por algo que el cliente pidio. Sin esto la
+# mitad 1 seria un log mas: el turno que contesta perfecto y no ofrece nada
+# saldria tan verde como el que vende.
+TIPOS_QUE_FRENAN = ("item", "condicion", "destino", "atributo", "precio",
+                    "pago", "oferta")
 
 # EL PRECIO ES LA EXCEPCION, Y LA FUERZA UN CASO REAL. Su evidencia no es un
 # texto que se pueda buscar en el mensaje: es la CUENTA, y la cuenta la arma la
@@ -833,7 +1084,13 @@ TIPOS_QUE_FRENAN = ("item", "condicion", "destino", "atributo", "precio", "pago"
 # el punto no tiene un solo anclaje. Exigirle uno seria dejar salir justo el
 # turno que nacio para frenar. Se pregunta de la unica forma honesta: se le
 # pide la cuenta a la calculadora, y si no la puede armar no se pega nada.
-_PRUEBA_POR_CONSTRUCCION = ("precio",)
+#
+# LA OFERTA ES LA OTRA, Y POR EL MISMO MOTIVO: su prueba no es un texto que se
+# pueda buscar en el mensaje sino el HECHO de que una herramienta certifico un
+# producto que el pedido no tiene. Ese hecho ya esta comprobado antes de que el
+# punto se abra —si no, no se abre—, asi que exigirle ademas un anclaje seria
+# pedirle dos veces la misma prueba y no frenaria nunca.
+_PRUEBA_POR_CONSTRUCCION = ("precio", "oferta")
 
 
 def puede_salir(puntos: list) -> dict:
@@ -884,8 +1141,35 @@ def instruccion(faltan: list) -> str:
     """
     if not faltan:
         return ""
-    lineas = ["Tu mensaje NO le contesta esto, que el cliente sí pidió. "
-              "Agregalo, sin repetir lo que ya escribiste:"]
-    for p in faltan:
-        lineas.append(f"- {p['texto']}")
+    # LA OFERTA SE PIDE APARTE Y NO COMO UN PUNTO QUE FALTA (FICHA 15). El
+    # encabezado de arriba dice "esto el cliente sí lo pidió", y la oferta es lo
+    # contrario: es lo que el cliente NO pidió y el bot tiene que proponer.
+    # Metida en esa lista, el modelo la leeria como un reclamo del cliente y
+    # contestaria en vez de ofrecer.
+    del_cliente = [p for p in faltan if p.get("tipo") != "oferta"]
+    oferta = next((p for p in faltan if p.get("tipo") == "oferta"
+                   and not p.get("no_corresponde")), None)
+    lineas = []
+    if del_cliente:
+        lineas.append("Tu mensaje NO le contesta esto, que el cliente sí pidió. "
+                      "Agregalo, sin repetir lo que ya escribiste:")
+        for p in del_cliente:
+            lineas.append(f"- {p['texto']}")
+    if oferta:
+        # LA UNICA LINEA DE LA MITAD 2, y es una atadura, no una reescritura del
+        # prompt: `_INSTRUCCION_DOS` no se toca. Va SOLO en los turnos que
+        # tienen algo concreto que ofrecer, asi que en el resto el prompt pesa
+        # exactamente lo que pesaba.
+        #
+        # "SIN PREGUNTAR DE NUEVO" NO ES CORTESIA: es el candado contra la
+        # insistencia. Dos preguntas en el mismo mensaje es pedirle al cliente
+        # que administre una agenda, y `una_sola_repregunta` es el numero que
+        # esta ficha no puede bajar.
+        if lineas:
+            lineas.append("")
+        lineas.append(
+            f"Ya le mostraste {oferta['termino']} y todavía no está en el "
+            "pedido: cerrá proponiendo el paso siguiente concreto sobre eso "
+            "—cargarlo, cotizarlo o reservarlo—, en una sola frase y sin "
+            "sumarle otra pregunta al cliente.")
     return "\n".join(lineas)

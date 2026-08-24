@@ -249,7 +249,12 @@ def test_el_punto_tiene_estado_terminal():
     from app.core import indice_turno as IT
     assert hasattr(IT, "estado_terminal"), (
         "no existe `indice_turno.estado_terminal`")
-    validos = {"RESUELTO", "AMBIGUO", "NO_SE_SABE", "CONFLICTO"}
+    # LOS CUATRO DE LA FICHA 08 DICEN COMO TERMINO ALGO QUE EL CLIENTE PIDIO.
+    # Los dos ultimos son de la FICHA 15 y son de otra familia: como termino lo
+    # que el BOT tenia que proponer. El vocabulario sigue cerrado; lo que crecio
+    # es lo que el indice mide.
+    validos = {"RESUELTO", "AMBIGUO", "NO_SE_SABE", "CONFLICTO",
+               "OFRECIDO", "NO_CORRESPONDE"}
     assert set(getattr(IT, "ESTADOS_TERMINALES", ())) == validos
 
 

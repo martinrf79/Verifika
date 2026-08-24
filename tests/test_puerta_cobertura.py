@@ -61,17 +61,24 @@ CASOS = [
      [_MOUSE, _envio("Concordia")],
      False, "destino:1"),
 
-    ("SALE: el mismo turno, con el destino dicho",
+    # LOS DOS TEXTOS DE ABAJO GANARON UNA FRASE CON LA FICHA 15, y no es
+    # maquillaje: el turno trae un producto certificado que el pedido no tiene,
+    # asi que desde la ficha 15 le falta algo de verdad —proponer el paso
+    # siguiente—. Sin la frase estos casos siguen siendo rojos, pero por el
+    # punto equivocado, y dejarian de medir lo que vinieron a medir, que es el
+    # destino.
+    ("SALE: el mismo turno, con el destino dicho y la oferta hecha",
      {"items": [{"que": "mouse logitech", "cantidad": 1}],
       "destinos": ["Concordia"]},
-     "Te confirmo 1 Mouse Logitech M170 Negro, con envío a Concordia.",
+     "Te confirmo 1 Mouse Logitech M170 Negro, con envío a Concordia. "
+     "Te lo cargo al pedido.",
      [_MOUSE, _envio("Concordia")],
      True, ""),
 
     ("SALE: sin evidencia no hay omision probada, hay busqueda que falto",
      {"items": [{"que": "mouse logitech", "cantidad": 1}],
       "destinos": ["Concordia"]},
-     "Te confirmo 1 Mouse Logitech M170 Negro.",
+     "Te confirmo 1 Mouse Logitech M170 Negro. Te lo cargo al pedido.",
      [_MOUSE],
      True, ""),
 
@@ -145,8 +152,8 @@ def test_lo_que_no_frena_no_desaparece():
     probar, y tiene que quedar a la vista para poder perseguirla."""
     declarado = {"items": [{"que": "mouse logitech", "cantidad": 1}],
                  "destinos": ["Concordia"]}
-    idx = IT.cobertura(declarado, "Te confirmo 1 Mouse Logitech M170 Negro.",
-                       "test", llamadas=[_MOUSE])
+    idx = IT.cobertura(declarado, "Te confirmo 1 Mouse Logitech M170 Negro. "
+                       "Te lo cargo al pedido.", "test", llamadas=[_MOUSE])
     puerta = IT.puede_salir(idx["puntos"])
     assert puerta["puede"], "sin evidencia no puede frenar"
     assert [p["id"] for p in puerta["sin_prueba"]] == ["destino:1"]
@@ -173,9 +180,15 @@ def test_los_tres_tipos_sin_prueba_mecanica_nunca_frenan():
     motivo esta escrito en `indice_turno`: una politica se contesta con prosa
     que el modelo escribe con sus palabras, y las otras dos no anclan a
     proposito. Si un dia se les encuentra prueba mecanica, esto se cambia a
-    proposito y con su motivo; que se cuele solo, no."""
+    proposito y con su motivo; que se cuele solo, no.
+
+    LA LISTA PASO DE SEIS A SIETE CON LA FICHA 15 y el septimo es de otra
+    familia: los seis frenan por algo que el CLIENTE pidio y no se dijo, la
+    oferta frena por algo que el BOT tenia que proponer y no propuso. Su prueba
+    es por construccion —una herramienta certifico un producto que el pedido no
+    tiene—, igual que la del precio."""
     assert set(IT.TIPOS_QUE_FRENAN) == {
-        "item", "condicion", "destino", "atributo", "precio", "pago"}
+        "item", "condicion", "destino", "atributo", "precio", "pago", "oferta"}
     for tipo in ("politica", "stock", "compatibilidad"):
         punto = {"id": f"{tipo}:1", "tipo": tipo, "texto": "lo que sea",
                  "estado": "", "anclajes": ["evidencia", "de sobra"]}
@@ -195,7 +208,7 @@ def test_el_destino_omitido_vuelve_al_mensaje():
 
     declarado = {"items": [{"que": "mouse logitech", "cantidad": 1}],
                  "destinos": ["Concordia", "Posadas"]}
-    texto = "Te confirmo 1 Mouse Logitech M170 Negro."
+    texto = "Te confirmo 1 Mouse Logitech M170 Negro. Te lo cargo al pedido."
     llamadas = [_MOUSE, _envio("Concordia"), _envio("Posadas")]
     fuera = _punto_omitido_repuesto(texto, declarado, llamadas, [],
                                     "verifika_prod", "test")

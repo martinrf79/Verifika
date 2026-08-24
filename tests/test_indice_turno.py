@@ -13,6 +13,19 @@ peor que no tener indice.
 """
 from app.core import indice_turno as IT
 
+
+def _del_cliente(faltan: list) -> list:
+    """Los ids de los puntos QUE PIDIO EL CLIENTE, sin el punto de oferta.
+
+    LA OFERTA ES DEL BOT, NO DEL CLIENTE (FICHA 15). Este archivo mide una sola
+    cosa —que el ANCLAJE ate lo interpretado con lo respondido— y el punto de
+    oferta no se ancla ni sale de lo declarado: se abre por codigo cuando una
+    herramienta trajo un producto que el pedido no tiene. Dejarlo entrar en
+    estas cuentas mezclaria dos varas distintas en el mismo numero. Lo que la
+    oferta si tiene que cumplir esta medido aparte, en
+    `tests/test_punto_de_oferta.py`."""
+    return [p["id"] for p in faltan if p.get("tipo") != "oferta"]
+
 DECLARADO = {
     "items": [{"que": "auriculares", "cantidad": 2},
               {"que": "mouse", "cantidad": 2},
@@ -136,7 +149,7 @@ def test_el_sinonimo_del_modelo_no_deja_el_punto_sin_atender():
     assert sin_evidencia["faltan"], "el caso ya no reproduce el defecto viejo"
     con_evidencia = IT.cobertura(declarado, texto, "t",
                                  llamadas=[_BUSQUEDA_MOUSE])
-    assert con_evidencia["faltan"] == [], [p["id"] for p in con_evidencia["faltan"]]
+    assert _del_cliente(con_evidencia["faltan"]) == []
 
 
 def test_una_respuesta_correcta_que_no_nombra_ningun_producto_cuenta():
@@ -167,7 +180,7 @@ def test_la_tercera_puerta_de_los_productos_tambien_ancla():
     texto = ("No contamos con un SSD que alcance esa velocidad, pero si "
              "disponemos de otras opciones:\n- Ssd Kingston A400 SATA 500GB: $28.500")
     r = IT.cobertura(declarado, texto, "t", llamadas=llamadas)
-    assert r["faltan"] == [], [p["id"] for p in r["faltan"]]
+    assert _del_cliente(r["faltan"]) == []
 
 
 def test_la_memoria_es_evidencia_cuando_el_turno_no_busco_nada():
@@ -224,11 +237,10 @@ def test_el_anclaje_nunca_puede_agregar_una_alarma():
         {"restricciones": ["barato"], "items": [{"que": "mouse", "cantidad": 1}]},
     ]
     for dec, txt in itertools.product(declarados, textos):
-        sin = {p["id"] for p in IT.cobertura(dec, txt, "t")["faltan"]}
-        con = {p["id"] for p in IT.cobertura(dec, txt, "t",
-                                             llamadas=[_BUSQUEDA_MOUSE],
-                                             memoria=[{"nombre": "Teclado Genius KB-110X"}]
-                                             )["faltan"]}
+        sin = set(_del_cliente(IT.cobertura(dec, txt, "t")["faltan"]))
+        con = set(_del_cliente(IT.cobertura(
+            dec, txt, "t", llamadas=[_BUSQUEDA_MOUSE],
+            memoria=[{"nombre": "Teclado Genius KB-110X"}])["faltan"]))
         assert con <= sin, f"el anclaje AGREGO faltantes: {con - sin} en {txt}"
 
 
