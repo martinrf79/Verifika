@@ -320,3 +320,157 @@ def test_existe_una_segunda_tienda_de_otro_rubro():
     assert len(tiendas) >= 2, (
         f"hay {len(tiendas)} tienda(s) en data/clientes: "
         + ", ".join(d.name for d in tiendas))
+
+
+# ── LO QUE LA FICHA 11 DEJO ABIERTO ────────────────────────────────────
+#
+# LOS CINCO DE ABAJO NO SON PASOS NUEVOS. Estaban abiertos desde el 24-ago y
+# contados en PROSA, en `arquitectura/LO_QUE_QUEDO_ABIERTO_DE_LA_11.md`, que es
+# el unico formato que este repo ya sabe que envejece: ningun contador los veia,
+# asi que el techo del plan decia 3 cuando faltaban 8. El techo subio a 8 en su
+# propio commit, con la cuenta escrita, ANTES de este archivo.
+#
+# El relato entero de cada uno sigue en la ficha. Aca va lo unico que una
+# maquina puede verificar: el numero de HOY, el numero OBJETIVO, y el assert.
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "PLAN: la cuenta sube a la etapa de resolucion, como pide DECISIONES.md #8. "
+    "HOY la cuenta se arma DESPUES del reconciliador: sobre el primer casete el "
+    "reconciliador deja su marca en la posicion 5 del turno y `cuenta_repuesta` "
+    "en la 8, adentro de la puerta de reposicion, y `cuenta_repuesta` interviene "
+    "en 19 de 54 turnos. OBJETIVO que la cuenta quede ANTES del reconciliador. "
+    "NO SE HACE MUDANDOLA Y VIENDO QUE PASA: la condicion que la gobierna "
+    "-`falta_la_cuenta`- la emite el reconciliador, asi que subirla sola la deja "
+    "armandose sin saber si el cliente pidio precio, que es EXACTAMENTE el "
+    "defecto que curo la FICHA 04 el 21-ago. Cierra cuando el reclamo tipado "
+    "salga de algo que corra antes, o cuando el reconciliador suba con ella."))
+def test_la_cuenta_se_arma_antes_del_reconciliador():
+    from banco_pruebas import sim_firestore
+    sim_firestore.install()
+    from app.verifika import grafo as G
+    from banco_pruebas.casete import CASETES, reproducir_charla
+
+    orden = []
+    orig = G.registrar
+
+    def espia(nodo_id, intervino, detalle=""):
+        orden.append(nodo_id)
+        return orig(nodo_id, intervino, detalle)
+
+    G.registrar = espia
+    try:
+        uno = sorted(p for p in CASETES.glob("*.json")
+                     if not p.name.startswith("_"))[:1]
+        assert uno, "no hay casetes grabados: este test no puede medir nada"
+        reproducir_charla(uno[0])
+    finally:
+        G.registrar = orig
+
+    assert "reconciliador" in orden and "cuenta_repuesta" in orden, (
+        f"el turno no ejercita los dos engranajes que este paso compara: "
+        f"{sorted(set(orden))}")
+    assert orden.index("cuenta_repuesta") < orden.index("reconciliador"), (
+        f"la cuenta se arma en la posicion {orden.index('cuenta_repuesta')} y "
+        f"el reconciliador en la {orden.index('reconciliador')}: la cuenta "
+        "sigue corriendo despues de quien emite su condicion")
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "PLAN: `_bloque_hallazgo` sale de `hub_venta` y la ida y vuelta se termina. "
+    "HOY son 2 cruces vivos: `hub_venta.py:51` importa `_RE_HAY_CUENTA` y "
+    "`_norm_renglon` de `salida.py` por la cabecera, y `salida.py:70` importa "
+    "`hub_venta` PEREZOSO para poder llamar a `_bloque_hallazgo`, que es el "
+    "unico que le queda despues de que la FICHA 11 se llevara los otros dos. "
+    "OBJETIVO cero cruces: ni `_bloque_hallazgo` en el hub, ni un import "
+    "perezoso de hub en la salida. LO QUE FALTA ES UNA DECISION, NO UNA "
+    "MUDANZA: los dos patrones son de `salida.py`, asi que llevar la funcion a "
+    "`reposicion` no saca la ida y vuelta, la da vuelta. Primero se decide de "
+    "quien son `_RE_HAY_CUENTA` y `_norm_renglon`, despues se muda."))
+def test_el_bloque_hallazgo_no_vive_en_el_hub():
+    hub = (_RAIZ / "app" / "core" / "hub_venta.py").read_text(encoding="utf-8")
+    sal = (_RAIZ / "app" / "core" / "salida.py").read_text(encoding="utf-8")
+    cruces = []
+    if re.search(r"^def _bloque_hallazgo\b", hub, re.M):
+        cruces.append("hub_venta define _bloque_hallazgo")
+    for i, linea in enumerate(sal.splitlines(), 1):
+        if re.search(r"\bimport\s+hub_venta\b", linea):
+            cruces.append(f"salida.py:{i} importa hub_venta")
+    assert not cruces, f"quedan {len(cruces)} cruces: {cruces}"
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "PLAN: el corpus ejercita las comprobaciones que hoy no despierta ninguna "
+    "charla. HOY 9 engranajes corren en los 54 turnos de las 15 charlas "
+    "grabadas y NO intervienen en ninguno -`aduana`, `honestidad_bot`, "
+    "`sin_cobro_inventado`, `sin_json`, `sin_negar_lo_traido`, "
+    "`hallazgo_repuesto`, `busqueda_repuesta`, `condicion_repuesta` y "
+    "`cierre`-, y los 26 guiones numerados 26 a 38 que se escribieron para "
+    "despertarlos tienen 0 casetes grabados. OBJETIVO que los 13 numeros esten "
+    "grabados, para que la evidencia de que una guardia sobra deje de ser 'el "
+    "corpus no la toca' y pase a ser 'la toca y no hace falta'. NO SE BORRA "
+    "NINGUNA ANTES: el corpus de hoy no tiene un CBU falso ni un 'sos un bot', "
+    "asi que hoy los 9 ceros prueban que la charla no los ejercita, no que "
+    "sobren. GRABAR ESOS CASETES ES LO UNICO DE ESTE PASO QUE NECESITA LA "
+    "CLAVE PAGA y por eso no se hace de paso en otra sesion."))
+def test_los_guiones_que_despiertan_las_guardias_estan_grabados():
+    guiones = _RAIZ / "banco_pruebas" / "guiones"
+    casetes = _RAIZ / "banco_pruebas" / "casetes"
+    _RANGO = re.compile(r"^(2[6-9]|3[0-8])_")
+    pedidos = sorted(p.stem for p in guiones.glob("*.txt")
+                     if _RANGO.match(p.name))
+    assert pedidos, "no hay guiones 26 a 38: este test no puede medir nada"
+    grabados = {p.stem for p in casetes.glob("*.json")}
+    faltan = [g for g in pedidos if g not in grabados]
+    assert not faltan, (
+        f"{len(faltan)} de {len(pedidos)} guiones del rango 26-38 no tienen "
+        f"casete grabado: {faltan[:8]}")
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "PLAN: existe UN numero de VENTA. HOY el piso de las 15 charlas guarda 8 "
+    "varas -piso, puntos, total, charlas, llamadas_max, llamadas_total, "
+    "largo_max, largo_promedio- y las 8 son defensivas: miden que no se caiga, "
+    "que no invente, que no se alargue. Cero miden si vende. OBJETIVO al menos "
+    "una vara `venta_*` en `banco_pruebas/casetes/_piso.json`, medida sobre las "
+    "mismas 15 charlas y con el mismo mecanismo de piso que las otras 8. "
+    "ESTE PASO SE ESCRIBE AUNQUE TODAVIA NO SEPAMOS QUE SE MIDE, y es el unico "
+    "de los cinco que toca la prioridad uno: un sistema que solo mide lo que no "
+    "debe hacer termina siendo un bot que no hace nada mal y no vende. QUE "
+    "cuenta como venta -avance, cierre, donde se cae el cliente- es una "
+    "decision de Martin; el prefijo es solo donde aterriza."))
+def test_el_piso_guarda_algun_numero_de_venta():
+    import json
+    piso = json.loads((_RAIZ / "banco_pruebas" / "casetes" / "_piso.json")
+                      .read_text(encoding="utf-8"))
+    varas = [k for k in piso if not k.startswith("_")]
+    assert varas, "el piso no tiene ninguna vara: este test no mide nada"
+    de_venta = [k for k in varas if k.startswith("venta_")]
+    assert de_venta, (
+        f"las {len(varas)} varas del piso son defensivas y ninguna mide venta: "
+        + ", ".join(sorted(varas)))
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "PLAN: el piso de la puerta guarda el crudo y no la razon. HOY "
+    "`banco_pruebas/puerta_piso.json` guarda 6 varas como PORCENTAJE -items, "
+    "destinos, reparto_pago, restricciones, pide_precio, contradicciones- y 0 "
+    "de las 6 guardan su numerador y su denominador por separado. OBJETIVO las "
+    "6 con `<vara>_n` y `<vara>_de`, asi el rojo dice CUAL de los dos se movio. "
+    "POR QUE NO ES COSMETICA: el 22-ago se puso rojo con `reparto_pago: 11.1% "
+    "-> 9.1%` y no entendia menos, sacaba el MISMO 1 turno; lo que cambio fue "
+    "el denominador, porque el modelo declaro reparto en 11 turnos en vez de 9. "
+    "Una razon contra un corpus mutable mide dos cosas a la vez y no puede "
+    "decir cual se movio, que es la misma enfermedad que la FICHA 03 curo en el "
+    "otro piso."))
+def test_el_piso_de_la_puerta_guarda_crudo_y_no_razon():
+    import json
+    piso = json.loads((_RAIZ / "banco_pruebas" / "puerta_piso.json")
+                      .read_text(encoding="utf-8"))
+    varas = [k for k in piso if not k.startswith("_")]
+    assert varas, "el piso de la puerta no tiene varas: este test no mide nada"
+    sin_crudo = [v for v in varas
+                 if f"{v}_n" not in piso or f"{v}_de" not in piso]
+    assert not sin_crudo, (
+        f"{len(sin_crudo)} de {len(varas)} varas guardan una razon sin su "
+        f"numerador y su denominador: {sin_crudo}")
