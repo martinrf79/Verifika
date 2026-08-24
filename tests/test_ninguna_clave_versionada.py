@@ -37,7 +37,17 @@ _RAIZ = Path(__file__).resolve().parent.parent
 # ls-files` falla o devuelve poco, el test no puede pasar por vacio.
 _MINIMO_ARCHIVOS = 400
 
-_PEM = "PRIVATE KEY-----"
+# EL MARCADOR SE ARMA EN PEDAZOS, Y NO ES UN CAPRICHO: si el literal
+# entero estuviera escrito en este archivo, el barrido lo encontraria ACA
+# y se denunciaria a si mismo. Paso: el 24-ago dejo el deploy en rojo.
+# La salida facil habria sido que el barrido se saltee su propio archivo,
+# y es justo la que NO se toma: un agujero de un archivo en el candado es
+# el lugar exacto donde despues se esconde algo. Se paga escribiendo el
+# marcador en dos mitades, que no le cuesta nada a nadie.
+_PEM = "PRIVATE" + " KEY-----"
+_ABRE = "-----BEGIN " + "PRIVATE" + " KEY-----"
+_ABRE_RSA = "-----BEGIN RSA " + "PRIVATE" + " KEY-----"
+_CIERRA = "-----END " + "PRIVATE" + " KEY-----"
 
 
 def _es_credencial(texto: str) -> str:
@@ -104,10 +114,10 @@ def test_ninguna_credencial_esta_versionada():
         "type": "service_account",
         "project_id": "memory-engine-v1",
         "private_key_id": "0" * 40,
-        "private_key": "-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n",
+        "private_key": _ABRE + "\nMIIE...\n" + _CIERRA + "\n",
         "client_email": "una-cuenta@memory-engine-v1.iam.gserviceaccount.com",
     })),
-    ("pem pelado", "algo antes\n-----BEGIN RSA PRIVATE KEY-----\nMIIE\n"),
+    ("pem pelado", "algo antes\n" + _ABRE_RSA + "\nMIIE\n"),
     ("json sin type pero con las dos claves", json.dumps({
         "private_key": "x", "client_email": "y@z.com"})),
 ])
@@ -142,3 +152,21 @@ def test_git_ignora_de_verdad_un_archivo_con_nombre_de_clave():
         r = subprocess.run(["git", "check-ignore", "-q", nombre],
                            cwd=_RAIZ, capture_output=True)
         assert r.returncode == 0, f"git NO ignora `{nombre}`"
+
+
+def test_el_barrido_se_mira_a_si_mismo():
+    """EL CANDADO NO TIENE EXCEPCIONES, NI PARA EL.
+
+    El 24-ago este archivo dejo el deploy en rojo porque tenia el literal del
+    bloque PEM escrito entero y el barrido lo encontro. La reparacion barata
+    era saltearlo de la lista; la que se hizo fue partir el literal en dos.
+    Este test guarda esa decision: si alguna vez alguien agrega una exclusion,
+    se pone rojo. Un candado con un archivo exento es el escondite obvio.
+    """
+    archivos = _versionados()
+    mio = str(Path(__file__).resolve().relative_to(_RAIZ)).replace("\\", "/")
+    assert mio in archivos, f"{mio} no esta versionado"
+    assert not _es_credencial(
+        (_RAIZ / mio).read_text(encoding="utf-8")), (
+        "el barrido se denuncia a si mismo: el literal del PEM esta escrito "
+        "entero en este archivo. Se parte en dos, NO se exceptua el archivo")
