@@ -40,9 +40,10 @@ webhook -> orchestrator -> hub_venta
        2. PARALELO -----------+  asyncio.gather. Hasta 2 rondas: la segunda
           "todo junto"        |  solo para lo que desbloquea la primera.
                               |
-       2-bis. REPOSICION -----+  el codigo REESCRIBE lo que el modelo declaro,
-          la etapa que este   |  antes de redactar. Seis funciones.
-          archivo no tenia    |  NO estaba documentada. Ver mas abajo.
+       2-bis. REPOSICION -----+  el codigo COMPLETA lo que el modelo declaro y
+          una puerta, en      |  no aplico, antes de redactar. Es UNA puerta,
+          reposicion.py       |  `completar`, con las seis piezas adentro y el
+                              |  orden de dependencia escrito. Ver mas abajo.
                               |
        3. LLAMADA DOS --------+  redacta con el JSON de resultados delante
           "redactar"          |
@@ -161,16 +162,22 @@ ciegas: es ejercitarlo —para eso entraron los guiones 26 a 38— y después de
 
 ---
 
-## La etapa de REPOSICIÓN — la que este archivo no tenía
+## La etapa de REPOSICIÓN — una puerta, en `app/core/reposicion.py`
 
-Entre la llamada uno y la redacción hay **seis funciones que reescriben lo que el
-modelo declaró**. No estaban en ningún diagrama.
+Entre la llamada uno y la redacción hay **una función, `completar`, que aplica lo
+que el modelo declaró y no aplicó**. Adentro corren seis piezas, en el orden de
+la dependencia, y ese orden está escrito arriba de ellas: hasta la FICHA 11 eran
+seis funciones sueltas en `hub_venta` y el orden vivía en cinco comentarios de
+`procesar_venta`.
 
 ```
-_busqueda_de_lo_declarado      _reparto_de_pago_declarado
-_condicion_faltante_aplicada   _supuesto_de_pago
-_cuenta_con_lo_declarado       _bloques_a_uno
+1. _busqueda_de_lo_declarado      4. _reparto_de_pago_declarado
+2. _condicion_faltante_aplicada   5. _supuesto_de_pago
+3. _cuenta_con_lo_declarado       6. _bloques_a_uno
 ```
+
+Cada una sigue pasando por `G.paso_datos`, así que se sigue midiendo cuál
+intervino y `peso_reposicion.py` ve el mismo detalle que veía con seis nodos.
 
 Lo que hacen, dicho sin eufemismo: **el código no confía en la interpretación y la
 vuelve a hacer.** Cuánto intervienen es, literalmente, la medida de cuán robusta

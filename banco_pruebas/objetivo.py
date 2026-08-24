@@ -273,13 +273,14 @@ def correr_codigo(tienda_id: str = TIENDA) -> dict:
     from banco_pruebas import sim_firestore
     sim_firestore.install()
     from app.core import hub_venta as HV
+    from app.core import reposicion as R
 
     declarado, llamadas = _llamadas_ideales(tienda_id)
-    llamadas = HV._cuenta_con_lo_declarado(llamadas, declarado, tienda_id, "obj")
-    llamadas = HV._reparto_de_pago_declarado(llamadas, declarado, tienda_id,
-                                             "obj")
-    llamadas = HV._supuesto_de_pago(llamadas, declarado, tienda_id, "obj")
-    llamadas = HV._bloques_a_uno(llamadas, "obj")
+    llamadas = R._cuenta_con_lo_declarado(llamadas, declarado, tienda_id, "obj")
+    llamadas = R._reparto_de_pago_declarado(llamadas, declarado, tienda_id,
+                                            "obj")
+    llamadas = R._supuesto_de_pago(llamadas, declarado, tienda_id, "obj")
+    llamadas = R._bloques_a_uno(llamadas, "obj")
 
     cuenta = next((l for l in llamadas
                    if l.get("herramienta") == "armar_presupuesto"), {})

@@ -34,6 +34,7 @@ sim_firestore.install()
 from app.config import get_settings  # noqa: E402
 from app.core import herramientas as H  # noqa: E402
 from app.core import hub_venta as HV  # noqa: E402
+from app.core import reposicion as R  # noqa: E402
 from app.core.estado_venta import (construir_estado, merge_productos,  # noqa: E402
                                    get_envio_localidades)
 from app.core.memoria_larga import _compactar_determinista  # noqa: E402
@@ -109,7 +110,7 @@ def correr_turno(user_id: str, mensaje: str, pedidos: list,
         declarado_antes=conv.get("ultimo_declarado") or [],
         declarado_ahora=declarado_ahora)
     locs = get_envio_localidades() or (conv.get("ultimas_localidades") or [])
-    bloque = HV._bloque_presupuesto(llamadas)
+    bloque = R._bloque_presupuesto(llamadas)
     save_conversation(user_id, history, resumen, tienda_id=TIENDA,
                       estado_conversacion="en_curso",
                       productos_vistos=vistos, carrito_vigente=carrito,
@@ -198,7 +199,7 @@ def serie_1():
                                          {"medio": "transferencia",
                                           "porcentaje": 80}])])
     # el destino se dio en el turno 7 y la cuenta es del 8
-    bloque = HV._bloque_presupuesto(r8["llamadas"])
+    bloque = R._bloque_presupuesto(r8["llamadas"])
     ok8 = "ordoba" in bloque and "%" in bloque
     caso("Serie 1", 8, "la cuenta con el destino dado un turno antes",
          "el destino y el reparto de pago en el bloque",
@@ -274,7 +275,7 @@ def serie_3():
                                      "destino": "Posadas"}],
                                    destinos=["Cordoba capital", "Concordia",
                                              "Posadas"])])
-    bloque = HV._bloque_presupuesto(r8["llamadas"])
+    bloque = R._bloque_presupuesto(r8["llamadas"])
     tres = sum(1 for d in ("ordoba", "oncordia", "osadas") if d in bloque)
     caso("Serie 3", 8, "los tres destinos cotizados por separado",
          "los 3 en el bloque", f"{tres} de 3", tres == 3)

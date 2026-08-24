@@ -16,6 +16,7 @@ import pytest
 
 from app.core import herramientas as H
 from app.core import hub_venta as HV
+from app.core import reposicion as R
 from app.core import salida as SAL
 
 TIENDA = "verifika_prod"
@@ -551,7 +552,7 @@ def test_la_cuenta_no_pierde_un_rubro_que_el_cliente_pidio(firestore_doble):
     un total al que le faltaban $69.000 de mercaderia que habia pedido. El
     codigo lo repone con lo que el mismo turno ya certifico."""
     from app.core import herramientas as H
-    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.core.reposicion import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = [p for p in get_all_products(tienda_id=TIENDA)
@@ -592,7 +593,7 @@ def test_no_se_inventa_un_rubro_que_el_turno_no_certifico(firestore_doble):
     turno NO le mostro ningun producto de ese rubro, el codigo no elige uno de
     la nada. Eso es un faltante de verdad y lo cuenta el redactor."""
     from app.core import herramientas as H
-    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.core.reposicion import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = [p for p in get_all_products(tienda_id=TIENDA)
@@ -670,7 +671,7 @@ def test_el_setenta_treinta_sin_medio_declara_el_supuesto(firestore_doble):
     El modelo eligio distinto dos dias seguidos, y como la transferencia tiene
     10% de descuento, ese silencio le cambia al cliente lo que paga. Se aplica
     el reparto -no se frena la venta- y se declara el supuesto en la cuenta."""
-    from app.core.hub_venta import _supuesto_de_pago
+    from app.core.reposicion import _supuesto_de_pago
 
     llamadas = [{"herramienta": "armar_presupuesto",
                  "pedido": {"items": [{"product_id": "MOU0023", "cantidad": 1}],
@@ -700,7 +701,7 @@ def test_la_cuenta_no_cotiza_menos_unidades_de_las_pedidas(firestore_doble):
     lo veia porque el rubro estaba; faltaba una unidad, que es la mitad de ese
     renglon en plata. Se completa sobre el renglon que el modelo ya eligio."""
     from app.core import herramientas as H
-    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.core.reposicion import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = [p for p in get_all_products(tienda_id=TIENDA)
@@ -724,7 +725,7 @@ def test_el_mismo_producto_partido_en_dos_destinos_no_se_duplica(firestore_doble
     """La contracara: dos renglones de 1 con destinos distintos SON las dos
     unidades pedidas. Sumar de nuevo seria cobrarle cuatro."""
     from app.core import herramientas as H
-    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.core.reposicion import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = [p for p in get_all_products(tienda_id=TIENDA)
@@ -771,11 +772,11 @@ def test_el_setenta_treinta_lo_aplica_el_codigo_si_el_modelo_no_lo_hizo(
                  "resultado": H.ejecutar("armar_presupuesto", args, TIENDA)}]
     declarado = {"restricciones": ["menos partes chinas posibles",
                                    "presupuesto 70/30"]}
-    sin_reparto = HV._bloque_presupuesto(llamadas)
+    sin_reparto = R._bloque_presupuesto(llamadas)
     assert "Pago dividido" not in sin_reparto
 
-    fuera = HV._reparto_de_pago_declarado(llamadas, declarado, TIENDA, "t")
-    con_reparto = HV._bloque_presupuesto(fuera)
+    fuera = R._reparto_de_pago_declarado(llamadas, declarado, TIENDA, "t")
+    con_reparto = R._bloque_presupuesto(fuera)
     assert "Pago dividido" in con_reparto
     assert "transferencia (70%)" in con_reparto
     assert "mercado pago (30%)" in con_reparto
@@ -783,8 +784,8 @@ def test_el_setenta_treinta_lo_aplica_el_codigo_si_el_modelo_no_lo_hizo(
     # codigo asume siempre para el lado que le conviene al cliente.
     assert "descuento" in con_reparto
     # Y el supuesto se declara, para que el cliente lo de vuelta en una linea.
-    declarada = HV._supuesto_de_pago(fuera, declarado, TIENDA, "t")
-    assert "doy vuelta" in HV._bloque_presupuesto(declarada)
+    declarada = R._supuesto_de_pago(fuera, declarado, TIENDA, "t")
+    assert "doy vuelta" in R._bloque_presupuesto(declarada)
 
 
 def test_el_reparto_no_queda_del_lado_que_le_cuesta_mas_al_cliente(
@@ -808,8 +809,8 @@ def test_el_reparto_no_queda_del_lado_que_le_cuesta_mas_al_cliente(
     llamadas = [{"herramienta": "armar_presupuesto", "pedido": al_reves,
                  "resultado": H.ejecutar("armar_presupuesto", al_reves,
                                          TIENDA)}]
-    fuera = HV._reparto_de_pago_declarado(llamadas, declarado, TIENDA, "t")
-    bloque = HV._bloque_presupuesto(fuera)
+    fuera = R._reparto_de_pago_declarado(llamadas, declarado, TIENDA, "t")
+    bloque = R._bloque_presupuesto(fuera)
     assert "transferencia (70%)" in bloque, bloque
     assert "mercado pago (30%)" in bloque
 
@@ -819,12 +820,12 @@ def test_el_reparto_no_queda_del_lado_que_le_cuesta_mas_al_cliente(
                              {"medio": "mercado pago", "porcentaje": 30}]}
     ok = [{"herramienta": "armar_presupuesto", "pedido": bien,
            "resultado": H.ejecutar("armar_presupuesto", bien, TIENDA)}]
-    assert HV._reparto_de_pago_declarado(ok, declarado, TIENDA, "t") == ok
+    assert R._reparto_de_pago_declarado(ok, declarado, TIENDA, "t") == ok
 
     # y si el cliente SI dijo que medio lleva cada parte, no se toca nada:
     # ahi el reparto no es ambiguo y la eleccion es suya.
     suyo = {"restricciones": ["70% con mercado pago y 30 por transferencia"]}
-    assert HV._reparto_de_pago_declarado(
+    assert R._reparto_de_pago_declarado(
         llamadas, suyo, TIENDA, "t") == llamadas
 
 
@@ -963,7 +964,7 @@ def test_el_bloque_fusionado_no_contesta_con_el_precio_ni_suma_universos(
         llamadas.append({"herramienta": "buscar_productos", "pedido": a,
                          "resultado": H.ejecutar("buscar_productos", a,
                                                  TIENDA)})
-    fuera = HV._bloques_a_uno(llamadas, "t")
+    fuera = R._bloques_a_uno(llamadas, "t")
     bloque = next(l["resultado"]["bloque"] for l in fuera
                   if (l.get("resultado") or {}).get("bloque"))
 
@@ -1149,7 +1150,7 @@ def test_el_rubro_declarado_y_nunca_buscado_lo_busca_el_codigo(firestore_doble):
     rec = P.reconciliar(declarado, llamadas, "t")
     assert len(rec["sin_buscar"]) == 3, "el reconciliador tiene que verlos"
 
-    fuera = HV._busqueda_de_lo_declarado(llamadas, declarado, rec,
+    fuera = R._busqueda_de_lo_declarado(llamadas, declarado, rec,
                                          "verifika_prod", "t")
     busquedas = [l for l in fuera if l["herramienta"] == "buscar_productos"]
     assert len(busquedas) == 3
@@ -1161,7 +1162,7 @@ def test_el_rubro_declarado_y_nunca_buscado_lo_busca_el_codigo(firestore_doble):
     # a proposito, porque aplicar una condicion al reves seria peor que no
     # aplicarla. Con negacion, la exclusion SI viaja en la busqueda repuesta:
     con_negacion = dict(declarado, restricciones=["que no sean chinos"])
-    otra = HV._busqueda_de_lo_declarado(llamadas, con_negacion, rec,
+    otra = R._busqueda_de_lo_declarado(llamadas, con_negacion, rec,
                                         "verifika_prod", "t")
     campos = [f["campo"] for l in otra if l["herramienta"] == "buscar_productos"
               for f in (l["pedido"].get("filtros") or [])]
@@ -1182,7 +1183,7 @@ def test_si_el_modelo_ya_busco_el_codigo_no_toca_nada(firestore_doble):
              {"id": "MOU0023", "nombre": "Mouse Logitech", "categoria": "mouse"}]}}]
     rec = P.reconciliar(declarado, llamadas, "t")
     assert rec["sin_buscar"] == []
-    fuera = HV._busqueda_de_lo_declarado(llamadas, declarado, rec,
+    fuera = R._busqueda_de_lo_declarado(llamadas, declarado, rec,
                                          "verifika_prod", "t")
     assert fuera == llamadas
 
@@ -1208,7 +1209,7 @@ def test_el_item_en_duda_se_pregunta_pero_no_se_cotiza(firestore_doble):
     assert len(rec["sin_buscar"]) == 3
     assert rec["preguntar"], "la duda tiene que seguir viajando como pregunta"
 
-    fuera = HV._busqueda_de_lo_declarado(llamadas, declarado, rec,
+    fuera = R._busqueda_de_lo_declarado(llamadas, declarado, rec,
                                          "verifika_prod", "t")
     cotizados = [l["pedido"].get("categoria") for l in fuera
                  if l["herramienta"] == "buscar_productos"]
@@ -1733,7 +1734,7 @@ def test_el_producto_del_carrito_gana_cuando_el_cliente_no_pidio_otro(
     """El carrito tiene el mouse Negro. El cliente agrega otra cosa, el turno
     vuelve a buscar "mouse" y la busqueda devuelve el Blanco primero. La cuenta
     tiene que seguir con el NEGRO: el cliente no pidio cambiar de color."""
-    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.core.reposicion import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = get_all_products(tienda_id=TIENDA)
@@ -1761,7 +1762,7 @@ def test_pero_el_cliente_todavia_puede_cambiar_de_producto(firestore_doble):
     """LA OTRA MITAD, y sin esto el arreglo de arriba seria peor que el
     defecto: si el cliente NOMBRA otro -"mouse blanco" con el Negro en el
     carrito- gana lo que trajo el turno. Un carrito congelado no vende."""
-    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.core.reposicion import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = get_all_products(tienda_id=TIENDA)
@@ -1803,7 +1804,7 @@ def test_pero_el_cliente_todavia_puede_cambiar_de_producto(firestore_doble):
 # plata de un renglon ya cotizado. La regla de la casa es que la cuenta no se
 # reescribe sola. Es una decision suya, no una omision.
 def test_un_rubro_pedido_una_vez_no_trae_dos_productos_distintos(firestore_doble):
-    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.core.reposicion import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = get_all_products(tienda_id=TIENDA)
@@ -1865,7 +1866,7 @@ def test_si_el_cliente_pidio_dos_rubros_iguales_no_se_unifican(firestore_doble):
     -"un mouse para mi y otro para mi hijo, distintos"- esta pidiendo dos cosas
     y unificarlas seria comerse la mitad del pedido. La unificacion solo actua
     cuando el rubro se nombro UNA vez."""
-    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.core.reposicion import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     mice = [p for p in get_all_products(tienda_id=TIENDA)
@@ -1890,7 +1891,7 @@ def test_el_mismo_producto_a_dos_destinos_no_se_junta(firestore_doble):
     """LA SEGUNDA ATADURA. El mismo producto a dos ciudades repite CON RAZON, y
     juntar esos renglones romperia el reparto de envios, que es plata. Se
     unifica dentro de cada destino, nunca entre destinos."""
-    from app.core.hub_venta import _cuenta_con_lo_declarado
+    from app.core.reposicion import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     mice = [p for p in get_all_products(tienda_id=TIENDA)

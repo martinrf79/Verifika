@@ -96,7 +96,10 @@ def test_los_contratos_frenan_de_verdad(firestore_doble):
                                         "productos": [{"id": "MOU0001",
                                                        "nombre": "x"}]}}],
             "declarado": {}, "memoria": [], "estado": {}}
-    nodo = G.POR_ID["cuenta_repuesta"]
+    # LA PUERTA DE LA REPOSICION, que desde la FICHA 11 es un nodo y eran seis.
+    # Este caso no prueba la pieza sino los CONTRATOS del nodo, y son los
+    # mismos `CONTRATOS_DE_REPOSICION` que declaraba `cuenta_repuesta`.
+    nodo = G.POR_ID["reposicion"]
 
     dopadas = {
         G.NO_INVENTA_ID: base["llamadas"] + [

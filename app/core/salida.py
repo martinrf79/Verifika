@@ -48,6 +48,7 @@ from app.core import atadura_prosa as AP
 from app.core import herramientas as H
 from app.core import indice_turno as IT
 from app.core import pedido as P
+from app.core import reposicion as R
 from app.logger import get_logger
 from app.verifika import invariantes as INV
 
@@ -55,10 +56,17 @@ log = get_logger(__name__)
 
 
 def _hub():
-    """Import perezoso del hub. Dos piezas de esta etapa necesitan la cuenta
-    que arma la REPOSICION —`_cuenta_con_lo_declarado` y `_bloque_presupuesto`,
-    que viven en `hub_venta` y son la FICHA 11— y el hub importa este modulo
-    arriba, asi que la ida y vuelta no puede ser un import de cabecera."""
+    """Import perezoso del hub, para lo UNICO que queda de aquel lado.
+
+    LA FICHA 11 SE LLEVO DOS DE LAS TRES. La cuenta y su bloque vivian en
+    `hub_venta`, y como el hub importa este modulo arriba, pedirselos era una
+    ida y vuelta que solo se podia escribir perezosa. Ahora viven en
+    `reposicion`, que no importa a nadie de esta etapa, asi que entran por la
+    cabecera como cualquier otro modulo.
+
+    QUEDA `_bloque_hallazgo`, y queda a proposito: usa `_RE_HAY_CUENTA` y
+    `_norm_renglon`, que son de ESTE modulo. Mudarlo a `reposicion` cambiaria
+    la ida y vuelta de lado en vez de sacarla."""
     from app.core import hub_venta
     return hub_venta
 
@@ -944,9 +952,9 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
 
     # ── EL PRECIO: EL BLOQUE SELLADO DE LA CALCULADORA ──────────────────
     if any(p.get("tipo") == "precio" for p in omitidos):
-        repuestas = _hub()._cuenta_con_lo_declarado(
+        repuestas = R._cuenta_con_lo_declarado(
             llamadas, declarado, tienda_id, trace_id, memoria=memoria)
-        bloque = _hub()._bloque_presupuesto(repuestas)
+        bloque = R._bloque_presupuesto(repuestas)
         if bloque and _norm_renglon(bloque) not in _norm_renglon(fuera):
             log.info("punto_omitido_repuesto", trace_id=trace_id,
                      puntos=[p["id"] for p in omitidos][:3], largo=len(bloque))

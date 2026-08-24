@@ -38,7 +38,7 @@ el estado se lee de acá, no de la memoria de nadie.**
 | **LOS FILTROS DE LA FICHA** | cada campo de la ficha por cada operador, con valores leidos de la fic… | 687 casos | **100.0%** |
 | **EL MENSAJE DEL CLIENTE** | el texto crudo que llega por la puerta -vacio, solo emoji, larguisimo,… | 48 casos | **100.0%** |
 | **LAS SPECS PREGUNTABLES** | cada spec que la fuente declara preguntable, por su propia seña y por … | 6958 casos | **100.0%** |
-| **LA DECISION Y LA REPOSICION** | los nodos que no tocan el texto sino el estado del turno -el ejecutor,… | 99 celdas | **100.0%** |
+| **LA DECISION Y LA REPOSICION** | los nodos que no tocan el texto sino el estado del turno -el ejecutor,… | 54 celdas | **100.0%** |
 
 ---
 
@@ -116,7 +116,7 @@ el estado se lee de acá, no de la memoria de nadie.**
 ### LA DECISION Y LA REPOSICION
 
 - **Que barre:** los nodos que no tocan el texto sino el estado del turno -el ejecutor, el reconciliador, el indice y las reposiciones-, contra los contratos que declara el grafo, sobre estados de turno generados.
-- **Numero:** 99 celdas. 11 nodos x 9 clases de estado = 99 celdas, 99 cubiertas; 108 estados generados, 6 contratos, 0 violaciones.
+- **Numero:** 54 celdas. 6 nodos x 9 clases de estado = 54 celdas, 54 cubiertas; 108 estados generados, 6 contratos, 0 violaciones.
 - **Cobertura de su superficie: 100.0%** — completa.
 - **Lo defiende:** `tests/test_barrido_decision.py`.
 

@@ -33,11 +33,12 @@ verde y el techo bajó.
 | # | qué hace | cómo se sabe que está |
 |---|---|---|
 | ~~10~~ | ~~salida baja de 18 nodos a 4~~ | **HECHA el 24-ago.** 4 puertas en `app/core/salida.py`, `hub_venta.py` bajó 953 líneas, batería verde y piso intacto |
-| 11 | las seis reposiciones se funden en una | `hub_venta.py` queda cerca de 400 líneas |
+| ~~11~~ | ~~las seis reposiciones se funden en una~~ | **HECHA el 24-ago.** Una puerta en `app/core/reposicion.py`, `hub_venta.py` bajó de 2.665 a 1.798 líneas, batería verde y piso intacto |
 | 12 | `registrar()` en las seis etapas, no sólo en salida | el censo se rehace solo, sin espías a mano |
 
-Las fichas 10 y 11 son las que bajan el costo de cada sesión: hoy leer
-`hub_venta.py` cuesta unos 47.000 tokens **cada vez**.
+Las fichas 10 y 11 eran las que bajaban el costo de cada sesión, y lo bajaron:
+leer `hub_venta.py` costaba unos 47.000 tokens **cada vez** con 3.621 líneas.
+Hoy tiene 1.798, y las otras dos mitades se leen sólo cuando se las toca.
 
 ---
 

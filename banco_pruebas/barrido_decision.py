@@ -382,8 +382,26 @@ def violaciones(nodo, antes: dict, despues: dict, catalogo: set) -> list:
         # la cuenta sin haber estado en ningun lado es el auricular del 12-ago.
         sumados = _items_cotizados(despues.get("llamadas")) - \
             _items_cotizados(antes.get("llamadas"))
+        # LO QUE EL PROPIO NODO TRAJO TAMBIEN ES RESPALDO (FICHA 11, 24-ago).
+        #
+        # ES EL ARREGLO DE UNA CEGUERA DEL BARRIDO, NO UNA VARA AFLOJADA, y la
+        # diferencia esta en la linea de arriba: el contrato dice "estaba en
+        # OTRA LLAMADA, en el carrito o en lo ya mostrado", y hasta hoy la
+        # primera de las tres no se contaba. No hacia falta contarla mientras
+        # la busqueda y la cuenta fueran dos nodos, porque el barrido le daba
+        # a cada uno el MISMO estado sin tocar: la cuenta corria sobre un turno
+        # donde la busqueda no habia pasado. En el turno vivo si pasa, siempre,
+        # y desde que las seis son una puerta el barrido lo ve.
+        #
+        # LO QUE CAZA SIGUE SIENDO EXACTAMENTE LO MISMO: un id que aparece SOLO
+        # adentro de la cuenta y en ningun otro lado, que es el auricular del
+        # 12-ago. `test_los_contratos_frenan_de_verdad` le planta uno y lo
+        # sigue cazando, y ese es el candado de que esto no vacio el contrato.
+        traidos = _ids_de([l for l in (despues.get("llamadas") or [])
+                           if not (isinstance(l, dict)
+                                   and l.get("herramienta") == "armar_presupuesto")])
         respaldo = _ids_de(antes) | _ids_de(despues.get("memoria")) | \
-            _ids_de(despues.get("estado"))
+            _ids_de(despues.get("estado")) | traidos
         sin_respaldo = sorted(sumados - respaldo)
         if sin_respaldo:
             rotos.append((G.NO_AGREGA_LO_NO_PEDIDO,

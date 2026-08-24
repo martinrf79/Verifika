@@ -258,63 +258,27 @@ NODOS = (
                  tienda_id=c["tienda_id"]))),
 
     # ── reposicion: lo que el modelo no aplico, lo aplica el codigo ───────
-    Nodo(id="busqueda_repuesta", etapa="reposicion",
-         funcion="app.core.hub_venta:_busqueda_de_lo_declarado",
-         exige="un item declarado que ninguna herramienta busco",
-         garantiza="la busqueda hecha por codigo, o nada; no inventa el "
-                   "producto",
+    #
+    # UN NODO DESDE LA FICHA 11 (24-ago-2026), y eran seis. No se borro
+    # ninguna: las seis piezas corren adentro de `completar`, cada una con su
+    # `G.paso_datos`, asi que el veredicto por engranaje sigue saliendo con el
+    # mismo detalle. Lo que se corto son las CINCO COSTURAS -el orden entre
+    # ellas vivia en comentarios de `procesar_venta`- y con ellas la unica
+    # forma que habia de reordenarlas sin darse cuenta.
+    Nodo(id="reposicion", etapa="reposicion",
+         funcion="app.core.reposicion:completar",
+         exige="lo que el modelo declaro, lo que el reconciliador reclamo y la "
+               "memoria de la charla",
+         garantiza="el rubro declarado buscado, la condicion aplicada, la "
+                   "cuenta calculada por la calculadora sobre ids "
+                   "certificados, el reparto sellado, el supuesto dicho y UNA "
+                   "sola cuenta; nada de eso inventa un producto ni una cifra",
          contratos=CONTRATOS_DE_REPOSICION,
          aplicar_datos=lambda c: _con(
-             c, llamadas=_hub()._busqueda_de_lo_declarado(
+             c, llamadas=_repo().completar(
                  c.get("llamadas") or [], c.get("declarado") or {},
-                 c.get("rec") or {}, c["tienda_id"], c["trace_id"]))),
-    Nodo(id="condicion_repuesta", etapa="reposicion",
-         funcion="app.core.hub_venta:_condicion_faltante_aplicada",
-         exige="una condicion del cliente que el plan no aplico",
-         garantiza="el filtro aplicado sobre lo que ya se trajo",
-         contratos=CONTRATOS_DE_REPOSICION,
-         aplicar_datos=lambda c: _con(
-             c, llamadas=_hub()._condicion_faltante_aplicada(
-                 c.get("llamadas") or [], c.get("rec") or {},
-                 c["tienda_id"], c["trace_id"]))),
-    Nodo(id="cuenta_repuesta", etapa="reposicion",
-         funcion="app.core.hub_venta:_cuenta_con_lo_declarado",
-         exige="un pedido declarado sin cuenta",
-         garantiza="la cuenta calculada por la calculadora sobre ids "
-                   "certificados",
-         contratos=CONTRATOS_DE_REPOSICION,
-         aplicar_datos=lambda c: _con(
-             c, llamadas=_hub()._cuenta_con_lo_declarado(
-                 c.get("llamadas") or [], c.get("declarado") or {},
-                 c["tienda_id"], c["trace_id"],
+                 c.get("rec") or {}, c["tienda_id"], c["trace_id"],
                  memoria=c.get("memoria") or []))),
-    Nodo(id="reparto_repuesto", etapa="reposicion",
-         funcion="app.core.hub_venta:_reparto_de_pago_declarado",
-         exige="un reparto de pago declarado y no aplicado",
-         garantiza="el split sellado por el codigo",
-         contratos=CONTRATOS_DE_REPOSICION,
-         aplicar_datos=lambda c: _con(
-             c, llamadas=_hub()._reparto_de_pago_declarado(
-                 c.get("llamadas") or [], c.get("declarado") or {},
-                 c["tienda_id"], c["trace_id"]))),
-    Nodo(id="supuesto_de_pago", etapa="reposicion",
-         funcion="app.core.hub_venta:_supuesto_de_pago",
-         exige="una cuenta con un supuesto de pago sin declarar",
-         garantiza="el supuesto dicho en el mensaje, para que el cliente sepa "
-                   "sobre que se calculo",
-         contratos=CONTRATOS_DE_REPOSICION,
-         aplicar_datos=lambda c: _con(
-             c, llamadas=_hub()._supuesto_de_pago(
-                 c.get("llamadas") or [], c.get("declarado") or {},
-                 c["tienda_id"], c["trace_id"]))),
-    Nodo(id="bloques_a_uno", etapa="reposicion",
-         funcion="app.core.hub_venta:_bloques_a_uno",
-         exige="varias cuentas parciales del mismo turno",
-         garantiza="UNA sola cuenta, con la aritmetica cerrando",
-         contratos=CONTRATOS_DE_REPOSICION,
-         aplicar_datos=lambda c: _con(
-             c, llamadas=_hub()._bloques_a_uno(c.get("llamadas") or [],
-                                               c["trace_id"]))),
     Nodo(id="indice_turno", etapa="decision",
          funcion="app.core.indice_turno:cobertura",
          exige="lo interpretado y el material que trajeron las herramientas",
@@ -442,6 +406,14 @@ def _hub():
     veredictos, asi que el grafo no puede importarlo arriba."""
     from app.core import hub_venta
     return hub_venta
+
+
+def _repo():
+    """La etapa de reposicion, en su propio modulo desde la FICHA 11. Perezoso
+    por lo mismo que el hub: `reposicion` pide `grafo` para dejar el veredicto
+    de cada una de sus seis piezas."""
+    from app.core import reposicion
+    return reposicion
 
 
 CICLOS = ()

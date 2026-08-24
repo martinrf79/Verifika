@@ -70,13 +70,30 @@ def test_la_salida_tiene_cuatro_nodos_o_menos():
         + ", ".join(n.id for n in salida))
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: las seis reposiciones se juntan en UNA funcion `completar` con orden "
-    "de dependencia explicito. HOY son 6 funciones sueltas en hub_venta que "
-    "reescriben lo que el modelo declaro, y ninguna sabe de las otras. "
-    "OBJETIVO 1. La mas grande, `_cuenta_con_lo_declarado`, no se borra: sube a "
-    "la etapa de resolucion, que es donde corresponde."))
 def test_la_reposicion_es_una_sola_funcion():
+    """CERRADO el 24-ago-2026 — FICHA 11. La marca se saco porque paso.
+
+    ERA: seis funciones sueltas en `hub_venta`, cada una con su `G.paso_datos`
+    en `procesar_venta`, y ninguna sabia de las otras. ES: una puerta,
+    `reposicion.completar`, con el orden de dependencia escrito en el docstring
+    del modulo en vez de repartido en cinco comentarios del hub.
+
+    NO SE BORRO NI UNA REPOSICION, igual que la FICHA 10 no borro una sola
+    comprobacion de salida: las seis corren adentro, cada una con su
+    `G.paso_datos`, asi que el veredicto por engranaje sale con el mismo
+    detalle y `peso_reposicion.py` ve lo mismo que veia. Lo que se corto son
+    las CINCO COSTURAS.
+
+    Y LA CONDICION DE LA MEMORIA BAJO CON ELLAS. La de la FICHA 04 -la memoria
+    se abre si el reconciliador reclamo la cuenta o si el turno no certifico
+    nada- vivia en `procesar_venta`, a nueve lineas de la unica pieza que la
+    usa. Esa distancia es la forma exacta del defecto del total perdido.
+
+    LO QUE EL BARRIDO VIO APENAS SE JUNTARON, y no lo podia ver antes: la
+    cuenta cotizando ids que la busqueda de la MISMA puerta acababa de traer.
+    Con seis nodos el barrido le daba a cada uno el mismo estado sin tocar, o
+    sea que medía la cuenta sobre un turno donde la busqueda no habia pasado.
+    En el turno vivo pasa siempre."""
     from app.core import hub_venta as H
     seis = ("_busqueda_de_lo_declarado", "_condicion_faltante_aplicada",
             "_cuenta_con_lo_declarado", "_reparto_de_pago_declarado",
