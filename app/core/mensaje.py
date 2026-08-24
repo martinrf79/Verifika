@@ -59,7 +59,7 @@ log = get_logger(__name__)
 # hub en vez de escribirlo de nuevo, que es la falla que ya se pago dos veces
 # -el patron de la poda escrito dos veces el 31-jul, la regex del reparto
 # duplicada el 6-ago-. Una definicion sola, dos usos.
-from app.core.hub_venta import _RE_ARRANQUE_CUENTA, _RE_HAY_CUENTA
+from app.core.salida import _RE_ARRANQUE_CUENTA, _RE_HAY_CUENTA
 # El bloque de reparto, con su titulo y su renglon, tal como lo escribe la
 # calculadora. Se importa por el mismo motivo que el patron de la cuenta.
 from app.core.herramientas import RENGLON_REPARTO, TITULO_REPARTO

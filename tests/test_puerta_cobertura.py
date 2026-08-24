@@ -191,7 +191,7 @@ def test_el_destino_omitido_vuelve_al_mensaje():
     SUMA, la unica del turno, y con la puerta adelante repone el destino
     certificado que el mensaje no nombro. Lo que pega no lo escribe el modelo
     ni lo inventa el codigo: es la localidad que la herramienta de envio uso."""
-    from app.core.hub_venta import _punto_omitido_repuesto
+    from app.core.salida import _punto_omitido_repuesto
 
     declarado = {"items": [{"que": "mouse logitech", "cantidad": 1}],
                  "destinos": ["Concordia", "Posadas"]}
@@ -222,7 +222,7 @@ def test_al_turno_que_pregunto_no_se_le_pega_una_cuenta():
     regla cero, dos capas mas abajo, y de casualidad—. Lo que este test clava
     es que la decision ahora la toma la puerta y no el azar de si la cuenta se
     podia armar."""
-    from app.core.hub_venta import _punto_omitido_repuesto
+    from app.core.salida import _punto_omitido_repuesto
 
     declarado = {"items": [{"que": "g pro x", "cantidad": 1}],
                  "pide_precio": True}

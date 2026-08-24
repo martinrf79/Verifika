@@ -84,7 +84,7 @@ _RE_NUMERO = re.compile(r"(?<![$\d.,])\d+(?:[.,]\d+)*(?!\d)")
 
 _RE_ORACION = re.compile(r"(?:[^.!?\n]|(?<=\d)[.,](?=\d))+[.!?]*")
 # El punto de los miles no termina una oracion. Mismo arreglo y mismo motivo
-# que en `hub_venta._RE_ORACIONES`: esta funcion tambien BORRA oraciones, asi
+# que en `salida._RE_ORACIONES`: esta funcion tambien BORRA oraciones, asi
 # que con el patron viejo podia cortar por adentro de una cifra.
 
 # Unidades que delatan un dato duro de producto en una oracion sin marcar. No

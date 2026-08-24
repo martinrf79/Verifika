@@ -244,6 +244,7 @@ def test_el_punto_omitido_se_repone_con_la_cuenta_sellada(firestore_doble):
     RESTAN: no hay nada mal escrito, hay algo que no esta."""
     from app.core.contexto_turno import set_current_tienda
     from app.core import hub_venta as HV
+    from app.core import salida as SAL
     from app.storage.firestore_client import get_all_products
 
     set_current_tienda("verifika_prod")
@@ -256,7 +257,7 @@ def test_el_punto_omitido_se_repone_con_la_cuenta_sellada(firestore_doble):
     sin_numero = (f"Que bueno que te interese llevarte dos unidades de la "
                   f"{prod['nombre']}. El precio ya es el mas competitivo.")
 
-    salida = HV._punto_omitido_repuesto(sin_numero, declarado, [], memoria,
+    salida = SAL._punto_omitido_repuesto(sin_numero, declarado, [], memoria,
                                         "verifika_prod", "t")
     assert "Presupuesto:" in salida and "Total:" in salida
     assert sin_numero in salida, "no se toca lo que el modelo escribio"
@@ -270,6 +271,7 @@ def test_no_toca_el_mensaje_cuando_el_punto_ya_esta_contestado(firestore_doble):
     mensaje. Corriendo despues, el texto ya existe y no hay nada que adivinar."""
     from app.core.contexto_turno import set_current_tienda
     from app.core import hub_venta as HV
+    from app.core import salida as SAL
     from app.storage.firestore_client import get_all_products
 
     set_current_tienda("verifika_prod")
@@ -282,7 +284,7 @@ def test_no_toca_el_mensaje_cuando_el_punto_ya_esta_contestado(firestore_doble):
     precio = f"{prod['precio_ars']:,}".replace(",", ".")
     con_numero = (f"La {prod['nombre']} sale ${precio}.\n"
                   f"Total: ${precio}\n¿Te la reservo?")
-    assert HV._punto_omitido_repuesto(con_numero, declarado, [], memoria,
+    assert SAL._punto_omitido_repuesto(con_numero, declarado, [], memoria,
                                       "verifika_prod", "t") == con_numero
 
 
@@ -292,12 +294,13 @@ def test_sin_nada_certificado_no_inventa_una_cuenta(firestore_doble):
     contestar es honesto; un precio inventado es la falla numero uno."""
     from app.core.contexto_turno import set_current_tienda
     from app.core import hub_venta as HV
+    from app.core import salida as SAL
 
     set_current_tienda("verifika_prod")
     declarado = {"items": [{"que": "algo que no existe", "cantidad": 2}],
                  "pide_precio": True}
     texto = "No tengo ese producto en el catalogo."
-    assert HV._punto_omitido_repuesto(texto, declarado, [], [],
+    assert SAL._punto_omitido_repuesto(texto, declarado, [], [],
                                       "verifika_prod", "t") == texto
 
 

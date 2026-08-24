@@ -16,6 +16,7 @@ import pytest
 
 from app.core import herramientas as H
 from app.core import hub_venta as HV
+from app.core import salida as SAL
 
 TIENDA = "verifika_prod"
 USUARIO = "test_hub_venta"
@@ -82,7 +83,7 @@ def test_la_plata_inventada_se_poda(monkeypatch):
                      {"id": "MOU0001", "nombre": "Mouse", "precio_ars": 8500}]}}]
     texto = ("El mouse sale $8.500. Te hago un precio especial de $6.000 "
              "si te lo llevas hoy.")
-    salida = HV._sin_plata_inventada(texto, llamadas, "", "t1")
+    salida = SAL._sin_plata_inventada(texto, llamadas, "", "t1")
     assert "8.500" in salida
     assert "6.000" not in salida
 
@@ -98,7 +99,7 @@ def test_la_regla_no_toca_un_renglon_de_la_cuenta(monkeypatch):
                  "resultado": {"estado": "ok", "bloque": bloque,
                                "total_ars": 17000}}]
     texto = "Te armo la cuenta.\n" + bloque + "\nY te regalo $5.000 de descuento."
-    salida = HV._sin_plata_inventada(texto, llamadas, bloque, "t1")
+    salida = SAL._sin_plata_inventada(texto, llamadas, bloque, "t1")
     for renglon in bloque.splitlines():
         assert renglon in salida
     assert "5.000" not in salida
@@ -109,7 +110,7 @@ def test_los_numeros_que_no_son_plata_sobreviven():
                  "resultado": {"estado": "encontrado", "producto": {
                      "id": "MOU0001", "nombre": "Mouse", "precio_ars": 8500}}}]
     texto = "Tiene 12 meses de garantia, 1600 DPI y sale $8.500."
-    salida = HV._sin_plata_inventada(texto, llamadas, "", "t1")
+    salida = SAL._sin_plata_inventada(texto, llamadas, "", "t1")
     assert "12 meses" in salida and "8.500" in salida
 
 
@@ -216,7 +217,7 @@ def test_un_cbu_inventado_no_sale_nunca():
              "Alias: VERIFIKA.TECH.PAGO\n"
              "Banco: Banco Industrial\n"
              "Avisame cuando lo hagas.")
-    salida = HV._sin_cobro_inventado(texto, TIENDA, "t1")
+    salida = SAL._sin_cobro_inventado(texto, TIENDA, "t1")
     assert "0000003100085423456789" not in salida
     assert "VERIFIKA.TECH.PAGO" not in salida
     assert "Banco Industrial" not in salida
@@ -227,13 +228,13 @@ def test_el_cbu_real_de_la_tienda_si_sale():
     from app.core.pago import datos_transferencia
     d = datos_transferencia(TIENDA) or {}
     texto = f"Transferi a CBU: {d.get('cbu')}\nAlias: {d.get('alias')}"
-    salida = HV._sin_cobro_inventado(texto, TIENDA, "t1")
+    salida = SAL._sin_cobro_inventado(texto, TIENDA, "t1")
     assert str(d.get("cbu")) in salida
 
 
 def test_una_respuesta_sin_datos_de_pago_no_se_toca():
     texto = "El mouse sale $8.500 y llega en 4 dias."
-    assert HV._sin_cobro_inventado(texto, TIENDA, "t1") == texto
+    assert SAL._sin_cobro_inventado(texto, TIENDA, "t1") == texto
 
 
 def test_el_json_de_las_herramientas_no_llega_al_cliente():
@@ -243,7 +244,7 @@ def test_el_json_de_las_herramientas_no_llega_al_cliente():
              '[{"herramienta": "cotizar_envio", "pedido": {"localidad": "Cordoba"},'
              ' "resultado": {"ok": true, "monto": 7500}}]\n'
              'El costo es $7.500.')
-    salida = HV._sin_json_filtrado(texto, "t1")
+    salida = SAL._sin_json_filtrado(texto, "t1")
     assert "herramienta" not in salida and "$7.500" in salida
 
 
@@ -251,12 +252,12 @@ def test_el_titulo_que_queda_sin_nada_abajo_se_va():
     """Cuando la regla poda los renglones inventados, el titulo que los
     anunciaba tiene que irse con ellos: al cliente le llego "Productos:" y nada
     debajo."""
-    assert "Productos:" not in HV._sin_titulos_huerfanos(
+    assert "Productos:" not in SAL._sin_titulos_huerfanos(
         "Te paso el detalle:\nProductos:\n\nEnvios:\n- A Cordoba: $7.500")
 
 
 def test_el_markdown_no_sale_a_whatsapp():
-    assert HV._sin_markdown("**Productos:** el mouse") == "Productos: el mouse"
+    assert SAL._sin_markdown("**Productos:** el mouse") == "Productos: el mouse"
 
 
 def test_la_cuenta_de_un_turno_anterior_sigue_respaldada():
@@ -265,7 +266,7 @@ def test_la_cuenta_de_un_turno_anterior_sigue_respaldada():
     se cuentan como respaldados, la regla poda una cuenta REAL y al cliente le
     llega el reparto de envios suelto, sin precios."""
     previo = "Presupuesto:\n- 2x Mouse: $8.500 c/u = $17.000\nTotal: $17.000"
-    salida = HV._sin_plata_inventada(
+    salida = SAL._sin_plata_inventada(
         "Te repito la cuenta: son $17.000 en total.", [], "", "t1",
         previo=previo)
     assert "$17.000" in salida
@@ -279,7 +280,7 @@ def test_el_dato_real_convive_con_el_inventado_sin_perder_el_bueno():
     d = datos_transferencia(TIENDA) or {}
     texto = (f"CBU: {d.get('cbu')}\nAlias: {d.get('alias')}\n"
              "Banco: Banco Industrial Inventado")
-    salida = HV._sin_cobro_inventado(texto, TIENDA, "t1")
+    salida = SAL._sin_cobro_inventado(texto, TIENDA, "t1")
     assert str(d.get("cbu")) in salida
     assert "Banco Industrial Inventado" not in salida
     # con un dato real presente NO se pega la muletilla de "necesito el total"
@@ -303,7 +304,7 @@ def test_la_poda_de_plata_no_se_come_la_cuenta_que_habia_que_reponer():
               "Subtotal: $20.000\nEnvio (Cordoba): $6.500\nTotal: $26.500")
     texto = ("Te confirmo el pedido.\nPresupuesto:\n"
              "- 2 x Mouse Logitech: $24.900\nTotal: $31.900\n¿Avanzamos?")
-    salida = HV._la_cuenta_y_la_plata(texto, [], "", "t1", previo=previo)
+    salida = SAL._la_cuenta_y_la_plata(texto, [], "", "t1", previo=previo)
 
     assert "Total: $26.500" in salida, (
         "se comio la cuenta buena y dejo el turno sin contestar:\n" + salida)
@@ -313,7 +314,7 @@ def test_la_poda_de_plata_no_se_come_la_cuenta_que_habia_que_reponer():
     assert salida.count("Presupuesto:") == 1, (
         "el titulo salio dos veces:\n" + salida)
     # el contrato que ahora se le cobra al nodo entero
-    assert HV._la_cuenta_y_la_plata(salida, [], "", "t1", previo=previo) == salida
+    assert SAL._la_cuenta_y_la_plata(salida, [], "", "t1", previo=previo) == salida
 
 
 # ── 7. LO QUE CAZO LA CHARLA REAL POR WHATSAPP DEL 1-AGO ────────────────────
@@ -331,7 +332,7 @@ def test_la_cuenta_no_se_puede_retipear_a_mano():
              "- 2x Memoria ram Kingston Fury Beast DDR4 3200 8GB Blanco: "
              "$34.500 c/u = $69.000\nSubtotal: $69.000\nTotal: $69.000\n"
              "Quedo a la espera.")
-    salida = HV._cuenta_no_retipeada(texto, hubo_calculo=False, previo=previo,
+    salida = SAL._cuenta_no_retipeada(texto, hubo_calculo=False, previo=previo,
                                      trace_id="t1")
     assert "Blanco" not in salida
     assert "Negro" in salida and "Total: $69.000" in salida
@@ -340,14 +341,14 @@ def test_la_cuenta_no_se_puede_retipear_a_mano():
 
 def test_la_cuenta_calculada_este_turno_no_se_toca():
     texto = "Presupuesto:\n- 1x Mouse: $8.500 c/u = $8.500\nTotal: $8.500"
-    assert HV._cuenta_no_retipeada(
+    assert SAL._cuenta_no_retipeada(
         texto, hubo_calculo=True, previo="", trace_id="t1") == texto
 
 
 def test_la_cuenta_pegada_igual_al_previo_pasa_intacta():
     previo = "Presupuesto:\n- 1x Mouse: $8.500 c/u = $8.500\nTotal: $8.500"
     texto = "Te la repito:\n" + previo
-    salida = HV._cuenta_no_retipeada(texto, hubo_calculo=False, previo=previo,
+    salida = SAL._cuenta_no_retipeada(texto, hubo_calculo=False, previo=previo,
                                      trace_id="t1")
     assert salida == texto
 
@@ -371,21 +372,21 @@ def test_no_se_ofrece_un_descuento_que_no_existe():
     texto = ("Contame cuantas unidades queres. Puedo consultar con el area "
              "comercial que descuento especial podemos aplicarte por el par. "
              "Quedo a la espera.")
-    salida = HV._sin_descuento_inventado(texto, "t1")
+    salida = SAL._sin_descuento_inventado(texto, "t1")
     assert "descuento especial" not in salida
     assert "Quedo a la espera." in salida
 
 
 def test_el_descuento_real_de_la_tienda_no_se_toca():
     texto = "Con transferencia tenés un descuento del 10% sobre el total."
-    assert HV._sin_descuento_inventado(texto, "t1") == texto
+    assert SAL._sin_descuento_inventado(texto, "t1") == texto
 
 
 def test_la_narracion_interna_no_llega_al_cliente():
     texto = ("Tengo los dos mouse en stock.\n"
              "Encontre varias opciones y el sistema me indica que hay modelos "
              "distintos.\n¿Cual preferis?")
-    salida = HV._sin_narracion_interna(texto, "t1")
+    salida = SAL._sin_narracion_interna(texto, "t1")
     assert "el sistema me indica" not in salida
     assert "¿Cual preferis?" in salida
 
@@ -395,7 +396,7 @@ def test_un_anuncio_de_presupuesto_sin_presupuesto_se_va():
     inventados se podan y al cliente le llega el anuncio solo."""
     texto = ("Tengo los dos mouse.\nTe paso el presupuesto por los dos mouse:\n"
              "\nQuedo atento a que teclado te interesa.")
-    salida = HV._sin_anuncio_vacio(texto, "t1")
+    salida = SAL._sin_anuncio_vacio(texto, "t1")
     assert "Te paso el presupuesto" not in salida
     assert "Quedo atento" in salida
 
@@ -403,7 +404,7 @@ def test_un_anuncio_de_presupuesto_sin_presupuesto_se_va():
 def test_el_anuncio_con_su_cuenta_abajo_se_respeta():
     texto = ("Te paso el presupuesto:\n"
              "Presupuesto:\n- 1x Mouse: $8.500 c/u = $8.500\nTotal: $8.500")
-    assert HV._sin_anuncio_vacio(texto, "t1") == texto
+    assert SAL._sin_anuncio_vacio(texto, "t1") == texto
 
 
 def test_no_se_niega_una_categoria_que_la_herramienta_acaba_de_traer():
@@ -417,7 +418,7 @@ def test_no_se_niega_una_categoria_que_la_herramienta_acaba_de_traer():
                       "categoria": "memoria ram", "precio_ars": 34500}]}}]
     texto = ("Te cuento que no vendemos modulos de memoria ram sueltos. "
              "Tengo notebooks que ya vienen con 16GB.")
-    salida = HV._sin_negar_lo_traido(texto, llamadas, "t1")
+    salida = SAL._sin_negar_lo_traido(texto, llamadas, "t1")
     assert "no vendemos" not in salida.lower()
     assert "Tengo notebooks" in salida
 
@@ -426,7 +427,7 @@ def test_el_no_honesto_de_lo_que_no_trajo_ninguna_herramienta_se_respeta():
     llamadas = [{"herramienta": "buscar_productos", "pedido": {},
                  "resultado": {"estado": "no_vendemos", "pedido": "heladera"}}]
     texto = "No vendemos heladeras, nuestro rubro es tecnologia."
-    assert HV._sin_negar_lo_traido(texto, llamadas, "t1") == texto
+    assert SAL._sin_negar_lo_traido(texto, llamadas, "t1") == texto
 
 
 def test_el_candado_de_negacion_no_se_come_la_abstencion_honesta():
@@ -446,11 +447,11 @@ def test_el_candado_de_negacion_no_se_come_la_abstencion_honesta():
                                     "precio_ars": 57500}]}}]
     texto = ("No tenemos ese dato de los auriculares en la ficha. "
              "Te muestro los que sí tengo.")
-    assert HV._sin_negar_lo_traido(texto, llamadas, "t1") == texto
+    assert SAL._sin_negar_lo_traido(texto, llamadas, "t1") == texto
 
     # Y la negacion del RUBRO, con el mismo resultado delante, se sigue yendo.
     niega = "No contamos con auriculares por ahora."
-    assert "no contamos" not in HV._sin_negar_lo_traido(
+    assert "no contamos" not in SAL._sin_negar_lo_traido(
         niega, llamadas, "t1").lower()
 
 
@@ -461,7 +462,7 @@ def test_el_precio_de_lo_ya_mostrado_no_se_poda():
     anterior; lo que faltaba era reconocerlo como respaldado."""
     vistos = [{"id": "TEC0019", "nombre": "Teclado Genius", "precio": 12000}]
     texto = "El primero que te mostre es el Teclado Genius, sale $12.000."
-    salida = HV._sin_plata_inventada(texto, [], "", "t1", vistos=vistos)
+    salida = SAL._sin_plata_inventada(texto, [], "", "t1", vistos=vistos)
     assert "$12.000" in salida
 
 
@@ -469,7 +470,7 @@ def test_el_renglon_escrito_a_mano_tambien_cuenta_como_cuenta():
     """El modelo escribio "1 x Teclado Genius KB-110X Blanco: $12.000" a mano.
     La primera version del patron pedia el guion y la equis pegada."""
     texto = "Te preparé esto:\n1 x Teclado Genius KB-110X Blanco: $12.000"
-    salida = HV._cuenta_no_retipeada(texto, hubo_calculo=False, previo="",
+    salida = SAL._cuenta_no_retipeada(texto, hubo_calculo=False, previo="",
                                      trace_id="t1")
     assert "$12.000" not in salida
 
@@ -484,7 +485,7 @@ def test_el_candado_de_negacion_ve_el_plural_de_la_categoria():
                       "categoria": "memoria ram", "precio_ars": 34500}]}}]
     texto = ("Te cuento que no vendemos memorias RAM por separado. "
              "Tengo equipos que ya vienen con 16GB.")
-    salida = HV._sin_negar_lo_traido(texto, llamadas, "t1")
+    salida = SAL._sin_negar_lo_traido(texto, llamadas, "t1")
     assert "no vendemos" not in salida.lower()
     assert "Tengo equipos" in salida
 
@@ -492,7 +493,7 @@ def test_el_candado_de_negacion_ve_el_plural_de_la_categoria():
 def test_el_estado_de_la_herramienta_no_se_le_cuenta_al_cliente():
     texto = ("Tenemos varias opciones y como el estado es ambiguo, te paso los "
              "que tenemos.\n¿Cual preferis?")
-    salida = HV._sin_narracion_interna(texto, "t1")
+    salida = SAL._sin_narracion_interna(texto, "t1")
     assert "estado es ambiguo" not in salida
     assert "¿Cual preferis?" in salida
 
@@ -506,7 +507,7 @@ def test_el_bloque_mutilado_se_repone_entero():
     Caso real de 56_ronda_dificil_memoria_razonamiento vuelta 3 turno 3: el bot
     anuncio "incluyendo el microfono", listo un solo renglon y no cerro la
     cuenta."""
-    from app.core.hub_venta import _bloque_entero_o_repuesto
+    from app.core.salida import _bloque_entero_o_repuesto
 
     bloque = ("Presupuesto:\n"
               "- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n"
@@ -528,7 +529,7 @@ def test_el_bloque_mutilado_se_repone_entero():
 
 def test_el_bloque_ya_pegado_no_se_duplica():
     """Si el modelo pego la cuenta entera y bien, no se toca nada."""
-    from app.core.hub_venta import _bloque_entero_o_repuesto
+    from app.core.salida import _bloque_entero_o_repuesto
 
     bloque = ("Presupuesto:\n"
               "- 1x Mouse: $10.000 c/u = $10.000\n"
@@ -928,7 +929,7 @@ def test_no_se_afirma_que_ningun_producto_cumple_cuando_es_falso(
     texto = ("Todos los productos que trabajo tienen componentes de origen "
              "chino, asi que no puedo cumplir con eso. Te paso lo que mas se "
              "acerca.")
-    limpio = HV._sin_afirmar_sobre_el_catalogo(texto, llamadas, "t")
+    limpio = SAL._sin_afirmar_sobre_el_catalogo(texto, llamadas, "t")
     assert "Todos los productos" not in limpio
     assert "Te paso lo que mas se acerca." in limpio
 
@@ -944,7 +945,7 @@ def test_el_hecho_acotado_al_rubro_sobrevive(firestore_doble):
     llamadas = [{"herramienta": "buscar_productos", "pedido": a,
                  "resultado": H.ejecutar("buscar_productos", a, TIENDA)}]
     texto = "Todos los auriculares que tengo se fabrican en China."
-    assert HV._sin_afirmar_sobre_el_catalogo(texto, llamadas, "t") == texto
+    assert SAL._sin_afirmar_sobre_el_catalogo(texto, llamadas, "t") == texto
 
 
 def test_el_bloque_fusionado_no_contesta_con_el_precio_ni_suma_universos(
@@ -992,7 +993,7 @@ def test_la_cuenta_no_sale_descuartizada(firestore_doble):
              "Envio (3 envios): $24.000\n"
              "Total: $41.000\n"
              "- mercado pago (30%): $12.300\n")
-    limpio = HV._bloque_entero_o_repuesto(texto, "Presupuesto:\nTotal: $99", "t")
+    limpio = SAL._bloque_entero_o_repuesto(texto, "Presupuesto:\nTotal: $99", "t")
     # ni un renglon a medias: o esta entero o no esta
     for resto in (" $17.000", "3 envios): $24.000", "30%): $12.300",
                   " $41.000"):
@@ -1097,7 +1098,7 @@ def test_el_muro_cae_en_sus_OCHO_redacciones(firestore_doble):
             # no" por "sin". Ese es el punto entero del test: la idea se puede
             # escribir de infinitas formas, asi que se cubre la FORMA.
             "No trabajamos productos sin componentes de origen chino."):
-        salida = HV._sin_afirmar_sobre_el_catalogo(frase, llamadas, "t")
+        salida = SAL._sin_afirmar_sobre_el_catalogo(frase, llamadas, "t")
         assert frase not in salida, f"el muro paso: {frase}"
 
 
@@ -1115,7 +1116,7 @@ def test_el_hecho_acotado_al_rubro_NO_es_muro(firestore_doble):
     for frase in ("Todos los mouse que tengo se fabrican en China.",
                   "No tenemos ese dato en la ficha de los mouse.",
                   "Puedo cumplir con lo que pediste en otros rubros."):
-        assert frase in HV._sin_afirmar_sobre_el_catalogo(frase, llamadas, "t")
+        assert frase in SAL._sin_afirmar_sobre_el_catalogo(frase, llamadas, "t")
 
 
 def test_sin_el_hecho_calculado_la_guardia_no_toca_nada(firestore_doble):
@@ -1125,7 +1126,7 @@ def test_sin_el_hecho_calculado_la_guardia_no_toca_nada(firestore_doble):
     llamadas = [{"herramienta": "buscar_productos", "resultado": {
         "productos": [{"nombre": "Mouse Genius", "categoria": "mouse"}]}}]
     frase = "No tenemos productos que no sean fabricados en China."
-    assert frase in HV._sin_afirmar_sobre_el_catalogo(frase, llamadas, "t")
+    assert frase in SAL._sin_afirmar_sobre_el_catalogo(frase, llamadas, "t")
 
 
 # ── EL RUBRO DECLARADO Y NUNCA BUSCADO (9-ago-2026) ──────────────────────────
@@ -1511,7 +1512,7 @@ def test_no_afirma_sobre_el_catalogo_cuando_no_pudo_buscar():
                 "resultado": {"estado": "no_encontrado"}}]
     texto = ("Te cuento que hoy no tengo ningun producto en stock que no sea "
              "de origen chino. ¿Buscamos en alguna categoria?")
-    salida = HV._sin_afirmar_sobre_el_catalogo(texto, fallida, "t")
+    salida = SAL._sin_afirmar_sobre_el_catalogo(texto, fallida, "t")
     assert "no tengo ningun producto" not in salida
     assert "¿Buscamos en alguna categoria?" in salida
 
@@ -1524,7 +1525,7 @@ def test_el_hecho_acotado_a_un_rubro_no_se_toca():
            "resultado": {"estado": "encontrado",
                          "productos": [{"id": "AUR1", "categoria": "auriculares"}]}}]
     frase = "Todos los auriculares que tengo se fabrican en China, te soy honesto."
-    assert HV._sin_afirmar_sobre_el_catalogo(frase, ok, "t") == frase
+    assert SAL._sin_afirmar_sobre_el_catalogo(frase, ok, "t") == frase
 
 
 # ── LA CERTIFICACION DE IDS, QUE NO LA LLAMABA NADIE (12-ago) ────────────────
@@ -1584,9 +1585,9 @@ def test_la_cuenta_del_pedido_viejo_no_contesta_el_pedido_nuevo():
     declarado = {"items": [{"que": "auriculares", "cantidad": 2},
                            {"que": "mouse", "cantidad": 2},
                            {"que": "memorias", "cantidad": 2}]}
-    assert HV._cuenta_de_otro_pedido(_CUENTA_MICROFONOS, declarado)
+    assert SAL._cuenta_de_otro_pedido(_CUENTA_MICROFONOS, declarado)
     texto = "Ahi va tu presupuesto.\n\n" + _CUENTA_MICROFONOS
-    salida = HV._cuenta_no_retipeada(texto, hubo_calculo=False,
+    salida = SAL._cuenta_no_retipeada(texto, hubo_calculo=False,
                                      previo=_CUENTA_MICROFONOS,
                                      trace_id="t", declarado=declarado)
     assert "$81.000" not in salida, (
@@ -1600,11 +1601,11 @@ def test_la_cuenta_del_mismo_pedido_se_reestampa_como_siempre():
     comportamiento que la guardia ya tenia."""
     from app.core import hub_venta as HV
     declarado = {"items": [{"que": "microfono razer", "cantidad": 1}]}
-    assert not HV._cuenta_de_otro_pedido(_CUENTA_MICROFONOS, declarado)
+    assert not SAL._cuenta_de_otro_pedido(_CUENTA_MICROFONOS, declarado)
     # Y sin declaracion tampoco se toca: no hay con que decidir.
-    assert not HV._cuenta_de_otro_pedido(_CUENTA_MICROFONOS, {})
+    assert not SAL._cuenta_de_otro_pedido(_CUENTA_MICROFONOS, {})
     texto = "Como quedo:\n\n" + _CUENTA_MICROFONOS
-    assert HV._cuenta_no_retipeada(texto, hubo_calculo=False,
+    assert SAL._cuenta_no_retipeada(texto, hubo_calculo=False,
                                    previo=_CUENTA_MICROFONOS,
                                    trace_id="t", declarado=declarado) == texto
 
@@ -1671,10 +1672,10 @@ def test_la_cuenta_con_el_producto_anulado_no_se_reestampa():
     declarado = {"items": [{"que": "auriculares", "cantidad": 1},
                            {"que": "mouse", "cantidad": 2},
                            {"que": "memoria ram", "cantidad": 2}]}
-    assert HV._cuenta_de_otro_pedido(_CUENTA_CON_TECLADO, declarado,
+    assert SAL._cuenta_de_otro_pedido(_CUENTA_CON_TECLADO, declarado,
                                      _CARRITO_SIN_TECLADO)
     texto = "Muchas gracias, Juan Perez.\n\n" + _CUENTA_CON_TECLADO
-    salida = HV._cuenta_no_retipeada(texto, hubo_calculo=False,
+    salida = SAL._cuenta_no_retipeada(texto, hubo_calculo=False,
                                      previo=_CUENTA_CON_TECLADO, trace_id="t",
                                      declarado=declarado,
                                      carrito=_CARRITO_SIN_TECLADO)
@@ -1693,10 +1694,10 @@ def test_la_cuenta_del_pedido_vigente_si_se_reestampa():
         "- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\n"
         "Subtotal: $74.500\nTotal: $74.500")
     declarado = {"items": [{"que": "auriculares", "cantidad": 1}]}
-    assert not HV._cuenta_de_otro_pedido(cuenta, declarado,
+    assert not SAL._cuenta_de_otro_pedido(cuenta, declarado,
                                          _CARRITO_SIN_TECLADO)
     texto = "Como quedo:\n\n" + cuenta
-    assert HV._cuenta_no_retipeada(texto, hubo_calculo=False, previo=cuenta,
+    assert SAL._cuenta_no_retipeada(texto, hubo_calculo=False, previo=cuenta,
                                    trace_id="t", declarado=declarado,
                                    carrito=_CARRITO_SIN_TECLADO) == texto
 
@@ -1928,7 +1929,7 @@ def test_la_tabla_markdown_no_le_llega_al_cliente():
              "| Memoria RAM | 2 | Monte Ralo | Desde $34.500 |\n"
              "| Mouse | 2 | Alta Gracia | Desde $8.500 |\n\n"
              "¿Confirmamos?")
-    salida = HV._sin_markdown(texto)
+    salida = SAL._sin_markdown(texto)
 
     assert "|" not in salida, "la tabla sigue saliendo:\n" + salida
     assert ":---" not in salida
@@ -1937,10 +1938,10 @@ def test_la_tabla_markdown_no_le_llega_al_cliente():
                  "Alta Gracia", "$8.500", "Cantidad"):
         assert dato in salida, f"se perdio {dato}:\n{salida}"
     assert "¿Confirmamos?" in salida
-    assert HV._sin_markdown(salida) == salida
+    assert SAL._sin_markdown(salida) == salida
 
 
 def test_un_texto_sin_tabla_no_se_toca():
     """La guarda no puede inventarse trabajo: un mensaje normal sale igual."""
     texto = "El mouse Genius sale $8.500 y hay 12 en stock.\n¿Te lo reservo?"
-    assert HV._sin_markdown(texto) == texto
+    assert SAL._sin_markdown(texto) == texto

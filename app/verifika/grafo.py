@@ -338,165 +338,92 @@ NODOS = (
                       "invariantes. Lo que el codigo hace con esa prosa lo "
                       "barren los diecinueve nodos de salida"),
 
-    # ── salida: de aca abajo, todo transforma el texto ───────────────────
-    Nodo(id="atadura", etapa="salida",
-         funcion="app.core.atadura_prosa:verificar",
-         exige="prosa con etiquetas y las llamadas del turno",
-         garantiza="prosa sin una sola etiqueta, con lo no respaldado podado",
+    # ── salida: CUATRO PUERTAS ───────────────────────────────────────────
+    #
+    # ERAN DIECIOCHO NODOS (FICHA 10, 24-ago-2026), y las dieciocho
+    # comprobaciones siguen corriendo: lo que se agrupo es el PASO DEL TURNO.
+    # Cada puerta contesta UNA pregunta sobre el mensaje —de donde salio el
+    # dato, quien calculo el numero, que tiene que estar si o si, como se lee—
+    # y adentro corre sus piezas en un orden fijo, con `G.paso` cada una, asi
+    # que el veredicto por engranaje es el mismo de antes. Lo que desaparece
+    # son diecisiete costuras: los dos errores de plata de agosto no vivian
+    # adentro de una pieza, vivian entre dos.
+    #
+    # LOS CONTRATOS DE UNA PUERTA SON LOS DE SU PIEZA MAS DEBIL, no la union
+    # de todas: una cadena cumple lo que cumplen todos sus eslabones. Por eso
+    # `procedencia` no declara NO_INVENTA_PLATA -la atadura nunca lo declaro- y
+    # `obligacion` tampoco, porque su tercera pieza es la unica del turno que
+    # SUMA, y lo que suma es la cuenta sellada de la calculadora.
+    Nodo(id="procedencia", etapa="salida",
+         funcion="app.core.salida:procedencia",
+         exige="prosa del modelo, con las etiquetas puestas, y las llamadas "
+               "del turno",
+         garantiza="ningun dato que no venga del material del turno: sin "
+                   "etiquetas, sin JSON, sin markdown, sin un CBU que no sea "
+                   "el de la tienda, sin negar lo que el catalogo trajo, sin "
+                   "afirmar sobre los 880, sin descuentos que no existen y "
+                   "sin la cocina del sistema a la vista",
          contratos=(NO_ENMUDECE, NO_LEVANTA, IDEMPOTENTE),
          aplicar=lambda t, c: __import__(
-             "app.core.atadura_prosa", fromlist=["x"]).verificar(
-                 t, c["llamadas"], c["trace_id"], tienda_id=c["tienda_id"])),
-    Nodo(id="sin_json", etapa="salida",
-         funcion="app.core.hub_venta:_sin_json_filtrado",
-         exige="el texto del modelo",
-         garantiza="sin JSON de herramientas filtrado al cliente",
+             "app.core.salida", fromlist=["x"]).procedencia(
+                 t, c["llamadas"], c["trace_id"], c["tienda_id"])),
+    Nodo(id="plata", etapa="salida",
+         funcion="app.core.salida:plata",
+         exige="el texto, las llamadas que respaldan cada cifra y el bloque "
+               "sellado de la calculadora",
+         garantiza="la cuenta es la que armo el codigo y viaja ENTERA; ningun "
+                   "importe sale sin respaldo en ella o en la fuente; ningun "
+                   "anuncio de presupuesto queda sin presupuesto abajo",
          contratos=TODOS_LOS_CONTRATOS,
-         aplicar=lambda t, c: _hub()._sin_json_filtrado(t, c["trace_id"])),
-    Nodo(id="sin_markdown", etapa="salida",
-         funcion="app.core.hub_venta:_sin_markdown",
-         exige="el texto del modelo",
-         garantiza="sin asteriscos de markdown, que WhatsApp no renderiza",
-         contratos=TODOS_LOS_CONTRATOS,
-         aplicar=lambda t, c: _hub()._sin_markdown(t)),
-    # UN NODO Y NO DOS (14-ago-2026). `peso_de_la_cadena.py` midio que la cuenta
-    # y la plata intervenian sobre los MISMOS mensajes el 81,8% de las veces, y
-    # corrian sueltas y en el orden equivocado: la poda de plata se comia los
-    # renglones antes de que la cuenta pudiera reponer el bloque bueno, y al
-    # cliente le llegaba "Presupuesto:" sin nada abajo. Fusionadas, el orden
-    # queda fijo -primero la cuenta del codigo, despues la plata- y no se las
-    # puede volver a separar sin darse cuenta. Ver `_la_cuenta_y_la_plata`.
-    Nodo(id="la_cuenta_y_la_plata", etapa="salida",
-         funcion="app.core.hub_venta:_la_cuenta_y_la_plata",
-         exige="el texto, las llamadas que respaldan cada cifra y si el turno "
-               "calculo",
-         garantiza="la cuenta es la que armo el codigo, y ningun importe sale "
-                   "sin respaldo en ella o en la fuente",
-         contratos=TODOS_LOS_CONTRATOS,
-         repone=("previo",),
-         aplicar=lambda t, c: _hub()._la_cuenta_y_la_plata(
-             t, c["llamadas"], c["bloque"], c["trace_id"],
-             previo=c["previo"], vistos=c["vistos"])),
-    Nodo(id="sin_cobro_inventado", etapa="salida",
-         funcion="app.core.hub_venta:_sin_cobro_inventado",
-         exige="el texto y la tienda",
-         garantiza="ningun CBU, alias ni link que no salga de la config real",
-         contratos=TODOS_LOS_CONTRATOS,
-         aplicar=lambda t, c: _hub()._sin_cobro_inventado(
-             t, c["tienda_id"], c["trace_id"])),
-    Nodo(id="sin_negar_lo_traido", etapa="salida",
-         funcion="app.core.hub_venta:_sin_negar_lo_traido",
-         exige="el texto y lo que las herramientas trajeron",
-         garantiza="el bot no niega lo que el catalogo si tiene",
-         contratos=TODOS_LOS_CONTRATOS,
-         aplicar=lambda t, c: _hub()._sin_negar_lo_traido(
-             t, c["llamadas"], c["trace_id"])),
-    Nodo(id="sin_afirmar_del_catalogo", etapa="salida",
-         funcion="app.core.hub_venta:_sin_afirmar_sobre_el_catalogo",
-         exige="el texto y lo que se busco",
-         garantiza="ninguna afirmacion sobre el catalogo entero sin haberlo "
-                   "recorrido",
-         contratos=TODOS_LOS_CONTRATOS,
-         aplicar=lambda t, c: _hub()._sin_afirmar_sobre_el_catalogo(
-             t, c["llamadas"], c["trace_id"])),
-    Nodo(id="sin_descuento_inventado", etapa="salida",
-         funcion="app.core.hub_venta:_sin_descuento_inventado",
-         exige="el texto",
-         garantiza="ningun porcentaje de descuento que no este en la FAQ",
-         contratos=TODOS_LOS_CONTRATOS,
-         aplicar=lambda t, c: _hub()._sin_descuento_inventado(
-             t, c["trace_id"])),
-    Nodo(id="sin_narracion_interna", etapa="salida",
-         funcion="app.core.hub_venta:_sin_narracion_interna",
-         exige="el texto",
-         garantiza="el cliente no lee la cocina del sistema",
-         contratos=TODOS_LOS_CONTRATOS,
-         aplicar=lambda t, c: _hub()._sin_narracion_interna(t, c["trace_id"])),
-    Nodo(id="sin_anuncio_vacio", etapa="salida",
-         funcion="app.core.hub_venta:_sin_anuncio_vacio",
-         exige="el texto",
-         garantiza="ningun anuncio de presupuesto sin presupuesto abajo",
-         contratos=TODOS_LOS_CONTRATOS,
-         aplicar=lambda t, c: _hub()._sin_anuncio_vacio(t, c["trace_id"])),
-    Nodo(id="bloque_repuesto", etapa="salida",
-         funcion="app.core.hub_venta:_bloque_entero_o_repuesto",
-         exige="el texto y el bloque sellado del codigo",
-         garantiza="la cuenta viaja ENTERA o se repone entera; nunca mutilada",
-         contratos=(NO_ENMUDECE, NO_LEVANTA, IDEMPOTENTE, NO_INVENTA_PLATA),
+         repone=("previo", "bloque", "hallazgo"),
+         aplicar=lambda t, c: __import__(
+             "app.core.salida", fromlist=["x"]).plata(
+                 t, c["llamadas"], c["bloque"], c["trace_id"],
+                 previo=c["previo"], vistos=c["vistos"])),
+    Nodo(id="obligacion", etapa="salida",
+         funcion="app.core.salida:obligacion",
+         exige="el mensaje del cliente, si es el primer turno, y los puntos "
+               "que el cliente abrio",
+         garantiza="si preguntan si es un bot se dice que si; el saludo se "
+                   "dice una vez y solo la primera; ningun punto que el "
+                   "sistema sabe contestar se va sin contestar",
+         contratos=(NO_ENMUDECE, NO_LEVANTA, IDEMPOTENTE),
          repone=("bloque",),
-         aplicar=lambda t, c: _hub()._bloque_entero_o_repuesto(
-             t, c["bloque"], c["trace_id"])),
-    Nodo(id="hallazgo_repuesto", etapa="salida",
-         funcion="app.core.hub_venta:_bloque_entero_o_repuesto",
-         exige="el texto y el bloque del hallazgo, si el turno encontro algo "
-               "parecido a lo que no hay",
-         garantiza="el hallazgo viaja entero o se repone entero, y sin barrer "
-                   "la cuenta que ya esta puesta",
-         contratos=(NO_ENMUDECE, NO_LEVANTA, IDEMPOTENTE, NO_INVENTA_PLATA),
-         repone=("hallazgo",),
-         aplicar=lambda t, c: _hub()._bloque_entero_o_repuesto(
-             t, _hub()._bloque_hallazgo(c["llamadas"], t), c["trace_id"],
-             barrer_cuenta=False)),
-    Nodo(id="cierre", etapa="salida",
+         aplicar=lambda t, c: __import__(
+             "app.core.salida", fromlist=["x"]).obligacion(
+                 t, c["mensaje"], c["negocio"], not c.get("anterior"),
+                 c.get("declarado") or {}, c["llamadas"],
+                 c.get("memoria") or [], c["tienda_id"], c["trace_id"])),
+    Nodo(id="higiene", etapa="salida",
+         funcion="app.core.salida:higiene",
+         exige="el mensaje entero, ya compuesto por las tres puertas de "
+               "arriba, y el anterior del bot",
+         garantiza="sin repeticion y con los invariantes corridos, sin perder "
+                   "un dato: las dos piezas son lossless",
+         contratos=TODOS_LOS_CONTRATOS,
+         aplicar=lambda t, c: __import__(
+             "app.core.salida", fromlist=["x"]).higiene(
+                 t, c["anterior"], c["mensaje"], c["trace_id"],
+                 c["tienda_id"], vocabulario=c.get("vocabulario"))),
+
+    # ── memoria: guardar, cerrar y cobrar ────────────────────────────────
+    #
+    # EL CIERRE DEJA DE SER UNA GUARDIA DE SALIDA (FICHA 10). Nunca verifico
+    # nada del texto: graba el lead y pega los datos de cobro que salen de la
+    # config. Es el paso 6 del sistema objetivo -"memoria, cierre y cobro"- y
+    # era el unico nodo de salida sin contrato mecanico, o sea una excepcion
+    # que habia que escribir cada vez que alguien contaba los contratos. En su
+    # etapa la excepcion desaparece: lo que sale al cliente lo ata la puerta
+    # de la procedencia, que si tiene contratos.
+    Nodo(id="cierre", etapa="memoria",
          funcion="app.core.hub_venta:_cerrar",
          exige="la señal de cierre y el presupuesto",
          garantiza="los datos de cobro que salen de la config, o nada",
          sin_contrato="no transforma el texto: graba el lead y devuelve los "
                       "datos de cobro. Escribe en el almacenamiento, que es "
                       "una de las cuatro razones declaradas en "
-                      "sin_camino_offline. Lo que sale al cliente lo ata "
-                      "sin_cobro_inventado, que si tiene los cuatro contratos"),
-    Nodo(id="honestidad_bot", etapa="salida",
-         funcion="app.core.guardas_salida:asegurar_honestidad_bot",
-         exige="el mensaje del cliente y la respuesta",
-         garantiza="si preguntan si es un bot, se dice que si",
-         contratos=(NO_ENMUDECE, NO_LEVANTA, IDEMPOTENTE, NO_INVENTA_PLATA),
-         aplicar=lambda t, c: __import__(
-             "app.core.guardas_salida", fromlist=["x"]
-         ).asegurar_honestidad_bot(c["mensaje"], t, c["negocio"])),
-    Nodo(id="saludo", etapa="salida",
-         funcion="app.core.guardas_salida:sin_saludo_del_modelo",
-         exige="la respuesta y si es el primer mensaje de la charla",
-         garantiza="el saludo se dice una vez y solo la primera",
-         contratos=(NO_ENMUDECE, NO_LEVANTA, IDEMPOTENTE, NO_INVENTA_PLATA),
-         aplicar=lambda t, c: __import__(
-             "app.core.guardas_salida", fromlist=["x"]
-         ).sin_saludo_del_modelo(t)),
-    Nodo(id="punto_omitido", etapa="salida",
-         funcion="app.core.hub_venta:_punto_omitido_repuesto",
-         exige="el mensaje entero y los puntos que el cliente pidio",
-         garantiza="ningun punto que el sistema sabe contestar se va sin "
-                   "contestar; lo que repone es el bloque sellado del codigo",
-         # NO declara NO_INVENTA_PLATA y no es un olvido: es el UNICO nodo que
-         # SUMA, y lo que suma es la cuenta sellada de la calculadora, que trae
-         # importes que el texto todavia no tenia. Esa es su razon de existir.
-         contratos=(NO_ENMUDECE, NO_LEVANTA, IDEMPOTENTE),
-         repone=("bloque",),
-         aplicar=lambda t, c: _hub()._punto_omitido_repuesto(
-             t, c.get("declarado") or {}, c["llamadas"], c.get("memoria") or [],
-             c["tienda_id"], c["trace_id"])),
-    Nodo(id="componedor", etapa="salida",
-         funcion="app.core.mensaje:componer",
-         exige="el mensaje entero y el anterior del bot",
-         garantiza="sin repeticion, sin perder un dato: las seis reglas son "
-                   "lossless",
-         contratos=TODOS_LOS_CONTRATOS,
-         aplicar=lambda t, c: __import__(
-             "app.core.mensaje", fromlist=["x"]).componer(
-                 t, anterior=c["anterior"], trace_id=c["trace_id"],
-                 pregunta=c["mensaje"])),
-    Nodo(id="aduana", etapa="salida",
-         funcion="app.core.aduana:revisar_salida",
-         exige="el mensaje compuesto, ya entero y todavia sin mandar",
-         garantiza="los invariantes corridos: repara lo que puede probar sin "
-                   "tocar un peso, y grita lo que no",
-         contratos=TODOS_LOS_CONTRATOS,
-         aplicar=lambda t, c: __import__(
-             "app.core.aduana", fromlist=["x"]).revisar_salida(
-                 t, anterior=c["anterior"], trace_id=c["trace_id"],
-                 tienda_id=c["tienda_id"], vocabulario=c.get("vocabulario"))),
-
-    # ── memoria ──────────────────────────────────────────────────────────
+                      "sin_camino_offline. Lo que sale al cliente lo ata la "
+                      "puerta de la procedencia, que si tiene contratos"),
     Nodo(id="memoria", etapa="memoria",
          funcion="app.storage.firestore_client:save_conversation",
          exige="el turno cerrado",

@@ -42,13 +42,27 @@ if str(_RAIZ) not in sys.path:
 
 # ── PASO 1 — EL TURNO SE ACHICA ─────────────────────────────────────
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: la etapa de salida se recorta a los candados que impiden una mentira "
-    "falsificable o cumplen una obligacion. HOY el grafo declara 18 nodos de "
-    "salida y 9 no intervienen en 54 turnos. OBJETIVO 4 o menos: la plata, el "
-    "dato atado, la obligacion y la higiene. Se cortan JUNTOS, no de a uno: "
-    "estan acoplados y cortarlos de a uno ya rompio dos veces."))
 def test_la_salida_tiene_cuatro_nodos_o_menos():
+    """CERRADO el 24-ago-2026 — FICHA 10. La marca se saco porque paso.
+
+    ERA: 18 nodos de salida en fila, cada uno con su `G.paso` en
+    `procesar_venta`. SON: cuatro puertas en `app/core/salida.py` —la
+    procedencia, la plata, la obligacion y la higiene—, una por pregunta que
+    hay que contestarle al mensaje.
+
+    NO SE BORRO NI UNA COMPROBACION, y eso es deliberado. La regla del plan
+    dejaba borrar lo que no impide una mentira falsificable, pero las nueve
+    que no intervienen sobre el corpus no estan muertas: el corpus no tenia un
+    CBU falso ni un "sos un bot". Borrarlas para que un numero baje seria
+    cambiar defensa contra la alucinacion por prolijidad, o sea lo contrario
+    de la prioridad uno. Lo que se corto son las DIECISIETE COSTURAS: los dos
+    errores de plata de agosto no vivian adentro de una pieza, vivian entre
+    dos, y el orden que las separaba estaba repartido en el hub en vez de
+    escrito en un solo lugar.
+
+    Y el veredicto por engranaje no se pierde: cada pieza sigue pasando por
+    `G.paso` adentro de su puerta, asi que se sigue midiendo cual toco el
+    mensaje, comparando el texto y no preguntandole a la pieza."""
     from app.verifika import grafo as G
     salida = [n for n in G.NODOS if n.etapa == "salida"]
     assert len(salida) <= 4, (

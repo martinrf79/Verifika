@@ -357,17 +357,20 @@ def barrido_de_contratos(contextos):
     return {"corridas": corridas, "fallas": fallas}
 
 
-def test_el_barrido_del_grafo_recorre_todos_los_nodos(barrido_de_contratos):
+def test_el_barrido_del_grafo_recorre_todos_los_nodos(barrido_de_contratos,
+                                                      contextos):
     """Que no se apague solo. Sin esto, un grafo vacio daria todos los
     contratos en verde, que es la trampa del tablero que este repo ya pago."""
-    # LA CUENTA, ESCRITA (24-ago-2026, FICHA 10). Este numero era `>= 150` y
-    # es el producto de tres cosas: nodos barribles x mensajes del corpus x los
-    # dos regimenes del turno. Con dieciocho nodos de salida daba 18x12x2=432 y
-    # 150 era un piso holgado; con cuatro puertas da 4x12x2=96, asi que el 150
-    # se pondria rojo sin que nada se haya apagado. Se escribe la cuenta en vez
-    # del numero: el barrido tiene que recorrer TODOS los nodos por TODO el
-    # corpus en los DOS regimenes, y eso no se afloja cuando los nodos cambian.
-    esperadas = len(G.barribles()) * 12 * 2
+    # LA CUENTA, ESCRITA (24-ago-2026, FICHA 10). Este numero era `>= 150`, que
+    # era el conteo de nodos del dia que se escribio por el corpus de ese dia:
+    # con dieciocho nodos de salida el barrido corria 234 veces y 150 era
+    # holgura. Con cuatro puertas corre 60, asi que el 150 se pondria rojo sin
+    # que nada se haya apagado, y bajarlo a otro numero repetiria el defecto.
+    # Se escribe la CUENTA: nodos barribles por el corpus REAL de cada uno de
+    # los dos regimenes -que no tienen el mismo largo, el del hallazgo trae
+    # tres mensajes y el de la cuenta doce-. Asi exige el barrido entero y no
+    # hay que tocarlo cuando cambian los nodos ni cuando crece el corpus.
+    esperadas = len(G.barribles()) * sum(len(_corpus(c)) for c in contextos)
     assert barrido_de_contratos["corridas"] == esperadas, (
         f"el barrido corrio {barrido_de_contratos['corridas']} veces y "
         f"tenian que ser {esperadas}")

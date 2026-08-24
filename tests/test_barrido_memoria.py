@@ -37,6 +37,7 @@ def transiciones(firestore_doble):
     cerrar el turno. Llamar a otra cosa probaria otro camino, que es la trampa
     que este repo ya pago dos veces."""
     from app.core import hub_venta as HV
+    from app.core import salida as SAL
     from app.core.estado_venta import (ancla_al_dia, construir_estado,
                                        detectar_criterio, libera_criterio,
                                        pide_agregar_al_pedido)
@@ -65,7 +66,7 @@ def transiciones(firestore_doble):
                               for c in carrito] if len(carrito) == 1 else [])
         prefs = HV._preferencias_al_dia(conv.get("preferencias_cliente") or {},
                                         declarado, [])
-        cuenta_vieja = HV._cuenta_de_otro_pedido(
+        cuenta_vieja = SAL._cuenta_de_otro_pedido(
             conv.get("ultimo_presupuesto") or "", declarado, carrito)
         fuera.append({
             "caso": f"{t['estado']['nombre']} + {t['movida']['nombre']}",
