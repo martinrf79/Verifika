@@ -1,0 +1,25 @@
+{
+ "avance": {
+  "verdes": 29,
+  "de": 55
+ },
+ "no_se_frena": {
+  "verdes": 28,
+  "de": 29
+ },
+ "el_detalle_no_mata": {
+  "verdes": 4,
+  "de": 4
+ },
+ "una_sola_repregunta": {
+  "verdes": 54,
+  "de": 55
+ },
+ "camino_al_cobro": {
+  "verdes": 9,
+  "de": 15
+ },
+ "charlas": 15,
+ "turnos": 55,
+ "_doc": "EL PISO DE VENTA, Y SOLO SUBE. Al reves de los techos del repo, que solo bajan. Guarda `verdes` y `de` crudos, no el porcentaje: el test compara fracciones con enteros y una regresion de un solo turno no se puede esconder redondeando. `turnos` y `charlas` son la afirmacion de CUANTO se midio; sin ellas el test podria pasar por vacio, que es como el CI estuvo verde cinco dias sin correr un casete. Se refija con `python3 banco_pruebas/vara_de_venta.py --piso`, que se NIEGA a escribir un numero mas bajo."
+}
