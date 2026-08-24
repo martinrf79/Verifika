@@ -83,9 +83,17 @@ def test_el_grafo_no_puede_mentir_sobre_el_orden_del_turno():
     assert declarados == reales, (
         f"el orden declarado no es el real.\ndeclarado: {declarados}\n"
         f"real:      {reales}")
-    assert len(posiciones) >= 14, (
-        f"solo {len(posiciones)} engranajes de salida pasan por el grafo: "
-        "alguno se cableo por afuera y no deja veredicto")
+    # EL PISO SE DERIVA DEL GRAFO, NO ES UN NUMERO (24-ago-2026, FICHA 10).
+    # Decia `>= 14` y era el conteo de nodos del dia que se escribio. Un piso
+    # escrito a mano envejece de las dos maneras: si los nodos bajan a
+    # proposito hay que aflojarlo -y aflojar un umbral es indistinguible de
+    # borrar la vara-, y si suben deja de exigir nada. Lo que el candado quiere
+    # decir es "TODOS los declarados estan cableados", y eso se escribe con
+    # `len(nodos_de(salida))`: mas estricto que cualquier numero, y no envejece.
+    declarables = [n for n in G.nodos_de("salida") if n.aplicar]
+    assert len(posiciones) == len(declarables), (
+        f"{len(posiciones)} de {len(declarables)} engranajes de salida pasan "
+        "por el grafo: alguno se cableo por afuera y no deja veredicto")
 
 
 def test_ningun_engranaje_de_salida_se_cablea_por_afuera_del_grafo():
@@ -133,8 +141,14 @@ def test_todo_nodo_de_salida_declara_al_menos_un_contrato():
     """Un nodo de salida sin contrato es un nodo que el barrido no puede
     controlar. Se permite solo cuando no transforma texto por si mismo —el
     cierre, que es una corrutina y arma el cobro—, y eso queda a la vista."""
+    # LA EXCEPCION SE CIERRA (24-ago-2026, FICHA 10). Era `== ["cierre"]`: el
+    # unico nodo de salida sin contrato mecanico era el que graba el lead y
+    # arma el cobro. Con la salida en cuatro puertas el cierre deja de ser una
+    # guardia -no verifica nada del texto- y baja a la etapa que le
+    # corresponde, asi que la lista queda VACIA y la excepcion desaparece en
+    # vez de heredarse. Cerrar lo permitido, no ampliarlo.
     sin_contrato = [n.id for n in G.nodos_de("salida") if not n.contratos]
-    assert sin_contrato == ["cierre"], (
+    assert sin_contrato == [], (
         f"nodos de salida sin contrato: {sin_contrato}")
 
 
@@ -149,7 +163,15 @@ def test_todo_contrato_declarado_existe_y_todo_nodo_barrible_se_barre():
     for n in G.NODOS:
         for c in n.contratos:
             assert c in universo, f"{n.id} declara '{c}', que no existe"
-    assert len(G.barribles()) >= 14, (
+    # MISMO CAMBIO QUE EL PISO DEL CANDADO, y por el mismo motivo: lo que hay
+    # que exigir es que NINGUN nodo de salida que transforma texto se quede
+    # afuera del barrido, no que sean catorce. Un nodo con `aplicar` y sin
+    # contratos es un nodo que el barrido no controla, y eso es lo que esto
+    # tiene que poner rojo.
+    fuera = [n.id for n in G.nodos_de("salida")
+             if n.aplicar and not n.contratos]
+    assert not fuera, f"nodos de salida que el barrido no controla: {fuera}"
+    assert len(G.barribles()) >= 4, (
         f"solo {len(G.barribles())} nodos son barribles: el barrido se apago")
     assert len(G.barribles_de_datos()) >= 10, (
         f"solo {len(G.barribles_de_datos())} nodos de datos son barribles: se "
@@ -338,8 +360,17 @@ def barrido_de_contratos(contextos):
 def test_el_barrido_del_grafo_recorre_todos_los_nodos(barrido_de_contratos):
     """Que no se apague solo. Sin esto, un grafo vacio daria todos los
     contratos en verde, que es la trampa del tablero que este repo ya pago."""
-    assert barrido_de_contratos["corridas"] >= 150, (
-        f"el barrido corrio {barrido_de_contratos['corridas']} veces")
+    # LA CUENTA, ESCRITA (24-ago-2026, FICHA 10). Este numero era `>= 150` y
+    # es el producto de tres cosas: nodos barribles x mensajes del corpus x los
+    # dos regimenes del turno. Con dieciocho nodos de salida daba 18x12x2=432 y
+    # 150 era un piso holgado; con cuatro puertas da 4x12x2=96, asi que el 150
+    # se pondria rojo sin que nada se haya apagado. Se escribe la cuenta en vez
+    # del numero: el barrido tiene que recorrer TODOS los nodos por TODO el
+    # corpus en los DOS regimenes, y eso no se afloja cuando los nodos cambian.
+    esperadas = len(G.barribles()) * 12 * 2
+    assert barrido_de_contratos["corridas"] == esperadas, (
+        f"el barrido corrio {barrido_de_contratos['corridas']} veces y "
+        f"tenian que ser {esperadas}")
 
 
 def test_ningun_engranaje_deja_mudo_al_bot(barrido_de_contratos):
