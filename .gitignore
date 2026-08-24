@@ -36,3 +36,18 @@ banco_pruebas/reposicion.json
 .coverage
 .coverage.*
 htmlcov/
+
+# CREDENCIALES DE GOOGLE, y por que hay una regla en vez de cuidado.
+# El 24-ago aparecio una clave de service account suelta en la carpeta del
+# repo, sin ninguna regla que la tapara. No estaba versionada -se verifico
+# commit por commit en los 730- pero un `git add -A` distraido la mandaba a
+# GitHub, y una clave que se filtra no se arregla borrando el archivo: hay que
+# rotarla en la nube. Se cierra lo prohibido, que es finito y chico.
+# El candado que lo mide: tests/test_ninguna_clave_versionada.py
+clave-*.json
+*-clave.json
+*service-account*.json
+*credentials*.json
+*.pem
+*.p12
+agente-bot-backup-*.yaml
