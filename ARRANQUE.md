@@ -32,7 +32,7 @@ verde y el techo bajó.
 
 | # | qué hace | cómo se sabe que está |
 |---|---|---|
-| 10 | salida baja de 18 nodos a 4 | `hub_venta.py` pierde ~1.200 líneas, batería verde |
+| ~~10~~ | ~~salida baja de 18 nodos a 4~~ | **HECHA el 24-ago.** 4 puertas en `app/core/salida.py`, `hub_venta.py` bajó 953 líneas, batería verde y piso intacto |
 | 11 | las seis reposiciones se funden en una | `hub_venta.py` queda cerca de 400 líneas |
 | 12 | `registrar()` en las seis etapas, no sólo en salida | el censo se rehace solo, sin espías a mano |
 
