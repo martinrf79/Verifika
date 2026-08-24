@@ -34,7 +34,7 @@ verde y el techo bajó.
 |---|---|---|
 | ~~10~~ | ~~salida baja de 18 nodos a 4~~ | **HECHA el 24-ago.** 4 puertas en `app/core/salida.py`, `hub_venta.py` bajó 953 líneas, batería verde y piso intacto |
 | ~~11~~ | ~~las seis reposiciones se funden en una~~ | **HECHA el 24-ago.** Una puerta en `app/core/reposicion.py`, `hub_venta.py` bajó de 2.665 a 1.798 líneas, batería verde y piso intacto |
-| 12 | `registrar()` en las seis etapas, no sólo en salida | el censo se rehace solo, sin espías a mano |
+| ~~12~~ | ~~`registrar()` en las seis etapas~~ | **HECHA el 24-ago.** El censo vive adentro de `grafo.registrar()` y `peso_del_censo.py` dejó de envolver nada: mide 39 nodos sobre 54 turnos, 15 declarados y 24 huérfanos, con candado en `tests/test_censo_del_grafo.py` |
 
 Las fichas 10 y 11 eran las que bajaban el costo de cada sesión, y lo bajaron:
 leer `hub_venta.py` costaba unos 47.000 tokens **cada vez** con 3.621 líneas.

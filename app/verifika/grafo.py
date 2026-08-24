@@ -46,6 +46,7 @@ una sesion leyo un numero viejo de un documento y se lo repitio a Martin como
 dato actual.
 """
 import json
+from collections import defaultdict
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 
@@ -474,15 +475,138 @@ def _ejecutar_sync(pedidos: list, tienda_id: str, trace_id: str) -> list:
 _marcas: ContextVar[list | None] = ContextVar("grafo_marcas", default=None)
 
 
+# ── EL CENSO, ADENTRO DEL GRAFO ────────────────────────────────────────────
+#
+# EL AGUJERO QUE CIERRA (FICHA 12). `registrar()` dejaba la marca del turno y
+# nada mas: `_marcas` es un ContextVar que `abrir_turno` PISA en cada turno, asi
+# que al terminar la charla no quedaba nada que contar. Para saber cuantas veces
+# corrio e intervino cada engranaje sobre las quince charlas habia que envolver
+# `G.registrar` DESDE AFUERA, y eso lo hacia `peso_del_censo.py` con un espia a
+# mano. Un instrumento que solo mide si alguien le pone un espia encima mide lo
+# que el espia ve, no lo que el turno hace: el dia que una pieza registre por
+# otro camino, el espia no se entera y el censo cuenta cero en silencio.
+#
+# QUE ES ESTO. El mismo `registrar()` que ya llamaban las seis etapas, sumando
+# ademas a un contador acumulado por nodo. No agrega una llamada nueva ni un
+# camino nuevo: agrega DOS SUMAS adentro de la que ya estaba.
+#
+# LAS CUATRO REGLAS QUE LO HACEN SEGURO, y son las mismas que las de `registrar`:
+#
+#   1. NO CAMBIA COMPORTAMIENTO NI PUEDE TUMBAR UN TURNO. Va adentro del mismo
+#      `registrar`, que nunca levanta, y son sumas sobre `defaultdict(int)`.
+#   2. NO CRECE SIN LIMITE. Las claves son ids de nodo, que son finitos, y los
+#      detalles se cortan en tres por nodo. Un contador que crece con los turnos
+#      seria una perdida de memoria en un servicio que vive dias.
+#   3. CUENTA TODAS LAS LLAMADAS, tambien las de afuera de un turno abierto.
+#      `registrar` se va temprano si no hay hoja de marcas; el censo suma ANTES
+#      de esa puerta, porque un engranaje que corre fuera del turno igual corrio
+#      y esconderlo es la misma ceguera que se esta cerrando.
+#   4. NO SE APAGA CON UNA FLAG. Son dos sumas por engranaje y el repo no deja
+#      caminos apagados al lado del vivo.
+#
+# LO QUE HABILITA, Y ES EL PUNTO: `peso_del_censo.py` dejo de envolver nada y
+# `tests/test_censo_del_grafo.py` afirma SOBRE CUANTOS NODOS midio, asi que el
+# censo ya no puede pasar por vacio.
+
+_censo_corrio: dict = defaultdict(int)
+_censo_intervino: dict = defaultdict(int)
+_censo_detalles: dict = defaultdict(list)
+_censo_notas: dict = defaultdict(int)
+_censo_turnos = 0
+
+
+def _censar(nodo_id: str, intervino: bool, detalle: str = "") -> None:
+    """La suma acumulada de un engranaje. Nunca levanta, por lo mismo que
+    `registrar`: un instrumento no puede tumbar lo que mide."""
+    try:
+        _censo_corrio[nodo_id] += 1
+        if intervino:
+            _censo_intervino[nodo_id] += 1
+            if detalle and len(_censo_detalles[nodo_id]) < 3:
+                _censo_detalles[nodo_id].append(str(detalle)[:40])
+    except Exception:  # noqa: BLE001 — medir peor es mejor que tumbar el turno
+        pass
+
+
+def censo_reiniciar() -> None:
+    """Pone el censo en cero. La llama quien va a medir una tanda —el banco, un
+    test— para que no arrastre lo que conto una corrida anterior."""
+    global _censo_turnos
+    _censo_corrio.clear()
+    _censo_intervino.clear()
+    _censo_detalles.clear()
+    _censo_notas.clear()
+    _censo_turnos = 0
+
+
+def censo() -> dict:
+    """LO QUE MIDIO EL GRAFO, sin que nadie lo envuelva.
+
+    `declarados` son los nodos de `NODOS`. `huerfanos` son los que dejan marca
+    y NO estan declarados: hoy son las piezas de adentro de las puertas de
+    `salida` y `reposicion`, que siguen registrando una por una con su id
+    propio despues de las FICHAS 10 y 11. **No son un error de nadie y no se
+    esconden**: son engranajes reales del turno, y contarlos aparte es la unica
+    forma de que el censo no mienta ni por arriba ni por abajo.
+
+    `turnos` sale de `abrir_turno`, que corre una vez por turno, y sirve de
+    control: ningun nodo puede haber corrido mas veces que turnos hubo. Si uno
+    lo supera esta marcando dos veces y TODOS los porcentajes quedan mal en
+    silencio."""
+    declarados = {n.id: n.etapa for n in NODOS}
+    filas = []
+    for nodo_id in sorted(set(_censo_corrio) | set(declarados)):
+        corrio = _censo_corrio.get(nodo_id, 0)
+        intervino = _censo_intervino.get(nodo_id, 0)
+        if corrio == 0:
+            clase = "NUNCA CORRE"
+        elif intervino == 0:
+            clase = "MUERTO"
+        elif intervino == corrio:
+            clase = "ESTRUCTURAL"
+        else:
+            clase = "A VECES"
+        filas.append({
+            "nodo": nodo_id,
+            "etapa": declarados.get(nodo_id, "(sin declarar)"),
+            "declarado": nodo_id in declarados,
+            "corrio": corrio,
+            "intervino": intervino,
+            "pct": round(100 * intervino / corrio) if corrio else 0,
+            "clase": clase,
+            "muestra": list(_censo_detalles.get(nodo_id, []))[:3],
+        })
+    medidos = [f for f in filas if f["corrio"]]
+    return {
+        "turnos": _censo_turnos,
+        "nodos_declarados": len(declarados),
+        "nodos_medidos": len(medidos),
+        "declarados_medidos": len([f for f in medidos if f["declarado"]]),
+        "huerfanos_medidos": len([f for f in medidos if not f["declarado"]]),
+        "etapas_medidas": sorted({f["etapa"] for f in medidos if f["declarado"]}),
+        "ciegos": [f["nodo"] for f in filas if not f["corrio"]],
+        "marcan_de_mas": [f["nodo"] for f in medidos
+                          if _censo_turnos and f["corrio"] > _censo_turnos],
+        "notas": dict(_censo_notas),
+        "filas": filas,
+    }
+
+
 def abrir_turno() -> None:
-    """Arranca la hoja de veredictos del turno. La llama el hub una sola vez."""
+    """Arranca la hoja de veredictos del turno. La llama el hub una sola vez.
+
+    Y es tambien lo que le da al censo su DENOMINADOR: un turno abierto es un
+    turno, y sin ese numero 'corrio 54 veces' no quiere decir nada."""
+    global _censo_turnos
     _marcas.set([])
     _notas.set({})
+    _censo_turnos += 1
 
 
 def registrar(nodo_id: str, intervino: bool, detalle: str = "") -> None:
     """Deja la marca de un engranaje. Nunca levanta: un registro roto no puede
     tumbar un turno."""
+    _censar(nodo_id, bool(intervino), detalle)
     marcas = _marcas.get()
     if marcas is None:
         return
@@ -507,6 +631,10 @@ def anotar(clave: str, valor) -> None:
     Las marcas no cambian —cada modulo sigue logueando lo suyo, que sirve para
     el detalle—; lo que se agrega es el RESUMEN en un solo lugar, la ficha del
     turno, pegada a la linea de cierre que ya se lee siempre."""
+    try:
+        _censo_notas[str(clave)] += 1
+    except Exception:  # noqa: BLE001 — un instrumento no rompe lo que mide
+        pass
     notas = _notas.get()
     if notas is None:
         return

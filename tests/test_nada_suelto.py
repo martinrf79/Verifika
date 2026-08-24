@@ -44,6 +44,12 @@ DECLARADAS = {
     "limpiar": "vacia los huecos anotados entre pruebas",
     "limpiar_cache": "vacia el cache de filtros entre pruebas",
     "barribles": "consulta del grafo declarado, la usa el barrido del cableado",
+    "censo": "lo que el grafo conto solo sobre cada engranaje; lo leen "
+             "banco_pruebas/peso_del_censo.py y tests/test_censo_del_grafo.py, "
+             "nunca el turno vivo",
+    "censo_reiniciar": "pone el censo del grafo en cero antes de medir una "
+                       "tanda; el turno vivo nunca lo reinicia, igual que "
+                       "reiniciar_marcador y reiniciar_cupo",
     "barribles_de_datos": "consulta del grafo declarado, la usa el barrido de "
                           "la decision y la reposicion",
     "obligatorias": "consulta del indice, la usan las pruebas del indice",
