@@ -173,9 +173,32 @@ def test_todo_contrato_declarado_existe_y_todo_nodo_barrible_se_barre():
     assert not fuera, f"nodos de salida que el barrido no controla: {fuera}"
     assert len(G.barribles()) >= 4, (
         f"solo {len(G.barribles())} nodos son barribles: el barrido se apago")
-    assert len(G.barribles_de_datos()) >= 10, (
-        f"solo {len(G.barribles_de_datos())} nodos de datos son barribles: se "
-        f"apago el barrido de la mitad que decide")
+    # LA MITAD QUE DECIDE, CON LA MISMA CURA QUE LA DE ARRIBA (FICHA 11).
+    #
+    # DECIA `>= 10` Y ERA EL CONTEO DEL DIA QUE SE ESCRIBIO. Hoy hay ONCE nodos
+    # de datos barribles y seis son la etapa de reposicion. La FICHA 11 los
+    # funde en UNA puerta, asi que el numero pasa a 11 - 6 + 1 = 6 sin que se
+    # apague una sola comprobacion: las seis piezas siguen corriendo adentro,
+    # con sus mismos contratos, y el barrido las ejercita a traves de la puerta.
+    #
+    # LAS DOS MANERAS EN QUE UN PISO ESCRITO A MANO ENVEJECE, y este las tiene
+    # las dos: con seis se pondria rojo sin que nada se haya apagado, y bajarlo
+    # a `>= 6` seria un umbral movido para que pase el trabajo que lo movio, o
+    # sea indistinguible de aflojar la vara. Es el mismo defecto que la FICHA 10
+    # curo en el piso de al lado dos lineas mas arriba, y se cura igual: lo que
+    # el candado quiere decir es "NINGUN nodo que mueve datos queda afuera del
+    # barrido", y eso se escribe derivandolo del grafo.
+    #
+    # Y ES MAS ESTRICTO QUE EL NUMERO, no menos: `>= 10` dejaba entrar un nodo
+    # nuevo sin contratos mientras hubiera diez viejos que si los tuvieran.
+    # Esto lo pone rojo el dia que aparece.
+    fuera_datos = [n.id for n in G.NODOS
+                   if n.aplicar_datos and not n.contratos]
+    assert not fuera_datos, (
+        f"nodos de datos que el barrido no controla: {fuera_datos}")
+    assert G.barribles_de_datos(), (
+        "ningun nodo de datos es barrible: se apago el barrido de la mitad "
+        "que decide")
 
 
 # ── 2. EL CORPUS GENERADO ──────────────────────────────────────────────────
