@@ -121,12 +121,21 @@ def test_el_grafo_registra_en_las_seis_etapas():
 
 # ── PASO 2 — EL MODELO DEJA DE ELEGIR ────────────────────────────────
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: la llamada UNO solo DECLARA; el codigo deriva que buscar. HOY el "
-    "modelo ve 9 herramientas y elige, y en el 57% de los turnos declara algo "
-    "que no busca. OBJETIVO 1 herramienta visible, `registrar_pedido`. Con eso "
-    "el reconciliador no puede tener faltantes: no queda nada que reconciliar."))
 def test_el_modelo_ve_una_sola_herramienta():
+    """CERRADO el 23-ago-2026 — FICHA 06. La marca se saco porque paso.
+
+    ERA: el modelo veia NUEVE herramientas y elegia. En el 57% de los turnos
+    declaraba una cosa y buscaba otra, y toda la maquinaria del reconciliador y
+    de las reposiciones existia para tapar esa distancia.
+
+    ES: ve UNA, `registrar_pedido`, con las cuatro familias informativas
+    adentro. Las otras ocho NO se borraron -no se saca capacidad-: siguen en
+    `_MOLDES` y en `_CUERPOS`, se validan igual, y las llama el CODIGO desde
+    `hub_venta._derivar_las_busquedas`, que las deriva de lo declarado. Lo que
+    se saco es la ELECCION, no la herramienta.
+
+    ESTE TEST NO SE BORRA: es el candado de que no vuelva a crecer la lista.
+    Sumarle una herramienta visible al modelo lo pone rojo en el mismo push."""
     from banco_pruebas import sim_firestore
     sim_firestore.install()
     from app.core import herramientas as H
@@ -134,22 +143,30 @@ def test_el_modelo_ve_una_sola_herramienta():
     assert len(esq) <= 1, f"el modelo todavia ve {len(esq)} herramientas"
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: el esquema que viaja en la llamada decisora se achica. HOY pesa "
-    "25.230 bytes repartidos en 9 herramientas, y el 78% son descripciones en "
-    "prosa metidas adentro del esquema, no los enums. OBJETIVO 6.000 o menos, "
-    "que es `registrar_pedido` SOLO, ya enriquecido con las cuatro familias "
-    "nuevas. "
-    "EL UMBRAL SE MOVIO DE 4.000 A 6.000 EL 21-AGO, en su propio commit y ANTES "
-    "del trabajo: el 4.000 asumia que el molde se quedaba en 3.046 bytes, y eso "
-    "era imposible —no puede cargar cuatro familias mas y no pesar mas—. La "
-    "cuenta: 3.046 de hoy + 1.518 del enum de `campo`, que es atadura y no se "
-    "toca, + ~400 de atributos, stock y compatibilidad = ~5.000, mas 20% de "
-    "aire. El enum de TEMAS (2.299) NO entra: el modelo nombra el tema libre y "
-    "el codigo lo certifica contra las 738 señas, que es la regla cero aplicada "
-    "a un tema en vez de a un producto. El umbral de la PARTE sube; el del "
-    "TOTAL baja de 25.230 a ~5.000, que es 80% menos."))
 def test_el_esquema_pesa_menos_de_seis_kilobytes():
+    """CERRADO el 23-ago-2026 — FICHA 06. La marca se saco porque paso.
+
+    ERA: 25.230 bytes en nueve herramientas, y el 78% eran descripciones en
+    prosa metidas adentro del esquema, no los enums.
+
+    ES: 5.891 bytes, `registrar_pedido` solo, ya con las cuatro familias
+    nuevas. Un 77% menos, y viaja en CADA llamada del decisor.
+
+    DE DONDE SALIERON LOS 19.339 BYTES. El enum de 129 TEMAS (2.299) salio
+    entero: el modelo nombra el tema con las palabras del cliente y lo certifica
+    `certificar_tema` contra las 785 señas de la fuente, que es la regla cero
+    aplicada a un tema en vez de a un producto. La guia que le explicaba al
+    modelo que cubre cada tema (3.843) salio con el: sin enum no hay nada que
+    elegir. El resto son las ocho herramientas que el modelo dejo de ver.
+
+    LO QUE NO SALIO, y es a proposito: los enum de `categoria` y de `campo`
+    siguen, mudados a los campos de este molde. No estaban por peso: son la
+    atadura que impide nombrar un rubro que no vendemos o un campo que la ficha
+    no tiene.
+
+    EL UMBRAL SE MOVIO DE 4.000 A 6.000 EL 21-AGO, en su propio commit y ANTES
+    del trabajo: el 4.000 asumia que el molde se quedaba en 3.046 bytes, y eso
+    era imposible -no puede cargar cuatro familias mas y no pesar mas-."""
     import json
     from banco_pruebas import sim_firestore
     sim_firestore.install()

@@ -1,10 +1,10 @@
 {
-  "items": 83.3,
-  "destinos": 47.1,
-  "reparto_pago": 9.1,
-  "restricciones": 66.7,
+  "items": 85.3,
+  "destinos": 63.6,
+  "reparto_pago": 16.7,
+  "restricciones": 90.0,
   "pide_precio": 0.0,
   "contradicciones": 0.0,
   "_turnos": 53,
-  "_items_turnos_exactos_pct": 72.0
+  "_items_turnos_exactos_pct": 73.9
 }

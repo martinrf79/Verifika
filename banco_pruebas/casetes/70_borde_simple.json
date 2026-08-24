@@ -6,15 +6,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"teclado\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"categoria\\\":\\\"teclado\\\",\\\"cuantos\\\":1,\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"direccion\\\":\\\"min\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"teclado\\\",\\\"teclado_mecanico_membrana\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"categoria\\\":\\\"teclado\\\",\\\"que\\\":\\\"teclado mas barato\\\"}],\\\"restricciones\\\":[\\\"el mas barato\\\"],\\\"atributos\\\":[{\\\"campo\\\":\\\"precio_ars\\\",\\\"de\\\":\\\"el teclado mas barato\\\"},{\\\"de\\\":\\\"el teclado mas barato\\\",\\\"campo\\\":\\\"conexion\\\"}],\\\"pide_precio\\\":true}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"teclado\\\"}],\\\"pide_precio\\\":true}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"categoria\\\":\\\"teclado\\\",\\\"cuantos\\\":1,\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"direccion\\\":\\\"min\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"teclado\\\",\\\"teclado_mecanico_membrana\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"categoria\\\":\\\"teclado\\\",\\\"que\\\":\\\"teclado mas barato\\\"}],\\\"restricciones\\\":[\\\"el mas barato\\\"],\\\"atributos\\\":[{\\\"campo\\\":\\\"precio_ars\\\",\\\"de\\\":\\\"el teclado mas barato\\\"},{\\\"de\\\":\\\"el teclado mas barato\\\",\\\"campo\\\":\\\"conexion\\\"}],\\\"pide_precio\\\":true}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"El teclado más económico que tenemos es el Genius KB-110X, que es un modelo <d TEC0020>con cable USB</d>.\\n\\nPresupuesto:\\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\\nSubtotal: $12.000\\nTotal: $12.000\\n\\n¿Te sirve este modelo para lo que necesitás o buscabas algo con otras características?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"El teclado más económico que tenemos es el Genius KB-110X, que cuenta con <d TEC0020>conexión con cable USB</d> y un precio de $12.000.\\n\\nPresupuesto:\\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\\nSubtotal: $12.000\\nTotal: $12.000\\n\\n¿Te sirve este modelo para lo que necesitás o buscabas algo con otras características?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -23,15 +23,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"mouse mas barato\\\",\\\"cantidad\\\":1}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"direccion\\\":\\\"min\\\",\\\"cuantos\\\":1,\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"categoria\\\":\\\"mouse\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse\\\",\\\"gaming_setup\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"compatibilidad\\\":[{\\\"que\\\":\\\"el mouse mas barato\\\",\\\"para\\\":\\\"jugar\\\"}],\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"categoria\\\":\\\"mouse\\\",\\\"que\\\":\\\"mouse\\\"}],\\\"restricciones\\\":[\\\"el mas barato\\\"],\\\"stock\\\":[\\\"mouse\\\"],\\\"atributos\\\":[{\\\"de\\\":\\\"el mouse mas barato\\\",\\\"campo\\\":\\\"precio_ars\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"mouse mas barato\\\",\\\"cantidad\\\":1}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"direccion\\\":\\\"min\\\",\\\"cuantos\\\":1,\\\"ordenar_por\\\":\\\"precio_ars\\\",\\\"categoria\\\":\\\"mouse\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse\\\",\\\"gaming_setup\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"compatibilidad\\\":[{\\\"que\\\":\\\"el mouse mas barato\\\",\\\"para\\\":\\\"jugar\\\"}],\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"categoria\\\":\\\"mouse\\\",\\\"que\\\":\\\"mouse\\\"}],\\\"restricciones\\\":[\\\"el mas barato\\\"],\\\"stock\\\":[\\\"mouse\\\"],\\\"atributos\\\":[{\\\"de\\\":\\\"el mouse mas barato\\\",\\\"campo\\\":\\\"precio_ars\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"El mouse más económico que tenemos es el Genius DX-110, que cuesta $8.500. Respecto a tu consulta, el fabricante indica que es <d MOU0023>ideal para Gaming</d>.\\n\\nPresupuesto:\\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\nSubtotal: $20.500\\nTotal: $20.500\\n\\nSi bien para un uso básico de oficina cualquier mouse óptico funciona, para gaming competitivo siempre se recomienda buscar un sensor con mejor respuesta, aunque este modelo es una excelente opción de entrada. ¿Te gustaría avanzar con estos productos?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"El mouse más barato que tenemos disponible es el Mouse Genius DX-110 Negro, que tiene un precio de $8.500 y contamos con stock para entrega inmediata. Respecto a tu consulta, el fabricante indica que es <d MOU0023>ideal para Gaming</d>, aunque como no pudimos identificar el equipo específico en el que lo vas a utilizar, no puedo confirmarte con seguridad si será compatible con tu configuración de juego. ¿Qué equipo tenés exactamente?\\n\\nAquí te comparto el presupuesto actualizado:\\n\\nPresupuesto:\\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\nSubtotal: $20.500\\nTotal: $20.500\", \"tool_calls\": []}"
     }
    ]
   },
@@ -40,15 +40,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"destinos\\\":[\\\"Rosario\\\"],\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"Teclado Genius KB-110X\\\",\\\"cantidad\\\":1},{\\\"que\\\":\\\"Mouse Genius DX-110\\\",\\\"cantidad\\\":1}]}\"}, {\"name\": \"cotizar_envio\", \"arguments\": \"{\\\"localidad\\\":\\\"Rosario\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"costo_envio\\\",\\\"envios\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"cuanto sale el total con envio a rosario\\\"],\\\"pide_precio\\\":true,\\\"destinos\\\":[\\\"rosario\\\"],\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\",\\\"categoria\\\":\\\"teclado\\\"},{\\\"cantidad\\\":1,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\",\\\"categoria\\\":\\\"mouse\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"destinos\\\":[\\\"Rosario\\\"],\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"Teclado Genius KB-110X\\\",\\\"cantidad\\\":1},{\\\"que\\\":\\\"Mouse Genius DX-110\\\",\\\"cantidad\\\":1}]}\"}, {\"name\": \"cotizar_envio\", \"arguments\": \"{\\\"localidad\\\":\\\"Rosario\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"costo_envio\\\",\\\"envios\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"cuanto sale el total con envio a rosario\\\"],\\\"pide_precio\\\":true,\\\"destinos\\\":[\\\"rosario\\\"],\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\",\\\"categoria\\\":\\\"teclado\\\"},{\\\"cantidad\\\":1,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\",\\\"categoria\\\":\\\"mouse\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Perfecto! Te confirmo que <d costo_envio>llegamos a todo el país</d> y el envío a Rosario tiene un costo de $7.000.\\n\\nAquí tenés el detalle de tu pedido:\\n\\nPresupuesto:\\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\nSubtotal: $20.500\\nEnvio: $7.000\\nTotal: $27.500\\n\\nEnvio a Rosario.\\n\\n¿Te gustaría confirmar la compra para que avancemos con el envío?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"¡Hola! Aquí tenés el presupuesto por ambos productos con el envío a Rosario incluido:\\n\\nPresupuesto:\\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\nSubtotal: $20.500\\nEnvio: $7.000\\nTotal: $27.500\\n\\nEnvio a rosario.\\n\\nSobre el envío, te comento nuestra política: <d costo_envio>Si, llegamos a todo el pais. A CABA y GBA el envio sale $3.000; al interior depende de la provincia: pasame tu provincia o codigo postal y te digo la tarifa exacta. Y un dato: superando los $250.000 el envio te queda gratis. A donde te lo mandariamos?</d>\\n\\nComo información adicional sobre los productos, te confirmo que el teclado <d TEC0020>es resistente a derrames y salpicaduras</d> y, al igual que el mouse, <d TEC0020>se alimenta por el cable USB</d> y <d MOU0023>se alimenta por el cable USB</d>. Ambos cuentan con una <d TEC0020>garantia oficial de 24 meses</d> y <d MOU0023>garantia oficial de 24 meses</d> respectivamente.\\n\\n¿Te gustaría avanzar con la compra?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -57,15 +57,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\"},{\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\",\\\"cantidad\\\":1}],\\\"destinos\\\":[\\\"Rosario\\\"],\\\"pide_precio\\\":true}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"garantia\\\",\\\"continuacion_presupuesto\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"temas\\\":[\\\"la garantia\\\",\\\"confirmar precio\\\"],\\\"items\\\":[{\\\"cantidad\\\":1,\\\"categoria\\\":\\\"teclado\\\",\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\"},{\\\"categoria\\\":\\\"mouse\\\",\\\"cantidad\\\":1,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"}],\\\"atributos\\\":[{\\\"campo\\\":\\\"garantia_meses\\\",\\\"de\\\":\\\"Teclado Genius KB-110X Blanco\\\"},{\\\"de\\\":\\\"Teclado Genius KB-110X Blanco\\\",\\\"campo\\\":\\\"precio_ars\\\"},{\\\"campo\\\":\\\"precio_ars\\\",\\\"de\\\":\\\"Mouse Genius DX-110 Negro\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\"},{\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\",\\\"cantidad\\\":1}],\\\"destinos\\\":[\\\"Rosario\\\"],\\\"pide_precio\\\":true}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"garantia\\\",\\\"continuacion_presupuesto\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"temas\\\":[\\\"la garantia\\\",\\\"confirmar precio\\\"],\\\"items\\\":[{\\\"cantidad\\\":1,\\\"categoria\\\":\\\"teclado\\\",\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\"},{\\\"categoria\\\":\\\"mouse\\\",\\\"cantidad\\\":1,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"}],\\\"atributos\\\":[{\\\"campo\\\":\\\"garantia_meses\\\",\\\"de\\\":\\\"Teclado Genius KB-110X Blanco\\\"},{\\\"de\\\":\\\"Teclado Genius KB-110X Blanco\\\",\\\"campo\\\":\\\"precio_ars\\\"},{\\\"campo\\\":\\\"precio_ars\\\",\\\"de\\\":\\\"Mouse Genius DX-110 Negro\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Hola! Te confirmo que el teclado cuenta con una garantía de <d TEC0020>24 meses</d>. <d garantia>Todos nuestros productos son originales y tienen garantía oficial del fabricante, que cubre fallas de fábrica; no cubre el daño por mal uso, golpes ni líquidos.</d>\\n\\nAquí tenés el detalle del presupuesto que me pediste para confirmar los valores:\\n\\nPresupuesto:\\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\nSubtotal: $20.500\\nEnvio: $7.000\\nTotal: $27.500\\n\\nEnvio a Rosario.\\n\\n¿Querés que avancemos con el pedido o tenés alguna otra duda?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"¡Hola! Con gusto te confirmo la información.\\n\\nEl Teclado Genius KB-110X Blanco cuenta con una <d TEC0020>garantía oficial Genius de 24 meses por defectos de fabricación</d>.\\n\\nSobre nuestra política de garantía, todos nuestros productos son originales y tienen garantía oficial del fabricante, con un mínimo de 6 meses; el plazo exacto de 24 meses para estos productos cubre fallas de fábrica, aunque no incluye daños por mal uso, golpes ni líquidos. Si algo llegara a fallar dentro del periodo, te acompañamos en todo el proceso para resolverlo.\\n\\nEntiendo perfectamente que comprar online puede generar dudas. Para tu tranquilidad, te confirmo que es una compra segura: operamos exclusivamente con medios de pago oficiales (como Mercado Pago o transferencias bancarias) donde no manejamos tus datos financieros, trabajamos solo con productos originales y te acompaño personalmente por este canal durante todo el proceso, desde la consulta hasta el seguimiento del envío.\\n\\nAquí tenés el detalle de tu pedido:\\n\\nPresupuesto:\\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\nSubtotal: $20.500\\nTotal: $20.500\\n\\n¿Te parece bien que avancemos con este presupuesto para tu pedido a Rosario?\", \"tool_calls\": []}"
     }
    ]
   }

@@ -494,6 +494,48 @@ def _en_duda(que: str, pedido: dict) -> bool:
     return False
 
 
+def _la_resolvio_el_codigo(restriccion: str, llamadas: list,
+                           tienda_id: str) -> bool:
+    """¿Esta condicion viaja en una busqueda porque LA TRADUJO EL CODIGO?
+
+    POR QUE HACE FALTA (FICHA 06, 23-ago-2026), y es la misma falla que este
+    chequeo ya pago dos veces: **un chequeo que no conoce el argumento nuevo no
+    protege, acusa.** El 4-ago fueron los `filtros`, que el universo de arriba
+    no miraba. Ahora es el ORDEN: desde la puerta unica, "el mas barato" no es
+    un filtro sino un `ordenar_por precio_ars`, y el universo de texto solo
+    guarda el NOMBRE del campo. "el mas barato" contra "precio ars" no comparte
+    ni una raiz, asi que la condicion se aplicaba perfecto y el reconciliador
+    la reclamaba igual: 8 turnos de 54, todos superlativos.
+
+    SE PREGUNTA CON LA MISMA FUNCION QUE TRADUJO, no con una lista de palabras.
+    El comentario de `_universo_de_restricciones` cuenta el intento anterior y
+    lo que costo: una bolsa de sinonimos -"el mas mejor menor mayor barato"-
+    hizo que "MENOS partes chinas" contara como aplicada porque "meno" pegaba
+    dentro de "menor". Aca no hay parecido de texto: se le pide a
+    `resolver_orden` el campo que sacaria de esta frase y se mira si ESE campo
+    es por el que se ordeno. Una sola definicion, dos usos, como `_stems`.
+
+    SOLO SE LLAMA CUANDO EL TEXTO YA FALLO, asi que en el caso normal no cuesta
+    nada: estas funciones recorren el catalogo."""
+    from app.core import filtros_catalogo as FC
+    pedidos = [l.get("pedido") or {} for l in (llamadas or [])]
+    orden = FC.resolver_orden(restriccion, tienda_id)
+    if orden and any(p.get("ordenar_por") == orden["campo"] for p in pedidos):
+        return True
+    cond = (FC.resolver_exclusion(restriccion, tienda_id)
+            or FC.resolver_inclusion(restriccion, tienda_id))
+    if cond and any(cond in (p.get("filtros") or []) for p in pedidos):
+        return True
+    # LA TERCERA PUERTA ES LA DESCRIPCION, y es la que usa la condicion que no
+    # entra en ninguna columna: el uso -"para trabajar", "que ande para
+    # jugar"-. `uso_recomendado` es prosa, ahi pega cualquier palabra, asi que
+    # no hay filtro posible y el codigo la manda al texto con el que se ordena
+    # por parecido. Viajar en la descripcion ES viajar en un argumento, que es
+    # literalmente lo que esta regla pide.
+    return any(_cubierto(restriccion, _norm(p.get("descripcion")))
+               for p in pedidos if p.get("descripcion"))
+
+
 def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
                 ya_resuelto: str = "", tienda_id: str = "") -> dict:
     """Compara lo que el modelo DECLARO que entendio contra lo que PIDIO.
@@ -503,6 +545,10 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
                  el plan cubre el pedido.
       preguntar: lista de contradicciones que el modelo NO puede resolver solo.
                  Si viene con algo, el turno termina preguntandole al cliente.
+      falta_el_reparto: el cliente nombro dos o mas destinos y ningun item
+                 dice a cual va. Tipado y no frase por lo mismo que
+                 `falta_la_cuenta`: no hay ronda donde el modelo lea un pedido
+                 de que vuelva a declarar.
       falta_la_cuenta: el cliente pidio precio, hay productos sobre la mesa
                  y NADIE armo la cuenta. Tipado por el mismo motivo que
                  `sin_buscar`: lo consume el CODIGO, que arma la cuenta, y no
@@ -521,7 +567,7 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
     sin_buscar: list[str] = []
     if not pedido:
         return {"faltantes": [], "preguntar": [], "sin_buscar": [],
-                "falta_la_cuenta": False}
+                "falta_la_cuenta": False, "falta_el_reparto": False}
 
     # LO QUE YA SE RESOLVIO EN TURNOS ANTERIORES TAMBIEN CUENTA COMO ATENDIDO.
     #
@@ -620,12 +666,24 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
     #    el turno paga 8 segundos por nada. Y encima el reparto se perdia igual.
     #    Ahora no se reclama: lo aplica el CODIGO despues del bucle, con el
     #    supuesto declarado en la cuenta. Ver `_reparto_de_pago_declarado`.
+    #    Y NO SE RECLAMA SI NO HUBO NINGUNA BUSQUEDA (FICHA 06). El turno 1 de
+    #    la charla real del 12-ago declara "que no sean fabricados en china" y
+    #    CERO items: el cliente puso la condicion antes de pedir nada. Sin
+    #    busqueda no hay argumento donde la condicion pueda viajar, asi que
+    #    pedirle que la aplique es un reclamo IMPOSIBLE —la misma clase que la
+    #    regla 1 arreglo el 7-ago con el tercer estado, y cada reclamo
+    #    imposible ensucia el unico numero con el que se mide si lo declarado y
+    #    lo hecho coinciden—. La condicion no se pierde: sigue en el pedido y
+    #    se aplica en cuanto haya algo que buscar.
+    hubo_busqueda = any(l.get("herramienta") in _TRAEN_PRODUCTOS
+                        for l in (llamadas or []))
     ambiguo = (reparto_declarado(pedido)
                or reparto_ambiguo(pedido.get("restricciones")))
-    for r in (pedido.get("restricciones") or []):
+    for r in (pedido.get("restricciones") or []) if hubo_busqueda else []:
         if ambiguo and str(r) == ambiguo[0]:
             continue
-        if not _cubierto(r, uni_rest):
+        if not _cubierto(r, uni_rest) and not _la_resolvio_el_codigo(
+                str(r), llamadas, tienda_id):
             faltantes.append(
                 f"El cliente puso la condicion '{r}' y no la aplicaste en "
                 f"ninguna busqueda. Usala en el argumento que corresponda.")
@@ -649,10 +707,16 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
             # una prosa que se puede reescribir sin darse cuenta; el hecho se
             # dice UNA vez y se dice tipado. Es la misma leccion que
             # `sin_buscar`, tres reglas mas arriba.
+            # LA FRASE SE FUE Y QUEDA LA MARCA (FICHA 06, 23-ago-2026). El
+            # comentario de arriba ya decia que la frase no la lee nadie desde
+            # el 17-ago; lo que faltaba era sacarla. Mientras estuvo, `faltantes`
+            # medía DOS cosas a la vez —lo declarado que no se buscó, que es un
+            # defecto, y la cuenta que la reposicion todavia no armo, que es el
+            # orden normal del turno— y por eso no podia llegar a cero ni con el
+            # sistema perfecto. El chequeo de aceptacion de la puerta unica es
+            # justamente ese cero, asi que un contador que mide dos cosas no
+            # sirve para tomarlo. El hecho sigue dicho, tipado y una sola vez.
             falta_la_cuenta = True
-            faltantes.append(
-                "El cliente pidio precio y todavia no armaste la cuenta. "
-                "Llama a armar_presupuesto con los ids que ya tenes.")
 
     # 6. LA CONTRADICCION QUE EL MODELO MISMO DECLARO. No se resuelve
     #    eligiendo: se pregunta. Es el `ambiguo` del certificador, aplicado al
@@ -704,19 +768,27 @@ def reconciliar(pedido: dict, llamadas: list, trace_id: str = "",
     #    y el trace estan en `_unidades_con_destino`.
     destinos = [d for d in (pedido.get("destinos") or []) if str(d).strip()]
     items = pedido.get("items") or []
-    if len(destinos) >= 2 and items and not any(
-            str(it.get("destino") or "").strip() for it in items) \
-            and not _reparto_cerrado(pedido, llamadas):
-        faltantes.append(
-            f"El cliente nombro {len(destinos)} destinos distintos y no "
-            f"dijiste que va a cada uno. Volve a declarar el pedido con "
-            f"registrar_pedido poniendo el `destino` en CADA item, y despues "
-            f"armá la cuenta con ese mismo destino en cada renglon.")
+    #    Y ESTA TAMBIEN SE TIPA (FICHA 06), por el mismo motivo que la 5: su
+    #    frase le pedia al modelo que VOLVIERA a declarar el pedido, y no hay
+    #    ronda donde leerla. El reparto que falta no lo puede poner el codigo
+    #    —seria elegir por el cliente a que ciudad va cada unidad— asi que el
+    #    reclamo no tiene accion posible en este turno: lo que si tiene es
+    #    quien lo diga. Los destinos ya abren un punto cada uno en
+    #    `indice_turno`, y si el mensaje no dice que va a cada lado esos puntos
+    #    salen sin contestar y el redactor recibe la obligacion. La marca queda
+    #    tipada y logueada para que el hueco se vea; la frase muerta se va.
+    falta_el_reparto = bool(
+        len(destinos) >= 2 and items
+        and not any(str(it.get("destino") or "").strip() for it in items)
+        and not _reparto_cerrado(pedido, llamadas))
 
-    if faltantes or preguntar:
+    if faltantes or preguntar or falta_la_cuenta or falta_el_reparto:
         log.info("reconciliador", trace_id=trace_id,
-                 faltantes=faltantes[:4], preguntar=preguntar[:4])
-    return {"faltantes": faltantes, "preguntar": preguntar,
+                 faltantes=faltantes[:4], preguntar=preguntar[:4],
+                 falta_la_cuenta=falta_la_cuenta,
+                 falta_el_reparto=falta_el_reparto)
+    return {"falta_el_reparto": falta_el_reparto,
+            "faltantes": faltantes, "preguntar": preguntar,
             "sin_buscar": sin_buscar, "falta_la_cuenta": falta_la_cuenta}
 
 

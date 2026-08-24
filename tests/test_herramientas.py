@@ -24,17 +24,23 @@ def _doble(firestore_doble):
 
 # ── LO QUE EL MODELO NO PUEDE NOMBRAR ────────────────────────────────────────
 def test_el_esquema_ata_categoria_y_tema_a_la_fuente_viva():
-    """La unica atadura que queda del lado del modelo: no puede pedir una
-    categoria que no vendemos ni un tema de politica que no existe. Los enums
-    salen del catalogo y de la FAQ, no de una lista escrita a mano que despues
-    diverge."""
+    """La atadura del lado del modelo, DESPUES DE LA PUERTA UNICA (FICHA 06).
+
+    No puede pedir una categoria que no vendemos: el enum sigue, mudado al
+    renglon del item, y sigue saliendo del catalogo vivo. El TEMA cambio de
+    mecanismo, no de exigencia: el modelo lo nombra con las palabras del
+    cliente y lo certifica el codigo contra las señas de la fuente. La prueba
+    de que sigue atado es que un tema que la casa NO tiene escrito vuelve
+    `not_found` y no el mas parecido."""
     esq = {e["function"]["name"]: e["function"]["parameters"]
            for e in H.esquemas(TIENDA)}
-    cats = esq["buscar_productos"]["properties"]["categoria"]["enum"]
-    temas = esq["consultar_temas"]["properties"]["temas"]["items"]["enum"]
-    assert len(cats) > 5 and len(temas) > 20
-    assert "heladeras" not in cats
-    assert "descuento_transferencia" in temas
+    cats = (esq["registrar_pedido"]["properties"]["items"]["items"]
+            ["properties"]["categoria"]["enum"])
+    assert len(cats) > 5 and "heladeras" not in cats
+    assert H.certificar_tema("descuento por transferencia", TIENDA) == {
+        "veredicto": "exists", "temas": ["descuento_transferencia"],
+        "nombre": "descuento por transferencia"}
+    assert H.certificar_tema("garrafa de gas", TIENDA)["veredicto"] == "not_found"
 
 
 def test_el_esquema_no_tiene_ref_ni_anyof():
@@ -499,10 +505,9 @@ def test_el_criterio_de_venta_sale_de_la_fuente_y_esta_atado_por_enum():
     """El hueco que quedo al pasar a herramientas: el dato duro quedo atado y la
     prosa de criterio quedo suelta, o sea inventada por el modelo. En el repo
     viven 93 bloques escritos para esta tienda que no usaba nadie."""
-    esq = {e["function"]["name"]: e["function"]["parameters"]
-           for e in H.esquemas(TIENDA)}
-    criterios = esq["consultar_temas"]["properties"]["temas"]["items"]["enum"]
-    assert len(criterios) > 50
+    assert len(H.temas_consultables(TIENDA)) > 50
+    # El modelo lo nombra con las palabras del cliente; el codigo lo certifica.
+    assert H.certificar_temas(["memoria ram"], TIENDA)["temas"] == ["memoria_ram"]
     r = H.ejecutar("consultar_temas", {"temas": ["memoria_ram"]}, TIENDA)
     t = r["temas"][0]
     assert t["estado"] == "encontrado" and len(t["criterio"]) > 80
@@ -666,9 +671,11 @@ def test_que_productos_tenes_tiene_puerta():
               if (p.get("stock") or 0) > 0}
     assert r["estado"] == "ok"
     assert r["cuantos_distintos"] == len(reales)
-    esq = {e["function"]["name"]: e["function"]["parameters"]
-           for e in H.esquemas(TIENDA)}
-    assert "categoria" in esq["consultar_catalogo"]["properties"]["campo"]["enum"]
+    # LA PUERTA YA NO LA ABRE EL MODELO (FICHA 06): `consultar_catalogo` dejo de
+    # ser visible y esta consulta la deriva el codigo cuando el cliente pregunta
+    # si tenemos algo y la busqueda vuelve sin nada. Lo que se prueba aca es que
+    # la herramienta contesta con el numero real; que se llame sola lo prueba
+    # `test_hub_venta.py`.
 
 
 def test_la_tablet_del_cliente_es_un_equipo_conocido():

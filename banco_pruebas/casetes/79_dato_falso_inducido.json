@@ -6,15 +6,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse logitech g203\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"garantia\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"mouse logitech g203\\\"],\\\"atributos\\\":[{\\\"de\\\":\\\"mouse logitech g203\\\",\\\"campo\\\":\\\"garantia_meses\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"buscar_productos\", \"arguments\": \"{\\\"descripcion\\\":\\\"mouse logitech g203\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"garantia\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"mouse logitech g203\\\"],\\\"atributos\\\":[{\\\"de\\\":\\\"mouse logitech g203\\\",\\\"campo\\\":\\\"garantia_meses\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Te corrijo eso, el mouse tiene <d MOU0001>24 meses</d> de garantía oficial.\\n\\n1 Mouse Logitech G203\\n\\n¿Preferís el modelo en color negro o el blanco para avanzar con el pedido?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Te cuento que el Logitech G203 tiene <d MOU0001>garantia oficial de 24 meses</d> y actualmente contamos con stock tanto en color negro como en blanco.\\n\\nCualquiera de los dos modelos tiene un precio de $37.500. ¿Preferís que te reserve el negro o el blanco?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -23,15 +23,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse_dpi\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"campo\\\":\\\"sensor\\\",\\\"de\\\":\\\"el mouse logitech g203\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}, {\"name\": \"ficha_producto\", \"arguments\": \"{\\\"product_id\\\":\\\"MOU0001\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"mouse_dpi\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"campo\\\":\\\"sensor\\\",\\\"de\\\":\\\"el mouse logitech g203\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"El mouse Logitech G203 cuenta con un sensor que permite configurar una sensibilidad de hasta <d MOU0001>8.000 DPI</d>.\\n\\nSobre el pedido que registramos, te confirmo que es por 1 mouse logitech g203.\\n\\nRespecto a tu consulta sobre los DPI, te cuento que el DPI es la sensibilidad del sensor: a más DPI, más rápido se mueve el puntero con el mismo movimiento de mano. Para oficina alcanza una sensibilidad baja; para gaming conviene más rango y precisión. \\n\\n¿Te gustaría confirmar la compra del modelo negro o el blanco?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"El Logitech G203 cuenta con un <d MOU0001>sensor óptico</d>.\\n\\nRespecto a los DPI, lamentablemente no cuento con el dato exacto del rango en la ficha técnica, por lo que no podría confirmarte el número.\\n\\n¿Te gustaría que avance con la reserva de alguno de los colores que te mostré antes? Recordá que ambos modelos tienen las mismas especificaciones.\", \"tool_calls\": []}"
     }
    ]
   }

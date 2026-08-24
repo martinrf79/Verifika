@@ -51,7 +51,7 @@ PIEZAS = {
     "items": "guia_pedido.cantidades_por_categoria",
     "destinos": "geo_cp.resolver / _localidades_en_texto",
     "reparto_pago": "pedido.reparto_ambiguo",
-    "restricciones": "filtros_catalogo.resolver_exclusion",
+    "restricciones": "filtros_catalogo: exclusion / inclusion / orden",
     "pide_precio": None,
     "contradicciones": None,
 }
@@ -245,13 +245,25 @@ def medir() -> dict:
     # codigo sabe TRADUCIR la restriccion a un filtro real de la ficha; el otro
     # es si sabe ENCONTRARLA en el mensaje crudo, que es lo que haria falta sin
     # modelo. La segunda pieza no existe.
-    from app.core.filtros_catalogo import resolver_exclusion
+    #
+    # SON TRES PUERTAS Y NO UNA (FICHA 06, 23-ago-2026). Este banco preguntaba
+    # solo por `resolver_exclusion` y por eso daba de menos: una condicion
+    # positiva -"marcas de estados unidos"- y un extremo -"el mas barato"- los
+    # traduce el codigo igual de bien, por `resolver_inclusion` y por
+    # `resolver_orden`, y contaban como no traducidos. Es la misma falla que el
+    # reconciliador ya pago dos veces: **un instrumento que no conoce el
+    # argumento nuevo no mide de menos por prudencia, mide MAL.** Se le pregunta
+    # al mecanismo entero, que es el que corre en el turno.
+    from app.core.filtros_catalogo import (resolver_exclusion,
+                                           resolver_inclusion, resolver_orden)
     total_r = traducidas = 0
     for guion, i, msg, dec in casos:
         for restr in (dec.get("restricciones") or []):
             total_r += 1
             try:
-                if resolver_exclusion(str(restr), TIENDA):
+                if (resolver_orden(str(restr), TIENDA)
+                        or resolver_exclusion(str(restr), TIENDA)
+                        or resolver_inclusion(str(restr), TIENDA)):
                     traducidas += 1
             except Exception:  # noqa: BLE001
                 pass

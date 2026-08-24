@@ -98,16 +98,25 @@ def test_las_situaciones_de_venta_tienen_movida_escrita():
 
 
 def test_las_movidas_llegan_al_modelo(firestore_doble):
-    # El punto entero: que esten en el enum de la herramienta y que la
-    # herramienta las devuelva. Una situacion SIN criterio -queja, despedida-
-    # tambien tiene que poder pedirse: lo que tiene para dar es el COMO.
+    # El punto entero: que el modelo pueda LLEGAR a ellas y que la herramienta
+    # las devuelva. Una situacion SIN criterio -queja, despedida- tambien tiene
+    # que poder pedirse: lo que tiene para dar es el COMO.
+    #
+    # DESDE LA FICHA 06 SE LLEGA CERTIFICANDO Y NO POR ENUM: el modelo escribe
+    # la situacion con las palabras del cliente y el codigo la resuelve contra
+    # las señas de la fuente. Se prueba con las palabras, que es lo que de
+    # verdad va a escribir, y no con el nombre interno del tema.
     from app.core import herramientas as H
-    esq = {e["function"]["name"]: e for e in H.esquemas("verifika_prod")}
-    enum = (esq["consultar_temas"]["function"]["parameters"]["properties"]
-            ["temas"]["items"]["enum"])
+    consultables = H.temas_consultables("verifika_prod")
     for tema in ("queja_enojo", "postergacion", "despedida_cordial",
                  "objecion_precio", "notebook"):
-        assert tema in enum, f"el modelo no puede pedir {tema}"
+        assert tema in consultables, f"el tema {tema} no se puede consultar"
+    for dicho, espera in (("se queja", "queja_enojo"),
+                          ("esta caro", "objecion_precio"),
+                          ("se despide", "despedida_cordial")):
+        v = H.certificar_tema(dicho, "verifika_prod")
+        assert espera in v["temas"], (
+            f"'{dicho}' no llega a {espera}: {v}")
 
     r = H.ejecutar("consultar_temas", {"temas": ["queja_enojo", "notebook"]},
                    "verifika_prod")
@@ -123,19 +132,22 @@ def test_el_modelo_sabe_que_cubre_cada_tema_de_politica(firestore_doble):
     # `query_faq` -muerto desde el 2-ago-. La leccion es la misma y sigue viva:
     # un tema generico no puede ganarle al especifico, porque el bot terminaria
     # afirmando una politica que no es la que preguntaron.
+    # LA REGLA NO CAMBIO, CAMBIO QUIEN LA APLICA (FICHA 06). Antes la guia le
+    # decia al modelo que cubre cada tema para que eligiera bien de un enum de
+    # 129; ahora el modelo escribe lo que dijo el cliente y `certificar_tema`
+    # resuelve con las MISMAS señas, del lado del codigo. Y se prueba mejor:
+    # esto mide el resultado -a que tema llega cada palabra del cliente- y no
+    # que la pista estuviera escrita en el prompt.
     from app.core import herramientas as H
-    esq = {e["function"]["name"]: e for e in H.esquemas("verifika_prod")}
-    d = (esq["consultar_temas"]["function"]["parameters"]["properties"]["temas"])
-    assert "envio_exterior" in d["items"]["enum"] and "envios" in d["items"]["enum"]
-    # La regla de especificidad, explicita.
-    assert "mas especifico" in d["description"]
-    # Y las palabras del cliente de cada tema, tomadas de faq.json.
-    for pista in ("exterior", "cuanto tarda", "cancelar"):
-        assert pista in d["description"], f"falta la pista '{pista}'"
-    # Los pares que se confundian, cada uno con su seña propia.
-    for tema in ("envio_exterior", "plazo_envio", "costo_envio", "envios"):
-        assert tema + " (" in d["description"] or tema + ";" in d["description"], (
-            f"{tema} quedo sin decir que cubre")
+    for dicho, espera in (("envio al exterior", "envio_exterior"),
+                          ("cuanto tarda el envio", "plazo_envio"),
+                          ("cuanto sale el envio", "costo_envio"),
+                          ("cancelar la compra", "cancelacion_pedido")):
+        v = H.certificar_tema(dicho, "verifika_prod")
+        assert espera in v["temas"], f"'{dicho}' resolvio a {v}"
+    # El generico NO le gana al especifico: es el error que estaba medido.
+    assert H.certificar_tema("envio al exterior",
+                             "verifika_prod")["temas"] == ["envio_exterior"]
 
 
 def test_el_enum_cubre_criterios_y_movidas():

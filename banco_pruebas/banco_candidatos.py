@@ -587,9 +587,13 @@ def c24():
     la lista sirve, el modelo esta obligado a elegir, elige el mas parecido y lo
     hace con confianza total. Se mide que el valor de escape este en el esquema
     que ve el modelo Y que el codigo lo trate distinto de un campo roto."""
+    # EL ESCAPE SE MUDO DE CAMPO (FICHA 06, 23-ago-2026) y sigue siendo el mismo
+    # candado. `buscar_productos` dejo de ser visible: sus filtros los escribe
+    # ahora el codigo. El unico campo del catalogo que el MODELO tipea es el
+    # dato que pregunto el cliente, y ahi es donde tiene que estar la salida.
     esqs = {e["function"]["name"]: e["function"]["parameters"]
             for e in H.esquemas(TIENDA)}
-    campo = (esqs["buscar_productos"]["properties"]["filtros"]["items"]
+    campo = (esqs["registrar_pedido"]["properties"]["atributos"]["items"]
              ["properties"]["campo"])
     en_el_enum = FC_SIN_CAMPO in (campo.get("enum") or [])
     r = H.buscar_productos(H.validar("buscar_productos", {

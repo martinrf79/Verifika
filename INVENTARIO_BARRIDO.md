@@ -32,13 +32,13 @@ el estado se lee de acá, no de la memoria de nadie.**
 | **LA FAQ** | cada palabra con la que el cliente puede nombrar un tema, para que nin… | 738 señas | — |
 | **GEO, LA TABLA DE LOCALIDADES** | la tabla entera de localidades, con provincia y sin ella, contra `geo_… | 16164 localidades | — |
 | **EL CODIGO DE LA CUENTA** | la calculadora, el split de pago, el cobro, el componedor, la aduana y… | 1260 combinaciones | — |
-| **LO QUE EL MODELO DECLARA** | las herramientas que el modelo llama, campo por campo, con valores val… | 359 casos | **100.0%** |
+| **LO QUE EL MODELO DECLARA** | las herramientas que el modelo llama, campo por campo, con valores val… | 386 casos | **100.0%** |
 | **LA MEMORIA ENTRE TURNOS** | la transicion de un turno al siguiente: el carrito, la cuenta guardada… | 72 transiciones | **100.0%** |
 | **LA COMPATIBILIDAD** | los pares de productos que la fuente hace posibles y los que no compar… | 320 pares | — |
 | **LOS FILTROS DE LA FICHA** | cada campo de la ficha por cada operador, con valores leidos de la fic… | 687 casos | **100.0%** |
 | **EL MENSAJE DEL CLIENTE** | el texto crudo que llega por la puerta -vacio, solo emoji, larguisimo,… | 48 casos | **100.0%** |
 | **LAS SPECS PREGUNTABLES** | cada spec que la fuente declara preguntable, por su propia seña y por … | 6958 casos | **100.0%** |
-| **LA DECISION Y LA REPOSICION** | los nodos que no tocan el texto sino el estado del turno -el ejecutor,… | 90 celdas | **100.0%** |
+| **LA DECISION Y LA REPOSICION** | los nodos que no tocan el texto sino el estado del turno -el ejecutor,… | 99 celdas | **100.0%** |
 
 ---
 
@@ -75,7 +75,7 @@ el estado se lee de acá, no de la memoria de nadie.**
 ### LO QUE EL MODELO DECLARA
 
 - **Que barre:** las herramientas que el modelo llama, campo por campo, con valores validos, de borde y torcidos, entrando por `ejecutar` que es su puerta real.
-- **Numero:** 359 casos. 9 herramientas, 42 campos, 126 de 126 celdas campo-por-clase; 135 casos de a un campo torcido y 224 de a pares.
+- **Numero:** 386 casos. 9 herramientas, 51 campos, 153 de 153 celdas campo-por-clase; 162 casos de a un campo torcido y 224 de a pares.
 - **Cobertura de su superficie: 100.0%** — completa.
 - **Lo defiende:** `tests/test_barrido_herramientas.py`.
 
@@ -116,7 +116,7 @@ el estado se lee de acá, no de la memoria de nadie.**
 ### LA DECISION Y LA REPOSICION
 
 - **Que barre:** los nodos que no tocan el texto sino el estado del turno -el ejecutor, el reconciliador, el indice y las reposiciones-, contra los contratos que declara el grafo, sobre estados de turno generados.
-- **Numero:** 90 celdas. 10 nodos x 9 clases de estado = 90 celdas, 90 cubiertas; 108 estados generados, 6 contratos, 0 violaciones.
+- **Numero:** 99 celdas. 11 nodos x 9 clases de estado = 99 celdas, 99 cubiertas; 108 estados generados, 6 contratos, 0 violaciones.
 - **Cobertura de su superficie: 100.0%** — completa.
 - **Lo defiende:** `tests/test_barrido_decision.py`.
 
@@ -162,4 +162,4 @@ Para que no aparezca como sorpresa tres sesiones despues:
 
 ---
 
-*Generado el 2026-08-15 por `banco_pruebas/inventario_barrido.py`.*
+*Generado el 2026-08-24 por `banco_pruebas/inventario_barrido.py`.*

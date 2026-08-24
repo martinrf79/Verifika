@@ -5,7 +5,11 @@ QUE SE BARRE ACA. El catalogo se barre pasando cada producto por el
 certificador; la FAQ no se puede barrer asi, porque desde el 2-ago el ruteo de
 un tema no lo hace un regex nuestro sino el MODELO, eligiendo del enum de
 `consultar_temas`. Entonces lo que se barre es la unica ayuda determinista que
-el modelo tiene para elegir: `_guia_de_temas`, la seña que viaja en el esquema.
+el modelo tiene para elegir. Hasta el 23-ago eso era `_guia_de_temas`, la seña
+que viajaba en el esquema; desde la FICHA 06 el modelo nombra el tema con las
+palabras del cliente y lo resuelve `certificar_tema`, con las MISMAS señas, del
+lado del codigo. La pregunta del barrido no cambio; lo que cambio es que ahora
+se puede medir el RESULTADO -a que tema llega cada palabra- y no la pista.
 
 LA PREGUNTA DEL BARRIDO, y sale de la fuente entera: por cada palabra con la que
 el cliente puede nombrar un tema -las keywords de `faq.json` mas los
@@ -79,91 +83,71 @@ def fuente(firestore_doble):
     return {"temas": temas, "faq": faq, "reclaman": dict(reclaman)}
 
 
-def _descritos_por_la_guia(fuente) -> set:
-    """Los temas que la guia del esquema realmente nombra. Se lee del TEXTO que
-    viaja al modelo, no de la variable interna: es la misma regla de tau-bench
-    que usa el resto del repo — se juzga por lo observado, no por lo que el
-    codigo cuenta que hizo."""
-    from app.core.herramientas import _guia_de_temas
-
-    guia = _guia_de_temas(fuente["faq"], fuente["temas"])
-    return set(re.findall(r"([a-z_]+) \(", guia))
-
-
 def test_ninguna_palabra_del_cliente_queda_sin_desambiguar(fuente):
-    """EL BARRIDO. Por cada palabra que dos o mas temas reclaman, la guia tiene
-    que describir a TODOS los que la reclaman. Si describe a uno solo, el modelo
-    no tiene con que elegir y adivina.
+    """EL BARRIDO. Por cada palabra que dos o mas temas reclaman, la
+    certificacion tiene que servir a TODOS los que la reclaman. Si sirve a uno
+    solo, el otro no llega nunca y el bot contesta la politica que no era.
 
-    Es la prueba generada desde la fuente: no hay un solo caso escrito a mano,
-    los da `faq.json` mas `base_conocimiento.json`. Sumar un tema nuevo que pise
-    una palabra ya usada pone esto en rojo el mismo dia, y no seis semanas
-    despues por una politica equivocada que le llego a un cliente."""
-    descritos = _descritos_por_la_guia(fuente)
+    QUE CAMBIO EL 23-AGO (FICHA 06) Y QUE NO. La pregunta es la misma; lo que
+    cambio es QUIEN la contesta y por lo tanto QUE se puede medir. Antes el
+    enum lo elegia el modelo y lo unico observable era si la guia del esquema
+    NOMBRABA los dos temas; ahora elige `certificar_tema`, asi que se mide el
+    resultado y no la pista: a que tema llega de verdad cada palabra de la
+    fuente. Es la misma regla de tau-bench del resto del repo, un paso mas
+    cerca de lo observado.
+
+    Y CERRO CUATRO CHOQUES QUE ESTABAN ABIERTOS -`cuotas` contra
+    `cuotas_financiacion`, `regalo` contra `envoltorio_regalo`, `envios` contra
+    `envio_zonas`, `devoluciones` contra `cambios_devoluciones`-: ante empate no
+    se elige, se sirven los dos, y el modelo contesta con las dos politicas
+    enteras delante."""
+    from app.core.herramientas import certificar_tema
+
     choques = {k: v for k, v in fuente["reclaman"].items() if len(v) > 1}
     assert choques, "el barrido se quedo sin casos: revisar keywords y disparadores"
-    ciegos = {k: sorted(v) for k, v in choques.items()
-              if not all(t in descritos for t in v)}
+    ciegos = {}
+    for k, v in choques.items():
+        servidos = certificar_tema(k, TIENDA)["temas"]
+        if not all(t in servidos for t in v):
+            ciegos[k] = (sorted(v), servidos)
     assert not ciegos, (
-        f"{len(ciegos)} de {len(choques)} palabras que el modelo tiene que "
-        f"adivinar, p.ej. {dict(list(ciegos.items())[:5])}")
+        f"{len(ciegos)} de {len(choques)} palabras donde la certificacion deja "
+        f"afuera a un tema que la reclama, p.ej. {dict(list(ciegos.items())[:5])}")
 
 
-def test_la_guia_no_se_desborda(fuente):
-    """PISO Y TECHO, porque esto se paga en CADA llamada al decisor.
+def test_toda_seña_de_la_fuente_llega_a_su_tema(fuente):
+    """EL BARRIDO ENTERO, no solo los choques: las 785 señas, una por una.
 
-    El techo evita que cubrir un tema nuevo devuelva la guia al tamaño que ya se
-    recorto una vez a proposito: describir los 129 temas costaba once mil
-    caracteres, mas que las dos herramientas que esto reemplazo juntas. El piso
-    evita lo contrario, que un refactor la deje muda sin que nadie lo note —
-    que es exactamente como estuvo media guia hasta hoy."""
-    from app.core.herramientas import _guia_de_temas
+    Una seña que vuelve `not_found` es un agujero por el que el cliente pregunta
+    algo que la casa TIENE escrito y no se le sirve. Se toleran las que no
+    tienen ni una palabra propia -'ese no', 'uno a', 'es para'-: son muletillas
+    que la fuente guardo como disparador y no hay con que resolverlas; el numero
+    esta clavado para que sumar una mas se vea."""
+    from app.core.herramientas import certificar_tema, _fichas
 
-    guia = _guia_de_temas(fuente["faq"], fuente["temas"])
-    assert 3000 < len(guia) < 6000, f"la guia mide {len(guia)} caracteres"
-
-
-def test_la_seña_que_distingue_va_primero(fuente):
-    """Describir un tema con una palabra que su vecino TAMBIEN reclama no
-    desempata nada: si `cuotas` y `cuotas_financiacion` piden las dos
-    'financiacion', esa palabra no le dice al modelo cual elegir. La propia si.
-
-    Se exige sobre los temas que TIENEN alguna seña propia; el que solo tiene
-    palabras compartidas se describe igual con las que hay, porque decir algo es
-    mejor que no decir nada."""
-    from app.core.guia_venta_prosa import disparadores_de
-    from app.core.herramientas import _guia_de_temas, _norm
-
-    guia = _guia_de_temas(fuente["faq"], fuente["temas"])
-    emitidas = dict(re.findall(r"([a-z_]+) \(([^)]*)\)", guia))
-    sin_propia_primero = []
-    for tema, texto in emitidas.items():
-        propias_disponibles = [
-            k for k in (list((fuente["faq"].get(tema) or {}).get("keywords") or [])
-                        + list(disparadores_de(tema)))
-            if k and len(fuente["reclaman"].get(_norm(k).strip(), ())) == 1
-            and not set(_norm(k).split()) <= set(_norm(tema).replace("_", " ").split())
-        ]
-        if not propias_disponibles:
-            continue
-        primera = texto.split(",")[0].strip()
-        if len(fuente["reclaman"].get(_norm(primera).strip(), ())) > 1:
-            sin_propia_primero.append((tema, primera))
-    assert not sin_propia_primero, (
-        f"temas descritos con una palabra compartida teniendo una propia: "
-        f"{sin_propia_primero[:5]}")
+    sin_ficha = [k for k in fuente["reclaman"] if not _fichas(k)]
+    perdidas = [k for k in fuente["reclaman"]
+                if _fichas(k)
+                and certificar_tema(k, TIENDA)["veredicto"] == "not_found"]
+    assert not perdidas, (
+        f"{len(perdidas)} señas de la fuente no llegan a ningun tema: "
+        f"{perdidas[:8]}")
+    assert len(sin_ficha) <= 12, (
+        f"{len(sin_ficha)} señas sin una sola palabra propia: {sin_ficha}")
 
 
-def test_todo_tema_del_enum_se_puede_nombrar(fuente):
-    """El otro borde de la misma pregunta: un tema que entra al enum y no tiene
-    NINGUNA palabra con la que el cliente lo pueda nombrar es un tema que nunca
-    se va a consultar. No es un error del codigo, es un hueco de la fuente, y
-    por eso se lockea con nombre: `varias_preguntas` es de conduccion, no lo
-    nombra un cliente, y es el unico que puede estar asi."""
-    from app.core.guia_venta_prosa import disparadores_de
+def test_la_certificacion_no_desborda_de_candidatos(fuente):
+    """PISO Y TECHO, y ahora se paga en la FUENTE y no en el esquema.
 
-    mudos = [t for t in fuente["temas"]
-             if not (list((fuente["faq"].get(t) or {}).get("keywords") or [])
-                     + list(disparadores_de(t)))]
-    assert mudos == ["varias_preguntas"], (
-        f"cambio la lista de temas que ninguna palabra nombra: {mudos}")
+    La guia vieja costaba 3.843 caracteres en CADA llamada al decisor. La
+    certificacion cuesta cero: no viaja nada. Lo que si tiene precio es servir
+    de mas —cada tema son varios parrafos de politica en el prompt del
+    redactor—, asi que se mide el promedio de candidatos por seña. Uno seria
+    perfecto y no se puede: la fuente tiene 32 palabras que dos temas reclaman."""
+    from app.core.herramientas import certificar_tema
+
+    servidos = [len(certificar_tema(k, TIENDA)["temas"])
+                for k in fuente["reclaman"]]
+    promedio = sum(servidos) / len(servidos)
+    assert 1.0 <= promedio <= 1.6, f"promedio de {promedio:.2f} temas por seña"
+    assert max(servidos) <= 3, "la certificacion sirve mas de tres temas juntos"

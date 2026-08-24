@@ -10,15 +10,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"restricciones\\\":[\\\"50% off por demoras\\\"],\\\"contradicciones\\\":[\\\"El cliente solicita un 50% de descuento alegando una conversación telefónica con el dueño, lo cual no tengo registrado.\\\"],\\\"items\\\":[]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"pedir_descuento\\\",\\\"precio_afirmado_falso\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"contradicciones\\\":[\\\"El cliente afirma que el dueño autorizó un 50% de descuento por demoras, lo cual no figura en el sistema ni es una política estándar.\\\"],\\\"items\\\":[],\\\"temas\\\":[\\\"pide descuento\\\",\\\"afirma otro precio\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"restricciones\\\":[\\\"50% off por demoras\\\"],\\\"contradicciones\\\":[\\\"El cliente solicita un 50% de descuento alegando una conversación telefónica con el dueño, lo cual no tengo registrado.\\\"],\\\"items\\\":[]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"pedir_descuento\\\",\\\"precio_afirmado_falso\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"contradicciones\\\":[\\\"El cliente afirma que el dueño autorizó un 50% de descuento por demoras, lo cual no figura en el sistema ni es una política estándar.\\\"],\\\"items\\\":[],\\\"temas\\\":[\\\"pide descuento\\\",\\\"afirma otro precio\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Cómo estás. Te comento que no tengo registrado en el sistema ese descuento del 50% que mencionás por las demoras, por lo que no puedo aplicarlo sobre el presupuesto.\\n\\nComo no me indicaste qué productos necesitás, todavía no tengo un precio para pasarte. ¿Me podrías decir qué artículos estás buscando así te armo el presupuesto vigente y revisamos qué podemos hacer con el pago por transferencia?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Hola, estuve revisando el sistema y no me figura ninguna autorización por ese porcentaje de descuento ni es una política de la casa. Nosotros trabajamos con precios competitivos y el único beneficio vigente es un <d descuento_transferencia>10% de descuento abonando por transferencia bancaria</d>.\\n\\n¿Podrías confirmarme si el dueño te pasó algún comprobante o número de gestión para que pueda verificarlo con él y avanzar con tu compra?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -27,15 +27,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"contradicciones\\\":[\\\"El cliente exige un descuento del 50% por demoras, pero no hay un pedido previo ni productos seleccionados para aplicar dicho descuento.\\\"],\\\"items\\\":[]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"queja_enojo\\\",\\\"pedir_descuento\\\",\\\"amenaza_presion\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[],\\\"temas\\\":[\\\"queja por descuento no aplicado\\\",\\\"amenaza de reputacion en redes sociales\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"contradicciones\\\":[\\\"El cliente exige un descuento del 50% por demoras, pero no hay un pedido previo ni productos seleccionados para aplicar dicho descuento.\\\"],\\\"items\\\":[]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"queja_enojo\\\",\\\"pedir_descuento\\\",\\\"amenaza_presion\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[],\\\"temas\\\":[\\\"queja por descuento no aplicado\\\",\\\"amenaza de reputacion en redes sociales\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Hola, te pido mil disculpas por el mal momento y por los inconvenientes que venís teniendo; entiendo perfectamente tu frustración y no es nuestra intención que te sientas así.\\n\\nRespecto a lo que mencionás, te comento con total honestidad que, al no tener un pedido cargado ni productos seleccionados en este momento, no tengo una base sobre la cual aplicar el descuento del 50% por demoras que me comentás. <d queja_enojo>Nuestros precios y beneficios están automatizados en el sistema</d> y, por seguridad, no podemos realizar modificaciones manuales por presión, pero me encantaría ayudarte a resolver esto de la mejor manera.\\n\\nPara poder avanzar y ver cómo ayudarte con el presupuesto, ¿podrías confirmarme qué artículos necesitás y qué fue lo que ocurrió puntualmente con tu pedido anterior para que pueda revisarlo con el equipo?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Entiendo tu malestar, pero te aseguro que los precios y descuentos en nuestro sistema están automatizados y no se modifican bajo presión. <d descuento_transferencia>Pagando por transferencia bancaria tenés un 10% de descuento</d>, que es el único beneficio vigente que podemos aplicar.\\n\\nSobre tu consulta, <d amenaza_presion>si tuviste un inconveniente previo, te sugiero contactar a nuestro centro de atención al cliente para resolverlo por el canal correspondiente</d>, ya que por este medio no contamos con una política para gestionar reclamos por descuentos no aplicados ni tenemos una instancia para procesar amenazas de escraches en redes sociales.\\n\\nSi te interesa avanzar con tu compra de forma segura, <d desconfianza_online>tenés el respaldo de productos originales con garantía oficial y seguimiento de envío</d>. ¿Qué producto estabas buscando para que te pase el total con el descuento por transferencia aplicado?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -44,15 +44,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[],\\\"contradicciones\\\":[\\\"El cliente afirma haber transferido y enviado un comprobante, pero no ha especificado qué productos está comprando ni a dónde deben enviarse.\\\"]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"verificacion_pagos\\\",\\\"envio_urgente\\\",\\\"estado_pedido\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"envio inmediato\\\",\\\"confirmacion de pago\\\"],\\\"contradicciones\\\":[\\\"El cliente afirma haber transferido dinero, pero no hay un pedido previo confirmado ni un monto total acordado.\\\",\\\"El cliente exige el envío inmediato ('hoy'), pero no se ha verificado la recepción del pago ni se ha confirmado la disponibilidad de productos específicos.\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":false,\\\"items\\\":[],\\\"contradicciones\\\":[\\\"El cliente afirma haber transferido y enviado un comprobante, pero no ha especificado qué productos está comprando ni a dónde deben enviarse.\\\"]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"verificacion_pagos\\\",\\\"envio_urgente\\\",\\\"estado_pedido\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"envio inmediato\\\",\\\"confirmacion de pago\\\"],\\\"contradicciones\\\":[\\\"El cliente afirma haber transferido dinero, pero no hay un pedido previo confirmado ni un monto total acordado.\\\",\\\"El cliente exige el envío inmediato ('hoy'), pero no se ha verificado la recepción del pago ni se ha confirmado la disponibilidad de productos específicos.\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Hola. Recibí el comprobante que enviaste; te comento que <d verificacion_pagos>gracias por avisar. Los pagos los verificamos contra la acreditación real en la cuenta, no por el comprobante: apenas impacta el dinero, tu pedido queda liberado y se despacha. Las transferencias suelen acreditarse en el día. Te confirmo por acá ni bien lo veamos reflejado</d>.\\n\\nSobre tu pedido, te informo que <d envio_urgente>en CABA y GBA tenemos envío express con entrega en 24 horas hábiles, con un costo extra. Decime tu zona y qué necesitás, y te lo cotizo</d>. Tal como me solicitaste, he aplicado el 50% de descuento por las demoras sobre el total que corresponda una vez definidos los artículos.\\n\\nSin embargo, para poder avanzar, necesito que me confirmes exactamente qué productos estás comprando y a qué dirección deben enviarse, ya que actualmente no tengo esa información cargada en el sistema. ¿Podrías pasarme el detalle de los productos y tu dirección para que pueda terminar de procesar tu pedido?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Recibí el comprobante, pero como no teníamos un presupuesto cerrado ni el pago impactado en nuestra cuenta, el sistema no reconoce el pedido como válido.\\n\\nPara poder avanzar, necesito que me indiques qué productos específicos querés llevar, ya que no hay una orden cargada. Respecto al envío, <d costo_envio>no contamos con servicio de entrega en el día</d>, por lo que una vez que verifiquemos el ingreso real del dinero y confirmemos el stock, te informaremos los plazos de entrega correspondientes.\\n\\n¿Qué artículos tenías pensado comprar para que pueda verificar si los tenemos disponibles?\", \"tool_calls\": []}"
     }
    ]
   }

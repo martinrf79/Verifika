@@ -66,13 +66,19 @@ def test_el_tipo_se_infiere_del_dato_no_se_declara_a_mano():
 
 
 def test_el_esquema_le_inyecta_el_enum_de_campos_al_modelo():
+    """EL ENUM SE MUDO DE CAMPO (FICHA 06) Y SIGUE SALIENDO DE LA FUENTE. Los
+    `filtros` los escribe ahora el codigo, asi que no hay a quien atar ahi; el
+    unico campo del catalogo que el modelo TIPEA es el dato que pregunto el
+    cliente, y ese es el que va atado."""
     esq = {e["function"]["name"]: e["function"]["parameters"]
            for e in H.esquemas(TIENDA)}
-    campo = esq["buscar_productos"]["properties"]["filtros"]["items"]["properties"]["campo"]
+    campo = (esq["registrar_pedido"]["properties"]["atributos"]["items"]
+             ["properties"]["campo"])
     assert "color" in campo["enum"] and "bluetooth" in campo["enum"]
     assert "medidas" not in campo["enum"]  # nombre inventado, no esta en la fuente
-    # los numericos se nombran: es el unico dato que no se deduce del nombre
-    assert "peso_gramos" in campo["description"]
+    # LA ESCAPATORIA, que es lo que impide que un enum cerrado FABRIQUE el
+    # invento obligando a elegir el campo mas parecido.
+    assert FC.SIN_CAMPO in campo["enum"] and FC.SIN_CAMPO in campo["description"]
 
 
 def test_el_esquema_de_filtros_no_trae_ref_ni_anyof():

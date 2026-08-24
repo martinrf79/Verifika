@@ -185,8 +185,21 @@ def valores(campo: str, m: dict) -> dict:
         return {VALIDO: cat, BORDE: cat.upper(), TORCIDO: "cohetes espaciales"}
     if hoja in ("descripcion", "que"):
         return {VALIDO: cat, BORDE: "x", TORCIDO: "asdkjh qwe zzz"}
-    if hoja == "equipo":
+    if hoja in ("equipo", "para"):
         return {VALIDO: "play 5", BORDE: "pc", TORCIDO: "nave espacial"}
+    # ── Las cuatro familias informativas (FICHA 06) ─────────────────────
+    if hoja == "de":
+        return {VALIDO: cat, BORDE: "ese", TORCIDO: "asdkjh qwe zzz"}
+    if hoja == "stock":
+        return {VALIDO: [cat], BORDE: [], TORCIDO: ["cohetes espaciales"]}
+    if hoja == "atributos":
+        return {VALIDO: [{"de": cat, "campo": "pais_fabricacion"}],
+                BORDE: [{"de": cat, "campo": "precio_ars"}],
+                TORCIDO: [{"de": "", "campo": "campo_que_no_existe"}]}
+    if hoja == "compatibilidad":
+        return {VALIDO: [{"que": cat, "para": "play 5"}],
+                BORDE: [{"que": cat, "para": "pc"}],
+                TORCIDO: [{"que": "", "para": ""}]}
     if hoja == "temas":
         return {VALIDO: (m["temas"][:2] or ["envios"]), BORDE: ["envios"],
                 TORCIDO: ["tema_que_no_existe"]}

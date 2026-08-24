@@ -130,11 +130,17 @@ print(f"  puntos SIN CONTESTAR al final del turno      : {sincon}  ({round(100*s
 print(f"  turnos con al menos un punto sin material    : {t_sinmat}/{len(TURNOS)}  ({round(100*t_sinmat/n)}%)")
 print(f"  turnos con al menos un punto sin contestar   : {t_sincon}/{len(TURNOS)}  ({round(100*t_sincon/n)}%)")
 print(f"  aduana: {adu} rojas, {adu_rep} reparadas")
-print("\nOJO CON LOS PUNTOS: `indice_turno.puntos` solo abre SEIS tipos -item,")
-print("condicion, destino, duda, pago, precio- y los seis salen de los campos de")
-print("`registrar_pedido`. No hay tipo para ATRIBUTO, STOCK, COMPATIBILIDAD ni")
-print("POLITICA, asi que una pregunta informativa no abre ningun punto y la")
-print("cobertura es CIEGA justo ahi. El % de sin_contestar es un PISO.")
+# EL AVISO CAMBIO DE SIGNO EL 23-AGO (FICHA 06). Hasta ese dia decia que las
+# cuatro familias informativas no abrian punto y que el numero de abajo era un
+# PISO. Ahora `registrar_pedido` las declara y el numero es el REAL. Como es
+# peor que el piso viejo, el aviso sigue haciendo falta: sin esto, la sesion
+# que vea 21% donde antes habia 11% lee una regresion y revierte un acierto.
+print("\nOJO CON LOS PUNTOS: desde el 23-ago las DIEZ familias se abren, asi")
+print("que este numero ya no es un piso: es el REAL. Y por eso SUBIO —de 22")
+print("sobre 206 a 49 sobre 238—. No es una regresion: las preguntas")
+print("informativas antes no abrian punto, asi que lo que no se contestaba de")
+print("ellas no se contaba. Es la verdad apareciendo, y baja con la FICHA 08,")
+print("que convierte la cobertura de log en PUERTA.")
 
 (_RAIZ / "banco_pruebas" / "reposicion.json").write_text(json.dumps({
     "reposicion": {k: {"corrio": CORRIO.get(k, 0), "cambio": CAMBIO.get(k, 0)} for k in REPO},

@@ -876,7 +876,12 @@ def test_varios_destinos_y_ningun_item_con_destino_es_un_faltante():
     declara los tres destinos en la lista suelta, sin decir que va a cada uno.
     La cuenta cobra tres envios y no puede armar el reparto: salio '2 de 6
     unidades quedaron sin destino'. El campo `destino` del item existe para
-    esto desde el 5-ago."""
+    esto desde el 5-ago.
+
+    LA MARCA ES TIPADA Y NO UNA FRASE desde la FICHA 06: el texto le pedia al
+    modelo que volviera a declarar el pedido y no hay ronda donde leerlo, igual
+    que `falta_la_cuenta` en la FICHA 04. Se mide el mismo hecho con el dato que
+    el codigo de verdad consume."""
     from app.core import pedido as P
 
     llamadas = [{"herramienta": "buscar_productos",
@@ -888,7 +893,7 @@ def test_varios_destinos_y_ningun_item_con_destino_es_un_faltante():
     suelto = {"items": [{"que": "mouse", "cantidad": 2}],
               "destinos": ["Cordoba capital", "Posadas"]}
     rec = P.reconciliar(suelto, llamadas, "t")
-    assert any("no dijiste que va a cada uno" in f for f in rec["faltantes"])
+    assert rec["falta_el_reparto"], rec
 
     # Con el destino en el item, no hay faltante.
     atado = {"items": [{"que": "mouse", "cantidad": 1,
@@ -896,13 +901,12 @@ def test_varios_destinos_y_ningun_item_con_destino_es_un_faltante():
                        {"que": "mouse", "cantidad": 1, "destino": "Posadas"}],
              "destinos": ["Cordoba capital", "Posadas"]}
     rec2 = P.reconciliar(atado, llamadas, "t")
-    assert not any("va a cada uno" in f for f in rec2["faltantes"])
+    assert not rec2["falta_el_reparto"]
 
     # Y con UN solo destino tampoco: no hay nada que repartir.
     uno = {"items": [{"que": "mouse", "cantidad": 2}],
            "destinos": ["Cordoba capital"]}
-    assert not any("va a cada uno" in f
-                   for f in P.reconciliar(uno, llamadas, "t")["faltantes"])
+    assert not P.reconciliar(uno, llamadas, "t")["falta_el_reparto"]
 
 
 def test_no_se_afirma_que_ningun_producto_cumple_cuando_es_falso(
@@ -1275,15 +1279,14 @@ def test_el_destino_vale_venga_de_la_cuenta_y_no_solo_del_pedido(firestore_doble
     from app.core import pedido as P
     declarado, cuenta = _seis_unidades_con_destino()
     rec = P.reconciliar(declarado, [cuenta], "t", tienda_id="verifika_prod")
-    assert not [f for f in rec["faltantes"] if "va a cada uno" in f], \
-        rec["faltantes"]
+    assert not rec["falta_el_reparto"], rec
 
     # Y si la cuenta reparte SOLO una parte, el reclamo vuelve: lo que se
     # acepta es el reparto COMPLETO, no cualquier destino suelto.
     a_medias = {**cuenta, "pedido": {**cuenta["pedido"],
                                      "items": cuenta["pedido"]["items"][:2]}}
     rec2 = P.reconciliar(declarado, [a_medias], "t", tienda_id="verifika_prod")
-    assert any("va a cada uno" in f for f in rec2["faltantes"])
+    assert rec2["falta_el_reparto"]
 
 
 def test_no_se_pregunta_lo_que_el_sistema_ya_resolvio(firestore_doble):

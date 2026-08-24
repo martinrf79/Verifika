@@ -6,15 +6,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"notebook\\\"}]}\"}, {\"name\": \"consultar_catalogo\", \"arguments\": \"{\\\"operacion\\\":\\\"mas_barato\\\",\\\"categoria\\\":\\\"notebook\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"notebook\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"notebook\\\",\\\"categoria\\\":\\\"notebook\\\"}],\\\"restricciones\\\":[\\\"la mas barata\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"notebook\\\"}]}\"}, {\"name\": \"consultar_catalogo\", \"arguments\": \"{\\\"operacion\\\":\\\"mas_barato\\\",\\\"categoria\\\":\\\"notebook\\\"}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"notebook\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"notebook\\\",\\\"categoria\\\":\\\"notebook\\\"}],\\\"restricciones\\\":[\\\"la mas barata\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Tengo dos modelos que comparten el precio más bajo, así que no hay uno solo que gane. Te paso este como opción:\\n\\nPresupuesto:\\n- 1x Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000 c/u = $693.000\\nSubtotal: $693.000\\nTotal: $693.000\\n\\nEste equipo tiene <d NOT0019>carcasa de aluminio</d> y un peso de <d NOT0019>1500 gramos</d>. Todos los modelos que tenemos cuentan con <d NOT0019>12 meses de garantía oficial</d> por defectos de fabricación y en la caja vas a encontrar la <d NOT0019>notebook, el cargador y el manual</d>. Para qué tipo de tareas la estarías necesitando?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"La notebook más económica que tenemos en este momento es la HP 245 G9, que cuenta con una <d NOT0019>carcasa de aluminio</d> y viene equipada con un procesador <d NOT0019>Core i5</d>, <d NOT0019>16GB de RAM</d> y un <d NOT0019>disco de 512GB SSD</d>. Es una excelente opción para <d NOT0019>trabajo y estudio</d> y cuenta con <d NOT0019>garantía oficial HP de 12 meses</d>.\\n\\nPresupuesto:\\n- 1x Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000 c/u = $693.000\\nSubtotal: $693.000\\nTotal: $693.000\\n\\nEn la caja vas a encontrar la <d igual_en_todos>notebook, el cargador y el manual de garantía</d>. ¿Te gustaría avanzar con la compra de este modelo?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -23,15 +23,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"restricciones\\\":[\\\"esta muy cara\\\",\\\"mejorame el precio\\\"],\\\"items\\\":[{\\\"que\\\":\\\"Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\\",\\\"cantidad\\\":1}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"objecion_precio\\\",\\\"pedir_descuento\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"esta caro\\\",\\\"pide descuento\\\",\\\"afirma otro precio\\\"],\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"restricciones\\\":[\\\"esta muy cara\\\",\\\"mejorame el precio\\\"],\\\"items\\\":[{\\\"que\\\":\\\"Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\\",\\\"cantidad\\\":1}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"objecion_precio\\\",\\\"pedir_descuento\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"esta caro\\\",\\\"pide descuento\\\",\\\"afirma otro precio\\\"],\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Entiendo perfectamente que busques la mejor opción y valoro que me lo comentes. En Verifika Tech, el precio de nuestros equipos refleja la calidad y el respaldo que ofrecemos, ya que cada unidad cuenta con <d NOT0019>12 meses de garantía oficial</d> y el respaldo de una marca reconocida.\\n\\nSobre tu pedido, te comparto el detalle actual:\\n\\nPresupuesto:\\n- 1x Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000 c/u = $693.000\\nSubtotal: $693.000\\nTotal: $693.000\\n\\nRespecto a tu consulta sobre mejorar el precio, te cuento que no manejamos rebajas adicionales por fuera de nuestras promociones vigentes. Sin embargo, la forma real de pagar menos es mediante el pago por transferencia bancaria, que es nuestro beneficio principal y permite obtener un mejor valor final.\\n\\nSi te parece bien, puedo recalcularte el presupuesto aplicando ese descuento por transferencia para que veas el valor final real. ¿Te gustaría que avancemos por ese lado?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Entiendo perfectamente que busques la mejor opción posible para tu compra; es muy común querer comparar precios y comprar de forma segura.\\n\\nSobre lo que comentás, te aseguro que el precio publicado es el vigente para este equipo, que cuenta con <d NOT0019>garantía oficial HP de 12 meses</d> y es un producto original. Comprar online puede generar dudas, pero en Verifika Tech te respaldamos con productos originales, garantía oficial y acompañamiento constante por este canal ante cualquier consulta o inconveniente que surja.\\n\\nAunque no manejamos rebajas adicionales fuera de nuestras promociones, te cuento que tenemos un beneficio real: pagando por transferencia bancaria tenés un 10% de descuento. Si te interesa, decime y te paso el total de tu pedido con ese descuento ya aplicado.\\n\\nPresupuesto:\\n- 1x Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000 c/u = $693.000\\nSubtotal: $693.000\\nTotal: $693.000\\n\\nRecordá que la <d NOT0019>caja incluye la notebook, el cargador y el manual de garantía</d>. ¿Querés que calculemos cuánto quedaría el total final aplicando el descuento por transferencia para avanzar?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -40,15 +40,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\\"}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"pedir_descuento\\\",\\\"mayorista_cantidad\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"pide descuento por cantidad\\\"],\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\\"}]}\"}, {\"name\": \"consultar_temas\", \"arguments\": \"{\\\"temas\\\":[\\\"pedir_descuento\\\",\\\"mayorista_cantidad\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"pide descuento por cantidad\\\"],\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Qué bueno que te lleves dos unidades! Es una excelente elección para equiparte.\\n\\nSobre tu consulta, te comento que en Verifika Tech nuestros precios ya son muy competitivos y no manejamos rebajas adicionales por cantidad fuera de las promociones vigentes, ya que buscamos siempre ofrecer el mejor valor posible desde el primer equipo. La forma real de pagar menos es aprovechando nuestro descuento por transferencia bancaria, que es el beneficio principal que tenemos activo.\\n\\nAquí te paso el presupuesto por las dos unidades:\\n\\nPresupuesto:\\n- 2x Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000 c/u = $1.386.000\\nSubtotal: $1.386.000\\nTotal: $1.386.000\\n\\nTe recuerdo que estas notebooks cuentan con <d NOT0019>12 meses de garantía oficial</d> y son un equipo muy confiable. ¿Te gustaría que avancemos con el pago por transferencia para aplicar el descuento y cerrar tu compra?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Entiendo perfectamente tu interés en buscar la mejor condición. Sobre tu consulta, te cuento que no contamos con una lista de precios mayoristas diferenciada; el precio publicado es el mismo independientemente de la cantidad, ya que buscamos mantener la transparencia para todos nuestros clientes.\\n\\nRespecto a la seguridad de tu compra, es totalmente legítimo que tengas reparos al comprar online. En Verifika Tech nos respaldamos con hechos concretos: todos nuestros productos son originales, cuentan con <d NOT0019>garantía oficial de 12 meses</d> y te brindamos acompañamiento constante por este canal ante cualquier duda o inconveniente que surja durante el proceso.\\n\\nAdemás, para ayudarte con el presupuesto, recordá que pagando por transferencia bancaria tenés un 10% de descuento adicional sobre el total.\\n\\nAquí te detallo el presupuesto por las dos unidades:\\n\\nPresupuesto:\\n- 2x Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000 c/u = $1.386.000\\nSubtotal: $1.386.000\\nTotal: $1.386.000\\n\\n¿Te gustaría que apliquemos el descuento por transferencia sobre este total para avanzar con tu pedido?\", \"tool_calls\": []}"
     }
    ]
   }

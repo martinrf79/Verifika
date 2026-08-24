@@ -425,7 +425,14 @@ _VACIAS = frozenset({
     "las", "del", "este", "esta", "esto", "algo", "alguna", "alguno", "mas",
     "menos", "muy", "pero", "como", "sea", "ser", "tenga", "tener", "quiero",
     "busco", "necesito", "dame", "mostrame", "tenes", "hay", "sirve", "anda",
-    "bueno", "buena", "barato", "barata", "caro", "cara", "mejor", "peor"})
+    "bueno", "buena", "barato", "barata", "caro", "cara", "mejor", "peor",
+    # LAS PREPOSICIONES DE TOPE ENTRAN ACA DESDE LA FICHA 06, y las trajo un
+    # falso positivo medido: "hasta 100 mil" resolvia a `bateria contiene hast`,
+    # o sea que un tope de precio filtraba por la bateria. Una preposicion no
+    # nombra ningun valor del catalogo; que aparezca adentro de la prosa de un
+    # campo es una casualidad de la palabra, no un hecho del producto.
+    "hasta", "desde", "entre", "sobre", "cada", "todo", "toda", "todos",
+    "cuanto", "cuantos", "cuesta", "sale", "vale", "precio"})
 
 
 def _texto_del_producto(prod: dict) -> list[tuple]:
@@ -549,6 +556,27 @@ _NEGACIONES = ("sin", "no", "menos", "menor", "minima", "minimo", "evitar",
                "excluir", "salvo", "excepto", "nada de", "que no")
 
 
+# LOS CAMPOS QUE SON PROSA, y por eso no resuelven un termino. Ahi cualquier
+# palabra pega y encima gana por volumen: medido, "no Logitech" resolvia a
+# `garantia_detalle` —que nombra la marca en cada renglon— en vez de a `marca`.
+# Excluirlos deja que gane el campo donde el termino ES el valor. UNA sola
+# definicion, la usan la exclusion y la inclusion: con dos copias, la que se
+# arregle primero deja a la otra resolviendo distinto sobre el mismo catalogo.
+_CAMPOS_DE_PROSA = frozenset({
+    "descripcion", "nombre", "contenido_caja", "descripcion_rica",
+    "caracteristicas_extra", "garantia_detalle", "uso_recomendado"})
+
+
+def tiene_negacion(restriccion: str) -> bool:
+    """¿La frase del cliente pide que algo NO sea? UNA definicion, dos usos: la
+    exclusion la necesita para saber que puede dar vuelta, y la derivacion para
+    saber que NO puede mandar al texto de relevancia. Con dos copias, la que se
+    arregle primero deja a la otra leyendo distinto la misma frase, que es la
+    falla que este repo ya pago tres veces."""
+    txt = _norm(restriccion)
+    return any(re.search(rf"(?<![a-z]){n}(?![a-z])", txt) for n in _NEGACIONES)
+
+
 def resolver_exclusion(restriccion: str, tienda_id: str) -> dict | None:
     """La restriccion del cliente convertida en una condicion, SIN semantica.
 
@@ -570,9 +598,9 @@ def resolver_exclusion(restriccion: str, tienda_id: str) -> dict | None:
     en las palabras del propio cliente; si no la hay, devuelve None y no se toca
     nada. Aplicar una condicion al reves seria peor que no aplicarla.
     """
-    txt = _norm(restriccion)
-    if not any(re.search(rf"(?<![a-z]){n}(?![a-z])", txt) for n in _NEGACIONES):
+    if not tiene_negacion(restriccion):
         return None
+    txt = _norm(restriccion)
     registro = campos_filtrables(tienda_id)
     from app.storage.firestore_client import get_all_products
     prods = get_all_products(tienda_id=tienda_id) or []
@@ -584,13 +612,7 @@ def resolver_exclusion(restriccion: str, tienda_id: str) -> dict | None:
     for w in palabras:
         raiz = w[:4]
         for campo in registro:
-            if campo in ("descripcion", "nombre", "contenido_caja",
-                         "descripcion_rica", "caracteristicas_extra",
-                         "garantia_detalle", "uso_recomendado"):
-                # PROSA. Ahi cualquier palabra pega y encima gana por volumen:
-                # medido, "no Logitech" resolvia a `garantia_detalle` -que
-                # nombra la marca en cada renglon- en vez de a `marca`. Excluir
-                # la prosa deja que gane el campo donde el termino ES el valor.
+            if campo in _CAMPOS_DE_PROSA:
                 continue
             n = sum(1 for p in prods[:400]
                     if _texto_contiene(_valor_crudo(p, campo), raiz))
@@ -599,6 +621,121 @@ def resolver_exclusion(restriccion: str, tienda_id: str) -> dict | None:
     if not mejor:
         return None
     return {"campo": mejor[0], "operador": "no_contiene", "valor": mejor[1]}
+
+
+def resolver_inclusion(restriccion: str, tienda_id: str) -> dict | None:
+    """La condicion POSITIVA del cliente, convertida en un filtro. La gemela de
+    `resolver_exclusion`, y por el mismo mecanismo: no interpreta la frase, mira
+    en que campo del catalogo esa palabra aparece como VALOR.
+
+    POR QUE HIZO FALTA (FICHA 06, 23-ago-2026). Hasta hoy la condicion positiva
+    -"marcas de estados unidos", "que sea blanco", "que sea inalambrico"- la
+    traducia el MODELO, escribiendo `filtros` en `buscar_productos`. Con la
+    puerta unica el modelo ya no escribe filtros: declara la condicion con las
+    palabras del cliente. Sin esta funcion esa mitad se perdia entera, y el
+    reconciliador lo cazaba con todas las letras: "El cliente puso la condicion
+    'marcas de estados unidos' y no la aplicaste en ninguna busqueda".
+
+    NO PISA A LA EXCLUSION Y NO SE APLICA AL EXTREMO. Si la frase trae una
+    negacion la resuelve la otra, que sabe darla vuelta; si es un superlativo la
+    resuelve `resolver_orden`. Aca entra solo lo que queda: una condicion lisa.
+    """
+    if tiene_negacion(restriccion):
+        return None
+    txt = _norm(restriccion)
+    registro = campos_filtrables(tienda_id)
+    from app.storage.firestore_client import get_all_products
+    prods = get_all_products(tienda_id=tienda_id) or []
+    palabras = [w for w in txt.split() if len(w) >= 4 and w not in _VACIAS]
+    mejor = None
+    for w in palabras:
+        raiz = w[:4]
+        for campo in registro:
+            if campo in _CAMPOS_DE_PROSA:
+                continue
+            n = sum(1 for p in prods[:400]
+                    if _texto_contiene(_valor_crudo(p, campo), raiz))
+            # NO ENTRA LO QUE CUMPLE TODO EL CATALOGO. Una palabra que aparece
+            # en los 400 no acota nada y encima gana por volumen: filtrar por
+            # ella es escribir una condicion que no filtra, y el reconciliador
+            # la daria por aplicada sin que lo este.
+            if n and n < len(prods[:400]) and (mejor is None or n > mejor[2]):
+                mejor = (campo, raiz, n)
+    if not mejor:
+        return None
+    return {"campo": mejor[0], "operador": "contiene", "valor": mejor[1]}
+
+
+# ── EL EXTREMO QUE EL CLIENTE PIDIO ─────────────────────────────────────────
+#
+# POR QUE ES CODIGO Y NO UN CAMPO DEL MOLDE (FICHA 06, 23-ago-2026). Hasta hoy
+# el extremo -"el mas barato"- viajaba en `buscar_productos.ordenar_por`, que el
+# modelo elegia. Con la puerta unica el modelo ya no elige herramienta: declara
+# la condicion con las palabras del cliente y el codigo la traduce. Meter otro
+# enum de campos en el molde para esto costaba 572 bytes por llamada, o sea
+# pagar dos veces el mismo enum, y el molde entero tiene un techo de 6.000.
+#
+# LA TABLA ES CHICA Y ES SOLO EL PUENTE QUE EL NOMBRE DEL CAMPO NO DA. Todo lo
+# que se puede sacar del propio nombre del campo se saca de ahi -"garantia"
+# pega en `garantia_meses`, "peso" en `peso_gramos`-; aca abajo van unicamente
+# los adjetivos que NO se parecen a ningun nombre de campo. Por eso no crece con
+# el catalogo: crece con el castellano, que no cambia.
+_ADJETIVOS_DE_ORDEN = {
+    "precio_ars": ("barat", "economic", "accesible", "car", "presupuest"),
+    "peso_gramos": ("livian", "ligero", "pesad"),
+}
+# Un extremo se pide con un superlativo. Sin esta marca, "que tenga garantia" se
+# leeria como "el de mas garantia" y el orden saldria de una frase que no lo
+# pidio: aplicar un orden que el cliente no pidio le cambia el producto que ve.
+_RE_SUPERLATIVO = re.compile(
+    r"(?<![a-z])(?:mas|menos|mayor|menor|mejor|peor|maxim\w*|minim\w*|"
+    r"barat\w*|economic\w*|car[oa]s?|livian\w*|ligero\w*|pesad\w*)(?![a-z])")
+_MENOR = ("menos", "menor", "minim", "barat", "economic", "accesible",
+          "livian", "ligero")
+
+
+def resolver_orden(frase: str, tienda_id: str) -> dict | None:
+    """El extremo que pidio el cliente, convertido en (campo, direccion).
+
+    Misma disciplina que `resolver_exclusion`: solo devuelve algo cuando la
+    frase del cliente TRAE la marca -un superlativo- y el campo sale de la
+    fuente viva, nunca de una lista escrita a mano. Si no hay superlativo
+    devuelve None y no se toca el orden, porque ordenar sin que lo hayan pedido
+    le cambia al cliente el producto que ve.
+    """
+    txt = _norm(frase)
+    if not _RE_SUPERLATIVO.search(txt):
+        return None
+    registro = campos_filtrables(tienda_id)
+    if not registro:
+        return None
+    palabras = [w for w in txt.replace("/", " ").split() if len(w) >= 4]
+    elegido = None
+    # LOS NUMERICOS PRIMERO. "el de mas garantia" pega igual en `garantia_meses`
+    # que en `garantia_detalle`, y ordenar por la prosa del detalle es ordenar
+    # alfabeticamente: da un ganador que no es el de mas garantia. Cuando dos
+    # campos empatan por nombre, el que responde la pregunta es el que tiene el
+    # numero, que es la misma regla que ya aplica `orden_tiene_sentido`.
+    orden_campos = ([c for c, t in registro.items() if t == "numero"]
+                    + [c for c, t in registro.items() if t != "numero"])
+    for campo in orden_campos:
+        # 1. El nombre del campo, por raiz: "garantia" -> garantia_meses.
+        raices = [t[:5] for t in campo.split("_") if len(t) >= 4]
+        if raices and any(any(w.startswith(r) or r.startswith(w[:5])
+                              for w in palabras) for r in raices):
+            elegido = campo
+            break
+    if elegido is None:
+        for campo, adjetivos in _ADJETIVOS_DE_ORDEN.items():
+            if campo in registro and any(w.startswith(a) for w in palabras
+                                         for a in adjetivos):
+                elegido = campo
+                break
+    if elegido is None:
+        return None
+    direccion = "min" if any(w.startswith(m) for w in palabras
+                             for m in _MENOR) else "max"
+    return {"campo": elegido, "direccion": direccion}
 
 
 def orden_tiene_sentido(prods: list[dict], campo: str, tienda_id: str) -> bool:

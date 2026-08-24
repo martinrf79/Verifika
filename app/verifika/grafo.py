@@ -231,6 +231,20 @@ NODOS = (
          aplicar_datos=lambda c: _con(
              c, llamadas=list(c.get("llamadas") or []) + _ejecutar_sync(
                  c.get("pedidos") or [], c["tienda_id"], c["trace_id"]))),
+    Nodo(id="busquedas_derivadas", etapa="decision",
+         funcion="app.core.hub_venta:_derivar_las_busquedas",
+         exige="lo que el modelo declaro del mensaje",
+         garantiza="una busqueda por cada cosa declarada, con las palabras del "
+                   "cliente; no declara nada que el cliente no haya pedido",
+         # IDEMPOTENTE de verdad y no por suerte: `_agregar` no repite una
+         # herramienta con los mismos argumentos y devuelve la que ya estaba,
+         # asi que la segunda pasada no agrega una llamada calcada ni cambia
+         # una decision que dependa del estado de la primera.
+         contratos=CONTRATOS_DE_REPOSICION,
+         aplicar_datos=lambda c: _con(
+             c, llamadas=_hub()._derivar_las_busquedas(
+                 c.get("llamadas") or [], c.get("declarado") or {},
+                 c.get("memoria") or [], c["tienda_id"], c["trace_id"]))),
     Nodo(id="reconciliador", etapa="decision",
          funcion="app.core.pedido:reconciliar",
          exige="lo que el modelo declaro y lo que efectivamente pidio",

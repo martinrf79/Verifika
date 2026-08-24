@@ -250,6 +250,13 @@ class TomarPedido(BaseModel):
 class ItemDeclarado(BaseModel):
     que: str = Field(description="Que pidio, tal cual: 'auriculares', "
                                  "'la asus tuf f15', 'memoria ram'.")
+    # LA CATEGORIA ES ATADURA, NO PESO (FICHA 06). El enum sale del catalogo
+    # vivo, asi que el modelo no puede nombrar un rubro que no vendemos, y con
+    # el rubro puesto la busqueda que deriva el codigo acota de una: sin el, un
+    # rubro pelado -"auriculares"- vuelve `no_encontrado` porque la descripcion
+    # esta pensada para lo que el cliente DESCRIBE, no para un rubro solo.
+    categoria: str | None = Field(
+        None, description="El rubro, si es uno de la lista. Vacio si no.")
     cantidad: int = Field(1, description="Cuantas unidades de eso.")
     # EL DESTINO VA PEGADO AL ITEM, no en una lista suelta al costado. Hasta el
     # 5-ago `destinos` viajaba aparte, sin ninguna atadura con los items, asi
@@ -281,38 +288,86 @@ class ItemDeclarado(BaseModel):
     # dificil. Lo que SI quedo de este intento es la derivacion de `destinos`
     # desde los renglones en `registrar_pedido`, que solo suma y nunca pierde.
     destino: str | None = Field(
-        None, description="A donde va ESTE item, si el pedido se reparte entre "
-                          "varios lugares. Si todo va a un solo lado, dejalo "
-                          "vacio y usá `destinos`.")
+        None, description="A donde va ESTE item si el pedido se reparte. Si "
+                          "todo va a un lado, vacio y usá `destinos`.")
+
+
+# EL DOCSTRING DE UN SUBMODELO VIAJA EN EL ESQUEMA, en cada llamada y por
+# turno. Lo que explica POR QUE existe el campo va como comentario, que no se
+# paga; lo que el modelo necesita para llenarlo va en el docstring, corto.
+# Este se lleva la semantica de `ficha_producto`, que dejo de ser visible: lo
+# que antes era "traeme la ficha del id tal" ahora es "el cliente pregunto ESTE
+# campo de ESTE producto", y la ficha la trae el codigo.
+class AtributoDeclarado(BaseModel):
+    """Un dato duro que el cliente pregunto de un producto."""
+    de: str = Field(description="Que producto, como lo nombro el cliente: "
+                                "'el mouse logitech', 'ese'.")
+    campo: str = Field(description="Que dato pregunto.")
+
+
+# Se lleva la semantica de `ver_compatibilidad`: el cruce contra las dos fichas
+# lo hace el codigo; aca solo se declaran los dos lados.
+class CompatibilidadDeclarada(BaseModel):
+    """Si un producto le sirve para lo que tiene o para lo que quiere."""
+    que: str = Field(description="El producto en duda, como lo nombro.")
+    para: str = Field(description="Contra que: 'mi notebook', 'la ps5', "
+                                  "'jugar', 'editar video'.")
 
 
 class RegistrarPedido(BaseModel):
-    """DECLARA lo que entendiste del mensaje ANTES de buscar. Llamala SIEMPRE
-    que el cliente pida productos, precios, un presupuesto o un envio, junto
-    con las demas herramientas y en la misma tanda. No busca nada: deja
-    asentado que entendiste, y el sistema compara eso contra lo que pediste. Si
-    lo que declaras y lo que buscas no coinciden, te lo va a devolver."""
+    """DECLARA TODO lo que entendiste. Es lo UNICO que llamas: no busca nada,
+    el codigo deriva de esto que ir a buscar y te lo devuelve para escribir.
+    Llamala siempre, salvo que el mensaje no pida ningun dato -un saludo-.
+
+    UN RENGLON POR CADA COSA QUE PREGUNTO, en el campo que corresponda. Lo que
+    no declares no se busca, y el cliente se queda sin esa respuesta."""
+    # `items` DEJO DE SER OBLIGATORIO (FICHA 06, 23-ago-2026), y lo encontro el
+    # turno 3 del casete 77 al regrabar. El cliente pregunta "que trae la caja?"
+    # -una pregunta informativa pura, sin nada que cotizar-, el modelo declara
+    # SOLO `atributos`, que es exactamente lo correcto, y Pydantic rechaza el
+    # molde entero por falta de `items`. El turno se queda sin declaracion, sin
+    # puntos, sin derivacion y sin ficha: `pedido_mal_formado` y el cliente sin
+    # respuesta.
+    #
+    # ES LA MISMA FALLA QUE `_sin_nulos` documenta doce lineas mas abajo -la
+    # distancia entre lo que el molde PIDE y lo que ACEPTA- y aparecio ahora
+    # porque hasta hoy no existia una declaracion legitima sin items: los seis
+    # campos viejos eran todos de la parte transaccional. Con las cuatro
+    # familias informativas adentro, "no hay nada que cotizar" pasa a ser un
+    # estado normal del turno y no un molde roto.
     items: list[ItemDeclarado] = Field(
-        description="Un renglon por cada cosa que el cliente quiere COTIZAR o "
-                    "ver. Solo lo que pidio de verdad; si nombro algo al pasar "
-                    "y no queda claro que lo quiera, no lo pongas aca: ponelo "
-                    "en contradicciones.")
+        default_factory=list,
+        description="Un renglon por cada cosa que quiere COTIZAR o ver. Solo "
+                    "lo que pidio de verdad; si nombro algo al pasar y no "
+                    "queda claro, va en contradicciones.")
     restricciones: list[str] | None = Field(
-        None, description="Condiciones que puso el cliente, tal cual las dijo: "
-                          "['sin partes chinas'], ['hasta 100 mil'], ['que sea "
-                          "inalambrico']. Vacio si no puso ninguna.")
+        None, description="TODA condicion y TODO extremo que puso, tal cual y "
+                          "uno por renglon: 'sin partes chinas', 'que sea "
+                          "inalambrico', 'el mas barato', 'el de mas "
+                          "garantia'. El codigo las traduce a filtros y a un "
+                          "orden. El ORIGEN es una condicion mas y la fuente lo "
+                          "sabe: nunca digas que no sabes de donde viene algo.")
     destinos: list[str] | None = Field(
         None, description="Todas las localidades de envio que nombro.")
+    # LA SEMANTICA DE `armar_presupuesto` VIVE ACA DESDE LA FICHA 06, y la
+    # segunda frase la puso un turno perdido al regrabar. El turno 8 de la
+    # charla real del 12-ago —"agregá a ese presupuesto que detallaste al
+    # último un teclado con envío a Córdoba"— salio SIN Total: el modelo dejo
+    # `pide_precio` en falso porque el cliente no pregunto "cuanto sale", y con
+    # eso el reconciliador no marca `falta_la_cuenta` y la cuenta no se rehace.
+    # Es exactamente el aviso de la ficha: la semantica que llevaban las ocho
+    # descripciones es lo que le enseñaba al modelo a declarar bien, y lo
+    # primero que hay que mirar si empieza a declarar peor.
     pide_precio: bool = Field(
         False, description="True si espera un numero: precio, total, cuanto "
-                           "sale, presupuesto.")
+                           "sale, presupuesto. TAMBIEN si pide agregar, sacar "
+                           "o cambiar algo de un presupuesto que ya le diste: "
+                           "la cuenta se rehace entera y lleva Total.")
     contradicciones: list[str] | None = Field(
-        None, description="Lo que NO cierra en el mensaje y no podes resolver "
-                          "vos sin elegir por el cliente: cantidades que no dan, "
-                          "un producto nombrado en el envio que no esta en el "
-                          "pedido, dos cosas incompatibles. Escribi cada una "
-                          "como la duda concreta que le harias al cliente. Si "
-                          "todo cierra, vacio.")
+        None, description="Lo que NO cierra y no podes resolver sin elegir por "
+                          "el cliente: cantidades que no dan, algo nombrado en "
+                          "el envio que no esta en el pedido. Cada una como la "
+                          "duda concreta que le harias. Si cierra, vacio.")
     # ── EL CAMPO QUE VOLVIO DEL INTERPRETE VIEJO (Martin, 7-ago-2026) ────────
     #
     # ES EL UNICO QUE VOLVIO, y no es una corazonada: salio de medir los dos
@@ -341,11 +396,46 @@ class RegistrarPedido(BaseModel):
     # mejor que cualquier regex. Con el campo tipado esa clase de falla no puede
     # existir, y se BORRA codigo en vez de agregar.
     reparto_pago: list[PartePago] | None = Field(
-        None, description="Si el cliente pidio dividir el pago, el reparto ya "
-                          "resuelto en numeros: 'setenta treinta', '70/30' o "
-                          "'mitad y mitad' se declaran acá como porcentajes que "
-                          "suman 100. Si no dijo con qué medio paga cada parte, "
-                          "poné el medio en null y lo resuelve el sistema.")
+        None, description="Si dividio el pago, el reparto en numeros que suman "
+                          "100: 'setenta treinta', '70/30', 'mitad y mitad'. Si "
+                          "no dijo el medio de una parte, dejalo vacio.")
+
+    # ── LAS CUATRO FAMILIAS INFORMATIVAS (FICHA 06, 23-ago-2026) ─────────
+    #
+    # POR QUE ENTRAN. `indice_turno.puntos` sabe abrir punto para atributo,
+    # stock, compatibilidad y politica desde la FICHA 02, y no lo abria nunca:
+    # los seis campos de arriba son la parte TRANSACCIONAL del pedido y una
+    # pregunta informativa no entra en ninguno. O sea que el contrato de
+    # cobertura era ciego justo en la mitad de la charla donde mas se alucina,
+    # y el 11% de puntos sin contestar era un PISO, no el numero.
+    #
+    # Y NO SE SUMAN A LOS 25 KB: LOS REEMPLAZAN. Las otras ocho herramientas
+    # dejaron de ser visibles el mismo dia. La semantica que llevaban en su
+    # descripcion -que resuelve cada una y cuando se usa- es lo que le enseñaba
+    # al modelo a declarar bien, asi que se MUDO acá campo por campo en vez de
+    # tirarse. Si el modelo empieza a declarar peor, es lo primero que hay que
+    # mirar.
+    atributos: list[AtributoDeclarado] | None = Field(
+        None, description="Cada DATO DURO que pregunto de un producto: cuanto "
+                          "pesa, cuantos dpi, que trae la caja, de donde viene. "
+                          "Uno por dato, aunque sean del mismo producto.")
+    stock: list[str] | None = Field(
+        None, description="Cada cosa sobre la que pregunto SI LA TENEMOS, con "
+                          "sus palabras: 'celulares samsung', 'una play 5'. "
+                          "Declarala TAMBIEN si creés que no la vendemos: es la "
+                          "unica forma de mirar el catalogo entero antes de "
+                          "decir que no hay. Sin eso no podes afirmarlo.")
+    compatibilidad: list[CompatibilidadDeclarada] | None = Field(
+        None, description="Cada vez que pregunto si algo LE SIRVE.")
+    temas: list[str] | None = Field(
+        None, description="UNO POR CADA COSA que pregunto y contesta la casa, "
+                          "con LAS PALABRAS DEL CLIENTE: 'envio al exterior', "
+                          "'cuanto tarda', 'la garantia', 'factura'. Va tambien "
+                          "la SITUACION: esta caro, pide descuento, desconfia, "
+                          "se queja, apura, posterga, cancela, se despide, pide "
+                          "una persona, afirma otro precio. Si pregunto tres "
+                          "van tres. El codigo lo certifica y te trae la "
+                          "politica con sus numeros, el criterio y la movida.")
 
 
 _MOLDES = {
@@ -397,127 +487,14 @@ def _esquema_de(modelo) -> dict:
     return _aplanar(bruto, bruto.get("$defs") or {})
 
 
-def _guia_de_temas(faq: dict, temas: list[str]) -> str:
-    """QUE CUBRE CADA TEMA, en las palabras del cliente.
-
-    Hasta el 3-ago el enum eran nombres pelados y el modelo tenia que adivinar
-    la frontera entre `envios`, `envio_exterior`, `costo_envio` y `plazo_envio`.
-    Elegir mal ahi no es un matiz: el bot afirma una politica que no es la que
-    pregunto el cliente, que es la peor forma de alucinar porque suena bien y
-    viene de la fuente.
-
-    Esto lo cubria antes un ruteo determinista por keywords (`query_faq`), que
-    murio con el camino atado. Las keywords SIGUEN en `faq.json` y los
-    disparadores en `base_conocimiento.json`, escritos como los dice el cliente;
-    ahora se los pasamos al modelo, que es quien elige. No es codigo nuevo: es
-    usar el dato que ya estaba y nadie leia.
-
-    La seña de cada tema sale de la fuente que lo define: keywords si es de la
-    FAQ, disparadores si es de la base de conocimiento.
-
-    SE ACLARAN LOS DE POLITICA, que es donde el error esta MEDIDO. Elegir mal
-    entre `envios`, `envio_exterior`, `costo_envio` y `plazo_envio` hace que el
-    bot afirme una politica que no es la que preguntaron. Los temas de criterio
-    -`mouse`, `queja_enojo`, `objecion_precio`- no tienen esa frontera, nunca
-    tuvieron guia y no hizo falta: el nombre alcanza. Describirlos igual costaba
-    once mil caracteres de esquema, mas que las dos herramientas que esto
-    reemplazo juntas, para repetir lo que el enum ya dice.
-
-    Y SOLO SE NOMBRA AL QUE LLEVA SEÑA. El enum ya lista los ciento
-    veintinueve; repetirlos aca abajo era pagarlos dos veces por llamada.
-    """
-    from app.core.guia_venta_prosa import disparadores_de
-
-    # Y SOLO SE GUIA AL QUE TIENE FRONTERA (10-ago). El docstring dice que esto
-    # existe para "los que se pisan", pero la seña salia para los CUARENTA Y
-    # CUATRO temas de la FAQ, incluidos los que no se pisan con ninguno:
-    # `cuotas`, `horarios`, `mayoristas`, `monedas_aceptadas`. Para esos el
-    # enum ya dice todo, y describirlos costaba 4.500 caracteres por llamada,
-    # el bloque mas grande de todo el esquema.
-    #
-    # Tener frontera es compartir una palabra con OTRO tema de la lista: la
-    # familia `envios`/`envio_exterior`/`costo_envio`/`plazo_envio`, que es el
-    # error medido; `garantia` contra `garantia_como_usar`; `cambios` contra
-    # `cambio_direccion`; `formas_pago` contra `formas_contacto`. Un nombre que
-    # no comparte con nadie no tiene con quien confundirse.
-    def _raices(t: str) -> set:
-        return {w.rstrip("s") for w in _norm(t).replace("_", " ").split()
-                if len(w) >= 4}
-
-    vecinas: dict = {}
-    for t in temas:
-        for r in _raices(t):
-            vecinas.setdefault(r, set()).add(t)
-    con_frontera = {t for t in temas
-                    if any(len(vecinas[r]) > 1 for r in _raices(t))}
-
-    # LA FRONTERA REAL SE MIDE POR LA SEÑA, NO POR EL NOMBRE (12-ago, barrido de
-    # la FAQ). El criterio de arriba mira si dos temas comparten una raiz de su
-    # NOMBRE, y con eso solo desambiguaba 1 de los 32 choques que tiene la
-    # fuente. Los otros 31 son dos temas que reclaman la MISMA palabra del
-    # cliente y se llaman distinto: 'direccion' la piden `cambio_direccion` y
-    # `ubicacion`, 'no funciona' la piden `defectuoso` y `producto_defectuoso`,
-    # 'cuotas' la piden `cuotas` y `cuotas_financiacion`. El nombre no los
-    # delata; la palabra del cliente si, y es el dato que ya esta en la fuente.
-    #
-    # Y SE MIRAN LOS DOS LADOS DE LA CASA. El filtro `tema not in faq` dejaba
-    # afuera a toda la base de conocimiento, que es justo la mitad con la que
-    # choca la FAQ: en 27 de los 31 el tema sin seña era el de la base. Un tema
-    # que el modelo no puede distinguir hace que el bot afirme una politica que
-    # no es la que preguntaron, que es la peor forma de alucinar porque suena
-    # bien y viene de la fuente.
-    def _todas(t: str) -> list:
-        return [k for k in ((faq.get(t, {}).get("keywords") or [])
-                            + disparadores_de(t)) if k]
-
-    def _señas_de(t: str) -> list:
-        propias = set(_norm(t).replace("_", " ").split())
-        # Una seña que solo repite el nombre del tema no desempata nada.
-        return [k for k in _todas(t)
-                if not set(_norm(k).split()) <= propias]
-
-    # LA FRONTERA SE DETECTA CON LA SEÑA CRUDA, SE IMPRIME CON LA FILTRADA, y
-    # confundir las dos cosas dejaba tres choques abiertos: `cambio_direccion`
-    # reclama la palabra 'direccion' igual que `ubicacion`, pero el filtro de
-    # arriba la descarta por repetir su propio nombre. Descartarla para IMPRIMIR
-    # es correcto -no desempata-; descartarla para DETECTAR es perder el choque,
-    # que es justo lo que hay que ver.
-    reclaman: dict = {}
-    for t in temas:
-        for k in _todas(t):
-            reclaman.setdefault(_norm(k).strip(), set()).add(t)
-    con_frontera |= {t for t in temas
-                     for k in _todas(t)
-                     if len(reclaman.get(_norm(k).strip(), ())) > 1}
-
-    partes = []
-    for tema in temas:
-        if tema not in con_frontera:
-            continue
-        señas = _señas_de(tema)
-        # LA SEÑA QUE DISTINGUE VA PRIMERO. Describir un tema con una palabra
-        # que su vecino tambien reclama no desempata nada: si `cuotas` y
-        # `cuotas_financiacion` piden las dos 'financiacion', esa palabra no le
-        # dice al modelo cual elegir. La propia, si.
-        #
-        # Y VAN DOS, NO TRES. La guia se paga en CADA llamada al decisor, asi
-        # que cada palabra de mas se cobra por turno y por charla. Con la seña
-        # que distingue elegida primero, la tercera ya no agrega: lo medido es
-        # que con dos se desambigua igual y la guia queda mas corta que antes de
-        # este cambio, cubriendo el doble de temas.
-        propias = [k for k in señas
-                   if len(reclaman.get(_norm(k).strip(), ())) == 1]
-        elegidas = list(dict.fromkeys(propias + señas))[:2]
-        if elegidas:
-            partes.append(f"{tema} ({', '.join(elegidas)})")
-    return ("Los temas exactos de la lista, UNO POR CADA COSA que pregunto el "
-            "cliente: si pregunto si hacen envio al exterior, cuanto tarda y "
-            "cuanto sale, van los tres temas, no uno. Elegi SIEMPRE el mas "
-            "especifico que cubra cada pregunta: si pregunta por el exterior es "
-            "envio_exterior y no envios, si pregunta cuanto tarda es plazo_envio "
-            "y no costo_envio. Que cubren los que se pisan: " + "; ".join(partes))
-
-
+# `_guia_de_temas` MURIO ACA (FICHA 06, 23-ago-2026). Le decia al modelo que
+# cubre cada tema que se pisa con otro, con dos señas de la fuente, para que
+# eligiera bien del enum de 129. Sin enum no hay nada que elegir: el modelo
+# nombra el tema con las palabras del cliente y `certificar_tema` lo resuelve
+# contra esas MISMAS señas, del lado del codigo, donde ademas se puede loguear
+# cuando no resuelve. La regla que llevaba escrita -gana el mas especifico- no
+# se perdio: es el puntaje de la seña mas larga que entra entera. Su historia
+# entera esta en `git log`.
 def temas_consultables(tienda_id: str) -> list[str]:
     """EL ENUM UNICO de temas: la FAQ y la base de conocimiento en UNA lista.
 
@@ -543,86 +520,225 @@ def temas_consultables(tienda_id: str) -> list[str]:
     return sorted(set(faq.keys()) | set(temas_criterio()))
 
 
-def _atar_filtros(prop: dict, tienda_id: str) -> None:
-    """El enum de `campo` SALE DEL CATALOGO VIVO, igual que `categoria` y que
-    `temas`. Sin esto el modelo inventa nombres de campo -`peso`, `garantia`,
-    `medidas`- que la fuente no tiene, y el filtro no filtra nada en silencio.
+# ── LA CERTIFICACION DE TEMAS: la regla cero, aplicada a un tema ────────────
+#
+# POR QUE EL ENUM SALIO (FICHA 06, 23-ago-2026). Los 129 temas pesaban 2.299
+# bytes, el bloque mas caro de todo el esquema, y viajaban en CADA llamada al
+# decisor. Sacarlo NO es aflojar la atadura: el modelo nombra el tema con LAS
+# PALABRAS DEL CLIENTE y el codigo lo certifica contra las señas que la fuente
+# ya tiene escritas -las keywords de la FAQ y los disparadores de la base-.
+#
+# ES LA REGLA CERO DE `CLAUDE.md` UN NIVEL MAS ARRIBA: la identidad la decide
+# una funcion determinista con tres veredictos de primera clase, `exists`,
+# `ambiguous` y `not_found`, y `not_found` no es un error, es un resultado.
+#
+# QUE PASA CON `ambiguous`, Y ES LO UNICO QUE SE APARTA DE LA FICHA. La ficha
+# pedia REPREGUNTAR. Repreguntar aca seria preguntarle al CLIENTE cual de dos
+# nombres de nuestro archivero quiso decir -"¿garantia o garantia_como_usar?"-,
+# que es exactamente la falla que este repo ya diagnostico y arreglo el 4-ago
+# al unificar los dos enums: "eso no era un error del modelo, era pedirle que
+# aprendiera nuestro archivero". El cliente no lo sabe y no tiene por que.
+#
+# Asi que ante `ambiguous` NO SE ELIGE -que es la parte que importa de la regla
+# cero- y se sirven TODOS los candidatos: el modelo recibe las dos politicas
+# enteras, con sus numeros reales, y contesta la que le preguntaron. No hay
+# invento posible: las dos vienen de la fuente. Y queda logueado.
+# LAS PALABRAS QUE NO NOMBRAN NINGUN TEMA. Van los pronombres y los
+# cuantificadores, no solo los articulos, y eso lo pidio un caso medido: la
+# fuente guarda 'otro a' como disparador de `multidestino`, asi que "afirma otro
+# precio" resolvia a multidestino por la palabra "otro". Un pronombre esta en
+# cualquier frase y por lo tanto no distingue nada; dejarlo adentro convierte al
+# tema que lo tenga de seña en el comodin que se lleva media casa.
+_SIN_SEÑA = frozenset(("que", "como", "cual", "cuando", "donde", "para", "por",
+             "con", "sin", "del", "los", "las", "una", "uno", "mas",
+             "muy", "hay", "eso", "esa", "ese", "esto", "tiene",
+             "tienen", "puedo", "quiero", "hacen", "hace", "son",
+             "esta", "estan", "pero", "y", "o", "el", "la", "de",
+             "otro", "otra", "otros", "otras", "todo", "toda", "todos",
+             "cada", "algo", "alguno", "mismo", "misma", "aca", "alla",
+             "ahi", "sobre", "tambien", "entonces", "ahora", "cosa",
+             "cosas", "otro/a", "algun", "alguna"))
 
-    Se le dice ademas cuales son numericos: es el unico dato que no se puede
-    deducir del nombre y sin el pide `mayor` sobre `color`."""
-    from app.core.filtros_catalogo import campos_filtrables, SIN_CAMPO
-    registro = campos_filtrables(tienda_id)
-    if not registro:
-        return
-    items = prop.get("items")
-    if not isinstance(items, dict):
-        return
-    campo = (items.get("properties") or {}).get("campo")
-    if not isinstance(campo, dict):
-        return
-    # LA ESCAPATORIA ENTRA AL ENUM. Ver el comentario largo en
-    # `filtros_catalogo.SIN_CAMPO`: un enum cerrado sin salida no previene el
-    # invento, lo fabrica, porque obliga a elegir el campo mas parecido cuando
-    # ninguno sirve.
-    campo["enum"] = list(registro) + [SIN_CAMPO]
-    numericos = [c for c, t in registro.items() if t == "numero"]
-    # ESTA DESCRIPCION VIAJA DOS VECES POR LLAMADA -en buscar_productos y en
-    # consultar_catalogo-, asi que cada palabra se paga doble. Se dejan las dos
-    # reglas que el modelo no puede deducir -cuales son numericos y que hacer
-    # cuando ninguno sirve- y se van los tres ejemplos, que decian lo mismo que
-    # la regla.
-    campo["description"] = (
-        "El campo exacto de la lista. Numericos, los unicos que aceptan mayor "
-        "y menor: " + ", ".join(numericos) + ". El resto va con contiene. "
-        f"Si ningun campo expresa lo que pide el cliente, usa '{SIN_CAMPO}' y "
-        f"deja en `valor` sus palabras. NO elijas el mas parecido: sale como "
-        f"si la fuente hubiera contestado, y no contesto.")
+
+def _fichas(texto) -> set:
+    """Las palabras con las que se compara un tema, por RAIZ CORTA y sin las que
+    no distinguen nada.
+
+    LA RAIZ ES LA MISMA QUE USA `indice_turno._aparece` -de cinco letras para
+    arriba alcanza el prefijo de cuatro- y es la misma por el mismo motivo: lo
+    que el cliente dice y lo que la fuente escribio nunca coinciden en la
+    conjugacion. "lo pienso" contra "lo piensa", "envio" contra "envios",
+    "cancelar" contra "cancelacion". Un cortador de plurales no alcanza: pierde
+    el verbo, que es como se dice la mitad de las situaciones de venta."""
+    fuera = set()
+    for w in _norm(texto).replace("_", " ").replace("/", " ").split():
+        w = "".join(c for c in w if c.isalnum())
+        # SE DESCARTA POR LA PALABRA ENTERA Y NO POR LA RAIZ, y se probo al
+        # reves: con la raiz, "estafa" cae en "esta" —que es una muletilla— y
+        # la fuente pierde dos señas de `desconfianza_online` sin que nadie lo
+        # note. La lista de abajo lleva por eso las variantes escritas, que es
+        # barato y no tiene efectos de borde.
+        if len(w) < 3 or w in _SIN_SEÑA:
+            continue
+        fuera.add(w[:4] if len(w) >= 5 else w)
+    return fuera
+
+
+def _senas_por_tema(tienda_id: str) -> dict:
+    """{tema: [conjuntos de fichas]}. La seña de cada tema sale de la fuente que
+    lo define: keywords si es de la FAQ, disparadores si es de la base."""
+    from app.core.guia_venta_prosa import disparadores_de
+    from app.storage.firestore_client import get_all_faq
+    faq = get_all_faq(tienda_id=tienda_id) or {}
+    fuera = {}
+    for tema in temas_consultables(tienda_id):
+        señas = [_fichas(tema)]
+        for k in ((faq.get(tema, {}).get("keywords") or [])
+                  + disparadores_de(tema)):
+            f = _fichas(k)
+            if f:
+                señas.append(f)
+        fuera[tema] = señas
+    return fuera
+
+
+def certificar_tema(nombre: str, tienda_id: str) -> dict:
+    """{veredicto, temas}. `exists` con UN tema, `ambiguous` con los que
+    empatan, `not_found` con la lista vacia. Nunca elige entre empatados."""
+    pedido = _fichas(nombre)
+    if not pedido:
+        return {"veredicto": "not_found", "temas": [], "nombre": nombre}
+    registro = _senas_por_tema(tienda_id)
+    # EL NOMBRE DEL TEMA NO TIENE ATAJO, y sacarselo arreglo cuatro choques que
+    # estaban ABIERTOS en PENDIENTE. Con atajo, "cuotas" resolvia a `cuotas` y
+    # `cuotas_financiacion` no se servia nunca, aunque reclama esa misma palabra:
+    # el nombre de nuestro archivero le ganaba a la fuente. El nombre ya viaja
+    # como una seña mas en `_senas_por_tema`, asi que empata con la otra y el
+    # veredicto sale `ambiguous`, que es lo que de verdad es.
+    # LA PALABRA PROPIA, que es la unica que puede desempatar sola. Es la misma
+    # idea que la guia vieja usaba para elegir que seña imprimir: una palabra
+    # que reclaman veinte temas -"pedido", "envio", "compra"- no dice nada; una
+    # que reclaman uno o dos -"queja", "cancelar", "factura"- lo nombra.
+    reclaman: dict = {}
+    for tema, señas in registro.items():
+        for f in señas:
+            for w in f:
+                reclaman.setdefault(w, set()).add(tema)
+    propias = {w for w, t in reclaman.items() if len(t) <= 3}
+    puntajes = {}
+    for tema, señas in registro.items():
+        # DOS NIVELES, Y EL DE ARRIBA APLASTA AL DE ABAJO. Una seña que entra
+        # ENTERA es que el cliente dijo esa frase; una palabra propia suelta es
+        # apenas un indicio. Multiplicar por diez el primero hace que el indicio
+        # nunca le gane a la frase, sin tener que ordenar por dos claves.
+        #
+        # Y EL PUNTAJE ES EL DE LA SEÑA MAS LARGA, no la suma: sumar premia al
+        # tema que tiene muchas señas cortas, que es justo el generico -`envios`-
+        # contra el especifico -`plazo_envio`-. La regla de la fuente es que gana
+        # el mas especifico, y especifico es la seña que cubre MAS de lo que dijo
+        # el cliente con una sola frase.
+        mejor = 0
+        for f in señas:
+            comun = f & pedido
+            if not comun:
+                continue
+            if f <= pedido:
+                mejor = max(mejor, 10 * len(f))
+            else:
+                # EL INDICIO SOLO CUENTA CON PALABRA PROPIA. Sin este filtro
+                # "cancelar la compra" pegaria en los treinta temas que nombran
+                # "compra" y todo saldria ambiguo, que es no certificar nada.
+                mejor = max(mejor, len(comun & propias))
+        if mejor:
+            puntajes[tema] = mejor
+    if not puntajes:
+        return {"veredicto": "not_found", "temas": [], "nombre": nombre}
+    tope = max(puntajes.values())
+    empatan = sorted(t for t, v in puntajes.items() if v == tope)
+    # NO HAY DESEMPATE, Y SE PROBO UNO. Preferir al tema cuyo NOMBRE entero cabe
+    # en lo que dijo el cliente arregla un caso feo -"compatibilidad" empata con
+    # media casa porque la raiz "comp" es tambien comprar y comparar- y ROMPE
+    # siete: con ese desempate "cuotas" vuelve a ganarle a `cuotas_financiacion`
+    # y "regalo" a `envoltorio_regalo`, que son justo los choques que estaban
+    # ABIERTOS en PENDIENTE desde el 12-ago. Medido: 0 choques ciegos sin el
+    # desempate, 7 con el. Entre servir un tema de mas y no servir el que el
+    # cliente pregunto, gana servir de mas: la fuente no miente, la ausencia si.
+    if len(empatan) == 1:
+        return {"veredicto": "exists", "temas": empatan, "nombre": nombre}
+    return {"veredicto": "ambiguous", "temas": empatan[:3], "nombre": nombre}
+
+
+def certificar_temas(nombres: list, tienda_id: str) -> dict:
+    """La puerta unica: lo que el modelo nombro libre, certificado. Se loguea
+    CADA vez que un tema no resuelve, que es la unica forma de que un agujero
+    de la fuente se vea en el log y no lo pague el cliente."""
+    ciertos: list = []
+    ambiguos: list = []
+    perdidos: list = []
+    for n in (nombres or []):
+        if not str(n or "").strip():
+            continue
+        v = certificar_tema(str(n), tienda_id)
+        if v["veredicto"] == "not_found":
+            perdidos.append(str(n))
+            continue
+        if v["veredicto"] == "ambiguous":
+            ambiguos.append((str(n), v["temas"]))
+        for t in v["temas"]:
+            if t not in ciertos:
+                ciertos.append(t)
+    if ambiguos or perdidos:
+        log.info("tema_no_resuelto", ambiguos=ambiguos[:4],
+                 sin_resolver=perdidos[:4])
+    return {"temas": ciertos, "ambiguos": ambiguos, "sin_resolver": perdidos}
+
+
+# `_atar_filtros` MURIO ACA (FICHA 06, 23-ago-2026). Inyectaba el enum de campos
+# en los `filtros` de `buscar_productos` y de `consultar_catalogo`, que eran las
+# dos herramientas donde el MODELO escribia una condicion. Ahora las condiciones
+# las escribe el codigo -`filtros_catalogo.resolver_exclusion` y su gemela
+# `resolver_orden`- con los nombres de campo sacados de la fuente, asi que no
+# hay a quien atar: no se puede inventar un campo que no se tipea. La misma
+# atadura, para el unico campo que el modelo SI escribe, quedo adentro de
+# `esquemas()`, que es su unico uso.
+# LAS OCHO QUE EL MODELO YA NO VE (FICHA 06, 23-ago-2026). No se borran: no se
+# saca capacidad. Siguen en `_MOLDES` y en `_CUERPOS`, se validan igual y las
+# llama el CODIGO desde `hub_venta._derivar_las_busquedas`, que las deriva de lo
+# que el modelo declaro. Lo que se saca es la ELECCION: el modelo declara, el
+# codigo busca. En el 57% de los turnos declaraba una cosa y buscaba otra, y esa
+# distancia era todo lo que el reconciliador tenia para reclamar.
+_VISIBLES = ("registrar_pedido",)
 
 
 def esquemas(tienda_id: str) -> list[dict]:
-    """Los esquemas de las herramientas, en formato function calling, con los
-    ENUMS de la fuente viva inyectados. Es la unica atadura que queda del lado
-    del modelo: no puede pedir una categoria que no vendemos ni un tema que no
-    existe."""
-    from app.storage.firestore_client import get_categories, get_all_faq
+    """EL MOLDE UNICO que ve el modelo, con los ENUMS de la fuente viva
+    inyectados. La atadura que queda es la que impide nombrar una categoria que
+    no vendemos o un campo que la ficha no tiene; el tema se nombra libre y lo
+    certifica `certificar_temas` contra las señas de la fuente."""
+    from app.storage.firestore_client import get_categories
+    from app.core.filtros_catalogo import campos_filtrables, SIN_CAMPO
     cats = [str(c) for c in (get_categories(tienda_id=tienda_id) or [])]
-    faq = get_all_faq(tienda_id=tienda_id) or {}
-    temas = temas_consultables(tienda_id)
+    registro = campos_filtrables(tienda_id)
     fuera = []
-    for nombre, modelo in _MOLDES.items():
+    for nombre in _VISIBLES:
+        modelo = _MOLDES[nombre]
         esq = _esquema_de(modelo)
         props = esq.get("properties") or {}
-        if nombre == "buscar_productos" and cats and "categoria" in props:
-            props["categoria"]["enum"] = cats
-        if nombre == "buscar_productos" and "filtros" in props:
-            _atar_filtros(props["filtros"], tienda_id)
-        if nombre == "buscar_productos" and "ordenar_por" in props:
-            # MISMA ATADURA que los campos de condicion, y por el mismo motivo:
-            # el enum sale de la fuente viva. `fuente_producto.ordenar_por` y
-            # `atributos_ordenables` estaban escritos desde el interprete que
-            # murio el 1-ago y ninguna herramienta los exponia, asi que "el mas
-            # liviano" no tenia como llegar al codigo con el dato cargado.
-            from app.core.filtros_catalogo import campos_filtrables
-            reg = campos_filtrables(tienda_id)
-            if reg:
-                props["ordenar_por"]["enum"] = list(reg)
-        if nombre == "consultar_catalogo" and "filtros" in props:
-            _atar_filtros(props["filtros"], tienda_id)
-        if nombre == "consultar_catalogo":
-            # MISMA ATADURA que buscar_productos: los campos y las categorias
-            # salen de la fuente viva, asi que el agregado no puede contar sobre
-            # una columna ni un rubro que no existe.
-            if cats and "categoria" in props:
-                props["categoria"]["enum"] = cats
-            from app.core.filtros_catalogo import campos_filtrables
-            reg = campos_filtrables(tienda_id)
-            if reg and "campo" in props:
-                # `categoria` entra SOLO aca: es el campo de "que rubros
-                # manejas", que se contesta con `valores`.
-                props["campo"]["enum"] = list(reg) + ["categoria"]
-        if nombre == "consultar_temas" and temas and "temas" in props:
-            props["temas"]["items"] = {"type": "string", "enum": temas}
-            props["temas"]["description"] = _guia_de_temas(faq, temas)
+        items = (props.get("items") or {}).get("items") or {}
+        if cats and "categoria" in (items.get("properties") or {}):
+            items["properties"]["categoria"]["enum"] = cats
+        campo = (((props.get("atributos") or {}).get("items") or {})
+                 .get("properties") or {}).get("campo")
+        if registro and isinstance(campo, dict):
+            # LA ESCAPATORIA ENTRA AL ENUM, igual que en el filtro que murio con
+            # `buscar_productos`: un enum cerrado sin salida no previene el
+            # invento, lo fabrica, porque obliga a elegir el campo mas parecido
+            # cuando ninguno sirve. Ver `filtros_catalogo.SIN_CAMPO`.
+            campo["enum"] = list(registro) + [SIN_CAMPO]
+            campo["description"] = (
+                f"El campo exacto. Si ninguno sirve usa '{SIN_CAMPO}': NO "
+                "elijas el mas parecido, sale como si la fuente hubiera "
+                "contestado y no contesto.")
         fuera.append({"type": "function", "function": {
             "name": nombre,
             "description": (modelo.__doc__ or "").strip(),
