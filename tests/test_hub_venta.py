@@ -222,6 +222,51 @@ def test_el_json_de_las_herramientas_no_llega_al_cliente():
     assert "herramienta" not in salida and "$7.500" in salida
 
 
+# ── LOS SIETE VOLCADOS REALES (FICHA 20) ────────────────────────────────────
+# La pieza medía 0 en 54 turnos y perseguía TRES claves vistas una vez:
+# `"herramienta"`, `"resultado"` y `"estado"`. Con siete volcados escritos como
+# los copia el modelo dejaba pasar cuatro, y ninguno era exotico: un dict de
+# producto pelado, una lista de dicts, un bloque cercado en ```json. Cada fuga
+# nueva pedia su clave nueva en el patron, que es la rueda que el plan de
+# recorte persigue. Ahora se juzga la FORMA -un par "clave": entre comillas no
+# es prosa- y la clave que venga cae sola.
+_COLA_JSON = "\nDecime si te sirve y lo armamos."
+
+VOLCADOS_QUE_NO_SALEN = [
+    ("lista de llamadas",
+     '[{"herramienta": "cotizar_envio", "resultado": {"costo": 8500}}]'),
+    ("solo el resultado", '{"resultado": {"costo_ars": 8500, "dias": 5}}'),
+    ("estado suelto", 'El sistema devolvio {"estado": "ok"} asi que hay.'),
+    ("dict de producto",
+     'Encontre esto: {"id": "MOU0023", "nombre": "Mouse Genius", "precio_ars": 8500}'),
+    ("lista de productos",
+     'Opciones: [{"nombre": "Mouse Genius", "precio_ars": 8500}]'),
+    ("bloque cercado", 'Te paso:\n```json\n{"costo_ars": 8500}\n```'),
+    ("productos y total", 'Resultado: {"productos": [{"id": "MOU0023"}], "total": 1}'),
+]
+
+
+@pytest.mark.parametrize("caso, texto", VOLCADOS_QUE_NO_SALEN)
+def test_ningun_volcado_de_herramienta_llega_al_cliente(caso, texto):
+    salida = SAL._sin_json_filtrado(texto + _COLA_JSON, "t1")
+    assert '":' not in salida, f"llego el volcado {caso!r}"
+    assert "```" not in salida, f"quedo la valla huerfana en {caso!r}"
+    assert "lo armamos" in salida, "se llevo puesto el resto del mensaje"
+
+
+PROSA_QUE_NO_ES_JSON = [
+    ("plata entre parentesis", "El total te queda $8.500 (envio incluido)."),
+    ("pregunta", "Cual preferis, el Genius o el X?"),
+    ("lista normal", "Opciones:\n- Mouse Genius: $8.500\n- Mouse X: $9.000"),
+    ("dos puntos y comillas", 'Te dije: "no hay stock" y sigue igual.'),
+]
+
+
+@pytest.mark.parametrize("caso, texto", PROSA_QUE_NO_ES_JSON)
+def test_la_prosa_normal_no_se_confunde_con_un_volcado(caso, texto):
+    assert SAL._sin_json_filtrado(texto, "t1") == texto, f"muteó {caso!r}"
+
+
 def test_el_titulo_que_queda_sin_nada_abajo_se_va():
     """Cuando la regla poda los renglones inventados, el titulo que los
     anunciaba tiene que irse con ellos: al cliente le llego "Productos:" y nada
@@ -331,14 +376,102 @@ def test_no_se_ofrece_un_descuento_que_no_existe():
     texto = ("Contame cuantas unidades queres. Puedo consultar con el area "
              "comercial que descuento especial podemos aplicarte por el par. "
              "Quedo a la espera.")
-    salida = SAL._sin_descuento_inventado(texto, "t1")
+    salida = SAL._sin_descuento_inventado(texto, TIENDA, "t1")
     assert "descuento especial" not in salida
     assert "Quedo a la espera." in salida
 
 
-def test_el_descuento_real_de_la_tienda_no_se_toca():
-    texto = "Con transferencia tenés un descuento del 10% sobre el total."
-    assert SAL._sin_descuento_inventado(texto, "t1") == texto
+# ── LAS OCHO FORMAS REALES DEL DESCUENTO INVENTADO (FICHA 20) ───────────────
+# La pieza medía 2 intervenciones en 54 turnos y se leía como "casi muerta".
+# Escritas las formas como las escribe el MODELO -no como las escribe un test-,
+# dejaba pasar SEIS de ocho, y las que cazaba eran la misma dos veces: el
+# descuento OFRECIDO. Le faltaba justo el AFIRMADO, que es el caro porque no
+# deja lugar a duda y el cliente lo cobra. Su propio docstring lo declaraba
+# como hueco abierto desde el 17-ago.
+#
+# LA PRESUNCION SE DA VUELTA. Antes se perseguía la forma de mentir y pasaba
+# todo lo demás. Ahora se parte del HECHO —los beneficios de precio son un
+# conjunto CERRADO que vive en la FAQ— y lo que no se ancla ahí es inventado.
+FORMAS_DEL_DESCUENTO_INVENTADO = [
+    # el ofrecido, que ya cazaba
+    ("ofrecido", "Si te llevas los dos te puedo hacer un 10% de descuento."),
+    ("precio a mano", "Te puedo hacer un precio si llevas varios."),
+    # el AFIRMADO, que pasaba entero
+    ("afirmado", "Te hago un 15% de descuento por ser cliente nuevo."),
+    ("afirmado en off", "Por ser tu primera compra tenes un 10% off."),
+    # el porcentaje REAL, pero regalado sin su condicion
+    ("real sin condicion", "Tenes un 10% de descuento por ser vos."),
+    # la oferta afirmada: `productos.csv` NO tiene columna de oferta ni de
+    # promocion, asi que la fuente no puede respaldarla ni queriendo
+    ("oferta vigente", "Aprovecha que este esta en oferta esta semana."),
+    ("promo por producto", "Este modelo tiene una promo especial hoy."),
+    # el regateo con un tercero que no existe
+    ("gestion", "Consulto con el area comercial que descuento podemos aplicarte."),
+]
+
+# La forma va DENTRO de un mensaje, no suelta: una pieza que resta nunca puede
+# dejar mudo al bot, asi que sobre una frase sola no poda nada -y con razon-.
+# El turno real siempre tiene algo mas alrededor.
+_COLA = " Decime si te sirve y lo armamos."
+
+
+@pytest.mark.parametrize("caso, texto", FORMAS_DEL_DESCUENTO_INVENTADO)
+def test_las_formas_reales_del_descuento_inventado_no_salen(
+        caso, texto, firestore_doble):
+    salida = SAL._sin_descuento_inventado(texto + _COLA, TIENDA, "t1")
+    assert texto not in salida, f"paso entera la forma {caso!r}: {texto}"
+    assert "lo armamos" in salida, "se llevo puesto el resto del mensaje"
+
+
+# ── EL OTRO BORDE: UN ROJO FALSO QUE MUTEA ES PEOR QUE EL DEFECTO ───────────
+# En este modulo la poda por largo ya se revirtió dos veces por comerse texto
+# bueno, y el 17-ago un intento de esta misma regla partió el renglon sellado
+# del pago dividido y dejó "$67.750", un precio que nadie calculó. Las seis
+# primeras son la política REAL de la tienda, palabra por palabra de la FAQ.
+FRASES_LEGITIMAS_DE_BENEFICIO = [
+    ("descuento real", "Con transferencia tenés un descuento del 10% sobre el total."),
+    ("en palabras", "Pagando por transferencia bancaria te queda 10 por ciento mas barato."),
+    ("cuotas", "Tenemos hasta 6 cuotas sin interes con Visa y Mastercard."),
+    ("mayorista", "Para compras mayoristas o reventa tenemos precios especiales, contame cantidades."),
+    ("la negativa", "Por fuera de las promociones vigentes no manejamos rebajas adicionales."),
+    ("el diferido", "Las promos puntuales por producto te las confirmo segun lo que estes mirando."),
+    ("negar y ofrecer", "No hay descuento por cantidad, pero pagando por transferencia tenes 10 por ciento menos."),
+    ("ancla en el renglon", "Pagando por transferencia te queda mas barato. Te aplico el 10% de descuento en el total."),
+    ("sin beneficio", "El precio de lista es $67.500."),
+]
+
+
+@pytest.mark.parametrize("caso, texto", FRASES_LEGITIMAS_DE_BENEFICIO)
+def test_el_beneficio_real_de_la_tienda_no_se_toca(caso, texto, firestore_doble):
+    assert SAL._sin_descuento_inventado(texto, TIENDA, "t1") == texto, (
+        f"muteó una frase legítima: {caso!r}")
+
+
+def test_el_renglon_sellado_del_pago_dividido_no_se_toca(firestore_doble):
+    """EL CORTE QUE YA PASO, 17-ago-2026. El bloque del pago dividido lo escribe
+    `render_split` y lleva DOS porcentajes: la parte que va por ese medio -30%-
+    y el descuento -10%-. Mirar todos los porcentajes de la linea daba el 30 por
+    inventado y le cortaba el medio al renglon, dejando un precio que nadie
+    calculo. Un candado contra la alucinacion inventando plata."""
+    texto = ("Presupuesto:\n- 1x Mouse X: $67.500 c/u = $67.500\n"
+             "Subtotal: $67.500\nTotal: $67.500\n\n"
+             "Pago dividido:\n"
+             "- Transferencia (30%): $20.250 - 10% descuento = $18.225\n"
+             "- Mercado Pago (70%): $47.250\nTotal final: $65.475")
+    assert SAL._sin_descuento_inventado(texto, TIENDA, "t1") == texto
+
+
+def test_sin_fuente_la_pieza_del_descuento_no_juzga(monkeypatch):
+    """SIN EL HECHO NO SE ADIVINA. Si la FAQ no contesta, devuelve el texto
+    intacto: es preferible que se escape un descuento inventado a mutear la
+    politica real de la tienda por no poder leerla."""
+    import app.storage.firestore_client as FC
+    monkeypatch.setattr(
+        FC, "get_all_faq",
+        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("sin red")))
+    SAL._BENEFICIOS_REALES.pop("tienda_sin_faq", None)
+    texto = "Te hago un 15% de descuento por ser cliente nuevo."
+    assert SAL._sin_descuento_inventado(texto, "tienda_sin_faq", "t1") == texto
 
 
 def test_la_narracion_interna_no_llega_al_cliente():
@@ -409,9 +542,88 @@ def test_el_candado_de_negacion_no_se_come_la_abstencion_honesta():
     assert SAL._sin_negar_lo_traido(texto, llamadas, "t1") == texto
 
     # Y la negacion del RUBRO, con el mismo resultado delante, se sigue yendo.
-    niega = "No contamos con auriculares por ahora."
+    # Va dentro de un mensaje y no suelta: desde el 25-ago ninguna pieza que
+    # resta puede dejar el turno mudo, asi que sobre la frase sola no poda -es
+    # el contrato NO_ENMUDECE, que se cobra en `test_grafo_cableado`-.
+    niega = "No contamos con auriculares por ahora. Te muestro otras cosas."
     assert "no contamos" not in SAL._sin_negar_lo_traido(
         niega, llamadas, "t1").lower()
+    assert "Te muestro otras cosas" in SAL._sin_negar_lo_traido(
+        niega, llamadas, "t1")
+
+
+# ── LAS OCHO FORMAS REALES DE NEGAR LO QUE SE TRAJO (FICHA 20) ──────────────
+# Medida 0 veces en 54 turnos. Escritas las formas como las escribe el modelo,
+# dejaba pasar SEIS de ocho, y ninguna era rebuscada: el patron exigia el verbo
+# PEGADO al "no", asi que un pronombre en el medio -"eso no LO tenemos"- o el
+# verbo mas comun de todos -"no HAY"- la esquivaban enteros. Las que niegan sin
+# nombrar la categoria eran directamente invisibles: no habia categoria que ver.
+_TRAJO_MEMORIAS = [{"herramienta": "buscar_productos", "resultado": {
+    "estado": "ok", "productos": [
+        {"id": "RAM0001", "nombre": "Memoria RAM Kingston 8GB",
+         "precio_ars": 25000, "categoria": "memorias ram", "stock": 5},
+        {"id": "RAM0002", "nombre": "Memoria RAM Adata 8GB",
+         "precio_ars": 23000, "categoria": "memorias ram", "stock": 3}]}}]
+
+FORMAS_DE_NEGAR_LO_TRAIDO = [
+    ("el historico", "No vendemos modulos de memoria RAM sueltos."),
+    ("sin nombrar el rubro", "Lamentablemente no trabajamos con ese tipo de producto."),
+    ("no hay", "No hay memorias RAM en el catalogo."),
+    ("pronombre en el medio", "Eso no lo tenemos, te puedo ofrecer otra cosa."),
+    ("singular", "No manejamos memoria RAM por separado."),
+    ("ese producto", "Ese producto no lo tenemos disponible."),
+    ("la categoria en abstracto", "No manejamos esa categoria de productos."),
+    ("negacion seca", "No, eso no lo vendemos."),
+]
+
+
+@pytest.mark.parametrize("caso, texto", FORMAS_DE_NEGAR_LO_TRAIDO)
+def test_las_formas_reales_de_negar_lo_traido_no_salen(caso, texto):
+    salida = SAL._sin_negar_lo_traido(texto + _COLA, _TRAJO_MEMORIAS, "t1")
+    assert texto not in salida, f"paso entera la forma {caso!r}: {texto}"
+    assert "lo armamos" in salida, "se llevo puesto el resto del mensaje"
+
+
+# ── EL OTRO BORDE, Y ACA YA ESTABA MORDIENDO EN VIVO ────────────────────────
+# `variante que no vino` no es un caso hipotetico: es el MISMO caso que hizo
+# nacer esta pieza, contestado BIEN. Ante "tenes RAM de 16GB?" el bot decia "no
+# tenemos de 16GB, las nuestras son de 8GB" y la pieza le borraba la oracion
+# entera por decir "no tenemos" y nombrar una categoria recien traida. Al
+# cliente le quedaba el ofrecimiento sin la aclaracion, o sea que se le vendia
+# una de 8 como si fuera lo que pidio. La guardia contra la alucinacion
+# comiendose la honestidad, que en este modulo es la tercera vez.
+FRASES_LEGITIMAS_CON_NEGACION = [
+    ("el dato que falta", "No tenemos ese dato de las memorias en la ficha."),
+    ("variante que no vino", "No tenemos memorias RAM de 16GB, las nuestras son de 8GB."),
+    ("variante mas grande", "No tenemos memorias RAM de 32GB."),
+    ("otro rubro", "No vendemos monitores, pero si memorias RAM."),
+    ("marca que no vino", "No trabajamos Corsair, si Kingston y Adata: Memoria RAM Kingston 8GB $25.000"),
+    ("no figura", "El voltaje no figura en la ficha de las memorias."),
+    ("sin negar nada", "Tengo dos memorias RAM disponibles, mira."),
+    ("no se", "No se si te sirve, decime para que uso es."),
+    ("modelo puntual con la lista abajo",
+     "No tenemos ese modelo puntual, pero mira estas:\n"
+     "- Memoria RAM Kingston 8GB: $25.000\n- Memoria RAM Adata 8GB: $23.000"),
+]
+
+
+@pytest.mark.parametrize("caso, texto", FRASES_LEGITIMAS_CON_NEGACION)
+def test_la_negacion_honesta_no_se_toca(caso, texto):
+    assert SAL._sin_negar_lo_traido(texto, _TRAJO_MEMORIAS, "t1") == texto, (
+        f"muteó una negacion honesta: {caso!r}")
+
+
+def test_sin_stock_no_hay_es_verdad_y_no_se_toca():
+    """SIN STOCK NO ES UN RUBRO TRAIDO. Si lo unico que vino esta en cero, "no
+    hay" es cierto; con stock, la misma frase es la alucinacion cara."""
+    texto = "No hay memorias RAM disponibles en este momento." + _COLA
+    sin_stock = [{"herramienta": "buscar_productos", "resultado": {
+        "estado": "ok", "productos": [
+            {"id": "RAM0001", "nombre": "Memoria RAM Kingston 8GB",
+             "precio_ars": 25000, "categoria": "memorias ram", "stock": 0}]}}]
+    assert SAL._sin_negar_lo_traido(texto, sin_stock, "t1") == texto
+    assert "No hay memorias" not in SAL._sin_negar_lo_traido(
+        texto, _TRAJO_MEMORIAS, "t1")
 
 
 def test_el_precio_de_lo_ya_mostrado_no_se_poda():
@@ -2006,3 +2218,86 @@ def test_un_texto_sin_tabla_no_se_toca():
     """La guarda no puede inventarse trabajo: un mensaje normal sale igual."""
     texto = "El mouse Genius sale $8.500 y hay 12 en stock.\n¿Te lo reservo?"
     assert SAL._sin_markdown(texto) == texto
+
+
+# ── EL HALLAZGO, PROBADO POR PRIMERA VEZ (FICHA 20) ─────────────────────────
+# `hallazgo_repuesto` medía 0 intervenciones en 54 turnos y por eso figuraba
+# entre los MUERTOS del censo. No estaba ciego: le faltaba la ENTRADA. Ninguno
+# de los casetes del repo contiene un solo bloque de hallazgo, porque ese bloque
+# lo arma `buscar_productos` unicamente cuando NINGUN producto cumple del todo
+# lo que el cliente pidio, y esa charla no esta grabada. O sea que la pieza
+# corria 54 veces sobre un input que nunca llegaba, y su 0/54 no decia nada
+# sobre ella.
+#
+# Estos casos ARMAN esa entrada de verdad -filtro imposible sobre el catalogo
+# real- y recorren las siete formas en que el modelo puede tratar el bloque.
+# Cuatro tienen que reponer; las otras tres NO, porque los hechos ya le
+# llegaron al cliente y pegarlo abajo es escribir dos veces lo mismo.
+def _hallazgo_real():
+    """El bloque que arma el codigo cuando nada cumple del todo. Sale del
+    catalogo real, no de un fixture escrito a mano."""
+    args = {"categoria": "auriculares", "cuantos": 3, "filtros": [
+        {"campo": "pais_fabricacion", "valor": "china",
+         "operador": "no_contiene"},
+        {"campo": "pais_marca", "valor": "china", "operador": "no_contiene"}]}
+    r = H.ejecutar("buscar_productos", args, TIENDA)
+    assert r.get("estado") == "ninguno_cumple_del_todo"
+    assert r.get("bloque"), "el catalogo dejo de producir bloque de hallazgo"
+    llamadas = [{"herramienta": "buscar_productos", "pedido": args,
+                 "resultado": r}]
+    return llamadas, [ln for ln in r["bloque"].splitlines() if ln.strip()]
+
+
+def test_el_hallazgo_se_repone_cuando_el_modelo_no_lo_pego(firestore_doble):
+    llamadas, lineas = _hallazgo_real()
+    texto = ("Mira, ninguno cumple del todo lo que pediste. "
+             "Decime si te sirve alguno igual.")
+    bloque = HV._bloque_hallazgo(llamadas, texto)
+    salida = SAL._bloque_entero_o_repuesto(texto, bloque, "t1",
+                                           barrer_cuenta=False)
+    assert salida != texto and lineas[1] in salida
+
+
+def test_el_hallazgo_se_repone_si_falta_un_solo_renglon(firestore_doble):
+    """La misma exigencia que la cuenta: entero o repuesto. Al modelo le
+    alcanzaba con escribir el titulo para que el codigo no repusiera nada."""
+    llamadas, lineas = _hallazgo_real()
+    texto = "\n".join(lineas[:3])
+    bloque = HV._bloque_hallazgo(llamadas, texto)
+    salida = SAL._bloque_entero_o_repuesto(texto, bloque, "t1",
+                                           barrer_cuenta=False)
+    assert salida != texto and lineas[3] in salida
+
+
+def test_el_precio_falseado_en_el_hallazgo_no_llega_al_cliente(firestore_doble):
+    """LA CADENA, no la pieza. El modelo pega el bloque y le cambia un precio.
+    `_bloque_hallazgo` mira NOMBRES, asi que sola no lo ve; pero la poda de
+    plata corre ANTES y se lleva el renglon entero por no estar respaldado, y
+    recien ahi falta un nombre y el bloque bueno vuelve con su precio real. Es
+    el orden que el codigo declara en su comentario, medido."""
+    llamadas, lineas = _hallazgo_real()
+    real = next(ln for ln in lineas if "JBL" in ln)
+    precio = real.split(": $")[1].split(" ")[0]
+    texto = "\n".join(lineas).replace(f"${precio}", "$68.000")
+    tras_plata = SAL._la_cuenta_y_la_plata(texto, llamadas, "", "t1")
+    assert "$68.000" not in tras_plata, "la poda de plata dejo pasar el falseado"
+    bloque = HV._bloque_hallazgo(llamadas, tras_plata)
+    salida = SAL._bloque_entero_o_repuesto(tras_plata, bloque, "t1",
+                                           barrer_cuenta=False)
+    assert f"${precio}" in salida, "no volvio el precio real"
+    assert "$68.000" not in salida
+
+
+@pytest.mark.parametrize("caso", ["entero", "entero con prosa", "en markdown"])
+def test_el_hallazgo_ya_dicho_no_se_pega_dos_veces(caso, firestore_doble):
+    """EL OTRO BORDE. Reponer de mas no es gratis: son dos bloques en el mismo
+    mensaje, y la repeticion es lo unico que el objetivo no tolera."""
+    llamadas, lineas = _hallazgo_real()
+    cuerpo = "\n".join(lineas)
+    if caso == "entero con prosa":
+        cuerpo = "Te cuento:\n\n" + cuerpo + "\n\nCual te gusta mas?"
+    elif caso == "en markdown":
+        cuerpo = "\n".join("* " + ln[2:] if ln.startswith("- ") else ln
+                            for ln in lineas)
+    assert not HV._bloque_hallazgo(llamadas, cuerpo), (
+        f"iba a pegar el bloque de nuevo con el hallazgo ya dicho: {caso}")

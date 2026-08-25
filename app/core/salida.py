@@ -167,9 +167,37 @@ def _sin_titulos_huerfanos(texto: str) -> str:
 # y tenerlas separadas fue lo que dejo la de arriba sin escribir.
 
 
+# ── UNA PIEZA QUE RESTA NO PUEDE DEJAR MUDO AL BOT ──────────────────────────
+# El contrato mas caro de romper, y ya paso en real: el cliente leyo el texto de
+# respaldo. Lo cobra `test_ningun_engranaje_deja_mudo_al_bot`, que corre CADA
+# pieza sobre todo el corpus, y lo cazo el mismo dia que estas tres se armaron
+# de nuevo: "No tengo exactamente eso." es un mensaje entero, la pieza se lo
+# comia y al cliente no le llegaba nada.
+#
+# La regla es de PRIORIDAD, no de criterio: es preferible que salga una frase
+# dudosa a que no salga NINGUNA. Si podar deja el mensaje vacio, no se poda.
+def _no_enmudece(original: str, podado: str, trace_id: str, quien: str) -> str:
+    if (original or "").strip() and not (podado or "").strip():
+        log.warning("salida_poda_enmudece", trace_id=trace_id, guardia=quien)
+        return original
+    return podado
+
+
+# NO SE PERSIGUEN LAS TRES CLAVES QUE SE VIERON UNA VEZ: SE PERSIGUE LA FORMA.
+# Medida el 25-ago (FICHA 20) con siete volcados escritos como los copia el
+# modelo, dejaba pasar cuatro. El patron nombraba `"herramienta"`, `"resultado"`
+# y `"estado"`, asi que un dict de producto pelado -{"id": "MOU0023", "nombre":
+# ...}-, una lista de dicts o un bloque cercado en ```json le pasaban por al
+# lado y al cliente le llegaba el volcado igual. Es la rueda de siempre: cada
+# fuga nueva agregaba su clave al patron.
+#
+# EL HECHO NO ES QUE CLAVE DICE, ES QUE UN JSON NO ES PROSA. Un par `"clave":`
+# entre comillas, un `[{` o un `}]` son sintaxis de maquina y no aparecen en un
+# mensaje escrito para una persona. Se juzga por eso, y la clave que venga cae
+# adentro sin tocar nada.
 _RE_JSON_FILTRADO = re.compile(
-    r'(?m)^.*(?:\[\s*\{\s*"herramienta"|"resultado"\s*:\s*\{|'
-    r'"estado"\s*:\s*"(?:ok|encontrado|no_encontrado)").*$')
+    r'(?m)^.*(?:"[a-z_]{2,}"\s*:|\[\s*\{|\}\s*\]|^\s*```\s*json).*$',
+    re.IGNORECASE)
 
 
 def _sin_json_filtrado(texto: str, trace_id: str) -> str:
@@ -177,9 +205,12 @@ def _sin_json_filtrado(texto: str, trace_id: str) -> str:
     el modelo copio el bloque entero de `cotizar_envio` al medio de la respuesta
     y al cliente le llego el volcado crudo de la herramienta."""
     limpio = _RE_JSON_FILTRADO.sub("", texto or "")
+    # Las vallas del bloque cercado quedan huerfanas cuando se le saca adentro.
+    limpio = re.sub(r"(?m)^\s*```\w*\s*$", "", limpio)
     if limpio != (texto or ""):
         log.warning("hub_venta_json_filtrado", trace_id=trace_id)
-    return re.sub(r"\n{3,}", "\n\n", limpio).strip()
+    return _no_enmudece(texto, re.sub(r"\n{3,}", "\n\n", limpio).strip(),
+                        trace_id, "sin_json")
 
 
 _RE_ORACIONES = re.compile(r"(?:[^.!?\n]|(?<=\d)[.,](?=\d))+[.!?]?")
@@ -190,25 +221,137 @@ _RE_ORACIONES = re.compile(r"(?:[^.!?\n]|(?<=\d)[.,](?=\d))+[.!?]?")
 # cifra que nadie calculo: medido ese dia, quedo "$67.750" donde iban $67.500
 # y $60.750, y lo cazo el invariante de que las partes suman el total. Un
 # punto entre digitos ahora es parte del numero, que es lo que siempre fue.
-# La oracion habla de un beneficio de precio...
+# ── EL BENEFICIO DE PRECIO SE JUZGA CONTRA LA FUENTE ────────────────────────
+# REESCRITA EL 25-ago-2026 (FICHA 20), Y EL MOTIVO ES UNA MEDICION. La version
+# vieja pedia DOS cosas en la misma oracion -un beneficio y una gestion- asi que
+# solo veia el descuento OFRECIDO. Probada con siete formas reales escritas como
+# las escribe el modelo, dejo pasar cinco:
+#
+#   "Te hago un 15% de descuento por ser cliente nuevo."      pasaba
+#   "Por ser tu primera compra tenes un 10% off."             pasaba
+#   "Aprovecha que esta en oferta esta semana."               pasaba
+#   "Llevando los dos te queda en $60.000 en vez de $67.500." pasaba (*)
+#   "Hablo con mi jefe y seguro te consigue algo mejor."      pasaba
+#
+# (*) las dos formas con MONTO ya las caza `_sin_plata_inventada`, que corre
+# antes y poda todo importe sin respaldo. Lo que no tenia dueño era el
+# beneficio SIN monto: el porcentaje afirmado y la oferta afirmada. Eso es lo
+# que esta funcion pasa a cubrir, y por eso no se fusiona con la de la plata.
+#
+# LA VUELTA DE LA PRESUNCION. Antes se buscaba la forma de mentir y se dejaba
+# pasar el resto. Ahora se parte del HECHO: los beneficios de precio de la
+# tienda son un conjunto CERRADO que vive en la fuente, y todo lo que no se
+# ancle ahi es inventado. Dos hechos, los dos leidos de la FAQ y ninguno
+# escrito aca:
+#
+#   ANCLAS      los mecanismos reales -transferencia, efectivo, cuotas,
+#               mayorista- salen de las keywords de los temas que hablan de
+#               beneficio. Si mañana la tienda suma uno, la guardia lo acepta
+#               sola: no hay lista que actualizar.
+#   PORCENTAJES los `valores` con unidad porcentaje. Hoy es uno solo. Un
+#               porcentaje pegado a un beneficio que no esta en ese conjunto
+#               es inventado, y no hace falta saber cual invento el modelo.
+#
+# Y EL CATALOGO CIERRA EL TERCER HECHO, gratis: `productos.csv` no tiene NINGUNA
+# columna de oferta ni de promocion. O sea que "este esta en oferta" no es algo
+# que la fuente pueda respaldar aunque quiera: es falso por construccion.
+#
+# EL OTRO BORDE, que en este modulo ya mordio dos veces. Un rojo falso que mutea
+# es peor que el defecto, asi que hay tres frenos y los tres se probaron:
+#   1. SIN FUENTE NO SE JUZGA. Si la FAQ no vino, la funcion devuelve el texto
+#      intacto. Un candado sin su hecho no adivina.
+#   2. LOS RENGLONES SELLADOS NO SE TOCAN. El bloque del presupuesto y el del
+#      pago dividido los escribe el CODIGO y llevan porcentajes -"(30%)", "- 10%
+#      descuento ="-. El 17-ago un intento de esta misma regla le corto el medio
+#      a ese renglon y dejo "$67.750", un precio que nadie calculo. Ahora la
+#      linea sellada se saltea antes de mirar nada.
+#   3. NEGAR Y DIFERIR NO ES CONCEDER. "No manejamos rebajas por fuera de las
+#      promociones vigentes" y "las promos por producto te las confirmo segun lo
+#      que mires" son las respuestas de la FUENTE, palabra por palabra. Una
+#      guardia que se las come deja al bot sin la politica real, que es el mismo
+#      defecto que ya cometio `_sin_negar_lo_traido` contra la honestidad.
 _RE_BENEFICIO = re.compile(
-    r"descuento|rebaja|precio especial|bonificaci[oó]n|"
-    r"mejor(?:ar|amos|o|arte)\s+(?:el\s+)?precio|hacer(?:te)?\s+(?:un\s+)?precio",
+    r"descuento|rebaja|oferta|promo|promoci[oó]n|bonificaci[oó]n|"
+    r"precios?\s+especiales?|sin\s+inter[eé]s|\d\s*%\s*off|\boff\b|"
+    r"mejor(?:ar|amos|o|arte)\s+(?:el\s+)?precio|hacer(?:te)?\s+(?:un\s+)?precio|"
+    r"te\s+lo\s+dejo|te\s+lo\s+hago|m[aá]s\s+barato",
     re.IGNORECASE)
-# ...y lo OFRECE o lo deja abierto. El orden de las dos piezas no importa: "puedo
-# consultar que descuento aplicarte" y "el descuento lo puedo consultar" son la
-# misma promesa, y la primera version del candado solo veia una de las dos.
-_RE_GESTION = re.compile(
-    r"consult|averigu|gestion|puedo|podemos|podr[ií]a|veamos|vemos|"
-    r"area comercial|te lo hago|te lo dejo|para vos|aplicart|ofrecert",
+# NEGAR EL BENEFICIO ES LA POLITICA, NO LA MENTIRA. Es la misma leccion que ya
+# se pago en `_sin_negar_lo_traido`: la guardia contra la alucinacion no puede
+# comerse la frase honesta que dice que el beneficio NO existe.
+_RE_NIEGA_BENEFICIO = re.compile(
+    r"\bno\s+(?:hay|tenemos|manejamos|hacemos|aplicamos|trabajamos|"
+    r"puedo\s+hacerte|hacemos)\b|\bno\s+se\s+(?:hacen|aplican)\b|"
+    r"\bpor\s+fuera\s+de\b|\bsin\s+descuento\b",
     re.IGNORECASE)
-# Los descuentos REALES de la tienda. Si la oracion nombra uno, es politica.
-_RE_DESCUENTO_REAL = re.compile(
-    r"transferenc|mayorist|cuotas sin inter[eé]s", re.IGNORECASE)
+# DIFERIR TAMPOCO ES CONCEDER. "Te lo confirmo segun lo que estes mirando" es
+# textual de la respuesta curada del tema `promociones`.
+_RE_DIFIERE = re.compile(
+    r"te\s+(?:lo|la|las|los)\s+confirmo|seg[uú]n\s+lo\s+que|"
+    r"si\s+llega\s+a\s+haber|en\s+el\s+momento|te\s+aviso",
+    re.IGNORECASE)
+# EL PORCENTAJE PEGADO AL BENEFICIO, y solo ese. En el renglon del pago
+# dividido conviven "(30%)" -que es la PARTE que va por ese medio- y "10%
+# descuento" -que es el beneficio-. Mirar todos los porcentajes de la linea
+# daba por inventado el 30 y se llevaba puesta la cuenta sellada.
+_RE_PCT_BENEFICIO = re.compile(
+    r"(\d{1,2})\s*(?:%|por\s*ciento)\s*(?:de\s+)?"
+    r"(?:descuento|rebaja|off|bonificaci[oó]n)|"
+    r"(?:descuento|rebaja|bonificaci[oó]n)\s*(?:de\s+|del\s+)?"
+    r"(\d{1,2})\s*(?:%|por\s*ciento)",
+    re.IGNORECASE)
+# LOS RENGLONES QUE ESCRIBE EL CODIGO. `_render_presentacion`, `_label_extra` y
+# `render_split` son los tres, y todos empiezan la linea igual.
+_RE_LINEA_SELLADA = re.compile(
+    r"^\s*(?:-\s|Presupuesto:|Subtotal:|Total(?:\s+final)?:|Pago\s+dividido:|"
+    r"Descuento\s+\d|Se[nñ]a\s+\d|Recargo\s+\d)",
+    re.IGNORECASE)
+
+_BENEFICIOS_REALES: dict = {}
 
 
-def _sin_descuento_inventado(texto: str, trace_id: str) -> str:
-    """NO SE OFRECE UN DESCUENTO QUE NO EXISTE. Ni siquiera como posibilidad.
+def _beneficios_reales(tienda_id: str | None) -> dict:
+    """EL HECHO, leido de la FAQ: con que se ancla un beneficio y que
+    porcentajes existen. `{}` si la fuente no contesta, y con `{}` la guardia
+    no juzga nada."""
+    tid = tienda_id or ""
+    if tid in _BENEFICIOS_REALES:
+        return _BENEFICIOS_REALES[tid]
+    anclas, pcts = set(), set()
+    try:
+        from app.storage.firestore_client import get_all_faq
+        faq = get_all_faq(tienda_id=tienda_id) or {}
+    except Exception as e:  # noqa: BLE001 — sin fuente la pieza no juzga
+        log.warning("salida_beneficios_sin_fuente", tienda=tid, error=str(e)[:80])
+        faq = {}
+    for tema, e in (faq or {}).items():
+        if not isinstance(e, dict):
+            continue
+        claves = [str(k) for k in (e.get("keywords") or [])]
+        # El tema habla de beneficio si LA FUENTE lo dice, en su nombre, en sus
+        # keywords o en su respuesta. No hay lista de temas escrita aca.
+        firma = " ".join([str(tema)] + claves + [str(e.get("respuesta") or "")])
+        if not _RE_BENEFICIO.search(firma):
+            continue
+        for k in claves:
+            # La keyword que ES el beneficio no ancla nada: "descuento" no
+            # respalda a "descuento". Ancla el MECANISMO.
+            if not _RE_BENEFICIO.search(k):
+                anclas.add(H._norm(k))
+        for v in (e.get("valores") or []):
+            if (v.get("unidad") or "").lower() == "porcentaje":
+                try:
+                    pcts.add(int(v.get("monto", 0)))
+                except (TypeError, ValueError):
+                    log.warning("salida_beneficio_pct_ilegible", tema=str(tema),
+                                monto=str(v.get("monto"))[:20])
+    hecho = {"anclas": {a for a in anclas if len(a) > 3}, "porcentajes": pcts}
+    _BENEFICIOS_REALES[tid] = hecho
+    return hecho
+
+
+def _sin_descuento_inventado(texto: str, tienda_id: str, trace_id: str) -> str:
+    """NO SALE UN BENEFICIO DE PRECIO QUE LA FUENTE NO RESPALDE.
 
     Banco repetido del 1-ago, guion de objecion de precio: ante "si te llevo dos
     me haces precio?" el bot contesto que iba a "consultar con el area comercial
@@ -216,44 +359,57 @@ def _sin_descuento_inventado(texto: str, trace_id: str) -> str:
     area comercial que consultar, y el descuento no existe. Es la puerta por la
     que se cuela una promesa comercial que despues alguien tiene que sostener.
 
-    Los descuentos REALES de la tienda -transferencia, mayorista, cuotas- salen
-    de consultar_temas y no los toca esta regla.
+    La forma mas cara no es esa, y hasta hoy no la veia nadie: el descuento
+    AFIRMADO -"te hago un 15% por ser cliente nuevo"- no deja lugar a duda y el
+    cliente lo cobra. Ahora cae por el hecho, no por la redaccion: 15 no esta
+    entre los porcentajes que declara la fuente.
 
-    EL HUECO QUE QUEDA ABIERTO, y esta declarado con test en
-    `tests/test_bot_sin_modelo.py`: esta regla pide DOS cosas en la misma
-    oracion, el beneficio y la gestion, o sea que caza el descuento OFRECIDO
-    -"puedo consultar que descuento aplicarte"- y deja pasar el AFIRMADO -"te
-    hago un 25% de descuento por ser vos"-, que es la mentira mas cara de las
-    dos porque no deja lugar a duda.
-
-    Y ESTA ESCRITO ACA POR QUE NO SE TAPA CON OTRA REGLA DE PROSA. El 17-ago se
-    intento: se le agrego una segunda mitad que podaba toda oracion con un
-    porcentaje de descuento que ninguna herramienta hubiera traido. Duro veinte
-    minutos. El renglon REAL del pago dividido -"transferencia (30%): $67.500 -
-    10% descuento = $60.750"- se parte en oraciones por los puntos de los miles,
-    y el pedazo que le tocaba a la regla no tenia la palabra "transferencia"
-    adentro, asi que la exencion no lo salvo: le corto el medio y dejo "$67.750".
-    O sea que un candado contra la alucinacion INVENTO UN PRECIO, que es
-    exactamente lo que el sistema entero existe para que no pase, y lo cazo el
-    invariante de que las partes tienen que sumar el total.
-
-    La leccion, que es la del plan de recorte entero: esto se cierra en la
-    ATADURA, contrastando la afirmacion contra la fuente, no sumando la regla
-    numero dieciocho sobre el texto ya escrito."""
+    Se juzga el mensaje ENTERO, oracion por oracion, pero el ancla se busca en
+    el RENGLON: el modelo escribe "Pagando por transferencia te queda mas
+    barato. Te aplico el 10% de descuento" en dos oraciones de la misma linea, y
+    la segunda sola parece inventada cuando la primera ya la respaldo.
+    """
+    if not (texto or "").strip() or not _RE_BENEFICIO.search(texto):
+        return texto
+    hecho = _beneficios_reales(tienda_id)
+    if not hecho.get("anclas"):
+        # SIN FUENTE NO SE JUZGA. Es preferible que se escape un descuento
+        # inventado a mutear la politica real de la tienda por no poder leerla.
+        log.warning("hub_venta_descuento_sin_fuente", trace_id=trace_id)
+        return texto
     fuera = []
-    for m in _RE_ORACIONES.finditer(texto or ""):
-        frase = m.group(0)
-        if (_RE_BENEFICIO.search(frase) and _RE_GESTION.search(frase)
-                and not _RE_DESCUENTO_REAL.search(frase)):
-            fuera.append(frase)
+    for linea in (texto or "").splitlines():
+        if _RE_LINEA_SELLADA.match(linea):
+            continue
+        ancla_en_el_renglon = any(a in H._norm(linea)
+                                  for a in hecho["anclas"])
+        for m in _RE_ORACIONES.finditer(linea):
+            frase = m.group(0)
+            if not _RE_BENEFICIO.search(frase):
+                continue
+            if _RE_NIEGA_BENEFICIO.search(frase) or _RE_DIFIERE.search(frase):
+                continue
+            pcts = {int(g) for mm in _RE_PCT_BENEFICIO.finditer(frase)
+                    for g in mm.groups() if g}
+            if pcts:
+                if not pcts <= hecho["porcentajes"]:
+                    fuera.append((frase, f"pct={sorted(pcts)}"))
+                elif not ancla_en_el_renglon:
+                    # El porcentaje existe pero suelto de su condicion: el 10%
+                    # es POR TRANSFERENCIA, y "tenes un 10% off" lo regala.
+                    fuera.append((frase, "pct real sin su condicion"))
+                continue
+            if not ancla_en_el_renglon:
+                fuera.append((frase, "sin ancla en la fuente"))
     if not fuera:
         return texto
     limpio = texto
-    for frase in fuera:
+    for frase, _ in fuera:
         limpio = limpio.replace(frase, "")
     log.warning("hub_venta_descuento_inventado", trace_id=trace_id,
-                frases=[f[:70] for f in fuera[:3]])
-    return re.sub(r"\n{3,}", "\n\n", limpio).strip()
+                frases=[f"{f[:60]} [{por}]" for f, por in fuera[:3]])
+    return _no_enmudece(texto, re.sub(r"\n{3,}", "\n\n", limpio).strip(),
+                        trace_id, "sin_descuento_inventado")
 
 
 _RE_NARRACION = re.compile(
@@ -263,9 +419,46 @@ _RE_NARRACION = re.compile(
     r"me\s+aparecen?\s+(?:varios|en\s+el\s+sistema))\b[^.!?\n]*[.!?]?")
 
 
+# LAS FORMAS DE NEGAR, MEDIDAS (FICHA 20, 25-ago-2026). El patron pedia el
+# verbo PEGADO al "no", asi que de ocho formas reales del defecto veia dos. Las
+# seis que pasaban no eran redacciones raras: son las mas naturales.
+#   "No hay memorias RAM en el catalogo."        -> "hay" no estaba
+#   "Eso no lo tenemos, te ofrezco otra cosa."   -> el pronombre partia el par
+#   "Ese producto no lo tenemos disponible."     -> idem
+# Se suma el pronombre opcional y "hay", que es la negacion mas comun de todas.
 _RE_NIEGA = re.compile(
-    r"no\s+(?:vendemos|trabajamos|manejamos|comercializamos|tenemos|"
-    r"contamos\s+con|ofrecemos|dispon)", re.IGNORECASE)
+    r"no\s+(?:lo|la|los|las|te|se|le)?\s*(?:vendemos|vendo|trabajamos|trabajo|"
+    r"manejamos|manejo|comercializamos|tenemos|tengo|hay|"
+    r"contamos\s+con|cuento\s+con|ofrecemos|ofrezco|dispon)", re.IGNORECASE)
+
+# NEGAR UNA VARIANTE NO ES NEGAR EL RUBRO, Y ESTA PIEZA SE COMIA LA VARIANTE.
+# Medido el 25-ago con las memorias RAM delante -el MISMO caso que la hizo
+# nacer-: ante "tenes RAM de 16GB?" el bot contestaba lo correcto, "no tenemos
+# memorias RAM de 16GB, las nuestras son de 8GB", y esta funcion le BORRABA la
+# oracion entera por decir "no tenemos" y nombrar una categoria que acabamos de
+# traer. Al cliente le quedaba el ofrecimiento sin la aclaracion: se le vendia
+# una de 8 como si fuera lo que pidio.
+#
+# Es el mismo defecto que ya se pago con `_RE_ES_SOBRE_EL_DATO`, y la tercera
+# vez en este modulo que una guardia contra la alucinacion muerde a la
+# honestidad. Se corta con un HECHO: si la oracion niega una MEDIDA -16GB,
+# 144Hz, 27 pulgadas- que no aparece en nada de lo que la herramienta trajo,
+# entonces la negacion es cierta y es la respuesta que queremos.
+_RE_MEDIDA = re.compile(
+    r"\d+\s*(?:gb|tb|mb|ghz|mhz|khz|hz|w|watts?|mm|cm|m|kg|g|"
+    r"pulgadas?|\"|'')\b", re.IGNORECASE)
+
+# LA NEGACION QUE NO NOMBRA NADA. "Eso no lo tenemos", "no trabajamos con ese
+# tipo de producto": la condicion por categoria no puede verlas porque no hay
+# categoria que ver, y son la mitad de las formas reales. Se juzgan contra el
+# mensaje ENTERO y contra el hecho: si la herramienta trajo productos y el
+# mensaje no muestra NINGUNO, negar en abstracto es falso. Si el mensaje si los
+# muestra, la negacion habla de otra cosa -un modelo puntual, una marca- y no
+# se toca: "no tenemos ese modelo, pero mira estas dos" es una buena respuesta.
+_RE_DEIXIS = re.compile(
+    r"\b(?:eso|esos|esas?|ese|esta?|estos?)\b|\bese\s+tipo\b|"
+    r"\besa\s+categor[ií]a\b|\bese\s+rubro\b|\bese\s+producto\b|"
+    r"\bese\s+art[ií]culo\b", re.IGNORECASE)
 
 # NEGAR EL RUBRO NO ES LO MISMO QUE NO TENER UN DATO, y esta guardia no las
 # distinguia. Medido el 5-ago, con el estado `sin_dato_en_la_fuente` recien
@@ -299,23 +492,67 @@ def _sin_negar_lo_traido(texto: str, llamadas: list, trace_id: str) -> str:
     Es la misma familia que la regla de la plata: se contrasta la salida contra
     exactamente lo que se le inyecto. Si el texto niega el rubro de un producto
     que vino en los resultados, esa oracion se va."""
-    categorias = set()
+    categorias, nombres = set(), []
     for l in (llamadas or []):
         r = l.get("resultado") or {}
         if r.get("estado") in ("no_vendemos", "no_encontrado"):
             continue
-        for p in (r.get("productos") or []):
-            if isinstance(p, dict) and p.get("categoria"):
-                categorias.add(H._norm(p["categoria"]))
+        prods = list(r.get("productos") or [])
         prod = r.get("producto")
-        if isinstance(prod, dict) and prod.get("categoria"):
-            categorias.add(H._norm(prod["categoria"]))
+        if isinstance(prod, dict):
+            prods.append(prod)
+        for p in prods:
+            if not isinstance(p, dict):
+                continue
+            # SIN STOCK NO ES UN RUBRO TRAIDO. Si lo unico que vino esta en
+            # cero, "no hay" es verdad y esta pieza no tiene nada que decir.
+            if p.get("stock") is not None and not p.get("stock"):
+                continue
+            if p.get("categoria"):
+                categorias.add(H._norm(p["categoria"]))
+            if p.get("nombre"):
+                nombres.append(H._norm(p["nombre"]))
     if not categorias:
         return texto
+    # EL HECHO PARA LA VARIANTE: todas las medidas que la fuente SI trajo.
+    medidas_traidas = {H._norm(m.group(0)).replace(" ", "")
+                       for n in nombres for m in _RE_MEDIDA.finditer(n)}
+    # EL HECHO PARA LA DEIXIS: si el mensaje muestra algo de lo traido, la
+    # negacion en abstracto habla de otra cosa.
+    bajo = H._norm(texto or "")
+    muestra_lo_traido = any(
+        n and (n in bajo
+               or all(t in bajo for t in n.split() if len(t) > 3))
+        for n in nombres)
     fuera = []
     for m in _RE_ORACIONES.finditer(texto or ""):
         frase = m.group(0)
         if not _RE_NIEGA.search(frase):
+            continue
+        # LA CLAUSULA NEGADA, no la oracion entera. Lo que viene despues de la
+        # coma o del "pero" suele ser la ALTERNATIVA que si tenemos -"no
+        # tenemos de 16GB, las nuestras son de 8GB"- y mirarla toda daba por
+        # traida la medida que se estaba negando. Tambien saca de la cuenta el
+        # nombre del cliente al final -"...ese tipo de producto, Martin"-, que
+        # si no se lee como si fuera una marca.
+        clausula = re.split(r",|\bpero\b|\bsi\s+ten|\bmira\b", frase,
+                            maxsplit=1, flags=re.IGNORECASE)[0]
+        # Basta con que la clausula nombre UNA medida que no vino: es la que se
+        # esta negando, y negar una variante que la fuente no trajo es cierto.
+        medidas = {H._norm(mm.group(0)).replace(" ", "")
+                   for mm in _RE_MEDIDA.finditer(clausula)}
+        if medidas - medidas_traidas:
+            continue
+        # LA MARCA QUE NO VINO, mismo criterio. "No trabajamos Corsair, si
+        # Kingston y Adata" nombra la categoria traida y por eso caia entera,
+        # cuando es exactamente la respuesta honesta. Un nombre propio adentro
+        # de la clausula negada que no es parte de la categoria ni de nada de
+        # lo que trajo la herramienta es una VARIANTE, no el rubro.
+        propios = {H._norm(w) for w in re.findall(r"\b[A-Z][a-zA-Z]{2,}\b",
+                                                  clausula[1:])}
+        propios -= {t for cat in categorias for t in cat.split()}
+        propios -= {t for n_ in nombres for t in n_.split()}
+        if propios:
             continue
         if _RE_ES_SOBRE_EL_DATO.search(frase):
             # Habla del dato que falta, no del rubro. Se deja: es justamente la
@@ -334,6 +571,11 @@ def _sin_negar_lo_traido(texto: str, llamadas: list, trace_id: str) -> str:
                               for t in fichas):
                 fuera.append(frase)
                 break
+        else:
+            # NINGUNA CATEGORIA NOMBRADA. Cae solo la negacion en abstracto, y
+            # solo cuando el mensaje no muestra nada de lo que se trajo.
+            if _RE_DEIXIS.search(frase) and not muestra_lo_traido:
+                fuera.append(frase)
     if not fuera:
         return texto
     limpio = texto
@@ -342,7 +584,8 @@ def _sin_negar_lo_traido(texto: str, llamadas: list, trace_id: str) -> str:
     log.error("hub_venta_nego_lo_traido", trace_id=trace_id,
               categorias=sorted(categorias)[:4],
               frases=[f[:70] for f in fuera[:3]])
-    return re.sub(r"\n{3,}", "\n\n", limpio).strip()
+    return _no_enmudece(texto, re.sub(r"\n{3,}", "\n\n", limpio).strip(),
+                        trace_id, "sin_negar_lo_traido")
 
 
 # ── LA AFIRMACION SOBRE LOS 880 ─────────────────────────────────────────────
@@ -1094,7 +1337,7 @@ def procedencia(texto: str, llamadas: list, trace_id: str,
     texto = _pieza("sin_afirmar_del_catalogo", _sin_afirmar_sobre_el_catalogo,
                    texto, llamadas, trace_id)
     texto = _pieza("sin_descuento_inventado", _sin_descuento_inventado,
-                   texto, trace_id)
+                   texto, tienda_id, trace_id)
     texto = _pieza("sin_narracion_interna", _sin_narracion_interna,
                    texto, trace_id)
     return texto
