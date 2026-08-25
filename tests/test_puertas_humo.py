@@ -113,6 +113,24 @@ def test_ver_compatibilidad_devuelve_veredictos(firestore_doble):
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.parametrize("nombre", sorted(LLAMADAS))
+def test_el_resultado_de_cada_puerta_atraviesa_el_reconciliador(nombre,
+                                                                firestore_doble):
+    """El reconciliador recorre el resultado de toda herramienta que trae
+    productos. Si una devuelve una forma que el no espera, revienta el turno
+    entero y el cliente recibe el mensaje enlatado."""
+    from app.core import pedido as P
+    args = _resolver(LLAMADAS[nombre], _id_de_mouse())
+    r = H.ejecutar(nombre, args, TIENDA)
+    llamadas = [{"herramienta": nombre, "pedido": args, "resultado": r}]
+    try:
+        P._universo_de_busquedas(llamadas)
+    except Exception as e:  # noqa: BLE001 — es justo lo que se esta cazando
+        raise AssertionError(
+            f"el resultado de {nombre} tumba al reconciliador: "
+            f"{type(e).__name__}: {e}. Resultado: {r}") from e
+
+
 def test_compatibilidad_resuelta_no_mata_el_turno(firestore_doble):
     """El caso puntual, fijado con las cuatro formas que devuelve la
     herramienta cuando SI contesta. `producto` viene como string en las cuatro;
