@@ -348,6 +348,13 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       producto_anotado: dict | None = None,
                       preferencias_cliente: dict | None = None,
                       criterio_confirmar_pendiente: bool | None = None,
+                      # LA OFERTA QUE EL TURNO DIFIRIO: los productos que tenia
+                      # para proponer y no propuso porque cedio -herramienta
+                      # ambigua, o una pregunta propia abierta-. El turno
+                      # siguiente reabre el punto desde aca aunque no llame
+                      # ninguna herramienta. Lista vacia = no hay nada pendiente,
+                      # y ese es el dato que la apaga.
+                      oferta_diferida: list | None = None,
                       **extras):
     # RED CONTRA LA DERIVA sim/prod (bug REAL 8-jul): el doble del banco acepta
     # cualquier kwarg y esta firma enumeraba los suyos; un campo nuevo pasado
@@ -431,6 +438,8 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
         datos["preferencias_cliente"] = preferencias_cliente
     if criterio_confirmar_pendiente is not None:
         datos["criterio_confirmar_pendiente"] = criterio_confirmar_pendiente
+    if oferta_diferida is not None:
+        datos["oferta_diferida"] = oferta_diferida
     # DATOS DEL CLIENTE ACUMULADOS turno a turno (nombre, telefono, direccion,
     # forma de pago), aunque todavia no exista un lead. Asi un dato dado ANTES de
     # la decision de compra no se pierde y el lead se siembra completo, sin volver

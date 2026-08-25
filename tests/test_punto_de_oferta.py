@@ -80,17 +80,31 @@ CASOS = [
     ("la accion sin el producto tampoco: coordinar por mail no es cargar nada",
      [_MOUSE], "El Logitech M170 tiene 1000 DPI.\nCoordinamos por mail.", ""),
 
-    # ── EL PRONOMBRE PELADO YA NO HACE DE PRODUCTO (FICHA 16) ──────────
-    # Estos dos casos esperaban OFRECIDO hasta el 25-ago. El requisito cambio:
-    # la oracion que ofrece tiene que NOMBRAR el producto. Se quedan escritos y
-    # dados vuelta en vez de borrados, porque lo que el detector dejo de contar
-    # es tan parte de la definicion como lo que cuenta.
-    ("la anafora legitima ya NO cuenta: la oracion que ofrece no nombra nada",
+    # ── LA ANAFORA VUELVE A CONTAR, CON LA VENTANA DEL MENSAJE (16B) ───
+    # Estos dos casos esperaban OFRECIDO, la ficha 16 los dio vuelta a
+    # SIN_ESTADO exigiendo las dos mitades en la MISMA oracion, y la 16B los
+    # endereza: son ofertas perfectas en castellano y el detector las rechazaba
+    # por como habla la gente, no por lo que decia. La ventana es la oracion de
+    # la accion mas la anterior, y para apoyarse en la anterior la accion tiene
+    # que señalar para atras —"te LO cargo", "te LO reservo"—.
+    ("la anafora legitima cuenta: el producto esta a una oracion",
      [_MOUSE], "El Logitech M170 es inalámbrico. Te lo cargo al pedido y te "
-     "paso el total.", ""),
+     "paso el total.", "OFRECIDO"),
 
-    ("la anafora en forma de pregunta tampoco, por la misma razon",
-     [_MOUSE], "El M170 sale $12.000. ¿Te lo reservo?", ""),
+    ("la anafora en forma de pregunta tambien, y con el precio en el medio: el "
+     "punto de los miles no puede partir la ventana",
+     [_MOUSE], "El M170 sale $12.000. ¿Te lo reservo?", "OFRECIDO"),
+
+    # ── LA VENTANA ES DE UNA ORACION, Y ESE NUMERO ES EL CANDADO ───────
+    # ESTE ES EL RIESGO QUE CREA LA VENTANA, y por eso es el caso nuevo. Es la
+    # forma EXACTA del falso 71 t3 de la sonda: el presupuesto nombra el
+    # producto, despues viene el total, y despues la cortesia con "avanzar con
+    # la compra". El producto queda a DOS oraciones y no cuenta —igual que en el
+    # mensaje real, donde la oracion anterior a la cortesia es "Total:
+    # $29.000"—. A dos oraciones ya no hay anafora: hay otro tema.
+    ("el producto a dos oraciones no cuenta: es la forma del falso 71 t3",
+     [_MOUSE], "Mouse Logitech M170 Negro: $12.000\nTotal: $12.000\n¿Te "
+     "gustaría avanzar con la compra de estos artículos?", ""),
 
     # ── SE OFRECIO ─────────────────────────────────────────────────────
     ("ofrecer cargarlo, SIN preguntar, que es la forma que no gasta la "
@@ -134,12 +148,12 @@ DESCARTADOS = [
 
 
 def test_cada_caso_termina_donde_tiene_que():
-    """LOS ONCE CASOS, uno por uno, con el estado en que termina el punto.
+    """LOS DOCE CASOS, uno por uno, con el estado en que termina el punto.
 
-    Eran nueve hasta la FICHA 16, que sumo los dos de la anafora: la oracion que
-    ofrece tiene que NOMBRAR el producto, asi que "te lo cargo" dejo de contar y
-    eso hay que poder leerlo en la lista."""
-    assert len(CASOS) == 11, f"se declararon 11 casos y hay {len(CASOS)}"
+    Eran nueve hasta la FICHA 16, que sumo los dos de la anafora; la 16B los da
+    vuelta a OFRECIDO y suma el doce, que es el borde nuevo: la ventana se abre
+    con la anafora y no con la vecindad."""
+    assert len(CASOS) == 12, f"se declararon 12 casos y hay {len(CASOS)}"
     fallan = []
     for nombre, llamadas, texto, esperado in CASOS:
         idx = IT.cobertura({"items": [{"que": "mouse", "cantidad": 1}]},
@@ -182,7 +196,7 @@ def test_sin_producto_certificado_no_hay_nada_que_ofrecer():
                        "resultado": {"estado": "ok", "temas": []}}],
                      [{"herramienta": "buscar_productos", "pedido": {},
                        "resultado": {"estado": "no_vendemos", "productos": []}}]):
-        assert IT.punto_de_oferta(llamadas) is None, llamadas
+        assert IT.punto_de_oferta(llamadas)[0] is None, llamadas
 
 
 def test_el_turno_que_no_ofrecio_SALE_IGUAL_y_queda_registrado():
@@ -290,7 +304,7 @@ def test_sobre_cuantos_casos_se_midio():
     estados = {c[3] for c in CASOS}
     print(f"\n  el punto de oferta se midio sobre {len(CASOS)} turnos armados, "
           f"en {len(estados)} finales distintos")
-    assert len(CASOS) == 11
+    assert len(CASOS) == 12
     assert estados == {"", "OFRECIDO", "NO_CORRESPONDE"}
     # LOS DOS FINALES DE LA OFERTA Y NINGUN OTRO. Si el punto pudiera terminar
     # RESUELTO o NO_SE_SABE, se estaria colando por el vocabulario de los
@@ -311,7 +325,7 @@ def test_lo_que_el_cliente_rechazo_no_se_vuelve_a_ofrecer():
     un bot que se calla ahi pierde la charla entera por respetar de mas."""
     fallan = []
     for nombre, descartados, esperado in DESCARTADOS:
-        punto = IT.punto_de_oferta([_MOUSE], [], "", descartados)
+        punto, _ = IT.punto_de_oferta([_MOUSE], [], "", descartados)
         assert punto, nombre
         estado = IT.estado_terminal(punto, "El M170 tiene 1000 DPI.", [_MOUSE],
                                     atendido=False)

@@ -45,7 +45,7 @@ def test_la_oferta_cede_ante_una_pregunta_propia():
     # PLANTEO, no la vara: el assert y el motivo son los mismos.
     texto = ("Cual de las dos versiones tenes, la Core i5 o la Ryzen 7? "
              "Te cargo el Mouse Logitech G203 al pedido y te paso el total.")
-    p = IT.punto_de_oferta(llamadas, None, texto, None)
+    p, _ = IT.punto_de_oferta(llamadas, None, texto, None)
     assert not p or p.get("no_corresponde"), (
         "el turno dejo una pregunta propia sin contestar y la oferta se abrio "
         f"igual, sin motivo: {p}")

@@ -21,11 +21,23 @@ casetes nuevos van a `casetes/` por el camino de siempre.
 ## LOS DEFECTOS
 
 ### 1. EL CUARTO FRENO — la oferta pisa una pregunta propia sin contestar
+**CERRADO.** Ficha 16 puso el freno; ficha 16B hizo que ceder signifique DIFERIR
+—el producto pendiente se guarda en el estado y el turno siguiente reabre el
+punto sin herramienta nueva—. Candados en `tests/test_ficha16_freno_y_detector.py`
+y `tests/test_ficha16b_oferta_diferida.py`.
+
 Tres turnos ofrecen encima de una pregunta que el mismo bot acaba de hacer:
 **76 t1, 80 t6, 80 t8**. Los tres frenos que existen hoy miran herramienta
 ambigua; ninguno mira si el turno dejó una pregunta propia abierta.
 
 ### 2. EL DETECTOR DE OFERTA ES LAXO
+**CERRADO, y en dos pasos porque el primero se paso de largo.** Ficha 16 borro
+`_RE_PRONOMBRE` y OFRECIDO cayo de 16 a 7; ficha 16B lo devolvio a 22 sobre esta
+misma grabacion, agrandando la ventana del ancla al MENSAJE INMEDIATO —la oracion
+de la accion mas la anterior— y sumando las formas del subjuntivo, que es como
+ofrece el modelo de verdad. Las cuatro frases de abajo siguen sin contar. Sobre
+el corpus viejo OFRECIDO volvio de 1 a 14.
+
 Cuenta **16 OFRECIDO** y al menos cuatro no son ofertas:
 
 - **71 t3** — cortesía de cierre genérica
@@ -55,3 +67,6 @@ del cliente en tercera persona. No está muerto, está ciego.
 No se regraba todavía. Primero (1) y (2), que son los que ensucian la medición;
 regrabar antes de arreglarlos es pagar la grabación dos veces. Y los dos se
 pueden verificar **gratis** contra los 15 casetes de esta carpeta.
+
+**(1) y (2) están CERRADOS (fichas 16 y 16B, 25-ago).** Quedan (3), (4) y (5),
+que recién ahora se pueden medir limpio. La regrabación es la ficha 17.

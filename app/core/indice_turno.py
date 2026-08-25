@@ -549,38 +549,73 @@ MOTIVOS_NO_CORRESPONDE = ("rechazado", "ya_en_el_pedido", "cerrando")
 # del modulo: una lista larga de sinonimos convierte cualquier cortesia en una
 # oferta y el numero deja de decir nada. Se escriben las formas, no la raiz
 # pelada, porque `carg` tambien esta en "cargador" y "sum" en "sumado".
+# EL SUBJUNTIVO ES COMO SE OFRECE EN CASTELLANO, y faltaba entero (FICHA 16B).
+# "¿Te gustaria que te RESERVE...?", "¿Querés que AVANCEMOS...?", "confirmame si
+# querés que lo CARGUE a tu pedido": trece de las ofertas reales del corpus viejo
+# estan escritas asi y ninguna contaba, porque la lista solo tenia el indicativo.
+# Medido: con la lista vieja, OFRECIDO sobre el corpus daba 1.
+#
+# Y `coordinar` SALE DE LA LISTA. Es el unico verbo que no propone un paso
+# COMERCIAL sobre el producto —"coordinamos por mail" es logistica, y se dice
+# igual sin vender nada—, y con la ventana del ancla abierta pasaba a ser el
+# agujero mas grande de las tres lineas: cualquier ficha tecnica seguida de
+# "coordinamos" contaba como oferta. Las ofertas reales que hablan de coordinar
+# traen su propio verbo adelante: "avancemos con el pago para coordinar el
+# envio".
+#
+# `aparte` NO ENTRA aunque sea la forma que falta de `apartar`: es adverbio
+# —"aparte de eso"— mucho mas seguido que verbo.
 _RE_ACCION = re.compile(
-    r"\b(cargo|cargar|cargarlo|cargarla|cargamos|cargas|"
-    r"sumo|sumar|sumarlo|sumarla|sumamos|sumas|"
+    r"\b(cargo|cargar|cargarlo|cargarla|cargarte|cargamos|cargas|"
+    r"cargue|carguemos|"
+    r"sumo|sumar|sumarlo|sumarla|sumamos|sumas|sume|sumemos|"
     r"agrego|agregar|agregarlo|agregarla|agregamos|agregas|"
+    r"agregue|agreguemos|"
     r"reservo|reservar|reservarlo|reservarla|reservamos|reservas|reserva|"
-    r"aparto|apartar|apartarlo|apartamos|"
-    r"cotizo|cotizar|cotizarlo|cotizamos|cotizacion|"
-    r"preparo|preparar|prepararlo|preparamos|"
-    r"avanzo|avanzar|avanzamos|avanzas|"
-    r"coordino|coordinar|coordinamos)\b")
+    r"reserve|reservemos|"
+    r"aparto|apartar|apartarlo|apartamos|apartemos|"
+    r"cotizo|cotizar|cotizarlo|cotizamos|cotizacion|cotice|coticemos|"
+    r"preparo|preparar|prepararlo|preparamos|prepare|preparemos|"
+    r"avanzo|avanzar|avanzamos|avanzas|avance|avancemos)\b")
 
-# SOBRE QUE CAE LA ACCION: SOBRE EL PRODUCTO NOMBRADO, Y NADA MAS (FICHA 16).
-# Aca vivia `_RE_PRONOMBRE`, que aceptaba un "lo" o un "la" pelado como si fuera
-# el producto —"el modelo lo nombra o lo pronominaliza"—. El agujero es que en
-# castellano ese "la" es articulo mucho mas seguido que pronombre, asi que
-# cualquier oracion con un verbo de accion y un sustantivo femenino contaba como
-# oferta. Los cuatro falsos que encontro la sonda del 25-ago entran los cuatro
-# por ahi, y en tres de los cuatro el "la" precede a un sustantivo comun:
+# SOBRE QUE CAE LA ACCION: SOBRE EL PRODUCTO NOMBRADO EN LA VENTANA DEL MENSAJE
+# INMEDIATO — la oracion de la accion MAS LA ANTERIOR (FICHA 16B).
+#
+# ACA VIVIA `_RE_PRONOMBRE`, que aceptaba un "lo" o un "la" pelado como si fuera
+# el producto. El agujero era que en castellano ese "la" es articulo mucho mas
+# seguido que pronombre, asi que cualquier oracion con un verbo de accion y un
+# sustantivo femenino contaba como oferta. Los cuatro falsos que encontro la
+# sonda del 25-ago entraban los cuatro por ahi, y en tres de los cuatro el "la"
+# precede a un sustantivo comun:
 #
 #   "¿te gustaria avanzar con LA COMPRA de estos articulos...?"      71 t3
 #   "si decidis avanzar con LA COMPRA podes obtener un 10%..."       73 t3
 #   "¿podrias confirmarme si esta cantidad es LA correcta...?"       80 t8
 #   una oferta que no tiene ningun producto asociado                 76 t2
 #
-# Mientras el detector contara esto, todo numero sobre oferta estaba sucio: la
-# sonda midio 16 OFRECIDO con al menos cuatro que no ofrecian nada.
+# LA FICHA 16 LO CERRO EXIGIENDO LAS DOS MITADES EN LA MISMA ORACION, Y ESO SE
+# PASO DE LARGO. Estas dos son ofertas perfectas en castellano y dejaron de
+# contar:
 #
-# EL PRECIO DE CERRARLO ES QUE OFRECIDO BAJA, Y ESTA BIEN. Una anafora legitima
-# —"El M170 sale $12.000. ¿Te lo reservo?"— deja de contar, porque la oracion
-# que ofrece no nombra el producto. Se prefiere fallar para ese lado: un falso
-# OFRECIDO dice que el turno vendio cuando no vendio, y ese error se propaga a
-# todo lo que se mida encima. El de menos solo pide una oracion mejor escrita.
+#   "El Logitech M170 es inalambrico. Te lo cargo al pedido y te paso el total."
+#   "El M170 sale $12.000. ¿Te lo reservo?"
+#
+# Por eso OFRECIDO se derrumbo de 10 a 1 en el corpus viejo: no era el corpus,
+# era el detector rechazando como habla la gente. Nadie nombra el producto dos
+# veces seguidas; se nombra una vez y despues se pronominaliza.
+#
+# LA VENTANA ES EL ARREGLO, Y NO AFLOJA NADA: la ACCION sigue teniendo que estar
+# en la oracion, y el PRODUCTO tiene que estar nombrado en esa oracion o en la
+# inmediatamente anterior. Si en esa ventana no hay ningun producto nombrado, la
+# anafora no vale, y ahi siguen quedando afuera "la compra" y "la correcta", que
+# son los falsos reales: MEDIDO contra los tres mensajes ENTEROS de la sonda,
+# ninguno tiene un producto a una oracion de distancia —la oracion anterior es
+# "Total: $29.000" en 71 t3, una aclaracion sobre precios mayoristas en 73 t3, y
+# "He actualizado tu presupuesto" en 80 t8—.
+#
+# LA VENTANA ES DE UNA ORACION A PROPOSITO, y ese numero es el candado: en esos
+# tres mensajes los nombres de producto estan dos y tres oraciones atras, en las
+# lineas del presupuesto. A dos oraciones ya no hay anafora: hay otro tema.
 
 # EL TURNO QUE YA ESTA CERRANDO. Pedirle el nombre, la direccion o la forma de
 # pago ES el paso siguiente: sumarle una oferta encima seria el interrogatorio
@@ -593,7 +628,15 @@ _RE_CERRANDO = re.compile(
 
 # UNA ORACION Y SU CIERRE. El grupo del cierre es lo que separa una pregunta de
 # una afirmacion, y por eso el patron captura en vez de partir.
-_RE_ORACION_Y_CIERRE = re.compile(r"([^.\n;!?]+)([.\n;!?]*)")
+#
+# EL PUNTO ENTRE DIGITOS NO CORTA (FICHA 16B), y esto era un defecto callado: en
+# castellano el punto es el separador de MILES, asi que "$12.000" partia el
+# mensaje en tres —"...sale $12", "000", " ¿Te lo reservo?"— y la oracion
+# anterior de la oferta quedaba siendo "000". Con precios en casi todos los
+# mensajes de venta, la ventana del ancla no se abria nunca justo donde mas
+# hace falta. Se pide digito a los dos lados: un punto final seguido de espacio
+# o de mayuscula sigue cortando igual.
+_RE_ORACION_Y_CIERRE = re.compile(r"((?:[^.\n;!?]|(?<=\d)\.(?=\d))+)([.\n;!?]*)")
 
 
 def _oraciones_marcadas(texto: str) -> list:
@@ -614,12 +657,6 @@ def _oraciones_marcadas(texto: str) -> list:
             continue
         fuera.append((frase, "?" in m.group(2) or "¿" in frase))
     return fuera
-
-
-def _oraciones(texto: str) -> list:
-    """Las oraciones del mensaje, sin la marca. Derivada y no copiada: si el
-    corte cambia, las dos se mueven juntas."""
-    return [f for f, _ in _oraciones_marcadas(texto)]
 
 
 def _productos_certificados(llamadas: list) -> list:
@@ -714,28 +751,80 @@ def _hay_ambiguedad(llamadas: list) -> bool:
     return False
 
 
+# CUANTOS PRODUCTOS SE ARRASTRAN AL TURNO SIGUIENTE. El punto ofrece uno solo
+# —`termino`— y los demas son el respaldo por si ese queda tapado; cuatro
+# alcanzan de sobra y el documento de la conversacion no engorda.
+_TOPE_DIFERIDA = 4
+
+
+def _limpiar_diferida(diferida: list | None) -> list:
+    """La oferta que quedo pendiente del turno anterior, saneada.
+
+    VIENE DE FIRESTORE, o sea de afuera: puede llegar con basura, con campos que
+    faltan o directamente con otra forma. Se queda lo que tiene nombre, que es
+    lo unico que el detector y los tres frenos saben mirar."""
+    fuera = []
+    for p in (diferida or []):
+        if not isinstance(p, dict):
+            continue
+        nombre = str(p.get("nombre") or "").strip()
+        if not nombre or any(q["nombre"] == nombre for q in fuera):
+            continue
+        fuera.append({"id": str(p.get("id") or "").upper(), "nombre": nombre})
+    return fuera[:_TOPE_DIFERIDA]
+
+
 def punto_de_oferta(llamadas: list, memoria: list | None = None,
                     texto: str = "",
                     descartados: list | None = None,
-                    puntos_del_cliente: list | None = None) -> dict | None:
-    """EL PUNTO SINTETICO `oferta`, o None si en este turno no hay nada que
-    ofrecer. Lo abre el codigo con dos hechos suyos y ninguna opinion del
-    modelo: hay un producto certificado y el pedido no lo tiene.
+                    puntos_del_cliente: list | None = None,
+                    diferida: list | None = None) -> tuple:
+    """EL PUNTO DE OFERTA Y LO QUE QUEDA PENDIENTE, en una sola pasada.
 
-    Sale con `candidatos` —los productos que se pueden ofrecer— y con
-    `no_corresponde` cuando el turno tiene motivo para no ofrecer nada.
+    Devuelve `(punto_o_None, pendientes)`, y por eso el que quiere solo el punto
+    escribe `punto_de_oferta(...)[0]`. LOS DOS SALEN DE LA MISMA CUENTA a
+    proposito: si fueran dos funciones, el dia que un freno cambie una de las
+    dos se quedaria vieja y el estado guardado diria algo distinto de lo que el
+    turno midio. Y no hay envoltura de una linea que devuelva solo el punto,
+    porque una envoltura que solo usan los tests es una cosa suelta.
 
     `puntos_del_cliente` son los puntos que `puntos()` ya desarmo de lo
     declarado, y entran solo para el cuarto freno: si entre ellos hay una
-    `duda`, el turno va a preguntar y la oferta cede."""
-    traidos = _productos_certificados(llamadas)
+    `duda`, el turno va a preguntar y la oferta se difiere.
+
+    `diferida` es la oferta que el turno ANTERIOR dejo pendiente: con eso el
+    punto se reabre aunque este turno no haya llamado ninguna herramienta.
+
+    CEDER SIGNIFICA DIFERIR (FICHA 16B), y antes no significaba nada. Los dos
+    `return None` de abajo —la ambigüedad y el cuarto freno— decian en un
+    comentario "queda para el turno siguiente" y no habia nada implementado: ni
+    flag, ni estado, ni memoria. El punto solo se reabria si el turno siguiente
+    volvia a llamar una herramienta de productos, porque `_productos_certificados`
+    mira las llamadas de ESTE turno y nada mas. Resultado medido: el cliente
+    preguntaba algo ambiguo, el bot aclaraba, y la oferta pendiente se
+    evaporaba. Era el defecto que la ficha 15 vino a matar, entrando por la
+    puerta de al lado.
+
+    AHORA CEDER DEVUELVE `pendientes`, que el turno guarda en el estado de la
+    conversacion, y el turno siguiente lo recibe en `diferida` y reabre el punto
+    desde ahi AUNQUE NO HAYA HERRAMIENTA NUEVA.
+
+    Y SE APAGA CON LOS TRES MOTIVOS TIPADOS QUE YA EXISTEN, no con un cuarto
+    inventado: si el cliente lo rechazo, si ya esta en el pedido, o si el turno
+    esta cerrando, `pendientes` sale vacio y la oferta muere ahi. Tambien sale
+    vacio cuando el punto SI se abre: ahi la oferta esta viva en este turno y su
+    estado lo mide `estado_terminal`, no el estado de la conversacion."""
+    # LO NUEVO PISA LO DIFERIDO, y no se suman. Si este turno certifico
+    # productos, la charla se movio: arrastrar tambien el de dos turnos atras es
+    # la insistencia que este punto entero existe para no cometer.
+    traidos = _productos_certificados(llamadas) or _limpiar_diferida(diferida)
     if not traidos:
-        return None
-    # LA AMBIGUEDAD MANDA Y NO DEJA RASTRO: el punto no se abre. Marcarlo
+        return None, []
+    # LA AMBIGUEDAD MANDA Y NO DEJA RASTRO EN EL PUNTO: no se abre. Marcarlo
     # `NO_CORRESPONDE` seria decir que se decidio no ofrecer, y lo que pasa es
-    # otra cosa —la oferta queda para el turno siguiente—.
+    # otra cosa —la oferta se DIFIERE, y por eso vuelve como `pendientes`—.
     if _hay_ambiguedad(llamadas):
-        return None
+        return None, traidos[:_TOPE_DIFERIDA]
     en_pedido = _ya_en_el_pedido(llamadas, memoria)
     fuera_del_pedido = [p for p in traidos
                         if p["id"] not in en_pedido
@@ -754,32 +843,35 @@ def punto_de_oferta(llamadas: list, memoria: list | None = None,
         motivo, libres = "rechazado", fuera_del_pedido
     elif _RE_CERRANDO.search(_n(texto or "")):
         motivo = "cerrando"
-    # ── EL CUARTO FRENO (FICHA 16): SI EL TURNO PREGUNTA, LA OFERTA CEDE ──
+    # ── EL CUARTO FRENO (FICHA 16): SI EL TURNO PREGUNTA, LA OFERTA SE DIFIERE ──
     # VA ACA Y NO ARRIBA, aunque el freno 1 este arriba: los tres motivos
     # tipados ganan, porque un turno que cierra tambien pregunta y decir que la
     # oferta "cedio" perderia el unico registro de que se decidio no ofrecer.
-    # Cuando cede no queda rastro a proposito, igual que con la ambiguedad:
-    # `NO_CORRESPONDE` dice "se decidio no ofrecer" y lo que pasa es otra cosa
-    # —la oferta queda para el turno siguiente—.
     if not motivo and (_duda_declarada(puntos_del_cliente)
                        or _ofrece_encima_de_una_pregunta(
                            texto or "", [p["nombre"] for p in traidos])):
-        return None
+        return None, libres[:_TOPE_DIFERIDA]
     nombres = [p["nombre"] for p in libres][:8]
-    return {"id": "oferta:1", "tipo": "oferta", "termino": nombres[0],
-            "texto": f"proponerle el paso siguiente sobre {nombres[0]}",
-            "candidatos": nombres,
-            **({"no_corresponde": motivo} if motivo else {})}
+    punto = {"id": "oferta:1", "tipo": "oferta", "termino": nombres[0],
+             "texto": f"proponerle el paso siguiente sobre {nombres[0]}",
+             "candidatos": nombres,
+             **({"no_corresponde": motivo} if motivo else {})}
+    return punto, []
 
 
-def _es_oferta(nombres: list, frase: str) -> bool:
+def _es_oferta(nombres: list, frase: str, previa: str = "") -> bool:
     """¿ESTA oracion propone el paso siguiente sobre alguno de esos productos?
 
-    LAS DOS MITADES EN LA MISMA ORACION, y esa atadura es todo lo que separa
-    esto de un colador. La accion sola deja pasar "coordinamos por mail"; el
-    producto solo deja pasar la ficha tecnica que no ofrece nada. Y no se pide
-    signo de pregunta a proposito: "Te lo cargo al pedido y te paso el total"
-    ofrece sin preguntar, que es justo la forma que no gasta la unica
+    LAS DOS MITADES EN LA VENTANA DEL MENSAJE INMEDIATO, y esa atadura es todo
+    lo que separa esto de un colador. La ACCION tiene que estar en ESTA oracion
+    —la accion sola deja pasar "coordinamos por mail"—; el PRODUCTO puede estar
+    nombrado en esta oracion o en `previa`, la inmediatamente anterior, que es
+    como se ofrece cuando se ofrece de verdad: "El M170 sale $12.000. ¿Te lo
+    reservo?". El producto solo, sin accion, sigue siendo la ficha tecnica que no
+    ofrece nada.
+
+    Y no se pide signo de pregunta a proposito: "Te lo cargo al pedido y te paso
+    el total" ofrece sin preguntar, que es justo la forma que no gasta la unica
     repregunta del turno.
 
     SIN PRODUCTOS NO HAY OFERTA, y no es un caso de borde: es el cuarto falso de
@@ -787,13 +879,28 @@ def _es_oferta(nombres: list, frase: str) -> bool:
     abajo sobre una lista vacia ya da False sin ninguna guarda aparte."""
     if not _RE_ACCION.search(_n(frase)):
         return False
-    return any(_ancla_en(nombre, frase) for nombre in (nombres or []))
+    ventana = f"{previa} {frase}" if previa else frase
+    return any(_ancla_en(nombre, ventana) for nombre in (nombres or []))
+
+
+def _con_su_previa(marcadas: list) -> list:
+    """Cada oracion con la anterior al lado: `(frase, es_pregunta, previa)`.
+
+    UNA SOLA, y es la ventana entera. Vive aca y no adentro de los dos que la
+    usan para que el freno y el detector no puedan mirar ventanas distintas: si
+    fueran dos, el dia que una se agrande el freno empezaria a comerse ofertas
+    que el detector cuenta."""
+    fuera = []
+    for i, (frase, es_pregunta) in enumerate(marcadas):
+        fuera.append((frase, es_pregunta, marcadas[i - 1][0] if i else ""))
+    return fuera
 
 
 def _ofrecio_el_paso(punto: dict, texto: str) -> bool:
     """¿El texto propone el paso siguiente sobre ESE producto?"""
     nombres = punto.get("candidatos") or []
-    return any(_es_oferta(nombres, frase) for frase in _oraciones(texto))
+    return any(_es_oferta(nombres, frase, previa)
+               for frase, _, previa in _con_su_previa(_oraciones_marcadas(texto)))
 
 
 def _ofrece_encima_de_una_pregunta(texto: str, nombres: list) -> bool:
@@ -812,8 +919,8 @@ def _ofrece_encima_de_una_pregunta(texto: str, nombres: list) -> bool:
     el freno 2 escrito como codigo: "¿Te reservo el Mouse Logitech M170?"
     propone, no interroga. Sin ella el freno se comeria a la oferta misma."""
     ofrece = pregunta = False
-    for frase, es_pregunta in _oraciones_marcadas(texto):
-        if _es_oferta(nombres, frase):
+    for frase, es_pregunta, previa in _con_su_previa(_oraciones_marcadas(texto)):
+        if _es_oferta(nombres, frase, previa):
             ofrece = True
         elif es_pregunta:
             pregunta = True
@@ -1125,10 +1232,17 @@ def estado_terminal(punto: dict, texto: str, llamadas: list | None = None,
 def cobertura(declarado: dict, texto: str, trace_id: str = "",
               llamadas: list | None = None,
               memoria: list | None = None,
-              descartados: list | None = None) -> dict:
+              descartados: list | None = None,
+              diferida: list | None = None) -> dict:
     """El indice del turno: cada punto interpretado, con su estado en la
-    respuesta. Devuelve `{puntos, faltan}` y lo deja en el log, que es donde se
-    puede leer despues sin adivinar.
+    respuesta. Devuelve `{puntos, faltan, diferida}` y lo deja en el log, que es
+    donde se puede leer despues sin adivinar.
+
+    `diferida` ENTRA Y SALE por la misma puerta (FICHA 16B). Entra con la oferta
+    que el turno anterior dejo pendiente, y sale con la que este turno deja: es
+    lo que `hub_venta` guarda en la conversacion. Va acá y no en una funcion
+    aparte para que sea IMPOSIBLE que el estado guardado y el estado medido
+    salgan de dos cuentas distintas.
 
     CADA PUNTO SALE CON DOS COSAS, y son distintas: `atendido`, que es si llego
     al texto, y `estado`, que es COMO termino —`ESTADOS_TERMINALES`, o vacio si
@@ -1146,12 +1260,12 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
     # el unico lugar del modulo donde estan juntos lo que trajeron las
     # herramientas y lo que el pedido ya tiene. `puntos()` sigue siendo lo
     # declarado y nada mas: la oferta no la declara nadie, la abre el codigo.
-    _oferta = punto_de_oferta(llamadas or [], memoria, texto or "",
-                              descartados, puntos_del_cliente=ps)
+    _oferta, _diferida = punto_de_oferta(llamadas or [], memoria, texto or "",
+                                         descartados, ps, diferida)
     if _oferta:
         ps = ps + [_oferta]
     if not ps:
-        return {"puntos": [], "faltan": []}
+        return {"puntos": [], "faltan": [], "diferida": _diferida}
     marcados = []
     for p in ps:
         anclas = anclajes(p, llamadas or [], memoria)
@@ -1182,8 +1296,9 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
                       for p in marcados],
              por_evidencia=[f"{p['id']}<-{p['por_ancla'][:30]}"
                             for p in marcados if p.get("por_ancla")][:5],
+             diferida=[p["nombre"] for p in _diferida][:3],
              faltan=[p["texto"][:60] for p in faltan][:5])
-    return {"puntos": marcados, "faltan": faltan}
+    return {"puntos": marcados, "faltan": faltan, "diferida": _diferida}
 
 
 # ── LA PUERTA: LA COBERTURA DEJA DE SER UN LOG (FICHA 09, 24-ago-2026) ───────

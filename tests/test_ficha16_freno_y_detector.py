@@ -16,18 +16,23 @@ un archivo solo:
   EL CUARTO FRENO      si el turno ya le pregunta algo al cliente, la oferta
                        CEDE. Los tres frenos anteriores miran la herramienta
                        ambigua; este mira al bot.
-  EL DETECTOR ESTRICTO OFRECIDO exige que la oracion NOMBRE el producto y
-                       proponga una accion concreta sobre el.
+  EL DETECTOR ESTRICTO OFRECIDO exige un producto NOMBRADO en la ventana del
+                       mensaje inmediato —la oracion de la accion mas la
+                       anterior— y una accion concreta sobre el.
 
 Sin el segundo, el primero ni se puede plantear: mientras un "lo" pelado hiciera
 de producto, cualquier frase con un verbo de accion contaba como oferta y los
 turnos que "ofrecian encima de una pregunta" incluian cuatro que no ofrecian
 nada.
 
-EL DETECTOR SE PUSO MAS ESTRICTO A PROPOSITO Y OFRECIDO BAJO: 16 a 7 sobre esta
-misma grabacion. Ese numero no es un piso ni un techo y no hay que defenderlo
-hacia arriba —subirlo aflojando el detector seria volver al agujero—. Lo que
-este archivo defiende son las dos propiedades, no la cifra.
+EL DETECTOR SE PUSO MAS ESTRICTO Y SE PASO DE LARGO, y la ficha 16B lo corrigio:
+exigir las dos mitades en la MISMA oracion rechazaba la anafora, que es como
+habla la gente. Sobre esta grabacion OFRECIDO fue 16 (sucio, con los cuatro
+falsos adentro) → 7 (demasiado estricto) → 22 (con la ventana del mensaje
+inmediato y las formas del subjuntivo). NINGUNO de los tres es un piso ni un
+techo, y ninguno hay que defenderlo: lo que este archivo defiende son las dos
+propiedades, no la cifra. Las cuatro frases de abajo siguen sin contar, que es
+la unica cifra que si importa y es cero.
 
 CORRE OFFLINE: sin modelo, sin clave, sin red.
 """
@@ -115,7 +120,7 @@ def test_la_oferta_cede_ante_la_duda_declarada():
     Los tres turnos de la sonda —76 t1, 80 t6 y 80 t8— llegaban a la redaccion
     con una `duda` en CONFLICTO y con esa linea pegada al prompt: el defecto lo
     empujaba el codigo, no el modelo."""
-    con_duda = IT.punto_de_oferta(
+    con_duda, pendiente = IT.punto_de_oferta(
         _MOUSE, None, "Te paso la cotizacion.", None,
         puntos_del_cliente=[{"id": "duda:1", "tipo": "duda",
                              "texto": "pidio 6 articulos y nombro 7 destinos"}])
@@ -123,9 +128,13 @@ def test_la_oferta_cede_ante_la_duda_declarada():
         "el turno arrastra una contradiccion que lo obliga a preguntar y la "
         f"oferta se abrio igual: {con_duda}")
     # Y SIN DUDA SE ABRE. Sin esta mitad el freno seria un apagador.
-    sin_duda = IT.punto_de_oferta(_MOUSE, None, "Te paso la cotizacion.", None,
-                                  puntos_del_cliente=[{"id": "item:1",
-                                                       "tipo": "item"}])
+    # Y LO QUE CEDIO NO SE PIERDE (FICHA 16B): vuelve como pendiente para que
+    # el turno siguiente lo reabra.
+    assert [p["nombre"] for p in pendiente] == ["Mouse Logitech G203"], pendiente
+    sin_duda, _ = IT.punto_de_oferta(_MOUSE, None, "Te paso la cotizacion.",
+                                     None,
+                                     puntos_del_cliente=[{"id": "item:1",
+                                                          "tipo": "item"}])
     assert sin_duda and not sin_duda.get("no_corresponde"), (
         f"sin nada que preguntar la oferta tiene que abrirse: {sin_duda}")
 

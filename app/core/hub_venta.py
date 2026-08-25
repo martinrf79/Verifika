@@ -1473,9 +1473,15 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # LA MEMORIA NEGATIVA TAMBIEN VIAJA (FICHA 15). Sin ella el punto de oferta
     # vuelve a proponer lo que el cliente ya rechazo, y eso es la insistencia
     # que la ficha existe para evitar. Es el mismo campo que guarda el turno.
+    # LA OFERTA QUE EL TURNO ANTERIOR DIFIRIO (FICHA 16B). Sin esto, un turno
+    # que cedio la oferta —porque la herramienta salio ambigua o porque el
+    # mismo turno tenia una pregunta abierta— la perdia para siempre: el punto
+    # se reabria SOLO si el turno siguiente volvia a llamar una herramienta de
+    # productos. Con el campo, el turno que aclara la duda cierra proponiendo.
     idx = IT.cobertura(declarado, material, trace_id, llamadas=llamadas,
                        memoria=_memoria_idx,
-                       descartados=conv.get("descartados") or [])
+                       descartados=conv.get("descartados") or [],
+                       diferida=conv.get("oferta_diferida") or [])
     # QUE SIGNIFICA QUE EL INDICE INTERVINO: que encontro un punto SIN
     # material y por eso le sumo una obligacion al prompt de redaccion. Si
     # todos los puntos tienen con que contestarse, mira y no toca nada.
@@ -1700,6 +1706,23 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         _grupos_envio = None
     _grupos_envio = _reparto_que_se_guarda(
         _grupos_envio, conv.get("grupos_envio") or [], carrito)
+    # EL INDICE, MEDIDO SOBRE LO QUE EL CLIENTE VA A LEER. La pasada de arriba
+    # mira el material y sirve para PEDIR; esta mira el texto final y sirve para
+    # SABER. Es la regla de tau-bench: se juzga por lo observado, no por lo que
+    # el agente cuenta que hizo. Sin esto, "el destino no llego al mensaje" solo
+    # se descubre leyendo una charla a mano, que es como se descubrio hoy.
+    # VAN LOS DESCARTADOS DE ESTE TURNO, no los de antes: la medicion es sobre
+    # el estado con que el turno cierra, y aca `descartados` ya incluye lo que
+    # el cliente acaba de sacar del pedido.
+    #
+    # VA ANTES DEL SAVE DESDE LA FICHA 16B, y no es un detalle de orden: esta
+    # pasada es la que dice que oferta quedo DIFERIDA, y eso se guarda con el
+    # resto de la memoria del turno. Calcularla despues del save obligaria a una
+    # segunda cuenta o a un segundo save, y las dos formas son una costura.
+    _idx_final = IT.cobertura(declarado, texto, trace_id + "|final",
+                              llamadas=llamadas, memoria=_memoria_idx,
+                              descartados=descartados,
+                              diferida=conv.get("oferta_diferida") or [])
     try:
         save_conversation(
             user_id, history, resumen, tienda_id=tienda_id,
@@ -1722,6 +1745,13 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
             preferencias_cliente=preferencias or None,
             datos_cliente_parciales=datos_cliente,
             pregunta_cierre_hecha=pregunta_cierre_hecha,
+            # LA OFERTA DIFERIDA (FICHA 16B). Va SIEMPRE el valor, nunca
+            # `or None`: la lista vacia es el dato que APAGA la oferta
+            # pendiente —el cliente la rechazo, ya esta en el carrito, el turno
+            # cerraba, o el turno la ofrecio de verdad— y con `or None` no se
+            # hubiera guardado nunca, asi que el producto se arrastraria para
+            # siempre. Eso es exactamente la insistencia que el punto evita.
+            oferta_diferida=_idx_final.get("diferida") or [],
             ultimo_presupuesto=(bloque or conv.get("ultimo_presupuesto") or None))
         G.veredicto("memoria", True,
                     f"turnos:{len(history) // 2} carrito:{len(carrito or [])}")
@@ -1729,17 +1759,6 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
         G.veredicto("memoria", False, f"no_guardo:{type(e).__name__}")
         log.warning("hub_venta_save_error", trace_id=trace_id, error=str(e)[:150])
 
-    # EL INDICE, MEDIDO SOBRE LO QUE EL CLIENTE VA A LEER. La pasada de arriba
-    # mira el material y sirve para PEDIR; esta mira el texto final y sirve para
-    # SABER. Es la regla de tau-bench: se juzga por lo observado, no por lo que
-    # el agente cuenta que hizo. Sin esto, "el destino no llego al mensaje" solo
-    # se descubre leyendo una charla a mano, que es como se descubrio hoy.
-    # VAN LOS DESCARTADOS DE ESTE TURNO, no los de antes: la medicion es sobre
-    # el estado con que el turno cierra, y aca `descartados` ya incluye lo que
-    # el cliente acaba de sacar del pedido.
-    _idx_final = IT.cobertura(declarado, texto, trace_id + "|final",
-                              llamadas=llamadas, memoria=_memoria_idx,
-                              descartados=descartados)
     G.anotar("sin_contestar", [p["id"] for p in (_idx_final.get("faltan") or [])][:5])
     # EN QUE TERMINO CADA PUNTO (FICHA 08). `sin_contestar` mete cuatro cosas
     # distintas en la misma bolsa y tres no son un defecto: el turno pregunto,
