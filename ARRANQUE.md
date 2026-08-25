@@ -46,7 +46,7 @@ verde y el contador se movió.
 | ~~12~~ | ~~`registrar()` en las seis etapas~~ | **HECHA el 24-ago.** El censo vive adentro de `grafo.registrar()` y `peso_del_censo.py` dejó de envolver nada: mide 39 nodos sobre 54 turnos, con candado en `tests/test_censo_del_grafo.py` |
 | ~~13~~ | ~~el primer número de VENTA~~ | **HECHA el 25-ago.** `banco_pruebas/vara_de_venta.py`: cinco números sobre el estado del turno, sin juez y sin modelo. Es el primer contador que **sube** |
 | ~~15~~ | ~~el punto de OFERTA~~ | **HECHA el 25-ago.** Punto sintético abierto por código en `indice_turno`, con estados terminales y exigido por `puede_salir`. El prompt no creció un byte |
-| **16** | **el cuarto freno + el detector estricto** | los 3 turnos que ofrecen encima de una pregunta propia desaparecen, y los 4 falsos `OFRECIDO` dejan de contar. Se verifica **gratis** contra `banco_pruebas/casetes_sonda_25ago/` |
+| ~~16~~ | ~~el cuarto freno + el detector estricto~~ | **HECHA el 25-ago.** Cuarto freno en `punto_de_oferta` y `_RE_PRONOMBRE` borrado; sobre los 15 casetes de la sonda `OFRECIDO` baja de 16 a 7, los 3 que ofrecian encima de su propia pregunta y los 4 falsos ya no cuentan, y el piso de venta quedo intacto |
 | 17 | regrabar el corpus | recién con 16 verde. Antes es pagar la grabación dos veces |
 | 18 | el modo degradado | hoy, si el decisor se cae, el cliente recibe "estoy con mucha demanda". No se cae un detalle: se cae la venta y el cliente |
 | 19 | `camino_al_cobro` | 6 de 15 charlas terminan sin que el bot diga nunca cómo se paga |
