@@ -1564,6 +1564,19 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # por engranaje no se pierde: se sigue midiendo comparando el texto, pieza
     # por pieza, y la ficha del turno dice lo mismo que decia con dieciocho.
     bloque = R._bloque_presupuesto(llamadas)
+    # ── LA FRONTERA, Y ES LA UNICA VEZ QUE EXISTE (FICHA 21) ──────────────
+    # Desde la linea siguiente, `texto` deja de ser lo que escribio el modelo:
+    # cuatro puertas podan y una SUMA prosa propia. Despues no hay forma de
+    # saber cual mitad la escribio quien —adentro, las dos son el mismo str—,
+    # y eso es lo que hizo la regresion: `camino_cobro` estampaba "link de
+    # pago" y "tu nombre", y `punto_de_oferta` leia esos literales suyos como
+    # si los hubiera decidido el modelo, daba el turno por CERRANDO y mataba
+    # cuatro ofertas de quince charlas.
+    #
+    # SE GUARDA ACA Y NO SE RECONSTRUYE DESPUES. Recortar la linea del cobro
+    # del texto final seria tapar este caso y dejar la costura entera abierta
+    # para la proxima puerta que estampe algo. Es la regla 13 de ARRANQUE.md.
+    texto_del_modelo = texto
     texto = G.paso("procedencia", S.procedencia,
                    texto, llamadas, trace_id, tienda_id)
     texto = G.paso("plata", S.plata, texto, llamadas, bloque, trace_id,
@@ -1597,7 +1610,8 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                        if h.get("role") == "assistant")
     texto = G.paso("obligacion", S.obligacion, texto, raw_message, negocio,
                    not history, declarado, llamadas, _memoria_idx, tienda_id,
-                   trace_id, conv.get("descartados") or [], dichos)
+                   trace_id, conv.get("descartados") or [], dichos,
+                   texto_del_modelo)
 
     # ── 7. LA HIGIENE: el mensaje entero, una sola vez ──────────────────
     # Va ULTIMA a proposito. Hasta acá cada puerta pegó o podó lo suyo y
@@ -1726,10 +1740,15 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # pasada es la que dice que oferta quedo DIFERIDA, y eso se guarda con el
     # resto de la memoria del turno. Calcularla despues del save obligaria a una
     # segunda cuenta o a un segundo save, y las dos formas son una costura.
+    # VA `texto_del_modelo` (FICHA 21): esta pasada es la que decide que oferta
+    # queda DIFERIDA y la guarda en la conversacion. Con el texto final, la
+    # linea del cobro apagaba la oferta con motivo tipado `cerrando` y
+    # `pendientes` salia vacio, o sea que no la difería: la mataba.
     _idx_final = IT.cobertura(declarado, texto, trace_id + "|final",
                               llamadas=llamadas, memoria=_memoria_idx,
                               descartados=descartados,
-                              diferida=conv.get("oferta_diferida") or [])
+                              diferida=conv.get("oferta_diferida") or [],
+                              texto_del_modelo=texto_del_modelo)
     try:
         save_conversation(
             user_id, history, resumen, tienda_id=tienda_id,

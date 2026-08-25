@@ -53,11 +53,10 @@ PUSHEÁ ANTES DE CERRAR, aunque quede a medias.
 
 ---
 
-## LO QUE RESTA — cinco cosas, al 26-ago
+## LO QUE RESTA — cuatro cosas, al 26-ago
 
 | # | qué | por qué importa |
 |---|---|---|
-| **21** | **la línea del cobro mata la oferta** | REGRESIÓN VIVA. El texto que estampa `camino_cobro` dice "link de pago" y "tu nombre", literales de `_RE_CERRANDO`: `punto_de_oferta` da el turno por CERRANDO, apaga la oferta y deja `pendientes` vacío, así que **no la difiere, la mata**. Son 4 ofertas sobre 15 charlas, entre ellas el K120 de `71 t3`. Causa de fondo: **código leyendo el texto que escribió el propio código como si lo hubiera escrito el modelo** |
 | 22 | el `SIN_ESTADO` que no debería existir | La FICHA 09 declaró que ningún punto sale sin estado y salen igual. Hambrea a `NO_SE_SABE` —2 casos en 55— y traba el cierre de `62` y `63`, que llegan al total y nunca cobran porque **todos** sus turnos con total repreguntan algo |
 | 23 | el modo degradado | Si el decisor se cae, el cliente recibe "estoy con mucha demanda". Es el único agujero que no tira un detalle: tira la venta **y el cliente** |
 | 24 | las tres guardias sin auditar | `honestidad_bot`, `punto_omitido`, `aduana`. Las tres con 0/54. De cuatro auditadas, **tres estaban ciegas**: la presunción es ciega hasta que se pruebe lo contrario |
@@ -85,6 +84,7 @@ toca hasta cerrar el `SIN_ESTADO`.
 | ~~18~~ | el enclítico, la alucinación y el turno complejo | pagó 4 A MEDIAS de 5. Largo 1.652 → **1.570**, `una_sola_repregunta` **55/55**, puntos 495 → 498 |
 | ~~19~~ | el camino al cobro | `camino_al_cobro` 8/15 → **10/15**. `sin_cobro_inventado` estaba medio ciega: 5 de 7 formas pasaban. Y el candado de las excepciones: en las guardias de salida quedan **cero** `except` que atrapan y siguen |
 | ~~20~~ | auditar los engranajes ciegos | 3 ARREGLADAS, 1 PROBADA. `sin_descuento_inventado` 6 de 8 pasaban, `sin_negar_lo_traido` 6 de 8, `sin_json` 4 de 7. Y un rojo falso vivo: `sin_negar_lo_traido` borraba la aclaración honesta y le vendía una RAM de 8 a quien pidió 16 |
+| ~~21~~ | la línea del cobro mataba la oferta | `punto_de_oferta` juzga `texto_del_modelo`, la frontera que `hub_venta` guarda antes de la primera puerta. Censo de oferta **OFRECIDO 22 → 26**, `NO_CORRESPONDE` 10 → 6; la vara entera sin un solo cambio turno por turno |
 
 ---
 

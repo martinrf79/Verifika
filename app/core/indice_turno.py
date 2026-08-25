@@ -823,6 +823,22 @@ def punto_de_oferta(llamadas: list, memoria: list | None = None,
     turno midio. Y no hay envoltura de una linea que devuelva solo el punto,
     porque una envoltura que solo usan los tests es una cosa suelta.
 
+    `texto` ES LO QUE ESCRIBIO EL MODELO, NUNCA EL TEXTO FINAL (FICHA 21), y
+    esto no es una preferencia: es la regla 13 de ARRANQUE.md. Las dos cosas
+    que esta funcion mira del texto —si el turno YA esta cerrando y si ofrece
+    encima de su propia pregunta— son lecturas de una DECISION del modelo. Una
+    puerta posterior que estampa prosa no decidio nada: `camino_cobro` pegaba
+    "link de pago" y "tu nombre", que son literales de `_RE_CERRANDO`, y este
+    punto daba el turno por CERRANDO y mataba la oferta —no la difería, la
+    mataba, porque `pendientes` sale vacio con motivo tipado—. Cuatro ofertas
+    sobre quince charlas, medidas.
+
+    QUIEN LO GARANTIZA ES `cobertura`, con `texto_del_modelo`. Aca no hay
+    defensa posible: desde adentro, la prosa del codigo y la del modelo son el
+    mismo str. Por eso el arreglo no es una lista de palabras a esquivar —eso
+    tapa un caso y deja la costura— sino que el texto del modelo llegue
+    SEPARADO desde donde todavia se sabe cual es cual.
+
     `puntos_del_cliente` son los puntos que `puntos()` ya desarmo de lo
     declarado, y entran solo para el cuarto freno: si entre ellos hay una
     `duda`, el turno va a preguntar y la oferta se difiere.
@@ -1268,7 +1284,8 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
               llamadas: list | None = None,
               memoria: list | None = None,
               descartados: list | None = None,
-              diferida: list | None = None) -> dict:
+              diferida: list | None = None,
+              texto_del_modelo: str | None = None) -> dict:
     """El indice del turno: cada punto interpretado, con su estado en la
     respuesta. Devuelve `{puntos, faltan, diferida}` y lo deja en el log, que es
     donde se puede leer despues sin adivinar.
@@ -1285,6 +1302,19 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
     bien igual: el turno pregunto por el, o no habia con que contestarlo. Lo
     que queda con `estado` vacio es la omision, y nada mas que la omision.
 
+    `texto_del_modelo` ES LA COSTURA DE LA FICHA 21, y por eso entra separado.
+    `texto` es lo que el cliente VA A LEER —el mensaje ya pasado por las cuatro
+    puertas—, y para casi todo eso es exactamente lo que hay que medir: la
+    regla de tau-bench dice que se juzga por lo observado. Pero la puerta 3
+    SUMA prosa, y el punto de oferta no mide lo observado sino una DECISION del
+    modelo. Sin separar los dos, `camino_cobro` estampaba "link de pago" y "tu
+    nombre" y la oferta se daba por cerrada: codigo leyendo como modelo el
+    texto que escribio el propio codigo.
+
+    Quien lo sabe es `hub_venta`, que es el unico lugar donde todavia existen
+    las dos versiones. Las pasadas que corren ANTES de las puertas no lo pasan
+    y no lo necesitan: ahi `texto` todavia es del modelo.
+
     `llamadas` son las herramientas del turno, y con ellas el punto se mide
     contra su EVIDENCIA -el producto que la busqueda devolvio, la localidad que
     el envio cotizo, el total que la calculadora armo- y no solo contra las
@@ -1295,7 +1325,20 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
     # el unico lugar del modulo donde estan juntos lo que trajeron las
     # herramientas y lo que el pedido ya tiene. `puntos()` sigue siendo lo
     # declarado y nada mas: la oferta no la declara nadie, la abre el codigo.
-    _oferta, _diferida = punto_de_oferta(llamadas or [], memoria, texto or "",
+    # LA OFERTA SE JUZGA CONTRA LO QUE ESCRIBIO EL MODELO (FICHA 21), y es el
+    # unico punto del turno que necesita esa distincion: los demas se miden
+    # contra lo que el cliente VA A LEER, que es el texto final y esta bien que
+    # lo sea. La oferta no: sus dos lecturas —el turno ya cierra, el turno
+    # ofrece encima de su propia pregunta— son sobre una DECISION, y la prosa
+    # que estampa una puerta posterior no decide nada.
+    #
+    # EL `is None` NO ES UN DEFAULT PIADOSO: `""` es un texto del modelo vacio y
+    # tiene que valer como tal. Solo cuando NADIE dijo cual era —las pasadas que
+    # miden el material, donde `texto` todavia ES del modelo— se cae al mismo
+    # texto, y ahi la distincion no existe porque no hay puerta que haya escrito.
+    _del_modelo = texto if texto_del_modelo is None else texto_del_modelo
+    _oferta, _diferida = punto_de_oferta(llamadas or [], memoria,
+                                         _del_modelo or "",
                                          descartados, ps, diferida)
     if _oferta:
         ps = ps + [_oferta]

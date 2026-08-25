@@ -1176,7 +1176,8 @@ def _la_cuenta_y_la_plata(texto: str, llamadas: list, bloque: str,
 
 def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
                             memoria: list, tienda_id: str, trace_id: str,
-                            descartados: list | None = None) -> str:
+                            descartados: list | None = None,
+                            texto_del_modelo: str = "") -> str:
     """EL CONTRATO NO_OMITE: un punto que el cliente pidio y que el sistema
     SABE contestar no puede salir sin contestar.
 
@@ -1210,9 +1211,15 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
     if not declarado or not (texto or "").strip():
         return texto
     try:
+        # EL TEXTO DEL MODELO VIAJA APARTE (FICHA 21). Para esta guardia
+        # `texto` es lo correcto —repone lo que le falta al mensaje que se
+        # manda—, pero adentro de `cobertura` el punto de oferta juzga una
+        # DECISION del modelo, y a esta altura `texto` ya lleva pegado lo que
+        # estamparon `bloque_repuesto`, `la_cuenta_y_la_plata` y el saludo.
         idx = IT.cobertura(declarado, texto, trace_id + "|guardia",
                            llamadas=llamadas, memoria=memoria,
-                           descartados=descartados)
+                           descartados=descartados,
+                           texto_del_modelo=texto_del_modelo or None)
     except Exception as e:  # noqa: BLE001 — un control no puede tumbar el turno
         log.warning("punto_omitido_error", trace_id=trace_id, error=str(e)[:120])
         return texto
@@ -1387,7 +1394,8 @@ def plata(texto: str, llamadas: list, bloque: str, trace_id: str,
 def obligacion(texto: str, mensaje: str, negocio: str, primer_mensaje: bool,
                declarado: dict | None, llamadas: list, memoria: list,
                tienda_id: str, trace_id: str,
-               descartados: list | None = None, dichos: str = "") -> str:
+               descartados: list | None = None, dichos: str = "",
+               texto_del_modelo: str = "") -> str:
     """PUERTA 3 — LO QUE TIENE QUE ESTAR SI O SI. La unica que SUMA.
 
     Las otras tres restan: podan lo que no puede salir. Esta pone lo que no
@@ -1423,7 +1431,7 @@ def obligacion(texto: str, mensaje: str, negocio: str, primer_mensaje: bool,
                     error=str(e)[:120])
     texto = _pieza("punto_omitido", _punto_omitido_repuesto, texto,
                    declarado or {}, llamadas, memoria, tienda_id, trace_id,
-                   descartados)
+                   descartados, texto_del_modelo)
     # VA ULTIMA DE LA PUERTA, y despues del punto omitido a proposito: se pega
     # al final del mensaje y tiene que ver el total ya repuesto por la puerta de
     # la plata. Antes del punto omitido quedaria en el medio del mensaje.
