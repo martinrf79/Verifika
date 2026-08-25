@@ -217,7 +217,10 @@ def _ficha_del_catalogo(fuente_id: str, tienda_id: str) -> str:
     try:
         from app.storage.firestore_client import get_product_by_id
         p = get_product_by_id(fuente_id, tienda_id=tienda_id or None)
-    except Exception:
+    except Exception as e:  # noqa: BLE001 — se registra: sin la ficha, la
+        # atadura no puede contrastar y la afirmacion pasa sin verificar.
+        log.error("atadura_ficha_ilegible", fuente_id=str(fuente_id),
+                  error=f"{type(e).__name__}: {str(e)[:120]}")
         return ""
     return _texto_de(p) if p else ""
 
@@ -264,7 +267,10 @@ def _sin_descuento_sin_respaldo(texto: str, fuente: str, trace_id: str) -> str:
         return texto
     try:
         from app.core.mensaje import _es_de_codigo
-    except Exception:  # noqa: BLE001 — sin la pieza, no se poda
+    except Exception as e:  # noqa: BLE001 — se registra: sin la pieza no se
+        # poda, o sea que un descuento sin respaldo sale entero.
+        log.error("atadura_sin_es_de_codigo",
+                  error=f"{type(e).__name__}: {str(e)[:120]}")
         return texto
     fuera = []
     for linea in texto.splitlines():

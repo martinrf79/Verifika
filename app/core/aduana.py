@@ -194,7 +194,10 @@ def _vocabulario(tienda_id: str) -> set:
         from app.storage.firestore_client import get_all_products
         return {str(p.get("nombre") or "") for p in
                 get_all_products(tienda_id=tienda_id) if p.get("nombre")}
-    except Exception:
+    except Exception as e:  # noqa: BLE001 — se registra: sin vocabulario el
+        # invariante del muro no controla nada, y hasta hoy eso pasaba mudo.
+        log.error("aduana_vocabulario_ilegible", tienda_id=str(tienda_id),
+                  error=f"{type(e).__name__}: {str(e)[:120]}")
         return set()
 
 

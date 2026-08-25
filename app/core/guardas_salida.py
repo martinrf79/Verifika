@@ -50,8 +50,11 @@ def business_name(tienda_id: str | None) -> str:
             stored = get_config("business_name", tienda_id=tienda_id)
             if stored:
                 name = stored
-        except Exception:
-            pass
+        except Exception as e:  # noqa: BLE001 — se registra: con el nombre del
+            # entorno en vez del de la tienda, la guarda de identidad se
+            # presenta como otro negocio y nadie se entera.
+            log.error("business_name_ilegible", tienda_id=str(tienda_id),
+                      error=f"{type(e).__name__}: {str(e)[:120]}")
     return name
 
 

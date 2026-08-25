@@ -216,7 +216,11 @@ def _cargar_base_conocimiento() -> None:
     try:
         with open(ruta, encoding="utf-8") as f:
             base = json.load(f)
-    except Exception:
+    except Exception as e:  # noqa: BLE001 — se registra: sin la fuente, TODO
+        # el texto fijo cae al defecto escrito en el codigo y la voz de la casa
+        # desaparece sin un solo test rojo.
+        log.error("base_conocimiento_ilegible", ruta=ruta,
+                  error=f"{type(e).__name__}: {str(e)[:120]}")
         return
 
     _IDENTIDAD.clear()

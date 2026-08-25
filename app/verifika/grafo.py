@@ -515,12 +515,30 @@ _censo_detalles: dict = defaultdict(list)
 _censo_notas: dict = defaultdict(int)
 _censo_turnos = 0
 
+# LOS ENGRANAJES QUE LEVANTARON, CONTADOS APARTE. {nodo: [tipos de excepcion]}.
+#
+# POR QUE ES UN CONTADOR PROPIO Y NO UNA LINEA MAS DEL DETALLE (FICHA 19). Una
+# excepcion atrapada y seguida de largo es la puerta por la que entraron los dos
+# peores defectos que este repo encontro: el crasher de compatibilidad, que le
+# devolvia el enlatado al cliente, y el `(?i)` del componedor, que alargaba los
+# mensajes sin un solo test rojo. Las dos veces la marca estaba —`G.paso` deja
+# `levanto:X` desde que existe— y las dos veces NADIE LA MIRABA, porque estaba
+# adentro de una lista de detalles de la que ningun test afirmaba nada.
+#
+# Con esto la marca deja de ser un detalle y pasa a ser un numero que la bateria
+# puede poner en rojo: `tests/test_ninguna_guardia_se_traga_una_excepcion.py`
+# corre el corpus y exige CERO. Esa es la mitad viva del candado; la otra es
+# estatica y mira el codigo.
+_censo_levantes: dict = defaultdict(list)
+
 
 def _censar(nodo_id: str, intervino: bool, detalle: str = "") -> None:
     """La suma acumulada de un engranaje. Nunca levanta, por lo mismo que
     `registrar`: un instrumento no puede tumbar lo que mide."""
     try:
         _censo_corrio[nodo_id] += 1
+        if str(detalle or "").startswith("levanto:"):
+            _censo_levantes[nodo_id].append(str(detalle)[len("levanto:"):])
         if intervino:
             _censo_intervino[nodo_id] += 1
             if detalle and len(_censo_detalles[nodo_id]) < 3:
@@ -537,6 +555,7 @@ def censo_reiniciar() -> None:
     _censo_intervino.clear()
     _censo_detalles.clear()
     _censo_notas.clear()
+    _censo_levantes.clear()
     _censo_turnos = 0
 
 
@@ -589,6 +608,11 @@ def censo() -> dict:
         "marcan_de_mas": [f["nodo"] for f in medidos
                           if _censo_turnos and f["corrio"] > _censo_turnos],
         "notas": dict(_censo_notas),
+        # LOS QUE LEVANTARON. Vacio es lo unico aceptable, y la bateria lo
+        # exige: un engranaje que explota y sigue de largo devuelve el texto
+        # como entro, o sea que el control que ese engranaje era NO CORRIO y
+        # el cliente lee lo que la guardia tenia que haber arreglado.
+        "levantes": {k: list(v) for k, v in _censo_levantes.items() if v},
         "filas": filas,
     }
 
