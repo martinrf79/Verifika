@@ -425,8 +425,29 @@ _RE_UNIVERSAL = re.compile(
     # estaba -negacion mas carencia- pero escrita solo con "que no", y esta la
     # dice con "sin". Son la misma oracion: "sin X" es "que no tienen X". Se
     # suma la preposicion a la MISMA rama, no una regla nueva.
+    #
+    # LA CARENCIA TIENE QUE COLGAR DEL SUSTANTIVO, NO DE UN CONECTOR (FICHA 18,
+    # 25-ago-2026). Esta rama pedia "no + verbo de tener + cualquier cosa + que
+    # no|sin", y `que no` en castellano tambien es la mitad de un conector
+    # consecutivo. La frase HONESTA de 62 T2 cae adentro:
+    #
+    #   "no trabajamos con ese producto en nuestro catalogo, POR LO QUE NO
+    #    contamos con stock"
+    #
+    # Es la respuesta correcta —el cliente pregunto por una PlayStation 5 y no
+    # la vendemos, y `buscar_productos` lo confirmo con `no_vendemos`— y la
+    # guardia se la comia entera, dejando al cliente sin contestacion. Un rojo
+    # falso que ademas MUTEA es peor que el defecto que la rama caza.
+    #
+    # Lo que la rama busca es "productos QUE NO tengan X" y "productos SIN X":
+    # ahi la carencia modifica al SUSTANTIVO. Se pide entonces el sustantivo
+    # pegado adelante, que es lo que siempre quiso decir. Las ocho redacciones
+    # reales del muro lo tienen -"productos que no", "producto en stock que no",
+    # "productos sin"-; "por lo que no" no lo tiene.
     r"no\s+(?:tengo|tenemos|hay|manejo|manejamos|trabajo|trabajamos|"
-    r"vendo|vendemos|cuento|contamos)\b[^.!?\n]*\b(?:que\s+no|sin)\b|"
+    r"vendo|vendemos|cuento|contamos)\b[^.!?\n]*"
+    r"\b(?:productos?|art[ií]culos?|[ií]tems?|modelos?|equipos?|marcas?|"
+    r"stock|mercader[ií]a|nada)\s+(?:que\s+no|sin)\b|"
     r"(?:todo|nada)\s+(?:el|mi)\s+cat[aá]logo|la\s+totalidad",
     re.IGNORECASE)
 
@@ -450,6 +471,33 @@ _RE_TODO_EL_CATALOGO = re.compile(
     r"stock|marcas?)\b|lo\s+que\s+(?:trabajo|manejo|tengo|vendo|vendemos|"
     r"trabajamos|manejamos)", re.IGNORECASE)
 
+# EL SURTIDO: DECIR A QUE SE DEDICA EL NEGOCIO ES UN UNIVERSAL, y entra por su
+# propia puerta como el muro (FICHA 18, 25-ago-2026).
+#
+# LA FRASE, textual de 62 T2: "por ahora estamos enfocados en nuestra linea de
+# tablets y otros accesorios de tecnologia e informatica". El cliente habia
+# preguntado por una PlayStation 5 y `buscar_productos` volvio `no_vendemos`.
+# De haber visto CERO productos el modelo dedujo de que se trata el negocio, y
+# lo dedujo mal: son 27 tablets sobre 880, contra 171 notebooks, 96 memorias y
+# 72 de almacenamiento. Es la misma invencion que "todos mis productos son
+# chinos" con el signo dado vuelta —en vez de negar el catalogo entero, lo
+# describe entero— y por eso no la veia ninguna de las formas de arriba.
+#
+# NO PIDE EL SUSTANTIVO GLOBAL, igual que `_RE_MURO` y por la misma razon:
+# "estamos enfocados en X" ya habla del negocio entero sin nombrar ni catalogo
+# ni productos. Pedirle el sustantivo seria pedirle justamente lo que no dice.
+#
+# LO QUE NO SE COME: la condicion de `acotada` sigue corriendo despues, asi que
+# la misma frase dicha sobre un rubro que SI trajimos se queda. Y no entra la
+# descripcion del rubro de la tienda que sale de la FUENTE —eso lo escribe el
+# codigo desde `base_conocimiento.json`, no el modelo, y no pasa por aca.
+_RE_SURTIDO = re.compile(
+    r"\b(?:estamos|estoy|seguimos|nos)\s+"
+    r"(?:enfocad[oa]s?|centrad[oa]s?|especializad[oa]s?|"
+    r"dedicamos|especializamos|enfocamos|centramos)\b|"
+    r"\bnuestra\s+l[ií]nea\s+(?:es|de)\b|"
+    r"\bnos\s+dedicamos\s+a\b", re.IGNORECASE)
+
 
 def _sin_afirmar_sobre_el_catalogo(texto: str, llamadas: list,
                                    trace_id: str) -> str:
@@ -472,10 +520,49 @@ def _sin_afirmar_sobre_el_catalogo(texto: str, llamadas: list,
         for p in (r.get("productos") or []):
             if isinstance(p, dict) and p.get("categoria"):
                 categorias.add(H._norm(p["categoria"]))
-        if (l.get("herramienta") in ("buscar_productos", "consultar_catalogo")
-                and str(r.get("estado") or "") in
-                ("no_encontrado", "no_se_pudo", "error")):
-            busqueda_fallida = True
+        # LA BUSQUEDA QUE NO TRAJO NADA SE MIDE POR EL HECHO, NO POR EL NOMBRE
+        # DEL VEREDICTO (FICHA 18, 25-ago-2026).
+        #
+        # Aca vivia una lista de tres estados —`no_encontrado`, `no_se_pudo`,
+        # `error`— y le faltaba el que mas importa: **`no_vendemos`**, que es el
+        # veredicto que sale justo cuando el cliente pidio algo que no esta en
+        # el catalogo, o sea el turno exacto en el que el modelo se tienta con
+        # un universal. Medido en 62 T2 del corpus regrabado: el cliente
+        # pregunto por una PlayStation 5, `buscar_productos` volvio
+        # `no_vendemos` con cero productos, esta guardia salio por el `return`
+        # de abajo sin mirar una palabra, y al cliente le llego "por ahora
+        # estamos enfocados en nuestra linea de tablets", con 27 tablets sobre
+        # 880 productos y 171 notebooks.
+        #
+        # Es la regla 9 escrita con estados en vez de frases: un vocabulario
+        # cerrado que parecia completo porque el que faltaba no estaba escrito
+        # en ningun lado. El vecino de al lado —`_sin_negar_lo_traido`, treinta
+        # lineas mas arriba— si conocia `no_vendemos`: dos guardias de la misma
+        # familia leyendo enums distintos del mismo resultado.
+        #
+        # EL HECHO ES QUE LA BUSQUEDA TRAJO CERO PRODUCTOS, y eso no depende de
+        # como se llame el veredicto: cubre los cuatro de antes, cubre
+        # `no_vendemos`, y cubre el que agregue la proxima herramienta. Se pide
+        # que `productos` sea una lista VACIA y no que falte: `consultar_catalogo`
+        # con `operacion=valores` no devuelve `productos` sino el censo de
+        # categorias, que si es mirar el catalogo, y no tiene por que armar
+        # esta guardia.
+        if l.get("herramienta") == "buscar_productos":
+            # DOS FORMAS DEL MISMO HECHO, y las dos son "no trajo lo que se
+            # pidio": o volvio sin un solo producto, o volvio con el marcador
+            # `rubro_real`, que es como `buscar_productos` dice "eso no es de
+            # este rubro" y deja en `productos` alternativas de OTRO rubro.
+            # `no_vendemos` con alternativa entra por la segunda.
+            if not (r.get("productos") or []) or r.get("rubro_real"):
+                busqueda_fallida = True
+        elif l.get("herramienta") == "consultar_catalogo":
+            # Aca si se pide la lista VACIA y no que falte: con
+            # `operacion=valores` esta herramienta no devuelve `productos` sino
+            # el censo de categorias, que ES mirar el catalogo y no tiene por
+            # que armar esta guardia.
+            trajo = r.get("productos")
+            if isinstance(trajo, list) and not trajo:
+                busqueda_fallida = True
     # LA GUARDIA SE APAGABA JUSTO CUANDO MAS FALTA HACIA (11-ago-2026).
     #
     # EL CASO REAL. Martin pidio "productos que no sean fabricados en china".
@@ -498,7 +585,8 @@ def _sin_afirmar_sobre_el_catalogo(texto: str, llamadas: list,
         frase = m.group(0)
         # El muro sin sustantivo entra por su propia puerta: no puede pedirsele
         # que nombre el catalogo, justamente porque no lo nombra.
-        if not _RE_MURO.search(frase):
+        surtido = bool(_RE_SURTIDO.search(frase))
+        if not _RE_MURO.search(frase) and not surtido:
             if not _RE_UNIVERSAL.search(frase):
                 continue
             if not _RE_TODO_EL_CATALOGO.search(frase):
@@ -506,9 +594,17 @@ def _sin_afirmar_sobre_el_catalogo(texto: str, llamadas: list,
         # Acotada a un rubro que trajimos: es un hecho del rubro, no del
         # catalogo. Se deja, por el mismo motivo que `_RE_ES_SOBRE_EL_DATO`
         # salva la abstencion honesta en la guardia de al lado.
+        # EL SURTIDO NO TIENE ESTA SALIDA, y es la diferencia entre las dos
+        # familias. `acotada` salva la frase que habla DE UN RUBRO —"todos los
+        # auriculares que tengo se fabrican en China"—, que es un hecho
+        # verdadero y util. "Estamos enfocados en tablets" no habla del rubro:
+        # habla de la PROPORCION del rubro en el catalogo, y eso ninguna
+        # busqueda lo puede respaldar por mas tablets que haya traido. Sin esta
+        # excepcion, el turno que ofrece una tablet como alternativa se compra
+        # el derecho a decir que la tienda se dedica a las tablets.
         palabras = set(H._norm(frase).replace(",", " ").split())
         acotada = False
-        for cat in categorias:
+        for cat in ([] if surtido else categorias):
             fichas = [t for t in cat.split() if len(t) > 2]
             if fichas and all(any(t == w or t == w.rstrip("s")
                                   or w == t.rstrip("s") for w in palabras)

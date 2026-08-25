@@ -530,18 +530,48 @@ def anuncio_sin_contenido(respuesta: str, tope: int = 340) -> bool:
 # conjunto que la charla ya acoto, no al catalogo. Quedan afuera.
 # `nada` sobrevive SOLO con un `que` detras -"no tengo nada QUE cumpla"-, que es
 # la forma de la afirmacion universal; "no tengo nada en negro" no la tiene.
+# EL DEMOSTRATIVO ES ANAFORICO, IGUAL QUE `ninguno` (FICHA 18, 25-ago-2026).
+# El hueco de dos palabras entre el verbo y el sustantivo dejaba entrar un
+# determinante que apunta a UN producto que la charla ya nombro:
+#
+#   "no trabajamos CON ESE PRODUCTO en nuestro catalogo"     62 T2
+#
+# Es la respuesta correcta —el cliente pregunto por una PlayStation 5,
+# `buscar_productos` volvio `no_vendemos` y el bot lo dijo— y este detector la
+# marcaba como universal sin respaldo, que es exactamente el falso positivo que
+# el 4-ago se cerro para `ninguno`, `ninguna` y `ningun`, entrando por otra
+# puerta. Un rojo falso ensena a ignorar el tablero, y encima aca tapaba la
+# invencion de verdad, que estaba en la oracion de abajo del mismo mensaje.
+#
+# `ese producto` habla de UN producto; `productos` pelado habla de los 880.
+_DEMOSTRATIVO = (r"(?:ese|esa|esos|esas|este|esta|estos|estas|aquel|aquella|"
+                 r"aquellos|aquellas|dicho|dicha|dichos|dichas|tal|tales|"
+                 r"su|sus|mi|mis)")
 _RE_UNIVERSAL_NEG = re.compile(
     r"\bno\s+(?:tengo|tenemos|hay|manejo|manejamos|trabajo|trabajamos|"
     r"cuento\s+con|contamos\s+con|dispongo\s+de|disponemos\s+de)\s+"
-    r"(?:\w+\s+){0,2}"
+    rf"(?:(?!{_DEMOSTRATIVO}\s)\w+\s+){{0,2}}"
     r"(?:productos?\b|art[ií]culos?\b|nada\s+que\b)",
     re.IGNORECASE)
 
+# DECIR A QUE SE DEDICA EL NEGOCIO ES LA MISMA UNIVERSAL CON OTRA CARA, y es la
+# que el juez no veia mientras marcaba la honesta de al lado. Textual de 62 T2:
+#
+#   "por ahora estamos enfocados en nuestra linea de tablets y otros accesorios"
+#
+# El modelo vio CERO productos —la busqueda volvio `no_vendemos`— y de ahi
+# dedujo de que se trata el negocio: son 27 tablets sobre 880, contra 171
+# notebooks. Ninguna herramienta le trajo el surtido, asi que no lo puede
+# describir, exactamente por el mismo motivo por el que no puede negarlo.
 _RE_UNIVERSAL_POS = re.compile(
     r"\b(?:todo|todos)\s+(?:lo\s+que|los\s+(?:productos?|art[ií]culos?)\s+que)\s+"
     r"(?:\w+\s+){0,2}"
     r"(?:trabajo|trabajamos|vendo|vendemos|tengo|tenemos|manejo|manejamos|"
-    r"ofrezco|ofrecemos)\b",
+    r"ofrezco|ofrecemos)\b"
+    r"|\b(?:estamos|estoy|seguimos|nos)\s+"
+    r"(?:enfocad[oa]s?|centrad[oa]s?|especializad[oa]s?|"
+    r"dedicamos|especializamos|enfocamos|centramos)\b"
+    r"|\bnuestra\s+l[ií]nea\s+(?:es|de)\b",
     re.IGNORECASE)
 
 

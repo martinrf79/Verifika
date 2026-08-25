@@ -1518,6 +1518,108 @@ def test_no_afirma_sobre_el_catalogo_cuando_no_pudo_buscar():
     assert "¿Buscamos en alguna categoria?" in salida
 
 
+# ── LA ALUCINACION DE 62 T2, Y LAS DOS PUERTAS QUE LA DEJARON PASAR ─────────
+#
+# EL TURNO, textual del corpus regrabado por la FICHA 17. El cliente pregunta
+# "y una play 5 tenes?", `buscar_productos` vuelve `no_vendemos`, y al cliente
+# le llega:
+#
+#   "no trabajamos con ese producto en nuestro catalogo, por lo que no
+#    contamos con stock."                                   <- CORRECTO
+#   "por ahora estamos enfocados en nuestra linea de tablets y otros
+#    accesorios de tecnologia e informatica."                <- INVENTADO
+#
+# La segunda es falsa y se prueba contra la fuente: 27 tablets sobre 880, contra
+# 171 notebooks, 96 memorias y 72 de almacenamiento. El modelo vio CERO
+# productos y de ahi dedujo de que se trata el negocio.
+#
+# LAS DOS PUERTAS, y las dos son vocabulario cerrado (regla 9):
+#   1. La guardia ni se armo: pedia un estado de una lista de tres y el que
+#      vino fue `no_vendemos`, que no estaba escrito. Ahora se arma por el
+#      HECHO -la busqueda no trajo lo que se pidio-.
+#   2. Aun armada, no tenia ninguna forma para "estamos enfocados en": todas
+#      sus formas NIEGAN el catalogo y esta lo DESCRIBE.
+_LLAMADAS_62_T2 = [{"herramienta": "registrar_pedido",
+                    "resultado": {"estado": "registrado"}},
+                   {"herramienta": "buscar_productos",
+                    "resultado": {"estado": "no_vendemos", "pedido": "play 5",
+                                  "rubro_real": "tecnologia e informatica",
+                                  "alternativa": None, "productos": []}}]
+_HONESTA_62_T2 = ("Sobre la PlayStation 5, te soy totalmente honesto: no "
+                  "trabajamos con ese producto en nuestro catálogo, por lo que "
+                  "no contamos con stock.")
+_INVENTADA_62_T2 = ("Como te comenté anteriormente, por ahora estamos "
+                    "enfocados en nuestra línea de tablets y otros accesorios "
+                    "de tecnología e informática.")
+
+
+def test_el_universal_del_surtido_no_le_llega_al_cliente():
+    """LA MITAD QUE PODA, medida sobre el mensaje entero de 62 T2 y no sobre la
+    frase suelta: lo que importa es que de las dos oraciones se vaya UNA."""
+    texto = f"{_HONESTA_62_T2}\n{_INVENTADA_62_T2} ¿Te gustaría ver alguna otra opción?"
+    limpio = SAL._sin_afirmar_sobre_el_catalogo(texto, _LLAMADAS_62_T2, "t")
+    assert "estamos enfocados" not in limpio, (
+        f"el universal del surtido salio igual:\n{limpio}")
+    assert "¿Te gustaría ver alguna otra opción?" in limpio, (
+        "se llevo puesta la oferta que cerraba el turno")
+
+
+def test_la_negativa_HONESTA_del_mismo_mensaje_sobrevive():
+    """LA MITAD QUE NO PUEDE COMERSE NADA, y es la cara de la venta.
+
+    "no trabajamos con ese producto" es la respuesta CORRECTA -el cliente
+    pregunto por algo que no vendemos y la herramienta lo confirmo con
+    `no_vendemos`-. Si la guardia se la lleva, el turno queda sin contestar la
+    pregunta: un rojo falso que ademas MUTEA es peor que el defecto que caza.
+    Entraba por la rama del `que no`, que matcheaba el conector consecutivo de
+    "por lo QUE NO contamos con stock"."""
+    limpio = SAL._sin_afirmar_sobre_el_catalogo(_HONESTA_62_T2,
+                                                _LLAMADAS_62_T2, "t")
+    assert limpio == _HONESTA_62_T2, (
+        f"se comio la contestacion honesta:\n{limpio!r}")
+
+
+def test_la_guardia_se_arma_con_los_cuatro_veredictos_de_busqueda_vacia():
+    """EL ARRANQUE POR EL HECHO Y NO POR EL NOMBRE DEL VEREDICTO.
+
+    DICE SOBRE CUANTOS VEREDICTOS CORRIO: si un dia la herramienta agrega uno,
+    este test no lo sabe, y por eso lo que se planta no son los nombres sino la
+    forma del resultado -sin productos, o con el marcador `rubro_real`-."""
+    formas = {
+        "sin la clave productos": {"estado": "no_encontrado"},
+        "con productos vacios": {"estado": "sin_resultados", "productos": []},
+        "no_vendemos sin alternativa": {"estado": "no_vendemos",
+                                        "rubro_real": "tecnologia",
+                                        "productos": []},
+        "no_vendemos CON alternativa de otro rubro": {
+            "estado": "no_vendemos", "rubro_real": "tecnologia",
+            "productos": [{"nombre": "Tablet A9", "categoria": "tablet"}]},
+    }
+    print(f"\n  se plantaron {len(formas)} formas de busqueda sin resultado")
+    pasaron = []
+    for nombre, res in formas.items():
+        llamadas = [{"herramienta": "buscar_productos", "resultado": res}]
+        if _INVENTADA_62_T2 in SAL._sin_afirmar_sobre_el_catalogo(
+                _INVENTADA_62_T2, llamadas, "t"):
+            pasaron.append(nombre)
+    assert not pasaron, (
+        f"{len(pasaron)} de {len(formas)} formas dejan la guardia dormida: "
+        f"{pasaron}")
+
+
+def test_el_censo_de_categorias_no_arma_la_guardia():
+    """EL BORDE DEL ARRANQUE. `consultar_catalogo` con `operacion=valores` NO
+    devuelve productos, pero ESO SI ES mirar el catalogo: devuelve el censo de
+    las 22 categorias. No puede contar como "no miro nada"."""
+    llamadas = [{"herramienta": "consultar_catalogo",
+                 "resultado": {"estado": "ok", "campo": "categoria",
+                               "cuantos_distintos": 22,
+                               "valores": [{"valor": "notebook",
+                                            "productos": 171}]}}]
+    assert SAL._sin_afirmar_sobre_el_catalogo(
+        _INVENTADA_62_T2, llamadas, "t") == _INVENTADA_62_T2
+
+
 def test_el_hecho_acotado_a_un_rubro_no_se_toca():
     """La contracara, y es la que evita romper la honestidad: "todos los
     auriculares que tengo se fabrican en China" es un hecho VERDADERO, util y

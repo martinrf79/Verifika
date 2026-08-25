@@ -86,8 +86,44 @@ def test_las_redacciones_reales_del_muro_se_marcan_todas(texto):
     "no tengo ninguna memoria de 32GB, tengo de 8 y de 16",
     # y `nada` solo cuenta con un `que` detras: esto es un no acotado
     "no tengo nada en negro de esa marca, pero tengo blanco",
+    # EL FALSO POSITIVO DE LA FICHA 18, textual de 62 T2 del corpus regrabado, y
+    # es el MISMO de arriba entrando por otra puerta: el demostrativo es tan
+    # anaforico como `ninguno`. El cliente pregunto por una PlayStation 5,
+    # `buscar_productos` volvio `no_vendemos` y el bot lo dijo bien. Esta linea
+    # le costaba un punto al piso y encima tapaba la invencion de verdad, que
+    # estaba en la oracion de abajo del mismo mensaje.
+    "no trabajamos con ese producto en nuestro catálogo, por lo que no "
+    "contamos con stock",
+    "no tenemos ese producto, pero mira estos que si",
+    "no manejamos esos articulos, te muestro lo que hay",
 ])
 def test_una_universal_legitima_o_un_no_acotado_no_se_marcan(texto):
+    assert not D.detectar_universal_de_catalogo(texto), texto
+
+
+# ── DECIR A QUE SE DEDICA EL NEGOCIO ES LA MISMA UNIVERSAL AL REVES ──────────
+# Las formas de arriba NIEGAN el catalogo entero. Esta lo DESCRIBE, y por eso
+# no la veia ninguna: el modelo vio CERO productos y de ahi dedujo de que se
+# trata la tienda. Medido contra la fuente, "estamos enfocados en tablets" son
+# 27 tablets sobre 880, contra 171 notebooks.
+@pytest.mark.parametrize("texto", [
+    "por ahora estamos enfocados en nuestra linea de tablets y otros accesorios",
+    "hoy nos dedicamos a las notebooks y los accesorios de informatica",
+    "nuestra linea es la tecnologia de escritorio",
+    "estamos especializados en almacenamiento",
+])
+def test_describir_el_surtido_entero_tambien_se_marca(texto):
+    assert D.detectar_universal_de_catalogo(texto), texto
+
+
+@pytest.mark.parametrize("texto", [
+    # LA CONTRACARA: hablar de UN producto o de UN rubro que si se trajo no es
+    # describir el surtido. Sin estas, el detector se comeria la venta.
+    "esta tablet esta enfocada en el uso liviano y la lectura",
+    "el equipo esta pensado para trabajo y estudio",
+    "tenemos varias opciones de almacenamiento externo, te paso tres",
+])
+def test_hablar_de_un_producto_o_un_rubro_no_es_describir_el_surtido(texto):
     assert not D.detectar_universal_de_catalogo(texto), texto
 
 
