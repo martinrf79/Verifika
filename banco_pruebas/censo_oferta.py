@@ -24,8 +24,16 @@ LAS TRES CASILLAS, y son las unicas en que la oferta puede terminar:
 Los turnos donde el punto NI SE ABRE no entran en el censo: no hubo producto
 certificado, o la herramienta salio ambigua y la oferta cede a proposito.
 
+LA SONDA DEL 25-AGO SE MIDE CON `--sonda`, y es la otra grabacion de los MISMOS
+quince guiones: `banco_pruebas/casetes_sonda_25ago/`. La bateria no la lee a
+proposito —el corpus es `casetes/` y no se toca— pero es prosa viva del modelo,
+distinta de la del corpus, y sirve para verificar GRATIS un arreglo del detector
+contra texto que ninguna sesion escribio para que pasara. De ahi salieron los
+defectos de la FICHA 16.
+
 USO
     python3 banco_pruebas/censo_oferta.py             # el censo entero
+    python3 banco_pruebas/censo_oferta.py --sonda     # sobre la sonda del 25-ago
     python3 banco_pruebas/censo_oferta.py --detalle   # turno por turno
     python3 banco_pruebas/censo_oferta.py 62 77       # solo esas charlas
     python3 banco_pruebas/censo_oferta.py --ofertas   # el texto ENTERO de cada
@@ -46,6 +54,13 @@ from banco_pruebas.casete import Casete, reproducir  # noqa: E402
 from banco_pruebas.puntaje import leer_guion  # noqa: E402
 
 CASILLAS = ("OFRECIDO", "NO_CORRESPONDE", "SIN_ESTADO")
+
+SONDA = Path(__file__).resolve().parent / "casetes_sonda_25ago"
+
+
+def casetes_de_la_sonda() -> list:
+    """Los quince casetes de la sonda del 25-ago, en orden."""
+    return sorted(p for p in SONDA.glob("*.json") if not p.name.startswith("_"))
 
 
 def _estado_de_la_oferta(eventos: list) -> str | None:
@@ -117,9 +132,10 @@ def medir(paths: list | None = None) -> dict:
 
 def _main() -> int:
     pedidos = [a for a in sys.argv[1:] if not a.startswith("--")]
-    paths = ([p for p in vara._casetes()
+    fuente = casetes_de_la_sonda() if "--sonda" in sys.argv else vara._casetes()
+    paths = ([p for p in fuente
               if any(p.stem.startswith(x) for x in pedidos)]
-             if pedidos else None)
+             if pedidos else fuente)
     res = medir(paths)
     if "--detalle" in sys.argv:
         for c in res["_charlas"]:

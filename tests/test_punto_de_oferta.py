@@ -80,14 +80,27 @@ CASOS = [
     ("la accion sin el producto tampoco: coordinar por mail no es cargar nada",
      [_MOUSE], "El Logitech M170 tiene 1000 DPI.\nCoordinamos por mail.", ""),
 
+    # ── EL PRONOMBRE PELADO YA NO HACE DE PRODUCTO (FICHA 16) ──────────
+    # Estos dos casos esperaban OFRECIDO hasta el 25-ago. El requisito cambio:
+    # la oracion que ofrece tiene que NOMBRAR el producto. Se quedan escritos y
+    # dados vuelta en vez de borrados, porque lo que el detector dejo de contar
+    # es tan parte de la definicion como lo que cuenta.
+    ("la anafora legitima ya NO cuenta: la oracion que ofrece no nombra nada",
+     [_MOUSE], "El Logitech M170 es inalámbrico. Te lo cargo al pedido y te "
+     "paso el total.", ""),
+
+    ("la anafora en forma de pregunta tampoco, por la misma razon",
+     [_MOUSE], "El M170 sale $12.000. ¿Te lo reservo?", ""),
+
     # ── SE OFRECIO ─────────────────────────────────────────────────────
     ("ofrecer cargarlo, SIN preguntar, que es la forma que no gasta la "
      "repregunta del turno",
-     [_MOUSE], "El Logitech M170 es inalámbrico. Te lo cargo al pedido y te "
-     "paso el total.", "OFRECIDO"),
+     [_MOUSE], "El Logitech M170 es inalámbrico. Te cargo el Mouse Logitech "
+     "M170 Negro al pedido y te paso el total.", "OFRECIDO"),
 
     ("ofrecer preguntando tambien vale, cuando el turno no pregunto otra cosa",
-     [_MOUSE], "El M170 sale $12.000. ¿Te lo reservo?", "OFRECIDO"),
+     [_MOUSE], "Sale $12.000. ¿Te reservo el Mouse Logitech M170 Negro?",
+     "OFRECIDO"),
 
     ("la accion sobre el producto NOMBRADO, sin pronombre",
      [_MOUSE], "Puedo cotizar el Mouse Logitech M170 Negro ahora mismo.",
@@ -121,8 +134,12 @@ DESCARTADOS = [
 
 
 def test_cada_caso_termina_donde_tiene_que():
-    """LOS NUEVE CASOS, uno por uno, con el estado en que termina el punto."""
-    assert len(CASOS) == 9, f"se declararon 9 casos y hay {len(CASOS)}"
+    """LOS ONCE CASOS, uno por uno, con el estado en que termina el punto.
+
+    Eran nueve hasta la FICHA 16, que sumo los dos de la anafora: la oracion que
+    ofrece tiene que NOMBRAR el producto, asi que "te lo cargo" dejo de contar y
+    eso hay que poder leerlo en la lista."""
+    assert len(CASOS) == 11, f"se declararon 11 casos y hay {len(CASOS)}"
     fallan = []
     for nombre, llamadas, texto, esperado in CASOS:
         idx = IT.cobertura({"items": [{"que": "mouse", "cantidad": 1}]},
@@ -273,7 +290,7 @@ def test_sobre_cuantos_casos_se_midio():
     estados = {c[3] for c in CASOS}
     print(f"\n  el punto de oferta se midio sobre {len(CASOS)} turnos armados, "
           f"en {len(estados)} finales distintos")
-    assert len(CASOS) == 9
+    assert len(CASOS) == 11
     assert estados == {"", "OFRECIDO", "NO_CORRESPONDE"}
     # LOS DOS FINALES DE LA OFERTA Y NINGUN OTRO. Si el punto pudiera terminar
     # RESUELTO o NO_SE_SABE, se estaria colando por el vocabulario de los

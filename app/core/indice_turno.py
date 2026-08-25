@@ -478,7 +478,7 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
 # exactamente el turno que esto viene a cazar.
 #
 # Y NO PUEDE VOLVERSE INSISTENCIA, que es la unica forma en que este punto
-# empeora el bot. Los frenos son tres y los tres son del codigo:
+# empeora el bot. Los frenos son CUATRO y los cuatro son del codigo:
 #
 #   1. LA AMBIGUEDAD MANDA. Si alguna herramienta del turno volvio ambigua, el
 #      turno esta OBLIGADO a repreguntar, y dos preguntas en el mismo mensaje es
@@ -489,6 +489,36 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
 #      pregunta, y por eso la instruccion de redaccion pide la frase, no el
 #      interrogatorio.
 #   3. NO CORRESPONDE, con motivo tipado y cerrado.
+#   4. LA PREGUNTA PROPIA DEL BOT MANDA IGUAL QUE LA AMBIGUEDAD (FICHA 16). El
+#      freno 1 mira la herramienta; este mira al BOT. Si el turno ya le pregunta
+#      algo al cliente, la oferta CEDE y queda para el turno siguiente.
+#
+# EL CUARTO SE VERIFICA CON DOS EVIDENCIAS PORQUE EL PUNTO SE MIDE DOS VECES, y
+# en cada momento el codigo tiene una distinta. ANTES de redactar, el texto es
+# el material de las herramientas y el bot todavia no escribio nada: ahi la
+# evidencia es la `duda` DECLARADA —una contradiccion del pedido obliga al turno
+# a preguntar, igual que la herramienta ambigua—, y sacarle la oferta a la
+# `instruccion` es lo que impide que el defecto se ESCRIBA. DESPUES, con el
+# texto final, la evidencia es el defecto mismo: una pregunta que no es la
+# oferta Y una oferta en el mismo mensaje. Sin la primera mitad el freno solo
+# dejaria de medir; sin la segunda se le escapa la pregunta que el modelo
+# inventa por su cuenta.
+#
+# Y LA SEGUNDA MITAD PIDE LAS DOS COSAS, no solo la pregunta, porque el turno
+# que pregunta y NO ofrece tiene que seguir contando su oferta pendiente: esa es
+# la omision que la FICHA 15 vino a cazar, y un freno que la tapara valdria
+# menos que no tenerlo.
+#
+# Medido en los 15 casetes de la sonda del 25-ago: tres turnos —76 t1, 80 t6 y
+# 80 t8— piden que les aclaren un pedido enredado y en el mismo mensaje ofrecen
+# un producto que nadie pidio. Los tres llegan a la redaccion con una `duda` en
+# CONFLICTO y con la linea de oferta pegada en el prompt: el defecto lo empujaba
+# el codigo, no el modelo.
+#
+# EL CUARTO VA DESPUES DE LOS MOTIVOS TIPADOS, y ese orden importa: un turno que
+# CIERRA —"¿a nombre de quien lo emito?"— tambien pregunta, pero eso ya tiene su
+# motivo y decir que la oferta "cedio" seria perder el unico registro de que se
+# decidio no ofrecer.
 #
 # EL TERCERO ES EL QUE MAS IMPORTA: "el cliente ya dijo que no lo quiere". La
 # memoria negativa vive en `descartados` —el campo del documento de la
@@ -530,10 +560,27 @@ _RE_ACCION = re.compile(
     r"avanzo|avanzar|avanzamos|avanzas|"
     r"coordino|coordinar|coordinamos)\b")
 
-# SOBRE QUE CAE LA ACCION. Sin esto "coordinamos por mail" o "avanzamos con la
-# consulta" contarian como oferta: la accion tiene que caer sobre el producto, y
-# el modelo lo nombra o lo pronominaliza —"te lo cargo"—.
-_RE_PRONOMBRE = re.compile(r"\b(lo|la|los|las|te lo|te la)\b")
+# SOBRE QUE CAE LA ACCION: SOBRE EL PRODUCTO NOMBRADO, Y NADA MAS (FICHA 16).
+# Aca vivia `_RE_PRONOMBRE`, que aceptaba un "lo" o un "la" pelado como si fuera
+# el producto —"el modelo lo nombra o lo pronominaliza"—. El agujero es que en
+# castellano ese "la" es articulo mucho mas seguido que pronombre, asi que
+# cualquier oracion con un verbo de accion y un sustantivo femenino contaba como
+# oferta. Los cuatro falsos que encontro la sonda del 25-ago entran los cuatro
+# por ahi, y en tres de los cuatro el "la" precede a un sustantivo comun:
+#
+#   "¿te gustaria avanzar con LA COMPRA de estos articulos...?"      71 t3
+#   "si decidis avanzar con LA COMPRA podes obtener un 10%..."       73 t3
+#   "¿podrias confirmarme si esta cantidad es LA correcta...?"       80 t8
+#   una oferta que no tiene ningun producto asociado                 76 t2
+#
+# Mientras el detector contara esto, todo numero sobre oferta estaba sucio: la
+# sonda midio 16 OFRECIDO con al menos cuatro que no ofrecian nada.
+#
+# EL PRECIO DE CERRARLO ES QUE OFRECIDO BAJA, Y ESTA BIEN. Una anafora legitima
+# —"El M170 sale $12.000. ¿Te lo reservo?"— deja de contar, porque la oracion
+# que ofrece no nombra el producto. Se prefiere fallar para ese lado: un falso
+# OFRECIDO dice que el turno vendio cuando no vendio, y ese error se propaga a
+# todo lo que se mida encima. El de menos solo pide una oracion mejor escrita.
 
 # EL TURNO QUE YA ESTA CERRANDO. Pedirle el nombre, la direccion o la forma de
 # pago ES el paso siguiente: sumarle una oferta encima seria el interrogatorio
@@ -544,11 +591,35 @@ _RE_CERRANDO = re.compile(
     r"como lo abonas|como abonas|link de pago|pedido confirmado)")
 
 
+# UNA ORACION Y SU CIERRE. El grupo del cierre es lo que separa una pregunta de
+# una afirmacion, y por eso el patron captura en vez de partir.
+_RE_ORACION_Y_CIERRE = re.compile(r"([^.\n;!?]+)([.\n;!?]*)")
+
+
+def _oraciones_marcadas(texto: str) -> list:
+    """Cada oracion del mensaje con UNA marca: si le pregunta algo al lector.
+
+    ACA EL SIGNO DE PREGUNTA CORTA, al reves que `_RE_CORTE`: si no cortara, la
+    accion de una oracion le daria el verde a la siguiente y "¿Te lo reservo?
+    ¿A que direccion?" seria una sola cosa.
+
+    Y CORTA PERO NO SE TIRA (FICHA 16): el cuarto freno necesita saber CUAL de
+    las oraciones preguntaba, asi que el cierre se conserva en vez de perderse
+    en el `split`. El `¿` de apertura cuenta igual que el `?` de cierre, porque
+    el modelo escribe los dos y a veces se olvida uno."""
+    fuera = []
+    for m in _RE_ORACION_Y_CIERRE.finditer(texto or ""):
+        frase = m.group(1)
+        if not frase.strip():
+            continue
+        fuera.append((frase, "?" in m.group(2) or "¿" in frase))
+    return fuera
+
+
 def _oraciones(texto: str) -> list:
-    """Las oraciones del mensaje. ACA EL SIGNO DE PREGUNTA CORTA, al reves que
-    `_RE_CORTE`: si no cortara, la accion de una oracion le daria el verde a la
-    siguiente y "¿Te lo reservo? ¿A que direccion?" seria una sola cosa."""
-    return [p for p in re.split(r"[.\n;!?]+", texto or "") if p.strip()]
+    """Las oraciones del mensaje, sin la marca. Derivada y no copiada: si el
+    corte cambia, las dos se mueven juntas."""
+    return [f for f, _ in _oraciones_marcadas(texto)]
 
 
 def _productos_certificados(llamadas: list) -> list:
@@ -645,13 +716,18 @@ def _hay_ambiguedad(llamadas: list) -> bool:
 
 def punto_de_oferta(llamadas: list, memoria: list | None = None,
                     texto: str = "",
-                    descartados: list | None = None) -> dict | None:
+                    descartados: list | None = None,
+                    puntos_del_cliente: list | None = None) -> dict | None:
     """EL PUNTO SINTETICO `oferta`, o None si en este turno no hay nada que
     ofrecer. Lo abre el codigo con dos hechos suyos y ninguna opinion del
     modelo: hay un producto certificado y el pedido no lo tiene.
 
     Sale con `candidatos` —los productos que se pueden ofrecer— y con
-    `no_corresponde` cuando el turno tiene motivo para no ofrecer nada."""
+    `no_corresponde` cuando el turno tiene motivo para no ofrecer nada.
+
+    `puntos_del_cliente` son los puntos que `puntos()` ya desarmo de lo
+    declarado, y entran solo para el cuarto freno: si entre ellos hay una
+    `duda`, el turno va a preguntar y la oferta cede."""
     traidos = _productos_certificados(llamadas)
     if not traidos:
         return None
@@ -678,6 +754,17 @@ def punto_de_oferta(llamadas: list, memoria: list | None = None,
         motivo, libres = "rechazado", fuera_del_pedido
     elif _RE_CERRANDO.search(_n(texto or "")):
         motivo = "cerrando"
+    # ── EL CUARTO FRENO (FICHA 16): SI EL TURNO PREGUNTA, LA OFERTA CEDE ──
+    # VA ACA Y NO ARRIBA, aunque el freno 1 este arriba: los tres motivos
+    # tipados ganan, porque un turno que cierra tambien pregunta y decir que la
+    # oferta "cedio" perderia el unico registro de que se decidio no ofrecer.
+    # Cuando cede no queda rastro a proposito, igual que con la ambiguedad:
+    # `NO_CORRESPONDE` dice "se decidio no ofrecer" y lo que pasa es otra cosa
+    # —la oferta queda para el turno siguiente—.
+    if not motivo and (_duda_declarada(puntos_del_cliente)
+                       or _ofrece_encima_de_una_pregunta(
+                           texto or "", [p["nombre"] for p in traidos])):
+        return None
     nombres = [p["nombre"] for p in libres][:8]
     return {"id": "oferta:1", "tipo": "oferta", "termino": nombres[0],
             "texto": f"proponerle el paso siguiente sobre {nombres[0]}",
@@ -685,24 +772,63 @@ def punto_de_oferta(llamadas: list, memoria: list | None = None,
             **({"no_corresponde": motivo} if motivo else {})}
 
 
-def _ofrecio_el_paso(punto: dict, texto: str) -> bool:
-    """¿El texto propone el paso siguiente sobre ESE producto?
+def _es_oferta(nombres: list, frase: str) -> bool:
+    """¿ESTA oracion propone el paso siguiente sobre alguno de esos productos?
 
     LAS DOS MITADES EN LA MISMA ORACION, y esa atadura es todo lo que separa
     esto de un colador. La accion sola deja pasar "coordinamos por mail"; el
     producto solo deja pasar la ficha tecnica que no ofrece nada. Y no se pide
     signo de pregunta a proposito: "Te lo cargo al pedido y te paso el total"
     ofrece sin preguntar, que es justo la forma que no gasta la unica
-    repregunta del turno."""
+    repregunta del turno.
+
+    SIN PRODUCTOS NO HAY OFERTA, y no es un caso de borde: es el cuarto falso de
+    la sonda. Una accion sin nada sobre que caer no propone nada, y el `any` de
+    abajo sobre una lista vacia ya da False sin ninguna guarda aparte."""
+    if not _RE_ACCION.search(_n(frase)):
+        return False
+    return any(_ancla_en(nombre, frase) for nombre in (nombres or []))
+
+
+def _ofrecio_el_paso(punto: dict, texto: str) -> bool:
+    """¿El texto propone el paso siguiente sobre ESE producto?"""
     nombres = punto.get("candidatos") or []
-    for pedazo in _oraciones(texto):
-        if not _RE_ACCION.search(_n(pedazo)):
-            continue
-        if _RE_PRONOMBRE.search(_n(pedazo)):
-            return True
-        if any(_ancla_en(nombre, pedazo) for nombre in nombres):
-            return True
-    return False
+    return any(_es_oferta(nombres, frase) for frase in _oraciones(texto))
+
+
+def _ofrece_encima_de_una_pregunta(texto: str, nombres: list) -> bool:
+    """¿El turno le pregunta algo al cliente Y ADEMAS le ofrece en el mismo
+    mensaje? Es el defecto exacto de la sonda, leido del texto final.
+
+    LAS DOS CONDICIONES JUNTAS, Y LA SEGUNDA NO ES UN ADORNO. Con solo la
+    pregunta esto se comeria al turno que pregunta y NO ofrece, y ese turno
+    tiene que seguir contando su oferta pendiente: es la omision que la FICHA 15
+    existe para cazar —26 turnos rojos en avance, tres charlas sin un solo
+    pedido—. Medido: sin esta mitad, "El Logitech M170 es inalambrico. ¿Te ayudo
+    con algo mas?" deja de figurar como turno que no ofrecio, o sea que el
+    cuarto freno taparia justo lo que el punto vino a destapar.
+
+    LA OFERTA EN FORMA DE PREGUNTA NO CUENTA COMO PREGUNTA, y esa excepcion es
+    el freno 2 escrito como codigo: "¿Te reservo el Mouse Logitech M170?"
+    propone, no interroga. Sin ella el freno se comeria a la oferta misma."""
+    ofrece = pregunta = False
+    for frase, es_pregunta in _oraciones_marcadas(texto):
+        if _es_oferta(nombres, frase):
+            ofrece = True
+        elif es_pregunta:
+            pregunta = True
+    return ofrece and pregunta
+
+
+def _duda_declarada(puntos_del_cliente: list | None) -> bool:
+    """¿El turno arrastra una contradiccion que lo OBLIGA a preguntar?
+
+    Es la mitad del cuarto freno que corre ANTES de redactar, cuando todavia no
+    hay texto del bot que mirar. Un punto `duda` nace de algo que no cierra sin
+    elegir por el cliente, y `estado_terminal` ya dice que solo puede terminar
+    AMBIGUO —el turno pregunto— o CONFLICTO —no pregunto y sigue abierto—: en
+    los dos casos el turno tiene una pregunta propia sobre la mesa."""
+    return any(p.get("tipo") == "duda" for p in (puntos_del_cliente or []))
 
 
 # ── LA COBERTURA: que punto llego al texto y cual no ─────────────────────────
@@ -1021,7 +1147,7 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
     # herramientas y lo que el pedido ya tiene. `puntos()` sigue siendo lo
     # declarado y nada mas: la oferta no la declara nadie, la abre el codigo.
     _oferta = punto_de_oferta(llamadas or [], memoria, texto or "",
-                              descartados)
+                              descartados, puntos_del_cliente=ps)
     if _oferta:
         ps = ps + [_oferta]
     if not ps:

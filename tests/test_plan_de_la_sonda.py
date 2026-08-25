@@ -9,14 +9,18 @@ turno 76 t1 es una anecdota, y "el punto de oferta se abre igual cuando el
 turno dejo una pregunta propia sin contestar" es una propiedad que se verifica
 sola y que la regrabacion no puede volver falsa por casualidad.
 
-LOS CINCO SON `PLAN:`, o sea que TODAVIA NO SE EMPEZARON, y los cinco estan en
-rojo a proposito con `strict=True`: el dia que alguien los arregle, el test se
-pone rojo si no le saca la marca. No se pueden cerrar en silencio.
+NACIERON LOS CINCO CON MARCA `PLAN:` y `strict=True`, que es lo que hace que no
+se puedan cerrar en silencio: el dia que alguien los arregla, el test se pone
+rojo si no le saca la marca. Asi se cerraron los dos primeros.
 
-EL ORDEN NO ES LIBRE. Los dos primeros —el freno y el detector— ensucian la
-medicion de los otros tres: mientras el detector cuente como OFRECIDO cuatro
-frases que no ofrecen nada, cualquier numero sobre oferta esta sucio, y
-regrabar antes de arreglarlo es pagar la grabacion dos veces.
+QUEDAN TRES MARCADOS. Los dos primeros —el cuarto freno y el detector
+estricto— los cerro la FICHA 16 el 25-ago y sus marcas ya no estan; siguen aca
+como candado, porque el dia que alguien afloje el detector se ponen rojos.
+
+EL ORDEN NO ERA LIBRE, y por eso esos dos iban primero: mientras el detector
+contara como OFRECIDO cuatro frases que no ofrecen nada, cualquier numero sobre
+oferta estaba sucio, y regrabar antes de arreglarlo era pagar la grabacion dos
+veces. Los tres que quedan —(c), (d) y (e)— ya se pueden medir limpio.
 """
 import pytest
 
@@ -26,26 +30,21 @@ from app.core import salida as SAL
 
 # ── (a) EL CUARTO FRENO: la oferta cede ante una pregunta propia ─────────────
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: si el turno ya le pregunta algo al cliente, la oferta CEDE. HOY el "
-    "punto de oferta tiene TRES frenos —`ya_en_el_pedido`, `rechazado` y "
-    "`cerrando`— y los tres miran otra cosa: los dos primeros miran el pedido y "
-    "el tercero es un vocabulario de cierre, no una pregunta. Ninguno mira si "
-    "el turno dejo una pregunta PROPIA sin contestar, asi que un texto que "
-    "pregunta y ofrece en el mismo mensaje abre el punto sin `no_corresponde`. "
-    "Medido: 3 turnos de la sonda ofrecen encima de su propia pregunta —76 t1, "
-    "80 t6, 80 t8—. OBJETIVO un cuarto freno: con una pregunta propia abierta "
-    "el punto no se abre, igual que con herramienta ambigua, y la oferta queda "
-    "para el turno siguiente. Dos preguntas en el mismo mensaje es pedirle al "
-    "cliente que administre una agenda."))
+# CERRADO POR LA FICHA 16, 25-ago. El cuarto freno existe y vive en
+# `punto_de_oferta`: la marca `PLAN:` se fue y el test queda como candado.
 def test_la_oferta_cede_ante_una_pregunta_propia():
     llamadas = [{"herramienta": "ficha_producto",
                  "resultado": {"estado": "encontrado",
                                "producto": {"id": "M1",
                                             "nombre": "Mouse Logitech G203",
                                             "categoria": "mouse"}}}]
+    # LA OFERTA NOMBRA EL PRODUCTO, y desde el detector estricto tiene que
+    # hacerlo para SER una oferta. Este texto decia "te lo cargo": con el
+    # pronombre pelado ya no ofrece nada, asi que el turno no estaria ofreciendo
+    # encima de su pregunta y el caso dejaria de ser el caso. Se corrige el
+    # PLANTEO, no la vara: el assert y el motivo son los mismos.
     texto = ("Cual de las dos versiones tenes, la Core i5 o la Ryzen 7? "
-             "Te lo cargo al pedido y te paso el total.")
+             "Te cargo el Mouse Logitech G203 al pedido y te paso el total.")
     p = IT.punto_de_oferta(llamadas, None, texto, None)
     assert not p or p.get("no_corresponde"), (
         "el turno dejo una pregunta propia sin contestar y la oferta se abrio "
@@ -66,16 +65,8 @@ NO_SON_OFERTAS = {
 }
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: OFRECIDO tiene que exigir que la oracion NOMBRE el producto Y "
-    "proponga una accion concreta sobre el —cargarlo, sumarlo, reservarlo, "
-    "cotizarlo—. HOY `_ofrecio_el_paso` acepta accion + `_RE_PRONOMBRE`, y un "
-    "'lo' o 'la' pelado hace de producto: las CUATRO frases de `NO_SON_OFERTAS` "
-    "cuentan hoy como oferta, 4 de 4. Por eso la sonda conto 16 OFRECIDO con al "
-    "menos 4 que no lo eran. OBJETIVO 0 de 4, sin perder el ofrecimiento real "
-    "—que este test tambien verifica—, porque un detector que se arregla "
-    "matando los verdaderos no arregla nada. Va PRIMERO junto con (a): mientras "
-    "cuente esto, todo numero sobre oferta esta sucio."))
+# CERRADO POR LA FICHA 16, 25-ago. `_RE_PRONOMBRE` ya no existe: la oracion
+# NOMBRA el producto o no cuenta. La marca `PLAN:` se fue y el test queda.
 def test_ofrecido_exige_nombrar_el_producto():
     punto = {"tipo": "oferta", "candidatos": ["Mouse Logitech G203"]}
     colados = [k for k, frase in NO_SON_OFERTAS.items()
