@@ -78,6 +78,12 @@ líneas. Hoy tiene 1.812, y las otras dos mitades se leen sólo cuando se tocan.
    cobertura del corpus, no utilidad del nodo.**
 10. Si un número da 100% a la primera, sospechá del denominador antes que del
     bot. `el_detalle_no_mata` dio 4/4 sobre cuatro casos.
+11. **Una ficha no cierra dejando más `A MEDIAS:` de los que pagó**, salvo que
+    Martín lo autorice en esa misma sesión. Marcar es diferir trabajo, y una
+    ficha que difiere más de lo que cierra deja el contador más arriba de como
+    lo encontró. La 17 tuvo esa autorización —la regrabación destapó cinco de
+    un saque y el techo subió de 0 a 5—; las que siguen, no. Al cerrar se dice
+    en el reporte cuántas se pagaron y cuántas quedaron.
 
 ---
 
