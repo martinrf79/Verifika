@@ -182,13 +182,16 @@ def test_los_tres_tipos_sin_prueba_mecanica_nunca_frenan():
     proposito. Si un dia se les encuentra prueba mecanica, esto se cambia a
     proposito y con su motivo; que se cuele solo, no.
 
-    LA LISTA PASO DE SEIS A SIETE CON LA FICHA 15 y el septimo es de otra
-    familia: los seis frenan por algo que el CLIENTE pidio y no se dijo, la
-    oferta frena por algo que el BOT tenia que proponer y no propuso. Su prueba
-    es por construccion —una herramienta certifico un producto que el pedido no
-    tiene—, igual que la del precio."""
+    Y LA OFERTA TAMPOCO FRENA, por un motivo distinto de los tres de arriba:
+    prueba tiene de sobra —una herramienta certifico el producto— pero no tiene
+    ARREGLO. Los seis que frenan, frenan porque el texto se puede reponer con
+    material sellado; una oferta que falta es prosa de venta y ninguna guardia
+    de este repo escribe prosa. Frenar ahi dejaria el turno marcado como
+    rechazado sin nada que hacer con el, y un turno mudo pierde la venta entera.
+    Sale por `sin_ofrecer`, que se cuenta y no retiene nada."""
     assert set(IT.TIPOS_QUE_FRENAN) == {
-        "item", "condicion", "destino", "atributo", "precio", "pago", "oferta"}
+        "item", "condicion", "destino", "atributo", "precio", "pago"}
+    assert set(IT.TIPOS_SIN_OFERTA) == {"oferta"}
     for tipo in ("politica", "stock", "compatibilidad"):
         punto = {"id": f"{tipo}:1", "tipo": tipo, "texto": "lo que sea",
                  "estado": "", "anclajes": ["evidencia", "de sobra"]}

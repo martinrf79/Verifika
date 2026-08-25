@@ -1470,8 +1470,12 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # LA MEMORIA TAMBIEN ES EVIDENCIA: el carrito vigente y lo ya mostrado
     # contestan un punto que este turno no volvio a buscar, y hace bien en no
     # volver a buscarlo.
+    # LA MEMORIA NEGATIVA TAMBIEN VIAJA (FICHA 15). Sin ella el punto de oferta
+    # vuelve a proponer lo que el cliente ya rechazo, y eso es la insistencia
+    # que la ficha existe para evitar. Es el mismo campo que guarda el turno.
     idx = IT.cobertura(declarado, material, trace_id, llamadas=llamadas,
-                       memoria=_memoria_idx)
+                       memoria=_memoria_idx,
+                       descartados=conv.get("descartados") or [])
     # QUE SIGNIFICA QUE EL INDICE INTERVINO: que encontro un punto SIN
     # material y por eso le sumo una obligacion al prompt de redaccion. Si
     # todos los puntos tienen con que contestarse, mira y no toca nada.
@@ -1483,6 +1487,12 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     pendiente = IT.instruccion(idx["faltan"])
     if pendiente:
         obligacion = (obligacion + "\n\n" if obligacion else "") + pendiente
+    # LA HONESTIDAD SOLO SI FALTA ALGO DEL CLIENTE (FICHA 15). El parrafo dice
+    # "pedile al cliente lo que falte", y eso empuja a una PREGUNTA: pegado a un
+    # turno donde lo unico abierto es OFRECER, invita a la segunda pregunta del
+    # mismo mensaje, que es justo lo que el punto de oferta tiene prohibido. La
+    # oferta no tiene nada que pedirle al cliente: tiene algo que proponerle.
+    if any(p.get("tipo") != "oferta" for p in (idx["faltan"] or [])):
         # LA HONESTIDAD, QUE ANTES LA DISPARABA AGOTAR LAS RONDAS. Con una sola
         # ronda no hay vueltas que agotar, asi que la señal pasa a ser la buena:
         # que despues de las reposiciones TODAVIA falte material. Va pegada al
@@ -1574,7 +1584,7 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # dos que restan y antes de la que mide el largo.
     texto = G.paso("obligacion", S.obligacion, texto, raw_message, negocio,
                    not history, declarado, llamadas, _memoria_idx, tienda_id,
-                   trace_id)
+                   trace_id, conv.get("descartados") or [])
 
     # ── 7. LA HIGIENE: el mensaje entero, una sola vez ──────────────────
     # Va ULTIMA a proposito. Hasta acá cada puerta pegó o podó lo suyo y
@@ -1724,8 +1734,12 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # SABER. Es la regla de tau-bench: se juzga por lo observado, no por lo que
     # el agente cuenta que hizo. Sin esto, "el destino no llego al mensaje" solo
     # se descubre leyendo una charla a mano, que es como se descubrio hoy.
+    # VAN LOS DESCARTADOS DE ESTE TURNO, no los de antes: la medicion es sobre
+    # el estado con que el turno cierra, y aca `descartados` ya incluye lo que
+    # el cliente acaba de sacar del pedido.
     _idx_final = IT.cobertura(declarado, texto, trace_id + "|final",
-                              llamadas=llamadas, memoria=_memoria_idx)
+                              llamadas=llamadas, memoria=_memoria_idx,
+                              descartados=descartados)
     G.anotar("sin_contestar", [p["id"] for p in (_idx_final.get("faltan") or [])][:5])
     # EN QUE TERMINO CADA PUNTO (FICHA 08). `sin_contestar` mete cuatro cosas
     # distintas en la misma bolsa y tres no son un defecto: el turno pregunto,

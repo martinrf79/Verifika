@@ -876,8 +876,8 @@ def _la_cuenta_y_la_plata(texto: str, llamadas: list, bloque: str,
 
 
 def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
-                            memoria: list, tienda_id: str,
-                            trace_id: str) -> str:
+                            memoria: list, tienda_id: str, trace_id: str,
+                            descartados: list | None = None) -> str:
     """EL CONTRATO NO_OMITE: un punto que el cliente pidio y que el sistema
     SABE contestar no puede salir sin contestar.
 
@@ -912,7 +912,8 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
         return texto
     try:
         idx = IT.cobertura(declarado, texto, trace_id + "|guardia",
-                           llamadas=llamadas, memoria=memoria)
+                           llamadas=llamadas, memoria=memoria,
+                           descartados=descartados)
     except Exception as e:  # noqa: BLE001 — un control no puede tumbar el turno
         log.warning("punto_omitido_error", trace_id=trace_id, error=str(e)[:120])
         return texto
@@ -925,6 +926,24 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
     # que este modulo entero existe para evitar. Ahora repone lo que
     # `puede_salir` puede PROBAR que se omitio: sin estado y con evidencia.
     puerta = IT.puede_salir(idx.get("puntos") or [])
+    # ── LA OFERTA QUE NO SE HIZO SE CUENTA, Y EL TURNO SALE (FICHA 15) ──
+    # VA ANTES DEL PORTON, y ese orden es la mitad del arreglo: la oferta NO
+    # frena, asi que un turno cuyo unico pendiente es ofrecer devuelve
+    # `puede=True` y se va por el `return` de abajo. Contarla despues seria no
+    # contarla nunca, y era justo el turno que hay que perseguir.
+    #
+    # NO SE REPONE, Y ES UNA DECISION. Los dos renglones de mas abajo pegan
+    # material SELLADO: una localidad que cotizo el envio, una cuenta que armo
+    # la calculadora. Una oferta no es un dato, es PROSA DE VENTA, y ninguna
+    # guardia de este modulo escribe prosa: pegar "¿te lo cargo?" al final de
+    # cualquier mensaje es el interrogatorio que la ficha prohibe, y ademas
+    # gastaria la unica repregunta del turno sin mirar si el mensaje ya
+    # preguntaba algo. La oferta la produce el REDACTOR, con la linea que
+    # `indice_turno.instruccion` le pone delante.
+    if puerta["sin_ofrecer"]:
+        log.warning("oferta_no_hecha", trace_id=trace_id,
+                    productos=[str(p.get("termino") or "")[:40]
+                               for p in puerta["sin_ofrecer"]][:3])
     if puerta["puede"]:
         return texto
     omitidos = puerta["omitidos"]
@@ -960,28 +979,13 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
                      puntos=[p["id"] for p in omitidos][:3], largo=len(bloque))
             fuera = (fuera.rstrip() + "\n\n" + bloque).strip()
 
-    # ── LA OFERTA NO SE REPONE ACA, Y ES UNA DECISION (FICHA 15) ────────
-    # Los dos renglones de arriba pegan material SELLADO: una localidad que
-    # cotizo el envio, una cuenta que armo la calculadora. Una oferta no es un
-    # dato, es PROSA DE VENTA, y ninguna guardia de este modulo escribe prosa:
-    # pegar "¿te lo cargo?" al final de cualquier mensaje es el interrogatorio
-    # que la ficha prohibe, y ademas gastaria la unica repregunta del turno sin
-    # mirar si el mensaje ya preguntaba algo. La oferta la produce el REDACTOR,
-    # con la linea que `indice_turno.instruccion` le pone delante. Lo que hace
-    # la puerta es dejar el turno en rojo y el numero a la vista, que es lo que
-    # permite perseguirlo.
-    sin_ofrecer = [p for p in omitidos if p.get("tipo") == "oferta"]
-    if sin_ofrecer:
-        log.warning("oferta_no_hecha", trace_id=trace_id,
-                    productos=[p.get("termino", "")[:40] for p in sin_ofrecer])
-    if fuera == texto and len(sin_ofrecer) < len(omitidos):
+    if fuera == texto:
         # LO QUE LA PUERTA NO PUDO REPONER NO SE PIERDE. Sin esta linea, un
         # punto que el codigo sabia contestar y no salio dicho se iba con el
         # turno sin dejar rastro, que es como estuvo doce dias.
         log.warning("punto_omitido_sin_reponer", trace_id=trace_id,
                     motivo=puerta["motivo"][:160],
-                    puntos=[p["texto"][:40] for p in omitidos
-                            if p.get("tipo") != "oferta"][:3])
+                    puntos=[p["texto"][:40] for p in omitidos][:3])
     return fuera
 
 
@@ -1083,7 +1087,8 @@ def plata(texto: str, llamadas: list, bloque: str, trace_id: str,
 
 def obligacion(texto: str, mensaje: str, negocio: str, primer_mensaje: bool,
                declarado: dict | None, llamadas: list, memoria: list,
-               tienda_id: str, trace_id: str) -> str:
+               tienda_id: str, trace_id: str,
+               descartados: list | None = None) -> str:
     """PUERTA 3 — LO QUE TIENE QUE ESTAR SI O SI. La unica que SUMA.
 
     Las otras tres restan: podan lo que no puede salir. Esta pone lo que no
@@ -1113,7 +1118,8 @@ def obligacion(texto: str, mensaje: str, negocio: str, primer_mensaje: bool,
         log.warning("salida_guardas_error", trace_id=trace_id,
                     error=str(e)[:120])
     return _pieza("punto_omitido", _punto_omitido_repuesto, texto,
-                  declarado or {}, llamadas, memoria, tienda_id, trace_id)
+                  declarado or {}, llamadas, memoria, tienda_id, trace_id,
+                  descartados)
 
 
 def higiene(texto: str, anterior: str, mensaje: str, trace_id: str,

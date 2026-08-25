@@ -11,7 +11,7 @@ cero de punta a punta, y tres charlas enteras sin un solo pedido.
 LO QUE ESTE ARCHIVO DEFIENDE NO ES QUE LA OFERTA EXISTA: ES QUE NO SE VUELVA
 INSISTENCIA. Un punto que obliga a ofrecer es facil de escribir y facil de
 convertir en un bot que pregunta dos veces por mensaje, y eso vende MENOS que no
-ofrecer nada. Los cuatro frenos se miden uno por uno:
+ofrecer nada. Los cinco frenos se miden uno por uno:
 
   1. UNA CORTESIA INTERROGATIVA NO ES UNA OFERTA. Es la gemela exacta del
      candado que ya tiene la vara de venta para el cierre: si "¿te ayudo en algo
@@ -21,12 +21,19 @@ ofrecer nada. Los cuatro frenos se miden uno por uno:
      OBLIGADO a repreguntar, asi que la oferta ni se abre: cede y queda para el
      turno siguiente.
   3. NO SE OFRECE LO QUE EL PEDIDO YA TIENE.
-  4. NO SE OFRECE ENCIMA DE UN CIERRE. Pedirle el nombre o la forma de pago ya
+  4. NO SE OFRECE LO QUE EL CLIENTE YA RECHAZO... pero rechazar UN modelo no
+     apaga la oferta de los demas: despues de un "ese no" es cuando recien
+     empieza la venta.
+  5. NO SE OFRECE ENCIMA DE UN CIERRE. Pedirle el nombre o la forma de pago ya
      ES el paso siguiente.
 
 Y LA OFERTA NO NECESITA SIGNO DE PREGUNTA, que es lo que hace que todo esto
 cierre: "Te lo cargo al pedido y te paso el total" propone sin gastar la unica
 repregunta que el turno tiene permitida.
+
+LO QUE FALTE OFRECER NUNCA RETIENE EL MENSAJE. El punto se cuenta y el turno
+sale: un turno mudo pierde la venta entera, y no hay nada que reponer porque una
+oferta es prosa de venta, no un dato sellado.
 
 CORRE OFFLINE: sin modelo, sin clave, sin red.
 """
@@ -96,6 +103,22 @@ CASOS = [
      "NO_CORRESPONDE"),
 ]
 
+# EL TERCER MOTIVO VA APARTE porque necesita un dato mas: la memoria negativa.
+# El cliente ya dijo que no a este producto, y volver a ofrecerselo es la
+# insistencia en su forma mas cara —la unica que el cliente lee como que no lo
+# escucharon—.
+DESCARTADOS = [
+    ("el cliente ya dijo que no: no se vuelve a ofrecer",
+     ["Mouse Logitech M170 Negro"], "NO_CORRESPONDE"),
+    ("descartado por rubro, como lo dice el cliente: 'los mouse no'",
+     ["los mouse"], "NO_CORRESPONDE"),
+    ("rechazar UN modelo no apaga la oferta de otro: ahi recien empieza la "
+     "venta",
+     ["Mouse Logitech G203"], ""),
+    ("un descartado de otro rubro no tapa nada",
+     ["Teclado Genius KB-110X"], ""),
+]
+
 
 def test_cada_caso_termina_donde_tiene_que():
     """LOS NUEVE CASOS, uno por uno, con el estado en que termina el punto."""
@@ -145,21 +168,39 @@ def test_sin_producto_certificado_no_hay_nada_que_ofrecer():
         assert IT.punto_de_oferta(llamadas) is None, llamadas
 
 
-def test_la_puerta_frena_el_turno_que_no_ofrecio_y_deja_salir_al_que_si():
-    """LA MITAD 1 NO ES UN LOG. El punto sin estado frena igual que los otros
-    seis tipos, y su prueba es por construccion: una herramienta certifico un
-    producto que el pedido no tiene. Sin esto, el turno que contesta perfecto y
-    no ofrece nada saldria tan verde como el que vende."""
-    declarado = {"items": [{"que": "mouse", "cantidad": 1}]}
-    mudo = IT.cobertura(declarado, "El Logitech M170 tiene 1000 DPI.", "t",
-                        llamadas=[_MOUSE])
-    puerta = IT.puede_salir(mudo["puntos"])
-    assert not puerta["puede"]
-    assert [p["id"] for p in puerta["omitidos"]] == ["oferta:1"]
+def test_el_turno_que_no_ofrecio_SALE_IGUAL_y_queda_registrado():
+    """LA OFERTA QUE FALTA NUNCA RETIENE EL MENSAJE, y esto es lo que lo clava.
 
-    ofrece = IT.cobertura(declarado, "El Logitech M170 tiene 1000 DPI. Te lo "
-                          "cargo al pedido.", "t", llamadas=[_MOUSE])
-    assert IT.puede_salir(ofrece["puntos"])["puede"]
+    Un turno mudo pierde la venta ENTERA; retenerlo la pierde igual y ademas
+    deja al cliente sin respuesta. Y no hay nada que reponer: una oferta es
+    prosa de venta, no un dato sellado, asi que "no puede salir" no abriria
+    ninguna puerta. Se cuenta y se manda.
+
+    ES `DECISIONES.md` #14 Y #16 llevados a su caso mas caro: un detalle nunca
+    tira una venta, y una oferta que no se hizo es un detalle al lado del
+    silencio."""
+    declarado = {"items": [{"que": "mouse", "cantidad": 1}]}
+    texto = "El Logitech M170 tiene 1000 DPI."
+    mudo = IT.cobertura(declarado, texto, "t", llamadas=[_MOUSE])
+
+    # 1. EL PUNTO QUEDO SIN ESTADO: la omision esta vista.
+    oferta = next(p for p in mudo["puntos"] if p["tipo"] == "oferta")
+    assert oferta["estado"] == "", "el punto tenia que quedar SIN_ESTADO"
+
+    # 2. Y LA PUERTA DEJA SALIR EL TURNO IGUAL.
+    puerta = IT.puede_salir(mudo["puntos"])
+    assert puerta["puede"] is True, puerta["motivo"]
+    assert puerta["omitidos"] == []
+    # 3. PERO NO DESAPARECE: sale contado en su propia lista.
+    assert [p["id"] for p in puerta["sin_ofrecer"]] == ["oferta:1"]
+
+    # 4. Y EL TEXTO LLEGA AL CLIENTE ENTERO, por el camino de verdad: la unica
+    #    guardia que suma, con la puerta adelante, no le saca ni le agrega nada.
+    from app.core.salida import _punto_omitido_repuesto
+    fuera = _punto_omitido_repuesto(texto, declarado, [_MOUSE], [],
+                                    "verifika_prod", "test")
+    assert fuera == texto, fuera
+    assert fuera.strip(), "el turno se fue mudo del todo"
 
 
 def test_nombrar_el_producto_no_lo_da_por_ofrecido():
@@ -237,4 +278,48 @@ def test_sobre_cuantos_casos_se_midio():
     # LOS DOS FINALES DE LA OFERTA Y NINGUN OTRO. Si el punto pudiera terminar
     # RESUELTO o NO_SE_SABE, se estaria colando por el vocabulario de los
     # puntos del cliente.
-    assert set(IT.MOTIVOS_NO_CORRESPONDE) == {"ya_en_el_pedido", "cerrando"}
+    assert set(IT.MOTIVOS_NO_CORRESPONDE) == {
+        "rechazado", "ya_en_el_pedido", "cerrando"}
+    print(f"  la memoria negativa se midio sobre {len(DESCARTADOS)} casos")
+    assert len(DESCARTADOS) == 4
+
+
+def test_lo_que_el_cliente_rechazo_no_se_vuelve_a_ofrecer():
+    """EL TERCER MOTIVO, Y EL QUE MAS CARO SALE SI FALTA. Volver a ofrecer lo
+    que el cliente ya dijo que no es la unica forma de insistencia que el
+    cliente lee como que no lo escucharon.
+
+    Y LA OTRA MITAD, QUE ES IGUAL DE IMPORTANTE: rechazar UN modelo no puede
+    apagar la oferta de los demas. "Ese no" es donde recien empieza la venta, y
+    un bot que se calla ahi pierde la charla entera por respetar de mas."""
+    fallan = []
+    for nombre, descartados, esperado in DESCARTADOS:
+        punto = IT.punto_de_oferta([_MOUSE], [], "", descartados)
+        assert punto, nombre
+        estado = IT.estado_terminal(punto, "El M170 tiene 1000 DPI.", [_MOUSE],
+                                    atendido=False)
+        if estado != esperado:
+            fallan.append(f"{nombre}: dio '{estado or 'SIN_ESTADO'}' y tenia "
+                          f"que dar '{esperado or 'SIN_ESTADO'}'")
+        if esperado and punto.get("no_corresponde") != "rechazado":
+            fallan.append(f"{nombre}: el motivo salio "
+                          f"'{punto.get('no_corresponde')}' y no 'rechazado'")
+    assert not fallan, "\n  ".join([""] + fallan)
+
+
+def test_al_turno_que_no_ofrece_no_se_le_pide_que_pregunte():
+    """EL PARRAFO DE HONESTIDAD NO VIAJA SOLO CON LA OFERTA (FICHA 15).
+
+    `hub_venta` pega "si no tenes el dato, decilo honesto y pedile al cliente lo
+    que falte" cada vez que la cobertura devuelve algo pendiente. Ese "pedile"
+    empuja a una PREGUNTA, y pegado a un turno donde lo unico abierto es
+    OFRECER invita a la segunda pregunta del mismo mensaje —justo lo que el
+    punto de oferta tiene prohibido—. La oferta no tiene nada que pedirle al
+    cliente: tiene algo que proponerle."""
+    solo_oferta = [{"id": "oferta:1", "tipo": "oferta", "termino": "Mouse M170",
+                    "texto": "proponerle el paso siguiente", "candidatos": []}]
+    con_un_punto = solo_oferta + [{"id": "destino:1", "tipo": "destino",
+                                   "texto": "envio a Concordia"}]
+    # La condicion es exactamente la que decide en `hub_venta`.
+    assert not any(p.get("tipo") != "oferta" for p in solo_oferta)
+    assert any(p.get("tipo") != "oferta" for p in con_un_punto)

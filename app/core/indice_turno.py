@@ -490,15 +490,19 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
 #      interrogatorio.
 #   3. NO CORRESPONDE, con motivo tipado y cerrado.
 #
-# EL TERCER MOTIVO QUE FALTA, Y POR QUE NO ESTA. "El cliente ya dijo que no lo
-# quiere" es un motivo legitimo y la memoria negativa existe —`descartados`, en
-# el documento de la conversacion— pero NO LLEGA HASTA ACA: `cobertura` recibe
-# el carrito y lo ya mostrado, y el descartado no viaja en ninguno de los dos.
-# Ponerlo pide un argumento mas en las dos llamadas de `hub_venta`, y esta ficha
-# dejo eso fuera de alcance. Mientras tanto el freno real es de hecho: un
-# producto rechazado no lo vuelve a traer ninguna herramienta, porque el turno
-# siguiente no lo busca. Un motivo escrito sin nadie que lo alimente seria una
-# cosa suelta, y de esas no se agregan.
+# EL TERCERO ES EL QUE MAS IMPORTA: "el cliente ya dijo que no lo quiere". La
+# memoria negativa vive en `descartados` —el campo del documento de la
+# conversacion, que guarda NOMBRES porque el cliente descarta "los auriculares",
+# no un id— y llega hasta aca porque `hub_venta` se la pasa a la cobertura. Sin
+# ella el bot vuelve a ofrecer lo que el cliente rechazo, que es la insistencia
+# en su forma mas cara: la unica que el cliente lee como que no lo escucharon.
+#
+# UN MODELO CONCRETO RECHAZADO NO TAPA A SU FAMILIA. Si lo descartado trae un
+# numero de modelo —"Mouse Logitech M170"— se exige ESE numero para callar la
+# oferta; sin numero —"los auriculares"— alcanza con la identidad corta que ya
+# usa el resto del modulo. Al reves, rechazar el M170 apagaria la oferta de
+# cualquier otro mouse Logitech, y dejar de ofrecer alternativas despues de un
+# "ese no" es perder la venta justo donde recien empieza.
 
 # LAS QUE CERTIFICAN UN PRODUCTO PARA OFRECERLO. `armar_presupuesto` no esta a
 # proposito: lo que pasa por ahi YA es el pedido, asi que no hay nada que
@@ -506,10 +510,10 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
 _CERTIFICAN_PRODUCTO = ("buscar_productos", "ficha_producto",
                         "comparar_productos")
 
-# LOS DOS MOTIVOS QUE EL CODIGO PUEDE PROBAR. Cerrado a proposito: un motivo
-# libre convierte `NO_CORRESPONDE` en un cajon donde cae todo lo que no se
-# ofrecio, y el punto deja de medir.
-MOTIVOS_NO_CORRESPONDE = ("ya_en_el_pedido", "cerrando")
+# LOS TRES MOTIVOS, Y NINGUNO MAS. Cerrado a proposito: un motivo libre
+# convierte `NO_CORRESPONDE` en un cajon donde cae todo lo que no se ofrecio, y
+# el punto deja de medir.
+MOTIVOS_NO_CORRESPONDE = ("rechazado", "ya_en_el_pedido", "cerrando")
 
 # PROPONER EL PASO SIGUIENTE. Formas literales y contadas, igual que el resto
 # del modulo: una lista larga de sinonimos convierte cualquier cortesia en una
@@ -598,6 +602,32 @@ def _ya_en_el_pedido(llamadas: list, memoria: list | None) -> set:
     return fuera
 
 
+def _rechazado(nombre: str, descartados: list | None) -> bool:
+    """¿El cliente ya dijo que NO a este producto?
+
+    `descartados` son NOMBRES, no ids: el cliente descarta "los auriculares", y
+    asi los guarda `hub_venta`. Por eso se compara por identidad corta y no por
+    igualdad, que no daria nunca.
+
+    EL MODELO CON NUMERO SE EXIGE ENTERO, y ahi esta toda la diferencia entre
+    respetar un "no" y perder la venta. "Mouse Logitech M170" y "Mouse Logitech
+    G203" comparten dos palabras: con la identidad corta sola, rechazar el M170
+    apagaria la oferta de cualquier mouse Logitech, y despues de un "ese no" es
+    justo cuando hay que ofrecer la alternativa."""
+    for d in (descartados or []):
+        d = str(d or "").strip()
+        if not d:
+            continue
+        modelos = [w for w in _palabras(d) if any(c.isdigit() for c in w)]
+        if modelos:
+            if all(_aparece(m, nombre) for m in modelos):
+                return True
+            continue
+        if _ancla_en(d, nombre):
+            return True
+    return False
+
+
 def _hay_ambiguedad(llamadas: list) -> bool:
     """¿El turno esta obligado a repreguntar? Es el mismo vocabulario que ya usa
     `_evidencia`: los estados que `herramientas.py` escribe y el veredicto de
@@ -614,7 +644,8 @@ def _hay_ambiguedad(llamadas: list) -> bool:
 
 
 def punto_de_oferta(llamadas: list, memoria: list | None = None,
-                    texto: str = "") -> dict | None:
+                    texto: str = "",
+                    descartados: list | None = None) -> dict | None:
     """EL PUNTO SINTETICO `oferta`, o None si en este turno no hay nada que
     ofrecer. Lo abre el codigo con dos hechos suyos y ninguna opinion del
     modelo: hay un producto certificado y el pedido no lo tiene.
@@ -630,11 +661,21 @@ def punto_de_oferta(llamadas: list, memoria: list | None = None,
     if _hay_ambiguedad(llamadas):
         return None
     en_pedido = _ya_en_el_pedido(llamadas, memoria)
-    libres = [p for p in traidos
-              if p["id"] not in en_pedido and _n(p["nombre"]) not in en_pedido]
+    fuera_del_pedido = [p for p in traidos
+                        if p["id"] not in en_pedido
+                        and _n(p["nombre"]) not in en_pedido]
+    libres = [p for p in fuera_del_pedido
+              if not _rechazado(p["nombre"], descartados)]
+    # LOS TRES MOTIVOS, EN ESTE ORDEN Y NO EN OTRO. Primero lo que el pedido ya
+    # tiene, que es el mas fuerte —ofrecerlo seria preguntarle si quiere lo que
+    # acaba de pedir—; despues el "no" del cliente, que manda sobre cualquier
+    # cosa que el bot quiera proponer; y al final el cierre, que es el unico que
+    # depende del texto de este turno.
     motivo = ""
-    if not libres:
+    if not fuera_del_pedido:
         motivo, libres = "ya_en_el_pedido", traidos
+    elif not libres:
+        motivo, libres = "rechazado", fuera_del_pedido
     elif _RE_CERRANDO.search(_n(texto or "")):
         motivo = "cerrando"
     nombres = [p["nombre"] for p in libres][:8]
@@ -957,7 +998,8 @@ def estado_terminal(punto: dict, texto: str, llamadas: list | None = None,
 
 def cobertura(declarado: dict, texto: str, trace_id: str = "",
               llamadas: list | None = None,
-              memoria: list | None = None) -> dict:
+              memoria: list | None = None,
+              descartados: list | None = None) -> dict:
     """El indice del turno: cada punto interpretado, con su estado en la
     respuesta. Devuelve `{puntos, faltan}` y lo deja en el log, que es donde se
     puede leer despues sin adivinar.
@@ -978,7 +1020,8 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
     # el unico lugar del modulo donde estan juntos lo que trajeron las
     # herramientas y lo que el pedido ya tiene. `puntos()` sigue siendo lo
     # declarado y nada mas: la oferta no la declara nadie, la abre el codigo.
-    _oferta = punto_de_oferta(llamadas or [], memoria, texto or "")
+    _oferta = punto_de_oferta(llamadas or [], memoria, texto or "",
+                              descartados)
     if _oferta:
         ps = ps + [_oferta]
     if not ps:
@@ -1069,12 +1112,25 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
 # `precio` con el total de la calculadora, un `pago` con el reparto declarado.
 # Los tres que faltan -politica, stock, compatibilidad- no tienen prueba
 # mecanica, y arriba esta escrito por que.
-# LA OFERTA FRENA IGUAL QUE LOS DEMAS (FICHA 15), y es el unico que frena por
-# algo que el bot no hizo en vez de por algo que el cliente pidio. Sin esto la
-# mitad 1 seria un log mas: el turno que contesta perfecto y no ofrece nada
-# saldria tan verde como el que vende.
-TIPOS_QUE_FRENAN = ("item", "condicion", "destino", "atributo", "precio",
-                    "pago", "oferta")
+TIPOS_QUE_FRENAN = ("item", "condicion", "destino", "atributo", "precio", "pago")
+
+# LA OFERTA NO FRENA, Y ES LO CONTRARIO DE UN OLVIDO (FICHA 15, corregida el
+# 25-ago). Los seis de arriba frenan porque el texto se puede ARREGLAR: falta un
+# dato que el codigo tiene y la guardia lo repone con material sellado. Una
+# oferta que falta no se puede reponer —es prosa de venta, y ninguna guardia de
+# este repo escribe prosa—, asi que "no puede salir" no abriria ninguna puerta:
+# dejaria el turno marcado como rechazado sin nada que hacer con el.
+#
+# Y EL DAÑO SERIA AL REVES DEL QUE SE BUSCA. Un turno mudo pierde la venta
+# ENTERA; retenerlo o tratarlo como texto rechazado la pierde igual y ademas
+# deja al cliente sin respuesta. `DECISIONES.md` #14 y #16 ya lo dicen para los
+# puntos del cliente y vale doble para este: un detalle nunca tira una venta, y
+# una oferta que no se hizo es exactamente un detalle comparado con el silencio.
+#
+# EL TURNO SALE Y QUEDA REGISTRADO, que es lo unico que hace falta: sale en
+# `sin_ofrecer`, lo loguea la puerta de salida y lo cuenta la vara de venta. Un
+# numero a la vista es lo que permite perseguirlo; un turno frenado, no.
+TIPOS_SIN_OFERTA = ("oferta",)
 
 # EL PRECIO ES LA EXCEPCION, Y LA FUERZA UN CASO REAL. Su evidencia no es un
 # texto que se pueda buscar en el mensaje: es la CUENTA, y la cuenta la arma la
@@ -1084,20 +1140,14 @@ TIPOS_QUE_FRENAN = ("item", "condicion", "destino", "atributo", "precio",
 # el punto no tiene un solo anclaje. Exigirle uno seria dejar salir justo el
 # turno que nacio para frenar. Se pregunta de la unica forma honesta: se le
 # pide la cuenta a la calculadora, y si no la puede armar no se pega nada.
-#
-# LA OFERTA ES LA OTRA, Y POR EL MISMO MOTIVO: su prueba no es un texto que se
-# pueda buscar en el mensaje sino el HECHO de que una herramienta certifico un
-# producto que el pedido no tiene. Ese hecho ya esta comprobado antes de que el
-# punto se abra —si no, no se abre—, asi que exigirle ademas un anclaje seria
-# pedirle dos veces la misma prueba y no frenaria nunca.
-_PRUEBA_POR_CONSTRUCCION = ("precio", "oferta")
+_PRUEBA_POR_CONSTRUCCION = ("precio",)
 
 
 def puede_salir(puntos: list) -> dict:
     """¿El turno puede salir con este texto? El veredicto de la cobertura,
     convertido en puerta.
 
-    Devuelve `{puede, omitidos, sin_prueba, motivo}`:
+    Devuelve `{puede, omitidos, sin_prueba, sin_ofrecer, motivo}`:
 
       puede       False si algun punto quedo sin estado TENIENDO con que
                   contestarse. Es lo unico que frena.
@@ -1107,6 +1157,10 @@ def puede_salir(puntos: list) -> dict:
                   se devuelven para que el turno los deje anotados: sin esto
                   desaparecerian, y un numero que desaparece es un numero que
                   nadie arregla.
+      sin_ofrecer el turno tenia un producto para proponer y no propuso nada.
+                  NUNCA frena: un turno mudo pierde la venta entera, y ninguna
+                  guardia puede reponer una oferta porque es prosa. Sale en su
+                  propia lista para que quede contado.
       motivo      una linea legible para el log.
 
     Es PURA: recibe los puntos que ya marco `cobertura` y no vuelve a mirar el
@@ -1117,16 +1171,22 @@ def puede_salir(puntos: list) -> dict:
                 if p.get("tipo") in TIPOS_QUE_FRENAN
                 and (p.get("anclajes")
                      or p.get("tipo") in _PRUEBA_POR_CONSTRUCCION)]
+    # LA OFERTA SALE ANTES DE MIRAR SI FRENA, porque no frena nunca. Va en su
+    # propia lista y no en `sin_prueba`: prueba tiene de sobra —una herramienta
+    # certifico el producto—, lo que no tiene es arreglo automatico.
+    sin_ofrecer = [p for p in sin_estado
+                   if p.get("tipo") in TIPOS_SIN_OFERTA]
     # Por IDENTIDAD y no por igualdad: dos puntos distintos pueden tener el
     # mismo contenido, y `in` sobre diccionarios compara valores.
-    _frenan = {id(p) for p in omitidos}
-    sin_prueba = [p for p in sin_estado if id(p) not in _frenan]
+    _contados = {id(p) for p in omitidos} | {id(p) for p in sin_ofrecer}
+    sin_prueba = [p for p in sin_estado if id(p) not in _contados]
     motivo = ""
     if omitidos:
         motivo = "sin decir, teniendo el dato: " + ", ".join(
             f"{p.get('id')}={p.get('texto')}" for p in omitidos[:4])
     return {"puede": not omitidos, "omitidos": omitidos,
-            "sin_prueba": sin_prueba, "motivo": motivo}
+            "sin_prueba": sin_prueba, "sin_ofrecer": sin_ofrecer,
+            "motivo": motivo}
 
 
 def instruccion(faltan: list) -> str:
