@@ -1,0 +1,73 @@
+{
+ "guion": "44_consigna_desprolijo",
+ "turnos": [
+  {
+   "mensaje": "hola qiero un mause inalambrico q sea barato y q ande pa jugar",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"restricciones\\\":[\\\"que sea barato\\\",\\\"que sirva para jugar\\\"],\\\"items\\\":[{\\\"categoria\\\":\\\"mouse\\\",\\\"que\\\":\\\"mause inalambrico\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"restricciones\\\":[\\\"que sea barato\\\",\\\"que sirva para jugar\\\"],\\\"items\\\":[{\\\"categoria\\\":\\\"mouse\\\",\\\"que\\\":\\\"mause inalambrico\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Tengo el Logitech M170 que es <d MOU0009>inalámbrico</d> y viene en color <d MOU0009>negro</d> o <d MOU0010>blanco</d>, ambos a $12.000. Te aclaro que el modelo Genius DX-110 que te mencioné antes no es inalámbrico, sino que <d MOU0023>se alimenta por el cable USB</d>.\\n\\nTodos estos modelos cuentan con una <d garantia_detalle>garantía oficial de 24 meses por defectos de fabricación</d> y en la caja encontrás el <d contenido_caja>mouse, el receptor USB y el manual</d>.\\n\\nDecime si querés que te cargue el Logitech M170 en el pedido para avanzar con tu compra.\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "a weno y tenes auris tmbn? q no sean tan caros",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"auriculares\\\"],\\\"items\\\":[{\\\"categoria\\\":\\\"auriculares\\\",\\\"que\\\":\\\"auriculares\\\"}],\\\"restricciones\\\":[\\\"que no sean caros\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"auriculares\\\"],\\\"items\\\":[{\\\"categoria\\\":\\\"auriculares\\\",\\\"que\\\":\\\"auriculares\\\"}],\\\"restricciones\\\":[\\\"que no sean caros\\\"]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Claro! Te cuento que sí tengo stock de auriculares. Honestamente, los modelos que tengo disponibles actualmente son de gama alta y no entrarían en la categoría de \\\"baratos\\\", ya que sus precios comienzan en $444.000.\\n\\nPor ejemplo, los Auriculares Sony WH-1000XM5 que te había mencionado antes están construidos en <d AUR0010>Plastico y cuero sintetico</d>, tienen una <d AUR0010>garantia de 12 meses</d> y, al igual que el resto de los modelos que tengo, son <d AUR0010>ideales para Gaming</d>. Todos estos productos cuentan con <d garantia_detalle>Garantia oficial Sony de 12 meses por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. No cubre danos por mal uso, golpes ni humedad</d> y en la caja incluyen <d contenido_caja>Auriculares, cable o receptor segun version, microfono desmontable segun modelo, manual de garantia</d>.\\n\\nSi te interesa, puedo cargarte los Auriculares Sony WH-1000XM5 en tu pedido para que los vayamos reservando.\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "nah deja los auris. cambie d idea, poneme 2 mauses d esos q m dijiste al principio",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"cancela auriculares\\\",\\\"pide 2 mouses inalambricos\\\"],\\\"items\\\":[{\\\"que\\\":\\\"mouse inalambrico\\\",\\\"cantidad\\\":2,\\\"categoria\\\":\\\"mouse\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"cancela auriculares\\\",\\\"pide 2 mouses inalambricos\\\"],\\\"items\\\":[{\\\"que\\\":\\\"mouse inalambrico\\\",\\\"cantidad\\\":2,\\\"categoria\\\":\\\"mouse\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Perfecto! Ya registré el pedido de los 2 mouses inalámbricos y cancelé los auriculares.\\n\\nSobre tus consultas, te comparto la información disponible:\\n\\n*   **Auriculares:** <d auriculares>Para gaming conviene un headset con microfono y buen sonido posicional para ubicar de donde viene todo. Para llamadas y oficina, prioriza microfono claro y comodidad para muchas horas. Para escuchar musica, importa la calidad del sonido. Los con cable no dependen de bateria; los inalambricos dan libertad pero hay que cargarlos. La almohadilla comoda hace la diferencia en jornadas largas.</d>\\n*   **Cancelación de pedido:** <d cancelacion_pedido>Podes cancelar sin costo mientras el pedido no haya salido. Escribinos cuanto antes con tu numero de pedido; si ya se despacho, lo gestionamos como devolucion.</d>\\n*   **Mouse:** <d mouse>Para oficina y uso diario un mouse optico comodo alcanza y sobra, no hace falta gastar de mas. Para gaming competitivo conviene mejor sensor, menos peso y buen agarre. Los inalambricos dan libertad pero dependen del receptor y la pila; para escritorio fijo el cable no molesta. Mano grande pide un cuerpo mas alto, mano chica algo compacto.</d>\\n*   **Conexión de periféricos:** <d perifericos_conexion>Los perifericos con cable no dependen de bateria y no tienen latencia; los inalambricos dan libertad pero hay que cargarlos o cambiarles pila. El bluetooth evita el receptor pero conviene chequear que el equipo lo tenga. El conector USB tiene que coincidir con el puerto del equipo. Para escritorio fijo el cable no molesta; para movilidad, lo inalambrico gana.</d>\\n\\nLos datos generales para los productos son: <d origen>Marca Logitech de Suiza. Fabricado en China.</d>, con una <d garantia_meses>garantia de 24 meses</d>. La <d garantia_detalle>Garantia oficial Logitech de 24 meses por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. No cubre danos por mal uso, golpes ni humedad</d> y el <d contenido_caja>contenido de la caja es: Mouse, cable o receptor USB segun version, manual de garantia</d>.\\n\\nSi te interesa, puedo cargarte el Mouse Logitech G Pro Wireless Negro en tu pedido para que lo vayamos reservando.\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "che acordate q los kiero d color negro, el d recien q sea negro si o si.",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"mouse logitech m170 negro\\\",\\\"categoria\\\":\\\"mouse\\\"}],\\\"atributos\\\":[{\\\"campo\\\":\\\"color\\\",\\\"de\\\":\\\"mouse logitech m170\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"mouse logitech m170 negro\\\",\\\"categoria\\\":\\\"mouse\\\"}],\\\"atributos\\\":[{\\\"campo\\\":\\\"color\\\",\\\"de\\\":\\\"mouse logitech m170\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Entendido! Ya tomé nota de que los querés en color negro. Te confirmo que el <d MOU0009>Mouse Logitech M170 es de color Negro</d>.\\n\\nSobre el producto, te cuento que el <d MOU0009>Mouse Logitech M170 es de material Plastico ABS</d>, <d MOU0009>pesa 85 gramos</d> y tiene unas <d MOU0009>dimensiones de 12.6x6.2x4.4 cm</d>. Además, cuenta con una <d MOU0009>garantia oficial de 24 meses por defectos de fabricacion</d> y en la <d MOU0009>caja incluye el mouse, el receptor USB y el manual de garantia</d>. Es un modelo <d MOU0009>ideal para Gaming</d> ya que posee <d MOU0009>sensor optico</d>.\\n\\nAquí tenés el detalle de tu pedido:\\n\\n* 2 mouse logitech m170 negro: $24.000\\n\\nPor favor, confirmame si estás de acuerdo con este presupuesto para proceder con la reserva de tus productos.\", \"tool_calls\": []}"
+    }
+   ]
+  }
+ ]
+}

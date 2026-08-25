@@ -1,0 +1,39 @@
+{
+ "guion": "76_pedido_multiple_criterio_no_binario",
+ "turnos": [
+  {
+   "mensaje": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no seria tan importante. Lo que si que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse sera envio a Cordoba capital. Un teclado y un mouse sera envio a Concordia. Los otros dos articulos seran con envio a posadas. Divide el presupuesto en setenta treinta, ya que vere en la fase siguiente como seguimos.",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"reparto_pago\\\":[{\\\"porcentaje\\\":70},{\\\"porcentaje\\\":30}],\\\"items\\\":[{\\\"cantidad\\\":2,\\\"categoria\\\":\\\"auriculares\\\",\\\"que\\\":\\\"auriculares\\\"},{\\\"cantidad\\\":2,\\\"que\\\":\\\"mouse\\\",\\\"categoria\\\":\\\"mouse\\\"},{\\\"que\\\":\\\"memorias\\\",\\\"cantidad\\\":2,\\\"categoria\\\":\\\"memoria ram\\\"}],\\\"contradicciones\\\":[\\\"El cliente pide cotizar un teclado para el envío a Concordia, pero no lo incluyó en la lista inicial de productos (auriculares, mouse, memorias).\\\",\\\"La suma de los artículos mencionados para los envíos (1 auricular + 1 mouse a Córdoba; 1 teclado + 1 mouse a Concordia; 2 artículos a Posadas) suma 6 artículos, pero el pedido inicial es de 2 auriculares, 2 mouse y 2 memorias (6 artículos en total). Hay una discrepancia entre los productos pedidos y los productos asignados a los destinos.\\\"],\\\"destinos\\\":[\\\"Cordoba capital\\\",\\\"Concordia\\\",\\\"Posadas\\\"],\\\"restricciones\\\":[\\\"que lleven las menos partes chinas posibles\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"reparto_pago\\\":[{\\\"porcentaje\\\":70},{\\\"porcentaje\\\":30}],\\\"items\\\":[{\\\"cantidad\\\":2,\\\"categoria\\\":\\\"auriculares\\\",\\\"que\\\":\\\"auriculares\\\"},{\\\"cantidad\\\":2,\\\"que\\\":\\\"mouse\\\",\\\"categoria\\\":\\\"mouse\\\"},{\\\"que\\\":\\\"memorias\\\",\\\"cantidad\\\":2,\\\"categoria\\\":\\\"memoria ram\\\"}],\\\"contradicciones\\\":[\\\"El cliente pide cotizar un teclado para el envío a Concordia, pero no lo incluyó en la lista inicial de productos (auriculares, mouse, memorias).\\\",\\\"La suma de los artículos mencionados para los envíos (1 auricular + 1 mouse a Córdoba; 1 teclado + 1 mouse a Concordia; 2 artículos a Posadas) suma 6 artículos, pero el pedido inicial es de 2 auriculares, 2 mouse y 2 memorias (6 artículos en total). Hay una discrepancia entre los productos pedidos y los productos asignados a los destinos.\\\"],\\\"destinos\\\":[\\\"Cordoba capital\\\",\\\"Concordia\\\",\\\"Posadas\\\"],\\\"restricciones\\\":[\\\"que lleven las menos partes chinas posibles\\\"]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Te paso la cotización de los artículos, pero antes necesito aclarar un par de cosas para que el pedido no tenga errores.\\n\\nAuriculares Redragon Zeus X: 2 unidades a $57.500 c/u\\nMouse Genius DX-110: 2 unidades a $8.500 c/u\\nMemoria RAM Kingston Fury Beast DDR4 8GB: 2 unidades a $34.500 c/u\\n\\nTotal: $201.000\\nPago 70%: $140.700\\nPago 30%: $60.300\\n\\nMouse: origen: Marca Genius de Taiwan. Fabricado en China.\\n\\nSobre el origen, todo lo que tengo disponible es fabricado en China, por lo que no puedo cumplir con tu preferencia de evitar partes de ese origen. Además, me pediste un teclado para Concordia que no estaba en la lista inicial y hay una diferencia entre los 6 artículos que pediste y los 6 destinos que mencionaste, ¿me confirmás cómo querés organizar finalmente los productos y si sumamos el teclado al presupuesto?\\n\\nSi te parece bien, ¿querés que avancemos cargando los Auriculares Redragon Zeus X Blanco que vimos antes?\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "el teclado sumalo aparte. y si todo se fabrica en china, mostrame lo menos chino que tengas",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"el cliente pide opciones con menos componentes chinos\\\",\\\"el cliente pide sumar un teclado al presupuesto por separado\\\"],\\\"items\\\":[{\\\"categoria\\\":\\\"teclado\\\",\\\"cantidad\\\":1,\\\"que\\\":\\\"teclado\\\"}],\\\"restricciones\\\":[\\\"que lleven las menos partes chinas posibles\\\"],\\\"contradicciones\\\":[\\\"El cliente pide sumar un teclado aparte, pero no especificó qué modelo de teclado quiere.\\\",\\\"El cliente pide 'lo menos chino que tengas' para auriculares, mouse y memorias, pero no especificó marcas o modelos alternativos para comparar origen.\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"el cliente pide opciones con menos componentes chinos\\\",\\\"el cliente pide sumar un teclado al presupuesto por separado\\\"],\\\"items\\\":[{\\\"categoria\\\":\\\"teclado\\\",\\\"cantidad\\\":1,\\\"que\\\":\\\"teclado\\\"}],\\\"restricciones\\\":[\\\"que lleven las menos partes chinas posibles\\\"],\\\"contradicciones\\\":[\\\"El cliente pide sumar un teclado aparte, pero no especificó qué modelo de teclado quiere.\\\",\\\"El cliente pide 'lo menos chino que tengas' para auriculares, mouse y memorias, pero no especificó marcas o modelos alternativos para comparar origen.\\\"]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Entiendo perfectamente tu búsqueda. Sobre la fabricación, es importante ser honestos: la gran mayoría de los componentes tecnológicos actuales, incluso de marcas occidentales, tienen su origen de fabricación en China. No cuento con opciones que estén libres de este origen en nuestro catálogo actual.\\n\\nAquí tienes el presupuesto solicitado por los artículos definidos:\\n\\nPresupuesto:\\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\\n- 2x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $69.000\\nSubtotal: $201.000\\nEnvio (3 envios): $24.000\\nTotal: $225.000\\n\\nPago dividido:\\n- transferencia (70%): $157.500 - 10% descuento = $141.750\\n- mercado pago (30%): $67.500\\nTotal final: $209.250\\n\\nPara avanzar, necesito que me confirmes qué modelo de teclado preferirías sumar y qué marcas o modelos específicos te gustaría que comparemos para evaluar el origen de los componentes.\\n\\nRespecto a nuestra forma de trabajo: siempre operamos con transparencia. Para comprar, simplemente definimos los productos, realizas el pago (transferencia o Mercado Pago) y, una vez acreditado, despachamos a tu dirección. Si necesitas editar el pedido, podemos ajustar los ítems y recalcular el total en cualquier momento. Trabajamos con productos de gama de entrada, media y alta, y mi objetivo es asesorarte para que elijas según tu uso real y no gastes de más.\\n\\nSobre el teclado que mencionamos, tengo disponible el <d TEC0020>Teclado Genius KB-110X Blanco</d>, que cuenta con <d TEC0020>garantía de 24 meses</d> y es ideal por su resistencia a derrames; si te parece bien, podemos cargarlo ahora mismo al presupuesto.\", \"tool_calls\": []}"
+    }
+   ]
+  }
+ ]
+}

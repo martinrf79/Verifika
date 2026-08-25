@@ -1,0 +1,39 @@
+{
+ "guion": "78_reparto_por_destino",
+ "turnos": [
+  {
+   "mensaje": "quiero 2 teclados y 1 mouse a rosario, y 1 auricular a cordoba. cuanto me sale todo con envio?",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"categoria\\\":\\\"teclado\\\",\\\"cantidad\\\":2,\\\"que\\\":\\\"teclados\\\",\\\"destino\\\":\\\"Rosario\\\"},{\\\"categoria\\\":\\\"mouse\\\",\\\"destino\\\":\\\"Rosario\\\",\\\"que\\\":\\\"mouse\\\",\\\"cantidad\\\":1},{\\\"destino\\\":\\\"Cordoba\\\",\\\"que\\\":\\\"auricular\\\",\\\"categoria\\\":\\\"auriculares\\\",\\\"cantidad\\\":1}],\\\"stock\\\":[\\\"teclados\\\",\\\"mouse\\\",\\\"auricular\\\"],\\\"pide_precio\\\":true,\\\"temas\\\":[\\\"cuanto me sale todo con envio\\\"],\\\"contradicciones\\\":[\\\"El cliente pide un total por todo el pedido, pero los productos se envian a destinos diferentes (Rosario y Cordoba), lo que implica envios separados.\\\"],\\\"destinos\\\":[\\\"Rosario\\\",\\\"Cordoba\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"categoria\\\":\\\"teclado\\\",\\\"cantidad\\\":2,\\\"que\\\":\\\"teclados\\\",\\\"destino\\\":\\\"Rosario\\\"},{\\\"categoria\\\":\\\"mouse\\\",\\\"destino\\\":\\\"Rosario\\\",\\\"que\\\":\\\"mouse\\\",\\\"cantidad\\\":1},{\\\"destino\\\":\\\"Cordoba\\\",\\\"que\\\":\\\"auricular\\\",\\\"categoria\\\":\\\"auriculares\\\",\\\"cantidad\\\":1}],\\\"stock\\\":[\\\"teclados\\\",\\\"mouse\\\",\\\"auricular\\\"],\\\"pide_precio\\\":true,\\\"temas\\\":[\\\"cuanto me sale todo con envio\\\"],\\\"contradicciones\\\":[\\\"El cliente pide un total por todo el pedido, pero los productos se envian a destinos diferentes (Rosario y Cordoba), lo que implica envios separados.\\\"],\\\"destinos\\\":[\\\"Rosario\\\",\\\"Cordoba\\\"]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Tengo stock disponible de todos los productos que buscás. Como vas a enviar cosas a Rosario y otras a Córdoba, no puedo pasarte un único total porque son dos envíos separados que se gestionan por cuenta propia, así que te detallo los costos de envío según nuestra política de <d costo_envio>envíos al interior que varían según la localidad</d>.\\n\\nPara el envío a Rosario el costo es de $7.000 y para el envío a Córdoba es de $7.500.\\n\\n¿Querés que carguemos al pedido el Teclado Logitech K120 Negro que te mostré antes?\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "dale, confirmame el total",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\"},{\\\"cantidad\\\":1,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"},{\\\"cantidad\\\":1,\\\"que\\\":\\\"Auriculares Redragon Zeus X Negro\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Teclado Genius KB-110X Blanco\\\"},{\\\"cantidad\\\":1,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"},{\\\"cantidad\\\":1,\\\"que\\\":\\\"Auriculares Redragon Zeus X Negro\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Excelente elección! Te confirmo que el teclado <d TEC0020>es resistente a derrames y salpicaduras</d>, el mouse <d MOU0023>cuenta con sensor óptico</d> y los auriculares <d AUR0019>tienen una garantía de 12 meses</d>.\\n\\nAquí tenés el detalle de tu pedido:\\n\\nPresupuesto:\\n- 2x Teclado Genius KB-110X Blanco: $12.000 c/u = $24.000\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\\nSubtotal: $90.000\\nTotal: $90.000\\n\\nTené en cuenta que los costos de envío a Rosario y Córdoba se abonan al recibir cada encomienda. Si te interesa, puedo cargar al presupuesto los Auriculares Redragon Zeus X Blanco que te mostré anteriormente.\", \"tool_calls\": []}"
+    }
+   ]
+  }
+ ]
+}

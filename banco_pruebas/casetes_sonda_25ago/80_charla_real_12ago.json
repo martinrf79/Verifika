@@ -1,0 +1,141 @@
+{
+ "guion": "80_charla_real_12ago",
+ "turnos": [
+  {
+   "mensaje": "Dame lista de productos que no sean fabricados en china",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"lista de productos que no sean fabricados en china\\\"],\\\"restricciones\\\":[\\\"que no sean fabricados en china\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"lista de productos que no sean fabricados en china\\\"],\\\"restricciones\\\":[\\\"que no sean fabricados en china\\\"]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Hola, te cuento que no tengo una lista filtrada por origen de fabricación porque esa información varía según la marca y el lote, y figura directamente en la ficha o en la caja cuando el fabricante lo informa.\\n\\n<d fabricacion>El pais de fabricacion varia segun la marca y figura en la ficha o en la caja cuando el fabricante lo informa. Pasame el modelo puntual y lo verifico antes de tu compra.</d>\\n\\nSi tenés algún modelo específico en mente que quieras que revise, pasámelo y me fijo qué dice la caja.\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "Micrófono",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Micrófono\\\",\\\"categoria\\\":\\\"microfono\\\"}],\\\"restricciones\\\":[\\\"que no sean fabricados en china\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Micrófono\\\",\\\"categoria\\\":\\\"microfono\\\"}],\\\"restricciones\\\":[\\\"que no sean fabricados en china\\\"]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Sobre tu búsqueda de micrófonos, te informo con total honestidad que, tras revisar nuestro catálogo actual, todos los modelos disponibles de la categoría son de origen chino, por lo que no cuento con opciones que cumplan con tu restricción de fabricación.\\n\\nLo que más se acerca a lo que pediste, entre los microfono (21 igual de cerca):\\n- Microfono FIFINE K669B Negro: $69.000 — origen: Marca FIFINE de China. Fabricado en China.\\n- Microfono FIFINE T669 Negro: $76.500 — origen: Marca FIFINE de China. Fabricado en China.\\n- Microfono FIFINE T669 Blanco: $76.500 — origen: Marca FIFINE de China. Fabricado en China.\\n\\nEstos datos son IDENTICOS en todos los productos de arriba: tienen una <d 12 meses>garantia oficial de 12 meses</d> y la caja incluye: <d contenido_caja>Microfono, cable USB, soporte o tripode segun modelo, manual</d>. El modelo <d MIC0005>Microfono FIFINE K669B Negro</d> está fabricado en <d MIC0005>Metal</d>, tiene un peso de <d MIC0005>435 gramos</d>, unas dimensiones de <d MIC0005>23.9x9.6x9.4 cm</d> y es ideal para <d MIC0005>Streaming</d>.\\n\\nComo el <d MIC0005>Microfono FIFINE K669B Negro</d> es nuestra opción más económica y funcional para streaming, confirmame si querés que lo cargue a tu pedido para avanzar con la gestión.\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "Pasame microfonos marcas estados unidos",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"microfonos\\\",\\\"categoria\\\":\\\"microfono\\\"}],\\\"restricciones\\\":[\\\"marcas de estados unidos\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"microfonos\\\",\\\"categoria\\\":\\\"microfono\\\"}],\\\"restricciones\\\":[\\\"marcas de estados unidos\\\"]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Hola! Entiendo perfectamente tu búsqueda. Te comento que, si bien el diseño y la ingeniería de estas marcas son de Estados Unidos, la fabricación de todos los modelos que te voy a presentar se realiza en China.\\n\\nAquí tenés las opciones de marcas estadounidenses:\\n\\n*   **Microfono Razer Seiren V3 Mini Negro**: $81.000. Es un modelo <d MIC0017>ideal para Streaming</d>, <d MIC0017>fabricado en metal</d>, con un <d MIC0017>peso de 860 gramos</d> y unas <d MIC0017>dimensiones de 21.0x9.7x10.9 cm</d>.\\n*   **Microfono HyperX SoloCast Negro**: $91.000. Este equipo <d MIC0013>pesa 1508 gramos</d> y tiene unas <d MIC0013>dimensiones de 21.8x10.0x11.0 cm</d>.\\n*   **Microfono HyperX SoloCast Blanco**: $91.000. Este modelo <d MIC0014>pesa 1290 gramos</d> y sus <d MIC0014>dimensiones son 19.9x10.1x9.9 cm</d>.\\n\\nEstos datos son IDENTICOS en todos los productos de arriba:\\n- Origen: Marca de Estados Unidos. Fabricado en China.\\n- Garantia: <d garantia_meses>12 meses</d> de garantia oficial por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. No cubre danos por mal uso, golpes ni humedad.\\n- Contenido de la caja: <d contenido_caja>Microfono, cable USB, soporte o tripode segun modelo, manual</d>.\\n\\nSi te interesa avanzar con el Razer Seiren V3 Mini, confirmame para reservarlo a tu nombre.\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "De los tres que mencionas manda el mas barato a correa, el que sigue a rio cuarto y el otro a san nicolas. Dividi el precio 80 20",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"reparto_pago\\\":[{\\\"porcentaje\\\":80},{\\\"porcentaje\\\":20}],\\\"pide_precio\\\":true,\\\"destinos\\\":[\\\"correa\\\",\\\"rio cuarto\\\",\\\"san nicolas\\\"],\\\"items\\\":[{\\\"que\\\":\\\"Microfono Razer Seiren V3 Mini Negro\\\",\\\"destino\\\":\\\"correa\\\"},{\\\"que\\\":\\\"Microfono HyperX SoloCast Negro\\\",\\\"destino\\\":\\\"rio cuarto\\\"},{\\\"que\\\":\\\"Microfono HyperX SoloCast Blanco\\\",\\\"destino\\\":\\\"san nicolas\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"reparto_pago\\\":[{\\\"porcentaje\\\":80},{\\\"porcentaje\\\":20}],\\\"pide_precio\\\":true,\\\"destinos\\\":[\\\"correa\\\",\\\"rio cuarto\\\",\\\"san nicolas\\\"],\\\"items\\\":[{\\\"que\\\":\\\"Microfono Razer Seiren V3 Mini Negro\\\",\\\"destino\\\":\\\"correa\\\"},{\\\"que\\\":\\\"Microfono HyperX SoloCast Negro\\\",\\\"destino\\\":\\\"rio cuarto\\\"},{\\\"que\\\":\\\"Microfono HyperX SoloCast Blanco\\\",\\\"destino\\\":\\\"san nicolas\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Hola! He registrado tu pedido con la distribución solicitada. Sobre los micrófonos, aunque son marcas de Estados Unidos, te confirmo que todos son <d MIC0017>fabricados en China</d> y <d MIC0013>fabricados en China</d>.\\n\\nAquí tenés el presupuesto detallado:\\n\\nPresupuesto:\\n- 1x Microfono Razer Seiren V3 Mini Negro: $81.000 c/u = $81.000\\n- 1x Microfono HyperX SoloCast Negro: $91.000 c/u = $91.000\\n- 1x Microfono HyperX SoloCast Blanco: $91.000 c/u = $91.000\\nSubtotal: $263.000\\nEnvio (3 envios): $25.500\\nTotal: $288.500\\n\\nPago dividido:\\n- transferencia (80%): $230.800 - 10% descuento = $207.720\\n- mercado pago (20%): $57.700\\nTotal final: $265.420\\n\\nReparto de los envios:\\n- A correa: 1x Microfono Razer Seiren V3 Mini Negro\\n- A rio cuarto: 1x Microfono HyperX SoloCast Negro\\n- A san nicolas: 1x Microfono HyperX SoloCast Blanco\\nEl 80% lo puse por transferencia, que es la que tiene descuento: si va al revés, decime y lo doy vuelta.\\n\\nTodos los modelos cuentan con <d MIC0017>12 meses de garantía oficial</d> por defectos de fabricación y en sus cajas incluyen <d MIC0013>micrófono, cable USB, soporte o trípode según modelo y manual</d>. ¿Querés que procedamos con el pago?\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "Correa santa fe san nicolas bs as",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"Microfono Razer Seiren V3 Mini Negro\\\"},{\\\"cantidad\\\":1,\\\"que\\\":\\\"Microfono HyperX SoloCast Negro\\\"},{\\\"que\\\":\\\"Microfono HyperX SoloCast Blanco\\\",\\\"cantidad\\\":1}],\\\"destinos\\\":[\\\"Correa, Santa Fe\\\",\\\"San Nicolas, Buenos Aires\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"cantidad\\\":1,\\\"que\\\":\\\"Microfono Razer Seiren V3 Mini Negro\\\"},{\\\"cantidad\\\":1,\\\"que\\\":\\\"Microfono HyperX SoloCast Negro\\\"},{\\\"que\\\":\\\"Microfono HyperX SoloCast Blanco\\\",\\\"cantidad\\\":1}],\\\"destinos\\\":[\\\"Correa, Santa Fe\\\",\\\"San Nicolas, Buenos Aires\\\"]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Hola! Te confirmo que he registrado tu pedido con los tres micrófonos seleccionados y los destinos correspondientes. Aquí tenés el detalle de tu presupuesto:\\n\\nPresupuesto:\\n- 1x Microfono Razer Seiren V3 Mini Negro: $81.000 c/u = $81.000\\n- 1x Microfono HyperX SoloCast Negro: $91.000 c/u = $91.000\\n- 1x Microfono HyperX SoloCast Blanco: $91.000 c/u = $91.000\\nSubtotal: $263.000\\nEnvio (3 envios): $25.500\\nTotal: $288.500\\n\\nPago dividido:\\n- transferencia (80%): $230.800 - 10% descuento = $207.720\\n- mercado pago (20%): $57.700\\nTotal final: $265.420\\n\\nSobre los productos, te comento sus características principales:\\n\\n*   **Microfono Razer Seiren V3 Mini Negro:** Es de <d MIC0017>marca Razer de Estados Unidos, fabricado en China</d>, cuenta con <d MIC0017>12 meses de garantía oficial</d>, se conecta mediante <d MIC0017>USB</d> y <d MIC0017>no usa batería, se alimenta por el cable</d>.\\n*   **Microfono HyperX SoloCast (Negro y Blanco):** Ambos son de <d MIC0013>marca HyperX de Estados Unidos, fabricados en China</d>. Cuentan con <d MIC0013>12 meses de garantía oficial</d>, conexión <d MIC0013>USB</d> y <d MIC0013>no usan batería, se alimentan por el cable</d>.\\n*   Para todos los modelos, la caja incluye: <d MIC0013>Microfono, cable USB, soporte o tripode segun modelo, manual</d>.\\n\\nRespecto a los envíos, hemos gestionado los siguientes destinos:\\n- **Correa, Santa Fe**: El costo de envío es de $7.000.\\n- **San Nicolas, Buenos Aires**: El costo de envío es de $6.000.\\n\\n*Nota: No cuento con el dato del costo de envío a Río Cuarto en este momento, por lo que no pude incluirlo en el presupuesto total. Si deseas que lo averigüe, por favor confirmame para realizar la consulta.*\\n\\n¿Deseas avanzar con el pago del presupuesto detallado?\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos.",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"contradicciones\\\":[\\\"El cliente pide 2 auriculares, 2 mouse y 2 memorias (total 6 items), pero en la distribución de envíos menciona: 1 auricular, 2 mouse, 1 teclado (que no estaba en la lista original) y 2 artículos sin especificar para Posadas. No coinciden las cantidades ni los productos.\\\"],\\\"restricciones\\\":[\\\"menos partes chinas posibles\\\"],\\\"destinos\\\":[\\\"Córdoba capital\\\",\\\"Concordia\\\",\\\"Posadas\\\"],\\\"items\\\":[{\\\"categoria\\\":\\\"auriculares\\\",\\\"cantidad\\\":2,\\\"que\\\":\\\"auriculares\\\"},{\\\"que\\\":\\\"mouse\\\",\\\"cantidad\\\":2,\\\"categoria\\\":\\\"mouse\\\"},{\\\"cantidad\\\":2,\\\"que\\\":\\\"memorias\\\"},{\\\"cantidad\\\":1,\\\"categoria\\\":\\\"teclado\\\",\\\"que\\\":\\\"teclado\\\"}],\\\"pide_precio\\\":true,\\\"reparto_pago\\\":[{\\\"porcentaje\\\":70},{\\\"porcentaje\\\":30}]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"contradicciones\\\":[\\\"El cliente pide 2 auriculares, 2 mouse y 2 memorias (total 6 items), pero en la distribución de envíos menciona: 1 auricular, 2 mouse, 1 teclado (que no estaba en la lista original) y 2 artículos sin especificar para Posadas. No coinciden las cantidades ni los productos.\\\"],\\\"restricciones\\\":[\\\"menos partes chinas posibles\\\"],\\\"destinos\\\":[\\\"Córdoba capital\\\",\\\"Concordia\\\",\\\"Posadas\\\"],\\\"items\\\":[{\\\"categoria\\\":\\\"auriculares\\\",\\\"cantidad\\\":2,\\\"que\\\":\\\"auriculares\\\"},{\\\"que\\\":\\\"mouse\\\",\\\"cantidad\\\":2,\\\"categoria\\\":\\\"mouse\\\"},{\\\"cantidad\\\":2,\\\"que\\\":\\\"memorias\\\"},{\\\"cantidad\\\":1,\\\"categoria\\\":\\\"teclado\\\",\\\"que\\\":\\\"teclado\\\"}],\\\"pide_precio\\\":true,\\\"reparto_pago\\\":[{\\\"porcentaje\\\":70},{\\\"porcentaje\\\":30}]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Hola! Entiendo perfectamente tu búsqueda. Respecto a tu solicitud sobre el origen de los productos, te informo que, lamentablemente, no contamos con opciones que no tengan componentes o fabricación en China. Aquí te detallo la situación de origen según el rubro:\\n\\nMouse: origen: Marca Genius de Taiwan. Fabricado en China.\\nTeclado: origen: Marca Genius de Taiwan. Fabricado en China.\\n\\nSobre los auriculares, te comento que los modelos Redragon son de origen: Marca Redragon de China. Fabricado en China. Tienen una <d AUR0019>garantia oficial de 12 meses</d> y su <d AUR0019>contenido de la caja incluye: Auriculares, cable o receptor segun version, microfono desmontable segun modelo, manual de garantia</d>.\\n\\nPresupuesto:\\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\\n- 2x Mouse Logitech M170 Negro: $12.000 c/u = $24.000\\n- 2x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $69.000\\n- 1x Teclado (modelo a definir): $0\\nSubtotal: $208.000\\nEnvio: $0\\nTotal: $208.000\\n\\nPago dividido:\\n- transferencia (70%): $145.600\\n- mercado pago (30%): $62.400\\nTotal final: $208.000\\n\\nTe comento que el cliente pide 2 auriculares, 2 mouse y 2 memorias (total 6 items), pero en la distribución de envíos menciona: 1 auricular, 2 mouse, 1 teclado (que no estaba en la lista original) y 2 artículos sin especificar para Posadas; ¿podrías confirmarme exactamente qué productos y cantidades deseas para cada destino para que el pedido coincida?\\n\\nComo ya conoces los Auriculares Redragon Zeus X Blanco, ¿te gustaría que procedamos a cargarlos en tu presupuesto actual?\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "Sí tienes razón En total son siete artículos cambia el mensaje mi primer mensaje cambia donde dice teclado por memoria y allí te quedará todo resuelto lo demás",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"reparto_pago\\\":[{\\\"porcentaje\\\":70,\\\"medio\\\":\\\"transferencia\\\"},{\\\"porcentaje\\\":30,\\\"medio\\\":\\\"mercado pago\\\"}],\\\"contradicciones\\\":[\\\"El cliente indica que son 7 artículos en total, pero la suma de 2 auriculares, 2 mouse y 3 memorias (asumiendo el cambio de teclado por memoria) da 7. Sin embargo, la distribución de envíos mencionada (1 auricular + 1 mouse a Córdoba; 1 memoria + 1 mouse a Concordia; 1 auricular + 2 memorias a Posadas) suma 6 artículos. ¿Confirma que son 3 memorias en total y cómo se distribuyen los 7 artículos?\\\"],\\\"pide_precio\\\":true,\\\"destinos\\\":[\\\"Córdoba capital\\\",\\\"Concordia\\\",\\\"Posadas\\\"],\\\"items\\\":[{\\\"cantidad\\\":2,\\\"categoria\\\":\\\"auriculares\\\",\\\"que\\\":\\\"Auriculares Redragon Zeus X Negro\\\"},{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\",\\\"categoria\\\":\\\"mouse\\\"},{\\\"cantidad\\\":3,\\\"categoria\\\":\\\"memoria ram\\\",\\\"que\\\":\\\"Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"reparto_pago\\\":[{\\\"porcentaje\\\":70,\\\"medio\\\":\\\"transferencia\\\"},{\\\"porcentaje\\\":30,\\\"medio\\\":\\\"mercado pago\\\"}],\\\"contradicciones\\\":[\\\"El cliente indica que son 7 artículos en total, pero la suma de 2 auriculares, 2 mouse y 3 memorias (asumiendo el cambio de teclado por memoria) da 7. Sin embargo, la distribución de envíos mencionada (1 auricular + 1 mouse a Córdoba; 1 memoria + 1 mouse a Concordia; 1 auricular + 2 memorias a Posadas) suma 6 artículos. ¿Confirma que son 3 memorias en total y cómo se distribuyen los 7 artículos?\\\"],\\\"pide_precio\\\":true,\\\"destinos\\\":[\\\"Córdoba capital\\\",\\\"Concordia\\\",\\\"Posadas\\\"],\\\"items\\\":[{\\\"cantidad\\\":2,\\\"categoria\\\":\\\"auriculares\\\",\\\"que\\\":\\\"Auriculares Redragon Zeus X Negro\\\"},{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\",\\\"categoria\\\":\\\"mouse\\\"},{\\\"cantidad\\\":3,\\\"categoria\\\":\\\"memoria ram\\\",\\\"que\\\":\\\"Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Hola! Entiendo perfectamente el ajuste. Te comento que, sobre el origen de los productos, los <d AUR0019>Auriculares Redragon Zeus X Negro</d> son de marca Redragon de China y fabricados en China, los <d MOU0023>Mouse Genius DX-110 Negro</d> son marca Genius de Taiwan pero fabricados en China, y las <d RAM0001>Memorias Kingston Fury Beast</d> son marca Kingston de Estados Unidos, fabricadas en Taiwan o China según la línea.\\n\\nAquí tienes el presupuesto actualizado:\\n\\nPresupuesto:\\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\\n- 3x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $103.500\\nSubtotal: $235.500\\nEnvio (3 envios): $24.000\\nTotal: $259.500\\n\\nPago dividido:\\n- transferencia (70%): $181.650 - 10% descuento = $163.485\\n- mercado pago (30%): $77.850\\nTotal final: $241.335\\n\\nLos 3 envios van sobre los destinos que me diste, pero me faltan 7 de 7 unidades sin asignar: decime qué va a cada uno.\\n\\n¿Me confirmas si son 3 memorias en total y cómo se distribuyen los 7 artículos exactos para cada destino? También tengo disponible la versión en color blanco de los auriculares, por si prefieres que los reservemos o coticemos en lugar de los negros.\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "Sí agrega a ese presupuesto que detallaste al último con los seis artículos agrega un teclado con envío a Córdoba",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"contradicciones\\\":[\\\"El cliente menciona \\\\\\\"seis artículos\\\\\\\" en el presupuesto anterior, pero el presupuesto vigente tiene 7 artículos (2 auriculares, 2 mouse, 3 memorias).\\\"],\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Auriculares Redragon Zeus X Negro\\\",\\\"categoria\\\":\\\"auriculares\\\"},{\\\"cantidad\\\":2,\\\"categoria\\\":\\\"mouse\\\",\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"},{\\\"que\\\":\\\"Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro\\\",\\\"cantidad\\\":3,\\\"categoria\\\":\\\"memoria ram\\\"},{\\\"destino\\\":\\\"Córdoba capital\\\",\\\"que\\\":\\\"teclado\\\",\\\"cantidad\\\":1,\\\"categoria\\\":\\\"teclado\\\"}],\\\"destinos\\\":[\\\"Córdoba capital\\\",\\\"Concordia\\\",\\\"Posadas\\\"],\\\"reparto_pago\\\":[{\\\"medio\\\":\\\"transferencia\\\",\\\"porcentaje\\\":70},{\\\"medio\\\":\\\"mercado pago\\\",\\\"porcentaje\\\":30}],\\\"pide_precio\\\":true,\\\"stock\\\":[\\\"teclado\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"contradicciones\\\":[\\\"El cliente menciona \\\\\\\"seis artículos\\\\\\\" en el presupuesto anterior, pero el presupuesto vigente tiene 7 artículos (2 auriculares, 2 mouse, 3 memorias).\\\"],\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Auriculares Redragon Zeus X Negro\\\",\\\"categoria\\\":\\\"auriculares\\\"},{\\\"cantidad\\\":2,\\\"categoria\\\":\\\"mouse\\\",\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"},{\\\"que\\\":\\\"Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro\\\",\\\"cantidad\\\":3,\\\"categoria\\\":\\\"memoria ram\\\"},{\\\"destino\\\":\\\"Córdoba capital\\\",\\\"que\\\":\\\"teclado\\\",\\\"cantidad\\\":1,\\\"categoria\\\":\\\"teclado\\\"}],\\\"destinos\\\":[\\\"Córdoba capital\\\",\\\"Concordia\\\",\\\"Posadas\\\"],\\\"reparto_pago\\\":[{\\\"medio\\\":\\\"transferencia\\\",\\\"porcentaje\\\":70},{\\\"medio\\\":\\\"mercado pago\\\",\\\"porcentaje\\\":30}],\\\"pide_precio\\\":true,\\\"stock\\\":[\\\"teclado\\\"]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Hola! He actualizado tu presupuesto incluyendo el teclado solicitado.\\n\\nRespecto a lo que mencionaste, noto que en tu mensaje anterior contabas \\\"seis artículos\\\", pero en este presupuesto actual tenemos un total de 8 unidades (2 auriculares, 2 mouse, 3 memorias y 1 teclado); ¿podrías confirmarme si esta cantidad es la correcta para avanzar?\\n\\nPresupuesto:\\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\\n- 3x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $103.500\\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\\nSubtotal: $247.500\\nEnvio (3 envios): $24.000\\nTotal: $271.500\\n\\nPago dividido:\\n- transferencia (70%): $190.050 - 10% descuento = $171.045\\n- mercado pago (30%): $81.450\\nTotal final: $252.495\\n\\nLos 3 envios van sobre los destinos que me diste, pero me faltan 7 de 8 unidades sin asignar: decime qué va a cada uno.\\n\\nSobre el origen de los productos: los <d AUR0019>Auriculares Redragon Zeus X Negro</d> son de China, los <d MOU0023>Mouse Genius DX-110 Negro</d> son marca de Taiwan pero fabricados en China, las <d RAM0001>Memorias Kingston</d> son marca de Estados Unidos (fabricadas en Taiwan o China) y el <d TEC0020>Teclado Genius KB-110X Blanco</d> es marca de Taiwan fabricado en China.\\n\\nComo ya te había mostrado los Auriculares Redragon Zeus X Blanco, ¿querés que los cargue también al pedido para completar el set?\", \"tool_calls\": []}"
+    }
+   ]
+  }
+ ]
+}

@@ -213,16 +213,23 @@ def _universo_de_busquedas(llamadas: list) -> str:
         for p in (res.get("productos") or []):
             partes.append(_norm(p.get("nombre")))
             partes.append(_norm(p.get("categoria")))
-        # `producto` VIENE EN DOS FORMAS Y LAS DOS SON VALIDAS. `buscar_productos`
-        # y `ficha_producto` devuelven la ficha entera; `ver_compatibilidad`
-        # devuelve el NOMBRE pelado, porque su respuesta es sobre si algo sirve
-        # para otra cosa y no sobre la identidad del producto —son dos ejes
-        # distintos, y la regla cero pide no mezclarlos—. Tratar el nombre como
-        # ficha tiraba el turno ENTERO con `AttributeError`, y el cliente recibia
-        # el enlatado de sobrecarga: toda pregunta de compatibilidad que resolvia
-        # perdia la venta. Se sumo el nombre y no se descarta, porque si no el
-        # reconciliador da el item por NO atendido y manda a buscar de nuevo lo
-        # que la herramienta ya trajo.
+        # `producto` LLEGA EN DOS FORMAS, y leerlo siempre como dict tumbaba
+        # el turno. `ficha_producto` manda la ficha entera; `ver_compatibilidad`
+        # manda el nombre pelado, porque al modelo no le hace falta mas que eso
+        # para redactar el veredicto. Aca se lo leia con `.get("nombre")` sin
+        # mirar que era: AttributeError, el hub atrapa la excepcion, y el
+        # cliente recibe el mensaje enlatado en vez de la respuesta.
+        #
+        # Rompia SOLO la mitad que contesta. Las salidas que no resuelven
+        # -`no_encontrado`, `equipo_desconocido`- no mandan string, asi que
+        # pasaban limpias: el bot andaba bien justo cuando no sabia y moria
+        # cuando sabia. Por eso parecia intermitente y no una puerta rota.
+        # Candado en `tests/test_puertas_humo.py`, que ahora pasa el resultado
+        # de CADA herramienta por aca.
+        #
+        # Y EL NOMBRE SE SUMA, no se descarta: si se tirara, el reconciliador
+        # daria el item por NO atendido y mandaria a buscar de nuevo lo que la
+        # herramienta ya trajo.
         prod = res.get("producto")
         if isinstance(prod, str):
             partes.append(_norm(prod))

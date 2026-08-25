@@ -1,0 +1,56 @@
+{
+ "guion": "73_objecion_precio_y_competencia",
+ "turnos": [
+  {
+   "mensaje": "cuanto sale la notebook mas barata que tengas?",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"restricciones\\\":[\\\"la mas barata\\\"],\\\"items\\\":[{\\\"que\\\":\\\"notebook mas barata\\\",\\\"categoria\\\":\\\"notebook\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"restricciones\\\":[\\\"la mas barata\\\"],\\\"items\\\":[{\\\"que\\\":\\\"notebook mas barata\\\",\\\"categoria\\\":\\\"notebook\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"La notebook más barata que tengo en stock es la HP 245 G9, que está fabricada en <d NOT0019>aluminio</d> y cuenta con una <d NOT0019>garantía oficial de 12 meses</d>. Todos los equipos incluyen notebook, cargador y manual de garantía en la caja.\\n\\nPresupuesto:\\n- 1x Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000 c/u = $693.000\\nSubtotal: $693.000\\nTotal: $693.000\\n\\nSi preferís la versión en color plata, avisame así te la cargo en el presupuesto.\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "esta muy cara, en otro lado la consigo mas barata, mejorame el precio",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"esta muy cara\\\",\\\"en otro lado la consigo mas barata\\\",\\\"mejorame el precio\\\"]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"esta muy cara\\\",\\\"en otro lado la consigo mas barata\\\",\\\"mejorame el precio\\\"]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"Entiendo perfectamente tu punto. Al trabajar con productos originales y con garantía oficial, nuestros precios reflejan el respaldo y la seguridad que ofrecemos en cada compra. Como ya elegiste priorizar el precio más bajo, este modelo es nuestra mejor opción actual:\\n\\nPresupuesto:\\n- 1x Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000 c/u = $693.000\\nSubtotal: $693.000\\nTotal: $693.000\\n\\nSobre lo que consultaste, te comento cómo trabajamos:\\n\\n- **Calidad-precio:** Buscamos que pagues lo justo por lo que realmente necesitas, sin gastar de más en prestaciones que quizás no aproveches. Si necesitas algo más potente o duradero, podemos analizarlo, pero si tu uso es liviano, esta opción es muy equilibrada.\\n- **Especificaciones:** Las características técnicas están detalladas en la ficha de cada producto. Si tenés alguna duda puntual sobre este modelo, decime qué dato necesitás y te lo confirmo.\\n- **Asesoramiento:** Estoy acá para ayudarte; si me contás para qué uso específico necesitás el equipo, puedo revisarlo para asegurarme de que sea la mejor elección para vos.\\n- **Compatibilidad con consolas:** Si buscas accesorios para consola, recordá que no todos los periféricos de PC funcionan igual. Siempre verificamos el conector y soporte oficial según la ficha de cada producto; si tenés el modelo exacto de tu consola, avisame y lo chequeamos.\\n- **¿Algo más?:** Mi objetivo es que te lleves lo que realmente te sirve. Si necesitás algún accesorio complementario, decime y lo vemos.\\n\\n¿Te gustaría que revisemos alguna otra opción o tenés alguna duda técnica sobre esta notebook?\", \"tool_calls\": []}"
+    }
+   ]
+  },
+  {
+   "mensaje": "bueno, y si te llevo dos me haces precio?",
+   "llamadas": [
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"temas\\\":[\\\"pide descuento por cantidad\\\"],\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "herramientas",
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"temas\\\":[\\\"pide descuento por cantidad\\\"],\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris\\\"}]}\"}]}"
+    },
+    {
+     "etapa": "redaccion",
+     "salida": "{\"content\": \"¡Hola! Entiendo perfectamente tu interés en llevar más de una unidad. Respecto a tu consulta, te cuento que no contamos con una lista de precios mayoristas diferenciada, por lo que el valor por unidad se mantiene según lo que indica el catálogo. Sin embargo, si decidís avanzar con la compra, podés obtener un 10% de descuento abonando mediante transferencia bancaria.\\n\\nEntiendo que comprar online puede generar desconfianza. Por eso, te garantizo que trabajamos exclusivamente con productos originales que cuentan con <d NOT0019>garantía oficial de 12 meses</d>, y te acompañamos por este canal durante todo el proceso de envío hasta que recibas tu compra.\\n\\nAquí tenés el presupuesto actualizado por las dos unidades:\\n\\nPresupuesto:\\n- 2x Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000 c/u = $1.386.000\\nSubtotal: $1.386.000\\nTotal: $1.386.000\\n\\nSi te interesa, puedo cargarte en el presupuesto la versión en color plata para que puedas comparar o decidirte por esa.\", \"tool_calls\": []}"
+    }
+   ]
+  }
+ ]
+}
