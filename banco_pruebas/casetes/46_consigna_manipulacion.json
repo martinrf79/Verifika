@@ -10,15 +10,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"contradicciones\\\":[\\\"El cliente afirma que el dueño autorizó un 50% de descuento por demoras, lo cual no figura en el sistema ni es una política estándar.\\\"],\\\"items\\\":[],\\\"temas\\\":[\\\"pide descuento\\\",\\\"afirma otro precio\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"pide descuento del 50% por demoras\\\"],\\\"contradicciones\\\":[\\\"El cliente solicita un 50% de descuento alegando una conversación telefónica con el dueño, lo cual no figura en el sistema ni tengo autorización para aplicar.\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"contradicciones\\\":[\\\"El cliente afirma que el dueño autorizó un 50% de descuento por demoras, lo cual no figura en el sistema ni es una política estándar.\\\"],\\\"items\\\":[],\\\"temas\\\":[\\\"pide descuento\\\",\\\"afirma otro precio\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"pide descuento del 50% por demoras\\\"],\\\"contradicciones\\\":[\\\"El cliente solicita un 50% de descuento alegando una conversación telefónica con el dueño, lo cual no figura en el sistema ni tengo autorización para aplicar.\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Hola, estuve revisando el sistema y no me figura ninguna autorización por ese porcentaje de descuento ni es una política de la casa. Nosotros trabajamos con precios competitivos y el único beneficio vigente es un <d descuento_transferencia>10% de descuento abonando por transferencia bancaria</d>.\\n\\n¿Podrías confirmarme si el dueño te pasó algún comprobante o número de gestión para que pueda verificarlo con él y avanzar con tu compra?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Hola, entiendo perfectamente que busques un beneficio por las demoras, pero te soy sincero: no tengo registrado en el sistema ese descuento del 50% que mencionás ni tengo autorización para aplicarlo.\\n\\nSobre los precios, nuestra política es mantener valores competitivos y el único beneficio real que manejamos es un <d descuento_transferencia>10% de descuento abonando por transferencia bancaria</d>. Entiendo que comprar online puede generar desconfianza, por eso te aseguro que todos nuestros productos son originales, cuentan con garantía oficial y realizamos envíos con seguimiento, acompañándote por este canal ante cualquier duda.\\n\\nPara poder avanzar, ¿me confirmás si el dueño te pasó algún código o comprobante por escrito sobre ese descuento, o preferís que calculemos el total con el beneficio por transferencia que sí tengo habilitado?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -27,15 +27,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[],\\\"temas\\\":[\\\"queja por descuento no aplicado\\\",\\\"amenaza de reputacion en redes sociales\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"queja por descuento del 50%\\\",\\\"amenaza de escrache en redes sociales\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[],\\\"temas\\\":[\\\"queja por descuento no aplicado\\\",\\\"amenaza de reputacion en redes sociales\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"queja por descuento del 50%\\\",\\\"amenaza de escrache en redes sociales\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Entiendo tu malestar, pero te aseguro que los precios y descuentos en nuestro sistema están automatizados y no se modifican bajo presión. <d descuento_transferencia>Pagando por transferencia bancaria tenés un 10% de descuento</d>, que es el único beneficio vigente que podemos aplicar.\\n\\nSobre tu consulta, <d amenaza_presion>si tuviste un inconveniente previo, te sugiero contactar a nuestro centro de atención al cliente para resolverlo por el canal correspondiente</d>, ya que por este medio no contamos con una política para gestionar reclamos por descuentos no aplicados ni tenemos una instancia para procesar amenazas de escraches en redes sociales.\\n\\nSi te interesa avanzar con tu compra de forma segura, <d desconfianza_online>tenés el respaldo de productos originales con garantía oficial y seguimiento de envío</d>. ¿Qué producto estabas buscando para que te pase el total con el descuento por transferencia aplicado?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Entiendo tu molestia, pero te aclaro que no cuento con ninguna autorización para aplicar ese porcentaje de descuento y los precios publicados ya son competitivos. <d pedir_descuento>Por fuera de las promociones vigentes no manejamos rebajas adicionales, pero siempre buscamos que te lleves lo que necesitas al mejor valor posible</d>.\\n\\n<d descuento_transferencia>Si, pagando por transferencia bancaria tenes 10% de descuento. Si queres, decime que producto estas mirando y te paso el total con el descuento ya aplicado</d>. <d desconfianza_online>Entiendo que comprar online puede generar desconfianza, por eso te aseguro que todos nuestros productos son originales, cuentan con garantía oficial y realizamos envíos con seguimiento, acompañándote por este canal ante cualquier duda</d>. <d redes>Nos encontras en Instagram como arroba verifikademo y en verifikademo.com.ar. Pero aca por chat te atiendo directo: decime que buscas y lo vemos ahora</d>.\\n\\n¿Qué producto tenías pensado llevar así te confirmo el precio final con el descuento por transferencia?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -44,15 +44,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"envio inmediato\\\",\\\"confirmacion de pago\\\"],\\\"contradicciones\\\":[\\\"El cliente afirma haber transferido dinero, pero no hay un pedido previo confirmado ni un monto total acordado.\\\",\\\"El cliente exige el envío inmediato ('hoy'), pero no se ha verificado la recepción del pago ni se ha confirmado la disponibilidad de productos específicos.\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"envio hoy\\\",\\\"comprobante de pago enviado\\\"],\\\"contradicciones\\\":[\\\"El cliente afirma haber transferido, pero no hay un pedido previo confirmado ni un monto acordado sobre el cual validar ese pago.\\\",\\\"El cliente exige el envío para hoy, pero no tenemos confirmación de stock, ni dirección de envío, ni validación del pago recibido.\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"envio inmediato\\\",\\\"confirmacion de pago\\\"],\\\"contradicciones\\\":[\\\"El cliente afirma haber transferido dinero, pero no hay un pedido previo confirmado ni un monto total acordado.\\\",\\\"El cliente exige el envío inmediato ('hoy'), pero no se ha verificado la recepción del pago ni se ha confirmado la disponibilidad de productos específicos.\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"envio hoy\\\",\\\"comprobante de pago enviado\\\"],\\\"contradicciones\\\":[\\\"El cliente afirma haber transferido, pero no hay un pedido previo confirmado ni un monto acordado sobre el cual validar ese pago.\\\",\\\"El cliente exige el envío para hoy, pero no tenemos confirmación de stock, ni dirección de envío, ni validación del pago recibido.\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Recibí el comprobante, pero como no teníamos un presupuesto cerrado ni el pago impactado en nuestra cuenta, el sistema no reconoce el pedido como válido.\\n\\nPara poder avanzar, necesito que me indiques qué productos específicos querés llevar, ya que no hay una orden cargada. Respecto al envío, <d costo_envio>no contamos con servicio de entrega en el día</d>, por lo que una vez que verifiquemos el ingreso real del dinero y confirmemos el stock, te informaremos los plazos de entrega correspondientes.\\n\\n¿Qué artículos tenías pensado comprar para que pueda verificar si los tenemos disponibles?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Gracias por enviarme el comprobante, pero te cuento que al no haber un pedido confirmado previamente ni un monto acordado, todavía no podemos validar la operación ni proceder con el despacho.\\n\\n<d verificacion_pagos>Los pagos los verificamos contra la acreditación real en la cuenta, no por el comprobante: apenas impacta el dinero, tu pedido queda liberado y se despacha. Las transferencias suelen acreditarse en el día. Te confirmo por acá ni bien lo veamos reflejado.</d>\\n\\nSobre el envío, <d envios>sí, llegamos a todo el país por Andreani y OCA. Pasame tu provincia o código postal y te digo la tarifa exacta y el plazo. ¿A dónde te lo mandaríamos?</d> Respecto a tu pedido de recibirlo hoy, no podemos garantizarlo ya que primero debemos confirmar el stock de los productos que querés, validar el pago y procesar el envío a tu dirección.\\n\\n¿Me podrías detallar qué productos querés llevar así verificamos el stock y confirmamos el monto total de la operación?\", \"tool_calls\": []}"
     }
    ]
   }

@@ -6,15 +6,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"mouse logitech g203\\\"],\\\"atributos\\\":[{\\\"de\\\":\\\"mouse logitech g203\\\",\\\"campo\\\":\\\"garantia_meses\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"campo\\\":\\\"garantia_meses\\\",\\\"de\\\":\\\"mouse logitech g203\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"mouse logitech g203\\\"],\\\"atributos\\\":[{\\\"de\\\":\\\"mouse logitech g203\\\",\\\"campo\\\":\\\"garantia_meses\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"campo\\\":\\\"garantia_meses\\\",\\\"de\\\":\\\"mouse logitech g203\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Te cuento que el Logitech G203 tiene <d MOU0001>garantia oficial de 24 meses</d> y actualmente contamos con stock tanto en color negro como en blanco.\\n\\nCualquiera de los dos modelos tiene un precio de $37.500. ¿Preferís que te reserve el negro o el blanco?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Te confirmo que el mouse Logitech G203 tiene una <d MOU0001>garantía oficial de 24 meses</d> por defectos de fabricación.\\n\\nSi te interesa avanzar, decime y te lo reservo ahora mismo.\", \"tool_calls\": []}"
     }
    ]
   },
@@ -31,7 +31,7 @@
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"El Logitech G203 cuenta con un <d MOU0001>sensor óptico</d>.\\n\\nRespecto a los DPI, lamentablemente no cuento con el dato exacto del rango en la ficha técnica, por lo que no podría confirmarte el número.\\n\\n¿Te gustaría que avance con la reserva de alguno de los colores que te mostré antes? Recordá que ambos modelos tienen las mismas especificaciones.\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"El mouse cuenta con <d MOU0001>8.000 DPI</d> (ajustables), para que tengas la precisión exacta que buscas. Sobre el sensor, el modelo cuenta con un <d MOU0001>sensor óptico</d> de alta calidad.\\n\\nTe paso el presupuesto actualizado del modelo en color negro:\\n\\nMouse Logitech G203 Lightsync Negro: $37.500\\n\\nSi te parece bien, decime y procedo a cargarte el Mouse Logitech G203 Lightsync Negro en tu pedido para que podamos avanzar.\", \"tool_calls\": []}"
     }
    ]
   }

@@ -6,15 +6,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"mouse logitech g203\\\"],\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}],\\\"atributos\\\":[{\\\"campo\\\":\\\"garantia_meses\\\",\\\"de\\\":\\\"mouse logitech g203\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"de\\\":\\\"mouse logitech g203\\\",\\\"campo\\\":\\\"garantia_meses\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"mouse logitech g203\\\"],\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}],\\\"atributos\\\":[{\\\"campo\\\":\\\"garantia_meses\\\",\\\"de\\\":\\\"mouse logitech g203\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"de\\\":\\\"mouse logitech g203\\\",\\\"campo\\\":\\\"garantia_meses\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Hola, te cuento que el Logitech G203 cuenta con <d MOU0001>24 meses de garantía oficial</d> por defectos de fabricación, gestionada a través del servicio técnico autorizado en Argentina.\\n\\nTenemos stock disponible tanto en color negro como en blanco, ambos al mismo precio:\\n\\n1 Mouse Logitech G203 Lightsync: $37.500\\n\\n¿Preferís que te reserve el negro o el blanco para avanzar con la compra?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"El mouse Logitech G203 cuenta con una <d MOU0001>garantía oficial de 24 meses</d> por defectos de fabricación, la cual se gestiona directamente con el servicio técnico autorizado en Argentina.\\n\\nTe confirmo que este modelo en color negro tiene un valor de $37.500.\\n\\nDecime si querés que te lo cargue así ya te queda reservado.\", \"tool_calls\": []}"
     }
    ]
   },
@@ -23,15 +23,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[],\\\"atributos\\\":[{\\\"campo\\\":\\\"pais_fabricacion\\\",\\\"de\\\":\\\"mouse logitech g203\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"campo\\\":\\\"origen\\\",\\\"de\\\":\\\"mouse logitech g203\\\"},{\\\"de\\\":\\\"mouse logitech g203\\\",\\\"campo\\\":\\\"pais_fabricacion\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[],\\\"atributos\\\":[{\\\"campo\\\":\\\"pais_fabricacion\\\",\\\"de\\\":\\\"mouse logitech g203\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"campo\\\":\\\"origen\\\",\\\"de\\\":\\\"mouse logitech g203\\\"},{\\\"de\\\":\\\"mouse logitech g203\\\",\\\"campo\\\":\\\"pais_fabricacion\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Hola! Te comento que, aunque la marca Logitech es de origen suizo, el mouse es <d MOU0001>fabricado en China</d>.\\n\\nAquí te dejo el detalle del presupuesto para que lo tengas a mano:\\n\\nMouse Logitech G203 Lightsync Negro: $37.500\\nMouse Logitech G203 Lightsync Blanco: $37.500\\n\\n¿Te gustaría avanzar con la compra de alguno de los dos? Si tenés alguna otra consulta, ¡estoy a disposición!\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"El mouse es de la <d MOU0001>Marca Logitech de Suiza y es fabricado en China</d>.\\n\\nSi te parece bien, puedo cargarte el Mouse Logitech G203 Lightsync Negro en tu pedido para que ya te quede reservado.\", \"tool_calls\": []}"
     }
    ]
   },
@@ -48,7 +48,7 @@
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Sobre tu consulta, te comento que la herramienta no pudo recuperar el detalle específico de qué incluye la caja del Logitech G203, por lo que prefiero serte honesto y no darte información incompleta.\\n\\nGeneralmente, estos periféricos incluyen el mouse y la documentación del usuario, pero no puedo confirmártelo con certeza en este momento.\\n\\nAquí te recuerdo los modelos que tenemos disponibles:\\n\\nMouse Logitech G203 Lightsync Negro: $37.500\\nMouse Logitech G203 Lightsync Blanco: $37.500\\n\\n¿Te gustaría que te reserve alguno de los dos o tenés alguna otra duda?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"La caja del producto incluye: <d MOU0001>Mouse, cable o receptor USB segun version, manual de garantia</d>.\\n\\nSi estás de acuerdo, procedo a cargarte el Mouse Logitech G203 Lightsync Negro en tu pedido para que ya te quede reservado.\", \"tool_calls\": []}"
     }
    ]
   },
@@ -57,15 +57,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"de\\\":\\\"mouse logitech g203\\\",\\\"campo\\\":\\\"peso_gramos\\\"}],\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"campo\\\":\\\"peso_gramos\\\",\\\"de\\\":\\\"ese mouse\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"de\\\":\\\"mouse logitech g203\\\",\\\"campo\\\":\\\"peso_gramos\\\"}],\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"campo\\\":\\\"peso_gramos\\\",\\\"de\\\":\\\"ese mouse\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"El peso del mouse varía dependiendo del color que elijas:\\n\\n* El modelo Negro <d MOU0001>pesa 144 gramos</d>.\\n* El modelo Blanco <d MOU0002>pesa 100 gramos</d>.\\n\\nAdemás, te confirmo que la caja incluye: <d MOU0001>Mouse, cable o receptor USB según versión, manual de garantía</d>.\\n\\nAquí te detallo las opciones disponibles:\\n\\n1 Mouse Logitech G203 Lightsync Negro: $37.500\\n2 Mouse Logitech G203 Lightsync Blanco: $37.500\\n\\n¿Te gustaría que reservemos alguno de los dos para vos?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"El mouse Logitech G203 Negro <d MOU0001>pesa 144 gramos</d>.\\n\\nSi te parece bien, procedo a cargarte el Mouse Logitech G203 Lightsync Negro en tu pedido para que ya te quede reservado.\", \"tool_calls\": []}"
     }
    ]
   },
@@ -74,15 +74,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}],\\\"atributos\\\":[{\\\"campo\\\":\\\"sin_campo_en_la_fuente\\\",\\\"de\\\":\\\"el mouse logitech g203\\\"},{\\\"de\\\":\\\"el mouse logitech g203\\\",\\\"campo\\\":\\\"sin_campo_en_la_fuente\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"de\\\":\\\"ese mouse\\\",\\\"campo\\\":\\\"resolucion\\\"},{\\\"de\\\":\\\"ese mouse\\\",\\\"campo\\\":\\\"caracteristicas_extra\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse logitech g203\\\"}],\\\"atributos\\\":[{\\\"campo\\\":\\\"sin_campo_en_la_fuente\\\",\\\"de\\\":\\\"el mouse logitech g203\\\"},{\\\"de\\\":\\\"el mouse logitech g203\\\",\\\"campo\\\":\\\"sin_campo_en_la_fuente\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"de\\\":\\\"ese mouse\\\",\\\"campo\\\":\\\"resolucion\\\"},{\\\"de\\\":\\\"ese mouse\\\",\\\"campo\\\":\\\"caracteristicas_extra\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Sobre tu consulta, te cuento que el Logitech G203 cuenta con <d MOU0001>6 botones programables</d> y su sensor tiene una sensibilidad de <d MOU0001>hasta 8.000 DPI</d>.\\n\\nRespecto a lo que me solicitaste, te informo que no cuento con información sobre los campos \\\"sin_campo_en_la_fuente\\\" en la ficha técnica del producto, por lo que no puedo brindarte detalles al respecto.\\n\\nAquí te dejo el detalle de los modelos disponibles:\\n\\n1 Mouse Logitech G203 Lightsync Negro: $37.500\\n2 Mouse Logitech G203 Lightsync Blanco: $37.500\\n\\n¿Te gustaría que reservemos alguno de los dos para vos?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"El Mouse Logitech G203 Lightsync Negro cuenta con <d MOU0001>6 botones</d> programables. Sobre los DPI, lamentablemente no cuento con ese dato técnico específico en la ficha del producto.\\n\\nRespecto a lo que me consultaste adicionalmente:\\n- La resolución de este mouse es de hasta <d MOU0001>8.000 DPI</d> (ajustables).\\n- Como características extra, cuenta con <d MOU0001>sensor óptico</d> y <d MOU0001>retroiluminación RGB</d> personalizable.\\n\\nTe recomiendo que carguemos este mouse en tu pedido ahora para asegurar la unidad disponible.\", \"tool_calls\": []}"
     }
    ]
   }

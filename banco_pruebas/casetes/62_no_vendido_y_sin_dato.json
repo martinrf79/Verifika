@@ -6,15 +6,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"celulares samsung\\\",\\\"iphone\\\"],\\\"items\\\":[{\\\"que\\\":\\\"celulares samsung\\\"},{\\\"que\\\":\\\"iphone\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"celulares samsung\\\",\\\"iphone\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"celulares samsung\\\",\\\"iphone\\\"],\\\"items\\\":[{\\\"que\\\":\\\"celulares samsung\\\"},{\\\"que\\\":\\\"iphone\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"celulares samsung\\\",\\\"iphone\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Hola, te cuento que no trabajamos celulares ni de Samsung ni de iPhone.\\n\\nSi te sirve, tenemos tablets Samsung Galaxy Tab A9 que son una excelente alternativa:\\n\\nTablet Samsung Galaxy Tab A9 Gris $211.500\\nTablet Samsung Galaxy Tab A9 Plata $211.500\\nTablet Samsung Galaxy Tab A9 Azul $211.500\\n\\nTodos estos modelos cuentan con <d TAB0001>128GB</d> de almacenamiento y una <d TAB0001>garantia oficial de 12 meses</d> por defectos de fabricación. ¿Te interesaría que te pase las especificaciones técnicas de alguna de estas tablets?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Hola, te cuento que no trabajamos celulares Samsung ni iPhone en este momento.\\n\\nLo que sí tenemos disponible es la Tablet Samsung Galaxy Tab A9, que viene en color gris, plata o azul. Todas tienen 128GB, cuentan con <d TAB0001>garantía oficial de 12 meses</d> y el equipo incluye <d TAB0001>tablet, cargador, cable y manual de garantía</d> en la caja.\\n\\nTe paso el detalle de la que te mencioné:\\n\\nTablet Samsung Galaxy Tab A9 Gris - $211.500\\n\\n¿Querés que te cargue esta tablet en el pedido para avanzar?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -31,7 +31,7 @@
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Respecto a tu consulta, te comento que lamentablemente no contamos con stock de PlayStation 5, ya que no trabajamos esa línea de productos en nuestro catálogo.\\n\\nCualquier otra duda que tengas sobre los productos que sí comercializamos, como las tablets que te mencioné anteriormente, estoy a tu disposición.\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Sobre la PlayStation 5, te soy totalmente honesto: no trabajamos con ese producto en nuestro catálogo, por lo que no contamos con stock.\\n\\nComo te comenté anteriormente, por ahora estamos enfocados en nuestra línea de tablets y otros accesorios de tecnología e informática. ¿Te gustaría ver alguna otra opción de nuestro catálogo o tenés alguna duda sobre las tablets que te mencioné?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -40,15 +40,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"restricciones\\\":[\\\"la mas barata\\\",\\\"para trabajar\\\"],\\\"items\\\":[{\\\"categoria\\\":\\\"notebook\\\",\\\"que\\\":\\\"notebook\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"categoria\\\":\\\"notebook\\\",\\\"que\\\":\\\"notebook\\\"}],\\\"pide_precio\\\":true,\\\"restricciones\\\":[\\\"la mas barata\\\",\\\"para trabajar\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"restricciones\\\":[\\\"la mas barata\\\",\\\"para trabajar\\\"],\\\"items\\\":[{\\\"categoria\\\":\\\"notebook\\\",\\\"que\\\":\\\"notebook\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"categoria\\\":\\\"notebook\\\",\\\"que\\\":\\\"notebook\\\"}],\\\"pide_precio\\\":true,\\\"restricciones\\\":[\\\"la mas barata\\\",\\\"para trabajar\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Para trabajar, la opción más económica que tenemos en stock es la **Notebook HP 245 G9 Core i5 16GB 512GB SSD**.\\n\\nAquí te comparto los detalles de este modelo:\\n\\n*   **Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris**: $693.000\\n*   **Notebook HP 245 G9 Core i5 16GB 512GB SSD Plata**: $693.000\\n\\nAmbos equipos son ideales para tu búsqueda, ya que cuentan con un <d NOT0019>uso recomendado para trabajo y estudio</d>. Además, están fabricadas con <d NOT0019>carcasa de aluminio</d> y tienen un <d NOT0019>procesador Core i5</d> junto con <d NOT0019>16GB de memoria RAM</d> y <d NOT0019>512GB de almacenamiento SSD</d>.\\n\\nSobre las condiciones generales para ambos modelos:\\n*   Cuentan con una <d NOT0019>garantía oficial de 12 meses</d> por defectos de fabricación.\\n*   El contenido de la caja incluye: <d NOT0019>Notebook, cargador, manual de garantía. Sin mouse ni mochila salvo promo especial</d>.\\n\\n¿Te gustaría avanzar con alguna de estas dos opciones o necesitas saber algo más sobre sus especificaciones?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Para trabajar, la opción más económica que tenemos disponible es la Notebook HP 245 G9 Core i5 16GB 512GB SSD.\\n\\nEsta notebook tiene una carcasa de <d NOT0019>Aluminio</d>, un peso de <d NOT0019>1500 gramos</d> y unas dimensiones de <d NOT0019>39.1x25.1x1.9 cm</d>. Es un equipo ideal para <d NOT0019>trabajo y estudio</d> que cuenta con una <d NOT0019>garantia oficial HP de 12 meses por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. No cubre danos por mal uso, golpes ni humedad.</d>\\n\\nTodos los modelos que te mencioné incluyen en la caja: <d igual_en_todos>Notebook, cargador, manual de garantia. Sin mouse ni mochila salvo promo especial</d>.\\n\\nPresupuesto:\\n- 1x Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000 c/u = $693.000\\nSubtotal: $693.000\\nTotal: $693.000\\n\\nTambién te comento que tenemos disponible la Notebook HP 245 G9 Core i5 16GB 512GB SSD en color Plata al mismo precio, ¿querés que cargue alguna de estas opciones en tu pedido?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -57,15 +57,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"de\\\":\\\"esa notebook\\\",\\\"campo\\\":\\\"lector_huella\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"campo\\\":\\\"lector_huella\\\",\\\"de\\\":\\\"esa notebook\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"de\\\":\\\"esa notebook\\\",\\\"campo\\\":\\\"lector_huella\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"atributos\\\":[{\\\"campo\\\":\\\"lector_huella\\\",\\\"de\\\":\\\"esa notebook\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Te comento que, tras revisar las especificaciones técnicas de los modelos HP 245 G9 que estamos viendo, no cuento con información específica que confirme si incluyen lector de huella digital. Prefiero ser honesto y decirte que ese dato no figura en la ficha técnica del producto.\\n\\nSi te interesa, puedo ofrecerte alguna otra alternativa o si prefieres avanzar con alguno de estos modelos, aquí te recuerdo los precios:\\n\\nNotebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000\\nNotebook HP 245 G9 Core i5 16GB 512GB SSD Plata: $693.000\\n\\n¿Te gustaría que verifique alguna otra característica técnica sobre estos equipos?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Sobre tu consulta respecto al lector de huellas, te confirmo que la Notebook HP 245 G9 <d NOT0019>no trae lector de huella</d>.\\n\\nAquí te recuerdo el presupuesto de lo que llevamos seleccionado:\\n\\nPresupuesto:\\n- 1x Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000 c/u = $693.000\\nSubtotal: $693.000\\nTotal: $693.000\\n\\n¿Te gustaría avanzar con la compra de este equipo o preferís que busquemos alguna otra alternativa?\", \"tool_calls\": []}"
     }
    ]
   }

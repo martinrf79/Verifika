@@ -6,15 +6,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"restricciones\\\":[\\\"el mas barato\\\"],\\\"items\\\":[{\\\"que\\\":\\\"mouse\\\",\\\"categoria\\\":\\\"mouse\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"mouse\\\",\\\"categoria\\\":\\\"mouse\\\"}],\\\"restricciones\\\":[\\\"el mas barato\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"restricciones\\\":[\\\"el mas barato\\\"],\\\"items\\\":[{\\\"que\\\":\\\"mouse\\\",\\\"categoria\\\":\\\"mouse\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"mouse\\\",\\\"categoria\\\":\\\"mouse\\\"}],\\\"restricciones\\\":[\\\"el mas barato\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Hola, el mouse más económico que tenemos es el Genius DX-110. Es un modelo con cable USB, <d MOU0023>tiene una garantía oficial de 24 meses</d> y <d MOU0023>está fabricado en plástico ABS</d>.\\n\\nPresupuesto:\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\nSubtotal: $8.500\\nTotal: $8.500\\n\\n¿Te sirve para lo que necesitás o buscabas algo inalámbrico?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"El modelo más económico que tengo disponible es el Genius DX-110, que <d MOU0023>está fabricado en plástico ABS</d> y cuenta con <d MOU0023>24 meses de garantía oficial</d>.\\n\\nPresupuesto:\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\nSubtotal: $8.500\\nTotal: $8.500\\n\\nSi preferís una opción inalámbrica, también tengo el Logitech M170 a $12.000, ¿querés que te cargue este último en el presupuesto?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -23,15 +23,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[],\\\"compatibilidad\\\":[{\\\"para\\\":\\\"jugar\\\",\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"compatibilidad\\\":[{\\\"que\\\":\\\"Mouse Genius DX-110\\\",\\\"para\\\":\\\"jugar\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[],\\\"compatibilidad\\\":[{\\\"para\\\":\\\"jugar\\\",\\\"que\\\":\\\"Mouse Genius DX-110 Negro\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"compatibilidad\\\":[{\\\"que\\\":\\\"Mouse Genius DX-110\\\",\\\"para\\\":\\\"jugar\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Hola! Sobre tu consulta, te cuento que el fabricante indica que este modelo es <d MOU0023>ideal para Gaming</d>. Sin embargo, como no pudimos identificar el equipo específico que tenés, ¿podrías decirme qué computadora o dispositivo vas a usar para jugar? Así puedo confirmarte con mayor precisión si es el adecuado.\\n\\nPresupuesto:\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\nSubtotal: $8.500\\nTotal: $8.500\\n\\nQuedo atento a lo que me comentes para asesorarte mejor.\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"El Mouse Genius DX-110 es un dispositivo de oficina básico con <d MOU0023>sensor óptico</d> y conexión mediante <d MOU0023>cable USB</d>.\\n\\nRespecto a tu consulta sobre si sirve para jugar, el sistema no pudo identificar el equipo específico que tenés para realizar la comparación. ¿Podrías decirme qué computadora o consola tenés exactamente? Con esa información, podré confirmarte si es compatible para el uso que buscas.\\n\\nPresupuesto:\\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\\nSubtotal: $8.500\\nTotal: $8.500\", \"tool_calls\": []}"
     }
    ]
   }

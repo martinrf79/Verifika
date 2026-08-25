@@ -6,15 +6,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"memoria ram de 16gb\\\",\\\"categoria\\\":\\\"memoria ram\\\"}],\\\"pide_precio\\\":true,\\\"destinos\\\":[\\\"rosario\\\"],\\\"stock\\\":[\\\"memoria ram de 16gb\\\"],\\\"temas\\\":[\\\"cuanto tarda a rosario\\\",\\\"aceptan transferencia\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"cuanto tarda a rosario\\\",\\\"aceptan transferencia\\\"],\\\"stock\\\":[\\\"memoria ram de 16gb\\\"],\\\"destinos\\\":[\\\"Rosario\\\"],\\\"items\\\":[{\\\"que\\\":\\\"memoria ram de 16gb\\\",\\\"categoria\\\":\\\"memoria ram\\\"}],\\\"pide_precio\\\":true}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"memoria ram de 16gb\\\",\\\"categoria\\\":\\\"memoria ram\\\"}],\\\"pide_precio\\\":true,\\\"destinos\\\":[\\\"rosario\\\"],\\\"stock\\\":[\\\"memoria ram de 16gb\\\"],\\\"temas\\\":[\\\"cuanto tarda a rosario\\\",\\\"aceptan transferencia\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"cuanto tarda a rosario\\\",\\\"aceptan transferencia\\\"],\\\"stock\\\":[\\\"memoria ram de 16gb\\\"],\\\"destinos\\\":[\\\"Rosario\\\"],\\\"items\\\":[{\\\"que\\\":\\\"memoria ram de 16gb\\\",\\\"categoria\\\":\\\"memoria ram\\\"}],\\\"pide_precio\\\":true}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Hola, tengo varias opciones de memorias de 16GB disponibles para tu equipo. Como hay modelos DDR4 y DDR5, decime cuál es el que necesitás para tu placa madre así te confirmo bien.\\n\\nSobre el envío a Rosario, el costo es de $7.000 y tarda entre 4 y 7 días hábiles una vez que el pago está acreditado. Te aclaro que trabajamos con acreditación efectiva, por lo que el despacho se libera recién cuando el área contable confirma el ingreso del dinero, independientemente del comprobante que se envíe.\\n\\nAceptamos transferencia bancaria y tenés un 10% de descuento con ese medio de pago. Sobre el tema de streaming, te comento que para transmitir con calidad lo ideal es contar con un equipo que tenga la potencia necesaria para jugar y streamear al mismo tiempo sin trabarse.\\n\\nRespecto a la garantía, todos los módulos cuentan con <d RAM0003>120 meses de garantía oficial</d> por defectos de fabricación.\\n\\nPara poder pasarte el total exacto con el descuento aplicado, ¿me confirmás cuál de estos modelos preferís?\\n\\nRAM0003: Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro - $41.000\\nRAM0009: Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro - $76.500\\nRAM0015: Memoria ram Corsair Vengeance LPX DDR4 3600 16GB Negro - $57.000\\nRAM0027: Memoria ram G.Skill Ripjaws V DDR4 3200 16GB Negro - $48.500\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Hola, tenemos varias opciones de memorias de 16GB en stock. Te paso los modelos disponibles:\\n\\nMemoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\\nMemoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\\nMemoria ram Corsair Vengeance LPX DDR4 3600 16GB Negro: $57.000\\nMemoria ram G.Skill Ripjaws V DDR4 3200 16GB Negro: $48.500\\n\\nTodos estos productos cuentan con <d RAM0003>garantia oficial de 120 meses</d> por defectos de fabricacion, gestionada con el servicio tecnico autorizado en Argentina. \\n\\nSobre tu consulta, aceptamos transferencia y tenes un 10% de descuento con este medio de pago. Respecto al envio a Rosario, el costo es de $7.000 y el plazo de entrega es de 4 a 7 dias habiles una vez acreditado el pago. Te aclaro que los pagos se verifican contra la acreditacion efectiva en nuestra cuenta, por lo que el envio se libera recien cuando el area contable confirma el ingreso del dinero, independientemente del comprobante que se envíe.\\n\\n¿Cual de estos modelos te interesa para que te pase el presupuesto final con el descuento aplicado?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -23,15 +23,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"cuanto es todo\\\"],\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro\\\",\\\"cantidad\\\":2,\\\"categoria\\\":\\\"memoria ram\\\"}],\\\"pide_precio\\\":true,\\\"temas\\\":[\\\"cuanto es todo\\\"],\\\"destinos\\\":[\\\"Rosario\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"cuanto es todo\\\"],\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro\\\",\\\"cantidad\\\":2,\\\"categoria\\\":\\\"memoria ram\\\"}],\\\"pide_precio\\\":true,\\\"temas\\\":[\\\"cuanto es todo\\\"],\\\"destinos\\\":[\\\"Rosario\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Buenísimo! Te confirmo que llevando dos unidades de estas memorias, que cuentan con <d RAM0003>120 meses de garantía</d> y son de <d RAM0003>origen en Estados Unidos (fabricadas en Taiwán o China)</d>, el presupuesto actualizado queda de la siguiente manera:\\n\\nPresupuesto:\\n- 2x Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000 c/u = $82.000\\nSubtotal: $82.000\\nTotal: $82.000\\n\\nComo veníamos charlando, este presupuesto retoma los detalles que ya conversamos para que no tengas que empezar desde cero, facilitando el camino hacia el cierre de tu compra.\\n\\nTe recuerdo que el costo de envío a Rosario es de $7.000 (a sumar al total) y que aceptamos transferencia bancaria, la cual cuenta con un 10% de descuento sobre el valor de los productos. \\n\\n¿Te gustaría avanzar con el pedido o tenés alguna otra duda sobre los componentes?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"¡Excelente elección! Te confirmo que estas memorias son ideales para <d RAM0003>una PC de escritorio</d>, cuentan con <d RAM0003>120 meses</d> de garantía y tienen un <d RAM0003>origen en la marca Kingston de Estados Unidos, fabricadas en Taiwan o China según línea</d>.\\n\\nPara continuar con tu presupuesto, aquí tenés el detalle actualizado por las dos unidades con el envío a Rosario:\\n\\nPresupuesto:\\n- 2x Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000 c/u = $82.000\\nSubtotal: $82.000\\nEnvio: $7.000\\nTotal: $89.000\\n\\nEnvio a Rosario.\\n\\nComo política de nuestra casa, al continuar un presupuesto retomamos lo que ya veníamos charlando para no hacerte arrancar de cero, acompañándote con naturalidad hacia el total y el cierre del pedido. Respecto a tu consulta, sí, aceptamos transferencia bancaria.\\n\\nTambién cuento con el modelo en color blanco, ¿te gustaría que lo agregue a este presupuesto para cotizarlo?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -40,15 +40,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"me lo mandas hoy?\\\"],\\\"items\\\":[{\\\"que\\\":\\\"Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro\\\",\\\"cantidad\\\":2}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"envio hoy\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"me lo mandas hoy?\\\"],\\\"items\\\":[{\\\"que\\\":\\\"Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro\\\",\\\"cantidad\\\":2}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"envio hoy\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Sobre tu consulta de si puedo enviarlo hoy, te comento que no es posible realizar el despacho en el día. Como te mencioné anteriormente, trabajamos con acreditación efectiva y el despacho se libera una vez que el área contable confirma el ingreso del dinero.\\n\\nPara que estés al tanto de cómo trabajamos:\\n- <d embalaje_envio>Cada pedido va embalado reforzado para el transporte y asegurado durante todo el envío. Si por el traslado llegara dañado, se cambia sin costo avisando dentro de los 7 días desde la recepción.</d>\\n- <d envios>Llegamos a todo el país por Andreani y OCA.</d>\\n- Sobre las zonas de envío, <d envio_zonas>realizamos envíos a todo el país, incluyendo Rosario</d>.\\n\\nPresupuesto:\\n- 2x Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000 c/u = $82.000\\nSubtotal: $82.000\\nTotal: $82.000\\n\\nTe recuerdo que estas memorias cuentan con <d RAM0003>120 meses de garantía</d> y tienen un <d RAM0003>origen de la marca Kingston de Estados Unidos, fabricadas en Taiwán o China según línea</d>.\\n\\n¿Te gustaría que avancemos con el pago para coordinar el envío?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Hola. Respecto a tu consulta, no podemos realizar el envío hoy mismo. Los pedidos se despachan una vez acreditado el pago y, como te comenté anteriormente, el plazo de entrega para Rosario es de 4 a 7 días hábiles.\\n\\nTe recuerdo el presupuesto vigente:\\n\\nPresupuesto:\\n- 2x Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000 c/u = $82.000\\nSubtotal: $82.000\\nEnvio: $7.000\\nTotal: $89.000\\n\\nSobre nuestras políticas, <d envios>llegamos a todo el país a través de Andreani y OCA</d>. En cuanto a <d envio_zonas>la cobertura real, confirmamos que llegamos a Rosario</d>, pero para cualquier otro destino, por favor pasame tu provincia o código postal para poder verificar la tarifa exacta y el plazo de entrega correspondiente.\\n\\n¿Te gustaría avanzar con la transferencia para procesar el pedido?\", \"tool_calls\": []}"
     }
    ]
   }

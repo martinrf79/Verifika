@@ -6,15 +6,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse inalambrico\\\",\\\"categoria\\\":\\\"mouse\\\"}],\\\"restricciones\\\":[\\\"que sea barato\\\",\\\"que ande para jugar\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"categoria\\\":\\\"mouse\\\",\\\"que\\\":\\\"mause inalambrico\\\"}],\\\"restricciones\\\":[\\\"que sea barato\\\",\\\"que sirva para jugar\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"mouse inalambrico\\\",\\\"categoria\\\":\\\"mouse\\\"}],\\\"restricciones\\\":[\\\"que sea barato\\\",\\\"que ande para jugar\\\"]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"categoria\\\":\\\"mouse\\\",\\\"que\\\":\\\"mause inalambrico\\\"}],\\\"restricciones\\\":[\\\"que sea barato\\\",\\\"que sirva para jugar\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"Hola, cómo estás. Para lo que buscás, te recomiendo el Logitech M170 que es <d MOU0009>inalámbrico</d> y está <d MOU0009>indicado para gaming</d>. Te paso los precios de las opciones que tengo:\\n\\nMouse Logitech M170 Negro: $12.000\\nMouse Logitech M170 Blanco: $12.000\\n\\nTodos cuentan con una <d garantia_detalle>garantía oficial de 24 meses por defectos de fabricación</d> y en la caja encontrás el <d contenido_caja>mouse, el receptor USB y el manual</d>. Tené en cuenta que el Genius que figura primero en precio no es inalámbrico, por eso no te lo ofrecí. ¿Te sirve alguno de estos dos para avanzar?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"Tengo el Logitech M170 que es <d MOU0009>inalámbrico</d> y está <d MOU0009>diseñado para gaming</d>, pero te aclaro que el Genius DX-110 que te mostré antes es más barato aunque <d MOU0023>funciona con cable USB</d> y no de forma inalámbrica.\\n\\nMouse Logitech M170 Negro: $12.000\\nMouse Logitech M170 Blanco: $12.000\\n\\nTodos los modelos cuentan con una <d garantia_detalle>garantía oficial de 24 meses</d> y en la caja encontrás el <d contenido_caja>mouse, el receptor USB y el manual</d>.\\n\\n¿Querés que te cargue el Logitech M170 en el pedido para avanzar con la compra?\", \"tool_calls\": []}"
     }
    ]
   },
@@ -23,15 +23,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"auriculares\\\"],\\\"restricciones\\\":[\\\"que no sean tan caros\\\",\\\"el más barato\\\"],\\\"items\\\":[{\\\"que\\\":\\\"auriculares\\\",\\\"categoria\\\":\\\"auriculares\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"restricciones\\\":[\\\"que no sean tan caros\\\"],\\\"items\\\":[{\\\"que\\\":\\\"auriculares\\\",\\\"categoria\\\":\\\"auriculares\\\"}],\\\"stock\\\":[\\\"auriculares\\\"]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"stock\\\":[\\\"auriculares\\\"],\\\"restricciones\\\":[\\\"que no sean tan caros\\\",\\\"el más barato\\\"],\\\"items\\\":[{\\\"que\\\":\\\"auriculares\\\",\\\"categoria\\\":\\\"auriculares\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"restricciones\\\":[\\\"que no sean tan caros\\\"],\\\"items\\\":[{\\\"que\\\":\\\"auriculares\\\",\\\"categoria\\\":\\\"auriculares\\\"}],\\\"stock\\\":[\\\"auriculares\\\"]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Claro que sí! Tenemos stock de auriculares, pero te soy sincero: por el momento solo me figuran modelos de gama alta, por lo que no tengo opciones económicas que cumplan con tu pedido de \\\"que no sean tan caros\\\".\\n\\nComo me habías pedido el más barato, te muestro lo que tengo disponible, aunque están por encima de lo que buscabas:\\n\\nAuriculares Sony ULT Wear (Negro o Blanco): $444.000\\nAuriculares Sony WH-1000XM5 (Blanco): $680.500\\n\\nSobre estos modelos, te cuento que todos <d AUR0010>están construidos en plástico y cuero sintético</d>, son <d AUR0010>ideales para gaming</d> y cuentan con una <d AUR0010>garantía oficial Sony de 12 meses por defectos de fabricación, gestionada con el servicio técnico autorizado en Argentina. No cubre daños por mal uso, golpes ni humedad</d>. Además, el <d AUR0010>origen es Marca Sony de Japón. Fabricado en China</d> y en la caja encontrarás <d AUR0010>auriculares, cable o receptor según versión, micrófono desmontable según modelo, manual de garantía</d>.\\n\\n¿Te gustaría que busque otro tipo de accesorios o preferís esperar a que ingrese algo más económico?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"¡Claro que sí! Sobre los auriculares, honestamente no cuento con opciones económicas en este momento, ya que los modelos disponibles son de gama alta. Aquí te detallo lo que tengo en stock:\\n\\n- Auriculares Sony WH-1000XM5 Blanco: $680.500. <d AUR0010>Están construidos en plástico y cuero sintético</d>, <d AUR0010>pesan 166 gramos</d> y tienen un <d AUR0010>uso recomendado para gaming</d>.\\n- Auriculares Sony ULT Wear (Negro o Blanco): $444.000.\\n\\nTodos estos modelos cuentan con una <d AUR0037>garantía oficial de 12 meses</d> por defectos de fabricación y en la caja incluyen <d AUR0037>auriculares, cable o receptor según versión, micrófono desmontable según modelo y manual de garantía</d>. Cabe aclarar que <d AUR0037>son de origen japonés, fabricados en China</d>, y funcionan <d AUR0037>con cable</d>, por lo que no utilizan batería.\\n\\nConfirmame si querés que cargue los Auriculares Sony WH-1000XM5 Blanco en tu pedido para avanzar con la compra.\", \"tool_calls\": []}"
     }
    ]
   },
@@ -40,15 +40,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Mouse Logitech M170\\\",\\\"cantidad\\\":2,\\\"categoria\\\":\\\"mouse\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"cancela auriculares\\\",\\\"pide 2 mouses\\\"],\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Logitech M170\\\",\\\"categoria\\\":\\\"mouse\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"items\\\":[{\\\"que\\\":\\\"Mouse Logitech M170\\\",\\\"cantidad\\\":2,\\\"categoria\\\":\\\"mouse\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"temas\\\":[\\\"cancela auriculares\\\",\\\"pide 2 mouses\\\"],\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"cantidad\\\":2,\\\"que\\\":\\\"Mouse Logitech M170\\\",\\\"categoria\\\":\\\"mouse\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Entendido! Olvidamos los auriculares entonces. He registrado tu pedido de los 2 mouse Logitech M170 tal como me pediste.\\n\\nAquí te detallo la información de los productos:\\n\\n*   **Mouse Logitech M170 Negro:** <d MOU0009>es de plástico ABS</d>, <d MOU0009>pesa 85 gramos</d> y mide <d MOU0009>12.6x6.2x4.4 cm</d>.\\n*   **Mouse Logitech M170 Blanco:** <d MOU0010>es de plástico ABS</d>, <d MOU0010>pesa 75 gramos</d> y mide <d MOU0010>12.6x6.0x4.0 cm</d>.\\n\\nAmbos modelos son <d MOU0009>ideales para gaming</d>, cuentan con <d MOU0009>sensor óptico</d> y son <d MOU0009>inalámbricos</d> (funcionan mediante un receptor USB de 2.4GHz). \\n\\nSobre las condiciones generales para ambos:\\n- <d MOU0009>El origen es marca Logitech de Suiza, fabricado en China</d>.\\n- <d MOU0009>La garantía oficial es de 24 meses por defectos de fabricación, gestionada con el servicio técnico autorizado en Argentina. No cubre daños por mal uso, golpes ni humedad</d>.\\n- <d MOU0009>En la caja encontrarás el mouse, el receptor USB y el manual de garantía</d>.\\n\\n¿Necesitás que agregue algo más o procedemos con el envío?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"¡Entendido! He cancelado los auriculares de tu pedido sin problemas. Sobre la política de cancelación, te comento que podés cancelar sin costo mientras el pedido no haya salido; simplemente escribinos cuanto antes con tu número de pedido y, si ya se despacho, lo gestionamos como una devolución.\\n\\nYa registré los dos mouses que me pediste. Sobre estos modelos, te cuento que son de <d MOU0009>material Plastico ABS</d>, tienen una <d MOU0009>garantia oficial de 24 meses</d> y en la caja incluyen el <d MOU0009>mouse, receptor USB y manual de garantia</d>.\\n\\nPresupuesto:\\n- 2x Mouse Logitech M170 Negro: $12.000 c/u = $24.000\\nSubtotal: $24.000\\nTotal: $24.000\\n\\nSi te interesa, puedo cargarte también el Mouse Logitech M170 Blanco al pedido para que lo cotice junto con los otros dos.\", \"tool_calls\": []}"
     }
    ]
   },
@@ -57,15 +57,15 @@
    "llamadas": [
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"restricciones\\\":[\\\"que sean de color negro\\\"],\\\"items\\\":[{\\\"cantidad\\\":2,\\\"categoria\\\":\\\"mouse\\\",\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\",\\\"cantidad\\\":2,\\\"categoria\\\":\\\"mouse\\\"}],\\\"atributos\\\":[{\\\"de\\\":\\\"Mouse Logitech M170 Negro\\\",\\\"campo\\\":\\\"color\\\"}]}\"}]}"
     },
     {
      "etapa": "herramientas",
-     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"restricciones\\\":[\\\"que sean de color negro\\\"],\\\"items\\\":[{\\\"cantidad\\\":2,\\\"categoria\\\":\\\"mouse\\\",\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\"}]}\"}]}"
+     "salida": "{\"content\": \"\", \"tool_calls\": [{\"name\": \"registrar_pedido\", \"arguments\": \"{\\\"pide_precio\\\":true,\\\"items\\\":[{\\\"que\\\":\\\"Mouse Logitech M170 Negro\\\",\\\"cantidad\\\":2,\\\"categoria\\\":\\\"mouse\\\"}],\\\"atributos\\\":[{\\\"de\\\":\\\"Mouse Logitech M170 Negro\\\",\\\"campo\\\":\\\"color\\\"}]}\"}]}"
     },
     {
      "etapa": "redaccion",
-     "salida": "{\"content\": \"¡Perfecto! Ya registré tu pedido de 2 unidades del Mouse Logitech M170 en color negro.\\n\\nTe confirmo los detalles de estos equipos:\\n<d MOU0009>El mouse es de color negro, está fabricado en material plástico ABS, tiene un peso de 85 gramos y unas dimensiones de 12.6x6.2x4.4 cm. Cuenta con sensor óptico y es ideal para gaming.</d>\\n\\nSobre los puntos generales, te recuerdo que <d MOU0009>el origen es marca Logitech de Suiza, fabricado en China</d>. Además, cuentan con una <d MOU0009>garantía oficial Logitech de 24 meses por defectos de fabricación, gestionada con el servicio técnico autorizado en Argentina (no cubre daños por mal uso, golpes ni humedad)</d> y <d MOU0009>en la caja encontrarás el mouse, el receptor USB y el manual de garantía</d>.\\n\\nAquí tenés el detalle de tu presupuesto:\\n\\n2 x Mouse Logitech M170 Negro: $24.000\\n\\n¿Querés que avancemos con la compra o necesitás alguna otra información?\", \"tool_calls\": []}"
+     "salida": "{\"content\": \"¡Perfecto! Ya registré los dos mouses en color negro tal como querías. Te confirmo que el <d MOU0009>Mouse Logitech M170 Negro</d> está fabricado en <d MOU0009>plástico ABS</d>, tiene un <d MOU0009>peso de 85 gramos</d> y cuenta con una <d MOU0009>garantía de 24 meses</d>. Además, todos los productos de esta línea tienen <d MOU0009>origen en la marca Logitech de Suiza con fabricación en China</d> e incluyen en la caja el <d MOU0009>mouse, receptor USB y manual de garantía</d>.\\n\\nPresupuesto:\\n- 2x Mouse Logitech M170 Negro: $12.000 c/u = $24.000\\nSubtotal: $24.000\\nTotal: $24.000\\n\\nSi te interesa, puedo cargar el Mouse Logitech M170 Blanco al presupuesto para que lo veas cotizado junto con los otros.\", \"tool_calls\": []}"
     }
    ]
   }

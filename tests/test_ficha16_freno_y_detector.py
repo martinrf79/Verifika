@@ -39,6 +39,8 @@ CORRE OFFLINE: sin modelo, sin clave, sin red.
 import sys
 from pathlib import Path
 
+import pytest
+
 _RAIZ = Path(__file__).resolve().parent.parent
 if str(_RAIZ) not in sys.path:
     sys.path.insert(0, str(_RAIZ))
@@ -199,3 +201,81 @@ def test_ninguna_oferta_se_apoya_en_una_pregunta_propia_en_los_15_casetes():
         f"{len(encima_de_una_pregunta)} turnos de {res['turnos']} cuentan como "
         f"OFRECIDO y ofrecen encima de una pregunta propia: "
         f"{encima_de_una_pregunta}")
+
+
+# ── LO QUE DESCUBRIO LA REGRABACION DE LA FICHA 17 ──────────────────────────
+#
+# EL PRONOMBRE PEGADO AL INFINITIVO. `cotizarte`, `cargarlos`, `reservartelo`:
+# el enclitico es la forma normal del castellano y el detector no la mira. La
+# 16B ya habia arreglado la anafora que va SUELTA -"cargarlo", con el producto
+# nombrado en la oracion anterior-, pero el clitico pegado al verbo entra por
+# otro lado: rompe el propio VERBO, asi que el detector ni llega a buscar el
+# producto. Las dos frases de abajo son textuales del corpus del 25-ago y las
+# dos ofrecen sin ninguna duda; las dos cuentan SIN_ESTADO.
+#
+# POR QUE NO SE ARREGLA EN LA MISMA SESION QUE LO ENCUENTRA. Arreglarlo SUBE
+# OFRECIDO de 23 a 26 sobre el mismo corpus, y un numero que sube porque el que
+# lo mide toco el detector en la misma sesion no se puede leer. Se declara, se
+# regraba, y lo cierra la ficha que venga.
+ENCLITICO = {
+    "70_borde_simple t2": (
+        {"tipo": "oferta", "candidatos": ["Mouse Logitech M170 Negro"]},
+        "Si te interesa, puedo cotizarte el Mouse Logitech M170 Negro que ya "
+        "te había mencionado anteriormente."),
+    "70_borde_simple t3": (
+        {"tipo": "oferta", "candidatos": ["Mouse Logitech M170 Negro"]},
+        "Si te interesa, puedo cotizarte el Mouse Logitech M170 Negro que te "
+        "mencioné anteriormente."),
+    "81_charla_real_12ago_cierre t3": (
+        {"tipo": "oferta",
+         "candidatos": ["Auriculares Redragon Zeus X Blanco"]},
+        "Como ya conoces los Auriculares Redragon Zeus X Blanco, ¿querés que "
+        "proceda a cargarlos en tu presupuesto actual para que los evaluemos?"),
+}
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "A MEDIAS: el detector no cuenta la oferta cuando el pronombre va PEGADO al "
+    "infinitivo. HOY las tres frases textuales de ENCLITICO dan False y el censo "
+    "las pone en SIN_ESTADO, que por eso mide 4 sobre el corpus regrabado cuando "
+    "leyendo el texto es 1; OFRECIDO mide 23 y son 26. Las mismas frases con el "
+    "pronombre suelto -cotizar el, que los cargue- ya cuentan, asi que lo que "
+    "falla es el VERBO y no el producto. OBJETIVO que las tres cuenten sin que "
+    "vuelva a contar ninguna de las cuatro frases de NO_SON_OFERTAS, que es la "
+    "unica cifra que este archivo defiende y tiene que seguir en cero."))
+def test_el_pronombre_pegado_al_verbo_no_tira_la_oferta():
+    """LAS TRES FRASES REALES QUE OFRECEN Y NO CUENTAN, una por una.
+
+    Son textuales del corpus regrabado el 25-ago por la FICHA 17: no las
+    escribio nadie para que pasaran, que es la unica forma de que un detector se
+    mida contra algo que no sea su propio autor."""
+    perdidas = [k for k, (punto, frase) in ENCLITICO.items()
+                if not IT._ofrecio_el_paso(punto, frase)]
+    print(f"\n  se plantaron {len(ENCLITICO)} ofertas reales con enclitico")
+    assert not perdidas, (
+        f"{len(perdidas)} de {len(ENCLITICO)} ofertas con el pronombre pegado "
+        f"al verbo no cuentan: {perdidas}")
+
+
+def test_el_enclitico_no_es_un_problema_del_producto_sino_del_verbo():
+    """EL CANDADO QUE EVITA QUE SE ARREGLE POR EL LADO EQUIVOCADO.
+
+    Las MISMAS frases con el pronombre suelto ya cuentan hoy. Deja escrito que
+    el producto esta bien nombrado y que lo unico que falta reconocer es la
+    forma del verbo: si un dia alguien 'arregla' esto ensanchando la busqueda
+    del producto, este test sigue verde y el de arriba sigue rojo, que es
+    exactamente la senal de que se toco lo que no era."""
+    sueltas = (
+        ({"tipo": "oferta", "candidatos": ["Mouse Logitech M170 Negro"]},
+         "Si te interesa, puedo cotizar el Mouse Logitech M170 Negro que ya te "
+         "había mencionado anteriormente."),
+        ({"tipo": "oferta",
+          "candidatos": ["Auriculares Redragon Zeus X Blanco"]},
+         "Como ya conoces los Auriculares Redragon Zeus X Blanco, ¿querés que "
+         "los cargue en tu presupuesto actual?"),
+    )
+    fallan = [f for punto, f in sueltas if not IT._ofrecio_el_paso(punto, f)]
+    print(f"\n  se plantaron {len(sueltas)} con el pronombre suelto")
+    assert not fallan, (
+        f"{len(fallan)} de {len(sueltas)} con el pronombre suelto tampoco "
+        f"cuentan, asi que el agujero es mas grande que el enclitico: {fallan}")
