@@ -38,14 +38,18 @@ if str(_RAIZ) not in sys.path:
 #   15  los nodos DECLARADOS en `grafo.NODOS`. Son las etapas y sus puertas,
 #       despues de que la FICHA 10 bajara salida de 18 a 4 y la 11 fundiera las
 #       seis reposiciones en una.
-#   24  los HUERFANOS: las piezas de adentro de esas puertas, que siguen
+#   25  los HUERFANOS: las piezas de adentro de esas puertas, que siguen
 #       registrando una por una con su id propio y NO tienen nodo declarado, o
 #       sea que corren sin contrato y el barrido de `test_grafo_cableado.py`
 #       -que saca su lista de `NODOS`- no las corre. **Se cuentan a proposito**:
 #       son engranajes reales del turno y un censo que los tira a una lista de
 #       nombres miente por abajo.
 _DECLARADOS = 15
-_HUERFANOS = 24
+# EL 25 ES `camino_al_cobro` (FICHA 19, 25-ago-2026): la cuarta obligacion de la
+# puerta 3, que dice COMO SE PAGA cuando hay un total cerrado. Entra como
+# huerfana igual que las otras siete piezas de su puerta, y por el mismo motivo:
+# el nodo declarado es la PUERTA, y las piezas de adentro registran una por una.
+_HUERFANOS = 25
 
 
 def _censar_un_casete():

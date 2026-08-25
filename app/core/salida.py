@@ -152,59 +152,19 @@ def _sin_titulos_huerfanos(texto: str) -> str:
     return re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip()
 
 
-_RE_CBU = re.compile(r"\b\d{18,26}\b")
-_RE_LINEA_COBRO = re.compile(
-    r"(?im)^.*\b(cbu|cvu|alias|titular|banco)\b\s*:?.*$")
-
-
-def _sin_cobro_inventado(texto: str, tienda_id: str, trace_id: str) -> str:
-    """UN CBU QUE NO ES EL DE LA TIENDA NO SALE. Nunca.
-
-    El peor error medido en el camino nuevo, charla viva del 2-ago: el cliente
-    pidio los datos para transferir, no habia presupuesto armado, el cierre no
-    entrego nada y el modelo se invento un CBU de 22 digitos, un alias y un
-    banco. Un cliente le manda la plata a una cuenta que no existe.
-
-    La regla de la plata no lo veia -mira montos de cuatro a siete digitos- y
-    ninguna otra tampoco. Asi que va su propio candado, del mismo tipo: se
-    compara contra la fuente y lo que no coincide se borra. La herramienta
-    `tomar_pedido` ya le entrega los datos REALES; esto es la red por si igual
-    escribe otros."""
-    if not _RE_CBU.search(texto or "") and "alias" not in (texto or "").lower():
-        return texto
-    try:
-        from app.core.pago import datos_transferencia
-        d = datos_transferencia(tienda_id) or {}
-    except Exception:
-        d = {}
-    # Cada campo se juzga contra SU valor real, no contra la bolsa entera: con
-    # la comparacion global se borraba la linea del titular aunque el CBU fuera
-    # el correcto, y el mensaje quedaba con la cuenta a medias.
-    campos = {"cbu": str(d.get("cbu") or ""), "cvu": str(d.get("cbu") or ""),
-              "alias": str(d.get("alias") or ""),
-              "titular": str(d.get("titular_cuenta") or ""),
-              "banco": str(d.get("banco") or "")}
-    salida, borradas, quedo_real = [], [], False
-    for linea in (texto or "").splitlines():
-        m = _RE_LINEA_COBRO.match(linea)
-        if not m:
-            salida.append(linea)
-            continue
-        baja = linea.lower()
-        etiqueta = m.group(1).lower()
-        real = campos.get(etiqueta, "").lower()
-        if real and real in baja:
-            salida.append(linea)
-            quedo_real = True
-        else:
-            borradas.append(linea.strip()[:60])
-    if borradas:
-        log.error("hub_venta_cobro_inventado", trace_id=trace_id,
-                  lineas=borradas[:4])
-        if not quedo_real:
-            salida.append("Para pasarte los datos de pago necesito confirmarte "
-                          "primero el total. Decime y te los paso enseguida.")
-    return re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip()
+# EL COBRO VIVE EN `app/core/camino_cobro.py` — las dos mitades juntas.
+#
+# La guardia que estaba aca se armaba por la FORMA -18 a 26 digitos seguidos, o
+# la palabra `alias` escrita- y podaba solo los renglones etiquetados. Medido en
+# la FICHA 19 sobre siete formas reales de escribir una cuenta inventada, CINCO
+# pasaban enteras: el CBU con espacios, el CBU con guiones, el CBU pelado en su
+# renglon, el alias sin la palabra alias, y el titular y el banco sin CBU. Es la
+# misma ceguera de `_sin_afirmar_sobre_el_catalogo` -no se armaba, y armada no
+# tenia la forma- sobre el peor error que este repo midio nunca.
+#
+# Se mudo entera y arreglada, y con ella la mitad que faltaba: DECIR como se
+# paga. Estan en un solo archivo porque son la misma frontera de los dos lados,
+# y tenerlas separadas fue lo que dejo la de arriba sin escribir.
 
 
 _RE_JSON_FILTRADO = re.compile(
@@ -1127,7 +1087,7 @@ def procedencia(texto: str, llamadas: list, trace_id: str,
                    tienda_id=tienda_id)
     texto = _pieza("sin_json", _sin_json_filtrado, texto, trace_id)
     texto = _pieza("sin_markdown", _sin_markdown, texto)
-    texto = _pieza("sin_cobro_inventado", _sin_cobro_inventado,
+    texto = _pieza("sin_cobro_inventado", _cc().sin_cobro_inventado,
                    texto, tienda_id, trace_id)
     texto = _pieza("sin_negar_lo_traido", _sin_negar_lo_traido,
                    texto, llamadas, trace_id)
@@ -1184,11 +1144,11 @@ def plata(texto: str, llamadas: list, bloque: str, trace_id: str,
 def obligacion(texto: str, mensaje: str, negocio: str, primer_mensaje: bool,
                declarado: dict | None, llamadas: list, memoria: list,
                tienda_id: str, trace_id: str,
-               descartados: list | None = None) -> str:
+               descartados: list | None = None, dichos: str = "") -> str:
     """PUERTA 3 — LO QUE TIENE QUE ESTAR SI O SI. La unica que SUMA.
 
     Las otras tres restan: podan lo que no puede salir. Esta pone lo que no
-    puede faltar, y son tres cosas, ninguna opinable:
+    puede faltar, y son cuatro cosas, ninguna opinable:
 
       1. QUE ES UN BOT, si preguntan. El prompt solo no alcanzo nunca.
       2. EL SALUDO, una vez y solo la primera. Es una obligacion, no un
@@ -1197,6 +1157,11 @@ def obligacion(texto: str, mensaje: str, negocio: str, primer_mensaje: bool,
          Es la COBERTURA de `DECISIONES.md` #6, la gemela de la procedencia:
          una omision atraviesa a todas las guardias que restan sin que ninguna
          la vea, porque no hay nada mal escrito, hay algo que no esta.
+      4. COMO SE PAGA, cuando hay un total cerrado y todavia no se dijo. Es el
+         ultimo escalon de la venta y era el unico que ninguna pieza escribia:
+         medido sobre las quince charlas grabadas, siete llegaban al final sin
+         que el bot dijera nunca por donde entra la plata. `dichos` es lo que el
+         bot ya dijo en la charla, y es lo que impide que se repita.
 
     VA DESPUES DE LAS DOS QUE RESTAN Y ANTES DE LA HIGIENE, y ese lugar es el
     unico posible: reponer antes obliga a adivinar si el modelo lo va a decir
@@ -1213,9 +1178,14 @@ def obligacion(texto: str, mensaje: str, negocio: str, primer_mensaje: bool,
     except Exception as e:  # noqa: BLE001 — una obligacion no tumba el turno
         log.warning("salida_guardas_error", trace_id=trace_id,
                     error=str(e)[:120])
-    return _pieza("punto_omitido", _punto_omitido_repuesto, texto,
-                  declarado or {}, llamadas, memoria, tienda_id, trace_id,
-                  descartados)
+    texto = _pieza("punto_omitido", _punto_omitido_repuesto, texto,
+                   declarado or {}, llamadas, memoria, tienda_id, trace_id,
+                   descartados)
+    # VA ULTIMA DE LA PUERTA, y despues del punto omitido a proposito: se pega
+    # al final del mensaje y tiene que ver el total ya repuesto por la puerta de
+    # la plata. Antes del punto omitido quedaria en el medio del mensaje.
+    return _pieza("camino_al_cobro", _cc().linea_de_cobro, texto,
+                  str(dichos or ""), tienda_id, trace_id)
 
 
 def higiene(texto: str, anterior: str, mensaje: str, trace_id: str,
@@ -1250,6 +1220,13 @@ def higiene(texto: str, anterior: str, mensaje: str, trace_id: str,
         log.warning("salida_aduana_error", trace_id=trace_id,
                     error=f"{type(e).__name__}: {str(e)[:120]}")
     return texto
+
+
+def _cc():
+    """Import perezoso del camino al cobro. Mismo motivo que `_gs()`: el modulo
+    lee la config de la tienda y no tiene por que cargarse para usar una poda."""
+    from app.core import camino_cobro as cc
+    return cc
 
 
 def _gs():

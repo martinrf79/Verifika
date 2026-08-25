@@ -1780,7 +1780,9 @@
     "pedido_envios_van_a": "Los envíos van a: {destinos}. Ya los tengo cotizados.",
     "pedido_opciones_de_categoria": "Para {cuantas} de {categoria}, opciones con stock:",
     "compat_no_va_con": "{producto} no es compatible con {plataforma}. ",
-    "compat_no_van_juntos": "No van juntos: {producto} no es compatible con {plataforma}. "
+    "compat_no_van_juntos": "No van juntos: {producto} no es compatible con {plataforma}. ",
+    "cobro_como_se_paga_con_descuento": "Podés pagar por transferencia bancaria, con {pct}% de descuento, o con link de pago. Para armarlo solo necesito tu nombre.",
+    "cobro_como_se_paga": "Podés pagar por transferencia bancaria o con link de pago. Para armarlo solo necesito tu nombre."
   },
   "etiquetas_datos": {
     "nombre": "tu nombre y apellido",

@@ -351,7 +351,8 @@ NODOS = (
                "que el cliente abrio",
          garantiza="si preguntan si es un bot se dice que si; el saludo se "
                    "dice una vez y solo la primera; ningun punto que el "
-                   "sistema sabe contestar se va sin contestar",
+                   "sistema sabe contestar se va sin contestar; con un total "
+                   "cerrado sobre la mesa se dice COMO SE PAGA, una vez",
          contratos=(NO_ENMUDECE, NO_LEVANTA, IDEMPOTENTE),
          repone=("bloque",),
          aplicar=lambda t, c: __import__(

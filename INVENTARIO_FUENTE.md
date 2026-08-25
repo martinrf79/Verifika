@@ -63,7 +63,7 @@ Cada celda = productos de esa categoria con el dato / productos donde la spec ap
 - FAQ: **50** temas
 - Base de conocimiento: **106** categorias de criterio
 - Movidas de venta escritas: **32**
-- Mensajes fijos al cliente: **54**
+- Mensajes fijos al cliente: **56**
 - Identidad del vendedor en la fuente: **si**
 - Categorias no vendidas: **29**
 - Specs preguntables: **25**

@@ -207,35 +207,8 @@ def test_el_primer_mensaje_avisa_que_es_un_asistente_automatico(monkeypatch):
 
 
 # ── 6. LOS DOS CANDADOS QUE NACIERON DE LA PRIMERA CHARLA VIVA ──────────────
-def test_un_cbu_inventado_no_sale_nunca():
-    """El peor error medido: sin presupuesto sobre la mesa el cliente pidio los
-    datos para transferir y el modelo se invento un CBU de 22 digitos, un alias
-    y un banco. La plata a una cuenta que no existe. La regla de la plata no lo
-    veia porque mira montos de cuatro a siete digitos."""
-    texto = ("Para pagar transferi a:\n"
-             "Titular: Verifika Tech S.A.\n"
-             "CBU: 0000003100085423456789\n"
-             "Alias: VERIFIKA.TECH.PAGO\n"
-             "Banco: Banco Industrial\n"
-             "Avisame cuando lo hagas.")
-    salida = SAL._sin_cobro_inventado(texto, TIENDA, "t1")
-    assert "0000003100085423456789" not in salida
-    assert "VERIFIKA.TECH.PAGO" not in salida
-    assert "Banco Industrial" not in salida
-    assert "Avisame cuando lo hagas." in salida
-
-
-def test_el_cbu_real_de_la_tienda_si_sale():
-    from app.core.pago import datos_transferencia
-    d = datos_transferencia(TIENDA) or {}
-    texto = f"Transferi a CBU: {d.get('cbu')}\nAlias: {d.get('alias')}"
-    salida = SAL._sin_cobro_inventado(texto, TIENDA, "t1")
-    assert str(d.get("cbu")) in salida
-
-
-def test_una_respuesta_sin_datos_de_pago_no_se_toca():
-    texto = "El mouse sale $8.500 y llega en 4 dias."
-    assert SAL._sin_cobro_inventado(texto, TIENDA, "t1") == texto
+# LOS CUATRO CANDADOS DEL COBRO SE MUDARON a tests/test_camino_al_cobro.py
+# junto con la guardia, y alla estan ademas las ocho formas que se le escapaban.
 
 
 def test_el_json_de_las_herramientas_no_llega_al_cliente():
@@ -271,21 +244,6 @@ def test_la_cuenta_de_un_turno_anterior_sigue_respaldada():
         "Te repito la cuenta: son $17.000 en total.", [], "", "t1",
         previo=previo)
     assert "$17.000" in salida
-
-
-def test_el_dato_real_convive_con_el_inventado_sin_perder_el_bueno():
-    """Primera version del candado: comparaba contra la bolsa entera de valores
-    y borraba la linea del titular aunque el CBU fuera el correcto. Cada campo
-    se juzga contra SU valor real."""
-    from app.core.pago import datos_transferencia
-    d = datos_transferencia(TIENDA) or {}
-    texto = (f"CBU: {d.get('cbu')}\nAlias: {d.get('alias')}\n"
-             "Banco: Banco Industrial Inventado")
-    salida = SAL._sin_cobro_inventado(texto, TIENDA, "t1")
-    assert str(d.get("cbu")) in salida
-    assert "Banco Industrial Inventado" not in salida
-    # con un dato real presente NO se pega la muletilla de "necesito el total"
-    assert "necesito confirmarte" not in salida
 
 
 def test_la_poda_de_plata_no_se_come_la_cuenta_que_habia_que_reponer():

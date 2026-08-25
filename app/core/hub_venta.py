@@ -1584,13 +1584,20 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                 if texto != _texto_antes_del_cierre else "")
 
     # ── 6. LA OBLIGACION: lo que tiene que estar si o si ────────────────
-    # Tres cosas y solo tres, ninguna opinable: que es un bot si preguntan, el
-    # saludo la primera vez, y el punto que el cliente pregunto y el sistema
-    # sabia contestar. Es la UNICA puerta que suma, y por eso va despues de las
-    # dos que restan y antes de la que mide el largo.
+    # Cuatro cosas y solo cuatro, ninguna opinable: que es un bot si preguntan,
+    # el saludo la primera vez, el punto que el cliente pregunto y el sistema
+    # sabia contestar, y COMO SE PAGA cuando hay un total cerrado. Es la UNICA
+    # puerta que suma, y por eso va despues de las dos que restan y antes de la
+    # que mide el largo.
+    #
+    # `dichos` es TODO lo que el bot ya le dijo al cliente en esta charla, no
+    # solo el mensaje anterior: el camino al cobro se dice UNA vez por charla, y
+    # con el ultimo mensaje solo se veria si se dijo en el turno de recien.
+    dichos = "\n".join(str(h.get("content") or "") for h in (history or [])
+                       if h.get("role") == "assistant")
     texto = G.paso("obligacion", S.obligacion, texto, raw_message, negocio,
                    not history, declarado, llamadas, _memoria_idx, tienda_id,
-                   trace_id, conv.get("descartados") or [])
+                   trace_id, conv.get("descartados") or [], dichos)
 
     # ── 7. LA HIGIENE: el mensaje entero, una sola vez ──────────────────
     # Va ULTIMA a proposito. Hasta acá cada puerta pegó o podó lo suyo y
