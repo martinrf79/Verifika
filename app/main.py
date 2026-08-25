@@ -428,7 +428,16 @@ async def _process_and_reply_whatsapp(tienda_id: str, user_id: str,
         from app.connectors.base import enviar_respuesta
         await enviar_respuesta(connector, user_id, response)
     except Exception as e:
+        # CON EL TRACEBACK, y hace falta: sin el, este log dice QUE se rompio y
+        # no DONDE. El 25-ago un `'str' object has no attribute 'get'` dejo un
+        # turno mudo en medio de una grabacion y hubo que salir a adivinar en
+        # que modulo caia. La regla 5 del CLAUDE.md pide observabilidad; un
+        # error sin linea no la cumple. Se recorta porque en Cloud Logging la
+        # entrada tiene tope, y las ultimas lineas son las que importan.
+        import traceback as _tb
         log.error("whatsapp_processing_error", error=str(e),
+                  tipo=type(e).__name__,
+                  traceback=_tb.format_exc()[-2000:],
                   user_id=user_id, tienda_id=tienda_id)
         if SENTRY_DSN:
             import sentry_sdk

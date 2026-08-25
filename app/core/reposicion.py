@@ -386,8 +386,16 @@ def _cuenta_con_lo_declarado(llamadas: list, declarado: dict, tienda_id: str,
     vistos: list = []
     for l in llamadas:
         r = l.get("resultado") or {}
-        for p in (r.get("productos") or []) + ([r["producto"]]
-                                               if r.get("producto") else []):
+        # EL MISMO `producto` DE DOS FORMAS (ver `pedido._universo_de_busquedas`):
+        # `ver_compatibilidad` lo devuelve como nombre pelado. Aca se juntan
+        # fichas CERTIFICADAS, o sea con id, y un nombre suelto no lo es: se
+        # descarta con el `isinstance`, que es el mismo guardia que ya usan
+        # `atadura_prosa`, `salida`, `estado_venta` y `hub_venta`. Sin el, esto
+        # explotaba igual que `pedido`; no se vio antes solo porque el turno se
+        # caia unas lineas mas arriba.
+        for p in (r.get("productos") or []) + [r.get("producto")]:
+            if not isinstance(p, dict):
+                continue
             if p.get("id") and p not in vistos:
                 vistos.append(p)
     # LA CHARLA TAMBIEN CERTIFICA, no solo el turno. Esta funcion decia "el

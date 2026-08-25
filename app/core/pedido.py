@@ -213,8 +213,20 @@ def _universo_de_busquedas(llamadas: list) -> str:
         for p in (res.get("productos") or []):
             partes.append(_norm(p.get("nombre")))
             partes.append(_norm(p.get("categoria")))
-        prod = res.get("producto") or {}
-        if prod:
+        # `producto` VIENE EN DOS FORMAS Y LAS DOS SON VALIDAS. `buscar_productos`
+        # y `ficha_producto` devuelven la ficha entera; `ver_compatibilidad`
+        # devuelve el NOMBRE pelado, porque su respuesta es sobre si algo sirve
+        # para otra cosa y no sobre la identidad del producto —son dos ejes
+        # distintos, y la regla cero pide no mezclarlos—. Tratar el nombre como
+        # ficha tiraba el turno ENTERO con `AttributeError`, y el cliente recibia
+        # el enlatado de sobrecarga: toda pregunta de compatibilidad que resolvia
+        # perdia la venta. Se sumo el nombre y no se descarta, porque si no el
+        # reconciliador da el item por NO atendido y manda a buscar de nuevo lo
+        # que la herramienta ya trajo.
+        prod = res.get("producto")
+        if isinstance(prod, str):
+            partes.append(_norm(prod))
+        elif isinstance(prod, dict):
             partes.append(_norm(prod.get("nombre")))
             partes.append(_norm(prod.get("categoria")))
 
