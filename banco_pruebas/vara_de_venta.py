@@ -119,10 +119,52 @@ _CIERRE = ("confirm", "reserv", "avanz", "coordin", "abon", "pag", "cerr",
 # COMO SE PAGA. Son MEDIOS de pago, no el verbo pagar: "te lo podes llevar
 # pagando" no le dice al cliente por donde entra la plata, y este punto es
 # justo si el camino al cobro llego a decirse alguna vez en la charla.
-_RE_COBRO = re.compile(
-    r"transferencia|mercado ?pago|link de pago|efectivo|tarjeta|debito|"
-    r"credito|cuotas|medios? de pago|formas? de pago|contra ?reembolso|"
-    r"deposito bancario")
+#
+# POR QUE SON DOS LISTAS Y NO UNA (FICHA 19, 25-ago-2026). Con una sola lista
+# de palabras sueltas el detector contaba la palabra y no el hecho, y en una
+# tienda de computacion esas palabras viven en el CATALOGO: `transferencia` es
+# la velocidad de un disco, `tarjeta` es de video, `credito` es de una promo.
+# Asi entro el falso positivo que inflo el piso a 9/15: `45_consigna_capciosas`
+# contaba porque el bot habia escrito "velocidades de TRANSFERENCIA" hablando
+# de discos rigidos. Un piso contaminado es peor que un piso bajo: dice que el
+# bot hace algo que no hace, y nadie va a arreglar lo que el tablero da verde.
+#
+#   LITERALES   la palabra ya es del cobro y no significa otra cosa. `mercado
+#               pago` es una marca, `transferencia bancaria` no es la de un
+#               disco, y `medios de pago` nombra el eje entero.
+#   AMBIGUOS    la misma palabra vive en el catalogo. Solo cuentan si la ORACION
+#               en la que caen habla de plata, y esa es toda la diferencia
+#               entre nombrar un medio y decir COMO SE PAGA.
+_RE_COBRO_LITERAL = re.compile(
+    r"mercado ?pago|link de pago|medios? de pago|formas? de pago|"
+    r"contra ?reembolso|deposito bancario|transferencia bancaria")
+
+_RE_COBRO_AMBIGUO = re.compile(
+    r"\b(?:transferencias?|efectivo|tarjetas?|debito|credito|cuotas)\b")
+
+# LA ORACION HABLA DE PLATA. Raices del acto de pagar, no del precio: `precio`
+# y `descuento` quedan AFUERA a proposito, porque "la tarjeta de video tiene
+# 10% de descuento" volveria a contar la tarjeta del catalogo como un medio de
+# pago, que es el mismo defecto por otra puerta.
+_RE_CTX_COBRO = re.compile(
+    r"pago|paga|pagas|pagar|pagan|pagando|pagamos|pague|pagues|abon|cobr|"
+    r"sena|deposit|acredit|transferir|transferis")
+
+
+def _dice_como_se_paga(texto: str) -> bool:
+    """Si en el texto se llego a decir POR DONDE ENTRA LA PLATA.
+
+    El texto entra ya normalizado por `_n`. Se parte en oraciones con el mismo
+    cortador que usa el punto 4 —que corta tambien en salto de linea, y por eso
+    cada renglon del bloque de pago dividido se juzga solo— y una oracion
+    cuenta si trae un literal, o si trae un ambiguo Y ademas habla de plata."""
+    for oracion in _RE_ORACION.finditer(texto or ""):
+        o = oracion.group(0)
+        if _RE_COBRO_LITERAL.search(o):
+            return True
+        if _RE_COBRO_AMBIGUO.search(o) and _RE_CTX_COBRO.search(o):
+            return True
+    return False
 
 
 def _preguntas(texto: str) -> list:
@@ -273,7 +315,7 @@ def correr_charla(path: Path) -> dict:
     #    cada mensaje que explique como se paga —seria repetirlo, que es lo que
     #    el objetivo 2 prohibe—. Lo que si se le pide a una charla que llego a
     #    tener un pedido es que en algun momento diga por donde entra la plata.
-    cobro = bool(_RE_COBRO.search(_n("\n".join(textos))))
+    cobro = _dice_como_se_paga(_n("\n".join(textos)))
     return {"nombre": Path(path).stem, "turnos": filas,
             "camino_al_cobro": cobro, "sin_ficha": sum(1 for f in filas
                                                        if not f["largo"])}

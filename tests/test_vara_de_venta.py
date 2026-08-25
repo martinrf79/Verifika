@@ -46,7 +46,8 @@ if str(_RAIZ) not in sys.path:
     sys.path.insert(0, str(_RAIZ))
 
 from banco_pruebas.vara_de_venta import (  # noqa: E402
-    LAS_CINCO, PISO, _ofrece_paso, _preguntas, medir, peor)
+    LAS_CINCO, PISO, _dice_como_se_paga, _n, _ofrece_paso, _preguntas, medir,
+    peor)
 
 
 # LOS PUNTOS QUE HOY ESTAN POR DEBAJO DEL PISO, Y POR QUE NO SE MARCA EL TEST
@@ -210,3 +211,36 @@ def test_la_definicion_no_se_afloja():
     assert len(_preguntas("¿Te lo reservo? ¿A que direccion lo mando?")) == 2
     assert len(_preguntas("Sale $ 25.000. ¿Lo confirmamos?")) == 1
     assert len(_preguntas("Sale $ 25.000.")) == 0
+
+
+def test_nombrar_un_medio_no_es_decir_como_se_paga():
+    """EL BORDE DEL PUNTO 5, y es el que ya se cruzo una vez.
+
+    En una tienda de computacion las palabras del cobro tambien son palabras
+    del catalogo: `transferencia` es la velocidad de un disco, `tarjeta` es de
+    video, `credito` es de una promo. Contarlas sueltas fue lo que inflo el
+    piso a 9/15 con una sola frase —"velocidades de TRANSFERENCIA"— y dejo el
+    tablero diciendo que el bot cerraba un camino al cobro que nunca abrio.
+
+    Estos casos fijan las dos mitades: el literal cuenta solo, el ambiguo
+    necesita que la ORACION hable de plata. Si alguien vuelve a ensanchar el
+    detector para que el numero suba, estos se rompen primero."""
+    def dice(t):
+        return _dice_como_se_paga(_n(t))
+
+    # EL CATALOGO NO COBRA. Las tres palabras, en su acepcion de producto.
+    assert not dice("Velocidades de transferencia de hasta 550 MB/s.")
+    assert not dice("El disco tiene mejor tasa de transferencia secuencial.")
+    assert not dice("La tarjeta de video tiene 10% de descuento.")
+    assert not dice("Es un mouse muy efectivo para gaming.")
+    # EL VERBO SOLO TAMPOCO ALCANZA: no dice por donde entra la plata.
+    assert not dice("Te lo podes llevar pagando hoy mismo.")
+    # LOS LITERALES CUENTAN SOLOS: no significan otra cosa.
+    assert dice("Coordinamos por Mercado Pago.")
+    assert dice("Te paso el link de pago.")
+    assert dice("Estos son los medios de pago que tenemos.")
+    assert dice("Con transferencia bancaria tenes descuento.")
+    # LOS AMBIGUOS, SOLO CON LA ORACION HABLANDO DE PLATA.
+    assert dice("Si realizas el pago mediante transferencia tenes 10%.")
+    assert dice("Podes abonar en efectivo cuando lo retires.")
+    assert dice("El total lo pagas con tarjeta en tres cuotas.")
