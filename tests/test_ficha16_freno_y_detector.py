@@ -39,8 +39,6 @@ CORRE OFFLINE: sin modelo, sin clave, sin red.
 import sys
 from pathlib import Path
 
-import pytest
-
 _RAIZ = Path(__file__).resolve().parent.parent
 if str(_RAIZ) not in sys.path:
     sys.path.insert(0, str(_RAIZ))
@@ -213,10 +211,12 @@ def test_ninguna_oferta_se_apoya_en_una_pregunta_propia_en_los_15_casetes():
 # producto. Las dos frases de abajo son textuales del corpus del 25-ago y las
 # dos ofrecen sin ninguna duda; las dos cuentan SIN_ESTADO.
 #
-# POR QUE NO SE ARREGLA EN LA MISMA SESION QUE LO ENCUENTRA. Arreglarlo SUBE
-# OFRECIDO de 23 a 26 sobre el mismo corpus, y un numero que sube porque el que
-# lo mide toco el detector en la misma sesion no se puede leer. Se declara, se
-# regraba, y lo cierra la ficha que venga.
+# CERRADO POR LA FICHA 18 (25-ago-2026), Y EL NUMERO SE LEE SOLO. La FICHA 17
+# lo declaro y no lo toco a proposito: un numero que sube porque el que lo mide
+# toco el detector en la misma sesion no se puede leer. Aca se arreglo SIN
+# regrabar y sobre el MISMO corpus, asi que las dos cifras son comparables
+# turno por turno: OFRECIDO 23 -> 26 y SIN_ESTADO 4 -> 1. El bot no cambio una
+# linea; lo que cambio es cuantas de sus ofertas el contador sabe leer.
 ENCLITICO = {
     "70_borde_simple t2": (
         {"tipo": "oferta", "candidatos": ["Mouse Logitech M170 Negro"]},
@@ -234,15 +234,6 @@ ENCLITICO = {
 }
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "A MEDIAS: el detector no cuenta la oferta cuando el pronombre va PEGADO al "
-    "infinitivo. HOY las tres frases textuales de ENCLITICO dan False y el censo "
-    "las pone en SIN_ESTADO, que por eso mide 4 sobre el corpus regrabado cuando "
-    "leyendo el texto es 1; OFRECIDO mide 23 y son 26. Las mismas frases con el "
-    "pronombre suelto -cotizar el, que los cargue- ya cuentan, asi que lo que "
-    "falla es el VERBO y no el producto. OBJETIVO que las tres cuenten sin que "
-    "vuelva a contar ninguna de las cuatro frases de NO_SON_OFERTAS, que es la "
-    "unica cifra que este archivo defiende y tiene que seguir en cero."))
 def test_el_pronombre_pegado_al_verbo_no_tira_la_oferta():
     """LAS TRES FRASES REALES QUE OFRECEN Y NO CUENTAN, una por una.
 

@@ -565,18 +565,53 @@ MOTIVOS_NO_CORRESPONDE = ("rechazado", "ya_en_el_pedido", "cerrando")
 #
 # `aparte` NO ENTRA aunque sea la forma que falta de `apartar`: es adverbio
 # —"aparte de eso"— mucho mas seguido que verbo.
+#
+# EL PRONOMBRE PEGADO AL INFINITIVO — EL ENCLITICO (FICHA 18, 25-ago-2026).
+#
+# La lista vieja escribia los encliticos A MANO y de a uno: tenia `cargarlo`,
+# `cargarla` y `cargarte`, pero no `cargarlos`; tenia `cotizarlo` pero no
+# `cotizarte`. Es la regla 9 en su forma mas cara: un vocabulario cerrado que
+# parece completo porque las formas que le faltan no estan escritas en ningun
+# lado. En castellano el clitico no es un sinonimo mas para agregar a la lista:
+# es una FLEXION, y se pega a cualquier infinitivo de la lista sin pedir
+# permiso. Cada regrabacion del corpus podia traer una forma nueva y volver a
+# bajar el numero, y de hecho la de la FICHA 17 trajo tres:
+#
+#   "puedo COTIZARTE el Mouse Logitech M170 Negro"            70 t2 y 70 t3
+#   "¿querés que proceda a CARGARLOS en tu presupuesto?"      81 t3
+#
+# Las tres ofrecen sin ninguna duda y las tres contaban SIN_ESTADO, porque el
+# clitico rompe el VERBO: el detector ni llegaba a buscar el producto.
+#
+# EL ARREGLO NO ES AGREGAR LAS TRES FORMAS QUE FALTABAN. Es dejar de escribir
+# la flexion a mano: el infinitivo se declara UNA vez y el sufijo enclitico sale
+# de la gramatica, no de una lista que alguien tiene que acordarse de completar.
+# Asi la forma que traiga la proxima regrabacion ya cuenta.
+#
+# LO QUE NO SE ENSANCHA, y es la mitad que importa: las RAICES siguen siendo las
+# ocho de siempre y el resto de las formas conjugadas sigue escrito una por una.
+# El imperativo -"cargalo", "reservalo"- NO entra: ninguna de las frases reales
+# lo usa y meterlo seria ensanchar el detector mas alla del defecto medido.
+# Y el clitico se pega SOLO al infinitivo, que es donde el castellano lo pega.
+_INFINITIVOS_DE_ACCION = ("cargar", "sumar", "agregar", "reservar", "apartar",
+                          "cotizar", "preparar", "avanzar")
+# Los cliticos, MAS LARGO PRIMERO para que la alternancia no se coma la `s` de
+# `cargarlos` matcheando `lo` y quedandose sin borde de palabra.
+_CLITICO = (r"(?:selos|selas|telos|telas|melos|melas|noslo|nosla|"
+            r"noslos|noslas|selo|sela|telo|tela|melo|mela|"
+            r"los|las|les|nos|lo|la|le|me|te|se)")
 _RE_ACCION = re.compile(
-    r"\b(cargo|cargar|cargarlo|cargarla|cargarte|cargamos|cargas|"
-    r"cargue|carguemos|"
-    r"sumo|sumar|sumarlo|sumarla|sumamos|sumas|sume|sumemos|"
-    r"agrego|agregar|agregarlo|agregarla|agregamos|agregas|"
-    r"agregue|agreguemos|"
-    r"reservo|reservar|reservarlo|reservarla|reservamos|reservas|reserva|"
-    r"reserve|reservemos|"
-    r"aparto|apartar|apartarlo|apartamos|apartemos|"
-    r"cotizo|cotizar|cotizarlo|cotizamos|cotizacion|cotice|coticemos|"
-    r"preparo|preparar|prepararlo|preparamos|prepare|preparemos|"
-    r"avanzo|avanzar|avanzamos|avanzas|avance|avancemos)\b")
+    r"\b(?:"
+    + "|".join(f"{v}{_CLITICO}{{0,2}}" for v in _INFINITIVOS_DE_ACCION)
+    + r"|cargo|cargamos|cargas|cargue|carguemos|"
+      r"sumo|sumamos|sumas|sume|sumemos|"
+      r"agrego|agregamos|agregas|agregue|agreguemos|"
+      r"reservo|reservamos|reservas|reserva|reserve|reservemos|"
+      r"aparto|apartamos|apartemos|"
+      r"cotizo|cotizamos|cotizacion|cotice|coticemos|"
+      r"preparo|preparamos|prepare|preparemos|"
+      r"avanzo|avanzamos|avanzas|avance|avancemos"
+    + r")\b")
 
 # SOBRE QUE CAE LA ACCION: SOBRE EL PRODUCTO NOMBRADO EN LA VENTANA DEL MENSAJE
 # INMEDIATO — la oracion de la accion MAS LA ANTERIOR (FICHA 16B).
