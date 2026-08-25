@@ -21,12 +21,12 @@ seis funciones de reposición desde afuera.
 **Los 8 muertos, con 54 oportunidades cada uno:**
 
 ```
-sin_json                 54 → 0
-sin_cobro_inventado      54 → 0
-sin_negar_lo_traido      54 → 0
-sin_narracion_interna    54 → 0
+sin_json                 54 → 0   ← VOCABULARIO CERRADO
+sin_cobro_inventado      54 → 0   ← VOCABULARIO CERRADO
+sin_negar_lo_traido      54 → 0   ← VOCABULARIO CERRADO
+sin_narracion_interna    54 → 0   ← VOCABULARIO CERRADO
+honestidad_bot           54 → 0   ← VOCABULARIO CERRADO
 hallazgo_repuesto        54 → 0
-honestidad_bot           54 → 0
 punto_omitido            54 → 0
 aduana                   54 → 0   (0 rojas, 0 reparadas)
 ```
@@ -54,6 +54,22 @@ prueba de que funcionen**.
 
 `sin_afirmar_del_catalogo` con 1/54 y `sin_descuento_inventado` con 2/54 son
 casi muertas, y son justo dos de las que pelean entre sí.
+
+**SALVEDAD, agregada el 25-ago: esta lectura NO vale para los cinco marcados
+arriba como VOCABULARIO CERRADO.** Ésos no deciden por estado: se despiertan
+sólo si el texto trae una frase de una lista literal y fija —`sin_json` los
+literales del volcado, `sin_cobro_inventado` un CBU de 18 a 26 dígitos o la
+palabra "alias", `sin_negar_lo_traido` las formas de `_RE_NIEGA`,
+`sin_narracion_interna` las de `_RE_NARRACION`, `honestidad_bot` las de
+`_RE_PREGUNTA_BOT` en el mensaje del cliente—. Un 0/54 ahí mide que **el corpus
+no dijo esas frases**, no que el nodo sobre. La prueba está medida:
+`sin_narracion_interna` corre en los 54 turnos, dio 0/54, y aun así dejó pasar
+"el cliente pide" al cliente en el turno 6 del guión 80. No está muerto, está
+ciego: su vocabulario nombra la máquina y no cubre hablar del cliente en tercera
+persona. **Los cinco NO se borran por el censo**; se los evalúa ampliando el
+vocabulario o con un barrido propio. El punto 4 de "Qué se desprende" aplica a
+los otros tres —`hallazgo_repuesto`, `punto_omitido` y `aduana`—, que sí deciden
+por estado y para los que un 0/54 sí es un dato sobre el nodo.
 
 ---
 
