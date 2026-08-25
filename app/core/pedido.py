@@ -213,8 +213,23 @@ def _universo_de_busquedas(llamadas: list) -> str:
         for p in (res.get("productos") or []):
             partes.append(_norm(p.get("nombre")))
             partes.append(_norm(p.get("categoria")))
-        prod = res.get("producto") or {}
-        if prod:
+        # `producto` LLEGA EN DOS FORMAS, y leerlo siempre como dict tumbaba
+        # el turno. `ficha_producto` manda la ficha entera; `ver_compatibilidad`
+        # manda el nombre pelado, porque al modelo no le hace falta mas que eso
+        # para redactar el veredicto. Aca se lo leia con `.get("nombre")` sin
+        # mirar que era: AttributeError, el hub atrapa la excepcion, y el
+        # cliente recibe el mensaje enlatado en vez de la respuesta.
+        #
+        # Rompia SOLO la mitad que contesta. Las salidas que no resuelven
+        # -`no_encontrado`, `equipo_desconocido`- no mandan string, asi que
+        # pasaban limpias: el bot andaba bien justo cuando no sabia y moria
+        # cuando sabia. Por eso parecia intermitente y no una puerta rota.
+        # Candado en `tests/test_puertas_humo.py`, que ahora pasa el resultado
+        # de CADA herramienta por aca.
+        prod = res.get("producto")
+        if isinstance(prod, str):
+            partes.append(_norm(prod))
+        elif isinstance(prod, dict):
             partes.append(_norm(prod.get("nombre")))
             partes.append(_norm(prod.get("categoria")))
 

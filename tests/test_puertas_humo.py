@@ -91,3 +91,48 @@ def test_ver_compatibilidad_devuelve_veredictos(firestore_doble):
     for v in veredictos:
         assert v.get("veredicto") in ("compatible", "incompatible", "sin_dato")
         assert v.get("equipo")
+
+
+# ---------------------------------------------------------------------------
+# LA PUERTA ABRE, PERO LO QUE SALE TIENE QUE PODER VIAJAR.
+#
+# 25-ago-2026. La prueba de arriba dice que cada herramienta CONTESTA. No dice
+# que su resultado sobreviva el camino que sigue despues, y ahi estaba el bug
+# vivo en produccion: `ver_compatibilidad` devuelve `producto` como STRING -el
+# nombre pelado- y el reconciliador lo leia como dict con `.get("nombre")`.
+# AttributeError, el hub atrapa, y el cliente recibe el enlatado.
+#
+# Lo peor era CUAL mitad rompia. Las respuestas que NO resuelven -`no_encontrado`
+# y `equipo_desconocido`- devuelven `producto` como dict o no lo devuelven, y
+# pasaban limpias. Reventaban SOLO las resueltas: las cuatro salidas que
+# efectivamente contestan la pregunta. El bot contestaba bien justo cuando no
+# sabia, y mataba el turno cuando sabia. Por eso se leia como "a veces falla".
+#
+# Esta prueba no mira compatibilidad: mira que el resultado de CUALQUIER puerta
+# atraviese el reconciliador. Cierra la clase entera, no el caso.
+# ---------------------------------------------------------------------------
+
+
+def test_compatibilidad_resuelta_no_mata_el_turno(firestore_doble):
+    """El caso puntual, fijado con las cuatro formas que devuelve la
+    herramienta cuando SI contesta. `producto` viene como string en las cuatro;
+    el reconciliador tiene que tolerarlo igual que tolera el dict."""
+    from app.core import pedido as P
+    formas = [
+        {"estado": "ok", "producto": "Mouse Logitech G203",
+         "compatibilidad": [{"equipo": "notebook", "veredicto": "compatible",
+                             "motivo": "x"}]},
+        {"estado": "ok", "producto": "Memoria Kingston 8GB",
+         "contra": "Lenovo IdeaPad 3", "compatibilidad": []},
+        {"estado": "ok", "producto": "Memoria Kingston 8GB",
+         "contra": "Lenovo IdeaPad 3", "variantes_evaluadas": 2,
+         "compatibilidad": []},
+        {"estado": "depende_de_la_variante", "producto": "Memoria Kingston 8GB",
+         "compatibilidad": []},
+    ]
+    for r in formas:
+        llamadas = [{"herramienta": "ver_compatibilidad", "pedido": {},
+                     "resultado": r}]
+        universo = P._universo_de_busquedas(llamadas)
+        assert "mouse" in universo or "memoria" in universo, (
+            f"el nombre del producto se perdio en el camino: {r} -> {universo}")
