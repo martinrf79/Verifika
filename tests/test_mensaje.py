@@ -10,9 +10,10 @@ La otra mitad de estos tests es la que importa: que el componedor NO se lleve
 la cuenta, NO se lleve una pregunta y NO deje el mensaje mudo. Podar de mas es
 el error que este repo ya pago dos veces.
 """
-from app.core.mensaje import (componer, sin_encabezados_huerfanos,
+from app.core.mensaje import (componer, sin_el_repaso_que_el_bot_anuncia,
+                              sin_encabezados_huerfanos,
                               sin_lo_ya_dicho, sin_producto_duplicado,
-                              sin_repeticion_interna,
+                              sin_repeticion_interna, una_sola_pregunta,
                               un_ejemplo_por_rubro_con_cuenta)
 
 
@@ -646,3 +647,100 @@ def test_dos_renglones_de_cuenta_con_el_mismo_importe_no_se_tocan():
     productos al mismo precio son DOS renglones legitimos, no una repeticion."""
     cuenta = "- 1x Mouse Genius: $8.500 c/u = $8.500. - 1x Mouse Logitech: $8.500 c/u = $8.500."
     assert sin_repeticion_interna(cuenta) == cuenta
+
+
+# ── REGLA 11: una sola pregunta por mensaje (FICHA 18) ──────────────────────
+#
+# LAS DOS SON TEXTUALES del corpus regrabado el 25-ago, y son los dos unicos
+# turnos de 55 que le preguntan dos cosas al cliente en el mismo mensaje.
+_DOS_PREGUNTAS = {
+    "76 t2 el dato y el permiso": (
+        "Sobre el teclado, para poder sumarlo al presupuesto, ¿podrías "
+        "confirmarme qué modelo te interesa y qué cantidad necesitás?\n"
+        "¿Te parece bien que avancemos con la elección del teclado para "
+        "cerrar el pedido?",
+        "qué modelo",                       # la que tiene que quedar
+        "¿Te parece bien"),                 # la que se tiene que ir
+    "46 t4 el destino antes que el producto": (
+        "Perfecto. ¿A dónde te lo mandaríamos? ¿Me podrías detallar qué "
+        "productos querés llevar así verificamos el stock?",
+        "qué productos",
+        "¿A dónde"),
+}
+
+
+def test_de_dos_preguntas_queda_la_del_escalon_mas_bajo():
+    """LOS DOS TURNOS REALES, uno por uno, y con la que queda declarada.
+
+    76 t2 lo resolveria tambien "quedate con la primera". 46 t4 NO: ahi la
+    primera pregunta es la direccion de envio de un pedido que todavia no tiene
+    productos. Por eso el criterio es el ORDEN DE LA VENTA y no el orden del
+    texto."""
+    print(f"\n  se plantaron {len(_DOS_PREGUNTAS)} turnos reales con dos preguntas")
+    mal = []
+    for nombre, (texto, queda, se_va) in _DOS_PREGUNTAS.items():
+        salida = una_sola_pregunta(texto)
+        if queda not in salida or se_va in salida:
+            mal.append(f"{nombre}: {salida!r}")
+    assert not mal, f"{len(mal)} de {len(_DOS_PREGUNTAS)} eligieron mal: {mal}"
+
+
+def test_una_sola_pregunta_no_toca_el_mensaje_que_pregunta_una_vez():
+    """EL OTRO LADO, y es el que evita que la regla se coma la venta: la oferta
+    en forma de pregunta es UNA pregunta y tiene que salir entera."""
+    for texto in ("¿Te reservo el Mouse Logitech G203?",
+                  "El M170 sale $12.000. ¿Te lo cargo al pedido?",
+                  "Te paso el total y coordinamos el envío."):
+        assert una_sola_pregunta(texto) == texto, texto
+
+
+# ── REGLA 12: el repaso que el bot anuncia (FICHA 18) ───────────────────────
+_ANTERIOR_45_T2 = (
+    "Sobre tu consulta, te comento que no contamos con discos duros HDD "
+    "mecánicos en nuestro catálogo actual. Es importante aclararte que el "
+    "pedido de un disco HDD mecánico con una velocidad de lectura de 7000 MB/s "
+    "es técnicamente imposible para esa tecnología; los HDD mecánicos actuales "
+    "alcanzan velocidades mucho menores, generalmente hasta 250 MB/s, mientras "
+    "que 7000 MB/s es una velocidad típica de un SSD NVMe PCIe 4.0.")
+_REPASO_45_T3 = (
+    "Como te mencioné anteriormente, los discos HDD mecánicos tienen "
+    "velocidades de transferencia mucho menores a los 7000 MB/s que "
+    "consultaste, ya que esa velocidad es propia de tecnologías de estado "
+    "sólido (SSD) de última generación.")
+
+
+def test_el_repaso_que_el_bot_declara_repetido_se_va():
+    """EL CASO REAL de 45 t3, que era el segundo turno sobre el escalon de
+    largo. El bot dice "como te mencioné anteriormente" y vuelve a contar, con
+    otras palabras, lo que ya conto en t2. No lo detecta un parecido: lo declara
+    el propio mensaje, y los numeros y siglas que trae -7000, MB, HDD, SSD- ya
+    estaban todos en pantalla."""
+    texto = f"Te confirmo que ese disco es USB tipo C.\n{_REPASO_45_T3}"
+    salida = sin_el_repaso_que_el_bot_anuncia(texto, _ANTERIOR_45_T2)
+    assert "Como te mencioné anteriormente" not in salida, salida
+    assert "USB tipo C" in salida, "se llevo puesta la contestacion del turno"
+
+
+def test_el_repaso_que_trae_un_dato_NUEVO_se_queda():
+    """LA ATADURA QUE HACE SEGURA A LA REGLA 12, y es la unica razon por la que
+    puede existir donde la poda por parecido se revirtio el 10-ago. Si la
+    oracion trae un numero que el mensaje anterior no tenia, no es un repaso: es
+    informacion, y se queda entera."""
+    nueva = ("Como te mencioné anteriormente, los discos HDD llegan hasta 250 "
+             "MB/s, y ademas te aviso que este modelo tiene 4 TB de capacidad.")
+    assert sin_el_repaso_que_el_bot_anuncia(nueva, _ANTERIOR_45_T2) == nueva
+
+
+def test_el_reenganche_corto_no_se_toca():
+    """El "como te decía" corto que reengancha el hilo es legitimo: no dice
+    ningun dato de vuelta y se queda. Mismo piso de largo que la regla 2."""
+    for texto in ("Como te mencioné, seguimos.",
+                  "Como te comenté antes, ahí va."):
+        assert sin_el_repaso_que_el_bot_anuncia(
+            texto, _ANTERIOR_45_T2) == texto, texto
+
+
+def test_sin_mensaje_anterior_la_regla_12_no_corre():
+    """El primer turno de una charla no tiene contra que comparar: sin anterior
+    no se borra nada, aunque el texto diga que ya lo menciono."""
+    assert sin_el_repaso_que_el_bot_anuncia(_REPASO_45_T3, "") == _REPASO_45_T3

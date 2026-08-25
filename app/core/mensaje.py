@@ -984,6 +984,191 @@ def sin_encabezados_huerfanos(texto: str) -> str:
 # deja crecer.
 
 
+# ── REGLA 11: UNA SOLA PREGUNTA POR MENSAJE (FICHA 18, 25-ago-2026) ─────────
+#
+# EL DEFECTO, medido sobre los 55 turnos del corpus regrabado: DOS turnos le
+# preguntan dos cosas al cliente en el mismo mensaje, y son los dos que la vara
+# `una_sola_repregunta` pone en rojo -53 sobre 55-.
+#
+#   46 t4  "¿A donde te lo mandariamos?"
+#          "¿Me podrias detallar que productos queres llevar asi verificamos el
+#           stock y confirmamos el monto total?"
+#   76 t2  "Sobre el teclado, para poder sumarlo al presupuesto, ¿podrias
+#           confirmarme que modelo te interesa y que cantidad necesitas?"
+#          "¿Te parece bien que avancemos con la eleccion del teclado para
+#           cerrar el pedido?"
+#
+# Dos preguntas en un mensaje de WhatsApp es pedirle al cliente que administre
+# una agenda: contesta una, la otra se pierde, y el turno siguiente la vuelve a
+# preguntar. 76 t2 es ademas el mensaje mas largo del corpus.
+#
+# CUAL SE QUEDA: LA DEL ESCALON MAS BAJO DE LA VENTA, y no la primera.
+# "Primera" hubiera alcanzado para 76 t2 y hubiera elegido MAL en 46 t4, donde
+# la primera pregunta es la direccion de envio de un pedido que todavia no
+# tiene productos. El orden no es una lista de sinonimos: es el orden en que se
+# arma una venta, y cada escalon se reconoce por unas pocas formas literales.
+# Preguntar por el destino antes que por el producto no es un empate de
+# criterio, es preguntar al reves.
+#
+# LA QUE SE VA NO ES LA OFERTA, y esto es lo que hace que la regla no le cueste
+# ventas. La que se descarta es siempre de un escalon MAS ALTO que la que
+# queda, o sea posterior en la venta; y cuando la descartada es un pedido de
+# permiso -"¿te parece bien que avancemos?"- lo que se saca es exactamente lo
+# que el CUARTO FRENO de `punto_de_oferta` ya venia sacando por el otro lado:
+# un turno que arrastra una duda y TIENE que preguntar, no ofrece encima. Alla
+# la oferta se DIFIERE al turno siguiente en vez de perderse; aca pasa lo
+# mismo, porque el punto sigue abierto.
+#
+# ES LOSSLESS, que es la unica licencia de este modulo: la pregunta que queda
+# es la que el pedido necesita PRIMERO, y la otra vuelve sola en cuanto esta se
+# conteste. Si hay una sola pregunta, no se toca nada.
+_RE_PREGUNTA_ORACION = re.compile(r"[^.\n;!?]+[.\n;!?]*")
+
+# LOS ESCALONES DE LA VENTA, en orden. El primero que matchea manda.
+_ESCALONES_DE_VENTA = (
+    ("producto", re.compile(
+        r"qu[eé]\s+productos?|cu[aá]les?\s+productos?|qu[eé]\s+art[ií]culos?|"
+        r"qu[eé]\s+te\s+interesa|qu[eé]\s+est[aá]s?\s+buscando|"
+        r"qu[eé]\s+necesit[aá]s|qu[eé]\s+quer[eé]s\s+llevar", re.IGNORECASE)),
+    ("modelo", re.compile(
+        r"qu[eé]\s+modelo|cu[aá]l\s+modelo|cu[aá]l\s+de\s+|cu[aá]l\s+prefer|"
+        r"cu[aá]les\s+prefer|qu[eé]\s+cantidad|cu[aá]ntas\s+unidades|"
+        r"cu[aá]ntos\s+|cu[aá]ntas\s+", re.IGNORECASE)),
+    ("destino", re.compile(
+        r"a\s+d[oó]nde|a\s+qu[eé]\s+direcci[oó]n|a\s+qu[eé]\s+domicilio|"
+        r"d[oó]nde\s+te\s+lo|qu[eé]\s+localidad|qu[eé]\s+ciudad", re.IGNORECASE)),
+    ("pago", re.compile(
+        r"forma\s+de\s+pago|medio\s+de\s+pago|c[oó]mo\s+(?:lo\s+)?abon|"
+        r"c[oó]mo\s+prefer[ií]s\s+pagar", re.IGNORECASE)),
+    ("nombre", re.compile(
+        r"a\s+nombre\s+de\s+qui[eé]n|tu\s+nombre|c[oó]mo\s+te\s+llam[aá]s",
+        re.IGNORECASE)),
+)
+# El escalon del que no matchea ninguno: el pedido de permiso, que es el ultimo
+# paso y el unico que no aporta un dato. Va despues de todos a proposito.
+_ESCALON_PERMISO = len(_ESCALONES_DE_VENTA)
+
+
+def _escalon(pregunta: str) -> int:
+    for i, (_, rx) in enumerate(_ESCALONES_DE_VENTA):
+        if rx.search(pregunta or ""):
+            return i
+    return _ESCALON_PERMISO
+
+
+def una_sola_pregunta(texto: str) -> str:
+    """REGLA 11. Ver el bloque de arriba."""
+    lineas = (texto or "").splitlines()
+    preguntas = []          # (i_linea, j_oracion, texto de la oracion)
+    partidas = []           # las oraciones de cada linea, ya cortadas
+    for i, linea in enumerate(lineas):
+        trozos = [m.group(0) for m in _RE_PREGUNTA_ORACION.finditer(linea)]
+        partidas.append(trozos)
+        for j, t in enumerate(trozos):
+            if "?" in t:
+                preguntas.append((i, j, t))
+    if len(preguntas) < 2:
+        return texto
+    # LA QUE SE QUEDA. Escalon mas bajo; a igual escalon, la primera.
+    queda = min(range(len(preguntas)),
+                key=lambda k: (_escalon(preguntas[k][2]), k))
+    fuera = {(i, j) for k, (i, j, _) in enumerate(preguntas) if k != queda}
+    salida = []
+    for i, trozos in enumerate(partidas):
+        if not trozos:
+            salida.append(lineas[i])
+            continue
+        salida.append("".join(t for j, t in enumerate(trozos)
+                              if (i, j) not in fuera).strip())
+    limpio = re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip()
+    log.info("mensaje_una_sola_pregunta", preguntas=len(preguntas),
+             se_quedo=preguntas[queda][2][:70])
+    return _valvula(texto, limpio)
+
+
+# ── REGLA 12: LA ORACION QUE EL BOT DECLARA REPETIDA (FICHA 18, 25-ago-2026) ─
+#
+# EL CASO, textual de 45 t3 del corpus regrabado, y es el segundo turno que
+# pasaba el escalon de largo -1.639 sobre un tope de 1.614-. El mensaje
+# contesta la pregunta del HDMI, muestra seis opciones, y CIERRA con 309
+# caracteres que arrancan asi:
+#
+#   "Como te mencione anteriormente, los discos HDD mecanicos tienen
+#    velocidades de transferencia mucho menores a los 7000 MB/s que
+#    consultaste, ya que esa velocidad es propia de tecnologias de estado
+#    solido (SSD)..."
+#
+# El cliente no volvio a preguntar eso: lo pregunto en t2 y el bot ya se lo
+# contesto ahi, mas largo y con el numero exacto. La oracion no agrega un dato.
+#
+# POR QUE NO LA CAZA LA REGLA 2. `sin_lo_ya_dicho` compara oraciones ENTERAS y
+# normalizadas: el modelo la volvio a redactar con otras palabras y no coincide
+# ni una. Y perseguir la redaccion ya se probo y se revirtio el 10-ago -esta
+# anotado abajo con su numero-, porque un parecido no es un hecho.
+#
+# ACA NO SE PERSIGUE NINGUNA REDACCION: LO DECLARA EL BOT. "Como te mencione
+# anteriormente" es el propio mensaje diciendo que lo que sigue ya se dijo. Eso
+# es un hecho del texto, no una similitud, y es la unica razon por la que esta
+# regla puede existir donde la del 10-ago no pudo.
+#
+# LAS TRES ATADURAS, y sin las tres no se borra:
+#   1. La oracion tiene que DECLARARSE repetida, con una de las formas de
+#      `_RE_YA_LO_DIJE`.
+#   2. Sus tokens DISTINTIVOS -numeros y siglas, que es donde vive el dato-
+#      tienen que estar TODOS en el mensaje anterior. Si trae un numero nuevo,
+#      no es un repaso: es informacion, y se queda. Y tiene que traer al menos
+#      dos, para que una oracion sin ningun dato no se borre de arriba.
+#   3. Piso de largo, el mismo `_MIN_REPETIDO_ENTRE_TURNOS` de la regla 2: el
+#      "como te decia" corto que reengancha el hilo es legitimo y no se toca.
+#
+# ES LOSSLESS con la misma prueba que la regla 2: lo que se borra esta en el
+# mensaje que el cliente ACABA DE LEER, y ademas alla esta dicho mejor.
+_RE_YA_LO_DIJE = re.compile(
+    r"\bcomo\s+(?:ya\s+)?te\s+"
+    r"(?:mencion|coment|dij|expliqu|anticip|cont)\w*|"
+    r"\btal\s+como\s+te\s+(?:mencion|coment|dij|expliqu)\w*|"
+    r"\bcomo\s+te\s+ven[ií]a\s+(?:dic|coment)\w*|"
+    r"\breitero\s+que\b|\bte\s+recuerdo\s+que\b", re.IGNORECASE)
+
+# EL DATO VIVE EN LOS NUMEROS Y LAS SIGLAS. "7000", "MB", "HDD", "SSD": si
+# todos esos ya estaban en pantalla, la oracion es un repaso. La prosa de
+# alrededor -"de ultima generacion", "es propia de"- es redaccion, no dato.
+_RE_DISTINTIVO = re.compile(r"\b(?:\d[\d\.]*|[A-Z]{2,})\b")
+_MIN_DISTINTIVOS_REPASO = 2
+
+
+def _distintivos(frase: str) -> set:
+    return {t.lower().rstrip(".") for t in _RE_DISTINTIVO.findall(frase or "")}
+
+
+def sin_el_repaso_que_el_bot_anuncia(texto: str, anterior: str = "") -> str:
+    """REGLA 12. Ver el bloque de arriba."""
+    if not (anterior or "").strip():
+        return texto
+    ya = _distintivos(anterior)
+    lineas = (texto or "").splitlines()
+    salida, fuera = [], 0
+    for linea in lineas:
+        trozos = _RE_ORACION.split(linea)
+        quedan = []
+        for t in trozos:
+            propios = _distintivos(t)
+            repaso = (len(t.strip()) >= _MIN_REPETIDO_ENTRE_TURNOS
+                      and _RE_YA_LO_DIJE.search(t)
+                      and len(propios) >= _MIN_DISTINTIVOS_REPASO
+                      and propios <= ya)
+            if repaso:
+                fuera += 1
+            else:
+                quedan.append(t)
+        salida.append(" ".join(t for t in quedan if t.strip()))
+    if not fuera:
+        return texto
+    limpio = re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip()
+    log.info("mensaje_repaso_anunciado", oraciones=fuera)
+    return _valvula(texto, limpio)
+
+
 # ── EL REDACTOR ATADO POR MOLDE, PROBADO Y DESCARTADO (8-ago) ───────────────
 # LA IDEA, que la pidio Martin y es la buena pregunta: si el largo no se puede
 # arreglar borrando, se arregla no generando. El redactor deja de devolver prosa
@@ -1050,6 +1235,15 @@ def componer(texto: str, anterior: str = "",
     t = sin_producto_duplicado(t)
     t = un_ejemplo_por_rubro_con_cuenta(t)
     t = sin_anuncio_que_el_bloque_repite(t)
+    # La 11 va DESPUES de todas las podas y antes de la limpieza de
+    # encabezados: recien aca el mensaje tiene las preguntas que de verdad le
+    # van a llegar al cliente. Un paso antes estaria eligiendo entre preguntas
+    # que otra regla todavia puede borrar.
+    t = una_sola_pregunta(t)
+    # La 12 va al lado de la 11 y despues de la 2: primero se van las oraciones
+    # que estan TEXTUALES en el mensaje anterior, y recien despues se mira la
+    # que el bot declara repetida pero volvio a redactar.
+    t = sin_el_repaso_que_el_bot_anuncia(t, anterior)
     t = sin_encabezados_huerfanos(t)
     if len(t) != antes:
         log.info("mensaje_compuesto", trace_id=trace_id, antes=antes,

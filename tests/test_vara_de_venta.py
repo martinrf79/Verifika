@@ -50,20 +50,33 @@ from banco_pruebas.vara_de_venta import (  # noqa: E402
 
 
 # LOS PUNTOS QUE HOY ESTAN POR DEBAJO DEL PISO, Y POR QUE NO SE MARCA EL TEST
-# ENTERO (FICHA 17, 25-ago-2026).
+# ENTERO (FICHA 17, 25-ago-2026 / FICHA 18, mismo dia).
 #
-# La regrabacion del corpus puso a `una_sola_repregunta` en 53/55 contra un piso
-# de 54/55. Marcar `test_la_vara_de_venta_no_baja` entero como xfail apagaria de
-# paso la vigilancia de los otros CUATRO puntos, y esos SUBIERON con el corpus
-# nuevo: `avance` 29/55 -> 33/55 y `no_se_frena` 28/29 -> 33/33. Un pendiente que
-# se lleva puesta la defensa de lo que anda es peor que el pendiente.
+# EL MECANISMO. El punto que esta bajo el piso sale de la lista que defiende el
+# test verde y entra en la suya, con `strict=True`. Marcar
+# `test_la_vara_de_venta_no_baja` entero apagaria de paso la vigilancia de los
+# otros cuatro, y un pendiente que se lleva puesta la defensa de lo que anda es
+# peor que el pendiente. El piso NO se toca nunca: el dia que el numero vuelva,
+# el xfail pasa, strict lo pone rojo, y alguien tiene que sacarlo de aca.
 #
-# Asi que el punto roto sale de la lista que defiende el test verde y entra en
-# la suya, con `strict=True`: el piso NO se toca -sigue diciendo 54/55- y el dia
-# que el bot vuelva a preguntar una sola vez por turno, el xfail pasa, strict lo
-# pone rojo, y alguien tiene que sacarlo de aca. Sacar OTRO punto de la lista
-# obliga a sumar otro xfail y a subir el techo de A MEDIAS, que solo baja.
-A_MEDIAS = ("una_sola_repregunta",)
+# LO QUE ESTABA MARCADO (FICHA 17): `una_sola_repregunta`, 53/55 contra un piso
+# de 54/55. **CERRADO por la FICHA 18**: mide 55/55, o sea que quedo por ENCIMA
+# del piso, y vuelve a la lista vigilada.
+#
+# LO QUE SE MARCA AHORA (FICHA 18): `camino_al_cobro`, 8/15 contra un piso de
+# 9/15. Y NO ES UNA VENTA PERDIDA: la charla que dejo de contar es
+# `45_consigna_capciosas`, que contaba porque el bot escribio "velocidades de
+# TRANSFERENCIA" hablando de discos, y `_RE_COBRO` -que busca MEDIOS de pago-
+# lee "transferencia". Esa oracion se fue con la regla 12 del componedor, que la
+# borro por ser un repaso de lo ya dicho, y con ella se fue el falso positivo.
+#
+# O SEA QUE EL PISO DE 9/15 ESTABA CONTAMINADO Y EL NUMERO REAL SIEMPRE FUE
+# 8/15. No se arregla en esta sesion, y a proposito: tocar el detector de una
+# vara en la misma sesion en que su numero se movio deja un numero que no se
+# puede leer, que es lo mismo que la FICHA 17 decidio con el enclitico. Ademas
+# la decision es de Martin, porque arreglar `_RE_COBRO` y refijar el piso es una
+# sola cosa y es justo el tema de la FICHA 19.
+A_MEDIAS = ("camino_al_cobro",)
 _VIGILADOS = tuple(k for k in LAS_CINCO if k not in A_MEDIAS)
 
 
@@ -116,14 +129,17 @@ def test_la_vara_de_venta_no_baja(vara):
 
 @pytest.mark.skipif(not PISO.exists(), reason="no hay piso de venta grabado")
 @pytest.mark.xfail(strict=True, reason=(
-    "A MEDIAS: la regrabacion del corpus (FICHA 17) dejo DOS turnos con dos "
-    "preguntas al cliente en el mismo mensaje. HOY una_sola_repregunta mide "
-    "53/55 y el piso es 54/55. Los dos son 46_consigna_manipulacion t4 -pregunta "
-    "a donde se manda Y que productos quiere- y "
-    "76_pedido_multiple_criterio_no_binario t2 -pregunta que modelo de teclado y "
-    "que cantidad, y ademas si avanzamos a cerrar-. OBJETIVO volver a 54/55 sin "
-    "bajar avance de 33/55 ni no_se_frena de 33/33, que son los que subieron con "
-    "el mismo corpus. El piso de venta NO se toco."))
+    "A MEDIAS: el detector de MEDIOS DE PAGO de la vara cuenta la palabra "
+    "transferencia aunque hable de datos y no de plata. HOY camino_al_cobro mide "
+    "8/15 y el piso dice 9/15. La charla que dejo de contar es "
+    "45_consigna_capciosas, y contaba por una sola frase -velocidades de "
+    "TRANSFERENCIA de un disco- que la regla 12 del componedor borro por ser un "
+    "repaso de lo ya dicho: o sea que el piso de 9/15 estaba contaminado y el "
+    "numero real siempre fue 8/15, en ninguna de esas 15 charlas se dijo como se "
+    "paga. OBJETIVO que _RE_COBRO pida contexto de pago -transferencia bancaria, "
+    "por transferencia, abonar por transferencia- y que el piso se refije en el "
+    "numero limpio, las dos cosas en el mismo commit de umbral y con las cuentas. "
+    "Es la FICHA 19 y la decision de refijar es de Martin. El piso NO se toco."))
 def test_los_puntos_a_medias_vuelven_al_piso(vara):
     """EL PUNTO QUE SE ROMPIO CON EL CORPUS NUEVO, contado y no escondido.
 
