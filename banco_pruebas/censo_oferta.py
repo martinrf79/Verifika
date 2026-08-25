@@ -1,0 +1,120 @@
+"""
+EL CENSO DEL PUNTO DE OFERTA — en cuantos turnos el bot tenia algo que
+proponer, y en cuantos lo propuso.
+
+POR QUE EXISTE. La FICHA 15 abrio el punto sintetico `oferta` y midio su censo
+a mano, pegando numeros en el mensaje del commit. Un numero que vive en un
+commit no se puede volver a correr: cuando se regraban los casetes hay que
+compararlo contra algo, y ese algo tiene que ser un instrumento, no un texto.
+
+DE DONDE SALE. Del mismo evento `indice_turno` que el bot ya loguea en cada
+turno, leido con `banco_pruebas/observador.py` —la misma ventana que en
+produccion es Cloud Logging—. `cobertura()` corre varias veces por turno
+(las dos llamadas de `hub_venta` mas la puerta de salida); vale la ULTIMA,
+que es la que mira el texto final, igual que hace la vara con `hub_venta_ok`.
+
+LAS TRES CASILLAS, y son las unicas en que la oferta puede terminar:
+
+  OFRECIDO        el turno propuso el paso siguiente sobre ese producto.
+  NO_CORRESPONDE  habia motivo tipado para no proponerlo: el cliente ya lo
+                  rechazo, el pedido ya lo tiene, o el turno esta cerrando.
+  SIN_ESTADO      el punto se abrio y el turno se fue sin ofrecer nada. Es
+                  la casilla vacia, y es la que la sonda viene a mirar.
+
+Los turnos donde el punto NI SE ABRE no entran en el censo: no hubo producto
+certificado, o la herramienta salio ambigua y la oferta cede a proposito.
+
+USO
+    python3 banco_pruebas/censo_oferta.py             # el censo entero
+    python3 banco_pruebas/censo_oferta.py --detalle   # turno por turno
+    python3 banco_pruebas/censo_oferta.py 62 77       # solo esas charlas
+"""
+import asyncio
+import json
+import sys
+from pathlib import Path
+
+_RAIZ = Path(__file__).resolve().parent.parent
+if str(_RAIZ) not in sys.path:
+    sys.path.insert(0, str(_RAIZ))
+
+from banco_pruebas import vara_de_venta as vara  # noqa: E402
+from banco_pruebas import clon_produccion as clon, observador  # noqa: E402
+from banco_pruebas.casete import Casete, reproducir  # noqa: E402
+from banco_pruebas.puntaje import leer_guion  # noqa: E402
+
+CASILLAS = ("OFRECIDO", "NO_CORRESPONDE", "SIN_ESTADO")
+
+
+def _estado_de_la_oferta(eventos: list) -> str | None:
+    """Como termino la oferta en este turno, o None si el punto no se abrio.
+
+    Se mira el ULTIMO `indice_turno` del turno porque `cobertura()` corre mas
+    de una vez y solo la ultima vio el texto que el cliente lee."""
+    indices = [e for e in eventos if e.get("event") == "indice_turno"]
+    if not indices:
+        return None
+    for marca in (indices[-1].get("estados") or []):
+        if str(marca).startswith("oferta:"):
+            return str(marca).split("=", 1)[1]
+    return None
+
+
+def correr_charla(path: Path) -> dict:
+    datos = json.loads(Path(path).read_text(encoding="utf-8"))
+    casete = Casete(Path(path).stem, datos.get("turnos") or [])
+    guion = Path(path).resolve().parent.parent / "guiones" / f"{Path(path).stem}.txt"
+    turnos = (leer_guion(guion.read_text(encoding="utf-8")) if guion.exists()
+              else [{"mensaje": t.get("mensaje", "")} for t in casete.turnos])
+
+    user = f"censo_oferta_{Path(path).stem}"
+    clon.reiniciar_cliente(user)
+    filas: list = []
+
+    async def _charla():
+        for t in turnos:
+            casete.abrir_turno(t["mensaje"])
+            with observador.turno() as obs:
+                partes = await clon.turno(user, t["mensaje"])
+            filas.append({"mensaje": (t["mensaje"] or "")[:60],
+                          "estado": _estado_de_la_oferta(obs.eventos),
+                          "texto": "\n".join(partes)})
+
+    with reproducir(casete):
+        asyncio.run(_charla())
+    return {"nombre": Path(path).stem, "turnos": filas}
+
+
+def medir(paths: list | None = None) -> dict:
+    with vara._escuchando():
+        charlas = [correr_charla(p) for p in (paths or vara._casetes())]
+    filas = [f for c in charlas for f in c["turnos"]]
+    abren = [f for f in filas if f["estado"] is not None]
+    censo = {k: sum(1 for f in abren if (f["estado"] or "SIN_ESTADO") == k)
+             for k in CASILLAS}
+    return {"charlas": len(charlas), "turnos": len(filas),
+            "abren": len(abren), **censo, "_charlas": charlas}
+
+
+def _main() -> int:
+    pedidos = [a for a in sys.argv[1:] if not a.startswith("--")]
+    paths = ([p for p in vara._casetes()
+              if any(p.stem.startswith(x) for x in pedidos)]
+             if pedidos else None)
+    res = medir(paths)
+    if "--detalle" in sys.argv:
+        for c in res["_charlas"]:
+            print(f"\n{c['nombre']}")
+            for i, f in enumerate(c["turnos"], 1):
+                estado = f["estado"]
+                marca = "no abre" if estado is None else (estado or "SIN_ESTADO")
+                print(f"  t{i:<2} {marca:<16s} {f['mensaje']}")
+    print(f"\nCENSO DEL PUNTO DE OFERTA — {res['charlas']} charlas, "
+          f"{res['turnos']} turnos, el punto abre en {res['abren']}")
+    for k in CASILLAS:
+        print(f"  {k:16s} {res[k]:4d}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(_main())
