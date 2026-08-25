@@ -28,6 +28,8 @@ USO
     python3 banco_pruebas/censo_oferta.py             # el censo entero
     python3 banco_pruebas/censo_oferta.py --detalle   # turno por turno
     python3 banco_pruebas/censo_oferta.py 62 77       # solo esas charlas
+    python3 banco_pruebas/censo_oferta.py --ofertas   # el texto ENTERO de cada
+                                                      # turno que ofrecio algo
 """
 import asyncio
 import json
@@ -60,6 +62,22 @@ def _estado_de_la_oferta(eventos: list) -> str | None:
     return None
 
 
+def _producto_ofrecido(eventos: list) -> str:
+    """QUE producto tenia el bot para proponer en este turno.
+
+    Sale del PRIMER `indice_turno`, no del ultimo: ahi la oferta todavia no se
+    escribio, asi que el punto figura en `faltan` con su texto entero
+    —"proponerle el paso siguiente sobre X"—. En el ultimo, si el turno ofrecio,
+    el punto ya esta atendido y no figura."""
+    for e in eventos:
+        if e.get("event") != "indice_turno":
+            continue
+        for f in (e.get("faltan") or []):
+            if str(f).startswith("proponerle el paso siguiente sobre "):
+                return str(f).replace("proponerle el paso siguiente sobre ", "")
+    return ""
+
+
 def correr_charla(path: Path) -> dict:
     datos = json.loads(Path(path).read_text(encoding="utf-8"))
     casete = Casete(Path(path).stem, datos.get("turnos") or [])
@@ -78,6 +96,7 @@ def correr_charla(path: Path) -> dict:
                 partes = await clon.turno(user, t["mensaje"])
             filas.append({"mensaje": (t["mensaje"] or "")[:60],
                           "estado": _estado_de_la_oferta(obs.eventos),
+                          "producto": _producto_ofrecido(obs.eventos),
                           "texto": "\n".join(partes)})
 
     with reproducir(casete):
@@ -109,6 +128,21 @@ def _main() -> int:
                 estado = f["estado"]
                 marca = "no abre" if estado is None else (estado or "SIN_ESTADO")
                 print(f"  t{i:<2} {marca:<16s} {f['mensaje']}")
+    if "--ofertas" in sys.argv:
+        # EL TEXTO ENTERO Y SIN TOCAR. Lo unico de toda esta maquinaria que no
+        # lo puede juzgar ningun test: si una oferta suena a insistir, a vender
+        # lo que no se pidio o a cambiar de tema, lo dice una persona leyendo.
+        # Por eso sale COMPLETO y no la oracion que a este script le parezca la
+        # oferta: recortar seria decidir por el que lee.
+        for c in res["_charlas"]:
+            for i, f in enumerate(c["turnos"], 1):
+                if f["estado"] != "OFRECIDO":
+                    continue
+                print(f"\n{'─' * 70}\n{c['nombre']}  turno {i}")
+                print(f"CLIENTE: {f['mensaje']}")
+                print(f"tenia para ofrecer: {f['producto'] or '(no figura)'}")
+                print(f"BOT:\n{f['texto']}")
+        print(f"\n{'─' * 70}")
     print(f"\nCENSO DEL PUNTO DE OFERTA — {res['charlas']} charlas, "
           f"{res['turnos']} turnos, el punto abre en {res['abren']}")
     for k in CASILLAS:

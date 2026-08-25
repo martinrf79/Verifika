@@ -37,6 +37,64 @@ GUIONES = Path(__file__).resolve().parent / "guiones"
 _PISO = CASETES / "_piso.json"
 
 
+class SinModelo(Exception):
+    """UN TURNO SALIO SIN MODELO Y LA TANDA SE CORTA (25-ago-2026).
+
+    EL DIA QUE COSTO ESTA CLASE. La cuota gratis se agoto a mitad de tanda y el
+    script siguio grabando como si nada: los 429 no viajan como excepcion hasta
+    aca -`hub_venta` los atrapa, marca `sin_modelo` y devuelve el enlatado de
+    sobrecarga- asi que cada turno "salio bien", el casete se guardo, y 22 de 23
+    turnos quedaron con "estoy con mucha demanda" adentro. Hubo que restaurar a
+    mano con git.
+
+    UN ENLATADO ADENTRO DE UN CASETE ENVENENA TODAS LAS VARAS, y en silencio: el
+    casete es el corpus contra el que se miden la vara de venta, el censo de la
+    oferta, el piso de los casetes y el tope de largo. Un turno enlatado no dice
+    "falto el modelo", dice "el bot contesto esto", y los cinco numeros bajan sin
+    que nadie haya tocado el bot. Es exactamente la confusion que el apunte de
+    ANTES existe para evitar, entrando por la otra puerta.
+
+    POR ESO CORTA LA TANDA ENTERA Y NO SOLO LA CHARLA. Si la cuota se agoto, las
+    que siguen van a salir igual de enlatadas: seguir es gastar el resto del dia
+    en llenar el corpus de basura."""
+
+
+def _enlatado_de_sobrecarga() -> str:
+    """El enlatado que sale cuando NO hubo modelo, leido de la FUENTE.
+
+    De `base_conocimiento.json` y no de un literal de aca: lo que el cliente lee
+    vive en la fuente, y un candado que compara contra su propia copia deja de
+    cazar el dia que alguien cambia la frase en el unico lugar donde se cambia.
+    El literal de al lado es el mismo default que usa `hub_venta`, y solo entra
+    si la fuente no se puede leer."""
+    from app.core.guia_venta_prosa import mensaje
+    return mensaje("sobrecarga",
+                   "Perdón, estoy con mucha demanda en este momento. "
+                   "Probá de nuevo en un ratito y te respondo. 🙏")
+
+
+def _sin_modelo(texto: str) -> bool:
+    """Si este turno salio SIN modelo.
+
+    SE MIRA EL TEXTO Y NO EL 429, y la diferencia es la que hace usable el
+    candado: `llm_reintento` absorbe casi todos los 429 y el turno sale
+    perfecto. Cortar en el primer 429 dejaria la clave gratis inusable, y la
+    gratis es la que manda para grabar. Lo que no se tolera es el 429 que GANO,
+    y eso se ve aca: el turno vuelve vacio, o vuelve con el enlatado de
+    sobrecarga que `hub_venta` pone cuando marca `sin_modelo`.
+
+    NO CAZA `VERIFIKA_FALLBACK_MESSAGE` a proposito: ese sale cuando el modelo
+    SI contesto y no trajo nada, que es una respuesta real del bot y tiene que
+    poder vivir en un casete. El unico enlatado que envenena el corpus es el que
+    dice que el modelo no estuvo."""
+    limpio = (texto or "").strip()
+    if not limpio:
+        return True
+    # El enlatado viaja partido en partes y con emoji: alcanza con el arranque.
+    marca = _enlatado_de_sobrecarga().strip()[:40]
+    return bool(marca) and marca in limpio
+
+
 async def _grabar_una(path: Path, pausa_s: float) -> dict:
     """Graba UNA charla por el camino VIVO.
 
@@ -53,6 +111,7 @@ async def _grabar_una(path: Path, pausa_s: float) -> dict:
     turnos = leer_guion(path.read_text(encoding="utf-8"))
     user = f"casete_{nombre}"
     clon.reiniciar_cliente(user)
+    fallback = get_settings().VERIFIKA_FALLBACK_MESSAGE
 
     respuestas: list[str] = []
     print(f"\n=== {nombre} ({len(turnos)} turnos) ===")
@@ -68,11 +127,18 @@ async def _grabar_una(path: Path, pausa_s: float) -> dict:
                 print(f"      ERROR: {type(e).__name__}: {str(e)[:120]}")
             respuestas.append(r or "")
             print(f"      -> {(r or '')[:100]}")
+            # EL CORTE VA ANTES DE `guardar()`, y ese es todo el candado: se sale
+            # del `with` por la excepcion, `grabando` no escribe nada por su
+            # cuenta, y el casete VIEJO de esta charla queda intacto en el disco.
+            if _sin_modelo(r):
+                raise SinModelo(
+                    f"{nombre} turno {i} de {len(turnos)}: el turno salio sin "
+                    f"modelo. Este casete NO se escribio y quedo el que ya "
+                    f"estaba.")
             if pausa_s and i < len(turnos):
                 time.sleep(pausa_s)
         ruta = casete.guardar()
 
-    fallback = get_settings().VERIFIKA_FALLBACK_MESSAGE
     res = puntuar_charla(turnos, respuestas, TIENDA, fallback)
     print(f"  casete: {ruta.name} | puntaje {res['puntaje']}/100")
     for f in res["fallas"][:6]:
@@ -150,7 +216,23 @@ async def _main(nombres: list[str]) -> int:
     if faltan:
         print("no existen:", [p.name for p in faltan])
         return 2
-    resultados = [await _grabar_una(p, pausa_s) for p in paths]
+    resultados = []
+    for p in paths:
+        try:
+            resultados.append(await _grabar_una(p, pausa_s))
+        except SinModelo as e:
+            # LA TANDA SE CORTA ACA Y SE DICE CUANTO ALCANZO. Ni esta charla ni
+            # las que faltan se escriben: si la cuota se agoto, las que siguen
+            # salen igual de enlatadas.
+            print(f"\n{'=' * 60}\nTANDA CORTADA: {e}")
+            hechas = [x.stem for x in paths[:len(resultados)]]
+            print(f"  se grabaron {len(hechas)} de {len(paths)} charlas: "
+                  f"{', '.join(hechas) or 'ninguna'}")
+            faltan = [x.stem for x in paths[len(resultados) + 1:]]
+            print(f"  quedo sin tocar el casete de {p.stem}"
+                  + (f" y no se intentaron {', '.join(faltan)}" if faltan else ""))
+            print("  el piso NO se toco. Se retoma con la cuota renovada.")
+            return 3
     numero = puntaje_global(resultados)
     print(f"\n{'=' * 60}\nEL NUMERO: {numero}/100 sobre {len(resultados)} charlas")
 
