@@ -12,15 +12,22 @@ recordar nada: se lee esto, se hace una ficha, se cierra.
 > se recuperaron de casualidad porque el contenedor viejo seguía vivo.
 > Antes de abrir una sesión nueva, la anterior tiene que haber pusheado.
 
+> ## REGLA CERO BIS — `git fetch` ANTES DE TOCAR NADA
+>
+> Comprobá que `HEAD` es `origin/main`. Si no lo es, **PARÁ**.
+> Pasó dos veces trabajar una sesión entera sobre un árbol viejo: el 3-ago, y
+> el 26-ago con un checkout **56 commits atrás**, parado en la FICHA 06
+> mientras el remoto iba por la 19. Las dos veces hubo que rehacer todo.
+
 ---
 
 ## Bloque para pegar al abrir una sesión nueva (Cowork o Claude Code)
 
 ```
 Repo: github.com/martinrf79/Verifika (rama main).
-Leé en este orden y nada más: RESUMEN_PARA_NUEVO_CHAT.md, DECISIONES.md,
-arquitectura/README.md, PLAN_RECORTE.md, ARRANQUE.md.
-Corré pytest y anotá los dos contadores: tests/plan_techo.json y
+git fetch && git status. Si HEAD no es origin/main, PARÁ y avisá.
+Leé en este orden y nada más: ARRANQUE.md, DECISIONES.md,
+arquitectura/README.md. Corré pytest y anotá tests/plan_techo.json y
 tests/a_medias_techo.json.
 Soy Martín, escucho por transcriptor: contestame en prosa plana, corto.
 Código sólo dentro de un bloque, y sólo si es una consigna a ejecutar.
@@ -34,33 +41,44 @@ PUSHEÁ ANTES DE CERRAR, aunque quede a medias.
 
 ---
 
-## Las fichas, en orden
+## LO QUE RESTA — cinco cosas, al 26-ago
 
-Cada una se toma sola. No se empieza la siguiente hasta que la batería está
-verde y el contador se movió.
-
-| # | qué hace | cómo se sabe que está |
+| # | qué | por qué importa |
 |---|---|---|
-| ~~10~~ | ~~salida baja de 18 nodos a 4~~ | **HECHA el 24-ago.** 4 puertas en `app/core/salida.py`, `hub_venta.py` bajó 953 líneas, batería verde y piso intacto |
-| ~~11~~ | ~~las seis reposiciones se funden en una~~ | **HECHA el 24-ago.** Una puerta en `app/core/reposicion.py`, `hub_venta.py` bajó de 2.665 a 1.798 líneas, batería verde y piso intacto |
-| ~~12~~ | ~~`registrar()` en las seis etapas~~ | **HECHA el 24-ago.** El censo vive adentro de `grafo.registrar()` y `peso_del_censo.py` dejó de envolver nada: mide 39 nodos sobre 54 turnos, con candado en `tests/test_censo_del_grafo.py` |
-| ~~13~~ | ~~el primer número de VENTA~~ | **HECHA el 25-ago.** `banco_pruebas/vara_de_venta.py`: cinco números sobre el estado del turno, sin juez y sin modelo. Es el primer contador que **sube** |
-| ~~15~~ | ~~el punto de OFERTA~~ | **HECHA el 25-ago.** Punto sintético abierto por código en `indice_turno`, con estados terminales y exigido por `puede_salir`. El prompt no creció un byte |
-| ~~16~~ | ~~el cuarto freno + el detector estricto~~ | **HECHA el 25-ago.** Cuarto freno en `punto_de_oferta` y `_RE_PRONOMBRE` borrado; sobre los 15 casetes de la sonda `OFRECIDO` baja de 16 a 7, los 3 que ofrecian encima de su propia pregunta y los 4 falsos ya no cuentan, y el piso de venta quedo intacto |
-| ~~16B~~ | ~~los dos agujeros que dejó la 16~~ | **HECHA el 25-ago.** Ceder ahora DIFIERE: la oferta pendiente vive en `oferta_diferida` y el turno siguiente reabre el punto sin herramienta nueva. Y la ventana del ancla es el MENSAJE inmediato, con el subjuntivo adentro: `OFRECIDO` vuelve de 1 a 14 en el corpus viejo y da 22 en la sonda, con los cuatro falsos afuera |
-| 17 | regrabar el corpus | recién con 16B verde. Antes es pagar la grabación dos veces |
-| 18 | el modo degradado | hoy, si el decisor se cae, el cliente recibe "estoy con mucha demanda". No se cae un detalle: se cae la venta y el cliente |
-| 19 | `camino_al_cobro` | 6 de 15 charlas terminan sin que el bot diga nunca cómo se paga |
+| **21** | **la línea del cobro mata la oferta** | REGRESIÓN VIVA. El texto que estampa `camino_cobro` dice "link de pago" y "tu nombre", literales de `_RE_CERRANDO`: `punto_de_oferta` da el turno por CERRANDO, apaga la oferta y deja `pendientes` vacío, así que **no la difiere, la mata**. Son 4 ofertas sobre 15 charlas, entre ellas el K120 de `71 t3`. Causa de fondo: **código leyendo el texto que escribió el propio código como si lo hubiera escrito el modelo** |
+| 22 | el `SIN_ESTADO` que no debería existir | La FICHA 09 declaró que ningún punto sale sin estado y salen igual. Hambrea a `NO_SE_SABE` —2 casos en 55— y traba el cierre de `62` y `63`, que llegan al total y nunca cobran porque **todos** sus turnos con total repreguntan algo |
+| 23 | el modo degradado | Si el decisor se cae, el cliente recibe "estoy con mucha demanda". Es el único agujero que no tira un detalle: tira la venta **y el cliente** |
+| 24 | las tres guardias sin auditar | `honestidad_bot`, `punto_omitido`, `aduana`. Las tres con 0/54. De cuatro auditadas, **tres estaban ciegas**: la presunción es ciega hasta que se pruebe lo contrario |
+| 25 | el motor multi-tienda | Los tres `PLAN:` escritos: el id de la tienda fuera del código, los prompts a la fuente, y la TIENDA CERO de otro rubro adentro del repo. Es lo que convierte "adaptable en horas" de promesa en hecho. Va último a propósito |
 
-Las fichas 10, 11 y 12 eran las que bajaban el costo de cada sesión, y lo
-bajaron: leer `hub_venta.py` costaba unos 47.000 tokens **cada vez** con 3.621
-líneas. Hoy tiene 1.812, y las otras dos mitades se leen sólo cuando se tocan.
+Menores anotados: congelar la vara de `test_puerta_determinista`, que da rojo
+falso en cada regrabación porque compara el código contra lo que declaró el
+modelo; y `el_detalle_no_mata`, que perdió la mitad del denominador y no se
+toca hasta cerrar el `SIN_ESTADO`.
+
+---
+
+## Las fichas hechas
+
+| # | qué hizo | evidencia |
+|---|---|---|
+| ~~10~~ | salida baja de 18 nodos a 4 | 4 puertas en `salida.py`, `hub_venta.py` −953 líneas |
+| ~~11~~ | las seis reposiciones se funden en una | `reposicion.py`; `hub_venta.py` 2.665 → 1.798 |
+| ~~12~~ | `registrar()` en las seis etapas | el censo vive en `grafo.registrar()`, 39 nodos sobre 54 turnos |
+| ~~13~~ | el primer número de VENTA | `vara_de_venta.py`: cinco números sin juez y sin modelo. El primer contador que **sube** |
+| ~~15~~ | el punto de OFERTA | punto sintético abierto por código, exigido por `puede_salir`. El prompt no creció un byte |
+| ~~16~~ | el cuarto freno + el detector estricto | los 3 que ofrecían encima de su propia pregunta y los 4 falsos dejan de contar |
+| ~~16B~~ | los dos agujeros de la 16 | ceder ahora DIFIERE (`oferta_diferida`); la ventana del ancla es el mensaje, con subjuntivo |
+| ~~17~~ | regrabar el corpus | 15 de 15 con la clave gratis. `avance` 29→33, `no_se_frena` 33/33, `OFRECIDO` 14→23. Cinco varas rotas contadas como `A MEDIAS:`, ninguna aflojada |
+| ~~18~~ | el enclítico, la alucinación y el turno complejo | pagó 4 A MEDIAS de 5. Largo 1.652 → **1.570**, `una_sola_repregunta` **55/55**, puntos 495 → 498 |
+| ~~19~~ | el camino al cobro | `camino_al_cobro` 8/15 → **10/15**. `sin_cobro_inventado` estaba medio ciega: 5 de 7 formas pasaban. Y el candado de las excepciones: en las guardias de salida quedan **cero** `except` que atrapan y siguen |
+| ~~20~~ | auditar los engranajes ciegos | 3 ARREGLADAS, 1 PROBADA. `sin_descuento_inventado` 6 de 8 pasaban, `sin_negar_lo_traido` 6 de 8, `sin_json` 4 de 7. Y un rojo falso vivo: `sin_negar_lo_traido` borraba la aclaración honesta y le vendía una RAM de 8 a quien pidió 16 |
 
 ---
 
 ## Las reglas que ya se pagaron caro y no se rediscuten
 
-0. **Se pushea al cerrar la sesión, siempre.** Ver la regla cero, arriba.
+0. **Se pushea al cerrar la sesión, siempre.** Y **`git fetch` al abrirla.**
 1. El umbral se cambia en su propio commit, **antes** del trabajo que lo hace
    pasar, y con la aritmética escrita.
 2. El que implementa nunca reescribe la vara.
@@ -73,17 +91,21 @@ líneas. Hoy tiene 1.812, y las otras dos mitades se leen sólo cuando se tocan.
    preguntar.
 8. `grabar_casetes.py` **sin argumentos graba todos los guiones**. Nombralos.
 9. Un **0 sobre 54** en un nodo de vocabulario cerrado no prueba que el nodo
-   sobre: prueba que el corpus no dijo esas frases. `sin_narracion_interna` dio
-   0/54 y aun así dejó pasar "el cliente pide" al cliente. **Ese censo mide
-   cobertura del corpus, no utilidad del nodo.**
+   sobre: prueba que el corpus no dijo esas frases. **Ese censo mide cobertura
+   del corpus, no utilidad del nodo.** De cuatro guardias auditadas, tres
+   estaban ciegas.
 10. Si un número da 100% a la primera, sospechá del denominador antes que del
     bot. `el_detalle_no_mata` dio 4/4 sobre cuatro casos.
 11. **Una ficha no cierra dejando más `A MEDIAS:` de los que pagó**, salvo que
-    Martín lo autorice en esa misma sesión. Marcar es diferir trabajo, y una
-    ficha que difiere más de lo que cierra deja el contador más arriba de como
-    lo encontró. La 17 tuvo esa autorización —la regrabación destapó cinco de
-    un saque y el techo subió de 0 a 5—; las que siguen, no. Al cerrar se dice
-    en el reporte cuántas se pagaron y cuántas quedaron.
+    Martín lo autorice en esa misma sesión. Al cerrar se dice en el reporte
+    cuántas se pagaron y cuántas quedaron.
+12. **Un rojo falso que mutea es peor que el defecto que caza.** Tres veces una
+    guardia contra la alucinación se comió una aclaración honesta. Toda guardia
+    nueva se prueba por los dos lados: las formas del defecto **y** las frases
+    legítimas que no puede tocar.
+13. **El código no lee como modelo lo que escribió el código.** Una puerta
+    posterior que estampa texto no puede cambiar cómo se juzga lo que dijo el
+    modelo. Es la causa de la ficha 21.
 
 ---
 
