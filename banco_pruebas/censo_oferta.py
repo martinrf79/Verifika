@@ -38,6 +38,8 @@ USO
     python3 banco_pruebas/censo_oferta.py 62 77       # solo esas charlas
     python3 banco_pruebas/censo_oferta.py --ofertas   # el texto ENTERO de cada
                                                       # turno que ofrecio algo
+    python3 banco_pruebas/censo_oferta.py --sin-estado  # el texto ENTERO de los
+                                                      # que el contador NO cuenta
 """
 import asyncio
 import json
@@ -155,6 +157,29 @@ def _main() -> int:
                 if f["estado"] != "OFRECIDO":
                     continue
                 print(f"\n{'─' * 70}\n{c['nombre']}  turno {i}")
+                print(f"CLIENTE: {f['mensaje']}")
+                print(f"tenia para ofrecer: {f['producto'] or '(no figura)'}")
+                print(f"BOT:\n{f['texto']}")
+        print(f"\n{'─' * 70}")
+    if "--sin-estado" in sys.argv:
+        # LOS QUE EL CONTADOR DA COMO NO OFRECIDOS, Y SE LEEN.
+        #
+        # POR QUE HACE FALTA (Martin, FICHA 17). `OFRECIDO` lo decide una lista
+        # CERRADA de verbos, y una lista cerrada ya fallo una vez: el subjuntivo
+        # se le escapaba y la FICHA 16B tuvo que meterselo. Un detector asi da
+        # un PISO —lo que cuenta, ofrecio— y nunca la vuelta: que no cuente NO
+        # prueba que el turno no ofrecio. La unica forma de saberlo es leer el
+        # texto, y para leerlo hay que poder sacarlo.
+        #
+        # SIN_ESTADO Y `no abre` JUNTOS, y a proposito: el punto que ni se abre
+        # tambien puede llevar una oferta adentro escrita con otras palabras, y
+        # ahi el detector ni siquiera llego a mirar.
+        for c in res["_charlas"]:
+            for i, f in enumerate(c["turnos"], 1):
+                if f["estado"] == "OFRECIDO":
+                    continue
+                marca = "no abre" if f["estado"] is None else f["estado"]
+                print(f"\n{'─' * 70}\n{c['nombre']}  turno {i}   [{marca}]")
                 print(f"CLIENTE: {f['mensaje']}")
                 print(f"tenia para ofrecer: {f['producto'] or '(no figura)'}")
                 print(f"BOT:\n{f['texto']}")
