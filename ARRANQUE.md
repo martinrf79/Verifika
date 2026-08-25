@@ -18,6 +18,18 @@ recordar nada: se lee esto, se hace una ficha, se cierra.
 > Pasó dos veces trabajar una sesión entera sobre un árbol viejo: el 3-ago, y
 > el 26-ago con un checkout **56 commits atrás**, parado en la FICHA 06
 > mientras el remoto iba por la 19. Las dos veces hubo que rehacer todo.
+>
+> **Y a la tercera se arregló la causa, que era el propio hook de arranque.**
+> Hacía `checkout main` + `merge --ff-only origin/main`, y el merge lleva
+> `|| true`: cuando el `main` local es la historia **sin ancestro común** que
+> trae el snapshot de la imagen del contenedor, el merge se niega en silencio y
+> el hook igual imprimía *"se pasó a main automáticamente"*. Intentar no es
+> comprobar. Ahora **verifica** que `HEAD` sea `origin/main`, y según por qué no
+> lo es hace una cosa distinta: si no hay ancestro común y el árbol está limpio
+> es el snapshot viejo y lo **corrige solo**; si hay commits propios o cambios
+> sin commitear puede ser trabajo real, así que **no toca nada y PARA**.
+> El candado es `tests/test_hook_arranque_arbol_viejo.py`, que corre el bloque
+> real contra seis árboles armados a mano.
 
 ---
 

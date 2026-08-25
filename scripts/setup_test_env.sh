@@ -27,19 +27,57 @@ set -e
 # ARRASTRA a main cuando no hay conflicto, que es lo que queremos; y cuando si
 # hay conflicto git se niega solo y no pisa nada. La proteccion la da git, no
 # una condicion nuestra de mas.
+# EL TERCER AGUJERO, Y EL QUE COSTO TRES SESIONES (26-ago). Lo de arriba
+# INTENTABA pasar a main y despues DABA POR HECHO que lo habia logrado. El
+# `merge --ff-only` lleva `|| true`, asi que cuando el main local es una historia
+# SIN ancestro comun con origin/main -el snapshot viejo que trae la imagen del
+# contenedor- el merge se niega, no pasa nada, y el hook igual imprime "se paso a
+# main automaticamente". La sesion arrancaba 56 commits atras, parada en la FICHA
+# 06, con un cartel diciendole que estaba al dia.
+#
+# Intentar no es comprobar. Ahora, despues de intentar, se VERIFICA que HEAD sea
+# origin/main, y segun por que no lo es se hace una cosa distinta:
+#   - sin ancestro comun  -> es el arbol viejo de la imagen, jamas trabajo real:
+#                            se corrige solo con reset --hard, y se avisa.
+#   - con commits propios -> puede ser trabajo sin pushear: NO se toca, se PARA.
+# El reset solo corre con el arbol limpio. Si hay cambios sin commitear no se
+# pisa nada: se para y lo resuelve la sesion.
 if git rev-parse --git-dir >/dev/null 2>&1; then
+  git fetch --quiet origin main 2>/dev/null || true
+
   if [ "$(git branch --show-current)" != "main" ]; then
-    git fetch --quiet origin main 2>/dev/null || true
     if git checkout --quiet main 2>/dev/null; then
-      git merge --quiet --ff-only origin/main 2>/dev/null || true
       echo "RAMA: se paso a main automaticamente. Se trabaja SIEMPRE en main."
     else
       echo "AVISO: no se pudo pasar a main solo -git se nego, hay conflicto real-."
       echo "       NO se trabaja en esta rama: resolvelo y volve a main a mano."
     fi
-  else
-    git fetch --quiet origin main 2>/dev/null || true
-    git merge --quiet --ff-only origin/main 2>/dev/null || true
+  fi
+  git merge --quiet --ff-only origin/main 2>/dev/null || true
+
+  # ── Y ACA SE COMPRUEBA, QUE ES LO QUE FALTABA ─────────────────────────────
+  REMOTO="$(git rev-parse origin/main 2>/dev/null || true)"
+  LOCAL="$(git rev-parse HEAD 2>/dev/null || true)"
+  if [ -n "$REMOTO" ] && [ -n "$LOCAL" ] && [ "$LOCAL" != "$REMOTO" ]; then
+    BASE="$(git merge-base HEAD origin/main 2>/dev/null || true)"
+    SUCIO="$(git status --porcelain 2>/dev/null || true)"
+    if [ -z "$BASE" ] && [ -z "$SUCIO" ]; then
+      VIEJO="$(git rev-parse --short HEAD)"
+      if git reset --hard -q origin/main 2>/dev/null; then
+        echo "ARBOL VIEJO CORREGIDO: el main local era una historia SIN ancestro"
+        echo "       comun con origin/main -el snapshot que trae la imagen-. Se"
+        echo "       reapunto main a origin/main. Lo viejo queda en $VIEJO."
+      fi
+    else
+      echo "PARA: HEAD no es origin/main y NO se corrige solo."
+      if [ -z "$BASE" ]; then
+        echo "       Historias sin ancestro comun y el arbol esta sucio: no se pisa."
+      else
+        echo "       main local tiene $(git rev-list --count origin/main..HEAD 2>/dev/null || echo '?') commit(s) propios: puede ser trabajo sin pushear."
+      fi
+      echo "       NO TRABAJES ASI. Es la REGLA CERO BIS de ARRANQUE.md."
+      echo "       Miralo con: git status && git log --oneline origin/main..HEAD"
+    fi
   fi
 fi
 
