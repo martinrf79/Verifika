@@ -423,6 +423,15 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
                 specs = f.get("specs") if isinstance(f.get("specs"), dict) else {}
                 valor = specs.get(campo, f.get(campo))
                 if valor in (None, "", []):
+                    # LA SPEC SE GUARDA CON EL NOMBRE CORTO (FICHA 22). El
+                    # modelo declara la COLUMNA del catalogo -`garantia_meses`-
+                    # y `specs_preguntables.json` la guarda por su id
+                    # -`garantia`-, asi que el punto se quedaba sin un solo
+                    # anclaje teniendo el dato certificado en la mano. Se prueba
+                    # el nombre corto DESPUES del entero, nunca en su lugar.
+                    corto = campo.split("_")[0]
+                    valor = specs.get(corto, f.get(corto))
+                if valor in (None, "", []):
                     continue
                 fuera.append(str(valor))
                 # UN PRECIO SE ESCRIBE CON PUNTO Y LA FICHA LO GUARDA PELADO
@@ -1013,11 +1022,23 @@ def _dice(palabra, texto: str) -> bool:
     minimo los descarta a todos: `_aparece("hz", ...)` da False SIEMPRE.
 
     Se ancla al arranque de palabra igual que `_aparece`, asi que `hz` no se
-    da por dicho porque el texto diga otra cosa que lo contenga en el medio."""
-    w = _raiz(str(palabra or "").strip())
-    if not w:
+    da por dicho porque el texto diga otra cosa que lo contenga en el medio.
+
+    EL CAMPO VIENE CON GUION BAJO Y ASI NO LO ESCRIBE NADIE (FICHA 22). El
+    modelo declara el campo con el nombre de la COLUMNA del catalogo
+    —`garantia_meses`, `peso_gramos`— y el mensaje al cliente dice "garantia
+    oficial de 24 meses". Buscar el slug entero da False SIEMPRE, o sea que el
+    atributo no se podia medir: dos de las omisiones de las charlas grabadas
+    eran esto, con la respuesta correcta escrita en el mismo renglon. Se parte
+    por `_` y se exigen TODOS los pedazos —lo mismo que hace `_aparece` con un
+    termino de varias palabras—, porque conformarse con uno seria un colador:
+    "meses" solo lo dice cualquier mensaje que hable de plazos."""
+    partes = [_raiz(w) for w in str(palabra or "").strip().split("_") if w.strip()]
+    partes = [w for w in partes if w]
+    if not partes:
         return False
-    return bool(re.search(rf"\b{re.escape(w)}", _n(texto)))
+    t = _n(texto)
+    return all(re.search(rf"\b{re.escape(w)}", t) for w in partes)
 
 
 def _cubierto(punto: dict, texto: str) -> bool:
@@ -1220,6 +1241,28 @@ def _evidencia(punto: dict, llamadas: list) -> str:
                     fuera = "NO_SE_SABE"
             continue
 
+        if tipo == "compatibilidad":
+            # EL VEREDICTO DE COMPATIBILIDAD VIVE EN SU PROPIA HERRAMIENTA, y
+            # se ataba mal (FICHA 22). `_atiende` compara el `termino` del
+            # punto —"el mouse mas barato jugar"— contra `categoria`,
+            # `descripcion`, `localidad` y `que`, y `ver_compatibilidad` no
+            # manda ninguno de esos cuatro: manda `product_id` y `equipo`. Por
+            # eso un `equipo_desconocido` —que ya esta en `_EVIDENCIA_SIN_DATO`
+            # y dice negro sobre blanco que el codigo no pudo identificar
+            # contra que comparar— se descartaba, y el punto se iba con la
+            # casilla vacia como si nadie lo hubiera mirado. Se ata por el
+            # EQUIPO, que es lo que la llamada y el punto sí comparten.
+            if l.get("herramienta") != "ver_compatibilidad":
+                continue
+            equipo = str(r.get("equipo")
+                         or (l.get("pedido") or {}).get("equipo") or "")
+            if equipo and not (set(_palabras(equipo))
+                               & set(_palabras(punto.get("para") or ""))):
+                continue
+            if str(r.get("estado") or "") in _EVIDENCIA_SIN_DATO:
+                fuera = "NO_SE_SABE"
+            continue
+
         if not _atiende(punto, l):
             continue
         estado = str(r.get("estado") or "")
@@ -1232,6 +1275,51 @@ def _evidencia(punto: dict, llamadas: list) -> str:
         if estado in _EVIDENCIA_SIN_DATO or veredicto == "not_found":
             fuera = "NO_SE_SABE"
     return fuera
+
+
+def _politica_servida(punto: dict, llamadas: list) -> bool:
+    """¿LA FUENTE TRAJO ESTE TEMA? Es la unica prueba mecanica que existe sobre
+    una politica, y por eso es la que decide su final (FICHA 22).
+
+    POR QUE LA POLITICA NO SE PUEDE MEDIR CONTRA EL TEXTO, y es la causa de 18
+    de los 24 puntos que terminaban con la casilla vacia. El punto se abre con
+    el nombre del tema —`desconfianza_online`, `preguntas_confirmacion`,
+    `cierre_venta`— y ese nombre es vocabulario de nuestro archivero: NADIE lo
+    escribe en un mensaje a un cliente. `_cubierto` lo busca igual, con lo cual
+    da False siempre y el punto no podia terminar en ningun lado. Un criterio
+    que da False siempre no es una vara: es un cero disfrazado, y estaba
+    contando como omision turnos que contestaban la politica perfecto —"comprar
+    online puede generar dudas, todos nuestros productos son originales"— sin
+    usar ni una vez la palabra "desconfianza".
+
+    LO QUE SI SE PUEDE PROBAR es de donde salio el material: `consultar_temas`
+    devuelve cada tema con su estado. Si el tema volvio SERVIDO, la politica se
+    sirvio entera y el modelo la reescribe con sus palabras, asi que no hay
+    forma mecanica de probar que se omitio —lo dice la puerta de la ficha 09 en
+    su propio comentario, y la regla tecnica 4: lo que no se puede mapear
+    mecanicamente se descarta—. Si el tema no volvio de ninguna herramienta, el
+    codigo no tuvo con que contestarlo, que es exactamente `NO_SE_SABE`.
+
+    NO AFLOJA EL ANCLAJE, que es la otra mitad y sigue igual: los numeros de la
+    politica —"6 meses", "3000 ars"— se siguen exigiendo en el texto por
+    `anclajes()`, y son los que hacen que un tema con monto se mida de verdad.
+    """
+    for l in (llamadas or []):
+        if l.get("herramienta") != "consultar_temas":
+            continue
+        r = l.get("resultado")
+        if not isinstance(r, dict):
+            continue
+        if str(r.get("estado") or "") in _EVIDENCIA_SIN_DATO:
+            continue
+        for t in (r.get("temas") or []):
+            if not isinstance(t, dict):
+                continue
+            if str(t.get("tema") or "") != str(punto.get("tema") or ""):
+                continue
+            if str(t.get("estado") or "") not in _EVIDENCIA_SIN_DATO:
+                return True
+    return False
 
 
 def estado_terminal(punto: dict, texto: str, llamadas: list | None = None,
@@ -1277,6 +1365,30 @@ def estado_terminal(punto: dict, texto: str, llamadas: list | None = None,
         return por_evidencia
     if _en_la_misma_oracion(punto, _RE_NO_SE, texto or ""):
         return "NO_SE_SABE"
+
+    # LA POLITICA TERMINA POR SU EVIDENCIA, NUNCA POR LA CASILLA VACIA
+    # (FICHA 22). El motivo entero esta en `_politica_servida`: el nombre del
+    # tema no aparece jamas en un mensaje escrito para un cliente, asi que la
+    # casilla vacia de una politica no probaba una omision —probaba que el
+    # criterio no podia medir—. O la fuente trajo el tema, y entonces se sirvio
+    # entero y no hay forma mecanica de probar lo contrario, o no lo trajo, y
+    # entonces no habia con que contestarlo.
+    if tipo == "politica":
+        if not _politica_servida(punto, llamadas or []):
+            return "NO_SE_SABE"
+        # LA POLITICA CON NUMEROS SI SE PUEDE PROBAR, Y ESA PRUEBA NO SE
+        # AFLOJA. `anclajes()` le saca a un tema sus montos con su unidad
+        # —"6 meses", "3000 ars"—, que es lo unico que la identifica en la
+        # prosa. Si el tema los tiene y NINGUNO salio en el mensaje, la
+        # omision esta probada mecanicamente y la casilla queda VACIA, igual
+        # que antes. Sin esta mitad, un plazo de garantia que el turno se
+        # olvido saldria RESUELTO por el solo hecho de que la fuente lo trajo,
+        # que es exactamente el verde falso que este modulo evita.
+        anclas = anclajes(punto, llamadas or [])
+        if anclas and not any(_ancla_en(a, texto or "") for a in anclas):
+            return ""
+        return "RESUELTO"
+
     return ""
 
 
