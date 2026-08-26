@@ -29,6 +29,14 @@ PLAN       el recorte. Baja a medida que se hace.
 El detalle de cada paso, con su número de hoy y su objetivo, está en
 `tests/test_plan_del_recorte.py`. La unidad de trabajo abierta, en `arquitectura/`.
 
+**26-ago:** `test_app_no_menciona_el_id_de_ninguna_tienda` pasó de `PLAN:` a
+`A MEDIAS:` — las dos rutas cableadas de `guia_venta_prosa.py` y
+`guia_compra.py` ya resuelven por `get_current_tienda()` con un corpus
+cacheado por tienda (no swap-in-place: evita la carrera entre pedidos
+concurrentes de dos tiendas). Quedan 18 menciones default en
+`compatibilidad.py`, `fuente_producto.py` y `coherencia_datos.py`, sin tocar.
+Techos: PLAN 12→11, A MEDIAS 1→2.
+
 ---
 
 ## Abierto

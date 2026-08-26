@@ -53,7 +53,7 @@ def mas_barato_con_stock(categoria: str | None = None) -> dict | None:
     return min(productos, key=lambda p: p["precio_ars"])
 
 
-# ── CERTIFICADOR DE CATEGORIA (17-jul, consigna 43) ──────────────────────────
+# ── CERTIFICADOR DE CATEGORIA (17-jul, consigna 43) ────────────────────────────────────
 # El certificador de identidad decide sobre PRODUCTOS; nadie decidia sobre la
 # CATEGORIA. Cuando el cliente pide una categoria que la tienda NO vende
 # (celular, consola, televisor), el universo del generador queda vacio y el
@@ -63,7 +63,7 @@ def mas_barato_con_stock(categoria: str | None = None) -> dict | None:
 # amplia desde el radar de logs; palabras ambiguas ("play", "telefono" como
 # dato de contacto) quedan AFUERA a proposito.
 #
-# FUENTE DE VERDAD: la lista vive en data/clientes/verifika_prod/no_vendidas.json.
+# FUENTE DE VERDAD: la lista vive en data/clientes/<tienda_id>/no_vendidas.json.
 # Sumar un caso es agregar una linea a ESE json, no tocar codigo.
 #
 # La copia entera que estaba aca abajo como "fallback minimo" se BORRO el 3-ago:
@@ -71,29 +71,39 @@ def mas_barato_con_stock(categoria: str | None = None) -> dict | None:
 # nunca queda igual a la otra por mucho tiempo. Si el archivo falta, el mapa
 # queda vacio y el bot no niega una categoria por un dato que no leyo, que es la
 # salida honesta; una copia vieja en codigo le haria negar mal y con confianza.
-_NO_VENDIDAS_CACHE: dict[str, str | None] | None = None
+#
+# CACHE POR TIENDA (FICHA 25, 26-ago-2026). Hasta hoy era una unica variable
+# global: la primera tienda que llamaba esto cacheaba SU no_vendidas.json y
+# CUALQUIER otra tienda de la misma instancia leia esa lista, aunque fuera de
+# otro rubro. `categoria_no_vendida` ya recibia `tienda_id` de su llamador —el
+# dato estaba, nadie lo usaba para elegir el archivo. No hay caso hoy porque
+# solo existe una tienda; el bug queda mudo hasta que exista una segunda.
+_NO_VENDIDAS_CACHE: dict[str, dict[str, str | None]] = {}
 
 
-def _no_vendidas() -> dict[str, str | None]:
-    """Lee la fuente de verdad (no_vendidas.json) una vez y la cachea. Si el
-    archivo falta o esta roto devuelve vacio: sin fuente no se niega nada."""
-    global _NO_VENDIDAS_CACHE
-    if _NO_VENDIDAS_CACHE is not None:
-        return _NO_VENDIDAS_CACHE
+def _no_vendidas(tienda_id: str | None = None) -> dict[str, str | None]:
+    """Lee la fuente de verdad (no_vendidas.json) de UNA tienda y la cachea por
+    tienda_id. Si el archivo falta o esta roto devuelve vacio: sin fuente no se
+    niega nada."""
+    from app.core.contexto_turno import get_current_tienda
+    from app.config import get_settings
+    tid = tienda_id or get_current_tienda() or get_settings().TIENDA_ID
+    if tid in _NO_VENDIDAS_CACHE:
+        return _NO_VENDIDAS_CACHE[tid]
     import json
     import os
     ruta = os.path.join(os.path.dirname(__file__), "..", "..", "data",
-                        "clientes", "verifika_prod", "no_vendidas.json")
+                        "clientes", tid, "no_vendidas.json")
     try:
         with open(ruta, encoding="utf-8") as f:
             data = json.load(f)
-        _NO_VENDIDAS_CACHE = {str(k).strip().lower(): v
-                              for k, v in (data.get("no_vendidas") or {}).items()
-                              if k}
+        _NO_VENDIDAS_CACHE[tid] = {str(k).strip().lower(): v
+                                   for k, v in (data.get("no_vendidas") or {}).items()
+                                   if k}
     except Exception:
-        log.warning("no_vendidas_sin_fuente", ruta=ruta)
-        _NO_VENDIDAS_CACHE = {}
-    return _NO_VENDIDAS_CACHE
+        log.warning("no_vendidas_sin_fuente", ruta=ruta, tienda_id=tid)
+        _NO_VENDIDAS_CACHE[tid] = {}
+    return _NO_VENDIDAS_CACHE[tid]
 
 
 # El cliente nombra algo que no vendemos para preguntar si lo NUESTRO le sirve
@@ -115,13 +125,13 @@ def categoria_no_vendida(mensaje: str,
     # Puntuacion a espacios: sin esto "ps5?" o "celulares?" (signo pegado al
     # final) no matchean el borde de palabra y el no honesto no salia.
     m = " " + re.sub(r"[^\w]+", " ", _norm(mensaje)) + " "
-    no_vendidas = _no_vendidas()
+    no_vendidas = _no_vendidas(tienda_id)
     pedida = next((p for p in no_vendidas if f" {p} " in m), None)
     if not pedida:
         return None
     # NO es un pedido de compra si lo nombra para preguntar COMPATIBILIDAD:
     # "el mas barato sirve para PS5?" pregunta por el mouse, no pide una PS5.
-    # Contestarle "PS5 no trabajamos" es un despropósito y encima tapa la
+    # Contestarle "PS5 no trabajamos" es un despropósito y encima tapa la
     # respuesta real (banco 29-jul, guion 54 turno 2).
     if _RE_COMPATIBILIDAD.search(m):
         return None
@@ -163,4 +173,3 @@ _STOP_MODELO = {"modelo", "el", "la", "los", "las", "de", "del", "un", "una",
 # es un pedido, y ese lo conduce el flujo de pedido normal.
 _RE_DECISION = re.compile(r"\b(quiero|dame|sumal[oa]|sumame|llevo|comprar"
                           r"|agrega|anotal[oa])\b")
-
