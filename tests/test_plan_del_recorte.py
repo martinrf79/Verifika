@@ -283,8 +283,19 @@ def test_la_cobertura_es_una_puerta_y_no_un_log():
     "PLAN: el motor no puede contener el id de ninguna tienda. HOY `app/` "
     "menciona un tienda_id concreto 21 veces, casi todas como valor por defecto "
     "de `os.getenv`, y dos como RUTA cableada a los archivos de esa tienda. "
-    "OBJETIVO cero. Es la fuga barata; la cara es la politica de negocio en "
-    "Python, que tiene su propio paso."))
+    "LAS DOS RUTA CABLEADA, nombradas para no tener que rebuscarlas: "
+    "`guia_venta_prosa.py::_cargar_base_conocimiento` siempre lee "
+    "'data/clientes/verifika_prod/base_conocimiento.json' -ahi vive la voz del "
+    "vendedor, los mensajes fijos y el criterio por categoria-, y "
+    "`guia_compra.py` siempre lee '.../verifika_prod/no_vendidas.json'. Esas "
+    "dos hay que parametrizarlas con el tienda_id de la conversacion, no "
+    "reescribirlas. LAS OTRAS ~19 son default de "
+    "`os.getenv('TIENDA_ID', 'verifika_prod')` en compatibilidad.py, "
+    "fuente_producto.py y coherencia_datos.py: inofensivas MIENTRAS el "
+    "llamador pase tienda_id -la regla #10.1 de CLAUDE.md ya lo exige-, pero "
+    "el string literal se saca igual para que un olvido no caiga en silencio "
+    "sobre la tienda equivocada. OBJETIVO cero. Es la fuga barata; la cara es "
+    "la politica de negocio en Python, que tiene su propio paso."))
 def test_app_no_menciona_el_id_de_ninguna_tienda():
     app = _RAIZ / "app"
     culpables = []
@@ -304,7 +315,23 @@ def test_app_no_menciona_el_id_de_ninguna_tienda():
     "PERSONA de la tienda —quien sos, como hablas— sea configuracion, y que en "
     "el codigo quede solo el nucleo de venta, que es igual para todas. Estaba "
     "como decision pendiente de Martin; el 19-ago dejo de ser opcional, porque "
-    "un prompt en el codigo es una tienda adentro del motor."))
+    "un prompt en el codigo es una tienda adentro del motor. "
+    "AVISO PARA QUIEN LO CIERRE, medido el 26-ago: la PERSONA ya salio. "
+    "`sistema()` delega en `guia_venta_prosa.identidad()`, que arma la voz "
+    "entera -identidad, mensajes fijos, criterio y movida por categoria- desde "
+    "`base_conocimiento.json`, cero texto de negocio en Python. Lo que sigue "
+    "vivo en hub_venta.py es `_INSTRUCCION_UNO`, `_INSTRUCCION_DOS` -la mecanica "
+    "universal del turno, 'declara todo lo que entendiste', 'contesta solo con "
+    "los datos de abajo', sin una palabra de ningun rubro- y `_SISTEMA_MINIMO`, "
+    "la red para cuando la fuente no carga. El assert de abajo las caza a las "
+    "tres por el nombre de la variable, no por si tienen algo de una tienda "
+    "adentro. SI EL UNICO ROJO ES ESTE, no hay logica que mover: no muden ni "
+    "renombren `_INSTRUCCION_UNO/DOS` para esquivar el regex, esa es la forma "
+    "exacta de sobre-trabajo que este plan quiere cortar. Verifiquen primero, "
+    "con grep de nombres de tienda y de rubro sobre hub_venta.py, si de verdad "
+    "queda algo de UNA tienda ahi adentro; si no queda nada, el test esta "
+    "pidiendo mas de lo que su propio OBJETIVO pide, y se corrige el assert en "
+    "su propio commit, explicado, no se lo esquiva con nombres nuevos."))
 def test_los_prompts_no_viven_en_el_codigo():
     hub = (_RAIZ / "app" / "core" / "hub_venta.py").read_text(encoding="utf-8")
     clavados = re.findall(r"^_(?:INSTRUCCION|SISTEMA)\w*\s*=", hub, re.M)
@@ -318,7 +345,13 @@ def test_los_prompts_no_viven_en_el_codigo():
     "FAQ, sus tarifas y sus datos de cobro. Se hace PRIMERO, aunque falle: lo "
     "que se rompa al servirla es la lista de fugas REAL, medida y no supuesta. "
     "Sin esto, 'adaptable a otro ecommerce' es una promesa de venta que nadie "
-    "puede verificar."))
+    "puede verificar. NO SE ARRANCA DE CERO: `scripts/crear_cliente.py` ya "
+    "hace el alta -registra la tienda en Firestore, carga catalogo y FAQ desde "
+    "CSV con cualquier cantidad de columnas extra, guarda configuracion-, y ya "
+    "se uso para dar de alta verifika_prod. El trabajo de esta ficha es "
+    "EJERCITARLO con un rubro real y lejano -no otra tienda de electronica- y "
+    "anotar como test rojo nuevo cada cosa puntual que se rompa al servirla, "
+    "no inventar una herramienta de alta que ya existe."))
 def test_existe_una_segunda_tienda_de_otro_rubro():
     clientes = _RAIZ / "data" / "clientes"
     tiendas = [d for d in clientes.iterdir() if d.is_dir()] if clientes.exists() else []
