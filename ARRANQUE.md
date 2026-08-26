@@ -55,7 +55,7 @@ PUSHEÁ ANTES DE CERRAR, aunque quede a medias.
 
 ## LO QUE RESTA — el número sale de `pytest`, no de esta tabla
 
-**Hoy: 13 `PLAN:` + 1 `A MEDIAS:`.** Unificado el 25-ago: hasta esa fecha esta
+**Hoy: 14 `PLAN:` + 1 `A MEDIAS:`.** Unificado el 25-ago: hasta esa fecha esta
 tabla nombraba cuatro fichas por número, pero el plan ejecutable —los `xfail`
 de `tests/test_plan_del_recorte.py` y `tests/test_plan_de_la_sonda.py`— traía
 otros ocho pasos sin número asignado. Cada fila de abajo es un test que existe
@@ -70,18 +70,18 @@ arregla ese mismo día, no se acumula.
 | 11 (cola) | `test_los_guiones_que_despiertan_las_guardias_estan_grabados` | guiones 26 a 38 sin grabar, necesita la clave paga. **También prerrequisito parcial de la 24** |
 | 11 (cola) | `test_el_piso_guarda_algun_numero_de_venta` | el piso mide 8 varas defensivas y ninguna que mida si el bot vende |
 | 11 (cola) | `test_el_piso_de_la_puerta_guarda_crudo_y_no_razon` | `puerta_piso.json` guarda porcentaje, no numerador y denominador por separado |
-| **22** | `test_ningun_punto_termina_con_la_casilla_vacia` | 24 puntos en `SIN_ESTADO` sobre 16 de 55 turnos, 18 de tipo `politica`. Hambrea la vara `el_detalle_no_mata`, que hoy mide 2/2 sobre un denominador que debería ser mayor |
+| **22** | `test_ningun_punto_termina_con_la_casilla_vacia` | **3** puntos en `SIN_ESTADO` sobre 2 de 55 turnos, contra 24 antes. Los 21 que se cerraron eran defectos de medición; los 3 que quedan son la ficha 29 y no se pueden cerrar acá |
 | **23** | `test_el_modo_degradado_puede_ver_lo_que_ya_se_sabe` | la disculpa de "mucha demanda" corre con `memoria` e `idx` en el mismo scope y no los nombra; `_sobrecarga()` no recibe ningún parámetro. Es el único agujero que tira la venta **y al cliente** |
 | **24** | *(sin test propio todavía)* | auditar `honestidad_bot`, `punto_omitido` y `aduana` como hizo la 20 —frases reales del defecto y frases legítimas que no se pueden tocar—. Las tres con 0/54. Se puede auditar por unidad sin esperar los guiones 26-38, aunque medirlas sobre corpus real sí los necesita |
 | **25** | `test_app_no_menciona_el_id_de_ninguna_tienda`, `test_los_prompts_no_viven_en_el_codigo`, `test_existe_una_segunda_tienda_de_otro_rubro` | el motor multi-tienda: el id fuera del código, los prompts a la fuente, la TIENDA CERO. Va último a propósito |
 | **26** | `test_no_hay_universal_sin_herramienta_que_lo_respalde` | alucinación: un universal sobre el catálogo sale sin que ninguna herramienta lo haya mirado |
 | **27** | `test_la_nota_interna_no_le_llega_al_cliente` | `sin_narracion_interna` no ve hablar del cliente en tercera persona, solo nombrar la máquina |
 | **28** | `test_no_se_promete_un_dato_que_no_se_da` | un anuncio de precio, plazo o stock puede salir sin el dato abajo |
-| A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** |
+| **29** | `test_la_cuenta_podada_no_se_lleva_el_reparto_ni_el_pago` | la anti-repetición poda el bloque de cuenta que no cambió y deja sólo la plata: se lleva el reparto por destino y el pago dividido, que son PUNTOS. Es la ficha 21 al revés —una puerta posterior RESTA texto después de que `puede_salir` ya juzgó— |
+| A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** —que hoy espera a la 29— |
 
-**Orden sugerido, y ninguno bloquea a otro salvo que se diga:** 22 antes que
-23 —un `SIN_ESTADO` mal contado ensucia cualquier vara que se arme
-después—; 26, 27 y 28 se pueden hacer en cualquier momento, son independientes
+**Orden sugerido, y ninguno bloquea a otro salvo que se diga:** 29 antes que
+22 —la 22 ya bajó todo lo que era suyo y los 3 que le faltan son de la 29—; 26, 27 y 28 se pueden hacer en cualquier momento, son independientes
 entre sí y del resto; 24 y 25 al final, como ya estaba decidido; la cola de la
 11 se reparte donde convenga, salvo el prerrequisito ya anotado.
 
