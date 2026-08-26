@@ -565,3 +565,59 @@ def test_el_modo_degradado_puede_ver_lo_que_ya_se_sabe():
         "total, y `_sobrecarga()` en app/main.py no recibe ningun parametro: "
         "el mensaje de demanda no tiene de donde sacar lo que el turno ya "
         "sabe")
+
+
+# ── FICHA 29 — LA HIGIENE BORRA EL RENGLON QUE LA PUERTA YA DIO POR DICHO ────
+#
+# LO ENCONTRO LA FICHA 22 y no es suyo, asi que se anota y se sigue. La 22
+# cerro 21 de los 24 puntos que terminaban con la casilla vacia —los tres
+# defectos de medicion: el slug del tema, el slug del campo y la evidencia de
+# compatibilidad mal atada—. Los TRES que quedan no son un defecto de medicion:
+# el renglon estaba escrito, la puerta lo vio, y una pieza posterior lo borro.
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "PLAN: FICHA 29. La anti-repeticion PODA un bloque de cuenta que no cambio "
+    "y deja en su lugar el resumen de `app/core/mensaje.py::_resumen_de_cuenta` "
+    "—'Sin cambios en la cuenta. Total: $104.500'—. Esa poda conserva LA PLATA "
+    "y se lleva puesto todo lo demas que vivia adentro del mismo bloque: el "
+    "REPARTO POR DESTINO -'Reparto de los envios: - A Rosario: 2x teclado, 1x "
+    "mouse / - A Cordoba: 1x auriculares'- y el PAGO DIVIDIDO -'Pago dividido: "
+    "- mercado pago (70%): $140.700 / - transferencia (30%): $60.300'-. Los "
+    "dos son PUNTOS del contrato de cobertura, no decoracion. "
+    "ES LA FICHA 21 AL REVES, y por eso vale escribirla aparte: alla una "
+    "puerta posterior SUMABA prosa y ensuciaba el juicio del modelo; aca una "
+    "puerta posterior RESTA texto DESPUES de que `puede_salir` ya juzgo, asi "
+    "que la guardia `punto_omitido` mira el texto con el renglon presente, "
+    "dice `puede=True` con razon, no repone nada, y el mensaje sale sin el "
+    "renglon igual. Medido con el espia sobre las dos charlas: en "
+    "'78_reparto_por_destino' turno 2 la guardia recibe el texto CON 'A "
+    "Rosario' y 'A Cordoba' y lo devuelve intacto, y despues la higiene lo "
+    "reemplaza por 'Sin cambios en la cuenta'; en '81_charla_real_12ago_cierre' "
+    "turno 3 pasa lo mismo con el 'Pago dividido'. El propio docstring de "
+    "`_resumen_de_cuenta` cita la charla 78 turno 2 como el caso que lo hizo "
+    "nacer: la regla es correcta para la plata y ciega para el resto. "
+    "HOY 3 puntos del censo de `banco_pruebas/censo_puntos.py` terminan con la "
+    "casilla vacia por esta causa y por ninguna otra -2 `destino` y 1 `pago`-, "
+    "y son los 3 que le faltan a la FICHA 22 para llegar a 0. "
+    "OBJETIVO 0: lo que la poda deja en pie tiene que conservar los renglones "
+    "de CODIGO que no son plata -el reparto por destino y el pago dividido-, "
+    "que son material sellado y no se pueden reescribir con prosa."))
+def test_la_cuenta_podada_no_se_lleva_el_reparto_ni_el_pago():
+    from app.core import mensaje as M
+    anterior = ("Presupuesto:\n"
+                "- 2x Teclado Genius KB-110X Blanco: $12.000 c/u = $24.000\n"
+                "- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\n"
+                "Subtotal: $81.500\n"
+                "Envio (2 envios): $14.500\n"
+                "Total: $104.500\n\n"
+                "Reparto de los envios:\n"
+                "- A Rosario: 2x teclado\n"
+                "- A Cordoba: 1x auriculares")
+    texto = ("Te confirmo el total.\n\n" + anterior)
+    quedo = M.sin_cuenta_que_no_cambio(texto, anterior)
+    assert "104.500" in quedo, (
+        "la plata se perdio: eso ya lo cubre otra vara y este test no mide eso")
+    faltan = [r for r in ("Rosario", "Cordoba") if r not in quedo]
+    assert not faltan, (
+        f"la poda se llevo {faltan} del reparto por destino. Quedo:\n{quedo}")
