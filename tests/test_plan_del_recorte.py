@@ -40,7 +40,7 @@ if str(_RAIZ) not in sys.path:
     sys.path.insert(0, str(_RAIZ))
 
 
-# ── PASO 1 — EL TURNO SE ACHICA ─────────────────────────────────────
+# ── PASO 1 — EL TURNO SE ACHICA ────────────────────────────────────
 
 def test_la_salida_tiene_cuatro_nodos_o_menos():
     """CERRADO el 24-ago-2026 — FICHA 10. La marca se saco porque paso.
@@ -150,7 +150,7 @@ def test_el_grafo_registra_en_las_seis_etapas():
         f"faltan {sorted(set(G.ETAPAS) - vistas)}")
 
 
-# ── PASO 2 — EL MODELO DEJA DE ELEGIR ────────────────────────────────
+# ── PASO 2 — EL MODELO DEJA DE ELEGIR ────────────────────────
 
 def test_el_modelo_ve_una_sola_herramienta():
     """CERRADO el 23-ago-2026 — FICHA 06. La marca se saco porque paso.
@@ -207,7 +207,7 @@ def test_el_esquema_pesa_menos_de_seis_kilobytes():
     assert peso <= 6000, f"el esquema pesa {peso} bytes"
 
 
-# ── PASO 3 — EL CONTRATO DEL TURNO ──────────────────────────────────
+# ── PASO 3 — EL CONTRATO DEL TURNO ────────────────────────
 
 def test_se_abre_un_punto_por_cada_familia_respondible():
     """CERRADO el 21-ago-2026 — FICHA 02. La marca se saco porque paso.
@@ -277,7 +277,7 @@ def test_la_cobertura_es_una_puerta_y_no_un_log():
         "siendo una metrica que se escribe en el log")
 
 
-# ── EL MOTOR — QUE NO TENGA UNA TIENDA ADENTRO ─────────────────────────
+# ── EL MOTOR — QUE NO TENGA UNA TIENDA ADENTRO ───────────────────────
 
 @pytest.mark.xfail(strict=True, reason=(
     "PLAN: el motor no puede contener el id de ninguna tienda. HOY `app/` "
@@ -309,33 +309,73 @@ def test_app_no_menciona_el_id_de_ninguna_tienda():
         + "\n  ".join(culpables[:25]))
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: los prompts salen del codigo a la fuente. HOY `_INSTRUCCION_UNO`, "
-    "`_INSTRUCCION_DOS` y `sistema()` viven en hub_venta.py. OBJETIVO que la "
-    "PERSONA de la tienda —quien sos, como hablas— sea configuracion, y que en "
-    "el codigo quede solo el nucleo de venta, que es igual para todas. Estaba "
-    "como decision pendiente de Martin; el 19-ago dejo de ser opcional, porque "
-    "un prompt en el codigo es una tienda adentro del motor. "
-    "AVISO PARA QUIEN LO CIERRE, medido el 26-ago: la PERSONA ya salio. "
-    "`sistema()` delega en `guia_venta_prosa.identidad()`, que arma la voz "
-    "entera -identidad, mensajes fijos, criterio y movida por categoria- desde "
-    "`base_conocimiento.json`, cero texto de negocio en Python. Lo que sigue "
-    "vivo en hub_venta.py es `_INSTRUCCION_UNO`, `_INSTRUCCION_DOS` -la mecanica "
-    "universal del turno, 'declara todo lo que entendiste', 'contesta solo con "
-    "los datos de abajo', sin una palabra de ningun rubro- y `_SISTEMA_MINIMO`, "
-    "la red para cuando la fuente no carga. El assert de abajo las caza a las "
-    "tres por el nombre de la variable, no por si tienen algo de una tienda "
-    "adentro. SI EL UNICO ROJO ES ESTE, no hay logica que mover: no muden ni "
-    "renombren `_INSTRUCCION_UNO/DOS` para esquivar el regex, esa es la forma "
-    "exacta de sobre-trabajo que este plan quiere cortar. Verifiquen primero, "
-    "con grep de nombres de tienda y de rubro sobre hub_venta.py, si de verdad "
-    "queda algo de UNA tienda ahi adentro; si no queda nada, el test esta "
-    "pidiendo mas de lo que su propio OBJETIVO pide, y se corrige el assert en "
-    "su propio commit, explicado, no se lo esquiva con nombres nuevos."))
+# CERRADO, VERIFICADO EL 26-AGO (avisado por el propio motivo de la FICHA 25:
+# "verifiquen primero... si no queda nada, se corrige el assert en su propio
+# commit, explicado, no se lo esquiva con nombres nuevos"). El assert original
+# cazaba `_INSTRUCCION_UNO/DOS` y `_SISTEMA_MINIMO` por el NOMBRE de la
+# variable, asi que el unico modo de pasar era mudarlas de archivo o
+# renombrarlas -sobre-trabajo cosmetico, no una fuga real-. Se leyo el
+# contenido de las tres, entero: cero categorias del catalogo (auriculares,
+# mouse, notebook, y las otras 19 de `productos.csv`), cero "verifika" o
+# "tienda tecno", cero vocabulario de un rubro. Son mecanica universal del
+# turno -"declara todo lo que entendiste", "contesta solo con los datos de
+# abajo"- y `{negocio}` en `_SISTEMA_MINIMO` ya es un parametro, no un dato
+# fijo. Eso es exactamente lo que la Decision 27 de `DECISIONES.md` permite
+# que quede en el motor: la mecanica, no la PERSONA -que esta ficha confirmo
+# que ya vive en `base_conocimiento.json` via `guia_venta_prosa.identidad()`-.
+# LA VARA NUEVA mide lo que el OBJETIVO real pide -contenido, no nombre- y
+# lleva su propio control positivo: si alguien pega una palabra de rubro
+# adentro de una de las tres constantes, el test tiene que volver a fallar, o
+# no esta probando nada.
 def test_los_prompts_no_viven_en_el_codigo():
-    hub = (_RAIZ / "app" / "core" / "hub_venta.py").read_text(encoding="utf-8")
-    clavados = re.findall(r"^_(?:INSTRUCCION|SISTEMA)\w*\s*=", hub, re.M)
-    assert not clavados, f"siguen en el codigo: {clavados}"
+    import csv
+
+    hub_path = _RAIZ / "app" / "core" / "hub_venta.py"
+    hub = hub_path.read_text(encoding="utf-8")
+
+    def _extraer(nombre: str) -> str:
+        m = re.search(
+            rf'{nombre}\s*=\s*(\(?""".*?"""\)?|\(?".*?"\)?)', hub, re.S)
+        assert m, (f"no se encontro {nombre} en hub_venta.py: si se movio o "
+                   f"se renombro, este test hay que releerlo, no borrarlo.")
+        return m.group(1)
+
+    piezas = {n: _extraer(n) for n in
+             ("_SISTEMA_MINIMO", "_INSTRUCCION_UNO", "_INSTRUCCION_DOS")}
+
+    # EL VOCABULARIO SALE DEL CATALOGO REAL, no de una lista a mano que
+    # envejece: es la misma regla que ya rige para los temas de la FAQ y el
+    # nombre del modelo (CLAUDE.md #9).
+    categorias = set()
+    csv_path = _RAIZ / "data" / "clientes" / "verifika_prod" / "productos.csv"
+    with csv_path.open(encoding="utf-8") as f:
+        for fila in csv.DictReader(f):
+            c = (fila.get("categoria") or "").strip().lower()
+            if c:
+                categorias.add(c)
+    assert categorias, "no se pudo leer ninguna categoria del catalogo real"
+    prohibidas = categorias | {"verifika", "tienda tecno", "tecno"}
+
+    def _fugas(piezas_: dict) -> list:
+        out = []
+        for nombre, texto in piezas_.items():
+            bajo = texto.lower()
+            for palabra in prohibidas:
+                if palabra in bajo:
+                    out.append(f"{nombre} contiene '{palabra}'")
+        return out
+
+    assert not _fugas(piezas), (
+        "quedo vocabulario de UNA tienda en la mecanica del turno:\n  "
+        + "\n  ".join(_fugas(piezas)))
+
+    # EL CONTROL POSITIVO. Si esto no fuera rojo, el assert de arriba no
+    # probaria nada: podria estar comparando contra una lista vacia.
+    con_fuga = dict(piezas)
+    con_fuga["_INSTRUCCION_UNO"] += " Tenemos el mejor stock de notebooks."
+    assert _fugas(con_fuga), (
+        "el detector no cazo una categoria real inyectada a proposito "
+        "(notebook): la vara mide el vacio, no vocabulario de tienda.")
 
 
 @pytest.mark.xfail(strict=True, reason=(
@@ -360,7 +400,7 @@ def test_existe_una_segunda_tienda_de_otro_rubro():
         + ", ".join(d.name for d in tiendas))
 
 
-# ── LO QUE LA FICHA 11 DEJO ABIERTO ────────────────────────────────────
+# ── LO QUE LA FICHA 11 DEJO ABIERTO ────────────────────────
 #
 # LOS CINCO DE ABAJO NO SON PASOS NUEVOS. Estaban abiertos desde el 24-ago y
 # contados en PROSA, en `arquitectura/LO_QUE_QUEDO_ABIERTO_DE_LA_11.md`, que es
@@ -514,7 +554,7 @@ def test_el_piso_de_la_puerta_guarda_crudo_y_no_razon():
         f"numerador y su denominador: {sin_crudo}")
 
 
-# ── FICHA 22 — NINGUN PUNTO SALE CON LA CASILLA VACIA ───────────────────────
+# ── FICHA 22 — NINGUN PUNTO SALE CON LA CASILLA VACIA ────────────────────────
 #
 # Estaba en ARRANQUE.md y en PENDIENTE.md como PROSA, sin test. Eso es lo que
 # esta ficha viene a cerrar primero: `DECISIONES.md` #31 pide que todo paso se
@@ -560,7 +600,7 @@ def test_ningun_punto_termina_con_la_casilla_vacia():
         f"terminan sin estado, por tipo: {r['por_tipo']}")
 
 
-# ── FICHA 23 — EL MODO DEGRADADO PUEDE VER LO QUE YA SABE ───────────────────
+# ── FICHA 23 — EL MODO DEGRADADO PUEDE VER LO QUE YA SABE ──────────────────────
 
 
 @pytest.mark.xfail(strict=True, reason=(
