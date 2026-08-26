@@ -21,6 +21,16 @@ EL ORDEN NO ERA LIBRE, y por eso esos dos iban primero: mientras el detector
 contara como OFRECIDO cuatro frases que no ofrecen nada, cualquier numero sobre
 oferta estaba sucio, y regrabar antes de arreglarlo era pagar la grabacion dos
 veces. Los tres que quedan —(c), (d) y (e)— ya se pueden medir limpio.
+
+NUMERACION (25-ago, unificacion del plan). Los cinco de la sonda comparten la
+misma secuencia de fichas que el resto del recorte, no una numeracion aparte:
+(a) y (b) son la FICHA 16 y la FICHA 16B, ya cerradas. Los tres que quedan
+—(c), (d), (e)— no tenian numero asignado y `ARRANQUE.md` los nombraba solo
+por su tema; quedan FICHA 26, FICHA 27 y FICHA 28 en ese orden, siguiendo
+justo despues de la 25 (motor multi-tienda), que ya estaba reservada. Ningun
+requisito cambio con esto: es la misma marca `PLAN:`, el mismo `strict=True`,
+el mismo assert; solo se le puso nombre al numero para que `ARRANQUE.md` y
+`pytest -rx` cuenten la misma historia.
 """
 import pytest
 
@@ -51,7 +61,7 @@ def test_la_oferta_cede_ante_una_pregunta_propia():
         f"igual, sin motivo: {p}")
 
 
-# ── (b) EL DETECTOR DE OFERTA ES LAXO ────────────────────────────────────────
+# ── (b) EL DETECTOR DE OFERTA ES LAXO ──────────────────────────────────
 
 # Las cuatro familias que la sonda encontro contadas como OFRECIDO sin serlo.
 # Las cuatro entran por el MISMO agujero: `_RE_PRONOMBRE` deja que un "lo" o un
@@ -83,7 +93,7 @@ def test_ofrecido_exige_nombrar_el_producto():
 # ── (c) UN UNIVERSAL SOBRE EL CATALOGO, SIN HERRAMIENTA QUE LO RESPALDE ──────
 
 @pytest.mark.xfail(strict=True, reason=(
-    "PLAN: un universal sobre el catalogo no puede salir si NINGUNA herramienta "
+    "PLAN: FICHA 26. Un universal sobre el catalogo no puede salir si NINGUNA herramienta "
     "miro el catalogo. HOY `_sin_afirmar_sobre_el_catalogo` cubre dos casos "
     "—hay evidencia de que el universal es falso, o la busqueda fallo— y "
     "arranca con `if not cumplen and not busqueda_fallida: return texto`. El "
@@ -102,10 +112,10 @@ def test_no_hay_universal_sin_herramienta_que_lo_respalde():
         f"hubiera mirado el catalogo: {salida!r}")
 
 
-# ── (d) LA NOTA INTERNA QUE LE LLEGA AL CLIENTE ──────────────────────────────
+# ── (d) LA NOTA INTERNA QUE LE LLEGA AL CLIENTE ──────────────────────────
 
 @pytest.mark.xfail(strict=True, reason=(
-    "PLAN: la nota interna no sale al cliente. HOY `sin_narracion_interna` "
+    "PLAN: FICHA 27. La nota interna no sale al cliente. HOY `sin_narracion_interna` "
     "EXISTE y CORRE en todos los turnos: el censo lo dio 0/54 y eso se leyo "
     "como nodo muerto, pero no esta muerto, esta CIEGO. `_RE_NARRACION` es un "
     "vocabulario cerrado de ocho formas y las ocho nombran la MAQUINA —'el "
@@ -126,10 +136,10 @@ def test_la_nota_interna_no_le_llega_al_cliente():
         f"tal cual: {colados}")
 
 
-# ── (e) LA PROMESA DE UN DATO QUE DESPUES NO SE DA ───────────────────────────
+# ── (e) LA PROMESA DE UN DATO QUE DESPUES NO SE DA ─────────────────────
 
 @pytest.mark.xfail(strict=True, reason=(
-    "PLAN: si el turno anuncia un dato, el dato va abajo o el anuncio se va. "
+    "PLAN: FICHA 28. Si el turno anuncia un dato, el dato va abajo o el anuncio se va. "
     "HOY `_sin_anuncio_vacio` cubre UNA sola familia, la de la cuenta: "
     "`_RE_ANUNCIO` pide que la linea diga presupuesto, cotizacion, detalle o "
     "total. Un anuncio de PRECIO, de PLAZO o de STOCK no lo mira nadie: medido, "
