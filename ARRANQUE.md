@@ -53,19 +53,37 @@ PUSHEÁ ANTES DE CERRAR, aunque quede a medias.
 
 ---
 
-## LO QUE RESTA — cuatro cosas, al 26-ago
+## LO QUE RESTA — el número sale de `pytest`, no de esta tabla
 
-| # | qué | por qué importa |
+**Hoy: 13 `PLAN:` + 1 `A MEDIAS:`.** Unificado el 25-ago: hasta esa fecha esta
+tabla nombraba cuatro fichas por número, pero el plan ejecutable —los `xfail`
+de `tests/test_plan_del_recorte.py` y `tests/test_plan_de_la_sonda.py`— traía
+otros ocho pasos sin número asignado. Cada fila de abajo es un test que existe
+hoy, con su ficha. **Si esta tabla nombra un test que no existe, o `pytest -rx`
+muestra un `PLAN:`/`A MEDIAS:` sin fila acá, algo se desincronizó** —se
+arregla ese mismo día, no se acumula.
+
+| ficha | test | qué falta |
 |---|---|---|
-| 22 | el `SIN_ESTADO` que no debería existir | La FICHA 09 declaró que ningún punto sale sin estado y salen igual. Hambrea a `NO_SE_SABE` —2 casos en 55— y traba el cierre de `62` y `63`, que llegan al total y nunca cobran porque **todos** sus turnos con total repreguntan algo |
-| 23 | el modo degradado | Si el decisor se cae, el cliente recibe "estoy con mucha demanda". Es el único agujero que no tira un detalle: tira la venta **y el cliente** |
-| 24 | las tres guardias sin auditar | `honestidad_bot`, `punto_omitido`, `aduana`. Las tres con 0/54. De cuatro auditadas, **tres estaban ciegas**: la presunción es ciega hasta que se pruebe lo contrario |
-| 25 | el motor multi-tienda | Los tres `PLAN:` escritos: el id de la tienda fuera del código, los prompts a la fuente, y la TIENDA CERO de otro rubro adentro del repo. Es lo que convierte "adaptable en horas" de promesa en hecho. Va último a propósito |
+| 11 (cola) | `test_la_cuenta_se_arma_antes_del_reconciliador` | la cuenta se arma DESPUÉS del reconciliador, no antes. Contado entero en `arquitectura/LO_QUE_QUEDO_ABIERTO_DE_LA_11.md` |
+| 11 (cola) | `test_el_bloque_hallazgo_no_vive_en_el_hub` | falta decidir de quién son `_RE_HAY_CUENTA` y `_norm_renglon` antes de mudar `_bloque_hallazgo` fuera de `hub_venta` |
+| 11 (cola) | `test_los_guiones_que_despiertan_las_guardias_estan_grabados` | guiones 26 a 38 sin grabar, necesita la clave paga. **También prerrequisito parcial de la 24** |
+| 11 (cola) | `test_el_piso_guarda_algun_numero_de_venta` | el piso mide 8 varas defensivas y ninguna que mida si el bot vende |
+| 11 (cola) | `test_el_piso_de_la_puerta_guarda_crudo_y_no_razon` | `puerta_piso.json` guarda porcentaje, no numerador y denominador por separado |
+| **22** | `test_ningun_punto_termina_con_la_casilla_vacia` | 24 puntos en `SIN_ESTADO` sobre 16 de 55 turnos, 18 de tipo `politica`. Hambrea la vara `el_detalle_no_mata`, que hoy mide 2/2 sobre un denominador que debería ser mayor |
+| **23** | `test_el_modo_degradado_puede_ver_lo_que_ya_se_sabe` | la disculpa de "mucha demanda" corre con `memoria` e `idx` en el mismo scope y no los nombra; `_sobrecarga()` no recibe ningún parámetro. Es el único agujero que tira la venta **y al cliente** |
+| **24** | *(sin test propio todavía)* | auditar `honestidad_bot`, `punto_omitido` y `aduana` como hizo la 20 —frases reales del defecto y frases legítimas que no se pueden tocar—. Las tres con 0/54. Se puede auditar por unidad sin esperar los guiones 26-38, aunque medirlas sobre corpus real sí los necesita |
+| **25** | `test_app_no_menciona_el_id_de_ninguna_tienda`, `test_los_prompts_no_viven_en_el_codigo`, `test_existe_una_segunda_tienda_de_otro_rubro` | el motor multi-tienda: el id fuera del código, los prompts a la fuente, la TIENDA CERO. Va último a propósito |
+| **26** | `test_no_hay_universal_sin_herramienta_que_lo_respalde` | alucinación: un universal sobre el catálogo sale sin que ninguna herramienta lo haya mirado |
+| **27** | `test_la_nota_interna_no_le_llega_al_cliente` | `sin_narracion_interna` no ve hablar del cliente en tercera persona, solo nombrar la máquina |
+| **28** | `test_no_se_promete_un_dato_que_no_se_da` | un anuncio de precio, plazo o stock puede salir sin el dato abajo |
+| A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** |
 
-Menores anotados: congelar la vara de `test_puerta_determinista`, que da rojo
-falso en cada regrabación porque compara el código contra lo que declaró el
-modelo; y `el_detalle_no_mata`, que perdió la mitad del denominador y no se
-toca hasta cerrar el `SIN_ESTADO`.
+**Orden sugerido, y ninguno bloquea a otro salvo que se diga:** 22 antes que
+23 —un `SIN_ESTADO` mal contado ensucia cualquier vara que se arme
+después—; 26, 27 y 28 se pueden hacer en cualquier momento, son independientes
+entre sí y del resto; 24 y 25 al final, como ya estaba decidido; la cola de la
+11 se reparte donde convenga, salvo el prerrequisito ya anotado.
 
 ---
 
