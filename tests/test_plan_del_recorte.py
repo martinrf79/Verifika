@@ -479,3 +479,89 @@ def test_el_piso_de_la_puerta_guarda_crudo_y_no_razon():
     assert not sin_crudo, (
         f"{len(sin_crudo)} de {len(varas)} varas guardan una razon sin su "
         f"numerador y su denominador: {sin_crudo}")
+
+
+# ── FICHA 22 — NINGUN PUNTO SALE CON LA CASILLA VACIA ───────────────────────
+#
+# Estaba en ARRANQUE.md y en PENDIENTE.md como PROSA, sin test. Eso es lo que
+# esta ficha viene a cerrar primero: `DECISIONES.md` #31 pide que todo paso se
+# entregue como test rojo, no como parrafo, y estos dos -22 y 23- eran la
+# excepcion que quedaba.
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "PLAN: FICHA 22. `DECISIONES.md` #3 y la FICHA 09 declaran que el turno no "
+    "sale si un punto quedo sin estado, y salen igual: `estado_terminal()` en "
+    "`app/core/indice_turno.py`, ultima linea, devuelve cadena vacia cuando el "
+    "punto no llego al texto, no hay evidencia de herramienta, no se pregunto "
+    "en la misma oracion y no matchea el patron -angosto- de NO_SE_SABE. HOY, "
+    "sobre las 15 charlas grabadas -medido con `banco_pruebas/censo_puntos.py`, "
+    "que lee el mismo evento `indice_turno` que ya loguea el codigo, sin punto "
+    "`oferta` porque ese tiene su propio censo en `censo_oferta.py`-, 24 puntos "
+    "terminan con la casilla vacia en 16 de 55 turnos: dieciocho de tipo "
+    "`politica`, dos `atributo`, dos `destino`, uno `compatibilidad`, uno "
+    "`pago`. Incluye los dos casos que ya cito PENDIENTE.md a mano -"
+    "'77_datos_duros' turno 1 y '79_dato_falso_inducido' turno 1, la garantia "
+    "del mouse g203-. Esto HAMBREA la vara `el_detalle_no_mata` de "
+    "`banco_pruebas/vara_de_venta.py`: solo puede contar lo que SI llega a "
+    "NO_SE_SABE, y hoy mide 2 de 2 sobre un denominador que estos 24 casos "
+    "dicen que deberia ser mayor. OBJETIVO 0: cada punto -de cualquier tipo, "
+    "no solo `oferta`- termina en RESUELTO, AMBIGUO, NO_SE_SABE o CONFLICTO. "
+    "NO SE PRESCRIBE LA CAUSA, y adrede: el desglose por tipo ya muestra que no "
+    "es una sola -algunos son omision real, y el propio ejemplo de la garantia "
+    "sugiere que al menos uno es el anclaje de cobertura sin reconocer una "
+    "respuesta que si se dio-, exactamente el patron mixto que la FICHA 20 ya "
+    "encontro en otras tres guardias. Diagnosticar las dos causas por separado "
+    "es parte del trabajo, no un prerrequisito para empezarlo."))
+def test_ningun_punto_termina_con_la_casilla_vacia():
+    from banco_pruebas import censo_puntos as CP
+    r = CP.medir()
+    assert r["puntos_sin_estado"] == 0, (
+        f"{r['puntos_sin_estado']} puntos en {r['turnos_afectados']} turnos "
+        f"terminan sin estado, por tipo: {r['por_tipo']}")
+
+
+# ── FICHA 23 — EL MODO DEGRADADO PUEDE VER LO QUE YA SABE ───────────────────
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "PLAN: FICHA 23. Si el decisor o el redactor se caen -429, timeout, sin "
+    "cliente configurado-, HOY el cliente recibe siempre la MISMA frase fija, "
+    "sin importar si el turno ya tiene un carrito armado, un total confirmado "
+    "o un nombre dado: 'Perdón, estoy con mucha demanda en este momento...'. "
+    "Es el unico agujero que no tira un detalle, tira la venta Y AL CLIENTE. "
+    "HOY, en `app/core/hub_venta.py`, el bloque que arma esa frase esta ADENTRO "
+    "de `procesar_venta`, que ya tiene `memoria`, `idx` -el indice del turno "
+    "con los puntos resueltos- y el resto del estado en el mismo scope, y no "
+    "los nombra ni una vez: son literales de cadena, nada mas. Y en "
+    "`app/main.py`, `_sobrecarga()` -la misma frase, para cuando el que se cae "
+    "es el webhook entero- no recibe NINGUN parametro. Las dos cosas prueban "
+    "lo mismo por dos lados: el mensaje no puede variar con lo que el turno ya "
+    "sabe porque nada se lo pasa, no porque se haya decidido no decirlo. "
+    "OBJETIVO que el bloque de `hub_venta.py` use al menos una de `memoria`, "
+    "`idx` o el total ya armado, y que `_sobrecarga()` reciba algun resumen del "
+    "turno. NO SE PRESCRIBE LA REDACCION FINAL -eso es del redactor de venta, "
+    "y el ejemplo del piso de la puerta que auditó la FICHA 20 ya mostró que "
+    "una guardia nueva se prueba por los dos lados, el defecto y la frase "
+    "legitima que no puede tocar-: se prescribe que la funcion tenga CON QUE."))
+def test_el_modo_degradado_puede_ver_lo_que_ya_se_sabe():
+    import re as _re
+    hub = (_RAIZ / "app" / "core" / "hub_venta.py").read_text(encoding="utf-8")
+    m = _re.search(
+        r"if sin_modelo or trace_id in _SIN_MODELO:\n(?P<bloque>(?:[ \t]+\S.*\n)+?)"
+        r"[ \t]*else:",
+        hub)
+    assert m, ("no se encontro el bloque del modo degradado en hub_venta.py: "
+               "el test no puede medir nada. Si el codigo se reorganizo, este "
+               "test se actualiza para seguir mirando el mismo bloque.")
+    bloque = m.group("bloque")
+    nombra_estado = any(v in bloque for v in ("memoria", "idx", "carrito",
+                                              "presupuesto", "total"))
+    from app.main import _sobrecarga
+    import inspect
+    tiene_parametro = len(inspect.signature(_sobrecarga).parameters) > 0
+    assert nombra_estado or tiene_parametro, (
+        "el bloque de hub_venta.py no nombra memoria/idx/carrito/presupuesto/"
+        "total, y `_sobrecarga()` en app/main.py no recibe ningun parametro: "
+        "el mensaje de demanda no tiene de donde sacar lo que el turno ya "
+        "sabe")
