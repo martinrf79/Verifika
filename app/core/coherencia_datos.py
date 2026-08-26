@@ -38,6 +38,7 @@ CI y puede consumirlo la ingesta.
 import csv
 import os
 
+from app.core.contexto_turno import tienda_por_defecto
 from app.core.fuente_producto import (_norm, _valores_de, specs_config,
                                        specs_por_modelo)
 from app.logger import get_logger
@@ -80,8 +81,9 @@ def _choca(valores_a: set, valores_b: set) -> list:
 
 
 # ── 1. el modelo contra su planilla curada ──────────────────────────────────
-def modelo_contra_planilla(tienda_id: str = "verifika_prod") -> list:
+def modelo_contra_planilla(tienda_id: str | None = None) -> list:
     """El nombre del MODELO manda: es lo que identifica al producto real."""
+    tienda_id = tienda_id or tienda_por_defecto()
     problemas = []
     for clave, specs in specs_por_modelo(tienda_id).items():
         _marca, modelo, _cat = clave
@@ -97,7 +99,7 @@ def modelo_contra_planilla(tienda_id: str = "verifika_prod") -> list:
 
 
 # ── 2. la prosa DESPUES de pasar por la puerta de ingesta ───────────────────
-def prosa_despues_de_ingerir(tienda_id: str = "verifika_prod") -> list:
+def prosa_despues_de_ingerir(tienda_id: str | None = None) -> list:
     """Ningun producto puede salir de la ingesta contradiciendo a la planilla.
 
     Se mide sobre el producto YA normalizado, que es lo que ve el cliente. La
@@ -115,6 +117,7 @@ def prosa_despues_de_ingerir(tienda_id: str = "verifika_prod") -> list:
     """
     from app.core.fuente_producto import (normalizar_producto,
                                           purgar_prosa_contradicha)
+    tienda_id = tienda_id or tienda_por_defecto()
     problemas = []
     for fila in _filas(tienda_id, "productos.csv"):
         prod = normalizar_producto(dict(fila), tienda_id)
@@ -128,8 +131,9 @@ def prosa_despues_de_ingerir(tienda_id: str = "verifika_prod") -> list:
 
 
 # ── 3 y 5. la tabla de compatibilidad ───────────────────────────────────────
-def compat_fuera_de_vocabulario(tienda_id: str = "verifika_prod") -> list:
+def compat_fuera_de_vocabulario(tienda_id: str | None = None) -> list:
     from app.core.compatibilidad import vocabulario
+    tienda_id = tienda_id or tienda_por_defecto()
     v = vocabulario(tienda_id)
     validos = {"plataformas": set(v["plataformas"]),
                "no_compatible": set(v["plataformas"]),
@@ -148,11 +152,12 @@ def compat_fuera_de_vocabulario(tienda_id: str = "verifika_prod") -> list:
     return problemas
 
 
-def compat_contra_specs(tienda_id: str = "verifika_prod") -> list:
+def compat_contra_specs(tienda_id: str | None = None) -> list:
     """Las dos planillas del mismo modelo no se pueden contradecir. Caso vivo: la
     motherboard cuya compatibilidad declara ranura DDR5 y cuya spec `ram` dice
     DDR4. Una de las dos manda al cliente a comprar la memoria equivocada."""
     from app.core.compatibilidad import tabla
+    tienda_id = tienda_id or tienda_por_defecto()
     problemas = []
     por_modelo = specs_por_modelo(tienda_id)
     for clave, compat in tabla(tienda_id).items():
@@ -178,10 +183,11 @@ def _modelos_del_catalogo(tienda_id: str) -> set:
     return {_clave(f) for f in _filas(tienda_id, "productos.csv")}
 
 
-def cobertura_compatibilidad(tienda_id: str = "verifika_prod") -> tuple:
+def cobertura_compatibilidad(tienda_id: str | None = None) -> tuple:
     """(cubiertos, total). La celda vacia sale honesta, asi que un hueco no es un
     error; pero un hueco GRANDE tiene que ser una decision y no un descuido."""
     from app.core.compatibilidad import tabla
+    tienda_id = tienda_id or tienda_por_defecto()
     catalogo = _modelos_del_catalogo(tienda_id)
     t = tabla(tienda_id)
     con_dato = {k for k, v in t.items()
@@ -190,9 +196,10 @@ def cobertura_compatibilidad(tienda_id: str = "verifika_prod") -> tuple:
     return len(catalogo & con_dato), len(catalogo)
 
 
-def filas_huerfanas(tienda_id: str = "verifika_prod") -> list:
+def filas_huerfanas(tienda_id: str | None = None) -> list:
     """Filas de las planillas cuyo modelo ya no esta en el catalogo: dato que
     nadie va a leer, y que al mirar la planilla hace creer que esta cargado."""
+    tienda_id = tienda_id or tienda_por_defecto()
     catalogo = _modelos_del_catalogo(tienda_id)
     problemas = []
     for archivo in ("specs_por_modelo.csv", "compatibilidad.csv"):
@@ -203,10 +210,11 @@ def filas_huerfanas(tienda_id: str = "verifika_prod") -> list:
     return problemas
 
 
-def columnas_no_declaradas(tienda_id: str = "verifika_prod") -> list:
+def columnas_no_declaradas(tienda_id: str | None = None) -> list:
     """Una columna de `specs_por_modelo.csv` que no esta en
     `specs_preguntables.json` NO la lee nadie: `_completar_capas` filtra por ids
     validos. Cargarla a mano es trabajo tirado, y en silencio."""
+    tienda_id = tienda_id or tienda_por_defecto()
     validos = {s["id"] for s in specs_config(tienda_id)}
     filas = _filas(tienda_id, "specs_por_modelo.csv")
     if not filas:
@@ -227,6 +235,7 @@ CHEQUEOS = {
 }
 
 
-def revisar_todo(tienda_id: str = "verifika_prod") -> dict:
+def revisar_todo(tienda_id: str | None = None) -> dict:
     """{nombre_del_chequeo: [problemas]}. Vacio = los datos son coherentes."""
+    tienda_id = tienda_id or tienda_por_defecto()
     return {nombre: fn(tienda_id) for nombre, fn in CHEQUEOS.items()}
