@@ -43,7 +43,7 @@ import os
 import re
 from difflib import get_close_matches
 
-from app.core.contexto_turno import get_current_tienda
+from app.core.contexto_turno import get_current_tienda, tienda_por_defecto
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -301,33 +301,6 @@ def _construir_corpus(tienda_id: str) -> dict | None:
     return corpus
 
 
-def _tienda_por_defecto() -> str:
-    """La tienda que este proceso sirve cuando todavia no hay contexto de
-    turno: al importar el modulo, en tests sin turno, en scripts de banco.
-    Prioridad: la que dice la configuracion (`TIENDA_ID`, que cada deploy fija
-    por secreto -regla #2 de CLAUDE.md, el LLM nunca elige tienda-); si esa
-    carpeta no existe -pasa en local/tests sin la variable seteada-, la UNICA
-    carpeta que haya bajo data/clientes, que es exactamente lo que hoy corre en
-    produccion. Si hay mas de una y la configurada no matchea ninguna, se
-    devuelve la configurada igual: el archivo faltante lo cuenta el log de
-    `_construir_corpus`, no un nombre pisado a mano aca."""
-    from app.config import get_settings
-    configurada = get_settings().TIENDA_ID
-    base = os.path.join(os.path.dirname(__file__), "..", "..", "data", "clientes")
-    try:
-        carpetas = sorted(d for d in os.listdir(base)
-                          if os.path.isdir(os.path.join(base, d)))
-    except OSError as e:
-        log.warning("data_clientes_ilegible", base=base,
-                   error=f"{type(e).__name__}: {str(e)[:120]}")
-        carpetas = []
-    if configurada in carpetas:
-        return configurada
-    if len(carpetas) == 1:
-        return carpetas[0]
-    return configurada
-
-
 # CACHE POR TIENDA (FICHA 25, 26-ago-2026). Cada corpus se arma UNA vez y no se
 # vuelve a tocar: pedidos concurrentes de tiendas distintas leen entradas
 # distintas del mismo dict, nunca el mismo dict a mitad de reescribirse. Es el
@@ -353,7 +326,7 @@ def _corpus_de(tienda_id: str) -> dict:
     return _CORPUS_CACHE[tienda_id]
 
 
-_TIENDA_DEFECTO = _tienda_por_defecto()
+_TIENDA_DEFECTO = tienda_por_defecto()
 
 
 def _tienda_actual() -> str:
