@@ -12,10 +12,10 @@ Tres reglas:
      (caracteristicas_extra, descripcion, nombre, modelo, contenido_caja) o de
      una columna. Si el dato no esta, la spec NO aparece en el mapa: ese hueco
      es la senal para el honesto "la ficha no lo especifica".
-  2. ESCALA. El trabajo es por CATEGORIA (22 en verifika_prod), no por
-     producto: sumar una spec o una categoria es editar el json, nunca tocar
-     codigo ni tocar las 880 filas. El enriquecido de 880 productos corre en
-     milisegundos, una vez por refresco de cache.
+  2. ESCALA. El trabajo es por CATEGORIA (22 en la tienda de referencia), no
+     por producto: sumar una spec o una categoria es editar el json, nunca
+     tocar codigo ni tocar las 880 filas. El enriquecido de 880 productos
+     corre en milisegundos, una vez por refresco de cache.
   3. UNA SOLA PUERTA. La ingesta (endpoint admin y script de carga) y la
      lectura del catalogo pasan por aca, asi la fuente del repo, la de
      Firestore y la que ve el bot son la MISMA.
@@ -25,6 +25,7 @@ import os
 import re
 import unicodedata
 
+from app.core.contexto_turno import tienda_por_defecto
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -74,7 +75,7 @@ def _ruta_config(tienda_id: str | None) -> str | None:
     entre las que YA existen en disco (os.scandir) y se compara el nombre, asi
     la ruta que se abre sale siempre del propio filesystem, no de concatenar
     el string que mando el cliente."""
-    tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
+    tid = tienda_id or tienda_por_defecto()
     base = os.path.join(os.path.dirname(__file__), "..", "..", "data", "clientes")
     try:
         with os.scandir(base) as it:
@@ -95,7 +96,7 @@ def specs_config(tienda_id: str | None = None) -> list[dict]:
     Si el archivo falta o esta roto se devuelve lista vacia: el consumidor cae
     a su red vieja y el bot sigue vivo.
     """
-    tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
+    tid = tienda_id or tienda_por_defecto()
     if tid in _CACHE_CONFIG:
         return _CACHE_CONFIG[tid]
     entradas: list[dict] = []
@@ -160,7 +161,7 @@ def specs_config(tienda_id: str | None = None) -> list[dict]:
 def _ruta_dato(tienda_id: str | None, archivo: str) -> str | None:
     """Ruta a un archivo de datos de la tienda, resuelta por scandir: el
     tienda_id puede venir de un path param HTTP y nunca se concatena crudo."""
-    tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
+    tid = tienda_id or tienda_por_defecto()
     base = os.path.join(os.path.dirname(__file__), "..", "..", "data", "clientes")
     try:
         with os.scandir(base) as it:
@@ -180,7 +181,7 @@ _CACHE_MODELO: dict[str, dict] = {}
 def specs_por_categoria(tienda_id: str | None = None) -> dict:
     """CAPA 2: {categoria: {spec: valor}} + reglas condicionales. Lo cierto para
     la categoria entera, que no hace falta cargar producto por producto."""
-    tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
+    tid = tienda_id or tienda_por_defecto()
     if tid in _CACHE_CATEGORIA:
         return _CACHE_CATEGORIA[tid]
     data = {"categorias": {}, "reglas": []}
@@ -206,9 +207,9 @@ def specs_por_modelo(tienda_id: str | None = None) -> dict:
     """CAPA 3: {(marca, modelo, categoria): {spec: valor}} desde
     `specs_por_modelo.csv`. Es el dato que varia de un modelo a otro y que NO
     se puede deducir: autonomia, lector de huella, thunderbolt, puertos. Se
-    llena una vez por MODELO (482 en verifika_prod), no por producto, y la
-    celda vacia sigue saliendo honesta."""
-    tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
+    llena una vez por MODELO (482 en la tienda de referencia), no por
+    producto, y la celda vacia sigue saliendo honesta."""
+    tid = tienda_id or tienda_por_defecto()
     if tid in _CACHE_MODELO:
         return _CACHE_MODELO[tid]
     tabla: dict = {}
@@ -492,7 +493,7 @@ def _completar_capas(out: dict, prod: dict, categoria: str,
     return out
 
 
-# ── ATRIBUTOS ORDENABLES ────────────────────────────────────────────────────
+# ── ATRIBUTOS ORDENABLES ────────────────────────────────────────────
 # "la mas grande", "la mas liviana", "la de mas hercios", "la mas barata" son la
 # MISMA operacion con distinto atributo. Por eso el criterio no se enumera a
 # mano -habria que editar codigo por cada forma nueva de preguntar-: se parte en
