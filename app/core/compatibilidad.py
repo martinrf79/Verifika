@@ -34,6 +34,7 @@ import os
 import re
 import unicodedata
 
+from app.core.contexto_turno import tienda_por_defecto
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -55,7 +56,7 @@ def _ruta(tienda_id: str | None, archivo: str) -> str | None:
     """Ruta a un archivo de la tienda resuelta por scandir: el tienda_id puede
     venir de un path param HTTP y nunca se concatena crudo (mismo criterio que
     fuente_producto)."""
-    tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
+    tid = tienda_id or tienda_por_defecto()
     base = os.path.join(os.path.dirname(__file__), "..", "..", "data", "clientes")
     try:
         with os.scandir(base) as it:
@@ -72,7 +73,7 @@ def vocabulario(tienda_id: str | None = None) -> dict:
     """El vocabulario cerrado: {plataformas: {id: {...}}, conectores: {id: {...}},
     familias: {id: familia}, alias: {palabra: id}}. Si el archivo falta se
     devuelve vacio y todo el modulo queda en no-op honesto."""
-    tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
+    tid = tienda_id or tienda_por_defecto()
     if tid in _CACHE_VOCAB:
         return _CACHE_VOCAB[tid]
     vocab = {"plataformas": {}, "conectores": {}, "familias": {},
@@ -116,7 +117,7 @@ def tabla(tienda_id: str | None = None) -> dict:
     """{(marca, modelo, categoria): {campo: [valores]}} desde compatibilidad.csv.
     Se valida contra el vocabulario al cargar: un id que no existe se DESCARTA y
     se loguea, asi un typo en la planilla no se convierte en una respuesta."""
-    tid = tienda_id or os.getenv("TIENDA_ID", "verifika_prod")
+    tid = tienda_id or tienda_por_defecto()
     if tid in _CACHE_TABLA:
         return _CACHE_TABLA[tid]
     out: dict = {}
@@ -215,7 +216,7 @@ def etiqueta_conector(cid: str, tienda_id: str | None = None) -> str:
     return (v["conectores"].get(cid) or {}).get("etiqueta", cid)
 
 
-# ── LOS DOS VEREDICTOS ───────────────────────────────────────────────────────
+# ── LOS DOS VEREDICTOS ────────────────────────────────────────────
 def evaluar(prod: dict, plataforma: str,
             tienda_id: str | None = None) -> tuple[str, str]:
     """¿Este producto anda con el equipo que tiene el cliente?
@@ -319,7 +320,7 @@ _NOTA_BLOQUE_COMPAT = ("\n\nCOMPATIBILIDAD (dato REAL de la fuente, contestá "
                        "con esto y NO afirmes nada que no figure aca):\n")
 
 
-# ── LO QUE CONSUME EL SOLVER Y EL JUEZ ───────────────────────────────────────
+# ── LO QUE CONSUME EL SOLVER Y EL JUEZ ───────────────────────────────
 def bloque_ficha(prod: dict, tienda_id: str | None = None) -> str:
     """La compatibilidad de UN producto como texto de ficha, estampado por el
     codigo desde la tabla. Es lo que devuelve el campo `compatibilidad` del
