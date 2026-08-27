@@ -29,11 +29,10 @@ PLAN       el recorte. Baja a medida que se hace.
 El detalle de cada paso, con su número de hoy y su objetivo, está en
 `tests/test_plan_del_recorte.py`. La unidad de trabajo abierta, en `arquitectura/`.
 
-**27-ago:** el recorte que el contador no veía quedó escrito. Orden de
-trabajo: `arquitectura/FICHA_30_la_simplificacion.md`. Tres `PLAN:` nuevos
-(fichas 31, 32, 33): una puerta al catálogo, una a la plata, un mutador en
-la higiene. No se tocó `app/`. Techo PLAN 11→14 en commit propio, con la
-cuenta escrita. El número vivo sale de `pytest`, no de esta línea.
+**27-ago:** orden de trabajo: `arquitectura/FICHA_34_el_nexo.md`. El depósito
+de lo que se apague es `archivo/`, no `reserva/`. Techo PLAN 14→16: el hub
+deja de llamar a reconciliar y a completar. No se tocó `app/` en este
+commit. El número vivo sale de `pytest`.
 
 ---
 

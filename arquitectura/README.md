@@ -16,7 +16,7 @@ A MEDIAS   algo que se EMPEZÓ y no se terminó.  Tiene que llegar a CERO.
 PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 ```
 
-La orden de trabajo abierta es `FICHA_30_la_simplificacion.md`. Cuando `PLAN`
+La orden de trabajo abierta es `FICHA_34_el_nexo.md`. Cuando `PLAN`
 llegue a cero, el recorte está hecho. **No hay que acordarse de nada: el
 número es lo que falta.**
 
@@ -47,7 +47,9 @@ toca, cómo se verifica.
 | archivo | qué es |
 |---|---|
 | `README.md` | esta puerta |
-| `FICHA_01_*.md` … | una unidad de trabajo cada una, en orden |
+| `FICHA_01_*.md` … | unidades ya cerradas, se leen para entender no para hacer |
+| `FICHA_30_la_simplificacion.md` | el diagnóstico del recorte |
+| `FICHA_34_el_nexo.md` | **la orden abierta**: el corte del turno |
 
 **En la raíz: la biblioteca.** Se consulta para entender POR QUÉ, no para saber
 qué hacer.
@@ -59,7 +61,7 @@ qué hacer.
 | `../PLAN_RECORTE.md` | CÓMO se hace cada paso y en qué orden |
 | `../ARQUITECTURA.md` | cómo está ordenado el sistema hoy |
 | `../tests/test_plan_del_recorte.py` | el plan viejo, lo que queda de las fichas 1 a 25 |
-| `../tests/test_plan_de_la_simplificacion.py` | **el plan de ahora**: fusionar lo duplicado |
+| `../tests/test_plan_de_la_simplificacion.py` | **el plan de ahora**: nexo y puertas |
 
 > **Por qué los cuatro no están físicamente acá.** Reescribir 45 KB de prosa
 > para cambiarles la ruta agrega riesgo de transcripción y no gana nada: nadie
