@@ -279,21 +279,13 @@ def test_la_cobertura_es_una_puerta_y_no_un_log():
 
 # ── EL MOTOR — QUE NO TENGA UNA TIENDA ADENTRO ───────────────────────
 
-@pytest.mark.xfail(strict=True, reason=(
-    "A MEDIAS: el motor no puede contener el id de ninguna tienda. LAS DOS "
-    "RUTA CABLEADA ya se sacaron, verificado el 26-ago: "
-    "`guia_venta_prosa.py` y `guia_compra.py` ahora resuelven el archivo por "
-    "`get_current_tienda()` -con un corpus cacheado por tienda, no un swap-"
-    "in-place sobre el global compartido, para no correr una condicion de "
-    "carrera entre pedidos concurrentes de dos tiendas- y cayeron a un default "
-    "auto-detectado en vez de un nombre escrito a mano. HOY `app/` menciona un "
-    "tienda_id concreto 18 veces, todas default de "
-    "`os.getenv('TIENDA_ID', 'verifika_prod')` en compatibilidad.py, "
-    "fuente_producto.py y coherencia_datos.py: inofensivas MIENTRAS el "
-    "llamador pase tienda_id -la regla #10.1 de CLAUDE.md ya lo exige-, pero "
-    "el string literal se saca igual para que un olvido no caiga en silencio "
-    "sobre la tienda equivocada. OBJETIVO cero. Es la fuga barata; la cara es "
-    "la politica de negocio en Python, que tiene su propio paso."))
+# CERRADO, VERIFICADO EL 26-AGO. Las dos rutas cableadas (`guia_venta_prosa.py`,
+# `guia_compra.py`) y las 18 menciones default de `os.getenv('TIENDA_ID',
+# 'verifika_prod')` en `compatibilidad.py`, `fuente_producto.py` y
+# `coherencia_datos.py` resuelven ahora por `app.core.contexto_turno.
+# tienda_por_defecto()`, la misma funcion en un solo lugar en vez de cuatro
+# copias con un nombre literal. `app/` no vuelve a mencionar una tienda
+# concreta.
 def test_app_no_menciona_el_id_de_ninguna_tienda():
     app = _RAIZ / "app"
     culpables = []
