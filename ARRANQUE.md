@@ -38,33 +38,37 @@ recordar nada: se lee esto, se hace una ficha, se cierra.
 ```
 Repo: github.com/martinrf79/Verifika (rama main).
 git fetch && git status. Si HEAD no es origin/main, PARÁ y avisá.
-Leé en este orden y nada más: ARRANQUE.md, DECISIONES.md,
-arquitectura/README.md. Corré pytest y anotá tests/plan_techo.json y
-tests/a_medias_techo.json.
+Leé en este orden y nada más: ARRANQUE.md,
+arquitectura/FICHA_30_la_simplificacion.md, DECISIONES.md.
+Corré pytest -q y anotá los dos techos.
 Soy Martín, escucho por transcriptor: contestame en prosa plana, corto.
 Código sólo dentro de un bloque, y sólo si es una consigna a ejecutar.
 Prioridad uno, no negociable: el bot vende y alucina lo menos posible.
 Si sabe, contesta; si es ambiguo, repregunta; si no sabe, dice que no sabe.
 Un detalle nunca tira una venta.
-Esta sesión hace UNA sola ficha, la que sigue en la lista de abajo.
-No reescribas documentos enteros por una corrección chica.
-PUSHEÁ ANTES DE CERRAR, aunque quede a medias.
+Esta sesión hace UNA sola ficha: la primera de 31, 32, 33 que pytest -rx
+muestre todavía en PLAN. Si las tres están verdes, la que sigue en la
+lista de abajo. No reescribas documentos enteros por una corrección chica.
+PUSHEÁ A main ANTES DE CERRAR, aunque quede a medias. Nada de ramas.
 ```
 
 ---
 
 ## LO QUE RESTA — el número sale de `pytest`, no de esta tabla
 
-**Hoy: 14 `PLAN:` + 1 `A MEDIAS:`.** Unificado el 25-ago: hasta esa fecha esta
-tabla nombraba cuatro fichas por número, pero el plan ejecutable —los `xfail`
-de `tests/test_plan_del_recorte.py` y `tests/test_plan_de_la_sonda.py`— traía
-otros ocho pasos sin número asignado. Cada fila de abajo es un test que existe
-hoy, con su ficha. **Si esta tabla nombra un test que no existe, o `pytest -rx`
-muestra un `PLAN:`/`A MEDIAS:` sin fila acá, algo se desincronizó** —se
-arregla ese mismo día, no se acumula.
+El número de `PLAN:` y de `A MEDIAS:` sale de `pytest`, no de esta línea. Cada
+fila de abajo es un test que existe hoy, con su ficha, salvo las que dicen
+*(sin test propio todavía)*: esas no se trabajan hasta que el test exista.
+**Si esta tabla nombra un `test_*` que no existe, o `pytest -rx` muestra un
+`PLAN:`/`A MEDIAS:` sin fila acá, algo se desincronizó** —se arregla ese
+mismo día, no se acumula. El candado está en
+`tests/test_plan_de_la_simplificacion.py`.
 
 | ficha | test | qué falta |
 |---|---|---|
+| **31** | `test_el_catalogo_tiene_una_sola_puerta_interna` | cuatro cuerpos leen el mismo catálogo. Orden y relato en `arquitectura/FICHA_30_la_simplificacion.md` |
+| **32** | `test_la_plata_tiene_una_sola_puerta_interna` | tres cuerpos tocan la cuenta o el cobro. `tomar_pedido` se borra |
+| **33** | `test_la_higiene_tiene_un_solo_mutador` | `componer` y `aduana` reescriben el mismo texto, uno atrás del otro |
 | 11 (cola) | `test_la_cuenta_se_arma_antes_del_reconciliador` | la cuenta se arma DESPUÉS del reconciliador, no antes. Contado entero en `arquitectura/LO_QUE_QUEDO_ABIERTO_DE_LA_11.md` |
 | 11 (cola) | `test_el_bloque_hallazgo_no_vive_en_el_hub` | falta decidir de quién son `_RE_HAY_CUENTA` y `_norm_renglon` antes de mudar `_bloque_hallazgo` fuera de `hub_venta` |
 | 11 (cola) | `test_los_guiones_que_despiertan_las_guardias_estan_grabados` | guiones 26 a 38 sin grabar, necesita la clave paga. **También prerrequisito parcial de la 24** |
@@ -77,13 +81,13 @@ arregla ese mismo día, no se acumula.
 | **26** | `test_no_hay_universal_sin_herramienta_que_lo_respalde` | alucinación: un universal sobre el catálogo sale sin que ninguna herramienta lo haya mirado |
 | **27** | `test_la_nota_interna_no_le_llega_al_cliente` | `sin_narracion_interna` no ve hablar del cliente en tercera persona, solo nombrar la máquina |
 | **28** | `test_no_se_promete_un_dato_que_no_se_da` | un anuncio de precio, plazo o stock puede salir sin el dato abajo |
-| **29** | `test_la_cuenta_podada_no_se_lleva_el_reparto_ni_el_pago` | la anti-repetición poda el bloque de cuenta que no cambió y deja sólo la plata: se lleva el reparto por destino y el pago dividido, que son PUNTOS. Es la ficha 21 al revés —una puerta posterior RESTA texto después de que `puede_salir` ya juzgó— |
-| A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** —que hoy espera a la 29— |
+| **29** | *(sin test propio todavía)* | la anti-repetición poda el bloque de cuenta que no cambió y se lleva el reparto y el pago, que son PUNTOS. No se trabaja hasta que exista el `xfail`. Es la ficha 21 al revés |
+| A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** |
 
-**Orden sugerido, y ninguno bloquea a otro salvo que se diga:** 29 antes que
-22 —la 22 ya bajó todo lo que era suyo y los 3 que le faltan son de la 29—; 26, 27 y 28 se pueden hacer en cualquier momento, son independientes
-entre sí y del resto; 24 y 25 al final, como ya estaba decidido; la cola de la
-11 se reparte donde convenga, salvo el prerrequisito ya anotado.
+**Orden: 31, 32, 33 primero**, una por sesión. Son el recorte que el contador no
+veía. Las 26, 27 y 28 ensanchan guardias ya existentes: si hay alucinación en
+real, se intercalan; si no, van después del corte. La 24 y la 29 no se tocan
+sin test. El resto de la cola, sobre el sistema ya fusionado.
 
 ---
 

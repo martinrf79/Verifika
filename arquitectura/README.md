@@ -8,20 +8,17 @@ resultado lo ven los tres en el mismo lugar.
 
 ## Los dos números que dicen dónde está el proyecto
 
-No hace falta abrir nada. Se corre `pytest` y se mira la última línea:
-
-```
-984 passed, 12 xfailed
-                 └── 1 A MEDIAS  +  11 PLAN
-```
+No hace falta abrir nada. Se corre `pytest -q` y se mira cuántos `PLAN:` y
+cuántos `A MEDIAS:` hay. Esos dos números no se copian acá: envejecen.
 
 ```
 A MEDIAS   algo que se EMPEZÓ y no se terminó.  Tiene que llegar a CERO.
-PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Es el recorte. Baja al hacerse.
+PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 ```
 
-Cuando `PLAN` llegue a cero, el recorte está hecho. **No hay que acordarse de
-nada: el número es lo que falta.**
+La orden de trabajo abierta es `FICHA_30_la_simplificacion.md`. Cuando `PLAN`
+llegue a cero, el recorte está hecho. **No hay que acordarse de nada: el
+número es lo que falta.**
 
 ---
 
@@ -61,7 +58,8 @@ qué hacer.
 | `../DECISIONES.md` | QUÉ se decidió y por qué — 40 líneas |
 | `../PLAN_RECORTE.md` | CÓMO se hace cada paso y en qué orden |
 | `../ARQUITECTURA.md` | cómo está ordenado el sistema hoy |
-| `../tests/test_plan_del_recorte.py` | **el plan ejecutable**: los 11 pasos |
+| `../tests/test_plan_del_recorte.py` | el plan viejo, lo que queda de las fichas 1 a 25 |
+| `../tests/test_plan_de_la_simplificacion.py` | **el plan de ahora**: fusionar lo duplicado |
 
 > **Por qué los cuatro no están físicamente acá.** Reescribir 45 KB de prosa
 > para cambiarles la ruta agrega riesgo de transcripción y no gana nada: nadie
