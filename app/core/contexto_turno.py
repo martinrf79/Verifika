@@ -29,7 +29,7 @@ def set_current_tienda(tienda_id: str | None):
 
 
 def get_current_tienda() -> str:
-    """Devuelve la tienda actual; si no se seó, la default del settings."""
+    """Devuelve la tienda actual; si no se seteó, la default del settings."""
     tid = _current_tienda.get()
     if tid:
         return tid
