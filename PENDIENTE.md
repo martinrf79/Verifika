@@ -29,10 +29,10 @@ PLAN       el recorte. Baja a medida que se hace.
 El detalle de cada paso, con su número de hoy y su objetivo, está en
 `tests/test_plan_del_recorte.py`. La unidad de trabajo abierta, en `arquitectura/`.
 
-**27-ago:** orden de trabajo: `arquitectura/FICHA_34_el_nexo.md`. El depósito
-de lo que se apague es `archivo/`, no `reserva/`. Techo PLAN 14→16: el hub
-deja de llamar a reconciliar y a completar. No se tocó `app/` en este
-commit. El número vivo sale de `pytest`.
+**27-ago:** campaña de reducción escrita. `arquitectura/PLAN_REDUCCION.md`:
+`app/` tiene 604 funciones y 24355 líneas; el 30% es 181 y 7306. Tres
+sesiones (34, 35, 36). Depósito: `archivo/`. Techo PLAN 16→18. No se tocó
+`app/`. El número vivo sale de `pytest`.
 
 ---
 

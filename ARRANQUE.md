@@ -39,15 +39,17 @@ recordar nada: se lee esto, se hace una ficha, se cierra.
 Repo: github.com/martinrf79/Verifika (rama main).
 git fetch && git status. Si HEAD no es origin/main, PARÁ y avisá.
 Leé en este orden y nada más: ARRANQUE.md,
-arquitectura/FICHA_34_el_nexo.md, DECISIONES.md.
+arquitectura/PLAN_REDUCCION.md, arquitectura/FICHA_34_el_nexo.md,
+DECISIONES.md.
 Corré pytest -q y anotá los dos techos.
 Soy Martín, escucho por transcriptor: contestame en prosa plana, corto.
 Código sólo dentro de un bloque, y sólo si es una consigna a ejecutar.
 Prioridad uno, no negociable: el bot vende y alucina lo menos posible.
 Si sabe, contesta; si es ambiguo, repregunta; si no sabe, dice que no sabe.
 Un detalle nunca tira una venta.
-Esta sesión hace la FICHA 34 y nada más. Snapshot a archivo/ ANTES de
-tocar el vivo. El hub deja de llamar a reconciliar y a completar.
+Esta sesión hace la FICHA 34, primer tercio de PLAN_REDUCCION, y nada más.
+Snapshot a archivo/ ANTES de tocar el vivo. El hub deja de llamar a
+reconciliar y a completar. Si reposicion.py nadie lo llama, sale de app/.
 Si el piso baja, revert del corte, no un parche.
 PUSHEÁ A main ANTES DE CERRAR. Toca app/: pedí el OK del push una vez,
 al final. Nada de ramas.
@@ -67,7 +69,8 @@ mismo día, no se acumula. El candado está en
 
 | ficha | test | qué falta |
 |---|---|---|
-| **34** | `test_el_hub_no_llama_a_reconciliar`, `test_el_hub_no_llama_a_completar_de_reposicion` | el nexo: interpretar → resolver → redactar. Relato en `arquitectura/FICHA_34_el_nexo.md`. Va primero. |
+| **34** | `test_el_hub_no_llama_a_reconciliar`, `test_el_hub_no_llama_a_completar_de_reposicion` | el nexo: interpretar → resolver → redactar. Primer tercio de `arquitectura/PLAN_REDUCCION.md`. Va primero. |
+| **36** | `test_app_tiene_a_lo_sumo_ciento_ochenta_funciones`, `test_app_pesa_a_lo_sumo_siete_mil_trescientas_lineas` | termómetros: 604→181 funciones, 24355→7306 líneas. Cierran al final, no en la 34 |
 | **31** | `test_el_catalogo_tiene_una_sola_puerta_interna` | cuatro cuerpos leen el mismo catálogo. La 34 puede ponerla verde de yapa; no se trabaja aparte |
 | **32** | `test_la_plata_tiene_una_sola_puerta_interna` | tres cuerpos tocan la cuenta o el cobro. `tomar_pedido` se borra |
 | **33** | `test_la_higiene_tiene_un_solo_mutador` | `componer` y `aduana` reescriben el mismo texto, uno atrás del otro |
@@ -86,10 +89,9 @@ mismo día, no se acumula. El candado está en
 | **29** | *(sin test propio todavía)* | la anti-repetición poda el bloque de cuenta que no cambió y se lleva el reparto y el pago, que son PUNTOS. No se trabaja hasta que exista el `xfail`. Es la ficha 21 al revés |
 | A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** |
 
-**Orden: 34 primero**, una sesión, toca `app/` y deploya. Las 31, 32 y 33 no
-se implementan aparte: si la 34 las pone verdes, se les saca la marca en el
-mismo commit. La 35 es la sesión siguiente: la higiene un solo mutador, ya
-escrita. La 24 y la 29 no se tocan sin test.
+**Orden: 34, 35, 36**, una por sesión, relato en `arquitectura/PLAN_REDUCCION.md`.
+La 34 toca `app/` y deploya. Las 31, 32 y 33 no se implementan aparte. La 35
+es la puerta. La 36 es el número. La 24 y la 29 no se tocan sin test.
 
 ---
 

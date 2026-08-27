@@ -19,8 +19,8 @@ No deploya. Está en `.gcloudignore` y en `paths-ignore` de `deploy.yml`.
 
 ## Qué hay guardado
 
-Todavía nada. La FICHA 34, cuando apague el reconciliador y la reposición del
-camino vivo, deja acá el snapshot con la fecha del commit.
+Todavía nada. La FICHA 34 deja acá el primer snapshot. Qué se apaga y en
+qué sesión está en `arquitectura/PLAN_REDUCCION.md`.
 
 | archivo | qué era | se borra cuando |
 |---|---|---|

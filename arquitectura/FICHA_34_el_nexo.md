@@ -1,8 +1,9 @@
 # FICHA 34 — El nexo. Una sesión.
 
-Esta ficha reemplaza a las 31, 32 y 33 como **próximo trabajo**. Esas tres
-siguen en pytest: si este corte las pone verdes de yapa, se les saca la marca
-en el mismo commit. Si no, quedan para después. No se implementan aparte.
+Primer tercio de `PLAN_REDUCCION.md`. Esta ficha reemplaza a las 31, 32 y 33
+como **próximo trabajo**. Esas tres siguen en pytest: si este corte las pone
+verdes de yapa, se les saca la marca en el mismo commit. Si no, quedan para
+después. No se implementan aparte.
 
 No se toca el turno a medias. O el hub deja de llamar al reconciliador y a la
 reposición, o no se pushea.
