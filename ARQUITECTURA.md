@@ -1,15 +1,16 @@
 # Arquitectura de Verifika — el turno, de punta a punta
 
 Mapa de referencia permanente. El estado del día vive en
-`RESUMEN_PARA_NUEVO_CHAT.md`, lo decidido en `DECISIONES.md`, lo medido en
-`PASO0_CENSO.md`. Esto es cómo se ordena el sistema.
+`RESUMEN_PARA_NUEVO_CHAT.md`, lo decidido en `DECISIONES.md`. Los números
+del censo salen de `banco_pruebas/peso_del_censo.py` y el candado está en
+`tests/test_censo_del_grafo.py`. Esto es cómo se ordena el sistema.
 
 > **REGLA DE ESTE ARCHIVO, y nació de un defecto suyo.** Acá no se escribe
-> ningún número que un script pueda medir. Este documento decía "los candados de
-> salida son cuatro" y son diecisiete; antes había dicho siete herramientas en el
-> diagrama y ocho en la tabla. **Los números se apuntan al script que los mide, no
-> se copian.** Es la misma regla que ya rige para los temas de la FAQ y para el
-> nombre del modelo, y este archivo es el tercer caso donde hizo falta.
+> ningún número que un script pueda medir. Los nodos declarados viven en
+> `app/verifika/grafo.py` (`NODOS`). Las piezas internas de cada puerta están
+> nombradas ahí, en el campo `piezas` de ese Nodo. Los cuerpos que despacha el
+> código viven en `app/core/herramientas._CUERPOS`. El modelo ve `_VISIBLES`.
+> Los nombres viejos los traduce `_ALIAS`.
 
 ---
 
@@ -24,8 +25,8 @@ producción el 1-ago: el juez declaró sin respaldo seis renglones que había
 estampado el propio código. El problema no era que el modelo alucinara; era que
 tres capas peleaban por la misma verdad.
 
-El principio sigue siendo correcto. **Lo que hay que leer abajo es hasta dónde se
-aplicó de verdad, porque no es lo que este archivo decía.**
+El principio sigue siendo correcto. Lo de abajo es el camino vivo, no el de
+agosto.
 
 ---
 
@@ -34,25 +35,21 @@ aplicó de verdad, porque no es lo que este archivo decía.**
 ```
 webhook -> orchestrator -> hub_venta
                              |
-       1. LLAMADA UNO  ------+  el modelo ve la charla + las herramientas
-          "que buscar"        |  y devuelve tool calls. No traduce nada.
+       1. LLAMADA UNO  ------+  el modelo ve registrar_pedido y DECLARA.
+          "que entendio"      |  No elige que buscar.
                               |
-       2. PARALELO -----------+  asyncio.gather. Hasta 2 rondas: la segunda
-          "todo junto"        |  solo para lo que desbloquea la primera.
+       2. RESOLVER -----------+  el codigo deriva las busquedas, arma la
+          "una sola opinion"  |  cuenta, cierra el contrato. indice_turno
+                              |  marca cada punto. Ver grafo.py.
                               |
-       2-bis. REPOSICION -----+  el codigo COMPLETA lo que el modelo declaro y
-          una puerta, en      |  no aplico, antes de redactar. Es UNA puerta,
-          reposicion.py       |  `completar`, con las seis piezas adentro y el
-                              |  orden de dependencia escrito. Ver mas abajo.
-                              |
-       3. LLAMADA DOS --------+  redacta con el JSON de resultados delante
+       3. LLAMADA DOS --------+  redacta UNA vez con el material delante
           "redactar"          |
                               |
-       4. SALIDA -------------+  los engranajes que tocan el texto DESPUES de
-          los candados        |  que el modelo escribio. Cuantos son, y cuales
-                              |  intervienen de verdad, lo mide el censo.
+       4. SALIDA -------------+  cuatro puertas: procedencia, plata,
+          procedencia, plata, |  obligacion, higiene. Las piezas de
+          obligacion, higiene |  adentro estan nombradas en grafo.py.
                               |
-       5. CIERRE Y COBRO -----+  leads.py, la misma funcion de siempre
+       5. CIERRE Y COBRO -----+  leads.py
                               |
        6. MEMORIA ------------+  history, resumen, vistos, carrito, destinos
 ```
@@ -61,36 +58,15 @@ webhook -> orchestrator -> hub_venta
 
 ## Las herramientas
 
-**Cuántas son NO se escribe acá.** Este archivo decía siete en el diagrama y ocho
-en la tabla, y el 14-ago se midieron nueve: dos números viejos en el mismo
-documento. El número lo mide `banco_pruebas/peso_del_turno.py` leyendo los moldes
-vivos, y la tabla de abajo se lee como qué resuelve cada una, no como el censo.
+El modelo ve `registrar_pedido`. El código deriva el resto. Qué cuerpos
+despacha el vivo y con qué nombres viejos se traducen no se copia acá: está
+en `_CUERPOS` y `_ALIAS` de `app/core/herramientas.py`.
 
 `app/core/herramientas.py`. Molde Pydantic + una función determinista que ya
-existía y estaba probada. La lógica no se reescribió: se le puso un molde adelante
-y el esquema que ve el modelo se GENERA del molde, así no hay dos definiciones que
-puedan divergir.
+existía y estaba probada. El esquema que ve el modelo se GENERA del molde, así
+no hay dos definiciones que puedan divergir.
 
-| herramienta | qué resuelve | de dónde sale el dato |
-|---|---|---|
-| `registrar_pedido` | DECLARA lo que entendió, antes de buscar | no toca la fuente; es lo que el reconciliador compara contra lo que pidió |
-| `buscar_productos` | identidad y catálogo | certificador + catálogo Firestore |
-| `consultar_catalogo` | contar, extremos, qué valores existen | catálogo entero, recorrido por código |
-| `ficha_producto` | la ficha completa por id | catálogo + specs + compatibilidad |
-| `consultar_temas` | qué dice la casa de cada tema | FAQ curada con sus valores estampados **+** criterio y movida de `base_conocimiento.json` |
-| `cotizar_envio` | costo a un destino | tabla de tarifas + geo de códigos postales |
-| `armar_presupuesto` | LA CUENTA | calculadora; devuelve el bloque ya escrito |
-| `ver_compatibilidad` | si sirve para su equipo | tabla de compatibilidad |
-| `tomar_pedido` | decisión de compra y cobro | marca el cierre; trae los datos de pago |
-
-**Cuatro de ellas leen el MISMO catálogo cambiando la proyección**
-—`buscar_productos`, `consultar_catalogo`, `ficha_producto` y
-`ver_compatibilidad`—. Eso no es capacidad repetida por accidente: es la misma
-puerta abierta cuatro veces, y el modelo tiene que elegir cuál.
-
----
-
-## Lo que sigue atado, y es lo único que hace falta atar
+### Lo que sigue atado, y es lo único que hace falta atar
 
 1. **La identidad la decide el código.** Regla cero del proyecto.
    `certificar_producto` devuelve encontrado, ambiguo o no_encontrado. Con ambiguo
@@ -99,54 +75,53 @@ puerta abierta cuatro veces, y el modelo tiene que elegir cuál.
    los filtros se inyectan en el esquema desde el catálogo y la FAQ. El modelo no
    puede pedir una categoría que no vendemos, ni un tema de política que no
    existe, ni filtrar por un campo que la fuente no tiene.
-2-bis. **Los atributos se CONSULTAN, no se razonan.** `buscar_productos` recibe
-   `filtros` estructurados —campo, operador, valor— sobre los campos reales del
-   catálogo, columnas y `specs`. Antes el modelo recibía tres fichas y tenía que
-   deducir de la prosa cuál era blanco o cuál pesaba menos: eso es adivinar con el
-   dato cargado al lado. Si la ficha no dice, el filtro devuelve "no se sabe", que
-   no es lo mismo que "no".
-3. **La plata la arma el código.** `armar_presupuesto` devuelve el presupuesto
-   renglón por renglón. El modelo lo pega, no lo recompone. Es la única parte del
-   mensaje que el modelo no redacta.
+2-bis. **Los atributos se CONSULTAN, no se razonan.** Las condiciones van en
+   filtros estructurados sobre los campos reales del catálogo. Si la ficha no
+   dice, el filtro devuelve "no se sabe", que no es lo mismo que "no".
+3. **La plata la arma el código.** El presupuesto vuelve renglón por renglón.
+   El modelo lo pega, no lo recompone. Es la única parte del mensaje que el
+   modelo no redacta.
 
 ---
 
-## La etapa de SALIDA — lo que este archivo decía mal
+## La etapa de SALIDA — cuatro puertas
 
-**Lo que decía hasta el 21-ago:** *"Son cuatro y ninguno reescribe prosa: borran
-lo que no puede salir"*, y que el juez, la red de verificadores y las ocho guardas
-se habían borrado el 2-ago.
+Cada puerta contesta UNA pregunta sobre el mensaje, y adentro corre sus piezas
+en un orden fijo. Las piezas siguen registrando una por una: están nombradas
+en `grafo.py`, campo `piezas` de cada Nodo. El barrido de
+`tests/test_grafo_cableado.py` barre las puertas, no las piezas. Cuáles
+intervienen de verdad lo mide `banco_pruebas/peso_del_censo.py`.
 
-**Lo medido** (`banco_pruebas/peso_del_censo.py`, los 15 casetes reproducidos por
-el camino vivo, 54 turnos, offline):
+```
+PROCEDENCIA  ¿de donde salio cada dato?      Lo que no viene del material
+                                             del turno no sale.
+PLATA        ¿quien calculo este numero?     La cuenta la arma el codigo y
+                                             viaja entera. Ningun peso sin
+                                             respaldo.
+OBLIGACION   ¿que tiene que estar si o si?   Que es un bot, el saludo la
+                                             primera vez, el punto que el
+                                             cliente pregunto, como se paga.
+                                             La UNICA que suma.
+HIGIENE      ¿como se lee?                   Sin repetir. Un mutador: componer.
+```
 
-- La etapa de salida tiene **diecisiete** nodos, no cuatro.
-- **Varios sí reescriben prosa**: `_bloque_entero_o_repuesto`,
-  `_punto_omitido_repuesto`, `_sin_titulos_huerfanos`.
-- **Ocho de los diecisiete no intervinieron nunca** en 54 turnos.
+Tres restan y una suma, y ese reparto ordena el orden: primero se saca lo que
+no puede estar, después se pone lo que falta, y al final se mira el mensaje
+entero una sola vez.
 
-El juez y las once guardas se borraron de verdad. Y después **volvieron a crecer
-con otros nombres.** La enfermedad que este documento describía como curada es la
-que el sistema tiene: trece pasadas encadenadas sobre el mismo texto, ninguna
-sabiendo lo que hicieron las otras.
-
-Eso no es una opinión de estilo, tiene dos víctimas registradas en `PENDIENTE.md`:
-arreglar la plata rompió el título huérfano, y un candado de descuento nuevo cortó
-un renglón de pago e inventó un precio. **Un diseño con trece escritores del mismo
-texto garantiza que arreglar una cosa rompa otra.**
-
-Los números por nodo están en `PASO0_CENSO.md` y se vuelven a sacar corriendo el
-censo. Acá no se copian.
+El juez y las once guardas se borraron de verdad. La forma volvió con otros
+nombres y se agrupó: las comprobaciones siguen, las costuras entre nodos sueltos
+no. Un diseño con muchos escritores del mismo texto garantiza que arreglar una
+cosa rompa otra; por eso el paso del turno son estas cuatro puertas y no una
+fila de piezas reordenables.
 
 ### Lo que sí borran, y hay que conservar
 
-De los diecisiete, lo que importa que exista es esto, y no depende de cuántas
-funciones lo implementen:
+No depende de cuántas funciones lo implementen:
 
 - **Plata inventada.** Todo monto del texto tiene que estar en lo que trajeron las
   herramientas, o en el presupuesto de un turno anterior, que también lo calculó
-  el código. Ve la plata con signo y sin signo, y no confunde una spec con un
-  monto.
+  el código.
 - **Cobro inventado.** Un CBU, alias, titular o banco que no coincida con la
   config de la tienda no sale. Nació de que el modelo se inventó un CBU de 22
   dígitos en una charla viva.
@@ -155,126 +130,71 @@ funciones lo implementen:
   prompt: si preguntan si es una máquina, se dice la verdad, y el primer mensaje
   avisa que es un asistente automático.
 
-**Cuidado con el atajo.** Que un nodo no haya intervenido en 54 turnos prueba que
-**estas charlas no lo ejercitan**, no que sobre. `sin_cobro_inventado` protege
-algo que importa y nació de un incidente real. Lo que corresponde no es borrarlo a
-ciegas: es ejercitarlo —para eso entraron los guiones 26 a 38— y después decidir.
+**Cuidado con el atajo.** Que una pieza no haya intervenido en el corpus prueba
+que **estas charlas no la ejercitan**, no que sobre. Lo que corresponde no es
+borrarla a ciegas: es ejercitarla y después decidir. Los nombres y las clases
+salen del censo, no de acá.
 
 ---
 
-## La etapa de REPOSICIÓN — una puerta, en `app/core/reposicion.py`
+## El nexo — resolver, no reposición
 
-Entre la llamada uno y la redacción hay **una función, `completar`, que aplica lo
-que el modelo declaró y no aplicó**. Adentro corren seis piezas, en el orden de
-la dependencia, y ese orden está escrito arriba de ellas: hasta la FICHA 11 eran
-seis funciones sueltas en `hub_venta` y el orden vivía en cinco comentarios de
-`procesar_venta`.
+Entre la declaración y la redacción hay **una función, `resolver`**. Una sola
+opinión sobre el pedido, desde lo declarado. El reconciliador no corre.
+`reposicion.py` salió de `app/`.
 
-```
-1. _busqueda_de_lo_declarado      4. _reparto_de_pago_declarado
-2. _condicion_faltante_aplicada   5. _supuesto_de_pago
-3. _cuenta_con_lo_declarado       6. _bloques_a_uno
-```
+Adentro el código deriva las búsquedas y arma la cuenta. Esas piezas registran
+con su id propio: están nombradas en el Nodo `resolver` de `grafo.py`.
+`busquedas_derivadas` es un nodo declarado, no una pieza huérfana.
+`indice_turno` cierra los puntos; `puerta_cobertura` registra el veredicto
+sobre el texto que el cliente va a leer, nombrada en ese Nodo.
 
-Cada una sigue pasando por `G.paso_datos`, así que se sigue midiendo cuál
-intervino y `peso_reposicion.py` ve el mismo detalle que veía con seis nodos.
-
-Lo que hacen, dicho sin eufemismo: **el código no confía en la interpretación y la
-vuelve a hacer.** Cuánto intervienen es, literalmente, la medida de cuán robusta
-es la interpretación en la práctica, y hasta el 18-ago nadie la había medido. Los
-números los saca `banco_pruebas/peso_reposicion.py`.
-
-El más grande no es una guardia: es **la resolución del punto `precio` puesta
-después de que el modelo escribió**. Corrige al modelo en una fracción muy alta de
-los turnos, y eso significa que está en la etapa equivocada, no que haga falta.
-
-### Por qué existe
-
-La llamada uno hace **dos trabajos a la vez**: declarar qué entendió, y elegir qué
-herramientas llamar. El primero anda bien. El segundo falla en más de la mitad de
-los turnos —el reconciliador reclama porque lo declarado y lo buscado no
-coinciden— y `_busqueda_de_lo_declarado` existe **únicamente para parchear esa
-diferencia después de que ocurrió**.
+La cuenta es la resolución del punto `precio` en la etapa de decisión, no un
+parche de salida.
 
 ---
 
 ## Los contratos, en dos familias
 
-El turno está declarado nodo por nodo en `app/verifika/grafo.py`, y cada nodo dice
-qué propiedades mecánicas cumple. Son propiedades que se comprueban **sin saber
-cuál era la respuesta correcta**, que es la única forma de correrlas sobre entradas
-generadas.
+El turno está declarado nodo por nodo en `app/verifika/grafo.py`, y cada nodo
+dice qué propiedades mecánicas cumple. Son propiedades que se comprueban **sin
+saber cuál era la respuesta correcta**, que es la única forma de correrlas sobre
+entradas generadas.
 
 - **Los de TEXTO**, para los nodos de salida: no enmudece, no inventa plata,
   idempotente, no levanta.
-- **Los de DATOS**, para la mitad que decide y repone: no inventa id, no pierde
-  evidencia, no agrega lo no pedido, no reclama lo ya resuelto, más idempotente y
-  no levanta.
+- **Los de DATOS**, para la mitad que decide: no inventa id, no pierde
+  evidencia, no agrega lo no pedido, más idempotente y no levanta.
 
 Un nodo sin contrato tiene que declarar POR QUÉ. El candado está en
 `tests/test_barrido_decision.py` y no deja entrar un nodo nuevo sin contrato ni
 motivo.
 
-### El agujero del instrumento, tapado el 21-ago
+Las etapas registran. Un nodo que NO transforma texto no se puede medir
+comparando lo que entró contra lo que salió, así que **hay que decir qué
+significa que intervino, nodo por nodo**:
 
-**Las seis etapas registran: los treinta y dos nodos declarados dejan marca.**
-Hasta el 21-ago registraban diecisiete, todos de salida, porque el único que
-llamaba a `registrar()` era `G.paso` y `G.paso` envuelve transformaciones de
-TEXTO: **el instrumento era ciego justo en la etapa donde estaba el problema**, y
-por eso la reposición hubo que medirla envolviéndola a mano desde afuera.
-
-Lo que había que resolver para taparlo es que un nodo que NO transforma texto no
-se puede medir comparando lo que entró contra lo que salió, así que **hay que
-decir qué significa que intervino, nodo por nodo**. Se contesta de dos formas y
-ninguna le pregunta al nodo:
-
-- `G.paso_datos` para el que recibe un estado y devuelve el estado nuevo —las
-  seis reposiciones—: intervino si el estado cambió, comparado serializado. Es
-  la regla de `G.paso` un piso más arriba.
-- `G.veredicto` para el que produce algo que no es su propia entrada —el estado
-  inicial, el decisor, el redactor, el cierre, el guardado—: el criterio se
-  escribe en una línea al lado de la llamada, a la vista de quien audita.
+- `G.paso_datos` para el que recibe un estado y devuelve el estado nuevo:
+  intervino si el estado cambió, comparado serializado.
+- `G.veredicto` para el que produce algo que no es su propia entrada: el
+  criterio se escribe en una línea al lado de la llamada.
 
 Ninguna de las dos cambia comportamiento, y `paso_datos` **re-levanta** la
 excepción en vez de tragarla: tragarla es lo correcto en `G.paso`, donde cumple
 `no_enmudece`, y sería inventar un camino nuevo acá.
 
-**Lo que hace confiable la medición nueva es que coincide con la vieja:**
-`cuenta_repuesta` interviene en el 44% de los turnos, el mismo número que
-`peso_reposicion.py` había sacado el 18-ago envolviendo la función desde afuera.
-Dos instrumentos independientes sobre las mismas quince charlas.
-
 ---
 
 ## Hacia dónde va el turno
 
-Decidido en la conversación de arquitectura del 18 y 19 de agosto; las cuarenta
-decisiones con su motivo están en `DECISIONES.md`. El resumen en cinco líneas:
+Decidido en la conversación de arquitectura del 18 y 19 de agosto; las
+decisiones con su motivo están en `DECISIONES.md`. Del cinco, el vivo ya hace
+los cuatro primeros: la llamada uno solo declara, el contrato lo cierra
+`indice_turno`, resolver es una sola opinión, el modelo redacta una vez y las
+cuatro puertas verifican. Lo que sigue abierto —segunda redacción, cobertura y
+procedencia como una sola vara— está en `PENDIENTE.md`, no acá.
 
-```
-1. INTERPRETAR   la llamada uno SOLO declara. El codigo deriva que buscar.
-                 Nadie corrige la declaracion: no hay dos versiones de la
-                 intencion, asi que no queda nada que reconciliar.
-
-2. CONTRATO      el turno se descompone en PUNTOS, y no sale hasta que cada
-                 punto tenga un estado terminal: RESUELTO, AMBIGUO (repregunta),
-                 NO SE SABE, o CONFLICTO. `indice_turno` ya lo calcula y hoy
-                 el resultado se tira en una linea de log.
-
-3. RESOLVER      una sola puerta de busqueda, no cuatro proyecciones del mismo
-                 catalogo. Devuelve candidatos, por que califica cada uno, y
-                 que NO se pudo saber. La cuenta se resuelve ACA.
-
-4. REDACTAR      un solo escritor. El modelo recibe el contrato ya resuelto y
-                 escribe una vez. Despues NO se toca el texto.
-
-5. VERIFICAR     invariantes booleanos, nunca mutacion. Si uno se viola, se
-                 rechaza y se vuelve a redactar UNA vez con la violacion como
-                 aviso; si falla otra vez, sale un texto determinista.
-```
-
-Y las dos propiedades que reemplazan a los diecisiete candados, las dos medidas
-sobre el texto que ve el cliente:
+Las dos propiedades que se miden sobre el texto que ve el cliente:
 
 - **COBERTURA** — todo punto del contrato tiene renglón en el texto. Mata la
   omisión.
@@ -282,8 +202,8 @@ sobre el texto que ve el cliente:
   invención.
 
 La regla que protege la venta, y va en la arquitectura desde el día uno: **un
-punto sin resolver bloquea su renglón, nunca el turno.** Máximo una repregunta por
-turno, y solo sobre lo que bloquea el cobro.
+punto sin resolver bloquea su renglón, nunca el turno.** Máximo una repregunta
+por turno, y solo sobre lo que bloquea el cobro.
 
 ---
 
@@ -292,7 +212,7 @@ turno, y solo sobre lo que bloquea el cobro.
 - **El intérprete.** Traducía el mensaje a una taxonomía nuestra de veinte campos
   con un vocabulario de 116 términos. Se caía por JSON truncado, y cuando se caía
   todo lo de abajo trabajaba a ciegas. El modelo ya entiende la charla: no hace
-  falta que la traduzca a nuestro diccionario, hace falta que pida datos.
+  falta que la traduzca a nuestro diccionario, hace falta que declare.
 - **El solver de fragmentos y su render.** El modelo emitía fragmentos atados a
   enums y el código los estampaba. El render descartaba lo que no encajaba: en un
   turno real quedaron seis de ocho preguntas sin contestar.
@@ -300,6 +220,9 @@ turno, y solo sobre lo que bloquea el cobro.
   con evidencia distinta a la suya. Borraban dato real. **Ojo: se borraron, y la
   forma volvió** —ver la sección de salida—. Borrar una capa no alcanza si el
   diseño sigue permitiendo que crezca otra igual con otro nombre.
+- **La reposición como etapa y el reconciliador.** El modelo declaraba una cosa
+  y buscaba otra; el código reinterpretaba después. Eso salió: una sola opinión,
+  desde lo declarado, en `resolver`.
 - **Los detectores** de stock contradicho y promesas prohibidas siguen vivos, pero
   en `banco_pruebas/detectores.py`: son instrumentos para MEDIR una corrida, no
   capas del bot.

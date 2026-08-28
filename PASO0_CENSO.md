@@ -1,5 +1,8 @@
 # PASO 0 — EL CENSO DE ENGRANAJES
 
+> **FOTO DEL 18-ago-2026.** Esta tabla no se actualiza. Los números de hoy
+> salen de `banco_pruebas/peso_del_censo.py`.
+
 Medido el 18-ago-2026 sobre los **15 casetes** del repo, reproducidos por el
 camino vivo con el modelo reemplazado por su grabación: **54 turnos**, offline,
 sin clave, sin red. Cero fallos de reproducción.

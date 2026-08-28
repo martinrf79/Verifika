@@ -7,11 +7,10 @@ producto_resuelto, categorias, specs_preguntadas, criterio, destinos- y despues
 componer la respuesta como fragmentos atados a enums. Dos andamios de LLM
 alrededor de las funciones deterministas que son lo que de verdad sabe.
 
-Aca no hay taxonomia. El modelo decide QUE BUSCAR y el codigo se lo trae. El
-cuerpo de cada herramienta es una funcion que YA existia y estaba probada: el
-certificador de identidad, la FAQ curada, la tabla de tarifas, la calculadora,
-la tabla de compatibilidad. No se reescribio la logica, se le puso un molde
-adelante.
+Aca no hay taxonomia. El modelo ve `registrar_pedido` y DECLARA lo que
+entendio. El codigo deriva las busquedas. `_CUERPOS` son cuatro. `_ALIAS`
+traduce los nombres viejos para no romper casetes ni tests. `_VISIBLES`
+es lo que ve el modelo.
 
 LO QUE SIGUE ATADO, y es lo unico que hace falta atar:
   - la IDENTIDAD la decide `certificar_producto`, nunca el modelo (regla cero).

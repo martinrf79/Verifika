@@ -159,6 +159,10 @@ class Nodo:
     # contrato no se distingue de un nodo al que nadie le escribio el contrato
     # todavia, que es exactamente como quedaron quince nodos sin que se notara.
     sin_contrato: str = ""
+    # PIEZAS INTERNAS que registran con su propio id adentro de este nodo.
+    # No son Nodo() propios: el barrido barre la puerta, el censo las cuenta
+    # como huerfanos. La lista tiene que coincidir con G.censo().
+    piezas: tuple = ()
 
 
 def _n(fn):
@@ -208,8 +212,9 @@ NODOS = (
          exige="el mensaje del cliente y la memoria",
          garantiza="una lista de herramientas con argumentos validados por el "
                    "molde, o texto directo si el turno no necesita ninguna",
-         sin_contrato="es el modelo. QUE herramientas elige no es determinista "
-                      "y ningun barrido lo puede comprobar: lo miden los "
+         sin_contrato="es el modelo DECLARANDO. Ve registrar_pedido; el codigo "
+                      "deriva que buscar. Lo que declara no es determinista y "
+                      "ningun barrido lo puede comprobar: lo miden los "
                       "casetes, el explorador e interpretacion.py. Lo que SI "
                       "es determinista de este nodo -el esquema que le viaja y "
                       "la validacion de lo que devuelve- lo barren LO QUE EL "
@@ -255,12 +260,15 @@ NODOS = (
                    "calculadora sobre ids certificados y el contrato del "
                    "turno; no inventa un producto ni una cifra",
          contratos=CONTRATOS_DE_REPOSICION,
+         piezas=("cuenta_repuesta", "reparto_repuesto",
+                 "supuesto_de_pago", "bloques_a_uno"),
          aplicar_datos=lambda c: _aplicar_nexo(c)),
     Nodo(id="indice_turno", etapa="decision",
          funcion="app.core.indice_turno:cobertura",
          exige="lo interpretado y el material que trajeron las herramientas",
          garantiza="que punto del pedido tiene con que contestarse y cual no",
          contratos=(NO_LEVANTA, IDEMPOTENTE),
+         piezas=("puerta_cobertura",),
          aplicar_datos=lambda c: _con(
              c, indice=__import__(
                  "app.core.indice_turno", fromlist=["x"]).cobertura(
@@ -277,7 +285,7 @@ NODOS = (
                       "determinista y ningun barrido la puede comprobar: la "
                       "miden los casetes con su piso, el explorador y los "
                       "invariantes. Lo que el codigo hace con esa prosa lo "
-                      "barren los diecinueve nodos de salida"),
+                      "barren las cuatro puertas de salida"),
 
     # ── salida: CUATRO PUERTAS ───────────────────────────────────────────
     #
@@ -305,6 +313,10 @@ NODOS = (
                    "afirmar sobre los 880, sin descuentos que no existen y "
                    "sin la cocina del sistema a la vista",
          contratos=(NO_ENMUDECE, NO_LEVANTA, IDEMPOTENTE),
+         piezas=("atadura", "sin_json", "sin_markdown",
+                 "sin_cobro_inventado", "sin_negar_lo_traido",
+                 "sin_afirmar_del_catalogo", "sin_descuento_inventado",
+                 "sin_narracion_interna"),
          aplicar=lambda t, c: __import__(
              "app.core.salida", fromlist=["x"]).procedencia(
                  t, c["llamadas"], c["trace_id"], c["tienda_id"])),
@@ -317,6 +329,8 @@ NODOS = (
                    "anuncio de presupuesto queda sin presupuesto abajo",
          contratos=TODOS_LOS_CONTRATOS,
          repone=("previo", "bloque", "hallazgo"),
+         piezas=("la_cuenta_y_la_plata", "sin_anuncio_vacio",
+                 "bloque_repuesto", "hallazgo_repuesto"),
          aplicar=lambda t, c: __import__(
              "app.core.salida", fromlist=["x"]).plata(
                  t, c["llamadas"], c["bloque"], c["trace_id"],
@@ -331,6 +345,8 @@ NODOS = (
                    "cerrado sobre la mesa se dice COMO SE PAGA, una vez",
          contratos=(NO_ENMUDECE, NO_LEVANTA, IDEMPOTENTE),
          repone=("bloque",),
+         piezas=("honestidad_bot", "saludo", "punto_omitido",
+                 "camino_al_cobro"),
          aplicar=lambda t, c: __import__(
              "app.core.salida", fromlist=["x"]).obligacion(
                  t, c["mensaje"], c["negocio"], not c.get("anterior"),
@@ -343,6 +359,7 @@ NODOS = (
          garantiza="sin repeticion, lossless, un mutador: componer. No "
                    "reescribe la prosa del modelo",
          contratos=TODOS_LOS_CONTRATOS,
+         piezas=("componedor",),
          aplicar=lambda t, c: __import__(
              "app.core.salida", fromlist=["x"]).higiene(
                  t, c["anterior"], c["mensaje"], c["trace_id"],
@@ -413,8 +430,8 @@ def _aplicar_nexo(c: dict) -> dict:
 CICLOS = ()
 """EL TURNO NO TIENE CICLOS DESDE EL 17-AGO, y es el cambio que mas latencia
 saco. Habia uno solo: si el reconciliador encontraba un faltante se volvia al
-decisor, hasta cuatro veces. Ahora el faltante lo resuelve el codigo en las
-reposiciones, y lo que ni asi se resuelve se lo dice el indice al redactor. Un
+decisor, hasta cuatro veces. Ahora el faltante lo resuelve el codigo en el
+resolver, y lo que ni asi se resuelve se lo dice el indice al redactor. Un
 grafo sin ciclos tiene un numero fijo de llamadas al modelo por turno: dos."""
 
 
@@ -555,11 +572,12 @@ def censo() -> dict:
     """LO QUE MIDIO EL GRAFO, sin que nadie lo envuelva.
 
     `declarados` son los nodos de `NODOS`. `huerfanos` son los que dejan marca
-    y NO estan declarados: hoy son las piezas de adentro de las puertas de
-    `salida` y `reposicion`, que siguen registrando una por una con su id
-    propio despues de las FICHAS 10 y 11. **No son un error de nadie y no se
-    esconden**: son engranajes reales del turno, y contarlos aparte es la unica
-    forma de que el censo no mienta ni por arriba ni por abajo.
+    y NO estan declarados: las piezas internas de cada puerta, de la cuenta
+    del resolver y de la cobertura, nombradas en el campo `piezas` de ese
+    Nodo. **No son nodos faltantes y no se esconden**: corren adentro de su
+    puerta, el barrido barre las puertas, el censo las cuenta aparte para que
+    el numero no mienta ni por arriba ni por abajo. El candado esta en
+    `tests/test_censo_del_grafo.py`.
 
     `turnos` sale de `abrir_turno`, que corre una vez por turno, y sirve de
     control: ningun nodo puede haber corrido mas veces que turnos hubo. Si uno
@@ -700,10 +718,10 @@ def veredicto_del_turno() -> dict:
 # DECIR que significa que intervino, nodo por nodo. Se contesta en dos formas y
 # ninguna le pregunta al nodo:
 #
-#   `paso_datos`  el nodo recibe un estado y devuelve el estado nuevo -las seis
-#                 reposiciones-. Intervino si el estado CAMBIO, comparado
-#                 serializado. Es la misma regla de `G.paso` un piso mas arriba,
-#                 y es la que ya usaba `banco_pruebas/peso_reposicion.py`.
+#   `paso_datos`  el nodo recibe un estado y devuelve el estado nuevo -las
+#                 piezas de la cuenta del resolver-. Intervino si el estado
+#                 CAMBIO, comparado serializado. Es la misma regla de `G.paso`
+#                 un piso mas arriba.
 #   `veredicto`   el nodo produce algo que no es su propia entrada -el estado
 #                 inicial, los pedidos del decisor, el texto del redactor, el
 #                 guardado-. Ahi el criterio se escribe en el sitio de la
@@ -743,7 +761,8 @@ def paso_datos(nodo_id: str, funcion, estado, *args, **kwargs):
     """Corre un engranaje que mueve DATOS y deja su veredicto.
 
     El estado entra por el primer parametro y sale como resultado, que es como
-    estan escritas las seis reposiciones. Intervino si la huella cambio.
+    estan escritas las piezas de la cuenta del resolver. Intervino si la huella
+    cambio.
 
     NO cambia el comportamiento: devuelve lo mismo que la funcion, y si la
     funcion levanta, la excepcion sigue viaje despues de dejar la marca."""

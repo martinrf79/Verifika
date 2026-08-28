@@ -146,6 +146,19 @@ def test_ninguna_instruccion_nombra_un_modelo_concreto():
         "archivo va a _REGISTROS con su motivo escrito.\n  "
         + "\n  ".join(culpables))
 
+    # FICHA 37: ARQUITECTURA.md no puede presentar reposicion.py como el vivo.
+    # Puede nombrarlo como ausente. El heading y la frase "una puerta, en
+    # reposicion.py" son el camino viejo, y una sesion nueva los lee como hoy.
+    arq = (_RAIZ / "ARQUITECTURA.md").read_text(
+        encoding="utf-8", errors="ignore")
+    assert not re.search(r"(?im)^##\s+La etapa de REPOSICI[OÓ]N", arq), (
+        "ARQUITECTURA.md vuelve a presentar la reposicion como etapa viva. "
+        "El vivo es resolver y cuatro puertas. Ver grafo.py.")
+    assert not re.search(
+        r"(?im)una puerta,?\s+en\s+`?(?:app/core/)?reposicion\.py", arq), (
+        "ARQUITECTURA.md presenta reposicion.py como el camino vivo. "
+        "Salió de app/. El nexo es resolver.")
+
 
 def test_ninguna_instruccion_menciona_un_proveedor_abandonado():
     """Nombrar un proveedor que ya no se usa deja la palabra flotando, y la
