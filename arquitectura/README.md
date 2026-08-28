@@ -16,8 +16,9 @@ A MEDIAS   algo que se EMPEZÓ y no se terminó.  Tiene que llegar a CERO.
 PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 ```
 
-La orden de trabajo abierta es `FICHA_41_un_idioma.md`. La FICHA 36 corrió:
-reposicion y guia_pedido salieron de `app/`. Los dos termómetros siguen.
+La orden de trabajo abierta es `FICHA_43_la_salida_habla_las_familias.md`.
+La 41 unificó nombres adentro del molde. La 42 nombró el catálogo de la
+pregunta. Los dos termómetros siguen.
 
 ---
 
@@ -50,7 +51,9 @@ toca, cómo se verifica.
 | `FICHA_34_el_nexo.md` | primera sesión: el nexo, cerrada |
 | `FICHA_35_la_puerta.md` | segunda sesión: la puerta, cerrada |
 | `FICHA_36_el_numero.md` | tercera sesión: el número; termómetros siguen |
-| `FICHA_41_un_idioma.md` | **abierta**: un idioma, el del molde |
+| `FICHA_41_un_idioma.md` | un idioma, el del molde; cerrada |
+| `FICHA_42_el_catalogo_de_la_pregunta.md` | el catálogo de la pregunta; cerrada |
+| `FICHA_43_la_salida_habla_las_familias.md` | **abierta**: la salida habla las familias abiertas |
 | `PLAN_REDUCCION.md` | **la campaña**: 604 funciones → 181, qué se queda |
 
 **En la raíz: la biblioteca.** Se consulta para entender POR QUÉ, no para saber
