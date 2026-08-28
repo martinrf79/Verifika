@@ -14,8 +14,17 @@ recordar nada: se lee esto, se hace una ficha, se cierra.
 
 > ## REGLA CERO BIS — `git fetch` ANTES DE TOCAR NADA
 >
-> Comprobá que `HEAD` es `origin/main`. Si no lo es, **PARÁ**.
-> Pasó dos veces trabajar una sesión entera sobre un árbol viejo: el 3-ago, y
+> Comprobá que `HEAD` es `origin/main`. Si no lo es, **no arranqués a laburar
+> sobre ese árbol**. Qué hacer depende de por qué no lo es:
+>
+> - Árbol limpio, en `main`, y `git merge-base --is-ancestor HEAD origin/main`:
+>   estás atrás, el fast-forward es seguro. `git pull --ff-only origin main` y
+>   seguí. El 28-ago un chat de la FICHA 35 paró acá con dos commits atrás y
+>   devolvió la sesión: no era el caso del 26-ago.
+> - Árbol sucio, commits locales que no están en `origin`, o no hay
+>   fast-forward: **PARÁ y avisá**. No se pisa trabajo.
+>
+> Pasó dos veces laburar una sesión entera sobre un árbol viejo: el 3-ago, y
 > el 26-ago con un checkout **56 commits atrás**, parado en la FICHA 06
 > mientras el remoto iba por la 19. Las dos veces hubo que rehacer todo.
 >
@@ -30,6 +39,8 @@ recordar nada: se lee esto, se hace una ficha, se cierra.
 > sin commitear puede ser trabajo real, así que **no toca nada y PARA**.
 > El candado es `tests/test_hook_arranque_arbol_viejo.py`, que corre el bloque
 > real contra seis árboles armados a mano.
+> Cowork y un entorno `build` a veces no corren ese hook: por eso el bloque de
+> abajo dice el fast-forward a mano.
 
 ---
 
@@ -37,7 +48,10 @@ recordar nada: se lee esto, se hace una ficha, se cierra.
 
 ```
 Repo: github.com/martinrf79/Verifika (rama main).
-git fetch && git status. Si HEAD no es origin/main, PARÁ y avisá.
+git fetch origin main && git checkout main && git status.
+Si HEAD no es origin/main: árbol limpio y fast-forward posible →
+git pull --ff-only origin main y seguí. Si el árbol está sucio, hay
+commits locales que no están en origin, o no hay fast-forward: PARÁ y avisá.
 Leé en este orden y nada más: ARRANQUE.md,
 arquitectura/PLAN_REDUCCION.md, arquitectura/FICHA_35_la_puerta.md,
 DECISIONES.md.

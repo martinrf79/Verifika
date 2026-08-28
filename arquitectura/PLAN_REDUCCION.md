@@ -157,7 +157,9 @@ No se suma a `DECLARADAS` para tapar.
 ```
 Repo: github.com/martinrf79/Verifika, rama main.
 git fetch origin main && git checkout main && git status.
-Si HEAD no es origin/main, PARÁ y avisá.
+Si HEAD no es origin/main: árbol limpio y fast-forward posible →
+git pull --ff-only origin main y seguí. Si el árbol está sucio, hay
+commits locales que no están en origin, o no hay fast-forward: PARÁ y avisá.
 Leé SOLO: ARRANQUE.md, arquitectura/PLAN_REDUCCION.md,
 arquitectura/FICHA_35_la_puerta.md, DECISIONES.md.
 Corré pytest -q.
