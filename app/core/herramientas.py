@@ -462,6 +462,13 @@ class RegistrarPedido(BaseModel):
                           "politica con sus numeros, el criterio y la movida.")
 
 
+# UNA SOLA LISTA. El indice, las dieciocho clases dificiles y cualquier
+# puerta de respuesta hablan ESTOS nombres. No hay sinonimo: `tipo` de un
+# punto ES el campo. Inventar `condicion` al lado de `restricciones` es el
+# telefono descompuesto que hace contestar un campo que nadie declaro.
+CAMPOS_PEDIDO = tuple(RegistrarPedido.model_fields.keys())
+
+
 _MOLDES = {
     "registrar_pedido": RegistrarPedido,
     "consultar_productos": ConsultarProductos,

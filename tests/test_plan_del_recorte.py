@@ -218,15 +218,12 @@ def test_se_abre_un_punto_por_cada_familia_respondible():
     preguntaba cuantos Hz tiene un monitor no se abria NINGUN punto, asi que la
     cobertura era ciega justo en las preguntas informativas.
 
-    ES: diez familias. Se suman ATRIBUTO, STOCK, COMPATIBILIDAD y POLITICA.
+    ES: diez familias, y el tipo ES el campo de `registrar_pedido`.
+    Las cuatro informativas estan en el molde desde la FICHA 06.
 
-    LO QUE ESTE TEST TODAVIA NO PRUEBA, y esta medido: el molde
-    `registrar_pedido` NO tiene esos campos, asi que en las 15 charlas grabadas
-    las cuatro familias nuevas no se abren —190 puntos y 24 sin contestar, los
-    MISMOS que antes del cambio—. La funcion sabe abrirlas; la declaracion
-    todavia no las trae. Eso es la unidad siguiente, y hasta que este hecha
-    **el 13% de puntos sin contestar sigue siendo un PISO y no el numero
-    real.**"""
+    Un apodo al lado del campo (`politica` por `temas`) es un telefono
+    descompuesto: el indice y la declaracion tienen que hablar el mismo
+    idioma."""
     from app.core import indice_turno as IT
     declarado = {
         "items": [{"que": "monitor", "cantidad": 1}],
@@ -236,7 +233,7 @@ def test_se_abre_un_punto_por_cada_familia_respondible():
         "temas": ["garantia"],
     }
     tipos = {p["tipo"] for p in IT.puntos(declarado)}
-    faltan = {"atributo", "stock", "compatibilidad", "politica"} - tipos
+    faltan = {"atributos", "stock", "compatibilidad", "temas"} - tipos
     assert not faltan, f"no se abre punto para: {sorted(faltan)}"
 
 

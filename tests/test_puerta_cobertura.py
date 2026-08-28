@@ -59,7 +59,7 @@ CASOS = [
       "destinos": ["Concordia"]},
      "Te confirmo 1 Mouse Logitech M170 Negro.",
      [_MOUSE, _envio("Concordia")],
-     False, "destino:1"),
+     False, "destinos:1"),
 
     # LOS DOS TEXTOS DE ABAJO GANARON UNA FRASE CON LA FICHA 15, y no es
     # maquillaje: el turno trae un producto certificado que el pedido no tiene,
@@ -122,7 +122,7 @@ CASOS = [
     ("FRENA: el precio pedido y el mensaje sin un numero, sin herramientas",
      {"items": [{"que": "notebook", "cantidad": 2}], "pide_precio": True},
      "Qué bueno que te interese llevarte dos unidades. Ya es el más competitivo.",
-     [], False, "precio:1"),
+     [], False, "pide_precio:1"),
 ]
 
 
@@ -156,21 +156,21 @@ def test_lo_que_no_frena_no_desaparece():
                        "Te lo cargo al pedido.", "test", llamadas=[_MOUSE])
     puerta = IT.puede_salir(idx["puntos"])
     assert puerta["puede"], "sin evidencia no puede frenar"
-    assert [p["id"] for p in puerta["sin_prueba"]] == ["destino:1"]
+    assert [p["id"] for p in puerta["sin_prueba"]] == ["destinos:1"]
 
 
 def test_la_puerta_es_pura_y_se_puede_correr_sobre_una_charla_vieja():
     """No mira el texto ni las herramientas: recibe los puntos ya marcados.
     Por eso se la puede correr sobre una charla guardada, y por eso dos
     corridas sobre los mismos puntos dan lo mismo."""
-    puntos = [{"id": "destino:1", "tipo": "destino", "texto": "envio a Concordia",
+    puntos = [{"id": "destinos:1", "tipo": "destinos", "texto": "envio a Concordia",
                "estado": "", "anclajes": ["Concordia"]},
-              {"id": "item:1", "tipo": "item", "texto": "1 mouse",
+              {"id": "items:1", "tipo": "items", "texto": "1 mouse",
                "estado": "RESUELTO", "anclajes": ["Mouse Logitech M170"]}]
     uno = IT.puede_salir(puntos)
     dos = IT.puede_salir(puntos)
     assert uno["puede"] is False and dos["puede"] is False
-    assert [p["id"] for p in uno["omitidos"]] == ["destino:1"]
+    assert [p["id"] for p in uno["omitidos"]] == ["destinos:1"]
     assert IT.puede_salir([])["puede"] is True
     assert IT.puede_salir(None)["puede"] is True
 
@@ -190,9 +190,10 @@ def test_los_tres_tipos_sin_prueba_mecanica_nunca_frenan():
     rechazado sin nada que hacer con el, y un turno mudo pierde la venta entera.
     Sale por `sin_ofrecer`, que se cuenta y no retiene nada."""
     assert set(IT.TIPOS_QUE_FRENAN) == {
-        "item", "condicion", "destino", "atributo", "precio", "pago"}
+        "items", "restricciones", "destinos", "atributos", "pide_precio",
+        "reparto_pago"}
     assert set(IT.TIPOS_SIN_OFERTA) == {"oferta"}
-    for tipo in ("politica", "stock", "compatibilidad"):
+    for tipo in ("temas", "stock", "compatibilidad"):
         punto = {"id": f"{tipo}:1", "tipo": tipo, "texto": "lo que sea",
                  "estado": "", "anclajes": ["evidencia", "de sobra"]}
         r = IT.puede_salir([punto])
@@ -272,7 +273,7 @@ def test_el_destino_sobrevive_cuando_la_cuenta_ya_se_dijo():
         if "total" not in ln.lower() and "reparto" not in ln.lower()
         and not ln.strip().startswith("- A "))
     idx = IT.cobertura(declarado, prosa, "test")
-    destinos = [p for p in idx["puntos"] if p["tipo"] == "destino"]
+    destinos = [p for p in idx["puntos"] if p["tipo"] == "destinos"]
     assert destinos and all(p["estado"] == "RESUELTO" for p in destinos), destinos
     otra = _punto_omitido_repuesto(
         fuera, declarado, [], [], "verifika_prod", "test", dichos=dichos)

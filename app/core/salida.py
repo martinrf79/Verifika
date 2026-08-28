@@ -1354,7 +1354,7 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
     # que no es cuenta y sobrevive al resumen. Charla 78 turno 2.
     destinos = []
     for p in omitidos:
-        if p.get("tipo") != "destino":
+        if p.get("tipo") != "destinos":
             continue
         nombre = str(p.get("termino") or "").strip()
         if nombre and nombre not in destinos:
@@ -1368,7 +1368,7 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
         return texto
 
     # ── EL PRECIO: EL BLOQUE SELLADO DE LA CALCULADORA ──────────────────
-    if any(p.get("tipo") == "precio" for p in omitidos):
+    if any(p.get("tipo") == "pide_precio" for p in omitidos):
         repuestas = R._cuenta_con_lo_declarado(
             llamadas, declarado, tienda_id, trace_id, memoria=memoria)
         bloque = R._bloque_presupuesto(repuestas)

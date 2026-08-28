@@ -34,27 +34,27 @@ CASOS = [
     ("RESUELTO: el punto llego al texto",
      {"items": [{"que": "mouse logitech", "cantidad": 2}]},
      "Te paso 2 Mouse Logitech M170 Negro a $12.000 cada uno.",
-     [], "item:1", "RESUELTO"),
+     [], "items:1", "RESUELTO"),
 
     ("OMISION: habia con que contestarlo y no salio dicho",
      {"items": [{"que": "mouse logitech", "cantidad": 2}]},
      "Perfecto, ya lo anoto y seguimos.",
      [_busqueda("mouse logitech", {"estado": "encontrado", "productos": [
          {"nombre": "Mouse Logitech M170 Negro"}]})],
-     "item:1", ""),
+     "items:1", ""),
 
     ("AMBIGUO: la busqueda volvio ambigua, hay que preguntar cual",
      {"items": [{"que": "g pro x", "cantidad": 1}]},
      "Dale, lo vemos.",
      [_busqueda("g pro x", {"estado": "ambiguo", "productos": [
          {"nombre": "Logitech G Pro X"}, {"nombre": "Logitech G Pro X 2"}]})],
-     "item:1", "AMBIGUO"),
+     "items:1", "AMBIGUO"),
 
     ("NO_SE_SABE: la casa no lo vende y la fuente lo dice",
      {"items": [{"que": "iphone", "cantidad": 1}]},
      "Dale, lo vemos.",
      [_busqueda("iphone", {"estado": "no_vendemos", "productos": []})],
-     "item:1", "NO_SE_SABE"),
+     "items:1", "NO_SE_SABE"),
 
     ("AMBIGUO: el texto repregunta POR ESE punto",
      {"stock": ["notebook asus"]},
@@ -66,22 +66,22 @@ CASOS = [
      "Listo, ya lo anoto. ¿Te lo despacho hoy?",
      [_busqueda("monitor samsung", {"estado": "encontrado", "productos": [
          {"nombre": "Monitor Samsung 24"}]})],
-     "item:1", ""),
+     "items:1", ""),
 
     ("NO_SE_SABE: el bot dice honestamente que no tiene el dato",
      {"atributos": [{"de": "monitor samsung", "campo": "hz"}]},
      "Del Monitor Samsung no tengo ese dato en la ficha.",
-     [], "atributo:1", "NO_SE_SABE"),
+     [], "atributos:1", "NO_SE_SABE"),
 
     ("CONFLICTO: el cliente se contradijo y el turno no pregunto",
      {"contradicciones": ["pediste 3 teclados pero nombraste 2 destinos"]},
      "Te confirmo los 3 teclados.",
-     [], "duda:1", "CONFLICTO"),
+     [], "contradicciones:1", "CONFLICTO"),
 
     ("AMBIGUO: la misma contradiccion, pero preguntada",
      {"contradicciones": ["pediste 3 teclados pero nombraste 2 destinos"]},
      "Me quedan 3 teclados y 2 destinos, ¿como los reparto?",
-     [], "duda:1", "AMBIGUO"),
+     [], "contradicciones:1", "AMBIGUO"),
 
     ("NO_SE_SABE: la fuente no tiene escrito ESE tema",
      {"temas": ["envio_exterior"]},
@@ -89,22 +89,22 @@ CASOS = [
      [{"herramienta": "consultar_temas", "pedido": {"temas": ["envio_exterior"]},
        "resultado": {"estado": "ok", "temas": [
            {"tema": "envio_exterior", "estado": "no_encontrado"}]}}],
-     "politica:1", "NO_SE_SABE"),
+     "temas:1", "NO_SE_SABE"),
 
     ("RESUELTO: el precio se contesta con el Total",
      {"items": [{"que": "teclado", "cantidad": 1}], "pide_precio": True},
      "Teclado Redragon.\nTotal: $24.000",
-     [], "precio:1", "RESUELTO"),
+     [], "pide_precio:1", "RESUELTO"),
 
     ("RESUELTO: la politica llego al texto",
      {"temas": ["garantia"]},
      "La garantia es de 6 meses por fabrica.",
-     [], "politica:1", "RESUELTO"),
+     [], "temas:1", "RESUELTO"),
 
     ("RESUELTO: el destino en Envio a, fuera de la cuenta",
      {"destinos": ["Rosario"]},
      "Sin cambios en la cuenta. Total: $104.500\n\nEnvío a Rosario.",
-     [], "destino:1", "RESUELTO"),
+     [], "destinos:1", "RESUELTO"),
 ]
 
 
@@ -141,7 +141,7 @@ def test_los_seis_estados_y_nada_mas():
     assert len(IT.ESTADOS_TERMINALES) == 6
     # LOS DOS DE LA OFERTA SON SOLO DE LA OFERTA. Si un punto del cliente
     # pudiera terminar OFRECIDO, la omision se escaparia por ahi.
-    assert IT.estado_terminal({"tipo": "item", "termino": "mouse"},
+    assert IT.estado_terminal({"tipo": "items", "termino": "mouse"},
                               "Te cargo el mouse al pedido.") == "RESUELTO"
 
 
@@ -179,6 +179,6 @@ def test_el_estado_no_le_pregunta_nada_al_modelo():
     """Sin llamadas y sin texto, la funcion contesta igual: es determinista y
     offline. Un punto sin nada con que contestarse queda SIN estado, que es
     lo que la puerta frena."""
-    punto = {"id": "item:1", "tipo": "item", "termino": "mouse", "texto": "1 mouse"}
+    punto = {"id": "items:1", "tipo": "items", "termino": "mouse", "texto": "1 mouse"}
     assert IT.estado_terminal(punto, "") == ""
     assert IT.estado_terminal(punto, "Te paso el mouse.") == "RESUELTO"

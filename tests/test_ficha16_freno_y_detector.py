@@ -122,7 +122,7 @@ def test_la_oferta_cede_ante_la_duda_declarada():
     empujaba el codigo, no el modelo."""
     con_duda, pendiente = IT.punto_de_oferta(
         _MOUSE, None, "Te paso la cotizacion.", None,
-        puntos_del_cliente=[{"id": "duda:1", "tipo": "duda",
+        puntos_del_cliente=[{"id": "contradicciones:1", "tipo": "contradicciones",
                              "texto": "pidio 6 articulos y nombro 7 destinos"}])
     assert con_duda is None, (
         "el turno arrastra una contradiccion que lo obliga a preguntar y la "
@@ -133,8 +133,8 @@ def test_la_oferta_cede_ante_la_duda_declarada():
     assert [p["nombre"] for p in pendiente] == ["Mouse Logitech G203"], pendiente
     sin_duda, _ = IT.punto_de_oferta(_MOUSE, None, "Te paso la cotizacion.",
                                      None,
-                                     puntos_del_cliente=[{"id": "item:1",
-                                                          "tipo": "item"}])
+                                     puntos_del_cliente=[{"id": "items:1",
+                                                          "tipo": "items"}])
     assert sin_duda and not sin_duda.get("no_corresponde"), (
         f"sin nada que preguntar la oferta tiene que abrirse: {sin_duda}")
 

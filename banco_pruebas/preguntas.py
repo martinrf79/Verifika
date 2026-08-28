@@ -177,6 +177,36 @@ CLASES = [
 ]
 
 
+# Cada clase cae en campos de `registrar_pedido`. No es otra taxonomia:
+# es el puente. `cierre` no es campo del molde: "me lo llevo" lo detecta
+# el cierre, no la declaracion.
+_FUERA_DEL_MOLDE = frozenset({"cierre"})
+CLASE_A_CAMPOS = {
+    "identidad_existe": ("stock",),
+    "identidad_no_existe": ("stock",),
+    "identidad_ambigua": ("items",),
+    "spec_de_ficha": ("atributos",),
+    "spec_sin_dato": ("atributos",),
+    "filtro_numerico": ("restricciones",),
+    "filtro_sin_campo": ("restricciones",),
+    "precio_simple": ("items", "pide_precio"),
+    "precio_multiple": ("items", "pide_precio", "destinos", "restricciones",
+                        "reparto_pago", "contradicciones"),
+    "envio_costo": ("destinos",),
+    "politica_faq": ("temas",),
+    "politica_sin_cubrir": ("temas",),
+    "compatibilidad": ("compatibilidad",),
+    "negacion": ("restricciones",),
+    "multipregunta": ("items", "pide_precio", "destinos", "temas", "stock",
+                      "atributos"),
+    "desprolijo": ("items",),
+    "capciosa": ("items", "stock"),
+    "dato_falso_inducido": ("temas", "pide_precio"),
+    "manipulacion": ("temas",),
+    "intencion_compra": ("cierre",),
+}
+
+
 def todas() -> list:
     """[(clase, pregunta, espera)] — una fila por pregunta."""
     fuera = []

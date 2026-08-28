@@ -247,7 +247,7 @@ def test_nombrar_el_producto_no_lo_da_por_ofrecido():
     assert oferta["atendido"] is False
     # Y el item SI se da por contestado con el mismo texto: son dos varas
     # distintas sobre el mismo mensaje, y tienen que dar distinto.
-    assert next(p for p in idx["puntos"] if p["id"] == "item:1")["atendido"]
+    assert next(p for p in idx["puntos"] if p["id"] == "items:1")["atendido"]
 
 
 def test_la_instruccion_pide_ofrecer_y_no_pide_preguntar():
@@ -349,7 +349,7 @@ def test_al_turno_que_no_ofrece_no_se_le_pide_que_pregunte():
     cliente: tiene algo que proponerle."""
     solo_oferta = [{"id": "oferta:1", "tipo": "oferta", "termino": "Mouse M170",
                     "texto": "proponerle el paso siguiente", "candidatos": []}]
-    con_un_punto = solo_oferta + [{"id": "destino:1", "tipo": "destino",
+    con_un_punto = solo_oferta + [{"id": "destinos:1", "tipo": "destinos",
                                    "texto": "envio a Concordia"}]
     # La condicion es exactamente la que decide en `hub_venta`.
     assert not any(p.get("tipo") != "oferta" for p in solo_oferta)

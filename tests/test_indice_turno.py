@@ -60,8 +60,9 @@ def test_cada_punto_interpretado_tiene_su_id():
     tiene que tener un valor con el que la respuesta se pueda atar."""
     ps = IT.puntos(DECLARADO)
     ids = [p["id"] for p in ps]
-    assert ids == ["item:1", "item:2", "item:3", "condicion:1", "destino:1",
-                   "destino:2", "destino:3", "duda:1", "pago:1", "precio:1"]
+    assert ids == ["items:1", "items:2", "items:3", "restricciones:1",
+                   "destinos:1", "destinos:2", "destinos:3",
+                   "contradicciones:1", "reparto_pago:1", "pide_precio:1"]
 
 
 def test_marca_lo_que_el_mensaje_REAL_no_contesto():
@@ -69,7 +70,8 @@ def test_marca_lo_que_el_mensaje_REAL_no_contesto():
     nombra UN destino de tres y no pregunta por el teclado. Esos tres puntos, y
     solo esos, tienen que salir marcados."""
     r = IT.cobertura(DECLARADO, _INCOMPLETO, "t")
-    assert [p["id"] for p in r["faltan"]] == ["destino:2", "destino:3", "duda:1"]
+    assert [p["id"] for p in r["faltan"]] == ["destinos:2", "destinos:3",
+                                             "contradicciones:1"]
 
 
 def test_no_marca_nada_cuando_esta_todo_dicho():
@@ -86,10 +88,10 @@ def test_la_duda_se_atiende_PREGUNTANDO_no_nombrando():
     regla cero -ante lo ambiguo se pregunta- llevada al indice."""
     nombrada = _INCOMPLETO + "\nEl teclado no estaba en el pedido inicial."
     r = IT.cobertura(DECLARADO, nombrada, "t")
-    assert "duda:1" in [p["id"] for p in r["faltan"]]
+    assert "contradicciones:1" in [p["id"] for p in r["faltan"]]
     con_pregunta = nombrada + " ¿Lo sumo?"
     r2 = IT.cobertura(DECLARADO, con_pregunta, "t")
-    assert "duda:1" not in [p["id"] for p in r2["faltan"]]
+    assert "contradicciones:1" not in [p["id"] for p in r2["faltan"]]
 
 
 def test_la_instruccion_nombra_el_punto_concreto():
@@ -205,7 +207,7 @@ def test_un_producto_de_la_memoria_no_contesta_un_punto_ajeno():
     carrito = [{"nombre": "Notebook HP 245 G9 Core i5"}]
     texto = "La Notebook HP 245 G9 es una gran eleccion."
     r = IT.cobertura(declarado, texto, "t", memoria=carrito)
-    assert [p["id"] for p in r["faltan"]] == ["item:1"]
+    assert [p["id"] for p in r["faltan"]] == ["items:1"]
 
 
 def test_una_omision_de_verdad_sigue_saliendo_marcada():
@@ -219,7 +221,7 @@ def test_una_omision_de_verdad_sigue_saliendo_marcada():
     texto = ("Que bueno que te interese llevarte dos unidades de la Notebook "
              "HP 245 G9. El precio ya es el mas competitivo que podemos ofrecer.")
     r = IT.cobertura(declarado, texto, "t", llamadas=[], memoria=carrito)
-    assert [p["id"] for p in r["faltan"]] == ["precio:1"]
+    assert [p["id"] for p in r["faltan"]] == ["pide_precio:1"]
 
 
 def test_el_anclaje_nunca_puede_agregar_una_alarma():
@@ -341,7 +343,7 @@ def test_el_filtro_aplicado_se_vuelve_restriccion_declarada():
     assert "china" in texto
     # y con eso el criterio ENTRA al indice como punto propio
     puntos = IT.puntos(salida)
-    assert any(p["tipo"] == "condicion" and "china" in p["termino"].lower()
+    assert any(p["tipo"] == "restricciones" and "china" in p["termino"].lower()
                for p in puntos)
 
 

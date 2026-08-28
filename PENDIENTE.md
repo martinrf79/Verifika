@@ -29,11 +29,10 @@ PLAN       el recorte. Baja a medida que se hace.
 El detalle de cada paso, con su número de hoy y su objetivo, está en
 `tests/test_plan_del_recorte.py`. La unidad de trabajo abierta, en `arquitectura/`.
 
-**28-ago:** El resolver lee el mensaje después de `registrar_pedido` y
-completa ítem→ciudad y el artículo que falte antes de buscar y cotizar.
-La vara es la cuenta: tres envíos y siete productos, sin unidades
-sin asignar. Los termómetros de la FICHA 36 siguen: el 30% no entra
-sin cortar el motor. El número vivo sale de `pytest`.
+**28-ago:** Un idioma: el tipo del punto es el campo de `registrar_pedido`.
+Dos campos declarados abren dos tipos, diez abren diez. Las dieciocho
+clases difíciles caen en esos campos, no en otra lista. La interpretación
+se toma como base; enlazar cada campo a su respuesta es la etapa siguiente.
 
 ---
 

@@ -21,10 +21,10 @@ QUE HACE ESTE MODULO, y es una sola idea. Cada cosa que el cliente pidio se
 convierte en un PUNTO con id estable. Despues se marca, punto por punto, si esa
 cosa aparece en la respuesta. El resultado es una lista chica y legible:
 
-    item:1   2 auriculares          -> atendido
-    item:2   2 mouse                -> atendido
-    destino:2 Concordia             -> FALTA
-    pago:1   reparto 70/30          -> atendido
+    items:1           2 auriculares   -> atendido
+    items:2           2 mouse         -> atendido
+    destinos:2        Concordia       -> FALTA
+    reparto_pago:1    70/30           -> atendido
 
 LO QUE NO HACE, y es a proposito. No inventa contenido, no reescribe prosa y no
 decide por el cliente. Marca. Lo que se hace con un punto que falta lo decide
@@ -38,9 +38,17 @@ hizo. El cliente no lee el estado interno: lee el mensaje.
 import re
 import unicodedata
 
+from app.core.herramientas import CAMPOS_PEDIDO
 from app.logger import get_logger
 
 log = get_logger(__name__)
+
+# Lo unico que no declara el cliente: la oferta la abre el codigo.
+TIPO_OFERTA = "oferta"
+# Nombres que el indice USABA y el molde NUNCA tuvo. Quedan prohibidos como
+# `tipo`: si reaparecen, hay dos idiomas otra vez.
+TIPOS_APODO = ("item", "condicion", "destino", "duda", "pago", "precio",
+               "atributo", "politica")
 
 
 def _n(s) -> str:
@@ -83,13 +91,28 @@ def _aparece(termino: str, texto: str) -> bool:
     return all(re.search(rf"\b{re.escape(p)}", t) for p in partes)
 
 
+def campos_abiertos(declarado: dict | None) -> tuple[str, ...]:
+    """Que campos del molde tienen algo. Dos campos declarados son dos
+    familias. Diez, diez. Vacio, False y lista vacia no abren nada."""
+    d = declarado or {}
+    fuera = []
+    for campo in CAMPOS_PEDIDO:
+        val = d.get(campo)
+        if campo == "pide_precio":
+            if val:
+                fuera.append(campo)
+            continue
+        if val:
+            fuera.append(campo)
+    return tuple(fuera)
+
+
 # ── LOS PUNTOS: cada cosa que el cliente pidio, con su id ────────────────────
 def puntos(declarado: dict) -> list:
     """Lo interpretado, desarmado en puntos con id estable.
 
-    El id es `tipo:n` y se arma del ORDEN en que el modelo declaro, que es el
-    orden del mensaje del cliente. Estable dentro del turno, que es lo que hace
-    falta para atar interpretacion con respuesta.
+    El id es `campo:n` y `tipo` ES el campo de `registrar_pedido`. Sin apodo.
+    El orden es el del molde, que es el del mensaje. Estable dentro del turno.
     """
     fuera: list = []
     if not declarado:
@@ -100,38 +123,39 @@ def puntos(declarado: dict) -> list:
         if not que:
             continue
         cant = it.get("cantidad") or 1
-        fuera.append({"id": f"item:{i}", "tipo": "item", "termino": que,
+        fuera.append({"id": f"items:{i}", "tipo": "items", "termino": que,
                       "texto": f"{cant} {que}"})
 
     for i, r in enumerate((declarado.get("restricciones") or []), 1):
         r = str(r or "").strip()
         if r:
-            fuera.append({"id": f"condicion:{i}", "tipo": "condicion",
+            fuera.append({"id": f"restricciones:{i}", "tipo": "restricciones",
                           "termino": r, "texto": r})
 
     for i, d in enumerate((declarado.get("destinos") or []), 1):
         d = str(d or "").strip()
         if d:
-            fuera.append({"id": f"destino:{i}", "tipo": "destino",
+            fuera.append({"id": f"destinos:{i}", "tipo": "destinos",
                           "termino": d, "texto": f"envio a {d}"})
 
     for i, c in enumerate((declarado.get("contradicciones") or []), 1):
         c = str(c or "").strip()
         if c:
-            fuera.append({"id": f"duda:{i}", "tipo": "duda", "termino": c,
-                          "texto": c})
+            fuera.append({"id": f"contradicciones:{i}", "tipo": "contradicciones",
+                          "termino": c, "texto": c})
 
     if declarado.get("reparto_pago"):
         pcts = [str(int(float(p.get("porcentaje") or 0)))
                 for p in declarado["reparto_pago"]
                 if p.get("porcentaje")]
         if pcts:
-            fuera.append({"id": "pago:1", "tipo": "pago",
+            fuera.append({"id": "reparto_pago:1", "tipo": "reparto_pago",
                           "termino": " ".join(pcts),
                           "texto": f"reparto del pago {'/'.join(pcts)}"})
 
     if declarado.get("pide_precio"):
-        fuera.append({"id": "precio:1", "tipo": "precio", "termino": "",
+        fuera.append({"id": "pide_precio:1", "tipo": "pide_precio",
+                      "termino": "",
                       "texto": "el precio de lo que pidio"})
 
     # ── LAS CUATRO FAMILIAS INFORMATIVAS (FICHA 02, 21-ago-2026) ────────
@@ -154,13 +178,9 @@ def puntos(declarado: dict) -> list:
     # busco no abre punto, y la omision —que es justo lo que queremos cazar—
     # se vuelve invisible. El punto nace de lo que el cliente pidio.
     #
-    # AVISO PARA LA SESION QUE LEA EL NUMERO, y es la trampa de esta unidad:
-    # hoy `registrar_pedido` NO tiene los campos `atributos`, `stock`,
-    # `compatibilidad` ni `temas`, asi que en una charla real estas cuatro
-    # familias NO SE ABREN TODAVIA. Agregarlos al molde cambia el esquema que
-    # ve el modelo y es otra unidad, con otro riesgo. **Un numero bajo de
-    # puntos nuevos en el corpus grabado no quiere decir que la omision bajo:
-    # quiere decir que todavia no se puede medir.**
+    # Las cuatro informativas viven en el molde desde la FICHA 06. El tipo
+    # es el campo. No se abre un punto porque se busco: se abre porque se
+    # declaro.
 
     for i, a in enumerate((declarado.get("atributos") or []), 1):
         de = str((a or {}).get("de") or "").strip()
@@ -171,7 +191,7 @@ def puntos(declarado: dict) -> list:
         # omision sin que nada haya mejorado, que es peor que no medirlo.
         if not de or not campo:
             continue
-        fuera.append({"id": f"atributo:{i}", "tipo": "atributo",
+        fuera.append({"id": f"atributos:{i}", "tipo": "atributos",
                       "termino": de, "campo": campo,
                       "texto": f"{campo} de {de}"})
 
@@ -196,7 +216,7 @@ def puntos(declarado: dict) -> list:
             # El tema viene con guion bajo -`costo_envio`, `garantia`- y el
             # matcher parte por espacios: sin esto `costo_envio` seria una sola
             # palabra que no aparece jamas en un mensaje escrito por nadie.
-            fuera.append({"id": f"politica:{i}", "tipo": "politica",
+            fuera.append({"id": f"temas:{i}", "tipo": "temas",
                           "termino": t.replace("_", " "), "tema": t,
                           "texto": f"la politica de {t.replace('_', ' ')}"})
 
@@ -358,16 +378,15 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
             continue
         r = l.get("resultado") or {}
         ped = l.get("pedido") or {}
-        # UNA CONDICION NO COMPARTE PALABRA CON SU BUSQUEDA, y no puede. El
+        # UNA RESTRICCION NO COMPARTE PALABRA CON SU BUSQUEDA, y no puede. El
         # cliente dice "para jugar" y el codigo busca "gamer": esa TRADUCCION es
         # exactamente el trabajo del interprete. Atarla exigiendo una palabra en
-        # comun deja afuera el unico caso que importa, asi que una condicion se
-        # ancla contra cualquier busqueda del turno que haya traido productos:
-        # la condicion se aplica sobre esa busqueda, no sobre otra.
+        # comun deja afuera el unico caso que importa, asi que una restriccion
+        # se ancla contra cualquier busqueda del turno que haya traido productos.
         fichas = _fichas_de(r)
-        propio = (_atiende(punto, l) if tipo != "condicion" else bool(fichas))
+        propio = (_atiende(punto, l) if tipo != "restricciones" else bool(fichas))
 
-        if tipo in ("item", "condicion") and propio:
+        if tipo in ("items", "restricciones") and propio:
             for p in fichas:
                 if p.get("nombre"):
                     fuera.append(str(p["nombre"]))
@@ -378,27 +397,27 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
             # MB/s" lo contesta negando. Los dos estaban marcados sin atender.
             fuera.append(str(ped.get("descripcion") or ""))
             fuera.append(str(ped.get("categoria") or ""))
-            if tipo == "condicion":
+            if tipo == "restricciones":
                 for f in (ped.get("filtros") or []):
                     if isinstance(f, dict) and f.get("valor"):
                         fuera.append(str(f["valor"]))
                 for c in (r.get("condiciones_aplicadas") or []):
                     fuera.append(str(c))
 
-        if tipo == "destino" and propio:
+        if tipo == "destinos" and propio:
             ped = l.get("pedido") or {}
             fuera.append(str(ped.get("localidad") or ""))
             if r.get("localidad"):
                 fuera.append(str(r["localidad"]))
 
-        if tipo == "item" and l.get("herramienta") in (
+        if tipo == "items" and l.get("herramienta") in (
                 "armar_presupuesto", "cotizar"):
             # La cuenta contesta el item nombrandolo en su renglon.
             for d in (r.get("detalle") or []):
                 if d.get("nombre"):
                     fuera.append(str(d["nombre"]))
 
-        if tipo == "precio":
+        if tipo == "pide_precio":
             # El precio se contesta con un numero, y el numero puede venir del
             # total de la cuenta o de los precios de lo que se mostro. La ficha
             # ya lo trae escrito -"$28.500"- porque al modelo se le pide que lo
@@ -421,7 +440,7 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
         # que no hace falta adivinar si el modelo uso la palabra "hz". Si el
         # valor esta en el mensaje, el atributo esta contestado, y ningun
         # sinonimo rompe eso. Solo ancla la ficha que el punto NOMBRA.
-        if tipo == "atributo" and propio:
+        if tipo == "atributos" and propio:
             campo = str(punto.get("campo") or "").strip()
             for f in fichas:
                 if not (del_punto & set(_palabras(str(f.get("nombre") or "")))):
@@ -456,7 +475,7 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
         # presentes —o sea que un parrafo largo anclaria contra casi
         # cualquier mensaje y el punto saldria contestado siempre—. Los
         # numeros con su unidad -"6 meses"- son lo unico que identifica.
-        if tipo == "politica" and _herr == "consultar_temas":
+        if tipo == "temas" and _herr == "consultar_temas":
             for t in (r.get("temas") or []):
                 if str(t.get("tema") or "") != str(punto.get("tema") or ""):
                     continue
@@ -1001,7 +1020,7 @@ def _duda_declarada(puntos_del_cliente: list | None) -> bool:
     elegir por el cliente, y `estado_terminal` ya dice que solo puede terminar
     AMBIGUO —el turno pregunto— o CONFLICTO —no pregunto y sigue abierto—: en
     los dos casos el turno tiene una pregunta propia sobre la mesa."""
-    return any(p.get("tipo") == "duda" for p in (puntos_del_cliente or []))
+    return any(p.get("tipo") == "contradicciones" for p in (puntos_del_cliente or []))
 
 
 # ── LA COBERTURA: que punto llego al texto y cual no ─────────────────────────
@@ -1058,10 +1077,10 @@ def _cubierto(punto: dict, texto: str) -> bool:
     tipo = punto.get("tipo")
     termino = punto.get("termino") or ""
 
-    if tipo in ("item", "destino"):
+    if tipo in ("items", "destinos"):
         return _aparece(termino, texto)
 
-    if tipo == "condicion":
+    if tipo == "restricciones":
         # De la condicion importa la palabra que la hace unica -"chinas",
         # "blanco", "logitech"-, no el relleno con que se dijo. Si alguna de
         # esas palabras esta en el texto, la condicion se nombro.
@@ -1074,17 +1093,17 @@ def _cubierto(punto: dict, texto: str) -> bool:
                   if len(w) >= 4 and w not in vacias]
         return any(_aparece(w, texto) for w in claves) if claves else True
 
-    if tipo == "duda":
-        # Una duda se atiende PREGUNTANDO. Que el texto nombre el objeto de la
-        # duda y tenga una pregunta: sin el signo, la nombro al pasar.
+    if tipo == "contradicciones":
+        # Una contradiccion se atiende PREGUNTANDO. Que el texto nombre el
+        # objeto y tenga una pregunta: sin el signo, la nombro al pasar.
         claves = [w for w in _n(termino).split() if len(w) >= 5][:6]
         nombrada = any(_aparece(w, texto) for w in claves) if claves else False
         return bool(nombrada and _RE_PREGUNTA.search(texto or ""))
 
-    if tipo == "pago":
+    if tipo == "reparto_pago":
         return all(p in _n(texto) for p in (termino or "").split())
 
-    if tipo == "precio":
+    if tipo == "pide_precio":
         return bool(_RE_TOTAL.search(texto or ""))
 
     # ── LAS CUATRO INFORMATIVAS (FICHA 02) ──────────────────────────────
@@ -1102,7 +1121,7 @@ def _cubierto(punto: dict, texto: str) -> bool:
     # vuelve invisible en silencio. Por eso las cuatro se escriben, aunque
     # todavia no puedan abrirse en una charla real.
 
-    if tipo == "atributo":
+    if tipo == "atributos":
         # El campo se pide aparte y sin el minimo de tres letras: `hz`, `ram`
         # y `w` son campos reales, y `_aparece` descarta las palabras cortas.
         return bool(_aparece(termino, texto) and _dice(punto.get("campo"), texto))
@@ -1116,7 +1135,7 @@ def _cubierto(punto: dict, texto: str) -> bool:
                     and _aparece(punto.get("para") or "", texto)
                     and _RE_VEREDICTO.search(_n(texto)))
 
-    if tipo == "politica":
+    if tipo == "temas":
         return _aparece(termino, texto)
 
     # ── LA OFERTA (FICHA 15) ────────────────────────────────────────────
@@ -1197,7 +1216,7 @@ def _nombrado(punto: dict, texto: str) -> bool:
     tipo = punto.get("tipo")
     if tipo == "compatibilidad":
         return _aparece(punto.get("que") or "", texto)
-    if tipo == "precio":
+    if tipo == "pide_precio":
         # El precio no se NOMBRA, se contesta con un numero. Preguntar "¿te
         # paso el total?" no es contestar el precio ni tampoco preguntarlo.
         return False
@@ -1230,8 +1249,8 @@ def _evidencia(punto: dict, llamadas: list) -> str:
         if not isinstance(r, dict):
             continue
 
-        if tipo == "politica":
-            # EL ESTADO DE UNA POLITICA ES POR TEMA. Una sola llamada trae
+        if tipo == "temas":
+            # EL ESTADO DE UN TEMA ES POR TEMA. Una sola llamada trae
             # hasta seis temas, y que cinco esten escritos no dice nada del
             # sexto: `consultar_temas` devuelve `estado` adentro de cada uno.
             if l.get("herramienta") != "consultar_temas":
@@ -1348,9 +1367,10 @@ def estado_terminal(punto: dict, texto: str, llamadas: list | None = None,
     # LA CONTRADICCION DECLARADA ES SU PROPIA FAMILIA, y no puede terminar
     # RESUELTA por el codigo: nace de algo que no cierra sin elegir por el
     # cliente. O el turno la PREGUNTA —y queda AMBIGUA, esperando al cliente—
-    # o no la pregunta y el conflicto sigue abierto. `_cubierto` de una `duda`
-    # ya exige el signo de pregunta, asi que aca "llego" significa "pregunto".
-    if tipo == "duda":
+    # o no la pregunta y el conflicto sigue abierto. `_cubierto` de una
+    # contradiccion ya exige el signo de pregunta, asi que aca "llego"
+    # significa "pregunto".
+    if tipo == "contradicciones":
         return "AMBIGUO" if llego else "CONFLICTO"
 
     # LA OFERTA TERMINA EN LOS SUYOS Y EN NINGUN OTRO (FICHA 15). No puede
@@ -1383,7 +1403,7 @@ def estado_terminal(punto: dict, texto: str, llamadas: list | None = None,
     # criterio no podia medir—. O la fuente trajo el tema, y entonces se sirvio
     # entero y no hay forma mecanica de probar lo contrario, o no lo trajo, y
     # entonces no habia con que contestarlo.
-    if tipo == "politica":
+    if tipo == "temas":
         if not _politica_servida(punto, llamadas or []):
             return "NO_SE_SABE"
         # LA POLITICA CON NUMEROS SI SE PUEDE PROBAR, Y ESA PRUEBA NO SE
@@ -1490,6 +1510,7 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
     log.info("indice_turno", trace_id=trace_id,
              total=len(marcados), sin_atender=len(faltan),
              sin_estado=len(sin_estado),
+             campos=list(campos_abiertos(declarado)),
              detalle=[f"{p['id']}={'ok' if p['atendido'] else 'FALTA'}"
                       for p in marcados],
              estados=[f"{p['id']}={p['estado'] or 'SIN_ESTADO'}"
@@ -1553,7 +1574,8 @@ def cobertura(declarado: dict, texto: str, trace_id: str = "",
 # `precio` con el total de la calculadora, un `pago` con el reparto declarado.
 # Los tres que faltan -politica, stock, compatibilidad- no tienen prueba
 # mecanica, y arriba esta escrito por que.
-TIPOS_QUE_FRENAN = ("item", "condicion", "destino", "atributo", "precio", "pago")
+TIPOS_QUE_FRENAN = ("items", "restricciones", "destinos", "atributos",
+                    "pide_precio", "reparto_pago")
 
 # LA OFERTA NO FRENA, Y ES LO CONTRARIO DE UN OLVIDO (FICHA 15, corregida el
 # 25-ago). Los seis de arriba frenan porque el texto se puede ARREGLAR: falta un
@@ -1581,7 +1603,7 @@ TIPOS_SIN_OFERTA = ("oferta",)
 # el punto no tiene un solo anclaje. Exigirle uno seria dejar salir justo el
 # turno que nacio para frenar. Se pregunta de la unica forma honesta: se le
 # pide la cuenta a la calculadora, y si no la puede armar no se pega nada.
-_PRUEBA_POR_CONSTRUCCION = ("precio",)
+_PRUEBA_POR_CONSTRUCCION = ("pide_precio",)
 
 
 def puede_salir(puntos: list) -> dict:
