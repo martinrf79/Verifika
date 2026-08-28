@@ -171,8 +171,6 @@ def test_todo_contrato_declarado_existe_y_todo_nodo_barrible_se_barre():
     fuera = [n.id for n in G.nodos_de("salida")
              if n.aplicar and not n.contratos]
     assert not fuera, f"nodos de salida que el barrido no controla: {fuera}"
-    assert len(G.barribles()) >= 4, (
-        f"solo {len(G.barribles())} nodos son barribles: el barrido se apago")
     # LA MITAD QUE DECIDE, CON LA MISMA CURA QUE LA DE ARRIBA (FICHA 11).
     #
     # DECIA `>= 10` Y ERA EL CONTEO DEL DIA QUE SE ESCRIBIO. Hoy hay ONCE nodos

@@ -88,6 +88,16 @@ def test_el_censo_dice_sobre_cuantos_nodos_midio():
         f"midio {c['nodos_medidos']} nodos y la cuenta escrita es "
         f"{_DECLARADOS} declarados + {_HUERFANOS} huerfanos")
 
+    # FICHA 40. El 22 de arriba es el techo y se queda clavado. Esto clava
+    # los NOMBRES: la union de piezas es exactamente el conjunto de huerfanos
+    # que el censo midio. No se deriva el 22 de piezas.
+    huerfanos = {f["nodo"] for f in c["filas"]
+                 if f["corrio"] and not f["declarado"]}
+    nombradas = {p for n in G.NODOS for p in n.piezas}
+    assert huerfanos == nombradas, (
+        f"huerfanos del censo {sorted(huerfanos)} vs piezas nombradas "
+        f"{sorted(nombradas)}")
+
 
 def test_las_seis_etapas_dejan_marca_y_ninguna_queda_ciega():
     """La FICHA 01 cablo las seis a `registrar()`. Esto es el candado de que
@@ -130,3 +140,25 @@ def test_el_instrumento_no_envuelve_nada():
     assert "G.censo()" in fuente, (
         "`peso_del_censo.py` no lee el censo del grafo: si no lo lee de ahi, "
         "lo esta sacando de otro lado y este candado no dice nada")
+
+
+def test_las_piezas_nombradas_coinciden_con_las_marcas_del_codigo():
+    """FICHA 40. El campo piezas no puede mentir: ni nombrar una que no
+    corre, ni correr una que no esta nombrada. El orden es el de la fuente.
+    El 22 lo clava el censo; esto clava los nombres."""
+    from app.verifika import grafo as G
+
+    tests = Path(__file__).resolve().parent
+    if str(tests) not in sys.path:
+        sys.path.insert(0, str(tests))
+    from test_plan_de_la_simplificacion import _sitios_de_piezas
+
+    declarados = {n.id for n in G.NODOS}
+    sitios = _sitios_de_piezas(declarados)
+    declaradas = {n.piezas for n in G.NODOS if n.piezas}
+    halladas = set(sitios.values())
+    assert halladas == declaradas, (
+        "el campo piezas no coincide con las marcas del codigo.\n"
+        f"sitios: {sitios}\n"
+        "nodos: "
+        + "; ".join(f"{n.id}={n.piezas}" for n in G.NODOS if n.piezas))

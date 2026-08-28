@@ -128,6 +128,7 @@ y la 29 no se tocan sin test.
 | ~~34~~ | el nexo: interpretar → resolver → redactar | hub sin `reconciliar(` ni `R.completar`; nace `app/core/resolver.py`; snapshot en `archivo/` |
 | ~~35~~ | la puerta: un mutador, la prosa no se reescribe | higiene solo `componer`; `aduana.py` a `archivo/`; techo PLAN 18→17 |
 | ~~36~~ | el número, primer corte | `reposicion.py` y `guia_pedido.py` a `archivo/`; nueve cuerpos a cuatro; techo PLAN 17→15. Los termómetros siguen: llegar a 181/7306 corta el motor |
+| ~~40~~ | el mapa no miente sobre las piezas | el campo `piezas` coincide con las marcas del codigo, en orden; la union es el conjunto de huerfanos. `banco_llamada_uno` puntua lo declarado, no el nombre de la tool |
 
 ---
 

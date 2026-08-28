@@ -2,8 +2,9 @@
 EL CANDADO DEL PESO DE LA CADENA.
 
 Lo que mide y por que, en `banco_pruebas/peso_de_la_cadena.py`. Aca solo se
-exige que el instrumento SIRVA: que corra, que mida todas las piezas del grafo
-y no una lista aparte, y que el par que se pisa siga siendo visible.
+exige que el instrumento SIRVA: que corra, que mida todas las puertas
+barribles del grafo y no una lista aparte, y que el par que se pisa siga
+siendo visible. Barre puertas (`G.barribles`), no las piezas internas.
 
 NO tiene piso ni techo a proposito. Los numeros de este banco estan para
 CAMBIAR: cuando el recorte fusione dos piezas, las veces y el solapamiento
@@ -20,13 +21,15 @@ if str(_RAIZ) not in sys.path:
 from banco_pruebas import peso_de_la_cadena as PC  # noqa: E402
 
 
-def test_el_instrumento_mide_todas_las_piezas_del_grafo(firestore_doble):
-    """La lista de piezas sale del cableado declarado, no de una copia. Si
-    alguien agrega una guarda al turno, entra a la medicion por existir."""
+def test_el_instrumento_mide_todas_las_puertas_barribles(firestore_doble):
+    """La lista de puertas sale de G.barribles, no de una copia. Si alguien
+    agrega una puerta al turno, entra a la medicion por existir. No mide
+    las piezas internas: esas las nombra el campo piezas y las cuenta el
+    censo."""
     from app.verifika import grafo as G
     r = PC.medir()
     assert r["nodos"] == len(G.barribles()), (
-        "el banco dejo de medir todas las piezas barribles del grafo")
+        "el banco dejo de medir todas las puertas barribles del grafo")
     assert r["corridas"] > 0
 
 
