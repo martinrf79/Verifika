@@ -1179,10 +1179,76 @@ def _la_cuenta_y_la_plata(texto: str, llamadas: list, bloque: str,
                                 previo=previo, vistos=vistos)
 
 
+def _linea_de_cuenta_o_reparto(linea: str) -> bool:
+    """¿Este renglón es cuenta o reparto, no prosa?
+
+    La higiene resume ese bloque a 'Sin cambios en la cuenta. Total: $X'
+    y se lleva las localidades que vivían solo ahí. Charla 78 turno 2."""
+    s = (linea or "").strip()
+    if not s:
+        return False
+    low = s.lower()
+    if low.startswith(H.TITULO_REPARTO.lower()):
+        return True
+    if s.startswith(H.RENGLON_REPARTO) or low.startswith("- a "):
+        return True
+    if _RE_HAY_CUENTA.match(s):
+        return True
+    if low.startswith("sin cambios en la cuenta"):
+        return True
+    return False
+
+
+def _fuera_de_la_cuenta(texto: str) -> str:
+    return "\n".join(ln for ln in (texto or "").splitlines()
+                     if not _linea_de_cuenta_o_reparto(ln))
+
+
+def _destinos_declarados(declarado: dict) -> list:
+    return [str(d).strip() for d in (declarado.get("destinos") or [])
+            if str(d or "").strip()]
+
+
+def _cuenta_ya_dicha(texto: str, declarado: dict, dichos: str) -> list:
+    """Destinos que el cliente ya vio en la cuenta y que en ESTE texto
+    viven solo adentro del bloque de cuenta/reparto.
+
+    Si la higiene resume esa cuenta idéntica, esas localidades desaparecen
+    y el punto destino queda vacío. No se estampa RESUELTO sobre
+    'Sin cambios': se pega un renglón que no es cuenta."""
+    if not (dichos or "").strip():
+        return []
+    prosa = _fuera_de_la_cuenta(texto)
+    fuera = []
+    for d in _destinos_declarados(declarado):
+        if not IT._aparece(d, dichos):
+            continue
+        if IT._aparece(d, prosa):
+            continue
+        if not IT._aparece(d, texto or ""):
+            continue
+        fuera.append(d)
+    return fuera
+
+
+def _pegar_linea_de_envio(texto: str, destinos: list, trace_id: str) -> str:
+    if not destinos:
+        return texto
+    linea = "Envío a " + ", ".join(destinos) + "."
+    if _norm_renglon(linea) in _norm_renglon(texto):
+        return texto
+    if all(IT._aparece(d, _fuera_de_la_cuenta(texto)) for d in destinos):
+        return texto
+    log.info("destino_omitido_repuesto", trace_id=trace_id,
+             destinos=destinos[:4])
+    return ((texto or "").rstrip() + "\n\n" + linea).strip()
+
+
 def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
                             memoria: list, tienda_id: str, trace_id: str,
                             descartados: list | None = None,
-                            texto_del_modelo: str = "") -> str:
+                            texto_del_modelo: str = "",
+                            dichos: str = "") -> str:
     """EL CONTRATO NO_OMITE: un punto que el cliente pidio y que el sistema
     SABE contestar no puede salir sin contestar.
 
@@ -1255,9 +1321,7 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
         log.warning("oferta_no_hecha", trace_id=trace_id,
                     productos=[str(p.get("termino") or "")[:40]
                                for p in puerta["sin_ofrecer"]][:3])
-    if puerta["puede"]:
-        return texto
-    omitidos = puerta["omitidos"]
+    omitidos = puerta["omitidos"] if not puerta["puede"] else []
     fuera = texto
 
     # ── EL DESTINO QUE EL CLIENTE NOMBRO Y EL MENSAJE NO DICE ───────────
@@ -1267,6 +1331,12 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
     # guarda, y el mensaje no lo nombra. Lo que se pega no lo inventa nadie:
     # es la localidad CERTIFICADA -la que el punto tiene como anclaje, o sea
     # la que la herramienta de envio uso-, y no afirma ni un peso.
+    #
+    # Y LA QUE LA HIGIENE SE COME (FICHA 39). En la pasada |guardia el destino
+    # esta RESUELTO porque vive en el reparto. La higiene resume la cuenta
+    # identica a "Sin cambios en la cuenta. Total: $X" y se lleva las
+    # ciudades. Si ese bloque ya se le mostro al cliente, se pega un renglon
+    # que no es cuenta y sobrevive al resumen. Charla 78 turno 2.
     destinos = []
     for p in omitidos:
         if p.get("tipo") != "destino":
@@ -1274,11 +1344,13 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
         nombre = str(p.get("termino") or "").strip()
         if nombre and nombre not in destinos:
             destinos.append(nombre)
-    if destinos:
-        linea = "Envío a " + ", ".join(destinos) + "."
-        fuera = (fuera.rstrip() + "\n\n" + linea).strip()
-        log.info("destino_omitido_repuesto", trace_id=trace_id,
-                 destinos=destinos[:4])
+    for d in _cuenta_ya_dicha(texto, declarado, dichos):
+        if d not in destinos:
+            destinos.append(d)
+    fuera = _pegar_linea_de_envio(fuera, destinos, trace_id)
+
+    if puerta["puede"] and fuera == texto:
+        return texto
 
     # ── EL PRECIO: EL BLOQUE SELLADO DE LA CALCULADORA ──────────────────
     if any(p.get("tipo") == "precio" for p in omitidos):
@@ -1436,7 +1508,7 @@ def obligacion(texto: str, mensaje: str, negocio: str, primer_mensaje: bool,
                     error=str(e)[:120])
     texto = _pieza("punto_omitido", _punto_omitido_repuesto, texto,
                    declarado or {}, llamadas, memoria, tienda_id, trace_id,
-                   descartados, texto_del_modelo)
+                   descartados, texto_del_modelo, dichos)
     # VA ULTIMA DE LA PUERTA, y despues del punto omitido a proposito: se pega
     # al final del mensaje y tiene que ver el total ya repuesto por la puerta de
     # la plata. Antes del punto omitido quedaria en el medio del mensaje.

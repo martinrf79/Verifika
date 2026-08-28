@@ -100,12 +100,17 @@ CASOS = [
      {"temas": ["garantia"]},
      "La garantia es de 6 meses por fabrica.",
      [], "politica:1", "RESUELTO"),
+
+    ("RESUELTO: el destino en Envio a, fuera de la cuenta",
+     {"destinos": ["Rosario"]},
+     "Sin cambios en la cuenta. Total: $104.500\n\nEnvío a Rosario.",
+     [], "destino:1", "RESUELTO"),
 ]
 
 
 def test_cada_caso_termina_donde_tiene_que_terminar():
-    """LOS DOCE CASOS, uno por uno, con su id y su final."""
-    assert len(CASOS) == 12, f"se declararon 12 casos y hay {len(CASOS)}"
+    """LOS TRECE CASOS, uno por uno, con su id y su final."""
+    assert len(CASOS) == 13, f"se declararon 13 casos y hay {len(CASOS)}"
     fallan = []
     for nombre, declarado, texto, llamadas, id_punto, esperado in CASOS:
         idx = IT.cobertura(declarado, texto, "test", llamadas=llamadas)

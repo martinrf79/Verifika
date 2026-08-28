@@ -248,3 +248,32 @@ def test_al_turno_que_pregunto_no_se_le_pega_una_cuenta():
     fuera = _punto_omitido_repuesto(texto, declarado, llamadas, [],
                                     "verifika_prod", "test")
     assert fuera == texto, f"le pego algo a un turno que pregunto:\n{fuera}"
+
+
+def test_el_destino_sobrevive_cuando_la_cuenta_ya_se_dijo():
+    """FICHA 39. La higiene resume la cuenta identica y se lleva el reparto.
+    Si esas localidades ya se le mostraron al cliente, la puerta pega
+    'Envío a X, Y.' ANTES, un renglon que no es cuenta."""
+    from app.core.salida import _punto_omitido_repuesto
+
+    declarado = {"destinos": ["Rosario", "Cordoba"]}
+    dichos = (
+        "Reparto de los envios:\n"
+        "- A Rosario: 2 teclados.\n"
+        "- A Cordoba: 1 mouse.\n"
+        "Total: $104.500"
+    )
+    texto = dichos
+    fuera = _punto_omitido_repuesto(
+        texto, declarado, [], [], "verifika_prod", "test", dichos=dichos)
+    assert "Envío a Rosario, Cordoba." in fuera, fuera
+    prosa = "\n".join(
+        ln for ln in fuera.splitlines()
+        if "total" not in ln.lower() and "reparto" not in ln.lower()
+        and not ln.strip().startswith("- A "))
+    idx = IT.cobertura(declarado, prosa, "test")
+    destinos = [p for p in idx["puntos"] if p["tipo"] == "destino"]
+    assert destinos and all(p["estado"] == "RESUELTO" for p in destinos), destinos
+    otra = _punto_omitido_repuesto(
+        fuera, declarado, [], [], "verifika_prod", "test", dichos=dichos)
+    assert otra == fuera

@@ -502,44 +502,14 @@ def test_el_piso_de_la_puerta_guarda_crudo_y_no_razon():
         f"numerador y su denominador: {sin_crudo}")
 
 
-# ── FICHA 22 — NINGUN PUNTO SALE CON LA CASILLA VACIA ────────────────────────
+# ── FICHA 22 / 39 — NINGUN PUNTO SALE CON LA CASILLA VACIA ──────────────────
 #
-# Estaba en ARRANQUE.md y en PENDIENTE.md como PROSA, sin test. Eso es lo que
-# esta ficha viene a cerrar primero: `DECISIONES.md` #31 pide que todo paso se
-# entregue como test rojo, no como parrafo, y estos dos -22 y 23- eran la
-# excepcion que quedaba.
+# CERRADO. HOY medido: 2 puntos destino en 1 turno (78_reparto_por_destino t2).
+# La higiene resumia la cuenta identica y se llevaba el reparto. La puerta
+# pega 'Envío a X, Y.' cuando ese bloque ya se le mostro al cliente. El censo
+# da 0. Omisión en test_estado_terminal.py sigue siendo "".
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: FICHA 22. `DECISIONES.md` #3 y la FICHA 09 declaran que el turno no "
-    "sale si un punto quedo sin estado, y salen igual: `estado_terminal()` en "
-    "`app/core/indice_turno.py`, ultima linea, devuelve cadena vacia cuando el "
-    "punto no llego al texto, no hay evidencia de herramienta, no se pregunto "
-    "en la misma oracion y no matchea el patron -angosto- de NO_SE_SABE. HOY, "
-    "sobre las 15 charlas grabadas -medido con `banco_pruebas/censo_puntos.py`, "
-    "que lee el mismo evento `indice_turno` que ya loguea el codigo, sin punto "
-    "`oferta` porque ese tiene su propio censo en `censo_oferta.py`-, 24 puntos "
-    "terminan con la casilla vacia en 16 de 55 turnos: dieciocho de tipo "
-    "`politica`, dos `atributo`, dos `destino`, uno `compatibilidad`, uno "
-    "`pago`. Incluye los dos casos que ya cito PENDIENTE.md a mano -"
-    "'77_datos_duros' turno 1 y '79_dato_falso_inducido' turno 1, la garantia "
-    "del mouse g203-, y los dos `destino` son '78_reparto_por_destino' turno 2: "
-    "el cliente ya dijo en un solo mensaje que van dos teclados y un mouse a "
-    "rosario y un auricular a cordoba, y al confirmar el total los dos destinos "
-    "quedan sin estado IGUAL, con el dato ya dicho por el cliente adentro del "
-    "propio turno -no es un caso para preguntar de nuevo, es la cobertura sin "
-    "reconocer una respuesta que ya esta en el mensaje-. Esto HAMBREA la vara "
-    "`el_detalle_no_mata` de "
-    "`banco_pruebas/vara_de_venta.py`: solo puede contar lo que SI llega a "
-    "NO_SE_SABE, y hoy mide 2 de 2 sobre un denominador que estos 24 casos "
-    "dicen que deberia ser mayor. OBJETIVO 0: cada punto -de cualquier tipo, "
-    "no solo `oferta`- termina en RESUELTO, AMBIGUO, NO_SE_SABE o CONFLICTO. "
-    "NO SE PRESCRIBE LA CAUSA, y adrede: el desglose por tipo ya muestra que no "
-    "es una sola -algunos son omision real, y el propio ejemplo de la garantia "
-    "sugiere que al menos uno es el anclaje de cobertura sin reconocer una "
-    "respuesta que si se dio-, exactamente el patron mixto que la FICHA 20 ya "
-    "encontro en otras tres guardias. Diagnosticar las dos causas por separado "
-    "es parte del trabajo, no un prerrequisito para empezarlo."))
 def test_ningun_punto_termina_con_la_casilla_vacia():
     from banco_pruebas import censo_puntos as CP
     r = CP.medir()
