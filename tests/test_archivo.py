@@ -66,6 +66,17 @@ def test_la_tabla_no_nombra_fantasmas():
         f"archivo/README.md nombra snapshots que no estan: {fantasmas}")
 
 
+def test_la_compuerta_enchufa_guia_pedido_sin_pytest():
+    """calidad.yml corre banco_repetido, no pytest. Si clon_produccion no
+    enchufa el snapshot, el juez revienta ModuleNotFoundError y el nocturno
+    queda rojo sin medir calidad. Medido el 28-ago en f12f1d9."""
+    clon = (_RAIZ / "banco_pruebas" / "clon_produccion.py").read_text(
+        encoding="utf-8")
+    assert "archivo_vivo" in clon, (
+        "clon_produccion.instalar dejo de enchufar el snapshot: la compuerta "
+        "nocturna no pasa por conftest")
+
+
 def test_el_archivo_no_entra_a_la_imagen():
     """Cuando hay un snapshot, tiene que estar fuera de Cloud Build y fuera
     del deploy. Las lineas de ignore las pone la FICHA 34 junto con el primer

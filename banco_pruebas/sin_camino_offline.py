@@ -73,6 +73,9 @@ SIN_CAMINO_OFFLINE = {
         "lee la FAQ de Firestore; el doble la sirve desde el repo",
     "app/storage/firestore_client.py:get_categories":
         "lee las categorias de Firestore; el doble las deriva del catalogo real",
+    "app/storage/firestore_client.py:get_config":
+        "lee un doc de config en Firestore; el doble lo sirve del volcado. "
+        "Faltaba en esta lista: la compuerta del 28-ago la marco ciega",
     "app/storage/firestore_client.py:get_conversation":
         "lee la conversacion de Firestore; el doble la guarda en memoria",
     "app/storage/firestore_client.py:save_conversation":

@@ -88,31 +88,11 @@ if not LOGS_EN_TESTS:
     _app_logger.setup_logging = _setup_y_callar
 
 
-def _cargar_archivo(nombre: str):
-    """Carga un snapshot de archivo/ para los tests que siguen ejercitando
-    lo que la FICHA 36 saco de app/. No cablea el vivo."""
-    import importlib.util
-    ruta = _RAIZ / "archivo" / nombre
-    spec = importlib.util.spec_from_file_location(
-        "archivo_" + nombre.replace(".", "_"), ruta)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
 def pytest_configure(config):
-    """FICHA 36: reconciliar y guia_pedido salieron de app/. Los tests y el
-    banco que todavía los llaman leen el snapshot, no el vivo."""
-    rec = _cargar_archivo("reconciliador_vivo_20260828.py")
-    from app.core import pedido as P
-    for n in ("reconciliar", "instruccion_de_preguntas",
-              "_universo_de_busquedas", "_universo_de_restricciones"):
-        setattr(P, n, getattr(rec, n))
-    guia = _cargar_archivo("guia_pedido_20260828.py")
-    sys.modules["app.core.guia_pedido"] = guia
-    repo = _cargar_archivo("reposicion_vivo_20260828.py")
-    from app.core import resolver as R
-    R._busqueda_de_lo_declarado = repo._busqueda_de_lo_declarado
+    """FICHA 36: reconciliar y guia_pedido salieron de app/. Un solo enchufe,
+    el de banco_pruebas.archivo_vivo, que tambien usa la compuerta nocturna."""
+    from banco_pruebas.archivo_vivo import enchufar
+    enchufar()
 
 
 

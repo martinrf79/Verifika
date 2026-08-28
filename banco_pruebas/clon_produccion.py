@@ -118,6 +118,9 @@ def instalar() -> dict:
     from banco_pruebas.sim_firestore import install
     info = install()
 
+    from banco_pruebas.archivo_vivo import enchufar
+    enchufar()
+
     import app.main as main
 
     def _conector(token: str, phone_number_id: str):

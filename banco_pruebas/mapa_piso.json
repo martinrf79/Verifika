@@ -20,6 +20,7 @@
   "app/storage/firestore_client.py:already_processed",
   "app/storage/firestore_client.py:get_all_faq",
   "app/storage/firestore_client.py:get_categories",
+  "app/storage/firestore_client.py:get_config",
   "app/storage/firestore_client.py:get_conversation",
   "app/storage/firestore_client.py:get_tienda_by_phone_id",
   "app/storage/firestore_client.py:reset_conversation",
