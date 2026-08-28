@@ -16,8 +16,9 @@ A MEDIAS   algo que se EMPEZÓ y no se terminó.  Tiene que llegar a CERO.
 PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 ```
 
-La orden de trabajo abierta es `PLAN_REDUCCION.md`. La primera sesión es
-`FICHA_34_el_nexo.md`. Cuando `PLAN` llegue a cero, el recorte está hecho.
+La orden de trabajo abierta es `PLAN_REDUCCION.md`. La próxima sesión es
+`FICHA_35_la_puerta.md`. La 34 cerró. Cuando `PLAN` llegue a cero, el
+recorte está hecho.
 
 ---
 
@@ -48,7 +49,8 @@ toca, cómo se verifica.
 | `README.md` | esta puerta |
 | `FICHA_01_*.md` … | unidades ya cerradas, se leen para entender no para hacer |
 | `FICHA_30_la_simplificacion.md` | el diagnóstico del recorte |
-| `FICHA_34_el_nexo.md` | primera sesión: el nexo |
+| `FICHA_34_el_nexo.md` | primera sesión: el nexo, cerrada |
+| `FICHA_35_la_puerta.md` | **próxima sesión**: la puerta, un mutador |
 | `PLAN_REDUCCION.md` | **la campaña**: 604 funciones → 181, qué se queda |
 
 **En la raíz: la biblioteca.** Se consulta para entender POR QUÉ, no para saber

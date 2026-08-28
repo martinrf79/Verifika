@@ -102,11 +102,13 @@ verdad solo si `reposicion.py` sale de `app/`.
 
 ### Sesión 2 — FICHA 35, la puerta
 
-Cuando la 34 esté en `origin/main` y el piso no haya bajado. Un mutador en
-la higiene. Aduana y el resto de podas a `archivo/`. El modelo escribe una
-vez. Se pega el bloque de la cuenta. Se corta lo que no está en el contrato.
-Si no sabe, el contrato ya dice NO_SE_SABE o AMBIGUO: el redactor no inventa.
-Deploya.
+Ya está escrita en `arquitectura/FICHA_35_la_puerta.md`. La 34 está en
+`origin/main` y el piso no bajó. Un mutador en la higiene. Snapshot de
+aduana a `archivo/`; si nadie la llama, `git rm` de `app/`. El modelo
+escribe una vez. Se pega el bloque de la cuenta. Se corta lo que no está
+en el contrato. Procedencia, plata sellada, cobro, saludo y punto omitido
+se quedan. Si no sabe, el contrato ya dice NO_SE_SABE o AMBIGUO: el
+redactor no inventa. Deploya.
 
 ### Sesión 3 — FICHA 36, el número
 
@@ -150,19 +152,22 @@ No se suma a `DECLARADAS` para tapar.
 
 ---
 
-## Bloque para el chat que EMPIEZA la reducción
+## Bloque para el chat que EMPIEZA la sesión 2
 
 ```
 Repo: github.com/martinrf79/Verifika, rama main.
 git fetch origin main && git checkout main && git status.
 Si HEAD no es origin/main, PARÁ y avisá.
 Leé SOLO: ARRANQUE.md, arquitectura/PLAN_REDUCCION.md,
-arquitectura/FICHA_34_el_nexo.md, DECISIONES.md.
+arquitectura/FICHA_35_la_puerta.md, DECISIONES.md.
 Corré pytest -q.
 Prioridad uno: el bot vende y no alucina. Si no sabe, lo dice o repregunta.
-ESTA SESIÓN ES LA FICHA 34, primer tercio de PLAN_REDUCCION. Nada más.
-Snapshot a archivo/ ANTES de tocar el vivo. El hub deja de llamar a
-reconciliar y a completar. Si reposicion.py nadie lo llama, sale de app/.
+ESTA SESIÓN ES LA FICHA 35, segundo tercio de PLAN_REDUCCION. Nada más.
+Snapshot a archivo/ ANTES de tocar el vivo.
+La higiene queda con un solo mutador (componer). Aduana no reescribe;
+si nadie la llama, sale de app/.
+La prosa no se reescribe: se pega el bloque de la cuenta y se corta lo
+que no está en el contrato.
 Si el piso baja, revert. PUSHEÁ a main. Toca app/: pedí el OK del push
 una vez, al final. Nada de ramas.
 ```

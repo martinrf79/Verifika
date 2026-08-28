@@ -39,8 +39,8 @@ recordar nada: se lee esto, se hace una ficha, se cierra.
 Repo: github.com/martinrf79/Verifika (rama main).
 git fetch && git status. Si HEAD no es origin/main, PARÁ y avisá.
 Leé en este orden y nada más: ARRANQUE.md,
-arquitectura/PLAN_REDUCCION.md, arquitectura/FICHA_34_el_nexo.md
-(la FICHA 35 está escrita al final de esa), DECISIONES.md.
+arquitectura/PLAN_REDUCCION.md, arquitectura/FICHA_35_la_puerta.md,
+DECISIONES.md.
 Corré pytest -q y anotá los dos techos.
 Soy Martín, escucho por transcriptor: contestame en prosa plana, corto.
 Código sólo dentro de un bloque, y sólo si es una consigna a ejecutar.
@@ -48,8 +48,9 @@ Prioridad uno, no negociable: el bot vende y alucina lo menos posible.
 Si sabe, contesta; si es ambiguo, repregunta; si no sabe, dice que no sabe.
 Un detalle nunca tira una venta.
 Esta sesión hace la FICHA 35, segundo tercio de PLAN_REDUCCION, y nada más.
-La higiene deja un solo mutador. Aduana y el resto de podas a archivo/.
-La prosa no se reescribe. Si el piso baja, revert del corte, no un parche.
+La higiene deja un solo mutador. Aduana no reescribe; si nadie la llama,
+sale de app/. La prosa no se reescribe. Si el piso baja, revert del corte,
+no un parche.
 PUSHEÁ A main ANTES DE CERRAR. Toca app/: pedí el OK del push una vez,
 al final. Nada de ramas.
 ```
@@ -68,11 +69,11 @@ mismo día, no se acumula. El candado está en
 
 | ficha | test | qué falta |
 |---|---|---|
-| **35** | `test_la_higiene_tiene_un_solo_mutador` | la puerta: un mutador, la prosa no se reescribe. Segundo tercio de `arquitectura/PLAN_REDUCCION.md`. Va cuando la 34 esté en origin/main y el piso no haya bajado. |
-| **36** | `test_app_tiene_a_lo_sumo_ciento_ochenta_funciones`, `test_app_pesa_a_lo_sumo_siete_mil_trescientas_lineas` | termómetros: 604→181 funciones, 24355→7306 líneas. Cierran al final, no en la 34 |
-| **31** | `test_el_catalogo_tiene_una_sola_puerta_interna` | cuatro cuerpos leen el mismo catálogo. La 34 puede ponerla verde de yapa; no se trabaja aparte |
-| **32** | `test_la_plata_tiene_una_sola_puerta_interna` | tres cuerpos tocan la cuenta o el cobro. `tomar_pedido` se borra |
-| **33** | `test_la_higiene_tiene_un_solo_mutador` | `componer` y `aduana` reescriben el mismo texto, uno atrás del otro |
+| **35** | `test_la_higiene_tiene_un_solo_mutador` | la puerta: un mutador, la prosa no se reescribe. Orden en `arquitectura/FICHA_35_la_puerta.md`. La 34 ya está en origin/main. |
+| **36** | `test_app_tiene_a_lo_sumo_ciento_ochenta_funciones`, `test_app_pesa_a_lo_sumo_siete_mil_trescientas_lineas` | termómetros: 604→181 funciones, 24355→7306 líneas. Cierran al final, no en la 35 |
+| **31** | `test_el_catalogo_tiene_una_sola_puerta_interna` | cuatro cuerpos leen el mismo catálogo. No se trabaja aparte; si la 35 la pone verde de yapa, se saca la marca |
+| **32** | `test_la_plata_tiene_una_sola_puerta_interna` | tres cuerpos tocan la cuenta o el cobro. `tomar_pedido` se borra. No se trabaja aparte |
+| **33** | `test_la_higiene_tiene_un_solo_mutador` | mismo test que la 35: `componer` y `aduana` reescriben el mismo texto. La 35 lo cierra; no se implementa aparte |
 | 11 (cola) | `test_la_cuenta_se_arma_antes_del_reconciliador` | la cuenta se arma DESPUÉS del reconciliador, no antes. Contado entero en `arquitectura/LO_QUE_QUEDO_ABIERTO_DE_LA_11.md` |
 | 11 (cola) | `test_el_bloque_hallazgo_no_vive_en_el_hub` | falta decidir de quién son `_RE_HAY_CUENTA` y `_norm_renglon` antes de mudar `_bloque_hallazgo` fuera de `hub_venta` |
 | 11 (cola) | `test_los_guiones_que_despiertan_las_guardias_estan_grabados` | guiones 26 a 38 sin grabar, necesita la clave paga. **También prerrequisito parcial de la 24** |
@@ -89,9 +90,9 @@ mismo día, no se acumula. El candado está en
 | A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** |
 
 **Orden: 35, 36**, una por sesión, relato en `arquitectura/PLAN_REDUCCION.md`.
-La 34 cerró: el hub no reconcilia ni repone. Las 31, 32 y 33 no se
-implementan aparte. La 35 es la puerta. La 36 es el número. La 24 y la 29
-no se tocan sin test.
+La 34 cerró: el hub no reconcilia ni repone. La 35 es la puerta, escrita
+en `arquitectura/FICHA_35_la_puerta.md`. Las 31, 32 y 33 no se implementan
+aparte. La 36 es el número. La 24 y la 29 no se tocan sin test.
 
 ---
 

@@ -19,7 +19,8 @@ No deploya. Está en `.gcloudignore` y en `paths-ignore` de `deploy.yml`.
 
 ## Qué hay guardado
 
-La FICHA 34 dejó el primer snapshot. Qué se apaga y en qué sesión está en
+La FICHA 34 dejó el primer snapshot. La 35 agrega el de aduana cuando esa
+sesión corte el vivo, no antes. Qué se apaga y en qué sesión está en
 `arquitectura/PLAN_REDUCCION.md`.
 
 | archivo | qué era | se borra cuando |

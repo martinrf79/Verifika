@@ -108,12 +108,8 @@ el pedido.
 
 ## FICHA 35 — la sesión de después, no esta
 
-Cuando 34 esté en `origin/main` y el piso no haya bajado: la higiene deja un
-solo mutador (`test_la_higiene_tiene_un_solo_mutador`, ya escrito) y la aduana
-pasa a `archivo/` como snapshot. La prosa no se reescribe. Solo se pega
-`out["bloque"]` y se corta lo que no está en el contrato.
-
-No se hace en la misma sesión que la 34. Son dos cortes, cada uno revertible.
+La orden operativa está en `arquitectura/FICHA_35_la_puerta.md`. No se hace
+en la misma sesión que la 34. Son dos cortes, cada uno revertible.
 
 ---
 

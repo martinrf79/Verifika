@@ -29,9 +29,9 @@ PLAN       el recorte. Baja a medida que se hace.
 El detalle de cada paso, con su número de hoy y su objetivo, está en
 `tests/test_plan_del_recorte.py`. La unidad de trabajo abierta, en `arquitectura/`.
 
-**28-ago:** FICHA 34, el nexo. Nace `resolver`. El hub no llama a
-`reconciliar` ni a `completar`. Snapshot en `archivo/`. El número vivo
-sale de `pytest`. Siguiente: FICHA 35, la puerta.
+**28-ago:** FICHA 34 en origin/main, deploy verde. Siguiente: FICHA 35,
+la puerta, escrita en `arquitectura/FICHA_35_la_puerta.md`. El número
+vivo sale de `pytest`.
 
 ---
 
