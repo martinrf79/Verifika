@@ -177,9 +177,9 @@ CLASES = [
 ]
 
 
-# Cada clase cae en campos de `registrar_pedido`. No es otra taxonomia:
-# es el puente. `cierre` no es campo del molde: "me lo llevo" lo detecta
-# el cierre, no la declaracion.
+# Cada clase cae en una familia de `app/core/familias.py`. No es otra
+# taxonomia: es el puente. `cierre` no lo declara el molde; memoria
+# todavia no tiene clase propia, a proposito: primero el catalogo.
 _FUERA_DEL_MOLDE = frozenset({"cierre"})
 CLASE_A_CAMPOS = {
     "identidad_existe": ("stock",),

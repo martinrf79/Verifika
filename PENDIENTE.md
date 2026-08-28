@@ -29,15 +29,16 @@ PLAN       el recorte. Baja a medida que se hace.
 El detalle de cada paso, con su número de hoy y su objetivo, está en
 `tests/test_plan_del_recorte.py`. La unidad de trabajo abierta, en `arquitectura/`.
 
-**28-ago:** Un idioma: el tipo del punto es el campo de `registrar_pedido`.
-Dos campos declarados abren dos tipos, diez abren diez. Las dieciocho
-clases difíciles caen en esos campos, no en otra lista. La interpretación
-se toma como base; enlazar cada campo a su respuesta es la etapa siguiente.
+**28-ago:** El catálogo de la pregunta está en `app/core/familias.py`:
+los campos del molde, más memoria y cierre. Una pregunta mezcla varias;
+es lo normal. Las clases difíciles y los campos del intérprete muerto
+caen ahí. Organizar la maquinaria a ese idioma es la etapa siguiente.
 
 ---
 
 ## Abierto
 
+- **ABIERTO** · **EL CATÁLOGO DE LA PREGUNTA YA ESTÁ NOMBRADO** en `app/core/familias.py`: doce familias, memoria incluida. Falta organizar la maquinaria para que hable ese idioma —pertinencia, memoria que se reabre, respuesta familia a familia— y no otro.
 - **ABIERTO** · **VEINTIDOS PIEZAS INTERNAS, nombradas en grafo.py junto a su puerta.** No se declaran como nodos. El 22 no crece: está clavado en `tests/test_censo_del_grafo.py`. El campo `piezas` no puede mentirle al código: cada nombre coincide con la marca que corre, y la unión es el conjunto de huérfanos del censo. El barrido barre las puertas, no las piezas.
 - **ABIERTO** · **SEIS ENGRANAJES CORREN EN LOS 54 TURNOS Y NO INTERVIENEN EN NINGUNO:** `honestidad_bot`, `sin_cobro_inventado`, `sin_json`, `sin_negar_lo_traido`, `hallazgo_repuesto` y `cierre`. FICHA 35: `aduana` ya no corre. FICHA 34: `busqueda_repuesta` y `condicion_repuesta` ya no corren. No prueba que sobren: prueba que el corpus no los ejercita. El paso esta contado como `PLAN:` y lo bloquea grabar los guiones 26 a 38, que necesita la clave paga. **`sin_cobro_inventado` ya se auditó (FICHA 19) y su 0/54 era de las dos cosas a la vez**: el corpus no lo ejercita Y la guardia era medio ciega, cinco de siete formas de cuenta inventada le pasaban enteras. Ahora está armada y probada con las ocho formas. **Los otros cinco no están auditados**: un 0/54 sigue sin decir si el nodo sobra o si nadie lo probó.
 - **ABIERTO** · El rubro que cambia de producto quedó cerrado en sus dos mitades; falta mirar si el mismo defecto entra por otra puerta que no sea la reposición.

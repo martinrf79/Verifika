@@ -462,10 +462,10 @@ class RegistrarPedido(BaseModel):
                           "politica con sus numeros, el criterio y la movida.")
 
 
-# UNA SOLA LISTA. El indice, las dieciocho clases dificiles y cualquier
-# puerta de respuesta hablan ESTOS nombres. No hay sinonimo: `tipo` de un
-# punto ES el campo. Inventar `condicion` al lado de `restricciones` es el
-# telefono descompuesto que hace contestar un campo que nadie declaro.
+# UNA SOLA LISTA DEL MOLDE. El tipo de un punto ES el campo. Inventar
+# `condicion` al lado de `restricciones` es el telefono descompuesto.
+# El catalogo COMPLETO de lo que una pregunta puede abrir —estos diez,
+# mas memoria y cierre— vive en `app/core/familias.py`.
 CAMPOS_PEDIDO = tuple(RegistrarPedido.model_fields.keys())
 
 

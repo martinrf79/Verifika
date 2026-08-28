@@ -38,7 +38,7 @@ hizo. El cliente no lee el estado interno: lee el mensaje.
 import re
 import unicodedata
 
-from app.core.herramientas import CAMPOS_PEDIDO
+from app.core.familias import abiertas
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -92,19 +92,9 @@ def _aparece(termino: str, texto: str) -> bool:
 
 
 def campos_abiertos(declarado: dict | None) -> tuple[str, ...]:
-    """Que campos del molde tienen algo. Dos campos declarados son dos
-    familias. Diez, diez. Vacio, False y lista vacia no abren nada."""
-    d = declarado or {}
-    fuera = []
-    for campo in CAMPOS_PEDIDO:
-        val = d.get(campo)
-        if campo == "pide_precio":
-            if val:
-                fuera.append(campo)
-            continue
-        if val:
-            fuera.append(campo)
-    return tuple(fuera)
+    """Que familias de declaracion tiene esta pregunta. El catalogo
+    completo —declaracion, memoria, cierre— vive en `familias.py`."""
+    return abiertas(declarado)
 
 
 # ── LOS PUNTOS: cada cosa que el cliente pidio, con su id ────────────────────
