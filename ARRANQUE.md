@@ -53,7 +53,8 @@ Si HEAD no es origin/main: árbol limpio y fast-forward posible →
 git pull --ff-only origin main y seguí. Si el árbol está sucio, hay
 commits locales que no están en origin, o no hay fast-forward: PARÁ y avisá.
 Leé en este orden y nada más: ARRANQUE.md,
-arquitectura/PLAN_REDUCCION.md, DECISIONES.md.
+arquitectura/PLAN_REDUCCION.md, arquitectura/FICHA_36_el_numero.md,
+DECISIONES.md.
 Corré pytest -q y anotá los dos techos.
 Soy Martín, escucho por transcriptor: contestame en prosa plana, corto.
 Código sólo dentro de un bloque, y sólo si es una consigna a ejecutar.
@@ -61,7 +62,9 @@ Prioridad uno, no negociable: el bot vende y alucina lo menos posible.
 Si sabe, contesta; si es ambiguo, repregunta; si no sabe, dice que no sabe.
 Un detalle nunca tira una venta.
 Esta sesión hace la FICHA 36, tercer tercio de PLAN_REDUCCION, y nada más.
-Si el piso baja, revert del corte, no un parche.
+reposicion.py sale de app/ si nadie la llama. Nueve cuerpos a cuatro.
+Los termómetros 181 y 7306 tienen que pasar. No se toca el razonamiento
+ni data/clientes. Si el piso baja, revert del corte, no un parche.
 PUSHEÁ A main ANTES DE CERRAR. Toca app/: pedí el OK del push una vez,
 al final. Nada de ramas.
 ```
@@ -80,7 +83,7 @@ mismo día, no se acumula. El candado está en
 
 | ficha | test | qué falta |
 |---|---|---|
-| **36** | `test_app_tiene_a_lo_sumo_ciento_ochenta_funciones`, `test_app_pesa_a_lo_sumo_siete_mil_trescientas_lineas` | termómetros: 604→181 funciones, 24355→7306 líneas. Cierran al final |
+| **36** | `test_app_tiene_a_lo_sumo_ciento_ochenta_funciones`, `test_app_pesa_a_lo_sumo_siete_mil_trescientas_lineas` | termómetros: 181 funciones, 7306 líneas. Orden en `arquitectura/FICHA_36_el_numero.md`. La 35 ya está en origin/main. |
 | **31** | `test_el_catalogo_tiene_una_sola_puerta_interna` | cuatro cuerpos leen el mismo catálogo. No se trabaja aparte; si la 36 la pone verde de yapa, se saca la marca |
 | **32** | `test_la_plata_tiene_una_sola_puerta_interna` | tres cuerpos tocan la cuenta o el cobro. `tomar_pedido` se borra. No se trabaja aparte |
 | 11 (cola) | `test_la_cuenta_se_arma_antes_del_reconciliador` | la cuenta se arma DESPUÉS del reconciliador, no antes. Contado entero en `arquitectura/LO_QUE_QUEDO_ABIERTO_DE_LA_11.md` |
@@ -99,8 +102,11 @@ mismo día, no se acumula. El candado está en
 | A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** |
 
 **Orden: 36**, una por sesión, relato en `arquitectura/PLAN_REDUCCION.md`.
-La 35 cerró: un mutador en higiene, aduana a `archivo/`. Las 31 y 32 no
-se implementan aparte. La 36 es el número. La 24 y la 29 no se tocan sin test.
+La 35 cerró: un mutador en higiene, aduana a `archivo/`. Las 31 y 32 las
+cierra la 36 si el corte las pone verdes; no se implementan aparte.
+Después de la 36: Martín mira producción, y recién ahí se optimizan las
+herramientas que queden y se atacan los errores de razonamiento. La 24
+y la 29 no se tocan sin test.
 
 ---
 

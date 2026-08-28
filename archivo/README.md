@@ -19,8 +19,9 @@ No deploya. Está en `.gcloudignore` y en `paths-ignore` de `deploy.yml`.
 
 ## Qué hay guardado
 
-La FICHA 34 dejó el primer snapshot. La 35 agrega el de aduana: el segundo
-mutador de la higiene. Qué se apaga y en qué sesión está en
+La FICHA 34 dejó el primer snapshot. La 35 agregó el de aduana. La 36
+copia el reposicion que todavía corre, distinto del de la 34, cuando esa
+sesión lo saque del vivo. Qué se apaga y en qué sesión está en
 `arquitectura/PLAN_REDUCCION.md`.
 
 | archivo | qué era | se borra cuando |

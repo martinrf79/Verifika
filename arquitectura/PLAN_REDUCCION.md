@@ -110,15 +110,16 @@ quedaron. Deploya. Si el piso baja, revert.
 
 ### Sesión 3 — FICHA 36, el número
 
-Lo apagado ya no está en `app/`. Nueve cuerpos de herramienta a cuatro
-funciones. Tests de módulos archivados se van con ellos o se apuntan a
-`archivo/` sin correrlos en el vivo. Fichas cerradas y corridas del banco
-salen del árbol. Los doce barridos se reapuntan al resolver y al contrato.
-Los dos termómetros de abajo tienen que pasar. Deploya.
+Ya está escrita en `arquitectura/FICHA_36_el_numero.md`. Lo apagado ya no
+está en `app/`. Nueve cuerpos a cuatro. `reposicion.py` sale cuando nadie
+la llama. Los dos termómetros tienen que pasar. Deploya.
 
-Multi-tienda es este mismo paso, no un cuarto: el motor ya no tiene política
-de una tienda. Semáforo: una carpeta de otro rubro. No se hace antes, porque
-se copian las fugas.
+La segunda tienda de otro rubro **no va en esta sesión**: se copia la
+fuga que todavía quede, y Martín quiere ver producción con la reducción
+encima antes de agrandar la fuente. Es la FICHA 25, después.
+
+Tampoco se retoca el razonamiento ni el match de las herramientas que
+queden. Eso es la campaña siguiente.
 
 ---
 
@@ -150,7 +151,7 @@ No se suma a `DECLARADAS` para tapar.
 
 ---
 
-## Bloque para el chat que EMPIEZA la sesión 2
+## Bloque para el chat que EMPIEZA la sesión 3
 
 ```
 Repo: github.com/martinrf79/Verifika, rama main.
@@ -159,15 +160,15 @@ Si HEAD no es origin/main: árbol limpio y fast-forward posible →
 git pull --ff-only origin main y seguí. Si el árbol está sucio, hay
 commits locales que no están en origin, o no hay fast-forward: PARÁ y avisá.
 Leé SOLO: ARRANQUE.md, arquitectura/PLAN_REDUCCION.md,
-arquitectura/FICHA_35_la_puerta.md, DECISIONES.md.
+arquitectura/FICHA_36_el_numero.md, DECISIONES.md.
 Corré pytest -q.
 Prioridad uno: el bot vende y no alucina. Si no sabe, lo dice o repregunta.
-ESTA SESIÓN ES LA FICHA 35, segundo tercio de PLAN_REDUCCION. Nada más.
+ESTA SESIÓN ES LA FICHA 36, tercer tercio de PLAN_REDUCCION. Nada más.
 Snapshot a archivo/ ANTES de tocar el vivo.
-La higiene queda con un solo mutador (componer). Aduana no reescribe;
-si nadie la llama, sale de app/.
-La prosa no se reescribe: se pega el bloque de la cuenta y se corta lo
-que no está en el contrato.
-Si el piso baja, revert. PUSHEÁ a main. Toca app/: pedí el OK del push
-una vez, al final. Nada de ramas.
+reposicion.py sale de app/ si nadie la llama. Nueve cuerpos a cuatro.
+Los termómetros 181 funciones y 7306 líneas tienen que pasar.
+No se toca el razonamiento. No se optimizan las herramientas que quedan.
+No se toca data/clientes. Si el piso baja, revert.
+PUSHEÁ a main. Toca app/: pedí el OK del push una vez, al final.
+Nada de ramas.
 ```

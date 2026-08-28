@@ -17,8 +17,8 @@ PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 ```
 
 La orden de trabajo abierta es `PLAN_REDUCCION.md`. La próxima sesión es
-la 36, el número. La 35 cerró. Cuando `PLAN` llegue a cero, el recorte
-está hecho.
+`FICHA_36_el_numero.md`. La 35 cerró. Cuando los dos termómetros pasen,
+el recorte de `app/` está hecho.
 
 ---
 
@@ -50,7 +50,8 @@ toca, cómo se verifica.
 | `FICHA_01_*.md` … | unidades ya cerradas, se leen para entender no para hacer |
 | `FICHA_30_la_simplificacion.md` | el diagnóstico del recorte |
 | `FICHA_34_el_nexo.md` | primera sesión: el nexo, cerrada |
-| `FICHA_35_la_puerta.md` | **próxima sesión**: la puerta, un mutador |
+| `FICHA_35_la_puerta.md` | segunda sesión: la puerta, cerrada |
+| `FICHA_36_el_numero.md` | **próxima sesión**: el número, 181 / 7306 |
 | `PLAN_REDUCCION.md` | **la campaña**: 604 funciones → 181, qué se queda |
 
 **En la raíz: la biblioteca.** Se consulta para entender POR QUÉ, no para saber

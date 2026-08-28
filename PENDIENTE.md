@@ -29,8 +29,9 @@ PLAN       el recorte. Baja a medida que se hace.
 El detalle de cada paso, con su número de hoy y su objetivo, está en
 `tests/test_plan_del_recorte.py`. La unidad de trabajo abierta, en `arquitectura/`.
 
-**28-ago:** FICHA 35 en origin/main. Higiene con un mutador. Siguiente:
-FICHA 36, el número. El número vivo sale de `pytest`.
+**28-ago:** FICHA 35 en origin/main. Siguiente: FICHA 36, el número,
+escrita en `arquitectura/FICHA_36_el_numero.md`. El número vivo sale de
+`pytest`.
 
 ---
 
