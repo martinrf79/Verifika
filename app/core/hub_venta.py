@@ -1453,12 +1453,6 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
                           for r in ((l.get("resultado") or {}).get("repuso") or [])
                           if isinstance(l.get("resultado"), dict)}),
     })
-    try:
-        from app.core.aduana import marcador as _marcador_aduana
-        _m = _marcador_aduana()
-        G.anotar("aduana", {k: _m[k] for k in ("rojas", "defectos", "reparadas")})
-    except Exception:  # noqa: BLE001 — la ficha nunca puede tumbar un turno
-        pass
 
     _SIN_MODELO.discard(trace_id)
     # EL VEREDICTO DEL TURNO, en la misma linea que ya se lee. Dice QUE

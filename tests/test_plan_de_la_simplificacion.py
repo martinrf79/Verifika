@@ -101,15 +101,8 @@ def test_la_plata_tiene_una_sola_puerta_interna():
         + ", ".join(sorted(puertas)))
 
 
-# ── FICHA 33 — UN SOLO MUTADOR EN LA HIGIENE ───────────────────────────────
+# ── FICHA 33/35 — UN SOLO MUTADOR EN LA HIGIENE ────────────────────────────
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: FICHA 33. La higiene tiene UN solo mutador. HOY `salida.higiene` "
-    "llama a dos `_pieza` que reescriben el texto: componedor y aduana. "
-    "mensaje.py, aduana.py e invariantes.py persiguen la repeticion cada uno "
-    "por su lado, y esa es la forma de los dos bugs de plata de agosto: "
-    "arreglar una pieza rompe la otra. OBJETIVO 1: solo `componer` toca el "
-    "texto. La aduana, si queda, mira y no muta."))
 def test_la_higiene_tiene_un_solo_mutador():
     from app.core import salida as S
     piezas = _piezas_de(S.higiene)

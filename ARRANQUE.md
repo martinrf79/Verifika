@@ -53,18 +53,15 @@ Si HEAD no es origin/main: árbol limpio y fast-forward posible →
 git pull --ff-only origin main y seguí. Si el árbol está sucio, hay
 commits locales que no están en origin, o no hay fast-forward: PARÁ y avisá.
 Leé en este orden y nada más: ARRANQUE.md,
-arquitectura/PLAN_REDUCCION.md, arquitectura/FICHA_35_la_puerta.md,
-DECISIONES.md.
+arquitectura/PLAN_REDUCCION.md, DECISIONES.md.
 Corré pytest -q y anotá los dos techos.
 Soy Martín, escucho por transcriptor: contestame en prosa plana, corto.
 Código sólo dentro de un bloque, y sólo si es una consigna a ejecutar.
 Prioridad uno, no negociable: el bot vende y alucina lo menos posible.
 Si sabe, contesta; si es ambiguo, repregunta; si no sabe, dice que no sabe.
 Un detalle nunca tira una venta.
-Esta sesión hace la FICHA 35, segundo tercio de PLAN_REDUCCION, y nada más.
-La higiene deja un solo mutador. Aduana no reescribe; si nadie la llama,
-sale de app/. La prosa no se reescribe. Si el piso baja, revert del corte,
-no un parche.
+Esta sesión hace la FICHA 36, tercer tercio de PLAN_REDUCCION, y nada más.
+Si el piso baja, revert del corte, no un parche.
 PUSHEÁ A main ANTES DE CERRAR. Toca app/: pedí el OK del push una vez,
 al final. Nada de ramas.
 ```
@@ -83,11 +80,9 @@ mismo día, no se acumula. El candado está en
 
 | ficha | test | qué falta |
 |---|---|---|
-| **35** | `test_la_higiene_tiene_un_solo_mutador` | la puerta: un mutador, la prosa no se reescribe. Orden en `arquitectura/FICHA_35_la_puerta.md`. La 34 ya está en origin/main. |
-| **36** | `test_app_tiene_a_lo_sumo_ciento_ochenta_funciones`, `test_app_pesa_a_lo_sumo_siete_mil_trescientas_lineas` | termómetros: 604→181 funciones, 24355→7306 líneas. Cierran al final, no en la 35 |
-| **31** | `test_el_catalogo_tiene_una_sola_puerta_interna` | cuatro cuerpos leen el mismo catálogo. No se trabaja aparte; si la 35 la pone verde de yapa, se saca la marca |
+| **36** | `test_app_tiene_a_lo_sumo_ciento_ochenta_funciones`, `test_app_pesa_a_lo_sumo_siete_mil_trescientas_lineas` | termómetros: 604→181 funciones, 24355→7306 líneas. Cierran al final |
+| **31** | `test_el_catalogo_tiene_una_sola_puerta_interna` | cuatro cuerpos leen el mismo catálogo. No se trabaja aparte; si la 36 la pone verde de yapa, se saca la marca |
 | **32** | `test_la_plata_tiene_una_sola_puerta_interna` | tres cuerpos tocan la cuenta o el cobro. `tomar_pedido` se borra. No se trabaja aparte |
-| **33** | `test_la_higiene_tiene_un_solo_mutador` | mismo test que la 35: `componer` y `aduana` reescriben el mismo texto. La 35 lo cierra; no se implementa aparte |
 | 11 (cola) | `test_la_cuenta_se_arma_antes_del_reconciliador` | la cuenta se arma DESPUÉS del reconciliador, no antes. Contado entero en `arquitectura/LO_QUE_QUEDO_ABIERTO_DE_LA_11.md` |
 | 11 (cola) | `test_el_bloque_hallazgo_no_vive_en_el_hub` | falta decidir de quién son `_RE_HAY_CUENTA` y `_norm_renglon` antes de mudar `_bloque_hallazgo` fuera de `hub_venta` |
 | 11 (cola) | `test_los_guiones_que_despiertan_las_guardias_estan_grabados` | guiones 26 a 38 sin grabar, necesita la clave paga. **También prerrequisito parcial de la 24** |
@@ -95,7 +90,7 @@ mismo día, no se acumula. El candado está en
 | 11 (cola) | `test_el_piso_de_la_puerta_guarda_crudo_y_no_razon` | `puerta_piso.json` guarda porcentaje, no numerador y denominador por separado |
 | **22** | `test_ningun_punto_termina_con_la_casilla_vacia` | **3** puntos en `SIN_ESTADO` sobre 2 de 55 turnos, contra 24 antes. Los 21 que se cerraron eran defectos de medición; los 3 que quedan son la ficha 29 y no se pueden cerrar acá |
 | **23** | `test_el_modo_degradado_puede_ver_lo_que_ya_se_sabe` | la disculpa de "mucha demanda" corre con `memoria` e `idx` en el mismo scope y no los nombra; `_sobrecarga()` no recibe ningún parámetro. Es el único agujero que tira la venta **y al cliente** |
-| **24** | *(sin test propio todavía)* | auditar `honestidad_bot`, `punto_omitido` y `aduana` como hizo la 20 —frases reales del defecto y frases legítimas que no se pueden tocar—. Las tres con 0/54. Se puede auditar por unidad sin esperar los guiones 26-38, aunque medirlas sobre corpus real sí los necesita |
+| **24** | *(sin test propio todavía)* | auditar `honestidad_bot` y `punto_omitido` como hizo la 20 —frases reales del defecto y frases legítimas que no se pueden tocar—. Las dos con 0/54. `aduana` salió del vivo en la 35. Se puede auditar por unidad sin esperar los guiones 26-38, aunque medirlas sobre corpus real sí los necesita |
 | **25** | `test_app_no_menciona_el_id_de_ninguna_tienda`, `test_los_prompts_no_viven_en_el_codigo`, `test_existe_una_segunda_tienda_de_otro_rubro` | el motor multi-tienda: el id fuera del código, los prompts a la fuente, la TIENDA CERO. Va último a propósito |
 | **26** | `test_no_hay_universal_sin_herramienta_que_lo_respalde` | alucinación: un universal sobre el catálogo sale sin que ninguna herramienta lo haya mirado |
 | **27** | `test_la_nota_interna_no_le_llega_al_cliente` | `sin_narracion_interna` no ve hablar del cliente en tercera persona, solo nombrar la máquina |
@@ -103,10 +98,9 @@ mismo día, no se acumula. El candado está en
 | **29** | *(sin test propio todavía)* | la anti-repetición poda el bloque de cuenta que no cambió y se lleva el reparto y el pago, que son PUNTOS. No se trabaja hasta que exista el `xfail`. Es la ficha 21 al revés |
 | A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** |
 
-**Orden: 35, 36**, una por sesión, relato en `arquitectura/PLAN_REDUCCION.md`.
-La 34 cerró: el hub no reconcilia ni repone. La 35 es la puerta, escrita
-en `arquitectura/FICHA_35_la_puerta.md`. Las 31, 32 y 33 no se implementan
-aparte. La 36 es el número. La 24 y la 29 no se tocan sin test.
+**Orden: 36**, una por sesión, relato en `arquitectura/PLAN_REDUCCION.md`.
+La 35 cerró: un mutador en higiene, aduana a `archivo/`. Las 31 y 32 no
+se implementan aparte. La 36 es el número. La 24 y la 29 no se tocan sin test.
 
 ---
 
@@ -127,6 +121,7 @@ aparte. La 36 es el número. La 24 y la 29 no se tocan sin test.
 | ~~20~~ | auditar los engranajes ciegos | 3 ARREGLADAS, 1 PROBADA. `sin_descuento_inventado` 6 de 8 pasaban, `sin_negar_lo_traido` 6 de 8, `sin_json` 4 de 7. Y un rojo falso vivo: `sin_negar_lo_traido` borraba la aclaración honesta y le vendía una RAM de 8 a quien pidió 16 |
 | ~~21~~ | la línea del cobro mataba la oferta | `punto_de_oferta` juzga `texto_del_modelo`, la frontera que `hub_venta` guarda antes de la primera puerta. Censo de oferta **OFRECIDO 22 → 26**, `NO_CORRESPONDE` 10 → 6; la vara entera sin un solo cambio turno por turno |
 | ~~34~~ | el nexo: interpretar → resolver → redactar | hub sin `reconciliar(` ni `R.completar`; nace `app/core/resolver.py`; snapshot en `archivo/` |
+| ~~35~~ | la puerta: un mutador, la prosa no se reescribe | higiene solo `componer`; `aduana.py` a `archivo/`; techo PLAN 18→17 |
 
 ---
 

@@ -17,8 +17,8 @@ PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 ```
 
 La orden de trabajo abierta es `PLAN_REDUCCION.md`. La próxima sesión es
-`FICHA_35_la_puerta.md`. La 34 cerró. Cuando `PLAN` llegue a cero, el
-recorte está hecho.
+la 36, el número. La 35 cerró. Cuando `PLAN` llegue a cero, el recorte
+está hecho.
 
 ---
 

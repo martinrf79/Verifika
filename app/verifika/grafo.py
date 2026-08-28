@@ -340,8 +340,8 @@ NODOS = (
          funcion="app.core.salida:higiene",
          exige="el mensaje entero, ya compuesto por las tres puertas de "
                "arriba, y el anterior del bot",
-         garantiza="sin repeticion y con los invariantes corridos, sin perder "
-                   "un dato: las dos piezas son lossless",
+         garantiza="sin repeticion, lossless, un mutador: componer. No "
+                   "reescribe la prosa del modelo",
          contratos=TODOS_LOS_CONTRATOS,
          aplicar=lambda t, c: __import__(
              "app.core.salida", fromlist=["x"]).higiene(
@@ -635,8 +635,8 @@ _notas: ContextVar[dict | None] = ContextVar("grafo_notas", default=None)
 
 
 def anotar(clave: str, valor) -> None:
-    """El veredicto de un engranaje que NO transforma texto: el decisor, el
-    reconciliador, el indice, la aduana.
+    """El veredicto de un engranaje que NO transforma texto: el decisor,
+    el indice.
 
     POR QUE ESTO Y NO OCHO LINEAS DE LOG (Martin, 12-ago-2026, y es su pedido
     textual: que todo lo que pasa adentro se pueda revisar). Cada engranaje ya

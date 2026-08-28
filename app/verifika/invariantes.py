@@ -44,10 +44,10 @@ vale nada.
 POR QUE VIVE EN `app/verifika/` Y NO EN `banco_pruebas/` (Martin, 11-ago-2026).
 Se mudo el 11-ago porque `banco_pruebas/` NO viaja en la imagen de Docker -el
 Dockerfile copia `app/` y `data/`- y estas reglas dejaron de ser solo de banco:
-`app/core/aduana.py` las corre EN VIVO, sobre el mensaje ya compuesto, antes de
-que salga a WhatsApp. Un invariante que solo corre despues cuenta errores; el
-mismo invariante corrido antes los evita. Es el mismo archivo, un solo camino,
-y el banco lo importa desde aca.
+`pago.py` llama `pago_parcial` y `salida.py` usa `_RE_ITEM`. FICHA 35: ya no
+hay un mutador que parchee el mensaje con el resultado de `revisar`. Un
+invariante violado no se reescribe: es termometro del banco y de
+`test_barrido_codigo.py`. Es el mismo archivo, un solo camino.
 
 USO:
     from app.verifika.invariantes import revisar
@@ -78,6 +78,14 @@ _RE_EXTRA = re.compile(
     r"(?P<signo>-?)\s*\$?(?P<monto>[\d\.]+)\s*(?P<cola>\(pago parcial\))?\s*$",
     re.IGNORECASE | re.MULTILINE)
 _RE_PLATA = re.compile(r"\$\s*([\d\.]+)")
+
+
+def _importes(texto: str) -> list:
+    """Todos los importes del mensaje, en orden. Huella de la plata: si
+    aparece un peso que no entro, alguien lo invento. FICHA 35: vivia en
+    aduana.py; los barridos del grafo y del codigo la siguen necesitando.
+    Reusa `_RE_PLATA`, no se duplica la regex."""
+    return ["$" + m for m in _RE_PLATA.findall(texto or "")]
 # "Sena 20%: $42.200 (pago parcial)" — lo escribe `_label_extra` de la
 # calculadora y es la marca de que el cliente NO paga el total ahora.
 _RE_PAGO_PARCIAL = re.compile(

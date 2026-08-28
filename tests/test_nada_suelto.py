@@ -38,7 +38,6 @@ _RAIZ = pathlib.Path(__file__).resolve().parent.parent
 DECLARADAS = {
     # ── Herramientas del banco y de los tests, a proposito ──────────────────
     "revisar_charla": "la usa banco_pruebas/produccion.py para auditar las charlas reales",
-    "reiniciar_marcador": "reinicia el contador de la aduana entre pruebas",
     "reiniciar_cupo": "reinicia el cupo del reintento entre pruebas",
     "sin_cupo": "lo consulta el banco para saber si la clave gratis se agoto",
     "limpiar": "vacia los huecos anotados entre pruebas",
@@ -49,7 +48,7 @@ DECLARADAS = {
              "nunca el turno vivo",
     "censo_reiniciar": "pone el censo del grafo en cero antes de medir una "
                        "tanda; el turno vivo nunca lo reinicia, igual que "
-                       "reiniciar_marcador y reiniciar_cupo",
+                       "reiniciar_cupo",
     "barribles_de_datos": "consulta del grafo declarado, la usa el barrido de "
                           "la decision y la reposicion",
     "obligatorias": "consulta del indice, la usan las pruebas del indice",
@@ -80,7 +79,9 @@ DECLARADAS = {
     # ── Alta de cliente: las llama scripts/crear_cliente.py ─────────────────
     "dispara_lead_fuerte": "regla del lead fuerte; la verifica su prueba",
 
-    # ── FICHA 34: salieron del vivo, las prueba test_hub_venta, salen en la 36
+    # ── FICHA 35: huella de importes, la usan los barridos, no el vivo ──────
+    "_importes": "FICHA 35: huella de la plata. La usan test_grafo_cableado y "
+                 "test_barrido_codigo, no el camino vivo.",
     "completar": "FICHA 34: el hub ya no llama a la reposicion; snapshot en archivo/. test_hub_venta y el banco las siguen ejercitando. Salen en la 36.",
     "reconciliar": "FICHA 34: segunda opinion, snapshot en archivo/. test_hub_venta la sigue ejercitando. Sale en la 36.",
     "instruccion_de_preguntas": "FICHA 34: viajaba con el reconciliador. test_hub_venta la sigue ejercitando. Sale en la 36.",

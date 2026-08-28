@@ -365,10 +365,8 @@ def test_con_sena_se_cobra_la_sena_y_no_el_total(entorno):
 
 def test_el_invariante_ve_el_cobro_del_total_habiendo_sena(entorno):
     """La otra mitad del arreglo: que el dia que vuelva a pasar, se vea. El
-    invariante corre en la aduana, en vivo, antes de que el mensaje salga, y
-    esta clase de falla es ROJA -no se repara, se grita con el trace_id-."""
-    from app.core.aduana import _ROJAS
-
+    invariante es el termometro: esta clase de falla no se parchea en el
+    mensaje. FICHA 35: se lee de INV.revisar, no de un modulo de parche."""
     defectuoso = ("Presupuesto:\n"
                   "- 2x Mouse Logitech G600 MMO Negro: $105.500 c/u = $211.000\n"
                   "Subtotal: $211.000\n"
@@ -380,7 +378,6 @@ def test_el_invariante_ve_el_cobro_del_total_habiendo_sena(entorno):
     fallas = INV.revisar(defectuoso)
     reglas = [f["regla"] for f in fallas]
     assert "cobra_el_total_habiendo_sena" in reglas, fallas
-    assert "cobra_el_total_habiendo_sena" in _ROJAS
 
 
 # ── 4. EL COMPONEDOR Y LA ADUANA sobre mensajes generados ───────────────────
@@ -391,8 +388,8 @@ def test_el_componedor_no_mueve_un_peso_ni_rompe_la_cuenta(entorno):
     caracteres por turno a una charla real sin haberse disparado ni una vez en
     los 176 turnos de las charlas grabadas: los casos escritos a mano no
     alcanzan para probar una tijera."""
-    from app.core.aduana import _importes
     from app.core.mensaje import componer
+    from app.verifika.invariantes import _importes
 
     for carro in _carros(entorno["muestra"], cuantos=3):
         for extras in COMBOS_EXTRA:
@@ -436,9 +433,10 @@ def test_el_renglon_de_la_sena_no_parte_la_cuenta_en_dos(entorno):
 
 def test_la_aduana_no_toca_un_mensaje_sano(entorno):
     """Una aduana que corrige lo que ya estaba bien es peor que el defecto que
-    arregla. Sobre mil mensajes correctos generados, tiene que devolver el texto
+    arregla. FICHA 35: corre contra el snapshot, no contra el camino vivo.
+    Sobre mil mensajes correctos generados, tiene que devolver el texto
     identico, caracter por caracter."""
-    from app.core.aduana import revisar_salida
+    from test_aduana import revisar_salida
 
     for carro in _carros(entorno["muestra"], cuantos=3):
         for extras in COMBOS_EXTRA:

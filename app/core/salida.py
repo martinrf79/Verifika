@@ -1444,10 +1444,14 @@ def higiene(texto: str, anterior: str, mensaje: str, trace_id: str,
     """PUERTA 4 — COMO SE LEE. No es un candado y por eso se dice aparte.
 
     Las tres de arriba deciden que puede decir el bot; esta no decide nada
-    sobre la verdad del mensaje: saca la repeticion y corre los invariantes
-    sobre el texto ya entero. Sus dos piezas son lossless por contrato —no
-    pueden perder un dato— y esa es la unica licencia con la que se les permite
-    tocar prosa a esta altura.
+    sobre la verdad del mensaje: saca la repeticion. Su unica pieza es
+    lossless por contrato —no puede perder un dato— y esa es la unica
+    licencia con la que se le permite tocar prosa a esta altura.
+
+    FICHA 35: un solo mutador, `componer`. La aduana ya no reescribe. Los
+    invariantes son termometro, no parche del mensaje que sale.
+    `tienda_id` y `vocabulario` quedan en la firma: es el contrato de la
+    puerta con el hub y el grafo.
 
     VA ULTIMA Y ES LO UNICO QUE MIRA EL MENSAJE COMPLETO. Hasta aca cada puerta
     pego o poda lo suyo y ninguna miro el total; este es el unico punto del
@@ -1461,14 +1465,6 @@ def higiene(texto: str, anterior: str, mensaje: str, trace_id: str,
         # Un componedor roto NO puede dejar mudo al bot: se manda el mensaje
         # largo, que es lo que se mandaba ayer.
         log.warning("salida_componedor_error", trace_id=trace_id,
-                    error=f"{type(e).__name__}: {str(e)[:120]}")
-    try:
-        from app.core.aduana import revisar_salida
-        texto = _pieza("aduana", revisar_salida, texto, anterior=anterior,
-                       trace_id=trace_id, tienda_id=tienda_id,
-                       vocabulario=vocabulario)
-    except Exception as e:  # noqa: BLE001
-        log.warning("salida_aduana_error", trace_id=trace_id,
                     error=f"{type(e).__name__}: {str(e)[:120]}")
     return texto
 

@@ -154,8 +154,8 @@ def medir_codigo() -> dict:
     return {"clave": "codigo", "titulo": "EL CODIGO DE LA CUENTA",
             "archivo": "tests/test_barrido_codigo.py",
             "que_barre": "la calculadora, el split de pago, el cobro, el "
-                         "componedor, la aduana y el reconciliador, sobre "
-                         "entradas generadas y no escritas",
+                         "componedor, el snapshot de aduana y el reconciliador, "
+                         "sobre entradas generadas y no escritas",
             "unidad": "combinaciones", "casos": carros * combos,
             "detalle": f"{carros} pedidos x {len(BC.COMBOS_EXTRA)} juegos de "
                        f"extras x 3 destinos x {len(BC.REPARTOS)} formas de pago"}

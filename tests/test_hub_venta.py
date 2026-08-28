@@ -11,6 +11,7 @@ prueba es el hub, no el proveedor.
 """
 import asyncio
 import time
+from pathlib import Path
 
 import pytest
 
@@ -1627,21 +1628,18 @@ def test_si_el_modelo_contesta_vacio_si_dice_que_no_tiene_el_dato(
     assert "demanda" not in salida.lower()
 
 
-def test_la_aduana_corre_en_el_camino_vivo(monkeypatch, firestore_doble):
-    """LA ADUANA ESTA ENCHUFADA, no es un modulo suelto. Se hace fugar una
-    etiqueta de la atadura por una via que las guardas de arriba no miran y se
-    verifica que igual no le llega al cliente. Sin este candado, la aduana
-    podria quedar desconectada del hub sin que ningun test lo notara."""
-    from app.core import aduana
-
-    llamada = {"veces": 0}
-    real = aduana.revisar_salida
-
-    def _espia(texto, **kw):
-        llamada["veces"] += 1
-        return real(texto, **kw)
-
-    monkeypatch.setattr(aduana, "revisar_salida", _espia)
+def test_el_hub_no_reenchufa_la_aduana(monkeypatch, firestore_doble):
+    """FICHA 35: `revisar_salida` ya no corre en el turno. Este candado cubre
+    que el hub no la vuelva a enchufar; el conteo de `_pieza` lo afirma
+    `test_la_higiene_tiene_un_solo_mutador`. El `Resumen:` huerfano lo caza
+    `_sin_titulos_huerfanos` en procedencia, que se queda. Si fugaría, este
+    test o el piso se ponen rojos: se revierte, no se reenchufa la aduana."""
+    hub = Path(HV.__file__).read_text(encoding="utf-8")
+    higiene = Path(SAL.__file__).read_text(encoding="utf-8")
+    assert "revisar_salida" not in higiene, (
+        "higiene volvio a llamar a revisar_salida")
+    assert "app.core.aduana" not in hub and "app.core.aduana" not in higiene, (
+        "el vivo volvio a importar aduana")
 
     async def _fake_uno(*a, **kw):
         return [], "Te confirmo el pedido para manana.\n\nResumen:\n"
@@ -1649,7 +1647,6 @@ def test_la_aduana_corre_en_el_camino_vivo(monkeypatch, firestore_doble):
     monkeypatch.setattr(HV, "_pedir_herramientas", _fake_uno)
     salida = asyncio.run(HV.procesar_venta(USUARIO, "listo", TIENDA,
                                            "test", "t1"))
-    assert llamada["veces"] == 1, "la aduana no corrio en el turno"
     assert "Resumen:" not in salida
 
 

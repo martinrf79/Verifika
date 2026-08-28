@@ -1,8 +1,9 @@
 """
-AREA: LA ADUANA (`app/core/aduana.py`) — los invariantes ANTES de mandar.
+AREA: LA ADUANA — snapshot en `archivo/aduana_20260828.py`.
 
-QUE SE PRUEBA. Que el ultimo control del turno hace exactamente dos cosas y
-ninguna mas: repara lo que puede PROBAR, y deja intacto lo que no.
+FICHA 35: aduana salio del camino vivo. Estos tests viven con el snapshot y
+dejan de afirmar el turno. Lo que repara y lo que no toca sigue siendo una
+propiedad del modulo apagado, hasta que el piso aguante y se borre.
 
 LA MITAD QUE MAS IMPORTA es la segunda. Una tijera al final ya fallo dos veces
 en este repo -el tope por caracteres tiro la nota de 55 a 23, la regla 2-bis
@@ -10,6 +11,7 @@ borro la oracion de OTRO producto-, asi que aca los candados que valen son los
 que prueban que NO toca: que no mueve un peso, que no borra una cuenta que no
 cierra, que no se lleva un renglon legitimo repetido por dos destinos.
 """
+import importlib.util
 import sys
 from pathlib import Path
 
@@ -17,7 +19,17 @@ _RAIZ = Path(__file__).resolve().parent.parent
 if str(_RAIZ) not in sys.path:
     sys.path.insert(0, str(_RAIZ))
 
-from app.core.aduana import revisar_salida  # noqa: E402
+
+def _aduana_archivo():
+    ruta = _RAIZ / "archivo" / "aduana_20260828.py"
+    spec = importlib.util.spec_from_file_location("aduana_archivo", ruta)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+aduana = _aduana_archivo()
+revisar_salida = aduana.revisar_salida
 
 
 # ── LO QUE REPARA ───────────────────────────────────────────────────────────
@@ -91,7 +103,6 @@ def test_una_reparacion_que_se_lleva_plata_no_escrita_se_descarta(monkeypatch):
     esta escrito en ningun otro lado, la reparacion se descarta aunque haya
     hecho desaparecer la violacion. Una aduana que corrige un peso es peor que
     el defecto que arregla."""
-    from app.core import aduana
 
     def _se_lleva_la_plata(texto):
         return "El Mouse Genius DX-110 esta disponible."
@@ -133,7 +144,6 @@ def test_la_reparacion_que_no_mejora_se_revierte(monkeypatch):
     """La atadura B: se acepta solo si quedan MENOS violaciones y ninguna
     NUEVA. Se dobla una reparacion que 'arregla' rompiendo otra cosa y se
     verifica que el mensaje vuelve al original."""
-    from app.core import aduana
 
     def _rompe(texto):
         # Saca la etiqueta y de paso deja un titulo huerfano: mismo total de

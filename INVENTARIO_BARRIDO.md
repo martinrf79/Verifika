@@ -31,7 +31,7 @@ el estado se lee de acá, no de la memoria de nadie.**
 | **LA COHERENCIA DE LA FUENTE** | los datos de la fuente cruzados entre si: la ficha contra su planilla,… | 6 chequeos | — |
 | **LA FAQ** | cada palabra con la que el cliente puede nombrar un tema, para que nin… | 738 señas | — |
 | **GEO, LA TABLA DE LOCALIDADES** | la tabla entera de localidades, con provincia y sin ella, contra `geo_… | 16164 localidades | — |
-| **EL CODIGO DE LA CUENTA** | la calculadora, el split de pago, el cobro, el componedor, la aduana y… | 1260 combinaciones | — |
+| **EL CODIGO DE LA CUENTA** | la calculadora, el split de pago, el cobro, el componedor, el snapshot… | 1260 combinaciones | — |
 | **LO QUE EL MODELO DECLARA** | las herramientas que el modelo llama, campo por campo, con valores val… | 386 casos | **100.0%** |
 | **LA MEMORIA ENTRE TURNOS** | la transicion de un turno al siguiente: el carrito, la cuenta guardada… | 72 transiciones | **100.0%** |
 | **LA COMPATIBILIDAD** | los pares de productos que la fuente hace posibles y los que no compar… | 320 pares | — |
@@ -68,7 +68,7 @@ el estado se lee de acá, no de la memoria de nadie.**
 
 ### EL CODIGO DE LA CUENTA
 
-- **Que barre:** la calculadora, el split de pago, el cobro, el componedor, la aduana y el reconciliador, sobre entradas generadas y no escritas.
+- **Que barre:** la calculadora, el split de pago, el cobro, el componedor, el snapshot de aduana y el reconciliador, sobre entradas generadas y no escritas.
 - **Numero:** 1260 combinaciones. 12 pedidos x 7 juegos de extras x 3 destinos x 5 formas de pago.
 - **Lo defiende:** `tests/test_barrido_codigo.py`.
 

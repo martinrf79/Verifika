@@ -54,7 +54,6 @@ if str(_RAIZ) not in sys.path:
 # que es la misma ceguera que este archivo viene a cerrar.
 _GUARDIAS = (
     "app/core/salida.py",          # las cuatro puertas y sus piezas
-    "app/core/aduana.py",          # el ultimo control antes de mandar
     "app/core/atadura_prosa.py",   # cada afirmacion atada a su producto
     "app/core/guardas_salida.py",  # identidad, saludo, honestidad de bot
     "app/core/guia_venta_prosa.py",  # el texto fijo que sale tal cual
@@ -70,9 +69,10 @@ _GUARDIAS = (
 _DEJA_RASTRO = frozenset({"warning", "error", "exception", "critical",
                           "registrar", "veredicto", "anotar"})
 
-# EL TECHO, Y SOLO BAJA. Cero es cero: no hay ningun `except` mudo en las ocho
+# EL TECHO, Y SOLO BAJA. Cero es cero: no hay ningun `except` mudo en las siete
 # guardias, asi que el primero que aparezca es un rojo. Si alguna vez hay que
 # subirlo, se sube A MANO, en su propio commit, con el motivo escrito.
+# FICHA 35: salio app/core/aduana.py. Eran 8, ahora 7.
 _TECHO_MUDOS = 0
 
 
@@ -137,13 +137,14 @@ def test_el_censo_de_except_no_puede_pasar_por_vacio():
     lista de guardias quede vacia o el parser deje de encontrar handlers, que
     es la forma en que los candados de este repo ya se murieron dos veces."""
     todos, _ = _censo_de_except()
-    assert len(_GUARDIAS) == 8, (
+    assert len(_GUARDIAS) == 7, (
         f"la lista de guardias tiene {len(_GUARDIAS)} modulos y estaban "
-        "escritos 8. Si una guardia se suma o se muda, el numero se cambia a "
-        "mano y el commit dice cual")
-    assert len(todos) >= 15, (
-        f"solo se encontraron {len(todos)} except en las ocho guardias: el "
-        "censo esta mirando mal y todo lo de arriba pasa por vacio")
+        "escritos 7. FICHA 35: salio aduana.py. Si una guardia se suma o se "
+        "muda, el numero se cambia a mano y el commit dice cual")
+    assert len(todos) >= 14, (
+        f"solo se encontraron {len(todos)} except en las siete guardias: el "
+        "censo esta mirando mal y todo lo de arriba pasa por vacio. FICHA 35: "
+        "el piso era 15 con aduana (3 except ahi + 1 en higiene); ahora 14")
 
 
 def test_el_techo_de_mudos_es_cero_y_esta_escrito():

@@ -102,13 +102,11 @@ verdad solo si `reposicion.py` sale de `app/`.
 
 ### Sesión 2 — FICHA 35, la puerta
 
-Ya está escrita en `arquitectura/FICHA_35_la_puerta.md`. La 34 está en
-`origin/main` y el piso no bajó. Un mutador en la higiene. Snapshot de
-aduana a `archivo/`; si nadie la llama, `git rm` de `app/`. El modelo
-escribe una vez. Se pega el bloque de la cuenta. Se corta lo que no está
-en el contrato. Procedencia, plata sellada, cobro, saludo y punto omitido
-se quedan. Si no sabe, el contrato ya dice NO_SE_SABE o AMBIGUO: el
-redactor no inventa. Deploya.
+Cerró. Un mutador en la higiene. Snapshot de aduana a `archivo/`; nadie
+la llamaba y salió de `app/` en el mismo commit. El modelo escribe una
+vez. Se pega el bloque de la cuenta. Se corta lo que no está en el
+contrato. Procedencia, plata sellada, cobro, saludo y punto omitido se
+quedaron. Deploya. Si el piso baja, revert.
 
 ### Sesión 3 — FICHA 36, el número
 

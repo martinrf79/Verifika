@@ -206,18 +206,19 @@ def armar_charla(rnd: random.Random, catalogo: list, guion: str) -> dict:
 # ── CORRER Y JUZGAR ─────────────────────────────────────────────────────────
 async def correr(charla: dict, uid: str) -> dict:
     """La charla entera por el camino VIVO del webhook. Devuelve lo que el
-    cliente recibio, turno por turno, el reloj de cada uno, lo que la ADUANA
-    atajo y si la corrida quedo SIN MEDIR por cuota.
+    cliente recibio, turno por turno, el reloj de cada uno, y si la corrida
+    quedo SIN MEDIR por cuota.
 
     LO DE "SIN MEDIR" NO ES UN DETALLE, y es la leccion del 9-ago: si una
     corrida donde el modelo nunca contesto se promedia con las demas, el numero
     manda a arreglar codigo que ni siquiera corrio. Con la clave gratis y su
-    cuota de 250.000 tokens por minuto eso pasa seguido, asi que se separa."""
-    from app.core import aduana
+    cuota de 250.000 tokens por minuto eso pasa seguido, asi que se separa.
+
+    FICHA 35: la ficha de aduana del explorador deja de existir. Sin mutador
+    vivo no hay atajos que contar."""
     from app.core.llm_reintento import reiniciar_cupo, sin_cupo
 
     clon_produccion.reiniciar_cliente(uid)
-    aduana.reiniciar_marcador()
     reiniciar_cupo()
     respuestas, tiempos = [], []
     for texto in charla["turnos"]:
@@ -230,7 +231,6 @@ async def correr(charla: dict, uid: str) -> dict:
         respuestas.append("\n".join(partes))
     negadas = sin_cupo()
     return {**charla, "respuestas": respuestas, "ms": tiempos,
-            "aduana": aduana.marcador(),
             "sin_medir": int(negadas["veces"]),
             "motivo": negadas["ultimo"][:80]}
 
