@@ -232,7 +232,8 @@ def _llamadas_ideales(tienda_id: str) -> tuple:
         "destinos": ["Cordoba capital", "Concordia", "Posadas"],
         "pide_precio": True,
         "contradicciones": ["Nombro un teclado en el envio a Concordia que no "
-                            "estaba en el pedido."]}
+                            "estaba en el pedido."],
+        "reparto_pago": [{"porcentaje": 70}, {"porcentaje": 30}]}
     llamadas = [{"herramienta": "registrar_pedido", "pedido": declarado,
                  "resultado": {"estado": "registrado", "pedido": declarado}}]
     ids = {}

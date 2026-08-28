@@ -1487,7 +1487,7 @@ def obligacion(texto: str, mensaje: str, negocio: str, primer_mensaje: bool,
                declarado: dict | None, llamadas: list, memoria: list,
                tienda_id: str, trace_id: str,
                descartados: list | None = None, dichos: str = "",
-               texto_del_modelo: str = "") -> str:
+               texto_del_modelo: str = "", cierre: bool = False) -> str:
     """PUERTA 3 — LO QUE TIENE QUE ESTAR SI O SI. La unica que SUMA.
 
     Las otras tres restan: podan lo que no puede salir. Esta pone lo que no
@@ -1528,11 +1528,13 @@ def obligacion(texto: str, mensaje: str, negocio: str, primer_mensaje: bool,
     # al final del mensaje y tiene que ver el total ya repuesto por la puerta de
     # la plata. Antes del punto omitido quedaria en el medio del mensaje.
     return _pieza("camino_al_cobro", _cc().linea_de_cobro, texto,
-                  str(dichos or ""), tienda_id, trace_id)
+                  str(dichos or ""), tienda_id, trace_id,
+                  declarado=declarado or {}, cierre=cierre)
 
 
 def higiene(texto: str, anterior: str, mensaje: str, trace_id: str,
-            tienda_id: str, vocabulario=None) -> str:
+            tienda_id: str, vocabulario=None, declarado=None,
+            llamadas=None) -> str:
     """PUERTA 4 — COMO SE LEE. No es un candado y por eso se dice aparte.
 
     Las tres de arriba deciden que puede decir el bot; esta no decide nada
@@ -1558,7 +1560,37 @@ def higiene(texto: str, anterior: str, mensaje: str, trace_id: str,
         # largo, que es lo que se mandaba ayer.
         log.warning("salida_componedor_error", trace_id=trace_id,
                     error=f"{type(e).__name__}: {str(e)[:120]}")
-    return texto
+    return asegurar_cuenta_si_abrio(texto, declarado, llamadas)
+
+
+def asegurar_cuenta_si_abrio(texto: str, declarado: dict | None,
+                             llamadas: list | None) -> str:
+    """FICHA 43. Si items y pide_precio se abrieron, la cuenta sellada tiene
+    que estar en el WhatsApp. Corre al final de la higiene: esa puerta resume
+    la cuenta identica y se llevaba los renglones; el supuesto de pago, que
+    no es cuenta, quedaba solo. Una cuenta interna que no se dice vale cero.
+    """
+    from app.core.familias import abiertas
+    from app.core import resolver as R
+    fam = abiertas(declarado)
+    if "items" not in fam or "pide_precio" not in fam:
+        return texto
+    bloque = R._bloque_presupuesto(llamadas or [])
+    if not bloque:
+        return texto
+    nt, nb = _norm_renglon(texto), _norm_renglon(bloque)
+    if nb and nb in nt:
+        return texto
+    # El mensaje es un pedazo de la cuenta sellada: el caso de produccion,
+    # solo el supuesto de pago. Sale la cuenta entera, una vez.
+    if nt and nt in nb:
+        log.info("familias_cuenta_repuesta", largo=len(bloque), via="fragmento")
+        return bloque.strip()
+    # Ya hay un total dicho, incluido "Sin cambios en la cuenta. Total: $X".
+    if re.search(r"(?i)total(?:\s+final)?\s*:", texto or ""):
+        return texto
+    log.info("familias_cuenta_repuesta", largo=len(bloque), via="ausente")
+    return ((texto or "").rstrip() + "\n\n" + bloque).strip()
 
 
 def _cc():

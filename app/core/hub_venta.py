@@ -1126,9 +1126,14 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     # ── 3. REDACTAR CON EL DATO DELANTE ─────────────────────────────────
     sin_modelo = False
     if llamadas:
+        from app.core.familias import abiertas as _fam_abiertas
+        al_redactor = llamadas
+        if "temas" not in _fam_abiertas(declarado):
+            al_redactor = [l for l in llamadas
+                           if l.get("herramienta") != "consultar_temas"]
         with _reloj(etapas, "redactor"):
             texto, sin_modelo = await _redactar(
-                negocio, memoria, history, raw_message, llamadas, trace_id,
+                negocio, memoria, history, raw_message, al_redactor, trace_id,
                 obligacion=obligacion)
         # QUE SIGNIFICA QUE EL REDACTOR INTERVINO: que escribio algo. El
         # detalle dice si lo escribio el modelo o el respaldo sin modelo, que
@@ -1225,7 +1230,8 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     texto = G.paso("obligacion", S.obligacion, texto, raw_message, negocio,
                    not history, declarado, llamadas, _memoria_idx, tienda_id,
                    trace_id, conv.get("descartados") or [], dichos,
-                   texto_del_modelo)
+                   texto_del_modelo,
+                   senal.get("intencion") == "decision_compra")
 
     # ── 7. LA HIGIENE: el mensaje entero, una sola vez ──────────────────
     # Va ULTIMA a proposito. Hasta acá cada puerta pegó o podó lo suyo y
@@ -1235,7 +1241,8 @@ async def procesar_venta(user_id: str, raw_message: str, tienda_id: str,
     anterior = next((h.get("content") for h in reversed(history or [])
                      if h.get("role") == "assistant"), "")
     texto = G.paso("higiene", S.higiene, texto, str(anterior or ""),
-                   raw_message, trace_id, tienda_id)
+                   raw_message, trace_id, tienda_id,
+                   declarado=declarado, llamadas=llamadas)
 
     # ── 7. MEMORIA ──────────────────────────────────────────────────────
     history = history + [{"role": "user", "content": raw_message},

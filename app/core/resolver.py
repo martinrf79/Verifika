@@ -1152,7 +1152,14 @@ def _supuesto_de_pago(llamadas: list, declarado: dict, tienda_id: str,
     El hecho lo mira sobre lo DECLARADO, no sobre el mensaje crudo: si una
     restriccion trae dos porcentajes y no nombra ningun medio de pago, el que
     despues aparece en la cuenta lo puso el modelo, no el cliente.
+
+    FICHA 43: la linea se ESCRIBE solo si la familia `reparto_pago` se abrio.
+    Aplicar el split es la cuenta; decir el supuesto es hablar. Si el cliente
+    no abrio esa familia, el codigo no la nombra.
     """
+    from app.core.familias import abiertas
+    if "reparto_pago" not in abiertas(declarado):
+        return llamadas
     idx = next((i for i, l in enumerate(llamadas)
                 if _es_presupuesto(l)
                 and (l.get("resultado") or {}).get("bloque")), None)

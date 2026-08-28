@@ -102,3 +102,36 @@ def test_los_veinte_siguen_escritos_en_el_interprete_muerto():
              ).read_text(encoding="utf-8")
     faltan = [k for k in F.DEL_VIEJO if f'"{k}"' not in texto]
     assert not faltan, faltan
+
+
+def test_sin_la_familia_el_codigo_no_escribe_el_supuesto():
+    """Aplicar el split es la cuenta. Decir el supuesto es hablar."""
+    from app.core.resolver import _supuesto_de_pago
+    llamadas = [{"herramienta": "armar_presupuesto",
+                 "pedido": {"pago": [{"medio": "transferencia",
+                                      "porcentaje": 70},
+                                     {"medio": "mercado pago",
+                                      "porcentaje": 30}]},
+                 "resultado": {"estado": "ok", "bloque": "Total: $8.500"}}]
+    solo_restriccion = {"restricciones": ["dividir el presupuesto en 70/30"]}
+    assert _supuesto_de_pago(llamadas, solo_restriccion, "verifika_prod",
+                             "t") == llamadas
+
+
+def test_si_abrio_precio_la_cuenta_entra_al_whatsapp():
+    """El caso de produccion: solo salia el supuesto. La cuenta tenia que
+    estar dicha, una vez."""
+    from app.core.salida import asegurar_cuenta_si_abrio
+    supuesto = ("El 70% lo puse por transferencia, que es la que tiene "
+                "descuento: si va al revés, decime y lo doy vuelta.")
+    bloque = ("Presupuesto:\n- 1x Mouse: $8.500\nTotal: $8.500\n" + supuesto)
+    llamadas = [{"herramienta": "armar_presupuesto",
+                 "resultado": {"bloque": bloque}}]
+    declarado = {"items": [{"que": "mouse", "cantidad": 1}],
+                 "pide_precio": True}
+    fuera = asegurar_cuenta_si_abrio(supuesto, declarado, llamadas)
+    assert "Total: $8.500" in fuera
+    assert fuera.count("doy vuelta") == 1
+    ya = asegurar_cuenta_si_abrio(
+        "Sin cambios en la cuenta. Total: $8.500", declarado, llamadas)
+    assert ya == "Sin cambios en la cuenta. Total: $8.500"

@@ -159,7 +159,8 @@ def _con_total(extra=""):
 
 
 def test_con_un_total_cerrado_se_dice_como_se_paga(reales):
-    salida = CC.linea_de_cobro(_con_total(), "", TIENDA, "t1")
+    salida = CC.linea_de_cobro(_con_total(), "", TIENDA, "t1",
+                               declarado={"pide_precio": True})
     assert "transferencia bancaria" in salida.lower()
     assert "link de pago" in salida.lower()
     assert "nombre" in salida.lower()
@@ -170,7 +171,8 @@ def test_con_un_total_cerrado_se_dice_como_se_paga(reales):
 def test_la_linea_no_gasta_la_unica_repregunta(reales):
     """`una_sola_repregunta` mide 55/55 y no puede pagarse el camino al cobro
     con el punto que ya esta en pleno. La linea afirma, no pregunta."""
-    pegado = CC.linea_de_cobro(_con_total(), "", TIENDA, "t1")
+    pegado = CC.linea_de_cobro(_con_total(), "", TIENDA, "t1",
+                              declarado={"pide_precio": True})
     agregado = pegado[len(_con_total()):]
     assert "?" not in agregado and "¿" not in agregado
 
@@ -194,7 +196,8 @@ def test_no_se_repite_si_ya_se_dijo_en_la_charla(reales):
     ademas suena a apuro."""
     dichos = ("Podés pagar por transferencia bancaria, con 10% de descuento, "
               "o con link de pago.")
-    assert CC.linea_de_cobro(_con_total(), dichos, TIENDA, "t1") == _con_total()
+    assert CC.linea_de_cobro(_con_total(), dichos, TIENDA, "t1",
+                            declarado={"pide_precio": True}) == _con_total()
 
 
 def test_no_se_repite_si_ya_se_dijo_en_el_mismo_mensaje(reales):
@@ -208,7 +211,8 @@ def test_el_porcentaje_sale_de_la_fuente_y_no_del_codigo(reales):
     cuentas del mismo numero."""
     pct = CC._pct_descuento_transferencia(TIENDA)
     assert pct > 0, "la FAQ no trae el descuento por transferencia"
-    salida = CC.linea_de_cobro(_con_total(), "", TIENDA, "t1")
+    salida = CC.linea_de_cobro(_con_total(), "", TIENDA, "t1",
+                              declarado={"pide_precio": True})
     assert f"{pct}%" in salida
 
 
@@ -217,8 +221,19 @@ def test_la_linea_no_dice_ni_un_dato_de_cuenta(reales):
     Se pasa por la guardia de al lado, que es la prueba de que las dos mitades
     no se contradicen: lo que la de arriba escribe, la de abajo lo deja pasar
     entero."""
-    salida = CC.linea_de_cobro(_con_total(), "", TIENDA, "t1")
+    salida = CC.linea_de_cobro(_con_total(), "", TIENDA, "t1",
+                              declarado={"pide_precio": True})
     for dato in (str(reales["cbu"]), str(reales["alias"]),
                  str(reales["titular_cuenta"])):
         assert dato not in salida
     assert _limpio(salida) == salida
+
+
+def test_sin_familia_de_plata_no_se_pega_el_cobro(reales):
+    """FICHA 43: un total en el texto no alcanza. Si el cliente no abrio
+    precio, temas, reparto ni cierre, no se le explica como pagar."""
+    assert CC.linea_de_cobro(_con_total(), "", TIENDA, "t1") == _con_total()
+    assert CC.linea_de_cobro(
+        _con_total(), "", TIENDA, "t1",
+        declarado={"atributos": [{"de": "mouse", "campo": "dpi"}]},
+    ) == _con_total()

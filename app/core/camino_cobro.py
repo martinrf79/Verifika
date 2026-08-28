@@ -92,14 +92,23 @@ def _pct_descuento_transferencia(tienda_id: str) -> int:
 
 
 def linea_de_cobro(texto: str, dichos: str, tienda_id: str,
-                   trace_id: str = "") -> str:
+                   trace_id: str = "", *, declarado: dict | None = None,
+                   cierre: bool = False) -> str:
     """Pega COMO SE PAGA al final del mensaje que cierra un total, una sola vez.
 
     `dichos` es todo lo que el bot ya le dijo al cliente en esta charla. Si ahi
     ya esta la modalidad, no se repite.
 
+    FICHA 43: no se pega sobre una pregunta que no hablo de plata. Un total
+    en el texto no alcanza si el cliente no abrio pide_precio, temas,
+    reparto_pago ni cierre.
+
     Devuelve el texto tal como entro cuando no corresponde, que es lo normal:
     esta pieza interviene en el turno del total y en ninguno mas."""
+    from app.core.familias import abiertas
+    fam = set(abiertas(declarado, cierre=cierre))
+    if not fam & {"pide_precio", "temas", "reparto_pago", "cierre"}:
+        return texto
     from app.core.pago import extraer_total_verificado
     if not (texto or "").strip():
         return texto

@@ -867,7 +867,7 @@ def test_el_setenta_treinta_sin_medio_declara_el_supuesto(firestore_doble):
                                      {"medio": "mercado pago",
                                       "porcentaje": 30}]},
                  "resultado": {"estado": "ok", "bloque": "Total: $8.500"}}]
-    declarado = {"restricciones": ["dividir el presupuesto en 70/30"]}
+    declarado = {"reparto_pago": [{"porcentaje": 70}, {"porcentaje": 30}]}
     fuera = _supuesto_de_pago(llamadas, declarado, TIENDA, "t")
     bloque = fuera[0]["resultado"]["bloque"]
     # El supuesto se DECLARA y se puede dar vuelta en una linea. Se acorto el
@@ -878,7 +878,9 @@ def test_el_setenta_treinta_sin_medio_declara_el_supuesto(firestore_doble):
 
     # Si el cliente SI dijo el medio, no se declara ningun supuesto: seria
     # ruido, y el ruido ensena a ignorar los avisos.
-    claro = {"restricciones": ["70% por transferencia y 30% con mercado pago"]}
+    claro = {"reparto_pago": [
+        {"porcentaje": 70, "medio": "transferencia"},
+        {"porcentaje": 30, "medio": "mercado pago"}]}
     assert _supuesto_de_pago(llamadas, claro, TIENDA, "t") == llamadas
 
 
@@ -958,7 +960,8 @@ def test_el_setenta_treinta_lo_aplica_el_codigo_si_el_modelo_no_lo_hizo(
     llamadas = [{"herramienta": "armar_presupuesto", "pedido": args,
                  "resultado": H.ejecutar("armar_presupuesto", args, TIENDA)}]
     declarado = {"restricciones": ["menos partes chinas posibles",
-                                   "presupuesto 70/30"]}
+                                   "presupuesto 70/30"],
+                 "reparto_pago": [{"porcentaje": 70}, {"porcentaje": 30}]}
     sin_reparto = R._bloque_presupuesto(llamadas)
     assert "Pago dividido" not in sin_reparto
 

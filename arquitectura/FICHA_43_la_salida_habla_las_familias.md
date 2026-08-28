@@ -1,4 +1,4 @@
-# FICHA 43 — La salida habla las familias abiertas. Una sesión.
+# FICHA 43 — La salida habla las familias abiertas. Cerrada.
 
 El catálogo ya está nombrado. Esta ficha no abre otro plan, no es un
 banco y no se desvía: no se tocan herramientas muertas ni el proveedor
