@@ -29,11 +29,11 @@ PLAN       el recorte. Baja a medida que se hace.
 El detalle de cada paso, con su número de hoy y su objetivo, está en
 `tests/test_plan_del_recorte.py`. La unidad de trabajo abierta, en `arquitectura/`.
 
-**28-ago:** FICHA 36: `reposicion.py` y `guia_pedido.py` salieron de `app/`,
-nueve cuerpos a cuatro, 31 y 32 verdes, techo PLAN 17→15. Los termómetros no
-cierran: 563 funciones / 22547 líneas contra 181 / 7306. Llegar al 30%
-exige cortar certificación, calculadora o el contrato; prioridad uno lo
-prohíbe. El número vivo sale de `pytest`.
+**28-ago:** El resolver lee el mensaje después de `registrar_pedido` y
+completa ítem→ciudad y el artículo que falte antes de buscar y cotizar.
+La vara es la cuenta: tres envíos y siete productos, sin unidades
+sin asignar. Los termómetros de la FICHA 36 siguen: el 30% no entra
+sin cortar el motor. El número vivo sale de `pytest`.
 
 ---
 

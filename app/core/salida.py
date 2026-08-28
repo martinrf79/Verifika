@@ -112,7 +112,7 @@ def _sin_plata_inventada(texto: str, llamadas: list, bloque: str,
                         and isinstance(p.get("precio"), (int, float))}
     fuera = H.plata_inventada(texto, respaldados)
     if not fuera:
-        return texto
+        return _sin_titulos_huerfanos(texto)
     lineas_bloque = {l.strip() for l in (bloque or "").splitlines() if l.strip()}
     salida, podadas = [], 0
     for linea in (texto or "").splitlines():
@@ -131,6 +131,8 @@ def _sin_plata_inventada(texto: str, llamadas: list, bloque: str,
 
 
 _RE_TITULO = re.compile(r"^\s*\**\s*[A-Za-zÁÉÍÓÚÑáéíóúñ ]{3,24}:\s*\**\s*$")
+_RE_TITULO_DE_LISTA = re.compile(
+    r"(?im)^\s*.{0,40}modelos que te sirven:\s*$")
 
 
 def _sin_titulos_huerfanos(texto: str) -> str:
@@ -139,14 +141,27 @@ def _sin_titulos_huerfanos(texto: str) -> str:
     Medido en la primera charla viva: la regla podo los renglones de precio que
     el modelo habia inventado -bien podados- y al cliente le llego "Productos:"
     y despues nada. La poda tiene que dejar un mensaje que se pueda leer, no un
-    esqueleto."""
+    esqueleto.
+
+    EL TITULO QUE PROMETE UNA LISTA, medido otra vez el 28-ago. Completar el
+    teclado en el turno 5 del casete 80 hace que el turno 8 ('agrega un
+    teclado') no mueva la cuenta, y reaparece 'Sin cambios en la cuenta'
+    debajo de 'Estos son los modelos que te sirven:'. `_RE_TITULO` no lo
+    cazaba: el anuncio tiene 34 letras y el tope era 24, y aunque lo
+    cazara, preguntaba si hay ALGO abajo, no si abajo esta la lista. Un
+    titulo de lista sin lista se va.
+    """
     lineas = (texto or "").splitlines()
     fuera = []
     for i, l in enumerate(lineas):
-        if not _RE_TITULO.match(l):
+        promete_lista = bool(_RE_TITULO_DE_LISTA.match(l))
+        if not _RE_TITULO.match(l) and not promete_lista:
             continue
         siguiente = next((x for x in lineas[i + 1:] if x.strip()), "")
-        if not siguiente or _RE_TITULO.match(siguiente):
+        es_lista = siguiente.lstrip().startswith(("-", "•")) or bool(
+            re.match(r"\d+[\.)]\s", siguiente.lstrip()))
+        if (not siguiente or _RE_TITULO.match(siguiente)
+                or (promete_lista and not es_lista)):
             fuera.append(i)
     salida = [l for i, l in enumerate(lineas) if i not in fuera]
     return re.sub(r"\n{3,}", "\n\n", "\n".join(salida)).strip()

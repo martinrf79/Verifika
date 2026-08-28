@@ -276,6 +276,22 @@ def test_el_titulo_que_queda_sin_nada_abajo_se_va():
         "Te paso el detalle:\nProductos:\n\nEnvios:\n- A Cordoba: $7.500")
 
 
+def test_el_titulo_que_promete_lista_y_no_la_tiene_se_va():
+    """El anuncio 'Estos son los modelos que te sirven:' con 'Sin cambios
+    en la cuenta' abajo no es una lista. Si queda, el cliente lee un titulo
+    huerfano. Casete 80 turno 8, reaparecio al completar el teclado antes."""
+    texto = ("Te paso lo que tenemos: un mouse.\n"
+             "Estos son los modelos que te sirven:\n"
+             "Sin cambios en la cuenta. Total final: $217.580")
+    limpio = SAL._sin_titulos_huerfanos(texto)
+    assert "modelos que te sirven" not in limpio
+    assert "Sin cambios en la cuenta" in limpio
+    # Y si abajo HAY lista, el titulo se queda: anuncio una y esta.
+    con_lista = ("Estos son los modelos que te sirven:\n"
+                 "- Mouse Genius DX-110 Negro")
+    assert "modelos que te sirven" in SAL._sin_titulos_huerfanos(con_lista)
+
+
 def test_el_markdown_no_sale_a_whatsapp():
     assert SAL._sin_markdown("**Productos:** el mouse") == "Productos: el mouse"
 

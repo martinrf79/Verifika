@@ -20,6 +20,8 @@ cuenta que el piso necesita —armar, reparto, supuesto, un bloque— se
 MUDARON aca en la FICHA 36, no se copiaron. El hub y la salida las piden
 a este modulo. `reposicion.py` sale de `app/` en el mismo commit.
 """
+import re
+
 from app.core import herramientas as H
 from app.core import indice_turno as IT
 from app.core import pedido as P
@@ -383,6 +385,244 @@ def _aplicar_la_cuenta(llamadas: list, declarado: dict, memoria: list,
     return G.paso_datos("bloques_a_uno", _bloques_a_uno, llamadas, trace_id)
 
 
+# ── COMPLETAR LO DECLARADO DESDE EL MENSAJE ────────────────────────────────
+#
+# DESPUES de registrar_pedido y ANTES de buscar y cotizar. El modelo declara;
+# el codigo lee el mensaje, completa item→ciudad y el articulo que falte
+# (el teclado nombrado solo en el envio) y recien ahi deriva. La respuesta
+# cambia cuando la cuenta sale con tres envios y siete productos, no cuando
+# el modelo razona mejor.
+#
+# El parser es el de guia_pedido que la FICHA 36 saco de app/. No se
+# reenchufa el modulo: se copia lo que el vivo necesita para cerrar el
+# reparto. app/ no importa archivo/.
+
+_RE_DESTINOS_MSG = re.compile(
+    r"\b(?:van?|vaya|iran?|env[ií]os?|mandar?|mandal[oa]s?|envial[oa]s?"
+    r"|enviad[oa]s?|con\s+env[ií]o)\s+(?:todos?\s+)?(?:junt[oa]s?\s+)?a\s+"
+    r"([a-zñ][a-zñ .'-]{2,30}?)"
+    r"(?=\s+(?:una?|un|todos?|lo|los|las|el|dime|decime|pasame|pagando|y|e"
+    r"|cuanto|dame|es|son|seran?|sera|lleva|va)\b|[,.?!]|$)")
+_RE_RESTO_GRUPO = re.compile(
+    r"lo demas|el resto|lo restante|lo que queda|que faltan|lo que falta"
+    r"|faltantes|los otros")
+_RE_DESTINO_PRONOMBRE = re.compile(
+    r"^(?:a\s+)?(?:donde|adonde|ahi|alla|alli|casa|mi casa|tu casa|su casa"
+    r"|el mismo|la misma|ese lugar|este lugar|la otra|el otro|otra direccion"
+    r"|otro destino|la direccion|la misma direccion)\b")
+_RE_GRUPO_NOMBRADO = re.compile(
+    r"env[ií]os?\s+(?:de|a|para)\s+([a-zñ][a-zñ .'-]{2,30}?)\s+"
+    r"(?:es|son|seran?|sera|lleva|va con|va)\s+")
+_RE_CORTE_GRUPO = re.compile(
+    r"\benv[ií]os?\b|" + _RE_RESTO_GRUPO.pattern
+    + r"|\bdime\b|\bdecime\b|\bdame\b|\bpasame\b|\bcuanto\b")
+
+
+def _es_destino_real(cand: str) -> bool:
+    c = (cand or "").strip()
+    if not c or _RE_DESTINO_PRONOMBRE.match(c):
+        return False
+    from app.core.geo_cp import es_lugar_conocido
+    return es_lugar_conocido(c)
+
+
+def _mismo_lugar(a: str, b: str) -> bool:
+    pa, pb = set(H._norm(a).split()), set(H._norm(b).split())
+    if not pa or not pb:
+        return False
+    return pa <= pb or pb <= pa
+
+
+def _hitos_destinos(mensaje: str, conocidos: list | None = None) -> list:
+    """[(destino, inicio, fin)] en el orden del mensaje. Primero los que
+    el modelo ya nombro, con su grafia; despues los que el regex saca y
+    geo confirma. Dedupe por subconjunto de palabras."""
+    m = H._norm(mensaje or "")
+    hitos: list = []
+
+    def _ya(cand: str) -> bool:
+        return any(_mismo_lugar(cand, d) for d, _, _ in hitos)
+
+    for d in (conocidos or []):
+        d = str(d or "").strip()
+        nd = H._norm(d)
+        if not d or not nd:
+            continue
+        pos = m.find(nd)
+        if pos < 0:
+            # 'cordoba capital' declarado, el mensaje dice 'cordoba':
+            # se busca la palabra mas larga que pegue.
+            for n in range(len(nd.split()), 0, -1):
+                frag = " ".join(nd.split()[:n])
+                pos = m.find(frag)
+                if pos >= 0 and len(frag) >= 3:
+                    break
+            else:
+                continue
+        if not _ya(d):
+            hitos.append((d, pos, pos + max(len(nd), 3)))
+    for h in _RE_DESTINOS_MSG.finditer(m):
+        cand = h.group(1).strip(" .,-")
+        if (len(cand) >= 3 and _es_destino_real(cand) and not _ya(cand)):
+            hitos.append((cand, h.start(), h.end()))
+    hitos.sort(key=lambda x: x[1])
+    return hitos[:4]
+
+
+def _grupos_del_mensaje(mensaje: str, cats_pedido: list,
+                        tienda_id: str, destinos: list | None = None) -> list:
+    """[(destino, [(n, cat)])] cuando el cliente dijo QUE va a cada ciudad.
+    [] si no cierra. Entiende items pegados antes del destino, grupos
+    nombrados despues, y el resto ('los otros van a Posadas')."""
+    from app.core import filtros_catalogo as FC
+    try:
+        totales = {cat: int(n) for n, cat in (cats_pedido or [])}
+    except (TypeError, ValueError):
+        return []
+    if not totales:
+        return []
+    m = H._norm(mensaje or "")
+    hitos = _hitos_destinos(mensaje, destinos)
+    if len(hitos) < 2:
+        return []
+    asignado: dict = {}
+    limites = sorted(h[1] for h in hitos)
+    for g in _RE_GRUPO_NOMBRADO.finditer(m):
+        ref = set(g.group(1).strip(" .,-").split())
+        duenos = [d for d, _, _ in hitos
+                  if ref <= set(H._norm(d).split())
+                  or set(H._norm(d).split()) <= ref]
+        if len(duenos) != 1:
+            continue
+        fin = min([l for l in limites if l > g.end()] + [len(m)])
+        seg = m[g.end():fin]
+        corte = _RE_CORTE_GRUPO.search(seg)
+        if corte:
+            seg = seg[:corte.start()]
+        items = FC.cantidades_por_categoria(seg, tienda_id)
+        if not items or duenos[0] in asignado:
+            if duenos[0] in asignado:
+                return []
+            continue
+        asignado[duenos[0]] = items
+    resto_destino = None
+    prev_fin = 0
+    for destino, ini, fin in hitos:
+        segmento = m[prev_fin:ini]
+        prev_fin = fin
+        ventana = segmento[-70:]
+        if len(segmento) > 70 and " " in ventana:
+            ventana = ventana[ventana.find(" ") + 1:]
+        if _RE_RESTO_GRUPO.search(ventana):
+            if resto_destino:
+                return []
+            resto_destino = destino
+            continue
+        if destino in asignado:
+            continue
+        items = FC.cantidades_por_categoria(ventana, tienda_id)
+        if items:
+            asignado[destino] = items
+    restantes = dict(totales)
+    for items in asignado.values():
+        for n, cat in items:
+            restantes[cat] = restantes.get(cat, 0) - int(n)
+    if any(n < 0 for n in restantes.values()):
+        return []
+    sobrante = {c: n for c, n in restantes.items() if n > 0}
+    sin_grupo = [d for d, _, _ in hitos if d not in asignado
+                 and d != resto_destino]
+    if resto_destino is None and len(sin_grupo) == 1 and sobrante \
+            and _RE_RESTO_GRUPO.search(m):
+        resto_destino = sin_grupo[0]
+        sin_grupo = []
+    grupos = [(d, items) for d, items in asignado.items()]
+    if resto_destino:
+        if not sobrante:
+            return []
+        grupos.append((resto_destino,
+                       [(n, c) for c, n in sorted(sobrante.items())]))
+    elif sobrante or sin_grupo:
+        return []
+    orden = {d: i for i, (d, _, _) in enumerate(hitos)}
+    grupos.sort(key=lambda g: orden.get(g[0], 99))
+    return grupos
+
+
+def _completar_el_declarado(declarado: dict, tienda_id: str) -> dict:
+    """Lee el mensaje, completa item→ciudad y el articulo que falte.
+
+    No interpreta: pega cantidades y destinos que el cliente YA escribio.
+    Si el reparto no cierra, deja lo que pudo (el articulo de mas) y no
+    inventa destinos. Todo-o-nada en el detalle de que va a donde.
+    """
+    if not isinstance(declarado, dict):
+        return declarado or {}
+    from app.core.estado_venta import get_current_estado
+    from app.core import filtros_catalogo as FC
+    mensaje = str((get_current_estado() or {}).get("mensaje_del_turno") or "")
+    if not mensaje.strip():
+        return declarado
+    fuera = dict(declarado)
+    items = [dict(i) for i in (fuera.get("items") or []) if isinstance(i, dict)]
+    destinos = [str(d).strip() for d in (fuera.get("destinos") or [])
+                if str(d or "").strip()]
+    cats = FC.cantidades_por_categoria(mensaje, tienda_id)
+    # EL ARTICULO QUE FALTA: nombrado en el envio y no en el pedido
+    # (el teclado a Concordia). Se suma, no se pregunta: la cuenta tiene
+    # que salir con las unidades que el cliente mando a algún lado.
+    cubiertos = " ".join(H._norm((i.get("categoria") or "") + " "
+                                 + (i.get("que") or "")) for i in items)
+    for n, cat in cats:
+        if P._cubierto(cat, cubiertos):
+            continue
+        items.append({"que": cat, "cantidad": max(1, int(n)),
+                      "categoria": cat})
+        cubiertos += " " + H._norm(cat)
+        log.info("articulo_faltante_completado", rubro=cat, cantidad=n)
+    hitos = _hitos_destinos(mensaje, destinos)
+    if hitos and not destinos:
+        destinos = [d for d, _, _ in hitos]
+    if hitos:
+        extra = [d for d, _, _ in hitos
+                 if not any(_mismo_lugar(d, x) for x in destinos)]
+        destinos = destinos + extra
+    if destinos:
+        fuera["destinos"] = destinos
+    cats_pedido = cats or [
+        (max(1, int(i.get("cantidad") or 1)),
+         str(i.get("categoria") or i.get("que") or "").strip())
+        for i in items if str(i.get("categoria") or i.get("que") or "").strip()]
+    grupos = _grupos_del_mensaje(mensaje, cats_pedido, tienda_id, destinos)
+    if grupos:
+        nuevos = []
+        for dest, pares in grupos:
+            canon = next((d for d in destinos if _mismo_lugar(d, dest)), dest)
+            for n, cat in pares:
+                nuevos.append({"que": cat, "cantidad": max(1, int(n)),
+                               "categoria": cat, "destino": canon})
+        items = nuevos
+        if not destinos:
+            fuera["destinos"] = [d for d, _ in grupos]
+        log.info("reparto_completado_del_mensaje",
+                 destinos=len(grupos),
+                 unidades=sum(i["cantidad"] for i in items))
+        # La contradiccion del teclado dejo de serlo: ya esta en el pedido.
+        dudar = []
+        for c in (fuera.get("contradicciones") or []):
+            t = H._norm(c)
+            if any(H._norm(i.get("que")) in t or H._norm(i.get("categoria")) in t
+                   for i in items if i.get("que")):
+                continue
+            dudar.append(c)
+        if dudar:
+            fuera["contradicciones"] = dudar
+        else:
+            fuera.pop("contradicciones", None)
+    fuera["items"] = items
+    return fuera
+
+
 def resolver(declarado, memoria, tienda_id, trace_id, llamadas=None,
              descartados=None, diferida=None) -> dict:
     """Interpreto → resuelvo → redactar. Una sola opinion sobre el pedido.
@@ -395,6 +635,18 @@ def resolver(declarado, memoria, tienda_id, trace_id, llamadas=None,
     from app.verifika import grafo as G
     llamadas = list(llamadas or [])
     declarado = declarado or {}
+    # Completa item→ciudad y el articulo que falte LEYENDO el mensaje,
+    # y recien ahi busca y cotiza. Pisa el dict del hub: si el redactor
+    # sigue viendo la contradiccion, pregunta aunque la cuenta ya cierre.
+    completo = _completar_el_declarado(declarado, tienda_id)
+    if completo is not declarado:
+        declarado.clear()
+        declarado.update(completo)
+    for l in llamadas:
+        if l.get("herramienta") == "registrar_pedido":
+            res = dict(l.get("resultado") or {})
+            res["pedido"] = declarado
+            l["resultado"] = res
     llamadas = G.paso_datos("busquedas_derivadas", _derivar_las_busquedas,
                             llamadas, declarado, memoria or [], tienda_id,
                             trace_id)

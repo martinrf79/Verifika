@@ -961,6 +961,65 @@ def categorias_nombradas(mensaje: str, tienda_id: str) -> list[str]:
             if c in reales]
 
 
+_NUM_PAL = {"un": 1, "una": 1, "uno": 1, "dos": 2, "tres": 3, "cuatro": 4,
+            "cinco": 5, "seis": 6, "siete": 7, "ocho": 8, "nueve": 9,
+            "diez": 10, "docena": 12}
+
+
+def cantidades_por_categoria(mensaje: str, tienda_id: str) -> list:
+    """[(cantidad, categoria_real)] de la PRIMERA mencion de cada rubro.
+
+    Las cantidades totales van primero y la distribucion despues: 'dos
+    auriculares... un auricular a Cordoba' cuenta 2, no 1. Mudada de
+    guia_pedido: el vivo la necesita para completar item→ciudad ANTES de
+    buscar y cotizar.
+    """
+    from app.storage.firestore_client import get_categories
+    try:
+        categorias = get_categories(tienda_id=tienda_id) or []
+    except Exception:
+        return []
+    cats: dict[str, str] = {}
+    reales = {_norm(c): str(c) for c in categorias if c}
+    for c in categorias:
+        cn = _norm(c)
+        if not cn:
+            continue
+        claves = {cn}
+        if cn.endswith("s"):
+            claves.add(cn[:-1])
+        if cn.endswith("es") and len(cn) > 4:
+            claves.add(cn[:-2])
+        partes = cn.split()
+        if partes:
+            claves.add(partes[0])
+            p0 = partes[0]
+            claves.add(p0[:-1] if len(p0) > 3 and p0.endswith("s") else p0)
+        for k in claves:
+            if k:
+                cats.setdefault(k, str(c))
+    for alias, cat in _COMO_LO_DICE_EL_CLIENTE.items():
+        real = reales.get(cat)
+        if real:
+            cats.setdefault(_norm(alias), real)
+    if not cats:
+        return []
+    out, vistas = [], set()
+    for m in re.finditer(
+            r"\b(\d{1,2}|un|una|uno|dos|tres|cuatro|cinco|seis|siete|ocho|"
+            r"nueve|diez|docena)\s+([a-zñ]+)", _norm(mensaje)):
+        tok = m.group(1)
+        n = int(tok) if tok.isdigit() else _NUM_PAL.get(tok, 0)
+        palabra = m.group(2)
+        cat = (cats.get(palabra)
+               or cats.get(palabra[:-1] if len(palabra) > 3
+                           and palabra.endswith("s") else palabra))
+        if cat and 1 <= n <= 99 and cat not in vistas:
+            vistas.add(cat)
+            out.append((n, cat))
+    return out
+
+
 def opciones_por_categoria(categoria: str, tienda_id: str,
                            k: int = 3) -> list[dict]:
     """Las k opciones mas baratas CON stock de una categoria, del catalogo
