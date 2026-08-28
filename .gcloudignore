@@ -39,6 +39,10 @@ banco_pruebas/
 # `tests/test_reserva.py` prohibe que app/ las importe. Ver reserva/README.md.
 reserva/
 
+# Capas apagadas. Snapshots de lo que salio del vivo. No corren, no se
+# importan desde app/. Ver archivo/README.md y tests/test_archivo.py.
+archivo/
+
 # Scripts de diagnostico y parches locales
 _*
 *.bak*

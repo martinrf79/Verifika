@@ -119,12 +119,6 @@ def test_la_higiene_tiene_un_solo_mutador():
 
 # ── FICHA 34 — EL NEXO: EL HUB DEJA DE TENER DOS OPINIONES ───────────────
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: FICHA 34. El hub no llama a reconciliar. HOY `procesar_venta` llama "
-    "a `P.reconciliar` despues de derivar las busquedas: es una segunda "
-    "opinion sobre el mismo pedido. OBJETIVO 0 llamadas: el resolver arma el "
-    "contrato desde lo declarado y no hay nada que reconciliar. Relato en "
-    "`arquitectura/FICHA_34_el_nexo.md`."))
 def test_el_hub_no_llama_a_reconciliar():
     hub = (_RAIZ / "app" / "core" / "hub_venta.py").read_text(encoding="utf-8")
     assert "reconciliar(" not in hub, (
@@ -132,12 +126,6 @@ def test_el_hub_no_llama_a_reconciliar():
         "opiniones")
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: FICHA 34. El hub no llama a reposicion.completar. HOY "
-    "`procesar_venta` llama a `R.completar` y reaplica lo declarado. OBJETIVO "
-    "0 llamadas: la cuenta y las busquedas las hace `resolver` antes de "
-    "redactar, y reposicion.py pasa a archivo/. Relato en "
-    "`arquitectura/FICHA_34_el_nexo.md`."))
 def test_el_hub_no_llama_a_completar_de_reposicion():
     hub = (_RAIZ / "app" / "core" / "hub_venta.py").read_text(encoding="utf-8")
     assert "R.completar" not in hub, (

@@ -275,9 +275,9 @@ def medir_decision() -> dict:
     return {"clave": "decision", "titulo": "LA DECISION Y LA REPOSICION",
             "archivo": "tests/test_barrido_decision.py",
             "que_barre": "los nodos que no tocan el texto sino el estado del "
-                         "turno -el ejecutor, el reconciliador, el indice y "
-                         "las reposiciones-, contra los contratos que declara "
-                         "el grafo, sobre estados de turno generados",
+                         "turno -el ejecutor, las busquedas derivadas, el "
+                         "resolver, el indice-, contra los contratos que "
+                         "declara el grafo, sobre estados de turno generados",
             "unidad": "celdas", "casos": cob["celdas"],
             "cobertura": cob["porcentaje"], "pendientes": cob["pendientes"],
             "detalle": f"{cob['nodos']} nodos x {cob['clases']} clases de "
@@ -364,8 +364,9 @@ Para que no aparezca como sorpresa tres sesiones despues:
 - **QUE herramientas elige el decisor.** Es el modelo decidiendo, y ningun
   barrido determinista lo puede comprobar. Lo miden `interpretacion.py`, los
   casetes con su piso y el explorador. Lo que SI es determinista de esa mitad
-  del turno —el ejecutor, el reconciliador, el indice y las seis reposiciones—
-  lo barre LA DECISION Y LA REPOSICION desde el 14-ago. Los nodos que quedan
+  del turno —el ejecutor, las búsquedas derivadas, el resolver y el índice—
+  lo barre LA DECISION Y LA REPOSICION desde el 14-ago (FICHA 34: el nexo
+  reemplazó al reconciliador y a la puerta de reposición). Los nodos que quedan
   sin contrato mecanico estan declarados uno por uno con su motivo en
   `grafo.sin_contrato()`, y `test_barrido_decision.py` no deja que entre uno
   nuevo sin motivo escrito.

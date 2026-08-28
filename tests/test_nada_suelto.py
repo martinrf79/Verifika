@@ -79,6 +79,11 @@ DECLARADAS = {
 
     # ── Alta de cliente: las llama scripts/crear_cliente.py ─────────────────
     "dispara_lead_fuerte": "regla del lead fuerte; la verifica su prueba",
+
+    # ── FICHA 34: salieron del vivo, las prueba test_hub_venta, salen en la 36
+    "completar": "FICHA 34: el hub ya no llama a la reposicion; snapshot en archivo/. test_hub_venta y el banco las siguen ejercitando. Salen en la 36.",
+    "reconciliar": "FICHA 34: segunda opinion, snapshot en archivo/. test_hub_venta la sigue ejercitando. Sale en la 36.",
+    "instruccion_de_preguntas": "FICHA 34: viajaba con el reconciliador. test_hub_venta la sigue ejercitando. Sale en la 36.",
 }
 
 

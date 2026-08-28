@@ -96,10 +96,10 @@ def test_los_contratos_frenan_de_verdad(firestore_doble):
                                         "productos": [{"id": "MOU0001",
                                                        "nombre": "x"}]}}],
             "declarado": {}, "memoria": [], "estado": {}}
-    # LA PUERTA DE LA REPOSICION, que desde la FICHA 11 es un nodo y eran seis.
-    # Este caso no prueba la pieza sino los CONTRATOS del nodo, y son los
-    # mismos `CONTRATOS_DE_REPOSICION` que declaraba `cuenta_repuesta`.
-    nodo = G.POR_ID["reposicion"]
+    # EL RESOLVER, que desde la FICHA 34 es el nexo. Este caso no prueba la
+    # pieza sino los CONTRATOS del nodo, y son los mismos
+    # `CONTRATOS_DE_REPOSICION` que declaraba la puerta de reposicion.
+    nodo = G.POR_ID["resolver"]
 
     dopadas = {
         G.NO_INVENTA_ID: base["llamadas"] + [
@@ -117,31 +117,3 @@ def test_los_contratos_frenan_de_verdad(firestore_doble):
         assert contrato in cazados, (
             f"se le planto una violacion de {contrato} y el barrido no la vio")
 
-    # El del reconciliador va aparte: su violacion no es una llamada de mas,
-    # es reclamar un item que la evidencia ya cubre.
-    antes = {"declarado": {"items": [{"que": "mouse"}]}, "memoria": [],
-             "estado": {}, "ya_resuelto": "",
-             "llamadas": [{"herramienta": "buscar_productos", "pedido": {},
-                           "resultado": {"estado": "ok", "productos": [
-                               {"id": "MOU0001",
-                                "nombre": "Mouse Logitech Negro"}]}}]}
-    despues = {**antes, "rec": {"faltantes":
-                                ["El cliente pidio 'mouse' y no lo buscaste."],
-                                "sin_buscar": ["mouse"]}}
-    cazados = [c for c, _ in BD.violaciones(G.POR_ID["reconciliador"], antes,
-                                            despues, catalogo)]
-    assert G.NO_RECLAMA_LO_RESUELTO in cazados, (
-        "se le planto un reclamo sobre un item ya atendido y no lo vio")
-
-    # Y EL MISMO RECLAMO CON OTRA REDACCION TIENE QUE CAZARSE IGUAL. Este es el
-    # test que hace que el contrato no dependa del texto: si mañana alguien
-    # reescribe como habla el reconciliador, esto sigue en verde porque mira el
-    # campo tipado `sin_buscar`. Sin este caso, el contrato podia dejar de
-    # cazar en silencio, que es la unica falla que un candado no puede tener.
-    otra = {**antes, "rec": {"faltantes": ["Che, fijate el mouse que te pidio."],
-                             "sin_buscar": ["mouse"]}}
-    cazados = [c for c, _ in BD.violaciones(G.POR_ID["reconciliador"], antes,
-                                            otra, catalogo)]
-    assert G.NO_RECLAMA_LO_RESUELTO in cazados, (
-        "el contrato dejo de cazar porque cambio la redaccion del reclamo: "
-        "esta atado al texto en vez de al campo tipado")

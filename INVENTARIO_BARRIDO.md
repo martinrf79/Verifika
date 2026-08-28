@@ -38,7 +38,7 @@ el estado se lee de acá, no de la memoria de nadie.**
 | **LOS FILTROS DE LA FICHA** | cada campo de la ficha por cada operador, con valores leidos de la fic… | 687 casos | **100.0%** |
 | **EL MENSAJE DEL CLIENTE** | el texto crudo que llega por la puerta -vacio, solo emoji, larguisimo,… | 48 casos | **100.0%** |
 | **LAS SPECS PREGUNTABLES** | cada spec que la fuente declara preguntable, por su propia seña y por … | 6958 casos | **100.0%** |
-| **LA DECISION Y LA REPOSICION** | los nodos que no tocan el texto sino el estado del turno -el ejecutor,… | 54 celdas | **100.0%** |
+| **LA DECISION Y LA REPOSICION** | los nodos que no tocan el texto sino el estado del turno -el ejecutor,… | 45 celdas | **100.0%** |
 
 ---
 
@@ -115,8 +115,8 @@ el estado se lee de acá, no de la memoria de nadie.**
 
 ### LA DECISION Y LA REPOSICION
 
-- **Que barre:** los nodos que no tocan el texto sino el estado del turno -el ejecutor, el reconciliador, el indice y las reposiciones-, contra los contratos que declara el grafo, sobre estados de turno generados.
-- **Numero:** 54 celdas. 6 nodos x 9 clases de estado = 54 celdas, 54 cubiertas; 108 estados generados, 6 contratos, 0 violaciones.
+- **Que barre:** los nodos que no tocan el texto sino el estado del turno -el ejecutor, las busquedas derivadas, el resolver, el indice-, contra los contratos que declara el grafo, sobre estados de turno generados.
+- **Numero:** 45 celdas. 5 nodos x 9 clases de estado = 45 celdas, 45 cubiertas; 108 estados generados, 5 contratos, 0 violaciones.
 - **Cobertura de su superficie: 100.0%** — completa.
 - **Lo defiende:** `tests/test_barrido_decision.py`.
 
@@ -154,12 +154,13 @@ Para que no aparezca como sorpresa tres sesiones despues:
 - **QUE herramientas elige el decisor.** Es el modelo decidiendo, y ningun
   barrido determinista lo puede comprobar. Lo miden `interpretacion.py`, los
   casetes con su piso y el explorador. Lo que SI es determinista de esa mitad
-  del turno —el ejecutor, el reconciliador, el indice y las seis reposiciones—
-  lo barre LA DECISION Y LA REPOSICION desde el 14-ago. Los nodos que quedan
+  del turno —el ejecutor, las búsquedas derivadas, el resolver y el índice—
+  lo barre LA DECISION Y LA REPOSICION desde el 14-ago (FICHA 34: el nexo
+  reemplazó al reconciliador y a la puerta de reposición). Los nodos que quedan
   sin contrato mecanico estan declarados uno por uno con su motivo en
   `grafo.sin_contrato()`, y `test_barrido_decision.py` no deja que entre uno
   nuevo sin motivo escrito.
 
 ---
 
-*Generado el 2026-08-24 por `banco_pruebas/inventario_barrido.py`.*
+*Generado el 2026-08-28 por `banco_pruebas/inventario_barrido.py`.*

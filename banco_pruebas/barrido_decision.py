@@ -469,13 +469,9 @@ def barrer() -> dict:
             celdas.add((nombre_nodo, clase))
 
     for clase, ctx in casos:
-        # El reconciliador corre primero de verdad en el turno, y las
-        # reposiciones comen lo que el reclama: sin eso, tres de las seis no se
-        # disparan nunca y el barrido mediria aire.
-        try:
-            ctx = G.POR_ID["reconciliador"].aplicar_datos(ctx)
-        except Exception:  # noqa: BLE001 — se reporta como violacion abajo
-            pass
+        # FICHA 34: el nexo ya no come un rec. El resolver arma desde lo
+        # declarado, y las clases del generador disparan busqueda y cuenta
+        # sin un reclamo de por medio.
         for nodo in nodos:
             entrada = dict(ctx)
             try:

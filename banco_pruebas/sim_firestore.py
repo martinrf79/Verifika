@@ -193,6 +193,12 @@ def install():
     import app.core.guia_compra as gc
     for n in ("get_all_products", "get_product_by_id", "get_categories"):
         setattr(gc, n, _patches[n])
+    # pago.py importa get_config ARRIBA. `test_pago.py` lo carga al colectar,
+    # antes de install(): sin este reenganche, sin_cobro_inventado llama a
+    # datos_transferencia con el get_config REAL y el proceso se clava al
+    # metadata de GCE. Misma trampa que hub_venta y guia_compra.
+    import app.core.pago as pago
+    setattr(pago, "get_config", _patches["get_config"])
 
     # LEADS EN RAM: el camino REAL del cierre (procesar_mensaje_para_lead, con
     # sus gatillos, pregunta suave y captura) corre TAL CUAL. Se dobla SOLO el

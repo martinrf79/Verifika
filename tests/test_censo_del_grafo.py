@@ -35,21 +35,15 @@ if str(_RAIZ) not in sys.path:
 # LOS DOS NUMEROS, ESCRITOS. No se deducen: se miden y se anotan, y el dia que
 # cambien la bateria se pone roja y obliga a mirar por que.
 #
-#   15  los nodos DECLARADOS en `grafo.NODOS`. Son las etapas y sus puertas,
-#       despues de que la FICHA 10 bajara salida de 18 a 4 y la 11 fundiera las
-#       seis reposiciones en una.
-#   25  los HUERFANOS: las piezas de adentro de esas puertas, que siguen
-#       registrando una por una con su id propio y NO tienen nodo declarado, o
-#       sea que corren sin contrato y el barrido de `test_grafo_cableado.py`
-#       -que saca su lista de `NODOS`- no las corre. **Se cuentan a proposito**:
-#       son engranajes reales del turno y un censo que los tira a una lista de
-#       nombres miente por abajo.
-_DECLARADOS = 15
-# EL 25 ES `camino_al_cobro` (FICHA 19, 25-ago-2026): la cuarta obligacion de la
-# puerta 3, que dice COMO SE PAGA cuando hay un total cerrado. Entra como
-# huerfana igual que las otras siete piezas de su puerta, y por el mismo motivo:
-# el nodo declarado es la PUERTA, y las piezas de adentro registran una por una.
-_HUERFANOS = 25
+#   23  los HUERFANOS: las piezas de adentro de las puertas. FICHA 34: salen
+#       busqueda_repuesta y condicion_repuesta (vivian de un rec que ya no se
+#       emite). 25 - 2 = 23. Se cuentan a proposito: son engranajes reales
+#       del turno y un censo que los tira a una lista de nombres miente.
+_DECLARADOS = 14
+# EL 23 SON las piezas de adentro de salida y de la cuenta del resolver, mas
+# camino_al_cobro. El nodo declarado es la PUERTA; las piezas registran una
+# por una.
+_HUERFANOS = 23
 
 
 def _censar_un_casete():

@@ -112,20 +112,20 @@ mejor. Medido el 7-ago: de 88 faltantes emitidos, 41 se repitieron en dos o mas
 rondas del MISMO turno."""
 
 CONTRATOS_DE_DATOS = (NO_LEVANTA, IDEMPOTENTE, NO_INVENTA_ID,
-                      NO_PIERDE_EVIDENCIA, NO_AGREGA_LO_NO_PEDIDO,
-                      NO_RECLAMA_LO_RESUELTO)
+                      NO_PIERDE_EVIDENCIA, NO_AGREGA_LO_NO_PEDIDO)
 """La familia entera. Es el universo de nombres validos para un nodo que mueve
 datos, igual que `TODOS_LOS_CONTRATOS` lo es para los que mueven texto."""
 
 CONTRATOS_DE_REPOSICION = (NO_LEVANTA, IDEMPOTENTE, NO_INVENTA_ID,
                            NO_PIERDE_EVIDENCIA, NO_AGREGA_LO_NO_PEDIDO)
-"""Los cinco que cumple TODA reposicion. `no_reclama_lo_resuelto` queda afuera
-a proposito y no es un olvido: solo tiene sentido para el reconciliador, que es
-el unico que reclama. Declararselo a una reposicion seria un contrato que se
-cumple por vacio, y un verde por vacio es el que enseña a no mirar el tablero."""
+"""Los cinco que cumple el resolver y cumplia la reposicion. `no_reclama_lo_
+resuelto` queda afuera a proposito: solo tenia sentido para el reconciliador,
+que en la FICHA 34 salio del vivo. Declararselo al resolver seria un contrato
+que se cumple por vacio, y un verde por vacio es el que enseña a no mirar."""
 
-# Las etapas del turno, en orden. Es la unica jerarquia del grafo.
-ETAPAS = ("entrada", "decision", "reposicion", "redaccion", "salida", "memoria")
+# Las etapas del turno, en orden. La de reposicion salio en la FICHA 34: el
+# nexo es resolver, adentro de decision. Cinco etapas, no seis.
+ETAPAS = ("entrada", "decision", "redaccion", "salida", "memoria")
 
 
 @dataclass(frozen=True)
@@ -233,7 +233,7 @@ NODOS = (
              c, llamadas=list(c.get("llamadas") or []) + _ejecutar_sync(
                  c.get("pedidos") or [], c["tienda_id"], c["trace_id"]))),
     Nodo(id="busquedas_derivadas", etapa="decision",
-         funcion="app.core.hub_venta:_derivar_las_busquedas",
+         funcion="app.core.resolver:_derivar_las_busquedas",
          exige="lo que el modelo declaro del mensaje",
          garantiza="una busqueda por cada cosa declarada, con las palabras del "
                    "cliente; no declara nada que el cliente no haya pedido",
@@ -243,43 +243,19 @@ NODOS = (
          # una decision que dependa del estado de la primera.
          contratos=CONTRATOS_DE_REPOSICION,
          aplicar_datos=lambda c: _con(
-             c, llamadas=_hub()._derivar_las_busquedas(
+             c, llamadas=_nexo()._derivar_las_busquedas(
                  c.get("llamadas") or [], c.get("declarado") or {},
                  c.get("memoria") or [], c["tienda_id"], c["trace_id"]))),
-    Nodo(id="reconciliador", etapa="decision",
-         funcion="app.core.pedido:reconciliar",
-         exige="lo que el modelo declaro y lo que efectivamente pidio",
-         garantiza="que falta y que hay que preguntar; nunca completa por su "
-                   "cuenta",
-         contratos=(NO_LEVANTA, IDEMPOTENTE, NO_RECLAMA_LO_RESUELTO),
-         aplicar_datos=lambda c: _con(
-             c, rec=__import__("app.core.pedido", fromlist=["x"]).reconciliar(
-                 c.get("declarado") or {}, c.get("llamadas") or [],
-                 c["trace_id"], ya_resuelto=c.get("ya_resuelto") or "",
-                 tienda_id=c["tienda_id"]))),
-
-    # ── reposicion: lo que el modelo no aplico, lo aplica el codigo ───────
-    #
-    # UN NODO DESDE LA FICHA 11 (24-ago-2026), y eran seis. No se borro
-    # ninguna: las seis piezas corren adentro de `completar`, cada una con su
-    # `G.paso_datos`, asi que el veredicto por engranaje sigue saliendo con el
-    # mismo detalle. Lo que se corto son las CINCO COSTURAS -el orden entre
-    # ellas vivia en comentarios de `procesar_venta`- y con ellas la unica
-    # forma que habia de reordenarlas sin darse cuenta.
-    Nodo(id="reposicion", etapa="reposicion",
-         funcion="app.core.reposicion:completar",
-         exige="lo que el modelo declaro, lo que el reconciliador reclamo y la "
-               "memoria de la charla",
-         garantiza="el rubro declarado buscado, la condicion aplicada, la "
-                   "cuenta calculada por la calculadora sobre ids "
-                   "certificados, el reparto sellado, el supuesto dicho y UNA "
-                   "sola cuenta; nada de eso inventa un producto ni una cifra",
+    # EL NEXO (FICHA 34). Reemplaza al reconciliador y a la puerta de
+    # reposicion: una sola opinion sobre el pedido, desde lo declarado.
+    Nodo(id="resolver", etapa="decision",
+         funcion="app.core.resolver:resolver",
+         exige="lo que el modelo declaro y la memoria de la charla",
+         garantiza="las busquedas derivadas, la cuenta armada por la "
+                   "calculadora sobre ids certificados y el contrato del "
+                   "turno; no inventa un producto ni una cifra",
          contratos=CONTRATOS_DE_REPOSICION,
-         aplicar_datos=lambda c: _con(
-             c, llamadas=_repo().completar(
-                 c.get("llamadas") or [], c.get("declarado") or {},
-                 c.get("rec") or {}, c["tienda_id"], c["trace_id"],
-                 memoria=c.get("memoria") or []))),
+         aplicar_datos=lambda c: _aplicar_nexo(c)),
     Nodo(id="indice_turno", etapa="decision",
          funcion="app.core.indice_turno:cobertura",
          exige="lo interpretado y el material que trajeron las herramientas",
@@ -410,12 +386,28 @@ def _hub():
     return hub_venta
 
 
-def _repo():
-    """La etapa de reposicion, en su propio modulo desde la FICHA 11. Perezoso
-    por lo mismo que el hub: `reposicion` pide `grafo` para dejar el veredicto
-    de cada una de sus seis piezas."""
-    from app.core import reposicion
-    return reposicion
+def _nexo():
+    """El resolver, perezoso: `resolver` pide `grafo` para dejar el veredicto
+    de las busquedas y de la cuenta."""
+    from app.core import resolver
+    return resolver
+
+
+def _aplicar_nexo(c: dict) -> dict:
+    out = _nexo().resolver(
+        c.get("declarado") or {},
+        c.get("memoria") or [],
+        c["tienda_id"],
+        c["trace_id"],
+        llamadas=c.get("llamadas") or [],
+        descartados=c.get("descartados") or [],
+        diferida=c.get("diferida") or [],
+    )
+    # El contrato del indice lleva ids de PUNTO (`item:1`, `oferta:1`), no de
+    # producto. Si viaja en el ctx, `no_inventa_id` los lee como product_id.
+    # El barrido mide las llamadas; el contrato lo consume el hub, no este
+    # aplicar.
+    return _con(c, llamadas=out["llamadas"], bloque=out["bloque"])
 
 
 CICLOS = ()

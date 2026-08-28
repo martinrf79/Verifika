@@ -19,12 +19,13 @@ No deploya. Está en `.gcloudignore` y en `paths-ignore` de `deploy.yml`.
 
 ## Qué hay guardado
 
-Todavía nada. La FICHA 34 deja acá el primer snapshot. Qué se apaga y en
-qué sesión está en `arquitectura/PLAN_REDUCCION.md`.
+La FICHA 34 dejó el primer snapshot. Qué se apaga y en qué sesión está en
+`arquitectura/PLAN_REDUCCION.md`.
 
 | archivo | qué era | se borra cuando |
 |---|---|---|
-| *(vacío)* | — | — |
+| `reposicion_20260827.py` | la puerta de reposición: seis re-interpretaciones sobre el mismo pedido | el piso de las 15 charlas no baje después de que el resolver aplique lo declarado |
+| `reconciliador_20260827.py` | `pedido.reconciliar` e `instruccion_de_preguntas`: segunda opinión sobre el mismo pedido | el piso no baje y el contrato del turno salga del índice, no de un reclamo |
 
 ## Qué NO va acá
 
