@@ -19,14 +19,15 @@ No deploya. Está en `.gcloudignore` y en `paths-ignore` de `deploy.yml`.
 
 ## Qué hay guardado
 
-La FICHA 34 dejó el primer snapshot. La 35 agrega el de aduana cuando esa
-sesión corte el vivo, no antes. Qué se apaga y en qué sesión está en
+La FICHA 34 dejó el primer snapshot. La 35 agrega el de aduana: el segundo
+mutador de la higiene. Qué se apaga y en qué sesión está en
 `arquitectura/PLAN_REDUCCION.md`.
 
 | archivo | qué era | se borra cuando |
 |---|---|---|
 | `reposicion_20260827.py` | la puerta de reposición: seis re-interpretaciones sobre el mismo pedido | el piso de las 15 charlas no baje después de que el resolver aplique lo declarado |
 | `reconciliador_20260827.py` | `pedido.reconciliar` e `instruccion_de_preguntas`: segunda opinión sobre el mismo pedido | el piso no baje y el contrato del turno salga del índice, no de un reclamo |
+| `aduana_20260828.py` | el segundo mutador de la higiene: reparaba el mensaje ya escrito | el piso no baje con un solo mutador (`componer`) y los invariantes como termómetro |
 
 ## Qué NO va acá
 
