@@ -84,7 +84,6 @@ mismo día, no se acumula. El candado está en
 | ficha | test | qué falta |
 |---|---|---|
 | **36** | `test_app_tiene_a_lo_sumo_ciento_ochenta_funciones`, `test_app_pesa_a_lo_sumo_siete_mil_trescientas_lineas` | termómetros: 181 funciones, 7306 líneas. El corte de esta sesión (reposicion y guia_pedido fuera de app/, nueve cuerpos a cuatro) no llega al 30% sin sacar certificación, calculadora o el contrato. Prioridad uno manda: no se fuerza. HOY lo mide el test. |
-| 11 (cola) | `test_la_cuenta_se_arma_antes_del_reconciliador` | la cuenta se arma DESPUÉS del reconciliador, no antes. Contado entero en `arquitectura/LO_QUE_QUEDO_ABIERTO_DE_LA_11.md` |
 | 11 (cola) | `test_el_bloque_hallazgo_no_vive_en_el_hub` | falta decidir de quién son `_RE_HAY_CUENTA` y `_norm_renglon` antes de mudar `_bloque_hallazgo` fuera de `hub_venta` |
 | 11 (cola) | `test_los_guiones_que_despiertan_las_guardias_estan_grabados` | guiones 26 a 38 sin grabar, necesita la clave paga. **También prerrequisito parcial de la 24** |
 | 11 (cola) | `test_el_piso_guarda_algun_numero_de_venta` | el piso mide 8 varas defensivas y ninguna que mida si el bot vende |

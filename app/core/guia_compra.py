@@ -6,9 +6,9 @@ ELIGIO mal (nego stock que existia y upselleo a lo caro). Elegir el minimo de un
 lista es un problema CERRADO: fuente de verdad + chequeo univoco. Eso es del
 codigo, no del modelo (generar > corregir > verificar).
 
-Quedan dos piezas y las dos las llama el codigo vivo: `mas_barato_con_stock`,
-que la usa `guia_pedido` para armar el pedido sellado, y `categoria_no_vendida`,
-que la llama `herramientas` para negar honesto lo que la tienda no vende.
+Queda `categoria_no_vendida`, que la llama `herramientas` para negar honesto
+lo que la tienda no vende. `mas_barato_con_stock` salio con la FICHA 38: el
+vivo ya no la llamaba; el snapshot de `archivo/` la sigue nombrando.
 
 QUE SE BORRO EL 14-AGO-2026 y por que se cuenta. Este modulo tenia ademas
 `guia_mas_barato`, que armaba un bloque de texto para inyectarle al solver, con
@@ -20,8 +20,7 @@ bloque de prompt. Si algun dia hace falta ese bloque, esta en git.
 import re
 import unicodedata
 
-from app.core.contexto_turno import get_current_tienda
-from app.storage.firestore_client import get_all_products, get_categories
+from app.storage.firestore_client import get_categories
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -34,23 +33,6 @@ def _norm(s: str) -> str:
 
 def _singular(w: str) -> str:
     return w[:-1] if len(w) > 3 and w.endswith("s") else w
-
-
-def mas_barato_con_stock(categoria: str | None = None) -> dict | None:
-    """El producto mas barato CON stock del catalogo (de una categoria, o de
-    todo). None si no hay ninguno con stock. Determinista: minimo por precio con
-    filtro stock > 0, la misma regla siempre."""
-    tid = get_current_tienda()
-    productos = [p for p in get_all_products(tienda_id=tid)
-                 if p.get("stock", 0) > 0
-                 and isinstance(p.get("precio_ars"), (int, float))]
-    if categoria:
-        cat = _norm(categoria)
-        productos = [p for p in productos
-                     if _norm(p.get("categoria", "")) == cat]
-    if not productos:
-        return None
-    return min(productos, key=lambda p: p["precio_ars"])
 
 
 # ── CERTIFICADOR DE CATEGORIA (17-jul, consigna 43) ────────────────────────────────────

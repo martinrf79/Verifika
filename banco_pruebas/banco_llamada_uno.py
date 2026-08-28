@@ -1,18 +1,15 @@
 """
-BANCO DE LA LLAMADA UNO — ¿el modelo pide bien, con el esquema nuevo?
+BANCO DE LA LLAMADA UNO — ¿el modelo DECLARA bien, con registrar_pedido?
 
-QUE MIDE Y POR QUE ES LA PRUEBA MAS BARATA QUE HAY. El banco de candidatos mide
-el TECHO: que devuelve el codigo cuando la llamada es perfecta. Este mide la
-otra mitad y solo esa: que llamada PIDE el modelo. No redacta, no encadena
-rondas, no arma presupuesto. Una request por mensaje.
+QUE MIDE. Una request por mensaje. No redacta, no encadena, no arma
+presupuesto. El modelo ve una sola herramienta y no elige que buscar: deja
+por escrito lo que entendio. Este banco mira ESA declaracion.
 
-Existe porque el 5-ago se colapsaron las cuatro puertas de `buscar_productos`:
-`orden`, `tope_precio` y `excluir` dejaron de ser argumentos y ahora todo es
-`filtros` mas `ordenar_por`. El modelo ve un esquema distinto al que venia
-usando, y eso NO se puede saber sin gastar tokens. Es el unico riesgo real del
-cambio y esta es la forma mas barata de medirlo.
+Las doce preguntas son las mismas de cuando el modelo elegia tool. Cambio el
+blanco, no la pregunta: "¿entendio que era una condicion de origen?" se
+afirma sobre lo declarado, no sobre el nombre de una herramienta.
 
-    BANCO_CLAVE_PAGA=true python3 banco_pruebas/banco_llamada_uno.py
+    python3 banco_pruebas/banco_llamada_uno.py
 """
 import asyncio
 import os
@@ -31,124 +28,111 @@ from app.core import hub_venta as HV  # noqa: E402
 
 TIENDA = "verifika_prod"
 
-# Cada caso: el mensaje del cliente y QUE tiene que aparecer en el pedido para
-# considerarlo bien. Se chequea la FORMA de la llamada, no la respuesta.
+# Cada caso: el mensaje y QUE tiene que aparecer en lo DECLARADO.
+# `senales` son subcadenas que tienen que estar en el blob de la declaracion.
 CASOS = [
-    # ── lo que antes era `excluir` ─────────────────────────────────────────
     ("Necesito el mouse que menos partes chinas tenga, pero que no sea "
      "Logitech",
-     {"herramienta": "buscar_productos", "operadores": {"no_contiene"},
-      "campos_entre": {"pais_fabricacion", "pais_marca", "origen", "marca"}}),
-    # ── lo que antes era `orden: barato` ───────────────────────────────────
+     {"senales": {"mouse", "china", "logitech"}}),
     ("Mostrame el mouse mas barato que tengas",
-     {"herramienta": "buscar_productos",
-      "ordenar_por": {"precio_ars"}, "direccion": "min"}),
-    # ── lo que antes NO TENIA PUERTA ───────────────────────────────────────
+     {"senales": {"mouse", "barato"}}),
     ("Cual es el mouse mas liviano que tengas para viajar?",
-     {"herramienta": "buscar_productos",
-      "ordenar_por": {"peso_gramos"}, "direccion": "min"}),
-    # El extremo de un campo que no es el precio se puede pedir por las DOS
-    # puertas: como busqueda ordenada o como agregado sobre el catalogo. Las
-    # dos son correctas; lo que no puede pasar es que no exista ninguna.
+     {"senales": {"mouse", "livian"}}),
     ("Que teclado tiene la garantia mas larga?",
-     {"herramienta": None,
-      "una_de": [{"herramienta": "buscar_productos",
-                  "ordenar_por": {"garantia_meses"}, "direccion": "max"},
-                 {"herramienta": "consultar_catalogo", "operacion": "el_mayor",
-                  "campos_entre": {"garantia_meses"}}]}),
-    # ── lo que antes era `tope_precio` ─────────────────────────────────────
+     {"senales": {"teclado", "garantia"}}),
     ("Busco unos auriculares de hasta 80 mil pesos",
-     {"herramienta": "buscar_productos", "operadores": {"menor"},
-      "campos_entre": {"precio_ars"}}),
-    # ── el agregado, ahora con condicion ───────────────────────────────────
+     {"senales": {"auricular", "80"}}),
     ("Cuantos productos tenes que no se fabriquen en China?",
-     {"herramienta": "consultar_catalogo", "operacion": "contar"}),
+     {"senales": {"china"}}),
     ("Cuantos mouse blancos tenes?",
-     {"herramienta": "consultar_catalogo", "operacion": "contar",
-      "campos_entre": {"color"}}),
+     {"senales": {"mouse", "blanc"}}),
     ("Cual es el producto mas caro de toda la tienda?",
-     {"herramienta": "consultar_catalogo", "operacion": "mas_caro"}),
+     {"senales": {"caro"}}),
     ("Que marcas manejas?",
-     {"herramienta": "consultar_catalogo", "operacion": "valores"}),
-    # ── condiciones combinadas, que antes no se podian pedir juntas ────────
+     {"senales": {"marca"}}),
     ("Un mouse inalambrico negro de menos de 120 gramos y que salga menos de "
      "50 mil",
-     {"herramienta": "buscar_productos", "minimo_filtros": 3}),
-    # ── producto contra producto ───────────────────────────────────────────
+     {"senales": {"mouse", "inalambric", "negro", "50"}}),
     ("Tengo una notebook Lenovo IdeaPad 3, que memoria RAM le sirve?",
-     {"herramienta": None,
-      "una_de": [{"herramienta": "buscar_productos"},
-                 {"herramienta": "ver_compatibilidad"}]}),
-    # ── la descripcion, que ahora ordena por relevancia ────────────────────
+     {"una_de": [{"senales": {"ram", "lenovo"}},
+                 {"senales": {"ram", "notebook"}},
+                 {"senales": {"memoria", "lenovo"}},
+                 {"senales": {"memoria", "notebook"}},
+                 {"compatibilidad": True}]}),
     ("Quiero un teclado inalambrico para la oficina",
-     {"herramienta": "buscar_productos", "con_descripcion": True}),
+     {"senales": {"teclado", "inalambric"}}),
 ]
 
 
-def _resumen(pedidos: list) -> str:
-    fuera = []
+def _declarado(pedidos: list) -> dict | None:
     for p in pedidos:
-        a = p.get("args") or {}
-        partes = [p["nombre"]]
-        if a.get("categoria"):
-            partes.append(f"cat={a['categoria']}")
-        if a.get("descripcion"):
-            partes.append(f"desc={str(a['descripcion'])[:28]!r}")
-        if a.get("operacion"):
-            partes.append(f"op={a['operacion']}")
-        if a.get("campo"):
-            partes.append(f"campo={a['campo']}")
-        for f in (a.get("filtros") or []):
-            partes.append(f"[{f.get('campo')} {f.get('operador')} "
-                          f"{f.get('valor')}]")
-        if a.get("ordenar_por"):
-            partes.append(f"orden={a['ordenar_por']} {a.get('direccion', '')}")
-        fuera.append(" ".join(partes))
-    return " | ".join(fuera) or "NO PIDIO NADA"
+        if p.get("nombre") == "registrar_pedido":
+            return p.get("args") or {}
+    return None
 
 
-def _evaluar(pedidos: list, esperado: dict) -> tuple:
+def _join(xs) -> str:
+    partes = []
+    for x in xs or []:
+        if isinstance(x, dict):
+            partes.extend(str(v) for v in x.values()
+                          if v not in (None, "", [], False))
+        else:
+            partes.append(str(x))
+    return " ".join(partes).lower()
+
+
+def _blob(d: dict) -> str:
+    return " ".join([
+        _join(d.get("items")),
+        _join(d.get("restricciones")),
+        _join(d.get("atributos")),
+        _join(d.get("compatibilidad")),
+        _join(d.get("stock")),
+        _join(d.get("temas")),
+    ])
+
+
+def _resumen(d: dict | None) -> str:
+    if d is None:
+        return "NO DECLARO"
+    partes = []
+    for it in (d.get("items") or []):
+        if isinstance(it, dict) and it.get("que"):
+            partes.append(f"item={it.get('que')!s:.28}")
+    for r in (d.get("restricciones") or []):
+        partes.append(f"rest={str(r)[:28]!r}")
+    for c in (d.get("compatibilidad") or []):
+        if isinstance(c, dict):
+            partes.append(f"compat={c.get('que')}->{c.get('para')}")
+    for a in (d.get("atributos") or []):
+        if isinstance(a, dict):
+            partes.append(f"attr={a.get('de')}.{a.get('campo')}")
+    for s in (d.get("stock") or []):
+        partes.append(f"stock={s}")
+    for t in (d.get("temas") or []):
+        partes.append(f"tema={t}")
+    return " | ".join(partes) or "(declaro vacio)"
+
+
+def _evaluar(d: dict | None, esperado: dict) -> tuple:
     if esperado.get("una_de"):
         motivos = []
         for alt in esperado["una_de"]:
-            ok, motivo = _evaluar(pedidos, alt)
+            ok, motivo = _evaluar(d, alt)
             if ok:
                 return True, ""
-            motivos.append(f"{alt['herramienta']}: {motivo}")
+            motivos.append(motivo)
         return False, " / ".join(motivos)
-    del_tipo = [p for p in pedidos
-                if p["nombre"] == esperado.get("herramienta")]
-    if not del_tipo:
-        return False, f"no llamo a {esperado.get('herramienta')}"
-    args = {}
-    for p in del_tipo:
-        for k, v in (p.get("args") or {}).items():
-            if v not in (None, "", []):
-                args.setdefault(k, v)
-        filtros = (p.get("args") or {}).get("filtros") or []
-        args.setdefault("filtros", [])
-        args["filtros"] = (args["filtros"] or []) + filtros
-    filtros = args.get("filtros") or []
-    campos = {str(f.get("campo")) for f in filtros}
-    operadores = {str(f.get("operador")) for f in filtros}
-
-    if "operacion" in esperado and args.get("operacion") != esperado["operacion"]:
-        return False, f"operacion={args.get('operacion')}"
-    if "operadores" in esperado and not (esperado["operadores"] & operadores):
-        return False, f"operadores={sorted(operadores) or 'sin filtros'}"
-    if "campos_entre" in esperado and not (esperado["campos_entre"] & campos) \
-            and str(args.get("campo")) not in esperado["campos_entre"]:
-        return False, f"campos={sorted(campos) or 'sin filtros'}"
-    if "ordenar_por" in esperado:
-        if str(args.get("ordenar_por")) not in esperado["ordenar_por"]:
-            return False, f"ordenar_por={args.get('ordenar_por')}"
-        if esperado.get("direccion") and \
-                args.get("direccion") != esperado["direccion"]:
-            return False, f"direccion={args.get('direccion')}"
-    if "minimo_filtros" in esperado and len(filtros) < esperado["minimo_filtros"]:
-        return False, f"solo {len(filtros)} condiciones"
-    if esperado.get("con_descripcion") and not args.get("descripcion"):
-        return False, "sin descripcion"
+    if d is None:
+        return False, "no llamo a registrar_pedido"
+    blob = _blob(d)
+    if esperado.get("compatibilidad"):
+        if not (d.get("compatibilidad") or []):
+            return False, "sin compatibilidad declarada"
+    for s in esperado.get("senales") or ():
+        if s.lower() not in blob:
+            return False, f"falta {s!r} en {blob[:80]!r}"
     return True, ""
 
 
@@ -158,18 +142,23 @@ async def main():
           f"redactor reasoning: {os.getenv('REDACTOR_REASONING', 'low')}")
     print("=" * 78)
     verdes = 0
+    declararon = 0
     for mensaje, esperado in CASOS:
         pedidos, texto = await HV._pedir_herramientas(
             "Verifika", "", [], mensaje, TIENDA, "banco1")
-        ok, motivo = _evaluar(pedidos, esperado)
+        d = _declarado(pedidos)
+        if d is not None:
+            declararon += 1
+        ok, motivo = _evaluar(d, esperado)
         verdes += 1 if ok else 0
         print(f"\n[{'OK ' if ok else 'MAL'}] {mensaje[:64]}")
-        print(f"   pidio : {_resumen(pedidos)}")
+        print(f"   declaro: {_resumen(d)}")
         if not ok:
             print(f"   falta : {motivo}")
         await asyncio.sleep(float(os.getenv("BANCO_PAUSA_S", "2")))
     print("\n" + "=" * 78)
-    print(f"LLAMADA UNO — {verdes} de {len(CASOS)} en verde")
+    print(f"LLAMADA UNO — {verdes} de {len(CASOS)} en verde "
+          f"(control: {declararon} de {len(CASOS)} llamaron registrar_pedido)")
     return 0 if verdes == len(CASOS) else 1
 
 

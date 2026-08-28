@@ -6,7 +6,7 @@ Que se prueba, en orden de importancia:
   1. que la tabla este COMPLETA y atada al vocabulario cerrado (un typo en la
      planilla no puede convertirse en una respuesta al cliente);
   2. los tres veredictos, con los casos que parieron esta capa;
-  3. que el NO llegue al texto que sale, que es donde se cortaba la mentira;
+  3. que el mensaje del cliente se lee a equipos del vocabulario cerrado;
   4. que la prosa del catalogo no contradiga a la planilla curada.
 """
 import csv
@@ -139,7 +139,7 @@ def test_sin_dato_no_es_error_y_no_afirma_nada():
         == ("sin_dato", "")
 
 
-# ── 3. LEER EL MENSAJE Y ESTAMPAR EL VEREDICTO ───────────────────────────────
+# ── 3. LEER EL MENSAJE ───────────────────────────────────────────────────────
 @pytest.mark.parametrize("mensaje,esperado", [
     ("esta memoria sirve para mi notebook?", ["notebook"]),
     ("el mouse anda con una mac?", ["macos"]),
@@ -151,58 +151,13 @@ def test_los_equipos_del_cliente_se_leen_del_mensaje(mensaje, esperado):
     assert C.plataformas_del_mensaje(mensaje) == esperado
 
 
-def test_el_interprete_manda_sobre_el_regex():
-    assert C.plataformas_de_interp({"plataformas_cliente": ["macos"]}) == ["macos"]
-    assert C.plataformas_de_interp({"plataformas_cliente": []}) == []
-    assert C.plataformas_de_interp(None) == []
-
-
-def test_el_estampado_saca_la_afirmacion_falsa_y_pone_el_no():
-    ram = _prod("Kingston", "Fury Beast DDR4 3200 8GB", "memoria ram")
-    texto = ("Te cuento: la Kingston Fury Beast DDR4 3200 8GB sirve para "
-             "cualquier notebook sin problema.\n¿Te la reservo?")
-    nuevo, eventos = C.estampar_veredicto(texto, [ram], ["notebook"])
-    assert eventos
-    assert "sirve para cualquier notebook" not in nuevo
-    assert "no es compatible" in nuevo.lower()
-    assert "¿Te la reservo?" in nuevo
-
-
-def test_el_estampado_no_toca_la_prosa_fundada():
-    """Si la fuente dice que SI, la respuesta del modelo esta bien y queda igual."""
-    mouse = _prod("Logitech", "G203 Lightsync", "mouse")
-    texto = "El Logitech G203 Lightsync anda perfecto con tu Mac."
-    nuevo, eventos = C.estampar_veredicto(texto, [mouse], ["macos"])
-    assert nuevo == texto and eventos == []
-
-
-def test_el_estampado_es_idempotente():
-    ram = _prod("Kingston", "Fury Beast DDR4 3200 8GB", "memoria ram")
-    texto = "La Kingston Fury Beast DDR4 3200 8GB sirve para tu notebook."
-    una, _e = C.estampar_veredicto(texto, [ram], ["notebook"])
-    dos, _e2 = C.estampar_veredicto(una, [ram], ["notebook"])
-    assert una == dos
-
-
-def test_sin_equipo_declarado_no_se_estampa_nada():
-    ram = _prod("Kingston", "Fury Beast DDR4 3200 8GB", "memoria ram")
-    texto = "La Kingston Fury Beast DDR4 3200 8GB es una gran memoria."
-    assert C.estampar_veredicto(texto, [ram], []) == (texto, [])
-
-
-# ── 4. LA FICHA Y EL PROMPT LO LLEVAN ────────────────────────────────────────
+# ── 4. LA FICHA LLEVA LA FILA ───────────────────────────────────────────────
 
 
 def test_el_producto_normalizado_trae_su_fila_de_compatibilidad():
     p = normalizar_producto({"marca": "Logitech", "modelo": "G203 Lightsync",
                              "categoria": "mouse", "nombre": "Mouse Logitech G203"})
     assert p["compat"].get("plataformas")
-
-
-def test_el_prompt_lleva_el_veredicto_ya_resuelto():
-    ram = _prod("Kingston", "Fury Beast DDR4 3200 8GB", "memoria ram")
-    bloque = C.bloque_prompt([ram], ["notebook"])
-    assert "COMPATIBILIDAD" in bloque and "INCOMPATIBLE" in bloque
 
 
 # ── 5. LA PROSA DEL CATALOGO NO CONTRADICE A LA PLANILLA ─────────────────────
@@ -267,8 +222,5 @@ def test_la_purga_es_idempotente():
     dos = normalizar_producto(dict(una))
     assert una["caracteristicas_extra"] == dos["caracteristicas_extra"]
     assert una["descripcion"] == dos["descripcion"]
-
-
-# ── 6. EL INTERPRETE LO DECLARA ATADO ────────────────────────────────────────
 
 

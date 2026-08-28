@@ -2256,10 +2256,10 @@ def cotizar(a: Cotizar, tienda_id: str) -> dict:
 
 
 def registrar_pedido(a: RegistrarPedido, tienda_id: str) -> dict:
-    """No busca nada: devuelve lo declarado para que el RECONCILIADOR lo compare
-    contra lo que el plan efectivamente pidio. Es la unica herramienta que no
-    toca la fuente, y existe porque hasta hoy no habia en el sistema NINGUNA
-    estructura con lo que el cliente pidio, asi que nada podia compararla.
+    """No busca nada: devuelve lo declarado para que el codigo derive las
+    busquedas y arme la cuenta. Es la unica herramienta que no toca la fuente,
+    y existe porque hasta hoy no habia en el sistema NINGUNA estructura con lo
+    que el cliente pidio.
 
     LA LISTA DE DESTINOS SE DERIVA, NO SE PIDE DOS VECES. Desde que el destino
     va pegado al renglon, `destinos` es redundante cuando el pedido se reparte:
@@ -2275,7 +2275,7 @@ def registrar_pedido(a: RegistrarPedido, tienda_id: str) -> dict:
         sueltos = [d for d in (pedido.get("destinos") or []) if str(d).strip()]
         # Los que el modelo nombro y no pego a ningun renglon se conservan: si
         # el cliente nombro una ciudad, el envio hay que cotizarlo igual, y el
-        # reconciliador tiene que poder ver que quedo sin repartir.
+        # codigo tiene que poder ver que quedo sin repartir.
         pedido["destinos"] = de_los_items + [
             d for d in sueltos
             if _norm(d) not in {_norm(x) for x in de_los_items}]

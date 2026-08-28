@@ -493,23 +493,6 @@ def _completar_capas(out: dict, prod: dict, categoria: str,
     return out
 
 
-# ── ATRIBUTOS ORDENABLES ────────────────────────────────────────────
-# "la mas grande", "la mas liviana", "la de mas hercios", "la mas barata" son la
-# MISMA operacion con distinto atributo. Por eso el criterio no se enumera a
-# mano -habria que editar codigo por cada forma nueva de preguntar-: se parte en
-# direccion (max o min, dos valores para siempre) y ATRIBUTO, y el enum de
-# atributos se DERIVA de la fuente. Columna numerica del catalogo o spec con
-# valor numerico = atributo preguntable. Si manana la tienda suma una columna,
-# esa columna queda preguntable sola, sin tocar una linea.
-
-# columnas numericas del catalogo y como se las nombra al cliente
-COLUMNAS_ORDENABLES = {
-    "precio_ars": "el precio",
-    "peso_gramos": "el peso",
-    "garantia_meses": "la garantia",
-    "stock": "el stock",
-}
-
 # multiplicadores para comparar magnitudes de la misma familia
 _UNIDADES = {"tb": 1024.0, "gb": 1.0, "mb": 1 / 1024.0,
              "kg": 1000.0, "g": 1.0,
@@ -535,43 +518,6 @@ def valor_numerico(texto) -> float | None:
             return None
     solo = re.fullmatch(r"\s*(\d+(?:[.,]\d+)?)\s*", str(texto or ""))
     return float(solo.group(1).replace(",", ".")) if solo else None
-
-
-def atributos_ordenables(productos: list, tienda_id: str | None = None,
-                         minimo: int = 5) -> dict:
-    """{atributo: etiqueta} de todo lo que se puede pedir "el que mas/menos".
-
-    DERIVADO de la fuente, no escrito a mano: una columna numerica o una spec
-    con magnitud, siempre que la tenga un minimo de productos. Es el enum que
-    consume el schema del interprete.
-    """
-    etq = {s["id"]: s["etiqueta"] for s in specs_config(tienda_id)}
-    num: dict[str, int] = {}
-    tot: dict[str, int] = {}
-    for p in (productos or []):
-        if not isinstance(p, dict):
-            continue
-        for col in COLUMNAS_ORDENABLES:
-            if p.get(col) not in (None, ""):
-                tot[col] = tot.get(col, 0) + 1
-                if valor_numerico(p.get(col)) is not None:
-                    num[col] = num.get(col, 0) + 1
-        specs = p.get("specs")
-        if isinstance(specs, dict):
-            for sid, val in specs.items():
-                if not val:
-                    continue
-                tot[sid] = tot.get(sid, 0) + 1
-                if valor_numerico(val) is not None:
-                    num[sid] = num.get(sid, 0) + 1
-    out = {}
-    for k, n in num.items():
-        # el atributo tiene que ser una MAGNITUD, no un texto con un numero
-        # suelto adentro: 'si, 4 slots DDR4 hasta 128GB' no es una capacidad
-        # ordenable. Se mide por proporcion, asi no hace falta lista a mano.
-        if n >= minimo and n / max(1, tot.get(k, 1)) >= 0.7:
-            out[k] = COLUMNAS_ORDENABLES.get(k) or etq.get(k, k)
-    return out
 
 
 def derivar_tags(prod: dict) -> str:

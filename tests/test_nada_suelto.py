@@ -53,7 +53,6 @@ DECLARADAS = {
                           "la decision y la reposicion",
     "obligatorias": "consulta del indice, la usan las pruebas del indice",
     "cobertura_compatibilidad": "mide la cobertura de aristas de compatibilidad en la fuente",
-    "atributos_ordenables": "lista los campos por los que se puede ordenar; la usa el interprete viejo del duelo, en banco_pruebas",
     "tool_schema": "arma el schema de la guia de venta; lo verifica su prueba",
 
     # ── Config por proveedor: se elige por settings, no por llamada ─────────
@@ -63,21 +62,12 @@ DECLARADAS = {
     "nvidia_thinking_off": "apaga el modo pensante de nvidia segun configuracion",
     "openrouter_reasoning_off": "apaga el razonamiento de openrouter segun configuracion",
 
-    # ── Compatibilidad: piezas del eje que hoy entra por otra puerta ────────
-    "bloque_prompt": "bloque de compatibilidad para el prompt",
-    "estampar_veredicto": "estampa el veredicto de compatibilidad en el mensaje",
-    "plataformas_de_interp": "lee las plataformas que declaro el modelo",
-
     # ── Alta de cliente: las llama scripts/crear_cliente.py ─────────────────
     "dispara_lead_fuerte": "regla del lead fuerte; la verifica su prueba",
 
     # ── FICHA 35: huella de importes, la usan los barridos, no el vivo ──────
     "_importes": "FICHA 35: huella de la plata. La usan test_grafo_cableado y "
                  "test_barrido_codigo, no el camino vivo.",
-    "mas_barato_con_stock": "camino sellado de la guia: el snapshot de "
-                            "guia_pedido_20260828 lo sigue llamando",
-    "pago_de_mensaje": "parser de reparto en prosa; lo verifican sus pruebas "
-                       "y el snapshot de guia_pedido_20260828 lo sigue llamando",
 }
 
 

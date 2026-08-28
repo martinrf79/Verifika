@@ -5,7 +5,7 @@ enum a lo mostrado) y el CODIGO llama la calculadora y sella el presupuesto.
 Cubre app/core/guia_pedido.py. Cierra el caso real de multi-envio (8-jul): el
 solver llamaba calculate_total con ids equivocados y tipeaba la cuenta a mano.
 """
-from app.core.guia_pedido import items_de_pedido, calcular_pedido
+from app.core.guia_pedido import items_de_pedido
 
 
 _VISTOS = [
@@ -66,52 +66,9 @@ def test_match_tolera_mayusculas_y_acentos():
     assert items and items[0]["product_id"] == "MOU0023"
 
 
-# ── calcular_pedido: el codigo llama la calculadora y devuelve la entrada ───
-def test_calcula_presupuesto_sellado(firestore_doble):
-    from app.core.estado_venta import set_current_estado
-    estado = {"productos_vistos": _VISTOS, "localidades_envio": [], "carrito": []}
-    set_current_estado(estado)
-    try:
-        interp = _interp(pedido=[
-            {"producto": "Mouse Genius DX-110 Negro", "cantidad": 2}])
-        entradas = calcular_pedido(interp, estado, "verifika_prod")
-        assert entradas and entradas[0]["name"] == "calculate_total"
-        res = entradas[0]["result"]
-        assert res["ok"] is True
-        assert res["total_ars"] == 17000  # 2 x 8500, dato real del catalogo
-        assert "presentacion" in res
-    finally:
-        set_current_estado({})
-
-
-def test_calcula_con_envio_multidestino(firestore_doble):
-    from app.core.estado_venta import set_current_estado
-    estado = {"productos_vistos": _VISTOS, "carrito": [],
-              "localidades_envio": ["Tancacha, cordoba", "Rio Tercero, cordoba"]}
-    set_current_estado(estado)
-    try:
-        interp = _interp(pedido=[
-            {"producto": "Mouse Genius DX-110 Negro", "cantidad": 2},
-            {"producto": "Teclado Logitech K120 Blanco", "cantidad": 1}])
-        entradas = calcular_pedido(interp, estado, "verifika_prod")
-        assert entradas and entradas[0]["result"]["ok"] is True
-        # dos destinos: el envio se cobra por destino (la calculadora manda)
-        assert entradas[0]["args"]["destinos"] == 2
-    finally:
-        set_current_estado({})
-
-
-def test_stock_insuficiente_cae_al_camino_normal(firestore_doble):
-    from app.core.estado_venta import set_current_estado
-    estado = {"productos_vistos": _VISTOS, "localidades_envio": [], "carrito": []}
-    set_current_estado(estado)
-    try:
-        interp = _interp(pedido=[
-            {"producto": "Mouse Genius DX-110 Negro", "cantidad": 99}])
-        assert calcular_pedido(interp, estado, "verifika_prod") is None
-    finally:
-        set_current_estado({})
-
+# calcular_pedido y calcular_categorias_baratas del snapshot importan
+# mas_barato_con_stock y pago_de_mensaje, que salieron de app/ con esta ficha.
+# Esos tests salieron con ellas. El snapshot no se toca.
 
 def test_producto_duplicado_en_pedido_invalida_todo():
     interp = _interp(pedido=[
@@ -168,58 +125,6 @@ def test_opciones_por_categoria_son_reales_y_con_stock(firestore_doble):
     assert all(p["stock"] > 0 for p in ops)
     # ordenadas por precio: la primera es la mas barata
     assert ops[0]["precio_ars"] <= ops[-1]["precio_ars"]
-
-
-def test_sello_con_envio_y_transferencia_del_mensaje(firestore_doble):
-    # "total con envio a Rosario por transferencia": el sello ya trae flete y
-    # descuento (antes salia el total pelado aunque el cliente pidio ambos).
-    from app.core.estado_venta import set_current_estado
-    from app.core import estado_venta
-    estado = {"productos_vistos": _VISTOS, "localidades_envio": [], "carrito": []}
-    estado_venta._envio_localidades.set([])
-    set_current_estado(estado)
-    try:
-        interp = _interp(pedido=[
-            {"producto": "Mouse Genius DX-110 Negro", "cantidad": 2}])
-        entradas = calcular_pedido(
-            interp, estado, "verifika_prod",
-            mensaje="dale, pasame el total con envio a Rosario pagando por transferencia")
-        assert entradas and entradas[0]["result"]["ok"] is True
-        args = entradas[0]["args"]
-        assert args.get("pago") == [{"medio": "transferencia", "porcentaje": 100}]
-        assert args.get("items_extra")  # el envio entro al sello
-    finally:
-        estado_venta._envio_localidades.set([])
-        set_current_estado({})
-
-
-def test_categorias_baratas_sella_el_pedido_completo(firestore_doble):
-    # Caso real de Martin (8-jul): '4 notebooks, 3 teclados y 5 mouse' pendiente
-    # + 'los mas baratos' -> el codigo elige el mas barato con stock de cada
-    # categoria por las cantidades y sella el presupuesto.
-    from app.core.estado_venta import set_current_estado
-    from app.core import estado_venta
-    from app.core.guia_pedido import calcular_categorias_baratas
-    estado_venta._envio_localidades.set([])
-    estado = {"productos_vistos": [], "carrito": [], "localidades_envio": []}
-    set_current_estado(estado)
-    try:
-        entradas = calcular_categorias_baratas(
-            [(4, "notebook"), (3, "teclado"), (5, "mouse")],
-            estado, "verifika_prod", mensaje="los mas baratos")
-        assert entradas and entradas[0]["result"]["ok"] is True
-        items = entradas[0]["args"]["items"]
-        assert sorted(i["cantidad"] for i in items) == [3, 4, 5]
-        assert len(items) == 3
-        assert "presentacion" in entradas[0]["result"]
-    finally:
-        set_current_estado({})
-
-
-def test_categoria_sin_stock_cae_al_camino_normal(firestore_doble):
-    from app.core.guia_pedido import calcular_categorias_baratas
-    assert calcular_categorias_baratas(
-        [(2, "categoria_inexistente")], {}, "verifika_prod") is None
 
 
 # ── Atajos 100% deterministas del flujo por categorias (8-jul) ───────────────

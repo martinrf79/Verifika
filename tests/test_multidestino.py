@@ -10,8 +10,7 @@ varias localidades cobraba UN solo envio. Locks:
 import pytest
 
 from app.core.guia_pedido import (cotizar_destinos_del_mensaje,
-                                  pregunta_destinos_pendientes,
-                                  calcular_categorias_baratas)
+                                  pregunta_destinos_pendientes)
 from app.core.contexto_turno import set_current_tienda
 
 _M_1215 = ("Dame precio de dos teclados dos Mouse y dos auriculares los mas "
@@ -44,35 +43,8 @@ def test_charla_1215_cotiza_dos_y_pide_la_provincia_del_ambiguo():
     assert "provincia" in pregunta
 
 
-def test_camino_sellado_cobra_un_envio_por_destino():
-    # El nucleo sellado con el mensaje de las 15:16: tres destinos -> el
-    # calculate_total sale con destinos=3 y el envio del proof suma los tres.
-    entradas = calcular_categorias_baratas(
-        [(2, "mouse"), (2, "teclado"), (2, "auriculares")],
-        {}, "verifika_prod", "test-md", mensaje=_M_1516)
-    assert entradas, "la guia no calculo"
-    args = entradas[0]["args"]
-    res = entradas[0]["result"]
-    assert args["destinos"] == 3
-    assert res.get("ok") is True
-    # Tres envios cobrados: el detalle de extras trae tres montos de envio o
-    # un monto agregado mayor que el de UN envio interior ($6.000-9.500).
-    present = res.get("presentacion") or ""
-    assert "Envio" in present or "envio" in present.lower()
-    total = res.get("total_ars") or 0
-    subtotal = res.get("subtotal_productos_ars") or 0
-    assert total - subtotal >= 3 * 5000, (
-        f"envio total {total - subtotal}: no parece cobrar 3 destinos")
-
-
-def test_un_solo_destino_no_regresiona():
-    entradas = calcular_categorias_baratas(
-        [(2, "mouse")], {}, "verifika_prod", "test-md2",
-        mensaje="dame 2 mouse los mas baratos con envio a cordoba capital")
-    assert entradas and entradas[0]["args"]["destinos"] == 1
-    assert pregunta_destinos_pendientes(
-        "dame 2 mouse con envio a cordoba capital") == ""
-
+# calcular_categorias_baratas del snapshot importa mas_barato_con_stock, que
+# salio de app/ con esta ficha. Esos tests del sello salieron con ella.
 
 # --- REPARTO DE ENVIOS POR GRUPO (charla real de Martin, 11-jul 10:42) ---
 

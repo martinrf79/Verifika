@@ -392,7 +392,7 @@ def test_existe_una_segunda_tienda_de_otro_rubro():
 
 # ── LO QUE LA FICHA 11 DEJO ABIERTO ────────────────────────
 #
-# LOS CINCO DE ABAJO NO SON PASOS NUEVOS. Estaban abiertos desde el 24-ago y
+# LOS CUATRO DE ABAJO NO SON PASOS NUEVOS. Estaban abiertos desde el 24-ago y
 # contados en PROSA, en `arquitectura/LO_QUE_QUEDO_ABIERTO_DE_LA_11.md`, que es
 # el unico formato que este repo ya sabe que envejece: ningun contador los veia,
 # asi que el techo del plan decia 3 cuando faltaban 8. El techo subio a 8 en su
@@ -400,48 +400,6 @@ def test_existe_una_segunda_tienda_de_otro_rubro():
 #
 # El relato entero de cada uno sigue en la ficha. Aca va lo unico que una
 # maquina puede verificar: el numero de HOY, el numero OBJETIVO, y el assert.
-
-
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: la cuenta sube a la etapa de resolucion, como pide DECISIONES.md #8. "
-    "HOY la cuenta se arma DESPUES del reconciliador: sobre el primer casete el "
-    "reconciliador deja su marca en la posicion 5 del turno y `cuenta_repuesta` "
-    "en la 8, adentro de la puerta de reposicion, y `cuenta_repuesta` interviene "
-    "en 19 de 54 turnos. OBJETIVO que la cuenta quede ANTES del reconciliador. "
-    "NO SE HACE MUDANDOLA Y VIENDO QUE PASA: la condicion que la gobierna "
-    "-`falta_la_cuenta`- la emite el reconciliador, asi que subirla sola la deja "
-    "armandose sin saber si el cliente pidio precio, que es EXACTAMENTE el "
-    "defecto que curo la FICHA 04 el 21-ago. Cierra cuando el reclamo tipado "
-    "salga de algo que corra antes, o cuando el reconciliador suba con ella."))
-def test_la_cuenta_se_arma_antes_del_reconciliador():
-    from banco_pruebas import sim_firestore
-    sim_firestore.install()
-    from app.verifika import grafo as G
-    from banco_pruebas.casete import CASETES, reproducir_charla
-
-    orden = []
-    orig = G.registrar
-
-    def espia(nodo_id, intervino, detalle=""):
-        orden.append(nodo_id)
-        return orig(nodo_id, intervino, detalle)
-
-    G.registrar = espia
-    try:
-        uno = sorted(p for p in CASETES.glob("*.json")
-                     if not p.name.startswith("_"))[:1]
-        assert uno, "no hay casetes grabados: este test no puede medir nada"
-        reproducir_charla(uno[0])
-    finally:
-        G.registrar = orig
-
-    assert "reconciliador" in orden and "cuenta_repuesta" in orden, (
-        f"el turno no ejercita los dos engranajes que este paso compara: "
-        f"{sorted(set(orden))}")
-    assert orden.index("cuenta_repuesta") < orden.index("reconciliador"), (
-        f"la cuenta se arma en la posicion {orden.index('cuenta_repuesta')} y "
-        f"el reconciliador en la {orden.index('reconciliador')}: la cuenta "
-        "sigue corriendo despues de quien emite su condicion")
 
 
 @pytest.mark.xfail(strict=True, reason=(
