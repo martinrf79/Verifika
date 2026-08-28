@@ -16,9 +16,9 @@ A MEDIAS   algo que se EMPEZÓ y no se terminó.  Tiene que llegar a CERO.
 PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 ```
 
-La orden de trabajo abierta es `PLAN_REDUCCION.md`. La próxima sesión es
-`FICHA_36_el_numero.md`. La 35 cerró. Cuando los dos termómetros pasen,
-el recorte de `app/` está hecho.
+La orden de trabajo abierta es `PLAN_REDUCCION.md`. La FICHA 36 corrió:
+reposicion y guia_pedido salieron de `app/`, nueve cuerpos a cuatro, 31 y
+32 verdes. Los dos termómetros siguen: el 30% no entra sin cortar el motor.
 
 ---
 
@@ -47,11 +47,10 @@ toca, cómo se verifica.
 | archivo | qué es |
 |---|---|
 | `README.md` | esta puerta |
-| `FICHA_01_*.md` … | unidades ya cerradas, se leen para entender no para hacer |
 | `FICHA_30_la_simplificacion.md` | el diagnóstico del recorte |
 | `FICHA_34_el_nexo.md` | primera sesión: el nexo, cerrada |
 | `FICHA_35_la_puerta.md` | segunda sesión: la puerta, cerrada |
-| `FICHA_36_el_numero.md` | **próxima sesión**: el número, 181 / 7306 |
+| `FICHA_36_el_numero.md` | tercera sesión: el número; termómetros 181 / 7306 siguen |
 | `PLAN_REDUCCION.md` | **la campaña**: 604 funciones → 181, qué se queda |
 
 **En la raíz: la biblioteca.** Se consulta para entender POR QUÉ, no para saber

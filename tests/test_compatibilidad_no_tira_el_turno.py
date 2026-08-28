@@ -34,7 +34,7 @@ if str(_RAIZ) not in sys.path:
     sys.path.insert(0, str(_RAIZ))
 
 from app.core.pedido import _universo_de_busquedas  # noqa: E402
-from app.core.reposicion import _cuenta_con_lo_declarado  # noqa: E402
+from app.core.resolver import _cuenta_con_lo_declarado  # noqa: E402
 
 # Tal cual las escribe `herramientas.py`.
 COMPAT = {"herramienta": "ver_compatibilidad",
@@ -80,8 +80,8 @@ def test_la_reposicion_no_se_traga_un_nombre_como_si_fuera_ficha():
     esta prueba puede afirmar sin armar media charla."""
     import inspect
 
-    from app.core import reposicion
-    fuente = inspect.getsource(reposicion._cuenta_con_lo_declarado)
+    from app.core import resolver
+    fuente = inspect.getsource(resolver._cuenta_con_lo_declarado)
     assert "isinstance(p, dict)" in fuente, (
         "el guardia que descarta el nombre pelado se fue de la reposicion")
 

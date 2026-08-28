@@ -26,15 +26,10 @@ TIENDA = "verifika_prod"
 # id de un producto real del catalogo cargado por la fixture.
 LLAMADAS = {
     "registrar_pedido": {"items": [{"que": "mouse", "cantidad": 2}]},
-    "buscar_productos": {"categoria": "mouse"},
-    "consultar_catalogo": {"operacion": "contar"},
-    "ficha_producto": {"product_id": "<mouse>"},
+    "consultar_productos": {"proyeccion": "lista", "categoria": "mouse"},
     "consultar_temas": {"temas": ["envios"]},
-    "cotizar_envio": {"localidad": "Rosario"},
-    "armar_presupuesto": {"items": [{"product_id": "<mouse>", "cantidad": 1}],
-                          "destinos": ["Rosario"]},
-    "ver_compatibilidad": {"product_id": "<mouse>", "equipo": "notebook"},
-    "tomar_pedido": {"motivo": "decide_comprar"},
+    "cotizar": {"items": [{"product_id": "<mouse>", "cantidad": 1}],
+                "destinos": ["Rosario"]},
 }
 
 

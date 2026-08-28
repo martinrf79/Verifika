@@ -34,7 +34,7 @@ sim_firestore.install()
 from app.config import get_settings  # noqa: E402
 from app.core import herramientas as H  # noqa: E402
 from app.core import hub_venta as HV  # noqa: E402
-from app.core import reposicion as R  # noqa: E402
+from app.core import resolver as R  # noqa: E402
 from app.core.estado_venta import (construir_estado, merge_productos,  # noqa: E402
                                    get_envio_localidades)
 from app.core.memoria_larga import _compactar_determinista  # noqa: E402

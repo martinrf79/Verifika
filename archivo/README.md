@@ -29,6 +29,9 @@ sesión lo saque del vivo. Qué se apaga y en qué sesión está en
 | `reposicion_20260827.py` | la puerta de reposición: seis re-interpretaciones sobre el mismo pedido | el piso de las 15 charlas no baje después de que el resolver aplique lo declarado |
 | `reconciliador_20260827.py` | `pedido.reconciliar` e `instruccion_de_preguntas`: segunda opinión sobre el mismo pedido | el piso no baje y el contrato del turno salga del índice, no de un reclamo |
 | `aduana_20260828.py` | el segundo mutador de la higiene: reparaba el mensaje ya escrito | el piso no baje con un solo mutador (`componer`) y los invariantes como termómetro |
+| `reposicion_vivo_20260828.py` | el reposicion que todavía corría al abrir la FICHA 36, distinto del snapshot de la 34 | el piso de las 15 charlas no baje con los helpers en el resolver y sin el archivo vivo en app/core |
+| `guia_pedido_20260828.py` | el camino sellado del 8-jul; el vivo solo pedía `categorias_nombradas` y `opciones_por_categoria` | el piso no baje con esas dos funciones en `filtros_catalogo` |
+| `reconciliador_vivo_20260828.py` | `pedido.reconciliar` y los helpers que solo ella usaba, al salir de `app/` | el piso no baje con una sola opinión sobre el pedido |
 
 ## Qué NO va acá
 

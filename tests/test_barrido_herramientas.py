@@ -121,8 +121,8 @@ def test_el_barrido_no_se_apaga_solo(barrido):
         f"el barrido corrio {len(barrido['corridas'])} casos: se apago")
     assert any("+" in c["clase"] for c in barrido["corridas"]), (
         "no corrio ningun caso de dos campos torcidos a la vez")
-    assert len(B.herramientas()) == 9, (
-        "cambio la cantidad de herramientas que el modelo puede llamar: "
+    assert len(B.herramientas()) == 4, (
+        "cambio la cantidad de herramientas internas: "
         "revisa que el barrido las cubra todas")
 
 

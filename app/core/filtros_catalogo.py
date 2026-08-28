@@ -885,3 +885,91 @@ def incumplidos(prod: dict, filtros: list, tienda_id: str) -> list[str]:
         que = f"{campo} {_norm(getattr(f, 'operador', ''))} {getattr(f, 'valor', '')}"
         fuera.append(que if r is False else f"{que} (la ficha no lo dice)")
     return fuera
+
+
+# COMO LO ESCRIBE EL CLIENTE REAL -> el rubro del catalogo. Sale de los
+# mensajes de Martin y de las charlas de WhatsApp, no de una lista imaginada.
+# Si el codigo no reconoce el rubro, la busqueda vuelve sin un solo producto.
+#
+# ACA SE ACUMULA LA EXPERIENCIA: cuando una charla real traiga una palabra
+# nueva, se agrega el renglon. La lista se valida contra las categorias REALES
+# antes de usarse.
+_COMO_LO_DICE_EL_CLIENTE = {
+    "mause": "mouse", "mauses": "mouse", "maus": "mouse", "raton": "mouse",
+    "auris": "auriculares", "auricular": "auriculares",
+    "cascos": "auriculares", "vincha": "auriculares",
+    "note": "notebook", "notebok": "notebook", "laptop": "notebook",
+    "compu": "notebook", "computadora": "notebook", "portatil": "notebook",
+    "ram": "memoria ram", "memorias": "memoria ram", "memoria": "memoria ram",
+    "gpu": "placa de video", "placa de video": "placa de video",
+    "tecaldo": "teclado", "teclao": "teclado",
+    "pantalla": "monitor", "pantallas": "monitor",
+    "silla": "silla gamer", "sillas": "silla gamer",
+    "mother": "motherboard", "board": "motherboard",
+    "micro": "procesador", "cpu": "procesador",
+    "parlantes": "parlante", "auriculares bluetooth": "auriculares",
+}
+
+
+def _rubros_por_como_lo_dice(msg: str, reales: set) -> list[str]:
+    """Los rubros que el cliente nombro con SU palabra. `msg` ya viene
+    normalizado; `reales` son las categorias del catalogo, en minuscula."""
+    import re
+    out = []
+    for alias, cat in _COMO_LO_DICE_EL_CLIENTE.items():
+        if cat not in reales or cat in out:
+            continue
+        if re.search(r"\b" + re.escape(alias) + r"\b", msg):
+            out.append(cat)
+    return out
+
+
+def categorias_nombradas(mensaje: str, tienda_id: str) -> list[str]:
+    """Categorias REALES de la tienda nombradas en el mensaje. Mudada de
+    guia_pedido en la FICHA 36: el vivo la pedía, el resto del modulo no."""
+    import re
+    from app.storage.firestore_client import get_categories
+    try:
+        categorias = get_categories(tienda_id=tienda_id) or []
+    except Exception:
+        return []
+    msg = _norm(mensaje)
+    out: list[str] = []
+    for c in categorias:
+        cn = _norm(c)
+        if not cn:
+            continue
+        variantes = {cn}
+        if cn.endswith("s"):
+            variantes.add(cn[:-1])
+        else:
+            variantes.add(cn + "s")
+        if cn.endswith("es") and len(cn) > 4:
+            variantes.add(cn[:-2])
+        partes = cn.split()
+        if len(partes) > 1:
+            p0, resto = partes[0], " ".join(partes[1:])
+            variantes.add((p0[:-1] if p0.endswith("s") else p0 + "s")
+                          + " " + resto)
+        if any(re.search(r"\b" + re.escape(v) + r"\b", msg)
+               for v in variantes):
+            out.append(str(c))
+    if out:
+        return out
+    reales = {_norm(c): str(c) for c in categorias if c}
+    return [reales[c] for c in _rubros_por_como_lo_dice(msg, set(reales))
+            if c in reales]
+
+
+def opciones_por_categoria(categoria: str, tienda_id: str,
+                           k: int = 3) -> list[dict]:
+    """Las k opciones mas baratas CON stock de una categoria, del catalogo
+    real. Determinista: mismo orden siempre. Mudada de guia_pedido."""
+    from app.storage.firestore_client import get_all_products
+    cat = _norm(categoria)
+    prods = [p for p in get_all_products(tienda_id=tienda_id)
+             if _norm(p.get("categoria", "")) == cat
+             and p.get("stock", 0) > 0
+             and isinstance(p.get("precio_ars"), (int, float))]
+    prods.sort(key=lambda p: p["precio_ars"])
+    return prods[:k]

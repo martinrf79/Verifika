@@ -6,7 +6,7 @@ aplica el 10% a todo lo que no es Mercado Pago, y cierra la suma exacta. Verific
 además que reproduce la cuenta CORRECTA de la charla real del 6-jul (donde el bot
 la hizo a mano y dio mal). Lógica pura, sin LLM ni Firestore.
 """
-from app.core import reposicion as R
+from app.core import resolver as R
 from app.core.pago_split import (calcular_split, es_mercado_pago,
                                  render_split, pago_de_mensaje)
 
@@ -173,7 +173,8 @@ def test_el_reparto_de_pago_sobrevive_cuando_el_codigo_rehace_la_cuenta(
         llamadas = R._cuenta_con_lo_declarado([], declarado, "verifika_prod",
                                               "t-split", memoria=memoria)
         cuenta = next((l for l in llamadas
-                       if l.get("herramienta") == "armar_presupuesto"), None)
+                       if l.get("herramienta") in ("cotizar",
+                                                   "armar_presupuesto")), None)
         assert cuenta, "no se rehizo la cuenta"
         assert cuenta["pedido"].get("pago"), "la cuenta se rehizo sin el split"
         bloque = (cuenta.get("resultado") or {}).get("bloque") or ""

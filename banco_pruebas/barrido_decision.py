@@ -316,9 +316,21 @@ def _ids_de(obj) -> set:
     return vistos
 
 
+def _canon_herr(nombre: str) -> str:
+    """FICHA 36: las puertas viejas y las nuevas son la misma evidencia."""
+    return {
+        "buscar_productos": "consultar_productos",
+        "consultar_catalogo": "consultar_productos",
+        "ficha_producto": "consultar_productos",
+        "ver_compatibilidad": "consultar_productos",
+        "armar_presupuesto": "cotizar",
+        "cotizar_envio": "cotizar",
+    }.get(nombre, nombre)
+
+
 def _herramientas_de(llamadas) -> set:
-    return {str(l.get("herramienta") or "") for l in (llamadas or [])
-            if isinstance(l, dict)} - {""}
+    return {_canon_herr(str(l.get("herramienta") or ""))
+            for l in (llamadas or []) if isinstance(l, dict)} - {""}
 
 
 def _items_cotizados(llamadas) -> set:
@@ -326,7 +338,8 @@ def _items_cotizados(llamadas) -> set:
     pagando, asi que es donde NO_AGREGA_LO_NO_PEDIDO se mide."""
     fuera = set()
     for l in (llamadas or []):
-        if not isinstance(l, dict) or l.get("herramienta") != "armar_presupuesto":
+        if not isinstance(l, dict) or l.get("herramienta") not in (
+                "armar_presupuesto", "cotizar"):
             continue
         for it in ((l.get("pedido") or {}).get("items") or []):
             if isinstance(it, dict) and it.get("product_id"):
@@ -399,7 +412,8 @@ def violaciones(nodo, antes: dict, despues: dict, catalogo: set) -> list:
         # sigue cazando, y ese es el candado de que esto no vacio el contrato.
         traidos = _ids_de([l for l in (despues.get("llamadas") or [])
                            if not (isinstance(l, dict)
-                                   and l.get("herramienta") == "armar_presupuesto")])
+                                   and l.get("herramienta") in (
+                                       "armar_presupuesto", "cotizar"))])
         respaldo = _ids_de(antes) | _ids_de(despues.get("memoria")) | \
             _ids_de(despues.get("estado")) | traidos
         sin_respaldo = sorted(sumados - respaldo)

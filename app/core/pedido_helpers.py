@@ -12,30 +12,6 @@ Sin dependencias de app.*: son puras, operan sobre los datos que reciben.
 from functools import lru_cache as _lru_cache
 
 
-def _money(n):
-    try:
-        return f"{int(n):,}".replace(",", ".")
-    except (TypeError, ValueError):
-        return None
-
-
-def _linea_producto(p: dict) -> str:
-    """Linea REAL de un producto desde el catalogo: nombre + precio + stock. La
-    verdad de la fuente, la usa el estampado de [[PROD:id]] y la guarda de
-    producto para re-anclar con el dato real, no re-tipeado."""
-    if not isinstance(p, dict):
-        return ""
-    nombre = str(p.get("nombre", "")).strip()
-    precio = _money(p.get("precio_ars"))
-    stock = p.get("stock", 0)
-    partes = [nombre]
-    if precio:
-        partes.append(f"- ${precio}")
-    if isinstance(stock, int) and stock > 0:
-        partes.append(f"({stock} en stock)")
-    return " ".join(partes).strip()
-
-
 def _norm_txt(s) -> str:
     import unicodedata
     s = unicodedata.normalize("NFKD", str(s or "").lower())

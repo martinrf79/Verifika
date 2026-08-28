@@ -17,7 +17,7 @@ import pytest
 
 from app.core import herramientas as H
 from app.core import hub_venta as HV
-from app.core import reposicion as R
+from app.core import resolver as R
 from app.core import salida as SAL
 
 TIENDA = "verifika_prod"
@@ -723,7 +723,7 @@ def test_la_cuenta_no_pierde_un_rubro_que_el_cliente_pidio(firestore_doble):
     un total al que le faltaban $69.000 de mercaderia que habia pedido. El
     codigo lo repone con lo que el mismo turno ya certifico."""
     from app.core import herramientas as H
-    from app.core.reposicion import _cuenta_con_lo_declarado
+    from app.core.resolver import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = [p for p in get_all_products(tienda_id=TIENDA)
@@ -764,7 +764,7 @@ def test_no_se_inventa_un_rubro_que_el_turno_no_certifico(firestore_doble):
     turno NO le mostro ningun producto de ese rubro, el codigo no elige uno de
     la nada. Eso es un faltante de verdad y lo cuenta el redactor."""
     from app.core import herramientas as H
-    from app.core.reposicion import _cuenta_con_lo_declarado
+    from app.core.resolver import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = [p for p in get_all_products(tienda_id=TIENDA)
@@ -842,7 +842,7 @@ def test_el_setenta_treinta_sin_medio_declara_el_supuesto(firestore_doble):
     El modelo eligio distinto dos dias seguidos, y como la transferencia tiene
     10% de descuento, ese silencio le cambia al cliente lo que paga. Se aplica
     el reparto -no se frena la venta- y se declara el supuesto en la cuenta."""
-    from app.core.reposicion import _supuesto_de_pago
+    from app.core.resolver import _supuesto_de_pago
 
     llamadas = [{"herramienta": "armar_presupuesto",
                  "pedido": {"items": [{"product_id": "MOU0023", "cantidad": 1}],
@@ -872,7 +872,7 @@ def test_la_cuenta_no_cotiza_menos_unidades_de_las_pedidas(firestore_doble):
     lo veia porque el rubro estaba; faltaba una unidad, que es la mitad de ese
     renglon en plata. Se completa sobre el renglon que el modelo ya eligio."""
     from app.core import herramientas as H
-    from app.core.reposicion import _cuenta_con_lo_declarado
+    from app.core.resolver import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = [p for p in get_all_products(tienda_id=TIENDA)
@@ -896,7 +896,7 @@ def test_el_mismo_producto_partido_en_dos_destinos_no_se_duplica(firestore_doble
     """La contracara: dos renglones de 1 con destinos distintos SON las dos
     unidades pedidas. Sumar de nuevo seria cobrarle cuatro."""
     from app.core import herramientas as H
-    from app.core.reposicion import _cuenta_con_lo_declarado
+    from app.core.resolver import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = [p for p in get_all_products(tienda_id=TIENDA)
@@ -2003,7 +2003,7 @@ def test_el_producto_del_carrito_gana_cuando_el_cliente_no_pidio_otro(
     """El carrito tiene el mouse Negro. El cliente agrega otra cosa, el turno
     vuelve a buscar "mouse" y la busqueda devuelve el Blanco primero. La cuenta
     tiene que seguir con el NEGRO: el cliente no pidio cambiar de color."""
-    from app.core.reposicion import _cuenta_con_lo_declarado
+    from app.core.resolver import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = get_all_products(tienda_id=TIENDA)
@@ -2020,7 +2020,7 @@ def test_el_producto_del_carrito_gana_cuando_el_cliente_no_pidio_otro(
         llamadas, {"items": [{"que": "mouse", "cantidad": 2}],
                    "pide_precio": True}, TIENDA, "t", memoria=memoria)
     items = [l["pedido"]["items"] for l in fuera
-             if l.get("herramienta") == "armar_presupuesto"]
+             if l.get("herramienta") in ("cotizar", "armar_presupuesto")]
     assert items, "no se armo la cuenta"
     assert items[0][0]["product_id"] == negro["id"], (
         f"la categoria ya resuelta se volvio a elegir: el carrito tenia "
@@ -2031,7 +2031,7 @@ def test_pero_el_cliente_todavia_puede_cambiar_de_producto(firestore_doble):
     """LA OTRA MITAD, y sin esto el arreglo de arriba seria peor que el
     defecto: si el cliente NOMBRA otro -"mouse blanco" con el Negro en el
     carrito- gana lo que trajo el turno. Un carrito congelado no vende."""
-    from app.core.reposicion import _cuenta_con_lo_declarado
+    from app.core.resolver import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = get_all_products(tienda_id=TIENDA)
@@ -2048,7 +2048,7 @@ def test_pero_el_cliente_todavia_puede_cambiar_de_producto(firestore_doble):
         llamadas, {"items": [{"que": "mouse blanco", "cantidad": 1}],
                    "pide_precio": True}, TIENDA, "t", memoria=memoria)
     items = [l["pedido"]["items"] for l in fuera
-             if l.get("herramienta") == "armar_presupuesto"]
+             if l.get("herramienta") in ("cotizar", "armar_presupuesto")]
     assert items and items[0][0]["product_id"] == blanco["id"], (
         "el cliente pidio el blanco y el arreglo lo dejo clavado en el del "
         "carrito")
@@ -2073,7 +2073,7 @@ def test_pero_el_cliente_todavia_puede_cambiar_de_producto(firestore_doble):
 # plata de un renglon ya cotizado. La regla de la casa es que la cuenta no se
 # reescribe sola. Es una decision suya, no una omision.
 def test_un_rubro_pedido_una_vez_no_trae_dos_productos_distintos(firestore_doble):
-    from app.core.reposicion import _cuenta_con_lo_declarado
+    from app.core.resolver import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     cat = get_all_products(tienda_id=TIENDA)
@@ -2095,7 +2095,7 @@ def test_un_rubro_pedido_una_vez_no_trae_dos_productos_distintos(firestore_doble
     fuera = _cuenta_con_lo_declarado(llamadas, declarado, TIENDA, "t",
                                      memoria=[])
     items = next(l["pedido"]["items"] for l in fuera
-                 if l.get("herramienta") == "armar_presupuesto")
+                 if l.get("herramienta") in ("cotizar", "armar_presupuesto"))
     ids = {i["product_id"] for i in items}
     assert len(ids) == 1, (
         f"el cliente pidio '2 mouse' y la cuenta trae {len(ids)} productos "
@@ -2135,7 +2135,7 @@ def test_si_el_cliente_pidio_dos_rubros_iguales_no_se_unifican(firestore_doble):
     -"un mouse para mi y otro para mi hijo, distintos"- esta pidiendo dos cosas
     y unificarlas seria comerse la mitad del pedido. La unificacion solo actua
     cuando el rubro se nombro UNA vez."""
-    from app.core.reposicion import _cuenta_con_lo_declarado
+    from app.core.resolver import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     mice = [p for p in get_all_products(tienda_id=TIENDA)
@@ -2151,7 +2151,7 @@ def test_si_el_cliente_pidio_dos_rubros_iguales_no_se_unifican(firestore_doble):
 
     fuera = _cuenta_con_lo_declarado(llamadas, declarado, TIENDA, "t", memoria=[])
     items = next(l["pedido"]["items"] for l in fuera
-                 if l.get("herramienta") == "armar_presupuesto")
+                 if l.get("herramienta") in ("cotizar", "armar_presupuesto"))
     assert len({i["product_id"] for i in items}) == 2, (
         "el cliente pidio dos mouse distintos y se los unifico en uno")
 
@@ -2160,7 +2160,7 @@ def test_el_mismo_producto_a_dos_destinos_no_se_junta(firestore_doble):
     """LA SEGUNDA ATADURA. El mismo producto a dos ciudades repite CON RAZON, y
     juntar esos renglones romperia el reparto de envios, que es plata. Se
     unifica dentro de cada destino, nunca entre destinos."""
-    from app.core.reposicion import _cuenta_con_lo_declarado
+    from app.core.resolver import _cuenta_con_lo_declarado
     from app.storage.firestore_client import get_all_products
 
     mice = [p for p in get_all_products(tienda_id=TIENDA)
@@ -2178,7 +2178,7 @@ def test_el_mismo_producto_a_dos_destinos_no_se_junta(firestore_doble):
 
     fuera = _cuenta_con_lo_declarado(llamadas, declarado, TIENDA, "t", memoria=[])
     items = next(l["pedido"]["items"] for l in fuera
-                 if l.get("herramienta") == "armar_presupuesto")
+                 if l.get("herramienta") in ("cotizar", "armar_presupuesto"))
     destinos = {i.get("destino") for i in items}
     assert destinos == {"cordoba capital", "rosario"}, (
         f"se perdio un destino al unificar: {items}")

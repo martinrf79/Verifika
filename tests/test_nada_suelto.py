@@ -63,14 +63,6 @@ DECLARADAS = {
     "nvidia_thinking_off": "apaga el modo pensante de nvidia segun configuracion",
     "openrouter_reasoning_off": "apaga el razonamiento de openrouter segun configuracion",
 
-    # ── Camino sellado de la guia, hoy en reserva ───────────────────────────
-    "calcular_pedido": "camino sellado de la guia: arma el pedido sin pasar por el modelo",
-    "calcular_categorias_baratas": "camino sellado de la guia para el pedido por categorias",
-    "mensaje_opciones_categorias": "texto sellado de las opciones por categoria",
-    "mensaje_presupuesto_sellado": "texto sellado del presupuesto de la guia",
-    "pregunta_destinos_pendientes": "pregunta sellada por los destinos que faltan cotizar",
-    "reparto_envios_detalle": "reparto con la tarifa real de cada tramo; el reparto vivo lo escribe armar_presupuesto",
-
     # ── Compatibilidad: piezas del eje que hoy entra por otra puerta ────────
     "bloque_prompt": "bloque de compatibilidad para el prompt",
     "estampar_veredicto": "estampa el veredicto de compatibilidad en el mensaje",
@@ -82,9 +74,10 @@ DECLARADAS = {
     # ── FICHA 35: huella de importes, la usan los barridos, no el vivo ──────
     "_importes": "FICHA 35: huella de la plata. La usan test_grafo_cableado y "
                  "test_barrido_codigo, no el camino vivo.",
-    "completar": "FICHA 34: el hub ya no llama a la reposicion; snapshot en archivo/. test_hub_venta y el banco las siguen ejercitando. Salen en la 36.",
-    "reconciliar": "FICHA 34: segunda opinion, snapshot en archivo/. test_hub_venta la sigue ejercitando. Sale en la 36.",
-    "instruccion_de_preguntas": "FICHA 34: viajaba con el reconciliador. test_hub_venta la sigue ejercitando. Sale en la 36.",
+    "mas_barato_con_stock": "camino sellado de la guia: el snapshot de "
+                            "guia_pedido_20260828 lo sigue llamando",
+    "pago_de_mensaje": "parser de reparto en prosa; lo verifican sus pruebas "
+                       "y el snapshot de guia_pedido_20260828 lo sigue llamando",
 }
 
 

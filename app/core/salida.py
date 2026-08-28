@@ -48,7 +48,7 @@ from app.core import atadura_prosa as AP
 from app.core import herramientas as H
 from app.core import indice_turno as IT
 from app.core import pedido as P
-from app.core import reposicion as R
+from app.core import resolver as R
 from app.logger import get_logger
 from app.verifika import invariantes as INV
 
@@ -750,7 +750,10 @@ def _sin_afirmar_sobre_el_catalogo(texto: str, llamadas: list,
         # con `operacion=valores` no devuelve `productos` sino el censo de
         # categorias, que si es mirar el catalogo, y no tiene por que armar
         # esta guardia.
-        if l.get("herramienta") == "buscar_productos":
+        if l.get("herramienta") == "buscar_productos" or (
+                l.get("herramienta") == "consultar_productos"
+                and ((l.get("pedido") or {}).get("proyeccion") or "lista")
+                == "lista"):
             # DOS FORMAS DEL MISMO HECHO, y las dos son "no trajo lo que se
             # pidio": o volvio sin un solo producto, o volvio con el marcador
             # `rubro_real`, que es como `buscar_productos` dice "eso no es de
@@ -758,7 +761,9 @@ def _sin_afirmar_sobre_el_catalogo(texto: str, llamadas: list,
             # `no_vendemos` con alternativa entra por la segunda.
             if not (r.get("productos") or []) or r.get("rubro_real"):
                 busqueda_fallida = True
-        elif l.get("herramienta") == "consultar_catalogo":
+        elif l.get("herramienta") == "consultar_catalogo" or (
+                l.get("herramienta") == "consultar_productos"
+                and (l.get("pedido") or {}).get("proyeccion") == "catalogo"):
             # Aca si se pide la lista VACIA y no que falte: con
             # `operacion=valores` esta herramienta no devuelve `productos` sino
             # el censo de categorias, que ES mirar el catalogo y no tiene por

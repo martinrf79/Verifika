@@ -232,6 +232,10 @@ def valores(campo: str, m: dict) -> dict:
         o = _opciones(herramienta, "operacion") or ["contar"]
         return {VALIDO: o[0], BORDE: o[-1],
                 TORCIDO: "operacion_que_no_existe"}
+    if hoja == "proyeccion":
+        o = _opciones(herramienta, "proyeccion") or ["lista"]
+        return {VALIDO: o[0], BORDE: o[-1],
+                TORCIDO: "proyeccion_que_no_existe"}
     # ── Listas de moldes anidados ───────────────────────────────────────
     if hoja == "items":
         if herramienta == "registrar_pedido":
@@ -326,7 +330,7 @@ def casos(m: dict | None = None) -> list:
 # error real del 12-ago -destino compuesto MAS reparto de pago- fue exactamente
 # eso. Se barren de a pares, que es lo que la practica llama pairwise y lo que
 # caza la enorme mayoria de los defectos de interaccion.
-CON_PLATA = ("armar_presupuesto",)
+CON_PLATA = ("cotizar",)
 
 
 def pares(m: dict | None = None) -> list:

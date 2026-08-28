@@ -57,7 +57,6 @@ HABLAN_AL_CLIENTE = [
     "core/cierre.py",
     "core/leads.py",
     "core/pago.py",
-    "core/guia_pedido.py",
     "core/guardas_salida.py",
     "core/orchestrator.py",
     "core/compatibilidad.py",

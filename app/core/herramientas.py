@@ -240,11 +240,36 @@ class VerCompatibilidad(BaseModel):
                           "con buscar_productos.")
 
 
-class TomarPedido(BaseModel):
-    """Se llama SOLO cuando el cliente decide comprar o pide los datos para
-    pagar. Dispara la captura del pedido y la entrega del cobro."""
-    motivo: Literal["decide_comprar", "pide_datos_de_pago"] = Field(
-        description="Que hizo el cliente exactamente.")
+class ConsultarProductos(BaseModel):
+    """Una puerta al catalogo, con proyeccion. lista busca, catalogo agrega,
+    ficha trae un id, compatibilidad cruza. Compatibilidad no se apaga: se
+    pide por proyeccion, no por otra puerta."""
+    proyeccion: Literal["lista", "catalogo", "ficha", "compatibilidad"] = Field(
+        "lista",
+        description="lista busca, catalogo agrega, ficha trae un id, "
+                    "compatibilidad cruza.")
+    descripcion: str | None = Field(None)
+    categoria: str | None = Field(None)
+    filtros: list[Filtro] | None = Field(None)
+    ordenar_por: str | None = Field(None)
+    direccion: Literal["min", "max"] = Field("min")
+    cuantos: int = Field(3)
+    operacion: Literal["contar", "mas_barato", "mas_caro", "el_mayor",
+                       "el_menor", "valores", "donde_se_cumple"] | None = Field(
+        None)
+    campo: str | None = Field(None)
+    product_id: str | None = Field(None)
+    equipo: str | None = Field(None)
+    contra_product_id: str | None = Field(None)
+
+
+class Cotizar(BaseModel):
+    """Una puerta a la plata: envio y presupuesto."""
+    localidad: str | None = Field(
+        None, description="Localidad de envio si solo se cotiza el envio.")
+    items: list[ItemPedido] | None = Field(None)
+    destinos: list[str] | None = Field(None)
+    pago: list[PartePago] | None = Field(None)
 
 
 class ItemDeclarado(BaseModel):
@@ -440,14 +465,9 @@ class RegistrarPedido(BaseModel):
 
 _MOLDES = {
     "registrar_pedido": RegistrarPedido,
-    "buscar_productos": BuscarProductos,
-    "consultar_catalogo": ConsultarCatalogo,
-    "ficha_producto": FichaProducto,
+    "consultar_productos": ConsultarProductos,
+    "cotizar": Cotizar,
     "consultar_temas": ConsultarTemas,
-    "cotizar_envio": CotizarEnvio,
-    "armar_presupuesto": ArmarPresupuesto,
-    "ver_compatibilidad": VerCompatibilidad,
-    "tomar_pedido": TomarPedido,
 }
 
 
@@ -817,6 +837,10 @@ def validar(nombre: str, args: dict):
     """Coaccion Pydantic de los argumentos que devolvio el modelo. Devuelve el
     objeto validado, o None con el motivo logueado: un argumento fuera de molde
     no entra a una funcion que toca plata."""
+    extra = _ALIAS.get(nombre)
+    if extra:
+        nombre, inj = extra
+        args = {**inj, **(args or {})}
     modelo = _MOLDES.get(nombre)
     if modelo is None:
         return None
@@ -1033,7 +1057,7 @@ def _acotado_al_rubro(a: BuscarProductos, catalogo: list,
     estante buscar. Es un hecho de la fuente, no un juicio: la categoria existe
     en el catalogo y el cliente la nombro.
     """
-    from app.core.guia_pedido import categorias_nombradas
+    from app.core.filtros_catalogo import categorias_nombradas
     try:
         cats = categorias_nombradas(a.descripcion or "", tienda_id)
     except Exception as e:
@@ -1070,7 +1094,7 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
         pedida, alt = cnv
         alternativas = []
         if alt:
-            from app.core.guia_pedido import opciones_por_categoria
+            from app.core.filtros_catalogo import opciones_por_categoria
             alternativas = [_ficha(p, tienda_id)
                             for p in opciones_por_categoria(alt, tienda_id, k=3)]
         return {"estado": "no_vendemos", "pedido": pedida,
@@ -1119,7 +1143,7 @@ def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
             # RAM sueltos", con el catalogo lleno de memorias.
             alternativas = []
             try:
-                from app.core.guia_pedido import (categorias_nombradas,
+                from app.core.filtros_catalogo import (categorias_nombradas,
                                                   opciones_por_categoria)
                 for cat in (categorias_nombradas(a.descripcion, tienda_id)
                             or [])[:1]:
@@ -2198,31 +2222,38 @@ def ver_compatibilidad(a: VerCompatibilidad, tienda_id: str) -> dict:
             "compatibilidad": veredictos}
 
 
-def tomar_pedido(a: TomarPedido, tienda_id: str) -> dict:
-    """MARCA la decision para que el cierre corra, y cuando el cliente pide los
-    datos para pagar los TRAE de la config de la tienda.
+def consultar_productos(a: ConsultarProductos, tienda_id: str) -> dict:
+    """Una puerta al catalogo. El match y el ranking no se retocan: se pide
+    la proyeccion y corre el cuerpo que ya existia."""
+    p = a.proyeccion or "lista"
+    if p == "catalogo":
+        return consultar_catalogo(
+            ConsultarCatalogo(operacion=a.operacion or "contar",
+                              campo=a.campo, categoria=a.categoria,
+                              filtros=a.filtros), tienda_id)
+    if p == "ficha":
+        return ficha_producto(
+            FichaProducto(product_id=a.product_id or ""), tienda_id)
+    if p == "compatibilidad":
+        return ver_compatibilidad(
+            VerCompatibilidad(product_id=a.product_id or "",
+                              equipo=a.equipo,
+                              contra_product_id=a.contra_product_id),
+            tienda_id)
+    return buscar_productos(
+        BuscarProductos(descripcion=a.descripcion, categoria=a.categoria,
+                        filtros=a.filtros, ordenar_por=a.ordenar_por,
+                        direccion=a.direccion or "min",
+                        cuantos=a.cuantos or 3), tienda_id)
 
-    Lo segundo nacio del peor error medido en el camino nuevo, charla viva del
-    2-ago: el cliente pidio los datos para transferir sin presupuesto sobre la
-    mesa, el cierre no los entrego -pide un total o un lead activo- y el modelo
-    llenó el hueco INVENTANDO un CBU, un alias y un banco. Una plata a una
-    cuenta que no existe. La leccion es la misma de siempre: si el dato no se le
-    entrega, se lo inventa. Ahora se lo entrega la herramienta."""
-    out = {"estado": "registrado", "motivo": a.motivo}
-    if a.motivo != "pide_datos_de_pago":
-        return out
-    try:
-        from app.core.pago import datos_transferencia
-        d = datos_transferencia(tienda_id) or {}
-        if d.get("cbu") or d.get("alias"):
-            out["datos_de_pago"] = {
-                "titular": d.get("titular_cuenta"), "banco": d.get("banco"),
-                "cbu": d.get("cbu"), "alias": d.get("alias")}
-            out["instruccion"] = ("Pasale ESTOS datos tal cual, sin cambiar un "
-                                  "digito. No inventes ni completes ninguno.")
-    except Exception as e:
-        log.warning("tomar_pedido_cobro_error", error=str(e)[:120])
-    return out
+
+def cotizar(a: Cotizar, tienda_id: str) -> dict:
+    """Una puerta a la plata. Envio o presupuesto, segun traiga items."""
+    if a.items:
+        return armar_presupuesto(
+            ArmarPresupuesto(items=a.items, destinos=a.destinos, pago=a.pago),
+            tienda_id)
+    return cotizar_envio(CotizarEnvio(localidad=a.localidad or ""), tienda_id)
 
 
 def registrar_pedido(a: RegistrarPedido, tienda_id: str) -> dict:
@@ -2254,14 +2285,21 @@ def registrar_pedido(a: RegistrarPedido, tienda_id: str) -> dict:
 
 _CUERPOS = {
     "registrar_pedido": registrar_pedido,
-    "buscar_productos": buscar_productos,
-    "consultar_catalogo": consultar_catalogo,
-    "ficha_producto": ficha_producto,
+    "consultar_productos": consultar_productos,
+    "cotizar": cotizar,
     "consultar_temas": consultar_temas,
-    "cotizar_envio": cotizar_envio,
-    "armar_presupuesto": armar_presupuesto,
-    "ver_compatibilidad": ver_compatibilidad,
-    "tomar_pedido": tomar_pedido,
+}
+
+# Nombres que el vivo ya no despacha. ejecutar() los traduce a las cuatro
+# puertas para no romper tests ni llamadas grabadas. No vuelven a `_CUERPOS`.
+_ALIAS = {
+    "buscar_productos": ("consultar_productos", {"proyeccion": "lista"}),
+    "consultar_catalogo": ("consultar_productos", {"proyeccion": "catalogo"}),
+    "ficha_producto": ("consultar_productos", {"proyeccion": "ficha"}),
+    "ver_compatibilidad": ("consultar_productos",
+                           {"proyeccion": "compatibilidad"}),
+    "cotizar_envio": ("cotizar", {}),
+    "armar_presupuesto": ("cotizar", {}),
 }
 
 
@@ -2365,7 +2403,15 @@ def ejecutar(nombre: str, args: dict, tienda_id: str) -> dict:
     ES LA UNICA PUERTA por la que sale un resultado de herramienta, asi que es
     el lugar donde se corta lo repetido: sirve para las cuatro listas de fichas
     que arma este archivo y para la que se escriba mañana. Ver
-    `_sin_repetir_lo_comun`."""
+    `_sin_repetir_lo_comun`.
+
+    FICHA 36: nueve cuerpos a cuatro. Los nombres viejos se traducen aca para
+    que un test o una llamada grabada no se caiga; `_CUERPOS` tiene cuatro.
+    """
+    extra = _ALIAS.get(nombre)
+    if extra:
+        nombre, inj = extra
+        args = {**inj, **(args or {})}
     cuerpo = _CUERPOS.get(nombre)
     if cuerpo is None:
         return {"estado": "herramienta_desconocida", "nombre": nombre}

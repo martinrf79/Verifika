@@ -40,9 +40,8 @@ from app.core import herramientas as H
 from app.core import indice_turno as IT
 from app.core import pedido as P
 from app.core.resolver import resolver
-# El bloque sellado de la cuenta y el hallazgo todavia se leen de reposicion:
-# salida.py tambien los usa (FICHA 35). El hub ya no llama a completar.
-from app.core import reposicion as R
+# El bloque sellado de la cuenta: el hub solo pide `_bloque_presupuesto`.
+from app.core import resolver as R
 # LA ETAPA DE SALIDA, en su propio modulo desde la FICHA 10: cuatro puertas en
 # vez de dieciocho guardias sueltas. Los dos patrones de renglon de cuenta se
 # leen de alla porque alla viven las piezas que los usan.
@@ -582,7 +581,7 @@ def _bloque_hallazgo(llamadas: list, texto: str = "") -> str:
     bloque = ""
     for l in llamadas:
         r = l.get("resultado") or {}
-        if l.get("herramienta") == "buscar_productos" and r.get("bloque"):
+        if l.get("herramienta") in ("buscar_productos", "consultar_productos") and r.get("bloque"):
             bloque = str(r["bloque"])
             break
     if not bloque or not texto:
@@ -638,7 +637,7 @@ def _productos_del_turno(llamadas: list, turno: int = 0) -> list:
 
 def _carrito_del_turno(llamadas: list) -> list:
     for l in llamadas:
-        if l.get("herramienta") != "armar_presupuesto":
+        if l.get("herramienta") not in ("armar_presupuesto", "cotizar"):
             continue
         detalle = (l.get("resultado") or {}).get("detalle") or []
         # EL DESTINO POR ITEM SE CALCULABA Y NO SE GUARDABA. `armar_presupuesto`
@@ -917,7 +916,7 @@ def _senal_de_cierre(llamadas: list, mensaje: str) -> dict:
     if _RE_PIDE_COBRO.search(mensaje or ""):
         return {"intencion": "decision_compra", "confianza": 1.0,
                 "motivo": "pide_datos_de_pago"}
-    if any(l.get("herramienta") == "armar_presupuesto" for l in llamadas):
+    if any(l.get("herramienta") in ("armar_presupuesto", "cotizar") for l in llamadas):
         return {"intencion": "pregunta_especifica", "confianza": 0.9}
     return {"intencion": "exploracion", "confianza": 0.6}
 

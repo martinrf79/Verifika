@@ -83,9 +83,7 @@ mismo día, no se acumula. El candado está en
 
 | ficha | test | qué falta |
 |---|---|---|
-| **36** | `test_app_tiene_a_lo_sumo_ciento_ochenta_funciones`, `test_app_pesa_a_lo_sumo_siete_mil_trescientas_lineas` | termómetros: 181 funciones, 7306 líneas. Orden en `arquitectura/FICHA_36_el_numero.md`. La 35 ya está en origin/main. |
-| **31** | `test_el_catalogo_tiene_una_sola_puerta_interna` | cuatro cuerpos leen el mismo catálogo. No se trabaja aparte; si la 36 la pone verde de yapa, se saca la marca |
-| **32** | `test_la_plata_tiene_una_sola_puerta_interna` | tres cuerpos tocan la cuenta o el cobro. `tomar_pedido` se borra. No se trabaja aparte |
+| **36** | `test_app_tiene_a_lo_sumo_ciento_ochenta_funciones`, `test_app_pesa_a_lo_sumo_siete_mil_trescientas_lineas` | termómetros: 181 funciones, 7306 líneas. El corte de esta sesión (reposicion y guia_pedido fuera de app/, nueve cuerpos a cuatro) no llega al 30% sin sacar certificación, calculadora o el contrato. Prioridad uno manda: no se fuerza. HOY lo mide el test. |
 | 11 (cola) | `test_la_cuenta_se_arma_antes_del_reconciliador` | la cuenta se arma DESPUÉS del reconciliador, no antes. Contado entero en `arquitectura/LO_QUE_QUEDO_ABIERTO_DE_LA_11.md` |
 | 11 (cola) | `test_el_bloque_hallazgo_no_vive_en_el_hub` | falta decidir de quién son `_RE_HAY_CUENTA` y `_norm_renglon` antes de mudar `_bloque_hallazgo` fuera de `hub_venta` |
 | 11 (cola) | `test_los_guiones_que_despiertan_las_guardias_estan_grabados` | guiones 26 a 38 sin grabar, necesita la clave paga. **También prerrequisito parcial de la 24** |
@@ -102,9 +100,9 @@ mismo día, no se acumula. El candado está en
 | A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** |
 
 **Orden: 36**, una por sesión, relato en `arquitectura/PLAN_REDUCCION.md`.
-La 35 cerró: un mutador en higiene, aduana a `archivo/`. Las 31 y 32 las
-cierra la 36 si el corte las pone verdes; no se implementan aparte.
-Después de la 36: Martín mira producción, y recién ahí se optimizan las
+La 36 cortó el vivo (reposicion, guia_pedido, nueve a cuatro) y cerró 31 y 32.
+Los termómetros no cierran: el stay-list del motor ya pesa más que 7306.
+Después: Martín mira producción, y recién ahí se optimizan las
 herramientas que queden y se atacan los errores de razonamiento. La 24
 y la 29 no se tocan sin test.
 
@@ -126,8 +124,11 @@ y la 29 no se tocan sin test.
 | ~~19~~ | el camino al cobro | `camino_al_cobro` 8/15 → **10/15**. `sin_cobro_inventado` estaba medio ciega: 5 de 7 formas pasaban. Y el candado de las excepciones: en las guardias de salida quedan **cero** `except` que atrapan y siguen |
 | ~~20~~ | auditar los engranajes ciegos | 3 ARREGLADAS, 1 PROBADA. `sin_descuento_inventado` 6 de 8 pasaban, `sin_negar_lo_traido` 6 de 8, `sin_json` 4 de 7. Y un rojo falso vivo: `sin_negar_lo_traido` borraba la aclaración honesta y le vendía una RAM de 8 a quien pidió 16 |
 | ~~21~~ | la línea del cobro mataba la oferta | `punto_de_oferta` juzga `texto_del_modelo`, la frontera que `hub_venta` guarda antes de la primera puerta. Censo de oferta **OFRECIDO 22 → 26**, `NO_CORRESPONDE` 10 → 6; la vara entera sin un solo cambio turno por turno |
+| ~~31~~ | una puerta al catálogo | `_CUERPOS` con `consultar_productos`; buscar/catalogo/ficha/compat salieron |
+| ~~32~~ | una puerta a la plata | `_CUERPOS` con `cotizar`; `tomar_pedido` borrado |
 | ~~34~~ | el nexo: interpretar → resolver → redactar | hub sin `reconciliar(` ni `R.completar`; nace `app/core/resolver.py`; snapshot en `archivo/` |
 | ~~35~~ | la puerta: un mutador, la prosa no se reescribe | higiene solo `componer`; `aduana.py` a `archivo/`; techo PLAN 18→17 |
+| ~~36~~ | el número, primer corte | `reposicion.py` y `guia_pedido.py` a `archivo/`; nueve cuerpos a cuatro; techo PLAN 17→15. Los termómetros siguen: llegar a 181/7306 corta el motor |
 
 ---
 

@@ -41,7 +41,7 @@ if str(_RAIZ) not in sys.path:
 from banco_pruebas import sim_firestore  # noqa: E402
 sim_firestore.install()
 
-from app.core import reposicion as H  # noqa: E402
+from app.core import resolver as H  # noqa: E402
 from app.verifika import grafo as G  # noqa: E402
 from banco_pruebas.casete import CASETES, reproducir_charla  # noqa: E402
 
@@ -50,8 +50,7 @@ from banco_pruebas.casete import CASETES, reproducir_charla  # noqa: E402
 # cambio, los nombres y la medicion no. Se envuelven una por una a proposito,
 # que es lo que le da a este instrumento su independencia del grafo: mide
 # desde afuera y por eso pudo confirmar el 44% de `cuenta_repuesta`.
-REPO = ["_busqueda_de_lo_declarado", "_condicion_faltante_aplicada",
-        "_cuenta_con_lo_declarado", "_reparto_de_pago_declarado",
+REPO = ["_cuenta_con_lo_declarado", "_reparto_de_pago_declarado",
         "_supuesto_de_pago", "_bloques_a_uno"]
 
 CORRIO = defaultdict(int)

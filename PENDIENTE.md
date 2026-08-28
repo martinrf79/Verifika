@@ -29,9 +29,11 @@ PLAN       el recorte. Baja a medida que se hace.
 El detalle de cada paso, con su número de hoy y su objetivo, está en
 `tests/test_plan_del_recorte.py`. La unidad de trabajo abierta, en `arquitectura/`.
 
-**28-ago:** FICHA 35 en origin/main. Siguiente: FICHA 36, el número,
-escrita en `arquitectura/FICHA_36_el_numero.md`. El número vivo sale de
-`pytest`.
+**28-ago:** FICHA 36: `reposicion.py` y `guia_pedido.py` salieron de `app/`,
+nueve cuerpos a cuatro, 31 y 32 verdes, techo PLAN 17→15. Los termómetros no
+cierran: 563 funciones / 22547 líneas contra 181 / 7306. Llegar al 30%
+exige cortar certificación, calculadora o el contrato; prioridad uno lo
+prohíbe. El número vivo sale de `pytest`.
 
 ---
 

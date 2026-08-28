@@ -140,9 +140,10 @@ def fuentes(llamadas: list) -> dict:
                 _sumar(t["tema"], t)
         # El envio no tiene id propio: se lo nombra por la herramienta, que es
         # como el modelo lo va a nombrar si lo marca.
-        if l.get("herramienta") == "cotizar_envio":
+        if l.get("herramienta") in ("cotizar_envio", "cotizar"):
             _sumar("cotizar_envio", r)
             _sumar("envio", r)
+            _sumar("cotizar", r)
     return idx
 
 

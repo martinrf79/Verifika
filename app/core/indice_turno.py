@@ -244,7 +244,8 @@ _VACIAS = {"que", "las", "los", "una", "unas", "unos", "con", "sin", "para",
 
 # Las herramientas que traen material con el que se contesta un punto.
 _TRAEN = ("buscar_productos", "ficha_producto", "comparar_productos",
-          "armar_presupuesto", "cotizar_envio", "consultar_temas")
+          "armar_presupuesto", "cotizar_envio", "consultar_temas",
+          "consultar_productos", "cotizar")
 
 
 def _palabras(texto: str) -> list:
@@ -348,8 +349,12 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
         # asi que ampliar la fuente de evidencia de un tipo viejo mueve
         # numeros que esta unidad no tiene que mover.
         _herr = l.get("herramienta")
-        if _herr not in _TRAEN and not (tipo == "compatibilidad"
-                                        and _herr == "ver_compatibilidad"):
+        if _herr not in _TRAEN and not (
+                tipo == "compatibilidad"
+                and (_herr == "ver_compatibilidad"
+                     or (_herr == "consultar_productos"
+                         and (l.get("pedido") or {}).get("proyeccion")
+                         == "compatibilidad"))):
             continue
         r = l.get("resultado") or {}
         ped = l.get("pedido") or {}
@@ -386,7 +391,8 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
             if r.get("localidad"):
                 fuera.append(str(r["localidad"]))
 
-        if tipo == "item" and l.get("herramienta") == "armar_presupuesto":
+        if tipo == "item" and l.get("herramienta") in (
+                "armar_presupuesto", "cotizar"):
             # La cuenta contesta el item nombrandolo en su renglon.
             for d in (r.get("detalle") or []):
                 if d.get("nombre"):
@@ -547,7 +553,7 @@ def anclajes(punto: dict, llamadas: list, memoria: list | None = None) -> list:
 # proposito: lo que pasa por ahi YA es el pedido, asi que no hay nada que
 # ofrecer. `cotizar_envio` y `consultar_temas` no traen producto.
 _CERTIFICAN_PRODUCTO = ("buscar_productos", "ficha_producto",
-                        "comparar_productos")
+                        "comparar_productos", "consultar_productos")
 
 # LOS TRES MOTIVOS, Y NINGUNO MAS. Cerrado a proposito: un motivo libre
 # convierte `NO_CORRESPONDE` en un cajon donde cae todo lo que no se ofrecio, y
@@ -743,7 +749,7 @@ def _ya_en_el_pedido(llamadas: list, memoria: list | None) -> set:
             fuera.add(_n(nombre))
 
     for l in (llamadas or []):
-        if l.get("herramienta") != "armar_presupuesto":
+        if l.get("herramienta") not in ("armar_presupuesto", "cotizar"):
             continue
         for d in ((l.get("resultado") or {}).get("detalle") or []):
             if isinstance(d, dict):
@@ -1252,7 +1258,11 @@ def _evidencia(punto: dict, llamadas: list) -> str:
             # contra que comparar— se descartaba, y el punto se iba con la
             # casilla vacia como si nadie lo hubiera mirado. Se ata por el
             # EQUIPO, que es lo que la llamada y el punto sí comparten.
-            if l.get("herramienta") != "ver_compatibilidad":
+            _herr = l.get("herramienta")
+            _proy = (l.get("pedido") or {}).get("proyeccion")
+            if _herr != "ver_compatibilidad" and not (
+                    _herr == "consultar_productos"
+                    and _proy == "compatibilidad"):
                 continue
             equipo = str(r.get("equipo")
                          or (l.get("pedido") or {}).get("equipo") or "")

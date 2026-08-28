@@ -273,7 +273,7 @@ def correr_codigo(tienda_id: str = TIENDA) -> dict:
     from banco_pruebas import sim_firestore
     sim_firestore.install()
     from app.core import hub_venta as HV
-    from app.core import reposicion as R
+    from app.core import resolver as R
 
     declarado, llamadas = _llamadas_ideales(tienda_id)
     llamadas = R._cuenta_con_lo_declarado(llamadas, declarado, tienda_id, "obj")

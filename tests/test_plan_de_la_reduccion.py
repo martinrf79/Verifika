@@ -46,7 +46,7 @@ def _lineas() -> int:
 
 
 @pytest.mark.xfail(strict=True, reason=(
-    "PLAN: FICHA 36. app/ queda en el 30% de funciones. HOY 604 funciones en "
+    "PLAN: FICHA 36. app/ queda en el 30% de funciones. HOY 563 funciones en "
     "app/, medido por ast. OBJETIVO 181 (el 30%). Relato y que se queda vs "
     "que va a archivo/ en arquitectura/PLAN_REDUCCION.md. No se cierra "
     "borrando certificacion ni calculadora."))
@@ -57,7 +57,7 @@ def test_app_tiene_a_lo_sumo_ciento_ochenta_funciones():
 
 
 @pytest.mark.xfail(strict=True, reason=(
-    "PLAN: FICHA 36. app/ queda en el 30% de lineas. HOY 24355 lineas en "
+    "PLAN: FICHA 36. app/ queda en el 30% de lineas. HOY 22547 lineas en "
     "app/**/*.py. OBJETIVO 7306 (el 30%). El 25% son 6089 y es piso si el "
     "corte lo da, no una vara para forzar. Misma ficha que el termometro "
     "de funciones: arquitectura/PLAN_REDUCCION.md."))

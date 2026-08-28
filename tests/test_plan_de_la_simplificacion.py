@@ -62,15 +62,6 @@ _PUERTAS_CATALOGO = (
 )
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: FICHA 31. El catalogo tiene UNA puerta interna. HOY hay 4 cuerpos "
-    "en `_CUERPOS` que leen el mismo catalogo cambiando la proyeccion: "
-    "buscar_productos, consultar_catalogo, ficha_producto, ver_compatibilidad. "
-    "El modelo ya no las ve (FICHA 06), pero `_derivar_las_busquedas` sigue "
-    "eligiendo entre las cuatro. OBJETIVO 1: un solo cuerpo "
-    "`consultar_productos` con un campo de proyeccion. El barrido de "
-    "herramientas se reapunta en el MISMO commit: hoy afirma "
-    "`len(herramientas()) == 9`."))
 def test_el_catalogo_tiene_una_sola_puerta_interna():
     puertas = set(_PUERTAS_CATALOGO) & _cuerpos()
     assert len(puertas) <= 1, (
@@ -87,13 +78,6 @@ _PUERTAS_PLATA = (
 )
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: FICHA 32. La plata tiene UNA puerta interna. HOY hay 3 cuerpos en "
-    "`_CUERPOS` que tocan la cuenta o el cobro: cotizar_envio, "
-    "armar_presupuesto, tomar_pedido. Cotizar un envio es un presupuesto con "
-    "solo envio, y tomar_pedido no se llamo en los turnos grabados cuando el "
-    "modelo elegia: la senal de cobro ya sale por camino_cobro. OBJETIVO 1: "
-    "un solo cuerpo `cotizar`. tomar_pedido no queda 'por si acaso'."))
 def test_la_plata_tiene_una_sola_puerta_interna():
     puertas = set(_PUERTAS_PLATA) & _cuerpos()
     assert len(puertas) <= 1, (
