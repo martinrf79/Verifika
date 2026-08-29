@@ -153,13 +153,17 @@ def _mapa_en_proceso_limpio(tmp_path) -> dict:
     FAQ, registro de campos, geo de CP-, asi que una funcion que ya corrio en
     otro test no se vuelve a ejecutar y el mapa la contaria como ciega. Medido:
     adentro de la bateria daban tres funciones ciegas de mas, y cambiaban segun
-    el orden. En un subproceso el punto de partida es siempre el mismo."""
+    el orden. En un subproceso el punto de partida es siempre el mismo.
+
+    El timeout es 1800 y no 600: adentro `mapa.py` corre la bateria bajo
+    cobertura con tope de 2700s. El 29-ago el candado mato el mapa a los
+    10 minutos y el nocturno quedo rojo sin medir la zona ciega."""
     import subprocess
     salida = tmp_path / "mapa.json"
     r = subprocess.run(
         [sys.executable, str(_RAIZ / "banco_pruebas" / "mapa.py"),
          "--json", str(salida)],
-        capture_output=True, text=True, timeout=600, cwd=str(_RAIZ))
+        capture_output=True, text=True, timeout=1800, cwd=str(_RAIZ))
     assert salida.exists(), (
         f"el mapa no corrio: {r.returncode}\n{r.stderr[-2000:]}")
     return json.loads(salida.read_text(encoding="utf-8"))
