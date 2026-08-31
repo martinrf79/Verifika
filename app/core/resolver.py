@@ -607,18 +607,37 @@ def _completar_el_declarado(declarado: dict, tienda_id: str) -> dict:
         log.info("reparto_completado_del_mensaje",
                  destinos=len(grupos),
                  unidades=sum(i["cantidad"] for i in items))
-        # La contradiccion del teclado dejo de serlo: ya esta en el pedido.
-        dudar = []
-        for c in (fuera.get("contradicciones") or []):
-            t = H._norm(c)
-            if any(H._norm(i.get("que")) in t or H._norm(i.get("categoria")) in t
-                   for i in items if i.get("que")):
-                continue
-            dudar.append(c)
-        if dudar:
-            fuera["contradicciones"] = dudar
-        else:
-            fuera.pop("contradicciones", None)
+        # EL CODIGO NO CIERRA UNA CONTRADICCION. ACA VIVIA EL FILTRO QUE LA
+        # BORRABA, y se va entero (31-ago-2026).
+        #
+        # Decia "la contradiccion del teclado dejo de serlo: ya esta en el
+        # pedido", y descartaba toda contradiccion cuyo texto nombrara una
+        # categoria que hubiera quedado en el carrito. La regla estaba dada
+        # vuelta: que el teclado este en el carrito es JUSTAMENTE lo que la
+        # hace una contradiccion, porque el cliente nunca pidio comprarlo; que
+        # el codigo lo haya metido no es el cliente contestando.
+        #
+        # MEDIDO EN VIVO, turno 2dde2ad0 del 31-ago, la charla real de Martin.
+        # El decisor detecto DOS contradicciones -el teclado que no estaba en
+        # la lista, y la distribucion que no coincide con lo pedido-, este
+        # filtro las borro a las dos porque las dos nombran categorias del
+        # carrito, e `indice_turno` ya ni vio el campo: en el log, `campos` no
+        # trae `contradicciones`. El cliente pidio seis articulos y se fue con
+        # siete y un teclado de $12.000 que nunca pidio, sin que nadie le
+        # preguntara nada.
+        #
+        # Y LA MAQUINARIA DE ABAJO YA ESTABA BIEN Y COMPLETA. `indice_turno`
+        # convierte cada contradiccion en un punto, `_cubierto` le exige el
+        # signo de pregunta, y el estado sale AMBIGUO si el turno pregunto o
+        # CONFLICTO si no: ahi esta escrito que una contradiccion "no puede
+        # terminar RESUELTA por el codigo". Este filtro contradecia esa regla
+        # tres archivos mas alla. Sacarlo no agrega una pieza: reconecta la que
+        # ya estaba.
+        #
+        # La contradiccion se cierra de UNA sola manera: el turno la pregunta y
+        # el cliente contesta. El item SI se queda en la cuenta -un detalle no
+        # tira una venta, y el cliente tiene que ver el presupuesto-, pero sale
+        # con la pregunta al lado.
     fuera["items"] = items
     return fuera
 
@@ -1113,9 +1132,29 @@ def _reparto_de_pago_declarado(llamadas: list, declarado: dict, tienda_id: str,
         grande = max(puesto, key=lambda x: float(x.get("porcentaje") or 0))
         if "transferencia" in H._norm(grande.get("medio")):
             return llamadas                      # ya esta del lado que conviene
-        log.warning("reparto_de_pago_al_reves", trace_id=trace_id,
-                    tenia=[(p.get("medio"), p.get("porcentaje"))
-                           for p in puesto])
+        # DOS SITUACIONES DISTINTAS, DOS AVISOS DISTINTOS (31-ago-2026).
+        #
+        # La correccion de abajo es la misma para las dos y esta bien que lo
+        # sea; lo que no puede ser el mismo es el DIAGNOSTICO. Hasta hoy este
+        # aviso decia `reparto_de_pago_al_reves` -o sea "el modelo eligio el
+        # medio que le cuesta mas al cliente"- tambien cuando el modelo no
+        # habia elegido NINGUN medio. Medido en el turno 2dde2ad0 del 31-ago:
+        # `tenia=[['', 70], ['', 30]]`, dos medios vacios, y el log dijo "al
+        # reves". No estaba al reves: no estaba.
+        #
+        # POR QUE IMPORTA UNA PALABRA EN UN LOG. Porque los logs son el unico
+        # instrumento con el que se mira produccion desde afuera, y un aviso que
+        # nombra mal lo que vio manda a buscar el defecto al lugar equivocado.
+        # Es la misma enfermedad que `logger.py` ya documenta por el otro lado.
+        # Ademas los dos casos se arreglan distinto si algun dia hay que
+        # arreglarlos: el volado del modelo se corrige acá, y el campo vacio se
+        # corrige en el contrato de `registrar_pedido`.
+        sin_medio = not any(H._norm(p.get("medio")) for p in puesto)
+        log.warning(
+            "reparto_de_pago_sin_medio" if sin_medio
+            else "reparto_de_pago_al_reves",
+            trace_id=trace_id,
+            tenia=[(p.get("medio"), p.get("porcentaje")) for p in puesto])
     args["pago"] = [{"medio": "transferencia", "porcentaje": mayor},
                     {"medio": "mercado pago", "porcentaje": menor}]
     r = H.ejecutar("cotizar", args, tienda_id)

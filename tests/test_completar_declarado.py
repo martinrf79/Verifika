@@ -73,7 +73,23 @@ def test_el_mensaje_completa_item_ciudad_y_el_teclado():
     assert all(i.get("destino") for i in items), items
     assert any("teclado" in (i.get("categoria") or i.get("que") or "").lower()
                for i in items), items
-    assert not fuera.get("contradicciones"), fuera.get("contradicciones")
+    # LA CONTRADICCION SOBREVIVE, y hasta el 31-ago esta linea afirmaba lo
+    # contrario. El requisito cambio de verdad y lo cambio una charla real: en
+    # el turno 2dde2ad0 el cliente pidio SEIS articulos, el codigo completo el
+    # reparto leyendo el mensaje, borro las dos contradicciones porque nombraban
+    # categorias que habian quedado en el carrito, y el cliente se fue con siete
+    # unidades y un teclado de $12.000 que nunca pidio, sin una sola pregunta.
+    #
+    # Que el teclado este en el carrito no cierra la contradiccion: es lo que la
+    # abre. Completar el reparto es merito del codigo y esta bien que lo haga;
+    # decidir por el cliente que ademas se lo lleva, no. Las dos cosas conviven
+    # y por eso este test las afirma juntas: el item se queda -abajo se
+    # comprueba que Concordia sale con sus dos unidades- y la contradiccion
+    # tambien, para que el turno la pregunte.
+    assert fuera.get("contradicciones"), (
+        "el codigo se comio la contradiccion al completar el reparto")
+    assert any("teclado" in c.lower() for c in fuera["contradicciones"]), \\
+        fuera["contradicciones"]
     # Cordoba: auricular + mouse. Concordia: teclado + mouse.
     def _en(ciudad):
         return [i for i in items if ciudad in H._norm(i.get("destino"))]
