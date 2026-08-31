@@ -29,10 +29,13 @@ PLAN       el recorte. Baja a medida que se hace.
 El detalle de cada paso, con su número de hoy y su objetivo, está en
 `tests/test_plan_del_recorte.py`. La unidad de trabajo abierta, en `arquitectura/`.
 
-**28-ago:** La FICHA 43 cerró: si se abrieron items y pide_precio, la
-cuenta sellada entra al WhatsApp. El supuesto de pago y el camino al
-cobro no se inyectan si esa familia no se abrió. Memoria sigue nombrada,
-sin detectar.
+**31-ago:** El puente de lectura de produccion quedo enchufado
+(`.github/workflows/puente_cowork.yml`, issue 31): se pide `/logs` en un
+comentario y vuelve el volcado de Cloud Run mas la auditoria de charlas
+reales, con WIF y sin ninguna clave. Con eso se leyo el turno `2dde2ad0`
+de la charla de Martin y se cerro lo que mostro: el codigo ya no borra
+contradicciones, y el aviso del reparto de pago distingue "sin medio" de
+"al reves".
 
 ---
 
@@ -60,3 +63,4 @@ sin detectar.
 - **ESPERA A MARTIN** · El sistema SIN LLM está medido en `banco_pruebas/puerta_determinista.py` y el número es alto. Lo que ninguna pieza ve es la NEGACIÓN —"el teclado sacalo"— y lo que no tiene pieza es `pide_precio` y `contradicciones`. Sirve como modo degradado para cuando el modelo se cae; NO se deploya en paralelo al vivo. **SU VARA NO ES UNA VARA Y SE PUEDE CONGELAR (FICHA 18, sin tocar).** Compara el codigo determinista contra el `registrar_pedido` que declaro el MODELO, y esas declaraciones viven adentro de los casetes: cada regrabacion cambia el blanco y el porcentaje se mueve solo -y el denominador tambien, 53 -> 54 turnos, asi que los dos numeros ni siquiera se comparan-. Congelarla es barato porque el dato ya esta en el repo: se copian las declaraciones de hoy a un archivo propio, se apunta el banco a ese archivo y no a los casetes vivos. Ahi el numero pasa a medir SOLO el codigo, que es lo que dice medir, y cambiar la referencia se vuelve un commit deliberado en vez de un efecto de otra tarea. **No hay que sacarla**: la pregunta que contesta -¿el sistema contesta con el LLM apagado?- es real y no hay otro numero para eso. Pero al cortar el juego congelado conviene AUDITARLO una vez a mano, porque hoy el techo del banco es "coincide con lo que dijo el modelo" y no "esta bien": si una declaracion estaba mal, el codigo determinista pierde puntos por acertar.
 - **ESPERA A MARTIN** · `villa, Buenos Aires` resuelve a un CP que el cliente no nombró. Daño chico —misma tarifa de interior— pero es el sistema eligiendo por el cliente. Se arregla en `geo_cp.resolver`.
 - **ESPERA A MARTIN** · Cuánto tiempo se guardan las conversaciones y con qué criterio se borran. Desde el 19-ago el bot pide solo el nombre, así que la superficie es chica, pero la decisión de retención es suya y conviene tomarla antes de vender a una empresa.
+- **ESPERA A MARTIN** · **La restriccion de ORIGEN no se puede cumplir con la fuente de hoy, y es la unica prioridad que el cliente declaro.** Medido en el turno `2dde2ad0` del 31-ago: las cuatro busquedas con `filtros=['origen']` volvieron `ninguno_cumple_del_todo`, las cuatro. El campo `origen` del catalogo es prosa -"Marca Genius de Taiwan. Fabricado en China."-, asi que "las menos partes chinas posibles" no se puede filtrar NI ORDENAR, y el turno termino tirando el origen de dos categorias de cuatro sin contestar el criterio. Encima el modelo salio con un universal falso sobre el catalogo -`hub_venta_afirmo_sobre_el_catalogo`, `se_cumple_en=['almacenamiento externo','procesador']`- que la guardia borro bien. **La decision es de FUENTE y es tuya:** que campo normalizado se agrega -pais de fabricacion, o un grado- y si la restriccion ORDENA en vez de filtrar, que es lo que evita el cero. Mientras no exista ese campo, cualquier arreglo de codigo es cosmetico.

@@ -153,3 +153,64 @@ def test_el_reparto_de_pago_sobrevive_cuando_el_codigo_rehace_la_cuenta(
             "el reparto de pago no salio en la cuenta:\n" + bloque)
     finally:
         set_current_estado(None)
+
+
+def test_el_aviso_distingue_sin_medio_de_al_reves(firestore_doble, monkeypatch):
+    """EL LOG NO PUEDE NOMBRAR MAL LO QUE VIO.
+
+    La correccion es la misma en los dos casos -el 70 va a transferencia, que
+    es la que tiene descuento- y esta bien que lo sea. El DIAGNOSTICO no puede
+    ser el mismo. Hasta el 31-ago el aviso decia `reparto_de_pago_al_reves`
+    tambien cuando el modelo no habia elegido NINGUN medio: medido en el turno
+    2dde2ad0 de la charla real, `tenia=[['', 70], ['', 30]]` y el log dijo "al
+    reves". No estaba al reves: no estaba.
+
+    Importa porque los logs son el unico instrumento con el que se mira
+    produccion desde afuera, y ademas los dos casos se arreglan en lugares
+    distintos: el volado del modelo en `_reparto_de_pago_declarado`, el campo
+    vacio en el contrato de `registrar_pedido`.
+    """
+    from app.core.contexto_turno import set_current_tienda
+    from app.core.estado_venta import set_current_estado
+
+    set_current_tienda("verifika_prod")
+    set_current_estado({})
+
+    declarado = {
+        "pide_precio": True,
+        "items": [{"que": "mouse", "cantidad": 2, "categoria": "mouse"}],
+        "reparto_pago": [{"porcentaje": 70}, {"porcentaje": 30}],
+    }
+    memoria = [{"id": "MOU0023", "nombre": "Mouse Genius DX-110 Negro",
+                "categoria": "mouse"}]
+    vistos = []
+    monkeypatch.setattr(R.log, "warning",
+                        lambda ev, **kw: vistos.append(ev))
+
+    def _avisos(pago_puesto):
+        llamadas = R._cuenta_con_lo_declarado([], dict(declarado),
+                                              "verifika_prod", "t-aviso",
+                                              memoria=memoria)
+        for l in llamadas:
+            if l.get("herramienta") in ("cotizar", "armar_presupuesto"):
+                l.setdefault("pedido", {})["pago"] = pago_puesto
+        vistos.clear()
+        R._reparto_de_pago_declarado(llamadas, dict(declarado),
+                                     "verifika_prod", "t-aviso")
+        return list(vistos)
+
+    try:
+        # SIN MEDIO: el modelo mando porcentajes pelados. Es el caso real.
+        vacio = _avisos([{"medio": "", "porcentaje": 70},
+                         {"medio": "", "porcentaje": 30}])
+        assert "reparto_de_pago_sin_medio" in vacio, vacio
+        assert "reparto_de_pago_al_reves" not in vacio, vacio
+
+        # AL REVES: el modelo SI eligio, y eligio el que le cuesta mas al
+        # cliente. Ese aviso tiene que seguir existiendo con su nombre.
+        reves = _avisos([{"medio": "mercado pago", "porcentaje": 70},
+                         {"medio": "transferencia", "porcentaje": 30}])
+        assert "reparto_de_pago_al_reves" in reves, reves
+        assert "reparto_de_pago_sin_medio" not in reves, reves
+    finally:
+        set_current_estado(None)
