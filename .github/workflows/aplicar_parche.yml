@@ -1,0 +1,111 @@
+name: aplicar parche
+
+# EL BRAZO DEL PUENTE: la sesion de analisis tambien puede MANDAR codigo.
+#
+# POR QUE EXISTE (Martin, 31-ago-2026). El puente de lectura ya andaba, pero
+# para escribir quedaba un solo camino: mandar el ARCHIVO ENTERO por la
+# integracion de GitHub, porque el proxy de git de esa sesion no le inyecta
+# credencial y `git push` le da 403. Para un arreglo de cuatro lineas en
+# `resolver.py` eso son 1.418 lineas retipeadas a mano, y ahi el problema no es
+# el gasto: es que un archivo de 70 KB copiado a mano se puede corromper en un
+# renglon del medio y la corrupcion no se ve. Un parche, en cambio, lo aplica
+# `git am`, que no se equivoca y que si no puede aplicarlo AVISA y no toca nada.
+#
+# COMO SE USA. Se dejan uno o mas `.patch` -salidos de `git format-patch`- en
+# `archivo/parches/`. Este workflow los aplica en orden con `git am`, que
+# conserva el mensaje y el autor de cada commit tal cual se escribieron, borra
+# los parches ya aplicados y pushea.
+#
+# POR QUE LOS PARCHES VIVEN EN `archivo/` Y NO EN `.github/`. Porque `archivo/`
+# ya esta en el `paths-ignore` de `deploy.yml`, asi que dejar un parche no
+# dispara un deploy del bot. Sin eso, cada parche ensuciaria el historial con
+# una construccion que no cambia una linea de lo que corre, que es justo lo que
+# ese `paths-ignore` esta escrito para evitar.
+#
+# Y EL DEPLOY SE DISPARA A MANO AL FINAL, que es la parte que hay que saber:
+# un push hecho con el `GITHUB_TOKEN` NO dispara workflows. Sin el disparo
+# explicito de abajo, el arreglo entraria a `main` y el bot vivo seguiria con el
+# codigo viejo, en silencio, que es la peor de las fallas posibles. El disparo
+# va a `deploy.yml`, que ya trae adelante el gate de la bateria offline: si un
+# test se pone rojo, el deploy ni arranca.
+#
+# LA GUARDA, la misma del puente y por el mismo motivo: el repo es PUBLICO.
+# Solo se aplica lo que dejo martinrf79.
+
+on:
+  push:
+    paths:
+      - 'archivo/parches/*.patch'
+
+permissions:
+  contents: write
+  issues: write
+  actions: write   # para disparar deploy.yml al final
+
+jobs:
+  aplicar:
+    if: github.actor == 'martinrf79'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout con historia
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Aplicar los parches
+        id: am
+        run: |
+          set -e
+          git config user.name "puente"
+          git config user.email "puente@users.noreply.github.com"
+          shopt -s nullglob
+          PARCHES=(archivo/parches/*.patch)
+          if [ ${#PARCHES[@]} -eq 0 ]; then
+            echo "No hay parches que aplicar."
+            echo "hubo=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # EN ORDEN, y con `git am`, que conserva mensaje y autor de cada
+          # commit. Si uno no aplica limpio, `git am` corta y deja el arbol como
+          # estaba: se prefiere no aplicar nada antes que aplicar la mitad.
+          printf 'Parches a aplicar:\n'; printf '  %s\n' "${PARCHES[@]}"
+          git am --3way "${PARCHES[@]}" || {
+            git am --abort || true
+            echo "hubo=error" >> "$GITHUB_OUTPUT"
+            exit 1
+          }
+          # Los parches ya aplicados no se quedan: el deposito no es una cola
+          # que crece. Se borran en su propio commit para que `git log` muestre
+          # que fue una entrega y no parte del arreglo.
+          git rm -q archivo/parches/*.patch
+          git commit -q -m "Parches aplicados y sacados del deposito."
+          git push origin HEAD:main
+          echo "hubo=si" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Disparar el deploy
+        if: steps.am.outputs.hubo == 'si'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Un push hecho con el GITHUB_TOKEN no dispara workflows, asi que el
+          # deploy hay que pedirlo. `deploy.yml` corre la bateria antes de
+          # deployar, o sea que esto no saltea ningun gate.
+          gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
+
+      - name: Contar como salio
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CORRIDA: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # Siempre se avisa, salga bien o mal, y en el mismo issue del puente:
+          # es el unico lugar donde la sesion de analisis puede leer la
+          # respuesta. Un brazo que trabaja y no contesta no sirve de nada.
+          case "${{ steps.am.outputs.hubo }}" in
+            si)    CUERPO="Parches aplicados en main, commit ${{ steps.am.outputs.sha }}. Deploy disparado; el gate de la bateria corre adelante. $CORRIDA" ;;
+            no)    CUERPO="No habia parches en archivo/parches/. $CORRIDA" ;;
+            *)     CUERPO="NO se aplico nada: git am se nego y el arbol quedo como estaba. Hay que regenerar el parche contra el main de ahora. $CORRIDA" ;;
+          esac
+          gh issue comment 31 --repo "$GITHUB_REPOSITORY" --body "$CUERPO"
