@@ -35,15 +35,16 @@ if str(_RAIZ) not in sys.path:
 # LOS DOS NUMEROS, ESCRITOS. No se deducen: se miden y se anotan, y el dia que
 # cambien la bateria se pone roja y obliga a mirar por que.
 #
-#   22  los HUERFANOS: las piezas de adentro de las puertas. FICHA 35: sale
-#       aduana (ya no es _pieza de higiene). 23 - 1 = 22. Se cuentan a
-#       proposito: son engranajes reales del turno y un censo que los tira
-#       a una lista de nombres miente.
+#   23  los HUERFANOS: las piezas de adentro de las puertas. FICHA 35: sale
+#       aduana (ya no es _pieza de higiene). 23 - 1 = 22. FICHA 44 (31-ago):
+#       entra `sin_continuidad_fantasma`, novena pieza de `procedencia`.
+#       22 + 1 = 23. Se cuentan a proposito: son engranajes reales del turno
+#       y un censo que los tira a una lista de nombres miente.
 _DECLARADOS = 14
-# EL 22 SON las piezas de adentro de salida y de la cuenta del resolver, mas
+# EL 23 SON las piezas de adentro de salida y de la cuenta del resolver, mas
 # camino_al_cobro. El nodo declarado es la PUERTA; las piezas registran una
 # por una.
-_HUERFANOS = 22
+_HUERFANOS = 23
 
 
 def _censar_un_casete():

@@ -897,6 +897,162 @@ _RE_HAY_CUENTA = re.compile(
     r"(?im)^\s*(?:presupuesto\s*:|subtotal\s*:|total(?:\s+final)?\s*:)")
 
 
+# ── LA OFERTA FANTASMA (FICHA 44) ───────────────────────────────────────────
+# "COMO YA CONOCES X" CUANDO ESTE TURNO NUNCA TRAJO X. Medido dos veces,
+# separadas por 17 dias y ocho fichas (34 a 43): reproduciendo el casete
+# `81_charla_real_12ago_cierre` con el codigo de HOY, y despues en el WhatsApp
+# real de Martin del 29-ago, la MISMA frase sobre el MISMO producto -"como ya
+# conoces los Auriculares Redragon Zeus X en color blanco"- cuando `llamadas`
+# solo trajo el negro. No es plata (la atadura de numeros no la mira, la
+# oracion no tiene un solo digito) y no es un universal sobre los 880
+# (`_sin_afirmar_sobre_el_catalogo` caza otra forma): es una afirmacion de
+# CONTINUIDAD -el bot da por sabido algo puntual que el turno no certifico.
+#
+# LA MISMA PUERTA QUE LA ATADURA, sin agrandar el prompt. `AP.fuentes()` ya
+# arma el indice de lo que las herramientas trajeron ESTE turno; alcanza para
+# vetar un color o un nombre propio que la oracion da por conocido y que no
+# esta ahi. No hace falta memoria de charla ni una llamada nueva al modelo.
+#
+# ES CONSERVADORA A PROPOSITO (regla 12: un rojo falso que mutea es peor que
+# el defecto que caza). Solo se poda cuando la clausula tiene una SEÑAL
+# concreta -un color, o un nombre propio de dos o mas palabras seguidas, o un
+# codigo con digitos como "DX-110"- y esa señal falta en lo que el turno trajo.
+# Una frase de continuidad sin ninguna señal puntual ("como hablamos, cualquier
+# duda me escribis") no tiene nada que contrastar y se deja intacta.
+_RE_CONTINUIDAD = re.compile(
+    r"\bya\s+(?:conoc[eé]s|sab[eé]s)\b|"
+    r"\bcomo\s+(?:ya\s+|te\s+)*(?:conoc[eé]s|sab[eé]s|hablamos|charlamos|"
+    r"coment[eé]|dije|vimos)\w*\b|"
+    r"\bretomamos\s+lo\s+que\s+ven[ií]amos\s+(?:hablando|charlando)\b",
+    re.IGNORECASE)
+
+# Los colores son la señal mas comun del defecto real (una variante que no es
+# la que trajo el turno). Normalizados como los deja `H._norm` -sin acentos.
+_COLORES = {
+    "blanco", "blanca", "negro", "negra", "rojo", "roja", "azul", "gris",
+    "plateado", "plateada", "plata", "dorado", "dorada", "verde", "amarillo",
+    "amarilla", "celeste", "violeta", "naranja", "marron", "beige", "rosa",
+    "turquesa", "bordo", "morado", "morada",
+}
+_RE_PROPIO = re.compile(r"\b[A-ZÁÉÍÓÚ][a-zA-Zá-úñÑ]{2,}\b")
+_RE_TOKEN_CON_DIGITO = re.compile(r"\b[a-z]*\d[a-z0-9-]*\b")
+
+
+def _clausula_de_continuidad(frase: str, fin_disparador: int) -> str:
+    """Lo que la oracion da por sabido: desde el final del disparador hasta la
+    coma o el final de la frase. Mismo recorte que usa `_sin_negar_lo_traido`
+    para aislar la clausula negada, aplicado del otro lado."""
+    resto = frase[fin_disparador:]
+    corte = re.search(r",|\bque\s+te\s+(?:pas|coment|dij)", resto,
+                      re.IGNORECASE)
+    return resto[:corte.start()] if corte else resto
+
+
+def _senales(clausula: str) -> set[str]:
+    """Los tokens puntuales de una clausula: colores, nombres propios y
+    codigos con digitos. Es la SEÑAL que hace falta para animarse a podar -ver
+    el comentario de arriba de por que no alcanza con cualquier palabra."""
+    normal = H._norm(clausula)
+    fuera = {tok for tok in re.findall(r"[a-z]+", normal) if tok in _COLORES}
+    fuera |= {H._norm(m.group(0)) for m in _RE_PROPIO.finditer(clausula)
+             if len(m.group(0)) > 3}
+    fuera |= set(_RE_TOKEN_CON_DIGITO.findall(normal))
+    return fuera
+
+
+def _entradas_confirmadas(llamadas: list, texto: str) -> list[str]:
+    """Lo CONFIRMADO de este turno, no lo que un buscador trajo de paso.
+
+    POR QUE NO `AP.fuentes()` A SECAS, y esto se cayo midiendo en vivo contra
+    `81_charla_real_12ago_cierre` turno 3 (no alcanzaba con el verbatim del
+    29-ago solo). `consultar_productos` devuelve TODOS los que cumplen el
+    filtro para que el modelo elija -ese turno trajo el negro Y el blanco de
+    los mismos auriculares, porque el cliente pidio "las menos partes chinas
+    posibles" y los dos empatan-. Si esta guardia mirara ese indice entero,
+    el blanco quedaria "respaldado" por el simple hecho de haber aparecido
+    como candidato de comparacion, y la frase fantasma pasaba igual: es el
+    bug que este comentario reemplaza.
+
+    CONTINUIDAD no pregunta "¿el catalogo tiene esto?" -esa la contesta la
+    atadura de numeros, y esta bien que la conteste ancho, mirando cualquier
+    candidato que trajo la busqueda-. Continuidad pregunta "¿el cliente ya
+    se llevo esto puesto?", y esa pregunta la contestan solo tres lugares,
+    los tres el mismo hecho dicho tres veces por caminos distintos, nunca un
+    candidato de comparacion: lo que `registrar_pedido` declaro que el
+    cliente quiere, lo que `cotizar` factura de verdad, y el bloque de la
+    cuenta que ya viaja en `texto` -este ultimo cubre ademas el turno de
+    seguimiento donde el modelo no vuelve a llamar a nada, que es la mayoria
+    de una charla real."""
+    entradas = [H._norm(m.group(0)) for m in
+               _RE_RENGLON_CUENTA_ENTERO.finditer(texto or "")]
+    for l in (llamadas or []):
+        herr = l.get("herramienta")
+        if herr == "registrar_pedido":
+            items = (((l.get("resultado") or {}).get("pedido") or {})
+                    .get("items") or (l.get("pedido") or {}).get("items") or [])
+            entradas += [H._norm(it["que"]) for it in items
+                        if isinstance(it, dict) and it.get("que")]
+        elif herr == "cotizar":
+            for d in (l.get("resultado") or {}).get("detalle") or []:
+                if isinstance(d, dict) and d.get("nombre"):
+                    entradas.append(H._norm(f"{d.get('id', '')} {d['nombre']}"))
+    return entradas
+
+
+def _sin_continuidad_fantasma(texto: str, llamadas: list,
+                              trace_id: str) -> str:
+    """NO SE AFIRMA CONTINUIDAD SOBRE UN PRODUCTO QUE EL TURNO NO TRAJO.
+
+    Ver el comentario de arriba (FICHA 44) para el porque y la evidencia, y
+    `_entradas_confirmadas` para de donde sale lo que cuenta como "trajo".
+
+    NO SE COMPARA CONTRA UNA SOLA BOLSA DE PALABRAS, segunda correccion,
+    medida contra el propio verbatim del 29-ago: ese mismo presupuesto trae
+    un Teclado BLANCO real -un item legitimo, distinto de los auriculares- y
+    comparar "aparece 'blanco' en algun lado" lo tomaba como respaldo de
+    CUALQUIER cosa blanca. Se compara por RENGLON: la clausula tiene que
+    encontrar un renglon que la nombre por sus tokens NO-color (nombre
+    propio, codigo), y el color que afirma tiene que estar en ESE MISMO
+    renglon, no en otro."""
+    entradas = _entradas_confirmadas(llamadas, texto)
+    if not entradas:
+        return texto
+    fuera = []
+    for m in _RE_ORACIONES.finditer(texto or ""):
+        frase = m.group(0)
+        disparo = _RE_CONTINUIDAD.search(frase)
+        if not disparo:
+            continue
+        clausula = _clausula_de_continuidad(frase, disparo.end())
+        senales = _senales(clausula)
+        colores = senales & _COLORES
+        otros = senales - _COLORES
+        if not otros:
+            # SIN NOMBRE PROPIO NI CODIGO, NO SE SABE DE QUE PRODUCTO HABLA.
+            # Un color suelto no alcanza para identificar un renglon: podar
+            # por las dudas se come la charla legitima (regla 12).
+            continue
+        candidatas = [e for e in entradas if all(t in e for t in otros)]
+        if not candidatas:
+            # EL PRODUCTO NOMBRADO NO ESTA EN NINGUN RENGLON DE ESTE TURNO.
+            fuera.append((frase, sorted(otros)))
+            continue
+        faltan = {c for c in colores if not any(c in e for e in candidatas)}
+        if faltan:
+            # EL PRODUCTO SI ESTA, PERO CON OTRO COLOR: la variante fantasma.
+            fuera.append((frase, sorted(faltan)))
+    if not fuera:
+        return texto
+    limpio = texto
+    for frase, _ in fuera:
+        limpio = limpio.replace(frase, "")
+    log.error("salida_continuidad_fantasma", trace_id=trace_id,
+              frases=[f[:90] for f, _ in fuera[:3]],
+              faltantes=[t for _, ts in fuera[:3] for t in ts][:6])
+    return _no_enmudece(texto, re.sub(r"\n{3,}", "\n\n", limpio).strip(),
+                        trace_id, "sin_continuidad_fantasma")
+
+
 def _norm_renglon(s: str) -> str:
     """Compara renglones sin que un espacio de mas los haga distintos."""
     return re.sub(r"\s+", " ", str(s or "")).strip().lower()
@@ -1414,10 +1570,11 @@ def procedencia(texto: str, llamadas: list, trace_id: str,
 
     Es la propiedad que `DECISIONES.md` #6 llama PROCEDENCIA y el plan de
     recorte llama C2, el candado general contra la alucinacion: lo que ninguna
-    herramienta trajo, no sale. Las ocho piezas son ocho formas del mismo
+    herramienta trajo, no sale. Las nueve piezas son nueve formas del mismo
     defecto, cada una nacida de una alucinacion medida —un CBU inventado, una
     categoria negada con los productos delante, una afirmacion sobre los 880,
-    un descuento que no existe— y todas se juzgan igual: contra lo que el
+    un descuento que no existe, una continuidad afirmada sobre un producto que
+    el turno no trajo (FICHA 44)— y todas se juzgan igual: contra lo que el
     codigo tiene a la vista, nunca contra un criterio.
 
     EL ORDEN NO ES ALFABETICO Y NO SE TOCA. La atadura va PRIMERA porque las
@@ -1434,6 +1591,8 @@ def procedencia(texto: str, llamadas: list, trace_id: str,
     texto = _pieza("sin_negar_lo_traido", _sin_negar_lo_traido,
                    texto, llamadas, trace_id)
     texto = _pieza("sin_afirmar_del_catalogo", _sin_afirmar_sobre_el_catalogo,
+                   texto, llamadas, trace_id)
+    texto = _pieza("sin_continuidad_fantasma", _sin_continuidad_fantasma,
                    texto, llamadas, trace_id)
     texto = _pieza("sin_descuento_inventado", _sin_descuento_inventado,
                    texto, tienda_id, trace_id)

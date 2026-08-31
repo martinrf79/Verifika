@@ -65,7 +65,7 @@ Esta sesión hace la FICHA 36, tercer tercio de PLAN_REDUCCION, y nada más.
 reposicion.py sale de app/ si nadie la llama. Nueve cuerpos a cuatro.
 Los termómetros 181 y 7306 tienen que pasar. No se toca el razonamiento
 ni data/clientes. Si el piso baja, revert del corte, no un parche.
-PUSHEÁ A main ANTES DE CERRAR. Toca app/: pedí el OK del push una vez,
+PUSHEÁ A main ANTES DE CERRAR. Toca app/: pedi el OK del push una vez,
 al final. Nada de ramas.
 ```
 
@@ -95,7 +95,8 @@ mismo día, no se acumula. El candado está en
 | **26** | `test_no_hay_universal_sin_herramienta_que_lo_respalde` | alucinación: un universal sobre el catálogo sale sin que ninguna herramienta lo haya mirado |
 | **27** | `test_la_nota_interna_no_le_llega_al_cliente` | `sin_narracion_interna` no ve hablar del cliente en tercera persona, solo nombrar la máquina |
 | **28** | `test_no_se_promete_un_dato_que_no_se_da` | un anuncio de precio, plazo o stock puede salir sin el dato abajo |
-| **29** | *(sin test propio todavía)* | la anti-repetición poda el bloque de cuenta que no cambió y se lleva el reparto y el pago, que son PUNTOS. No se trabaja hasta que exista el `xfail`. Es la ficha 21 al revés |
+| **29** | *(sin test propio todavía)* | la anti-repetición poda el bloque de cuenta que no cambió y se lleva el reparto y el pago, que son PUNTOS. No se trabaja hasta que exista el `xfail`. Es la ficha 21 al reves |
+| **44** | `test_no_se_afirma_continuidad_sobre_un_producto_que_el_turno_no_trajo` | CERRADO 31-ago. `_sin_continuidad_fantasma`, novena pieza de `procedencia()` en `salida.py`. Verificado sobre el mismo casete: turno 2 de `81_charla_real_12ago_cierre` ya no dice "como ya conocés los Auriculares Blanco". `test_continuidad_legitima_sobre_un_producto_ya_traido_no_se_toca`, en el mismo archivo, es la baranda del lado que no se puede romper |
 | A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** |
 
 **Orden: 36**, una por sesión, relato en `arquitectura/PLAN_REDUCCION.md`.
@@ -129,6 +130,7 @@ y la 29 no se tocan sin test.
 | ~~35~~ | la puerta: un mutador, la prosa no se reescribe | higiene solo `componer`; `aduana.py` a `archivo/`; techo PLAN 18→17 |
 | ~~36~~ | el número, primer corte | `reposicion.py` y `guia_pedido.py` a `archivo/`; nueve cuerpos a cuatro; techo PLAN 17→15. Los termómetros siguen: llegar a 181/7306 corta el motor |
 | ~~40~~ | el mapa no miente sobre las piezas | el campo `piezas` coincide con las marcas del codigo, en orden; la union es el conjunto de huerfanos. `banco_llamada_uno` puntua lo declarado, no el nombre de la tool |
+| ~~44~~ | la oferta fantasma: continuidad afirmada sobre un producto que el turno no trajo | `_sin_continuidad_fantasma`, novena pieza de `procedencia()`. Compara por renglon, contra lo CONFIRMADO (`registrar_pedido`, `cotizar`, el bloque de la cuenta) y no contra cualquier candidato que trajo `consultar_productos` -esa version mas ancha dejaba pasar la frase igual, medido reproduciendo `81_charla_real_12ago_cierre`-. Huerfanos del censo 22 → 23 |
 
 ---
 

@@ -50,7 +50,7 @@ from collections import defaultdict
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 
-# ── LOS CONTRATOS, escritos una vez y cobrados en cada nodo ─────────────────
+# ── LOS CONTRATOS, escritos una vez y cobrados en cada nodo ───────────────
 #
 # Son MECANICOS a proposito: los cuatro se comprueban sin saber cual era la
 # respuesta correcta, que es la unica manera de correrlos sobre entradas
@@ -76,7 +76,7 @@ el turno sin respuesta, que es peor que el defecto que venia a arreglar."""
 
 TODOS_LOS_CONTRATOS = (NO_ENMUDECE, NO_INVENTA_PLATA, IDEMPOTENTE, NO_LEVANTA)
 
-# ── LOS CONTRATOS DE LA MITAD QUE DECIDE ───────────────────────────────────
+# ── LOS CONTRATOS DE LA MITAD QUE DECIDE ───────────────────────────
 #
 # Los cuatro de arriba son de los nodos que transforman TEXTO. La mitad de
 # decision y reposicion no toca el texto: mueve DATOS -las llamadas a las
@@ -183,9 +183,9 @@ def _con(ctx: dict, **cambios) -> dict:
     return fuera
 
 
-# ── EL TURNO, NODO POR NODO, EN EL ORDEN EN QUE CORRE ───────────────────────
+# ── EL TURNO, NODO POR NODO, EN EL ORDEN EN QUE CORRE ─────────────────────
 NODOS = (
-    # ── entrada ──────────────────────────────────────────────────────────
+    # ── entrada ────────────────────────────────────────────────────
     Nodo(id="estado", etapa="entrada",
          funcion="app.core.estado_venta:construir_estado",
          exige="la conversacion guardada de Firestore",
@@ -206,7 +206,7 @@ NODOS = (
                  c.get("estado") or {}, c.get("history") or [],
                  c["tienda_id"]))),
 
-    # ── decision: que hace falta y que trajo ──────────────────────────────
+    # ── decision: que hace falta y que trajo ───────────────────────────
     Nodo(id="decisor", etapa="decision",
          funcion="app.core.hub_venta:_pedir_herramientas",
          exige="el mensaje del cliente y la memoria",
@@ -276,7 +276,7 @@ NODOS = (
                      c["trace_id"], llamadas=c.get("llamadas") or [],
                      memoria=c.get("memoria") or []))),
 
-    # ── redaccion ────────────────────────────────────────────────────────
+    # ── redaccion ───────────────────────────────────────────
     Nodo(id="redactor", etapa="redaccion",
          funcion="app.core.hub_venta:_redactar",
          exige="el material de las herramientas y la obligacion del turno",
@@ -287,7 +287,7 @@ NODOS = (
                       "invariantes. Lo que el codigo hace con esa prosa lo "
                       "barren las cuatro puertas de salida"),
 
-    # ── salida: CUATRO PUERTAS ───────────────────────────────────────────
+    # ── salida: CUATRO PUERTAS ─────────────────────────────────────
     #
     # ERAN DIECIOCHO NODOS (FICHA 10, 24-ago-2026), y las dieciocho
     # comprobaciones siguen corriendo: lo que se agrupo es el PASO DEL TURNO.
@@ -310,13 +310,14 @@ NODOS = (
          garantiza="ningun dato que no venga del material del turno: sin "
                    "etiquetas, sin JSON, sin markdown, sin un CBU que no sea "
                    "el de la tienda, sin negar lo que el catalogo trajo, sin "
-                   "afirmar sobre los 880, sin descuentos que no existen y "
-                   "sin la cocina del sistema a la vista",
+                   "afirmar sobre los 880, sin continuidad afirmada sobre un "
+                   "producto que el turno no trajo, sin descuentos que no "
+                   "existen y sin la cocina del sistema a la vista",
          contratos=(NO_ENMUDECE, NO_LEVANTA, IDEMPOTENTE),
          piezas=("atadura", "sin_json", "sin_markdown",
                  "sin_cobro_inventado", "sin_negar_lo_traido",
-                 "sin_afirmar_del_catalogo", "sin_descuento_inventado",
-                 "sin_narracion_interna"),
+                 "sin_afirmar_del_catalogo", "sin_continuidad_fantasma",
+                 "sin_descuento_inventado", "sin_narracion_interna"),
          aplicar=lambda t, c: __import__(
              "app.core.salida", fromlist=["x"]).procedencia(
                  t, c["llamadas"], c["trace_id"], c["tienda_id"])),
@@ -365,7 +366,7 @@ NODOS = (
                  t, c["anterior"], c["mensaje"], c["trace_id"],
                  c["tienda_id"], vocabulario=c.get("vocabulario"))),
 
-    # ── memoria: guardar, cerrar y cobrar ────────────────────────────────
+    # ── memoria: guardar, cerrar y cobrar ────────────────────────
     #
     # EL CIERRE DEJA DE SER UNA GUARDIA DE SALIDA (FICHA 10). Nunca verifico
     # nada del texto: graba el lead y pega los datos de cobro que salen de la
@@ -471,7 +472,7 @@ def _ejecutar_sync(pedidos: list, tienda_id: str, trace_id: str) -> list:
                                                     trace_id))
 
 
-# ── EL VEREDICTO POR ENGRANAJE ─────────────────────────────────────────────
+# ── EL VEREDICTO POR ENGRANAJE ───────────────────────────────────
 #
 # EL PROBLEMA QUE CIERRA, y estaba abierto en PENDIENTE desde el 11-ago: cuando
 # la respuesta sale mal hay que leer la charla entera para saber cual de los
@@ -485,7 +486,7 @@ def _ejecutar_sync(pedidos: list, tienda_id: str, trace_id: str) -> list:
 _marcas: ContextVar[list | None] = ContextVar("grafo_marcas", default=None)
 
 
-# ── EL CENSO, ADENTRO DEL GRAFO ────────────────────────────────────────────
+# ── EL CENSO, ADENTRO DEL GRAFO ──────────────────────────────────
 #
 # EL AGUJERO QUE CIERRA (FICHA 12). `registrar()` dejaba la marca del turno y
 # nada mas: `_marcas` es un ContextVar que `abrir_turno` PISA en cada turno, asi
@@ -702,7 +703,7 @@ def veredicto_del_turno() -> dict:
     return ficha
 
 
-# ── LOS ENGRANAJES QUE NO TRANSFORMAN TEXTO ────────────────────────────────
+# ── LOS ENGRANAJES QUE NO TRANSFORMAN TEXTO ──────────────────────────
 #
 # EL AGUJERO QUE CIERRAN (FICHA 01). Hasta hoy el unico que llamaba a
 # `registrar()` era `G.paso`, y `G.paso` envuelve transformaciones de TEXTO: de
