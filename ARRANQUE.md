@@ -96,6 +96,7 @@ mismo día, no se acumula. El candado está en
 | **27** | `test_la_nota_interna_no_le_llega_al_cliente` | `sin_narracion_interna` no ve hablar del cliente en tercera persona, solo nombrar la máquina |
 | **28** | `test_no_se_promete_un_dato_que_no_se_da` | un anuncio de precio, plazo o stock puede salir sin el dato abajo |
 | **29** | *(sin test propio todavía)* | la anti-repetición poda el bloque de cuenta que no cambió y se lleva el reparto y el pago, que son PUNTOS. No se trabaja hasta que exista el `xfail`. Es la ficha 21 al revés |
+| **44** | `test_no_se_afirma_continuidad_sobre_un_producto_que_el_turno_no_trajo` | una oración de continuidad —"ya conocés", "como te comenté"— sobre un producto que `llamadas` no trajo este turno llega intacta: ninguna de las ocho piezas de `procedencia()` la mira, la atadura sólo controla números adentro de un tag. Medida dos veces: casete `81_charla_real_12ago_cierre` reproducido con el código de hoy, y el WhatsApp real del 29-ago con la misma frase sobre el mismo producto. `test_continuidad_legitima_sobre_un_producto_ya_traido_no_se_toca`, en el mismo archivo, es la baranda del lado que no se puede romper |
 | A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** |
 
 **Orden: 36**, una por sesión, relato en `arquitectura/PLAN_REDUCCION.md`.
