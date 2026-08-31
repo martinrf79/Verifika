@@ -28,7 +28,9 @@ USO:
 
 CREDENCIAL: la env `GCP_SA_KEY_B64`, que trae la clave de `claude-lector`
 (logging.viewer + datastore.viewer). Sin ella el script avisa y sale sin error,
-para que corra en cualquier lado sin romper nada.
+para que corra en cualquier lado sin romper nada. Tambien acepta un access token
+ya hecho en `GCP_ACCESS_TOKEN`, que es por donde entra el puente de Actions con
+WIF, sin ninguna llave.
 
 EL NUMERO QUE DEJA, y es el que contesta "¿cuando es robusto?": **defectos por
 charla real**. Hoy es alto. Cuando quince o veinte charlas reales seguidas no
@@ -58,7 +60,18 @@ _BASE = ("https://firestore.googleapis.com/v1/projects/memory-engine-v1/"
 # ── CREDENCIAL ──────────────────────────────────────────────────────────────
 def _token() -> str | None:
     """Access token desde `GCP_SA_KEY_B64`. None si no esta la env o falta la
-    libreria de firma: el script avisa y sale limpio, no explota."""
+    libreria de firma: el script avisa y sale limpio, no explota.
+
+    ATAJO PARA EL PUENTE (31-ago-2026). Si el entorno ya trae un access token
+    hecho en `GCP_ACCESS_TOKEN`, se usa ese y no hace falta ninguna llave. Es lo
+    que permite que `.github/workflows/puente_cowork.yml` corra este script con
+    WIF -sin secreto que rotar ni que se pueda filtrar en un log-, y no cambia
+    nada para quien corre con la clave de `claude-lector`: si esa env no esta,
+    el camino de abajo es el de siempre.
+    """
+    ya_hecho = (os.environ.get("GCP_ACCESS_TOKEN") or "").strip()
+    if ya_hecho:
+        return ya_hecho
     crudo = (os.environ.get("GCP_SA_KEY_B64") or "").strip()
     if not crudo:
         return None

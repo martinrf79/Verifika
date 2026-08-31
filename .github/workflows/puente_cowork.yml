@@ -1,0 +1,222 @@
+name: puente cowork
+
+# EL PUENTE DE LECTURA DE PRODUCCION, SIN CLAVES Y SIN PASOS A MANO.
+#
+# POR QUE EXISTE (Martin, 31-ago-2026). Cowork -la sesion de analisis, la que no
+# escribe codigo- no puede correr `gcloud` ni leer los logs de una corrida de
+# Actions: la integracion de GitHub que tiene solo lee y escribe repo, issues y
+# pull requests. `diagnostico.yml` ya trae los logs, pero los deja en la salida
+# de la corrida, que es justo lo unico que Cowork NO puede leer. El resultado
+# era el peor de los dos mundos: el puente existia y del otro lado no se veia.
+#
+# ESTE WORKFLOW CIERRA ESE HUECO POR EL UNICO CANAL COMPARTIDO: un ISSUE.
+# Cowork comenta un pedido en el issue del puente; el workflow lo lee, corre lo
+# que se le pide contra produccion, y CONTESTA EN EL MISMO ISSUE. Cowork lee la
+# respuesta como un comentario mas. Nadie pega una clave en un chat y Martin no
+# tiene que tocar nada.
+#
+# LA CREDENCIAL ES WIF, la misma de `diagnostico.yml`: no hay llave que rotar ni
+# secreto que pueda quedar en un log. El token de acceso se genera en el runner,
+# vive lo que dura el job y no sale de ahi.
+#
+# NO ESCRIBE NADA. Ni en Firestore, ni en Cloud Run, ni en el repo. Lee logs,
+# lee conversaciones y comenta. Por eso puede correr sin que nadie lo mire.
+#
+# LA GUARDA, y hace falta porque el repo es PUBLICO: solo se atiende el pedido
+# si lo comenta martinrf79. Sin eso, cualquiera que comente en el issue tendria
+# un lector de produccion gratis.
+#
+# COMO SE PIDE. Un comentario que empiece con /logs, con pares clave=valor
+# opcionales en la misma linea:
+#
+#   /logs
+#   /logs sev=INFO fresh=6h limit=300
+#   /logs filtro=jsonPayload.event="whatsapp_processing_error"
+#   /logs usuario=5493547504287
+#
+#   sev      severidad minima. DEFAULT DEBUG INFO NOTICE WARNING ERROR CRITICAL
+#   fresh    ventana de tiempo. 30m 6h 2d
+#   limit    cuantas lineas de log
+#   filtro   filtro extra de Cloud Logging, tal cual
+#   usuario  si viene, la auditoria de invariantes corre SOLO sobre esa charla
+#   charlas  cuantas conversaciones audita produccion.py. Default 20
+#
+# Y SIEMPRE, con pedido o sin el, la respuesta trae las dos cosas: el volcado de
+# logs y el informe de `banco_pruebas/produccion.py`, que es el que convierte
+# cada charla real en una medicion de invariantes. Ese numero -defectos por
+# charla real- es el unico que mide el bot contra las preguntas de verdad y no
+# contra los 54 turnos grabados.
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: "Numero del issue donde dejar el informe"
+        required: true
+      pedido:
+        description: "Linea de pedido, ej: /logs sev=INFO fresh=6h limit=300"
+        default: "/logs"
+
+permissions:
+  contents: read
+  issues: write
+  id-token: write
+
+jobs:
+  puente:
+    # Tres condiciones, y las tres importan:
+    #  - que sea un comentario en un ISSUE, no en un pull request;
+    #  - que empiece con /logs, para no despertarse con cualquier charla;
+    #  - que lo haya escrito Martin. El repo es publico.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      ( github.event.issue.pull_request == null &&
+        github.event.comment.user.login == 'martinrf79' &&
+        startsWith(github.event.comment.body, '/logs') )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Avisar que se recibio el pedido
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number || inputs.issue }}
+          CORRIDA: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue comment "$ISSUE" --repo "$GITHUB_REPOSITORY" \
+            --body "Pedido recibido. Corriendo el puente: $CORRIDA"
+
+      - name: Leer el pedido
+        id: pedido
+        env:
+          CUERPO: ${{ github.event.comment.body || inputs.pedido }}
+        run: |
+          # Se leen SOLO pares clave=valor de la primera linea, y cada uno se
+          # sanitiza a su forma valida. El motivo es el mismo que ya documenta
+          # `diagnostico.yml`: el pedido se escribe desde un chat y un espacio de
+          # mas rompia el comando. Un puente que falla por formato no es puente.
+          LINEA=$(printf '%s' "$CUERPO" | head -1)
+
+          leer() { printf '%s' "$LINEA" | grep -oiE "(^|[[:space:]])$1=[^[:space:]]+" | head -1 | cut -d= -f2- ; }
+
+          SEV=$(leer sev | tr -dc 'A-Za-z' | tr '[:lower:]' '[:upper:]')
+          case "$SEV" in DEFAULT|DEBUG|INFO|NOTICE|WARNING|ERROR|CRITICAL) ;; *) SEV=INFO ;; esac
+
+          FRESH=$(leer fresh | grep -oiE '[0-9]+[smhd]' | head -1 | tr '[:upper:]' '[:lower:]')
+          [ -z "$FRESH" ] && FRESH="12h"
+
+          LIM=$(leer limit | tr -dc '0-9'); [ -z "$LIM" ] && LIM=300
+          [ "$LIM" -gt 1000 ] && LIM=1000
+
+          CHARLAS=$(leer charlas | tr -dc '0-9'); [ -z "$CHARLAS" ] && CHARLAS=20
+          [ "$CHARLAS" -gt 300 ] && CHARLAS=300
+
+          USUARIO=$(leer usuario | tr -dc '0-9')
+
+          # El filtro va hasta el final de la linea a proposito: puede llevar
+          # comillas y espacios, y recortarlo en el primer espacio lo romperia.
+          FILTRO=$(printf '%s' "$LINEA" | sed -n 's/.*[[:space:]]filtro=\(.*\)$/\1/p')
+
+          {
+            echo "sev=$SEV"
+            echo "fresh=$FRESH"
+            echo "limit=$LIM"
+            echo "charlas=$CHARLAS"
+            echo "usuario=$USUARIO"
+            echo "filtro<<FIN"
+            echo "$FILTRO"
+            echo "FIN"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Autenticar a Google (WIF, sin llave)
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: memory-engine-v1
+          workload_identity_provider: projects/1000939441597/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: claude-bridge@memory-engine-v1.iam.gserviceaccount.com
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar lo minimo
+        run: pip install --quiet cryptography
+
+      - name: Volcar los logs de agente-bot
+        env:
+          SEV: ${{ steps.pedido.outputs.sev }}
+          FRESH: ${{ steps.pedido.outputs.fresh }}
+          LIM: ${{ steps.pedido.outputs.limit }}
+          FILTRO: ${{ steps.pedido.outputs.filtro }}
+        run: |
+          QUERY="resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"agente-bot\" AND severity>=${SEV}"
+          [ -n "$FILTRO" ] && QUERY="${QUERY} AND ${FILTRO}"
+          echo "Query: ${QUERY}" | tee logs.txt
+          echo "Ventana: ${FRESH}   Limite: ${LIM}" | tee -a logs.txt
+          echo "---" | tee -a logs.txt
+          # jsonPayload trae el evento y sus campos; textPayload queda de
+          # respaldo para los stack traces de uvicorn. Sin jsonPayload las
+          # lineas salen en blanco, que es la trampa que ya documenta
+          # diagnostico.yml.
+          gcloud logging read "${QUERY}" \
+            --project=memory-engine-v1 \
+            --limit="${LIM}" --freshness="${FRESH}" \
+            --format="value(timestamp,severity,jsonPayload,textPayload)" >> logs.txt 2>&1 || true
+
+      - name: Auditar las charlas reales con los invariantes
+        env:
+          CHARLAS: ${{ steps.pedido.outputs.charlas }}
+          USUARIO: ${{ steps.pedido.outputs.usuario }}
+        run: |
+          # El token del WIF entra por env: `produccion.py` lo acepta como
+          # alternativa a GCP_SA_KEY_B64, asi el puente no necesita ninguna
+          # llave de cuenta de servicio.
+          export GCP_ACCESS_TOKEN="$(gcloud auth print-access-token)"
+          ARGS="--limite $CHARLAS"
+          [ -n "$USUARIO" ] && ARGS="--usuario $USUARIO"
+          python3 banco_pruebas/produccion.py $ARGS > auditoria.txt 2>&1 || true
+          tail -5 auditoria.txt
+
+      - name: Contestar en el issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number || inputs.issue }}
+        run: |
+          # GitHub corta un comentario en 65536 caracteres. Se recorta cada
+          # parte con tope propio y se avisa cuando se recorto, porque un
+          # informe truncado en silencio es peor que uno corto: el que lo lee
+          # saca conclusiones de lo que no esta.
+          python3 - <<'PY' > cuerpo.md
+          import pathlib
+
+          def leer(nombre, tope):
+              t = pathlib.Path(nombre).read_text(encoding="utf-8", errors="replace")
+              if len(t) <= tope:
+                  return t, False
+              return t[-tope:], True
+
+          audit, cort_a = leer("auditoria.txt", 20000)
+          logs, cort_l = leer("logs.txt", 38000)
+
+          print("## Informe del puente\n")
+          print("### Invariantes sobre las charlas REALES\n")
+          if cort_a:
+              print("_Recortado: se muestran los ultimos 20.000 caracteres._\n")
+          print("```")
+          print(audit.rstrip())
+          print("```\n")
+          print("### Logs de Cloud Run\n")
+          if cort_l:
+              print("_Recortado: se muestran los ultimos 38.000 caracteres._\n")
+          print("```")
+          print(logs.rstrip())
+          print("```")
+          PY
+          gh issue comment "$ISSUE" --repo "$GITHUB_REPOSITORY" --body-file cuerpo.md
