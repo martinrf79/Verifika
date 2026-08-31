@@ -88,8 +88,8 @@ def test_el_mensaje_completa_item_ciudad_y_el_teclado():
     # tambien, para que el turno la pregunte.
     assert fuera.get("contradicciones"), (
         "el codigo se comio la contradiccion al completar el reparto")
-    assert any("teclado" in c.lower() for c in fuera["contradicciones"]), \\
-        fuera["contradicciones"]
+    assert any("teclado" in c.lower() for c in fuera["contradicciones"]), (
+        fuera["contradicciones"])
     # Cordoba: auricular + mouse. Concordia: teclado + mouse.
     def _en(ciudad):
         return [i for i in items if ciudad in H._norm(i.get("destino"))]
