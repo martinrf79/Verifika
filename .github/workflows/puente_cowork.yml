@@ -146,8 +146,12 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Instalar lo minimo
-        run: pip install --quiet cryptography
+      - name: Instalar dependencias
+        # LA LISTA ENTERA, y la primera corrida enseño por que. `produccion.py`
+        # importa `app.verifika`, cuyo `__init__` importa `llm_adapter`, que
+        # importa httpx, openai y tenacity en la cabecera. Con solo cryptography
+        # el informe volvio con un ModuleNotFoundError en lugar de la auditoria.
+        run: pip install --quiet -r requirements.txt cryptography
 
       - name: Volcar los logs de agente-bot
         env:
@@ -156,7 +160,14 @@ jobs:
           LIM: ${{ steps.pedido.outputs.limit }}
           FILTRO: ${{ steps.pedido.outputs.filtro }}
         run: |
-          QUERY="resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"agente-bot\" AND severity>=${SEV}"
+          # SOLO ENTRADAS CON CONTENIDO, y esto no es cosmetica. Cloud Run
+          # escribe un log de REQUEST por cada chequeo de salud -uno cada cinco
+          # minutos- que no trae ni jsonPayload ni textPayload. En la primera
+          # corrida, de 400 lineas pedidas entraron tres del bot y el resto fue
+          # esa fila de INFO en blanco: la ventana que se pidio no se veia. Es
+          # la misma enfermedad que `logger.py` documenta por el otro lado, la
+          # de leer los logs por donde el mensaje no vive.
+          QUERY="resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"agente-bot\" AND severity>=${SEV} AND (jsonPayload.event:* OR textPayload:*)"
           [ -n "$FILTRO" ] && QUERY="${QUERY} AND ${FILTRO}"
           echo "Query: ${QUERY}" | tee logs.txt
           echo "Ventana: ${FRESH}   Limite: ${LIM}" | tee -a logs.txt
