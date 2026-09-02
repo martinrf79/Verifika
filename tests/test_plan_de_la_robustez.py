@@ -18,13 +18,6 @@ from app.core.herramientas import certificar_tema
 
 # ── FICHA 45 — UNA CONTRADICCION DECLARADA TIENE QUE PREGUNTAR ─────────────
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: FICHA 45. Una contradiccion declarada produce UNA pregunta. "
-    "HOY el indice marca CONFLICTO y la puerta de obligacion manda el "
-    "texto sin signo de pregunta: 0 preguntas escritas por el codigo "
-    "sobre 1 contradiccion plantada. OBJETIVO 1: el texto que sale lleva "
-    "pregunta, sin que el modelo la recuerde. Turno 4cb60031 de Telegram. "
-    "Relato en arquitectura/FICHA_44_deposito_y_robustez.md."))
 def test_una_contradiccion_declarada_sale_con_pregunta(firestore_doble):
     declarado = {"contradicciones": [
         "la suma de los envios no coincide con las cantidades"
@@ -41,6 +34,51 @@ def test_una_contradiccion_declarada_sale_con_pregunta(firestore_doble):
         declarado, [], [], "verifika_prod", "t-ficha45")
     assert "?" in (out or ""), (
         "el indice vio CONFLICTO y la obligacion no pregunto nada")
+    assert "Cómo lo querés:" in out or "Como lo queres:" in out or "querés" in out
+
+
+def test_el_loop_lee_el_estado_y_no_el_texto():
+    """El criterio es el indice. Un RESUELTO no se toca. Un CONFLICTO
+    pregunta. Una omision con evidencia se repone. No se lee la prosa."""
+    puntos = [
+        {"id": "contradicciones:1", "tipo": "contradicciones",
+         "estado": "CONFLICTO", "texto": "las cantidades no cierran"},
+        {"id": "items:1", "tipo": "items", "estado": "RESUELTO",
+         "texto": "mouse"},
+        {"id": "destinos:1", "tipo": "destinos", "estado": "",
+         "anclajes": ["rosario"], "texto": "envio a rosario"},
+        {"id": "atributos:1", "tipo": "atributos", "estado": "NO_SE_SABE",
+         "texto": "origen"},
+    ]
+    plan = {p["id"]: p["actuador"] for p in IT.actuar(puntos)}
+    assert plan["contradicciones:1"] == IT.ACTUAR_PREGUNTAR
+    assert plan["items:1"] == IT.ACTUAR_NADA
+    assert plan["destinos:1"] == IT.ACTUAR_REPONER
+    assert plan["atributos:1"] == IT.ACTUAR_NADA
+
+
+def test_la_pregunta_no_habla_del_cliente_en_tercera(firestore_doble):
+    declarado = {"contradicciones": [
+        "El cliente pide un teclado que no estaba en el pedido"
+    ]}
+    out = S.obligacion(
+        "Ahi va el presupuesto.", "el pedido", "Tienda", False,
+        declarado, [], [], "verifika_prod", "t-ficha45d")
+    bajo = (out or "").lower()
+    assert "el cliente pide" not in bajo
+    assert "?" in (out or "")
+
+
+def test_la_pregunta_de_conflicto_es_una_sola_pasada(firestore_doble):
+    declarado = {"contradicciones": [
+        "la suma de los envios no coincide con las cantidades"
+    ]}
+    texto = "Ahi va el presupuesto con lo que pediste."
+    una = S.obligacion(texto, "el pedido", "Tienda", False,
+                       declarado, [], [], "verifika_prod", "t-ficha45b")
+    dos = S.obligacion(una, "el pedido", "Tienda", False,
+                       declarado, [], [], "verifika_prod", "t-ficha45c")
+    assert dos.count("?") == una.count("?")
 
 
 # ── FICHA 46 — UN PEDIDO DE PRODUCTO NO ABRE POLITICA DE PAGO ───────────────

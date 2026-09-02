@@ -1363,6 +1363,7 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
         if d not in destinos:
             destinos.append(d)
     fuera = _pegar_linea_de_envio(fuera, destinos, trace_id)
+    fuera = _aplicar_conflicto(fuera, idx.get("puntos") or [], trace_id)
 
     if puerta["puede"] and fuera == texto:
         return texto
@@ -1385,6 +1386,48 @@ def _punto_omitido_repuesto(texto: str, declarado: dict, llamadas: list,
                     motivo=puerta["motivo"][:160],
                     puntos=[p["texto"][:40] for p in omitidos][:3])
     return fuera
+
+
+def _aplicar_conflicto(texto: str, puntos: list, trace_id: str) -> str:
+    """EL LOOP, el actuador que faltaba. `actuar` decide; aca se escribe
+    UNA pregunta sellada. No se toca si el texto ya pregunto ese hecho."""
+    plan = IT.actuar(puntos)
+    por_id = {p.get("id"): p for p in (puntos or []) if isinstance(p, dict)}
+    for paso in plan:
+        if paso.get("actuador") != IT.ACTUAR_PREGUNTAR:
+            continue
+        punto = por_id.get(paso.get("id")) or {}
+        if punto and IT._cubierto(punto, texto):
+            continue
+        pregunta = _pregunta_de_conflicto(paso.get("texto") or "")
+        if not pregunta or pregunta in (texto or ""):
+            continue
+        log.info("conflicto_pregunta", trace_id=trace_id,
+                 punto=paso.get("id"), largo=len(pregunta))
+        return ((texto or "").rstrip() + "\n\n" + pregunta).strip()
+    return texto
+
+
+_RE_NOTA_INTERNA = re.compile(
+    r"\b(?:el|al|del)\s+(?:cliente|usuario)\s+"
+    r"(?:me\s+|te\s+|ya\s+|no\s+|tambi[eé]n\s+)*"
+    r"(?:pidi[oó]|pide|dijo|dice|mencion[oó]|menciona|aclar[oó]|aclara"
+    r"|solicit[oó]|solicita|indic[oó]|indica|pregunt[oó]|pregunta"
+    r"|declar[oó]|declara|escribi[oó]|nombr[oó]|nombra)\b",
+    re.IGNORECASE)
+
+
+def _pregunta_de_conflicto(hecho: str) -> str:
+    """La pregunta SELLADA. El hecho lo declaro el decisor; el codigo no
+    lo resuelve. Se le habla al cliente, no de el: la nota en tercera
+    persona no se pega. El sello 'Como lo queres:' lo reconoce la higiene."""
+    t = re.sub(r"\s+", " ", str(hecho or "")).strip()
+    t = _RE_NOTA_INTERNA.sub("pediste", t).strip().rstrip(".?")
+    if not t:
+        return ""
+    if len(t) > 140:
+        t = t[:137].rsplit(" ", 1)[0] + "…"
+    return f"¿Cómo lo querés: {t}?"
 
 
 # ── LAS CUATRO PUERTAS ──────────────────────────────────────────────────────

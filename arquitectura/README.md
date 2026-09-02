@@ -16,10 +16,10 @@ A MEDIAS   algo que se EMPEZÓ y no se terminó.  Tiene que llegar a CERO.
 PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 ```
 
-La orden de trabajo abierta: `FICHA_44_deposito_y_robustez.md`.
-No se borra nada. Lo que sobra va a `archivo/`. Lo que hoy le cuesta
-una venta se cierra primero: una contradicción declarada tiene que
-preguntar. Los termómetros de la 36 siguen y no se fuerzan.
+La orden de trabajo abierta: FICHA 46, el ruteo de la política.
+Relato del diagnóstico en `FICHA_44_deposito_y_robustez.md`. La 45
+cerró el loop: el criterio es el índice, CONFLICTO pregunta. Los
+termómetros de la 36 no se fuerzan.
 
 ---
 
@@ -55,7 +55,8 @@ toca, cómo se verifica.
 | `FICHA_41_un_idioma.md` | un idioma, el del molde; cerrada |
 | `FICHA_42_el_catalogo_de_la_pregunta.md` | el catálogo de la pregunta; cerrada |
 | `FICHA_43_la_salida_habla_las_familias.md` | la salida habla las familias abiertas; cerrada |
-| `FICHA_44_deposito_y_robustez.md` | **abierta**: depósito sin borrar, y los tres defectos del 2-sep |
+| `FICHA_44_deposito_y_robustez.md` | depósito sin borrar; el diagnóstico |
+| `FICHA_45_el_loop.md` | el loop adentro del turno; CONFLICTO pregunta; cerrada |
 | `PLAN_REDUCCION.md` | la campaña de agosto: qué se queda vs qué ya fue a archivo/ |
 
 **En la raíz: la biblioteca.** Se consulta para entender POR QUÉ, no para saber

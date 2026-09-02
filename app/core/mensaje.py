@@ -1026,6 +1026,10 @@ _RE_PREGUNTA_ORACION = re.compile(r"[^.\n;!?]+[.\n;!?]*")
 
 # LOS ESCALONES DE LA VENTA, en orden. El primero que matchea manda.
 _ESCALONES_DE_VENTA = (
+    # FICHA 45. La pregunta de un CONFLICTO bloquea el cobro: gana a las
+    # demas. El sello lo escribe `_pregunta_de_conflicto`, no el modelo.
+    ("conflicto", re.compile(
+        r"c[oó]mo\s+lo\s+quer[eé]s:", re.IGNORECASE)),
     ("producto", re.compile(
         r"qu[eé]\s+productos?|cu[aá]les?\s+productos?|qu[eé]\s+art[ií]culos?|"
         r"qu[eé]\s+te\s+interesa|qu[eé]\s+est[aá]s?\s+buscando|"

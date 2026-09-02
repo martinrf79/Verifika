@@ -1642,6 +1642,56 @@ def puede_salir(puntos: list) -> dict:
             "motivo": motivo}
 
 
+# ── EL LOOP DE CORRECCION, UNA PASADA ───────────────────────────────────────
+#
+# EL CRITERIO NO LO OPINA NADIE. Sale del estado terminal que `cobertura`
+# ya calculo. Esta tabla es la unica deduccion: estado → actuador. El texto
+# no se reescribe. Una pasada. Maximo una pregunta, y solo la de CONFLICTO.
+#
+#   RESUELTO / AMBIGUO / OFRECIDO / NO_CORRESPONDE / NO_SE_SABE
+#       → nada. El turno ya termino bien, o pregunto, o no sabe y no frena.
+#   CONFLICTO
+#       → preguntar. El pedido no cierra y el texto no pregunto. FICHA 45.
+#   casilla vacia CON evidencia
+#       → reponer. Material sellado. Ya lo hace `_punto_omitido_repuesto`.
+#   casilla vacia SIN evidencia
+#       → anotar. Se manda igual. No se inventa el dato.
+#
+# NO ES UN JUEZ. Un juez reescribe prosa. Esto elige UN actuador declarado
+# y para. `DECISIONES.md` #5 (rechazar y redactar de nuevo) sigue sin
+# pagarse: dos llamadas, el piso las tiene en 2.
+ACTUAR_NADA = "nada"
+ACTUAR_REPONER = "reponer"
+ACTUAR_PREGUNTAR = "preguntar"
+ACTUAR_ANOTAR = "anotar"
+
+
+def actuar(puntos: list) -> list:
+    """El plan del turno: un actuador por punto, leido del estado.
+
+    Puro. No toca el texto. Lo consume la puerta de obligacion."""
+    puerta = puede_salir(puntos)
+    omitidos = {id(p) for p in puerta["omitidos"]}
+    fuera = []
+    for p in puntos or []:
+        if not isinstance(p, dict):
+            continue
+        estado = p.get("estado") or ""
+        if estado == "CONFLICTO":
+            actuador = ACTUAR_PREGUNTAR
+        elif id(p) in omitidos:
+            actuador = ACTUAR_REPONER
+        elif estado in ("RESUELTO", "AMBIGUO", "OFRECIDO",
+                        "NO_CORRESPONDE", "NO_SE_SABE"):
+            actuador = ACTUAR_NADA
+        else:
+            actuador = ACTUAR_ANOTAR
+        fuera.append({"id": p.get("id"), "tipo": p.get("tipo"),
+                      "estado": estado, "actuador": actuador,
+                      "texto": p.get("texto") or ""})
+    return fuera
+
+
 def instruccion(faltan: list) -> str:
     """Los puntos sin atender, convertidos en una obligacion CONCRETA para la
     redaccion.
