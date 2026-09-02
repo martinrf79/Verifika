@@ -2508,8 +2508,105 @@ def plata_inventada(texto: str, respaldados: set[int]) -> list[int]:
             if n >= 100 and n not in respaldados]
 
 
-def contexto_json(llamadas: list[dict]) -> str:
+_TOPE_CONTEXTO = 14000
+
+# Las listas que un resultado de herramienta puede traer, en el orden en que se
+# recortan. La lista de productos es la unica que llega a pesar de verdad; las
+# otras estan para que una herramienta nueva con lista larga no vuelva a
+# desbordar en silencio.
+_LISTAS_RECORTABLES = ("productos", "opciones", "alternativas", "temas",
+                       "resultados", "items")
+
+
+def _peso(obj) -> int:
+    return len(json.dumps(obj, ensure_ascii=False, default=str))
+
+
+def _lista_mas_larga(llamadas: list[dict]) -> tuple[dict, str] | None:
+    """El resultado con la lista mas larga, que es al que le toca ceder un item.
+    Se recorta SIEMPRE del mas largo, asi ninguna herramienta se queda en cero
+    mientras otra conserva treinta."""
+    peor, campo, largo = None, "", 1
+    for l in llamadas:
+        r = l.get("resultado")
+        if not isinstance(r, dict):
+            continue
+        for c in _LISTAS_RECORTABLES:
+            v = r.get(c)
+            if isinstance(v, list) and len(v) > largo:
+                peor, campo, largo = r, c, len(v)
+    return (peor, campo) if peor is not None else None
+
+
+def contexto_json(llamadas: list[dict], tope: int = _TOPE_CONTEXTO) -> str:
     """El JSON que se le inyecta al modelo para redactar. Un bloque por
     herramienta con su nombre: un dict plano pisaria las claves entre
-    herramientas y el no_encontrado de una taparia el resultado de otra."""
-    return json.dumps(llamadas, ensure_ascii=False, default=str)[:14000]
+    herramientas y el no_encontrado de una taparia el resultado de otra.
+
+    ESTO NO SE CORTA POR CARACTER, Y ES LA CAUSA DEL 2-SEP-2026. Hasta hoy
+    terminaba en `[:14000]`. Medido con el catalogo real: cuatro herramientas
+    pesan 11.787 caracteres y entran; CINCO pesan 17.061 y el rebanado dejaba
+    al modelo con `... por defectos de fabricacion,` y ahi se terminaba el
+    archivo. JSON invalido, una llave sin cerrar, y un producto entero
+    desaparecido sin que nada lo dijera. Cinco herramientas es lo que dispara
+    una pregunta de dificultad media-alta: la que nunca se contesto bien. El
+    modelo no fallaba, recibia un archivo partido al medio.
+
+    Ahora se recorta por ITEM y se DECLARA. Tres reglas:
+
+      1. Si entra, sale igual que antes. Byte por byte.
+      2. Si no entra, se le saca el ultimo item a la lista mas larga, una y otra
+         vez, hasta que entre. Ninguna herramienta desaparece: el modelo tiene
+         que saber que se consulto, aunque la lista venga corta.
+      3. Cada lista recortada queda marcada con `recortado`, que dice cuantos se
+         muestran de cuantos hay. Un dato que falta y se declara termina en una
+         pregunta al cliente; un dato que falta en silencio termina en una
+         invencion, que es la prioridad uno del proyecto.
+
+    La vara es `tests/test_el_redactor_recibe_json_entero.py`.
+    """
+    crudo = json.dumps(llamadas, ensure_ascii=False, default=str)
+    if len(crudo) <= tope:
+        return crudo
+
+    # Copia propia: el recorte no puede tocar los resultados que el resto del
+    # turno sigue usando para certificar ids y armar la cuenta.
+    podadas = json.loads(json.dumps(llamadas, ensure_ascii=False, default=str))
+    originales = {}
+    for l in podadas:
+        r = l.get("resultado")
+        if isinstance(r, dict):
+            for c in _LISTAS_RECORTABLES:
+                if isinstance(r.get(c), list):
+                    originales[(id(r), c)] = len(r[c])
+
+    while _peso(podadas) > tope:
+        peor = _lista_mas_larga(podadas)
+        if peor is None:
+            break
+        r, campo = peor
+        r[campo] = r[campo][:-1]
+        r["recortado"] = {"campo": campo, "mostrados": len(r[campo]),
+                          "de": originales.get((id(r), campo), 0),
+                          "nota": "la lista vino recortada por tamaño: si el "
+                                  "cliente pregunta por lo que no esta, "
+                                  "decilo y pedile que precise, no lo inventes"}
+    salida = json.dumps(podadas, ensure_ascii=False, default=str)
+    if len(salida) <= tope:
+        return salida
+
+    # Ultimo recurso: ni recortando las listas entra. Antes que devolver JSON
+    # roto, se devuelve el estado de cada herramienta y se dice que el detalle
+    # no viajo. El modelo pregunta; no inventa.
+    minimo = [{"herramienta": l.get("herramienta"), "pedido": l.get("pedido"),
+               "resultado": {"estado": (l.get("resultado") or {}).get("estado")
+                             if isinstance(l.get("resultado"), dict) else None,
+                             "recortado": {"campo": "resultado",
+                                           "mostrados": 0, "de": 1,
+                                           "nota": "el detalle no entro en el "
+                                                   "contexto: pedile al cliente "
+                                                   "que acote la consulta"}}}
+              for l in llamadas]
+    log.warning("contexto_json_al_minimo", herramientas=len(llamadas),
+                peso=len(crudo))
+    return json.dumps(minimo, ensure_ascii=False, default=str)[:tope]
