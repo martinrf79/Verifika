@@ -114,6 +114,7 @@ index bddfbd0..b38ab5a 100644
 +        # SUELTAS, sin que ningun item los nombre, siguen colapsando en el
 +        # primero. Ahi no hay a que busqueda atarlos y elegir uno seria
 +        # inventar; se deja como estaba.
+-        o = orden or FC.resolver_orden(que, tienda_id)
 +        o = FC.resolver_orden(que, tienda_id) or orden
          if o:
              args["ordenar_por"] = o["campo"]
