@@ -336,7 +336,7 @@ def barrido_de_contratos(contextos):
     regimenes del turno, y junta las violaciones de contrato. La lista de nodos
     no esta escrita acá: sale del grafo, asi que un engranaje nuevo entra al
     barrido por existir."""
-    from app.verifika.invariantes import _importes
+    from banco_pruebas.invariantes import _importes
 
     fallas = []
     corridas = 0

@@ -185,7 +185,7 @@ def test_los_invariantes_valen_con_el_modelo_mintiendo(firestore_doble):
     el codigo garantiza cuando el de arriba no ayuda, que es el peor caso y el
     unico que importa para la prioridad uno."""
     from app.storage.firestore_client import get_all_products
-    from app.verifika.invariantes import revisar_charla
+    from banco_pruebas.invariantes import revisar_charla
 
     vocabulario = {str(p.get("nombre") or "") for p in
                    get_all_products(tienda_id="verifika_prod") if p.get("nombre")}

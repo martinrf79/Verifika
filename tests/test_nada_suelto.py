@@ -37,7 +37,6 @@ _RAIZ = pathlib.Path(__file__).resolve().parent.parent
 # no entra: la lista existe para revisarla, no para tapar.
 DECLARADAS = {
     # ── Herramientas del banco y de los tests, a proposito ──────────────────
-    "revisar_charla": "la usa banco_pruebas/produccion.py para auditar las charlas reales",
     "reiniciar_cupo": "reinicia el cupo del reintento entre pruebas",
     "sin_cupo": "lo consulta el banco para saber si la clave gratis se agoto",
     "limpiar": "vacia los huecos anotados entre pruebas",
@@ -64,10 +63,6 @@ DECLARADAS = {
 
     # ── Alta de cliente: las llama scripts/crear_cliente.py ─────────────────
     "dispara_lead_fuerte": "regla del lead fuerte; la verifica su prueba",
-
-    # ── FICHA 35: huella de importes, la usan los barridos, no el vivo ──────
-    "_importes": "FICHA 35: huella de la plata. La usan test_grafo_cableado y "
-                 "test_barrido_codigo, no el camino vivo.",
 }
 
 

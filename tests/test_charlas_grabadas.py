@@ -195,7 +195,7 @@ def test_los_invariantes_valen_en_toda_charla(firestore_doble):
     Corre sobre los casetes en cada push, gratis y sin clave: los invariantes
     son aritmetica y texto, no llaman al modelo."""
     from app.storage.firestore_client import get_all_products
-    from app.verifika.invariantes import revisar_charla
+    from banco_pruebas.invariantes import revisar_charla
 
     # CON EL CATALOGO DELANTE, que es el decimo invariante: todo producto que
     # se COTIZA tiene que existir entre los 880. Se le pasa desde el 11-ago,

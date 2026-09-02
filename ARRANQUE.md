@@ -96,14 +96,14 @@ mismo día, no se acumula. El candado está en
 | **29** | *(sin test propio todavía)* | la anti-repetición poda el bloque de cuenta que no cambió y se lleva el reparto y el pago, que son PUNTOS. No se trabaja hasta que exista el `xfail`. Es la ficha 21 al revés |
 | **44** | *(diseño, no implementa)* | depósito sin borrar y diagnóstico. Relato en `arquitectura/FICHA_44_deposito_y_robustez.md`. El techo del plan subió para contar los tres de abajo |
 | **45** | `test_una_contradiccion_declarada_sale_con_pregunta` | CERRADA. El loop `actuar` lee el estado del índice. CONFLICTO pregunta. |
+| **48** | *(cerrada, sin PLAN propio)* | primer apagón: seis puertas privadas y termómetro fuera de `app/`. Relato en `arquitectura/FICHA_48_el_apagon.md`. |
 | **46** | `test_un_pedido_de_producto_no_abre_politica_de_pago` | "dame precio de una intermedia" abre cuotas o envío. Turno b92cae87. Primero se mide la puerta |
 | **47** | `test_dos_extremos_sueltos_no_eligen_el_primero` | dos extremos solo en restricciones se quedan con el primero. Elegir es inventar |
 | A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** |
 
-**Orden: 46**, una por sesión, relato en `arquitectura/FICHA_45_el_loop.md`.
-La 45 dejó el loop adentro del turno: el criterio es el índice, una
-pasada, un actuador. Sigue el ruteo de la política. Después los
-extremos sueltos. El depósito de la grasa espera. La 24 y la 29 no
+**Orden: 46**, una por sesión, relato en `arquitectura/FICHA_44_deposito_y_robustez.md`.
+La 45 dejó el loop. La 48 apagó las seis puertas y el termómetro. Sigue
+el ruteo de la política. Después los extremos sueltos. La 24 y la 29 no
 se tocan sin test.
 
 ---
@@ -131,6 +131,7 @@ se tocan sin test.
 | ~~36~~ | el número, primer corte | `reposicion.py` y `guia_pedido.py` a `archivo/`; nueve cuerpos a cuatro; techo PLAN 17→15. Los termómetros siguen: llegar a 181/7306 corta el motor |
 | ~~40~~ | el mapa no miente sobre las piezas | el campo `piezas` coincide con las marcas del codigo, en orden; la union es el conjunto de huerfanos. `banco_llamada_uno` puntua lo declarado, no el nombre de la tool |
 | ~~45~~ | el loop: el criterio es el índice | `actuar` lee el estado. CONFLICTO escribe una pregunta sellada. Techo PLAN 14→13. No se suma pieza al grafo |
+| ~~48~~ | el primer apagón | seis puertas de herramientas a helpers privados; invariantes termómetro a `banco_pruebas/`. Snapshots en `archivo/` |
 
 ---
 

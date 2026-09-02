@@ -57,7 +57,7 @@ def _correr(nombre: str) -> dict:
     from banco_pruebas.puntaje import leer_guion
     from app.core import indice_turno as IT
     from app.storage.firestore_client import get_all_products
-    from app.verifika.invariantes import revisar_charla
+    from banco_pruebas.invariantes import revisar_charla
 
     turnos = leer_guion((GUIONES / f"{nombre}.txt").read_text(encoding="utf-8"))
     clon.instalar()

@@ -1080,7 +1080,7 @@ def _acotado_al_rubro(a: BuscarProductos, catalogo: list,
     return acotado or catalogo
 
 
-def _lista(a: BuscarProductos, tienda_id: str) -> dict:
+def buscar_productos(a: BuscarProductos, tienda_id: str) -> dict:
     """Identidad y catalogo. El veredicto lo da el CODIGO, siempre."""
     from app.storage.firestore_client import get_all_products
     from app.core.pedido_helpers import certificar_producto
@@ -1418,7 +1418,7 @@ def _lista(a: BuscarProductos, tienda_id: str) -> dict:
     return salida
 
 
-def _catalogo(a: ConsultarCatalogo, tienda_id: str) -> dict:
+def consultar_catalogo(a: ConsultarCatalogo, tienda_id: str) -> dict:
     """EL AGREGADO SOBRE LOS 880. La clase de pregunta que el modelo no podia
     ni formular, y por eso la inventaba.
 
@@ -1539,7 +1539,7 @@ def _catalogo(a: ConsultarCatalogo, tienda_id: str) -> dict:
                            "todo el catalogo."}
 
 
-def _ficha_por_id(a: FichaProducto, tienda_id: str) -> dict:
+def ficha_producto(a: FichaProducto, tienda_id: str) -> dict:
     from app.storage.firestore_client import get_product_by_id
     p = get_product_by_id(str(a.product_id).upper(), tienda_id=tienda_id)
     if not p:
@@ -1624,7 +1624,7 @@ def consultar_temas(a: ConsultarTemas, tienda_id: str) -> dict:
     return {"estado": "ok", "temas": fuera}
 
 
-def _envio(a: CotizarEnvio, tienda_id: str) -> dict:
+def cotizar_envio(a: CotizarEnvio, tienda_id: str) -> dict:
     from app.core import calculadora as T
     r = T.cotizar_envio(localidad=a.localidad)
     r.pop("mensaje_para_llm", None)
@@ -1886,7 +1886,7 @@ def _con_el_carrito_que_ya_estaba(items: list, tienda_id: str) -> list:
     return suma + list(items)
 
 
-def _presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
+def armar_presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
     """LA CUENTA. Cotiza cada destino y suma, y devuelve el presupuesto ya
     escrito renglon por renglon.
 
@@ -2126,7 +2126,7 @@ def _presupuesto(a: ArmarPresupuesto, tienda_id: str) -> dict:
             "proof": r.get("proof") or {}}
 
 
-def _compatibilidad(a: VerCompatibilidad, tienda_id: str) -> dict:
+def ver_compatibilidad(a: VerCompatibilidad, tienda_id: str) -> dict:
     from app.storage.firestore_client import get_product_by_id
     from app.core.compatibilidad import (evaluar, plataformas_del_mensaje,
                                          etiqueta_plataforma)
@@ -2233,20 +2233,20 @@ def consultar_productos(a: ConsultarProductos, tienda_id: str) -> dict:
     la proyeccion y corre el cuerpo que ya existia."""
     p = a.proyeccion or "lista"
     if p == "catalogo":
-        return _catalogo(
+        return consultar_catalogo(
             ConsultarCatalogo(operacion=a.operacion or "contar",
                               campo=a.campo, categoria=a.categoria,
                               filtros=a.filtros), tienda_id)
     if p == "ficha":
-        return _ficha_por_id(
+        return ficha_producto(
             FichaProducto(product_id=a.product_id or ""), tienda_id)
     if p == "compatibilidad":
-        return _compatibilidad(
+        return ver_compatibilidad(
             VerCompatibilidad(product_id=a.product_id or "",
                               equipo=a.equipo,
                               contra_product_id=a.contra_product_id),
             tienda_id)
-    return _lista(
+    return buscar_productos(
         BuscarProductos(descripcion=a.descripcion, categoria=a.categoria,
                         filtros=a.filtros, ordenar_por=a.ordenar_por,
                         direccion=a.direccion or "min",
@@ -2256,10 +2256,10 @@ def consultar_productos(a: ConsultarProductos, tienda_id: str) -> dict:
 def cotizar(a: Cotizar, tienda_id: str) -> dict:
     """Una puerta a la plata. Envio o presupuesto, segun traiga items."""
     if a.items:
-        return _presupuesto(
+        return armar_presupuesto(
             ArmarPresupuesto(items=a.items, destinos=a.destinos, pago=a.pago),
             tienda_id)
-    return _envio(CotizarEnvio(localidad=a.localidad or ""), tienda_id)
+    return cotizar_envio(CotizarEnvio(localidad=a.localidad or ""), tienda_id)
 
 
 def registrar_pedido(a: RegistrarPedido, tienda_id: str) -> dict:
@@ -2287,16 +2287,6 @@ def registrar_pedido(a: RegistrarPedido, tienda_id: str) -> dict:
             d for d in sueltos
             if _norm(d) not in {_norm(x) for x in de_los_items}]
     return {"estado": "registrado", "pedido": pedido}
-
-
-# Nombres viejos: no son puertas. El vivo entra por _CUERPOS. Tests y
-# banco siguen llamando estos nombres; son el mismo helper, no otra logica.
-buscar_productos = _lista
-consultar_catalogo = _catalogo
-ficha_producto = _ficha_por_id
-ver_compatibilidad = _compatibilidad
-cotizar_envio = _envio
-armar_presupuesto = _presupuesto
 
 
 _CUERPOS = {

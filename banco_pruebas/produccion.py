@@ -50,7 +50,7 @@ _RAIZ = Path(__file__).resolve().parent.parent
 if str(_RAIZ) not in sys.path:
     sys.path.insert(0, str(_RAIZ))
 
-from app.verifika.invariantes import revisar_charla  # noqa: E402
+from banco_pruebas.invariantes import revisar_charla  # noqa: E402
 
 TIENDA = "verifika_prod"
 _BASE = ("https://firestore.googleapis.com/v1/projects/memory-engine-v1/"

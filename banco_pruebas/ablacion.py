@@ -72,7 +72,7 @@ def _un_turno(pregunta: str, permitidas, espera: list) -> dict:
     from banco_pruebas import clon_produccion as clon
     from app.core import herramientas as H
     from app.storage.firestore_client import get_all_products
-    from app.verifika.invariantes import revisar
+    from banco_pruebas.invariantes import revisar
 
     clon.instalar()
     user = "ablacion"

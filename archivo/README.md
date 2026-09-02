@@ -32,6 +32,8 @@ sesión lo saque del vivo. Qué se apaga y en qué sesión está en
 | `reposicion_vivo_20260828.py` | el reposicion que todavía corría al abrir la FICHA 36, distinto del snapshot de la 34 | el piso de las 15 charlas no baje con los helpers en el resolver y sin el archivo vivo en app/core |
 | `guia_pedido_20260828.py` | el camino sellado del 8-jul; el vivo solo pedía `categorias_nombradas` y `opciones_por_categoria` | el piso no baje con esas dos funciones en `filtros_catalogo` |
 | `reconciliador_vivo_20260828.py` | `pedido.reconciliar` y los helpers que solo ella usaba, al salir de `app/` | el piso no baje con una sola opinión sobre el pedido |
+| `herramientas_20260902.py` | las seis puertas viejas todavía como `def` público; el vivo ya entra por cuatro `_CUERPOS` | el piso no baje con los seis cuerpos como helpers privados y alias para tests |
+| `invariantes_20260902.py` | el termómetro completo en `app/verifika/` | el piso no baje con `_RE_ITEM` y `pago_parcial` en el vivo y `revisar` en el banco |
 
 ## Qué NO va acá
 

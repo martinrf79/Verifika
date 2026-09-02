@@ -18,7 +18,7 @@ PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 
 La orden de trabajo abierta: FICHA 46, el ruteo de la política.
 Relato del diagnóstico en `FICHA_44_deposito_y_robustez.md`. La 45
-cerró el loop: el criterio es el índice, CONFLICTO pregunta. Los
+cerró el loop. La 48 apagó las seis puertas y el termómetro. Los
 termómetros de la 36 no se fuerzan.
 
 ---
@@ -57,6 +57,7 @@ toca, cómo se verifica.
 | `FICHA_43_la_salida_habla_las_familias.md` | la salida habla las familias abiertas; cerrada |
 | `FICHA_44_deposito_y_robustez.md` | depósito sin borrar; el diagnóstico |
 | `FICHA_45_el_loop.md` | el loop adentro del turno; CONFLICTO pregunta; cerrada |
+| `FICHA_48_el_apagon.md` | el primer apagón: seis puertas y el termómetro; cerrada |
 | `PLAN_REDUCCION.md` | la campaña de agosto: qué se queda vs qué ya fue a archivo/ |
 
 **En la raíz: la biblioteca.** Se consulta para entender POR QUÉ, no para saber

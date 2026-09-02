@@ -27,7 +27,7 @@ adelante.
 
 LAS DOS CLASES DE PROPIEDAD, y las dos hacen falta:
 
-  1. LOS INVARIANTES (`app/verifika/invariantes.py`) sobre el mensaje que sale.
+  1. LOS INVARIANTES (`banco_pruebas/invariantes.py`) sobre el mensaje que sale.
      Miran que el texto no se contradiga a si mismo. Son ciegos a un envio
      cobrado de mas: un mensaje puede ser perfectamente coherente y cobrar mal.
   2. LAS PROPIEDADES CRUZADAS, que es lo que agrega este archivo. No
@@ -44,7 +44,7 @@ import itertools
 
 import pytest
 
-from app.verifika import invariantes as INV
+from banco_pruebas import invariantes as INV
 
 TIENDA = "verifika_prod"
 
@@ -389,7 +389,7 @@ def test_el_componedor_no_mueve_un_peso_ni_rompe_la_cuenta(entorno):
     los 176 turnos de las charlas grabadas: los casos escritos a mano no
     alcanzan para probar una tijera."""
     from app.core.mensaje import componer
-    from app.verifika.invariantes import _importes
+    from banco_pruebas.invariantes import _importes
 
     for carro in _carros(entorno["muestra"], cuantos=3):
         for extras in COMBOS_EXTRA:

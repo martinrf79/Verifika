@@ -46,7 +46,7 @@ if str(_RAIZ) not in sys.path:
     sys.path.insert(0, str(_RAIZ))
 
 from banco_pruebas import barrido_entradas as B  # noqa: E402
-from app.verifika import invariantes as INV  # noqa: E402
+from banco_pruebas import invariantes as INV  # noqa: E402
 
 TIENDA = "verifika_prod"
 

@@ -35,4 +35,12 @@ def enchufar() -> None:
     repo = _cargar("reposicion_vivo_20260828.py")
     from app.core import resolver as R
     R._busqueda_de_lo_declarado = repo._busqueda_de_lo_declarado
+    # FICHA 48: el termometro salio de app/. Los snapshots que lo llamaban
+    # (aduana) siguen importando app.verifika.invariantes: se les deja
+    # revisar ahi solo en el banco, no en produccion.
+    from app.verifika import invariantes as INV
+    from banco_pruebas.invariantes import revisar, revisar_charla, _importes
+    INV.revisar = revisar
+    INV.revisar_charla = revisar_charla
+    INV._importes = _importes
     _ENCHUFADO = True

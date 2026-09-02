@@ -237,7 +237,7 @@ async def correr(charla: dict, uid: str) -> dict:
 
 def juzgar(corrida: dict, vocabulario: set) -> list:
     """Los invariantes sobre la charla corrida. Sin respuesta esperada."""
-    from app.verifika.invariantes import revisar_charla
+    from banco_pruebas.invariantes import revisar_charla
     fallas = revisar_charla(corrida["respuestas"], vocabulario=vocabulario)
     for f in fallas:
         i = f["turno"] - 1
