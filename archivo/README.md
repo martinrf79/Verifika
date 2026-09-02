@@ -93,3 +93,44 @@ siguen en `data/clientes/<tienda>/`, con su candado en `INVENTARIO_FUENTE.md`.
 `camino_nuevo.env`, `columna_simple.env`, `llm_carritos.env` y
 `maquina_determinista.env`. Prendían combinaciones de flags de las que hoy no
 queda ninguna: un repo, un camino vivo, cero flags sueltas.
+
+### `archivo/tests_apagados/` — la batería vieja, apagada el 2-sep-2026
+
+**73 archivos, 15.464 líneas.** No se borró ninguno: si mañana hace falta uno,
+se vuelve con `git mv` y corre igual.
+
+**Por qué se apagaron.** Medido el 2-sep contra el árbol de main: 36.984 líneas
+de test contra 22.061 de `app/`, 1.209 tests en verde, y el bot sin contestar
+bien una pregunta de dificultad media-alta. De 966 definiciones, 120 no miraban
+nunca lo que recibe el cliente —candados sobre archivos `.md`, sobre el hook de
+git, sobre el guard de ramas, sobre el propio arnés— y el test más lento de toda
+la batería, 10,71 segundos, verificaba que un inventario en `.md` coincidiera
+con el código. En todo el repo había **14 asserts** que afirmaban que el bot
+contestó lo que le preguntaron.
+
+Y los casetes eran un circuito cerrado: `grabar_casetes.py:252` calcula el piso
+reproduciendo la grabación recién hecha, y `test_charlas_grabadas.py:170` exige
+que ese número no baje. La salida grabada del modelo producía el número, y el
+test exigía que el número no bajara. Un error que ninguna guardia cazaba quedaba
+consagrado adentro del piso. Estaba escrito con todas las letras en
+`tests/oro/README.md:4` desde antes.
+
+**Qué se quedó, y por qué.** 31 archivos, 6.433 líneas, 429 tests en 13,5
+segundos contra 208. Dos grupos y nada más:
+
+- **`tests/test_oro.py` y los 65 casos de `tests/oro/`** — entrada y salida
+  escritas a mano, nunca regrabadas. Es la única vara del repo que mide la nueva
+  prioridad 1b, que interprete y responda bien, y es con la que se midió que la
+  capa 2 da 32 de 40 **con la interpretación perfecta**: o sea que 8 de los
+  fallos son de cableado y no del modelo.
+- **Los tests de las herramientas deterministas que se quedan** — calculadora,
+  envío, pago, geo_cp, cierre, filtros, herramientas, compatibilidad, fuente,
+  curadas, índice, familias, prosa de la casa, y las puertas de entrada del
+  webhook. Son las piezas que hacen posible la respuesta: apagar su red sería
+  quedarse sin nada justo en lo que se conserva.
+
+**Lo que se apagó con esto, y hay que saberlo:** los dos techos, `A MEDIAS` y
+`PLAN`, ya no los cuida nadie —vivían en `test_a_medias.py`—; el candado de
+`PENDIENTE.md`; el candado de que los `.md` no mientan sobre el modelo; y la
+medición de regresión de las 15 charlas grabadas. `banco_pruebas/` no se tocó:
+sigue entero y `python3 banco_pruebas/oro.py` corre offline y gratis.
