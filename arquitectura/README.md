@@ -16,9 +16,10 @@ A MEDIAS   algo que se EMPEZÓ y no se terminó.  Tiene que llegar a CERO.
 PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 ```
 
-La orden de trabajo abierta: no hay una ficha nueva. La 41 unificó
-nombres adentro del molde. La 42 nombró el catálogo. La 43 hizo que
-la salida hable las familias abiertas. Los dos termómetros siguen.
+La orden de trabajo abierta: `FICHA_44_deposito_y_robustez.md`.
+No se borra nada. Lo que sobra va a `archivo/`. Lo que hoy le cuesta
+una venta se cierra primero: una contradicción declarada tiene que
+preguntar. Los termómetros de la 36 siguen y no se fuerzan.
 
 ---
 
@@ -54,7 +55,8 @@ toca, cómo se verifica.
 | `FICHA_41_un_idioma.md` | un idioma, el del molde; cerrada |
 | `FICHA_42_el_catalogo_de_la_pregunta.md` | el catálogo de la pregunta; cerrada |
 | `FICHA_43_la_salida_habla_las_familias.md` | la salida habla las familias abiertas; cerrada |
-| `PLAN_REDUCCION.md` | **la campaña**: 604 funciones → 181, qué se queda |
+| `FICHA_44_deposito_y_robustez.md` | **abierta**: depósito sin borrar, y los tres defectos del 2-sep |
+| `PLAN_REDUCCION.md` | la campaña de agosto: qué se queda vs qué ya fue a archivo/ |
 
 **En la raíz: la biblioteca.** Se consulta para entender POR QUÉ, no para saber
 qué hacer.
@@ -66,7 +68,8 @@ qué hacer.
 | `../PLAN_RECORTE.md` | CÓMO se hace cada paso y en qué orden |
 | `../ARQUITECTURA.md` | cómo está ordenado el sistema hoy |
 | `../tests/test_plan_del_recorte.py` | el plan viejo, lo que queda de las fichas 1 a 25 |
-| `../tests/test_plan_de_la_simplificacion.py` | **el plan de ahora**: nexo y puertas |
+| `../tests/test_plan_de_la_simplificacion.py` | el plan del nexo y las puertas |
+| `../tests/test_plan_de_la_robustez.py` | **el plan de ahora**: contradicción, ruteo, extremos sueltos |
 
 > **Por qué los cuatro no están físicamente acá.** Reescribir 45 KB de prosa
 > para cambiarles la ruta agrega riesgo de transcripción y no gana nada: nadie

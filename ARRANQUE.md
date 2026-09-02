@@ -53,18 +53,16 @@ Si HEAD no es origin/main: árbol limpio y fast-forward posible →
 git pull --ff-only origin main y seguí. Si el árbol está sucio, hay
 commits locales que no están en origin, o no hay fast-forward: PARÁ y avisá.
 Leé en este orden y nada más: ARRANQUE.md,
-arquitectura/PLAN_REDUCCION.md, arquitectura/FICHA_36_el_numero.md,
-DECISIONES.md.
+arquitectura/FICHA_44_deposito_y_robustez.md, DECISIONES.md.
 Corré pytest -q y anotá los dos techos.
 Soy Martín, escucho por transcriptor: contestame en prosa plana, corto.
 Código sólo dentro de un bloque, y sólo si es una consigna a ejecutar.
 Prioridad uno, no negociable: el bot vende y alucina lo menos posible.
 Si sabe, contesta; si es ambiguo, repregunta; si no sabe, dice que no sabe.
 Un detalle nunca tira una venta.
-Esta sesión hace la FICHA 36, tercer tercio de PLAN_REDUCCION, y nada más.
-reposicion.py sale de app/ si nadie la llama. Nueve cuerpos a cuatro.
-Los termómetros 181 y 7306 tienen que pasar. No se toca el razonamiento
-ni data/clientes. Si el piso baja, revert del corte, no un parche.
+Esta sesión hace la FICHA 45, la contradicción pregunta, y nada más.
+No se deposita grasa. No se toca certificar_temas. No se toca
+data/clientes. Si el piso baja, revert.
 PUSHEÁ A main ANTES DE CERRAR. Toca app/: pedí el OK del push una vez,
 al final. Nada de ramas.
 ```
@@ -96,13 +94,16 @@ mismo día, no se acumula. El candado está en
 | **27** | `test_la_nota_interna_no_le_llega_al_cliente` | `sin_narracion_interna` no ve hablar del cliente en tercera persona, solo nombrar la máquina |
 | **28** | `test_no_se_promete_un_dato_que_no_se_da` | un anuncio de precio, plazo o stock puede salir sin el dato abajo |
 | **29** | *(sin test propio todavía)* | la anti-repetición poda el bloque de cuenta que no cambió y se lleva el reparto y el pago, que son PUNTOS. No se trabaja hasta que exista el `xfail`. Es la ficha 21 al revés |
+| **44** | *(diseño, no implementa)* | depósito sin borrar y diagnóstico. Relato en `arquitectura/FICHA_44_deposito_y_robustez.md`. El techo del plan subió para contar los tres de abajo |
+| **45** | `test_una_contradiccion_declarada_sale_con_pregunta` | una contradicción en CONFLICTO sale sin pregunta. Turno 4cb60031. Es la que más venta cuesta |
+| **46** | `test_un_pedido_de_producto_no_abre_politica_de_pago` | "dame precio de una intermedia" abre cuotas o envío. Turno b92cae87. Primero se mide la puerta |
+| **47** | `test_dos_extremos_sueltos_no_eligen_el_primero` | dos extremos solo en restricciones se quedan con el primero. Elegir es inventar |
 | A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** |
 
-**Orden: 36**, una por sesión, relato en `arquitectura/PLAN_REDUCCION.md`.
-La 36 cortó el vivo (reposicion, guia_pedido, nueve a cuatro) y cerró 31 y 32.
-Los termómetros no cierran: el stay-list del motor ya pesa más que 7306.
-Después: Martín mira producción, y recién ahí se optimizan las
-herramientas que queden y se atacan los errores de razonamiento. La 24
+**Orden: 45**, una por sesión, relato en `arquitectura/FICHA_44_deposito_y_robustez.md`.
+La 36 ya cortó el vivo. Los termómetros no se fuerzan. Primero la
+contradicción pregunta. Después el ruteo de la política. Después los
+extremos sueltos. El depósito de la grasa es la 48, no esta. La 24
 y la 29 no se tocan sin test.
 
 ---
