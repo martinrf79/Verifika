@@ -160,12 +160,21 @@ def _derivar_las_busquedas(llamadas: list, declarado: dict, memoria: list,
     # VALOR, que es un hecho, y la del orden sale del nombre del campo.
     filtros: list = []
     sueltas: list = []
-    orden = None
+    # LOS EXTREMOS SE JUNTAN TODOS, NO SE QUEDA EL PRIMERO (2-sep-2026).
+    # Era `orden = orden or extremo`: UNA variable para el turno entero, asi que
+    # el primer extremo se llevaba todas las busquedas. "cual es el mas caro de
+    # toda la tienda, y cual el mas barato" salia con direccion min las dos
+    # veces, y el mas caro no lo miraba nadie. ELEGIR ES INVENTAR, que es la
+    # regla cero aplicada al orden: si el turno declaro dos extremos opuestos y
+    # ninguno es mas suyo que el otro, no se elige uno, se contestan los dos.
+    # Caso de oro C2-S04, y ficha 47.
+    extremos: list = []
     for r in (declarado.get("restricciones") or []):
         r = str(r)
         extremo = FC.resolver_orden(r, tienda_id)
         if extremo:
-            orden = orden or extremo
+            if extremo not in extremos:
+                extremos.append(extremo)
             continue
         cond = (FC.resolver_exclusion(r, tienda_id)
                 or FC.resolver_inclusion(r, tienda_id))
@@ -189,6 +198,13 @@ def _derivar_las_busquedas(llamadas: list, declarado: dict, memoria: list,
         # abierto, que es honesto.
         if not FC.tiene_negacion(r):
             sueltas.append(r)
+
+    # UN SOLO extremo sigue mandando sobre todo el turno, igual que antes: es el
+    # caso normal -"la notebook mas barata"- y ahi no hay nada que elegir. DOS O
+    # MAS no gobiernan ninguna busqueda de item: cada uno se contesta con la suya
+    # abajo, y el item que traiga su propio extremo en el texto lo usa igual
+    # porque `_buscar` lo lee de `que` antes que de `orden`.
+    orden = extremos[0] if len(extremos) == 1 else None
 
     def _buscar(que: str, categoria: str = ""):
         args: dict = {"descripcion": " ".join([que] + sueltas), "cuantos": 3}
@@ -230,6 +246,45 @@ def _derivar_las_busquedas(llamadas: list, declarado: dict, memoria: list,
         que = str((it or {}).get("que") or "").strip()
         if que:
             _buscar(que, str((it or {}).get("categoria") or "").strip())
+
+    # ── 2-bis. EL EXTREMO QUE NINGUN ITEM RECLAMA SE BUSCA SOLO ─────────
+    # "cual es el mas caro de toda la tienda" no nombra ningun rubro, asi que no
+    # abre item, y hasta hoy no derivaba NADA: los filtros se calculaban y no los
+    # consumia nadie, porque `_buscar` solo se invoca desde items, stock y
+    # atributos. El extremo sobre la tienda entera es una pregunta legitima y
+    # tiene respuesta exacta en la fuente: se busca sin descripcion y sin
+    # categoria, ordenado, y alcanza con el primero.
+    #
+    # Con UN solo extremo esto NO corre si algun item ya se lo llevo: en ese caso
+    # `orden` viajo en la busqueda del item y volver a preguntar por el extremo
+    # de toda la tienda seria contestar otra cosa.
+    #
+    # VA POR EL AGREGADO, NO POR LA LISTA, y esa es la parte que faltaba: una
+    # busqueda de lista sin descripcion y sin categoria vuelve `no_encontrado`
+    # con `buscado: ""`, porque la lista esta pensada para lo que el cliente
+    # DESCRIBE. El camino exacto ya existia en la herramienta y no lo llamaba
+    # nadie: `proyeccion: catalogo` con `operacion` devuelve el producto entero
+    # con su valor y sobre cuantos se midio -778-, que es una respuesta
+    # determinista y no un ranking por parecido.
+    #
+    # SOLO CUANDO EL TURNO NO DECLARO NINGUN ITEM, y esto se acoto midiendo: la
+    # primera version corria siempre que hubiera dos extremos distintos y rompio
+    # el caso C2-E06, donde "que sea barato" y "que no sean tan caros" son dos
+    # ablandadores DE SUS ITEMS -un mouse y unos auriculares- y no dos preguntas
+    # sobre la tienda entera. Sin items no hay a que atarlos y la unica lectura
+    # posible es la tienda entera; con items, el extremo es del item y el caso de
+    # dos extremos sueltos con items sigue abierto, que es la ficha 47.
+    _hay_items = any(str((it or {}).get("que") or "").strip()
+                     for it in (declarado.get("items") or []))
+    for ext in ([] if _hay_items else extremos):
+        campo, direccion = ext["campo"], ext["direccion"]
+        if campo == "precio_ars":
+            op = "mas_caro" if direccion == "max" else "mas_barato"
+            args = {"proyeccion": "catalogo", "operacion": op}
+        else:
+            op = "el_mayor" if direccion == "max" else "el_menor"
+            args = {"proyeccion": "catalogo", "operacion": op, "campo": campo}
+        _agregar("consultar_productos", args)
 
     # ── 3. STOCK: lo mismo, y si no aparece se mira el CATALOGO ENTERO ──
     # Es la obligacion que llevaba `consultar_catalogo` en su descripcion:

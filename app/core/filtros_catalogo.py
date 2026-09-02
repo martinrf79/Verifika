@@ -692,6 +692,19 @@ _RE_SUPERLATIVO = re.compile(
     r"barat\w*|economic\w*|car[oa]s?|livian\w*|ligero\w*|pesad\w*)(?![a-z])")
 _MENOR = ("menos", "menor", "minim", "barat", "economic", "accesible",
           "livian", "ligero")
+# LO QUE DA VUELTA EL ADJETIVO, y sale de `_NEGACIONES` restandole lo que
+# `_MENOR` ya consume. Una sola fuente, dos usos, que es la regla de este modulo.
+#
+# POR QUE NO ES `tiene_negacion`: su vocabulario incluye "menos", "menor",
+# "minima" y "minimo", que para la EXCLUSION son negacion -"el que menos partes
+# chinas tenga"- pero en un EXTREMO son el extremo. Darlas vuelta convertiria
+# "el que menos pesa" en el mas pesado, que es peor que el defecto que arregla.
+#
+# Y suma "nada" pelado, que `_NEGACIONES` no tiene porque alla figura como "nada
+# de". "nada caro" y "nada barato" son formas reales y aca no pueden confundirse
+# con otra cosa: esto solo corre sobre una frase que YA trae un superlativo.
+_NIEGA_EL_ADJETIVO = tuple(n for n in _NEGACIONES
+                           if not any(n.startswith(m) for m in _MENOR)) + ("nada",)
 
 
 def resolver_orden(frase: str, tienda_id: str) -> dict | None:
@@ -748,6 +761,15 @@ def resolver_orden(frase: str, tienda_id: str) -> dict | None:
         return None
     direccion = "min" if any(w.startswith(m) for w in palabras
                              for m in _MENOR) else "max"
+    # LA NEGACION DA VUELTA EL EXTREMO, y hasta el 2-sep-2026 no la miraba nadie:
+    # la direccion salia solo de si aparecia una palabra de `_MENOR`. Medido
+    # sobre la fuente real, 8 de 10 formas negadas se leian al reves, y "que no
+    # sea caro" -de las mas comunes para poner un presupuesto- ordenaba del mas
+    # caro al mas barato. Estaba tapado por `orden = orden or extremo`, que se
+    # quedaba con el primer extremo del turno. Vara: tests/test_extremo_negado.py
+    if any(re.search(rf"(?<![a-z]){n}(?![a-z])", txt)
+           for n in _NIEGA_EL_ADJETIVO):
+        direccion = "max" if direccion == "min" else "min"
     return {"campo": elegido, "direccion": direccion}
 
 
