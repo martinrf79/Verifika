@@ -31,12 +31,13 @@ y (c) el diseño del turno con muchas piezas, que es el recorte de fondo.
 
 ---
 
-## PASO 1 — HECHO EN UN CLON DE SESION, NO LLEGO A MAIN. Repetirlo.
+## PASO 1 — HECHO Y EN MAIN. No se repite.
 
-Se ejecuto el 2-sep en el clon de Cowork y la bateria dio igual antes y
-despues, pero el push a main no fue posible desde esa sesion. Se repite con
-`git mv` a las carpetas de abajo y una fila por archivo en archivo/README.md
-(tests/test_archivo.py exige la fila). Sin tocar app/.
+Se ejecuto el 2-sep en un clon de Cowork y el push no fue posible desde esa
+sesion, asi que quedo aca como paso a repetir. **Ya se repitio con `git mv` y
+esta en main**: que se movio y a donde lo dice `archivo/README.md`, que es el
+unico lugar donde eso vive. La bateria dio igual antes y despues. Sin tocar
+`app/`.
   - 5 instrumentos de banco_pruebas  -> archivo/instrumentos/
     (banco_atado_charlas, charla_sim, duelo_interprete, fiscalizador, peso_reposicion)
   - 3 scripts a mano                 -> archivo/scripts_viejos/
