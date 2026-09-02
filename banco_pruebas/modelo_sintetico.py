@@ -482,14 +482,11 @@ def sin_modelo(tienda_id: str = TIENDA, modo: str = "hostil"):
     verde probando de menos. Ver `tests/test_casete_candado.py`, que es el
     candado que obliga a que puerta nueva tenga parche nuevo en el mismo
     commit."""
-    from app.core import cierre, hub_venta, herramientas as H
-    from app.verifika import llm_adapter
+    from app.core import hub_venta, herramientas as H
 
     estado: dict = {"turno": -1, "llamadas": []}
     real_g = hub_venta._cliente
     real_d = hub_venta._cliente_decisor
-    real_a = llm_adapter.llm_complete
-    real_c = getattr(cierre, "llm_complete", None)
     real_ej = H.ejecutar
 
     def _cli():
@@ -503,21 +500,12 @@ def sin_modelo(tienda_id: str = TIENDA, modo: str = "hostil"):
             {"herramienta": nombre, "pedido": args, "resultado": r})
         return r
 
-    def _adapter(messages, role="solver", **kw):
-        return {}
-
     hub_venta._cliente = _cli
     hub_venta._cliente_decisor = _cli
-    llm_adapter.llm_complete = _adapter
     H.ejecutar = _ejecutar_espia
-    if real_c is not None:
-        cierre.llm_complete = _adapter
     try:
         yield estado
     finally:
         hub_venta._cliente = real_g
         hub_venta._cliente_decisor = real_d
-        llm_adapter.llm_complete = real_a
         H.ejecutar = real_ej
-        if real_c is not None:
-            cierre.llm_complete = real_c

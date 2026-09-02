@@ -47,8 +47,11 @@ CASETES = Path(__file__).resolve().parent / "casetes"
 # cuando se ajusta una frase del prompt. Las dos que no llevan schema se
 # resuelven por el modulo que llama.
 # La llamada UNO lleva las herramientas; la DOS no. Es parte del contrato con el
-# modelo y no cambia cuando se ajusta una frase del prompt.
-_POR_MODULO = {"memoria_larga": "memoria", "hub_venta": "redaccion"}
+# modelo y no cambia cuando se ajusta una frase del prompt. El extractor del
+# cierre entra por la misma puerta; si no tiene etapa propia, `_etapa` lo
+# confunde con la redaccion porque se llama desde hub_venta.
+_POR_MODULO = {"memoria_larga": "memoria", "hub_venta": "redaccion",
+               "cierre": "extractor"}
 
 
 def _etapa(kwargs: dict) -> str:
@@ -213,32 +216,20 @@ class _ClienteFalso:
 
 @contextmanager
 def _parchar(casete: Casete, grabando: bool):
-    """Intercepta las DOS puertas por las que el sistema habla con el modelo.
+    """Intercepta las puertas por las que el sistema habla con el modelo.
 
-    La primera es el cliente: `hub_venta._cliente`. Por ahi pasan las dos
-    llamadas del turno -que buscar y redactar- y el resumen de memoria. Antes
-    eran dos clientes, uno del interprete y otro del solver; con el hub de
-    herramientas quedo uno solo, y una sola puerta es mas dificil de esquivar.
+    La del redactor: `hub_venta._cliente`. Por ahi pasan las dos llamadas del
+    turno, el resumen de memoria y el extractor del cierre. Una sola puerta,
+    mas dificil de esquivar.
 
-    La segunda es una funcion, `verifika.llm_adapter.llm_complete`, y la encontro
-    el candado de `tests/test_casete_candado.py` despues de que yo mismo la tapara
-    en la lista de permitidos: la usan `cierre.extraer_datos_cliente` y
-    `tools.query_faq`, o sea que corre en turnos reales. Sin interceptarla, en CI
-    esas llamadas se irian a la red de verdad y el test quedaria verde probando
-    de menos, que es exactamente el modo de falla que esta maquina viene a matar.
+    La del decisor: `hub_venta._cliente_decisor`. Con DECISOR_BASE_URL vacio
+    devuelve `_cliente()` y el parche de abajo ya la cubria; con la base_url
+    puesta se arma su propio cliente y la llamada UNO se le escapaba al
+    casete. Se intercepta aca por la regla del candado: puerta nueva, parche
+    nuevo, mismo commit.
     """
-    from app.core import cierre, hub_venta
-    from app.verifika import llm_adapter
+    from app.core import hub_venta
     real_g = hub_venta._cliente
-    real_a = llm_adapter.llm_complete
-    # `cierre` importa llm_complete a nivel de MODULO, asi que parchear solo el
-    # adapter no lo alcanza: hay que pisarle su propia referencia.
-    real_c = getattr(cierre, "llm_complete", None)
-    # La puerta del DECISOR. Con DECISOR_BASE_URL vacio devuelve `_cliente()` y
-    # el parche de abajo ya la cubria; con la base_url puesta se arma su propio
-    # cliente y la llamada UNO se le escapaba al casete, o sea salia a la red de
-    # verdad en CI. Se intercepta aca por la regla del candado: puerta nueva,
-    # parche nuevo, mismo commit.
     real_d = hub_venta._cliente_decisor
 
     def _fake_g():
@@ -247,30 +238,13 @@ def _parchar(casete: Casete, grabando: bool):
     def _fake_d():
         return _ClienteFalso(casete, real_d() if grabando else None)
 
-    def _fake_adapter(messages, role="solver", **kw):
-        etapa = f"adapter_{role}"
-        if grabando:
-            r = real_a(messages, role=role, **kw)
-            casete.grabar(etapa, json.dumps(r, ensure_ascii=False, default=str))
-            return r
-        salida = casete.leer(etapa)
-        if salida is None:
-            raise TimeoutError(f"sin grabacion para {etapa}")
-        return json.loads(salida)
-
     hub_venta._cliente = _fake_g
     hub_venta._cliente_decisor = _fake_d
-    llm_adapter.llm_complete = _fake_adapter
-    if real_c is not None:
-        cierre.llm_complete = _fake_adapter
     try:
         yield casete
     finally:
         hub_venta._cliente = real_g
         hub_venta._cliente_decisor = real_d
-        llm_adapter.llm_complete = real_a
-        if real_c is not None:
-            cierre.llm_complete = real_c
 
 
 @contextmanager

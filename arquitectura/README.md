@@ -16,10 +16,10 @@ A MEDIAS   algo que se EMPEZÓ y no se terminó.  Tiene que llegar a CERO.
 PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 ```
 
-La orden de trabajo abierta: FICHA 46, el ruteo de la política.
-Relato del diagnóstico en `FICHA_44_deposito_y_robustez.md`. La 45
-cerró el loop. La 48 apagó las seis puertas y el termómetro. Los
-termómetros de la 36 no se fuerzan.
+La orden de trabajo abierta: Recorte 2 hecho (una puerta al modelo).
+Sigue la FICHA 46, el ruteo de la política. Relato del diagnóstico en
+`FICHA_44_deposito_y_robustez.md`. La 45 cerró el loop. La 48 apagó
+las seis puertas y el termómetro. Los termómetros de la 36 no se fuerzan.
 
 ---
 

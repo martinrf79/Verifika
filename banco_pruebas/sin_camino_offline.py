@@ -42,22 +42,6 @@ SIN_CAMINO_OFFLINE = {
     # corrieran de verdad, el CI saldria a la red, gastaria y seria no
     # determinista. `tests/test_casete_candado.py` ya vigila que la puerta este
     # tapada; que ademas figuren sin ejercitar es la consecuencia buscada.
-    "app/verifika/llm_adapter.py:llm_complete":
-        "la puerta al modelo; el casete la parchea para que el CI no salga a la red",
-    "app/verifika/llm_adapter.py:_get_client":
-        "arma el cliente HTTP del proveedor; sin credencial no hay nada que armar",
-    "app/verifika/llm_adapter.py:_call_openai_compatible":
-        "llamada HTTP real al proveedor compatible con OpenAI",
-    "app/verifika/llm_adapter.py:_call_anthropic":
-        "llamada HTTP real a Anthropic",
-    "app/verifika/llm_adapter.py:_deepseek_thinking_off":
-        "apaga el modo pensante de DeepSeek en el cuerpo de la llamada real",
-    "app/verifika/llm_adapter.py:_gemini_thinking_off":
-        "apaga el modo pensante de Gemini en el cuerpo de la llamada real",
-    "app/verifika/llm_adapter.py:_nvidia_thinking_off":
-        "apaga el modo pensante de NVIDIA en el cuerpo de la llamada real",
-    "app/verifika/llm_adapter.py:_openrouter_reasoning_off":
-        "apaga el razonamiento de OpenRouter en el cuerpo de la llamada real",
     "app/core/hub_venta.py:_cliente":
         "la puerta del redactor al modelo; el casete la parchea, ver casete._parchar",
     "app/core/hub_venta.py:_cliente_decisor":

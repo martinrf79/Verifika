@@ -135,7 +135,6 @@ def instalar() -> dict:
     settings = get_settings()
     info.update({
         "solver_model": settings.GEMINI_MODEL,
-        "interprete": settings.INTERPRETER_PROVIDER,
         "tienda": settings.TIENDA_ID,
         "modo_cierre": modo_cierre(TIENDA),
         "clave": ("PROD (paga)" if (os.environ.get("GEMINI_API_KEY_PROD") or "")

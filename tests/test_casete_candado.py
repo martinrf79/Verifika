@@ -55,10 +55,7 @@ def test_no_hay_una_tercera_puerta_al_modelo():
     # Las dos puertas que el casete SI intercepta, mas el transcriptor de audio,
     # que no participa del turno de texto. La lista es corta a proposito: cada
     # nombre que se le suma es una llamada al modelo que los tests dejan de ver.
-    # Este mismo test encontro `llm_adapter.llm_complete` -que usan
-    # `cierre.extraer_datos_cliente` y `tools.query_faq`, o sea que corre en
-    # turnos reales- despues de que la lista la tapara sin querer.
-    permitidos = {"hub_venta.py", "llm_adapter.py", "transcriber.py"}
+    permitidos = {"hub_venta.py", "transcriber.py"}
     culpables = []
     for py in sorted(_APP.rglob("*.py")):
         if py.name in permitidos:
@@ -73,6 +70,15 @@ def test_no_hay_una_tercera_puerta_al_modelo():
         + ", ".join(culpables)
         + ". Usar hub_venta._cliente(), o sumar la puerta nueva a "
           "banco_pruebas/casete._parchar.")
+
+
+def test_el_extractor_del_cierre_entra_por_la_puerta_del_hub():
+    """El Recorte 2 unifico la puerta. Si extraer_datos_cliente vuelve a
+    llamar a otra funcion, el casete deja de verla y CI sale a la red."""
+    src = (_APP / "core" / "cierre.py").read_text(encoding="utf-8")
+    assert "llm_complete" not in src
+    assert "llm_adapter" not in src
+    assert "_cliente" in src and "_modelo" in src
 
 
 def test_reproducir_intercepta_de_verdad():
@@ -117,3 +123,7 @@ def test_las_dos_llamadas_del_turno_se_graban_por_separado():
 
     assert _etapa({"tools": [{"type": "function"}]}) == "herramientas"
     assert _etapa({"messages": []}) != "herramientas"
+    from banco_pruebas.casete import _POR_MODULO
+    assert _POR_MODULO.get("cierre") == "extractor", (
+        "el extractor del cierre tiene que tener etapa propia: si no, "
+        "_etapa lo lee como redaccion porque se llama desde hub_venta")

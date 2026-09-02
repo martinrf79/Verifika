@@ -60,6 +60,8 @@ Código sólo dentro de un bloque, y sólo si es una consigna a ejecutar.
 Prioridad uno, no negociable: el bot vende y alucina lo menos posible.
 Si sabe, contesta; si es ambiguo, repregunta; si no sabe, dice que no sabe.
 Un detalle nunca tira una venta.
+El Recorte 2 (una puerta al modelo) ya está en main. Relato en
+arquitectura/PLAN_RECORTE_2SEP.md.
 Esta sesión hace la FICHA 46, el ruteo de la política, y nada más.
 No se deposita grasa. No se toca el loop de la 45. No se toca
 data/clientes. Si el piso baja, revert.
@@ -102,9 +104,9 @@ mismo día, no se acumula. El candado está en
 | A MEDIAS | `test_lo_que_el_codigo_entiende_sin_modelo_no_puede_bajar` | el piso compara contra el `registrar_pedido` que declaró el modelo, y eso se mueve solo en cada regrabación. **Congelado a propósito, no se toca hasta cerrar la 22** |
 
 **Orden: 46**, una por sesión, relato en `arquitectura/FICHA_44_deposito_y_robustez.md`.
-La 45 dejó el loop. La 48 apagó las seis puertas y el termómetro. Sigue
-el ruteo de la política. Después los extremos sueltos. La 24 y la 29 no
-se tocan sin test.
+La 45 dejó el loop. La 48 apagó las seis puertas y el termómetro. El
+Recorte 2 dejó una sola puerta al modelo. Sigue el ruteo de la política.
+Después los extremos sueltos. La 24 y la 29 no se tocan sin test.
 
 ---
 
@@ -132,6 +134,7 @@ se tocan sin test.
 | ~~40~~ | el mapa no miente sobre las piezas | el campo `piezas` coincide con las marcas del codigo, en orden; la union es el conjunto de huerfanos. `banco_llamada_uno` puntua lo declarado, no el nombre de la tool |
 | ~~45~~ | el loop: el criterio es el índice | `actuar` lee el estado. CONFLICTO escribe una pregunta sellada. Techo PLAN 14→13. No se suma pieza al grafo |
 | ~~48~~ | el primer apagón | seis puertas de herramientas a helpers privados; invariantes termómetro a `banco_pruebas/`. Snapshots en `archivo/` |
+| ~~R2~~ | una puerta al modelo | `llm_adapter` y el zoologico de providers a `archivo/`. El extractor del cierre usa `hub_venta._cliente` |
 
 ---
 

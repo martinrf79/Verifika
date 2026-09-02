@@ -52,42 +52,12 @@ viejos, porque el Dockerfile copia data/ entera.
 
 ---
 
-## PASO 2 — UNA SOLA PUERTA AL MODELO. Sale llm_adapter y el zoologico de providers
+## PASO 2 — HECHO Y EN MAIN. Una sola puerta al modelo.
 
-Que hay hoy: el turno vivo habla con Gemini por `hub_venta._cliente()`, un
-cliente OpenAI-compatible. Al lado sobrevive `app/verifika/llm_adapter.py`
-(417 lineas: ocho proveedores distintos, por rol solver/proposer/checker) y
-en `app/config.py` unas 200 lineas de claves y flags de esos proveedores. Lo usa UNA sola llamada:
-`cierre.extraer_datos_cliente`, que le pide al modelo el nombre del cliente.
-
-Que se hace:
-  1. En `app/core/cierre.py`, `extraer_datos_cliente` pasa a usar el mismo
-     cliente del hub: `from app.core.hub_venta import _cliente, _modelo` y
-     una llamada `chat.completions.create` con temperature 0 y max_tokens 160.
-     Se mantiene el respaldo determinista que ya existe abajo.
-  2. `app/verifika/llm_adapter.py` -> `archivo/llm_adapter_20260902.py`, con
-     fila en archivo/README.md. `app/verifika/__init__.py` deja de exportarlo.
-  3. `app/config.py`: los bloques de cada proveedor que no es el del camino
-     vivo, y las cinco funciones `*_thinking_off` / `*_extra_body`, salen a
-     `archivo/config_providers_20260902.py`.
-     Quedan: GEMINI_*, DECISOR_*, REDACTOR_REASONING, TIENDA_ID, HISTORY_LIMIT,
-     los secretos de WhatsApp y Telegram, Firestore, y los mensajes fijos.
-  4. Instrumentos que hoy parchean `llm_complete` y hay que reapuntar al
-     nuevo camino (son seis, ya ubicados):
-       banco_pruebas/casete.py          lineas 223-273
-       banco_pruebas/modelo_sintetico.py lineas 486-523
-       banco_pruebas/sin_camino_offline.py lineas 45-59 (borrar las 8 entradas)
-       tests/test_cierre_y_cobro.py     lineas 226 y 244 (monkeypatch)
-       tests/test_casete_candado.py     linea 61 (sacar llm_adapter.py)
-       tests/smoke_verifika.py          test_llm_adapter (sacar)
-     Y `tests/test_nada_suelto.py` DECLARADAS: sacar las cinco de providers.
-  5. Bateria en verde. Commit "Recorte 2: una puerta al modelo".
-
-Numero que lo mide: app/ baja unas 650 lineas y `requirements.txt` puede
-soltar dos dependencias que solo usaba el adaptador (avisar antes, regla
-11.3 de CLAUDE.md).
-Riesgo: bajo. La unica llamada que cambia es la del nombre del cliente, y
-tiene respaldo determinista.
+Se ejecuto el 2-sep. `cierre.extraer_datos_cliente` usa `hub_venta._cliente`.
+`llm_adapter.py` y el zoologico de providers de `config.py` quedaron en
+`archivo/`. El casete intercepta esa unica puerta. Toca `app/`: el push
+deploya.
 
 ---
 

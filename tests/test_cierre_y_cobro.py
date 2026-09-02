@@ -223,7 +223,7 @@ def test_los_datos_del_cliente_salen_igual_sin_el_modelo(firestore_doble,
     def _explota(*a, **kw):
         raise RuntimeError("modelo caido")
 
-    monkeypatch.setattr(cierre, "llm_complete", _explota)
+    monkeypatch.setattr("app.core.hub_venta._cliente", _explota)
     datos = cierre.extraer_datos_cliente(
         "mi telefono es 3415551234 y pago por transferencia", trace_id="t")
     assert datos["telefono"], "se perdio el telefono teniendo el patron delante"
@@ -241,7 +241,7 @@ def test_el_extractor_devuelve_los_cuatro_campos_siempre(firestore_doble,
     def _explota(*a, **kw):
         raise RuntimeError("modelo caido")
 
-    monkeypatch.setattr(cierre, "llm_complete", _explota)
+    monkeypatch.setattr("app.core.hub_venta._cliente", _explota)
     datos = cierre.extraer_datos_cliente("hola", trace_id="t")
     assert set(datos) == set(cierre.CAMPOS_EXTRAIBLES), (
         f"el extractor cambio su contrato: devolvio {sorted(datos)}")

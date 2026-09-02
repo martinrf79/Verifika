@@ -6,7 +6,7 @@ Ejecutar:
     python -m tests.smoke_verifika
 
 Requiere:
-    DEEPSEEK_API_KEY configurada en el entorno.
+    GEMINI_API_KEY configurada en el entorno.
 
 NO requiere Firestore: usa evidencia mockeada in-memory.
 """
@@ -19,24 +19,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def test_llm_adapter():
-    """Test 1: el adaptador llama a DeepSeek y devuelve algo."""
-    from app.verifika.llm_adapter import llm_complete, list_roles_config
-
+    """El adaptador por rol salio el 2-sep. El turno vivo habla con el
+    modelo solo por hub_venta._cliente."""
     print("\n=== TEST 1: LLM Adapter ===")
-    config = list_roles_config()
-    print(f"Configuración de roles: {config}")
-
-    result = llm_complete(
-        messages=[{"role": "user", "content": "Decí solamente 'hola'"}],
-        role="solver",
-        temperature=0.0,
-        max_tokens=20,
-    )
-    print(f"Provider: {result['provider']}")
-    print(f"Model: {result['model']}")
-    print(f"Respuesta: {result['content']}")
-    assert result["content"], "Respuesta vacía"
-    print("✓ Adaptador funciona\n")
+    from app.core.hub_venta import _cliente, _modelo
+    print(f"Modelo: {_modelo()}")
+    assert callable(_cliente)
+    print("✓ La puerta unica existe\n")
 
 
 def test_proposer():
@@ -143,8 +132,8 @@ def test_pipeline_completo():
 
 
 def main():
-    if not os.getenv("DEEPSEEK_API_KEY"):
-        print("ERROR: DEEPSEEK_API_KEY no configurada en el entorno")
+    if not os.getenv("GEMINI_API_KEY"):
+        print("ERROR: GEMINI_API_KEY no configurada en el entorno")
         sys.exit(1)
 
     try:

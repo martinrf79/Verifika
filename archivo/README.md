@@ -34,6 +34,8 @@ sesión lo saque del vivo. Qué se apaga y en qué sesión está en
 | `reconciliador_vivo_20260828.py` | `pedido.reconciliar` y los helpers que solo ella usaba, al salir de `app/` | el piso no baje con una sola opinión sobre el pedido |
 | `herramientas_20260902.py` | las seis puertas viejas todavía como `def` público; el vivo ya entra por cuatro `_CUERPOS` | el piso no baje con los seis cuerpos como helpers privados y alias para tests |
 | `invariantes_20260902.py` | el termómetro completo en `app/verifika/` | el piso no baje con `_RE_ITEM` y `pago_parcial` en el vivo y `revisar` en el banco |
+| `llm_adapter_20260902.py` | el adaptador de ocho proveedores; el vivo habla por `hub_venta._cliente` | el piso no baje con una sola puerta al modelo |
+| `config_providers_20260902.py` | claves y `*_thinking_off` de proveedores que no son Gemini | el piso no baje con Gemini como única puerta |
 
 ## Qué NO va acá
 

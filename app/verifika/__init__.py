@@ -1,15 +1,10 @@
 """
-VERIFIKA — adaptador de modelo LLM reutilizable.
+VERIFIKA — grafo del turno e invariantes de cobro.
 
-- llm_adapter: interfaz unica para cualquier modelo LLM, por rol.
+El adaptador de modelo por rol salio el 2-sep (Recorte 2): el turno vivo
+habla con el modelo solo por `hub_venta._cliente`. Snapshot en
+`archivo/llm_adapter_20260902.py`.
 
-El Checker LLM (proposer/checker/pipeline) se consolido y borro el 25-jun: el
-camino vivo usa el filtro determinista (app/core/verificador.py), no un LLM
-juzgando a otro LLM.
+El Checker LLM (proposer/checker/pipeline) se consolido y borro el 25-jun:
+el camino vivo usa el filtro determinista (`app/core/verificador.py`).
 """
-from app.verifika.llm_adapter import llm_complete, list_roles_config
-
-__all__ = [
-    "llm_complete",
-    "list_roles_config",
-]

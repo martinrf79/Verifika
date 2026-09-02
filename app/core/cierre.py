@@ -15,7 +15,6 @@ import unicodedata
 
 from app.config import get_settings
 from app.logger import get_logger
-from app.verifika.llm_adapter import llm_complete
 from app.core.leads import extraer_telefono
 
 log = get_logger(__name__)
@@ -239,17 +238,25 @@ def extraer_determinista(mensaje: str) -> dict:
 
 def extraer_datos_cliente(mensaje: str, trace_id=None) -> dict:
     """Extrae los datos presentes en el mensaje. Devuelve dict con los cuatro
-    campos, vacios los que no esten."""
+    campos, vacios los que no esten. Misma puerta al modelo que el resto del
+    turno: `hub_venta._cliente`. Si esa llamada falla, el respaldo
+    determinista de abajo rellena lo que se pueda por patron."""
     datos = {c: "" for c in CAMPOS_EXTRAIBLES}
     try:
-        r = llm_complete(
+        from app.core.hub_venta import _cliente, _modelo
+        cli = _cliente()
+        if cli is None:
+            raise RuntimeError("sin cliente")
+        r = cli.chat.completions.create(
+            model=_modelo(),
             messages=[
                 {"role": "system", "content": _EXTRACTOR_PROMPT},
                 {"role": "user", "content": mensaje},
             ],
-            role="proposer", temperature=0.0, max_tokens=160, trace_id=trace_id,
+            temperature=0.0, max_tokens=160,
+            extra_body={"reasoning_effort": "none"},
         )
-        content = r.get("content", "").strip()
+        content = (r.choices[0].message.content or "").strip()
         if content.startswith("```"):
             content = content.split("```")[1] if "```" in content[3:] else content[3:]
             if content.startswith("json"):

@@ -24,15 +24,7 @@
   "app/storage/firestore_client.py:get_conversation",
   "app/storage/firestore_client.py:get_tienda_by_phone_id",
   "app/storage/firestore_client.py:reset_conversation",
-  "app/storage/firestore_client.py:save_conversation",
-  "app/verifika/llm_adapter.py:_call_anthropic",
-  "app/verifika/llm_adapter.py:_call_openai_compatible",
-  "app/verifika/llm_adapter.py:_deepseek_thinking_off",
-  "app/verifika/llm_adapter.py:_gemini_thinking_off",
-  "app/verifika/llm_adapter.py:_get_client",
-  "app/verifika/llm_adapter.py:_nvidia_thinking_off",
-  "app/verifika/llm_adapter.py:_openrouter_reasoning_off",
-  "app/verifika/llm_adapter.py:llm_complete"
+  "app/storage/firestore_client.py:save_conversation"
  ],
  "vivas": 486
 }
