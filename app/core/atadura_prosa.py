@@ -81,6 +81,9 @@ _RE_ETIQUETA_SUELTA = re.compile(r"</?d\b[^>]*>", re.IGNORECASE)
 # la afirmacion como verificada sin haber verificado nada, que es la peor forma
 # de fallar: en silencio y con el tablero en verde.
 _RE_NUMERO = re.compile(r"(?<![$\d.,])\d+(?:[.,]\d+)*(?!\d)")
+# El separador de grupos de un numero, sea miles o decimal. Cual de los dos es
+# lo decide `_canon` por el largo de los grupos, no por el signo.
+_RE_SEPARADOR = re.compile(r"[.,]")
 
 _RE_ORACION = re.compile(r"(?:[^.!?\n]|(?<=\d)[.,](?=\d))+[.!?]*")
 # El punto de los miles no termina una oracion. Mismo arreglo y mismo motivo
@@ -147,24 +150,66 @@ def fuentes(llamadas: list) -> dict:
     return idx
 
 
+def _canon(crudo: str) -> str:
+    """El VALOR del numero: el separador de MILES se saca, el DECIMAL se queda.
+
+    LA FALLA QUE CIERRA, medida en produccion el 2-sep-2026. Aca se hacia
+    `crudo.replace(".", "")`, escrito para que `1.500` y `1500` fueran el mismo
+    dato. Le pegaba a los DECIMALES: `19.5` se convertia en `195`, `195` no
+    aparece en una fuente que dice `19.5`, y la oracion se podaba por invento.
+    Como TODAS las dimensiones del catalogo son decimales, toda frase que citara
+    una medida CORRECTA se borraba entera.
+
+    Confirmado en el turno `d0a95a28` de WhatsApp: las tres tablets dijeron su
+    medida exacta -19.5x15.6x0.7, 18.9x18.0x0.7, 16.3x16.8x0.7- y las tres
+    oraciones se fueron, con `numeros=['195','156','07']` en el log. Y en el
+    turno `2060c32b` de Telegram con el K380 y sus 45.1x14.0x3.7. Cuatro
+    respuestas correctas borradas en dos charlas. De ahi salen tambien los
+    `encabezado_huerfano`: la poda se lleva el contenido y el titulo queda solo.
+
+    LA REGLA, que es la del castellano. Si TODOS los grupos que siguen a un
+    separador tienen exactamente tres digitos, los separadores son de miles y se
+    sacan. Si no, el ultimo separador es decimal: se sacan los anteriores y ese
+    queda como punto.
+
+      1.500      -> 1500        miles
+      3.100.500  -> 3100500     miles
+      19.5       -> 19.5        decimal
+      0,7        -> 0.7         decimal
+      1.234,56   -> 1234.56     miles y decimal
+
+    `1.500` queda como mil quinientos y no como uno coma cinco. Es ambiguo en
+    castellano y se elige lo que ya hacia el codigo: en este catalogo los tres
+    digitos son plata, no medida.
+    """
+    partes = _RE_SEPARADOR.split(crudo)
+    if len(partes) == 1:
+        return partes[0]
+    if all(len(g) == 3 for g in partes[1:]):
+        return "".join(partes)
+    return "".join(partes[:-1]) + "." + partes[-1]
+
+
 def _numeros(texto: str) -> list[str]:
-    """Los numeros de una afirmacion, normalizados. `1.500` y `1500` son el
-    mismo dato escrito de dos formas y la fuente usa las dos."""
+    """Los numeros de una afirmacion, con su valor canonico. `1.500` y `1500`
+    son el mismo dato escrito de dos formas y la fuente usa las dos; `19.5` y
+    `195` NO lo son, y confundirlos es lo que borraba respuestas buenas."""
     fuera = []
     for m in _RE_NUMERO.finditer(texto or ""):
-        crudo = m.group(0)
-        limpio = crudo.replace(".", "").replace(",", "")
+        limpio = _canon(m.group(0))
         if limpio and limpio not in fuera:
             fuera.append(limpio)
     return fuera
 
 
 def _respaldado(numero: str, fuente: str) -> bool:
-    """El numero esta en la fuente, escrito como sea. Se compara contra la
-    fuente con y sin separadores para que `24` matchee `24 meses` y `1500`
-    matchee `1.500`."""
-    plana = re.sub(r"[.,](?=\d{3}\b)", "", fuente or "")
-    return bool(re.search(r"(?<!\d)" + re.escape(numero) + r"(?!\d)", plana))
+    """El numero esta en la fuente, escrito como sea.
+
+    Se compara VALOR contra VALOR, con la misma canonizacion de los dos lados,
+    en vez de buscar la cadena adentro del texto. Asi `24` matchea `24 meses`,
+    `1500` matchea `1.500`, y `19.5` matchea `19.5` sin convertirse en `195`.
+    """
+    return _canon(numero) in _numeros(fuente)
 
 
 def sin_etiquetas(texto: str) -> str:
