@@ -37,3 +37,55 @@ sesión lo saque del vivo. Qué se apaga y en qué sesión está en
 
 Barridos, casetes, el índice del turno, la calculadora, `certificar_producto`,
 `filtros_catalogo`. Eso es el motor. Si entra acá, se apagó de más.
+
+
+## PASO 1 DEL RECORTE DEL 2-SEP — lo que estaba alrededor de `app/`, no adentro
+
+`arquitectura/PLAN_RECORTE_2SEP.md` midio que en `app/` NO hay codigo muerto:
+el 94% de las funciones corren en cada turno. Lo que hacia grande e ilegible al
+repo era lo de alrededor. Esto es eso, movido entero y sin tocar `app/`.
+
+Efecto colateral bueno: la imagen de Docker deja de llevar los bancos viejos,
+porque el Dockerfile copia `data/` entera.
+
+Se borran todos juntos cuando el motor V2 este en verde y el piso de las 15
+charlas no baje. Hasta entonces git los sigue teniendo igual.
+
+### `archivo/instrumentos/` — bancos que ya no contesta nadie
+
+| archivo | qué era |
+|---|---|
+| `banco_atado_charlas.py` | banco que ataba las charlas grabadas a su declaración |
+| `charla_sim.py` | simulador de charla anterior al explorador |
+| `duelo_interprete.py` | el duelo entre el intérprete viejo y el de hoy, ya resuelto y anotado adentro de `herramientas` |
+| `fiscalizador.py` | auditoría de turnos anterior al banco de producción |
+| `peso_reposicion.py` | midió a mano el 44% de `cuenta_repuesta`; hoy lo mide el grafo, y `tests/test_plan_del_recorte.py` guarda el número |
+
+### `archivo/scripts_viejos/` — scripts de una sola vez
+
+| archivo | qué era |
+|---|---|
+| `planilla_specs.py` | volcó las specs a planilla cuando se armó el catálogo |
+| `planilla_compatibilidad.py` | lo mismo para la tabla de compatibilidad |
+| `generar_embeddings.py` | embeddings de la búsqueda semántica, que ya no se usa |
+
+### `archivo/datos_viejos/` — los bancos de `data/` que no son fuente
+
+Salieron todos los archivos de `data/` que no viven en `data/clientes/` ni en
+`data/geo/`, que son las dos fuentes vivas. Son juegos de preguntas y de
+escenarios de bancos ya retirados: `_h21`, `_s3`, `_serv_shadow`, `_serv_trap`,
+los `molino_*`, los `preguntas_*`, los `escenarios_*`, `casos_reales`,
+`comprension_casos`, `mini_check`, `mini_prompt`, `productos_prod`, `puentes` y
+`solver_casos`. **La fuente NO se toco**: el catálogo, la FAQ y las tarifas
+siguen en `data/clientes/<tienda>/`, con su candado en `INVENTARIO_FUENTE.md`.
+
+### `archivo/documentacion/` — apuntes de una ficha ya cerrada
+
+`APUNTE_ANTES_FICHA17.md`, `APUNTE_DESPUES_FICHA17.md` y
+`SONDA_OFERTA_APUNTE_25ago2026.md`. Se citan entre ellos y a nadie más.
+
+### `archivo/config_viejo/` — presets de caminos que ya no existen
+
+`camino_nuevo.env`, `columna_simple.env`, `llm_carritos.env` y
+`maquina_determinista.env`. Prendían combinaciones de flags de las que hoy no
+queda ninguna: un repo, un camino vivo, cero flags sueltas.
