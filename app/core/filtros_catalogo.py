@@ -720,8 +720,21 @@ def resolver_orden(frase: str, tienda_id: str) -> dict | None:
                     + [c for c, t in registro.items() if t != "numero"])
     for campo in orden_campos:
         # 1. El nombre del campo, por raiz: "garantia" -> garantia_meses.
+        #
+        # EL PUENTE AL REVES PIDE CINCO LETRAS, y esa es la correccion del
+        # 2-sep-2026. `r.startswith(w[:5])` deja que una palabra CORTA del
+        # cliente se quede con un campo largo: con `w="cara"` y la raiz
+        # `carac` de `caracteristicas_extra`, "la mas cara" ordenaba por la
+        # PROSA de las caracteristicas, o sea alfabeticamente, en vez de por
+        # precio. Medido en el turno `95175a7f` de WhatsApp.
+        #
+        # Con cuatro letras solo vale el puente derecho -que la palabra del
+        # cliente EMPIECE con la raiz del campo-, asi "peso" sigue pegando en
+        # `peso_gramos` y "cara" cae al mapa de adjetivos de abajo, que ya
+        # tenia la raiz `car` apuntando a `precio_ars`.
         raices = [t[:5] for t in campo.split("_") if len(t) >= 4]
-        if raices and any(any(w.startswith(r) or r.startswith(w[:5])
+        if raices and any(any(w.startswith(r)
+                              or (len(w) >= 5 and r.startswith(w[:5]))
                               for w in palabras) for r in raices):
             elegido = campo
             break

@@ -200,7 +200,25 @@ def _derivar_las_busquedas(llamadas: list, declarado: dict, memoria: list,
         # EL EXTREMO PUEDE VENIR EN EL ITEM Y NO EN LA CONDICION. "la notebook
         # mas barata que tengas" es UNA frase: el modelo la declara entera en
         # `que` y no tiene por que partirla en dos campos.
-        o = orden or FC.resolver_orden(que, tienda_id)
+        #
+        # Y EL DEL ITEM MANDA SOBRE EL DEL TURNO, que es la correccion del
+        # 2-sep-2026. `orden` es UNA sola variable para el turno entero y se
+        # guarda con `orden or extremo`, o sea que el PRIMER extremo se quedaba
+        # con todas las busquedas. En "que notebook es la mas barata y cual la
+        # mas cara" ganaba "barata" y las dos busquedas salieron con direccion
+        # min: las dos devolvieron NOT0019, que es la mas barata de 171, y la
+        # mas cara -NOT0162, cuatro veces mas cara- nunca se miro. Medido en el
+        # turno `95175a7f` de WhatsApp.
+        #
+        # El extremo del item es MAS ESPECIFICO que el del turno: nombra a que
+        # busqueda pertenece. Cuando el item no trae ninguno se usa el del
+        # turno, igual que antes.
+        #
+        # LO QUE SIGUE ABIERTO: dos extremos declarados como condiciones
+        # SUELTAS, sin que ningun item los nombre, siguen colapsando en el
+        # primero. Ahi no hay a que busqueda atarlos y elegir uno seria
+        # inventar; se deja como estaba.
+        o = FC.resolver_orden(que, tienda_id) or orden
         if o:
             args["ordenar_por"] = o["campo"]
             args["direccion"] = o["direccion"]
