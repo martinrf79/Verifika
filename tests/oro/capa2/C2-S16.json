@@ -1,0 +1,41 @@
+{
+  "id": "C2-S16",
+  "de": "S16",
+  "que": "el extremo de una categoria con su precio",
+  "mensaje": "cuanto sale el mouse mas barato que tengas",
+  "declarado": {
+    "items": [
+      {
+        "que": "mouse",
+        "categoria": "mouse",
+        "cantidad": 1
+      }
+    ],
+    "restricciones": [
+      "el mas barato"
+    ],
+    "pide_precio": true
+  },
+  "espera": {
+    "ids": [
+      "MOU0023"
+    ],
+    "categorias": [
+      "mouse"
+    ],
+    "cuenta": true,
+    "total_ars": 8500,
+    "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+    },
+    "bloque_contiene": [
+      "Total: $8.500"
+    ],
+    "cubre": [
+      "items:1",
+      "restricciones:1",
+      "pide_precio:1"
+    ]
+  }
+}

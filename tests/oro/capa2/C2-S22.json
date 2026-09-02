@@ -1,0 +1,27 @@
+{
+  "id": "C2-S22",
+  "de": "S22",
+  "que": "el RUBRO que dijo el cliente no se puede tirar",
+  "mensaje": "decime precio de tablet samsung",
+  "declarado": {
+    "items": [
+      {
+        "que": "tablet samsung",
+        "categoria": "tablet",
+        "cantidad": 1
+      }
+    ],
+    "pide_precio": true
+  },
+  "espera": {
+    "categorias": [
+      "tablet"
+    ],
+    "cuenta": true,
+    "cubre": [
+      "items:1",
+      "pide_precio:1"
+    ]
+  },
+  "nota": "Charla real del 24-jul: el certificador matcheaba por marca sobre los 880 y mezclaba rubros. Samsung tiene tablets, monitores y ssd."
+}

@@ -1,0 +1,20 @@
+{
+  "id": "C2-S13",
+  "de": "S13",
+  "que": "la objecion de precio: es un TEMA de la casa, no una busqueda",
+  "mensaje": "vi el mismo mouse a 30 mil en otro lado, me lo haces a ese precio",
+  "declarado": {
+    "items": [],
+    "temas": [
+      "vi mas barato en otro lado",
+      "me haces ese precio"
+    ]
+  },
+  "espera": {
+    "cubre": [
+      "temas:1",
+      "temas:2"
+    ]
+  },
+  "nota": "Sin politica escrita el modelo improvisa, y ahi nace el descuento inventado que la capa 4 despues tiene que cortar."
+}

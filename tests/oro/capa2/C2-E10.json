@@ -1,0 +1,34 @@
+{
+  "id": "C2-E10",
+  "de": "E10",
+  "que": "cambio de decision: saca un rubro y sube la cantidad del otro EN EL MISMO mensaje",
+  "mensaje": "nah deja los auris, poneme 2 mauses de esos que me dijiste al principio",
+  "declarado": {
+    "items": [
+      {
+        "que": "mouse",
+        "categoria": "mouse",
+        "cantidad": 2
+      }
+    ],
+    "pide_precio": true
+  },
+  "memoria": [
+    "MOU0023",
+    "AUR0019"
+  ],
+  "espera": {
+    "ids": [
+      "MOU0023"
+    ],
+    "ids_prohibidos": [
+      "AUR0019"
+    ],
+    "cuenta": true,
+    "cubre": [
+      "items:1",
+      "pide_precio:1"
+    ]
+  },
+  "nota": "El carrito previo tenia un mouse y unos auriculares. Despues de este turno queda 2x mouse y los auriculares se dan de baja: la cuenta no puede seguir cobrandolos."
+}

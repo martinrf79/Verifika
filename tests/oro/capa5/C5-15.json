@@ -1,0 +1,23 @@
+{
+  "id": "C5-15",
+  "de": "cierre.mensaje_confirmacion",
+  "que": "la confirmacion no promete un dato que el lead no tiene",
+  "estado": {
+    "lead": {
+      "nombre": "Martin",
+      "telefono": "3511234567",
+      "direccion": "",
+      "forma_pago": ""
+    }
+  },
+  "espera": {
+    "confirmacion_contiene": [
+      "Martin"
+    ],
+    "confirmacion_no_contiene": [
+      "el envio a",
+      "el pago por"
+    ]
+  },
+  "nota": "De aca nacio el 'Resumen:' huerfano que llego a Martin en tres charlas: el titulo se pegaba y el bloque se podaba despues."
+}

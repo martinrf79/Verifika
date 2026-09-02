@@ -1,0 +1,27 @@
+{
+  "id": "C2-S17",
+  "de": "S17",
+  "que": "la repregunta sobre el producto en foco, sin nombrarlo",
+  "mensaje": "y ese sirve para jugar",
+  "declarado": {
+    "items": [],
+    "compatibilidad": [
+      {
+        "que": "ese",
+        "para": "jugar"
+      }
+    ]
+  },
+  "memoria": [
+    "MOU0023"
+  ],
+  "espera": {
+    "ids": [
+      "MOU0023"
+    ],
+    "cubre": [
+      "compatibilidad:1"
+    ]
+  },
+  "nota": "'ese' no tiene ninguna raiz con que buscar: el producto lo pone la memoria del turno anterior. Si el anclaje se pierde, el modelo contesta de su entrenamiento."
+}

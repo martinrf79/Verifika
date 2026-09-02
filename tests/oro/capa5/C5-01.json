@@ -1,0 +1,13 @@
+{
+  "id": "C5-01",
+  "de": "el camino normal del lead fuerte",
+  "que": "pregunta de cierre hecha y el cliente dice que si",
+  "estado": {
+    "pregunta_hecha": true,
+    "respuesta": "dale, si, avancemos"
+  },
+  "espera": {
+    "dispara_lead": true,
+    "es_no_interesado": false
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "id": "C2-E02",
+  "de": "E2",
+  "que": "stock real, tarifa a una localidad chica y tres politicas de logistica",
+  "mensaje": "tenes el monitor Samsung Odyssey G5, cuanto sale el envio a Villa Maria y si puedo cambiar la direccion despues",
+  "declarado": {
+    "items": [
+      {
+        "que": "monitor Samsung Odyssey G5",
+        "categoria": "monitor",
+        "cantidad": 1,
+        "destino": "Villa Maria"
+      }
+    ],
+    "destinos": [
+      "Villa Maria"
+    ],
+    "pide_precio": true,
+    "temas": [
+      "cuanto tarda",
+      "cambiar la direccion",
+      "seguimiento del pedido"
+    ]
+  },
+  "espera": {
+    "categorias": [
+      "monitor"
+    ],
+    "cuenta": true,
+    "envios": [
+      "Villa Maria"
+    ],
+    "temas": [
+      "plazo_envio",
+      "cambio_direccion",
+      "seguimiento_pedido"
+    ],
+    "cubre": [
+      "items:1",
+      "destinos:1",
+      "pide_precio:1",
+      "temas:1",
+      "temas:2",
+      "temas:3"
+    ]
+  }
+}

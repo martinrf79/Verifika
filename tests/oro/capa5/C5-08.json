@@ -1,0 +1,11 @@
+{
+  "id": "C5-08",
+  "de": "_RE_PIDE_COBRO",
+  "que": "la otra forma de pedir lo mismo",
+  "estado": {
+    "respuesta": "cual es el alias para transferir"
+  },
+  "espera": {
+    "pide_cobro": true
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "C2-E11",
+  "de": "E11",
+  "que": "'que me conviene' se contesta con el criterio escrito de la casa",
+  "mensaje": "entre esas dos notebooks cual me conviene, que me recomendas",
+  "declarado": {
+    "items": [],
+    "temas": [
+      "comparar dos productos",
+      "que me recomendas",
+      "notebooks"
+    ]
+  },
+  "espera": {
+    "temas": [
+      "comparar_dos_productos",
+      "asesoramiento_metodo",
+      "notebook"
+    ],
+    "cubre": [
+      "temas:1",
+      "temas:2",
+      "temas:3"
+    ]
+  },
+  "nota": "Sin criterio de la casa el modelo compara de memoria, y eso es opinion sin fuente."
+}

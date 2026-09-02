@@ -1,0 +1,13 @@
+{
+  "id": "C5-05",
+  "de": "la trampa del no que no es un no",
+  "que": "una CORRECCION del pedido nunca es falta de interes",
+  "estado": {
+    "pregunta_hecha": true,
+    "respuesta": "no, sacale el teclado y dejame solo el mouse"
+  },
+  "espera": {
+    "es_no_interesado": false
+  },
+  "nota": "Arranca con 'no' y es un pedido de cambio. Tomarlo como desinteres tira una venta que estaba viva."
+}

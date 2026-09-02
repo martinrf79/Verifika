@@ -1,0 +1,29 @@
+{
+  "id": "C2-E07",
+  "de": "E7",
+  "que": "la cifra imposible no se respalda ni se acerca",
+  "mensaje": "quiero un disco de 7000 MB/s y el iphone 15 pro version android",
+  "declarado": {
+    "items": [
+      {
+        "que": "un disco de 7000 MB/s",
+        "categoria": "ssd",
+        "cantidad": 1
+      }
+    ],
+    "restricciones": [
+      "7000 MB/s de lectura"
+    ],
+    "stock": [
+      "el iphone 15 pro version android"
+    ]
+  },
+  "espera": {
+    "cubre": [
+      "items:1",
+      "stock:1",
+      "restricciones:1"
+    ]
+  },
+  "nota": "Un iPhone con Android no existe y nosotros no vendemos celulares. La velocidad se contesta con lo que la fuente tenga o no se afirma: lo que no puede pasar es que vuelva como si la fuente la respaldara."
+}

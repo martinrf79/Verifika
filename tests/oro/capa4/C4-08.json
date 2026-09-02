@@ -1,0 +1,19 @@
+{
+  "id": "C4-08",
+  "de": "garantia_detalle, el ABIERTO del 2-sep",
+  "que": "un PLAZO DE GARANTIA distinto del que dice la ficha",
+  "material": {
+    "productos": [
+      "NOT0055"
+    ],
+    "temas": [],
+    "bloque": ""
+  },
+  "texto": "La Asus TUF Gaming F15 tiene 36 meses de garantia oficial.",
+  "espera": {
+    "corta": [
+      "36 meses"
+    ]
+  },
+  "nota": "La ficha de NOT0055 dice 12 meses. Un plazo inflado es una promesa que la casa despues tiene que pagar."
+}

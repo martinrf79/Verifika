@@ -1,0 +1,36 @@
+{
+  "id": "C2-S23",
+  "de": "S23",
+  "que": "tres specs del mismo producto en foco, en un turno",
+  "mensaje": "cuanta ram y disco tiene, y cuanto pesa",
+  "declarado": {
+    "items": [],
+    "atributos": [
+      {
+        "de": "esa tablet",
+        "campo": "ram"
+      },
+      {
+        "de": "esa tablet",
+        "campo": "almacenamiento"
+      },
+      {
+        "de": "esa tablet",
+        "campo": "peso"
+      }
+    ]
+  },
+  "memoria": [
+    "TAB0001"
+  ],
+  "espera": {
+    "ids": [
+      "TAB0001"
+    ],
+    "cubre": [
+      "atributos:1",
+      "atributos:2",
+      "atributos:3"
+    ]
+  }
+}

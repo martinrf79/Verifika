@@ -1,0 +1,22 @@
+{
+  "id": "C4-01",
+  "de": "la alucinacion medida del 10-ago",
+  "que": "un DATO DURO que la ficha no tiene",
+  "material": {
+    "productos": [
+      "MOU0023"
+    ],
+    "temas": [],
+    "bloque": ""
+  },
+  "texto": "El Mouse Genius DX-110 Negro tiene una sensibilidad de hasta 8000 DPI. Es el mas barato que tenemos.",
+  "espera": {
+    "corta": [
+      "8000 DPI"
+    ],
+    "conserva": [
+      "Genius DX-110"
+    ]
+  },
+  "nota": "El 8000 DPI salio del entrenamiento del modelo, no del catalogo. El patron viejo arrancaba con \\d{1,3} esperando grupos de miles, asi que un numero de cuatro digitos sin separador era invisible."
+}

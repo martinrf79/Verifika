@@ -1,0 +1,22 @@
+{
+  "id": "C4-07",
+  "de": "la atadura de la FICHA 04",
+  "que": "una marca con un ID que el turno nunca trajo",
+  "material": {
+    "productos": [
+      "MOU0023"
+    ],
+    "temas": [],
+    "bloque": ""
+  },
+  "texto": "El mouse <d MOU9999>viene con receptor USB y pila incluida</d>. Te sirve para la oficina.",
+  "espera": {
+    "corta": [
+      "receptor USB"
+    ],
+    "conserva": [
+      "oficina"
+    ]
+  },
+  "nota": "MOU9999 no existe. Un id que el modelo nombra y no esta en el material no tiene respaldo, y la afirmacion que cuelga de el tampoco."
+}

@@ -1,0 +1,28 @@
+{
+  "id": "C2-S12",
+  "de": "S12",
+  "que": "la garantia de un producto MAS la politica de que pasa despues",
+  "mensaje": "que garantia tiene la Asus TUF F15 y que pasa a los 18 meses",
+  "declarado": {
+    "items": [],
+    "atributos": [
+      {
+        "de": "la Asus TUF F15",
+        "campo": "garantia"
+      }
+    ],
+    "temas": [
+      "que pasa cuando se vence la garantia"
+    ]
+  },
+  "espera": {
+    "ids": [
+      "NOT0055"
+    ],
+    "cubre": [
+      "atributos:1",
+      "temas:1"
+    ]
+  },
+  "nota": "La TUF F15 trae 12 meses, asi que a los 18 ya esta vencida: son dos datos de dos fuentes distintas -la ficha y la FAQ- y el turno necesita los dos."
+}

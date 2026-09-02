@@ -1,0 +1,30 @@
+{
+  "id": "C2-S11",
+  "de": "S11",
+  "que": "compatibilidad contra un equipo que el cliente YA tiene y no vendemos",
+  "mensaje": "tengo una notebook Lenovo IdeaPad 3, que memoria le sirve",
+  "declarado": {
+    "items": [
+      {
+        "que": "memoria",
+        "categoria": "memoria ram",
+        "cantidad": 1
+      }
+    ],
+    "compatibilidad": [
+      {
+        "que": "memoria ram",
+        "para": "una notebook Lenovo IdeaPad 3"
+      }
+    ]
+  },
+  "espera": {
+    "categorias": [
+      "memoria ram"
+    ],
+    "cubre": [
+      "items:1",
+      "compatibilidad:1"
+    ]
+  }
+}

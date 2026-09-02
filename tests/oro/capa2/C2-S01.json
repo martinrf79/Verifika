@@ -1,0 +1,33 @@
+{
+  "id": "C2-S01",
+  "de": "S1",
+  "que": "la restriccion de ORIGEN y la de marca excluida se traducen a filtro, no a prosa",
+  "mensaje": "el mouse que menos partes chinas tenga, que no sea Logitech",
+  "declarado": {
+    "items": [
+      {
+        "que": "mouse",
+        "categoria": "mouse",
+        "cantidad": 1
+      }
+    ],
+    "restricciones": [
+      "que menos partes chinas tenga",
+      "que no sea Logitech"
+    ]
+  },
+  "espera": {
+    "categorias": [
+      "mouse"
+    ],
+    "sin_marca": [
+      "Logitech"
+    ],
+    "cubre": [
+      "items:1",
+      "restricciones:1",
+      "restricciones:2"
+    ]
+  },
+  "nota": "En la fuente NINGUN mouse deja de fabricarse en China, asi que la respuesta honesta es que no hay. Lo que se mide aca es que el codigo lo sepa por filtro; que el bot lo diga es capa 3."
+}

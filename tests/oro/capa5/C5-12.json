@@ -1,0 +1,12 @@
+{
+  "id": "C5-12",
+  "de": "elegir_medio_pago",
+  "que": "si el cliente no dijo con que paga, el codigo NO elige",
+  "estado": {
+    "forma_pago": ""
+  },
+  "espera": {
+    "medio_pago": ""
+  },
+  "nota": "Elegir en silencio le cambia al cliente lo que paga, porque la transferencia tiene descuento. Misma leccion que PartePago.medio vacio."
+}

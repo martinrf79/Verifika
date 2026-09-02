@@ -1,0 +1,13 @@
+{
+  "id": "C5-02",
+  "de": "el arreglo D",
+  "que": "el no del cliente no dispara nada y no se insiste",
+  "estado": {
+    "pregunta_hecha": true,
+    "respuesta": "no gracias, por ahora no"
+  },
+  "espera": {
+    "dispara_lead": false,
+    "es_no_interesado": true
+  }
+}

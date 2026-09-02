@@ -1,0 +1,22 @@
+{
+  "id": "C4-02",
+  "de": "la charla real del 6-ago",
+  "que": "PLATA que no calculo el codigo",
+  "material": {
+    "productos": [
+      "MOU0023"
+    ],
+    "temas": [],
+    "bloque": "Presupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\nSubtotal: $8.500\nTotal: $8.500"
+  },
+  "texto": "Te lo dejo en $6.200 con el descuento. Total: $8.500.",
+  "espera": {
+    "corta": [
+      "$6.200"
+    ],
+    "conserva": [
+      "8.500"
+    ]
+  },
+  "nota": "El unico peso que puede salir es el que armo la calculadora. Un monto que no esta en el bloque ni en el material no tiene de donde haber salido."
+}

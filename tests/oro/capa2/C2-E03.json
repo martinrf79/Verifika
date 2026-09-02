@@ -1,0 +1,40 @@
+{
+  "id": "C2-E03",
+  "de": "E3",
+  "que": "la financiacion sale de NUESTRA FAQ, no del dialogo de referencia",
+  "mensaje": "la tablet Lenovo P11 la puedo pagar en cuotas, y si transfiero hay descuento, hacen factura A",
+  "declarado": {
+    "items": [
+      {
+        "que": "tablet Lenovo P11",
+        "categoria": "tablet",
+        "cantidad": 1
+      }
+    ],
+    "pide_precio": true,
+    "temas": [
+      "pagar en cuotas",
+      "descuento por transferencia",
+      "factura A"
+    ]
+  },
+  "espera": {
+    "categorias": [
+      "tablet"
+    ],
+    "cuenta": true,
+    "temas": [
+      "cuotas",
+      "descuento_transferencia",
+      "factura"
+    ],
+    "cubre": [
+      "items:1",
+      "pide_precio:1",
+      "temas:1",
+      "temas:2",
+      "temas:3"
+    ]
+  },
+  "nota": "El dialogo de referencia inventa 'Cuota Simple' y un recargo del 15%. Ni uno ni otro estan en la fuente: si el tema no trae politica propia, el hueco lo llena el modelo con eso. — Este caso se escribio esperando `datos_fiscales` y se corrigio a mano: la FAQ tiene DOS temas con politica para lo fiscal, `factura` y `datos_fiscales`, y el de `factura` es el que contesta 'factura A' con todas las letras. Cual de los dos corresponde es justo el par de temas que espera a Martin en PENDIENTE.md."
+}

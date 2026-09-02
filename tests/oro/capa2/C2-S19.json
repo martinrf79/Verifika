@@ -1,0 +1,20 @@
+{
+  "id": "C2-S19",
+  "de": "S19",
+  "que": "'que vendes': un agregado sobre el rubro, no una lista de productos",
+  "mensaje": "que productos tenes, me pasas el catalogo",
+  "declarado": {
+    "items": [],
+    "stock": [
+      "que productos tienen",
+      "el catalogo"
+    ]
+  },
+  "espera": {
+    "cubre": [
+      "stock:1",
+      "stock:2"
+    ]
+  },
+  "nota": "Son 22 rubros con stock. Si el codigo no los trae, el modelo lista de memoria los que vio y eso es un universal inventado."
+}

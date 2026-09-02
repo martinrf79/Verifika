@@ -1,0 +1,19 @@
+{
+  "id": "C4-05",
+  "de": "la charla real del 12-ago",
+  "que": "NEGAR lo que el turno tiene en la mano",
+  "material": {
+    "productos": [
+      "TAB0001"
+    ],
+    "temas": [],
+    "bloque": ""
+  },
+  "texto": "No manejamos tablets en este momento. Te puedo ofrecer otra cosa.",
+  "espera": {
+    "corta": [
+      "No manejamos tablets"
+    ]
+  },
+  "nota": "El turno trajo una tablet de la fuente y el texto la niega. Negar lo traido cierra una venta con el producto sobre la mesa."
+}

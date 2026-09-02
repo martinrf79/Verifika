@@ -1,0 +1,28 @@
+{
+  "id": "C2-S24",
+  "de": "S24",
+  "que": "el rubro pedido gana contra un numero que matchea otro rubro",
+  "mensaje": "tenes memoria ram de 16gb",
+  "declarado": {
+    "items": [
+      {
+        "que": "memoria ram de 16gb",
+        "categoria": "memoria ram",
+        "cantidad": 1
+      }
+    ],
+    "stock": [
+      "memoria ram de 16gb"
+    ]
+  },
+  "espera": {
+    "categorias": [
+      "memoria ram"
+    ],
+    "cubre": [
+      "items:1",
+      "stock:1"
+    ]
+  },
+  "nota": "Hay 25 memorias de 16GB con stock. El bot vivo contesto que no vendia modulos sueltos porque '16gb' matchea el nombre de las notebooks."
+}

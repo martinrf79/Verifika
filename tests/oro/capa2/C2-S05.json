@@ -1,0 +1,27 @@
+{
+  "id": "C2-S05",
+  "de": "S5",
+  "que": "el comparativo contra un producto nombrado",
+  "mensaje": "tenes algo mas barato que el Genius DX-110",
+  "declarado": {
+    "items": [
+      {
+        "que": "algo mas barato que el Genius DX-110",
+        "cantidad": 1
+      }
+    ],
+    "restricciones": [
+      "mas barato que el Genius DX-110"
+    ]
+  },
+  "espera": {
+    "ids_prohibidos": [
+      "MOU0023"
+    ],
+    "cubre": [
+      "items:1",
+      "restricciones:1"
+    ]
+  },
+  "nota": "MOU0023 vale $8.500 y es el mas barato de la tienda entera: la respuesta correcta es que no hay nada mas barato. El propio DX-110 no puede salir como candidato."
+}

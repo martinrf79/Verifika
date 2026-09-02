@@ -1,0 +1,22 @@
+{
+  "id": "C2-S09",
+  "de": "S9",
+  "que": "el regalo sin rubro: el criterio de la casa, no el del modelo",
+  "mensaje": "busco un regalo para mi viejo, que labura en el campo",
+  "declarado": {
+    "items": [
+      {
+        "que": "un regalo para alguien que trabaja en el campo",
+        "cantidad": 1
+      }
+    ],
+    "temas": [
+      "que me recomendas de regalo"
+    ]
+  },
+  "espera": {
+    "cubre": [
+      "items:1"
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "C2-S15",
+  "de": "S15",
+  "que": "la CONDICION sobre el envio: el cliente pone un tope y el pedido cambia segun la tarifa",
+  "mensaje": "2 auriculares, y si el envio a Posadas sale mas de 8 mil mandame uno",
+  "declarado": {
+    "items": [
+      {
+        "que": "auriculares",
+        "categoria": "auriculares",
+        "cantidad": 2,
+        "destino": "Posadas"
+      }
+    ],
+    "destinos": [
+      "Posadas"
+    ],
+    "pide_precio": true,
+    "contradicciones": [
+      "si el envio a Posadas supera los 8 mil quiere uno solo en vez de dos"
+    ]
+  },
+  "espera": {
+    "cuenta": true,
+    "envios": [
+      "Posadas"
+    ],
+    "cubre": [
+      "items:1",
+      "destinos:1",
+      "pide_precio:1"
+    ],
+    "no_cubre": [
+      "contradicciones:1"
+    ]
+  },
+  "nota": "El envio a Posadas cuesta $10.000, o sea que la condicion SE CUMPLE y el pedido correcto es de UNO. Ninguna pieza puede resolver eso sola: se pregunta."
+}

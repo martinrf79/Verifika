@@ -1,0 +1,27 @@
+{
+  "id": "C2-E04",
+  "de": "E4",
+  "que": "el pedido que no existe no se confirma, y la garantia sale de la FAQ",
+  "mensaje": "mi pedido 4589 llego fallado, que hago para el cambio",
+  "declarado": {
+    "items": [],
+    "temas": [
+      "llego fallado",
+      "proceso de cambio",
+      "la garantia"
+    ]
+  },
+  "espera": {
+    "temas": [
+      "defectuoso",
+      "proceso_cambio",
+      "garantia"
+    ],
+    "cubre": [
+      "temas:1",
+      "temas:2",
+      "temas:3"
+    ]
+  },
+  "nota": "No existe herramienta de pedidos: el numero 4589 no se puede verificar y por lo tanto no se confirma. El proceso sale de la FAQ, no de los 30 dias que invento el dialogo."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "C2-S07",
+  "de": "S7",
+  "que": "la busqueda por USO, que no es un campo del catalogo",
+  "mensaje": "notebook para diseño grafico que le dure años",
+  "declarado": {
+    "items": [
+      {
+        "que": "notebook para diseño grafico",
+        "categoria": "notebook",
+        "cantidad": 1
+      }
+    ],
+    "restricciones": [
+      "que le dure años"
+    ]
+  },
+  "espera": {
+    "categorias": [
+      "notebook"
+    ],
+    "cubre": [
+      "items:1",
+      "restricciones:1"
+    ]
+  }
+}

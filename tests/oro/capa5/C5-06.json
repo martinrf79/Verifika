@@ -1,0 +1,13 @@
+{
+  "id": "C5-06",
+  "de": "la postergacion",
+  "que": "'lo pienso' es un no, aunque no diga que no",
+  "estado": {
+    "pregunta_hecha": true,
+    "respuesta": "mmm lo pienso y te aviso mas adelante"
+  },
+  "espera": {
+    "dispara_lead": false,
+    "es_no_interesado": true
+  }
+}

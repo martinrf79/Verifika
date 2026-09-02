@@ -1,0 +1,18 @@
+{
+  "id": "C2-S06",
+  "de": "S6",
+  "que": "un agregado sobre un campo del catalogo: las marcas",
+  "mensaje": "que marcas manejas",
+  "declarado": {
+    "items": [],
+    "stock": [
+      "que marcas manejan"
+    ]
+  },
+  "espera": {
+    "cubre": [
+      "stock:1"
+    ]
+  },
+  "nota": "Son 75 marcas con stock. Si el codigo no las trae, el modelo lista las que vio en el turno y eso es un universal inventado."
+}

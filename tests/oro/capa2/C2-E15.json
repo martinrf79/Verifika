@@ -1,0 +1,77 @@
+{
+  "id": "C2-E15",
+  "de": "E15",
+  "que": "el mensaje real de Martin: seis items en tres rubros, tres destinos, reparto 70/30 y una contradiccion",
+  "mensaje": "mandame 2 auriculares a Cordoba capital, 2 mouse a Concordia y 2 memorias a Posadas, las menos partes chinas posibles, y el teclado a Concordia; pago 70 por transferencia y 30 por mercado pago",
+  "declarado": {
+    "items": [
+      {
+        "que": "auriculares",
+        "categoria": "auriculares",
+        "cantidad": 2,
+        "destino": "Cordoba capital"
+      },
+      {
+        "que": "mouse",
+        "categoria": "mouse",
+        "cantidad": 2,
+        "destino": "Concordia"
+      },
+      {
+        "que": "memorias",
+        "categoria": "memoria ram",
+        "cantidad": 2,
+        "destino": "Posadas"
+      }
+    ],
+    "restricciones": [
+      "las menos partes chinas posibles"
+    ],
+    "destinos": [
+      "Cordoba capital",
+      "Concordia",
+      "Posadas"
+    ],
+    "pide_precio": true,
+    "reparto_pago": [
+      {
+        "medio": "transferencia",
+        "porcentaje": 70
+      },
+      {
+        "medio": "mercado pago",
+        "porcentaje": 30
+      }
+    ],
+    "contradicciones": [
+      "manda un teclado a Concordia que no esta en el pedido"
+    ]
+  },
+  "espera": {
+    "cuenta": true,
+    "envios": [
+      "Cordoba capital",
+      "Concordia",
+      "Posadas"
+    ],
+    "bloque_contiene": [
+      "Total",
+      "70",
+      "30"
+    ],
+    "cubre": [
+      "items:1",
+      "items:2",
+      "items:3",
+      "destinos:1",
+      "destinos:2",
+      "destinos:3",
+      "pide_precio:1",
+      "reparto_pago:1"
+    ],
+    "no_cubre": [
+      "contradicciones:1"
+    ]
+  },
+  "nota": "La contradiccion se declara y se pregunta: el teclado no esta en el pedido y elegir por el cliente es inventar. Los tres envios y el reparto tienen que estar en el bloque."
+}

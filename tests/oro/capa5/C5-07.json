@@ -1,0 +1,11 @@
+{
+  "id": "C5-07",
+  "de": "_RE_PIDE_COBRO",
+  "que": "el cliente pide los datos para pagar, con las palabras de siempre",
+  "estado": {
+    "respuesta": "pasame el cbu asi te transfiero"
+  },
+  "espera": {
+    "pide_cobro": true
+  }
+}

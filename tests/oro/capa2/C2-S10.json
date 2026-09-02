@@ -1,0 +1,24 @@
+{
+  "id": "C2-S10",
+  "de": "S10",
+  "que": "la spec de un producto nombrado con nombre y apellido",
+  "mensaje": "los HyperX Cloud II tienen cancelacion de ruido activa",
+  "declarado": {
+    "items": [],
+    "atributos": [
+      {
+        "de": "los HyperX Cloud II",
+        "campo": "cancelacion de ruido activa"
+      }
+    ]
+  },
+  "espera": {
+    "ids": [
+      "AUR0001"
+    ],
+    "cubre": [
+      "atributos:1"
+    ]
+  },
+  "nota": "Los Cloud II reales son AUR0001 y AUR0002. Ojo con el atajo: AUR0024 es un Cloud III y no sirve para contestar esto."
+}

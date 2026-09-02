@@ -1,0 +1,18 @@
+{
+  "id": "C5-14",
+  "de": "pago.datos_transferencia",
+  "que": "los datos de cobro salen de la config, nunca de la prosa",
+  "estado": {
+    "forma_pago": "transferencia"
+  },
+  "espera": {
+    "cobro_contiene": [
+      "CBU",
+      "Alias"
+    ],
+    "cobro_no_contiene": [
+      "0170099220000067797374"
+    ]
+  },
+  "nota": "Sin CBU ni alias configurados el mensaje sale VACIO y el cierre cae al humano: sin dato real no se inventa nada."
+}

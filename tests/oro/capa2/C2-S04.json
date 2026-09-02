@@ -1,0 +1,25 @@
+{
+  "id": "C2-S04",
+  "de": "S4",
+  "que": "los dos extremos de TODA la tienda en un solo turno",
+  "mensaje": "cual es el producto mas caro de toda la tienda, y cual el mas barato",
+  "declarado": {
+    "items": [],
+    "restricciones": [
+      "el mas caro de toda la tienda",
+      "el mas barato de toda la tienda"
+    ],
+    "pide_precio": true
+  },
+  "espera": {
+    "ids": [
+      "NOT0160",
+      "MOU0023"
+    ],
+    "cubre": [
+      "restricciones:1",
+      "restricciones:2"
+    ]
+  },
+  "nota": "Mas caro con stock: NOT0160 a $3.100.500. Mas barato: MOU0023 a $8.500. Son DOS extremos opuestos en el mismo turno: una sola busqueda ordenada no puede contestar los dos."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "C2-S02",
+  "de": "S2",
+  "que": "un extremo sobre un campo que no es el precio",
+  "mensaje": "cual es el mas liviano que tengas para viajar",
+  "declarado": {
+    "items": [
+      {
+        "que": "algo liviano para viajar",
+        "cantidad": 1
+      }
+    ],
+    "restricciones": [
+      "el mas liviano"
+    ]
+  },
+  "espera": {
+    "orden": {
+      "campo": "peso_gramos",
+      "direccion": "min"
+    },
+    "cubre": [
+      "items:1",
+      "restricciones:1"
+    ]
+  }
+}

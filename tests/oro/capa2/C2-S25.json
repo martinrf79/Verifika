@@ -1,0 +1,24 @@
+{
+  "id": "C2-S25",
+  "de": "S25",
+  "que": "identidad AMBIGUA: se pregunta, no se elige",
+  "mensaje": "quiero una notebook asus",
+  "declarado": {
+    "items": [
+      {
+        "que": "notebook asus",
+        "categoria": "notebook",
+        "cantidad": 1
+      }
+    ]
+  },
+  "espera": {
+    "categorias": [
+      "notebook"
+    ],
+    "cubre": [
+      "items:1"
+    ]
+  },
+  "nota": "Hay 32 notebooks Asus con stock. Regla cero: ante ambiguous el turno pregunta. Lo que aca se mide es que los candidatos sean todos notebooks Asus; que pregunte es capa 3."
+}

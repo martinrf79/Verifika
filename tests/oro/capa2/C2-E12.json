@@ -1,0 +1,27 @@
+{
+  "id": "C2-E12",
+  "de": "E12",
+  "que": "la objecion de precio con su politica, para que el descuento no se invente",
+  "mensaje": "esta muy caro, en otro lado la vi a 99 mil, me haces un 25 por ciento",
+  "declarado": {
+    "items": [],
+    "temas": [
+      "esta caro",
+      "pide descuento",
+      "afirma otro precio"
+    ]
+  },
+  "espera": {
+    "temas": [
+      "objecion_precio",
+      "pedir_descuento",
+      "precio_afirmado_falso"
+    ],
+    "cubre": [
+      "temas:1",
+      "temas:2",
+      "temas:3"
+    ]
+  },
+  "nota": "El 25% y los 99 mil son del cliente, no de la fuente. Que el bot no los repita como propios es capa 4; que tenga con que contestar es esta."
+}

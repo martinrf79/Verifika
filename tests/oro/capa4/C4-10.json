@@ -1,0 +1,23 @@
+{
+  "id": "C4-10",
+  "de": "la familia sin_json / sin_markdown",
+  "que": "el VOLCADO INTERNO que se filtra al cliente",
+  "material": {
+    "productos": [
+      "MOU0023"
+    ],
+    "temas": [],
+    "bloque": ""
+  },
+  "texto": "{\"estado\": \"encontrado\", \"productos\": [{\"id\": \"MOU0023\"}]} El mouse cuesta poco y anda bien.",
+  "espera": {
+    "corta": [
+      "\"estado\"",
+      "MOU0023"
+    ],
+    "conserva": [
+      "anda bien"
+    ]
+  },
+  "nota": "Un renglon de JSON o un id interno que llega al cliente no es una alucinacion, pero rompe la charla igual y le cambia el largo y la puntuacion a todo lo que sigue."
+}

@@ -1,0 +1,28 @@
+{
+  "id": "C2-E05",
+  "de": "E5",
+  "que": "no vendemos el rubro, y la alternativa respeta el tope de plata que puso el cliente",
+  "mensaje": "busco un celular bueno para fotos, tengo hasta 500 mil, viene con cargador",
+  "declarado": {
+    "items": [],
+    "stock": [
+      "un celular bueno para fotos"
+    ],
+    "restricciones": [
+      "hasta 500 mil"
+    ],
+    "atributos": [
+      {
+        "de": "la alternativa",
+        "campo": "contenido de la caja"
+      }
+    ]
+  },
+  "espera": {
+    "cubre": [
+      "stock:1",
+      "restricciones:1"
+    ]
+  },
+  "nota": "No vendemos celulares. La alternativa tiene que ser real y ninguna puede pasar los $500.000: el tope es del cliente y es un filtro, no una sugerencia."
+}

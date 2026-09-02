@@ -1,0 +1,12 @@
+{
+  "id": "C5-09",
+  "de": "_RE_PIDE_COBRO",
+  "que": "hablar de plata NO es pedir el cobro",
+  "estado": {
+    "respuesta": "me gusta el mouse pero esta caro, hay algo mas barato"
+  },
+  "espera": {
+    "pide_cobro": false
+  },
+  "nota": "Un falso positivo aca manda datos de cobro a alguien que todavia esta eligiendo."
+}

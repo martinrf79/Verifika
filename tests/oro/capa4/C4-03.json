@@ -1,0 +1,22 @@
+{
+  "id": "C4-03",
+  "de": "la familia sin_descuento_inventado",
+  "que": "un DESCUENTO que la fuente no da",
+  "material": {
+    "productos": [
+      "NOT0055"
+    ],
+    "temas": [],
+    "bloque": ""
+  },
+  "texto": "La Asus TUF F15 es una gran opcion. Te hago un 25% de descuento por ser vos.",
+  "espera": {
+    "corta": [
+      "25%"
+    ],
+    "conserva": [
+      "Asus TUF"
+    ]
+  },
+  "nota": "Los beneficios reales de la casa estan escritos en la fuente. Un porcentaje que no esta ahi es plata que el bot regala sin permiso."
+}

@@ -1,0 +1,20 @@
+{
+  "id": "C2-S20",
+  "de": "S20",
+  "que": "el rubro que NO vendemos: el no honesto lo dice el codigo",
+  "mensaje": "tenes celulares samsung o iphone",
+  "declarado": {
+    "items": [],
+    "stock": [
+      "celulares samsung",
+      "iphone"
+    ]
+  },
+  "espera": {
+    "cubre": [
+      "stock:1",
+      "stock:2"
+    ]
+  },
+  "nota": "No vendemos celulares. El no tiene que salir de la fuente y venir con alternativa real, no de que al modelo se le ocurra negarse."
+}

@@ -1,0 +1,57 @@
+{
+  "id": "C2-E09",
+  "de": "E9",
+  "que": "dos cosas por turno: el extremo con su precio Y una spec del mismo producto",
+  "mensaje": "cuanto sale el teclado mas barato y si es con cable, y despues mandame ese y el mouse mas barato a Rosario",
+  "declarado": {
+    "items": [
+      {
+        "que": "teclado",
+        "categoria": "teclado",
+        "cantidad": 1,
+        "destino": "Rosario"
+      },
+      {
+        "que": "mouse",
+        "categoria": "mouse",
+        "cantidad": 1,
+        "destino": "Rosario"
+      }
+    ],
+    "restricciones": [
+      "el mas barato"
+    ],
+    "destinos": [
+      "Rosario"
+    ],
+    "pide_precio": true,
+    "atributos": [
+      {
+        "de": "el teclado mas barato",
+        "campo": "conexion"
+      }
+    ]
+  },
+  "espera": {
+    "ids": [
+      "TEC0020",
+      "MOU0023"
+    ],
+    "cuenta": true,
+    "envios": [
+      "Rosario"
+    ],
+    "bloque_contiene": [
+      "Total"
+    ],
+    "cubre": [
+      "items:1",
+      "items:2",
+      "restricciones:1",
+      "destinos:1",
+      "pide_precio:1",
+      "atributos:1"
+    ]
+  },
+  "nota": "Teclado mas barato con stock: TEC0020 a $12.000. Mouse mas barato: MOU0023 a $8.500. Los dos van al mismo destino."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "C2-E14",
+  "de": "E14",
+  "que": "la correccion del cliente ACOTA: no se vuelve a preguntar lo mismo",
+  "mensaje": "la de ryzen",
+  "declarado": {
+    "items": [
+      {
+        "que": "la notebook asus de ryzen",
+        "categoria": "notebook",
+        "cantidad": 1
+      }
+    ]
+  },
+  "memoria": [
+    "NOT0048"
+  ],
+  "espera": {
+    "categorias": [
+      "notebook"
+    ],
+    "cubre": [
+      "items:1"
+    ]
+  },
+  "nota": "El turno anterior fue 'quiero una notebook asus' y volvio ambiguo. Este acota a Ryzen y TIENE que resolver: todos los candidatos son notebooks Asus con Ryzen."
+}

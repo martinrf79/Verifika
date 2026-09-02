@@ -1,0 +1,22 @@
+{
+  "id": "C4-06",
+  "de": "la familia sin_afirmar_sobre_el_catalogo",
+  "que": "un UNIVERSAL sobre los 880 que el turno no puede saber",
+  "material": {
+    "productos": [
+      "MOU0023"
+    ],
+    "temas": [],
+    "bloque": ""
+  },
+  "texto": "El Mouse Genius DX-110 Negro es el unico mouse con cable que nos queda en todo el catalogo.",
+  "espera": {
+    "corta": [
+      "unico"
+    ],
+    "conserva": [
+      "Genius DX-110"
+    ]
+  },
+  "nota": "El turno trajo tres productos: no puede afirmar nada sobre los 880. Hay 45 mouse con stock."
+}

@@ -1,0 +1,11 @@
+{
+  "id": "C5-11",
+  "de": "elegir_medio_pago",
+  "que": "el efectivo no tiene via automatica: lo coordina una persona",
+  "estado": {
+    "forma_pago": "en efectivo cuando llegue"
+  },
+  "espera": {
+    "medio_pago": "efectivo"
+  }
+}

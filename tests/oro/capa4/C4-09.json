@@ -1,0 +1,23 @@
+{
+  "id": "C4-09",
+  "de": "la FICHA 10, el bloque sellado",
+  "que": "la CUENTA RETIPEADA a mano por el modelo",
+  "material": {
+    "productos": [
+      "MOU0023"
+    ],
+    "temas": [],
+    "bloque": "Presupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\nSubtotal: $8.500\nTotal: $8.500"
+  },
+  "texto": "Te armo la cuenta: el mouse sale 8.500, el envio 3.200, o sea 11.700 en total.",
+  "espera": {
+    "corta": [
+      "3.200",
+      "11.700"
+    ],
+    "conserva": [
+      "Total: $8.500"
+    ]
+  },
+  "nota": "La cuenta es la unica parte del mensaje que el modelo no redacta. Si la reescribe o se la come, el bloque del codigo vuelve entero."
+}

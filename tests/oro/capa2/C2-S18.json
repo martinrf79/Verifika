@@ -1,0 +1,52 @@
+{
+  "id": "C2-S18",
+  "de": "S18",
+  "que": "cuatro puertas distintas en un solo mensaje",
+  "mensaje": "cuanto sale el mouse mas barato, para que sirve, cuanto es el envio a Cordoba y cuanto tarda",
+  "declarado": {
+    "items": [
+      {
+        "que": "mouse",
+        "categoria": "mouse",
+        "cantidad": 1,
+        "destino": "Cordoba capital"
+      }
+    ],
+    "restricciones": [
+      "el mas barato"
+    ],
+    "destinos": [
+      "Cordoba capital"
+    ],
+    "pide_precio": true,
+    "atributos": [
+      {
+        "de": "el mouse mas barato",
+        "campo": "para que sirve"
+      }
+    ],
+    "temas": [
+      "cuanto tarda el envio"
+    ]
+  },
+  "espera": {
+    "ids": [
+      "MOU0023"
+    ],
+    "cuenta": true,
+    "envios": [
+      "Cordoba capital"
+    ],
+    "temas": [
+      "plazo_envio"
+    ],
+    "cubre": [
+      "items:1",
+      "restricciones:1",
+      "destinos:1",
+      "pide_precio:1",
+      "atributos:1",
+      "temas:1"
+    ]
+  }
+}

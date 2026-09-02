@@ -1,0 +1,44 @@
+{
+  "id": "C2-E13",
+  "de": "E13",
+  "que": "la combinada media: producto, precio, plazo a un destino y forma de pago",
+  "mensaje": "tenes memoria ram de 16gb, cuanto sale con envio a Rosario, cuanto tarda y como puedo pagar",
+  "declarado": {
+    "items": [
+      {
+        "que": "memoria ram de 16gb",
+        "categoria": "memoria ram",
+        "cantidad": 1,
+        "destino": "Rosario"
+      }
+    ],
+    "destinos": [
+      "Rosario"
+    ],
+    "pide_precio": true,
+    "temas": [
+      "cuanto tarda",
+      "como puedo pagar"
+    ]
+  },
+  "espera": {
+    "categorias": [
+      "memoria ram"
+    ],
+    "cuenta": true,
+    "envios": [
+      "Rosario"
+    ],
+    "temas": [
+      "plazo_envio",
+      "formas_pago"
+    ],
+    "cubre": [
+      "items:1",
+      "destinos:1",
+      "pide_precio:1",
+      "temas:1",
+      "temas:2"
+    ]
+  }
+}

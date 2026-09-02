@@ -1,0 +1,26 @@
+{
+  "id": "C2-S21",
+  "de": "S21",
+  "que": "la spec puntual sobre el producto en foco",
+  "mensaje": "esa notebook tiene lector de huella digital",
+  "declarado": {
+    "items": [],
+    "atributos": [
+      {
+        "de": "esa notebook",
+        "campo": "lector de huella digital"
+      }
+    ]
+  },
+  "memoria": [
+    "NOT0055"
+  ],
+  "espera": {
+    "ids": [
+      "NOT0055"
+    ],
+    "cubre": [
+      "atributos:1"
+    ]
+  }
+}

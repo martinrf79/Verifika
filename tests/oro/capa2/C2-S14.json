@@ -1,0 +1,35 @@
+{
+  "id": "C2-S14",
+  "de": "S14",
+  "que": "cantidad grande, precio por volumen y un tema fiscal, todo junto",
+  "mensaje": "10 notebooks para una empresa, precio por cantidad y factura A",
+  "declarado": {
+    "items": [
+      {
+        "que": "notebooks",
+        "categoria": "notebook",
+        "cantidad": 10
+      }
+    ],
+    "pide_precio": true,
+    "temas": [
+      "precio por cantidad",
+      "factura A"
+    ]
+  },
+  "espera": {
+    "cuenta": true,
+    "categorias": [
+      "notebook"
+    ],
+    "bloque_contiene": [
+      "10x"
+    ],
+    "cubre": [
+      "items:1",
+      "pide_precio:1",
+      "temas:1",
+      "temas:2"
+    ]
+  }
+}

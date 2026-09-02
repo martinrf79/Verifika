@@ -1,0 +1,19 @@
+{
+  "id": "C5-13",
+  "de": "cierre.faltantes",
+  "que": "lo que falta para cerrar se dice completo y una sola vez",
+  "estado": {
+    "lead": {
+      "nombre": "",
+      "telefono": "",
+      "direccion": "Cordoba capital",
+      "forma_pago": "transferencia"
+    }
+  },
+  "espera": {
+    "faltantes": [
+      "nombre"
+    ]
+  },
+  "nota": "El bot pide el NOMBRE y nada mas: ni telefono, ni DNI, ni CUIT, ni tarjeta, ni el CBU del cliente. El telefono, la direccion y la forma de pago se GUARDAN si el cliente los dice, pero no frenan el cierre. Este caso se escribio pidiendo tambien el telefono y estaba mal: se corrigio a mano contra CAMPOS_REQUERIDOS y la regla 6 de CLAUDE.md."
+}

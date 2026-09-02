@@ -1,0 +1,30 @@
+{
+  "id": "C2-E01",
+  "de": "E1",
+  "que": "el modelo AJENO: piden una G15 y tenemos la G16. No se confirma lo que no existe",
+  "mensaje": "tenes la notebook Asus ROG Strix G15, que placa de video trae",
+  "declarado": {
+    "items": [
+      {
+        "que": "notebook Asus ROG Strix G15",
+        "categoria": "notebook",
+        "cantidad": 1
+      }
+    ],
+    "atributos": [
+      {
+        "de": "la Asus ROG Strix G15",
+        "campo": "placa de video"
+      }
+    ]
+  },
+  "espera": {
+    "categorias": [
+      "notebook"
+    ],
+    "cubre": [
+      "items:1"
+    ]
+  },
+  "nota": "En la fuente NO existe ninguna Asus ROG Strix G15: la nuestra es la G16. Ningun candidato puede llamarse G15 -ojo, existe una Dell G15- y las specs no pueden salir de un producto ajeno."
+}

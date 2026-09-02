@@ -1,0 +1,13 @@
+{
+  "id": "C5-04",
+  "de": "el gatillo",
+  "que": "sin pregunta previa, un si suelto no cierra nada",
+  "estado": {
+    "pregunta_hecha": false,
+    "respuesta": "si"
+  },
+  "espera": {
+    "dispara_lead": false
+  },
+  "nota": "El si puede ser respuesta a cualquier otra cosa. Sin la pregunta de cierre en el turno anterior no hay confirmacion que valga."
+}

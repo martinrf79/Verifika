@@ -1,0 +1,14 @@
+{
+  "id": "C5-03",
+  "de": "el apuro real visto en prod el 1-jul",
+  "que": "una PREGUNTA del cliente no es una confirmacion",
+  "estado": {
+    "pregunta_hecha": true,
+    "respuesta": "estas seguro que el envio llega a Santa Ana?"
+  },
+  "espera": {
+    "dispara_lead": false,
+    "es_no_interesado": false
+  },
+  "nota": "Sin esto el bot tomaba la duda como un si y saltaba a pedir datos. Una pregunta se contesta, no cierra la venta."
+}

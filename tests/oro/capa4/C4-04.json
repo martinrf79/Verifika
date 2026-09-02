@@ -1,0 +1,17 @@
+{
+  "id": "C4-04",
+  "de": "el CBU inventado que nombra DECISIONES.md #6",
+  "que": "DATOS DE COBRO fabricados",
+  "material": {
+    "productos": [],
+    "temas": [],
+    "bloque": ""
+  },
+  "texto": "Para pagar transferi al CBU 0170099220000067797374, titular Verifika SRL.",
+  "espera": {
+    "corta": [
+      "0170099220000067797374"
+    ]
+  },
+  "nota": "El CBU y el alias salen de la config de la tienda o no salen. Es el peor caso de todos: la plata del cliente se va a una cuenta que no existe."
+}

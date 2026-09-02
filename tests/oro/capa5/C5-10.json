@@ -1,0 +1,11 @@
+{
+  "id": "C5-10",
+  "de": "elegir_medio_pago",
+  "que": "la forma de pago decide la via de cobro, sin adivinar",
+  "estado": {
+    "forma_pago": "transferencia bancaria"
+  },
+  "espera": {
+    "medio_pago": "cbu"
+  }
+}

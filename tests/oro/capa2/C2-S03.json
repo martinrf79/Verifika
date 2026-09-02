@@ -1,0 +1,22 @@
+{
+  "id": "C2-S03",
+  "de": "S3",
+  "que": "una CUENTA sobre los 880, no una lista de tres",
+  "mensaje": "cuantos productos tenes que no se fabriquen en China",
+  "declarado": {
+    "items": [],
+    "restricciones": [
+      "que no se fabriquen en China"
+    ],
+    "stock": [
+      "productos que no se fabriquen en China"
+    ]
+  },
+  "espera": {
+    "cubre": [
+      "stock:1",
+      "restricciones:1"
+    ]
+  },
+  "nota": "La verdad son 169 productos con stock, en tres rubros: memoria ram, almacenamiento externo y procesador. Una lista de tres candidatos NO contesta un cuantos."
+}

@@ -1,0 +1,26 @@
+{
+  "id": "C2-S08",
+  "de": "S8",
+  "que": "el pedido ABIERTO: el cliente no nombra los rubros, los tiene que poner la casa",
+  "mensaje": "quiero armar una PC gamer completa, que necesito y cuanto sale",
+  "declarado": {
+    "items": [
+      {
+        "que": "una PC gamer completa",
+        "cantidad": 1
+      }
+    ],
+    "pide_precio": true,
+    "temas": [
+      "armar una pc"
+    ]
+  },
+  "espera": {
+    "cuenta": true,
+    "cubre": [
+      "items:1",
+      "pide_precio:1"
+    ]
+  },
+  "nota": "Una PC gamer son varios rubros -motherboard, procesador, placa de video, fuente, gabinete, memoria ram, ssd- y el cliente no nombro ninguno. Es el caso que mas estira la derivacion."
+}

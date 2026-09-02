@@ -1,0 +1,36 @@
+{
+  "id": "C2-E06",
+  "de": "E6",
+  "que": "el typo y el lunfardo del cliente real: si el codigo no los entiende, ya salio vacio",
+  "mensaje": "qiero un mause inalambrico q sea barato y q ande pa jugar, y tenes auris tmbn q no sean tan caros",
+  "declarado": {
+    "items": [
+      {
+        "que": "mause inalambrico barato para jugar",
+        "categoria": "mouse",
+        "cantidad": 1
+      },
+      {
+        "que": "auris que no sean tan caros",
+        "categoria": "auriculares",
+        "cantidad": 1
+      }
+    ],
+    "restricciones": [
+      "que sea barato",
+      "que no sean tan caros",
+      "inalambrico"
+    ]
+  },
+  "espera": {
+    "categorias": [
+      "mouse",
+      "auriculares"
+    ],
+    "cubre": [
+      "items:1",
+      "items:2"
+    ]
+  },
+  "nota": "'mause' cae en mouse y 'auris' en auriculares. No hay prompt que salve una busqueda que ya volvio vacia."
+}
