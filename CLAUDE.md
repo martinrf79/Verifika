@@ -2,6 +2,35 @@
 
 Claude Code lee este archivo al iniciar **cada** sesión. No borrarlo, no moverlo.
 
+---
+
+## 0. PUERTA ÚNICA — lo primero que lee cualquier sesión, de cualquier modelo
+
+**Este bloque es el único lugar por el que se entra al proyecto.** Si un
+resumen, un `.md` viejo o una sesión anterior dicen algo distinto, gana lo que
+está acá.
+
+1. **Se trabaja SÓLO en `main`.** Nada de ramas: ni de prueba, ni de respaldo,
+   ni pull requests. El detalle está en la sección 7. — *3-sep: una sesión abrió
+   una rama para probar un permiso. La regla estaba escrita hace semanas, en la
+   sección 7 de trece. No falló la regla, falló el orden de lectura: una regla
+   que hay que buscar se lee después de romperla.*
+2. **EL ESTADO NO ESTÁ EN NINGÚN RESUMEN.** Lo abierto está en `PENDIENTE.md`,
+   lo hecho en `git log`, la unidad de trabajo viva en `arquitectura/`, y los
+   números —cuántos productos, qué modelo, qué deploya— **en el código**. Un
+   `.md` que contradice al código está mal, siempre.
+3. **Pushear a `main` DEPLOYA**, salvo que el cambio toque sólo lo que está en
+   `paths-ignore` de `deploy.yml`. Cuáles son se mira ahí, no acá.
+4. **Lo que el cliente recibió de verdad se lee en el issue 31**, comentando
+   `/logs`. El informe vuelve con los invariantes, los logs de Cloud Run y
+   —desde el 3-sep— la charla literal. **Los logs NO guardan el texto de la
+   respuesta:** `turno_ok` anota largo, latencia y puntos, nunca el mensaje.
+5. **Una sesión que no puede correr `pytest` ni `gcloud`** —Cowork, el celular—
+   igual llega a todo: al repo por la integración de GitHub, que lee y escribe
+   `main` incluidos los workflows, y a producción por el issue 31.
+
+---
+
 **Es CORTO a propósito.** Cada regla nació de un día perdido, y esa historia
 estaba contada en tres párrafos: ahora es una línea entre guiones. La regla está
 entera; lo que se comprimió es el cuento. Si algo hace falta, `git log` lo tiene.
