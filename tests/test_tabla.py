@@ -12,7 +12,7 @@ import json
 import pytest
 
 from app.core import resolver as R, herramientas as H, tabla as TB
-from app.core.indice_turno import puntos as PUNTOS
+from app.core.tabla import puntos as PUNTOS
 
 TIENDA = "verifika_prod"
 ORO = sorted(glob.glob("tests/oro/capa2/*.json"))

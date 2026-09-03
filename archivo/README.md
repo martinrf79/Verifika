@@ -134,3 +134,55 @@ segundos contra 208. Dos grupos y nada más:
 `PENDIENTE.md`; el candado de que los `.md` no mientan sobre el modelo; y la
 medición de regresión de las 15 charlas grabadas. `banco_pruebas/` no se tocó:
 sigue entero y `python3 banco_pruebas/oro.py` corre offline y gratis.
+
+### `archivo/plomeria_apagada/` — el hub y sus cuatro puertas, 3-sep-2026
+
+**7 modulos, 7.442 lineas.** `hub_venta.py`, `salida.py`, `mensaje.py`,
+`indice_turno.py`, `grafo.py`, `atadura_prosa.py` e `invariantes.py`, mas el
+`__init__.py` del paquete `app/verifika/`, que quedo vacio.
+
+Los reemplaza **`app/core/turno.py`**, que hace el turno entero de punta a punta
+usando **`app/core/tabla.py`**. Se vuelve con `git revert` del commit que los
+movio: el camino viejo esta completo, no se toco una linea.
+
+**Por que se apagaron y no se recortaron.** Entre la segunda llamada al modelo y
+el mensaje al cliente corrian 23 piezas a nivel puerta y 46 mutadores contando
+los internos, todos reescribiendo prosa que el modelo ya habia escrito. Dos de
+ellos hacian lo contrario entre si sobre el mismo bloque, uno detras del otro en
+el mismo turno: `mensaje.sin_cuenta_que_no_cambio` resumia la cuenta a una linea
+y `salida.asegurar_cuenta_si_abrio` la reponia entera.
+
+Y no era arreglable pieza por pieza, porque la causa era el reparto: el codigo
+calculaba punto por punto que habia preguntado el cliente y que material tenia
+para cada uno, **no se lo pasaba al modelo**, le mandaba un volcado crudo mas un
+reto en prosa al final del prompt, y despues le parcheaba el texto que volvia.
+Vigilar prosa libre no tiene fondo: fueron 4 nodos, despues 18, despues 46.
+
+Ahora el modelo devuelve la mesa llena, con esquema, y el codigo la arma. Las
+reglas dejaron de ser guardias y pasaron a ser la forma del formulario:
+
+```
+plata inventada    no hay casilla donde escribir un numero de plata
+punto omitido      hay una casilla por punto y el esquema las pide todas
+dos preguntas      `pregunta_final` es un campo, no una lista
+dato inventado     si la fuente no lo tiene, el material sale VACIO
+identidad elegida  `ambiguo` sale como pregunta CON los candidatos
+```
+
+**Lo que NO se apago, porque era comportamiento y no plomeria**, y se mudo entero
+en vez de dejarse morir: `indice_turno.puntos` esta ahora en `tabla.py` -era la
+unica de sus 1.738 lineas que abria los puntos del turno-; `invariantes.pago_parcial`
+esta en `pago.py` con su regex tal cual; y la puerta al modelo -`_cliente`,
+`_modelo` y los tres del decisor- vive en `llm_reintento.py`, que ya era el unico
+lugar por donde pasan las dos llamadas. Esa ultima mudanza saco de un movimiento
+los tres ciclos de import que `cierre`, `memoria_larga` y `main` escondian con un
+import perezoso adentro de una funcion.
+
+**Lo que queda pendiente y hay que saberlo:** los 10 casos de oro de la capa 4
+miden `salida.procedencia` y `salida.plata`, que estan aca adentro, y su campo
+`texto` viene con las etiquetas `<d ID>` de la atadura. La capa 4 quedo sin
+mecanismo que medir y esta declarada como `xfail` estricto en `tests/test_oro.py`
+con el detalle de cual caso ya cubre la estructura y cual hay que reescribir.
+Reescribir un caso de oro es decision de Martin.
+
+**Tamaño, medido:** `app/` paso de 51 archivos y 22.547 lineas a 45 y 16.794.

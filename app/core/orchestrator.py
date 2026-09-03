@@ -18,7 +18,7 @@ import structlog
 
 from app.config import get_settings
 from app.logger import get_logger
-from app.core.hub_venta import procesar_venta
+from app.core.turno import procesar_turno
 
 log = get_logger(__name__)
 settings = get_settings()
@@ -68,7 +68,7 @@ async def process_message(user_id: str, raw_message: str,
             return mensaje("conversacion_reiniciada",
                            "Listo, conversacion reiniciada. Empezamos de cero.")
 
-        return await procesar_venta(
+        return await procesar_turno(
             user_id, raw_message, tid, canal, trace_id)
     finally:
         structlog.contextvars.clear_contextvars()

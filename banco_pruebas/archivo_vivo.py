@@ -35,12 +35,8 @@ def enchufar() -> None:
     repo = _cargar("reposicion_vivo_20260828.py")
     from app.core import resolver as R
     R._busqueda_de_lo_declarado = repo._busqueda_de_lo_declarado
-    # FICHA 48: el termometro salio de app/. Los snapshots que lo llamaban
-    # (aduana) siguen importando app.verifika.invariantes: se les deja
-    # revisar ahi solo en el banco, no en produccion.
-    from app.verifika import invariantes as INV
-    from banco_pruebas.invariantes import revisar, revisar_charla, _importes
-    INV.revisar = revisar
-    INV.revisar_charla = revisar_charla
-    INV._importes = _importes
+    # EL TERMOMETRO YA NO SE ENCHUFA (3-sep-2026). `app.verifika.invariantes`
+    # se apago con el grafo, y lo unico suyo que usaba el camino vivo
+    # -`pago_parcial`- se mudo entero a `app/core/pago.py`. Lo que hacia este
+    # bloque era pisarle tres funciones a un modulo que ya no existe.
     _ENCHUFADO = True

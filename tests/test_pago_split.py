@@ -127,7 +127,6 @@ def test_el_reparto_de_pago_sobrevive_cuando_el_codigo_rehace_la_cuenta(
     palabra del split, en el turno mismo en que lo cambio.
 
     El dato estaba declarado en ese turno: lo unico que faltaba era pasarlo."""
-    from app.core import hub_venta as HV
     from app.core.contexto_turno import set_current_tienda
     from app.core.estado_venta import set_current_estado
     set_current_tienda("verifika_prod")

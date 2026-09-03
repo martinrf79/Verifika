@@ -239,11 +239,11 @@ def extraer_determinista(mensaje: str) -> dict:
 def extraer_datos_cliente(mensaje: str, trace_id=None) -> dict:
     """Extrae los datos presentes en el mensaje. Devuelve dict con los cuatro
     campos, vacios los que no esten. Misma puerta al modelo que el resto del
-    turno: `hub_venta._cliente`. Si esa llamada falla, el respaldo
+    turno: `llm_reintento._cliente`. Si esa llamada falla, el respaldo
     determinista de abajo rellena lo que se pueda por patron."""
     datos = {c: "" for c in CAMPOS_EXTRAIBLES}
     try:
-        from app.core.hub_venta import _cliente, _modelo
+        from app.core.llm_reintento import _cliente, _modelo
         cli = _cliente()
         if cli is None:
             raise RuntimeError("sin cliente")

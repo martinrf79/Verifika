@@ -142,3 +142,83 @@ async def llamar_con_reintento(fn, *, timeout_s: float | None = None,
             raise
     assert ultimo is not None
     raise ultimo
+
+
+def _settings():
+    from app.config import get_settings
+    return get_settings()
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# LA PUERTA AL MODELO
+# ══════════════════════════════════════════════════════════════════════════
+#
+# VIVE ACA DESDE QUE SE APAGO EL HUB (3-sep-2026), y la mudanza saca tres
+# ciclos de import de un movimiento. Estaba en `hub_venta`, y `cierre`,
+# `memoria_larga` y `main` la importaban de ahi con un import perezoso adentro
+# de una funcion, que es la forma de esconder un ciclo sin arreglarlo. Este
+# modulo ya era el unico lugar por donde pasan las dos llamadas -es donde vive
+# el reintento y la marca de la llamada negada-, asi que la puerta y el
+# reintento son una sola cosa y no dos.
+#
+# `settings` se lee adentro de cada funcion a proposito: este modulo lo importa
+# `app.config` en su propio camino, y leerlo arriba cerraria el ciclo que la
+# mudanza vino a abrir.
+
+
+def _cliente():
+    """La UNICA puerta al modelo. Sin clave devuelve None y el turno cae al
+    mensaje de fallback en vez de romperse."""
+    import os
+    from openai import OpenAI
+    settings = _settings()
+    key = (settings.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY") or "")
+    key = key.split()[0] if key else ""
+    if not key:
+        return None
+    return OpenAI(api_key=key, base_url=settings.GEMINI_BASE_URL)
+
+
+def _modelo() -> str:
+    return _settings().GEMINI_MODEL or "gemini-3.1-flash-lite"
+
+
+def _cliente_decisor():
+    """El cliente de la llamada UNO, la que ELIGE herramientas.
+
+    Por defecto es el mismo de siempre: sin DECISOR_BASE_URL devuelve `_cliente()`
+    y el decisor va por Gemini, igual que antes de existir esta funcion. Con la
+    base_url puesta apunta a otro provider compatible con la API de OpenAI, para
+    poder MEDIR si otro modelo decide mejor o mas rapido. Es config, no una capa:
+    el REDACTOR nunca pasa por aca, sigue en Gemini."""
+    import os
+    from openai import OpenAI
+    settings = _settings()
+    base = (settings.DECISOR_BASE_URL or "").strip()
+    if not base:
+        return _cliente()
+    key = (settings.DECISOR_API_KEY or os.environ.get("DECISOR_API_KEY") or "")
+    key = key.split()[0] if key else ""
+    if not key:
+        # Sin la clave del decisor no se cae el turno: se vuelve a Gemini, que es
+        # el camino que ya funciona. Un decisor mal configurado no puede dejar
+        # mudo al bot en produccion.
+        log.warning("turno_decisor_sin_clave", base_url=base)
+        return _cliente()
+    return OpenAI(api_key=key, base_url=base)
+
+
+def _modelo_decisor() -> str:
+    """El modelo de la llamada UNO. Por default el mismo que redacta; se le
+    puede poner uno mas grande SOLO acá, que es donde se decide."""
+    return _settings().DECISOR_MODEL or _modelo()
+
+
+def _extra_decisor() -> dict:
+    """`reasoning_effort` es de Gemini. Mandarselo a Groq o a OpenAI hace saltar
+    la llamada con 400, asi que solo viaja cuando el decisor va por Gemini. Con
+    Gemini manda DECISOR_REASONING, o sea el decisor sigue PENSANDO."""
+    settings = _settings()
+    if (settings.DECISOR_BASE_URL or "").strip():
+        return {}
+    return {"reasoning_effort": settings.DECISOR_REASONING}

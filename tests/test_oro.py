@@ -23,6 +23,17 @@ def corrida():
     return oro.correr()
 
 
+# LA CAPA 4 NO ENTRA EN EL PISO HASTA QUE SUS CASOS SE REESCRIBAN. No es que
+# haya bajado: es que el mecanismo que median -`salida.procedencia` y
+# `salida.plata`- se apago el 3-sep con el resto de la plomeria, y sus diez
+# casos traen el `texto` en el formato viejo, con las etiquetas de la atadura
+# que el modelo ya no escribe. Medirla hoy da 0 de 10 y ese cero no dice nada
+# del sistema. El detalle de cual queda cubierto por estructura y cual hay que
+# reescribir esta en `banco_pruebas/oro.py`, arriba de `_correr_capa4`, y la
+# decision es de Martin: el que implementa no reescribe la vara.
+_SIN_MECANISMO = {4, "4"}
+
+
 def test_el_piso_de_cada_capa_no_baja(corrida):
     """El numero de cada capa puede SUBIR. Si baja, algo se rompio y el CI lo
     grita con el nombre de los casos que se cayeron.
@@ -32,12 +43,35 @@ def test_el_piso_de_cada_capa_no_baja(corrida):
     from banco_pruebas import oro
     piso = oro.piso()
     assert piso, "falta banco_pruebas/oro_piso.json: corre oro.py --fijar"
+    medidas = 0
     for n, filas in corrida.items():
+        if n in _SIN_MECANISMO:
+            continue
         verdes = [f["id"] for f in filas if f["ok"]]
         rojas = [f["id"] for f in filas if not f["ok"]]
         assert len(verdes) >= piso[f"capa{n}"], (
             f"la capa {n} bajo de {piso[f'capa{n}']} a {len(verdes)}. "
             f"En rojo ahora: {rojas}")
+        medidas += 1
+    assert medidas == 2, f"se midieron {medidas} capas, esperaba 2"
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "PLAN: la capa 4 vuelve a tener mecanismo. HOY sus 10 casos miden "
+    "`salida.procedencia` y `salida.plata`, que se apagaron el 3-sep, y su "
+    "campo `texto` viene con las etiquetas `<d ID>` de la atadura, que el "
+    "modelo ya no escribe: la capa da 0 de 10 y ese cero no mide el sistema. "
+    "OBJETIVO 10 de 10 contra el mecanismo nuevo. Cuatro ya estan cubiertos "
+    "por estructura y tienen vara en tests/test_tabla.py -C4-01 el dato que la "
+    "ficha no tiene, C4-02 la plata sin respaldo, C4-09 la cuenta retipeada, "
+    "C4-10 el volcado interno-; C4-07 esta a medias; y C4-03, C4-04, C4-05 y "
+    "C4-08 NO estan cubiertos, porque son contenido de la prosa adentro de una "
+    "casilla y ahi el esquema no llega. Reescribir un caso de oro es decision "
+    "de Martin: el que implementa no reescribe la vara."))
+def test_la_capa_cuatro_tiene_mecanismo(corrida):
+    filas = corrida.get(4) or corrida.get("4") or []
+    verdes = [f["id"] for f in filas if f["ok"]]
+    assert filas and len(verdes) == len(filas)
 
 
 def test_ningun_caso_se_borro(corrida):

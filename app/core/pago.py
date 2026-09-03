@@ -27,7 +27,6 @@ import httpx
 from app.config import get_settings
 from app.logger import get_logger
 from app.storage.firestore_client import get_config
-from app.verifika import invariantes as INV
 
 log = get_logger(__name__)
 
@@ -49,6 +48,25 @@ _RE_RENGLON_SPLIT = re.compile(
     r"^\s*-\s*(?P<medio>[^(]+?)\s*\(\s*[\d.,]+\s*%\s*\)\s*:\s*"
     r"(?P<montos>.*\S)\s*$", re.IGNORECASE | re.MULTILINE)
 _RE_PLATA = re.compile(r"\$\s*([\d\.]+)")
+
+
+# EL PAGO PARCIAL, MUDADO DE `invariantes` (3-sep-2026). Era la unica funcion de
+# ese modulo que usaba el camino vivo: el resto era termometro y se apago junto
+# con el grafo. Se muda ENTERA y TAL CUAL, con su regex y su comentario, en vez
+# de dejar un modulo de una sola funcion viva.
+#
+# "Sena 20%: $42.200 (pago parcial)" — lo escribe `_label_extra` de la
+# calculadora y es la marca de que el cliente NO paga el total ahora.
+_RE_PAGO_PARCIAL = re.compile(
+    r"^\s*[^:\n]{2,40}?\s*:\s*\$(?P<monto>[\d\.]+)\s*\(pago parcial\)\s*$",
+    re.IGNORECASE | re.MULTILINE)
+
+
+def _pago_parcial(mensaje: str) -> int | None:
+    """Lo que el cliente paga AHORA cuando la cuenta lleva una seña. None si la
+    cuenta no marca ningun pago parcial."""
+    m = _RE_PAGO_PARCIAL.search(mensaje or "")
+    return int(str(m.group("monto")).replace(".", "")) if m else None
 
 
 def montos_por_medio(presentacion: str) -> dict:
@@ -107,7 +125,7 @@ def monto_a_cobrar(presentacion: str, medio: str) -> int | None:
             es_mp = "mercado" in nombre or nombre == "mp"
             if (medio == "mp") == es_mp:
                 return monto
-    sena = INV.pago_parcial(presentacion)
+    sena = _pago_parcial(presentacion)
     if sena:
         return sena
     return extraer_total_verificado(presentacion)

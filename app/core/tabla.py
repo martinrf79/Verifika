@@ -7,7 +7,7 @@ volcado crudo de las herramientas, y una instruccion en prosa al final del promp
 punto que habia faltado.
 
 O sea: el codigo YA sabia, punto por punto, que pregunto el cliente y que
-material tenia para cada uno —lo calcula `indice_turno.puntos` en cada turno— y
+material tenia para cada uno —lo calculaba `indice_turno.puntos` en cada turno— y
 le mandaba al modelo un volcado sin esa estructura mas un reto. El modelo tenia
 que aparear pregunta y evidencia solo. Eso es el cableado.
 
@@ -42,10 +42,12 @@ cliente pregunta los DPI y la ficha no tiene DPI, el material sale VACIO en vez
 de salir con los otros diecisiete campos. El modelo no tiene de donde sacar un
 numero parecido. La alucinacion no se caza despues: no tiene con que nacer.
 
-`puntos` se importa de `indice_turno` mientras ese modulo siga vivo. Cuando
-`indice_turno` se vaya a `archivo/`, la funcion se muda ACA y no se copia antes:
-dos definiciones de lo mismo es la falla que este repo ya pago tres veces.
+`puntos` se mudo ACA desde `indice_turno` el 3-sep-2026, cuando ese modulo se
+apago. Vino entera y tal cual, con su docstring: es la unica pieza de las 1.738
+lineas del indice que era comportamiento y no medicion. No usa nada mas de su
+modulo viejo.
 """
+import json
 import re
 import unicodedata
 
@@ -142,6 +144,121 @@ def _valor_del_campo(p: dict, campo: str):
                                      and len(str(k)) < largo):
                 mejor, cuantas, largo = v, comunes, len(str(k))
     return mejor
+
+
+def puntos(declarado: dict) -> list:
+    """Lo interpretado, desarmado en puntos con id estable.
+
+    El id es `campo:n` y `tipo` ES el campo de `registrar_pedido`. Sin apodo.
+    El orden es el del molde, que es el del mensaje. Estable dentro del turno.
+    """
+    fuera: list = []
+    if not declarado:
+        return fuera
+
+    for i, it in enumerate((declarado.get("items") or []), 1):
+        que = str(it.get("que") or "").strip()
+        if not que:
+            continue
+        cant = it.get("cantidad") or 1
+        fuera.append({"id": f"items:{i}", "tipo": "items", "termino": que,
+                      "texto": f"{cant} {que}"})
+
+    for i, r in enumerate((declarado.get("restricciones") or []), 1):
+        r = str(r or "").strip()
+        if r:
+            fuera.append({"id": f"restricciones:{i}", "tipo": "restricciones",
+                          "termino": r, "texto": r})
+
+    for i, d in enumerate((declarado.get("destinos") or []), 1):
+        d = str(d or "").strip()
+        if d:
+            fuera.append({"id": f"destinos:{i}", "tipo": "destinos",
+                          "termino": d, "texto": f"envio a {d}"})
+
+    for i, c in enumerate((declarado.get("contradicciones") or []), 1):
+        c = str(c or "").strip()
+        if c:
+            fuera.append({"id": f"contradicciones:{i}", "tipo": "contradicciones",
+                          "termino": c, "texto": c})
+
+    if declarado.get("reparto_pago"):
+        pcts = [str(int(float(p.get("porcentaje") or 0)))
+                for p in declarado["reparto_pago"]
+                if p.get("porcentaje")]
+        if pcts:
+            fuera.append({"id": "reparto_pago:1", "tipo": "reparto_pago",
+                          "termino": " ".join(pcts),
+                          "texto": f"reparto del pago {'/'.join(pcts)}"})
+
+    if declarado.get("pide_precio"):
+        fuera.append({"id": "pide_precio:1", "tipo": "pide_precio",
+                      "termino": "",
+                      "texto": "el precio de lo que pidio"})
+
+    # ── LAS CUATRO FAMILIAS INFORMATIVAS (FICHA 02, 21-ago-2026) ────────
+    #
+    # LAS SEIS DE ARRIBA SALEN TODAS DE `registrar_pedido`, o sea que el
+    # sistema solo sabia abrir puntos sobre la parte TRANSACCIONAL: que
+    # comprar, adonde va, como se paga. Si el cliente preguntaba cuantos Hz
+    # tiene el monitor NO SE ABRIA NINGUN PUNTO, y entonces no quedaba nada
+    # sin contestar —porque nunca se declaro que hubiera algo que contestar—.
+    # El contrato de cobertura era ciego exactamente en las preguntas
+    # informativas, que son la mitad de una conversacion de venta y son donde
+    # mas se alucina.
+    #
+    # POR ESO EL 13% DE PUNTOS SIN CONTESTAR ES UN PISO Y NO EL NUMERO REAL.
+    # El real es peor y no se puede medir hasta que existan las diez.
+    #
+    # EL PUNTO SALE DE LO DECLARADO, NUNCA DE LO BUSCADO. Es tentador abrir un
+    # punto de `politica` porque se llamo a `consultar_temas`, y es circular:
+    # si el punto existe porque se busco, entonces una pregunta que NADIE
+    # busco no abre punto, y la omision —que es justo lo que queremos cazar—
+    # se vuelve invisible. El punto nace de lo que el cliente pidio.
+    #
+    # Las cuatro informativas viven en el molde desde la FICHA 06. El tipo
+    # es el campo. No se abre un punto porque se busco: se abre porque se
+    # declaro.
+
+    for i, a in enumerate((declarado.get("atributos") or []), 1):
+        de = str((a or {}).get("de") or "").strip()
+        campo = str((a or {}).get("campo") or "").strip()
+        # UN ATRIBUTO SIN CAMPO NO ES UN PUNTO. "el monitor" no se puede
+        # contestar; "los Hz del monitor" si. Un punto que no se contesta con
+        # un dato concreto infla el denominador y hace BAJAR el porcentaje de
+        # omision sin que nada haya mejorado, que es peor que no medirlo.
+        if not de or not campo:
+            continue
+        fuera.append({"id": f"atributos:{i}", "tipo": "atributos",
+                      "termino": de, "campo": campo,
+                      "texto": f"{campo} de {de}"})
+
+    for i, q in enumerate((declarado.get("stock") or []), 1):
+        q = str(q or "").strip()
+        if q:
+            fuera.append({"id": f"stock:{i}", "tipo": "stock", "termino": q,
+                          "texto": f"si hay stock de {q}"})
+
+    for i, c in enumerate((declarado.get("compatibilidad") or []), 1):
+        que = str((c or {}).get("que") or "").strip()
+        para = str((c or {}).get("para") or "").strip()
+        if not que or not para:
+            continue
+        fuera.append({"id": f"compatibilidad:{i}", "tipo": "compatibilidad",
+                      "termino": f"{que} {para}", "que": que, "para": para,
+                      "texto": f"si {que} sirve para {para}"})
+
+    for i, t in enumerate((declarado.get("temas") or []), 1):
+        t = str(t or "").strip()
+        if t:
+            # El tema viene con guion bajo -`costo_envio`, `garantia`- y el
+            # matcher parte por espacios: sin esto `costo_envio` seria una sola
+            # palabra que no aparece jamas en un mensaje escrito por nadie.
+            fuera.append({"id": f"temas:{i}", "tipo": "temas",
+                          "termino": t.replace("_", " "), "tema": t,
+                          "texto": f"la politica de {t.replace('_', ' ')}"})
+
+    return fuera
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -365,8 +482,7 @@ def tabla(declarado: dict, llamadas: list, bloque: str = "",
     el mensaje: solo aparea lo declarado con lo que trajeron las herramientas.
     """
     if puntos_del_turno is None:
-        from app.core.indice_turno import puntos as _puntos
-        puntos_del_turno = _puntos(declarado or {})
+        puntos_del_turno = puntos(declarado or {})
 
     idx = _clasificar(llamadas)
     campos = _campos_que_pidio_el_turno(declarado or {}, puntos_del_turno)
@@ -466,7 +582,73 @@ ESQUEMA_RESPUESTA = {
 }
 
 
-def armar(respuesta: dict, mesa: dict) -> str:
+
+# ── LAS TRES QUE EL ESQUEMA NO PUEDE GARANTIZAR ────────────────────────────
+#
+# El esquema fija la FORMA: cuantas casillas hay, que cada una tenga su id, que
+# haya una sola pregunta. Lo que NO puede fijar es el contenido de la prosa
+# adentro de cada casilla, y ahi todavia entran tres cosas. Son tres, no
+# cuarenta y seis, y son totales: no dependen de reconocer una redaccion.
+#
+#   1. UN NUMERO DE PLATA que no esta en el bloque sellado ni en el material.
+#      La instruccion dice que no escriba precios; esto lo hace cierto.
+#   2. UN ID INTERNO. `MOU0023` no es una alucinacion pero le rompe la charla
+#      al cliente, y ademas es la forma de que una afirmacion se cuelgue de un
+#      id que el turno nunca trajo.
+#   3. UN PEDAZO DE JSON. El volcado interno filtrado.
+#
+# Se corta la ORACION, no el mensaje: podar de mas deja al bot mudo, y un turno
+# mudo es peor que un turno feo. Si la poda se lleva todo, se deja el texto.
+
+_RE_PLATA = re.compile(r"\$\s*[\d][\d.,]*")
+_RE_ID_INTERNO = re.compile(r"\b[A-Z]{2,4}\d{3,5}\b")
+_RE_JSON = re.compile(r'["\{\[]\s*"[a-z_]+"\s*:|"estado"\s*:|\{\s*"')
+
+
+def _numeros_del_texto(t: str) -> set:
+    return {re.sub(r"[.,]", "", m.group(0).replace("$", "").strip())
+            for m in _RE_PLATA.finditer(t or "")}
+
+
+def _limpiar(texto: str, mesa: dict, trace_id: str = "") -> str:
+    """La casilla del modelo, sin lo que no puede escribir."""
+    texto = (texto or "").strip()
+    if not texto:
+        return ""
+    respaldo = _numeros_del_texto(mesa.get("bloque") or "")
+    respaldo |= _numeros_del_texto(
+        json.dumps(mesa.get("puntos") or [], ensure_ascii=False, default=str))
+    fuera = []
+    for oracion in re.split(r"(?<=[.!?])\s+", texto):
+        motivo = ""
+        sueltos = _numeros_del_texto(oracion) - respaldo
+        if sueltos:
+            motivo = f"plata_sin_respaldo:{sorted(sueltos)[:3]}"
+        elif _RE_ID_INTERNO.search(oracion):
+            motivo = "id_interno"
+        elif _RE_JSON.search(oracion):
+            motivo = "json_filtrado"
+        if motivo:
+            log.warning("casilla_podada", trace_id=trace_id, motivo=motivo,
+                        oracion=oracion[:120])
+            continue
+        fuera.append(oracion)
+    limpio = " ".join(fuera).strip()
+    if not limpio:
+        # LA CASILLA SE VA ENTERA, Y ESTA BIEN. La valvula del sistema viejo
+        # -"si podar se lleva todo, no se poda"- existia porque ahi se podaba el
+        # MENSAJE: cortarlo entero dejaba al bot mudo. Aca se poda UNA casilla y
+        # el mensaje sigue teniendo las otras, el bloque sellado y la pregunta,
+        # asi que vaciarla no enmudece a nadie. Mantener la valvula en este
+        # nivel era peor que no tenerla: una casilla de una sola oracion con un
+        # precio inventado pasaba intacta, que es justo el caso que esto ataja.
+        # La valvula sigue existiendo, una sola vez, al final de `armar`.
+        log.error("casilla_podada_entera", trace_id=trace_id,
+                  texto=texto[:160])
+    return limpio
+
+
+def armar(respuesta: dict, mesa: dict, trace_id: str = "") -> str:
     """El mensaje al cliente, armado desde la tabla llena.
 
     `respuesta` es lo que devolvio el modelo con el esquema de arriba. `mesa` es
@@ -494,7 +676,7 @@ def armar(respuesta: dict, mesa: dict) -> str:
             # cualquier vendedor. Es lo unico que se saca del orden del cliente.
             hay_cuenta = True
             continue
-        texto = dicho.get(pid, "")
+        texto = _limpiar(dicho.get(pid, ""), mesa, trace_id)
         if texto:
             partes.append(texto)
         elif estado in ("sin_material", "pregunta"):
@@ -525,7 +707,14 @@ def armar(respuesta: dict, mesa: dict) -> str:
     if pregunta:
         partes.append(pregunta)
 
-    return "\n\n".join(x for x in partes if x)
+    mensaje = "\n\n".join(x for x in partes if x)
+    # LA VALVULA, UNA SOLA VEZ Y AL FINAL. Si de todo el turno no quedo nada que
+    # decir, el que llama cae al mensaje de demanda: es preferible a mandar un
+    # texto vacio, y el error de arriba ya dejo la marca de por que paso.
+    if not mensaje.strip():
+        log.error("turno_sin_nada_que_decir", trace_id=trace_id,
+                  puntos=len(mesa.get("puntos") or []))
+    return mensaje
 
 
 def _pregunta_del_codigo(fila: dict) -> str:

@@ -147,7 +147,7 @@ async def health():
         # LA VERDAD, no el flag. Hasta el 30-jul esto declaraba
         # "llm_provider: openai" y el modelo de Groq, mientras el turno entero
         # corria en Gemini: el health del sistema mintiendo sobre en que corre.
-        # El turno entero entra por hub_venta._cliente, Gemini.
+        # El turno entero entra por llm_reintento._cliente, Gemini.
         "solver_provider": "gemini",
         "solver_model": settings.GEMINI_MODEL,
         "sentry_enabled": bool(SENTRY_DSN),
@@ -260,11 +260,11 @@ async def diag_latencia(request: Request):
     if (rechazo := _rechazo_admin(request)) is not None:
         return rechazo
 
-    from app.core.hub_venta import _cliente
+    from app.core.llm_reintento import _cliente
     from app.core import herramientas as _H
 
     modelo = settings.GEMINI_MODEL
-    out = {"camino": "herramientas (hub_venta)", "modelo": modelo}
+    out = {"camino": "herramientas (turno)", "modelo": modelo}
     try:
         client = _cliente()
     except Exception as e:

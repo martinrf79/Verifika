@@ -397,7 +397,36 @@ def _llamadas_del_material(material: dict) -> list:
     return llamadas
 
 
+# ── LA CAPA 4 QUEDO SIN MECANISMO QUE MEDIR (3-sep-2026) ──────────────────
+#
+# Sus diez casos estan escritos contra `salida.procedencia` y `salida.plata`, la
+# compuerta de prosa que se apago con el resto de la plomeria, y su campo
+# `texto` viene en el formato viejo, con las etiquetas `<d ID>...</d>` de la
+# atadura. El modelo ya no escribe eso: devuelve la mesa llena.
+#
+# NO SE REESCRIBEN LOS CASOS ACA. Son la vara, y el que implementa no reescribe
+# la vara. Lo que hay que hacer, y lo decide Martin caso por caso:
+#
+#   C4-01 dato que la ficha no tiene    ya no puede nacer: el material sale
+#                                       vacio. Vara nueva en test_tabla.py.
+#   C4-02 plata que no calculo el codigo  cubierto por `_limpiar`, y ademas el
+#                                       modelo no tiene casilla de plata.
+#   C4-09 cuenta retipeada              cubierto: la casilla sellada se ignora.
+#   C4-10 volcado interno               cubierto por `_limpiar`.
+#   C4-07 id que el turno no trajo      cubierto a medias: `_limpiar` corta la
+#                                       oracion con el id, pero una afirmacion
+#                                       SIN id colgada de nada sigue pasando.
+#   C4-03, C4-04, C4-05, C4-06, C4-08   NO estan cubiertos por estructura. Son
+#                                       contenido de la prosa adentro de una
+#                                       casilla, y ahi el esquema no llega.
+#                                       Hay que decidir si se reescriben contra
+#                                       la mesa o si se aceptan como riesgo.
+#
+# Mientras tanto la capa 4 no da un numero: dar uno falso -verde porque no corre,
+# o rojo porque el mecanismo no existe- es peor que decir que falta.
 def _correr_capa4(caso: dict) -> list:
+    return ["MECANISMO APAGADO: el caso mide `salida.procedencia`/`salida.plata`, "
+            "que se fueron a archivo/. Hay que reescribirlo contra la mesa."]
     from app.core import salida as S
     from app.core.contexto_turno import set_current_tienda
     set_current_tienda(TIENDA)

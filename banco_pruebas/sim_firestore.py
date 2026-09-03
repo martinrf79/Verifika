@@ -180,11 +180,11 @@ def install():
     import app.core.calculadora as tools
     for n in ("get_all_products", "get_product_by_id", "get_categories", "get_all_faq"):
         setattr(tools, n, _patches[n])
-    # hub_venta es el camino VIVO y tambien importa los nombres arriba. Antes de
+    # turno es el camino VIVO y tambien importa los nombres arriba. Antes de
     # este parche solo funcionaba de casualidad, porque el banco lo importaba
     # DESPUES de install(); un test que lo importe antes -o el orchestrator, que
     # lo trae al colectar- quedaba clavado al Firestore real.
-    import app.core.hub_venta as hv
+    import app.core.turno as hv
     for n in ("get_conversation", "save_conversation"):
         setattr(hv, n, _patches[n])
     # guia_compra tambien importa los nombres arriba: si alguien lo importo

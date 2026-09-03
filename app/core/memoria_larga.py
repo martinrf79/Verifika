@@ -77,7 +77,7 @@ async def actualizar_resumen(resumen_previo: str, descartados: list[dict],
         # larga estaba rota justo donde mas importa, en la charla larga, y en
         # silencio: el except de abajo la deja en "" y el turno sigue. Es la
         # misma falla que tenia la reescritura de la guardia de promesas.
-        from app.core.hub_venta import _cliente as _cliente_gemini
+        from app.core.llm_reintento import _cliente as _cliente_gemini
         modelo = settings.GEMINI_MODEL or "gemini-3.1-flash-lite"
         kwargs = {"model": modelo,
                   "messages": [{"role": "user", "content": prompt}],

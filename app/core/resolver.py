@@ -23,7 +23,6 @@ a este modulo. `reposicion.py` sale de `app/` en el mismo commit.
 import re
 
 from app.core import herramientas as H
-from app.core import indice_turno as IT
 from app.core import pedido as P
 from app.logger import get_logger
 
@@ -439,7 +438,6 @@ def _aplicar_la_cuenta(llamadas: list, declarado: dict, memoria: list,
     cuando el turno no certifico nada: es la condicion de la FICHA 04
     escrita sin el reclamo del reconciliador.
     """
-    from app.verifika import grafo as G
     decl = dict(declarado or {})
     if _hace_falta_cuenta(decl) and not decl.get("pide_precio"):
         decl = {**decl, "pide_precio": True}
@@ -448,14 +446,14 @@ def _aplicar_la_cuenta(llamadas: list, declarado: dict, memoria: list,
                          for l in llamadas)
     con_memoria = (memoria if (_hace_falta_cuenta(decl) or not certifico_algo)
                    else None)
-    llamadas = G.paso_datos("cuenta_repuesta", _cuenta_con_lo_declarado,
-                            llamadas, decl, tienda_id, trace_id,
-                            memoria=con_memoria)
-    llamadas = G.paso_datos("reparto_repuesto", _reparto_de_pago_declarado,
-                            llamadas, decl, tienda_id, trace_id)
-    llamadas = G.paso_datos("supuesto_de_pago", _supuesto_de_pago,
-                            llamadas, decl, tienda_id, trace_id)
-    return G.paso_datos("bloques_a_uno", _bloques_a_uno, llamadas, trace_id)
+    # LOS CUATRO PASOS, DERECHO. `G.paso_datos` era el envoltorio de medicion
+    # del grafo y RE-LANZABA, o sea que sacarlo no cambia el comportamiento de
+    # ninguno: cambia que ya no se anota en un instrumento que se apago.
+    llamadas = _cuenta_con_lo_declarado(llamadas, decl, tienda_id, trace_id,
+                                        memoria=con_memoria)
+    llamadas = _reparto_de_pago_declarado(llamadas, decl, tienda_id, trace_id)
+    llamadas = _supuesto_de_pago(llamadas, decl, tienda_id, trace_id)
+    return _bloques_a_uno(llamadas, trace_id)
 
 
 # ── COMPLETAR LO DECLARADO DESDE EL MENSAJE ────────────────────────────────
@@ -724,7 +722,6 @@ def resolver(declarado, memoria, tienda_id, trace_id, llamadas=None,
     porque el indice los necesita para no reabrir lo rechazado. Los tres
     son del camino vivo; el contrato de la ficha son los cuatro primeros.
     """
-    from app.verifika import grafo as G
     llamadas = list(llamadas or [])
     declarado = declarado or {}
     # Completa item→ciudad y el articulo que falte LEYENDO el mensaje,
@@ -739,18 +736,17 @@ def resolver(declarado, memoria, tienda_id, trace_id, llamadas=None,
             res = dict(l.get("resultado") or {})
             res["pedido"] = declarado
             l["resultado"] = res
-    llamadas = G.paso_datos("busquedas_derivadas", _derivar_las_busquedas,
-                            llamadas, declarado, memoria or [], tienda_id,
-                            trace_id)
+    # SIN `G.paso_datos` Y SIN `contrato` (3-sep-2026). El envoltorio del grafo
+    # era instrumento, no comportamiento: re-lanzaba, asi que sacarlo no cambia
+    # una linea de lo que pasa. Y el `contrato` lo armaba `indice_turno.cobertura`
+    # midiendo la cobertura contra el MATERIAL para despues pedirle al modelo lo
+    # que faltaba en prosa; eso ahora es la mesa de `tabla.py`, que le da al
+    # modelo la pregunta al lado de su evidencia en vez de un reto al final.
+    llamadas = _derivar_las_busquedas(llamadas, declarado, memoria or [],
+                                      tienda_id, trace_id)
     llamadas = _aplicar_la_cuenta(llamadas, declarado, memoria or [],
                                   tienda_id, trace_id)
-    contrato = IT.cobertura(declarado, _material_del_turno(llamadas),
-                            trace_id, llamadas=llamadas,
-                            memoria=memoria or [],
-                            descartados=descartados or [],
-                            diferida=diferida or [])
-    return {"llamadas": llamadas, "contrato": contrato,
-            "bloque": _bloque_presupuesto(llamadas)}
+    return {"llamadas": llamadas, "bloque": _bloque_presupuesto(llamadas)}
 
 
 # ── PIEZAS MUDADAS DE reposicion.py (FICHA 36) ──

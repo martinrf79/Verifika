@@ -35,7 +35,7 @@ def test_mensaje_normal_no_dispara_reset(monkeypatch, firestore_doble):
     async def _fake_venta(user_id, raw_message, tid, canal, trace_id):
         return "RESPUESTA_DEL_FLUJO"
 
-    monkeypatch.setattr(O, "procesar_venta", _fake_venta)
+    monkeypatch.setattr(O, "procesar_turno", _fake_venta)
     assert _correr("hola tenes mouse?") == "RESPUESTA_DEL_FLUJO"
     # y "nueva compra" (frase natural) tampoco resetea: el bot mantiene continuidad.
     assert _correr("quiero hacer una nueva compra") == "RESPUESTA_DEL_FLUJO"
