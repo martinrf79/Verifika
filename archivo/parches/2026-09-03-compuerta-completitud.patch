@@ -866,5 +866,8 @@ index fa2f669..3291033 100644
 +
 +
  def test_cuantos_turnos_se_probaron():
--    assert len([f for f in globals() if f.startswith("test_")]) == 9
+-    assert len([f for f in globals() if f.startswith("test_")]) == 8
 +    assert len([f for f in globals() if f.startswith("test_")]) == 9
+-- 
+2.43.0
+
