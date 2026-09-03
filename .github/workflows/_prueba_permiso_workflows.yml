@@ -1,0 +1,10 @@
+name: Prueba de permiso de workflows (no corre sola)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  nada:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "solo prueba de permiso"
