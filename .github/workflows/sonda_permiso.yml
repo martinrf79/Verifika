@@ -1,0 +1,14 @@
+name: sonda permiso
+
+# ARCHIVO DE PRUEBA, se borra en el commit siguiente. Existe treinta segundos
+# para contestar una sola pregunta: si esta sesion puede escribir dentro de
+# .github/workflows/. No corre solo: unicamente a mano.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  nada:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "sonda"
