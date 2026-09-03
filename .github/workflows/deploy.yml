@@ -21,6 +21,9 @@ on:
       - 'banco_pruebas/**'
       - 'reserva/**'
       - 'archivo/**'
+      # El nocturno no entra a la imagen. Sin esta linea, arreglar calidad.yml
+      # rebuilda el bot sin tocar app/, el mismo desperdicio que el banco.
+      - '.github/workflows/calidad.yml'
   workflow_dispatch:
 
 jobs:

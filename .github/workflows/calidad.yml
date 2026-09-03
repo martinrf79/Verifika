@@ -9,12 +9,10 @@ name: calidad
 # sin_invento- cae mas de 5 puntos, el script sale con codigo 1 y la corrida
 # queda en rojo.
 #
-# POR QUE ASI Y NO CON DEEPEVAL. Hasta el 1-ago esto corria banco_deepeval.py,
-# que media el flujo atado (interprete + solver por fragmentos). Ese camino se
-# borro entero con el cambio de arquitectura a hub_venta, el runner se fue con
-# el, y el nocturno quedo cuatro noches en rojo llamando a un archivo que ya no
-# existe. La medicion de calidad hoy vive en banco_repetido + piso: una sola
-# compuerta, sobre el codigo que de verdad corre.
+# El turno vivo es `app.core.turno`. El 3-sep el nocturno quedo rojo en 23
+# segundos porque el espia todavia importaba `hub_venta` (apagado) y el paso
+# del mapa pedia un test ya archivado. Una sola compuerta, sobre el codigo
+# que de verdad corre.
 #
 # NO corre en cada push: llama al modelo VIVO. Se dispara a mano
 # (workflow_dispatch) y una vez por noche (schedule). Necesita el secreto
@@ -37,9 +35,9 @@ on:
 jobs:
   compuerta:
     runs-on: ubuntu-latest
-    # 90 y no 60: el candado del mapa sumo su segunda pasada -la bateria entera
-    # bajo cobertura, que es lo que saco 43 funciones de la zona ciega- y con
-    # los tres pasos juntos el nocturno roza los 60.
+    # 90 y no 60: el set del piso son 78 turnos con pausa de 10s por el tier
+    # gratis, mas el explorador. El candado del mapa se apago con el hub
+    # (`archivo/tests_apagados/test_mapa.py`); no se revive aca.
     timeout-minutes: 90
     env:
       # Clave GRATIS de Gemini a proposito: el nocturno corre el set del piso (8
@@ -71,13 +69,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest coverage pytest-asyncio==1.4.0
 
       # LA COMPUERTA VA PRIMERA. Estuvo tercera hasta el 13-ago y ese orden se
-      # pago: el candado del mapa se puso rojo, el paso de la compuerta quedo
-      # SKIPPED, y tres noches seguidas nadie midio si el bot contestaba peor.
-      # Un candado de cobertura no puede tapar la medicion de calidad, que es
-      # la prioridad uno. Ahora la compuerta corre siempre y primero.
+      # pago: un candado de cobertura se puso rojo, el paso de la compuerta
+      # quedo SKIPPED, y tres noches seguidas nadie midio si el bot contestaba
+      # peor. Un candado de cobertura no puede tapar la medicion de calidad.
       #
       # Los inputs viajan por env y NO interpolados en la linea de comando: son
       # texto libre de quien dispara el workflow, y ahi se inyecta cualquier cosa.
@@ -86,17 +82,6 @@ jobs:
           GUIONES: ${{ github.event.inputs.guiones }}
           VUELTAS: ${{ github.event.inputs.vueltas || '3' }}
         run: python3 banco_pruebas/banco_repetido.py "$VUELTAS" $GUIONES
-
-      # EL CANDADO DEL MAPA VIVE ACA, no en el push. Mide las 40 y las 10
-      # charlas bajo cobertura y en un proceso aparte: son minutos, no segundos.
-      # El 6-ago corriendo en cada push dejo la corrida de deploy CANCELADA a
-      # los 15 minutos, con el deploy en skipped, y el arreglo de la cuenta
-      # nunca llego a produccion. Un candado que frena el deploy no protege.
-      # `if: always()`: corre aunque la compuerta haya salido en rojo, asi las
-      # dos medidas del nocturno salen en el mismo log y no se tapan entre si.
-      - name: El candado del mapa, la zona ciega no crece
-        if: always()
-        run: pytest tests/test_mapa.py -m lento -q -p no:randomly
 
       # EL EXPLORADOR, y va DESPUES de la compuerta a proposito: la compuerta
       # es la que puede poner la corrida en rojo, y el explorador no juzga

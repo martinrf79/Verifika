@@ -18,8 +18,9 @@ cliente ve en WhatsApp.
 QUE JUZGA, en tres capas, de la mas dura a la mas blanda:
   1. el JUEZ de invariantes (`juez.py`): stock contradicho, promesa prohibida,
      narracion interna, marcador sin estampar.
-  2. los CANDADOS del hub, leidos del log del turno: plata inventada, cuenta
-     retipeada, cobro inventado, JSON filtrado, herramientas recortadas.
+  2. los CANDADOS del turno, leidos del log: herramientas recortadas, respuesta
+     que no es la mesa. Las puertas de salida se apagaron: plata inventada,
+     cuenta retipeada y JSON filtrado ya no tienen casilla ni evento.
   3. las EXPECTATIVAS del guion (`> contiene:` / `> no_contiene:`).
 
 Uso:
@@ -51,29 +52,32 @@ GUIONES = Path(__file__).resolve().parent / "guiones"
 CORRIDAS = Path(__file__).resolve().parent / "corridas"
 PAUSA_S = float(os.getenv("BANCO_PAUSA_S", "2"))
 
-# Los candados del hub. Si alguno dispara, el turno tuvo que ser corregido por
-# el codigo: no es un fallo del cliente, pero SI es una senal de que el modelo
-# se salio del carril. Se cuentan aparte de los errores duros.
+# Candados que TODAVIA emite el camino vivo (`app.core.turno`). Si alguno
+# dispara, el codigo tuvo que intervenir: no es un fallo del cliente, pero SI
+# es una senal de que el modelo se salio del carril. Se cuentan aparte de los
+# errores duros. Los cinco que vivian en las puertas de salida
+# (plata inventada, cuenta retipeada, cobro inventado, JSON filtrado, bloque
+# repuesto) no tienen equivalente: el modelo ya no escribe prosa libre ni
+# numeros de plata. Un mapa honesto y corto, no eventos inventados.
 _CANDADOS = {
-    "hub_venta_plata_inventada": "plata inventada",
-    "hub_venta_cuenta_retipeada": "cuenta retipeada",
-    "hub_venta_cobro_inventado": "cobro inventado",
-    "hub_venta_json_filtrado": "json filtrado",
-    "hub_venta_bloque_repuesto": "bloque repuesto",
-    "hub_venta_pedidos_recortados": "herramientas recortadas",
+    "turno_pedidos_recortados": "herramientas recortadas",
+    "turno_respuesta_no_es_la_mesa": "respuesta no es la mesa",
 }
 
 
 class _Espia:
     """Escucha los eventos del turno sin tocar el codigo vivo. Los candados no
-    se deducen del texto: se leen del log que ya emite el hub."""
+    se deducen del texto: se leen del log que ya emite `turno.py`."""
 
     def __init__(self):
         self.eventos: list[str] = []
+        self._mod = None
+        self._log = None
 
     def __enter__(self):
-        from app.core import hub_venta as HV
-        self._log = HV.log
+        from app.core import turno as T
+        self._mod = T
+        self._log = T.log
         espia = self
 
         class _Proxy:
@@ -85,12 +89,12 @@ class _Espia:
                         espia.eventos.append(str(evento))
                     return real(evento, **kw) if evento else real(**kw)
                 return _cap
-        HV.log = _Proxy()
+        T.log = _Proxy()
         return self
 
     def __exit__(self, *a):
-        from app.core import hub_venta as HV
-        HV.log = self._log
+        if self._mod is not None:
+            self._mod.log = self._log
         return False
 
     def candados(self) -> list[str]:
