@@ -93,7 +93,7 @@ def _falla(regla, detalle):
     return {"regla": regla, "detalle": detalle}
 
 
-# ── LOS INVARIANTES ───────────────────────────────────────────────────────
+# ── LOS INVARIANTES ─────────────────────────────────────────────────────────
 def cuenta_cierra(mensaje: str) -> list:
     """La aritmetica de la cuenta, que es la unica plata que el cliente ve.
 
@@ -346,7 +346,7 @@ def productos_del_catalogo(mensaje: str, vocabulario: set) -> list:
     return fallas
 
 
-# ── LA PUERTA ────────────────────────────────────────────────────────────
+# ── LA PUERTA ───────────────────────────────────────────────────────────────
 TODOS = (
     "cuenta_cierra",
     "lo_cobrado_es_lo_facturado",
