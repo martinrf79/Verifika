@@ -1,5 +1,10 @@
 # Agente Multi-Canal v4
 
+> **PUERTA ÚNICA: el bloque 0 de `CLAUDE.md`.** Cualquier sesión —de cualquier
+> modelo— entra por ahí antes de tocar nada. Este README explica el producto y
+> el alta de clientes; **no** dice cómo se trabaja ni dónde está parado el
+> sistema. Si algo de acá contradice al bloque 0, gana el bloque 0.
+
 Bot de ventas conversacional para WhatsApp y Telegram.
 Multi-tenant (cada cliente trae sus propias credenciales de Meta).
 Sentry, idempotencia y health por tienda integrados.
