@@ -345,12 +345,114 @@ def test_una_sola_pregunta_por_mensaje():
     assert salida.count("?") == 1, salida
 
 
+# ══════════════════════════════════════════════════════════════════════
+# LA COMPUERTA DE COMPLETITUD (3-sep-2026)
+#
+# Los cinco de abajo son la vara de la unica compuerta que queda, y cubren sus
+# dos mitades: que un punto abierto se PREGUNTE aunque el modelo haya escrito
+# encima, y que una casilla sin material no pueda traer un DATO.
+#
+# Medido en vivo la noche del 3-sep, turnos tg_524215778 y tg_524215783: la
+# mesa dijo que quedaban puntos sin contestar, el mensaje salio igual y el log
+# dijo `turno_ok`. La medicion existia y no gobernaba nada.
+# ══════════════════════════════════════════════════════════════════════
+
+def test_un_punto_abierto_se_pregunta_aunque_el_modelo_escriba_encima():
+    """La falla que despachaba turnos incompletos: bastaba con que el modelo
+    escribiera CUALQUIER cosa en la casilla para que el punto se diera por
+    contestado. El texto honesto sale, pero el punto sigue abierto."""
+    mesa = {"puntos": [
+        {"id": "atributos:1", "pregunto": "dpi de el mouse",
+         "estado": "sin_material", "material": []}]}
+    resp = {"puntos": [{"id": "atributos:1",
+                        "texto": "No tengo ese dato a mano."}]}
+    salida = TB.armar(resp, mesa)
+    assert "No tengo ese dato a mano." in salida, salida
+    assert salida.strip().endswith("?"), f"no termino preguntando:\n{salida}"
+    assert salida.count("?") == 1, salida
+
+
+def test_la_pregunta_del_modelo_que_no_habla_del_punto_abierto_se_reemplaza():
+    """`pregunta_final` le ganaba SIEMPRE a la del codigo, asi que una pregunta
+    de venta cualquiera tapaba el punto que faltaba. Una pregunta que no habla
+    de lo que falta no cierra el hueco."""
+    mesa = {"puntos": [
+        {"id": "stock:1", "pregunto": "si hay stock de una heladera",
+         "termino": "una heladera", "estado": "sin_material", "material": []}]}
+    salida = TB.armar({"puntos": [], "pregunta_final": "Te lo armo?"}, mesa)
+    assert "Te lo armo?" not in salida, salida
+    assert "heladera" in salida.lower(), salida
+    assert salida.count("?") == 1, salida
+
+
+def test_la_pregunta_del_modelo_que_si_habla_del_punto_abierto_se_conserva():
+    """La otra cara, y es la que evita que el codigo pise una pregunta MEJOR:
+    si el modelo pregunto por el punto abierto, esa queda. El puente es por
+    palabras, el mismo de `_pega`: no hay que entender castellano."""
+    mesa = {"puntos": [
+        {"id": "stock:1", "pregunto": "si hay stock de una heladera",
+         "termino": "una heladera", "estado": "sin_material", "material": []}]}
+    salida = TB.armar(
+        {"puntos": [], "pregunta_final": "De que heladera me hablas?"}, mesa)
+    assert "De que heladera me hablas?" in salida, salida
+    assert salida.count("?") == 1, salida
+
+
+def test_una_contradiccion_se_pregunta_aunque_el_modelo_la_conteste():
+    """Regla cero: resolver una contradiccion es elegir por el cliente. La mesa
+    ya la marcaba `pregunta` y el armado la daba por cerrada si el modelo
+    escribia algo. Es el teclado de $12.000 del turno 2dde2ad0."""
+    mesa = {"puntos": [
+        {"id": "contradicciones:1",
+         "pregunto": "pediste 6 articulos y nombraste 7 en el envio",
+         "estado": "pregunta", "material": []}]}
+    resp = {"puntos": [{"id": "contradicciones:1",
+                        "texto": "Lo dejo como vos dijiste."}],
+            "pregunta_final": "Arrancamos?"}
+    salida = TB.armar(resp, mesa)
+    assert "Arrancamos?" not in salida, salida
+    assert "articulos" in salida.lower(), salida
+    assert salida.count("?") == 1, salida
+
+
+def test_una_casilla_sin_material_no_puede_traer_un_numero():
+    """La mitad "no inventes". Es el caso C4-01: la ficha no tiene los DPI, el
+    material sale vacio, y el modelo igual escribe un numero con pinta de spec.
+    No lleva signo pesos, no es un id y no es JSON, asi que las tres
+    comprobaciones viejas lo dejaban pasar entero."""
+    mesa = {"puntos": [
+        {"id": "atributos:1", "pregunto": "dpi de el mouse",
+         "estado": "sin_material", "material": []}]}
+    resp = {"puntos": [{"id": "atributos:1",
+                        "texto": "El mouse tiene 8000 DPI."}]}
+    salida = TB.armar(resp, mesa)
+    assert "8000" not in salida, salida
+    assert salida.strip().endswith("?"), salida
+
+
+def test_el_informe_dice_que_quedo_abierto_y_que_se_salteo():
+    """Lo que hace que el turno deje de loguearse como correcto: `armar` no
+    decide sola que hacer con eso, lo DECLARA, y `turno.py` lo loguea."""
+    mesa = {"puntos": [
+        {"id": "items:1", "pregunto": "1 mouse", "estado": "con_material",
+         "material": [{"id": "MOU0023"}]},
+        {"id": "stock:1", "pregunto": "si hay stock de una heladera",
+         "estado": "sin_material", "material": []}]}
+    informe: dict = {}
+    TB.armar({"puntos": []}, mesa, "t-informe", informe)
+    assert informe["abiertos"] == ["stock:1"], informe
+    assert informe["salteados"] == ["items:1"], informe
+    assert informe["pregunto"] is True, informe
+
+
 MOLDES = [
     ("contradicciones:1", "pediste 2 mouse y nombraste 3 destinos"),
     ("restricciones:1", "que le dure años"),
     ("atributos:1", "cancelacion de ruido de los HyperX"),
     ("stock:1", "si hay stock de una heladera"),
     ("temas:1", "la politica de cambios"),
+    ("pide_precio:1", "el precio de lo que pidio"),
+    ("reparto_pago:1", "reparto del pago 70/30"),
 ]
 
 
@@ -367,7 +469,7 @@ def test_la_pregunta_del_codigo_sale_legible(pid, que):
 
 
 def test_cuantos_moldes_de_pregunta_se_probaron():
-    assert len(MOLDES) == 5, f"se probaron {len(MOLDES)}, esperaba 5"
+    assert len(MOLDES) == 7, f"se probaron {len(MOLDES)}, esperaba 7"
 
 
 def test_la_cuenta_va_al_final_y_antes_de_la_pregunta(firestore_doble):

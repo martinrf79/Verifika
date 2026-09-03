@@ -145,6 +145,13 @@ def get_all_products(force_refresh: bool = False, tienda_id: str | None = None) 
     except Exception as e:
         log.warning("catalog_enriquecer_failed", tienda_id=tid, error=str(e)[:150])
 
+    if not productos:
+        # UNA LECTURA VACIA NO SE CACHEA. Ver `get_all_faq`: es la misma linea
+        # y la misma media hora de silencio.
+        log.error("catalogo_vacio_en_firestore", tienda_id=tid,
+                  ruta=f"tiendas/{tid}/productos")
+        return []
+
     _catalog_cache[tid] = productos
     _catalog_cache_ts[tid] = now
     log.info("catalog_loaded_from_firestore", tienda_id=tid, count=len(productos))
@@ -279,6 +286,23 @@ def invalidate_cache(tienda_id: str | None = None):
 
 
 def get_all_faq(force_refresh: bool = False, tienda_id: str | None = None) -> dict:
+    """La FAQ de la tienda. Una lectura VACIA no se cachea y se grita.
+
+    LA MEDIA HORA MUDA DEL 25-AGO, y es la unica linea que quedaba de la
+    familia. Firestore no falla cuando se lee una ruta que no existe: devuelve
+    cero documentos, sin excepcion y sin aviso. Si `tid` no es la tienda que
+    esta cargada -y el 25-ago quedo el default `tienda_principal` colgando
+    despues de sacar los defaults-, `tiendas/<tid>/faq` no existe, la funcion
+    devolvia un diccionario vacio, LO CACHEABA UNA HORA, y el bot se quedaba
+    contestando que no tiene politica sobre nada. Los cincuenta temas estaban
+    en la base; el turno leia de una ruta que no.
+
+    Dos cosas cambian y las dos son de una linea. La primera: un vacio no entra
+    al cache, asi que el proximo turno vuelve a preguntarle a Firestore en vez
+    de repetir el silencio durante una hora. La segunda: sale como ERROR con la
+    ruta que se leyo, que es lo unico que hacia falta para verlo desde afuera.
+    Una tienda sin un solo tema no es un estado valido: es la ruta equivocada.
+    """
     global _faq_cache, _faq_cache_ts
     tid = tienda_id or settings.TIENDA_ID
     now = time.time()
@@ -290,8 +314,14 @@ def get_all_faq(force_refresh: bool = False, tienda_id: str | None = None) -> di
     for doc in docs:
         faq[doc.id] = doc.to_dict()
 
+    if not faq:
+        log.error("faq_vacia_en_firestore", tienda_id=tid,
+                  ruta=f"tiendas/{tid}/faq")
+        return {}
+
     _faq_cache[tid] = faq
     _faq_cache_ts[tid] = now
+    log.info("faq_loaded_from_firestore", tienda_id=tid, count=len(faq))
     return faq
 
 

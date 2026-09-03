@@ -617,6 +617,10 @@ _RE_PLATA = re.compile(r"\$\s*[\d][\d.,]*")
 # producto, que es justo lo que el cliente tiene que leer.
 _RE_ID_INTERNO = re.compile(r"\b[A-Z]{3}\d{4}\b")
 _RE_JSON = re.compile(r'["\{\[]\s*"[a-z_]+"\s*:|"estado"\s*:|\{\s*"')
+# CUALQUIER NUMERO, no solo el de plata. Solo se mira en las casillas que NO
+# tienen material, y ahi es total: una fila sin material no tiene de donde
+# sacar una cifra, asi que toda cifra que aparezca la puso el modelo.
+_RE_NUMERO = re.compile(r"\b\d[\d.,]*\b")
 
 
 def _numeros_del_texto(t: str) -> set:
@@ -624,14 +628,36 @@ def _numeros_del_texto(t: str) -> set:
             for m in _RE_PLATA.finditer(t or "")}
 
 
-def _limpiar(texto: str, mesa: dict, trace_id: str = "") -> str:
-    """La casilla del modelo, sin lo que no puede escribir."""
+def _numeros_sueltos(t: str) -> set:
+    return {re.sub(r"[.,]", "", m.group(0)) for m in _RE_NUMERO.finditer(t or "")}
+
+
+def _limpiar(texto: str, mesa: dict, trace_id: str = "",
+             fila: dict | None = None) -> str:
+    """La casilla del modelo, sin lo que no puede escribir.
+
+    LA CUARTA COMPROBACION, y es la mitad "no inventes" de la compuerta de
+    completitud: si la fila NO TRAE MATERIAL, la casilla no puede traer un
+    dato. Hasta hoy se miraban tres cosas -plata sin respaldo, id interno,
+    JSON- y las tres pasan por encima de una casilla `sin_material` que
+    conteste "tiene 8000 DPI": el numero no lleva signo pesos, no es un id y
+    no es JSON, asi que salia intacto. Es el caso C4-01 de los casos de oro y
+    la razon por la que la capa 4 medía 4 de 10.
+
+    La regla es TOTAL y no depende de reconocer una redaccion: sobre una fila
+    sin material, toda cifra que no este en la mesa -ni en lo que pregunto el
+    cliente, ni en el material de otra fila, ni en el bloque sellado- se cae
+    con su oracion. Una fila sin material no tiene de donde sacar una cifra.
+    """
     texto = (texto or "").strip()
     if not texto:
         return ""
     respaldo = _numeros_del_texto(mesa.get("bloque") or "")
     respaldo |= _numeros_del_texto(
         json.dumps(mesa.get("puntos") or [], ensure_ascii=False, default=str))
+    sin_material = fila is not None and not (fila.get("material") or [])
+    datos = (_numeros_sueltos(json.dumps(mesa, ensure_ascii=False, default=str))
+             if sin_material else set())
     fuera = []
     for oracion in re.split(r"(?<=[.!?])\s+", texto):
         motivo = ""
@@ -642,6 +668,10 @@ def _limpiar(texto: str, mesa: dict, trace_id: str = "") -> str:
             motivo = "id_interno"
         elif _RE_JSON.search(oracion):
             motivo = "json_filtrado"
+        elif sin_material:
+            inventados = _numeros_sueltos(oracion) - datos
+            if inventados:
+                motivo = f"dato_sin_material:{sorted(inventados)[:3]}"
         if motivo:
             log.warning("casilla_podada", trace_id=trace_id, motivo=motivo,
                         oracion=oracion[:120])
@@ -662,13 +692,50 @@ def _limpiar(texto: str, mesa: dict, trace_id: str = "") -> str:
     return limpio
 
 
-def armar(respuesta: dict, mesa: dict, trace_id: str = "") -> str:
+def _pregunta_por(pregunta: str, fila: dict) -> bool:
+    """Si la pregunta que escribio el modelo habla del punto que quedo abierto.
+
+    NO ES ENTENDER CASTELLANO, y por eso se puede confiar: alcanza con que
+    comparta una palabra con lo que el cliente pidio en esa fila. Es el mismo
+    puente por palabras que `_pega` ya usa para aparear pregunta y evidencia.
+
+    Existe porque la `pregunta_final` del modelo le ganaba SIEMPRE a la del
+    codigo: un turno con un punto sin contestar salia con la pregunta de venta
+    que al modelo se le ocurriera -"te lo armo?"- y el punto abierto quedaba
+    tapado. Una pregunta que no habla de lo que falta no cierra el hueco.
+    """
+    if not pregunta:
+        return False
+    del_punto = (_palabras(fila.get("pregunto")) | _palabras(fila.get("termino"))) - _VACIAS
+    return bool(del_punto and (_palabras(pregunta) & del_punto))
+
+
+def armar(respuesta: dict, mesa: dict, trace_id: str = "",
+          informe: dict | None = None) -> str:
     """El mensaje al cliente, armado desde la tabla llena.
 
     `respuesta` es lo que devolvio el modelo con el esquema de arriba. `mesa` es
     lo que devolvio `tabla()`. El orden manda la mesa, no la respuesta: si el
     modelo devolvio los puntos en otro orden, se reordenan; si se salteo uno,
     se ve.
+
+    `informe`, si viene, se llena con lo que la compuerta vio: los puntos que
+    quedaron ABIERTOS, los que el modelo salteo teniendo material, y si el
+    turno salio con pregunta. Es lo que hace que el turno deje de loguearse
+    como correcto cuando no lo es.
+
+    ── LA COMPUERTA DE COMPLETITUD ──────────────────────────────────────────
+    El estado de la fila MANDA sobre lo que escribio el modelo. Hasta hoy una
+    fila `sin_material` o `pregunta` solo contaba como abierta si la casilla
+    volvia VACIA: si el modelo escribia cualquier cosa encima, la fila se daba
+    por contestada y el turno se despachaba entero. O sea que la mesa medía
+    bien lo que faltaba y despues nadie usaba esa medicion.
+
+    Medido en vivo el 3-sep, turnos tg_524215778 y tg_524215783: la mesa dijo
+    que quedaban puntos sin contestar, el mensaje salio igual, y el log dijo
+    `turno_ok`. Ahora una fila abierta es abierta aunque el modelo haya escrito
+    encima: su texto sale si es honesto, pero el turno TERMINA PREGUNTANDO por
+    ella. Una sola pregunta por turno, la del primer punto abierto.
     """
     dicho = {str(p.get("id")): str(p.get("texto") or "").strip()
              for p in (respuesta.get("puntos") or []) if isinstance(p, dict)}
@@ -678,6 +745,7 @@ def armar(respuesta: dict, mesa: dict, trace_id: str = "") -> str:
         partes.append(ap)
 
     sin_contestar = []
+    salteados = []
     hay_cuenta = False
     for fila in mesa.get("puntos") or []:
         pid, estado = fila.get("id"), fila.get("estado")
@@ -690,12 +758,18 @@ def armar(respuesta: dict, mesa: dict, trace_id: str = "") -> str:
             # cualquier vendedor. Es lo unico que se saca del orden del cliente.
             hay_cuenta = True
             continue
-        texto = _limpiar(dicho.get(pid, ""), mesa, trace_id)
-        if texto:
-            partes.append(texto)
-        elif estado in ("sin_material", "pregunta"):
+        texto = _limpiar(dicho.get(pid, ""), mesa, trace_id, fila)
+        if estado in ("sin_material", "pregunta"):
+            # ABIERTA AUNQUE EL MODELO HAYA ESCRITO. Su texto sale -decir "no
+            # tengo ese dato" es lo correcto- pero no cierra el punto: la
+            # compuerta de abajo se asegura de que el turno pregunte por el.
             sin_contestar.append(fila)
+            if texto:
+                partes.append(texto)
+        elif texto:
+            partes.append(texto)
         else:
+            salteados.append(fila)
             # EL MODELO SE SALTEO UN PUNTO QUE SI TENIA CON QUE CONTESTAR, y eso
             # NO se tapa con una pregunta al cliente: preguntarle por algo que
             # el sistema sabia contestar es peor que no decirlo, porque lo hace
@@ -710,16 +784,27 @@ def armar(respuesta: dict, mesa: dict, trace_id: str = "") -> str:
         partes.append(mesa["bloque"].strip())
 
     pregunta = str(respuesta.get("pregunta_final") or "").strip()
-    if not pregunta and sin_contestar:
+    if sin_contestar and not _pregunta_por(pregunta, sin_contestar[0]):
         # EL CODIGO NO REDACTA, PERO NO DEJA UN HUECO MUDO. Si el modelo no
         # pregunto por lo que quedo sin contestar, la escribe el codigo. Y la
         # escribe SEGUN EL TIPO, no pegando el renglon crudo: pegado quedaba
         # "Una cosa para no equivocarme: que no sea caro, me lo confirmas?",
         # que es exactamente el riesgo de que el codigo arme prosa. Una sola
         # pregunta, la del primer punto que quedo abierto.
+        #
+        # LA CONDICION CAMBIO EL 3-SEP y es la mitad "no despaches" de la
+        # compuerta: antes bastaba con que el modelo escribiera CUALQUIER
+        # pregunta para que el punto abierto quedara sin preguntar. Ahora su
+        # pregunta se conserva solo si habla del punto; si no, la reemplaza la
+        # del codigo. Sigue habiendo UNA sola pregunta por turno.
         pregunta = _pregunta_del_codigo(sin_contestar[0])
     if pregunta:
         partes.append(pregunta)
+
+    if isinstance(informe, dict):
+        informe["abiertos"] = [f.get("id") for f in sin_contestar]
+        informe["salteados"] = [f.get("id") for f in salteados]
+        informe["pregunto"] = bool(pregunta)
 
     mensaje = "\n\n".join(x for x in partes if x)
     # LA VALVULA, UNA SOLA VEZ Y AL FINAL. Si de todo el turno no quedo nada que
@@ -768,4 +853,16 @@ def _pregunta_del_codigo(fila: dict) -> str:
         cosa = que[len("si hay stock de "):] if que.startswith("si hay stock de ") else que
         return (f"De {cosa} no llegue a confirmarte el stock. "
                 f"Me decis la marca o el modelo y lo busco?")
+    # LOS DOS MOLDES DE PLATA (3-sep-2026). Estos dos puntos se abren `sellado`
+    # cuando hay cuenta y `sin_material` cuando no la hay, asi que desde que la
+    # compuerta pregunta por todo punto abierto pasaron a caer aca seguido. Con
+    # el molde generico salia "Sobre el precio de lo que pidio no tengo el dato
+    # confirmado", que le echa al catalogo la culpa de algo que en realidad es
+    # que todavia no se sabe QUE cotizar.
+    if tipo == "pide_precio":
+        return ("Para pasarte el precio me falta cerrar cual y cuantos. "
+                "Me lo confirmas y te lo armo?")
+    if tipo == "reparto_pago":
+        return ("Del reparto del pago todavia no tengo el total armado. "
+                "Cerramos el pedido y te lo divido?")
     return f"Sobre {que} no tengo el dato confirmado. Me lo precisas un poco?"

@@ -22,9 +22,18 @@ no toca produccion, no gasta una llamada al modelo: los invariantes son
 aritmetica y texto. No necesita clave de LLM, ni la gratis ni la paga.
 
 USO:
-    python3 banco_pruebas/produccion.py              # las ultimas 20 charlas
+    python3 banco_pruebas/produccion.py --desde 18h   # solo lo NUEVO
     python3 banco_pruebas/produccion.py --limite 50
     python3 banco_pruebas/produccion.py --usuario 5493547504287
+
+LA VENTANA ES LO QUE HACE COMPARABLE EL NUMERO (3-sep-2026). Sin `--desde`
+esto pide una pagina de conversaciones y Firestore la devuelve por orden de
+NOMBRE, o sea siempre las mismas charlas viejas, y el denominador de "defectos
+por charla" termina siendo `--limite`. Medido: el mismo estado del bot dio 0,8
+y 0,20 en dos corridas sin que cambiara un solo defecto. Con `--desde` se
+recorren todas las paginas y se auditan solo las charlas tocadas dentro de la
+ventana: el denominador pasa a ser una cantidad del mundo y dos corridas con la
+misma ventana se pueden comparar.
 
 CREDENCIAL: la env `GCP_SA_KEY_B64`, que trae la clave de `claude-lector`
 (logging.viewer + datastore.viewer). Sin ella el script avisa y sale sin error,
@@ -40,10 +49,12 @@ import argparse
 import base64
 import json
 import os
+import re
 import sys
 import time
 import urllib.parse
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 
 _RAIZ = Path(__file__).resolve().parent.parent
@@ -123,26 +134,99 @@ def _respuestas_del_bot(doc: dict) -> list:
     return salida
 
 
-def charlas(tok: str, limite: int = 20, usuario: str = "") -> list:
-    """[(user_id, [respuestas])] de las conversaciones vivas."""
+def ventana_a_segundos(txt: str) -> int:
+    """`18h`, `2d`, `30m` a segundos. Cero si no se entiende o viene vacio."""
+    m = re.fullmatch(r"(\d+)\s*([smhd])", (txt or "").strip().lower())
+    if not m:
+        return 0
+    return int(m.group(1)) * {"s": 1, "m": 60, "h": 3600, "d": 86400}[m.group(2)]
+
+
+def _cuando(doc: dict) -> float:
+    """El `updateTime` del documento, en epoch. Cero si no vino."""
+    t = str(doc.get("updateTime") or "").strip()
+    if not t:
+        return 0.0
+    # Firestore manda NANOsegundos y `fromisoformat` solo aguanta micro. La
+    # fraccion se tira entera: la ventana mas corta que se pide son minutos.
+    t = re.sub(r"\.\d+", "", t).replace("Z", "+00:00")
+    try:
+        return datetime.fromisoformat(t).timestamp()
+    except ValueError:
+        return 0.0
+
+
+def charlas(tok: str, limite: int = 20, usuario: str = "",
+            desde_s: int = 0) -> tuple:
+    """`([(user_id, [respuestas])], meta)` de las conversaciones vivas.
+
+    LA VENTANA, Y ES LA MITAD DEL INSTRUMENTO (3-sep-2026). Sin ella esta
+    funcion pedia UNA pagina de `pageSize=limite` y Firestore la devuelve en
+    orden de NOMBRE de documento, o sea siempre las mismas charlas viejas. Dos
+    consecuencias, las dos medidas: el puente re-auditaba las mismas cinco
+    charlas corrida tras corrida, y como el denominador de "defectos por
+    charla" era `limite`, el numero se movia entre 0,8 y 0,20 sin que cambiara
+    UN SOLO defecto. Un instrumento cuyo numero depende de cuanto le pedis no
+    mide nada.
+
+    Con `desde_s` se recorren TODAS las paginas y se queda solo lo que se toco
+    dentro de la ventana. Ahi el denominador pasa a ser "las charlas que hubo
+    en la ventana", que es una cantidad del mundo y no del pedido, y dos
+    corridas con la misma ventana se pueden comparar.
+
+    `limite` deja de elegir el conjunto y queda como tope de seguridad.
+    """
     if usuario:
         doc = _get(f"{_BASE}/tiendas/{TIENDA}/conversaciones/{usuario}", tok)
-        return [(usuario, _respuestas_del_bot(doc))]
-    url = (f"{_BASE}/tiendas/{TIENDA}/conversaciones"
-           f"?pageSize={max(1, min(int(limite), 300))}")
-    datos = _get(url, tok)
-    out = []
-    for doc in datos.get("documents", []) or []:
-        uid = str(doc.get("name", "")).rsplit("/", 1)[-1]
-        out.append((uid, _respuestas_del_bot(doc)))
-    return out
+        return ([(usuario, _respuestas_del_bot(doc))],
+                {"ventana_s": 0, "vistas": 1, "usuario": usuario})
+
+    tope = max(1, min(int(limite), 300))
+    corte = (time.time() - desde_s) if desde_s else 0
+    out, vistas, token = [], 0, ""
+    while True:
+        url = (f"{_BASE}/tiendas/{TIENDA}/conversaciones"
+               f"?pageSize={300 if desde_s else tope}")
+        if token:
+            url += f"&pageToken={urllib.parse.quote(token)}"
+        datos = _get(url, tok)
+        for doc in datos.get("documents", []) or []:
+            vistas += 1
+            if corte and _cuando(doc) < corte:
+                continue
+            uid = str(doc.get("name", "")).rsplit("/", 1)[-1]
+            out.append((uid, _respuestas_del_bot(doc)))
+            if len(out) >= tope:
+                break
+        token = datos.get("nextPageToken") or ""
+        if len(out) >= tope or not token or not desde_s:
+            break
+    return out, {"ventana_s": desde_s, "vistas": vistas, "usuario": ""}
 
 
 # ── EL INFORME ──────────────────────────────────────────────────────────────
-def informe(revisadas: list) -> str:
+def informe(revisadas: list, meta: dict | None = None) -> str:
+    meta = meta or {}
     lineas = ["", "=" * 78,
               "PRODUCCION COMO BANCO — los invariantes sobre las charlas REALES",
               "=" * 78, ""]
+    # QUE CONJUNTO SE MIDIO, ARRIBA DE TODO. Un numero sin su denominador se
+    # compara con el de la corrida anterior y no significa nada.
+    if meta.get("usuario"):
+        lineas += [f"CONJUNTO: la charla {meta['usuario']}, sola.", ""]
+    elif meta.get("ventana_s"):
+        horas = meta["ventana_s"] / 3600
+        lineas += [f"VENTANA: las ultimas {horas:.0f} horas. "
+                   f"Se miraron {meta.get('vistas', 0)} charlas y entraron "
+                   f"{len(revisadas)}.",
+                   "Dos corridas con la MISMA ventana se comparan; con "
+                   "ventanas distintas, no.", ""]
+    else:
+        lineas += ["SIN VENTANA: se midieron las primeras charlas por orden de "
+                   "id, que son siempre las mismas.",
+                   "El numero de abajo se mueve con --limite y NO se compara "
+                   "con el de otra corrida. Pasa --desde para que se pueda.",
+                   ""]
     total_turnos = sum(len(m) for _, m, _ in revisadas)
     con_falla = [r for r in revisadas if r[2]]
     todas = [f for _, _, fs in revisadas for f in fs]
@@ -182,9 +266,19 @@ def informe(revisadas: list) -> str:
 
 def main(argv: list) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--limite", type=int, default=20)
+    ap.add_argument("--limite", type=int, default=20,
+                    help="tope de charlas. Con --desde es solo un tope de "
+                         "seguridad: el conjunto lo elige la ventana.")
     ap.add_argument("--usuario", default="")
+    ap.add_argument("--desde", default="",
+                    help="ventana de tiempo: 30m, 18h, 2d. Audita SOLO las "
+                         "charlas tocadas dentro de la ventana, que es lo "
+                         "unico que hace comparables dos corridas.")
     args = ap.parse_args(argv)
+    desde_s = ventana_a_segundos(args.desde)
+    if args.desde and not desde_s:
+        print(f"No entiendo la ventana '{args.desde}'. Se espera 30m, 18h o 2d.")
+        return 1
 
     tok = _token()
     if not tok:
@@ -194,7 +288,7 @@ def main(argv: list) -> int:
         return 0
 
     try:
-        crudas = charlas(tok, args.limite, args.usuario)
+        crudas, meta = charlas(tok, args.limite, args.usuario, desde_s)
     except Exception as e:
         print(f"No se pudieron bajar las charlas: {type(e).__name__}: {e}")
         return 1
@@ -206,10 +300,17 @@ def main(argv: list) -> int:
         revisadas.append((uid, mensajes, revisar_charla(mensajes)))
 
     if not revisadas:
-        print("No hay charlas con respuestas del bot para revisar.")
+        # NO ES LO MISMO "no hubo" que "no anduvo", y con ventana hay que
+        # decirlo: cero charlas nuevas es un resultado valido del instrumento.
+        if desde_s:
+            print(f"Ninguna charla se toco en las ultimas "
+                  f"{desde_s / 3600:.0f} horas. Se miraron "
+                  f"{meta.get('vistas', 0)}. No hay nada nuevo que auditar.")
+        else:
+            print("No hay charlas con respuestas del bot para revisar.")
         return 0
 
-    print(informe(revisadas))
+    print(informe(revisadas, meta))
     return 0
 
 

@@ -35,6 +35,16 @@ rojos del banco de oro. La unidad de trabajo, en `arquitectura/`.
 `app/core/turno.py` sobre `app/core/tabla.py`. `app/` pasó de 22.547 líneas a
 16.794 y la batería de 36.984 a 6.946.
 
+**3-sep, tarde:** cerró la **compuerta de completitud**, que era lo único grande
+que quedaba abierto del recorte y no era recortar sino editar. El estado de la
+fila manda sobre lo que escribió el modelo: una fila `sin_material` o `pregunta`
+queda abierta aunque el modelo escriba encima, el turno termina preguntando por
+ella, la `pregunta_final` del modelo se conserva sólo si habla de ese punto, y
+una casilla sin material no puede traer una cifra. Un turno incompleto ya no se
+loguea como correcto: sale `turno_incompleto` con los ids. Y el instrumento
+dejó de mentir por el denominador: `produccion.py --desde` audita sólo las
+charlas de la ventana en vez de las mismas viejas por orden de id.
+
 **31-ago:** El puente de lectura de produccion quedo enchufado
 (`.github/workflows/puente_cowork.yml`, issue 31): se pide `/logs` en un
 comentario y vuelve el volcado de Cloud Run mas la auditoria de charlas
@@ -48,7 +58,7 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 ## Abierto
 
 - **ABIERTO** · **LA CAPA 4 DE LOS CASOS DE ORO QUEDO SIN MECANISMO.** Sus 10 casos miden `salida.procedencia` y `salida.plata`, que se apagaron el 3-sep, y su campo `texto` viene con las etiquetas `<d ID>` de la atadura, que el modelo ya no escribe. Esta como `xfail` estricto en `tests/test_oro.py`, con el detalle caso por caso: C4-01, C4-02, C4-09 y C4-10 ya los cubre la estructura y tienen vara en `test_tabla.py`; C4-07 esta a medias; y C4-03, C4-04, C4-05 y C4-08 NO estan cubiertos, porque son contenido de la prosa adentro de una casilla. **Reescribir un caso de oro es decision de Martín.**
-- **ABIERTO** · **EL TURNO NUEVO NO SE MIDIO EN VIVO.** `turno.py` corre de punta a punta con el modelo doblado —`tests/test_turno.py`, 8 casos— pero nunca hablo con Gemini. Lo que falta medir es si el modelo respeta el esquema: si no lo respeta, el turno cae al mensaje de demanda y se ve en el log como `turno_respuesta_no_es_la_mesa`. Es la primera prueba por WhatsApp.
+- **ABIERTO** · **LA COMPUERTA DE COMPLETITUD NO SE MIDIO EN VIVO.** El turno nuevo SI se midio: 9 turnos por Telegram el 3-sep entre 03:12 y 03:16 UTC, y el modelo respeto el esquema en los 9 —cero `turno_respuesta_no_es_la_mesa`—. Lo que mostro fueron tres defectos: la poda que se comia el nombre del producto y la guarda de honestidad que nunca corria, las dos ya arregladas y deployadas, y la compuerta, arreglada esta tarde y todavia sin una charla real encima. Lo que hay que mirar en la proxima prueba por WhatsApp son dos renglones nuevos: `turno_incompleto`, que dice que puntos quedaron abiertos, y `casilla_podada` con motivo `dato_sin_material`. Si `turno_incompleto` aparece con `pregunto=False`, la compuerta tiene un agujero.
 - **ABIERTO** · **EL CANDADO DEL MAPA QUEDÓ EN ARCHIVO.** `tests/test_mapa.py` se apagó con el hub; el nocturno ya no lo corre. El piso de `banco_pruebas/mapa_piso.json` es del camino viejo. Reescribirlo sobre `turno.py` es otra ficha: no se revive el test apagado contra el inventario nuevo.
 - **ABIERTO** · **SIETE ROJOS DE LA CAPA 2, todos de cableado y con la interpretación perfecta escrita a mano.** C2-S05 el comparativo devuelve el propio producto de referencia; C2-S07 el uso "para jugar" no es un campo del catálogo; C2-S08 el pedido abierto no deriva rubros ni cuenta; C2-S13 "me haces ese precio" no lo certifica ningún tema; C2-S17 "ese" no ancla al producto del turno anterior; C2-E01 la G15 que no existe devuelve rubros que no son; C2-E04 el tema `defectuoso` existe con otro nombre y vuelve vacío.
 - **ABIERTO** · **DOS CAMPOS QUE EL MODELO DECLARA Y NO LEE NADIE.** `contradicciones` no tiene una sola referencia ejecutable en `resolver.py`: la mesa la saca como pregunta, pero ninguna búsqueda la usa. Y `atributos[].campo` sigue sin acotar la ficha en el resolver —se pide entera— aunque la mesa después proyecte solo el campo pedido.

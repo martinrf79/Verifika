@@ -12,7 +12,10 @@
       4. REDACTAR      llamada DOS. Devuelve la tabla LLENA, con esquema. No
       |                escribe numeros de plata: no tiene donde.
       5. ARMAR         codigo. Ordena, pega la cuenta sellada al final y, si
-      |                quedo un punto sin contestar, escribe UNA pregunta.
+      |                quedo un punto sin contestar, escribe UNA pregunta. El
+      |                estado de la fila manda sobre lo que escribio el modelo:
+      |                una fila abierta se pregunta aunque el modelo escribiera
+      |                encima, y una fila sin material no puede traer cifras.
       6. CIERRE        codigo. Lead o datos de cobro, y la memoria del turno.
 
 LO QUE YA NO EXISTE, a proposito: las cuatro puertas de salida con sus
@@ -1022,11 +1025,12 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
 
     # ── 4. REDACTAR Y 5. ARMAR ──────────────────────────────────────────
     sin_modelo = False
+    informe: dict = {}
     if mesa["puntos"]:
         with _reloj(etapas, "redactor"):
             respuesta, sin_modelo = await _redactar(
                 negocio, memoria, history, raw_message, mesa, trace_id)
-        texto = (TB.armar(respuesta, mesa, trace_id)
+        texto = (TB.armar(respuesta, mesa, trace_id, informe)
                  if not sin_modelo else "")
     else:
         # Sin puntos el modelo ya contesto en la llamada uno: un saludo, un
@@ -1158,8 +1162,23 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     except Exception as e:  # noqa: BLE001
         log.warning("turno_save_error", trace_id=trace_id, error=str(e)[:150])
 
+    # ── 9. LO QUE LA COMPUERTA VIO ──────────────────────────────────────
+    #
+    # UN TURNO INCOMPLETO DEJA DE LOGUEARSE COMO CORRECTO. Medido en vivo el
+    # 3-sep: los turnos tg_524215778 y tg_524215783 salieron con puntos que la
+    # mesa sabia sin contestar, y el unico renglon que quedo en el log fue
+    # `turno_ok`. Desde afuera -que es el unico lugar desde donde se mira
+    # produccion- el turno pasaba por bueno. El aviso va ANTES del `turno_ok`
+    # para que el que lee los logs de arriba hacia abajo lo vea pegado.
+    if informe.get("abiertos") or informe.get("salteados"):
+        log.warning("turno_incompleto", trace_id=trace_id,
+                    abiertos=informe.get("abiertos") or [],
+                    salteados=informe.get("salteados") or [],
+                    pregunto=bool(informe.get("pregunto")))
     log.info("turno_ok", trace_id=trace_id,
              latency_ms=int((time.time() - t0) * 1000),
              etapas=etapas, largo=len(texto or ""),
-             puntos=len(mesa["puntos"]))
+             puntos=len(mesa["puntos"]),
+             abiertos=len(informe.get("abiertos") or []),
+             salteados=len(informe.get("salteados") or []))
     return texto

@@ -185,5 +185,27 @@ async def test_el_orchestrator_entra_por_el_turno_nuevo(monkeypatch,
     assert out == "ok" and llamado.get("si")
 
 
+@pytest.mark.asyncio
+async def test_un_punto_abierto_pregunta_aunque_el_modelo_lo_conteste(
+        monkeypatch, firestore_doble):
+    """LA COMPUERTA DE COMPLETITUD, de punta a punta. El modelo escribe encima
+    de la casilla sin material -que es lo que hacia que el turno se despachara
+    entero- y el turno igual termina preguntando por ese punto.
+
+    Es el turno tg_524215778 del 3-sep: la mesa sabia que faltaba, el mensaje
+    salio sin preguntar, y el log dijo `turno_ok`."""
+    declarado = {"items": [],
+                 "atributos": [{"de": "el Genius DX-110", "campo": "dpi"}]}
+    respuesta = {"apertura": "", "pregunta_final": "Te lo armo?",
+                 "puntos": [{"id": "atributos:1",
+                             "texto": "Ese modelo anda muy bien."}]}
+    _doblar(monkeypatch, declarado, respuesta)
+    texto = await T.procesar_turno("u-nueve", "cuantos dpi tiene el Genius "
+                                              "DX-110", TIENDA, "test", "t9")
+    assert "Te lo armo?" not in texto, texto
+    assert texto.strip().endswith("?"), f"no termino preguntando:\n{texto}"
+    assert "dpi" in texto.lower(), texto
+
+
 def test_cuantos_turnos_se_probaron():
-    assert len([f for f in globals() if f.startswith("test_")]) == 8
+    assert len([f for f in globals() if f.startswith("test_")]) == 9
