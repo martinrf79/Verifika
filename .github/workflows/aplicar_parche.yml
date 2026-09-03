@@ -16,6 +16,13 @@ name: aplicar parche
 # conserva el mensaje y el autor de cada commit tal cual se escribieron, borra
 # los parches ya aplicados y pushea.
 #
+# LO QUE UN PARCHE NO PUEDE TOCAR: `.github/workflows/`. El `GITHUB_TOKEN` no
+# tiene permiso de workflows, asi que el `git push` del final se rechaza entero
+# aunque el parche sea perfecto. Se chequea ARRIBA, antes de aplicar nada, y se
+# avisa con el nombre del archivo: un cambio de workflow va por la integracion
+# de GitHub, en su propio commit. — *3-sep: cuarenta minutos buscando un parche
+# corrupto que aplicaba limpio en local.*
+#
 # POR QUE LOS PARCHES VIVEN EN `archivo/` Y NO EN `.github/`. Porque `archivo/`
 # ya esta en el `paths-ignore` de `deploy.yml`, asi que dejar un parche no
 # dispara un deploy del bot. Sin eso, cada parche ensuciaria el historial con
@@ -66,13 +73,29 @@ jobs:
             echo "hubo=no" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          printf 'Parches a aplicar:\n'; printf '  %s\n' "${PARCHES[@]}"
+
+          # PRIMERO LO QUE NO SE VA A PODER PUSHEAR, y se mira ANTES de tocar el
+          # arbol. El GITHUB_TOKEN no tiene permiso de workflows: si un parche
+          # trae un `+++ b/.github/workflows/...`, el `git am` va a andar
+          # perfecto y el `git push` del final se va a rechazar entero. Sin este
+          # chequeo el unico aviso que queda es el de mas abajo, que dice
+          # "regenerar el parche" y manda a buscar el defecto donde no esta.
+          TOCA=$(grep -hoE '^\+\+\+ b/\.github/workflows/[^[:space:]]+' "${PARCHES[@]}" \
+                 | sed 's|^+++ b/||' | sort -u | tr '\n' ' ')
+          if [ -n "$TOCA" ]; then
+            echo "El parche toca archivos de workflow: $TOCA"
+            echo "hubo=error_workflow" >> "$GITHUB_OUTPUT"
+            echo "detalle=$TOCA" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
           # EN ORDEN, y con `git am`, que conserva mensaje y autor de cada
           # commit. Si uno no aplica limpio, `git am` corta y deja el arbol como
           # estaba: se prefiere no aplicar nada antes que aplicar la mitad.
-          printf 'Parches a aplicar:\n'; printf '  %s\n' "${PARCHES[@]}"
           git am --3way "${PARCHES[@]}" || {
             git am --abort || true
-            echo "hubo=error" >> "$GITHUB_OUTPUT"
+            echo "hubo=error_am" >> "$GITHUB_OUTPUT"
             exit 1
           }
           # Los parches ya aplicados no se quedan: el deposito no es una cola
@@ -80,7 +103,13 @@ jobs:
           # que fue una entrega y no parte del arreglo.
           git rm -q archivo/parches/*.patch
           git commit -q -m "Parches aplicados y sacados del deposito."
-          git push origin HEAD:main
+          # EL PUSH TIENE SU PROPIO ESTADO. Es el paso que fallo el 3-sep y el
+          # que no se distinguia del `git am`: los dos terminaban en el mismo
+          # mensaje. Un aviso que nombra mal lo que vio no es un aviso.
+          git push origin HEAD:main || {
+            echo "hubo=error_push" >> "$GITHUB_OUTPUT"
+            exit 1
+          }
           echo "hubo=si" >> "$GITHUB_OUTPUT"
           echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
@@ -99,13 +128,26 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           CORRIDA: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          DETALLE: ${{ steps.am.outputs.detalle }}
         run: |
           # Siempre se avisa, salga bien o mal, y en el mismo issue del puente:
           # es el unico lugar donde la sesion de analisis puede leer la
           # respuesta. Un brazo que trabaja y no contesta no sirve de nada.
+          #
+          # CUATRO ESTADOS, NO DOS. Hasta el 3-sep habia uno solo para todo lo
+          # que saliera mal, y decia siempre lo mismo: "git am se nego, hay que
+          # regenerar el parche". Cuando lo que fallo fue el push por un archivo
+          # de workflow, ese mensaje mando a rehacer un parche que estaba bien.
           case "${{ steps.am.outputs.hubo }}" in
-            si)    CUERPO="Parches aplicados en main, commit ${{ steps.am.outputs.sha }}. Deploy disparado; el gate de la bateria corre adelante. $CORRIDA" ;;
-            no)    CUERPO="No habia parches en archivo/parches/. $CORRIDA" ;;
-            *)     CUERPO="NO se aplico nada: git am se nego y el arbol quedo como estaba. Hay que regenerar el parche contra el main de ahora. $CORRIDA" ;;
+            si)
+              CUERPO="Parches aplicados en main, commit ${{ steps.am.outputs.sha }}. Deploy disparado; el gate de la bateria corre adelante. $CORRIDA" ;;
+            no)
+              CUERPO="No habia parches en archivo/parches/. $CORRIDA" ;;
+            error_workflow)
+              CUERPO="NO se aplico nada, y el parche NO tiene la culpa: toca archivos de workflow -$DETALLE-, y el GITHUB_TOKEN no puede pushear eso. El parche seguramente aplica limpio. Sacale esos archivos y mandalos por separado con la integracion de GitHub, en su propio commit. $CORRIDA" ;;
+            error_push)
+              CUERPO="El parche APLICO bien y el push a main fallo. El arbol de main quedo como estaba. No hay que regenerar el parche: hay que mirar por que se rechazo el push. $CORRIDA" ;;
+            *)
+              CUERPO="NO se aplico nada: git am se nego y el arbol quedo como estaba. Hay que regenerar el parche contra el main de ahora. $CORRIDA" ;;
           esac
           gh issue comment 31 --repo "$GITHUB_REPOSITORY" --body "$CUERPO"
