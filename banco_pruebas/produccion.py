@@ -17,6 +17,15 @@ O sea que cada vez que Martin prueba por WhatsApp, el sistema se mide gratis
 contra la distribucion VERDADERA de preguntas. Eso es lo que ningun guion
 escrito a mano reproduce.
 
+Y DESDE EL 3-SEP EL INFORME TERMINA CON LA CHARLA LITERAL. El texto que
+recibio el cliente NO esta en ningun log: `turno_ok` anota el largo, la
+latencia y los puntos, nunca el mensaje. Este script ya bajaba el `history`
+entero de la conversacion para correr los invariantes y despues lo tiraba. Ese
+descarte costaba una sesion completa: desde afuera se podia decir que fallo por
+dentro y no como sono por fuera, que es justo lo unico que Martin ve. Ahora la
+transcripcion va al FINAL del informe, que es la punta que el puente conserva
+cuando recorta.
+
 ES DE SOLO LECTURA. Baja conversaciones y las revisa. No escribe en Firestore,
 no toca produccion, no gasta una llamada al modelo: los invariantes son
 aritmetica y texto. No necesita clave de LLM, ni la gratis ni la paga.
@@ -25,6 +34,7 @@ USO:
     python3 banco_pruebas/produccion.py --desde 18h   # solo lo NUEVO
     python3 banco_pruebas/produccion.py --limite 50
     python3 banco_pruebas/produccion.py --usuario 5493547504287
+    python3 banco_pruebas/produccion.py --desde 4h --sin-transcripcion
 
 LA VENTANA ES LO QUE HACE COMPARABLE EL NUMERO (3-sep-2026). Sin `--desde`
 esto pide una pagina de conversaciones y Firestore la devuelve por orden de
@@ -66,6 +76,14 @@ from banco_pruebas.invariantes import revisar_charla  # noqa: E402
 TIENDA = "verifika_prod"
 _BASE = ("https://firestore.googleapis.com/v1/projects/memory-engine-v1/"
          "databases/(default)/documents")
+
+# TOPES DE LA TRANSCRIPCION. El puente corta `auditoria.txt` en 20.000
+# caracteres y se queda con la COLA, asi que la transcripcion tiene que entrar
+# entera abajo sin empujar los numeros afuera del recorte.
+TOPE_CHARLAS_TRANSCRIPTAS = 5
+TOPE_MENSAJES = 30
+TOPE_CARACTERES_MENSAJE = 2000
+TOPE_TRANSCRIPCION = 12000
 
 
 # ── CREDENCIAL ──────────────────────────────────────────────────────────────
@@ -134,6 +152,29 @@ def _respuestas_del_bot(doc: dict) -> list:
     return salida
 
 
+def _dialogo(doc: dict) -> list:
+    """La charla ENTERA en orden: `[(rol, texto)]`, cliente y bot.
+
+    Es el mismo `history` que lee `_respuestas_del_bot`, sin filtrar por rol.
+    Se agrega aparte y no se toca la otra funcion a proposito: los invariantes
+    se corren sobre las respuestas del bot y esa entrada no cambia.
+
+    El rol se guarda tal cual viene. Si algun dia aparece uno que no es `user`
+    ni `assistant`, la transcripcion lo muestra con su nombre en vez de
+    esconderlo: un rol que no se esperaba es informacion, no ruido.
+    """
+    hist = (doc.get("fields", {}).get("history", {})
+            .get("arrayValue", {}).get("values", []) or [])
+    salida = []
+    for it in hist:
+        f = it.get("mapValue", {}).get("fields", {})
+        rol = f.get("role", {}).get("stringValue", "") or "?"
+        txt = f.get("content", {}).get("stringValue", "")
+        if txt:
+            salida.append((rol, txt))
+    return salida
+
+
 def ventana_a_segundos(txt: str) -> int:
     """`18h`, `2d`, `30m` a segundos. Cero si no se entiende o viene vacio."""
     m = re.fullmatch(r"(\d+)\s*([smhd])", (txt or "").strip().lower())
@@ -175,15 +216,21 @@ def charlas(tok: str, limite: int = 20, usuario: str = "",
     corridas con la misma ventana se pueden comparar.
 
     `limite` deja de elegir el conjunto y queda como tope de seguridad.
+
+    `meta["dialogos"]` lleva la charla literal de cada una, para la
+    transcripcion del final. La forma de `out` NO cambia: quien ya usaba esta
+    funcion sigue recibiendo los mismos pares.
     """
     if usuario:
         doc = _get(f"{_BASE}/tiendas/{TIENDA}/conversaciones/{usuario}", tok)
         return ([(usuario, _respuestas_del_bot(doc))],
-                {"ventana_s": 0, "vistas": 1, "usuario": usuario})
+                {"ventana_s": 0, "vistas": 1, "usuario": usuario,
+                 "dialogos": {usuario: _dialogo(doc)}})
 
     tope = max(1, min(int(limite), 300))
     corte = (time.time() - desde_s) if desde_s else 0
     out, vistas, token = [], 0, ""
+    dialogos: dict = {}
     while True:
         url = (f"{_BASE}/tiendas/{TIENDA}/conversaciones"
                f"?pageSize={300 if desde_s else tope}")
@@ -196,15 +243,68 @@ def charlas(tok: str, limite: int = 20, usuario: str = "",
                 continue
             uid = str(doc.get("name", "")).rsplit("/", 1)[-1]
             out.append((uid, _respuestas_del_bot(doc)))
+            dialogos[uid] = _dialogo(doc)
             if len(out) >= tope:
                 break
         token = datos.get("nextPageToken") or ""
         if len(out) >= tope or not token or not desde_s:
             break
-    return out, {"ventana_s": desde_s, "vistas": vistas, "usuario": ""}
+    return out, {"ventana_s": desde_s, "vistas": vistas, "usuario": "",
+                 "dialogos": dialogos}
 
 
 # ── EL INFORME ──────────────────────────────────────────────────────────────
+def transcripcion(revisadas: list, dialogos: dict) -> list:
+    """La charla LITERAL, y va al FINAL del informe a proposito.
+
+    El puente recorta `auditoria.txt` por la COLA -se queda con los ultimos
+    20.000 caracteres-, asi que lo que va abajo es lo que sobrevive al recorte.
+    Los topes de arriba estan puestos para que la transcripcion no empuje los
+    numeros afuera de esa ventana.
+
+    NO SE RESUME NI SE LIMPIA NADA. El unico recorte es por largo, y cuando
+    pasa lo dice con el numero de caracteres que tenia el mensaje entero: un
+    texto acortado en silencio es exactamente el defecto que este archivo
+    existe para no repetir.
+    """
+    lineas = ["", "=" * 78,
+              "LA CHARLA, TAL CUAL LA RECIBIO EL CLIENTE",
+              "=" * 78,
+              "Esto NO esta en los logs: `turno_ok` guarda el largo, la",
+              "latencia y los puntos, nunca el texto. Sale del `history` de la",
+              "conversacion, que es lo mismo que se le mando a Telegram o a",
+              "WhatsApp.", ""]
+    usadas, gastado, cortadas = 0, 0, 0
+    for uid, _mensajes, _fallas in revisadas:
+        dia = dialogos.get(uid) or []
+        if not dia:
+            continue
+        if usadas >= TOPE_CHARLAS_TRANSCRIPTAS or gastado >= TOPE_TRANSCRIPCION:
+            cortadas += 1
+            continue
+        usadas += 1
+        recorte = dia[-TOPE_MENSAJES:]
+        bloque = [f"-- charla {uid}: {len(dia)} mensajes"
+                  + (f", se muestran los ultimos {TOPE_MENSAJES}"
+                     if len(dia) > TOPE_MENSAJES else "")]
+        for rol, texto in recorte:
+            quien = {"user": "CLIENTE", "assistant": "BOT    "}.get(
+                rol, f"{rol:<7}")
+            t = (texto or "").strip()
+            if len(t) > TOPE_CARACTERES_MENSAJE:
+                t = (t[:TOPE_CARACTERES_MENSAJE]
+                     + f" [...recortado, el mensaje entero tenia {len(texto)}"
+                       " caracteres]")
+            bloque.append(f"  {quien}  " + t.replace("\n", "\n           "))
+        bloque.append("")
+        gastado += sum(len(x) for x in bloque)
+        lineas += bloque
+    if cortadas:
+        lineas += [f"[{cortadas} charlas quedaron sin transcribir por el tope. "
+                   "Para ver una entera, pedila sola con usuario=<id>.]", ""]
+    return lineas
+
+
 def informe(revisadas: list, meta: dict | None = None) -> str:
     meta = meta or {}
     lineas = ["", "=" * 78,
@@ -252,6 +352,14 @@ def informe(revisadas: list, meta: dict | None = None) -> str:
         f"EL NUMERO QUE MANDA — DEFECTOS POR CHARLA REAL: {por_charla:.2f}",
         "",
         "Robusto es que esto de CERO sobre quince o veinte charlas seguidas.",
+        "",
+        "Y ESTE NUMERO MIDE EL TEXTO DE SALIDA, NADA MAS. `revisar` recibe el",
+        "mensaje, el anterior y el vocabulario: no ve el estado del turno. Los",
+        "avisos que el turno si deja -turno_incompleto,",
+        "punto_con_material_sin_texto, turno_guarda_error- viven en los LOGS y",
+        "no cuentan aca. Cero violaciones y tres avisos en la misma ventana es",
+        "un resultado posible, no una contradiccion: leelo junto a los logs y",
+        "junto a la charla de abajo.",
         "=" * 78]
 
     if todas:
@@ -261,6 +369,10 @@ def informe(revisadas: list, meta: dict | None = None) -> str:
         lineas += ["", "POR REGLA, de la que mas duele para abajo:"]
         for regla, n in sorted(cuenta.items(), key=lambda x: -x[1]):
             lineas.append(f"  {n:>3}  {regla}")
+
+    dialogos = meta.get("dialogos") or {}
+    if dialogos:
+        lineas += transcripcion(revisadas, dialogos)
     return "\n".join(lineas)
 
 
@@ -274,6 +386,10 @@ def main(argv: list) -> int:
                     help="ventana de tiempo: 30m, 18h, 2d. Audita SOLO las "
                          "charlas tocadas dentro de la ventana, que es lo "
                          "unico que hace comparables dos corridas.")
+    ap.add_argument("--sin-transcripcion", action="store_true",
+                    help="no imprime la charla literal al final. Por defecto "
+                         "SE IMPRIME: el texto que recibio el cliente no esta "
+                         "en ningun log y sin el no se puede juzgar un turno.")
     args = ap.parse_args(argv)
     desde_s = ventana_a_segundos(args.desde)
     if args.desde and not desde_s:
@@ -292,6 +408,9 @@ def main(argv: list) -> int:
     except Exception as e:
         print(f"No se pudieron bajar las charlas: {type(e).__name__}: {e}")
         return 1
+
+    if args.sin_transcripcion:
+        meta["dialogos"] = {}
 
     revisadas = []
     for uid, mensajes in crudas:
