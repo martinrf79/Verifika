@@ -1,0 +1,894 @@
+From 1ecdce15ac51cd1ab77dade90be7b2e5e61c6a37 Mon Sep 17 00:00:00 2001
+From: martinrf79 <martinrf79@users.noreply.github.com>
+Date: Thu, 3 Sep 2026 13:22:07 +0000
+Subject: [PATCH] La mesa media lo que faltaba y nadie la usaba: la compuerta
+ de completitud.
+
+Lo ultimo grande que quedaba abierto del recorte, y no era apagar una pieza
+sino editar tres. Se lleva dos causas de una vez: el turno que se despacha con
+puntos sin contestar, y el que completa un hueco con un supuesto.
+
+EL DEFECTO, MEDIDO EN VIVO. Nueve turnos por Telegram el 3-sep entre 03:12 y
+03:16 UTC. `tabla_armada` decia `sin_material=1` y `punto_con_material_sin_texto`
+nombraba el punto que el modelo se salteo; el mensaje salia igual y el unico
+renglon que quedaba era `turno_ok`. En tg_524215778 el cliente pregunto cuantos
+tipos de memorias hay, la mesa abrio el punto, el modelo no lo escribio, y el
+turno se fue con 160 caracteres y un `turno_ok`. Desde afuera, que es el unico
+lugar desde donde se mira produccion, el turno pasaba por bueno.
+
+LA CAUSA ERA UNA SOLA Y NO ESTABA EN NINGUNA PIEZA: el estado de la fila no
+gobernaba nada. `armar` daba una fila por contestada en cuanto la casilla traia
+texto, asi que `sin_material` y `pregunta` solo contaban como abiertas cuando el
+modelo se quedaba callado. Si escribia cualquier cosa encima, el hueco se
+tapaba solo. Y la `pregunta_final` del modelo le ganaba SIEMPRE a la del codigo:
+un "te lo armo?" tapaba el punto que faltaba.
+
+LAS TRES EDICIONES, en app/core/tabla.py:
+
+1. Una fila `sin_material` o `pregunta` queda ABIERTA escriba lo que escriba el
+   modelo. Su texto sale -decir "no tengo ese dato" es lo correcto- pero el
+   turno termina preguntando por ella. Sigue habiendo UNA sola pregunta.
+2. `_pregunta_por`: la pregunta del modelo se conserva solo si comparte una
+   palabra con lo que el cliente pidio en esa fila. Es el mismo puente por
+   palabras de `_pega`, no hay que entender castellano. Si no habla del punto,
+   la reemplaza el molde del codigo.
+3. `_limpiar` gana una cuarta comprobacion y es la mitad "no inventes": sobre
+   una fila SIN MATERIAL, toda cifra que no este en la mesa se cae con su
+   oracion. Es el caso C4-01 -"tiene 8000 DPI"- que no lleva signo pesos, no es
+   un id y no es JSON, asi que las tres comprobaciones viejas lo dejaban pasar
+   entero. Una fila sin material no tiene de donde sacar una cifra.
+
+Y dos moldes nuevos de pregunta, `pide_precio` y `reparto_pago`, porque desde
+que la compuerta pregunta por todo punto abierto esos dos caen seguido y el
+molde generico le echaba al catalogo la culpa de que todavia no se sabe que
+cotizar.
+
+UN TURNO INCOMPLETO DEJA DE LOGUEARSE COMO CORRECTO. `armar` no decide sola que
+hacer con lo que vio: lo declara en `informe`, y `turno.py` saca
+`turno_incompleto` con los ids abiertos, los salteados y si el turno pregunto.
+`turno_ok` lleva los dos contadores.
+
+EL INSTRUMENTO, que era la otra mitad del problema. `produccion.py` pedia UNA
+pagina de conversaciones y Firestore la devuelve por orden de nombre: siempre
+las mismas charlas viejas, y el denominador de "defectos por charla" terminaba
+siendo `--limite`. El mismo estado del bot dio 0,8 y 0,20 sin que cambiara un
+solo defecto. Con `--desde 18h` se recorren todas las paginas y se auditan solo
+las charlas tocadas en la ventana; el informe dice que conjunto midio y, sin
+ventana, avisa que el numero no se compara. El puente le pasa la MISMA ventana
+que a los logs, asi que el informe se lee entero: arriba los defectos de esas
+horas, abajo los logs de esas horas. El filtro de ruido de la consulta ya
+estaba puesto y se verifico que anda: cero lineas en blanco en la corrida de hoy.
+
+LA LINEA DE FIRESTORE, la media hora muda del 25-ago. Firestore no falla cuando
+se lee una ruta que no existe: devuelve cero documentos, sin excepcion y sin
+aviso. `get_all_faq` cacheaba ese vacio UNA HORA, asi que el bot se quedaba
+contestando que no tiene politica sobre nada mientras los temas estaban en la
+base y el turno leia de otra ruta. Ahora un vacio no entra al cache y sale como
+ERROR con la ruta que se leyo. Lo mismo para el catalogo, que es la misma linea.
+
+LA VARA: 482 verdes, 2 xfail, 21 segundos, contra 468 antes. Catorce tests
+nuevos, ninguno tocado para que pase. Cinco cubren la compuerta -el punto
+abierto que se pregunta aunque el modelo escriba encima, la pregunta que no
+habla del punto y se reemplaza, la que si habla y se conserva, la contradiccion
+que se pregunta igual, y la cifra sin material que se cae-, uno el informe de
+la compuerta, uno el turno entero de punta a punta, y cinco el instrumento.
+
+Se vuelve con `git revert` de este commit.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01FPPunaBp7pgtRetRgv9DiL
+---
+ .github/workflows/puente_cowork.yml |   9 +-
+ PENDIENTE.md                        |  12 ++-
+ app/core/tabla.py                   | 113 +++++++++++++++++++++--
+ app/core/turno.py                   |  25 +++++-
+ app/storage/firestore_client.py     |  30 +++++++
+ banco_pruebas/produccion.py         | 135 ++++++++++++++++++++++++----
+ tests/test_puente_ventana.py        |  70 +++++++++++++++
+ tests/test_tabla.py                 | 104 ++++++++++++++++++++-
+ tests/test_turno.py                 |  24 ++++-
+ 9 files changed, 490 insertions(+), 32 deletions(-)
+ create mode 100644 tests/test_puente_ventana.py
+
+diff --git a/.github/workflows/puente_cowork.yml b/.github/workflows/puente_cowork.yml
+index d6426e2..22510df 100644
+--- a/.github/workflows/puente_cowork.yml
++++ b/.github/workflows/puente_cowork.yml
+@@ -185,12 +185,19 @@ jobs:
+         env:
+           CHARLAS: ${{ steps.pedido.outputs.charlas }}
+           USUARIO: ${{ steps.pedido.outputs.usuario }}
++          FRESH: ${{ steps.pedido.outputs.fresh }}
+         run: |
+           # El token del WIF entra por env: `produccion.py` lo acepta como
+           # alternativa a GCP_SA_KEY_B64, asi el puente no necesita ninguna
+           # llave de cuenta de servicio.
+           export GCP_ACCESS_TOKEN="$(gcloud auth print-access-token)"
+-          ARGS="--limite $CHARLAS"
++          # LA MISMA VENTANA QUE LOS LOGS, y por eso el informe pasa a tener
++          # sentido leido entero: arriba los defectos de las charlas de ESAS
++          # horas, abajo los logs de ESAS MISMAS horas. Hasta el 3-sep la
++          # auditoria pedia una pagina de conversaciones por orden de id -o
++          # sea las mismas charlas viejas, siempre- y el numero se movia con
++          # `charlas=` sin que cambiara un solo defecto.
++          ARGS="--limite $CHARLAS --desde $FRESH"
+           [ -n "$USUARIO" ] && ARGS="--usuario $USUARIO"
+           python3 banco_pruebas/produccion.py $ARGS > auditoria.txt 2>&1 || true
+           tail -5 auditoria.txt
+diff --git a/PENDIENTE.md b/PENDIENTE.md
+index fbf9070..4398730 100644
+--- a/PENDIENTE.md
++++ b/PENDIENTE.md
+@@ -35,6 +35,16 @@ rojos del banco de oro. La unidad de trabajo, en `arquitectura/`.
+ `app/core/turno.py` sobre `app/core/tabla.py`. `app/` pasó de 22.547 líneas a
+ 16.794 y la batería de 36.984 a 6.946.
+ 
++**3-sep, tarde:** cerró la **compuerta de completitud**, que era lo único grande
++que quedaba abierto del recorte y no era recortar sino editar. El estado de la
++fila manda sobre lo que escribió el modelo: una fila `sin_material` o `pregunta`
++queda abierta aunque el modelo escriba encima, el turno termina preguntando por
++ella, la `pregunta_final` del modelo se conserva sólo si habla de ese punto, y
++una casilla sin material no puede traer una cifra. Un turno incompleto ya no se
++loguea como correcto: sale `turno_incompleto` con los ids. Y el instrumento
++dejó de mentir por el denominador: `produccion.py --desde` audita sólo las
++charlas de la ventana en vez de las mismas viejas por orden de id.
++
+ **31-ago:** El puente de lectura de produccion quedo enchufado
+ (`.github/workflows/puente_cowork.yml`, issue 31): se pide `/logs` en un
+ comentario y vuelve el volcado de Cloud Run mas la auditoria de charlas
+@@ -48,7 +58,7 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
+ ## Abierto
+ 
+ - **ABIERTO** · **LA CAPA 4 DE LOS CASOS DE ORO QUEDO SIN MECANISMO.** Sus 10 casos miden `salida.procedencia` y `salida.plata`, que se apagaron el 3-sep, y su campo `texto` viene con las etiquetas `<d ID>` de la atadura, que el modelo ya no escribe. Esta como `xfail` estricto en `tests/test_oro.py`, con el detalle caso por caso: C4-01, C4-02, C4-09 y C4-10 ya los cubre la estructura y tienen vara en `test_tabla.py`; C4-07 esta a medias; y C4-03, C4-04, C4-05 y C4-08 NO estan cubiertos, porque son contenido de la prosa adentro de una casilla. **Reescribir un caso de oro es decision de Martín.**
+-- **ABIERTO** · **EL TURNO NUEVO NO SE MIDIO EN VIVO.** `turno.py` corre de punta a punta con el modelo doblado —`tests/test_turno.py`, 8 casos— pero nunca hablo con Gemini. Lo que falta medir es si el modelo respeta el esquema: si no lo respeta, el turno cae al mensaje de demanda y se ve en el log como `turno_respuesta_no_es_la_mesa`. Es la primera prueba por WhatsApp.
++- **ABIERTO** · **LA COMPUERTA DE COMPLETITUD NO SE MIDIO EN VIVO.** El turno nuevo SI se midio: 9 turnos por Telegram el 3-sep entre 03:12 y 03:16 UTC, y el modelo respeto el esquema en los 9 —cero `turno_respuesta_no_es_la_mesa`—. Lo que mostro fueron tres defectos: la poda que se comia el nombre del producto y la guarda de honestidad que nunca corria, las dos ya arregladas y deployadas, y la compuerta, arreglada esta tarde y todavia sin una charla real encima. Lo que hay que mirar en la proxima prueba por WhatsApp son dos renglones nuevos: `turno_incompleto`, que dice que puntos quedaron abiertos, y `casilla_podada` con motivo `dato_sin_material`. Si `turno_incompleto` aparece con `pregunto=False`, la compuerta tiene un agujero.
+ - **ABIERTO** · **EL CANDADO DEL MAPA QUEDÓ EN ARCHIVO.** `tests/test_mapa.py` se apagó con el hub; el nocturno ya no lo corre. El piso de `banco_pruebas/mapa_piso.json` es del camino viejo. Reescribirlo sobre `turno.py` es otra ficha: no se revive el test apagado contra el inventario nuevo.
+ - **ABIERTO** · **SIETE ROJOS DE LA CAPA 2, todos de cableado y con la interpretación perfecta escrita a mano.** C2-S05 el comparativo devuelve el propio producto de referencia; C2-S07 el uso "para jugar" no es un campo del catálogo; C2-S08 el pedido abierto no deriva rubros ni cuenta; C2-S13 "me haces ese precio" no lo certifica ningún tema; C2-S17 "ese" no ancla al producto del turno anterior; C2-E01 la G15 que no existe devuelve rubros que no son; C2-E04 el tema `defectuoso` existe con otro nombre y vuelve vacío.
+ - **ABIERTO** · **DOS CAMPOS QUE EL MODELO DECLARA Y NO LEE NADIE.** `contradicciones` no tiene una sola referencia ejecutable en `resolver.py`: la mesa la saca como pregunta, pero ninguna búsqueda la usa. Y `atributos[].campo` sigue sin acotar la ficha en el resolver —se pide entera— aunque la mesa después proyecte solo el campo pedido.
+diff --git a/app/core/tabla.py b/app/core/tabla.py
+index d2fd59c..9d045f2 100644
+--- a/app/core/tabla.py
++++ b/app/core/tabla.py
+@@ -617,6 +617,10 @@ _RE_PLATA = re.compile(r"\$\s*[\d][\d.,]*")
+ # producto, que es justo lo que el cliente tiene que leer.
+ _RE_ID_INTERNO = re.compile(r"\b[A-Z]{3}\d{4}\b")
+ _RE_JSON = re.compile(r'["\{\[]\s*"[a-z_]+"\s*:|"estado"\s*:|\{\s*"')
++# CUALQUIER NUMERO, no solo el de plata. Solo se mira en las casillas que NO
++# tienen material, y ahi es total: una fila sin material no tiene de donde
++# sacar una cifra, asi que toda cifra que aparezca la puso el modelo.
++_RE_NUMERO = re.compile(r"\b\d[\d.,]*\b")
+ 
+ 
+ def _numeros_del_texto(t: str) -> set:
+@@ -624,14 +628,36 @@ def _numeros_del_texto(t: str) -> set:
+             for m in _RE_PLATA.finditer(t or "")}
+ 
+ 
+-def _limpiar(texto: str, mesa: dict, trace_id: str = "") -> str:
+-    """La casilla del modelo, sin lo que no puede escribir."""
++def _numeros_sueltos(t: str) -> set:
++    return {re.sub(r"[.,]", "", m.group(0)) for m in _RE_NUMERO.finditer(t or "")}
++
++
++def _limpiar(texto: str, mesa: dict, trace_id: str = "",
++             fila: dict | None = None) -> str:
++    """La casilla del modelo, sin lo que no puede escribir.
++
++    LA CUARTA COMPROBACION, y es la mitad "no inventes" de la compuerta de
++    completitud: si la fila NO TRAE MATERIAL, la casilla no puede traer un
++    dato. Hasta hoy se miraban tres cosas -plata sin respaldo, id interno,
++    JSON- y las tres pasan por encima de una casilla `sin_material` que
++    conteste "tiene 8000 DPI": el numero no lleva signo pesos, no es un id y
++    no es JSON, asi que salia intacto. Es el caso C4-01 de los casos de oro y
++    la razon por la que la capa 4 medía 4 de 10.
++
++    La regla es TOTAL y no depende de reconocer una redaccion: sobre una fila
++    sin material, toda cifra que no este en la mesa -ni en lo que pregunto el
++    cliente, ni en el material de otra fila, ni en el bloque sellado- se cae
++    con su oracion. Una fila sin material no tiene de donde sacar una cifra.
++    """
+     texto = (texto or "").strip()
+     if not texto:
+         return ""
+     respaldo = _numeros_del_texto(mesa.get("bloque") or "")
+     respaldo |= _numeros_del_texto(
+         json.dumps(mesa.get("puntos") or [], ensure_ascii=False, default=str))
++    sin_material = fila is not None and not (fila.get("material") or [])
++    datos = (_numeros_sueltos(json.dumps(mesa, ensure_ascii=False, default=str))
++             if sin_material else set())
+     fuera = []
+     for oracion in re.split(r"(?<=[.!?])\s+", texto):
+         motivo = ""
+@@ -642,6 +668,10 @@ def _limpiar(texto: str, mesa: dict, trace_id: str = "") -> str:
+             motivo = "id_interno"
+         elif _RE_JSON.search(oracion):
+             motivo = "json_filtrado"
++        elif sin_material:
++            inventados = _numeros_sueltos(oracion) - datos
++            if inventados:
++                motivo = f"dato_sin_material:{sorted(inventados)[:3]}"
+         if motivo:
+             log.warning("casilla_podada", trace_id=trace_id, motivo=motivo,
+                         oracion=oracion[:120])
+@@ -662,13 +692,50 @@ def _limpiar(texto: str, mesa: dict, trace_id: str = "") -> str:
+     return limpio
+ 
+ 
+-def armar(respuesta: dict, mesa: dict, trace_id: str = "") -> str:
++def _pregunta_por(pregunta: str, fila: dict) -> bool:
++    """Si la pregunta que escribio el modelo habla del punto que quedo abierto.
++
++    NO ES ENTENDER CASTELLANO, y por eso se puede confiar: alcanza con que
++    comparta una palabra con lo que el cliente pidio en esa fila. Es el mismo
++    puente por palabras que `_pega` ya usa para aparear pregunta y evidencia.
++
++    Existe porque la `pregunta_final` del modelo le ganaba SIEMPRE a la del
++    codigo: un turno con un punto sin contestar salia con la pregunta de venta
++    que al modelo se le ocurriera -"te lo armo?"- y el punto abierto quedaba
++    tapado. Una pregunta que no habla de lo que falta no cierra el hueco.
++    """
++    if not pregunta:
++        return False
++    del_punto = (_palabras(fila.get("pregunto")) | _palabras(fila.get("termino"))) - _VACIAS
++    return bool(del_punto and (_palabras(pregunta) & del_punto))
++
++
++def armar(respuesta: dict, mesa: dict, trace_id: str = "",
++          informe: dict | None = None) -> str:
+     """El mensaje al cliente, armado desde la tabla llena.
+ 
+     `respuesta` es lo que devolvio el modelo con el esquema de arriba. `mesa` es
+     lo que devolvio `tabla()`. El orden manda la mesa, no la respuesta: si el
+     modelo devolvio los puntos en otro orden, se reordenan; si se salteo uno,
+     se ve.
++
++    `informe`, si viene, se llena con lo que la compuerta vio: los puntos que
++    quedaron ABIERTOS, los que el modelo salteo teniendo material, y si el
++    turno salio con pregunta. Es lo que hace que el turno deje de loguearse
++    como correcto cuando no lo es.
++
++    ── LA COMPUERTA DE COMPLETITUD ──────────────────────────────────────────
++    El estado de la fila MANDA sobre lo que escribio el modelo. Hasta hoy una
++    fila `sin_material` o `pregunta` solo contaba como abierta si la casilla
++    volvia VACIA: si el modelo escribia cualquier cosa encima, la fila se daba
++    por contestada y el turno se despachaba entero. O sea que la mesa medía
++    bien lo que faltaba y despues nadie usaba esa medicion.
++
++    Medido en vivo el 3-sep, turnos tg_524215778 y tg_524215783: la mesa dijo
++    que quedaban puntos sin contestar, el mensaje salio igual, y el log dijo
++    `turno_ok`. Ahora una fila abierta es abierta aunque el modelo haya escrito
++    encima: su texto sale si es honesto, pero el turno TERMINA PREGUNTANDO por
++    ella. Una sola pregunta por turno, la del primer punto abierto.
+     """
+     dicho = {str(p.get("id")): str(p.get("texto") or "").strip()
+              for p in (respuesta.get("puntos") or []) if isinstance(p, dict)}
+@@ -678,6 +745,7 @@ def armar(respuesta: dict, mesa: dict, trace_id: str = "") -> str:
+         partes.append(ap)
+ 
+     sin_contestar = []
++    salteados = []
+     hay_cuenta = False
+     for fila in mesa.get("puntos") or []:
+         pid, estado = fila.get("id"), fila.get("estado")
+@@ -690,12 +758,18 @@ def armar(respuesta: dict, mesa: dict, trace_id: str = "") -> str:
+             # cualquier vendedor. Es lo unico que se saca del orden del cliente.
+             hay_cuenta = True
+             continue
+-        texto = _limpiar(dicho.get(pid, ""), mesa, trace_id)
+-        if texto:
+-            partes.append(texto)
+-        elif estado in ("sin_material", "pregunta"):
++        texto = _limpiar(dicho.get(pid, ""), mesa, trace_id, fila)
++        if estado in ("sin_material", "pregunta"):
++            # ABIERTA AUNQUE EL MODELO HAYA ESCRITO. Su texto sale -decir "no
++            # tengo ese dato" es lo correcto- pero no cierra el punto: la
++            # compuerta de abajo se asegura de que el turno pregunte por el.
+             sin_contestar.append(fila)
++            if texto:
++                partes.append(texto)
++        elif texto:
++            partes.append(texto)
+         else:
++            salteados.append(fila)
+             # EL MODELO SE SALTEO UN PUNTO QUE SI TENIA CON QUE CONTESTAR, y eso
+             # NO se tapa con una pregunta al cliente: preguntarle por algo que
+             # el sistema sabia contestar es peor que no decirlo, porque lo hace
+@@ -710,17 +784,28 @@ def armar(respuesta: dict, mesa: dict, trace_id: str = "") -> str:
+         partes.append(mesa["bloque"].strip())
+ 
+     pregunta = str(respuesta.get("pregunta_final") or "").strip()
+-    if not pregunta and sin_contestar:
++    if sin_contestar and not _pregunta_por(pregunta, sin_contestar[0]):
+         # EL CODIGO NO REDACTA, PERO NO DEJA UN HUECO MUDO. Si el modelo no
+         # pregunto por lo que quedo sin contestar, la escribe el codigo. Y la
+         # escribe SEGUN EL TIPO, no pegando el renglon crudo: pegado quedaba
+         # "Una cosa para no equivocarme: que no sea caro, me lo confirmas?",
+         # que es exactamente el riesgo de que el codigo arme prosa. Una sola
+         # pregunta, la del primer punto que quedo abierto.
++        #
++        # LA CONDICION CAMBIO EL 3-SEP y es la mitad "no despaches" de la
++        # compuerta: antes bastaba con que el modelo escribiera CUALQUIER
++        # pregunta para que el punto abierto quedara sin preguntar. Ahora su
++        # pregunta se conserva solo si habla del punto; si no, la reemplaza la
++        # del codigo. Sigue habiendo UNA sola pregunta por turno.
+         pregunta = _pregunta_del_codigo(sin_contestar[0])
+     if pregunta:
+         partes.append(pregunta)
+ 
++    if isinstance(informe, dict):
++        informe["abiertos"] = [f.get("id") for f in sin_contestar]
++        informe["salteados"] = [f.get("id") for f in salteados]
++        informe["pregunto"] = bool(pregunta)
++
+     mensaje = "\n\n".join(x for x in partes if x)
+     # LA VALVULA, UNA SOLA VEZ Y AL FINAL. Si de todo el turno no quedo nada que
+     # decir, el que llama cae al mensaje de demanda: es preferible a mandar un
+@@ -768,4 +853,16 @@ def _pregunta_del_codigo(fila: dict) -> str:
+         cosa = que[len("si hay stock de "):] if que.startswith("si hay stock de ") else que
+         return (f"De {cosa} no llegue a confirmarte el stock. "
+                 f"Me decis la marca o el modelo y lo busco?")
++    # LOS DOS MOLDES DE PLATA (3-sep-2026). Estos dos puntos se abren `sellado`
++    # cuando hay cuenta y `sin_material` cuando no la hay, asi que desde que la
++    # compuerta pregunta por todo punto abierto pasaron a caer aca seguido. Con
++    # el molde generico salia "Sobre el precio de lo que pidio no tengo el dato
++    # confirmado", que le echa al catalogo la culpa de algo que en realidad es
++    # que todavia no se sabe QUE cotizar.
++    if tipo == "pide_precio":
++        return ("Para pasarte el precio me falta cerrar cual y cuantos. "
++                "Me lo confirmas y te lo armo?")
++    if tipo == "reparto_pago":
++        return ("Del reparto del pago todavia no tengo el total armado. "
++                "Cerramos el pedido y te lo divido?")
+     return f"Sobre {que} no tengo el dato confirmado. Me lo precisas un poco?"
+diff --git a/app/core/turno.py b/app/core/turno.py
+index aefc49e..f99bc86 100644
+--- a/app/core/turno.py
++++ b/app/core/turno.py
+@@ -12,7 +12,10 @@
+       4. REDACTAR      llamada DOS. Devuelve la tabla LLENA, con esquema. No
+       |                escribe numeros de plata: no tiene donde.
+       5. ARMAR         codigo. Ordena, pega la cuenta sellada al final y, si
+-      |                quedo un punto sin contestar, escribe UNA pregunta.
++      |                quedo un punto sin contestar, escribe UNA pregunta. El
++      |                estado de la fila manda sobre lo que escribio el modelo:
++      |                una fila abierta se pregunta aunque el modelo escribiera
++      |                encima, y una fila sin material no puede traer cifras.
+       6. CIERRE        codigo. Lead o datos de cobro, y la memoria del turno.
+ 
+ LO QUE YA NO EXISTE, a proposito: las cuatro puertas de salida con sus
+@@ -1022,11 +1025,12 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
+ 
+     # ── 4. REDACTAR Y 5. ARMAR ──────────────────────────────────────────
+     sin_modelo = False
++    informe: dict = {}
+     if mesa["puntos"]:
+         with _reloj(etapas, "redactor"):
+             respuesta, sin_modelo = await _redactar(
+                 negocio, memoria, history, raw_message, mesa, trace_id)
+-        texto = (TB.armar(respuesta, mesa, trace_id)
++        texto = (TB.armar(respuesta, mesa, trace_id, informe)
+                  if not sin_modelo else "")
+     else:
+         # Sin puntos el modelo ya contesto en la llamada uno: un saludo, un
+@@ -1158,8 +1162,23 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
+     except Exception as e:  # noqa: BLE001
+         log.warning("turno_save_error", trace_id=trace_id, error=str(e)[:150])
+ 
++    # ── 9. LO QUE LA COMPUERTA VIO ──────────────────────────────────────
++    #
++    # UN TURNO INCOMPLETO DEJA DE LOGUEARSE COMO CORRECTO. Medido en vivo el
++    # 3-sep: los turnos tg_524215778 y tg_524215783 salieron con puntos que la
++    # mesa sabia sin contestar, y el unico renglon que quedo en el log fue
++    # `turno_ok`. Desde afuera -que es el unico lugar desde donde se mira
++    # produccion- el turno pasaba por bueno. El aviso va ANTES del `turno_ok`
++    # para que el que lee los logs de arriba hacia abajo lo vea pegado.
++    if informe.get("abiertos") or informe.get("salteados"):
++        log.warning("turno_incompleto", trace_id=trace_id,
++                    abiertos=informe.get("abiertos") or [],
++                    salteados=informe.get("salteados") or [],
++                    pregunto=bool(informe.get("pregunto")))
+     log.info("turno_ok", trace_id=trace_id,
+              latency_ms=int((time.time() - t0) * 1000),
+              etapas=etapas, largo=len(texto or ""),
+-             puntos=len(mesa["puntos"]))
++             puntos=len(mesa["puntos"]),
++             abiertos=len(informe.get("abiertos") or []),
++             salteados=len(informe.get("salteados") or []))
+     return texto
+diff --git a/app/storage/firestore_client.py b/app/storage/firestore_client.py
+index d0ee01f..fdf9681 100644
+--- a/app/storage/firestore_client.py
++++ b/app/storage/firestore_client.py
+@@ -145,6 +145,13 @@ def get_all_products(force_refresh: bool = False, tienda_id: str | None = None)
+     except Exception as e:
+         log.warning("catalog_enriquecer_failed", tienda_id=tid, error=str(e)[:150])
+ 
++    if not productos:
++        # UNA LECTURA VACIA NO SE CACHEA. Ver `get_all_faq`: es la misma linea
++        # y la misma media hora de silencio.
++        log.error("catalogo_vacio_en_firestore", tienda_id=tid,
++                  ruta=f"tiendas/{tid}/productos")
++        return []
++
+     _catalog_cache[tid] = productos
+     _catalog_cache_ts[tid] = now
+     log.info("catalog_loaded_from_firestore", tienda_id=tid, count=len(productos))
+@@ -279,6 +286,23 @@ def invalidate_cache(tienda_id: str | None = None):
+ 
+ 
+ def get_all_faq(force_refresh: bool = False, tienda_id: str | None = None) -> dict:
++    """La FAQ de la tienda. Una lectura VACIA no se cachea y se grita.
++
++    LA MEDIA HORA MUDA DEL 25-AGO, y es la unica linea que quedaba de la
++    familia. Firestore no falla cuando se lee una ruta que no existe: devuelve
++    cero documentos, sin excepcion y sin aviso. Si `tid` no es la tienda que
++    esta cargada -y el 25-ago quedo el default `tienda_principal` colgando
++    despues de sacar los defaults-, `tiendas/<tid>/faq` no existe, la funcion
++    devolvia un diccionario vacio, LO CACHEABA UNA HORA, y el bot se quedaba
++    contestando que no tiene politica sobre nada. Los cincuenta temas estaban
++    en la base; el turno leia de una ruta que no.
++
++    Dos cosas cambian y las dos son de una linea. La primera: un vacio no entra
++    al cache, asi que el proximo turno vuelve a preguntarle a Firestore en vez
++    de repetir el silencio durante una hora. La segunda: sale como ERROR con la
++    ruta que se leyo, que es lo unico que hacia falta para verlo desde afuera.
++    Una tienda sin un solo tema no es un estado valido: es la ruta equivocada.
++    """
+     global _faq_cache, _faq_cache_ts
+     tid = tienda_id or settings.TIENDA_ID
+     now = time.time()
+@@ -290,8 +314,14 @@ def get_all_faq(force_refresh: bool = False, tienda_id: str | None = None) -> di
+     for doc in docs:
+         faq[doc.id] = doc.to_dict()
+ 
++    if not faq:
++        log.error("faq_vacia_en_firestore", tienda_id=tid,
++                  ruta=f"tiendas/{tid}/faq")
++        return {}
++
+     _faq_cache[tid] = faq
+     _faq_cache_ts[tid] = now
++    log.info("faq_loaded_from_firestore", tienda_id=tid, count=len(faq))
+     return faq
+ 
+ 
+diff --git a/banco_pruebas/produccion.py b/banco_pruebas/produccion.py
+index fe30163..0279de8 100644
+--- a/banco_pruebas/produccion.py
++++ b/banco_pruebas/produccion.py
+@@ -22,10 +22,19 @@ no toca produccion, no gasta una llamada al modelo: los invariantes son
+ aritmetica y texto. No necesita clave de LLM, ni la gratis ni la paga.
+ 
+ USO:
+-    python3 banco_pruebas/produccion.py              # las ultimas 20 charlas
++    python3 banco_pruebas/produccion.py --desde 18h   # solo lo NUEVO
+     python3 banco_pruebas/produccion.py --limite 50
+     python3 banco_pruebas/produccion.py --usuario 5493547504287
+ 
++LA VENTANA ES LO QUE HACE COMPARABLE EL NUMERO (3-sep-2026). Sin `--desde`
++esto pide una pagina de conversaciones y Firestore la devuelve por orden de
++NOMBRE, o sea siempre las mismas charlas viejas, y el denominador de "defectos
++por charla" termina siendo `--limite`. Medido: el mismo estado del bot dio 0,8
++y 0,20 en dos corridas sin que cambiara un solo defecto. Con `--desde` se
++recorren todas las paginas y se auditan solo las charlas tocadas dentro de la
++ventana: el denominador pasa a ser una cantidad del mundo y dos corridas con la
++misma ventana se pueden comparar.
++
+ CREDENCIAL: la env `GCP_SA_KEY_B64`, que trae la clave de `claude-lector`
+ (logging.viewer + datastore.viewer). Sin ella el script avisa y sale sin error,
+ para que corra en cualquier lado sin romper nada. Tambien acepta un access token
+@@ -40,10 +49,12 @@ import argparse
+ import base64
+ import json
+ import os
++import re
+ import sys
+ import time
+ import urllib.parse
+ import urllib.request
++from datetime import datetime
+ from pathlib import Path
+ 
+ _RAIZ = Path(__file__).resolve().parent.parent
+@@ -123,26 +134,99 @@ def _respuestas_del_bot(doc: dict) -> list:
+     return salida
+ 
+ 
+-def charlas(tok: str, limite: int = 20, usuario: str = "") -> list:
+-    """[(user_id, [respuestas])] de las conversaciones vivas."""
++def ventana_a_segundos(txt: str) -> int:
++    """`18h`, `2d`, `30m` a segundos. Cero si no se entiende o viene vacio."""
++    m = re.fullmatch(r"(\d+)\s*([smhd])", (txt or "").strip().lower())
++    if not m:
++        return 0
++    return int(m.group(1)) * {"s": 1, "m": 60, "h": 3600, "d": 86400}[m.group(2)]
++
++
++def _cuando(doc: dict) -> float:
++    """El `updateTime` del documento, en epoch. Cero si no vino."""
++    t = str(doc.get("updateTime") or "").strip()
++    if not t:
++        return 0.0
++    # Firestore manda NANOsegundos y `fromisoformat` solo aguanta micro. La
++    # fraccion se tira entera: la ventana mas corta que se pide son minutos.
++    t = re.sub(r"\.\d+", "", t).replace("Z", "+00:00")
++    try:
++        return datetime.fromisoformat(t).timestamp()
++    except ValueError:
++        return 0.0
++
++
++def charlas(tok: str, limite: int = 20, usuario: str = "",
++            desde_s: int = 0) -> tuple:
++    """`([(user_id, [respuestas])], meta)` de las conversaciones vivas.
++
++    LA VENTANA, Y ES LA MITAD DEL INSTRUMENTO (3-sep-2026). Sin ella esta
++    funcion pedia UNA pagina de `pageSize=limite` y Firestore la devuelve en
++    orden de NOMBRE de documento, o sea siempre las mismas charlas viejas. Dos
++    consecuencias, las dos medidas: el puente re-auditaba las mismas cinco
++    charlas corrida tras corrida, y como el denominador de "defectos por
++    charla" era `limite`, el numero se movia entre 0,8 y 0,20 sin que cambiara
++    UN SOLO defecto. Un instrumento cuyo numero depende de cuanto le pedis no
++    mide nada.
++
++    Con `desde_s` se recorren TODAS las paginas y se queda solo lo que se toco
++    dentro de la ventana. Ahi el denominador pasa a ser "las charlas que hubo
++    en la ventana", que es una cantidad del mundo y no del pedido, y dos
++    corridas con la misma ventana se pueden comparar.
++
++    `limite` deja de elegir el conjunto y queda como tope de seguridad.
++    """
+     if usuario:
+         doc = _get(f"{_BASE}/tiendas/{TIENDA}/conversaciones/{usuario}", tok)
+-        return [(usuario, _respuestas_del_bot(doc))]
+-    url = (f"{_BASE}/tiendas/{TIENDA}/conversaciones"
+-           f"?pageSize={max(1, min(int(limite), 300))}")
+-    datos = _get(url, tok)
+-    out = []
+-    for doc in datos.get("documents", []) or []:
+-        uid = str(doc.get("name", "")).rsplit("/", 1)[-1]
+-        out.append((uid, _respuestas_del_bot(doc)))
+-    return out
++        return ([(usuario, _respuestas_del_bot(doc))],
++                {"ventana_s": 0, "vistas": 1, "usuario": usuario})
++
++    tope = max(1, min(int(limite), 300))
++    corte = (time.time() - desde_s) if desde_s else 0
++    out, vistas, token = [], 0, ""
++    while True:
++        url = (f"{_BASE}/tiendas/{TIENDA}/conversaciones"
++               f"?pageSize={300 if desde_s else tope}")
++        if token:
++            url += f"&pageToken={urllib.parse.quote(token)}"
++        datos = _get(url, tok)
++        for doc in datos.get("documents", []) or []:
++            vistas += 1
++            if corte and _cuando(doc) < corte:
++                continue
++            uid = str(doc.get("name", "")).rsplit("/", 1)[-1]
++            out.append((uid, _respuestas_del_bot(doc)))
++            if len(out) >= tope:
++                break
++        token = datos.get("nextPageToken") or ""
++        if len(out) >= tope or not token or not desde_s:
++            break
++    return out, {"ventana_s": desde_s, "vistas": vistas, "usuario": ""}
+ 
+ 
+ # ── EL INFORME ──────────────────────────────────────────────────────────────
+-def informe(revisadas: list) -> str:
++def informe(revisadas: list, meta: dict | None = None) -> str:
++    meta = meta or {}
+     lineas = ["", "=" * 78,
+               "PRODUCCION COMO BANCO — los invariantes sobre las charlas REALES",
+               "=" * 78, ""]
++    # QUE CONJUNTO SE MIDIO, ARRIBA DE TODO. Un numero sin su denominador se
++    # compara con el de la corrida anterior y no significa nada.
++    if meta.get("usuario"):
++        lineas += [f"CONJUNTO: la charla {meta['usuario']}, sola.", ""]
++    elif meta.get("ventana_s"):
++        horas = meta["ventana_s"] / 3600
++        lineas += [f"VENTANA: las ultimas {horas:.0f} horas. "
++                   f"Se miraron {meta.get('vistas', 0)} charlas y entraron "
++                   f"{len(revisadas)}.",
++                   "Dos corridas con la MISMA ventana se comparan; con "
++                   "ventanas distintas, no.", ""]
++    else:
++        lineas += ["SIN VENTANA: se midieron las primeras charlas por orden de "
++                   "id, que son siempre las mismas.",
++                   "El numero de abajo se mueve con --limite y NO se compara "
++                   "con el de otra corrida. Pasa --desde para que se pueda.",
++                   ""]
+     total_turnos = sum(len(m) for _, m, _ in revisadas)
+     con_falla = [r for r in revisadas if r[2]]
+     todas = [f for _, _, fs in revisadas for f in fs]
+@@ -182,9 +266,19 @@ def informe(revisadas: list) -> str:
+ 
+ def main(argv: list) -> int:
+     ap = argparse.ArgumentParser(description=__doc__)
+-    ap.add_argument("--limite", type=int, default=20)
++    ap.add_argument("--limite", type=int, default=20,
++                    help="tope de charlas. Con --desde es solo un tope de "
++                         "seguridad: el conjunto lo elige la ventana.")
+     ap.add_argument("--usuario", default="")
++    ap.add_argument("--desde", default="",
++                    help="ventana de tiempo: 30m, 18h, 2d. Audita SOLO las "
++                         "charlas tocadas dentro de la ventana, que es lo "
++                         "unico que hace comparables dos corridas.")
+     args = ap.parse_args(argv)
++    desde_s = ventana_a_segundos(args.desde)
++    if args.desde and not desde_s:
++        print(f"No entiendo la ventana '{args.desde}'. Se espera 30m, 18h o 2d.")
++        return 1
+ 
+     tok = _token()
+     if not tok:
+@@ -194,7 +288,7 @@ def main(argv: list) -> int:
+         return 0
+ 
+     try:
+-        crudas = charlas(tok, args.limite, args.usuario)
++        crudas, meta = charlas(tok, args.limite, args.usuario, desde_s)
+     except Exception as e:
+         print(f"No se pudieron bajar las charlas: {type(e).__name__}: {e}")
+         return 1
+@@ -206,10 +300,17 @@ def main(argv: list) -> int:
+         revisadas.append((uid, mensajes, revisar_charla(mensajes)))
+ 
+     if not revisadas:
+-        print("No hay charlas con respuestas del bot para revisar.")
++        # NO ES LO MISMO "no hubo" que "no anduvo", y con ventana hay que
++        # decirlo: cero charlas nuevas es un resultado valido del instrumento.
++        if desde_s:
++            print(f"Ninguna charla se toco en las ultimas "
++                  f"{desde_s / 3600:.0f} horas. Se miraron "
++                  f"{meta.get('vistas', 0)}. No hay nada nuevo que auditar.")
++        else:
++            print("No hay charlas con respuestas del bot para revisar.")
+         return 0
+ 
+-    print(informe(revisadas))
++    print(informe(revisadas, meta))
+     return 0
+ 
+ 
+diff --git a/tests/test_puente_ventana.py b/tests/test_puente_ventana.py
+new file mode 100644
+index 0000000..48e323e
+--- /dev/null
++++ b/tests/test_puente_ventana.py
+@@ -0,0 +1,70 @@
++"""EL INSTRUMENTO: que el numero de defectos por charla se pueda comparar.
++
++POR QUE EXISTE ESTE ARCHIVO (3-sep-2026). `banco_pruebas/produccion.py` es el
++unico lugar del repo que da un numero sobre las charlas REALES, y ese numero se
++movio entre 0,8 y 0,20 en dos corridas seguidas sin que cambiara un solo
++defecto: pedia una pagina de conversaciones, Firestore la devuelve por orden de
++NOMBRE de documento -o sea siempre las mismas charlas viejas- y el denominador
++de la division terminaba siendo `--limite`, que es una cantidad del PEDIDO y no
++del mundo.
++
++Un instrumento cuyo numero depende de cuanto le pedis no mide nada, y peor: da
++la impresion de que algo mejoro o empeoro cuando lo unico que cambio fue el
++argumento. Estos tests son la vara de la ventana que lo arregla. Corren
++offline, sin credencial y sin tocar Firestore.
++
++Cada test dice sobre cuantos casos corrio (regla 10.6 de CLAUDE.md).
++"""
++import banco_pruebas.produccion as PR
++
++VENTANAS = [
++    ("30m", 1800),
++    ("18h", 64800),
++    ("2d", 172800),
++    ("45s", 45),
++    ("  6H ", 21600),
++    ("", 0),
++    ("xx", 0),
++    ("h", 0),
++]
++
++
++def test_la_ventana_se_lee_o_se_declara_invalida():
++    """Cero significa SIN VENTANA, nunca "una ventana rara que interpreto".
++    `main` corta con un mensaje antes de medir sobre un conjunto que no es el
++    que se pidio."""
++    for texto, esperado in VENTANAS:
++        assert PR.ventana_a_segundos(texto) == esperado, texto
++
++
++def test_cuantas_ventanas_se_probaron():
++    assert len(VENTANAS) == 8, f"se probaron {len(VENTANAS)}, esperaba 8"
++
++
++def test_el_reloj_de_firestore_se_lee_con_nanosegundos():
++    """Firestore manda NANOsegundos y `fromisoformat` solo aguanta micro. Si
++    esto devolviera cero, toda charla quedaria fuera de la ventana y la
++    auditoria diria "no hay nada nuevo" para siempre, que es el peor de los
++    fallos posibles: silencioso y con forma de buena noticia."""
++    t = PR._cuando({"updateTime": "2026-09-03T03:16:53.747618234Z"})
++    assert t > 1_700_000_000, t
++    assert PR._cuando({}) == 0.0
++    assert PR._cuando({"updateTime": "no es una fecha"}) == 0.0
++
++
++def test_sin_ventana_el_informe_avisa_que_el_numero_no_se_compara():
++    """La parte que evita que vuelva a pasar lo mismo por otro lado: si alguien
++    corre sin `--desde`, el informe lo dice arriba de todo en vez de dejar un
++    numero que parece comparable."""
++    texto = PR.informe([("u1", ["hola"], [])], {})
++    assert "SIN VENTANA" in texto, texto
++    assert "NO se compara" in texto, texto
++
++
++def test_con_ventana_el_informe_dice_cual_y_cuantas_entraron():
++    """Un denominador sin su conjunto es media medicion."""
++    texto = PR.informe([("u1", ["hola"], [])],
++                       {"ventana_s": 64800, "vistas": 37, "usuario": ""})
++    assert "ultimas 18 horas" in texto, texto
++    assert "37 charlas" in texto, texto
++    assert "entraron 1" in texto, texto
+diff --git a/tests/test_tabla.py b/tests/test_tabla.py
+index e1b4c28..9d76fbc 100644
+--- a/tests/test_tabla.py
++++ b/tests/test_tabla.py
+@@ -345,12 +345,114 @@ def test_una_sola_pregunta_por_mensaje():
+     assert salida.count("?") == 1, salida
+ 
+ 
++# ══════════════════════════════════════════════════════════════════════
++# LA COMPUERTA DE COMPLETITUD (3-sep-2026)
++#
++# Los cinco de abajo son la vara de la unica compuerta que queda, y cubren sus
++# dos mitades: que un punto abierto se PREGUNTE aunque el modelo haya escrito
++# encima, y que una casilla sin material no pueda traer un DATO.
++#
++# Medido en vivo la noche del 3-sep, turnos tg_524215778 y tg_524215783: la
++# mesa dijo que quedaban puntos sin contestar, el mensaje salio igual y el log
++# dijo `turno_ok`. La medicion existia y no gobernaba nada.
++# ══════════════════════════════════════════════════════════════════════
++
++def test_un_punto_abierto_se_pregunta_aunque_el_modelo_escriba_encima():
++    """La falla que despachaba turnos incompletos: bastaba con que el modelo
++    escribiera CUALQUIER cosa en la casilla para que el punto se diera por
++    contestado. El texto honesto sale, pero el punto sigue abierto."""
++    mesa = {"puntos": [
++        {"id": "atributos:1", "pregunto": "dpi de el mouse",
++         "estado": "sin_material", "material": []}]}
++    resp = {"puntos": [{"id": "atributos:1",
++                        "texto": "No tengo ese dato a mano."}]}
++    salida = TB.armar(resp, mesa)
++    assert "No tengo ese dato a mano." in salida, salida
++    assert salida.strip().endswith("?"), f"no termino preguntando:\n{salida}"
++    assert salida.count("?") == 1, salida
++
++
++def test_la_pregunta_del_modelo_que_no_habla_del_punto_abierto_se_reemplaza():
++    """`pregunta_final` le ganaba SIEMPRE a la del codigo, asi que una pregunta
++    de venta cualquiera tapaba el punto que faltaba. Una pregunta que no habla
++    de lo que falta no cierra el hueco."""
++    mesa = {"puntos": [
++        {"id": "stock:1", "pregunto": "si hay stock de una heladera",
++         "termino": "una heladera", "estado": "sin_material", "material": []}]}
++    salida = TB.armar({"puntos": [], "pregunta_final": "Te lo armo?"}, mesa)
++    assert "Te lo armo?" not in salida, salida
++    assert "heladera" in salida.lower(), salida
++    assert salida.count("?") == 1, salida
++
++
++def test_la_pregunta_del_modelo_que_si_habla_del_punto_abierto_se_conserva():
++    """La otra cara, y es la que evita que el codigo pise una pregunta MEJOR:
++    si el modelo pregunto por el punto abierto, esa queda. El puente es por
++    palabras, el mismo de `_pega`: no hay que entender castellano."""
++    mesa = {"puntos": [
++        {"id": "stock:1", "pregunto": "si hay stock de una heladera",
++         "termino": "una heladera", "estado": "sin_material", "material": []}]}
++    salida = TB.armar(
++        {"puntos": [], "pregunta_final": "De que heladera me hablas?"}, mesa)
++    assert "De que heladera me hablas?" in salida, salida
++    assert salida.count("?") == 1, salida
++
++
++def test_una_contradiccion_se_pregunta_aunque_el_modelo_la_conteste():
++    """Regla cero: resolver una contradiccion es elegir por el cliente. La mesa
++    ya la marcaba `pregunta` y el armado la daba por cerrada si el modelo
++    escribia algo. Es el teclado de $12.000 del turno 2dde2ad0."""
++    mesa = {"puntos": [
++        {"id": "contradicciones:1",
++         "pregunto": "pediste 6 articulos y nombraste 7 en el envio",
++         "estado": "pregunta", "material": []}]}
++    resp = {"puntos": [{"id": "contradicciones:1",
++                        "texto": "Lo dejo como vos dijiste."}],
++            "pregunta_final": "Arrancamos?"}
++    salida = TB.armar(resp, mesa)
++    assert "Arrancamos?" not in salida, salida
++    assert "articulos" in salida.lower(), salida
++    assert salida.count("?") == 1, salida
++
++
++def test_una_casilla_sin_material_no_puede_traer_un_numero():
++    """La mitad "no inventes". Es el caso C4-01: la ficha no tiene los DPI, el
++    material sale vacio, y el modelo igual escribe un numero con pinta de spec.
++    No lleva signo pesos, no es un id y no es JSON, asi que las tres
++    comprobaciones viejas lo dejaban pasar entero."""
++    mesa = {"puntos": [
++        {"id": "atributos:1", "pregunto": "dpi de el mouse",
++         "estado": "sin_material", "material": []}]}
++    resp = {"puntos": [{"id": "atributos:1",
++                        "texto": "El mouse tiene 8000 DPI."}]}
++    salida = TB.armar(resp, mesa)
++    assert "8000" not in salida, salida
++    assert salida.strip().endswith("?"), salida
++
++
++def test_el_informe_dice_que_quedo_abierto_y_que_se_salteo():
++    """Lo que hace que el turno deje de loguearse como correcto: `armar` no
++    decide sola que hacer con eso, lo DECLARA, y `turno.py` lo loguea."""
++    mesa = {"puntos": [
++        {"id": "items:1", "pregunto": "1 mouse", "estado": "con_material",
++         "material": [{"id": "MOU0023"}]},
++        {"id": "stock:1", "pregunto": "si hay stock de una heladera",
++         "estado": "sin_material", "material": []}]}
++    informe: dict = {}
++    TB.armar({"puntos": []}, mesa, "t-informe", informe)
++    assert informe["abiertos"] == ["stock:1"], informe
++    assert informe["salteados"] == ["items:1"], informe
++    assert informe["pregunto"] is True, informe
++
++
+ MOLDES = [
+     ("contradicciones:1", "pediste 2 mouse y nombraste 3 destinos"),
+     ("restricciones:1", "que le dure años"),
+     ("atributos:1", "cancelacion de ruido de los HyperX"),
+     ("stock:1", "si hay stock de una heladera"),
+     ("temas:1", "la politica de cambios"),
++    ("pide_precio:1", "el precio de lo que pidio"),
++    ("reparto_pago:1", "reparto del pago 70/30"),
+ ]
+ 
+ 
+@@ -367,7 +469,7 @@ def test_la_pregunta_del_codigo_sale_legible(pid, que):
+ 
+ 
+ def test_cuantos_moldes_de_pregunta_se_probaron():
+-    assert len(MOLDES) == 5, f"se probaron {len(MOLDES)}, esperaba 5"
++    assert len(MOLDES) == 7, f"se probaron {len(MOLDES)}, esperaba 7"
+ 
+ 
+ def test_la_cuenta_va_al_final_y_antes_de_la_pregunta(firestore_doble):
+diff --git a/tests/test_turno.py b/tests/test_turno.py
+index fa2f669..3291033 100644
+--- a/tests/test_turno.py
++++ b/tests/test_turno.py
+@@ -185,5 +185,27 @@ async def test_el_orchestrator_entra_por_el_turno_nuevo(monkeypatch,
+     assert out == "ok" and llamado.get("si")
+ 
+ 
++@pytest.mark.asyncio
++async def test_un_punto_abierto_pregunta_aunque_el_modelo_lo_conteste(
++        monkeypatch, firestore_doble):
++    """LA COMPUERTA DE COMPLETITUD, de punta a punta. El modelo escribe encima
++    de la casilla sin material -que es lo que hacia que el turno se despachara
++    entero- y el turno igual termina preguntando por ese punto.
++
++    Es el turno tg_524215778 del 3-sep: la mesa sabia que faltaba, el mensaje
++    salio sin preguntar, y el log dijo `turno_ok`."""
++    declarado = {"items": [],
++                 "atributos": [{"de": "el Genius DX-110", "campo": "dpi"}]}
++    respuesta = {"apertura": "", "pregunta_final": "Te lo armo?",
++                 "puntos": [{"id": "atributos:1",
++                             "texto": "Ese modelo anda muy bien."}]}
++    _doblar(monkeypatch, declarado, respuesta)
++    texto = await T.procesar_turno("u-nueve", "cuantos dpi tiene el Genius "
++                                              "DX-110", TIENDA, "test", "t9")
++    assert "Te lo armo?" not in texto, texto
++    assert texto.strip().endswith("?"), f"no termino preguntando:\n{texto}"
++    assert "dpi" in texto.lower(), texto
++
++
+ def test_cuantos_turnos_se_probaron():
+-    assert len([f for f in globals() if f.startswith("test_")]) == 8
++    assert len([f for f in globals() if f.startswith("test_")]) == 9
+-- 
+2.43.0
+
