@@ -936,7 +936,12 @@ def _obligaciones(texto: str, mesa: dict, negocio: str, primera_vez: bool,
     from app.core import guardas_salida as gs
     from app.core import camino_cobro as cc
     try:
-        texto = gs.asegurar_honestidad_bot(texto, mensaje)
+        # (mensaje del cliente, respuesta, nombre del negocio). Hasta el 3-sep
+        # se llamaba con dos argumentos y cruzados: tiraba TypeError en CADA
+        # turno, el `except` de abajo lo tapaba, y la guarda que declara que es
+        # un bot no corrio nunca. Se veia en produccion como `turno_guarda_error`
+        # dos veces en dos turnos seguidos.
+        texto = gs.asegurar_honestidad_bot(mensaje, texto, negocio)
         texto = (gs.con_saludo_inicial(texto, negocio, tienda_id)
                  if primera_vez else gs.sin_saludo_del_modelo(texto))
     except Exception as e:  # noqa: BLE001 — una guarda no tumba el turno

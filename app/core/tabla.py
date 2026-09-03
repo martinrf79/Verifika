@@ -601,7 +601,21 @@ ESQUEMA_RESPUESTA = {
 # mudo es peor que un turno feo. Si la poda se lleva todo, se deja el texto.
 
 _RE_PLATA = re.compile(r"\$\s*[\d][\d.,]*")
-_RE_ID_INTERNO = re.compile(r"\b[A-Z]{2,4}\d{3,5}\b")
+# EL ID INTERNO ES EXACTAMENTE TRES LETRAS Y CUATRO DIGITOS: PAR0016, TAB0003,
+# AUR0001. Son 881 de los 900 codigos del catalogo. Los otros 19 -AG400, AK500,
+# AK620, AP201- NO son ids: son el modelo PUBLICO, la parte del nombre que el
+# cliente lee en la caja.
+#
+# Con `[A-Z]{2,4}\d{3,5}` la regla se comia esos modelos, y el 3-sep a las 03:16
+# se vio el precio en produccion: "SP-HF180" hizo match por "HF180" y la poda
+# borro las dos casillas enteras del turno tg_524215782, una de ellas con el
+# presupuesto adentro. El cliente pregunto por parlantes y recibio un mensaje
+# sin los parlantes. La casilla quedo con material y sin texto, que es lo que
+# despues logueo `punto_con_material_sin_texto`.
+#
+# El molde ajustado no pierde un solo id real y deja pasar el nombre del
+# producto, que es justo lo que el cliente tiene que leer.
+_RE_ID_INTERNO = re.compile(r"\b[A-Z]{3}\d{4}\b")
 _RE_JSON = re.compile(r'["\{\[]\s*"[a-z_]+"\s*:|"estado"\s*:|\{\s*"')
 
 
