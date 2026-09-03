@@ -71,7 +71,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest coverage
+          pip install pytest coverage pytest-asyncio==1.4.0
 
       # LA COMPUERTA VA PRIMERA. Estuvo tercera hasta el 13-ago y ese orden se
       # pago: el candado del mapa se puso rojo, el paso de la compuerta quedo
