@@ -207,14 +207,21 @@ jobs:
           python3 - <<'PY' > cuerpo.md
           import pathlib
 
-          def leer(nombre, tope):
+          # DE QUE PUNTA SE RECORTA. La auditoria termina con el resumen y los
+          # numeros, asi que de ella se guarda la COLA. Los logs vienen del mas
+          # nuevo al mas viejo, asi que guardar la cola era guardar lo VIEJO y
+          # tirar lo recien pasado. El 3-sep se pidio una ventana de un dia para
+          # medir el turno nuevo y el informe volvio con las 24 horas anteriores
+          # al deploy: el recorte se habia comido justo lo unico que se queria
+          # ver. De los logs se guarda la CABEZA.
+          def leer(nombre, tope, punta):
               t = pathlib.Path(nombre).read_text(encoding="utf-8", errors="replace")
               if len(t) <= tope:
                   return t, False
-              return t[-tope:], True
+              return (t[:tope] if punta == "cabeza" else t[-tope:]), True
 
-          audit, cort_a = leer("auditoria.txt", 20000)
-          logs, cort_l = leer("logs.txt", 38000)
+          audit, cort_a = leer("auditoria.txt", 20000, "cola")
+          logs, cort_l = leer("logs.txt", 38000, "cabeza")
 
           print("## Informe del puente\n")
           print("### Invariantes sobre las charlas REALES\n")
@@ -225,7 +232,7 @@ jobs:
           print("```\n")
           print("### Logs de Cloud Run\n")
           if cort_l:
-              print("_Recortado: se muestran los ultimos 38.000 caracteres._\n")
+              print("_Recortado: se muestran los PRIMEROS 38.000 caracteres, que son los mas NUEVOS._\n")
           print("```")
           print(logs.rstrip())
           print("```")

@@ -2,20 +2,49 @@
 EL TERMOMETRO. Salió de app/ en la FICHA 48.
 
 No muta el mensaje. Afirma propiedades que ninguna respuesta correcta viola.
-El vivo solo guarda `_RE_ITEM` y `pago_parcial` en app/verifika/invariantes.py,
-porque el cobro y la salida los necesitan en la imagen. El resto —revisar,
-revisar_charla y las reglas— corre en el banco y en la batería, no en el turno.
+Hasta el 3-sep cuatro piezas se importaban del vivo. El vivo que las tenía
+—el cobro y la salida— se apagó con el hub, así que ahora viven acá abajo y
+este archivo no importa nada de app/. Revisar, revisar_charla y las reglas
+corren en el banco y en la batería, nunca en el turno.
 
 Snapshot del archivo completo: archivo/invariantes_20260902.py.
 """
 import re
+import unicodedata
 
-from app.verifika.invariantes import (  # noqa: E402
-    _RE_ITEM,
-    _n,
-    _plata,
-    pago_parcial,
-)
+# EL TERMOMETRO SE BASTA SOLO, y desde el 3-sep no le queda mas remedio. Estas
+# cuatro piezas se importaban de `app/verifika/invariantes.py`, que se apago con
+# el hub y quedo en `archivo/plomeria_apagada/`. El import colgado no rompio
+# ningun test —la bateria no llega hasta aca— pero SI rompio la auditoria de
+# produccion del puente, con `ModuleNotFoundError: No module named
+# 'app.verifika'` en el runner, y la rompio la unica noche en que habia que
+# medir el turno nuevo contra charlas reales. Copiadas aca, que es donde este
+# archivo dice vivir desde la FICHA 48: el banco no depende del vivo.
+_RE_ITEM = re.compile(
+    r"^\s*-\s*(?P<cant>\d+)\s*x\s+(?P<nombre>.+?):\s*\$(?P<unit>[\d\.]+)\s*"
+    r"c/u\s*=\s*\$(?P<sub>[\d\.]+)\s*$", re.MULTILINE)
+
+# "Sena 20%: $42.200 (pago parcial)" — lo escribe `_label_extra` de la
+# calculadora y es la marca de que el cliente NO paga el total ahora.
+_RE_PAGO_PARCIAL = re.compile(
+    r"^\s*[^:\n]{2,40}?\s*:\s*\$(?P<monto>[\d\.]+)\s*\(pago parcial\)\s*$",
+    re.IGNORECASE | re.MULTILINE)
+
+
+def _n(s) -> str:
+    s = unicodedata.normalize("NFKD", re.sub(r"\s+", " ", str(s or "")).strip().lower())
+    return "".join(c for c in s if not unicodedata.combining(c))
+
+
+def _plata(s) -> int:
+    return int(str(s).replace(".", ""))
+
+
+def pago_parcial(mensaje: str) -> int | None:
+    """Lo que el cliente paga AHORA cuando la cuenta lleva una seña. None si la
+    cuenta no marca ningun pago parcial."""
+    m = _RE_PAGO_PARCIAL.search(mensaje or "")
+    return _plata(m.group("monto")) if m else None
 
 _RE_SUBTOTAL = re.compile(r"^\s*subtotal\s*:\s*\$([\d\.]+)\s*$",
                           re.IGNORECASE | re.MULTILINE)
@@ -64,7 +93,7 @@ def _falla(regla, detalle):
     return {"regla": regla, "detalle": detalle}
 
 
-# ── LOS INVARIANTES ─────────────────────────────────────────────────────────
+# ── LOS INVARIANTES ───────────────────────────────────────────────────────
 def cuenta_cierra(mensaje: str) -> list:
     """La aritmetica de la cuenta, que es la unica plata que el cliente ve.
 
@@ -317,7 +346,7 @@ def productos_del_catalogo(mensaje: str, vocabulario: set) -> list:
     return fallas
 
 
-# ── LA PUERTA ───────────────────────────────────────────────────────────────
+# ── LA PUERTA ────────────────────────────────────────────────────────────
 TODOS = (
     "cuenta_cierra",
     "lo_cobrado_es_lo_facturado",
