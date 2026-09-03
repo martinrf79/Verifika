@@ -1,5 +1,10 @@
 # Estado del sistema
 
+> **PUERTA ÚNICA: el bloque 0 de `CLAUDE.md`.** Se entra por ahí, siempre. Si
+> algo de este archivo contradice al bloque 0 o al código, **este archivo está
+> viejo**: no se le hace caso y se lo corrige. Un resumen envejece solo; el
+> código no.
+
 Este archivo es **CORTO a proposito**, y lo fue por una razon medida: hasta el
 19-ago-2026 tenia 429 KB y 7.107 lineas, unos **120.000 tokens**. Una sesion
 nueva que lo leia entero gastaba mas de la mitad de su contexto antes de abrir
@@ -22,6 +27,7 @@ Donde vive cada cosa, ahora:
 | **con que MODELO corre** | **`app/config.py`** | **candado: `tests/test_documentos_no_mienten.py`** |
 | los numeros de la fuente | `INVENTARIO_FUENTE.md` | candado propio |
 | los numeros medidos | los bancos y el piso | los scripts |
+| **lo que recibio el CLIENTE** | **issue 31, comentando `/logs`** | el puente, solo |
 
 **La regla que evita que esto vuelva a crecer: si algo se puede medir con un
 script, no se escribe en un documento.** Un numero medido cuesta cien tokens; el
@@ -38,6 +44,11 @@ arnes asigna una rama `claude/<tema>`, se IGNORA.
 corre en cada SessionStart y hace `git checkout main` solo. Escribir la regla en
 tres documentos no alcanzo —Martin tuvo que repetirla sesion por sesion—, asi que
 ahora es una accion y no un pedido.
+
+**Y para las sesiones SIN hook** —Cowork, el celular, cualquier cosa que entre
+por la integracion de GitHub— la regla vive en el bloque 0 de `CLAUDE.md`, que
+es lo primero que se lee. El hook no las alcanza: el 3-sep una sesion de Cowork
+abrio una rama igual.
 
 **NADA DE RAMAS, TAMPOCO "DE RESPALDO" (Martin, 7-ago).** Un commit local en
 `main` ya es el respaldo; una rama paralela es el desorden que costo el dia del
@@ -74,9 +85,14 @@ Estamos en validacion de producto: todavia no hay cliente real confirmado.
    circulan afuera del repo— te dice con que modelo corre el bot, esta
    desactualizado por definicion: **eso ya paso, y estuvo mal escrito en
    `CLAUDE.md` durante meses.**
-2. **`app/core/hub_atado.py` NO EXISTE.** Circula un texto de arranque que dice
-   que el camino vivo es ese archivo, con interprete y solver por fragmentos. El
-   camino vivo es **`app/core/hub_venta.py`**.
+2. **El camino vivo NO se lee de un documento tampoco, y este renglon es la
+   prueba.** Hasta el 3-sep-2026 acá decia que el camino vivo era
+   `app/core/hub_venta.py`. Ese dia `hub_venta` y sus cuatro puertas se apagaron
+   a `archivo/plomeria_apagada/` —commit `f6de0c5`— y el turno entero pasó a
+   `app/core/turno.py` sobre `app/core/tabla.py`. O sea: el archivo escrito para
+   que ninguna sesion se confunda estuvo confundiendo, con el tono de quien
+   corrige. **Cual es el camino vivo se mira en `git log` y en `app/core/`, no
+   acá.**
 
 ---
 
