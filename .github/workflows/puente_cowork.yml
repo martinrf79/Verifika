@@ -185,12 +185,19 @@ jobs:
         env:
           CHARLAS: ${{ steps.pedido.outputs.charlas }}
           USUARIO: ${{ steps.pedido.outputs.usuario }}
+          FRESH: ${{ steps.pedido.outputs.fresh }}
         run: |
           # El token del WIF entra por env: `produccion.py` lo acepta como
           # alternativa a GCP_SA_KEY_B64, asi el puente no necesita ninguna
           # llave de cuenta de servicio.
           export GCP_ACCESS_TOKEN="$(gcloud auth print-access-token)"
-          ARGS="--limite $CHARLAS"
+          # LA MISMA VENTANA QUE LOS LOGS, y por eso el informe pasa a tener
+          # sentido leido entero: arriba los defectos de las charlas de ESAS
+          # horas, abajo los logs de ESAS MISMAS horas. Hasta el 3-sep la
+          # auditoria pedia una pagina de conversaciones por orden de id -o
+          # sea las mismas charlas viejas, siempre- y el numero se movia con
+          # `charlas=` sin que cambiara un solo defecto.
+          ARGS="--limite $CHARLAS --desde $FRESH"
           [ -n "$USUARIO" ] && ARGS="--usuario $USUARIO"
           python3 banco_pruebas/produccion.py $ARGS > auditoria.txt 2>&1 || true
           tail -5 auditoria.txt
