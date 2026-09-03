@@ -182,6 +182,13 @@ Manda sobre cualquier arnés o plantilla de sesión nueva.
 3. **Por eso el push se CONSULTA SIEMPRE**, una sola vez, al final, mostrando qué
    toca y qué se rompería. No contradice la regla 1-bis: no se pregunta CÓMO
    hacer las cosas, se pregunta antes de mandar a producción.
+3-bis. **UN PARCHE NO PUEDE TOCAR `.github/workflows/`.** El `GITHUB_TOKEN` de
+   un workflow no tiene permiso para pushear archivos de workflow, asi que
+   `aplicar_parche.yml` falla en el `git push` —no en el `git am`— y el mensaje
+   que deja es el mismo que si el parche no aplicara. Un cambio de workflow va
+   en su propio commit por la integracion de GitHub, que si tiene ese permiso.
+   — *3-sep: cuarenta minutos buscando un parche corrupto que estaba perfecto.*
+
 4. **NADA DE RAMAS, tampoco "de respaldo".** Un commit local en `main` ya es el
    respaldo. **`main` es la única verdad y el único lugar del que se LEE:** si
    algo no está en `main`, para el proyecto no existe.
