@@ -1,5 +1,16 @@
 # Arquitectura de Verifika — el turno, de punta a punta
 
+> **PUERTA ÚNICA: el bloque 0 de `CLAUDE.md`.** Se entra por ahí.
+>
+> **Y ESTE MAPA QUEDÓ ATRÁS DEL CÓDIGO (3-sep-2026).** El diagrama de abajo
+> entra por `hub_venta` y sus cuatro puertas de salida. Ese camino **se apagó**
+> el 3-sep a `archivo/plomeria_apagada/` —commit `f6de0c5`—: el turno vivo hoy
+> es `app/core/turno.py` sobre la mesa de `app/core/tabla.py`, en seis pasos.
+> Lo que sigue valiendo entero es **el principio** y **el reparto de quién
+> decide qué**; lo que no vale es el cableado dibujado. Reescribirlo es trabajo
+> propio y todavía no se hizo. Mientras tanto: **el camino vivo se lee de
+> `app/core/`, no de acá.**
+
 Mapa de referencia permanente. El estado del día vive en
 `RESUMEN_PARA_NUEVO_CHAT.md`, lo decidido en `DECISIONES.md`. Los números
 del censo salen de `banco_pruebas/peso_del_censo.py` y el candado está en
@@ -226,6 +237,12 @@ por turno, y solo sobre lo que bloquea el cobro.
 - **Los detectores** de stock contradicho y promesas prohibidas siguen vivos, pero
   en `banco_pruebas/detectores.py`: son instrumentos para MEDIR una corrida, no
   capas del bot.
+- **El hub y sus cuatro puertas de salida (3-sep-2026).** `hub_venta`, `salida`,
+  `mensaje`, `indice_turno`, `grafo`, `atadura_prosa` e `invariantes` están en
+  `archivo/plomeria_apagada/`. El turno pasó a `app/core/turno.py` sobre la mesa
+  de `app/core/tabla.py`: el modelo llena un formulario con esquema JSON, una
+  casilla por punto, y el código arma el mensaje. Todo el diagrama de arriba y
+  la sección de las cuatro puertas describen el camino APAGADO.
 
 ---
 
