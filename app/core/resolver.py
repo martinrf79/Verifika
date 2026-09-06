@@ -326,14 +326,32 @@ def _derivar_las_busquedas(llamadas: list, declarado: dict, memoria: list,
             return ""
         return _id_para(que, fuera, memoria)
 
+    # LA FICHA VIAJA CON EL TERMINO PARA EL QUE SE PIDIO (6-sep-2026). Acá se
+    # sabe, y con certeza, que el cliente dijo "el mouse logitech" y que eso
+    # resolvio a MOU0023; la mesa despues volvia a aparear pregunta y ficha por
+    # PALABRAS COMPARTIDAS, o sea que el unico lugar del sistema donde el dato
+    # existe exacto lo tiraba y el siguiente lo adivinaba. Con dos productos
+    # parecidos en el mismo turno eso le contesta al cliente la ficha del otro,
+    # que es alucinar con cara de dato verificado.
+    #
+    # `para` es una lista y la ficha se pide UNA sola vez por producto: dos
+    # atributos del mismo producto -"cuanto pesa y que garantia tiene"- son dos
+    # filas y una sola consulta. Es un argumento que Pydantic ignora al validar,
+    # asi que no cambia lo que la herramienta hace ni el esquema que ve el
+    # modelo: viaja en el pedido, que es donde la mesa lo lee.
+    _fichas_por_pid: dict = {}
     for a in (declarado.get("atributos") or []):
         de = str((a or {}).get("de") or "").strip()
         if not de:
             continue
         pid = _resolver(de)
         if pid:
-            _agregar("consultar_productos",
-                     {"proyeccion": "ficha", "product_id": pid})
+            _fichas_por_pid.setdefault(pid, [])
+            if de not in _fichas_por_pid[pid]:
+                _fichas_por_pid[pid].append(de)
+    for pid, terminos in _fichas_por_pid.items():
+        _agregar("consultar_productos",
+                 {"proyeccion": "ficha", "product_id": pid, "para": terminos})
 
     # ── 5. COMPATIBILIDAD: los dos lados, certificados ─────────────────
     for c in (declarado.get("compatibilidad") or []):

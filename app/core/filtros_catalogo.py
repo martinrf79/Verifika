@@ -751,6 +751,23 @@ def resolver_orden(frase: str, tienda_id: str) -> dict | None:
                               for w in palabras) for r in raices):
             elegido = campo
             break
+        # 1-bis. EL VERBO DEL CLIENTE, que es el sustantivo con otra letra al
+        # final (6-sep-2026). "el que menos pesa" no resolvia a NINGUN campo y
+        # el turno salia sin orden: `pesa` no empieza con `peso` y `peso` no
+        # empieza con `pesa`, asi que ninguno de los dos puentes de arriba pega,
+        # y el mapa de adjetivos tiene `pesad`, que tampoco. "el de menor peso"
+        # andaba: el cliente pagaba por usar el verbo en vez del sustantivo.
+        #
+        # LA CONDICION ES ESTRECHA A PROPOSITO: mismo largo y todo igual menos
+        # la ultima letra. Eso es exactamente una flexion -pesa/peso, mide/mida-
+        # y NO alcanza para el caso que el puente de cinco letras vino a
+        # prohibir: `cara` contra `caracteristicas` son largos distintos, asi
+        # que sigue cayendo al mapa de adjetivos y "la mas cara" sigue ordenando
+        # por precio. Vara: tests/test_extremo_negado.py
+        if any(len(w) == len(t) and len(w) >= 4 and w[:-1] == t[:-1]
+               for w in palabras for t in campo.split("_")):
+            elegido = campo
+            break
     if elegido is None:
         for campo, adjetivos in _ADJETIVOS_DE_ORDEN.items():
             if campo in registro and any(w.startswith(a) for w in palabras

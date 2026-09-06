@@ -267,9 +267,19 @@ def puntos(declarado: dict) -> list:
 
 def _clasificar(llamadas: list) -> dict:
     """Las llamadas del turno agrupadas por lo que saben contestar. Una sola
-    pasada, sin interpretar nada: se mira el pedido, que lo escribio el codigo."""
-    idx = {"listas": [], "fichas": {}, "compat": [], "temas": {},
-           "envios": {}, "agregados": []}
+    pasada, sin interpretar nada: se mira el pedido, que lo escribio el codigo.
+
+    `fichas_por_termino` es la JUNTA DURA de los atributos (6-sep-2026). El
+    resolver ya sabe, cuando deriva la ficha, PARA QUE termino del cliente la
+    esta pidiendo -"el mouse logitech", "ese"- y hasta hoy tiraba ese dato: la
+    mesa despues volvia a aparear pregunta y ficha por palabras compartidas. Es
+    la unica junta del sistema que no aparea por identificador, y aparear por
+    palabras significa que "el segundo mouse" puede quedarse con la ficha del
+    primero. Ahora el termino viaja en el pedido y el apareo es exacto; el de
+    palabras queda de respaldo para las llamadas que no lo traen.
+    """
+    idx = {"listas": [], "fichas": {}, "fichas_por_termino": {}, "compat": [],
+           "temas": {}, "envios": {}, "agregados": []}
     for l in (llamadas or []):
         ped = (l.get("pedido") or {})
         res = (l.get("resultado") or {})
@@ -290,6 +300,9 @@ def _clasificar(llamadas: list) -> dict:
             p = res.get("producto") or {}
             if p.get("id"):
                 idx["fichas"][p["id"]] = res
+            for t in (ped.get("para") or []):
+                if str(t or "").strip():
+                    idx["fichas_por_termino"][_norm(t)] = res
         elif proy == "compatibilidad":
             idx["compat"].append(res)
         elif proy == "catalogo":
@@ -336,10 +349,22 @@ def _candidatos_ambiguos(termino: str, idx: dict, campos: list):
     return None
 
 
-def _material_del_punto(p: dict, idx: dict, campos: list) -> list:
+def _material_del_punto(p: dict, idx: dict, campos: list,
+                        traza: list | None = None) -> list:
     """El material de UN punto. Devuelve lista vacia cuando no hay: eso no es un
-    error, es el dato que hace que el bot pregunte en vez de inventar."""
+    error, es el dato que hace que el bot pregunte en vez de inventar.
+
+    `traza`, si viene, se llena con QUE llamada quedo apareada con esta fila.
+    No decide nada: es la unica forma de mirar desde afuera la junta que decide
+    que evidencia contesta que pregunta. Hasta hoy esa decision no dejaba una
+    sola linea de log, asi que una respuesta contestada con el material de otra
+    pregunta era indistinguible de una respuesta correcta.
+    """
     tipo, termino = p.get("tipo"), str(p.get("termino") or "")
+
+    def _anota(de: str):
+        if traza is not None:
+            traza.append(f"{p.get('id')}<-{de}")
 
     if tipo in ("items", "stock", "restricciones"):
         # LAS LISTAS PRIMERO Y LOS AGREGADOS DE ULTIMA. Un agregado no lleva
@@ -358,6 +383,9 @@ def _material_del_punto(p: dict, idx: dict, campos: list) -> list:
                                      or ped.get("filtros"))))
             if not es_del_punto:
                 continue
+            _anota("lista:" + (str(ped.get("descripcion") or "")
+                               or str(ped.get("categoria") or "")
+                               or str(ped.get("operacion") or "?"))[:40])
             uno = res.get("producto")
             prods = [uno] if isinstance(uno, dict) else (res.get("productos") or [])
             prods = [x for x in prods if isinstance(x, dict)]
@@ -421,13 +449,22 @@ def _material_del_punto(p: dict, idx: dict, campos: list) -> list:
         # candidatos y la pregunta se escribe sola: "cual de estas dos".
         amb = _candidatos_ambiguos(termino, idx, campos)
         if amb is not None:
+            _anota("ambiguo")
             return amb
-        for res in idx["fichas"].values():
+        # LA JUNTA DURA PRIMERO. Si el resolver dejo dicho para que termino
+        # pidio esta ficha, se usa esa y no se aparea por palabras: es el mismo
+        # termino, no uno parecido.
+        duro = idx["fichas_por_termino"].get(_norm(termino))
+        candidatas = ([(duro, "ficha_exacta")] if duro else
+                      [(r, "ficha_por_palabras") for r in idx["fichas"].values()])
+        for res, como in candidatas:
             prod = res.get("producto")
             if not isinstance(prod, dict):
                 continue
-            if not _pega(termino, f"{prod.get('nombre','')} {prod.get('id','')}"):
+            if como == "ficha_por_palabras" and not _pega(
+                    termino, f"{prod.get('nombre','')} {prod.get('id','')}"):
                 continue
+            _anota(f"{como}:{prod.get('id') or '?'}")
             valor = _valor_del_campo(prod, campo)
             if valor in (None, "", [], {}):
                 # LA FICHA NO LO TIENE. Sale vacio a proposito: mandar los otros
@@ -449,6 +486,7 @@ def _material_del_punto(p: dict, idx: dict, campos: list) -> list:
                 continue
             if res.get("estado") in ("equipo_desconocido", "no_encontrado"):
                 return []
+            _anota(f"compat:{prod.get('id') or '?'}")
             return [{"id": prod.get("id"), "nombre": prod.get("nombre"),
                      "veredicto": res.get("estado"),
                      "porque": res.get("motivo") or res.get("detalle") or ""}]
@@ -458,6 +496,11 @@ def _material_del_punto(p: dict, idx: dict, campos: list) -> list:
         t = idx["temas"].get(_norm(p.get("tema") or termino))
         if not t or t.get("estado") != "encontrado":
             return []
+        _anota(f"tema:{t.get('tema')}")
+        # LA POLITICA Y EL CRITERIO, NO LA MOVIDA. La movida es como se CONDUCE
+        # la situacion, no un dato que contestarle al cliente: si viajara en la
+        # fila, el modelo puede terminar contestandole la instruccion interna.
+        # Va por el carril de conduccion que arma `_guion`.
         return [{k: t[k] for k in ("tema", "politica", "valores", "criterio")
                  if t.get(k) not in (None, "", [], {})}]
 
@@ -465,14 +508,49 @@ def _material_del_punto(p: dict, idx: dict, campos: list) -> list:
         e = idx["envios"].get(_norm(termino))
         if not e or not e.get("ok"):
             return []
+        _anota(f"envio:{termino[:24]}")
         return [{"localidad": termino, "costo": e.get("costo"),
                  "zona": e.get("zona")}]
 
     return []
 
 
+def _guion(idx: dict) -> list:
+    """COMO VENDE LA CASA EN ESTA SITUACION. El carril de conduccion, y es lo
+    que hasta el 6-sep-2026 se buscaba, se servia, se logueaba y se caia acá.
+
+    `consultar_temas` devuelve SEIS cosas por tema -politica, valores, criterio,
+    objetivo, movida y escape, ver `herramientas._criterio_de`- y esta funcion
+    copiaba cuatro. `objetivo`, `movida` y `escape` no llegaban nunca al modelo
+    que escribe. O sea que la prosa de venta que la casa tiene escrita para cada
+    situacion -esta caro, pide descuento, desconfia, se despide- existia en la
+    fuente, se pedia bien y el redactor no la veia: contestaba correcto y sin
+    vender, o la improvisaba de memoria. `turno._log_fuente` se escribio para
+    cazar esto y lo que mostraba era la mitad de arriba del problema.
+
+    NO ES UNA FILA Y NO SE CONTESTA. Una fila es algo que el cliente pregunto y
+    que hay que cubrir; esto es como se le habla. Por eso sale por su propio
+    carril y viaja al modelo como sistema, no como material del turno: si
+    entrara a la mesa, la compuerta de completitud le pediria una casilla y el
+    modelo podria escribirle al cliente el objetivo de venta.
+
+    INVARIANTE DE LA FUENTE: cero digitos en objetivo, movida y escape -esta
+    escrito en `guia_venta_prosa`-, asi que este carril no puede meter una cifra
+    en el mensaje ni aflojar la poda de plata.
+    """
+    fuera = []
+    for t in idx["temas"].values():
+        if t.get("estado") != "encontrado":
+            continue
+        cond = {k: t[k] for k in ("objetivo", "movida", "escape")
+                if str(t.get(k) or "").strip()}
+        if cond:
+            fuera.append({"tema": t.get("tema"), **cond})
+    return fuera
+
+
 def tabla(declarado: dict, llamadas: list, bloque: str = "",
-          puntos_del_turno: list | None = None) -> dict:
+          puntos_del_turno: list | None = None, trace_id: str = "") -> dict:
     """LA MESA QUE VE LA SEGUNDA LLAMADA.
 
     Devuelve `{"puntos": [...], "bloque": str}`. El bloque de la cuenta viaja
@@ -489,6 +567,7 @@ def tabla(declarado: dict, llamadas: list, bloque: str = "",
     hay_cuenta = bool(re.search(r"(?i)total(?:\s+final)?\s*:", bloque or ""))
 
     filas = []
+    traza: list = []
     for p in puntos_del_turno:
         tipo = p.get("tipo")
         fila = {"id": p.get("id"), "pregunto": p.get("texto")}
@@ -502,7 +581,7 @@ def tabla(declarado: dict, llamadas: list, bloque: str = "",
             fila["estado"] = "sellado" if hay_cuenta else "sin_material"
             fila["material"] = []
         else:
-            mat = _material_del_punto(p, idx, campos)
+            mat = _material_del_punto(p, idx, campos, traza)
             if mat and any("cual_de_estos" in m for m in mat
                            if isinstance(m, dict)):
                 # La identidad no se eligio, y por eso mismo hay que preguntar.
@@ -515,10 +594,19 @@ def tabla(declarado: dict, llamadas: list, bloque: str = "",
     out = {"puntos": filas}
     if bloque:
         out["bloque"] = bloque
+    guion = _guion(idx)
+    if guion:
+        out["guion"] = guion
 
     faltan = sum(1 for f in filas if f["estado"] == "sin_material")
     log.info("tabla_armada", puntos=len(filas), sin_material=faltan,
-             sellado=sum(1 for f in filas if f["estado"] == "sellado"))
+             sellado=sum(1 for f in filas if f["estado"] == "sellado"),
+             conduccion=[g.get("tema") for g in guion])
+    # LA JUNTA, ESCRITA. Que llamada quedo apareada con que fila. Es la unica
+    # decision del turno que no dejaba rastro, y es la que decide si el bot
+    # contesta la pregunta con su propia evidencia o con la de al lado.
+    if traza:
+        log.info("mesa_apareada", trace_id=trace_id, pares=traza[:12])
     return out
 
 

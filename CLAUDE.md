@@ -19,6 +19,12 @@ está acá.
    lo hecho en `git log`, la unidad de trabajo viva en `arquitectura/`, y los
    números —cuántos productos, qué modelo, qué deploya— **en el código**. Un
    `.md` que contradice al código está mal, siempre.
+2-bis. **CÓMO SE LLAMA CADA PARTE lo dice `arquitectura/MAPA_CABLEADO.md`, y
+   sólo ése.** Las estaciones del turno `T`, las juntas `J`, los cuatro puntos
+   donde entra el modelo `L` y las desconexiones `D` se definen ahí. Cualquier
+   otro archivo las nombra por su número y remite; no las vuelve a describir.
+   — *6-sep: es la misma regla de este bloque aplicada a los nombres. La segunda
+   descripción de lo mismo es el teléfono descompuesto, y ya se pagó tres veces.*
 3. **Pushear a `main` DEPLOYA**, salvo que el cambio toque sólo lo que está en
    `paths-ignore` de `deploy.yml`. Cuáles son se mira ahí, no acá.
 4. **Lo que el cliente recibió de verdad se lee en el issue 31**, comentando

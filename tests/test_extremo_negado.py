@@ -100,17 +100,28 @@ def test_cuantas_no_negadas_se_probaron():
     assert total == 8, f"se probaron {total} frases sin negacion, esperaba 8"
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: el verbo no llega al campo. HOY 'el que menos pesa' devuelve None y "
-    "no ordena por nada: `_RE_SUPERLATIVO` matchea 'menos', pero despues el "
-    "campo se busca por raiz del NOMBRE -'peso' de `peso_gramos`- y la palabra "
-    "del cliente es el VERBO, 'pesa', que no empieza con 'peso' ni llega a las "
-    "cinco letras del puente al reves; el mapa `_ADJETIVOS_DE_ORDEN` tiene "
-    "'pesad' y tampoco pega. OBJETIVO min. Lo destapo la vara del extremo "
-    "negado del 2-sep, NO es una regresion: 'el de menor peso' anda hoy y sigue "
-    "andando. Es un agujero de la traduccion verbo a campo, hermano del que ya "
-    "tiene 'cara' contra `caracteristicas_extra`, y se arregla en la ficha de "
-    "la derivacion, no aca."))
-def test_el_verbo_del_cliente_tambien_llega_al_campo(firestore_doble):
-    o = FC.resolver_orden("el que menos pesa", TIENDA)
-    assert o is not None and o["direccion"] == "min"
+# EL VERBO DEL CLIENTE LLEGA AL CAMPO desde el 6-sep-2026. Estaba como `PLAN`
+# desde el 2-sep: "el que menos pesa" devolvia None y el turno salia sin orden,
+# mientras "el de menor peso" andaba. El puente nuevo es una flexion —mismo
+# largo, todo igual menos la ultima letra— y por eso NO revive el caso que el
+# puente de cinco letras vino a prohibir: `cara` contra `caracteristicas` son
+# largos distintos y "la mas cara" sigue ordenando por precio, que lo cuida
+# `DERECHAS` de arriba.
+VERBOS = [
+    ("el que menos pesa", "peso_gramos", "min"),
+    ("el que mas pesa", "peso_gramos", "max"),
+]
+
+
+@pytest.mark.parametrize("frase,campo,esperado", VERBOS)
+def test_el_verbo_del_cliente_tambien_llega_al_campo(
+        frase, campo, esperado, firestore_doble):
+    o = FC.resolver_orden(frase, TIENDA)
+    assert o is not None, f"{frase!r} no resolvio a ningun campo"
+    assert o["campo"] == campo, f"{frase!r} resolvio a {o['campo']}"
+    assert o["direccion"] == esperado, \
+        f"{frase!r} da {o['direccion']} y tiene que dar {esperado}"
+
+
+def test_cuantos_verbos_se_probaron():
+    assert len(VERBOS) == 2, f"se probaron {len(VERBOS)} verbos, esperaba 2"

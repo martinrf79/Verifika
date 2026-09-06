@@ -277,8 +277,15 @@ def _log_fuente(llamadas: list, trace_id: str, ronda: int) -> None:
 
 
 def _mensajes(negocio: str, memoria: str, history: list, mensaje: str,
-              instruccion: str, datos: str = "") -> list:
+              instruccion: str, datos: str = "", conduccion: str = "") -> list:
     msgs = [{"role": "system", "content": sistema(negocio)}]
+    if conduccion:
+        # VA COMO SISTEMA, AL LADO DE LA IDENTIDAD, y no como datos del turno.
+        # La diferencia no es cosmetica: el sistema es quien sos y como vendes;
+        # los datos son lo que te preguntaron. La movida de la casa es lo
+        # primero y no lo segundo, y puesta entre los datos el modelo puede
+        # terminar contandosela al cliente.
+        msgs.append({"role": "system", "content": conduccion})
     if memoria:
         msgs.append({"role": "system", "content": memoria})
     # TODO EL HISTORIAL QUE EL SISTEMA GUARDA, no la mitad. Estaba clavado en
@@ -855,6 +862,32 @@ def _reloj(etapas: dict, nombre: str):
 # LO NUEVO: LA MESA EN EL MEDIO
 # ══════════════════════════════════════════════════════════════════════════
 
+def _conduccion(guion: list) -> str:
+    """COMO VENDE LA CASA ESTA SITUACION, en el mensaje de sistema.
+
+    Lo arma `tabla._guion` de lo que la fuente tiene escrito para los temas que
+    volvieron: el objetivo, la movida y el escape. Hasta el 6-sep-2026 esos tres
+    campos se pedian, volvian y se caian en la mesa, asi que el redactor
+    contestaba correcto y sin vender: la guia de venta de la casa existia y no
+    la veia nadie.
+
+    ES PARA EL VENDEDOR, NO PARA EL CLIENTE, y por eso lo dice la primera linea:
+    un objetivo de venta escrito en el mensaje suena a maquina y es lo unico que
+    este carril puede romper.
+    """
+    if not guion:
+        return ""
+    lineas = ["Asi vende la casa en esta situacion. Es para vos, no se lo "
+              "escribas al cliente ni lo repitas: usalo para elegir el tono y "
+              "que ofrecer."]
+    for g in guion[:4]:
+        partes = [f"{k}: {g[k]}" for k in ("objetivo", "movida", "escape")
+                  if g.get(k)]
+        if partes:
+            lineas.append(f"- {g.get('tema')} — " + " | ".join(partes))
+    return "\n".join(lineas)
+
+
 async def _redactar(negocio, memoria, history, mensaje, mesa, trace_id):
     """LLAMADA DOS. El modelo devuelve la MESA LLENA, no un mensaje.
 
@@ -871,9 +904,12 @@ async def _redactar(negocio, memoria, history, mensaje, mesa, trace_id):
     cli = _cliente()
     if cli is None:
         return {}, True
-    datos = json.dumps(mesa, ensure_ascii=False, default=str)
+    # EL GUION SALE DE LA MESA Y ENTRA POR EL SISTEMA. Es conduccion, no
+    # material: no se contesta, no abre casilla y no lo mira la compuerta.
+    material = {k: v for k, v in mesa.items() if k != "guion"}
+    datos = json.dumps(material, ensure_ascii=False, default=str)
     msgs = _mensajes(negocio, memoria, history, mensaje, _INSTRUCCION_DOS,
-                     datos)
+                     datos, _conduccion(mesa.get("guion") or []))
 
     def _call():
         r = cli.chat.completions.create(
@@ -1017,7 +1053,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     bloque = out["bloque"] or ""
 
     # ── 3. LA MESA ──────────────────────────────────────────────────────
-    mesa = TB.tabla(declarado, llamadas, bloque)
+    mesa = TB.tabla(declarado, llamadas, bloque, trace_id=trace_id)
     log.info("turno_mesa", trace_id=trace_id, puntos=len(mesa["puntos"]),
              sin_material=sum(1 for p in mesa["puntos"]
                               if p["estado"] == "sin_material"),
