@@ -8,6 +8,21 @@ uno tiene el turno, la hora y el renglon de log que lo prueba.
 Nacen con marca PLAN: y strict=True. El que implementa no reescribe la vara.
 Cuando el caso pasa, `strict` obliga a sacar la marca en ese mismo commit.
 
+UNA VARA DE D13 SE CAMBIO A PROPOSITO, en su propio commit y ANTES del arreglo.
+La primera version llamaba `con_saludo_inicial` con tres argumentos y pedia que
+no reventara: eso no mide el requisito, mide UNA de las dos formas de arreglarlo
+—agregarle un parametro a la funcion— y se la habria podido poner en verde con
+un parametro de adorno. Lo que hay que medir es que la obligacion SALGA y que
+las tres sean independientes, y eso es lo que miden las dos de ahora. La vara
+quedo mas dura, no mas blanda.
+
+Y NO SE MIDE POR EL LOG, aunque el defecto se haya visto ahi. La bateria filtra
+structlog en CRITICAL para no imprimir dos megas de JSON por corrida, asi que un
+warning no llega a ningun capturador y un test que lo buscara daria verde
+siempre, que es la peor clase de test que existe. Se mide por comportamiento:
+la linea tiene que estar en el texto, y con la primera guarda reventada a mano
+la de abajo tiene que salir igual.
+
 Relato completo en arquitectura/FICHA_49_la_obligacion_muda.md.
 Los numeros de desconexion, D13 D14 y D15, viven en
 arquitectura/MAPA_CABLEADO.md y en ningun otro lado.
@@ -38,11 +53,8 @@ NEGOCIO = "Verifika Tech"
     "turno.py:984 llama con_saludo_inicial con TRES argumentos y "
     "guardas_salida.py:136 la define con DOS, asi que el bloque entero de "
     "obligaciones se corta con TypeError y el except lo deja en un warning. "
-    "Medido en produccion el 3-sep 17:37:17 UTC, turno tg_524215785: sale "
-    "turno_guarda_error con "
-    "'con_saludo_inicial() takes 2 positional arguments but 3 were given' y "
-    "el cliente recibio un mensaje que arranca con el saludo del modelo, sin "
-    "el aviso. OBJETIVO: la linea esta. Relato en "
+    "Medido en produccion el 3-sep 17:37:17 UTC, turno tg_524215785. "
+    "OBJETIVO: la linea esta. Relato en "
     "arquitectura/FICHA_49_la_obligacion_muda.md."))
 def test_el_primer_mensaje_lleva_la_linea_de_que_es_automatico():
     mesa = {"bloque": "", "puntos": []}
@@ -55,17 +67,24 @@ def test_el_primer_mensaje_lleva_la_linea_de_que_es_automatico():
 
 
 @pytest.mark.xfail(strict=True, reason=(
-    "PLAN: D13. Ninguna obligacion del turno puede caerse en silencio. HOY "
-    "el bloque de guardas es un solo try: si la primera falla, las de abajo "
-    "no corren y afuera no se nota. OBJETIVO: llamar a las obligaciones no "
-    "levanta TypeError. Relato en "
+    "PLAN: D13. Las tres obligaciones son independientes: la que se cae no "
+    "puede apagar a las otras dos. HOY van adentro de un solo try, asi que "
+    "la primera que falla saltea a las de abajo y afuera queda un solo "
+    "warning sin nombre. Asi se rompio dos veces seguidas la misma cosa: el "
+    "3-sep la honestidad, el 6-sep el saludo. OBJETIVO: con la primera "
+    "reventada a mano, el saludo sigue saliendo. Relato en "
     "arquitectura/FICHA_49_la_obligacion_muda.md."))
-def test_las_obligaciones_no_se_caen_por_una_firma_que_no_coincide():
-    # No se atrapa la excepcion a proposito: si la firma vuelve a no
-    # coincidir, este test tiene que verlo, no taparlo como lo tapa el vivo.
-    texto = gs.asegurar_honestidad_bot("hola", "Hola, te paso los precios.",
-                                       NEGOCIO)
-    gs.con_saludo_inicial(texto, NEGOCIO, TIENDA)
+def test_una_obligacion_que_se_cae_no_apaga_a_las_otras(monkeypatch):
+    def _revienta(*a, **k):
+        raise RuntimeError("guarda rota a proposito")
+
+    monkeypatch.setattr(gs, "asegurar_honestidad_bot", _revienta)
+    mesa = {"bloque": "", "puntos": []}
+    salida = T._obligaciones("hola, que venden?", mesa, NEGOCIO, True,
+                             "hola, que venden?", "", TIENDA, "t-d13c")
+    assert gs.linea_saludo(NEGOCIO) in salida, (
+        "una guarda rota se llevo puesta a la de abajo: "
+        f"{salida!r}")
 
 
 # ── D14 — UN UNIVERSAL SOBRE EL CATALOGO SIN HERRAMIENTA QUE LO MIRE ────────
