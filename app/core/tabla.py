@@ -904,6 +904,18 @@ def armar(respuesta: dict, mesa: dict, trace_id: str = "",
     return mensaje
 
 
+_RE_LA_POLITICA_DE = re.compile(r"(?i)^la politica de\s+")
+
+# Los interrogativos con los que arranca una pregunta del cliente. Ninguna
+# clave de la FAQ empieza con uno, asi que verlo adelante es la prueba de que
+# lo que sigue no es el nombre de una politica de la casa.
+_RE_ARRANCA_PREGUNTANDO = re.compile(
+    r"(?i)^(?:que|qu[eé]|cual|cu[aá]l|cuales|cu[aá]les|cuanto|cu[aá]nto|"
+    r"cuantos|cu[aá]ntos|cuanta|cu[aá]nta|cuantas|cu[aá]ntas|como|c[oó]mo|"
+    r"donde|d[oó]nde|cuando|cu[aá]ndo|quien|qui[eé]n|quienes|qui[eé]nes|"
+    r"hay|tienen|tenes|ten[eé]s|tienes|puedo|pueden)\b")
+
+
 def _pregunta_del_codigo(fila: dict) -> str:
     """La unica prosa que el codigo escribe, y son cuatro moldes fijos.
 
@@ -947,6 +959,35 @@ def _pregunta_del_codigo(fila: dict) -> str:
     # el molde generico salia "Sobre el precio de lo que pidio no tengo el dato
     # confirmado", que le echa al catalogo la culpa de algo que en realidad es
     # que todavia no se sabe QUE cotizar.
+    if tipo == "temas":
+        # D15, 6-sep-2026. UN TEMA DE VERDAD ES UNA CLAVE DE LA FAQ, NO UNA
+        # FRASE. `puntos` arma el renglon como "la politica de " mas la clave
+        # con los guiones bajos cambiados por espacios, asi que mientras el
+        # modelo declara claves el molde generico salia bien. Cuando declara
+        # como tema la pregunta cruda del cliente, sale esto, medido en
+        # produccion el 3-sep 17:38:51 UTC, turno tg_524215788:
+        #
+        #   Sobre la politica de que producto tienen en mas de 5 tipos no
+        #   tengo el dato confirmado.
+        #
+        # Eso le atribuye a la casa una politica que el cliente nunca nombro,
+        # y encima en el renglon donde el bot esta admitiendo que no sabe.
+        #
+        # COMO SE SABE QUE NO ES UNA CLAVE, y es por FORMA, no por
+        # vocabulario: las 50 claves de la FAQ tienen TRES palabras como
+        # maximo -`teclado_mecanico_membrana`, `garantia_como_usar`- y ninguna
+        # arranca con un interrogativo. Cualquiera de las dos cosas alcanza
+        # para saber que lo que hay ahi es prosa del modelo. Si un dia la
+        # fuente suma una clave mas larga, el peor caso es esta misma frase
+        # neutra, que sigue siendo verdadera.
+        nombre = _RE_LA_POLITICA_DE.sub("", que).strip()
+        es_clave = (nombre and not _RE_ARRANCA_PREGUNTANDO.match(nombre)
+                    and len(nombre.split()) <= 3)
+        if not es_clave:
+            return ("De eso no tengo el dato confirmado de este lado. "
+                    "Me lo precisas un poco y lo busco?")
+        return (f"Sobre la politica de {nombre} no tengo el dato confirmado. "
+                f"Me lo precisas un poco?")
     if tipo == "pide_precio":
         return ("Para pasarte el precio me falta cerrar cual y cuantos. "
                 "Me lo confirmas y te lo armo?")

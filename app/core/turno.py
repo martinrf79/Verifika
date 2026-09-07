@@ -974,24 +974,45 @@ def _obligaciones(texto: str, mesa: dict, negocio: str, primera_vez: bool,
     """
     from app.core import guardas_salida as gs
     from app.core import camino_cobro as cc
-    try:
-        # (mensaje del cliente, respuesta, nombre del negocio). Hasta el 3-sep
-        # se llamaba con dos argumentos y cruzados: tiraba TypeError en CADA
-        # turno, el `except` de abajo lo tapaba, y la guarda que declara que es
-        # un bot no corrio nunca. Se veia en produccion como `turno_guarda_error`
-        # dos veces en dos turnos seguidos.
-        texto = gs.asegurar_honestidad_bot(mensaje, texto, negocio)
-        texto = (gs.con_saludo_inicial(texto, negocio, tienda_id)
-                 if primera_vez else gs.sin_saludo_del_modelo(texto))
-    except Exception as e:  # noqa: BLE001 — una guarda no tumba el turno
-        log.warning("turno_guarda_error", trace_id=trace_id,
-                    error=f"{type(e).__name__}: {str(e)[:120]}")
-    try:
-        texto = cc.linea_de_cobro(texto, mesa.get("bloque") or "", dichos,
-                                  tienda_id)
-    except Exception as e:  # noqa: BLE001
-        log.warning("turno_cobro_error", trace_id=trace_id,
-                    error=f"{type(e).__name__}: {str(e)[:120]}")
+
+    def _obligacion(nombre: str, hacer, actual: str) -> str:
+        """UN try POR OBLIGACION, Y NO UNO PARA LAS TRES (D13, 6-sep-2026).
+
+        Con un solo `try` alrededor de las tres, la primera que se cae apaga a
+        las de abajo y afuera queda un warning sin nombre. Esa forma se comio
+        la misma obligacion DOS VECES SEGUIDAS: el 3-sep no corria
+        `asegurar_honestidad_bot` y el 6-sep no corria el saludo, las dos por
+        una firma que no coincidia, las dos tapadas por este mismo `except`.
+
+        Ahora cada obligacion se cae sola, con su nombre en el log, y el resto
+        sigue. El `nombre` no es adorno: sin el, `turno_guarda_error` no dice
+        cual de las tres fallo, que es exactamente lo que hizo falta y no
+        estaba las dos veces que paso.
+        """
+        try:
+            return hacer()
+        except Exception as e:  # noqa: BLE001 — una guarda no tumba el turno
+            log.warning("turno_guarda_error", trace_id=trace_id,
+                        guarda=nombre,
+                        error=f"{type(e).__name__}: {str(e)[:120]}")
+            return actual
+
+    # (mensaje del cliente, respuesta, nombre del negocio).
+    texto = _obligacion(
+        "honestidad_bot",
+        lambda: gs.asegurar_honestidad_bot(mensaje, texto, negocio), texto)
+    # `con_saludo_inicial` toma la respuesta y el NOMBRE DEL NEGOCIO, que ya
+    # viene resuelto en `negocio`. Pasarle ademas el `tienda_id` era un tercer
+    # argumento que la funcion no tiene: TypeError en el primer turno de cada
+    # charla, y el cliente sin el aviso de que habla con algo automatico.
+    texto = _obligacion(
+        "saludo",
+        (lambda: gs.con_saludo_inicial(texto, negocio)) if primera_vez
+        else (lambda: gs.sin_saludo_del_modelo(texto)), texto)
+    texto = _obligacion(
+        "linea_de_cobro",
+        lambda: cc.linea_de_cobro(texto, mesa.get("bloque") or "", dichos,
+                                  tienda_id), texto)
     return texto
 
 

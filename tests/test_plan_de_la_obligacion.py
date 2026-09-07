@@ -47,16 +47,12 @@ NEGOCIO = "Verifika Tech"
 
 # ── D13 — LA OBLIGACION DE DECIR QUE ES UN BOT NO SALE NUNCA ────────────────
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: D13. El primer mensaje de cada charla tiene que llevar la linea "
-    "obligatoria de que es un asistente automatico. HOY no la lleva: "
-    "turno.py:984 llama con_saludo_inicial con TRES argumentos y "
-    "guardas_salida.py:136 la define con DOS, asi que el bloque entero de "
-    "obligaciones se corta con TypeError y el except lo deja en un warning. "
-    "Medido en produccion el 3-sep 17:37:17 UTC, turno tg_524215785. "
-    "OBJETIVO: la linea esta. Relato en "
-    "arquitectura/FICHA_49_la_obligacion_muda.md."))
 def test_el_primer_mensaje_lleva_la_linea_de_que_es_automatico():
+    """D13, CERRADA el 7-sep. Hasta el arreglo esto era rojo: `turno.py` le
+    pasaba a `con_saludo_inicial` un tercer argumento que la funcion no tiene,
+    el bloque entero de obligaciones se cortaba con TypeError y el cliente
+    recibia un mensaje sin el aviso de que habla con algo automatico. Medido
+    en produccion el 3-sep 17:37:17 UTC, turno tg_524215785."""
     mesa = {"bloque": "", "puntos": []}
     salida = T._obligaciones(
         "hola, que venden?", mesa, NEGOCIO, True,
@@ -66,15 +62,12 @@ def test_el_primer_mensaje_lleva_la_linea_de_que_es_automatico():
         f"asistente automatico: {salida!r}")
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: D13. Las tres obligaciones son independientes: la que se cae no "
-    "puede apagar a las otras dos. HOY van adentro de un solo try, asi que "
-    "la primera que falla saltea a las de abajo y afuera queda un solo "
-    "warning sin nombre. Asi se rompio dos veces seguidas la misma cosa: el "
-    "3-sep la honestidad, el 6-sep el saludo. OBJETIVO: con la primera "
-    "reventada a mano, el saludo sigue saliendo. Relato en "
-    "arquitectura/FICHA_49_la_obligacion_muda.md."))
 def test_una_obligacion_que_se_cae_no_apaga_a_las_otras(monkeypatch):
+    """D13, la otra mitad, CERRADA el 7-sep. Las tres obligaciones iban dentro
+    de un solo try: la primera que fallaba apagaba a las de abajo y afuera
+    quedaba un warning sin nombre. Esa forma se comio la misma obligacion dos
+    veces seguidas, el 3-sep la honestidad y el 6-sep el saludo. Ahora cada
+    una se cae sola."""
     def _revienta(*a, **k):
         raise RuntimeError("guarda rota a proposito")
 
@@ -137,18 +130,13 @@ _INTERROGATIVA = re.compile(
     r"cuantas|como|donde|cuando)\b")
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: D15. El codigo no redacta, pero lo poco que escribe no puede "
-    "mentir sobre lo que el cliente pregunto. HOY el molde generico de "
-    "tabla._pregunta_del_codigo pega el renglon crudo de la fila y sale "
-    "'Sobre la politica de que producto tienen en mas de 5 tipos no tengo el "
-    "dato confirmado', que llama politica de la casa a una pregunta del "
-    "cliente sobre el catalogo. Medido en produccion el 3-sep 17:38:51 UTC, "
-    "turno tg_524215788, y leido tal cual en la charla del puente. OBJETIVO "
-    "0 de 2. Relato en arquitectura/FICHA_49_la_obligacion_muda.md."))
 @pytest.mark.parametrize("pregunto,clausula", _PEGADAS)
 def test_la_pregunta_del_codigo_no_llama_politica_a_una_pregunta_del_cliente(
         pregunto, clausula):
+    """D15, CERRADA el 7-sep. El molde generico pegaba el renglon crudo y
+    salia 'Sobre la politica de que producto tienen en mas de 5 tipos no tengo
+    el dato confirmado', que le atribuye a la casa una politica que el cliente
+    nunca nombro. Medido el 3-sep 17:38:51 UTC, turno tg_524215788."""
     fila = {"id": "temas:1", "estado": "sin_material", "pregunto": pregunto}
     escrita = TB._pregunta_del_codigo(fila)
     assert not _INTERROGATIVA.search(escrita), (
