@@ -1,0 +1,498 @@
+From 9dbea140bed5ed99c78fc2b34a383b4d08a396d7 Mon Sep 17 00:00:00 2001
+From: Cowork <martinrf79@gmail.com>
+Date: Mon, 7 Sep 2026 00:36:07 +0000
+Subject: [PATCH 2/2] FICHA 49: cierran D13 y D15. La obligacion vuelve a salir
+ y el codigo deja de inventar politicas
+
+Bateria 494 -> 498 verdes, xfail 7 -> 3. Banco de oro sin moverse: 48 de 65.
+Los tres xfail que quedan son los dos casos de D14 y el de la capa 4.
+
+D13. LA LINEA OBLIGATORIA DE QUE ES UN BOT NO SALIA NUNCA, y son dos cosas, no
+una. La primera es el argumento de mas: `con_saludo_inicial` toma la respuesta y
+el nombre del negocio, que ya viene resuelto en `negocio`, y se la llamaba
+ademas con el `tienda_id`. TypeError en el primer turno de cada charla, tapado
+por el `except`, y el cliente sin el aviso de que habla con algo automatico.
+Medido el 3-sep 17:37:17 UTC en el turno tg_524215785.
+
+La segunda es la que evita la tercera vuelta. Las tres obligaciones compartian
+un solo `try`: la primera que se caia apagaba a las de abajo y afuera quedaba un
+warning sin nombre. Esa forma se comio la misma obligacion DOS VECES SEGUIDAS
+-el 3-sep la honestidad, el 6-sep el saludo- y las dos veces el log no alcanzo
+para saber cual se habia roto. Ahora cada obligacion corre en su propio `try` y
+deja su nombre en `turno_guarda_error`.
+
+D15. LA PREGUNTA DEL CODIGO LLAMABA POLITICA A UNA PREGUNTA DEL CLIENTE. Los
+`temas` tienen molde propio y la decision se toma por FORMA, no por vocabulario:
+un tema de verdad es una clave de la FAQ, y las 50 claves tienen tres palabras
+como maximo -teclado_mecanico_membrana, garantia_como_usar- y ninguna arranca
+con un interrogativo. Cuando lo que queda despues de sacarle "la politica de" no
+cumple eso, no es el nombre de una politica y no se lo nombra: sale una frase
+neutra que no pega el renglon crudo. La contracara esta medida y sigue verde:
+"la politica de garantia" y las otras claves largas de la fuente salen igual que
+antes. Si un dia la fuente suma una clave de cuatro palabras, el peor caso es la
+frase neutra, que sigue siendo verdadera.
+
+D14 QUEDA ABIERTA A PROPOSITO, con su vara en rojo. Es la unica de las tres que
+pide decidir un mecanismo, y el mecanismo facil -una lista de frases prohibidas-
+es el camino del que este repo ya volvio: fueron 4 nodos, despues 18, despues
+46. La condicion tiene que ser de ESTADO.
+
+Verificado antes de pushear: bateria verde sobre 498 casos, banco de oro en 48
+de 65 sin moverse, y `app/` no importa `archivo/`. Toca app/, asi que deploya:
+Martin lo pidio explicito en esta sesion.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Rj3k6iPrvXqqf5SSSxW19D
+---
+ PENDIENTE.md                                |  2 +-
+ app/core/tabla.py                           | 40 ++++++++++++
+ app/core/turno.py                           | 57 +++++++++++------
+ arquitectura/FICHA_49_la_obligacion_muda.md | 42 ++++++++++---
+ arquitectura/MAPA_CABLEADO.md               | 69 +++++++++++++--------
+ arquitectura/README.md                      |  5 +-
+ tests/test_plan_de_la_obligacion.py         | 40 +++++-------
+ 7 files changed, 175 insertions(+), 80 deletions(-)
+
+diff --git a/PENDIENTE.md b/PENDIENTE.md
+index ab7ef1a..a9c483c 100644
+--- a/PENDIENTE.md
++++ b/PENDIENTE.md
+@@ -67,7 +67,7 @@ cableado: estaciones `T`, juntas `J`, puntos de modelo `L` y desconexiones `D`.
+ Aca va una linea por item, con su numero. Si un item y el mapa se contradicen,
+ gana el codigo y los dos estan mal.
+ 
+-- **ABIERTO** · **D13, D14 y D15 — LAS TRES QUE EL CLIENTE LEE, y las tres son la FICHA 49.** Leidas de las charlas reales del 3 y 4 de septiembre por el puente, reproducidas offline, con vara en `tests/test_plan_de_la_obligacion.py`. D13: la linea obligatoria de que es un bot no sale nunca, `TypeError` de aridad tapado por un `except`. D14: un universal sobre el catalogo sale sin que ninguna herramienta lo mire, y el mismo mensaje se desdice dos renglones despues. D15: la pregunta que escribe el codigo llama politica de la casa a una pregunta del cliente. El detalle, en el mapa.
++- **ABIERTO** · **D14 · UN UNIVERSAL SOBRE EL CATALOGO SALE SIN QUE NINGUNA HERRAMIENTA LO MIRE.** Una fila `sin_material` afirma sobre los 880 productos y dos renglones despues, en el mismo mensaje, dice que no tiene el dato. Es la unica de la FICHA 49 que queda: D13 y D15 cerraron el 7-sep. Sigue abierta porque hay que DECIDIR EL MECANISMO, y la condicion tiene que ser de ESTADO y no de vocabulario: perseguir prosa con una lista de frases ya fracaso aca, fueron 4 nodos, despues 18, despues 46. Vara puesta y en rojo, dos casos, en `tests/test_plan_de_la_obligacion.py`.
+ - **ABIERTO** · **D2 · LA CAPA 4 DE LOS CASOS DE ORO QUEDO SIN MECANISMO.** Sus 10 casos miden `salida.procedencia` y `salida.plata`, que se apagaron el 3-sep, y su campo `texto` viene con las etiquetas `<d ID>` de la atadura, que el modelo ya no escribe. Esta como `xfail` estricto en `tests/test_oro.py`, con el detalle caso por caso: C4-01, C4-02, C4-09 y C4-10 ya los cubre la estructura y tienen vara en `test_tabla.py`; C4-07 esta a medias; y C4-03, C4-04, C4-05 y C4-08 NO estan cubiertos, porque son contenido de la prosa adentro de una casilla. **Reescribir un caso de oro es decision de Martín.**
+ - **ABIERTO** · **LA COMPUERTA DE COMPLETITUD NO SE MIDIO EN VIVO.** El turno nuevo SI se midio: 9 turnos por Telegram el 3-sep entre 03:12 y 03:16 UTC, y el modelo respeto el esquema en los 9 —cero `turno_respuesta_no_es_la_mesa`—. Lo que mostro fueron tres defectos: la poda que se comia el nombre del producto y la guarda de honestidad que nunca corria, las dos ya arregladas y deployadas, y la compuerta, arreglada esta tarde y todavia sin una charla real encima. Lo que hay que mirar en la proxima prueba por WhatsApp son dos renglones nuevos: `turno_incompleto`, que dice que puntos quedaron abiertos, y `casilla_podada` con motivo `dato_sin_material`. Si `turno_incompleto` aparece con `pregunto=False`, la compuerta tiene un agujero.
+ - **ABIERTO** · **EL CANDADO DEL MAPA DE TESTS QUEDÓ EN ARCHIVO.** `tests/test_mapa.py` se apagó con el hub; el nocturno ya no lo corre. El piso de `banco_pruebas/mapa_piso.json` es del camino viejo. Reescribirlo sobre `turno.py` es otra ficha: no se revive el test apagado contra el inventario nuevo.
+diff --git a/app/core/tabla.py b/app/core/tabla.py
+index 99f2fff..a9ce211 100644
+--- a/app/core/tabla.py
++++ b/app/core/tabla.py
+@@ -904,6 +904,18 @@ def armar(respuesta: dict, mesa: dict, trace_id: str = "",
+     return mensaje
+ 
+ 
++_RE_LA_POLITICA_DE = re.compile(r"(?i)^la politica de\s+")
++
++# Los interrogativos con los que arranca una pregunta del cliente. Ninguna
++# clave de la FAQ empieza con uno, asi que verlo adelante es la prueba de que
++# lo que sigue no es el nombre de una politica de la casa.
++_RE_ARRANCA_PREGUNTANDO = re.compile(
++    r"(?i)^(?:que|qu[eé]|cual|cu[aá]l|cuales|cu[aá]les|cuanto|cu[aá]nto|"
++    r"cuantos|cu[aá]ntos|cuanta|cu[aá]nta|cuantas|cu[aá]ntas|como|c[oó]mo|"
++    r"donde|d[oó]nde|cuando|cu[aá]ndo|quien|qui[eé]n|quienes|qui[eé]nes|"
++    r"hay|tienen|tenes|ten[eé]s|tienes|puedo|pueden)\b")
++
++
+ def _pregunta_del_codigo(fila: dict) -> str:
+     """La unica prosa que el codigo escribe, y son cuatro moldes fijos.
+ 
+@@ -947,6 +959,34 @@ def _pregunta_del_codigo(fila: dict) -> str:
+     # el molde generico salia "Sobre el precio de lo que pidio no tengo el dato
+     # confirmado", que le echa al catalogo la culpa de algo que en realidad es
+     # que todavia no se sabe QUE cotizar.
++    if tipo == "temas":
++        # D15, 6-sep-2026. UN TEMA DE VERDAD ES UNA CLAVE DE LA FAQ, NO UNA
++        # FRASE. `puntos` arma el renglon como "la politica de " mas la clave
++        # con los guiones bajos cambiados por espacios, asi que mientras el
++        # modelo declara claves el molde generico salia bien. Cuando declara
++        # como tema la pregunta cruda del cliente, sale esto, medido en
++        # produccion el 3-sep 17:38:51 UTC, turno tg_524215788:
++        #
++        #   Sobre la politica de que producto tienen en mas de 5 tipos no
++        #   tengo el dato confirmado.
++        #
++        # Eso le atribuye a la casa una politica que el cliente nunca nombro,
++        # y encima en el renglon donde el bot esta admitiendo que no sabe.
++        #
++        # COMO SE SABE QUE NO ES UNA CLAVE, y es por FORMA, no por
++        # vocabulario: las 50 claves de la FAQ tienen TRES palabras como
++        # maximo -`teclado_mecanico_membrana`, `garantia_como_usar`- y ninguna
++        # arranca con un interrogativo. Cualquiera de las dos cosas alcanza
++        # para saber que lo que hay ahi es prosa del modelo. Si un dia la
++        # fuente suma una clave mas larga, el peor caso es esta misma frase
++        # neutra, que sigue siendo verdadera.
++        nombre = _RE_LA_POLITICA_DE.sub("", que).strip()
++        if not nombre or _RE_ARRANCA_PREGUNTANDO.match(nombre) or \\
++                len(nombre.split()) > 3:
++            return ("De eso no tengo el dato confirmado de este lado. "
++                    "Me lo precisas un poco y lo busco?")
++        return (f"Sobre la politica de {nombre} no tengo el dato confirmado. "
++                f"Me lo precisas un poco?")
+     if tipo == "pide_precio":
+         return ("Para pasarte el precio me falta cerrar cual y cuantos. "
+                 "Me lo confirmas y te lo armo?")
+diff --git a/app/core/turno.py b/app/core/turno.py
+index f38c2e5..479b690 100644
+--- a/app/core/turno.py
++++ b/app/core/turno.py
+@@ -974,24 +974,45 @@ def _obligaciones(texto: str, mesa: dict, negocio: str, primera_vez: bool,
+     """
+     from app.core import guardas_salida as gs
+     from app.core import camino_cobro as cc
+-    try:
+-        # (mensaje del cliente, respuesta, nombre del negocio). Hasta el 3-sep
+-        # se llamaba con dos argumentos y cruzados: tiraba TypeError en CADA
+-        # turno, el `except` de abajo lo tapaba, y la guarda que declara que es
+-        # un bot no corrio nunca. Se veia en produccion como `turno_guarda_error`
+-        # dos veces en dos turnos seguidos.
+-        texto = gs.asegurar_honestidad_bot(mensaje, texto, negocio)
+-        texto = (gs.con_saludo_inicial(texto, negocio, tienda_id)
+-                 if primera_vez else gs.sin_saludo_del_modelo(texto))
+-    except Exception as e:  # noqa: BLE001 — una guarda no tumba el turno
+-        log.warning("turno_guarda_error", trace_id=trace_id,
+-                    error=f"{type(e).__name__}: {str(e)[:120]}")
+-    try:
+-        texto = cc.linea_de_cobro(texto, mesa.get("bloque") or "", dichos,
+-                                  tienda_id)
+-    except Exception as e:  # noqa: BLE001
+-        log.warning("turno_cobro_error", trace_id=trace_id,
+-                    error=f"{type(e).__name__}: {str(e)[:120]}")
++
++    def _obligacion(nombre: str, hacer, actual: str) -> str:
++        """UN try POR OBLIGACION, Y NO UNO PARA LAS TRES (D13, 6-sep-2026).
++
++        Con un solo `try` alrededor de las tres, la primera que se cae apaga a
++        las de abajo y afuera queda un warning sin nombre. Esa forma se comio
++        la misma obligacion DOS VECES SEGUIDAS: el 3-sep no corria
++        `asegurar_honestidad_bot` y el 6-sep no corria el saludo, las dos por
++        una firma que no coincidia, las dos tapadas por este mismo `except`.
++
++        Ahora cada obligacion se cae sola, con su nombre en el log, y el resto
++        sigue. El `nombre` no es adorno: sin el, `turno_guarda_error` no dice
++        cual de las tres fallo, que es exactamente lo que hizo falta y no
++        estaba las dos veces que paso.
++        """
++        try:
++            return hacer()
++        except Exception as e:  # noqa: BLE001 — una guarda no tumba el turno
++            log.warning("turno_guarda_error", trace_id=trace_id,
++                        guarda=nombre,
++                        error=f"{type(e).__name__}: {str(e)[:120]}")
++            return actual
++
++    # (mensaje del cliente, respuesta, nombre del negocio).
++    texto = _obligacion(
++        "honestidad_bot",
++        lambda: gs.asegurar_honestidad_bot(mensaje, texto, negocio), texto)
++    # `con_saludo_inicial` toma la respuesta y el NOMBRE DEL NEGOCIO, que ya
++    # viene resuelto en `negocio`. Pasarle ademas el `tienda_id` era un tercer
++    # argumento que la funcion no tiene: TypeError en el primer turno de cada
++    # charla, y el cliente sin el aviso de que habla con algo automatico.
++    texto = _obligacion(
++        "saludo",
++        (lambda: gs.con_saludo_inicial(texto, negocio)) if primera_vez
++        else (lambda: gs.sin_saludo_del_modelo(texto)), texto)
++    texto = _obligacion(
++        "linea_de_cobro",
++        lambda: cc.linea_de_cobro(texto, mesa.get("bloque") or "", dichos,
++                                  tienda_id), texto)
+     return texto
+ 
+ 
+diff --git a/arquitectura/FICHA_49_la_obligacion_muda.md b/arquitectura/FICHA_49_la_obligacion_muda.md
+index 55cc0f7..7e19987 100644
+--- a/arquitectura/FICHA_49_la_obligacion_muda.md
++++ b/arquitectura/FICHA_49_la_obligacion_muda.md
+@@ -1,10 +1,14 @@
+ # FICHA 49 — La obligación muda, el universal sin herramienta, y la política que no era política
+ 
++**ESTADO al 7-sep-2026: D13 y D15 CERRADAS y deployadas. D14 sigue abierta**,
++y es la única de las tres que necesita decidir un mecanismo. Lo que sigue se
++deja escrito tal cual porque es el relato del diagnóstico; lo que cambió está
++marcado en cada bloque.
++
+ Esta es la orden de trabajo. Sale de leer las charlas REALES del 3 y 4 de
+ septiembre por el puente de producción, issue 31, no de leer código a ojo.
+ Los tres defectos se reprodujeron offline antes de escribirse. La vara ya
+-está puesta: `tests/test_plan_de_la_obligacion.py`, seis rojos y un verde
+-de contracara.
++está puesta: `tests/test_plan_de_la_obligacion.py`.
+ 
+ **Los números viven en `MAPA_CABLEADO.md`, sección 4: D13, D14 y D15.**
+ Acá va el relato y la orden; los nombres no se duplican.
+@@ -20,8 +24,12 @@ python3 banco_pruebas/oro.py
+ ```
+ 
+ 493 verdes y 1 xfail en la batería; 48 de 65 en el banco, con capa 2 en 33
+-de 40, capa 4 en 0 de 10 y capa 5 en 15 de 15. Con esta ficha la batería
+-pasa a 494 verdes y 7 xfail, y los dos números de arriba no se mueven.
++de 40, capa 4 en 0 de 10 y capa 5 en 15 de 15.
++
++Con la vara puesta la batería pasó a 494 verdes y 7 xfail. Con D13 y D15
++cerradas quedó en **498 verdes y 3 xfail**: los dos que quedan marcados son
++los dos casos de D14, más el de la capa 4 que ya estaba. **El banco no se
++movió en ningún momento: 48 de 65.**
+ 
+ ---
+ 
+@@ -43,10 +51,16 @@ un "no sé" mal escrito.
+ 
+ ---
+ 
+-## D13 · La línea obligatoria de que es un bot no sale nunca
++## D13 · CERRADA · La línea obligatoria de que es un bot no salía nunca
+ 
+ **Estación T9.1 y T9.2, `turno._obligaciones`.**
+ 
++**Cerrada el 7-sep, y son dos cosas.** El argumento de más se sacó. Y las tres
++obligaciones dejaron de compartir un `try`: cada una corre en el suyo y deja su
++nombre en `turno_guarda_error`. Lo segundo es lo que importa a futuro, porque
++sin nombre y sin independencia el warning no alcanzaba para saber qué se había
++roto, y por eso se rompió dos veces seguidas.
++
+ `turno.py:984` llama `gs.con_saludo_inicial(texto, negocio, tienda_id)`, con
+ tres argumentos. `guardas_salida.py:136` la define
+ `con_saludo_inicial(respuesta, business_name)`, con dos. En el primer turno
+@@ -79,10 +93,15 @@ segundo es el que evita la tercera vuelta de lo mismo.
+ 
+ Es una línea de código, y el bloque merece un `try` por obligación.
+ 
+-## D14 · Un universal sobre el catálogo sale sin que ninguna herramienta lo mire
++## D14 · ABIERTA · Un universal sobre el catálogo sale sin que ninguna herramienta lo mire
+ 
+ **Estación T8.2, la poda de `tabla._limpiar`.**
+ 
++**Sigue abierta a propósito, y es la única de las tres.** Las otras dos eran
++una firma y un molde de texto: se arreglan sin decidir nada. Ésta pide elegir
++el mecanismo, y el mecanismo fácil —una lista de frases prohibidas— es el
++camino del que este repo ya volvió. Va en su propia sesión.
++
+ Medido el 3-sep a las 17:38:51 UTC, turno `tg_524215788`. El cliente
+ preguntó `que producto tienen en mas de 5 tipos`. El log dice
+ `busquedas_derivadas` con `hechas=[]`: ninguna herramienta miró el catálogo.
+@@ -116,10 +135,15 @@ La condición es de ESTADO, no de vocabulario: la fila no tiene material y la
+ llamada no se hizo. La frase se mira sólo para saber si es una afirmación
+ sobre el conjunto, no para adivinar el tema.
+ 
+-## D15 · La pregunta que escribe el código llama política a una pregunta del cliente
++## D15 · CERRADA · La pregunta que escribe el código llamaba política a una pregunta del cliente
+ 
+ **Estación T8.3, `tabla._pregunta_del_codigo`.**
+ 
++**Cerrada el 7-sep.** Los `temas` tienen molde propio y la decisión se toma por
++FORMA: un tema de verdad es una clave de la FAQ, las 50 tienen tres palabras
++como máximo y ninguna arranca con un interrogativo. Lo que no cumple eso no se
++nombra como política.
++
+ Mismo turno. Cuando el punto quedó abierto, la compuerta escribió:
+ 
+ ```
+@@ -180,8 +204,10 @@ Lee SOLO: CLAUDE.md bloque 0, arquitectura/FICHA_49_la_obligacion_muda.md,
+ arquitectura/MAPA_CABLEADO.md seccion 4.
+ Corre pytest -q y banco_pruebas/oro.py y anota los dos numeros.
+ Prioridad uno: el bot vende y no alucina. Si no sabe, lo dice o repregunta.
+-ESTA SESION ES LA FICHA 49: D13, D14 y D15. Nada mas.
++ESTA SESION ES LA FICHA 49, LO QUE QUEDA: D14 sola. D13 y D15 ya cerraron.
+ La vara es tests/test_plan_de_la_obligacion.py y NO se afloja.
++La condicion de D14 es de ESTADO, no de vocabulario: si el arreglo empieza a
++crecer en una lista de frases prohibidas, esta mal.
+ No se deposita grasa. No se toca certificar_temas. No se toca data/clientes.
+ Si el piso de las 15 charlas baja, revert.
+ PUSHEA a main. Toca app/: pedi el OK del push una vez, al final.
+diff --git a/arquitectura/MAPA_CABLEADO.md b/arquitectura/MAPA_CABLEADO.md
+index e0f79c8..d908127 100644
+--- a/arquitectura/MAPA_CABLEADO.md
++++ b/arquitectura/MAPA_CABLEADO.md
+@@ -183,13 +183,17 @@ las que salen de leer el código llevan el archivo y la línea.
+ Cerradas el 6-sep-2026: **D1**, **D6**, la mitad dura de **D3**, la parte del
+ verbo de **D4**, y **D10** en lo que hacía falta para diagnosticar la junta.
++Cerradas el 7-sep-2026: **D13** y **D15**.
+ Abiertas: **D2**, **D4** en su parte de fondo, **D5**, **D7**, **D8**, **D9**,
+-**D11**, **D12**, **D13**, **D14**, **D15**.
++**D11**, **D12**, **D14**.
+ 
+-Las tres últimas se agregaron el 6-sep-2026 leyendo las charlas REALES del 3 y
+-4 de septiembre por el puente de producción, issue 31. Las tres están
+-reproducidas offline y tienen vara: `tests/test_plan_de_la_obligacion.py`.
+-Relato en `FICHA_49_la_obligacion_muda.md`.
++D13, D14 y D15 se agregaron el 6-sep-2026 leyendo las charlas REALES del 3 y 4
++de septiembre por el puente de producción, issue 31, y las tres se
++reprodujeron offline antes de escribirse. Vara:
++`tests/test_plan_de_la_obligacion.py`. Relato en
++`FICHA_49_la_obligacion_muda.md`. **D14 sigue abierta a propósito:** su arreglo
++necesita decidir el mecanismo, y meterle una lista de frases prohibidas al
++mensaje es el camino que este repo ya recorrió y del que ya volvió.
+ 
+ ### D1 · CERRADA 6-sep · La movida de venta se buscaba y se caía antes del redactor
+ **Estación:** T6.3.
+@@ -317,9 +321,17 @@ Si el turno declara dos extremos opuestos y además hay items, el extremo del
+ turno no gobierna ninguna búsqueda y cada item usa el suyo. El caso sin items ya
+ está verde.
+ 
+-### D13 · ABIERTA · La línea obligatoria de que es un bot no sale nunca
+-**Estación:** T9.1 y T9.2, `turno._obligaciones:961`.
+-`turno.py:984` llama `con_saludo_inicial` con TRES argumentos y
++### D13 · CERRADA 7-sep · La línea obligatoria de que es un bot no salía nunca
++**Estación:** T9.1 y T9.2, `turno._obligaciones`.
++**Cómo se cerró, y son dos cosas.** El argumento de más se sacó: la función
++toma la respuesta y el nombre del negocio, que ya viene resuelto. Y las tres
++obligaciones dejaron de compartir un `try`: cada una corre en el suyo y deja su
++nombre en `turno_guarda_error`, así que la que se cae no apaga a las de abajo y
++el log dice cuál fue. Eso segundo es lo que evita la tercera vuelta: sin nombre
++y sin independencia, el warning no alcanzaba para saber qué se había roto.
++Vara: `tests/test_plan_de_la_obligacion.py`, dos casos.
++**Lo que era, para que se entienda el número:**
++`turno.py:984` llamaba `con_saludo_inicial` con TRES argumentos y
+ `guardas_salida.py:136` la define con DOS. En el primer turno de cada charla
+ eso levanta `TypeError`, el `except` lo convierte en un `warning` y el bloque
+ entero de obligaciones queda sin correr. El cliente nunca lee que está
+@@ -328,10 +340,9 @@ Medido el 3-sep 17:37:17 UTC, turno `tg_524215785`: `turno_guarda_error` con
+ `con_saludo_inicial() takes 2 positional arguments but 3 were given`, y en la
+ charla del puente ese turno arranca con el saludo del modelo.
+ Cómo se ve: una obligación de la casa que no se cumple, y nadie se entera.
+-**Ya pasó una vez**, el 3-sep, con `asegurar_honestidad_bot`: se arregló esa y
+-se rompió la de al lado, porque un solo `try` alrededor de tres obligaciones no
+-deja ver cuál se cayó. Vara: `tests/test_plan_de_la_obligacion.py`, dos casos.
+-**Es una línea de código, más un `try` por obligación.**
++**Ya había pasado una vez**, el 3-sep, con `asegurar_honestidad_bot`: se
++arregló esa y se rompió la de al lado, porque un solo `try` alrededor de tres
++obligaciones no deja ver cuál se cayó.
+ 
+ ### D14 · ABIERTA · Un universal sobre el catálogo sale sin herramienta que lo mire
+ **Estación:** T8.2, `tabla._limpiar:635`.
+@@ -350,21 +361,28 @@ Cómo se ve: el bot afirma y se desdice en el mismo mensaje.
+ lista de frases ya fracasó: fueron 4 nodos, después 18, después 46. Vara:
+ `tests/test_plan_de_la_obligacion.py`, dos casos.
+ 
+-### D15 · ABIERTA · La pregunta del código llama política a una pregunta del cliente
+-**Estación:** T8.3, `tabla._pregunta_del_codigo:907`.
+-La fila `temas` trae su `pregunto` como `la politica de ` más la frase cruda
+-del cliente, y el molde genérico la pega entera. Cuando el modelo declaró como
+-tema algo que no es política de la casa, sale
++### D15 · CERRADA 7-sep · La pregunta del código llamaba política a una pregunta del cliente
++**Estación:** T8.3, `tabla._pregunta_del_codigo`.
++**Cómo se cerró.** Los `temas` tienen molde propio, y la decisión se toma por
++FORMA, no por vocabulario: un tema de verdad es una clave de la FAQ, y las 50
++claves tienen tres palabras como máximo —`teclado_mecanico_membrana`— y
++ninguna arranca con un interrogativo. Cuando lo que quedó después de sacarle
++`la politica de ` no cumple eso, no es el nombre de una política y no se lo
++nombra: sale una frase neutra que no pega el renglón crudo. Vara:
++`tests/test_plan_de_la_obligacion.py`, dos casos y un verde de contracara para
++que el caso legítimo —`la politica de garantia`— no quede mudo.
++**Lo que era, para que se entienda el número:** la fila `temas` trae su
++`pregunto` como `la politica de ` más la frase cruda, y el molde genérico la
++pegaba entera. Cuando el modelo declaró como tema algo que no es política de
++la casa, salía
+ `Sobre la politica de que producto tienen en mas de 5 tipos no tengo el dato
+ confirmado`.
+ Medido el 3-sep 17:38:51 UTC, turno `tg_524215788`, leído tal cual en la
+ charla del puente.
+-Cómo se ve: el bot le atribuye a la casa una política que el cliente nunca
++Cómo se veía: el bot le atribuía a la casa una política que el cliente nunca
+ nombró, en el renglón donde estaba admitiendo que no sabe.
+ Los moldes de `restricciones`, `stock`, `pide_precio` y `reparto_pago` ya se
+-corrigieron por esta misma razón; el genérico quedó sin corregir. Vara:
+-`tests/test_plan_de_la_obligacion.py`, dos casos y un verde de contracara para
+-que el caso legítimo —`la politica de garantia`— no quede mudo.
++habían corregido por esta misma razón; el genérico había quedado.
+ 
+ ---
+ 
+@@ -378,10 +396,11 @@ la proyección del campo (D3, D4, D6).
+ **Las tres del 6-sep son de otra familia y hay que decirlo aparte: D13, D14 y
+ D15 son las tres que el cliente LEE.** Una obligación que no se cumple, una
+ afirmación sobre el catálogo sin nada que la respalde, y un "no sé" que le
+-atribuye a la casa una política inventada. Ninguna necesita una decisión
+-grande, y las tres estuvieron a la vista en una charla de diez mensajes que
+-nadie había leído hasta que el puente la trajo. **Eso es lo que mide la
+-distancia entre la batería verde y el teléfono del cliente.**
++atribuye a la casa una política inventada. Las tres estuvieron a la vista en
++una charla de diez mensajes que nadie había leído hasta que el puente la
++trajo. **Eso es lo que mide la distancia entre la batería verde y el teléfono
++del cliente.** D13 y D15 cerraron el 7-sep; D14 sigue abierta porque es la
++única de las tres que necesita decidir un mecanismo.
+ 
+ La pregunta "por qué en teoría funciona y en la práctica no" tiene, medida, esta
+ respuesta: **porque las dos únicas juntas que no aparean por identificador son
+diff --git a/arquitectura/README.md b/arquitectura/README.md
+index db84d49..1fac22b 100644
+--- a/arquitectura/README.md
++++ b/arquitectura/README.md
+@@ -16,8 +16,9 @@ A MEDIAS   algo que se EMPEZÓ y no se terminó.  Tiene que llegar a CERO.
+ PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
+ ```
+ 
+-La orden de trabajo abierta: **la FICHA 49**, las tres que el cliente lee.
+-Relato en `FICHA_49_la_obligacion_muda.md`, vara en
++La orden de trabajo abierta: **lo que queda de la FICHA 49, que es D14 sola.**
++D13 y D15 cerraron el 7-sep y están deployadas. Relato en
++`FICHA_49_la_obligacion_muda.md`, vara en
+ `tests/test_plan_de_la_obligacion.py`.
+ 
+ Detrás de ella, el orden grande no cambió y está en `FORMULARIO_V2.md`
+diff --git a/tests/test_plan_de_la_obligacion.py b/tests/test_plan_de_la_obligacion.py
+index e3466bf..787a8e4 100644
+--- a/tests/test_plan_de_la_obligacion.py
++++ b/tests/test_plan_de_la_obligacion.py
+@@ -47,16 +47,12 @@ NEGOCIO = "Verifika Tech"
+ 
+ # ── D13 — LA OBLIGACION DE DECIR QUE ES UN BOT NO SALE NUNCA ────────────────
+ 
+-@pytest.mark.xfail(strict=True, reason=(
+-    "PLAN: D13. El primer mensaje de cada charla tiene que llevar la linea "
+-    "obligatoria de que es un asistente automatico. HOY no la lleva: "
+-    "turno.py:984 llama con_saludo_inicial con TRES argumentos y "
+-    "guardas_salida.py:136 la define con DOS, asi que el bloque entero de "
+-    "obligaciones se corta con TypeError y el except lo deja en un warning. "
+-    "Medido en produccion el 3-sep 17:37:17 UTC, turno tg_524215785. "
+-    "OBJETIVO: la linea esta. Relato en "
+-    "arquitectura/FICHA_49_la_obligacion_muda.md."))
+ def test_el_primer_mensaje_lleva_la_linea_de_que_es_automatico():
++    """D13, CERRADA el 7-sep. Hasta el arreglo esto era rojo: `turno.py` le
++    pasaba a `con_saludo_inicial` un tercer argumento que la funcion no tiene,
++    el bloque entero de obligaciones se cortaba con TypeError y el cliente
++    recibia un mensaje sin el aviso de que habla con algo automatico. Medido
++    en produccion el 3-sep 17:37:17 UTC, turno tg_524215785."""
+     mesa = {"bloque": "", "puntos": []}
+     salida = T._obligaciones(
+         "hola, que venden?", mesa, NEGOCIO, True,
+@@ -66,15 +62,12 @@ def test_el_primer_mensaje_lleva_la_linea_de_que_es_automatico():
+         f"asistente automatico: {salida!r}")
+ 
+ 
+-@pytest.mark.xfail(strict=True, reason=(
+-    "PLAN: D13. Las tres obligaciones son independientes: la que se cae no "
+-    "puede apagar a las otras dos. HOY van adentro de un solo try, asi que "
+-    "la primera que falla saltea a las de abajo y afuera queda un solo "
+-    "warning sin nombre. Asi se rompio dos veces seguidas la misma cosa: el "
+-    "3-sep la honestidad, el 6-sep el saludo. OBJETIVO: con la primera "
+-    "reventada a mano, el saludo sigue saliendo. Relato en "
+-    "arquitectura/FICHA_49_la_obligacion_muda.md."))
+ def test_una_obligacion_que_se_cae_no_apaga_a_las_otras(monkeypatch):
++    """D13, la otra mitad, CERRADA el 7-sep. Las tres obligaciones iban dentro
++    de un solo try: la primera que fallaba apagaba a las de abajo y afuera
++    quedaba un warning sin nombre. Esa forma se comio la misma obligacion dos
++    veces seguidas, el 3-sep la honestidad y el 6-sep el saludo. Ahora cada
++    una se cae sola."""
+     def _revienta(*a, **k):
+         raise RuntimeError("guarda rota a proposito")
+ 
+@@ -137,18 +130,13 @@ _INTERROGATIVA = re.compile(
+     r"cuantas|como|donde|cuando)\b")
+ 
+ 
+-@pytest.mark.xfail(strict=True, reason=(
+-    "PLAN: D15. El codigo no redacta, pero lo poco que escribe no puede "
+-    "mentir sobre lo que el cliente pregunto. HOY el molde generico de "
+-    "tabla._pregunta_del_codigo pega el renglon crudo de la fila y sale "
+-    "'Sobre la politica de que producto tienen en mas de 5 tipos no tengo el "
+-    "dato confirmado', que llama politica de la casa a una pregunta del "
+-    "cliente sobre el catalogo. Medido en produccion el 3-sep 17:38:51 UTC, "
+-    "turno tg_524215788, y leido tal cual en la charla del puente. OBJETIVO "
+-    "0 de 2. Relato en arquitectura/FICHA_49_la_obligacion_muda.md."))
+ @pytest.mark.parametrize("pregunto,clausula", _PEGADAS)
+ def test_la_pregunta_del_codigo_no_llama_politica_a_una_pregunta_del_cliente(
+         pregunto, clausula):
++    """D15, CERRADA el 7-sep. El molde generico pegaba el renglon crudo y
++    salia 'Sobre la politica de que producto tienen en mas de 5 tipos no tengo
++    el dato confirmado', que le atribuye a la casa una politica que el cliente
++    nunca nombro. Medido el 3-sep 17:38:51 UTC, turno tg_524215788."""
+     fila = {"id": "temas:1", "estado": "sin_material", "pregunto": pregunto}
+     escrita = TB._pregunta_del_codigo(fila)
+     assert not _INTERROGATIVA.search(escrita), (
+-- 
+2.43.0
+
