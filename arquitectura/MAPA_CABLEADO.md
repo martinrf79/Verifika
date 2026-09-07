@@ -184,7 +184,12 @@ las que salen de leer el código llevan el archivo y la línea.
 Cerradas el 6-sep-2026: **D1**, **D6**, la mitad dura de **D3**, la parte del
 verbo de **D4**, y **D10** en lo que hacía falta para diagnosticar la junta.
 Abiertas: **D2**, **D4** en su parte de fondo, **D5**, **D7**, **D8**, **D9**,
-**D11**, **D12**.
+**D11**, **D12**, **D13**, **D14**, **D15**.
+
+Las tres últimas se agregaron el 6-sep-2026 leyendo las charlas REALES del 3 y
+4 de septiembre por el puente de producción, issue 31. Las tres están
+reproducidas offline y tienen vara: `tests/test_plan_de_la_obligacion.py`.
+Relato en `FICHA_49_la_obligacion_muda.md`.
 
 ### D1 · CERRADA 6-sep · La movida de venta se buscaba y se caía antes del redactor
 **Estación:** T6.3.
@@ -312,14 +317,71 @@ Si el turno declara dos extremos opuestos y además hay items, el extremo del
 turno no gobierna ninguna búsqueda y cada item usa el suyo. El caso sin items ya
 está verde.
 
+### D13 · ABIERTA · La línea obligatoria de que es un bot no sale nunca
+**Estación:** T9.1 y T9.2, `turno._obligaciones:961`.
+`turno.py:984` llama `con_saludo_inicial` con TRES argumentos y
+`guardas_salida.py:136` la define con DOS. En el primer turno de cada charla
+eso levanta `TypeError`, el `except` lo convierte en un `warning` y el bloque
+entero de obligaciones queda sin correr. El cliente nunca lee que está
+hablando con un asistente automático.
+Medido el 3-sep 17:37:17 UTC, turno `tg_524215785`: `turno_guarda_error` con
+`con_saludo_inicial() takes 2 positional arguments but 3 were given`, y en la
+charla del puente ese turno arranca con el saludo del modelo.
+Cómo se ve: una obligación de la casa que no se cumple, y nadie se entera.
+**Ya pasó una vez**, el 3-sep, con `asegurar_honestidad_bot`: se arregló esa y
+se rompió la de al lado, porque un solo `try` alrededor de tres obligaciones no
+deja ver cuál se cayó. Vara: `tests/test_plan_de_la_obligacion.py`, dos casos.
+**Es una línea de código, más un `try` por obligación.**
+
+### D14 · ABIERTA · Un universal sobre el catálogo sale sin herramienta que lo mire
+**Estación:** T8.2, `tabla._limpiar:635`.
+Una fila `sin_material` puede afirmar sobre los 880 productos y la poda no lo
+ve: corta plata sin respaldo, id interno, JSON filtrado y cifra en fila sin
+material, ninguna de las cuatro mira un universal en prosa.
+Medido el 3-sep 17:38:51 UTC, turno `tg_524215788`: `busquedas_derivadas` con
+`hechas=[]` y el cliente leyó `no contamos con ningun producto que disponga de
+mas de 5 variantes`, y dos renglones más abajo, en el MISMO mensaje, que no
+tiene el dato.
+La guarda que cazaba esto —`hub_venta_afirmo_sobre_el_catalogo`, hoy en
+`archivo/plomeria_apagada/salida.py:844`— se apagó con el hub el 3-sep y no la
+reemplazó nadie.
+Cómo se ve: el bot afirma y se desdice en el mismo mensaje.
+**La condición es de ESTADO, no de vocabulario.** Perseguir prosa con una
+lista de frases ya fracasó: fueron 4 nodos, después 18, después 46. Vara:
+`tests/test_plan_de_la_obligacion.py`, dos casos.
+
+### D15 · ABIERTA · La pregunta del código llama política a una pregunta del cliente
+**Estación:** T8.3, `tabla._pregunta_del_codigo:907`.
+La fila `temas` trae su `pregunto` como `la politica de ` más la frase cruda
+del cliente, y el molde genérico la pega entera. Cuando el modelo declaró como
+tema algo que no es política de la casa, sale
+`Sobre la politica de que producto tienen en mas de 5 tipos no tengo el dato
+confirmado`.
+Medido el 3-sep 17:38:51 UTC, turno `tg_524215788`, leído tal cual en la
+charla del puente.
+Cómo se ve: el bot le atribuye a la casa una política que el cliente nunca
+nombró, en el renglón donde estaba admitiendo que no sabe.
+Los moldes de `restricciones`, `stock`, `pide_precio` y `reparto_pago` ya se
+corrigieron por esta misma razón; el genérico quedó sin corregir. Vara:
+`tests/test_plan_de_la_obligacion.py`, dos casos y un verde de contracara para
+que el caso legítimo —`la politica de garantia`— no quede mudo.
+
 ---
 
 ## 5. RESUMEN DE UNA LÍNEA
 
-De las doce desconexiones, **una es de la fuente** (D8, la más cara), **dos son
-de instrumentación** (D2 y D10: el sistema falla y nadie lo ve), y **nueve son
-plomería**, de las cuales tres viven todas en la misma junta blanda J4 y en la
-proyección del campo (D3, D4, D6).
+De las quince desconexiones, **una es de la fuente** (D8, la más cara), **dos
+son de instrumentación** (D2 y D10: el sistema falla y nadie lo ve), y **doce
+son plomería**, de las cuales tres viven todas en la misma junta blanda J4 y en
+la proyección del campo (D3, D4, D6).
+
+**Las tres del 6-sep son de otra familia y hay que decirlo aparte: D13, D14 y
+D15 son las tres que el cliente LEE.** Una obligación que no se cumple, una
+afirmación sobre el catálogo sin nada que la respalde, y un "no sé" que le
+atribuye a la casa una política inventada. Ninguna necesita una decisión
+grande, y las tres estuvieron a la vista en una charla de diez mensajes que
+nadie había leído hasta que el puente la trajo. **Eso es lo que mide la
+distancia entre la batería verde y el teléfono del cliente.**
 
 La pregunta "por qué en teoría funciona y en la práctica no" tiene, medida, esta
 respuesta: **porque las dos únicas juntas que no aparean por identificador son
