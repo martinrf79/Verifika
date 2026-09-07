@@ -16,10 +16,21 @@ A MEDIAS   algo que se EMPEZÓ y no se terminó.  Tiene que llegar a CERO.
 PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 ```
 
-La orden de trabajo abierta: Recorte 2 hecho (una puerta al modelo).
-Sigue la FICHA 46, el ruteo de la política. Relato del diagnóstico en
-`FICHA_44_deposito_y_robustez.md`. La 45 cerró el loop. La 48 apagó
-las seis puertas y el termómetro. Los termómetros de la 36 no se fuerzan.
+La orden de trabajo abierta: **la FICHA 49**, las tres que el cliente lee.
+Relato en `FICHA_49_la_obligacion_muda.md`, vara en
+`tests/test_plan_de_la_obligacion.py`.
+
+Detrás de ella, el orden grande no cambió y está en `FORMULARIO_V2.md`
+sección 6: primero D2 —la vara de la capa 4—, después el hueco 4, después
+el hueco 1.
+
+Qué pasó con las fichas 46 y 47, porque el que lea esto las va a buscar:
+**nunca se escribieron.** Sus dos casos siguen abiertos con otro nombre en
+`MAPA_CABLEADO.md`, que desde el 6-sep es el único lugar donde se nombra el
+cableado: el ruteo de la política es **D7**, y los dos extremos sueltos son
+**D12**. La batería que las contaba con marcas `PLAN:` se apagó el 2-sep con
+el resto de los candados de proceso. La 45 cerró el loop. La 48 apagó las
+seis puertas y el termómetro. Los termómetros de la 36 no se fuerzan.
 
 ---
 
@@ -58,6 +69,9 @@ toca, cómo se verifica.
 | `FICHA_44_deposito_y_robustez.md` | depósito sin borrar; el diagnóstico |
 | `FICHA_45_el_loop.md` | el loop adentro del turno; CONFLICTO pregunta; cerrada |
 | `FICHA_48_el_apagon.md` | el primer apagón: seis puertas y el termómetro; cerrada |
+| `FICHA_49_la_obligacion_muda.md` | **la orden abierta**: D13, D14 y D15, leídas de charlas reales |
+| `MAPA_CABLEADO.md` | el único lugar donde se nombra el cableado y el estado de cada falla |
+| `FORMULARIO_V2.md` | los huecos del formulario y el orden grande |
 | `PLAN_REDUCCION.md` | la campaña de agosto: qué se queda vs qué ya fue a archivo/ |
 
 **En la raíz: la biblioteca.** Se consulta para entender POR QUÉ, no para saber
@@ -69,9 +83,13 @@ qué hacer.
 | `../DECISIONES.md` | QUÉ se decidió y por qué — 40 líneas |
 | `../PLAN_RECORTE.md` | CÓMO se hace cada paso y en qué orden |
 | `../ARQUITECTURA.md` | cómo está ordenado el sistema hoy |
-| `../tests/test_plan_del_recorte.py` | el plan viejo, lo que queda de las fichas 1 a 25 |
-| `../tests/test_plan_de_la_simplificacion.py` | el plan del nexo y las puertas |
-| `../tests/test_plan_de_la_robustez.py` | **el plan de ahora**: contradicción, ruteo, extremos sueltos |
+| `../tests/test_plan_de_la_obligacion.py` | **el plan de ahora**: D13, D14 y D15 |
+
+> **Los tres planes viejos ya no están en `tests/`.** `test_plan_del_recorte.py`,
+> `test_plan_de_la_simplificacion.py` y `test_plan_de_la_robustez.py` se apagaron
+> el 2-sep con los otros setenta y tres, y viven en `archivo/tests_apagados/`.
+> Se leen para entender qué se pedía; no cuentan nada. Lo que quedó abierto de
+> ellos está en `MAPA_CABLEADO.md` con número de desconexión.
 
 > **Por qué los cuatro no están físicamente acá.** Reescribir 45 KB de prosa
 > para cambiarles la ruta agrega riesgo de transcripción y no gana nada: nadie
