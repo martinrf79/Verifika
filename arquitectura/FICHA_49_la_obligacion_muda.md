@@ -1,10 +1,14 @@
 # FICHA 49 — La obligación muda, el universal sin herramienta, y la política que no era política
 
+**ESTADO al 7-sep-2026: D13 y D15 CERRADAS y deployadas. D14 sigue abierta**,
+y es la única de las tres que necesita decidir un mecanismo. Lo que sigue se
+deja escrito tal cual porque es el relato del diagnóstico; lo que cambió está
+marcado en cada bloque.
+
 Esta es la orden de trabajo. Sale de leer las charlas REALES del 3 y 4 de
 septiembre por el puente de producción, issue 31, no de leer código a ojo.
 Los tres defectos se reprodujeron offline antes de escribirse. La vara ya
-está puesta: `tests/test_plan_de_la_obligacion.py`, seis rojos y un verde
-de contracara.
+está puesta: `tests/test_plan_de_la_obligacion.py`.
 
 **Los números viven en `MAPA_CABLEADO.md`, sección 4: D13, D14 y D15.**
 Acá va el relato y la orden; los nombres no se duplican.
@@ -20,8 +24,12 @@ python3 banco_pruebas/oro.py
 ```
 
 493 verdes y 1 xfail en la batería; 48 de 65 en el banco, con capa 2 en 33
-de 40, capa 4 en 0 de 10 y capa 5 en 15 de 15. Con esta ficha la batería
-pasa a 494 verdes y 7 xfail, y los dos números de arriba no se mueven.
+de 40, capa 4 en 0 de 10 y capa 5 en 15 de 15.
+
+Con la vara puesta la batería pasó a 494 verdes y 7 xfail. Con D13 y D15
+cerradas quedó en **498 verdes y 3 xfail**: los dos que quedan marcados son
+los dos casos de D14, más el de la capa 4 que ya estaba. **El banco no se
+movió en ningún momento: 48 de 65.**
 
 ---
 
@@ -43,9 +51,15 @@ un "no sé" mal escrito.
 
 ---
 
-## D13 · La línea obligatoria de que es un bot no sale nunca
+## D13 · CERRADA · La línea obligatoria de que es un bot no salía nunca
 
 **Estación T9.1 y T9.2, `turno._obligaciones`.**
+
+**Cerrada el 7-sep, y son dos cosas.** El argumento de más se sacó. Y las tres
+obligaciones dejaron de compartir un `try`: cada una corre en el suyo y deja su
+nombre en `turno_guarda_error`. Lo segundo es lo que importa a futuro, porque
+sin nombre y sin independencia el warning no alcanzaba para saber qué se había
+roto, y por eso se rompió dos veces seguidas.
 
 `turno.py:984` llama `gs.con_saludo_inicial(texto, negocio, tienda_id)`, con
 tres argumentos. `guardas_salida.py:136` la define
@@ -79,9 +93,14 @@ segundo es el que evita la tercera vuelta de lo mismo.
 
 Es una línea de código, y el bloque merece un `try` por obligación.
 
-## D14 · Un universal sobre el catálogo sale sin que ninguna herramienta lo mire
+## D14 · ABIERTA · Un universal sobre el catálogo sale sin que ninguna herramienta lo mire
 
 **Estación T8.2, la poda de `tabla._limpiar`.**
+
+**Sigue abierta a propósito, y es la única de las tres.** Las otras dos eran
+una firma y un molde de texto: se arreglan sin decidir nada. Ésta pide elegir
+el mecanismo, y el mecanismo fácil —una lista de frases prohibidas— es el
+camino del que este repo ya volvió. Va en su propia sesión.
 
 Medido el 3-sep a las 17:38:51 UTC, turno `tg_524215788`. El cliente
 preguntó `que producto tienen en mas de 5 tipos`. El log dice
@@ -116,9 +135,14 @@ La condición es de ESTADO, no de vocabulario: la fila no tiene material y la
 llamada no se hizo. La frase se mira sólo para saber si es una afirmación
 sobre el conjunto, no para adivinar el tema.
 
-## D15 · La pregunta que escribe el código llama política a una pregunta del cliente
+## D15 · CERRADA · La pregunta que escribe el código llamaba política a una pregunta del cliente
 
 **Estación T8.3, `tabla._pregunta_del_codigo`.**
+
+**Cerrada el 7-sep.** Los `temas` tienen molde propio y la decisión se toma por
+FORMA: un tema de verdad es una clave de la FAQ, las 50 tienen tres palabras
+como máximo y ninguna arranca con un interrogativo. Lo que no cumple eso no se
+nombra como política.
 
 Mismo turno. Cuando el punto quedó abierto, la compuerta escribió:
 
@@ -180,8 +204,10 @@ Lee SOLO: CLAUDE.md bloque 0, arquitectura/FICHA_49_la_obligacion_muda.md,
 arquitectura/MAPA_CABLEADO.md seccion 4.
 Corre pytest -q y banco_pruebas/oro.py y anota los dos numeros.
 Prioridad uno: el bot vende y no alucina. Si no sabe, lo dice o repregunta.
-ESTA SESION ES LA FICHA 49: D13, D14 y D15. Nada mas.
+ESTA SESION ES LA FICHA 49, LO QUE QUEDA: D14 sola. D13 y D15 ya cerraron.
 La vara es tests/test_plan_de_la_obligacion.py y NO se afloja.
+La condicion de D14 es de ESTADO, no de vocabulario: si el arreglo empieza a
+crecer en una lista de frases prohibidas, esta mal.
 No se deposita grasa. No se toca certificar_temas. No se toca data/clientes.
 Si el piso de las 15 charlas baja, revert.
 PUSHEA a main. Toca app/: pedi el OK del push una vez, al final.

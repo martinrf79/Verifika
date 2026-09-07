@@ -183,13 +183,17 @@ las que salen de leer el código llevan el archivo y la línea.
 
 Cerradas el 6-sep-2026: **D1**, **D6**, la mitad dura de **D3**, la parte del
 verbo de **D4**, y **D10** en lo que hacía falta para diagnosticar la junta.
+Cerradas el 7-sep-2026: **D13** y **D15**.
 Abiertas: **D2**, **D4** en su parte de fondo, **D5**, **D7**, **D8**, **D9**,
-**D11**, **D12**, **D13**, **D14**, **D15**.
+**D11**, **D12**, **D14**.
 
-Las tres últimas se agregaron el 6-sep-2026 leyendo las charlas REALES del 3 y
-4 de septiembre por el puente de producción, issue 31. Las tres están
-reproducidas offline y tienen vara: `tests/test_plan_de_la_obligacion.py`.
-Relato en `FICHA_49_la_obligacion_muda.md`.
+D13, D14 y D15 se agregaron el 6-sep-2026 leyendo las charlas REALES del 3 y 4
+de septiembre por el puente de producción, issue 31, y las tres se
+reprodujeron offline antes de escribirse. Vara:
+`tests/test_plan_de_la_obligacion.py`. Relato en
+`FICHA_49_la_obligacion_muda.md`. **D14 sigue abierta a propósito:** su arreglo
+necesita decidir el mecanismo, y meterle una lista de frases prohibidas al
+mensaje es el camino que este repo ya recorrió y del que ya volvió.
 
 ### D1 · CERRADA 6-sep · La movida de venta se buscaba y se caía antes del redactor
 **Estación:** T6.3.
@@ -317,9 +321,17 @@ Si el turno declara dos extremos opuestos y además hay items, el extremo del
 turno no gobierna ninguna búsqueda y cada item usa el suyo. El caso sin items ya
 está verde.
 
-### D13 · ABIERTA · La línea obligatoria de que es un bot no sale nunca
-**Estación:** T9.1 y T9.2, `turno._obligaciones:961`.
-`turno.py:984` llama `con_saludo_inicial` con TRES argumentos y
+### D13 · CERRADA 7-sep · La línea obligatoria de que es un bot no salía nunca
+**Estación:** T9.1 y T9.2, `turno._obligaciones`.
+**Cómo se cerró, y son dos cosas.** El argumento de más se sacó: la función
+toma la respuesta y el nombre del negocio, que ya viene resuelto. Y las tres
+obligaciones dejaron de compartir un `try`: cada una corre en el suyo y deja su
+nombre en `turno_guarda_error`, así que la que se cae no apaga a las de abajo y
+el log dice cuál fue. Eso segundo es lo que evita la tercera vuelta: sin nombre
+y sin independencia, el warning no alcanzaba para saber qué se había roto.
+Vara: `tests/test_plan_de_la_obligacion.py`, dos casos.
+**Lo que era, para que se entienda el número:**
+`turno.py:984` llamaba `con_saludo_inicial` con TRES argumentos y
 `guardas_salida.py:136` la define con DOS. En el primer turno de cada charla
 eso levanta `TypeError`, el `except` lo convierte en un `warning` y el bloque
 entero de obligaciones queda sin correr. El cliente nunca lee que está
@@ -328,10 +340,9 @@ Medido el 3-sep 17:37:17 UTC, turno `tg_524215785`: `turno_guarda_error` con
 `con_saludo_inicial() takes 2 positional arguments but 3 were given`, y en la
 charla del puente ese turno arranca con el saludo del modelo.
 Cómo se ve: una obligación de la casa que no se cumple, y nadie se entera.
-**Ya pasó una vez**, el 3-sep, con `asegurar_honestidad_bot`: se arregló esa y
-se rompió la de al lado, porque un solo `try` alrededor de tres obligaciones no
-deja ver cuál se cayó. Vara: `tests/test_plan_de_la_obligacion.py`, dos casos.
-**Es una línea de código, más un `try` por obligación.**
+**Ya había pasado una vez**, el 3-sep, con `asegurar_honestidad_bot`: se
+arregló esa y se rompió la de al lado, porque un solo `try` alrededor de tres
+obligaciones no deja ver cuál se cayó.
 
 ### D14 · ABIERTA · Un universal sobre el catálogo sale sin herramienta que lo mire
 **Estación:** T8.2, `tabla._limpiar:635`.
@@ -350,21 +361,28 @@ Cómo se ve: el bot afirma y se desdice en el mismo mensaje.
 lista de frases ya fracasó: fueron 4 nodos, después 18, después 46. Vara:
 `tests/test_plan_de_la_obligacion.py`, dos casos.
 
-### D15 · ABIERTA · La pregunta del código llama política a una pregunta del cliente
-**Estación:** T8.3, `tabla._pregunta_del_codigo:907`.
-La fila `temas` trae su `pregunto` como `la politica de ` más la frase cruda
-del cliente, y el molde genérico la pega entera. Cuando el modelo declaró como
-tema algo que no es política de la casa, sale
+### D15 · CERRADA 7-sep · La pregunta del código llamaba política a una pregunta del cliente
+**Estación:** T8.3, `tabla._pregunta_del_codigo`.
+**Cómo se cerró.** Los `temas` tienen molde propio, y la decisión se toma por
+FORMA, no por vocabulario: un tema de verdad es una clave de la FAQ, y las 50
+claves tienen tres palabras como máximo —`teclado_mecanico_membrana`— y
+ninguna arranca con un interrogativo. Cuando lo que quedó después de sacarle
+`la politica de ` no cumple eso, no es el nombre de una política y no se lo
+nombra: sale una frase neutra que no pega el renglón crudo. Vara:
+`tests/test_plan_de_la_obligacion.py`, dos casos y un verde de contracara para
+que el caso legítimo —`la politica de garantia`— no quede mudo.
+**Lo que era, para que se entienda el número:** la fila `temas` trae su
+`pregunto` como `la politica de ` más la frase cruda, y el molde genérico la
+pegaba entera. Cuando el modelo declaró como tema algo que no es política de
+la casa, salía
 `Sobre la politica de que producto tienen en mas de 5 tipos no tengo el dato
 confirmado`.
 Medido el 3-sep 17:38:51 UTC, turno `tg_524215788`, leído tal cual en la
 charla del puente.
-Cómo se ve: el bot le atribuye a la casa una política que el cliente nunca
+Cómo se veía: el bot le atribuía a la casa una política que el cliente nunca
 nombró, en el renglón donde estaba admitiendo que no sabe.
 Los moldes de `restricciones`, `stock`, `pide_precio` y `reparto_pago` ya se
-corrigieron por esta misma razón; el genérico quedó sin corregir. Vara:
-`tests/test_plan_de_la_obligacion.py`, dos casos y un verde de contracara para
-que el caso legítimo —`la politica de garantia`— no quede mudo.
+habían corregido por esta misma razón; el genérico había quedado.
 
 ---
 
@@ -378,10 +396,11 @@ la proyección del campo (D3, D4, D6).
 **Las tres del 6-sep son de otra familia y hay que decirlo aparte: D13, D14 y
 D15 son las tres que el cliente LEE.** Una obligación que no se cumple, una
 afirmación sobre el catálogo sin nada que la respalde, y un "no sé" que le
-atribuye a la casa una política inventada. Ninguna necesita una decisión
-grande, y las tres estuvieron a la vista en una charla de diez mensajes que
-nadie había leído hasta que el puente la trajo. **Eso es lo que mide la
-distancia entre la batería verde y el teléfono del cliente.**
+atribuye a la casa una política inventada. Las tres estuvieron a la vista en
+una charla de diez mensajes que nadie había leído hasta que el puente la
+trajo. **Eso es lo que mide la distancia entre la batería verde y el teléfono
+del cliente.** D13 y D15 cerraron el 7-sep; D14 sigue abierta porque es la
+única de las tres que necesita decidir un mecanismo.
 
 La pregunta "por qué en teoría funciona y en la práctica no" tiene, medida, esta
 respuesta: **porque las dos únicas juntas que no aparean por identificador son

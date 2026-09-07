@@ -16,8 +16,9 @@ A MEDIAS   algo que se EMPEZÓ y no se terminó.  Tiene que llegar a CERO.
 PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 ```
 
-La orden de trabajo abierta: **la FICHA 49**, las tres que el cliente lee.
-Relato en `FICHA_49_la_obligacion_muda.md`, vara en
+La orden de trabajo abierta: **lo que queda de la FICHA 49, que es D14 sola.**
+D13 y D15 cerraron el 7-sep y están deployadas. Relato en
+`FICHA_49_la_obligacion_muda.md`, vara en
 `tests/test_plan_de_la_obligacion.py`.
 
 Detrás de ella, el orden grande no cambió y está en `FORMULARIO_V2.md`
