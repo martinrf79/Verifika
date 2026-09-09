@@ -1,0 +1,308 @@
+{
+  "pregunta": "hola, que zapatillas tienen en talle 42",
+  "user_id": "sonda_1788959056",
+  "respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nTe cuento que no trabajamos con calzado, nos dedicamos exclusivamente a componentes y periféricos de informática.\n\nSi te sirve ver algo de nuestro catálogo en notebooks, periféricos o componentes, avisame y te paso lo que tenemos disponible.\n\n¿Te interesa que te muestre alguna otra cosa de nuestra tienda?",
+  "error": null,
+  "etapas": [
+    {
+      "etapa": "_pedir_herramientas",
+      "ms": 2302,
+      "sale": [
+        [
+          {
+            "nombre": "registrar_pedido",
+            "args": {
+              "stock": [
+                "zapatillas en talle 42"
+              ]
+            }
+          }
+        ],
+        ""
+      ]
+    },
+    {
+      "etapa": "_ejecutar_en_paralelo",
+      "ms": 0,
+      "sale": [
+        {
+          "herramienta": "registrar_pedido",
+          "pedido": {
+            "stock": [
+              "zapatillas en talle 42"
+            ]
+          },
+          "resultado": {
+            "estado": "registrado",
+            "pedido": {
+              "items": [],
+              "restricciones": null,
+              "destinos": null,
+              "pide_precio": false,
+              "contradicciones": null,
+              "reparto_pago": null,
+              "atributos": null,
+              "stock": [
+                "zapatillas en talle 42"
+              ],
+              "compatibilidad": null,
+              "temas": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "etapa": "resolver",
+      "ms": 18,
+      "sale": {
+        "llamadas": [
+          {
+            "herramienta": "registrar_pedido",
+            "pedido": {
+              "stock": [
+                "zapatillas en talle 42"
+              ]
+            },
+            "resultado": {
+              "estado": "registrado",
+              "pedido": {
+                "items": [],
+                "restricciones": null,
+                "destinos": null,
+                "pide_precio": false,
+                "contradicciones": null,
+                "reparto_pago": null,
+                "atributos": null,
+                "stock": [
+                  "zapatillas en talle 42"
+                ],
+                "compatibilidad": null,
+                "temas": null
+              }
+            }
+          },
+          {
+            "herramienta": "consultar_productos",
+            "pedido": {
+              "descripcion": "zapatillas en talle 42",
+              "cuantos": 3,
+              "proyeccion": "lista"
+            },
+            "resultado": {
+              "estado": "no_encontrado",
+              "buscado": "zapatillas en talle 42",
+              "categorias_que_vendemos": [
+                "almacenamiento externo",
+                "auriculares",
+                "cargador",
+                "cooler",
+                "fuente",
+                "gabinete",
+                "impresora",
+                "memoria ram",
+                "microfono",
+                "monitor",
+                "motherboard",
+                "mouse",
+                "notebook",
+                "parlante",
+                "placa de video",
+                "procesador",
+                "router",
+                "silla gamer",
+                "ssd",
+                "tablet",
+                "teclado",
+                "webcam"
+              ],
+              "instruccion": "No se pudo identificar un producto con eso. NO digas que no tenemos nada ni afirmes nada sobre el catalogo entero: lo que pasa es que la descripcion no alcanza para elegir. Preguntale lo minimo que te falta para poder buscar, o proponele un rubro de `categorias_que_vendemos` que le pueda servir y confirmá con él antes de seguir."
+            }
+          },
+          {
+            "herramienta": "consultar_productos",
+            "pedido": {
+              "proyeccion": "catalogo",
+              "operacion": "valores",
+              "campo": "categoria"
+            },
+            "resultado": {
+              "estado": "ok",
+              "campo": "categoria",
+              "cuantos_distintos": 22,
+              "valores": [
+                {
+                  "valor": "notebook",
+                  "productos": 148
+                },
+                {
+                  "valor": "memoria ram",
+                  "productos": 83
+                },
+                {
+                  "valor": "almacenamiento externo",
+                  "productos": 67
+                },
+                {
+                  "valor": "ssd",
+                  "productos": 54
+                },
+                {
+                  "valor": "mouse",
+                  "productos": 45
+                },
+                {
+                  "valor": "auriculares",
+                  "productos": 43
+                },
+                {
+                  "valor": "teclado",
+                  "productos": 39
+                },
+                {
+                  "valor": "silla gamer",
+                  "productos": 35
+                },
+                {
+                  "valor": "parlante",
+                  "productos": 31
+                },
+                {
+                  "valor": "gabinete",
+                  "productos": 29
+                },
+                {
+                  "valor": "tablet",
+                  "productos": 24
+                },
+                {
+                  "valor": "monitor",
+                  "productos": 22
+                },
+                {
+                  "valor": "router",
+                  "productos": 22
+                },
+                {
+                  "valor": "microfono",
+                  "productos": 21
+                },
+                {
+                  "valor": "procesador",
+                  "productos": 19
+                },
+                {
+                  "valor": "placa de video",
+                  "productos": 18
+                },
+                {
+                  "valor": "impresora",
+                  "productos": 17
+                },
+                {
+                  "valor": "cargador",
+                  "productos": 16
+                },
+                {
+                  "valor": "cooler",
+                  "productos": 13
+                },
+                {
+                  "valor": "motherboard",
+                  "productos": 12
+                },
+                {
+                  "valor": "fuente",
+                  "productos": 11
+                },
+                {
+                  "valor": "webcam",
+                  "productos": 9
+                }
+              ]
+            }
+          }
+        ],
+        "bloque": ""
+      }
+    },
+    {
+      "etapa": "tabla",
+      "ms": 0,
+      "sale": {
+        "puntos": [
+          {
+            "id": "stock:1",
+            "pregunto": "si hay stock de zapatillas en talle 42",
+            "estado": "con_material",
+            "material": [
+              {
+                "no_hay": "zapatillas en talle 42",
+                "si_vendemos": [
+                  "almacenamiento externo",
+                  "auriculares",
+                  "cargador",
+                  "cooler",
+                  "fuente",
+                  "gabinete",
+                  "impresora",
+                  "memoria ram",
+                  "microfono",
+                  "monitor",
+                  "motherboard",
+                  "mouse",
+                  "notebook",
+                  "parlante",
+                  "placa de video",
+                  "procesador",
+                  "router",
+                  "silla gamer",
+                  "ssd",
+                  "tablet",
+                  "teclado",
+                  "webcam"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "etapa": "_redactar",
+      "ms": 1618,
+      "sale": [
+        {
+          "apertura": "Hola, te cuento que no trabajamos con calzado, nos dedicamos exclusivamente a componentes y periféricos de informática.",
+          "puntos": [
+            {
+              "id": "stock:1",
+              "texto": "Si te sirve ver algo de nuestro catálogo en notebooks, periféricos o componentes, avisame y te paso lo que tenemos disponible."
+            }
+          ],
+          "pregunta_final": "¿Te interesa que te muestre alguna otra cosa de nuestra tienda?"
+        },
+        false
+      ]
+    },
+    {
+      "etapa": "armar",
+      "ms": 0,
+      "sale": "Hola, te cuento que no trabajamos con calzado, nos dedicamos exclusivamente a componentes y periféricos de informática.\n\nSi te sirve ver algo de nuestro catálogo en notebooks, periféricos o componentes, avisame y te paso lo que tenemos disponible.\n\n¿Te interesa que te muestre alguna otra cosa de nuestra tienda?"
+    },
+    {
+      "etapa": "_obligaciones",
+      "ms": 3,
+      "sale": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nTe cuento que no trabajamos con calzado, nos dedicamos exclusivamente a componentes y periféricos de informática.\n\nSi te sirve ver algo de nuestro catálogo en notebooks, periféricos o componentes, avisame y te paso lo que tenemos disponible.\n\n¿Te interesa que te muestre alguna otra cosa de nuestra tienda?"
+    },
+    {
+      "etapa": "_cerrar",
+      "ms": 1081,
+      "sale": [
+        "¡Hola! Soy el asistente automático de Verifika Tech.\n\nTe cuento que no trabajamos con calzado, nos dedicamos exclusivamente a componentes y periféricos de informática.\n\nSi te sirve ver algo de nuestro catálogo en notebooks, periféricos o componentes, avisame y te paso lo que tenemos disponible.\n\n¿Te interesa que te muestre alguna otra cosa de nuestra tienda?",
+        {},
+        false
+      ]
+    }
+  ]
+}
