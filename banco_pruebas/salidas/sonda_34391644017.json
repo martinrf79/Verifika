@@ -1,0 +1,251 @@
+{
+  "pregunta": "Dime cual es el producto mas caro que tienen",
+  "user_id": "sonda_1788979978",
+  "respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEntiendo perfectamente que busques la mejor opción y que el presupuesto sea un punto clave en tu decisión.\n\nSi este modelo se aleja de lo que tenías pensado, podemos revisar juntos otras alternativas de nuestra gama que quizás se ajusten mejor a tu presupuesto sin sacrificar la funcionalidad que realmente necesitás.\n\n¿Te gustaría que veamos alguna opción más accesible o preferís que profundicemos en las prestaciones técnicas de este modelo?",
+  "error": null,
+  "etapas": [
+    {
+      "etapa": "_pedir_herramientas",
+      "ms": 2312,
+      "sale": [
+        [
+          {
+            "nombre": "registrar_pedido",
+            "args": {
+              "atributos": [
+                {
+                  "campo": "precio_ars",
+                  "de": "el producto mas caro"
+                }
+              ],
+              "temas": [
+                "cual es el producto mas caro"
+              ]
+            }
+          }
+        ],
+        ""
+      ]
+    },
+    {
+      "etapa": "_ejecutar_en_paralelo",
+      "ms": 0,
+      "sale": [
+        {
+          "herramienta": "registrar_pedido",
+          "pedido": {
+            "atributos": [
+              {
+                "campo": "precio_ars",
+                "de": "el producto mas caro"
+              }
+            ],
+            "temas": [
+              "cual es el producto mas caro"
+            ]
+          },
+          "resultado": {
+            "estado": "registrado",
+            "pedido": {
+              "items": [],
+              "restricciones": null,
+              "destinos": null,
+              "pide_precio": false,
+              "contradicciones": null,
+              "reparto_pago": null,
+              "atributos": [
+                {
+                  "de": "el producto mas caro",
+                  "campo": "precio_ars"
+                }
+              ],
+              "stock": null,
+              "compatibilidad": null,
+              "temas": [
+                "objecion_precio"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "etapa": "resolver",
+      "ms": 283,
+      "sale": {
+        "llamadas": [
+          {
+            "herramienta": "registrar_pedido",
+            "pedido": {
+              "atributos": [
+                {
+                  "campo": "precio_ars",
+                  "de": "el producto mas caro"
+                }
+              ],
+              "temas": [
+                "cual es el producto mas caro"
+              ]
+            },
+            "resultado": {
+              "estado": "registrado",
+              "pedido": {
+                "items": [],
+                "restricciones": null,
+                "destinos": null,
+                "pide_precio": false,
+                "contradicciones": null,
+                "reparto_pago": null,
+                "atributos": [
+                  {
+                    "de": "el producto mas caro",
+                    "campo": "precio_ars"
+                  }
+                ],
+                "stock": null,
+                "compatibilidad": null,
+                "temas": [
+                  "objecion_precio"
+                ]
+              }
+            }
+          },
+          {
+            "herramienta": "consultar_productos",
+            "pedido": {
+              "descripcion": "el producto mas caro",
+              "cuantos": 3,
+              "ordenar_por": "precio_ars",
+              "direccion": "max",
+              "proyeccion": "lista"
+            },
+            "resultado": {
+              "estado": "no_encontrado",
+              "buscado": "el producto mas caro",
+              "categorias_que_vendemos": [
+                "almacenamiento externo",
+                "auriculares",
+                "cargador",
+                "cooler",
+                "fuente",
+                "gabinete",
+                "impresora",
+                "memoria ram",
+                "microfono",
+                "monitor",
+                "motherboard",
+                "mouse",
+                "notebook",
+                "parlante",
+                "placa de video",
+                "procesador",
+                "router",
+                "silla gamer",
+                "ssd",
+                "tablet",
+                "teclado",
+                "webcam"
+              ],
+              "instruccion": "No se pudo identificar un producto con eso. NO digas que no tenemos nada ni afirmes nada sobre el catalogo entero: lo que pasa es que la descripcion no alcanza para elegir. Preguntale lo minimo que te falta para poder buscar, o proponele un rubro de `categorias_que_vendemos` que le pueda servir y confirmá con él antes de seguir."
+            }
+          },
+          {
+            "herramienta": "consultar_temas",
+            "pedido": {
+              "temas": [
+                "objecion_precio"
+              ]
+            },
+            "resultado": {
+              "estado": "ok",
+              "temas": [
+                {
+                  "tema": "objecion_precio",
+                  "estado": "encontrado",
+                  "objetivo": "Reencuadrar en valor, no bajar un precio inventado. Mantener el precio real y mover la charla a lo que se lleva por esa plata.",
+                  "movida": "Valida la objecion sin ponerte a la defensiva. Puente al valor concreto de ese producto, lo real de la ficha, garantia o prestacion, no promesas. Ofrece el camino de pagar menos que si existe. Cierre que invita a avanzar.",
+                  "escape": "Si pide igualar un precio de la competencia, no lo prometas: ofrece el beneficio real.",
+                  "criterio": "Cuando el cliente dice que algo le parece caro, no se discute el precio ni se inventa un descuento: se ayuda a ver el valor y se ofrecen alternativas reales. Primero se entiende el uso: muchas veces hay una opcion de gama mas baja que le cumple perfecto y le entra en el bolsillo, y mostrarla genera confianza. Otras veces el producto vale lo que cuesta y conviene explicar por que, la durabilidad, la garantia oficial, el rendimiento. Lo que nunca se hace es prometer una rebaja o un beneficio que no exista: eso lo define la tienda y sale de la informacion oficial."
+                }
+              ]
+            }
+          }
+        ],
+        "bloque": ""
+      }
+    },
+    {
+      "etapa": "tabla",
+      "ms": 0,
+      "sale": {
+        "puntos": [
+          {
+            "id": "atributos:1",
+            "pregunto": "precio_ars de el producto mas caro",
+            "estado": "sin_material",
+            "material": []
+          },
+          {
+            "id": "temas:1",
+            "pregunto": "la politica de objecion precio",
+            "estado": "con_material",
+            "material": [
+              {
+                "tema": "objecion_precio",
+                "criterio": "Cuando el cliente dice que algo le parece caro, no se discute el precio ni se inventa un descuento: se ayuda a ver el valor y se ofrecen alternativas reales. Primero se entiende el uso: muchas veces hay una opcion de gama mas baja que le cumple perfecto y le entra en el bolsillo, y mostrarla genera confianza. Otras veces el producto vale lo que cuesta y conviene explicar por que, la durabilidad, la garantia oficial, el rendimiento. Lo que nunca se hace es prometer una rebaja o un beneficio que no exista: eso lo define la tienda y sale de la informacion oficial."
+              }
+            ]
+          }
+        ],
+        "guion": [
+          {
+            "tema": "objecion_precio",
+            "objetivo": "Reencuadrar en valor, no bajar un precio inventado. Mantener el precio real y mover la charla a lo que se lleva por esa plata.",
+            "movida": "Valida la objecion sin ponerte a la defensiva. Puente al valor concreto de ese producto, lo real de la ficha, garantia o prestacion, no promesas. Ofrece el camino de pagar menos que si existe. Cierre que invita a avanzar.",
+            "escape": "Si pide igualar un precio de la competencia, no lo prometas: ofrece el beneficio real."
+          }
+        ]
+      }
+    },
+    {
+      "etapa": "_redactar",
+      "ms": 1735,
+      "sale": [
+        {
+          "apertura": "Entiendo perfectamente que busques la mejor opción y que el presupuesto sea un punto clave en tu decisión.",
+          "puntos": [
+            {
+              "id": "atributos:1",
+              "texto": "Sobre el producto de mayor valor, no contamos con una ficha técnica detallada de materiales específicos en este momento, pero puedo confirmarte que su precio refleja su calidad superior, su garantía oficial y su alto rendimiento, los cuales aseguran una inversión duradera."
+            },
+            {
+              "id": "temas:1",
+              "texto": "Si este modelo se aleja de lo que tenías pensado, podemos revisar juntos otras alternativas de nuestra gama que quizás se ajusten mejor a tu presupuesto sin sacrificar la funcionalidad que realmente necesitás."
+            }
+          ],
+          "pregunta_final": "¿Te gustaría que veamos alguna opción más accesible o preferís que profundicemos en las prestaciones técnicas de este modelo?"
+        },
+        false
+      ]
+    },
+    {
+      "etapa": "armar",
+      "ms": 0,
+      "sale": "Entiendo perfectamente que busques la mejor opción y que el presupuesto sea un punto clave en tu decisión.\n\nSi este modelo se aleja de lo que tenías pensado, podemos revisar juntos otras alternativas de nuestra gama que quizás se ajusten mejor a tu presupuesto sin sacrificar la funcionalidad que realmente necesitás.\n\n¿Te gustaría que veamos alguna opción más accesible o preferís que profundicemos en las prestaciones técnicas de este modelo?"
+    },
+    {
+      "etapa": "_obligaciones",
+      "ms": 2,
+      "sale": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEntiendo perfectamente que busques la mejor opción y que el presupuesto sea un punto clave en tu decisión.\n\nSi este modelo se aleja de lo que tenías pensado, podemos revisar juntos otras alternativas de nuestra gama que quizás se ajusten mejor a tu presupuesto sin sacrificar la funcionalidad que realmente necesitás.\n\n¿Te gustaría que veamos alguna opción más accesible o preferís que profundicemos en las prestaciones técnicas de este modelo?"
+    },
+    {
+      "etapa": "_cerrar",
+      "ms": 1026,
+      "sale": [
+        "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEntiendo perfectamente que busques la mejor opción y que el presupuesto sea un punto clave en tu decisión.\n\nSi este modelo se aleja de lo que tenías pensado, podemos revisar juntos otras alternativas de nuestra gama que quizás se ajusten mejor a tu presupuesto sin sacrificar la funcionalidad que realmente necesitás.\n\n¿Te gustaría que veamos alguna opción más accesible o preferís que profundicemos en las prestaciones técnicas de este modelo?",
+        {},
+        false
+      ]
+    }
+  ]
+}
