@@ -1,0 +1,200 @@
+From 641ced4ce8145edb80c0622fc7472e289e1eb130 Mon Sep 17 00:00:00 2001
+From: Cowork <martinrf79@gmail.com>
+Date: Wed, 9 Sep 2026 18:19:09 +0000
+Subject: [PATCH] D14: una fila sin material no aporta prosa del modelo
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Medido con la sonda el 9-sep, corridas 34385441947 y 34385474847, dejadas en
+banco_pruebas/salidas/. Las dos preguntas reales de WhatsApp de esta tarde
+-"dime cual es el producto mas caro que tienen" y "tienes algun producto con
+origen estados unidos"- dejaron la fila de atributos en sin_material con la
+lista VACIA, y el modelo escribio encima:
+
+  cada pieza de nuestra gama superior esta diseñada con materiales de alta
+  durabilidad y cuenta con garantia oficial que respalda su rendimiento a
+  largo plazo
+
+Ninguna de esas tres afirmaciones salio de la fuente. Y las cuatro
+comprobaciones de _limpiar no la tocaron porque NO TIENE UN SOLO DIGITO: la
+cuarta caza cifras sin respaldo y una promesa cualitativa sobre el catalogo
+entero no lleva ninguna. El agujero no era la regla, era su alcance.
+
+EL ARREGLO, en tabla.armar y son dos lineas de comportamiento:
+
+1. Una fila cuya lista de material esta vacia ya NO aporta el texto del
+   modelo. Sale solo cuando hay material con que escribirlo -el "no hay" con
+   los rubros que si vendemos, los candidatos de un ambiguo-. El punto lo
+   cubre _pregunta_del_codigo, que ya tiene el molde honesto por tipo. Lo que
+   se descarta se loguea como casilla_sin_material_descartada.
+
+2. La apertura pasa por _limpiar. Era la unica prosa del modelo que salia sin
+   pasar por ninguna comprobacion, y en la corrida 34385474847 abria con "no
+   tenemos cargado el origen de los productos en nuestra base de datos", una
+   afirmacion sobre la base que la fila nunca dijo.
+
+Y de paso saca una DUPLICACION que se veia en esa misma corrida: el mensaje
+abria con esa frase y cerraba con "de origen de algun producto no tengo el
+dato confirmado en la ficha". Las dos por el mismo punto.
+
+NO SE PUEDE distinguir por texto un "no tengo ese dato" honesto de una promesa
+inventada sin ponerse a entender castellano, y este modulo no hace eso. Lo que
+si es total: una fila sin material no tiene con que decir nada, ni una cifra
+ni un adjetivo. Entonces no dice.
+
+LA VARA. D14 tenia sus dos casos escritos en tests/test_plan_de_la_obligacion
+con PLAN: y strict=True, y pasan: la marca sale en este mismo commit, como
+manda la cabecera de ese archivo. Y test_tabla.test_un_punto_abierto_se_
+pregunta_aunque_el_modelo_escriba_encima se ajusto a proposito: pedia que el
+texto honesto del modelo saliera, y esa es la misma puerta por la que salia el
+universal. Ahora pide que no salga y que la frase honesta la escriba el codigo.
+La vara quedo mas dura, no mas blanda. 500 pasan, 1 xfail.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01FBwSUbK599gKC6Lh4WVJ4x
+---
+ app/core/tabla.py                   | 46 +++++++++++++++++++++++++----
+ tests/test_plan_de_la_obligacion.py | 24 ++++++++-------
+ tests/test_tabla.py                 | 18 +++++++++--
+ 3 files changed, 71 insertions(+), 17 deletions(-)
+
+diff --git a/app/core/tabla.py b/app/core/tabla.py
+index af1c4b8..dd6cf40 100644
+--- a/app/core/tabla.py
++++ b/app/core/tabla.py
+@@ -828,7 +828,12 @@ def armar(respuesta: dict, mesa: dict, trace_id: str = "",
+     dicho = {str(p.get("id")): str(p.get("texto") or "").strip()
+              for p in (respuesta.get("puntos") or []) if isinstance(p, dict)}
+     partes = []
+-    ap = str(respuesta.get("apertura") or "").strip()
++    # LA APERTURA TAMBIEN SE PODA. Es prosa del modelo igual que una casilla y
++    # hasta hoy era la unica que salia sin pasar por `_limpiar`: un precio, un
++    # id interno o un pedazo de JSON en la primera frase viajaban intactos. Va
++    # sin `fila` a proposito -no pertenece a ningun punto-, asi que le corren
++    # las tres comprobaciones de siempre y no la de la fila vacia.
++    ap = _limpiar(str(respuesta.get("apertura") or "").strip(), mesa, trace_id)
+     if ap:
+         partes.append(ap)
+ 
+@@ -848,12 +853,43 @@ def armar(respuesta: dict, mesa: dict, trace_id: str = "",
+             continue
+         texto = _limpiar(dicho.get(pid, ""), mesa, trace_id, fila)
+         if estado in ("sin_material", "pregunta"):
+-            # ABIERTA AUNQUE EL MODELO HAYA ESCRITO. Su texto sale -decir "no
+-            # tengo ese dato" es lo correcto- pero no cierra el punto: la
+-            # compuerta de abajo se asegura de que el turno pregunte por el.
++            # ABIERTA AUNQUE EL MODELO HAYA ESCRITO -eso ya estaba- y desde hoy
++            # tambien MUDA cuando la fila no trae NADA. Su texto sale solo si hay
++            # material con que escribirlo: el "no hay" con los rubros que si
++            # vendemos, los candidatos de un ambiguo. Sobre una fila con la lista
++            # de material VACIA no sale, y el punto lo cubre la pregunta del
++            # codigo, que para eso tiene un molde honesto por tipo.
++            #
++            # POR QUE, y esta medido con la sonda el 9-sep-2026, corridas
++            # 34385441947 y 34385474847 en `banco_pruebas/salidas/`. "Dime cual
++            # es el producto mas caro que tienen" dejo la fila `atributos:1` en
++            # `sin_material` con la lista vacia, y el modelo escribio encima:
++            # "cada pieza de nuestra gama superior esta diseñada con materiales
++            # de alta durabilidad y cuenta con garantia oficial que respalda su
++            # rendimiento a largo plazo". Ninguna de esas tres afirmaciones salio
++            # de la fuente. Y las cuatro comprobaciones de `_limpiar` no la
++            # tocaron porque NO TIENE UN SOLO DIGITO: la cuarta caza cifras sin
++            # respaldo, y una promesa cualitativa sobre el catalogo entero no
++            # lleva ninguna. El agujero no era la regla, era su alcance.
++            #
++            # NO SE PUEDE DISTINGUIR POR TEXTO un "no tengo ese dato" honesto de
++            # una promesa inventada sin ponerse a entender castellano, y eso es
++            # justo lo que este modulo no hace. Lo que si es TOTAL: una fila sin
++            # material no tiene con que decir nada, ni una cifra ni un adjetivo.
++            # Entonces no dice.
++            #
++            # Y ADEMAS SACA UNA DUPLICACION que se veia en la otra corrida: el
++            # mensaje abria con "no tenemos cargado el origen de los productos en
++            # nuestra base de datos" y cerraba con "de origen de algun producto
++            # no tengo el dato confirmado en la ficha". Las dos frases por el
++            # mismo punto, y la primera afirmando sobre la base algo que la fila
++            # nunca dijo.
+             sin_contestar.append(fila)
+-            if texto:
++            if texto and (fila.get("material") or []):
+                 partes.append(texto)
++            elif texto:
++                log.warning("casilla_sin_material_descartada",
++                            trace_id=trace_id, punto=pid, texto=texto[:160])
+         elif texto:
+             partes.append(texto)
+         else:
+diff --git a/tests/test_plan_de_la_obligacion.py b/tests/test_plan_de_la_obligacion.py
+index 787a8e4..a6a4cdd 100644
+--- a/tests/test_plan_de_la_obligacion.py
++++ b/tests/test_plan_de_la_obligacion.py
+@@ -89,16 +89,20 @@ _UNIVERSALES = (
+ )
+ 
+ 
+-@pytest.mark.xfail(strict=True, reason=(
+-    "PLAN: D14. Una fila SIN MATERIAL no puede afirmar nada sobre el catalogo "
+-    "entero. HOY sale tal cual y encima se contradice dos renglones despues "
+-    "con la pregunta del codigo, que dice que no tiene el dato. Medido en "
+-    "produccion el 3-sep 17:38:51 UTC, turno tg_524215788: "
+-    "busquedas_derivadas con hechas=[] y el cliente leyo 'no contamos con "
+-    "ningun producto que disponga de mas de 5 variantes'. La guarda vieja "
+-    "-hub_venta_afirmo_sobre_el_catalogo- se apago con el hub el 3-sep y no "
+-    "la reemplazo nadie. OBJETIVO 0 de 2. Relato en "
+-    "arquitectura/FICHA_49_la_obligacion_muda.md."))
++# D14, CERRADA el 9-sep-2026, y la marca sale en este mismo commit como manda
++# la cabecera de este archivo. El arreglo esta en `tabla.armar`: una fila cuya
++# lista de material esta VACIA ya no aporta la prosa del modelo, y el punto lo
++# cubre `_pregunta_del_codigo`, que es la unica frase honesta que se puede
++# escribir sin dato. Eso saca de un movimiento las dos mitades del defecto: el
++# universal sobre el catalogo, y la contradiccion con la pregunta de dos
++# renglones despues.
++#
++# POR QUE NO ALCANZABA `_limpiar`, que ya existia para esto: su cuarta
++# comprobacion caza CIFRAS sin respaldo, y estas dos frases no tienen un solo
++# digito. Se volvio a ver con la sonda el 9-sep, corrida 34385441947, con "cada
++# pieza de nuestra gama superior esta diseñada con materiales de alta
++# durabilidad y cuenta con garantia oficial". El agujero no era la regla: era
++# que solo mirara numeros.
+ @pytest.mark.parametrize("texto_del_modelo", _UNIVERSALES)
+ def test_un_universal_sobre_el_catalogo_no_sale_de_una_fila_sin_material(
+         texto_del_modelo):
+diff --git a/tests/test_tabla.py b/tests/test_tabla.py
+index 9d76fbc..f1be0ed 100644
+--- a/tests/test_tabla.py
++++ b/tests/test_tabla.py
+@@ -360,14 +360,28 @@ def test_una_sola_pregunta_por_mensaje():
+ def test_un_punto_abierto_se_pregunta_aunque_el_modelo_escriba_encima():
+     """La falla que despachaba turnos incompletos: bastaba con que el modelo
+     escribiera CUALQUIER cosa en la casilla para que el punto se diera por
+-    contestado. El texto honesto sale, pero el punto sigue abierto."""
++    contestado. El punto sigue abierto y el turno termina preguntando por el.
++
++    LA VARA CAMBIO EL 9-SEP con el cierre de D14: sobre una fila cuya lista de
++    material esta VACIA, el texto del modelo ya NO sale. Antes se pedia que
++    saliera -"No tengo ese dato a mano" es honesto y no molestaba- y esa puerta
++    era la misma por la que salia "cada pieza de nuestra gama superior cuenta
++    con garantia oficial", que no tiene un digito y por eso `_limpiar` no la
++    tocaba. No hay forma de separar las dos por texto sin entender castellano,
++    asi que sobre una fila sin material no pasa ninguna: la frase honesta la
++    escribe `_pregunta_del_codigo`, que es lo que este test comprueba abajo.
++    """
+     mesa = {"puntos": [
+         {"id": "atributos:1", "pregunto": "dpi de el mouse",
+          "estado": "sin_material", "material": []}]}
+     resp = {"puntos": [{"id": "atributos:1",
+                         "texto": "No tengo ese dato a mano."}]}
+     salida = TB.armar(resp, mesa)
+-    assert "No tengo ese dato a mano." in salida, salida
++    assert "No tengo ese dato a mano." not in salida, (
++        "la prosa del modelo salio sobre una fila sin material: "
++        f"{salida!r}")
++    assert "no tengo el dato confirmado" in salida.lower(), (
++        f"el punto abierto quedo mudo:\n{salida}")
+     assert salida.strip().endswith("?"), f"no termino preguntando:\n{salida}"
+     assert salida.count("?") == 1, salida
+ 
+-- 
+2.43.0
+
