@@ -89,16 +89,20 @@ _UNIVERSALES = (
 )
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: D14. Una fila SIN MATERIAL no puede afirmar nada sobre el catalogo "
-    "entero. HOY sale tal cual y encima se contradice dos renglones despues "
-    "con la pregunta del codigo, que dice que no tiene el dato. Medido en "
-    "produccion el 3-sep 17:38:51 UTC, turno tg_524215788: "
-    "busquedas_derivadas con hechas=[] y el cliente leyo 'no contamos con "
-    "ningun producto que disponga de mas de 5 variantes'. La guarda vieja "
-    "-hub_venta_afirmo_sobre_el_catalogo- se apago con el hub el 3-sep y no "
-    "la reemplazo nadie. OBJETIVO 0 de 2. Relato en "
-    "arquitectura/FICHA_49_la_obligacion_muda.md."))
+# D14, CERRADA el 9-sep-2026, y la marca sale en este mismo commit como manda
+# la cabecera de este archivo. El arreglo esta en `tabla.armar`: una fila cuya
+# lista de material esta VACIA ya no aporta la prosa del modelo, y el punto lo
+# cubre `_pregunta_del_codigo`, que es la unica frase honesta que se puede
+# escribir sin dato. Eso saca de un movimiento las dos mitades del defecto: el
+# universal sobre el catalogo, y la contradiccion con la pregunta de dos
+# renglones despues.
+#
+# POR QUE NO ALCANZABA `_limpiar`, que ya existia para esto: su cuarta
+# comprobacion caza CIFRAS sin respaldo, y estas dos frases no tienen un solo
+# digito. Se volvio a ver con la sonda el 9-sep, corrida 34385441947, con "cada
+# pieza de nuestra gama superior esta diseñada con materiales de alta
+# durabilidad y cuenta con garantia oficial". El agujero no era la regla: era
+# que solo mirara numeros.
 @pytest.mark.parametrize("texto_del_modelo", _UNIVERSALES)
 def test_un_universal_sobre_el_catalogo_no_sale_de_una_fila_sin_material(
         texto_del_modelo):

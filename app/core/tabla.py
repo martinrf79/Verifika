@@ -828,7 +828,12 @@ def armar(respuesta: dict, mesa: dict, trace_id: str = "",
     dicho = {str(p.get("id")): str(p.get("texto") or "").strip()
              for p in (respuesta.get("puntos") or []) if isinstance(p, dict)}
     partes = []
-    ap = str(respuesta.get("apertura") or "").strip()
+    # LA APERTURA TAMBIEN SE PODA. Es prosa del modelo igual que una casilla y
+    # hasta hoy era la unica que salia sin pasar por `_limpiar`: un precio, un
+    # id interno o un pedazo de JSON en la primera frase viajaban intactos. Va
+    # sin `fila` a proposito -no pertenece a ningun punto-, asi que le corren
+    # las tres comprobaciones de siempre y no la de la fila vacia.
+    ap = _limpiar(str(respuesta.get("apertura") or "").strip(), mesa, trace_id)
     if ap:
         partes.append(ap)
 
@@ -848,12 +853,43 @@ def armar(respuesta: dict, mesa: dict, trace_id: str = "",
             continue
         texto = _limpiar(dicho.get(pid, ""), mesa, trace_id, fila)
         if estado in ("sin_material", "pregunta"):
-            # ABIERTA AUNQUE EL MODELO HAYA ESCRITO. Su texto sale -decir "no
-            # tengo ese dato" es lo correcto- pero no cierra el punto: la
-            # compuerta de abajo se asegura de que el turno pregunte por el.
+            # ABIERTA AUNQUE EL MODELO HAYA ESCRITO -eso ya estaba- y desde hoy
+            # tambien MUDA cuando la fila no trae NADA. Su texto sale solo si hay
+            # material con que escribirlo: el "no hay" con los rubros que si
+            # vendemos, los candidatos de un ambiguo. Sobre una fila con la lista
+            # de material VACIA no sale, y el punto lo cubre la pregunta del
+            # codigo, que para eso tiene un molde honesto por tipo.
+            #
+            # POR QUE, y esta medido con la sonda el 9-sep-2026, corridas
+            # 34385441947 y 34385474847 en `banco_pruebas/salidas/`. "Dime cual
+            # es el producto mas caro que tienen" dejo la fila `atributos:1` en
+            # `sin_material` con la lista vacia, y el modelo escribio encima:
+            # "cada pieza de nuestra gama superior esta diseñada con materiales
+            # de alta durabilidad y cuenta con garantia oficial que respalda su
+            # rendimiento a largo plazo". Ninguna de esas tres afirmaciones salio
+            # de la fuente. Y las cuatro comprobaciones de `_limpiar` no la
+            # tocaron porque NO TIENE UN SOLO DIGITO: la cuarta caza cifras sin
+            # respaldo, y una promesa cualitativa sobre el catalogo entero no
+            # lleva ninguna. El agujero no era la regla, era su alcance.
+            #
+            # NO SE PUEDE DISTINGUIR POR TEXTO un "no tengo ese dato" honesto de
+            # una promesa inventada sin ponerse a entender castellano, y eso es
+            # justo lo que este modulo no hace. Lo que si es TOTAL: una fila sin
+            # material no tiene con que decir nada, ni una cifra ni un adjetivo.
+            # Entonces no dice.
+            #
+            # Y ADEMAS SACA UNA DUPLICACION que se veia en la otra corrida: el
+            # mensaje abria con "no tenemos cargado el origen de los productos en
+            # nuestra base de datos" y cerraba con "de origen de algun producto
+            # no tengo el dato confirmado en la ficha". Las dos frases por el
+            # mismo punto, y la primera afirmando sobre la base algo que la fila
+            # nunca dijo.
             sin_contestar.append(fila)
-            if texto:
+            if texto and (fila.get("material") or []):
                 partes.append(texto)
+            elif texto:
+                log.warning("casilla_sin_material_descartada",
+                            trace_id=trace_id, punto=pid, texto=texto[:160])
         elif texto:
             partes.append(texto)
         else:

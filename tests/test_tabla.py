@@ -360,14 +360,28 @@ def test_una_sola_pregunta_por_mensaje():
 def test_un_punto_abierto_se_pregunta_aunque_el_modelo_escriba_encima():
     """La falla que despachaba turnos incompletos: bastaba con que el modelo
     escribiera CUALQUIER cosa en la casilla para que el punto se diera por
-    contestado. El texto honesto sale, pero el punto sigue abierto."""
+    contestado. El punto sigue abierto y el turno termina preguntando por el.
+
+    LA VARA CAMBIO EL 9-SEP con el cierre de D14: sobre una fila cuya lista de
+    material esta VACIA, el texto del modelo ya NO sale. Antes se pedia que
+    saliera -"No tengo ese dato a mano" es honesto y no molestaba- y esa puerta
+    era la misma por la que salia "cada pieza de nuestra gama superior cuenta
+    con garantia oficial", que no tiene un digito y por eso `_limpiar` no la
+    tocaba. No hay forma de separar las dos por texto sin entender castellano,
+    asi que sobre una fila sin material no pasa ninguna: la frase honesta la
+    escribe `_pregunta_del_codigo`, que es lo que este test comprueba abajo.
+    """
     mesa = {"puntos": [
         {"id": "atributos:1", "pregunto": "dpi de el mouse",
          "estado": "sin_material", "material": []}]}
     resp = {"puntos": [{"id": "atributos:1",
                         "texto": "No tengo ese dato a mano."}]}
     salida = TB.armar(resp, mesa)
-    assert "No tengo ese dato a mano." in salida, salida
+    assert "No tengo ese dato a mano." not in salida, (
+        "la prosa del modelo salio sobre una fila sin material: "
+        f"{salida!r}")
+    assert "no tengo el dato confirmado" in salida.lower(), (
+        f"el punto abierto quedo mudo:\n{salida}")
     assert salida.strip().endswith("?"), f"no termino preguntando:\n{salida}"
     assert salida.count("?") == 1, salida
 
