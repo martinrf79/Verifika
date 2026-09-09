@@ -1,0 +1,821 @@
+
+========================================================================
+ETAPA 0  ENTORNO, antes de tocar nada
+========================================================================
+raiz del repo: /home/runner/work/Verifika/Verifika
+python: 3.11.16
+clave de modelo presente: si, largo 53
+  GEMINI_MODEL = gemini-3.1-flash-lite
+  GEMINI_BASE_URL = https://generativelanguage.googleapis.com/v1beta/openai/
+  TIENDA_ID = verifika_prod
+  DECISOR_MODEL = 
+  DECISOR_BASE_URL = 
+  HISTORY_LIMIT = 10
+firestore_client importado
+2026-09-09 17:52:15 [info     ] fuente_producto_enriquecida    productos=88 tienda_id=verifika_prod
+2026-09-09 17:52:15 [info     ] catalog_loaded_from_firestore  count=880 tienda_id=verifika_prod
+herramientas que ve el modelo: 1
+  registrar_pedido
+
+========================================================================
+ETAPA 0  TURNO  user_id sonda_1788976335  canal telegram
+========================================================================
+pregunta: Tienes algun producto con origen estados unidos
+usuario de sonda: no pisa ninguna conversacion real
+2026-09-09 17:52:15 [info     ] message_received               msg_preview=Tienes algun producto con origen estados unidos tienda_id=verifika_prod trace_id=6ed73c5d user_id=sonda_1788976335
+
+========================================================================
+ETAPA 1  DECISOR, llamada uno al modelo  (_pedir_herramientas)
+========================================================================
+entra:
+    {
+      "posicionales": [
+        "Verifika Tech",
+        "",
+        [],
+        "Tienes algun producto con origen estados unidos",
+        "verifika_prod",
+        "6ed73c5d"
+      ],
+      "con_nombre": {}
+    }
+sale:
+    [
+      [
+        {
+          "nombre": "registrar_pedido",
+          "args": {
+            "atributos": [
+              {
+                "campo": "origen",
+                "de": "algun producto"
+              }
+            ],
+            "temas": [
+              "consulta por origen de productos"
+            ]
+          }
+        }
+      ],
+      ""
+    ]
+tiempo: 2339 ms
+2026-09-09 17:52:19 [info     ] turno_pedidos                  herramientas=['registrar_pedido'] tienda_id=verifika_prod trace_id=6ed73c5d
+
+========================================================================
+ETAPA 2  HERRAMIENTAS contra la fuente de verdad  (_ejecutar_en_paralelo)
+========================================================================
+entra:
+    {
+      "posicionales": [
+        [
+          {
+            "nombre": "registrar_pedido",
+            "args": {
+              "atributos": [
+                {
+                  "campo": "origen",
+                  "de": "algun producto"
+                }
+              ],
+              "temas": [
+                "consulta por origen de productos"
+              ]
+            }
+          }
+        ],
+        "verifika_prod",
+        "6ed73c5d"
+      ],
+      "con_nombre": {}
+    }
+sale:
+    [
+      {
+        "herramienta": "registrar_pedido",
+        "pedido": {
+          "atributos": [
+            {
+              "campo": "origen",
+              "de": "algun producto"
+            }
+          ],
+          "temas": [
+            "consulta por origen de productos"
+          ]
+        },
+        "resultado": {
+          "estado": "registrado",
+          "pedido": {
+            "items": [],
+            "restricciones": null,
+            "destinos": null,
+            "pide_precio": false,
+            "contradicciones": null,
+            "reparto_pago": null,
+            "atributos": [
+              {
+                "de": "algun producto",
+                "campo": "origen"
+              }
+            ],
+            "stock": null,
+            "compatibilidad": null,
+            "temas": [
+              "consulta por origen de productos"
+            ]
+          }
+        }
+      }
+    ]
+tiempo: 0 ms
+
+========================================================================
+ETAPA 3  RESOLVER candidatos  (resolver)
+========================================================================
+entra:
+    {
+      "posicionales": [
+        {
+          "items": [],
+          "restricciones": null,
+          "destinos": null,
+          "pide_precio": false,
+          "contradicciones": null,
+          "reparto_pago": null,
+          "atributos": [
+            {
+              "de": "algun producto",
+              "campo": "origen"
+            }
+          ],
+          "stock": null,
+          "compatibilidad": null,
+          "temas": [
+            "consulta por origen de productos"
+          ]
+        },
+        [],
+        "verifika_prod",
+        "6ed73c5d"
+      ],
+      "con_nombre": {
+        "llamadas": [
+          {
+            "herramienta": "registrar_pedido",
+            "pedido": {
+              "atributos": [
+                {
+                  "campo": "origen",
+                  "de": "algun producto"
+                }
+              ],
+              "temas": [
+                "consulta por origen de productos"
+              ]
+            },
+            "resultado": {
+              "estado": "registrado",
+              "pedido": {
+                "items": [],
+                "restricciones": null,
+                "destinos": null,
+                "pide_precio": false,
+                "contradicciones": null,
+                "reparto_pago": null,
+                "atributos": [
+                  {
+                    "de": "algun producto",
+                    "campo": "origen"
+                  }
+                ],
+                "stock": null,
+                "compatibilidad": null,
+                "temas": [
+                  "consulta por origen de productos"
+                ]
+              }
+            }
+          }
+        ],
+        "descartados": [],
+        "diferida": []
+      }
+    }
+2026-09-09 17:52:19 [info     ] hueco_de_fuente                campo=descripcion pidio=algun producto tienda_id=verifika_prod tipo=sin_rubro trace_id=6ed73c5d
+2026-09-09 17:52:19 [info     ] faq_loaded_from_firestore      count=50 tienda_id=verifika_prod trace_id=6ed73c5d
+2026-09-09 17:52:19 [info     ] tema_no_resuelto               ambiguos=[('consulta por origen de productos', ['asesoramiento', 'compat_consola', 'consulta_algo_mas'])] sin_resolver=[] tienda_id=verifika_prod trace_id=6ed73c5d
+2026-09-09 17:52:19 [info     ] busquedas_derivadas            filtros=[] hechas=[('consultar_productos', 'no_encontrado'), ('consultar_temas', 'ok')] orden=None sin_identificar=[] sueltas=[] temas_ambiguos=['consulta por origen de productos'] temas_sin_resolver=[] tienda_id=verifika_prod trace_id=6ed73c5d
+sale:
+    {
+      "llamadas": [
+        {
+          "herramienta": "registrar_pedido",
+          "pedido": {
+            "atributos": [
+              {
+                "campo": "origen",
+                "de": "algun producto"
+              }
+            ],
+            "temas": [
+              "consulta por origen de productos"
+            ]
+          },
+          "resultado": {
+            "estado": "registrado",
+            "pedido": {
+              "items": [],
+              "restricciones": null,
+              "destinos": null,
+              "pide_precio": false,
+              "contradicciones": null,
+              "reparto_pago": null,
+              "atributos": [
+                {
+                  "de": "algun producto",
+                  "campo": "origen"
+                }
+              ],
+              "stock": null,
+              "compatibilidad": null,
+              "temas": [
+                "asesoramiento",
+                "compat_consola",
+                "consulta_algo_mas"
+              ]
+            }
+          }
+        },
+        {
+          "herramienta": "consultar_productos",
+          "pedido": {
+            "descripcion": "algun producto",
+            "cuantos": 3,
+            "proyeccion": "lista"
+          },
+          "resultado": {
+            "estado": "no_encontrado",
+            "buscado": "algun producto",
+            "categorias_que_vendemos": [
+              "almacenamiento externo",
+              "auriculares",
+              "cargador",
+              "cooler",
+              "fuente",
+              "gabinete",
+              "impresora",
+              "memoria ram",
+              "microfono",
+              "monitor",
+              "motherboard",
+              "mouse",
+              "notebook",
+              "parlante",
+              "placa de video",
+              "procesador",
+              "router",
+              "silla gamer",
+              "ssd",
+              "tablet",
+              "teclado",
+              "webcam"
+            ],
+            "instruccion": "No se pudo identificar un producto con eso. NO digas que no tenemos nada ni afirmes nada sobre el catalogo entero: lo que pasa es que la descripcion no alcanza para elegir. Preguntale lo minimo que te falta para poder buscar, o proponele un rubro de `categorias_que_vendemos` que le pueda servir y confirmá con él antes de seguir."
+          }
+        },
+        {
+          "herramienta": "consultar_temas",
+          "pedido": {
+            "temas": [
+              "asesoramiento",
+              "compat_consola",
+              "consulta_algo_mas"
+            ]
+          },
+          "resultado": {
+            "estado": "ok",
+            "temas": [
+              {
+                "tema": "asesoramiento",
+                "estado": "encontrado",
+                "politica": "Claro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo.",
+                "valores": []
+              },
+              {
+                "tema": "compat_consola",
+                "estado": "encontrado",
+                "criterio": "Si un accesorio sirve para una consola depende de lo que diga la ficha: el conector y el soporte oficial. Muchos perifericos de PC no funcionan igual en consola. Se responde con lo que la ficha confirma; si no lo aclara, se dice honesto y se ofrece verificarlo antes de comprar. Para saber cual mostrar, conviene preguntar el modelo exacto de la consola."
+              },
+              {
+                "tema": "consulta_algo_mas",
+                "estado": "encontrado",
+                "criterio": "Ofrecer algo mas se hace con criterio, sugiriendo lo que de verdad complementa lo que el cliente lleva, por ejemplo un accesorio que le va a hacer falta, sin forzar ni inflar el carrito. Si no hace falta nada, se respeta y se avanza al cierre. La venta cruzada suma cuando aporta, no cuando incomoda."
+              }
+            ]
+          }
+        }
+      ],
+      "bloque": ""
+    }
+tiempo: 351 ms
+
+========================================================================
+ETAPA 4  MESA, tabla de puntos  (tabla)
+========================================================================
+entra:
+    {
+      "posicionales": [
+        {
+          "items": [],
+          "restricciones": null,
+          "destinos": null,
+          "pide_precio": false,
+          "contradicciones": null,
+          "reparto_pago": null,
+          "atributos": [
+            {
+              "de": "algun producto",
+              "campo": "origen"
+            }
+          ],
+          "stock": null,
+          "compatibilidad": null,
+          "temas": [
+            "asesoramiento",
+            "compat_consola",
+            "consulta_algo_mas"
+          ]
+        },
+        [
+          {
+            "herramienta": "registrar_pedido",
+            "pedido": {
+              "atributos": [
+                {
+                  "campo": "origen",
+                  "de": "algun producto"
+                }
+              ],
+              "temas": [
+                "consulta por origen de productos"
+              ]
+            },
+            "resultado": {
+              "estado": "registrado",
+              "pedido": {
+                "items": [],
+                "restricciones": null,
+                "destinos": null,
+                "pide_precio": false,
+                "contradicciones": null,
+                "reparto_pago": null,
+                "atributos": [
+                  {
+                    "de": "algun producto",
+                    "campo": "origen"
+                  }
+                ],
+                "stock": null,
+                "compatibilidad": null,
+                "temas": [
+                  "asesoramiento",
+                  "compat_consola",
+                  "consulta_algo_mas"
+                ]
+              }
+            }
+          },
+          {
+            "herramienta": "consultar_productos",
+            "pedido": {
+              "descripcion": "algun producto",
+              "cuantos": 3,
+              "proyeccion": "lista"
+            },
+            "resultado": {
+              "estado": "no_encontrado",
+              "buscado": "algun producto",
+              "categorias_que_vendemos": [
+                "almacenamiento externo",
+                "auriculares",
+                "cargador",
+                "cooler",
+                "fuente",
+                "gabinete",
+                "impresora",
+                "memoria ram",
+                "microfono",
+                "monitor",
+                "motherboard",
+                "mouse",
+                "notebook",
+                "parlante",
+                "placa de video",
+                "procesador",
+                "router",
+                "silla gamer",
+                "ssd",
+                "tablet",
+                "teclado",
+                "webcam"
+              ],
+              "instruccion": "No se pudo identificar un producto con eso. NO digas que no tenemos nada ni afirmes nada sobre el catalogo entero: lo que pasa es que la descripcion no alcanza para elegir. Preguntale lo minimo que te falta para poder buscar, o proponele un rubro de `categorias_que_vendemos` que le pueda servir y confirmá con él antes de seguir."
+            }
+          },
+          {
+            "herramienta": "consultar_temas",
+            "pedido": {
+              "temas": [
+                "asesoramiento",
+                "compat_consola",
+                "consulta_algo_mas"
+              ]
+            },
+            "resultado": {
+              "estado": "ok",
+              "temas": [
+                {
+                  "tema": "asesoramiento",
+                  "estado": "encontrado",
+                  "politica": "Claro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo.",
+                  "valores": []
+                },
+                {
+                  "tema": "compat_consola",
+                  "estado": "encontrado",
+                  "criterio": "Si un accesorio sirve para una consola depende de lo que diga la ficha: el conector y el soporte oficial. Muchos perifericos de PC no funcionan igual en consola. Se responde con lo que la ficha confirma; si no lo aclara, se dice honesto y se ofrece verificarlo antes de comprar. Para saber cual mostrar, conviene preguntar el modelo exacto de la consola."
+                },
+                {
+                  "tema": "consulta_algo_mas",
+                  "estado": "encontrado",
+                  "criterio": "Ofrecer algo mas se hace con criterio, sugiriendo lo que de verdad complementa lo que el cliente lleva, por ejemplo un accesorio que le va a hacer falta, sin forzar ni inflar el carrito. Si no hace falta nada, se respeta y se avanza al cierre. La venta cruzada suma cuando aporta, no cuando incomoda."
+                }
+              ]
+            }
+          }
+        ],
+        ""
+      ],
+      "con_nombre": {
+        "trace_id": "6ed73c5d"
+      }
+    }
+2026-09-09 17:52:19 [info     ] tabla_armada                   conduccion=[] puntos=4 sellado=0 sin_material=1 tienda_id=verifika_prod trace_id=6ed73c5d
+2026-09-09 17:52:19 [info     ] mesa_apareada                  pares=['temas:1<-tema:asesoramiento', 'temas:2<-tema:compat_consola', 'temas:3<-tema:consulta_algo_mas'] tienda_id=verifika_prod trace_id=6ed73c5d
+sale:
+    {
+      "puntos": [
+        {
+          "id": "atributos:1",
+          "pregunto": "origen de algun producto",
+          "estado": "sin_material",
+          "material": []
+        },
+        {
+          "id": "temas:1",
+          "pregunto": "la politica de asesoramiento",
+          "estado": "con_material",
+          "material": [
+            {
+              "tema": "asesoramiento",
+              "politica": "Claro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo."
+            }
+          ]
+        },
+        {
+          "id": "temas:2",
+          "pregunto": "la politica de compat consola",
+          "estado": "con_material",
+          "material": [
+            {
+              "tema": "compat_consola",
+              "criterio": "Si un accesorio sirve para una consola depende de lo que diga la ficha: el conector y el soporte oficial. Muchos perifericos de PC no funcionan igual en consola. Se responde con lo que la ficha confirma; si no lo aclara, se dice honesto y se ofrece verificarlo antes de comprar. Para saber cual mostrar, conviene preguntar el modelo exacto de la consola."
+            }
+          ]
+        },
+        {
+          "id": "temas:3",
+          "pregunto": "la politica de consulta algo mas",
+          "estado": "con_material",
+          "material": [
+            {
+              "tema": "consulta_algo_mas",
+              "criterio": "Ofrecer algo mas se hace con criterio, sugiriendo lo que de verdad complementa lo que el cliente lleva, por ejemplo un accesorio que le va a hacer falta, sin forzar ni inflar el carrito. Si no hace falta nada, se respeta y se avanza al cierre. La venta cruzada suma cuando aporta, no cuando incomoda."
+            }
+          ]
+        }
+      ]
+    }
+tiempo: 0 ms
+2026-09-09 17:52:19 [info     ] turno_mesa                     peso=1367 puntos=4 sin_material=1 tienda_id=verifika_prod trace_id=6ed73c5d
+
+========================================================================
+ETAPA 5  REDACTOR, llamada dos al modelo  (_redactar)
+========================================================================
+entra:
+    {
+      "posicionales": [
+        "Verifika Tech",
+        "",
+        [],
+        "Tienes algun producto con origen estados unidos",
+        {
+          "puntos": [
+            {
+              "id": "atributos:1",
+              "pregunto": "origen de algun producto",
+              "estado": "sin_material",
+              "material": []
+            },
+            {
+              "id": "temas:1",
+              "pregunto": "la politica de asesoramiento",
+              "estado": "con_material",
+              "material": [
+                {
+                  "tema": "asesoramiento",
+                  "politica": "Claro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo."
+                }
+              ]
+            },
+            {
+              "id": "temas:2",
+              "pregunto": "la politica de compat consola",
+              "estado": "con_material",
+              "material": [
+                {
+                  "tema": "compat_consola",
+                  "criterio": "Si un accesorio sirve para una consola depende de lo que diga la ficha: el conector y el soporte oficial. Muchos perifericos de PC no funcionan igual en consola. Se responde con lo que la ficha confirma; si no lo aclara, se dice honesto y se ofrece verificarlo antes de comprar. Para saber cual mostrar, conviene preguntar el modelo exacto de la consola."
+                }
+              ]
+            },
+            {
+              "id": "temas:3",
+              "pregunto": "la politica de consulta algo mas",
+              "estado": "con_material",
+              "material": [
+                {
+                  "tema": "consulta_algo_mas",
+                  "criterio": "Ofrecer algo mas se hace con criterio, sugiriendo lo que de verdad complementa lo que el cliente lleva, por ejemplo un accesorio que le va a hacer falta, sin forzar ni inflar el carrito. Si no hace falta nada, se respeta y se avanza al cierre. La venta cruzada suma cuando aporta, no cuando incomoda."
+                }
+              ]
+            }
+          ]
+        },
+        "6ed73c5d"
+      ],
+      "con_nombre": {}
+    }
+sale:
+    [
+      {
+        "apertura": "Hola, te cuento que no tenemos cargado el origen de los productos en nuestra base de datos.",
+        "puntos": [
+          {
+            "id": "atributos:1",
+            "texto": "Si tenes algun modelo especifico en mente, pasamelo y me fijo si en la ficha tecnica figura ese dato."
+          },
+          {
+            "id": "temas:1",
+            "texto": "Claro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo."
+          },
+          {
+            "id": "temas:2",
+            "texto": "Sobre la compatibilidad con consolas, depende de lo que diga la ficha tecnica del accesorio. Si tenes el modelo exacto de tu consola, avisame y lo verificamos antes de avanzar."
+          },
+          {
+            "id": "temas:3",
+            "texto": "Mi idea es recomendarte solo lo que realmente complemente tu compra para que le saques provecho."
+          }
+        ],
+        "pregunta_final": "Que equipo estas buscando sumar hoy?"
+      },
+      false
+    ]
+tiempo: 1456 ms
+
+========================================================================
+ETAPA 6  ARMAR texto desde la mesa  (armar)
+========================================================================
+entra:
+    {
+      "posicionales": [
+        {
+          "apertura": "Hola, te cuento que no tenemos cargado el origen de los productos en nuestra base de datos.",
+          "puntos": [
+            {
+              "id": "atributos:1",
+              "texto": "Si tenes algun modelo especifico en mente, pasamelo y me fijo si en la ficha tecnica figura ese dato."
+            },
+            {
+              "id": "temas:1",
+              "texto": "Claro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo."
+            },
+            {
+              "id": "temas:2",
+              "texto": "Sobre la compatibilidad con consolas, depende de lo que diga la ficha tecnica del accesorio. Si tenes el modelo exacto de tu consola, avisame y lo verificamos antes de avanzar."
+            },
+            {
+              "id": "temas:3",
+              "texto": "Mi idea es recomendarte solo lo que realmente complemente tu compra para que le saques provecho."
+            }
+          ],
+          "pregunta_final": "Que equipo estas buscando sumar hoy?"
+        },
+        {
+          "puntos": [
+            {
+              "id": "atributos:1",
+              "pregunto": "origen de algun producto",
+              "estado": "sin_material",
+              "material": []
+            },
+            {
+              "id": "temas:1",
+              "pregunto": "la politica de asesoramiento",
+              "estado": "con_material",
+              "material": [
+                {
+                  "tema": "asesoramiento",
+                  "politica": "Claro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo."
+                }
+              ]
+            },
+            {
+              "id": "temas:2",
+              "pregunto": "la politica de compat consola",
+              "estado": "con_material",
+              "material": [
+                {
+                  "tema": "compat_consola",
+                  "criterio": "Si un accesorio sirve para una consola depende de lo que diga la ficha: el conector y el soporte oficial. Muchos perifericos de PC no funcionan igual en consola. Se responde con lo que la ficha confirma; si no lo aclara, se dice honesto y se ofrece verificarlo antes de comprar. Para saber cual mostrar, conviene preguntar el modelo exacto de la consola."
+                }
+              ]
+            },
+            {
+              "id": "temas:3",
+              "pregunto": "la politica de consulta algo mas",
+              "estado": "con_material",
+              "material": [
+                {
+                  "tema": "consulta_algo_mas",
+                  "criterio": "Ofrecer algo mas se hace con criterio, sugiriendo lo que de verdad complementa lo que el cliente lleva, por ejemplo un accesorio que le va a hacer falta, sin forzar ni inflar el carrito. Si no hace falta nada, se respeta y se avanza al cierre. La venta cruzada suma cuando aporta, no cuando incomoda."
+                }
+              ]
+            }
+          ]
+        },
+        "6ed73c5d",
+        {}
+      ],
+      "con_nombre": {}
+    }
+sale:
+    Hola, te cuento que no tenemos cargado el origen de los productos en nuestra base de datos.
+    
+    Si tenes algun modelo especifico en mente, pasamelo y me fijo si en la ficha tecnica figura ese dato.
+    
+    Claro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo.
+    
+    Sobre la compatibilidad con consolas, depende de lo que diga la ficha tecnica del accesorio. Si tenes el modelo exacto de tu consola, avisame y lo verificamos antes de avanzar.
+    
+    Mi idea es recomendarte solo lo que realmente complemente tu compra para que le saques provecho.
+    
+    De origen de algun producto no tengo el dato confirmado en la ficha. Queres que lo consulte y te aviso?
+tiempo: 0 ms
+
+========================================================================
+ETAPA 7  OBLIGACIONES fuera de la mesa  (_obligaciones)
+========================================================================
+entra:
+    {
+      "posicionales": [
+        "Hola, te cuento que no tenemos cargado el origen de los productos en nuestra base de datos.\n\nSi tenes algun modelo especifico en mente, pasamelo y me fijo si en la ficha tecnica figura ese dato.\n\nClaro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo.\n\nSobre la compatibilidad con consolas, depende de lo que diga la ficha tecnica del accesorio. Si tenes el modelo exacto de tu consola, avisame y lo verificamos antes de avanzar.\n\nMi idea es recomendarte solo lo que realmente complemente tu compra para que le saques provecho.\n\nDe origen de algun producto no tengo el dato confirmado en la ficha. Queres que lo consulte y te aviso?",
+        {
+          "puntos": [
+            {
+              "id": "atributos:1",
+              "pregunto": "origen de algun producto",
+              "estado": "sin_material",
+              "material": []
+            },
+            {
+              "id": "temas:1",
+              "pregunto": "la politica de asesoramiento",
+              "estado": "con_material",
+              "material": [
+                {
+                  "tema": "asesoramiento",
+                  "politica": "Claro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo."
+                }
+              ]
+            },
+            {
+              "id": "temas:2",
+              "pregunto": "la politica de compat consola",
+              "estado": "con_material",
+              "material": [
+                {
+                  "tema": "compat_consola",
+                  "criterio": "Si un accesorio sirve para una consola depende de lo que diga la ficha: el conector y el soporte oficial. Muchos perifericos de PC no funcionan igual en consola. Se responde con lo que la ficha confirma; si no lo aclara, se dice honesto y se ofrece verificarlo antes de comprar. Para saber cual mostrar, conviene preguntar el modelo exacto de la consola."
+                }
+              ]
+            },
+            {
+              "id": "temas:3",
+              "pregunto": "la politica de consulta algo mas",
+              "estado": "con_material",
+              "material": [
+                {
+                  "tema": "consulta_algo_mas",
+                  "criterio": "Ofrecer algo mas se hace con criterio, sugiriendo lo que de verdad complementa lo que el cliente lleva, por ejemplo un accesorio que le va a hacer falta, sin forzar ni inflar el carrito. Si no hace falta nada, se respeta y se avanza al cierre. La venta cruzada suma cuando aporta, no cuando incomoda."
+                }
+              ]
+            }
+          ]
+        },
+        "Verifika Tech",
+        true,
+        "Tienes algun producto con origen estados unidos",
+        "",
+        "verifika_prod",
+        "6ed73c5d"
+      ],
+      "con_nombre": {}
+    }
+sale:
+    ¡Hola! Soy el asistente automático de Verifika Tech.
+    
+    Te cuento que no tenemos cargado el origen de los productos en nuestra base de datos.
+    
+    Si tenes algun modelo especifico en mente, pasamelo y me fijo si en la ficha tecnica figura ese dato.
+    
+    Claro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo.
+    
+    Sobre la compatibilidad con consolas, depende de lo que diga la ficha tecnica del accesorio. Si tenes el modelo exacto de tu consola, avisame y lo verificamos antes de avanzar.
+    
+    Mi idea es recomendarte solo lo que realmente complemente tu compra para que le saques provecho.
+    
+    De origen de algun producto no tengo el dato confirmado en la ficha. Queres que lo consulte y te aviso?
+tiempo: 3 ms
+
+========================================================================
+ETAPA 8  CIERRE y cobro  (_cerrar)
+========================================================================
+entra:
+    {
+      "posicionales": [
+        {
+          "history": [],
+          "summary": "",
+          "estado_conversacion": "saludo",
+          "updated_at": null
+        },
+        "sonda_1788976335",
+        "telegram",
+        "verifika_prod",
+        "Tienes algun producto con origen estados unidos",
+        "¡Hola! Soy el asistente automático de Verifika Tech.\n\nTe cuento que no tenemos cargado el origen de los productos en nuestra base de datos.\n\nSi tenes algun modelo especifico en mente, pasamelo y me fijo si en la ficha tecnica figura ese dato.\n\nClaro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo.\n\nSobre la compatibilidad con consolas, depende de lo que diga la ficha tecnica del accesorio. Si tenes el modelo exacto de tu consola, avisame y lo verificamos antes de avanzar.\n\nMi idea es recomendarte solo lo que realmente complemente tu compra para que le saques provecho.\n\nDe origen de algun producto no tengo el dato confirmado en la ficha. Queres que lo consulte y te aviso?",
+        "6ed73c5d",
+        {
+          "intencion": "exploracion",
+          "confianza": 0.6
+        },
+        ""
+      ],
+      "con_nombre": {}
+    }
+2026-09-09 17:52:22 [info     ] lead_decision_via_interpretador confianza_llm=0.6 intencion_llm=exploracion nivel_mapeado=ninguna tienda_id=verifika_prod trace_id=6ed73c5d
+sale:
+    [
+      "¡Hola! Soy el asistente automático de Verifika Tech.\n\nTe cuento que no tenemos cargado el origen de los productos en nuestra base de datos.\n\nSi tenes algun modelo especifico en mente, pasamelo y me fijo si en la ficha tecnica figura ese dato.\n\nClaro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo.\n\nSobre la compatibilidad con consolas, depende de lo que diga la ficha tecnica del accesorio. Si tenes el modelo exacto de tu consola, avisame y lo verificamos antes de avanzar.\n\nMi idea es recomendarte solo lo que realmente complemente tu compra para que le saques provecho.\n\nDe origen de algun producto no tengo el dato confirmado en la ficha. Queres que lo consulte y te aviso?",
+      {},
+      false
+    ]
+tiempo: 1008 ms
+2026-09-09 17:52:22 [info     ] geo_cp_cargado                 localidades=16164 max_ngram=7 tienda_id=verifika_prod trace_id=6ed73c5d
+2026-09-09 17:52:22 [warning  ] turno_save_error               error=403 Missing or insufficient permissions. tienda_id=verifika_prod trace_id=6ed73c5d
+2026-09-09 17:52:22 [warning  ] turno_incompleto               abiertos=['atributos:1'] pregunto=True salteados=[] tienda_id=verifika_prod trace_id=6ed73c5d
+2026-09-09 17:52:22 [info     ] turno_ok                       abiertos=1 etapas={'decisor': 2339, 'decisor_n': 1, 'herramientas': 0, 'herramientas_n': 1, 'resolver': 351, 'resolver_n': 1, 'redactor': 1456, 'redactor_n': 1, 'cierre': 1008, 'cierre_n': 1} largo=773 latency_ms=6855 puntos=4 salteados=0 tienda_id=verifika_prod trace_id=6ed73c5d
+
+========================================================================
+RESPUESTA FINAL AL CLIENTE
+========================================================================
+¡Hola! Soy el asistente automático de Verifika Tech.
+
+Te cuento que no tenemos cargado el origen de los productos en nuestra base de datos.
+
+Si tenes algun modelo especifico en mente, pasamelo y me fijo si en la ficha tecnica figura ese dato.
+
+Claro, para eso estoy. Contame que necesitas, para que lo vas a usar y tu presupuesto aproximado, y te recomiendo las mejores opciones del catalogo.
+
+Sobre la compatibilidad con consolas, depende de lo que diga la ficha tecnica del accesorio. Si tenes el modelo exacto de tu consola, avisame y lo verificamos antes de avanzar.
+
+Mi idea es recomendarte solo lo que realmente complemente tu compra para que le saques provecho.
+
+De origen de algun producto no tengo el dato confirmado en la ficha. Queres que lo consulte y te aviso?
+
+tiempo total del turno: 6861 ms
+
+capturado en salida.json
