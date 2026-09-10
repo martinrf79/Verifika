@@ -75,7 +75,7 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
       else
         echo "       main local tiene $(git rev-list --count origin/main..HEAD 2>/dev/null || echo '?') commit(s) propios: puede ser trabajo sin pushear."
       fi
-      echo "       NO TRABAJES ASI. Es la REGLA CERO BIS de ARRANQUE.md."
+      echo "       NO TRABAJES ASI. Es la REGLA CERO BIS de papeles/ARRANQUE.md."
       echo "       Miralo con: git status && git log --oneline origin/main..HEAD"
     fi
   fi
@@ -118,7 +118,7 @@ que son los que hacen algo en vez de pedirlo:
     sesion, y hay hook que lo bloquea.
   - Lo que el cliente lee sale de base_conocimiento.json, no de app/.
   - Cuantos productos, temas o barridos hay NO se escribe en ningun texto:
-    INVENTARIO_FUENTE.md e INVENTARIO_BARRIDO.md, que tienen candado.
+    papeles/INVENTARIO_FUENTE.md e papeles/INVENTARIO_BARRIDO.md, que tienen candado.
 
 >>> LOS INSTRUMENTOS, y que contesta cada uno <<<
   banco_pruebas/las_40.py          las 40 preguntas de Martin, parte de codigo
@@ -129,7 +129,7 @@ que son los que hacen algo en vez de pedirlo:
   banco_pruebas/objetivo.py        la nota contra el objetivo
   banco_pruebas/interpretacion.py  separa ENTENDER de CONTESTAR
 
-Detalle historico: RESUMEN_PARA_NUEVO_CHAT.md. Reglas: CLAUDE.md.
+Detalle historico: papeles/RESUMEN_PARA_NUEVO_CHAT.md. Reglas: CLAUDE.md.
 =============================================================================
 REGLAS
 

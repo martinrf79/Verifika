@@ -10,7 +10,7 @@ Es la herramienta que reemplaza al "me parece que el catalogo esta completo".
 Uso:
     python scripts/inventario_fuente.py
     python scripts/inventario_fuente.py --vivo
-    python scripts/inventario_fuente.py --md INVENTARIO_FUENTE.md
+    python scripts/inventario_fuente.py --md papeles/INVENTARIO_FUENTE.md
 
 Escala: el reporte es por CATEGORIA y por CAMPO, nunca por producto, asi una
 tienda de 880 o de 20.000 productos se lee igual de rapido.

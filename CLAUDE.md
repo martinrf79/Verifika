@@ -41,9 +41,9 @@ está acá.
 estaba contada en tres párrafos: ahora es una línea entre guiones. La regla está
 entera; lo que se comprimió es el cuento. Si algo hace falta, `git log` lo tiene.
 
-**Qué NO va acá:** el estado (`RESUMEN_PARA_NUEVO_CHAT.md`), lo que falta
-(`PENDIENTE.md`), lo decidido (`DECISIONES.md`), cómo se ordena el sistema
-(`ARQUITECTURA.md`), y la unidad de trabajo abierta (`arquitectura/`).
+**Qué NO va acá:** el estado (`papeles/RESUMEN_PARA_NUEVO_CHAT.md`), lo que falta
+(`PENDIENTE.md`), lo decidido (`papeles/DECISIONES.md`), cómo se ordena el sistema
+(`papeles/ARQUITECTURA.md`), y la unidad de trabajo abierta (`arquitectura/`).
 
 ---
 
@@ -260,7 +260,7 @@ causa no fue que hubiera muchas ramas: fue que ninguna se mergeó.*
 sube a Firestore por `/admin/upload-catalog` y `/admin/upload-faq`.
 
 **NO se escriben acá los números de la fuente** —cuántos productos, cuántos temas,
-cuántas categorías—. Están en `INVENTARIO_FUENTE.md`, que tiene candado que lo
+cuántas categorías—. Están en `papeles/INVENTARIO_FUENTE.md`, que tiene candado que lo
 obliga a coincidir con los archivos reales.
 
 **NO regenerar el catálogo ni crear otros fixtures.** Un solo catálogo, una sola

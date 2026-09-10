@@ -6,7 +6,7 @@ clases de preguntas con dificultad y escribi dos o tres de cada una".
 
 DE DONDE SALEN LAS CLASES, y esto importa: **no las invente**. Salen de lo que
 el repo ya tiene probado y sufrido -los 80 guiones, los 8 dialogos de
-`CONSIGNA_PREGUNTAS_REALES.md` y las 40 pruebas de `las_40.py`-. Cada clase
+`papeles/CONSIGNA_PREGUNTAS_REALES.md` y las 40 pruebas de `las_40.py`-. Cada clase
 declara de donde viene. Inventar clases nuevas seria medir mi imaginacion en vez
 del negocio.
 

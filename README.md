@@ -69,7 +69,7 @@ ENVIRONMENT=production
 
 ## Deploy
 
-**No se deploya a mano desde acá.** Hay un solo camino y está en `DEPLOY.md`: el
+**No se deploya a mano desde acá.** Hay un solo camino y está en `papeles/DEPLOY.md`: el
 push a `main` dispara `.github/workflows/deploy.yml`, que corre la batería de
 tests ANTES de deployar, o `./deploy.sh` desde Cloud Shell.
 

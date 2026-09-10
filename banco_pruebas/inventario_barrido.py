@@ -29,7 +29,7 @@ objetos distintos con el mismo nombre. Ese es el telefono descompuesto, y se
 arregla con este archivo: **un solo lugar, medido, con candado.**
 
 QUE HACE. Corre cada barrido, le pide su numero, y escribe
-`INVENTARIO_BARRIDO.md`. El candado `tests/test_inventario_barrido.py` vuelve a
+`papeles/INVENTARIO_BARRIDO.md`. El candado `tests/test_inventario_barrido.py` vuelve a
 medir y compara: si el documento y la medicion no coinciden, se pone rojo. Y
 ademas verifica que no exista un `tests/test_barrido_*.py` que no este
 inventariado: un barrido nuevo entra a la lista o el CI no pasa.
@@ -45,7 +45,7 @@ _RAIZ = Path(__file__).resolve().parent.parent
 if str(_RAIZ) not in sys.path:
     sys.path.insert(0, str(_RAIZ))
 
-DESTINO = _RAIZ / "INVENTARIO_BARRIDO.md"
+DESTINO = _RAIZ / "papeles/INVENTARIO_BARRIDO.md"
 
 # Los barridos, con el archivo que los defiende. La lista es corta a proposito:
 # se lee de un vistazo, que es lo que faltaba. `test_inventario` verifica que no

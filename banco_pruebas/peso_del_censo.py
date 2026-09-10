@@ -5,7 +5,7 @@ Reproduce las charlas grabadas por el camino vivo (el modelo reemplazado por su
 casete) y cuenta, nodo por nodo: cuantas veces CORRIO y cuantas veces INTERVINO
 -o sea, cambio algo-.
 
-POR QUE EXISTE. `PASO0_CENSO.md` afirma que hay nodos que no intervienen NUNCA
+POR QUE EXISTE. `papeles/PASO0_CENSO.md` afirma que hay nodos que no intervienen NUNCA
 sobre el corpus. Sin este script eso es una afirmacion escrita a mano, y una
 afirmacion escrita a mano envejece: es la misma enfermedad del 44 de la FAQ que
 resultaron ser 50. El numero sale de aca o no sale.

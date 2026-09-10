@@ -35,7 +35,7 @@ reparto de pago se arreglo leyendo "70/30" y se cayo con "setenta treinta",
 que es como lo escribio el. **Una sola redaccion no prueba nada.**
 
 EL HISTORIAL SOBREVIVE LAS SESIONES. Cada corrida con `--anotar` agrega una
-fila a `OBJETIVO.md`: fecha, que se cambio, la nota antes y despues. El archivo
+fila a `papeles/OBJETIVO.md`: fecha, que se cambio, la nota antes y despues. El archivo
 es GENERADO, nunca escrito a mano: un documento a mano miente a las dos
 sesiones, uno calculado no puede.
 
@@ -54,7 +54,7 @@ _RAIZ = Path(__file__).resolve().parent.parent
 if str(_RAIZ) not in sys.path:
     sys.path.insert(0, str(_RAIZ))
 
-DOC = _RAIZ / "OBJETIVO.md"
+DOC = _RAIZ / "papeles/OBJETIVO.md"
 TIENDA = "verifika_prod"
 
 

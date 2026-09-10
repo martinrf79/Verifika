@@ -13,7 +13,7 @@ hasta hoy el marcador era una estimacion heredada -"unas 12"-. Aca se fija con
 precision sobre lo que SI esta en el repo, y cada entrada declara su fuente:
 
   - `RESUMEN etapa 1 #n`  : las 15 preguntas dificiles del 4-ago, verbatim.
-  - `CONSIGNA dialogo n`  : los 8 dialogos de CONSIGNA_PREGUNTAS_REALES.md.
+  - `CONSIGNA dialogo n`  : los 8 dialogos de papeles/CONSIGNA_PREGUNTAS_REALES.md.
   - `guion NN`            : los guiones que Martin mando por WhatsApp y quedaron
                             lockeados en `banco_pruebas/guiones/`.
 

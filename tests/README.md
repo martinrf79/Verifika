@@ -133,11 +133,11 @@ dato de comportamiento no está en un test, es una opinión, no un hecho.
 **Y un dato que vive en un archivo no se copia a un documento.** Si un `.md` dice
 un número o un nombre que el código también dice, gana el código y el `.md` está
 mal. Ya pasó tres veces: la FAQ que decía 44 temas y tenía 50, el modelo del LLM
-mal nombrado durante meses en `CLAUDE.md`, y el `paths-ignore` de `DEPLOY.md`.
+mal nombrado durante meses en `CLAUDE.md`, y el `paths-ignore` de `papeles/DEPLOY.md`.
 Cada caso tiene ahora su candado.
 
 ## Cómo arranca un chat nuevo
 
-Leer `CLAUDE.md` (reglas) y `RESUMEN_PARA_NUEVO_CHAT.md` (estado), y correr
+Leer `CLAUDE.md` (reglas) y `papeles/RESUMEN_PARA_NUEVO_CHAT.md` (estado), y correr
 `pytest` para ver qué está en rojo. Con eso el chat arranca sabiendo todo y sigue
 por el próximo rojo, sin re-investigar ni quemar tokens.

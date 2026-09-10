@@ -46,7 +46,7 @@ def principal() -> int:
         print(f"  {etapa:11} {len(nodos):2} nodos  {', '.join(archivos)[:44]}{aviso}")
         print(f"              mide: {BANCO.get(etapa, '-')}")
     print("  fuente       catalogo, FAQ y tarifas: data/clientes/<tienda>/")
-    print("              mide: INVENTARIO_FUENTE.md (con candado)")
+    print("              mide: papeles/INVENTARIO_FUENTE.md (con candado)")
     print("=======================================================================")
     return 0
 
