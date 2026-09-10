@@ -136,7 +136,12 @@ CASOS = [
 
     # ── AGREGADOS SOBRE EL CATALOGO. No hay producto que identificar.
     ("Que marcas manejas?", set(), {"atributos", "items"}),
-    ("Cuantos mouse blancos tenes?", {"restricciones"}, {"atributos"}),
+    # AFLOJADO EL 10-SEP, Y LA VARA ESTABA MAL, NO EL MODELO. Pedia
+    # `restricciones` para "cuantos mouse blancos tenes"; el modelo declaro
+    # `stock` con "mouse blancos" adentro, que contesta igual de bien y es
+    # defendible. Una vara que exige UNA de dos formas correctas mide el gusto
+    # del que la escribio. Queda lo que si es seguro: no es un atributo.
+    ("Cuantos mouse blancos tenes?", set(), {"atributos"}),
 
     # ── ATRIBUTOS DE VERDAD: el producto se identifica y se pide un dato.
     ("que garantia tiene el mouse logitech g203?",
@@ -166,8 +171,14 @@ CASOS = [
      {"items", "pide_precio"}, {"atributos", "restricciones"}),
     ("no, el teclado sacalo, dejame solo los mouse",
      {"items"}, {"atributos", "restricciones"}),
+    # SACADO EL 10-SEP, Y ERA UN DEFECTO DE LA VARA. "los dos juntos, cuanto me
+    # sale con envio a rosario" pedia `items`, y esta vara corre SIN HISTORIAL:
+    # sin los turnos anteriores no hay forma de saber cuales son los dos, asi
+    # que el caso medía la falta de contexto y se la cobraba al modelo. Un caso
+    # que no se puede acertar no mide nada. Los turnos que dependen del
+    # historial son un banco aparte y hay que hacerlo con historial de verdad.
     ("los dos juntos, cuanto me sale con envio a rosario?",
-     {"items", "pide_precio", "destinos"}, {"atributos"}),
+     {"pide_precio", "destinos"}, {"atributos"}),
 
     # ── POLITICA DE LA CASA: `temas`, y tiene que ser una CLAVE de la FAQ.
     ("me lo mandas hoy?", {"temas"}, {"atributos", "items"}),
@@ -258,6 +269,7 @@ async def main():
     de_menos = Counter()    # casilla vacia cuando tenia que estar llena
     en_juego = Counter()    # cuantos casos ponen esa casilla en juego
     campos_vistos = Counter()
+    temas_vistos = Counter()
     registro = []
 
     for mensaje, deben, no_deben in CASOS:
@@ -279,6 +291,9 @@ async def main():
             de_mas[c] += 1
         for c in _campos(d or {}):
             campos_vistos[c] += 1
+        for t in ((d or {}).get("temas") or []):
+            if str(t or "").strip():
+                temas_vistos[str(t).strip()] += 1
 
         print(f"\n[{'OK ' if ok else 'MAL'}] {mensaje[:66]}")
         print(f"   declaro: {_resumen(d)}")
@@ -303,17 +318,69 @@ async def main():
         print(f"  {c:16} {en_juego[c] - mal:3} de {en_juego[c]:3} bien"
               f"   de mas {de_mas[c]:2}   de menos {de_menos[c]:2}")
 
-    print("\nNOMBRES DE CAMPO QUE DECLARO, y esta lista no puntua:")
+    # ── LAS DOS ATADURAS QUE YA EXISTEN, MEDIDAS ───────────────────────────
+    #
+    # El molde NO tiene el vocabulario abierto: `esquemas()` ya inyecta el enum
+    # de `campo` desde el catalogo vivo, con `sin_campo_en_la_fuente` como
+    # escapatoria, y los temas se nombran libres a proposito y los certifica
+    # `certificar_temas` contra las señas de la fuente. O sea que las dos
+    # ataduras estan puestas. Lo que nunca se midio es si SE RESPETAN, y sin
+    # ese numero no se sabe si hay que cerrar algo o solo hacerlo cumplir.
+    print("\nNOMBRES DE CAMPO QUE DECLARO, contra el enum real del molde:")
+    try:
+        from app.core.filtros_catalogo import campos_filtrables, SIN_CAMPO
+        # OJO CON EL NOMBRE: `registro` ya es la lista del detalle de arriba.
+        # Reusarlo aca pisaba el detalle y el JSON salia con un set adentro.
+        del_enum = set(campos_filtrables(TIENDA) or {})
+    except Exception as e:  # noqa: BLE001
+        del_enum, SIN_CAMPO = set(), "sin_campo_en_la_fuente"
+        print(f"  no se pudo leer el registro de campos: {e!r}")
+    fuera_del_enum = 0
     for campo, n in campos_vistos.most_common():
-        print(f"  {n:3}  {campo}")
-    print("Cuanto mas larga y mas dispersa esta lista, mas hace falta cerrar "
-          "el vocabulario de `campo`.")
+        if not del_enum:
+            marca = "?"
+        elif campo == SIN_CAMPO:
+            marca = "escapatoria"
+        elif campo in del_enum:
+            marca = "en el enum"
+        else:
+            marca = "FUERA DEL ENUM"
+            fuera_del_enum += n
+        print(f"  {n:3}  {campo:32} {marca}")
+    if del_enum:
+        print(f"  campos del enum en la fuente: {len(del_enum)}")
+        print(f"  declaraciones fuera del enum: {fuera_del_enum}")
+        print("  Si esto es cero, el vocabulario cerrado se respeta y no hay "
+              "nada que cerrar. Si no, la atadura existe y no se cumple: la "
+              "arregla el codigo, no una instruccion.")
+
+    print("\nTEMAS QUE DECLARO, contra la certificacion de la fuente:")
+    try:
+        from app.core.herramientas import certificar_tema
+    except Exception as e:  # noqa: BLE001
+        certificar_tema = None
+        print(f"  no se pudo importar certificar_tema: {e!r}")
+    perdidos = 0
+    for tema, n in temas_vistos.most_common():
+        v = "?"
+        if certificar_tema is not None:
+            try:
+                v = certificar_tema(tema, TIENDA).get("veredicto", "?")
+            except Exception as e:  # noqa: BLE001
+                v = f"error {type(e).__name__}"
+        if v == "not_found":
+            perdidos += n
+        print(f"  {n:3}  {str(tema)[:44]:44} {v}")
+    print(f"  temas que no certifican: {perdidos}")
+    print("  Un tema que no certifica es una pregunta que el sistema abrio y "
+          "no puede contestar con la voz de la casa.")
 
     if args.json:
         Path(args.json).write_text(json.dumps(
             {"exactos": exactos, "casos": len(CASOS),
              "de_mas": dict(de_mas), "de_menos": dict(de_menos),
              "en_juego": dict(en_juego), "campos": dict(campos_vistos),
+             "temas": dict(temas_vistos),
              "detalle": registro}, ensure_ascii=False, indent=2, default=str),
             encoding="utf-8")
         print(f"\ncapturado en {args.json}")
