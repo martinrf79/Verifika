@@ -1,0 +1,839 @@
+{
+  "exactos": 28,
+  "casos": 36,
+  "de_mas": {
+    "atributos": 1,
+    "temas": 1
+  },
+  "de_menos": {
+    "items": 3,
+    "restricciones": 4
+  },
+  "en_juego": {
+    "temas": 21,
+    "pide_precio": 5,
+    "restricciones": 24,
+    "items": 15,
+    "atributos": 27,
+    "stock": 3,
+    "destinos": 3,
+    "compatibilidad": 2,
+    "contradicciones": 1
+  },
+  "campos": {
+    "garantia_meses": 2,
+    "peso_gramos": 3,
+    "uso_recomendado": 1,
+    "color": 1,
+    "precio_ars": 1,
+    "origen": 2,
+    "lector_huella": 1,
+    "contenido_caja": 1,
+    "sin_campo_en_la_fuente": 2,
+    "pais_fabricacion": 1
+  },
+  "detalle": [
+    {
+      "mensaje": "hola, cuanto sale el mouse mas barato que tengas?",
+      "ok": true,
+      "declaro": {
+        "restricciones": [
+          "el mas barato"
+        ],
+        "items": [
+          {
+            "que": "mouse",
+            "categoria": "mouse"
+          }
+        ],
+        "pide_precio": true
+      },
+      "llenas": [
+        "items",
+        "pide_precio",
+        "restricciones"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "bueno, dame la notebook mas barata que tengas para trabajar",
+      "ok": true,
+      "declaro": {
+        "restricciones": [
+          "la mas barata",
+          "para trabajar"
+        ],
+        "pide_precio": true,
+        "items": [
+          {
+            "que": "notebook",
+            "categoria": "notebook"
+          }
+        ]
+      },
+      "llenas": [
+        "items",
+        "pide_precio",
+        "restricciones"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "Mostrame el mouse mas barato que tengas",
+      "ok": true,
+      "declaro": {
+        "restricciones": [
+          "el mas barato"
+        ],
+        "stock": [
+          "mouse"
+        ],
+        "items": [
+          {
+            "que": "mouse",
+            "categoria": "mouse"
+          }
+        ]
+      },
+      "llenas": [
+        "items",
+        "restricciones",
+        "stock"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "Que teclado tiene la garantia mas larga?",
+      "ok": false,
+      "declaro": {
+        "atributos": [
+          {
+            "de": "teclado",
+            "campo": "garantia_meses"
+          }
+        ],
+        "restricciones": [
+          "el de mas garantia"
+        ]
+      },
+      "llenas": [
+        "atributos",
+        "restricciones"
+      ],
+      "falta": [
+        "items"
+      ],
+      "sobra": []
+    },
+    {
+      "mensaje": "Cual es el mouse mas liviano que tengas para viajar?",
+      "ok": false,
+      "declaro": {
+        "atributos": [
+          {
+            "campo": "peso_gramos",
+            "de": "el mouse mas liviano"
+          },
+          {
+            "campo": "uso_recomendado",
+            "de": "el mouse mas liviano"
+          }
+        ],
+        "stock": [
+          "mouse"
+        ],
+        "restricciones": [
+          "el mas liviano",
+          "para viajar"
+        ]
+      },
+      "llenas": [
+        "atributos",
+        "restricciones",
+        "stock"
+      ],
+      "falta": [
+        "items"
+      ],
+      "sobra": []
+    },
+    {
+      "mensaje": "Busco unos auriculares de hasta 80 mil pesos",
+      "ok": true,
+      "declaro": {
+        "items": [
+          {
+            "categoria": "auriculares",
+            "que": "auriculares"
+          }
+        ],
+        "restricciones": [
+          "hasta 80 mil pesos"
+        ],
+        "pide_precio": true
+      },
+      "llenas": [
+        "items",
+        "pide_precio",
+        "restricciones"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "Un mouse inalambrico negro de menos de 120 gramos y que salga menos de 50 mil",
+      "ok": true,
+      "declaro": {
+        "restricciones": [
+          "inalambrico",
+          "color negro",
+          "menos de 120 gramos",
+          "menos de 50 mil pesos"
+        ],
+        "items": [
+          {
+            "que": "mouse inalambrico",
+            "categoria": "mouse"
+          }
+        ],
+        "stock": [
+          "mouse inalambrico"
+        ],
+        "pide_precio": true,
+        "atributos": [
+          {
+            "de": "mouse",
+            "campo": "color"
+          },
+          {
+            "campo": "peso_gramos",
+            "de": "mouse"
+          },
+          {
+            "de": "mouse",
+            "campo": "precio_ars"
+          }
+        ]
+      },
+      "llenas": [
+        "atributos",
+        "items",
+        "pide_precio",
+        "restricciones",
+        "stock"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "Necesito el mouse que menos partes chinas tenga, pero que no sea Logitech",
+      "ok": true,
+      "declaro": {
+        "items": [
+          {
+            "que": "mouse",
+            "categoria": "mouse"
+          }
+        ],
+        "restricciones": [
+          "que tenga la menor cantidad de partes chinas posible",
+          "que no sea marca Logitech"
+        ],
+        "pide_precio": true
+      },
+      "llenas": [
+        "items",
+        "pide_precio",
+        "restricciones"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "Quiero un teclado inalambrico para la oficina",
+      "ok": true,
+      "declaro": {
+        "items": [
+          {
+            "categoria": "teclado",
+            "que": "teclado inalambrico"
+          }
+        ],
+        "restricciones": [
+          "inalambrico",
+          "uso de oficina"
+        ]
+      },
+      "llenas": [
+        "items",
+        "restricciones"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "Dime cual es el producto mas caro que tienen",
+      "ok": false,
+      "declaro": {
+        "temas": [
+          "cual es el producto mas caro que tienen"
+        ]
+      },
+      "llenas": [
+        "temas"
+      ],
+      "falta": [
+        "restricciones"
+      ],
+      "sobra": []
+    },
+    {
+      "mensaje": "Cual es el producto mas caro de toda la tienda?",
+      "ok": false,
+      "declaro": {
+        "temas": [
+          "producto mas caro de la tienda"
+        ]
+      },
+      "llenas": [
+        "temas"
+      ],
+      "falta": [
+        "restricciones"
+      ],
+      "sobra": []
+    },
+    {
+      "mensaje": "Tienes algun producto con origen estados unidos",
+      "ok": false,
+      "declaro": {
+        "atributos": [
+          {
+            "de": "algun producto",
+            "campo": "origen"
+          }
+        ]
+      },
+      "llenas": [
+        "atributos"
+      ],
+      "falta": [
+        "restricciones"
+      ],
+      "sobra": [
+        "atributos"
+      ]
+    },
+    {
+      "mensaje": "Cuantos productos tenes que no se fabriquen en China?",
+      "ok": true,
+      "declaro": {
+        "restricciones": [
+          "que no se fabriquen en China"
+        ],
+        "temas": [
+          "consulta sobre origen de los productos"
+        ]
+      },
+      "llenas": [
+        "restricciones",
+        "temas"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "Dame lista de productos que no sean fabricados en china",
+      "ok": true,
+      "declaro": {
+        "restricciones": [
+          "que no sean fabricados en china"
+        ],
+        "temas": [
+          "lista de productos que no sean fabricados en china"
+        ]
+      },
+      "llenas": [
+        "restricciones",
+        "temas"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "Pasame microfonos marcas estados unidos",
+      "ok": true,
+      "declaro": {
+        "restricciones": [
+          "marcas de estados unidos"
+        ],
+        "items": [
+          {
+            "que": "microfonos",
+            "categoria": "microfono"
+          }
+        ]
+      },
+      "llenas": [
+        "items",
+        "restricciones"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "Que marcas manejas?",
+      "ok": true,
+      "declaro": {
+        "temas": [
+          "marcas que manejan"
+        ]
+      },
+      "llenas": [
+        "temas"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "Cuantos mouse blancos tenes?",
+      "ok": false,
+      "declaro": {
+        "stock": [
+          "mouse blancos"
+        ]
+      },
+      "llenas": [
+        "stock"
+      ],
+      "falta": [
+        "restricciones"
+      ],
+      "sobra": []
+    },
+    {
+      "mensaje": "que garantia tiene el mouse logitech g203?",
+      "ok": true,
+      "declaro": {
+        "atributos": [
+          {
+            "campo": "garantia_meses",
+            "de": "mouse logitech g203"
+          }
+        ]
+      },
+      "llenas": [
+        "atributos"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "esa notebook tiene lector de huella digital?",
+      "ok": true,
+      "declaro": {
+        "atributos": [
+          {
+            "campo": "lector_huella",
+            "de": "esa notebook"
+          }
+        ]
+      },
+      "llenas": [
+        "atributos"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "que trae la caja?",
+      "ok": true,
+      "declaro": {
+        "atributos": [
+          {
+            "campo": "contenido_caja",
+            "de": "el producto que está consultando"
+          }
+        ],
+        "contradicciones": [
+          "El cliente pregunta qué trae la caja pero no especificó a qué producto se refiere."
+        ]
+      },
+      "llenas": [
+        "atributos",
+        "contradicciones"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "y cuanto pesa ese mouse?",
+      "ok": true,
+      "declaro": {
+        "atributos": [
+          {
+            "de": "ese mouse",
+            "campo": "peso_gramos"
+          }
+        ]
+      },
+      "llenas": [
+        "atributos"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "cuantos dpi tiene y cuantos botones?",
+      "ok": true,
+      "declaro": {
+        "contradicciones": [
+          "El cliente pregunta por DPI y botones pero no especificó de qué mouse estamos hablando."
+        ],
+        "atributos": [
+          {
+            "campo": "sin_campo_en_la_fuente",
+            "de": "el mouse"
+          },
+          {
+            "campo": "sin_campo_en_la_fuente",
+            "de": "el mouse"
+          }
+        ]
+      },
+      "llenas": [
+        "atributos",
+        "contradicciones"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "de donde viene, es chino?",
+      "ok": false,
+      "declaro": {
+        "temas": [
+          "origen del producto",
+          "es chino"
+        ],
+        "atributos": [
+          {
+            "campo": "origen",
+            "de": "el producto"
+          },
+          {
+            "de": "el producto",
+            "campo": "pais_fabricacion"
+          }
+        ]
+      },
+      "llenas": [
+        "atributos",
+        "temas"
+      ],
+      "falta": [],
+      "sobra": [
+        "temas"
+      ]
+    },
+    {
+      "mensaje": "hola tenes celulares samsung o iphone?",
+      "ok": true,
+      "declaro": {
+        "stock": [
+          "celulares samsung",
+          "iphone"
+        ]
+      },
+      "llenas": [
+        "stock"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "y una play 5 tenes?",
+      "ok": true,
+      "declaro": {
+        "stock": [
+          "play 5"
+        ],
+        "items": [
+          {
+            "que": "play 5"
+          }
+        ]
+      },
+      "llenas": [
+        "items",
+        "stock"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "hola, tenes memoria ram de 16gb? cuanto sale, cuanto tarda a rosario y aceptan transferencia?",
+      "ok": true,
+      "declaro": {
+        "stock": [
+          "memoria ram de 16gb"
+        ],
+        "destinos": [
+          "Rosario"
+        ],
+        "items": [
+          {
+            "que": "memoria ram de 16gb",
+            "categoria": "memoria ram"
+          }
+        ],
+        "temas": [
+          "cuanto tarda a rosario",
+          "aceptan transferencia"
+        ],
+        "pide_precio": true
+      },
+      "llenas": [
+        "destinos",
+        "items",
+        "pide_precio",
+        "stock",
+        "temas"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "y ese sirve para jugar?",
+      "ok": true,
+      "declaro": {
+        "compatibilidad": [
+          {
+            "que": "ese",
+            "para": "jugar"
+          }
+        ]
+      },
+      "llenas": [
+        "compatibilidad"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "Tengo una notebook Lenovo IdeaPad 3, que memoria RAM le sirve?",
+      "ok": true,
+      "declaro": {
+        "compatibilidad": [
+          {
+            "para": "notebook Lenovo IdeaPad 3",
+            "que": "memoria RAM"
+          }
+        ]
+      },
+      "llenas": [
+        "compatibilidad"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "quiero 2 mouse genius dx-110 negro y 1 teclado, cuanto sale?",
+      "ok": true,
+      "declaro": {
+        "pide_precio": true,
+        "stock": [
+          "mouse genius dx-110 negro",
+          "teclado"
+        ],
+        "items": [
+          {
+            "que": "mouse genius dx-110 negro",
+            "categoria": "mouse",
+            "cantidad": 2
+          },
+          {
+            "cantidad": 1,
+            "categoria": "teclado",
+            "que": "teclado"
+          }
+        ]
+      },
+      "llenas": [
+        "items",
+        "pide_precio",
+        "stock"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "no, el teclado sacalo, dejame solo los mouse",
+      "ok": true,
+      "declaro": {
+        "temas": [
+          "modificar pedido"
+        ],
+        "pide_precio": true,
+        "items": [
+          {
+            "categoria": "mouse",
+            "que": "mouse"
+          }
+        ]
+      },
+      "llenas": [
+        "items",
+        "pide_precio",
+        "temas"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "los dos juntos, cuanto me sale con envio a rosario?",
+      "ok": false,
+      "declaro": {
+        "contradicciones": [
+          "El cliente pide precio por \"los dos juntos\" pero no se especificó previamente qué productos son."
+        ],
+        "temas": [
+          "precio total con envio"
+        ],
+        "pide_precio": true,
+        "destinos": [
+          "Rosario"
+        ]
+      },
+      "llenas": [
+        "contradicciones",
+        "destinos",
+        "pide_precio",
+        "temas"
+      ],
+      "falta": [
+        "items"
+      ],
+      "sobra": []
+    },
+    {
+      "mensaje": "me lo mandas hoy?",
+      "ok": true,
+      "declaro": {
+        "temas": [
+          "envio hoy"
+        ]
+      },
+      "llenas": [
+        "temas"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "bueno, y si te llevo dos me haces precio?",
+      "ok": true,
+      "declaro": {
+        "contradicciones": [
+          "No tengo identificado el producto sobre el cual pide el descuento por cantidad"
+        ],
+        "temas": [
+          "pide descuento"
+        ],
+        "pide_precio": true
+      },
+      "llenas": [
+        "contradicciones",
+        "pide_precio",
+        "temas"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "Hola, quiero comprar el iPhone 15 Pro, pero la version que viene con Android",
+      "ok": true,
+      "declaro": {
+        "items": [
+          {
+            "que": "iPhone 15 Pro"
+          }
+        ],
+        "contradicciones": [
+          "El cliente pide un iPhone 15 Pro con Android, lo cual es técnicamente imposible ya que los iPhone utilizan iOS."
+        ],
+        "stock": [
+          "iPhone 15 Pro"
+        ]
+      },
+      "llenas": [
+        "contradicciones",
+        "items",
+        "stock"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "quiero 2 teclados y 1 mouse a rosario, y 1 auricular a cordoba. cuanto me sale todo junto?",
+      "ok": true,
+      "declaro": {
+        "destinos": [
+          "rosario",
+          "cordoba"
+        ],
+        "pide_precio": true,
+        "items": [
+          {
+            "destino": "rosario",
+            "cantidad": 2,
+            "categoria": "teclado",
+            "que": "teclados"
+          },
+          {
+            "destino": "rosario",
+            "que": "mouse",
+            "cantidad": 1,
+            "categoria": "mouse"
+          },
+          {
+            "categoria": "auriculares",
+            "cantidad": 1,
+            "destino": "cordoba",
+            "que": "auricular"
+          }
+        ],
+        "temas": [
+          "cuanto me sale todo junto"
+        ]
+      },
+      "llenas": [
+        "destinos",
+        "items",
+        "pide_precio",
+        "temas"
+      ],
+      "falta": [],
+      "sobra": []
+    },
+    {
+      "mensaje": "Precio",
+      "ok": true,
+      "declaro": {
+        "contradicciones": [
+          "El cliente pide precio pero no especificó sobre qué producto."
+        ],
+        "pide_precio": true
+      },
+      "llenas": [
+        "contradicciones",
+        "pide_precio"
+      ],
+      "falta": [],
+      "sobra": []
+    }
+  ]
+}

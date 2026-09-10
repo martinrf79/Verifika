@@ -1,0 +1,186 @@
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/openai/chat/completions "HTTP/1.1 200 OK"
+clave: GEMINI_API_KEY | modelo: gemini-3.1-flash-lite
+decisor reasoning: low
+==============================================================================
+
+[OK ] hola, cuanto sale el mouse mas barato que tengas?
+   declaro: item=mouse | rest='el mas barato' | pide_precio
+
+[OK ] bueno, dame la notebook mas barata que tengas para trabajar
+   declaro: item=notebook | rest='la mas barata' | rest='para trabajar' | pide_precio
+
+[OK ] Mostrame el mouse mas barato que tengas
+   declaro: item=mouse | rest='el mas barato' | stock=mouse
+
+[MAL] Que teclado tiene la garantia mas larga?
+   declaro: rest='el de mas garantia' | attr=teclado.garantia_meses
+   falta llenar : ['items']
+
+[MAL] Cual es el mouse mas liviano que tengas para viajar?
+   declaro: rest='el mas liviano' | rest='para viajar' | attr=el mouse mas liviano.peso_gramos | attr=el mouse mas liviano.uso_recomendado | stock=mouse
+   falta llenar : ['items']
+
+[OK ] Busco unos auriculares de hasta 80 mil pesos
+   declaro: item=auriculares | rest='hasta 80 mil pesos' | pide_precio
+
+[OK ] Un mouse inalambrico negro de menos de 120 gramos y que salga meno
+   declaro: item=mouse inalambrico | rest='inalambrico' | rest='color negro' | rest='menos de 120 gramos' | rest='menos de 50 mil pesos' | attr=mouse.color | attr=mouse.peso_gramos | attr=mouse.precio_ars | stock=mouse inalambrico | pide_precio
+
+[OK ] Necesito el mouse que menos partes chinas tenga, pero que no sea L
+   declaro: item=mouse | rest='que tenga la menor cantida' | rest='que no sea marca Logitech' | pide_precio
+
+[OK ] Quiero un teclado inalambrico para la oficina
+   declaro: item=teclado inalambrico | rest='inalambrico' | rest='uso de oficina'
+
+[MAL] Dime cual es el producto mas caro que tienen
+   declaro: tema=cual es el producto mas ca
+   falta llenar : ['restricciones']
+
+[MAL] Cual es el producto mas caro de toda la tienda?
+   declaro: tema=producto mas caro de la ti
+   falta llenar : ['restricciones']
+
+[MAL] Tienes algun producto con origen estados unidos
+   declaro: attr=algun producto.origen
+   falta llenar : ['restricciones']
+   lleno de mas : ['atributos']
+
+[OK ] Cuantos productos tenes que no se fabriquen en China?
+   declaro: rest='que no se fabriquen en Chi' | tema=consulta sobre origen de l
+
+[OK ] Dame lista de productos que no sean fabricados en china
+   declaro: rest='que no sean fabricados en ' | tema=lista de productos que no 
+
+[OK ] Pasame microfonos marcas estados unidos
+   declaro: item=microfonos | rest='marcas de estados unidos'
+
+[OK ] Que marcas manejas?
+   declaro: tema=marcas que manejan
+
+[MAL] Cuantos mouse blancos tenes?
+   declaro: stock=mouse blancos
+   falta llenar : ['restricciones']
+
+[OK ] que garantia tiene el mouse logitech g203?
+   declaro: attr=mouse logitech g203.garantia_meses
+
+[OK ] esa notebook tiene lector de huella digital?
+   declaro: attr=esa notebook.lector_huella
+
+[OK ] que trae la caja?
+   declaro: attr=el producto que está consultando.contenido_caja | contra=El cliente pregunta qué tr
+
+[OK ] y cuanto pesa ese mouse?
+   declaro: attr=ese mouse.peso_gramos
+
+[OK ] cuantos dpi tiene y cuantos botones?
+   declaro: attr=el mouse.sin_campo_en_la_fuente | attr=el mouse.sin_campo_en_la_fuente | contra=El cliente pregunta por DP
+
+[MAL] de donde viene, es chino?
+   declaro: attr=el producto.origen | attr=el producto.pais_fabricacion | tema=origen del producto | tema=es chino
+   lleno de mas : ['temas']
+
+[OK ] hola tenes celulares samsung o iphone?
+   declaro: stock=celulares samsung | stock=iphone
+
+[OK ] y una play 5 tenes?
+   declaro: item=play 5 | stock=play 5
+
+[OK ] hola, tenes memoria ram de 16gb? cuanto sale, cuanto tarda a rosar
+   declaro: item=memoria ram de 16gb | stock=memoria ram de 16gb | tema=cuanto tarda a rosario | tema=aceptan transferencia | dest=Rosario | pide_precio
+
+[OK ] y ese sirve para jugar?
+   declaro: compat=ese->jugar
+
+[OK ] Tengo una notebook Lenovo IdeaPad 3, que memoria RAM le sirve?
+   declaro: compat=memoria RAM->notebook Lenovo IdeaPad 3
+
+[OK ] quiero 2 mouse genius dx-110 negro y 1 teclado, cuanto sale?
+   declaro: item=mouse genius dx-110 negro | item=teclado | stock=mouse genius dx-110 ne | stock=teclado | pide_precio
+
+[OK ] no, el teclado sacalo, dejame solo los mouse
+   declaro: item=mouse | tema=modificar pedido | pide_precio
+
+[MAL] los dos juntos, cuanto me sale con envio a rosario?
+   declaro: tema=precio total con envio | dest=Rosario | pide_precio | contra=El cliente pide precio por
+   falta llenar : ['items']
+
+[OK ] me lo mandas hoy?
+   declaro: tema=envio hoy
+
+[OK ] bueno, y si te llevo dos me haces precio?
+   declaro: tema=pide descuento | pide_precio | contra=No tengo identificado el p
+
+[OK ] Hola, quiero comprar el iPhone 15 Pro, pero la version que viene c
+   declaro: item=iPhone 15 Pro | stock=iPhone 15 Pro | contra=El cliente pide un iPhone 
+
+[OK ] quiero 2 teclados y 1 mouse a rosario, y 1 auricular a cordoba. cu
+   declaro: item=teclados | item=mouse | item=auricular | tema=cuanto me sale todo junto | dest=rosario | dest=cordoba | pide_precio
+
+[OK ] Precio
+   declaro: pide_precio | contra=El cliente pide precio per
+
+==============================================================================
+TURNOS EXACTOS: 28 de 36   (77 por ciento)
+control: 36 de 36 llamaron a registrar_pedido
+
+ACIERTO POR CASILLA, sobre los casos que la ponen en juego:
+  items             12 de  15 bien   de mas  0   de menos  3
+  restricciones     20 de  24 bien   de mas  0   de menos  4
+  atributos         26 de  27 bien   de mas  1   de menos  0
+  stock              3 de   3 bien   de mas  0   de menos  0
+  compatibilidad     2 de   2 bien   de mas  0   de menos  0
+  temas             20 de  21 bien   de mas  1   de menos  0
+  destinos           3 de   3 bien   de mas  0   de menos  0
+  pide_precio        5 de   5 bien   de mas  0   de menos  0
+  contradicciones    1 de   1 bien   de mas  0   de menos  0
+
+NOMBRES DE CAMPO QUE DECLARO, y esta lista no puntua:
+    3  peso_gramos
+    2  garantia_meses
+    2  origen
+    2  sin_campo_en_la_fuente
+    1  uso_recomendado
+    1  color
+    1  precio_ars
+    1  lector_huella
+    1  contenido_caja
+    1  pais_fabricacion
+Cuanto mas larga y mas dispersa esta lista, mas hace falta cerrar el vocabulario de `campo`.
+
+capturado en salida.json
