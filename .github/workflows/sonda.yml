@@ -1,17 +1,24 @@
-name: sonda de turno
+name: sonda y vara
 
-# LA SONDA, CORRIENDO SOLA, CON LA SALIDA DONDE COWORK LA PUEDE LEER.
+# EL BRAZO DE MEDICION, CON LA SALIDA DONDE COWORK LA PUEDE LEER.
 #
 # POR QUE EXISTE (Martin, 9-sep-2026). El puente de logs ya trae produccion,
-# pero la sonda -que muestra las ocho etapas del turno por dentro- la tenia que
-# correr Martin a mano en Cloud Shell y pegar el resultado en el chat. Copiar y
-# pegar pierde detalle, llega tarde, y cada sesion nueva arranca sin nada.
+# pero lo que muestra el sistema por dentro lo tenia que correr Martin a mano en
+# Cloud Shell y pegar el resultado en el chat. Copiar y pegar pierde detalle,
+# llega tarde, y cada sesion nueva arranca sin nada.
 #
-# ESTE WORKFLOW CIERRA ESO. Se pide con un comentario que empieza con /sonda en
-# un issue; el workflow corre la sonda contra la fuente de verdad real y el
-# modelo real, COMMITEA la salida completa en banco_pruebas/salidas/ -que Cowork
-# lee del repo, sin tope de tamaño y para siempre- y ademas contesta en el issue
-# con la cola del informe y el nombre del archivo.
+# DOS PEDIDOS, UN SOLO CAMINO (10-sep-2026):
+#
+#   /sonda <pregunta>   un turno completo por dentro: las ocho etapas de
+#                       app/core/turno.py con lo que entra y lo que sale de
+#                       cada una. Mide la CADENA.
+#   /vara               los 36 casos de banco_pruebas/banco_llamada_uno.py:
+#                       si el modelo declara en la CASILLA que corresponde.
+#                       Mide la INTERPRETACION, sin llegar a la respuesta.
+#
+# Las dos commitean la salida ENTERA en banco_pruebas/salidas/ -que Cowork lee
+# del repo, sin tope de tamaño y para siempre- y contestan en el issue con la
+# cola del informe.
 #
 # NADIE PEGA UNA CLAVE EN UN CHAT. Google entra por WIF, sin llave. La clave del
 # modelo sale del secreto del repo y nunca se imprime: solo se dice si esta.
@@ -23,11 +30,7 @@ name: sonda de turno
 # LA GUARDA: el repo es publico, asi que solo se atiende si el comentario lo
 # escribio martinrf79.
 #
-# COMO SE PIDE
-#   /sonda que garantia tienen las zapatillas talle 42 negras
-#   /sonda usuario=5493547504287 cuanto sale el envio a cordoba
-#   /sonda tienda=verifika_prod tope=6000 tu pregunta
-#
+# PARAMETROS de /sonda, en la misma linea:
 #   usuario  reproduce sobre esa conversacion real de Firestore. Sin esto usa
 #            un user_id de sonda y no pisa ninguna charla
 #   tienda   TIENDA_ID a usar. Default verifika_prod
@@ -43,9 +46,9 @@ on:
         required: true
         default: "31"
       pedido:
-        description: "Linea de pedido, ej: /sonda tu pregunta"
+        description: "Linea de pedido: /sonda tu pregunta   o   /vara"
         required: true
-        default: "/sonda"
+        default: "/vara"
 
 permissions:
   contents: write
@@ -58,7 +61,8 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       ( github.event.issue.pull_request == null &&
         github.event.comment.user.login == 'martinrf79' &&
-        startsWith(github.event.comment.body, '/sonda') )
+        ( startsWith(github.event.comment.body, '/sonda') ||
+          startsWith(github.event.comment.body, '/vara') ) )
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -71,7 +75,7 @@ jobs:
           CORRIDA: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           gh issue comment "$ISSUE" --repo "$GITHUB_REPOSITORY" \
-            --body "Sonda recibida. Corriendo: $CORRIDA"
+            --body "Pedido recibido. Corriendo: $CORRIDA"
 
       - name: Leer el pedido
         id: pedido
@@ -82,6 +86,11 @@ jobs:
         run: |
           LINEA=$(printf '%s' "$CUERPO" | head -1)
 
+          case "$LINEA" in
+            /vara*) MODO=vara ;;
+            *)      MODO=sonda ;;
+          esac
+
           leer() { printf '%s' "$LINEA" | grep -oiE "(^|[[:space:]])$1=[^[:space:]]+" | head -1 | cut -d= -f2- ; }
 
           USUARIO=$(leer usuario | tr -dc '0-9')
@@ -89,18 +98,19 @@ jobs:
           TOPE=$(leer tope | tr -dc '0-9'); [ -z "$TOPE" ] && TOPE=2500
           [ "$TOPE" -gt 20000 ] && TOPE=20000
 
-          # La pregunta es la linea sin el /sonda y sin los pares clave=valor.
+          # La pregunta es la linea sin el prefijo y sin los pares clave=valor.
           PREGUNTA=$(printf '%s' "$LINEA" \
-            | sed -E 's@^/sonda[[:space:]]*@@' \
+            | sed -E 's@^/(sonda|vara)[[:space:]]*@@' \
             | sed -E 's@(^|[[:space:]])(usuario|tienda|tope)=[^[:space:]]+@@g' \
             | sed -E 's@^[[:space:]]+|[[:space:]]+$@@g')
 
-          if [ -z "$PREGUNTA" ]; then
+          if [ "$MODO" = "sonda" ] && [ -z "$PREGUNTA" ]; then
             PREGUNTA="hola, que productos tienen"
             echo "Sin pregunta en el pedido: se usa una de cortesia."
           fi
 
           {
+            echo "modo=$MODO"
             echo "usuario=$USUARIO"
             echo "tienda=$TIENDA"
             echo "tope=$TOPE"
@@ -131,43 +141,52 @@ jobs:
         # lugar de una medicion.
         run: pip install --quiet -r requirements.txt
 
-      - name: Correr la sonda
+      - name: Correr
         env:
-          # Si el secreto no esta, la sonda lo dice en su etapa cero y el
-          # informe queda marcado como no valido. No se imprime la clave.
+          # Si el secreto no esta, la corrida lo dice y el informe queda marcado
+          # como no valido. No se imprime la clave.
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_PROD }}
           GOOGLE_CLOUD_PROJECT: memory-engine-v1
           TIENDA_ID: ${{ steps.pedido.outputs.tienda }}
+          MODO: ${{ steps.pedido.outputs.modo }}
           PREGUNTA: ${{ steps.pedido.outputs.pregunta }}
           USUARIO: ${{ steps.pedido.outputs.usuario }}
           TOPE: ${{ steps.pedido.outputs.tope }}
+          BANCO_PAUSA_S: "1"
         run: |
           if [ -n "$GEMINI_API_KEY" ]; then
             echo "Secreto GEMINI_API_KEY_PROD: presente."
           else
             echo "AVISO: no hay secreto GEMINI_API_KEY_PROD en el repo."
-            echo "La sonda va a correr sin modelo y el informe NO mide el codigo."
+            echo "La corrida va a salir sin modelo y NO mide el codigo."
           fi
-          ARGS="--tope $TOPE --json salida.json"
-          [ -n "$USUARIO" ] && ARGS="$ARGS --user $USUARIO"
-          # La pregunta va como argumento entre comillas, desde env.
-          python3 banco_pruebas/sonda_turno.py $ARGS "$PREGUNTA" > sonda.txt 2>&1 || true
+          if [ "$MODO" = "vara" ]; then
+            echo "MODO VARA: los casos de banco_llamada_uno.py"
+            python3 banco_pruebas/banco_llamada_uno.py --json salida.json \
+              > sonda.txt 2>&1 || true
+          else
+            ARGS="--tope $TOPE --json salida.json"
+            [ -n "$USUARIO" ] && ARGS="$ARGS --user $USUARIO"
+            # La pregunta va como argumento entre comillas, desde env.
+            python3 banco_pruebas/sonda_turno.py $ARGS "$PREGUNTA" \
+              > sonda.txt 2>&1 || true
+          fi
           echo "lineas de salida: $(wc -l < sonda.txt)"
 
       - name: Guardar la salida en el repo
         env:
           GH_TOKEN: ${{ github.token }}
           RUN: ${{ github.run_id }}
+          MODO: ${{ steps.pedido.outputs.modo }}
         run: |
           mkdir -p banco_pruebas/salidas
-          DEST="banco_pruebas/salidas/sonda_${RUN}.txt"
-          cp sonda.txt "$DEST"
-          [ -f salida.json ] && cp salida.json "banco_pruebas/salidas/sonda_${RUN}.json"
+          cp sonda.txt "banco_pruebas/salidas/${MODO}_${RUN}.txt"
+          [ -f salida.json ] && cp salida.json "banco_pruebas/salidas/${MODO}_${RUN}.json"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add banco_pruebas/salidas
-          git commit -m "sonda: salida de la corrida ${RUN}" || echo "nada que commitear"
-          # Rebase por si entro otro commit mientras corria la sonda.
+          git commit -m "${MODO}: salida de la corrida ${RUN}" || echo "nada que commitear"
+          # Rebase por si entro otro commit mientras corria.
           git pull --rebase --autostash origin main || true
           git push origin HEAD:main
 
@@ -176,6 +195,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           ISSUE: ${{ github.event.issue.number || inputs.issue }}
           PREGUNTA: ${{ steps.pedido.outputs.pregunta }}
+          MODO: ${{ steps.pedido.outputs.modo }}
           RUN: ${{ github.run_id }}
         run: |
           python3 - <<'PY' > cuerpo.md
@@ -184,14 +204,16 @@ jobs:
 
           t = pathlib.Path("sonda.txt").read_text(encoding="utf-8", errors="replace")
           run = os.environ["RUN"]
-          print("## Informe de la sonda\n")
-          print("Pregunta: `" + os.environ.get("PREGUNTA", "") + "`\n")
+          modo = os.environ["MODO"]
+          print("## Informe de la " + modo + "\n")
+          if modo == "sonda":
+              print("Pregunta: `" + os.environ.get("PREGUNTA", "") + "`\n")
           print("Salida completa en el repo, sin recortar:")
-          print("`banco_pruebas/salidas/sonda_" + run + ".txt`")
-          print("y el capturado en `banco_pruebas/salidas/sonda_" + run + ".json`\n")
+          print("`banco_pruebas/salidas/" + modo + "_" + run + ".txt`")
+          print("y el capturado en `banco_pruebas/salidas/" + modo + "_" + run + ".json`\n")
           print("Largo total: " + str(len(t)) + " caracteres.\n")
-          # En el comentario va la COLA: ahi estan las ultimas etapas, la
-          # respuesta final y los avisos. Lo de arriba se lee del archivo.
+          # En el comentario va la COLA: ahi estan los numeros del final y los
+          # avisos. Lo de arriba se lee del archivo.
           tope = 50000
           if len(t) > tope:
               print("_Recortado para el comentario: se muestran los ultimos "
