@@ -6,12 +6,12 @@ herramientas, resolver, mesa, redactor, obligaciones. Todo eso esta apagado en
 
 EL FLUJO, entero:
 
-  1. FUENTE   el codigo busca en el catalogo y en la FAQ con el mensaje del
-              cliente, y se queda con lo poco que puede hacer falta.
-  2. MODELO   UNA llamada. Ve la voz de la casa, la memoria de la charla, los
-              VEINTE TIPOS con su molde de respuesta, y la fuente de arriba.
-              Contesta con un tipo y un texto. El precio lo copia de la ficha;
-              el envio y la suma van como hueco, porque no los sabe.
+  1. FUENTE   el codigo pone el inventario -dos renglones sobre el catalogo
+              entero- y las politicas de la casa que el mensaje pisa.
+  2. MODELO   ve la voz de la casa, la memoria, los VEINTE TIPOS y el motor de
+              busqueda. BUSCA EL: escribe la consulta, el codigo la ejecuta, y
+              con lo que volvio contesta. El precio lo copia de la ficha que
+              trajo; el envio y la suma van como hueco, porque no los sabe.
   3. NUMEROS  el codigo pone el envio y el total, y tira abajo la respuesta si
               quedo una sola cifra que la fuente no tiene.
   4. CIERRE   si el cliente decidio comprar, se toma el pedido y se manda el
@@ -23,8 +23,16 @@ segundos medidos y se comian la cuota diaria de a tres. Una sola con los veinte
 moldes adentro pesa menos que la primera de las tres que habia.
 
 DE DONDE SACA EL MODELO LA RESPUESTA, que es la pregunta que define todo esto:
-de las fichas y las politicas que el codigo le pone delante en la etapa uno, y
-de ningun otro lado. Por eso la ficha viaja con el precio ya escrito.
+de las fichas que EL busco con `motor.buscar` y de las politicas que el codigo
+certifica, y de ningun otro lado. Por eso la ficha viaja con el precio ya
+escrito, y por eso la guarda de procedencia mira exactamente esas fichas.
+
+POR QUE EL MODELO BUSCA Y NO EL CODIGO. El codigo no razona, asi que no puede
+traducir "un rectangulo con teclas" a `teclado` ni "acorde a la crisis" a un
+orden por precio. Cuando lo intento -`resolver_inclusion` y sus hermanas,
+cortando raices de cuatro letras- dio lo que tenia que dar: "que no sea de
+marca china" resolvia a `origen no_contiene marc`, la raiz de "marca", que esta
+en los 880 origenes. Cero productos, y el bot diciendo que no hay nada.
 
 LO QUE EL MODELO NO PUEDE HACER, y lo garantiza el codigo, no el prompt:
 escribir un numero que la fuente no tenga -precio, plazo o spec, da igual-,
@@ -72,9 +80,29 @@ precio, decilo; nunca lo aproximes.
 Los OTROS huecos del molde -{{producto}}, {{stock}}, {{opciones}} y los demas-
 NO se copian: ahi va la palabra real, sacada de la ficha que tenes abajo.
 
-SOLO EXISTE LO QUE ESTA EN LA FUENTE que te paso abajo. Si un producto no esta
-en las fichas, no lo vendemos y se lo decis. Si un dato no esta en la ficha, no
-lo tenemos y se lo decis. No completes con lo que sepas de esos productos.
+PARA HABLAR DE UN PRODUCTO, PRIMERO BUSCA. Tenes la herramienta `buscar` y es
+el UNICO lugar del que salen las fichas y los precios. No contestes de memoria
+ni con lo que sepas de esos productos: si no lo buscaste, no lo tenes.
+
+Traduci vos lo que el cliente dijo. "Un rectangulo con teclas" es la categoria
+`teclado`. "Algo acorde a la crisis" es ordenar por precio de menor a mayor.
+Eso es tu trabajo, no el del codigo.
+
+Si el cliente pidio varias cosas, mandalas como varias consultas en UNA sola
+llamada. Si lo que volvio no sirve, busca de nuevo con otra consulta.
+
+LEE LO QUE LA BUSQUEDA TE CONTESTA, que dice mas que la lista:
+- `no_aplicado` es una condicion que el catalogo NO puede cumplir. Deciselo al
+  cliente; no la des por cumplida ni la ignores.
+- `veredicto: ambiguo` significa que hay varios que pegan igual. NO elijas:
+  preguntale cual.
+- `veredicto: no_existe` con filas al lado es lo mas parecido, no lo que pidio.
+  Decile que eso exacto no hay y mostrale esto.
+- `sin_dato` son los que no tienen ese dato cargado. No es un no.
+
+SOLO EXISTE LO QUE LA BUSQUEDA DEVOLVIO. Si un producto no aparecio, no lo
+vendemos y se lo decis. Si un dato no esta en la ficha, no lo tenemos y se lo
+decis.
 
 Contesta SOLO con este JSON, sin nada alrededor:
 {"tipo": "<uno de los veinte>", "texto": "<el mensaje para el cliente>"}
@@ -118,28 +146,25 @@ def _memoria_texto(conv: dict) -> str:
     return "\n".join(partes)
 
 
-def _bloque_fuente(fichas: list, politicas: list, inventario: str = "") -> str:
-    """Lo que el codigo pone delante del modelo, y DICE LO QUE ES.
+def _bloque_fuente(politicas: list, inventario: str = "") -> str:
+    """Lo que el codigo pone delante del modelo SIN que lo pida.
 
-    EL ENCABEZADO DECIA "es todo lo que existe" Y ERA MENTIRA. Son las fichas
-    mas parecidas al mensaje, no el catalogo. Medido el 11-sep: a "¿cuantos
-    productos vendes?" el bot contesto "5 modelos de memorias RAM", que es
-    exactamente lo que el encabezado le habia dicho que tenia. El modelo hizo
-    caso. Por eso ahora viaja el inventario entero -dos renglones- y las fichas
-    se presentan por lo que son.
+    YA NO HAY FICHAS ACA, y es el cambio de la FICHA 50: las trae el modelo con
+    `buscar`. Queda lo que ninguna busqueda puede contestar y por eso viaja
+    siempre.
+
+    EL INVENTARIO. Medido el 11-sep: a "¿cuantos productos vendes?" el bot
+    contesto "5 modelos de memorias RAM", porque el encabezado le decia "es
+    todo lo que existe" arriba de las cinco fichas que la relevancia habia
+    traido. Una pregunta sobre el catalogo ENTERO no la contesta ninguna
+    busqueda por parecido: son dos renglones y van siempre.
+
+    LAS POLITICAS siguen certificadas por el codigo. Son el mapa 3 y no cambian
+    en esta vuelta.
     """
     partes = []
     if inventario:
         partes.append(inventario)
-    if fichas:
-        partes.append(f"LAS {len(fichas)} FICHAS MAS PARECIDAS a lo que "
-                      "pregunto, con todos sus datos. Para hablar de un "
-                      "producto usa SOLO estas; para hablar del catalogo "
-                      "entero, el renglon de arriba:\n"
-                      + json.dumps(fichas, ensure_ascii=False))
-    else:
-        partes.append("FICHAS PARECIDAS: ninguna. Nada del catalogo se parece "
-                      "a lo que nombro, asi que ese producto no lo vendemos.")
     if politicas:
         partes.append("POLITICAS DE LA CASA que tocan este mensaje:\n"
                       + "\n".join(f"- {p['tema']}: {p['texto']}" for p in politicas))
@@ -162,13 +187,31 @@ def _parsear(crudo: str) -> dict:
     return {"tipo": "", "texto": (crudo or "").strip()}
 
 
+# Cuantas veces puede buscar el modelo en un turno. Dos, y el numero tiene
+# motivo: una para buscar y otra para corregir si lo que salio no sirve, que es
+# la capacidad que la FICHA 50 pide con todas las letras. La tercera no la pide
+# nadie y cada vuelta es una llamada al modelo.
+VUELTAS_DE_BUSQUEDA = 2
+
+
 async def _preguntar(sistema: str, memoria: str, history: list, mensaje: str,
-                     fuente: str, trace_id: str) -> dict:
+                     fuente: str, trace_id: str, tienda_id: str) -> tuple:
+    """La llamada al modelo, con el motor de busqueda en la mano.
+
+    EL MODELO BUSCA Y DESPUES CONTESTA, y esa es la vuelta que agrega la FICHA
+    50. Antes el codigo adivinaba que fichas ponerle delante leyendo el mensaje
+    crudo; ahora el modelo escribe la consulta y el codigo la ejecuta.
+
+    Devuelve (salida, fichas, veces_que_busco). Las fichas son las del motor:
+    es lo que `numeros` usa como procedencia, asi que un precio que no este en
+    lo que el modelo EFECTIVAMENTE busco no puede salir al cliente.
+    """
+    from app.core import motor as MT
     from app.core.llm_reintento import _cliente, _modelo
     cli = _cliente()
     if cli is None:
         log.warning("respuesta_sin_clave", trace_id=trace_id)
-        return {}
+        return {}, [], 0
     msgs = [{"role": "system", "content": sistema}]
     if memoria:
         msgs.append({"role": "system", "content": memoria})
@@ -178,19 +221,78 @@ async def _preguntar(sistema: str, memoria: str, history: list, mensaje: str,
     msgs.append({"role": "user",
                  "content": f"Mensaje del cliente: {mensaje}\n\n{fuente}"})
 
-    def _call():
-        r = cli.chat.completions.create(
-            model=_modelo(), messages=msgs, temperature=0.3, max_tokens=900)
-        return (r.choices[0].message.content or "") if r.choices else ""
-
     try:
-        crudo = await llamar_con_reintento(
-            _call, timeout_s=settings.LLM_TIMEOUT_SECONDS, trace_id=trace_id)
-    except Exception as e:  # noqa: BLE001 — el turno no se rompe por el modelo
-        log.warning("respuesta_modelo_error", trace_id=trace_id,
-                    error=f"{type(e).__name__}: {str(e)[:150]}")
-        return {}
-    return _parsear(crudo)
+        herramientas = [MT.esquema(tienda_id)]
+    except Exception as e:  # noqa: BLE001 — sin esquema se contesta sin buscar
+        log.warning("respuesta_esquema_error", trace_id=trace_id,
+                    error=f"{type(e).__name__}: {str(e)[:120]}")
+        herramientas = []
+
+    # NO SE LE REENVIA AL MODELO SU PROPIA LLAMADA, y no es una eleccion de
+    # estilo. El protocolo de herramientas pide devolver el mensaje `assistant`
+    # con sus `tool_calls` y despues el rol `tool`; Gemini ademas exige que ese
+    # eco traiga un `thought_signature` suyo, y sin el contesta 400 -medido el
+    # 11-sep, seis de seis-. Reenviar campos propios de un proveedor ata el
+    # turno a ese proveedor.
+    #
+    # Lo que se hace en cambio: el resultado de la busqueda se le pone delante
+    # como UN BLOQUE MAS de la fuente, que es exactamente lo que es. La vuelta
+    # siguiente es una llamada limpia con ese bloque adentro. Funciona igual en
+    # cualquier proveedor compatible y no tiene protocolo que mantener.
+    fichas: list = []
+    hallazgos: list = []
+    busquedas = 0
+    for vuelta in range(VUELTAS_DE_BUSQUEDA + 1):
+        cuerpo = f"Mensaje del cliente: {mensaje}\n\n{fuente}"
+        if hallazgos:
+            cuerpo += ("\n\nLO QUE DEVOLVIO TU BUSQUEDA. Es toda la fuente que "
+                       "tenes sobre productos; de aca salen las fichas y los "
+                       "precios:\n" + "\n".join(hallazgos))
+        turno = msgs + [{"role": "user", "content": cuerpo}]
+        # En la ultima vuelta la herramienta ya no viaja: es la vuelta de
+        # CONTESTAR. Sin esto el modelo puede quedarse buscando para siempre y
+        # el cliente sin respuesta.
+        tools = herramientas if (herramientas and vuelta < VUELTAS_DE_BUSQUEDA) else None
+
+        def _call(_tools=tools, _msgs=turno):
+            extra = {"tools": _tools, "tool_choice": "auto"} if _tools else {}
+            r = cli.chat.completions.create(
+                model=_modelo(), messages=_msgs, temperature=0.3,
+                max_tokens=900, **extra)
+            return r.choices[0].message if r.choices else None
+
+        try:
+            msg = await llamar_con_reintento(
+                _call, timeout_s=settings.LLM_TIMEOUT_SECONDS,
+                trace_id=trace_id)
+        except Exception as e:  # noqa: BLE001 — el turno no se rompe por el modelo
+            log.warning("respuesta_modelo_error", trace_id=trace_id,
+                        error=f"{type(e).__name__}: {str(e)[:150]}")
+            return {}, fichas, busquedas
+        if msg is None:
+            return {}, fichas, busquedas
+
+        llamadas = list(getattr(msg, "tool_calls", None) or [])
+        if not llamadas:
+            return _parsear(msg.content or ""), fichas, busquedas
+
+        for c in llamadas:
+            busquedas += 1
+            try:
+                args = json.loads(c.function.arguments or "{}")
+            except Exception:  # noqa: BLE001 — un JSON roto no tumba el turno
+                args = {}
+                log.warning("motor_argumentos_rotos", trace_id=trace_id,
+                            crudo=str(c.function.arguments)[:200])
+            consultas = args.get("consultas") or []
+            r = MT.buscar(consultas, tienda_id, trace_id)
+            for f in MT.fichas_de(r):
+                if str(f.get("id")) not in {str(x.get("id")) for x in fichas}:
+                    fichas.append(f)
+            hallazgos.append(
+                "Buscaste: " + json.dumps(consultas, ensure_ascii=False)[:900]
+                + "\nVolvio: " + json.dumps(r, ensure_ascii=False)[:8000])
+    return {}, fichas, busquedas
 
 
 def _senal(tipo: str, mensaje: str) -> dict:
@@ -295,18 +397,26 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
 
     # ── 1. FUENTE ───────────────────────────────────────────────────────
     t = time.time()
-    fichas = F.fichas_relevantes(raw_message, tienda_id)
     politicas = F.politicas_relevantes(raw_message, tienda_id)
     inventario = F.texto_inventario(tienda_id)
     etapas["fuente"] = int((time.time() - t) * 1000)
 
-    # ── 2. MODELO ───────────────────────────────────────────────────────
+    # ── 2. MODELO, QUE AHORA BUSCA EL ──────────────────────────────────
+    #
+    # LAS FICHAS YA NO LAS ELIGE EL CODIGO. Salen de lo que el modelo busco con
+    # el motor. Es el cambio entero de la FICHA 50: el codigo no razona, asi
+    # que no puede elegir que ponerle delante, y el catalogo entero no entra.
     t = time.time()
-    salida = await _preguntar(_prompt_sistema(negocio), _memoria_texto(conv),
-                              history, raw_message,
-                              _bloque_fuente(fichas, politicas, inventario),
-                              trace_id)
+    salida, fichas, busquedas = await _preguntar(
+        _prompt_sistema(negocio), _memoria_texto(conv), history, raw_message,
+        _bloque_fuente(politicas, inventario), trace_id, tienda_id)
     etapas["modelo"] = int((time.time() - t) * 1000)
+    if not busquedas:
+        # EL TERCER CANDADO DE LA FICHA 50: se mide cada turno que contesto sin
+        # haber buscado. No se bloquea —la guarda de procedencia ya impide que
+        # salga un numero que no vio—, se CUENTA, que es como sabemos si el
+        # modelo usa el motor o lo esquiva.
+        log.warning("turno_sin_buscar", trace_id=trace_id)
 
     texto = (salida.get("texto") or "").strip()
     if texto and not (salida.get("tipo") or "").strip():

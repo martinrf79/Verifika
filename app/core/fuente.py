@@ -233,11 +233,14 @@ def certificar_temas(nombres: list, tienda_id: str) -> dict:
 # ── LOS PRODUCTOS QUE EL MENSAJE NOMBRA ─────────────────────────────────────
 #
 # El certificador de identidad -`pedido_helpers.certificar_producto`- sigue
-# siendo quien dice si un producto EXISTE. Esto es el paso de antes: acotar los
-# 880 del catalogo a los pocos que el mensaje puede estar nombrando, para que el
-# prompt no lleve el catalogo entero ni lleve nada.
-
-TOPE_FICHAS = 5
+# siendo quien dice si un producto EXISTE.
+#
+# LAS FICHAS YA NO SALEN DE ACA (11-sep-2026). `fichas_relevantes` adivinaba
+# cuales ponerle delante al modelo leyendo el mensaje crudo; ahora las busca el
+# modelo con `motor.buscar`, que es la FICHA 50. Lo que queda en este modulo es
+# lo que NINGUNA busqueda puede contestar: el inventario del catalogo entero y
+# las politicas de la casa, que se certifican y no se buscan. `_ficha_corta`
+# sigue aca porque es la forma de la ficha, y la usa el motor.
 
 
 def _norm_cat(c) -> str:
@@ -276,83 +279,6 @@ def _ficha_corta(prod: dict) -> dict:
         fuera[str(campo)] = valor
     return fuera
 
-
-def fichas_relevantes(mensaje: str, tienda_id: str,
-                      tope: int = TOPE_FICHAS) -> list[dict]:
-    """Las fichas del catalogo que el mensaje nombra, de mas a menos relevante.
-
-    La relevancia la calcula `filtros_catalogo.relevancia`, que ya pesa por
-    rareza: una palabra que esta en los 880 no distingue nada y una que esta en
-    dos los nombra. Si nada pasa el piso, vuelve vacio: que el modelo no tenga
-    ninguna ficha delante es un resultado valido y es lo que le hace decir que
-    no lo tenemos.
-    """
-    from app.core.filtros_catalogo import (categorias_nombradas, ordenar,
-                                           orden_tiene_sentido,
-                                           pesos_por_rareza, relevancia,
-                                           resolver_orden)
-    from app.storage.firestore_client import get_all_products
-    txt = (mensaje or "").strip()
-    if not txt:
-        return []
-    try:
-        catalogo = get_all_products(tienda_id=tienda_id) or []
-    except Exception as e:  # noqa: BLE001 — sin catalogo se contesta sin fichas
-        log.warning("fuente_catalogo_error", error=f"{type(e).__name__}: {e}")
-        return []
-    if not catalogo:
-        return []
-    # ── EL EXTREMO NO SE BUSCA POR PARECIDO, SE ORDENA ──────────────────
-    #
-    # MEDIDO EL 11-SEP: a "cual es el producto mas caro que tienes" la
-    # relevancia devolvio cinco memorias RAM cualquiera, porque ninguna palabra
-    # del mensaje nombra un producto. "Mas caro" no es un parecido: es un
-    # ORDEN, y el orden lo hace el codigo sobre el campo de la fuente.
-    #
-    # `resolver_orden` solo devuelve algo si el cliente puso el superlativo, y
-    # el campo sale de `campos_filtrables`, o sea de la fuente viva. Si el
-    # cliente nombro un rubro, el orden se acota a ese rubro; si no, va sobre
-    # el catalogo entero, que es lo que la pregunta pide.
-    orden = resolver_orden(txt, tienda_id)
-    rubros = [_norm_cat(c) for c in categorias_nombradas(txt, tienda_id)]
-    # UN PEDIDO DE VARIOS RUBROS NO ES UN EXTREMO, por mas que traiga la
-    # palabra. Medido el 11-sep 18:41: "dame precio de dos auriculares, dos
-    # mouse y dos memorias... que lleven las MENOS partes chinas posibles"
-    # disparo el superlativo y ordeno los 146 por precio DESCENDENTE, asi que
-    # el cliente que dijo que el precio no le importaba se llevo los cinco mas
-    # caros. El superlativo ahi califica una restriccion, no pide un extremo
-    # del catalogo. Con dos o mas rubros nombrados se busca por parecido, que
-    # es lo que un pedido multiple necesita.
-    if orden and orden.get("campo") and len(rubros) < 2:
-        universo = catalogo
-        if rubros:
-            universo = [p for p in catalogo
-                        if _norm_cat(p.get("categoria")) in rubros]
-        if universo and orden_tiene_sentido(universo, orden["campo"], tienda_id):
-            fuera = [_ficha_corta(p) for p in ordenar(
-                universo, orden["campo"], orden.get("direccion") or "min",
-                tienda_id)[:tope]]
-            log.info("fuente_fichas_por_orden", campo=orden["campo"],
-                     direccion=orden.get("direccion"), de=len(universo),
-                     cuantas=len(fuera), ids=[f.get("id") for f in fuera])
-            return fuera
-
-    raras = pesos_por_rareza(catalogo, txt)
-    puntuados = []
-    for p in catalogo:
-        r = relevancia(p, txt, raras)
-        if r > 0:
-            puntuados.append((r, p))
-    if not puntuados:
-        return []
-    puntuados.sort(key=lambda x: (-x[0], str(x[1].get("nombre") or "")))
-    fuera = [_ficha_corta(p) for _, p in puntuados[:tope]]
-    log.info("fuente_fichas", cuantas=len(fuera), de=len(puntuados),
-             ids=[f.get("id") for f in fuera])
-    return fuera
-
-
-# ── LAS POLITICAS QUE EL MENSAJE PISA ───────────────────────────────────────
 
 TOPE_TEMAS = 3
 

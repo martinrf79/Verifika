@@ -3,12 +3,34 @@
 **Decidida con Martín el 11-sep-2026, después del apagón.** El diseño no se
 cambia sin preguntarle; se lee esta ficha entera antes de tocar nada.
 
-**ESTADO — lo único que se escribió hasta ahora, 11-sep.** La base del mapa 1:
-el catálogo se recorre UNA vez y hay UN caché, `filtros_catalogo.recorrida`, y
-de esa pasada salen el registro de campos y el inventario que antes eran dos
-recorridas y dos cachés en dos módulos. El tipo del campo ya es de tres
-valores: `numero`, `texto` y `si_no`. Todo lo demás de esta ficha sigue sin
-escribir. El detalle del cambio está en `git log`, no acá.
+**ESTADO al 11-sep, tarde. EL MOTOR ESTÁ ESCRITO; EL MAPA NO.**
+
+Hecho: la recorrida única del catálogo —`filtros_catalogo.recorrida`— con el
+tipo de campo en tres valores, y **el motor**, `app/core/motor.py`: una sola
+puerta, consulta estructurada, el modelo la llama y el código la ejecuta.
+Borradas las cuatro funciones que adivinaban por el cliente.
+
+Falta: los tres mapas, y el orden se invirtió con motivo. **El motor va primero
+porque sin él el mapa no se puede medir.** Medido con la clave gratis, 6 de 6:
+el modelo busca sin mapa ninguno. O sea que el mapa no es lo que lo habilita:
+es lo que le ahorra vueltas. Cuánto ahorra es lo que falta medir.
+
+**TRES DECISIONES QUE ESTA FICHA NO TENÍA Y AHORA SÍ:**
+
+1. **Son tres mapas y UN motor.** No tres motores. El mecanismo de buscar es el
+   mismo en los tres; un segundo motor sería la complejidad volviendo.
+2. **La forma de la búsqueda es consulta estructurada.** Ni palabra clave sola
+   —ya falló, medido— ni embeddings, que quedan afuera por la regla 10.4: un
+   vecino cercano no se puede mapear a un id certificado. El texto libre entra
+   como un campo más, no como el mecanismo.
+3. **Lo que el mapa 1 tiene que sumar y esta ficha no decía:** qué se puede
+   HACER con cada campo —filtrar, ordenar, las dos, ninguna— y en cuántos
+   productos está cargado. Y enumerar por VARIEDAD, no por tipo ni por largo:
+   `dimensiones` tiene 850 valores distintos en 880 productos y listarlos es
+   basura; `pais_fabricacion` tiene 5 y es justo el que hace falta para D8.
+   Maqueta medida del mapa 1 entero con esa regla: 1.349 tokens.
+
+El detalle del cambio está en `git log`, no acá.
 
 ---
 

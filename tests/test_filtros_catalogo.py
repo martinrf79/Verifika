@@ -213,31 +213,30 @@ def _llamada(filtros=None, **ped):
 
 
 
-# ── PEDIR MENOS DE ALGO ES UNA FORMA, NO UNA PALABRA (9-ago-2026) ────────────
+# ── LA EXCLUSION YA NO LA RESUELVE EL CODIGO (11-sep-2026) ──────────────────
+#
+# `resolver_exclusion` y `resolver_inclusion` se borraron con el motor.
+# Traducian la frase del cliente a un campo cortando raices de cuatro letras, y
+# eso es razonar: "que no sea de marca china" resolvia a
+# `origen no_contiene marc` -la raiz de "marca", que esta en los 880 origenes-,
+# o sea CERO productos y el bot diciendo que no hay nada.
+#
+# Las frases que median los dos tests que estaban aca -"menos partes chinas
+# posibles" y sus seis formas, mas las cuatro que NO son exclusiones- no se
+# perdieron: la traduccion la escribe ahora el modelo, asi que se miden donde se
+# puede medir al modelo, en `banco_pruebas/barrido_orden.py`. Lo que SI se sigue
+# midiendo offline es la otra mitad, la que el codigo si puede garantizar: que
+# la condicion, una vez escrita, saque exactamente lo que tiene que sacar.
 
-def test_la_minimizacion_se_resuelve_se_diga_como_se_diga():
-    """"menos partes chinas posibles" resolvia y "la MENOR cantidad de partes
-    chinas posible" -como lo dijo Martin en la redaccion coloquial- devolvia
-    None: el unico criterio que el cliente puso se perdia entero, y con el la
-    unica razon por la que escribio. Se cubre la FORMA, no la palabra con que
-    se dijo esta vez."""
-    from app.core import filtros_catalogo as FC
-    for frase in ("menos partes chinas posibles",
-                  "menor cantidad de partes chinas posible",
-                  "la minima cantidad de componentes chinos",
-                  "lo menos chino posible",
-                  "que no sean chinos"):
-        cond = FC.resolver_exclusion(frase, TIENDA)
-        assert cond and cond["operador"] == "no_contiene", frase
-        assert cond["valor"] == "chin", frase
+def test_la_exclusion_por_campo_saca_lo_que_tiene_que_sacar(firestore_doble):
+    prods = _productos()
+    chinos = [p for p in prods
+              if "chin" in FC._norm(FC._valor_crudo(p, "pais_marca"))]
+    assert len(chinos) > 20, "el catalogo tiene que tener marcas chinas"
 
-
-def test_lo_que_NO_es_una_exclusion_sigue_sin_tocarse():
-    """LA CONTRACARA, y es la que hace seguro el cambio de arriba. Aplicar una
-    condicion al reves es peor que no aplicarla: quien PIDE algo chino no puede
-    terminar con un filtro que se lo saca, y una palabra suelta como 'menor' en
-    otro contexto no puede inventar una condicion."""
-    from app.core import filtros_catalogo as FC
-    for frase in ("quiero productos chinos", "mouse chino",
-                  "para mi hijo menor", "el precio menor posible"):
-        assert FC.resolver_exclusion(frase, TIENDA) is None, frase
+    class F:
+        campo, operador, valor = "pais_marca", "no_contiene", "china"
+    r = FC.aplicar(prods, [F()], TIENDA)
+    quedaron = {str(p.get("id")) for p in r["productos"]}
+    assert not (quedaron & {str(p.get("id")) for p in chinos}), \
+        "quedo adentro una marca china"

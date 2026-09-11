@@ -65,6 +65,29 @@ TIENDA = os.getenv("TIENDA_ID", "verifika_prod")
 # `precio_ars`, `min` es el mas barato.
 
 DUROS = [
+    # ── LA NEGACION DEL ADJETIVO, que venia de tests/test_extremo_negado.py ─
+    #
+    # "que no sea caro" es PEDIR BARATO, y el sistema lo daba vuelta: ordenaba
+    # del mas caro al mas barato. Ocho formas de la misma frase, mas las cinco
+    # derechas que no se pueden mover y las tres comparativas que NO son una
+    # negacion aunque traigan "menos". Vivian en un test offline porque las
+    # resolvia el codigo; ahora las resuelve el modelo y se miden aca.
+    ("que no sean tan caros",                "precio_ars", "min"),
+    ("que no sea caro",                      "precio_ars", "min"),
+    ("que no sea muy caro",                  "precio_ars", "min"),
+    ("nada caro",                            "precio_ars", "min"),
+    ("sin que sea caro",                     "precio_ars", "min"),
+    ("que no salga tan caro",                "precio_ars", "min"),
+    ("que no sea tan cara",                  "precio_ars", "min"),
+    ("que no sea barato",                    "precio_ars", "max"),
+    ("que sea barato",                       "precio_ars", "min"),
+    ("el mas caro de toda la tienda",        "precio_ars", "max"),
+    ("la mas economica",                     "precio_ars", "min"),
+    ("el de menor peso",                     "peso_gramos", "min"),
+    ("el mas liviano",                       "peso_gramos", "min"),
+    ("el que menos pesa",                    "peso_gramos", "min"),
+    ("el que mas pesa",                      "peso_gramos", "max"),
+    ("el que mas garantia tenga",            "garantia_meses", "max"),
     # ── PRECIO, el que mas se pide ────────────────────────────────────────
     ("el mas barato",                        "precio_ars", "min"),
     ("mas barato",                           "precio_ars", "min"),
@@ -162,107 +185,86 @@ def categorias_vivas() -> list:
     return sorted({str(c) for c in cats if c})
 
 
-def corrida() -> dict:
-    from banco_pruebas import sim_firestore
-    sim_firestore.install()
-    from app.core.filtros_catalogo import resolver_orden
 
-    duros = list(DUROS)
-    for cat in categorias_vivas():
-        duros.append((PLANTILLA_RUBRO.format(cat), "precio_ars", "min"))
+def _consulta_del_modelo(frase: str, esquema: dict) -> dict:
+    """Lo que el MODELO escribe como `ordenar_por` ante la frase del cliente.
 
+    UNA llamada por frase, con el motor en la mano y nada mas. No se mide la
+    respuesta al cliente: se mide la CONSULTA, que es lo unico que este barrido
+    siempre midio. Lo que cambio es quien la escribe.
+    """
+    import json
+    from app.core.llm_reintento import _cliente, _modelo
+    cli = _cliente()
+    if cli is None:
+        return {}
+    r = cli.chat.completions.create(
+        model=_modelo(), temperature=0,
+        messages=[{"role": "system",
+                   "content": "Sos el vendedor. Para hablar de un producto "
+                              "buscalo primero con la herramienta."},
+                  {"role": "user", "content": f"Un cliente dice: {frase}"}],
+        tools=[esquema], tool_choice="auto", max_tokens=400)
+    msg = r.choices[0].message if r.choices else None
+    for c in list(getattr(msg, "tool_calls", None) or []):
+        try:
+            args = json.loads(c.function.arguments or "{}")
+        except Exception:  # noqa: BLE001
+            continue
+        for q in args.get("consultas") or []:
+            if q.get("ordenar_por"):
+                return q["ordenar_por"]
+    return {}
+
+
+def correr(tienda_id: str = TIENDA) -> dict:
+    """El barrido entero. GASTA MODELO: una llamada por frase, con la gratis."""
+    from app.core.motor import esquema as esquema_motor
+    esq = esquema_motor(tienda_id)
     filas = []
-    for frase, campo_ok, dir_ok in duros:
-        r = resolver_orden(frase, TIENDA)
-        campo = r["campo"] if r else None
-        direc = r["direccion"] if r else None
-        if campo == campo_ok and direc == dir_ok:
+    for frase, campo_ok, dir_ok in DUROS:
+        o = _consulta_del_modelo(frase, esq)
+        campo, direc = o.get("campo", ""), o.get("direccion", "")
+        if not o:
+            estado = "sin orden"
+        elif campo == campo_ok and direc == dir_ok:
             estado = "ok"
-        elif campo is None:
-            estado = "sin_orden"
-        elif campo != campo_ok:
-            estado = "campo_robado"
-        else:
+        elif campo == campo_ok:
             estado = "invertido"
+        else:
+            estado = "otro campo"
         filas.append({"frase": frase, "espera": f"{campo_ok} {dir_ok}",
-                      "salio": f"{campo} {direc}" if r else "sin orden",
+                      "salio": f"{campo} {direc}".strip() or "sin orden",
                       "estado": estado})
-
-    from app.core.filtros_catalogo import campos_filtrables
-    tipos = campos_filtrables(TIENDA) or {}
-
     blandos = []
     for frase in BLANDOS:
-        r = resolver_orden(frase, TIENDA)
-        blandos.append({
-            "frase": frase,
-            "salio": f"{r['campo']} {r['direccion']}" if r else "sin orden",
-            "tipo": tipos.get(r["campo"], "?") if r else None,
-        })
-
+        o = _consulta_del_modelo(frase, esq)
+        blandos.append({"frase": frase,
+                        "salio": f"{o.get('campo','')} {o.get('direccion','')}".strip()
+                                 or "sin orden"})
     return {"duros": filas, "blandos": blandos}
 
 
 def main() -> int:
+    from banco_pruebas import sim_firestore
+    sim_firestore.install()
     ap = argparse.ArgumentParser()
-    ap.add_argument("--todos", action="store_true", help="tambien los verdes")
-    ap.add_argument("--json", dest="destino", default=None)
+    ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
-
-    datos = corrida()
-    filas = datos["duros"]
-    total = len(filas)
-    por = {}
-    for f in filas:
-        por[f["estado"]] = por.get(f["estado"], 0) + 1
-    ok = por.get("ok", 0)
-
-    print()
-    print("BARRIDO DEL ORDEN — resolver_orden, T5.1")
-    print(f"tienda {TIENDA}")
-    print()
-    print(f"  BLOQUE DURO   {ok} de {total} frases resuelven al campo y la "
-          f"direccion correctos")
-    for estado, titulo in (("invertido", "salen AL REVES, la direccion opuesta"),
-                           ("campo_robado", "ordenan por OTRO campo"),
-                           ("sin_orden", "no resuelven y el pedido sale sin orden")):
-        n = por.get(estado, 0)
-        if not n:
-            continue
-        print()
-        print(f"  {n} {titulo}:")
-        for f in filas:
-            if f["estado"] == estado:
-                print(f"      {f['frase']:46} espera {f['espera']:22} "
-                      f"salio {f['salio']}")
-
-    if args.todos:
-        print()
-        print("  los verdes:")
-        for f in filas:
-            if f["estado"] == "ok":
-                print(f"      {f['frase']:46} {f['salio']}")
-
-    print()
-    print(f"  BLOQUE BLANDO  {len(datos['blandos'])} frases que no puntuan. "
-          f"Cuales merecen un campo nuevo es decision de FUENTE.")
-    sin = [b for b in datos["blandos"] if b["salio"] == "sin orden"]
-    print(f"  {len(sin)} de {len(datos['blandos'])} vuelven sin orden:")
-    print("  las que SI resuelven a un campo de TEXTO no son un rojo por si")
-    print("  solas: ordenar texto es ordenar alfabeticamente, y eso lo ataja")
-    print("  despues `orden_tiene_sentido`, que mira los valores y no el nombre.")
-    for b in datos["blandos"]:
-        if b["salio"] == "sin orden":
-            print(f"      {b['frase']}")
-        else:
-            print(f"      {b['frase']}   -> {b['salio']}  [campo de {b['tipo']}]")
-    print()
-
-    if args.destino:
-        with open(args.destino, "w", encoding="utf-8") as fh:
-            json.dump(datos, fh, ensure_ascii=False, indent=2)
-        print(f"  capturado en {args.destino}")
-        print()
+    r = correr()
+    if args.json:
+        print(json.dumps(r, ensure_ascii=False, indent=2))
+        return 0
+    ok = sum(1 for f in r["duros"] if f["estado"] == "ok")
+    print(f"BARRIDO DEL ORDEN — lo escribe el MODELO, lo ejecuta el motor")
+    print(f"duros: {ok} de {len(r['duros'])}")
+    for f in r["duros"]:
+        if f["estado"] != "ok":
+            print(f"  [{f['estado']:10}] {f['frase']!r} -> {f['salio']} "
+                  f"(esperaba {f['espera']})")
+    print(f"\nblandos: {len(r['blandos'])} frases que la fuente no puede cumplir")
+    for f in r["blandos"]:
+        print(f"  {f['frase']!r} -> {f['salio']}")
     return 0
 
 

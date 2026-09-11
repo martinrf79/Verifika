@@ -86,7 +86,7 @@ def resumir(valor):
 # ─────────────────────────────────────────────────────────── envoltorios
 
 ORDEN = {
-    "fichas_relevantes": (1, "FICHAS del catalogo que el codigo pone delante"),
+    "buscar": (1, "MOTOR: lo que el MODELO busco en el catalogo"),
     "politicas_relevantes": (2, "POLITICAS de la casa, certificadas"),
     "_preguntar": (3, "MODELO, LA llamada, unica"),
     "llenar": (4, "NUMEROS, los huecos de plata los pone el codigo"),
@@ -238,7 +238,8 @@ def main():
     from app.core import respuesta as R
     from app.core.orchestrator import process_message
 
-    envolver_sync(F, "fichas_relevantes")
+    from app.core import motor as MT
+    envolver_sync(MT, "buscar")
     envolver_sync(F, "politicas_relevantes")
     envolver_async(R, "_preguntar")
     envolver_sync(NU, "llenar")

@@ -218,18 +218,12 @@ def _decidir(mensaje: str, tienda_id: str, previo: dict | None = None) -> list:
         # condicion sale sin contestar por culpa del doble.
         for f in (declarado.get("filtros") or []):
             args.setdefault("filtros", []).append(dict(f))
-        if declarado.get("restricciones"):
-            from app.core import filtros_catalogo as FC
-            filtros = []
-            for r in declarado["restricciones"]:
-                try:
-                    cond = FC.resolver_exclusion(str(r), tienda_id)
-                except Exception:  # noqa: BLE001
-                    cond = None
-                if cond and cond not in filtros:
-                    filtros.append(cond)
-            if filtros:
-                args["filtros"] = filtros
+        # LA RESTRICCION YA NO LA TRADUCE EL CODIGO (11-sep-2026). Este doble
+        # la pasaba por `resolver_exclusion`, que se borro con el motor: cortaba
+        # raices de cuatro letras y "que no sea de marca china" resolvia a la
+        # raiz de "marca", o sea cero productos. Traducir la frase a un campo es
+        # razonar y lo hace el modelo; un doble sintetico no puede fingirlo, y
+        # fingirlo mal es peor que no hacerlo.
         pedidos.append({"nombre": "buscar_productos", "args": args})
     # TODOS los destinos, no el primero. El cliente que nombra tres espera tres
     # cotizaciones, y un modelo real pide las tres en la misma tanda. Cotizar

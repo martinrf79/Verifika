@@ -241,38 +241,24 @@ def medir() -> dict:
             "recall": round(100.0 * aciertos / max(1, con), 1),
             "falsos_positivos": falsos}
 
-    # RESTRICCIONES: dos numeros distintos y hay que no mezclarlos. Uno es si el
-    # codigo sabe TRADUCIR la restriccion a un filtro real de la ficha; el otro
-    # es si sabe ENCONTRARLA en el mensaje crudo, que es lo que haria falta sin
-    # modelo. La segunda pieza no existe.
+    # RESTRICCIONES: LA PIEZA SE BORRO Y EL NUMERO SE VA CON ELLA.
     #
-    # SON TRES PUERTAS Y NO UNA (FICHA 06, 23-ago-2026). Este banco preguntaba
-    # solo por `resolver_exclusion` y por eso daba de menos: una condicion
-    # positiva -"marcas de estados unidos"- y un extremo -"el mas barato"- los
-    # traduce el codigo igual de bien, por `resolver_inclusion` y por
-    # `resolver_orden`, y contaban como no traducidos. Es la misma falla que el
-    # reconciliador ya pago dos veces: **un instrumento que no conoce el
-    # argumento nuevo no mide de menos por prudencia, mide MAL.** Se le pregunta
-    # al mecanismo entero, que es el que corre en el turno.
-    from app.core.filtros_catalogo import (resolver_exclusion,
-                                           resolver_inclusion, resolver_orden)
-    total_r = traducidas = 0
-    for guion, i, msg, dec in casos:
-        for restr in (dec.get("restricciones") or []):
-            total_r += 1
-            try:
-                if (resolver_orden(str(restr), TIENDA)
-                        or resolver_exclusion(str(restr), TIENDA)
-                        or resolver_inclusion(str(restr), TIENDA)):
-                    traducidas += 1
-            except Exception:  # noqa: BLE001
-                pass
+    # Hasta el 11-sep este banco preguntaba si el CODIGO sabia traducir la
+    # restriccion del cliente a un filtro, por `resolver_exclusion`,
+    # `resolver_inclusion` y `resolver_orden`. Las tres se borraron con el
+    # motor, y no por prolijidad: traducian cortando raices de cuatro letras y
+    # "que no sea de marca china" daba `origen no_contiene marc` -la raiz de
+    # "marca", que esta en los 880 origenes-, o sea cero productos.
+    #
+    # Sin modelo NO SE PUEDE traducir una restriccion, y ese es el resultado
+    # honesto. Informar un recall de una pieza inexistente seria peor que no
+    # informar nada, que es la falla que este mismo archivo ya nombra arriba.
     r["campos"]["restricciones"] = {
-        "pieza": PIEZAS["restricciones"], "turnos": total_r,
-        "reconstruidos": traducidas,
-        "recall": round(100.0 * traducidas / max(1, total_r), 1),
-        "nota": "mide TRADUCIR la restriccion ya aislada a un filtro. "
-                "ENCONTRARLA en el mensaje crudo no tiene pieza."}
+        "pieza": PIEZAS["restricciones"], "turnos": sum(
+            len(dec.get("restricciones") or []) for _, _, _, dec in casos),
+        "reconstruidos": 0, "recall": 0.0,
+        "nota": "SIN PIEZA desde el 11-sep: traducir una restriccion a un "
+                "campo es razonar, y sin modelo no hay quien lo haga."}
 
     # Los que no tienen pieza. Se cuentan igual, para que se vea el tamaño del
     # hueco y no quede como una nota al pie.

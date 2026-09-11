@@ -61,13 +61,16 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
-**11-sep, LO ABIERTO: LOS TRES MAPAS.** El diseño esta acordado con Martin y
-escrito entero en `arquitectura/FICHA_50_los_tres_mapas.md`. En una linea: el
-modelo no recibe el catalogo, recibe el VOCABULARIO de la fuente —tres mapas,
-producto, envio y politicas, que se GENERAN de la fuente y crecen con la
-variedad y no con la cantidad— mas UNA herramienta de busqueda que el modelo
-llama el. Medido: 823 tokens para 880 productos; estimado 1.500 a 2.500 para
-siete mil. **Empezado por abajo: el catalogo se recorre UNA vez y hay UN cache —`filtros_catalogo.recorrida`—, y de ahi salen el registro de campos y el inventario. El campo ya se tipa `numero`, `texto` o `si_no`. Falta el mapa en si: los valores frecuentes, el renglon de lo que NO existe, los mapas de envio y politicas, y la herramienta de busqueda. No se sigue sin leer la ficha.**
+**11-sep, LO ABIERTO: EL MAPA. EL MOTOR YA ESTA.** El diseño entero esta en
+`arquitectura/FICHA_50_los_tres_mapas.md`. **El motor se escribio y anda:**
+`app/core/motor.py`, una sola puerta, consulta estructurada, y el modelo la
+llama el. Medido con la gratis, 6 de 6 mensajes: el modelo busca sin mapa
+ninguno, traduce "un rectangulo con teclas" a teclados y "acorde a la crisis" a
+un orden por precio, y ante "silencioso" contesta que no lo tiene cargado.
+**Falta el mapa**, y ahora se puede medir si hace falta y cuanto: la maqueta del
+mapa 1 pesa 1.349 tokens con la regla de enumerar por VARIEDAD y no por tipo.
+Lo que el mapa tiene que sumar y la ficha no dice: que se puede HACER con cada
+campo -filtrar, ordenar, ninguna- y en cuantos productos esta cargado.
 
 **11-sep, EL APAGON.** Se apago la arquitectura de moldes, mesa y dos llamadas
 al modelo. El turno es ahora `app/core/respuesta.py`, cinco etapas: una sola llamada, con los
