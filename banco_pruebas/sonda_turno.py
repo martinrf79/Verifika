@@ -241,6 +241,7 @@ def main():
     from app.core import motor as MT
     envolver_sync(MT, "buscar")
     envolver_sync(F, "politicas_relevantes")
+    envolver_sync(F, "texto_envio")
     envolver_async(R, "_preguntar")
     envolver_sync(NU, "llenar")
 

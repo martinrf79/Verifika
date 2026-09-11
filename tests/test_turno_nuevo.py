@@ -72,54 +72,193 @@ _DOS = _UNA + [{"id": "MOU2", "nombre": "Mouse Dos", "precio_ars": 12000}]
 
 
 def test_el_precio_sale_de_la_ficha_y_no_del_modelo():
-    texto, inf = N.llenar("Sale {{precio}}.", _UNA, "cuanto sale?", "t")
+    texto, inf = N.llenar("Sale {{precio}}.", _UNA, "t")
     assert "$8.500" in texto
     assert inf["llenos"] == ["precio"] and not inf["sin_dato"]
 
 
 def test_con_dos_fichas_y_sin_referencia_no_se_elige(firestore_doble):
-    texto, inf = N.llenar("Sale {{precio}}.", _DOS, "cuanto sale?", "t")
+    texto, inf = N.llenar("Sale {{precio}}.", _DOS, "t")
     assert N.SIN_DATO in texto
     assert inf["sin_dato"] == ["precio"]
 
 
 def test_con_dos_fichas_la_referencia_desempata():
-    texto, _ = N.llenar("Sale {{precio:MOU2}}.", _DOS, "x", "t")
+    texto, _ = N.llenar("Sale {{precio:MOU2}}.", _DOS, "t")
     assert "$12.000" in texto
 
 
 def test_el_total_solo_suma_lo_que_ya_se_puso():
-    texto, inf = N.llenar("{{precio}} y el total {{total}}.", _UNA, "x", "t")
+    texto, inf = N.llenar("{{precio}} y el total {{total}}.", _UNA, "t")
     assert "$8.500" in texto and "$8.500" in texto.split("total")[1]
     # Sin ningun monto puesto antes, el total no se deriva de la nada.
-    texto2, inf2 = N.llenar("El total es {{total}}.", _UNA, "x", "t")
+    texto2, inf2 = N.llenar("El total es {{total}}.", _UNA, "t")
     assert N.SIN_DATO in texto2 and inf2["sin_dato"] == ["total"]
 
 
+# ── EL ENVIO, QUE ESTABA DESENCHUFADO ──────────────────────────────────────
+#
+# El motor de envio estaba entero y no lo alcanzaba nadie: la unica herramienta
+# del modelo mira el catalogo, y el unico puente -el hueco- el molde ni lo
+# nombraba. Estos casos son esa falla, uno por agujero.
+
+def _envio(mensaje: str, previa: str = ""):
+    from app.core import fuente as F
+    from app.core.contexto_turno import set_current_tienda
+    set_current_tienda(TIENDA)
+    return F.texto_envio(mensaje, previa, TIENDA)
+
+
 def test_el_envio_sale_de_la_tabla_con_el_destino_del_mensaje(firestore_doble):
-    texto, inf = N.llenar("El envio sale {{envio}}.", _UNA,
-                          "cuanto sale el envio a cordoba capital?", "t")
-    assert "envio" in inf["llenos"], f"no cotizo: {inf}"
+    e = _envio("cuanto sale el envio a cordoba capital?")
+    assert e["monto"] and e["zona"], f"no cotizo: {e}"
+    texto, inf = N.llenar("El envio sale {{envio}}.", _UNA, "t",
+                          envio_monto=e["monto"])
+    assert "envio" in inf["llenos"], f"no se escribio: {inf}"
     assert "$" in texto
 
 
-def test_sin_destino_el_envio_no_se_inventa(firestore_doble):
-    texto, inf = N.llenar("El envio sale {{envio}}.", _UNA, "hola", "t")
+def test_el_destino_de_UN_TURNO_ANTERIOR_tambien_cotiza(firestore_doble):
+    """El agujero medido: el destino se buscaba SOLO en el mensaje de este
+    turno, asi que un cliente que dio el codigo postal dos turnos antes no
+    cotizaba nunca. La charla tambien es fuente del destino."""
+    e = _envio("y cuanto me sale el envio?", previa="cordoba")
+    assert e["monto"], "con la localidad de la charla tiene que cotizar"
+    assert e["destino"], f"no resolvio el destino: {e}"
+
+
+def test_el_mensaje_de_HOY_le_gana_al_destino_viejo(firestore_doble):
+    """Un cliente que corrige la direccion corrige la tarifa."""
+    viejo = _envio("envio a cordoba capital")
+    nuevo = _envio("mandamelo a CP 1425", previa="cordoba")
+    assert nuevo["destino"] != viejo["destino"], f"quedo pegado: {nuevo}"
+
+
+def test_sin_destino_no_se_cotiza_y_se_pide_el_dato(firestore_doble):
+    e = _envio("hola, hacen envios?")
+    assert e["monto"] is None, "sin destino no puede haber tarifa"
+    assert "PROVINCIA" in e["texto"] and "POSTAL" in e["texto"]
+    texto, inf = N.llenar("El envio sale {{envio}}.", _UNA, "t",
+                          envio_monto=e["monto"])
     assert N.SIN_DATO in texto and inf["sin_dato"] == ["envio"]
 
 
+def test_un_envio_roto_no_deja_al_cliente_sin_turno(firestore_doble,
+                                                    monkeypatch):
+    """La etapa uno no tiene red arriba: si el bloque de envio lanza, el turno
+    entero se cae y el cliente no recibe nada."""
+    from app.core import fuente as F
+    monkeypatch.setattr(F, "_texto_envio",
+                        lambda *a: (_ for _ in ()).throw(RuntimeError("boom")))
+    e = F.texto_envio("envio a cordoba", "", TIENDA)
+    assert e == F.SIN_ENVIO
+
+
+def test_el_mapa_de_envio_dice_las_zonas_y_el_umbral(firestore_doble):
+    """El mapa 2 de la FICHA 50: no dice cuanto sale ESTE envio, dice que se
+    puede cotizar y con que dato. Es lo que evita que el bot prometa."""
+    e = _envio("hola")
+    assert "CABA" in e["texto"] and "GRATIS" in e["texto"]
+
+
+def test_mostrar_cinco_productos_caros_NO_regala_el_envio(firestore_doble):
+    """El subtotal del umbral sumaba TODAS las fichas que devolvio la busqueda,
+    no el pedido: mostrar cinco notebooks pasaba los 250 mil y el envio salia
+    gratis sin que el cliente comprara nada."""
+    caras = [{"id": f"X{i}", "nombre": f"Notebook {i}", "precio_ars": 900000}
+             for i in range(5)]
+    e = _envio("envio a cordoba capital")
+    texto, inf = N.llenar("El envio sale {{envio}}.", caras, "t",
+                          envio_monto=e["monto"])
+    assert e["monto"] > 0 and "0" != texto, f"regalo el envio: {texto}"
+    assert inf["montos"] == [e["monto"]]
+
+
+def test_el_bloque_de_envio_apaga_la_politica_del_RANGO(firestore_doble):
+    """Dos caminos para el mismo numero y ganaba el flojo: la politica publica
+    el rango de interior y el bloque trae la tarifa exacta de la provincia."""
+    from app.core import fuente as F
+    pol = F.politicas_relevantes("cuanto sale el envio a cordoba?", TIENDA)
+    assert any(p["tema"] in R.TEMAS_DEL_ENVIO for p in pol), \
+        "el caso dejo de medir lo que dice medir: la politica ya no se certifica"
+    quedan = R._sin_el_tema_del_envio(pol)
+    assert not any(p["tema"] in R.TEMAS_DEL_ENVIO for p in quedan)
+    otros = [p for p in pol if p["tema"] not in R.TEMAS_DEL_ENVIO]
+    assert quedan == otros, "se llevo puesta una politica que no era de tarifa"
+
+
+def test_el_turno_ENTERO_escribe_la_tarifa_del_envio(firestore_doble, monkeypatch):
+    """De punta a punta: el cliente dice el destino, el modelo escribe el hueco
+    y el cliente lee un monto. Es el camino que estaba cortado."""
+    monkeypatch.setattr(
+        R, "_preguntar",
+        lambda *a, **k: asyncio.sleep(
+            0, result=({"tipo": "envio_costo",
+                        "texto": "El envio sale {{envio}} y llega rapido."},
+                       [], 1)))
+    texto = asyncio.run(R.procesar_turno(
+        "sonda_envio", "hacen envio a cordoba capital?", TIENDA,
+        "telegram", "trace_envio"))
+    assert "$" in texto and N.SIN_DATO not in texto, texto
+
+
+def test_el_destino_QUEDA_EN_LA_CHARLA_para_el_turno_siguiente(firestore_doble,
+                                                               monkeypatch):
+    """El cliente dice el destino una vez. Lo que se guarda es el destino que
+    cotizo -la palabra, no un codigo postal pelado-, asi el turno siguiente
+    cotiza sin pedirselo de nuevo."""
+    monkeypatch.setattr(
+        R, "_preguntar",
+        lambda *a, **k: asyncio.sleep(
+            0, result=({"tipo": "envio_costo", "texto": "Sale {{envio}}."},
+                       [], 1)))
+    asyncio.run(R.procesar_turno("sonda_memoria_envio", "envio a cordoba?",
+                                 TIENDA, "telegram", "trace_m1"))
+    from app.storage.firestore_client import get_conversation
+    conv = get_conversation("sonda_memoria_envio", tienda_id=TIENDA) or {}
+    assert conv.get("ultima_localidad") == "cordoba", conv.get("ultima_localidad")
+    e = _envio("y cuanto seria el envio?", conv["ultima_localidad"])
+    assert e["monto"], "el destino guardado tiene que volver a cotizar"
+
+
+def test_el_turno_pide_el_dato_cuando_no_hay_destino(firestore_doble, monkeypatch):
+    """Sin provincia ni codigo postal no hay tarifa, y el bloque se lo dice al
+    modelo ANTES de que prometa un numero."""
+    vistos = {}
+
+    async def _espia(sistema, memoria, history, mensaje, fuente, trace, tienda):
+        vistos["fuente"] = fuente
+        return {"tipo": "envio_costo", "texto": "Decime tu provincia."}, [], 1
+
+    monkeypatch.setattr(R, "_preguntar", _espia)
+    asyncio.run(R.procesar_turno("sonda_envio2", "hacen envios?", TIENDA,
+                                 "telegram", "trace_envio2"))
+    assert "PROVINCIA" in vistos["fuente"] and "CODIGO POSTAL" in vistos["fuente"]
+
+
+def test_ningun_molde_pide_un_hueco_que_el_codigo_NO_LLENA():
+    """La falla exacta del 11-sep: el molde de envio decia `{{costo_envio}}`,
+    que `numeros` no llena, asi que el hueco quedaba crudo y el cliente leia
+    'ese dato no lo tengo a mano' justo donde iba la tarifa."""
+    import re
+    llena = {"precio", "envio", "total"}
+    malos = [(t, h) for t, (_, molde) in TP.TIPOS.items()
+             for h in re.findall(r"\{\{\s*(\w+)", molde) if h not in llena]
+    assert not malos, f"moldes con huecos que nadie llena: {malos}"
+
+
 def test_una_cifra_que_escribio_el_modelo_queda_marcada():
-    _, inf = N.llenar("Te lo dejo en $3.000.", _UNA, "x", "t")
+    _, inf = N.llenar("Te lo dejo en $3.000.", _UNA, "t")
     assert inf["inventada"], "la plata inventada paso sin marcarse"
 
 
 def test_el_precio_de_la_ficha_no_se_marca_como_inventado():
-    _, inf = N.llenar("Sale $8.500.", _UNA, "x", "t")
+    _, inf = N.llenar("Sale $8.500.", _UNA, "t")
     assert not inf["inventada"]
 
 
 def test_un_hueco_del_molde_que_el_modelo_copio_no_sale_con_llaves():
-    texto, inf = N.llenar("El {{producto}} sale {{precio}}.", _UNA, "x", "t")
+    texto, inf = N.llenar("El {{producto}} sale {{precio}}.", _UNA, "t")
     assert "{{" not in texto
     assert inf.get("crudos")
 
@@ -192,14 +331,14 @@ def test_la_ficha_le_lleva_el_precio_ya_escrito(firestore_doble):
 def test_el_precio_copiado_de_la_ficha_pasa(firestore_doble):
     fichas = _buscar({"texto": "mouse genius dx-110", "cuantos": 1})
     texto = f"Ese mouse sale {fichas[0]['precio']}."
-    _, inf = N.llenar(texto, fichas, "x", "t")
+    _, inf = N.llenar(texto, fichas, "t")
     assert not inf["inventada"]
 
 
 def test_un_precio_parecido_pero_distinto_no_pasa(firestore_doble):
     fichas = _buscar({"texto": "mouse genius dx-110", "cuantos": 1})
     otro = int(fichas[0]["precio_ars"]) + 1
-    _, inf = N.llenar(f"Sale ${otro:,}.".replace(",", "."), fichas, "x", "t")
+    _, inf = N.llenar(f"Sale ${otro:,}.".replace(",", "."), fichas, "t")
     assert inf["inventada"], "un digito cambiado tiene que caer"
 
 
@@ -208,22 +347,23 @@ def test_una_spec_de_la_ficha_no_es_plata_inventada(firestore_doble):
     no sea plata, y uno que la ficha no tiene cae aunque parezca inocente."""
     fichas = [{"id": "X", "nombre": "Monitor", "precio_ars": 165000,
                "precio": "$165.000", "descripcion": "resolucion 1920x1080"}]
-    _, ok = N.llenar("Tiene 1920x1080 de resolucion.", fichas, "x", "t")
+    _, ok = N.llenar("Tiene 1920x1080 de resolucion.", fichas, "t")
     assert not ok["inventada"]
-    _, mal = N.llenar("Tiene 2560x1440 de resolucion.", fichas, "x", "t")
+    _, mal = N.llenar("Tiene 2560x1440 de resolucion.", fichas, "t")
     assert mal["inventada"]
 
 
 def test_un_numero_corto_de_prosa_no_tira_la_respuesta():
-    _, inf = N.llenar("100% original, garantia de 24 meses.", _UNA, "x", "t")
+    _, inf = N.llenar("100% original, garantia de 24 meses.", _UNA, "t")
     assert not inf["inventada"]
 
 
 def test_el_total_suma_el_precio_que_escribio_el_modelo(firestore_doble):
     """El precio ya no lo pone el codigo, asi que el total tiene que sumar lo
     que quedo ESCRITO. Sumar solo lo del codigo daba media cuenta."""
+    e = _envio("envio a cordoba capital")
     texto, inf = N.llenar("Sale $8.500 y el envio {{envio}}. Total {{total}}.",
-                          _UNA, "envio a cordoba capital", "t")
+                          _UNA, "t", envio_monto=e["monto"])
     assert "total" in inf["llenos"]
     montos = [m for m in inf["montos"]]
     assert max(montos) > 8500, f"el total no sumo el precio del modelo: {texto}"
@@ -302,9 +442,9 @@ def test_el_inventario_tambien_es_fuente(firestore_doble):
     inv = F.texto_inventario(TIENDA)
     tope = F.inventario(TIENDA)["precio_max"]
     texto = f"El mas caro sale ${tope:,}.".replace(",", ".")
-    _, sin_inv = N.llenar(texto, [], "x", "t")
+    _, sin_inv = N.llenar(texto, [], "t")
     assert sin_inv["inventada"], "sin inventario no hay respaldo, tiene que caer"
-    _, con_inv = N.llenar(texto, [], "x", "t", inventario=inv)
+    _, con_inv = N.llenar(texto, [], "t", fuente_texto=inv)
     assert not con_inv["inventada"], "con el inventario delante NO es invento"
 
 

@@ -6,7 +6,7 @@ decide este modulo, no el prompt.
 
 Los dos numeros que ninguna ficha tiene van como hueco y los pone el codigo:
 
-    {{envio}}       la tarifa que devuelve la tabla de envios para el destino
+    {{envio}}       la tarifa que ya cotizo `fuente.texto_envio` para el destino
     {{total}}       la suma, que el modelo no puede hacer de cabeza
 
 (y siguen andando `{{precio}}` y `{{precio:ID}}`, por si el modelo no tiene el
@@ -80,31 +80,30 @@ def _precio_de(fichas: list, referencia: str):
     return con_precio[0] if len(con_precio) == 1 else None
 
 
-def _envio(mensaje: str, fichas: list, trace_id: str):
-    """La tarifa del destino que el cliente nombro. None si no hay destino o la
-    tienda no tiene tarifa cargada para esa zona."""
-    from app.core.calculadora import cotizar_envio
-    from app.core.geo_cp import resolver as geo
-    prov, cp = geo(mensaje or "")
-    destino = str(cp or "") or str(prov or "").replace("_", " ")
-    if not destino:
-        return None
-    subtotal = sum(int(f.get("precio_ars") or 0) for f in (fichas or []))
-    try:
-        r = cotizar_envio(localidad=destino, subtotal=subtotal or None) or {}
-    except Exception as e:  # noqa: BLE001 — sin tarifa no se inventa una
-        log.warning("numeros_envio_error", trace_id=trace_id,
-                    error=f"{type(e).__name__}: {str(e)[:120]}")
-        return None
-    if not r.get("ok"):
-        return None
-    return int(r.get("monto") or 0)
+# EL ENVIO YA NO SE COTIZA ACA, y es el arreglo del 11-sep. Lo resuelve
+# `fuente.texto_envio` ANTES de hablarle al modelo, con el destino buscado en
+# el mensaje Y en la charla, y el monto llega hecho. Lo que habia era una
+# SEGUNDA resolucion de destino que miraba solo el mensaje de este turno —un
+# codigo postal dado dos turnos antes no cotizaba— y que ademas armaba el
+# subtotal del umbral de envio gratis sumando TODAS las fichas que devolvio la
+# busqueda: mostrar cinco notebooks regalaba el envio. Un dato, un lugar.
 
 
-def llenar(texto: str, fichas: list, mensaje: str, trace_id: str = "",
-           politicas: list | None = None, inventario: str = "") -> tuple:
+def llenar(texto: str, fichas: list, trace_id: str = "",
+           fuente_texto: str = "", envio_monto: int | None = None) -> tuple:
     """(texto con los numeros puestos, informe). El informe dice que huecos se
-    llenaron, cuales quedaron sin dato y si hubo plata inventada."""
+    llenaron, cuales quedaron sin dato y si hubo plata inventada.
+
+    `fuente_texto` es TODO lo que se le puso delante al modelo, tal cual viajo:
+    inventario, politicas y envio. La guarda compara contra eso y no contra una
+    lista de piezas, asi una fuente nueva no se olvida de sumarse a la
+    procedencia -paso el 11-sep con el inventario y tiro una respuesta
+    correcta-.
+
+    `envio_monto` es la tarifa que ya cotizo `fuente.texto_envio`. None cuando
+    no hay destino: entonces el hueco dice que no se tiene el dato, nunca un
+    numero.
+    """
     informe = {"llenos": [], "sin_dato": [], "montos": [], "inventada": []}
     usados: list = []
 
@@ -121,7 +120,7 @@ def llenar(texto: str, fichas: list, mensaje: str, trace_id: str = "",
             informe["montos"].append(monto)
             return _money(monto)
         if clase == "envio":
-            monto = _envio(mensaje, fichas, trace_id)
+            monto = envio_monto
             if monto is None:
                 informe["sin_dato"].append("envio")
                 return SIN_DATO
@@ -167,9 +166,7 @@ def llenar(texto: str, fichas: list, mensaje: str, trace_id: str = "",
     permitidos = {str(m) for m in informe["montos"]}
     permitidos |= _digitos(_json.dumps(fichas or [], ensure_ascii=False,
                                        default=str))
-    permitidos |= _digitos(_json.dumps(politicas or [], ensure_ascii=False,
-                                       default=str))
-    permitidos |= _digitos(inventario or "")
+    permitidos |= _digitos(fuente_texto or "")
     for bruto in _CIFRA.findall(salida):
         limpio = re.sub(r"\D", "", bruto)
         if limpio and limpio not in permitidos:

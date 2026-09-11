@@ -7,13 +7,16 @@ herramientas, resolver, mesa, redactor, obligaciones. Todo eso esta apagado en
 EL FLUJO, entero:
 
   1. FUENTE   el codigo pone el inventario -dos renglones sobre el catalogo
-              entero- y las politicas de la casa que el mensaje pisa.
+              entero-, las politicas de la casa que el mensaje pisa, y el
+              ENVIO ya cotizado: el destino sale del mensaje o de la charla y
+              la tarifa de la tabla, antes de que el modelo hable.
   2. MODELO   ve la voz de la casa, la memoria, los VEINTE TIPOS y el motor de
               busqueda. BUSCA EL: escribe la consulta, el codigo la ejecuta, y
               con lo que volvio contesta. El precio lo copia de la ficha que
               trajo; el envio y la suma van como hueco, porque no los sabe.
-  3. NUMEROS  el codigo pone el envio y el total, y tira abajo la respuesta si
-              quedo una sola cifra que la fuente no tiene.
+  3. NUMEROS  el codigo escribe el envio que ya cotizo y el total, y tira
+              abajo la respuesta si quedo una sola cifra que la fuente no
+              tiene. La procedencia se mide contra TODO lo que viajo.
   4. CIERRE   si el cliente decidio comprar, se toma el pedido y se manda el
               link de pago. `leads` y `cierre` no se tocaron.
   5. MEMORIA  se guarda la charla, igual que siempre.
@@ -77,8 +80,9 @@ Cualquier cifra de plata que no salga de una ficha o de esos dos huecos tira la
 respuesta entera abajo y el cliente se queda sin contestar. Si no tenes el
 precio, decilo; nunca lo aproximes.
 
-Los OTROS huecos del molde -{{producto}}, {{stock}}, {{opciones}} y los demas-
-NO se copian: ahi va la palabra real, sacada de la ficha que tenes abajo.
+Lo que en el molde va entre signos de menor y mayor -<producto>, <stock>,
+<opciones>- NO se copia: ahi va la palabra real, sacada de la ficha que tenes
+abajo. Las llaves dobles son las tres unicas que el codigo llena.
 
 PARA HABLAR DE UN PRODUCTO, PRIMERO BUSCA. Tenes la herramienta `buscar` y es
 el UNICO lugar del que salen las fichas y los precios. No contestes de memoria
@@ -146,7 +150,8 @@ def _memoria_texto(conv: dict) -> str:
     return "\n".join(partes)
 
 
-def _bloque_fuente(politicas: list, inventario: str = "") -> str:
+def _bloque_fuente(politicas: list, inventario: str = "",
+                   envio: str = "") -> str:
     """Lo que el codigo pone delante del modelo SIN que lo pida.
 
     YA NO HAY FICHAS ACA, y es el cambio de la FICHA 50: las trae el modelo con
@@ -161,14 +166,39 @@ def _bloque_fuente(politicas: list, inventario: str = "") -> str:
 
     LAS POLITICAS siguen certificadas por el codigo. Son el mapa 3 y no cambian
     en esta vuelta.
+
+    EL ENVIO ES EL MAPA 2 y entra igual que el inventario: resuelto por el
+    codigo, sin que el modelo lo pida. No es una herramienta mas porque no hay
+    nada que razonar —el destino sale del codigo postal— y porque cada vuelta
+    al modelo vuelve a pagar el prompt entero.
     """
     partes = []
     if inventario:
         partes.append(inventario)
+    if envio:
+        partes.append(envio)
     if politicas:
         partes.append("POLITICAS DE LA CASA que tocan este mensaje:\n"
                       + "\n".join(f"- {p['tema']}: {p['texto']}" for p in politicas))
     return "\n\n".join(partes)
+
+
+# Los dos temas que el bloque de envio REEMPLAZA. No son todos los de envio: el
+# plazo, el express, el exterior y el embalaje siguen siendo politica, porque el
+# bloque no los contesta.
+TEMAS_DEL_ENVIO = ("costo_envio", "envios")
+
+
+def _sin_el_tema_del_envio(politicas: list) -> list:
+    """UN SOLO CAMINO PARA EL NUMERO DEL ENVIO.
+
+    La politica `costo_envio` publica el RANGO del interior -de 5.000 a 12.000-
+    y el bloque de envio trae la tarifa EXACTA de esa provincia, sacada de la
+    misma fuente. Con las dos delante el modelo escribia el rango, que es el
+    numero flojo, teniendo el exacto al lado. Por cada cosa que se prende se
+    apaga una.
+    """
+    return [p for p in (politicas or []) if p["tema"] not in TEMAS_DEL_ENVIO]
 
 
 def _parsear(crudo: str) -> dict:
@@ -399,6 +429,11 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     t = time.time()
     politicas = F.politicas_relevantes(raw_message, tienda_id)
     inventario = F.texto_inventario(tienda_id)
+    envio = F.texto_envio(raw_message, conv.get("ultima_localidad") or "",
+                          tienda_id)
+    if envio.get("texto"):
+        politicas = _sin_el_tema_del_envio(politicas)
+    bloque = _bloque_fuente(politicas, inventario, envio.get("texto") or "")
     etapas["fuente"] = int((time.time() - t) * 1000)
 
     # ── 2. MODELO, QUE AHORA BUSCA EL ──────────────────────────────────
@@ -409,7 +444,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     t = time.time()
     salida, fichas, busquedas = await _preguntar(
         _prompt_sistema(negocio), _memoria_texto(conv), history, raw_message,
-        _bloque_fuente(politicas, inventario), trace_id, tienda_id)
+        bloque, trace_id, tienda_id)
     etapas["modelo"] = int((time.time() - t) * 1000)
     if not busquedas:
         # EL TERCER CANDADO DE LA FICHA 50: se mide cada turno que contesto sin
@@ -435,8 +470,9 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     else:
         # ── 3. NUMEROS ──────────────────────────────────────────────────
         t = time.time()
-        texto, informe = N.llenar(texto, fichas, raw_message, trace_id,
-                                  politicas=politicas, inventario=inventario)
+        texto, informe = N.llenar(texto, fichas, trace_id,
+                                  fuente_texto=bloque,
+                                  envio_monto=envio.get("monto"))
         etapas["numeros"] = int((time.time() - t) * 1000)
         if informe.get("inventada"):
             # LA RESPUESTA CON PLATA INVENTADA NO SALE. No hay forma honesta de
@@ -471,14 +507,12 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     for f in fichas:
         if str(f.get("id")) not in ids:
             vistos.append({"id": f.get("id"), "nombre": f.get("nombre")})
-    localidad = conv.get("ultima_localidad") or ""
-    try:
-        from app.core.geo_cp import resolver as geo
-        prov, cp = geo(raw_message)
-        if prov or cp:
-            localidad = str(cp or prov).replace("_", " ")
-    except Exception as e:  # noqa: BLE001
-        log.warning("respuesta_geo_error", trace_id=trace_id, error=str(e)[:120])
+    # EL DESTINO DE LA CHARLA LO ESCRIBE QUIEN LO RESOLVIO. Habia una SEGUNDA
+    # resolucion aca -otra llamada a `geo`, con otro criterio que el del motor
+    # de envio- y guardaba un codigo postal pelado. Ahora se guarda el destino
+    # que cotizo de verdad, ya nombrado con la palabra: el turno siguiente lo
+    # vuelve a clasificar sin depender de que el cliente lo repita.
+    localidad = envio.get("destino") or conv.get("ultima_localidad") or ""
     try:
         save_conversation(user_id, history, resumen, tienda_id=tienda_id,
                           estado_conversacion="en_curso",
@@ -494,6 +528,9 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              latency_ms=int((time.time() - t0) * 1000), etapas=etapas,
              tipo=salida.get("tipo") or "", largo=len(texto or ""),
              fichas=len(fichas), politicas=len(politicas),
+             envio_destino=envio.get("destino") or "",
+             envio_zona=envio.get("zona") or "",
+             envio_monto=envio.get("monto"),
              huecos_llenos=len((informe or {}).get("llenos") or []),
              huecos_sin_dato=len((informe or {}).get("sin_dato") or []),
              plata_inventada=len((informe or {}).get("inventada") or []))

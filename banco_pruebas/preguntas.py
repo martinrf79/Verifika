@@ -32,7 +32,14 @@ Se comprueban con codigo, sin saber cual era la frase correcta.
 import re
 
 # El hueco del molde, igual que en la FAQ curada.
-_HUECO_RE = re.compile(r"\{\{(\w+)\}\}")
+# DOS NOTACIONES, Y LA DIFERENCIA IMPORTA (11-sep-2026). Las llaves dobles son
+# los TRES huecos que llena el codigo -precio, envio y total-; los signos de
+# menor y mayor son los que escribe el modelo con la palabra de la ficha.
+# Antes todo iba con llaves, y el molde de envio decia `{{costo_envio}}`, que
+# `numeros` no llena: el hueco quedaba crudo y el cliente leia "ese dato no lo
+# tengo a mano" justo donde iba la tarifa. Las dos son huecos de dato para este
+# candado; lo que cambia es QUIEN los llena.
+_HUECO_RE = re.compile(r"\{\{(\w+)\}\}|<(\w+)>")
 
 # Cada entrada: (clase, de_donde_sale, por_que_es_dificil, [preguntas], [espera])
 CLASES = [
@@ -235,8 +242,10 @@ def respuesta_generica(clase: str) -> str:
 
 
 def huecos(clase: str) -> tuple:
-    """Los `{{...}}` que el codigo tiene que llenar para servir esa casilla."""
-    return tuple(_HUECO_RE.findall(RESPUESTA_GENERICA[clase]))
+    """Los huecos de esa casilla: los `{{...}}` que llena el codigo y los
+    `<...>` que el modelo escribe con la palabra de la ficha."""
+    return tuple(a or b for a, b in
+                 _HUECO_RE.findall(RESPUESTA_GENERICA[clase]))
 
 
 def resumen() -> str:

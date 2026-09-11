@@ -3,14 +3,28 @@
 **Decidida con Martín el 11-sep-2026, después del apagón.** El diseño no se
 cambia sin preguntarle; se lee esta ficha entera antes de tocar nada.
 
-**ESTADO al 11-sep, tarde. EL MOTOR ESTÁ ESCRITO; EL MAPA NO.**
+**ESTADO al 11-sep, noche. EL MOTOR ESTÁ; EL MAPA 2 TAMBIÉN; FALTAN EL 1 Y EL 3.**
+
+El mapa 2 —ENVÍO— se hizo primero y fuera de orden, con motivo: no era que
+faltara el mapa, era que el motor de envío estaba ENTERO y desenchufado. Vive en
+`fuente.texto_envio`, se genera de la fuente igual que los otros —la FAQ y la
+tabla de provincias— y viaja siempre, como el inventario. Con destino trae la
+tarifa exacta ya cotizada y el plazo; sin destino, las zonas, el umbral de envío
+gratis y qué dato falta para cotizar. Cuesta 70 tokens y apaga la política del
+rango, que pesaba 251 caracteres: en un mensaje de envío no cuesta nada, y el
+número que sale pasa a ser el exacto en vez del rango.
+
+El renglón de "lo que NO tenemos" ya está adentro de ese mapa: sin provincia ni
+código postal el bloque dice que no hay tarifa y que hay que pedir el dato, en
+vez de dejar que el modelo prometa un monto.
 
 Hecho: la recorrida única del catálogo —`filtros_catalogo.recorrida`— con el
 tipo de campo en tres valores, y **el motor**, `app/core/motor.py`: una sola
 puerta, consulta estructurada, el modelo la llama y el código la ejecuta.
 Borradas las cuatro funciones que adivinaban por el cliente.
 
-Falta: los tres mapas, y el orden se invirtió con motivo. **El motor va primero
+Faltan el mapa 1 —PRODUCTO— y el 3 —POLÍTICAS—, y el orden se invirtió con
+motivo. **El motor va primero
 porque sin él el mapa no se puede medir.** Medido con la clave gratis, 6 de 6:
 el modelo busca sin mapa ninguno. O sea que el mapa no es lo que lo habilita:
 es lo que le ahorra vueltas. Cuánto ahorra es lo que falta medir.

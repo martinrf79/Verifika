@@ -44,9 +44,13 @@ def test_toda_respuesta_tiene_hueco_y_ninguno_queda_a_medias():
         if not P.huecos(clase):
             sin_hueco.append(clase)
     assert not sin_hueco, f"molde sin ningun hueco de dato: {sin_hueco}"
-    # `{{` y `}}` tienen que cerrar: un hueco a medias se sirve roto.
+    # Los dos delimitadores tienen que cerrar: un hueco a medias se sirve roto.
+    # Son DOS desde el 11-sep: llaves dobles para los tres que llena el codigo,
+    # menor y mayor para los que escribe el modelo con la palabra de la ficha.
     for clase, texto in P.RESPUESTA_GENERICA.items():
-        assert texto.count("{{") == texto.count("}}") == len(P.huecos(clase)), (
+        assert texto.count("{{") == texto.count("}}"), f"llave abierta en {clase}"
+        assert texto.count("<") == texto.count(">"), f"signo abierto en {clase}"
+        assert texto.count("{{") + texto.count("<") == len(P.huecos(clase)), (
             f"hueco mal cerrado en {clase}")
 
 

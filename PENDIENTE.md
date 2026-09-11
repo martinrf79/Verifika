@@ -24,8 +24,11 @@ corto.
 
 ```
 python3 -m pytest -q          la batería offline
-python3 banco_pruebas/oro.py  los casos de oro por capa, offline y gratis
 ```
+
+`banco_pruebas/oro.py` NO corre desde el apagón: importa `app.core.herramientas`,
+que se apagó el 11-sep. Reescribirlo sobre el camino nuevo es otra ficha; hasta
+entonces el único número es el de la batería.
 
 Los dos números los dicen los comandos, así que acá no se escriben: un conteo
 copiado a un `.md` envejece el mismo día. El mapa del cableado anota el piso del
@@ -84,12 +87,29 @@ borran todavia porque lo que describen -un agujero de la FUENTE- puede volver
 a aparecer en el camino nuevo.**
 
 
+**11-sep, tarde: EL ENVIO QUEDO ENCHUFADO, y era el mapa 2.** El motor de
+envio estaba entero y no lo alcanzaba nadie: la unica herramienta del modelo
+mira el catalogo. Ahora el codigo cotiza ANTES de hablarle -`fuente.texto_envio`-
+y el bloque viaja como el inventario: con destino, la tarifa exacta ya cotizada
+y el plazo; sin destino, las zonas, el umbral y que dato falta. Cierra cuatro
+agujeros: el destino ahora sale del mensaje O de la charla y se lo pregunta al
+motor de envio en vez de a `geo`, asi que "CP 5121" y "a rosario" tambien
+cotizan; el molde del tipo `envio_costo` pedia `{{costo_envio}}`, que nadie
+llena, y el cliente leia "ese dato no lo tengo a mano" donde iba la tarifa; la
+politica del RANGO ya no viaja al lado de la tarifa exacta; y el subtotal del
+envio gratis dejo de sumar TODAS las fichas que devolvio la busqueda -mostrar
+cinco notebooks regalaba el envio-. Cuesta 70 tokens y apaga una politica de
+251 caracteres. Vara: 8 casos nuevos en `tests/test_turno_nuevo.py`.
+
 **LOS NOMBRES Y EL DETALLE DE CADA FALLA NO SE ESCRIBEN ACA.** Viven en
 `arquitectura/MAPA_CABLEADO.md`, que es el unico lugar donde se nombra el
 cableado: estaciones `T`, juntas `J`, puntos de modelo `L` y desconexiones `D`.
 Aca va una linea por item, con su numero. Si un item y el mapa se contradicen,
 gana el codigo y los dos estan mal.
 
+- **ABIERTO** · **EL UMBRAL DE ENVIO GRATIS NO SE APLICA EN EL TURNO.** Depende del PEDIDO y el pedido no existe como estado en el camino vivo. Viaja como dato para que el modelo lo diga y lo aplica la calculadora cuando el cierre arma la orden. Aplicarlo antes exige el carrito, que es el item de abajo.
+- **ABIERTO** · **TRES CAMPOS DE LA MEMORIA SE LEEN Y NO LOS ESCRIBE NADIE:** `ultimo_presupuesto`, `carrito_vigente` y `descartados`. El unico que guarda charla es `respuesta.py` y no los pasa. Lo que cuesta: con `ultimo_presupuesto` vacio, `leads` corta siempre por "no cerrar sin precio mostrado", asi que una intencion fuerte de compra crea un lead tibio EN SILENCIO y el link de pago no sale. **Es el cierre, y es lo proximo.**
+- **ABIERTO** · **`set_current_estado` NO LO LLAMA NADIE en el camino vivo.** Las muletas de `cotizar_envio` que leen el estado -la direccion del cliente y la provincia pegajosa- estan muertas. Hoy no hacen falta porque el destino entra por el bloque de envio y por la charla; si vuelven a hacer falta, se decide entonces y no se revive por las dudas.
 - **ESPERA A MARTIN** · **D16 · EL BLOQUE BLANDO DEL BARRIDO DEL ORDEN.** El bloque duro quedo en 59 de 59 y las dos familias cerraron el 11-sep. Quedan 28 frases que el cliente puede pedir y la fuente no puede cumplir: "gama baja", "buena relacion precio calidad", "el mas rapido", "el mas vendido". La fuente tiene TRES campos numericos —`precio_ars`, `peso_gramos`, `garantia_meses`— y sobre lo demas ordenar no significa nada. **No es codigo: es decidir que campo normalizado se agrega**, la misma discusion de D8. La lista entera la imprime `python3 banco_pruebas/barrido_orden.py`.
 - **ABIERTO** · **LA CASILLA GENERICA DE CADA TIPO DE PREGUNTA ES CATALOGO, NO CAMINO VIVO.** Los 20 tipos y el molde de la respuesta de cada uno estan en `banco_pruebas/preguntas.py`, con candado en `tests/test_preguntas_genericas.py`; la lista entera la imprime `python3 -m banco_pruebas.preguntas`. El bot vivo todavia no lee ese diccionario: **enchufarlo es la segunda parte y la decide Martin.**
 - **ABIERTO** · **D14 · UN UNIVERSAL SOBRE EL CATALOGO SALE SIN QUE NINGUNA HERRAMIENTA LO MIRE.** Una fila `sin_material` afirma sobre los 880 productos y dos renglones despues, en el mismo mensaje, dice que no tiene el dato. Es la unica de la FICHA 49 que queda: D13 y D15 cerraron el 7-sep. Sigue abierta porque hay que DECIDIR EL MECANISMO, y la condicion tiene que ser de ESTADO y no de vocabulario: perseguir prosa con una lista de frases ya fracaso aca, fueron 4 nodos, despues 18, despues 46. Vara puesta y en rojo, dos casos, en `tests/test_plan_de_la_obligacion.py`.

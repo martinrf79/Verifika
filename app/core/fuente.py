@@ -371,3 +371,188 @@ def texto_inventario(tienda_id: str) -> str:
         linea += (f" Los precios van de {_plata(inv['precio_min'])} a "
                   f"{_plata(inv['precio_max'])}.")
     return linea
+
+
+# ── EL ENVIO: EL MAPA 2 DE LA FICHA 50, Y LA TARIFA YA COTIZADA ────────────
+#
+# QUE ESTABA ROTO, Y ES LO QUE ARREGLA ESTO (11-sep-2026). El motor de envio
+# —`calculadora.cotizar_envio`, con la tarifa exacta de las 24 provincias, la
+# zona resuelta por CPA oficial y el umbral de envio gratis— estaba ENTERO y
+# DESENCHUFADO. La unica herramienta del modelo es `buscar`, que mira el
+# catalogo, asi que al envio no llegaba por ahi; y el unico puente que quedaba
+# era el hueco `{{envio}}`, que el molde del tipo `envio_costo` ni siquiera
+# nombraba —decia `{{costo_envio}}`, que el codigo no llena—.
+#
+# Resultado medido en el codigo: la respuesta de envio salia de la politica
+# `costo_envio`, o sea el RANGO publicado de 5.000 a 12.000, teniendo la tarifa
+# exacta de la provincia a una llamada de distancia. Dos caminos para el mismo
+# numero y ganaba el flojo, que es exactamente la regla 2 del proyecto.
+#
+# COMO ENTRA AHORA. Igual que el inventario: el codigo lo resuelve ANTES y se
+# lo pone delante. El envio no necesita razonar —el destino sale del CPA o del
+# nombre del lugar, determinista— asi que no es una herramienta mas: seria una
+# vuelta mas al modelo, y cada vuelta vuelve a pagar el prompt entero.
+#
+# EL DESTINO SE BUSCA EN DOS LADOS Y ESE ES EL SEGUNDO ARREGLO: el mensaje de
+# este turno, y si no, la localidad que la charla ya tiene. Hasta hoy se miraba
+# solo el mensaje, asi que un cliente que dio el codigo postal tres turnos
+# antes no cotizaba nunca.
+#
+# EL UMBRAL DE ENVIO GRATIS NO SE APLICA ACA, y es a proposito: depende del
+# PEDIDO, y el pedido no vive en este camino. Viaja como dato para que el
+# modelo lo diga —"a partir de tanto es gratis"— y lo aplica la calculadora
+# cuando el cierre arma la orden de verdad. Lo que se borro es la cuenta que
+# sumaba TODAS las fichas que devolvio la busqueda: mostrar cinco notebooks
+# regalaba el envio.
+
+
+def _cotizar(texto: str) -> dict:
+    """La tarifa de ese texto, o {} si no clasifica.
+
+    SE LE PASA EL TEXTO CRUDO Y NO UN LUGAR YA RESUELTO, y es el segundo
+    arreglo del dia. `geo_cp.resolver` es mas estricto que el clasificador de
+    zona: "mandamelo a CP 5121" y "envio a rosario" no los resolvia, y los dos
+    clasifican perfecto por `clasificar_zona`. Quien sabe de destinos es el
+    motor de envio, asi que se le pregunta a el y no a una pieza de al lado.
+    """
+    from app.core.calculadora import cotizar_envio
+    if not str(texto or "").strip():
+        return {}
+    try:
+        r = cotizar_envio(localidad=texto) or {}
+    except Exception as e:  # noqa: BLE001 — sin tarifa no se inventa una
+        log.warning("envio_cotizar_error", error=f"{type(e).__name__}: {e}")
+        return {}
+    return r if r.get("ok") else {}
+
+
+def _destino_legible(r: dict) -> str:
+    """Como se nombra ese destino: la provincia si la hay, si no la zona.
+
+    NUNCA EL CODIGO POSTAL. Con el CP puesto ahi el bloque le decia al modelo
+    "el envio a 5000", y el cliente que habia escrito "Cordoba capital" leia un
+    numero. El destino se nombra con la palabra, y ademas asi sirve para el
+    turno siguiente: "cordoba" vuelve a clasificar, y es estable.
+    """
+    prov = str(r.get("provincia") or "").replace("_", " ").strip()
+    if prov:
+        return prov
+    zona = str(r.get("zona") or "").strip()
+    return {"caba": "CABA", "gba": "GBA"}.get(zona, zona)
+
+
+def _plazo_de(zona: str, faq: dict) -> str:
+    """El plazo de esa zona, de la FAQ `plazo_envio`. Vacio si la tienda no lo
+    tiene cargado: un plazo inventado es una promesa que no podemos cumplir."""
+    valores = {str(v.get("concepto") or ""): v.get("monto")
+               for v in ((faq.get("plazo_envio") or {}).get("valores") or [])}
+    clave = "caba" if str(zona or "") in ("caba", "gba") else "interior"
+    mn, mx = valores.get(f"dias_{clave}_min"), valores.get(f"dias_{clave}_max")
+    if not (isinstance(mn, (int, float)) and isinstance(mx, (int, float))):
+        return ""
+    return f"Llega en {int(mn)} a {int(mx)} dias habiles desde el pago."
+
+
+def _umbral_de(faq: dict) -> int:
+    """El umbral de envio gratis. Sale de la MISMA funcion que lo aplica en la
+    calculadora, para que el numero que el bot publica y el que el codigo cobra
+    no puedan divergir nunca."""
+    from app.core.calculadora import _umbral_envio_gratis
+    return _umbral_envio_gratis((faq.get("costo_envio") or {}).get("valores"))
+
+
+def _tabla_interior(tienda_id: str) -> dict:
+    """La tarifa por provincia, con el mismo orden de precedencia que usa la
+    calculadora: Firestore pisa al default del codigo. Si el mapa leyera solo
+    el default, una tienda con tabla propia publicaria un rango que sus propias
+    cotizaciones no cumplen.
+    """
+    from app.config import get_settings as _gs
+    from app.storage.firestore_client import get_config
+    try:
+        propia = (get_config("tarifas_envio", tienda_id=tienda_id) or {}).get(
+            "provincias") or {}
+    except Exception as e:  # noqa: BLE001 — sin tabla propia, el default
+        log.warning("envio_tarifas_error", error=f"{type(e).__name__}: {e}")
+        propia = {}
+    return {**(_gs().ENVIO_INTERIOR_POR_PROVINCIA or {}), **propia}
+
+
+def _tarifas(faq: dict, tienda_id: str) -> str:
+    """Las zonas que la tienda cotiza, con su tarifa. Es el mapa 2: no dice a
+    cuanto sale ESTE envio, dice que se puede cotizar y con que dato."""
+    partes = []
+    valores = (faq.get("costo_envio") or {}).get("valores") or []
+    metro = next((v for v in valores if any(
+        k in str(v.get("concepto") or "").lower()
+        for k in ("caba", "gba", "metropol", "amba"))), None)
+    if metro and isinstance(metro.get("monto"), (int, float)):
+        partes.append(f"a CABA y GBA {_plata(metro['monto'])}")
+    montos = [int(m) for m in _tabla_interior(tienda_id).values() if m]
+    if montos:
+        partes.append(f"al interior segun la provincia, de {_plata(min(montos))} "
+                      f"a {_plata(max(montos))}")
+    return "; ".join(partes)
+
+
+SIN_ENVIO = {"texto": "", "destino": "", "monto": None, "zona": ""}
+
+
+def texto_envio(mensaje: str, localidad_previa: str, tienda_id: str) -> dict:
+    """{texto, destino, monto, zona}, y NUNCA lanza: un bloque de envio que se
+    rompe no puede dejar al cliente sin turno. Sin bloque el bot contesta lo
+    demas igual, y el hueco del envio dice que no se tiene el dato."""
+    try:
+        return _texto_envio(mensaje, localidad_previa, tienda_id)
+    except Exception as e:  # noqa: BLE001 — el envio nunca tumba el turno
+        log.warning("envio_bloque_error", error=f"{type(e).__name__}: {str(e)[:150]}")
+        return dict(SIN_ENVIO)
+
+
+def _texto_envio(mensaje: str, localidad_previa: str, tienda_id: str) -> dict:
+    """El bloque de envio que viaja al modelo.
+
+    Con destino: la tarifa EXACTA ya cotizada, y el monto sale aparte para que
+    `numeros` lo escriba en el hueco. Sin destino: el mapa de lo que la tienda
+    cotiza y que dato hace falta para dar el numero exacto.
+    """
+    from app.storage.firestore_client import get_all_faq
+    try:
+        faq = get_all_faq(tienda_id=tienda_id) or {}
+    except Exception as e:  # noqa: BLE001 — sin FAQ se contesta sin envio
+        log.warning("envio_faq_error", error=f"{type(e).__name__}: {e}")
+        return dict(SIN_ENVIO)
+
+    umbral = _umbral_de(faq)
+    gratis = (f" El envio es GRATIS si la compra supera {_plata(umbral)}."
+              if umbral else "")
+
+    # EL MENSAJE DE HOY MANDA SOBRE LA CHARLA: un cliente que corrige la
+    # direccion corrige la tarifa.
+    r = _cotizar(mensaje)
+    de_donde = "mensaje"
+    if not r:
+        r = _cotizar(localidad_previa)
+        de_donde = "charla"
+
+    if r:
+        monto, zona = int(r.get("monto") or 0), str(r.get("zona") or "")
+        visible = _destino_legible(r)
+        plazo = _plazo_de(zona, faq)
+        log.info("envio_cotizado", destino=visible, zona=zona, monto=monto,
+                 de_donde=de_donde)
+        return {
+            "texto": (f"EL ENVIO A {visible.upper()} YA ESTA COTIZADO por el "
+                      f"codigo: {_plata(monto)}, tarifa exacta de ese destino. "
+                      f"{plazo}{gratis} Escribi {{{{envio}}}} donde vaya ese "
+                      f"costo y el codigo lo pone; no lo copies a mano ni lo "
+                      f"redondees."),
+            "destino": visible, "monto": monto, "zona": zona}
+
+    tarifas = _tarifas(faq, tienda_id)
+    cuerpo = f"ENVIOS: la tienda cotiza {tarifas}." if tarifas else \
+        "ENVIOS: la tienda cotiza por zona."
+    return {"texto": (cuerpo + gratis + " Para dar la tarifa EXACTA hace falta "
+                      "la PROVINCIA o el CODIGO POSTAL. Si el cliente no lo "
+                      "dijo, pediselo: no des un monto sin ese dato."),
+            "destino": "", "monto": None, "zona": ""}
