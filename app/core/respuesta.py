@@ -13,7 +13,9 @@ EL FLUJO, entero:
               Contesta con un tipo y un texto. Los montos van como huecos.
   3. NUMEROS  el codigo pone el precio y el envio en los huecos, y borra
               cualquier cifra que el modelo haya escrito por su cuenta.
-  4. MEMORIA  se guarda la charla, igual que siempre.
+  4. CIERRE   si el cliente decidio comprar, se toma el pedido y se manda el
+              link de pago. `leads` y `cierre` no se tocaron.
+  5. MEMORIA  se guarda la charla, igual que siempre.
 
 POR QUE UNA SOLA LLAMADA. Tres llamadas por turno daban entre 4,4 y 5,8
 segundos medidos y se comian la cuota diaria de a tres. Una sola con los veinte
@@ -165,6 +167,90 @@ async def _preguntar(sistema: str, memoria: str, history: list, mensaje: str,
     return _parsear(crudo)
 
 
+def _senal(tipo: str, mensaje: str) -> dict:
+    """La interpretacion MINIMA que pide el cierre: intencion y confianza.
+
+    LA SEÑAL SALE DE DOS LADOS Y NINGUNO ES UNA HERRAMIENTA. Del TIPO que
+    eligio el modelo -`intencion_compra` es literalmente eso-, y de la marca
+    determinista sobre el mensaje, que ya existia y no depende de que el modelo
+    se acuerde de nada. Con que uno de los dos diga compra, alcanza.
+    """
+    from app.core.leads import _RE_PIDE_COBRO
+    if _RE_PIDE_COBRO.search(mensaje or ""):
+        return {"intencion": "decision_compra", "confianza": 1.0,
+                "motivo": "pide_datos_de_pago"}
+    if str(tipo or "") == "intencion_compra":
+        return {"intencion": "decision_compra", "confianza": 1.0,
+                "motivo": "tipo_intencion_compra"}
+    if str(tipo or "") in ("precio_simple", "precio_multiple", "envio_costo"):
+        return {"intencion": "pregunta_especifica", "confianza": 0.9}
+    return {"intencion": "exploracion", "confianza": 0.6}
+
+
+async def _cerrar(conv, user_id, canal, tienda_id, mensaje, texto, trace_id,
+                  senal) -> tuple:
+    """CIERRE Y COBRO. La misma funcion de siempre: `leads` no se toco.
+
+    El bot que contesta bien y no toma el pedido no sirve para vender, asi que
+    esta etapa sobrevivio al apagon entera. Devuelve (texto, datos del cliente,
+    si ya se pregunto el cierre).
+    """
+    from app.core.cierre import extraer_datos_cliente, extraer_determinista
+    from app.core.leads import _RE_PIDE_COBRO, procesar_mensaje_para_lead
+    datos_previos = conv.get("datos_cliente_parciales") or {}
+    datos_turno: dict = {}
+    try:
+        datos_turno.update(extraer_determinista(mensaje))
+        if senal.get("intencion") == "decision_compra":
+            for k, v in extraer_datos_cliente(mensaje, trace_id).items():
+                if v:
+                    datos_turno[k] = v
+    except Exception as e:  # noqa: BLE001 — el cierre nunca tumba el turno
+        log.warning("respuesta_extractor_error", trace_id=trace_id,
+                    error=str(e)[:120])
+    datos = {**datos_previos, **datos_turno}
+    pide_cobro = bool(_RE_PIDE_COBRO.search(mensaje or ""))
+    meta: dict = {}
+    if (texto and texto != settings.VERIFIKA_FALLBACK_MESSAGE) or pide_cobro:
+        try:
+            _, meta = await procesar_mensaje_para_lead(
+                user_id, canal, tienda_id, mensaje, texto, trace_id,
+                interpretacion=senal,
+                presupuesto=conv.get("ultimo_presupuesto") or "",
+                datos_turno=datos_turno, datos_previos=datos,
+                presupuesto_nuevo=False,
+                pregunta_cierre_hecha=bool(conv.get("pregunta_cierre_hecha")))
+            rd = (meta.get("respuesta_directa") or "").strip()
+            # EL COBRO NO SE ENTREGA DOS VECES: se compara por el DATO -el CBU
+            # o el alias-, no por el texto.
+            if rd and meta.get("accion") == "cobro_datos":
+                try:
+                    from app.core.pago import datos_transferencia
+                    d = datos_transferencia(tienda_id) or {}
+                    clave = str(d.get("cbu") or d.get("alias") or "")
+                    if clave and clave in (texto or ""):
+                        log.info("respuesta_cobro_ya_entregado", trace_id=trace_id)
+                        rd = ""
+                except Exception as e:  # noqa: BLE001
+                    log.warning("respuesta_cobro_dedup_error", trace_id=trace_id,
+                                error=str(e)[:120])
+            if rd:
+                base = (texto or "").strip()
+                if not base or base == settings.VERIFIKA_FALLBACK_MESSAGE:
+                    texto = rd
+                elif base[:80] and base[:80] in rd:
+                    texto = rd
+                else:
+                    texto = base + "\n\n" + rd
+                log.info("respuesta_cierre", trace_id=trace_id,
+                         accion=meta.get("accion"))
+        except Exception as e:  # noqa: BLE001
+            log.warning("respuesta_lead_error", trace_id=trace_id,
+                        error=str(e)[:160])
+    hecha = meta.get("accion") in ("pregunta_cierre", "pregunta_pendiente_cierre")
+    return texto, datos, hecha
+
+
 async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
                          canal: str, trace_id: str) -> str:
     """Un turno completo. Devuelve el texto para el cliente.
@@ -214,7 +300,14 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
         texto = gs.con_saludo_inicial(gs.sin_saludo_del_modelo(texto), negocio) \
             if not history else gs.sin_saludo_del_modelo(texto)
 
-    # ── 4. MEMORIA ──────────────────────────────────────────────────────
+    # ── 4. CIERRE Y COBRO ───────────────────────────────────────────────
+    t = time.time()
+    texto, datos_cliente, cierre_hecho = await _cerrar(
+        conv, user_id, canal, tienda_id, raw_message, texto, trace_id,
+        _senal(salida.get("tipo") or "", raw_message))
+    etapas["cierre"] = int((time.time() - t) * 1000)
+
+    # ── 5. MEMORIA ──────────────────────────────────────────────────────
     t = time.time()
     history = history + [{"role": "user", "content": raw_message},
                          {"role": "assistant", "content": texto}]
@@ -245,7 +338,9 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
         save_conversation(user_id, history, resumen, tienda_id=tienda_id,
                           estado_conversacion="en_curso",
                           productos_vistos=vistos[-20:],
-                          ultima_localidad=localidad or None)
+                          ultima_localidad=localidad or None,
+                          datos_cliente_parciales=datos_cliente,
+                          pregunta_cierre_hecha=cierre_hecho)
     except Exception as e:  # noqa: BLE001
         log.warning("respuesta_save_error", trace_id=trace_id, error=str(e)[:150])
     etapas["memoria"] = int((time.time() - t) * 1000)

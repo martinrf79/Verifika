@@ -23,7 +23,7 @@ explorar carpetas es lo que gasta de mas y no agrega nada.
 | --- | --- |
 | Entrada de WhatsApp y Telegram, webhooks, salud | `app/main.py` |
 | Despacho del turno, anti-jailbreak, reset | `app/core/orchestrator.py` |
-| EL TURNO COMPLETO, las cuatro etapas | `app/core/respuesta.py` |
+| EL TURNO COMPLETO, las cinco etapas | `app/core/respuesta.py` |
 | LOS VEINTE TIPOS de pregunta y su respuesta generica, que son el prompt | `app/core/tipos.py` |
 | Lo que el codigo pone delante del modelo: fichas del catalogo y politicas certificadas | `app/core/fuente.py` |
 | LOS DOS NUMEROS, precio y envio, y la guarda de plata inventada | `app/core/numeros.py` |

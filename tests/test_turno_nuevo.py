@@ -145,3 +145,24 @@ def test_la_respuesta_con_plata_inventada_no_sale(firestore_doble, monkeypatch):
     texto = asyncio.run(R.procesar_turno("sonda_test2", "cuanto sale?", TIENDA,
                                          "telegram", "trace_test2"))
     assert "99.999" not in texto
+
+
+# ── EL CIERRE, QUE SOBREVIVIO AL APAGON ─────────────────────────────────────
+
+def test_la_señal_de_compra_sale_del_tipo_o_del_mensaje():
+    assert R._senal("intencion_compra", "listo")["intencion"] == "decision_compra"
+    assert R._senal("", "pasame el link de pago")["intencion"] == "decision_compra"
+    assert R._senal("precio_simple", "cuanto sale?")["intencion"] == "pregunta_especifica"
+    assert R._senal("politica_faq", "hola")["intencion"] == "exploracion"
+
+
+def test_el_turno_pasa_por_el_cierre_y_no_se_rompe(firestore_doble, monkeypatch):
+    """El bot que contesta bien y no toma el pedido no vende. La etapa corre."""
+    monkeypatch.setattr(
+        R, "_preguntar",
+        lambda *a, **k: asyncio.sleep(
+            0, result={"tipo": "intencion_compra",
+                       "texto": "Listo, lo dejamos tomado."}))
+    texto = asyncio.run(R.procesar_turno("sonda_cierre", "listo, me lo llevo",
+                                         TIENDA, "telegram", "trace_cierre"))
+    assert texto and "Listo" in texto

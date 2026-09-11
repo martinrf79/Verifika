@@ -62,7 +62,7 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 ## Abierto
 
 **11-sep, EL APAGON.** Se apago la arquitectura de moldes, mesa y dos llamadas
-al modelo. El turno es ahora `app/core/respuesta.py`: una sola llamada, con los
+al modelo. El turno es ahora `app/core/respuesta.py`, cinco etapas: una sola llamada, con los
 veinte tipos de pregunta y su respuesta generica adentro del prompt
 -`app/core/tipos.py`-. El codigo busca en la fuente ANTES de hablarle al modelo
 -`app/core/fuente.py`- y pone los dos unicos numeros que existen, precio y
