@@ -7,6 +7,16 @@ Esto dice DONDE ESTA CADA COSA, y nada mas.
 
 Si movés o partís un archivo, se actualiza esta pagina en el mismo commit.
 
+## CON QUE ARRANCA UNA SESION NUEVA — tres archivos y ninguno mas
+
+1. El bloque 0 de `CLAUDE.md`, que son las reglas.
+2. Esta pagina, que dice donde esta cada cosa.
+3. `arquitectura/PLAN_INTERPRETACION.md`, que es la unidad de trabajo abierta:
+   el numero de hoy, lo que falta y en que orden.
+
+Con esos tres se arranca sabiendo todo lo que hace falta. Leer el repo entero o
+explorar carpetas es lo que gasta de mas y no agrega nada.
+
 ## EL BOT QUE CORRE — `app/`
 
 | Que querés tocar | Archivo |
@@ -62,7 +72,8 @@ deploy ni arranca. Sin modelo y sin credenciales.
 ## PAPELES — `papeles/` y `arquitectura/`
 
 `papeles/` son los documentos de referencia que hasta el 10-sep-2026 vivian
-sueltos en la raiz. `arquitectura/` son las fichas y los planes, y ahi vive
+sueltos en la raiz. `arquitectura/` son las fichas y los planes, y ahi viven
+`arquitectura/PLAN_INTERPRETACION.md`, que es lo que estamos haciendo, y
 `arquitectura/MAPA_CABLEADO.md`, que nombra cada parte del cableado.
 
 UNA ACLARACION QUE EVITA UN TELEFONO DESCOMPUESTO: las fichas y lo apagado
