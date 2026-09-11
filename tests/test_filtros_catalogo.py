@@ -240,3 +240,39 @@ def test_la_exclusion_por_campo_saca_lo_que_tiene_que_sacar(firestore_doble):
     quedaron = {str(p.get("id")) for p in r["productos"]}
     assert not (quedaron & {str(p.get("id")) for p in chinos}), \
         "quedo adentro una marca china"
+
+
+# ── LA GRILLA ENTERA, CORRIDA POR LA BATERIA ───────────────────────────────
+#
+# ESTABA ARMADA Y NO LA CORRIA NADIE. `banco_pruebas/barrido_filtros.py` contaba
+# la cobertura -205 celdas, 100%- y ejecutaba los casos solo cuando una sesion
+# se acordaba de hacerlo a mano. Es la misma enfermedad que el `|| true` del CI
+# que dejo los casetes verdes cinco dias sin correr nada: un barrido que nadie
+# ejecuta es una lista de casos, no una vara.
+#
+# El dia que se corrio encontro un agujero real a la primera: una condicion de
+# texto SIN VALOR se aplicaba igual y dejaba el catalogo en cero, en silencio.
+
+def test_la_grilla_entera_de_filtros_no_tiene_una_sola_falla(firestore_doble):
+    from banco_pruebas import barrido_filtros as B
+    r = B.correr(TIENDA)
+    assert r["casos"] > 600, f"la grilla se encogio: {r['casos']} casos"
+    assert not r["fallas"], (
+        f"{len(r['fallas'])} de {r['casos']} casos fallaron: "
+        + "; ".join(f"{f['campo']} {f['operador']} {f['valor']!r}: {f['falla']}"
+                    for f in r["fallas"][:6]))
+    print(f"\nGRILLA DE FILTROS: {r['casos']} casos sobre "
+          f"{r['productos']} productos, 0 fallas")
+
+
+def test_una_condicion_SIN_VALOR_no_se_lleva_puesto_el_catalogo(firestore_doble):
+    """Lo que encontro la grilla. El gemelo numerico ya estaba tapado desde
+    siempre; el de texto no, y era el mismo agujero del otro lado."""
+    prods = _productos()
+
+    class F:
+        campo, operador, valor = "color", "igual", ""
+    r = FC.aplicar(prods, [F()], TIENDA)
+    assert r["descartados"], "se aplico una condicion sin valor"
+    assert len(r["productos"]) == len(prods), "filtro por nada"
+    assert "sin valor" in r["descartados"][0]["motivo"]

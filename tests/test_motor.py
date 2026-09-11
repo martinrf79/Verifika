@@ -118,11 +118,80 @@ def test_un_empate_grande_no_es_una_ambiguedad():
 def test_ante_dos_que_pegan_igual_se_sirven_LOS_DOS_y_no_se_elige():
     """REGLA 10.0: ante `ambiguous` el modelo esta OBLIGADO a preguntar, no a
     elegir. Y para poder preguntar tiene que VER los candidatos: decirle que hay
-    dos y mostrarle uno es pedirle que pregunte por algo que no tiene delante."""
-    r = _una({"texto": "Teclado Genius KB-110X", "cuantos": 1})
+    dos y mostrarle uno es pedirle que pregunte por algo que no tiene delante.
+
+    LO QUE MIDE NO CAMBIO; cambio COMO se declara. Hasta el 11-sep la marca de
+    "el cliente nombro una sola cosa" era `cuantos: 1`, o sea una perilla de
+    paginado leida como intencion. Ahora el modelo lo dice en `busco`, que es
+    donde vive: si el cliente nombro una cosa o pidio opciones es idioma."""
+    r = _una({"texto": "Teclado Genius KB-110X", "busco": "uno"})
     assert r["veredicto"] == "ambiguo"
     assert len(r["filas"]) > 1, "sirvio uno solo de los que empatan"
     assert "no elijas" in r["motivo"]
+
+
+def test_LA_AMBIGUEDAD_NO_DEPENDE_DE_CUANTAS_FILAS_PIDIO():
+    """EL AGUJERO QUE ESTO CIERRA. Con la marca vieja, un modelo que pedia
+    cinco filas de un producto puntual no recibia la ambiguedad NUNCA, que es
+    justo donde elegir es inventar identidad. Y era facil que pidiera cinco:
+    el default de la herramienta es cinco."""
+    for cuantos in (1, 3, 5):
+        r = _una({"texto": "Teclado Genius KB-110X", "busco": "uno",
+                  "cuantos": cuantos})
+        assert r["veredicto"] == "ambiguo", f"con cuantos={cuantos} no aviso"
+
+
+def test_EL_QUE_PIDIO_OPCIONES_NO_RECIBE_UNA_REPREGUNTA():
+    """La otra mitad de la misma linea: `cuantos: 1` sobre un pedido de opciones
+    -"el mas barato", "mostrame uno"- no es una ambiguedad de identidad, y con
+    la marca vieja tambien la recibia."""
+    r = _una({"texto": "Teclado Genius KB-110X", "busco": "varios",
+              "cuantos": 1})
+    assert r["veredicto"] != "ambiguo"
+    assert r["empatados"] == 0, "un empate que no es ambiguedad no se informa"
+
+
+def test_el_empate_del_RESCATE_no_lo_pisa_el_chequeo_de_ambiguedad():
+    """Los dos empates viven en el mismo campo y se calculan uno despues del
+    otro. "52 estan igual de lejos" es informacion para el cliente: un chequeo
+    de identidad que no encuentra ambiguedad no puede borrarla de paso."""
+    r = _una({"texto": "mouse", "categoria": "mouse", "busco": "uno",
+              "cuantos": 3,
+              "condiciones": [{"campo": "origen", "operador": "no_contiene",
+                               "valor": "china"}]})
+    assert r["veredicto"] == "no_existe"
+    assert r["empatados"] > 10, f"se perdio el empate del rescate: {r}"
+
+
+# ── LA FILA DEL RESCATE NO PUEDE VIAJAR MUDA ───────────────────────────────
+
+def test_la_fila_del_rescate_dice_el_DATO_por_el_que_no_cumple():
+    """EL CASO MEDIDO, 11-sep: "un mouse que no sea de fabricacion china"
+    devuelve `no_existe` —los 52 lo son— y tres mouse al lado como lo mas
+    parecido. Esas fichas viajaban MUDAS: el campo por el que se filtro no
+    entra en la ficha corta, que trae los del rubro. El modelo recibia tres
+    mouse sin un solo dato que lo contradiga, y ofrecer lo que el cliente acaba
+    de excluir queda a un paso."""
+    r = _una({"texto": "mouse", "categoria": "mouse", "cuantos": 3,
+              "condiciones": [{"campo": "origen", "operador": "no_contiene",
+                               "valor": "china"}]})
+    assert r["veredicto"] == "no_existe"
+    assert r["filas"], "el rescate tiene que traer lo mas parecido"
+    for f in r["filas"]:
+        assert f.get("no_cumple"), f"fila muda: {f.get('nombre')}"
+        assert "china" in f["no_cumple"].lower(), \
+            "tiene que decir el dato real de la ficha, no la condicion cruda"
+
+
+def test_una_fila_que_SI_cumple_no_lleva_el_renglon():
+    """No se le cuelga un `no_cumple` a lo que cumple: seria ruido que el
+    modelo tiene que aprender a ignorar, y lo que se aprende a ignorar deja de
+    leerse cuando importa."""
+    r = _una({"categoria": "mouse", "cuantos": 3,
+              "condiciones": [{"campo": "origen", "operador": "contiene",
+                               "valor": "china"}]})
+    assert r["veredicto"] == "existe"
+    assert all("no_cumple" not in f for f in r["filas"])
 
 
 # ── LO QUE PIDE LA FICHA 50, capacidad por capacidad ────────────────────────

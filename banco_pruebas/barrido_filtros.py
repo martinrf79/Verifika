@@ -200,27 +200,106 @@ def torcidos(tienda_id: str = TIENDA) -> list:
     numero = next((c for c, t in reg.items() if t == "numero"), "precio_ars")
     return [
         {"campo": "peso", "operador": "menor", "valor": "500",
+         "espera": "descartado",
          "porque": "campo inventado: la ficha dice peso_gramos"},
         {"campo": "medidas", "operador": "contiene", "valor": "chico",
+         "espera": "descartado",
          "porque": "campo inventado: la ficha dice dimensiones"},
         {"campo": "", "operador": "contiene", "valor": "algo",
-         "porque": "campo vacio"},
+         "espera": "descartado", "porque": "campo vacio"},
         {"campo": texto, "operador": "mayor", "valor": "5",
+         "espera": "descartado",
          "porque": "comparacion sobre un campo de texto"},
         {"campo": numero, "operador": "menor", "valor": "muy poco",
-         "porque": "el valor no es un numero"},
+         "espera": "descartado", "porque": "el valor no es un numero"},
         {"campo": numero, "operador": "menor", "valor": "",
+         "espera": "descartado",
          "porque": "valor vacio en una comparacion"},
         {"campo": SIN_CAMPO, "operador": "contiene",
-         "valor": "cancelacion de ruido activa",
+         "valor": "cancelacion de ruido activa", "espera": "descartado",
          "porque": "la escapatoria: el catalogo no expresa lo que pidio"},
         {"campo": texto.upper(), "operador": "contiene", "valor": "negro",
-         "porque": "el campo con mayusculas, que el modelo manda seguido"},
+         "espera": "se_aplica",
+         "porque": "el campo con mayusculas, que el modelo manda seguido: se "
+                   "tolera y se filtra, no se descarta"},
         {"campo": numero, "operador": "menor", "valor": "500 gramos",
-         "porque": "el numero con la unidad pegada, medido en vivo"},
+         "espera": "se_aplica",
+         "porque": "el numero con la unidad pegada, medido en vivo: se lee el "
+                   "numero y se filtra"},
         {"campo": texto, "operador": "igual", "valor": "",
-         "porque": "valor vacio sobre texto"},
+         "espera": "descartado",
+         "porque": "valor vacio sobre texto. Hasta el 11-sep se aplicaba y "
+                   "dejaba el catalogo en cero, en silencio"},
     ]
+
+
+def correr(tienda_id: str = TIENDA) -> dict:
+    """CORRE la grilla entera y devuelve `{casos, fallas}`.
+
+    POR QUE NO EXISTIA HASTA HOY, y es la misma enfermedad que este repo ya
+    documenta con el `|| true` del CI: la grilla estaba armada, contada y
+    cubierta al 100%, y la CORRIA una sesion a mano cuando se acordaba. Un
+    barrido que nadie ejecuta es una lista de casos, no una vara. Desde el
+    11-sep lo corre la bateria, y dice sobre CUANTOS casos paso.
+
+    Las tres esperas salen del tipo del campo y del operador, nunca de un
+    resultado grabado:
+
+      trae_al_testigo     el producto del que salio el valor tiene que volver
+      excluye_al_testigo  `no_contiene` sobre su propio valor lo tiene que sacar
+      descartado          la condicion no se puede aplicar y hay que DECIRLO
+
+    Y los TORCIDOS -lo que el modelo manda cuando se equivoca- tienen una sola
+    espera, que es la regla de Martin del 2-ago: nunca vuelve vacia sin motivo
+    escrito. Un campo inventado no filtra en silencio; se descarta y se dice.
+    """
+    from app.core.filtros_catalogo import aplicar
+    prods = _productos(tienda_id)
+    fallas = []
+
+    def _uno(campo, operador, valor):
+        class F:
+            pass
+        F.campo, F.operador, F.valor = campo, operador, valor
+        r = aplicar(prods, [F()], tienda_id)
+        return r, {str(p.get("id")) for p in r["productos"]}
+
+    casos_ok = 0
+    for c in casos(tienda_id):
+        r, ids = _uno(c["campo"], c["operador"], c["valor"])
+        testigo = str(c.get("testigo") or "")
+        mal = ""
+        if c["espera"] == "trae_al_testigo" and testigo and testigo not in ids:
+            mal = "el valor de la ficha no volvio a su ficha"
+        elif c["espera"] == "excluye_al_testigo" and testigo and testigo in ids:
+            mal = "la exclusion dejo adentro al producto que la motivo"
+        elif c["espera"] == "descartado" and not r["descartados"]:
+            mal = "se aplico una condicion que no se puede aplicar"
+        if mal:
+            fallas.append({**c, "falla": mal})
+        else:
+            casos_ok += 1
+
+    for c in torcidos(tienda_id):
+        r, _ = _uno(c["campo"], c["operador"], c["valor"])
+        # LO TORCIDO TIENE DOS DESENLACES VALIDOS Y NINGUN TERCERO. O el codigo
+        # NO PUEDE aplicarlo y lo dice con motivo -nunca vacia sin motivo
+        # escrito, la regla de Martin del 2-ago-, o lo TOLERA y filtra igual,
+        # que es lo que corresponde cuando el modelo escribe el campo en
+        # mayuscula o le pega la unidad al numero. Lo que no vale es el tercero:
+        # aplicar algo que no se entiende y devolver cero en silencio.
+        mal = ""
+        if c["espera"] == "descartado" and not r["descartados"]:
+            mal = "se aplico en silencio algo que no se puede aplicar"
+        elif c["espera"] == "se_aplica" and r["descartados"]:
+            mal = "se descarto algo que habia que tolerar"
+        if mal:
+            fallas.append({**c, "falla": mal})
+        else:
+            casos_ok += 1
+
+    return {"casos": casos_ok + len(fallas), "fallas": fallas,
+            "productos": len(prods)}
 
 
 def cobertura(tienda_id: str = TIENDA) -> dict:
@@ -254,3 +333,8 @@ if __name__ == "__main__":
           f"{c['casos']} casos ({c['torcidos']} torcidos)")
     if c["pendientes"]:
         print("sin cubrir:", c["pendientes"][:12])
+    r = correr()
+    print(f"corridos {r['casos']} casos sobre {r['productos']} productos: "
+          f"{len(r['fallas'])} fallas")
+    for f in r["fallas"][:10]:
+        print(f"   {f['campo']} {f['operador']} {f['valor']!r}: {f['falla']}")

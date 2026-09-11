@@ -112,6 +112,17 @@ ojo**, y el renglon de condiciones no aplicadas es el que dice que campo agregar
 que es la discusion abierta de D8 y D16. Vara del instrumento, offline y sin
 credencial: `tests/test_numero_motor.py`, 12 casos.
 
+**11-sep, noche: DOS DE ROBUSTEZ DEL MOTOR, y un candado que faltaba.** La
+AMBIGUEDAD dejo de leerse desde `cuantos` -una perilla de paginado usada como
+intencion- y la declara el modelo en `busco`: un producto puntual pedido con
+cinco filas no recibia la ambiguedad NUNCA, que es donde elegir es inventar. La
+FILA DEL RESCATE dejo de viajar muda: lleva `no_cumple` con el dato real de la
+ficha, con `dato_que_falla`, que estaba escrita para esto y no la llamaba nadie.
+Y LA GRILLA DE FILTROS -687 casos, cubierta al 100% desde el 12-ago- LA CORRIA
+UNA SESION A MANO: ahora la corre la bateria y dice sobre cuantos casos paso. El
+dia que se corrio encontro un agujero real: una condicion de texto SIN VALOR se
+aplicaba igual y dejaba el catalogo en cero, en silencio.
+
 **LOS NOMBRES Y EL DETALLE DE CADA FALLA NO SE ESCRIBEN ACA.** Viven en
 `arquitectura/MAPA_CABLEADO.md`, que es el unico lugar donde se nombra el
 cableado: estaciones `T`, juntas `J`, puntos de modelo `L` y desconexiones `D`.

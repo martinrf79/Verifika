@@ -465,6 +465,21 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
             descartados.append({"campo": campo,
                                 "motivo": f"operador desconocido: {operador}"})
             continue
+        if str(valor).strip() == "":
+            # UNA CONDICION SIN VALOR NO ES UNA CONDICION, y hasta el 11-sep
+            # sobre un campo de TEXTO se aplicaba igual: `almacenamiento igual
+            # ''` no dejaba pasar a nadie y se llevaba puesto el catalogo
+            # entero, en silencio y sin un motivo escrito. El gemelo numerico
+            # -`garantia_meses menor ''`- si estaba tapado, dos guardas mas
+            # abajo, asi que el agujero era solo de este lado.
+            #
+            # Lo encontro el barrido de filtros el dia que por fin se corrio:
+            # la grilla estaba armada y contada desde el 12-ago y la ejecutaba
+            # una sesion a mano cuando se acordaba.
+            descartados.append({"campo": campo,
+                                "motivo": "la condicion vino sin valor: no se "
+                                          "puede filtrar por nada"})
+            continue
         if tipo != "numero" and operador in ("mayor", "menor"):
             clase = "de si o no" if tipo == "si_no" else "de texto"
             descartados.append({"campo": campo,

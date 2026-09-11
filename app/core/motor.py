@@ -58,6 +58,12 @@ FILAS_POR_DEFECTO = 5
 # dos mouse y dos memorias"— es UNA llamada con tres consultas, no tres turnos.
 TOPE_CONSULTAS = 6
 
+# Hasta cuantos empatados siguen siendo UNA COSA con variantes -el mismo teclado
+# en negro, blanco, gris y azul- y no un termino generico. Pasados estos, que el
+# cliente haya nombrado una sola cosa y empaten veinte quiere decir que la
+# nombro ancho, y ahi mostrar la lista es mejor que repreguntar.
+TOPE_AMBIGUO = 4
+
 
 class _Cond:
     """La condicion como la espera `filtros_catalogo.aplicar`, que lee por
@@ -126,6 +132,12 @@ def esquema(tienda_id: str) -> dict:
                 "type": "array", "items": {"type": "string"},
                 "description": "Ids exactos, para volver a un producto que ya "
                                "le mostraste."},
+            "busco": {
+                "type": "string", "enum": ["uno", "varios"],
+                "description": "'uno' si el cliente nombro UN producto "
+                               "puntual; 'varios' si pidio opciones. Con "
+                               "'uno', si hay dos que pegan igual se te dice "
+                               "y tenes que preguntar cual."},
             "cuantos": {"type": "integer",
                         "description": f"Filas, hasta {TOPE_FILAS}."},
         },
@@ -184,7 +196,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     cuando lo que pasa es que la fuente no tiene el dato.
     """
     from app.core.fuente import _ficha_corta
-    from app.core.filtros_catalogo import (aplicar, ordenar,
+    from app.core.filtros_catalogo import (aplicar, dato_que_falla, ordenar,
                                            orden_tiene_sentido,
                                            pesos_por_rareza,
                                            rankear_por_cercania, relevancia)
@@ -234,10 +246,12 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     # 3. EL RESCATE. Si ninguna cumple todo, se trae lo mas parecido y se dice
     #    cual condicion falla. Devolver vacio seria decirle al cliente que no
     #    existe lo que si existe con una condicion menos.
+    rescate = False
     if conds and not quedan:
         quedan, empatados, incumple = rankear_por_cercania(
             universo, conds, tienda_id)
         veredicto = "no_existe"
+        rescate = True
         notas.append(f"ninguno cumple todo; esto es lo mas parecido, "
                      f"incumple {incumple} de {len(conds)}")
         if empatados > 1:
@@ -274,12 +288,29 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
         # lejos de un precio imposible no es una ambiguedad: es que la
         # condicion no se puede cumplir, y eso es `no_existe` con el rescate al
         # lado. Confundir los dos haria que el bot repregunte donde tiene que
-        # contestar. Por eso la marca es que el modelo haya pedido UNA fila.
-        if tope == 1 and len(quedan) > 1:
+        # contestar.
+        #
+        # LA MARCA LA DECLARA EL MODELO, Y ANTES ERA EL TOPE DE FILAS. Hasta el
+        # 11-sep la condicion era `cuantos == 1`, o sea que se leia la
+        # INTENCION del cliente desde una perilla de paginado. Dos agujeros
+        # medidos: el modelo que pedia cinco filas de un producto puntual no
+        # recibia la ambiguedad NUNCA —y ahi es donde elegir es inventar—, y
+        # cualquier consulta con `cuantos: 1` la recibia aunque el cliente
+        # hubiera pedido "el mas barato". Si el cliente nombro una cosa o pidio
+        # opciones es IDIOMA, y el idioma lo lee el modelo: ahora lo declara en
+        # `busco` y el codigo certifica el empate, que es lo unico que el
+        # codigo puede saber.
+        #
+        # EL EMPATE DEL RESCATE NO SE PISA. `empatados` puede venir cargado de
+        # arriba -"52 estan igual de lejos"- y eso es informacion del cliente:
+        # solo se lo reemplaza cuando de verdad hay una ambiguedad de
+        # identidad, nunca con un cero de paso.
+        if str(c.get("busco") or "") == "uno" and len(quedan) > 1:
             mejor = puntos[id(quedan[0])]
-            empatados = sum(1 for p in quedan if puntos[id(p)] == mejor)
-            if empatados > 1 and mejor > 0:
+            iguales = sum(1 for p in quedan if puntos[id(p)] == mejor)
+            if 1 < iguales <= TOPE_AMBIGUO and mejor > 0:
                 veredicto = "ambiguo"
+                empatados = iguales
                 notas.append(f"hay {empatados} que pegan igual con lo que "
                              f"pidio: no elijas, pregunta cual")
                 # SE SIRVEN TODOS LOS CANDIDATOS, no el primero. Decirle al
@@ -293,10 +324,36 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
         veredicto = "no_existe"
         notas.append("el catalogo no tiene nada de eso")
 
+    # LA FILA DEL RESCATE DICE POR QUE NO CUMPLE, Y ES EL DATO REAL.
+    #
+    # Medido el 11-sep sobre el catalogo vivo: "un mouse que no sea de
+    # fabricacion china" devuelve `no_existe` -los 52 lo son- con tres mouse al
+    # lado como lo mas parecido, y esas tres fichas viajan MUDAS: el campo por
+    # el que se filtro no esta en la ficha corta, porque `campos_ficha` trae los
+    # del rubro. O sea que el modelo recibe tres mouse sin un solo dato que lo
+    # contradiga y un motivo en prosa a un renglon de distancia. Ofrecer lo que
+    # el cliente acaba de excluir esta a un paso.
+    #
+    # Con esto cada fila del rescate lleva `no_cumple` con el VALOR de la ficha
+    # —"origen: Marca Genius de Taiwan. Fabricado en China."—, asi el modelo
+    # puede decir la verdad entera: no tengo ninguno sin eso, y estos son los
+    # que hay. Y el cliente decide, que es lo que no puede hacer si no lo ve.
+    #
+    # `dato_que_falla` ya estaba escrita para esto, con su caso y su fecha, y no
+    # la llamaba nadie: quedo suelta cuando se apago el bloque que la usaba.
+    filas = []
+    for p in quedan[:tope]:
+        f = _ficha_corta(p)
+        if rescate:
+            motivo_fila = dato_que_falla(p, conds, tienda_id)
+            if motivo_fila:
+                f["no_cumple"] = motivo_fila
+        filas.append(f)
+
     return {"veredicto": veredicto,
             "cuantos_habia": cumplieron if conds else de_cuantos,
             "de_cuantos_se_miro": de_cuantos,
-            "filas": [_ficha_corta(p) for p in quedan[:tope]],
+            "filas": filas,
             "no_aplicado": no_aplicado,
             "sin_dato": r.get("sin_dato", 0),
             "empatados": empatados,
