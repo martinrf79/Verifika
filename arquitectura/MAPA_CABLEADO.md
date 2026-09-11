@@ -73,8 +73,8 @@ uno solo y es `app/core/turno.py:962 procesar_turno`.
 - **T1.4** `guardas_salida.business_name` — el nombre del negocio.
 
 ### T2 · INTERPRETAR — **L1, el modelo declara**
-- **T2.1** `herramientas.esquemas(tienda_id)` — el molde que ve el modelo.
-- **T2.2** el molde es `RegistrarPedido`, `herramientas.py:341`. **Diez campos**,
+- **T2.1** `molde.esquemas(tienda_id)` — el molde que ve el modelo.
+- **T2.2** el molde es `RegistrarPedido`, en `app/core/molde.py`. **Diez campos**,
   y ese es el formulario que ya existe: `items`, `restricciones`, `destinos`,
   `pide_precio`, `contradicciones`, `reparto_pago`, `atributos`, `stock`,
   `compatibilidad`, `temas`.
@@ -204,7 +204,7 @@ fila, así que no abre casilla ni la mira la compuerta de completitud. Vara:
 `tests/test_guion_y_junta.py`, cinco casos.
 **Lo que era, para que se entienda el número:** `tabla.py:461`.
 `consultar_temas` devuelve por tema: `politica`, `valores`, `criterio`,
-`objetivo`, `movida`, `escape` — está en `herramientas.py:1583`. La mesa copia
+`objetivo`, `movida`, `escape` — está en `herramientas.consultar_temas`. La mesa copia
 sólo cuatro: `tema`, `politica`, `valores`, `criterio`. **`objetivo`, `movida` y
 `escape` no llegan nunca al modelo que escribe.**
 Cómo se ve: el bot contesta correcto y sin vender. La prosa de venta que la casa

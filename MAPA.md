@@ -25,7 +25,8 @@ explorar carpetas es lo que gasta de mas y no agrega nada.
 | Despacho del turno, anti-jailbreak, reset | `app/core/orchestrator.py` |
 | EL TURNO COMPLETO, las ocho etapas | `app/core/turno.py` |
 | Las dos llamadas al modelo y el reintento | `app/core/llm_reintento.py` |
-| EL MOLDE que ve el modelo, `registrar_pedido` y los enums | `app/core/herramientas.py` |
+| EL MOLDE que ve el modelo, `registrar_pedido`, `esquemas()` y los enums | `app/core/molde.py` |
+| Las herramientas de consulta que corre el codigo, y `validar` | `app/core/herramientas.py` |
 | Resolucion de candidatos y busquedas derivadas | `app/core/resolver.py` |
 | LA MESA de puntos y el armado del mensaje final | `app/core/tabla.py` |
 | Campos y filtros del catalogo, el enum de `campo` | `app/core/filtros_catalogo.py` |

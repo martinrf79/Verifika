@@ -118,14 +118,18 @@ no sirvio y se revisa antes de seguir.
   y daba verde con la casilla equivocada.
 - 10-sep: el orden del repo, etapa 1. La raiz bajo de 31 entradas a 23 y de 14
   documentos a 4, y aparecio `MAPA.md`.
+- 11-sep: el primer corte de la etapa 2. El molde salio a `app/core/molde.py`:
+  los moldes de Pydantic, `_MOLDES`, `esquemas()` y el saneo de nulos. No cambio
+  comportamiento, `herramientas.py` los sigue exportando con los mismos nombres,
+  y bajo de 2.612 lineas a unas 2.040. Los pasos 2 y 3 se editan en el molde.
 
 ## EL CORTE DE LOS ARCHIVOS GRANDES — etapa 2 del orden
 
 MEDIDO, no estimado. `herramientas.py` tiene 2.612 lineas y 61 definiciones;
 `resolver.py` 1.505 y 20; `turno.py` 1.241 y 23.
 
-EL PRIMER CORTE, Y EL UNICO QUE HACE FALTA AHORA: sacar el MOLDE de
-`herramientas.py` a su propio archivo. Son los modelos de Pydantic
+EL PRIMER CORTE, HECHO EL 11-SEP: el MOLDE salio de `herramientas.py` a
+`app/core/molde.py`. Son los modelos de Pydantic
 -`RegistrarPedido` y sus hermanos, 139 lineas solo la clase principal- mas
 `esquemas()`, que es donde se inyectan los enums. Es exactamente lo que hay que
 editar para los pasos 2 y 3 de arriba, y hoy vive mezclado con las herramientas
