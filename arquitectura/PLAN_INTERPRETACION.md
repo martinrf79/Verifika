@@ -18,14 +18,15 @@ teclado de $512.500 cuando el mas barato sale $12.000.
 
 Es **D16** del mapa, y tiene vara propia, offline y gratis:
 
-    python3 banco_pruebas/barrido_orden.py     45 de 59 el 11-sep-2026
+    python3 banco_pruebas/barrido_orden.py     45 -> 59 de 59, cerrada el 11-sep
 
-Nueve frases salen al reves y cinco de las 22 categorias le roban el campo al
-precio. **Conclusion para este plan: en esa familia de preguntas el cuello no
-es la interpretacion.** Se puede arreglar D16 sin tocar nada de lo de abajo, y
-el numero de `/vara` no se mueve porque D16 vive despues de la llamada uno.
-Decidir si se hace antes o despues de los cuatro pasos de mas abajo es de
-Martin.
+Eran nueve frases que salian al reves y cinco de las 22 categorias que le
+robaban el campo al precio. Las dos familias cerraron el mismo dia y el bloque
+duro quedo entero. **Conclusion para este plan, y sigue valiendo: en esa
+familia de preguntas el cuello no era la interpretacion.** El numero de
+`/vara` no se movio, porque D16 vive DESPUES de la llamada uno. Lo que queda
+de D16 no es codigo: 28 frases que la fuente no puede cumplir con sus tres
+campos numericos, y eso es decision de FUENTE, la misma de D8.
 
 EL ORDEN DEL TURNO, para que no se vuelva a confundir. Primero el modelo lee la
 pregunta e interpreta. Segundo el codigo trae candidatos segun esa

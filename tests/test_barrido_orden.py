@@ -51,20 +51,10 @@ def test_ninguna_frase_se_borro(barrido):
         f"{piso['duro_total']}. Una frase del barrido se corrige, no se borra.")
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "PLAN: la restriccion en prosa se traduce a (campo, direccion) sin "
-    "equivocarse. HOY el bloque duro da 54 de 59 y los 5 rojos son la FAMILIA "
-    "B de D16: nombrar el rubro le roba el campo al precio. 'el teclado mas "
-    "barato' ordena por `switch_teclado`, 'la memoria ram mas barata' y 'la "
-    "placa de video mas barata' por `memoria_video`, 'el procesador mas "
-    "barato' por `procesador` y 'el almacenamiento externo mas barato' por "
-    "`almacenamiento`. Son 5 de las 22 categorias del catalogo vivo. La causa "
-    "es que el nombre del campo se busca por raiz compartida contra las "
-    "palabras del cliente y gana el primero que pega, sin mirar que la palabra "
-    "que pego es el RUBRO y no el eje: es la misma enfermedad que D3 y D4, "
-    "aparear por palabras en vez de por un veredicto. OBJETIVO 59 de 59. La "
-    "FAMILIA A cerro el 11-sep-2026 y el piso subio de 45 a 54."))
 def test_ninguna_restriccion_sale_al_reves(barrido):
+    """Las dos familias de D16 cerraron el 11-sep-2026 y el bloque duro quedo
+    entero: 59 de 59. Lo que sigue abierto es el bloque blando, que no puntua
+    porque no es codigo sino decision de FUENTE."""
     filas = barrido["duros"]
     rojas = [f"{f['frase']} espera {f['espera']} salio {f['salio']}"
              for f in filas if f["estado"] != "ok"]

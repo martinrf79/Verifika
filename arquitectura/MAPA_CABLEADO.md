@@ -183,9 +183,10 @@ las que salen de leer el código llevan el archivo y la línea.
 
 Cerradas el 6-sep-2026: **D1**, **D6**, la mitad dura de **D3**, la parte del
 verbo de **D4**, y **D10** en lo que hacía falta para diagnosticar la junta.
-Cerradas el 7-sep-2026: **D13** y **D15**.
+Cerradas el 7-sep-2026: **D13** y **D15**. Cerrada el 11-sep-2026: **D16**.
 Abiertas: **D2**, **D4** en su parte de fondo, **D5**, **D7**, **D8**, **D9**,
-**D11**, **D12**, **D14**, y **D16** en su familia B.
+**D11**, **D12**, **D14**.
+Cerrada el 11-sep-2026: **D16**, sus dos familias.
 D16 se agrego el 11-sep-2026.
 
 D13, D14 y D15 se agregaron el 6-sep-2026 leyendo las charlas REALES del 3 y 4
@@ -385,13 +386,13 @@ nombró, en el renglón donde estaba admitiendo que no sabe.
 Los moldes de `restricciones`, `stock`, `pide_precio` y `reparto_pago` ya se
 habían corregido por esta misma razón; el genérico había quedado.
 
-### D16 · MITAD CERRADA 11-sep · La restriccion en prosa se traduce al orden equivocado
+### D16 · CERRADA 11-sep · La restriccion en prosa se traduce al orden equivocado
 **Estacion:** T5.1, `filtros_catalogo.resolver_orden:710`.
 **Vara:** `tests/test_barrido_orden.py`, y el barrido entero en
 `banco_pruebas/barrido_orden.py`. Offline y gratis: doble local de Firestore
 con el catalogo real, cero llamadas al modelo, un segundo.
 
-    python3 banco_pruebas/barrido_orden.py     45 de 59, y 54 de 59 tras cerrar la familia A
+    python3 banco_pruebas/barrido_orden.py     45 -> 54 -> 59 de 59, el 11-sep-2026
 
 **Como se encontro.** Con la sonda, el 11-sep, sobre "necesito un aparato
 rectangular con varias teclas, que sea bueno, pero dada la crisis armame un
@@ -420,11 +421,23 @@ cambiaria en silencio que negacion da vuelta el extremo. Aparte, "el mejor
 precio" es el mas barato y se decide DESPUES de saber el campo, porque es el
 unico eje donde "mejor" apunta para abajo: la mejor garantia es la mas larga.
 
-**FAMILIA B — cinco casos, ordenan por OTRO campo.** Nombrar el rubro le roba
+**FAMILIA B — cinco casos, ordenaban por OTRO campo. CERRADA el 11-sep.** Nombrar el rubro le roba
 el campo al precio. De las 22 categorias del catalogo vivo, cinco lo hacen:
 `teclado` se va a `switch_teclado`, `memoria ram` y `placa de video` a
 `memoria_video`, `procesador` a `procesador`, `almacenamiento externo` a
-`almacenamiento`. "El teclado mas barato" no ordena por precio.
+`almacenamiento`. "El teclado mas barato" no ordenaba por precio, y pegaba en
+el camino normal: `resolver.py:236` le pasa el texto del item entero porque el
+modelo declara "teclado mas barato" sin partirlo.
+**Como se cerro.** Las palabras que nombran el RUBRO dejan de poder elegir el
+campo del orden. La categoria no se adivina: sale de `get_categories` por la
+fuente viva, con limite de palabra y sus plurales, asi que no es una lista
+escrita a mano y no crece con el catalogo. Se le saca al eje y nada mas: esas
+palabras siguen contando para el mapa de adjetivos y para la direccion. Si
+despues de sacarlas ninguna nombra un campo, cae al mapa y "barato" resuelve a
+`precio_ars`, que es lo que el cliente pidio. Lo que se pierde, y se acepta: si
+el eje se llama igual que el rubro —"el almacenamiento externo con mas
+almacenamiento"— la frase queda sin orden en vez de ordenar por el campo
+homonimo. Sin orden es honesto; ordenar por la columna equivocada no.
 
 **Es la misma enfermedad que D3 y D4**, un escalon mas arriba: aparear por
 palabras compartidas en vez de por un veredicto.

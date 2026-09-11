@@ -746,6 +746,38 @@ def resolver_orden(frase: str, tienda_id: str) -> dict | None:
     # con el parentesis daba `max`, y el bot ofrecio el teclado de $512.500 con
     # el mas barato de la tienda a $12.000.
     palabras = [w for w in re.findall(r"[a-z0-9]+", txt) if len(w) >= 4]
+    # EL RUBRO NO ELIGE EL CAMPO DEL ORDEN (D16 familia B, 11-sep-2026).
+    #
+    # El nombre del campo se busca por raiz compartida contra las palabras del
+    # cliente y gana el primero que pega, sin mirar QUE es la palabra que pego.
+    # Cuando el cliente nombra el rubro, el rubro gana: "el teclado mas barato"
+    # ordenaba por `switch_teclado`, "la memoria ram mas barata" y "la placa de
+    # video mas barata" por `memoria_video`, "el procesador mas barato" por
+    # `procesador` y "el almacenamiento externo mas barato" por
+    # `almacenamiento`. Son 5 de las 22 categorias, y pega en el camino normal:
+    # `resolver.py:236` le pasa el texto del item entero -"teclado mas barato"-
+    # porque el modelo declara la frase sin partirla.
+    #
+    # LA CATEGORIA ES UN HECHO, NO UNA ADIVINANZA: sale de `get_categories` por
+    # la fuente viva, con limite de palabra y sus plurales. No es una lista
+    # escrita a mano y no crece con el catalogo.
+    #
+    # SOLO SE LE SACA AL EJE. Las palabras del rubro siguen contando para el
+    # mapa de adjetivos y para la direccion: lo unico que no pueden hacer es
+    # elegir por que campo se ordena. Si despues de sacarlas no queda ninguna
+    # que nombre un campo, cae al mapa de adjetivos y "barato" resuelve a
+    # `precio_ars`, que es lo que el cliente pidio.
+    #
+    # LO QUE SE PIERDE, y se acepta: si el eje se llama igual que el rubro -"el
+    # almacenamiento externo con mas almacenamiento"- la frase queda sin orden
+    # en vez de ordenar por el campo homonimo. Sin orden es honesto; ordenar por
+    # la columna equivocada no.
+    rubro = set()
+    for c in categorias_nombradas(txt, tienda_id):
+        for t in re.findall(r"[a-z0-9]+", _norm(c)):
+            rubro.update(w for w in palabras
+                         if w == t or w.startswith(t) or t.startswith(w))
+    palabras_eje = [w for w in palabras if w not in rubro] or palabras
     elegido = None
     # LOS NUMERICOS PRIMERO. "el de mas garantia" pega igual en `garantia_meses`
     # que en `garantia_detalle`, y ordenar por la prosa del detalle es ordenar
@@ -771,7 +803,7 @@ def resolver_orden(frase: str, tienda_id: str) -> dict | None:
         raices = [t[:5] for t in campo.split("_") if len(t) >= 4]
         if raices and any(any(w.startswith(r)
                               or (len(w) >= 5 and r.startswith(w[:5]))
-                              for w in palabras) for r in raices):
+                              for w in palabras_eje) for r in raices):
             elegido = campo
             break
         # 1-bis. EL VERBO DEL CLIENTE, que es el sustantivo con otra letra al
@@ -788,7 +820,7 @@ def resolver_orden(frase: str, tienda_id: str) -> dict | None:
         # que sigue cayendo al mapa de adjetivos y "la mas cara" sigue ordenando
         # por precio. Vara: tests/test_extremo_negado.py
         if any(len(w) == len(t) and len(w) >= 4 and w[:-1] == t[:-1]
-               for w in palabras for t in campo.split("_")):
+               for w in palabras_eje for t in campo.split("_")):
             elegido = campo
             break
     if elegido is None:
