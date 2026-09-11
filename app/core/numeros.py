@@ -1,21 +1,26 @@
 """LOS DOS NUMEROS QUE EXISTEN — el precio de un producto y el costo de un envio.
 
-El modelo tiene PROHIBIDO escribir un digito de plata. Escribe huecos y este
-modulo los llena desde la fuente:
+EL MODELO ESCRIBE EL PRECIO, copiado de la ficha que el codigo le puso
+delante. Lo que NO puede escribir es un numero que la fuente no tenga, y eso lo
+decide este modulo, no el prompt.
 
-    {{precio}}      el precio de la unica ficha que se le puso delante
-    {{precio:ID}}   el precio de esa ficha, cuando hay varias
+Los dos numeros que ninguna ficha tiene van como hueco y los pone el codigo:
+
     {{envio}}       la tarifa que devuelve la tabla de envios para el destino
-    {{total}}       la suma de lo que ya se lleno, nada mas
+    {{total}}       la suma, que el modelo no puede hacer de cabeza
+
+(y siguen andando `{{precio}}` y `{{precio:ID}}`, por si el modelo no tiene el
+numero a mano)
 
 Dos reglas y ninguna excepcion:
 
   1. UN HUECO QUE NO RESUELVE NO SE INVENTA. Se dice que no se tiene el dato y
      queda el renglon `hueco_sin_dato` en el log. Es la misma regla de la FAQ
      curada: una respuesta a medias es mejor que una inventada.
-  2. UNA CIFRA QUE EL MODELO ESCRIBIO POR SU CUENTA NO SALE. Si hay un precio
-     certificado se reemplaza por ese; si no hay, la respuesta entera se
-     descarta. El codigo siempre puede invalidar lo que dijo el modelo.
+  2. UN NUMERO QUE NO ESTA EN LA FUENTE NO SALE, y se lleva puesta la
+     respuesta entera. No importa si es un precio, un plazo o una spec: si el
+     modelo lo escribio y la fuente no lo tiene, lo invento. El codigo siempre
+     puede invalidar lo que dijo el modelo.
 """
 import re
 
@@ -25,9 +30,25 @@ log = get_logger(__name__)
 
 _HUECO = re.compile(r"\{\{\s*(precio|envio|total)\s*(?::\s*([^}]*))?\s*\}\}")
 
-# Una cifra de PLATA: con signo pesos, o un numero de cuatro digitos para
-# arriba con o sin puntos. Un "16GB" o un "2024" corto no entran.
-_PLATA = re.compile(r"\$\s?\d[\d.]*|\b\d{1,3}(?:\.\d{3})+\b|\b\d{4,}\b")
+# UNA CIFRA GRANDE: con signo pesos, con puntos de mil, o cuatro digitos para
+# arriba. No es solo plata a proposito: `1920x1080` y `3200 MHz` tambien caen
+# aca, y esta bien que caigan. La regla no es "de donde sale la plata" sino
+# "de donde sale el numero", y la respuesta es siempre la misma: de la fuente.
+# Lo corto -"24 meses", "2 unidades", "16GB"- no entra: no hay nada que
+# inventar en un numero que el cliente puede verificar de un vistazo.
+#
+# EL PISO DEL NUMERO PELADO ES CUATRO DIGITOS, y se probo en tres. Con tres,
+# "100% original" y "en 3 a 5 dias, zona 100" se llevaban puesta la respuesta
+# entera por un numero que no es un dato. Con cuatro no se pierde nada que
+# importe: el precio mas barato del catalogo tiene cuatro digitos, y un monto
+# de tres escrito como plata igual cae por el signo pesos o por los puntos.
+# El borde se mira por DIGITO y no por palabra: con `\b`, "2560x1440" no era
+# dos numeros sino ninguno, porque entre el 0 y la x no hay borde de palabra.
+# Una resolucion inventada pasaba entera.
+_CIFRA = re.compile(r"\$\s?\d[\d.]*"
+                    r"|(?<!\d)\d{1,3}(?:\.\d{3})+(?!\d)"
+                    r"|(?<!\d)\d{4,}(?!\d)")
+_PLATA = _CIFRA  # nombre viejo, por si algo lo importa
 
 SIN_DATO = "ese dato no lo tengo a mano"
 
@@ -37,7 +58,10 @@ def _money(n) -> str:
 
 
 def _digitos(texto: str) -> set:
-    return {re.sub(r"\D", "", m) for m in _PLATA.findall(texto or "") if m}
+    """Todas las corridas de tres digitos o mas que hay en un texto. Es como se
+    compara: sin puntos, sin signo y sin unidad, asi `$8.500`, `8500` y `8.500`
+    son el mismo numero."""
+    return {m for m in re.findall(r"\d{3,}", re.sub(r"[.,]", "", texto or ""))}
 
 
 def _precio_de(fichas: list, referencia: str):
@@ -77,7 +101,8 @@ def _envio(mensaje: str, fichas: list, trace_id: str):
     return int(r.get("monto") or 0)
 
 
-def llenar(texto: str, fichas: list, mensaje: str, trace_id: str = "") -> tuple:
+def llenar(texto: str, fichas: list, mensaje: str, trace_id: str = "",
+           politicas: list | None = None) -> tuple:
     """(texto con los numeros puestos, informe). El informe dice que huecos se
     llenaron, cuales quedaron sin dato y si hubo plata inventada."""
     informe = {"llenos": [], "sin_dato": [], "montos": [], "inventada": []}
@@ -104,14 +129,9 @@ def llenar(texto: str, fichas: list, mensaje: str, trace_id: str = "") -> tuple:
             informe["llenos"].append("envio")
             informe["montos"].append(monto)
             return _money(monto)
-        # total: SOLO suma lo que ya se puso. Nunca deriva un numero nuevo.
-        if not usados:
-            informe["sin_dato"].append("total")
-            return SIN_DATO
-        total = sum(usados)
-        informe["llenos"].append("total")
-        informe["montos"].append(total)
-        return _money(total)
+        # El total se resuelve en la SEGUNDA pasada, cuando ya estan puestos
+        # los precios y el envio: sumar antes daria la mitad de la cuenta.
+        return "\x00TOTAL\x00"
 
     salida = _HUECO.sub(_pone, texto or "")
 
@@ -124,14 +144,47 @@ def llenar(texto: str, fichas: list, mensaje: str, trace_id: str = "") -> tuple:
         log.warning("hueco_crudo", trace_id=trace_id, huecos=crudos[:5])
         salida = re.sub(r"\s*\{\{[^}]*\}\}", " " + SIN_DATO, salida)
 
-    # LA GUARDA. Todo lo que quedo con pinta de plata y no lo puso el codigo.
+    # ── LA GUARDA: TODO NUMERO SALE DE LA FUENTE ────────────────────────
+    #
+    # Desde el 11-sep el modelo SI escribe el precio, copiado de la ficha. Esto
+    # es lo que hace que esa licencia no sea un agujero: un numero que no esta
+    # en las fichas, ni en las politicas que se le pusieron delante, ni lo puso
+    # el codigo, NO PUEDE haber salido de la fuente. Salio de la cabeza del
+    # modelo, y la respuesta entera no sale.
+    #
+    # Y por eso la comparacion es contra el texto ENTERO de la fuente y no solo
+    # contra los precios: `1000 dpi` y `3200 MHz` son numeros de la ficha, y
+    # una guarda que solo conociera precios los llamaria invento y tiraria una
+    # respuesta correcta. La regla es de PROCEDENCIA, no de tema.
+    import json as _json
     permitidos = {str(m) for m in informe["montos"]}
-    permitidos |= {str(f.get("precio_ars")) for f in (fichas or [])
-                   if f.get("precio_ars")}
-    for bruto in _PLATA.findall(salida):
+    permitidos |= _digitos(_json.dumps(fichas or [], ensure_ascii=False,
+                                       default=str))
+    permitidos |= _digitos(_json.dumps(politicas or [], ensure_ascii=False,
+                                       default=str))
+    for bruto in _CIFRA.findall(salida):
         limpio = re.sub(r"\D", "", bruto)
         if limpio and limpio not in permitidos:
             informe["inventada"].append(bruto.strip())
+
+    # ── EL TOTAL, RECIEN AHORA ──────────────────────────────────────────
+    #
+    # Suma TODO monto que quedo escrito en el mensaje, venga del modelo o del
+    # codigo: los del modelo ya pasaron por la guarda de arriba, asi que a esta
+    # altura no hay una sola cifra sin respaldo en la fuente. Sumar solo lo que
+    # puso el codigo daba la mitad de la cuenta -el precio lo escribe el modelo
+    # desde la ficha-, que es peor que no dar ninguna.
+    if "\x00TOTAL\x00" in salida:
+        partes = [int(re.sub(r"\D", "", m)) for m in
+                  re.findall(r"\$\s?\d[\d.]*", salida.split("\x00TOTAL\x00")[0])]
+        if partes:
+            total = sum(partes)
+            informe["llenos"].append("total")
+            informe["montos"].append(total)
+            salida = salida.replace("\x00TOTAL\x00", _money(total))
+        else:
+            informe["sin_dato"].append("total")
+            salida = salida.replace("\x00TOTAL\x00", SIN_DATO)
 
     if informe["sin_dato"]:
         log.warning("hueco_sin_dato", trace_id=trace_id,

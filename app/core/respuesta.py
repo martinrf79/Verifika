@@ -10,9 +10,10 @@ EL FLUJO, entero:
               cliente, y se queda con lo poco que puede hacer falta.
   2. MODELO   UNA llamada. Ve la voz de la casa, la memoria de la charla, los
               VEINTE TIPOS con su molde de respuesta, y la fuente de arriba.
-              Contesta con un tipo y un texto. Los montos van como huecos.
-  3. NUMEROS  el codigo pone el precio y el envio en los huecos, y borra
-              cualquier cifra que el modelo haya escrito por su cuenta.
+              Contesta con un tipo y un texto. El precio lo copia de la ficha;
+              el envio y la suma van como hueco, porque no los sabe.
+  3. NUMEROS  el codigo pone el envio y el total, y tira abajo la respuesta si
+              quedo una sola cifra que la fuente no tiene.
   4. CIERRE   si el cliente decidio comprar, se toma el pedido y se manda el
               link de pago. `leads` y `cierre` no se tocaron.
   5. MEMORIA  se guarda la charla, igual que siempre.
@@ -21,9 +22,14 @@ POR QUE UNA SOLA LLAMADA. Tres llamadas por turno daban entre 4,4 y 5,8
 segundos medidos y se comian la cuota diaria de a tres. Una sola con los veinte
 moldes adentro pesa menos que la primera de las tres que habia.
 
+DE DONDE SACA EL MODELO LA RESPUESTA, que es la pregunta que define todo esto:
+de las fichas y las politicas que el codigo le pone delante en la etapa uno, y
+de ningun otro lado. Por eso la ficha viaja con el precio ya escrito.
+
 LO QUE EL MODELO NO PUEDE HACER, y lo garantiza el codigo, no el prompt:
-escribir un numero de plata, afirmar que existe un producto que no esta en las
-fichas que se le pusieron delante, e inventar una politica de la casa.
+escribir un numero que la fuente no tenga -precio, plazo o spec, da igual-,
+calcular un envio o una suma, afirmar que existe un producto que no esta en las
+fichas, e inventar una politica de la casa.
 """
 import json
 import time
@@ -51,11 +57,17 @@ tipo que corresponde al mensaje del cliente y contestale con ESE molde, escrito
 con tus palabras, corto y natural. Si el mensaje mezcla dos tipos, contesta los
 dos en el mismo mensaje.
 
-NO ESCRIBAS NINGUN NUMERO DE PLATA. Nunca. Donde iria un precio escribi
-{{precio}}, o {{precio:id}} si hay mas de un producto en juego. Donde iria el
-costo del envio escribi {{envio}}. Donde iria la suma escribi {{total}}. Los
-pone el codigo desde la fuente; un numero tuyo se borra y el cliente se queda
-sin respuesta.
+LA PLATA. El precio de un producto lo escribis VOS, copiado TAL CUAL del campo
+`precio` de su ficha, hasta el ultimo digito. Es el unico numero de plata que
+podes escribir, y solo si esa ficha esta abajo.
+
+Los otros dos NO los sabes y no los podes deducir: el costo del ENVIO escribilo
+{{envio}}, y la SUMA de varias cosas escribila {{total}}. No los calcules, no
+los estimes, no los redondees. Los pone el codigo.
+
+Cualquier cifra de plata que no salga de una ficha o de esos dos huecos tira la
+respuesta entera abajo y el cliente se queda sin contestar. Si no tenes el
+precio, decilo; nunca lo aproximes.
 
 Los OTROS huecos del molde -{{producto}}, {{stock}}, {{opciones}} y los demas-
 NO se copian: ahi va la palabra real, sacada de la ficha que tenes abajo.
@@ -291,7 +303,8 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     else:
         # ── 3. NUMEROS ──────────────────────────────────────────────────
         t = time.time()
-        texto, informe = N.llenar(texto, fichas, raw_message, trace_id)
+        texto, informe = N.llenar(texto, fichas, raw_message, trace_id,
+                                  politicas=politicas)
         etapas["numeros"] = int((time.time() - t) * 1000)
         if informe.get("inventada"):
             # LA RESPUESTA CON PLATA INVENTADA NO SALE. No hay forma honesta de

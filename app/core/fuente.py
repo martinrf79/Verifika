@@ -240,16 +240,31 @@ def certificar_temas(nombres: list, tienda_id: str) -> dict:
 TOPE_FICHAS = 5
 
 
+def _plata(n) -> str:
+    """El precio como se escribe, no como se guarda. Vacio si no hay precio:
+    una ficha sin precio no puede inventar uno."""
+    try:
+        return "$" + f"{int(round(float(n))):,}".replace(",", ".")
+    except (TypeError, ValueError):
+        return ""
+
+
 def _ficha_corta(prod: dict) -> dict:
     """La ficha que ve el modelo. Corta a proposito: id, nombre, categoria,
     stock, precio y los campos que la fuente declaro para ese rubro."""
     from app.core.fuente_producto import campos_ficha
+    precio = prod.get("precio_ars")
     fuera = {
         "id": prod.get("id"),
         "nombre": prod.get("nombre"),
         "categoria": prod.get("categoria"),
         "stock": prod.get("stock"),
-        "precio_ars": prod.get("precio_ars"),
+        # EL PRECIO VIAJA YA ESCRITO, y es a proposito: el modelo lo COPIA en
+        # vez de formatearlo. Un numero pelado invita a redondearlo, a pasarlo
+        # a miles o a sumarle el envio de memoria; una cadena se copia igual.
+        # El numero crudo queda al lado para el codigo, que es quien suma.
+        "precio": _plata(precio),
+        "precio_ars": precio,
     }
     for campo, valor in (campos_ficha(prod) or []):
         if campo in fuera or valor in (None, ""):

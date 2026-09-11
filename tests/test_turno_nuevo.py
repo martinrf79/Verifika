@@ -166,3 +166,58 @@ def test_el_turno_pasa_por_el_cierre_y_no_se_rompe(firestore_doble, monkeypatch)
     texto = asyncio.run(R.procesar_turno("sonda_cierre", "listo, me lo llevo",
                                          TIENDA, "telegram", "trace_cierre"))
     assert texto and "Listo" in texto
+
+
+# ── EL MODELO ESCRIBE EL PRECIO, Y LA GUARDA ES DE PROCEDENCIA ──────────────
+#
+# Desde el 11-sep el precio lo copia el modelo de la ficha. Lo que lo hace
+# seguro no es el prompt: es que un numero que no esta en la fuente tira la
+# respuesta abajo, sea un precio, un plazo o una spec.
+
+def test_la_ficha_le_lleva_el_precio_ya_escrito(firestore_doble):
+    from app.core import fuente as F
+    fichas = F.fichas_relevantes("mouse genius dx-110", TIENDA, tope=1)
+    assert fichas and fichas[0]["precio"].startswith("$")
+    assert fichas[0]["precio_ars"]
+
+
+def test_el_precio_copiado_de_la_ficha_pasa(firestore_doble):
+    from app.core import fuente as F
+    fichas = F.fichas_relevantes("mouse genius dx-110", TIENDA, tope=1)
+    texto = f"Ese mouse sale {fichas[0]['precio']}."
+    _, inf = N.llenar(texto, fichas, "x", "t")
+    assert not inf["inventada"]
+
+
+def test_un_precio_parecido_pero_distinto_no_pasa(firestore_doble):
+    from app.core import fuente as F
+    fichas = F.fichas_relevantes("mouse genius dx-110", TIENDA, tope=1)
+    otro = int(fichas[0]["precio_ars"]) + 1
+    _, inf = N.llenar(f"Sale ${otro:,}.".replace(",", "."), fichas, "x", "t")
+    assert inf["inventada"], "un digito cambiado tiene que caer"
+
+
+def test_una_spec_de_la_ficha_no_es_plata_inventada(firestore_doble):
+    """La guarda mira PROCEDENCIA, no tema: un numero de la ficha pasa aunque
+    no sea plata, y uno que la ficha no tiene cae aunque parezca inocente."""
+    fichas = [{"id": "X", "nombre": "Monitor", "precio_ars": 165000,
+               "precio": "$165.000", "descripcion": "resolucion 1920x1080"}]
+    _, ok = N.llenar("Tiene 1920x1080 de resolucion.", fichas, "x", "t")
+    assert not ok["inventada"]
+    _, mal = N.llenar("Tiene 2560x1440 de resolucion.", fichas, "x", "t")
+    assert mal["inventada"]
+
+
+def test_un_numero_corto_de_prosa_no_tira_la_respuesta():
+    _, inf = N.llenar("100% original, garantia de 24 meses.", _UNA, "x", "t")
+    assert not inf["inventada"]
+
+
+def test_el_total_suma_el_precio_que_escribio_el_modelo(firestore_doble):
+    """El precio ya no lo pone el codigo, asi que el total tiene que sumar lo
+    que quedo ESCRITO. Sumar solo lo del codigo daba media cuenta."""
+    texto, inf = N.llenar("Sale $8.500 y el envio {{envio}}. Total {{total}}.",
+                          _UNA, "envio a cordoba capital", "t")
+    assert "total" in inf["llenos"]
+    montos = [m for m in inf["montos"]]
+    assert max(montos) > 8500, f"el total no sumo el precio del modelo: {texto}"
