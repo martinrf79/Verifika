@@ -61,6 +61,18 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
+**11-sep, EL APAGON.** Se apago la arquitectura de moldes, mesa y dos llamadas
+al modelo. El turno es ahora `app/core/respuesta.py`: una sola llamada, con los
+veinte tipos de pregunta y su respuesta generica adentro del prompt
+-`app/core/tipos.py`-. El codigo busca en la fuente ANTES de hablarle al modelo
+-`app/core/fuente.py`- y pone los dos unicos numeros que existen, precio y
+envio, DESPUES -`app/core/numeros.py`-. `app/` paso de 17.437 lineas a 11.129.
+Lo apagado esta entero en `archivo/apagado_11sep/`. **Los items de abajo que
+nombran la mesa, el molde, el resolver o el indice quedaron sin objeto: no se
+borran todavia porque lo que describen -un agujero de la FUENTE- puede volver
+a aparecer en el camino nuevo.**
+
+
 **LOS NOMBRES Y EL DETALLE DE CADA FALLA NO SE ESCRIBEN ACA.** Viven en
 `arquitectura/MAPA_CABLEADO.md`, que es el unico lugar donde se nombra el
 cableado: estaciones `T`, juntas `J`, puntos de modelo `L` y desconexiones `D`.

@@ -88,11 +88,9 @@ if not LOGS_EN_TESTS:
     _app_logger.setup_logging = _setup_y_callar
 
 
-def pytest_configure(config):
-    """FICHA 36: reconciliar y guia_pedido salieron de app/. Un solo enchufe,
-    el de banco_pruebas.archivo_vivo, que tambien usa la compuerta nocturna."""
-    from banco_pruebas.archivo_vivo import enchufar
-    enchufar()
+# EL ENCHUFE DEL ARCHIVO SE APAGO (11-sep-2026). `pytest_configure` cargaba
+# tres modulos de `archivo/` y le pisaba funciones a `pedido` y a `resolver`
+# para que el camino viejo siguiera en pie. Ese camino ya no existe.
 
 
 

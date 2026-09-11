@@ -182,102 +182,12 @@ CLASES = [
 ]
 
 
-# ─────────────────────────────────────────────────────────────────────────
-# LA RESPUESTA GENERICA DE CADA TIPO — una casilla por clase, ni una suelta.
-#
-# QUE ES. El MOLDE de la respuesta, no la respuesta. Dice la FORMA que tiene
-# que tener la contestacion de ese tipo de pregunta: que se afirma, que se
-# calla y que se pregunta. El dato duro entra por los huecos `{{...}}`, igual
-# que en la FAQ curada de `app/core/curadas.py`.
-#
-# POR QUE CON HUECOS Y SIN UN SOLO DIGITO. Un numero escrito aca seria un dato
-# sin fuente, que es la falla que el proyecto persigue desde el principio: la
-# plata la arma el codigo -`app/core/calculadora.py`- y la spec sale de la
-# ficha. Si un hueco no resuelve, la respuesta NO se sirve: una politica a
-# medias es peor que no contestarla. Mismo criterio que `estampar_valores`.
-#
-# COMO SE LEE CADA RENGLON. La clase dice cuando aplica, `CLASE_A_CAMPOS` dice
-# que familias de `app/core/familias.py` abre, `espera` dice que invariante
-# tiene que cumplir la salida, y esto dice como suena. Cuatro caras de la
-# misma fila, ninguna repetida en un `.md`.
-#
-# LO QUE TODAVIA NO ES. Hoy es CATALOGO: el bot vivo no lee este diccionario.
-# Enchufarlo al camino vivo -que la casilla de la mesa salga con este molde-
-# es la segunda parte, y cuando pase este diccionario se muda a `app/`.
-RESPUESTA_GENERICA = {
-    "identidad_existe":
-        "Si, {{producto}} lo tenemos. {{stock}}. Si queres te paso el precio "
-        "o lo sumamos al pedido.",
+# LAS VEINTE RESPUESTAS GENERICAS SE MUDARON AL CAMINO VIVO (11-sep-2026).
+# Viven en `app/core/tipos.py`, porque desde el apagado son el prompt del
+# modelo y no un catalogo de banco. Aca se importan: una sola fuente, y este
+# archivo sigue siendo el unico lugar donde estan las preguntas de ejemplo.
+from app.core.tipos import RESPUESTA_GENERICA, TIPOS  # noqa: F401,E402
 
-    "identidad_no_existe":
-        "{{producto_pedido}} no lo vendemos, asi que no te puedo pasar datos "
-        "de ese. Lo que si tengo en {{rubro}} es {{opciones}}.",
-
-    "identidad_ambigua":
-        "Tengo varios que entran en lo que pedis: {{opciones}}. Decime con "
-        "cual seguimos y te paso los datos de ese.",
-
-    "spec_de_ficha":
-        "{{producto}}: {{atributo}} es {{valor}}. Es lo que dice la ficha.",
-
-    "spec_sin_dato":
-        "Ese dato no figura en la ficha de {{producto}}, asi que no te lo "
-        "invento. De ese producto si tengo {{atributos_disponibles}}.",
-
-    "filtro_numerico":
-        "Con {{condicion}} te quedan {{opciones}}. {{precios}}.",
-
-    "filtro_sin_campo":
-        "{{criterio}} no es un dato que tengamos cargado, asi que no te puedo "
-        "decir cual cumple sin inventarlo. Ordenar si puedo por "
-        "{{campos_disponibles}}.",
-
-    "precio_simple":
-        "{{producto}} sale {{precio}}. {{stock}}.",
-
-    "precio_multiple":
-        "Te armo la cuenta: {{detalle_items}}. Total {{total}}.",
-
-    "envio_costo":
-        "A {{destino}} el envio sale {{costo_envio}} y {{plazo}}.",
-
-    "politica_faq":
-        "{{politica}}",
-
-    "politica_sin_cubrir":
-        "Eso no lo tengo escrito en las politicas de la casa, asi que no te lo "
-        "puedo asegurar. {{derivacion}}.",
-
-    "compatibilidad":
-        "{{producto}} con {{contraparte}}: {{veredicto}}, {{motivo}}. Si la "
-        "ficha no lo declara, te lo digo asi: no figura.",
-
-    "negacion":
-        "Saco {{excluido}} de la busqueda. Con eso te quedan {{opciones}}.",
-
-    "multipregunta":
-        "{{punto_por_punto}}. Una linea por cosa que preguntaste, ninguna sin "
-        "contestar.",
-
-    "desprolijo":
-        "Entiendo {{lectura}}. {{respuesta_del_tipo_de_abajo}}. Si la lectura "
-        "no es segura, primero confirmo: te referis a {{candidato}}.",
-
-    "capciosa":
-        "Eso no se da junto: {{correccion}}. Lo mas cerca que tengo es "
-        "{{opciones}}.",
-
-    "dato_falso_inducido":
-        "No me consta {{dato_afirmado}} y no te lo puedo confirmar. Lo que "
-        "figura en la fuente es {{dato_real}}.",
-
-    "manipulacion":
-        "Eso no lo puedo hacer. Lo que si puedo es {{lo_que_si}}.",
-
-    "intencion_compra":
-        "Listo. Me pasas tu nombre y te dejo el link para pagar: "
-        "{{link_pago}}. {{resumen_pedido}}.",
-}
 
 # Cada clase cae en una familia de `app/core/familias.py`. No es otra
 # taxonomia: es el puente. `cierre` no lo declara el molde; memoria

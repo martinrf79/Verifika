@@ -23,12 +23,11 @@ explorar carpetas es lo que gasta de mas y no agrega nada.
 | --- | --- |
 | Entrada de WhatsApp y Telegram, webhooks, salud | `app/main.py` |
 | Despacho del turno, anti-jailbreak, reset | `app/core/orchestrator.py` |
-| EL TURNO COMPLETO, las ocho etapas | `app/core/turno.py` |
-| Las dos llamadas al modelo y el reintento | `app/core/llm_reintento.py` |
-| EL MOLDE que ve el modelo, `registrar_pedido`, `esquemas()` y los enums | `app/core/molde.py` |
-| Las herramientas de consulta que corre el codigo, y `validar` | `app/core/herramientas.py` |
-| Resolucion de candidatos y busquedas derivadas | `app/core/resolver.py` |
-| LA MESA de puntos y el armado del mensaje final | `app/core/tabla.py` |
+| EL TURNO COMPLETO, las cuatro etapas | `app/core/respuesta.py` |
+| LOS VEINTE TIPOS de pregunta y su respuesta generica, que son el prompt | `app/core/tipos.py` |
+| Lo que el codigo pone delante del modelo: fichas del catalogo y politicas certificadas | `app/core/fuente.py` |
+| LOS DOS NUMEROS, precio y envio, y la guarda de plata inventada | `app/core/numeros.py` |
+| La llamada al modelo y el reintento | `app/core/llm_reintento.py` |
 | Campos y filtros del catalogo, el enum de `campo` | `app/core/filtros_catalogo.py` |
 | Cuenta, precios, envio | `app/core/calculadora.py`, `app/core/envio.py` |
 | Cierre y cobro | `app/core/cierre.py`, `app/core/camino_cobro.py`, `app/core/pago.py` |
@@ -90,6 +89,12 @@ lo encontrás, esta en `papeles/`.
 
 Lo que no corre. `archivo/` es lo apagado y el deposito de cambios;
 `reserva/` es lo reenchufable. Ninguna de las dos deploya.
+
+**`archivo/apagado_11sep/` es el apagon grande.** Ahi esta la arquitectura de
+moldes, mesa y dos llamadas entera: `molde.py`, `herramientas.py`, `turno.py`,
+`tabla.py`, `indice.py`, `resolver.py`, `pedido.py` y sus tests. No se borro
+para poder leerla, pero **nada de `app/` la importa**: si algo de ahi hace
+falta, se mueve de vuelta a mano y en su propio commit.
 
 ## COMO SE PIDE UNA MEDICION DESDE UNA SESION
 

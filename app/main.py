@@ -177,10 +177,15 @@ def _modo_cierre_efectivo() -> str:
 
 
 def _inventario_fuente() -> dict:
-    """El inventario del indice, tolerante: el health nunca se cae por esto."""
+    """Cuantos productos y cuantos temas ve el servicio. Lo contaba el indice,
+    que se apago el 11-sep-2026; se cuenta de la fuente, que es donde vive el
+    numero. Tolerante: el health nunca se cae por esto."""
     try:
-        from app.core.indice import inventario
-        return inventario(settings.TIENDA_ID)
+        from app.storage.firestore_client import get_all_faq, get_all_products
+        return {
+            "productos": len(get_all_products(tienda_id=settings.TIENDA_ID) or []),
+            "temas_faq": len(get_all_faq(tienda_id=settings.TIENDA_ID) or {}),
+        }
     except Exception as e:
         return {"error": str(e)[:120]}
 
@@ -238,82 +243,11 @@ async def health_tienda(tienda_id: str, request: Request):
         return JSONResponse({"error": str(e)[:200]}, status_code=500)
 
 
-@app.post("/admin/diag-latencia")
-async def diag_latencia(request: Request):
-    """
-    Boton de diagnostico: mide llamadas PELADAS al modelo desde adentro de Cloud
-    Run para aislar de donde sale la demora de un turno. No toca el flujo del
-    bot. Requiere X-Admin-Token.
-
-    Mide la forma REAL del camino vivo, que es tool calling con las siete
-    herramientas. Antes media el solver viejo -tools,
-    tool_choice required, system prompt grande- y encima con el cliente de
-    `agent`, que sigue el flag LLM_PROVIDER: con LLM_PROVIDER=openai y la clave
-    vencida, este diagnostico devolvia 401 mientras el bot andaba bien. Un
-    diagnostico que miente es peor que no tenerlo.
-
-    Comparar los ms entre pruebas:
-      1 vs 2 = costo de mandar las herramientas
-      2 vs 3 = costo del prompt grande
-      3 vs 4 = costo del historial acumulado
-    """
-    if (rechazo := _rechazo_admin(request)) is not None:
-        return rechazo
-
-    from app.core.llm_reintento import _cliente
-    from app.core import herramientas as _H
-
-    modelo = settings.GEMINI_MODEL
-    out = {"camino": "herramientas (turno)", "modelo": modelo}
-    try:
-        client = _cliente()
-    except Exception as e:
-        return JSONResponse({"error": f"cliente: {str(e)[:200]}"},
-                            status_code=500)
-
-    # Las herramientas REALES del turno: es lo que viaja en la llamada uno.
-    try:
-        tools = _H.esquemas(settings.TIENDA_ID)
-    except Exception:
-        tools = None
-
-    prompt_grande = ("Sos un vendedor argentino. " + ("Regla de venta. " * 400))
-    # Historial simulado pesado, como una charla de diez turnos.
-    hist_sim = []
-    for i in range(5):
-        hist_sim.append({"role": "user",
-                         "content": f"Consulta {i} sobre productos y precios"})
-        hist_sim.append({"role": "assistant", "content": (
-            "Te muestro opciones: Mouse Genius DX-110 $8.500, Teclado Genius "
-            "KB-110X $12.000, Monitor Samsung 24 $165.000. ") * 3})
-
-    def _llamar(messages, usar_schema, max_t):
-        t0 = _time.perf_counter()
-        kw = dict(model=modelo, messages=messages, max_tokens=max_t,
-                  temperature=0, extra_body={"reasoning_effort": "none"})
-        if usar_schema and tools:
-            kw["tools"] = tools
-            kw["tool_choice"] = "auto"
-        r = client.chat.completions.create(**kw)
-        ms = int((_time.perf_counter() - t0) * 1000)
-        u = getattr(r, "usage", None)
-        return {"ms": ms, "prompt_tokens": getattr(u, "prompt_tokens", None)}
-
-    _ok = [{"role": "user", "content": "Responde solo: ok"}]
-    _sys = [{"role": "system", "content": prompt_grande}]
-    pruebas = {
-        "1_minima": (_ok, False, 5),
-        "2_con_herramientas": (_ok, True, 400),
-        "3_prompt_grande": (_sys + _ok, True, 400),
-        "4_historial_grande": (_sys + hist_sim + _ok, True, 400),
-    }
-    for nombre, (msgs, usar, max_t) in pruebas.items():
-        try:
-            out[nombre] = await asyncio.to_thread(_llamar, msgs, usar, max_t)
-        except Exception as e:
-            out[nombre] = {"error": str(e)[:150]}
-
-    return out
+# EL DIAGNOSTICO DE LATENCIA SE APAGO (11-sep-2026). Media el costo de mandar
+# las herramientas y el prompt grande del camino de dos llamadas, que ya no
+# existe. El turno nuevo loguea sus propias etapas en `turno_ok`: fuente,
+# modelo, numeros y memoria, con sus ms. Un diagnostico que mide un camino
+# apagado es peor que no tenerlo.
 
 
 async def _process_and_reply_telegram(chat_id: str, text: str):

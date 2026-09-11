@@ -19,7 +19,7 @@ from app.config import get_settings
 from app.logger import get_logger
 from app.storage.firestore_client import _tienda_ref
 from app.core.notificador import notificar_lead
-from app.core.indice import texto_operativo
+from app.core.guia_venta_prosa import mensaje as _msj
 
 log = get_logger(__name__)
 settings = get_settings()
@@ -64,9 +64,21 @@ _RE_CIERRE_YA_PREGUNTADO = re.compile(
 #                      cliente confirmaba, el lead ya estaba tomado y el solver
 #                      re-mandaba el presupuesto en cada "si".
 #   handoff_humano   : la decision de compra que toma una persona.
-MENSAJE_NO_INTERESADO = texto_operativo("no_interesado")
-MENSAJE_PEDIDO_YA_TOMADO = texto_operativo("pedido_ya_tomado")
-MENSAJE_HANDOFF_HUMANO = texto_operativo("handoff_humano")
+# LOS TRES TEXTOS OPERATIVOS, leidos de la fuente (11-sep-2026). Estaban en
+# `indice.OPERATIVAS`, que no hacia mas que envolver este mismo `mensaje()`; el
+# indice se apago con el resto del camino viejo.
+MENSAJE_NO_INTERESADO = _msj(
+    "no_interesado",
+    "Perfecto, sin problema. Cuando quieras retomar, acá estoy. Igual le paso "
+    "el dato a una persona del equipo por si te puede dar una mano.")
+MENSAJE_PEDIDO_YA_TOMADO = _msj(
+    "pedido_ya_tomado",
+    "Tu pedido ya quedó tomado. Una persona del equipo te contacta a la "
+    "brevedad para coordinar el pago y el envío. ¿Te ayudo con algo más?")
+MENSAJE_HANDOFF_HUMANO = _msj(
+    "handoff_humano",
+    "Buenísimo, gracias por la decisión. En un momento te contacta una persona "
+    "del equipo para cerrar el pago y el envío.")
 
 # El cliente pide explicitamente el link o los datos para pagar.
 _RE_PIDE_COBRO = re.compile(

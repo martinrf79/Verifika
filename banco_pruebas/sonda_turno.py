@@ -6,7 +6,7 @@ Que hace
     Corre UN turno real del bot -el mismo codigo que corre en produccion, la
     misma fuente de verdad, el mismo modelo- y va imprimiendo la entrada y la
     salida de cada etapa del turno. No inventa un camino nuevo: envuelve las
-    ocho etapas que ya existen en app/core/turno.py y las deja pasar.
+    cuatro etapas que ya existen en app/core/respuesta.py y las deja pasar.
 
 Que NO hace
     No modifica ni una linea del repo. No agrega flags. No cambia la
@@ -14,14 +14,10 @@ Que NO hace
     se detiene ahi y muestra el error completo con el dato que la rompio.
 
 Etapas que muestra, en el orden real del turno
-    1  decisor        llamada UNO al modelo, que herramientas pide
-    2  herramientas   ejecucion en paralelo contra la fuente de verdad
-    3  resolver       resolucion de candidatos
-    4  mesa           armado de la tabla de puntos
-    5  redactor       llamada DOS al modelo, la mesa llena
-    6  armar          texto final a partir de la mesa
-    7  obligaciones   agregados que no salen de la mesa
-    8  cierre         cierre y cobro
+    1  fichas         que productos del catalogo le pone el codigo delante
+    2  politicas      que temas de la casa certifico el codigo
+    3  modelo         LA llamada, unica: que tipo eligio y que texto escribio
+    4  numeros        que huecos de plata lleno el codigo y cuales no
 
 Donde vive y por que
     banco_pruebas/ NO deploya: esta en el paths-ignore de deploy.yml y en
@@ -90,14 +86,10 @@ def resumir(valor):
 # ─────────────────────────────────────────────────────────── envoltorios
 
 ORDEN = {
-    "_pedir_herramientas": (1, "DECISOR, llamada uno al modelo"),
-    "_ejecutar_en_paralelo": (2, "HERRAMIENTAS contra la fuente de verdad"),
-    "resolver": (3, "RESOLVER candidatos"),
-    "tabla": (4, "MESA, tabla de puntos"),
-    "_redactar": (5, "REDACTOR, llamada dos al modelo"),
-    "armar": (6, "ARMAR texto desde la mesa"),
-    "_obligaciones": (7, "OBLIGACIONES fuera de la mesa"),
-    "_cerrar": (8, "CIERRE y cobro"),
+    "fichas_relevantes": (1, "FICHAS del catalogo que el codigo pone delante"),
+    "politicas_relevantes": (2, "POLITICAS de la casa, certificadas"),
+    "_preguntar": (3, "MODELO, LA llamada, unica"),
+    "llenar": (4, "NUMEROS, los huecos de plata los pone el codigo"),
 }
 
 
@@ -203,19 +195,13 @@ def etapa_cero():
         faltan.append("acceso a Firestore")
 
     try:
-        from app.core import herramientas as H
-        esquemas = H.esquemas(getattr(s, "TIENDA_ID", ""))
-        nombres = []
-        for e in esquemas or []:
-            try:
-                nombres.append(e["function"]["name"])
-            except Exception:
-                nombres.append(str(e)[:40])
-        print("herramientas que ve el modelo: {}".format(len(nombres)))
-        print("  " + ", ".join(nombres))
+        from app.core import tipos as TP
+        bloque = TP.bloque_para_el_prompt()
+        print("tipos de pregunta que ve el modelo: {}".format(len(TP.TIPOS)))
+        print("  peso del bloque: {} caracteres".format(len(bloque)))
     except Exception as e:
-        print("NO SE PUDIERON LEER LOS ESQUEMAS DE HERRAMIENTAS: " + repr(e))
-        faltan.append("esquemas de herramientas")
+        print("NO SE PUDIERON LEER LOS VEINTE TIPOS: " + repr(e))
+        faltan.append("los veinte tipos")
 
     if faltan:
         print()
@@ -243,18 +229,19 @@ def main():
 
     faltan = etapa_cero()
 
-    from app.core import turno as T
-    from app.core import tabla as TB
+    # LAS CUATRO ETAPAS DEL TURNO NUEVO (11-sep-2026). Eran ocho y estan
+    # apagadas en `archivo/apagado_11sep/`. La sonda es lo unico que quedo
+    # intacto del instrumental viejo, porque errores de cableado va a seguir
+    # habiendo y es la unica forma de verlos por dentro sin tocar el codigo.
+    from app.core import fuente as F
+    from app.core import numeros as NU
+    from app.core import respuesta as R
     from app.core.orchestrator import process_message
 
-    envolver_async(T, "_pedir_herramientas")
-    envolver_async(T, "_ejecutar_en_paralelo")
-    envolver_sync(T, "resolver")
-    envolver_sync(TB, "tabla")
-    envolver_async(T, "_redactar")
-    envolver_sync(TB, "armar")
-    envolver_sync(T, "_obligaciones")
-    envolver_async(T, "_cerrar")
+    envolver_sync(F, "fichas_relevantes")
+    envolver_sync(F, "politicas_relevantes")
+    envolver_async(R, "_preguntar")
+    envolver_sync(NU, "llenar")
 
     user = args.user or ("sonda_" + str(int(time.time())))
     cabecera(0, "TURNO", "user_id " + user + "  canal " + args.canal)

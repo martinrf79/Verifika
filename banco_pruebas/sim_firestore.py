@@ -184,7 +184,7 @@ def install():
     # este parche solo funcionaba de casualidad, porque el banco lo importaba
     # DESPUES de install(); un test que lo importe antes -o el orchestrator, que
     # lo trae al colectar- quedaba clavado al Firestore real.
-    import app.core.turno as hv
+    import app.core.respuesta as hv
     for n in ("get_conversation", "save_conversation"):
         setattr(hv, n, _patches[n])
     # guia_compra tambien importa los nombres arriba: si alguien lo importo

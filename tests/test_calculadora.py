@@ -217,21 +217,6 @@ def test_carrito_vigente_rechaza_id_inferido_de_memoria(firestore_doble):
     assert "MOU0023" in r["mensaje_para_llm"]
 
 
-def test_carrito_vigente_acepta_id_certificado_del_turno(firestore_doble):
-    """El mismo id pasa si una tool del turno lo devolvio (certificado)."""
-    from app.core.calculadora import calculate_total
-    from app.core import herramientas as H
-    from app.core import estado_venta
-    from app.core.estado_venta import certificar_ids_de_resultado
-
-    estado_venta.set_current_estado({"carrito": [
-        {"id": "MOU0023", "nombre": "Mouse Genius DX-110 Negro", "cantidad": 2}]})
-    # La ficha la trae la herramienta VIVA del hub, no la vieja de tools.py.
-    certificar_ids_de_resultado(
-        H.ejecutar("ficha_producto", {"product_id": "MOU0049"}, "verifika_prod"))
-    r = calculate_total(items=[{"product_id": "MOU0049", "cantidad": 1}])
-    estado_venta.set_current_estado({})
-    assert r.get("ok") is True
 
 
 def test_carrito_vigente_acepta_ids_del_propio_carrito(firestore_doble):
