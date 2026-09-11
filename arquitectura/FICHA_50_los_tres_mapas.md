@@ -164,7 +164,12 @@ turno.
    la ve en cada turno.
 2. **La guarda de procedencia**, que ya existe en `app/core/numeros.py`. Un
    número que no está en lo que se le puso delante no sale al cliente.
-3. **La medición.** Se loguea cada turno que contestó sin haber buscado.
+3. **La medición.** Un renglón por turno, `motor_turno`, y sale SIEMPRE: haya
+   buscado o no. Dice cuántas vueltas costó, si volvió a buscar, si repitió la
+   misma consulta, qué veredictos salieron y **qué condición no se pudo
+   cumplir**, que es el renglón que dice qué campo le falta a la fuente. Lo
+   agrega `banco_pruebas/produccion.py` sobre la ventana que se pida, así que
+   el número se lee desde el issue 31 sin entrar a ninguna consola.
 
 Con los tres, el modelo no puede evitarla. Y con el tercero sabemos cuántas
 veces lo intentó.

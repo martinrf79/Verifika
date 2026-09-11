@@ -19,6 +19,14 @@ from app.core import tipos as TP
 TIENDA = "verifika_prod"
 
 
+def _motor(llamadas: int = 1) -> dict:
+    """El informe del motor como lo devuelve `_preguntar`, para los turnos que
+    doblan al modelo. `llamadas` es cuantas veces busco."""
+    d = R._informe_en_blanco()
+    d["llamadas"] = llamadas
+    return d
+
+
 def _buscar(consulta: dict) -> list:
     """Una consulta como la escribe el modelo, y las fichas que volvieron."""
     return MT.fichas_de(MT.buscar([consulta], TIENDA))
@@ -195,7 +203,7 @@ def test_el_turno_ENTERO_escribe_la_tarifa_del_envio(firestore_doble, monkeypatc
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "envio_costo",
                         "texto": "El envio sale {{envio}} y llega rapido."},
-                       [], 1)))
+                       [], _motor())))
     texto = asyncio.run(R.procesar_turno(
         "sonda_envio", "hacen envio a cordoba capital?", TIENDA,
         "telegram", "trace_envio"))
@@ -211,7 +219,7 @@ def test_el_destino_QUEDA_EN_LA_CHARLA_para_el_turno_siguiente(firestore_doble,
         R, "_preguntar",
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "envio_costo", "texto": "Sale {{envio}}."},
-                       [], 1)))
+                       [], _motor())))
     asyncio.run(R.procesar_turno("sonda_memoria_envio", "envio a cordoba?",
                                  TIENDA, "telegram", "trace_m1"))
     from app.storage.firestore_client import get_conversation
@@ -228,7 +236,7 @@ def test_el_turno_pide_el_dato_cuando_no_hay_destino(firestore_doble, monkeypatc
 
     async def _espia(sistema, memoria, history, mensaje, fuente, trace, tienda):
         vistos["fuente"] = fuente
-        return {"tipo": "envio_costo", "texto": "Decime tu provincia."}, [], 1
+        return {"tipo": "envio_costo", "texto": "Decime tu provincia."}, [], _motor()
 
     monkeypatch.setattr(R, "_preguntar", _espia)
     asyncio.run(R.procesar_turno("sonda_envio2", "hacen envios?", TIENDA,
@@ -276,7 +284,7 @@ def test_el_json_del_modelo_se_parsea_venga_como_venga():
 def test_sin_modelo_el_bot_no_queda_mudo(firestore_doble, monkeypatch):
     """Un modelo caido da el mensaje de demanda, no una excepcion ni un vacio."""
     monkeypatch.setattr(R, "_preguntar",
-                        lambda *a, **k: asyncio.sleep(0, result=({}, [], 0)))
+                        lambda *a, **k: asyncio.sleep(0, result=({}, [], _motor(0))))
     texto = asyncio.run(R.procesar_turno("sonda_test", "hola", TIENDA,
                                          "telegram", "trace_test"))
     assert texto and len(texto) > 10
@@ -289,7 +297,7 @@ def test_la_respuesta_con_plata_inventada_no_sale(firestore_doble, monkeypatch):
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "precio_simple",
                         "texto": "Ese mouse sale $99.999, te lo llevas hoy."},
-                       [], 1)))
+                       [], _motor())))
     texto = asyncio.run(R.procesar_turno("sonda_test2", "cuanto sale?", TIENDA,
                                          "telegram", "trace_test2"))
     assert "99.999" not in texto
@@ -310,7 +318,7 @@ def test_el_turno_pasa_por_el_cierre_y_no_se_rompe(firestore_doble, monkeypatch)
         R, "_preguntar",
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "intencion_compra",
-                        "texto": "Listo, lo dejamos tomado."}, [], 1)))
+                        "texto": "Listo, lo dejamos tomado."}, [], _motor())))
     texto = asyncio.run(R.procesar_turno("sonda_cierre", "listo, me lo llevo",
                                          TIENDA, "telegram", "trace_cierre"))
     assert texto and "Listo" in texto

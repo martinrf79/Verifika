@@ -131,7 +131,7 @@ async def _correr(nombres: list) -> dict:
     clon_produccion.instalar()
     observador.instalar(consola=False)
 
-    salida = {"charlas": [], "turnos": 0, "ok": 0}
+    salida = {"charlas": [], "turnos": 0, "ok": 0, "eventos": []}
     for nombre in nombres:
         charla = CHARLAS[nombre]
         user = f"tanda_{nombre}"
@@ -141,6 +141,7 @@ async def _correr(nombres: list) -> dict:
             with observador.turno() as t:
                 partes = await clon_produccion.turno(user, texto)
             mensaje = "\n\n".join(partes)
+            salida["eventos"] += list(t.eventos)
             fallas = _fallas_de_estado(t.eventos, mensaje)
             if quiere_plata and not _RE_PLATA.search(mensaje):
                 fallas.append("PIDIO PRECIO Y NO HAY UN NUMERO DE PLATA")
@@ -192,6 +193,12 @@ def main() -> int:
     if largos:
         print(f"LARGO: maximo {max(largos)}, promedio {sum(largos) // len(largos)}")
     print()
+    # EL MISMO NUMERO QUE EL DE PRODUCCION, Y LA MISMA FUNCION. Si la tanda y
+    # el issue 31 contaran cada uno por su lado, dos numeros de la misma cosa
+    # terminan discrepando y no se sabe cual creer.
+    from banco_pruebas.produccion import numero_del_motor
+    print("\n".join(numero_del_motor(datos.get("eventos") or [])))
+
     print("Un turno limpio es: sin punto abierto, sin punto salteado, sin tema")
     print("ambiguo servido entero, sin fallback, y con el precio adentro cuando")
     print("el cliente lo pidio.")

@@ -224,6 +224,59 @@ def _parsear(crudo: str) -> dict:
 VUELTAS_DE_BUSQUEDA = 2
 
 
+def _informe_en_blanco() -> dict:
+    """EL NUMERO DEL MOTOR, un renglon por turno.
+
+    QUE CONTESTA, que es lo que hoy no se puede contestar de ninguna otra
+    forma: si el modelo USA el motor o lo esquiva, cuantas vueltas le cuesta
+    -y cada vuelta vuelve a pagar el prompt entero-, si lo que vuelve le
+    sirve o tiene que buscar de nuevo, y QUE LE FALTA A LA FUENTE, que sale
+    solo de `campos`: una condicion que el catalogo no puede cumplir es un
+    campo que habria que agregar, y hasta hoy eso se descubria leyendo
+    charlas a mano.
+
+    Las cuatro perillas del motor -dos vueltas, ocho filas, seis consultas,
+    cinco por defecto- estan puestas a ojo. Este renglon es lo que permite
+    moverlas mirando, y por eso va antes que cualquier arreglo de robustez.
+    """
+    return {"vueltas": 0, "llamadas": 0, "consultas": 0, "repetidas": 0,
+            "veredictos": [], "filas": 0, "rescates": 0, "vacios": 0,
+            "sin_dato": 0, "campos": [], "fichas": 0}
+
+
+def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
+    """Suma al informe lo que hizo ESTA llamada al motor.
+
+    LA CONSULTA REPETIDA SE CUENTA APARTE, y es el unico numero de aca que no
+    se puede sacar del resultado: entre vuelta y vuelta el modelo no ve lo que
+    ya pidio, solo lo que volvio, asi que puede gastar la segunda vuelta
+    repitiendo la primera. Si eso pasa seguido, el arreglo no es subir el tope
+    de vueltas: es decirle que ya lo busco.
+    """
+    for c in (consultas or []):
+        informe["consultas"] += 1
+        seña = json.dumps(c, ensure_ascii=False, sort_keys=True, default=str)
+        if seña in pedidas:
+            informe["repetidas"] += 1
+        else:
+            pedidas.add(seña)
+    for res in (r or {}).get("resultados") or []:
+        veredicto = str(res.get("veredicto") or "")
+        filas = len(res.get("filas") or [])
+        informe["veredictos"].append(veredicto)
+        informe["filas"] += filas
+        informe["sin_dato"] += int(res.get("sin_dato") or 0)
+        if not filas:
+            informe["vacios"] += 1
+        elif veredicto == "no_existe":
+            # Trajo lo mas parecido: la condicion no se pudo cumplir entera.
+            informe["rescates"] += 1
+        for na in res.get("no_aplicado") or []:
+            campo = str((na or {}).get("campo") or "")
+            if campo:
+                informe["campos"].append(campo)
+
+
 async def _preguntar(sistema: str, memoria: str, history: list, mensaje: str,
                      fuente: str, trace_id: str, tienda_id: str) -> tuple:
     """La llamada al modelo, con el motor de busqueda en la mano.
@@ -232,16 +285,23 @@ async def _preguntar(sistema: str, memoria: str, history: list, mensaje: str,
     50. Antes el codigo adivinaba que fichas ponerle delante leyendo el mensaje
     crudo; ahora el modelo escribe la consulta y el codigo la ejecuta.
 
-    Devuelve (salida, fichas, veces_que_busco). Las fichas son las del motor:
-    es lo que `numeros` usa como procedencia, asi que un precio que no este en
-    lo que el modelo EFECTIVAMENTE busco no puede salir al cliente.
+    Devuelve (salida, fichas, informe). Las fichas son las del motor: es lo que
+    `numeros` usa como procedencia, asi que un precio que no este en lo que el
+    modelo EFECTIVAMENTE busco no puede salir al cliente.
+
+    EL INFORME ES EL NUMERO DEL MOTOR, y por eso se arma aca y no adentro de
+    `motor.py`: el motor ve UNA llamada, y lo que hay que medir es el TURNO
+    -cuantas vueltas costo, si el modelo re-busco, si repitio la misma consulta,
+    y que condicion no se pudo aplicar-. Nada de esto se puede reconstruir
+    despues desde afuera: si no sale del turno, no existe.
     """
     from app.core import motor as MT
     from app.core.llm_reintento import _cliente, _modelo
+    informe = _informe_en_blanco()
     cli = _cliente()
     if cli is None:
         log.warning("respuesta_sin_clave", trace_id=trace_id)
-        return {}, [], 0
+        return {}, [], informe
     msgs = [{"role": "system", "content": sistema}]
     if memoria:
         msgs.append({"role": "system", "content": memoria})
@@ -271,8 +331,9 @@ async def _preguntar(sistema: str, memoria: str, history: list, mensaje: str,
     # cualquier proveedor compatible y no tiene protocolo que mantener.
     fichas: list = []
     hallazgos: list = []
-    busquedas = 0
+    pedidas: set = set()
     for vuelta in range(VUELTAS_DE_BUSQUEDA + 1):
+        informe["vueltas"] += 1
         cuerpo = f"Mensaje del cliente: {mensaje}\n\n{fuente}"
         if hallazgos:
             cuerpo += ("\n\nLO QUE DEVOLVIO TU BUSQUEDA. Es toda la fuente que "
@@ -298,16 +359,19 @@ async def _preguntar(sistema: str, memoria: str, history: list, mensaje: str,
         except Exception as e:  # noqa: BLE001 — el turno no se rompe por el modelo
             log.warning("respuesta_modelo_error", trace_id=trace_id,
                         error=f"{type(e).__name__}: {str(e)[:150]}")
-            return {}, fichas, busquedas
+            informe["fichas"] = len(fichas)
+            return {}, fichas, informe
         if msg is None:
-            return {}, fichas, busquedas
+            informe["fichas"] = len(fichas)
+            return {}, fichas, informe
 
         llamadas = list(getattr(msg, "tool_calls", None) or [])
         if not llamadas:
-            return _parsear(msg.content or ""), fichas, busquedas
+            informe["fichas"] = len(fichas)
+            return _parsear(msg.content or ""), fichas, informe
 
         for c in llamadas:
-            busquedas += 1
+            informe["llamadas"] += 1
             try:
                 args = json.loads(c.function.arguments or "{}")
             except Exception:  # noqa: BLE001 — un JSON roto no tumba el turno
@@ -316,13 +380,15 @@ async def _preguntar(sistema: str, memoria: str, history: list, mensaje: str,
                             crudo=str(c.function.arguments)[:200])
             consultas = args.get("consultas") or []
             r = MT.buscar(consultas, tienda_id, trace_id)
+            _anotar(informe, consultas, pedidas, r)
             for f in MT.fichas_de(r):
                 if str(f.get("id")) not in {str(x.get("id")) for x in fichas}:
                     fichas.append(f)
             hallazgos.append(
                 "Buscaste: " + json.dumps(consultas, ensure_ascii=False)[:900]
                 + "\nVolvio: " + json.dumps(r, ensure_ascii=False)[:8000])
-    return {}, fichas, busquedas
+    informe["fichas"] = len(fichas)
+    return {}, fichas, informe
 
 
 def _senal(tipo: str, mensaje: str) -> dict:
@@ -442,11 +508,22 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     # el motor. Es el cambio entero de la FICHA 50: el codigo no razona, asi
     # que no puede elegir que ponerle delante, y el catalogo entero no entra.
     t = time.time()
-    salida, fichas, busquedas = await _preguntar(
+    salida, fichas, motor = await _preguntar(
         _prompt_sistema(negocio), _memoria_texto(conv), history, raw_message,
         bloque, trace_id, tienda_id)
     etapas["modelo"] = int((time.time() - t) * 1000)
-    if not busquedas:
+    # EL NUMERO DEL MOTOR, UN RENGLON POR TURNO. Sale SIEMPRE, haya buscado o
+    # no: un turno que no busco es un dato, no un hueco en la serie. Lo agrega
+    # `banco_pruebas/produccion.py` sobre la ventana que se pida, asi que el
+    # numero se lee desde el issue 31 sin entrar a la consola de nadie.
+    log.info("motor_turno", trace_id=trace_id,
+             vueltas=motor["vueltas"], llamadas=motor["llamadas"],
+             consultas=motor["consultas"], repetidas=motor["repetidas"],
+             veredictos=motor["veredictos"][:12], filas=motor["filas"],
+             rescates=motor["rescates"], vacios=motor["vacios"],
+             sin_dato=motor["sin_dato"], campos=motor["campos"][:8],
+             fichas=motor["fichas"])
+    if not motor["llamadas"]:
         # EL TERCER CANDADO DE LA FICHA 50: se mide cada turno que contesto sin
         # haber buscado. No se bloquea —la guarda de procedencia ya impide que
         # salga un numero que no vio—, se CUENTA, que es como sabemos si el

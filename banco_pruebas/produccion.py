@@ -139,6 +139,153 @@ def _get(url: str, tok: str) -> dict:
         return json.load(r)
 
 
+def _post(url: str, tok: str, cuerpo: dict) -> dict:
+    req = urllib.request.Request(
+        url, data=json.dumps(cuerpo).encode(),
+        headers={"Authorization": f"Bearer {tok}",
+                 "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return json.load(r)
+
+
+# ── EL NUMERO DEL MOTOR ─────────────────────────────────────────────────────
+#
+# POR QUE VIVE ACA Y NO EN UN SCRIPT PROPIO. Este archivo ya es el lector de
+# produccion: tiene la credencial, tiene la ventana, y el puente del issue 31
+# ya lo corre. Un script aparte seria una segunda cosa que pedir, con su
+# segunda ventana, y dos numeros de la misma corrida que no se pueden comparar.
+#
+# QUE CONTESTA, y hasta hoy no lo contestaba nadie: si el modelo USA el motor o
+# lo esquiva, cuantas vueltas le cuesta -y cada vuelta vuelve a pagar el prompt
+# entero-, si lo que vuelve le sirve o tiene que buscar de nuevo, y QUE LE
+# FALTA A LA FUENTE. Ese ultimo renglon es el que mas vale: una condicion que
+# el catalogo no puede cumplir es un campo que habria que agregar, y hasta hoy
+# eso se descubria leyendo charlas a mano.
+#
+# EL RENGLON LO ESCRIBE EL TURNO -`motor_turno` en `app/core/respuesta.py`-, en
+# CADA turno, haya buscado o no. Un turno que no busco es un dato, no un hueco.
+
+# LOS CAMPOS DEL RENGLON, EN UN SOLO LUGAR. El turno los escribe -el informe de
+# `respuesta._informe_en_blanco`- y esta funcion los lee. Si alguien renombra
+# uno de los dos lados, el agregador se queda mudo sin que nadie lo note: es el
+# telefono descompuesto que este repo ya pago tres veces. Por eso hay candado
+# en `tests/test_numero_motor.py`, que compara las dos listas.
+CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "veredictos",
+          "filas", "rescates", "vacios", "sin_dato", "campos", "fichas")
+
+PROYECTO = os.environ.get("GCP_PROJECT", "memory-engine-v1")
+SERVICIO = os.environ.get("CLOUD_RUN_SERVICIO", "agente-bot")
+TOPE_PAGINAS = 5
+
+
+def renglones_del_motor(tok: str, desde_s: int, limite: int = 1000) -> list:
+    """Los `motor_turno` de la ventana, del mas nuevo al mas viejo.
+
+    Lista vacia si la credencial no alcanza para leer logs: el informe de
+    invariantes no se cae por eso. Sin ventana se miran las ultimas 24 horas,
+    que es el default de Cloud Logging para una consulta sin filtro de tiempo.
+    """
+    desde = datetime.utcfromtimestamp(
+        time.time() - (desde_s or 86400)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    filtro = (f'resource.type="cloud_run_revision" '
+              f'AND resource.labels.service_name="{SERVICIO}" '
+              f'AND jsonPayload.event="motor_turno" '
+              f'AND timestamp>="{desde}"')
+    fuera, token = [], ""
+    for _ in range(TOPE_PAGINAS):
+        cuerpo = {"resourceNames": [f"projects/{PROYECTO}"],
+                  "filter": filtro, "orderBy": "timestamp desc",
+                  "pageSize": min(1000, max(1, limite))}
+        if token:
+            cuerpo["pageToken"] = token
+        try:
+            r = _post("https://logging.googleapis.com/v2/entries:list",
+                      tok, cuerpo)
+        except Exception as e:  # noqa: BLE001 — sin logs, el resto del informe
+            print(f"[el numero del motor no se pudo leer: "
+                  f"{type(e).__name__}: {str(e)[:120]}]")
+            return fuera
+        for e in r.get("entries") or []:
+            if isinstance(e.get("jsonPayload"), dict):
+                fuera.append(e["jsonPayload"])
+        token = r.get("nextPageToken") or ""
+        if not token or len(fuera) >= limite:
+            break
+    return fuera[:limite]
+
+
+def _n(v) -> int:
+    """Un numero del jsonPayload. Cloud Logging manda los enteros como float o
+    como cadena segun el humor, asi que se normaliza en un solo lugar."""
+    try:
+        return int(float(v))
+    except (TypeError, ValueError):
+        return 0
+
+
+def numero_del_motor(eventos: list) -> list:
+    """El informe del motor, en lineas. Funcion PURA sobre los renglones: la
+    misma cuenta sirve para los logs de produccion y para una corrida viva, y
+    por eso se puede medir offline con eventos escritos a mano."""
+    turnos = [e for e in (eventos or [])
+              if str((e or {}).get("event") or "") == "motor_turno"]
+    cab = ["", "=" * 78, "EL NUMERO DEL MOTOR — que hizo la busqueda en cada turno",
+           "=" * 78, ""]
+    if not turnos:
+        return cab + ["No hay turnos con renglon `motor_turno` en la ventana.",
+                      "Si el bot contesto igual, es que esta corriendo una "
+                      "version anterior al renglon.", ""]
+
+    n = len(turnos)
+    busco = [t for t in turnos if _n(t.get("llamadas")) > 0]
+    revuelta = [t for t in busco if _n(t.get("llamadas")) > 1]
+    consultas = sum(_n(t.get("consultas")) for t in turnos)
+    repetidas = sum(_n(t.get("repetidas")) for t in turnos)
+    filas = sum(_n(t.get("filas")) for t in turnos)
+    vacios = sum(_n(t.get("vacios")) for t in turnos)
+    rescates = sum(_n(t.get("rescates")) for t in turnos)
+    sin_dato = sum(_n(t.get("sin_dato")) for t in turnos)
+
+    def pct(x):
+        return f"{100 * x / n:.0f}%"
+
+    veredictos: dict = {}
+    for t in turnos:
+        for v in (t.get("veredictos") or []):
+            veredictos[str(v)] = veredictos.get(str(v), 0) + 1
+    campos: dict = {}
+    for t in turnos:
+        for c in (t.get("campos") or []):
+            campos[str(c)] = campos.get(str(c), 0) + 1
+
+    lineas = cab + [
+        f"TURNOS EN LA VENTANA: {n}",
+        f"  busco en {len(busco)} de {n} ({pct(len(busco))})   "
+        f"contestaron sin buscar: {n - len(busco)}",
+        f"  volvio a buscar en {len(revuelta)} ({pct(len(revuelta))}): "
+        f"la primera consulta no le alcanzo",
+        f"  consultas: {consultas} en total, "
+        f"{consultas / max(1, len(busco)):.1f} por turno que busco",
+        f"  consultas REPETIDAS: {repetidas}"
+        + ("   <- gasto una vuelta pidiendo lo mismo" if repetidas else ""),
+        f"  filas devueltas: {filas}   vacias: {vacios}   "
+        f"rescates: {rescates}   sin el dato cargado: {sin_dato}",
+    ]
+    if veredictos:
+        lineas.append("  veredictos: " + " · ".join(
+            f"{k} {v}" for k, v in sorted(veredictos.items(),
+                                          key=lambda x: -x[1])))
+    if campos:
+        lineas += ["",
+                   "LO QUE LA FUENTE NO PUDO CUMPLIR, que es el renglon que "
+                   "dice que campo agregar:"]
+        for c, v in sorted(campos.items(), key=lambda x: -x[1]):
+            lineas.append(f"   {v:>3}x  {c}")
+    else:
+        lineas.append("  toda condicion que se pidio se pudo aplicar.")
+    return lineas + [""]
+
+
 # ── BAJAR LAS CHARLAS ───────────────────────────────────────────────────────
 def _respuestas_del_bot(doc: dict) -> list:
     """Las respuestas del bot, en orden, de un documento de conversacion."""
@@ -402,6 +549,13 @@ def main(argv: list) -> int:
               "no se pueden bajar las charlas reales. No es un error del\n"
               "sistema; es que este entorno no tiene la credencial de lectura.")
         return 0
+
+    # EL NUMERO DEL MOTOR VA PRIMERO Y VA SIEMPRE. No depende de que haya
+    # charlas nuevas en la ventana -son dos preguntas distintas- y el camino de
+    # abajo tiene una salida temprana cuando no hay ninguna: dejarlo abajo
+    # significaba perder el numero justo las veces que no hubo charlas.
+    print("\n".join(numero_del_motor(
+        renglones_del_motor(tok, desde_s, max(200, args.limite * 20)))))
 
     try:
         crudas, meta = charlas(tok, args.limite, args.usuario, desde_s)

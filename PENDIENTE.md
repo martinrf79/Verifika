@@ -101,6 +101,17 @@ envio gratis dejo de sumar TODAS las fichas que devolvio la busqueda -mostrar
 cinco notebooks regalaba el envio-. Cuesta 70 tokens y apaga una politica de
 251 caracteres. Vara: 8 casos nuevos en `tests/test_turno_nuevo.py`.
 
+**11-sep, noche: EL MOTOR YA TIENE NUMERO.** `motor_turno`, un renglon por
+turno y sale siempre: vueltas, si re-busco, si repitio la misma consulta,
+veredictos, filas, rescates, y los campos que no se pudieron aplicar. Lo agrega
+`produccion.py` sobre la misma ventana que los invariantes, asi que el numero
+sale por el issue 31 con `/logs`, y la tanda viva imprime el mismo con la misma
+funcion. **Era lo que faltaba para mover las cuatro perillas del motor -dos
+vueltas, ocho filas, seis consultas, cinco por defecto- mirando en vez de a
+ojo**, y el renglon de condiciones no aplicadas es el que dice que campo agregar,
+que es la discusion abierta de D8 y D16. Vara del instrumento, offline y sin
+credencial: `tests/test_numero_motor.py`, 12 casos.
+
 **LOS NOMBRES Y EL DETALLE DE CADA FALLA NO SE ESCRIBEN ACA.** Viven en
 `arquitectura/MAPA_CABLEADO.md`, que es el unico lugar donde se nombra el
 cableado: estaciones `T`, juntas `J`, puntos de modelo `L` y desconexiones `D`.
