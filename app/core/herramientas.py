@@ -515,6 +515,8 @@ def _lista(a: BuscarProductos, tienda_id: str) -> dict:
     from app.core.pedido_helpers import certificar_producto
     from app.core.guia_compra import categoria_no_vendida
 
+    from app.core.filtros_catalogo import (
+        orden_tiene_sentido as FC_orden_tiene_sentido)
     catalogo = get_all_products(tienda_id=tienda_id) or []
     pedido_txt = a.descripcion or a.categoria or ""
 
@@ -570,58 +572,88 @@ def _lista(a: BuscarProductos, tienda_id: str) -> dict:
         if veredicto == "exists":
             prods = hits
         elif not a.categoria:
-            # NO ENCONTRADO NO ES "NO VENDEMOS ESO". Si la descripcion nombra
-            # una categoria que SI tenemos -"memoria ram de 16gb", y las
-            # nuestras son de 8- se devuelven las reales de esa categoria. Sin
-            # esto el modelo generaliza el no: medido el 1-ago, ante "tenes
-            # memoria ram de 16gb" contesto "no estamos vendiendo modulos de
-            # RAM sueltos", con el catalogo lleno de memorias.
-            alternativas = []
-            try:
-                from app.core.filtros_catalogo import (categorias_nombradas,
-                                                  opciones_por_categoria)
-                for cat in (categorias_nombradas(a.descripcion, tienda_id)
-                            or [])[:1]:
-                    alternativas = [_ficha(p, tienda_id) for p in
-                                    opciones_por_categoria(cat, tienda_id, k=3)]
-            except Exception as e:
-                log.warning("buscar_alternativas_error", error=str(e)[:120])
-            if alternativas:
-                return {"estado": "no_encontrado", "buscado": a.descripcion,
-                        "hay_en_la_categoria": alternativas,
-                        "instruccion": "Ese exacto no lo tenemos, pero la "
-                                       "categoria SI la vendemos. Decile que "
-                                       "eso puntual no, y mostrale estas que si "
-                                       "tenemos. NO digas que no vendemos el "
-                                       "rubro."}
-            # LA SALIDA MUDA ERA EL GENERADOR DE MURO. Este era el unico de los
-            # estados de salida que volvia SIN instruccion, sin cuantos habia y
-            # sin alternativa: el modelo recibia "no_encontrado" pelado y de ahi
-            # generalizaba al catalogo entero. Medido el 5-ago con "un regalo
-            # para mi viejo que labura en el campo": estado no_encontrado,
-            # instruccion False, nada mas.
+            # LA PREGUNTA DE RANKING NO ES UNA PREGUNTA DE IDENTIDAD
+            # (11-sep-2026). Medido en produccion, charla 5493547504287, turno
+            # `1fe1d20c`: "dame precio del articulo mas caro que tengas" salio
+            # `no_encontrado` con `hueco_de_fuente tipo=sin_rubro`, y el cliente
+            # leyo las 22 categorias de la casa y ningun precio.
             #
-            # No se inventa un candidato: se le da al modelo con QUE preguntar.
-            from app.storage.firestore_client import get_categories
-            # LA MARCA DEL HUECO DE IDIOMA. Aca llega lo que el codigo no pudo
-            # llevar ni a un producto ni a un rubro, o sea la palabra del
-            # cliente que todavia no entendemos. Queda anotada con sus palabras
-            # para que la proxima sesion arranque de la lista y no de leer una
-            # charla a mano. No cambia esta respuesta: solo deja evidencia.
-            from app.core import huecos
-            huecos.anotar(tienda_id, "sin_rubro", "descripcion", a.descripcion)
-            return {"estado": "no_encontrado", "buscado": a.descripcion,
-                    "categorias_que_vendemos": [
-                        str(c) for c in (get_categories(tienda_id=tienda_id)
-                                         or [])],
-                    "instruccion": "No se pudo identificar un producto con eso. "
-                                   "NO digas que no tenemos nada ni afirmes "
-                                   "nada sobre el catalogo entero: lo que pasa "
-                                   "es que la descripcion no alcanza para "
-                                   "elegir. Preguntale lo minimo que te falta "
-                                   "para poder buscar, o proponele un rubro de "
-                                   "`categorias_que_vendemos` que le pueda "
-                                   "servir y confirmá con él antes de seguir."}
+            # El orden estaba BIEN derivado -`orden=precio_ars` en el mismo
+            # log-. Lo que fallaba es que "el mas caro de la tienda" se le
+            # preguntaba al certificador de identidad, que contesta a QUE
+            # producto se refiere el cliente. Eso no es lo que se pregunto: se
+            # pregunto cual de los 880 va primero por precio, y para eso no hay
+            # nada que identificar. El candidato es el catalogo entero.
+            #
+            # NO ES UNA EXCEPCION A LA REGLA CERO, es la regla cero bien
+            # aplicada: `not_found` sigue siendo un veredicto valido de la
+            # identidad; lo que se saca es preguntarle a la identidad algo que
+            # no era de identidad.
+            #
+            # LA PUERTA ES ESTRECHA, y son las dos condiciones juntas. Tiene que
+            # venir un `ordenar_por` explicito, y ese campo tiene que ordenar por
+            # ALGO: `orden_tiene_sentido` mira los valores, no el nombre, asi que
+            # un campo de etiquetas -color, origen- no abre el catalogo. Sin las
+            # dos, una palabra suelta devolveria las 880 fichas ordenadas por
+            # cualquier cosa, que es peor que el defecto que esto arregla.
+            # Vara: tests/test_pregunta_sin_rubro.py, y sus dos guardas.
+            campo_pedido = _norm(a.ordenar_por) if a.ordenar_por else ""
+            if campo_pedido and FC_orden_tiene_sentido(
+                    catalogo, campo_pedido, tienda_id):
+                prods = list(catalogo)
+            if not prods:
+                # NO ENCONTRADO NO ES "NO VENDEMOS ESO". Si la descripcion nombra
+                # una categoria que SI tenemos -"memoria ram de 16gb", y las
+                # nuestras son de 8- se devuelven las reales de esa categoria. Sin
+                # esto el modelo generaliza el no: medido el 1-ago, ante "tenes
+                # memoria ram de 16gb" contesto "no estamos vendiendo modulos de
+                # RAM sueltos", con el catalogo lleno de memorias.
+                alternativas = []
+                try:
+                    from app.core.filtros_catalogo import (categorias_nombradas,
+                                                      opciones_por_categoria)
+                    for cat in (categorias_nombradas(a.descripcion, tienda_id)
+                                or [])[:1]:
+                        alternativas = [_ficha(p, tienda_id) for p in
+                                        opciones_por_categoria(cat, tienda_id, k=3)]
+                except Exception as e:
+                    log.warning("buscar_alternativas_error", error=str(e)[:120])
+                if alternativas:
+                    return {"estado": "no_encontrado", "buscado": a.descripcion,
+                            "hay_en_la_categoria": alternativas,
+                            "instruccion": "Ese exacto no lo tenemos, pero la "
+                                           "categoria SI la vendemos. Decile que "
+                                           "eso puntual no, y mostrale estas que si "
+                                           "tenemos. NO digas que no vendemos el "
+                                           "rubro."}
+                # LA SALIDA MUDA ERA EL GENERADOR DE MURO. Este era el unico de los
+                # estados de salida que volvia SIN instruccion, sin cuantos habia y
+                # sin alternativa: el modelo recibia "no_encontrado" pelado y de ahi
+                # generalizaba al catalogo entero. Medido el 5-ago con "un regalo
+                # para mi viejo que labura en el campo": estado no_encontrado,
+                # instruccion False, nada mas.
+                #
+                # No se inventa un candidato: se le da al modelo con QUE preguntar.
+                from app.storage.firestore_client import get_categories
+                # LA MARCA DEL HUECO DE IDIOMA. Aca llega lo que el codigo no pudo
+                # llevar ni a un producto ni a un rubro, o sea la palabra del
+                # cliente que todavia no entendemos. Queda anotada con sus palabras
+                # para que la proxima sesion arranque de la lista y no de leer una
+                # charla a mano. No cambia esta respuesta: solo deja evidencia.
+                from app.core import huecos
+                huecos.anotar(tienda_id, "sin_rubro", "descripcion", a.descripcion)
+                return {"estado": "no_encontrado", "buscado": a.descripcion,
+                        "categorias_que_vendemos": [
+                            str(c) for c in (get_categories(tienda_id=tienda_id)
+                                             or [])],
+                        "instruccion": "No se pudo identificar un producto con eso. "
+                                       "NO digas que no tenemos nada ni afirmes "
+                                       "nada sobre el catalogo entero: lo que pasa "
+                                       "es que la descripcion no alcanza para "
+                                       "elegir. Preguntale lo minimo que te falta "
+                                       "para poder buscar, o proponele un rubro de "
+                                       "`categorias_que_vendemos` que le pueda "
+                                       "servir y confirmá con él antes de seguir."}
 
     if not prods:
         cat = _norm(a.categoria)
