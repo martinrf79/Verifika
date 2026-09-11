@@ -268,3 +268,40 @@ def test_el_extremo_con_rubro_se_acota_al_rubro(firestore_doble):
 def test_sin_ficha_el_bloque_dice_que_no_lo_vendemos():
     bloque = R._bloque_fuente([], [], "")
     assert "no lo vendemos" in bloque
+
+
+# ── LO QUE MOSTRO LA PRIMERA TANDA REAL, 11-sep 18:40 ───────────────────────
+
+def test_el_inventario_tambien_es_fuente(firestore_doble):
+    """El modelo contesto '$3.100.500' porque el inventario se lo dijo, y la
+    guarda lo llamo invento: se tiro una respuesta correcta. Lo que viaja al
+    prompt es fuente, todo."""
+    from app.core import fuente as F
+    inv = F.texto_inventario(TIENDA)
+    tope = F.inventario(TIENDA)["precio_max"]
+    texto = f"El mas caro sale ${tope:,}.".replace(",", ".")
+    _, sin_inv = N.llenar(texto, [], "x", "t")
+    assert sin_inv["inventada"], "sin inventario no hay respaldo, tiene que caer"
+    _, con_inv = N.llenar(texto, [], "x", "t", inventario=inv)
+    assert not con_inv["inventada"], "con el inventario delante NO es invento"
+
+
+def test_un_pedido_de_varios_rubros_no_es_un_extremo(firestore_doble):
+    """'Dame dos auriculares, dos mouse y dos memorias... las MENOS partes
+    chinas' ordenaba por precio descendente y devolvia los cinco mas caros."""
+    from app.core import fuente as F
+    fichas = F.fichas_relevantes(
+        "dame precio de dos auriculares, dos mouse y dos memorias, que lleven "
+        "las menos partes chinas posibles", TIENDA, tope=5)
+    tope = F.inventario(TIENDA)["precio_max"]
+    assert fichas
+    assert not any(int(f.get("precio_ars") or 0) == tope for f in fichas), \
+        "ordeno por precio: el pedido multiple no es un extremo"
+
+
+def test_el_extremo_de_un_solo_rubro_sigue_ordenando(firestore_doble):
+    """La guarda de arriba no puede llevarse puesto el caso que si funciona."""
+    from app.core import fuente as F
+    fichas = F.fichas_relevantes("el teclado mas barato", TIENDA, tope=2)
+    assert fichas
+    assert all("teclado" in str(f.get("categoria", "")).lower() for f in fichas)

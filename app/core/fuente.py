@@ -314,9 +314,17 @@ def fichas_relevantes(mensaje: str, tienda_id: str,
     # cliente nombro un rubro, el orden se acota a ese rubro; si no, va sobre
     # el catalogo entero, que es lo que la pregunta pide.
     orden = resolver_orden(txt, tienda_id)
-    if orden and orden.get("campo"):
+    rubros = [_norm_cat(c) for c in categorias_nombradas(txt, tienda_id)]
+    # UN PEDIDO DE VARIOS RUBROS NO ES UN EXTREMO, por mas que traiga la
+    # palabra. Medido el 11-sep 18:41: "dame precio de dos auriculares, dos
+    # mouse y dos memorias... que lleven las MENOS partes chinas posibles"
+    # disparo el superlativo y ordeno los 146 por precio DESCENDENTE, asi que
+    # el cliente que dijo que el precio no le importaba se llevo los cinco mas
+    # caros. El superlativo ahi califica una restriccion, no pide un extremo
+    # del catalogo. Con dos o mas rubros nombrados se busca por parecido, que
+    # es lo que un pedido multiple necesita.
+    if orden and orden.get("campo") and len(rubros) < 2:
         universo = catalogo
-        rubros = [_norm_cat(c) for c in categorias_nombradas(txt, tienda_id)]
         if rubros:
             universo = [p for p in catalogo
                         if _norm_cat(p.get("categoria")) in rubros]

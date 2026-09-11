@@ -326,7 +326,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
         # ── 3. NUMEROS ──────────────────────────────────────────────────
         t = time.time()
         texto, informe = N.llenar(texto, fichas, raw_message, trace_id,
-                                  politicas=politicas)
+                                  politicas=politicas, inventario=inventario)
         etapas["numeros"] = int((time.time() - t) * 1000)
         if informe.get("inventada"):
             # LA RESPUESTA CON PLATA INVENTADA NO SALE. No hay forma honesta de

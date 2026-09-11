@@ -102,7 +102,7 @@ def _envio(mensaje: str, fichas: list, trace_id: str):
 
 
 def llenar(texto: str, fichas: list, mensaje: str, trace_id: str = "",
-           politicas: list | None = None) -> tuple:
+           politicas: list | None = None, inventario: str = "") -> tuple:
     """(texto con los numeros puestos, informe). El informe dice que huecos se
     llenaron, cuales quedaron sin dato y si hubo plata inventada."""
     informe = {"llenos": [], "sin_dato": [], "montos": [], "inventada": []}
@@ -152,6 +152,13 @@ def llenar(texto: str, fichas: list, mensaje: str, trace_id: str = "",
     # el codigo, NO PUEDE haber salido de la fuente. Salio de la cabeza del
     # modelo, y la respuesta entera no sale.
     #
+    # LA FUENTE SON LAS TRES COSAS QUE VIAJARON, y el inventario es una de
+    # ellas. Medido el 11-sep 18:40: a "que producto mas caro tenes" el modelo
+    # contesto "$3.100.500", que es el tope que el inventario le habia dicho, y
+    # la guarda lo llamo invento porque solo miraba fichas y politicas. Se tiro
+    # una respuesta CORRECTA. Lo que se le pone delante al modelo es fuente,
+    # todo, o la guarda castiga por hacerle caso al prompt.
+    #
     # Y por eso la comparacion es contra el texto ENTERO de la fuente y no solo
     # contra los precios: `1000 dpi` y `3200 MHz` son numeros de la ficha, y
     # una guarda que solo conociera precios los llamaria invento y tiraria una
@@ -162,6 +169,7 @@ def llenar(texto: str, fichas: list, mensaje: str, trace_id: str = "",
                                        default=str))
     permitidos |= _digitos(_json.dumps(politicas or [], ensure_ascii=False,
                                        default=str))
+    permitidos |= _digitos(inventario or "")
     for bruto in _CIFRA.findall(salida):
         limpio = re.sub(r"\D", "", bruto)
         if limpio and limpio not in permitidos:
