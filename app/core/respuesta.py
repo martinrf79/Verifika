@@ -118,14 +118,28 @@ def _memoria_texto(conv: dict) -> str:
     return "\n".join(partes)
 
 
-def _bloque_fuente(fichas: list, politicas: list) -> str:
+def _bloque_fuente(fichas: list, politicas: list, inventario: str = "") -> str:
+    """Lo que el codigo pone delante del modelo, y DICE LO QUE ES.
+
+    EL ENCABEZADO DECIA "es todo lo que existe" Y ERA MENTIRA. Son las fichas
+    mas parecidas al mensaje, no el catalogo. Medido el 11-sep: a "¿cuantos
+    productos vendes?" el bot contesto "5 modelos de memorias RAM", que es
+    exactamente lo que el encabezado le habia dicho que tenia. El modelo hizo
+    caso. Por eso ahora viaja el inventario entero -dos renglones- y las fichas
+    se presentan por lo que son.
+    """
     partes = []
+    if inventario:
+        partes.append(inventario)
     if fichas:
-        partes.append("FICHAS DEL CATALOGO, es todo lo que existe:\n"
+        partes.append(f"LAS {len(fichas)} FICHAS MAS PARECIDAS a lo que "
+                      "pregunto, con todos sus datos. Para hablar de un "
+                      "producto usa SOLO estas; para hablar del catalogo "
+                      "entero, el renglon de arriba:\n"
                       + json.dumps(fichas, ensure_ascii=False))
     else:
-        partes.append("FICHAS DEL CATALOGO: ninguna. El catalogo no tiene nada "
-                      "que se parezca a lo que pregunto.")
+        partes.append("FICHAS PARECIDAS: ninguna. Nada del catalogo se parece "
+                      "a lo que nombro, asi que ese producto no lo vendemos.")
     if politicas:
         partes.append("POLITICAS DE LA CASA que tocan este mensaje:\n"
                       + "\n".join(f"- {p['tema']}: {p['texto']}" for p in politicas))
@@ -283,16 +297,24 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     t = time.time()
     fichas = F.fichas_relevantes(raw_message, tienda_id)
     politicas = F.politicas_relevantes(raw_message, tienda_id)
+    inventario = F.texto_inventario(tienda_id)
     etapas["fuente"] = int((time.time() - t) * 1000)
 
     # ── 2. MODELO ───────────────────────────────────────────────────────
     t = time.time()
     salida = await _preguntar(_prompt_sistema(negocio), _memoria_texto(conv),
                               history, raw_message,
-                              _bloque_fuente(fichas, politicas), trace_id)
+                              _bloque_fuente(fichas, politicas, inventario),
+                              trace_id)
     etapas["modelo"] = int((time.time() - t) * 1000)
 
     texto = (salida.get("texto") or "").strip()
+    if texto and not (salida.get("tipo") or "").strip():
+        # EL TIPO VACIO NO TUMBA EL TURNO PERO SE CUENTA. Medido el 11-sep:
+        # tres de seis turnos volvieron sin tipo, o sea que el modelo contesto
+        # sin encasillar. El texto igual sale -el parseo tolera texto pelado-,
+        # pero sin este renglon no habia forma de saber cuantas veces pasa.
+        log.warning("tipo_vacio", trace_id=trace_id, largo=len(texto))
     if not texto:
         from app.core.guia_venta_prosa import mensaje as _prosa
         texto = _prosa("sobrecarga",

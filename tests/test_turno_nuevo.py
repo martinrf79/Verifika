@@ -221,3 +221,50 @@ def test_el_total_suma_el_precio_que_escribio_el_modelo(firestore_doble):
     assert "total" in inf["llenos"]
     montos = [m for m in inf["montos"]]
     assert max(montos) > 8500, f"el total no sumo el precio del modelo: {texto}"
+
+
+# ── EL CATALOGO ENTERO NO SON LAS CINCO FICHAS QUE TOCARON ─────────────────
+#
+# La falla medida en vivo el 11-sep: a "¿cuantos productos vendes?" el bot
+# contesto "5 modelos de memorias RAM". Estos cuatro casos son esa falla.
+
+def test_el_inventario_dice_el_catalogo_entero(firestore_doble):
+    from app.core import fuente as F
+    inv = F.inventario(TIENDA)
+    assert inv["productos"] > 100, f"solo {inv['productos']} productos"
+    assert len(inv["categorias"]) > 5
+    assert inv["precio_min"] and inv["precio_max"] > inv["precio_min"]
+
+
+def test_el_inventario_viaja_en_el_bloque_de_fuente(firestore_doble):
+    from app.core import fuente as F
+    texto = F.texto_inventario(TIENDA)
+    bloque = R._bloque_fuente(_UNA, [], texto)
+    assert str(F.inventario(TIENDA)["productos"]) in bloque
+    assert "todo lo que existe" not in bloque, "el encabezado que hacia mentir"
+
+
+def test_el_extremo_se_ordena_no_se_busca_por_parecido(firestore_doble):
+    """'El mas caro que tenes' no nombra ningun producto: por relevancia salian
+    cinco fichas cualquiera. Tiene que salir el mas caro del catalogo."""
+    from app.core import fuente as F
+    fichas = F.fichas_relevantes("cual es el producto mas caro que tienes",
+                                 TIENDA, tope=1)
+    assert fichas
+    tope = F.inventario(TIENDA)["precio_max"]
+    assert int(fichas[0]["precio_ars"]) == tope
+
+
+def test_el_extremo_con_rubro_se_acota_al_rubro(firestore_doble):
+    from app.core import fuente as F
+    fichas = F.fichas_relevantes("el teclado mas barato que tengas", TIENDA,
+                                 tope=3)
+    assert fichas
+    assert all("teclado" in str(f.get("categoria", "")).lower() for f in fichas)
+    precios = [int(f["precio_ars"]) for f in fichas]
+    assert precios == sorted(precios), "no vino ordenado de menor a mayor"
+
+
+def test_sin_ficha_el_bloque_dice_que_no_lo_vendemos():
+    bloque = R._bloque_fuente([], [], "")
+    assert "no lo vendemos" in bloque

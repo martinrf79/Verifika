@@ -240,6 +240,10 @@ def certificar_temas(nombres: list, tienda_id: str) -> dict:
 TOPE_FICHAS = 5
 
 
+def _norm_cat(c) -> str:
+    return _norm(str(c or ""))
+
+
 def _plata(n) -> str:
     """El precio como se escribe, no como se guarda. Vacio si no hay precio:
     una ficha sin precio no puede inventar uno."""
@@ -283,7 +287,10 @@ def fichas_relevantes(mensaje: str, tienda_id: str,
     ninguna ficha delante es un resultado valido y es lo que le hace decir que
     no lo tenemos.
     """
-    from app.core.filtros_catalogo import relevancia, pesos_por_rareza
+    from app.core.filtros_catalogo import (categorias_nombradas, ordenar,
+                                           orden_tiene_sentido,
+                                           pesos_por_rareza, relevancia,
+                                           resolver_orden)
     from app.storage.firestore_client import get_all_products
     txt = (mensaje or "").strip()
     if not txt:
@@ -295,6 +302,33 @@ def fichas_relevantes(mensaje: str, tienda_id: str,
         return []
     if not catalogo:
         return []
+    # ── EL EXTREMO NO SE BUSCA POR PARECIDO, SE ORDENA ──────────────────
+    #
+    # MEDIDO EL 11-SEP: a "cual es el producto mas caro que tienes" la
+    # relevancia devolvio cinco memorias RAM cualquiera, porque ninguna palabra
+    # del mensaje nombra un producto. "Mas caro" no es un parecido: es un
+    # ORDEN, y el orden lo hace el codigo sobre el campo de la fuente.
+    #
+    # `resolver_orden` solo devuelve algo si el cliente puso el superlativo, y
+    # el campo sale de `campos_filtrables`, o sea de la fuente viva. Si el
+    # cliente nombro un rubro, el orden se acota a ese rubro; si no, va sobre
+    # el catalogo entero, que es lo que la pregunta pide.
+    orden = resolver_orden(txt, tienda_id)
+    if orden and orden.get("campo"):
+        universo = catalogo
+        rubros = [_norm_cat(c) for c in categorias_nombradas(txt, tienda_id)]
+        if rubros:
+            universo = [p for p in catalogo
+                        if _norm_cat(p.get("categoria")) in rubros]
+        if universo and orden_tiene_sentido(universo, orden["campo"], tienda_id):
+            fuera = [_ficha_corta(p) for p in ordenar(
+                universo, orden["campo"], orden.get("direccion") or "min",
+                tienda_id)[:tope]]
+            log.info("fuente_fichas_por_orden", campo=orden["campo"],
+                     direccion=orden.get("direccion"), de=len(universo),
+                     cuantas=len(fuera), ids=[f.get("id") for f in fuera])
+            return fuera
+
     raras = pesos_por_rareza(catalogo, txt)
     puntuados = []
     for p in catalogo:
@@ -354,3 +388,71 @@ def politicas_relevantes(mensaje: str, tienda_id: str,
     log.info("fuente_politicas", veredicto=v["veredicto"],
              temas=[f["tema"] for f in fuera])
     return fuera
+
+
+# ── EL INVENTARIO: LO QUE EL MODELO TIENE QUE SABER SIEMPRE ────────────────
+#
+# MEDIDO EN VIVO EL 11-SEP, Y ES LA FALLA QUE MAS DAÑO HIZO DEL CAMINO NUEVO.
+# A "¿cuantos productos vendes?" el bot contesto "nuestro catalogo cuenta con 5
+# modelos diferentes de memorias RAM". Hay 880 productos en 22 categorias.
+#
+# No mintio el modelo: mintio el prompt. La etapa uno le mandaba CINCO fichas
+# elegidas por relevancia con el encabezado "es todo lo que existe", asi que
+# ante una pregunta sobre el catalogo ENTERO -cuantos vendes, que vendes, que
+# categorias tenes- contestaba sobre las cinco que le tocaron.
+#
+# El inventario es la respuesta determinista a esas preguntas, y viaja SIEMPRE:
+# son dos renglones y no depende de que la relevancia acierte.
+
+_INVENTARIO: dict = {}
+
+
+def inventario(tienda_id: str) -> dict:
+    """{productos, categorias: [(nombre, cuantos)], precio_min, precio_max}.
+
+    Se arma una vez por tienda y no se vuelve a tocar: el catalogo ya vive
+    cacheado en `firestore_client` y esto son cuentas sobre esa lista."""
+    if tienda_id in _INVENTARIO:
+        return _INVENTARIO[tienda_id]
+    try:
+        from app.storage.firestore_client import get_all_products
+        catalogo = get_all_products(tienda_id=tienda_id) or []
+    except Exception as e:  # noqa: BLE001
+        log.warning("fuente_inventario_error", error=f"{type(e).__name__}: {e}")
+        return {}
+    cuenta: dict = {}
+    precios = []
+    for p in catalogo:
+        cat = str(p.get("categoria") or "").strip()
+        if cat:
+            cuenta[cat] = cuenta.get(cat, 0) + 1
+        v = p.get("precio_ars")
+        if v:
+            try:
+                precios.append(int(v))
+            except (TypeError, ValueError):
+                pass
+    out = {
+        "productos": len(catalogo),
+        "categorias": sorted(cuenta.items(), key=lambda t: (-t[1], t[0])),
+        "precio_min": min(precios) if precios else None,
+        "precio_max": max(precios) if precios else None,
+    }
+    _INVENTARIO[tienda_id] = out
+    log.info("fuente_inventario", productos=out["productos"],
+             categorias=len(out["categorias"]))
+    return out
+
+
+def texto_inventario(tienda_id: str) -> str:
+    """El inventario como se lo lee el modelo. Vacio si no se pudo armar."""
+    inv = inventario(tienda_id)
+    if not inv.get("productos"):
+        return ""
+    cats = ", ".join(f"{c} ({n})" for c, n in inv["categorias"])
+    linea = (f"EL CATALOGO ENTERO son {inv['productos']} productos en "
+             f"{len(inv['categorias'])} categorias: {cats}.")
+    if inv.get("precio_min") and inv.get("precio_max"):
+        linea += (f" Los precios van de {_plata(inv['precio_min'])} a "
+                  f"{_plata(inv['precio_max'])}.")
+    return linea
