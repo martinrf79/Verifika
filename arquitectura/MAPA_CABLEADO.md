@@ -185,7 +185,8 @@ Cerradas el 6-sep-2026: **D1**, **D6**, la mitad dura de **D3**, la parte del
 verbo de **D4**, y **D10** en lo que hacía falta para diagnosticar la junta.
 Cerradas el 7-sep-2026: **D13** y **D15**.
 Abiertas: **D2**, **D4** en su parte de fondo, **D5**, **D7**, **D8**, **D9**,
-**D11**, **D12**, **D14**.
+**D11**, **D12**, **D14**, **D16**.
+D16 se agrego el 11-sep-2026.
 
 D13, D14 y D15 se agregaron el 6-sep-2026 leyendo las charlas REALES del 3 y 4
 de septiembre por el puente de producción, issue 31, y las tres se
@@ -384,14 +385,58 @@ nombró, en el renglón donde estaba admitiendo que no sabe.
 Los moldes de `restricciones`, `stock`, `pide_precio` y `reparto_pago` ya se
 habían corregido por esta misma razón; el genérico había quedado.
 
+### D16 · ABIERTA · La restriccion en prosa se traduce al orden equivocado
+**Estacion:** T5.1, `filtros_catalogo.resolver_orden:710`.
+**Vara:** `tests/test_barrido_orden.py`, y el barrido entero en
+`banco_pruebas/barrido_orden.py`. Offline y gratis: doble local de Firestore
+con el catalogo real, cero llamadas al modelo, un segundo.
+
+    python3 banco_pruebas/barrido_orden.py     45 de 59 el 11-sep-2026
+
+**Como se encontro.** Con la sonda, el 11-sep, sobre "necesito un aparato
+rectangular con varias teclas, que sea bueno, pero dada la crisis armame un
+presupuesto acorde". **L1 interpreto BIEN**: declaro `categoria: teclado` y las
+dos restricciones. El que fallo fue este paso: salio `precio_ars direccion max`
+y el cliente leyo un presupuesto por un teclado de $512.500 cuando el mas
+barato de la tienda sale $12.000. **Es el caso que muestra que la
+interpretacion no era el cuello.**
+
+**FAMILIA A — nueve casos, salen AL REVES.** La marca de superlativo gana sobre
+el adjetivo que la sigue: "el de precio mas bajo", "el de mas bajo precio", "el
+mejor precio", "el de peso mas bajo" y "la garantia mas corta" ordenan de mayor
+a menor. El bot entrega lo contrario de lo que le pidieron, y lo dice con
+seguridad. Ahi cae tambien `presupuesto acorde a la crisis (economico)`: el
+parentesis no se saca antes de partir en palabras, la palabra queda como
+`(economico)` y no pega con el mapa de adjetivos. `economico` suelto da `min`;
+`(economico)` da `max`.
+
+**FAMILIA B — cinco casos, ordenan por OTRO campo.** Nombrar el rubro le roba
+el campo al precio. De las 22 categorias del catalogo vivo, cinco lo hacen:
+`teclado` se va a `switch_teclado`, `memoria ram` y `placa de video` a
+`memoria_video`, `procesador` a `procesador`, `almacenamiento externo` a
+`almacenamiento`. "El teclado mas barato" no ordena por precio.
+
+**Es la misma enfermedad que D3 y D4**, un escalon mas arriba: aparear por
+palabras compartidas en vez de por un veredicto.
+
+**Lo que el barrido NO llama rojo, y es a proposito.** Veintiocho frases mas
+—"gama baja", "buena relacion precio calidad", "el mas rapido", "el mas
+vendido"— quedan en un bloque blando que no puntua. La fuente tiene **tres**
+campos numericos, `precio_ars`, `peso_gramos` y `garantia_meses`, y sobre lo
+demas ordenar no significa nada: devolver None ahi es lo honesto. Cuales de
+esas frases merecen un campo normalizado nuevo es **decision de FUENTE**, la
+misma discusion de D8, y no se decide desde el codigo.
+
 ---
 
 ## 5. RESUMEN DE UNA LÍNEA
 
-De las quince desconexiones, **una es de la fuente** (D8, la más cara), **dos
-son de instrumentación** (D2 y D10: el sistema falla y nadie lo ve), y **doce
-son plomería**, de las cuales tres viven todas en la misma junta blanda J4 y en
-la proyección del campo (D3, D4, D6).
+De las dieciséis desconexiones, **una es de la fuente** (D8, la más cara), **dos
+son de instrumentación** (D2 y D10: el sistema falla y nadie lo ve), y **trece
+son plomería**, de las cuales cuatro viven todas en la misma enfermedad —aparear
+por palabras compartidas en vez de por un veredicto— en la junta blanda J4, en
+la proyección del campo y en la traducción de la restricción al orden (D3, D4,
+D6, D16).
 
 **Las tres del 6-sep son de otra familia y hay que decirlo aparte: D13, D14 y
 D15 son las tres que el cliente LEE.** Una obligación que no se cumple, una

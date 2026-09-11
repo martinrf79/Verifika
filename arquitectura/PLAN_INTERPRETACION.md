@@ -7,6 +7,26 @@ estamos. No hay que leer nada mas para empezar.
 
 ## LA PROXIMA SESION ARRANCA ACA — fijado el 11-sep-2026
 
+LO QUE MIDIO LA TARDE DEL 11-SEP, Y CORRIGE EL ORDEN DE ESTE PLAN. Se corrio
+con la sonda una pregunta de complejidad media-alta: "necesito un aparato
+rectangular con varias teclas, que sea bueno, pero dada la crisis armame un
+presupuesto acorde". LA INTERPRETACION SALIO BIEN. La llamada uno declaro
+`categoria: teclado` y las dos restricciones, sin ver un solo producto: con el
+menu le alcanzo. **Lo que fallo fue el paso siguiente**, T5.1: la restriccion
+se tradujo a `precio_ars direccion max` y el cliente leyo un presupuesto por un
+teclado de $512.500 cuando el mas barato sale $12.000.
+
+Es **D16** del mapa, y tiene vara propia, offline y gratis:
+
+    python3 banco_pruebas/barrido_orden.py     45 de 59 el 11-sep-2026
+
+Nueve frases salen al reves y cinco de las 22 categorias le roban el campo al
+precio. **Conclusion para este plan: en esa familia de preguntas el cuello no
+es la interpretacion.** Se puede arreglar D16 sin tocar nada de lo de abajo, y
+el numero de `/vara` no se mueve porque D16 vive despues de la llamada uno.
+Decidir si se hace antes o despues de los cuatro pasos de mas abajo es de
+Martin.
+
 EL ORDEN DEL TURNO, para que no se vuelva a confundir. Primero el modelo lee la
 pregunta e interpreta. Segundo el codigo trae candidatos segun esa
 interpretacion. Tercero el modelo razona sobre esos candidatos y escribe. El

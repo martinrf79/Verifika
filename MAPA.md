@@ -49,6 +49,7 @@ catalogo se lee de Firestore; esto es la carga y el respaldo.
 | --- | --- |
 | UN turno por dentro, las ocho etapas con sus datos | `banco_pruebas/sonda_turno.py` |
 | LA INTERPRETACION: ¿declara en la casilla que corresponde? | `banco_pruebas/banco_llamada_uno.py` |
+| EL ORDEN: ¿la restriccion en prosa sale al campo y la direccion que el cliente pidio? Offline y gratis | `banco_pruebas/barrido_orden.py` |
 | Produccion como banco: charlas reales contra invariantes | `banco_pruebas/produccion.py` |
 | Charlas grabadas para reproducir sin gastar modelo | `banco_pruebas/casetes/` |
 | Salidas de todas las corridas, sin recortar | `banco_pruebas/salidas/` |
