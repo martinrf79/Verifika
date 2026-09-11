@@ -692,6 +692,22 @@ _RE_SUPERLATIVO = re.compile(
     r"barat\w*|economic\w*|car[oa]s?|livian\w*|ligero\w*|pesad\w*)(?![a-z])")
 _MENOR = ("menos", "menor", "minim", "barat", "economic", "accesible",
           "livian", "ligero")
+# EL ADJETIVO APUNTA AL EXTREMO BAJO, y "mas" no lo gobierna (D16, 11-sep-2026).
+# Hasta hoy la direccion salia SOLO de `_MENOR`, asi que la marca de superlativo
+# ganaba sobre el adjetivo que la seguia: "el de precio mas bajo" y "la garantia
+# mas corta" ordenaban de MAYOR a menor y el cliente recibia exactamente lo
+# contrario de lo que pidio. Medido: 9 frases de 59 en
+# `banco_pruebas/barrido_orden.py`.
+#
+# VAN APARTE DE `_MENOR` A PROPOSITO. `_MENOR` alimenta ademas
+# `_NIEGA_EL_ADJETIVO`, que se arma restandoselo a `_NEGACIONES`; meter estas
+# raices ahi cambiaria en silencio que negacion da vuelta el extremo. Una tabla,
+# un uso.
+#
+# NO SON MARCA DE SUPERLATIVO. "bajo consumo" o "garantia corta" no piden un
+# extremo, asi que estas raices no entran en `_RE_SUPERLATIVO`: solo deciden
+# HACIA DONDE, y unicamente cuando la frase ya trajo su marca.
+_MENOR_ADJETIVO = ("baj", "cort", "chic", "reducid")
 # LO QUE DA VUELTA EL ADJETIVO, y sale de `_NEGACIONES` restandole lo que
 # `_MENOR` ya consume. Una sola fuente, dos usos, que es la regla de este modulo.
 #
@@ -722,7 +738,14 @@ def resolver_orden(frase: str, tienda_id: str) -> dict | None:
     registro = campos_filtrables(tienda_id)
     if not registro:
         return None
-    palabras = [w for w in txt.replace("/", " ").split() if len(w) >= 4]
+    # LA PUNTUACION SE SACA ANTES DE PARTIR (D16, 11-sep-2026). `_norm` baja a
+    # minuscula y saca tildes, nada mas, asi que un parentesis quedaba pegado a
+    # la palabra. El modelo escribio la restriccion como "presupuesto acorde a
+    # la crisis (economico)" —turno medido con la sonda el 11-sep— y
+    # "(economico)" no empieza con ninguna raiz: `economico` suelto daba `min`,
+    # con el parentesis daba `max`, y el bot ofrecio el teclado de $512.500 con
+    # el mas barato de la tienda a $12.000.
+    palabras = [w for w in re.findall(r"[a-z0-9]+", txt) if len(w) >= 4]
     elegido = None
     # LOS NUMERICOS PRIMERO. "el de mas garantia" pega igual en `garantia_meses`
     # que en `garantia_detalle`, y ordenar por la prosa del detalle es ordenar
@@ -777,7 +800,13 @@ def resolver_orden(frase: str, tienda_id: str) -> dict | None:
     if elegido is None:
         return None
     direccion = "min" if any(w.startswith(m) for w in palabras
-                             for m in _MENOR) else "max"
+                             for m in _MENOR + _MENOR_ADJETIVO) else "max"
+    # "EL MEJOR PRECIO" ES EL MAS BARATO, y es el unico eje donde "mejor" apunta
+    # para abajo: la mejor garantia es la mas larga, el mejor peso no quiere
+    # decir nada. Por eso se decide DESPUES de saber el campo y no con una
+    # palabra suelta.
+    if elegido == "precio_ars" and any(w.startswith("mejor") for w in palabras):
+        direccion = "min"
     # LA NEGACION DA VUELTA EL EXTREMO, y hasta el 2-sep-2026 no la miraba nadie:
     # la direccion salia solo de si aparecia una palabra de `_MENOR`. Medido
     # sobre la fuente real, 8 de 10 formas negadas se leian al reves, y "que no

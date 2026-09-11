@@ -185,7 +185,7 @@ Cerradas el 6-sep-2026: **D1**, **D6**, la mitad dura de **D3**, la parte del
 verbo de **D4**, y **D10** en lo que hacía falta para diagnosticar la junta.
 Cerradas el 7-sep-2026: **D13** y **D15**.
 Abiertas: **D2**, **D4** en su parte de fondo, **D5**, **D7**, **D8**, **D9**,
-**D11**, **D12**, **D14**, **D16**.
+**D11**, **D12**, **D14**, y **D16** en su familia B.
 D16 se agrego el 11-sep-2026.
 
 D13, D14 y D15 se agregaron el 6-sep-2026 leyendo las charlas REALES del 3 y 4
@@ -385,13 +385,13 @@ nombró, en el renglón donde estaba admitiendo que no sabe.
 Los moldes de `restricciones`, `stock`, `pide_precio` y `reparto_pago` ya se
 habían corregido por esta misma razón; el genérico había quedado.
 
-### D16 · ABIERTA · La restriccion en prosa se traduce al orden equivocado
+### D16 · MITAD CERRADA 11-sep · La restriccion en prosa se traduce al orden equivocado
 **Estacion:** T5.1, `filtros_catalogo.resolver_orden:710`.
 **Vara:** `tests/test_barrido_orden.py`, y el barrido entero en
 `banco_pruebas/barrido_orden.py`. Offline y gratis: doble local de Firestore
 con el catalogo real, cero llamadas al modelo, un segundo.
 
-    python3 banco_pruebas/barrido_orden.py     45 de 59 el 11-sep-2026
+    python3 banco_pruebas/barrido_orden.py     45 de 59, y 54 de 59 tras cerrar la familia A
 
 **Como se encontro.** Con la sonda, el 11-sep, sobre "necesito un aparato
 rectangular con varias teclas, que sea bueno, pero dada la crisis armame un
@@ -401,14 +401,24 @@ y el cliente leyo un presupuesto por un teclado de $512.500 cuando el mas
 barato de la tienda sale $12.000. **Es el caso que muestra que la
 interpretacion no era el cuello.**
 
-**FAMILIA A — nueve casos, salen AL REVES.** La marca de superlativo gana sobre
+**FAMILIA A — nueve casos, salian AL REVES. CERRADA el 11-sep.** La marca de superlativo gana sobre
 el adjetivo que la sigue: "el de precio mas bajo", "el de mas bajo precio", "el
 mejor precio", "el de peso mas bajo" y "la garantia mas corta" ordenan de mayor
 a menor. El bot entrega lo contrario de lo que le pidieron, y lo dice con
 seguridad. Ahi cae tambien `presupuesto acorde a la crisis (economico)`: el
 parentesis no se saca antes de partir en palabras, la palabra queda como
-`(economico)` y no pega con el mapa de adjetivos. `economico` suelto da `min`;
-`(economico)` da `max`.
+`(economico)` y no pega con el mapa de adjetivos. `economico` suelto daba `min`;
+`(economico)`, `max`.
+**Como se cerro, y son dos cosas.** La puntuacion se saca antes de partir la
+frase en palabras, asi que un parentesis ya no esconde un adjetivo. Y la
+direccion dejo de salir solo de `_MENOR`: hay una tabla aparte,
+`_MENOR_ADJETIVO`, con las raices que apuntan al extremo bajo del eje —`baj`,
+`cort`, `chic`, `reducid`— que NO son marca de superlativo y solo deciden hacia
+donde cuando la frase ya trajo la suya. Va aparte de `_MENOR` a proposito:
+`_MENOR` alimenta ademas `_NIEGA_EL_ADJETIVO`, y meter estas raices ahi
+cambiaria en silencio que negacion da vuelta el extremo. Aparte, "el mejor
+precio" es el mas barato y se decide DESPUES de saber el campo, porque es el
+unico eje donde "mejor" apunta para abajo: la mejor garantia es la mas larga.
 
 **FAMILIA B — cinco casos, ordenan por OTRO campo.** Nombrar el rubro le roba
 el campo al precio. De las 22 categorias del catalogo vivo, cinco lo hacen:

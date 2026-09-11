@@ -53,23 +53,17 @@ def test_ninguna_frase_se_borro(barrido):
 
 @pytest.mark.xfail(strict=True, reason=(
     "PLAN: la restriccion en prosa se traduce a (campo, direccion) sin "
-    "equivocarse. HOY el bloque duro da 45 de 59 y los 14 rojos son de dos "
-    "familias, las dos medidas con `python3 banco_pruebas/barrido_orden.py`. "
-    "FAMILIA A, nueve casos, SALEN AL REVES: la marca de superlativo gana "
-    "sobre el adjetivo que la sigue, asi que 'el de precio mas bajo', 'el "
-    "mejor precio', 'el de peso mas bajo' y 'la garantia mas corta' ordenan de "
-    "mayor a menor y el bot entrega exactamente lo contrario de lo que le "
-    "pidieron. Ahi tambien cae 'presupuesto acorde a la crisis (economico)', "
-    "que es como el modelo escribio la restriccion en el turno medido: el "
-    "parentesis no se saca antes de partir en palabras, la palabra queda como "
-    "'(economico)' y no pega con el mapa de adjetivos. FAMILIA B, cinco casos, "
-    "ORDENAN POR OTRO CAMPO: nombrar el rubro le roba el campo al precio, y "
-    "'el teclado mas barato' ordena por `switch_teclado`, 'la memoria ram mas "
-    "barata' y 'la placa de video mas barata' por `memoria_video`, 'el "
-    "procesador mas barato' por `procesador` y 'el almacenamiento externo mas "
-    "barato' por `almacenamiento`. Son 5 de las 22 categorias del catalogo "
-    "vivo. OBJETIVO 59 de 59. Las dos familias son la misma enfermedad que D3 "
-    "y D4: aparear por palabras compartidas en vez de por un veredicto."))
+    "equivocarse. HOY el bloque duro da 54 de 59 y los 5 rojos son la FAMILIA "
+    "B de D16: nombrar el rubro le roba el campo al precio. 'el teclado mas "
+    "barato' ordena por `switch_teclado`, 'la memoria ram mas barata' y 'la "
+    "placa de video mas barata' por `memoria_video`, 'el procesador mas "
+    "barato' por `procesador` y 'el almacenamiento externo mas barato' por "
+    "`almacenamiento`. Son 5 de las 22 categorias del catalogo vivo. La causa "
+    "es que el nombre del campo se busca por raiz compartida contra las "
+    "palabras del cliente y gana el primero que pega, sin mirar que la palabra "
+    "que pego es el RUBRO y no el eje: es la misma enfermedad que D3 y D4, "
+    "aparear por palabras en vez de por un veredicto. OBJETIVO 59 de 59. La "
+    "FAMILIA A cerro el 11-sep-2026 y el piso subio de 45 a 54."))
 def test_ninguna_restriccion_sale_al_reves(barrido):
     filas = barrido["duros"]
     rojas = [f"{f['frase']} espera {f['espera']} salio {f['salio']}"
