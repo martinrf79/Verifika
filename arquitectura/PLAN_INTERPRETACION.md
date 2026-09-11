@@ -5,6 +5,54 @@ Si una sesion nueva lee el bloque 0 de `CLAUDE.md` y `MAPA.md`, este es el
 tercer archivo que tiene que leer, y con esos tres arranca sabiendo donde
 estamos. No hay que leer nada mas para empezar.
 
+## LA PROXIMA SESION ARRANCA ACA — fijado el 11-sep-2026
+
+EL ORDEN DEL TURNO, para que no se vuelva a confundir. Primero el modelo lee la
+pregunta e interpreta. Segundo el codigo trae candidatos segun esa
+interpretacion. Tercero el modelo razona sobre esos candidatos y escribe. El
+codigo nunca entra antes con candidatos: lo unico que le da antes es el menu,
+las categorias y los campos que existen en la fuente.
+
+LA UNIDAD DE TRABAJO, que Martin puso primera el 11-sep: que la llamada uno
+declare DOS datos, la CATEGORIA y la INTENCION, los dos de listas cerradas y
+con escapatoria, como `atributos`. Cubre el paso 3 del orden de mas abajo y
+agrega la intencion; los pasos 1 y 2 quedan para despues.
+
+- LO QUE YA EXISTE, leido en `app/core/molde.py`: cada item de `items` tiene
+  `categoria` con el enum de la fuente viva. Pero un item exige un producto,
+  asi que una pregunta sin producto -el mas caro de la tienda- no tiene donde
+  poner la categoria. Es la familia 1 de los fallos.
+- LO QUE NO EXISTE: la intencion. No hay campo. La lista cerrada se arma a
+  partir de las familias de pregunta, y el catalogo de lo que una pregunta
+  puede abrir ya vive en `app/core/familias.py`: se lee ANTES de inventar una
+  lista nueva.
+- Se mide con `/vara` antes y despues, y la vara se amplia con casos que midan
+  la intencion.
+
+LOS CUATRO CONTROLES DE UNA INTERPRETACION. El codigo no puede juzgar el
+sentido de una pregunta; estos cuatro no necesitan entenderlo. Hoy NINGUNO esta
+completo en el repo. Van despues de los dos datos, en este orden:
+
+1. FORMA. La categoria, el campo y la intencion existen en la fuente o en su
+   lista. Hoy lo cubren los enums de `categoria` y de `campo`; falta el de la
+   intencion.
+2. RESULTADO. Si la interpretacion no trae ningun producto, o choca con la
+   fuente, algo se entendio mal, y no se contesta como si nada.
+3. REPETICION. Se interpreta dos veces; si las dos no coinciden, hay duda real.
+   Es el paso 4 del orden de mas abajo.
+4. ESCAPATORIA. El modelo puede declarar que no sabe, igual que hoy puede
+   declarar `sin_campo_en_la_fuente`.
+
+Cuando salta cualquiera de los cuatro, el juez es el cliente: UNA pregunta de
+confirmacion. Es el objetivo uno del proyecto.
+
+LO QUE YA HAY PARA MIRAR. La sonda del 11-sep con una pregunta de complejidad
+media -"algo rectangular, con botoneras, estamos en crisis, dame algo acorde"-
+esta en `banco_pruebas/salidas/sonda_34553808072.txt`. El catalogo no dice
+nunca rectangular ni boton, asi que todo depende de la interpretacion. Se sabe
+que el sistema de hoy contesta mal: se lee la COLA para ver en que etapa se
+rompe, no para arreglar ese caso.
+
 ## EL NUMERO, Y COMO SE SACA
 
     Interpretacion: 30 turnos exactos de 36. 83 por ciento. 10-sep-2026.
