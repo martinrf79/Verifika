@@ -312,6 +312,54 @@ def _clasificar(llamadas: list) -> dict:
     return idx
 
 
+def _linea_de_precio(material: list) -> str:
+    """El precio que la fuente contesto, escrito por el CODIGO.
+
+    LA PLATA NO LA ESCRIBE EL MODELO, y eso no cambia acá: `ESQUEMA_RESPUESTA`
+    no tiene casilla para un numero de plata y esta linea sale del mismo lado
+    que la cuenta, del material certificado. Lo unico nuevo es que un PRECIO
+    suelto —"cual es el mas caro"— no necesitaba un presupuesto armado para
+    poder decirse, y hasta hoy se caia por eso.
+
+    Se escriben como maximo tres: el punto se contesta, no se vuelca el
+    catalogo.
+    """
+    from app.core.calculadora import _money
+    renglones = []
+    for p in (material or [])[:3]:
+        if not isinstance(p, dict):
+            continue
+        precio = p.get("precio", p.get("precio_ars"))
+        nombre = str(p.get("nombre") or "").strip()
+        if precio is None or not nombre:
+            continue
+        renglones.append(f"- {nombre}: {_money(precio)}")
+    return "\n".join(renglones)
+
+
+def _precio_que_el_turno_ya_tiene(idx: dict, campos: list) -> list:
+    """El precio que este turno YA trajo de la fuente, si lo trajo.
+
+    Mira primero el AGREGADO —"el mas caro de la tienda" vuelve como
+    `campo=precio_ars` con su producto— y despues las LISTAS, donde cada
+    producto viaja con su `precio_ars`. No calcula nada y no elige nada: pasa
+    lo que la fuente ya contesto. Si no hay ninguno de los dos devuelve vacio,
+    y ahi la fila queda abierta y el turno pregunta.
+    """
+    for a in (idx.get("agregados") or []):
+        res = a.get("resultado") or {}
+        prod = res.get("producto")
+        if _norm(res.get("campo")) == "precio_ars" and isinstance(prod, dict):
+            return [_producto_de_compra(prod, campos)]
+    for l in (idx.get("listas") or []):
+        res = l.get("resultado") or {}
+        con_precio = [p for p in (res.get("productos") or [])
+                      if isinstance(p, dict) and p.get("precio_ars") is not None]
+        if con_precio:
+            return [_producto_de_compra(p, campos) for p in con_precio]
+    return []
+
+
 def _campos_que_pidio_el_turno(declarado: dict, puntos: list) -> list:
     """Los campos del catalogo que este turno tiene que poder justificar: el que
     se pregunto como atributo, y el que ordena o filtra una restriccion. Sin
@@ -568,6 +616,7 @@ def tabla(declarado: dict, llamadas: list, bloque: str = "",
 
     filas = []
     traza: list = []
+    precio_suelto = ""
     for p in puntos_del_turno:
         tipo = p.get("tipo")
         fila = {"id": p.get("id"), "pregunto": p.get("texto")}
@@ -577,7 +626,48 @@ def tabla(declarado: dict, llamadas: list, bloque: str = "",
             # es elegir por el cliente, que es la regla cero.
             fila["estado"] = "pregunta"
             fila["material"] = []
-        elif tipo in ("pide_precio", "reparto_pago"):
+        elif tipo == "pide_precio":
+            # UN PRECIO NO ES UN PRESUPUESTO (11-sep-2026). Hasta hoy esta fila
+            # se daba por cubierta SOLO con una cuenta armada, o sea con un
+            # producto elegido y una cantidad. Pero "dame el precio del mas caro
+            # que tengas" no pide un presupuesto: pide UN PRECIO, y el turno ya
+            # lo trajo de la fuente.
+            #
+            # Medido en produccion, charla 5493547504287, turno `1fe1d20c`: la
+            # herramienta volvio `campo=precio_ars valor=3100500.0` con su
+            # producto, y el turno termino igual en "para pasarte el precio me
+            # falta cerrar cual y cuantos". El dato estaba en la mesa y la fila
+            # se abrio de gusto.
+            #
+            # LA CUENTA SIGUE GANANDO. Con presupuesto armado la fila va
+            # `sellado` y la plata la escribe el codigo: el modelo no tiene
+            # casilla donde retipear un numero, y eso no se afloja.
+            #
+            # Y LA COMPUERTA TAMPOCO. Sin nada que respalde un precio la fila
+            # queda `sin_material` y el turno pregunta, igual que antes.
+            # Vara: tests/test_precio_ya_en_la_mesa.py, con sus tres guardas.
+            if hay_cuenta:
+                fila["estado"] = "sellado"
+                fila["material"] = []
+            else:
+                mat = _precio_que_el_turno_ya_tiene(idx, campos)
+                linea = _linea_de_precio(mat)
+                if linea:
+                    # SELLADA, igual que la cuenta: el modelo no escribe en esta
+                    # casilla y el codigo pega la linea al final. Asi el precio
+                    # no depende de que el modelo se acuerde de escribirlo
+                    # —medido: con la fila `con_material` el modelo la salteo y
+                    # el cliente volvio a quedarse sin precio— y tampoco se
+                    # duplica con lo que el modelo hubiera escrito.
+                    fila["estado"] = "sellado"
+                    fila["material"] = mat
+                    precio_suelto = linea
+                else:
+                    fila["estado"] = "sin_material"
+                    fila["material"] = []
+        elif tipo == "reparto_pago":
+            # EL REPARTO SI NECESITA LA CUENTA: dividir un pago sin total no se
+            # puede, y ahi preguntar es la respuesta honesta.
             fila["estado"] = "sellado" if hay_cuenta else "sin_material"
             fila["material"] = []
         else:
@@ -594,6 +684,10 @@ def tabla(declarado: dict, llamadas: list, bloque: str = "",
     out = {"puntos": filas}
     if bloque:
         out["bloque"] = bloque
+    if precio_suelto and not bloque:
+        # Solo cuando NO hay cuenta. Con presupuesto armado manda el bloque, que
+        # ya trae el precio con su subtotal y su total.
+        out["precio"] = precio_suelto
     guion = _guion(idx)
     if guion:
         out["guion"] = guion
@@ -902,6 +996,8 @@ def armar(respuesta: dict, mesa: dict, trace_id: str = "",
             log.warning("punto_con_material_sin_texto", punto=pid,
                         pregunto=fila.get("pregunto"))
 
+    if mesa.get("precio") and not mesa.get("bloque"):
+        partes.append(mesa["precio"].strip())
     if hay_cuenta and mesa.get("bloque"):
         # Entera y sin retipear: si el modelo escribio algo en la casilla
         # sellada, se descarto arriba y nunca llego hasta aca.
