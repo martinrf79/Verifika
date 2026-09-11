@@ -1,0 +1,7 @@
+{
+  "turnos_limpios": 9,
+  "turnos": 11,
+  "largo_maximo": 833,
+  "medido": "11-sep-2026",
+  "nota": "El modelo no es determinista: dos corridas de la misma charla dieron 2 de 3 y 1 de 3 en `parlante`. Una corrida sola no prueba nada; lo que se compara son corridas enteras, y una baja se confirma corriendo de nuevo."
+}
