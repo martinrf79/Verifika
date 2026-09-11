@@ -61,6 +61,14 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
+**11-sep, LO ABIERTO: LOS TRES MAPAS.** El diseño esta acordado con Martin y
+escrito entero en `arquitectura/FICHA_50_los_tres_mapas.md`. En una linea: el
+modelo no recibe el catalogo, recibe el VOCABULARIO de la fuente —tres mapas,
+producto, envio y politicas, que se GENERAN de la fuente y crecen con la
+variedad y no con la cantidad— mas UNA herramienta de busqueda que el modelo
+llama el. Medido: 823 tokens para 880 productos; estimado 1.500 a 2.500 para
+siete mil. **Ninguna linea escrita todavia, y no se empieza sin leer la ficha.**
+
 **11-sep, EL APAGON.** Se apago la arquitectura de moldes, mesa y dos llamadas
 al modelo. El turno es ahora `app/core/respuesta.py`, cinco etapas: una sola llamada, con los
 veinte tipos de pregunta y su respuesta generica adentro del prompt
