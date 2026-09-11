@@ -162,7 +162,13 @@ def install():
         return False
 
     def invalidate_cache(tienda_id=None):
-        return None
+        """El catalogo del doble se lee del repo y no envejece, asi que no hay
+        nada que recargar. Lo que SI hay que tirar es lo DERIVADO: el doble
+        tiene que mentir en el dato, nunca en el comportamiento, y la de verdad
+        vacia la recorrida de `filtros_catalogo`. Sin esta linea el doble
+        callaba justo el agujero que la de verdad cerro el 11-sep."""
+        from app.core.filtros_catalogo import limpiar_cache
+        limpiar_cache(tienda_id)
 
     _patches = {
         "get_all_products": get_all_products, "get_product_by_id": get_product_by_id,

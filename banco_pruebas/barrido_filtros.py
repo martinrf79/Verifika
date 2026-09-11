@@ -155,7 +155,7 @@ def casos(tienda_id: str = TIENDA) -> list:
         for op in operadores():
             for v in vals:
                 crudo = v["valor"]
-                if op in ("mayor", "menor") and tipo == "texto":
+                if op in ("mayor", "menor") and tipo != "numero":
                     # La grilla se cubre igual: la celda existe y el codigo
                     # tiene que rechazarla con motivo, no aplicarla mal.
                     fuera.append({"campo": campo, "tipo": tipo, "operador": op,
@@ -175,7 +175,7 @@ def casos(tienda_id: str = TIENDA) -> list:
                 fuera.append({"campo": campo, "tipo": tipo, "operador": op,
                               "valor": str(crudo), "testigo": v["testigo"],
                               "espera": "trae_al_testigo"})
-                if op == "contiene" and tipo == "texto":
+                if op == "contiene" and tipo != "numero":
                     p = _palabra_util(crudo)
                     if p and p != _norm(crudo):
                         fuera.append({"campo": campo, "tipo": tipo,

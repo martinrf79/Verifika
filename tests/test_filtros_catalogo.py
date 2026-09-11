@@ -18,6 +18,12 @@ from app.core.contexto_turno import set_current_tienda
 TIENDA = "verifika_prod"
 
 
+def _productos():
+    """El catalogo real del repo por el doble local de Firestore."""
+    from app.storage.firestore_client import get_all_products
+    return get_all_products(tienda_id=TIENDA) or []
+
+
 @pytest.fixture(autouse=True)
 def _doble(firestore_doble):
     set_current_tienda(TIENDA)
@@ -56,12 +62,78 @@ def test_los_campos_filtrables_salen_del_catalogo_vivo():
 def test_el_tipo_se_infiere_del_dato_no_se_declara_a_mano():
     """`mayor` y `menor` solo tienen sentido sobre numeros. El tipo se deduce
     de los valores del catalogo: un campo mitad numero mitad texto es texto,
-    porque comparar '24' contra '24 meses' da un resultado que parece bien."""
+    porque comparar '24' contra '24 meses' da un resultado que parece bien.
+
+    SON TRES TIPOS DESDE EL 11-SEP, no dos. `bluetooth` dejo de ser `texto` y
+    paso a ser `si_no`: no cambio el dato, cambio que ahora se lo nombra por lo
+    que es. La vara de antes -que no fuera numero- sigue entera abajo."""
     campos = FC.campos_filtrables(TIENDA)
     assert campos["peso_gramos"] == "numero"
     assert campos["garantia_meses"] == "numero"
     assert campos["color"] == "texto"
-    assert campos["bluetooth"] == "texto"
+    assert campos["bluetooth"] == "si_no"
+    # LA MISMA VARA DEL SIEMPRE, aplicada al veredicto. `bateria` dice "si,
+    # bateria recargable" en 470 fichas y "funciona con 1 pila AA" en 12: esas
+    # 12 no dicen que no, asi que el campo NO es de si o no.
+    assert campos["bateria"] == "texto"
+    assert campos["wifi"] == "texto"
+
+
+def test_un_campo_de_si_o_no_resuelve_el_no_aunque_la_ficha_no_ponga_coma():
+    """EL AGUJERO QUE CIERRA EL TIPO, medido el 11-sep sobre el catalogo vivo.
+
+    La fuente escribe el veredicto de dos formas: con coma -"si, lector
+    microSD"- y sin ella -"no trae lector de tarjetas"-. El `igual` de texto
+    cortaba por la coma, asi que salvaba la primera y no la segunda: de los
+    ocho campos de si o no, TRES daban casi cero para el `no`. El cliente que
+    pedia una notebook sin lector de huella se llevaba un "no hay", con 123
+    fichas que lo dicen."""
+    campos = FC.campos_filtrables(TIENDA)
+    prods = _productos()
+    for campo in ("lector_tarjetas", "lector_huella", "thunderbolt"):
+        assert campos[campo] == "si_no", campo
+        dicen_no = [p for p in prods
+                    if FC._valor_crudo(p, campo)
+                    and FC._norm(FC._valor_crudo(p, campo)).startswith("no")]
+        assert len(dicen_no) > 50, campo
+        cumplen = [p for p in prods
+                   if FC.evaluar(p, campo, "igual", "no", "si_no") is True]
+        assert len(cumplen) == len(dicen_no), campo
+
+
+def test_sobre_un_campo_de_si_o_no_mayor_y_menor_se_descartan():
+    """El tipo nuevo no abre una puerta que no existia: comparar por mayor un
+    veredicto no ordena nada, y se devuelve como filtro NO aplicado con su
+    motivo, igual que sobre un campo de texto."""
+    class F:
+        campo, operador, valor = "bluetooth", "mayor", "5"
+    r = FC.aplicar(_productos(), [F()], TIENDA)
+    assert r["aplicados"] == []
+    assert len(r["descartados"]) == 1
+    assert "mayor o menor" in r["descartados"][0]["motivo"]
+
+
+def test_el_inventario_y_los_campos_salen_de_UNA_recorrida_y_UN_cache():
+    """LA FALLA QUE ESTO CIERRA, y no la veia nadie porque no era un test rojo
+    sino un numero viejo: `campos_filtrables` aca y `fuente.inventario` alla
+    recorrian los mismos 880 productos, cada una con su cache, y
+    `invalidate_cache` -la que corre en cada /admin/upload-catalog- no tocaba
+    ninguno de los dos. Subir un catalogo nuevo dejaba al bot diciendo el
+    numero de productos del viejo hasta que el proceso se reiniciara."""
+    from app.core import fuente as F
+    from app.storage.firestore_client import invalidate_cache
+
+    r = FC.recorrida(TIENDA)
+    assert r["campos"] == FC.campos_filtrables(TIENDA)
+    assert F.inventario(TIENDA)["productos"] == r["productos"] == 880
+    assert len(r["categorias"]) == 22
+
+    # El cache de lo derivado muere con el catalogo, y por una sola puerta.
+    FC._cache[TIENDA] = dict(r, productos=1, campos={"inventado": "texto"})
+    assert F.inventario(TIENDA)["productos"] == 1
+    invalidate_cache(TIENDA)
+    assert F.inventario(TIENDA)["productos"] == 880
+    assert "inventado" not in FC.campos_filtrables(TIENDA)
 
 
 

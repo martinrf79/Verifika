@@ -278,6 +278,17 @@ def invalidate_cache(tienda_id: str | None = None):
     else:
         _catalog_cache.pop(tienda_id, None)
         _catalog_cache_ts.pop(tienda_id, None)
+    # LO QUE SE DERIVA DEL CATALOGO MUERE CON EL CATALOGO, y esta linea es la
+    # unica que lo garantiza. `filtros_catalogo.recorrida` cachea el registro de
+    # campos y el inventario, y ese cache NO tiene TTL: se arma una vez por
+    # tienda. Sin esto, subir un catalogo nuevo por /admin dejaba al bot
+    # ofreciendole al modelo los campos del viejo y diciendo el numero de
+    # productos del viejo hasta que el proceso se reiniciara.
+    try:
+        from app.core.filtros_catalogo import limpiar_cache
+        limpiar_cache(tienda_id)
+    except Exception as e:  # noqa: BLE001 — invalidar de mas nunca rompe nada
+        log.warning("invalidate_cache_derivados_error", error=str(e)[:150])
 
 
 # ────────────────────────────────────────────────────────────

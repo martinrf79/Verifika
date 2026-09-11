@@ -182,23 +182,67 @@ def _valor_crudo(prod: dict, campo: str):
     return (prod.get("specs") or {}).get(campo)
 
 
-def campos_filtrables(tienda_id: str) -> dict[str, str]:
-    """El registro de campos, DERIVADO DEL CATALOGO VIVO: {campo: tipo}, con
-    tipo `numero` o `texto`.
+def _si_no(v) -> str:
+    """`si`, `no`, o vacio cuando el valor NO es un veredicto.
 
-    Se recorre el catalogo una vez por tienda y se cachea: `esquemas()` corre en
-    cada turno y esto no puede costar 880 productos por mensaje.
+    La fuente no guarda booleanos: guarda la frase entera con el veredicto
+    adelante. "si, bluetooth 5.0", "no, este modelo es con cable", "no trae
+    lector de tarjetas". UNA sola definicion de que cuenta como veredicto, y la
+    usan los dos lados: la recorrida para TIPAR el campo y `evaluar` para
+    COMPARARLO. Con dos copias, la que se arregle primero deja a la otra
+    leyendo distinto el mismo dato.
+    """
+    if isinstance(v, bool):
+        return "si" if v else "no"
+    m = re.match(r"(si|no)\b", _norm(v))
+    return m.group(1) if m else ""
+
+
+def recorrida(tienda_id: str) -> dict:
+    """UNA SOLA PASADA POR EL CATALOGO, y de ella salen las DOS cosas que el
+    codigo deriva de la fuente: el REGISTRO DE CAMPOS con su tipo y el
+    INVENTARIO -cuantos productos, que categorias, en que rango de precios-.
+
+    POR QUE ESTAN JUNTAS, y no es prolijidad. Hasta el 11-sep eran dos
+    funciones en dos modulos -`campos_filtrables` aca y `fuente.inventario`
+    alla-, cada una recorriendo los mismos 880 productos y cada una con SU
+    PROPIO CACHE. Dos caches del mismo dato tienen dos vidas, y una de las dos
+    siempre se olvida de morir: `firestore_client.invalidate_cache` -la que
+    corre en cada `/admin/upload-catalog`- vaciaba el catalogo y no tocaba
+    ninguno de los dos. O sea que despues de subir un catalogo nuevo el bot
+    seguia diciendo el numero de productos del viejo y seguia ofreciendo los
+    campos del viejo, hasta que el proceso se reiniciara. Con una pasada y un
+    cache hay un solo lugar del que acordarse, y `limpiar_cache` es ese lugar.
+
+    Devuelve {campos, productos, categorias, precio_min, precio_max}.
     """
     if tienda_id in _cache:
         return _cache[tienda_id]
-    from app.storage.firestore_client import get_all_products
-    prods = get_all_products(tienda_id=tienda_id) or []
+    try:
+        from app.storage.firestore_client import get_all_products
+        prods = get_all_products(tienda_id=tienda_id) or []
+    except Exception as e:  # noqa: BLE001 — sin catalogo se sigue sin fichas
+        log.warning("recorrida_catalogo_error",
+                    error=f"{type(e).__name__}: {e}")
+        prods = []
 
     llenos: dict[str, int] = {}
     numericos: dict[str, int] = {}
+    veredictos: dict[str, int] = {}
+    por_categoria: dict[str, int] = {}
+    precios: list[int] = []
+
     for p in prods:
         if not isinstance(p, dict):
             continue
+        cat = str(p.get("categoria") or "").strip()
+        if cat:
+            por_categoria[cat] = por_categoria.get(cat, 0) + 1
+        if p.get("precio_ars"):
+            try:
+                precios.append(int(p["precio_ars"]))
+            except (TypeError, ValueError):
+                pass
         pares = list(p.items()) + list((p.get("specs") or {}).items())
         for k, v in pares:
             if k in _CAMPOS_INTERNOS or k in _SPECS_DUPLICADAS:
@@ -208,6 +252,8 @@ def campos_filtrables(tienda_id: str) -> dict[str, str]:
             llenos[k] = llenos.get(k, 0) + 1
             if isinstance(v, (int, float)) and not isinstance(v, bool):
                 numericos[k] = numericos.get(k, 0) + 1
+            elif _si_no(v):
+                veredictos[k] = veredictos.get(k, 0) + 1
 
     registro = {}
     for campo, n in llenos.items():
@@ -216,19 +262,64 @@ def campos_filtrables(tienda_id: str) -> dict[str, str]:
         # Numerico solo si lo es SIEMPRE. Un campo mitad numero mitad texto se
         # trata como texto: comparar "24" contra "24 meses" con `mayor` da un
         # resultado que parece bien y esta mal.
-        registro[campo] = "numero" if numericos.get(campo, 0) == n else "texto"
+        #
+        # SI O NO CON LA MISMA VARA, y por la misma razon. `bateria` dice "si,
+        # bateria recargable" en 470 productos y "funciona con 1 pila AA" en 12:
+        # tratarlo como veredicto haria que `bateria igual no` dejara afuera a
+        # esos 12, que NO dicen que no. Medido el 11-sep sobre el catalogo vivo:
+        # con la vara del SIEMPRE dan `si_no` ocho campos -bluetooth,
+        # lector_huella, lector_tarjetas, ram_ampliable, resistencia_agua,
+        # retroiluminacion, tactil y thunderbolt- y quedan en texto bateria,
+        # camara y wifi, que estan realmente mezclados.
+        if numericos.get(campo, 0) == n:
+            registro[campo] = "numero"
+        elif veredictos.get(campo, 0) == n:
+            registro[campo] = "si_no"
+        else:
+            registro[campo] = "texto"
     # El precio ENTRA al registro. Tenia su propia puerta -`tope_precio` y
     # `orden`- y era la cuarta forma de decir lo mismo. Como condicion es
     # `precio_ars menor 100000`; como orden es `ordenar_por precio_ars`.
     registro["precio_ars"] = "numero"
     for campo in DERIVADOS:
         registro[campo] = "texto"
-    _cache[tienda_id] = dict(sorted(registro.items()))
-    return _cache[tienda_id]
+
+    out = {
+        "campos": dict(sorted(registro.items())),
+        "productos": len(prods),
+        "categorias": sorted(por_categoria.items(), key=lambda t: (-t[1], t[0])),
+        "precio_min": min(precios) if precios else None,
+        "precio_max": max(precios) if precios else None,
+    }
+    if not prods:
+        # UNA LECTURA VACIA NO SE CACHEA, la misma linea que ya tiene
+        # `get_all_products`: este cache no tiene TTL, asi que cachear el vacio
+        # deja al bot sin campos y sin inventario hasta que reinicie el proceso.
+        log.error("recorrida_catalogo_vacia", tienda_id=tienda_id)
+        return out
+    _cache[tienda_id] = out
+    log.info("recorrida_catalogo", tienda_id=tienda_id,
+             productos=out["productos"], categorias=len(out["categorias"]),
+             campos=len(out["campos"]))
+    return out
+
+
+def campos_filtrables(tienda_id: str) -> dict[str, str]:
+    """El registro de campos, DERIVADO DEL CATALOGO VIVO: {campo: tipo}, con
+    tipo `numero`, `texto` o `si_no`.
+
+    Es la vista de campos de `recorrida`, que es la unica pasada y el unico
+    cache. Corre en cada turno y no puede costar 880 productos por mensaje.
+    """
+    return recorrida(tienda_id)["campos"]
 
 
 def limpiar_cache(tienda_id: str | None = None) -> None:
-    """Para los tests y para cuando se recarga el catalogo por /admin."""
+    """Para los tests y para cuando se recarga el catalogo por /admin.
+
+    La llama `firestore_client.invalidate_cache`: lo que se deriva del catalogo
+    muere junto con el catalogo, siempre, y no por separado.
+    """
     if tienda_id is None:
         _cache.clear()
     else:
@@ -312,6 +403,18 @@ def evaluar(prod: dict, campo: str, operador: str, valor, tipo: str):
         if tipo == "numero":
             a, b = _a_numero(crudo), _a_numero(valor)
             return None if a is None or b is None else a == b
+        if tipo == "si_no":
+            # UN VEREDICTO SE COMPARA POR EL VEREDICTO, no por la frase.
+            #
+            # El corte por coma de abajo salvaba "si, bluetooth 5.0" y NO
+            # salvaba "no trae lector de tarjetas", que es como la fuente
+            # escribe la mitad de los campos de si o no. Medido el 11-sep:
+            # `lector_tarjetas igual no` daba CERO sobre los 230 productos que
+            # lo dicen, y el bot contestaba que no hay. El tipo cierra ese
+            # agujero para los nueve campos que son veredicto de punta a punta.
+            a, b = _si_no(crudo), _si_no(valor)
+            if a and b:
+                return a == b
         # `igual` sobre texto vale contra el string entero O contra su PRIMER
         # SEGMENTO. Las specs de si o no estan escritas "veredicto, detalle":
         # 234 productos dicen "si, bluetooth 5.0" y 202 "no, este modelo es con
@@ -362,9 +465,10 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
             descartados.append({"campo": campo,
                                 "motivo": f"operador desconocido: {operador}"})
             continue
-        if tipo == "texto" and operador in ("mayor", "menor"):
+        if tipo != "numero" and operador in ("mayor", "menor"):
+            clase = "de si o no" if tipo == "si_no" else "de texto"
             descartados.append({"campo": campo,
-                                "motivo": "es un campo de texto, no se puede "
+                                "motivo": f"es un campo {clase}, no se puede "
                                           "comparar por mayor o menor"})
             continue
         if operador in ("mayor", "menor") and _a_numero(valor) is None:

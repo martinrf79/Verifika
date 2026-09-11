@@ -1,8 +1,14 @@
 # FICHA 50 — Los tres mapas y la herramienta de búsqueda. Abierta.
 
-**Decidida con Martín el 11-sep-2026, después del apagón.** Ninguna línea de
-esto está escrita todavía. Se escribe en la sesión siguiente, con contexto
-nuevo, y se lee esta ficha antes de tocar nada.
+**Decidida con Martín el 11-sep-2026, después del apagón.** El diseño no se
+cambia sin preguntarle; se lee esta ficha entera antes de tocar nada.
+
+**ESTADO — lo único que se escribió hasta ahora, 11-sep.** La base del mapa 1:
+el catálogo se recorre UNA vez y hay UN caché, `filtros_catalogo.recorrida`, y
+de esa pasada salen el registro de campos y el inventario que antes eran dos
+recorridas y dos cachés en dos módulos. El tipo del campo ya es de tres
+valores: `numero`, `texto` y `si_no`. Todo lo demás de esta ficha sigue sin
+escribir. El detalle del cambio está en `git log`, no acá.
 
 ---
 

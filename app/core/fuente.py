@@ -412,44 +412,25 @@ def politicas_relevantes(mensaje: str, tienda_id: str,
 # El inventario es la respuesta determinista a esas preguntas, y viaja SIEMPRE:
 # son dos renglones y no depende de que la relevancia acierte.
 
-_INVENTARIO: dict = {}
-
 
 def inventario(tienda_id: str) -> dict:
     """{productos, categorias: [(nombre, cuantos)], precio_min, precio_max}.
 
-    Se arma una vez por tienda y no se vuelve a tocar: el catalogo ya vive
-    cacheado en `firestore_client` y esto son cuentas sobre esa lista."""
-    if tienda_id in _INVENTARIO:
-        return _INVENTARIO[tienda_id]
-    try:
-        from app.storage.firestore_client import get_all_products
-        catalogo = get_all_products(tienda_id=tienda_id) or []
-    except Exception as e:  # noqa: BLE001
-        log.warning("fuente_inventario_error", error=f"{type(e).__name__}: {e}")
+    LA CUENTA NO SE HACE ACA. Sale de `filtros_catalogo.recorrida`, que recorre
+    el catalogo UNA vez y de esa misma pasada saca tambien el registro de
+    campos. Hasta el 11-sep habia dos recorridas de los mismos 880 productos y
+    dos caches del mismo dato, y a este no lo vaciaba nadie: subir un catalogo
+    nuevo por `/admin/upload-catalog` dejaba al bot diciendo el numero de
+    productos del anterior hasta que el proceso se reiniciara.
+
+    Vacio cuando el catalogo no se pudo leer, y `texto_inventario` lo omite.
+    """
+    from app.core.filtros_catalogo import recorrida
+    r = recorrida(tienda_id)
+    if not r.get("productos"):
         return {}
-    cuenta: dict = {}
-    precios = []
-    for p in catalogo:
-        cat = str(p.get("categoria") or "").strip()
-        if cat:
-            cuenta[cat] = cuenta.get(cat, 0) + 1
-        v = p.get("precio_ars")
-        if v:
-            try:
-                precios.append(int(v))
-            except (TypeError, ValueError):
-                pass
-    out = {
-        "productos": len(catalogo),
-        "categorias": sorted(cuenta.items(), key=lambda t: (-t[1], t[0])),
-        "precio_min": min(precios) if precios else None,
-        "precio_max": max(precios) if precios else None,
-    }
-    _INVENTARIO[tienda_id] = out
-    log.info("fuente_inventario", productos=out["productos"],
-             categorias=len(out["categorias"]))
-    return out
+    return {k: r[k] for k in
+            ("productos", "categorias", "precio_min", "precio_max")}
 
 
 def texto_inventario(tienda_id: str) -> str:
