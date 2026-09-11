@@ -1,0 +1,136 @@
+From decbce65c38775e865bc71ab91b8b42833d19cd8 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 11 Sep 2026 01:25:21 +0000
+Subject: [PATCH] El molde sale de herramientas.py a app/core/molde.py, sin
+ cambiar lo que hace
+
+Primer corte de la etapa 2 del orden, el que pide PLAN_INTERPRETACION.
+Se mueven, tal cual, los moldes de Pydantic -RegistrarPedido y sus
+hermanos-, CAMPOS_PEDIDO, _MOLDES, _aplanar, _esquema_de, _VISIBLES,
+esquemas(), _submodelo y _sin_nulos. Es lo que se edita para los pasos
+2 y 3 de la interpretacion, y vivia mezclado con las herramientas de
+consulta.
+
+herramientas.py importa todos esos nombres de molde.py, asi que
+herramientas.RegistrarPedido, herramientas.esquemas y el resto siguen
+andando igual. molde.py no importa nada de herramientas.py.
+
+Comprobado antes de subir: las 24 definiciones movidas tienen el mismo
+arbol de sintaxis que antes, ninguna falta ni sobra; el esquema de los
+16 moldes y la salida de esquemas() son identicos byte a byte entre la
+version vieja y la nueva. validar() se quedo en herramientas porque
+depende de _ALIAS.
+
+herramientas.py baja de 2612 lineas a 2041. MAPA.md y MAPA_CABLEADO.md
+apuntan al archivo nuevo.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01U4Et8Lds9JqAqJRTtXYJWp
+---
+ MAPA.md                                |   3 ++-
+ app/core/herramientas.py               | Bin 137940 -> 106635 bytes
+ app/core/{herramientas.py => molde.py} | Bin 137940 -> 33094 bytes
+ arquitectura/MAPA_CABLEADO.md          |   6 +++---
+ arquitectura/PLAN_INTERPRETACION.md    |   8 ++++++--
+ 5 files changed, 11 insertions(+), 6 deletions(-)
+ copy app/core/{herramientas.py => molde.py} (23%)
+
+diff --git a/MAPA.md b/MAPA.md
+index e2fd15e49ec0e9af3e748227eb67735e0b8145ed..c325d0d9abbf0b430c36898bc4112245a14e72dc 100644
+--- a/MAPA.md
++++ b/MAPA.md
+@@ -25,7 +25,8 @@ explorar carpetas es lo que gasta de mas y no agrega nada.
+ | Despacho del turno, anti-jailbreak, reset | `app/core/orchestrator.py` |
+ | EL TURNO COMPLETO, las ocho etapas | `app/core/turno.py` |
+ | Las dos llamadas al modelo y el reintento | `app/core/llm_reintento.py` |
+-| EL MOLDE que ve el modelo, `registrar_pedido` y los enums | `app/core/herramientas.py` |
++| EL MOLDE que ve el modelo, `registrar_pedido`, `esquemas()` y los enums | `app/core/molde.py` |
++| Las herramientas de consulta que corre el codigo, y `validar` | `app/core/herramientas.py` |
+ | Resolucion de candidatos y busquedas derivadas | `app/core/resolver.py` |
+ | LA MESA de puntos y el armado del mensaje final | `app/core/tabla.py` |
+ | Campos y filtros del catalogo, el enum de `campo` | `app/core/filtros_catalogo.py` |
+diff --git a/app/core/herramientas.py b/app/core/herramientas.py
+index d6ffbbcaa840bbe15a9229667174eaf51d2d4651..ea103b5b7134cd221434f9a9e6f6e15dd01422c5 100644
+GIT binary patch
+delta 735
+zcmaKqziJdw6vkO0K_-obg@xdOG+CU?W`kJRCHn^!HtgWaf>_L)oqOE9FmvzZ{@D<l
+zEi5hP39Pj+1hLi9PQf?u3GxEsncXZ27Q!uN4&V9R?|kR}`h54@x9v|Kw}#LqD+nkL
+z+U<Qy<^JKp;Zw-9g+k|oESy71_S92>cCVSjLM})FpA^fom1#q*l`tyL)9S<4?v7V7
+z(}Dy#ylifNz0-JEHRQwU=bu;AkHyXsCjS8dU$`;@x6DK^CXhv`jY9>PA!J&C^)}cA
+zrHiRyliXw_6{VpN&`Myx;Iz;@$m(0jj3AwpSsE-PDTg+CPBUqpK@*dZLZ^(=E6t5$
+zGkD7M86!~%KAQg&<1;k5j)K=l7r<debr{hqjBC5F2T*%F#b?lea?lO{mH>U3JEKE5
+z_Ld2;(ZXj=+YmZhS)V&J9nLP-GuHHFHph+Rmf}Udj*xl4T~5A1(^Ct{4FgBTdY%ws
+zG>&4dIY*|buOj=%m!7QS(u7P$7bQA5mAMosR=Dc@{C;c0T;sZw<!DgU7-!_vJAG5C
+zEmZgV50)YPlP9}9I*CW)B<^(w-BAe1$!OT^jn}RdEOS(7xO^RQB6xSnWH25a4_O79
+t?73+DwBRR|vx9`APn75P83xTD;GLz(%uBpHQ{NxIy}I~vb<y}e{|nk00Pz3-
+
+diff --git a/app/core/herramientas.py b/app/core/molde.py
+similarity index 23%
+copy from app/core/herramientas.py
+copy to app/core/molde.py
+index d6ffbbcaa840bbe15a9229667174eaf51d2d4651..7e298b450765d3e253c4d32ac9a5c43eb0807b51 100644
+GIT binary patch
+delta 830
+zcmZ9KPj1vu48|p-qAC|)S6Q<HX=X%c(Z%d4Cc8mY?E#3J=gwGqf5LMzB5Z=VLRodg
+z0a#YO0w?GR*l-Q}l7>b|S-kgRfByWlA0Li?eS6W(X0t5c!ut=~O%A`meg_-iQ$s)&
+zTri}!P5y3set8b$!6I0T4h=%%!yMWaMxyZ!`>X>kv+N2j2QUQ1o?=AD<ZF~=)fOrI
+z^mHLqEmm(=XLFE_J(TFK8KX+7JbS{FJJ`tfSke-5Ntsn-M-j>pYwAM~sKyFmr8f&9
+z8uDwvQlF(pbsI!`u!cncXBVwOUvmkI;*xeOb;Ni<onaFSZA2OYwd>FaS<L%RH3p&h
+z*rT~BQn$rZuk!j$G0%ETsvW%g6$17xm1AM@jZ1Zt(oLfT2o8L}p_k97aV|Y}BX6OM
+z3~Rv(BmP5TQS>aV)JHMatXM_uyyW1ME7fHLM_)>dCMcgYD9NVqlM#KF#@474dLB$S
+zPKI5jToLM^63TDTNmP7r*Rf{^!sN8{dNggQWSpoau?gIPZTN2wMuvsT?K)jG^g0=>
+z%DV>bGRs9-VJ!E22wEIQXFjc+_VH}~$@?6XS`1YXuEToRT%Ee+W`-(C)6p*xoFYjx
+p7C4zcX;>fb^^n%zn%k43yO(uavESYPIojMm9{-^G&E3yee*yIWC{X|a
+
+diff --git a/arquitectura/MAPA_CABLEADO.md b/arquitectura/MAPA_CABLEADO.md
+index d90812713041902832c88344a07c4f63086f3e68..4df3b1465965a24b45df5485826c791414e7259d 100644
+--- a/arquitectura/MAPA_CABLEADO.md
++++ b/arquitectura/MAPA_CABLEADO.md
+@@ -73,8 +73,8 @@ uno solo y es `app/core/turno.py:962 procesar_turno`.
+ - **T1.4** `guardas_salida.business_name` — el nombre del negocio.
+ 
+ ### T2 · INTERPRETAR — **L1, el modelo declara**
+-- **T2.1** `herramientas.esquemas(tienda_id)` — el molde que ve el modelo.
+-- **T2.2** el molde es `RegistrarPedido`, `herramientas.py:341`. **Diez campos**,
++- **T2.1** `molde.esquemas(tienda_id)` — el molde que ve el modelo.
++- **T2.2** el molde es `RegistrarPedido`, en `app/core/molde.py`. **Diez campos**,
+   y ese es el formulario que ya existe: `items`, `restricciones`, `destinos`,
+   `pide_precio`, `contradicciones`, `reparto_pago`, `atributos`, `stock`,
+   `compatibilidad`, `temas`.
+@@ -204,7 +204,7 @@ fila, así que no abre casilla ni la mira la compuerta de completitud. Vara:
+ `tests/test_guion_y_junta.py`, cinco casos.
+ **Lo que era, para que se entienda el número:** `tabla.py:461`.
+ `consultar_temas` devuelve por tema: `politica`, `valores`, `criterio`,
+-`objetivo`, `movida`, `escape` — está en `herramientas.py:1583`. La mesa copia
++`objetivo`, `movida`, `escape` — está en `herramientas.consultar_temas`. La mesa copia
+ sólo cuatro: `tema`, `politica`, `valores`, `criterio`. **`objetivo`, `movida` y
+ `escape` no llegan nunca al modelo que escribe.**
+ Cómo se ve: el bot contesta correcto y sin vender. La prosa de venta que la casa
+diff --git a/arquitectura/PLAN_INTERPRETACION.md b/arquitectura/PLAN_INTERPRETACION.md
+index e43515785acba4747270e0287394ea2aa3692112..74019a33b6b1fc3d0514d4010b7bf6720a579c55 100644
+--- a/arquitectura/PLAN_INTERPRETACION.md
++++ b/arquitectura/PLAN_INTERPRETACION.md
+@@ -118,14 +118,18 @@ no sirvio y se revisa antes de seguir.
+   y daba verde con la casilla equivocada.
+ - 10-sep: el orden del repo, etapa 1. La raiz bajo de 31 entradas a 23 y de 14
+   documentos a 4, y aparecio `MAPA.md`.
++- 11-sep: el primer corte de la etapa 2. El molde salio a `app/core/molde.py`:
++  los moldes de Pydantic, `_MOLDES`, `esquemas()` y el saneo de nulos. No cambio
++  comportamiento, `herramientas.py` los sigue exportando con los mismos nombres,
++  y bajo de 2.612 lineas a unas 2.040. Los pasos 2 y 3 se editan en el molde.
+ 
+ ## EL CORTE DE LOS ARCHIVOS GRANDES — etapa 2 del orden
+ 
+ MEDIDO, no estimado. `herramientas.py` tiene 2.612 lineas y 61 definiciones;
+ `resolver.py` 1.505 y 20; `turno.py` 1.241 y 23.
+ 
+-EL PRIMER CORTE, Y EL UNICO QUE HACE FALTA AHORA: sacar el MOLDE de
+-`herramientas.py` a su propio archivo. Son los modelos de Pydantic
++EL PRIMER CORTE, HECHO EL 11-SEP: el MOLDE salio de `herramientas.py` a
++`app/core/molde.py`. Son los modelos de Pydantic
+ -`RegistrarPedido` y sus hermanos, 139 lineas solo la clase principal- mas
+ `esquemas()`, que es donde se inyectan los enums. Es exactamente lo que hay que
+ editar para los pasos 2 y 3 de arriba, y hoy vive mezclado con las herramientas
+-- 
+2.43.0
+
