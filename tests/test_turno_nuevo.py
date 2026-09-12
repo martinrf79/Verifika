@@ -60,17 +60,69 @@ def test_el_motor_encuentra_el_producto_que_el_modelo_nombra(firestore_doble):
     assert all("precio_ars" in f for f in fichas)
 
 
-def test_sin_consulta_el_motor_no_trae_nada(firestore_doble):
+def test_sin_consulta_ni_tema_el_motor_no_trae_nada(firestore_doble):
     from app.core import fuente as F
-    assert MT.buscar([], TIENDA)["resultados"] == []
-    assert F.politicas_relevantes("", TIENDA) == []
+    r = MT.buscar([], TIENDA)
+    assert r["resultados"] == [] and r["politicas"] == []
+    assert F.politicas_de([], TIENDA)["politicas"] == []
 
 
 def test_la_politica_de_la_casa_se_certifica_no_se_adivina(firestore_doble):
+    """La misma vara de siempre, del otro lado de la puerta: el tema lo nombra
+    el MODELO y lo certifica el codigo contra las señas de la fuente."""
     from app.core import fuente as F
-    pol = F.politicas_relevantes("como puedo pagar?", TIENDA)
+    pol = F.politicas_de(["formas de pago"], TIENDA)["politicas"]
     assert pol, "no certifico ningun tema"
     assert all(p.get("texto") for p in pol)
+
+
+def test_un_tema_que_la_casa_NO_TIENE_se_dice_y_no_se_inventa(firestore_doble):
+    """`sin_resolver` NO es un error: es lo que el cliente pregunto y la casa
+    no tiene escrito, y el modelo tiene que decirlo. Es tambien el renglon que
+    dice que tema agregarle a la FAQ, y antes no existia: con el codigo
+    adivinando, un tema sin resolver era indistinguible de uno que nadie
+    pregunto."""
+    from app.core import fuente as F
+    r = F.politicas_de(["futbol"], TIENDA)
+    assert r["politicas"] == [], r
+    assert r["sin_resolver"], "no dejo rastro del tema que no resolvio"
+
+
+def test_el_tema_se_nombra_CORTO_y_el_esquema_lo_pide(firestore_doble):
+    """MEDIDO AL ESCRIBIR ESTO, y por eso el esquema pide pocas palabras.
+    `certificar_tema` pega por raiz de cuatro letras y no tiene umbral: un tema
+    corto y al punto —"futbol", "bailar tango"— resuelve `not_found` como
+    corresponde, pero una frase larga con palabras genericas se engancha con
+    cualquiera ("si viajan a marte con el pedido" resolvia a `embalaje_envio`
+    por "pedido" y "viajan").
+
+    Es exactamente la falla que este cambio saca del camino vivo: antes el que
+    nombraba el tema era el MENSAJE ENTERO del cliente, o sea siempre el caso
+    largo. Pedirle al modelo el tema pelado es lo que hace que el certificador
+    trabaje en el rango donde anda bien."""
+    from app.core import fuente as F
+    props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
+    d = props["temas"]["description"].lower()
+    assert "pocas palabras" in d or "corto" in d, d
+    assert F.politicas_de(["bailar tango"], TIENDA)["politicas"] == []
+
+
+def test_el_modelo_puede_pedir_PRODUCTOS_Y_POLITICAS_en_una_llamada(firestore_doble):
+    """Una puerta sola: no hay herramienta nueva. El mecanismo de buscar en la
+    fuente es el mismo, cambia QUE se busca."""
+    r = MT.buscar([{"texto": "mouse", "cuantos": 2, "busco": "varios"}],
+                  TIENDA, "t", temas=["garantia"])
+    assert r["resultados"] and r["resultados"][0]["filas"]
+    assert r["politicas"] and r["politicas"][0]["texto"]
+
+
+def test_el_esquema_del_motor_OFRECE_temas(firestore_doble):
+    """El campo viaja como parte del MISMO esquema de `buscar`. Y no lleva
+    enum: los 129 temas pesaban 2.299 bytes en cada llamada y ese enum ya se
+    saco una vez por eso. La atadura esta en el codigo, no en el esquema."""
+    props = (MT.esquema(TIENDA)["function"]["parameters"]["properties"])
+    assert "temas" in props and "consultas" in props
+    assert "enum" not in props["temas"]["items"]
 
 
 # ── LOS DOS NUMEROS ─────────────────────────────────────────────────────────
@@ -200,15 +252,53 @@ def test_mostrar_cinco_productos_caros_NO_regala_el_envio(firestore_doble):
 
 def test_el_bloque_de_envio_apaga_la_politica_del_RANGO(firestore_doble):
     """Dos caminos para el mismo numero y ganaba el flojo: la politica publica
-    el rango de interior y el bloque trae la tarifa exacta de la provincia."""
-    from app.core import fuente as F
-    pol = F.politicas_relevantes("cuanto sale el envio a cordoba?", TIENDA)
-    assert any(p["tema"] in R.TEMAS_DEL_ENVIO for p in pol), \
-        "el caso dejo de medir lo que dice medir: la politica ya no se certifica"
-    quedan = R._sin_el_tema_del_envio(pol)
-    assert not any(p["tema"] in R.TEMAS_DEL_ENVIO for p in quedan)
-    otros = [p for p in pol if p["tema"] not in R.TEMAS_DEL_ENVIO]
-    assert quedan == otros, "se llevo puesta una politica que no era de tarifa"
+    el rango de interior y el bloque trae la tarifa exacta de la provincia.
+
+    LA MISMA VARA DEL OTRO LADO DE LA PUERTA (12-sep-2026). Antes el filtro
+    corria sobre la lista que el codigo adivinaba; ahora corre sobre lo que el
+    MODELO pide por el motor, que es donde hoy entran las politicas."""
+    from app.core import motor as MT
+    # sin apagar: el tema del envio se sirve, o el caso dejo de medir
+    libre = MT.buscar([], TIENDA, "t", temas=["costo del envio"])
+    assert any(p["tema"] in R.TEMAS_DEL_ENVIO for p in libre["politicas"]), \
+        "el caso dejo de medir lo que dice medir: el tema ya no se certifica"
+    # con el bloque de envio puesto, no se sirve
+    apagado = MT.buscar([], TIENDA, "t", temas=["costo del envio"],
+                        temas_apagados=R.TEMAS_DEL_ENVIO)
+    assert not any(p["tema"] in R.TEMAS_DEL_ENVIO
+                   for p in apagado["politicas"])
+
+
+def test_el_turno_APAGA_el_tema_del_envio_CUANDO_HAY_BLOQUE(firestore_doble,
+                                                            monkeypatch):
+    """EL APAGADO VA CON EL BLOQUE, haya destino o no, y eso no es un descuido.
+
+    Con destino, el bloque trae la tarifa EXACTA y la politica publica el rango:
+    gana el flojo si viajan las dos. SIN destino, el bloque publica ESE MISMO
+    rango y ademas pide la provincia, asi que la politica no agrega nada y solo
+    puede contradecirlo. En los dos casos sobra, y por eso la condicion es que
+    el bloque exista.
+
+    (La primera version de esta vara esperaba que sin destino el tema se
+    sirviera. Estaba mal: se escribio antes de mirar que el bloque sin destino
+    ya publica el rango.)"""
+    vistos = {}
+
+    async def _espia(voz, memoria, history, mensaje, fuente, trace, tienda,
+                     temas_apagados=()):
+        vistos[mensaje] = tuple(temas_apagados)
+        return {"tipo": "envio_costo", "texto": "ok"}, [], _motor()
+
+    monkeypatch.setattr(R, "_preguntar", _espia)
+    for u, m in (("sonda_ap1", "envio a cordoba capital?"),
+                 ("sonda_ap2", "hacen envios?")):
+        asyncio.run(R.procesar_turno(u, m, TIENDA, "telegram", "t_" + u))
+        assert vistos[m] == R.TEMAS_DEL_ENVIO, m
+    # y la contracara que justifica el apagado sin destino: el bloque YA dice
+    # el rango, asi que la politica no es lo unico que la casa tiene.
+    sin_destino = _envio("hacen envios?", "")
+    assert not sin_destino["monto"]
+    assert "PROVINCIA" in sin_destino["texto"] and "$" in sin_destino["texto"]
 
 
 def test_el_turno_ENTERO_escribe_la_tarifa_del_envio(firestore_doble, monkeypatch):
@@ -250,8 +340,10 @@ def test_el_turno_pide_el_dato_cuando_no_hay_destino(firestore_doble, monkeypatc
     modelo ANTES de que prometa un numero."""
     vistos = {}
 
-    async def _espia(sistema, memoria, history, mensaje, fuente, trace, tienda):
+    async def _espia(sistema, memoria, history, mensaje, fuente, trace, tienda,
+                     temas_apagados=()):
         vistos["fuente"] = fuente
+        vistos["apagados"] = temas_apagados
         return {"tipo": "envio_costo", "texto": "Decime tu provincia."}, [], _motor()
 
     monkeypatch.setattr(R, "_preguntar", _espia)

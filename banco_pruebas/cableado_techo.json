@@ -1,14 +1,15 @@
 {
-  "techo": 29,
+  "techo": 28,
   "medido": "12-sep-2026, despues de archivar el racimo de instrumental muerto",
   "reparto": {
     "campo_sin_escritor": 9,
-    "funcion_sin_llamador": 20
+    "funcion_sin_llamador": 19
   },
   "como_se_baja": "desconectando de verdad: borrar el modulo muerto, sacar la lectura del campo que nadie escribe, o enchufar la funcion que hacia falta. No se baja subiendo el techo.",
   "no_cuenta": "funcion_solo_instrumento: una funcion que usan los tests o el banco y no el camino vivo puede ser exactamente lo que corresponde. Meterla en el techo obligaria a borrar instrumental para bajar un numero.",
   "historia": [
     "32 en la primera corrida, 12-sep",
-    "29 al archivar los 6 modulos que ni importaban. Las funciones sin llamador SUBIERON de 17 a 20: tres de app/ las mantenian vivas en apariencia esos mismos bancos muertos."
+    "29 al archivar los 6 modulos que ni importaban. Las funciones sin llamador SUBIERON de 17 a 20: tres de app/ las mantenian vivas en apariencia esos mismos bancos muertos.",
+    "28 al enchufar el mapa 3: el modelo pide las politicas por el motor, asi que `certificar_temas` dejo de estar suelta y `politicas_relevantes` -que las adivinaba del mensaje crudo- se borro."
   ]
 }

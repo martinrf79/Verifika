@@ -9,7 +9,7 @@ vienen certificadas.
 Dos puertas, y ninguna mas:
 
   fichas_relevantes(mensaje)   los productos del catalogo que el mensaje nombra
-  politicas_relevantes(mensaje) los temas de la casa que el mensaje pisa
+  politicas_de(nombres)          los temas de la casa que el MODELO nombro
 
 La certificacion de temas viene TAL CUAL de la herramienta vieja, porque es una
 de las diez deterministas que quedan prendidas y su logica esta medida: tres
@@ -283,45 +283,67 @@ def _ficha_corta(prod: dict) -> dict:
 TOPE_TEMAS = 3
 
 
-def politicas_relevantes(mensaje: str, tienda_id: str,
-                         tope: int = TOPE_TEMAS) -> list[dict]:
-    """[{tema, texto}] con la politica de la casa ya estampada.
+def _texto_del_tema(tema: str, faq: dict) -> str:
+    """La politica de la casa sobre ese tema, con los numeros ya estampados.
 
-    El tema se certifica con las mismas señas de siempre. Los numeros de la
-    politica -una tarifa, un plazo, un porcentaje- los estampa `curadas`, que
+    Los numeros -una tarifa, un plazo, un porcentaje- los pone `curadas`, que
     devuelve None si un hueco no resuelve: una politica a medias no se sirve.
+    Sin curada cae a la prosa de la casa del MISMO tema.
     """
     from app.core.curadas import estampar_valores
+    dato = faq.get(tema) or {}
+    texto = dato.get("respuesta_curada") or ""
+    if texto:
+        texto = estampar_valores(texto, dato) or ""
+    if not texto:
+        from app.core.guia_venta_prosa import consultar_guia_venta
+        g = consultar_guia_venta(tema) or {}
+        texto = " ".join(str(g.get(k) or "") for k in
+                         ("texto", "objetivo", "movida")).strip()
+    return texto
+
+
+def politicas_de(nombres: list, tienda_id: str, tope: int = TOPE_TEMAS) -> dict:
+    """LO QUE EL MODELO NOMBRO, CERTIFICADO. Es el mapa 3 de la FICHA 50.
+
+    QUE REEMPLAZA: a `politicas_relevantes`, borrada el 12-sep. Ahi el CODIGO
+    adivinaba el tema leyendo el mensaje CRUDO entero con raices de cuatro
+    letras, asi que un mensaje largo pegaba con cualquier cosa. Medido en vivo el 12-sep 01:37: "quiero un mouse que no sea
+    de fabricacion china" sirvio las politicas `fabricacion` y `mouse`, veredicto
+    ambiguo, ninguna de las dos al caso. Y a las 00:58 un pedido de precios de
+    seis productos trajo `concepto_imposible` y `costo_envio`, y con esas dos
+    delante el modelo encasillo el turno como `politica_sin_cubrir`.
+
+    Es la MISMA leccion que la FICHA 50 ya aplico a los productos: el codigo no
+    razona, asi que no puede elegir de que habla el cliente. El modelo nombra el
+    tema con las palabras del cliente y `certificar_temas` lo resuelve contra
+    las señas que la fuente ya tiene escritas. Los tres veredictos no cambian, y
+    ante `ambiguous` se sirven todos los candidatos: no se elige.
+
+    Devuelve {politicas: [{tema, texto}], sin_resolver: [...]}. `sin_resolver`
+    NO es un error: es un tema que la casa no tiene escrito, y el modelo tiene
+    que decirlo en vez de inventarlo.
+    """
     from app.storage.firestore_client import get_all_faq
-    txt = (mensaje or "").strip()
-    if not txt:
-        return []
-    v = certificar_tema(txt, tienda_id)
-    if v["veredicto"] == "not_found":
-        log.info("fuente_sin_tema")
-        return []
+    pedidos = [str(n).strip() for n in (nombres or []) if str(n or "").strip()]
+    if not pedidos:
+        return {"politicas": [], "sin_resolver": []}
     try:
         faq = get_all_faq(tienda_id=tienda_id) or {}
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:  # noqa: BLE001 — sin FAQ no se inventa una politica
         log.warning("fuente_faq_error", error=f"{type(e).__name__}: {e}")
-        return []
+        return {"politicas": [], "sin_resolver": pedidos}
+    v = certificar_temas(pedidos, tienda_id)
     fuera = []
     for tema in v["temas"][:tope]:
-        dato = faq.get(tema) or {}
-        texto = dato.get("respuesta_curada") or ""
-        if texto:
-            texto = estampar_valores(texto, dato) or ""
-        if not texto:
-            # Sin curada, la prosa de la casa: criterio y movida del mismo tema.
-            from app.core.guia_venta_prosa import consultar_guia_venta
-            g = consultar_guia_venta(tema) or {}
-            texto = " ".join(str(g.get(k) or "") for k in
-                             ("texto", "objetivo", "movida")).strip()
+        texto = _texto_del_tema(tema, faq)
         if texto:
             fuera.append({"tema": tema, "texto": texto})
-    log.info("fuente_politicas", veredicto=v["veredicto"],
-             temas=[f["tema"] for f in fuera])
-    return fuera
+    log.info("fuente_politicas", pidio=pedidos[:4],
+             temas=[f["tema"] for f in fuera],
+             ambiguos=[a[0] for a in v["ambiguos"]][:3],
+             sin_resolver=v["sin_resolver"][:3])
+    return {"politicas": fuera, "sin_resolver": v["sin_resolver"]}
 
 
 # ── EL INVENTARIO: LO QUE EL MODELO TIENE QUE SABER SIEMPRE ────────────────

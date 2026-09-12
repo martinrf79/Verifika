@@ -172,7 +172,7 @@ def _post(url: str, tok: str, cuerpo: dict) -> dict:
 # en `tests/test_numero_motor.py`, que compara las dos listas.
 CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "puntuales",
           "veredictos", "filas", "rescates", "vacios", "sin_dato", "campos",
-          "fichas")
+          "fichas", "temas", "temas_sin_resolver")
 
 PROYECTO = os.environ.get("GCP_PROJECT", "memory-engine-v1")
 SERVICIO = os.environ.get("CLOUD_RUN_SERVICIO", "agente-bot")
@@ -259,6 +259,21 @@ def numero_del_motor(eventos: list) -> list:
     for t in turnos:
         for c in (t.get("campos") or []):
             campos[str(c)] = campos.get(str(c), 0) + 1
+    # LOS TEMAS QUE EL MODELO PIDIO Y LOS QUE LA CASA NO TIENE ESCRITOS. El
+    # segundo es el renglon que dice QUE LE FALTA A LA FAQ, y antes del 12-sep
+    # no existia: con el codigo adivinando el tema, uno sin resolver era
+    # indistinguible de uno que nadie pregunto.
+    temas: dict = {}
+    faltan: dict = {}
+    con_tema = 0
+    for t in turnos:
+        pedidos = t.get("temas") or []
+        if pedidos:
+            con_tema += 1
+        for x in pedidos:
+            temas[str(x)] = temas.get(str(x), 0) + 1
+        for x in (t.get("temas_sin_resolver") or []):
+            faltan[str(x)] = faltan.get(str(x), 0) + 1
 
     lineas = cab + [
         f"TURNOS EN LA VENTANA: {n}",
@@ -280,6 +295,19 @@ def numero_del_motor(eventos: list) -> list:
         lineas.append("  veredictos: " + " · ".join(
             f"{k} {v}" for k, v in sorted(veredictos.items(),
                                           key=lambda x: -x[1])))
+    lineas.append(f"  pidio politicas de la casa en {con_tema} de {n} "
+                  f"({pct(con_tema)})"
+                  + ("   <- nunca las pide: el mapa 3 no se esta usando"
+                     if n and not con_tema else ""))
+    if temas:
+        lineas.append("  temas servidos: " + " · ".join(
+            f"{k} {v}" for k, v in sorted(temas.items(), key=lambda x: -x[1])))
+    if faltan:
+        lineas += ["",
+                   "LO QUE EL CLIENTE PREGUNTO Y LA CASA NO TIENE ESCRITO, que "
+                   "es el renglon que dice que tema agregar a la FAQ:"]
+        for c, v in sorted(faltan.items(), key=lambda x: -x[1]):
+            lineas.append(f"   {v:>3}x  {c}")
     if campos:
         lineas += ["",
                    "LO QUE LA FUENTE NO PUDO CUMPLIR, que es el renglon que "

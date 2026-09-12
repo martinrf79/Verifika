@@ -87,7 +87,7 @@ def resumir(valor):
 
 ORDEN = {
     "buscar": (1, "MOTOR: lo que el MODELO busco en el catalogo"),
-    "politicas_relevantes": (2, "POLITICAS de la casa, certificadas"),
+    "politicas_de": (2, "POLITICAS que el MODELO nombro, certificadas"),
     "_preguntar": (3, "MODELO, LA llamada, unica"),
     "llenar": (4, "NUMEROS, los huecos de plata los pone el codigo"),
 }
@@ -240,7 +240,7 @@ def main():
 
     from app.core import motor as MT
     envolver_sync(MT, "buscar")
-    envolver_sync(F, "politicas_relevantes")
+    envolver_sync(F, "politicas_de")
     envolver_sync(F, "texto_envio")
     envolver_async(R, "_preguntar")
     envolver_sync(NU, "llenar")

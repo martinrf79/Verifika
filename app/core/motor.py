@@ -64,6 +64,11 @@ TOPE_CONSULTAS = 6
 # nombro ancho, y ahi mostrar la lista es mejor que repreguntar.
 TOPE_AMBIGUO = 4
 
+# Cuantas politicas de la casa vuelven en una llamada. El mismo tope que ya
+# usaba `fuente`, y por el mismo motivo: ante un tema ambiguo se sirven TODOS
+# los candidatos en vez de elegir, y tres alcanza para eso.
+TOPE_TEMAS = 3
+
 
 class _Cond:
     """La condicion como la espera `filtros_catalogo.aplicar`, que lee por
@@ -147,17 +152,42 @@ def esquema(tienda_id: str) -> dict:
         "function": {
             "name": NOMBRE,
             "description": (
-                "Busca en el catalogo de la tienda. Llamala ANTES de hablar de "
-                "un producto: es el unico lugar del que salen las fichas y los "
-                "precios. Podes mandar varias consultas juntas si el cliente "
-                "pidio varias cosas, y podes volver a llamarla si lo que salio "
-                "no sirve."),
+                "Busca en la fuente de la tienda. Llamala ANTES de hablar de un "
+                "producto o de una politica de la casa: es el unico lugar del "
+                "que salen las fichas, los precios y lo que la casa tiene "
+                "escrito. Podes mandar varias consultas juntas si el cliente "
+                "pidio varias cosas, pedir politicas con `temas`, las dos cosas "
+                "en la misma llamada, y volver a llamarla si lo que salio no "
+                "sirve."),
             "parameters": {
                 "type": "object",
                 "properties": {
                     "consultas": {"type": "array", "items": consulta,
-                                  "description": f"Hasta {TOPE_CONSULTAS}."}},
-                "required": ["consultas"]},
+                                  "description": f"Hasta {TOPE_CONSULTAS}."},
+                    # EL MAPA 3, Y ES UN CAMPO MAS DE LA MISMA PUERTA. No hay
+                    # una herramienta nueva a proposito: el mecanismo de buscar
+                    # en la fuente es el mismo, cambia que se busca. Una
+                    # herramienta aparte serian dos puertas para lo mismo.
+                    #
+                    # NO LLEVA ENUM, y va contra la costumbre del resto del
+                    # esquema. Los 129 temas pesaban 2.299 bytes en CADA
+                    # llamada, y ese enum ya se saco una vez por eso (FICHA 06,
+                    # 23-ago). El modelo nombra el tema con LAS PALABRAS DEL
+                    # CLIENTE y `fuente.certificar_temas` lo resuelve contra las
+                    # señas que la fuente ya tiene escritas: la atadura esta en
+                    # el codigo, no en el esquema.
+                    "temas": {
+                        "type": "array", "items": {"type": "string"},
+                        "description": (
+                            "Lo que el cliente pregunta sobre la CASA y no "
+                            "sobre un producto: garantia, cambios, cuotas, "
+                            "facturacion, plazos. Nombra el tema CORTO, en "
+                            "POCAS PALABRAS y con las del cliente: 'garantia', "
+                            "'cambios', no la frase entera que escribio. Te "
+                            "devuelvo lo que la casa tiene escrito, y si no lo "
+                            "tiene te lo digo y se lo decis asi. Hasta "
+                            f"{TOPE_TEMAS}.")}},
+                "required": []},
         },
     }
 
@@ -360,11 +390,38 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
             "motivo": "; ".join(notas)}
 
 
-def buscar(consultas: list, tienda_id: str, trace_id: str = "") -> dict:
-    """LA PUERTA. Varias consultas en una llamada, un resultado por consulta.
+def buscar(consultas: list, tienda_id: str, trace_id: str = "",
+           temas: list | None = None, temas_apagados=()) -> dict:
+    """LA PUERTA. Productos y politicas de la casa, en una sola llamada.
+
+    `temas_apagados` son los que OTRO bloque ya contesta mejor, y hoy es uno
+    solo: el costo del envio, que `fuente.texto_envio` ya cotizo exacto para
+    ese destino mientras la politica publica apenas el RANGO. Dos caminos para
+    el mismo numero y ganaba el flojo; por cada cosa que se prende se apaga una.
 
     No lanza: un error de busqueda deja al bot sin fichas, nunca mudo.
     """
+    from app.core.fuente import politicas_de
+    fuera_temas, sin_resolver = [], []
+    if temas:
+        try:
+            r = politicas_de(list(temas)[:TOPE_TEMAS], tienda_id)
+            apagados = {str(t) for t in (temas_apagados or ())}
+            fuera_temas = [p for p in r["politicas"]
+                           if p["tema"] not in apagados]
+            sin_resolver = r["sin_resolver"]
+        except Exception as e:  # noqa: BLE001 — sin politica no se inventa una
+            log.warning("motor_temas_error", trace_id=trace_id,
+                        error=f"{type(e).__name__}: {str(e)[:120]}")
+
+    if not consultas:
+        # SOLO POLITICAS ES UNA LLAMADA VALIDA. "¿Cual es la politica de
+        # garantia?" no necesita tocar el catalogo, y obligar a inventar una
+        # consulta vacia para preguntarlo seria pedirle al modelo que aprenda
+        # nuestra plomeria.
+        return {"resultados": [], "politicas": fuera_temas,
+                "temas_sin_resolver": sin_resolver}
+
     from app.storage.firestore_client import get_all_products
     try:
         catalogo = get_all_products(tienda_id=tienda_id) or []
@@ -373,7 +430,9 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "") -> dict:
                     error=f"{type(e).__name__}: {e}")
         catalogo = []
     if not catalogo:
-        return {"resultados": [], "motivo": "no se pudo leer el catalogo"}
+        return {"resultados": [], "politicas": fuera_temas,
+                "temas_sin_resolver": sin_resolver,
+                "motivo": "no se pudo leer el catalogo"}
 
     fuera = []
     for c in (consultas or [])[:TOPE_CONSULTAS]:
@@ -388,8 +447,10 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "") -> dict:
                           "motivo": "esa consulta no se pudo ejecutar"})
     log.info("motor_buscar", trace_id=trace_id, consultas=len(fuera),
              veredictos=[f["veredicto"] for f in fuera],
-             filas=[len(f["filas"]) for f in fuera])
-    return {"resultados": fuera}
+             filas=[len(f["filas"]) for f in fuera],
+             temas=[p["tema"] for p in fuera_temas])
+    return {"resultados": fuera, "politicas": fuera_temas,
+            "temas_sin_resolver": sin_resolver}
 
 
 def fichas_de(resultado: dict) -> list[dict]:

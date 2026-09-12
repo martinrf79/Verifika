@@ -6,14 +6,14 @@ herramientas, resolver, mesa, redactor, obligaciones. Todo eso esta apagado en
 
 EL FLUJO, entero:
 
-  1. FUENTE   el codigo pone el inventario -dos renglones sobre el catalogo
-              entero-, las politicas de la casa que el mensaje pisa, y el
-              ENVIO ya cotizado: el destino sale del mensaje o de la charla y
-              la tarifa de la tabla, antes de que el modelo hable.
-  2. MODELO   ve la voz de la casa, la memoria, los VEINTE TIPOS y el motor de
-              busqueda. BUSCA EL: escribe la consulta, el codigo la ejecuta, y
-              con lo que volvio contesta. El precio lo copia de la ficha que
-              trajo; el envio y la suma van como hueco, porque no los sabe.
+  1. FUENTE   el codigo pone lo que NINGUNA busqueda puede contestar: el
+              inventario -dos renglones sobre el catalogo entero- y el ENVIO ya
+              cotizado, que sale del codigo postal y no se razona.
+  2. MODELO   ve la voz de la casa, la memoria, los VEINTE TIPOS y el motor.
+              BUSCA EL, productos Y politicas de la casa por la MISMA puerta:
+              escribe la consulta, el codigo la ejecuta y certifica, y con lo
+              que volvio contesta. El precio lo copia de la ficha que trajo; el
+              envio y la suma van como hueco, porque no los sabe.
   3. NUMEROS  el codigo escribe el envio que ya cotizo y el total, y tira
               abajo la respuesta si quedo una sola cifra que la fuente no
               tiene. La procedencia se mide contra TODO lo que viajo.
@@ -26,8 +26,8 @@ segundos medidos y se comian la cuota diaria de a tres. Una sola con los veinte
 moldes adentro pesa menos que la primera de las tres que habia.
 
 DE DONDE SACA EL MODELO LA RESPUESTA, que es la pregunta que define todo esto:
-de las fichas que EL busco con `motor.buscar` y de las politicas que el codigo
-certifica, y de ningun otro lado. Por eso la ficha viaja con el precio ya
+de las fichas Y las politicas que EL pidio con `motor.buscar` y que el codigo
+certifico, y de ningun otro lado. Por eso la ficha viaja con el precio ya
 escrito, y por eso la guarda de procedencia mira exactamente esas fichas.
 
 POR QUE EL MODELO BUSCA Y NO EL CODIGO. El codigo no razona, asi que no puede
@@ -87,6 +87,12 @@ abajo. Las llaves dobles son las tres unicas que el codigo llena.
 PARA HABLAR DE UN PRODUCTO, PRIMERO BUSCA. Tenes la herramienta `buscar` y es
 el UNICO lugar del que salen las fichas y los precios. No contestes de memoria
 ni con lo que sepas de esos productos: si no lo buscaste, no lo tenes.
+
+Y LO MISMO PARA LAS POLITICAS DE LA CASA. Si el cliente pregunta por garantia,
+cambios, cuotas, facturacion o plazos, pedilo en `temas` de esa MISMA llamada,
+corto y con las palabras del cliente. Lo que la casa tiene escrito sale de ahi
+y de ningun otro lado: una politica no se deduce ni se supone. Si te contesto
+que no lo tiene escrito, deciselo asi al cliente.
 
 Traduci vos lo que el cliente dijo. "Un rectangulo con teclas" es la categoria
 `teclado`. "Algo acorde a la crisis" es ordenar por precio de menor a mayor.
@@ -279,18 +285,6 @@ def _bloque_fuente(politicas: list, inventario: str = "",
 TEMAS_DEL_ENVIO = ("costo_envio", "envios")
 
 
-def _sin_el_tema_del_envio(politicas: list) -> list:
-    """UN SOLO CAMINO PARA EL NUMERO DEL ENVIO.
-
-    La politica `costo_envio` publica el RANGO del interior -de 5.000 a 12.000-
-    y el bloque de envio trae la tarifa EXACTA de esa provincia, sacada de la
-    misma fuente. Con las dos delante el modelo escribia el rango, que es el
-    numero flojo, teniendo el exacto al lado. Por cada cosa que se prende se
-    apaga una.
-    """
-    return [p for p in (politicas or []) if p["tema"] not in TEMAS_DEL_ENVIO]
-
-
 def _parsear(crudo: str) -> dict:
     """El JSON del modelo, o el texto pelado si no vino como JSON. Un modelo
     que se olvida del formato no puede dejar mudo al bot."""
@@ -331,7 +325,8 @@ def _informe_en_blanco() -> dict:
     """
     return {"vueltas": 0, "llamadas": 0, "consultas": 0, "repetidas": 0,
             "puntuales": 0, "veredictos": [], "filas": 0, "rescates": 0,
-            "vacios": 0, "sin_dato": 0, "campos": [], "fichas": 0}
+            "vacios": 0, "sin_dato": 0, "campos": [], "fichas": 0,
+            "temas": [], "temas_sin_resolver": []}
 
 
 def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
@@ -357,6 +352,14 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
             informe["repetidas"] += 1
         else:
             pedidas.add(seña)
+    # LOS TEMAS QUE EL MODELO PIDIO, Y LOS QUE LA CASA NO TIENE ESCRITOS. El
+    # segundo numero es el que dice que le FALTA A LA FAQ, y hasta hoy no
+    # existia: con el codigo adivinando el tema, un tema sin resolver era
+    # indistinguible de uno que nadie pregunto.
+    for p in (r or {}).get("politicas") or []:
+        informe["temas"].append(str(p.get("tema") or ""))
+    for n in (r or {}).get("temas_sin_resolver") or []:
+        informe["temas_sin_resolver"].append(str(n))
     for res in (r or {}).get("resultados") or []:
         veredicto = str(res.get("veredicto") or "")
         filas = len(res.get("filas") or [])
@@ -375,7 +378,8 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
 
 
 async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
-                     fuente: str, trace_id: str, tienda_id: str) -> tuple:
+                     fuente: str, trace_id: str, tienda_id: str,
+                     temas_apagados=()) -> tuple:
     """La llamada al modelo, con el motor de busqueda en la mano.
 
     EL ORDEN DE LECTURA, y es lo que cambio el 12-sep. Lo que el modelo lee,
@@ -505,13 +509,16 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                 log.warning("motor_argumentos_rotos", trace_id=trace_id,
                             crudo=str(c.function.arguments)[:200])
             consultas = args.get("consultas") or []
-            r = MT.buscar(consultas, tienda_id, trace_id)
+            r = MT.buscar(consultas, tienda_id, trace_id,
+                          temas=args.get("temas"),
+                          temas_apagados=temas_apagados)
             _anotar(informe, consultas, pedidas, r)
             for f in MT.fichas_de(r):
                 if str(f.get("id")) not in {str(x.get("id")) for x in fichas}:
                     fichas.append(f)
+            pidio = {"consultas": consultas, "temas": args.get("temas") or []}
             hallazgos.append(
-                "Buscaste: " + json.dumps(consultas, ensure_ascii=False)[:900]
+                "Buscaste: " + json.dumps(pidio, ensure_ascii=False)[:900]
                 + "\nVolvio: " + json.dumps(r, ensure_ascii=False)[:8000])
     informe["fichas"] = len(fichas)
     return {}, fichas, informe
@@ -619,13 +626,19 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
 
     # ── 1. FUENTE ───────────────────────────────────────────────────────
     t = time.time()
-    politicas = F.politicas_relevantes(raw_message, tienda_id)
+    # LAS POLITICAS YA NO SE ADIVINAN ACA, y es el mapa 3 de la FICHA 50
+    # (12-sep-2026). Las pide el modelo por el motor, con el campo `temas`, y
+    # las certifica `fuente.politicas_de`. Lo que queda en esta etapa es lo que
+    # NINGUNA busqueda puede contestar: el inventario del catalogo entero y el
+    # envio, que no se razona porque sale del codigo postal.
     inventario = F.texto_inventario(tienda_id)
     envio = F.texto_envio(raw_message, conv.get("ultima_localidad") or "",
                           tienda_id)
-    if envio.get("texto"):
-        politicas = _sin_el_tema_del_envio(politicas)
-    bloque = _bloque_fuente(politicas, inventario, envio.get("texto") or "")
+    # EL TEMA QUE OTRO BLOQUE CONTESTA MEJOR NO SE SIRVE DOS VECES: con destino
+    # cotizado, la politica `costo_envio` publica el RANGO al lado de la tarifa
+    # exacta, y el modelo escribia el numero flojo.
+    apagados = TEMAS_DEL_ENVIO if envio.get("texto") else ()
+    bloque = _bloque_fuente([], inventario, envio.get("texto") or "")
     etapas["fuente"] = int((time.time() - t) * 1000)
 
     # ── 2. MODELO, QUE AHORA BUSCA EL ──────────────────────────────────
@@ -637,7 +650,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     memoria = _memoria_texto(conv)
     salida, fichas, motor = await _preguntar(
         _voz(negocio), memoria, history, raw_message,
-        bloque, trace_id, tienda_id)
+        bloque, trace_id, tienda_id, temas_apagados=apagados)
     etapas["modelo"] = int((time.time() - t) * 1000)
     # EL NUMERO DEL MOTOR, UN RENGLON POR TURNO. Sale SIEMPRE, haya buscado o
     # no: un turno que no busco es un dato, no un hueco en la serie. Lo agrega
@@ -650,7 +663,8 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              veredictos=motor["veredictos"][:12], filas=motor["filas"],
              rescates=motor["rescates"], vacios=motor["vacios"],
              sin_dato=motor["sin_dato"], campos=motor["campos"][:8],
-             fichas=motor["fichas"])
+             fichas=motor["fichas"], temas=motor["temas"][:6],
+             temas_sin_resolver=motor["temas_sin_resolver"][:4])
     if not motor["llamadas"]:
         # EL TERCER CANDADO DE LA FICHA 50: se mide cada turno que contesto sin
         # haber buscado. No se bloquea —la guarda de procedencia ya impide que
@@ -752,7 +766,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     log.info("turno_ok", trace_id=trace_id,
              latency_ms=int((time.time() - t0) * 1000), etapas=etapas,
              tipo=salida.get("tipo") or "", largo=len(texto or ""),
-             fichas=len(fichas), politicas=len(politicas),
+             fichas=len(fichas), politicas=len(motor["temas"]),
              envio_destino=envio.get("destino") or "",
              envio_zona=envio.get("zona") or "",
              envio_monto=envio.get("monto"),
