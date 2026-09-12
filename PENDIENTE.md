@@ -147,8 +147,23 @@ Por eso se pueden contar y por eso tiene final.
 **LA PUNTA GRANDE ES `app/core/estado_venta.py`: 15 de las 32, el 47%, en 417
 lineas.** Nadie llama `set_current_estado` en el camino vivo, asi que
 `get_current_estado` devuelve `{}` SIEMPRE: todo lo que ese modulo le aporta a
-`calculadora` es un diccionario vacio. Apagarlo y limpiar a sus lectores baja el
-censo casi a la mitad de una sola vez. **Es la proxima ficha y la decide Martin.**
+`calculadora` es un diccionario vacio.
+
+**SE INTENTO CORTARLO EL 12-SEP Y EL CENSO LO FRENO, con razon.** Sacar sus dos
+muletas de `cotizar_envio` SUBIO el censo: al irse los lectores, mas funciones
+quedaron sin llamador. Un corte a medias empeora el cableado. Y ademas destapo
+dos cosas que agrandan la ficha: **`calculate_total` no la llama NADIE desde
+`app/`** -la cuenta quedo huerfana del camino vivo cuando el turno paso a sumar
+con `{{total}}`-, y **hay varas que miden ramas muertas**: `test_envio.py::
+test_localidad_ambigua_resuelve_con_provincia_del_estado` setea el estado a mano
+para medir una capacidad que en produccion no corre desde el apagon.
+
+**La ficha entonces es una sola y es de tres partes: `estado_venta`,
+`calculate_total` y las varas que las miden.** Toca el modulo de la plata. **La
+decide Martin.** Lo unico que se saco por ahora es lo que se pudo REEMPLAZAR sin
+perder nada: la localidad ambigua mas la provincia de la charla, que estaba
+muerta en `estado_venta` y ahora vive en `fuente.texto_envio`, donde el dato si
+existe.
 
 **LOS NOMBRES Y EL DETALLE DE CADA FALLA NO SE ESCRIBEN ACA.** Viven en
 `arquitectura/MAPA_CABLEADO.md`, que es el unico lugar donde se nombra el

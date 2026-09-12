@@ -534,6 +534,26 @@ def _texto_envio(mensaje: str, localidad_previa: str, tienda_id: str) -> dict:
     if not r:
         r = _cotizar(localidad_previa)
         de_donde = "charla"
+    if not r and localidad_previa and str(mensaje or "").strip():
+        # LA LOCALIDAD AMBIGUA MAS LA PROVINCIA DE LA CHARLA (12-sep-2026).
+        #
+        # El caso es real y tiene fecha: "Los Condores" no resuelve solo -hay
+        # varios en el pais- y el cliente ya habia dicho Cordoba dos turnos
+        # antes. Cotizar cada texto por separado falla en los dos; juntos
+        # resuelven, porque la tabla desambigua una localidad con la provincia
+        # en el mismo texto.
+        #
+        # ESTA CAPACIDAD YA EXISTIA Y ESTABA MUERTA. Vivia en `cotizar_envio`,
+        # que la buscaba en `estado_venta.get_current_estado()`, y nadie llama
+        # `set_current_estado` en el camino vivo: ese diccionario es `{}`
+        # SIEMPRE, asi que la rama no corrio una sola vez desde el apagon. El
+        # unico que la ejercitaba era un test que seteaba el estado a mano, o
+        # sea una vara midiendo un mundo que no existe.
+        #
+        # Aca si vive, porque la provincia sale de `ultima_localidad`, que el
+        # turno escribe de verdad en cada charla.
+        r = _cotizar(f"{mensaje}, {localidad_previa}")
+        de_donde = "mensaje+charla"
 
     if r:
         monto, zona = int(r.get("monto") or 0), str(r.get("zona") or "")

@@ -162,6 +162,22 @@ def test_un_envio_roto_no_deja_al_cliente_sin_turno(firestore_doble,
     assert e == F.SIN_ENVIO
 
 
+def test_la_localidad_AMBIGUA_se_resuelve_con_la_provincia_de_la_charla(
+        firestore_doble):
+    """El caso real: "Los Condores" no resuelve solo -hay varios en el pais- y
+    el cliente ya habia dicho Cordoba dos turnos antes. Cotizar cada texto por
+    separado falla en los dos; juntos resuelven.
+
+    ESTA CAPACIDAD YA EXISTIA Y ESTABA MUERTA. Vivia en `cotizar_envio`, que
+    buscaba la provincia en `estado_venta`, y nadie llama `set_current_estado`
+    en el camino vivo: ese diccionario es `{}` siempre. La unica que la
+    ejercitaba era una vara que seteaba el estado a mano."""
+    solo = _envio("mandalo a Los Condores")
+    assert solo["monto"] is None, "el caso dejo de medir: ya resuelve solo"
+    con_charla = _envio("mandalo a Los Condores", previa="cordoba")
+    assert con_charla["monto"], "con la provincia de la charla tiene que cotizar"
+
+
 def test_el_mapa_de_envio_dice_las_zonas_y_el_umbral(firestore_doble):
     """El mapa 2 de la FICHA 50: no dice cuanto sale ESTE envio, dice que se
     puede cotizar y con que dato. Es lo que evita que el bot prometa."""
