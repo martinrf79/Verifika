@@ -123,10 +123,30 @@ LOS VEINTE TIPOS:
 """
 
 
-def _prompt_sistema(negocio: str) -> str:
+def _voz(negocio: str) -> str:
+    """QUIEN HABLA. Es lo unico anclado al principio y no se movio: la identidad
+    de la casa tiene que estar antes que todo, incluso antes de la pregunta."""
     from app.core.guia_venta_prosa import identidad
-    voz = identidad(negocio) or ""
-    return "\n".join(x for x in (voz, _REGLAS + TP.bloque_para_el_prompt()) if x)
+    return identidad(negocio) or ""
+
+
+def _aparato() -> str:
+    """EL APARATO: las reglas y los veinte moldes. Va DESPUES de la pregunta.
+
+    POR QUE SE PARTIO EN DOS (12-sep-2026). Hasta hoy la voz y el aparato eran
+    un solo bloque de sistema, asi que el modelo leia dos mil y pico de tokens
+    de instrucciones y moldes ANTES de saber que le habian preguntado. Elegir
+    entre veinte tipos sin tener la pregunta delante es elegir a ciegas: lo que
+    queda fresco es el ultimo molde leido, no el que corresponde.
+
+    Medido lo que pasaba: `tipo_vacio` en la mitad de los turnos, y el 12-sep
+    00:58 un pedido de precios de seis productos encasillado como
+    `politica_sin_cubrir` —el molde de "eso no lo tengo escrito"— teniendo
+    quince fichas en la mano.
+
+    Ahora el orden es: quien habla, QUE LE PREGUNTARON, como se contesta.
+    """
+    return _REGLAS + TP.bloque_para_el_prompt()
 
 
 def _memoria_texto(conv: dict) -> str:
@@ -313,9 +333,24 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
                 informe["campos"].append(campo)
 
 
-async def _preguntar(sistema: str, memoria: str, history: list, mensaje: str,
+async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                      fuente: str, trace_id: str, tienda_id: str) -> tuple:
     """La llamada al modelo, con el motor de busqueda en la mano.
+
+    EL ORDEN DE LECTURA, y es lo que cambio el 12-sep. Lo que el modelo lee,
+    en este orden y ninguno otro:
+
+      1. LA VOZ     quien habla. Anclado al principio, como siempre.
+      2. LA PREGUNTA el mensaje del cliente, PELADO. Antes que el aparato.
+      3. EL APARATO  las reglas y los veinte moldes.
+      4. LA MEMORIA  lo que ya se hablo.
+      5. LA CHARLA   el historial, en orden.
+      6. EL TURNO    la fuente, lo que volvio de buscar, y el mensaje otra vez
+                     al final, que es donde tiene que estar fresco.
+
+    El mensaje aparece dos veces a proposito y cuesta decenas de tokens: arriba
+    para que el modelo sepa que le preguntaron antes de leer como se contesta,
+    y abajo para que sea lo ultimo que ve antes de escribir.
 
     EL MODELO BUSCA Y DESPUES CONTESTA, y esa es la vuelta que agrega la FICHA
     50. Antes el codigo adivinaba que fichas ponerle delante leyendo el mensaje
@@ -338,14 +373,18 @@ async def _preguntar(sistema: str, memoria: str, history: list, mensaje: str,
     if cli is None:
         log.warning("respuesta_sin_clave", trace_id=trace_id)
         return {}, [], informe
-    msgs = [{"role": "system", "content": sistema}]
+    msgs = [{"role": "system", "content": voz}] if voz else []
+    # LA PREGUNTA, ANTES QUE EL APARATO. Es el cambio del 12-sep y el motivo
+    # esta entero en `_aparato`.
+    msgs.append({"role": "system",
+                 "content": "ESTO ES LO QUE TE PREGUNTO EL CLIENTE Y ES LO QUE "
+                            "TENES QUE CONTESTAR:\n" + (mensaje or "")})
+    msgs.append({"role": "system", "content": _aparato()})
     if memoria:
         msgs.append({"role": "system", "content": memoria})
     for h in (history or [])[-(settings.HISTORY_LIMIT * 2):]:
         if h.get("role") in ("user", "assistant") and h.get("content"):
             msgs.append({"role": h["role"], "content": str(h["content"])[:900]})
-    msgs.append({"role": "user",
-                 "content": f"Mensaje del cliente: {mensaje}\n\n{fuente}"})
 
     try:
         herramientas = [MT.esquema(tienda_id)]
@@ -370,12 +409,22 @@ async def _preguntar(sistema: str, memoria: str, history: list, mensaje: str,
     pedidas: set = set()
     for vuelta in range(VUELTAS_DE_BUSQUEDA + 1):
         informe["vueltas"] += 1
-        cuerpo = f"Mensaje del cliente: {mensaje}\n\n{fuente}"
+        # LA FUENTE VIAJABA DOS VECES, y era un bug de cableado, no una
+        # eleccion (12-sep-2026). `msgs` ya llevaba un turno de usuario con el
+        # mensaje Y la fuente enteros, y aca se armaba OTRO igual: el
+        # inventario, el bloque de envio y las politicas llegaban duplicados al
+        # modelo en cada una de las hasta tres vueltas. Ahora el turno se arma
+        # en un solo lugar y `msgs` no lo trae.
+        partes = []
+        if fuente:
+            partes.append(fuente)
         if hallazgos:
-            cuerpo += ("\n\nLO QUE DEVOLVIO TU BUSQUEDA. Es toda la fuente que "
-                       "tenes sobre productos; de aca salen las fichas y los "
-                       "precios:\n" + "\n".join(hallazgos))
-        turno = msgs + [{"role": "user", "content": cuerpo}]
+            partes.append("LO QUE DEVOLVIO TU BUSQUEDA. Es toda la fuente que "
+                          "tenes sobre productos; de aca salen las fichas y "
+                          "los precios:\n" + "\n".join(hallazgos))
+        # EL MENSAJE, ULTIMO. Que sea lo ultimo que lee antes de escribir.
+        partes.append("Contesta ESTE mensaje del cliente: " + (mensaje or ""))
+        turno = msgs + [{"role": "user", "content": "\n\n".join(partes)}]
         # En la ultima vuelta la herramienta ya no viaja: es la vuelta de
         # CONTESTAR. Sin esto el modelo puede quedarse buscando para siempre y
         # el cliente sin respuesta.
@@ -546,7 +595,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     t = time.time()
     memoria = _memoria_texto(conv)
     salida, fichas, motor = await _preguntar(
-        _prompt_sistema(negocio), memoria, history, raw_message,
+        _voz(negocio), memoria, history, raw_message,
         bloque, trace_id, tienda_id)
     etapas["modelo"] = int((time.time() - t) * 1000)
     # EL NUMERO DEL MOTOR, UN RENGLON POR TURNO. Sale SIEMPRE, haya buscado o

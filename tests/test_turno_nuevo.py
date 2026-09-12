@@ -43,7 +43,7 @@ def test_el_prompt_lleva_los_veinte_tipos_y_ninguno_menos():
 
 
 def test_el_prompt_de_sistema_incluye_las_reglas_y_los_tipos(firestore_doble):
-    s = R._prompt_sistema("Verifika")
+    s = R._aparato()
     assert "{{precio}}" in s and "{{envio}}" in s
     assert "identidad_ambigua" in s and "politica_sin_cubrir" in s
 
@@ -530,7 +530,7 @@ def test_el_prompt_PIDE_declarar_busco(firestore_doble):
     """Medido con el modelo real el 12-sep: 0 de 9 consultas declararon
     `busco`, asi que la ambiguedad no se podia disparar nunca. Estaba solo en
     la descripcion del esquema; ahora lo pide el prompt con todas las letras."""
-    p = R._prompt_sistema("Verifika")
+    p = R._aparato()
     assert "busco" in p and "TODA consulta" in p
 
 
@@ -561,3 +561,89 @@ def test_el_extremo_de_un_solo_rubro_sigue_ordenando(firestore_doble):
                                       "direccion": "min"}})
     assert fichas
     assert all("teclado" in str(f.get("categoria", "")).lower() for f in fichas)
+
+
+# ── EL ORDEN DE LECTURA DEL MODELO (12-sep-2026) ────────────────────────────
+
+
+class _MensajeFalso:
+    """Lo que el SDK devuelve: un mensaje sin herramientas, con texto."""
+    tool_calls = None
+
+    def __init__(self, content):
+        self.content = content
+
+
+class _ClienteEspia:
+    """Un doble del cliente del proveedor que GUARDA lo que se le mando.
+
+    No mide el prompt como cadena suelta: mide la conversacion ENTERA tal cual
+    viaja, que es lo unico que dice en que orden lee el modelo."""
+
+    def __init__(self, caja):
+        self.caja = caja
+        self.chat = self
+        self.completions = self
+
+    def create(self, *, model, messages, **kw):
+        self.caja.append(messages)
+
+        class _R:
+            choices = [type("C", (), {
+                "message": _MensajeFalso('{"tipo": "spec_de_ficha", '
+                                         '"texto": "listo"}')})()]
+        return _R()
+
+
+def _conversacion(mensaje, memoria="", history=None, fuente="LA FUENTE_MARCA"):
+    """Corre `_preguntar` contra el espia y devuelve los mensajes que viajaron."""
+    from app.core import llm_reintento as LR
+    caja = []
+    viejo = LR._cliente
+    LR._cliente = lambda: _ClienteEspia(caja)
+    try:
+        asyncio.run(R._preguntar("LA VOZ_MARCA", memoria, history or [],
+                                 mensaje, fuente, "trace_orden", TIENDA))
+    finally:
+        LR._cliente = viejo
+    assert caja, "no se le hablo al modelo"
+    return caja[-1]
+
+
+def test_el_modelo_LEE_LA_PREGUNTA_ANTES_QUE_LOS_VEINTE_MOLDES(firestore_doble):
+    """EL PEDIDO DE MARTIN, 12-sep. Elegir entre veinte tipos sin tener la
+    pregunta delante es elegir a ciegas, y se vio en vivo: un pedido de precios
+    de seis productos salio encasillado como `politica_sin_cubrir` con quince
+    fichas en la mano.
+
+    Lo anclado al principio sigue anclado: la voz de la casa va primera."""
+    msgs = _conversacion("cuanto pesa el teclado K120")
+    junto = [m["content"] for m in msgs]
+    entero = "\n".join(junto)
+    assert "LA VOZ_MARCA" in junto[0], "la voz dejo de ir primera"
+    donde_pregunta = entero.index("cuanto pesa el teclado K120")
+    donde_moldes = entero.index("identidad_ambigua")
+    assert donde_pregunta < donde_moldes, \
+        "el modelo lee los veinte moldes antes de saber que le preguntaron"
+
+
+def test_el_mensaje_del_cliente_es_LO_ULTIMO_que_lee(firestore_doble):
+    """Arriba para saber que le preguntaron, abajo para tenerlo fresco cuando
+    escribe. Las dos puntas, y la de abajo es la que manda."""
+    msgs = _conversacion("cuanto pesa el teclado K120")
+    assert "cuanto pesa el teclado K120" in msgs[-1]["content"]
+    cola = msgs[-1]["content"]
+    assert cola.rindex("cuanto pesa el teclado K120") > cola.index("LA FUENTE_MARCA"), \
+        "la fuente quedo despues del mensaje: el modelo escribe con otra cosa fresca"
+
+
+def test_LA_FUENTE_NO_VIAJA_DOS_VECES(firestore_doble):
+    """BUG DE CABLEADO MEDIDO EL 12-SEP. `msgs` ya llevaba un turno de usuario
+    con el mensaje Y la fuente enteros, y el loop armaba OTRO igual: el
+    inventario, el bloque de envio y las politicas llegaban duplicados al
+    modelo en CADA vuelta, hasta tres por turno. Nadie lo veia porque el
+    duplicado no rompe nada: solo se paga."""
+    msgs = _conversacion("cuanto pesa el teclado K120")
+    entero = "\n".join(m["content"] for m in msgs)
+    assert entero.count("LA FUENTE_MARCA") == 1, \
+        f"la fuente viaja {entero.count('LA FUENTE_MARCA')} veces"
