@@ -159,8 +159,9 @@ test_localidad_ambigua_resuelve_con_provincia_del_estado` setea el estado a mano
 para medir una capacidad que en produccion no corre desde el apagon.
 
 **La ficha entonces es una sola y es de tres partes: `estado_venta`,
-`calculate_total` y las varas que las miden.** Toca el modulo de la plata. **La
-decide Martin.** Lo unico que se saco por ahora es lo que se pudo REEMPLAZAR sin
+`calculate_total` y las varas que las miden. Esta escrita entera en
+`arquitectura/FICHA_51_el_fantasma_del_hub.md` y es la unidad de trabajo
+ABIERTA.** Toca el modulo de la plata. **La decide Martin.** Lo unico que se saco por ahora es lo que se pudo REEMPLAZAR sin
 perder nada: la localidad ambigua mas la provincia de la charla, que estaba
 muerta en `estado_venta` y ahora vive en `fuente.texto_envio`, donde el dato si
 existe.
