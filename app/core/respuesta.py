@@ -247,8 +247,8 @@ def _informe_en_blanco() -> dict:
     moverlas mirando, y por eso va antes que cualquier arreglo de robustez.
     """
     return {"vueltas": 0, "llamadas": 0, "consultas": 0, "repetidas": 0,
-            "veredictos": [], "filas": 0, "rescates": 0, "vacios": 0,
-            "sin_dato": 0, "campos": [], "fichas": 0}
+            "puntuales": 0, "veredictos": [], "filas": 0, "rescates": 0,
+            "vacios": 0, "sin_dato": 0, "campos": [], "fichas": 0}
 
 
 def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
@@ -262,6 +262,13 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
     """
     for c in (consultas or []):
         informe["consultas"] += 1
+        # CUANTAS VECES DECLARO QUE EL CLIENTE NOMBRO UNA COSA. Sin este numero
+        # no hay forma de saber si `busco` se usa: la ambiguedad podria estar
+        # muerta -el modelo no lo declara nunca- y el informe se veria igual,
+        # con cero ambiguos, que es exactamente como se ve cuando no hubo
+        # ninguna. Lo pidio la primera tanda viva con el numero puesto.
+        if str((c or {}).get("busco") or "") == "uno":
+            informe["puntuales"] += 1
         seña = json.dumps(c, ensure_ascii=False, sort_keys=True, default=str)
         if seña in pedidas:
             informe["repetidas"] += 1
@@ -526,6 +533,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     log.info("motor_turno", trace_id=trace_id,
              vueltas=motor["vueltas"], llamadas=motor["llamadas"],
              consultas=motor["consultas"], repetidas=motor["repetidas"],
+             puntuales=motor["puntuales"],
              veredictos=motor["veredictos"][:12], filas=motor["filas"],
              rescates=motor["rescates"], vacios=motor["vacios"],
              sin_dato=motor["sin_dato"], campos=motor["campos"][:8],

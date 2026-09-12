@@ -68,6 +68,19 @@ def test_la_consulta_REPETIDA_se_ve():
     assert "gasto una vuelta pidiendo lo mismo" in lineas
 
 
+def test_se_cuenta_si_el_modelo_DECLARA_el_producto_puntual():
+    """Lo pidio la primera tanda viva con el numero puesto: el informe decia
+    cero ambiguos, y cero ambiguos se ve igual cuando no hubo ninguna que
+    cuando el modelo no declara `busco` nunca y la ambiguedad esta muerta."""
+    mudo = "\n".join(P.numero_del_motor(
+        [_turno(llamadas=1, consultas=2, puntuales=0)]))
+    assert "la ambiguedad no se puede disparar" in mudo
+    vivo = "\n".join(P.numero_del_motor(
+        [_turno(llamadas=1, consultas=2, puntuales=1)]))
+    assert "puntual: 1 de 2" in vivo
+    assert "no se puede disparar" not in vivo
+
+
 def test_los_veredictos_se_agregan_de_todas_las_consultas():
     lineas = "\n".join(P.numero_del_motor(
         [_turno(llamadas=1, veredictos=["existe", "no_existe"]),

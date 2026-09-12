@@ -170,8 +170,9 @@ def _post(url: str, tok: str, cuerpo: dict) -> dict:
 # uno de los dos lados, el agregador se queda mudo sin que nadie lo note: es el
 # telefono descompuesto que este repo ya pago tres veces. Por eso hay candado
 # en `tests/test_numero_motor.py`, que compara las dos listas.
-CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "veredictos",
-          "filas", "rescates", "vacios", "sin_dato", "campos", "fichas")
+CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "puntuales",
+          "veredictos", "filas", "rescates", "vacios", "sin_dato", "campos",
+          "fichas")
 
 PROYECTO = os.environ.get("GCP_PROJECT", "memory-engine-v1")
 SERVICIO = os.environ.get("CLOUD_RUN_SERVICIO", "agente-bot")
@@ -241,6 +242,7 @@ def numero_del_motor(eventos: list) -> list:
     revuelta = [t for t in busco if _n(t.get("llamadas")) > 1]
     consultas = sum(_n(t.get("consultas")) for t in turnos)
     repetidas = sum(_n(t.get("repetidas")) for t in turnos)
+    puntuales = sum(_n(t.get("puntuales")) for t in turnos)
     filas = sum(_n(t.get("filas")) for t in turnos)
     vacios = sum(_n(t.get("vacios")) for t in turnos)
     rescates = sum(_n(t.get("rescates")) for t in turnos)
@@ -268,6 +270,9 @@ def numero_del_motor(eventos: list) -> list:
         f"{consultas / max(1, len(busco)):.1f} por turno que busco",
         f"  consultas REPETIDAS: {repetidas}"
         + ("   <- gasto una vuelta pidiendo lo mismo" if repetidas else ""),
+        f"  declaradas de UN producto puntual: {puntuales} de {consultas}"
+        + ("   <- nunca lo declara: la ambiguedad no se puede disparar"
+           if consultas and not puntuales else ""),
         f"  filas devueltas: {filas}   vacias: {vacios}   "
         f"rescates: {rescates}   sin el dato cargado: {sin_dato}",
     ]

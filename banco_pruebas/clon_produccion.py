@@ -118,9 +118,14 @@ def instalar() -> dict:
     from banco_pruebas.sim_firestore import install
     info = install()
 
-    from banco_pruebas.archivo_vivo import enchufar
-    enchufar()
-
+    # EL ENCHUFE DEL ARCHIVO SE SACO (11-sep-2026), no se arreglo. Este
+    # llamado era `banco_pruebas.archivo_vivo.enchufar`, que le pisaba
+    # funciones a `app.core.pedido` y a `app.core.resolver` desde un snapshot
+    # del 28-ago. Los dos modulos se apagaron con la FICHA 48, asi que el
+    # enchufe no tenia donde enchufar: el import reventaba y se llevaba puesta
+    # la tanda viva entera, que es el unico instrumento que corre el camino
+    # vivo ANTES del deploy. Estuvo roto desde el apagon y no se noto porque
+    # nadie la corrio.
     import app.main as main
 
     def _conector(token: str, phone_number_id: str):

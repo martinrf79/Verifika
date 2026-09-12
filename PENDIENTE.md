@@ -123,6 +123,17 @@ UNA SESION A MANO: ahora la corre la bateria y dice sobre cuantos casos paso. El
 dia que se corrio encontro un agujero real: una condicion de texto SIN VALOR se
 aplicaba igual y dejaba el catalogo en cero, en silencio.
 
+**11-sep, noche: LA TANDA VIVA ESTABA ROTA DESDE EL APAGON.** `clon_produccion.
+instalar` importaba `banco_pruebas.archivo_vivo`, que le pisaba funciones a
+`app.core.pedido` y `app.core.resolver`: los dos se apagaron con la FICHA 48, el
+import reventaba y se llevaba puesto el unico instrumento que corre el camino
+vivo ANTES del deploy. No se noto porque nadie la corrio. Se saco el enchufe, no
+se revivio el modulo. **Primera corrida con el numero puesto: 9 de 11 turnos
+limpios y las 2 fallas son 429 de la clave gratis, no defectos.** El motor
+busco en 7 de 11, cero re-busquedas, cero repetidas, cero rescates, los 7
+veredictos `existe`. Ojo con el 4 de 11 que contesto SIN buscar: dos son los
+turnos que murieron por 429.
+
 **LOS NOMBRES Y EL DETALLE DE CADA FALLA NO SE ESCRIBEN ACA.** Viven en
 `arquitectura/MAPA_CABLEADO.md`, que es el unico lugar donde se nombra el
 cableado: estaciones `T`, juntas `J`, puntos de modelo `L` y desconexiones `D`.
