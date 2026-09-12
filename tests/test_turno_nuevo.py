@@ -456,6 +456,68 @@ def test_el_inventario_tambien_es_fuente(firestore_doble):
     assert not con_inv["inventada"], "con el inventario delante NO es invento"
 
 
+# ── LA MEMORIA DE LO QUE YA SE MOSTRO ──────────────────────────────────────
+#
+# LA FALLA MEDIDA, 12-sep 00:06 y 00:08: el bot contesto DOS VECES seguidas "no
+# tengo esa informacion confirmada" a un cliente que estaba armando un
+# presupuesto. El modelo escribio de memoria los precios de lo que ya habia
+# mostrado -algunos acertados, otros sumados a mano- y la guarda tiro la
+# respuesta entera, con razon. No podia hacer otra cosa: la memoria le mandaba
+# los NOMBRES pelados.
+
+def test_la_memoria_lleva_el_ID_y_el_PRECIO_de_lo_ya_mostrado():
+    conv = {"productos_vistos": [
+        {"id": "MOU2", "nombre": "Mouse Logitech G203", "precio": "$37.500"}]}
+    m = R._memoria_texto(conv)
+    assert "MOU2" in m, "sin el id no puede volver a buscarlo"
+    assert "$37.500" in m, "sin el precio lo escribe de memoria o no lo dice"
+
+
+def test_el_precio_de_lo_YA_MOSTRADO_no_es_plata_inventada(firestore_doble,
+                                                           monkeypatch):
+    """El turno entero: el cliente pregunta por algo que vio hace dos turnos y
+    el bot le dice el precio sin volver a buscarlo. Antes salia el fallback."""
+    conv = {"productos_vistos": [
+        {"id": "MOU2", "nombre": "Mouse Logitech G203", "precio": "$37.500"}]}
+    memoria = R._memoria_texto(conv)
+    # El modelo copia el precio de la memoria y NO busco: fichas vacias.
+    _, inf = N.llenar("El Logitech G203 sale $37.500.", [], "t",
+                      fuente_texto=memoria)
+    assert not inf["inventada"], (
+        "el precio que el codigo le puso delante en la memoria no puede ser "
+        f"invento: {inf['inventada']}")
+    # Y uno que NO esta en ningun lado sigue cayendo.
+    _, mal = N.llenar("El Logitech G203 sale $99.999.", [], "t",
+                      fuente_texto=memoria)
+    assert mal["inventada"], "la guarda no puede aflojarse para todo"
+
+
+def test_el_precio_se_GUARDA_en_la_memoria_del_turno(firestore_doble,
+                                                     monkeypatch):
+    """Hasta hoy `productos_vistos` tenia id y nombre nada mas, asi que el
+    turno siguiente no podia decir cuanto salia lo que el anterior mostro."""
+    ficha = _buscar({"texto": "mouse", "cuantos": 1})[0]
+    monkeypatch.setattr(
+        R, "_preguntar",
+        lambda *a, **k: asyncio.sleep(
+            0, result=({"tipo": "precio_simple", "texto": "Ahi va."},
+                       [ficha], _motor())))
+    asyncio.run(R.procesar_turno("sonda_vistos", "un mouse", TIENDA,
+                                 "telegram", "trace_vistos"))
+    from app.storage.firestore_client import get_conversation
+    conv = get_conversation("sonda_vistos", tienda_id=TIENDA) or {}
+    vistos = conv.get("productos_vistos") or []
+    assert vistos and vistos[0].get("precio"), f"sin precio: {vistos}"
+
+
+def test_el_prompt_PIDE_declarar_busco(firestore_doble):
+    """Medido con el modelo real el 12-sep: 0 de 9 consultas declararon
+    `busco`, asi que la ambiguedad no se podia disparar nunca. Estaba solo en
+    la descripcion del esquema; ahora lo pide el prompt con todas las letras."""
+    p = R._prompt_sistema("Verifika")
+    assert "busco" in p and "TODA consulta" in p
+
+
 def test_un_pedido_de_varios_rubros_son_VARIAS_CONSULTAS(firestore_doble):
     """'Dame dos auriculares, dos mouse y dos memorias... las MENOS partes
     chinas' ordenaba por precio descendente y devolvia los cinco mas caros a un

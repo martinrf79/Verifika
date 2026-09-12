@@ -95,9 +95,10 @@ Eso es tu trabajo, no el del codigo.
 Si el cliente pidio varias cosas, mandalas como varias consultas en UNA sola
 llamada. Si lo que volvio no sirve, busca de nuevo con otra consulta.
 
-Cuando el cliente nombra UN producto puntual, deciselo a la busqueda con
-`busco: uno`. Si hay dos que le pegan igual te aviso, y ahi le preguntas cual:
-elegir por el es inventar.
+TODA consulta lleva `busco`, y no es opcional: `uno` si el cliente nombro un
+producto puntual -"el K120", "esa notebook", "el teclado que me mostraste"-, y
+`varios` si pidio opciones, un rubro o un extremo. Con `uno`, si hay dos que le
+pegan igual te aviso y ahi le preguntas cual: elegir por el es inventar.
 
 LEE LO QUE LA BUSQUEDA TE CONTESTA, que dice mas que la lista:
 - `no_aplicado` es una condicion que el catalogo NO puede cumplir. Deciselo al
@@ -139,9 +140,30 @@ def _memoria_texto(conv: dict) -> str:
     resumen = (conv.get("summary") or "").strip()
     if resumen:
         partes.append("De lo que ya hablaron: " + resumen)
-    vistos = [str(p.get("nombre") or "") for p in (conv.get("productos_vistos") or [])]
+    vistos = conv.get("productos_vistos") or []
     if vistos:
-        partes.append("Productos que ya le mostraste: " + ", ".join(vistos[:8]))
+        # CON ID Y CON PRECIO, y las dos cosas por un caso medido.
+        #
+        # EL 12-SEP A LAS 00:06 y a las 00:08 el bot le contesto DOS VECES
+        # seguidas "no tengo esa informacion confirmada" a un cliente que estaba
+        # armando un presupuesto. Lo que paso adentro: el modelo escribio los
+        # precios de lo que ya habia mostrado SACANDOLOS DE SU CABEZA -algunos
+        # acertados, otros sumados a mano- y la guarda de procedencia tiro la
+        # respuesta entera, con razon.
+        #
+        # No podia hacer otra cosa: este bloque le mandaba los NOMBRES pelados.
+        # Sin el precio no tenia de donde copiarlo; sin el id no podia ni volver
+        # a buscarlo, aunque `buscar` acepta ids y su descripcion dice, textual,
+        # "para volver a un producto que ya le mostraste". La capacidad estaba
+        # escrita y el modelo no tenia con que usarla.
+        #
+        # El precio aca ES fuente -viaja en el prompt, igual que el inventario-
+        # asi que copiarlo de aca ya no es inventar.
+        partes.append("Productos que ya le mostraste, con su id y su precio:\n"
+                      + "\n".join(
+                          f"- {p.get('id')}: {p.get('nombre')}"
+                          + (f", {p['precio']}" if p.get("precio") else "")
+                          for p in vistos[:8]))
     carrito = [str(p.get("nombre") or "") for p in (conv.get("carrito_vigente") or [])]
     if carrito:
         partes.append("En el pedido: " + ", ".join(carrito[:8]))
@@ -522,8 +544,9 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     # el motor. Es el cambio entero de la FICHA 50: el codigo no razona, asi
     # que no puede elegir que ponerle delante, y el catalogo entero no entra.
     t = time.time()
+    memoria = _memoria_texto(conv)
     salida, fichas, motor = await _preguntar(
-        _prompt_sistema(negocio), _memoria_texto(conv), history, raw_message,
+        _prompt_sistema(negocio), memoria, history, raw_message,
         bloque, trace_id, tienda_id)
     etapas["modelo"] = int((time.time() - t) * 1000)
     # EL NUMERO DEL MOTOR, UN RENGLON POR TURNO. Sale SIEMPRE, haya buscado o
@@ -562,8 +585,14 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     else:
         # ── 3. NUMEROS ──────────────────────────────────────────────────
         t = time.time()
+        # LA MEMORIA TAMBIEN ES FUENTE, y sin este renglon el arreglo de arriba
+        # no sirve de nada: el precio de lo ya mostrado viaja al modelo, el
+        # modelo lo copia como se le pide, y la guarda lo llama invento porque
+        # solo miraba el bloque. Es LA MISMA leccion que este archivo ya
+        # aprendio el 11-sep con el inventario, aplicada al otro bloque que
+        # viaja aparte: lo que se le pone delante al modelo es fuente, TODO.
         texto, informe = N.llenar(texto, fichas, trace_id,
-                                  fuente_texto=bloque,
+                                  fuente_texto=bloque + "\n" + memoria,
                                   envio_monto=envio.get("monto"))
         etapas["numeros"] = int((time.time() - t) * 1000)
         if informe.get("inventada"):
@@ -598,7 +627,11 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     ids = {str(p.get("id")) for p in vistos}
     for f in fichas:
         if str(f.get("id")) not in ids:
-            vistos.append({"id": f.get("id"), "nombre": f.get("nombre")})
+            # EL PRECIO SE GUARDA, y hasta hoy no: `productos_vistos` tenia id y
+            # nombre nada mas, asi que el turno siguiente no podia decir cuanto
+            # salia lo que el turno anterior ya habia mostrado.
+            vistos.append({"id": f.get("id"), "nombre": f.get("nombre"),
+                           "precio": f.get("precio")})
     # EL DESTINO DE LA CHARLA LO ESCRIBE QUIEN LO RESOLVIO. Habia una SEGUNDA
     # resolucion aca -otra llamada a `geo`, con otro criterio que el del motor
     # de envio- y guardaba un codigo postal pelado. Ahora se guarda el destino
