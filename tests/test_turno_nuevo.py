@@ -773,3 +773,53 @@ def test_el_plazo_que_es_IGUAL_no_se_repite_por_renglon(firestore_doble):
     assert len(e["destinos"]) == 3, e["destinos"]
     assert e["texto"].count("dias habiles") == 1, e["texto"]
     assert e["texto"].count("GRATIS") <= 1, e["texto"]
+
+
+# ── LA PALABRA DEL CLIENTE (12-sep-2026) ────────────────────────────────────
+
+
+def test_el_destino_se_nombra_COMO_LO_DIJO_EL_CLIENTE(firestore_doble):
+    """REGLA DE VENTA ANTES QUE DE CODIGO. El cliente escribe "Posadas" y el
+    bot le contestaba "misiones", porque el destino se nombraba con la
+    provincia que resolvio la tabla. La provincia es un artefacto NUESTRO: al
+    cliente no le importa, el pidio a Posadas. Y pesa mas todavia porque esto
+    es un motor multi-tienda: la division en provincias es de la tabla
+    argentina, la palabra del cliente viaja a cualquier lado."""
+    e = _envio("hacen envio a posadas?", "")
+    assert e["destino"] == "posadas", e["destino"]
+    assert "POSADAS" in e["texto"], e["texto"]
+    assert "misiones" not in e["texto"].lower(), e["texto"]
+
+
+def test_la_charla_guarda_lo_ESTABLE_y_no_lo_dicho(firestore_doble):
+    """Son dos necesidades distintas y hasta hoy compartian una funcion. Lo
+    que se guarda tiene que volver a clasificar solo dentro de tres turnos, y
+    una localidad ambigua no lo hace; la provincia si."""
+    e = _envio("hacen envio a posadas?", "")
+    assert e["destino_estable"] == "misiones", e
+    # y lo guardado tiene que volver a cotizar sin que el cliente lo repita
+    assert _envio("y cuanto era el envio?", e["destino_estable"])["monto"]
+
+
+def test_dos_localidades_de_la_MISMA_provincia_son_DOS_envios(firestore_doble):
+    """Colapsarlas en "misiones" le contesta un envio donde pidio dos, aunque
+    la tarifa sea la misma."""
+    e = _envio("uno a Posadas y otro a Obera", "")
+    nombres = [d["destino"] for d in e["destinos"]]
+    assert nombres == ["posadas", "obera"], nombres
+
+
+def test_el_turno_ENTERO_le_contesta_con_SU_palabra(firestore_doble, monkeypatch):
+    """De punta a punta, que es donde se ve: el cliente pide a Concordia y el
+    hueco de Concordia trae la tarifa de Entre Rios sin nombrarla."""
+    monkeypatch.setattr(
+        R, "_preguntar",
+        lambda *a, **k: asyncio.sleep(
+            0, result=({"tipo": "envio_costo",
+                        "texto": "A Concordia sale {{envio:concordia}}."},
+                       [], _motor())))
+    texto = asyncio.run(R.procesar_turno(
+        "sonda_palabra", "mandalo a concordia", TIENDA, "telegram", "trace_pal"))
+    assert "Concordia" in texto and "$" in texto, texto
+    assert N.SIN_DATO not in texto, texto
+    assert "entre rios" not in texto.lower(), texto

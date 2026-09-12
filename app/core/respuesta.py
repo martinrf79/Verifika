@@ -733,7 +733,11 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     # de envio- y guardaba un codigo postal pelado. Ahora se guarda el destino
     # que cotizo de verdad, ya nombrado con la palabra: el turno siguiente lo
     # vuelve a clasificar sin depender de que el cliente lo repita.
-    localidad = envio.get("destino") or conv.get("ultima_localidad") or ""
+    # SE GUARDA LO ESTABLE, SE MUESTRA LO QUE EL CLIENTE DIJO. Son dos cosas
+    # distintas y desde el 12-sep tienen campo propio: lo que vuelve a
+    # clasificar solo dentro de tres turnos es la provincia, no "Posadas".
+    localidad = (envio.get("destino_estable") or envio.get("destino")
+                 or conv.get("ultima_localidad") or "")
     try:
         save_conversation(user_id, history, resumen, tienda_id=tienda_id,
                           estado_conversacion="en_curso",

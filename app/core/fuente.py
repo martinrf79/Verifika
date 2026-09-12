@@ -427,12 +427,37 @@ def _cotizar(texto: str) -> dict:
 
 
 def _destino_legible(r: dict) -> str:
-    """Como se nombra ese destino: la provincia si la hay, si no la zona.
+    """COMO SE LE NOMBRA AL CLIENTE: la palabra que EL uso, si la dijo.
 
-    NUNCA EL CODIGO POSTAL. Con el CP puesto ahi el bloque le decia al modelo
-    "el envio a 5000", y el cliente que habia escrito "Cordoba capital" leia un
-    numero. El destino se nombra con la palabra, y ademas asi sirve para el
-    turno siguiente: "cordoba" vuelve a clasificar, y es estable.
+    ES UNA REGLA DE VENTA ANTES QUE UNA DE CODIGO (12-sep-2026). El cliente
+    escribe "Posadas" y el bot le contestaba "misiones", porque el destino se
+    nombraba con la provincia que la tabla resolvio. La provincia es un
+    artefacto NUESTRO —asi esta armada la tarifa— y al cliente no le importa:
+    el pidio a Posadas. Nombrarle otra cosa lo obliga a verificar que no nos
+    equivocamos, que es exactamente lo que un vendedor no hace.
+
+    Y PESA MAS PORQUE ESTO ES UN MOTOR MULTI-TIENDA: la division en provincias
+    es de la tabla argentina. La palabra del cliente viaja en cualquier pais.
+
+    Sin esa palabra —el destino viene de la charla, no de este mensaje— cae a
+    la provincia y despues a la zona, que es como venia funcionando. NUNCA el
+    codigo postal: con el CP puesto ahi, el cliente que escribio "Cordoba
+    capital" leia "el envio a 5000".
+    """
+    dicho = str(r.get("dicho") or "").strip()
+    if dicho:
+        return dicho
+    return _destino_estable(r)
+
+
+def _destino_estable(r: dict) -> str:
+    """COMO SE GUARDA para el turno siguiente: la provincia, o la zona.
+
+    VA APARTE DE COMO SE NOMBRA, y son dos necesidades distintas que hasta hoy
+    compartian una funcion. Lo que se guarda tiene que volver a clasificar solo
+    dentro de tres turnos, y una localidad ambigua —"Los Condores"— no lo hace;
+    la provincia si. Lo que se MUESTRA tiene que ser la palabra del cliente.
+    Mezclarlas obligaba a elegir cual de las dos se rompe.
     """
     prov = str(r.get("provincia") or "").replace("_", " ").strip()
     if prov:
@@ -523,10 +548,15 @@ def _cotizar_cada_uno(mensaje: str) -> list[dict]:
         r = _cotizar(lugar)
         if not r:
             continue
-        clave = _destino_legible(r).lower()
-        if clave and clave not in vistos:
-            vistos.add(clave)
-            fuera.append(r)
+        # SE REPITE POR LO QUE EL CLIENTE DIJO, no por la provincia. "Posadas y
+        # Obera" son DOS envios aunque compartan tarifa: colapsarlos en
+        # "misiones" le contesta uno donde pidio dos.
+        if lugar in vistos:
+            continue
+        vistos.add(lugar)
+        r = dict(r)
+        r["dicho"] = lugar
+        fuera.append(r)
     return fuera
 
 
@@ -569,11 +599,12 @@ def _bloque_de_varios(rs: list, gratis: str, faq: dict) -> dict:
                   + "\nCada hueco trae la tarifa de SU destino: no copies un "
                   "monto a mano ni uses el mismo para todos."),
         "destino": destinos[0]["destino"], "monto": destinos[0]["monto"],
-        "zona": destinos[0]["zona"], "destinos": destinos}
+        "zona": destinos[0]["zona"], "destino_estable": _destino_estable(rs[0]),
+        "destinos": destinos}
 
 
 SIN_ENVIO = {"texto": "", "destino": "", "monto": None, "zona": "",
-             "destinos": []}
+             "destino_estable": "", "destinos": []}
 
 
 def texto_envio(mensaje: str, localidad_previa: str, tienda_id: str) -> dict:
@@ -654,6 +685,7 @@ def _texto_envio(mensaje: str, localidad_previa: str, tienda_id: str) -> dict:
                       f"costo y el codigo lo pone; no lo copies a mano ni lo "
                       f"redondees."),
             "destino": visible, "monto": monto, "zona": zona,
+            "destino_estable": _destino_estable(r),
             "destinos": [{"destino": visible, "monto": monto, "zona": zona}]}
 
     tarifas = _tarifas(faq, tienda_id)
@@ -662,4 +694,5 @@ def _texto_envio(mensaje: str, localidad_previa: str, tienda_id: str) -> dict:
     return {"texto": (cuerpo + gratis + " Para dar la tarifa EXACTA hace falta "
                       "la PROVINCIA o el CODIGO POSTAL. Si el cliente no lo "
                       "dijo, pediselo: no des un monto sin ese dato."),
-            "destino": "", "monto": None, "zona": "", "destinos": []}
+            "destino": "", "monto": None, "zona": "",
+            "destino_estable": "", "destinos": []}
