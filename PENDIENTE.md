@@ -166,6 +166,26 @@ perder nada: la localidad ambigua mas la provincia de la charla, que estaba
 muerta en `estado_venta` y ahora vive en `fuente.texto_envio`, donde el dato si
 existe.
 
+**12-sep, MADRUGADA: CUATRO CABLES, TODOS MEDIDOS ANTES DE TOCAR.** La sonda
+por WhatsApp desmintio dos sospechas —`busco` SI se declara, `puntuales: 1`, y
+la restriccion de origen SI se aplica, `rescates: 1`— y confirmo las otras dos.
+Lo que se cerro: **(1)** el modelo lee la PREGUNTA antes de los veinte moldes, y
+la fuente dejo de viajar DUPLICADA en cada vuelta; **(2)** el formato se OBLIGA
+con `response_format` y el tipo solo puede ser uno de los veinte —medido contra
+el proveedor: sin esquema contestaba en markdown, que era el `tipo_vacio` de
+tres de cada cuatro turnos—; **(3)** el envio cotiza CADA destino que el cliente
+nombro, con `{{envio:<destino>}}` por cada uno, y lo nombra CON LA PALABRA DEL
+CLIENTE —"Posadas", no "misiones"—, que es regla de venta y ademas lo unico que
+viaja fuera de la tabla argentina; **(4)** el MAPA 3: las politicas las pide el
+modelo por el motor con el campo `temas`, sin herramienta nueva, y las certifica
+`fuente.politicas_de`. `politicas_relevantes` se borro. Censo 29 -> 28.
+
+**LO QUE FALTA MEDIR DE ESOS CUATRO: la tanda por WhatsApp posterior al deploy
+de las 02:4x.** Los renglones a mirar son `tipo` —tiene que dejar de venir
+vacio—, `envio_cotizado_varios`, y los dos nuevos de `motor_turno`: `temas` y
+**`temas_sin_resolver`, que es el renglon que dice que tema agregarle a la
+FAQ** y antes no existia.
+
 **LOS NOMBRES Y EL DETALLE DE CADA FALLA NO SE ESCRIBEN ACA.** Viven en
 `arquitectura/MAPA_CABLEADO.md`, que es el unico lugar donde se nombra el
 cableado: estaciones `T`, juntas `J`, puntos de modelo `L` y desconexiones `D`.
