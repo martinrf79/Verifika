@@ -134,6 +134,22 @@ busco en 7 de 11, cero re-busquedas, cero repetidas, cero rescates, los 7
 veredictos `existe`. Ojo con el 4 de 11 que contesto SIN buscar: dos son los
 turnos que murieron por 429.
 
+**12-sep: EL CENSO DEL CABLEADO. 32 PUNTAS SUELTAS, Y CASI LA MITAD SON DE UN
+SOLO MODULO.** `python3 banco_pruebas/censo_cableado.py`, con techo en
+`cableado_techo.json` y candado en `tests/test_censo_cableado.py`. Cinco
+detectores mecanicos: modulo que ni importa, campo que se lee y nadie escribe,
+funcion viva sin llamador, hueco que nadie llena, y capacidad ofrecida al modelo
+que el codigo no consume. Primera corrida: **6 modulos rotos, 9 campos sin
+escritor, 17 funciones sin llamador**. Las desconexiones no eran fallas
+independientes: son puntas de los dos apagones, el del 3-sep y el del 11-sep.
+Por eso se pueden contar y por eso tiene final.
+
+**LA PUNTA GRANDE ES `app/core/estado_venta.py`: 15 de las 32, el 47%, en 417
+lineas.** Nadie llama `set_current_estado` en el camino vivo, asi que
+`get_current_estado` devuelve `{}` SIEMPRE: todo lo que ese modulo le aporta a
+`calculadora` es un diccionario vacio. Apagarlo y limpiar a sus lectores baja el
+censo casi a la mitad de una sola vez. **Es la proxima ficha y la decide Martin.**
+
 **LOS NOMBRES Y EL DETALLE DE CADA FALLA NO SE ESCRIBEN ACA.** Viven en
 `arquitectura/MAPA_CABLEADO.md`, que es el unico lugar donde se nombra el
 cableado: estaciones `T`, juntas `J`, puntos de modelo `L` y desconexiones `D`.
