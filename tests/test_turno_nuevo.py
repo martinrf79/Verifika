@@ -587,6 +587,7 @@ class _ClienteEspia:
 
     def create(self, *, model, messages, **kw):
         self.caja.append(messages)
+        self.kw = kw
 
         class _R:
             choices = [type("C", (), {
@@ -599,8 +600,9 @@ def _conversacion(mensaje, memoria="", history=None, fuente="LA FUENTE_MARCA"):
     """Corre `_preguntar` contra el espia y devuelve los mensajes que viajaron."""
     from app.core import llm_reintento as LR
     caja = []
+    espia = _ClienteEspia(caja)
     viejo = LR._cliente
-    LR._cliente = lambda: _ClienteEspia(caja)
+    LR._cliente = lambda: espia
     try:
         asyncio.run(R._preguntar("LA VOZ_MARCA", memoria, history or [],
                                  mensaje, fuente, "trace_orden", TIENDA))
@@ -608,6 +610,21 @@ def _conversacion(mensaje, memoria="", history=None, fuente="LA FUENTE_MARCA"):
         LR._cliente = viejo
     assert caja, "no se le hablo al modelo"
     return caja[-1]
+
+
+def _parametros(mensaje="cuanto pesa el teclado K120"):
+    """Los kwargs con los que se llamo al proveedor en la ultima vuelta."""
+    from app.core import llm_reintento as LR
+    caja = []
+    espia = _ClienteEspia(caja)
+    viejo = LR._cliente
+    LR._cliente = lambda: espia
+    try:
+        asyncio.run(R._preguntar("LA VOZ_MARCA", "", [], mensaje,
+                                 "LA FUENTE_MARCA", "trace_fmt", TIENDA))
+    finally:
+        LR._cliente = viejo
+    return espia.kw
 
 
 def test_el_modelo_LEE_LA_PREGUNTA_ANTES_QUE_LOS_VEINTE_MOLDES(firestore_doble):
@@ -647,3 +664,38 @@ def test_LA_FUENTE_NO_VIAJA_DOS_VECES(firestore_doble):
     entero = "\n".join(m["content"] for m in msgs)
     assert entero.count("LA FUENTE_MARCA") == 1, \
         f"la fuente viaja {entero.count('LA FUENTE_MARCA')} veces"
+
+
+# ── EL FORMATO SE OBLIGA, NO SE PIDE (12-sep-2026) ──────────────────────────
+
+
+def test_el_esquema_de_respuesta_VIAJA_EN_LA_LLAMADA(firestore_doble):
+    """EL PROMPT PEDIA Y NADIE OBLIGABA. Medido contra el proveedor vivo el
+    12-sep: la misma pregunta, con esquema devuelve el JSON y sin esquema
+    devuelve `**Tipo:** saludo` en markdown. En produccion eso salia como
+    `tipo_vacio` en tres de cada cuatro turnos."""
+    fmt = _parametros().get("response_format") or {}
+    assert fmt.get("type") == "json_schema", f"no viajo el esquema: {fmt}"
+    assert fmt["json_schema"]["strict"] is True, "el esquema no es estricto"
+
+
+def test_el_TIPO_solo_puede_ser_UNO_DE_LOS_VEINTE(firestore_doble):
+    """EL ENUM ES EL CANDADO, y sale de la misma fuente que el prompt: un tipo
+    inventado por el modelo deja de ser posible en vez de tolerarse. Es la
+    regla cero aplicada al formulario de la respuesta."""
+    esq = _parametros()["response_format"]["json_schema"]["schema"]
+    permitidos = esq["properties"]["tipo"]["enum"]
+    assert permitidos == list(TP.ORDEN), "el enum se desincronizo de los tipos"
+    assert len(permitidos) == 20
+    assert set(esq["required"]) == {"tipo", "texto"}
+    assert esq["additionalProperties"] is False
+
+
+def test_el_esquema_viaja_TAMBIEN_en_las_vueltas_con_herramientas(firestore_doble):
+    """Se midio antes de escribirlo: cuando el modelo llama a `buscar` el
+    contenido viene vacio y el esquema no estorba. Por eso va en todas las
+    vueltas, no solo en la de contestar: el modelo puede contestar en
+    cualquiera."""
+    kw = _parametros()
+    assert "tools" in kw, "esta vara dejo de medir: la vuelta no lleva motor"
+    assert kw.get("response_format"), "el esquema se cae cuando hay motor"

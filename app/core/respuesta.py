@@ -116,11 +116,52 @@ SOLO EXISTE LO QUE LA BUSQUEDA DEVOLVIO. Si un producto no aparecio, no lo
 vendemos y se lo decis. Si un dato no esta en la ficha, no lo tenemos y se lo
 decis.
 
-Contesta SOLO con este JSON, sin nada alrededor:
-{"tipo": "<uno de los veinte>", "texto": "<el mensaje para el cliente>"}
+Contestas con dos cosas: el `tipo` que elegiste de la lista de abajo, y el
+`texto` que lee el cliente. El formato lo obliga el codigo, no vos.
 
 LOS VEINTE TIPOS:
 """
+
+
+def _esquema_respuesta() -> dict:
+    """EL FORMATO NO SE PIDE: SE OBLIGA (12-sep-2026).
+
+    Hasta hoy el JSON se pedia por prompt y nada mas, asi que el modelo
+    contestaba en prosa cuando se le daba la gana y `_parsear` caia al texto
+    pelado con el tipo VACIO. Medido contra el proveedor vivo: la MISMA
+    pregunta, con esquema devuelve `{"tipo": "saludo", "texto": "hola"}` y sin
+    esquema devuelve `**Tipo:** saludo` en markdown. No es que el modelo se
+    olvide: es que nadie se lo estaba obligando.
+
+    En vivo eso salia como `tipo_vacio` en tres de cada cuatro turnos, y un
+    tipo vacio no es cosmetico: de el sale la señal del cierre en `_senal`, asi
+    que un `intencion_compra` que no se encasilla es una venta que no se toma.
+
+    EL ENUM ES EL CANDADO. Los veinte tipos viajan como valores permitidos, de
+    la misma fuente que el prompt: un tipo inventado deja de ser posible en vez
+    de tolerarse. Es la regla cero aplicada al formulario de la respuesta.
+
+    CONVIVE CON EL MOTOR, y se midio antes de escribirlo: cuando el modelo
+    llama a `buscar`, el contenido viene vacio y el esquema no estorba; cuando
+    contesta, sale el JSON. Por eso viaja en TODAS las vueltas y no solo en la
+    ultima.
+    """
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "respuesta_al_cliente",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "tipo": {"type": "string", "enum": list(TP.ORDEN)},
+                    "texto": {"type": "string"},
+                },
+                "required": ["tipo", "texto"],
+            },
+        },
+    }
 
 
 def _voz(negocio: str) -> str:
@@ -434,7 +475,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             extra = {"tools": _tools, "tool_choice": "auto"} if _tools else {}
             r = cli.chat.completions.create(
                 model=_modelo(), messages=_msgs, temperature=0.3,
-                max_tokens=900, **extra)
+                max_tokens=900, response_format=_esquema_respuesta(), **extra)
             return r.choices[0].message if r.choices else None
 
         try:
