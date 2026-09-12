@@ -89,8 +89,34 @@ def _precio_de(fichas: list, referencia: str):
 # busqueda: mostrar cinco notebooks regalaba el envio. Un dato, un lugar.
 
 
+def _envio_de(envios: dict, referencia: str):
+    """La tarifa del destino que el modelo nombro en el hueco, o None.
+
+    Se compara NORMALIZADO y por contenido en las dos direcciones: el modelo
+    puede escribir `{{envio:Cordoba}}` donde el bloque decia `cordoba`, o
+    `{{envio:Cordoba capital}}` donde decia `cordoba`. Lo que no se hace es
+    elegir por parecido cuando hay dos candidatos: ahi no se adivina, sale que
+    no se tiene el dato, que es la misma regla que gobierna el precio."""
+    ref = _norm_destino(referencia)
+    if not ref or not envios:
+        return None
+    exacto = [m for d, m in envios.items() if _norm_destino(d) == ref]
+    if len(exacto) == 1:
+        return exacto[0]
+    parecidos = [m for d, m in envios.items()
+                 if ref in _norm_destino(d) or _norm_destino(d) in ref]
+    return parecidos[0] if len(parecidos) == 1 else None
+
+
+def _norm_destino(s) -> str:
+    import unicodedata
+    t = unicodedata.normalize("NFKD", str(s or "").lower().strip())
+    return "".join(c for c in t if not unicodedata.combining(c))
+
+
 def llenar(texto: str, fichas: list, trace_id: str = "",
-           fuente_texto: str = "", envio_monto: int | None = None) -> tuple:
+           fuente_texto: str = "", envio_monto: int | None = None,
+           envios: dict | None = None) -> tuple:
     """(texto con los numeros puestos, informe). El informe dice que huecos se
     llenaron, cuales quedaron sin dato y si hubo plata inventada.
 
@@ -103,6 +129,10 @@ def llenar(texto: str, fichas: list, trace_id: str = "",
     `envio_monto` es la tarifa que ya cotizo `fuente.texto_envio`. None cuando
     no hay destino: entonces el hueco dice que no se tiene el dato, nunca un
     numero.
+
+    `envios` es {destino: tarifa} cuando el cliente nombro VARIOS, y resuelve
+    `{{envio:cordoba}}`. Con un solo destino alcanza `envio_monto` y los dos
+    caminos son el mismo: la lista trae uno.
     """
     informe = {"llenos": [], "sin_dato": [], "montos": [], "inventada": []}
     usados: list = []
@@ -120,9 +150,14 @@ def llenar(texto: str, fichas: list, trace_id: str = "",
             informe["montos"].append(monto)
             return _money(monto)
         if clase == "envio":
-            monto = envio_monto
+            # EL HUECO CON DESTINO, `{{envio:cordoba}}` (12-sep-2026). Con
+            # varios destinos en un mensaje, un `{{envio}}` pelado no dice a
+            # cual de las tarifas se refiere el renglon, asi que el codigo
+            # escribia la misma dos veces. El destino que el modelo nombra en
+            # el hueco es el que `fuente` ya cotizo y le puso delante.
+            monto = _envio_de(envios, ref) if ref else envio_monto
             if monto is None:
-                informe["sin_dato"].append("envio")
+                informe["sin_dato"].append("envio" + (f":{ref}" if ref else ""))
                 return SIN_DATO
             usados.append(monto)
             informe["llenos"].append("envio")

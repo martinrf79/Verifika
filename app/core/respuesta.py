@@ -681,9 +681,15 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
         # solo miraba el bloque. Es LA MISMA leccion que este archivo ya
         # aprendio el 11-sep con el inventario, aplicada al otro bloque que
         # viaja aparte: lo que se le pone delante al modelo es fuente, TODO.
-        texto, informe = N.llenar(texto, fichas, trace_id,
-                                  fuente_texto=bloque + "\n" + memoria,
-                                  envio_monto=envio.get("monto"))
+        texto, informe = N.llenar(
+            texto, fichas, trace_id,
+            fuente_texto=bloque + "\n" + memoria,
+            envio_monto=envio.get("monto"),
+            # CADA DESTINO CON SU TARIFA. Sin este renglon el arreglo del
+            # multidestino no llega a ninguna parte: `fuente` cotiza los tres y
+            # `numeros` sigue escribiendo el mismo monto en los tres huecos.
+            envios={d["destino"]: d["monto"]
+                    for d in (envio.get("destinos") or [])})
         etapas["numeros"] = int((time.time() - t) * 1000)
         if informe.get("inventada"):
             # LA RESPUESTA CON PLATA INVENTADA NO SALE. No hay forma honesta de

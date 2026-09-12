@@ -699,3 +699,77 @@ def test_el_esquema_viaja_TAMBIEN_en_las_vueltas_con_herramientas(firestore_dobl
     kw = _parametros()
     assert "tools" in kw, "esta vara dejo de medir: la vuelta no lleva motor"
     assert kw.get("response_format"), "el esquema se cae cuando hay motor"
+
+
+# ── EL MULTIDESTINO (12-sep-2026) ───────────────────────────────────────────
+
+
+def test_dos_destinos_en_un_mensaje_se_cotizan_LOS_DOS(firestore_doble):
+    """MEDIDO EN VIVO EL 12-SEP 01:37. "Mandame uno a Cordoba capital y otro a
+    Posadas, cuanto sale cada envio?" salio con UN solo `envio_cotizado`
+    —cordoba, $7.500— y UN solo hueco lleno. El cliente pidio dos tarifas y
+    leyo una."""
+    e = _envio("Mandame uno a Cordoba capital y otro a Posadas, "
+               "cuanto sale cada envio?", "")
+    destinos = e.get("destinos") or []
+    assert len(destinos) == 2, f"cotizo {len(destinos)}: {destinos}"
+    nombres = " ".join(d["destino"].lower() for d in destinos)
+    assert "cordoba" in nombres and "misiones" in nombres or "posadas" in nombres, nombres
+    assert all(d["monto"] for d in destinos), "algun destino salio sin tarifa"
+
+
+def test_cada_destino_trae_SU_PROPIO_HUECO(firestore_doble):
+    """Con un solo `{{envio}}` el codigo no sabe a cual de las tarifas se
+    refiere cada renglon, asi que escribiria la misma dos veces."""
+    e = _envio("uno a Cordoba capital y otro a Posadas", "")
+    for d in e["destinos"]:
+        assert ("{{envio:" + d["destino"] + "}}") in e["texto"], \
+            f"falta el hueco de {d['destino']}"
+
+
+def test_el_hueco_CON_DESTINO_escribe_la_tarifa_de_ESE_destino(firestore_doble):
+    """De punta a punta: dos huecos distintos, dos montos distintos."""
+    e = _envio("uno a Cordoba capital y otro a Posadas", "")
+    envios = {d["destino"]: d["monto"] for d in e["destinos"]}
+    a, b = list(e["destinos"])
+    texto = ("A " + a["destino"] + " sale {{envio:" + a["destino"] + "}} y a "
+             + b["destino"] + " sale {{envio:" + b["destino"] + "}}.")
+    salida, informe = N.llenar(texto, [], "trace_multi",
+                               fuente_texto=e["texto"],
+                               envio_monto=a["monto"], envios=envios)
+    assert N.SIN_DATO not in salida, salida
+    assert len(informe["llenos"]) == 2, informe
+    assert informe["montos"] == [a["monto"], b["monto"]], informe["montos"]
+
+
+def test_un_destino_SOLO_sigue_andando_igual(firestore_doble):
+    """Un camino solo: con un destino la lista trae uno y `{{envio}}` pelado
+    resuelve como siempre. La contracara del caso de arriba."""
+    e = _envio("hacen envio a cordoba capital?", "")
+    assert len(e["destinos"]) == 1 and e["monto"], e
+    salida, informe = N.llenar("Sale {{envio}}.", [], "trace_uno",
+                               fuente_texto=e["texto"],
+                               envio_monto=e["monto"],
+                               envios={d["destino"]: d["monto"]
+                                       for d in e["destinos"]})
+    assert N.SIN_DATO not in salida and "$" in salida, salida
+
+
+def test_un_destino_que_NO_se_cotizo_no_inventa_tarifa(firestore_doble):
+    """La regla de siempre, aplicada al hueco nuevo: un destino que el codigo
+    no cotizo dice que no se tiene el dato, nunca un numero de otro."""
+    salida, informe = N.llenar("A Neuquen sale {{envio:neuquen}}.", [],
+                               "trace_falta", fuente_texto="",
+                               envio_monto=7500,
+                               envios={"cordoba": 7500, "misiones": 9000})
+    assert N.SIN_DATO in salida, salida
+    assert "envio:neuquen" in informe["sin_dato"], informe
+
+
+def test_el_plazo_que_es_IGUAL_no_se_repite_por_renglon(firestore_doble):
+    """Tres destinos del interior comparten el plazo, y repetirlo por renglon
+    es lo que el objetivo 2 no tolera: el bloque se mide en repeticion."""
+    e = _envio("uno a Cordoba capital, otro a Concordia y otro a posadas", "")
+    assert len(e["destinos"]) == 3, e["destinos"]
+    assert e["texto"].count("dias habiles") == 1, e["texto"]
+    assert e["texto"].count("GRATIS") <= 1, e["texto"]

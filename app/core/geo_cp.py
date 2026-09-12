@@ -219,6 +219,45 @@ def es_lugar_conocido(texto: str) -> bool:
     return bool(_localidades_en_texto(t)[1])
 
 
+def lugares_en_texto(texto: str) -> list[str]:
+    """Cada lugar que el texto nombra, en ORDEN DE APARICION y sin repetir.
+
+    EL MULTIDESTINO SALE DE ACA (12-sep-2026). Medido en vivo el 12-sep 01:37:
+    "Mandame uno a Cordoba capital y otro a Posadas" cotizaba UNA sola vez
+    —Cordoba, $7.500— y Posadas no se cotizaba nunca. El cliente pedia dos
+    tarifas y leia una. La causa no era el motor de envio: era que nadie le
+    preguntaba por el segundo destino, porque el texto entero iba como UN lugar.
+
+    NO PERSIGUE PROSA, y esa es la unica forma de que esto no se pudra: no
+    parte por comas ni por la palabra "y" ni por "otro". Usa la MISMA
+    segmentacion por maximal munch que ya gobierna este archivo, contra las
+    16.164 localidades de la tabla. Lo que devuelve son lugares porque la tabla
+    dice que lo son, no porque una lista de frases lo adivine. Es la leccion
+    que el repo ya pago tres veces: primero 4 nodos, despues 18, despues 46.
+
+    Con la provincia sola —"mandalo a chubut"— cae al detector de provincia,
+    que ya sabe distinguir la provincia de la localidad que la contiene.
+    """
+    _cargar()
+    t = _norm(texto)
+    if not t:
+        return []
+    palabras, hits = _localidades_en_texto(t)
+    fuera, vistos = [], set()
+    # `_localidades_en_texto` ordena por largo para desempatar provincias; aca
+    # manda el ORDEN en que el cliente los dijo, que es el orden en que los va
+    # a leer en la respuesta.
+    for loc, ini, _fin in sorted(hits, key=lambda h: h[1]):
+        if loc not in vistos:
+            vistos.add(loc)
+            fuera.append(loc)
+    if not fuera:
+        prov = _provincia_en_texto(t, hits)
+        if prov:
+            fuera.append(prov.replace("_", " "))
+    return fuera
+
+
 def resolver(texto: str):
     """(prov_slug, cp) desde el texto del cliente, o (None, None).
 
