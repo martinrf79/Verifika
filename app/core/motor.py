@@ -237,6 +237,59 @@ def _por_ids(catalogo: list, ids: list) -> list:
     return [porid[i] for i in pedidos if i in porid]
 
 
+def _con_la_cuenta(filas: list, unidades: int, trace_id: str = "") -> None:
+    """EL SUBTOTAL DE CADA LINEA, HECHO POR `calculadora` (13-sep-2026).
+
+    ES EL CALCULO DE ESTA BOCA, y el criterio de la FICHA 52: cada boca trae su
+    calculo adentro. Envio ya lo hacia —su tabla de tarifas es fuente y el
+    codigo deriva la del destino— y catalogo no tenia el suyo: "dos teclados de
+    esos" volvia con el precio unitario y la multiplicacion quedaba para el
+    modelo, que es justo lo que el modelo no tiene que hacer.
+
+    POR QUE LA HERRAMIENTA Y NO UN `precio * cantidad` ACA. Porque seria un
+    SEGUNDO lugar donde el repo hace cuentas de plata, y el dia que las dos se
+    separen nadie va a saber cual manda. `calculadora.calculate_total` es la
+    herramienta de la plata, esta escrita, esta medida, y desde el apagon del
+    11-sep NO LA LLAMABA NADIE desde `app/`: enchufarla aca no agrega una pieza,
+    revive la que estaba.
+
+    LO QUE NO HACE, y es la mitad que no le toca a esta boca: el total del
+    pedido, el envio y el descuento. Eso cruza bocas y vive en el retorno. Por
+    eso se llama con `items` y nada mas —sin `pago`, sin `destinos`, sin
+    `items_extra`— y de lo que devuelve se usa UNA cosa: el subtotal de cada
+    linea.
+
+    No devuelve nada: escribe sobre las filas. Si la cuenta falla, la fila
+    queda con su cantidad y sin subtotal, que es honesto; lo que no puede pasar
+    es que una cuenta rota tumbe la busqueda.
+    """
+    if unidades <= 1 or not filas:
+        return
+    from app.core.fuente import _plata
+    try:
+        from app.core.calculadora import calculate_total
+        r = calculate_total(items=[{"product_id": f.get("id"),
+                                    "cantidad": unidades}
+                                   for f in filas if f.get("id")])
+        if not r.get("ok"):
+            log.warning("motor_cuenta_sin_ok", trace_id=trace_id,
+                        motivo=str(r.get("mensaje_para_llm"))[:120])
+            return
+        por_id = {str(d.get("id")): d for d in (r.get("detalle") or [])}
+    except Exception as e:  # noqa: BLE001 — una cuenta rota no tumba la busqueda
+        log.warning("motor_cuenta_error", trace_id=trace_id,
+                    error=f"{type(e).__name__}: {str(e)[:120]}")
+        return
+    for f in filas:
+        d = por_id.get(str(f.get("id")))
+        if not d or d.get("subtotal") in (None, ""):
+            continue
+        f["subtotal_ars"] = d["subtotal"]
+        # Ya escrito, igual que el precio: una cadena se copia, un numero
+        # pelado invita a redondearlo o a sumarle el envio de memoria.
+        f["subtotal"] = _plata(d["subtotal"])
+
+
 def _no_vendemos(texto: str, categoria: str, tienda_id: str):
     """Si lo que se pidio es una categoria que la tienda NO vende, decirlo con
     la alternativa REAL al lado. None si no aplica.
@@ -304,13 +357,16 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     # 1. POR ID PRIMERO. Es como resuelve la memoria —"el que me mostraste
     #    antes"— y no necesita ni parecido ni condiciones.
     if c.get("ids"):
-        filas = _por_ids(catalogo, c["ids"])
+        filas_id = _por_ids(catalogo, c["ids"])
+        filas = filas_id
         faltan = [str(i) for i in c["ids"] if str(i) not in
                   {str(p.get("id")) for p in filas}]
+        fichas_id = [_ficha_corta(p, unidades, specs_pedidas)
+                     for p in filas[:tope]]
+        _con_la_cuenta(fichas_id, unidades)
         return {"veredicto": "existe" if filas else "no_existe",
                 "cuantos_habia": len(filas),
-                "filas": [_ficha_corta(p, unidades, specs_pedidas)
-                          for p in filas[:tope]],
+                "filas": fichas_id,
                 "no_aplicado": ([{"campo": "ids", "motivo":
                                   f"no existen estos ids: {', '.join(faltan)}"}]
                                 if faltan else []),
@@ -338,6 +394,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
         de_la_alt, _ = _universo(catalogo, alt, tienda_id) if alt else ([], "")
         filas_alt = [_ficha_corta(p, unidades, specs_pedidas)
                      for p in (de_la_alt if alt else [])[:tope]]
+        _con_la_cuenta(filas_alt, unidades)
         return {"veredicto": "no_existe",
                 "cuantos_habia": 0,
                 "de_cuantos_se_miro": len(catalogo),
@@ -471,6 +528,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
             if motivo_fila:
                 f["no_cumple"] = motivo_fila
         filas.append(f)
+    _con_la_cuenta(filas, unidades)
 
     return {"veredicto": veredicto,
             "cuantos_habia": cumplieron if conds else de_cuantos,

@@ -85,8 +85,30 @@ un calculo nuevo.** Las specs ya se calculaban enteras en el camino vivo
 mostraba: ahora se piden POR NOMBRE, y el mapa entero sale solo con `busco:
 uno`. Se midio antes de elegir: el mapa completo engorda la ficha hasta un 57%
 y cinco notebooks con todo dan 8.837 caracteres. **La cantidad es el calculo de
-esta boca**: dos unidades vuelven con el subtotal ya escrito. Y `no_vendidas`
+esta boca y lo hace `calculadora`**: dos unidades vuelven con el subtotal ya
+escrito, y `calculate_total` volvio a tener un llamador vivo -antes del
+13-sep TODAS sus menciones en `app/` eran comentarios-. Y `no_vendidas`
 se enchufo: el censo bajo de 28 a 27.
+
+**13-sep: EL AGUJERO GRANDE DE LA BUSQUEDA, MEDIDO Y ABIERTO.** El arreglo de
+`no_vendidas` tapa SOLO las palabras escritas en el json. Medido sobre el
+catalogo vivo: `celular` y `heladera` vuelven `no_existe` bien, pero **`dron`,
+`bicicleta` y `zapatillas` vuelven `existe` con cinco mouse y teclados**. La
+causa NO es que falte una palabra en la lista: `relevancia` es un ORDENADOR, no
+un filtro, asi que con 880 productos siempre devuelve los cinco de arriba
+aunque el mejor tenga parecido cero. **El arreglo es un UMBRAL de puntaje**, de
+ESTADO y no de vocabulario: bajo el piso, `no_existe` y sin filas. Perseguirlo
+con una lista de palabras es el camino que este repo ya recorrio tres veces
+-4 nodos, 18, 46- y del que ya volvio.
+
+**13-sep: Y LA PROSA PESA MAS QUE LAS SPECS, al reves de lo que parecia.** De
+los 4.412 caracteres de cinco fichas de teclado, **2.900 son prosa (65%)**:
+`descripcion`, `descripcion_rica`, `contenido_caja`, `uso_recomendado`,
+`garantia_detalle`. Las siete specs estructuradas suman 1.501 si van todas y
+306 si se pide una. **Lo que corresponde a futuro es al reves de lo que se
+hizo: que las specs viajen siempre y que la PROSA se pida.** No se cambio
+todavia porque sacar prosa toca lo que el modelo usa para redactar, y eso se
+mide antes de tocarlo.
 
 **LOS DOS DEFECTOS QUE DESTAPO EL TRABAJO, los dos medidos:** a "tenes
 celulares?" el motor contestaba **`existe` con cinco productos que no son

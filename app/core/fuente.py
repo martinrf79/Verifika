@@ -281,12 +281,12 @@ def _ficha_corta(prod: dict, cantidad: int = 1, specs_pedidas=None) -> dict:
     distancia. El mapa ya viene en la forma que el modelo necesita: campo y
     respuesta corta en castellano.
 
-    LA CANTIDAD ES EL CALCULO DE ESTA BOCA. Cada boca trae el suyo: envio
-    deriva la tarifa del destino, y catalogo multiplica por cuantos pidio el
-    cliente. "Dos teclados de esos" vuelve con `subtotal` ya hecho, escrito
-    igual que el precio para que el modelo lo COPIE en vez de multiplicar de
-    cabeza. Lo que NO se hace aca es el total del pedido: eso cruza bocas
-    —precios, envio y el descuento que es politica— y vive en el retorno.
+    LA CANTIDAD ES EL CALCULO DE ESTA BOCA, y la hace `calculadora`. Cada boca
+    trae el suyo: envio deriva la tarifa del destino, catalogo multiplica por
+    cuantos pidio el cliente. Esta funcion solo ANOTA la cantidad; quien pone
+    el subtotal es `motor._con_la_cuenta`, que llama a la herramienta de la
+    plata. Lo que NO se hace en esta boca es el total del pedido: eso cruza
+    bocas —precios, envio y el descuento que es politica— y vive en el retorno.
     """
     from app.core.fuente_producto import campos_ficha
     precio = prod.get("precio_ars")
@@ -303,12 +303,11 @@ def _ficha_corta(prod: dict, cantidad: int = 1, specs_pedidas=None) -> dict:
         "precio_ars": precio,
     }
     if cantidad and cantidad > 1:
+        # SOLO LA CANTIDAD. El SUBTOTAL lo estampa `motor._con_la_cuenta`
+        # llamando a `calculadora`, que es la herramienta de la plata: una
+        # multiplicacion suelta escrita aca seria un segundo lugar donde el
+        # repo hace cuentas, y por cada cosa que se prende se apaga una.
         fuera["cantidad"] = cantidad
-        try:
-            fuera["subtotal"] = _plata(float(precio) * cantidad)
-            fuera["subtotal_ars"] = int(round(float(precio) * cantidad))
-        except (TypeError, ValueError):
-            pass
     for campo, valor in (campos_ficha(prod) or []):
         if campo in fuera or valor in (None, ""):
             continue

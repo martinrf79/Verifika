@@ -378,3 +378,34 @@ def test_lo_que_no_vendemos_NO_lo_contesta_la_relevancia_con_cinco_parecidos():
     for f in r["filas"]:
         assert f["categoria"] == "tablet", (
             f"las filas tienen que ser la alternativa real, vino {f['categoria']}")
+
+
+def test_el_subtotal_lo_hace_la_HERRAMIENTA_y_no_una_cuenta_suelta():
+    """`calculadora` es la herramienta de la plata y desde el apagon del
+    11-sep no la llamaba NADIE desde `app/`. El subtotal de la linea sale de
+    ahi: una multiplicacion escrita en el motor seria un segundo lugar donde
+    el repo hace cuentas, y el dia que las dos se separen nadie sabe cual manda.
+    """
+    from unittest.mock import patch
+    with patch("app.core.calculadora.calculate_total") as ct:
+        ct.return_value = {"ok": True, "detalle": []}
+        _una({"categoria": "mouse", "cuantos": 2, "cantidad": 3})
+        assert ct.called, "el motor no llamo a calculadora"
+        items = ct.call_args.kwargs["items"]
+        assert all(i["cantidad"] == 3 for i in items)
+        # La boca NO manda envio, ni pago, ni extras: eso cruza bocas y es del
+        # retorno. Si algun dia viajan por aca, la boca se comio al retorno.
+        assert not ct.call_args.kwargs.get("pago")
+        assert not ct.call_args.kwargs.get("destinos")
+
+
+def test_si_la_cuenta_se_cae_la_busqueda_sigue_y_la_fila_no_miente():
+    """Una cuenta rota no puede tumbar la busqueda ni dejar un subtotal a
+    medias: la fila se queda con su cantidad y sin subtotal, que es honesto."""
+    from unittest.mock import patch
+    with patch("app.core.calculadora.calculate_total",
+               side_effect=RuntimeError("boom")):
+        r = _una({"categoria": "mouse", "cuantos": 2, "cantidad": 3})
+    assert r["filas"], "la busqueda tiene que seguir"
+    assert r["filas"][0]["cantidad"] == 3
+    assert "subtotal" not in r["filas"][0]
