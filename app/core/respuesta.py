@@ -523,7 +523,13 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                     fichas.append(f)
             pidio = {"consultas": consultas, "temas": args.get("temas") or []}
             hallazgos.append(
-                "Buscaste: " + json.dumps(pidio, ensure_ascii=False)[:900]
+                # EL RECORTE ERA DE 900 Y CORTABA CONSULTAS ENTERAS. Medido
+                # el 13-sep: un pedido abierto -"algo para jugar que no sea muy
+                # caro"- mando cinco consultas que dan 959 caracteres, asi que
+                # la quinta llegaba partida y el modelo no podia saber que ya
+                # la habia pedido. Seis consultas es el tope, y con el tope
+                # lleno entran holgadas en 1.400.
+                "Buscaste: " + json.dumps(pidio, ensure_ascii=False)[:1400]
                 + "\nVolvio: " + _retorno_que_entra(r, trace_id))
     informe["fichas"] = len(fichas)
     return {}, fichas, informe

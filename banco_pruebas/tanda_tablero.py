@@ -45,9 +45,9 @@ TIENDA = "verifika_prod"
 # ocurrencias. Cada uno dice cual es, para que se pueda leer el resultado por
 # pedido y no en promedio.
 MENSAJES = [
-    ("1  lo tenes", "hola, tenes la notebook G15?"),
+    ("1  lo tenes*", "hola, tenes la notebook G15?"),
     ("2  stock", "cuantos teclados mecanicos te quedan?"),
-    ("3  que trae", "el mouse G502 que trae en la caja?"),
+    ("3  que trae*", "el mouse G502 que trae en la caja?"),
     ("4  cual cumple", "busco una notebook con 16gb de ram y que no sea fabricada en china"),
     ("4b valor que no existe", "tenes algo fabricado en japon?"),
     ("4c marca", "trabajan con la marca Redragon?"),
@@ -148,7 +148,12 @@ async def main() -> int:
     # puntual. En esta lista hay dos mensajes asi -la G15 y el G502- y los dos
     # lo declararon, las dos tandas. Un numero con el denominador equivocado es
     # peor que ninguno: manda a arreglar lo que no esta roto.
-    puntuales_posibles = sum(1 for f in filas if f["pedido"][0] in "13"
+    # EL ASTERISCO marca los mensajes donde el cliente nombra UN producto
+    # puntual, que son los unicos donde `uno` corresponde. Se marca a mano en
+    # la lista porque es una propiedad del mensaje, no algo que se pueda
+    # derivar: la primera version lo adivinaba por el numero de pedido y
+    # contaba seis donde hay dos.
+    puntuales_posibles = sum(1 for f in filas if "*" in f["pedido"]
                              and f["informe"]["llamadas"])
     print(f"CON `busco: uno`        {puntuales} declaradas sobre "
           f"{puntuales_posibles} mensajes de producto puntual   "

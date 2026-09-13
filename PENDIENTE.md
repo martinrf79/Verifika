@@ -64,15 +64,13 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
-- **ABIERTO** · **LA CONSULTA REPETIDA ES LO UNICO QUE QUEDO ABIERTO DEL
-  TABLERO.** Medido el 13-sep con la clave gratis: 6 consultas repetidas sobre
-  31. El modelo gasta la segunda vuelta volviendo a pedir lo mismo porque entre
-  vuelta y vuelta NO VE lo que ya pidio, solo lo que volvio. **El arreglo no es
-  subir el tope de vueltas: es decirle que ya lo busco.** `informe["repetidas"]`
-  ya lo cuenta y el banco es `banco_pruebas/tanda_tablero.py`.
-- **CERRADO el 13-sep** · El tablero: 2,23 vueltas por turno contra 3,00, y
-  buscaron 22 de 22. Ficha 53 seccion 10, piso en
-  `banco_pruebas/tablero_piso.json`.
+- **CERRADO el 13-sep** · **EL TABLERO, entero.** 2,22 vueltas por turno contra
+  3,00, buscaron 35 de 36, cero busquedas vacias, y la consulta repetida ya no
+  se ejecuta dos veces. Ficha 53, vara en `tests/test_tablero.py` con 20 casos,
+  banco en `banco_pruebas/tanda_tablero.py` y piso en `tablero_piso.json`. **Lo
+  que sigue son los RAMALES**: compatibilidad y criterio no tienen cable, y el
+  envio llega empujado por el codigo en vez de pedido por el modelo. Estan en
+  la tabla de la FICHA 52.
 
 **13-sep: EL DISEÑO ENTERO DEL TURNO ESTA ESCRITO, Y ES LA UNIDAD DE TRABAJO
 ABIERTA.** `arquitectura/FICHA_52_las_seis_bocas.md`: los 14 pedidos posibles del

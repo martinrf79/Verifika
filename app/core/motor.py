@@ -42,6 +42,8 @@ Y CASI TODO ESTO YA ESTABA. `aplicar`, `ordenar`, `rankear_por_cercania` y
 barrido, 687 casos, da cero fallas. El motor las ENSAMBLA y les pone una puerta
 con contrato. No es una capa nueva encima; es la puerta que faltaba.
 """
+import json
+
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -651,10 +653,48 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
                 "temas_sin_resolver": sin_resolver,
                 "motivo": "no se pudo leer el catalogo"}
 
+    # LA CONSULTA REPETIDA SE EJECUTA UNA SOLA VEZ (13-sep-2026).
+    #
+    # MEDIDO: 6 repetidas sobre 31 en la tanda del tablero, y la causa NO era
+    # la que decia el comentario de `_anotar` -"entre vuelta y vuelta el modelo
+    # no ve lo que ya pidio"-. Ese texto se escribio antes de que `hallazgos`
+    # empezara a mandarle "Buscaste: ..." de vuelta, asi que hoy SI lo ve. Las
+    # repetidas son otra cosa y se ven en el crudo: el modelo manda dos
+    # consultas IDENTICAS en la MISMA llamada -"monitor, varios" dos veces-, y
+    # ahi no hay vuelta de por medio que valga.
+    #
+    # POR ESO EL ARREGLO ES DETERMINISTA Y VIVE ACA. Pedirselo al prompt seria
+    # gastar tokens en cada turno para que el modelo se acuerde de algo que el
+    # codigo puede garantizar. Ejecutar dos veces lo mismo cuesta la busqueda
+    # al pedo Y las filas duplicadas adentro del retorno, que es lo caro.
+    #
+    # NO SE DESCARTA EN SILENCIO: la consulta repetida vuelve en su lugar, con
+    # las mismas filas y un renglon que lo dice. El modelo mando N consultas y
+    # tiene que recibir N resultados; un hueco en la lista lo obligaria a
+    # adivinar cual falto. Y el numero sigue contandose en `informe`, que es
+    # donde se mira si esto empeora.
+    vistas: dict = {}
     fuera = []
     for c in (consultas or [])[:TOPE_CONSULTAS]:
+        seña = json.dumps(c, ensure_ascii=False, sort_keys=True, default=str)
+        if seña in vistas:
+            # SIN LAS FILAS, y ahi esta el ahorro de verdad. Copiarlas seria
+            # mandarle al modelo las mismas cinco fichas dos veces adentro del
+            # mismo retorno, que es justo el gasto que esto viene a sacar.
+            fuera.append({
+                "veredicto": vistas[seña]["veredicto"],
+                "filas": [], "cuantos_habia": vistas[seña]["cuantos_habia"],
+                "no_aplicado": [], "sin_dato": 0, "empatados": 0,
+                "repetida": (f"identica a tu consulta numero "
+                             f"{vistas[seña]['_n']} de esta misma llamada. Se "
+                             f"busco una sola vez y el resultado esta ahi"),
+                "motivo": ""})
+            continue
         try:
-            fuera.append(_una(c, catalogo, tienda_id))
+            r_una = _una(c, catalogo, tienda_id)
+            r_una["_n"] = len(fuera) + 1
+            vistas[seña] = r_una
+            fuera.append(r_una)
         except Exception as e:  # noqa: BLE001 — una consulta rota no tumba el resto
             log.warning("motor_consulta_error", trace_id=trace_id,
                         error=f"{type(e).__name__}: {str(e)[:120]}")
@@ -662,7 +702,9 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
                           "cuantos_habia": 0, "no_aplicado": [], "sin_dato": 0,
                           "empatados": 0,
                           "motivo": "esa consulta no se pudo ejecutar"})
+    repetidas = sum(1 for f in fuera if f.get("repetida"))
     log.info("motor_buscar", trace_id=trace_id, consultas=len(fuera),
+             repetidas=repetidas,
              veredictos=[f["veredicto"] for f in fuera],
              filas=[len(f["filas"]) for f in fuera],
              temas=[p["tema"] for p in fuera_temas])

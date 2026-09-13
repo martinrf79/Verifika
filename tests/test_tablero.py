@@ -166,3 +166,26 @@ def test_la_G15_no_puede_traer_una_G16(firestore_doble):
         for f in filas:
             assert codigo in f["nombre"].lower(), f"{codigo} trajo {f['nombre']}"
             assert marca.lower() in f["nombre"].lower()
+
+
+def test_la_consulta_repetida_se_ejecuta_una_sola_vez(firestore_doble):
+    """Medido el 13-sep: 6 repetidas sobre 31, y la causa no era la que decia
+    el comentario de `_anotar`. El modelo manda dos consultas IDENTICAS en la
+    MISMA llamada, asi que no hay vuelta de por medio: es determinista y se
+    arregla en el motor, sin gastar prompt.
+
+    LA REPETIDA VUELVE EN SU LUGAR Y SIN FILAS. En su lugar porque el modelo
+    mando N consultas y tiene que recibir N resultados; sin filas porque
+    copiarlas seria mandarle las mismas fichas dos veces en el mismo retorno,
+    que es el gasto que esto saca.
+    """
+    una = {"categoria": "monitor", "busco": "varios"}
+    otra = {"busco": "varios", "categoria": "monitor"}  # mismas claves, otro orden
+    r = MT.buscar([una, otra, {"categoria": "mouse", "busco": "varios"}],
+                  TIENDA)
+    res = r["resultados"]
+    assert len(res) == 3, "el modelo mando tres y tiene que recibir tres"
+    assert not res[0].get("repetida") and res[0]["filas"]
+    assert res[1].get("repetida"), "la segunda es identica y no se marco"
+    assert res[1]["filas"] == [], "la repetida no puede repetir las filas"
+    assert not res[2].get("repetida") and res[2]["filas"]

@@ -225,8 +225,22 @@ un producto puntual, y de los catorce mensajes hay dos asi. Los dos lo
 declararon, las dos tandas. El banco ahora cuenta sobre el denominador que
 corresponde.
 
-**LO QUE QUEDA ABIERTO, y es uno solo:** 6 consultas repetidas sobre 31. El
-modelo gasta la segunda vuelta volviendo a pedir lo mismo, porque entre vuelta
-y vuelta no ve lo que ya pidio, solo lo que volvio. El arreglo no es subir el
-tope de vueltas: es decirle que ya lo busco. `informe["repetidas"]` ya lo
-cuenta.
+**LA CONSULTA REPETIDA SE CERRO EL MISMO DIA, Y LA CAUSA NO ERA LA ESCRITA.**
+El comentario de `_anotar` decia que el modelo repite porque entre vuelta y
+vuelta no ve lo que ya pidio. Ese texto quedo viejo: `hallazgos` hoy le manda
+"Buscaste: ..." de vuelta, asi que si lo ve. El crudo de la tanda muestra otra
+cosa: **manda dos consultas IDENTICAS en la MISMA llamada**, donde no hay
+vuelta de por medio.
+
+Por eso el arreglo es determinista y vive en el motor, no en el prompt: pedirle
+al modelo que se acuerde cuesta tokens en cada turno para garantizar algo que
+el codigo garantiza gratis. La repetida vuelve **en su lugar y sin filas** —en
+su lugar porque el modelo mando N consultas y tiene que recibir N resultados;
+sin filas porque copiarlas seria mandarle las mismas fichas dos veces adentro
+del mismo retorno, que es el gasto que esto saca—.
+
+Y el recorte de `hallazgos` paso de 900 a 1.400 caracteres: un pedido abierto
+manda cinco consultas que dan 959, asi que la quinta llegaba partida.
+
+**Tercera tanda, ya con esto adentro: 14 de 14 turnos sanos, 2,21 vueltas, cero
+sin respuesta.**
