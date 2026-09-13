@@ -33,6 +33,18 @@ diferencia es la que hace que el tablero no crezca con el catálogo.
 VARIEDAD.** Siete mil productos de las mismas veintidós categorías tienen el
 mismo tablero que ochocientos. Es la salida de la FICHA 50 y no se rediscute.
 
+**No es un segundo motor.** El mecanismo de buscar no cambia. Cambia que el
+modelo escribe la consulta CON EL VOCABULARIO DE LA FUENTE, no con el de su
+entrenamiento. Tienda nueva, catálogo nuevo, tablero nuevo: sale de la misma
+pasada que ya existe, `filtros_catalogo.recorrida`. Un cache, no dos.
+
+**Dos codificaciones, una fuente.** El CANDADO es el esquema: enums de nombres,
+categorías y operadores, para que un campo que no existe no se pueda ni
+nombrar. La LEYENDA es el vocabulario: tipo, qué se puede hacer, cobertura, y
+los valores si son etiqueta. El candado impide inventar el nombre. La leyenda
+dice qué ponerle adentro. Pegarlas en una sola forma es o un enum que explota
+o un texto donde se puede nombrar un campo que no existe.
+
 ---
 
 ## 2. EL DEFECTO DE HOY, MEDIDO
@@ -100,6 +112,13 @@ la variedad y tres ejemplos. Medido hoy: con umbral 8 la maqueta da 1.422
 tokens, con 12 da 1.476, con 20 da 1.930. **Arranca en 12** y manda el techo de
 la sección 7, no este número.
 
+**Y la variedad sola no alcanza.** Un valor entra a la leyenda si la variedad
+es baja Y el valor es ETIQUETA, no prosa. `color` tiene 8 y se lista: `negro`,
+`blanco`. `contenido_caja` tiene 22 y NO se lista: son 22 párrafos. `bateria`
+tiene 23 y son frases. `nombre` y `descripcion` tienen 880 y se buscan con
+`texto`. La maqueta que lista todo valor con variedad ≤ 30 pesa **2.237
+tokens** y rompe el techo porque trata prosa como vocabulario.
+
 **D5. Los códigos de modelo se piden por `modelo contiene <codigo>`, y el borde
 es de dígitos.** La regla ya vive en `filtros_catalogo._raices` y está medida
 desde el 13-ago: el borde de un número son otros dígitos, así que `16` pega en
@@ -111,6 +130,12 @@ la sección 5.
 contesta y lo que no. Catálogo, políticas, compatibilidad, envío y criterio,
 por su número de la FICHA 52. Sin esto el modelo sólo puede pedir dos.
 
+**Una boca sin ramal se nombra CON ESE HECHO, no se esconde ni se finge.**
+"Compatibilidad: la tabla de pares; hoy el ramal no está, si preguntás te lo
+digo." El motor, ante esa pregunta, devuelve hueco —la misma escuela de D3—
+y no una lista vacía. Anunciar un cable que no existe es otra vuelta al
+modelo. Callar la boca es dejarla muerta aunque el ramal llegue después.
+
 **D7. Dos pisos, y el segundo casi nunca corre.** El piso 1 viaja siempre. El
 piso 2 —pedir los valores de un campo— es **un campo más de la misma puerta**,
 nunca una herramienta nueva: el mecanismo de buscar en la fuente es el mismo.
@@ -120,21 +145,30 @@ El motivo es de plata: el 12-sep los seis turnos posteriores al mapa 3 gastaron
 `vueltas=3`, tres llamadas al modelo por turno, y cada vuelta vuelve a pagar el
 prompt entero.
 
-**D8. Se mide o no se hace.** La sección 8 dice qué se loguea.
+**D8. Se mide o no se hace.** La sección 8 dice qué se loguea. El tablero sirve
+si bajan las vueltas. Si `vueltas=3` se queda, el índice no indexó y no se
+sigue engordando.
 
 ---
 
 ## 4. LA FORMA — tres partes y ninguna más
 
-**PARTE A · LAS CINCO BOCAS.** Qué contesta cada una y qué no. Una línea.
+**PARTE A · LAS CINCO BOCAS.** Qué contesta cada una y qué no. Una línea. Si el
+ramal no está, esa misma línea lo dice.
 
 **PARTE B · EL VOCABULARIO DEL CATÁLOGO.** Por campo: el tipo, en cuántos
 productos está cargado, qué se puede hacer con él, y los valores **sólo si la
-variedad es baja**. Más las 22 categorías con su cuenta, que ya viajan.
+variedad es baja y el valor es etiqueta**. Más las 22 categorías con su cuenta,
+que ya viajan. **Esto REEMPLAZA a `texto_inventario`:** hoy son dos renglones,
+110 tokens, el mapa 1 pobre. No viajan los dos.
 
 **PARTE C · LO QUE LA FUENTE NO TIENE.** `sin_campo_en_la_fuente` para el
 pedido que ningún campo expresa, `no_vendidas` para la categoría que la tienda
 no vende, y el hueco de valor de D3. **Las tres son respuestas, no errores.**
+No hay campo de ruido, ni de comodidad, ni de gama, ni de "el más vendido".
+`origen` es prosa: se usa `pais_marca` y `pais_fabricacion`. La lista larga de
+frases que la fuente no puede cumplir la imprime
+`python3 banco_pruebas/barrido_orden.py` y es D16: no se copia acá.
 
 ---
 
@@ -171,13 +205,23 @@ los tres modelos.
 
 - **Embeddings**, ni como mecanismo principal ni como respaldo. Regla 10.4: una
   cita tiene que poder mapearse a un id, y un vecino cercano no se verifica
-  mecánicamente.
+  mecánicamente. El español lo traduce el modelo: "un rectángulo con teclas"
+  no está en ningún tablero.
 - **Mandar fichas, o un resumen del catálogo.** Crece con la cantidad.
+- **Listar prosa como si fuera vocabulario.** `contenido_caja`, `descripcion`,
+  `garantia_detalle` no entran aunque la variedad sea baja.
 - **Mezclar los tres mapas en un solo enum.** Ya se pagó.
 - **Un segundo motor, o una herramienta nueva al lado de `buscar`.** Serían dos
-  puertas para lo mismo.
+  puertas para lo mismo. Un índice de "facet state" por consulta, antes de
+  buscar, es esa segunda puerta con otro nombre.
 - **Una flag apagada para medir.** Regla 2-bis: el cambio se hace vivo y se
   vuelve con git.
+
+Se miró afuera y se descarta lo que este repo ya descartó. Un índice de
+vocabulario de catálogo, generado de la fuente y puesto delante ANTES de la
+primera herramienta, es el patrón que evita pagar vueltas de exploración. Lo
+demás —vecinos cercanos, un motor de facetas por consulta, una capa que
+traduzca color por embedding— no.
 
 ---
 
@@ -197,6 +241,9 @@ piso 1 se fija en **1.500 tokens**, vive en un test y **sólo baja**, igual que
 los dos techos del bloque 1 de `CLAUDE.md`. Un umbral se cambia en su propio
 commit, antes del trabajo que lo hace pasar, con las cuentas escritas.
 
+El 1.349 de la FICHA 50 es la maqueta del mapa 1 solo. El 1.500 es lo que
+VIAJA: candado y leyenda juntos, sin duplicar `texto_inventario`.
+
 ---
 
 ## 8. QUÉ SE MIDE
@@ -212,15 +259,42 @@ Por turno, sobre lo que `motor_turno` ya loguea:
 
 **Sin esto no se optimiza nada**, y además es la regla 10.5: sin logs no hay
 deploy. El número de referencia es el del 12-sep, en la sección 8 de la FICHA
-52: buscó en 15 de 19 turnos, y en 6 de 6 después del mapa 3.
+52: buscó en 15 de 19 turnos, y en 6 de 6 después del mapa 3. Esos seis
+gastaron `vueltas=3` todos. Ése es el número que el tablero tiene que bajar.
 
 ---
 
-## 9. QUÉ SE ROMPE Y CÓMO SE VUELVE
+## 9. QUÉ SE HACE, EN ORDEN
+
+1. **La leyenda de CATÁLOGO**, generada de `recorrida`, con D4 y el techo de
+   1.500. Reemplaza `texto_inventario`. El candado no se toca salvo para
+   nombrar las cinco bocas en la descripción, con el ramal que falta dicho.
+2. **El hueco de valor**, D3, en el mismo camino que `SIN_CAMPO`. Sin esto la
+   leyenda enseña los cinco países y el modelo sigue filtrando a ciegas.
+3. **La vara**, offline, sin modelo: la leyenda sale de la fuente; `dimensiones`
+   no se lista y `pais_fabricacion` sí; `contenido_caja` no se lista; el techo
+   no sube; `texto_inventario` no viaja al lado; `g15` no trae `g16`. Cada
+   falla real de WhatsApp entra en `tests/test_turno_nuevo.py` ANTES de
+   arreglarla.
+4. **Medir `motor_turno`.** Si las vueltas no bajan, no se sigue.
+
+Los ramales que faltan —compatibilidad, criterio, envío pedido y no empujado—
+son otras fichas. El tablero los nombra y no los finge.
+
+---
+
+## 10. QUÉ SE ROMPE Y CÓMO SE VUELVE
 
 **Toca el camino vivo**, porque el esquema viaja en cada turno: `motor.esquema`
 y lo que `respuesta._preguntar` le pone delante al modelo. Si el tablero
 engorda, **paga cada mensaje del día**, y por eso el techo es un test y no una
 intención.
 
+No se toca la memoria, el contrato del motor, la guarda, la cuenta,
+`data/clientes/`, el cierre, ni lo apagado en `archivo/apagado_11sep/`.
+
 Se vuelve con `git revert`. No hay flag, no hay camino viejo al lado.
+
+Una leyenda a medias —campos sin "qué se puede hacer", o valores de prosa, o
+bocas anunciadas como si tuvieran cable— es peor que el inventario de dos
+renglones, porque enseña mal.

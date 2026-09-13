@@ -11,23 +11,23 @@ Si movés o partís un archivo, se actualiza esta pagina en el mismo commit.
 
 1. El bloque 0 de `CLAUDE.md`, que son las reglas.
 2. Esta pagina, que dice donde esta cada cosa.
-3. `arquitectura/FICHA_50_los_tres_mapas.md`, que es la unidad de trabajo
-   abierta desde el 11-sep-2026: los tres mapas y la herramienta de busqueda,
-   con el diseño acordado con Martin y el orden en que se hace.
+3. `arquitectura/FICHA_53_el_tablero.md`, que es la unidad de trabajo
+   abierta desde el 13-sep-2026: el indice de la fuente. La 50 guarda las
+   tres decisiones y el 1.349. La 52 nombra las bocas y el croquis.
 
 **ARRANQUE CORTO PARA LA SESION QUE SIGUE, y son cinco lineas:**
 
-1. El camino vivo es `app/core/respuesta.py`. UNA llamada al modelo, cinco
-   etapas: fuente, modelo, numeros, cierre, memoria. Lo viejo esta apagado en
-   `archivo/apagado_11sep/` y NO se reenchufa.
-2. Se lee `arquitectura/FICHA_50_los_tres_mapas.md` ENTERA antes de tocar nada.
-   El diseño esta acordado; lo que falta es escribirlo.
-3. **No se crea una funcion sin mirar si ya existe.** El inventario, los campos
-   filtrables y los temas YA estan. El mapa es, en su mayor parte, pegarlos.
-4. **No se cambia el diseño sin preguntarle a Martin.** Una herramienta a
-   medias es peor que ninguna.
+1. El camino vivo es `app/core/respuesta.py`. El motor ya busca. Lo viejo
+   esta apagado en `archivo/apagado_11sep/` y NO se reenchufa.
+2. Se lee `arquitectura/FICHA_53_el_tablero.md` ENTERA antes de tocar nada.
+   El diseño esta acordado; lo que falta es la leyenda.
+3. **No se crea una funcion sin mirar si ya existe.** `recorrida` ya saca
+   tipo, categorias y rango. La leyenda es la misma pasada con variedad,
+   cobertura y lo que no tiene.
+4. **No se cambia el diseño sin preguntarle a Martin.** Una leyenda a
+   medias ensena mal.
 5. Cada falla real de WhatsApp entra como caso en `tests/test_turno_nuevo.py`
-   ANTES de arreglarla. Es lo unico que impide que un arreglo rompa otro.
+   ANTES de arreglarla. El tablero sirve si bajan las vueltas de `motor_turno`.
 
 Con esos tres se arranca sabiendo todo lo que hace falta. Leer el repo entero o
 explorar carpetas es lo que gasta de mas y no agrega nada.
@@ -40,7 +40,8 @@ explorar carpetas es lo que gasta de mas y no agrega nada.
 | Despacho del turno, anti-jailbreak, reset | `app/core/orchestrator.py` |
 | EL TURNO COMPLETO, las cinco etapas | `app/core/respuesta.py` |
 | LOS VEINTE TIPOS de pregunta y su respuesta generica, que son el prompt | `app/core/tipos.py` |
-| EL DISEÑO DE LOS TRES MAPAS y la herramienta de busqueda, sin escribir todavia | `arquitectura/FICHA_50_los_tres_mapas.md` |
+| EL TABLERO: indice de la fuente, candado mas leyenda | `arquitectura/FICHA_53_el_tablero.md` |
+| Las tres decisiones del mapa y el techo de 1.349 tokens | `arquitectura/FICHA_50_los_tres_mapas.md` |
 | Lo que el codigo pone delante del modelo: fichas del catalogo y politicas certificadas | `app/core/fuente.py` |
 | LOS DOS NUMEROS, precio y envio, y la guarda de plata inventada | `app/core/numeros.py` |
 | La llamada al modelo y el reintento | `app/core/llm_reintento.py` |

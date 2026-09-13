@@ -12,7 +12,8 @@ acá.** Este archivo nombra lo que está CABLEADO; la ficha 52 nombra a dónde v
 —tablero, motor, ramales, bocas, retorno, redacción, guarda—. **Las dos que más
 se confunden están definidas ahí y sólo ahí:** una BOCA es un área de la fuente
 de verdad, un RAMAL es el cable que la conecta al motor. Son cinco bocas y el
-archivo se sigue llamando `las_seis_bocas` por lo que ya lo cita. No se contradicen
+archivo se sigue llamando `las_seis_bocas` por lo que ya lo cita. Cómo se
+genera el tablero vive en `FICHA_53_el_tablero.md`. No se contradicen
 porque no hablan de lo mismo. A medida que cada ramal de la 52 se construya, su
 nombre baja acá con número propio y la 52 deja de nombrarlo.
 

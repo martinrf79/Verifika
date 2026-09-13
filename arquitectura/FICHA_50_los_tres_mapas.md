@@ -1,7 +1,12 @@
-# FICHA 50 — Los tres mapas y la herramienta de búsqueda. Abierta.
+# FICHA 50 — Los tres mapas y la herramienta de búsqueda.
 
 **Decidida con Martín el 11-sep-2026, después del apagón.** El diseño no se
-cambia sin preguntarle; se lee esta ficha entera antes de tocar nada.
+cambia sin preguntarle.
+
+**La unidad de trabajo del mapa pasó a `FICHA_53_el_tablero.md` el 13-sep.**
+Esta ficha guarda las tres decisiones y el techo: la maqueta del mapa 1
+pesa 1.349 tokens con la regla de enumerar por variedad. No se reescribe
+para anunciar lo construido.
 
 **ESTADO al 11-sep, noche. EL MOTOR ESTÁ; EL MAPA 2 TAMBIÉN; FALTAN EL 1 Y EL 3.**
 

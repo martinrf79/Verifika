@@ -177,9 +177,11 @@ abajo si no.
    con id y precio, carrito, descartados, destino, nombre.
 7. **EL TABLERO** — el índice de lo que se puede preguntar: los campos
    filtrables, las categorías, los operadores, y **las cinco bocas con lo que
-   contesta cada una**. Viaja como esquema de herramienta del proveedor, no como
-   texto, así un campo que no existe no se puede ni nombrar. **El tablero no
-   tiene un solo dato.**
+   contesta cada una**. El diseño de cómo se genera está en
+   `FICHA_53_el_tablero.md`: el CANDADO viaja como esquema, para que un campo
+   que no existe no se pueda ni nombrar; la LEYENDA es el vocabulario
+   generado, sin una sola ficha. **El tablero no tiene un solo dato de
+   producto.**
 8. **LOS MOLDES** — las formas de la respuesta. Hoy `app/core/tipos.py`.
 
 **El motor**
@@ -303,7 +305,7 @@ tabla y el código se contradicen, gana el código.
 | Componente | Estado |
 |---|---|
 | Voz, pregunta, memoria, moldes, turno | vivos |
-| Tablero | vivo, 940 tokens, **sin las cinco bocas listadas** |
+| Tablero | candado vivo, 1.047 tokens el 13-sep, **sin leyenda** |
 | Motor | vivo, una puerta |
 | Ramal a CATÁLOGO | **ordenado el 13-sep**: specs pedidas por nombre, cantidad con subtotal, y `no_vendidas` con su alternativa real |
 | Ramal a POLÍTICAS | vivo desde el 12-sep |

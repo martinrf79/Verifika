@@ -16,10 +16,10 @@ A MEDIAS   algo que se EMPEZÓ y no se terminó.  Tiene que llegar a CERO.
 PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
 ```
 
-La orden de trabajo abierta: **lo que queda de la FICHA 49, que es D14 sola.**
-D13 y D15 cerraron el 7-sep y están deployadas. Relato en
-`FICHA_49_la_obligacion_muda.md`, vara en
-`tests/test_plan_de_la_obligacion.py`.
+La orden de trabajo abierta: **`FICHA_53_el_tablero.md`.** El motor ya
+busca. Falta el índice: candado más leyenda, techo 1.500 tokens de lo que
+viaja. Las bocas y el croquis están en la 52. Las tres decisiones del mapa,
+en la 50.
 
 Detrás de ella, el orden grande no cambió y está en `FORMULARIO_V2.md`
 sección 6: primero D2 —la vara de la capa 4—, después el hueco 4, después
@@ -70,7 +70,10 @@ toca, cómo se verifica.
 | `FICHA_44_deposito_y_robustez.md` | depósito sin borrar; el diagnóstico |
 | `FICHA_45_el_loop.md` | el loop adentro del turno; CONFLICTO pregunta; cerrada |
 | `FICHA_48_el_apagon.md` | el primer apagón: seis puertas y el termómetro; cerrada |
-| `FICHA_49_la_obligacion_muda.md` | **la orden abierta**: D13, D14 y D15, leídas de charlas reales |
+| `FICHA_49_la_obligacion_muda.md` | D13 y D15 cerraron; queda D14 |
+| `FICHA_50_los_tres_mapas.md` | un motor, consulta estructurada, techo 1.349 |
+| `FICHA_52_las_seis_bocas.md` | el croquis: bocas, ramales, tablero |
+| `FICHA_53_el_tablero.md` | **la orden abierta**: el índice de la fuente |
 | `MAPA_CABLEADO.md` | el único lugar donde se nombra el cableado y el estado de cada falla |
 | `FORMULARIO_V2.md` | los huecos del formulario y el orden grande |
 | `PLAN_REDUCCION.md` | la campaña de agosto: qué se queda vs qué ya fue a archivo/ |
