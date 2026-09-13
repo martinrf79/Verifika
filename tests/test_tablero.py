@@ -21,9 +21,20 @@ from app.core.filtros_catalogo import (CARGA_FLACA, LARGO_ETIQUETA,
 TIENDA = "verifika_prod"
 
 # Medido el 13-sep-2026 sobre la tienda viva: el esquema entero, con la leyenda
-# adentro, da 2.001. El techo deja margen para que una tienda con mas variedad
-# entre, y NO para que este repo engorde.
-TECHO_TABLERO = 2100
+# adentro, daba 2.001 y el techo era 2.100. El techo deja margen para que una
+# tienda con mas variedad entre, y NO para que este repo engorde.
+#
+# SUBE UNA VEZ, 13-sep-2026, Y LAS CUENTAS SON ESTAS. La boca de
+# COMPATIBILIDAD entra al tablero: el campo `compatibilidad` del esquema pesa
+# 177 tokens -los dos ids, los doce equipos que el vocabulario conoce y los
+# tres veredictos- y nombrarla en la descripcion de la puerta cuesta otros 36.
+# El esquema vivo pasa de 2.001 a 2.214, asi que el techo pasa de 2.100 a
+# 2.300 y el margen queda en 86, del mismo orden que el 99 que tenia.
+#
+# LO QUE COMPRA ESE GASTO: la compatibilidad se contestaba de memoria. La
+# tabla de la casa estaba escrita, se estampa en cada ficha al leer el catalogo
+# y el turno no la alcanzaba; sin este campo, el modelo no tiene como pedirla.
+TECHO_TABLERO = 2300
 
 
 def _tokens(s: str) -> int:
