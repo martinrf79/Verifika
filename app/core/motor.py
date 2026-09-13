@@ -145,6 +145,27 @@ def esquema(tienda_id: str) -> dict:
                                "y tenes que preguntar cual."},
             "cuantos": {"type": "integer",
                         "description": f"Filas, hasta {TOPE_FILAS}."},
+            # LA CANTIDAD ES EL CALCULO DE ESTA BOCA, y por eso entra como un
+            # campo de la consulta y no como una herramienta nueva. "Dos
+            # teclados de esos" vuelve con el subtotal ya hecho, asi el modelo
+            # copia en vez de multiplicar. No se confunde con `cuantos`: una
+            # dice cuantas FILAS mostrar, la otra cuantas UNIDADES compra.
+            "cantidad": {"type": "integer",
+                         "description": "Cuantas UNIDADES de cada producto "
+                                        "pide el cliente. Con dos o mas te "
+                                        "devuelvo el subtotal ya calculado. "
+                                        "No es la cantidad de filas."},
+            # LAS SPECS SE PIDEN POR NOMBRE, Y NO ES BUROCRACIA: el mapa entero
+            # engorda la ficha hasta un 57% y cinco notebooks con todo no
+            # entran en el recorte con que el turno le pasa el retorno al
+            # modelo. Pidiendo por nombre, el peso es el de la pregunta.
+            # Con `busco: uno` no hace falta: van todas.
+            "specs": {
+                "type": "array", "items": {"type": "string"},
+                "description": "Los datos de ficha que la pregunta necesita: "
+                               "'bluetooth', 'garantia', 'resistencia_agua'. "
+                               "Si el cliente nombro UN producto puntual no "
+                               "hace falta pedirlas, te mando todas."},
         },
     }
     return {
@@ -216,6 +237,36 @@ def _por_ids(catalogo: list, ids: list) -> list:
     return [porid[i] for i in pedidos if i in porid]
 
 
+def _no_vendemos(texto: str, categoria: str, tienda_id: str):
+    """Si lo que se pidio es una categoria que la tienda NO vende, decirlo con
+    la alternativa REAL al lado. None si no aplica.
+
+    Se le pasa lo que ESCRIBIO EL MODELO —el texto de la consulta y el rubro—,
+    no el mensaje crudo del cliente: el motor no mira el mensaje, mira la
+    consulta, y esa es la unica entrada que tiene. Un fallo de esta funcion no
+    puede tumbar la busqueda: sin fuente no se niega nada, que es la salida
+    honesta que `guia_compra` ya documenta.
+    """
+    from app.core.guia_compra import categoria_no_vendida
+    for frase in (f"{texto} {categoria}".strip(), texto, categoria):
+        if not frase:
+            continue
+        try:
+            r = categoria_no_vendida(frase, tienda_id)
+        except Exception as e:  # noqa: BLE001 — sin fuente no se niega nada
+            log.warning("motor_no_vendidas_error", tienda_id=tienda_id,
+                        error=f"{type(e).__name__}: {str(e)[:120]}")
+            return None
+        if r:
+            pedida, alt = r
+            return {"pedido": pedida,
+                    "en_su_lugar": alt or "",
+                    "motivo": f"la tienda no vende {pedida}"
+                              + (f"; lo mas cercano que si hay es {alt}"
+                                 if alt else "; no hay nada equivalente")}
+    return None
+
+
 def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     """UNA consulta del modelo contra el catalogo. Devuelve el resultado
     ENTERO: lo que trajo, cuantos habia, que no se pudo aplicar y por que.
@@ -238,6 +289,15 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     except (TypeError, ValueError):
         tope = FILAS_POR_DEFECTO
     tope = max(1, min(TOPE_FILAS, tope))
+    try:
+        unidades = max(1, int(c.get("cantidad") or 1))
+    except (TypeError, ValueError):
+        unidades = 1
+    # None quiere decir TODAS. Con un producto puntual el cliente pregunta
+    # detalle y las filas son pocas, asi que el mapa entero es barato y ademas
+    # es lo que hace falta; en una lista viajan solo las que se pidieron.
+    pedidas = c.get("specs")
+    specs_pedidas = None if str(c.get("busco") or "") == "uno" else (pedidas or [])
 
     no_aplicado, notas = [], []
 
@@ -249,12 +309,44 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
                   {str(p.get("id")) for p in filas}]
         return {"veredicto": "existe" if filas else "no_existe",
                 "cuantos_habia": len(filas),
-                "filas": [_ficha_corta(p) for p in filas[:tope]],
+                "filas": [_ficha_corta(p, unidades, specs_pedidas)
+                          for p in filas[:tope]],
                 "no_aplicado": ([{"campo": "ids", "motivo":
                                   f"no existen estos ids: {', '.join(faltan)}"}]
                                 if faltan else []),
                 "sin_dato": 0, "empatados": 0,
                 "motivo": "" if filas else "ninguno de esos ids esta en el catalogo"}
+
+    # EL "NO LO VENDEMOS" VA PRIMERO, Y ESE ES EL PUNTO (13-sep-2026).
+    #
+    # Estaba escrito abajo, colgando de "si no quedo ninguno", y ahi NO CORRIA
+    # NUNCA: una consulta con `texto: celular` y sin condiciones deja el
+    # universo entero, la relevancia ordena los 880 y vuelven CINCO PRODUCTOS
+    # con veredicto `existe`. O sea que a "tenes celulares?" el motor contesta
+    # que si, con cinco cosas que no son celulares, y el modelo no tiene como
+    # saberlo. Es la respuesta 2 dicha como la 3 al reves, que la FICHA 52
+    # llama el defecto mas caro del nicho.
+    #
+    # La relevancia SIEMPRE devuelve algo: esa es su naturaleza y por eso no
+    # puede ser la que decida si existe. Lo decide la fuente, antes.
+    no_lo_vendemos = _no_vendemos(texto, str(c.get("categoria") or ""),
+                                  tienda_id)
+    if no_lo_vendemos:
+        # LAS FILAS SON LAS DE LA ALTERNATIVA REAL, no las del parecido. Es la
+        # respuesta 3 entera: no hay ficha de eso, y esto SI tengo en su lugar.
+        alt = no_lo_vendemos.get("en_su_lugar") or ""
+        de_la_alt, _ = _universo(catalogo, alt, tienda_id) if alt else ([], "")
+        filas_alt = [_ficha_corta(p, unidades, specs_pedidas)
+                     for p in (de_la_alt if alt else [])[:tope]]
+        return {"veredicto": "no_existe",
+                "cuantos_habia": 0,
+                "de_cuantos_se_miro": len(catalogo),
+                "filas": filas_alt,
+                "no_aplicado": [],
+                "sin_dato": 0,
+                "empatados": 0,
+                "no_lo_vendemos": no_lo_vendemos,
+                "motivo": no_lo_vendemos["motivo"]}
 
     universo, aviso = _universo(catalogo, str(c.get("categoria") or ""),
                                 tienda_id)
@@ -373,7 +465,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     # la llamaba nadie: quedo suelta cuando se apago el bloque que la usaba.
     filas = []
     for p in quedan[:tope]:
-        f = _ficha_corta(p)
+        f = _ficha_corta(p, unidades, specs_pedidas)
         if rescate:
             motivo_fila = dato_que_falla(p, conds, tienda_id)
             if motivo_fila:

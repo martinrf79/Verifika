@@ -519,9 +519,49 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             pidio = {"consultas": consultas, "temas": args.get("temas") or []}
             hallazgos.append(
                 "Buscaste: " + json.dumps(pidio, ensure_ascii=False)[:900]
-                + "\nVolvio: " + json.dumps(r, ensure_ascii=False)[:8000])
+                + "\nVolvio: " + _retorno_que_entra(r, trace_id))
     informe["fichas"] = len(fichas)
     return {}, fichas, informe
+
+
+# Cuanto del retorno le cabe al modelo en una vuelta. El numero es el de
+# siempre; lo que cambio el 13-sep es COMO se recorta.
+TOPE_RETORNO = 8000
+
+
+def _retorno_que_entra(r: dict, trace_id: str = "") -> str:
+    """El retorno como JSON, recortado SACANDO FILAS y no cortando la cadena.
+
+    HASTA HOY ERA `json.dumps(r)[:8000]`, o sea que un retorno grande le
+    llegaba al modelo partido al medio: la cadena queda sin cerrar, no es JSON,
+    y la ultima ficha aparece mutilada —un precio a la mitad es un precio
+    distinto—. Se destapo el 13-sep midiendo las specs: cinco notebooks con el
+    mapa entero dan 8.837 caracteres y el corte caia adentro de una ficha.
+
+    Sacar la ultima fila y DECIRLO es honesto: el modelo sabe que hay mas y
+    puede pedir menos o afinar la consulta. Un JSON roto no le deja hacer nada,
+    y encima parece completo.
+    """
+    entero = json.dumps(r, ensure_ascii=False)
+    if len(entero) <= TOPE_RETORNO:
+        return entero
+    podado = json.loads(entero)
+    sacadas = 0
+    for res in podado.get("resultados") or []:
+        while len(json.dumps(podado, ensure_ascii=False)) > TOPE_RETORNO \
+                and len(res.get("filas") or []) > 1:
+            res["filas"].pop()
+            sacadas += 1
+    if sacadas:
+        podado["recortado"] = (
+            f"se sacaron {sacadas} filas para que entre la respuesta; "
+            f"pedi menos filas o afina la consulta si necesitas ver mas")
+    salida = json.dumps(podado, ensure_ascii=False)
+    log.info("retorno_recortado", trace_id=trace_id, filas_sacadas=sacadas,
+             largo=len(salida), largo_entero=len(entero))
+    # Si ni con una fila por consulta entra, recien ahi se corta la cadena: es
+    # el ultimo recurso y queda anotado en el log de arriba.
+    return salida[:TOPE_RETORNO]
 
 
 def _senal(tipo: str, mensaje: str) -> dict:

@@ -256,9 +256,38 @@ def _plata(n) -> str:
         return ""
 
 
-def _ficha_corta(prod: dict) -> dict:
+def _ficha_corta(prod: dict, cantidad: int = 1, specs_pedidas=None) -> dict:
     """La ficha que ve el modelo. Corta a proposito: id, nombre, categoria,
-    stock, precio y los campos que la fuente declaro para ese rubro."""
+    stock, precio y los campos que la fuente declaro para ese rubro.
+
+    LAS SPECS VIAJAN SOLO LAS QUE SE PIDEN, Y ESE ES EL PRECIO (13-sep-2026).
+    Medido antes de elegir: el mapa entero suma entre 1.476 y 3.225 caracteres
+    por consulta —la ficha crece entre un 32 y un 57 por ciento— y cinco
+    notebooks con todas las specs dan 8.837, que NO ENTRAN en el recorte de
+    8.000 con que `respuesta` le pasa el retorno al modelo. O sea que mandarlas
+    siempre no era caro: era romper el JSON a la mitad. Por eso `specs_pedidas`
+    filtra, y sale el mapa entero solo cuando el modelo declaro `busco: uno`,
+    que es el caso donde el cliente pregunta por UN producto y quiere detalle.
+
+    LO QUE VIAJA, VIAJA DE LA FUENTE (13-sep-2026). Las tres capas
+    —`specs_preguntables`, `specs_por_categoria`, `specs_por_modelo`— se
+    calculan enteras en el camino vivo: `firestore_client` llama a
+    `fuente_producto.enriquecer` en cada refresco del catalogo y cada producto
+    queda con su mapa `specs` en memoria. **Lo que faltaba no era el calculo,
+    era mostrarlo:** esta funcion solo pasaba `campos_ficha`, que es prosa
+    —nombre, descripcion, caracteristicas—, asi que una pregunta puntual
+    —"¿tiene bluetooth?", "¿es resistente al agua?"— se contestaba leyendo
+    prosa o no se contestaba, teniendo el dato estructurado a un campo de
+    distancia. El mapa ya viene en la forma que el modelo necesita: campo y
+    respuesta corta en castellano.
+
+    LA CANTIDAD ES EL CALCULO DE ESTA BOCA. Cada boca trae el suyo: envio
+    deriva la tarifa del destino, y catalogo multiplica por cuantos pidio el
+    cliente. "Dos teclados de esos" vuelve con `subtotal` ya hecho, escrito
+    igual que el precio para que el modelo lo COPIE en vez de multiplicar de
+    cabeza. Lo que NO se hace aca es el total del pedido: eso cruza bocas
+    —precios, envio y el descuento que es politica— y vive en el retorno.
+    """
     from app.core.fuente_producto import campos_ficha
     precio = prod.get("precio_ars")
     fuera = {
@@ -273,10 +302,34 @@ def _ficha_corta(prod: dict) -> dict:
         "precio": _plata(precio),
         "precio_ars": precio,
     }
+    if cantidad and cantidad > 1:
+        fuera["cantidad"] = cantidad
+        try:
+            fuera["subtotal"] = _plata(float(precio) * cantidad)
+            fuera["subtotal_ars"] = int(round(float(precio) * cantidad))
+        except (TypeError, ValueError):
+            pass
     for campo, valor in (campos_ficha(prod) or []):
         if campo in fuera or valor in (None, ""):
             continue
         fuera[str(campo)] = valor
+    # LAS SPECS AL FINAL Y EN SU PROPIA CAJA. Anidadas y no desparramadas entre
+    # los campos de arriba: asi el modelo ve de un vistazo que es dato duro de
+    # la ficha y que es prosa, y un campo nuevo del catalogo no puede pisar a
+    # `id` ni a `precio` por llamarse igual.
+    specs = prod.get("specs") or {}
+    if isinstance(specs, dict) and specs:
+        if specs_pedidas is None:
+            elegidas = dict(specs)
+        else:
+            # El campo que se pidio y la ficha no tiene NO se rellena con nada:
+            # que falte es el dato -es la respuesta 2, "no tengo ese dato"- y
+            # un vacio inventado ahi seria peor que la ausencia.
+            pedidas = {_norm(str(x)) for x in (specs_pedidas or [])}
+            elegidas = {k: v for k, v in specs.items() if _norm(str(k)) in pedidas}
+        elegidas = {str(k): v for k, v in elegidas.items() if v not in (None, "")}
+        if elegidas:
+            fuera["specs"] = elegidas
     return fuera
 
 

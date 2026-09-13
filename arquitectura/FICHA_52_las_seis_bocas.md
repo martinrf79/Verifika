@@ -287,7 +287,7 @@ Las bocas no son una idea: son los archivos que están en el disco. Leído el
 
 | Boca | Dónde vive | Lo lee |
 |---|---|---|
-| CATÁLOGO | `productos.csv`, `specs_preguntables.json`, `specs_por_categoria.json`, `specs_por_modelo.csv`, `no_vendidas.json` | `filtros_catalogo` y `fuente_producto`; **`no_vendidas` sólo lo lee `guia_compra`, que no lo importa NADIE en `app/`** |
+| CATÁLOGO | `productos.csv`, `specs_preguntables.json`, `specs_por_categoria.json`, `specs_por_modelo.csv`, `no_vendidas.json` | las cinco, por el motor, desde el 13-sep |
 | POLÍTICAS | `faq.json` | `curadas` y `fuente` |
 | COMPATIBILIDAD | `compatibilidad.csv`, `compatibilidad_vocabulario.json` | `compatibilidad.py`, al que el turno no llega |
 | CRITERIO | `base_conocimiento.json`, bloque `categorias` | nadie; el archivo sí lo lee `guia_venta_prosa` para la VOZ |
@@ -305,7 +305,7 @@ tabla y el código se contradicen, gana el código.
 | Voz, pregunta, memoria, moldes, turno | vivos |
 | Tablero | vivo, 940 tokens, **sin las cinco bocas listadas** |
 | Motor | vivo, una puerta |
-| Ramal a CATÁLOGO | vivo, **sin las tres capas de specs, sin `no_vendidas` y sin el cálculo de cantidad** |
+| Ramal a CATÁLOGO | **ordenado el 13-sep**: specs pedidas por nombre, cantidad con subtotal, y `no_vendidas` con su alternativa real |
 | Ramal a POLÍTICAS | vivo desde el 12-sep |
 | Ramal a COMPATIBILIDAD | **no existe** |
 | Ramal a ENVÍO | el dato llega, pero **lo empuja el código**, no lo pide el modelo |

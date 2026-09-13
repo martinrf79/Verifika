@@ -915,3 +915,29 @@ def test_el_turno_ENTERO_le_contesta_con_SU_palabra(firestore_doble, monkeypatch
     assert "Concordia" in texto and "$" in texto, texto
     assert N.SIN_DATO not in texto, texto
     assert "entre rios" not in texto.lower(), texto
+
+
+# ── EL RECORTE DEL RETORNO (13-sep-2026) ────────────────────────────────────
+
+def test_un_retorno_grande_se_recorta_SACANDO_FILAS_y_sigue_siendo_JSON():
+    """Era `json.dumps(r)[:8000]`: un retorno grande le llegaba al modelo
+    partido al medio, sin cerrar y con la ultima ficha mutilada. Un precio
+    cortado a la mitad es un precio distinto."""
+    import json
+    from app.core import respuesta as R
+    gordo = {"resultados": [{"veredicto": "existe", "filas": [
+        {"id": f"P{i:04d}", "nombre": "Notebook " + "x" * 300,
+         "precio": "$1.234.567"} for i in range(40)]}]}
+    salida = R._retorno_que_entra(gordo)
+    assert len(salida) <= R.TOPE_RETORNO
+    d = json.loads(salida)          # si estuviera cortada, esto revienta
+    assert d["resultados"][0]["filas"], "no puede quedarse sin ninguna fila"
+    assert "recortado" in d, "el modelo tiene que saber que hay mas"
+
+
+def test_un_retorno_que_entra_no_se_toca():
+    import json
+    from app.core import respuesta as R
+    chico = {"resultados": [{"veredicto": "existe",
+                             "filas": [{"id": "P1", "precio": "$10.000"}]}]}
+    assert json.loads(R._retorno_que_entra(chico)) == chico

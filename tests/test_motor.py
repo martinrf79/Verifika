@@ -271,3 +271,110 @@ def test_una_consulta_rota_no_se_lleva_puestas_las_otras():
                    {"categoria": "mouse", "cuantos": 1}], TIENDA)
     assert len(r["resultados"]) == 2
     assert r["resultados"][1]["filas"], "la consulta buena tambien se cayo"
+
+
+# ── LA BOCA CATALOGO, ORDENADA (13-sep-2026) ────────────────────────────────
+#
+# Las tres piezas que le faltaban a la boca, y ninguna era un calculo nuevo: la
+# fuente ya las tenia y nadie las mostraba.
+#
+#   1. LAS SPECS. `firestore_client` llama a `fuente_producto.enriquecer` en
+#      cada refresco, asi que cada producto YA viene con su mapa `specs` de las
+#      tres capas. La ficha corta no lo pasaba.
+#   2. LA CANTIDAD. Es el calculo de esta boca, el mismo lugar que ocupa la
+#      tarifa en la boca de envio.
+#   3. `no_vendidas.json`. Estaba en el disco y su unico lector, `guia_compra`,
+#      no lo importaba NADIE en `app/`.
+
+
+def test_la_spec_que_se_pide_por_nombre_viaja_en_la_ficha():
+    """Una pregunta puntual —bluetooth, resistencia al agua— se contestaba
+    leyendo prosa con el dato duro a un campo de distancia."""
+    r = _una({"categoria": "mouse", "cuantos": 2, "specs": ["bluetooth"]})
+    assert r["filas"], "el catalogo tiene mouse"
+    specs = r["filas"][0].get("specs") or {}
+    assert "bluetooth" in specs, f"no viajo la spec pedida: {sorted(specs)}"
+
+
+def test_LA_SPEC_QUE_NO_SE_PIDIO_NO_VIAJA_y_ese_es_el_precio():
+    """El mapa entero engorda la ficha hasta un 57% y cinco notebooks con todo
+    dan 8.837 caracteres, que NO entran en el recorte de 8.000 con que el turno
+    le pasa el retorno al modelo: mandarlas siempre no era caro, era romper el
+    JSON a la mitad. Medido el 13-sep, y por eso se piden por nombre."""
+    fila = _una({"categoria": "mouse", "cuantos": 2,
+                 "specs": ["bluetooth"]})["filas"][0]
+    assert set(fila["specs"]) == {"bluetooth"}, "viajaron specs que nadie pidio"
+
+
+def test_con_UN_producto_puntual_viaja_el_mapa_ENTERO():
+    """Ahi el cliente pregunta detalle y las filas son pocas, asi que el mapa
+    entero es barato y ademas es justo lo que hace falta."""
+    r = _una({"texto": "mouse", "busco": "uno", "cuantos": 2})
+    specs = r["filas"][0].get("specs") or {}
+    assert len(specs) > 1, f"con busco=uno tienen que ir todas: {sorted(specs)}"
+
+
+def test_las_specs_no_pisan_el_precio_ni_el_id():
+    """Van anidadas a proposito: un campo nuevo del catalogo no puede
+    llamarse `precio` y quedarse con el renglon de la plata."""
+    fila = _una({"categoria": "mouse", "cuantos": 1,
+                 "specs": ["garantia"]})["filas"][0]
+    assert fila["id"] and fila["precio"], "la ficha perdio id o precio"
+    assert isinstance(fila.get("specs"), dict)
+
+
+def test_dos_unidades_vuelven_con_el_subtotal_YA_HECHO():
+    """El calculo de esta boca. El modelo copia, no multiplica."""
+    r = _una({"categoria": "mouse", "cuantos": 1, "cantidad": 2})
+    fila = r["filas"][0]
+    assert fila.get("cantidad") == 2
+    assert fila.get("subtotal_ars") == fila["precio_ars"] * 2
+    assert fila.get("subtotal"), "el subtotal tiene que viajar ya escrito"
+
+
+def test_una_sola_unidad_no_ensucia_la_ficha_con_un_subtotal():
+    """Con una unidad el subtotal ES el precio, y repetirlo es un numero mas
+    que la guarda de procedencia tiene que respaldar de gusto."""
+    fila = _una({"categoria": "mouse", "cuantos": 1})["filas"][0]
+    assert "subtotal" not in fila and "cantidad" not in fila
+
+
+def test_lo_que_la_tienda_NO_VENDE_vuelve_con_su_alternativa_real():
+    """La respuesta 3 de las seis: no hay ficha, y esto si tengo en su lugar."""
+    r = _una({"texto": "celular", "cuantos": 5})
+    nv = r.get("no_lo_vendemos") or {}
+    assert nv, f"no salio el no_lo_vendemos: {r.get('motivo')}"
+    assert nv["pedido"] == "celular"
+    assert nv["en_su_lugar"] == "tablet", "la alternativa sale de no_vendidas.json"
+
+
+def test_la_alternativa_se_valida_contra_el_catalogo_y_no_se_inventa():
+    """Si la alternativa que el json propone no es una categoria REAL, no se
+    ofrece: ofrecer lo que tampoco hay es el mismo defecto una vuelta mas."""
+    from app.core.filtros_catalogo import recorrida
+    reales = {c for c, _ in (recorrida(TIENDA).get("categorias") or [])}
+    r = _una({"texto": "celular", "cuantos": 5})
+    alt = (r.get("no_lo_vendemos") or {}).get("en_su_lugar")
+    assert not alt or alt in reales, f"{alt} no es una categoria del catalogo"
+
+
+def test_un_producto_que_SI_existe_no_dispara_el_no_lo_vendemos():
+    """El renglon solo aparece cuando de verdad no hay nada."""
+    r = _una({"categoria": "mouse", "cuantos": 3})
+    assert r["filas"] and "no_lo_vendemos" not in r
+
+
+def test_lo_que_no_vendemos_NO_lo_contesta_la_relevancia_con_cinco_parecidos():
+    """El caso que encontro el rojo del 13-sep, y es el mas caro del nicho.
+
+    `texto: celular` sin condiciones dejaba el universo entero, la relevancia
+    ordenaba los 880 y volvian cinco fichas con veredicto `existe`: a "tenes
+    celulares?" el motor contestaba que SI. La relevancia siempre devuelve
+    algo —esa es su naturaleza— asi que no puede ser la que decida si existe.
+    """
+    r = _una({"texto": "quiero un celular", "cuantos": 5})
+    assert r["veredicto"] == "no_existe", "la relevancia volvio a contestar que si"
+    assert (r.get("no_lo_vendemos") or {}).get("pedido") == "celular"
+    for f in r["filas"]:
+        assert f["categoria"] == "tablet", (
+            f"las filas tienen que ser la alternativa real, vino {f['categoria']}")

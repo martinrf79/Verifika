@@ -79,9 +79,25 @@ descuento, reparto- vive en el RETORNO y se calcula ANTES de redactar, para que
 el modelo escriba con los numeros resueltos en vez de dejar huecos. NUMEROS
 deja de calcular y se funde con la GUARDA, que solo verifica.
 
-**LO QUE FALTA CABLEAR SON CUATRO RAMALES** -compatibilidad, criterio, el de
-envio que hoy empuja el codigo, y la cuenta del retorno- mas las tres capas de
-specs, `no_vendidas` y la cantidad adentro del catalogo. El setenta treinta lo
+**13-sep: LA BOCA CATALOGO QUEDO ORDENADA, y ninguna de las tres piezas era
+un calculo nuevo.** Las specs ya se calculaban enteras en el camino vivo
+-`firestore_client` llama a `enriquecer` en cada refresco- y la ficha no las
+mostraba: ahora se piden POR NOMBRE, y el mapa entero sale solo con `busco:
+uno`. Se midio antes de elegir: el mapa completo engorda la ficha hasta un 57%
+y cinco notebooks con todo dan 8.837 caracteres. **La cantidad es el calculo de
+esta boca**: dos unidades vuelven con el subtotal ya escrito. Y `no_vendidas`
+se enchufo: el censo bajo de 28 a 27.
+
+**LOS DOS DEFECTOS QUE DESTAPO EL TRABAJO, los dos medidos:** a "tenes
+celulares?" el motor contestaba **`existe` con cinco productos que no son
+celulares** -la relevancia SIEMPRE devuelve algo, asi que no puede ser la que
+decida si algo existe-, y el retorno se recortaba con `json.dumps(r)[:8000]`,
+o sea que un retorno grande le llegaba al modelo **partido al medio**, sin
+cerrar y con la ultima ficha mutilada. Ahora se recorta sacando FILAS y se le
+dice que hay mas. Vara: 10 casos nuevos en `test_motor.py` y `test_turno_nuevo.py`.
+
+**LO QUE FALTA CABLEAR SON TRES RAMALES** -compatibilidad, criterio, y el de
+envio que hoy empuja el codigo- mas la cuenta del retorno. El setenta treinta lo
 cierra la cuenta del retorno: `calculate_total` no la llama NADIE desde `app/`,
 y ella es la unica que llama a `pago_split`.
 
