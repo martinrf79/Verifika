@@ -139,6 +139,46 @@ OPERADORES = ("contiene", "no_contiene", "igual", "mayor", "menor")
 # de disfrazarse de filtro que no encontro nada.
 SIN_CAMPO = "sin_campo_en_la_fuente"
 
+# ── EL VOCABULARIO: CUANDO UN CAMPO SE ENUMERA Y CUANDO NO ──────────────────
+#
+# LA REGLA ES LA VARIEDAD, NO EL TIPO NI EL LARGO DEL CAMPO. `dimensiones`
+# tiene 850 valores distintos en 880 productos y listarlos es basura;
+# `pais_fabricacion` tiene 5 y es justo el que hace falta. Es la decision de la
+# FICHA 50 y la maqueta de la 53.
+#
+# Y SE ENUMERA SOLO SI EL VALOR ES UNA ETIQUETA, o sea si entra en un renglon.
+# `contenido_caja` tiene 22 valores distintos -poca variedad- pero cada uno es
+# un parrafo: listarlo pesa 675 tokens de prosa que no le sirven a nadie. Las
+# dos condiciones juntas, medidas el 13-sep sobre la tienda viva: enumeran 16
+# campos de 41 y pesan 801 tokens.
+# El valor tiene que ser una ETIQUETA: entra en un renglon, no es un parrafo.
+LARGO_ETIQUETA = 60
+# Y LA LISTA ENTERA COMPITE POR UN PRESUPUESTO UNICO. Es la variedad medida en
+# caracteres, que es lo unico que se paga: `marca` tiene 75 valores y pesa 825
+# caracteres, y es de los campos que mas nombra un cliente -"tenes Logitech?"-;
+# `puertos` tiene 43 y pesa 1.700, porque cada valor es una lista. Contar
+# valores dejaba afuera al barato y adentro al caro.
+#
+# QUIEN ENTRA PRIMERO LO DECIDE EL RENDIMIENTO, no un orden escrito a mano:
+# en cuantos productos esta cargado el campo, dividido lo que cuesta su
+# renglon. Asi el presupuesto se llena con lo que mas contesta por caracter, y
+# una tienda nueva con otra fuente se ordena sola.
+TECHO_LEYENDA = 3400
+
+# Un campo cargado en menos de esto no se enumera y se avisa aparte: filtrar
+# por ahi devuelve casi nada, y ese casi nada se lee como "no lo tenemos".
+CARGA_FLACA = 0.30
+
+# Cuantos valores reales se le muestran al modelo cuando escribio uno que no
+# existe. Cinco alcanzan para que corrija y no inundan el retorno.
+TOPE_HUECO = 5
+
+# Hasta cuantos valores distintos se guardan por campo. Pasado el tope se deja
+# de acumular: `descripcion` tiene uno por producto y guardarlos todos seria
+# tener el catalogo dos veces en memoria. El tope es cuarenta veces la variedad
+# que se enumera, asi que ningun campo enumerable puede tocarlo.
+TOPE_VALORES = 200
+
 _cache: dict = {}
 
 
@@ -227,6 +267,7 @@ def recorrida(tienda_id: str) -> dict:
         prods = []
 
     llenos: dict[str, int] = {}
+    valores: dict[str, dict] = {}
     numericos: dict[str, int] = {}
     veredictos: dict[str, int] = {}
     por_categoria: dict[str, int] = {}
@@ -243,6 +284,16 @@ def recorrida(tienda_id: str) -> dict:
                 precios.append(int(p["precio_ars"]))
             except (TypeError, ValueError):
                 pass
+        # LOS DERIVADOS ENTRAN A LA PASADA, y no es un detalle: el campo del
+        # defecto medido -`pais_fabricacion`, 5 valores- no vive arriba de todo
+        # ni adentro de `specs`, se parte de `origen`. Sin esto el unico campo
+        # que el modelo venia errando quedaba justo afuera del vocabulario.
+        for campo in DERIVADOS:
+            d = _derivado(p, campo)
+            if d:
+                llenos[campo] = llenos.get(campo, 0) + 1
+                _sumar_valor(valores, campo, d)
+
         pares = list(p.items()) + list((p.get("specs") or {}).items())
         for k, v in pares:
             if k in _CAMPOS_INTERNOS or k in _SPECS_DUPLICADAS:
@@ -250,6 +301,7 @@ def recorrida(tienda_id: str) -> dict:
             if v in (None, "", [], {}) or isinstance(v, (dict, list)):
                 continue
             llenos[k] = llenos.get(k, 0) + 1
+            _sumar_valor(valores, k, v)
             if isinstance(v, (int, float)) and not isinstance(v, bool):
                 numericos[k] = numericos.get(k, 0) + 1
             elif _si_no(v):
@@ -286,6 +338,8 @@ def recorrida(tienda_id: str) -> dict:
 
     out = {
         "campos": dict(sorted(registro.items())),
+        "valores": valores,
+        "llenos": llenos,
         "productos": len(prods),
         "categorias": sorted(por_categoria.items(), key=lambda t: (-t[1], t[0])),
         "precio_min": min(precios) if precios else None,
@@ -302,6 +356,188 @@ def recorrida(tienda_id: str) -> dict:
              productos=out["productos"], categorias=len(out["categorias"]),
              campos=len(out["campos"]))
     return out
+
+
+def _sumar_valor(valores: dict, campo: str, v) -> None:
+    """Un valor mas al vocabulario del campo, con su cuenta. Se corta en
+    `TOPE_VALORES` y queda anotado que se corto: un campo truncado no se
+    enumera nunca, asi que el recorte no puede mentirle al modelo."""
+    d = valores.setdefault(campo, {"vistos": {}, "truncado": False})
+    if d["truncado"]:
+        return
+    k = _norm(v)
+    if not k:
+        return
+    if k not in d["vistos"] and len(d["vistos"]) >= TOPE_VALORES:
+        d["truncado"] = True
+        return
+    d["vistos"][k] = d["vistos"].get(k, 0) + 1
+
+
+def vocabulario(tienda_id: str) -> dict[str, dict]:
+    """EL VOCABULARIO DE LA FUENTE: por campo, con que palabras se pregunta.
+
+    Es la PARTE B del tablero -la FICHA 53- y sale de la misma `recorrida` que
+    ya derivaba los campos y el inventario. No hay pasada nueva ni cache nuevo:
+    es la misma regla que junto `campos_filtrables` con `inventario` el 11-sep,
+    y por el mismo motivo -dos caches del mismo dato tienen dos vidas y una se
+    olvida de morir-.
+
+    Por campo: {tipo, llenos, distintos, valores}. `valores` es la lista
+    ordenada por frecuencia SOLO si el campo se enumera; `None` si no.
+
+    UN VALOR ENUMERADO NO ES UN DATO, ES VOCABULARIO. Que la fuente escriba
+    `china` no dice que producto es chino: dice que esa es la palabra. Por eso
+    esto no crece con el catalogo, crece con la variedad.
+    """
+    r = recorrida(tienda_id)
+    campos = r.get("campos") or {}
+    llenos = r.get("llenos") or {}
+    crudos = r.get("valores") or {}
+    out = {}
+    for campo, tipo in campos.items():
+        d = crudos.get(campo) or {"vistos": {}, "truncado": False}
+        vistos = d["vistos"]
+        distintos = len(vistos)
+        orden = sorted(vistos, key=lambda k: (-vistos[k], k))
+        # SE CONOCE EL VOCABULARIO ENTERO salvo que se haya truncado, y eso es
+        # lo que habilita el hueco de valor. ENUMERARLO en la leyenda es otra
+        # cosa y la decide `leyenda` con su presupuesto: un campo se puede
+        # conocer sin que convenga listarlo.
+        # `precio_ars` no entra a la pasada -es campo interno- pero lo tienen
+        # todos los productos que la recorrida conto con precio.
+        cargado = llenos.get(campo, 0)
+        if campo == "precio_ars" and not cargado:
+            cargado = r.get("productos") or 0
+        out[campo] = {"tipo": tipo,
+                      "llenos": cargado,
+                      "distintos": distintos,
+                      "truncado": d["truncado"],
+                      "etiqueta": bool(orden) and all(
+                          len(v) <= LARGO_ETIQUETA for v in orden),
+                      "valores": orden if (orden and not d["truncado"])
+                      else None}
+    return out
+
+
+def leyenda(tienda_id: str) -> str:
+    """EL VOCABULARIO COMO LO LEE EL MODELO, un renglon por campo.
+
+    Es lo unico que el esquema no podia decir: el enum del proveedor cierra los
+    NOMBRES de campo, y esto dice, de cada uno, en cuantos productos esta
+    cargado y con que palabras esta escrito.
+
+    POR QUE HACE FALTA, medido el 13-sep sobre la tienda viva:
+    `pais_fabricacion igual china` trae 633 productos y `contiene china` trae
+    789. Son 156 de diferencia, el 18% del catalogo, decididos por un operador
+    que el modelo elegia sin ver los 5 valores que la fuente usa.
+
+    Y EL `n/total` NO ES ADORNO: `memoria_video` esta en 18 de 880. Filtrar por
+    ahi devuelve casi nada, y ese casi nada se lee como "no lo tenemos" en vez
+    de "la fuente no lo tiene cargado". Es la respuesta 2 dicha como la 3, que
+    la FICHA 52 llama el defecto mas caro del nicho.
+    """
+    voc = vocabulario(tienda_id)
+    total = recorrida(tienda_id).get("productos") or 0
+    if not voc or not total:
+        return ""
+    r = recorrida(tienda_id)
+    numericos, candidatos, flacos = [], [], []
+    for campo, d in sorted(voc.items()):
+        # UN NUMERO NO SE ENUMERA, SE ACOTA. Listarle 386 precios al modelo no
+        # le dice nada; el rango le dice todo lo que necesita para escribir un
+        # `menor` que no vuelva vacio. Van siempre: son tres y son baratos.
+        if d["tipo"] == "numero":
+            lo, hi = _rango(campo, d, r)
+            numericos.append(f"{campo} de {lo} a {hi}" if lo is not None
+                             else campo)
+            continue
+        if d["llenos"] < CARGA_FLACA * total:
+            flacos.append(campo)
+            continue
+        if not d["valores"] or not d["etiqueta"]:
+            continue
+        renglon = (f"{campo} ({d['llenos']}/{total}): "
+                   + " | ".join(d["valores"]))
+        candidatos.append((d["llenos"] / len(renglon), len(renglon), renglon))
+
+    gastado = 0
+    elegidos = []
+    for _, costo, renglon in sorted(candidatos, key=lambda x: -x[0]):
+        if gastado + costo > TECHO_LEYENDA:
+            continue
+        elegidos.append(renglon)
+        gastado += costo
+
+    partes = []
+    if numericos:
+        partes.append("NUMEROS, con mayor o menor: " + "; ".join(numericos)
+                      + ".")
+    if elegidos:
+        partes.append("LAS PALABRAS QUE USA LA FUENTE. Filtra con estas, no "
+                      "con las tuyas:\n" + "\n".join(sorted(elegidos)))
+    if flacos:
+        partes.append("CARGADOS EN POCOS PRODUCTOS. Filtrar por estos deja "
+                      "afuera a los que no tienen el dato cargado, que no es "
+                      "lo mismo que no cumplirlo: " + ", ".join(flacos) + ".")
+    partes.append("El resto de los campos del enum existe y se busca con "
+                  "`contiene`; sus valores son muchos para listarlos.")
+    return "\n\n".join(partes)
+
+
+def _rango(campo: str, d: dict, r: dict):
+    """El minimo y el maximo de un campo numerico. `precio_ars` no pasa por el
+    vocabulario -es campo interno de la pasada- y su rango ya lo tiene la
+    recorrida, asi que se lee de ahi y no se calcula dos veces."""
+    if campo == "precio_ars":
+        return r.get("precio_min"), r.get("precio_max")
+    nums = [n for n in (_a_numero(v) for v in (d.get("valores") or []))
+            if n is not None]
+    if not nums:
+        crudos = (r.get("valores") or {}).get(campo, {}).get("vistos") or {}
+        nums = [n for n in (_a_numero(v) for v in crudos) if n is not None]
+    if not nums:
+        return None, None
+    return int(min(nums)), int(max(nums))
+
+
+def campos_ordenables(tienda_id: str) -> list[str]:
+    """LOS CAMPOS POR LOS QUE ORDENAR SIGNIFICA ALGO: los numericos.
+
+    El esquema ofrecia los 41, y era caro y ademas estaba mal. Sobre una
+    etiqueta -`bluetooth`, `color`- el orden es alfabetico y no contesta
+    ninguna pregunta que un cliente pueda hacer; `orden_tiene_sentido` ya lo
+    rechazaba DESPUES, o sea que el modelo gastaba una consulta para que el
+    motor le dijera que no. Ofrecer solo los tres numericos lo dice ANTES.
+    """
+    campos = recorrida(tienda_id).get("campos") or {}
+    return sorted(c for c, tipo in campos.items() if tipo == "numero")
+
+
+def condicion_sin_vocabulario(campo: str, operador: str, valor,
+                              tienda_id: str) -> list | None:
+    """EL HUECO DE VALOR. Si NINGUN valor de la fuente puede cumplir esta
+    condicion, devuelve los valores que SI hay. `None` si la condicion es
+    cumplible, o si el campo no se enumera.
+
+    POR QUE EXISTE, y es la decision D3 de la FICHA 53: un valor que la fuente
+    no usa no puede devolver cero. Cero se lee como "no lo tenemos"; el hueco
+    se lee como "esa palabra no es la nuestra, estas si". Es la misma escuela
+    de `SIN_CAMPO`: el pedido que la fuente no expresa se ve como lo que es en
+    vez de disfrazarse de filtro que no encontro nada.
+
+    SOLO SOBRE CAMPOS ENUMERABLES, a proposito. Sobre `modelo`, con 482
+    valores, el que contesta es el rescate por cercania, que ya existe y ya
+    devuelve lo mas parecido con el motivo al lado.
+    """
+    d = (vocabulario(tienda_id) or {}).get(campo)
+    if not d or not d["valores"]:
+        return None
+    for v in d["valores"]:
+        if evaluar({"_v": v}, "_v", operador, valor, d["tipo"]) is True:
+            return None
+    # Los mas usados y no todos: el hueco tiene que caber en el retorno.
+    return list(d["valores"][:TOPE_HUECO])
 
 
 def campos_filtrables(tienda_id: str) -> dict[str, str]:

@@ -97,10 +97,14 @@ class _Cond:
 def esquema(tienda_id: str) -> dict:
     """La herramienta tal como viaja al modelo, en formato OpenAI-compatible."""
     from app.core.filtros_catalogo import (OPERADORES, SIN_CAMPO,
-                                           campos_filtrables, recorrida)
+                                           campos_filtrables,
+                                           campos_ordenables, leyenda,
+                                           recorrida)
     r = recorrida(tienda_id)
     campos = sorted(campos_filtrables(tienda_id))
     categorias = [c for c, _ in r.get("categorias") or []]
+    ordenables = campos_ordenables(tienda_id)
+    vocab = leyenda(tienda_id)
     consulta = {
         "type": "object",
         "properties": {
@@ -116,8 +120,18 @@ def esquema(tienda_id: str) -> dict:
                 "items": {
                     "type": "object",
                     "properties": {
-                        "campo": {"type": "string",
-                                  "enum": campos + [SIN_CAMPO]},
+                        "campo": {
+                            "type": "string",
+                            "enum": campos + [SIN_CAMPO],
+                            # LA LEYENDA VIVE ACA, pegada al campo que decide.
+                            # El enum cierra los NOMBRES; esto dice, de cada
+                            # uno, en cuantos productos esta cargado y CON QUE
+                            # PALABRAS esta escrito. Es la parte B del tablero
+                            # y sale de la fuente viva, asi que una tienda
+                            # nueva trae su vocabulario sin tocar codigo.
+                            "description": (
+                                "El campo del catalogo. Esto es lo que hay "
+                                "adentro de cada uno:\n\n" + vocab)},
                         "operador": {"type": "string",
                                      "enum": list(OPERADORES)},
                         "valor": {"type": "string"},
@@ -125,11 +139,19 @@ def esquema(tienda_id: str) -> dict:
                     "required": ["campo", "operador", "valor"]},
                 "description": "Lo que el producto tiene que cumplir. Si el "
                                f"catalogo no tiene campo para eso, usa "
-                               f"'{SIN_CAMPO}' y se te dice."},
+                               f"'{SIN_CAMPO}' y se te dice. Si escribis un "
+                               "valor que la fuente no usa NO filtro por eso: "
+                               "te devuelvo los valores reales para que "
+                               "corrijas."},
+            # SOLO LOS NUMERICOS, y el enum de los 41 que habia aca era caro
+            # y ademas estaba mal: sobre una etiqueta -`color`, `bluetooth`- el
+            # orden es alfabetico y no contesta ninguna pregunta de un cliente.
+            # `orden_tiene_sentido` ya lo rechazaba DESPUES, o sea que el
+            # modelo gastaba una consulta para que el motor le dijera que no.
             "ordenar_por": {
                 "type": "object",
                 "properties": {
-                    "campo": {"type": "string", "enum": campos},
+                    "campo": {"type": "string", "enum": ordenables},
                     "direccion": {"type": "string", "enum": ["min", "max"]}},
                 "required": ["campo", "direccion"],
                 "description": "Para 'el mas barato', 'el mas liviano'."},
@@ -172,14 +194,34 @@ def esquema(tienda_id: str) -> dict:
         "type": "function",
         "function": {
             "name": NOMBRE,
+            # LA DESCRIPCION ES EL TABLERO, y por eso dice lo que antes decia
+            # el prompt en prosa. El esquema viaja en las vueltas donde SE
+            # PUEDE buscar y desaparece en la de contestar, que es justo donde
+            # esto ya no sirve; el prompt viajaba las tres. Mudarlo no borra
+            # una instruccion: la pone donde se usa.
+            #
+            # LAS CINCO BOCAS SE NOMBRAN. Una boca que el tablero no nombra no
+            # existe para el modelo aunque tenga cable, y hasta hoy se
+            # nombraban dos: el catalogo y los temas.
             "description": (
-                "Busca en la fuente de la tienda. Llamala ANTES de hablar de un "
-                "producto o de una politica de la casa: es el unico lugar del "
-                "que salen las fichas, los precios y lo que la casa tiene "
-                "escrito. Podes mandar varias consultas juntas si el cliente "
-                "pidio varias cosas, pedir politicas con `temas`, las dos cosas "
-                "en la misma llamada, y volver a llamarla si lo que salio no "
-                "sirve."),
+                "Busca en la fuente de la tienda. Es el UNICO lugar del que "
+                "salen las fichas, los precios y lo que la casa tiene escrito: "
+                "llamala ANTES de hablar de un producto o de una politica, y "
+                "si no lo buscaste, no lo tenes.\n"
+                "LO QUE PODES PEDIR ACA:\n"
+                "- CATALOGO: que hay, que trae, cuanto sale, cuanto stock, "
+                "cual cumple tal cosa. Va en `consultas`.\n"
+                "- POLITICAS de la casa: garantia, cambios, cuotas, "
+                "facturacion, plazos, descuentos. Va en `temas`, corto y con "
+                "las palabras del cliente.\n"
+                "- Las dos cosas en la MISMA llamada, y varias consultas "
+                "juntas si el cliente pidio varias cosas.\n"
+                "TODAVIA NO TIENEN CABLE y no las pidas por aca: si un "
+                "producto es compatible con otro, para que sirve o cual "
+                "conviene, y el costo del envio, que ya lo tenes resuelto mas "
+                "arriba.\n"
+                "Si lo que salio no sirve, volve a llamarla con otra "
+                "consulta."),
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -413,7 +455,32 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
 
     # 2. LAS CONDICIONES. `aplicar` ya informa el tercer balde —los que no
     #    tienen el dato— y los filtros que no se pudieron aplicar con su motivo.
-    conds = [_Cond(x) for x in (c.get("condiciones") or [])]
+    # EL HUECO DE VALOR, ANTES DE FILTRAR (13-sep-2026). Si la fuente no
+    # escribe esa palabra en ese campo, la condicion no se aplica y se DICE con
+    # los valores reales al lado. Filtrarla daria cero, y un cero se lee como
+    # "no lo tenemos" cuando lo que pasa es que el modelo escribio `japon`
+    # donde la fuente dice `china, taiwan o corea segun linea`.
+    #
+    # Es la misma escuela que `SIN_CAMPO` y corre solo sobre los campos cuyo
+    # vocabulario se conoce entero. Sobre `modelo`, con 482 valores, el que
+    # contesta es el rescate por cercania, que ya existe.
+    from app.core.filtros_catalogo import condicion_sin_vocabulario
+    crudas = []
+    for x in (c.get("condiciones") or []):
+        campo = str((x or {}).get("campo") or "")
+        reales = condicion_sin_vocabulario(campo, str((x or {}).get("operador")
+                                                      or ""),
+                                           (x or {}).get("valor", ""),
+                                           tienda_id)
+        if reales is None:
+            crudas.append(x)
+            continue
+        no_aplicado.append({
+            "campo": campo,
+            "motivo": f"la fuente no escribe '{(x or {}).get('valor')}' en "
+                      f"{campo}; lo que dice es: {' | '.join(reales)}. No se "
+                      f"filtro por eso: volve a pedir con una de esas"})
+    conds = [_Cond(x) for x in crudas]
     r = aplicar(universo, conds, tienda_id) if conds else {
         "productos": universo, "aplicados": [], "descartados": [], "sin_dato": 0}
     no_aplicado.extend(r["descartados"])

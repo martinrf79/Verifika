@@ -64,10 +64,13 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
-- **ABIERTO** · **EL TABLERO ES LA UNIDAD DE TRABAJO ABIERTA Y SU FICHA YA
-  ESTA ESCRITA:** `arquitectura/FICHA_53_el_tablero.md`. Ocho decisiones, forma
-  en tres partes, caso G15, techo 1.500. **Todavia no se toco una linea de
-  codigo.** Sirve si bajan las vueltas de `motor_turno`.
+- **ABIERTO** · **EL TABLERO SE CONSTRUYO EL 13-sep Y FALTA MEDIRLO VIVO.**
+  Ficha en `arquitectura/FICHA_53_el_tablero.md`, vara en
+  `tests/test_tablero.py`, 19 casos. Lo abierto es la seccion 10 de la ficha y
+  necesita el modelo vivo: **la media de vueltas por turno tiene que bajar de
+  tres a dos**, cuantos huecos de valor aparecen, y si los tres parrafos
+  mudados del prompt al esquema se siguen respetando. El de `busco` no se
+  respetaba y por eso se quedo en el prompt.
 
 **13-sep: EL DISEÑO ENTERO DEL TURNO ESTA ESCRITO, Y ES LA UNIDAD DE TRABAJO
 ABIERTA.** `arquitectura/FICHA_52_las_seis_bocas.md`: los 14 pedidos posibles del
