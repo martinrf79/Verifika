@@ -34,7 +34,17 @@ TIENDA = "verifika_prod"
 # LO QUE COMPRA ESE GASTO: la compatibilidad se contestaba de memoria. La
 # tabla de la casa estaba escrita, se estampa en cada ficha al leer el catalogo
 # y el turno no la alcanzaba; sin este campo, el modelo no tiene como pedirla.
-TECHO_TABLERO = 2300
+#
+# Y SUBE OTRA VEZ, EL MISMO DIA, POR LA ULTIMA BOCA QUE FALTABA CABLEAR. El
+# campo `envios` pesa 76 tokens y nombrar la boca en la descripcion de la
+# puerta cuesta 11: el esquema pasa de 2.214 a 2.301. El techo pasa de 2.300 a
+# 2.400 y el margen vuelve a 99, que es el que tuvo siempre.
+#
+# LO QUE COMPRA: el envio deja de viajar EMPUJADO en cada turno. El bloque que
+# sale del prompt pesaba entre 70 y 250 caracteres y viajaba contestara lo que
+# contestara el cliente, asi que el tablero sube y el TURNO baja. La cuenta
+# entera se mira en vivo, no aca.
+TECHO_TABLERO = 2400
 
 
 def _tokens(s: str) -> int:
