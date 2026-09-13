@@ -6,10 +6,11 @@ pone delante lo poco que hace falta para contestar. El modelo no elige
 herramientas, no declara campos y no nombra ids: lee fichas y politicas que ya
 vienen certificadas.
 
-Dos puertas, y ninguna mas:
+Las areas que se CERTIFICAN en vez de buscarse, y las dos entran con lo que el
+MODELO nombro, ninguna con el mensaje crudo:
 
-  fichas_relevantes(mensaje)   los productos del catalogo que el mensaje nombra
-  politicas_de(nombres)          los temas de la casa que el MODELO nombro
+  politicas_de(nombres)   la FAQ: garantia, cambios, cuotas, plazos
+  criterio_de(nombres)    el criterio de la casa: para que sirve, cual conviene
 
 La certificacion de temas viene TAL CUAL de la herramienta vieja, porque es una
 de las diez deterministas que quedan prendidas y su logica esta medida: tres
@@ -334,25 +335,151 @@ def _ficha_corta(prod: dict, cantidad: int = 1, specs_pedidas=None) -> dict:
 
 TOPE_TEMAS = 3
 
+# Cuantas entradas de criterio vuelven en una llamada. El mismo tope que las
+# politicas y por el mismo motivo: ante un tema ambiguo se sirven todos los
+# candidatos en vez de elegir, y tres alcanza para eso.
+TOPE_CRITERIO = 3
+
 
 def _texto_del_tema(tema: str, faq: dict) -> str:
     """La politica de la casa sobre ese tema, con los numeros ya estampados.
 
     Los numeros -una tarifa, un plazo, un porcentaje- los pone `curadas`, que
     devuelve None si un hueco no resuelve: una politica a medias no se sirve.
-    Sin curada cae a la prosa de la casa del MISMO tema.
+
+    SOLO DE LA FAQ, Y ESO CAMBIO EL 13-sep-2026. Cuando la FAQ no tenia el
+    tema, esta funcion caia al criterio de `base_conocimiento.json` y lo servia
+    como POLITICA: era el ramal de criterio entrando por el cable equivocado.
+    Medido sobre la tienda viva, "para que sirve un mouse gamer" pedido como
+    tema devolvia el criterio de `mouse` bajo el encabezado "POLITICAS DE LA
+    CASA que tocan este mensaje", y encima se comia una de las tres ranuras que
+    tienen las politicas de verdad. El criterio ahora tiene boca propia y
+    vuelve en su propia caja; el tema que la FAQ no contesta no se pierde, lo
+    manda ahi `_de_la_casa`.
     """
     from app.core.curadas import estampar_valores
     dato = faq.get(tema) or {}
     texto = dato.get("respuesta_curada") or ""
     if texto:
         texto = estampar_valores(texto, dato) or ""
-    if not texto:
-        from app.core.guia_venta_prosa import consultar_guia_venta
-        g = consultar_guia_venta(tema) or {}
-        texto = " ".join(str(g.get(k) or "") for k in
-                         ("texto", "objetivo", "movida")).strip()
     return texto
+
+
+def _criterio_del_tema(tema: str) -> dict:
+    """LO QUE LA CASA TIENE ESCRITO SOBRE ESE TEMA: para que sirve, cual
+    conviene, y la movida con la que se conduce la situacion si la fuente la
+    escribio. `{}` si `categorias` no dice nada de eso.
+
+    EL MATCH TOLERANTE DE `consultar_guia_venta` NO DECIDE ACA, y por eso se
+    verifica que devolvio EL tema que se le pidio. Se le entra con un tema ya
+    CERTIFICADO por `certificar_tema` —tres veredictos, y ante `ambiguous` no
+    elige—, asi que esta funcion solo LEE la fuente. Sin ese chequeo, un nombre
+    que no existe volveria con el criterio del tema mas parecido y el modelo no
+    tendria como saber que le contestaron otra cosa.
+
+    NO TRAE NUMEROS, Y NO ES UNA PRECAUCION DE ESTA FUNCION: es el invariante
+    de `guia_venta_prosa`, que descarta el campo entero si tiene un digito. Por
+    eso esta es la unica boca sin CALCULO adentro —la FICHA 52 le pide uno a
+    cada una—: no hay nada que calcular sobre prosa sin cifras, y la cuenta de
+    la pregunta que la acompaña -"¿cual conviene?"- la trae la boca CATALOGO
+    con el precio de cada ficha.
+    """
+    from app.core.guia_venta_prosa import consultar_guia_venta
+    g = consultar_guia_venta(tema) or {}
+    if str(g.get("tema") or "") != tema:
+        return {}
+    fuera = {"tema": tema}
+    for clave, campo in (("texto", "texto"), ("objetivo", "objetivo"),
+                         ("movida", "movida"), ("cuando_no", "escape")):
+        v = str(g.get(campo) or "").strip()
+        if v:
+            fuera[clave] = v
+    return fuera if len(fuera) > 1 else {}
+
+
+def _de_la_casa(pedidos: list, faq: dict, tienda_id: str, tope: int,
+                evento: str) -> dict:
+    """EL REPARTO POR AREA: de cada tema certificado, la boca que lo contesta.
+
+    LA BOCA LA ELIGE EL CODIGO, NO EL MODELO, y esa es la leccion del 4-ago
+    escrita en `temas_consultables`: "un tema es un tema; de que archivo sale es
+    asunto del codigo". El modelo nombra con las palabras del cliente y puede
+    nombrarlo por el campo que no corresponde —"¿me hacés precio?" es criterio
+    de venta Y politica de descuento a la vez—; lo que no puede pasar es que un
+    tema que la casa TIENE escrito vuelva vacio porque entro por el campo de al
+    lado. Por eso las dos cajas salen siempre y cada tema cae en la suya.
+
+    EL ORDEN DE LAS DOS AREAS NO ES ARBITRARIO: primero la FAQ, que es la que
+    trae los numeros ya estampados por `curadas`, y el criterio despues, que es
+    prosa sin un solo digito. Un tema que las dos tienen escrito se contesta con
+    el que puede traer la cifra.
+
+    Lo que ninguna de las dos tiene escrito va a `sin_resolver`, junto con lo
+    que no certifico: los dos dicen que le falta a la fuente.
+    """
+    v = certificar_temas(pedidos, tienda_id)
+    politicas, criterio, sin_resolver = [], [], list(v["sin_resolver"])
+    for tema in v["temas"][:tope]:
+        texto = _texto_del_tema(tema, faq)
+        if texto:
+            politicas.append({"tema": tema, "texto": texto})
+            continue
+        c = _criterio_del_tema(tema)
+        if c:
+            criterio.append(c)
+            continue
+        sin_resolver.append(tema)
+    log.info(evento, pidio=pedidos[:4],
+             temas=[p["tema"] for p in politicas],
+             criterio=[c["tema"] for c in criterio],
+             ambiguos=[a[0] for a in v["ambiguos"]][:3],
+             sin_resolver=sin_resolver[:3])
+    return {"politicas": politicas, "criterio": criterio,
+            "sin_resolver": sin_resolver}
+
+
+def criterio_de(nombres: list, tienda_id: str,
+                tope: int = TOPE_CRITERIO) -> dict:
+    """LA BOCA CRITERIO, CERTIFICADA. Es el componente 15 de la FICHA 52 y lo
+    unico que le faltaba era el cable.
+
+    QUE AREA ES. Las entradas de `categorias` en `base_conocimiento.json`: para
+    que sirve cada cosa, cual conviene segun el uso, que diferencia hay entre
+    dos, que significa gama baja aca, y la movida con la que se conduce una
+    objecion o una queja. Estan escritas y del turno no las alcanzaba NADIE: el
+    archivo lo lee `guia_venta_prosa`, y de las cuatro cosas que trae, el turno
+    usa una sola, la VOZ. O sea que el criterio de la casa quedaba adentro del
+    mismo archivo que si viaja en cada turno.
+
+    QUE PASABA SIN ESTE CABLE, y son dos cosas medidas. El tablero le decia al
+    modelo, con todas las letras, que para que sirve un producto y cual conviene
+    TODAVIA NO SE PIDEN por la puerta: asi que a "¿me sirve para jugar?" —el
+    pedido 5 de los catorce de la FICHA 52— contestaba de memoria. Y por el
+    otro lado el criterio SI se colaba, disfrazado: pedido como `temas`, la
+    prosa de `mouse` volvia rotulada "POLITICAS DE LA CASA".
+
+    MISMA PUERTA Y MISMO MECANISMO QUE `politicas_de`, y por eso las dos son la
+    misma funcion con otro nombre: la certificacion es `certificar_temas` y el
+    reparto por area es `_de_la_casa`. Lo que las distingue no es el codigo, es
+    que cada una NOMBRA una boca en el tablero, y una boca que el tablero no
+    nombra no existe para el modelo. Una funcion de certificacion nueva seria un
+    segundo criterio de identidad para lo mismo.
+
+    Devuelve {criterio: [{tema, texto, objetivo, movida, cuando_no}],
+    politicas: [...], sin_resolver: [...]}. `sin_resolver` NO es un error: es lo
+    que el cliente pregunto y la casa no tiene escrito, y es el renglon que dice
+    QUE ENTRADA agregarle a `base_conocimiento.json`.
+    """
+    from app.storage.firestore_client import get_all_faq
+    pedidos = [str(n).strip() for n in (nombres or []) if str(n or "").strip()]
+    if not pedidos:
+        return {"politicas": [], "criterio": [], "sin_resolver": []}
+    try:
+        faq = get_all_faq(tienda_id=tienda_id) or {}
+    except Exception as e:  # noqa: BLE001 — sin FAQ se sirve el criterio solo
+        log.warning("fuente_faq_error", error=f"{type(e).__name__}: {e}")
+        faq = {}
+    return _de_la_casa(pedidos, faq, tienda_id, tope, "fuente_criterio")
 
 
 def politicas_de(nombres: list, tienda_id: str, tope: int = TOPE_TEMAS) -> dict:
@@ -372,30 +499,23 @@ def politicas_de(nombres: list, tienda_id: str, tope: int = TOPE_TEMAS) -> dict:
     las señas que la fuente ya tiene escritas. Los tres veredictos no cambian, y
     ante `ambiguous` se sirven todos los candidatos: no se elige.
 
-    Devuelve {politicas: [{tema, texto}], sin_resolver: [...]}. `sin_resolver`
-    NO es un error: es un tema que la casa no tiene escrito, y el modelo tiene
-    que decirlo en vez de inventarlo.
+    Devuelve {politicas: [{tema, texto}], criterio: [...], sin_resolver: [...]}.
+    `sin_resolver` NO es un error: es un tema que la casa no tiene escrito, y el
+    modelo tiene que decirlo en vez de inventarlo. La caja de `criterio` sale de
+    aca porque el reparto por area lo hace el codigo: un tema que la FAQ no
+    contesta y el criterio si, vuelve como criterio y no como una politica que la
+    casa nunca escribio. El motivo entero esta en `_de_la_casa`.
     """
     from app.storage.firestore_client import get_all_faq
     pedidos = [str(n).strip() for n in (nombres or []) if str(n or "").strip()]
     if not pedidos:
-        return {"politicas": [], "sin_resolver": []}
+        return {"politicas": [], "criterio": [], "sin_resolver": []}
     try:
         faq = get_all_faq(tienda_id=tienda_id) or {}
     except Exception as e:  # noqa: BLE001 — sin FAQ no se inventa una politica
         log.warning("fuente_faq_error", error=f"{type(e).__name__}: {e}")
-        return {"politicas": [], "sin_resolver": pedidos}
-    v = certificar_temas(pedidos, tienda_id)
-    fuera = []
-    for tema in v["temas"][:tope]:
-        texto = _texto_del_tema(tema, faq)
-        if texto:
-            fuera.append({"tema": tema, "texto": texto})
-    log.info("fuente_politicas", pidio=pedidos[:4],
-             temas=[f["tema"] for f in fuera],
-             ambiguos=[a[0] for a in v["ambiguos"]][:3],
-             sin_resolver=v["sin_resolver"][:3])
-    return {"politicas": fuera, "sin_resolver": v["sin_resolver"]}
+        return {"politicas": [], "criterio": [], "sin_resolver": pedidos}
+    return _de_la_casa(pedidos, faq, tienda_id, tope, "fuente_politicas")
 
 
 # ── EL INVENTARIO: LO QUE EL MODELO TIENE QUE SABER SIEMPRE ────────────────

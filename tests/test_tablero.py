@@ -155,15 +155,23 @@ def test_el_tablero_nombra_las_cinco_bocas(firestore_doble):
     CAMBIO EL 13-sep: COMPATIBILIDAD pasa de la lista de las que no tienen
     cable a la de las que se pueden pedir, porque el cable se construyo. Las
     dos listas se siguen midiendo, que es lo que esta vara cuida: la boca sin
-    cable no puede quedar muda ni fingida."""
+    cable no puede quedar muda ni fingida.
+
+    Y CAMBIA POR ULTIMA VEZ EL MISMO DIA, CON EL CRITERIO: la lista de las que
+    no tienen cable queda VACIA, asi que lo que se mide ahora es lo otro. Las
+    cinco se nombran y las cinco se pueden pedir; y el aviso de "todavia no
+    tiene cable" no puede sobrevivir a su boca, porque un tablero que dice que
+    algo no se pide es un tablero que hace que no se pida."""
     d = MT.esquema(TIENDA)["function"]["description"].lower()
-    assert "catalogo" in d and "politicas" in d
-    assert "compatibilidad" in d, "la boca con cable no se nombra"
     props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
-    assert "compatibilidad" in props, "se nombra la boca y no se puede pedir"
-    assert "envio" in d and "envios" in props, "la boca de envio no se ofrece"
-    for sin_cable in ("conviene",):
-        assert sin_cable in d, f"no se avisa que falta el cable de {sin_cable}"
+    assert "catalogo" in d and "consultas" in props
+    assert "politicas" in d and "temas" in props
+    for boca in ("compatibilidad", "envios", "criterio"):
+        assert boca in d, f"la boca con cable no se nombra: {boca}"
+        assert boca in props, f"se nombra {boca} y no se puede pedir"
+    assert "conviene" in d, "el tablero no dice para que sirve la boca criterio"
+    assert "no tiene cable" not in d and "no tienen cable" not in d, (
+        "las cinco bocas tienen cable y el tablero sigue avisando que falta uno")
 
 
 @pytest.mark.parametrize("campo,operador,valor,hay_hueco", [

@@ -68,8 +68,8 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
   3,00, buscaron 35 de 36, cero busquedas vacias, y la consulta repetida ya no
   se ejecuta dos veces. Ficha 53, vara en `tests/test_tablero.py` con 20 casos,
   banco en `banco_pruebas/tanda_tablero.py` y piso en `tablero_piso.json`. **Lo
-  que sigue son los RAMALES**: el unico que queda sin cable es CRITERIO. Esta
-  en la tabla de la FICHA 52.
+  que seguia eran los RAMALES, y el 13-sep quedaron los cinco enchufados.** La
+  tabla de la FICHA 52 dice cual falta medir vivo.
 
 **13-sep: EL DISEÑO ENTERO DEL TURNO ESTA ESCRITO, Y ES LA UNIDAD DE TRABAJO
 ABIERTA.** `arquitectura/FICHA_52_las_seis_bocas.md`: los 14 pedidos posibles del
@@ -128,6 +128,24 @@ si el modelo PIDE el envio cuando se lo preguntan -renglon `envios` de
 `motor_turno`- y cuanto bajo el turno al sacarle el bloque que viajaba siempre.
 El renglon `envios_sin_clasificar` dice que lugar no reconocimos.
 
+**13-sep: EL RAMAL A CRITERIO QUEDO ENCHUFADO, y era la ultima boca sin cable.**
+Las entradas de `base_conocimiento.json` estan escritas y del turno no las
+alcanzaba nadie: del archivo se usaba la VOZ y nada mas, asi que "¿me sirve para
+jugar?" -el pedido 5 de los catorce- lo contestaba el modelo de memoria. Ahora
+se pide por el campo `criterio` de la MISMA puerta y lo certifica
+`fuente.criterio_de`, con los tres veredictos y sin elegir ante un empate. **Y
+se cerro el camino de al lado, que era el que hacia daño:** `_texto_del_tema`
+caia al criterio cuando la FAQ no tenia el tema, asi que la prosa de `mouse`
+llegaba rotulada "POLITICAS DE LA CASA" y se comia una de las tres ranuras de
+las politicas de verdad. El reparto por area lo hace el codigo en las dos
+direcciones: un tema que la FAQ contesta y entro por `criterio` vuelve como
+politica, y al reves. Techo del tablero: 2.400 -> 2.530, con las cuentas en
+`tests/test_tablero.py`; es el ultimo que se paga por una boca. Vara: 12 casos
+en `test_motor.py` y 2 en `test_turno_nuevo.py`. **LO QUE FALTA ES MEDIRLO
+VIVO:** los renglones nuevos de `motor_turno` son `criterio` y
+**`criterio_sin_resolver`, que es el que dice que ENTRADA agregarle a
+`base_conocimiento.json`**, y salen por el issue 31 con `/logs`.
+
 **13-sep: DOS ARREGLOS DEL MOTOR, los dos medidos antes de tocar.** La
 AMBIGUEDAD colgaba de un `elif`: una consulta con `ordenar_por` no calculaba
 parecido, asi que "Teclado Logitech K380" con `busco: uno` devolvia `ambiguo`
@@ -163,10 +181,11 @@ o sea que un retorno grande le llegaba al modelo **partido al medio**, sin
 cerrar y con la ultima ficha mutilada. Ahora se recorta sacando FILAS y se le
 dice que hay mas. Vara: 10 casos nuevos en `test_motor.py` y `test_turno_nuevo.py`.
 
-**LO QUE FALTA CABLEAR SON TRES RAMALES** -compatibilidad, criterio, y el de
-envio que hoy empuja el codigo- mas la cuenta del retorno. El setenta treinta lo
-cierra la cuenta del retorno: `calculate_total` no la llama NADIE desde `app/`,
-y ella es la unica que llama a `pago_split`.
+**YA NO FALTA CABLEAR NINGUN RAMAL: LO QUE FALTA ES LA CUENTA DEL RETORNO.** Los
+cinco se enchufaron el 13-sep. El setenta treinta lo cierra esa cuenta:
+`calculate_total` **ya tiene un llamador vivo** -el subtotal de la boca
+CATALOGO- pero el TOTAL del pedido sigue sin llamarla, y ella es la unica que
+llama a `pago_split`.
 
 **13-sep, LA MEDICION DEL MOTOR, leida por el issue 31 sobre los 19 turnos.**
 Busco en 15 de 19, cero busquedas vacias, toda condicion se pudo aplicar. Los

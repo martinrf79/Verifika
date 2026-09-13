@@ -978,3 +978,24 @@ def test_EL_RENGLON_QUE_DICE_QUE_FILA_LE_FALTA_A_LA_TABLA(firestore_doble):
         '{"compatibilidad": [{"producto": "MOU0001", "con": "mi tostadora"}]}')
     assert informe["compat"] == ["sin_dato"]
     assert informe["compat_sin_dato"] == ["MOU0001|mi tostadora"]
+
+
+# ── EL RAMAL A CRITERIO LLEGA AL TURNO (13-sep-2026) ────────────────────────
+
+def test_lo_que_el_modelo_pide_por_CRITERIO_LLEGA_AL_MOTOR(firestore_doble):
+    """El cable entero: el modelo lo pide por la misma puerta, el criterio sale
+    certificado de `base_conocimiento.json` y vuelve contado en el informe. Sin
+    el renglon del informe, una boca nueva es invisible el dia que deja de
+    andar."""
+    _s, _f, _e, informe = _turno_con('{"criterio": ["mouse"]}')
+    assert informe["criterio"] == ["mouse"]
+    assert informe["criterio_sin_resolver"] == []
+
+
+def test_EL_RENGLON_QUE_DICE_QUE_ENTRADA_LE_FALTA_A_LA_BASE(firestore_doble):
+    """El mismo par de numeros que las politicas, la compatibilidad y el envio:
+    lo que se pregunto y lo que la casa no tiene escrito. El segundo dice que
+    entrada agregarle a `base_conocimiento.json`, y sale por el issue 31."""
+    _s, _f, _e, informe = _turno_con('{"criterio": ["garrafa de gas"]}')
+    assert informe["criterio"] == []
+    assert informe["criterio_sin_resolver"] == ["garrafa de gas"]

@@ -84,6 +84,11 @@ TEMAS_DEL_ENVIO = ("costo_envio", "envios")
 # no es una pregunta de un cliente, es un barrido.
 TOPE_COMPAT = 4
 
+# Cuantas entradas de criterio vuelven en una llamada. El mismo tope que las
+# politicas: ante un tema ambiguo se sirven todos los candidatos en vez de
+# elegir, y tres alcanza para eso.
+TOPE_CRITERIO = 3
+
 
 class _Cond:
     """La condicion como la espera `filtros_catalogo.aplicar`, que lee por
@@ -254,12 +259,13 @@ def esquema(tienda_id: str) -> dict:
                 "- COMPATIBILIDAD: si un producto anda con el equipo del "
                 "cliente o con otro producto. Va en `compatibilidad`, y sale "
                 "de la tabla de la casa, no de tu memoria.\n"
+                "- CRITERIO: para que sirve, cual conviene, que diferencia hay "
+                "entre dos, que significa gama media. Va en `criterio`, y es "
+                "lo que la casa tiene escrito, no tu opinion.\n"
                 "- Todas en la MISMA llamada, y varias consultas "
                 "juntas si el cliente pidio varias cosas.\n"
                 "- ENVIO: cuanto sale y en cuanto llega. Va en `envios`, "
                 "con el lugar que nombro el cliente.\n"
-                "TODAVIA NO TIENE CABLE y no la pidas por aca: para que sirve "
-                "un producto o cual conviene.\n"
                 "Si lo que salio no sirve, volve a llamarla con otra "
                 "consulta."),
             "parameters": {
@@ -337,7 +343,29 @@ def esquema(tienda_id: str) -> dict:
                             "esta mother?'. Vuelve compatible, incompatible o "
                             "sin_dato con el motivo escrito; el sin_dato no "
                             "se completa, se avisa. Hasta "
-                            f"{TOPE_COMPAT}.")}},
+                            f"{TOPE_COMPAT}.")},
+                    # LA BOCA DE CRITERIO, Y ES UN CAMPO MAS DE LA MISMA PUERTA
+                    # (13-sep-2026). Cuarta vez el mismo criterio: `temas`,
+                    # `compatibilidad`, `envios` y esto preguntan a la fuente
+                    # por areas distintas con el MISMO mecanismo. Una
+                    # herramienta aparte serian dos puertas para lo mismo.
+                    #
+                    # TAMPOCO LLEVA ENUM, por lo mismo que `temas`: los 129
+                    # nombres pesaban 2.299 bytes en cada llamada. El modelo lo
+                    # nombra con LAS PALABRAS DEL CLIENTE y lo certifica
+                    # `fuente.criterio_de` contra los disparadores que la
+                    # fuente ya tiene escritos.
+                    "criterio": {
+                        "type": "array", "items": {"type": "string"},
+                        "description": (
+                            "Para que SIRVE algo, cual CONVIENE segun el uso, "
+                            "que diferencia hay entre dos, y que significa "
+                            "gama baja o media aca. Nombralo CORTO y con las "
+                            "palabras del cliente: 'mouse', 'para jugar', "
+                            "'gama media'. Es el criterio de la casa, no una "
+                            "ficha: no trae numeros ni precios, esos salen de "
+                            "`consultas`. Si la casa no lo tiene escrito te lo "
+                            f"digo y se lo decis asi. Hasta {TOPE_CRITERIO}.")}},
                 "required": []},
         },
     }
@@ -707,7 +735,8 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
             "motivo": "; ".join(notas)}
 
 
-def _salida(resultados, temas, sin_resolver, compat, envios) -> dict:
+def _salida(resultados, temas, sin_resolver, compat, envios, criterio,
+            sin_criterio) -> dict:
     """El retorno, con UNA sola forma. Las cajas que nadie pidio no viajan: una
     clave vacia en cada turno es ruido adentro de la caja donde todo lo demas
     es dato certificado."""
@@ -717,6 +746,10 @@ def _salida(resultados, temas, sin_resolver, compat, envios) -> dict:
         fuera["compatibilidad"] = compat
     if envios:
         fuera["envios"] = envios
+    if criterio:
+        fuera["criterio"] = criterio
+    if sin_criterio:
+        fuera["criterio_sin_resolver"] = sin_criterio
     return fuera
 
 
@@ -784,8 +817,10 @@ def _un_compat(pedido: dict, catalogo: list, tienda_id: str) -> dict:
 
 def buscar(consultas: list, tienda_id: str, trace_id: str = "",
            temas: list | None = None, compat: list | None = None,
-           envios: list | None = None, localidad_previa: str = "") -> dict:
-    """LA PUERTA. Catalogo, politicas, compatibilidad y envio, en una llamada.
+           envios: list | None = None, localidad_previa: str = "",
+           criterio: list | None = None) -> dict:
+    """LA PUERTA. Catalogo, politicas, compatibilidad, envio y el criterio de la
+    casa, en una llamada.
 
     `localidad_previa` es lo unico que entra de la charla, y no es una
     excepcion: es el dato con el que la tabla desambigua una localidad
@@ -793,7 +828,7 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
 
     No lanza: un error de busqueda deja al bot sin fichas, nunca mudo.
     """
-    from app.core.fuente import cotizar_destinos, politicas_de
+    from app.core.fuente import cotizar_destinos, criterio_de, politicas_de
 
     # EL ENVIO PRIMERO, PORQUE APAGA UNA POLITICA. Con la tarifa exacta de un
     # destino cotizada, la politica del RANGO no se sirve: son dos caminos para
@@ -811,23 +846,55 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
     cotizado = any(f.get("monto_ars") for f in fuera_envios.get("filas") or [])
 
     fuera_temas, sin_resolver = [], []
+    criterios, sin_criterio = [], []
     if temas:
         try:
             r = politicas_de(list(temas)[:TOPE_TEMAS], tienda_id)
-            apagados = set(TEMAS_DEL_ENVIO) if cotizado else set()
-            fuera_temas = [p for p in r["politicas"]
-                           if p["tema"] not in apagados]
+            fuera_temas = list(r["politicas"])
             sin_resolver = r["sin_resolver"]
+            # EL TEMA QUE LA FAQ NO CONTESTA VUELVE POR SU BOCA, no rotulado
+            # como politica: el reparto por area lo hace `fuente`, que es la
+            # que sabe de que archivo salio cada texto.
+            criterios = list(r.get("criterio") or [])
         except Exception as e:  # noqa: BLE001 — sin politica no se inventa una
             log.warning("motor_temas_error", trace_id=trace_id,
                         error=f"{type(e).__name__}: {str(e)[:120]}")
 
+    # EL RAMAL A CRITERIO. La boca no necesita el catalogo -su fuente es
+    # `base_conocimiento.json`- asi que se resuelve antes de leerlo, igual que
+    # las politicas: preguntar para que sirve un mouse no tiene por que costar
+    # una lectura de 880 fichas.
+    if criterio:
+        try:
+            rc = criterio_de(list(criterio)[:TOPE_CRITERIO], tienda_id)
+            # SIN REPETIR: el mismo tema puede llegar por los dos campos, y
+            # mandarle dos veces la misma prosa es el gasto que no se hace.
+            ya = {c["tema"] for c in criterios}
+            criterios += [c for c in rc["criterio"] if c["tema"] not in ya]
+            ya_pol = {p["tema"] for p in fuera_temas}
+            fuera_temas += [p for p in rc["politicas"]
+                            if p["tema"] not in ya_pol]
+            sin_criterio = rc["sin_resolver"]
+        except Exception as e:  # noqa: BLE001 — sin criterio no se opina
+            log.warning("motor_criterio_error", trace_id=trace_id,
+                        error=f"{type(e).__name__}: {str(e)[:120]}")
+
+    # EL APAGADO DEL ENVIO SE APLICA A LAS DOS ENTRADAS, y esto es lo que hay
+    # que cuidar al sumar un campo que tambien puede devolver politicas: con la
+    # tarifa exacta cotizada, la politica del RANGO no se sirve, y filtrando
+    # solo lo que entro por `temas` el mismo numero flojo volvia a entrar por
+    # `criterio`, que es la regla 2 rota por la puerta de atras.
+    if cotizado:
+        fuera_temas = [p for p in fuera_temas
+                       if p["tema"] not in TEMAS_DEL_ENVIO]
+
     if not consultas and not compat:
-        # SOLO POLITICAS O SOLO ENVIO ES UNA LLAMADA VALIDA. "¿Cual es la politica de
-        # garantia?" no necesita tocar el catalogo, y obligar a inventar una
-        # consulta vacia para preguntarlo seria pedirle al modelo que aprenda
-        # nuestra plomeria.
-        return _salida([], fuera_temas, sin_resolver, [], fuera_envios)
+        # SOLO POLITICAS, SOLO ENVIO O SOLO CRITERIO ES UNA LLAMADA VALIDA.
+        # "¿Cual es la politica de garantia?" y "¿para que me sirve?" no
+        # necesitan tocar el catalogo, y obligar a inventar una consulta vacia
+        # para preguntarlo seria pedirle al modelo que aprenda nuestra plomeria.
+        return _salida([], fuera_temas, sin_resolver, [], fuera_envios,
+                       criterios, sin_criterio)
 
     # LA COMPATIBILIDAD TAMBIEN NECESITA EL CATALOGO, y por eso la lectura no
     # cuelga mas de `consultas`: el par se evalua sobre las fichas reales, que
@@ -840,7 +907,8 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
                     error=f"{type(e).__name__}: {e}")
         catalogo = []
     if not catalogo:
-        r = _salida([], fuera_temas, sin_resolver, [], fuera_envios)
+        r = _salida([], fuera_temas, sin_resolver, [], fuera_envios,
+                    criterios, sin_criterio)
         r["motivo"] = "no se pudo leer el catalogo"
         return r
 
@@ -918,9 +986,10 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
              filas=[len(f["filas"]) for f in fuera],
              temas=[p["tema"] for p in fuera_temas],
              compat=[c["veredicto"] for c in compatibilidades],
-             envios=[f["destino"] for f in fuera_envios.get("filas") or []])
+             envios=[f["destino"] for f in fuera_envios.get("filas") or []],
+             criterio=[c["tema"] for c in criterios])
     return _salida(fuera, fuera_temas, sin_resolver, compatibilidades,
-                   fuera_envios)
+                   fuera_envios, criterios, sin_criterio)
 
 
 def fichas_de(resultado: dict) -> list[dict]:

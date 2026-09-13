@@ -133,6 +133,9 @@ sobre productos; de aca salen las fichas y los precios. Dice mas que la lista:
 - `no_cumple` en una fila es el dato REAL por el que ese producto no cumple lo
   que pidio. Deciselo con esas palabras; nunca ofrezcas como si cumpliera algo
   que el cliente excluyo.
+- `criterio` es lo que la casa tiene escrito sobre para que sirve y cual
+  conviene. Es desde donde razonas, no un dato: no lleva numeros, y los que
+  hagan falta salen de las fichas.
 """
 
 
@@ -331,7 +334,8 @@ def _informe_en_blanco() -> dict:
             "puntuales": 0, "veredictos": [], "filas": 0, "rescates": 0,
             "vacios": 0, "sin_dato": 0, "campos": [], "fichas": 0,
             "temas": [], "temas_sin_resolver": [], "compat": [],
-            "compat_sin_dato": [], "envios": [], "envios_sin_clasificar": []}
+            "compat_sin_dato": [], "envios": [], "envios_sin_clasificar": [],
+            "criterio": [], "criterio_sin_resolver": []}
 
 
 def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
@@ -383,6 +387,14 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
         informe["envios"].append(str(e.get("destino") or ""))
         if e.get("sin_dato"):
             informe["envios_sin_clasificar"].append(str(e.get("destino") or ""))
+    # LA BOCA CRITERIO, CON EL MISMO PAR DE NUMEROS QUE LAS OTRAS TRES: lo que
+    # se sirvio y lo que la casa no tiene escrito. El segundo es el que dice QUE
+    # ENTRADA agregarle a `base_conocimiento.json`, igual que
+    # `temas_sin_resolver` con la FAQ y `compat_sin_dato` con la tabla de pares.
+    for c in (r or {}).get("criterio") or []:
+        informe["criterio"].append(str((c or {}).get("tema") or ""))
+    for n in (r or {}).get("criterio_sin_resolver") or []:
+        informe["criterio_sin_resolver"].append(str(n))
     for res in (r or {}).get("resultados") or []:
         veredicto = str(res.get("veredicto") or "")
         filas = len(res.get("filas") or [])
@@ -539,7 +551,8 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                           temas=args.get("temas"),
                           compat=args.get("compatibilidad"),
                           envios=args.get("envios"),
-                          localidad_previa=localidad_previa)
+                          localidad_previa=localidad_previa,
+                          criterio=args.get("criterio"))
             _anotar(informe, consultas, pedidas, r)
             for f in MT.fichas_de(r):
                 if str(f.get("id")) not in {str(x.get("id")) for x in fichas}:
@@ -549,7 +562,8 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                     envios[str(e["destino"])] = int(e["monto_ars"])
             pidio = {"consultas": consultas, "temas": args.get("temas") or [],
                      "compatibilidad": args.get("compatibilidad") or [],
-                     "envios": args.get("envios") or []}
+                     "envios": args.get("envios") or [],
+                     "criterio": args.get("criterio") or []}
             hallazgos.append(
                 # EL RECORTE ERA DE 900 Y CORTABA CONSULTAS ENTERAS. Medido
                 # el 13-sep: un pedido abierto -"algo para jugar que no sea muy
@@ -747,7 +761,9 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              compat=motor["compat"][:6],
              compat_sin_dato=motor["compat_sin_dato"][:4],
              envios=motor["envios"][:4],
-             envios_sin_clasificar=motor["envios_sin_clasificar"][:4])
+             envios_sin_clasificar=motor["envios_sin_clasificar"][:4],
+             criterio=motor["criterio"][:6],
+             criterio_sin_resolver=motor["criterio_sin_resolver"][:4])
     if not motor["llamadas"]:
         # EL TERCER CANDADO DE LA FICHA 50: se mide cada turno que contesto sin
         # haber buscado. No se bloquea —la guarda de procedencia ya impide que

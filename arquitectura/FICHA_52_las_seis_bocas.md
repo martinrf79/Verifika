@@ -212,9 +212,14 @@ abajo si no.
     adentro, uno por destino nombrado: es el modelo del que copian las demás.
 15. **CRITERIO** — para qué sirve, cuál conviene, qué significa gama baja acá.
     Sale de las 106 entradas de `categorias` en `base_conocimiento.json`, cada
-    una con sus disparadores y su texto. **Es la boca que falta entera.** Ojo
-    con el archivo: el MISMO `base_conocimiento.json` sirve también la voz, y
-    por eso la voz queda afuera del motor y el criterio no.
+    una con sus disparadores y su texto. **Cableada el 13-sep**: se pide por el
+    campo `criterio` y la certifica `fuente.criterio_de`. **Es la única boca sin
+    cálculo adentro**, y no por que le falte: su prosa no tiene un solo dígito
+    —el invariante de `guia_venta_prosa` descarta el campo que trae uno—, así
+    que no hay nada que calcular; la cuenta de "¿cuál conviene?" la trae
+    CATÁLOGO con el precio de cada ficha. Ojo con el archivo: el MISMO
+    `base_conocimiento.json` sirve también la voz, y por eso la voz queda afuera
+    del motor y el criterio no.
 
 **La vuelta**
 
@@ -292,7 +297,7 @@ Las bocas no son una idea: son los archivos que están en el disco. Leído el
 | CATÁLOGO | `productos.csv`, `specs_preguntables.json`, `specs_por_categoria.json`, `specs_por_modelo.csv`, `no_vendidas.json` | las cinco, por el motor, desde el 13-sep |
 | POLÍTICAS | `faq.json` | `curadas` y `fuente` |
 | COMPATIBILIDAD | `compatibilidad.csv`, `compatibilidad_vocabulario.json` | el motor, por el campo `compatibilidad`, desde el 13-sep |
-| CRITERIO | `base_conocimiento.json`, bloque `categorias` | nadie; el archivo sí lo lee `guia_venta_prosa` para la VOZ |
+| CRITERIO | `base_conocimiento.json`, bloque `categorias` | el motor, por el campo `criterio`, desde el 13-sep |
 | ENVÍO | Firestore, `config/tarifas_envio` | el motor, por el campo `envios`, desde el 13-sep |
 
 ---
@@ -311,7 +316,7 @@ tabla y el código se contradicen, gana el código.
 | Ramal a POLÍTICAS | vivo desde el 12-sep |
 | Ramal a COMPATIBILIDAD | **vivo el 13-sep**: el modelo pide el par por la misma puerta y el veredicto lo escribe `compatibilidad.py`. Falta medirlo vivo |
 | Ramal a ENVÍO | **vivo el 13-sep**: lo pide el modelo por el campo `envios` y el bloque empujado se borró. Falta medirlo vivo |
-| Ramal a CRITERIO | **no existe** |
+| Ramal a CRITERIO | **vivo el 13-sep**: el modelo lo pide por la misma puerta y lo certifica `fuente.criterio_de`. Falta medirlo vivo |
 | Retorno | vive, pero **sin la cuenta**: `calculate_total` no la llama nadie desde `app/`, y ella es la única que llama a `pago_split` |
 | Redacción, cierre, memoria | vivos |
 | Guarda | **a medias**: `numeros.py` cuida la plata, y todavía calcula en vez de sólo verificar |

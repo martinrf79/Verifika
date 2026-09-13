@@ -526,6 +526,130 @@ def test_LA_AMBIGUEDAD_NO_SE_PIERDE_POR_PEDIR_UN_ORDEN():
     assert len(con_orden["filas"]) == con_orden["empatados"] > 1
 
 
+# ── EL RAMAL A CRITERIO (13-sep-2026) ──────────────────────────────────────
+#
+# LA BOCA QUE QUEDABA SIN CABLE, y con esta las cinco lo tienen.
+# `base_conocimiento.json` tiene el criterio de la casa escrito -para que sirve,
+# cual conviene, que significa gama media- y del turno no lo alcanzaba nadie: el
+# archivo lo lee `guia_venta_prosa`, y de las cuatro cosas que trae, el turno
+# usaba una sola, la VOZ.
+#
+# Y NO ES QUE FALTARA NADA MAS QUE EL CABLE. El tablero le decia al modelo, con
+# todas las letras, que para que sirve un producto TODAVIA NO SE PIDE por ahi,
+# asi que el pedido 5 de los catorce de la FICHA 52 -"¿me sirve para esto?"- lo
+# contestaba de memoria; y por el otro lado la misma prosa SI se colaba pedida
+# como `temas`, rotulada "POLITICAS DE LA CASA".
+
+def _criterio(*nombres) -> dict:
+    return MT.buscar([], TIENDA, criterio=list(nombres))
+
+
+def test_para_que_sirve_lo_contesta_LA_CASA_y_no_la_memoria_del_modelo():
+    """El texto sale de `base_conocimiento.json`, tal cual lo escribio la casa.
+    Sin este cable, la unica fuente de un "¿cual me conviene?" era el modelo."""
+    from app.core.guia_venta_prosa import GUIA_VENTA
+    r = _criterio("mouse")["criterio"]
+    assert [c["tema"] for c in r] == ["mouse"]
+    assert r[0]["texto"] == GUIA_VENTA["mouse"]
+
+
+def test_el_criterio_SOLO_es_una_llamada_valida():
+    """Igual que las politicas y la compatibilidad: preguntar para que sirve un
+    mouse no tiene por que costar una lectura de 880 fichas."""
+    r = _criterio("gama media")
+    assert r["resultados"] == []
+    assert [c["tema"] for c in r["criterio"]] == ["gama_entrada_media_alta"]
+
+
+def test_EL_CRITERIO_NO_TRAE_UN_SOLO_NUMERO_y_por_eso_no_tiene_calculo():
+    """La FICHA 52 le pide un CALCULO a cada boca —envio deriva la tarifa,
+    catalogo multiplica la cantidad— y esta es la unica que no lo tiene, porque
+    no hay nada que calcular sobre prosa sin cifras: el invariante de
+    `guia_venta_prosa` descarta el campo entero si tiene un digito. Si un numero
+    se colara aca seria plata sin ficha, o sea sin procedencia."""
+    import re
+    pedidos = ("mouse", "teclado", "notebook", "gama media", "durabilidad",
+               "marcas", "queja", "objecion de precio", "memoria ram")
+    con_digito = [(c["tema"], k) for p in pedidos
+                  for c in _criterio(p).get("criterio") or []
+                  for k, v in c.items()
+                  if k != "tema" and re.search(r"\d", str(v))]
+    assert not con_digito, f"el criterio trajo cifras: {con_digito}"
+
+
+def test_la_situacion_de_venta_trae_el_GUION_y_no_solo_el_criterio():
+    """Las entradas de conversacion no tienen criterio de producto: tienen
+    objetivo, movida y cuando NO usarla. Eso es lo unico que la casa escribio
+    para una queja, y sin este cable no llegaba al que redacta."""
+    c = _criterio("queja")["criterio"][0]
+    assert c["tema"] == "queja_enojo"
+    assert c["objetivo"] and c["movida"] and c["cuando_no"]
+
+
+def test_lo_que_la_casa_NO_TIENE_ESCRITO_vuelve_en_el_renglon_que_lo_dice():
+    """`sin_resolver` no es un error: es el renglon que dice que entrada
+    agregarle a `base_conocimiento.json`, el mismo par que ya tienen los temas
+    con la FAQ y la compatibilidad con su tabla."""
+    r = _criterio("garrafa de gas")
+    assert "criterio" not in r, "no se inventa un criterio que no existe"
+    assert r["criterio_sin_resolver"] == ["garrafa de gas"]
+
+
+def test_ante_un_criterio_AMBIGUO_se_sirven_TODOS_y_no_se_elige():
+    """La misma linea que las politicas: el empate lo declara `certificar_tema`
+    y ahi no se elige. "marcas" reclama varias entradas de la casa y vuelven las
+    que tienen criterio escrito, no la primera."""
+    temas = [c["tema"] for c in _criterio("marcas")["criterio"]]
+    assert len(temas) > 1, f"se eligio una sola: {temas}"
+    assert "marcas" in temas
+
+
+def test_EL_CRITERIO_YA_NO_VUELVE_DISFRAZADO_DE_POLITICA():
+    """EL DEFECTO MEDIDO, y es la otra mitad de este cable. `_texto_del_tema`
+    caia al criterio cuando la FAQ no tenia el tema, asi que la prosa de `mouse`
+    llegaba al modelo bajo el encabezado "POLITICAS DE LA CASA" y encima se
+    comia una de las tres ranuras de las politicas de verdad."""
+    r = MT.buscar([], TIENDA, temas=["para que sirve un mouse gamer"])
+    assert "mouse" in [c["tema"] for c in r["criterio"]]
+    assert "mouse" not in [p["tema"] for p in r["politicas"]]
+
+
+def test_el_tema_que_LA_FAQ_contesta_no_se_pierde_por_entrar_por_criterio():
+    """El reparto es simetrico y lo hace el CODIGO: un tema es un tema y de que
+    archivo sale no es asunto del modelo. "¿el envio cuanto sale?" pedido como
+    criterio vuelve como politica, con el numero estampado, en vez de vacio."""
+    r = MT.buscar([], TIENDA, criterio=["costo del envio"])
+    assert "costo_envio" in [p["tema"] for p in r["politicas"]]
+
+
+def test_EL_TEMA_APAGADO_NO_ENTRA_TAMPOCO_POR_LA_PUERTA_DE_ATRAS():
+    """El costo del envio se apaga cuando la boca de ENVIO ya cotizo la tarifa
+    exacta y la politica publica apenas el rango. El apagado se aplica a las dos
+    entradas: filtrando solo lo que entra por `temas`, el numero flojo volvia a
+    entrar por `criterio`, que es la regla 2 rota por el costado."""
+    r = MT.buscar([], TIENDA, criterio=["costo del envio"],
+                  envios=["cordoba capital"])
+    assert not [p for p in r["politicas"] if p["tema"] in MT.TEMAS_DEL_ENVIO]
+
+
+def test_la_caja_de_criterio_NO_VIAJA_si_nadie_pregunto():
+    r = MT.buscar([{"categoria": "mouse", "cuantos": 1}], TIENDA)
+    assert "criterio" not in r and "criterio_sin_resolver" not in r
+
+
+def test_el_tope_de_criterio_no_se_puede_pasar():
+    r = _criterio("mouse", "teclado", "notebook", "monitor", "gama media",
+                  "durabilidad", "marcas", "streaming")
+    assert len(r["criterio"]) <= MT.TOPE_CRITERIO
+
+
+def test_un_pedido_de_criterio_vacio_no_tumba_la_llamada():
+    """Mismo contrato que una consulta rota: lo que se puede contestar se
+    contesta, y lo que no vuelve dicho."""
+    r = _criterio(None, "", "mouse")
+    assert [c["tema"] for c in r["criterio"]] == ["mouse"]
+
+
 def test_el_resultado_no_lleva_campos_de_PLOMERIA():
     """El numero de la consulta vive en el deduplicador, no adentro del
     resultado: un `_n` colgado del dict se le va al modelo dentro del retorno,

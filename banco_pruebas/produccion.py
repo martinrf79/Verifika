@@ -173,7 +173,8 @@ def _post(url: str, tok: str, cuerpo: dict) -> dict:
 CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "puntuales",
           "veredictos", "filas", "rescates", "vacios", "sin_dato", "campos",
           "fichas", "temas", "temas_sin_resolver", "compat",
-          "compat_sin_dato", "envios", "envios_sin_clasificar")
+          "compat_sin_dato", "envios", "envios_sin_clasificar", "criterio",
+          "criterio_sin_resolver")
 
 PROYECTO = os.environ.get("GCP_PROJECT", "memory-engine-v1")
 SERVICIO = os.environ.get("CLOUD_RUN_SERVICIO", "agente-bot")
@@ -307,6 +308,21 @@ def numero_del_motor(eventos: list) -> list:
         for x in (t.get("envios_sin_clasificar") or []):
             envios_faltan[str(x)] = envios_faltan.get(str(x), 0) + 1
 
+    # LA BOCA CRITERIO, CON EL MISMO PAR: lo que se sirvio y lo que la casa no
+    # tiene escrito. El segundo dice QUE ENTRADA agregarle a
+    # `base_conocimiento.json`, que es el archivo del que sale esta boca.
+    criterio: dict = {}
+    criterio_faltan: dict = {}
+    con_criterio = 0
+    for t in turnos:
+        pedidos = t.get("criterio") or []
+        if pedidos:
+            con_criterio += 1
+        for x in pedidos:
+            criterio[str(x)] = criterio.get(str(x), 0) + 1
+        for x in (t.get("criterio_sin_resolver") or []):
+            criterio_faltan[str(x)] = criterio_faltan.get(str(x), 0) + 1
+
     lineas = cab + [
         f"TURNOS EN LA VENTANA: {n}",
         f"  busco en {len(busco)} de {n} ({pct(len(busco))})   "
@@ -361,6 +377,19 @@ def numero_del_motor(eventos: list) -> list:
                    "LOS LUGARES QUE NO SE PUDIERON CLASIFICAR, que es el "
                    "renglon que dice que le falta a la tabla de destinos:"]
         for c, v in sorted(envios_faltan.items(), key=lambda x: -x[1]):
+            lineas.append(f"   {v:>3}x  {c}")
+    if con_criterio:
+        lineas.append("  pidio CRITERIO de la casa en "
+                      f"{con_criterio} de {n} ({pct(con_criterio)}): "
+                      + " · ".join(f"{k} {v}" for k, v in
+                                   sorted(criterio.items(),
+                                          key=lambda x: -x[1])))
+    if criterio_faltan:
+        lineas += ["",
+                   "LO QUE EL CLIENTE PREGUNTO Y LA CASA NO TIENE ESCRITO COMO "
+                   "CRITERIO, que es el renglon que dice que entrada agregarle "
+                   "a base_conocimiento.json:"]
+        for c, v in sorted(criterio_faltan.items(), key=lambda x: -x[1]):
             lineas.append(f"   {v:>3}x  {c}")
     if campos:
         lineas += ["",
