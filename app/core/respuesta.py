@@ -333,7 +333,8 @@ def _informe_en_blanco() -> dict:
     return {"vueltas": 0, "llamadas": 0, "consultas": 0, "repetidas": 0,
             "puntuales": 0, "veredictos": [], "filas": 0, "rescates": 0,
             "vacios": 0, "sin_dato": 0, "campos": [], "fichas": 0,
-            "temas": [], "temas_sin_resolver": []}
+            "temas": [], "temas_sin_resolver": [], "compat": [],
+            "compat_sin_dato": []}
 
 
 def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
@@ -367,6 +368,16 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
         informe["temas"].append(str(p.get("tema") or ""))
     for n in (r or {}).get("temas_sin_resolver") or []:
         informe["temas_sin_resolver"].append(str(n))
+    # LOS PARES DE COMPATIBILIDAD Y —EL QUE IMPORTA— LOS QUE LA TABLA NO PUDO
+    # CONTESTAR. Es el mismo par de numeros que `temas` / `temas_sin_resolver`:
+    # el segundo dice QUE FILA FALTA en `compatibilidad.csv`, y sin el un hueco
+    # de la tabla es indistinguible de una pregunta que nadie hizo.
+    for x in (r or {}).get("compatibilidad") or []:
+        v = str((x or {}).get("veredicto") or "")
+        informe["compat"].append(v)
+        if v == "sin_dato":
+            informe["compat_sin_dato"].append(
+                f"{(x or {}).get('producto')}|{(x or {}).get('con')}")
     for res in (r or {}).get("resultados") or []:
         veredicto = str(res.get("veredicto") or "")
         filas = len(res.get("filas") or [])
@@ -516,12 +527,14 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             consultas = args.get("consultas") or []
             r = MT.buscar(consultas, tienda_id, trace_id,
                           temas=args.get("temas"),
-                          temas_apagados=temas_apagados)
+                          temas_apagados=temas_apagados,
+                          compat=args.get("compatibilidad"))
             _anotar(informe, consultas, pedidas, r)
             for f in MT.fichas_de(r):
                 if str(f.get("id")) not in {str(x.get("id")) for x in fichas}:
                     fichas.append(f)
-            pidio = {"consultas": consultas, "temas": args.get("temas") or []}
+            pidio = {"consultas": consultas, "temas": args.get("temas") or [],
+                     "compatibilidad": args.get("compatibilidad") or []}
             hallazgos.append(
                 # EL RECORTE ERA DE 900 Y CORTABA CONSULTAS ENTERAS. Medido
                 # el 13-sep: un pedido abierto -"algo para jugar que no sea muy
@@ -715,7 +728,9 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              rescates=motor["rescates"], vacios=motor["vacios"],
              sin_dato=motor["sin_dato"], campos=motor["campos"][:8],
              fichas=motor["fichas"], temas=motor["temas"][:6],
-             temas_sin_resolver=motor["temas_sin_resolver"][:4])
+             temas_sin_resolver=motor["temas_sin_resolver"][:4],
+             compat=motor["compat"][:6],
+             compat_sin_dato=motor["compat_sin_dato"][:4])
     if not motor["llamadas"]:
         # EL TERCER CANDADO DE LA FICHA 50: se mide cada turno que contesto sin
         # haber buscado. No se bloquea —la guarda de procedencia ya impide que

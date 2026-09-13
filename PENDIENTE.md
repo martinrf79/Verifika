@@ -68,9 +68,9 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
   3,00, buscaron 35 de 36, cero busquedas vacias, y la consulta repetida ya no
   se ejecuta dos veces. Ficha 53, vara en `tests/test_tablero.py` con 20 casos,
   banco en `banco_pruebas/tanda_tablero.py` y piso en `tablero_piso.json`. **Lo
-  que sigue son los RAMALES**: compatibilidad y criterio no tienen cable, y el
-  envio llega empujado por el codigo en vez de pedido por el modelo. Estan en
-  la tabla de la FICHA 52.
+  que sigue son los RAMALES**: criterio no tiene cable y el envio llega
+  empujado por el codigo en vez de pedido por el modelo. Estan en la tabla de
+  la FICHA 52.
 
 **13-sep: EL DISEÑO ENTERO DEL TURNO ESTA ESCRITO, Y ES LA UNIDAD DE TRABAJO
 ABIERTA.** `arquitectura/FICHA_52_las_seis_bocas.md`: los 14 pedidos posibles del
@@ -97,6 +97,26 @@ esta boca y lo hace `calculadora`**: dos unidades vuelven con el subtotal ya
 escrito, y `calculate_total` volvio a tener un llamador vivo -antes del
 13-sep TODAS sus menciones en `app/` eran comentarios-. Y `no_vendidas`
 se enchufo: el censo bajo de 28 a 27.
+
+**13-sep: EL RAMAL A COMPATIBILIDAD QUEDO ENCHUFADO, y el dato ya estaba
+calculado.** La tabla de la casa se estampa en CADA ficha al leer el catalogo
+-`fuente_producto.enriquecer`- y despues se tiraba: `evaluar` y `evaluar_par`
+no las llamaba nadie desde el turno, asi que la compatibilidad la contestaba el
+modelo de memoria. Ahora se pide por el campo `compatibilidad` de la MISMA
+puerta -no hay herramienta nueva-, consume un id certificado, y vuelve
+compatible / incompatible / ambiguo / sin_dato con el motivo escrito por el
+codigo. Techo del tablero: 2.100 -> 2.300, con las cuentas en
+`tests/test_tablero.py`. Vara: 12 casos en `test_motor.py` y 2 en
+`test_turno_nuevo.py`. **LO QUE FALTA ES MEDIRLO VIVO:** los renglones nuevos
+de `motor_turno` son `compat` y **`compat_sin_dato`, que es el que dice que
+FILA agregarle a `compatibilidad.csv`**, y salen por el issue 31 con `/logs`.
+
+**13-sep: DOS ARREGLOS DEL MOTOR, los dos medidos antes de tocar.** La
+AMBIGUEDAD colgaba de un `elif`: una consulta con `ordenar_por` no calculaba
+parecido, asi que "Teclado Logitech K380" con `busco: uno` devolvia `ambiguo`
+con dos candidatos y el MISMO pedido con un orden por precio devolvia `existe`
+con cinco y el modelo eligiendo -la regla 10.0 se perdia por una perilla de
+paginado-. Y el `_n` del deduplicador viajaba adentro del retorno al modelo.
 
 **13-sep: EL AGUJERO GRANDE DE LA BUSQUEDA, MEDIDO Y ABIERTO.** El arreglo de
 `no_vendidas` tapa SOLO las palabras escritas en el json. Medido sobre el

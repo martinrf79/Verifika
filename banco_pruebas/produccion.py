@@ -172,7 +172,8 @@ def _post(url: str, tok: str, cuerpo: dict) -> dict:
 # en `tests/test_numero_motor.py`, que compara las dos listas.
 CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "puntuales",
           "veredictos", "filas", "rescates", "vacios", "sin_dato", "campos",
-          "fichas", "temas", "temas_sin_resolver")
+          "fichas", "temas", "temas_sin_resolver", "compat",
+          "compat_sin_dato")
 
 PROYECTO = os.environ.get("GCP_PROJECT", "memory-engine-v1")
 SERVICIO = os.environ.get("CLOUD_RUN_SERVICIO", "agente-bot")
@@ -275,6 +276,21 @@ def numero_del_motor(eventos: list) -> list:
         for x in (t.get("temas_sin_resolver") or []):
             faltan[str(x)] = faltan.get(str(x), 0) + 1
 
+    # LA BOCA DE COMPATIBILIDAD, CON EL MISMO PAR DE NUMEROS QUE LOS TEMAS: lo
+    # que se pregunto y lo que la tabla no pudo contestar. El segundo es el que
+    # dice QUE FILA FALTA en `compatibilidad.csv`.
+    compat: dict = {}
+    compat_faltan: dict = {}
+    con_compat = 0
+    for t in turnos:
+        pedidos = t.get("compat") or []
+        if pedidos:
+            con_compat += 1
+        for x in pedidos:
+            compat[str(x)] = compat.get(str(x), 0) + 1
+        for x in (t.get("compat_sin_dato") or []):
+            compat_faltan[str(x)] = compat_faltan.get(str(x), 0) + 1
+
     lineas = cab + [
         f"TURNOS EN LA VENTANA: {n}",
         f"  busco en {len(busco)} de {n} ({pct(len(busco))})   "
@@ -307,6 +323,17 @@ def numero_del_motor(eventos: list) -> list:
                    "LO QUE EL CLIENTE PREGUNTO Y LA CASA NO TIENE ESCRITO, que "
                    "es el renglon que dice que tema agregar a la FAQ:"]
         for c, v in sorted(faltan.items(), key=lambda x: -x[1]):
+            lineas.append(f"   {v:>3}x  {c}")
+    if con_compat:
+        lineas.append("  pregunto COMPATIBILIDAD en "
+                      f"{con_compat} de {n} ({pct(con_compat)}): "
+                      + " · ".join(f"{k} {v}" for k, v in
+                                   sorted(compat.items(), key=lambda x: -x[1])))
+    if compat_faltan:
+        lineas += ["",
+                   "LO QUE LA TABLA DE COMPATIBILIDAD NO PUDO CONTESTAR, que "
+                   "es el renglon que dice que fila agregarle:"]
+        for c, v in sorted(compat_faltan.items(), key=lambda x: -x[1]):
             lineas.append(f"   {v:>3}x  {c}")
     if campos:
         lineas += ["",

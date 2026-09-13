@@ -71,6 +71,11 @@ TOPE_AMBIGUO = 4
 # los candidatos en vez de elegir, y tres alcanza para eso.
 TOPE_TEMAS = 3
 
+# Cuantos pares de compatibilidad se evaluan en una llamada. Un armado -"¿la
+# placa entra en esta mother, y la memoria?"- son dos o tres pares; mas que eso
+# no es una pregunta de un cliente, es un barrido.
+TOPE_COMPAT = 4
+
 
 class _Cond:
     """La condicion como la espera `filtros_catalogo.aplicar`, que lee por
@@ -96,6 +101,24 @@ class _Cond:
 # nuevo, esquema nuevo, sin tocar una linea de codigo.
 
 
+def _equipos(tienda_id: str) -> str:
+    """Los equipos que el vocabulario de compatibilidad conoce, con la etiqueta
+    que lee un cliente. Salen de la FUENTE viva -`compatibilidad_vocabulario.
+    json`-, igual que el enum de campos: una tienda nueva trae los suyos sin
+    tocar una linea. Son doce y caben; el alias -"de apple", "la play"- lo
+    resuelve el codigo, asi que no hace falta escribirlos aca."""
+    try:
+        from app.core.compatibilidad import vocabulario
+        v = vocabulario(tienda_id)
+        etq = [str((d or {}).get("etiqueta") or pid)
+               for pid, d in (v.get("plataformas") or {}).items()]
+        return ", ".join(etq)
+    except Exception as e:  # noqa: BLE001 — sin vocabulario se pide en prosa
+        log.warning("motor_equipos_error", tienda_id=tienda_id,
+                    error=f"{type(e).__name__}: {str(e)[:120]}")
+        return "una notebook, una PC, una consola, un celular"
+
+
 def esquema(tienda_id: str) -> dict:
     """La herramienta tal como viaja al modelo, en formato OpenAI-compatible."""
     from app.core.filtros_catalogo import (OPERADORES, SIN_CAMPO,
@@ -107,6 +130,7 @@ def esquema(tienda_id: str) -> dict:
     categorias = [c for c, _ in r.get("categorias") or []]
     ordenables = campos_ordenables(tienda_id)
     vocab = leyenda(tienda_id)
+    equipos = _equipos(tienda_id)
     consulta = {
         "type": "object",
         "properties": {
@@ -216,12 +240,14 @@ def esquema(tienda_id: str) -> dict:
                 "- POLITICAS de la casa: garantia, cambios, cuotas, "
                 "facturacion, plazos, descuentos. Va en `temas`, corto y con "
                 "las palabras del cliente.\n"
-                "- Las dos cosas en la MISMA llamada, y varias consultas "
+                "- COMPATIBILIDAD: si un producto anda con el equipo del "
+                "cliente o con otro producto. Va en `compatibilidad`, y sale "
+                "de la tabla de la casa, no de tu memoria.\n"
+                "- Todas en la MISMA llamada, y varias consultas "
                 "juntas si el cliente pidio varias cosas.\n"
-                "TODAVIA NO TIENEN CABLE y no las pidas por aca: si un "
-                "producto es compatible con otro, para que sirve o cual "
-                "conviene, y el costo del envio, que ya lo tenes resuelto mas "
-                "arriba.\n"
+                "TODAVIA NO TIENEN CABLE y no las pidas por aca: para que "
+                "sirve un producto o cual conviene, y el costo del envio, que "
+                "ya lo tenes resuelto mas arriba.\n"
                 "Si lo que salio no sirve, volve a llamarla con otra "
                 "consulta."),
             "parameters": {
@@ -251,7 +277,41 @@ def esquema(tienda_id: str) -> dict:
                             "'cambios', no la frase entera que escribio. Te "
                             "devuelvo lo que la casa tiene escrito, y si no lo "
                             "tiene te lo digo y se lo decis asi. Hasta "
-                            f"{TOPE_TEMAS}.")}},
+                            f"{TOPE_TEMAS}.")},
+                    # LA BOCA DE COMPATIBILIDAD, Y ES UN CAMPO MAS DE LA MISMA
+                    # PUERTA (13-sep-2026). Mismo criterio que `temas`: el
+                    # mecanismo de preguntarle a la fuente es el mismo, cambia
+                    # QUE se le pregunta. Una herramienta aparte serian dos
+                    # puertas para lo mismo.
+                    #
+                    # CONSUME UN ID CERTIFICADO, y eso es la regla 10.0: la
+                    # identidad la decide la busqueda, no esta pregunta. Por
+                    # eso `producto` es un id que el modelo YA recibio y no un
+                    # nombre suelto: sobre un nombre habria que adivinar de
+                    # cual se habla, que es exactamente lo mezclado que la
+                    # regla prohibe. Compatibilidad e identidad son dos ejes.
+                    "compatibilidad": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "producto": {
+                                    "type": "string",
+                                    "description": "El id que te devolvi en "
+                                                   "una busqueda; uno "
+                                                   "inventado no se evalua."},
+                                "con": {
+                                    "type": "string",
+                                    "description": "El equipo del cliente —"
+                                                   + equipos + "— o el id de "
+                                                   "OTRO producto."}},
+                            "required": ["producto", "con"]},
+                        "description": (
+                            "'¿anda con mi PS5?', '¿esta memoria entra en "
+                            "esta mother?'. Vuelve compatible, incompatible o "
+                            "sin_dato con el motivo escrito; el sin_dato no "
+                            "se completa, se avisa. Hasta "
+                            f"{TOPE_COMPAT}.")}},
                 "required": []},
         },
     }
@@ -520,11 +580,21 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
                 "campo": campo_orden,
                 "motivo": "ordenar por ese campo no ordena por nada: sus "
                           "valores son etiquetas, no magnitudes"})
-    elif texto and quedan:
+    # EL PARECIDO SE CALCULA SIEMPRE QUE HAYA TEXTO, Y ANTES COLGABA DEL ORDEN
+    # (13-sep-2026). Estaba escrito como `elif`, asi que una consulta con
+    # `ordenar_por` no calculaba puntajes y por lo tanto NO PODIA ver una
+    # ambiguedad de identidad. Medido sobre el catalogo vivo: "Teclado Logitech
+    # K380" con `busco: uno` devuelve `ambiguo` con los dos que pegan igual, y
+    # el MISMO pedido con un orden por precio devuelve `existe` con cinco y el
+    # modelo eligiendo. La obligacion de preguntar de la regla 10.0 se perdia
+    # por una perilla que no tiene nada que ver con la identidad.
+    puntos = {}
+    if texto and quedan:
         raras = pesos_por_rareza(quedan, texto)
         puntos = {id(p): relevancia(p, texto, raras) for p in quedan}
-        quedan = sorted(quedan, key=lambda p: (-puntos[id(p)],
-                                               p.get("precio_ars") or 0))
+        if not campo_orden:
+            quedan = sorted(quedan, key=lambda p: (-puntos[id(p)],
+                                                   p.get("precio_ars") or 0))
         # AMBIGUO ES DE IDENTIDAD, Y SOLO DE IDENTIDAD.
         #
         # Es la regla 10.0: ante `ambiguous` el modelo esta OBLIGADO a
@@ -553,19 +623,21 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
         # arriba -"52 estan igual de lejos"- y eso es informacion del cliente:
         # solo se lo reemplaza cuando de verdad hay una ambiguedad de
         # identidad, nunca con un cero de paso.
+        # EL MEJOR PUNTAJE SE BUSCA CON `max`, no en la primera fila: con un
+        # orden explicito la primera es la mas barata, no la que mas pega.
         if str(c.get("busco") or "") == "uno" and len(quedan) > 1:
-            mejor = puntos[id(quedan[0])]
-            iguales = sum(1 for p in quedan if puntos[id(p)] == mejor)
-            if 1 < iguales <= TOPE_AMBIGUO and mejor > 0:
+            mejor = max(puntos.values())
+            iguales = [p for p in quedan if puntos[id(p)] == mejor]
+            if 1 < len(iguales) <= TOPE_AMBIGUO and mejor > 0:
                 veredicto = "ambiguo"
-                empatados = iguales
+                empatados = len(iguales)
                 notas.append(f"hay {empatados} que pegan igual con lo que "
                              f"pidio: no elijas, pregunta cual")
                 # SE SIRVEN TODOS LOS CANDIDATOS, no el primero. Decirle al
                 # modelo que hay dos y mostrarle uno es pedirle que pregunte
                 # por algo que no puede ver. Es la misma linea que ya tiene
                 # `certificar_temas` ante un tema ambiguo.
-                quedan = quedan[:empatados]
+                quedan = iguales
                 tope = min(TOPE_FILAS, max(tope, empatados))
 
     if not quedan:
@@ -609,8 +681,71 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
             "motivo": "; ".join(notas)}
 
 
+def _un_compat(pedido: dict, catalogo: list, tienda_id: str) -> dict:
+    """UN par de compatibilidad, certificado. Devuelve {producto, con,
+    veredicto, motivo} con veredicto en compatible / incompatible / ambiguo /
+    sin_dato.
+
+    EL VEREDICTO LO ESCRIBE EL CODIGO Y EL MOTIVO TAMBIEN. Es el modulo
+    `compatibilidad`, que estaba entero y no lo llamaba NADIE desde el turno:
+    la tabla se estampa en cada ficha al leer el catalogo -`fuente_producto.
+    enriquecer`- y despues se tiraba, porque `_ficha_corta` no la muestra. El
+    dato existia, el cable no. De ahi salia que la compatibilidad la contestara
+    el modelo de memoria, que es la alucinacion del 29-jul -"anda con cualquier
+    notebook", dicho sobre una RAM de escritorio-.
+
+    `sin_dato` NO ES UN ERROR: es la respuesta 2 de la FICHA 52 y se sirve tal
+    cual. Un hueco que el modelo completa es peor que un hueco.
+
+    AMBIGUO ES LA REGLA 10.0 otra vez: "de apple" son macOS e iOS a la vez y
+    elegir uno seria decidir por el cliente, asi que vuelven los dos y se
+    pregunta.
+    """
+    from app.core.compatibilidad import (etiqueta_plataforma, evaluar,
+                                         evaluar_par, plataformas_del_mensaje)
+    pid = str((pedido or {}).get("producto") or "").strip()
+    con = str((pedido or {}).get("con") or "").strip()
+    base = {"producto": pid, "con": con}
+    porid = {str(p.get("id")): p for p in catalogo}
+    prod = porid.get(pid)
+    if not prod:
+        return {**base, "veredicto": "sin_dato",
+                "motivo": f"no tengo ningun producto con el id '{pid}': "
+                          f"buscalo primero y usa el id que te devuelvo"}
+    base["nombre"] = prod.get("nombre")
+
+    # EL OTRO PRODUCTO PRIMERO. Un id del catalogo es identidad certificada; un
+    # alias de plataforma es una lectura del texto. Ante los dos, manda el dato.
+    otro = porid.get(con)
+    if otro:
+        veredicto, motivo = evaluar_par(prod, otro, tienda_id)
+        return {**base, "con_nombre": otro.get("nombre"),
+                "veredicto": veredicto,
+                "motivo": motivo or "la tabla de la casa no dice si estos dos "
+                                    "van juntos"}
+
+    equipos = plataformas_del_mensaje(con, tienda_id)
+    if not equipos:
+        return {**base, "veredicto": "sin_dato",
+                "motivo": f"no reconozco '{con}' como un equipo ni como un id "
+                          f"del catalogo; los equipos que conozco son: "
+                          + _equipos(tienda_id)}
+    if len(equipos) > 1:
+        etqs = [etiqueta_plataforma(e, tienda_id) for e in equipos]
+        return {**base, "veredicto": "ambiguo", "candidatos": etqs,
+                "motivo": f"'{con}' puede ser {' o '.join(etqs)}: no elijas, "
+                          f"pregunta cual tiene"}
+    veredicto, motivo = evaluar(prod, equipos[0], tienda_id)
+    return {**base, "con_equipo": etiqueta_plataforma(equipos[0], tienda_id),
+            "veredicto": veredicto,
+            "motivo": motivo or (
+                f"la tabla de la casa no dice si {prod.get('nombre')} anda con "
+                f"{etiqueta_plataforma(equipos[0], tienda_id)}")}
+
+
 def buscar(consultas: list, tienda_id: str, trace_id: str = "",
-           temas: list | None = None, temas_apagados=()) -> dict:
+           temas: list | None = None, temas_apagados=(),
+           compat: list | None = None) -> dict:
     """LA PUERTA. Productos y politicas de la casa, en una sola llamada.
 
     `temas_apagados` son los que OTRO bloque ya contesta mejor, y hoy es uno
@@ -633,7 +768,7 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
             log.warning("motor_temas_error", trace_id=trace_id,
                         error=f"{type(e).__name__}: {str(e)[:120]}")
 
-    if not consultas:
+    if not consultas and not compat:
         # SOLO POLITICAS ES UNA LLAMADA VALIDA. "¿Cual es la politica de
         # garantia?" no necesita tocar el catalogo, y obligar a inventar una
         # consulta vacia para preguntarlo seria pedirle al modelo que aprenda
@@ -641,6 +776,9 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
         return {"resultados": [], "politicas": fuera_temas,
                 "temas_sin_resolver": sin_resolver}
 
+    # LA COMPATIBILIDAD TAMBIEN NECESITA EL CATALOGO, y por eso la lectura no
+    # cuelga mas de `consultas`: el par se evalua sobre las fichas reales, que
+    # son las que traen la tabla estampada.
     from app.storage.firestore_client import get_all_products
     try:
         catalogo = get_all_products(tienda_id=tienda_id) or []
@@ -652,6 +790,21 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
         return {"resultados": [], "politicas": fuera_temas,
                 "temas_sin_resolver": sin_resolver,
                 "motivo": "no se pudo leer el catalogo"}
+
+    # EL RAMAL A COMPATIBILIDAD. Un par roto no tumba el resto, igual que una
+    # consulta rota: vuelve `sin_dato`, que es la salida honesta de esta boca.
+    compatibilidades = []
+    for pedido in (compat or [])[:TOPE_COMPAT]:
+        try:
+            compatibilidades.append(_un_compat(pedido, catalogo, tienda_id))
+        except Exception as e:  # noqa: BLE001 — sin dato no se afirma nada
+            log.warning("motor_compat_error", trace_id=trace_id,
+                        error=f"{type(e).__name__}: {str(e)[:120]}")
+            compatibilidades.append(
+                {"producto": str((pedido or {}).get("producto") or ""),
+                 "con": str((pedido or {}).get("con") or ""),
+                 "veredicto": "sin_dato",
+                 "motivo": "eso no se pudo verificar"})
 
     # LA CONSULTA REPETIDA SE EJECUTA UNA SOLA VEZ (13-sep-2026).
     #
@@ -673,6 +826,10 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
     # tiene que recibir N resultados; un hueco en la lista lo obligaria a
     # adivinar cual falto. Y el numero sigue contandose en `informe`, que es
     # donde se mira si esto empeora.
+    # EL NUMERO DE LA CONSULTA VIVE EN `vistas`, NO ADENTRO DEL RESULTADO. Un
+    # `_n` colgado del dict se le va al modelo dentro del retorno, y un campo
+    # que no significa nada para el que lee es ruido que hay que aprender a
+    # ignorar, justo en la caja donde todo lo demas es dato certificado.
     vistas: dict = {}
     fuera = []
     for c in (consultas or [])[:TOPE_CONSULTAS]:
@@ -682,18 +839,17 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
             # mandarle al modelo las mismas cinco fichas dos veces adentro del
             # mismo retorno, que es justo el gasto que esto viene a sacar.
             fuera.append({
-                "veredicto": vistas[seña]["veredicto"],
-                "filas": [], "cuantos_habia": vistas[seña]["cuantos_habia"],
+                "veredicto": vistas[seña][0]["veredicto"],
+                "filas": [], "cuantos_habia": vistas[seña][0]["cuantos_habia"],
                 "no_aplicado": [], "sin_dato": 0, "empatados": 0,
                 "repetida": (f"identica a tu consulta numero "
-                             f"{vistas[seña]['_n']} de esta misma llamada. Se "
+                             f"{vistas[seña][1]} de esta misma llamada. Se "
                              f"busco una sola vez y el resultado esta ahi"),
                 "motivo": ""})
             continue
         try:
             r_una = _una(c, catalogo, tienda_id)
-            r_una["_n"] = len(fuera) + 1
-            vistas[seña] = r_una
+            vistas[seña] = (r_una, len(fuera) + 1)
             fuera.append(r_una)
         except Exception as e:  # noqa: BLE001 — una consulta rota no tumba el resto
             log.warning("motor_consulta_error", trace_id=trace_id,
@@ -707,9 +863,15 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
              repetidas=repetidas,
              veredictos=[f["veredicto"] for f in fuera],
              filas=[len(f["filas"]) for f in fuera],
-             temas=[p["tema"] for p in fuera_temas])
-    return {"resultados": fuera, "politicas": fuera_temas,
-            "temas_sin_resolver": sin_resolver}
+             temas=[p["tema"] for p in fuera_temas],
+             compat=[c["veredicto"] for c in compatibilidades])
+    salida = {"resultados": fuera, "politicas": fuera_temas,
+              "temas_sin_resolver": sin_resolver}
+    # SOLO SI SE PIDIO. Una clave vacia en cada retorno es ruido en la caja que
+    # el modelo lee entera.
+    if compatibilidades:
+        salida["compatibilidad"] = compatibilidades
+    return salida
 
 
 def fichas_de(resultado: dict) -> list[dict]:

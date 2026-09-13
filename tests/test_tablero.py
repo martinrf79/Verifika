@@ -124,10 +124,18 @@ def test_ordenar_por_ofrece_solo_los_numericos(firestore_doble):
 
 def test_el_tablero_nombra_las_cinco_bocas(firestore_doble):
     """Una boca que el tablero no nombra no existe para el modelo, aunque tenga
-    cable. Y la que NO tiene cable se dice, en vez de fingirla."""
+    cable. Y la que NO tiene cable se dice, en vez de fingirla.
+
+    CAMBIO EL 13-sep: COMPATIBILIDAD pasa de la lista de las que no tienen
+    cable a la de las que se pueden pedir, porque el cable se construyo. Las
+    dos listas se siguen midiendo, que es lo que esta vara cuida: la boca sin
+    cable no puede quedar muda ni fingida."""
     d = MT.esquema(TIENDA)["function"]["description"].lower()
     assert "catalogo" in d and "politicas" in d
-    for sin_cable in ("compatible", "conviene", "envio"):
+    assert "compatibilidad" in d, "la boca con cable no se nombra"
+    props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
+    assert "compatibilidad" in props, "se nombra la boca y no se puede pedir"
+    for sin_cable in ("conviene", "envio"):
         assert sin_cable in d, f"no se avisa que falta el cable de {sin_cable}"
 
 

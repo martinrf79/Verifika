@@ -409,3 +409,129 @@ def test_si_la_cuenta_se_cae_la_busqueda_sigue_y_la_fila_no_miente():
     assert r["filas"], "la busqueda tiene que seguir"
     assert r["filas"][0]["cantidad"] == 3
     assert "subtotal" not in r["filas"][0]
+
+
+# ── EL RAMAL A COMPATIBILIDAD (13-sep-2026) ─────────────────────────────────
+#
+# LA BOCA ESTABA Y EL CABLE NO. `compatibilidad.csv` se estampa en CADA ficha
+# al leer el catalogo -`fuente_producto.enriquecer` llama a `compat_de` en cada
+# refresco- y despues se tiraba: `_ficha_corta` no lo muestra y el turno no
+# llamaba a `evaluar` ni a `evaluar_par`. O sea que el dato existia, estaba
+# calculado, y la compatibilidad igual la contestaba el modelo de memoria: de
+# ahi salio la alucinacion del 29-jul, "anda con cualquier notebook" dicho
+# sobre una memoria RAM de escritorio.
+
+def _compat(*pares) -> list:
+    return MT.buscar([], TIENDA, compat=list(pares)).get("compatibilidad") or []
+
+
+def test_el_par_que_VA_lo_dice_la_tabla_y_no_el_modelo():
+    """La memoria DDR4 en la mother que tiene ranura DDR4. El veredicto y el
+    motivo los escribe el CODIGO: el modelo copia, no razona."""
+    r = _compat({"producto": "RAM0001", "con": "MBO0001"})[0]
+    assert r["veredicto"] == "compatible"
+    assert r["motivo"], "un veredicto sin motivo obliga al modelo a inventarlo"
+    assert r.get("con_nombre"), "no se dice con QUE se comparo"
+
+
+def test_el_par_que_NO_ENTRA_vuelve_incompatible_con_el_dato_que_lo_dice():
+    """El i5-12400F es LGA1700 y la B550M-A es AM4: no entra, y el motivo tiene
+    que nombrar las dos piezas. Es la pregunta que mas caro sale contestar de
+    memoria, porque el cliente compra y no le entra."""
+    r = _compat({"producto": "CPU0001", "con": "MBO0001"})[0]
+    assert r["veredicto"] == "incompatible"
+    assert "zocalo" in r["motivo"].lower() or "socket" in r["motivo"].lower()
+
+
+def test_anda_con_el_EQUIPO_que_nombro_el_cliente_no_solo_con_otro_producto():
+    """La otra mitad de la boca: "¿esto anda con mi PS5?". El equipo entra en
+    las palabras del cliente y lo resuelve el vocabulario cerrado."""
+    r = _compat({"producto": "EXT0001", "con": "ps5"})[0]
+    assert r["veredicto"] == "compatible"
+    assert r.get("con_equipo"), "no se dice contra que equipo se evaluo"
+
+
+def test_un_equipo_AMBIGUO_no_se_elige_se_pregunta():
+    """REGLA 10.0, la misma de la identidad: "de apple" son macOS e iOS a la
+    vez, y elegir uno es decidir por el cliente. Vuelven los dos."""
+    r = _compat({"producto": "EXT0001", "con": "de apple"})[0]
+    assert r["veredicto"] == "ambiguo"
+    assert len(r["candidatos"]) > 1, "se sirvio uno solo de los candidatos"
+    assert "pregunta" in r["motivo"]
+
+
+def test_un_ID_QUE_NO_EXISTE_no_se_evalua_y_se_dice_como_arreglarlo():
+    """La compatibilidad consume un id CERTIFICADO. Un id inventado no se
+    evalua en silencio: se dice que hay que buscarlo primero."""
+    r = _compat({"producto": "NO_EXISTE_9", "con": "ps5"})[0]
+    assert r["veredicto"] == "sin_dato"
+    assert "buscalo" in r["motivo"]
+
+
+def test_lo_que_la_tabla_NO_DICE_vuelve_SIN_DATO_y_no_se_completa():
+    """`sin_dato` no es un error: es la respuesta honesta, y trae los equipos
+    que si se conocen para que el modelo pueda repreguntar con sentido."""
+    r = _compat({"producto": "MOU0001", "con": "mi tostadora"})[0]
+    assert r["veredicto"] == "sin_dato"
+    assert "notebook" in r["motivo"].lower(), \
+        "no se dicen los equipos que la casa si conoce"
+
+
+def test_la_compatibilidad_SOLA_es_una_llamada_valida():
+    """Igual que las politicas: preguntar si dos cosas que ya se mostraron van
+    juntas no necesita volver a buscar el catalogo."""
+    r = MT.buscar([], TIENDA, compat=[{"producto": "RAM0001",
+                                       "con": "MBO0001"}])
+    assert r["resultados"] == []
+    assert len(r["compatibilidad"]) == 1
+
+
+def test_la_caja_de_compatibilidad_NO_VIAJA_si_nadie_pregunto():
+    """Una clave vacia en cada retorno es ruido adentro de la caja donde todo
+    lo demas es dato certificado."""
+    assert "compatibilidad" not in MT.buscar([{"categoria": "mouse"}], TIENDA)
+
+
+def test_el_tope_de_pares_no_se_puede_pasar():
+    uno = {"producto": "RAM0001", "con": "MBO0001"}
+    assert len(_compat(*([uno] * 9))) == MT.TOPE_COMPAT
+
+
+def test_un_par_roto_no_se_lleva_puesto_al_otro():
+    """Mismo contrato que una consulta rota: el par que falla vuelve sin_dato y
+    el resto se contesta igual."""
+    r = _compat({"producto": None, "con": None},
+                {"producto": "RAM0001", "con": "MBO0001"})
+    assert len(r) == 2
+    assert r[0]["veredicto"] == "sin_dato"
+    assert r[1]["veredicto"] == "compatible"
+
+
+# ── LOS DOS ARREGLOS DEL MOTOR (13-sep-2026) ───────────────────────────────
+
+def test_LA_AMBIGUEDAD_NO_SE_PIERDE_POR_PEDIR_UN_ORDEN():
+    """EL AGUJERO MEDIDO. El calculo del parecido colgaba de un `elif`: una
+    consulta con `ordenar_por` no calculaba puntajes, asi que no podia ver una
+    ambiguedad de identidad NUNCA. "Teclado Logitech K380" con `busco: uno`
+    devuelve `ambiguo` con los dos que empatan; el MISMO pedido con un orden
+    por precio devolvia `existe` con cinco y el modelo eligiendo, que es
+    justo lo que la regla 10.0 prohibe."""
+    sin_orden = _una({"texto": "Teclado Logitech K380", "busco": "uno"})
+    con_orden = _una({"texto": "Teclado Logitech K380", "busco": "uno",
+                      "ordenar_por": {"campo": "precio_ars",
+                                      "direccion": "min"}})
+    assert sin_orden["veredicto"] == "ambiguo", "cambio el caso de referencia"
+    assert con_orden["veredicto"] == "ambiguo", \
+        "una perilla de orden se llevo puesta la obligacion de preguntar"
+    assert len(con_orden["filas"]) == con_orden["empatados"] > 1
+
+
+def test_el_resultado_no_lleva_campos_de_PLOMERIA():
+    """El numero de la consulta vive en el deduplicador, no adentro del
+    resultado: un `_n` colgado del dict se le va al modelo dentro del retorno,
+    y lo que no significa nada se aprende a ignorar."""
+    r = MT.buscar([{"texto": "mouse"}, {"texto": "mouse"}], TIENDA)
+    for res in r["resultados"]:
+        assert not [k for k in res if k.startswith("_")], f"plomeria: {res}"
+    assert r["resultados"][1]["repetida"], "se perdio el aviso de repetida"
+    assert "numero 1" in r["resultados"][1]["repetida"]

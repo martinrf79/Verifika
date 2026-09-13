@@ -941,3 +941,57 @@ def test_un_retorno_que_entra_no_se_toca():
     chico = {"resultados": [{"veredicto": "existe",
                              "filas": [{"id": "P1", "precio": "$10.000"}]}]}
     assert json.loads(R._retorno_que_entra(chico)) == chico
+
+
+# ── EL RAMAL A COMPATIBILIDAD LLEGA AL TURNO (13-sep-2026) ──────────────────
+
+class _ClienteQuePregunta:
+    """Un doble que la PRIMERA vuelta llama al motor pidiendo compatibilidad y
+    la segunda contesta con texto. Es la unica forma de medir el cable entero
+    -esquema, despacho, retorno e informe- sin gastar una clave."""
+
+    def __init__(self, args):
+        self.args, self.vueltas, self.chat = args, 0, self
+        self.completions = self
+
+    def create(self, *, model, messages, **kw):
+        self.vueltas += 1
+        fn = type("F", (), {"name": "buscar", "arguments": self.args})()
+        llamada = type("L", (), {"function": fn})()
+        msg = type("M", (), {
+            "tool_calls": [llamada] if self.vueltas == 1 else None,
+            "content": '{"tipo": "compatibilidad", "texto": "entra"}'})()
+        return type("R", (), {"choices": [type("C", (), {"message": msg})()]})()
+
+
+def _turno_con(args: str):
+    from app.core import llm_reintento as LR
+    cli = _ClienteQuePregunta(args)
+    viejo = LR._cliente
+    LR._cliente = lambda: cli
+    try:
+        return asyncio.run(R._preguntar("VOZ", "", [], "entra en mi mother?",
+                                        "FUENTE", "trace_compat", TIENDA))
+    finally:
+        LR._cliente = viejo
+
+
+def test_lo_que_el_modelo_pide_por_compatibilidad_LLEGA_AL_MOTOR(firestore_doble):
+    """El cable entero: el modelo lo pide, el motor lo evalua con la tabla de
+    la casa y el veredicto vuelve contado en el informe. Sin el renglon del
+    informe, una boca nueva es invisible el dia que deja de andar."""
+    _s, _f, informe = _turno_con(
+        '{"compatibilidad": [{"producto": "RAM0001", "con": "MBO0001"}]}')
+    assert informe["compat"] == ["compatible"]
+    assert informe["compat_sin_dato"] == []
+
+
+def test_EL_RENGLON_QUE_DICE_QUE_FILA_LE_FALTA_A_LA_TABLA(firestore_doble):
+    """El par de numeros es el mismo que el de las politicas: lo que se
+    pregunto y lo que la fuente no pudo contestar. El segundo es el que dice
+    que cargar en `compatibilidad.csv`, y sin el un hueco de la tabla es
+    indistinguible de una pregunta que nadie hizo."""
+    _s, _f, informe = _turno_con(
+        '{"compatibilidad": [{"producto": "MOU0001", "con": "mi tostadora"}]}')
+    assert informe["compat"] == ["sin_dato"]
+    assert informe["compat_sin_dato"] == ["MOU0001|mi tostadora"]

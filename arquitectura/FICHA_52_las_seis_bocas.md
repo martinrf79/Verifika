@@ -291,7 +291,7 @@ Las bocas no son una idea: son los archivos que están en el disco. Leído el
 |---|---|---|
 | CATÁLOGO | `productos.csv`, `specs_preguntables.json`, `specs_por_categoria.json`, `specs_por_modelo.csv`, `no_vendidas.json` | las cinco, por el motor, desde el 13-sep |
 | POLÍTICAS | `faq.json` | `curadas` y `fuente` |
-| COMPATIBILIDAD | `compatibilidad.csv`, `compatibilidad_vocabulario.json` | `compatibilidad.py`, al que el turno no llega |
+| COMPATIBILIDAD | `compatibilidad.csv`, `compatibilidad_vocabulario.json` | el motor, por el campo `compatibilidad`, desde el 13-sep |
 | CRITERIO | `base_conocimiento.json`, bloque `categorias` | nadie; el archivo sí lo lee `guia_venta_prosa` para la VOZ |
 | ENVÍO | Firestore, `config/tarifas_envio` | `calculadora.cotizar_envio` por `fuente.texto_envio` |
 
@@ -309,7 +309,7 @@ tabla y el código se contradicen, gana el código.
 | Motor | vivo, una puerta |
 | Ramal a CATÁLOGO | **ordenado el 13-sep**: specs pedidas por nombre, cantidad con subtotal, y `no_vendidas` con su alternativa real |
 | Ramal a POLÍTICAS | vivo desde el 12-sep |
-| Ramal a COMPATIBILIDAD | **no existe** |
+| Ramal a COMPATIBILIDAD | **vivo el 13-sep**: el modelo pide el par por la misma puerta y el veredicto lo escribe `compatibilidad.py`. Falta medirlo vivo |
 | Ramal a ENVÍO | el dato llega, pero **lo empuja el código**, no lo pide el modelo |
 | Ramal a CRITERIO | **no existe** |
 | Retorno | vive, pero **sin la cuenta**: `calculate_total` no la llama nadie desde `app/`, y ella es la única que llama a `pago_split` |
