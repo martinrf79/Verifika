@@ -64,13 +64,15 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
-- **ABIERTO** · **EL TABLERO SE CONSTRUYO EL 13-sep Y FALTA MEDIRLO VIVO.**
-  Ficha en `arquitectura/FICHA_53_el_tablero.md`, vara en
-  `tests/test_tablero.py`, 19 casos. Lo abierto es la seccion 10 de la ficha y
-  necesita el modelo vivo: **la media de vueltas por turno tiene que bajar de
-  tres a dos**, cuantos huecos de valor aparecen, y si los tres parrafos
-  mudados del prompt al esquema se siguen respetando. El de `busco` no se
-  respetaba y por eso se quedo en el prompt.
+- **ABIERTO** · **LA CONSULTA REPETIDA ES LO UNICO QUE QUEDO ABIERTO DEL
+  TABLERO.** Medido el 13-sep con la clave gratis: 6 consultas repetidas sobre
+  31. El modelo gasta la segunda vuelta volviendo a pedir lo mismo porque entre
+  vuelta y vuelta NO VE lo que ya pidio, solo lo que volvio. **El arreglo no es
+  subir el tope de vueltas: es decirle que ya lo busco.** `informe["repetidas"]`
+  ya lo cuenta y el banco es `banco_pruebas/tanda_tablero.py`.
+- **CERRADO el 13-sep** · El tablero: 2,23 vueltas por turno contra 3,00, y
+  buscaron 22 de 22. Ficha 53 seccion 10, piso en
+  `banco_pruebas/tablero_piso.json`.
 
 **13-sep: EL DISEÑO ENTERO DEL TURNO ESTA ESCRITO, Y ES LA UNIDAD DE TRABAJO
 ABIERTA.** `arquitectura/FICHA_52_las_seis_bocas.md`: los 14 pedidos posibles del

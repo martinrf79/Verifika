@@ -192,13 +192,41 @@ no estaba instruido para vender.
 
 ---
 
-## 10. QUE FALTA MEDIR
+## 10. LO QUE SE MIDIO VIVO, EL 13-sep
 
-Con el modelo vivo, y es lo unico que dice si esto sirvio:
+**Con la clave GRATIS**, dos tandas de catorce mensajes que cubren los catorce
+pedidos de la FICHA 52. El banco es `banco_pruebas/tanda_tablero.py` y el piso
+queda en `banco_pruebas/tablero_piso.json`. **28 turnos corridos, 22 sanos:**
+los seis que faltan murieron con `RateLimitError` de la cuota gratis, que es lo
+que la regla 4 dice que pasa y por eso se cuentan aparte en vez de ensuciar el
+promedio.
 
-1. **La media de vueltas por turno.** Hoy son tres. Tiene que bajar a dos.
-2. **Cuantas consultas pegan a la primera**, y cuantos huecos de valor
-   aparecen. Un hueco es el tablero funcionando; muchos del mismo campo son un
-   renglon de la leyenda que quedo afuera del presupuesto.
-3. **Si los tres parrafos mudados al esquema se siguen respetando.** El de
-   `busco` no se respeto. Los otros tres no tienen medicion todavia.
+    VUELTAS POR TURNO       2,23   contra 3,00 del 12-sep
+    BUSCARON                22 de 22   contra 15 de 19
+    BUSQUEDAS VACIAS        0
+    HUECOS DE VALOR         4, y los cuatro correctos
+    `busco: uno`            4 de 4 oportunidades
+    CONSULTAS REPETIDAS     6 de 31
+
+**EL TABLERO SE PAGA.** Cuesta 1.538 tokens por turno y ahorra 0,77 vueltas;
+una vuelta vale del orden de 7.700, o sea unos 5.900 ahorrados. **Queda a favor
+por cuatro a uno**, y eso sin contar el segundo y medio de latencia que cada
+vuelta se lleva.
+
+**EL HUECO DE VALOR FUNCIONA Y APARECIO SOLO.** Los dos de cada tanda:
+`pais_fabricacion japon`, que es el caso buscado, y `caracteristicas_extra
+mecanico`, que no lo era —el modelo fue a buscar "teclado mecanico" a un campo
+donde la fuente escribe otra cosa—. Los dos volvieron con los valores reales en
+vez de con un cero.
+
+**`busco` SE DECLARA CUANDO CORRESPONDE, y el primer numero enganaba.** "2 de
+18 consultas" parecia un fracaso: `uno` solo corresponde si el cliente nombro
+un producto puntual, y de los catorce mensajes hay dos asi. Los dos lo
+declararon, las dos tandas. El banco ahora cuenta sobre el denominador que
+corresponde.
+
+**LO QUE QUEDA ABIERTO, y es uno solo:** 6 consultas repetidas sobre 31. El
+modelo gasta la segunda vuelta volviendo a pedir lo mismo, porque entre vuelta
+y vuelta no ve lo que ya pidio, solo lo que volvio. El arreglo no es subir el
+tope de vueltas: es decirle que ya lo busco. `informe["repetidas"]` ya lo
+cuenta.

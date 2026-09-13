@@ -1,0 +1,18 @@
+{
+  "_": "EL PISO DEL TABLERO. Medido el 13-sep-2026 con la clave GRATIS, sobre 22 turnos sanos de 28 corridos en dos tandas. Los seis que faltan murieron por 429 de la cuota gratis, no por el sistema: se excluyen del promedio y se cuentan aparte. ESTOS NUMEROS SOLO MEJORAN. Si una corrida los empeora, el cambio se revierte entero.",
+  "fecha": "2026-09-13",
+  "clave": "gratis",
+  "turnos_sanos": 22,
+  "turnos_caidos_por_cuota": 6,
+  "vueltas_por_turno": 2.23,
+  "vueltas_por_turno_antes": 3.0,
+  "vueltas_antes_medido": "12-sep, 6 de 6 turnos con vueltas=3",
+  "buscaron": 22,
+  "consultas": 31,
+  "busco_uno_declarado": 4,
+  "busco_uno_oportunidades": 4,
+  "consultas_repetidas": 6,
+  "busquedas_vacias": 0,
+  "huecos_de_valor": 4,
+  "huecos_correctos": 4
+}
