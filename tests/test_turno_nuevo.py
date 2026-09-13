@@ -707,6 +707,56 @@ def test_el_precio_de_lo_YA_MOSTRADO_no_es_plata_inventada(firestore_doble,
     assert mal["inventada"], "la guarda no puede aflojarse para todo"
 
 
+def test_la_tarifa_del_motor_NO_es_plata_inventada():
+    """MEDIDO EN VIVO EL 13-SEP 22:35, charla 5493547504287. 'El que me
+    dijiste recien' —el Genius de $12.000— el modelo copio los $7.500 que el
+    motor acaba de cotizar a Cordoba. La guarda los llamo invento porque el
+    envio ya no viaja en el bloque de fuente: el 13-sep salio de ahi para
+    pedirse por el motor. huecos_llenos=0, largo=92, el cliente leyo el
+    fallback. La tarifa ESTA en `envios`. Copiarla no es inventar."""
+    ficha = {"id": "TEC9", "nombre": "Teclado Genius KB-110X Blanco",
+             "precio_ars": 12000, "precio": "$12.000"}
+    texto = ("El Genius KB-110X Blanco sale $12.000. "
+             "A Cordoba el envio es $7.500.")
+    _, inf = N.llenar(texto, [ficha], "t", envios={"cordoba": 7500})
+    assert not inf["inventada"], inf["inventada"]
+    _, mal = N.llenar(texto.replace("$7.500", "$9.999"), [ficha], "t",
+                      envios={"cordoba": 7500})
+    assert mal["inventada"], "la guarda no puede aflojarse para toda tarifa"
+
+
+def test_el_turno_con_la_tarifa_copiada_NO_cae_al_fallback(firestore_doble,
+                                                           monkeypatch):
+    """De punta a punta, que es donde se vio: la respuesta con la tarifa
+    copiada del motor tiene que salir. El fallback era el defecto."""
+    ficha = {"id": "TEC9", "nombre": "Teclado Genius KB-110X Blanco",
+             "precio_ars": 12000, "precio": "$12.000"}
+    monkeypatch.setattr(
+        R, "_preguntar",
+        lambda *a, **k: asyncio.sleep(
+            0, result=({"tipo": "intencion_compra",
+                        "texto": ("El Genius KB-110X Blanco sale $12.000. "
+                                  "A Cordoba el envio es $7.500.")},
+                       [ficha], {"cordoba": 7500}, _motor())))
+    texto = asyncio.run(R.procesar_turno(
+        "sonda_recien", "El que me dijiste recien", TIENDA,
+        "telegram", "trace_recien"))
+    assert "No tengo esa información confirmada" not in texto, texto
+    assert "$12.000" in texto and "$7.500" in texto, texto
+
+
+def test_la_memoria_dice_cual_es_el_ultimo_que_mostro():
+    """'El que me dijiste recien' no puede adivinar: el ultimo de la lista
+    tiene que estar marcado como el mas reciente."""
+    conv = {"productos_vistos": [
+        {"id": "MOU2", "nombre": "Mouse Logitech G203", "precio": "$37.500"},
+        {"id": "TEC9", "nombre": "Teclado Genius KB-110X Blanco",
+         "precio": "$12.000"}]}
+    m = R._memoria_texto(conv)
+    assert "el que me dijiste" in m.lower()
+    assert m.rfind("TEC9") > m.rfind("MOU2")
+
+
 def test_el_precio_se_GUARDA_en_la_memoria_del_turno(firestore_doble,
                                                      monkeypatch):
     """Hasta hoy `productos_vistos` tenia id y nombre nada mas, asi que el
@@ -731,6 +781,20 @@ def test_el_prompt_PIDE_declarar_busco(firestore_doble):
     la descripcion del esquema; ahora lo pide el prompt con todas las letras."""
     p = R._aparato()
     assert "busco" in p and "TODA consulta" in p
+
+
+def test_un_campo_que_falta_NO_cancela_el_resto_del_pedido():
+    """MEDIDO EN VIVO EL 13-SEP 22:32. El presupuesto de dos auriculares, dos
+    mouse, dos memorias, tres destinos y origen de partes salio tipo
+    `filtro_sin_campo` y SOLO dijo que el origen no esta cargado. El motor
+    habia traido 15 fichas y tres tarifas. El molde y el prompt tienen que
+    hacer imposible contestar solo el hueco."""
+    cuando, molde = TP.TIPOS["filtro_sin_campo"]
+    assert "multipregunta" in cuando
+    assert "<detalle>" in molde
+    p = R._aparato()
+    assert "NO cancela" in p
+    assert "multipregunta" in p
 
 
 def test_un_pedido_de_varios_rubros_son_VARIAS_CONSULTAS(firestore_doble):

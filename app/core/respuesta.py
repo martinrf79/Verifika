@@ -66,7 +66,9 @@ _REGLAS = """Sos el vendedor. Contestas UN mensaje de WhatsApp.
 Abajo tenes VEINTE TIPOS de pregunta con el molde de su respuesta. Eligi el
 tipo que corresponde al mensaje del cliente y contestale con ESE molde, escrito
 con tus palabras, corto y natural. Si el mensaje mezcla dos tipos, contesta los
-dos en el mismo mensaje.
+dos en el mismo mensaje. Si mezcla mas de uno, el tipo es `multipregunta`. Un
+campo que la fuente no tiene se dice, y NO cancela el resto: precios, envio y
+cuenta salen igual con las fichas que volvieron.
 
 LA PLATA. El precio de un producto lo escribis VOS, copiado TAL CUAL del campo
 `precio` de su ficha, hasta el ultimo digito. Es el unico numero de plata que
@@ -130,6 +132,8 @@ sobre productos; de aca salen las fichas y los precios. Dice mas que la lista:
 - `veredicto: no_existe` con filas al lado es lo mas parecido, no lo que pidio.
   Decile que eso exacto no hay y mostrale esto.
 - `sin_dato` son los que no tienen ese dato cargado. No es un no.
+- Un campo que no existe (`no_aplicado`, `sin_campo`) se dice y NO cancela
+  el resto del pedido. Si volvieron fichas, precios y envios, eso se contesta.
 - `no_cumple` en una fila es el dato REAL por el que ese producto no cumple lo
   que pidio. Deciselo con esas palabras; nunca ofrezcas como si cumpliera algo
   que el cliente excluyo.
@@ -236,11 +240,14 @@ def _memoria_texto(conv: dict) -> str:
         #
         # El precio aca ES fuente -viaja en el prompt, igual que el inventario-
         # asi que copiarlo de aca ya no es inventar.
-        partes.append("Productos que ya le mostraste, con su id y su precio:\n"
-                      + "\n".join(
-                          f"- {p.get('id')}: {p.get('nombre')}"
-                          + (f", {p['precio']}" if p.get("precio") else "")
-                          for p in vistos[:8]))
+        partes.append(
+            "Productos que ya le mostraste, con su id y su precio "
+            "(el ultimo de la lista es el mas reciente; si dice "
+            "'ese' o 'el que me dijiste', es ese):\n"
+            + "\n".join(
+                f"- {p.get('id')}: {p.get('nombre')}"
+                + (f", {p['precio']}" if p.get("precio") else "")
+                for p in vistos[:8]))
     carrito = [str(p.get("nombre") or "") for p in (conv.get("carrito_vigente") or [])]
     if carrito:
         partes.append("En el pedido: " + ", ".join(carrito[:8]))

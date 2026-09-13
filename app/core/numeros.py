@@ -202,6 +202,20 @@ def llenar(texto: str, fichas: list, trace_id: str = "",
     permitidos |= _digitos(_json.dumps(fichas or [], ensure_ascii=False,
                                        default=str))
     permitidos |= _digitos(fuente_texto or "")
+    # LA TARIFA DEL MOTOR TAMBIEN ES FUENTE, y hasta hoy no. El 13-sep el
+    # envio salio del bloque que viaja siempre y paso a pedirse por el motor:
+    # la tarifa vive en `envios`, que el modelo ve en el retorno, y la guarda
+    # no la miraba. Medido el 13-sep 22:35, charla 5493547504287: "el que me
+    # dijiste recien" —el Genius de $12.000— el modelo copio los $7.500 que
+    # el motor acaba de cotizar a Cordoba, huecos_llenos=0, y la guarda tiro
+    # la respuesta entera. El cliente leyo el fallback. Copiar la tarifa que
+    # volvio no es inventar; inventar sigue cayendo, porque lo que no esta
+    # en `envios` no entra aca.
+    if envio_monto is not None:
+        permitidos |= _digitos(str(int(envio_monto)))
+    if envios:
+        permitidos |= _digitos(_json.dumps(envios, ensure_ascii=False,
+                                           default=str))
     for bruto in _CIFRA.findall(salida):
         limpio = re.sub(r"\D", "", bruto)
         if limpio and limpio not in permitidos:

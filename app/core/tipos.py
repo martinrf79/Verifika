@@ -38,8 +38,8 @@ TIPOS = {
         "hay que traducir la condicion a un filtro sobre un campo real",
         "Con <condicion> te quedan <opciones>. <precios>."),
     "filtro_sin_campo": (
-        "el catalogo no tiene un campo para eso: no se puede filtrar NI afirmar que se cumple, y la salida honesta es decirlo",
-        "<criterio> no es un dato que tengamos cargado, asi que no te puedo decir cual cumple sin inventarlo. Ordenar si puedo por <campos_disponibles>."),
+        "el catalogo no tiene un campo para eso: no se puede filtrar NI afirmar que se cumple, y la salida honesta es decirlo. Si el mismo mensaje pedia precios, envio o cuenta, el tipo es multipregunta: el campo que falta se dice Y el resto se contesta con las fichas que volvieron",
+        "<criterio> no es un dato que tengamos cargado, asi que no te puedo decir cual cumple sin inventarlo. Lo que si pediste y si tengo, lo contesto: <detalle>. Ordenar si puedo por <campos_disponibles>."),
     "precio_simple": (
         "la plata la arma el codigo: el modelo no puede escribir un numero",
         "<producto> sale {{precio}}. <stock>."),
