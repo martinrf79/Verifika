@@ -7,6 +7,12 @@ nombra por su número y remite acá; no la vuelve a describir. Es la misma regla
 de la puerta única del bloque 0 de `CLAUDE.md`, aplicada a los nombres: la
 segunda descripción de lo mismo es el teléfono descompuesto.
 
+**LOS NOMBRES DEL DISEÑO NUEVO VIVEN EN `FICHA_52_las_seis_bocas.md`, y no
+acá.** Este archivo nombra lo que está CABLEADO; la ficha 52 nombra a dónde va
+—tablero, motor, ramales, bocas, retorno, redacción, guarda—. No se contradicen
+porque no hablan de lo mismo. A medida que cada ramal de la 52 se construya, su
+nombre baja acá con número propio y la 52 deja de nombrarlo.
+
 Leído del código de `main` el 6-sep-2026. Todo lo que dice este archivo se
 puede verificar abriendo el archivo y la línea que se nombra. Si algo acá
 contradice al código, gana el código.

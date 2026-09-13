@@ -64,6 +64,17 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
+**13-sep: EL DISEÑO ENTERO DEL TURNO ESTA ESCRITO, Y ES LA UNIDAD DE TRABAJO
+ABIERTA.** `arquitectura/FICHA_52_las_seis_bocas.md`: los 14 pedidos posibles del
+nicho, las 6 respuestas posibles, los 23 componentes con nombre, el croquis y la
+tabla de que esta vivo y que falta. Decision de Martin: todo lo que se contesta
+con un dato entra por el motor; solo la voz y la memoria quedan afuera. **Lo que
+falta cablear son cuatro ramales** -compatibilidad, cuenta, criterio, y el de
+envio que hoy empuja el codigo- mas las tres capas de specs y `no_vendidas`
+adentro del catalogo. La boca CUENTA es la que cierra el setenta treinta:
+`pago_split` esta entero y no lo alcanza nadie desde el apagon del 11-sep.
+
+
 **11-sep, LO ABIERTO: EL MAPA. EL MOTOR YA ESTA.** El diseño entero esta en
 `arquitectura/FICHA_50_los_tres_mapas.md`. **El motor se escribio y anda:**
 `app/core/motor.py`, una sola puerta, consulta estructurada, y el modelo la
