@@ -44,7 +44,23 @@ TIENDA = "verifika_prod"
 # se saco del prompt pesaba entre 70 y 250 caracteres y salia contestara lo que
 # contestara el cliente, asi que el tablero sube y el TURNO baja. La cuenta
 # entera se mira en vivo, no aca.
-TECHO_TABLERO = 2400
+#
+# Y SUBE LA TERCERA Y ULTIMA VEZ, EL MISMO DIA, POR LA BOCA QUE QUEDABA: el
+# CRITERIO. El campo `criterio` pesa 111 tokens y nombrar la boca en la
+# descripcion de la puerta cuesta 41; a cambio se BORRA la linea que avisaba
+# que esa boca no tenia cable, que devuelve 22. Son +130: el esquema pasa de
+# 2.301 a 2.432, asi que el techo pasa de 2.400 a 2.530 y el margen queda en
+# 98, el mismo 99 que tuvo siempre.
+#
+# LO QUE COMPRA ESE GASTO: hoy "para que sirve" y "cual conviene" no tienen a
+# quien preguntarle. Las entradas de `base_conocimiento.json` estan escritas y
+# del turno no las alcanza nadie -el archivo se lee para la VOZ-, asi que el
+# criterio lo contesta el modelo de memoria o entra disfrazado de politica. Sin
+# este campo no hay forma de pedirlo.
+#
+# Y ES EL ULTIMO QUE SE PAGA POR UNA BOCA: con esta, las cinco tienen cable, y
+# el techo de aca en adelante solo baja.
+TECHO_TABLERO = 2530
 
 
 def _tokens(s: str) -> int:
