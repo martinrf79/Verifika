@@ -71,6 +71,14 @@ TOPE_AMBIGUO = 4
 # los candidatos en vez de elegir, y tres alcanza para eso.
 TOPE_TEMAS = 3
 
+# LOS TEMAS QUE EL ENVIO APAGA, y viven ACA desde el 13-sep. Con una tarifa
+# exacta cotizada, la politica publica apenas el RANGO -"de 5.000 a 12.000"- y
+# el modelo escribia el numero flojo teniendo el bueno al lado. El apagado
+# estaba en el turno, que era el que empujaba el envio; ahora las dos cosas se
+# piden por esta puerta y la decision vive donde se ven las dos.
+TEMAS_DEL_ENVIO = ("costo_envio", "envios")
+
+
 # Cuantos pares de compatibilidad se evaluan en una llamada. Un armado -"¿la
 # placa entra en esta mother, y la memoria?"- son dos o tres pares; mas que eso
 # no es una pregunta de un cliente, es un barrido.
@@ -128,6 +136,9 @@ def esquema(tienda_id: str) -> dict:
     r = recorrida(tienda_id)
     campos = sorted(campos_filtrables(tienda_id))
     categorias = [c for c, _ in r.get("categorias") or []]
+    # EL TOPE DE DESTINOS LO PONE QUIEN COTIZA, y se lee de ahi en vez de
+    # copiarlo: un numero escrito dos veces se separa el dia que uno cambia.
+    from app.core.fuente import TOPE_DESTINOS as TOPE_ENVIOS
     ordenables = campos_ordenables(tienda_id)
     vocab = leyenda(tienda_id)
     equipos = _equipos(tienda_id)
@@ -245,9 +256,10 @@ def esquema(tienda_id: str) -> dict:
                 "de la tabla de la casa, no de tu memoria.\n"
                 "- Todas en la MISMA llamada, y varias consultas "
                 "juntas si el cliente pidio varias cosas.\n"
-                "TODAVIA NO TIENEN CABLE y no las pidas por aca: para que "
-                "sirve un producto o cual conviene, y el costo del envio, que "
-                "ya lo tenes resuelto mas arriba.\n"
+                "- ENVIO: cuanto sale y en cuanto llega. Va en `envios`, "
+                "con el lugar que nombro el cliente.\n"
+                "TODAVIA NO TIENE CABLE y no la pidas por aca: para que sirve "
+                "un producto o cual conviene.\n"
                 "Si lo que salio no sirve, volve a llamarla con otra "
                 "consulta."),
             "parameters": {
@@ -290,6 +302,20 @@ def esquema(tienda_id: str) -> dict:
                     # nombre suelto: sobre un nombre habria que adivinar de
                     # cual se habla, que es exactamente lo mezclado que la
                     # regla prohibe. Compatibilidad e identidad son dos ejes.
+                    # LA BOCA DE ENVIO, QUE HASTA HOY EMPUJABA EL CODIGO.
+                    # El destino sigue siendo determinista -lo clasifica la
+                    # tabla, no el modelo-; lo que cambia es quien PIDE. El
+                    # modelo nombra el lugar con las palabras del cliente, que
+                    # ademas es la unica parte del envio que no es argentina.
+                    "envios": {
+                        "type": "array", "items": {"type": "string"},
+                        "description": (
+                            "Los destinos que nombro el cliente, con SUS "
+                            "palabras: 'Posadas', 'CP 5121'. Si lo dijo turnos "
+                            "atras esta en tu memoria. Te devuelvo la tarifa "
+                            "exacta, el plazo y el hueco que copias donde vaya "
+                            f"el costo: el monto NO lo escribis vos. Hasta "
+                            f"{TOPE_ENVIOS}.")},
                     "compatibilidad": {
                         "type": "array",
                         "items": {
@@ -681,6 +707,19 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
             "motivo": "; ".join(notas)}
 
 
+def _salida(resultados, temas, sin_resolver, compat, envios) -> dict:
+    """El retorno, con UNA sola forma. Las cajas que nadie pidio no viajan: una
+    clave vacia en cada turno es ruido adentro de la caja donde todo lo demas
+    es dato certificado."""
+    fuera = {"resultados": resultados, "politicas": temas,
+             "temas_sin_resolver": sin_resolver}
+    if compat:
+        fuera["compatibilidad"] = compat
+    if envios:
+        fuera["envios"] = envios
+    return fuera
+
+
 def _un_compat(pedido: dict, catalogo: list, tienda_id: str) -> dict:
     """UN par de compatibilidad, certificado. Devuelve {producto, con,
     veredicto, motivo} con veredicto en compatible / incompatible / ambiguo /
@@ -744,23 +783,38 @@ def _un_compat(pedido: dict, catalogo: list, tienda_id: str) -> dict:
 
 
 def buscar(consultas: list, tienda_id: str, trace_id: str = "",
-           temas: list | None = None, temas_apagados=(),
-           compat: list | None = None) -> dict:
-    """LA PUERTA. Productos y politicas de la casa, en una sola llamada.
+           temas: list | None = None, compat: list | None = None,
+           envios: list | None = None, localidad_previa: str = "") -> dict:
+    """LA PUERTA. Catalogo, politicas, compatibilidad y envio, en una llamada.
 
-    `temas_apagados` son los que OTRO bloque ya contesta mejor, y hoy es uno
-    solo: el costo del envio, que `fuente.texto_envio` ya cotizo exacto para
-    ese destino mientras la politica publica apenas el RANGO. Dos caminos para
-    el mismo numero y ganaba el flojo; por cada cosa que se prende se apaga una.
+    `localidad_previa` es lo unico que entra de la charla, y no es una
+    excepcion: es el dato con el que la tabla desambigua una localidad
+    -"Los Condores" con "cordoba" al lado-. El destino lo NOMBRA el modelo.
 
     No lanza: un error de busqueda deja al bot sin fichas, nunca mudo.
     """
-    from app.core.fuente import politicas_de
+    from app.core.fuente import cotizar_destinos, politicas_de
+
+    # EL ENVIO PRIMERO, PORQUE APAGA UNA POLITICA. Con la tarifa exacta de un
+    # destino cotizada, la politica del RANGO no se sirve: son dos caminos para
+    # el mismo numero y gana el flojo. El apagado vivia en el turno, que era
+    # quien empujaba el envio; ahora las dos cosas entran por aca y la decision
+    # vive donde se ven las dos.
+    fuera_envios: dict = {}
+    if envios:
+        try:
+            fuera_envios = cotizar_destinos(envios, tienda_id,
+                                            localidad_previa) or {}
+        except Exception as e:  # noqa: BLE001 — sin tarifa no se inventa una
+            log.warning("motor_envio_error", trace_id=trace_id,
+                        error=f"{type(e).__name__}: {str(e)[:120]}")
+    cotizado = any(f.get("monto_ars") for f in fuera_envios.get("filas") or [])
+
     fuera_temas, sin_resolver = [], []
     if temas:
         try:
             r = politicas_de(list(temas)[:TOPE_TEMAS], tienda_id)
-            apagados = {str(t) for t in (temas_apagados or ())}
+            apagados = set(TEMAS_DEL_ENVIO) if cotizado else set()
             fuera_temas = [p for p in r["politicas"]
                            if p["tema"] not in apagados]
             sin_resolver = r["sin_resolver"]
@@ -769,12 +823,11 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
                         error=f"{type(e).__name__}: {str(e)[:120]}")
 
     if not consultas and not compat:
-        # SOLO POLITICAS ES UNA LLAMADA VALIDA. "¿Cual es la politica de
+        # SOLO POLITICAS O SOLO ENVIO ES UNA LLAMADA VALIDA. "¿Cual es la politica de
         # garantia?" no necesita tocar el catalogo, y obligar a inventar una
         # consulta vacia para preguntarlo seria pedirle al modelo que aprenda
         # nuestra plomeria.
-        return {"resultados": [], "politicas": fuera_temas,
-                "temas_sin_resolver": sin_resolver}
+        return _salida([], fuera_temas, sin_resolver, [], fuera_envios)
 
     # LA COMPATIBILIDAD TAMBIEN NECESITA EL CATALOGO, y por eso la lectura no
     # cuelga mas de `consultas`: el par se evalua sobre las fichas reales, que
@@ -787,9 +840,9 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
                     error=f"{type(e).__name__}: {e}")
         catalogo = []
     if not catalogo:
-        return {"resultados": [], "politicas": fuera_temas,
-                "temas_sin_resolver": sin_resolver,
-                "motivo": "no se pudo leer el catalogo"}
+        r = _salida([], fuera_temas, sin_resolver, [], fuera_envios)
+        r["motivo"] = "no se pudo leer el catalogo"
+        return r
 
     # EL RAMAL A COMPATIBILIDAD. Un par roto no tumba el resto, igual que una
     # consulta rota: vuelve `sin_dato`, que es la salida honesta de esta boca.
@@ -864,14 +917,10 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
              veredictos=[f["veredicto"] for f in fuera],
              filas=[len(f["filas"]) for f in fuera],
              temas=[p["tema"] for p in fuera_temas],
-             compat=[c["veredicto"] for c in compatibilidades])
-    salida = {"resultados": fuera, "politicas": fuera_temas,
-              "temas_sin_resolver": sin_resolver}
-    # SOLO SI SE PIDIO. Una clave vacia en cada retorno es ruido en la caja que
-    # el modelo lee entera.
-    if compatibilidades:
-        salida["compatibilidad"] = compatibilidades
-    return salida
+             compat=[c["veredicto"] for c in compatibilidades],
+             envios=[f["destino"] for f in fuera_envios.get("filas") or []])
+    return _salida(fuera, fuera_temas, sin_resolver, compatibilidades,
+                   fuera_envios)
 
 
 def fichas_de(resultado: dict) -> list[dict]:

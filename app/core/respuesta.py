@@ -270,10 +270,12 @@ def _bloque_fuente(politicas: list, inventario: str = "",
     LAS POLITICAS siguen certificadas por el codigo. Son el mapa 3 y no cambian
     en esta vuelta.
 
-    EL ENVIO ES EL MAPA 2 y entra igual que el inventario: resuelto por el
-    codigo, sin que el modelo lo pida. No es una herramienta mas porque no hay
-    nada que razonar —el destino sale del codigo postal— y porque cada vuelta
-    al modelo vuelve a pagar el prompt entero.
+    EL ENVIO SALIO DE ACA EL 13-sep: era el ultimo dato que se empujaba, y
+    ahora lo pide el modelo por el motor como todo lo demas. El argumento que
+    lo sostenia -que no hay nada que razonar en un codigo postal- sigue siendo
+    cierto y no alcanzaba: el precio de tenerlo servido fue que la politica del
+    rango compitiera con la tarifa exacta y que el turno que preguntaba por el
+    envio fuera justo el que no llamaba al motor.
     """
     partes = []
     if inventario:
@@ -285,11 +287,6 @@ def _bloque_fuente(politicas: list, inventario: str = "",
                       + "\n".join(f"- {p['tema']}: {p['texto']}" for p in politicas))
     return "\n\n".join(partes)
 
-
-# Los dos temas que el bloque de envio REEMPLAZA. No son todos los de envio: el
-# plazo, el express, el exterior y el embalaje siguen siendo politica, porque el
-# bloque no los contesta.
-TEMAS_DEL_ENVIO = ("costo_envio", "envios")
 
 
 def _parsear(crudo: str) -> dict:
@@ -334,7 +331,7 @@ def _informe_en_blanco() -> dict:
             "puntuales": 0, "veredictos": [], "filas": 0, "rescates": 0,
             "vacios": 0, "sin_dato": 0, "campos": [], "fichas": 0,
             "temas": [], "temas_sin_resolver": [], "compat": [],
-            "compat_sin_dato": []}
+            "compat_sin_dato": [], "envios": [], "envios_sin_clasificar": []}
 
 
 def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
@@ -378,6 +375,14 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
         if v == "sin_dato":
             informe["compat_sin_dato"].append(
                 f"{(x or {}).get('producto')}|{(x or {}).get('con')}")
+    # LOS DESTINOS, Y LOS QUE NO SE PUDIERON CLASIFICAR. El segundo renglon es
+    # el que dice que lugar le falta a la tabla de `geo_cp`, o que el cliente
+    # escribe de una forma que no reconocemos. Antes no existia: con el codigo
+    # adivinando el destino, un lugar que no clasificaba no dejaba rastro.
+    for e in ((r or {}).get("envios") or {}).get("filas") or []:
+        informe["envios"].append(str(e.get("destino") or ""))
+        if e.get("sin_dato"):
+            informe["envios_sin_clasificar"].append(str(e.get("destino") or ""))
     for res in (r or {}).get("resultados") or []:
         veredicto = str(res.get("veredicto") or "")
         filas = len(res.get("filas") or [])
@@ -397,7 +402,7 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
 
 async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                      fuente: str, trace_id: str, tienda_id: str,
-                     temas_apagados=()) -> tuple:
+                     localidad_previa: str = "") -> tuple:
     """La llamada al modelo, con el motor de busqueda en la mano.
 
     EL ORDEN DE LECTURA, y es lo que cambio el 12-sep. Lo que el modelo lee,
@@ -419,9 +424,10 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     50. Antes el codigo adivinaba que fichas ponerle delante leyendo el mensaje
     crudo; ahora el modelo escribe la consulta y el codigo la ejecuta.
 
-    Devuelve (salida, fichas, informe). Las fichas son las del motor: es lo que
-    `numeros` usa como procedencia, asi que un precio que no este en lo que el
-    modelo EFECTIVAMENTE busco no puede salir al cliente.
+    Devuelve (salida, fichas, envios, informe). Las fichas y los envios son lo
+    que volvio del motor, y son las DOS procedencias que `numeros` necesita:
+    un precio o una tarifa que no este en lo que el modelo EFECTIVAMENTE pidio
+    no puede salir al cliente. Los envios son {destino: monto}.
 
     EL INFORME ES EL NUMERO DEL MOTOR, y por eso se arma aca y no adentro de
     `motor.py`: el motor ve UNA llamada, y lo que hay que medir es el TURNO
@@ -435,7 +441,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     cli = _cliente()
     if cli is None:
         log.warning("respuesta_sin_clave", trace_id=trace_id)
-        return {}, [], informe
+        return {}, [], {}, informe
     msgs = [{"role": "system", "content": voz}] if voz else []
     # LA PREGUNTA, ANTES QUE EL APARATO. Es el cambio del 12-sep y el motivo
     # esta entero en `_aparato`.
@@ -468,6 +474,10 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     # siguiente es una llamada limpia con ese bloque adentro. Funciona igual en
     # cualquier proveedor compatible y no tiene protocolo que mantener.
     fichas: list = []
+    # LOS ENVIOS SE ACUMULAN COMO LAS FICHAS, y por el mismo motivo: son la
+    # procedencia de la tarifa. Un destino cotizado en la primera vuelta tiene
+    # que seguir valiendo en la ultima, que es donde el modelo escribe.
+    envios: dict = {}
     hallazgos: list = []
     pedidas: set = set()
     for vuelta in range(VUELTAS_DE_BUSQUEDA + 1):
@@ -506,15 +516,15 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             log.warning("respuesta_modelo_error", trace_id=trace_id,
                         error=f"{type(e).__name__}: {str(e)[:150]}")
             informe["fichas"] = len(fichas)
-            return {}, fichas, informe
+            return {}, fichas, envios, informe
         if msg is None:
             informe["fichas"] = len(fichas)
-            return {}, fichas, informe
+            return {}, fichas, envios, informe
 
         llamadas = list(getattr(msg, "tool_calls", None) or [])
         if not llamadas:
             informe["fichas"] = len(fichas)
-            return _parsear(msg.content or ""), fichas, informe
+            return _parsear(msg.content or ""), fichas, envios, informe
 
         for c in llamadas:
             informe["llamadas"] += 1
@@ -527,14 +537,19 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             consultas = args.get("consultas") or []
             r = MT.buscar(consultas, tienda_id, trace_id,
                           temas=args.get("temas"),
-                          temas_apagados=temas_apagados,
-                          compat=args.get("compatibilidad"))
+                          compat=args.get("compatibilidad"),
+                          envios=args.get("envios"),
+                          localidad_previa=localidad_previa)
             _anotar(informe, consultas, pedidas, r)
             for f in MT.fichas_de(r):
                 if str(f.get("id")) not in {str(x.get("id")) for x in fichas}:
                     fichas.append(f)
+            for e in (r.get("envios") or {}).get("filas") or []:
+                if e.get("monto_ars"):
+                    envios[str(e["destino"])] = int(e["monto_ars"])
             pidio = {"consultas": consultas, "temas": args.get("temas") or [],
-                     "compatibilidad": args.get("compatibilidad") or []}
+                     "compatibilidad": args.get("compatibilidad") or [],
+                     "envios": args.get("envios") or []}
             hallazgos.append(
                 # EL RECORTE ERA DE 900 Y CORTABA CONSULTAS ENTERAS. Medido
                 # el 13-sep: un pedido abierto -"algo para jugar que no sea muy
@@ -545,7 +560,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                 "Buscaste: " + json.dumps(pidio, ensure_ascii=False)[:1400]
                 + "\nVolvio: " + _retorno_que_entra(r, trace_id))
     informe["fichas"] = len(fichas)
-    return {}, fichas, informe
+    return {}, fichas, envios, informe
 
 
 # Cuanto del retorno le cabe al modelo en una vuelta. El numero es el de
@@ -696,13 +711,13 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     # NINGUNA busqueda puede contestar: el inventario del catalogo entero y el
     # envio, que no se razona porque sale del codigo postal.
     inventario = F.texto_inventario(tienda_id)
-    envio = F.texto_envio(raw_message, conv.get("ultima_localidad") or "",
-                          tienda_id)
-    # EL TEMA QUE OTRO BLOQUE CONTESTA MEJOR NO SE SIRVE DOS VECES: con destino
-    # cotizado, la politica `costo_envio` publica el RANGO al lado de la tarifa
-    # exacta, y el modelo escribia el numero flojo.
-    apagados = TEMAS_DEL_ENVIO if envio.get("texto") else ()
-    bloque = _bloque_fuente([], inventario, envio.get("texto") or "")
+    # EL ENVIO YA NO SE EMPUJA ACA, y era el ultimo dato que llegaba por un
+    # segundo camino (13-sep-2026). Lo pide el modelo por el motor, con el
+    # lugar que nombro el cliente; el codigo sigue clasificando el texto a
+    # provincia y sacando la tarifa de la tabla, que es la mitad que le toca.
+    # El apagado de la politica del rango se mudo al motor, que es donde ahora
+    # se ven las dos cosas.
+    bloque = _bloque_fuente([], inventario)
     etapas["fuente"] = int((time.time() - t) * 1000)
 
     # ── 2. MODELO, QUE AHORA BUSCA EL ──────────────────────────────────
@@ -712,9 +727,9 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     # que no puede elegir que ponerle delante, y el catalogo entero no entra.
     t = time.time()
     memoria = _memoria_texto(conv)
-    salida, fichas, motor = await _preguntar(
-        _voz(negocio), memoria, history, raw_message,
-        bloque, trace_id, tienda_id, temas_apagados=apagados)
+    salida, fichas, envios, motor = await _preguntar(
+        _voz(negocio), memoria, history, raw_message, bloque, trace_id,
+        tienda_id, localidad_previa=conv.get("ultima_localidad") or "")
     etapas["modelo"] = int((time.time() - t) * 1000)
     # EL NUMERO DEL MOTOR, UN RENGLON POR TURNO. Sale SIEMPRE, haya buscado o
     # no: un turno que no busco es un dato, no un hueco en la serie. Lo agrega
@@ -730,7 +745,9 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              fichas=motor["fichas"], temas=motor["temas"][:6],
              temas_sin_resolver=motor["temas_sin_resolver"][:4],
              compat=motor["compat"][:6],
-             compat_sin_dato=motor["compat_sin_dato"][:4])
+             compat_sin_dato=motor["compat_sin_dato"][:4],
+             envios=motor["envios"][:4],
+             envios_sin_clasificar=motor["envios_sin_clasificar"][:4])
     if not motor["llamadas"]:
         # EL TERCER CANDADO DE LA FICHA 50: se mide cada turno que contesto sin
         # haber buscado. No se bloquea —la guarda de procedencia ya impide que
@@ -764,12 +781,13 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
         texto, informe = N.llenar(
             texto, fichas, trace_id,
             fuente_texto=bloque + "\n" + memoria,
-            envio_monto=envio.get("monto"),
-            # CADA DESTINO CON SU TARIFA. Sin este renglon el arreglo del
-            # multidestino no llega a ninguna parte: `fuente` cotiza los tres y
-            # `numeros` sigue escribiendo el mismo monto en los tres huecos.
-            envios={d["destino"]: d["monto"]
-                    for d in (envio.get("destinos") or [])})
+            # LA TARIFA SALE DE LO QUE EL MODELO PIDIO POR EL MOTOR. Un
+            # `{{envio}}` pelado usa la unica que volvio; con varios destinos
+            # cada hueco trae la suya por `{{envio:<destino>}}`, que es lo que
+            # evita escribir el mismo monto en los tres renglones.
+            envio_monto=(list(envios.values())[0] if len(envios) == 1
+                         else None),
+            envios=envios)
         etapas["numeros"] = int((time.time() - t) * 1000)
         if informe.get("inventada"):
             # LA RESPUESTA CON PLATA INVENTADA NO SALE. No hay forma honesta de
@@ -816,8 +834,15 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     # SE GUARDA LO ESTABLE, SE MUESTRA LO QUE EL CLIENTE DIJO. Son dos cosas
     # distintas y desde el 12-sep tienen campo propio: lo que vuelve a
     # clasificar solo dentro de tres turnos es la provincia, no "Posadas".
-    localidad = (envio.get("destino_estable") or envio.get("destino")
-                 or conv.get("ultima_localidad") or "")
+    # LO QUE SE GUARDA ES LA PROVINCIA, no la palabra del cliente: dentro de
+    # tres turnos tiene que volver a clasificar sola, y "Los Condores" no lo
+    # hace. Se resuelve del lado del codigo justamente para que la provincia no
+    # viaje al modelo, que es lo que hacia que le contestara "misiones" al que
+    # pidio a Posadas.
+    previa = conv.get("ultima_localidad") or ""
+    primero = next(iter(envios), "")
+    localidad = (F.estable_de(primero, previa) or primero or previa) \
+        if primero else previa
     try:
         save_conversation(user_id, history, resumen, tienda_id=tienda_id,
                           estado_conversacion="en_curso",
@@ -833,9 +858,8 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              latency_ms=int((time.time() - t0) * 1000), etapas=etapas,
              tipo=salida.get("tipo") or "", largo=len(texto or ""),
              fichas=len(fichas), politicas=len(motor["temas"]),
-             envio_destino=envio.get("destino") or "",
-             envio_zona=envio.get("zona") or "",
-             envio_monto=envio.get("monto"),
+             envio_destinos=list(envios)[:3],
+             envio_montos=list(envios.values())[:3],
              huecos_llenos=len((informe or {}).get("llenos") or []),
              huecos_sin_dato=len((informe or {}).get("sin_dato") or []),
              plata_inventada=len((informe or {}).get("inventada") or []))

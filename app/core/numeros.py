@@ -6,7 +6,7 @@ decide este modulo, no el prompt.
 
 Los dos numeros que ninguna ficha tiene van como hueco y los pone el codigo:
 
-    {{envio}}       la tarifa que ya cotizo `fuente.texto_envio` para el destino
+    {{envio}}       la tarifa del destino, ya cotizada por el motor
     {{total}}       la suma, que el modelo no puede hacer de cabeza
 
 (y siguen andando `{{precio}}` y `{{precio:ID}}`, por si el modelo no tiene el
@@ -80,13 +80,12 @@ def _precio_de(fichas: list, referencia: str):
     return con_precio[0] if len(con_precio) == 1 else None
 
 
-# EL ENVIO YA NO SE COTIZA ACA, y es el arreglo del 11-sep. Lo resuelve
-# `fuente.texto_envio` ANTES de hablarle al modelo, con el destino buscado en
-# el mensaje Y en la charla, y el monto llega hecho. Lo que habia era una
-# SEGUNDA resolucion de destino que miraba solo el mensaje de este turno —un
-# codigo postal dado dos turnos antes no cotizaba— y que ademas armaba el
-# subtotal del umbral de envio gratis sumando TODAS las fichas que devolvio la
-# busqueda: mostrar cinco notebooks regalaba el envio. Un dato, un lugar.
+# EL ENVIO NO SE COTIZA ACA, y es el arreglo del 11-sep con el destino que le
+# puso el 13-sep. Lo resuelve la boca de envio, que hoy pide el modelo por el
+# motor, y el monto llega hecho. Lo que habia era una SEGUNDA resolucion de
+# destino que ademas armaba el subtotal del umbral de envio gratis sumando
+# TODAS las fichas que devolvio la busqueda: mostrar cinco notebooks regalaba
+# el envio. Un dato, un lugar.
 
 
 def _envio_de(envios: dict, referencia: str):
@@ -126,13 +125,14 @@ def llenar(texto: str, fichas: list, trace_id: str = "",
     procedencia -paso el 11-sep con el inventario y tiro una respuesta
     correcta-.
 
-    `envio_monto` es la tarifa que ya cotizo `fuente.texto_envio`. None cuando
-    no hay destino: entonces el hueco dice que no se tiene el dato, nunca un
-    numero.
+    `envio_monto` es la tarifa cuando volvio UNA sola del motor. None cuando
+    no volvio ninguna o volvieron varias: entonces el hueco pelado dice que no
+    se tiene el dato, nunca un numero, porque con dos tarifas delante elegir
+    seria adivinar.
 
-    `envios` es {destino: tarifa} cuando el cliente nombro VARIOS, y resuelve
-    `{{envio:cordoba}}`. Con un solo destino alcanza `envio_monto` y los dos
-    caminos son el mismo: la lista trae uno.
+    `envios` es {destino: tarifa}, lo que el modelo pidio por la boca de envio,
+    y resuelve `{{envio:cordoba}}`. Con un solo destino los dos caminos son el
+    mismo: la lista trae uno.
     """
     informe = {"llenos": [], "sin_dato": [], "montos": [], "inventada": []}
     usados: list = []

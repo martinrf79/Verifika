@@ -70,9 +70,9 @@ async def _un_turno(texto: str) -> dict:
 
     set_current_tienda(TIENDA)
     inventario = F.texto_inventario(TIENDA)
-    envio = F.texto_envio(texto, "", TIENDA)
-    apagados = R.TEMAS_DEL_ENVIO if envio.get("texto") else ()
-    bloque = R._bloque_fuente([], inventario, envio.get("texto") or "")
+    # EL ENVIO YA NO SE EMPUJA: lo pide el modelo por el motor, como el resto.
+    # El banco arma el mismo bloque que el turno vivo, ni mas ni menos.
+    bloque = R._bloque_fuente([], inventario)
 
     # SE ENVUELVE `buscar` PARA VER LO QUE EL MODELO ESCRIBIO, no solo lo que
     # volvio. El informe cuenta los campos que no se aplicaron; el motivo
@@ -93,9 +93,9 @@ async def _un_turno(texto: str) -> dict:
     R.MT = MT
     t0 = time.time()
     try:
-        salida, fichas, informe = await R._preguntar(
+        salida, fichas, envios, informe = await R._preguntar(
             R._voz(gs.business_name(TIENDA)), "", [], texto, bloque,
-            "tanda", TIENDA, temas_apagados=apagados)
+            "tanda", TIENDA)
     finally:
         MT.buscar = original
     ms = int((time.time() - t0) * 1000)

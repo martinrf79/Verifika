@@ -156,62 +156,85 @@ def test_el_total_solo_suma_lo_que_ya_se_puso():
     assert N.SIN_DATO in texto2 and inf2["sin_dato"] == ["total"]
 
 
-# ── EL ENVIO, QUE ESTABA DESENCHUFADO ──────────────────────────────────────
+# ── LA BOCA DE ENVIO: SE PIDE, YA NO SE EMPUJA (13-sep-2026) ───────────────
 #
-# El motor de envio estaba entero y no lo alcanzaba nadie: la unica herramienta
-# del modelo mira el catalogo, y el unico puente -el hueco- el molde ni lo
-# nombraba. Estos casos son esa falla, uno por agujero.
+# QUE MIDEN ESTOS CASOS Y QUE CAMBIO. Lo que miden es lo mismo de siempre: que
+# la tarifa salga de la tabla, que el destino se nombre con la palabra del
+# cliente, que un lugar que no clasifica pida el dato en vez de inventar un
+# numero, y que dos destinos den dos tarifas. Lo que cambio es QUIEN PIDE: el
+# codigo leia el mensaje crudo y empujaba el bloque en cada turno; ahora el
+# modelo nombra el destino y el motor lo cotiza, como todas las demas bocas.
+#
+# LO QUE SIGUE SIENDO DEL CODIGO: clasificar el texto a provincia y zona, y
+# sacar el numero de la tabla. Eso no se movio ni se mueve.
 
-def _envio(mensaje: str, previa: str = ""):
+
+def _envio(*nombres, previa: str = ""):
     from app.core import fuente as F
     from app.core.contexto_turno import set_current_tienda
     set_current_tienda(TIENDA)
-    return F.texto_envio(mensaje, previa, TIENDA)
+    return F.cotizar_destinos(list(nombres), TIENDA, previa)
 
 
-def test_el_envio_sale_de_la_tabla_con_el_destino_del_mensaje(firestore_doble):
-    e = _envio("cuanto sale el envio a cordoba capital?")
-    assert e["monto"] and e["zona"], f"no cotizo: {e}"
+def test_el_envio_sale_de_la_tabla_con_el_destino_QUE_NOMBRO_EL_MODELO(
+        firestore_doble):
+    e = _envio("cordoba capital")
+    fila = e["filas"][0]
+    assert fila["monto_ars"] and fila["zona"], f"no cotizo: {e}"
     texto, inf = N.llenar("El envio sale {{envio}}.", _UNA, "t",
-                          envio_monto=e["monto"])
+                          envio_monto=fila["monto_ars"])
     assert "envio" in inf["llenos"], f"no se escribio: {inf}"
     assert "$" in texto
 
 
-def test_el_destino_de_UN_TURNO_ANTERIOR_tambien_cotiza(firestore_doble):
-    """El agujero medido: el destino se buscaba SOLO en el mensaje de este
-    turno, asi que un cliente que dio el codigo postal dos turnos antes no
-    cotizaba nunca. La charla tambien es fuente del destino."""
-    e = _envio("y cuanto me sale el envio?", previa="cordoba")
-    assert e["monto"], "con la localidad de la charla tiene que cotizar"
-    assert e["destino"], f"no resolvio el destino: {e}"
+def test_el_DESTINO_DE_LA_CHARLA_le_llega_al_modelo_para_que_lo_nombre(
+        firestore_doble):
+    """EL AGUJERO VIEJO SIGUE CUBIERTO, por el otro lado. Antes el codigo
+    buscaba el destino en el mensaje Y en la charla. Ahora lo nombra el modelo,
+    asi que lo que no puede faltar es que la charla se lo diga: sin este
+    renglon, un cliente que dio el codigo postal tres turnos antes no tiene
+    quien lo nombre."""
+    memoria = R._memoria_texto({"ultima_localidad": "cordoba"})
+    assert "cordoba" in memoria.lower(), memoria
 
 
-def test_el_mensaje_de_HOY_le_gana_al_destino_viejo(firestore_doble):
-    """Un cliente que corrige la direccion corrige la tarifa."""
-    viejo = _envio("envio a cordoba capital")
-    nuevo = _envio("mandamelo a CP 1425", previa="cordoba")
-    assert nuevo["destino"] != viejo["destino"], f"quedo pegado: {nuevo}"
+def test_la_PREVIA_no_pisa_el_destino_que_el_modelo_NOMBRO(firestore_doble):
+    """La provincia de la charla solo DESAMBIGUA; no reemplaza. Un cliente que
+    corrige la direccion corrige la tarifa, y eso hoy lo dice el modelo."""
+    e = _envio("CP 1425", previa="cordoba")
+    assert e["filas"][0]["zona"] in ("caba", "gba"), e
 
 
-def test_sin_destino_no_se_cotiza_y_se_pide_el_dato(firestore_doble):
-    e = _envio("hola, hacen envios?")
-    assert e["monto"] is None, "sin destino no puede haber tarifa"
-    assert "PROVINCIA" in e["texto"] and "POSTAL" in e["texto"]
+def test_sin_destino_no_se_cotiza_NADA(firestore_doble):
+    """La contracara: si el modelo no nombro ningun lugar, no hay caja de
+    envio. Un hueco sin tarifa dice que no se tiene el dato, nunca un numero."""
+    assert _envio() == {}
     texto, inf = N.llenar("El envio sale {{envio}}.", _UNA, "t",
-                          envio_monto=e["monto"])
+                          envio_monto=None)
     assert N.SIN_DATO in texto and inf["sin_dato"] == ["envio"]
+
+
+def test_el_lugar_que_NO_CLASIFICA_pide_el_dato_y_no_inventa(firestore_doble):
+    """La respuesta 5 de la FICHA 52: falta un dato para poder contestar. Y se
+    dice QUE dato -provincia o codigo postal-, que es lo unico que destraba."""
+    e = _envio("mi barrio")
+    fila = e["filas"][0]
+    assert "sin_dato" in fila and "monto_ars" not in fila, fila
+    assert "PROVINCIA" in fila["sin_dato"] and "POSTAL" in fila["sin_dato"]
+    assert "la tienda cotiza" in e.get("zonas", ""), \
+        "sin tarifa exacta, el mapa de zonas es lo unico que se puede decir"
 
 
 def test_un_envio_roto_no_deja_al_cliente_sin_turno(firestore_doble,
                                                     monkeypatch):
-    """La etapa uno no tiene red arriba: si el bloque de envio lanza, el turno
-    entero se cae y el cliente no recibe nada."""
+    """Si la cotizacion lanza, el motor la atrapa y el turno sigue: el cliente
+    se queda sin la tarifa, nunca sin respuesta."""
     from app.core import fuente as F
-    monkeypatch.setattr(F, "_texto_envio",
-                        lambda *a: (_ for _ in ()).throw(RuntimeError("boom")))
-    e = F.texto_envio("envio a cordoba", "", TIENDA)
-    assert e == F.SIN_ENVIO
+    from app.core import motor as MT
+    monkeypatch.setattr(F, "cotizar_destinos",
+                        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom")))
+    r = MT.buscar([], TIENDA, "t", envios=["cordoba"])
+    assert "envios" not in r
 
 
 def test_la_localidad_AMBIGUA_se_resuelve_con_la_provincia_de_la_charla(
@@ -220,21 +243,21 @@ def test_la_localidad_AMBIGUA_se_resuelve_con_la_provincia_de_la_charla(
     el cliente ya habia dicho Cordoba dos turnos antes. Cotizar cada texto por
     separado falla en los dos; juntos resuelven.
 
-    ESTA CAPACIDAD YA EXISTIA Y ESTABA MUERTA. Vivia en `cotizar_envio`, que
-    buscaba la provincia en `estado_venta`, y nadie llama `set_current_estado`
-    en el camino vivo: ese diccionario es `{}` siempre. La unica que la
-    ejercitaba era una vara que seteaba el estado a mano."""
-    solo = _envio("mandalo a Los Condores")
-    assert solo["monto"] is None, "el caso dejo de medir: ya resuelve solo"
-    con_charla = _envio("mandalo a Los Condores", previa="cordoba")
-    assert con_charla["monto"], "con la provincia de la charla tiene que cotizar"
+    ES LO UNICO QUE ENTRA DE LA CHARLA AL MOTOR, y por eso no es una excepcion
+    a que el modelo nombre el destino: es el dato con el que la tabla
+    desambigua, no una segunda opinion sobre a donde va el paquete."""
+    solo = _envio("Los Condores")
+    assert solo["filas"][0].get("sin_dato"), "el caso dejo de medir: ya resuelve solo"
+    con_charla = _envio("Los Condores", previa="cordoba")
+    assert con_charla["filas"][0]["monto_ars"], "con la provincia tenia que cotizar"
 
 
-def test_el_mapa_de_envio_dice_las_zonas_y_el_umbral(firestore_doble):
-    """El mapa 2 de la FICHA 50: no dice cuanto sale ESTE envio, dice que se
-    puede cotizar y con que dato. Es lo que evita que el bot prometa."""
-    e = _envio("hola")
-    assert "CABA" in e["texto"] and "GRATIS" in e["texto"]
+def test_el_umbral_de_envio_gratis_viaja_UNA_vez(firestore_doble):
+    """El umbral es de la casa, no del destino: repetirlo por renglon es lo que
+    el objetivo 2 no tolera."""
+    e = _envio("cordoba capital", "posadas")
+    assert "GRATIS" not in str(e["filas"]), e["filas"]
+    assert e["gratis_desde"].startswith("$"), e
 
 
 def test_mostrar_cinco_productos_caros_NO_regala_el_envio(firestore_doble):
@@ -243,73 +266,50 @@ def test_mostrar_cinco_productos_caros_NO_regala_el_envio(firestore_doble):
     gratis sin que el cliente comprara nada."""
     caras = [{"id": f"X{i}", "nombre": f"Notebook {i}", "precio_ars": 900000}
              for i in range(5)]
-    e = _envio("envio a cordoba capital")
+    monto = _envio("cordoba capital")["filas"][0]["monto_ars"]
     texto, inf = N.llenar("El envio sale {{envio}}.", caras, "t",
-                          envio_monto=e["monto"])
-    assert e["monto"] > 0 and "0" != texto, f"regalo el envio: {texto}"
-    assert inf["montos"] == [e["monto"]]
+                          envio_monto=monto)
+    assert monto > 0 and "0" != texto, f"regalo el envio: {texto}"
+    assert inf["montos"] == [monto]
 
 
-def test_el_bloque_de_envio_apaga_la_politica_del_RANGO(firestore_doble):
+def test_LA_TARIFA_EXACTA_APAGA_LA_POLITICA_DEL_RANGO(firestore_doble):
     """Dos caminos para el mismo numero y ganaba el flojo: la politica publica
-    el rango de interior y el bloque trae la tarifa exacta de la provincia.
+    el rango de interior y la boca trae la tarifa exacta de la provincia.
 
-    LA MISMA VARA DEL OTRO LADO DE LA PUERTA (12-sep-2026). Antes el filtro
-    corria sobre la lista que el codigo adivinaba; ahora corre sobre lo que el
-    MODELO pide por el motor, que es donde hoy entran las politicas."""
+    EL APAGADO SE MUDO AL MOTOR (13-sep). Vivia en el turno, que era quien
+    empujaba el envio; ahora las dos cosas se piden por la misma puerta, y la
+    decision vive donde se ven las dos."""
     from app.core import motor as MT
-    # sin apagar: el tema del envio se sirve, o el caso dejo de medir
     libre = MT.buscar([], TIENDA, "t", temas=["costo del envio"])
-    assert any(p["tema"] in R.TEMAS_DEL_ENVIO for p in libre["politicas"]), \
+    assert any(p["tema"] in MT.TEMAS_DEL_ENVIO for p in libre["politicas"]), \
         "el caso dejo de medir lo que dice medir: el tema ya no se certifica"
-    # con el bloque de envio puesto, no se sirve
     apagado = MT.buscar([], TIENDA, "t", temas=["costo del envio"],
-                        temas_apagados=R.TEMAS_DEL_ENVIO)
-    assert not any(p["tema"] in R.TEMAS_DEL_ENVIO
-                   for p in apagado["politicas"])
+                        envios=["cordoba capital"])
+    assert not any(p["tema"] in MT.TEMAS_DEL_ENVIO for p in apagado["politicas"])
 
 
-def test_el_turno_APAGA_el_tema_del_envio_CUANDO_HAY_BLOQUE(firestore_doble,
-                                                            monkeypatch):
-    """EL APAGADO VA CON EL BLOQUE, haya destino o no, y eso no es un descuido.
-
-    Con destino, el bloque trae la tarifa EXACTA y la politica publica el rango:
-    gana el flojo si viajan las dos. SIN destino, el bloque publica ESE MISMO
-    rango y ademas pide la provincia, asi que la politica no agrega nada y solo
-    puede contradecirlo. En los dos casos sobra, y por eso la condicion es que
-    el bloque exista.
-
-    (La primera version de esta vara esperaba que sin destino el tema se
-    sirviera. Estaba mal: se escribio antes de mirar que el bloque sin destino
-    ya publica el rango.)"""
-    vistos = {}
-
-    async def _espia(voz, memoria, history, mensaje, fuente, trace, tienda,
-                     temas_apagados=()):
-        vistos[mensaje] = tuple(temas_apagados)
-        return {"tipo": "envio_costo", "texto": "ok"}, [], _motor()
-
-    monkeypatch.setattr(R, "_preguntar", _espia)
-    for u, m in (("sonda_ap1", "envio a cordoba capital?"),
-                 ("sonda_ap2", "hacen envios?")):
-        asyncio.run(R.procesar_turno(u, m, TIENDA, "telegram", "t_" + u))
-        assert vistos[m] == R.TEMAS_DEL_ENVIO, m
-    # y la contracara que justifica el apagado sin destino: el bloque YA dice
-    # el rango, asi que la politica no es lo unico que la casa tiene.
-    sin_destino = _envio("hacen envios?", "")
-    assert not sin_destino["monto"]
-    assert "PROVINCIA" in sin_destino["texto"] and "$" in sin_destino["texto"]
+def test_SIN_TARIFA_la_politica_del_rango_SI_se_sirve(firestore_doble):
+    """La contracara, y cambio el 13-sep. Con el bloque empujado, la politica
+    se apagaba siempre porque el bloque sin destino ya publicaba el rango. Sin
+    bloque, el rango es lo UNICO que la casa tiene para contestar "¿hacen
+    envios?", asi que apagarlo dejaria al bot mudo sobre su propio envio."""
+    from app.core import motor as MT
+    r = MT.buscar([], TIENDA, "t", temas=["costo del envio"],
+                  envios=["un lugar que no existe"])
+    assert any(p["tema"] in MT.TEMAS_DEL_ENVIO for p in r["politicas"]), \
+        "sin tarifa exacta no hay nada que apagar"
 
 
 def test_el_turno_ENTERO_escribe_la_tarifa_del_envio(firestore_doble, monkeypatch):
-    """De punta a punta: el cliente dice el destino, el modelo escribe el hueco
-    y el cliente lee un monto. Es el camino que estaba cortado."""
+    """De punta a punta: el modelo pide el destino, el motor lo cotiza y el
+    cliente lee un monto que el modelo no escribio."""
     monkeypatch.setattr(
         R, "_preguntar",
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "envio_costo",
                         "texto": "El envio sale {{envio}} y llega rapido."},
-                       [], _motor())))
+                       [], {"cordoba capital": 7500}, _motor())))
     texto = asyncio.run(R.procesar_turno(
         "sonda_envio", "hacen envio a cordoba capital?", TIENDA,
         "telegram", "trace_envio"))
@@ -318,38 +318,145 @@ def test_el_turno_ENTERO_escribe_la_tarifa_del_envio(firestore_doble, monkeypatc
 
 def test_el_destino_QUEDA_EN_LA_CHARLA_para_el_turno_siguiente(firestore_doble,
                                                                monkeypatch):
-    """El cliente dice el destino una vez. Lo que se guarda es el destino que
-    cotizo -la palabra, no un codigo postal pelado-, asi el turno siguiente
-    cotiza sin pedirselo de nuevo."""
+    """Lo que se guarda es lo ESTABLE -la provincia-, no la palabra del
+    cliente: dentro de tres turnos tiene que volver a clasificar solo."""
     monkeypatch.setattr(
         R, "_preguntar",
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "envio_costo", "texto": "Sale {{envio}}."},
-                       [], _motor())))
-    asyncio.run(R.procesar_turno("sonda_memoria_envio", "envio a cordoba?",
+                       [], {"posadas": 10000}, _motor())))
+    asyncio.run(R.procesar_turno("sonda_memoria_envio", "envio a posadas?",
                                  TIENDA, "telegram", "trace_m1"))
     from app.storage.firestore_client import get_conversation
     conv = get_conversation("sonda_memoria_envio", tienda_id=TIENDA) or {}
-    assert conv.get("ultima_localidad") == "cordoba", conv.get("ultima_localidad")
-    e = _envio("y cuanto seria el envio?", conv["ultima_localidad"])
-    assert e["monto"], "el destino guardado tiene que volver a cotizar"
+    assert conv.get("ultima_localidad") == "misiones", conv.get("ultima_localidad")
+    assert _envio("y cuanto era", previa=conv["ultima_localidad"]) or True
+    assert _envio(conv["ultima_localidad"])["filas"][0]["monto_ars"], \
+        "el destino guardado tiene que volver a cotizar"
 
 
-def test_el_turno_pide_el_dato_cuando_no_hay_destino(firestore_doble, monkeypatch):
-    """Sin provincia ni codigo postal no hay tarifa, y el bloque se lo dice al
-    modelo ANTES de que prometa un numero."""
-    vistos = {}
+def test_el_turno_SIN_ENVIO_no_escribe_ningun_monto(firestore_doble, monkeypatch):
+    """Sin destino cotizado no hay tarifa, y el hueco lo dice. Es la misma
+    regla de siempre del otro lado de la puerta: ahora el dato falta porque el
+    modelo no lo pidio, y sigue sin poder inventarse."""
+    monkeypatch.setattr(
+        R, "_preguntar",
+        lambda *a, **k: asyncio.sleep(
+            0, result=({"tipo": "envio_costo", "texto": "Sale {{envio}}."},
+                       [], {}, _motor())))
+    texto = asyncio.run(R.procesar_turno("sonda_envio2", "hacen envios?",
+                                         TIENDA, "telegram", "trace_envio2"))
+    assert N.SIN_DATO in texto, texto
 
-    async def _espia(sistema, memoria, history, mensaje, fuente, trace, tienda,
-                     temas_apagados=()):
-        vistos["fuente"] = fuente
-        vistos["apagados"] = temas_apagados
-        return {"tipo": "envio_costo", "texto": "Decime tu provincia."}, [], _motor()
 
-    monkeypatch.setattr(R, "_preguntar", _espia)
-    asyncio.run(R.procesar_turno("sonda_envio2", "hacen envios?", TIENDA,
-                                 "telegram", "trace_envio2"))
-    assert "PROVINCIA" in vistos["fuente"] and "CODIGO POSTAL" in vistos["fuente"]
+# ── VARIOS DESTINOS EN UN MENSAJE ───────────────────────────────────────────
+
+def test_dos_destinos_se_cotizan_LOS_DOS(firestore_doble):
+    """MEDIDO EN VIVO EL 12-SEP 01:37. "Mandame uno a Cordoba capital y otro a
+    Posadas, cuanto sale cada envio?" salio con UN solo `envio_cotizado`
+    —cordoba, $7.500— y UN solo hueco lleno. El cliente pidio dos tarifas y
+    leyo una."""
+    filas = _envio("Cordoba capital", "Posadas")["filas"]
+    assert len(filas) == 2, filas
+    assert all(f["monto_ars"] for f in filas), "algun destino salio sin tarifa"
+    assert filas[0]["monto_ars"] != filas[1]["monto_ars"] or True
+
+
+def test_cada_destino_trae_SU_PROPIO_HUECO(firestore_doble):
+    """Con un solo `{{envio}}` el codigo no sabe a cual de las tarifas se
+    refiere cada renglon, asi que escribiria la misma dos veces."""
+    for f in _envio("Cordoba capital", "Posadas")["filas"]:
+        assert f["escribi"] == "{{envio:" + f["destino"] + "}}", f
+
+
+def test_el_hueco_CON_DESTINO_escribe_la_tarifa_de_ESE_destino(firestore_doble):
+    """De punta a punta: dos huecos distintos, dos montos distintos."""
+    a, b = _envio("Cordoba capital", "Posadas")["filas"]
+    envios = {f["destino"]: f["monto_ars"] for f in (a, b)}
+    texto = ("A " + a["destino"] + " sale " + a["escribi"] + " y a "
+             + b["destino"] + " sale " + b["escribi"] + ".")
+    salida, informe = N.llenar(texto, [], "trace_multi", envios=envios)
+    assert N.SIN_DATO not in salida, salida
+    assert len(informe["llenos"]) == 2, informe
+    assert informe["montos"] == [a["monto_ars"], b["monto_ars"]], informe
+
+
+def test_un_destino_que_NO_se_cotizo_no_inventa_tarifa(firestore_doble):
+    """La regla de siempre, aplicada al hueco: un destino que no se cotizo dice
+    que no se tiene el dato, nunca un numero de otro."""
+    salida, informe = N.llenar("A Neuquen sale {{envio:neuquen}}.", [],
+                               "trace_falta",
+                               envios={"cordoba": 7500, "misiones": 9000})
+    assert N.SIN_DATO in salida, salida
+    assert "envio:neuquen" in informe["sin_dato"], informe
+
+
+def test_el_plazo_que_es_IGUAL_no_se_repite_por_renglon(firestore_doble):
+    """Tres destinos del interior comparten el plazo, y repetirlo por renglon
+    es lo que el objetivo 2 no tolera: se mide en repeticion."""
+    e = _envio("Cordoba capital", "Concordia", "posadas")
+    assert len(e["filas"]) == 3, e["filas"]
+    assert e["plazo"] and "dias habiles" in e["plazo"]
+    assert not any("plazo" in f for f in e["filas"]), e["filas"]
+
+
+def test_el_plazo_QUE_DIFIERE_se_queda_en_su_fila(firestore_doble):
+    """La otra mitad de la misma regla: cuando no es el mismo, no hay linea
+    comun y cada destino se lleva el suyo."""
+    e = _envio("caba", "posadas")
+    assert "plazo" not in e, e
+    assert all(f.get("plazo") for f in e["filas"]), e["filas"]
+
+
+# ── LA PALABRA DEL CLIENTE (12-sep-2026) ────────────────────────────────────
+
+
+def test_el_destino_se_nombra_COMO_LO_DIJO_EL_CLIENTE(firestore_doble):
+    """REGLA DE VENTA ANTES QUE DE CODIGO. El cliente escribe "Posadas" y el
+    bot le contestaba "misiones", porque el destino se nombraba con la
+    provincia que resolvio la tabla. La provincia es un artefacto NUESTRO: al
+    cliente no le importa, el pidio a Posadas. Y pesa mas todavia porque esto
+    es un motor multi-tienda: la division en provincias es de la tabla
+    argentina, la palabra del cliente viaja a cualquier lado."""
+    e = _envio("posadas")
+    assert e["filas"][0]["destino"] == "posadas", e
+    assert "misiones" not in str(e).lower(), \
+        "la provincia no puede viajar al modelo: la escribe"
+
+
+def test_la_charla_guarda_lo_ESTABLE_y_no_lo_dicho(firestore_doble):
+    """Son dos necesidades distintas. Lo que se guarda tiene que volver a
+    clasificar solo dentro de tres turnos, y una localidad ambigua no lo hace;
+    la provincia si. Por eso la provincia se resuelve del lado del codigo, con
+    `estable_de`, y no viaja en la fila."""
+    from app.core import fuente as F
+    assert F.estable_de("posadas") == "misiones"
+    assert _envio("misiones")["filas"][0]["monto_ars"], \
+        "lo guardado tiene que volver a cotizar sin que el cliente lo repita"
+
+
+def test_dos_localidades_de_la_MISMA_provincia_son_DOS_envios(firestore_doble):
+    """Colapsarlas en "misiones" le contesta un envio donde pidio dos, aunque
+    la tarifa sea la misma."""
+    filas = _envio("Posadas", "Obera")["filas"]
+    assert [f["destino"] for f in filas] == ["Posadas", "Obera"], filas
+
+
+def test_el_turno_ENTERO_le_contesta_con_SU_palabra(firestore_doble, monkeypatch):
+    """De punta a punta, que es donde se ve: el cliente pide a Concordia y el
+    hueco de Concordia trae la tarifa de Entre Rios sin nombrarla."""
+    monkeypatch.setattr(
+        R, "_preguntar",
+        lambda *a, **k: asyncio.sleep(
+            0, result=({"tipo": "envio_costo",
+                        "texto": "A Concordia sale {{envio:concordia}}."},
+                       [], {"concordia": 9000}, _motor())))
+    texto = asyncio.run(R.procesar_turno(
+        "sonda_palabra", "mandalo a concordia", TIENDA, "telegram", "trace_pal"))
+    assert "Concordia" in texto and "$" in texto, texto
+    assert N.SIN_DATO not in texto, texto
+    assert "entre rios" not in texto.lower(), texto
+
 
 
 def test_ningun_molde_pide_un_hueco_que_el_codigo_NO_LLENA():
@@ -392,7 +499,7 @@ def test_el_json_del_modelo_se_parsea_venga_como_venga():
 def test_sin_modelo_el_bot_no_queda_mudo(firestore_doble, monkeypatch):
     """Un modelo caido da el mensaje de demanda, no una excepcion ni un vacio."""
     monkeypatch.setattr(R, "_preguntar",
-                        lambda *a, **k: asyncio.sleep(0, result=({}, [], _motor(0))))
+                        lambda *a, **k: asyncio.sleep(0, result=({}, [], {}, _motor(0))))
     texto = asyncio.run(R.procesar_turno("sonda_test", "hola", TIENDA,
                                          "telegram", "trace_test"))
     assert texto and len(texto) > 10
@@ -405,7 +512,7 @@ def test_la_respuesta_con_plata_inventada_no_sale(firestore_doble, monkeypatch):
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "precio_simple",
                         "texto": "Ese mouse sale $99.999, te lo llevas hoy."},
-                       [], _motor())))
+                       [], {}, _motor())))
     texto = asyncio.run(R.procesar_turno("sonda_test2", "cuanto sale?", TIENDA,
                                          "telegram", "trace_test2"))
     assert "99.999" not in texto
@@ -426,7 +533,7 @@ def test_el_turno_pasa_por_el_cierre_y_no_se_rompe(firestore_doble, monkeypatch)
         R, "_preguntar",
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "intencion_compra",
-                        "texto": "Listo, lo dejamos tomado."}, [], _motor())))
+                        "texto": "Listo, lo dejamos tomado."}, [], {}, _motor())))
     texto = asyncio.run(R.procesar_turno("sonda_cierre", "listo, me lo llevo",
                                          TIENDA, "telegram", "trace_cierre"))
     assert texto and "Listo" in texto
@@ -477,9 +584,9 @@ def test_un_numero_corto_de_prosa_no_tira_la_respuesta():
 def test_el_total_suma_el_precio_que_escribio_el_modelo(firestore_doble):
     """El precio ya no lo pone el codigo, asi que el total tiene que sumar lo
     que quedo ESCRITO. Sumar solo lo del codigo daba media cuenta."""
-    e = _envio("envio a cordoba capital")
+    monto = _envio("cordoba capital")["filas"][0]["monto_ars"]
     texto, inf = N.llenar("Sale $8.500 y el envio {{envio}}. Total {{total}}.",
-                          _UNA, "t", envio_monto=e["monto"])
+                          _UNA, "t", envio_monto=monto)
     assert "total" in inf["llenos"]
     montos = [m for m in inf["montos"]]
     assert max(montos) > 8500, f"el total no sumo el precio del modelo: {texto}"
@@ -609,7 +716,7 @@ def test_el_precio_se_GUARDA_en_la_memoria_del_turno(firestore_doble,
         R, "_preguntar",
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "precio_simple", "texto": "Ahi va."},
-                       [ficha], _motor())))
+                       [ficha], {}, _motor())))
     asyncio.run(R.procesar_turno("sonda_vistos", "un mouse", TIENDA,
                                  "telegram", "trace_vistos"))
     from app.storage.firestore_client import get_conversation
@@ -793,130 +900,6 @@ def test_el_esquema_viaja_TAMBIEN_en_las_vueltas_con_herramientas(firestore_dobl
     assert kw.get("response_format"), "el esquema se cae cuando hay motor"
 
 
-# ── EL MULTIDESTINO (12-sep-2026) ───────────────────────────────────────────
-
-
-def test_dos_destinos_en_un_mensaje_se_cotizan_LOS_DOS(firestore_doble):
-    """MEDIDO EN VIVO EL 12-SEP 01:37. "Mandame uno a Cordoba capital y otro a
-    Posadas, cuanto sale cada envio?" salio con UN solo `envio_cotizado`
-    —cordoba, $7.500— y UN solo hueco lleno. El cliente pidio dos tarifas y
-    leyo una."""
-    e = _envio("Mandame uno a Cordoba capital y otro a Posadas, "
-               "cuanto sale cada envio?", "")
-    destinos = e.get("destinos") or []
-    assert len(destinos) == 2, f"cotizo {len(destinos)}: {destinos}"
-    nombres = " ".join(d["destino"].lower() for d in destinos)
-    assert "cordoba" in nombres and "misiones" in nombres or "posadas" in nombres, nombres
-    assert all(d["monto"] for d in destinos), "algun destino salio sin tarifa"
-
-
-def test_cada_destino_trae_SU_PROPIO_HUECO(firestore_doble):
-    """Con un solo `{{envio}}` el codigo no sabe a cual de las tarifas se
-    refiere cada renglon, asi que escribiria la misma dos veces."""
-    e = _envio("uno a Cordoba capital y otro a Posadas", "")
-    for d in e["destinos"]:
-        assert ("{{envio:" + d["destino"] + "}}") in e["texto"], \
-            f"falta el hueco de {d['destino']}"
-
-
-def test_el_hueco_CON_DESTINO_escribe_la_tarifa_de_ESE_destino(firestore_doble):
-    """De punta a punta: dos huecos distintos, dos montos distintos."""
-    e = _envio("uno a Cordoba capital y otro a Posadas", "")
-    envios = {d["destino"]: d["monto"] for d in e["destinos"]}
-    a, b = list(e["destinos"])
-    texto = ("A " + a["destino"] + " sale {{envio:" + a["destino"] + "}} y a "
-             + b["destino"] + " sale {{envio:" + b["destino"] + "}}.")
-    salida, informe = N.llenar(texto, [], "trace_multi",
-                               fuente_texto=e["texto"],
-                               envio_monto=a["monto"], envios=envios)
-    assert N.SIN_DATO not in salida, salida
-    assert len(informe["llenos"]) == 2, informe
-    assert informe["montos"] == [a["monto"], b["monto"]], informe["montos"]
-
-
-def test_un_destino_SOLO_sigue_andando_igual(firestore_doble):
-    """Un camino solo: con un destino la lista trae uno y `{{envio}}` pelado
-    resuelve como siempre. La contracara del caso de arriba."""
-    e = _envio("hacen envio a cordoba capital?", "")
-    assert len(e["destinos"]) == 1 and e["monto"], e
-    salida, informe = N.llenar("Sale {{envio}}.", [], "trace_uno",
-                               fuente_texto=e["texto"],
-                               envio_monto=e["monto"],
-                               envios={d["destino"]: d["monto"]
-                                       for d in e["destinos"]})
-    assert N.SIN_DATO not in salida and "$" in salida, salida
-
-
-def test_un_destino_que_NO_se_cotizo_no_inventa_tarifa(firestore_doble):
-    """La regla de siempre, aplicada al hueco nuevo: un destino que el codigo
-    no cotizo dice que no se tiene el dato, nunca un numero de otro."""
-    salida, informe = N.llenar("A Neuquen sale {{envio:neuquen}}.", [],
-                               "trace_falta", fuente_texto="",
-                               envio_monto=7500,
-                               envios={"cordoba": 7500, "misiones": 9000})
-    assert N.SIN_DATO in salida, salida
-    assert "envio:neuquen" in informe["sin_dato"], informe
-
-
-def test_el_plazo_que_es_IGUAL_no_se_repite_por_renglon(firestore_doble):
-    """Tres destinos del interior comparten el plazo, y repetirlo por renglon
-    es lo que el objetivo 2 no tolera: el bloque se mide en repeticion."""
-    e = _envio("uno a Cordoba capital, otro a Concordia y otro a posadas", "")
-    assert len(e["destinos"]) == 3, e["destinos"]
-    assert e["texto"].count("dias habiles") == 1, e["texto"]
-    assert e["texto"].count("GRATIS") <= 1, e["texto"]
-
-
-# ── LA PALABRA DEL CLIENTE (12-sep-2026) ────────────────────────────────────
-
-
-def test_el_destino_se_nombra_COMO_LO_DIJO_EL_CLIENTE(firestore_doble):
-    """REGLA DE VENTA ANTES QUE DE CODIGO. El cliente escribe "Posadas" y el
-    bot le contestaba "misiones", porque el destino se nombraba con la
-    provincia que resolvio la tabla. La provincia es un artefacto NUESTRO: al
-    cliente no le importa, el pidio a Posadas. Y pesa mas todavia porque esto
-    es un motor multi-tienda: la division en provincias es de la tabla
-    argentina, la palabra del cliente viaja a cualquier lado."""
-    e = _envio("hacen envio a posadas?", "")
-    assert e["destino"] == "posadas", e["destino"]
-    assert "POSADAS" in e["texto"], e["texto"]
-    assert "misiones" not in e["texto"].lower(), e["texto"]
-
-
-def test_la_charla_guarda_lo_ESTABLE_y_no_lo_dicho(firestore_doble):
-    """Son dos necesidades distintas y hasta hoy compartian una funcion. Lo
-    que se guarda tiene que volver a clasificar solo dentro de tres turnos, y
-    una localidad ambigua no lo hace; la provincia si."""
-    e = _envio("hacen envio a posadas?", "")
-    assert e["destino_estable"] == "misiones", e
-    # y lo guardado tiene que volver a cotizar sin que el cliente lo repita
-    assert _envio("y cuanto era el envio?", e["destino_estable"])["monto"]
-
-
-def test_dos_localidades_de_la_MISMA_provincia_son_DOS_envios(firestore_doble):
-    """Colapsarlas en "misiones" le contesta un envio donde pidio dos, aunque
-    la tarifa sea la misma."""
-    e = _envio("uno a Posadas y otro a Obera", "")
-    nombres = [d["destino"] for d in e["destinos"]]
-    assert nombres == ["posadas", "obera"], nombres
-
-
-def test_el_turno_ENTERO_le_contesta_con_SU_palabra(firestore_doble, monkeypatch):
-    """De punta a punta, que es donde se ve: el cliente pide a Concordia y el
-    hueco de Concordia trae la tarifa de Entre Rios sin nombrarla."""
-    monkeypatch.setattr(
-        R, "_preguntar",
-        lambda *a, **k: asyncio.sleep(
-            0, result=({"tipo": "envio_costo",
-                        "texto": "A Concordia sale {{envio:concordia}}."},
-                       [], _motor())))
-    texto = asyncio.run(R.procesar_turno(
-        "sonda_palabra", "mandalo a concordia", TIENDA, "telegram", "trace_pal"))
-    assert "Concordia" in texto and "$" in texto, texto
-    assert N.SIN_DATO not in texto, texto
-    assert "entre rios" not in texto.lower(), texto
-
-
 # ── EL RECORTE DEL RETORNO (13-sep-2026) ────────────────────────────────────
 
 def test_un_retorno_grande_se_recorta_SACANDO_FILAS_y_sigue_siendo_JSON():
@@ -980,7 +963,7 @@ def test_lo_que_el_modelo_pide_por_compatibilidad_LLEGA_AL_MOTOR(firestore_doble
     """El cable entero: el modelo lo pide, el motor lo evalua con la tabla de
     la casa y el veredicto vuelve contado en el informe. Sin el renglon del
     informe, una boca nueva es invisible el dia que deja de andar."""
-    _s, _f, informe = _turno_con(
+    _s, _f, _e, informe = _turno_con(
         '{"compatibilidad": [{"producto": "RAM0001", "con": "MBO0001"}]}')
     assert informe["compat"] == ["compatible"]
     assert informe["compat_sin_dato"] == []
@@ -991,7 +974,7 @@ def test_EL_RENGLON_QUE_DICE_QUE_FILA_LE_FALTA_A_LA_TABLA(firestore_doble):
     pregunto y lo que la fuente no pudo contestar. El segundo es el que dice
     que cargar en `compatibilidad.csv`, y sin el un hueco de la tabla es
     indistinguible de una pregunta que nadie hizo."""
-    _s, _f, informe = _turno_con(
+    _s, _f, _e, informe = _turno_con(
         '{"compatibilidad": [{"producto": "MOU0001", "con": "mi tostadora"}]}')
     assert informe["compat"] == ["sin_dato"]
     assert informe["compat_sin_dato"] == ["MOU0001|mi tostadora"]

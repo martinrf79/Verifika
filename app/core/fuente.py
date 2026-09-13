@@ -594,179 +594,121 @@ def _tarifas(faq: dict, tienda_id: str) -> str:
     return "; ".join(partes)
 
 
-# Cuantos destinos se cotizan en un turno. Cuatro alcanza para el pedido
+# Cuantos destinos se cotizan en una llamada. Cuatro alcanza para el pedido
 # partido que motivo esto -tres destinos- y le deja uno de margen; mas que eso
 # no es un pedido, es un texto que nombra lugares de paso.
 TOPE_DESTINOS = 4
 
 
-def _cotizar_cada_uno(mensaje: str) -> list[dict]:
-    """Un resultado de cotizacion por cada lugar que el mensaje nombra, en el
-    orden en que el cliente los dijo y sin repetir destino.
+# ── LA BOCA DE ENVIO: SE PIDE, YA NO SE EMPUJA (13-sep-2026) ────────────────
+#
+# QUE CAMBIA. Hasta hoy el codigo leia el mensaje crudo, buscaba lugares con
+# `geo_cp`, cotizaba y le ponia el bloque delante al modelo EN CADA TURNO,
+# hubiera preguntado o no. Andaba, y por eso duro: el destino es determinista y
+# no hay nada que razonar en un codigo postal.
+#
+# POR QUE SE CAMBIA IGUAL. Era el ultimo dato que llegaba por un SEGUNDO
+# camino, y eso se pago dos veces medido: la politica del rango competia con la
+# tarifa exacta -hubo que apagarla a mano- y en los 19 turnos del 13-sep el
+# unico que pidio envio fue de los que NO llamaron al motor, porque ya lo tenia
+# servido. La decision de Martin en la FICHA 52 es una sola: todo lo que se
+# contesta con un dato entra por el motor.
+#
+# QUE SIGUE SIENDO DEL CODIGO, y es la mitad que importa: clasificar el texto a
+# provincia y zona, y sacar la tarifa de la tabla. El modelo NOMBRA el destino
+# con las palabras del cliente; el numero no lo toca nadie mas que la fuente.
+#
+# EL UMBRAL DE ENVIO GRATIS NO SE APLICA ACA, y es a proposito: depende del
+# PEDIDO, que no vive en este camino. Viaja como dato para que el modelo lo
+# diga y lo aplica la calculadora cuando el cierre arma la orden.
 
-    LOS LUGARES LOS DA `geo_cp`, contra su tabla de 16.164 localidades. Este
-    modulo no parte prosa: pregunta donde hay un lugar y cotiza cada uno.
 
-    UN LUGAR QUE NO COTIZA NO ENTRA Y NO ROMPE NADA: si una localidad es
-    ambigua, ese destino simplemente no esta, y el turno sigue con los que si
-    resolvieron. Devolver una tarifa adivinada seria peor que faltar una.
+def _fila_de(r: dict, nombre: str, faq: dict) -> dict:
+    """La fila que ve el modelo: el destino con SU palabra, la tarifa ya
+    escrita, el plazo y el hueco que tiene que copiar.
+
+    NO LLEVA LA PROVINCIA. "Posadas" resuelve a misiones y el cliente pidio a
+    Posadas: con la provincia delante el modelo la escribe, que es la falla de
+    venta que el repo corrigio el 12-sep. Lo que la charla necesita guardar lo
+    resuelve `estable_de`, del lado del codigo.
     """
-    from app.core.geo_cp import lugares_en_texto
-    try:
-        lugares = lugares_en_texto(mensaje)
-    except Exception as e:  # noqa: BLE001 — sin lugares se sigue por el camino de uno
-        log.warning("envio_lugares_error", error=f"{type(e).__name__}: {e}")
-        return []
-    fuera, vistos = [], set()
-    for lugar in lugares[:TOPE_DESTINOS]:
-        r = _cotizar(lugar)
-        if not r:
-            continue
-        # SE REPITE POR LO QUE EL CLIENTE DIJO, no por la provincia. "Posadas y
-        # Obera" son DOS envios aunque compartan tarifa: colapsarlos en
-        # "misiones" le contesta uno donde pidio dos.
-        if lugar in vistos:
-            continue
-        vistos.add(lugar)
-        r = dict(r)
-        r["dicho"] = lugar
-        fuera.append(r)
-    return fuera
+    monto, zona = int(r.get("monto") or 0), str(r.get("zona") or "")
+    visible = _destino_legible({**r, "dicho": nombre})
+    return {"destino": visible,
+            "costo": _plata(monto),
+            "monto_ars": monto,
+            "zona": zona,
+            "plazo": _plazo_de(zona, faq),
+            "escribi": f"{{{{envio:{visible}}}}}"}
 
 
-def _bloque_de_varios(rs: list, gratis: str, faq: dict) -> dict:
-    """El bloque cuando el cliente nombro MAS DE UN destino.
+def cotizar_destinos(nombres, tienda_id: str,
+                     localidad_previa: str = "") -> dict:
+    """{filas, gratis_desde, zonas} para los destinos que nombro el modelo.
 
-    CADA DESTINO LLEVA SU PROPIO HUECO, `{{envio:<destino>}}`, y ese es el
-    punto entero: con un solo `{{envio}}` el codigo no puede saber a cual de
-    las tarifas se refiere cada renglon, asi que escribiria la misma dos veces.
-    El hueco con referencia ya existia en `numeros` para el precio y no lo
-    usaba nadie para el envio.
+    NUNCA LANZA Y NUNCA INVENTA: el destino que no clasifica vuelve con
+    `sin_dato` y con que dato falta, que es la respuesta 5 de la FICHA 52.
 
-    `destino` y `monto` sueltos siguen saliendo, y son los del PRIMERO: es lo
-    que `respuesta` guarda como la localidad de la charla y lo que resuelve un
-    `{{envio}}` sin referencia. Un camino solo, con la lista al lado.
-    """
-    filas, destinos, plazos = [], [], []
-    for r in rs:
-        monto, zona = int(r.get("monto") or 0), str(r.get("zona") or "")
-        visible = _destino_legible(r)
-        destinos.append({"destino": visible, "monto": monto, "zona": zona})
-        plazos.append(_plazo_de(zona, faq))
-        filas.append(f"- {visible}: {_plata(monto)}, escribi "
-                     f"{{{{envio:{visible}}}}} donde vaya ese costo.")
-    # EL PLAZO QUE ES EL MISMO SE DICE UNA VEZ. Tres destinos del interior
-    # comparten "llega en 4 a 7 dias" y repetirlo por renglon es exactamente lo
-    # que el objetivo 2 no tolera: el bloque se mide en repeticion. Cuando los
-    # plazos difieren, cada fila se lleva el suyo y no hay linea comun.
-    unicos = {p for p in plazos if p}
-    comun = unicos.pop() if len(unicos) == 1 else ""
-    if not comun:
-        filas = [f + (f" {p}" if p else "") for f, p in zip(filas, plazos)]
-    log.info("envio_cotizado_varios", destinos=[d["destino"] for d in destinos],
-             montos=[d["monto"] for d in destinos])
-    cola = " ".join(x for x in (comun, gratis.strip()) if x)
-    return {
-        "texto": ("EL CLIENTE NOMBRO VARIOS DESTINOS y el codigo YA COTIZO CADA "
-                  "UNO, tarifa exacta:\n" + "\n".join(filas)
-                  + (f"\n{cola}" if cola else "")
-                  + "\nCada hueco trae la tarifa de SU destino: no copies un "
-                  "monto a mano ni uses el mismo para todos."),
-        "destino": destinos[0]["destino"], "monto": destinos[0]["monto"],
-        "zona": destinos[0]["zona"], "destino_estable": _destino_estable(rs[0]),
-        "destinos": destinos}
-
-
-SIN_ENVIO = {"texto": "", "destino": "", "monto": None, "zona": "",
-             "destino_estable": "", "destinos": []}
-
-
-def texto_envio(mensaje: str, localidad_previa: str, tienda_id: str) -> dict:
-    """{texto, destino, monto, zona}, y NUNCA lanza: un bloque de envio que se
-    rompe no puede dejar al cliente sin turno. Sin bloque el bot contesta lo
-    demas igual, y el hueco del envio dice que no se tiene el dato."""
-    try:
-        return _texto_envio(mensaje, localidad_previa, tienda_id)
-    except Exception as e:  # noqa: BLE001 — el envio nunca tumba el turno
-        log.warning("envio_bloque_error", error=f"{type(e).__name__}: {str(e)[:150]}")
-        return dict(SIN_ENVIO)
-
-
-def _texto_envio(mensaje: str, localidad_previa: str, tienda_id: str) -> dict:
-    """El bloque de envio que viaja al modelo.
-
-    Con destino: la tarifa EXACTA ya cotizada, y el monto sale aparte para que
-    `numeros` lo escriba en el hueco. Sin destino: el mapa de lo que la tienda
-    cotiza y que dato hace falta para dar el numero exacto.
+    `localidad_previa` es la provincia que la charla ya tiene, y resuelve la
+    localidad AMBIGUA: "Los Condores" no clasifica solo -hay varios en el
+    pais- y con "cordoba" al lado si. Cotizar cada texto por separado falla en
+    los dos; juntos resuelven, porque la tabla desambigua una localidad con la
+    provincia en el mismo texto.
     """
     from app.storage.firestore_client import get_all_faq
     try:
         faq = get_all_faq(tienda_id=tienda_id) or {}
-    except Exception as e:  # noqa: BLE001 — sin FAQ se contesta sin envio
+    except Exception as e:  # noqa: BLE001 — sin FAQ no hay plazo ni umbral
         log.warning("envio_faq_error", error=f"{type(e).__name__}: {e}")
-        return dict(SIN_ENVIO)
-
+        faq = {}
+    filas, alguno_sin_dato = [], False
+    for nombre in [str(n or "").strip() for n in (nombres or [])][:TOPE_DESTINOS]:
+        if not nombre:
+            continue
+        r = _cotizar(nombre)
+        if not r and localidad_previa:
+            r = _cotizar(f"{nombre}, {localidad_previa}")
+        if not r:
+            alguno_sin_dato = True
+            filas.append({"destino": nombre, "sin_dato":
+                          "no puedo clasificar ese lugar: pedile la PROVINCIA "
+                          "o el CODIGO POSTAL y volve a preguntarme"})
+            continue
+        filas.append(_fila_de(r, nombre, faq))
+    if not filas:
+        return {}
+    fuera: dict = {"filas": filas}
+    # EL PLAZO QUE ES EL MISMO SE DICE UNA VEZ. Tres destinos del interior
+    # comparten "llega en 4 a 7 dias", y repetirlo por renglon es exactamente
+    # lo que el objetivo 2 no tolera: se mide en repeticion. Cuando los plazos
+    # difieren, cada fila se queda con el suyo y no hay linea comun.
+    plazos = {f.get("plazo") for f in filas if f.get("plazo")}
+    if len(plazos) == 1 and not any(f.get("sin_dato") for f in filas):
+        fuera["plazo"] = plazos.pop()
+        for f in filas:
+            f.pop("plazo", None)
     umbral = _umbral_de(faq)
-    gratis = (f" El envio es GRATIS si la compra supera {_plata(umbral)}."
-              if umbral else "")
+    if umbral:
+        fuera["gratis_desde"] = _plata(umbral)
+    if alguno_sin_dato:
+        tarifas = _tarifas(faq, tienda_id)
+        if tarifas:
+            fuera["zonas"] = f"la tienda cotiza {tarifas}"
+    log.info("envio_cotizado", destinos=[f["destino"] for f in filas],
+             montos=[f.get("monto_ars") for f in filas])
+    return fuera
 
-    # VARIOS DESTINOS EN UN MENSAJE, y es el arreglo del 12-sep. Medido en
-    # vivo 01:37: "uno a Cordoba capital y otro a Posadas" cotizaba UNA sola
-    # vez y el cliente leia una tarifa donde habia pedido dos. Los lugares los
-    # segmenta `geo_cp`, contra su tabla, no una lista de frases.
-    varios = _cotizar_cada_uno(mensaje)
-    if len(varios) > 1:
-        return _bloque_de_varios(varios, gratis, faq)
 
-    # EL MENSAJE DE HOY MANDA SOBRE LA CHARLA: un cliente que corrige la
-    # direccion corrige la tarifa.
-    r = varios[0] if varios else _cotizar(mensaje)
-    de_donde = "mensaje"
-    if not r:
-        r = _cotizar(localidad_previa)
-        de_donde = "charla"
-    if not r and localidad_previa and str(mensaje or "").strip():
-        # LA LOCALIDAD AMBIGUA MAS LA PROVINCIA DE LA CHARLA (12-sep-2026).
-        #
-        # El caso es real y tiene fecha: "Los Condores" no resuelve solo -hay
-        # varios en el pais- y el cliente ya habia dicho Cordoba dos turnos
-        # antes. Cotizar cada texto por separado falla en los dos; juntos
-        # resuelven, porque la tabla desambigua una localidad con la provincia
-        # en el mismo texto.
-        #
-        # ESTA CAPACIDAD YA EXISTIA Y ESTABA MUERTA. Vivia en `cotizar_envio`,
-        # que la buscaba en `estado_venta.get_current_estado()`, y nadie llama
-        # `set_current_estado` en el camino vivo: ese diccionario es `{}`
-        # SIEMPRE, asi que la rama no corrio una sola vez desde el apagon. El
-        # unico que la ejercitaba era un test que seteaba el estado a mano, o
-        # sea una vara midiendo un mundo que no existe.
-        #
-        # Aca si vive, porque la provincia sale de `ultima_localidad`, que el
-        # turno escribe de verdad en cada charla.
-        r = _cotizar(f"{mensaje}, {localidad_previa}")
-        de_donde = "mensaje+charla"
+def estable_de(nombre: str, localidad_previa: str = "") -> str:
+    """COMO SE GUARDA EL DESTINO PARA EL TURNO SIGUIENTE: la provincia, o la
+    zona. Va aparte de como se NOMBRA, y son dos necesidades distintas: lo que
+    se guarda tiene que volver a clasificar solo dentro de tres turnos, y una
+    localidad ambigua no lo hace; la provincia si.
 
-    if r:
-        monto, zona = int(r.get("monto") or 0), str(r.get("zona") or "")
-        visible = _destino_legible(r)
-        plazo = _plazo_de(zona, faq)
-        log.info("envio_cotizado", destino=visible, zona=zona, monto=monto,
-                 de_donde=de_donde)
-        return {
-            "texto": (f"EL ENVIO A {visible.upper()} YA ESTA COTIZADO por el "
-                      f"codigo: {_plata(monto)}, tarifa exacta de ese destino. "
-                      f"{plazo}{gratis} Escribi {{{{envio}}}} donde vaya ese "
-                      f"costo y el codigo lo pone; no lo copies a mano ni lo "
-                      f"redondees."),
-            "destino": visible, "monto": monto, "zona": zona,
-            "destino_estable": _destino_estable(r),
-            "destinos": [{"destino": visible, "monto": monto, "zona": zona}]}
-
-    tarifas = _tarifas(faq, tienda_id)
-    cuerpo = f"ENVIOS: la tienda cotiza {tarifas}." if tarifas else \
-        "ENVIOS: la tienda cotiza por zona."
-    return {"texto": (cuerpo + gratis + " Para dar la tarifa EXACTA hace falta "
-                      "la PROVINCIA o el CODIGO POSTAL. Si el cliente no lo "
-                      "dijo, pediselo: no des un monto sin ese dato."),
-            "destino": "", "monto": None, "zona": "",
-            "destino_estable": "", "destinos": []}
+    Vive del lado del codigo a proposito: la provincia no viaja al modelo, para
+    que no le conteste "misiones" al que pidio a Posadas.
+    """
+    r = _cotizar(nombre)
+    if not r and localidad_previa:
+        r = _cotizar(f"{nombre}, {localidad_previa}")
+    return _destino_estable(r) if r else ""

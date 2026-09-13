@@ -41,7 +41,7 @@ TIENDA = "verifika_prod"
 # 2.400 y el margen vuelve a 99, que es el que tuvo siempre.
 #
 # LO QUE COMPRA: el envio deja de viajar EMPUJADO en cada turno. El bloque que
-# sale del prompt pesaba entre 70 y 250 caracteres y viajaba contestara lo que
+# se saco del prompt pesaba entre 70 y 250 caracteres y salia contestara lo que
 # contestara el cliente, asi que el tablero sube y el TURNO baja. La cuenta
 # entera se mira en vivo, no aca.
 TECHO_TABLERO = 2400
@@ -145,7 +145,8 @@ def test_el_tablero_nombra_las_cinco_bocas(firestore_doble):
     assert "compatibilidad" in d, "la boca con cable no se nombra"
     props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
     assert "compatibilidad" in props, "se nombra la boca y no se puede pedir"
-    for sin_cable in ("conviene", "envio"):
+    assert "envio" in d and "envios" in props, "la boca de envio no se ofrece"
+    for sin_cable in ("conviene",):
         assert sin_cable in d, f"no se avisa que falta el cable de {sin_cable}"
 
 

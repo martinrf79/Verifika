@@ -68,9 +68,8 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
   3,00, buscaron 35 de 36, cero busquedas vacias, y la consulta repetida ya no
   se ejecuta dos veces. Ficha 53, vara en `tests/test_tablero.py` con 20 casos,
   banco en `banco_pruebas/tanda_tablero.py` y piso en `tablero_piso.json`. **Lo
-  que sigue son los RAMALES**: criterio no tiene cable y el envio llega
-  empujado por el codigo en vez de pedido por el modelo. Estan en la tabla de
-  la FICHA 52.
+  que sigue son los RAMALES**: el unico que queda sin cable es CRITERIO. Esta
+  en la tabla de la FICHA 52.
 
 **13-sep: EL DISEÑO ENTERO DEL TURNO ESTA ESCRITO, Y ES LA UNIDAD DE TRABAJO
 ABIERTA.** `arquitectura/FICHA_52_las_seis_bocas.md`: los 14 pedidos posibles del
@@ -110,6 +109,24 @@ codigo. Techo del tablero: 2.100 -> 2.300, con las cuentas en
 `test_turno_nuevo.py`. **LO QUE FALTA ES MEDIRLO VIVO:** los renglones nuevos
 de `motor_turno` son `compat` y **`compat_sin_dato`, que es el que dice que
 FILA agregarle a `compatibilidad.csv`**, y salen por el issue 31 con `/logs`.
+
+**13-sep: LA BOCA DE ENVIO SE PIDE, YA NO SE EMPUJA, y era el ultimo dato que
+llegaba por un segundo camino.** El codigo leia el mensaje crudo con `geo_cp`,
+cotizaba y ponia el bloque delante EN CADA TURNO. Ahora el modelo nombra el
+destino con las palabras del cliente -campo `envios` de la misma puerta- y el
+codigo sigue haciendo lo suyo: clasificar el texto a provincia y sacar el
+numero de la tabla. Se borro `fuente.texto_envio` entero y con el
+`geo_cp.lugares_en_texto`, que quedo sin llamador el mismo dia. El apagado de
+la politica del RANGO se mudo al motor, que es donde ahora se ven las dos
+cosas, y cambio de regla: sin tarifa exacta el rango SI se sirve, porque es lo
+unico que la casa tiene para contestar "¿hacen envios?". La provincia NO viaja
+al modelo -`estable_de` la resuelve del lado del codigo- para que no le
+conteste "misiones" al que pidio a Posadas. Techo del tablero: 2.300 -> 2.400.
+Vara: la seccion entera de envio de `test_turno_nuevo.py`, reescrita sobre el
+camino nuevo. **LO QUE FALTA ES MEDIRLO VIVO**, y hay dos preguntas concretas:
+si el modelo PIDE el envio cuando se lo preguntan -renglon `envios` de
+`motor_turno`- y cuanto bajo el turno al sacarle el bloque que viajaba siempre.
+El renglon `envios_sin_clasificar` dice que lugar no reconocimos.
 
 **13-sep: DOS ARREGLOS DEL MOTOR, los dos medidos antes de tocar.** La
 AMBIGUEDAD colgaba de un `elif`: una consulta con `ordenar_por` no calculaba
