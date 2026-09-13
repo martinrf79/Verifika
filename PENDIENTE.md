@@ -66,13 +66,39 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 **13-sep: EL DISEÑO ENTERO DEL TURNO ESTA ESCRITO, Y ES LA UNIDAD DE TRABAJO
 ABIERTA.** `arquitectura/FICHA_52_las_seis_bocas.md`: los 14 pedidos posibles del
-nicho, las 6 respuestas posibles, los 23 componentes con nombre, el croquis y la
+nicho, las 6 respuestas posibles, los 22 componentes con nombre, el croquis y la
 tabla de que esta vivo y que falta. Decision de Martin: todo lo que se contesta
-con un dato entra por el motor; solo la voz y la memoria quedan afuera. **Lo que
-falta cablear son cuatro ramales** -compatibilidad, cuenta, criterio, y el de
-envio que hoy empuja el codigo- mas las tres capas de specs y `no_vendidas`
-adentro del catalogo. La boca CUENTA es la que cierra el setenta treinta:
-`pago_split` esta entero y no lo alcanza nadie desde el apagon del 11-sep.
+con un dato entra por el motor; solo la voz y la memoria quedan afuera.
+
+**13-sep, LAS DOS PALABRAS, y ordenan el resto.** Una BOCA es un area de la
+FUENTE DE VERDAD; un RAMAL es el cable que la conecta al motor. No se cuentan
+juntos. Con eso son **cinco bocas, no seis**: CUENTA no tiene area de fuente.
+**Cada boca trae su propio CALCULO adentro** -envio ya lo hace con la tarifa,
+catalogo lo tiene que hacer con la cantidad-, y lo que CRUZA bocas -total,
+descuento, reparto- vive en el RETORNO y se calcula ANTES de redactar, para que
+el modelo escriba con los numeros resueltos en vez de dejar huecos. NUMEROS
+deja de calcular y se funde con la GUARDA, que solo verifica.
+
+**LO QUE FALTA CABLEAR SON CUATRO RAMALES** -compatibilidad, criterio, el de
+envio que hoy empuja el codigo, y la cuenta del retorno- mas las tres capas de
+specs, `no_vendidas` y la cantidad adentro del catalogo. El setenta treinta lo
+cierra la cuenta del retorno: `calculate_total` no la llama NADIE desde `app/`,
+y ella es la unica que llama a `pago_split`.
+
+**13-sep, LA MEDICION DEL MOTOR, leida por el issue 31 sobre los 19 turnos.**
+Busco en 15 de 19, cero busquedas vacias, toda condicion se pudo aplicar. Los
+cuatro que no buscaron tienen nombre: uno pidio el ENVIO, que el codigo ya le
+habia puesto delante; uno pidio una POLITICA y era antes del mapa 3; uno es el
+setenta treinta, que no tiene a quien llamar; y uno es variabilidad. **Partido
+por deploy el numero es otro: en los seis turnos posteriores al mapa 3 -12-sep
+20:13 a 20:20- llamo al motor en 6 de 6.** El agujero no es que el modelo
+esquive el motor: es que hay datos que llegan por un segundo camino.
+
+**13-sep, EL COSTO NUEVO Y NADIE LO ESTABA MIRANDO.** Esos seis turnos gastaron
+`vueltas=3` y `llamadas=2` TODOS, contra `vueltas=2` y una llamada antes: son
+tres llamadas al modelo por turno, que es justo lo que el apagon del 11-sep
+vino a matar, con 4 consultas repetidas sobre 47. Se mide con `motor_turno` y
+hay que mirarlo ANTES de agregar el proximo ramal.
 
 
 **11-sep, LO ABIERTO: EL MAPA. EL MOTOR YA ESTA.** El diseño entero esta en
