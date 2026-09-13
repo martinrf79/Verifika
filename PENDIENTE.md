@@ -64,6 +64,11 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
+- **ABIERTO** · **EL TABLERO ES LA PROXIMA UNIDAD DE TRABAJO Y SU FICHA YA ESTA
+  ESCRITA:** `arquitectura/FICHA_53_el_tablero.md`, el componente 7 de la 52.
+  Ocho decisiones, la forma en tres partes, el caso G15 y el techo de 1.500
+  tokens. **Todavia no se toco una linea de codigo.**
+
 **13-sep: EL DISEÑO ENTERO DEL TURNO ESTA ESCRITO, Y ES LA UNIDAD DE TRABAJO
 ABIERTA.** `arquitectura/FICHA_52_las_seis_bocas.md`: los 14 pedidos posibles del
 nicho, las 6 respuestas posibles, los 22 componentes con nombre, el croquis y la
