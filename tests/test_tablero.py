@@ -84,7 +84,13 @@ TIENDA = "verifika_prod"
 #
 # Y AHORA SI SOLO BAJA: con esta, las cinco bocas tienen cable y la cuenta que
 # las cruza tambien. No queda nada que enchufar que justifique subirlo.
-TECHO_TABLERO = 2730
+#
+# ── Y BAJA EL MISMO DIA, QUE ES COMO TIENE QUE MOVERSE ──────────────────────
+#
+# El campo `specs` de la consulta se borro: dejo de significar algo cuando la
+# prosa dejo de viajar en las listas. Devuelve 62 tokens, asi que el esquema
+# pasa de 2.631 a 2.569 y el techo de 2.730 a 2.670, con el margen en 101.
+TECHO_TABLERO = 2670
 
 
 def _tokens(s: str) -> int:

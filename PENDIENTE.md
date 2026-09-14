@@ -64,6 +64,33 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
+**14-sep: LA CUENTA DEL RETORNO, y con ella el setenta treinta.** `{{total}}` lo
+resolvia `numeros` SUMANDO las cifras ya escritas en el mensaje, DESPUES de
+redactar. Esa suma no conoce el descuento por transferencia ni el reparto entre
+medios, asi que el 70/30 no existia: `calculate_total` es la unica que llama a
+`pago_split` y el total del pedido no la llamaba desde el apagon. Ahora se pide
+por el campo `cuenta` de la MISMA puerta, con los ids certificados; los destinos
+NO se declaran, salen de los `envios` de esa misma llamada. Toda la plata la
+sigue haciendo `calculadora`, el envio incluido, que entra como `items_extra`
+con el concepto que ella deriva de la provincia. Medido: 2 mouse a Cordoba con
+70/30 dan total $82.500 y total final $76.725. El total calculado es FUENTE
+—el modelo lo puede escribir— y si deja el hueco, el hueco se llena con ESE
+total. **LO QUE FALTA ES MEDIRLO VIVO:** renglones `cuentas` y
+`cuentas_sin_total` de `motor_turno`, que ya los lee `produccion.py`.
+
+**14-sep: LA PROSA SE PIDE Y LAS SPECS VIAJAN, al reves del 13-sep.** Lo que se
+midio entonces estaba medido con la prosa adentro. Medido ahora, cinco fichas
+por rubro: la prosa es el 60 al 63 por ciento del retorno de TODA lista, y las
+specs completas son mas baratas que ella en los cuatro rubros -teclado -1.404,
+notebook -411, mouse -1.377, silla gamer -2.798-. Decide `busco`, que el modelo
+ya declara, asi que no costo un campo nuevo: con `uno` viaja todo, con `varios`
+no viaja prosa. Retornos: teclado 4.628 -> 2.719, mouse 4.626 -> 2.744, silla
+5.038 -> 1.735, y **ocho notebooks pasaron de 8.932 a 7.478, o sea que dejaron
+de romper el recorte de 8.000**. El campo `specs` de la consulta se borro y
+devolvio 62 tokens del tablero. **LO QUE FALTA ES MEDIRLO VIVO:** si al modelo
+le alcanza para redactar una lista sin los parrafos.
+
+
 **14-sep: EL UMBRAL DE IDENTIDAD, y era el agujero grande de la busqueda.**
 Medido ANTES de tocar, sobre el catalogo vivo: de doce pedidos de cosas que la
 tienda no vende, OCHO volvian `existe` con los MISMOS cinco mouse -`dron`,

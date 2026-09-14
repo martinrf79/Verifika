@@ -18,6 +18,10 @@ from app.core import motor as MT
 
 TIENDA = "verifika_prod"
 
+# El recorte con que el turno le pasa el retorno al modelo, leido de ahi y no
+# copiado: un numero escrito dos veces se separa el dia que uno cambia.
+from app.core.respuesta import TOPE_RETORNO as MT_TOPE
+
 
 @pytest.fixture(autouse=True)
 def _doble(firestore_doble):
@@ -296,14 +300,21 @@ def test_la_spec_que_se_pide_por_nombre_viaja_en_la_ficha():
     assert "bluetooth" in specs, f"no viajo la spec pedida: {sorted(specs)}"
 
 
-def test_LA_SPEC_QUE_NO_SE_PIDIO_NO_VIAJA_y_ese_es_el_precio():
-    """El mapa entero engorda la ficha hasta un 57% y cinco notebooks con todo
-    dan 8.837 caracteres, que NO entran en el recorte de 8.000 con que el turno
-    le pasa el retorno al modelo: mandarlas siempre no era caro, era romper el
-    JSON a la mitad. Medido el 13-sep, y por eso se piden por nombre."""
-    fila = _una({"categoria": "mouse", "cuantos": 2,
-                 "specs": ["bluetooth"]})["filas"][0]
-    assert set(fila["specs"]) == {"bluetooth"}, "viajaron specs que nadie pidio"
+# ESTE TEST REEMPLAZA AL DEL 13-sep, Y EL REQUISITO CAMBIO DE VERDAD.
+#
+# El del 13-sep pedia lo contrario: que la spec que no se pidio NO viajara,
+# porque el mapa entero engordaba la ficha hasta un 57% y cinco notebooks con
+# todo daban 8.837 caracteres, que no entran en el recorte de 8.000. Ese numero
+# estaba medido CON LA PROSA ADENTRO, y esa era la causa: medido el 14-sep, la
+# prosa es el 60 al 63 por ciento del retorno de toda lista y las specs
+# completas son mas baratas que ella en los cuatro rubros. Sacada la prosa, las
+# specs entran holgadas: ocho notebooks pasaron de 8.932 caracteres a 7.478.
+
+def test_LAS_SPECS_VIAJAN_ENTERAS_Y_NO_HAY_QUE_PEDIRLAS():
+    """Son el dato que contesta "¿tiene bluetooth?" sin leer un parrafo. El
+    campo `specs` de la consulta se borro: ya no significa nada."""
+    fila = _una({"categoria": "mouse", "cuantos": 2})["filas"][0]
+    assert len(fila.get("specs") or {}) > 1, "las specs tienen que ir enteras"
 
 
 def test_con_UN_producto_puntual_viaja_el_mapa_ENTERO():
@@ -317,8 +328,7 @@ def test_con_UN_producto_puntual_viaja_el_mapa_ENTERO():
 def test_las_specs_no_pisan_el_precio_ni_el_id():
     """Van anidadas a proposito: un campo nuevo del catalogo no puede
     llamarse `precio` y quedarse con el renglon de la plata."""
-    fila = _una({"categoria": "mouse", "cuantos": 1,
-                 "specs": ["garantia"]})["filas"][0]
+    fila = _una({"categoria": "mouse", "cuantos": 1})["filas"][0]
     assert fila["id"] and fila["precio"], "la ficha perdio id o precio"
     assert isinstance(fila.get("specs"), dict)
 
@@ -828,3 +838,49 @@ def test_sin_items_no_hay_cuenta_y_el_retorno_no_trae_la_caja():
     demas es dato certificado."""
     r = MT.buscar([{"texto": "mouse", "busco": "varios"}], TIENDA, "t")
     assert "cuenta" not in r
+
+
+# ── LA PROSA SE PIDE, Y LA PIDE `busco` ─────────────────────────────────────
+#
+# MEDIDO EL 14-sep sobre el catalogo vivo, cinco fichas por rubro: la prosa era
+# el 60 al 63 por ciento del retorno de TODA lista. Cinco parrafos de "ideal
+# para" son ademas la REPETICION que el objetivo 2 no tolera, y para que sirve
+# y cual conviene tienen boca propia desde el 13-sep: `criterio`.
+
+_PROSA = ("descripcion", "descripcion_rica", "contenido_caja",
+          "uso_recomendado", "garantia_detalle")
+
+
+def test_en_una_LISTA_la_prosa_no_viaja():
+    """Retorno de una lista de teclados: 4.628 caracteres antes, 2.719 despues.
+    El cliente que pide opciones necesita nombres, precios y dato duro."""
+    filas = _una({"categoria": "teclado", "busco": "varios"})["filas"]
+    assert filas
+    colados = sorted({c for f in filas for c in _PROSA if f.get(c)})
+    assert not colados, f"viajo prosa en una lista: {colados}"
+
+
+def test_con_UN_producto_puntual_la_prosa_SI_viaja():
+    """La otra mitad, y es la que impide que esto se lleve puesto lo que el
+    modelo usa para redactar: con `busco: uno` el cliente pregunta detalle."""
+    filas = _una({"texto": "Teclado Logitech K120", "busco": "uno"})["filas"]
+    assert filas
+    assert any(f.get(c) for f in filas for c in _PROSA), \
+        "con busco=uno la prosa tiene que viajar"
+
+
+def test_la_identidad_y_la_spec_de_fabrica_viajan_siempre():
+    """Nombre y modelo son IDENTIDAD y `caracteristicas_extra` es la spec
+    compacta de fabrica: ninguno de los tres es prosa, y sin ellos una lista no
+    se puede leer."""
+    f = _una({"categoria": "mouse", "busco": "varios"})["filas"][0]
+    assert f.get("nombre") and f.get("id") and f.get("precio")
+
+
+def test_ocho_notebooks_entran_en_el_recorte_del_retorno():
+    """Con prosa daban 8.932 caracteres y el recorte es de 8.000, o sea que la
+    ultima ficha llegaba mutilada. Es el defecto que esto cierra de paso."""
+    import json as _json
+    r = MT.buscar([{"categoria": "notebook", "busco": "varios", "cuantos": 8}],
+                  TIENDA)
+    assert len(_json.dumps(r, ensure_ascii=False)) < MT_TOPE

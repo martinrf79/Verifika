@@ -219,17 +219,13 @@ def esquema(tienda_id: str) -> dict:
                                         "pide el cliente. Con dos o mas te "
                                         "devuelvo el subtotal ya calculado. "
                                         "No es la cantidad de filas."},
-            # LAS SPECS SE PIDEN POR NOMBRE, Y NO ES BUROCRACIA: el mapa entero
-            # engorda la ficha hasta un 57% y cinco notebooks con todo no
-            # entran en el recorte con que el turno le pasa el retorno al
-            # modelo. Pidiendo por nombre, el peso es el de la pregunta.
-            # Con `busco: uno` no hace falta: van todas.
-            "specs": {
-                "type": "array", "items": {"type": "string"},
-                "description": "Los datos de ficha que la pregunta necesita: "
-                               "'bluetooth', 'garantia', 'resistencia_agua'. "
-                               "Si el cliente nombro UN producto puntual no "
-                               "hace falta pedirlas, te mando todas."},
+            # EL CAMPO `specs` SE BORRO EL 14-sep, y es la vieja que se apaga
+            # por la que se prende. Se habia agregado el 13-sep para que el
+            # mapa de specs no engordara la ficha, pero lo que engordaba era la
+            # PROSA: medido, 60 al 63 por ciento del retorno de toda lista, y
+            # las specs completas son mas baratas que ella en los cuatro
+            # rubros. Sacada la prosa, las specs entran enteras y no hay nada
+            # que pedir. La medicion esta en `fuente._ficha_corta`.
         },
     }
     return {
@@ -636,11 +632,14 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
         unidades = max(1, int(c.get("cantidad") or 1))
     except (TypeError, ValueError):
         unidades = 1
-    # None quiere decir TODAS. Con un producto puntual el cliente pregunta
-    # detalle y las filas son pocas, asi que el mapa entero es barato y ademas
-    # es lo que hace falta; en una lista viajan solo las que se pidieron.
-    pedidas = c.get("specs")
-    specs_pedidas = None if str(c.get("busco") or "") == "uno" else (pedidas or [])
+    # EL DETALLE LO DECIDE `busco`, Y NADA MAS (14-sep-2026). Con `uno` el
+    # cliente pregunta por UN producto y quiere el parrafo; con `varios` pidio
+    # opciones, y la prosa de cinco fichas era el 63% del retorno. Las specs
+    # viajan enteras en los dos casos: el campo `specs` de la consulta se borro
+    # porque dejo de significar algo. El motivo entero esta en
+    # `fuente._ficha_corta`, con la medicion al lado.
+    detalle = str(c.get("busco") or "") == "uno"
+    specs_pedidas = None
 
     no_aplicado, notas = [], []
 
@@ -651,7 +650,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
         filas = filas_id
         faltan = [str(i) for i in c["ids"] if str(i) not in
                   {str(p.get("id")) for p in filas}]
-        fichas_id = [_ficha_corta(p, unidades, specs_pedidas)
+        fichas_id = [_ficha_corta(p, unidades, specs_pedidas, detalle)
                      for p in filas[:tope]]
         _con_la_cuenta(fichas_id, unidades)
         return {"veredicto": "existe" if filas else "no_existe",
@@ -682,7 +681,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
         # respuesta 3 entera: no hay ficha de eso, y esto SI tengo en su lugar.
         alt = no_lo_vendemos.get("en_su_lugar") or ""
         de_la_alt, _ = _universo(catalogo, alt, tienda_id) if alt else ([], "")
-        filas_alt = [_ficha_corta(p, unidades, specs_pedidas)
+        filas_alt = [_ficha_corta(p, unidades, specs_pedidas, detalle)
                      for p in (de_la_alt if alt else [])[:tope]]
         _con_la_cuenta(filas_alt, unidades)
         return {"veredicto": "no_existe",
@@ -920,7 +919,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     # la llamaba nadie: quedo suelta cuando se apago el bloque que la usaba.
     filas = []
     for p in quedan[:tope]:
-        f = _ficha_corta(p, unidades, specs_pedidas)
+        f = _ficha_corta(p, unidades, specs_pedidas, detalle)
         if rescate:
             motivo_fila = dato_que_falla(p, conds, tienda_id)
             if motivo_fila:

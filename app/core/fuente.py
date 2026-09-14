@@ -257,7 +257,24 @@ def _plata(n) -> str:
         return ""
 
 
-def _ficha_corta(prod: dict, cantidad: int = 1, specs_pedidas=None) -> dict:
+# LA PROSA DE LA FICHA, y es lo que se PIDE desde el 14-sep. Son los cinco
+# campos que `fuente_producto.CAMPOS_TEXTO` trae y que no son ni identidad ni
+# dato duro: los parrafos con los que el modelo redacta.
+#
+# NO SE ESCRIBEN DOS VECES: salen de CAMPOS_TEXTO sacandole los tres que SIEMPRE
+# viajan -el nombre y el modelo son identidad, `caracteristicas_extra` es la
+# spec compacta de fabrica-, asi que un campo de texto nuevo en el catalogo cae
+# del lado de la prosa solo, sin tocar esta lista.
+_SIEMPRE = ("nombre", "modelo", "caracteristicas_extra")
+
+
+def _campos_prosa() -> tuple:
+    from app.core.fuente_producto import CAMPOS_TEXTO
+    return tuple(c for c in CAMPOS_TEXTO if c not in _SIEMPRE)
+
+
+def _ficha_corta(prod: dict, cantidad: int = 1, specs_pedidas=None,
+                 detalle: bool = False) -> dict:
     """La ficha que ve el modelo. Corta a proposito: id, nombre, categoria,
     stock, precio y los campos que la fuente declaro para ese rubro.
 
@@ -309,14 +326,48 @@ def _ficha_corta(prod: dict, cantidad: int = 1, specs_pedidas=None) -> dict:
         # multiplicacion suelta escrita aca seria un segundo lugar donde el
         # repo hace cuentas, y por cada cosa que se prende se apaga una.
         fuera["cantidad"] = cantidad
+    # ── LA PROSA SE PIDE, LAS SPECS VIAJAN (14-sep-2026) ────────────────
+    #
+    # ES EL REVES DE LO QUE SE HIZO EL 13-sep, y el motivo es que lo que se
+    # midio entonces estaba medido con la prosa adentro. MEDIDO AHORA sobre el
+    # catalogo vivo, cinco fichas por rubro:
+    #
+    #     rubro          prosa   specs completas    neto
+    #     teclado        2.850            1.446   -1.404
+    #     notebook       3.581            3.170     -411
+    #     mouse          2.798            1.421   -1.377
+    #     silla gamer    3.198              400   -2.798
+    #
+    # La prosa era el 60 al 63 por ciento del retorno entero en TODA lista, y
+    # las specs completas son mas baratas que ella en los cuatro rubros. O sea
+    # que el intercambio no se paga: devuelve. Y ocho notebooks con prosa daban
+    # 8.932 caracteres, que NO ENTRAN en el recorte de 8.000.
+    #
+    # QUIEN DECIDE ES `busco`, que el modelo YA declara, asi que esto no cuesta
+    # un campo nuevo en el tablero. Con `uno` el cliente pregunta por UN
+    # producto y quiere detalle: viaja todo. Con `varios` pidio opciones, y
+    # cinco parrafos de "ideal para" son la REPETICION que el objetivo 2 no
+    # tolera. Para que sirve y cual conviene tienen boca propia desde el
+    # 13-sep: es `criterio`, y esta es la razon por la que la prosa ya no
+    # tiene que viajar en cada lista para contestarlo.
+    prosa = _campos_prosa()
     for campo, valor in (campos_ficha(prod) or []):
         if campo in fuera or valor in (None, ""):
+            continue
+        if not detalle and campo in prosa:
             continue
         fuera[str(campo)] = valor
     # LAS SPECS AL FINAL Y EN SU PROPIA CAJA. Anidadas y no desparramadas entre
     # los campos de arriba: asi el modelo ve de un vistazo que es dato duro de
     # la ficha y que es prosa, y un campo nuevo del catalogo no puede pisar a
     # `id` ni a `precio` por llamarse igual.
+    # LAS SPECS VIAJAN ENTERAS, SIEMPRE. Ya no hay que pedirlas: el campo
+    # `specs` de la consulta se borro el 14-sep porque dejo de significar algo.
+    # El motivo por el que se filtraban -que cinco notebooks con todo no
+    # entraban en el recorte de 8.000- era de la prosa, no de ellas: sacada la
+    # prosa, entran holgadas y son el dato que contesta "¿tiene bluetooth?" sin
+    # leer un parrafo. `specs_pedidas` queda por si alguna tienda necesita
+    # recortar; el camino vivo no la usa.
     specs = prod.get("specs") or {}
     if isinstance(specs, dict) and specs:
         if specs_pedidas is None:
