@@ -174,7 +174,7 @@ CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "puntuales",
           "veredictos", "filas", "rescates", "vacios", "sin_dato", "campos",
           "fichas", "temas", "temas_sin_resolver", "compat",
           "compat_sin_dato", "envios", "envios_sin_clasificar", "criterio",
-          "criterio_sin_resolver")
+          "criterio_sin_resolver", "cuentas", "cuentas_sin_total")
 
 PROYECTO = os.environ.get("GCP_PROJECT", "memory-engine-v1")
 SERVICIO = os.environ.get("CLOUD_RUN_SERVICIO", "agente-bot")
@@ -323,6 +323,14 @@ def numero_del_motor(eventos: list) -> list:
         for x in (t.get("criterio_sin_resolver") or []):
             criterio_faltan[str(x)] = criterio_faltan.get(str(x), 0) + 1
 
+    # LA CUENTA DEL RETORNO, con el mismo par que las bocas: la que salio y la
+    # que no se pudo hacer. El segundo numero dice cuantas veces el cliente
+    # pidio el total y el codigo no pudo darselo, que hasta el 14-sep no se
+    # podia contar: el total lo resolvia una suma del texto, que siempre da
+    # algo.
+    cuentas = sum(int(t.get("cuentas") or 0) for t in turnos)
+    cuentas_sin = sum(int(t.get("cuentas_sin_total") or 0) for t in turnos)
+
     lineas = cab + [
         f"TURNOS EN LA VENTANA: {n}",
         f"  busco en {len(busco)} de {n} ({pct(len(busco))})   "
@@ -331,6 +339,8 @@ def numero_del_motor(eventos: list) -> list:
         f"la primera consulta no le alcanzo",
         f"  consultas: {consultas} en total, "
         f"{consultas / max(1, len(busco)):.1f} por turno que busco",
+        f"  CUENTAS del pedido: {cuentas} calculadas por `calculate_total`"
+        + (f", {cuentas_sin} que no se pudieron dar" if cuentas_sin else ""),
         f"  consultas REPETIDAS: {repetidas}"
         + ("   <- gasto una vuelta pidiendo lo mismo" if repetidas else ""),
         f"  declaradas de UN producto puntual: {puntuales} de {consultas}"

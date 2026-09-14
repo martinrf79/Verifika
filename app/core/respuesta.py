@@ -74,9 +74,10 @@ LA PLATA. El precio de un producto lo escribis VOS, copiado TAL CUAL del campo
 `precio` de su ficha, hasta el ultimo digito. Es el unico numero de plata que
 podes escribir, y solo si esa ficha esta abajo.
 
-Los otros dos NO los sabes y no los podes deducir: el costo del ENVIO escribilo
-{{envio}}, y la SUMA de varias cosas escribila {{total}}. No los calcules, no
-los estimes, no los redondees. Los pone el codigo.
+Los otros dos NO los calculas vos: el costo del ENVIO y la SUMA de varias
+cosas. Si los pediste por el motor —`envios` y `cuenta`— te vuelven ya escritos
+y los copias igual que un precio. Si no los pediste, escribi {{envio}} y
+{{total}} y los pone el codigo. Nunca los estimes ni los redondees.
 
 Cualquier cifra de plata que no salga de una ficha o de esos dos huecos tira la
 respuesta entera abajo y el cliente se queda sin contestar. Si no tenes el
@@ -140,6 +141,12 @@ sobre productos; de aca salen las fichas y los precios. Dice mas que la lista:
 - `criterio` es lo que la casa tiene escrito sobre para que sirve y cual
   conviene. Es desde donde razonas, no un dato: no lleva numeros, y los que
   hagan falta salen de las fichas.
+- `cuenta` es el total del pedido YA SUMADO por el codigo, con el envio y el
+  descuento adentro. `total` es lo que suma; `total_final`, cuando esta, es lo
+  que el cliente PAGA con el reparto que pidio, y ese es el que se dice.
+  `detalle` trae el renglon por renglon. Copialos; no los vuelvas a sumar.
+  `sin_total` es que la cuenta no se pudo hacer, con el motivo: eso se dice, no
+  se completa con una suma tuya.
 """
 
 
@@ -342,7 +349,8 @@ def _informe_en_blanco() -> dict:
             "vacios": 0, "sin_dato": 0, "campos": [], "fichas": 0,
             "temas": [], "temas_sin_resolver": [], "compat": [],
             "compat_sin_dato": [], "envios": [], "envios_sin_clasificar": [],
-            "criterio": [], "criterio_sin_resolver": []}
+            "criterio": [], "criterio_sin_resolver": [],
+            "cuentas": 0, "cuentas_sin_total": 0}
 
 
 def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
@@ -402,6 +410,15 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
         informe["criterio"].append(str((c or {}).get("tema") or ""))
     for n in (r or {}).get("criterio_sin_resolver") or []:
         informe["criterio_sin_resolver"].append(str(n))
+    # LA CUENTA DEL RETORNO, CON EL MISMO PAR DE NUMEROS QUE LAS BOCAS: la que
+    # salio y la que no se pudo hacer. El segundo dice que le falta al pedido
+    # para poder darle un total, y sin el un total que no salio es
+    # indistinguible de un cliente que no lo pidio.
+    _cta = (r or {}).get("cuenta") or {}
+    if _cta.get("total_ars") is not None:
+        informe["cuentas"] += 1
+    elif _cta.get("sin_total"):
+        informe["cuentas_sin_total"] += 1
     for res in (r or {}).get("resultados") or []:
         veredicto = str(res.get("veredicto") or "")
         filas = len(res.get("filas") or [])
@@ -443,10 +460,11 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     50. Antes el codigo adivinaba que fichas ponerle delante leyendo el mensaje
     crudo; ahora el modelo escribe la consulta y el codigo la ejecuta.
 
-    Devuelve (salida, fichas, envios, informe). Las fichas y los envios son lo
-    que volvio del motor, y son las DOS procedencias que `numeros` necesita:
-    un precio o una tarifa que no este en lo que el modelo EFECTIVAMENTE pidio
-    no puede salir al cliente. Los envios son {destino: monto}.
+    Devuelve (salida, fichas, envios, cuenta, informe). Las fichas, los envios
+    y la cuenta son lo que volvio del motor, y son las TRES procedencias que
+    `numeros` necesita: un precio, una tarifa o un total que no este en lo que
+    el modelo EFECTIVAMENTE pidio no puede salir al cliente. Los envios son
+    {destino: monto}; la cuenta es el total ya calculado por `calculadora`.
 
     EL INFORME ES EL NUMERO DEL MOTOR, y por eso se arma aca y no adentro de
     `motor.py`: el motor ve UNA llamada, y lo que hay que medir es el TURNO
@@ -460,7 +478,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     cli = _cliente()
     if cli is None:
         log.warning("respuesta_sin_clave", trace_id=trace_id)
-        return {}, [], {}, informe
+        return {}, [], {}, {}, informe
     msgs = [{"role": "system", "content": voz}] if voz else []
     # LA PREGUNTA, ANTES QUE EL APARATO. Es el cambio del 12-sep y el motivo
     # esta entero en `_aparato`.
@@ -497,6 +515,10 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     # procedencia de la tarifa. Un destino cotizado en la primera vuelta tiene
     # que seguir valiendo en la ultima, que es donde el modelo escribe.
     envios: dict = {}
+    # LA CUENTA SE ACUMULA COMO LAS FICHAS Y LOS ENVIOS, y por el mismo motivo:
+    # es la tercera procedencia. Un total calculado en la primera vuelta tiene
+    # que seguir valiendo en la ultima, que es donde el modelo escribe.
+    cuenta: dict = {}
     hallazgos: list = []
     pedidas: set = set()
     for vuelta in range(VUELTAS_DE_BUSQUEDA + 1):
@@ -535,15 +557,15 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             log.warning("respuesta_modelo_error", trace_id=trace_id,
                         error=f"{type(e).__name__}: {str(e)[:150]}")
             informe["fichas"] = len(fichas)
-            return {}, fichas, envios, informe
+            return {}, fichas, envios, cuenta, informe
         if msg is None:
             informe["fichas"] = len(fichas)
-            return {}, fichas, envios, informe
+            return {}, fichas, envios, cuenta, informe
 
         llamadas = list(getattr(msg, "tool_calls", None) or [])
         if not llamadas:
             informe["fichas"] = len(fichas)
-            return _parsear(msg.content or ""), fichas, envios, informe
+            return _parsear(msg.content or ""), fichas, envios, cuenta, informe
 
         for c in llamadas:
             informe["llamadas"] += 1
@@ -559,7 +581,8 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                           compat=args.get("compatibilidad"),
                           envios=args.get("envios"),
                           localidad_previa=localidad_previa,
-                          criterio=args.get("criterio"))
+                          criterio=args.get("criterio"),
+                          cuenta=args.get("cuenta"))
             _anotar(informe, consultas, pedidas, r)
             for f in MT.fichas_de(r):
                 if str(f.get("id")) not in {str(x.get("id")) for x in fichas}:
@@ -567,10 +590,13 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             for e in (r.get("envios") or {}).get("filas") or []:
                 if e.get("monto_ars"):
                     envios[str(e["destino"])] = int(e["monto_ars"])
+            if (r.get("cuenta") or {}).get("total_ars") is not None:
+                cuenta = r["cuenta"]
             pidio = {"consultas": consultas, "temas": args.get("temas") or [],
                      "compatibilidad": args.get("compatibilidad") or [],
                      "envios": args.get("envios") or [],
-                     "criterio": args.get("criterio") or []}
+                     "criterio": args.get("criterio") or [],
+                     "cuenta": args.get("cuenta") or {}}
             hallazgos.append(
                 # EL RECORTE ERA DE 900 Y CORTABA CONSULTAS ENTERAS. Medido
                 # el 13-sep: un pedido abierto -"algo para jugar que no sea muy
@@ -581,7 +607,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                 "Buscaste: " + json.dumps(pidio, ensure_ascii=False)[:1400]
                 + "\nVolvio: " + _retorno_que_entra(r, trace_id))
     informe["fichas"] = len(fichas)
-    return {}, fichas, envios, informe
+    return {}, fichas, envios, cuenta, informe
 
 
 # Cuanto del retorno le cabe al modelo en una vuelta. El numero es el de
@@ -748,7 +774,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     # que no puede elegir que ponerle delante, y el catalogo entero no entra.
     t = time.time()
     memoria = _memoria_texto(conv)
-    salida, fichas, envios, motor = await _preguntar(
+    salida, fichas, envios, cuenta, motor = await _preguntar(
         _voz(negocio), memoria, history, raw_message, bloque, trace_id,
         tienda_id, localidad_previa=conv.get("ultima_localidad") or "")
     etapas["modelo"] = int((time.time() - t) * 1000)
@@ -770,7 +796,9 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              envios=motor["envios"][:4],
              envios_sin_clasificar=motor["envios_sin_clasificar"][:4],
              criterio=motor["criterio"][:6],
-             criterio_sin_resolver=motor["criterio_sin_resolver"][:4])
+             criterio_sin_resolver=motor["criterio_sin_resolver"][:4],
+             cuentas=motor["cuentas"],
+             cuentas_sin_total=motor["cuentas_sin_total"])
     if not motor["llamadas"]:
         # EL TERCER CANDADO DE LA FICHA 50: se mide cada turno que contesto sin
         # haber buscado. No se bloquea —la guarda de procedencia ya impide que
@@ -810,7 +838,16 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
             # evita escribir el mismo monto en los tres renglones.
             envio_monto=(list(envios.values())[0] if len(envios) == 1
                          else None),
-            envios=envios)
+            envios=envios,
+            # EL TOTAL YA CALCULADO, Y ES EL CAMBIO DEL 14-sep. Hasta hoy
+            # `{{total}}` lo resolvia `numeros` sumando las cifras que ya
+            # estaban escritas en el mensaje, y esa suma no puede conocer el
+            # descuento por transferencia ni el reparto entre medios de pago.
+            # Ahora el total lo hace `calculadora` en el retorno, ANTES de
+            # redactar: el modelo lo escribe con el numero en la mano, y si
+            # igual deja el hueco, el hueco se llena con ESE total y no con
+            # una suma distinta.
+            cuenta=cuenta)
         etapas["numeros"] = int((time.time() - t) * 1000)
         if informe.get("inventada"):
             # LA RESPUESTA CON PLATA INVENTADA NO SALE. No hay forma honesta de
@@ -883,6 +920,8 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              fichas=len(fichas), politicas=len(motor["temas"]),
              envio_destinos=list(envios)[:3],
              envio_montos=list(envios.values())[:3],
+             cuenta_total=(cuenta or {}).get("total_ars"),
+             cuenta_final=(cuenta or {}).get("total_final_ars"),
              huecos_llenos=len((informe or {}).get("llenos") or []),
              huecos_sin_dato=len((informe or {}).get("sin_dato") or []),
              plata_inventada=len((informe or {}).get("inventada") or []))

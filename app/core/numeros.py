@@ -115,7 +115,7 @@ def _norm_destino(s) -> str:
 
 def llenar(texto: str, fichas: list, trace_id: str = "",
            fuente_texto: str = "", envio_monto: int | None = None,
-           envios: dict | None = None) -> tuple:
+           envios: dict | None = None, cuenta: dict | None = None) -> tuple:
     """(texto con los numeros puestos, informe). El informe dice que huecos se
     llenaron, cuales quedaron sin dato y si hubo plata inventada.
 
@@ -133,6 +133,14 @@ def llenar(texto: str, fichas: list, trace_id: str = "",
     `envios` es {destino: tarifa}, lo que el modelo pidio por la boca de envio,
     y resuelve `{{envio:cordoba}}`. Con un solo destino los dos caminos son el
     mismo: la lista trae uno.
+
+    `cuenta` es el TOTAL que `calculadora` ya calculo en el retorno, antes de
+    que el modelo redactara. Hace dos cosas, y las dos son la misma regla de
+    procedencia: el modelo PUEDE escribir ese total -y entonces esto es lo que
+    impide que la guarda lo llame invento-, y si igual deja el hueco,
+    `{{total}}` se llena con ESE total y no con una suma del texto. Con un
+    reparto de pago manda `total_final_ars`, que es el unico numero que el
+    cliente va a pagar de verdad.
     """
     informe = {"llenos": [], "sin_dato": [], "montos": [], "inventada": []}
     usados: list = []
@@ -216,6 +224,15 @@ def llenar(texto: str, fichas: list, trace_id: str = "",
     if envios:
         permitidos |= _digitos(_json.dumps(envios, ensure_ascii=False,
                                            default=str))
+    # EL TOTAL CALCULADO TAMBIEN ES FUENTE. Es la misma leccion que este modulo
+    # ya aprendio dos veces -con el inventario el 11-sep, con la tarifa del
+    # motor el 13-sep-: lo que se le pone delante al modelo es fuente, TODO, o
+    # la guarda castiga por hacerle caso. El detalle entra entero porque ahi
+    # viven los subtotales y el descuento, que son los renglones que el modelo
+    # copia cuando desglosa la cuenta.
+    if cuenta:
+        permitidos |= _digitos(_json.dumps(cuenta, ensure_ascii=False,
+                                           default=str))
     for bruto in _CIFRA.findall(salida):
         limpio = re.sub(r"\D", "", bruto)
         if limpio and limpio not in permitidos:
@@ -229,14 +246,29 @@ def llenar(texto: str, fichas: list, trace_id: str = "",
     # puso el codigo daba la mitad de la cuenta -el precio lo escribe el modelo
     # desde la ficha-, que es peor que no dar ninguna.
     if "\x00TOTAL\x00" in salida:
-        partes = [int(re.sub(r"\D", "", m)) for m in
-                  re.findall(r"\$\s?\d[\d.]*", salida.split("\x00TOTAL\x00")[0])]
+        # EL TOTAL CALCULADO GANA SOBRE LA SUMA DEL TEXTO (14-sep-2026), y no
+        # es una preferencia: son dos numeros distintos. La suma del texto no
+        # puede conocer el descuento por transferencia ni el reparto entre
+        # medios, asi que con un 70/30 daba el total SIN descuento. Con la
+        # cuenta hecha, el hueco se llena con lo que el cliente va a pagar.
+        _calc = (cuenta or {}).get("total_final_ars")
+        if _calc is None:
+            _calc = (cuenta or {}).get("total_ars")
+        if _calc is not None:
+            informe["llenos"].append("total")
+            informe["montos"].append(int(_calc))
+            salida = salida.replace("\x00TOTAL\x00", _money(_calc))
+            partes = []
+        else:
+            partes = [int(re.sub(r"\D", "", m)) for m in
+                      re.findall(r"\$\s?\d[\d.]*",
+                                 salida.split("\x00TOTAL\x00")[0])]
         if partes:
             total = sum(partes)
             informe["llenos"].append("total")
             informe["montos"].append(total)
             salida = salida.replace("\x00TOTAL\x00", _money(total))
-        else:
+        elif "\x00TOTAL\x00" in salida:
             informe["sin_dato"].append("total")
             salida = salida.replace("\x00TOTAL\x00", SIN_DATO)
 

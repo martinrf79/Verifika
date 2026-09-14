@@ -760,3 +760,71 @@ def test_con_orden_explicito_el_veredicto_igual_dice_que_no_se_llama_asi():
     assert r["veredicto"] == "no_existe"
     assert r["filas"]
     assert "ninguna ficha se llama" in r["motivo"]
+
+
+# ── LA CUENTA DEL RETORNO ───────────────────────────────────────────────────
+#
+# LO QUE CUIDA. Hasta el 14-sep el TOTAL del pedido lo resolvia `numeros`
+# SUMANDO las cifras que ya estaban escritas en el mensaje. Esa suma no puede
+# conocer el descuento por transferencia ni el reparto entre medios de pago,
+# asi que el setenta treinta no existia: `calculate_total` es la unica que
+# llama a `pago_split` y desde el apagon del 11-sep el total del pedido no la
+# llamaba nunca.
+#
+# LA CUENTA NO ES UNA BOCA: no tiene area de fuente. Es aritmetica sobre lo
+# que las otras cinco devolvieron, y por eso vive en el RETORNO.
+
+def _cuenta(pedido: dict, envios=None) -> dict:
+    return MT.buscar([], TIENDA, "t_cuenta", envios=envios,
+                     cuenta=pedido).get("cuenta") or {}
+
+
+def test_el_total_del_pedido_lo_hace_la_calculadora_no_una_suma():
+    """Dos unidades por su precio, con el subtotal y el total escritos por
+    `calculate_total`. El modelo copia; no multiplica ni suma."""
+    c = _cuenta({"items": [{"id": "MOU0001", "cantidad": 3}]})
+    assert c["total_ars"] == 112500
+    assert c["total"] == "$112.500"
+    assert "112.500" in c["detalle"]
+
+
+def test_el_envio_entra_a_la_cuenta_por_la_calculadora():
+    """La tarifa no se suma a mano: entra como extra por el camino que la
+    calculadora ya tiene escrito, con el concepto que ella deriva de la
+    provincia. Un segundo lugar donde este repo sume plata es un segundo lugar
+    que se puede separar del primero."""
+    c = _cuenta({"items": [{"id": "MOU0001", "cantidad": 2}]},
+                envios=["Cordoba"])
+    assert c["total_ars"] == 75000 + 7500
+    assert "Envio" in c["detalle"]
+
+
+def test_el_setenta_treinta_aplica_el_descuento_y_da_el_total_final():
+    """EL CASO QUE NO EXISTIA. Con la suma del texto no habia forma de llegar
+    aca: el descuento por transferencia lo dueña `pago_split`, y a `pago_split`
+    la llama SOLO `calculate_total`."""
+    c = _cuenta({"items": [{"id": "MOU0001", "cantidad": 2}],
+                 "reparto_pago": [
+                     {"medio": "transferencia", "porcentaje": 70},
+                     {"medio": "mercado pago", "porcentaje": 30}]},
+                envios=["Cordoba"])
+    assert c["total_ars"] == 82500
+    # 70% con 10% de descuento + 30% sin descuento, todo hecho por pago_split.
+    assert c["total_final_ars"] == 76725
+    assert c["total_final"] == "$76.725"
+    assert "descuento" in c["detalle"]
+
+
+def test_un_id_que_no_existe_no_da_un_total_da_el_motivo():
+    """Un total que no se pudo hacer y vuelve mudo se lee como un total de
+    cero. Con el motivo escrito el modelo dice que le falta para poder darlo."""
+    c = _cuenta({"items": [{"id": "NO_EXISTE_0000", "cantidad": 1}]})
+    assert "total_ars" not in c
+    assert c["sin_total"]
+
+
+def test_sin_items_no_hay_cuenta_y_el_retorno_no_trae_la_caja():
+    """Una clave vacia en cada turno es ruido adentro de la caja donde todo lo
+    demas es dato certificado."""
+    r = MT.buscar([{"texto": "mouse", "busco": "varios"}], TIENDA, "t")
+    assert "cuenta" not in r

@@ -309,7 +309,7 @@ def test_el_turno_ENTERO_escribe_la_tarifa_del_envio(firestore_doble, monkeypatc
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "envio_costo",
                         "texto": "El envio sale {{envio}} y llega rapido."},
-                       [], {"cordoba capital": 7500}, _motor())))
+                       [], {"cordoba capital": 7500}, {}, _motor())))
     texto = asyncio.run(R.procesar_turno(
         "sonda_envio", "hacen envio a cordoba capital?", TIENDA,
         "telegram", "trace_envio"))
@@ -324,7 +324,7 @@ def test_el_destino_QUEDA_EN_LA_CHARLA_para_el_turno_siguiente(firestore_doble,
         R, "_preguntar",
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "envio_costo", "texto": "Sale {{envio}}."},
-                       [], {"posadas": 10000}, _motor())))
+                       [], {"posadas": 10000}, {}, _motor())))
     asyncio.run(R.procesar_turno("sonda_memoria_envio", "envio a posadas?",
                                  TIENDA, "telegram", "trace_m1"))
     from app.storage.firestore_client import get_conversation
@@ -343,7 +343,7 @@ def test_el_turno_SIN_ENVIO_no_escribe_ningun_monto(firestore_doble, monkeypatch
         R, "_preguntar",
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "envio_costo", "texto": "Sale {{envio}}."},
-                       [], {}, _motor())))
+                       [], {}, {}, _motor())))
     texto = asyncio.run(R.procesar_turno("sonda_envio2", "hacen envios?",
                                          TIENDA, "telegram", "trace_envio2"))
     assert N.SIN_DATO in texto, texto
@@ -450,7 +450,7 @@ def test_el_turno_ENTERO_le_contesta_con_SU_palabra(firestore_doble, monkeypatch
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "envio_costo",
                         "texto": "A Concordia sale {{envio:concordia}}."},
-                       [], {"concordia": 9000}, _motor())))
+                       [], {"concordia": 9000}, {}, _motor())))
     texto = asyncio.run(R.procesar_turno(
         "sonda_palabra", "mandalo a concordia", TIENDA, "telegram", "trace_pal"))
     assert "Concordia" in texto and "$" in texto, texto
@@ -499,7 +499,7 @@ def test_el_json_del_modelo_se_parsea_venga_como_venga():
 def test_sin_modelo_el_bot_no_queda_mudo(firestore_doble, monkeypatch):
     """Un modelo caido da el mensaje de demanda, no una excepcion ni un vacio."""
     monkeypatch.setattr(R, "_preguntar",
-                        lambda *a, **k: asyncio.sleep(0, result=({}, [], {}, _motor(0))))
+                        lambda *a, **k: asyncio.sleep(0, result=({}, [], {}, {}, _motor(0))))
     texto = asyncio.run(R.procesar_turno("sonda_test", "hola", TIENDA,
                                          "telegram", "trace_test"))
     assert texto and len(texto) > 10
@@ -512,7 +512,7 @@ def test_la_respuesta_con_plata_inventada_no_sale(firestore_doble, monkeypatch):
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "precio_simple",
                         "texto": "Ese mouse sale $99.999, te lo llevas hoy."},
-                       [], {}, _motor())))
+                       [], {}, {}, _motor())))
     texto = asyncio.run(R.procesar_turno("sonda_test2", "cuanto sale?", TIENDA,
                                          "telegram", "trace_test2"))
     assert "99.999" not in texto
@@ -533,7 +533,7 @@ def test_el_turno_pasa_por_el_cierre_y_no_se_rompe(firestore_doble, monkeypatch)
         R, "_preguntar",
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "intencion_compra",
-                        "texto": "Listo, lo dejamos tomado."}, [], {}, _motor())))
+                        "texto": "Listo, lo dejamos tomado."}, [], {}, {}, _motor())))
     texto = asyncio.run(R.procesar_turno("sonda_cierre", "listo, me lo llevo",
                                          TIENDA, "telegram", "trace_cierre"))
     assert texto and "Listo" in texto
@@ -737,7 +737,7 @@ def test_el_turno_con_la_tarifa_copiada_NO_cae_al_fallback(firestore_doble,
             0, result=({"tipo": "intencion_compra",
                         "texto": ("El Genius KB-110X Blanco sale $12.000. "
                                   "A Cordoba el envio es $7.500.")},
-                       [ficha], {"cordoba": 7500}, _motor())))
+                       [ficha], {"cordoba": 7500}, {}, _motor())))
     texto = asyncio.run(R.procesar_turno(
         "sonda_recien", "El que me dijiste recien", TIENDA,
         "telegram", "trace_recien"))
@@ -766,7 +766,7 @@ def test_el_precio_se_GUARDA_en_la_memoria_del_turno(firestore_doble,
         R, "_preguntar",
         lambda *a, **k: asyncio.sleep(
             0, result=({"tipo": "precio_simple", "texto": "Ahi va."},
-                       [ficha], {}, _motor())))
+                       [ficha], {}, {}, _motor())))
     asyncio.run(R.procesar_turno("sonda_vistos", "un mouse", TIENDA,
                                  "telegram", "trace_vistos"))
     from app.storage.firestore_client import get_conversation
@@ -1027,7 +1027,7 @@ def test_lo_que_el_modelo_pide_por_compatibilidad_LLEGA_AL_MOTOR(firestore_doble
     """El cable entero: el modelo lo pide, el motor lo evalua con la tabla de
     la casa y el veredicto vuelve contado en el informe. Sin el renglon del
     informe, una boca nueva es invisible el dia que deja de andar."""
-    _s, _f, _e, informe = _turno_con(
+    _s, _f, _e, _c, informe = _turno_con(
         '{"compatibilidad": [{"producto": "RAM0001", "con": "MBO0001"}]}')
     assert informe["compat"] == ["compatible"]
     assert informe["compat_sin_dato"] == []
@@ -1038,7 +1038,7 @@ def test_EL_RENGLON_QUE_DICE_QUE_FILA_LE_FALTA_A_LA_TABLA(firestore_doble):
     pregunto y lo que la fuente no pudo contestar. El segundo es el que dice
     que cargar en `compatibilidad.csv`, y sin el un hueco de la tabla es
     indistinguible de una pregunta que nadie hizo."""
-    _s, _f, _e, informe = _turno_con(
+    _s, _f, _e, _c, informe = _turno_con(
         '{"compatibilidad": [{"producto": "MOU0001", "con": "mi tostadora"}]}')
     assert informe["compat"] == ["sin_dato"]
     assert informe["compat_sin_dato"] == ["MOU0001|mi tostadora"]
@@ -1051,7 +1051,7 @@ def test_lo_que_el_modelo_pide_por_CRITERIO_LLEGA_AL_MOTOR(firestore_doble):
     certificado de `base_conocimiento.json` y vuelve contado en el informe. Sin
     el renglon del informe, una boca nueva es invisible el dia que deja de
     andar."""
-    _s, _f, _e, informe = _turno_con('{"criterio": ["mouse"]}')
+    _s, _f, _e, _c, informe = _turno_con('{"criterio": ["mouse"]}')
     assert informe["criterio"] == ["mouse"]
     assert informe["criterio_sin_resolver"] == []
 
@@ -1060,6 +1060,56 @@ def test_EL_RENGLON_QUE_DICE_QUE_ENTRADA_LE_FALTA_A_LA_BASE(firestore_doble):
     """El mismo par de numeros que las politicas, la compatibilidad y el envio:
     lo que se pregunto y lo que la casa no tiene escrito. El segundo dice que
     entrada agregarle a `base_conocimiento.json`, y sale por el issue 31."""
-    _s, _f, _e, informe = _turno_con('{"criterio": ["garrafa de gas"]}')
+    _s, _f, _e, _c, informe = _turno_con('{"criterio": ["garrafa de gas"]}')
     assert informe["criterio"] == []
     assert informe["criterio_sin_resolver"] == ["garrafa de gas"]
+
+
+# ── LA CUENTA DEL RETORNO LLEGA A LA GUARDA (14-sep-2026) ───────────────────
+#
+# Son las dos mitades de la misma regla de procedencia: el modelo PUEDE
+# escribir el total que la calculadora ya hizo, y si igual deja el hueco, el
+# hueco se llena con ESE total y no con una suma del texto.
+
+_CUENTA = {"total_ars": 82500, "total": "$82.500",
+           "total_final_ars": 76725, "total_final": "$76.725",
+           "detalle": "Subtotal: $75.000\nEnvio: $7.500\nTotal: $82.500"}
+
+
+def test_el_hueco_del_total_se_llena_con_la_cuenta_y_no_con_la_suma_del_texto():
+    """LOS DOS NUMEROS SON DISTINTOS Y ESE ES EL PUNTO. La suma del texto daria
+    75.000 mas 7.500 = 82.500, o sea el total SIN el descuento. Con un reparto
+    de pago, lo que el cliente paga es 76.725. El hueco tiene que traer lo que
+    va a pagar."""
+    texto = "Van $75.000 mas $7.500 de envio. Total {{total}}."
+    salida, inf = N.llenar(texto, [], "t_cuenta",
+                           fuente_texto="$75.000 $7.500", cuenta=_CUENTA)
+    assert "76.725" in salida
+    assert inf["montos"][-1] == 76725
+    assert not inf["inventada"], inf
+
+
+def test_sin_cuenta_el_hueco_del_total_sigue_sumando_el_texto():
+    """Lo viejo no se rompe: sin cuenta pedida, el camino de siempre."""
+    salida, inf = N.llenar("Van $75.000 y $7.500. Total {{total}}.", [], "t",
+                           fuente_texto="$75.000 $7.500")
+    assert "82.500" in salida
+
+
+def test_el_total_calculado_es_fuente_y_el_modelo_lo_puede_escribir():
+    """La otra mitad. Sin esto la guarda llama invento al total que el codigo
+    acaba de calcular y tira la respuesta entera: es la misma leccion que este
+    modulo ya aprendio con el inventario el 11-sep y con la tarifa del motor el
+    13-sep."""
+    salida, inf = N.llenar("Te queda en $76.725 pagando 70 y 30.", [],
+                           "t_fuente", fuente_texto="", cuenta=_CUENTA)
+    assert not inf["inventada"], inf
+    assert "76.725" in salida
+
+
+def test_un_total_que_la_cuenta_no_dijo_sigue_cayendo_como_invento():
+    """La licencia es de PROCEDENCIA, no de tema: que exista una cuenta no
+    habilita cualquier cifra."""
+    _s, inf = N.llenar("Te queda en $99.999 en total", [], "t_inv",
+                       fuente_texto="", cuenta=_CUENTA)
+    assert inf["inventada"] == ["$99.999"]

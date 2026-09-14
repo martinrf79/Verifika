@@ -262,6 +262,8 @@ def esquema(tienda_id: str) -> dict:
                 "- CRITERIO: para que sirve, cual conviene, que diferencia hay "
                 "entre dos, que significa gama media. Va en `criterio`, y es "
                 "lo que la casa tiene escrito, no tu opinion.\n"
+                "- CUENTA: cuanto sale todo junto. Va en `cuenta`, "
+                "con los ids y las cantidades; la suma la hago yo.\n"
                 "- Todas en la MISMA llamada, y varias consultas "
                 "juntas si el cliente pidio varias cosas.\n"
                 "- ENVIO: cuanto sale y en cuanto llega. Va en `envios`, "
@@ -365,7 +367,44 @@ def esquema(tienda_id: str) -> dict:
                             "'gama media'. Es el criterio de la casa, no una "
                             "ficha: no trae numeros ni precios, esos salen de "
                             "`consultas`. Si la casa no lo tiene escrito te lo "
-                            f"digo y se lo decis asi. Hasta {TOPE_CRITERIO}.")}},
+                            f"digo y se lo decis asi. Hasta {TOPE_CRITERIO}.")},
+                    # LA CUENTA, Y NO ES UNA BOCA: NO TIENE AREA DE FUENTE.
+                    # Es aritmetica sobre lo que las bocas ya devolvieron, y
+                    # por eso vive en el RETORNO. Es un campo mas de la misma
+                    # puerta por el mismo criterio que las otras cinco: el
+                    # mecanismo es el mismo, cambia que se pide.
+                    #
+                    # LOS DESTINOS NO SE PIDEN ACA: salen de `envios`, en esta
+                    # misma llamada. Pedirlos dos veces abre la puerta a que
+                    # las dos respuestas no coincidan.
+                    "cuenta": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {"type": "string"},
+                                        "cantidad": {"type": "integer"}},
+                                    "required": ["id"]}},
+                            "reparto_pago": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "medio": {"type": "string"},
+                                        "porcentaje": {"type": "number"}},
+                                    "required": ["medio", "porcentaje"]},
+                                "description": (
+                                    "Solo si reparte el pago: '70 transferencia "
+                                    "30 Mercado Pago'. Suman 100. El descuento "
+                                    "lo aplico yo.")}},
+                        "description": (
+                            "Cuanto sale TODO junto. Los `id` que te devolvi, "
+                            "con su cantidad. Te vuelve el total ya sumado "
+                            "—productos, envio de los destinos que pediste y "
+                            "descuento— y el detalle. No sumes vos.")}},
                 "required": []},
         },
     }
@@ -446,6 +485,98 @@ def _con_la_cuenta(filas: list, unidades: int, trace_id: str = "") -> None:
         # Ya escrito, igual que el precio: una cadena se copia, un numero
         # pelado invita a redondearlo o a sumarle el envio de memoria.
         f["subtotal"] = _plata(d["subtotal"])
+
+
+def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
+               trace_id: str = "") -> dict:
+    """LA CUENTA DEL RETORNO — lo que CRUZA bocas, calculado ANTES de redactar.
+
+    QUE ES Y POR QUE VIVE ACA. Cada boca trae su calculo adentro: catalogo
+    multiplica por la cantidad, envio saca la tarifa de su tabla. Pero el TOTAL
+    del pedido, el descuento por transferencia y el reparto entre medios de
+    pago no son de ninguna boca: cruzan todas. La FICHA 52 los pone en el
+    RETORNO, y el punto es el ANTES: el modelo escribe con el numero resuelto
+    en la mano en vez de dejar un hueco que el codigo tapa despues.
+
+    QUE CAMBIA. Hasta hoy `{{total}}` lo resolvia `numeros` SUMANDO las cifras
+    que ya estaban escritas en el mensaje. Esa suma no puede conocer el
+    descuento por transferencia ni el reparto 70/30, asi que el setenta treinta
+    no existia: `calculate_total` es la unica que llama a `pago_split`, y desde
+    el apagon del 11-sep el TOTAL del pedido no la llamaba nunca.
+
+    TODA LA PLATA LA HACE `calculadora`, incluido el envio. La tarifa no se
+    suma a mano aca: entra como `items_extra` por el mismo camino que la
+    calculadora ya tiene escrito, con el `concepto` que ella misma deriva de la
+    provincia. Un segundo lugar donde este repo sume plata es un segundo lugar
+    que se puede separar del primero.
+
+    LOS DESTINOS NO SE DECLARAN: salen de lo que la boca de envio YA cotizo en
+    esta misma llamada. Preguntarselos al modelo seria pedir dos veces el mismo
+    dato y abrir la puerta a que las dos respuestas no coincidan.
+
+    No lanza: una cuenta rota deja al turno sin total, nunca con uno inventado.
+    """
+    items = []
+    for x in (pedido or {}).get("items") or []:
+        pid = str((x or {}).get("id") or "").strip()
+        if not pid:
+            continue
+        try:
+            cant = max(1, int((x or {}).get("cantidad") or 1))
+        except (TypeError, ValueError):
+            cant = 1
+        items.append({"product_id": pid, "cantidad": cant})
+    if not items:
+        return {}
+
+    from app.core.calculadora import calculate_total, cotizar_envio
+
+    # EL ENVIO ENTRA POR LA CALCULADORA, con el concepto que ella deriva de la
+    # provincia. Un destino que no clasifica no suma nada y tampoco rompe: la
+    # cuenta sale sin envio y el retorno lo dice por la boca de envio.
+    extras = []
+    for fila in (envios or {}).get("filas") or []:
+        destino = str(fila.get("destino") or "").strip()
+        if not destino or not fila.get("monto_ars"):
+            continue
+        try:
+            q = cotizar_envio(destino)
+        except Exception as e:  # noqa: BLE001 — sin concepto no se suma envio
+            log.warning("motor_cuenta_envio_error", trace_id=trace_id,
+                        error=f"{type(e).__name__}: {str(e)[:120]}")
+            continue
+        if q.get("ok") and q.get("concepto"):
+            extras.append({"faq_tema": "costo_envio",
+                           "concepto": q["concepto"]})
+
+    reparto = [x for x in ((pedido or {}).get("reparto_pago") or [])
+               if isinstance(x, dict) and x.get("medio")]
+
+    try:
+        r = calculate_total(items=items, items_extra=extras or None,
+                            pago=reparto or None)
+    except Exception as e:  # noqa: BLE001 — una cuenta rota no tumba el turno
+        log.warning("motor_cuenta_total_error", trace_id=trace_id,
+                    error=f"{type(e).__name__}: {str(e)[:150]}")
+        return {}
+    if not r.get("ok"):
+        # EL MOTIVO VIAJA. Un total que no se pudo hacer y vuelve mudo se lee
+        # como un total de cero; con el motivo escrito el modelo dice que le
+        # falta para poder darlo, que es la respuesta 5 de las seis.
+        return {"sin_total": str(r.get("mensaje_para_llm") or
+                                 "no se pudo armar la cuenta")}
+
+    from app.core.fuente import _plata
+    fuera = {"total_ars": r.get("total_ars"),
+             "total": _plata(r.get("total_ars")),
+             # LA PRESENTACION YA VIENE ESCRITA POR LA CALCULADORA, renglon por
+             # renglon, con el subtotal, el envio y el reparto. Reescribirla
+             # aca seria la segunda descripcion de lo mismo.
+             "detalle": r.get("presentacion") or ""}
+    if r.get("total_final_ars") is not None:
+        fuera["total_final_ars"] = r["total_final_ars"]
+        fuera["total_final"] = _plata(r["total_final_ars"])
+    return fuera
 
 
 def _no_vendemos(texto: str, categoria: str, tienda_id: str):
@@ -808,7 +939,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
 
 
 def _salida(resultados, temas, sin_resolver, compat, envios, criterio,
-            sin_criterio) -> dict:
+            sin_criterio, cuenta=None) -> dict:
     """El retorno, con UNA sola forma. Las cajas que nadie pidio no viajan: una
     clave vacia en cada turno es ruido adentro de la caja donde todo lo demas
     es dato certificado."""
@@ -822,6 +953,8 @@ def _salida(resultados, temas, sin_resolver, compat, envios, criterio,
         fuera["criterio"] = criterio
     if sin_criterio:
         fuera["criterio_sin_resolver"] = sin_criterio
+    if cuenta:
+        fuera["cuenta"] = cuenta
     return fuera
 
 
@@ -890,7 +1023,7 @@ def _un_compat(pedido: dict, catalogo: list, tienda_id: str) -> dict:
 def buscar(consultas: list, tienda_id: str, trace_id: str = "",
            temas: list | None = None, compat: list | None = None,
            envios: list | None = None, localidad_previa: str = "",
-           criterio: list | None = None) -> dict:
+           criterio: list | None = None, cuenta: dict | None = None) -> dict:
     """LA PUERTA. Catalogo, politicas, compatibilidad, envio y el criterio de la
     casa, en una llamada.
 
@@ -960,7 +1093,7 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
         fuera_temas = [p for p in fuera_temas
                        if p["tema"] not in TEMAS_DEL_ENVIO]
 
-    if not consultas and not compat:
+    if not consultas and not compat and not (cuenta or {}).get("items"):
         # SOLO POLITICAS, SOLO ENVIO O SOLO CRITERIO ES UNA LLAMADA VALIDA.
         # "¿Cual es la politica de garantia?" y "¿para que me sirve?" no
         # necesitan tocar el catalogo, y obligar a inventar una consulta vacia
@@ -1051,6 +1184,18 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
                           "cuantos_habia": 0, "no_aplicado": [], "sin_dato": 0,
                           "empatados": 0,
                           "motivo": "esa consulta no se pudo ejecutar"})
+    # LA CUENTA VA ULTIMA, Y ESE ES SU LUGAR: es lo unico que cruza bocas, asi
+    # que necesita que las otras ya hayan contestado. Con los envios de esta
+    # misma llamada ya cotizados, la tarifa entra a la cuenta sin volver a
+    # pedirsela a nadie.
+    la_cuenta = {}
+    if cuenta:
+        try:
+            la_cuenta = _la_cuenta(cuenta, fuera_envios, tienda_id, trace_id)
+        except Exception as e:  # noqa: BLE001 — sin total no se inventa uno
+            log.warning("motor_cuenta_error", trace_id=trace_id,
+                        error=f"{type(e).__name__}: {str(e)[:150]}")
+
     repetidas = sum(1 for f in fuera if f.get("repetida"))
     log.info("motor_buscar", trace_id=trace_id, consultas=len(fuera),
              repetidas=repetidas,
@@ -1059,9 +1204,10 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
              temas=[p["tema"] for p in fuera_temas],
              compat=[c["veredicto"] for c in compatibilidades],
              envios=[f["destino"] for f in fuera_envios.get("filas") or []],
-             criterio=[c["tema"] for c in criterios])
+             criterio=[c["tema"] for c in criterios],
+             cuenta=la_cuenta.get("total_ars") or la_cuenta.get("sin_total"))
     return _salida(fuera, fuera_temas, sin_resolver, compatibilidades,
-                   fuera_envios, criterios, sin_criterio)
+                   fuera_envios, criterios, sin_criterio, la_cuenta)
 
 
 def fichas_de(resultado: dict) -> list[dict]:
