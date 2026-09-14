@@ -60,7 +60,31 @@ TIENDA = "verifika_prod"
 #
 # Y ES EL ULTIMO QUE SE PAGA POR UNA BOCA: con esta, las cinco tienen cable, y
 # el techo de aca en adelante solo baja.
-TECHO_TABLERO = 2530
+#
+# ── Y SUBE UNA VEZ MAS, EL 14-sep, Y NO ES POR UNA BOCA ─────────────────────
+#
+# ESTO CONTRADICE EL RENGLON DE ARRIBA, y se dice asi en vez de borrarlo. El
+# 13-sep se escribio que el techo solo bajaba de ahi en adelante. Sube igual, y
+# el motivo tiene que poder discutirse: por eso la frase vieja queda.
+#
+# QUE SE PAGA: el campo `cuenta` pesa 170 tokens y nombrarla en la descripcion
+# de la puerta cuesta 25. Son +195; medido, el esquema pasa de 2.432 a 2.631,
+# asi que el techo pasa de 2.530 a 2.730 y el margen queda en 99, el mismo que
+# tuvo siempre. La primera version del campo pesaba 288 y se recorto a 195
+# antes de tocar el techo: lo que se paga es lo que no se pudo sacar.
+#
+# LO QUE COMPRA, y por que no es una boca sexta: la CUENTA no tiene area de
+# fuente. Es aritmetica sobre lo que las otras devolvieron, y vive en el
+# RETORNO. Hasta hoy el TOTAL del pedido lo resolvia `numeros` SUMANDO las
+# cifras que ya estaban escritas en el mensaje. Esa suma no puede conocer el
+# descuento por transferencia ni el reparto entre medios de pago, asi que el
+# setenta treinta no existia: `calculate_total` es la unica que llama a
+# `pago_split` y desde el apagon del 11-sep el total del pedido no la llamaba
+# nunca. Sin este campo no hay forma de pedirla.
+#
+# Y AHORA SI SOLO BAJA: con esta, las cinco bocas tienen cable y la cuenta que
+# las cruza tambien. No queda nada que enchufar que justifique subirlo.
+TECHO_TABLERO = 2730
 
 
 def _tokens(s: str) -> int:
