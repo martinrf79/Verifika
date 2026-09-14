@@ -659,3 +659,104 @@ def test_el_resultado_no_lleva_campos_de_PLOMERIA():
         assert not [k for k in res if k.startswith("_")], f"plomeria: {res}"
     assert r["resultados"][1]["repetida"], "se perdio el aviso de repetida"
     assert "numero 1" in r["resultados"][1]["repetida"]
+
+
+# ── EL UMBRAL DE IDENTIDAD ──────────────────────────────────────────────────
+#
+# LA VARA DEL 14-sep. Medido ANTES de tocar nada, sobre el catalogo vivo: de
+# doce pedidos de cosas que la tienda no vende, OCHO volvian `existe` con los
+# mismos cinco mouse. `dron`, `bicicleta`, `zapatillas`, `guitarra`, `perfume`,
+# `colchon` y `taladro` entre ellos.
+#
+# La causa no era que faltara una palabra en `no_vendidas.json`: `relevancia`
+# es un ORDENADOR, asi que con 880 productos siempre devuelve los cinco de
+# arriba aunque el mejor tenga parecido cero. La decision de si algo EXISTE no
+# puede salir de un ordenador.
+
+NO_LO_VENDE = ("dron", "drone dji", "bicicleta", "zapatillas",
+               "zapatillas nike", "heladera", "guitarra", "perfume",
+               "colchon", "taladro", "televisor", "celular")
+
+SI_LO_VENDE = ("teclado", "mouse gamer", "notebook", "logitech",
+               "teclado mecanico", "auriculares", "silla", "monitor",
+               "webcam", "tablet", "impresora")
+
+
+def test_lo_que_la_tienda_no_vende_nunca_vuelve_como_existe():
+    """DOCE casos, y el numero es el punto: ocho de estos doce volvian
+    `existe`. Un `existe` aca es el bot diciendole que si al que pregunto por
+    algo que no hay, que es el defecto mas caro del nicho."""
+    fallan = [t for t in NO_LO_VENDE
+              if _una({"texto": t, "busco": "varios"})["veredicto"] == "existe"]
+    assert not fallan, f"volvieron existe: {fallan}"
+    assert len(NO_LO_VENDE) == 12
+
+
+def test_lo_que_la_tienda_si_vende_sigue_volviendo_como_existe():
+    """ONCE casos. El umbral no sirve de nada si se lleva puesto el catalogo:
+    esta es la mitad que impide taparlo negando todo."""
+    fallan = [t for t in SI_LO_VENDE
+              if _una({"texto": t, "busco": "varios"})["veredicto"] != "existe"]
+    assert not fallan, f"no volvieron existe: {fallan}"
+    assert len(SI_LO_VENDE) == 11
+
+
+def test_sin_nombre_ni_mencion_no_viajan_filas_de_relleno():
+    """Mostrar 'lo mas parecido' a `zapatillas` seria mostrar los cinco mas
+    baratos, que no se parecen a nada. Ruido adentro de la caja donde todo lo
+    demas es dato certificado."""
+    r = _una({"texto": "zapatillas", "busco": "varios"})
+    assert r["veredicto"] == "no_existe"
+    assert r["filas"] == []
+    assert r["motivo"]
+
+
+def test_el_motivo_no_dice_que_la_tienda_no_lo_vende():
+    """'Ninguna ficha lo nombra' NO es 'la tienda no lo vende'. Esa frase es de
+    `no_vendidas`, que la tiene escrita y curada. Aca puede ser que el cliente
+    lo diga con una palabra que la casa no escribe, y ahi lo que corresponde es
+    volver a buscar por categoria."""
+    m = _una({"texto": "algo para jugar", "busco": "varios"})["motivo"]
+    assert "no vende" not in m
+    assert "categoria" in m
+
+
+def test_el_umbral_no_corre_cuando_la_consulta_trae_categoria():
+    """`teclado retroiluminado` no se llama asi en NINGUNA ficha: la palabra
+    vive en las specs. Con el universo ya acotado por la categoria el texto es
+    una caracteristica, no una identidad, y tiene que seguir contestando."""
+    r = _una({"categoria": "teclado", "texto": "retroiluminado",
+              "busco": "varios"})
+    assert r["veredicto"] == "existe"
+    assert r["filas"]
+
+
+def test_el_umbral_no_corre_cuando_una_condicion_si_se_aplico():
+    """Misma regla por el otro lado: si una condicion recorto el universo, el
+    recorte ya lo hizo algo real y el texto no decide identidad."""
+    r = _una({"texto": "barato liviano comodo",
+              "condiciones": [{"campo": "precio_ars", "operador": "menor",
+                               "valor": "30000"}],
+              "busco": "varios"})
+    assert r["veredicto"] == "existe"
+    assert r["filas"]
+
+
+def test_el_orden_explicito_pide_un_extremo_y_el_extremo_existe():
+    """`lo mas barato que tengas` no nombra ningun producto, y tiene que
+    contestar igual con los mas baratos. Medido el 14-sep: el umbral sin esta
+    rama devolvia cero filas y mataba una venta real."""
+    r = _una({"texto": "lo mas barato que tengas", "busco": "varios",
+              "ordenar_por": {"campo": "precio_ars", "direccion": "min"}})
+    assert r["filas"], "el extremo del catalogo existe aunque las palabras no"
+
+
+def test_con_orden_explicito_el_veredicto_igual_dice_que_no_se_llama_asi():
+    """Lo que salva `zapatillas mas baratas`: las filas son el extremo real,
+    pero el veredicto y el motivo dicen que ninguna se llama asi. El modelo
+    contesta las dos cosas en vez de elegir una."""
+    r = _una({"texto": "zapatillas", "busco": "varios",
+              "ordenar_por": {"campo": "precio_ars", "direccion": "min"}})
+    assert r["veredicto"] == "no_existe"
+    assert r["filas"]
+    assert "ninguna ficha se llama" in r["motivo"]

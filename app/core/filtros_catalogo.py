@@ -773,6 +773,16 @@ _CAMPOS_RELEVANCIA = (
     ("descripcion", 1.0), ("descripcion_rica", 1.0), ("contenido_caja", 0.5),
 )
 
+# LOS CAMPOS QUE DICEN QUE ES LA COSA, y son otra cosa que los que dicen COMO
+# ES. Es la regla 10.0 aplicada al texto: identidad y caracteristica no se
+# mezclan. Que un producto SE LLAME "Mouse Logitech M170" lo hace un mouse; que
+# su descripcion mencione la palabra "notebook" no lo convierte en una.
+#
+# De aca sale el umbral de identidad, que es lo unico que puede decidir si algo
+# EXISTE. La relevancia no puede: es un ordenador, siempre devuelve los cinco
+# de arriba aunque el mejor tenga cero.
+_CAMPOS_IDENTIDAD = ("nombre", "modelo", "marca", "tags", "categoria")
+
 # Palabras que aparecen en cualquier consulta y no discriminan nada. Sin esto
 # "un mouse PARA jugar" puntua alto en todo lo que diga "para" en su prosa.
 _VACIAS = frozenset({
@@ -877,6 +887,37 @@ def pesos_por_rareza(prods: list[dict], texto: str) -> dict:
     if not any(v > 0 for v in fuera.values()):
         return {w: 0.0 for w in palabras}
     return fuera
+
+
+def lo_nombra(prod: dict, texto: str) -> bool:
+    """¿Este producto SE LLAMA algo de lo que el cliente pidio?
+
+    Mira solo los campos de identidad -nombre, modelo, marca, tags, categoria-
+    y nunca la prosa. Es la mitad que faltaba de la busqueda: `relevancia`
+    ORDENA, y un ordenador siempre devuelve los cinco de arriba, tenga el mejor
+    parecido cero o no. Preguntar "¿tenes zapatillas?" devolvia cinco mouse con
+    veredicto `existe`, que es la respuesta 2 dicha como la 3 al reves.
+
+    NO LLEVA NUMERO, y eso es a proposito: un umbral de puntaje habria que
+    recalibrarlo cada vez que cambia el catalogo o el peso de un campo. Esto
+    pregunta por el ESTADO -¿alguna ficha lo nombra?- y no envejece.
+    """
+    palabras = palabras_utiles(texto)
+    if not palabras:
+        return False
+    for campo in _CAMPOS_IDENTIDAD:
+        valor = _norm(_valor_crudo(prod, campo))
+        if not valor:
+            continue
+        for w in palabras:
+            if _texto_contiene(valor, w):
+                return True
+    return False
+
+
+def alguno_lo_nombra(prods: list[dict], texto: str) -> bool:
+    """¿ALGUNO del universo lo nombra? La pregunta que decide si existe."""
+    return any(lo_nombra(p, texto) for p in (prods or []))
 
 
 def clave_de_orden(prod: dict, campo: str, tienda_id: str):

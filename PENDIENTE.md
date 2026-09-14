@@ -64,6 +64,31 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
+**14-sep: EL UMBRAL DE IDENTIDAD, y era el agujero grande de la busqueda.**
+Medido ANTES de tocar, sobre el catalogo vivo: de doce pedidos de cosas que la
+tienda no vende, OCHO volvian `existe` con los MISMOS cinco mouse -`dron`,
+`bicicleta`, `zapatillas`, `guitarra`, `perfume`, `colchon`, `taladro`-. La
+causa no era una palabra faltante en `no_vendidas.json`: `relevancia` es un
+ORDENADOR, asi que con 880 productos siempre devuelve los cinco de arriba
+aunque el mejor tenga parecido cero. **Ahora la identidad la decide
+`lo_nombra`, que mira solo nombre, modelo, marca, tags y categoria, nunca la
+prosa: es la regla 10.0 aplicada al texto.** NO LLEVA NUMERO -pregunta por el
+estado, no por un puntaje-, asi que no hay que recalibrarlo cuando cambie el
+catalogo. Solo corre SIN RECORTE: con una categoria o una condicion aplicada el
+texto es caracteristica, no identidad, y `teclado retroiluminado` sigue
+contestando. Y el orden explicito sirve filas igual, porque `lo mas barato que
+tengas` pide un extremo que existe aunque las palabras no nombren nada. Ahora
+12 de 12 y los 11 que si existen sin moverse. Vara: 8 casos nuevos en
+`tests/test_motor.py`, 451 verdes. **LO QUE FALTA ES MEDIRLO VIVO:** el renglon
+que lo cuenta es `vacios` de `motor_turno`, por el issue 31 con `/logs`.
+
+**`arquitectura/MAPA_CABLEADO.md` ESTA VIEJO Y MIENTE.** Describe `turno.py`,
+`tabla.py`, `molde.py`, `resolver.py` y `herramientas.py`, y ninguno de esos
+archivos existe desde el apagon del 11-sep. El camino vivo es
+`orchestrator` -> `respuesta.procesar_turno` sobre `motor.buscar`. Reescribirlo
+es la ficha de ordenar el repo, que quedo para despues.
+
+
 - **CERRADO el 13-sep** · **EL TABLERO, entero.** 2,22 vueltas por turno contra
   3,00, buscaron 35 de 36, cero busquedas vacias, y la consulta repetida ya no
   se ejecuta dos veces. Ficha 53, vara en `tests/test_tablero.py` con 20 casos,

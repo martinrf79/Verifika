@@ -488,7 +488,8 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     cuando lo que pasa es que la fuente no tiene el dato.
     """
     from app.core.fuente import _ficha_corta
-    from app.core.filtros_catalogo import (aplicar, dato_que_falla, ordenar,
+    from app.core.filtros_catalogo import (alguno_lo_nombra, aplicar,
+                                           dato_que_falla, ordenar,
                                            orden_tiene_sentido,
                                            pesos_por_rareza,
                                            rankear_por_cercania, relevancia)
@@ -625,10 +626,12 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     #    contesta ninguna pregunta que un cliente pueda hacer.
     orden = c.get("ordenar_por") or {}
     campo_orden = str(orden.get("campo") or "")
+    orden_aplicado = False
     if campo_orden:
         if quedan and orden_tiene_sentido(quedan, campo_orden, tienda_id):
             quedan = ordenar(quedan, campo_orden,
                              str(orden.get("direccion") or "min"), tienda_id)
+            orden_aplicado = True
         else:
             no_aplicado.append({
                 "campo": campo_orden,
@@ -679,7 +682,76 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
         # identidad, nunca con un cero de paso.
         # EL MEJOR PUNTAJE SE BUSCA CON `max`, no en la primera fila: con un
         # orden explicito la primera es la mas barata, no la que mas pega.
-        if str(c.get("busco") or "") == "uno" and len(quedan) > 1:
+        # ── EL UMBRAL DE IDENTIDAD ──────────────────────────────────────
+        #
+        # QUE TAPA, medido el 14-sep sobre el catalogo vivo: `dron`,
+        # `bicicleta`, `zapatillas`, `guitarra`, `perfume`, `colchon` y
+        # `taladro` volvian `existe` con los MISMOS cinco mouse. Ocho falsos
+        # positivos sobre doce pedidos de cosas que la tienda no vende. El bot
+        # le decia que si al que pregunto por algo que no existe, que es el
+        # defecto mas caro del nicho.
+        #
+        # POR QUE NO LO TAPA `no_vendidas.json`: esa lista solo conoce las
+        # palabras que alguien escribio adentro. Perseguir esto con una lista
+        # de palabras es el camino que este repo ya recorrio tres veces y del
+        # que ya volvio.
+        #
+        # LA REGLA, y no tiene numero: si NINGUNA ficha del catalogo se LLAMA
+        # algo de lo que pidio, no existe. `relevancia` no puede decidirlo
+        # porque es un ordenador; `lo_nombra` mira identidad y nada mas.
+        #
+        # SOLO CORRE SIN RECORTE, y esa es la otra mitad. Si la consulta trajo
+        # una categoria o una condicion que SI se aplico, el universo ya esta
+        # acotado por algo real y el texto es una caracteristica, no una
+        # identidad: "teclado retroiluminado" no se llama asi en ninguna ficha
+        # y tiene que seguir contestando.
+        sin_identidad = (not r.get("aplicados")
+                         and de_cuantos == len(catalogo)
+                         and not alguno_lo_nombra(quedan, texto))
+        if sin_identidad:
+            veredicto = "no_existe"
+            if max(puntos.values()) <= 0 and not orden_aplicado:
+                # NI NOMBRADO NI MENCIONADO. Mostrar "lo mas parecido" aca
+                # seria mostrar los cinco mas baratos, que no se parecen a
+                # nada: es ruido adentro de la caja donde todo lo demas es
+                # dato certificado.
+                quedan = []
+                # EL MOTIVO DICE EL HECHO Y NO CONCLUYE DE MAS. "Ninguna ficha
+                # lo nombra" no es lo mismo que "la tienda no lo vende": esa
+                # frase es de `no_vendidas`, que la tiene escrita y curada. Aca
+                # puede ser que el cliente lo diga con una palabra que la casa
+                # no escribe -"algo para jugar"-, y ahi lo que corresponde es
+                # volver a buscar por categoria, no decirle que no hay.
+                #
+                # LAS CATEGORIAS NO SE LISTAN ACA: ya viajan en el enum del
+                # esquema, en cada llamada. Escribirlas de nuevo seria la
+                # segunda copia de lo mismo.
+                notas.append(f"ninguna ficha del catalogo dice '{texto}': ni "
+                             f"en el nombre, ni en la marca, ni en el modelo, "
+                             f"ni en los tags, ni en la categoria, ni en la "
+                             f"prosa. Si asi es como lo dice el cliente y no "
+                             f"como lo escribe la tienda, volve a buscar con "
+                             f"una categoria")
+            elif orden_aplicado:
+                # EL ORDEN EXPLICITO PIDE UN EXTREMO, Y EL EXTREMO EXISTE
+                # AUNQUE LAS PALABRAS NO NOMBREN NADA. "Lo mas barato que
+                # tengas" no nombra un producto y tiene que contestar con los
+                # mas baratos; medido el 14-sep, el umbral sin esta rama se lo
+                # llevaba puesto y devolvia cero.
+                #
+                # EL VEREDICTO IGUAL ES `no_existe`, y ahi esta lo que salva
+                # "zapatillas mas baratas": las filas son el extremo real del
+                # catalogo, pero el motivo dice que ninguna se llama asi. El
+                # modelo contesta las dos cosas -eso no hay, esto es lo mas
+                # barato que si tengo- en vez de elegir una.
+                notas.append(f"ninguna ficha se llama '{texto}'; estas son las "
+                             f"del orden que pediste, no las que nombraste")
+            else:
+                notas.append(f"ninguna ficha se llama '{texto}'; estas lo "
+                             f"mencionan y es lo mas parecido que hay")
+
+        if (not sin_identidad and str(c.get("busco") or "") == "uno"
+                and len(quedan) > 1):
             mejor = max(puntos.values())
             iguales = [p for p in quedan if puntos[id(p)] == mejor]
             if 1 < len(iguales) <= TOPE_AMBIGUO and mejor > 0:
