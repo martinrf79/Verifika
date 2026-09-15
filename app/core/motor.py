@@ -461,9 +461,15 @@ def _con_la_cuenta(filas: list, unidades: int, trace_id: str = "") -> None:
     from app.core.fuente import _plata
     try:
         from app.core.calculadora import calculate_total
+        # SIN VALIDAR STOCK: esto es una LISTA de opciones, no un pedido. El
+        # motivo entero y la medicion estan en `calculadora.calculate_total`.
+        # El stock de cada fila viaja igual en la ficha, asi que el modelo lo
+        # ve y lo puede decir; lo que no puede pasar es que un agotado deje sin
+        # subtotal a los otros cuatro.
         r = calculate_total(items=[{"product_id": f.get("id"),
                                     "cantidad": unidades}
-                                   for f in filas if f.get("id")])
+                                   for f in filas if f.get("id")],
+                            validar_stock=False)
         if not r.get("ok"):
             log.warning("motor_cuenta_sin_ok", trace_id=trace_id,
                         motivo=str(r.get("mensaje_para_llm"))[:120])

@@ -884,3 +884,37 @@ def test_ocho_notebooks_entran_en_el_recorte_del_retorno():
     r = MT.buscar([{"categoria": "notebook", "busco": "varios", "cuantos": 8}],
                   TIENDA)
     assert len(_json.dumps(r, ensure_ascii=False)) < MT_TOPE
+
+
+# ── UNA LISTA NO ES UN PEDIDO ───────────────────────────────────────────────
+#
+# MEDIDO EN PRODUCCION dos dias seguidos, en la misma charla real: pidiendo
+# "precio de dos mouse", el G502 Hero con stock 0 devolvia `ok: False` y se
+# llevaba puestos los subtotales de los otros cuatro. Lo mismo con el G413 y
+# los teclados. El cliente pidio precios, no comprar los cinco.
+
+def test_un_agotado_no_deja_sin_subtotal_a_los_demas():
+    """El renglon `motor_cuenta_sin_ok` salio dos veces en el turno del
+    14-sep 22:57. Es el bug entero, y el catalogo vivo lo reproduce."""
+    filas = _una({"categoria": "mouse", "busco": "varios",
+                  "cantidad": 2})["filas"]
+    assert len(filas) == 5
+    sin = [f["id"] for f in filas if not f.get("subtotal")]
+    assert not sin, f"quedaron sin subtotal: {sin}"
+
+
+def test_el_stock_cero_viaja_igual_para_que_el_modelo_lo_diga():
+    """No se tapa el agotado: se muestra con su subtotal Y con su stock al
+    lado. Lo que el codigo no puede hacer es decidir por el cliente que ese
+    producto no le interesa."""
+    filas = _una({"categoria": "mouse", "busco": "varios",
+                  "cantidad": 2})["filas"]
+    assert any(f.get("stock") == 0 for f in filas)
+
+
+def test_el_TOTAL_de_un_pedido_SI_valida_stock():
+    """La otra mitad. En la cuenta del retorno el cliente SI va a llevar esas
+    unidades, asi que ahi el agotado tiene que frenar y decir cual es."""
+    c = _cuenta({"items": [{"id": "MOU0003", "cantidad": 2}]})
+    assert "total_ars" not in c
+    assert "Stock insuficiente" in c["sin_total"]

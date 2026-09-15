@@ -195,7 +195,22 @@ def calculate_total(items: list[dict] | None = None,
                     items_extra: list[dict] | None = None,
                     destinos: int = 1,
                     pago: list[dict] | None = None,
-                    grupos: list[dict] | None = None) -> dict:
+                    grupos: list[dict] | None = None,
+                    validar_stock: bool = True) -> dict:
+    """`validar_stock=False` es para MOSTRAR, no para vender (14-sep-2026).
+
+    UNA LISTA DE OPCIONES NO ES UN PEDIDO, y confundirlas costo dos turnos
+    reales medidos. El motor le pide a esta funcion el subtotal de las CINCO
+    filas que va a mostrar, todas con la cantidad que nombro el cliente. Con la
+    validacion prendida, UN producto agotado devuelve `ok: False` y se lleva
+    puestos los subtotales de los otros cuatro, que si tienen stock. Medido el
+    13 y el 14-sep en la misma charla: el G502 Hero con stock 0 mato la cuenta
+    de los otros cuatro mouse, y el G413 la de los otros cuatro teclados. El
+    cliente pidio precios, no comprar los cinco.
+
+    Con el TOTAL de un pedido la validacion se queda prendida, que es donde
+    significa algo: ahi el cliente si va a llevar esas unidades.
+    """
     log.info(f"calculate_total INICIO items={items} items_extra={items_extra} "
              f"destinos={destinos} pago={pago}")
     # PAGO DIVIDIDO POR PORCENTAJE: si el cliente reparte el total entre medios
@@ -324,7 +339,7 @@ def calculate_total(items: list[dict] | None = None,
         if not producto:
             no_encontrados.append(pid)
             continue
-        if cantidad > producto.get("stock", 0):
+        if validar_stock and cantidad > producto.get("stock", 0):
             return {
                 "ok": False,
                 "mensaje_para_llm": (
