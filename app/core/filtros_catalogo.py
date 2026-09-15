@@ -110,6 +110,26 @@ _CAMPOS_INTERNOS = frozenset({
     "id", "stock", "categoria", "precio_ars", "tags", "descripcion_rica",
     "specs", "compat", "embedding", "created_at", "updated_at"})
 
+# ── LOS CAMPOS QUE YA TIENEN BOCA PROPIA ────────────────────────────────────
+#
+# FICHA 54, punto 3.1. No son internos: son prosa de la casa sobre PARA QUE
+# SIRVE algo, y eso lo contesta la boca `criterio`. Tenerlos ADEMAS como campo
+# filtrable son DOS CAMINOS para la misma pregunta, y el modelo elige el que ve
+# en el enum, porque el enum esta delante y la boca hay que acordarsela.
+#
+# MEDIDO el 15-sep: "me sirve un mouse de esos para diseño grafico" fue a
+# filtrar el catalogo por `uso_recomendado` en vez de preguntarle a la casa, y
+# volvio el hueco de valor -la fuente no escribe 'diseño grafico' ahi, escribe
+# 'trabajo y estudio', 'gaming', 'gaming y productividad'-. El cliente pregunto
+# para que sirve y el sistema le contesto que esa palabra no esta en una
+# columna.
+#
+# EL CAMPO NO SE BORRA Y SIGUE PESANDO EN EL PARECIDO: `relevancia` lo usa con
+# peso 2.5, asi que "algo para jugar" sigue trayendo lo que la ficha dice que
+# es para jugar. Lo que se saca es la posibilidad de DECLARARLO como condicion,
+# que es la que abria el segundo camino.
+_CAMPOS_CON_BOCA_PROPIA = frozenset({"uso_recomendado"})
+
 # Claves de `specs` que repiten una columna del catalogo. Se deja la columna,
 # que viene tipada: `garantia_meses` es un entero y se puede comparar; la spec
 # `garantia` es el texto "24 meses" y no.
@@ -296,7 +316,8 @@ def recorrida(tienda_id: str) -> dict:
 
         pares = list(p.items()) + list((p.get("specs") or {}).items())
         for k, v in pares:
-            if k in _CAMPOS_INTERNOS or k in _SPECS_DUPLICADAS:
+            if (k in _CAMPOS_INTERNOS or k in _SPECS_DUPLICADAS
+                    or k in _CAMPOS_CON_BOCA_PROPIA):
                 continue
             if v in (None, "", [], {}) or isinstance(v, (dict, list)):
                 continue

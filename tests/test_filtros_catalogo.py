@@ -39,8 +39,13 @@ def test_los_campos_filtrables_salen_del_catalogo_vivo():
     campos = FC.campos_filtrables(TIENDA)
     # columnas del catalogo
     for c in ("color", "material", "peso_gramos", "dimensiones",
-              "garantia_meses", "origen", "contenido_caja", "uso_recomendado"):
+              "garantia_meses", "origen", "contenido_caja"):
         assert c in campos, c
+    # Y EL QUE DEJO DE ESTAR, 15-sep, FICHA 54 punto 3.1: `uso_recomendado` es
+    # para que SIRVE algo, y eso ya lo contesta la boca `criterio`. Tenerlo
+    # tambien aca eran dos caminos para la misma pregunta y el modelo elegia
+    # este, porque el enum esta delante. El campo sigue vivo en el parecido.
+    assert "uso_recomendado" not in campos
     # claves de specs, que es donde viven las que mas pregunta el cliente
     for c in ("bluetooth", "conexion", "bateria", "resistencia_agua", "wifi"):
         assert c in campos, c
