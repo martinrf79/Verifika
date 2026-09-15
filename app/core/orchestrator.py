@@ -31,8 +31,13 @@ async def process_message(user_id: str, raw_message: str,
     trace_id = str(uuid.uuid4())[:8]
     tid = tienda_id or settings.TIENDA_ID
     structlog.contextvars.bind_contextvars(trace_id=trace_id, tienda_id=tid)
+    # EL MENSAJE ENTERO, HASTA 400. Con 80 caracteres un pedido real llegaba
+    # cortado a la mitad -"Dame precio de dos auriculares, dos mouse y dos
+    # memorias. El precio no seria tan"- y desde el log no se podia saber que
+    # le habian pedido al bot. Es la ENTRADA del cliente, no la respuesta: la
+    # regla que prohibe guardar texto es sobre lo que el bot escribe.
     log.info("message_received", trace_id=trace_id, tienda_id=tid,
-             user_id=user_id, msg_preview=(raw_message or "")[:80])
+             user_id=user_id, msg_preview=(raw_message or "")[:400])
     try:
         # Anti-jailbreak: filtro de entrada por codigo, antes de cualquier LLM.
         # Conservador: solo corta patrones claros de ataque ("ignora tus

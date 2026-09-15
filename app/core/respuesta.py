@@ -598,6 +598,16 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             + msgs[corte_moldes + 1:])
         turno = cabeza + [{"role": "user", "content": "\n\n".join(partes)}]
 
+        # QUE VIAJO, POR VUELTA. Es el primero de los dos renglones que le
+        # faltaban a la sonda de produccion (15-sep-2026): desde afuera no
+        # habia forma de saber que tenia el modelo delante cuando decidio.
+        # No viaja el TEXTO -seria el prompt entero en cada turno- sino su
+        # forma: que bloques estaban, cuanto pesaban y en que vuelta.
+        log.info("prompt_armado", trace_id=trace_id, vuelta=vuelta + 1,
+                 con_tablero=bool(tools), con_moldes=not bool(tools),
+                 bloques=len(turno), hallazgos=len(hallazgos),
+                 tokens=sum(len(str(m.get("content") or "")) for m in turno) // 4)
+
         def _call(_tools=tools, _msgs=turno):
             extra = {"tools": _tools, "tool_choice": "auto"} if _tools else {}
             r = cli.chat.completions.create(
@@ -632,6 +642,21 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                 log.warning("motor_argumentos_rotos", trace_id=trace_id,
                             crudo=str(c.function.arguments)[:200])
             consultas = args.get("consultas") or []
+            pidio = {"consultas": consultas, "temas": args.get("temas") or [],
+                     "compatibilidad": args.get("compatibilidad") or [],
+                     "envios": args.get("envios") or [],
+                     "criterio": args.get("criterio") or [],
+                     "cuenta": args.get("cuenta") or {}}
+            # LO QUE EL MODELO ESCRIBIO, TAL CUAL, y es EL renglon que faltaba.
+            # `motor_buscar` cuenta cuantas consultas hubo y cuantas filas
+            # volvieron; con que PALABRAS se pidio no quedaba en ningun lado.
+            # El banco lo ve con un espia y produccion no lo veia, asi que la
+            # unica pieza que decide toda la busqueda era la unica invisible.
+            #
+            # VA ANTES DE BUSCAR a proposito: si el motor se cae, el renglon
+            # ya quedo escrito y se puede ver con que lo tumbaron.
+            log.info("motor_pedido", trace_id=trace_id, vuelta=vuelta + 1,
+                     pedido=json.dumps(pidio, ensure_ascii=False)[:1500])
             r = MT.buscar(consultas, tienda_id, trace_id,
                           temas=args.get("temas"),
                           compat=args.get("compatibilidad"),
@@ -648,11 +673,6 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                     envios[str(e["destino"])] = int(e["monto_ars"])
             if (r.get("cuenta") or {}).get("total_ars") is not None:
                 cuenta = r["cuenta"]
-            pidio = {"consultas": consultas, "temas": args.get("temas") or [],
-                     "compatibilidad": args.get("compatibilidad") or [],
-                     "envios": args.get("envios") or [],
-                     "criterio": args.get("criterio") or [],
-                     "cuenta": args.get("cuenta") or {}}
             hallazgos.append(
                 # EL RECORTE ERA DE 900 Y CORTABA CONSULTAS ENTERAS. Medido
                 # el 13-sep: un pedido abierto -"algo para jugar que no sea muy

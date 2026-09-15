@@ -649,6 +649,222 @@ def informe(revisadas: list, meta: dict | None = None) -> str:
     return "\n".join(lineas)
 
 
+
+# ── LA PELICULA DEL TURNO — la sonda, pero sobre PRODUCCION ─────────────────
+#
+# POR QUE EXISTE (Martin, 15-sep-2026). `banco_pruebas/sonda_turno.py` muestra
+# el turno por dentro, etapa por etapa, pero corre un turno NUEVO contra el
+# modelo: no puede decir que paso en la charla que el cliente ya tuvo. Y el
+# informe de arriba dice CUANTO -cuantas consultas, cuantas vueltas- pero no
+# QUE. Entre los dos quedaba el unico hueco que importa: con que palabras pidio
+# el modelo, que tenia delante cuando las escribio, y que volvio.
+#
+# NO ES UN INSTRUMENTO NUEVO. Es este mismo lector, con dos renglones mas que
+# el turno ahora escribe -`prompt_armado` y `motor_pedido`- y una funcion PURA
+# que los ordena por `trace_id`. Sale por el mismo issue 31 y con la misma
+# credencial: no hay nada nuevo que pedir ni que recordar.
+#
+# LA RESPUESTA DEL BOT NO ESTA ACA, y es a proposito: los logs no guardan el
+# texto que leyo el cliente. Esta abajo, en la transcripcion del mismo informe.
+
+EVENTOS_PELICULA = (
+    "message_received", "prompt_armado", "motor_pedido", "motor_buscar",
+    "retorno_recortado", "motor_turno", "turno_ok", "turno_sin_buscar",
+    "tipo_vacio", "respuesta_sin_modelo", "motor_argumentos_rotos",
+    "respuesta_modelo_error", "antijailbreak_bloqueo")
+
+# Cuantos turnos se cuentan por defecto. Tres alcanzan para una prueba por
+# WhatsApp y entran en un comentario del issue; el informe de arriba sigue
+# midiendo la ventana entera.
+TURNOS_PELICULA = 3
+
+
+def renglones_del_turno(tok: str, desde_s: int, limite: int = 600) -> list:
+    """Los eventos que arman la pelicula, del mas viejo al mas nuevo.
+
+    Mismo camino y mismas excusas que `renglones_del_motor`: si la credencial
+    no alcanza, se devuelve vacio y el resto del informe sigue.
+    """
+    desde = datetime.utcfromtimestamp(
+        time.time() - (desde_s or 86400)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    eventos = " OR ".join(f'"{e}"' for e in EVENTOS_PELICULA)
+    filtro = (f'resource.type="cloud_run_revision" '
+              f'AND resource.labels.service_name="{SERVICIO}" '
+              f'AND jsonPayload.event=({eventos}) '
+              f'AND timestamp>="{desde}"')
+    fuera, token = [], ""
+    for _ in range(TOPE_PAGINAS):
+        cuerpo = {"resourceNames": [f"projects/{PROYECTO}"],
+                  "filter": filtro, "orderBy": "timestamp desc",
+                  "pageSize": min(1000, max(1, limite))}
+        if token:
+            cuerpo["pageToken"] = token
+        try:
+            r = _post("https://logging.googleapis.com/v2/entries:list",
+                      tok, cuerpo)
+        except Exception as e:  # noqa: BLE001 — sin logs, el resto del informe
+            print(f"[la pelicula no se pudo leer: "
+                  f"{type(e).__name__}: {str(e)[:120]}]")
+            return fuera
+        for e in r.get("entries") or []:
+            p = e.get("jsonPayload")
+            if isinstance(p, dict):
+                p = dict(p)
+                p["_t"] = e.get("timestamp") or ""
+                fuera.append(p)
+        token = r.get("nextPageToken") or ""
+        if not token or len(fuera) >= limite:
+            break
+    return list(reversed(fuera[:limite]))
+
+
+def _una_consulta(c: dict) -> str:
+    """Una consulta del modelo en un renglon legible. Es la traduccion del
+    JSON a algo que se pueda leer en voz alta, que es como Martin lee."""
+    p = []
+    if c.get("texto"):
+        p.append(f'texto "{c["texto"]}"')
+    if c.get("categoria"):
+        p.append(f'categoria {c["categoria"]}')
+    for x in c.get("condiciones") or []:
+        p.append(f'{x.get("campo")} {x.get("operador")} {x.get("valor")}')
+    o = c.get("ordenar_por") or {}
+    if o:
+        p.append(f'ordenar {o.get("campo")} {o.get("direccion")}')
+    if c.get("ids"):
+        p.append("ids " + ", ".join(str(i) for i in c["ids"]))
+    if c.get("busco"):
+        p.append(f'busco {c["busco"]}')
+    if c.get("cantidad"):
+        p.append(f'cantidad {c["cantidad"]}')
+    return " · ".join(p) or "(vacia)"
+
+
+def _lo_que_pidio(crudo) -> list:
+    """El pedido del modelo, campo por campo. Devuelve renglones ya indentados.
+
+    UN PEDIDO VACIO TAMBIEN SE DICE: que el modelo no declarara una boca es
+    justamente lo que hay que poder ver.
+    """
+    try:
+        d = json.loads(crudo) if isinstance(crudo, str) else (crudo or {})
+    except Exception:  # noqa: BLE001 — un pedido ilegible se muestra crudo
+        return [f"      PIDIO   (no se pudo leer) {str(crudo)[:200]}"]
+    filas = []
+    for c in d.get("consultas") or []:
+        filas.append(f"      consulta   {_una_consulta(c)}")
+    for campo in ("temas", "criterio", "envios"):
+        if d.get(campo):
+            filas.append(f"      {campo:<10} "
+                         + " | ".join(str(x) for x in d[campo]))
+    for c in d.get("compatibilidad") or []:
+        filas.append(f"      compat     {c.get('producto')} con {c.get('con')}")
+    cta = d.get("cuenta") or {}
+    if cta:
+        items = ", ".join(f'{i.get("id")} x{i.get("cantidad") or 1}'
+                          for i in (cta.get("items") or []))
+        reparto = ", ".join(f'{r.get("porcentaje")}% {r.get("medio")}'
+                            for r in (cta.get("reparto_pago") or []))
+        filas.append(f"      cuenta     {items}"
+                     + (f"   reparto {reparto}" if reparto else ""))
+    return filas or ["      PIDIO   nada"]
+
+
+def pelicula(eventos: list, turnos: int = TURNOS_PELICULA) -> list:
+    """LOS ULTIMOS TURNOS, ETAPA POR ETAPA. Funcion PURA sobre los renglones.
+
+    Pura como `numero_del_motor`, y por el mismo motivo: lo que decide que se
+    ve tiene que poder probarse sin red y sin credencial.
+    """
+    if not eventos:
+        return []
+    turnos_dict: dict = {}
+    for e in eventos:
+        t = str(e.get("trace_id") or "")
+        if t:
+            turnos_dict.setdefault(t, []).append(e)
+    if not turnos_dict:
+        return []
+    ultimos = list(turnos_dict.items())[-max(1, turnos):]
+
+    out = ["", "=" * 64,
+           f"LA PELICULA DE LOS ULTIMOS {len(ultimos)} TURNOS",
+           "Lo que el modelo tenia delante, lo que pidio y lo que volvio.",
+           "El texto que leyo el cliente no esta en los logs: esta en la "
+           "transcripcion, al final.", "=" * 64]
+    for trace, evs in ultimos:
+        cab = next((e for e in evs if e.get("event") == "message_received"), {})
+        fin = next((e for e in evs if e.get("event") == "turno_ok"), {})
+        hora = str(cab.get("_t") or (evs[0].get("_t") if evs else ""))[11:19]
+        out.append("")
+        out.append(f"--- TURNO {trace}   {hora} UTC ---")
+        if cab.get("msg_preview"):
+            out.append(f"  CLIENTE: {cab['msg_preview']}")
+        for e in evs:
+            ev = e.get("event")
+            if ev == "prompt_armado":
+                cual = ("buscar" if e.get("con_tablero") else "contestar")
+                out.append(f"  VUELTA {_n(e.get('vuelta'))} · de {cual} · "
+                           f"{_n(e.get('tokens'))} tokens · "
+                           f"{_n(e.get('hallazgos'))} respuestas del motor ya "
+                           f"en la mano")
+            elif ev == "motor_pedido":
+                out += _lo_que_pidio(e.get("pedido"))
+            elif ev == "motor_buscar":
+                ver = ", ".join(str(v) for v in (e.get("veredictos") or []))
+                filas = e.get("filas") or []
+                out.append(f"      VOLVIO   {len(filas)} consultas · "
+                           f"veredictos {ver or 'ninguno'} · "
+                           f"filas {filas or 0}"
+                           + (f" · repetidas {_n(e.get('repetidas'))}"
+                              if _n(e.get("repetidas")) else ""))
+                for campo in ("temas", "criterio", "envios", "compat"):
+                    if e.get(campo):
+                        out.append(f"      {campo:<10} "
+                                   + ", ".join(str(x) for x in e[campo]))
+                if e.get("cuenta"):
+                    out.append(f"      cuenta     {str(e['cuenta'])[:300]}")
+            elif ev == "retorno_recortado":
+                out.append(f"      RECORTE  se sacaron "
+                           f"{_n(e.get('filas_sacadas'))} filas para que "
+                           f"entre el retorno")
+            elif ev == "motor_turno":
+                if e.get("campos"):
+                    out.append("      NO SE PUDO APLICAR: "
+                               + ", ".join(str(x) for x in e["campos"]))
+                for campo in ("temas_sin_resolver", "criterio_sin_resolver",
+                              "compat_sin_dato", "envios_sin_clasificar"):
+                    if e.get(campo):
+                        out.append(f"      {campo}: "
+                                   + ", ".join(str(x) for x in e[campo]))
+                if _n(e.get("cuentas_sin_total")):
+                    out.append("      LA CUENTA NO SE PUDO HACER")
+            elif ev in ("turno_sin_buscar", "tipo_vacio",
+                        "respuesta_sin_modelo", "motor_argumentos_rotos",
+                        "respuesta_modelo_error", "antijailbreak_bloqueo"):
+                out.append(f"      AVISO    {ev} "
+                           + str(e.get("error") or e.get("motivo") or "")[:140])
+        if fin:
+            etapas = fin.get("etapas") or {}
+            out.append(f"  CONTESTO tipo {fin.get('tipo') or '(sin tipo)'} · "
+                       f"{_n(fin.get('largo'))} caracteres · "
+                       f"{_n(fin.get('latency_ms'))} ms")
+            if etapas:
+                out.append("      etapas   " + ", ".join(
+                    f"{k} {_n(v)}ms" for k, v in etapas.items()))
+            alertas = []
+            if _n(fin.get("plata_inventada")):
+                alertas.append("PLATA INVENTADA, la respuesta no salio")
+            if _n(fin.get("huecos_sin_dato")):
+                alertas.append(f"{_n(fin.get('huecos_sin_dato'))} huecos sin dato")
+            if fin.get("cuenta_total"):
+                alertas.append(f"total {fin['cuenta_total']}")
+            if alertas:
+                out.append("      " + " · ".join(alertas))
+        else:
+            out.append("  (este turno no llego a `turno_ok`: se cayo antes)")
+    return out
+
 def main(argv: list) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--limite", type=int, default=20,
@@ -659,6 +875,9 @@ def main(argv: list) -> int:
                     help="ventana de tiempo: 30m, 18h, 2d. Audita SOLO las "
                          "charlas tocadas dentro de la ventana, que es lo "
                          "unico que hace comparables dos corridas.")
+    ap.add_argument("--pelicula", type=int, default=TURNOS_PELICULA,
+                    help="cuantos turnos se muestran etapa por etapa. 0 los "
+                         "apaga.")
     ap.add_argument("--sin-transcripcion", action="store_true",
                     help="no imprime la charla literal al final. Por defecto "
                          "SE IMPRIME: el texto que recibio el cliente no esta "
@@ -682,6 +901,12 @@ def main(argv: list) -> int:
     # significaba perder el numero justo las veces que no hubo charlas.
     print("\n".join(numero_del_motor(
         renglones_del_motor(tok, desde_s, max(200, args.limite * 20)))))
+
+    # LA PELICULA VA PEGADA AL NUMERO, y antes de las charlas: primero cuanto,
+    # despues QUE. Sale siempre y no hay nada que pedir.
+    if args.pelicula:
+        print("\n".join(pelicula(
+            renglones_del_turno(tok, desde_s), args.pelicula)))
 
     try:
         crudas, meta = charlas(tok, args.limite, args.usuario, desde_s)
