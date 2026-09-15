@@ -776,6 +776,30 @@ def test_el_precio_se_GUARDA_en_la_memoria_del_turno(firestore_doble,
     assert vistos and vistos[0].get("precio"), f"sin precio: {vistos}"
 
 
+def test_EL_PROMPT_NO_SE_CONTRADICE_SOBRE_LA_PLATA(firestore_doble):
+    """FICHA 54, punto 5. El prompt decia que el precio es el UNICO numero de
+    plata que el modelo puede escribir, y seis renglones despues decia que el
+    total de la cuenta se copia igual que un precio. Y despues amenazaba: una
+    cifra que no salga de una ficha o de los dos huecos tira la respuesta
+    entera abajo. El total no es una ficha ni un hueco.
+
+    O sea que el prompt le decia al modelo que escribir el total —que el codigo
+    ya calculo y que la guarda de `numeros` acepta como fuente— mataba la
+    respuesta. Se escribio el 14-sep al enchufar la cuenta: la enumeracion de
+    casos se desincroniza sola cada vez que se enchufa una boca.
+
+    LA VARA ES QUE SEA UNA REGLA DE PROCEDENCIA, no una lista de casos."""
+    p = R._REGLAS
+    assert "unico numero de plata" not in p, \
+        "volvio la enumeracion: un numero declarado unico y otros dos al lado"
+    # LOS TRES ORIGENES SE NOMBRAN JUNTOS Y VALEN IGUAL, que es exactamente lo
+    # que la guarda de `numeros` ya hace: fichas, envios y cuenta.
+    plata = p[p.index("LA PLATA"):p.index("TODA consulta")]
+    for palabra in ("precio", "envio", "total"):
+        assert palabra in plata, f"la regla de la plata no nombra {palabra}"
+    assert "{{envio}}" in plata and "{{total}}" in plata
+
+
 def test_el_prompt_PIDE_declarar_busco(firestore_doble):
     """Medido con el modelo real el 12-sep: 0 de 9 consultas declararon
     `busco`, asi que la ambiguedad no se podia disparar nunca. Estaba solo en

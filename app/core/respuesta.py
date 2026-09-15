@@ -59,27 +59,36 @@ settings = get_settings()
 
 # ── EL PROMPT ───────────────────────────────────────────────────────────────
 #
-# Corto a proposito. Lo unico largo son los veinte moldes, que son el trabajo
-# del modelo. Cada regla de aca tiene ademas su candado en codigo: el prompt
-# pide, el codigo obliga.
+# Corto a proposito. Cada regla de aca tiene ademas su candado en codigo: el
+# prompt pide, el codigo obliga. Los veinte moldes viven aparte, en
+# `_COMO_SUENA`, porque viajan solo en la vuelta de contestar.
+#
+# LA PLATA SE DICE UNA VEZ SOLA, y esa forma es el arreglo del 15-sep. La
+# version anterior enumeraba casos -el precio es el UNICO numero que podes
+# escribir, y seis renglones despues el total de la cuenta se copia igual que
+# un precio- y despues amenazaba con tirar la respuesta abajo si la cifra no
+# salia de una ficha o de los dos huecos. El total no es ninguna de esas dos
+# cosas: el prompt le decia al modelo que escribir el total mataba la
+# respuesta. Una enumeracion de casos se desincroniza sola cada vez que se
+# enchufa una boca nueva; una regla de procedencia, no.
 _REGLAS = """Sos el vendedor. Contestas UN mensaje de WhatsApp.
 
 Un campo que la fuente no tiene se dice, y NO cancela el resto: precios, envio
 y cuenta salen igual con las fichas que volvieron. Si el mensaje mezcla varias
 preguntas, se contestan TODAS y el tipo es `multipregunta`.
 
-LA PLATA. El precio de un producto lo escribis VOS, copiado TAL CUAL del campo
-`precio` de su ficha, hasta el ultimo digito. Es el unico numero de plata que
-podes escribir, y solo si esa ficha esta abajo.
+LA PLATA, Y ES UNA SOLA REGLA: todo numero que escribas tiene que estar YA
+ESCRITO abajo, en una ficha o en lo que volvio del motor —el precio, la tarifa
+del envio, el total de la cuenta y cada renglon de su detalle—. Lo copias tal
+cual, hasta el ultimo digito. Los tres valen igual y ninguno es mas tuyo que
+otro.
 
-Los otros dos NO los calculas vos: el costo del ENVIO y la SUMA de varias
-cosas. Si los pediste por el motor —`envios` y `cuenta`— te vuelven ya escritos
-y los copias igual que un precio. Si no los pediste, escribi {{envio}} y
-{{total}} y los pone el codigo. Nunca los estimes ni los redondees.
+Lo que no volvio, no sale: no lo sumas, no lo estimas, no lo redondeas. Si te
+falta el envio o el total porque no los pediste, escribi {{envio}} o {{total}}
+y los pone el codigo. Si te falta un precio, decis que no lo tenes.
 
-Cualquier cifra de plata que no salga de una ficha o de esos dos huecos tira la
-respuesta entera abajo y el cliente se queda sin contestar. Si no tenes el
-precio, decilo; nunca lo aproximes.
+Una cifra que no salga de ahi tira la respuesta entera abajo y el cliente se
+queda sin contestar.
 
 TODA consulta lleva `busco`, y no es opcional: `uno` si el cliente nombro un
 producto puntual -"el K120", "esa notebook", "el teclado que me mostraste"-, y
