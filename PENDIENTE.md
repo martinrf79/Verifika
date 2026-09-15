@@ -64,6 +64,26 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
+**15-sep: LA UNIDAD DE TRABAJO ABIERTA ES `arquitectura/FICHA_54_el_tablero_y_las_bocas.md`.**
+Consigna de Martin: lo que el modelo VE en el tablero tiene que ser exactamente
+lo que las bocas PUEDEN contestar. **NO se construyen bancos nuevos** —ya se
+ramifico por ahi tres veces—; se corre el que hay antes y despues de cada
+cambio. El orden de los cuatro trabajos esta en la seccion 6 de la ficha.
+
+**15-sep: EL NUMERO DE LA ATADURA, y es el "antes" contra el que se compara.**
+`python3 banco_pruebas/tanda_tablero.py`, clave gratis, 17 mensajes, cero
+caidos: **pidio el campo que hacia falta en 13 de 16, 81%**, con 2,65 vueltas
+por turno. Los ceros son `compatibilidad` 0 de 1, `criterio` 0 de 1, y `cuenta`
+1 de 2. El banco ahora mide QUE CAMPOS declaro el modelo contra los que hacian
+falta, cuenta aparte los turnos caidos por cuota, y espera 20 segundos entre
+mensajes: sin la pausa medía la cuota gratis, no al bot.
+
+**15-sep: EL PROMPT SE CONTRADICE SOBRE LA PLATA, y lo escribi yo el 14-sep.**
+`respuesta._REGLAS` dice que el precio es el unico numero de plata que el modelo
+puede escribir, y seis renglones despues que el total de la cuenta se copia
+igual que un precio. Seccion 5 de la ficha 54.
+
+
 **14-sep: LA CUENTA DEL RETORNO, y con ella el setenta treinta.** `{{total}}` lo
 resolvia `numeros` SUMANDO las cifras ya escritas en el mensaje, DESPUES de
 redactar. Esa suma no conoce el descuento por transferencia ni el reparto entre
