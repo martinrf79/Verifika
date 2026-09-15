@@ -471,11 +471,70 @@ def test_un_equipo_AMBIGUO_no_se_elige_se_pregunta():
 
 
 def test_un_ID_QUE_NO_EXISTE_no_se_evalua_y_se_dice_como_arreglarlo():
-    """La compatibilidad consume un id CERTIFICADO. Un id inventado no se
-    evalua en silencio: se dice que hay que buscarlo primero."""
+    """La compatibilidad consume un id CERTIFICADO, y desde el 15-sep lo
+    certifica el CODIGO: lo que no es un id se resuelve como nombre contra el
+    catalogo. Si tampoco es un producto, la respuesta es que no lo vendemos
+    -la 3 de la FICHA 52- y no un veredicto de compatibilidad en silencio."""
     r = _compat({"producto": "NO_EXISTE_9", "con": "ps5"})[0]
     assert r["veredicto"] == "sin_dato"
-    assert "buscalo" in r["motivo"]
+    assert "no vendemos" in r["motivo"]
+
+
+def test_EL_NOMBRE_DEL_CLIENTE_SE_CERTIFICA_ADENTRO_DE_LA_BOCA(firestore_doble):
+    """FICHA 54, punto 3.2. El dos pasos costaba una vuelta entera: buscar el
+    producto, recibir el id, y recien ahi preguntar si anda. Medido el 15-sep,
+    el paso uno volvia `ambiguo` y el turno se quedaba ahi, asi que el campo
+    `compatibilidad` no se pidio en ninguna de las tres corridas.
+
+    LA REGLA 10.0 SIGUE ENTERA: la identidad la decide el codigo, no el
+    modelo, y por el MISMO camino que una consulta cualquiera. Lo que cambio
+    es quien certifica, no si se certifica."""
+    r = _compat({"producto": "Mouse Logitech G502 Hero", "con": "ps5"})[0]
+    assert r["veredicto"] != "ambiguo"
+    # el id certificado vuelve escrito, o los nombres de los que pegaron
+    assert r.get("pedido_como") == "Mouse Logitech G502 Hero"
+    assert r.get("producto") or r.get("vale_para_todos")
+
+
+def test_SI_LA_RESPUESTA_ES_LA_MISMA_PARA_TODOS_NO_SE_REPREGUNTA(firestore_doble):
+    """LA OTRA MITAD DE LA REGLA 10.0: identidad y compatibilidad son DOS
+    EJES. El caso del banco es "el teclado K380 anda con mi PS5", y el K380
+    esta dos veces en el catalogo, negro y blanco. El color no cambia con que
+    anda, asi que preguntarle al cliente cual de los dos para contestarle
+    despues lo mismo es una repregunta sin dato adentro.
+
+    LA IDENTIDAD NO SE RESUELVE, y esa es la diferencia con elegir: no se
+    elige un producto, se dice que para todos la respuesta es la misma, y los
+    nombres viajan para que el modelo lo pueda decir asi."""
+    r = _compat({"producto": "K380", "con": "PS5"})[0]
+    assert r["veredicto"] != "ambiguo"
+    assert len(r["vale_para_todos"]) == 2
+    assert "no hace falta que preguntes cual" in r["motivo"]
+
+
+def test_LA_AMBIGUEDAD_DEL_EQUIPO_NO_SE_TAPA(firestore_doble):
+    """Y si la que es ambigua es la contraparte —"de apple" son iPhone, iPad y
+    Mac—, la repregunta que corresponde es sobre el EQUIPO. Colapsar por
+    producto ahi seria contestar una pregunta con la otra."""
+    r = _compat({"producto": "K380", "con": "de apple"})[0]
+    assert r["veredicto"] == "ambiguo"
+    assert "pregunta cual tiene" in r["motivo"]
+
+
+def test_UN_NOMBRE_QUE_NO_EXISTE_NO_SE_EVALUA(firestore_doble):
+    """Un nombre que ninguna ficha usa no se resuelve al mas parecido: eso
+    seria inventar identidad. Es la respuesta 3 de la FICHA 52."""
+    r = _compat({"producto": "bicicleta", "con": "ps5"})[0]
+    assert r["veredicto"] == "sin_dato"
+    assert "no vendemos" in r["motivo"]
+
+
+def test_UN_PAR_VACIO_NO_SE_MANDA_A_BUSCAR(firestore_doble):
+    """Sin producto no hay identidad que certificar. Mandarlo a la busqueda
+    devolveria el catalogo entero como si el cliente hubiera nombrado algo."""
+    r = _compat({"producto": "", "con": "ps5"})[0]
+    assert r["veredicto"] == "sin_dato"
+    assert "incompleto" in r["motivo"]
 
 
 def test_lo_que_la_tabla_NO_DICE_vuelve_SIN_DATO_y_no_se_completa():

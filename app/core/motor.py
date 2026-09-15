@@ -301,11 +301,18 @@ def esquema(tienda_id: str) -> dict:
                     # puertas para lo mismo.
                     #
                     # CONSUME UN ID CERTIFICADO, y eso es la regla 10.0: la
-                    # identidad la decide la busqueda, no esta pregunta. Por
-                    # eso `producto` es un id que el modelo YA recibio y no un
-                    # nombre suelto: sobre un nombre habria que adivinar de
-                    # cual se habla, que es exactamente lo mezclado que la
-                    # regla prohibe. Compatibilidad e identidad son dos ejes.
+                    # identidad la decide una funcion determinista, no esta
+                    # pregunta. Compatibilidad e identidad siguen siendo dos
+                    # ejes y no se mezclan.
+                    #
+                    # LO QUE CAMBIO EL 15-sep ES QUIEN CERTIFICA, no si se
+                    # certifica: `producto` acepta el nombre que dijo el
+                    # cliente y lo resuelve el CODIGO, adentro de la boca, con
+                    # la misma consulta que escribiria el modelo. Antes hacia
+                    # falta una vuelta previa para conseguir el id, y medido el
+                    # 15-sep esa vuelta se comia la pregunta: el paso uno
+                    # volvia `ambiguo` y el turno se quedaba ahi. El motivo
+                    # entero esta en `_un_compat`.
                     # LA BOCA DE ENVIO, QUE HASTA HOY EMPUJABA EL CODIGO.
                     # El destino sigue siendo determinista -lo clasifica la
                     # tabla, no el modelo-; lo que cambia es quien PIDE. El
@@ -327,9 +334,13 @@ def esquema(tienda_id: str) -> dict:
                             "properties": {
                                 "producto": {
                                     "type": "string",
-                                    "description": "El id que te devolvi en "
-                                                   "una busqueda; uno "
-                                                   "inventado no se evalua."},
+                                    "description": "El id que te devolvi, o "
+                                                   "el nombre que uso el "
+                                                   "cliente: no hace falta "
+                                                   "buscarlo antes, lo "
+                                                   "resuelvo yo. Si hay dos "
+                                                   "que pegan igual te los "
+                                                   "devuelvo y preguntas."},
                                 "con": {
                                     "type": "string",
                                     "description": "El equipo del cliente —"
@@ -983,42 +994,139 @@ def _un_compat(pedido: dict, catalogo: list, tienda_id: str) -> dict:
     elegir uno seria decidir por el cliente, asi que vuelven los dos y se
     pregunta.
     """
-    from app.core.compatibilidad import (etiqueta_plataforma, evaluar,
-                                         evaluar_par, plataformas_del_mensaje)
     pid = str((pedido or {}).get("producto") or "").strip()
     con = str((pedido or {}).get("con") or "").strip()
     base = {"producto": pid, "con": con}
     porid = {str(p.get("id")): p for p in catalogo}
+    # UN PEDIDO VACIO NO ES UN NOMBRE, y se corta antes de resolver nada: sin
+    # producto no hay identidad que certificar, y mandarlo a la busqueda
+    # devolveria el catalogo entero como si el cliente hubiera nombrado algo.
+    if not pid or not con:
+        return {**base, "veredicto": "sin_dato",
+                "motivo": "el par vino incompleto: necesito el producto y con "
+                          "que lo quiere usar"}
     prod = porid.get(pid)
     if not prod:
-        return {**base, "veredicto": "sin_dato",
-                "motivo": f"no tengo ningun producto con el id '{pid}': "
-                          f"buscalo primero y usa el id que te devuelvo"}
+        # ── EL DOS PASOS SE RESUELVE ADENTRO (15-sep-2026, FICHA 54, 3.2) ──
+        #
+        # QUE PASABA. `producto` exigia un id que el modelo YA hubiera
+        # recibido, asi que "el teclado K380 anda con mi PS5" costaba dos
+        # vueltas: buscar el K380, recibir el id, y recien ahi preguntar. En la
+        # practica ni eso: medido el 15-sep, el paso uno volvio `ambiguo` -hay
+        # dos K380- y el turno se quedo ahi, que ante un ambiguo es correcto,
+        # pero el cliente nunca supo si andaba con la PS5. El campo
+        # `compatibilidad` no se pidio en NINGUNA de las tres corridas.
+        #
+        # LA REGLA 10.0 NO SE TOCA, y esto es exactamente lo que dice: la
+        # identidad la decide UNA FUNCION DETERMINISTA con tres veredictos, y
+        # la herramienta consume un id CERTIFICADO. Lo que cambia es QUIEN
+        # certifica: antes el modelo tenia que traer el id de una vuelta
+        # anterior, ahora lo certifica el codigo aca mismo. El modelo sigue sin
+        # decidir identidad; sigue sin poder inventar un producto.
+        #
+        # Y ES EL MISMO CAMINO DE IDENTIDAD, no uno nuevo: se llama a `_una`
+        # con `busco: uno`, que es la consulta que el modelo escribiria. Un
+        # segundo mecanismo de "cual producto es este" seria la cosa suelta que
+        # la regla 2 prohibe, y ademas se desincronizaria del primero.
+        cert = _una({"texto": pid, "busco": "uno", "cuantos": TOPE_AMBIGUO},
+                    catalogo, tienda_id)
+        filas = cert.get("filas") or []
+        if cert.get("veredicto") == "ambiguo" or len(filas) > 1:
+            # AMBIGUO DE IDENTIDAD. No se elige nunca: eso es la regla 10.0.
+            #
+            # PERO LA PREGUNTA PUEDE NO NECESITAR LA IDENTIDAD, y ahi esta la
+            # otra mitad de esa misma regla: identidad y compatibilidad son
+            # DOS EJES. Medido el 15-sep con el caso del banco: "el teclado
+            # K380 anda con mi PS5" da dos candidatos -el negro y el blanco- y
+            # los dos dan el MISMO veredicto contra la PS5, porque el color no
+            # cambia con que anda. Preguntarle al cliente cual de los dos para
+            # despues contestarle lo mismo es fricción sin dato adentro.
+            #
+            # Asi que se evaluan TODOS los candidatos y solo se repregunta si
+            # el veredicto cambia entre ellos, que es cuando la identidad SI
+            # hace falta para contestar. La identidad sigue sin resolverse: no
+            # se elige un producto, se dice que para todos la respuesta es la
+            # misma.
+            candidatos = [porid.get(str(f.get("id"))) for f in
+                          filas[:TOPE_AMBIGUO]]
+            candidatos = [c for c in candidatos if c]
+            juicios = [_evaluar(c, con, porid, tienda_id) for c in candidatos]
+            distintos = {j["veredicto"] for j in juicios}
+            # SI EL VEREDICTO COMUN ES `ambiguo` LA REPREGUNTA ES OTRA: esa
+            # ambiguedad es del OTRO lado del par -"de apple" son macOS e iOS-
+            # y su motivo ya dice que hay que preguntar cual equipo tiene. Se
+            # devuelve tal cual: agregarle "no hace falta preguntar cual
+            # producto" seria contestar una pregunta con la otra.
+            if distintos == {"ambiguo"}:
+                return {**base, **juicios[0], "pedido_como": pid}
+            if len(distintos) == 1 and juicios:
+                nombres = [str(c.get("nombre")) for c in candidatos]
+                return {**base, **juicios[0],
+                        "nombre": " / ".join(nombres),
+                        "pedido_como": pid,
+                        "vale_para_todos": nombres,
+                        "motivo": f"para los {len(nombres)} que pegan con "
+                                  f"'{pid}' la respuesta es la misma, asi que "
+                                  f"no hace falta que preguntes cual: "
+                                  + juicios[0]["motivo"]}
+            lista = [{"id": c.get("id"), "nombre": c.get("nombre")}
+                     for c in candidatos]
+            return {**base, "veredicto": "ambiguo", "candidatos": lista,
+                    "motivo": f"'{pid}' puede ser mas de uno y la respuesta "
+                              f"cambia segun cual: no elijas, pregunta cual y "
+                              f"volve a pedirme el par con ese id"}
+        if not filas or cert.get("veredicto") == "no_existe":
+            # NO EXISTE NO ES UN ERROR: es la respuesta 3 de la FICHA 52.
+            return {**base, "veredicto": "sin_dato",
+                    "motivo": f"no vendemos '{pid}', asi que no puedo decirte "
+                              f"con que anda: " + (cert.get("motivo") or
+                                                   "no esta en el catalogo")}
+        prod = porid.get(str(filas[0].get("id")))
+        if not prod:
+            return {**base, "veredicto": "sin_dato",
+                    "motivo": f"no tengo ningun producto con el id '{pid}': "
+                              f"buscalo primero y usa el id que te devuelvo"}
+        # EL ID CERTIFICADO VUELVE ESCRITO, y no es cosmetico: el modelo pidio
+        # por un nombre y tiene que saber de que ficha salio el veredicto.
+        base["producto"] = str(prod.get("id"))
+        base["pedido_como"] = pid
     base["nombre"] = prod.get("nombre")
+    return {**base, **_evaluar(prod, con, porid, tienda_id)}
 
+
+def _evaluar(prod: dict, con: str, porid: dict, tienda_id: str) -> dict:
+    """EL EJE DE COMPATIBILIDAD, CON LA IDENTIDAD YA RESUELTA. Devuelve
+    {veredicto, motivo} y, segun el caso, contra que se evaluo.
+
+    Esta partido de `_un_compat` porque se llama DOS VECES: una con el
+    producto certificado, y una por candidato cuando el nombre del cliente
+    pega con varios. Una segunda copia de estas reglas seria la cosa suelta
+    que la regla 2 prohibe.
+    """
+    from app.core.compatibilidad import (etiqueta_plataforma, evaluar,
+                                         evaluar_par, plataformas_del_mensaje)
     # EL OTRO PRODUCTO PRIMERO. Un id del catalogo es identidad certificada; un
     # alias de plataforma es una lectura del texto. Ante los dos, manda el dato.
     otro = porid.get(con)
     if otro:
         veredicto, motivo = evaluar_par(prod, otro, tienda_id)
-        return {**base, "con_nombre": otro.get("nombre"),
-                "veredicto": veredicto,
+        return {"con_nombre": otro.get("nombre"), "veredicto": veredicto,
                 "motivo": motivo or "la tabla de la casa no dice si estos dos "
                                     "van juntos"}
 
     equipos = plataformas_del_mensaje(con, tienda_id)
     if not equipos:
-        return {**base, "veredicto": "sin_dato",
+        return {"veredicto": "sin_dato",
                 "motivo": f"no reconozco '{con}' como un equipo ni como un id "
                           f"del catalogo; los equipos que conozco son: "
                           + _equipos(tienda_id)}
     if len(equipos) > 1:
         etqs = [etiqueta_plataforma(e, tienda_id) for e in equipos]
-        return {**base, "veredicto": "ambiguo", "candidatos": etqs,
+        return {"veredicto": "ambiguo", "candidatos": etqs,
                 "motivo": f"'{con}' puede ser {' o '.join(etqs)}: no elijas, "
                           f"pregunta cual tiene"}
     veredicto, motivo = evaluar(prod, equipos[0], tienda_id)
-    return {**base, "con_equipo": etiqueta_plataforma(equipos[0], tienda_id),
+    return {"con_equipo": etiqueta_plataforma(equipos[0], tienda_id),
             "veredicto": veredicto,
             "motivo": motivo or (
                 f"la tabla de la casa no dice si {prod.get('nombre')} anda con "
