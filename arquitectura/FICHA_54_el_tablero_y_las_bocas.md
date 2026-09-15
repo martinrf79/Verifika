@@ -70,8 +70,16 @@ Medido: "el teclado K380 anda con mi PS5" hizo el paso uno bien —busco el
 K380— y volvio `ambiguo`. Ahi se quedo, que ante un ambiguo es lo correcto.
 
 **Ordenar el tablero NO arregla esto.** Lo que hay que decidir es otra cosa:
-como se pide una boca que necesita un id que todavia no existe. Esa decision
-es de Martin y esta abierta.
+como se pide una boca que necesita un id que todavia no existe.
+
+**DECIDIDO EL 15-sep, Y YA CORRE EN LAS DOS BOCAS: certifica el codigo,
+adentro.** El modelo escribe el nombre que uso el cliente y la boca lo resuelve
+con el mismo certificador de identidad. La regla 10.0 no se toca: lo que cambia
+es QUIEN certifica, no si se certifica. La vara no es la misma en las dos, y la
+diferencia es la plata: la compatibilidad puede contestar sin elegir cuando los
+candidatos dan el mismo veredicto, la cuenta no puede, porque cada candidato
+tiene su precio. Ahi un nombre que pega con mas de uno vuelve `sin_total` con
+la repregunta.
 
 ---
 
@@ -120,4 +128,10 @@ Un cambio, una corrida del banco. Si se mueven juntos no se sabe cual sirvio.
    Contesta si el 81% se mueve y si las 2,65 vueltas bajan.
 2. **Cerrar el doble camino de `criterio`.** Es el punto 3.1.
 3. **Sacar la contradiccion de la plata.** Es el punto 5.
-4. **Decidir el dos pasos.** Es el punto 3.2, y necesita a Martin.
+4. **Decidir el dos pasos.** Es el punto 3.2. Decidido y hecho el 15-sep en
+   las dos bocas: compatibilidad y cuenta certifican adentro.
+5. **Que el tablero hable el idioma de la fuente campo por campo.** Es el punto
+   1 aplicado a la leyenda: los ocho campos de si o no dejaron de enumerar su
+   prosa —19 formas de decir que algo tiene bluetooth— y dicen las dos palabras
+   que el motor compara. La lista de lo que falta mirar de este paso no es
+   otra: es la misma corrida del banco.
