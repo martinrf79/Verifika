@@ -892,6 +892,28 @@ def test_un_id_que_no_existe_no_da_un_total_da_el_motivo():
     assert c["sin_total"]
 
 
+def test_la_cuenta_certifica_el_nombre_adentro_y_no_cuesta_una_vuelta():
+    """FICHA 54, punto 3.2, el mismo camino que la compatibilidad ya toma: el
+    modelo escribe el nombre que uso el cliente y el id lo certifica el codigo.
+    Antes hacia falta una vuelta previa para conseguirlo, y una vuelta cuesta
+    del orden de 7.700 tokens."""
+    c = _cuenta({"items": [{"id": "Mouse Logitech G203 Lightsync Negro",
+                            "cantidad": 2}]})
+    assert c.get("total_ars"), c
+    # EL ID CERTIFICADO VUELVE ESCRITO: el modelo pidio por un nombre y tiene
+    # que saber de que ficha salio la plata.
+    assert c["certificados"][0]["id"] == "MOU0001"
+
+
+def test_un_nombre_ambiguo_no_se_cuenta_y_vuelve_la_repregunta():
+    """LA AMBIGUEDAD NO TIENE ATAJO CUANDO HAY PLATA, y es la diferencia con
+    `_un_compat`: alla dos candidatos pueden dar el mismo veredicto, aca cada
+    uno tiene SU precio. Elegir seria inventarle plata al cliente."""
+    c = _cuenta({"items": [{"id": "auriculares", "cantidad": 2}]})
+    assert "total_ars" not in c
+    assert "pregunta cual" in c["sin_total"]
+
+
 def test_sin_items_no_hay_cuenta_y_el_retorno_no_trae_la_caja():
     """Una clave vacia en cada turno es ruido adentro de la caja donde todo lo
     demas es dato certificado."""

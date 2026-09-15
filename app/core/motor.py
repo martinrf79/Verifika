@@ -392,7 +392,15 @@ def esquema(tienda_id: str) -> dict:
                                 "items": {
                                     "type": "object",
                                     "properties": {
-                                        "id": {"type": "string"},
+                                        "id": {
+                                            "type": "string",
+                                            "description": (
+                                                "El id que te devolvi, o el "
+                                                "nombre que uso el cliente: no "
+                                                "hace falta buscarlo antes, lo "
+                                                "resuelvo yo. Si pega con mas "
+                                                "de uno no lo cuento, te los "
+                                                "devuelvo y preguntas cual.")},
                                         "cantidad": {"type": "integer"}},
                                     "required": ["id"]}},
                             "reparto_pago": {
@@ -408,8 +416,9 @@ def esquema(tienda_id: str) -> dict:
                                     "30 Mercado Pago'. Suman 100. El descuento "
                                     "lo aplico yo.")}},
                         "description": (
-                            "Cuanto sale TODO junto. Los `id` que te devolvi, "
-                            "con su cantidad. Te vuelve el total ya sumado "
+                            "Cuanto sale TODO junto. Los productos con su "
+                            "cantidad, por id o por el nombre que uso el "
+                            "cliente. Te vuelve el total ya sumado "
                             "—productos, envio de los destinos que pediste y "
                             "descuento— y el detalle. No sumes vos.")}},
                 "required": []},
@@ -501,7 +510,7 @@ def _con_la_cuenta(filas: list, unidades: int, trace_id: str = "") -> None:
 
 
 def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
-               trace_id: str = "") -> dict:
+               trace_id: str = "", catalogo: list | None = None) -> dict:
     """LA CUENTA DEL RETORNO — lo que CRUZA bocas, calculado ANTES de redactar.
 
     QUE ES Y POR QUE VIVE ACA. Cada boca trae su calculo adentro: catalogo
@@ -527,9 +536,24 @@ def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
     esta misma llamada. Preguntarselos al modelo seria pedir dos veces el mismo
     dato y abrir la puerta a que las dos respuestas no coincidan.
 
+    EL ID SE CERTIFICA ADENTRO, igual que en `_un_compat` (15-sep-2026, FICHA
+    54 punto 3.2). El modelo puede escribir el nombre que uso el cliente y el
+    codigo lo resuelve con la MISMA consulta de identidad; antes hacia falta
+    una vuelta previa para conseguir el id, y una vuelta cuesta del orden de
+    7.700 tokens. La regla 10.0 no se toca: el id lo certifica una funcion
+    determinista, no el modelo.
+
+    Y ACA LA AMBIGUEDAD NO TIENE ATAJO, que es la diferencia con la
+    compatibilidad. Alla dos candidatos pueden dar el mismo veredicto y
+    contestar sin elegir; aca cada candidato tiene SU precio, asi que un nombre
+    que pega con mas de uno no se cuenta: vuelve `sin_total` con los
+    candidatos, que es la respuesta 4 de la FICHA 52. Elegir seria inventarle
+    plata al cliente.
+
     No lanza: una cuenta rota deja al turno sin total, nunca con uno inventado.
     """
-    items = []
+    porid = {str(p.get("id")): p for p in (catalogo or [])}
+    items, pedidos_como = [], []
     for x in (pedido or {}).get("items") or []:
         pid = str((x or {}).get("id") or "").strip()
         if not pid:
@@ -538,6 +562,13 @@ def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
             cant = max(1, int((x or {}).get("cantidad") or 1))
         except (TypeError, ValueError):
             cant = 1
+        if catalogo and pid not in porid:
+            cert = _certificar_id(pid, catalogo, tienda_id)
+            if cert.get("sin_total"):
+                return cert
+            pedidos_como.append({"pedido_como": pid, "id": cert["id"],
+                                 "nombre": cert.get("nombre")})
+            pid = cert["id"]
         items.append({"product_id": pid, "cantidad": cant})
     if not items:
         return {}
@@ -589,7 +620,49 @@ def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
     if r.get("total_final_ars") is not None:
         fuera["total_final_ars"] = r["total_final_ars"]
         fuera["total_final"] = _plata(r["total_final_ars"])
+    # EL ID CERTIFICADO VUELVE ESCRITO, por lo mismo que en `_un_compat`: el
+    # modelo pidio por un nombre y tiene que saber de que ficha salio la plata.
+    if pedidos_como:
+        fuera["certificados"] = pedidos_como
     return fuera
+
+
+def _certificar_id(nombre: str, catalogo: list, tienda_id: str) -> dict:
+    """EL NOMBRE QUE USO EL CLIENTE, RESUELTO A UN ID. Devuelve {id, nombre} o
+    {sin_total: motivo} cuando no se puede certificar sin elegir.
+
+    LA VARA ES MAS DURA QUE LA DE `_un_compat`, Y LA DIFERENCIA ES LA PLATA.
+    Alla alcanza el veredicto de `_una`, porque dos candidatos pueden dar la
+    misma respuesta de compatibilidad. Aca cada candidato tiene SU precio, y
+    `_una` con `busco: uno` no alcanza: medido el 15-sep, "auriculares" le da
+    veredicto `existe` con el Zeus X Negro primero -46 fichas se llaman asi y
+    el orden desempata por parecido-. Contar eso seria elegir por el cliente.
+    Asi que se pide identidad ENTERA: una sola ficha que se llame todo eso.
+
+    NO ES UN MECANISMO NUEVO: es `lo_nombra`, el mismo certificador de
+    identidad, preguntado en su forma estricta. `_una` sigue siendo quien
+    escribe el motivo cuando no se puede certificar.
+    """
+    from app.core.filtros_catalogo import los_que_lo_nombran_entero
+    exactos = los_que_lo_nombran_entero(catalogo, nombre)
+    if len(exactos) == 1:
+        return {"id": str(exactos[0].get("id")),
+                "nombre": exactos[0].get("nombre")}
+    cert = _una({"texto": nombre, "busco": "uno", "cuantos": TOPE_AMBIGUO},
+                catalogo, tienda_id)
+    filas = cert.get("filas") or []
+    if not exactos and (not filas or cert.get("veredicto") == "no_existe"):
+        return {"sin_total": f"no vendemos '{nombre}', asi que no puedo "
+                             f"ponerlo en la cuenta: "
+                             + (cert.get("motivo") or "no esta en el catalogo")}
+    candidatos = (exactos or
+                  [{"id": f.get("id"), "nombre": f.get("nombre")}
+                   for f in filas])[:TOPE_AMBIGUO]
+    lista = [f"{c.get('nombre')} ({c.get('id')})" for c in candidatos]
+    return {"sin_total": f"'{nombre}' puede ser mas de uno y cada uno sale "
+                         f"distinto, asi que no lo cuento: no elijas, "
+                         f"pregunta cual de estos y volve a pedirme la cuenta "
+                         f"con ese id. " + " | ".join(lista)}
 
 
 def _no_vendemos(texto: str, categoria: str, tienda_id: str):
@@ -1304,7 +1377,8 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
     la_cuenta = {}
     if cuenta:
         try:
-            la_cuenta = _la_cuenta(cuenta, fuera_envios, tienda_id, trace_id)
+            la_cuenta = _la_cuenta(cuenta, fuera_envios, tienda_id, trace_id,
+                                   catalogo)
         except Exception as e:  # noqa: BLE001 — sin total no se inventa uno
             log.warning("motor_cuenta_error", trace_id=trace_id,
                         error=f"{type(e).__name__}: {str(e)[:150]}")

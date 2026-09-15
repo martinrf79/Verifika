@@ -975,6 +975,41 @@ def alguno_lo_nombra(prods: list[dict], texto: str) -> bool:
     return any(lo_nombra(p, texto) for p in (prods or []))
 
 
+def los_que_lo_nombran_entero(prods: list[dict], texto: str) -> list[dict]:
+    """LOS QUE SE LLAMAN TODO ESO, no alguna parte. El hermano estricto de
+    `lo_nombra`, y existe por la plata.
+
+    `lo_nombra` pregunta si ALGUNA palabra pega, que es lo que hace falta para
+    decidir si algo EXISTE: "¿tenes auriculares?" tiene que contestar. Para
+    poner un producto en una CUENTA la pregunta es otra y mas dura: ¿hay UNA
+    sola ficha que se llame asi? "auriculares" lo dicen 46 fichas y elegir una
+    seria inventarle plata al cliente; "Mouse Logitech G203 Lightsync Negro" lo
+    dice una sola.
+
+    TAMPOCO LLEVA NUMERO, por lo mismo que su hermano: pregunta por el ESTADO
+    -cuantas fichas se llaman asi- y no envejece con el catalogo.
+
+    Y EL NOMBRE ENTERO GANA, que es el desempate sin el cual esto no servia
+    para nada. `palabras_utiles` recorta las palabras cortas, asi que el nombre
+    completo de una notebook pega tambien con sus tres hermanas -la Slim 5 y la
+    Ryzen 7 tienen esas mismas palabras MAS otras-. La ficha que se llama
+    EXACTAMENTE asi no es una candidata mas: es la respuesta.
+    """
+    palabras = palabras_utiles(texto)
+    if not palabras:
+        return []
+    exacto = _norm(texto)
+    fuera = []
+    for prod in (prods or []):
+        if _norm(prod.get("nombre")) == exacto:
+            return [prod]
+        campos = [_norm(_valor_crudo(prod, c)) for c in _CAMPOS_IDENTIDAD]
+        campos = [v for v in campos if v]
+        if all(any(_texto_contiene(v, w) for v in campos) for w in palabras):
+            fuera.append(prod)
+    return fuera
+
+
 def clave_de_orden(prod: dict, campo: str, tienda_id: str):
     """El valor comparable de un producto para ordenar por `campo`. None cuando
     la ficha no lo dice: esos van al final, nunca al principio, porque un dato
