@@ -624,6 +624,16 @@ def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
     # modelo pidio por un nombre y tiene que saber de que ficha salio la plata.
     if pedidos_como:
         fuera["certificados"] = pedidos_como
+    # QUE HAY ADENTRO DEL TOTAL, y no es adorno: es lo que el turno guarda como
+    # carrito para que el turno SIGUIENTE no lo rearme de cero. Medido el
+    # 15-sep en WhatsApp: tres turnos seguidos sobre el MISMO pedido dieron
+    # tres totales distintos -207.500, 284.000 y 395.000- porque cada uno
+    # eligio productos y cantidades por su cuenta. Sin esta lista, lo unico que
+    # sobrevive al turno es una cifra suelta que nadie puede verificar.
+    fuera["items"] = [
+        {"id": i["product_id"], "cantidad": i["cantidad"],
+         "nombre": (porid.get(i["product_id"]) or {}).get("nombre") or ""}
+        for i in items]
     return fuera
 
 

@@ -300,9 +300,37 @@ def _memoria_texto(conv: dict) -> str:
                 f"- {p.get('id')}: {p.get('nombre')}"
                 + (f", {p['precio']}" if p.get("precio") else "")
                 for p in vistos[:8]))
-    carrito = [str(p.get("nombre") or "") for p in (conv.get("carrito_vigente") or [])]
+    # EL ULTIMO PRESUPUESTO, Y ES FUENTE COMO EL PRECIO DE ARRIBA (15-sep-2026).
+    #
+    # MEDIDO EN WHATSAPP ESE MISMO DIA, cuatro turnos sobre UN pedido: el total
+    # salio 207.500, despues 284.000 y despues 395.000, y el cuarto turno no
+    # llego al cliente porque el modelo escribio $250.000 y la guarda tiro la
+    # respuesta entera. Ninguna de las tres cuentas estaba mal sumada: cada
+    # turno ELIGIO productos y cantidades distintas, porque lo unico que
+    # sobrevivia al turno eran los nombres de lo mostrado.
+    #
+    # Con el presupuesto delante el modelo no rearma el carrito: lo copia. Y al
+    # viajar en el prompt es FUENTE, asi que copiar ese total ya no es inventar
+    # y la guarda de procedencia deja de matar la respuesta.
+    #
+    # LA REGLA DE FRESCURA VA PEGADA AL DATO, que es donde se usa: si el pedido
+    # cambio, se pide la cuenta de nuevo. Corregir un total a mano es la unica
+    # forma de que vuelva a aparecer una cifra sin procedencia.
+    presu = (conv.get("ultimo_presupuesto") or "").strip()
+    if presu:
+        partes.append(
+            "EL ULTIMO PRESUPUESTO que ya le pasaste. Estos numeros son "
+            "fuente: copialos tal cual. Si el pedido cambio, pedi la cuenta de "
+            "nuevo por el motor en vez de corregirlos a mano:\n" + presu[:700])
+    carrito = conv.get("carrito_vigente") or []
     if carrito:
-        partes.append("En el pedido: " + ", ".join(carrito[:8]))
+        # CON ID Y CON CANTIDAD, por lo mismo que los productos vistos: sin el
+        # id el modelo no puede volver a pedir la cuenta de lo mismo, y sin la
+        # cantidad la vuelve a elegir -medido: el cliente pidio dos de cada uno
+        # y el turno siguiente cotizo uno-.
+        partes.append("EN EL PEDIDO, tal como se conto: " + " · ".join(
+            f"{p.get('cantidad') or 1}x {p.get('id')} {p.get('nombre') or ''}".strip()
+            for p in carrito[:8]))
     descartados = [str(x) for x in (conv.get("descartados") or [])]
     if descartados:
         partes.append("Ya dijo que NO a: " + ", ".join(descartados[:6]))
@@ -979,11 +1007,24 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     primero = next(iter(envios), "")
     localidad = (F.estable_de(primero, previa) or primero or previa) \
         if primero else previa
+    # LA CUENTA SOBREVIVE AL TURNO. Los dos campos existian en la memoria desde
+    # siempre y no los escribia NADIE: `leads` lee `ultimo_presupuesto` para
+    # decidir si puede cerrar, y como venia vacio cortaba siempre por "no
+    # cerrar sin precio mostrado". Se escriben solo cuando la cuenta SALIO; una
+    # cuenta que no se pudo hacer no pisa la anterior, porque la anterior sigue
+    # siendo lo ultimo que el cliente vio.
+    presupuesto = None
+    carrito = None
+    if (cuenta or {}).get("total_ars") is not None:
+        presupuesto = str(cuenta.get("detalle") or "")[:900] or None
+        carrito = cuenta.get("items") or None
     try:
         save_conversation(user_id, history, resumen, tienda_id=tienda_id,
                           estado_conversacion="en_curso",
                           productos_vistos=vistos[-20:],
                           ultima_localidad=localidad or None,
+                          ultimo_presupuesto=presupuesto,
+                          carrito_vigente=carrito,
                           datos_cliente_parciales=datos_cliente,
                           pregunta_cierre_hecha=cierre_hecho)
     except Exception as e:  # noqa: BLE001
