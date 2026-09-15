@@ -90,7 +90,13 @@ TIENDA = "verifika_prod"
 # El campo `specs` de la consulta se borro: dejo de significar algo cuando la
 # prosa dejo de viajar en las listas. Devuelve 62 tokens, asi que el esquema
 # pasa de 2.631 a 2.569 y el techo de 2.730 a 2.670, con el margen en 101.
-TECHO_TABLERO = 2670
+#
+# ── Y BAJA OTRA VEZ EL 15-sep, CON LOS CAMPOS DE VEREDICTO ──────────────────
+#
+# Los ocho campos de si o no dejaron de enumerar su prosa y pasaron a un
+# renglon propio con las dos palabras que el motor compara. El esquema pasa de
+# 2.653 a 2.457 y el techo de 2.670 a 2.560, con el margen en 103.
+TECHO_TABLERO = 2560
 
 
 def _tokens(s: str) -> int:
@@ -164,6 +170,39 @@ def test_la_leyenda_avisa_los_campos_flacos(firestore_doble):
     assert flacos, "la tienda de prueba tiene que tener algun campo flaco"
     for c in flacos:
         assert c in L, f"el campo flaco '{c}' no se avisa"
+
+
+def test_un_campo_de_veredicto_se_dice_en_veredicto(firestore_doble):
+    """LA CONSIGNA DE LA FICHA 54: el tablero tiene que decir lo mismo que las
+    bocas. `evaluar` compara los campos de si o no por `_si_no` -la primera
+    palabra- y la leyenda enumeraba las 19 formas en que la fuente escribe que
+    algo tiene bluetooth. Eran dos idiomas para el mismo campo, y el que el
+    modelo veia era el que el motor no usa."""
+    L = leyenda(TIENDA)
+    voc = vocabulario(TIENDA)
+    si_no = [c for c, d in voc.items() if d["tipo"] == "si_no"]
+    assert si_no, "la tienda de prueba tiene que tener campos de si o no"
+    # Se mira el renglon ENUMERADO, no la leyenda entera: "no, se conecta por
+    # usb" es un valor legitimo de `wifi`, que es de texto y si se enumera.
+    enumerados = {r.split(" (")[0] for r in L.splitlines() if "): " in r}
+    for campo in si_no:
+        assert campo in L, f"el campo de veredicto '{campo}' no se nombra"
+        assert campo not in enumerados, (
+            f"se enumero la prosa de un veredicto: {campo}")
+    assert "igual si" in L and "igual no" in L, (
+        "la leyenda no dice con que se filtra un campo de si o no")
+
+
+def test_el_hueco_de_un_veredicto_contesta_si_o_no(firestore_doble):
+    """La misma regla del otro lado. Devolverle "si, bluetooth 5.1 | no, este
+    modelo es con cable" a un `igual true` le ensena a copiar la frase, que es
+    justo lo que el motor no compara."""
+    voc = vocabulario(TIENDA)
+    campo = next(c for c, d in voc.items() if d["tipo"] == "si_no")
+    assert condicion_sin_vocabulario(campo, "igual", "true", TIENDA) == [
+        "si", "no"]
+    assert condicion_sin_vocabulario(campo, "igual", "si", TIENDA) is None
+    assert condicion_sin_vocabulario(campo, "igual", "no", TIENDA) is None
 
 
 def test_ordenar_por_ofrece_solo_los_numericos(firestore_doble):

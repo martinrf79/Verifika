@@ -183,7 +183,15 @@ LARGO_ETIQUETA = 60
 # en cuantos productos esta cargado el campo, dividido lo que cuesta su
 # renglon. Asi el presupuesto se llena con lo que mas contesta por caracter, y
 # una tienda nueva con otra fuente se ordena sola.
-TECHO_LEYENDA = 3400
+# BAJA A 3.000 EL 15-sep, Y LA CUENTA ES ESTA. Los ocho campos de si o no se
+# fueron del presupuesto a su propio renglon: enumerarlos costaba 1.224
+# caracteres -bluetooth 652 y retroiluminacion 572- y el renglon nuevo cuesta
+# 471 y vive afuera, igual que los numeros. Con el techo viejo esos 1.224
+# liberados los compraba `bateria`, que son 945 caracteres para 23 formas de
+# decir tres cosas: justo la prosa que este techo existe para frenar. Bajando
+# 400 la leyenda dice MAS que antes -ocho campos nombrados contra dos
+# enumerados- y el tablero pasa de 2.656 a 2.460 tokens. Solo baja.
+TECHO_LEYENDA = 3000
 
 # Un campo cargado en menos de esto no se enumera y se avisa aparte: filtrar
 # por ahi devuelve casi nada, y ese casi nada se lee como "no lo tenemos".
@@ -457,13 +465,21 @@ def leyenda(tienda_id: str) -> str:
     ahi devuelve casi nada, y ese casi nada se lee como "no lo tenemos" en vez
     de "la fuente no lo tiene cargado". Es la respuesta 2 dicha como la 3, que
     la FICHA 52 llama el defecto mas caro del nicho.
+
+    UN CAMPO DE VEREDICTO SE DICE EN VEREDICTO (15-sep, FICHA 54 punto 1). La
+    leyenda enumeraba las 19 formas en que la fuente escribe que algo tiene
+    bluetooth y las 17 de la retroiluminacion, y el motor NO las usa: `evaluar`
+    compara por `_si_no`, o sea por la primera palabra. Eran 1.224 caracteres
+    del presupuesto para ensenar un idioma que ningun lado del codigo habla, y
+    encima inducian a copiar la frase entera. Los ocho campos de si o no van
+    ahora en su propio renglon, con las dos palabras que el motor entiende.
     """
     voc = vocabulario(tienda_id)
     total = recorrida(tienda_id).get("productos") or 0
     if not voc or not total:
         return ""
     r = recorrida(tienda_id)
-    numericos, candidatos, flacos = [], [], []
+    numericos, veredictos, candidatos, flacos = [], [], [], []
     for campo, d in sorted(voc.items()):
         # UN NUMERO NO SE ENUMERA, SE ACOTA. Listarle 386 precios al modelo no
         # le dice nada; el rango le dice todo lo que necesita para escribir un
@@ -472,6 +488,12 @@ def leyenda(tienda_id: str) -> str:
             lo, hi = _rango(campo, d, r)
             numericos.append(f"{campo} de {lo} a {hi}" if lo is not None
                              else campo)
+            continue
+        # UN VEREDICTO NO SE ENUMERA TAMPOCO: su vocabulario son dos palabras.
+        # Va siempre y fuera del presupuesto, por lo mismo que los numeros: no
+        # crece con la variedad de VALORES, crece con la de CAMPOS.
+        if d["tipo"] == "si_no":
+            veredictos.append(f"{campo} ({d['llenos']}/{total})")
             continue
         if d["llenos"] < CARGA_FLACA * total:
             flacos.append(campo)
@@ -494,6 +516,13 @@ def leyenda(tienda_id: str) -> str:
     if numericos:
         partes.append("NUMEROS, con mayor o menor: " + "; ".join(numericos)
                       + ".")
+    if veredictos:
+        partes.append(
+            "DE SI O NO, con `igual si` o `igual no` y nada mas. La fuente "
+            "escribe el veredicto adelante y despues la explicacion, y yo "
+            "comparo el veredicto: no copies la frase entera ni la inventes. "
+            "Entre parentesis, en cuantos esta cargado: al que no lo tiene no "
+            "lo cuenta ni el si ni el no. " + "; ".join(veredictos) + ".")
     if elegidos:
         partes.append("LAS PALABRAS QUE USA LA FUENTE. Filtra con estas, no "
                       "con las tuyas:\n" + "\n".join(sorted(elegidos)))
@@ -557,6 +586,11 @@ def condicion_sin_vocabulario(campo: str, operador: str, valor,
     for v in d["valores"]:
         if evaluar({"_v": v}, "_v", operador, valor, d["tipo"]) is True:
             return None
+    # UN VEREDICTO CONTESTA EN VEREDICTO. Devolverle "si, bluetooth 5.1 | no,
+    # este modelo es con cable" a un `igual true` le ensena a copiar la frase,
+    # que es justo lo que el motor no compara. Las dos palabras que entiende.
+    if d["tipo"] == "si_no":
+        return ["si", "no"]
     # Los mas usados y no todos: el hueco tiene que caber en el retorno.
     return list(d["valores"][:TOPE_HUECO])
 
