@@ -8,6 +8,7 @@ ningun numero de plata sale del modelo, ningun hueco se inventa, y un modelo
 caido no deja mudo al bot.
 """
 import asyncio
+import json
 
 import pytest
 
@@ -837,33 +838,64 @@ class _MensajeFalso:
         self.content = content
 
 
+class _LlamadaFalsa:
+    """Una llamada al motor como la escribe el modelo. El espia la devuelve
+    cuando se le pide, para poder mirar la vuelta de CONTESTAR: desde el
+    15-sep los veinte moldes viajan solo ahi, asi que una conversacion que
+    nunca busca no alcanza para medir el orden de lectura."""
+    id = "llamada_espia"
+
+    def __init__(self, consulta):
+        self.function = type("F", (), {
+            "name": "buscar",
+            "arguments": json.dumps({"consultas": [consulta]})})()
+
+
+class _MensajeConBusqueda:
+    content = ""
+
+    def __init__(self, consulta):
+        self.tool_calls = [_LlamadaFalsa(consulta)]
+
+
 class _ClienteEspia:
     """Un doble del cliente del proveedor que GUARDA lo que se le mando.
 
     No mide el prompt como cadena suelta: mide la conversacion ENTERA tal cual
-    viaja, que es lo unico que dice en que orden lee el modelo."""
+    viaja, que es lo unico que dice en que orden lee el modelo.
 
-    def __init__(self, caja):
+    `busca` es cuantas vueltas pide el motor antes de contestar."""
+
+    def __init__(self, caja, busca=0):
         self.caja = caja
+        self.busca = busca
         self.chat = self
         self.completions = self
 
     def create(self, *, model, messages, **kw):
         self.caja.append(messages)
         self.kw = kw
+        if self.busca > 0:
+            self.busca -= 1
+            msg = _MensajeConBusqueda({"texto": "teclado", "cuantos": 1})
+        else:
+            msg = _MensajeFalso('{"tipo": "spec_de_ficha", "texto": "listo"}')
 
         class _R:
-            choices = [type("C", (), {
-                "message": _MensajeFalso('{"tipo": "spec_de_ficha", '
-                                         '"texto": "listo"}')})()]
+            choices = [type("C", (), {"message": msg})()]
         return _R()
 
 
-def _conversacion(mensaje, memoria="", history=None, fuente="LA FUENTE_MARCA"):
-    """Corre `_preguntar` contra el espia y devuelve los mensajes que viajaron."""
+def _conversacion(mensaje, memoria="", history=None, fuente="LA FUENTE_MARCA",
+                  busca=0, vuelta=-1):
+    """Corre `_preguntar` contra el espia y devuelve los mensajes que viajaron.
+
+    `busca` cuantas vueltas busca antes de contestar; `vuelta` cual de las
+    conversaciones se devuelve -la ultima por default, que es la de contestar-.
+    """
     from app.core import llm_reintento as LR
     caja = []
-    espia = _ClienteEspia(caja)
+    espia = _ClienteEspia(caja, busca)
     viejo = LR._cliente
     LR._cliente = lambda: espia
     try:
@@ -872,7 +904,7 @@ def _conversacion(mensaje, memoria="", history=None, fuente="LA FUENTE_MARCA"):
     finally:
         LR._cliente = viejo
     assert caja, "no se le hablo al modelo"
-    return caja[-1]
+    return caja[vuelta]
 
 
 def _parametros(mensaje="cuanto pesa el teclado K120"):
@@ -896,8 +928,12 @@ def test_el_modelo_LEE_LA_PREGUNTA_ANTES_QUE_LOS_VEINTE_MOLDES(firestore_doble):
     de seis productos salio encasillado como `politica_sin_cubrir` con quince
     fichas en la mano.
 
-    Lo anclado al principio sigue anclado: la voz de la casa va primera."""
-    msgs = _conversacion("cuanto pesa el teclado K120")
+    Lo anclado al principio sigue anclado: la voz de la casa va primera.
+
+    SE MIDE EN LA VUELTA DE CONTESTAR, que desde el 15-sep es la unica donde
+    los moldes viajan. El requisito no cambio: cambio donde se cumple."""
+    msgs = _conversacion("cuanto pesa el teclado K120",
+                         busca=R.VUELTAS_DE_BUSQUEDA)
     junto = [m["content"] for m in msgs]
     entero = "\n".join(junto)
     assert "LA VOZ_MARCA" in junto[0], "la voz dejo de ir primera"
@@ -905,6 +941,55 @@ def test_el_modelo_LEE_LA_PREGUNTA_ANTES_QUE_LOS_VEINTE_MOLDES(firestore_doble):
     donde_moldes = entero.index("identidad_ambigua")
     assert donde_pregunta < donde_moldes, \
         "el modelo lee los veinte moldes antes de saber que le preguntaron"
+
+
+def test_LOS_MOLDES_NO_VIAJAN_EN_LAS_VUELTAS_DE_BUSCAR(firestore_doble):
+    """DECISION DE MARTIN, 15-sep, FICHA 54 punto 4. Los veinte moldes pesan
+    1.036 tokens y se pagaban en las tres vueltas. En la vuelta de buscar no se
+    decide como suena la respuesta.
+
+    Y NO ES SOLO COSTO: INDUCEN. El modelo elegia un tipo y despues declaraba
+    los campos que ese tipo le sugeria; al pedido con reparto 70/30 le puso
+    `identidad_ambigua` en vez de pedir la cuenta.
+
+    LA SIMETRIA: el tablero ya desaparece en la vuelta de contestar."""
+    buscando = _conversacion("cuanto pesa el teclado K120", busca=1, vuelta=0)
+    assert buscando, "no se le hablo al modelo"
+    entero = "\n".join(m["content"] for m in buscando)
+    assert "identidad_ambigua" not in entero, \
+        "los veinte moldes viajan en la vuelta de buscar"
+    assert "LOS VEINTE TIPOS" not in entero
+    # LO QUE SI TIENE QUE SEGUIR VIAJANDO: las reglas de buscar. Sacar los
+    # moldes no puede llevarse puesto `busco`, que es lo que dispara la
+    # ambiguedad, ni el candado de que solo existe lo que volvio.
+    assert "TODA consulta" in entero and "busco" in entero
+    assert "SOLO EXISTE LO QUE LA BUSQUEDA DEVOLVIO" in entero
+
+
+def test_EL_ESQUEMA_SE_QUEDA_EN_LAS_TRES_VUELTAS(firestore_doble):
+    """Es la otra mitad de la decision, y son cosas distintas: el esquema
+    OBLIGA el formato, los moldes ENSEÑAN la prosa. Medido el 12-sep: sin
+    esquema el modelo contestaba en markdown y el tipo salia vacio en tres de
+    cada cuatro turnos. Sacarlo de las vueltas de buscar seria repetir eso."""
+    from app.core import llm_reintento as LR
+    caja = []
+    espia = _ClienteEspia(caja, busca=2)
+    viejo = LR._cliente
+    LR._cliente = lambda: espia
+    esquemas = []
+    try:
+        real = espia.create
+
+        def envoltura(**kw):
+            esquemas.append(kw.get("response_format"))
+            return real(**kw)
+        espia.create = envoltura
+        asyncio.run(R._preguntar("LA VOZ_MARCA", "", [], "hola",
+                                 "LA FUENTE_MARCA", "trace_esq", TIENDA))
+    finally:
+        LR._cliente = viejo
+    assert len(esquemas) == 3, f"vueltas medidas: {len(esquemas)}"
+    assert all(e and e.get("type") == "json_schema" for e in esquemas)
 
 
 def test_el_mensaje_del_cliente_es_LO_ULTIMO_que_lee(firestore_doble):

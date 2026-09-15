@@ -9,7 +9,8 @@ EL FLUJO, entero:
   1. FUENTE   el codigo pone lo que NINGUNA busqueda puede contestar: el
               inventario -dos renglones sobre el catalogo entero- y el ENVIO ya
               cotizado, que sale del codigo postal y no se razona.
-  2. MODELO   ve la voz de la casa, la memoria, los VEINTE TIPOS y el motor.
+  2. MODELO   ve la voz de la casa, la memoria, el tablero y el motor. Los
+              VEINTE TIPOS los ve recien en la vuelta de contestar.
               BUSCA EL, productos Y politicas de la casa por la MISMA puerta:
               escribe la consulta, el codigo la ejecuta y certifica, y con lo
               que volvio contesta. El precio lo copia de la ficha que trajo; el
@@ -63,12 +64,9 @@ settings = get_settings()
 # pide, el codigo obliga.
 _REGLAS = """Sos el vendedor. Contestas UN mensaje de WhatsApp.
 
-Abajo tenes VEINTE TIPOS de pregunta con el molde de su respuesta. Eligi el
-tipo que corresponde al mensaje del cliente y contestale con ESE molde, escrito
-con tus palabras, corto y natural. Si el mensaje mezcla dos tipos, contesta los
-dos en el mismo mensaje. Si mezcla mas de uno, el tipo es `multipregunta`. Un
-campo que la fuente no tiene se dice, y NO cancela el resto: precios, envio y
-cuenta salen igual con las fichas que volvieron.
+Un campo que la fuente no tiene se dice, y NO cancela el resto: precios, envio
+y cuenta salen igual con las fichas que volvieron. Si el mensaje mezcla varias
+preguntas, se contestan TODAS y el tipo es `multipregunta`.
 
 LA PLATA. El precio de un producto lo escribis VOS, copiado TAL CUAL del campo
 `precio` de su ficha, hasta el ultimo digito. Es el unico numero de plata que
@@ -82,10 +80,6 @@ y los copias igual que un precio. Si no los pediste, escribi {{envio}} y
 Cualquier cifra de plata que no salga de una ficha o de esos dos huecos tira la
 respuesta entera abajo y el cliente se queda sin contestar. Si no tenes el
 precio, decilo; nunca lo aproximes.
-
-Lo que en el molde va entre signos de menor y mayor -<producto>, <stock>,
-<opciones>- NO se copia: ahi va la palabra real, sacada de la ficha que tenes
-abajo. Las llaves dobles son las tres unicas que el codigo llena.
 
 TODA consulta lleva `busco`, y no es opcional: `uno` si el cliente nombro un
 producto puntual -"el K120", "esa notebook", "el teclado que me mostraste"-, y
@@ -112,8 +106,37 @@ Y ADEMAS DE NO MENTIR, VENDES. Son cinco y salieron de charlas reales:
 4. UNA sola pregunta por mensaje.
 5. Con el precio ya mostrado y el cliente decidido, ofrece el cierre.
 
-Contestas con dos cosas: el `tipo` que elegiste de la lista de abajo, y el
-`texto` que lee el cliente. El formato lo obliga el codigo, no vos.
+Contestas con dos cosas: el `tipo` de pregunta que es, y el `texto` que lee el
+cliente. El formato lo obliga el codigo, no vos.
+"""
+
+
+# ── COMO SUENA LA RESPUESTA — los veinte moldes ─────────────────────────────
+#
+# VIAJA SOLO EN LA VUELTA DE CONTESTAR (15-sep-2026, decision de Martin en la
+# FICHA 54). Pesan 1.036 tokens y se pagaban en las tres vueltas; en la vuelta
+# de buscar no se decide como suena la respuesta, asi que ahi no pertenecen.
+#
+# Y NO ES SOLO COSTO: INDUCEN. El modelo elige un tipo y despues declara los
+# campos que ese tipo le sugiere, en vez de mirar que boca contesta lo que le
+# preguntaron. Al pedido con reparto 70/30 le puso `identidad_ambigua`.
+#
+# LA SIMETRIA YA EXISTIA DEL OTRO LADO: el tablero -que es el indice de lo que
+# se puede pedir- desaparece en la vuelta de contestar, porque ahi ya no hay
+# nada que pedir. Los moldes son lo mismo al reves.
+#
+# EL ESQUEMA DE RESPUESTA SE QUEDA EN LAS TRES, y es otra cosa: el esquema
+# OBLIGA el formato y los moldes enseñan la prosa. Sin esquema el modelo
+# contestaba en markdown y el tipo salia vacio -medido el 12-sep-.
+_COMO_SUENA = """COMO SUENA LA RESPUESTA. Abajo tenes VEINTE TIPOS de pregunta
+con el molde de cada uno. Eligi el que corresponde al mensaje del cliente y
+contestale con ESE molde, escrito con tus palabras, corto y natural. Si el
+mensaje mezcla dos tipos, contesta los dos en el mismo mensaje; si mezcla mas
+de uno, el tipo es `multipregunta`.
+
+Lo que en el molde va entre signos de menor y mayor -<producto>, <stock>,
+<opciones>- NO se copia: ahi va la palabra real, sacada de la ficha que tenes
+abajo. Las llaves dobles son las tres unicas que el codigo llena.
 
 LOS VEINTE TIPOS:
 """
@@ -198,8 +221,21 @@ def _voz(negocio: str) -> str:
     return identidad(negocio) or ""
 
 
+def _moldes() -> str:
+    """LOS VEINTE MOLDES, y viajan SOLO en la vuelta de contestar.
+
+    El motivo entero esta arriba de `_COMO_SUENA`: en la vuelta de buscar no se
+    decide como suena la respuesta, y tener los veinte delante induce al modelo
+    a elegir un tipo primero y a pedir despues los campos que ese tipo sugiere.
+    """
+    return _COMO_SUENA + TP.bloque_para_el_prompt()
+
+
 def _aparato() -> str:
-    """EL APARATO: las reglas y los veinte moldes. Va DESPUES de la pregunta.
+    """EL APARATO ENTERO: las reglas y los veinte moldes. Es lo que ve el
+    modelo en la vuelta de CONTESTAR; en las de buscar viaja solo `_REGLAS`.
+
+    Va DESPUES de la pregunta.
 
     POR QUE SE PARTIO EN DOS (12-sep-2026). Hasta hoy la voz y el aparato eran
     un solo bloque de sistema, asi que el modelo leia dos mil y pico de tokens
@@ -214,7 +250,7 @@ def _aparato() -> str:
 
     Ahora el orden es: quien habla, QUE LE PREGUNTARON, como se contesta.
     """
-    return _REGLAS + TP.bloque_para_el_prompt()
+    return _REGLAS + _moldes()
 
 
 def _memoria_texto(conv: dict) -> str:
@@ -485,7 +521,11 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     msgs.append({"role": "system",
                  "content": "ESTO ES LO QUE TE PREGUNTO EL CLIENTE Y ES LO QUE "
                             "TENES QUE CONTESTAR:\n" + (mensaje or "")})
-    msgs.append({"role": "system", "content": _aparato()})
+    # LAS REGLAS VIAJAN SIEMPRE; LOS MOLDES SOLO EN LA VUELTA DE CONTESTAR, y
+    # se enchufan adentro del loop, justo aca, para que el orden de lectura no
+    # cambie: voz, pregunta, reglas, MOLDES, memoria, charla, turno.
+    corte_moldes = len(msgs)
+    msgs.append({"role": "system", "content": _REGLAS})
     if memoria:
         msgs.append({"role": "system", "content": memoria})
     for h in (history or [])[-(settings.HISTORY_LIMIT * 2):]:
@@ -536,11 +576,18 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             partes.append(_COMO_SE_LEE + "\n".join(hallazgos))
         # EL MENSAJE, ULTIMO. Que sea lo ultimo que lee antes de escribir.
         partes.append("Contesta ESTE mensaje del cliente: " + (mensaje or ""))
-        turno = msgs + [{"role": "user", "content": "\n\n".join(partes)}]
         # En la ultima vuelta la herramienta ya no viaja: es la vuelta de
         # CONTESTAR. Sin esto el modelo puede quedarse buscando para siempre y
         # el cliente sin respuesta.
         tools = herramientas if (herramientas and vuelta < VUELTAS_DE_BUSQUEDA) else None
+        # Y ES LA MISMA LINEA LA QUE DECIDE LOS MOLDES, a proposito: donde hay
+        # herramienta se busca, y donde no hay, se contesta. Que las dos cosas
+        # salgan de la misma condicion hace imposible que se desincronicen.
+        cabeza = msgs if tools else (
+            msgs[:corte_moldes + 1]
+            + [{"role": "system", "content": _moldes()}]
+            + msgs[corte_moldes + 1:])
+        turno = cabeza + [{"role": "user", "content": "\n\n".join(partes)}]
 
         def _call(_tools=tools, _msgs=turno):
             extra = {"tools": _tools, "tool_choice": "auto"} if _tools else {}
