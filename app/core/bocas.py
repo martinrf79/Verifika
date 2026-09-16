@@ -177,14 +177,43 @@ BOCAS = (
 )
 
 
+# ── EL PEDIDO, Y NO ES UNA BOCA ─────────────────────────────────────────────
+#
+# No es un area de la fuente: es lo que el CLIENTE pidio, anotado antes de
+# decidir por donde va cada cosa. Va aparte de `BOCAS` por eso, y se nombra
+# PRIMERO en las dos vistas porque es lo primero que pasa en el turno.
+#
+# POR QUE EXISTE, medido dos veces en WhatsApp el 16-sep. "Las menos partes
+# chinas posibles" no genero ni una condicion y "divide el presupuesto en
+# setenta treinta" no genero ni una cuenta, las dos veces. Ninguno dejo rastro:
+# el modelo escribia consultas, y lo que no le parecia una consulta dejaba de
+# existir. Con la planilla el pedido es un estado, y lo que no se atendio vuelve
+# con las palabras del cliente en vez de desaparecer.
+PEDIDO = Boca(
+    nombre="EL PEDIDO",
+    campo="pedido",
+    # EL INDICE LO NOMBRA Y EL CAMPO LO EXPLICA, igual que las bocas: como se
+    # llena vive en el esquema, que es el unico lugar donde se usa. Decirlo
+    # entero en los dos lados era la segunda descripcion que este archivo vino
+    # a sacar, y ademas no entraba en el techo del tablero.
+    pide="TODO lo que el cliente pide, un renglon por cosa y con SUS palabras",
+    claves={"sin_atender": "sin_atender"},
+    lee=(
+        "`sin_atender` son los renglones de tu pedido que ESTA llamada no "
+        "cubrio, con las palabras del cliente. Cada uno se resuelve o se DICE: "
+        "si no se puede cumplir, se dice cual y por que, en un renglon, y el "
+        "resto del pedido se contesta igual. Un pedido que el cliente hizo y "
+        "la respuesta no menciona es lo peor que puede pasar en un turno.",
+    ))
+
+
 # Lo que NO es de ninguna boca: la puerta en si. Se dice una vez, arriba del
 # indice, y no depende de cuantos ramales haya enchufados.
 _PUERTA = (
     "Busca en la fuente de la tienda. Es el UNICO lugar del que salen las "
     "fichas, los precios y lo que la casa tiene escrito: llamala ANTES de "
     "hablar de un producto o de una politica, y si no lo buscaste, no lo "
-    "tenes.\n"
-    "LO QUE PODES PEDIR ACA:\n")
+    "tenes.\n\n")
 
 _CIERRE_DEL_INDICE = (
     "- Todas en la MISMA llamada, y varias consultas juntas si el cliente "
@@ -195,9 +224,14 @@ _CIERRE_DEL_INDICE = (
 def para_el_tablero() -> str:
     """VISTA 1 · el indice de la herramienta. Viaja en las vueltas de BUSCAR y
     muere en la de contestar, que es donde ya no hay nada que pedir."""
+    # EL PEDIDO PRIMERO Y SEPARADO: no es algo que se pide a la fuente, es lo
+    # que hay que anotar ANTES de pedir nada.
     renglones = [f"- {b.nombre}: {b.pide}. Va en `{b.campo}`."
                  for b in BOCAS]
-    return _PUERTA + "\n".join(renglones) + "\n" + _CIERRE_DEL_INDICE
+    return (_PUERTA
+            + f"ANTES QUE NADA, {PEDIDO.pide}. Va en `{PEDIDO.campo}`.\n\n"
+            + "LO QUE PODES PEDIR ACA:\n"
+            + "\n".join(renglones) + "\n" + _CIERRE_DEL_INDICE)
 
 
 def para_el_retorno() -> str:
@@ -209,7 +243,8 @@ def para_el_retorno() -> str:
     que enseña a LEER LO QUE VOLVIO va aca. Que las dos vistas salgan de la
     misma lista es lo que hace imposible que una boca nueva vuelva muda.
     """
-    renglones = [f"- {linea}" for b in BOCAS for linea in b.lee]
+    renglones = [f"- {linea}"
+                 for b in (PEDIDO,) + BOCAS for linea in b.lee]
     return ("LO QUE DEVOLVIO TU BUSQUEDA. Es toda la fuente que tenes sobre "
             "productos; de aca salen las fichas y los precios. Dice mas que "
             "la lista:\n" + "\n".join(renglones) + "\n")
@@ -247,4 +282,5 @@ def para_la_plata() -> str:
 def claves_del_retorno() -> dict:
     """Cada caja que el retorno puede traer, con la palabra que la explica en
     el encabezado. Es lo que el candado cruza contra `motor._salida`."""
-    return {clave: palabra for b in BOCAS for clave, palabra in b.claves.items()}
+    return {clave: palabra for b in (PEDIDO,) + BOCAS
+            for clave, palabra in b.claves.items()}

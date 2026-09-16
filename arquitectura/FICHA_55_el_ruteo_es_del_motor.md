@@ -118,10 +118,24 @@ de las tres cascadas que este repo ya pago: los 116 regex, las 70 flags y los
 
 ## 4. LAS TRES COSAS QUE HAY QUE HACER, en orden
 
-### 4.1 EL RUTEO PASA AL MOTOR
+### 4.1 EL RUTEO PASA AL MOTOR · **PRIMER PASO HECHO, 16-sep**
 
 El modelo llena una PLANILLA PLANA: que pide el cliente, renglon por renglon,
 con SUS palabras. No elige boca.
+
+**LO QUE YA CORRE.** La planilla existe y es OBLIGATORIA en el tablero
+—`pedido`, con `id` y `dice`—, el modelo declara en `atiende` que renglones
+cubre cada llamada, y el motor resta por ID y devuelve `sin_atender` con las
+palabras del cliente. El cruce es por identificador y no por palabras
+compartidas, que es lo que lo separa de D3, D4, D6 y D16. Costo medido: +24
+tokens en el tablero, porque lo que pesa la planilla se pago consolidando las
+descripciones que repetian el indice y el encabezado del retorno.
+
+**LO QUE FALTA, y es la otra mitad.** El codigo todavia no RUTEA: sigue siendo
+el modelo el que decide a que boca va cada renglon. Lo que se gano es que un
+renglon no pueda desaparecer en silencio. Correr `certificar_temas`,
+`criterio_de`, `geo_cp` y el certificador de identidad ANTES, para que ellas
+elijan la boca, es el paso que queda.
 
 El motor rutea cada renglon con las certificaciones que **ya existen y hoy
 corren tarde**: `certificar_temas`, `criterio_de`, `geo_cp`, el vocabulario de

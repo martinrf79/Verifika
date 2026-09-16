@@ -251,7 +251,59 @@ def esquema(tienda_id: str) -> dict:
             "description": BC.para_el_tablero(),
             "parameters": {
                 "type": "object",
+                # LA PLANILLA ES OBLIGATORIA —el `required` esta abajo,
+                # que es donde el objeto lo declara— y es el unico campo que
+                # lo es. Sin esto un pedido del cliente que el modelo no supo
+                # por donde mandar desaparece sin dejar rastro, que es el
+                # defecto medido dos veces —12:05 y 19:47 del 16-sep— y el
+                # motivo entero de la FICHA 55 §4.1.
                 "properties": {
+                    # ── EL PEDIDO COMO ESTADO (FICHA 55 §4.1 y §4.3) ──
+                    #
+                    # PRIMERO SE ENUMERA LO QUE PIDIO EL CLIENTE, DESPUES SE
+                    # DECIDE QUE HACER CON CADA COSA. Hoy el modelo escribe
+                    # consultas: si un pedido no le parece una consulta, no
+                    # existe. Medido las dos veces que se probo en WhatsApp:
+                    # "las menos partes chinas posibles" no genero ni una
+                    # condicion, y "divide el presupuesto en setenta treinta"
+                    # no genero ni una cuenta. Ninguno de los dos dejo rastro,
+                    # asi que nadie —ni el codigo ni el log— podia saber que
+                    # el cliente los habia pedido.
+                    #
+                    # VA CON LAS PALABRAS DEL CLIENTE, sin traducir. Traducir
+                    # es el otro trabajo y se hace en `consultas`; aca se
+                    # ANOTA, que es lo que el codigo no puede hacer solo.
+                    "pedido": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "string",
+                                       "description": "Unico: r1, r2, r3."},
+                                "dice": {"type": "string",
+                                         "description": "Con las palabras del "
+                                                        "cliente, sin "
+                                                        "traducir."}},
+                            "required": ["id", "dice"]},
+                        "description": (
+                            "TODO lo que pide el cliente, un renglon por cosa, "
+                            "ANTES de decidir por donde va. Una restriccion es "
+                            "un renglon igual que un producto: 'sin partes "
+                            "chinas' es uno, 'pago 70/30' es otro. Enumeralo "
+                            "entero aunque no sepas resolver alguno: lo que no "
+                            "anotes, para mi no existe.")},
+                    # EL CRUCE, Y ES POR ID. La junta blanda —aparear por
+                    # palabras compartidas— es la enfermedad que el
+                    # MAPA_CABLEADO ya tiene numerada cuatro veces: D3, D4, D6
+                    # y D16. Aca el modelo dice QUE RENGLONES cubre esta
+                    # llamada y el codigo cruza por identificador. Lo que
+                    # queda afuera vuelve con las palabras del cliente.
+                    "atiende": {
+                        "type": "array", "items": {"type": "string"},
+                        "description": (
+                            "Los `id` del pedido que ESTA llamada resuelve. El "
+                            "que falte vuelve como pendiente: lo resolves o se "
+                            "lo decis al cliente.")},
                     "consultas": {"type": "array", "items": consulta,
                                   "description": f"Hasta {TOPE_CONSULTAS}."},
                     # EL MAPA 3, Y ES UN CAMPO MAS DE LA MISMA PUERTA. No hay
@@ -269,14 +321,9 @@ def esquema(tienda_id: str) -> dict:
                     "temas": {
                         "type": "array", "items": {"type": "string"},
                         "description": (
-                            "Lo que el cliente pregunta sobre la CASA y no "
-                            "sobre un producto: garantia, cambios, cuotas, "
-                            "facturacion, plazos. Nombra el tema CORTO, en "
-                            "POCAS PALABRAS y con las del cliente: 'garantia', "
-                            "'cambios', no la frase entera que escribio. Te "
-                            "devuelvo lo que la casa tiene escrito, y si no lo "
-                            "tiene te lo digo y se lo decis asi. Hasta "
-                            f"{TOPE_TEMAS}.")},
+                            "Nombra el tema CORTO y con las palabras del "
+                            "cliente: 'garantia', 'cambios', no la frase "
+                            f"entera que escribio. Hasta {TOPE_TEMAS}.")},
                     # LA BOCA DE COMPATIBILIDAD, Y ES UN CAMPO MAS DE LA MISMA
                     # PUERTA (13-sep-2026). Mismo criterio que `temas`: el
                     # mecanismo de preguntarle a la fuente es el mismo, cambia
@@ -304,12 +351,9 @@ def esquema(tienda_id: str) -> dict:
                     "envios": {
                         "type": "array", "items": {"type": "string"},
                         "description": (
-                            "Los destinos que nombro el cliente, con SUS "
-                            "palabras: 'Posadas', 'CP 5121'. Si lo dijo turnos "
-                            "atras esta en tu memoria. Te devuelvo la tarifa "
-                            "exacta, el plazo y el hueco que copias donde vaya "
-                            f"el costo: el monto NO lo escribis vos. Hasta "
-                            f"{TOPE_ENVIOS}.")},
+                            "Los destinos con las palabras del cliente: "
+                            "'Posadas', 'CP 5121'. Si lo dijo turnos atras "
+                            f"esta en tu memoria. Hasta {TOPE_ENVIOS}.")},
                     "compatibilidad": {
                         "type": "array",
                         "items": {
@@ -330,12 +374,14 @@ def esquema(tienda_id: str) -> dict:
                                                    + equipos + "— o el id de "
                                                    "OTRO producto."}},
                             "required": ["producto", "con"]},
+                        # QUE VUELVE lo explica el encabezado del retorno,
+                        # que es donde se usa: aca solo va como se PIDE. Es la
+                        # regla de la FICHA 53 §8, que el 16-sep puso a
+                        # derivar las dos vistas de `bocas` y que estas
+                        # descripciones todavia no cumplian.
                         "description": (
                             "'¿anda con mi PS5?', '¿esta memoria entra en "
-                            "esta mother?'. Vuelve compatible, incompatible o "
-                            "sin_dato con el motivo escrito; el sin_dato no "
-                            "se completa, se avisa. Hasta "
-                            f"{TOPE_COMPAT}.")},
+                            f"esta mother?'. Hasta {TOPE_COMPAT}.")},
                     # LA BOCA DE CRITERIO, Y ES UN CAMPO MAS DE LA MISMA PUERTA
                     # (13-sep-2026). Cuarta vez el mismo criterio: `temas`,
                     # `compatibilidad`, `envios` y esto preguntan a la fuente
@@ -350,14 +396,10 @@ def esquema(tienda_id: str) -> dict:
                     "criterio": {
                         "type": "array", "items": {"type": "string"},
                         "description": (
-                            "Para que SIRVE algo, cual CONVIENE segun el uso, "
-                            "que diferencia hay entre dos, y que significa "
-                            "gama baja o media aca. Nombralo CORTO y con las "
-                            "palabras del cliente: 'mouse', 'para jugar', "
-                            "'gama media'. Es el criterio de la casa, no una "
-                            "ficha: no trae numeros ni precios, esos salen de "
-                            "`consultas`. Si la casa no lo tiene escrito te lo "
-                            f"digo y se lo decis asi. Hasta {TOPE_CRITERIO}.")},
+                            "Nombralo CORTO y con las palabras del cliente: "
+                            "'mouse', 'para jugar', 'gama media'. No trae "
+                            "numeros ni precios: esos salen de `consultas`. "
+                            f"Hasta {TOPE_CRITERIO}.")},
                     # LA CUENTA, Y NO ES UNA BOCA: NO TIENE AREA DE FUENTE.
                     # Es aritmetica sobre lo que las bocas ya devolvieron, y
                     # por eso vive en el RETORNO. Es un campo mas de la misma
@@ -398,13 +440,19 @@ def esquema(tienda_id: str) -> dict:
                                     "Solo si reparte el pago: '70 transferencia "
                                     "30 Mercado Pago'. Suman 100. El descuento "
                                     "lo aplico yo.")}},
+                        # Idem compatibilidad: lo que VUELVE —el total, el
+                        # detalle, el `sin_total`— lo explica el encabezado del
+                        # retorno. Aca va como se PIDE.
                         "description": (
                             "Cuanto sale TODO junto. Los productos con su "
                             "cantidad, por id o por el nombre que uso el "
-                            "cliente. Te vuelve el total ya sumado "
-                            "—productos, envio de los destinos que pediste y "
-                            "descuento— y el detalle. No sumes vos.")}},
-                "required": []},
+                            "cliente. No sumes vos.")}},
+                # LA PLANILLA ES LO UNICO OBLIGATORIO, y va ACA. Habia un
+                # `"required": []` en este lugar que pisaba en silencio al que
+                # se declaraba arriba de `properties`: el esquema salia con la
+                # planilla opcional, o sea con la pieza apagada sin que nadie
+                # lo viera. Un solo `required` por objeto, y es este.
+                "required": ["pedido"]},
         },
     }
 
@@ -1021,7 +1069,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
 
 
 def _salida(resultados, temas, sin_resolver, compat, envios, criterio,
-            sin_criterio, cuenta=None) -> dict:
+            sin_criterio, cuenta=None, sin_atender=None) -> dict:
     """El retorno, con UNA sola forma. Las cajas que nadie pidio no viajan: una
     clave vacia en cada turno es ruido adentro de la caja donde todo lo demas
     es dato certificado."""
@@ -1037,6 +1085,11 @@ def _salida(resultados, temas, sin_resolver, compat, envios, criterio,
         fuera["criterio_sin_resolver"] = sin_criterio
     if cuenta:
         fuera["cuenta"] = cuenta
+    # EL PEDIDO PENDIENTE VUELVE SIEMPRE QUE HAYA ALGUNO, y es la unica caja
+    # que no sale de una boca: no es lo que la fuente contesto, es lo que el
+    # cliente pidio y nadie atendio.
+    if sin_atender:
+        fuera["sin_atender"] = sin_atender
     return fuera
 
 
@@ -1199,10 +1252,45 @@ def _evaluar(prod: dict, con: str, porid: dict, tienda_id: str) -> dict:
                 f"{etiqueta_plataforma(equipos[0], tienda_id)}")}
 
 
+def _sin_atender(pedido, atiende) -> list:
+    """LOS RENGLONES DEL PEDIDO QUE ESTA LLAMADA NO CUBRE, con las palabras del
+    cliente. Es el cruce de la FICHA 55 §4.1, y es lo mas chico que lo hace:
+    una resta de identificadores.
+
+    POR ID Y NO POR PALABRAS. Aparear por palabras compartidas es la enfermedad
+    que el `MAPA_CABLEADO` tiene numerada cuatro veces —D3, D4, D6 y D16—: la
+    junta blanda J4 decide con una coincidencia de tres letras cual evidencia
+    contesta cual pregunta. Aca no hay nada que adivinar: el modelo anota el
+    renglon con un id y dice cuales cubre.
+
+    QUE ARREGLA, medido dos veces en WhatsApp el 16-sep. "Las menos partes
+    chinas posibles" no genero ni una condicion y "divide el presupuesto en
+    setenta treinta" no genero ni una cuenta, las dos veces. Ninguno de los dos
+    dejo rastro: no habia lugar donde constara que el cliente los habia pedido,
+    asi que el turno no podia saber que le faltaba algo, el log no podia
+    contarlo, y el cliente leyo una respuesta que ni los mencionaba.
+
+    UN RENGLON SIN ATENDER NO ES UN ERROR, es un pendiente, y por eso vuelve
+    como dato y no como excepcion: hay pedidos que la fuente no puede cumplir
+    —el origen es D8 y es de FUENTE— y la respuesta correcta ahi es decirlo,
+    no callarlo.
+    """
+    cubiertos = {str(x) for x in (atiende or ())}
+    fuera = []
+    for r in (pedido or ()):
+        rid = str((r or {}).get("id") or "")
+        dice = str((r or {}).get("dice") or "").strip()
+        if not dice or rid in cubiertos:
+            continue
+        fuera.append({"id": rid, "dice": dice})
+    return fuera
+
+
 def buscar(consultas: list, tienda_id: str, trace_id: str = "",
            temas: list | None = None, compat: list | None = None,
            envios: list | None = None, localidad_previa: str = "",
-           criterio: list | None = None, cuenta: dict | None = None) -> dict:
+           criterio: list | None = None, cuenta: dict | None = None,
+           pedido: list | None = None, atiende: list | None = None) -> dict:
     """LA PUERTA. Catalogo, politicas, compatibilidad, envio y el criterio de la
     casa, en una llamada.
 
@@ -1278,7 +1366,8 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
         # necesitan tocar el catalogo, y obligar a inventar una consulta vacia
         # para preguntarlo seria pedirle al modelo que aprenda nuestra plomeria.
         return _salida([], fuera_temas, sin_resolver, [], fuera_envios,
-                       criterios, sin_criterio)
+                       criterios, sin_criterio,
+                       sin_atender=_sin_atender(pedido, atiende))
 
     # LA COMPATIBILIDAD TAMBIEN NECESITA EL CATALOGO, y por eso la lectura no
     # cuelga mas de `consultas`: el par se evalua sobre las fichas reales, que
@@ -1292,22 +1381,23 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
         catalogo = []
     if not catalogo:
         r = _salida([], fuera_temas, sin_resolver, [], fuera_envios,
-                    criterios, sin_criterio)
+                    criterios, sin_criterio,
+                    sin_atender=_sin_atender(pedido, atiende))
         r["motivo"] = "no se pudo leer el catalogo"
         return r
 
     # EL RAMAL A COMPATIBILIDAD. Un par roto no tumba el resto, igual que una
     # consulta rota: vuelve `sin_dato`, que es la salida honesta de esta boca.
     compatibilidades = []
-    for pedido in (compat or [])[:TOPE_COMPAT]:
+    for par in (compat or [])[:TOPE_COMPAT]:
         try:
-            compatibilidades.append(_un_compat(pedido, catalogo, tienda_id))
+            compatibilidades.append(_un_compat(par, catalogo, tienda_id))
         except Exception as e:  # noqa: BLE001 — sin dato no se afirma nada
             log.warning("motor_compat_error", trace_id=trace_id,
                         error=f"{type(e).__name__}: {str(e)[:120]}")
             compatibilidades.append(
-                {"producto": str((pedido or {}).get("producto") or ""),
-                 "con": str((pedido or {}).get("con") or ""),
+                {"producto": str((par or {}).get("producto") or ""),
+                 "con": str((par or {}).get("con") or ""),
                  "veredicto": "sin_dato",
                  "motivo": "eso no se pudo verificar"})
 
@@ -1387,7 +1477,8 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
              criterio=[c["tema"] for c in criterios],
              cuenta=la_cuenta.get("total_ars") or la_cuenta.get("sin_total"))
     return _salida(fuera, fuera_temas, sin_resolver, compatibilidades,
-                   fuera_envios, criterios, sin_criterio, la_cuenta)
+                   fuera_envios, criterios, sin_criterio, la_cuenta,
+                   _sin_atender(pedido, atiende))
 
 
 def fichas_de(resultado: dict) -> list[dict]:
