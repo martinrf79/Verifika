@@ -47,6 +47,7 @@ import json
 import time
 
 from app.config import get_settings
+from app.core import bocas as BC
 from app.core import numeros as N
 from app.core import tipos as TP
 from app.core.llm_reintento import llamar_con_reintento
@@ -71,24 +72,13 @@ settings = get_settings()
 # cosas: el prompt le decia al modelo que escribir el total mataba la
 # respuesta. Una enumeracion de casos se desincroniza sola cada vez que se
 # enchufa una boca nueva; una regla de procedencia, no.
-_REGLAS = """Sos el vendedor. Contestas UN mensaje de WhatsApp.
+_MOLDE_REGLAS = """Sos el vendedor. Contestas UN mensaje de WhatsApp.
 
 Un campo que la fuente no tiene se dice, y NO cancela el resto: precios, envio
 y cuenta salen igual con las fichas que volvieron. Si el mensaje mezcla varias
 preguntas, se contestan TODAS y el tipo es `multipregunta`.
 
-LA PLATA, Y ES UNA SOLA REGLA: todo numero que escribas tiene que estar YA
-ESCRITO abajo, en una ficha o en lo que volvio del motor —el precio, la tarifa
-del envio, el total de la cuenta y cada renglon de su detalle—. Lo copias tal
-cual, hasta el ultimo digito. Los tres valen igual y ninguno es mas tuyo que
-otro.
-
-Lo que no volvio, no sale: no lo sumas, no lo estimas, no lo redondeas. Si te
-falta el envio o el total porque no los pediste, escribi {{envio}} o {{total}}
-y los pone el codigo. Si te falta un precio, decis que no lo tenes.
-
-Una cifra que no salga de ahi tira la respuesta entera abajo y el cliente se
-queda sin contestar.
+__LA_PLATA__
 
 TODA consulta lleva `busco`, y no es opcional: `uno` si el cliente nombro un
 producto puntual -"el K120", "esa notebook", "el teclado que me mostraste"-, y
@@ -118,6 +108,19 @@ Y ADEMAS DE NO MENTIR, VENDES. Son cinco y salieron de charlas reales:
 Contestas con dos cosas: el `tipo` de pregunta que es, y el `texto` que lee el
 cliente. El formato lo obliga el codigo, no vos.
 """
+
+
+# EL PROMPT ARMADO. El unico hueco es la plata, y sale de `bocas`: la lista de
+# numeros que el modelo puede copiar es la lista de bocas que devuelven uno, no
+# una enumeracion escrita a mano. El 14-sep se enchufo la cuenta y el prompt
+# siguio diciendo que el precio era el unico numero de plata, o sea que le
+# decia al modelo que escribir el total mataba la respuesta. Derivada, la boca
+# nueva entra al prompt el mismo dia que entra al motor.
+#
+# SE ARMA CON `replace` Y NO CON `format` a proposito: el prompt tiene llaves
+# dobles de verdad -{{envio}} y {{total}} son los huecos que llena el codigo- y
+# `format` se las comeria.
+_REGLAS = _MOLDE_REGLAS.replace("__LA_PLATA__", BC.para_la_plata())
 
 
 # ── COMO SUENA LA RESPUESTA — los veinte moldes ─────────────────────────────
@@ -155,42 +158,15 @@ LOS VEINTE TIPOS:
 # es el punto: en la primera vuelta no hay retorno que leer, asi que en el
 # prompt se pagaba una vez de gusto en cada turno. Naciendo con el retorno, no
 # hay turno que lo pague sin usarlo.
-_COMO_SE_LEE = """LO QUE DEVOLVIO TU BUSQUEDA. Es toda la fuente que tenes
-sobre productos; de aca salen las fichas y los precios. Dice mas que la lista:
-- `no_aplicado` es una condicion que el catalogo NO puede cumplir, con el
-  motivo. Si dice que la fuente no usa esa palabra, tenes los valores reales al
-  lado: volve a buscar con uno de esos. Nunca la des por cumplida ni la ignores.
-- `veredicto: ambiguo` significa que hay varios que pegan igual. NO elijas:
-  preguntale cual.
-- `veredicto: no_existe` con filas al lado es lo mas parecido, no lo que pidio.
-  Decile que eso exacto no hay y mostrale esto.
-- `sin_dato` son los que no tienen ese dato cargado. No es un no.
-- Un campo que no existe (`no_aplicado`, `sin_campo`) se dice y NO cancela
-  el resto del pedido. Si volvieron fichas, precios y envios, eso se contesta.
-- `no_cumple` en una fila es el dato REAL por el que ese producto no cumple lo
-  que pidio. Deciselo con esas palabras; nunca ofrezcas como si cumpliera algo
-  que el cliente excluyo.
-- `criterio` es lo que la casa tiene escrito sobre para que sirve y cual
-  conviene. Es desde donde razonas, no un dato: no lleva numeros, y los que
-  hagan falta salen de las fichas.
-- `cuenta` es el total del pedido YA SUMADO por el codigo, con el envio y el
-  descuento adentro. `total` es lo que suma; `total_final`, cuando esta, es lo
-  que el cliente PAGA con el reparto que pidio, y ese es el que se dice.
-  `detalle` trae el renglon por renglon. Copialos; no los vuelvas a sumar.
-  `sin_total` es que la cuenta no se pudo hacer, con el motivo: eso se dice, no
-  se completa con una suma tuya.
-- `envios` son las tarifas que YA se cotizaron, una por destino. Si volvieron,
-  SE DICEN en esta respuesta: nombra cada destino con la palabra del cliente y
-  escribi {{envio:<destino>}} donde va el monto. Un envio cotizado y no dicho
-  es el dato mas caro que se puede tirar.
-- `politicas` es lo que la casa tiene escrito sobre garantia, cambios, cuotas o
-  facturacion. Es la respuesta, no un material: se dice con esas palabras.
-- `temas_sin_resolver` y `criterio_sin_resolver` son los que la casa NO tiene
-  escritos. Se dice que eso no lo tenemos; no se contesta de memoria.
-- `compatibilidad` trae el veredicto de la tabla de la casa: compatible,
-  incompatible o sin_dato, con el motivo escrito. El `sin_dato` se avisa, no se
-  completa.
-"""
+#
+# Y YA NO SE ESCRIBE ACA (16-sep-2026, FICHA 55 §4.2). Los renglones salen de
+# `bocas`, que es la MISMA lista de la que sale el indice del tablero y la
+# regla de la plata de abajo. Eran dos textos sobre lo mismo con dos
+# redacciones distintas, y ya se pago dos veces: el encabezado tardo tres dias
+# en enterarse de que habia cinco bocas, y el envio cotizado no salia en la
+# respuesta porque que hacer con la tarifa estaba escrito en el tablero, que
+# no viaja en la vuelta de contestar.
+_COMO_SE_LEE = BC.para_el_retorno()
 
 
 def _esquema_respuesta() -> dict:

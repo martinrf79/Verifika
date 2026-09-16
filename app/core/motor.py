@@ -44,6 +44,7 @@ con contrato. No es una capa nueva encima; es la puerta que faltaba.
 """
 import json
 
+from app.core import bocas as BC
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -241,31 +242,13 @@ def esquema(tienda_id: str) -> dict:
             # LAS CINCO BOCAS SE NOMBRAN. Una boca que el tablero no nombra no
             # existe para el modelo aunque tenga cable, y hasta hoy se
             # nombraban dos: el catalogo y los temas.
-            "description": (
-                "Busca en la fuente de la tienda. Es el UNICO lugar del que "
-                "salen las fichas, los precios y lo que la casa tiene escrito: "
-                "llamala ANTES de hablar de un producto o de una politica, y "
-                "si no lo buscaste, no lo tenes.\n"
-                "LO QUE PODES PEDIR ACA:\n"
-                "- CATALOGO: que hay, que trae, cuanto sale, cuanto stock, "
-                "cual cumple tal cosa. Va en `consultas`.\n"
-                "- POLITICAS de la casa: garantia, cambios, cuotas, "
-                "facturacion, plazos, descuentos. Va en `temas`, corto y con "
-                "las palabras del cliente.\n"
-                "- COMPATIBILIDAD: si un producto anda con el equipo del "
-                "cliente o con otro producto. Va en `compatibilidad`, y sale "
-                "de la tabla de la casa, no de tu memoria.\n"
-                "- CRITERIO: para que sirve, cual conviene, que diferencia hay "
-                "entre dos, que significa gama media. Va en `criterio`, y es "
-                "lo que la casa tiene escrito, no tu opinion.\n"
-                "- CUENTA: cuanto sale todo junto. Va en `cuenta`, "
-                "con los ids y las cantidades; la suma la hago yo.\n"
-                "- Todas en la MISMA llamada, y varias consultas "
-                "juntas si el cliente pidio varias cosas.\n"
-                "- ENVIO: cuanto sale y en cuanto llega. Va en `envios`, "
-                "con el lugar que nombro el cliente.\n"
-                "Si lo que salio no sirve, volve a llamarla con otra "
-                "consulta."),
+            #
+            # Y YA NO SE ESCRIBE ACA (16-sep-2026, FICHA 55 §4.2). El indice
+            # sale de `bocas.para_el_tablero`, que es la MISMA lista de la que
+            # sale el encabezado del retorno y la regla de la plata del
+            # prompt. Escribirlo dos veces es lo que hizo que el encabezado
+            # tardara tres dias en enterarse de que habia cinco bocas.
+            "description": BC.para_el_tablero(),
             "parameters": {
                 "type": "object",
                 "properties": {
