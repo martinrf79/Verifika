@@ -101,3 +101,28 @@ def test_los_nombres_de_los_eventos_son_los_que_el_turno_escribe():
             fuentes += fh.read()
     for ev in EVENTOS_PELICULA:
         assert f'"{ev}"' in fuentes, f"nadie escribe el renglon '{ev}'"
+
+
+def test_todo_evento_que_la_pelicula_IMPRIME_lo_pide_tambien():
+    """EL CODIGO MUERTO DE LA PELICULA, y me lo comi el 16-sep.
+
+    `EVENTOS_PELICULA` es lo que la pelicula PIDE a Cloud Logging; abajo hay un
+    `elif ev == "..."` por cada uno que sabe imprimir. Agregue la rama de
+    `correccion_de_estado` y NO el nombre a la lista, asi que la rama era
+    inalcanzable: el evento nunca venia. Se vio en la primera corrida real, con
+    un turno de cuatro vueltas del que habia que DEDUCIR que se habia
+    corregido.
+
+    Las dos listas viven en el mismo archivo y a veinte lineas de distancia, y
+    igual se separaron. Por eso es un candado y no un cuidado.
+    """
+    import re
+    from pathlib import Path
+    fuente = Path("banco_pruebas/produccion.py").read_text(encoding="utf-8")
+    # Los que la pelicula sabe imprimir, sacados del codigo que los imprime.
+    imprime = set(re.findall(r'elif ev == "([a-z_]+)"', fuente))
+    imprime |= set(re.findall(r'if ev == "([a-z_]+)"', fuente))
+    huerfanos = sorted(imprime - set(EVENTOS_PELICULA))
+    assert not huerfanos, (
+        f"la pelicula imprime {huerfanos} y no los PIDE: esas ramas no se "
+        f"alcanzan nunca. Agregalos a EVENTOS_PELICULA")

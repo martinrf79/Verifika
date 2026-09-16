@@ -270,22 +270,27 @@ def afirmo_sin_mirar(texto: str, tocados, tienda_id: str,
     return sin_respaldo
 
 
-# CUANTAS PALABRAS TIENE QUE TENER UN CAMPO PARA QUE SE LO CORRIJA, y este
-# numero es todo el recorte entre ver y actuar.
+# QUE CAMPO SE CORRIGE, Y LA RESPUESTA ES: CUALQUIERA QUE LA FUENTE TENGA.
 #
-# La guarda VE todos los campos: ese es el renglon y no se toca, porque es el
-# numero con el que se decide. Lo que se CORRIGE es un subconjunto, y el corte
-# es de forma: un campo de una palabra —`color`, `marca`, `stock`, `modelo`,
-# `peso`— es una palabra comun del castellano comercial, y "te lo puedo buscar
-# por color" no es una afirmacion sobre la fuente. Uno de dos palabras
-# —`pais_fabricacion`, `memoria_video`, `garantia_meses`— es jerga de la
-# fuente: si el modelo lo escribe es porque esta hablando de ESE campo.
+# HUBO UN RECORTE Y DURO UNA CHARLA. El 16-sep se corregia solo un campo de dos
+# o mas palabras, con el argumento de que uno de una sola —`color`, `marca`— es
+# castellano comercial y "te lo puedo buscar por color" no es una afirmacion
+# sobre la fuente. Sonaba bien y era una proxy floja: esa misma tarde, a las
+# 19:47, el modelo afirmo sobre `origen` —una palabra, campo real, cargado en
+# 880 de 880— y la correccion no se disparo. El recorte dejo pasar exactamente
+# el caso para el que la pieza existe.
 #
-# ES UN CORTE DE FORMA Y NO DE VOCABULARIO, que es lo que lo hace admisible
-# bajo la regla 4 de la FICHA 55: no hay una lista de campos elegidos a mano
-# que alguien tenga que mantener. Se cuenta cuantas partes tiene el nombre que
-# la fuente ya le puso.
-PALABRAS_PARA_CORREGIR = 2
+# POR QUE SACARLO NO ES REPLEGARSE. Los dos costos no se parecen. Un falso
+# positivo cuesta UNA vuelta, una vez por turno, y el bloque que se le manda no
+# es un reto: es el dato del campo. Ante "te lo puedo buscar por color" el
+# modelo recibe los valores reales de `color` y o busca mejor o repregunta
+# mejor. Un falso negativo cuesta lo que se leyo el 16-sep: el cliente se lleva
+# una mentira sobre la tienda.
+#
+# LO QUE QUEDA ES EL UNICO FILTRO DURO: que la fuente TENGA ese campo. Si no lo
+# tiene, la negacion del modelo era correcta y el codigo no le discute una
+# verdad. Ese filtro no es una heuristica —se le pregunta a la fuente—, que es
+# la diferencia con el que se saca.
 
 # Cuantas correcciones se hacen por turno. UNA. Cada una cuesta una vuelta al
 # modelo, y una segunda seria perseguir al modelo hasta que diga lo que
@@ -297,16 +302,12 @@ def para_corregir(sin_respaldo, tienda_id: str) -> tuple:
     """El campo que vale la pena devolverle al modelo, con lo que la fuente
     dice de el. `(None, "")` si no hay ninguno.
 
-    DOS FILTROS Y NINGUNO MAS. Que el nombre tenga varias partes, que es el
-    recorte de arriba. Y que la fuente TENGA algo escrito de ese campo: si no
-    tiene, la negacion del modelo era correcta y no hay nada que corregir. Ese
-    segundo filtro no es cosmetico —es lo que evita que el codigo le discuta al
-    modelo una verdad—.
+    UN SOLO FILTRO, y se lo contesta la fuente: que tenga algo escrito de ese
+    campo. El motivo de que sea uno solo esta arriba, con el caso que se llevo
+    puesto al otro.
     """
     from app.core.filtros_catalogo import que_dice_la_fuente_de
     for campo in sin_respaldo or ():
-        if len(str(campo).split("_")) < PALABRAS_PARA_CORREGIR:
-            continue
         dice = que_dice_la_fuente_de(str(campo), tienda_id)
         if dice:
             return str(campo), dice

@@ -182,15 +182,38 @@ def test_se_corrige_UNA_sola_vez_por_turno(firestore_doble, monkeypatch):
     assert "insisto" in salida["texto"], "la respuesta tiene que salir igual"
 
 
-def test_un_campo_de_UNA_palabra_no_dispara_la_correccion(firestore_doble):
-    """EL RECORTE ENTRE VER Y ACTUAR. "Te lo puedo buscar por color" no es una
-    afirmacion sobre la fuente, y frenar ahi cambia un defecto por otro mas
-    caro. La guarda lo VE igual —el renglon no pierde nada— y no se actua."""
-    sin = gs.afirmo_sin_mirar("Te lo puedo buscar por color si querés.",
-                              set(), TIENDA, "t")
-    assert "color" in sin, "la guarda tiene que seguir VIENDOLO"
-    campo, _ = gs.para_corregir(sin, TIENDA)
-    assert campo != "color", "un campo de una palabra no se corrige"
+def test_EL_CASO_DE_LAS_19_47_un_campo_de_UNA_palabra_SI_se_corrige(
+        firestore_doble):
+    """EL RECORTE QUE DURO UNA CHARLA, y este test es su lapida.
+
+    Hasta las 19:47 del 16-sep se corregia solo un campo de dos o mas palabras:
+    uno de una sola —`color`, `marca`— es castellano comercial, y "te lo puedo
+    buscar por color" no es una afirmacion sobre la fuente. Sonaba bien.
+
+    Esa misma tarde el modelo afirmo sobre `origen` —una palabra, campo real,
+    cargado en 880 de 880— y la correccion NO se disparo. El recorte dejo pasar
+    exactamente el caso para el que la pieza existe.
+
+    Los dos costos no se parecen: un falso positivo cuesta una vuelta, un falso
+    negativo cuesta que el cliente se lleve una mentira sobre la tienda.
+    """
+    sin = gs.afirmo_sin_mirar(
+        "Sobre tu consulta por el origen, no podemos garantizar una seleccion "
+        "basada en ese criterio.", set(), TIENDA, "t")
+    assert "origen" in sin
+    campo, dice = gs.para_corregir(sin, TIENDA)
+    assert campo == "origen", "el caso del 16-sep sigue sin corregirse"
+    assert dice, "tiene que volver con lo que la fuente dice del campo"
+
+
+def test_el_dato_que_vuelve_ENTRA_de_un_vistazo(firestore_doble):
+    """`origen` tiene 84 valores distintos y cada uno es una frase entera. Sin
+    tope, la correccion le manda un chorro de prosa adentro de un bloque que
+    tiene que leerse de golpe."""
+    from app.core.filtros_catalogo import que_dice_la_fuente_de
+    dice = que_dice_la_fuente_de("origen", TIENDA)
+    assert "y 76 mas" in dice, dice
+    assert len(dice) < 700, f"el bloque de un campo solo pesa {len(dice)}"
 
 
 def test_un_campo_que_la_fuente_NO_tiene_no_se_corrige(firestore_doble):

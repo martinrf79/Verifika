@@ -675,7 +675,13 @@ EVENTOS_PELICULA = (
     # LA GUARDA DE ESTADO, Y NACE MUDA: su unico efecto es este renglon. Va en
     # la pelicula porque es donde se decide si algun dia frena —hace falta ver
     # el campo Y la respuesta que lo nombro, y eso no se lee de un contador—.
-    "afirmo_sin_mirar")
+    "afirmo_sin_mirar",
+    # LA CORRECCION DE ESTADO. Sale cuando la guarda no solo vio sino que le
+    # devolvio el dato al modelo y le pidio de nuevo. Sin este renglon una
+    # vuelta de mas en el turno no se distingue de una busqueda que no alcanzo,
+    # que es exactamente lo que paso el 16-sep a las 19:46: el turno mostraba
+    # cuatro vueltas y habia que deducir de ahi que se habia corregido.
+    "correccion_de_estado")
 
 # Cuantos turnos se cuentan por defecto. Tres alcanzan para una prueba por
 # WhatsApp y entran en un comentario del issue; el informe de arriba sigue

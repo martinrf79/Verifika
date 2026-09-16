@@ -197,6 +197,12 @@ TECHO_LEYENDA = 3000
 # por ahi devuelve casi nada, y ese casi nada se lee como "no lo tenemos".
 CARGA_FLACA = 0.30
 
+# Cuantos valores de un campo se le devuelven al modelo cuando se lo corrige.
+# No es el tope de la leyenda —ese reparte un presupuesto entre TODOS los
+# campos—: aca es un campo solo y lo que se cuida es que el bloque siga siendo
+# legible de un vistazo.
+VALORES_AL_CORREGIR = 8
+
 # Cuantos valores reales se le muestran al modelo cuando escribio uno que no
 # existe. Cinco alcanzan para que corrija y no inundan el retorno.
 TOPE_HUECO = 5
@@ -568,7 +574,15 @@ def que_dice_la_fuente_de(campo: str, tienda_id: str) -> str:
     elif d["tipo"] == "si_no":
         cuerpo = "es de si o no, y se filtra con `igual si` o `igual no`"
     elif d.get("valores"):
-        cuerpo = "la fuente escribe: " + " | ".join(d["valores"])
+        # SE ACOTA, Y NO ES UN DETALLE. `origen` tiene 84 valores distintos y
+        # cada uno es una frase entera —"marca logitech de suiza. fabricado en
+        # china."—: devolverlos todos es un chorro de prosa adentro de un
+        # bloque que tiene que leerse de un vistazo. Con los primeros y el
+        # total, el modelo sabe con que palabras se busca y cuanto hay.
+        vals = list(d["valores"])
+        cuerpo = "la fuente escribe: " + " | ".join(vals[:VALORES_AL_CORREGIR])
+        if len(vals) > VALORES_AL_CORREGIR:
+            cuerpo += f" ... y {len(vals) - VALORES_AL_CORREGIR} mas"
     else:
         cuerpo = ("tiene demasiados valores distintos para listarlos; se busca "
                   "con `contiene`")
