@@ -411,14 +411,7 @@ def _informe_en_blanco() -> dict:
     # `campos_tocados` es el estado que la guarda de `guardas_salida` cruza
     # contra la respuesta: los campos que el turno miro de verdad. No es lo
     # mismo que `campos`, que son los que NO se pudieron aplicar.
-    # LA PLANILLA, EN DOS NUMEROS. `renglones` dice si el modelo la esta
-    # llenando —si sale cero, la pieza no existe para el— y `sin_atender` es
-    # EL numero de la FICHA 55 §4.1: cuantas cosas pidio el cliente que el
-    # turno no cubrio. Antes del 16-sep ese numero no se podia calcular,
-    # porque un pedido que el modelo no mandaba a ninguna boca no dejaba
-    # rastro en ningun lado.
     return {"campos_tocados": set(), "correcciones": 0,
-            "renglones": 0, "sin_atender": [],
             "vueltas": 0, "llamadas": 0, "consultas": 0, "repetidas": 0,
             "puntuales": 0, "veredictos": [], "filas": 0, "rescates": 0,
             "vacios": 0, "sin_dato": 0, "campos": [], "fichas": 0,
@@ -428,8 +421,7 @@ def _informe_en_blanco() -> dict:
             "cuentas": 0, "cuentas_sin_total": 0}
 
 
-def _anotar(informe: dict, consultas: list, pedidas: set, r: dict,
-            pedido_del_modelo: list | None = None) -> None:
+def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
     """Suma al informe lo que hizo ESTA llamada al motor.
 
     LA CONSULTA REPETIDA SE CUENTA APARTE, y es el unico numero de aca que no
@@ -438,11 +430,6 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict,
     repitiendo la primera. Si eso pasa seguido, el arreglo no es subir el tope
     de vueltas: es decirle que ya lo busco.
     """
-    informe["renglones"] += len(pedido_del_modelo or ())
-    # CON LAS PALABRAS DEL CLIENTE, y no con el id: el id sirve para cruzar,
-    # pero el renglon del log tiene que poder leerse contra la charla.
-    for renglon in (r or {}).get("sin_atender") or []:
-        informe["sin_atender"].append(str((renglon or {}).get("dice") or ""))
     for c in (consultas or []):
         informe["consultas"] += 1
         # LOS CAMPOS QUE ESTA CONSULTA MIRO. Es el estado con el que se juzga
@@ -760,9 +747,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                 log.warning("motor_argumentos_rotos", trace_id=trace_id,
                             crudo=str(c.function.arguments)[:200])
             consultas = args.get("consultas") or []
-            pidio = {"pedido": args.get("pedido") or [],
-                     "atiende": args.get("atiende") or [],
-                     "consultas": consultas, "temas": args.get("temas") or [],
+            pidio = {"consultas": consultas, "temas": args.get("temas") or [],
                      "compatibilidad": args.get("compatibilidad") or [],
                      "envios": args.get("envios") or [],
                      "criterio": args.get("criterio") or [],
@@ -783,13 +768,8 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                           envios=args.get("envios"),
                           localidad_previa=localidad_previa,
                           criterio=args.get("criterio"),
-                          cuenta=args.get("cuenta"),
-                          # LA PLANILLA Y EL CRUCE (FICHA 55 §4.1). El motor
-                          # resta los ids y devuelve lo que quedo pendiente.
-                          pedido=args.get("pedido"),
-                          atiende=args.get("atiende"))
-            _anotar(informe, consultas, pedidas, r,
-                    args.get("pedido"))
+                          cuenta=args.get("cuenta"))
+            _anotar(informe, consultas, pedidas, r)
             for f in MT.fichas_de(r):
                 if str(f.get("id")) not in {str(x.get("id")) for x in fichas}:
                     fichas.append(f)
@@ -993,8 +973,6 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              sin_dato=motor["sin_dato"], campos=motor["campos"][:8],
              campos_tocados=len(motor["campos_tocados"]),
              correcciones=motor["correcciones"],
-             renglones=motor["renglones"],
-             sin_atender=motor["sin_atender"][:6],
              fichas=motor["fichas"], temas=motor["temas"][:6],
              temas_sin_resolver=motor["temas_sin_resolver"][:4],
              compat=motor["compat"][:6],

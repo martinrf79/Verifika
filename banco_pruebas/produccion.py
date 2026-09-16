@@ -172,8 +172,7 @@ def _post(url: str, tok: str, cuerpo: dict) -> dict:
 # en `tests/test_numero_motor.py`, que compara las dos listas.
 CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "puntuales",
           "veredictos", "filas", "rescates", "vacios", "sin_dato", "campos",
-          "campos_tocados", "correcciones", "renglones",
-          "sin_atender", "fichas", "temas", "temas_sin_resolver", "compat",
+          "campos_tocados", "correcciones", "fichas", "temas", "temas_sin_resolver", "compat",
           "compat_sin_dato", "envios", "envios_sin_clasificar", "criterio",
           "criterio_sin_resolver", "cuentas", "cuentas_sin_total")
 
@@ -850,16 +849,6 @@ def pelicula(eventos: list, turnos: int = TURNOS_PELICULA) -> list:
                                    + ", ".join(str(x) for x in e[campo]))
                 if _n(e.get("cuentas_sin_total")):
                     out.append("      LA CUENTA NO SE PUDO HACER")
-                # EL RENGLON DE LA FICHA 55 §4.1, y es el que dice si el turno
-                # dejo algo del cliente sin contestar. Va con las PALABRAS del
-                # cliente, que es lo que se puede leer en voz alta contra la
-                # charla de abajo.
-                if e.get("sin_atender"):
-                    out.append("      EL CLIENTE PIDIO Y NADIE ATENDIO: "
-                               + " · ".join(str(x) for x in e["sin_atender"]))
-                elif _n(e.get("renglones")):
-                    out.append(f"      pedido: {_n(e.get('renglones'))} "
-                               f"renglones, todos atendidos")
             elif ev == "correccion_de_estado":
                 out.append(f"      SE LE CORRIGIO: {e.get('campo')} · se le "
                            f"devolvio el dato y se le pidio de nuevo")
