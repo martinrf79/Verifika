@@ -172,7 +172,7 @@ def _post(url: str, tok: str, cuerpo: dict) -> dict:
 # en `tests/test_numero_motor.py`, que compara las dos listas.
 CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "puntuales",
           "veredictos", "filas", "rescates", "vacios", "sin_dato", "campos",
-          "campos_tocados", "fichas", "temas", "temas_sin_resolver", "compat",
+          "campos_tocados", "correcciones", "fichas", "temas", "temas_sin_resolver", "compat",
           "compat_sin_dato", "envios", "envios_sin_clasificar", "criterio",
           "criterio_sin_resolver", "cuentas", "cuentas_sin_total")
 
@@ -843,6 +843,9 @@ def pelicula(eventos: list, turnos: int = TURNOS_PELICULA) -> list:
                                    + ", ".join(str(x) for x in e[campo]))
                 if _n(e.get("cuentas_sin_total")):
                     out.append("      LA CUENTA NO SE PUDO HACER")
+            elif ev == "correccion_de_estado":
+                out.append(f"      SE LE CORRIGIO: {e.get('campo')} · se le "
+                           f"devolvio el dato y se le pidio de nuevo")
             elif ev == "afirmo_sin_mirar":
                 out.append("      AFIRMO SIN MIRAR: "
                            + ", ".join(str(x) for x in e.get("campos") or [])

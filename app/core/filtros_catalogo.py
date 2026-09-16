@@ -535,6 +535,46 @@ def leyenda(tienda_id: str) -> str:
     return "\n\n".join(partes)
 
 
+
+def que_dice_la_fuente_de(campo: str, tienda_id: str) -> str:
+    """LO QUE LA FUENTE TIENE DE UN CAMPO, en un renglon, para UN campo solo.
+
+    `leyenda` arma esto para el tablero entero y con presupuesto: entra el que
+    mas contesta por caracter y el resto se cae. Esta funcion contesta la otra
+    pregunta, que es de a uno y sin presupuesto: **de ESTE campo, ¿que tiene la
+    fuente?**
+
+    PARA QUE SE USA, y es lo unico que la justifica: cuando el modelo AFIRMA
+    sobre un campo que no miro, el codigo le devuelve el dato en vez de dejarlo
+    pasar. Medido en WhatsApp el 16-sep: el bot contesto "no contamos con
+    informacion sobre el pais de fabricacion" con el campo cargado en 880 de
+    880, y con ese renglon en el tablero que el mismo no uso. La negacion la
+    tiene que escribir el codigo y el modelo copiarla —FICHA 55 §1-bis—, y para
+    eso el codigo tiene que poder decir, de un campo cualquiera, que hay.
+
+    Cadena vacia si el campo no existe en la fuente. Ahi la negacion del modelo
+    era correcta y no hay nada que corregir.
+    """
+    voc = vocabulario(tienda_id)
+    d = voc.get(campo)
+    if not d:
+        return ""
+    r = recorrida(tienda_id)
+    total = r.get("productos") or 0
+    llenos = d.get("llenos") or 0
+    if d["tipo"] == "numero":
+        lo, hi = _rango(campo, d, r)
+        cuerpo = (f"va de {lo} a {hi}" if lo is not None else "es un numero")
+    elif d["tipo"] == "si_no":
+        cuerpo = "es de si o no, y se filtra con `igual si` o `igual no`"
+    elif d.get("valores"):
+        cuerpo = "la fuente escribe: " + " | ".join(d["valores"])
+    else:
+        cuerpo = ("tiene demasiados valores distintos para listarlos; se busca "
+                  "con `contiene`")
+    return f"{campo} ({llenos} de {total} productos lo tienen cargado): {cuerpo}"
+
+
 def _rango(campo: str, d: dict, r: dict):
     """El minimo y el maximo de un campo numerico. `precio_ars` no pasa por el
     vocabulario -es campo interno de la pasada- y su rango ya lo tiene la

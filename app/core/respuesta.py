@@ -411,7 +411,7 @@ def _informe_en_blanco() -> dict:
     # `campos_tocados` es el estado que la guarda de `guardas_salida` cruza
     # contra la respuesta: los campos que el turno miro de verdad. No es lo
     # mismo que `campos`, que son los que NO se pudieron aplicar.
-    return {"campos_tocados": set(),
+    return {"campos_tocados": set(), "correcciones": 0,
             "vueltas": 0, "llamadas": 0, "consultas": 0, "repetidas": 0,
             "puntuales": 0, "veredictos": [], "filas": 0, "rescates": 0,
             "vacios": 0, "sin_dato": 0, "campos": [], "fichas": 0,
@@ -562,6 +562,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     y que condicion no se pudo aplicar-. Nada de esto se puede reconstruir
     despues desde afuera: si no sale del turno, no existe.
     """
+    from app.core import guardas_salida as gs
     from app.core import motor as MT
     from app.core.llm_reintento import _cliente, _modelo
     informe = _informe_en_blanco()
@@ -614,8 +615,22 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     # que seguir valiendo en la ultima, que es donde el modelo escribe.
     cuenta: dict = {}
     hallazgos: list = []
+    # LA CORRECCION VIAJA APARTE DE LOS HALLAZGOS, y no es cosmetica: los
+    # hallazgos salen bajo el encabezado "LO QUE DEVOLVIO TU BUSQUEDA", y la
+    # correccion no es un retorno de busqueda —es el codigo diciendole que lo
+    # que escribio no se sostiene—. Mezclarlas seria la segunda descripcion de
+    # dos cosas distintas bajo un mismo titulo.
+    correccion = ""
     pedidas: set = set()
-    for vuelta in range(VUELTAS_DE_BUSQUEDA + 1):
+    # EL LOOP ES UN `while` DESDE EL 16-sep, y el motivo es uno solo: la
+    # correccion de estado puede pedir UNA vuelta mas. `tope` son las vueltas
+    # que llevan tablero, o sea en las que se puede buscar; siempre hay una
+    # ultima sin tablero, que es la de contestar. Un turno que no se corrige
+    # cuesta exactamente lo que costaba.
+    tope = VUELTAS_DE_BUSQUEDA
+    vuelta = 0
+    corregido = False
+    while vuelta <= tope:
         informe["vueltas"] += 1
         # LA FUENTE VIAJABA DOS VECES, y era un bug de cableado, no una
         # eleccion (12-sep-2026). `msgs` ya llevaba un turno de usuario con el
@@ -628,12 +643,17 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             partes.append(fuente)
         if hallazgos:
             partes.append(_COMO_SE_LEE + "\n".join(hallazgos))
+        # LA CORRECCION, PEGADA AL MENSAJE. Va ultima de la fuente y antes del
+        # pedido del cliente, que es donde queda fresca: lo que se le esta
+        # pidiendo es que reescriba, y eso se lee justo antes de escribir.
+        if correccion:
+            partes.append(correccion)
         # EL MENSAJE, ULTIMO. Que sea lo ultimo que lee antes de escribir.
         partes.append("Contesta ESTE mensaje del cliente: " + (mensaje or ""))
         # En la ultima vuelta la herramienta ya no viaja: es la vuelta de
         # CONTESTAR. Sin esto el modelo puede quedarse buscando para siempre y
         # el cliente sin respuesta.
-        tools = herramientas if (herramientas and vuelta < VUELTAS_DE_BUSQUEDA) else None
+        tools = herramientas if (herramientas and vuelta < tope) else None
         # Y ES LA MISMA LINEA LA QUE DECIDE LOS MOLDES, a proposito: donde hay
         # herramienta se busca, y donde no hay, se contesta. Que las dos cosas
         # salgan de la misma condicion hace imposible que se desincronicen.
@@ -675,8 +695,48 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
 
         llamadas = list(getattr(msg, "tool_calls", None) or [])
         if not llamadas:
+            salida = _parsear(msg.content or "")
+            # ── LA CORRECCION DE ESTADO, Y ES LO QUE LA GUARDA HACE AHORA ──
+            #
+            # Hasta el 16-sep esto miraba y nada mas. Lo que mostro la primera
+            # charla real con la guarda puesta es que mirar no alcanzaba: el
+            # renglon salio correcto —`pais_fabricacion`, con 19 campos
+            # tocados— y el cliente leyo la mentira igual.
+            #
+            # NO SE TIRA LA RESPUESTA: se le devuelve el dato y se le pide de
+            # nuevo. El motivo entero, con el caso, esta en
+            # `guardas_salida.correccion_de_estado`.
+            #
+            # UNA SOLA VEZ POR TURNO. La segunda seria perseguir al modelo
+            # hasta que diga lo que queremos.
+            if not corregido and informe["correcciones"] < gs.TOPE_CORRECCIONES:
+                aviso = gs.correccion_de_estado(
+                    salida.get("texto") or "", informe["campos_tocados"],
+                    tienda_id, trace_id)
+                if aviso:
+                    corregido = True
+                    informe["correcciones"] += 1
+                    correccion = aviso
+                    # LA VUELTA QUE VIENE LLEVA TABLERO, y es la unica forma
+                    # de que la correccion sirva: se le pide que busque el
+                    # campo que no busco, asi que tiene que poder buscar.
+                    #
+                    # ES `+2` Y NO `+1`, y el test lo cazo: el tablero viaja
+                    # mientras `vuelta < tope`, asi que para que la vuelta
+                    # `vuelta+1` lo lleve, el tope tiene que quedar en
+                    # `vuelta+2`. Con `+1` la correccion viajaba a una vuelta
+                    # sin tablero, o sea que se le devolvia el dato y no se le
+                    # daba con que buscarlo.
+                    #
+                    # Y LA DE DESPUES NO LO LLEVA, que es lo que cierra el
+                    # turno: si en la vuelta de correccion busca, la siguiente
+                    # es la de contestar. Peor caso, cuatro llamadas en vez de
+                    # tres, y solo en el turno que se corrige.
+                    tope = vuelta + 2
+                    vuelta += 1
+                    continue
             informe["fichas"] = len(fichas)
-            return _parsear(msg.content or ""), fichas, envios, cuenta, informe
+            return salida, fichas, envios, cuenta, informe
 
         for c in llamadas:
             informe["llamadas"] += 1
@@ -727,6 +787,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                 # lleno entran holgadas en 1.400.
                 "Buscaste: " + json.dumps(pidio, ensure_ascii=False)[:1400]
                 + "\nVolvio: " + _retorno_que_entra(r, trace_id))
+        vuelta += 1
     informe["fichas"] = len(fichas)
     return {}, fichas, envios, cuenta, informe
 
@@ -911,6 +972,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              rescates=motor["rescates"], vacios=motor["vacios"],
              sin_dato=motor["sin_dato"], campos=motor["campos"][:8],
              campos_tocados=len(motor["campos_tocados"]),
+             correcciones=motor["correcciones"],
              fichas=motor["fichas"], temas=motor["temas"][:6],
              temas_sin_resolver=motor["temas_sin_resolver"][:4],
              compat=motor["compat"][:6],
@@ -975,18 +1037,6 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
             # LA RESPUESTA CON PLATA INVENTADA NO SALE. No hay forma honesta de
             # corregirla renglon por renglon: el numero ya contamino la frase.
             texto = settings.VERIFIKA_FALLBACK_MESSAGE
-        # ── LA GUARDA DE ESTADO, Y NACE MUDA ────────────────────────────
-        #
-        # Mira lo que la de arriba no puede mirar: las AFIRMACIONES. El 15 y el
-        # 16-sep el bot contesto que no tiene el pais de fabricacion con el
-        # campo cargado en 880 de 880, y esa frase no lleva ni una cifra, asi
-        # que la guarda de plata la deja pasar entera.
-        #
-        # NO TOCA EL TEXTO todavia, a proposito: el motivo esta entero en
-        # `guardas_salida.afirmo_sin_mirar`. Escribe su renglon y el numero
-        # sale por la pelicula; con ese numero se decide si frena.
-        gs.afirmo_sin_mirar(texto, motor.get("campos_tocados"), tienda_id,
-                            trace_id)
         texto = gs.con_saludo_inicial(gs.sin_saludo_del_modelo(texto), negocio) \
             if not history else gs.sin_saludo_del_modelo(texto)
 

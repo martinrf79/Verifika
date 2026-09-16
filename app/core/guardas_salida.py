@@ -268,3 +268,94 @@ def afirmo_sin_mirar(texto: str, tocados, tienda_id: str,
         log.warning("afirmo_sin_mirar", trace_id=trace_id,
                     campos=sin_respaldo[:6], tocados=len(tocados or ()))
     return sin_respaldo
+
+
+# CUANTAS PALABRAS TIENE QUE TENER UN CAMPO PARA QUE SE LO CORRIJA, y este
+# numero es todo el recorte entre ver y actuar.
+#
+# La guarda VE todos los campos: ese es el renglon y no se toca, porque es el
+# numero con el que se decide. Lo que se CORRIGE es un subconjunto, y el corte
+# es de forma: un campo de una palabra —`color`, `marca`, `stock`, `modelo`,
+# `peso`— es una palabra comun del castellano comercial, y "te lo puedo buscar
+# por color" no es una afirmacion sobre la fuente. Uno de dos palabras
+# —`pais_fabricacion`, `memoria_video`, `garantia_meses`— es jerga de la
+# fuente: si el modelo lo escribe es porque esta hablando de ESE campo.
+#
+# ES UN CORTE DE FORMA Y NO DE VOCABULARIO, que es lo que lo hace admisible
+# bajo la regla 4 de la FICHA 55: no hay una lista de campos elegidos a mano
+# que alguien tenga que mantener. Se cuenta cuantas partes tiene el nombre que
+# la fuente ya le puso.
+PALABRAS_PARA_CORREGIR = 2
+
+# Cuantas correcciones se hacen por turno. UNA. Cada una cuesta una vuelta al
+# modelo, y una segunda seria perseguir al modelo hasta que diga lo que
+# queremos, que es otra cosa y no se hace.
+TOPE_CORRECCIONES = 1
+
+
+def para_corregir(sin_respaldo, tienda_id: str) -> tuple:
+    """El campo que vale la pena devolverle al modelo, con lo que la fuente
+    dice de el. `(None, "")` si no hay ninguno.
+
+    DOS FILTROS Y NINGUNO MAS. Que el nombre tenga varias partes, que es el
+    recorte de arriba. Y que la fuente TENGA algo escrito de ese campo: si no
+    tiene, la negacion del modelo era correcta y no hay nada que corregir. Ese
+    segundo filtro no es cosmetico —es lo que evita que el codigo le discuta al
+    modelo una verdad—.
+    """
+    from app.core.filtros_catalogo import que_dice_la_fuente_de
+    for campo in sin_respaldo or ():
+        if len(str(campo).split("_")) < PALABRAS_PARA_CORREGIR:
+            continue
+        dice = que_dice_la_fuente_de(str(campo), tienda_id)
+        if dice:
+            return str(campo), dice
+    return None, ""
+
+
+def correccion_de_estado(texto: str, tocados, tienda_id: str,
+                         trace_id: str = "") -> str:
+    """EL BLOQUE QUE VUELVE AL MODELO cuando afirmo sobre un campo que no miro.
+    Cadena vacia si no hay nada que corregir.
+
+    POR QUE DEVOLVER EL DATO Y NO TIRAR LA RESPUESTA. Tirarla deja al cliente
+    sin contestar por una frase de mas, que es un remedio peor: la guarda de
+    plata puede hacerlo porque una cifra inventada contamina el mensaje entero,
+    y una afirmacion sobre un campo no. Y editar la frase esta prohibido: la
+    prosa es del modelo, y cortarla por palabras es el solver de fragmentos que
+    se borro el 2-ago.
+
+    ASI QUE SE HACE LO QUE LA FICHA 55 §1-bis YA DECIDIO: la negacion la escribe
+    el codigo y el modelo la COPIA. El mecanismo no es nuevo —es el hueco de
+    valor, que ya funciona y aparecio solo en la tanda del 13-sep— aplicado a lo
+    que el modelo AFIRMA en vez de a lo que BUSCA.
+
+    EL CASO, medido en WhatsApp el 16-sep-2026 a las 12:05 UTC. El cliente pidio
+    seis productos con "las menos partes chinas posibles". El modelo mando
+    cuatro consultas SIN una sola condicion —tiro la restriccion entera— y
+    contesto "no contamos con informacion sobre el pais de fabricacion", con el
+    campo cargado en 880 de 880 y con sus cinco valores en el tablero que el
+    mismo tenia delante. Y esa negacion falsa se llevo puesto el resto del
+    turno: no dio un solo precio de las veinte fichas que habia traido, no pidio
+    la cuenta del setenta treinta, y no marco que el cliente nombro un teclado
+    que no habia pedido. **No fueron cuatro defectos: fue uno, y los otros tres
+    colgaban de el.**
+    """
+    sin = afirmo_sin_mirar(texto, tocados, tienda_id, trace_id)
+    if not sin:
+        return ""
+    campo, dice = para_corregir(sin, tienda_id)
+    if not campo:
+        return ""
+    log.warning("correccion_de_estado", trace_id=trace_id, campo=campo)
+    return (
+        "CORRECCION DEL CODIGO, y es un dato de la fuente, no una opinion.\n"
+        f"En lo que escribiste afirmaste sobre `{campo}`, y en este turno no lo "
+        "consultaste ni una vez. La fuente SI lo tiene:\n"
+        f"  {dice}\n"
+        "Si el cliente pidio algo sobre ese campo, pedilo por el motor con una "
+        "condicion y con una de esas palabras. Si volves a decir que no lo "
+        "tenemos, le estas mintiendo al cliente.\n"
+        "Y el resto del pedido se contesta IGUAL: los precios que ya volvieron, "
+        "los envios que ya se cotizaron y la cuenta si la pidio. Una condicion "
+        "que no se pueda cumplir se dice en un renglon y no cancela nada.")
