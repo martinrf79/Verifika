@@ -408,7 +408,11 @@ def _informe_en_blanco() -> dict:
     cinco por defecto- estan puestas a ojo. Este renglon es lo que permite
     moverlas mirando, y por eso va antes que cualquier arreglo de robustez.
     """
-    return {"vueltas": 0, "llamadas": 0, "consultas": 0, "repetidas": 0,
+    # `campos_tocados` es el estado que la guarda de `guardas_salida` cruza
+    # contra la respuesta: los campos que el turno miro de verdad. No es lo
+    # mismo que `campos`, que son los que NO se pudieron aplicar.
+    return {"campos_tocados": set(),
+            "vueltas": 0, "llamadas": 0, "consultas": 0, "repetidas": 0,
             "puntuales": 0, "veredictos": [], "filas": 0, "rescates": 0,
             "vacios": 0, "sin_dato": 0, "campos": [], "fichas": 0,
             "temas": [], "temas_sin_resolver": [], "compat": [],
@@ -428,6 +432,17 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
     """
     for c in (consultas or []):
         informe["consultas"] += 1
+        # LOS CAMPOS QUE ESTA CONSULTA MIRO. Es el estado con el que se juzga
+        # despues si la respuesta afirmo sobre algo que el turno nunca tuvo
+        # delante: un campo que entro por una condicion o por el orden ya
+        # volvio con su dato o con el motivo de por que no.
+        for cond in (c or {}).get("condiciones") or []:
+            campo = str((cond or {}).get("campo") or "")
+            if campo:
+                informe["campos_tocados"].add(campo)
+        orden = str(((c or {}).get("ordenar_por") or {}).get("campo") or "")
+        if orden:
+            informe["campos_tocados"].add(orden)
         # CUANTAS VECES DECLARO QUE EL CLIENTE NOMBRO UNA COSA. Sin este numero
         # no hay forma de saber si `busco` se usa: la ambiguedad podria estar
         # muerta -el modelo no lo declara nunca- y el informe se veria igual,
@@ -483,6 +498,17 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
         informe["cuentas"] += 1
     elif _cta.get("sin_total"):
         informe["cuentas_sin_total"] += 1
+    # EL OTRO LADO, Y SIN EL LA GUARDA SERIA UN GENERADOR DE FALSOS
+    # POSITIVOS: un campo tambien le llega al modelo adentro de la ficha, sin
+    # que ninguna consulta lo haya nombrado. Hablar de la garantia de un
+    # teclado cuya ficha trae `garantia_meses` no es afirmar sin mirar.
+    for res in (r or {}).get("resultados") or []:
+        for fila in res.get("filas") or []:
+            informe["campos_tocados"].update(
+                str(k) for k, v in (fila or {}).items()
+                if v not in (None, "") and not isinstance(v, dict))
+            informe["campos_tocados"].update(
+                str(k) for k in (fila or {}).get("specs") or ())
     for res in (r or {}).get("resultados") or []:
         veredicto = str(res.get("veredicto") or "")
         filas = len(res.get("filas") or [])
@@ -884,6 +910,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              veredictos=motor["veredictos"][:12], filas=motor["filas"],
              rescates=motor["rescates"], vacios=motor["vacios"],
              sin_dato=motor["sin_dato"], campos=motor["campos"][:8],
+             campos_tocados=len(motor["campos_tocados"]),
              fichas=motor["fichas"], temas=motor["temas"][:6],
              temas_sin_resolver=motor["temas_sin_resolver"][:4],
              compat=motor["compat"][:6],
@@ -948,6 +975,18 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
             # LA RESPUESTA CON PLATA INVENTADA NO SALE. No hay forma honesta de
             # corregirla renglon por renglon: el numero ya contamino la frase.
             texto = settings.VERIFIKA_FALLBACK_MESSAGE
+        # ── LA GUARDA DE ESTADO, Y NACE MUDA ────────────────────────────
+        #
+        # Mira lo que la de arriba no puede mirar: las AFIRMACIONES. El 15 y el
+        # 16-sep el bot contesto que no tiene el pais de fabricacion con el
+        # campo cargado en 880 de 880, y esa frase no lleva ni una cifra, asi
+        # que la guarda de plata la deja pasar entera.
+        #
+        # NO TOCA EL TEXTO todavia, a proposito: el motivo esta entero en
+        # `guardas_salida.afirmo_sin_mirar`. Escribe su renglon y el numero
+        # sale por la pelicula; con ese numero se decide si frena.
+        gs.afirmo_sin_mirar(texto, motor.get("campos_tocados"), tienda_id,
+                            trace_id)
         texto = gs.con_saludo_inicial(gs.sin_saludo_del_modelo(texto), negocio) \
             if not history else gs.sin_saludo_del_modelo(texto)
 

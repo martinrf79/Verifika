@@ -92,8 +92,11 @@ def test_los_nombres_de_los_eventos_son_los_que_el_turno_escribe():
     que existir en el codigo que corre; si uno se renombra, esto se cae acá y
     no en silencio sobre produccion."""
     fuentes = ""
+    # `guardas_salida` entro el 16-sep con la guarda de estado: es la tercera
+    # obligacion del camino vivo y escribe su propio renglon, asi que tiene que
+    # estar del lado que el candado mira.
     for f in ("app/core/respuesta.py", "app/core/motor.py",
-              "app/core/orchestrator.py"):
+              "app/core/orchestrator.py", "app/core/guardas_salida.py"):
         with open(f, encoding="utf-8") as fh:
             fuentes += fh.read()
     for ev in EVENTOS_PELICULA:

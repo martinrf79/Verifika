@@ -172,7 +172,7 @@ def _post(url: str, tok: str, cuerpo: dict) -> dict:
 # en `tests/test_numero_motor.py`, que compara las dos listas.
 CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "puntuales",
           "veredictos", "filas", "rescates", "vacios", "sin_dato", "campos",
-          "fichas", "temas", "temas_sin_resolver", "compat",
+          "campos_tocados", "fichas", "temas", "temas_sin_resolver", "compat",
           "compat_sin_dato", "envios", "envios_sin_clasificar", "criterio",
           "criterio_sin_resolver", "cuentas", "cuentas_sin_total")
 
@@ -671,7 +671,11 @@ EVENTOS_PELICULA = (
     "message_received", "prompt_armado", "motor_pedido", "motor_buscar",
     "retorno_recortado", "motor_turno", "turno_ok", "turno_sin_buscar",
     "tipo_vacio", "respuesta_sin_modelo", "motor_argumentos_rotos",
-    "respuesta_modelo_error", "antijailbreak_bloqueo")
+    "respuesta_modelo_error", "antijailbreak_bloqueo",
+    # LA GUARDA DE ESTADO, Y NACE MUDA: su unico efecto es este renglon. Va en
+    # la pelicula porque es donde se decide si algun dia frena —hace falta ver
+    # el campo Y la respuesta que lo nombro, y eso no se lee de un contador—.
+    "afirmo_sin_mirar")
 
 # Cuantos turnos se cuentan por defecto. Tres alcanzan para una prueba por
 # WhatsApp y entran en un comentario del issue; el informe de arriba sigue
@@ -839,9 +843,18 @@ def pelicula(eventos: list, turnos: int = TURNOS_PELICULA) -> list:
                                    + ", ".join(str(x) for x in e[campo]))
                 if _n(e.get("cuentas_sin_total")):
                     out.append("      LA CUENTA NO SE PUDO HACER")
+            elif ev == "afirmo_sin_mirar":
+                out.append("      AFIRMO SIN MIRAR: "
+                           + ", ".join(str(x) for x in e.get("campos") or [])
+                           + f" · el turno tuvo {_n(e.get('tocados'))} campos "
+                           f"delante")
             elif ev in ("turno_sin_buscar", "tipo_vacio",
                         "respuesta_sin_modelo", "motor_argumentos_rotos",
-                        "respuesta_modelo_error", "antijailbreak_bloqueo"):
+                        "respuesta_modelo_error", "antijailbreak_bloqueo",
+    # LA GUARDA DE ESTADO, Y NACE MUDA: su unico efecto es este renglon. Va en
+    # la pelicula porque es donde se decide si algun dia frena —hace falta ver
+    # el campo Y la respuesta que lo nombro, y eso no se lee de un contador—.
+    "afirmo_sin_mirar"):
                 out.append(f"      AVISO    {ev} "
                            + str(e.get("error") or e.get("motivo") or "")[:140])
         if fin:
