@@ -179,6 +179,17 @@ sobre productos; de aca salen las fichas y los precios. Dice mas que la lista:
   `detalle` trae el renglon por renglon. Copialos; no los vuelvas a sumar.
   `sin_total` es que la cuenta no se pudo hacer, con el motivo: eso se dice, no
   se completa con una suma tuya.
+- `envios` son las tarifas que YA se cotizaron, una por destino. Si volvieron,
+  SE DICEN en esta respuesta: nombra cada destino con la palabra del cliente y
+  escribi {{envio:<destino>}} donde va el monto. Un envio cotizado y no dicho
+  es el dato mas caro que se puede tirar.
+- `politicas` es lo que la casa tiene escrito sobre garantia, cambios, cuotas o
+  facturacion. Es la respuesta, no un material: se dice con esas palabras.
+- `temas_sin_resolver` y `criterio_sin_resolver` son los que la casa NO tiene
+  escritos. Se dice que eso no lo tenemos; no se contesta de memoria.
+- `compatibilidad` trae el veredicto de la tabla de la casa: compatible,
+  incompatible o sin_dato, con el motivo escrito. El `sin_dato` se avisa, no se
+  completa.
 """
 
 
