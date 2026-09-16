@@ -25,6 +25,53 @@ fue con el agua fue el contrato del turno, y eso es lo que vuelve, chico.
 
 ---
 
+## 1-bis. LAS DOS ACTIVIDADES DEL MODELO, Y NINGUNA MAS
+
+**Decision de Martin, 16-sep-2026.** El modelo hace dos cosas:
+
+1. **TRADUCE.** Lee el mensaje del cliente y llena la planilla con SUS
+   palabras: que pide, que intencion trae. Es lo unico que el codigo no puede
+   hacer -"un rectangulo con teclas" es `teclado`- y es la mitad del punto 1.
+2. **REDACTA Y VENDE.** Escribe la respuesta con los cinco atributos de venta
+   de la FICHA 52 §5, **y TODOS los datos que escribe salen del codigo.**
+
+**TODOS QUIERE DECIR TODOS**, y la lista no es una enumeracion de casos —que
+es lo que se desincroniza— sino una sola regla: **si el cliente lo puede
+verificar contra la tienda, salio del codigo.** Producto, precio, stock,
+plazo, tarifa, total, politica, veredicto de compatibilidad **y tambien las
+NEGACIONES**: "eso no lo tenemos", "no puedo filtrar por ahi", "no lo
+vendemos".
+
+**DONDE ESTA EL LIMITE, y escribirlo es lo que evita que esto se lea como una
+promesa imposible.** El dato es del codigo; **la PROSA es del modelo**: el
+orden de las frases, los conectores, el tono y la pregunta final. Si la prosa
+tambien saliera del codigo volvemos al solver de fragmentos que se borro el
+2-ago —`DECISIONES.md` #10— y el bot deja de vender.
+
+**COMO SE LOGRA, y no es un mecanismo nuevo: es `DECISIONES.md` #11**, los
+cuatro niveles de atadura, escrito el 19-ago y construido a medias.
+
+    enum                 el modelo solo puede NOMBRAR lo que existe   · vivo
+    bloque sellado       lo que afirma plata o politica vuelve YA
+                         ESCRITO del codigo y se pega                 · a medias
+    ancla por afirmacion toda oracion que afirma apunta a un dato
+                         que volvio; los conectores son libres        · NO existe
+    lo prohibido         la lista corta de lo que no se dice nunca    · vivo
+
+**LA PIEZA QUE FALTA ES LA TERCERA, y la FICHA 52 §18 ya la tiene escrita como
+la segunda regla de la guarda:** si el texto nombra un producto, un precio, un
+plazo, una politica o una cuenta y NO hubo retorno, no sale. Hoy la guarda
+mira cifras —`numeros.py`— y nada mas.
+
+**Y LA NEGACION SE RESUELVE DANDOLA VUELTA, que es lo barato:** el motivo de
+por que algo no se pudo cumplir YA vuelve escrito del motor —el hueco de
+valor, `sin_campo`, `no_cumple`, `sin_dato`—. El modelo lo COPIA, no lo
+redacta. Asi la negacion deja de ser prosa y pasa a ser un dato, que es como
+se puede verificar. **Perseguir la frase con una lista de palabras no se hace:
+ya fracaso tres veces.**
+
+---
+
 ## 2. LO QUE SE MIDIO EN VIVO, 15 y 16-sep
 
 Cuatro turnos por WhatsApp sobre UN pedido de dos auriculares, dos mouse y dos
@@ -62,7 +109,7 @@ de las tres cascadas que este repo ya pago: los 116 regex, las 70 flags y los
 | 1 | catalogo da cinco opciones, la cuenta exige uno | la cuenta acepta una LINEA por rubro con regla escrita |
 | 2 | la memoria guarda 20 vistos y muestra 8, en silencio | el corte se dice o no existe |
 | 3 | el retorno muere al terminar el turno | lo que volvio sobrevive **· hecho para la cuenta, 15-sep** |
-| 4 | nadie controla lo que el modelo AFIRMA de la fuente | guarda de ESTADO: si no se consulto el campo, no se niega |
+| 4 | nadie controla lo que el modelo AFIRMA de la fuente | el ancla por afirmacion del §1-bis; la negacion la escribe el codigo y el modelo la copia |
 | 5 | una condicion filtra o no filtra, no hay grado | la condicion se puede pedir como PREFERENCIA: ordena, no descarta |
 | 6 | `contradicciones` lo declara el modelo y no lo lee nadie | el codigo cruza lo pedido contra lo repartido |
 | 7 | dos vueltas no alcanzan cuando hay cuenta | con el 1 resuelto, la cuenta entra en la misma llamada |
