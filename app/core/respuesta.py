@@ -72,6 +72,15 @@ settings = get_settings()
 # cosas: el prompt le decia al modelo que escribir el total mataba la
 # respuesta. Una enumeracion de casos se desincroniza sola cada vez que se
 # enchufa una boca nueva; una regla de procedencia, no.
+#
+# EL PARRAFO DE `busco` NO SE MUDA AL ESQUEMA, y hay medicion: el 12-sep, con
+# `busco` viviendo SOLO en la descripcion de la herramienta, 0 de 9 consultas
+# lo declararon y la ambiguedad no se podia disparar nunca. Vara en
+# `tests/test_turno_nuevo.py`. ESTA NOTA ES PARA EL QUE EDITA, y hasta el
+# 16-sep vivia ADENTRO del prompt: el modelo la leia en cada vuelta —tres por
+# turno— con una fecha, un numero de medicion y la ruta de un test adentro.
+# Nada de eso lo ayuda a contestar. Lo que le habla al modelo va en el string;
+# lo que nos habla a nosotros, aca.
 _MOLDE_REGLAS = """Sos el vendedor. Contestas UN mensaje de WhatsApp.
 
 Un campo que la fuente no tiene se dice, y NO cancela el resto: precios, envio
@@ -84,11 +93,6 @@ TODA consulta lleva `busco`, y no es opcional: `uno` si el cliente nombro un
 producto puntual -"el K120", "esa notebook", "el teclado que me mostraste"-, y
 `varios` si pidio opciones, un rubro o un extremo. Con `uno`, si hay dos que le
 pegan igual te aviso y ahi le preguntas cual: elegir por el es inventar.
-
-ESTE PARRAFO NO SE MUDA AL ESQUEMA, y hay medicion: el 12-sep, con `busco`
-viviendo SOLO en la descripcion de la herramienta, 0 de 9 consultas lo
-declararon y la ambiguedad no se podia disparar nunca. Vara en
-`tests/test_turno_nuevo.py`.
 
 Traduci vos lo que el cliente dijo. "Un rectangulo con teclas" es la categoria
 `teclado`. "Algo acorde a la crisis" es ordenar por precio de menor a mayor.

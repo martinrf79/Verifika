@@ -135,3 +135,25 @@ def test_la_plata_la_nombran_las_bocas_que_la_devuelven():
         f"cambiaron las bocas que devuelven plata: {dan}. Si es a proposito, "
         f"`numeros` tiene que aceptar la procedencia nueva ANTES que el prompt "
         f"la prometa")
+
+
+def test_el_prompt_no_lleva_documentacion_adentro():
+    """LO QUE LE HABLA AL MODELO VA EN EL PROMPT; LO QUE NOS HABLA A NOSOTROS,
+    EN UN COMENTARIO.
+
+    Hasta el 16-sep `_REGLAS` llevaba adentro un parrafo que empezaba "ESTE
+    PARRAFO NO SE MUDA AL ESQUEMA, y hay medicion" y seguia con una fecha, un
+    resultado —0 de 9— y la ruta de un test del repo. Era una nota para el que
+    edita el codigo, y el modelo la leia en CADA vuelta, tres por turno. Nada
+    de eso lo ayuda a contestarle a un cliente.
+
+    Es barato y vuelve solo: la proxima vez que alguien justifique un renglon
+    del prompt, lo va a justificar adentro del prompt. Por eso es un candado y
+    no un arreglo.
+    """
+    from app.core.respuesta import _aparato
+    p = _aparato()
+    for rastro in ("tests/", ".py", "Vara en", "FICHA ", "hay medicion"):
+        assert rastro not in p, (
+            f"el prompt lleva '{rastro}' adentro: eso es documentacion del "
+            f"repo viajando al modelo en cada vuelta. Va en un comentario")
