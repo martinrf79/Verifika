@@ -210,11 +210,11 @@ BOCAS = (
 # se degrado de dos vueltas a cinco. Aca cambia una sola cosa, el verbo, y se
 # vuelve con git.
 _PUERTA = (
-    "ANOTA ACA TODO LO QUE TE PIDIO EL CLIENTE, y yo lo busco. Esto no es una "
-    "busqueda: es la traduccion de su mensaje. Si el mensaje trae cinco cosas, "
-    "las cinco entran en esta llamada, cada una en el campo que le toca.\n"
-    "LO QUE NO ANOTES NO EXISTE: no lo busco, no vuelve, y el cliente se queda "
-    "sin esa parte. Es el UNICO lugar del que salen las fichas y los precios.\n"
+    "ANOTA ACA TODO LO QUE TE PIDIO EL CLIENTE, y yo lo busco: si el mensaje "
+    "trae cinco cosas, las cinco entran en ESTA llamada, cada una en su "
+    "campo.\n"
+    "LO QUE NO ANOTES NO EXISTE: no lo busco y el cliente se queda sin esa "
+    "parte. Es el UNICO lugar del que salen las fichas y los precios.\n"
     "DONDE VA CADA COSA:\n")
 
 _CIERRE_DEL_INDICE = (

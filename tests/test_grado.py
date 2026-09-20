@@ -121,3 +121,39 @@ def test_una_preferencia_no_cuenta_como_condicion_incumplida(firestore_doble):
     assert r["veredicto"] == "no_existe"
     assert "de 1" in r["motivo"], (
         f"la preferencia se conto como condicion dura: {r['motivo']}")
+
+
+def test_el_ejemplo_del_tablero_dice_CUAL_de_los_dos(firestore_doble):
+    """MEDIDO VIVO EL 20-sep, y el defecto era del texto que escribi yo.
+
+    Con el grado ya deployado, las tres corridas declararon `pais_fabricacion
+    prefiere china` a un cliente que pidio las MENOS chinas. Es el operador al
+    reves: `prefiere` pide justo las que mas tienen.
+
+    LA CAUSA: el renglon ponia el ejemplo del cliente —"las menos partes
+    chinas posibles"— pegado a los dos operadores y sin decir a cual
+    correspondia. El modelo lo leyo al lado de `prefiere` y ato eso. Un
+    ejemplo que no dice cual es peor que no tener ejemplo: ancla al primero.
+    """
+    props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
+    d = props["consultas"]["items"]["properties"]["condiciones"]["description"]
+    bajo = d.lower()
+    i_evita, i_pref = bajo.find("evita"), bajo.find("prefiere")
+    assert i_evita > 0 and i_pref > 0
+    menos = bajo.find("las menos partes chinas")
+    assert menos > 0, "se fue el ejemplo del caso medido"
+    # el ejemplo tiene que nombrar `evita` ANTES que al proximo `prefiere`
+    assert 0 < bajo.find("evita", menos) < bajo.find("prefiere", menos), (
+        "el ejemplo no dice que 'las menos chinas' es `evita`")
+
+
+def test_el_reparto_manda_a_pedir_la_cuenta(firestore_doble):
+    """MEDIDO VIVO EL 20-sep: el reparto se declaro 3 de 3 y la cuenta 1 de 3.
+
+    El campo plano arreglo que el reparto VIAJE; lo que quedo abierto es que
+    sin `cuenta` no hay total sobre el cual repartir, y el modelo no tenia por
+    que saberlo. Se dice donde se declara el reparto, que es donde le hace
+    falta."""
+    props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
+    d = props["reparto_pago"]["description"].lower()
+    assert "cuenta" in d, "el reparto no avisa que necesita la cuenta"

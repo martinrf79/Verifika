@@ -195,9 +195,11 @@ def esquema(tienda_id: str) -> dict:
                                "te devuelvo los valores reales para que "
                                "corrijas.\n"
                                "`prefiere` y `evita` NO FILTRAN, ORDENAN: son "
-                               "el GRADO —'las menos partes chinas posibles'—. "
-                               "Vuelven TODOS y te digo cuantos cumplen. "
-                               "`no_contiene` es para cuando EXCLUYE."},
+                               "el GRADO, y MIRA CUAL: 'las menos partes "
+                               "chinas posibles' es `evita` china; "
+                               "'preferentemente Logitech' es `prefiere` "
+                               "logitech. Vuelven TODOS y te digo cuantos "
+                               "cumplen. `no_contiene` es para cuando EXCLUYE."},
             # SOLO LOS NUMERICOS, y el enum de los 41 que habia aca era caro
             # y ademas estaba mal: sobre una etiqueta -`color`, `bluetooth`- el
             # orden es alfabetico y no contesta ninguna pregunta de un cliente.
@@ -372,8 +374,9 @@ def esquema(tienda_id: str) -> dict:
                             "required": ["medio", "porcentaje"]},
                         "description": (
                             "Solo si reparte el pago: '70 transferencia 30 "
-                            "Mercado Pago'. Suman 100. El descuento lo "
-                            "aplico yo.")},
+                            "Mercado Pago'. Suman 100. El descuento lo aplico "
+                            "SOBRE LA CUENTA: mandá tambien `cuenta` con los "
+                            "ids, o no hay total que repartir.")},
                     "compatibilidad": {
                         "type": "array",
                         "items": {
@@ -443,9 +446,8 @@ def esquema(tienda_id: str) -> dict:
                         # IDEM: el indice ya dice que contesta y que la
                         # suma la hace el codigo.
                         "description": (
-                            "Los productos con su cantidad, por id o por el "
-                            "nombre que uso el cliente. Vuelve el total ya "
-                            "sumado —con envio y descuento— y el detalle.")}},
+                            "Vuelve el total ya sumado —con envio y "
+                            "descuento— y el detalle.")}},
                 "required": []},
         },
     }
