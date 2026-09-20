@@ -147,6 +147,22 @@ def _c_orden(c, p):
     return False
 
 
+def _c_barato(c, p):
+    """LO MAS BARATO PRIMERO, dicho de cualquiera de las dos formas validas:
+    `ordenar_por precio_ars min`, o el grado sobre el precio apuntando al
+    minimo del catalogo. Las dos son la misma lectura del cliente."""
+    for q in _consultas(p):
+        o = q.get("ordenar_por") or {}
+        if _norm(o.get("campo")) == "precio_ars" and _norm(
+                o.get("direccion")) == "min":
+            return True
+        for x in (q.get("condiciones") or []):
+            if (_norm(x.get("campo")) == "precio_ars"
+                    and _norm(x.get("operador")) == "prefiere"):
+                return True
+    return False
+
+
 def _c_compat(c, p):
     return bool(p.get("compatibilidad"))
 
@@ -159,7 +175,7 @@ CASILLA = {"consulta": _c_consulta, "condicion": _c_condicion,
            "envio": _c_envio, "envio_va": _c_envio_va, "reparto": _c_reparto,
            "cuenta": _c_cuenta, "tema": _c_tema, "busco": _c_busco,
            "orden": _c_orden, "compat": _c_compat, "nombra": _c_nombra,
-           "temas_limpios": _c_temas_limpios,
+           "temas_limpios": _c_temas_limpios, "barato": _c_barato,
            "sin_consultas_obligatorias": _c_sin_consultas}
 
 

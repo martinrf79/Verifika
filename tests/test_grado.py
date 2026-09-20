@@ -167,3 +167,42 @@ def test_el_reparto_NO_espera_a_la_cuenta(firestore_doble):
         "el reparto no dice que se anota sin esperar a la cuenta")
     assert "o no hay total que repartir" not in d, (
         "volvio el acoplamiento que midio 0 de 3")
+
+
+def test_el_grado_sobre_un_NUMERO_ordena_por_cercania(firestore_doble):
+    """EL AGUJERO DEL OPERADOR, medido en produccion el 20-sep.
+
+    A "acorde a la crisis" el modelo escribio `precio_ars prefiere 8500` —8500
+    es el minimo del catalogo, que la leyenda le dice—, o sea "preferi los que
+    estan cerca del mas barato". LA TRADUCCION ERA CORRECTA. Lo que estaba mal
+    era el codigo: el grado comparaba TEXTO, asi que buscaba precios que
+    contuvieran la cadena "8500" y el orden salia basura, en silencio.
+
+    Es el gemelo de la guarda que ya existia del otro lado: `mayor` y `menor`
+    sobre un campo de texto se rechazan con motivo escrito. El grado sobre un
+    numero NO se rechaza, porque si significa algo: es una distancia.
+    """
+    from app.core.filtros_catalogo import _preferencia_numerica
+    prods = [{"id": "A", "precio_ars": 100000}, {"id": "B"},
+             {"id": "C", "precio_ars": 9000}]
+    orden, con, sin = _preferencia_numerica(prods, "precio_ars",
+                                            "prefiere", "8500")
+    assert [p["id"] for p in orden][:2] == ["C", "A"], orden
+    assert (con, sin) == (2, 1)
+    lejos, _, _ = _preferencia_numerica(prods, "precio_ars", "evita", "8500")
+    assert [p["id"] for p in lejos][0] == "A"
+
+
+def test_el_renglon_del_numero_NO_dice_que_cumplen(firestore_doble):
+    """Sobre un numero no se cumple, se esta mas cerca o mas lejos. Decirle al
+    modelo "171 de 171 lo cumplen" de un precio es mentirle con la forma de un
+    dato, que es peor que no decirle nada."""
+    r = MT.buscar([{"categoria": "notebook", "busco": "varios", "cuantos": 3,
+                    "condiciones": [{"campo": "precio_ars",
+                                     "operador": "prefiere",
+                                     "valor": "8500"}]}], TIENDA, "t")
+    m = r["resultados"][0]["motivo"].lower()
+    assert "cercania" in m, m
+    assert "cumplen" not in m, f"le dice que cumplen un numero: {m}"
+    precios = [f["precio_ars"] for f in r["resultados"][0]["filas"]]
+    assert precios == sorted(precios), f"no ordeno por precio: {precios}"

@@ -902,6 +902,16 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     # condicion que la fuente NO PUDO cumplir.
     for pref in r.get("preferencias") or []:
         donde = "primero" if pref["operador"] == "prefiere" else "al final"
+        if pref.get("por") == "cercania":
+            # SOBRE UN NUMERO NO SE CUMPLE, SE ESTA CERCA. Decir "171 de 171
+            # lo cumplen" de un precio seria mentirle al modelo con la forma
+            # de un dato.
+            cerca = "mas cerca" if pref["operador"] == "prefiere" else "mas lejos"
+            notas.append(
+                f"{pref['campo']} NO se filtro, se ORDENO por cercania a "
+                f"{pref['valor']}: primero los que estan {cerca}. Estan "
+                f"TODOS, y ninguno 'cumple' ese numero: es un orden")
+            continue
         notas.append(
             f"{pref['campo']} '{pref['valor']}' NO se filtro, se ORDENO: "
             f"{pref['cumplen']} de {pref['evaluados']} lo cumplen y van "

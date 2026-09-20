@@ -150,13 +150,7 @@
         },
         {
           "n": "traduce 'acorde a la crisis' a un orden por precio",
-          "tipo": "orden",
-          "campo": [
-            "precio_ars"
-          ],
-          "direccion": [
-            "min"
-          ]
+          "tipo": "barato"
         }
       ]
     },
@@ -207,13 +201,7 @@
         },
         {
           "n": "traduce 'acorde a la crisis' a un orden por precio",
-          "tipo": "orden",
-          "campo": [
-            "precio_ars"
-          ],
-          "direccion": [
-            "min"
-          ]
+          "tipo": "barato"
         },
         {
           "n": "EL VINCULO en los tres destinos",
@@ -229,7 +217,8 @@
           "n": "la cuenta del presupuesto",
           "tipo": "cuenta"
         }
-      ]
+      ],
+      "_nota_barato": "20-sep: la casilla pedia `ordenar_por precio_ars min`. Medido: el modelo tambien escribe `precio_ars prefiere 8500` —8500 es el minimo del catalogo, que la leyenda le dice—, o sea 'los mas cercanos al mas barato'. Son DOS formas correctas de decir lo mismo y las dos valen. Lo que estaba roto era el codigo, no la lectura: el grado sobre un numero comparaba texto. Se arreglo el mismo dia."
     }
   ]
 }

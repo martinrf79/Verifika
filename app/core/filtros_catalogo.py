@@ -888,6 +888,43 @@ def _pega_por_raiz(prod: dict, campo: str, valor) -> bool | None:
     return any(_texto_contiene(crudo, r) for r in _raices(valor))
 
 
+def _preferencia_numerica(prods: list, campo: str, operador: str,
+                          valor) -> tuple:
+    """EL GRADO SOBRE UN NUMERO ES UNA DISTANCIA, no una coincidencia de texto.
+
+    MEDIDO EN PRODUCCION EL 20-sep, cuatro corridas: a "acorde a la crisis" el
+    modelo escribio `precio_ars prefiere 8500` —8500 es el minimo del catalogo,
+    que la leyenda le dice— o sea "preferi los que esten cerca del mas barato".
+    La traduccion es CORRECTA. Lo que estaba mal era el codigo: `_pega_por_raiz`
+    compara TEXTO, asi que buscaba precios que contuvieran la cadena "8500" y
+    el orden salia basura, en silencio.
+
+    Es el gemelo de la guarda que ya existe del otro lado: `mayor` y `menor`
+    sobre un campo de texto se rechazan con motivo escrito. El grado sobre un
+    numero no se rechaza porque SI significa algo: `prefiere` ordena por
+    cercania al valor y `evita` por lejania. El que no tiene el dato va al
+    medio, igual que en el de texto.
+    """
+    ref = _a_numero(valor)
+    if ref is None:
+        return list(prods), 0, 0
+    lejos = float("inf")
+
+    def _dist(p):
+        v = _a_numero(_valor_crudo(p, campo))
+        return lejos if v is None else abs(v - ref)
+
+    con_dato = [p for p in prods if _dist(p) != lejos]
+    sin_dato = [p for p in prods if _dist(p) == lejos]
+    con_dato.sort(key=_dist, reverse=(operador == "evita"))
+    if operador == "prefiere":
+        ordenados = con_dato + sin_dato
+    else:
+        # `evita`: los mas lejanos primero y los que SI estan cerca al final.
+        ordenados = con_dato + sin_dato
+    return ordenados, len(con_dato), len(sin_dato)
+
+
 def _ordenar_por_preferencia(prods: list, campo: str, operador: str,
                              valor) -> tuple:
     """Devuelve (ordenados, cuantos_pegan, cuantos_sin_dato). NO saca a nadie.
@@ -965,12 +1002,22 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
             # NO FILTRA: ORDENA. `quedan` sale con los mismos productos y en
             # otro orden, asi que una preferencia jamas puede vaciar el
             # resultado ni cambiar el veredicto.
-            quedan, pegan, sin_dato = _ordenar_por_preferencia(
-                quedan, campo, operador, valor)
+            if tipo == "numero":
+                quedan, pegan, sin_dato = _preferencia_numerica(
+                    quedan, campo, operador, valor)
+            else:
+                quedan, pegan, sin_dato = _ordenar_por_preferencia(
+                    quedan, campo, operador, valor)
             preferencias.append({"campo": campo, "operador": operador,
                                  "valor": valor, "cumplen": pegan,
                                  "sin_dato": sin_dato,
-                                 "evaluados": len(quedan)})
+                                 "evaluados": len(quedan),
+                                 # COMO se ordeno, para que el renglon que lee
+                                 # el modelo no diga que 171 "cumplen" un
+                                 # numero: sobre un numero no se cumple, se
+                                 # esta mas cerca o mas lejos.
+                                 "por": ("cercania" if tipo == "numero"
+                                         else "coincidencia")})
             continue
         if tipo != "numero" and operador in ("mayor", "menor"):
             clase = "de si o no" if tipo == "si_no" else "de texto"
