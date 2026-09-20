@@ -64,21 +64,42 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
-**20-sep: LA TANDA DEL TABLERO ESTA DEPLOYADA Y FALTA MEDIRLA VIVA.** Cuatro
-commits, de `8e21013` a `a36da81`: la orden de entrada pasa de BUSCAR a ANOTAR,
-la leyenda baja su techo a 1.050 y suelta `marca`, `temas` y `criterio` se
-funden en un campo con enum de 104, entran los operadores de grado `prefiere` y
-`evita`, y `reparto_pago` sube al primer nivel. Tablero 2.556 tokens contra
-2.553, con un campo menos y dos candados duros mas. **La vara es el mismo
-mensaje por WhatsApp**, y el "antes" son las cuatro corridas del 19-sep, trazas
-`fa4b30a4`, `b9dc345c`, `39d84209` y `fdd87c02`: origen en la vuelta 1 **0 de
-4**, reparto de pago **0 de 4**, vueltas por turno **3,5**.
+**20-sep: LA INTERPRETACION DE LA VUELTA 1, MEDIDA EN PRODUCCION.** Siete
+commits, de `8e21013` a `71c1220`, con cuatro tandas de WhatsApp en el medio. La
+vuelta 1 del mensaje complejo pasa de declarar **3 de 9** cosas a **6 de 9**, y
+la latencia a la mitad. Ultima tanda, cuatro corridas en la revision 00557, con
+la vuelta 1 IDENTICA las cuatro veces:
 
-**20-sep: LO QUE QUEDA ABIERTO DE LAS TRES FORMAS.** El GRADO y la COBERTURA
-cerraron. El **VINCULO** no: que producto va a que destino se sigue perdiendo,
-porque `envios` es una lista de textos pelados. Se midio 0 de 4. Es el unico de
-los tres que toca motor de verdad y se dejo afuera a proposito.
+    CORRECCION origen      4 de 4  ->  9 de 9  ->  0 de 4
+    vueltas por turno         3,5  ->     5,0  ->    2,75
+    latencia               7.167ms ->  7.700ms ->  4.443ms
+    la restriccion en v1   0 de 4               ->  4 de 4
+    la direccion `evita`        -               ->  4 de 4
+    el setenta treinta     0 de 4               ->  4 de 4
+    el teclado en v1       4 de 4  ->  0 de 3  ->   4 de 4
+    la cuenta              0 de 4               ->  2 de 4, en la vuelta 2
+    veredictos `no_existe`      4               ->       0
 
+**LO QUE ENSEÑO LA TANDA, y vale mas que los numeros:** los cambios
+ESTRUCTURALES —un campo plano, un operador nuevo, un enum, un campo que sale del
+registro, el campo de la condicion estampado en cada fila— pegaron 5 de 5 y se
+quedaron. Los de PROSA —reescribir un texto del tablero— fueron 1 de 3 y dos
+rompieron algo que ya andaba. Y con tres corridas por tanda solo se leen efectos
+enormes: un 0 de 3 que pasa a 3 de 3 se lee; un 3 de 3 que pasa a 2 de 3 es
+ruido.
+
+**20-sep: LO QUE QUEDA ABIERTO DE LA INTERPRETACION.** Tres cosas, y ninguna se
+arregla con prosa del tablero.
+- **EL VINCULO**, 0 de 4: que producto va a que destino. `envios` es una lista
+  de textos pelados y no hay donde atar. Es el unico que toca motor de verdad.
+- **LA CUENTA EN LA VUELTA 1**, 2 de 4 y siempre en la vuelta 2. Medido dos
+  veces que la cuenta y el reparto son un SUBE Y BAJA: el modelo hace una o la
+  otra, y el texto solo mueve cual. Es firma de techo de capacidad, no de
+  instruccion faltante.
+- **EL MODELO DE L1 NO SE PROBO.** `config.py` corre el escalon mas barato y
+  `DECISOR_MODEL` esta vacio. Probar el de arriba SOLO para la vuelta de
+  interpretar es lo unico que dice si el techo es el tablero o el modelo. Es
+  plata: **ESPERA A MARTIN.**
 
 **15-sep: LA UNIDAD DE TRABAJO ABIERTA ES `arquitectura/FICHA_54_el_tablero_y_las_bocas.md`.**
 Consigna de Martin: lo que el modelo VE en el tablero tiene que ser exactamente
