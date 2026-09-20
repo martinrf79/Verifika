@@ -1,0 +1,123 @@
+"""EL GRADO — `prefiere` y `evita`, los dos operadores que NO filtran.
+
+EL DEFECTO QUE CIERRAN, medido CUATRO veces en WhatsApp el 19-sep con el mismo
+mensaje: a "necesito que lleven las menos partes chinas posibles" el modelo
+escribio `pais_fabricacion no_contiene china` y volvieron cuatro `no_existe`.
+El cliente pidio MINIMIZAR y el sistema fue a EXCLUIR.
+
+Y NO FUE UNA ALUCINACION: el enum de operadores tenia cinco valores y los cinco
+son binarios. Cumple o no cumple. El modelo eligio el menos malo de los que el
+candado le dejaba escribir, que es lo que pasa siempre que falta un casillero.
+
+LO QUE SE MIDE ACA son las tres mitades del arreglo, y ninguna sirve sin las
+otras dos: que NO filtre, que ORDENE, y que el modelo SE ENTERE de que no se
+filtro. Un orden callado es una mentira con cara de dato: el modelo escribiria
+"estos no tienen partes chinas" sobre una lista donde los ultimos si las
+tienen.
+"""
+from app.core import motor as MT
+from app.core.filtros_catalogo import ORDENAN, OPERADORES
+
+TIENDA = "verifika_prod"
+
+
+def _una(operador, campo="pais_fabricacion", valor="china", cuantos=5):
+    r = MT.buscar([{"categoria": "auriculares", "busco": "varios",
+                    "cuantos": cuantos,
+                    "condiciones": [{"campo": campo, "operador": operador,
+                                     "valor": valor}]}], TIENDA, "t")
+    return r["resultados"][0]
+
+
+def test_los_dos_operadores_del_grado_estan_en_el_enum():
+    """El candado es el enum: un operador que no esta ahi el modelo no lo puede
+    ni escribir, que es exactamente por lo que escribio `no_contiene`."""
+    for op in ORDENAN:
+        assert op in OPERADORES
+    assert set(ORDENAN) == {"prefiere", "evita"}
+
+
+def test_la_preferencia_no_saca_a_nadie(firestore_doble):
+    """LA MITAD MAS IMPORTANTE. Una preferencia que filtra es el defecto de
+    vuelta: cero productos se lee como "no lo tenemos"."""
+    sin = MT.buscar([{"categoria": "auriculares", "busco": "varios",
+                      "cuantos": 5}], TIENDA, "t")["resultados"][0]
+    for op in ORDENAN:
+        con = _una(op)
+        assert con["cuantos_habia"] == sin["cuantos_habia"], (
+            f"`{op}` filtro: quedaron {con['cuantos_habia']} de "
+            f"{sin['cuantos_habia']}")
+
+
+def test_la_preferencia_nunca_devuelve_no_existe(firestore_doble):
+    """Es el caso medido: los cuatro `no_existe` del 19-sep. Ni siquiera con un
+    valor que NINGUN producto cumple, porque no se saco a nadie."""
+    for op in ORDENAN:
+        assert _una(op)["veredicto"] == "existe"
+        assert _una(op, valor="marte")["veredicto"] == "existe"
+
+
+def test_el_orden_pone_a_los_que_cumplen_donde_va(firestore_doble):
+    """`prefiere` los trae primero y `evita` los manda al final. Se mide sobre
+    un campo con dos grupos de verdad en el catalogo vivo."""
+    from app.core.filtros_catalogo import _pega_por_raiz
+    from app.storage.firestore_client import get_all_products
+    prods = [p for p in get_all_products(tienda_id=TIENDA)
+             if str(p.get("categoria") or "") == "notebook"]
+    hay = [p for p in prods if _pega_por_raiz(p, "ram", "16gb") is True]
+    no_hay = [p for p in prods if _pega_por_raiz(p, "ram", "16gb") is False]
+    if not hay or not no_hay:
+        return  # el catalogo no tiene los dos grupos: no hay nada que ordenar
+    from app.core.filtros_catalogo import _ordenar_por_preferencia
+    arriba, cumplen, _ = _ordenar_por_preferencia(prods, "ram", "prefiere",
+                                                  "16gb")
+    assert cumplen == len(hay)
+    assert _pega_por_raiz(arriba[0], "ram", "16gb") is True
+    abajo, _, _ = _ordenar_por_preferencia(prods, "ram", "evita", "16gb")
+    assert _pega_por_raiz(abajo[-1], "ram", "16gb") is True
+
+
+def test_el_que_no_tiene_el_dato_va_al_MEDIO(firestore_doble):
+    """La respuesta 2 contra la 3 de la FICHA 52, aplicada al orden: el que no
+    tiene el dato cargado no es ni un si ni un no, y mezclarlo con el que dijo
+    que no es el defecto mas caro del nicho."""
+    from app.core.filtros_catalogo import _ordenar_por_preferencia
+    prods = [{"id": "A", "campo_x": "china"}, {"id": "B"},
+             {"id": "C", "campo_x": "taiwan"}]
+    orden, cumplen, sin_dato = _ordenar_por_preferencia(
+        prods, "campo_x", "prefiere", "china")
+    assert [p["id"] for p in orden] == ["A", "B", "C"]
+    assert (cumplen, sin_dato) == (1, 1)
+    orden, _, _ = _ordenar_por_preferencia(prods, "campo_x", "evita", "china")
+    assert [p["id"] for p in orden] == ["C", "B", "A"]
+
+
+def test_el_modelo_se_entera_de_que_NO_se_filtro(firestore_doble):
+    """LA TERCERA MITAD. Sin este renglon el modelo afirma sobre la lista
+    entera lo que solo cumple una parte."""
+    m = _una("evita")["motivo"].lower()
+    assert "no se filtro" in m and "ordeno" in m
+    assert "cumplen" in m, "no dice CUANTOS cumplen"
+    assert "todos" in m, "no avisa que tambien vuelven los que no cumplen"
+
+
+def test_una_preferencia_no_cuenta_como_condicion_incumplida(firestore_doble):
+    """El rescate por cercania mira solo lo que FILTRA. Una preferencia no saco
+    a nadie, asi que contarla como fallada diria que un producto no cumple algo
+    que nunca se le exigio.
+
+    La condicion dura es un precio imposible y no una marca inventada a
+    proposito: sobre `marca` el vocabulario se conoce entero, asi que el HUECO
+    DE VALOR la atajaria antes y la consulta ni llegaria al rescate.
+    """
+    r = MT.buscar([{"categoria": "auriculares", "busco": "varios",
+                    "cuantos": 3,
+                    "condiciones": [
+                        {"campo": "pais_fabricacion", "operador": "evita",
+                         "valor": "china"},
+                        {"campo": "precio_ars", "operador": "menor",
+                         "valor": "1"}]}],
+                  TIENDA, "t")["resultados"][0]
+    assert r["veredicto"] == "no_existe"
+    assert "de 1" in r["motivo"], (
+        f"la preferencia se conto como condicion dura: {r['motivo']}")

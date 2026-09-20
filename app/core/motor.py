@@ -193,7 +193,11 @@ def esquema(tienda_id: str) -> dict:
                                f"'{SIN_CAMPO}' y se te dice. Si escribis un "
                                "valor que la fuente no usa NO filtro por eso: "
                                "te devuelvo los valores reales para que "
-                               "corrijas."},
+                               "corrijas.\n"
+                               "`prefiere` y `evita` NO FILTRAN, ORDENAN: son "
+                               "el GRADO —'las menos partes chinas posibles'—. "
+                               "Vuelven TODOS y te digo cuantos cumplen. "
+                               "`no_contiene` es para cuando EXCLUYE."},
             # SOLO LOS NUMERICOS, y el enum de los 41 que habia aca era caro
             # y ademas estaba mal: sobre una etiqueta -`color`, `bluetooth`- el
             # orden es alfabetico y no contesta ninguna pregunta de un cliente.
@@ -357,12 +361,12 @@ def esquema(tienda_id: str) -> dict:
                                                    + equipos + "— o el id de "
                                                    "OTRO producto."}},
                             "required": ["producto", "con"]},
+                        # NO REPITE EL INDICE NI EL RETORNO: que contesta
+                        # esta boca lo dice el indice, y que hacer con el
+                        # veredicto lo dice el encabezado del retorno.
                         "description": (
                             "'¿anda con mi PS5?', '¿esta memoria entra en "
-                            "esta mother?'. Vuelve compatible, incompatible o "
-                            "sin_dato con el motivo escrito; el sin_dato no "
-                            "se completa, se avisa. Hasta "
-                            f"{TOPE_COMPAT}.")},
+                            f"esta mother?'. Hasta {TOPE_COMPAT}.")},
                     # EL CAMPO `criterio` SE BORRO EL 20-sep, y es la vieja
                     # que se apaga por la que se prende. Nacio el 13-sep como
                     # la quinta boca cableada, y lo que se vio despues es que
@@ -414,12 +418,12 @@ def esquema(tienda_id: str) -> dict:
                                     "Solo si reparte el pago: '70 transferencia "
                                     "30 Mercado Pago'. Suman 100. El descuento "
                                     "lo aplico yo.")}},
+                        # IDEM: el indice ya dice que contesta y que la
+                        # suma la hace el codigo.
                         "description": (
-                            "Cuanto sale TODO junto. Los productos con su "
-                            "cantidad, por id o por el nombre que uso el "
-                            "cliente. Te vuelve el total ya sumado "
-                            "—productos, envio de los destinos que pediste y "
-                            "descuento— y el detalle. No sumes vos.")}},
+                            "Los productos con su cantidad, por id o por el "
+                            "nombre que uso el cliente. Vuelve el total ya "
+                            "sumado —con envio y descuento— y el detalle.")}},
                 "required": []},
         },
     }
@@ -828,9 +832,25 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
                       f"filtro por eso: volve a pedir con una de esas"})
     conds = [_Cond(x) for x in crudas]
     r = aplicar(universo, conds, tienda_id) if conds else {
-        "productos": universo, "aplicados": [], "descartados": [], "sin_dato": 0}
+        "productos": universo, "aplicados": [], "descartados": [],
+        "sin_dato": 0, "preferencias": []}
     no_aplicado.extend(r["descartados"])
     quedan = r["productos"]
+
+    # LA PREFERENCIA SE DICE, Y ESE ES MEDIO ARREGLO (20-sep-2026). `prefiere`
+    # y `evita` ordenan y devuelven a todos, asi que si el modelo no se entera
+    # de que NO se filtro, escribe "estos no tienen partes chinas" sobre una
+    # lista donde los ultimos si las tienen. Un orden callado es una mentira
+    # con cara de dato. Va en `motivo`, que es el renglon que el modelo ya lee
+    # de cada resultado, y no en `no_aplicado`, que significa otra cosa: una
+    # condicion que la fuente NO PUDO cumplir.
+    for pref in r.get("preferencias") or []:
+        donde = "primero" if pref["operador"] == "prefiere" else "al final"
+        notas.append(
+            f"{pref['campo']} '{pref['valor']}' NO se filtro, se ORDENO: "
+            f"{pref['cumplen']} de {pref['evaluados']} lo cumplen y van "
+            f"{donde}. Estan TODOS, tambien los que no lo cumplen: no digas "
+            f"que la lista entera lo cumple")
     cumplieron = len(quedan)
     empatados = 0
     veredicto = "existe"
@@ -838,14 +858,19 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     # 3. EL RESCATE. Si ninguna cumple todo, se trae lo mas parecido y se dice
     #    cual condicion falla. Devolver vacio seria decirle al cliente que no
     #    existe lo que si existe con una condicion menos.
+    # EL RESCATE MIRA SOLO LO QUE FILTRA. Una preferencia no se puede
+    # "incumplir": no saco a nadie, asi que contarla como condicion fallada
+    # diria que un producto no cumple algo que nunca se le exigio.
+    from app.core.filtros_catalogo import ORDENAN
+    duras = [x for x in conds if x.operador not in ORDENAN]
     rescate = False
-    if conds and not quedan:
+    if duras and not quedan:
         quedan, empatados, incumple = rankear_por_cercania(
-            universo, conds, tienda_id)
+            universo, duras, tienda_id)
         veredicto = "no_existe"
         rescate = True
         notas.append(f"ninguno cumple todo; esto es lo mas parecido, "
-                     f"incumple {incumple} de {len(conds)}")
+                     f"incumple {incumple} de {len(duras)}")
         if empatados > 1:
             notas.append(f"{empatados} estan igual de lejos y se desempato "
                          f"por precio")
@@ -1020,7 +1045,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     for p in quedan[:tope]:
         f = _ficha_corta(p, unidades, specs_pedidas, detalle)
         if rescate:
-            motivo_fila = dato_que_falla(p, conds, tienda_id)
+            motivo_fila = dato_que_falla(p, duras, tienda_id)
             if motivo_fila:
                 f["no_cumple"] = motivo_fila
         filas.append(f)

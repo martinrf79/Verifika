@@ -141,7 +141,25 @@ _SPECS_DUPLICADAS = frozenset({"garantia"})
 # el modelo puede pedir y nunca trae nada.
 _MINIMO_PRODUCTOS = 10
 
-OPERADORES = ("contiene", "no_contiene", "igual", "mayor", "menor")
+# EL GRADO ENTRA EL 20-sep, Y ES EL CASILLERO QUE FALTABA. Los cinco de antes
+# son binarios: cumple o no cumple. Un cliente que pide "las menos partes
+# chinas posibles" no esta excluyendo, esta PREFIRIENDO, y con cinco operadores
+# binarios delante el modelo elegia el menos malo.
+#
+# MEDIDO CUATRO VECES EN WHATSAPP EL 19-sep, mismo mensaje: salio
+# `pais_fabricacion no_contiene china` y volvieron cuatro `no_existe`. El
+# cliente pidio MINIMIZAR y el sistema fue a EXCLUIR. No fue una alucinacion:
+# fue la unica forma que el enum le dejaba de escribir eso.
+#
+# `prefiere` y `evita` NO FILTRAN: ordenan y devuelven a todos. Por eso no
+# pueden dejar un resultado vacio, que es el otro lado del mismo defecto: cero
+# productos se lee como "no lo tenemos".
+OPERADORES = ("contiene", "no_contiene", "igual", "mayor", "menor",
+              "prefiere", "evita")
+
+# Los dos que ordenan en vez de filtrar. Se nombran aparte para que ningun
+# lugar del codigo tenga que volver a escribir la pareja.
+ORDENAN = ("prefiere", "evita")
 
 # LA ESCAPATORIA DEL ENUM, y es lo contrario de lo que parece.
 #
@@ -803,6 +821,41 @@ def evaluar(prod: dict, campo: str, operador: str, valor, tipo: str):
     return _texto_contiene(crudo, valor)
 
 
+def _pega_por_raiz(prod: dict, campo: str, valor) -> bool | None:
+    """Si el producto trae ese valor, por RAIZ de cada palabra. None cuando no
+    tiene el dato cargado: no es un no, es un no se sabe.
+
+    Es la misma comparacion que usa `no_contiene` —"partes chinas" -> "chin"—
+    y se saca a una funcion para que la preferencia y la exclusion no puedan
+    contestar distinto sobre el mismo producto.
+    """
+    crudo = _valor_crudo(prod, campo)
+    if crudo in (None, "", [], {}):
+        return None
+    return any(_texto_contiene(crudo, r) for r in _raices(valor))
+
+
+def _ordenar_por_preferencia(prods: list, campo: str, operador: str,
+                             valor) -> tuple:
+    """Devuelve (ordenados, cuantos_pegan, cuantos_sin_dato). NO saca a nadie.
+
+    EL QUE NO TIENE EL DATO VA AL MEDIO, y es la unica decision de aca. Con
+    `prefiere` primero van los que lo cumplen y ultimos los que NO lo cumplen;
+    el que no tiene el dato cargado no es ninguna de las dos cosas y no puede
+    quedar mezclado con el que dijo que no. Es la respuesta 2 contra la 3 de la
+    FICHA 52, aplicada al orden.
+    """
+    pegan = {id(p): _pega_por_raiz(p, campo, valor) for p in prods}
+    if operador == "prefiere":
+        rango = {True: 0, None: 1, False: 2}
+    else:
+        rango = {False: 0, None: 1, True: 2}
+    ordenados = sorted(prods, key=lambda p: rango[pegan[id(p)]])
+    return (ordenados,
+            sum(1 for v in pegan.values() if v is True),
+            sum(1 for v in pegan.values() if v is None))
+
+
 def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
     """Aplica la lista de filtros y devuelve el resultado ENTERO, no solo la
     lista: que se aplico, que no se pudo aplicar y por que, y -si no quedo
@@ -811,7 +864,7 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
     `filtros` son los moldes Pydantic de `herramientas.Filtro`.
     """
     registro = campos_filtrables(tienda_id)
-    aplicados, descartados = [], []
+    aplicados, descartados, preferencias = [], [], []
     quedan = list(prods)
     sin_dato_total = 0
 
@@ -855,6 +908,17 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
                                 "motivo": "la condicion vino sin valor: no se "
                                           "puede filtrar por nada"})
             continue
+        if operador in ORDENAN:
+            # NO FILTRA: ORDENA. `quedan` sale con los mismos productos y en
+            # otro orden, asi que una preferencia jamas puede vaciar el
+            # resultado ni cambiar el veredicto.
+            quedan, pegan, sin_dato = _ordenar_por_preferencia(
+                quedan, campo, operador, valor)
+            preferencias.append({"campo": campo, "operador": operador,
+                                 "valor": valor, "cumplen": pegan,
+                                 "sin_dato": sin_dato,
+                                 "evaluados": len(quedan)})
+            continue
         if tipo != "numero" and operador in ("mayor", "menor"):
             clase = "de si o no" if tipo == "si_no" else "de texto"
             descartados.append({"campo": campo,
@@ -884,7 +948,8 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
         quedan = cumplen
 
     return {"productos": quedan, "aplicados": aplicados,
-            "descartados": descartados, "sin_dato": sin_dato_total}
+            "descartados": descartados, "sin_dato": sin_dato_total,
+            "preferencias": preferencias}
 
 
 # ── RELEVANCIA — el criterio de orden que NO existia ────────────────────────
