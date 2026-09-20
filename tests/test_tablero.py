@@ -333,3 +333,36 @@ def test_la_consulta_repetida_se_ejecuta_una_sola_vez(firestore_doble):
     assert res[1].get("repetida"), "la segunda es identica y no se marco"
     assert res[1]["filas"] == [], "la repetida no puede repetir las filas"
     assert not res[2].get("repetida") and res[2]["filas"]
+
+
+def test_el_reparto_del_pago_es_un_campo_de_primer_nivel(firestore_doble):
+    """UNA COSA QUE EL CLIENTE DICE ES UN CAMPO.
+
+    Nacio el 14-sep adentro de `cuenta`, y ahi el modelo tenia que tomar DOS
+    decisiones para escribir algo que el cliente dijo una vez: resolver que
+    quiere una cuenta, y recien ahi anotar el reparto. Medido cuatro veces en
+    WhatsApp el 19-sep, "divide el presupuesto en setenta treinta" se declaro
+    0 de 4: las cuatro se quedo en la primera decision.
+
+    Y HAY MEDICION DE QUE LA FORMA MANDA: en esas mismas corridas `envios`
+    —primer nivel, lista de textos— salio 4 de 4 y `condiciones` —anidado dos
+    niveles y opcional— salio 0 de 4.
+    """
+    props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
+    assert "reparto_pago" in props, "el reparto volvio a esconderse"
+    assert "reparto_pago" not in props["cuenta"]["properties"], (
+        "quedaron dos lugares para lo mismo")
+
+
+def test_el_reparto_de_arriba_llega_a_la_cuenta(firestore_doble):
+    """El campo subio en el tablero; la cuenta lo sigue leyendo de donde
+    siempre. Si esto se corta, el modelo declara el setenta treinta y el total
+    sale sin el descuento, que es peor que no tener el campo."""
+    r = MT.buscar([], TIENDA, "t",
+                  cuenta={"items": [{"id": "MOU0001", "cantidad": 2}]},
+                  reparto_pago=[{"medio": "transferencia", "porcentaje": 70},
+                                {"medio": "mercado pago", "porcentaje": 30}])
+    c = r.get("cuenta") or {}
+    assert c.get("total") and c.get("total_final")
+    assert c["total_final"] != c["total"], (
+        "el reparto no movio el total: el descuento no se aplico")

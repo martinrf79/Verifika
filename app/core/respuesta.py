@@ -751,7 +751,8 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                      "compatibilidad": args.get("compatibilidad") or [],
                      "envios": args.get("envios") or [],
                      "criterio": args.get("criterio") or [],
-                     "cuenta": args.get("cuenta") or {}}
+                     "cuenta": args.get("cuenta") or {},
+                     "reparto_pago": args.get("reparto_pago") or []}
             # LO QUE EL MODELO ESCRIBIO, TAL CUAL, y es EL renglon que faltaba.
             # `motor_buscar` cuenta cuantas consultas hubo y cuantas filas
             # volvieron; con que PALABRAS se pidio no quedaba en ningun lado.
@@ -768,7 +769,8 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                           envios=args.get("envios"),
                           localidad_previa=localidad_previa,
                           criterio=args.get("criterio"),
-                          cuenta=args.get("cuenta"))
+                          cuenta=args.get("cuenta"),
+                          reparto_pago=args.get("reparto_pago"))
             _anotar(informe, consultas, pedidas, r)
             for f in MT.fichas_de(r):
                 if str(f.get("id")) not in {str(x.get("id")) for x in fichas}:

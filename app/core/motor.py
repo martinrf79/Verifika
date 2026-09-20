@@ -341,6 +341,39 @@ def esquema(tienda_id: str) -> dict:
                             "exacta, el plazo y el hueco que copias donde vaya "
                             f"el costo: el monto NO lo escribis vos. Hasta "
                             f"{TOPE_ENVIOS}.")},
+                    # EL REPARTO DEL PAGO SUBE AL PRIMER NIVEL (20-sep-2026)
+                    # y sale de adentro de `cuenta`, donde nacio el 14-sep.
+                    #
+                    # MEDIDO CUATRO VECES EN WHATSAPP EL 19-sep, mismo mensaje:
+                    # "divide el presupuesto en setenta treinta" se declaro
+                    # CERO de 4. Adentro de `cuenta` el modelo tiene que tomar
+                    # DOS decisiones para escribir una cosa que el cliente dijo
+                    # una vez: primero resolver que quiere una cuenta, y recien
+                    # ahi puede anotar el reparto. Las cuatro veces se quedo en
+                    # la primera y el reparto no existio.
+                    #
+                    # Y HAY MEDICION DE QUE LO PLANO SE LLENA: en esas mismas
+                    # cuatro corridas `envios` —primer nivel, lista de textos—
+                    # salio 4 de 4, y `condiciones` —anidado dos niveles y
+                    # opcional— salio 0 de 4. No es criterio del modelo, es
+                    # forma del esquema.
+                    #
+                    # UNA COSA QUE EL CLIENTE DICE ES UN CAMPO. Esa es la regla
+                    # entera, y es la misma por la que `temas` y `criterio` se
+                    # fundieron en uno: no hacerle tomar al modelo decisiones
+                    # que el cliente no tomo.
+                    "reparto_pago": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "medio": {"type": "string"},
+                                "porcentaje": {"type": "number"}},
+                            "required": ["medio", "porcentaje"]},
+                        "description": (
+                            "Solo si reparte el pago: '70 transferencia 30 "
+                            "Mercado Pago'. Suman 100. El descuento lo "
+                            "aplico yo.")},
                     "compatibilidad": {
                         "type": "array",
                         "items": {
@@ -406,18 +439,7 @@ def esquema(tienda_id: str) -> dict:
                                                 "devuelvo y preguntas cual.")},
                                         "cantidad": {"type": "integer"}},
                                     "required": ["id"]}},
-                            "reparto_pago": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "medio": {"type": "string"},
-                                        "porcentaje": {"type": "number"}},
-                                    "required": ["medio", "porcentaje"]},
-                                "description": (
-                                    "Solo si reparte el pago: '70 transferencia "
-                                    "30 Mercado Pago'. Suman 100. El descuento "
-                                    "lo aplico yo.")}},
+                            },
                         # IDEM: el indice ya dice que contesta y que la
                         # suma la hace el codigo.
                         "description": (
@@ -1243,7 +1265,8 @@ def _evaluar(prod: dict, con: str, porid: dict, tienda_id: str) -> dict:
 def buscar(consultas: list, tienda_id: str, trace_id: str = "",
            temas: list | None = None, compat: list | None = None,
            envios: list | None = None, localidad_previa: str = "",
-           criterio: list | None = None, cuenta: dict | None = None) -> dict:
+           criterio: list | None = None, cuenta: dict | None = None,
+           reparto_pago: list | None = None) -> dict:
     """LA PUERTA. Catalogo, politicas, compatibilidad, envio y el criterio de la
     casa, en una llamada.
 
@@ -1421,6 +1444,14 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
     la_cuenta = {}
     if cuenta:
         try:
+            # EL REPARTO ENTRA POR ARRIBA Y SE APLICA ADENTRO. El campo
+            # subio al primer nivel del tablero, pero la cuenta lo sigue
+            # leyendo de donde siempre: se junta aca y `_la_cuenta` no se
+            # entera del cambio. Lo que el modelo haya anotado adentro de
+            # `cuenta` sigue valiendo, asi que una llamada vieja no se rompe.
+            if reparto_pago and not (cuenta or {}).get("reparto_pago"):
+                cuenta = dict(cuenta or {})
+                cuenta["reparto_pago"] = reparto_pago
             la_cuenta = _la_cuenta(cuenta, fuera_envios, tienda_id, trace_id,
                                    catalogo)
         except Exception as e:  # noqa: BLE001 — sin total no se inventa uno
