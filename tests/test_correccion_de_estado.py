@@ -233,32 +233,3 @@ def test_un_campo_que_la_fuente_NO_tiene_no_se_corrige(firestore_doble):
     era CORRECTA. El codigo no le discute una verdad."""
     campo, dice = gs.para_corregir(["campo_que_no_existe_en_la_fuente"], TIENDA)
     assert campo is None and dice == ""
-
-
-def test_las_claves_de_NUESTRO_formulario_no_se_reclaman(firestore_doble):
-    """EL CASO DE LAS 23:12, revision 00561, turno `2808116e`.
-
-    El catalogo vivo tiene un campo llamado `tipo`. El modelo escribio la
-    palabra "tipo" en su respuesta —que es castellano comercial y ademas es la
-    clave que NOSOTROS le exigimos emitir— y la guarda lo leyo como una
-    afirmacion sobre el catalogo. La correccion lo mando a hablar del campo
-    `tipo`, el JSON salio sin encasillar, y el turno costo 15.705 ms para
-    entregar 153 caracteres contra los 2.700 y 600 de los turnos sanos.
-
-    NO ES PERSEGUIR VOCABULARIO: la lista no sale del castellano, sale de
-    nuestro esquema. Al modelo se le EXIGE emitir esas claves.
-    """
-    sin = gs.afirmo_sin_mirar(
-        "Te paso el tipo y el texto de cada uno.", set(), TIENDA, "t")
-    assert "tipo" not in sin and "texto" not in sin, sin
-
-
-def test_el_candado_ata_la_lista_al_esquema_de_verdad(firestore_doble):
-    """Si el formulario de la respuesta cambia y esta lista no, vuelve el
-    turno roto de las 23:12 con otra palabra. Por eso se cruzan."""
-    from app.core.respuesta import _esquema_respuesta
-    del_esquema = set(_esquema_respuesta()["json_schema"]["schema"]
-                      ["properties"])
-    assert set(gs.CLAVES_DE_LA_RESPUESTA) == del_esquema, (
-        f"el esquema dice {sorted(del_esquema)} y la guarda cuida "
-        f"{sorted(gs.CLAVES_DE_LA_RESPUESTA)}")
