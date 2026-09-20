@@ -54,8 +54,14 @@ def _c_consulta(c, p):
     for q in _consultas(p):
         if c.get("categoria") and _norm(q.get("categoria")) != _norm(c["categoria"]):
             continue
+        # DONDE SEA QUE LO HAYA NOMBRADO, y es el segundo bug de esta pieza.
+        # La vara miraba solo `texto` y `categoria`, y a "cuanto sale el K120"
+        # el modelo contesto `categoria: teclado` + `nombre contiene K120`,
+        # que es una lectura MEJOR que la escrita. La vara daba mal al modelo
+        # por acertar de otra forma. La casilla es "busca el producto
+        # puntual": cualquier lugar de la consulta donde lo nombre cuenta.
         if c.get("texto_contiene") and _norm(c["texto_contiene"]) not in _norm(
-                str(q.get("texto") or "") + " " + str(q.get("categoria") or "")):
+                json.dumps(q, ensure_ascii=False)):
             continue
         if c.get("cantidad") and q.get("cantidad") not in c["cantidad"]:
             continue
@@ -215,12 +221,29 @@ def _turnos(minutos: int) -> list:
     return turnos
 
 
+def _clave(texto: str) -> str:
+    """El texto sin nada que el dedo pueda cambiar: minusculas, sin acentos y
+    sin puntuacion ni espacios."""
+    return "".join(c for c in _norm(texto) if c.isalnum())
+
+
 def _de_que_mensaje(texto: str, vara: dict):
-    """El mensaje de la vara al que corresponde este turno. Se aparea por los
-    primeros 40 caracteres normalizados: es exacto, no por parecido."""
-    plano = _norm(texto)[:40]
+    """El mensaje de la vara al que corresponde este turno.
+
+    APAREA POR PREFIJO EXACTO, no por parecido: se comparan los primeros 30
+    caracteres utiles, o el mensaje entero si es mas corto. No hay ranking ni
+    distancia, que es la enfermedad que el MAPA_CABLEADO ya tiene numerada.
+
+    LA PUNTUACION SE SACA, y es el primer bug de esta pieza: M3 se mando como
+    "cuanto sale el K120" y la vara decia "cuanto sale el K120?". El turno
+    existia en los logs y el lector lo tiro, o sea que un signo de pregunta de
+    menos borraba tres corridas del numero.
+    """
+    plano = _clave(texto)
     for m in vara["mensajes"]:
-        if plano and plano == _norm(m["texto"])[:40]:
+        esperado = _clave(m["texto"])
+        n = min(30, len(plano), len(esperado))
+        if n >= 10 and plano[:n] == esperado[:n]:
             return m
     return None
 
