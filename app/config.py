@@ -59,12 +59,25 @@ class Settings(BaseModel):
     # delante y no decide nada.
     # Vacio = mismo modelo que el redactor. Se le pone otro -ej gemini-3-pro-
     # SOLO para el decisor, sin encarecer el turno entero.
-    # SE PRUEBA EL ESCALON DE ARRIBA, 20-sep, con el OK de Martin porque es
-    # plata. Es config operativa —la regla 2 la deja— y se revierte con una
-    # linea. NO es un alias `-latest`, que flota y te cambia modelo y costo sin
-    # avisar. Solo lo usa la vuelta que INTERPRETA; la que redacta sigue con el
-    # de siempre.
-    DECISOR_MODEL: str = os.getenv("DECISOR_MODEL", "gemini-3.8-flash")
+    # SE PROBO EL ESCALON DE ARRIBA EL 20-sep Y VUELVE A VACIO EL MISMO DIA.
+    # `gemini-3.8-flash` en la vuelta que interpreta, un turno medido en
+    # produccion, revision 00561, mensaje M6:
+    #
+    #     latencia        15.705 ms   contra 4.400 con flash-lite
+    #     tipo            VACIO       `tipo_vacio`, el JSON no se parseo
+    #     largo           153         contra 600 a 900
+    #     vueltas         3 con tablero, y contesto sin poder encasillarse
+    #
+    # NO ES QUE INTERPRETE PEOR: es que el turno SALIO ROTO. Un tipo vacio no
+    # es cosmetico —de el sale la señal del cierre— y cuatro veces la latencia
+    # se le nota al cliente. La medicion contesto lo que tenia que contestar y
+    # la respuesta es que el techo NO era el modelo.
+    #
+    # EL CABLE SE QUEDA Y QUEDA INERTE: con esto vacio, la vuelta que
+    # interpreta usa el mismo modelo que redacta, que es como venia. Volver a
+    # probar otro id es cambiar esta linea, y ya hay vara para que el redactor
+    # no se encarezca de paso.
+    DECISOR_MODEL: str = os.getenv("DECISOR_MODEL", "")
     DECISOR_REASONING: str = os.getenv("DECISOR_REASONING", "low")
     # EL RAZONAMIENTO DEL REDACTOR. Estaba CLAVADO en "none" adentro de
     # `_redactar`. Se saco a config para poder MEDIRLO, y se midio con la clave
