@@ -8,37 +8,134 @@
       "dificultad": "multipregunta con grado, tres destinos y reparto de pago",
       "texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
       "casillas": [
-        {"n": "rubro auriculares", "tipo": "consulta", "categoria": "auriculares", "cantidad": [2]},
-        {"n": "rubro mouse", "tipo": "consulta", "categoria": "mouse", "cantidad": [2]},
-        {"n": "rubro memoria", "tipo": "consulta", "categoria": "memoria ram", "cantidad": [2]},
-        {"n": "el teclado, que solo aparece en la frase de envio", "tipo": "consulta", "categoria": "teclado", "cantidad": [1, 2]},
-        {"n": "la restriccion de origen existe", "tipo": "condicion", "campo": ["pais_fabricacion"], "valor": "china"},
-        {"n": "y apunta al extremo correcto", "tipo": "condicion", "campo": ["pais_fabricacion"], "valor": "china", "acepta": ["evita"]},
-        {"n": "destino Cordoba", "tipo": "envio", "destino": "cordoba"},
-        {"n": "destino Concordia", "tipo": "envio", "destino": "concordia"},
-        {"n": "destino Posadas", "tipo": "envio", "destino": "posadas"},
-        {"n": "EL VINCULO: que producto va a que destino", "tipo": "envio_va"},
-        {"n": "el setenta treinta", "tipo": "reparto", "porcentajes": [70, 30]},
-        {"n": "la cuenta del pedido", "tipo": "cuenta"}
-      ]
+        {
+          "n": "rubro auriculares",
+          "tipo": "consulta",
+          "categoria": "auriculares",
+          "cantidad": [
+            2
+          ]
+        },
+        {
+          "n": "rubro mouse",
+          "tipo": "consulta",
+          "categoria": "mouse",
+          "cantidad": [
+            2
+          ]
+        },
+        {
+          "n": "rubro memoria",
+          "tipo": "consulta",
+          "categoria": "memoria ram",
+          "cantidad": [
+            2
+          ]
+        },
+        {
+          "n": "el teclado, que solo aparece en la frase de envio",
+          "tipo": "nombra",
+          "palabra": "teclado"
+        },
+        {
+          "n": "la restriccion de origen existe",
+          "tipo": "condicion",
+          "campo": [
+            "pais_fabricacion"
+          ],
+          "valor": "china"
+        },
+        {
+          "n": "y apunta al extremo correcto",
+          "tipo": "condicion",
+          "campo": [
+            "pais_fabricacion"
+          ],
+          "valor": "china",
+          "acepta": [
+            "evita"
+          ]
+        },
+        {
+          "n": "destino Cordoba",
+          "tipo": "envio",
+          "destino": "cordoba"
+        },
+        {
+          "n": "destino Concordia",
+          "tipo": "envio",
+          "destino": "concordia"
+        },
+        {
+          "n": "destino Posadas",
+          "tipo": "envio",
+          "destino": "posadas"
+        },
+        {
+          "n": "EL VINCULO: que producto va a que destino",
+          "tipo": "envio_va"
+        },
+        {
+          "n": "el setenta treinta",
+          "tipo": "reparto",
+          "porcentajes": [
+            70,
+            30
+          ]
+        },
+        {
+          "n": "la cuenta del pedido",
+          "tipo": "cuenta"
+        }
+      ],
+      "_nota_teclado": "20-sep: esta casilla pedia el teclado como CONSULTA. Medido: el modelo lo pone en el `va` de Concordia —'un teclado y un mouse'— y NO lo cotiza, que es una lectura defendible: el cliente pidio precio de auriculares, mouse y memorias, y el teclado aparece solo al repartir los envios. La casilla mide que lo CAPTE; donde lo ponga es la ambiguedad del mensaje, y Martin dijo que esas no penalizan. CORREGIR ESTO SUBE EL NUMERO SIN QUE EL MODELO HAYA MEJORADO: es un arreglo de la vara, no un avance."
     },
     {
       "id": "M2",
       "dificultad": "politica y criterio por el MISMO campo, que es lo que el enum fusionado del 20-sep tiene que resolver",
       "texto": "Hola, tienen garantia en los teclados mecanicos? y cual me conviene para escribir mucho todos los dias?",
       "casillas": [
-        {"n": "la politica de garantia", "tipo": "tema", "acepta": ["garantia", "garantia_como_usar"]},
-        {"n": "el criterio del teclado", "tipo": "tema", "acepta": ["teclado", "teclado_mecanico_membrana"]},
-        {"n": "no se inventa una consulta al catalogo para esto", "tipo": "sin_consultas_obligatorias"}
-      ]
+        {
+          "n": "la politica de garantia",
+          "tipo": "tema",
+          "acepta": [
+            "garantia",
+            "garantia_como_usar"
+          ]
+        },
+        {
+          "n": "el criterio del teclado",
+          "tipo": "tema",
+          "acepta": [
+            "teclado",
+            "teclado_mecanico_membrana"
+          ]
+        },
+        {
+          "n": "no declara temas que el cliente NO pregunto",
+          "tipo": "temas_limpios",
+          "tope": 2
+        }
+      ],
+      "_nota_consulta": "20-sep: salio la casilla 'no se inventa una consulta al catalogo'. El modelo manda `categoria: teclado` y es defendible: a 'cual me conviene' mostrar opciones no es un disparate. Era la vara pidiendo de mas. En su lugar entra una que mide un defecto REAL y nuevo."
     },
     {
       "id": "M3",
       "dificultad": "identidad puntual: la regla 10.0, ante dos que pegan igual se PREGUNTA",
       "texto": "cuanto sale el K120?",
       "casillas": [
-        {"n": "busca el producto puntual", "tipo": "consulta", "texto_contiene": "k120"},
-        {"n": "lo declara como UNO, no como varios", "tipo": "busco", "acepta": ["uno"]}
+        {
+          "n": "busca el producto puntual",
+          "tipo": "consulta",
+          "texto_contiene": "k120"
+        },
+        {
+          "n": "lo declara como UNO, no como varios",
+          "tipo": "busco",
+          "acepta": [
+            "uno"
+          ]
+        }
       ]
     },
     {
@@ -46,8 +143,21 @@
       "dificultad": "traducir prosa a categoria y a orden: es el caso D16 del mapa",
       "texto": "necesito un aparato rectangular con varias teclas, que sea bueno, pero dada la crisis armame un presupuesto acorde",
       "casillas": [
-        {"n": "traduce el rodeo a la categoria", "tipo": "consulta", "categoria": "teclado"},
-        {"n": "traduce 'acorde a la crisis' a un orden por precio", "tipo": "orden", "campo": ["precio_ars"], "direccion": ["min"]}
+        {
+          "n": "traduce el rodeo a la categoria",
+          "tipo": "consulta",
+          "categoria": "teclado"
+        },
+        {
+          "n": "traduce 'acorde a la crisis' a un orden por precio",
+          "tipo": "orden",
+          "campo": [
+            "precio_ars"
+          ],
+          "direccion": [
+            "min"
+          ]
+        }
       ]
     },
     {
@@ -55,8 +165,70 @@
       "dificultad": "dos bocas distintas en un mensaje corto: compatibilidad y envio",
       "texto": "los auriculares HyperX andan con mi PS5? y cuanto sale el envio a Rosario?",
       "casillas": [
-        {"n": "pregunta por el par de compatibilidad", "tipo": "compat"},
-        {"n": "cotiza el destino con la palabra del cliente", "tipo": "envio", "destino": "rosario"}
+        {
+          "n": "pregunta por el par de compatibilidad",
+          "tipo": "compat"
+        },
+        {
+          "n": "cotiza el destino con la palabra del cliente",
+          "tipo": "envio",
+          "destino": "rosario"
+        }
+      ]
+    },
+    {
+      "id": "M6",
+      "dificultad": "aritmetica sobre el enunciado mas el vinculo en tres destinos",
+      "texto": "Dame precio de 7 articulos 2 notebooks 1 microfono y los demas serian memorias pasame ee acuerdo a la crisis el presupuesto.",
+      "casillas": [
+        {
+          "n": "las notebooks",
+          "tipo": "consulta",
+          "categoria": "notebook",
+          "cantidad": [
+            2
+          ]
+        },
+        {
+          "n": "el microfono",
+          "tipo": "consulta",
+          "categoria": "microfono",
+          "cantidad": [
+            1
+          ]
+        },
+        {
+          "n": "DEDUCE que 'los demas' son 4 memorias",
+          "tipo": "consulta",
+          "categoria": "memoria ram",
+          "cantidad": [
+            4
+          ]
+        },
+        {
+          "n": "traduce 'acorde a la crisis' a un orden por precio",
+          "tipo": "orden",
+          "campo": [
+            "precio_ars"
+          ],
+          "direccion": [
+            "min"
+          ]
+        },
+        {
+          "n": "EL VINCULO en los tres destinos",
+          "tipo": "envio_va",
+          "cuantos": 3
+        },
+        {
+          "n": "no declara temas que el cliente NO pregunto",
+          "tipo": "temas_limpios",
+          "tope": 0
+        },
+        {
+          "n": "la cuenta del presupuesto",
+          "tipo": "cuenta"
+        }
       ]
     }
   ]

@@ -307,10 +307,17 @@ def esquema(tienda_id: str) -> dict:
                         # mismo es el telefono descompuesto. QUE contesta esta
                         # boca lo dice el indice, arriba; aca va solo como se
                         # elige y que pasa si no esta.
+                        # SOLO LO QUE PREGUNTO, y es el defecto que trajo el
+                        # enum. Medido 4 de 4 el 20-sep: a un pedido de
+                        # precios le agrego `confianza_seguridad`,
+                        # `pedir_descuento` y `envio_urgente`, que el cliente
+                        # no nombro. Antes del enum no podia pasar —no tenia
+                        # de donde elegir—; es el costo del candado.
                         "description": (
-                            "Elegi el nombre de la lista que cubre lo que "
-                            f"pregunto. Si ninguno lo cubre poné '{SIN_TEMA}' "
-                            f"y se lo decis asi. Hasta {TOPE_TEMAS}.")},
+                            "SOLO lo que el cliente PREGUNTO: si no pregunto "
+                            "nada de la casa, va vacio. Elegi el nombre de la "
+                            "lista que cubre lo que pregunto. Si ninguno lo "
+                            f"cubre poné '{SIN_TEMA}'. Hasta {TOPE_TEMAS}.")},
                     # LA BOCA DE COMPATIBILIDAD, Y ES UN CAMPO MAS DE LA MISMA
                     # PUERTA (13-sep-2026). Mismo criterio que `temas`: el
                     # mecanismo de preguntarle a la fuente es el mismo, cambia

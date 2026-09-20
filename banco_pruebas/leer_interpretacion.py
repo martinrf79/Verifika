@@ -91,14 +91,27 @@ def _c_envio(c, p):
     return False
 
 
+def _c_nombra(c, p):
+    """La palabra aparece en ALGUN lado de lo declarado. Para lo que el cliente
+    dijo una vez y el modelo puede anotar en mas de un campo con razon."""
+    return _norm(c["palabra"]) in _norm(json.dumps(p, ensure_ascii=False))
+
+
+def _c_temas_limpios(c, p):
+    """NO declarar de mas. Es el defecto que trajo el enum de 104 temas del
+    20-sep: medido 4 de 4 en M6, el modelo agrego `confianza_seguridad`,
+    `pedir_descuento` y `envio_urgente` a un cliente que no pregunto ninguna.
+    Antes del enum no podia pasar; es el costo del candado y se mide."""
+    return len(p.get("temas") or []) <= int(c.get("tope", 0))
+
+
 def _c_envio_va(c, p):
     # EL VINCULO. Hoy `envios` es una lista de textos pelados, asi que esta
     # casilla NO SE PUEDE llenar: un texto no tiene donde decir que va ahi.
     # Queda escrita igual y en cero a proposito, que es como se ve una deuda.
-    for e in (p.get("envios") or []):
-        if isinstance(e, dict) and str(e.get("va") or "").strip():
-            return True
-    return False
+    atados = sum(1 for e in (p.get("envios") or [])
+                 if isinstance(e, dict) and str(e.get("va") or "").strip())
+    return atados >= int(c.get("cuantos", 1))
 
 
 def _c_reparto(c, p):
@@ -145,7 +158,8 @@ def _c_sin_consultas(c, p):
 CASILLA = {"consulta": _c_consulta, "condicion": _c_condicion,
            "envio": _c_envio, "envio_va": _c_envio_va, "reparto": _c_reparto,
            "cuenta": _c_cuenta, "tema": _c_tema, "busco": _c_busco,
-           "orden": _c_orden, "compat": _c_compat,
+           "orden": _c_orden, "compat": _c_compat, "nombra": _c_nombra,
+           "temas_limpios": _c_temas_limpios,
            "sin_consultas_obligatorias": _c_sin_consultas}
 
 
