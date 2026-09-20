@@ -64,6 +64,22 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
+**20-sep: LA TANDA DEL TABLERO ESTA DEPLOYADA Y FALTA MEDIRLA VIVA.** Cuatro
+commits, de `8e21013` a `a36da81`: la orden de entrada pasa de BUSCAR a ANOTAR,
+la leyenda baja su techo a 1.050 y suelta `marca`, `temas` y `criterio` se
+funden en un campo con enum de 104, entran los operadores de grado `prefiere` y
+`evita`, y `reparto_pago` sube al primer nivel. Tablero 2.556 tokens contra
+2.553, con un campo menos y dos candados duros mas. **La vara es el mismo
+mensaje por WhatsApp**, y el "antes" son las cuatro corridas del 19-sep, trazas
+`fa4b30a4`, `b9dc345c`, `39d84209` y `fdd87c02`: origen en la vuelta 1 **0 de
+4**, reparto de pago **0 de 4**, vueltas por turno **3,5**.
+
+**20-sep: LO QUE QUEDA ABIERTO DE LAS TRES FORMAS.** El GRADO y la COBERTURA
+cerraron. El **VINCULO** no: que producto va a que destino se sigue perdiendo,
+porque `envios` es una lista de textos pelados. Se midio 0 de 4. Es el unico de
+los tres que toca motor de verdad y se dejo afuera a proposito.
+
+
 **15-sep: LA UNIDAD DE TRABAJO ABIERTA ES `arquitectura/FICHA_54_el_tablero_y_las_bocas.md`.**
 Consigna de Martin: lo que el modelo VE en el tablero tiene que ser exactamente
 lo que las bocas PUEDEN contestar. **NO se construyen bancos nuevos** —ya se
