@@ -14,6 +14,7 @@ import pytest
 
 from app.core import motor as MT
 from app.core.filtros_catalogo import (CARGA_FLACA, LARGO_ETIQUETA,
+                                       que_dice_la_fuente_de,
                                        campos_ordenables,
                                        condicion_sin_vocabulario, leyenda,
                                        vocabulario)
@@ -138,13 +139,25 @@ def test_la_leyenda_dice_las_palabras_del_campo_que_se_erraba(firestore_doble):
         assert v in L, f"falta el valor '{v}' en la leyenda"
 
 
-def test_la_leyenda_enumera_la_marca(firestore_doble):
-    """Es de los campos que mas nombra un cliente -"tenes Logitech?"- y tiene
-    75 valores: la regla de contar valores lo dejaba afuera, la de presupuesto
-    por rendimiento lo mete."""
+def test_la_marca_no_se_enumera_y_el_hueco_la_cubre(firestore_doble):
+    """DA VUELTA LA VARA DEL 13-sep, y el requisito cambio de verdad.
+
+    Hasta hoy este test exigia lo contrario: que `marca` entrara en la leyenda
+    porque es de los campos que mas nombra un cliente. Lo que se midio despues
+    es que la leyenda no alcanza sola —el 19-sep, cuatro veces seguidas, el
+    modelo tuvo los cinco valores de `pais_fabricacion` delante y escribio
+    igual `no_contiene china`— y que `marca` es el renglon que PEOR rinde:
+    724 caracteres, el 35% del gasto, para 75 valores.
+
+    La cobertura no se pierde, cambia de mecanismo: el HUECO DE VALOR devuelve
+    los valores reales del campo cuando el modelo escribe uno que la fuente no
+    usa. Seguro pagado por adelantado contra pago al usar.
+    """
     L = leyenda(TIENDA)
-    for m in ("logitech", "asus", "kingston", "samsung"):
-        assert m in L, f"falta la marca '{m}'"
+    assert "logitech" not in L, "marca volvio a la leyenda: son 724 caracteres"
+    cubre = que_dice_la_fuente_de("marca", TIENDA)
+    for m in ("logitech", "asus"):
+        assert m in cubre, f"el hueco de valor no cubre la marca '{m}'"
 
 
 def test_la_leyenda_no_lleva_prosa(firestore_doble):

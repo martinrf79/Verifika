@@ -183,7 +183,37 @@ LARGO_ETIQUETA = 60
 # en cuantos productos esta cargado el campo, dividido lo que cuesta su
 # renglon. Asi el presupuesto se llena con lo que mas contesta por caracter, y
 # una tienda nueva con otra fuente se ordena sola.
-# BAJA A 3.000 EL 15-sep, Y LA CUENTA ES ESTA. Los ocho campos de si o no se
+# BAJA A 1.050 EL 20-sep, Y LA CUENTA ES ESTA. Medido: con el techo en 3.000 la
+# leyenda gasta 2.095 caracteres en nueve campos, y los dos mas caros son los
+# dos que menos rinden. `marca` pesa 724 —el 35% del gasto, 75 valores— y
+# `caracteristicas_extra` 363. Con 1.050 entran siete campos por 1.008 y esos
+# dos quedan afuera. Quien entra lo sigue decidiendo el RENDIMIENTO y no una
+# lista escrita a mano, asi que una tienda con otra fuente se ordena sola:
+#
+#     9,57   90  color                    entra
+#     5,69  154  pais_marca               entra
+#     5,37  164  pais_fabricacion         entra
+#     4,18   79  almacenamiento           entra
+#     3,71  237  material                 entra
+#     2,35  363  caracteristicas_extra    QUEDA AFUERA
+#     2,22  130  wifi                     entra
+#     2,01  154  ram                      entra
+#     1,22  724  marca                    QUEDA AFUERA
+#
+# LO QUE SALE NO QUEDA SIN CUBRIR, y por eso se puede sacar: el HUECO DE VALOR
+# ya hace el mismo trabajo y cobra solo cuando falla. El modelo escribe una
+# marca que la fuente no usa, el motor no filtra por eso y le devuelve los
+# valores reales de ese campo. La leyenda es seguro pagado por adelantado sobre
+# los 41 campos y en las dos vueltas de cada turno; el hueco es pago al usar y
+# devuelve exactamente el campo que fallo.
+#
+# Y HAY MEDICION DE QUE LA LEYENDA NO ALCANZABA SOLA: el 19-sep, cuatro veces
+# seguidas, el modelo tuvo los cinco valores de `pais_fabricacion` delante y
+# escribio igual `no_contiene china`. La leyenda resuelve QUE PALABRA usa la
+# casa; no resuelve que FORMA tiene lo que le pidieron. Eso lo cierra el
+# operador de grado, que es otro commit.
+#
+# LA BAJA ANTERIOR, DEL 15-sep, Y LA CUENTA ERA ESTA. Los ocho campos de si o no se
 # fueron del presupuesto a su propio renglon: enumerarlos costaba 1.224
 # caracteres -bluetooth 652 y retroiluminacion 572- y el renglon nuevo cuesta
 # 471 y vive afuera, igual que los numeros. Con el techo viejo esos 1.224
@@ -191,7 +221,7 @@ LARGO_ETIQUETA = 60
 # decir tres cosas: justo la prosa que este techo existe para frenar. Bajando
 # 400 la leyenda dice MAS que antes -ocho campos nombrados contra dos
 # enumerados- y el tablero pasa de 2.656 a 2.460 tokens. Solo baja.
-TECHO_LEYENDA = 3000
+TECHO_LEYENDA = 1050
 
 # Un campo cargado en menos de esto no se enumera y se avisa aparte: filtrar
 # por ahi devuelve casi nada, y ese casi nada se lee como "no lo tenemos".
