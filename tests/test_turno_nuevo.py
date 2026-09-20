@@ -1311,3 +1311,37 @@ def test_el_reparto_declarado_en_una_vuelta_vale_en_la_que_trae_la_cuenta(
     assert cuenta.get("total_ars"), f"no hubo cuenta: {cuenta}"
     assert cuenta.get("total_final_ars"), (
         f"el reparto de la vuelta 1 se perdio: {cuenta}")
+
+
+def test_el_modelo_de_la_vuelta_lo_decide_EL_TABLERO(firestore_doble):
+    """La misma linea que decide si viaja el tablero decide el modelo, igual
+    que ya decide los moldes: donde hay herramienta se INTERPRETA, y donde no
+    hay, se REDACTA. Que las tres cosas salgan de la misma condicion hace
+    imposible que se desincronicen.
+
+    Y EL REDACTOR NO SE ENCARECE: la vuelta de contestar sigue con el modelo de
+    siempre. Si esto se rompe, se paga el escalon de arriba en cada turno para
+    escribir un texto con los datos ya resueltos delante.
+    """
+    from app.core import llm_reintento as LR
+    caja = []
+
+    class _Espia(_ClienteEspia):
+        def create(self, *, model, messages, **kw):
+            caja.append((model, bool(kw.get("tools"))))
+            return super().create(model=model, messages=messages, **kw)
+
+    espia = _Espia([], busca=2)  # dos vueltas de busqueda y la de contestar
+    viejo = LR._cliente
+    LR._cliente = lambda: espia
+    try:
+        asyncio.run(R._preguntar("V", "", [], "dame un teclado", "F", "t",
+                                 TIENDA))
+    finally:
+        LR._cliente = viejo
+    con_tablero = [m for m, t in caja if t]
+    sin_tablero = [m for m, t in caja if not t]
+    assert con_tablero and sin_tablero, caja
+    assert all(m == LR._modelo_decisor() for m in con_tablero), caja
+    assert all(m == LR._modelo() for m in sin_tablero), (
+        "el redactor se encarecio: paga el escalon de arriba para escribir")

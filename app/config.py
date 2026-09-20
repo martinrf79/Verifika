@@ -59,7 +59,12 @@ class Settings(BaseModel):
     # delante y no decide nada.
     # Vacio = mismo modelo que el redactor. Se le pone otro -ej gemini-3-pro-
     # SOLO para el decisor, sin encarecer el turno entero.
-    DECISOR_MODEL: str = os.getenv("DECISOR_MODEL", "")
+    # SE PRUEBA EL ESCALON DE ARRIBA, 20-sep, con el OK de Martin porque es
+    # plata. Es config operativa —la regla 2 la deja— y se revierte con una
+    # linea. NO es un alias `-latest`, que flota y te cambia modelo y costo sin
+    # avisar. Solo lo usa la vuelta que INTERPRETA; la que redacta sigue con el
+    # de siempre.
+    DECISOR_MODEL: str = os.getenv("DECISOR_MODEL", "gemini-3.8-flash")
     DECISOR_REASONING: str = os.getenv("DECISOR_REASONING", "low")
     # EL RAZONAMIENTO DEL REDACTOR. Estaba CLAVADO en "none" adentro de
     # `_redactar`. Se saco a config para poder MEDIRLO, y se midio con la clave

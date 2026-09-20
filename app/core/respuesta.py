@@ -564,7 +564,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     """
     from app.core import guardas_salida as gs
     from app.core import motor as MT
-    from app.core.llm_reintento import _cliente, _modelo
+    from app.core.llm_reintento import _cliente, _modelo, _modelo_decisor
     informe = _informe_en_blanco()
     cli = _cliente()
     if cli is None:
@@ -680,14 +680,54 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
         # forma: que bloques estaban, cuanto pesaban y en que vuelta.
         log.info("prompt_armado", trace_id=trace_id, vuelta=vuelta + 1,
                  con_tablero=bool(tools), con_moldes=not bool(tools),
+                 modelo=(_modelo_decisor() if tools else _modelo()),
                  bloques=len(turno), hallazgos=len(hallazgos),
                  tokens=sum(len(str(m.get("content") or "")) for m in turno) // 4)
 
-        def _call(_tools=tools, _msgs=turno):
+        # EL MODELO DE LA VUELTA QUE INTERPRETA (20-sep-2026), Y ES UNA
+        # MEDICION, NO UNA MEJORA DECLARADA.
+        #
+        # `llm_reintento._modelo_decisor` ya existia desde el 2-ago para esto
+        # exacto —"se le puede poner uno mas grande SOLO aca, que es donde se
+        # decide"— y quedo sin llamar cuando el decisor viejo se apago el
+        # 11-sep. Esto lo vuelve a enchufar en el camino vivo; no es una pieza
+        # nueva.
+        #
+        # LA MISMA LINEA QUE DECIDE EL TABLERO decide el modelo, igual que ya
+        # decide los moldes: donde hay herramienta se interpreta, y donde no
+        # hay, se redacta. Que las tres cosas salgan de la misma condicion hace
+        # imposible que se desincronicen.
+        #
+        # POR QUE SE PRUEBA: medido el 20-sep sobre M1 y M6, cinco turnos, la
+        # UNICA casilla que falla en los dos mensajes es la cuenta, y el
+        # tablero ya no la mueve —se midio tres veces que el modelo hace el
+        # reparto O la cuenta, nunca las dos—. Eso es firma de capacidad. Si
+        # esto no mueve el numero, el techo es otro y se revierte: es config
+        # operativa y sale con una linea.
+        modelo_vuelta = _modelo_decisor() if tools else _modelo()
+
+        def _call(_tools=tools, _msgs=turno, _modelo_v=modelo_vuelta):
             extra = {"tools": _tools, "tool_choice": "auto"} if _tools else {}
-            r = cli.chat.completions.create(
-                model=_modelo(), messages=_msgs, temperature=0.3,
-                max_tokens=900, response_format=_esquema_respuesta(), **extra)
+            try:
+                r = cli.chat.completions.create(
+                    model=_modelo_v, messages=_msgs, temperature=0.3,
+                    max_tokens=900, response_format=_esquema_respuesta(),
+                    **extra)
+            except Exception as e:  # noqa: BLE001 — ver el renglon de abajo
+                # EL TURNO NO SE CAE POR PROBAR UN MODELO. Un id mal escrito o
+                # una cuota agotada del escalon de arriba dejaria al cliente
+                # SIN RESPUESTA, y eso no es un costo aceptable para una
+                # medicion. Se reintenta una vez con el de siempre y se anota
+                # cual fue, para que el log no mienta sobre quien contesto.
+                if _modelo_v == _modelo():
+                    raise
+                log.warning("modelo_decisor_cayo", trace_id=trace_id,
+                            modelo=_modelo_v,
+                            error=f"{type(e).__name__}: {str(e)[:150]}")
+                r = cli.chat.completions.create(
+                    model=_modelo(), messages=_msgs, temperature=0.3,
+                    max_tokens=900, response_format=_esquema_respuesta(),
+                    **extra)
             return r.choices[0].message if r.choices else None
 
         try:
