@@ -243,15 +243,23 @@ def test_el_tablero_nombra_las_cinco_bocas(firestore_doble):
     no tienen cable queda VACIA, asi que lo que se mide ahora es lo otro. Las
     cinco se nombran y las cinco se pueden pedir; y el aviso de "todavia no
     tiene cable" no puede sobrevivir a su boca, porque un tablero que dice que
-    algo no se pide es un tablero que hace que no se pida."""
+    algo no se pide es un tablero que hace que no se pida.
+
+    Y CAMBIA EL 20-sep, CON LA FUSION DE LAS DOS AREAS DE LA CASA: politicas y
+    criterio se piden por el MISMO campo, asi que ya no hay un campo por boca y
+    la lista no se puede escribir a mano. Lo que se mide es el invariante, no
+    los nombres: TODA boca que el indice nombra tiene su campo en el esquema.
+    Asi una boca nueva no puede nacer nombrada y sin puerta, ni al reves."""
     d = MT.esquema(TIENDA)["function"]["description"].lower()
     props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
+    from app.core import bocas as BC
+    for b in BC.BOCAS:
+        assert b.campo in props, f"se nombra {b.nombre} y no se puede pedir"
     assert "catalogo" in d and "consultas" in props
     assert "politicas" in d and "temas" in props
-    for boca in ("compatibilidad", "envios", "criterio"):
-        assert boca in d, f"la boca con cable no se nombra: {boca}"
-        assert boca in props, f"se nombra {boca} y no se puede pedir"
     assert "conviene" in d, "el tablero no dice para que sirve la boca criterio"
+    for boca in ("compatibilidad", "envios"):
+        assert boca in d, f"la boca con cable no se nombra: {boca}"
     assert "no tiene cable" not in d and "no tienen cable" not in d, (
         "las cinco bocas tienen cable y el tablero sigue avisando que falta uno")
 

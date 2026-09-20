@@ -58,6 +58,55 @@ def temas_consultables(tienda_id: str) -> list[str]:
     return sorted(set(faq.keys()) | set(temas_criterio()))
 
 
+# LO QUE EL CLIENTE PIDE Y LO QUE ES CONDUCTA. El `pilar` de cada entrada de
+# `base_conocimiento.json` ya parte la base en cinco, y dos de esos cinco no
+# son preguntas de un cliente: `conversacion` es el saludo, el cierre y la
+# despedida, y `seguridad` es el jailbreak, la autoridad falsa y la amenaza.
+# Las usa el CODIGO por dentro; nadie las pregunta por WhatsApp.
+#
+# NO ES UNA LISTA ESCRITA A MANO, y por eso se nombran los dos pilares y no
+# los treinta ids: una entrada nueva con pilar `criterio` entra sola al enum,
+# y una de conducta se queda afuera sola. Es la misma regla de la leyenda.
+_PILARES_DE_CONDUCTA = ("conversacion", "seguridad")
+
+# LA VALVULA DE ESCAPE DEL ENUM, y es la regla 10.0 aplicada a un tema: el "no"
+# es un resultado de primera clase, no un error. Con el enum cerrado, un tema
+# de la casa que la fuente no tiene escrito dejaria de poder nombrarse, y el
+# modelo elegiria el mas parecido —que es exactamente la alucinacion que el
+# enum viene a cerrar—. Con esto puede decir que le preguntaron algo que la
+# lista no cubre, y vuelve por `temas_sin_resolver` como cualquier otro.
+SIN_TEMA = "la_casa_no_lo_tiene_escrito"
+
+
+def temas_del_tablero(tienda_id: str) -> list[str]:
+    """EL ENUM DE TEMAS TAL COMO VIAJA, y es `temas_consultables` sin conducta.
+
+    POR QUE VUELVE EL ENUM QUE LA FICHA 06 SACO EL 23-ago. Entonces eran 129
+    nombres y 2.299 bytes en CADA llamada, el bloque mas caro del esquema, y
+    salio por peso. Lo que cambio es la cuenta, medida el 20-sep: sacandole los
+    dos pilares de conducta quedan 99 nombres y 1.670 bytes, y la leyenda
+    acaba de devolver 1.087 caracteres al bajar su techo. Ahora se paga.
+
+    Y LO QUE COMPRA ES UN CANDADO DURO donde habia una atadura blanda. Sin
+    enum el modelo escribe las palabras del cliente y se entera DESPUES, por
+    `certificar_temas`, si la casa tenia eso escrito. Con enum, un tema que la
+    fuente no tiene no se puede ni nombrar, que es la misma regla con la que el
+    esquema cierra los nombres de campo del catalogo.
+    """
+    from app.core.guia_venta_prosa import meta_categoria
+    from app.core.guia_venta_prosa import temas as temas_criterio
+    from app.storage.firestore_client import get_all_faq
+    try:
+        faq = get_all_faq(tienda_id=tienda_id) or {}
+    except Exception as e:  # noqa: BLE001 — sin FAQ queda el criterio solo
+        log.warning("fuente_faq_error", error=f"{type(e).__name__}: {e}")
+        faq = {}
+    de_la_base = [t for t in temas_criterio()
+                  if (meta_categoria(t).get("pilar") or "")
+                  not in _PILARES_DE_CONDUCTA]
+    return sorted(set(faq.keys()) | set(de_la_base))
+
+
 # ── LA CERTIFICACION DE TEMAS: la regla cero, aplicada a un tema ────────────
 #
 # POR QUE EL ENUM SALIO (FICHA 06, 23-ago-2026). Los 129 temas pesaban 2.299
@@ -384,7 +433,10 @@ def _ficha_corta(prod: dict, cantidad: int = 1, specs_pedidas=None,
     return fuera
 
 
-TOPE_TEMAS = 3
+# SUBE DE 3 A 6 EL 20-sep, y el motivo entero esta en `motor.TOPE_TEMAS`: los
+# campos `temas` y `criterio` del tablero se fundieron en uno, asi que un solo
+# tope tiene que cubrir lo que antes cubrian dos de tres.
+TOPE_TEMAS = 6
 
 # Cuantas entradas de criterio vuelven en una llamada. El mismo tope que las
 # politicas y por el mismo motivo: ante un tema ambiguo se sirven todos los

@@ -103,10 +103,12 @@ BOCAS = (
             "ofrezcas como si cumpliera algo que el cliente excluyo.",
         )),
     Boca(
-        nombre="POLITICAS de la casa",
+        nombre="LO QUE LA CASA TIENE ESCRITO",
         campo="temas",
-        pide="garantia, cambios, cuotas, facturacion, plazos, descuentos. "
-             "Corto y con las palabras del cliente",
+        pide="sus POLITICAS —garantia, cambios, cuotas, facturacion, plazos— "
+             "y su CRITERIO —para que sirve, cual conviene, que diferencia "
+             "hay entre dos, que es gama media aca—. Elegis el nombre de la "
+             "lista; de que area es lo reparto yo",
         claves={"politicas": "politicas",
                 "temas_sin_resolver": "temas_sin_resolver"},
         lee=(
@@ -129,11 +131,16 @@ BOCAS = (
             "`sin_dato` se avisa, no se completa.",
         )),
     Boca(
-        nombre="CRITERIO",
-        campo="criterio",
-        pide="para que sirve, cual conviene, que diferencia hay entre dos, "
-             "que significa gama media. Es lo que la casa tiene escrito, no "
-             "tu opinion",
+        # LA MISMA BOCA QUE LA DE ARRIBA EN EL INDICE, Y DOS EN EL RETORNO
+        # (20-sep-2026). Son dos AREAS de la fuente y por eso siguen siendo
+        # dos entradas: cada una tiene su caja y su renglon de lectura. Lo
+        # que se unifico es COMO SE PIDEN, porque `criterio_de` y
+        # `politicas_de` son la misma funcion con otro nombre y la caja la
+        # elige el codigo. `pide` queda vacio para que el indice no diga dos
+        # veces lo mismo; el renglon de arriba ya nombra las dos.
+        nombre="",
+        campo="temas",
+        pide="",
         claves={"criterio": "criterio",
                 "criterio_sin_resolver": "criterio_sin_resolver"},
         lee=(
@@ -207,8 +214,7 @@ _PUERTA = (
     "busqueda: es la traduccion de su mensaje. Si el mensaje trae cinco cosas, "
     "las cinco entran en esta llamada, cada una en el campo que le toca.\n"
     "LO QUE NO ANOTES NO EXISTE: no lo busco, no vuelve, y el cliente se queda "
-    "sin esa parte. Y es ademas el UNICO lugar del que salen las fichas, los "
-    "precios y lo que la casa tiene escrito: si no lo pediste, no lo tenes.\n"
+    "sin esa parte. Es el UNICO lugar del que salen las fichas y los precios.\n"
     "DONDE VA CADA COSA:\n")
 
 _CIERRE_DEL_INDICE = (
@@ -221,7 +227,7 @@ def para_el_tablero() -> str:
     """VISTA 1 · el indice de la herramienta. Viaja en las vueltas de BUSCAR y
     muere en la de contestar, que es donde ya no hay nada que pedir."""
     renglones = [f"- {b.nombre}: {b.pide}. Va en `{b.campo}`."
-                 for b in BOCAS]
+                 for b in BOCAS if b.pide]
     return _PUERTA + "\n".join(renglones) + "\n" + _CIERRE_DEL_INDICE
 
 

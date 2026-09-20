@@ -67,10 +67,16 @@ TOPE_CONSULTAS = 6
 # nombro ancho, y ahi mostrar la lista es mejor que repreguntar.
 TOPE_AMBIGUO = 4
 
-# Cuantas politicas de la casa vuelven en una llamada. El mismo tope que ya
-# usaba `fuente`, y por el mismo motivo: ante un tema ambiguo se sirven TODOS
-# los candidatos en vez de elegir, y tres alcanza para eso.
-TOPE_TEMAS = 3
+# Cuantas cosas escritas por la casa vuelven en una llamada. El mismo tope que
+# usa `fuente`, y por el mismo motivo: ante un tema ambiguo se sirven TODOS los
+# candidatos en vez de elegir.
+#
+# SUBE DE 3 A 6 EL 20-sep Y NO ES AFLOJAR LA VARA: es la misma capacidad de
+# antes en un solo campo. Hasta hoy el modelo podia pedir 3 por `temas` y 3
+# por `criterio`, y los dos campos se fundieron en uno. Con 3 el mensaje que
+# pregunta garantia, cuotas y ademas para que sirve un mouse perdia una de las
+# tres, que es justo el defecto que esta tanda vino a cerrar.
+TOPE_TEMAS = 6
 
 # LOS TEMAS QUE EL ENVIO APAGA, y viven ACA desde el 13-sep. Con una tarifa
 # exacta cotizada, la politica publica apenas el RANGO -"de 5.000 a 12.000"- y
@@ -139,6 +145,8 @@ def esquema(tienda_id: str) -> dict:
                                            campos_filtrables,
                                            campos_ordenables, leyenda,
                                            recorrida)
+    from app.core.fuente import SIN_TEMA
+    from app.core.fuente import temas_del_tablero as _TEMAS
     r = recorrida(tienda_id)
     campos = sorted(campos_filtrables(tienda_id))
     categorias = [c for c, _ in r.get("categorias") or []]
@@ -259,24 +267,43 @@ def esquema(tienda_id: str) -> dict:
                     # en la fuente es el mismo, cambia que se busca. Una
                     # herramienta aparte serian dos puertas para lo mismo.
                     #
-                    # NO LLEVA ENUM, y va contra la costumbre del resto del
-                    # esquema. Los 129 temas pesaban 2.299 bytes en CADA
-                    # llamada, y ese enum ya se saco una vez por eso (FICHA 06,
-                    # 23-ago). El modelo nombra el tema con LAS PALABRAS DEL
-                    # CLIENTE y `fuente.certificar_temas` lo resuelve contra las
-                    # señas que la fuente ya tiene escritas: la atadura esta en
-                    # el codigo, no en el esquema.
+                    # UNA SOLA PUERTA PARA TODO LO QUE LA CASA TIENE
+                    # ESCRITO (20-sep-2026), y antes eran dos: `temas` y
+                    # `criterio`. Eran la MISMA puerta con dos nombres. Las dos
+                    # entraban por `fuente.certificar_temas` y las dos repartian
+                    # por area con `_de_la_casa`, o sea que LA CAJA LA ELIGE EL
+                    # CODIGO y da igual por cual de los dos campos entre el
+                    # tema. Al modelo se le estaba haciendo elegir, en cada
+                    # turno, una cosa que el codigo ya resuelve solo.
+                    #
+                    # Y ESTA ESCRITO DESDE EL 4-ago, en `temas_consultables`:
+                    # "un tema es un tema; de que archivo sale es asunto del
+                    # codigo". El tablero era el unico lugar que todavia no lo
+                    # cumplia.
+                    #
+                    # AHORA LLEVA ENUM, y eso da vuelta la decision de la FICHA
+                    # 06 del 23-ago con la cuenta medida al lado. Entonces eran
+                    # 129 nombres y 2.299 bytes y salio por peso; hoy, sin los
+                    # dos pilares de conducta, son 104 y 1.821, y la leyenda
+                    # acaba de devolver 1.087 caracteres bajando su techo.
+                    #
+                    # LO QUE COMPRA: un candado duro donde habia atadura
+                    # blanda. Un tema que la casa no tiene escrito deja de
+                    # poder nombrarse, que es la misma regla con la que el
+                    # esquema cierra los nombres de campo del catalogo.
                     "temas": {
-                        "type": "array", "items": {"type": "string"},
+                        "type": "array",
+                        "items": {"type": "string",
+                                  "enum": _TEMAS(tienda_id) + [SIN_TEMA]},
+                        # LA DESCRIPCION NO REPITE EL INDICE, y eso es el
+                        # bloque 0 de CLAUDE.md: la segunda descripcion de lo
+                        # mismo es el telefono descompuesto. QUE contesta esta
+                        # boca lo dice el indice, arriba; aca va solo como se
+                        # elige y que pasa si no esta.
                         "description": (
-                            "Lo que el cliente pregunta sobre la CASA y no "
-                            "sobre un producto: garantia, cambios, cuotas, "
-                            "facturacion, plazos. Nombra el tema CORTO, en "
-                            "POCAS PALABRAS y con las del cliente: 'garantia', "
-                            "'cambios', no la frase entera que escribio. Te "
-                            "devuelvo lo que la casa tiene escrito, y si no lo "
-                            "tiene te lo digo y se lo decis asi. Hasta "
-                            f"{TOPE_TEMAS}.")},
+                            "Elegi el nombre de la lista que cubre lo que "
+                            f"pregunto. Si ninguno lo cubre poné '{SIN_TEMA}' "
+                            f"y se lo decis asi. Hasta {TOPE_TEMAS}.")},
                     # LA BOCA DE COMPATIBILIDAD, Y ES UN CAMPO MAS DE LA MISMA
                     # PUERTA (13-sep-2026). Mismo criterio que `temas`: el
                     # mecanismo de preguntarle a la fuente es el mismo, cambia
@@ -336,28 +363,17 @@ def esquema(tienda_id: str) -> dict:
                             "sin_dato con el motivo escrito; el sin_dato no "
                             "se completa, se avisa. Hasta "
                             f"{TOPE_COMPAT}.")},
-                    # LA BOCA DE CRITERIO, Y ES UN CAMPO MAS DE LA MISMA PUERTA
-                    # (13-sep-2026). Cuarta vez el mismo criterio: `temas`,
-                    # `compatibilidad`, `envios` y esto preguntan a la fuente
-                    # por areas distintas con el MISMO mecanismo. Una
-                    # herramienta aparte serian dos puertas para lo mismo.
-                    #
-                    # TAMPOCO LLEVA ENUM, por lo mismo que `temas`: los 129
-                    # nombres pesaban 2.299 bytes en cada llamada. El modelo lo
-                    # nombra con LAS PALABRAS DEL CLIENTE y lo certifica
-                    # `fuente.criterio_de` contra los disparadores que la
-                    # fuente ya tiene escritos.
-                    "criterio": {
-                        "type": "array", "items": {"type": "string"},
-                        "description": (
-                            "Para que SIRVE algo, cual CONVIENE segun el uso, "
-                            "que diferencia hay entre dos, y que significa "
-                            "gama baja o media aca. Nombralo CORTO y con las "
-                            "palabras del cliente: 'mouse', 'para jugar', "
-                            "'gama media'. Es el criterio de la casa, no una "
-                            "ficha: no trae numeros ni precios, esos salen de "
-                            "`consultas`. Si la casa no lo tiene escrito te lo "
-                            f"digo y se lo decis asi. Hasta {TOPE_CRITERIO}.")},
+                    # EL CAMPO `criterio` SE BORRO EL 20-sep, y es la vieja
+                    # que se apaga por la que se prende. Nacio el 13-sep como
+                    # la quinta boca cableada, y lo que se vio despues es que
+                    # no era una puerta distinta: `criterio_de` y
+                    # `politicas_de` son la misma funcion con otro nombre —la
+                    # misma certificacion y el mismo reparto por area— asi que
+                    # el campo solo le pedia al modelo que adivinara nuestro
+                    # archivero. La BOCA sigue viva y sigue devolviendo su
+                    # caja; lo que se apaga es la segunda forma de pedirla.
+                    # `motor.buscar` conserva el parametro para no romper a
+                    # quien lo llame, pero el tablero ya no lo ofrece.
                     # LA CUENTA, Y NO ES UNA BOCA: NO TIENE AREA DE FUENTE.
                     # Es aritmetica sobre lo que las bocas ya devolvieron, y
                     # por eso vive en el RETORNO. Es un campo mas de la misma
@@ -1229,13 +1245,23 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
                         error=f"{type(e).__name__}: {str(e)[:120]}")
     cotizado = any(f.get("monto_ars") for f in fuera_envios.get("filas") or [])
 
+    # LA VALVULA DE ESCAPE NO SE CERTIFICA, SE CONTESTA. `SIN_TEMA` es el valor
+    # que el enum le deja escribir al modelo cuando el cliente pregunto algo de
+    # la casa que la lista no cubre. Mandarlo al certificador seria pedirle que
+    # le busque señas a una frase nuestra, y con las raices de cuatro letras
+    # pegaria con cualquier cosa; va derecho a `sin_resolver`, que es la caja
+    # que ya significa "eso la casa no lo tiene escrito".
+    from app.core.fuente import SIN_TEMA
+    pedidos = [t for t in (temas or []) if t != SIN_TEMA]
     fuera_temas, sin_resolver = [], []
     criterios, sin_criterio = [], []
-    if temas:
+    if len(pedidos) != len(temas or []):
+        sin_resolver.append(SIN_TEMA)
+    if pedidos:
         try:
-            r = politicas_de(list(temas)[:TOPE_TEMAS], tienda_id)
+            r = politicas_de(pedidos[:TOPE_TEMAS], tienda_id)
             fuera_temas = list(r["politicas"])
-            sin_resolver = r["sin_resolver"]
+            sin_resolver += r["sin_resolver"]
             # EL TEMA QUE LA FAQ NO CONTESTA VUELVE POR SU BOCA, no rotulado
             # como politica: el reparto por area lo hace `fuente`, que es la
             # que sabe de que archivo salio cada texto.
