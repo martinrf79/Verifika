@@ -1006,3 +1006,53 @@ def test_el_TOTAL_de_un_pedido_SI_valida_stock():
     c = _cuenta({"items": [{"id": "MOU0003", "cantidad": 2}]})
     assert "total_ars" not in c
     assert "Stock insuficiente" in c["sin_total"]
+
+
+# ── LA FILA TRAE EL CAMPO POR EL QUE SE PREGUNTO (20-sep-2026) ─────────────
+
+def test_la_fila_trae_el_campo_de_la_CONDICION():
+    """ES EL MISMO DEFECTO QUE `no_cumple`, UN ESCALON MAS ARRIBA.
+
+    `no_cumple` lo cerraba solo en el RESCATE, o sea cuando el veredicto es
+    `no_existe`. Medido el 20-sep contra el catalogo vivo: una busqueda con
+    condicion sobre `pais_fabricacion` devolvia filas con id, nombre,
+    categoria, stock, precio, modelo y specs, y NI UN DATO del pais. El modelo
+    tiene que hablar del origen y no tiene el origen delante.
+
+    Y LOS OPERADORES DE GRADO LO DESTAPARON: con `prefiere` y `evita` el
+    veredicto es siempre `existe`, asi que el rescate no corre nunca y las
+    filas volvieron a viajar mudas. Una preferencia sin el valor al lado es
+    peor que un filtro: el modelo recibe una lista ordenada y no puede decir
+    por que ni cuales cumplen.
+    """
+    for operador in ("contiene", "evita", "prefiere"):
+        r = _una({"categoria": "auriculares", "busco": "varios", "cuantos": 3,
+                  "condiciones": [{"campo": "pais_fabricacion",
+                                   "operador": operador, "valor": "china"}]})
+        assert r["filas"], operador
+        for f in r["filas"]:
+            assert f.get("pais_fabricacion"), (
+                f"fila muda con `{operador}`: {f.get('nombre')}")
+
+
+def test_la_fila_trae_el_campo_del_ORDEN():
+    """Ordenar por un campo que el modelo no ve es pedirle que confie en la
+    fila de arriba."""
+    r = _una({"categoria": "teclado", "busco": "varios", "cuantos": 3,
+              "ordenar_por": {"campo": "peso_gramos", "direccion": "min"}})
+    pesos = [f.get("peso_gramos") for f in r["filas"]]
+    assert all(p is not None for p in pesos), f"filas sin el peso: {pesos}"
+    assert pesos == sorted(pesos), f"el orden no se ve en las filas: {pesos}"
+
+
+def test_un_campo_sin_dato_NO_se_inventa_en_la_fila():
+    """Lo que no tiene dato cargado se omite, no se rellena: es la diferencia
+    entre "no lo tiene" y "no lo sabemos", que la FICHA 52 llama el defecto mas
+    caro del nicho."""
+    r = _una({"categoria": "auriculares", "busco": "varios", "cuantos": 5,
+              "condiciones": [{"campo": "memoria_video",
+                               "operador": "prefiere", "valor": "8gb"}]})
+    assert r["filas"], "una preferencia no puede vaciar el resultado"
+    sin = [f for f in r["filas"] if "memoria_video" not in f]
+    assert sin, ("se le invento `memoria_video` a auriculares, que no lo "
+                 "tienen cargado")

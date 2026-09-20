@@ -1065,9 +1065,42 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     #
     # `dato_que_falla` ya estaba escrita para esto, con su caso y su fecha, y no
     # la llamaba nadie: quedo suelta cuando se apago el bloque que la usaba.
+    # EL CAMPO POR EL QUE SE PREGUNTO VIAJA EN CADA FILA (20-sep-2026).
+    #
+    # ES EL MISMO DEFECTO QUE `no_cumple` YA CERRABA, y lo que se vio el 20-sep
+    # es que lo cerraba SOLO EN EL RESCATE. Medido contra el catalogo vivo: una
+    # busqueda de auriculares con condicion sobre `pais_fabricacion` devuelve
+    # filas con id, nombre, categoria, stock, precio, modelo, specs y
+    # caracteristicas_extra, y NI UN DATO del pais. El modelo tiene que hablar
+    # del origen y no tiene el origen delante.
+    #
+    # Y LOS OPERADORES DE GRADO LO DESTAPARON. Con `prefiere` y `evita` el
+    # veredicto es siempre `existe`, asi que el rescate —que es quien estampaba
+    # `no_cumple`— no corre nunca, y las filas volvieron a viajar mudas. Una
+    # preferencia sin el valor al lado es peor que un filtro: el modelo recibe
+    # una lista ordenada y no puede decir por que ni cuales cumplen.
+    #
+    # LO MISMO PARA EL ORDEN: si se ordeno por peso, el peso viaja. Ordenar por
+    # un campo que el modelo no ve es pedirle que confie en la fila de arriba.
+    #
+    # NO PISA NADA: si la ficha del rubro ya trae el campo, se respeta el que
+    # estaba. Y lo que no tiene dato cargado no se inventa: se omite, que es la
+    # diferencia entre "no lo tiene" y "no lo sabemos".
+    from app.core.filtros_catalogo import SIN_CAMPO as _SIN, _valor_crudo
+    campos_pedidos = [c.campo for c in conds if c.campo != _SIN]
+    if campo_orden:
+        campos_pedidos.append(campo_orden)
+    campos_pedidos = sorted(set(campos_pedidos))
+
     filas = []
     for p in quedan[:tope]:
         f = _ficha_corta(p, unidades, specs_pedidas, detalle)
+        for campo in campos_pedidos:
+            if campo in f:
+                continue
+            crudo = _valor_crudo(p, campo)
+            if crudo not in (None, "", [], {}):
+                f[campo] = crudo
         if rescate:
             motivo_fila = dato_que_falla(p, duras, tienda_id)
             if motivo_fila:
