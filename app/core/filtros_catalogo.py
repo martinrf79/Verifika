@@ -201,7 +201,18 @@ LARGO_ETIQUETA = 60
 # en cuantos productos esta cargado el campo, dividido lo que cuesta su
 # renglon. Asi el presupuesto se llena con lo que mas contesta por caracter, y
 # una tienda nueva con otra fuente se ordena sola.
-# BAJA A 1.050 EL 20-sep, Y LA CUENTA ES ESTA. Medido: con el techo en 3.000 la
+# BAJA OTRA VEZ, A 900, EL 20-sep, PARA PAGAR EL VINCULO. Sale `ram`: 154
+# caracteres, rendimiento 2,01, el que peor rinde de los que quedaban. La
+# leyenda pasa de 1.008 a 854 y quedan seis campos. Mismo criterio que `marca`
+# y `caracteristicas_extra` —lo decide el RENDIMIENTO, no una lista— y misma
+# cobertura de reemplazo: el HUECO DE VALOR devuelve los valores reales de
+# `ram` cuando el modelo escribe uno que la fuente no usa.
+#
+# LO QUE COMPRA: el campo `envios` pasa de 304 a 460 bytes porque cada destino
+# lleva ahora QUE va ahi. Es la casilla del VINCULO, que se medio 0 de 4 en
+# cuatro tandas porque el modelo NO TENIA DONDE escribirla.
+#
+# LA BAJA ANTERIOR, A 1.050, Y LA CUENTA ERA ESTA. Medido: con el techo en 3.000 la
 # leyenda gasta 2.095 caracteres en nueve campos, y los dos mas caros son los
 # dos que menos rinden. `marca` pesa 724 —el 35% del gasto, 75 valores— y
 # `caracteristicas_extra` 363. Con 1.050 entran siete campos por 1.008 y esos
@@ -239,7 +250,7 @@ LARGO_ETIQUETA = 60
 # decir tres cosas: justo la prosa que este techo existe para frenar. Bajando
 # 400 la leyenda dice MAS que antes -ocho campos nombrados contra dos
 # enumerados- y el tablero pasa de 2.656 a 2.460 tokens. Solo baja.
-TECHO_LEYENDA = 1050
+TECHO_LEYENDA = 900
 
 # Un campo cargado en menos de esto no se enumera y se avisa aparte: filtrar
 # por ahi devuelve casi nada, y ese casi nada se lee como "no lo tenemos".
