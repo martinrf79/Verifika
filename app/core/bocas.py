@@ -179,12 +179,37 @@ BOCAS = (
 
 # Lo que NO es de ninguna boca: la puerta en si. Se dice una vez, arriba del
 # indice, y no depende de cuantos ramales haya enchufados.
+# LA ORDEN DE ENTRADA ES ANOTAR, NO BUSCAR (20-sep-2026). Y es el cambio mas
+# barato de los cuatro que salieron de medir la interpretacion en vivo.
+#
+# EL DEFECTO, medido CUATRO veces con el mismo mensaje el 19-sep —trazas
+# fa4b30a4, b9dc345c, 39d84209 y fdd87c02, todas por WhatsApp—: la vuelta 1
+# sale IDENTICA las cuatro veces. No hay varianza, asi que no es el modelo
+# inestable. Declaro los cuatro rubros y los tres destinos, y dejo afuera
+# las tres cosas que no le parecieron una busqueda:
+#
+#     "las menos partes chinas posibles"          0 de 4
+#     "divide el presupuesto en setenta treinta"  0 de 4
+#     que producto va a que destino               0 de 4
+#
+# EL TEXTO ERA LA CAUSA, y estaba a la vista: el indice arrancaba con "Busca
+# en la fuente de la tienda". Es una orden de BUSCAR. El modelo la cumplio al
+# pie de la letra: mando a buscar lo buscable y tiro el resto. Una preferencia
+# no es una busqueda, un reparto de pago tampoco, y una atadura entre producto
+# y destino menos.
+#
+# LO QUE NO SE HACE, y ya se pago: esto NO agrega un campo ni lo hace
+# obligatorio. El 16-sep la planilla del pedido nacio obligatoria y el modelo
+# se degrado de dos vueltas a cinco. Aca cambia una sola cosa, el verbo, y se
+# vuelve con git.
 _PUERTA = (
-    "Busca en la fuente de la tienda. Es el UNICO lugar del que salen las "
-    "fichas, los precios y lo que la casa tiene escrito: llamala ANTES de "
-    "hablar de un producto o de una politica, y si no lo buscaste, no lo "
-    "tenes.\n"
-    "LO QUE PODES PEDIR ACA:\n")
+    "ANOTA ACA TODO LO QUE TE PIDIO EL CLIENTE, y yo lo busco. Esto no es una "
+    "busqueda: es la traduccion de su mensaje. Si el mensaje trae cinco cosas, "
+    "las cinco entran en esta llamada, cada una en el campo que le toca.\n"
+    "LO QUE NO ANOTES NO EXISTE: no lo busco, no vuelve, y el cliente se queda "
+    "sin esa parte. Y es ademas el UNICO lugar del que salen las fichas, los "
+    "precios y lo que la casa tiene escrito: si no lo pediste, no lo tenes.\n"
+    "DONDE VA CADA COSA:\n")
 
 _CIERRE_DEL_INDICE = (
     "- Todas en la MISMA llamada, y varias consultas juntas si el cliente "
