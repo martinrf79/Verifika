@@ -1056,3 +1056,46 @@ def test_un_campo_sin_dato_NO_se_inventa_en_la_fila():
     sin = [f for f in r["filas"] if "memoria_video" not in f]
     assert sin, ("se le invento `memoria_video` a auriculares, que no lo "
                  "tienen cargado")
+
+
+# ── EL VINCULO: QUE VA A CADA DESTINO (20-sep-2026) ────────────────────────
+
+def test_el_vinculo_vuelve_pegado_a_su_tarifa():
+    """LA CASILLA QUE NO SE PODIA LLENAR, medida 0 de 4 en cuatro tandas.
+
+    `envios` era una lista de TEXTOS pelados, asi que "un auricular y un mouse
+    va a Cordoba" no tenia donde escribirse. El modelo declaraba los tres
+    destinos y la atadura se perdia: no era que interpretara mal, era que el
+    tablero no tenia la casilla.
+
+    Y VUELVE PEGADO A SU TARIFA, no en una lista aparte: separados, el modelo
+    tiene tres montos y tres frases y los aparea de memoria, que es la junta
+    blanda que el MAPA_CABLEADO ya tiene numerada cuatro veces.
+    """
+    r = MT.buscar([], TIENDA, "t",
+                  envios=[{"destino": "Posadas", "va": "los otros dos"},
+                          {"destino": "Concordia"}])
+    filas = {f["destino"]: f for f in (r.get("envios") or {}).get("filas") or []}
+    assert filas["Posadas"].get("monto_ars"), "se rompio la cotizacion"
+    assert filas["Posadas"].get("va") == "los otros dos"
+    assert "va" not in filas["Concordia"], (
+        "se le invento un vinculo a un destino que el cliente no ato")
+
+
+def test_un_destino_en_TEXTO_PELADO_sigue_valiendo():
+    """La forma vieja no se rompe: es lo que llega desde la memoria de una
+    charla anterior, y un turno que se cae por eso deja al cliente sin envio."""
+    r = MT.buscar([], TIENDA, "t", envios=["Posadas"])
+    filas = (r.get("envios") or {}).get("filas") or []
+    assert filas and filas[0].get("monto_ars"), f"{filas}"
+
+
+def test_el_tablero_tiene_la_casilla_del_vinculo(firestore_doble):
+    """Sin esto en el esquema, el modelo no puede declararlo aunque quiera."""
+    envios = (MT.esquema(TIENDA)["function"]["parameters"]
+              ["properties"]["envios"]["items"])
+    assert envios["type"] == "object", "`envios` volvio a ser texto pelado"
+    assert "destino" in envios["properties"] and "va" in envios["properties"]
+    assert envios["required"] == ["destino"], (
+        "el vinculo no puede ser obligatorio: el 16-sep un campo obligatorio "
+        "degrado el comportamiento de llamada de dos vueltas a cinco")

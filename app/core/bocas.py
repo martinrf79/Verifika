@@ -163,7 +163,8 @@ BOCAS = (
             "Si volvieron, SE DICEN en esta respuesta: nombra cada destino "
             "con la palabra del cliente y escribi {{envio:<destino>}} donde "
             "va el monto. Un envio cotizado y no dicho es el dato mas caro "
-            "que se puede tirar.",
+            "que se puede tirar. Si la fila trae `va`, eso es lo que el "
+            "cliente mando a ESE destino: deciselo junto con su tarifa.",
         )),
     Boca(
         nombre="CUENTA",

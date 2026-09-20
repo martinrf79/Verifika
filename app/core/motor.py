@@ -230,10 +230,11 @@ def esquema(tienda_id: str) -> dict:
             # copia en vez de multiplicar. No se confunde con `cuantos`: una
             # dice cuantas FILAS mostrar, la otra cuantas UNIDADES compra.
             "cantidad": {"type": "integer",
-                         "description": "Cuantas UNIDADES de cada producto "
-                                        "pide el cliente. Con dos o mas te "
-                                        "devuelvo el subtotal ya calculado. "
-                                        "No es la cantidad de filas."},
+                         # QUE DEVUELVE NO VA ACA: el subtotal lo explica el
+                     # encabezado del retorno, que nace con el retorno.
+                     "description": "Cuantas UNIDADES de cada producto pide "
+                                    "el cliente. No es la cantidad de "
+                                    "filas."},
             # EL CAMPO `specs` SE BORRO EL 14-sep, y es la vieja que se apaga
             # por la que se prende. Se habia agregado el 13-sep para que el
             # mapa de specs no engordara la ficha, pero lo que engordaba era la
@@ -334,15 +335,39 @@ def esquema(tienda_id: str) -> dict:
                     # tabla, no el modelo-; lo que cambia es quien PIDE. El
                     # modelo nombra el lugar con las palabras del cliente, que
                     # ademas es la unica parte del envio que no es argentina.
+                    # EL VINCULO (20-sep-2026), Y ES LA CASILLA QUE NO SE
+                    # PODIA LLENAR. `envios` era una lista de TEXTOS pelados,
+                    # asi que "un auricular y un mouse va a Cordoba" no tenia
+                    # donde escribirse: el modelo declaraba los tres destinos y
+                    # la atadura se perdia, medido 0 de 4 en cuatro tandas.
+                    #
+                    # NO SE CERTIFICA NADA, y por eso es barato: `va` son las
+                    # palabras del cliente y viajan como vinieron. El destino
+                    # lo sigue clasificando la tabla —eso no cambia— y `va`
+                    # vuelve pegado a su tarifa para que el modelo pueda decir
+                    # QUE va a cada lado en vez de listar tres montos sueltos.
                     "envios": {
-                        "type": "array", "items": {"type": "string"},
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "destino": {
+                                    "type": "string",
+                                    "description": "Con LAS PALABRAS del "
+                                                   "cliente: 'Posadas', "
+                                                   "'CP 5121'."},
+                                "va": {
+                                    "type": "string",
+                                    "description": "QUE va a ese destino, con "
+                                                   "las palabras del cliente: "
+                                                   "'un auricular y un "
+                                                   "mouse'."}},
+                            "required": ["destino"]},
                         "description": (
-                            "Los destinos que nombro el cliente, con SUS "
-                            "palabras: 'Posadas', 'CP 5121'. Si lo dijo turnos "
-                            "atras esta en tu memoria. Te devuelvo la tarifa "
-                            "exacta, el plazo y el hueco que copias donde vaya "
-                            f"el costo: el monto NO lo escribis vos. Hasta "
-                            f"{TOPE_ENVIOS}.")},
+                            "Si lo dijo turnos atras esta en tu memoria. Te "
+                            "devuelvo la tarifa y el hueco que copias donde "
+                            "vaya el costo: el monto NO lo escribis vos. "
+                            f"Hasta {TOPE_ENVIOS}.")},
                     # EL REPARTO DEL PAGO SUBE AL PRIMER NIVEL (20-sep-2026)
                     # y sale de adentro de `cuenta`, donde nacio el 14-sep.
                     #
@@ -1318,11 +1343,32 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
     # el mismo numero y gana el flojo. El apagado vivia en el turno, que era
     # quien empujaba el envio; ahora las dos cosas entran por aca y la decision
     # vive donde se ven las dos.
+    # LAS DOS FORMAS, y la vieja no se rompe. Desde el 20-sep el modelo manda
+    # objetos con `destino` y `va`; un texto pelado sigue valiendo y es lo que
+    # llega desde la memoria de una charla vieja.
+    nombres, el_va = [], {}
+    for e in (envios or []):
+        if isinstance(e, dict):
+            d = str(e.get("destino") or "").strip()
+            if not d:
+                continue
+            nombres.append(d)
+            if str(e.get("va") or "").strip():
+                el_va[d] = str(e["va"]).strip()
+        elif str(e or "").strip():
+            nombres.append(str(e).strip())
+
     fuera_envios: dict = {}
-    if envios:
+    if nombres:
         try:
-            fuera_envios = cotizar_destinos(envios, tienda_id,
+            fuera_envios = cotizar_destinos(nombres, tienda_id,
                                             localidad_previa) or {}
+            # EL VINCULO VUELVE PEGADO A SU TARIFA. Separados, el modelo tiene
+            # tres montos y tres frases y los aparea de memoria, que es la
+            # junta blanda que este repo ya tiene numerada cuatro veces.
+            for fila in fuera_envios.get("filas") or []:
+                if fila.get("destino") in el_va:
+                    fila["va"] = el_va[fila["destino"]]
         except Exception as e:  # noqa: BLE001 — sin tarifa no se inventa una
             log.warning("motor_envio_error", trace_id=trace_id,
                         error=f"{type(e).__name__}: {str(e)[:120]}")
