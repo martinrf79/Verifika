@@ -236,6 +236,30 @@ def campos_nombrados(texto: str, campos) -> list:
     return fuera
 
 
+# LAS CLAVES DE NUESTRO PROPIO FORMULARIO NO SE PUEDEN RECLAMAR (20-sep-2026).
+#
+# EL CASO, MEDIDO EN PRODUCCION, revision 00561, turno `2808116e`:
+#
+#     afirmo_sin_mirar     campos: ["tipo"]
+#     correccion_de_estado campo: "tipo"
+#     tipo_vacio
+#     turno_ok             tipo '', 15.705 ms, largo 153
+#
+# El catalogo VIVO tiene un campo llamado `tipo`. El modelo escribio la palabra
+# "tipo" en su respuesta —que es castellano comercial y ademas es la clave que
+# NOSOTROS le pedimos emitir en `_esquema_respuesta`— y la guarda lo leyo como
+# una afirmacion sobre el catalogo. La correccion lo mando a hablar del campo
+# `tipo`, el JSON salio sin encasillar, y el turno costo cuatro veces la
+# latencia para entregar 153 caracteres.
+#
+# NO ES PERSEGUIR VOCABULARIO, que es lo que este repo tiene prohibido: la
+# lista no sale del castellano, sale de NUESTRO esquema. Al modelo se le exige
+# emitir esas claves, asi que su presencia en el texto no es evidencia de
+# nada. Un candado en `tests/` las cruza contra el esquema para que no se
+# separen el dia que el formulario cambie.
+CLAVES_DE_LA_RESPUESTA = ("tipo", "texto")
+
+
 def afirmo_sin_mirar(texto: str, tocados, tienda_id: str,
                      trace_id: str = "") -> list:
     """Los campos que la respuesta nombra y que el turno NUNCA tuvo delante.
@@ -259,7 +283,8 @@ def afirmo_sin_mirar(texto: str, tocados, tienda_id: str,
     # LOS TOCADOS SE SACAN ANTES DE MIRAR EL TEXTO, y no despues: un campo
     # respaldado no tiene por que costar una busqueda en la respuesta.
     sin_respaldo = sorted(campos_nombrados(
-        texto, campos - {str(t) for t in (tocados or ())}))
+        texto, campos - {str(t) for t in (tocados or ())}
+        - set(CLAVES_DE_LA_RESPUESTA)))
     if sin_respaldo:
         # EL RENGLON ES LA PIEZA. Sale con el campo y con cuantos campos tuvo
         # el turno en la mano, que es lo que permite leer el falso positivo:
