@@ -64,42 +64,64 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
-**20-sep: LA INTERPRETACION DE LA VUELTA 1, MEDIDA EN PRODUCCION.** Siete
-commits, de `8e21013` a `71c1220`, con cuatro tandas de WhatsApp en el medio. La
-vuelta 1 del mensaje complejo pasa de declarar **3 de 9** cosas a **6 de 9**, y
-la latencia a la mitad. Ultima tanda, cuatro corridas en la revision 00557, con
-la vuelta 1 IDENTICA las cuatro veces:
+**20-sep: LA INTERPRETACION DE LA VUELTA 1 PASO DE 3 DE 9 A 11 DE 12.** Diez
+commits, de `8e21013` a `4fb0500`, medidos en WhatsApp real. Lo que cambio el
+tablero: la orden de entrada ANOTA en vez de buscar, `temas` y `criterio` se
+fundieron en un campo con enum de 104, entraron los operadores de GRADO
+`prefiere` y `evita`, `reparto_pago` subio al primer nivel, `origen` salio del
+registro por ser prosa con gemelo, la fila trae el campo por el que se
+pregunto, y `envios` lleva EL VINCULO —que va a cada destino—.
 
-    CORRECCION origen      4 de 4  ->  9 de 9  ->  0 de 4
-    vueltas por turno         3,5  ->     5,0  ->    2,75
-    latencia               7.167ms ->  7.700ms ->  4.443ms
-    la restriccion en v1   0 de 4               ->  4 de 4
-    la direccion `evita`        -               ->  4 de 4
-    el setenta treinta     0 de 4               ->  4 de 4
-    el teclado en v1       4 de 4  ->  0 de 3  ->   4 de 4
-    la cuenta              0 de 4               ->  2 de 4, en la vuelta 2
-    veredictos `no_existe`      4               ->       0
+    la restriccion en la vuelta 1   0 de 4  ->  4 de 4
+    la direccion `evita`                 -  ->  4 de 4
+    el setenta treinta              0 de 4  ->  4 de 4
+    el vinculo producto a destino   0 de 4  ->  4 de 4
+    vueltas por turno                  3,5  ->  2,75
+    latencia                       7.167ms  ->  ~4.400ms
+    veredictos `no_existe`               4  ->  0
 
-**LO QUE ENSEÑO LA TANDA, y vale mas que los numeros:** los cambios
-ESTRUCTURALES —un campo plano, un operador nuevo, un enum, un campo que sale del
-registro, el campo de la condicion estampado en cada fila— pegaron 5 de 5 y se
-quedaron. Los de PROSA —reescribir un texto del tablero— fueron 1 de 3 y dos
-rompieron algo que ya andaba. Y con tres corridas por tanda solo se leen efectos
-enormes: un 0 de 3 que pasa a 3 de 3 se lee; un 3 de 3 que pasa a 2 de 3 es
-ruido.
+**LA VARA AHORA ESTA ESCRITA, y es lo que mas vale de la sesion.**
+`banco_pruebas/vara_interpretacion.json` tiene seis mensajes con las casillas
+que el modelo deberia llenar, y `leer_interpretacion.py` las cruza contra los
+logs de PRODUCCION. No llama al modelo ni usa ninguna clave de LLM. Ultimo
+numero limpio, revision 00560: **M1 11 de 12, M6 6 de 7**.
 
-**20-sep: LO QUE QUEDA ABIERTO DE LA INTERPRETACION.** Tres cosas, y ninguna se
-arregla con prosa del tablero.
-- **EL VINCULO**, 0 de 4: que producto va a que destino. `envios` es una lista
-  de textos pelados y no hay donde atar. Es el unico que toca motor de verdad.
-- **LA CUENTA EN LA VUELTA 1**, 2 de 4 y siempre en la vuelta 2. Medido dos
-  veces que la cuenta y el reparto son un SUBE Y BAJA: el modelo hace una o la
-  otra, y el texto solo mueve cual. Es firma de techo de capacidad, no de
-  instruccion faltante.
-- **EL MODELO DE L1 NO SE PROBO.** `config.py` corre el escalon mas barato y
-  `DECISOR_MODEL` esta vacio. Probar el de arriba SOLO para la vuelta de
-  interpretar es lo unico que dice si el techo es el tablero o el modelo. Es
-  plata: **ESPERA A MARTIN.**
+**QUE ENSEÑO LA SESION:** los cambios ESTRUCTURALES —un campo plano, un
+operador, un enum, un campo que sale del registro— pegaron 6 de 6 y se
+quedaron. Los de PROSA fueron 1 de 3 y dos rompieron algo que ya andaba.
+
+---
+
+## Lo que quedo ABIERTO al cerrar el 20-sep
+
+**1. LA CUENTA EN LA VUELTA 1 — la unica casilla que falla en M1 y M6.** Medido
+tres veces: el modelo hace el reparto O la cuenta, nunca las dos, y el texto
+solo mueve cual. El tablero ya no la mueve.
+
+**2. EL CAMPO `tipo` ROMPE TURNOS, y esta sin resolver.** El catalogo VIVO
+tiene un campo `tipo`; el modelo esta OBLIGADO a emitir la clave `tipo` por
+`_esquema_respuesta`; `guardas_salida.afirmo_sin_mirar` lee lo segundo como una
+afirmacion sobre lo primero. Medido, turno `2808116e`: correccion, `tipo_vacio`,
+**15.705 ms y 153 caracteres** contra los 4.400 y 574 de un turno sano. Le pasa
+a CUALQUIER modelo. Se intento apagar la guarda para esas dos claves
+—`e69c54e`— y el turno siguiente salio con `plata_inventada` y 146 caracteres,
+asi que se revirtio: **apagarla a ciegas no es la solucion.** Falta entender por
+que el turno cambia de camino cuando no se corrige.
+
+**3. EL CATALOGO DE PRODUCCION TIENE COLUMNAS QUE EL CSV DEL REPO NO TIENE.**
+`tipo` es una: no esta en `data/clientes/verifika_prod/productos.csv` y si en
+Firestore. La regla 9 dice que el repo es la fuente. Es su propio trabajo.
+
+**4. EL ESCALON DE ARRIBA SE PROBO Y SE REVIRTIO EL MISMO DIA.** `DECISOR_MODEL`
+volvio a vacio. El cable quedo ENCHUFADO e inerte: `_modelo_decisor` se usa en
+la vuelta que interpreta, `prompt_armado` dice que modelo fue, el turno no se
+cae si el de arriba falla, y hay vara para que el redactor no se encarezca.
+Volver a probar es cambiar una linea. **OJO:** la medicion quedo sucia, porque
+el turno que se juzgo roto lo rompio el punto 2, no el modelo. Si se reintenta,
+primero el punto 2 y con el mensaje mas CORTO.
+
+**5. EL VINCULO EN EL MOTOR.** Hoy `va` viaja y vuelve pegado a su tarifa, que
+alcanza para interpretar y decir. Repartir la CUENTA por destino no se hizo.
 
 **15-sep: LA UNIDAD DE TRABAJO ABIERTA ES `arquitectura/FICHA_54_el_tablero_y_las_bocas.md`.**
 Consigna de Martin: lo que el modelo VE en el tablero tiene que ser exactamente
