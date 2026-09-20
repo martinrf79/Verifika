@@ -161,7 +161,8 @@ def test_el_empate_del_RESCATE_no_lo_pisa_el_chequeo_de_ambiguedad():
     de identidad que no encuentra ambiguedad no puede borrarla de paso."""
     r = _una({"texto": "mouse", "categoria": "mouse", "busco": "uno",
               "cuantos": 3,
-              "condiciones": [{"campo": "origen", "operador": "no_contiene",
+              "condiciones": [{"campo": "pais_fabricacion",
+                               "operador": "no_contiene",
                                "valor": "china"}]})
     assert r["veredicto"] == "no_existe"
     assert r["empatados"] > 10, f"se perdio el empate del rescate: {r}"
@@ -175,9 +176,14 @@ def test_la_fila_del_rescate_dice_el_DATO_por_el_que_no_cumple():
     parecido. Esas fichas viajaban MUDAS: el campo por el que se filtro no
     entra en la ficha corta, que trae los del rubro. El modelo recibia tres
     mouse sin un solo dato que lo contradiga, y ofrecer lo que el cliente acaba
-    de excluir queda a un paso."""
+    de excluir queda a un paso.
+
+    EL CAMPO CAMBIO EL 20-sep y el caso es el mismo: `origen` salio del
+    registro por ser prosa con gemelo, asi que el mismo pedido del cliente se
+    escribe ahora sobre `pais_fabricacion`, que es el gemelo normalizado."""
     r = _una({"texto": "mouse", "categoria": "mouse", "cuantos": 3,
-              "condiciones": [{"campo": "origen", "operador": "no_contiene",
+              "condiciones": [{"campo": "pais_fabricacion",
+                               "operador": "no_contiene",
                                "valor": "china"}]})
     assert r["veredicto"] == "no_existe"
     assert r["filas"], "el rescate tiene que traer lo mas parecido"
@@ -192,7 +198,8 @@ def test_una_fila_que_SI_cumple_no_lleva_el_renglon():
     modelo tiene que aprender a ignorar, y lo que se aprende a ignorar deja de
     leerse cuando importa."""
     r = _una({"categoria": "mouse", "cuantos": 3,
-              "condiciones": [{"campo": "origen", "operador": "contiene",
+              "condiciones": [{"campo": "pais_fabricacion",
+                               "operador": "contiene",
                                "valor": "china"}]})
     assert r["veredicto"] == "existe"
     assert all("no_cumple" not in f for f in r["filas"])

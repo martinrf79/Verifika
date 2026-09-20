@@ -39,8 +39,21 @@ def test_los_campos_filtrables_salen_del_catalogo_vivo():
     campos = FC.campos_filtrables(TIENDA)
     # columnas del catalogo
     for c in ("color", "material", "peso_gramos", "dimensiones",
-              "garantia_meses", "origen", "contenido_caja"):
+              "garantia_meses", "contenido_caja"):
         assert c in campos, c
+    # Y EL OTRO QUE DEJO DE ESTAR, 20-sep: `origen` es PROSA CON GEMELO. Sus
+    # 84 valores son frases —"marca logitech de suiza. fabricado en china."— y
+    # el mismo dato ya viaja normalizado en `pais_fabricacion` y `pais_marca`,
+    # que tienen 5 y 9 valores y estan en la leyenda. Filtrar por el daba cero
+    # y ademas la guarda de salida lo reclamaba en la respuesta, que costaba
+    # dos vueltas por turno. El motivo entero esta en `PROSA_CON_GEMELO`.
+    assert "origen" not in campos, (
+        "volvio `origen` al registro: filtrar por prosa da cero y la guarda "
+        "lo reclama")
+    # LA CONTRACARA, que es lo que hace que sea una regla y no una lista:
+    # `contenido_caja` tambien es prosa y se QUEDA, porque no tiene gemelo.
+    # "¿trae cable?" no lo contesta ningun otro campo.
+    assert campos["contenido_caja"] == "texto"
     # Y EL QUE DEJO DE ESTAR, 15-sep, FICHA 54 punto 3.1: `uso_recomendado` es
     # para que SIRVE algo, y eso ya lo contesta la boca `criterio`. Tenerlo
     # tambien aca eran dos caminos para la misma pregunta y el modelo elegia
@@ -129,7 +142,11 @@ def test_el_inventario_y_los_campos_salen_de_UNA_recorrida_y_UN_cache():
     from app.storage.firestore_client import invalidate_cache
 
     r = FC.recorrida(TIENDA)
-    assert r["campos"] == FC.campos_filtrables(TIENDA)
+    # LOS CAMPOS SALEN DE LA MISMA RECORRIDA, menos la prosa con gemelo, que
+    # se descuenta DESPUES: el catalogo se lee una sola vez igual.
+    assert ({k: v for k, v in r["campos"].items()
+             if k not in FC.PROSA_CON_GEMELO}
+            == FC.campos_filtrables(TIENDA))
     assert F.inventario(TIENDA)["productos"] == r["productos"] == 880
     assert len(r["categorias"]) == 22
 

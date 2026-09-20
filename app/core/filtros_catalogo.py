@@ -697,14 +697,56 @@ def condicion_sin_vocabulario(campo: str, operador: str, valor,
     return list(d["valores"][:TOPE_HUECO])
 
 
+# LA PROSA QUE YA VIAJA NORMALIZADA EN OTRO CAMPO (20-sep-2026).
+#
+# NO ES UNA LISTA DE EXCLUSIONES A GUSTO: es una regla con una condicion que se
+# puede verificar campo por campo. Un campo entra aca solo si cumple LAS DOS:
+# sus valores son PROSA —no entran en un renglon, `etiqueta` False— y el mismo
+# dato ya viaja NORMALIZADO en otro campo del catalogo. Filtrar por el da
+# basura y ademas es innecesario, porque el gemelo contesta lo mismo y mejor.
+#
+#     origen -> pais_fabricacion y pais_marca
+#         880 productos, 84 valores, hasta 88 caracteres, del tipo
+#         "marca logitech de suiza. fabricado en china.". Los gemelos tienen
+#         5 y 9 valores, y los dos estan en la leyenda.
+#
+# QUE PASABA CON EL, y es D8 del MAPA_CABLEADO mas lo medido el 19 y el 20-sep.
+# El modelo lo pedia —`origen no_contiene china`, cuatro veces medidas— y
+# devolvia cero, porque el corte por raices sobre prosa no discrimina: "que no
+# sea de marca china" resolvia a `origen no_contiene marc`, la raiz de "marca",
+# que esta en los 880 origenes.
+#
+# Y LO SEGUNDO, QUE ES LO QUE COSTABA VUELTAS. `guardas_salida.afirmo_sin_mirar`
+# mira los campos que la RESPUESTA nombra contra los que el turno miro. El
+# modelo buscaba bien por `pais_fabricacion`, escribia "origen" en el texto, y
+# la guarda lo marcaba como afirmado sin mirar. Disparo en 9 de 9 turnos de las
+# ultimas tres tandas y cada disparo cuesta DOS vueltas: el modelo contesta, se
+# lo manda a corregir, vuelve a buscar y contesta de nuevo. Un campo que no se
+# puede pedir tampoco se puede reclamar.
+#
+# CONTENIDO_CAJA Y DESCRIPCION NO ENTRAN, y es la contracara que hace que esto
+# sea una regla y no una lista. Los dos son prosa, pero NO tienen gemelo: "trae
+# cable?" se contesta con `contenido_caja contiene cable` y no hay otro campo
+# que lo diga. Se quedan.
+PROSA_CON_GEMELO = ("origen",)
+
+
 def campos_filtrables(tienda_id: str) -> dict[str, str]:
     """El registro de campos, DERIVADO DEL CATALOGO VIVO: {campo: tipo}, con
     tipo `numero`, `texto` o `si_no`.
 
     Es la vista de campos de `recorrida`, que es la unica pasada y el unico
     cache. Corre en cada turno y no puede costar 880 productos por mensaje.
+
+    MENOS LA PROSA QUE TIENE GEMELO, y el motivo entero esta arriba de
+    `PROSA_CON_GEMELO`. Sale de aca y no de la recorrida a proposito: el
+    catalogo se sigue leyendo entero y el campo sigue existiendo en la ficha;
+    lo que deja de existir es la posibilidad de FILTRAR por el, que es lo que
+    daba cero, y la de que la guarda lo reclame, que es lo que costaba dos
+    vueltas por turno.
     """
-    return recorrida(tienda_id)["campos"]
+    campos = recorrida(tienda_id)["campos"]
+    return {k: v for k, v in campos.items() if k not in PROSA_CON_GEMELO}
 
 
 def limpiar_cache(tienda_id: str | None = None) -> None:

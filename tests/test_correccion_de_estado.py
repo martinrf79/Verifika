@@ -196,14 +196,26 @@ def test_EL_CASO_DE_LAS_19_47_un_campo_de_UNA_palabra_SI_se_corrige(
 
     Los dos costos no se parecen: un falso positivo cuesta una vuelta, un falso
     negativo cuesta que el cliente se lleve una mentira sobre la tienda.
+
+    EL CAMPO DEL CASO CAMBIO EL 20-sep Y LA REGLA NO. `origen` salio del
+    registro por ser prosa con gemelo —el motivo esta en `PROSA_CON_GEMELO`—,
+    asi que un campo que ya no se puede pedir tampoco se reclama. Lo que este
+    test mide sigue siendo lo mismo y por eso no se borra: que un campo de UNA
+    palabra, real y cargado, se corrija igual. Se mide con `material`, que es
+    880 de 880 como lo era `origen`.
     """
     sin = gs.afirmo_sin_mirar(
-        "Sobre tu consulta por el origen, no podemos garantizar una seleccion "
-        "basada en ese criterio.", set(), TIENDA, "t")
-    assert "origen" in sin
+        "Sobre tu consulta por el material, no podemos garantizar una "
+        "seleccion basada en ese criterio.", set(), TIENDA, "t")
+    assert "material" in sin
     campo, dice = gs.para_corregir(sin, TIENDA)
-    assert campo == "origen", "el caso del 16-sep sigue sin corregirse"
+    assert campo == "material", "el caso del 16-sep sigue sin corregirse"
     assert dice, "tiene que volver con lo que la fuente dice del campo"
+    # Y LA CONTRACARA DEL 20-sep: el campo que salio del registro ya no se
+    # reclama, que es lo que costaba dos vueltas por turno medidas 9 de 9.
+    assert not gs.afirmo_sin_mirar(
+        "Sobre tu consulta por el origen, no podemos garantizar nada.",
+        set(), TIENDA, "t"), "la guarda sigue reclamando un campo que no se pide"
 
 
 def test_el_dato_que_vuelve_ENTRA_de_un_vistazo(firestore_doble):
