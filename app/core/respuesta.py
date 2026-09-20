@@ -614,6 +614,16 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     # es la tercera procedencia. Un total calculado en la primera vuelta tiene
     # que seguir valiendo en la ultima, que es donde el modelo escribe.
     cuenta: dict = {}
+    # EL REPARTO SE ACUMULA, IGUAL QUE LAS FICHAS, LOS ENVIOS Y LA CUENTA, y
+    # por el mismo motivo: declarado en una vuelta tiene que seguir valiendo en
+    # la que trae la cuenta.
+    #
+    # MEDIDO EL 20-sep, revision 00555: las tres corridas declararon el reparto
+    # y la cuenta en vueltas DISTINTAS, y el total solo salio con descuento en
+    # las dos donde el modelo los repitio juntos. Sin esto, acordarse depende
+    # de que el modelo se acuerde, y eso es pedirle que haga gratis lo que el
+    # codigo garantiza gratis.
+    reparto: list = []
     hallazgos: list = []
     # LA CORRECCION VIAJA APARTE DE LOS HALLAZGOS, y no es cosmetica: los
     # hallazgos salen bajo el encabezado "LO QUE DEVOLVIO TU BUSQUEDA", y la
@@ -763,6 +773,10 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             # ya quedo escrito y se puede ver con que lo tumbaron.
             log.info("motor_pedido", trace_id=trace_id, vuelta=vuelta + 1,
                      pedido=json.dumps(pidio, ensure_ascii=False)[:1500])
+            # SE GUARDA ANTES DE BUSCAR, para que la MISMA vuelta que lo
+            # declara ya lo use si ademas trae la cuenta.
+            if args.get("reparto_pago"):
+                reparto = list(args["reparto_pago"])
             r = MT.buscar(consultas, tienda_id, trace_id,
                           temas=args.get("temas"),
                           compat=args.get("compatibilidad"),
@@ -770,7 +784,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                           localidad_previa=localidad_previa,
                           criterio=args.get("criterio"),
                           cuenta=args.get("cuenta"),
-                          reparto_pago=args.get("reparto_pago"))
+                          reparto_pago=reparto)
             _anotar(informe, consultas, pedidas, r)
             for f in MT.fichas_de(r):
                 if str(f.get("id")) not in {str(x.get("id")) for x in fichas}:

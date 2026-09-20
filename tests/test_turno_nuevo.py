@@ -1243,3 +1243,71 @@ def test_un_total_que_la_cuenta_no_dijo_sigue_cayendo_como_invento():
     _s, inf = N.llenar("Te queda en $99.999 en total", [], "t_inv",
                        fuente_texto="", cuenta=_CUENTA)
     assert inf["inventada"] == ["$99.999"]
+
+
+# ── EL REPARTO SOBREVIVE A LA VUELTA (20-sep-2026) ──────────────────────────
+
+
+class _LlamadaCruda:
+    """Una llamada al motor con los argumentos EXACTOS que se le pasen."""
+    id = "llamada_cruda"
+
+    def __init__(self, args):
+        self.function = type("F", (), {"name": "buscar",
+                                       "arguments": json.dumps(args)})()
+
+
+class _MensajeCrudo:
+    content = ""
+
+    def __init__(self, args):
+        self.tool_calls = [_LlamadaCruda(args)]
+
+
+class _ClienteGuion:
+    """Devuelve una llamada distinta por vuelta, segun el guion que se le da."""
+
+    def __init__(self, guion):
+        self.guion = list(guion)
+        self.chat = self
+        self.completions = self
+
+    def create(self, *, model, messages, **kw):
+        msg = (_MensajeCrudo(self.guion.pop(0)) if self.guion
+               else _MensajeFalso('{"tipo": "precio_simple", "texto": "listo"}'))
+
+        class _R:
+            choices = [type("C", (), {"message": msg})()]
+        return _R()
+
+
+def test_el_reparto_declarado_en_una_vuelta_vale_en_la_que_trae_la_cuenta(
+        firestore_doble):
+    """MEDIDO VIVO EL 20-sep, revision 00555, tres corridas: las tres
+    declararon el reparto y la cuenta en vueltas DISTINTAS.
+
+    Sin acumular, el reparto de la vuelta 1 no existe cuando llega la cuenta, y
+    el cliente lee el total SIN el descuento que pidio. Acordarse no puede
+    depender de que el modelo repita: es lo que el codigo garantiza gratis.
+    """
+    from app.core import llm_reintento as LR
+    guion = [
+        # vuelta 1: el reparto, sin cuenta -no tiene los ids todavia-
+        {"consultas": [{"texto": "mouse", "cuantos": 1, "busco": "varios"}],
+         "reparto_pago": [{"medio": "transferencia", "porcentaje": 70},
+                          {"medio": "mercado pago", "porcentaje": 30}]},
+        # vuelta 2: la cuenta, y el modelo NO repite el reparto
+        {"cuenta": {"items": [{"id": "MOU0001", "cantidad": 2}]}},
+    ]
+    espia = _ClienteGuion(guion)
+    viejo = LR._cliente
+    LR._cliente = lambda: espia
+    try:
+        _, _, _, cuenta, _ = asyncio.run(R._preguntar(
+            "LA VOZ", "", [], "dame el total 70 30", "LA FUENTE",
+            "trace_reparto", TIENDA))
+    finally:
+        LR._cliente = viejo
+    assert cuenta.get("total_ars"), f"no hubo cuenta: {cuenta}"
+    assert cuenta.get("total_final_ars"), (
+        f"el reparto de la vuelta 1 se perdio: {cuenta}")

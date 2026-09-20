@@ -147,13 +147,23 @@ def test_el_ejemplo_del_tablero_dice_CUAL_de_los_dos(firestore_doble):
         "el ejemplo no dice que 'las menos chinas' es `evita`")
 
 
-def test_el_reparto_manda_a_pedir_la_cuenta(firestore_doble):
-    """MEDIDO VIVO EL 20-sep: el reparto se declaro 3 de 3 y la cuenta 1 de 3.
+def test_el_reparto_NO_espera_a_la_cuenta(firestore_doble):
+    """SE DA VUELTA EL MISMO DIA QUE SE ESCRIBIO, y la medicion es la causa.
 
-    El campo plano arreglo que el reparto VIAJE; lo que quedo abierto es que
-    sin `cuenta` no hay total sobre el cual repartir, y el modelo no tenia por
-    que saberlo. Se dice donde se declara el reparto, que es donde le hace
-    falta."""
+    A las 02:48 esta descripcion decia "mandá tambien `cuenta` con los ids, o
+    no hay total que repartir". El modelo la obedecio: como en la vuelta 1
+    todavia no tiene ids, difirio LAS DOS cosas. Medido en la revision 00555,
+    tres corridas: el reparto en la vuelta 1 cayo de 3 de 3 a 0 de 3 y las
+    vueltas por turno subieron de 3,3 a 5,0.
+
+    ERA DOS DECISIONES ENCADENADAS OTRA VEZ, que es exactamente lo que el
+    campo plano habia desarmado, reintroducido con una frase. Ahora el
+    acoplamiento lo resuelve el CODIGO —el turno acumula el reparto entre
+    vueltas— y el tablero pide lo contrario: anotalo ya.
+    """
     props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
     d = props["reparto_pago"]["description"].lower()
-    assert "cuenta" in d, "el reparto no avisa que necesita la cuenta"
+    assert "misma" in d and "no tengas los ids" in d, (
+        "el reparto no dice que se anota sin esperar a la cuenta")
+    assert "o no hay total que repartir" not in d, (
+        "volvio el acoplamiento que midio 0 de 3")

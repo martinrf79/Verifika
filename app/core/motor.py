@@ -374,9 +374,9 @@ def esquema(tienda_id: str) -> dict:
                             "required": ["medio", "porcentaje"]},
                         "description": (
                             "Solo si reparte el pago: '70 transferencia 30 "
-                            "Mercado Pago'. Suman 100. El descuento lo aplico "
-                            "SOBRE LA CUENTA: mandá tambien `cuenta` con los "
-                            "ids, o no hay total que repartir.")},
+                            "Mercado Pago'. Suman 100. Anotalo en la MISMA "
+                            "llamada, aunque no tengas los ids: me lo guardo y "
+                            "lo aplico cuando llegue la cuenta.")},
                     "compatibilidad": {
                         "type": "array",
                         "items": {
