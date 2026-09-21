@@ -187,6 +187,33 @@ def _c_sin_consultas(c, p):
     return not _consultas(p)
 
 
+def _c_sin_umbral_inventado(c, p):
+    """QUE NO SE INVENTE UN NUMERO QUE EL CLIENTE NO DIJO (21-sep-2026).
+
+    MEDIDO EN M11. A "que no sea muy cara" —sin ninguna cifra— el modelo
+    escribio `precio_ars menor 500000` en cuatro corridas y `menor 800000` en
+    la quinta. **Se invento un techo, y ni siquiera el mismo.**
+
+    POR QUE IMPORTA MAS DE LO QUE PARECE: un orden por precio no pierde nada,
+    muestra lo barato primero y el cliente elige. Un FILTRO por un techo
+    inventado BORRA productos que el cliente podria querer, y los borra en
+    silencio: nadie se entera de lo que no salio. Es el codigo eligiendo por
+    el cliente, que es la misma enfermedad que `geo_cp` con la localidad.
+
+    Y ES LA SENAL DE UN HUECO: "muy cara" es una GAMA, la fuente no tiene
+    campo de gama, y en vez de decirlo el modelo tapa el hueco con un numero.
+    Un hueco que se tapa solo es un hueco que nadie va a arreglar.
+    """
+    for q in _consultas(p):
+        for x in (q.get("condiciones") or []):
+            if _norm(x.get("campo")) not in [_norm(v) for v in c["campo"]]:
+                continue
+            if _norm(x.get("operador")) in ("menor", "mayor", "menor_igual",
+                                            "mayor_igual", "entre"):
+                return False
+    return True
+
+
 def _c_sin_mecanismo(c, p):
     """LA DEUDA, ESCRITA Y EN CERO A PROPOSITO (21-sep-2026).
 
@@ -233,7 +260,8 @@ CASILLA = {"consulta": _c_consulta, "condicion": _c_condicion,
            "orden": _c_orden, "compat": _c_compat, "nombra": _c_nombra,
            "temas_limpios": _c_temas_limpios, "barato": _c_barato,
            "sin_consultas_obligatorias": _c_sin_consultas,
-           "sin_mecanismo": _c_sin_mecanismo}
+           "sin_mecanismo": _c_sin_mecanismo,
+           "sin_umbral_inventado": _c_sin_umbral_inventado}
 
 # LA DEUDA NO SE PUNTUA. Ver `_c_sin_mecanismo`.
 DEUDA = "sin_mecanismo"

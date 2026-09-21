@@ -404,6 +404,14 @@
           "tipo": "barato"
         },
         {
+          "n": "NO inventa un techo de precio que el cliente no dijo",
+          "clase": "B4",
+          "tipo": "sin_umbral_inventado",
+          "campo": [
+            "precio_ars"
+          ]
+        },
+        {
           "n": "'para que juegue' se traduce a condiciones",
           "clase": "D1",
           "tipo": "sin_mecanismo",
@@ -411,7 +419,8 @@
         }
       ],
       "_cubre": "B4 atenuado · C10 restriccion implicita por contexto · D1 actividad · D4 persona",
-      "nucleo": false
+      "nucleo": false,
+      "_lo_que_la_vara_NO_veia": "21-sep, cinco corridas: M11 daba 2 de 2 y las dos casillas median la mitad FACIL. Lo que de verdad importaba pasaba sin que nadie lo mirara.\n  1. 'PARA QUE JUEGUE Y HAGA LA TAREA' SE PIERDE ENTERO. Las cinco corridas salieron con `categoria: notebook` y una condicion de precio, y NADA del proposito. El eje D no funciona cuando hay que traducir a ATRIBUTOS; funciona cuando el sintoma mapea a un RUBRO, que es M12.\n  2. SE INVENTA UN TECHO. 'Que no sea muy cara' no trae ninguna cifra y el modelo escribio `precio_ars menor 500000` cuatro veces y `menor 800000` la quinta. Un filtro inventado borra productos en silencio.\nESTO ES LO QUE PASA CUANDO LA VARA MIDE LO QUE ES FACIL DE MEDIR."
     },
     {
       "id": "M12",
