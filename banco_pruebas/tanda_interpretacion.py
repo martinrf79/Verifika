@@ -45,7 +45,8 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if RAIZ not in sys.path:
     sys.path.insert(0, RAIZ)
 
-from banco_pruebas import observador, sim_firestore  # noqa: E402
+from banco_pruebas import clon_produccion, observador  # noqa: E402
+from banco_pruebas import sim_firestore  # noqa: E402
 from banco_pruebas.leer_interpretacion import (  # noqa: E402
     cargar_vara, puntuar)
 
@@ -91,8 +92,21 @@ async def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--solo", default="", help="ids de la vara: M1,M6")
     ap.add_argument("--pausa", type=float, default=20.0)
+    # UNA CORRIDA NO ES UN NUMERO. El modelo decide distinto entre llamadas
+    # identicas, asi que un 12 de 12 suelto no distingue "quedo atado" de
+    # "salio bien esta vez". Lo que dice si un cambio sirvio es en CUANTAS de
+    # N corridas se llena cada casilla, y cual es la que tiembla.
+    ap.add_argument("--repeticiones", type=int, default=1)
     ap.add_argument("--json", default="")
     args = ap.parse_args()
+
+    # LA CLAVE LA ELIGE `clon_produccion`, Y NO HAY UNA SEGUNDA FORMA. La
+    # gratis es el default y la paga entra solo por la variable
+    # `BANCO_CLAVE_PAGA`, que es la decision del 4-ago despues de que toda
+    # corrida de banco se fuera a la paga sin que nadie lo pidiera. Escribir
+    # aca un segundo selector seria justo la clase de cosa suelta que la
+    # regla 2 prohibe.
+    clon_produccion.preparar_entorno()
 
     vara = cargar_vara()
     quiero = {x.strip().upper() for x in args.solo.split(",") if x.strip()}
@@ -112,30 +126,74 @@ async def main() -> int:
     # censo queda anotado en PENDIENTE; no se arregla desde aca.
     observador.instalar(consola=False)
 
-    vistos, caidos = [], []
-    for i, m in enumerate(mensajes):
-        if i and args.pausa:
-            await asyncio.sleep(args.pausa)
-        t = await _un_turno(m["texto"], f"banco-{m['id']}")
-        print(f"{m['id']:<4} {len(t['vueltas'])} llamada(s)  {t['ms']}ms"
-              + (f"  RADARES: {','.join(sorted(set(t['radares'])))}"
-                 if t["radares"] else ""))
-        (caidos if t["caido"] else vistos).append((t, m))
+    corridas, crudo = [], []
+    primero = True
+    for vuelta in range(max(1, args.repeticiones)):
+        if args.repeticiones > 1:
+            print(f"\n{'#'*60}\n# CORRIDA {vuelta + 1} de "
+                  f"{args.repeticiones}\n{'#'*60}")
+        vistos, caidos = [], []
+        for m in mensajes:
+            if not primero and args.pausa:
+                await asyncio.sleep(args.pausa)
+            primero = False
+            t = await _un_turno(m["texto"], f"banco-{m['id']}-{vuelta + 1}")
+            print(f"{m['id']:<4} {len(t['vueltas'])} llamada(s)  {t['ms']}ms"
+                  + (f"  RADARES: {','.join(sorted(set(t['radares'])))}"
+                     if t["radares"] else ""))
+            (caidos if t["caido"] else vistos).append((t, m))
+            crudo.append({"corrida": vuelta + 1, "id": m["id"], **t})
 
-    if caidos:
-        print(f"\nCAIDOS Y NO SE CUENTAN: "
-              f"{', '.join(m['id'] for _t, m in caidos)}  "
-              f"— casi siempre el 429 de la clave gratis, no el modelo")
-    if not vistos:
-        print("\nningun turno sano: no hay nada que puntuar")
-        return 1
-    codigo = puntuar(vistos)
+        if caidos:
+            print(f"\nCAIDOS Y NO SE CUENTAN: "
+                  f"{', '.join(m['id'] for _t, m in caidos)}  "
+                  f"— casi siempre el 429 de la clave, no el modelo")
+        if not vistos:
+            print("\nningun turno sano en esta corrida")
+            continue
+        corridas.append(puntuar(vistos))
+
     if args.json:
         with open(args.json, "w", encoding="utf-8") as f:
-            json.dump([{"id": m["id"], **t} for t, m in vistos + caidos], f,
-                      ensure_ascii=False, indent=2)
+            json.dump(crudo, f, ensure_ascii=False, indent=2)
         print(f"\ncrudo en {args.json}")
-    return codigo
+    if not corridas:
+        return 1
+    if len(corridas) > 1:
+        _estabilidad(corridas)
+    # VERDE SOLO SI TODAS LAS CORRIDAS LLENARON TODO. Una sola que falle deja
+    # el codigo en 1, que es lo que convierte esto en algo que se corre en
+    # loop y se mira el resultado, en vez de leerlo a ojo cada vez.
+    return 0 if all(c["v1"] == c["de"] for c in corridas) else 1
+
+
+def _estabilidad(corridas: list) -> None:
+    """EN CUANTAS DE N CORRIDAS SE LLENO CADA COSA, y cual es la que tiembla.
+
+    Es el renglon que convierte un 12 de 12 en un numero. Un promedio no
+    sirve: esconde justo lo que hay que ver, que es si una casilla se llena
+    SIEMPRE o se llena A VECES.
+    """
+    n = len(corridas)
+    print(f"\n{'='*60}\nESTABILIDAD sobre {n} corridas")
+    for mid in list(corridas[0]["por_mensaje"]):
+        filas = [c["por_mensaje"][mid] for c in corridas
+                 if mid in c["por_mensaje"]]
+        de = filas[0]["de"]
+        plenos = sum(1 for f in filas if f["v1"] == de)
+        flojas: dict = {}
+        for f in filas:
+            for nombre in f["fallaron"]:
+                flojas[nombre] = flojas.get(nombre, 0) + 1
+        reng = sorted({f["renglones"] for f in filas})
+        print(f"  {mid:<4} {plenos}/{len(filas)} corridas en {de} de {de}"
+              f"   renglones={'-'.join(str(x) for x in reng)}")
+        for nombre, veces in sorted(flojas.items(), key=lambda kv: -kv[1]):
+            print(f"         FALLO {veces}/{len(filas)}: {nombre}")
+    v1 = [c["v1"] for c in corridas]
+    de = corridas[0]["de"]
+    print(f"\n  vuelta 1: min {min(v1)} · max {max(v1)} · de {de}"
+          f"   ({sum(1 for x in v1 if x == de)}/{n} corridas perfectas)")
 
 
 if __name__ == "__main__":

@@ -323,7 +323,7 @@ def emparejar(turnos: list, vara: dict) -> list:
     return [(t, m) for t, m in vistos if m]
 
 
-def puntuar(vistos: list) -> int:
+def puntuar(vistos: list, imprimir: bool = True) -> dict:
     """EL PUNTAJE, Y ES LA UNICA DEFINICION DE 'CORRECTO' QUE HAY.
 
     LA SEPARACION DEL 21-sep, y es la regla 2 de CLAUDE.md aplicada a este
@@ -338,6 +338,12 @@ def puntuar(vistos: list) -> int:
     {trace, texto, rev, vueltas: [pedido, ...]}.
     """
     tot1 = tot2 = total = 0
+    # EL DETALLE VUELVE, Y NO SOLO SE IMPRIME (21-sep-2026). Con una sola
+    # corrida alcanzaba con leer; para decir si un 12 de 12 es el numero o fue
+    # suerte hacen falta varias, y para eso el puntaje tiene que ser un dato
+    # que se pueda juntar. Lo que NO cambia es quien decide si una casilla esta
+    # llena: esa sigue siendo la unica definicion, aca.
+    detalle: dict = {}
     for t, m in vistos:
         v1 = _juntar({}, t["vueltas"][0] if t["vueltas"] else {})
         v2 = v1
@@ -346,6 +352,7 @@ def puntuar(vistos: list) -> int:
         print(f"\n{m['id']}  {t['trace']}  {t['rev'][-8:]}  "
               f"{len(t['vueltas'])} llamada(s)")
         n1 = n2 = 0
+        fallaron = []
         for c in m["casillas"]:
             f = CASILLA[c["tipo"]]
             a = f(c, v1)
@@ -353,8 +360,11 @@ def puntuar(vistos: list) -> int:
             b = a if c["tipo"] in AUSENCIA else f(c, v2)
             n1 += a
             n2 += b
+            if not a:
+                fallaron.append(c["n"])
             marca = "OK " if a else ("v2 " if b else ".. ")
-            print(f"   {marca} {c['n']}")
+            if imprimir:
+                print(f"   {marca} {c['n']}")
             # LO QUE ENSUCIO DESPUES NO CUENTA, PERO TAMPOCO SE PIERDE.
             if c["tipo"] in AUSENCIA and a and not f(c, v2):
                 print(f"        ojo: limpia en la vuelta 1 y sucia despues "
@@ -362,6 +372,9 @@ def puntuar(vistos: list) -> int:
         total += len(m["casillas"])
         tot1 += n1
         tot2 += n2
+        detalle[m["id"]] = {"v1": n1, "v2": n2, "de": len(m["casillas"]),
+                            "fallaron": fallaron,
+                            "renglones": len(v1.get("renglones") or [])}
         print(f"   ── {n1} de {len(m['casillas'])} en la vuelta 1, "
               f"{n2} hasta la vuelta 2")
         # EL NUMERO QUE NO EXISTIA HASTA EL 21-sep: cuantos renglones enumero
@@ -372,11 +385,13 @@ def puntuar(vistos: list) -> int:
         reng = v1.get("renglones") or []
         print(f"   ── {len(reng)} renglon(es): "
               + " | ".join(str(x)[:38] for x in reng[:9]))
-    print(f"\n{'='*60}\nTOTAL   vuelta 1: {tot1} de {total}"
-          f"   ({100*tot1//total}%)"
-          f"\n        hasta la 2: {tot2} de {total}   ({100*tot2//total}%)"
-          f"\n        turnos leidos: {len(vistos)}")
-    return 0
+    if imprimir:
+        print(f"\n{'='*60}\nTOTAL   vuelta 1: {tot1} de {total}"
+              f"   ({100*tot1//total}%)"
+              f"\n        hasta la 2: {tot2} de {total}   ({100*tot2//total}%)"
+              f"\n        turnos leidos: {len(vistos)}")
+    return {"v1": tot1, "v2": tot2, "de": total, "turnos": len(vistos),
+            "por_mensaje": detalle}
 
 
 def main(argv):
@@ -385,7 +400,8 @@ def main(argv):
     if not vistos:
         print(f"ningun turno de la vara en los ultimos {minutos} minutos")
         return 1
-    return puntuar(vistos)
+    r = puntuar(vistos)
+    return 0 if r["v1"] == r["de"] else 1
 
 
 if __name__ == "__main__":
