@@ -173,7 +173,7 @@
     {
       "id": "M6",
       "dificultad": "aritmetica sobre el enunciado mas el vinculo en tres destinos",
-      "texto": "Dame precio de 7 articulos 2 notebooks 1 microfono y los demas serian memorias pasame ee acuerdo a la crisis el presupuesto.",
+      "texto": "Dame precio de 7 articulos 2 notebooks 1 microfono y los demas serian memorias pasame ee acuerdo a la crisis el presupuesto. Envio de los dos primeros a la plata y los otros 5 envios 2 a villa maria y 3 a toledo",
       "casillas": [
         {
           "n": "las notebooks",
@@ -204,6 +204,21 @@
           "tipo": "barato"
         },
         {
+          "n": "destino La Plata",
+          "tipo": "envio",
+          "destino": "la plata"
+        },
+        {
+          "n": "destino Villa Maria",
+          "tipo": "envio",
+          "destino": "villa maria"
+        },
+        {
+          "n": "destino Toledo",
+          "tipo": "envio",
+          "destino": "toledo"
+        },
+        {
           "n": "EL VINCULO en los tres destinos",
           "tipo": "envio_va",
           "cuantos": 3
@@ -218,7 +233,8 @@
           "tipo": "cuenta"
         }
       ],
-      "_nota_barato": "20-sep: la casilla pedia `ordenar_por precio_ars min`. Medido: el modelo tambien escribe `precio_ars prefiere 8500` —8500 es el minimo del catalogo, que la leyenda le dice—, o sea 'los mas cercanos al mas barato'. Son DOS formas correctas de decir lo mismo y las dos valen. Lo que estaba roto era el codigo, no la lectura: el grado sobre un numero comparaba texto. Se arreglo el mismo dia."
+      "_nota_barato": "20-sep: la casilla pedia `ordenar_por precio_ars min`. Medido: el modelo tambien escribe `precio_ars prefiere 8500` —8500 es el minimo del catalogo, que la leyenda le dice—, o sea 'los mas cercanos al mas barato'. Son DOS formas correctas de decir lo mismo y las dos valen. Lo que estaba roto era el codigo, no la lectura: el grado sobre un numero comparaba texto. Se arreglo el mismo dia.",
+      "_nota_envios": "21-sep: EL TEXTO GUARDADO ESTABA CORTADO y es un defecto de la VARA, no del modelo. Terminaba en 'el presupuesto.' y se comia la frase entera de los envios -'Envio de los dos primeros a la plata y los otros 5 envios 2 a villa maria y 3 a toledo'-, asi que el mensaje pedia el VINCULO en tres destinos y no pedia ninguno de los tres destinos. El modelo podia cotizar los tres perfecto y no ganaba un punto. Entran las tres casillas que faltaban y M6 pasa de 7 a 10. SUBE EL NUMERO SIN QUE EL MODELO HAYA MEJORADO, igual que la nota del teclado de M1: es un arreglo de vara. El aparea por los primeros 30 caracteres utiles, asi que el turno ya se leia igual; lo que estaba mal era lo que se le pedia."
     }
   ]
 }

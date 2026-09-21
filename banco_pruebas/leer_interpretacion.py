@@ -125,7 +125,23 @@ def _c_reparto(c, p):
 
 
 def _c_cuenta(c, p):
-    return bool(((p.get("cuenta") or {}).get("items")) or [])
+    """QUE EL MODELO CAPTO QUE LE PIDIERON UN TOTAL, y desde el 21-sep eso se
+    declara en un campo plano de si o no.
+
+    ANTES MEDIA OTRA COSA, Y ERA IMPOSIBLE DE LLENAR EN LA VUELTA 1. Miraba
+    `cuenta.items`, que pide un ID por producto; el cliente nombro RUBROS
+    -"dos notebooks"- y el modelo todavia no miro el catalogo, asi que no
+    tiene un solo id que escribir. La casilla se salteaba: medido tres veces,
+    el modelo hacia el reparto O la cuenta, nunca las dos. Esto NO es aflojar
+    la vara, es que CAMBIO EL ESQUEMA: se mide lo mismo de siempre -si capto
+    el pedido de presupuesto- y ahora sobre el campo donde eso se puede
+    escribir de verdad.
+
+    LA FORMA VIEJA SIGUE VALIENDO: un turno que ya eligio los ids llena la
+    casilla como antes, asi que un log anterior al cambio se lee igual.
+    """
+    return bool(p.get("pedir_total")
+                or ((p.get("cuenta") or {}).get("items")) or [])
 
 
 def _c_tema(c, p):
