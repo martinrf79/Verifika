@@ -797,7 +797,15 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                 log.warning("motor_argumentos_rotos", trace_id=trace_id,
                             crudo=str(c.function.arguments)[:200])
             consultas = args.get("consultas") or []
-            pidio = {"consultas": consultas, "temas": args.get("temas") or [],
+            # LOS DOS OBLIGATORIOS VAN PRIMEROS Y NACEN MUDOS (21-sep-2026).
+            # `renglones` es lo que el cliente pidio con SUS palabras y
+            # `pedir_total` el si o no del presupuesto. Los dos VIAJAN Y SE
+            # LOGUEAN Y NADA MAS: ninguna respuesta cambia por ellos, que es
+            # la regla 2 de las seis contra la cascada. La cuenta la sigue
+            # haciendo `cuenta.items` cuando hay ids, igual que ayer.
+            pidio = {"renglones": args.get("renglones") or [],
+                     "pedir_total": bool(args.get("pedir_total")),
+                     "consultas": consultas, "temas": args.get("temas") or [],
                      "compatibilidad": args.get("compatibilidad") or [],
                      "envios": args.get("envios") or [],
                      "criterio": args.get("criterio") or [],
@@ -811,8 +819,12 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             #
             # VA ANTES DE BUSCAR a proposito: si el motor se cae, el renglon
             # ya quedo escrito y se puede ver con que lo tumbaron.
+            # EL RECORTE SUBE A 2.000 PORQUE ENTRAN DOS CAMPOS MAS, y este
+            # renglon es lo UNICO que lee la vara de la interpretacion desde
+            # produccion: un pedido cortado a la mitad se lee como un campo
+            # que el modelo no declaro. Son caracteres de log, no tokens.
             log.info("motor_pedido", trace_id=trace_id, vuelta=vuelta + 1,
-                     pedido=json.dumps(pidio, ensure_ascii=False)[:1500])
+                     pedido=json.dumps(pidio, ensure_ascii=False)[:2000])
             # SE GUARDA ANTES DE BUSCAR, para que la MISMA vuelta que lo
             # declara ya lo use si ademas trae la cuenta.
             if args.get("reparto_pago"):
@@ -841,7 +853,14 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                 # la quinta llegaba partida y el modelo no podia saber que ya
                 # la habia pedido. Seis consultas es el tope, y con el tope
                 # lleno entran holgadas en 1.400.
-                "Buscaste: " + json.dumps(pidio, ensure_ascii=False)[:1400]
+                # Y EL RENGLON NO VUELVE EN EL ECO, a proposito. Este
+                # presupuesto ya se agrando una vez -de 900 a 1.400- porque
+                # cortaba consultas enteras; meter la lista adelante volveria
+                # a cortarlas, que es el defecto que se arreglo el 13-sep. El
+                # modelo ya tiene sus renglones en su propia llamada.
+                "Buscaste: " + json.dumps(
+                    {k: v for k, v in pidio.items() if k != "renglones"},
+                    ensure_ascii=False)[:1400]
                 + "\nVolvio: " + _retorno_que_entra(r, trace_id))
         vuelta += 1
     informe["fichas"] = len(fichas)

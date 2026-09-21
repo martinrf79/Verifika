@@ -267,6 +267,74 @@ def esquema(tienda_id: str) -> dict:
             "parameters": {
                 "type": "object",
                 "properties": {
+                    # EL RENGLON, Y VA PRIMERO A PROPOSITO (21-sep-2026).
+                    #
+                    # EL MODELO ESCRIBE EN ORDEN, campo por campo. Hasta hoy
+                    # lo primero que escribia eran las `consultas`, que ya es
+                    # traducir y repartir a la vez; y lo ultimo de todo, seis
+                    # campos despues, la `cuenta`. El peor lugar posible para
+                    # lo que mas se olvidaba.
+                    #
+                    # ACA NO SE INTERPRETA, SE COPIA. Es la unica casilla del
+                    # esquema que no le pide al modelo ninguna decision: que
+                    # dijo el cliente, renglon por renglon, con sus palabras.
+                    # Despues llena el resto con su propia lista delante, que
+                    # es un andamio y no una instruccion: no le pedimos que se
+                    # acuerde, le damos de donde copiar.
+                    #
+                    # ES LA PLANILLA PLANA DE LA FICHA 55 §4.1, NACIDA MUDA.
+                    # Viaja, se loguea y NO cambia una sola respuesta, que es
+                    # la regla 2 de las seis contra la cascada. El dia que el
+                    # codigo rutee estos renglones, el campo ya va a estar
+                    # lleno y medido sobre charlas reales.
+                    #
+                    # Y DA UN NUMERO QUE HOY NO EXISTE: cuantos renglones
+                    # enumero contra cuantas casillas lleno. Enumerar siete y
+                    # llenar cinco es un problema de REPARTO; enumerar cuatro
+                    # es que no entendio. Hoy los dos fracasos se ven iguales.
+                    #
+                    # QUE EL ORDEN DEL ESQUEMA MANDE EL ORDEN DE ESCRITURA ES
+                    # UNA APUESTA, no una ley: se mide en la proxima tanda.
+                    "renglones": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": (
+                            "PRIMERO Y SIEMPRE. Todo lo que el cliente pidio "
+                            "en este mensaje, UN RENGLON POR CADA COSA, con "
+                            "LAS PALABRAS de el y sin interpretar: 'dos "
+                            "notebooks', 'acorde a la crisis', 'los otros a "
+                            "villa maria', 'la garantia'. Despues llenas los "
+                            "campos de abajo con esta lista delante, y no "
+                            "dejas ningun renglon afuera.")},
+                    # EL PEDIDO DE TOTAL, PLANO Y OBLIGATORIO, y sale de
+                    # adentro de `cuenta` por el mismo motivo por el que el
+                    # 20-sep el reparto salio de ahi: adentro le pedia al
+                    # modelo DOS decisiones para una cosa que el cliente dijo
+                    # una vez.
+                    #
+                    # PEOR QUE EL REPARTO, PORQUE ERA IMPOSIBLE. `cuenta.items`
+                    # pide un ID por producto y en la vuelta 1 el cliente
+                    # nombro RUBROS -"dos notebooks"-: el modelo todavia no
+                    # miro el catalogo y no tiene un solo id que escribir.
+                    # Medido tres veces, se la salteaba y hacia el reparto O
+                    # la cuenta, nunca las dos. No elegia: zafaba de una
+                    # casilla que no podia completar.
+                    #
+                    # UN SI O NO SIEMPRE TIENE RESPUESTA, y por eso este SI
+                    # puede ser obligatorio. Un objeto anidado obligatorio
+                    # seria peor que opcional: lo forzaria a inventar algo
+                    # para llenarlo.
+                    #
+                    # NACE MUDO: viaja, se loguea y no arma ninguna cuenta.
+                    # La cuenta la sigue haciendo `cuenta.items` cuando hay
+                    # ids, igual que ayer. Darle poder de frenar o de pedir es
+                    # la vuelta siguiente, cuando el numero diga que se llena.
+                    "pedir_total": {
+                        "type": "boolean",
+                        "description": (
+                            "Si el cliente pidio un presupuesto, un total o "
+                            "'cuanto me sale todo'. Es si o no y va SIEMPRE, "
+                            "aunque todavia no tengas los ids.")},
                     "consultas": {"type": "array", "items": consulta,
                                   "description": f"Hasta {TOPE_CONSULTAS}."},
                     # EL MAPA 3, Y ES UN CAMPO MAS DE LA MISMA PUERTA. No hay
@@ -480,7 +548,18 @@ def esquema(tienda_id: str) -> dict:
                         "description": (
                             "Vuelve el total ya sumado —con envio y "
                             "descuento— y el detalle.")}},
-                "required": []},
+                # LOS DOS UNICOS OBLIGATORIOS, y hasta hoy no habia ninguno.
+                # Un campo opcional se puede olvidar gratis y sin dejar
+                # rastro; uno obligatorio no se puede saltear, porque no hay
+                # respuesta valida sin el. No es que el modelo se acuerde
+                # mejor: es que la forma no lo permite. Empuja muy fuerte,
+                # no es un candado fisico.
+                #
+                # SOLO ESTOS DOS PORQUE SON LOS UNICOS QUE SIEMPRE TIENEN
+                # RESPUESTA. Obligar `envios` o `temas` seria pedirle que
+                # llene con ruido lo que el cliente no dijo, que es el defecto
+                # que el enum de temas ya trajo una vez.
+                "required": ["renglones", "pedir_total"]},
         },
     }
 
