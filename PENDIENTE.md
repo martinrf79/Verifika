@@ -94,9 +94,17 @@ quedaron. Los de PROSA fueron 1 de 3 y dos rompieron algo que ya andaba.
 
 ## Lo que quedo ABIERTO al cerrar el 20-sep
 
-**1. LA CUENTA EN LA VUELTA 1 — la unica casilla que falla en M1 y M6.** Medido
-tres veces: el modelo hace el reparto O la cuenta, nunca las dos, y el texto
-solo mueve cual. El tablero ya no la mueve.
+**1. LA CUENTA EN LA VUELTA 1 — atacada el 21-sep por la FORMA, sin medir aun.**
+El defecto no era que el modelo eligiera mal: `cuenta.items` pide un ID por
+producto y el cliente nombro RUBROS, asi que en la vuelta 1 la casilla era
+IMPOSIBLE de llenar. Entra `pedir_total`, un si o no plano y obligatorio, y
+entra `renglones`, la lista de lo que pidio el cliente con sus palabras, que va
+primera. Los dos nacen MUDOS: viajan, se loguean, no cambian una respuesta.
+**Falta el numero: una tanda de los seis mensajes por WhatsApp y
+`leer_interpretacion.py`.** Lo que hay que mirar es si `pedir_total` se llena,
+si `renglones` sale completo, y cuantos renglones enumero contra cuantas
+casillas lleno — enumerar de menos es que no entendio, enumerar bien y llenar
+poco es un problema de reparto.
 
 **2. EL CAMPO `tipo` ROMPE TURNOS, y esta sin resolver.** El catalogo VIVO
 tiene un campo `tipo`; el modelo esta OBLIGADO a emitir la clave `tipo` por
