@@ -97,7 +97,30 @@ TIENDA = "verifika_prod"
 # Los ocho campos de si o no dejaron de enumerar su prosa y pasaron a un
 # renglon propio con las dos palabras que el motor compara. El esquema pasa de
 # 2.653 a 2.457 y el techo de 2.670 a 2.560, con el margen en 103.
-TECHO_TABLERO = 2560
+#
+# ── Y SUBE EL 21-sep, POR LOS DOS CAMPOS OBLIGATORIOS ───────────────────────
+#
+# Entran `renglones` -la lista de lo que pidio el cliente, con sus palabras-
+# y `pedir_total` -el si o no que saca el pedido de presupuesto de adentro de
+# `cuenta`-. Medido: `renglones` pesa 92 tokens, `pedir_total` 41 y la lista
+# de obligatorios 15. El esquema vivo pasa de 2.560 a 2.708.
+#
+# EL TECHO PASA DE 2.560 A 2.810 y el margen vuelve a 102, del mismo orden que
+# el 103 con el que nacio. OJO CON EL PUNTO DE PARTIDA: el margen estaba en
+# CERO -2.560 de techo con 2.560 de esquema-, asi que el enum de temas del
+# 20-sep se comio los 103 enteros sin que nadie lo anotara. Esta cuenta lo
+# repone, no solo lo que se agrega hoy.
+#
+# LO QUE CUESTA, EN EL TECHO QUE MANDA, QUE ES EL DEL TURNO: el tablero viaja
+# dos veces por turno, asi que son +296 tokens. Una vuelta de mas cuesta del
+# orden de 7.700 -FICHA 53 §7-, o sea que esto se paga solo si ahorra UNA
+# vuelta cada veintiseis turnos.
+#
+# LO QUE COMPRA: la unica casilla que fallaba en los dos mensajes largos era
+# la cuenta, y fallaba porque pedia un id que en la vuelta 1 no existe. Y
+# hasta hoy el esquema no tenia UN SOLO campo obligatorio, o sea que olvidarse
+# de cualquier cosa era gratis y no dejaba rastro.
+TECHO_TABLERO = 2810
 
 
 def _tokens(s: str) -> int:
