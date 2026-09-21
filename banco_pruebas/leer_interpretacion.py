@@ -294,15 +294,30 @@ def _de_que_mensaje(texto: str, vara: dict):
     return None
 
 
-def main(argv):
-    minutos = int(argv[0]) if argv else 30
-    vara = json.load(open(VARA, encoding="utf-8"))
-    turnos = _turnos(minutos)
+def cargar_vara() -> dict:
+    return json.load(open(VARA, encoding="utf-8"))
+
+
+def emparejar(turnos: list, vara: dict) -> list:
+    """[(turno, mensaje_de_la_vara)] de los turnos que la vara reconoce."""
     vistos = [(t, _de_que_mensaje(t["texto"], vara)) for t in turnos]
-    vistos = [(t, m) for t, m in vistos if m]
-    if not vistos:
-        print(f"ningun turno de la vara en los ultimos {minutos} minutos")
-        return 1
+    return [(t, m) for t, m in vistos if m]
+
+
+def puntuar(vistos: list) -> int:
+    """EL PUNTAJE, Y ES LA UNICA DEFINICION DE 'CORRECTO' QUE HAY.
+
+    LA SEPARACION DEL 21-sep, y es la regla 2 de CLAUDE.md aplicada a este
+    archivo. La tanda offline -`banco_pruebas/tanda_interpretacion.py`- mide
+    exactamente lo mismo que produccion, asi que NO puede tener su propio
+    puntaje: dos definiciones de correcto se separan el dia que alguien toca
+    una, y ahi los dos numeros dejan de compararse sin que nadie lo note.
+    Lo que cambia entre los dos caminos es de donde salen los turnos; que
+    cuenta como acierto, no.
+
+    Recibe [(turno, mensaje_de_la_vara)] y cada turno es
+    {trace, texto, rev, vueltas: [pedido, ...]}.
+    """
     tot1 = tot2 = total = 0
     for t, m in vistos:
         v1 = _juntar({}, t["vueltas"][0] if t["vueltas"] else {})
@@ -323,11 +338,28 @@ def main(argv):
         tot2 += n2
         print(f"   ── {n1} de {len(m['casillas'])} en la vuelta 1, "
               f"{n2} hasta la vuelta 2")
+        # EL NUMERO QUE NO EXISTIA HASTA EL 21-sep: cuantos renglones enumero
+        # el modelo contra cuantas casillas lleno. Enumerar DE MENOS es que no
+        # entendio el mensaje; enumerar bien y llenar poco es un problema de
+        # REPARTO. Hasta hoy los dos fracasos se veian identicos y no habia
+        # forma de saber cual de los dos arreglar.
+        reng = v1.get("renglones") or []
+        print(f"   ── {len(reng)} renglon(es): "
+              + " | ".join(str(x)[:38] for x in reng[:9]))
     print(f"\n{'='*60}\nTOTAL   vuelta 1: {tot1} de {total}"
           f"   ({100*tot1//total}%)"
           f"\n        hasta la 2: {tot2} de {total}   ({100*tot2//total}%)"
           f"\n        turnos leidos: {len(vistos)}")
     return 0
+
+
+def main(argv):
+    minutos = int(argv[0]) if argv else 30
+    vistos = emparejar(_turnos(minutos), cargar_vara())
+    if not vistos:
+        print(f"ningun turno de la vara en los ultimos {minutos} minutos")
+        return 1
+    return puntuar(vistos)
 
 
 if __name__ == "__main__":
