@@ -14,5 +14,17 @@
   "_pedir_total_discrimina": "Prende en M1, M4 y M6 —los tres que piden presupuesto— y queda apagado en M2, M3 y M5. Identico en las nueve corridas. Si prendiera en los seis la casilla estaria pasando de arriba y el numero no valdria nada.",
   "_renglones": "M1 enumera 6 o 7, M6 enumera 5 o 6, los cortos 1 o 2. El campo se llena; el dia que el codigo rutee esos renglones -FICHA 55 §4.1- ya va a estar medido.",
   "_lo_que_este_piso_NO_dice": "No es produccion. El banco usa el doble local de Firestore y el catalogo del repo, asi que NO puede reproducir el campo `tipo`, que existe en el catalogo vivo, rompe turnos y esta abierto en PENDIENTE. El numero de verdad se lee con `leer_interpretacion.py` sobre los logs de Cloud Run. Si los dos no coinciden, manda el de produccion.",
-  "como_se_repite": "python3 banco_pruebas/tanda_interpretacion.py --repeticiones 5"
+  "como_se_repite": "python3 banco_pruebas/tanda_interpretacion.py --repeticiones 5",
+  "_vara_crecio_21sep": {
+    "mensajes": 19,
+    "casillas": 66,
+    "puntuables": 54,
+    "sin_casilla": 12,
+    "primera_corrida": "49 de 54 en la vuelta 1, 90%. Con los tres arreglos de vara del mismo dia, el techo de esa corrida pasa a 52 de 54.",
+    "nucleo": "31 de 31. EL PISO DE LOS SEIS AGUANTO al entrar trece mensajes nuevos, y es el unico numero comparable con las nueve corridas de la manana.",
+    "lo_que_fallo_de_verdad": "M7 declaro el tema `auriculares` a un cliente que no pregunto nada de la casa. M17 recien ordeno por precio en la vuelta 2. DOS defectos en 54, los dos invisibles para la vara de seis mensajes.",
+    "_la_deuda_son_doce": "Doce clases que el cliente dice y el esquema no tiene donde anotar: D1 y D5 proposito, F2 premisa falsa, F5 contradiccion, F6 urgencia, C7 condicional, E3 presupuesto como techo, A5 hiperonimo ambiguo, A10 referencia externa, B6 gama, B9 relacion precio-calidad, B11 popularidad. ESA LISTA ES LA ESPECIFICACION DE LA FICHA 57.",
+    "_cuatro_no_se_pueden_medir": "A11, B8, E5 y G5 necesitan memoria entre turnos. 4 de 52.",
+    "como_se_repite": "python3 banco_pruebas/tanda_interpretacion.py --repeticiones 5"
+  }
 }
