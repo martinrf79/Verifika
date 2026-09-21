@@ -187,6 +187,27 @@ def _c_sin_consultas(c, p):
     return not _consultas(p)
 
 
+def _c_sin_mecanismo(c, p):
+    """LA DEUDA, ESCRITA Y EN CERO A PROPOSITO (21-sep-2026).
+
+    Es la clase que el cliente SI dice y el esquema de hoy no tiene donde
+    anotar: el proposito del eje D, la premisa falsa, la urgencia, el
+    condicional, el presupuesto como techo. No es que el modelo falle: es que
+    NO HAY CASILLA.
+
+    ES EL MISMO RECURSO QUE USO `envio_va` EL 20-sep -"queda escrita igual y
+    en cero a proposito, que es como se ve una deuda"- y ahi funciono: la
+    casilla imposible se volvio el pedido del campo `va`, que se construyo y
+    hoy da 100%.
+
+    POR ESO NO ENTRA EN EL DENOMINADOR. Si entrara, el numero bajaria por algo
+    que el modelo no hizo mal, y las corridas dejarian de compararse con el
+    piso. Se cuenta aparte y se imprime aparte: esta lista ES la
+    especificacion de lo que la FICHA 57 tiene que construir.
+    """
+    return False
+
+
 # LAS CASILLAS DE AUSENCIA, Y NO SE ACUMULAN (21-sep-2026).
 #
 # TODAS LAS DEMAS SON MONOTONAS: una vez que el modelo declaro algo, sumar la
@@ -211,7 +232,11 @@ CASILLA = {"consulta": _c_consulta, "condicion": _c_condicion,
            "cuenta": _c_cuenta, "tema": _c_tema, "busco": _c_busco,
            "orden": _c_orden, "compat": _c_compat, "nombra": _c_nombra,
            "temas_limpios": _c_temas_limpios, "barato": _c_barato,
-           "sin_consultas_obligatorias": _c_sin_consultas}
+           "sin_consultas_obligatorias": _c_sin_consultas,
+           "sin_mecanismo": _c_sin_mecanismo}
+
+# LA DEUDA NO SE PUNTUA. Ver `_c_sin_mecanismo`.
+DEUDA = "sin_mecanismo"
 
 
 def _juntar(a: dict, b: dict) -> dict:
@@ -352,8 +377,16 @@ def puntuar(vistos: list, imprimir: bool = True) -> dict:
         print(f"\n{m['id']}  {t['trace']}  {t['rev'][-8:]}  "
               f"{len(t['vueltas'])} llamada(s)")
         n1 = n2 = 0
-        fallaron = []
+        fallaron, deuda = [], []
         for c in m["casillas"]:
+            # LA DEUDA SE LISTA Y NO SE PUNTUA, ni arriba ni abajo de la
+            # fraccion: no es una falla del modelo, es una casilla que no
+            # existe todavia.
+            if c["tipo"] == DEUDA:
+                deuda.append((c.get("clase", "?"), c["n"]))
+                if imprimir:
+                    print(f"   -- {c['n']}   [{c.get('clase', '?')}] SIN CASILLA")
+                continue
             f = CASILLA[c["tipo"]]
             a = f(c, v1)
             # UNA CASILLA DE AUSENCIA NO SE ACUMULA: arrastra la vuelta 1.
@@ -369,14 +402,17 @@ def puntuar(vistos: list, imprimir: bool = True) -> dict:
             if c["tipo"] in AUSENCIA and a and not f(c, v2):
                 print(f"        ojo: limpia en la vuelta 1 y sucia despues "
                       f"— {(v2.get('temas') or [])}")
-        total += len(m["casillas"])
+        puntuables = len(m["casillas"]) - len(deuda)
+        total += puntuables
         tot1 += n1
         tot2 += n2
-        detalle[m["id"]] = {"v1": n1, "v2": n2, "de": len(m["casillas"]),
-                            "fallaron": fallaron,
+        detalle[m["id"]] = {"v1": n1, "v2": n2, "de": puntuables,
+                            "fallaron": fallaron, "deuda": deuda,
+                            "nucleo": bool(m.get("nucleo")),
                             "renglones": len(v1.get("renglones") or [])}
-        print(f"   ── {n1} de {len(m['casillas'])} en la vuelta 1, "
-              f"{n2} hasta la vuelta 2")
+        print(f"   ── {n1} de {puntuables} en la vuelta 1, "
+              f"{n2} hasta la vuelta 2"
+              + (f"   (+{len(deuda)} sin casilla)" if deuda else ""))
         # EL NUMERO QUE NO EXISTIA HASTA EL 21-sep: cuantos renglones enumero
         # el modelo contra cuantas casillas lleno. Enumerar DE MENOS es que no
         # entendio el mensaje; enumerar bien y llenar poco es un problema de
@@ -385,12 +421,27 @@ def puntuar(vistos: list, imprimir: bool = True) -> dict:
         reng = v1.get("renglones") or []
         print(f"   ── {len(reng)} renglon(es): "
               + " | ".join(str(x)[:38] for x in reng[:9]))
+    # EL NUCLEO SE INFORMA APARTE, y no es un adorno: son los seis mensajes
+    # con los que se midio el piso del 21-sep. Si el total se mezclara con los
+    # mensajes nuevos, el piso dejaria de tener con que compararse y se
+    # perderia la unica referencia que hay.
+    nuc = [x for x in detalle.values() if x["nucleo"]]
+    n_v1, n_de = sum(x["v1"] for x in nuc), sum(x["de"] for x in nuc)
+    deudas = sum(len(x["deuda"]) for x in detalle.values())
     if imprimir:
         print(f"\n{'='*60}\nTOTAL   vuelta 1: {tot1} de {total}"
               f"   ({100*tot1//total}%)"
               f"\n        hasta la 2: {tot2} de {total}   ({100*tot2//total}%)"
               f"\n        turnos leidos: {len(vistos)}")
+        if nuc and n_de and n_de != total:
+            print(f"\n  NUCLEO (los 6 del piso): {n_v1} de {n_de}"
+                  f"   — es el unico numero comparable con"
+                  f" interpretacion_piso.json")
+        if deudas:
+            print(f"  SIN CASILLA: {deudas} clases que el cliente dice y el"
+                  f" esquema no tiene donde anotar.")
     return {"v1": tot1, "v2": tot2, "de": total, "turnos": len(vistos),
+            "nucleo_v1": n_v1, "nucleo_de": n_de, "deuda": deudas,
             "por_mensaje": detalle}
 
 
