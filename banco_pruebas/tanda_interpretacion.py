@@ -103,8 +103,14 @@ async def main() -> int:
         return 1
 
     sim_firestore.install()
+    # EL BUFFER ARRANCA VACIO EN UN PROCESO FRESCO, asi que no se limpia. Y
+    # hay un motivo para no escribir esa linea aunque sea inocua: el censo del
+    # cableado aparea por NOMBRE PELADO, asi que un `observador.limpiar()` aca
+    # hacia figurar a `app/core/huecos.py:limpiar` como instrumento y bajaba
+    # el censo de 24 a 23 sin que nadie hubiera enchufado nada. Una mejora
+    # falsa en un techo que solo baja es peor que no medir. El defecto del
+    # censo queda anotado en PENDIENTE; no se arregla desde aca.
     observador.instalar(consola=False)
-    observador.limpiar()
 
     vistos, caidos = [], []
     for i, m in enumerate(mensajes):

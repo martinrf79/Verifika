@@ -187,6 +187,25 @@ def _c_sin_consultas(c, p):
     return not _consultas(p)
 
 
+# LAS CASILLAS DE AUSENCIA, Y NO SE ACUMULAN (21-sep-2026).
+#
+# TODAS LAS DEMAS SON MONOTONAS: una vez que el modelo declaro algo, sumar la
+# vuelta siguiente no se lo puede quitar. `temas_limpios` mide lo contrario
+# —que NO haya declarado de mas— asi que acumularla la apaga en cuanto una
+# vuelta agrega un tema, y la columna 2 puede quedar POR DEBAJO de la 1.
+#
+# MEDIDO EN LA TANDA DEL 21-sep: M6 dio 10 de 10 en la vuelta 1 y 9 hasta la
+# 2, porque en la segunda el modelo pidio `costo_envio` y `plazo_envio` —a un
+# cliente que SI pregunto por envios—. Un numero que baja cuando el modelo
+# hace mas trabajo no mide al modelo, mide al lector: es la misma enfermedad
+# que el bug del `reparto` del 20-sep, un escalon mas adentro.
+#
+# SE EVALUAN SOBRE LA VUELTA 1 Y ESE VALOR SE ARRASTRA. La pregunta que
+# contestan es "de entrada, ¿metio ruido?", y esa se contesta en la primera
+# llamada. Lo que la vuelta 2 agregue se IMPRIME aparte para que no se pierda,
+# pero no mueve el puntaje.
+AUSENCIA = {"temas_limpios"}
+
 CASILLA = {"consulta": _c_consulta, "condicion": _c_condicion,
            "envio": _c_envio, "envio_va": _c_envio_va, "reparto": _c_reparto,
            "cuenta": _c_cuenta, "tema": _c_tema, "busco": _c_busco,
@@ -329,10 +348,17 @@ def puntuar(vistos: list) -> int:
         n1 = n2 = 0
         for c in m["casillas"]:
             f = CASILLA[c["tipo"]]
-            a, b = f(c, v1), f(c, v2)
+            a = f(c, v1)
+            # UNA CASILLA DE AUSENCIA NO SE ACUMULA: arrastra la vuelta 1.
+            b = a if c["tipo"] in AUSENCIA else f(c, v2)
             n1 += a
             n2 += b
-            print(f"   {'OK ' if a else ('v2 ' if b else '.. ')} {c['n']}")
+            marca = "OK " if a else ("v2 " if b else ".. ")
+            print(f"   {marca} {c['n']}")
+            # LO QUE ENSUCIO DESPUES NO CUENTA, PERO TAMPOCO SE PIERDE.
+            if c["tipo"] in AUSENCIA and a and not f(c, v2):
+                print(f"        ojo: limpia en la vuelta 1 y sucia despues "
+                      f"— {(v2.get('temas') or [])}")
         total += len(m["casillas"])
         tot1 += n1
         tot2 += n2
