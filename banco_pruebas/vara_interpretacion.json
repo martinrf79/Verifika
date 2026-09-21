@@ -419,6 +419,12 @@
       "texto": "se me traba la compu cuando abro muchas pestañas, que me recomendas? es para la oficina",
       "casillas": [
         {
+          "n": "traduce el SINTOMA al rubro que lo resuelve",
+          "clase": "D5",
+          "tipo": "consulta",
+          "categoria": "memoria ram"
+        },
+        {
           "n": "traduce el sintoma a un rubro",
           "clase": "D5",
           "tipo": "sin_mecanismo",
@@ -434,7 +440,9 @@
       "_cubre": "D3 ambiente · D5 problema a resolver",
       "nucleo": false,
       "_nota_tope": "21-sep: EL TOPE ERA 1 Y LO PUSE A OJO. Medido, el modelo declaro `asesoramiento` y `memoria_ram` a un cliente que pidio una recomendacion por un problema: ninguno de los dos es ruido, los dos vienen al caso. Un tope inventado mide mi corazonada, no al modelo. Pasa a 2, que todavia atrapa el ruido de verdad —tres o mas temas que nadie pregunto—. ARREGLO DE VARA, no avance.",
-      "_lo_que_mostro": "Y MOSTRO ALGO QUE VALE MAS QUE LA CASILLA: a 'se me traba la compu cuando abro muchas pestañas' el modelo contesto `categoria: memoria ram` mas `ram_ampliable igual si`. Tradujo el SINTOMA al rubro correcto sin ningun mecanismo. El criterio del eje D ya funciona; lo que falta no es la capacidad, es DONDE DECLARARLO. Eso es exactamente la FICHA 57 §3 capa 3."
+      "_lo_que_mostro": "Y MOSTRO ALGO QUE VALE MAS QUE LA CASILLA: a 'se me traba la compu cuando abro muchas pestañas' el modelo contesto `categoria: memoria ram` mas `ram_ampliable igual si`. Tradujo el SINTOMA al rubro correcto sin ningun mecanismo. El criterio del eje D ya funciona; lo que falta no es la capacidad, es DONDE DECLARARLO. Eso es exactamente la FICHA 57 §3 capa 3.",
+      "_por_que_dos_casillas": "21-sep: SON DOS PREGUNTAS DISTINTAS Y LAS DOS IMPORTAN.\n  1. ¿El modelo TRADUCE? -> se mide HOY, por el EFECTO en la consulta. El criterio del eje D no necesita un campo propio para medirse: si tradujo 'se me traba con muchas pestañas' a memoria RAM, eso se ve en `categoria`.\n  2. ¿Lo DECLARA, para que el codigo pueda verificarlo y reusarlo? -> eso no se puede hoy y queda como `sin_mecanismo`.\nSepararlas es lo que evita la conclusion equivocada. Si solo estuviera la deuda, un lector futuro creeria que el modelo NO PUEDE traducir el eje D, cuando lo que falta es donde anotarlo.",
+      "_medido_21sep": "Primera corrida: `categoria: memoria ram` mas `ram_ampliable igual si`. Y `ram_ampliable` NO ES INVENTADO: sale de `specs_por_modelo.csv`, se fusiona con el catalogo y esta en el enum de los 40 campos. La traduccion fue correcta Y aterrizada. UNA CORRIDA NO ES UNA CAPACIDAD: por eso entra esta casilla, para contar en cuantas de N lo hace."
     },
     {
       "id": "M13",
