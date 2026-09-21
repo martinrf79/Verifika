@@ -100,8 +100,10 @@ producto y el cliente nombro RUBROS, asi que en la vuelta 1 la casilla era
 IMPOSIBLE de llenar. Entra `pedir_total`, un si o no plano y obligatorio, y
 entra `renglones`, la lista de lo que pidio el cliente con sus palabras, que va
 primera. Los dos nacen MUDOS: viajan, se loguean, no cambian una respuesta.
-**Falta el numero: una tanda de los seis mensajes por WhatsApp y
-`leer_interpretacion.py`.** Lo que hay que mirar es si `pedir_total` se llena,
+**MEDIDO EN BANCO EL 21-sep: M1 da 12 de 12 en 9 de 9 corridas**, piso en
+`banco_pruebas/interpretacion_piso.json`. **Falta el numero REAL: la tanda por
+WhatsApp y `leer_interpretacion.py`.** El banco no puede reproducir el campo
+`tipo`, asi que si los dos numeros no coinciden manda el de produccion. Lo que hay que mirar es si `pedir_total` se llena,
 si `renglones` sale completo, y cuantos renglones enumero contra cuantas
 casillas lleno — enumerar de menos es que no entendio, enumerar bien y llenar
 poco es un problema de reparto.

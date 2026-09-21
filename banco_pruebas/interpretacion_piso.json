@@ -1,0 +1,18 @@
+{
+  "_": "EL PISO DE LA INTERPRETACION. Medido el 21-sep-2026 con la clave GRATIS, NUEVE corridas de los seis mensajes de `vara_interpretacion.json` por el camino vivo del turno, con `tanda_interpretacion.py`. Cero turnos caidos. ESTOS NUMEROS SOLO MEJORAN: si una corrida los empeora, el cambio se revierte entero.",
+  "fecha": "2026-09-21",
+  "clave": "gratis",
+  "corridas": 9,
+  "turnos_caidos": 0,
+  "casillas_de_la_vara": 31,
+  "vuelta_1_min": 30,
+  "vuelta_1_max": 31,
+  "corridas_perfectas": 8,
+  "M1_doce_de_doce": "9 de 9 corridas",
+  "_que_cambio": "El 20-sep produccion daba 11 de 12 en M1 y la unica casilla roja era la cuenta. El 21-sep entraron `pedir_total` -un si o no plano y obligatorio- y `renglones` -lo que pidio el cliente con sus palabras, primero en el esquema-. La casilla que faltaba se llena.",
+  "_la_casilla_que_tiembla": "M6 `temas_limpios`, 1 de 5 en la segunda tanda. Esa corrida declaro `costo_envio` y `cuotas_financiacion` a un cliente que NO nombro financiacion. NO SE SUBE EL TOPE: la casilla cazo un ruido real, que es el defecto que trajo el enum de 104 temas el 20-sep y que esta casilla existe para medir. Es del modelo, no de la vara.",
+  "_pedir_total_discrimina": "Prende en M1, M4 y M6 —los tres que piden presupuesto— y queda apagado en M2, M3 y M5. Identico en las nueve corridas. Si prendiera en los seis la casilla estaria pasando de arriba y el numero no valdria nada.",
+  "_renglones": "M1 enumera 6 o 7, M6 enumera 5 o 6, los cortos 1 o 2. El campo se llena; el dia que el codigo rutee esos renglones -FICHA 55 §4.1- ya va a estar medido.",
+  "_lo_que_este_piso_NO_dice": "No es produccion. El banco usa el doble local de Firestore y el catalogo del repo, asi que NO puede reproducir el campo `tipo`, que existe en el catalogo vivo, rompe turnos y esta abierto en PENDIENTE. El numero de verdad se lee con `leer_interpretacion.py` sobre los logs de Cloud Run. Si los dos no coinciden, manda el de produccion.",
+  "como_se_repite": "python3 banco_pruebas/tanda_interpretacion.py --repeticiones 5"
+}
