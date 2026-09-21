@@ -469,7 +469,45 @@ def esquema(tienda_id: str) -> dict:
                         "items": {
                             "type": "object",
                             "properties": {
-                                "medio": {"type": "string"},
+                                # EL MEDIO SE CIERRA (21-sep-2026), Y ERA EL
+                                # ULTIMO CAMPO QUE AFIRMABA ALGO DE LA TIENDA
+                                # SIN VERIFICARSE.
+                                #
+                                # MEDIDO: con `medio: "criptomonedas"` la
+                                # cuenta salio con total y sin una palabra de
+                                # aviso. Y sale PEOR que sin aviso: la regla
+                                # de `pago_split` es que todo lo que NO es
+                                # Mercado Pago cuenta como transferencia y
+                                # lleva el descuento, asi que el bot cotizaba
+                                # un 10% menos por un medio que la tienda no
+                                # acepta. Plata mal, que es la regla 3.1.
+                                #
+                                # TRES VALORES Y NO MAS, y no salen de la
+                                # prosa de la FAQ: salen de lo que el CODIGO
+                                # distingue. `pago_split` solo separa Mercado
+                                # Pago del resto; que la tienda liste Visa,
+                                # Mastercard y Amex no cambia una cuenta.
+                                # Perseguir la prosa para sacar marcas seria
+                                # la enfermedad que este repo ya pago tres
+                                # veces.
+                                #
+                                # Y EL CUARTO ES LA SALIDA, no un relleno:
+                                # `medio_no_disponible` es el SIN_CAMPO del
+                                # pago. Un cliente que dice "mitad en efectivo"
+                                # tiene donde declararse, y el codigo puede
+                                # decir que no se toma en vez de cobrarle un
+                                # descuento que no corresponde.
+                                "medio": {
+                                    "type": "string",
+                                    "enum": ["transferencia", "mercado_pago",
+                                             "tarjeta",
+                                             "medio_no_disponible"],
+                                    "description": (
+                                        "Con que paga. Si el cliente nombra "
+                                        "uno que no esta en la lista poné "
+                                        "'medio_no_disponible' y te digo que "
+                                        "contestar: NO lo acomodes al mas "
+                                        "parecido.")},
                                 "porcentaje": {"type": "number"}},
                             "required": ["medio", "porcentaje"]},
                         "description": (
@@ -733,6 +771,15 @@ def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
 
     reparto = [x for x in ((pedido or {}).get("reparto_pago") or [])
                if isinstance(x, dict) and x.get("medio")]
+    # UN MEDIO QUE LA TIENDA NO TOMA NO ENTRA A LA CUENTA, Y SE DICE.
+    # Dejarlo entrar es peor que ignorarlo: `pago_split` lo trataria como
+    # transferencia y le aplicaria el descuento, o sea que el bot cotizaria
+    # mas barato por algo que no se puede pagar.
+    from app.core.filtros_catalogo import _norm
+    no_disp = [x for x in reparto
+               if _norm(x.get("medio")) == "medio_no_disponible"]
+    if no_disp:
+        reparto = [x for x in reparto if x not in no_disp]
 
     try:
         r = calculate_total(items=items, items_extra=extras or None,
@@ -762,6 +809,13 @@ def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
     # modelo pidio por un nombre y tiene que saber de que ficha salio la plata.
     if pedidos_como:
         fuera["certificados"] = pedidos_como
+    if no_disp:
+        # EL MOTIVO VIAJA ESCRITO Y EL MODELO LO COPIA, que es como este repo
+        # resuelve las negaciones: el dato es del codigo, la prosa del modelo.
+        fuera["medio_no_disponible"] = (
+            "el cliente nombro un medio de pago que la tienda no toma. Se "
+            "cobra por transferencia, Mercado Pago o tarjeta. Decilo y no "
+            "lo cuentes en el total.")
     # QUE HAY ADENTRO DEL TOTAL, y no es adorno: es lo que el turno guarda como
     # carrito para que el turno SIGUIENTE no lo rearme de cero. Medido el
     # 15-sep en WhatsApp: tres turnos seguidos sobre el MISMO pedido dieron
