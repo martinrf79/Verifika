@@ -316,13 +316,15 @@
           "clase": "A6",
           "tipo": "condicion",
           "campo": [
-            "marca"
+            "marca",
+            "nombre"
           ],
           "valor": "logitech"
         }
       ],
       "_cubre": "A6 metonimia de marca · A7 extranjerismo · A9 por quien lo usa",
-      "nucleo": false
+      "nucleo": false,
+      "_nota_marca": "21-sep: LA VARA PEDIA `marca` Y EL MODELO ESCRIBIO `nombre contiene logitech`. Es MENOS preciso que `marca`, pero no es un error: encuentra los Logitech igual. Y lo que esta casilla mide es otra cosa —que la marca entre como CONDICION y no como la categoria— y eso el modelo lo acerto. Es el mismo caso del K120 en M3, donde la vara daba mal al modelo por acertar de otra forma. CORREGIR ESTO SUBE EL NUMERO SIN QUE EL MODELO HAYA MEJORADO: es arreglo de vara."
     },
     {
       "id": "M9",
@@ -426,11 +428,13 @@
           "n": "no inventa temas de la casa",
           "clase": "RUIDO",
           "tipo": "temas_limpios",
-          "tope": 1
+          "tope": 2
         }
       ],
       "_cubre": "D3 ambiente · D5 problema a resolver",
-      "nucleo": false
+      "nucleo": false,
+      "_nota_tope": "21-sep: EL TOPE ERA 1 Y LO PUSE A OJO. Medido, el modelo declaro `asesoramiento` y `memoria_ram` a un cliente que pidio una recomendacion por un problema: ninguno de los dos es ruido, los dos vienen al caso. Un tope inventado mide mi corazonada, no al modelo. Pasa a 2, que todavia atrapa el ruido de verdad —tres o mas temas que nadie pregunto—. ARREGLO DE VARA, no avance.",
+      "_lo_que_mostro": "Y MOSTRO ALGO QUE VALE MAS QUE LA CASILLA: a 'se me traba la compu cuando abro muchas pestañas' el modelo contesto `categoria: memoria ram` mas `ram_ampliable igual si`. Tradujo el SINTOMA al rubro correcto sin ningun mecanismo. El criterio del eje D ya funciona; lo que falta no es la capacidad, es DONDE DECLARARLO. Eso es exactamente la FICHA 57 §3 capa 3."
     },
     {
       "id": "M13",
@@ -540,7 +544,8 @@
           "clase": "C3",
           "tipo": "condicion",
           "campo": [
-            "marca"
+            "marca",
+            "nombre"
           ],
           "valor": "samsung",
           "acepta": [
@@ -555,7 +560,8 @@
         }
       ],
       "_cubre": "C1 dura afirmativa · C3 blanda · C8 tolerancia · F6 urgencia",
-      "nucleo": false
+      "nucleo": false,
+      "_nota_marca": "21-sep: idem M8, el campo se acepta en `marca` o en `nombre`. Lo que esta casilla mide es que la preferencia sea BLANDA —operador `prefiere`— y no un filtro duro, y eso el modelo lo acerto."
     },
     {
       "id": "M17",
