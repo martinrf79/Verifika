@@ -177,8 +177,7 @@ def _estabilidad(corridas: list) -> None:
     n = len(corridas)
     print(f"\n{'='*60}\nESTABILIDAD sobre {n} corridas")
     for mid in list(corridas[0]["por_mensaje"]):
-        filas = [c["por_mensaje"][mid] for c in corridas
-                 if mid in c["por_mensaje"]]
+        filas = [x for c in corridas for x in c["por_mensaje"].get(mid, [])]
         de = filas[0]["de"]
         plenos = sum(1 for f in filas if f["v1"] == de)
         flojas: dict = {}

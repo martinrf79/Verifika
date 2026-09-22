@@ -434,10 +434,18 @@ def puntuar(vistos: list, imprimir: bool = True) -> dict:
         total += puntuables
         tot1 += n1
         tot2 += n2
-        detalle[m["id"]] = {"v1": n1, "v2": n2, "de": puntuables,
-                            "fallaron": fallaron, "deuda": deuda,
-                            "nucleo": bool(m.get("nucleo")),
-                            "renglones": len(v1.get("renglones") or [])}
+        # SE ACUMULA, NO SE PISA (22-sep-2026). Leyendo PRODUCCION el mismo
+        # mensaje llega varias veces —M13 llego cuatro—, y con el detalle
+        # indexado por id sobrevivia solo el ultimo. El TOTAL siempre estuvo
+        # bien; lo que mentia era el renglon del nucleo y el conteo de deuda.
+        # Un instrumento que miente sobre una repeticion es peor leyendo
+        # produccion que leyendo el banco, porque alla la repeticion es lo
+        # normal.
+        detalle.setdefault(m["id"], []).append(
+            {"v1": n1, "v2": n2, "de": puntuables,
+             "fallaron": fallaron, "deuda": deuda,
+             "nucleo": bool(m.get("nucleo")),
+             "renglones": len(v1.get("renglones") or [])})
         print(f"   ── {n1} de {puntuables} en la vuelta 1, "
               f"{n2} hasta la vuelta 2"
               + (f"   (+{len(deuda)} sin casilla)" if deuda else ""))
@@ -453,16 +461,17 @@ def puntuar(vistos: list, imprimir: bool = True) -> dict:
     # con los que se midio el piso del 21-sep. Si el total se mezclara con los
     # mensajes nuevos, el piso dejaria de tener con que compararse y se
     # perderia la unica referencia que hay.
-    nuc = [x for x in detalle.values() if x["nucleo"]]
+    nuc = [x for xs in detalle.values() for x in xs if x["nucleo"]]
     n_v1, n_de = sum(x["v1"] for x in nuc), sum(x["de"] for x in nuc)
-    deudas = sum(len(x["deuda"]) for x in detalle.values())
+    deudas = len({c for xs in detalle.values() for x in xs
+                  for c, _n in x["deuda"]})
     if imprimir:
         print(f"\n{'='*60}\nTOTAL   vuelta 1: {tot1} de {total}"
               f"   ({100*tot1//total}%)"
               f"\n        hasta la 2: {tot2} de {total}   ({100*tot2//total}%)"
               f"\n        turnos leidos: {len(vistos)}")
         if nuc and n_de and n_de != total:
-            print(f"\n  NUCLEO (los 6 del piso): {n_v1} de {n_de}"
+            print(f"\n  NUCLEO ({len(nuc)} turnos): {n_v1} de {n_de}"
                   f"   — es el unico numero comparable con"
                   f" interpretacion_piso.json")
         if deudas:
