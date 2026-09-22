@@ -120,7 +120,46 @@ TIENDA = "verifika_prod"
 # la cuenta, y fallaba porque pedia un id que en la vuelta 1 no existe. Y
 # hasta hoy el esquema no tenia UN SOLO campo obligatorio, o sea que olvidarse
 # de cualquier cosa era gratis y no dejaba rastro.
-TECHO_TABLERO = 2810
+# ── Y SUBE EL 22-sep, POR LA BOCA DE LO QUE EL CLIENTE AFIRMA ───────────────
+#
+# ESTE COMMIT NO TRAE LA BOCA: trae el techo con las cuentas hechas, y la boca
+# entra en el que sigue. Movido junto con el trabajo que lo hace pasar es
+# indistinguible de aflojar la vara, que es la unica puerta por la que este
+# metodo se corrompe.
+#
+# LA CUENTA, MEDIDA CON EL DOBLE Y EL CATALOGO DEL REPO:
+#
+#     el campo `afirma` del esquema         128
+#     su renglon en el indice de bocas       36
+#     ----------------------------------------
+#     la boca entera                        164
+#
+#     tablero hoy, sin ella               2.772
+#     tablero con ella                    2.936
+#
+# EL MARGEN ESTABA EN 38, NO EN 102. El techo de 2.810 se fijo el 21-sep con
+# el esquema en 2.708; hoy mide 2.772 sin tocar nada, asi que los campos que
+# entraron despues se comieron 64 sin que nadie lo anotara. Esta cuenta lo
+# repone igual que la del 21-sep repuso la del 20.
+#
+# EL TECHO PASA DE 2.810 A 3.040 y el margen vuelve a 104, del mismo orden que
+# el 103 con el que nacio y el 102 del 21-sep.
+#
+# LO QUE CUESTA, EN EL TECHO QUE MANDA, QUE ES EL DEL TURNO: el tablero viaja
+# dos veces por turno, asi que son +328 tokens. Una vuelta de mas cuesta del
+# orden de 7.700 -FICHA 53 §7-, o sea que esto se paga solo si ahorra UNA
+# vuelta cada veinticuatro turnos.
+#
+# LO QUE COMPRA, y es lo unico que justifica una boca nueva: hoy el cliente no
+# tiene NINGUN lugar donde declarar un dato que da por sentado. Medido en
+# produccion, los cuatro turnos del "K120 inalambrico ese" pasaron sin
+# declararlo, porque no hay casilla. La FICHA 57 §5.1 llama a esa premisa
+# falsa el unico vector que hoy pasaria por todos los candados: la alucinacion
+# no la trae el modelo, la trae el CLIENTE, y aceptarla es mentir con sus
+# palabras. La misma casilla recibe ademas lo que el cliente cuenta de lo
+# SUYO, que hasta hoy solo entraba por dos puertas angostas —el equipo en
+# compatibilidad y el lugar en envios—.
+TECHO_TABLERO = 3040
 
 
 def _tokens(s: str) -> int:
