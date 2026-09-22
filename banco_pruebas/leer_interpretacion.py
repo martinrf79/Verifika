@@ -144,8 +144,28 @@ def _c_cuenta(c, p):
                 or ((p.get("cuenta") or {}).get("items")) or [])
 
 
+def _nombre_del_tema(t):
+    """EL TEMA, VENGA COMO VENGA (22-sep-2026).
+
+    Desde hoy `temas` son objetos `{tema, dicho}` —la cita del cliente al lado,
+    que es lo que le pone costo a declarar de mas—. Antes eran textos pelados.
+
+    Y ESTE RENGLON LO ESCRIBE UNA MEDICION QUE SALIO MAL. La primera tanda con
+    el campo nuevo dio 51 de 57 contra 55, y el culpable no era el cambio: era
+    este lector, que comparaba el nombre del tema contra un diccionario entero
+    y no acertaba nunca. El modelo habia declarado `garantia` con su cita
+    exacta y la vara lo conto como fallado.
+
+    ES LA MISMA ENFERMEDAD QUE EL SANEO ANTES DEL LOG, de esta misma sesion,
+    con el signo cambiado: alla el instrumento medía la correccion y el numero
+    subia solo; aca dejo de ver el campo y el numero bajaba solo. Las dos veces
+    el defecto estaba en el que mide, no en lo medido.
+    """
+    return _norm(t.get("tema") if isinstance(t, dict) else t)
+
+
 def _c_tema(c, p):
-    pedidos = [_norm(t) for t in (p.get("temas") or [])]
+    pedidos = [_nombre_del_tema(t) for t in (p.get("temas") or [])]
     return any(_norm(v) in pedidos for v in c["acepta"])
 
 
