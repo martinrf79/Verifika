@@ -271,13 +271,29 @@ def _memoria_texto(conv: dict) -> str:
         # "EL SEGUNDO", "EL MAS BARATO DE ESOS", "ESE". Es lo que nombro tu
         # ultimo mensaje, numerado en el orden en que el cliente lo leyo, que
         # es el unico orden al que el cliente se puede referir.
+        #
+        # UN MODELO EN DOS COLORES ES UN RENGLON, porque asi lo lee el cliente:
+        # "el G203 en negro o blanco" es UNA opcion. Numerados por separado,
+        # "el segundo" caia en el G203 blanco y no en el G502 —medido en la
+        # tanda de charlas del 22-sep, CH2—.
+        grupos: list = []
+        for p in recien:
+            clave = p.get("modelo") or p.get("id")
+            if grupos and grupos[-1][0] == clave:
+                grupos[-1][1].append(p)
+            elif any(g[0] == clave for g in grupos):
+                next(g for g in grupos if g[0] == clave)[1].append(p)
+            else:
+                grupos.append((clave, [p]))
         partes.append(
             "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el "
             "cliente lo leyo. 'El segundo' es el 2; 'ese' o 'esos' es esto:\n"
             + "\n".join(
-                f"{n}. {p.get('id')}: {p.get('nombre')}"
-                + (f", {p['precio']}" if p.get("precio") else "")
-                for n, p in enumerate(recien[:8], 1)))
+                f"{n}. " + " / ".join(
+                    f"{p.get('id')}: {p.get('nombre')}"
+                    + (f", {p['precio']}" if p.get("precio") else "")
+                    for p in ps)
+                for n, (_c, ps) in enumerate(grupos[:8], 1)))
         vistos = [p for p in vistos if p not in recien]
     if vistos:
         # CON ID Y CON PRECIO, y las dos cosas por un caso medido.
@@ -361,6 +377,7 @@ def _nombrados(texto: str, fichas: list, tienda_id: str) -> list:
     El mismo modelo en dos colores queda en el lugar donde se nombro, con el
     color que la respuesta dice primero.
     """
+    import re
     from app.storage.firestore_client import get_product_by_id
     t = _norm_simple(texto)
     hallados = []
@@ -369,14 +386,23 @@ def _nombrados(texto: str, fichas: list, tienda_id: str) -> list:
             prod = get_product_by_id(str(f.get("id")), tienda_id=tienda_id) or {}
         except Exception:  # noqa: BLE001 — sin producto no se aparea
             prod = {}
-        pos = [t.find(k) for k in _claves_modelo(prod.get("modelo"))]
-        pos = [x for x in pos if x >= 0]
-        if not pos:
+        apariciones = sorted({m.start() for k in _claves_modelo(prod.get("modelo"))
+                              for m in re.finditer(re.escape(k), t)})
+        if not apariciones:
             continue
-        i = min(pos)
+        # SI EL MODELO SE NOMBRA UNA VEZ, sus colores son UN renglon: "el G203
+        # en negro o blanco". SI SE NOMBRA POR COLOR -"1. G203 negro, 2. G203
+        # blanco"- cada color es su renglon, y la posicion es la de la
+        # aparicion que sigue su color. Manda lo que el cliente leyo.
         color = _norm_simple(prod.get("color"))
+        i = apariciones[0]
+        if len(apariciones) > 1 and color:
+            i = next((a for a in apariciones
+                      if color in t[a:a + 60].split(",")[0]), i)
         j = t.find(color, i) if color else -1
-        hallados.append((i, j if j >= 0 else 10 ** 6, f))
+        grupo = (str(prod.get("modelo") or "") if len(apariciones) == 1
+                 else str(f.get("id")))
+        hallados.append((i, j if j >= 0 else 10 ** 6, dict(f, modelo=grupo)))
     hallados.sort(key=lambda x: (x[0], x[1]))
     visto, fuera = set(), []
     for _i, _j, f in hallados:
@@ -395,7 +421,8 @@ def _claves_modelo(modelo) -> list:
     m = _norm_simple(modelo)
     claves = [m] if len(m) >= 3 else []
     claves += [w for w in re.split(r"\s+", m)
-               if len(w) >= 3 and any(c.isdigit() for c in w) and w != m]
+               if len(w) >= 3 and any(c.isdigit() for c in w)
+               and any(c.isalpha() for c in w) and w != m]
     return claves
 
 
@@ -425,6 +452,7 @@ def _vistos_al_dia(vistos: list, fichas: list, texto: str, turno: int,
         # cuanto salia lo que ya se mostro.
         fuera.append({"id": f.get("id"), "nombre": f.get("nombre"),
                       "precio": f.get("precio"),
+                      "modelo": f.get("modelo") or "",
                       "turno": turno if nombrados else 0})
     return fuera
 

@@ -120,3 +120,50 @@ def test_un_umbral_que_NADIE_devolvio_sigue_cayendo(firestore_doble,
     fuera = asyncio.run(R.procesar_turno(
         "sonda_umbral2", "y a Rosario?", TIENDA, "telegram", "trace_u2"))
     assert "999.999" not in fuera
+
+
+def test_un_modelo_en_dos_colores_es_UN_renglon():
+    """'El G203 en negro o blanco' es una opcion para el cliente. Numerados por
+    separado, 'el segundo' caia en el G203 blanco y no en el G502."""
+    blanco = _ficha("MOU0002", "Mouse Logitech G203 Lightsync Blanco",
+                    "$37.500")
+    conv = {"productos_vistos": [
+        dict(G203, turno=1, modelo="G203 Lightsync"),
+        dict(blanco, turno=1, modelo="G203 Lightsync"),
+        dict(G502, turno=1, modelo="G502 Hero")]}
+    m = R._memoria_texto(conv)
+    assert "2. MOU0003" in m, m
+    renglon_uno = next(r for r in m.splitlines() if r.startswith("1. "))
+    assert "MOU0001" in renglon_uno and "MOU0002" in renglon_uno
+
+
+def test_un_precio_no_se_confunde_con_un_modelo(firestore_doble):
+    """Un modelo que es un numero pelado -'500 W1'- apareaba con cualquier
+    precio terminado en 500. La clave de un modelo lleva letra Y numero."""
+    assert "500" not in R._claves_modelo("500 W1")
+    assert "g203" in R._claves_modelo("G203 Lightsync")
+
+
+def test_si_la_respuesta_numera_los_colores_cada_color_es_su_renglon(
+        firestore_doble):
+    """'1. G203 negro, 2. G203 blanco, 3. G502': ahi el segundo ES el blanco,
+    porque asi lo leyo el cliente."""
+    blanco = _ficha("MOU0002", "Mouse Logitech G203 Lightsync Blanco",
+                    "$37.500")
+    texto = ("1. Mouse Logitech G203 Lightsync Negro ($37.500), 2. Mouse "
+             "Logitech G203 Lightsync Blanco ($37.500), 3. Mouse Logitech "
+             "G502 Hero Negro ($70.000)")
+    vistos = R._vistos_al_dia([], [G502, blanco, G203], texto, 1, TIENDA)
+    assert [p["id"] for p in vistos] == ["MOU0001", "MOU0002", "MOU0003"]
+    m = R._memoria_texto({"productos_vistos": vistos})
+    assert "2. MOU0002" in m, m
+
+
+def test_si_la_respuesta_nombra_el_modelo_una_vez_los_colores_van_juntos(
+        firestore_doble):
+    blanco = _ficha("MOU0002", "Mouse Logitech G203 Lightsync Blanco",
+                    "$37.500")
+    texto = "el G203 Lightsync (negro o blanco) a $37.500 y el G502 Hero"
+    vistos = R._vistos_al_dia([], [G502, blanco, G203], texto, 1, TIENDA)
+    m = R._memoria_texto({"productos_vistos": vistos})
+    assert "2. MOU0003" in m, m

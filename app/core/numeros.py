@@ -107,6 +107,28 @@ def _envio_de(envios: dict, referencia: str):
     return parecidos[0] if len(parecidos) == 1 else None
 
 
+def _suma_verificada(objetivo: int, sumandos: list, veces: int = 5) -> bool:
+    """¿Sale `objetivo` sumando al menos DOS montos de la fuente, cada uno
+    hasta `veces` unidades? Dos como minimo: un monto solo ya estaria entre
+    los permitidos, y una cifra que es un multiplo de uno solo —"$75.000"
+    por dos G203— tambien se acepta porque es cantidad por precio."""
+    vals = sorted({v for v in sumandos if 0 < v <= objetivo})[:12]
+    if not vals or objetivo <= 0:
+        return False
+    # (suma, cuantos) alcanzables; se corta en el objetivo, que es chico.
+    alcanzables = {(0, 0)}
+    for v in vals:
+        nuevos = set()
+        for suma, n in alcanzables:
+            for k in range(1, veces + 1):
+                t = suma + v * k
+                if t > objetivo:
+                    break
+                nuevos.add((t, n + k))
+        alcanzables |= nuevos
+    return any(suma == objetivo and n >= 2 for suma, n in alcanzables)
+
+
 def _norm_destino(s) -> str:
     import unicodedata
     t = unicodedata.normalize("NFKD", str(s or "").lower().strip())
@@ -233,10 +255,28 @@ def llenar(texto: str, fichas: list, trace_id: str = "",
     if cuenta:
         permitidos |= _digitos(_json.dumps(cuenta, ensure_ascii=False,
                                            default=str))
+    # LA SUMA QUE EL CODIGO PUEDE COMPROBAR NO ES INVENTO (22-sep-2026).
+    # Medido 2 de 3 en la tanda de charlas: a "precio del K120 y del G203" el
+    # modelo contesto los dos precios Y "$52.000 los dos", la guarda no
+    # encontro 52.000 en ninguna fuente y el cliente leyo "no tengo esa
+    # informacion". La suma estaba BIEN. Lo que la regla protege es que la
+    # plata sea correcta, no que el modelo no sume: si el codigo reconstruye la
+    # cifra EXACTA con precios y tarifas que si son fuente, esta verificada.
+    # Si no la reconstruye, sigue cayendo igual que antes.
+    sumandos = [int(f["precio_ars"]) for f in (fichas or [])
+                if str(f.get("precio_ars") or "").isdigit()]
+    sumandos += [int(v) for v in (envios or {}).values()
+                 if str(v).isdigit()]
     for bruto in _CIFRA.findall(salida):
         limpio = re.sub(r"\D", "", bruto)
         if limpio and limpio not in permitidos:
+            if _suma_verificada(int(limpio), sumandos):
+                informe.setdefault("sumas", []).append(int(limpio))
+                continue
             informe["inventada"].append(bruto.strip())
+    if informe.get("sumas"):
+        log.info("suma_verificada", trace_id=trace_id,
+                 montos=informe["sumas"][:5])
 
     # ── EL TOTAL, RECIEN AHORA ──────────────────────────────────────────
     #

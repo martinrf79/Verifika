@@ -48,38 +48,48 @@ def _catalogo() -> list:
 
 
 def mostrados(texto: str, catalogo: list) -> list:
-    """Los MODELOS que nombro la respuesta, en el orden en que los nombro.
+    """Los productos que nombro la respuesta, en el orden en que los nombro.
 
-    Cada uno es (modelo, {ids}): el mismo modelo en dos colores es una sola
-    cosa para "el segundo", que es como lo lee un cliente. Un modelo de menos
-    de tres letras no se busca: apareado por parecido es la enfermedad que el
-    MAPA_CABLEADO ya tiene numerada.
+    Cada uno es (modelo, {ids}). Si el modelo se nombra UNA vez, sus colores
+    son una sola cosa para "el segundo" —"el G203 en negro o blanco"—; si se
+    nombra por color —"1. G203 negro, 2. G203 blanco"—, cada color es su
+    renglon. La clave de un modelo es el modelo entero o su parte con letra y
+    numero —"el G203" nombra al "G203 Lightsync"—.
     """
+    import re
     t = _norm(texto)
-    pos: dict = {}
+    por_modelo: dict = {}
     for p in catalogo:
         m = _norm(p.get("modelo"))
         if len(m) < 3:
             continue
-        # EL MODELO ENTERO O SU PARTE CON NUMEROS: "el G203" nombra al "G203
-        # Lightsync". Es como lo nombran el cliente y el bot.
+        por_modelo.setdefault(m, []).append(p)
+    items = []
+    for m, prods in por_modelo.items():
         claves = [m] + [w for w in m.split() if len(w) >= 3 and w != m
-                        and any(c.isdigit() for c in w)]
-        hits = [t.find(k) for k in claves if t.find(k) >= 0]
-        if not hits:
+                        and any(c.isdigit() for c in w)
+                        and any(c.isalpha() for c in w)]
+        ap = sorted({x.start() for k in claves
+                     for x in re.finditer(re.escape(k), t)})
+        if not ap:
             continue
-        i = min(hits)
-        if m not in pos:
-            pos[m] = [i, set()]
-        pos[m][1].add(p["id"].lower())
-    # UN MODELO ADENTRO DE OTRO NO CUENTA DOS VECES: "g pro x superlight" y
-    # "g pro" en la misma posicion son uno.
-    orden = sorted(pos.items(), key=lambda kv: (kv[1][0], -len(kv[0])))
+        if len(ap) == 1 or len(prods) == 1:
+            items.append((ap[0], len(m), m, {p["id"].lower() for p in prods}))
+            continue
+        for p in prods:
+            color = _norm(p.get("color"))
+            i = next((a for a in ap
+                      if color and color in t[a:a + 60].split(",")[0]), None)
+            if i is not None:
+                items.append((i, len(m), m, {p["id"].lower()}))
+    items.sort(key=lambda x: (x[0], -x[1]))
     fuera, tomadas = [], []
-    for m, (i, ids) in orden:
+    for i, largo, m, ids in items:
+        # UN MODELO ADENTRO DE OTRO NO CUENTA DOS VECES: "g pro x" adentro de
+        # "g pro x superlight", o "g502 x" por su "g502" en el "g502 hero".
         if any(a <= i < b for a, b in tomadas):
             continue
-        tomadas.append((i, i + len(m)))
+        tomadas.append((i, i + largo))
         fuera.append((m, ids))
     return fuera
 
@@ -121,7 +131,11 @@ def _c_responde_sobre(c, p, historia, catalogo, texto):
 
 
 def _c_pregunta(c, p, historia, catalogo, texto):
-    return "?" in (texto or "")
+    """Repregunta con signo o sin el: "decime con cual seguimos" es una
+    repregunta aunque no lleve signo."""
+    import re
+    return "?" in (texto or "") or bool(re.search(
+        r"\b(decime|contame|avisame)\b", _norm(texto)))
 
 
 def _c_sin_rubro(c, p, historia, catalogo, texto):
