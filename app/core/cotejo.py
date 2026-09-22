@@ -363,3 +363,112 @@ def reponer_condiciones(consultas: list, memoria: dict,
         log.info("condicion_repuesta", trace_id=trace_id,
                  repuestas=repuestas[:6])
     return repuestas
+
+
+# ── 6 · LA PREGUNTA NO ES UNA AFIRMACION ────────────────────────────────────
+#
+# MEDIDO EN LA TANDA DE CHARLAS DEL 22-sep, CH14: a "el teclado es
+# inalambrico?" el modelo declaro `afirma {sobre: TEC0029, dice: inalambrico}`
+# y su renglon fue "el K120 inalambrico ese", que es el EJEMPLO de la
+# descripcion copiado tal cual. La boca contesto como a una premisa y el
+# cliente leyo "lo tomamos como una caracteristica del uso que le das".
+#
+# LA DIFERENCIA ES DE GRAMATICA Y NO DE TEMA, y por eso la puede ver el codigo.
+# En una pregunta el dato va DESPUES de un verbo que lo pregunta: "ES
+# inalambrico?", "TIENE bluetooth?", "VIENE en blanco?". En una premisa va
+# pegado al nombre, como adjetivo: "el K120 inalambrico ese, cuanto sale?".
+# Los verbos son del castellano, cerrados y universales: sirven igual para
+# cualquier tienda, que es la regla de `_VACIAS`.
+_PREGUNTAN = ("es", "son", "tiene", "tienen", "viene", "vienen", "trae",
+              "traen", "anda", "andan", "funciona", "funcionan", "sirve",
+              "sirven", "usa", "usan", "lleva", "llevan", "incluye",
+              "incluyen", "esta", "estan", "hay")
+
+
+def afirmas_que_preguntan(afirma: list, mensaje: str,
+                          trace_id: str = "") -> list:
+    """Saca de `afirma` lo que el cliente PREGUNTO en vez de dar por sentado.
+
+    Modifica la lista en el lugar y devuelve lo que saco. Solo mira el dato
+    —`dice`— y solo lo saca si en el mensaje aparece despues de uno de los
+    verbos que preguntan, a lo sumo dos palabras de distancia, y la oracion
+    termina en signo de pregunta. Ante la duda se queda: una premisa falsa
+    tragada es peor que una aclaracion de mas.
+    """
+    if not afirma:
+        return []
+    oraciones = re.split(r"(?<=[?.!\n])", mensaje or "")
+    sacadas = []
+    for a in list(afirma):
+        if not isinstance(a, dict):
+            continue
+        dice = norm(a.get("dice"))
+        if not dice:
+            continue
+        verbos = "|".join(_PREGUNTAN)
+        patron = re.compile(r"\b(?:" + verbos + r")\s+(?:\w+\s+){0,2}"
+                            + re.escape(dice))
+        if any(o.strip().endswith("?") and patron.search(norm(o))
+               for o in oraciones):
+            afirma.remove(a)
+            sacadas.append(f"{a.get('sobre')}: {a.get('dice')}")
+    if sacadas:
+        log.info("afirma_era_pregunta", trace_id=trace_id,
+                 sacadas=sacadas[:4])
+    return sacadas
+
+
+# ── 7 · EL PRODUCTO QUE EL RENGLON NOMBRA SE BUSCA ──────────────────────────
+#
+# MEDIDO EN LA TANDA DE CHARLAS DEL 22-sep, CH22: al turno de "cuanto sale el
+# K120?" el cliente pregunta "y cuanta garantia tiene?". El renglon del modelo
+# dice "cuanta garantia tiene el teclado K120 negro" —entendio— y el pedido
+# trae solo el tema `garantia`. Sin la ficha no hay `garantia_meses`, y el
+# cliente leyo la politica generica: "decime cual te interesa".
+#
+# EL OLVIDO DEJA RASTRO EN EL RENGLON, que es para lo que existe el renglon.
+# Si nombra un modelo que el cliente ya vio y ninguna consulta lo trae, el
+# codigo agrega la consulta por id. No razona: aparea el modelo por la misma
+# clave con la que la memoria guarda lo nombrado, contra productos que YA
+# se mostraron, asi que no puede traer uno que el cliente no conoce.
+
+
+def rescatar_nombrados(renglones: list, pedido: dict, vistos: list,
+                       trace_id: str = "") -> list:
+    """Agrega a `pedido['consultas']` los productos vistos que un renglon
+    nombra y nada pide. Devuelve los ids agregados."""
+    if not renglones or not vistos:
+        return []
+    texto = " ".join(norm(r) for r in renglones)
+    crudo = norm(str(pedido))
+    grupos: dict = {}
+    for p in vistos:
+        if not isinstance(p, dict) or not p.get("id"):
+            continue
+        for k in _claves(p.get("modelo")):
+            if re.search(r"(?<![a-z0-9])" + re.escape(k) + r"(?![a-z0-9])",
+                         texto):
+                grupos.setdefault(norm(p.get("modelo")), []).append(
+                    str(p["id"]))
+                break
+    agregados = []
+    for _modelo, ids in grupos.items():
+        if any(norm(i) in crudo for i in ids):
+            continue
+        pedido.setdefault("consultas", []).append(
+            {"ids": ids, "busco": "uno"})
+        agregados += ids
+    if agregados:
+        log.info("nombrado_rescatado", trace_id=trace_id, ids=agregados[:6])
+    return agregados
+
+
+def _claves(modelo) -> list:
+    """El modelo entero, o su parte con letra y numero: "G203" de "G203
+    Lightsync". Una palabra sin numeros no alcanza, "Pro" esta en veinte."""
+    m = norm(modelo)
+    claves = [m] if len(m) >= 3 else []
+    claves += [w for w in m.split() if len(w) >= 3 and w != m
+               and any(c.isdigit() for c in w)
+               and any(c.isalpha() for c in w)]
+    return claves

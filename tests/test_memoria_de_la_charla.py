@@ -128,9 +128,9 @@ def test_un_modelo_en_dos_colores_es_UN_renglon():
     blanco = _ficha("MOU0002", "Mouse Logitech G203 Lightsync Blanco",
                     "$37.500")
     conv = {"productos_vistos": [
-        dict(G203, turno=1, modelo="G203 Lightsync"),
-        dict(blanco, turno=1, modelo="G203 Lightsync"),
-        dict(G502, turno=1, modelo="G502 Hero")]}
+        dict(G203, turno=1, grupo="G203 Lightsync"),
+        dict(blanco, turno=1, grupo="G203 Lightsync"),
+        dict(G502, turno=1, grupo="G502 Hero")]}
     m = R._memoria_texto(conv)
     assert "2. MOU0003" in m, m
     renglon_uno = next(r for r in m.splitlines() if r.startswith("1. "))

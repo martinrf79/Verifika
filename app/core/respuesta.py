@@ -278,7 +278,7 @@ def _memoria_texto(conv: dict) -> str:
         # tanda de charlas del 22-sep, CH2—.
         grupos: list = []
         for p in recien:
-            clave = p.get("modelo") or p.get("id")
+            clave = p.get("grupo") or p.get("modelo") or p.get("id")
             if grupos and grupos[-1][0] == clave:
                 grupos[-1][1].append(p)
             elif any(g[0] == clave for g in grupos):
@@ -455,7 +455,9 @@ def _nombrados(texto: str, fichas: list, tienda_id: str) -> list:
         j = t.find(color, i) if color else -1
         grupo = (str(prod.get("modelo") or "") if len(apariciones) == 1
                  else str(f.get("id")))
-        hallados.append((i, j if j >= 0 else 10 ** 6, dict(f, modelo=grupo)))
+        hallados.append((i, j if j >= 0 else 10 ** 6,
+                         dict(f, modelo=str(prod.get("modelo") or ""),
+                              grupo=grupo)))
     hallados.sort(key=lambda x: (x[0], x[1]))
     visto, fuera = set(), []
     for _i, _j, f in hallados:
@@ -506,6 +508,7 @@ def _vistos_al_dia(vistos: list, fichas: list, texto: str, turno: int,
         fuera.append({"id": f.get("id"), "nombre": f.get("nombre"),
                       "precio": f.get("precio"),
                       "modelo": f.get("modelo") or "",
+                      "grupo": f.get("grupo") or f.get("modelo") or "",
                       "turno": turno if nombrados else 0})
     return fuera
 
@@ -715,7 +718,8 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
 async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                      fuente: str, trace_id: str, tienda_id: str,
                      localidad_previa: str = "",
-                     vigentes: dict | None = None) -> tuple:
+                     vigentes: list | None = None,
+                     vistos: list | None = None) -> tuple:
     """La llamada al modelo, con el motor de busqueda en la mano.
 
     EL ORDEN DE LECTURA, y es lo que cambio el 12-sep. Lo que el modelo lee,
@@ -1072,6 +1076,14 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                 consultas, mensaje, _ordenables, trace_id)
             informe["condiciones_repuestas"] += CO.reponer_condiciones(
                 consultas, condiciones_del_turno, trace_id)
+            # LA PREGUNTA NO ES PREMISA, Y EL PRODUCTO QUE EL RENGLON NOMBRA
+            # SE BUSCA (22-sep-2026). Las dos las midio la tanda de charlas y
+            # el motivo entero esta en `cotejo`, secciones 6 y 7.
+            CO.afirmas_que_preguntan(args.get("afirma"), mensaje, trace_id)
+            _con = dict(args, consultas=consultas)
+            CO.rescatar_nombrados(pidio["renglones"], _con, vistos or [],
+                                  trace_id)
+            consultas = _con["consultas"]
             # ── EL RENGLON ES COPIA, O NO LO ES ───────────────────────────
             #
             # Se mide sobre la PRIMERA llamada del turno y nada mas. La
@@ -1346,7 +1358,8 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     salida, fichas, envios, cuenta, motor = await _preguntar(
         _voz(negocio), memoria, history, raw_message, bloque, trace_id,
         tienda_id, localidad_previa=conv.get("ultima_localidad") or "",
-        vigentes=(conv.get("preferencias_cliente") or {}).get("vigentes"))
+        vigentes=(conv.get("preferencias_cliente") or {}).get("vigentes"),
+        vistos=conv.get("productos_vistos") or [])
     etapas["modelo"] = int((time.time() - t) * 1000)
     # EL NUMERO DEL MOTOR, UN RENGLON POR TURNO. Sale SIEMPRE, haya buscado o
     # no: un turno que no busco es un dato, no un hueco en la serie. Lo agrega
