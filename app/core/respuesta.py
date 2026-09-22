@@ -826,21 +826,6 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                 log.warning("motor_argumentos_rotos", trace_id=trace_id,
                             crudo=str(c.function.arguments)[:200])
             consultas = args.get("consultas") or []
-            # ── EL COTEJO, ANTES DE BUSCAR (22-sep-2026) ───────────────────
-            #
-            # LAS DOS CORRECCIONES DETERMINISTAS VAN ACA Y NO EN EL MOTOR, y
-            # el motivo es el de siempre: el motor no mira el mensaje del
-            # cliente, mira la consulta. Cotejar lo declarado contra lo dicho
-            # es trabajo de este borde, que es el unico lugar donde estan las
-            # dos cosas.
-            #
-            # SANEAR VA ANTES DE REPONER, a proposito: asi la memoria del
-            # turno solo guarda condiciones ya saneadas y un techo inventado
-            # no puede volver a entrar por la puerta de la reposicion.
-            informe["umbrales_degradados"] += CO.sanear_umbrales(
-                consultas, mensaje, _ordenables, trace_id)
-            informe["condiciones_repuestas"] += CO.reponer_condiciones(
-                consultas, condiciones_del_turno, trace_id)
             # LOS DOS OBLIGATORIOS VAN PRIMEROS Y NACEN MUDOS (21-sep-2026).
             # `renglones` es lo que el cliente pidio con SUS palabras y
             # `pedir_total` el si o no del presupuesto. Los dos VIAJAN Y SE
@@ -869,6 +854,38 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             # que el modelo no declaro. Son caracteres de log, no tokens.
             log.info("motor_pedido", trace_id=trace_id, vuelta=vuelta + 1,
                      pedido=json.dumps(pidio, ensure_ascii=False)[:2000])
+            # ── EL COTEJO, DESPUES DE LOGUEAR Y ANTES DE BUSCAR ────────────
+            #
+            # EL ORDEN ES LO UNICO QUE IMPORTA ACA, y la primera tanda con el
+            # modelo real lo cazo el 22-sep. Con el saneo ANTES del log, el
+            # `motor_pedido` salia ya corregido: la vara leia una consulta sin
+            # el techo inventado y le daba la casilla por buena. M11 paso de
+            # fallar 2 de 2 en produccion a dar 3 de 3 en banco sin que el
+            # modelo hubiera cambiado nada.
+            #
+            # UN INSTRUMENTO QUE MIDE LA CORRECCION EN VEZ DEL MODELO ES PEOR
+            # QUE NO TENER INSTRUMENTO, porque el numero sube solo y eso es
+            # indistinguible de un avance. Es la misma enfermedad que el
+            # umbral movido junto con el trabajo que lo hace pasar, que
+            # CLAUDE.md llama la unica puerta por la que este metodo se
+            # corrompe.
+            #
+            # ASI QUE EL LOG DICE LO QUE ESCRIBIO EL MODELO y estas dos lineas
+            # arreglan lo que le llega al motor. Lo que el codigo corrigio se
+            # lee aparte, en los renglones del cotejo de `motor_turno`.
+            #
+            # LAS DOS VAN ACA Y NO EN EL MOTOR porque el motor no mira el
+            # mensaje del cliente, mira la consulta: cotejar lo declarado
+            # contra lo dicho es trabajo de este borde, el unico lugar donde
+            # estan las dos cosas.
+            #
+            # SANEAR VA ANTES DE REPONER: asi la memoria del turno solo guarda
+            # condiciones ya saneadas y un techo inventado no puede volver a
+            # entrar por la puerta de la reposicion.
+            informe["umbrales_degradados"] += CO.sanear_umbrales(
+                consultas, mensaje, _ordenables, trace_id)
+            informe["condiciones_repuestas"] += CO.reponer_condiciones(
+                consultas, condiciones_del_turno, trace_id)
             # ── EL RENGLON ES COPIA, O NO LO ES ───────────────────────────
             #
             # Se mide sobre la PRIMERA llamada del turno y nada mas. La

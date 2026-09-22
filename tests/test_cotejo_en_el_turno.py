@@ -146,6 +146,48 @@ def test_el_techo_inventado_no_llega_al_motor(firestore_doble, monkeypatch):
                                           "direccion": "min"}
 
 
+def test_el_log_del_pedido_dice_lo_que_ESCRIBIO_EL_MODELO(firestore_doble,
+                                                          monkeypatch):
+    """EL CANDADO DEL ORDEN, y lo pago una tanda entera el 22-sep.
+
+    Con el saneo ANTES del log, `motor_pedido` salia ya corregido y la vara de
+    la interpretacion leia una consulta sin el techo inventado: M11 paso de
+    fallar 2 de 2 en produccion a dar 3 de 3 en banco sin que el modelo hubiera
+    cambiado nada. Un instrumento que mide la correccion en vez del modelo es
+    peor que no tener instrumento, porque el numero sube solo y eso es
+    indistinguible de un avance.
+
+    El log tiene que traer el techo inventado. Lo que el codigo corrigio se lee
+    aparte, en los renglones del cotejo.
+    """
+    # Los logs del turno estan silenciados en la bateria, asi que se espia el
+    # logger del modulo en vez de leer la salida.
+    anotados = []
+
+    class _Log:
+        def info(self, ev, **kw):
+            anotados.append((ev, kw))
+
+        def warning(self, ev, **kw):
+            anotados.append((ev, kw))
+
+    monkeypatch.setattr(R, "log", _Log())
+    guion = [_Msg(tool_calls=[_Call(
+        '{"renglones": ["necesito una compu para mi hijo de 8 años"], '
+        '"pedir_total": false, "consultas": [{"categoria": "notebook", '
+        '"condiciones": [{"campo": "precio_ars", "operador": "menor", '
+        '"valor": "500000"}]}]}')]),
+        _Msg('{"tipo": "recomendacion", "texto": "listo"}')]
+    informe, vistas, _ = _correr(monkeypatch, guion, M11)
+    pedidos = [kw for ev, kw in anotados if ev == "motor_pedido"]
+    assert pedidos, "no se loguea el pedido"
+    crudo = str(pedidos[0].get("pedido", ""))
+    assert "500000" in crudo, "el log salio ya corregido: la vara no puede ver"
+    # Y al motor le llego saneado igual.
+    assert vistas[0][0]["condiciones"] == []
+    assert informe["umbrales_degradados"] == ["precio_ars menor 500000"]
+
+
 def test_la_cifra_dicha_por_el_cliente_si_llega_al_motor(firestore_doble,
                                                          monkeypatch):
     men = "mostrame notebooks de menos de 700000 pesos"
