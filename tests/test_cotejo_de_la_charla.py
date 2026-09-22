@@ -135,3 +135,35 @@ def test_el_lector_de_la_vara_lee_las_dos_formas():
     assert _c_barato({}, {"consultas": [{"ordenar_por": {
         "campo": "precio_ars", "direccion": "min"}}]})
     assert not _c_barato({}, {"consultas": [{"orden": "ninguno"}]})
+
+
+# ── 9 · "lo tenes en rosa?" con un solo modelo delante ─────────────────────
+
+G203S = [{"id": "MOU0001", "modelo": "G203 Lightsync", "turno": 1},
+         {"id": "MOU0002", "modelo": "G203 Lightsync", "turno": 1}]
+
+
+def test_el_pronombre_con_un_solo_modelo_trae_ese_modelo():
+    """CH15: contesto con los colores de TODOS los mouses."""
+    pedido = {"consultas": [{"categoria": "mouse", "condiciones": [
+        {"campo": "color", "operador": "igual", "valor": "rosa"}]}]}
+    ids = CO.rescatar_anafora("lo tenes en rosa?", pedido, G203S)
+    assert ids == ["MOU0001", "MOU0002"]
+    assert pedido["consultas"][-1] == {"ids": ids, "busco": "uno"}
+
+
+def test_con_dos_modelos_delante_no_se_elige():
+    """Ahi la ambiguedad es real: la regla 10.0 manda preguntar."""
+    dos = G203S + [{"id": "MOU0003", "modelo": "G502 Hero", "turno": 1}]
+    assert CO.rescatar_anafora("lo tenes en rosa?", {"consultas": []},
+                               dos) == []
+
+
+def test_sin_pronombre_no_se_toca():
+    assert CO.rescatar_anafora("tenes mouses rosa?", {"consultas": []},
+                               G203S) == []
+
+
+def test_el_mismo_pero_en_blanco_tambien():
+    assert CO.rescatar_anafora("tenes el mismo pero en blanco?",
+                               {"consultas": []}, G203S)

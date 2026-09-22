@@ -1110,6 +1110,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             _con = dict(args, consultas=consultas)
             CO.rescatar_nombrados(pidio["renglones"], _con, vistos or [],
                                   trace_id)
+            CO.rescatar_anafora(mensaje, _con, vistos or [], trace_id)
             consultas = _con["consultas"]
             CO.restringir_a_esos(mensaje, consultas,
                                  _lo_ultimo_nombrado(vistos, tienda_id),

@@ -519,3 +519,44 @@ def restringir_a_esos(mensaje: str, consultas: list, recien: list,
         log.info("restringida_a_esos", trace_id=trace_id, ids=ids[:8],
                  consultas=len(tocadas))
     return tocadas
+
+
+# ── 9 · "LO TENES EN ROSA?" CON UN SOLO MODELO DELANTE ─────────────────────
+#
+# MEDIDO EN LA TANDA DE CHARLAS DEL 22-sep, CH15: tras "cuanto sale el G203?"
+# —y el bot nombro el G203 en negro y en blanco— el cliente pregunta "lo
+# tenes en rosa?". El modelo busco mouses rosa en todo el catalogo y contesto
+# con los colores de TODOS los mouses —negro, blanco, plata, gris, azul—,
+# cuando el G203 solo viene en dos.
+#
+# EL PRONOMBRE NO ES AMBIGUO SI DELANTE HAY UN SOLO MODELO, y eso lo decide el
+# codigo sin razonar: cuenta cuantos modelos nombro la ultima respuesta. Con
+# uno solo, el pronombre apunta a el y se agrega su consulta por id —las
+# variantes vuelven con sus colores reales—. Con dos o mas NO se toca: ahi la
+# ambiguedad es real y la regla 10.0 manda preguntar, no elegir.
+_ANAFORA = re.compile(
+    r"\b(?:lo|la|los|las)\s+(?:tenes|tienen|tenés|hay|traen|venden|haces|"
+    r"hacen|conseguis|manejan)\b|\bel mismo\b|\bla misma\b|\bese mismo\b")
+
+
+def rescatar_anafora(mensaje: str, pedido: dict, vistos: list,
+                     trace_id: str = "") -> list:
+    """Si el mensaje refiere con pronombre y lo ultimo nombrado es UN solo
+    modelo, agrega su consulta por ids cuando nada lo pide. Devuelve los ids
+    agregados."""
+    if not vistos or not _ANAFORA.search(norm(mensaje)):
+        return []
+    ultimo = max((int(p.get("turno") or 0) for p in vistos
+                  if isinstance(p, dict)), default=0)
+    recien = [p for p in vistos if isinstance(p, dict) and ultimo
+              and int(p.get("turno") or 0) == ultimo]
+    modelos = {norm(p.get("modelo")) for p in recien if p.get("modelo")}
+    if len(modelos) != 1:
+        return []
+    ids = [str(p["id"]) for p in recien if p.get("id")]
+    crudo = norm(str(pedido))
+    if any(norm(i) in crudo for i in ids):
+        return []
+    pedido.setdefault("consultas", []).append({"ids": ids, "busco": "uno"})
+    log.info("anafora_rescatada", trace_id=trace_id, ids=ids[:6])
+    return ids

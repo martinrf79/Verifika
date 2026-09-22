@@ -238,6 +238,14 @@ async def correr_charla(ch: dict, corrida: int, catalogo: list,
         # forma "rubro: campo operador valor". Sin esto la vara mediria la
         # declaracion y no lo que se busco de verdad.
         for e in t.eventos:
+            # "DE ESOS" QUE EL COTEJO RESTRINGIO A LO ULTIMO NOMBRADO: la
+            # busqueda efectiva lleva esos ids aunque el modelo no los haya
+            # escrito. Evento propio, asi que se lee aparte del pedido.
+            if e.get("event") == "restringida_a_esos":
+                junto.setdefault("consultas", []).append(
+                    {"ids": list(e.get("ids") or []),
+                     "restringida_por_codigo": True})
+                continue
             if e.get("event") != "motor_turno":
                 continue
             for r in e.get("condiciones_repuestas") or []:
