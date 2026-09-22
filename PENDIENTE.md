@@ -64,52 +64,43 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
-**22-sep: EL COTEJO ESTA VIVO Y LE FALTA EL NUMERO REAL.** `app/core/cotejo.py`
-son cinco comprobaciones deterministas sobre lo que el modelo declara contra lo
-que el cliente dijo: la fidelidad del renglon, el rubro nombrado y no buscado,
-la cifra que el cliente no dijo degradada de filtro a orden, la vuelta que no
-agrega nada, y la condicion de exclusion que una vuelta pierde y se repone.
-Bateria 588 verdes. **LO QUE FALTA ES MEDIRLO VIVO:** el bloque EL COTEJO del
-informe del issue 31 con `/logs`, y lo primero que hay que mirar es el
-porcentaje de renglones que son COPIA, porque de eso dependen los otros cuatro.
-Dos cosas para vigilar en la tanda: un falso positivo del rubro sin pedir
-—"no quiero un teclado, quiero un mouse" lo nombra y no lo pide— y si el aviso
-que viaja al modelo le cambia el largo del mensaje.
+**22-sep: EL PISO DE LA INTERPRETACION QUEDO EN 55 DE 57, NUCLEO 31 DE 31.**
+Dos corridas de los 19, cero turnos caidos, con la paga porque la gratis se
+agotaba y tiraba el 15% de los turnos. El denominador subio de 54 a 57 por MAS
+problema medido: la premisa falsa dejo de ser deuda. Todo en
+`banco_pruebas/interpretacion_piso.json`.
 
-**22-sep: EL ATERRIZAJE, PRIMERA MITAD HECHA.** Un campo vacio en TODAS las
-filas del universo ya no vacia el resultado: sale como `no_aplicado` y el resto
-del pedido sobrevive. Era el turno `2c36e750` —el modelo interpreto bien y el
-sistema contesto "no lo vendemos"— y se mide offline porque `color` esta en
-cero de los 19 procesadores. Y `SIN_CAMPO` ahora devuelve EN QUE CAMPO vive ese
-valor, asi el modelo no tiene que acertarle al nombre de nuestro esquema.
-**FALTA:** el indice invertido para catalogos grandes, que es el paso 2 de la
-FICHA 57 y no se adelanto; y medir vivo si el rubro sin pedir da falsos
-positivos.
+**LO QUE ENTRO Y ESTA VIVO EN PRODUCCION:** el cotejo —cinco comprobaciones
+deterministas, `app/core/cotejo.py`—, el aterrizaje —un campo vacio en toda la
+categoria ya no dice "no lo vendemos", y `SIN_CAMPO` devuelve donde SI vive el
+valor— y la boca `afirma`, que resuelve la premisa falsa y el dato del cliente
+con una sola casilla. M13 da 3 de 3.
 
-**22-sep: EL NUMERO DE LA TANDA DEL 22 NO SE ANOTA COMO PISO.** Dio 55 de 56 y
-estaba inflado: el cotejo saneaba el umbral ANTES de escribir `motor_pedido`,
-asi que la vara media la correccion y no al modelo. Corregido el orden, M11
-vuelve a fallar 2 de 2 como en produccion. **Lo unico comparable de esa tanda
-es NUCLEO 31 de 31**, igual al piso. La proxima corrida limpia de los 19 es la
-que puede mover el piso.
+**LO QUE FALLA Y ES CONSISTENTE, con la causa ya verificada por el taller:**
+M7 declara un tema que el cliente no pregunto, 5 de 5 corridas. M11 se inventa
+un techo de precio, 2 de 2 —contenido: el codigo lo degrada a orden antes del
+motor, asi que no borra filas—. M17 no ordena por precio, 1 de 2.
 
-**22-sep: LA BOCA `afirma` ESTA VIVA Y MEDIDA.** Una casilla para la premisa
-falsa y para el dato que aporta el cliente, con cuatro veredictos
-—confirma, contradice, no_consta, del_cliente—. **M13 da 3 de 3 en tres
-corridas y la casilla F2 pasa de CERO a 3 de 3**, o sea que dejo de ser deuda.
-Medido por el camino vivo del turno, con el texto que lee el cliente:
+**SE PROBARON DOS ARREGLOS DE FORMA Y SE REVIRTIERON:** el tema con cita
+obligatoria y el aviso del umbral al modelo. Ninguno movio el numero. La
+leccion, que vale mas que los dos: **un candado que el modelo puede satisfacer
+sin cambiar su decision no es un candado** —cito "que no se escuche el ruido de
+afuera", que SI esta en el mensaje, y el tema paso igual—.
 
-    antes  "Teclado K120 inalambrico no lo vendemos"
-    ahora  "El teclado Logitech K120 NO es inalambrico, el dato real es que su
-            conexion es con cable USB... ambos salen $14.500"
+**LO SIGUIENTE, Y NO SE EMPEZO:** `ordenar_por` obligatorio con valor de
+escape, que es el patron que ya funciono tres veces en este repo —`SIN_TEMA`,
+`medio_no_disponible`, `pedir_total`—. Ataca M17 y la mitad de M11.
 
-    antes  un procesador negro devolvia cero y se negaba
-    ahora  "Color no es un dato que tengamos cargado, asi que no te puedo
-            decir cual cumple sin inventarlo. Lo que si tengo es..."
+**EL TALLER (`banco_pruebas/taller.py`) ES LO QUE MAS VALE DE LA SESION.** Le
+pregunta al modelo SOLO lo que el codigo puede comprobar despues, y separa
+hueco de tablero de hueco de esquema. Primer numero: 4 de 4 casillas son hueco
+de TABLERO y CERO de esquema, o sea que para estos casos no hay que ampliar la
+fuente.
 
-**FALTA:** la tanda de los 19 con todo esto puesto, que es la que puede mover
-el piso; y medir si `del_cliente` sobrevive varios turnos, porque hoy vale
-para el turno y nadie lo guarda —es la memoria entre turnos, el paso 5—.
+**DOS BUGS DE INSTRUMENTO EN UN DIA, Y LOS DOS MOVIAN EL NUMERO SOLOS:** el
+cotejo saneaba antes de loguear —el numero subia— y el lector no veia `temas`
+si cambiaba de forma —bajaba—. Los dos arreglados y con candado. Cuando un
+numero se mueve, mirar primero al que mide.
 
 **22-sep: EL MAPA_CABLEADO NOMBRA PIEZAS MUERTAS.** Habla de `turno.py`,
 `tabla.py`, `resolver.py` y `molde.py`, apagadas el 3 y el 11-sep. La regla
