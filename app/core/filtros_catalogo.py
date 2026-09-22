@@ -946,6 +946,69 @@ def _ordenar_por_preferencia(prods: list, campo: str, operador: str,
             sum(1 for v in pegan.values() if v is None))
 
 
+# ── EL ATERRIZAJE — de un valor al campo donde vive ─────────────────────────
+#
+# QUE RESUELVE, y son los dos patrones que produccion dio ocho veces el
+# 22-sep. El modelo hace bien el salto de las palabras del cliente al CONCEPTO
+# -"se traba con muchas pestañas" a memoria, "aparato con teclas" a teclado- y
+# falla en el salto siguiente, del concepto al CAMPO de esta tienda. Y no falla
+# por adivinar: elige de la lista que le damos, que es una sola para las 880
+# filas mientras los campos viven POR CATEGORIA.
+#
+# POR QUE LO HACE EL CODIGO Y NO EL MODELO. Es busqueda exhaustiva sobre un
+# espacio cerrado: dado un valor, en que campos del universo aparece. Eso se
+# calcula, no se razona. Es la regla 10.0 del proyecto aplicada a los campos:
+# la identidad la decide una funcion determinista, no el modelo.
+#
+# SOLO CORREN CUANDO ALGO YA FALLO, y por eso no hace falta indice: el camino
+# feliz no las toca. Sobre 880 productos y 20 campos son 17.600 comparaciones
+# de texto en el peor caso, y el peor caso es un filtro que iba a devolver cero.
+# A escala de 100.000 filas esto pide un indice invertido, y ese es el paso 2
+# de la FICHA 57 -la prueba a escala-, que no se adelanta acá.
+
+
+def campos_cargados(prods: list[dict], tienda_id: str) -> list[str]:
+    """Los campos filtrables que ESTE universo tiene con dato.
+
+    No es lo mismo que `campos_filtrables`, que son los del catalogo entero:
+    `color` esta cargado en 861 de los 880 productos y en CERO de los 19
+    procesadores. Preguntar por el color de un procesador no es preguntar por
+    algo que no vendemos.
+    """
+    return sorted(campo for campo in campos_filtrables(tienda_id)
+                  if any(str(p.get(campo, "")).strip() for p in prods))
+
+
+def campos_con_el_valor(prods: list[dict], valor, tienda_id: str) -> list[str]:
+    """En que campos de ESTE universo aparece ese valor.
+
+    Es el aterrizaje al reves: en vez de pedirle al modelo que elija el campo,
+    el codigo busca donde vive el valor y se lo dice. Devuelve los campos, no
+    las filas: lo que el modelo necesita para corregir la consulta.
+    """
+    v = _norm(valor)
+    if not v:
+        return []
+    fuera = []
+    for campo in campos_filtrables(tienda_id):
+        if any(v in _norm(p.get(campo, "")) for p in prods):
+            fuera.append(campo)
+    return sorted(fuera)
+
+
+def _donde_si_vive(prods: list[dict], valor, tienda_id: str,
+                   menos: str = "") -> str:
+    """La coletilla que se le agrega al motivo de un descarte. Vacia si el
+    valor no esta en ningun lado, porque una sugerencia inventada es peor que
+    ninguna."""
+    donde = [c for c in campos_con_el_valor(prods, valor, tienda_id)
+             if c != menos]
+    if not donde:
+        return ""
+    return (". ese valor SI esta cargado en: " + ", ".join(donde[:4])
+            + " — volve a buscar con uno de esos")
+
+
 def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
     """Aplica la lista de filtros y devuelve el resultado ENTERO, no solo la
     lista: que se aplico, que no se pudo aplicar y por que, y -si no quedo
@@ -970,10 +1033,17 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
             # se filtra por nada y se dice, para que el modelo no afirme sobre
             # eso ni lo de por cumplido.
             huecos.anotar(tienda_id, "sin_campo", SIN_CAMPO, str(valor))
+            # Y ACA EL ATERRIZAJE PAGA SOLO (22-sep-2026). `SIN_CAMPO` es la
+            # escapatoria que el modelo usa cuando no encuentra donde escribir
+            # algo; si ese valor SI vive en un campo del catalogo, el codigo lo
+            # sabe y se lo dice en vez de dejarlo con el hueco. El modelo no
+            # tiene que acertarle al nombre de nuestro esquema: alcanza con que
+            # escriba la palabra del cliente.
             descartados.append({
                 "campo": SIN_CAMPO, "valor": str(valor),
-                "motivo": "el catalogo no tiene ningun campo para eso: no se "
-                          "puede filtrar por ahi ni afirmar que se cumple"})
+                "motivo": ("el catalogo no tiene ningun campo para eso: no se "
+                           "puede filtrar por ahi ni afirmar que se cumple"
+                           + _donde_si_vive(quedan, valor, tienda_id))})
             continue
         if tipo is None:
             descartados.append({"campo": getattr(f, "campo", ""),
@@ -1041,7 +1111,40 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
                        if evaluar(p, campo, operador, valor, tipo) is None)
         sin_dato_total += sin_dato
         if evaluados and sin_dato == evaluados:
+            # EL CAMPO MUERTO EN ESTE UNIVERSO (22-sep-2026), Y HASTA HOY
+            # SALIA COMO "NO LO VENDEMOS".
+            #
+            # QUE PASABA. El hueco se anotaba —esta linea ya estaba— y despues
+            # se vaciaba `quedan` igual, asi que la consulta devolvia CERO y el
+            # veredicto salia `no_existe`. Medido en produccion, turno
+            # 2c36e750: el cliente dice "se me traba la compu cuando abro
+            # muchas pestañas", el modelo razona bien y pide memoria ram con
+            # `ram_ampliable igual si`, las 96 memorias no tienen ese campo
+            # cargado, y el turno termino contestando 202 caracteres de la FAQ.
+            # El modelo interpreto bien y el sistema contesto mal.
+            #
+            # ES LA MISMA DOCTRINA QUE `condicion_sin_vocabulario`, un escalon
+            # mas arriba: "un valor que la fuente no usa no puede devolver
+            # cero, porque cero se lee como no lo tenemos". Un CAMPO que esta
+            # vacio en todas las filas del universo tampoco puede. La condicion
+            # no se cumplio ni se dejo de cumplir: NO SE PUDO APLICAR.
+            #
+            # Y POR ESO `quedan` NO SE TOCA. El resto del pedido sobrevive, que
+            # es la regla que la boca CATALOGO ya le promete al modelo: un
+            # campo que no existe se dice y NO cancela el resto.
+            #
+            # EN EL CATALOGO DEL REPO: `color` esta en 861 de 880 productos y
+            # en CERO de los 19 procesadores. "Un procesador negro" devolvia
+            # cero y el bot contestaba que no lo vendemos.
             huecos.anotar(tienda_id, "sin_dato", campo, str(valor))
+            descartados.append({
+                "campo": campo, "valor": str(valor),
+                "motivo": (
+                    f"ninguno de los {evaluados} productos de esta busqueda "
+                    f"tiene cargado '{campo}', asi que no se puede filtrar "
+                    f"por ahi ni decir que no lo tenemos"
+                    + _donde_si_vive(quedan, valor, tienda_id, menos=campo))})
+            continue
         aplicados.append({"campo": campo, "operador": operador,
                           "valor": valor, "quedaron": len(cumplen),
                           "sin_dato": sin_dato, "evaluados": evaluados})
