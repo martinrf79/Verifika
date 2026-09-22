@@ -975,8 +975,14 @@ def campos_cargados(prods: list[dict], tienda_id: str) -> list[str]:
     procesadores. Preguntar por el color de un procesador no es preguntar por
     algo que no vendemos.
     """
+    # SE LEE CON `_valor_crudo` Y NO CON `p.get`, y la diferencia no es de
+    # estilo: campos como `conexion` los DERIVA `fuente_producto.enriquecer` y
+    # no estan en el dict que devuelve el catalogo. Leyendolos con `get` este
+    # indice veia vacio justo donde vive el dato mas util, y el primer test
+    # del K120 inalambrico lo destapo.
     return sorted(campo for campo in campos_filtrables(tienda_id)
-                  if any(str(p.get(campo, "")).strip() for p in prods))
+                  if any(str(_valor_crudo(p, campo) or "").strip()
+                         for p in prods))
 
 
 def campos_con_el_valor(prods: list[dict], valor, tienda_id: str) -> list[str]:
@@ -991,7 +997,7 @@ def campos_con_el_valor(prods: list[dict], valor, tienda_id: str) -> list[str]:
         return []
     fuera = []
     for campo in campos_filtrables(tienda_id):
-        if any(v in _norm(p.get(campo, "")) for p in prods):
+        if any(v in _norm(_valor_crudo(p, campo)) for p in prods):
             fuera.append(campo)
     return sorted(fuera)
 

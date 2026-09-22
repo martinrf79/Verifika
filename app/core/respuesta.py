@@ -421,7 +421,8 @@ def _informe_en_blanco() -> dict:
             "puntuales": 0, "veredictos": [], "filas": 0, "rescates": 0,
             "vacios": 0, "sin_dato": 0, "campos": [], "fichas": 0,
             "temas": [], "temas_sin_resolver": [], "compat": [],
-            "compat_sin_dato": [], "envios": [], "envios_sin_clasificar": [],
+            "compat_sin_dato": [], "afirma": [], "envios": [],
+            "envios_sin_clasificar": [],
             "criterio": [], "criterio_sin_resolver": [],
             "cuentas": 0, "cuentas_sin_total": 0,
             "renglones": 0, "renglones_copia": 0, "renglones_propios": [],
@@ -467,6 +468,8 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
     # segundo numero es el que dice que le FALTA A LA FAQ, y hasta hoy no
     # existia: con el codigo adivinando el tema, un tema sin resolver era
     # indistinguible de uno que nadie pregunto.
+    for a in (r or {}).get("afirma") or []:
+        informe["afirma"].append(str(a.get("veredicto") or ""))
     for p in (r or {}).get("politicas") or []:
         informe["temas"].append(str(p.get("tema") or ""))
     for n in (r or {}).get("temas_sin_resolver") or []:
@@ -836,6 +839,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                      "pedir_total": bool(args.get("pedir_total")),
                      "consultas": consultas, "temas": args.get("temas") or [],
                      "compatibilidad": args.get("compatibilidad") or [],
+                     "afirma": args.get("afirma") or [],
                      "envios": args.get("envios") or [],
                      "criterio": args.get("criterio") or [],
                      "cuenta": args.get("cuenta") or {},
@@ -926,8 +930,8 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             # mismo pedido no pueda volver con dos retornos distintos.
             if (CO.todo_repetido(consultas, pedidas)
                     and not any(args.get(k) for k in (
-                        "temas", "compatibilidad", "envios", "criterio",
-                        "cuenta", "reparto_pago"))):
+                        "temas", "compatibilidad", "afirma", "envios",
+                        "criterio", "cuenta", "reparto_pago"))):
                 informe["vueltas_sin_aporte"] += 1
                 # SE ANOTA IGUAL, CON EL RETORNO VACIO: la consulta se pidio,
                 # asi que tiene que seguir contando en `consultas` y en
@@ -944,6 +948,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             r = MT.buscar(consultas, tienda_id, trace_id,
                           temas=args.get("temas"),
                           compat=args.get("compatibilidad"),
+                          afirma=args.get("afirma"),
                           envios=args.get("envios"),
                           localidad_previa=localidad_previa,
                           criterio=args.get("criterio"),
@@ -1164,6 +1169,11 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              temas_sin_resolver=motor["temas_sin_resolver"][:4],
              compat=motor["compat"][:6],
              compat_sin_dato=motor["compat_sin_dato"][:4],
+             # LO QUE EL CLIENTE DIO POR SENTADO, un veredicto por afirmacion.
+             # El renglon que importa es cuantas `contradice`: cada una es una
+             # premisa falsa que, sin esta boca, el bot le habria repetido al
+             # cliente con sus propias palabras.
+             afirma=motor["afirma"][:6],
              envios=motor["envios"][:4],
              envios_sin_clasificar=motor["envios_sin_clasificar"][:4],
              criterio=motor["criterio"][:6],

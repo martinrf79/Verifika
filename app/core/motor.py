@@ -515,6 +515,33 @@ def esquema(tienda_id: str) -> dict:
                             "Mercado Pago'. Suman 100. Anotalo en la MISMA "
                             "llamada, aunque no tengas los ids: me lo guardo y "
                             "lo aplico cuando llegue la cuenta.")},
+                    # LO QUE EL CLIENTE AFIRMA (22-sep-2026). El motivo entero
+                    # esta en `_una_afirmacion`: una sola casilla para la
+                    # premisa falsa y para el dato que el cliente aporta,
+                    # porque al modelo no se le pide que decida cual de las
+                    # dos es. Anota lo que dijo; el codigo verifica.
+                    "afirma": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "sobre": {
+                                    "type": "string",
+                                    "description": "De que habla: el id, el "
+                                                   "nombre que uso, o lo SUYO "
+                                                   "-'mi notebook'-."},
+                                "dice": {
+                                    "type": "string",
+                                    "description": "Lo que afirma, con SUS "
+                                                   "palabras: 'inalambrico', "
+                                                   "'8 giga'."}},
+                            "required": ["sobre", "dice"]},
+                        "description": (
+                            "Lo que el cliente DA POR SENTADO en vez de "
+                            "preguntarlo: 'el K120 inalambrico ese'. Te digo "
+                            "si es cierto, si no —con el dato real— o si es "
+                            f"cosa suya. No lo des por bueno vos. Hasta "
+                            f"{TOPE_AFIRMA}.")},
                     "compatibilidad": {
                         "type": "array",
                         "items": {
@@ -1294,7 +1321,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
 
 
 def _salida(resultados, temas, sin_resolver, compat, envios, criterio,
-            sin_criterio, cuenta=None) -> dict:
+            sin_criterio, cuenta=None, afirma=None) -> dict:
     """El retorno, con UNA sola forma. Las cajas que nadie pidio no viajan: una
     clave vacia en cada turno es ruido adentro de la caja donde todo lo demas
     es dato certificado."""
@@ -1310,7 +1337,132 @@ def _salida(resultados, temas, sin_resolver, compat, envios, criterio,
         fuera["criterio_sin_resolver"] = sin_criterio
     if cuenta:
         fuera["cuenta"] = cuenta
+    if afirma:
+        fuera["afirma"] = afirma
     return fuera
+
+
+# ── LO QUE EL CLIENTE AFIRMA ────────────────────────────────────────────────
+#
+# UNA SOLA CASILLA PARA DOS COSAS QUE PARECIAN DISTINTAS, y esa es toda la
+# idea. El cliente afirma algo; lo que cambia es contra que se puede
+# verificar:
+#
+#   SOBRE UN PRODUCTO NUESTRO   "el teclado K120 inalambrico ese"
+#                               hay ficha: se verifica y se contesta con el
+#                               dato real. Es la PREMISA FALSA, el eje F2, y
+#                               la FICHA 57 §5.1 la llama el unico vector que
+#                               hoy pasaria por todos los candados: la
+#                               alucinacion no la trae el modelo, la trae el
+#                               CLIENTE, y aceptarla es mentir con sus
+#                               palabras.
+#
+#   SOBRE ALGO SUYO             "mi notebook tiene 8 giga", "ya tengo el cable"
+#                               no hay ficha contra que cotejar, y eso NO es un
+#                               error: es una fuente de verdad que el cliente
+#                               aporta y que vale para el resto de la charla.
+#
+# QUE LA MISMA CASILLA RESUELVA LAS DOS ES LO QUE LA HACE BARATA: al modelo no
+# se le pide que decida de cual de los dos casos se trata. Anota lo que el
+# cliente dijo y el CODIGO decide, que es la regla 10.0 aplicada a las
+# afirmaciones: la identidad la decide una funcion determinista.
+#
+# LOS CUATRO VEREDICTOS, y `no_consta` es tan valido como los otros:
+#
+#   confirma      la ficha lo dice
+#   contradice    la ficha dice OTRA cosa en ese mismo campo, y va el dato real
+#   no_consta     ese campo esta vacio en la ficha, o nadie en el catalogo usa
+#                 esa palabra. NO se puede negar por ausencia
+#   del_cliente   no se resolvio a ningun producto: es dato suyo
+#
+# POR QUE `no_consta` Y NO "contradice" ANTE UNA FICHA MUDA. Ausencia de
+# evidencia no es evidencia de ausencia, y confundirlas seria inventar una
+# negacion — el mismo defecto que el campo muerto diciendo "no lo vendemos",
+# que se acaba de arreglar un piso mas abajo.
+#
+# Y NO SE COMPARA POR PARECIDO. La verificacion la hace `evaluar`, la misma
+# funcion con la que se resuelve cualquier condicion del catalogo, con sus
+# tres respuestas de siempre: True, False y None. No hay ranking ni umbral.
+
+# Cuantas afirmaciones se verifican en una llamada. Mas que esto no es un
+# cliente hablando: es un formulario.
+TOPE_AFIRMA = 4
+
+
+def _una_afirmacion(pedido: dict, catalogo: list, tienda_id: str) -> dict:
+    """UNA afirmacion del cliente, verificada contra la fuente."""
+    from app.core.filtros_catalogo import (_valor_crudo, campos_con_el_valor,
+                                           campos_filtrables, evaluar,
+                                           los_que_lo_nombran_entero)
+    sobre = str((pedido or {}).get("sobre") or "").strip()
+    dice = str((pedido or {}).get("dice") or "").strip()
+    base = {"sobre": sobre, "dice": dice}
+    if not dice:
+        return {**base, "veredicto": "no_consta",
+                "motivo": "la afirmacion vino sin contenido"}
+    # 1 · ¿DE QUE HABLA? La identidad la decide el certificador de siempre.
+    fichas = los_que_lo_nombran_entero(catalogo, sobre) if sobre else []
+    # NOMBRAR UN RUBRO NO ES NOMBRAR UNA FICHA, y es lo que cazo el primer test
+    # de "mi notebook": `los_que_lo_nombran_entero` devuelve 191, porque "mi"
+    # no es una palabra util y "notebook" lo dicen todas. Pasado `TOPE_AMBIGUO`
+    # el cliente nombro ANCHO —es el mismo criterio con el que el motor decide
+    # que una cosa con variantes dejo de serlo— y sobre un rubro entero no hay
+    # ficha contra que cotejar: es dato suyo.
+    if len(fichas) > TOPE_AMBIGUO:
+        fichas = []
+    if not fichas:
+        return {**base, "veredicto": "del_cliente",
+                "motivo": "no es de un producto nuestro, asi que es un dato "
+                          "que aporta el cliente: tomalo como cierto y usalo "
+                          "en el resto de la charla"}
+    # 2 · ¿DONDE VIVIRIA ESO? Es el aterrizaje, el mismo del 22-sep.
+    campos = campos_con_el_valor(catalogo, dice, tienda_id)
+    if not campos:
+        return {**base, "veredicto": "no_consta",
+                "motivo": f"ningun producto del catalogo dice '{dice}', asi "
+                          f"que no puedo confirmarlo NI negarlo"}
+    registro = campos_filtrables(tienda_id)
+    # 3 · CONTRA CADA FICHA CANDIDATA, con `evaluar` y sus tres respuestas.
+    porficha = []
+    for f in fichas[:TOPE_AMBIGUO]:
+        visto, real = None, ""
+        for campo in campos:
+            r = evaluar(f, campo, "contiene", dice, registro.get(campo, ""))
+            if r is True:
+                visto = "confirma"
+                break
+            if r is False and visto is None:
+                # CON `_valor_crudo` Y NO CON `get`: `conexion` y varios mas
+                # los DERIVA `fuente_producto.enriquecer` y no estan en el
+                # dict del catalogo. Con `get` el dato real salia `None`, o
+                # sea que se le mandaba al modelo "el dato real es None" —peor
+                # que no decir nada, porque suena a dato—.
+                visto = "contradice"
+                real = f"{campo}: {_valor_crudo(f, campo)}"
+        porficha.append((visto or "no_consta", real, f))
+    veredictos = {v for v, _, _ in porficha}
+    # UNA AMBIGUEDAD DE IDENTIDAD NO IMPIDE VERIFICAR, y es el caso medido: "el
+    # K120" son dos fichas —negra y blanca— y las dos contestan lo mismo sobre
+    # si es inalambrico. Preguntar cual solo hace falta si difieren.
+    if len(veredictos) > 1:
+        return {**base, "veredicto": "ambiguo",
+                "motivo": "'" + sobre + "' puede ser mas de uno y no todos "
+                          "dicen lo mismo de eso: pregunta cual. "
+                          + " | ".join(f"{f.get('nombre')} ({f.get('id')})"
+                                       for _, _, f in porficha)}
+    v, real, f = porficha[0]
+    if v == "confirma":
+        return {**base, "veredicto": "confirma", "id": str(f.get("id")),
+                "motivo": f"la ficha de {f.get('nombre')} lo dice"}
+    if v == "contradice":
+        return {**base, "veredicto": "contradice", "id": str(f.get("id")),
+                "dato_real": real,
+                "motivo": f"{f.get('nombre')} NO es asi. El dato real es "
+                          f"{real}. Deciselo con esas palabras antes de "
+                          f"seguir: no le repitas la suya"}
+    return {**base, "veredicto": "no_consta", "id": str(f.get("id")),
+            "motivo": f"la ficha de {f.get('nombre')} no trae ese dato, asi "
+                      f"que no lo puedo confirmar ni negar"}
 
 
 def _un_compat(pedido: dict, catalogo: list, tienda_id: str) -> dict:
@@ -1474,6 +1626,7 @@ def _evaluar(prod: dict, con: str, porid: dict, tienda_id: str) -> dict:
 
 def buscar(consultas: list, tienda_id: str, trace_id: str = "",
            temas: list | None = None, compat: list | None = None,
+           afirma: list | None = None,
            envios: list | None = None, localidad_previa: str = "",
            criterio: list | None = None, cuenta: dict | None = None,
            reparto_pago: list | None = None) -> dict:
@@ -1577,8 +1730,14 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
         fuera_temas = [p for p in fuera_temas
                        if p["tema"] not in TEMAS_DEL_ENVIO]
 
-    if not consultas and not compat and not (cuenta or {}).get("items"):
+    if (not consultas and not compat and not afirma
+            and not (cuenta or {}).get("items")):
         # SOLO POLITICAS, SOLO ENVIO O SOLO CRITERIO ES UNA LLAMADA VALIDA.
+        # `afirma` entra en la condicion porque verificar lo que el cliente da
+        # por sentado NECESITA el catalogo, igual que la compatibilidad: sin
+        # ficha no hay contra que cotejar. Se olvido en el primer cableado y
+        # la caja volvia vacia en el unico caso en que el cliente afirma algo
+        # sin pedir nada mas —que es justo como llega la premisa falsa—.
         # "¿Cual es la politica de garantia?" y "¿para que me sirve?" no
         # necesitan tocar el catalogo, y obligar a inventar una consulta vacia
         # para preguntarlo seria pedirle al modelo que aprenda nuestra plomeria.
@@ -1600,6 +1759,22 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
                     criterios, sin_criterio)
         r["motivo"] = "no se pudo leer el catalogo"
         return r
+
+    # EL RAMAL DE LO QUE EL CLIENTE AFIRMA. Una afirmacion rota no tumba el
+    # resto: vuelve `no_consta`, que es la salida honesta de esta boca y no
+    # una negacion. El motivo entero esta en `_una_afirmacion`.
+    afirmaciones = []
+    for pedido in (afirma or [])[:TOPE_AFIRMA]:
+        try:
+            afirmaciones.append(_una_afirmacion(pedido, catalogo, tienda_id))
+        except Exception as e:  # noqa: BLE001 — por ausencia no se niega nada
+            log.warning("motor_afirma_error", trace_id=trace_id,
+                        error=f"{type(e).__name__}: {str(e)[:120]}")
+            afirmaciones.append(
+                {"sobre": str((pedido or {}).get("sobre") or ""),
+                 "dice": str((pedido or {}).get("dice") or ""),
+                 "veredicto": "no_consta",
+                 "motivo": "eso no se pudo verificar"})
 
     # EL RAMAL A COMPATIBILIDAD. Un par roto no tumba el resto, igual que una
     # consulta rota: vuelve `sin_dato`, que es la salida honesta de esta boca.
@@ -1696,11 +1871,13 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
              filas=[len(f["filas"]) for f in fuera],
              temas=[p["tema"] for p in fuera_temas],
              compat=[c["veredicto"] for c in compatibilidades],
+             afirma=[a["veredicto"] for a in afirmaciones],
              envios=[f["destino"] for f in fuera_envios.get("filas") or []],
              criterio=[c["tema"] for c in criterios],
              cuenta=la_cuenta.get("total_ars") or la_cuenta.get("sin_total"))
     return _salida(fuera, fuera_temas, sin_resolver, compatibilidades,
-                   fuera_envios, criterios, sin_criterio, la_cuenta)
+                   fuera_envios, criterios, sin_criterio, la_cuenta,
+                   afirmaciones)
 
 
 def fichas_de(resultado: dict) -> list[dict]:

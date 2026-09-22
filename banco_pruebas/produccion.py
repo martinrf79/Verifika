@@ -174,7 +174,7 @@ CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "puntuales",
           "veredictos", "filas", "rescates", "vacios", "sin_dato", "campos",
           "campos_tocados", "correcciones", "fichas", "temas", "temas_sin_resolver", "compat",
           "compat_sin_dato", "envios", "envios_sin_clasificar", "criterio",
-          "criterio_sin_resolver", "cuentas", "cuentas_sin_total",
+          "criterio_sin_resolver", "cuentas", "cuentas_sin_total", "afirma",
           # LOS CINCO DEL COTEJO (22-sep-2026).
           "renglones", "renglones_copia", "renglones_propios",
           "rubros_sin_pedir", "umbrales_degradados", "condiciones_repuestas",

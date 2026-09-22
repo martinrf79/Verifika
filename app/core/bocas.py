@@ -120,6 +120,30 @@ BOCAS = (
             "memoria.",
         )),
     Boca(
+        # LO QUE EL CLIENTE DA POR SENTADO (22-sep-2026). Es una boca y no un
+        # agregado al catalogo porque contesta otra pregunta: el catalogo dice
+        # QUE HAY, esto dice SI ES CIERTO LO QUE EL CLIENTE YA CREE. El motivo
+        # entero, y por que la premisa falsa y el dato del cliente son la
+        # misma casilla, esta en `motor._una_afirmacion`.
+        nombre="LO QUE EL CLIENTE DA POR SENTADO",
+        campo="afirma",
+        pide="si es cierto un dato que el cliente afirma en vez de "
+             "preguntar, y lo que cuenta de lo SUYO",
+        claves={"afirma": "afirma"},
+        lee=(
+            "`afirma` trae el veredicto de cada cosa que el cliente dio por "
+            "sentada. `confirma` es que la ficha lo dice. `contradice` viene "
+            "con el DATO REAL al lado: deciselo con esas palabras antes de "
+            "seguir y no le repitas la suya, porque repetirsela es mentirle "
+            "con su propia frase.",
+            "`no_consta` es que la ficha no trae ese dato: no se puede "
+            "confirmar NI negar, y se dice asi. Por ausencia no se niega "
+            "nada.",
+            "`del_cliente` es un dato suyo —su notebook, su consola, lo que "
+            "ya tiene—. No esta en ninguna ficha y es cierto igual: tomalo "
+            "como valido y usalo en el resto de la charla.",
+        )),
+    Boca(
         nombre="COMPATIBILIDAD",
         campo="compatibilidad",
         pide="si un producto anda con el equipo del cliente o con otro "
