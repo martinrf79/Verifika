@@ -427,7 +427,6 @@ def _informe_en_blanco() -> dict:
             "cuentas": 0, "cuentas_sin_total": 0,
             "renglones": 0, "renglones_copia": 0, "renglones_propios": [],
             "rubros_sin_pedir": [], "umbrales_degradados": [],
-            "temas_sin_cita": [],
             "condiciones_repuestas": [], "vueltas_sin_aporte": 0}
 
 
@@ -887,44 +886,10 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             # SANEAR VA ANTES DE REPONER: asi la memoria del turno solo guarda
             # condiciones ya saneadas y un techo inventado no puede volver a
             # entrar por la puerta de la reposicion.
-            caidas = CO.sanear_umbrales(consultas, mensaje, _ordenables,
-                                        trace_id)
-            informe["umbrales_degradados"] += caidas
-            # Y EL AVISO VUELVE AL MODELO (22-sep-2026). El taller pregunto de
-            # frente "copia las palabras del cliente donde dice ese numero" y
-            # el modelo contesto NINGUNO las dos corridas: SABE que se lo
-            # invento. Lo hace igual mientras llena el resto del tablero.
-            #
-            # Asi que el arreglo no es pedirselo mejor al prompt —ya se probo y
-            # fallo 2 de 2— sino devolverle el dato en el turno, que es el
-            # mecanismo que ya funciona con `no_aplicado`: el codigo corrige, y
-            # ademas lo dice, para que la vuelta siguiente no lo repita.
-            if caidas:
-                hallazgos.append(
-                    "OJO: saque " + " y ".join(caidas[:3])
-                    + " porque el cliente NO dijo ese numero. Lo pase a ORDEN,"
-                    " que muestra lo barato primero sin borrar nada. Un techo"
-                    " que el cliente no puso borra productos que el si podria"
-                    " querer.")
+            informe["umbrales_degradados"] += CO.sanear_umbrales(
+                consultas, mensaje, _ordenables, trace_id)
             informe["condiciones_repuestas"] += CO.reponer_condiciones(
                 consultas, condiciones_del_turno, trace_id)
-            # EL TEMA QUE NO SE PUEDE CITAR NO SE PIDE. El modelo lo declara
-            # con las palabras del cliente y el codigo las comprueba contra el
-            # mensaje: el que no las tiene no llega a la fuente y se avisa.
-            # `args["temas"]` se reescribe en el lugar porque es lo que viaja
-            # al motor dos lineas mas abajo.
-            temas_pedidos, temas_sin_cita = CO.temas_citados(
-                args.get("temas"), mensaje)
-            args["temas"] = temas_pedidos
-            if temas_sin_cita:
-                informe["temas_sin_cita"] += temas_sin_cita
-                log.info("tema_sin_cita", trace_id=trace_id,
-                         temas=temas_sin_cita[:4])
-                hallazgos.append(
-                    "OJO: no pedi " + " ni ".join(
-                        s.split(":")[0] for s in temas_sin_cita[:3])
-                    + " porque el cliente no pregunto eso. Contesta lo que SI "
-                    "te pregunto.")
             # ── EL RENGLON ES COPIA, O NO LO ES ───────────────────────────
             #
             # Se mide sobre la PRIMERA llamada del turno y nada mas. La
@@ -1224,7 +1189,6 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              renglones_propios=motor["renglones_propios"][:4],
              rubros_sin_pedir=motor["rubros_sin_pedir"][:4],
              umbrales_degradados=motor["umbrales_degradados"][:4],
-             temas_sin_cita=motor["temas_sin_cita"][:4],
              condiciones_repuestas=motor["condiciones_repuestas"][:4],
              vueltas_sin_aporte=motor["vueltas_sin_aporte"])
     if not motor["llamadas"]:

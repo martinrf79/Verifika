@@ -366,52 +366,10 @@ def esquema(tienda_id: str) -> dict:
                     # blanda. Un tema que la casa no tiene escrito deja de
                     # poder nombrarse, que es la misma regla con la que el
                     # esquema cierra los nombres de campo del catalogo.
-                    # EL TEMA VIAJA CON LA CITA (22-sep-2026), Y ES EL
-                    # MISMO CAMBIO QUE LLEVO `envios` DE 0 A 4 DE 4.
-                    #
-                    # EL DEFECTO, medido 2 de 2 corridas en el piso: a M7
-                    # —"eso que se pone en la oreja para escuchar musica"— el
-                    # modelo le agrega el tema `auriculares`, que el cliente
-                    # no pregunto. Es el costo del enum de 104: antes no
-                    # podia pasar porque no tenia de donde elegir.
-                    #
-                    # Y EL TALLER DIO LA CAUSA, verificada 2 de 2: preguntado
-                    # de frente "copia las palabras del mensaje donde el
-                    # cliente pregunta por una politica", contesta NINGUNO.
-                    # SABE que no corresponde. Lo declara igual mientras llena
-                    # el resto del tablero.
-                    #
-                    # ASI QUE NO ES CAPACIDAD, ES QUE DECLARAR ES GRATIS. La
-                    # cita le pone el costo donde tiene que estar: para
-                    # nombrar un tema hay que copiar de donde salio, y si no
-                    # hay de donde, no se escribe. El codigo lo comprueba
-                    # contra el mensaje, asi que no depende de que el modelo
-                    # se porte bien.
-                    #
-                    # UN OBJETO DE DOS CAMPOS EN PRIMER NIVEL SE LLENA: es lo
-                    # que midio `envios` el 20-sep cuando paso de lista de
-                    # textos a {destino, va}. Lo que NO se llena es lo anidado
-                    # dos niveles y opcional, que dio 0 de 4.
-                    #
-                    # LA FORMA VIEJA SIGUE VALIENDO: una lista de textos
-                    # pelados entra igual, para no romper una llamada que
-                    # venga de una charla vieja.
                     "temas": {
                         "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "tema": {
-                                    "type": "string",
-                                    "enum": _TEMAS(tienda_id) + [SIN_TEMA]},
-                                "dicho": {
-                                    "type": "string",
-                                    "description": "LAS PALABRAS del cliente "
-                                                   "donde pregunta eso, "
-                                                   "copiadas. Si no las "
-                                                   "encontras, no pidas el "
-                                                   "tema."}},
-                            "required": ["tema", "dicho"]},
+                        "items": {"type": "string",
+                                  "enum": _TEMAS(tienda_id) + [SIN_TEMA]},
                         # LA DESCRIPCION NO REPITE EL INDICE, y eso es el
                         # bloque 0 de CLAUDE.md: la segunda descripcion de lo
                         # mismo es el telefono descompuesto. QUE contesta esta
@@ -425,11 +383,9 @@ def esquema(tienda_id: str) -> dict:
                         # de donde elegir—; es el costo del candado.
                         "description": (
                             "SOLO lo que el cliente PREGUNTO: si no pregunto "
-                            "nada de la casa, va VACIO. Cada tema va con las "
-                            "palabras del cliente que lo piden; si no podes "
-                            "copiarlas, no pidas ese tema. Si pregunto algo "
-                            f"que la lista no cubre poné '{SIN_TEMA}'. Hasta "
-                            f"{TOPE_TEMAS}.")},
+                            "nada de la casa, va vacio. Elegi el nombre de la "
+                            "lista que cubre lo que pregunto. Si ninguno lo "
+                            f"cubre poné '{SIN_TEMA}'. Hasta {TOPE_TEMAS}.")},
                     # LA BOCA DE COMPATIBILIDAD, Y ES UN CAMPO MAS DE LA MISMA
                     # PUERTA (13-sep-2026). Mismo criterio que `temas`: el
                     # mecanismo de preguntarle a la fuente es el mismo, cambia

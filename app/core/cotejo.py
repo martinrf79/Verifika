@@ -329,52 +329,6 @@ def todo_repetido(consultas: list, pedidas: set) -> bool:
 REPONIBLES = ("no_contiene", "evita", "prefiere")
 
 
-# ── 6 · EL TEMA QUE NO SE PUEDE CITAR NO SE PIDE ───────────────────────────
-#
-# EL CASO, 2 de 2 corridas en el piso del 22-sep: a M7 —"eso que se pone en la
-# oreja para escuchar musica, que no se escuche el ruido de afuera"— el modelo
-# le agrega el tema `auriculares`, que el cliente no pregunto. Y el taller dio
-# la causa verificada: preguntado de frente contesta NINGUNO. Sabe que no
-# corresponde; lo declara igual porque declarar es gratis.
-#
-# LA CITA LE PONE EL COSTO DONDE VA, y el codigo la comprueba contra el
-# mensaje. Es la misma regla que `renglones`: lo que sale del cliente se copia,
-# y lo copiado se puede cotejar.
-#
-# EL PISO ES MAS BLANDO QUE EL DEL RENGLON, a proposito. Un renglon es una
-# frase entera; una cita de tema suele ser dos o tres palabras —"tienen
-# garantia"— y exigir el 80% de tokens sobre algo tan corto lo volveria un
-# candado de una palabra. Alcanza con que UNA palabra de contenido salga del
-# mensaje: lo que se quiere impedir es el tema inventado de cero, no afinar la
-# redaccion de una cita.
-
-
-def temas_citados(temas: list, mensaje: str) -> tuple:
-    """Separa los temas cuya cita sale del mensaje de los que no.
-
-    Devuelve (los que se piden, los descartados). Acepta las DOS formas: los
-    objetos `{tema, dicho}` de hoy y los textos pelados de antes, que pasan
-    derecho porque no tienen cita que cotejar —una llamada vieja no se rompe—.
-    """
-    dentro = set(_tokens(mensaje))
-    piden, fuera = [], []
-    for t in (temas or []):
-        if not isinstance(t, dict):
-            piden.append(str(t))
-            continue
-        nombre = str(t.get("tema") or "").strip()
-        if not nombre:
-            continue
-        cita = _tokens(t.get("dicho"))
-        if cita and not any(p in dentro for p in cita):
-            fuera.append(f"{nombre}: dijo que el cliente pidio "
-                         f"'{str(t.get('dicho'))[:40]}' y eso no esta en el "
-                         f"mensaje")
-            continue
-        piden.append(nombre)
-    return piden, fuera
-
-
 def reponer_condiciones(consultas: list, memoria: dict,
                         trace_id: str = "") -> list:
     """Vuelve a poner en cada consulta las condiciones que su categoria ya

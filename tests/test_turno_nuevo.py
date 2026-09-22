@@ -110,11 +110,7 @@ def test_el_tema_se_nombra_CORTO_y_el_esquema_lo_pide(firestore_doble):
     politica, lo nombre quien lo nombre."""
     from app.core import fuente as F
     props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
-    # EL ENUM SE MUDO ADENTRO DEL OBJETO (22-sep-2026) y el requisito es el
-    # mismo: sigue viajando y sigue cerrando los nombres. Lo que cambio es que
-    # cada tema va con la CITA del cliente al lado, porque declarar era gratis
-    # y el modelo agregaba temas que nadie pregunto —medido 2 de 2—.
-    enum = props["temas"]["items"]["properties"]["tema"]["enum"]
+    enum = props["temas"]["items"]["enum"]
     assert "garantia" in enum and "cuotas" in enum
     assert F.SIN_TEMA in enum, "sin valvula de escape el modelo elige el mas parecido"
     assert F.politicas_de(["bailar tango"], TIENDA)["politicas"] == []
@@ -147,11 +143,7 @@ def test_el_esquema_del_motor_OFRECE_temas(firestore_doble):
     sigue devolviendo su caja."""
     props = (MT.esquema(TIENDA)["function"]["parameters"]["properties"])
     assert "temas" in props and "consultas" in props
-    item = props["temas"]["items"]
-    assert item["properties"]["tema"]["enum"], "el enum de temas no viaja"
-    # Y LA CITA ES OBLIGATORIA: un tema sin las palabras del cliente no se
-    # puede escribir, que es lo que le pone costo a declarar de mas.
-    assert set(item["required"]) == {"tema", "dicho"}
+    assert props["temas"]["items"]["enum"], "el enum de temas no viaja"
     assert "criterio" not in props, "volvio la segunda puerta para lo mismo"
 
 
