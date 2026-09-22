@@ -1,0 +1,125 @@
+{
+  "_que_es": "LA VARA DE LA MEMORIA Y LA REPREGUNTA (22-sep-2026). La vara de 19 mide UN mensaje suelto y deja afuera la mitad del objetivo de Martin: 'interpretacion correcta frente a cualquier tipo de pregunta o repreguntar, te referis a'. Esto mide CHARLAS de varios turnos por el camino vivo entero, con la memoria de verdad entre turno y turno.",
+  "_como_se_mide": "Cada turno lleva sus casillas y se puntua sobre lo que el modelo declaro en ESE turno, todas sus vueltas juntas. Las casillas son las MISMAS de `leer_interpretacion.CASILLA` mas tres que solo existen en una charla: `referencia` —el turno apunta al producto correcto de un turno anterior—, `responde_sobre` —la respuesta habla de ese producto— y `pregunta` —el bot repregunta en vez de elegir—. Una referencia por posicion depende de lo que el bot MOSTRO, asi que se resuelve contra la respuesta real de ese turno; si el bot mostro menos filas que la posicion, la casilla no aplica y se cuenta aparte.",
+  "charlas": [
+    {
+      "id": "CH1", "clase": "anafora 'ese'",
+      "turnos": [
+        {"texto": "cuanto sale el teclado logitech K120?", "casillas": []},
+        {"texto": "y ese es inalambrico o con cable?", "casillas": [
+          {"n": "'ese' es el K120", "tipo": "referencia", "modelo": "k120"},
+          {"n": "la respuesta habla del K120", "tipo": "responde_sobre", "modelo": "k120"}]}
+      ]
+    },
+    {
+      "id": "CH2", "clase": "ordinal sobre la lista mostrada",
+      "turnos": [
+        {"texto": "mostrame 3 mouse logitech", "casillas": [
+          {"n": "el rubro", "tipo": "consulta", "categoria": "mouse"}]},
+        {"texto": "el segundo cuanto pesa?", "casillas": [
+          {"n": "'el segundo' es el segundo que mostro", "tipo": "referencia", "de_turno": 1, "posicion": 2},
+          {"n": "la respuesta habla del segundo", "tipo": "responde_sobre", "de_turno": 1, "posicion": 2}]}
+      ]
+    },
+    {
+      "id": "CH3", "clase": "refinamiento eliptico: arrastra el rubro y la condicion",
+      "turnos": [
+        {"texto": "busco auriculares inalambricos", "casillas": [
+          {"n": "el rubro", "tipo": "consulta", "categoria": "auriculares"}]},
+        {"texto": "y en blanco?", "casillas": [
+          {"n": "arrastra el rubro", "tipo": "consulta", "categoria": "auriculares"},
+          {"n": "el color nuevo", "tipo": "condicion", "campo": ["color"], "valor": "blanco"}]}
+      ]
+    },
+    {
+      "id": "CH4", "clase": "envio de lo que ya se hablo",
+      "turnos": [
+        {"texto": "precio del mouse G203 negro", "casillas": []},
+        {"texto": "y cuanto me sale mandarlo a Rosario?", "casillas": [
+          {"n": "cotiza el destino", "tipo": "envio", "destino": "rosario"}]}
+      ]
+    },
+    {
+      "id": "CH5", "clase": "total sobre lo anterior, con cantidad",
+      "turnos": [
+        {"texto": "precio del teclado K120 negro y del mouse G203 negro", "casillas": []},
+        {"texto": "quiero 2 de cada uno, cuanto es todo?", "casillas": [
+          {"n": "pide el total", "tipo": "cuenta"},
+          {"n": "apunta al K120", "tipo": "referencia", "modelo": "k120"},
+          {"n": "apunta al G203", "tipo": "referencia", "modelo": "g203"}]}
+      ]
+    },
+    {
+      "id": "CH6", "clase": "rechazo de lo mostrado",
+      "turnos": [
+        {"texto": "mostrame auriculares", "casillas": [
+          {"n": "el rubro", "tipo": "consulta", "categoria": "auriculares"}]},
+        {"texto": "no, los redragon no me gustan. que otros tenes?", "casillas": [
+          {"n": "arrastra el rubro", "tipo": "consulta", "categoria": "auriculares"},
+          {"n": "excluye la marca", "tipo": "condicion", "campo": ["marca", "nombre"], "valor": "redragon", "acepta": ["no_contiene", "evita", "distinto"]}]}
+      ]
+    },
+    {
+      "id": "CH7", "clase": "ambiguo: tiene que repreguntar, y despues arrastrar la respuesta",
+      "turnos": [
+        {"texto": "cuanto sale el logitech?", "casillas": [
+          {"n": "repregunta en vez de elegir", "tipo": "pregunta"}]},
+        {"texto": "el mouse", "casillas": [
+          {"n": "el rubro que contesto", "tipo": "consulta", "categoria": "mouse"},
+          {"n": "arrastra la marca", "tipo": "nombra", "palabra": "logitech"}]}
+      ]
+    },
+    {
+      "id": "CH8", "clase": "referencia lejana: cuatro turnos despues",
+      "turnos": [
+        {"texto": "cuanto sale el teclado K120 negro?", "casillas": []},
+        {"texto": "y hacen envios a Cordoba?", "casillas": [
+          {"n": "el destino", "tipo": "envio", "destino": "cordoba"}]},
+        {"texto": "que garantia tienen los productos?", "casillas": [
+          {"n": "la politica", "tipo": "tema", "acepta": ["garantia", "garantia_como_usar"]}]},
+        {"texto": "ok, al final me llevo el teclado que me dijiste al principio. cuanto era?", "casillas": [
+          {"n": "apunta al K120", "tipo": "referencia", "modelo": "k120"},
+          {"n": "la respuesta habla del K120", "tipo": "responde_sobre", "modelo": "k120"}]}
+      ]
+    },
+    {
+      "id": "CH9", "clase": "correccion del cliente",
+      "turnos": [
+        {"texto": "busco una notebook para diseño", "casillas": [
+          {"n": "el rubro", "tipo": "consulta", "categoria": "notebook"}]},
+        {"texto": "perdon, me equivoque, quise decir un monitor para diseño", "casillas": [
+          {"n": "el rubro corregido", "tipo": "consulta", "categoria": "monitor"},
+          {"n": "no vuelve a buscar notebooks", "tipo": "sin_rubro", "categoria": "notebook"}]}
+      ]
+    },
+    {
+      "id": "CH10", "clase": "superlativo sobre lo mostrado",
+      "turnos": [
+        {"texto": "mostrame 3 teclados mecanicos", "casillas": [
+          {"n": "el rubro", "tipo": "consulta", "categoria": "teclado"}]},
+        {"texto": "de esos cual es el mas barato?", "casillas": [
+          {"n": "el mas barato de ESOS, no del catalogo", "tipo": "referencia", "de_turno": 1, "todos": true},
+          {"n": "ordena por precio", "tipo": "barato"}]}
+      ]
+    },
+    {
+      "id": "CH11", "clase": "cantidad sobre 'esos'",
+      "turnos": [
+        {"texto": "cuanto sale el mouse logitech M170 negro?", "casillas": []},
+        {"texto": "quiero 3 de esos", "casillas": [
+          {"n": "apunta al M170", "tipo": "referencia", "modelo": "m170"},
+          {"n": "la cantidad", "tipo": "cantidad", "valor": 3}]}
+      ]
+    },
+    {
+      "id": "CH12", "clase": "cambia de variante: 'el mismo pero en blanco'",
+      "turnos": [
+        {"texto": "cuanto sale el mouse G203 negro?", "casillas": []},
+        {"texto": "tenes el mismo pero en blanco?", "casillas": [
+          {"n": "busca el G203", "tipo": "referencia", "modelo": "g203"},
+          {"n": "la respuesta habla del G203", "tipo": "responde_sobre", "modelo": "g203"},
+          {"n": "el color nuevo", "tipo": "nombra", "palabra": "blanco"}]}
+      ]
+    }
+  ]
+}
