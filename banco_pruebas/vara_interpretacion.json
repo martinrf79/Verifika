@@ -1,669 +1,673 @@
 {
-  "_que_es": "LA VARA DE LA INTERPRETACION. Para cada mensaje, LAS CASILLAS que el modelo tendria que haber llenado en su llamada al motor. NO es un banco: no llama al modelo ni a nadie. Es la definicion escrita de 'correcto', y existe porque hasta el 20-sep se reconstruia de memoria en cada tanda, o sea que el blanco se movia un poco cada vez que se dibujaba.",
-  "_como_se_mide": "Martin manda el mensaje por WhatsApp. `leer_interpretacion.py` lee el `motor_pedido` de los logs de produccion y lo cruza contra esto. Produccion, no banco.",
-  "_donde_hay_mas_de_una_respuesta_valida": "Se escribe en `acepta`. Una casilla con varias opciones da por buena cualquiera: no se penaliza al modelo por elegir una lectura razonable distinta de la nuestra.",
-  "mensajes": [
+ "_que_es": "LA VARA DE LA INTERPRETACION. Para cada mensaje, LAS CASILLAS que el modelo tendria que haber llenado en su llamada al motor. NO es un banco: no llama al modelo ni a nadie. Es la definicion escrita de 'correcto', y existe porque hasta el 20-sep se reconstruia de memoria en cada tanda, o sea que el blanco se movia un poco cada vez que se dibujaba.",
+ "_como_se_mide": "Martin manda el mensaje por WhatsApp. `leer_interpretacion.py` lee el `motor_pedido` de los logs de produccion y lo cruza contra esto. Produccion, no banco.",
+ "_donde_hay_mas_de_una_respuesta_valida": "Se escribe en `acepta`. Una casilla con varias opciones da por buena cualquiera: no se penaliza al modelo por elegir una lectura razonable distinta de la nuestra.",
+ "mensajes": [
+  {
+   "id": "M1",
+   "dificultad": "multipregunta con grado, tres destinos y reparto de pago",
+   "texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "casillas": [
     {
-      "id": "M1",
-      "dificultad": "multipregunta con grado, tres destinos y reparto de pago",
-      "texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
-      "casillas": [
-        {
-          "n": "rubro auriculares",
-          "tipo": "consulta",
-          "categoria": "auriculares",
-          "cantidad": [
-            2
-          ],
-          "clase": "E1"
-        },
-        {
-          "n": "rubro mouse",
-          "tipo": "consulta",
-          "categoria": "mouse",
-          "cantidad": [
-            2
-          ],
-          "clase": "E1"
-        },
-        {
-          "n": "rubro memoria",
-          "tipo": "consulta",
-          "categoria": "memoria ram",
-          "cantidad": [
-            2
-          ],
-          "clase": "E1"
-        },
-        {
-          "n": "el teclado, que solo aparece en la frase de envio",
-          "tipo": "nombra",
-          "palabra": "teclado",
-          "clase": "ALC"
-        },
-        {
-          "n": "la restriccion de origen existe",
-          "tipo": "condicion",
-          "campo": [
-            "pais_fabricacion"
-          ],
-          "valor": "china",
-          "clase": "C2"
-        },
-        {
-          "n": "y apunta al extremo correcto",
-          "tipo": "condicion",
-          "campo": [
-            "pais_fabricacion"
-          ],
-          "valor": "china",
-          "acepta": [
-            "evita"
-          ],
-          "clase": "C4"
-        },
-        {
-          "n": "destino Cordoba",
-          "tipo": "envio",
-          "destino": "cordoba",
-          "clase": "OP"
-        },
-        {
-          "n": "destino Concordia",
-          "tipo": "envio",
-          "destino": "concordia",
-          "clase": "OP"
-        },
-        {
-          "n": "destino Posadas",
-          "tipo": "envio",
-          "destino": "posadas",
-          "clase": "OP"
-        },
-        {
-          "n": "EL VINCULO: que producto va a que destino",
-          "tipo": "envio_va",
-          "clase": "ALC"
-        },
-        {
-          "n": "el setenta treinta",
-          "tipo": "reparto",
-          "porcentajes": [
-            70,
-            30
-          ],
-          "clase": "E6"
-        },
-        {
-          "n": "la cuenta del pedido",
-          "tipo": "cuenta",
-          "clase": "OP"
-        }
-      ],
-      "_nota_teclado": "20-sep: esta casilla pedia el teclado como CONSULTA. Medido: el modelo lo pone en el `va` de Concordia —'un teclado y un mouse'— y NO lo cotiza, que es una lectura defendible: el cliente pidio precio de auriculares, mouse y memorias, y el teclado aparece solo al repartir los envios. La casilla mide que lo CAPTE; donde lo ponga es la ambiguedad del mensaje, y Martin dijo que esas no penalizan. CORREGIR ESTO SUBE EL NUMERO SIN QUE EL MODELO HAYA MEJORADO: es un arreglo de la vara, no un avance.",
-      "nucleo": true,
-      "_cubre": "E1 cantidad · C2 dura negativa · C4 grado sobre condicion · E6 reparto · G1 multipregunta · ALCANCE"
+     "n": "rubro auriculares",
+     "tipo": "consulta",
+     "categoria": "auriculares",
+     "cantidad": [
+      2
+     ],
+     "clase": "E1"
     },
     {
-      "id": "M2",
-      "dificultad": "politica y criterio por el MISMO campo, que es lo que el enum fusionado del 20-sep tiene que resolver",
-      "texto": "Hola, tienen garantia en los teclados mecanicos? y cual me conviene para escribir mucho todos los dias?",
-      "casillas": [
-        {
-          "n": "la politica de garantia",
-          "tipo": "tema",
-          "acepta": [
-            "garantia",
-            "garantia_como_usar"
-          ],
-          "clase": "OP"
-        },
-        {
-          "n": "el criterio del teclado",
-          "tipo": "tema",
-          "acepta": [
-            "teclado",
-            "teclado_mecanico_membrana"
-          ],
-          "clase": "D2"
-        },
-        {
-          "n": "no declara temas que el cliente NO pregunto",
-          "tipo": "temas_limpios",
-          "tope": 2,
-          "clase": "RUIDO"
-        }
-      ],
-      "_nota_consulta": "20-sep: salio la casilla 'no se inventa una consulta al catalogo'. El modelo manda `categoria: teclado` y es defendible: a 'cual me conviene' mostrar opciones no es un disparate. Era la vara pidiendo de mas. En su lugar entra una que mide un defecto REAL y nuevo.",
-      "nucleo": true,
-      "_cubre": "D2 intensidad de uso · politica de la casa en el mismo mensaje"
+     "n": "rubro mouse",
+     "tipo": "consulta",
+     "categoria": "mouse",
+     "cantidad": [
+      2
+     ],
+     "clase": "E1"
     },
     {
-      "id": "M3",
-      "dificultad": "identidad puntual: la regla 10.0, ante dos que pegan igual se PREGUNTA",
-      "texto": "cuanto sale el K120?",
-      "casillas": [
-        {
-          "n": "busca el producto puntual",
-          "tipo": "consulta",
-          "texto_contiene": "k120",
-          "clase": "A12"
-        },
-        {
-          "n": "lo declara como UNO, no como varios",
-          "tipo": "busco",
-          "acepta": [
-            "uno"
-          ],
-          "clase": "OP"
-        }
-      ],
-      "nucleo": true,
-      "_cubre": "A12 nombre parcial"
+     "n": "rubro memoria",
+     "tipo": "consulta",
+     "categoria": "memoria ram",
+     "cantidad": [
+      2
+     ],
+     "clase": "E1"
     },
     {
-      "id": "M4",
-      "dificultad": "traducir prosa a categoria y a orden: es el caso D16 del mapa",
-      "texto": "necesito un aparato rectangular con varias teclas, que sea bueno, pero dada la crisis armame un presupuesto acorde",
-      "casillas": [
-        {
-          "n": "traduce el rodeo a la categoria",
-          "tipo": "consulta",
-          "categoria": "teclado",
-          "clase": "A1"
-        },
-        {
-          "n": "traduce 'acorde a la crisis' a un orden por precio",
-          "tipo": "barato",
-          "clase": "B5"
-        }
-      ],
-      "nucleo": true,
-      "_cubre": "A1 perifrasis por forma · B5 circunstancia como grado · B13 calidad sin eje"
+     "n": "el teclado, que solo aparece en la frase de envio",
+     "tipo": "nombra",
+     "palabra": "teclado",
+     "clase": "ALC"
     },
     {
-      "id": "M5",
-      "dificultad": "dos bocas distintas en un mensaje corto: compatibilidad y envio",
-      "texto": "los auriculares HyperX andan con mi PS5? y cuanto sale el envio a Rosario?",
-      "casillas": [
-        {
-          "n": "pregunta por el par de compatibilidad",
-          "tipo": "compat",
-          "clase": "C9"
-        },
-        {
-          "n": "cotiza el destino con la palabra del cliente",
-          "tipo": "envio",
-          "destino": "rosario",
-          "clase": "OP"
-        }
-      ],
-      "nucleo": true,
-      "_cubre": "C9 compatibilidad · dos bocas en un mensaje corto"
+     "n": "la restriccion de origen existe",
+     "tipo": "condicion",
+     "campo": [
+      "pais_fabricacion"
+     ],
+     "valor": "china",
+     "clase": "C2"
     },
     {
-      "id": "M6",
-      "dificultad": "aritmetica sobre el enunciado mas el vinculo en tres destinos",
-      "texto": "Dame precio de 7 articulos 2 notebooks 1 microfono y los demas serian memorias pasame ee acuerdo a la crisis el presupuesto. Envio de los dos primeros a la plata y los otros 5 envios 2 a villa maria y 3 a toledo",
-      "casillas": [
-        {
-          "n": "las notebooks",
-          "tipo": "consulta",
-          "categoria": "notebook",
-          "cantidad": [
-            2
-          ],
-          "clase": "E1"
-        },
-        {
-          "n": "el microfono",
-          "tipo": "consulta",
-          "categoria": "microfono",
-          "cantidad": [
-            1
-          ],
-          "clase": "E1"
-        },
-        {
-          "n": "DEDUCE que 'los demas' son 4 memorias",
-          "tipo": "consulta",
-          "categoria": "memoria ram",
-          "cantidad": [
-            4
-          ],
-          "clase": "E2"
-        },
-        {
-          "n": "traduce 'acorde a la crisis' a un orden por precio",
-          "tipo": "barato",
-          "clase": "B5"
-        },
-        {
-          "n": "destino La Plata",
-          "tipo": "envio",
-          "destino": "la plata",
-          "clase": "OP"
-        },
-        {
-          "n": "destino Villa Maria",
-          "tipo": "envio",
-          "destino": "villa maria",
-          "clase": "OP"
-        },
-        {
-          "n": "destino Toledo",
-          "tipo": "envio",
-          "destino": "toledo",
-          "clase": "OP"
-        },
-        {
-          "n": "EL VINCULO en los tres destinos",
-          "tipo": "envio_va",
-          "cuantos": 3,
-          "clase": "ALC"
-        },
-        {
-          "n": "no declara temas que el cliente NO pregunto",
-          "tipo": "temas_limpios",
-          "tope": 0,
-          "clase": "RUIDO"
-        },
-        {
-          "n": "la cuenta del presupuesto",
-          "tipo": "cuenta",
-          "clase": "OP"
-        }
-      ],
-      "_nota_barato": "20-sep: la casilla pedia `ordenar_por precio_ars min`. Medido: el modelo tambien escribe `precio_ars prefiere 8500` —8500 es el minimo del catalogo, que la leyenda le dice—, o sea 'los mas cercanos al mas barato'. Son DOS formas correctas de decir lo mismo y las dos valen. Lo que estaba roto era el codigo, no la lectura: el grado sobre un numero comparaba texto. Se arreglo el mismo dia.",
-      "_nota_envios": "21-sep: EL TEXTO GUARDADO ESTABA CORTADO y es un defecto de la VARA, no del modelo. Terminaba en 'el presupuesto.' y se comia la frase entera de los envios -'Envio de los dos primeros a la plata y los otros 5 envios 2 a villa maria y 3 a toledo'-, asi que el mensaje pedia el VINCULO en tres destinos y no pedia ninguno de los tres destinos. El modelo podia cotizar los tres perfecto y no ganaba un punto. Entran las tres casillas que faltaban y M6 pasa de 7 a 10. SUBE EL NUMERO SIN QUE EL MODELO HAYA MEJORADO, igual que la nota del teclado de M1: es un arreglo de vara. El aparea por los primeros 30 caracteres utiles, asi que el turno ya se leia igual; lo que estaba mal era lo que se le pedia.",
-      "nucleo": true,
-      "_cubre": "E1 cantidad · E2 resto implicito · B5 circunstancia · G1 multipregunta · G3 audio transcripto · ALCANCE"
+     "n": "y apunta al extremo correcto",
+     "tipo": "condicion",
+     "campo": [
+      "pais_fabricacion"
+     ],
+     "valor": "china",
+     "acepta": [
+      "evita"
+     ],
+     "clase": "C4"
     },
     {
-      "id": "M7",
-      "dificultad": "nombrar sin el nombre: funcion, parte, efecto y regionalismo en una sola frase",
-      "texto": "hola necesito eso que se pone en la oreja para escuchar musica, que no se escuche el ruido de afuera. audifonos o como se llamen",
-      "casillas": [
-        {
-          "n": "traduce el rodeo a la categoria",
-          "clase": "A2",
-          "tipo": "consulta",
-          "categoria": "auriculares"
-        },
-        {
-          "n": "no inventa un tema que el cliente no pregunto",
-          "clase": "RUIDO",
-          "tipo": "temas_limpios",
-          "tope": 0
-        }
-      ],
-      "_cubre": "A2 funcion · A3 parte · A4 efecto · A8 regionalismo",
-      "nucleo": false
+     "n": "destino Cordoba",
+     "tipo": "envio",
+     "destino": "cordoba",
+     "clase": "OP"
     },
     {
-      "id": "M8",
-      "dificultad": "la marca usada como categoria, mas extranjerismo, mas 'lo que usan los gamers'",
-      "texto": "quiero un logitech, un keyboard de los que usan los gamers",
-      "casillas": [
-        {
-          "n": "entiende que keyboard es teclado",
-          "clase": "A7",
-          "tipo": "consulta",
-          "categoria": "teclado"
-        },
-        {
-          "n": "la marca es una condicion, no la categoria",
-          "clase": "A6",
-          "tipo": "condicion",
-          "campo": [
-            "marca",
-            "nombre"
-          ],
-          "valor": "logitech"
-        }
-      ],
-      "_cubre": "A6 metonimia de marca · A7 extranjerismo · A9 por quien lo usa",
-      "nucleo": false,
-      "_nota_marca": "21-sep: LA VARA PEDIA `marca` Y EL MODELO ESCRIBIO `nombre contiene logitech`. Es MENOS preciso que `marca`, pero no es un error: encuentra los Logitech igual. Y lo que esta casilla mide es otra cosa —que la marca entre como CONDICION y no como la categoria— y eso el modelo lo acerto. Es el mismo caso del K120 en M3, donde la vara daba mal al modelo por acertar de otra forma. CORREGIR ESTO SUBE EL NUMERO SIN QUE EL MODELO HAYA MEJORADO: es arreglo de vara."
+     "n": "destino Concordia",
+     "tipo": "envio",
+     "destino": "concordia",
+     "clase": "OP"
     },
     {
-      "id": "M9",
-      "dificultad": "umbral, gama vaga y dos ejes en tension en el mismo pedido",
-      "texto": "mostrame monitores de 100 a 200 lucas, gama media, que sean buenos pero que no me fundan",
-      "casillas": [
-        {
-          "n": "el rubro",
-          "clase": "B7",
-          "tipo": "consulta",
-          "categoria": "monitor"
-        },
-        {
-          "n": "el umbral entra como condicion de precio",
-          "clase": "B7",
-          "tipo": "condicion",
-          "campo": [
-            "precio_ars"
-          ]
-        },
-        {
-          "n": "'gama media' no se puede cumplir y no se inventa",
-          "clase": "B6",
-          "tipo": "sin_mecanismo",
-          "_por_que": "la fuente no tiene un campo de gama. Hoy no hay donde declarar que el pedido no se puede cumplir SIN tirarlo. Es el hueco real de la FICHA 57 §1."
-        }
-      ],
-      "_cubre": "B6 rango vago · B7 umbral · B13 calidad sin eje · C6 dos ejes en tension",
-      "nucleo": false
+     "n": "destino Posadas",
+     "tipo": "envio",
+     "destino": "posadas",
+     "clase": "OP"
     },
     {
-      "id": "M10",
-      "dificultad": "tres escalas distintas, y una de las tres la fuente no la tiene",
-      "texto": "cual es el mouse mas liviano que tengas? y el mas nuevo? y cual es el que mas venden",
-      "casillas": [
-        {
-          "n": "el rubro",
-          "clase": "B10",
-          "tipo": "consulta",
-          "categoria": "mouse"
-        },
-        {
-          "n": "ordena por la escala que SI existe",
-          "clase": "B10",
-          "tipo": "orden",
-          "campo": [
-            "peso_gramos"
-          ],
-          "direccion": [
-            "min"
-          ]
-        },
-        {
-          "n": "'el mas vendido' no tiene campo y se dice",
-          "clase": "B11",
-          "tipo": "sin_mecanismo",
-          "_por_que": "no hay campo de popularidad. El modelo no tiene hoy como declarar 'esto no se puede' salvo tirando el pedido."
-        }
-      ],
-      "_cubre": "B10 escala no monetaria · B11 escala social · B12 escala temporal",
-      "nucleo": false
+     "n": "EL VINCULO: que producto va a que destino",
+     "tipo": "envio_va",
+     "clase": "ALC"
     },
     {
-      "id": "M11",
-      "dificultad": "el cliente describe su VIDA, no el producto: es el eje D entero",
-      "texto": "necesito una compu para mi hijo de 8 años, para que juegue y haga la tarea, que no sea muy cara",
-      "casillas": [
-        {
-          "n": "traduce 'compu' a un rubro del catalogo",
-          "clase": "A8",
-          "tipo": "consulta",
-          "categoria": "notebook"
-        },
-        {
-          "n": "'que no sea muy cara' ordena por precio",
-          "clase": "B4",
-          "tipo": "barato"
-        },
-        {
-          "n": "NO inventa un techo de precio que el cliente no dijo",
-          "clase": "B4",
-          "tipo": "sin_umbral_inventado",
-          "campo": [
-            "precio_ars"
-          ]
-        },
-        {
-          "n": "'para que juegue' se traduce a condiciones",
-          "clase": "D1",
-          "tipo": "sin_mecanismo",
-          "_por_que": "EL EJE D NO TIENE MECANISMO. Es la capa 3 de la FICHA 57 §3: el diccionario de proposito a condiciones. Hasta que exista, esta casilla vale cero a proposito."
-        }
-      ],
-      "_cubre": "B4 atenuado · C10 restriccion implicita por contexto · D1 actividad · D4 persona",
-      "nucleo": false,
-      "_lo_que_la_vara_NO_veia": "21-sep, cinco corridas: M11 daba 2 de 2 y las dos casillas median la mitad FACIL. Lo que de verdad importaba pasaba sin que nadie lo mirara.\n  1. 'PARA QUE JUEGUE Y HAGA LA TAREA' SE PIERDE ENTERO. Las cinco corridas salieron con `categoria: notebook` y una condicion de precio, y NADA del proposito. El eje D no funciona cuando hay que traducir a ATRIBUTOS; funciona cuando el sintoma mapea a un RUBRO, que es M12.\n  2. SE INVENTA UN TECHO. 'Que no sea muy cara' no trae ninguna cifra y el modelo escribio `precio_ars menor 500000` cuatro veces y `menor 800000` la quinta. Un filtro inventado borra productos en silencio.\nESTO ES LO QUE PASA CUANDO LA VARA MIDE LO QUE ES FACIL DE MEDIR."
+     "n": "el setenta treinta",
+     "tipo": "reparto",
+     "porcentajes": [
+      70,
+      30
+     ],
+     "clase": "E6"
     },
     {
-      "id": "M12",
-      "dificultad": "el cliente trae un PROBLEMA, no un pedido",
-      "texto": "se me traba la compu cuando abro muchas pestañas, que me recomendas? es para la oficina",
-      "casillas": [
-        {
-          "n": "traduce el SINTOMA al rubro que lo resuelve",
-          "clase": "D5",
-          "tipo": "consulta",
-          "categoria": "memoria ram"
-        },
-        {
-          "n": "traduce el sintoma a un rubro",
-          "clase": "D5",
-          "tipo": "sin_mecanismo",
-          "_por_que": "'se me traba con muchas pestañas' es memoria RAM, y eso es conocimiento del modelo que hoy no tiene donde aterrizar como criterio declarado."
-        },
-        {
-          "n": "no inventa temas de la casa",
-          "clase": "RUIDO",
-          "tipo": "temas_limpios",
-          "tope": 2
-        }
-      ],
-      "_cubre": "D3 ambiente · D5 problema a resolver",
-      "nucleo": false,
-      "_nota_tope": "21-sep: EL TOPE ERA 1 Y LO PUSE A OJO. Medido, el modelo declaro `asesoramiento` y `memoria_ram` a un cliente que pidio una recomendacion por un problema: ninguno de los dos es ruido, los dos vienen al caso. Un tope inventado mide mi corazonada, no al modelo. Pasa a 2, que todavia atrapa el ruido de verdad —tres o mas temas que nadie pregunto—. ARREGLO DE VARA, no avance.",
-      "_lo_que_mostro": "Y MOSTRO ALGO QUE VALE MAS QUE LA CASILLA: a 'se me traba la compu cuando abro muchas pestañas' el modelo contesto `categoria: memoria ram` mas `ram_ampliable igual si`. Tradujo el SINTOMA al rubro correcto sin ningun mecanismo. El criterio del eje D ya funciona; lo que falta no es la capacidad, es DONDE DECLARARLO. Eso es exactamente la FICHA 57 §3 capa 3.",
-      "_por_que_dos_casillas": "21-sep: SON DOS PREGUNTAS DISTINTAS Y LAS DOS IMPORTAN.\n  1. ¿El modelo TRADUCE? -> se mide HOY, por el EFECTO en la consulta. El criterio del eje D no necesita un campo propio para medirse: si tradujo 'se me traba con muchas pestañas' a memoria RAM, eso se ve en `categoria`.\n  2. ¿Lo DECLARA, para que el codigo pueda verificarlo y reusarlo? -> eso no se puede hoy y queda como `sin_mecanismo`.\nSepararlas es lo que evita la conclusion equivocada. Si solo estuviera la deuda, un lector futuro creeria que el modelo NO PUEDE traducir el eje D, cuando lo que falta es donde anotarlo.",
-      "_medido_21sep": "Primera corrida: `categoria: memoria ram` mas `ram_ampliable igual si`. Y `ram_ampliable` NO ES INVENTADO: sale de `specs_por_modelo.csv`, se fusiona con el catalogo y esta en el enum de los 40 campos. La traduccion fue correcta Y aterrizada. UNA CORRIDA NO ES UNA CAPACIDAD: por eso entra esta casilla, para contar en cuantas de N lo hace."
-    },
-    {
-      "id": "M13",
-      "dificultad": "LA PREMISA FALSA: el cliente afirma un dato que el producto no tiene",
-      "texto": "hola el teclado K120 inalambrico ese cuanto sale? creo que se llama asi",
-      "casillas": [
-        {
-          "n": "busca el producto puntual igual",
-          "clase": "A12",
-          "tipo": "consulta",
-          "texto_contiene": "k120"
-        },
-        {
-          "n": "lo declara como UNO",
-          "clase": "OP",
-          "tipo": "busco",
-          "acepta": [
-            "uno"
-          ]
-        },
-        {
-          "n": "declara que el cliente AFIRMO algo, para poder verificarlo",
-          "clase": "F2",
-          "tipo": "sin_mecanismo",
-          "_por_que": "ES EL VECTOR MAS PELIGROSO Y NO TIENE CANDADO. La alucinacion no la trae el modelo: la trae el CLIENTE. Sin un campo donde declarar la afirmacion, el codigo no puede contrastarla contra la ficha y el bot puede confirmarla con las palabras del cliente. FICHA 57 §5.1."
-        }
-      ],
-      "_cubre": "F1 duda declarada · F2 premisa falsa",
-      "nucleo": false
-    },
-    {
-      "id": "M14",
-      "dificultad": "exclusion de un conjunto, condicional, y meta-comentario sobre lo que ya intento",
-      "texto": "ya busque en la pagina y no encontre. necesito auriculares, cualquiera menos redragon, y si no hay negro mandame blanco",
-      "casillas": [
-        {
-          "n": "el rubro",
-          "clase": "C5",
-          "tipo": "consulta",
-          "categoria": "auriculares"
-        },
-        {
-          "n": "la exclusion entra como condicion negativa",
-          "clase": "C5",
-          "tipo": "condicion",
-          "campo": [
-            "marca"
-          ],
-          "valor": "redragon",
-          "acepta": [
-            "no_contiene",
-            "distinto"
-          ]
-        },
-        {
-          "n": "el condicional 'si no hay X entonces Y'",
-          "clase": "C7",
-          "tipo": "sin_mecanismo",
-          "_por_que": "no hay forma de declarar una alternativa condicionada. Hoy o se pide una o se pide la otra."
-        }
-      ],
-      "_cubre": "C5 exclusion · C7 condicional · F3 meta-comentario",
-      "nucleo": false
-    },
-    {
-      "id": "M15",
-      "dificultad": "se corrige a mitad de mensaje, reparte por persona y se contradice",
-      "texto": "dame 3 teclados... no, mejor 4, uno para cada chico. el mas barato pero que sea de marca",
-      "casillas": [
-        {
-          "n": "toma la cantidad CORREGIDA, no la primera",
-          "clase": "F4",
-          "tipo": "consulta",
-          "categoria": "teclado",
-          "cantidad": [
-            4
-          ]
-        },
-        {
-          "n": "'el mas barato' ordena por precio",
-          "clase": "B1",
-          "tipo": "barato"
-        },
-        {
-          "n": "declara la contradiccion en vez de elegir una mitad",
-          "clase": "F5",
-          "tipo": "sin_mecanismo",
-          "_por_que": "'el mas barato pero de marca' son dos pedidos en tension. Hoy el modelo elige uno en silencio y nadie se entera."
-        }
-      ],
-      "_cubre": "B1 superlativo · E4 distributiva · F4 correccion · F5 contradiccion",
-      "nucleo": false
-    },
-    {
-      "id": "M16",
-      "dificultad": "dura, blanda y tolerancia sobre el mismo pedido, mas un plazo",
-      "texto": "necesito un monitor si o si con hdmi, de 24 pulgadas para arriba, preferentemente samsung, y lo necesito para el viernes",
-      "casillas": [
-        {
-          "n": "el rubro",
-          "clase": "C1",
-          "tipo": "consulta",
-          "categoria": "monitor"
-        },
-        {
-          "n": "la preferencia de marca es BLANDA, no un filtro",
-          "clase": "C3",
-          "tipo": "condicion",
-          "campo": [
-            "marca",
-            "nombre"
-          ],
-          "valor": "samsung",
-          "acepta": [
-            "prefiere"
-          ]
-        },
-        {
-          "n": "el plazo es una condicion del cliente, no un adorno",
-          "clase": "F6",
-          "tipo": "sin_mecanismo",
-          "_por_que": "no hay donde declarar urgencia. Hoy se pierde, y es lo que decide si la venta se cierra."
-        }
-      ],
-      "_cubre": "C1 dura afirmativa · C3 blanda · C8 tolerancia · F6 urgencia",
-      "nucleo": false,
-      "_nota_marca": "21-sep: idem M8, el campo se acepta en `marca` o en `nombre`. Lo que esta casilla mide es que la preferencia sea BLANDA —operador `prefiere`— y no un filtro duro, y eso el modelo lo acerto."
-    },
-    {
-      "id": "M17",
-      "dificultad": "como llega de verdad un WhatsApp: emojis, abreviaturas, ruido y un hiperonimo vago",
-      "texto": "holaa q tal 😊 mira te cuento me mude hace poco y necesito un aparato para la compu, algo q no salga mucho, xfa. tmb queria saber si hacen factura",
-      "casillas": [
-        {
-          "n": "pide la politica que el cliente SI pregunto",
-          "clase": "OP",
-          "tipo": "tema",
-          "acepta": [
-            "factura",
-            "precios_iva",
-            "factura_a",
-            "facturacion"
-          ]
-        },
-        {
-          "n": "'que no salga mucho' ordena por precio",
-          "clase": "B3",
-          "tipo": "barato"
-        },
-        {
-          "n": "'un aparato para la compu' es demasiado vago y hay que preguntar",
-          "clase": "A5",
-          "tipo": "sin_mecanismo",
-          "_por_que": "un hiperonimo sin rubro no se puede resolver. La respuesta correcta es repreguntar, y no hay donde declarar 'esto es ambiguo a nivel pedido'."
-        }
-      ],
-      "_cubre": "A5 hiperonimo · B3 negacion del extremo · G2 desprolijo · G4 ruido · G6 emojis",
-      "nucleo": false
-    },
-    {
-      "id": "M18",
-      "dificultad": "relacion precio-calidad, que suena a orden y la fuente no la tiene",
-      "texto": "cual tiene mejor relacion precio calidad en notebooks? el que mas me rinda por lo que sale",
-      "casillas": [
-        {
-          "n": "el rubro",
-          "clase": "B2",
-          "tipo": "consulta",
-          "categoria": "notebook"
-        },
-        {
-          "n": "'mejor relacion precio calidad' no tiene campo y se dice",
-          "clase": "B9",
-          "tipo": "sin_mecanismo",
-          "_por_que": "exige un campo de calidad normalizado que la fuente no tiene. Es el bloque blando del D16, en ESPERA A MARTIN."
-        }
-      ],
-      "_cubre": "B2 superlativo con rodeo · B9 relacion calidad-precio",
-      "nucleo": false
-    },
-    {
-      "id": "M19",
-      "dificultad": "arma por presupuesto y compara con algo que tuvo",
-      "texto": "tengo 200 mil, armame lo que entre para una pc de escritorio, algo parecido a lo que tenia antes que era una hp",
-      "casillas": [
-        {
-          "n": "pide el total, que es lo que el cliente pidio",
-          "clase": "E3",
-          "tipo": "cuenta"
-        },
-        {
-          "n": "el presupuesto es un techo, no un producto",
-          "clase": "E3",
-          "tipo": "sin_mecanismo",
-          "_por_que": "'lo que entre en 200 mil' es una optimizacion sobre el total, no un filtro por producto. No hay donde declararla."
-        },
-        {
-          "n": "'parecido a la hp que tenia' es una referencia externa",
-          "clase": "A10",
-          "tipo": "sin_mecanismo",
-          "_por_que": "el referente no esta en el catalogo ni en la charla: esta en la memoria del cliente. Lo unico rescatable es la marca."
-        }
-      ],
-      "_cubre": "A10 comparacion con lo que tiene · E3 por presupuesto",
-      "nucleo": false
+     "n": "la cuenta del pedido",
+     "tipo": "cuenta",
+     "clase": "OP"
     }
-  ],
-  "_clases_que_NO_se_pueden_medir_en_un_turno": {
-    "A11": "anafora: 'ese', 'el que me mostraste'. El referente esta en el turno anterior.",
-    "B8": "relativo a un referente de la charla: 'mas barato que ese'.",
-    "E5": "comparativa con lo anterior: 'el doble de lo que pedi'.",
-    "G5": "el pedido llega en varios mensajes cortos seguidos.",
-    "_por_que": "LAS CUATRO NECESITAN MEMORIA ENTRE TURNOS, y por eso no hay mensaje que las mida aca: una vara de un turno no las puede tocar. Es la FICHA 57 §5.2 convertida en numero: 4 de 52. Se miden cuando exista el pedido como estado."
+   ],
+   "_nota_teclado": "20-sep: esta casilla pedia el teclado como CONSULTA. Medido: el modelo lo pone en el `va` de Concordia —'un teclado y un mouse'— y NO lo cotiza, que es una lectura defendible: el cliente pidio precio de auriculares, mouse y memorias, y el teclado aparece solo al repartir los envios. La casilla mide que lo CAPTE; donde lo ponga es la ambiguedad del mensaje, y Martin dijo que esas no penalizan. CORREGIR ESTO SUBE EL NUMERO SIN QUE EL MODELO HAYA MEJORADO: es un arreglo de la vara, no un avance.",
+   "nucleo": true,
+   "_cubre": "E1 cantidad · C2 dura negativa · C4 grado sobre condicion · E6 reparto · G1 multipregunta · ALCANCE"
+  },
+  {
+   "id": "M2",
+   "dificultad": "politica y criterio por el MISMO campo, que es lo que el enum fusionado del 20-sep tiene que resolver",
+   "texto": "Hola, tienen garantia en los teclados mecanicos? y cual me conviene para escribir mucho todos los dias?",
+   "casillas": [
+    {
+     "n": "la politica de garantia",
+     "tipo": "tema",
+     "acepta": [
+      "garantia",
+      "garantia_como_usar"
+     ],
+     "clase": "OP"
+    },
+    {
+     "n": "el criterio del teclado",
+     "tipo": "tema",
+     "acepta": [
+      "teclado",
+      "teclado_mecanico_membrana"
+     ],
+     "clase": "D2"
+    },
+    {
+     "n": "no declara temas que el cliente NO pregunto",
+     "tipo": "temas_limpios",
+     "tope": 2,
+     "clase": "RUIDO"
+    }
+   ],
+   "_nota_consulta": "20-sep: salio la casilla 'no se inventa una consulta al catalogo'. El modelo manda `categoria: teclado` y es defendible: a 'cual me conviene' mostrar opciones no es un disparate. Era la vara pidiendo de mas. En su lugar entra una que mide un defecto REAL y nuevo.",
+   "nucleo": true,
+   "_cubre": "D2 intensidad de uso · politica de la casa en el mismo mensaje"
+  },
+  {
+   "id": "M3",
+   "dificultad": "identidad puntual: la regla 10.0, ante dos que pegan igual se PREGUNTA",
+   "texto": "cuanto sale el K120?",
+   "casillas": [
+    {
+     "n": "busca el producto puntual",
+     "tipo": "consulta",
+     "texto_contiene": "k120",
+     "clase": "A12"
+    },
+    {
+     "n": "lo declara como UNO, no como varios",
+     "tipo": "busco",
+     "acepta": [
+      "uno"
+     ],
+     "clase": "OP"
+    }
+   ],
+   "nucleo": true,
+   "_cubre": "A12 nombre parcial"
+  },
+  {
+   "id": "M4",
+   "dificultad": "traducir prosa a categoria y a orden: es el caso D16 del mapa",
+   "texto": "necesito un aparato rectangular con varias teclas, que sea bueno, pero dada la crisis armame un presupuesto acorde",
+   "casillas": [
+    {
+     "n": "traduce el rodeo a la categoria",
+     "tipo": "consulta",
+     "categoria": "teclado",
+     "clase": "A1"
+    },
+    {
+     "n": "traduce 'acorde a la crisis' a un orden por precio",
+     "tipo": "barato",
+     "clase": "B5"
+    }
+   ],
+   "nucleo": true,
+   "_cubre": "A1 perifrasis por forma · B5 circunstancia como grado · B13 calidad sin eje"
+  },
+  {
+   "id": "M5",
+   "dificultad": "dos bocas distintas en un mensaje corto: compatibilidad y envio",
+   "texto": "los auriculares HyperX andan con mi PS5? y cuanto sale el envio a Rosario?",
+   "casillas": [
+    {
+     "n": "pregunta por el par de compatibilidad",
+     "tipo": "compat",
+     "clase": "C9"
+    },
+    {
+     "n": "cotiza el destino con la palabra del cliente",
+     "tipo": "envio",
+     "destino": "rosario",
+     "clase": "OP"
+    }
+   ],
+   "nucleo": true,
+   "_cubre": "C9 compatibilidad · dos bocas en un mensaje corto"
+  },
+  {
+   "id": "M6",
+   "dificultad": "aritmetica sobre el enunciado mas el vinculo en tres destinos",
+   "texto": "Dame precio de 7 articulos 2 notebooks 1 microfono y los demas serian memorias pasame ee acuerdo a la crisis el presupuesto. Envio de los dos primeros a la plata y los otros 5 envios 2 a villa maria y 3 a toledo",
+   "casillas": [
+    {
+     "n": "las notebooks",
+     "tipo": "consulta",
+     "categoria": "notebook",
+     "cantidad": [
+      2
+     ],
+     "clase": "E1"
+    },
+    {
+     "n": "el microfono",
+     "tipo": "consulta",
+     "categoria": "microfono",
+     "cantidad": [
+      1
+     ],
+     "clase": "E1"
+    },
+    {
+     "n": "DEDUCE que 'los demas' son 4 memorias",
+     "tipo": "consulta",
+     "categoria": "memoria ram",
+     "cantidad": [
+      4
+     ],
+     "clase": "E2"
+    },
+    {
+     "n": "traduce 'acorde a la crisis' a un orden por precio",
+     "tipo": "barato",
+     "clase": "B5"
+    },
+    {
+     "n": "destino La Plata",
+     "tipo": "envio",
+     "destino": "la plata",
+     "clase": "OP"
+    },
+    {
+     "n": "destino Villa Maria",
+     "tipo": "envio",
+     "destino": "villa maria",
+     "clase": "OP"
+    },
+    {
+     "n": "destino Toledo",
+     "tipo": "envio",
+     "destino": "toledo",
+     "clase": "OP"
+    },
+    {
+     "n": "EL VINCULO en los tres destinos",
+     "tipo": "envio_va",
+     "cuantos": 3,
+     "clase": "ALC"
+    },
+    {
+     "n": "no declara temas que el cliente NO pregunto",
+     "tipo": "temas_limpios",
+     "tope": 0,
+     "clase": "RUIDO"
+    },
+    {
+     "n": "la cuenta del presupuesto",
+     "tipo": "cuenta",
+     "clase": "OP"
+    }
+   ],
+   "_nota_barato": "20-sep: la casilla pedia `ordenar_por precio_ars min`. Medido: el modelo tambien escribe `precio_ars prefiere 8500` —8500 es el minimo del catalogo, que la leyenda le dice—, o sea 'los mas cercanos al mas barato'. Son DOS formas correctas de decir lo mismo y las dos valen. Lo que estaba roto era el codigo, no la lectura: el grado sobre un numero comparaba texto. Se arreglo el mismo dia.",
+   "_nota_envios": "21-sep: EL TEXTO GUARDADO ESTABA CORTADO y es un defecto de la VARA, no del modelo. Terminaba en 'el presupuesto.' y se comia la frase entera de los envios -'Envio de los dos primeros a la plata y los otros 5 envios 2 a villa maria y 3 a toledo'-, asi que el mensaje pedia el VINCULO en tres destinos y no pedia ninguno de los tres destinos. El modelo podia cotizar los tres perfecto y no ganaba un punto. Entran las tres casillas que faltaban y M6 pasa de 7 a 10. SUBE EL NUMERO SIN QUE EL MODELO HAYA MEJORADO, igual que la nota del teclado de M1: es un arreglo de vara. El aparea por los primeros 30 caracteres utiles, asi que el turno ya se leia igual; lo que estaba mal era lo que se le pedia.",
+   "nucleo": true,
+   "_cubre": "E1 cantidad · E2 resto implicito · B5 circunstancia · G1 multipregunta · G3 audio transcripto · ALCANCE"
+  },
+  {
+   "id": "M7",
+   "dificultad": "nombrar sin el nombre: funcion, parte, efecto y regionalismo en una sola frase",
+   "texto": "hola necesito eso que se pone en la oreja para escuchar musica, que no se escuche el ruido de afuera. audifonos o como se llamen",
+   "casillas": [
+    {
+     "n": "traduce el rodeo a la categoria",
+     "clase": "A2",
+     "tipo": "consulta",
+     "categoria": "auriculares"
+    },
+    {
+     "n": "no inventa un tema que el cliente no pregunto",
+     "clase": "RUIDO",
+     "tipo": "temas_limpios",
+     "tope": 0
+    }
+   ],
+   "_cubre": "A2 funcion · A3 parte · A4 efecto · A8 regionalismo",
+   "nucleo": false
+  },
+  {
+   "id": "M8",
+   "dificultad": "la marca usada como categoria, mas extranjerismo, mas 'lo que usan los gamers'",
+   "texto": "quiero un logitech, un keyboard de los que usan los gamers",
+   "casillas": [
+    {
+     "n": "entiende que keyboard es teclado",
+     "clase": "A7",
+     "tipo": "consulta",
+     "categoria": "teclado"
+    },
+    {
+     "n": "la marca es una condicion, no la categoria",
+     "clase": "A6",
+     "tipo": "condicion",
+     "campo": [
+      "marca",
+      "nombre"
+     ],
+     "valor": "logitech"
+    }
+   ],
+   "_cubre": "A6 metonimia de marca · A7 extranjerismo · A9 por quien lo usa",
+   "nucleo": false,
+   "_nota_marca": "21-sep: LA VARA PEDIA `marca` Y EL MODELO ESCRIBIO `nombre contiene logitech`. Es MENOS preciso que `marca`, pero no es un error: encuentra los Logitech igual. Y lo que esta casilla mide es otra cosa —que la marca entre como CONDICION y no como la categoria— y eso el modelo lo acerto. Es el mismo caso del K120 en M3, donde la vara daba mal al modelo por acertar de otra forma. CORREGIR ESTO SUBE EL NUMERO SIN QUE EL MODELO HAYA MEJORADO: es arreglo de vara."
+  },
+  {
+   "id": "M9",
+   "dificultad": "umbral, gama vaga y dos ejes en tension en el mismo pedido",
+   "texto": "mostrame monitores de 100 a 200 lucas, gama media, que sean buenos pero que no me fundan",
+   "casillas": [
+    {
+     "n": "el rubro",
+     "clase": "B7",
+     "tipo": "consulta",
+     "categoria": "monitor"
+    },
+    {
+     "n": "el umbral entra como condicion de precio",
+     "clase": "B7",
+     "tipo": "condicion",
+     "campo": [
+      "precio_ars"
+     ]
+    },
+    {
+     "n": "'gama media' no se puede cumplir y no se inventa",
+     "clase": "B6",
+     "tipo": "sin_mecanismo",
+     "_por_que": "la fuente no tiene un campo de gama. Hoy no hay donde declarar que el pedido no se puede cumplir SIN tirarlo. Es el hueco real de la FICHA 57 §1."
+    }
+   ],
+   "_cubre": "B6 rango vago · B7 umbral · B13 calidad sin eje · C6 dos ejes en tension",
+   "nucleo": false
+  },
+  {
+   "id": "M10",
+   "dificultad": "tres escalas distintas, y una de las tres la fuente no la tiene",
+   "texto": "cual es el mouse mas liviano que tengas? y el mas nuevo? y cual es el que mas venden",
+   "casillas": [
+    {
+     "n": "el rubro",
+     "clase": "B10",
+     "tipo": "consulta",
+     "categoria": "mouse"
+    },
+    {
+     "n": "ordena por la escala que SI existe",
+     "clase": "B10",
+     "tipo": "orden",
+     "campo": [
+      "peso_gramos"
+     ],
+     "direccion": [
+      "min"
+     ]
+    },
+    {
+     "n": "'el mas vendido' no tiene campo y se dice",
+     "clase": "B11",
+     "tipo": "sin_mecanismo",
+     "_por_que": "no hay campo de popularidad. El modelo no tiene hoy como declarar 'esto no se puede' salvo tirando el pedido."
+    }
+   ],
+   "_cubre": "B10 escala no monetaria · B11 escala social · B12 escala temporal",
+   "nucleo": false
+  },
+  {
+   "id": "M11",
+   "dificultad": "el cliente describe su VIDA, no el producto: es el eje D entero",
+   "texto": "necesito una compu para mi hijo de 8 años, para que juegue y haga la tarea, que no sea muy cara",
+   "casillas": [
+    {
+     "n": "traduce 'compu' a un rubro del catalogo",
+     "clase": "A8",
+     "tipo": "consulta",
+     "categoria": "notebook"
+    },
+    {
+     "n": "'que no sea muy cara' ordena por precio",
+     "clase": "B4",
+     "tipo": "barato"
+    },
+    {
+     "n": "NO inventa un techo de precio que el cliente no dijo",
+     "clase": "B4",
+     "tipo": "sin_umbral_inventado",
+     "campo": [
+      "precio_ars"
+     ]
+    },
+    {
+     "n": "'para que juegue' se traduce a condiciones",
+     "clase": "D1",
+     "tipo": "sin_mecanismo",
+     "_por_que": "EL EJE D NO TIENE MECANISMO. Es la capa 3 de la FICHA 57 §3: el diccionario de proposito a condiciones. Hasta que exista, esta casilla vale cero a proposito."
+    }
+   ],
+   "_cubre": "B4 atenuado · C10 restriccion implicita por contexto · D1 actividad · D4 persona",
+   "nucleo": false,
+   "_lo_que_la_vara_NO_veia": "21-sep, cinco corridas: M11 daba 2 de 2 y las dos casillas median la mitad FACIL. Lo que de verdad importaba pasaba sin que nadie lo mirara.\n  1. 'PARA QUE JUEGUE Y HAGA LA TAREA' SE PIERDE ENTERO. Las cinco corridas salieron con `categoria: notebook` y una condicion de precio, y NADA del proposito. El eje D no funciona cuando hay que traducir a ATRIBUTOS; funciona cuando el sintoma mapea a un RUBRO, que es M12.\n  2. SE INVENTA UN TECHO. 'Que no sea muy cara' no trae ninguna cifra y el modelo escribio `precio_ars menor 500000` cuatro veces y `menor 800000` la quinta. Un filtro inventado borra productos en silencio.\nESTO ES LO QUE PASA CUANDO LA VARA MIDE LO QUE ES FACIL DE MEDIR."
+  },
+  {
+   "id": "M12",
+   "dificultad": "el cliente trae un PROBLEMA, no un pedido",
+   "texto": "se me traba la compu cuando abro muchas pestañas, que me recomendas? es para la oficina",
+   "casillas": [
+    {
+     "n": "traduce el SINTOMA al rubro que lo resuelve",
+     "clase": "D5",
+     "tipo": "consulta",
+     "categoria": "memoria ram"
+    },
+    {
+     "n": "traduce el sintoma a un rubro",
+     "clase": "D5",
+     "tipo": "sin_mecanismo",
+     "_por_que": "'se me traba con muchas pestañas' es memoria RAM, y eso es conocimiento del modelo que hoy no tiene donde aterrizar como criterio declarado."
+    },
+    {
+     "n": "no inventa temas de la casa",
+     "clase": "RUIDO",
+     "tipo": "temas_limpios",
+     "tope": 2
+    }
+   ],
+   "_cubre": "D3 ambiente · D5 problema a resolver",
+   "nucleo": false,
+   "_nota_tope": "21-sep: EL TOPE ERA 1 Y LO PUSE A OJO. Medido, el modelo declaro `asesoramiento` y `memoria_ram` a un cliente que pidio una recomendacion por un problema: ninguno de los dos es ruido, los dos vienen al caso. Un tope inventado mide mi corazonada, no al modelo. Pasa a 2, que todavia atrapa el ruido de verdad —tres o mas temas que nadie pregunto—. ARREGLO DE VARA, no avance.",
+   "_lo_que_mostro": "Y MOSTRO ALGO QUE VALE MAS QUE LA CASILLA: a 'se me traba la compu cuando abro muchas pestañas' el modelo contesto `categoria: memoria ram` mas `ram_ampliable igual si`. Tradujo el SINTOMA al rubro correcto sin ningun mecanismo. El criterio del eje D ya funciona; lo que falta no es la capacidad, es DONDE DECLARARLO. Eso es exactamente la FICHA 57 §3 capa 3.",
+   "_por_que_dos_casillas": "21-sep: SON DOS PREGUNTAS DISTINTAS Y LAS DOS IMPORTAN.\n  1. ¿El modelo TRADUCE? -> se mide HOY, por el EFECTO en la consulta. El criterio del eje D no necesita un campo propio para medirse: si tradujo 'se me traba con muchas pestañas' a memoria RAM, eso se ve en `categoria`.\n  2. ¿Lo DECLARA, para que el codigo pueda verificarlo y reusarlo? -> eso no se puede hoy y queda como `sin_mecanismo`.\nSepararlas es lo que evita la conclusion equivocada. Si solo estuviera la deuda, un lector futuro creeria que el modelo NO PUEDE traducir el eje D, cuando lo que falta es donde anotarlo.",
+   "_medido_21sep": "Primera corrida: `categoria: memoria ram` mas `ram_ampliable igual si`. Y `ram_ampliable` NO ES INVENTADO: sale de `specs_por_modelo.csv`, se fusiona con el catalogo y esta en el enum de los 40 campos. La traduccion fue correcta Y aterrizada. UNA CORRIDA NO ES UNA CAPACIDAD: por eso entra esta casilla, para contar en cuantas de N lo hace."
+  },
+  {
+   "id": "M13",
+   "dificultad": "LA PREMISA FALSA: el cliente afirma un dato que el producto no tiene",
+   "texto": "hola el teclado K120 inalambrico ese cuanto sale? creo que se llama asi",
+   "casillas": [
+    {
+     "n": "busca el producto puntual igual",
+     "clase": "A12",
+     "tipo": "consulta",
+     "texto_contiene": "k120"
+    },
+    {
+     "n": "lo declara como UNO",
+     "clase": "OP",
+     "tipo": "busco",
+     "acepta": [
+      "uno"
+     ]
+    },
+    {
+     "n": "declara lo que el cliente AFIRMO, para poder verificarlo",
+     "clase": "F2",
+     "tipo": "afirma",
+     "_por_que": "22-sep: DEJA DE SER DEUDA. El campo `afirma` existe y el codigo verifica la premisa contra la ficha: el K120 tiene `conexion: con cable USB`, asi que la afirmacion vuelve `contradice` con el dato real. Mide lo mismo de siempre —que el modelo la DECLARE en vez de tragarsela— sobre el campo donde por fin se puede escribir. Mismo camino que `envio_va`, que paso de 0 de 4 a 100%.",
+     "nombra": [
+      "k120",
+      "inalambrico"
+     ]
+    }
+   ],
+   "_cubre": "F1 duda declarada · F2 premisa falsa",
+   "nucleo": false
+  },
+  {
+   "id": "M14",
+   "dificultad": "exclusion de un conjunto, condicional, y meta-comentario sobre lo que ya intento",
+   "texto": "ya busque en la pagina y no encontre. necesito auriculares, cualquiera menos redragon, y si no hay negro mandame blanco",
+   "casillas": [
+    {
+     "n": "el rubro",
+     "clase": "C5",
+     "tipo": "consulta",
+     "categoria": "auriculares"
+    },
+    {
+     "n": "la exclusion entra como condicion negativa",
+     "clase": "C5",
+     "tipo": "condicion",
+     "campo": [
+      "marca"
+     ],
+     "valor": "redragon",
+     "acepta": [
+      "no_contiene",
+      "distinto"
+     ]
+    },
+    {
+     "n": "el condicional 'si no hay X entonces Y'",
+     "clase": "C7",
+     "tipo": "sin_mecanismo",
+     "_por_que": "no hay forma de declarar una alternativa condicionada. Hoy o se pide una o se pide la otra."
+    }
+   ],
+   "_cubre": "C5 exclusion · C7 condicional · F3 meta-comentario",
+   "nucleo": false
+  },
+  {
+   "id": "M15",
+   "dificultad": "se corrige a mitad de mensaje, reparte por persona y se contradice",
+   "texto": "dame 3 teclados... no, mejor 4, uno para cada chico. el mas barato pero que sea de marca",
+   "casillas": [
+    {
+     "n": "toma la cantidad CORREGIDA, no la primera",
+     "clase": "F4",
+     "tipo": "consulta",
+     "categoria": "teclado",
+     "cantidad": [
+      4
+     ]
+    },
+    {
+     "n": "'el mas barato' ordena por precio",
+     "clase": "B1",
+     "tipo": "barato"
+    },
+    {
+     "n": "declara la contradiccion en vez de elegir una mitad",
+     "clase": "F5",
+     "tipo": "sin_mecanismo",
+     "_por_que": "'el mas barato pero de marca' son dos pedidos en tension. Hoy el modelo elige uno en silencio y nadie se entera."
+    }
+   ],
+   "_cubre": "B1 superlativo · E4 distributiva · F4 correccion · F5 contradiccion",
+   "nucleo": false
+  },
+  {
+   "id": "M16",
+   "dificultad": "dura, blanda y tolerancia sobre el mismo pedido, mas un plazo",
+   "texto": "necesito un monitor si o si con hdmi, de 24 pulgadas para arriba, preferentemente samsung, y lo necesito para el viernes",
+   "casillas": [
+    {
+     "n": "el rubro",
+     "clase": "C1",
+     "tipo": "consulta",
+     "categoria": "monitor"
+    },
+    {
+     "n": "la preferencia de marca es BLANDA, no un filtro",
+     "clase": "C3",
+     "tipo": "condicion",
+     "campo": [
+      "marca",
+      "nombre"
+     ],
+     "valor": "samsung",
+     "acepta": [
+      "prefiere"
+     ]
+    },
+    {
+     "n": "el plazo es una condicion del cliente, no un adorno",
+     "clase": "F6",
+     "tipo": "sin_mecanismo",
+     "_por_que": "no hay donde declarar urgencia. Hoy se pierde, y es lo que decide si la venta se cierra."
+    }
+   ],
+   "_cubre": "C1 dura afirmativa · C3 blanda · C8 tolerancia · F6 urgencia",
+   "nucleo": false,
+   "_nota_marca": "21-sep: idem M8, el campo se acepta en `marca` o en `nombre`. Lo que esta casilla mide es que la preferencia sea BLANDA —operador `prefiere`— y no un filtro duro, y eso el modelo lo acerto."
+  },
+  {
+   "id": "M17",
+   "dificultad": "como llega de verdad un WhatsApp: emojis, abreviaturas, ruido y un hiperonimo vago",
+   "texto": "holaa q tal 😊 mira te cuento me mude hace poco y necesito un aparato para la compu, algo q no salga mucho, xfa. tmb queria saber si hacen factura",
+   "casillas": [
+    {
+     "n": "pide la politica que el cliente SI pregunto",
+     "clase": "OP",
+     "tipo": "tema",
+     "acepta": [
+      "factura",
+      "precios_iva",
+      "factura_a",
+      "facturacion"
+     ]
+    },
+    {
+     "n": "'que no salga mucho' ordena por precio",
+     "clase": "B3",
+     "tipo": "barato"
+    },
+    {
+     "n": "'un aparato para la compu' es demasiado vago y hay que preguntar",
+     "clase": "A5",
+     "tipo": "sin_mecanismo",
+     "_por_que": "un hiperonimo sin rubro no se puede resolver. La respuesta correcta es repreguntar, y no hay donde declarar 'esto es ambiguo a nivel pedido'."
+    }
+   ],
+   "_cubre": "A5 hiperonimo · B3 negacion del extremo · G2 desprolijo · G4 ruido · G6 emojis",
+   "nucleo": false
+  },
+  {
+   "id": "M18",
+   "dificultad": "relacion precio-calidad, que suena a orden y la fuente no la tiene",
+   "texto": "cual tiene mejor relacion precio calidad en notebooks? el que mas me rinda por lo que sale",
+   "casillas": [
+    {
+     "n": "el rubro",
+     "clase": "B2",
+     "tipo": "consulta",
+     "categoria": "notebook"
+    },
+    {
+     "n": "'mejor relacion precio calidad' no tiene campo y se dice",
+     "clase": "B9",
+     "tipo": "sin_mecanismo",
+     "_por_que": "exige un campo de calidad normalizado que la fuente no tiene. Es el bloque blando del D16, en ESPERA A MARTIN."
+    }
+   ],
+   "_cubre": "B2 superlativo con rodeo · B9 relacion calidad-precio",
+   "nucleo": false
+  },
+  {
+   "id": "M19",
+   "dificultad": "arma por presupuesto y compara con algo que tuvo",
+   "texto": "tengo 200 mil, armame lo que entre para una pc de escritorio, algo parecido a lo que tenia antes que era una hp",
+   "casillas": [
+    {
+     "n": "pide el total, que es lo que el cliente pidio",
+     "clase": "E3",
+     "tipo": "cuenta"
+    },
+    {
+     "n": "el presupuesto es un techo, no un producto",
+     "clase": "E3",
+     "tipo": "sin_mecanismo",
+     "_por_que": "'lo que entre en 200 mil' es una optimizacion sobre el total, no un filtro por producto. No hay donde declararla."
+    },
+    {
+     "n": "'parecido a la hp que tenia' es una referencia externa",
+     "clase": "A10",
+     "tipo": "sin_mecanismo",
+     "_por_que": "el referente no esta en el catalogo ni en la charla: esta en la memoria del cliente. Lo unico rescatable es la marca."
+    }
+   ],
+   "_cubre": "A10 comparacion con lo que tiene · E3 por presupuesto",
+   "nucleo": false
   }
+ ],
+ "_clases_que_NO_se_pueden_medir_en_un_turno": {
+  "A11": "anafora: 'ese', 'el que me mostraste'. El referente esta en el turno anterior.",
+  "B8": "relativo a un referente de la charla: 'mas barato que ese'.",
+  "E5": "comparativa con lo anterior: 'el doble de lo que pedi'.",
+  "G5": "el pedido llega en varios mensajes cortos seguidos.",
+  "_por_que": "LAS CUATRO NECESITAN MEMORIA ENTRE TURNOS, y por eso no hay mensaje que las mida aca: una vara de un turno no las puede tocar. Es la FICHA 57 §5.2 convertida en numero: 4 de 52. Se miden cuando exista el pedido como estado."
+ }
 }

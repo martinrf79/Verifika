@@ -214,6 +214,29 @@ def _c_sin_umbral_inventado(c, p):
     return True
 
 
+def _c_afirma(c, p):
+    """LO QUE EL CLIENTE DA POR SENTADO, DECLARADO (22-sep-2026).
+
+    ERA DEUDA Y AHORA ES CASILLA. Hasta hoy la premisa falsa —clase F2— se
+    contaba con `sin_mecanismo` y valia cero a proposito, porque el esquema no
+    tenia donde anotarla. Es el mismo camino que `envio_va` el 20-sep: la
+    casilla imposible se escribe primero, se construye el campo, y recien ahi
+    se puede medir. Ese precedente dio 0 de 4 y hoy da 100%.
+
+    Y NO ES AFLOJAR LA VARA NI ENDURECERLA: mide lo mismo que medía —si el
+    modelo DECLARA la afirmacion en vez de tragarsela— sobre el campo donde
+    eso por fin se puede escribir. Lo que cambio es el esquema, no el
+    requisito.
+    """
+    for a in (p.get("afirma") or []):
+        if not isinstance(a, dict):
+            continue
+        junto = _norm(str(a.get("sobre") or "") + " " + str(a.get("dice") or ""))
+        if all(_norm(v) in junto for v in c.get("nombra") or []):
+            return True
+    return False
+
+
 def _c_sin_mecanismo(c, p):
     """LA DEUDA, ESCRITA Y EN CERO A PROPOSITO (21-sep-2026).
 
@@ -260,6 +283,7 @@ CASILLA = {"consulta": _c_consulta, "condicion": _c_condicion,
            "orden": _c_orden, "compat": _c_compat, "nombra": _c_nombra,
            "temas_limpios": _c_temas_limpios, "barato": _c_barato,
            "sin_consultas_obligatorias": _c_sin_consultas,
+           "afirma": _c_afirma,
            "sin_mecanismo": _c_sin_mecanismo,
            "sin_umbral_inventado": _c_sin_umbral_inventado}
 
