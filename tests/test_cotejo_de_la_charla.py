@@ -73,3 +73,44 @@ def test_un_modelo_que_no_se_vio_no_se_rescata():
 def test_la_clave_no_aparea_adentro_de_otra_palabra():
     pedido = {"consultas": []}
     assert CO.rescatar_nombrados(["el k1200 pro"], pedido, VISTOS) == []
+
+
+# ── 8 · "de esos" es entre los que el cliente leyo ─────────────────────────
+
+RECIEN = [("TEC0001", "teclado"), ("TEC0005", "teclado"),
+          ("TEC0007", "teclado")]
+
+
+def test_de_esos_restringe_a_lo_ultimo_nombrado():
+    """CH10: 'de esos cual es el mas barato?' busco en el catalogo entero y
+    presento como 'de los que te mencione' uno que nunca menciono."""
+    consultas = [{"categoria": "teclado",
+                  "ordenar_por": {"campo": "precio_ars", "direccion": "min"}}]
+    CO.restringir_a_esos("de esos cual es el mas barato?", consultas, RECIEN)
+    assert consultas[0]["ids"] == ["TEC0001", "TEC0005", "TEC0007"]
+    assert consultas[0]["ordenar_por"]["campo"] == "precio_ars"
+
+
+def test_sin_la_marca_no_se_restringe():
+    consultas = [{"categoria": "teclado"}]
+    CO.restringir_a_esos("cual es el teclado mas barato?", consultas, RECIEN)
+    assert "ids" not in consultas[0]
+
+
+def test_otro_rubro_no_se_toca():
+    consultas = [{"categoria": "mouse"}]
+    CO.restringir_a_esos("de esos, cual va con un mouse?", consultas, RECIEN)
+    assert "ids" not in consultas[0]
+
+
+def test_el_motor_ordena_ADENTRO_de_los_ids(firestore_doble):
+    """Con ids el orden se ignoraba, asi que 'el mas barato de esos' no se
+    podia pedir sin salir al catalogo."""
+    from app.core import motor as MT
+    ids = ["TEC0011", "TEC0029", "TEC0001"]
+    r = MT.buscar([{"ids": ids, "ordenar_por": {"campo": "precio_ars",
+                                                 "direccion": "min"}}],
+                  "verifika_prod")
+    precios = [f["precio_ars"] for f in MT.fichas_de(r)]
+    assert precios == sorted(precios), precios
+    assert {f["id"] for f in MT.fichas_de(r)} == set(ids)

@@ -967,6 +967,17 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     if c.get("ids"):
         filas_id = _por_ids(catalogo, c["ids"])
         filas = filas_id
+        # "DE ESOS, EL MAS BARATO" (22-sep-2026). Los ids son el universo y
+        # el orden se aplica ADENTRO: hasta hoy el orden se ignoraba con ids,
+        # asi que el extremo "de esos" solo se podia pedir buscando en el
+        # catalogo entero, y medido en la tanda de charlas —CH10— el bot
+        # contesto "de los que te mencione, el mas barato es el KB-110X"
+        # con un teclado que nunca habia mencionado.
+        _o = c.get("ordenar_por") or {}
+        if (_o.get("campo") and len(filas) > 1
+                and orden_tiene_sentido(filas, str(_o["campo"]), tienda_id)):
+            filas = ordenar(filas, str(_o["campo"]),
+                            str(_o.get("direccion") or "min"), tienda_id)
         faltan = [str(i) for i in c["ids"] if str(i) not in
                   {str(p.get("id")) for p in filas}]
         fichas_id = [_ficha_corta(p, unidades, specs_pedidas, detalle)

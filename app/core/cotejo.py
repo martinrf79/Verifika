@@ -472,3 +472,50 @@ def _claves(modelo) -> list:
                and any(c.isdigit() for c in w)
                and any(c.isalpha() for c in w)]
     return claves
+
+
+# ── 8 · "DE ESOS" ES ENTRE LOS QUE EL CLIENTE LEYO ─────────────────────────
+#
+# MEDIDO EN LA TANDA DE CHARLAS DEL 22-sep, CH10: tras mostrar el G915, el
+# K380 y el G413, "de esos cual es el mas barato?" busco en el catalogo entero
+# y el cliente leyo "de los que te mencione, el mas barato es el KB-110X": un
+# teclado que el bot nunca le habia mencionado. Contesto bien la pregunta
+# equivocada, y lo presento como la correcta.
+#
+# LA MARCA ES GRAMATICAL, como en la seccion 6: "de esos", "entre estos", "de
+# los que me mostraste". Son del castellano, cerradas, y sirven para cualquier
+# tienda. El conjunto es lo que la memoria ya numero —lo que nombro la ultima
+# respuesta—, asi que el codigo no elige nada: restringe al universo que el
+# propio cliente senalo.
+_DE_ESOS = re.compile(
+    r"\b(?:de|entre|cual de|cuales de)\s+"
+    r"(?:esos|estos|esas|estas|ellos|ellas|"
+    r"los que|las que|todos esos|todas esas)\b")
+
+
+def restringir_a_esos(mensaje: str, consultas: list, recien: list,
+                      trace_id: str = "") -> list:
+    """Si el cliente dice "de esos", cada consulta sin ids del rubro de lo
+    ultimo nombrado pasa a buscar SOLO entre esos ids, con su orden.
+
+    `recien` es [(id, categoria)] de lo que nombro la ultima respuesta; lo
+    arma quien llama, que es el que lee la fuente. Devuelve las consultas
+    restringidas. Una consulta de OTRO rubro no se toca: "de esos, ¿cual va
+    con este mouse?" puede pedir otra cosa.
+    """
+    if not recien or not _DE_ESOS.search(norm(mensaje)):
+        return []
+    rubros = {norm(cat) for _i, cat in recien if cat}
+    ids = [i for i, _c in recien]
+    tocadas = []
+    for c in consultas or []:
+        if not isinstance(c, dict) or c.get("ids"):
+            continue
+        if c.get("categoria") and norm(c["categoria"]) not in rubros:
+            continue
+        c["ids"] = list(ids)
+        tocadas.append(c.get("categoria") or "sin rubro")
+    if tocadas:
+        log.info("restringida_a_esos", trace_id=trace_id, ids=ids[:8],
+                 consultas=len(tocadas))
+    return tocadas

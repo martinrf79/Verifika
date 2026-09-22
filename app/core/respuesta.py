@@ -287,7 +287,9 @@ def _memoria_texto(conv: dict) -> str:
                 grupos.append((clave, [p]))
         partes.append(
             "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el "
-            "cliente lo leyo. 'El segundo' es el 2; 'ese' o 'esos' es esto:\n"
+            "cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' "
+            "o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el "
+            "catalogo:\n"
             + "\n".join(
                 f"{n}. " + " / ".join(
                     f"{p.get('id')}: {p.get('nombre')}"
@@ -418,6 +420,26 @@ def _vigentes_para_guardar(condiciones: dict) -> list:
             for x in conds.values()
             if isinstance(x, dict)
             and CO.norm(x.get("operador")) in CO.REPONIBLES][:12]
+
+
+def _lo_ultimo_nombrado(vistos: list | None, tienda_id: str) -> list:
+    """[(id, categoria)] de lo que nombro la ultima respuesta, para que el
+    cotejo resuelva "de esos". La categoria sale de la fuente y no de la
+    memoria: la memoria guarda lo que se dijo, la fuente dice que es."""
+    from app.storage.firestore_client import get_product_by_id
+    vistos = vistos or []
+    ultimo = max((int(p.get("turno") or 0) for p in vistos), default=0)
+    fuera = []
+    for p in vistos:
+        if not ultimo or int(p.get("turno") or 0) != ultimo:
+            continue
+        try:
+            prod = get_product_by_id(str(p.get("id")),
+                                     tienda_id=tienda_id) or {}
+        except Exception:  # noqa: BLE001 — sin producto no hay rubro
+            prod = {}
+        fuera.append((str(p.get("id")), str(prod.get("categoria") or "")))
+    return fuera
 
 
 def _nombrados(texto: str, fichas: list, tienda_id: str) -> list:
@@ -1084,6 +1106,9 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             CO.rescatar_nombrados(pidio["renglones"], _con, vistos or [],
                                   trace_id)
             consultas = _con["consultas"]
+            CO.restringir_a_esos(mensaje, consultas,
+                                 _lo_ultimo_nombrado(vistos, tienda_id),
+                                 trace_id)
             # ── EL RENGLON ES COPIA, O NO LO ES ───────────────────────────
             #
             # Se mide sobre la PRIMERA llamada del turno y nada mas. La
