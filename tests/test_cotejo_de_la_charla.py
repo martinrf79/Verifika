@@ -193,3 +193,10 @@ def test_igual_exacto_sigue_siendo_exacto(firestore_doble):
                                "valor": "negro"})], "verifika_prod")
     assert r["aplicados"][0]["operador"] == "igual"
     assert "nota" not in r["aplicados"][0]
+
+
+def test_restringir_ata_la_consulta_del_mismo_rubro():
+    consultas = [{"categoria": "mouse", "condiciones": [
+        {"campo": "color", "operador": "igual", "valor": "rosa"}]}]
+    CO.restringir(consultas, [("MOU0001", "mouse"), ("MOU0002", "mouse")])
+    assert consultas[0]["ids"] == ["MOU0001", "MOU0002"]

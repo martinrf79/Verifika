@@ -505,6 +505,14 @@ def restringir_a_esos(mensaje: str, consultas: list, recien: list,
     """
     if not recien or not _DE_ESOS.search(norm(mensaje)):
         return []
+    return restringir(consultas, recien, trace_id)
+
+
+def restringir(consultas: list, recien: list, trace_id: str = "") -> list:
+    """Cada consulta sin ids del rubro de `recien` pasa a buscar SOLO entre
+    esos ids. Lo usan "de esos" y el pronombre con un solo modelo delante."""
+    if not recien:
+        return []
     rubros = {norm(cat) for _i, cat in recien if cat}
     ids = [i for i, _c in recien]
     tocadas = []

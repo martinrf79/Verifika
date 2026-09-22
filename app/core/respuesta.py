@@ -1110,11 +1110,19 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             _con = dict(args, consultas=consultas)
             CO.rescatar_nombrados(pidio["renglones"], _con, vistos or [],
                                   trace_id)
-            CO.rescatar_anafora(mensaje, _con, vistos or [], trace_id)
+            _anafora = CO.rescatar_anafora(mensaje, _con, vistos or [],
+                                           trace_id)
             consultas = _con["consultas"]
-            CO.restringir_a_esos(mensaje, consultas,
-                                 _lo_ultimo_nombrado(vistos, tienda_id),
-                                 trace_id)
+            _recien = _lo_ultimo_nombrado(vistos, tienda_id)
+            CO.restringir_a_esos(mensaje, consultas, _recien, trace_id)
+            # EL PRONOMBRE ATA TAMBIEN LA CONSULTA DEL MODELO: "lo tenes en
+            # rosa?" con el G203 delante no pregunta por los mouses rosa del
+            # catalogo, pregunta por el G203. Medido en CH15: con el rescate
+            # solo, la consulta del modelo seguia buscando en todo el rubro y
+            # la respuesta listaba los colores de todos los mouses.
+            if _anafora:
+                CO.restringir(consultas, [x for x in _recien
+                                          if x[0] in _anafora], trace_id)
             # ── EL RENGLON ES COPIA, O NO LO ES ───────────────────────────
             #
             # Se mide sobre la PRIMERA llamada del turno y nada mas. La
