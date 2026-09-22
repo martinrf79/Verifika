@@ -168,14 +168,51 @@ def puntuar_turno(casillas, pedido, historia, catalogo, texto) -> list:
     return fuera
 
 
+def _memoria_de(uid: str) -> str:
+    """Lo que el modelo tiene delante como memoria ANTES del turno: el mismo
+    texto que arma `respuesta._memoria_texto` con la charla guardada."""
+    from app.core import respuesta as R
+    from app.storage.firestore_client import get_conversation
+    try:
+        return R._memoria_texto(get_conversation(
+            uid, tienda_id=clon_produccion.TIENDA) or {})
+    except Exception:  # noqa: BLE001 — sin memoria no hay diagnostico
+        return ""
+
+
+async def _que_le_falto(c, nombre, memoria, mensaje, historia,
+                        catalogo) -> str:
+    """EL TALLER DE LA CHARLA: se le pregunta al modelo SOLO lo que el codigo
+    puede comprobar. Con la MISMA memoria y el MISMO mensaje, ¿a que producto
+    se refiere el cliente? Si contesta el id correcto, entendio y no lo
+    escribio: HUECO DE TABLERO. Si no, la memoria no le alcanzo: HUECO DE
+    MEMORIA. Una explicacion de por que fallo no se pide: no se puede
+    verificar, es prosa bien escrita."""
+    from banco_pruebas.taller import _preguntar_al_modelo
+    esp = _esperado(c, historia, catalogo) or []
+    ids = set().union(*[i for _m, i in esp]) if esp else set()
+    pregunta = (memoria + "\n\nEl cliente escribe: '" + mensaje + "'. ¿A "
+                "que producto o productos se refiere? Contesta SOLO con los "
+                "ids separados por coma, o NINGUNO.")
+    try:
+        crudo = await _preguntar_al_modelo(pregunta)
+    except Exception as e:  # noqa: BLE001
+        return f"{nombre}: CONFUSO ({type(e).__name__})"
+    dijo = {x.strip().lower() for x in crudo.replace("\n", ",").split(",")
+            if x.strip()}
+    veredicto = ("HUECO_TABLERO" if dijo & ids else "HUECO_MEMORIA")
+    return f"{nombre}: {veredicto} — contesto {crudo.strip()[:60]!r}"
+
+
 async def correr_charla(ch: dict, corrida: int, catalogo: list,
-                        pausa: float) -> dict:
+                        pausa: float, taller: bool = False) -> dict:
     uid = f"charla-{ch['id']}-{corrida}-{int(time.time())}"
     clon_produccion.reiniciar_cliente(uid)
     historia, filas = [], []
     for n, tu in enumerate(ch["turnos"], 1):
         if pausa and (n > 1 or corrida > 1):
             await asyncio.sleep(pausa)
+        memoria_antes = _memoria_de(uid)
         t0 = time.time()
         with observador.turno() as t:
             try:
@@ -213,12 +250,20 @@ async def correr_charla(ch: dict, corrida: int, catalogo: list,
                              ("campo", "operador", "valor"), partes_r))]})
         caido = not texto or clon_produccion.es_fallback(texto)
         res = puntuar_turno(tu["casillas"], junto, historia, catalogo, texto)
+        diagnostico = []
+        if taller:
+            for c, (nombre, ok) in zip(tu["casillas"], res):
+                if ok is False and c["tipo"] == "referencia":
+                    diagnostico.append(await _que_le_falto(
+                        c, nombre, memoria_antes, tu["texto"], historia,
+                        catalogo))
         historia.append({"texto": texto, "mostrados": mostrados(texto, catalogo),
                          "pedido": junto})
         filas.append({"turno": n, "cliente": tu["texto"], "bot": texto,
                       "pedido": junto, "llamadas": len(pedidos),
                       "ms": int((time.time() - t0) * 1000), "caido": caido,
                       "casillas": res, "radares": radares,
+                      "diagnostico": diagnostico,
                       "mostrados": [m for m, _ in historia[-1]["mostrados"]]})
     return {"id": ch["id"], "clase": ch["clase"], "turnos": filas}
 
@@ -238,6 +283,8 @@ def _imprimir(r: dict) -> tuple:
         if f["caido"]:
             caidos += 1
             continue
+        for d in f.get("diagnostico") or []:
+            print(f"      TALLER {d}")
         for nombre, v in f["casillas"]:
             if v is None:
                 na += 1
@@ -255,6 +302,10 @@ async def main() -> int:
     ap.add_argument("--pausa", type=float, default=4.0)
     ap.add_argument("--repeticiones", type=int, default=1)
     ap.add_argument("--json", default="")
+    ap.add_argument("--taller", action="store_true",
+                    help="ante una referencia fallada, le pregunta al modelo "
+                         "a que id apuntaba y separa hueco de tablero de "
+                         "hueco de memoria")
     args = ap.parse_args()
 
     print(clon_produccion.preparar_entorno())
@@ -272,7 +323,8 @@ async def main() -> int:
         if args.repeticiones > 1:
             print(f"\n{'#' * 60}\n# CORRIDA {corrida}\n{'#' * 60}")
         for ch in charlas:
-            r = await correr_charla(ch, corrida, catalogo, args.pausa)
+            r = await correr_charla(ch, corrida, catalogo, args.pausa,
+                                    args.taller)
             r["corrida"] = corrida
             crudo.append(r)
             for i, x in enumerate(_imprimir(r)):

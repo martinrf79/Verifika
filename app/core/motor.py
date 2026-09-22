@@ -55,6 +55,22 @@ NOMBRE = "buscar"
 # busqueda que devuelve cuarenta fichas inunda el prompt y ademas no sirve, que
 # es la leccion del catalogo entero que no entra.
 TOPE_FILAS = 8
+
+# La salida del orden: la respuesta cuando el cliente no pidio ninguno.
+SIN_ORDEN = "ninguno"
+
+
+def orden_plano(consulta: dict) -> dict:
+    """Traduce el `orden` plano que escribe el modelo —`precio_ars_min`— al
+    `ordenar_por` que leen el motor y el cotejo. `ninguno` no ordena. Si el
+    modelo igual mando un `ordenar_por`, se respeta: gana lo explicito."""
+    c = consulta
+    o = str(c.get("orden") or "")
+    if o and o != SIN_ORDEN and not c.get("ordenar_por"):
+        campo, _, direccion = o.rpartition("_")
+        if campo and direccion in ("min", "max"):
+            c["ordenar_por"] = {"campo": campo, "direccion": direccion}
+    return c
 FILAS_POR_DEFECTO = 5
 
 # Cuantas consultas entran en una llamada. Un pedido multiple —"dos auriculares,
@@ -205,13 +221,26 @@ def esquema(tienda_id: str) -> dict:
             # orden es alfabetico y no contesta ninguna pregunta de un cliente.
             # `orden_tiene_sentido` ya lo rechazaba DESPUES, o sea que el
             # modelo gastaba una consulta para que el motor le dijera que no.
-            "ordenar_por": {
-                "type": "object",
-                "properties": {
-                    "campo": {"type": "string", "enum": ordenables},
-                    "direccion": {"type": "string", "enum": ["min", "max"]}},
-                "required": ["campo", "direccion"],
-                "description": "Para 'el mas barato', 'el mas liviano'."},
+            # EL ORDEN ES PLANO Y OBLIGATORIO, CON SALIDA (22-sep-2026). Era
+            # un objeto opcional `ordenar_por` y medido en M17 —"algo q no
+            # salga mucho"— el modelo lo omitia 1 de 2: sin orden, el cliente
+            # que pidio lo barato recibia cualquier cosa. Es el patron que ya
+            # funciono tres veces en este repo —`SIN_TEMA`,
+            # `medio_no_disponible`, `pedir_total`—: una casilla que SIEMPRE
+            # tiene respuesta puede ser obligatoria, y `ninguno` es la
+            # respuesta cuando no pidio orden. Una sola forma: el objeto se
+            # borra y el codigo traduce esto para el motor.
+            #
+            # SOLO LOS NUMERICOS, como siempre: sobre una etiqueta el orden es
+            # alfabetico y no contesta ninguna pregunta de un cliente.
+            "orden": {
+                "type": "string",
+                "enum": [SIN_ORDEN] + [f"{c}_{d}" for c in ordenables
+                                       for d in ("min", "max")],
+                "description": ("SIEMPRE. 'el mas barato', 'que no salga "
+                                "mucho', 'acorde a la crisis' es precio_ars_"
+                                "min; 'el mas liviano', peso_gramos_min. Si "
+                                f"no pidio orden, '{SIN_ORDEN}'.")},
             "ids": {
                 "type": "array", "items": {"type": "string"},
                 "description": "Ids exactos, para volver a un producto que ya "
@@ -243,6 +272,7 @@ def esquema(tienda_id: str) -> dict:
             # rubros. Sacada la prosa, las specs entran enteras y no hay nada
             # que pedir. La medicion esta en `fuente._ficha_corta`.
         },
+        "required": ["orden"],
     }
     return {
         "type": "function",
@@ -439,7 +469,9 @@ def esquema(tienda_id: str) -> dict:
                                                    "mouse'."}},
                             "required": ["destino"]},
                         "description": (
-                            "Si lo dijo turnos atras esta en tu memoria. Te "
+                            "Un lugar que nombra va aca aunque solo pregunte "
+                            "si llegan. Si lo dijo turnos atras esta en tu "
+                            "memoria. Te "
                             "devuelvo la tarifa y el hueco que copias donde "
                             "vaya el costo: el monto NO lo escribis vos. "
                             f"Hasta {TOPE_ENVIOS}.")},

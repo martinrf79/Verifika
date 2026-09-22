@@ -286,10 +286,14 @@ def test_ordenar_por_ofrece_solo_los_numericos(firestore_doble):
     ordenables = campos_ordenables(TIENDA)
     assert set(ordenables) == {"precio_ars", "peso_gramos", "garantia_meses"}
     esq = MT.esquema(TIENDA)
+    # EL REQUISITO NO CAMBIO, CAMBIO LA FORMA (22-sep-2026): el orden paso de
+    # un objeto opcional `ordenar_por` a un campo plano y obligatorio `orden`
+    # —`precio_ars_min`— con la salida `ninguno`. Lo que se mide es lo mismo:
+    # que solo se ofrezcan los numericos.
     en_esquema = (esq["function"]["parameters"]["properties"]["consultas"]
-                  ["items"]["properties"]["ordenar_por"]["properties"]
-                  ["campo"]["enum"])
-    assert en_esquema == ordenables
+                  ["items"]["properties"]["orden"]["enum"])
+    assert en_esquema == [MT.SIN_ORDEN] + [f"{c}_{d}" for c in ordenables
+                                           for d in ("min", "max")]
 
 
 def test_el_tablero_nombra_las_cinco_bocas(firestore_doble):

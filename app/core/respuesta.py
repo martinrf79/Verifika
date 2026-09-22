@@ -1094,6 +1094,11 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             # SANEAR VA ANTES DE REPONER: asi la memoria del turno solo guarda
             # condiciones ya saneadas y un techo inventado no puede volver a
             # entrar por la puerta de la reposicion.
+            # EL ORDEN PLANO SE TRADUCE PRIMERO: el saneo degrada un techo
+            # inventado a un orden y tiene que ver el orden que ya pidio.
+            for _c in consultas:
+                if isinstance(_c, dict):
+                    MT.orden_plano(_c)
             informe["umbrales_degradados"] += CO.sanear_umbrales(
                 consultas, mensaje, _ordenables, trace_id)
             informe["condiciones_repuestas"] += CO.reponer_condiciones(

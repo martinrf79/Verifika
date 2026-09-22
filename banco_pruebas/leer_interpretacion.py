@@ -174,9 +174,24 @@ def _c_busco(c, p):
                for q in _consultas(p))
 
 
+def _orden_de(q):
+    """EL ORDEN, VENGA COMO VENGA (22-sep-2026). Desde hoy el modelo lo
+    escribe plano —`orden: precio_ars_min`—; antes era el objeto
+    `ordenar_por`. Mide lo mismo: si ordeno y por que. Un log viejo se lee
+    igual."""
+    o = q.get("ordenar_por") or {}
+    if o.get("campo"):
+        return o
+    plano = str(q.get("orden") or "")
+    campo, _, direccion = plano.rpartition("_")
+    if campo and direccion in ("min", "max"):
+        return {"campo": campo, "direccion": direccion}
+    return {}
+
+
 def _c_orden(c, p):
     for q in _consultas(p):
-        o = q.get("ordenar_por") or {}
+        o = _orden_de(q)
         if (_norm(o.get("campo")) in [_norm(v) for v in c["campo"]]
                 and _norm(o.get("direccion")) in [_norm(v) for v in c["direccion"]]):
             return True
@@ -188,7 +203,7 @@ def _c_barato(c, p):
     `ordenar_por precio_ars min`, o el grado sobre el precio apuntando al
     minimo del catalogo. Las dos son la misma lectura del cliente."""
     for q in _consultas(p):
-        o = q.get("ordenar_por") or {}
+        o = _orden_de(q)
         if _norm(o.get("campo")) == "precio_ars" and _norm(
                 o.get("direccion")) == "min":
             return True

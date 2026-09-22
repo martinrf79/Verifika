@@ -114,3 +114,24 @@ def test_el_motor_ordena_ADENTRO_de_los_ids(firestore_doble):
     precios = [f["precio_ars"] for f in MT.fichas_de(r)]
     assert precios == sorted(precios), precios
     assert {f["id"] for f in MT.fichas_de(r)} == set(ids)
+
+
+# ── el orden plano ─────────────────────────────────────────────────────────
+
+def test_el_orden_plano_se_traduce_para_el_motor():
+    from app.core import motor as MT
+    c = MT.orden_plano({"categoria": "mouse", "orden": "precio_ars_min"})
+    assert c["ordenar_por"] == {"campo": "precio_ars", "direccion": "min"}
+
+
+def test_ninguno_no_ordena():
+    from app.core import motor as MT
+    assert "ordenar_por" not in MT.orden_plano({"orden": MT.SIN_ORDEN})
+
+
+def test_el_lector_de_la_vara_lee_las_dos_formas():
+    from banco_pruebas.leer_interpretacion import _c_barato
+    assert _c_barato({}, {"consultas": [{"orden": "precio_ars_min"}]})
+    assert _c_barato({}, {"consultas": [{"ordenar_por": {
+        "campo": "precio_ars", "direccion": "min"}}]})
+    assert not _c_barato({}, {"consultas": [{"orden": "ninguno"}]})
