@@ -167,3 +167,48 @@ def test_si_la_respuesta_nombra_el_modelo_una_vez_los_colores_van_juntos(
     vistos = R._vistos_al_dia([], [G502, blanco, G203], texto, 1, TIENDA)
     m = R._memoria_texto({"productos_vistos": vistos})
     assert "2. MOU0003" in m, m
+
+
+# ── LO QUE EL CLIENTE EXCLUYO SIGUE VALIENDO EN EL TURNO SIGUIENTE ─────────
+#
+# CH21 de la tanda: "auriculares que no sean redragon" y al turno siguiente
+# "y algo mas barato?" busco auriculares SIN la exclusion.
+
+REDRAGON = {"categoria": "auriculares", "campo": "marca",
+            "operador": "no_contiene", "valor": "redragon"}
+
+
+def test_la_exclusion_se_arrastra_al_turno_siguiente():
+    vig = R._vigentes_que_siguen([REDRAGON], "y algo mas barato?")
+    assert list(vig) == ["auriculares"]
+    (cond,) = vig["auriculares"].values()
+    assert cond["valor"] == "redragon"
+
+
+def test_si_el_cliente_vuelve_a_nombrar_el_valor_manda_lo_que_dice_ahora():
+    """'ahora si, mostrame redragon': el codigo no le repone lo que levanto."""
+    assert R._vigentes_que_siguen([REDRAGON], "ahora si, mostrame Redragon") \
+        == {}
+
+
+def test_un_filtro_positivo_no_se_arrastra():
+    """Una positiva puede vaciar la busqueda; solo excluir o graduar pasa."""
+    positiva = dict(REDRAGON, operador="contiene")
+    assert R._vigentes_que_siguen([positiva], "otros?") == {}
+
+
+def test_la_exclusion_se_repone_en_la_busqueda_del_mismo_rubro():
+    from app.core import cotejo as CO
+    vig = R._vigentes_que_siguen([REDRAGON], "y algo mas barato?")
+    consultas = [{"categoria": "auriculares",
+                  "ordenar_por": {"campo": "precio_ars", "direccion": "min"}}]
+    CO.reponer_condiciones(consultas, vig)
+    assert consultas[0]["condiciones"][0]["valor"] == "redragon"
+
+
+def test_ida_y_vuelta_por_lo_que_se_guarda():
+    vig = R._vigentes_que_siguen([REDRAGON], "otros?")
+    guardado = R._vigentes_para_guardar(vig)
+    assert guardado == [REDRAGON]
+    m = R._memoria_texto({"preferencias_cliente": {"vigentes": guardado}})
+    assert "redragon" in m.lower()

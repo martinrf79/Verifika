@@ -354,6 +354,17 @@ def _memoria_texto(conv: dict) -> str:
         partes.append("EN EL PEDIDO, tal como se conto: " + " · ".join(
             f"{p.get('cantidad') or 1}x {p.get('id')} {p.get('nombre') or ''}".strip()
             for p in carrito[:8]))
+    # LO QUE EXCLUYO O PREFIRIO, y el codigo lo repone solo en la busqueda
+    # del mismo rubro. Se le dice al modelo para que no ofrezca de palabra lo
+    # que el motor ya saco.
+    vig = (conv.get("preferencias_cliente") or {}).get("vigentes") or []
+    renglones_vig = [f"{x.get('categoria')}: {x.get('campo')} "
+                     f"{x.get('operador')} {x.get('valor')}"
+                     for x in vig if isinstance(x, dict)]
+    if renglones_vig:
+        partes.append("LO QUE EL CLIENTE YA EXCLUYO O PREFIRIO, y sigue "
+                      "valiendo si refina la busqueda: "
+                      + " · ".join(renglones_vig[:6]))
     descartados = [str(x) for x in (conv.get("descartados") or [])]
     if descartados:
         partes.append("Ya dijo que NO a: " + ", ".join(descartados[:6]))
@@ -365,6 +376,48 @@ def _memoria_texto(conv: dict) -> str:
         partes.append("Se llama: " + str(datos["nombre"]))
     return "\n".join(partes)
 
+
+
+def _vigentes_que_siguen(vigentes: dict | None, mensaje: str) -> dict:
+    """Lo que el cliente excluyo o prefirio en turnos anteriores, que sigue
+    valiendo en este (22-sep-2026).
+
+    MEDIDO EN LA TANDA DE CHARLAS, CH21: "auriculares que no sean redragon",
+    y al turno siguiente "y algo mas barato?" busco auriculares SIN la
+    exclusion. Entre vueltas de un turno el cotejo ya la reponia; entre turnos
+    se perdia, porque la memoria no guardaba con que criterio se busco.
+
+    ENTRE TURNOS EL CLIENTE HABLO, y por eso la regla es mas estricta que entre
+    vueltas: una exclusion se arrastra SOLO si el mensaje nuevo no vuelve a
+    nombrar ese valor. Si dice "ahora si, mostrame redragon", manda lo que el
+    modelo declare en este turno. Son las mismas `REPONIBLES` del cotejo:
+    excluir o graduar, nunca un filtro positivo que pueda vaciar la busqueda.
+    """
+    from app.core import cotejo as CO
+    m = CO.norm(mensaje)
+    fuera: dict = {}
+    for x in (vigentes or []):
+        if not isinstance(x, dict) or not x.get("categoria"):
+            continue
+        if CO.norm(x.get("operador")) not in CO.REPONIBLES:
+            continue
+        if CO.norm(x.get("valor")) in m:
+            continue
+        cond = {k: x.get(k) for k in ("campo", "operador", "valor")}
+        fuera.setdefault(CO.norm(x["categoria"]), {})[CO.firma(cond)] = cond
+    return fuera
+
+
+def _vigentes_para_guardar(condiciones: dict) -> list:
+    """El estado del turno como lista plana, que es lo que se guarda: una
+    clave armada con la condicion no es un nombre de campo seguro."""
+    from app.core import cotejo as CO
+    return [dict(categoria=cat, **{k: x.get(k) for k in
+                                   ("campo", "operador", "valor")})
+            for cat, conds in (condiciones or {}).items()
+            for x in conds.values()
+            if isinstance(x, dict)
+            and CO.norm(x.get("operador")) in CO.REPONIBLES][:12]
 
 
 def _nombrados(texto: str, fichas: list, tienda_id: str) -> list:
@@ -661,7 +714,8 @@ def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
 
 async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                      fuente: str, trace_id: str, tienda_id: str,
-                     localidad_previa: str = "") -> tuple:
+                     localidad_previa: str = "",
+                     vigentes: dict | None = None) -> tuple:
     """La llamada al modelo, con el motor de busqueda en la mano.
 
     EL ORDEN DE LECTURA, y es lo que cambio el 12-sep. Lo que el modelo lee,
@@ -789,7 +843,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     # turno igual que `pedidas`, y vive aca por el mismo motivo: declarado en
     # una vuelta tiene que seguir valiendo en la ultima, que es donde el
     # modelo escribe.
-    condiciones_del_turno: dict = {}
+    condiciones_del_turno: dict = _vigentes_que_siguen(vigentes, mensaje)
     # EL LOOP ES UN `while` DESDE EL 16-sep, y el motivo es uno solo: la
     # correccion de estado puede pedir UNA vuelta mas. `tope` son las vueltas
     # que llevan tablero, o sea en las que se puede buscar; siempre hay una
@@ -945,6 +999,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                     continue
             informe["fichas"] = len(fichas)
             salida["fuente_casa"] = fuente_casa
+            salida["vigentes"] = condiciones_del_turno
             return salida, fichas, envios, cuenta, informe
 
         for c in llamadas:
@@ -1290,7 +1345,8 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     memoria = _memoria_texto(conv)
     salida, fichas, envios, cuenta, motor = await _preguntar(
         _voz(negocio), memoria, history, raw_message, bloque, trace_id,
-        tienda_id, localidad_previa=conv.get("ultima_localidad") or "")
+        tienda_id, localidad_previa=conv.get("ultima_localidad") or "",
+        vigentes=(conv.get("preferencias_cliente") or {}).get("vigentes"))
     etapas["modelo"] = int((time.time() - t) * 1000)
     # EL NUMERO DEL MOTOR, UN RENGLON POR TURNO. Sale SIEMPRE, haya buscado o
     # no: un turno que no busco es un dato, no un hueco en la serie. Lo agrega
@@ -1458,7 +1514,14 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
                           ultimo_presupuesto=presupuesto,
                           carrito_vigente=carrito,
                           datos_cliente_parciales=datos_cliente,
-                          pregunta_cierre_hecha=cierre_hecho)
+                          pregunta_cierre_hecha=cierre_hecho,
+                          # EL CRITERIO QUE SIGUE VALIENDO. Solo se pisa si
+                          # el turno paso por el modelo: un turno caido no
+                          # borra lo que el cliente excluyo.
+                          preferencias_cliente=(
+                              {"vigentes": _vigentes_para_guardar(
+                                  salida["vigentes"])}
+                              if "vigentes" in salida else None))
     except Exception as e:  # noqa: BLE001
         log.warning("respuesta_save_error", trace_id=trace_id, error=str(e)[:150])
     etapas["memoria"] = int((time.time() - t) * 1000)

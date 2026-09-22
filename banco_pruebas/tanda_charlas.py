@@ -195,6 +195,22 @@ async def correr_charla(ch: dict, corrida: int, catalogo: list,
         junto: dict = {}
         for x in pedidos:
             junto = _juntar(junto, x)
+        # LO QUE EL CODIGO REPUSO TAMBIEN ES LA BUSQUEDA. El `motor_pedido` es
+        # lo que declaro el modelo; una exclusion que el cotejo le devolvio a
+        # la consulta vive en `motor_turno.condiciones_repuestas`, con la
+        # forma "rubro: campo operador valor". Sin esto la vara mediria la
+        # declaracion y no lo que se busco de verdad.
+        for e in t.eventos:
+            if e.get("event") != "motor_turno":
+                continue
+            for r in e.get("condiciones_repuestas") or []:
+                cat, _, resto = str(r).partition(": ")
+                partes_r = resto.split(" ", 2)
+                if len(partes_r) == 3:
+                    junto.setdefault("consultas", []).append(
+                        {"categoria": cat, "repuesta_por_codigo": True,
+                         "condiciones": [dict(zip(
+                             ("campo", "operador", "valor"), partes_r))]})
         caido = not texto or clon_produccion.es_fallback(texto)
         res = puntuar_turno(tu["casillas"], junto, historia, catalogo, texto)
         historia.append({"texto": texto, "mostrados": mostrados(texto, catalogo),
