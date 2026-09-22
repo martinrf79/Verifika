@@ -93,6 +93,24 @@ vuelve a fallar 2 de 2 como en produccion. **Lo unico comparable de esa tanda
 es NUCLEO 31 de 31**, igual al piso. La proxima corrida limpia de los 19 es la
 que puede mover el piso.
 
+**22-sep: LA BOCA `afirma` ESTA VIVA Y MEDIDA.** Una casilla para la premisa
+falsa y para el dato que aporta el cliente, con cuatro veredictos
+—confirma, contradice, no_consta, del_cliente—. **M13 da 3 de 3 en tres
+corridas y la casilla F2 pasa de CERO a 3 de 3**, o sea que dejo de ser deuda.
+Medido por el camino vivo del turno, con el texto que lee el cliente:
+
+    antes  "Teclado K120 inalambrico no lo vendemos"
+    ahora  "El teclado Logitech K120 NO es inalambrico, el dato real es que su
+            conexion es con cable USB... ambos salen $14.500"
+
+    antes  un procesador negro devolvia cero y se negaba
+    ahora  "Color no es un dato que tengamos cargado, asi que no te puedo
+            decir cual cumple sin inventarlo. Lo que si tengo es..."
+
+**FALTA:** la tanda de los 19 con todo esto puesto, que es la que puede mover
+el piso; y medir si `del_cliente` sobrevive varios turnos, porque hoy vale
+para el turno y nadie lo guarda —es la memoria entre turnos, el paso 5—.
+
 **22-sep: EL MAPA_CABLEADO NOMBRA PIEZAS MUERTAS.** Habla de `turno.py`,
 `tabla.py`, `resolver.py` y `molde.py`, apagadas el 3 y el 11-sep. La regla
 2-bis manda que los nombres los diga ese archivo y hoy los da mal. Es su propio
