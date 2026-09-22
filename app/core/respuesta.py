@@ -265,6 +265,20 @@ def _memoria_texto(conv: dict) -> str:
     if resumen:
         partes.append("De lo que ya hablaron: " + resumen)
     vistos = conv.get("productos_vistos") or []
+    ultimo = max((int(p.get("turno") or 0) for p in vistos), default=0)
+    recien = [p for p in vistos if ultimo and int(p.get("turno") or 0) == ultimo]
+    if recien:
+        # "EL SEGUNDO", "EL MAS BARATO DE ESOS", "ESE". Es lo que nombro tu
+        # ultimo mensaje, numerado en el orden en que el cliente lo leyo, que
+        # es el unico orden al que el cliente se puede referir.
+        partes.append(
+            "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el "
+            "cliente lo leyo. 'El segundo' es el 2; 'ese' o 'esos' es esto:\n"
+            + "\n".join(
+                f"{n}. {p.get('id')}: {p.get('nombre')}"
+                + (f", {p['precio']}" if p.get("precio") else "")
+                for n, p in enumerate(recien[:8], 1)))
+        vistos = [p for p in vistos if p not in recien]
     if vistos:
         # CON ID Y CON PRECIO, y las dos cosas por un caso medido.
         #
@@ -284,13 +298,15 @@ def _memoria_texto(conv: dict) -> str:
         # El precio aca ES fuente -viaja en el prompt, igual que el inventario-
         # asi que copiarlo de aca ya no es inventar.
         partes.append(
-            "Productos que ya le mostraste, con su id y su precio "
-            "(el ultimo de la lista es el mas reciente; si dice "
-            "'ese' o 'el que me dijiste', es ese):\n"
+            "Productos que le mostraste ANTES, con su id y su precio, del "
+            "mas viejo al mas reciente"
+            + ("" if recien else
+               "; si dice 'ese' o 'el que me dijiste', es el ultimo")
+            + ":\n"
             + "\n".join(
                 f"- {p.get('id')}: {p.get('nombre')}"
                 + (f", {p['precio']}" if p.get("precio") else "")
-                for p in vistos[:8]))
+                for p in vistos[-8:]))
     # EL ULTIMO PRESUPUESTO, Y ES FUENTE COMO EL PRECIO DE ARRIBA (15-sep-2026).
     #
     # MEDIDO EN WHATSAPP ESE MISMO DIA, cuatro turnos sobre UN pedido: el total
@@ -333,6 +349,84 @@ def _memoria_texto(conv: dict) -> str:
         partes.append("Se llama: " + str(datos["nombre"]))
     return "\n".join(partes)
 
+
+
+def _nombrados(texto: str, fichas: list, tienda_id: str) -> list:
+    """Las fichas que la respuesta NOMBRA, en el orden en que las nombra.
+
+    SE APAREA POR MODELO, que es la palabra que distingue un producto en una
+    respuesta —"el K120", "el G203"—, y no por el nombre entero, que el modelo
+    casi nunca copia tal cual. Un modelo de menos de tres letras no se busca:
+    aparear por parecido es la enfermedad que el MAPA_CABLEADO tiene numerada.
+    El mismo modelo en dos colores queda en el lugar donde se nombro, con el
+    color que la respuesta dice primero.
+    """
+    from app.storage.firestore_client import get_product_by_id
+    t = _norm_simple(texto)
+    hallados = []
+    for f in fichas or []:
+        try:
+            prod = get_product_by_id(str(f.get("id")), tienda_id=tienda_id) or {}
+        except Exception:  # noqa: BLE001 — sin producto no se aparea
+            prod = {}
+        pos = [t.find(k) for k in _claves_modelo(prod.get("modelo"))]
+        pos = [x for x in pos if x >= 0]
+        if not pos:
+            continue
+        i = min(pos)
+        color = _norm_simple(prod.get("color"))
+        j = t.find(color, i) if color else -1
+        hallados.append((i, j if j >= 0 else 10 ** 6, f))
+    hallados.sort(key=lambda x: (x[0], x[1]))
+    visto, fuera = set(), []
+    for _i, _j, f in hallados:
+        if str(f.get("id")) not in visto:
+            visto.add(str(f.get("id")))
+            fuera.append(f)
+    return fuera
+
+
+def _claves_modelo(modelo) -> list:
+    """Como se nombra un modelo en una respuesta: entero -"G Pro X
+    Superlight"- o por la parte que lleva numeros -"G203" de "G203
+    Lightsync"-, que es la que usan el cliente y el bot. Una palabra sin
+    numeros no alcanza: "Pro" o "Core" estan en veinte modelos."""
+    import re
+    m = _norm_simple(modelo)
+    claves = [m] if len(m) >= 3 else []
+    claves += [w for w in re.split(r"\s+", m)
+               if len(w) >= 3 and any(c.isdigit() for c in w) and w != m]
+    return claves
+
+
+def _norm_simple(t) -> str:
+    import unicodedata
+    t = unicodedata.normalize("NFD", str(t or "").lower())
+    return "".join(c for c in t if unicodedata.category(c) != "Mn")
+
+
+def _vistos_al_dia(vistos: list, fichas: list, texto: str, turno: int,
+                   tienda_id: str) -> list:
+    """La lista de productos vistos despues de este turno.
+
+    LO NOMBRADO VA AL FINAL, EN SU ORDEN Y CON SU TURNO. Si la respuesta no
+    nombra ninguna ficha por su modelo —una charla sobre envio, o un nombre que
+    no se pudo aparear— se guardan las fichas como antes, para no perder el id:
+    olvidar es peor que recordar de mas.
+    """
+    nombrados = _nombrados(texto, fichas, tienda_id)
+    nuevos = nombrados or [f for f in fichas or []
+                           if str(f.get("id")) not in
+                           {str(p.get("id")) for p in vistos}]
+    ids = {str(f.get("id")) for f in nuevos}
+    fuera = [p for p in vistos if str(p.get("id")) not in ids]
+    for f in nuevos:
+        # EL PRECIO SE GUARDA: sin el, el turno siguiente no puede decir
+        # cuanto salia lo que ya se mostro.
+        fuera.append({"id": f.get("id"), "nombre": f.get("nombre"),
+                      "precio": f.get("precio"),
+                      "turno": turno if nombrados else 0})
+    return fuera
 
 def _bloque_fuente(politicas: list, inventario: str = "",
                    envio: str = "") -> str:
@@ -643,6 +737,10 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     # que escribio no se sostiene—. Mezclarlas seria la segunda descripcion de
     # dos cosas distintas bajo un mismo titulo.
     correccion = ""
+    # LO QUE LA CASA DEVOLVIO, para la guarda de la plata. Viaja pegado a la
+    # salida y no en el informe: el informe es el renglon de metricas y tiene
+    # candado de que el que escribe y el que lee nombren lo mismo.
+    fuente_casa = ""
     pedidas: set = set()
     # LO QUE EL COTEJO NECESITA DE LA FUENTE, LEIDO UNA SOLA VEZ POR TURNO.
     # `cotejo` no lee la fuente a proposito —hay un test que lo exige— asi que
@@ -818,6 +916,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                     vuelta += 1
                     continue
             informe["fichas"] = len(fichas)
+            salida["fuente_casa"] = fuente_casa
             return salida, fichas, envios, cuenta, informe
 
         for c in llamadas:
@@ -963,6 +1062,19 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                     envios[str(e["destino"])] = int(e["monto_ars"])
             if (r.get("cuenta") or {}).get("total_ars") is not None:
                 cuenta = r["cuenta"]
+            # LO QUE LA CASA TIENE ESCRITO TAMBIEN ES FUENTE (22-sep-2026). Es
+            # la cuarta vez que este modulo aprende la misma leccion, ahora con
+            # las politicas: "¿cuanto sale mandarlo a Rosario?" volvio con la
+            # tarifa Y con el envio gratis desde $250.000, el modelo escribio
+            # las dos y la guarda tiro la respuesta entera por la segunda.
+            # Medido 2 de 2 en la tanda de charlas. Entra SOLO lo que volvio
+            # de la fuente, no la consulta: un umbral que el modelo escribio
+            # en su pedido no se legitima por haberlo pedido.
+            for k in ("politicas", "criterio", "afirma", "compatibilidad",
+                      "envios"):
+                if r.get(k):
+                    fuente_casa += "\n" + json.dumps(
+                        r[k], ensure_ascii=False, default=str)
             hallazgos.append(
                 # EL RECORTE ERA DE 900 Y CORTABA CONSULTAS ENTERAS. Medido
                 # el 13-sep: un pedido abierto -"algo para jugar que no sea muy
@@ -1223,7 +1335,8 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
         # viaja aparte: lo que se le pone delante al modelo es fuente, TODO.
         texto, informe = N.llenar(
             texto, fichas, trace_id,
-            fuente_texto=bloque + "\n" + memoria,
+            fuente_texto=(bloque + "\n" + memoria + "\n"
+                          + str(salida.get("fuente_casa") or "")),
             # LA TARIFA SALE DE LO QUE EL MODELO PIDIO POR EL MOTOR. Un
             # `{{envio}}` pelado usa la unica que volvio; con varios destinos
             # cada hueco trae la suya por `{{envio:<destino>}}`, que es lo que
@@ -1269,15 +1382,18 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
             log.warning("respuesta_memoria_error", trace_id=trace_id,
                         error=str(e)[:120])
     history = history[-(settings.HISTORY_LIMIT * 2):]
-    vistos = list(conv.get("productos_vistos") or [])
-    ids = {str(p.get("id")) for p in vistos}
-    for f in fichas:
-        if str(f.get("id")) not in ids:
-            # EL PRECIO SE GUARDA, y hasta hoy no: `productos_vistos` tenia id y
-            # nombre nada mas, asi que el turno siguiente no podia decir cuanto
-            # salia lo que el turno anterior ya habia mostrado.
-            vistos.append({"id": f.get("id"), "nombre": f.get("nombre"),
-                           "precio": f.get("precio")})
+    # LO QUE SE RECUERDA ES LO QUE EL CLIENTE LEYO, EN EL ORDEN EN QUE LO LEYO
+    # (22-sep-2026). Hasta hoy se guardaban TODAS las fichas que volvian de
+    # buscar —hasta ocho por consulta— al final de la lista y solo si eran
+    # nuevas, y la memoria mostraba las OCHO MAS VIEJAS diciendo "el ultimo es
+    # el mas reciente". Pasados ocho productos, "ese" apuntaba al equivocado y
+    # "el segundo" no tenia orden de donde salir. Ahora lo nombrado en la
+    # respuesta va al final, en su orden, marcado con el turno.
+    previos = conv.get("productos_vistos") or []
+    vistos = _vistos_al_dia(
+        previos, fichas, texto,
+        max((int(p.get("turno") or 0) for p in previos), default=0) + 1,
+        tienda_id)
     # EL DESTINO DE LA CHARLA LO ESCRIBE QUIEN LO RESOLVIO. Habia una SEGUNDA
     # resolucion aca -otra llamada a `geo`, con otro criterio que el del motor
     # de envio- y guardaba un codigo postal pelado. Ahora se guarda el destino
