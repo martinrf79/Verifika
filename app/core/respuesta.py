@@ -411,6 +411,11 @@ def _informe_en_blanco() -> dict:
     # `campos_tocados` es el estado que la guarda de `guardas_salida` cruza
     # contra la respuesta: los campos que el turno miro de verdad. No es lo
     # mismo que `campos`, que son los que NO se pudieron aplicar.
+    # LOS CINCO NUMEROS DEL COTEJO (22-sep-2026). Salen de `app.core.cotejo` y
+    # miden lo mismo desde cinco lados: cuanto de lo que el modelo declaro se
+    # puede cotejar contra lo que el cliente dijo. `renglones` y
+    # `renglones_copia` son la base —sobre un renglon parafraseado no se puede
+    # cotejar nada— y los otros tres son lo que el codigo ya corrigio solo.
     return {"campos_tocados": set(), "correcciones": 0,
             "vueltas": 0, "llamadas": 0, "consultas": 0, "repetidas": 0,
             "puntuales": 0, "veredictos": [], "filas": 0, "rescates": 0,
@@ -418,7 +423,10 @@ def _informe_en_blanco() -> dict:
             "temas": [], "temas_sin_resolver": [], "compat": [],
             "compat_sin_dato": [], "envios": [], "envios_sin_clasificar": [],
             "criterio": [], "criterio_sin_resolver": [],
-            "cuentas": 0, "cuentas_sin_total": 0}
+            "cuentas": 0, "cuentas_sin_total": 0,
+            "renglones": 0, "renglones_copia": 0, "renglones_propios": [],
+            "rubros_sin_pedir": [], "umbrales_degradados": [],
+            "condiciones_repuestas": [], "vueltas_sin_aporte": 0}
 
 
 def _anotar(informe: dict, consultas: list, pedidas: set, r: dict) -> None:
@@ -562,6 +570,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     y que condicion no se pudo aplicar-. Nada de esto se puede reconstruir
     despues desde afuera: si no sale del turno, no existe.
     """
+    from app.core import cotejo as CO
     from app.core import guardas_salida as gs
     from app.core import motor as MT
     from app.core.llm_reintento import _cliente, _modelo, _modelo_decisor
@@ -632,6 +641,26 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     # dos cosas distintas bajo un mismo titulo.
     correccion = ""
     pedidas: set = set()
+    # LO QUE EL COTEJO NECESITA DE LA FUENTE, LEIDO UNA SOLA VEZ POR TURNO.
+    # `cotejo` no lee la fuente a proposito —hay un test que lo exige— asi que
+    # los dos enums se los pasa este borde, que ya los tiene para el esquema.
+    # Si la recorrida falla, el cotejo sigue midiendo la fidelidad del renglon
+    # y se apagan las dos comprobaciones que dependen del catalogo: un turno
+    # no se cae porque una comprobacion no pueda correr.
+    try:
+        from app.core.filtros_catalogo import campos_ordenables, recorrida
+        _ordenables = campos_ordenables(tienda_id)
+        _categorias = [c for c, _ in recorrida(tienda_id).get(
+            "categorias") or []]
+    except Exception as e:  # noqa: BLE001
+        log.warning("cotejo_sin_fuente", trace_id=trace_id,
+                    error=f"{type(e).__name__}: {str(e)[:120]}")
+        _ordenables, _categorias = [], []
+    # LAS CONDICIONES DECLARADAS EN ESTE TURNO, por categoria. Es estado del
+    # turno igual que `pedidas`, y vive aca por el mismo motivo: declarado en
+    # una vuelta tiene que seguir valiendo en la ultima, que es donde el
+    # modelo escribe.
+    condiciones_del_turno: dict = {}
     # EL LOOP ES UN `while` DESDE EL 16-sep, y el motivo es uno solo: la
     # correccion de estado puede pedir UNA vuelta mas. `tope` son las vueltas
     # que llevan tablero, o sea en las que se puede buscar; siempre hay una
@@ -797,6 +826,21 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                 log.warning("motor_argumentos_rotos", trace_id=trace_id,
                             crudo=str(c.function.arguments)[:200])
             consultas = args.get("consultas") or []
+            # ── EL COTEJO, ANTES DE BUSCAR (22-sep-2026) ───────────────────
+            #
+            # LAS DOS CORRECCIONES DETERMINISTAS VAN ACA Y NO EN EL MOTOR, y
+            # el motivo es el de siempre: el motor no mira el mensaje del
+            # cliente, mira la consulta. Cotejar lo declarado contra lo dicho
+            # es trabajo de este borde, que es el unico lugar donde estan las
+            # dos cosas.
+            #
+            # SANEAR VA ANTES DE REPONER, a proposito: asi la memoria del
+            # turno solo guarda condiciones ya saneadas y un techo inventado
+            # no puede volver a entrar por la puerta de la reposicion.
+            informe["umbrales_degradados"] += CO.sanear_umbrales(
+                consultas, mensaje, _ordenables, trace_id)
+            informe["condiciones_repuestas"] += CO.reponer_condiciones(
+                consultas, condiciones_del_turno, trace_id)
             # LOS DOS OBLIGATORIOS VAN PRIMEROS Y NACEN MUDOS (21-sep-2026).
             # `renglones` es lo que el cliente pidio con SUS palabras y
             # `pedir_total` el si o no del presupuesto. Los dos VIAJAN Y SE
@@ -825,10 +869,61 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             # que el modelo no declaro. Son caracteres de log, no tokens.
             log.info("motor_pedido", trace_id=trace_id, vuelta=vuelta + 1,
                      pedido=json.dumps(pidio, ensure_ascii=False)[:2000])
+            # ── EL RENGLON ES COPIA, O NO LO ES ───────────────────────────
+            #
+            # Se mide sobre la PRIMERA llamada del turno y nada mas. La
+            # pregunta que contesta es "de entrada, ¿transcribio o tradujo?",
+            # y esa se contesta en la primera, igual que las casillas de
+            # ausencia de la vara. En la vuelta 2 el modelo ya tiene su propia
+            # lista delante, asi que copiarse a si mismo no dice nada nuevo.
+            if not informe["renglones"] and pidio["renglones"]:
+                copias, propios = CO.fidelidad(pidio["renglones"], mensaje)
+                informe["renglones"] = len(pidio["renglones"])
+                informe["renglones_copia"] = copias
+                informe["renglones_propios"] = propios
+                # EL RUBRO NOMBRADO Y NO PEDIDO, que es la omision hecha
+                # afirmacion. Sale del cruce de los renglones COPIA contra
+                # las categorias que las consultas fueron a buscar, y viaja
+                # como aviso: el turno no escribe el texto, le pone el dato
+                # delante al modelo para que pregunte por lo que falta.
+                faltan = CO.rubros_sin_pedir(
+                    pidio["renglones"], mensaje, consultas, _categorias)
+                if faltan:
+                    informe["rubros_sin_pedir"] = faltan
+                    log.info("rubro_sin_pedir", trace_id=trace_id,
+                             rubros=faltan[:4])
+                    hallazgos.append(
+                        "OJO: el cliente nombro " + ", ".join(faltan[:4])
+                        + " y no lo buscaste. Si lo quiere en el pedido, "
+                        "buscalo; si no estas seguro, preguntaselo.")
             # SE GUARDA ANTES DE BUSCAR, para que la MISMA vuelta que lo
             # declara ya lo use si ademas trae la cuenta.
             if args.get("reparto_pago"):
                 reparto = list(args["reparto_pago"])
+            # ── LA VUELTA QUE NO AGREGA NADA ──────────────────────────────
+            #
+            # Si esta llamada repite consultas ya servidas y no trae ninguna
+            # otra casilla, no se vuelve a buscar: el retorno de arriba sigue
+            # delante del modelo y este es el mismo. No baja la latencia —el
+            # motor son 0 ms contra 3.000 del modelo— y lo que da es que el
+            # mismo pedido no pueda volver con dos retornos distintos.
+            if (CO.todo_repetido(consultas, pedidas)
+                    and not any(args.get(k) for k in (
+                        "temas", "compatibilidad", "envios", "criterio",
+                        "cuenta", "reparto_pago"))):
+                informe["vueltas_sin_aporte"] += 1
+                # SE ANOTA IGUAL, CON EL RETORNO VACIO: la consulta se pidio,
+                # asi que tiene que seguir contando en `consultas` y en
+                # `repetidas`. Saltear el conteo junto con la busqueda haria
+                # que el numero de repetidas bajara justo cuando empezamos a
+                # atajarlas, que es un instrumento midiendose a si mismo.
+                _anotar(informe, consultas, pedidas, {})
+                log.info("vuelta_sin_aporte", trace_id=trace_id,
+                         vuelta=vuelta + 1, consultas=len(consultas))
+                hallazgos.append(
+                    "Eso ya lo buscaste y te lo devolvi mas arriba: usa ese "
+                    "resultado. Si te falta algo, pedi OTRA cosa.")
+                continue
             r = MT.buscar(consultas, tienda_id, trace_id,
                           temas=args.get("temas"),
                           compat=args.get("compatibilidad"),
@@ -1057,7 +1152,18 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
              criterio=motor["criterio"][:6],
              criterio_sin_resolver=motor["criterio_sin_resolver"][:4],
              cuentas=motor["cuentas"],
-             cuentas_sin_total=motor["cuentas_sin_total"])
+             cuentas_sin_total=motor["cuentas_sin_total"],
+             # LOS CINCO DEL COTEJO (22-sep-2026). `renglones_copia` sobre
+             # `renglones` es el numero que dice si la casilla de
+             # transcripcion transcribe; los otros cuatro son lo que el codigo
+             # vio y corrigio solo, o sea el trabajo que antes no se hacia.
+             renglones=motor["renglones"],
+             renglones_copia=motor["renglones_copia"],
+             renglones_propios=motor["renglones_propios"][:4],
+             rubros_sin_pedir=motor["rubros_sin_pedir"][:4],
+             umbrales_degradados=motor["umbrales_degradados"][:4],
+             condiciones_repuestas=motor["condiciones_repuestas"][:4],
+             vueltas_sin_aporte=motor["vueltas_sin_aporte"])
     if not motor["llamadas"]:
         # EL TERCER CANDADO DE LA FICHA 50: se mide cada turno que contesto sin
         # haber buscado. No se bloquea —la guarda de procedencia ya impide que

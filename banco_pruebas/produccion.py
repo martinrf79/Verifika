@@ -174,7 +174,11 @@ CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "puntuales",
           "veredictos", "filas", "rescates", "vacios", "sin_dato", "campos",
           "campos_tocados", "correcciones", "fichas", "temas", "temas_sin_resolver", "compat",
           "compat_sin_dato", "envios", "envios_sin_clasificar", "criterio",
-          "criterio_sin_resolver", "cuentas", "cuentas_sin_total")
+          "criterio_sin_resolver", "cuentas", "cuentas_sin_total",
+          # LOS CINCO DEL COTEJO (22-sep-2026).
+          "renglones", "renglones_copia", "renglones_propios",
+          "rubros_sin_pedir", "umbrales_degradados", "condiciones_repuestas",
+          "vueltas_sin_aporte")
 
 PROYECTO = os.environ.get("GCP_PROJECT", "memory-engine-v1")
 SERVICIO = os.environ.get("CLOUD_RUN_SERVICIO", "agente-bot")
@@ -409,7 +413,84 @@ def numero_del_motor(eventos: list) -> list:
             lineas.append(f"   {v:>3}x  {c}")
     else:
         lineas.append("  toda condicion que se pidio se pudo aplicar.")
-    return lineas + [""]
+    return lineas + _bloque_cotejo(turnos) + [""]
+
+
+# ── EL COTEJO, QUE ES EL NUMERO DE LA INTERPRETACION (22-sep-2026) ──────────
+#
+# POR QUE ES UN BLOQUE APARTE. Todo lo de arriba mide QUE HIZO la busqueda;
+# esto mide CUANTO DE LO QUE EL MODELO DECLARO SE PUDO COTEJAR contra lo que el
+# cliente dijo, que es otra pregunta. Mezclados, el renglon de la fidelidad se
+# leia como un contador mas de filas.
+#
+# EL PRIMER NUMERO ES EL QUE MANDA: renglones copia sobre renglones emitidos.
+# `renglones` es la unica casilla del esquema que no le pide al modelo ninguna
+# decision —que dijo el cliente, con sus palabras— y es la que le da al codigo
+# con que detectar lo OMITIDO. Si baja, todas las comprobaciones que se apoyan
+# en ella pierden piso, y por eso se imprime primero y solo.
+
+
+def _bloque_cotejo(turnos: list) -> list:
+    renglones = sum(int(t.get("renglones") or 0) for t in turnos)
+    copias = sum(int(t.get("renglones_copia") or 0) for t in turnos)
+    con_renglon = [t for t in turnos if int(t.get("renglones") or 0)]
+    if not con_renglon:
+        return ["", "EL COTEJO: ningun turno de la ventana declaro renglones."]
+    propios: dict = {}
+    rubros: dict = {}
+    umbrales: dict = {}
+    repuestas: dict = {}
+    sin_aporte = 0
+    for t in turnos:
+        for x in (t.get("renglones_propios") or []):
+            propios[str(x)] = propios.get(str(x), 0) + 1
+        for x in (t.get("rubros_sin_pedir") or []):
+            rubros[str(x)] = rubros.get(str(x), 0) + 1
+        for x in (t.get("umbrales_degradados") or []):
+            umbrales[str(x)] = umbrales.get(str(x), 0) + 1
+        for x in (t.get("condiciones_repuestas") or []):
+            repuestas[str(x)] = repuestas.get(str(x), 0) + 1
+        sin_aporte += int(t.get("vueltas_sin_aporte") or 0)
+    lineas = [
+        "",
+        "=" * 78,
+        "EL COTEJO — lo que el modelo declaro contra lo que el cliente dijo",
+        "=" * 78,
+        "",
+        f"EL RENGLON ES COPIA en {copias} de {renglones} "
+        f"({copias * 100 // max(1, renglones)}%), sobre "
+        f"{len(con_renglon)} turno" + ("s" if len(con_renglon) != 1 else "")
+        + " que declararon renglones.",
+        "  Un renglon que no es copia es la casilla de transcripcion usada "
+        "para interpretar,",
+        "  y sobre un renglon parafraseado el codigo no puede cotejar nada.",
+    ]
+    if propios:
+        lineas += ["", "LOS RENGLONES QUE EL MODELO ESCRIBIO CON SUS PALABRAS "
+                       "EN VEZ DE COPIAR:"]
+        for c, v in sorted(propios.items(), key=lambda x: -x[1])[:10]:
+            lineas.append(f"   {v:>3}x  {c}")
+    if rubros:
+        lineas += ["", "EL RUBRO QUE EL CLIENTE NOMBRO Y NADIE BUSCO, que es "
+                       "la omision hecha afirmacion:"]
+        for c, v in sorted(rubros.items(), key=lambda x: -x[1]):
+            lineas.append(f"   {v:>3}x  {c}")
+    else:
+        lineas.append("  ningun rubro nombrado quedo sin buscar.")
+    if umbrales:
+        lineas += ["", "LA CIFRA QUE EL CLIENTE NO DIJO, degradada de filtro a "
+                       "orden por el codigo:"]
+        for c, v in sorted(umbrales.items(), key=lambda x: -x[1]):
+            lineas.append(f"   {v:>3}x  {c}")
+    if repuestas:
+        lineas += ["", "LA CONDICION QUE UNA VUELTA PERDIO Y EL CODIGO "
+                       "REPUSO:"]
+        for c, v in sorted(repuestas.items(), key=lambda x: -x[1]):
+            lineas.append(f"   {v:>3}x  {c}")
+    if sin_aporte:
+        lineas.append(f"  vueltas que no agregaron nada y no se volvieron a "
+                      f"buscar: {sin_aporte}")
+    return lineas
 
 
 # ── BAJAR LAS CHARLAS ───────────────────────────────────────────────────────
