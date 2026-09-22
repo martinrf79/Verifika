@@ -64,6 +64,23 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
+**22-sep: EL COTEJO ESTA VIVO Y LE FALTA EL NUMERO REAL.** `app/core/cotejo.py`
+son cinco comprobaciones deterministas sobre lo que el modelo declara contra lo
+que el cliente dijo: la fidelidad del renglon, el rubro nombrado y no buscado,
+la cifra que el cliente no dijo degradada de filtro a orden, la vuelta que no
+agrega nada, y la condicion de exclusion que una vuelta pierde y se repone.
+Bateria 588 verdes. **LO QUE FALTA ES MEDIRLO VIVO:** el bloque EL COTEJO del
+informe del issue 31 con `/logs`, y lo primero que hay que mirar es el
+porcentaje de renglones que son COPIA, porque de eso dependen los otros cuatro.
+Dos cosas para vigilar en la tanda: un falso positivo del rubro sin pedir
+—"no quiero un teclado, quiero un mouse" lo nombra y no lo pide— y si el aviso
+que viaja al modelo le cambia el largo del mensaje.
+
+**22-sep: EL MAPA_CABLEADO NOMBRA PIEZAS MUERTAS.** Habla de `turno.py`,
+`tabla.py`, `resolver.py` y `molde.py`, apagadas el 3 y el 11-sep. La regla
+2-bis manda que los nombres los diga ese archivo y hoy los da mal. Es su propio
+trabajo y no se toco en esta sesion.
+
 **20-sep: LA INTERPRETACION DE LA VUELTA 1 PASO DE 3 DE 9 A 11 DE 12.** Diez
 commits, de `8e21013` a `4fb0500`, medidos en WhatsApp real. Lo que cambio el
 tablero: la orden de entrada ANOTA en vez de buscar, `temas` y `criterio` se
