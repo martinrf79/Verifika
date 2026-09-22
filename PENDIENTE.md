@@ -76,6 +76,23 @@ Dos cosas para vigilar en la tanda: un falso positivo del rubro sin pedir
 —"no quiero un teclado, quiero un mouse" lo nombra y no lo pide— y si el aviso
 que viaja al modelo le cambia el largo del mensaje.
 
+**22-sep: EL ATERRIZAJE, PRIMERA MITAD HECHA.** Un campo vacio en TODAS las
+filas del universo ya no vacia el resultado: sale como `no_aplicado` y el resto
+del pedido sobrevive. Era el turno `2c36e750` —el modelo interpreto bien y el
+sistema contesto "no lo vendemos"— y se mide offline porque `color` esta en
+cero de los 19 procesadores. Y `SIN_CAMPO` ahora devuelve EN QUE CAMPO vive ese
+valor, asi el modelo no tiene que acertarle al nombre de nuestro esquema.
+**FALTA:** el indice invertido para catalogos grandes, que es el paso 2 de la
+FICHA 57 y no se adelanto; y medir vivo si el rubro sin pedir da falsos
+positivos.
+
+**22-sep: EL NUMERO DE LA TANDA DEL 22 NO SE ANOTA COMO PISO.** Dio 55 de 56 y
+estaba inflado: el cotejo saneaba el umbral ANTES de escribir `motor_pedido`,
+asi que la vara media la correccion y no al modelo. Corregido el orden, M11
+vuelve a fallar 2 de 2 como en produccion. **Lo unico comparable de esa tanda
+es NUCLEO 31 de 31**, igual al piso. La proxima corrida limpia de los 19 es la
+que puede mover el piso.
+
 **22-sep: EL MAPA_CABLEADO NOMBRA PIEZAS MUERTAS.** Habla de `turno.py`,
 `tabla.py`, `resolver.py` y `molde.py`, apagadas el 3 y el 11-sep. La regla
 2-bis manda que los nombres los diga ese archivo y hoy los da mal. Es su propio
