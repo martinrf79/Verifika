@@ -177,7 +177,8 @@ CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "puntuales",
           "criterio_sin_resolver", "cuentas", "cuentas_sin_total", "afirma",
           # LOS CINCO DEL COTEJO (22-sep-2026).
           "renglones", "renglones_copia", "renglones_propios",
-          "rubros_sin_pedir", "umbrales_degradados", "condiciones_repuestas",
+          "rubros_sin_pedir", "umbrales_degradados", "temas_sin_cita",
+          "condiciones_repuestas",
           "vueltas_sin_aporte")
 
 PROYECTO = os.environ.get("GCP_PROJECT", "memory-engine-v1")
