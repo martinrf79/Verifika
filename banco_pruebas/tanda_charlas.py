@@ -241,6 +241,12 @@ async def correr_charla(ch: dict, corrida: int, catalogo: list,
             # "DE ESOS" QUE EL COTEJO RESTRINGIO A LO ULTIMO NOMBRADO: la
             # busqueda efectiva lleva esos ids aunque el modelo no los haya
             # escrito. Evento propio, asi que se lee aparte del pedido.
+            if e.get("event") in ("anafora_rescatada",
+                                  "nombrado_rescatado"):
+                junto.setdefault("consultas", []).append(
+                    {"ids": list(e.get("ids") or []),
+                     "rescatada_por_codigo": True})
+                continue
             if e.get("event") == "restringida_a_esos":
                 junto.setdefault("consultas", []).append(
                     {"ids": list(e.get("ids") or []),

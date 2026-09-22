@@ -167,3 +167,29 @@ def test_sin_pronombre_no_se_toca():
 def test_el_mismo_pero_en_blanco_tambien():
     assert CO.rescatar_anafora("tenes el mismo pero en blanco?",
                                {"consultas": []}, G203S)
+
+
+# ── "igual G203" contra "G203 Lightsync" ───────────────────────────────────
+
+def test_igual_a_medias_aterriza_y_no_niega_el_producto(firestore_doble):
+    """CH5: 'modelo igual G203' no pegaba con 'G203 Lightsync' y el cliente
+    leyo 'el G203 no lo tenemos'."""
+    from app.core import motor as MT
+    r = MT.buscar([{"categoria": "mouse", "busco": "uno", "condiciones": [
+        {"campo": "modelo", "operador": "igual", "valor": "G203"},
+        {"campo": "color", "operador": "igual", "valor": "negro"}]}],
+        "verifika_prod")
+    ids = [f["id"] for f in MT.fichas_de(r)]
+    assert ids and ids[0] == "MOU0001", ids
+
+
+def test_igual_exacto_sigue_siendo_exacto(firestore_doble):
+    from app.core.filtros_catalogo import aplicar
+    from app.core.motor import _Cond
+    from app.storage.firestore_client import get_all_products
+    prods = [p for p in get_all_products(tienda_id="verifika_prod")
+             if p.get("categoria") == "mouse"]
+    r = aplicar(prods, [_Cond({"campo": "color", "operador": "igual",
+                               "valor": "negro"})], "verifika_prod")
+    assert r["aplicados"][0]["operador"] == "igual"
+    assert "nota" not in r["aplicados"][0]

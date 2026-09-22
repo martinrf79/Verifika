@@ -1113,6 +1113,23 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
         evaluados = len(quedan)
         cumplen = [p for p in quedan
                    if evaluar(p, campo, operador, valor, tipo) is True]
+        # "IGUAL G203" CONTRA "G203 LIGHTSYNC" (22-sep-2026). Medido en la
+        # tanda de charlas, CH5: el modelo escribio `modelo igual G203`, no
+        # pego con ninguno porque el modelo del catalogo es "G203 Lightsync",
+        # el motor dijo que no existe y el cliente leyo "el G203 no lo
+        # tenemos" con un Redragon ofrecido en su lugar. Un "no lo vendemos"
+        # falso sobre un producto que esta en el catalogo, que es lo que la
+        # regla 10.0 existe para impedir. Si el igual no pega con NINGUNO y el
+        # contiene si, se aplica el contiene y se anota: aterriza el valor en
+        # vez de negar el producto. Nunca agranda un resultado que ya tenia
+        # filas.
+        relajado = False
+        if (not cumplen and operador == "igual" and tipo not in
+                ("numero", "si_no")):
+            flojos = [p for p in quedan
+                      if evaluar(p, campo, "contiene", valor, tipo) is True]
+            if flojos:
+                cumplen, relajado = flojos, True
         sin_dato = sum(1 for p in quedan
                        if evaluar(p, campo, operador, valor, tipo) is None)
         sin_dato_total += sin_dato
@@ -1151,9 +1168,13 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
                     f"por ahi ni decir que no lo tenemos"
                     + _donde_si_vive(quedan, valor, tienda_id, menos=campo))})
             continue
-        aplicados.append({"campo": campo, "operador": operador,
+        aplicados.append({"campo": campo,
+                          "operador": "contiene" if relajado else operador,
                           "valor": valor, "quedaron": len(cumplen),
-                          "sin_dato": sin_dato, "evaluados": evaluados})
+                          "sin_dato": sin_dato, "evaluados": evaluados,
+                          **({"nota": f"ninguno es exactamente '{valor}': "
+                                      f"se tomaron los que lo contienen"}
+                             if relajado else {})})
         quedan = cumplen
 
     return {"productos": quedan, "aplicados": aplicados,
