@@ -64,6 +64,22 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
+**22-sep, noche: LA INTERPRETACION CON MEMORIA SE MIDE Y QUEDA EN 122 DE 124.**
+Nueva vara de charlas de varios turnos, `banco_pruebas/vara_charlas.json`, con
+su tanda y un taller que le pregunta al modelo a que id apuntaba. La vara de 19
+queda en 56 y 57 de 57. Todo en `banco_pruebas/interpretacion_piso.json`.
+
+**ABIERTO DE HOY:** "y el otro?" sobre el par de dos turnos atras, 1 de 2. La
+jerga interna del motor llega al cliente —"la fuente no escribe", "volve a
+pedir con una de esas"—: es de la redaccion, no de la interpretacion. Los
+auriculares no tienen cargado si son inalambricos, y los 48 teclados dicen
+"mecanico" en `tags`: hueco de la fuente, no se toco `data/clientes/`.
+
+**LAS DOS LLAMADAS NO SE HICIERON:** Martin las habilito como camino, no como
+meta. Hoy el turno hace de 2 a 5 llamadas, 4,5 segundos la mitad y 7,2 el
+90%. Lo que las haria posibles —que el codigo aterrice lo que hoy corrige la
+segunda vuelta— avanzo con los rescates del cotejo, secciones 6 a 9.
+
 **22-sep: EL PISO DE LA INTERPRETACION QUEDO EN 55 DE 57, NUCLEO 31 DE 31.**
 Dos corridas de los 19, cero turnos caidos, con la paga porque la gratis se
 agotaba y tiraba el 15% de los turnos. El denominador subio de 54 a 57 por MAS
@@ -87,9 +103,8 @@ leccion, que vale mas que los dos: **un candado que el modelo puede satisfacer
 sin cambiar su decision no es un candado** —cito "que no se escuche el ruido de
 afuera", que SI esta en el mensaje, y el tema paso igual—.
 
-**LO SIGUIENTE, Y NO SE EMPEZO:** `ordenar_por` obligatorio con valor de
-escape, que es el patron que ya funciono tres veces en este repo —`SIN_TEMA`,
-`medio_no_disponible`, `pedir_total`—. Ataca M17 y la mitad de M11.
+**HECHO EL 22-sep A LA NOCHE:** el orden es plano y obligatorio, `orden`,
+con la salida `ninguno`. M17 pasa en todas las corridas desde entonces.
 
 **EL TALLER (`banco_pruebas/taller.py`) ES LO QUE MAS VALE DE LA SESION.** Le
 pregunta al modelo SOLO lo que el codigo puede comprobar despues, y separa

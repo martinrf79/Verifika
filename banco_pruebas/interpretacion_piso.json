@@ -1,46 +1,63 @@
 {
- "_": "EL PISO DE LA INTERPRETACION. Medido el 21-sep-2026 con la clave GRATIS, NUEVE corridas de los seis mensajes de `vara_interpretacion.json` por el camino vivo del turno, con `tanda_interpretacion.py`. Cero turnos caidos. ESTOS NUMEROS SOLO MEJORAN: si una corrida los empeora, el cambio se revierte entero.",
- "fecha": "2026-09-21",
- "clave": "gratis",
- "corridas": 9,
- "turnos_caidos": 0,
- "casillas_de_la_vara": 31,
- "vuelta_1_min": 30,
- "vuelta_1_max": 31,
- "corridas_perfectas": 8,
- "M1_doce_de_doce": "9 de 9 corridas",
- "_que_cambio": "El 20-sep produccion daba 11 de 12 en M1 y la unica casilla roja era la cuenta. El 21-sep entraron `pedir_total` -un si o no plano y obligatorio- y `renglones` -lo que pidio el cliente con sus palabras, primero en el esquema-. La casilla que faltaba se llena.",
- "_la_casilla_que_tiembla": "M6 `temas_limpios`, 1 de 5 en la segunda tanda. Esa corrida declaro `costo_envio` y `cuotas_financiacion` a un cliente que NO nombro financiacion. NO SE SUBE EL TOPE: la casilla cazo un ruido real, que es el defecto que trajo el enum de 104 temas el 20-sep y que esta casilla existe para medir. Es del modelo, no de la vara.",
- "_pedir_total_discrimina": "Prende en M1, M4 y M6 —los tres que piden presupuesto— y queda apagado en M2, M3 y M5. Identico en las nueve corridas. Si prendiera en los seis la casilla estaria pasando de arriba y el numero no valdria nada.",
- "_renglones": "M1 enumera 6 o 7, M6 enumera 5 o 6, los cortos 1 o 2. El campo se llena; el dia que el codigo rutee esos renglones -FICHA 55 §4.1- ya va a estar medido.",
- "_lo_que_este_piso_NO_dice": "No es produccion. El banco usa el doble local de Firestore y el catalogo del repo, asi que NO puede reproducir el campo `tipo`, que existe en el catalogo vivo, rompe turnos y esta abierto en PENDIENTE. El numero de verdad se lee con `leer_interpretacion.py` sobre los logs de Cloud Run. Si los dos no coinciden, manda el de produccion.",
- "como_se_repite": "python3 banco_pruebas/tanda_interpretacion.py --repeticiones 5",
- "_vara_crecio_21sep": {
-  "mensajes": 19,
-  "casillas": 66,
-  "puntuables": 54,
-  "sin_casilla": 12,
-  "primera_corrida": "49 de 54 en la vuelta 1, 90%. Con los tres arreglos de vara del mismo dia, el techo de esa corrida pasa a 52 de 54.",
-  "nucleo": "31 de 31. EL PISO DE LOS SEIS AGUANTO al entrar trece mensajes nuevos, y es el unico numero comparable con las nueve corridas de la manana.",
-  "lo_que_fallo_de_verdad": "M7 declaro el tema `auriculares` a un cliente que no pregunto nada de la casa. M17 recien ordeno por precio en la vuelta 2. DOS defectos en 54, los dos invisibles para la vara de seis mensajes.",
-  "_la_deuda_son_doce": "Doce clases que el cliente dice y el esquema no tiene donde anotar: D1 y D5 proposito, F2 premisa falsa, F5 contradiccion, F6 urgencia, C7 condicional, E3 presupuesto como techo, A5 hiperonimo ambiguo, A10 referencia externa, B6 gama, B9 relacion precio-calidad, B11 popularidad. ESA LISTA ES LA ESPECIFICACION DE LA FICHA 57.",
-  "_cuatro_no_se_pueden_medir": "A11, B8, E5 y G5 necesitan memoria entre turnos. 4 de 52.",
-  "como_se_repite": "python3 banco_pruebas/tanda_interpretacion.py --repeticiones 5"
- },
- "_22sep_la_corrida_limpia_de_los_19": {
-  "fecha": "2026-09-22",
-  "clave": "paga, y se dice por que: la gratis venia agotada del dia y con ella se caia el 15% de los turnos, justo los mensajes largos. Con la paga, CERO caidos de 38.",
-  "corridas": 2,
+  "_": "EL PISO DE LA INTERPRETACION. Medido el 21-sep-2026 con la clave GRATIS, NUEVE corridas de los seis mensajes de `vara_interpretacion.json` por el camino vivo del turno, con `tanda_interpretacion.py`. Cero turnos caidos. ESTOS NUMEROS SOLO MEJORAN: si una corrida los empeora, el cambio se revierte entero.",
+  "fecha": "2026-09-21",
+  "clave": "gratis",
+  "corridas": 9,
   "turnos_caidos": 0,
-  "vuelta_1": "55 de 57 (96%) en las dos corridas",
-  "nucleo": "31 de 31 — el unico numero comparable con las nueve corridas del 21-sep, y AGUANTO",
-  "_el_denominador_crecio_de_54_a_57": "y crecio por MAS problema medido, no por menos: la premisa falsa —clase F2— salio de `sin_mecanismo`, donde valia cero por no tener donde escribirse, y paso a ser una casilla que se llena. El 96% se mide sobre una vara mas ancha que el 91% del 21-sep.",
-  "_los_tres_que_fallan_y_son_consistentes": {
-   "M7": "2 de 2 corridas: declara un tema que el cliente no pregunto. Es el costo del enum de 104, estable desde el 21-sep.",
-   "M11": "2 de 2 corridas: se inventa un techo de precio. El MODELO lo sigue haciendo; lo que cambio es que el codigo lo degrada a orden antes del motor, asi que ya no borra filas en silencio. La vara lo marca en rojo porque mide al modelo, no a la correccion.",
-   "M17": "1 de 2 corridas: tiembla al ordenar por precio."
+  "casillas_de_la_vara": 31,
+  "vuelta_1_min": 30,
+  "vuelta_1_max": 31,
+  "corridas_perfectas": 8,
+  "M1_doce_de_doce": "9 de 9 corridas",
+  "_que_cambio": "El 20-sep produccion daba 11 de 12 en M1 y la unica casilla roja era la cuenta. El 21-sep entraron `pedir_total` -un si o no plano y obligatorio- y `renglones` -lo que pidio el cliente con sus palabras, primero en el esquema-. La casilla que faltaba se llena.",
+  "_la_casilla_que_tiembla": "M6 `temas_limpios`, 1 de 5 en la segunda tanda. Esa corrida declaro `costo_envio` y `cuotas_financiacion` a un cliente que NO nombro financiacion. NO SE SUBE EL TOPE: la casilla cazo un ruido real, que es el defecto que trajo el enum de 104 temas el 20-sep y que esta casilla existe para medir. Es del modelo, no de la vara.",
+  "_pedir_total_discrimina": "Prende en M1, M4 y M6 —los tres que piden presupuesto— y queda apagado en M2, M3 y M5. Identico en las nueve corridas. Si prendiera en los seis la casilla estaria pasando de arriba y el numero no valdria nada.",
+  "_renglones": "M1 enumera 6 o 7, M6 enumera 5 o 6, los cortos 1 o 2. El campo se llena; el dia que el codigo rutee esos renglones -FICHA 55 §4.1- ya va a estar medido.",
+  "_lo_que_este_piso_NO_dice": "No es produccion. El banco usa el doble local de Firestore y el catalogo del repo, asi que NO puede reproducir el campo `tipo`, que existe en el catalogo vivo, rompe turnos y esta abierto en PENDIENTE. El numero de verdad se lee con `leer_interpretacion.py` sobre los logs de Cloud Run. Si los dos no coinciden, manda el de produccion.",
+  "como_se_repite": "python3 banco_pruebas/tanda_interpretacion.py --repeticiones 5",
+  "_vara_crecio_21sep": {
+    "mensajes": 19,
+    "casillas": 66,
+    "puntuables": 54,
+    "sin_casilla": 12,
+    "primera_corrida": "49 de 54 en la vuelta 1, 90%. Con los tres arreglos de vara del mismo dia, el techo de esa corrida pasa a 52 de 54.",
+    "nucleo": "31 de 31. EL PISO DE LOS SEIS AGUANTO al entrar trece mensajes nuevos, y es el unico numero comparable con las nueve corridas de la manana.",
+    "lo_que_fallo_de_verdad": "M7 declaro el tema `auriculares` a un cliente que no pregunto nada de la casa. M17 recien ordeno por precio en la vuelta 2. DOS defectos en 54, los dos invisibles para la vara de seis mensajes.",
+    "_la_deuda_son_doce": "Doce clases que el cliente dice y el esquema no tiene donde anotar: D1 y D5 proposito, F2 premisa falsa, F5 contradiccion, F6 urgencia, C7 condicional, E3 presupuesto como techo, A5 hiperonimo ambiguo, A10 referencia externa, B6 gama, B9 relacion precio-calidad, B11 popularidad. ESA LISTA ES LA ESPECIFICACION DE LA FICHA 57.",
+    "_cuatro_no_se_pueden_medir": "A11, B8, E5 y G5 necesitan memoria entre turnos. 4 de 52.",
+    "como_se_repite": "python3 banco_pruebas/tanda_interpretacion.py --repeticiones 5"
   },
-  "_lo_que_entro_perfecto": "M1 12 de 12 y M6 10 de 10 las dos corridas —los dos mensajes largos— y M13 3 de 3 las dos, con la casilla de la premisa falsa.",
-  "_lo_que_este_numero_NO_dice": "No es produccion. Sigue valiendo lo de siempre: si el banco y produccion no coinciden, manda produccion."
- }
+  "_22sep_la_corrida_limpia_de_los_19": {
+    "fecha": "2026-09-22",
+    "clave": "paga, y se dice por que: la gratis venia agotada del dia y con ella se caia el 15% de los turnos, justo los mensajes largos. Con la paga, CERO caidos de 38.",
+    "corridas": 2,
+    "turnos_caidos": 0,
+    "vuelta_1": "55 de 57 (96%) en las dos corridas",
+    "nucleo": "31 de 31 — el unico numero comparable con las nueve corridas del 21-sep, y AGUANTO",
+    "_el_denominador_crecio_de_54_a_57": "y crecio por MAS problema medido, no por menos: la premisa falsa —clase F2— salio de `sin_mecanismo`, donde valia cero por no tener donde escribirse, y paso a ser una casilla que se llena. El 96% se mide sobre una vara mas ancha que el 91% del 21-sep.",
+    "_los_tres_que_fallan_y_son_consistentes": {
+      "M7": "2 de 2 corridas: declara un tema que el cliente no pregunto. Es el costo del enum de 104, estable desde el 21-sep.",
+      "M11": "2 de 2 corridas: se inventa un techo de precio. El MODELO lo sigue haciendo; lo que cambio es que el codigo lo degrada a orden antes del motor, asi que ya no borra filas en silencio. La vara lo marca en rojo porque mide al modelo, no a la correccion.",
+      "M17": "1 de 2 corridas: tiembla al ordenar por precio."
+    },
+    "_lo_que_entro_perfecto": "M1 12 de 12 y M6 10 de 10 las dos corridas —los dos mensajes largos— y M13 3 de 3 las dos, con la casilla de la premisa falsa.",
+    "_lo_que_este_numero_NO_dice": "No es produccion. Sigue valiendo lo de siempre: si el banco y produccion no coinciden, manda produccion."
+  },
+  "_22sep_noche_memoria_y_orden": {
+    "fecha": "2026-09-22",
+    "clave": "paga, autorizada por Martin en la sesion: la gratis se agoto a mitad de la primera tanda y tiro 25 turnos",
+    "vara_19": {
+      "vuelta_1": "57 y 56 de 57 en la ultima medicion; 56 de 57 en las cinco corridas anteriores con el orden plano, contra el piso de 55",
+      "lo_que_queda": "M11, el techo inventado, 1 de 2. El codigo lo degrada a orden antes de buscar, asi que no llega al cliente.",
+      "M17": "orden plano y obligatorio: pasa en todas las corridas desde que entro",
+      "M7": "pasa en todas las corridas desde el orden plano; la causa no se afirma"
+    },
+    "charlas": {
+      "vara": "banco_pruebas/vara_charlas.json, 22 charlas de 2 a 4 turnos, 62 casillas",
+      "linea_de_base": "29 de 33 sobre las 12 primeras, con dos turnos que le dijeron al cliente 'no tengo esa informacion' con la casilla en verde",
+      "piso": "122 de 124 en dos corridas, cero caidos",
+      "lo_que_queda": "CH14 'y el otro?' 1 de 2: el modelo lee 'el otro' como el otro color del K120 y no como el G203 del turno anterior. El taller lo da como hueco de memoria."
+    },
+    "como_se_repite": "python3 banco_pruebas/tanda_charlas.py --repeticiones 2 --taller"
+  }
 }
