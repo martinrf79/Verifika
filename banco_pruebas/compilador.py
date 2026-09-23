@@ -74,6 +74,16 @@ def _escrito(palabra: str, msg: str) -> bool:
     return False
 
 
+def _marcas() -> set:
+    from banco_pruebas.memoria import catalogo
+    return {_norm(p.get("marca")) for p in catalogo() if p.get("marca")}
+
+
+def _escritos(mensaje: str) -> set:
+    from banco_pruebas.memoria import _rubros_escritos
+    return _rubros_escritos(mensaje)
+
+
 def validar(ficha: dict, mensaje: str, tab: dict) -> tuple:
     """La ficha que el codigo acepta, y lo que se saco. Con DeepSeek el
     proveedor no obliga las listas, asi que esto es la atadura; con Gemini es
@@ -120,6 +130,31 @@ def validar(ficha: dict, mensaje: str, tab: dict) -> tuple:
             for t in trozos[1:]:
                 cola.append(dict(p, producto=t))
             p["producto"] = trozos[0]
+        # UNA MARCA SOLA NO ES UN PRODUCTO si el rubro esta escrito:
+        # "impresoras epson" es una busqueda con la marca, no "¿cual Epson?".
+        # Medido el 23-sep en la tercera tanda: se repreguntaba y la busqueda
+        # se perdia. Sin rubro escrito —"el lenovo"— queda como producto, y
+        # la certificacion repregunta entre rubros.
+        # "Impresora epson" tambien: sin las palabras del rubro, queda la marca.
+        sin_rubro = " ".join(
+            w for w in re.findall(r"[\w-]+", _norm(p.get("producto")))
+            if not any(w in (r, r + "s", r + "es")
+                       for r in _norm(p.get("rubro")).split()))
+        if p.get("producto") and sin_rubro in _marcas() and \
+                _norm(p.get("rubro")) in _escritos(mensaje):
+            marca = sin_rubro
+            p["producto"] = ""
+            if not any(_norm(c.get("valor")) == _norm(marca)
+                       for c in p.get("criterios") or []
+                       if isinstance(c, dict)):
+                p["criterios"] = list(p.get("criterios") or []) + [
+                    {"concepto": "marca", "valor": marca, "fuerza": "debe"}]
+            avisos.append(f"marca como producto: {marca!r}")
+        # UN PRODUCTO CON NOMBRE ES DE LA TIENDA, siempre: es la regla del
+        # prompt, y aca la cumple el codigo. A "quiero 2" el modelo le puso
+        # origen ninguno y la parte se descartaba.
+        if p.get("producto") and p.get("origen") == "ninguno":
+            p["origen"] = "tienda"
         # EL PRODUCTO TIENE QUE ESTAR ESCRITO: un nombre que el cliente no
         # dijo es identidad inventada, la regla 10.0.
         if p.get("producto") and _norm(p["producto"]) not in msg:
@@ -268,8 +303,12 @@ def aterrizar(concepto: str, valor: str, fuerza: str, rubro: str,
     no puede quedar como filtro positivo."""
     from app.core.filtros_catalogo import vocabulario
     v = _norm(valor)
-    if fuerza == "debe" and concepto not in ("precio_ars", "peso_gramos") \
-            and _negado(valor, dice):
+    # PREFIERE TAMBIEN SE DA VUELTA: "las menos partes chinas posibles"
+    # marcada como `prefiere` compilaba "prefiere china". Medido el 23-sep en
+    # la vara de 19, M1.
+    if fuerza in ("debe", "prefiere") and \
+            concepto not in ("precio_ars", "peso_gramos") and \
+            _negado(valor, dice):
         fuerza = "evita"
     fuera = {"condiciones": [], "orden": ""}
     if concepto == "precio_ars":
@@ -307,8 +346,14 @@ def aterrizar(concepto: str, valor: str, fuerza: str, rubro: str,
         elif any(k in v or k in _norm(dice) for k in _CARO):
             fuera["orden"] = "precio_ars_max"
         return fuera
-    if concepto == "peso_gramos" and any(k in v for k in _LIVIANO):
-        fuera["orden"] = "peso_gramos_min"
+    if concepto == "peso_gramos":
+        # LO LIVIANO SE LEE TAMBIEN EN LO QUE DIJO: a "el mas liviano" el
+        # modelo le puso de valor "minimo" y salia "peso contiene minimo".
+        # Medido el 23-sep en la vara de 19, M10. Un peso sin cifra y sin
+        # liviano no es un filtro: no hay texto que un peso contenga.
+        if any(k in v or k in _norm(dice) for k in _LIVIANO) or \
+                v in ("minimo", "menor", "min", "el menor"):
+            fuera["orden"] = "peso_gramos_min"
         return fuera
     if concepto in ("otro", "compatible_con"):
         return fuera

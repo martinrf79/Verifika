@@ -334,3 +334,48 @@ def test_lo_caro_en_femenino_y_suelto(tab, valor, esperado):
 def test_un_palo_es_un_millon(tab):
     assert C._cifras("1 palo") == [1000000]
     assert C._cifras("2 millones y medio") == [2000000]
+
+
+@pytest.mark.parametrize("producto", ["epson", "impresora epson"])
+def test_una_marca_sola_con_el_rubro_escrito_es_un_filtro(tab, producto):
+    texto = "mostrame impresoras epson"
+    p = _un_turno(tab, texto, quiere="buscar", rubro="impresora",
+                  producto=producto)
+    assert not p.get("repreguntar")
+    assert [(x["campo"], _norm(x["valor"])) for c in p["consultas"]
+            for x in c["condiciones"]] == [("marca", "epson")]
+
+
+def test_lo_que_resuelve_la_memoria_es_de_la_tienda(tab):
+    """"Quiero 2" con origen ninguno: la memoria lo resuelve y la parte no
+    se descarta."""
+    p = _dos_turnos(tab, ("tenes la Logitech C920?",
+                          {"rubro": "webcam", "producto": "Logitech C920",
+                           "quiere": "stock"}),
+                    ("dale, quiero 2", {"quiere": "comprar", "refiere": "ese",
+                                        "origen": "ninguno", "cantidad": 2}))
+    assert [(c.get("ids"), c.get("cantidad")) for c in p[1]["consultas"]] == \
+        [(["WEB0001"], 2)]
+
+
+def test_el_destino_del_turno_anterior_sigue_al_producto_nuevo(tab):
+    p = _dos_turnos(tab, ("cuanto sale el envio a Ushuaia?",
+                          {"quiere": "envio", "destino": "Ushuaia"}),
+                    ("y si le sumo un mouse Logitech M170 negro?",
+                     {"rubro": "mouse", "producto": "Logitech M170 negro"}))
+    assert [e["destino"] for e in p[1]["envios"]] == ["Ushuaia"]
+
+
+def test_prefiere_lo_negado_se_evita(tab):
+    texto = "que lleven las menos partes chinas posibles"
+    a = C.aterrizar("pais_fabricacion", "china", "prefiere", "mouse", texto)
+    assert [x["operador"] for x in a["condiciones"]] in (["evita"],
+                                                         ["no_contiene"])
+
+
+def test_el_peso_minimo_es_lo_liviano_y_nunca_un_texto(tab):
+    a = C.aterrizar("peso_gramos", "minimo", "debe", "mouse",
+                    "cual es el mouse mas liviano?")
+    assert a == {"condiciones": [], "orden": "peso_gramos_min"}
+    b = C.aterrizar("peso_gramos", "pesado", "debe", "mouse", "uno pesado")
+    assert b["condiciones"] == []

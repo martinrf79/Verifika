@@ -320,6 +320,8 @@ def resolver(ficha: dict, mensaje: str, estado: dict) -> tuple:
             p["_ids"] = list(items[0]["ids"])
             p["producto"] = f"{items[0]['marca']} {items[0]['modelo']}".strip()
             p["rubro"] = items[0]["rubro"]
+            if p.get("origen") == "ninguno":
+                p["origen"] = "tienda"
             eventos.append(f"{forma}: {p['producto']}")
             for it in items[1:]:
                 q = dict(p, _ids=list(it["ids"]), rubro=it["rubro"],
@@ -359,7 +361,13 @@ def completar(pedido: dict, mensaje: str, estado: dict, ficha: dict) -> dict:
     msg = _norm(mensaje)
     escritos = _rubros_escritos(mensaje)
     # EL DESTINO DE ANTES, si el cliente habla del envio y no dijo adonde.
-    if not pedido.get("envios") and estado["destino"] and _ENVIO.search(msg):
+    # O SI EL TURNO ANTERIOR FUE DEL ENVIO: "y si le sumo un mouse?"
+    # despues de cotizar a Ushuaia sigue hablando de ese envio. Medido el
+    # 23-sep en la tercera tanda.
+    recien = estado.get("destino_turno") == estado["turno"] and \
+        bool(pedido.get("consultas"))
+    if not pedido.get("envios") and estado["destino"] and (
+            _ENVIO.search(msg) or recien):
         pedido["envios"] = [{"destino": estado["destino"],
                              "va": "; ".join(p.get("dice") or ""
                                              for p in ficha.get("partes")
@@ -498,6 +506,7 @@ def al_dia(estado: dict, pedido: dict, resultado: dict,
     for e in pedido.get("envios") or []:
         if e.get("destino"):
             estado["destino"] = e["destino"]
+            estado["destino_turno"] = estado["turno"]
     rep = pedido.get("repreguntar") or []
     estado["pendiente"] = ({"producto": rep[0]["dice"]}
                            if rep and rep[0].get("rubros")
