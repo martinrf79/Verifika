@@ -186,6 +186,23 @@ ESQUEMA = {"type": "object", "additionalProperties": False,
            "required": ["busquedas"]}
 
 
+RUBROS: list = []
+
+
+def _esquema() -> dict:
+    """Con --con-rubro, el rubro sale de la lista cerrada de categorias. Es la
+    unica lista del catalogo que ve el modelo, y crece con los RUBROS, no con
+    los productos."""
+    if not RUBROS:
+        return ESQUEMA
+    e = json.loads(json.dumps(ESQUEMA))
+    it = e["properties"]["busquedas"]["items"]
+    it["properties"]["rubro"] = {"type": "string",
+                                 "enum": RUBROS + ["ninguno"]}
+    it["required"].append("rubro")
+    return e
+
+
 def escribir_busquedas(mensaje: str) -> list:
     from app.core.llm_reintento import _modelo
     import time
@@ -194,10 +211,13 @@ def escribir_busquedas(mensaje: str) -> list:
         try:
             r = cli.chat.completions.create(
                 model=_modelo(), temperature=0.2, max_tokens=800,
-                messages=[{"role": "system", "content": PROMPT},
+                messages=[{"role": "system", "content": PROMPT + (
+                    "\n- rubro: el tipo de producto, de la lista; 'ninguno' "
+                    "si no sabes cual es." if RUBROS else "")},
                           {"role": "user", "content": mensaje}],
                 response_format={"type": "json_schema", "json_schema": {
-                    "name": "busquedas", "strict": True, "schema": ESQUEMA}})
+                    "name": "busquedas", "strict": True,
+                    "schema": _esquema()}})
             b = json.loads(r.choices[0].message.content or "{}")
             return b.get("busquedas") or []
         except Exception as e:  # noqa: BLE001 — la gratis da 429: se aguanta
@@ -220,7 +240,9 @@ def _cifras_del(mensaje: str) -> set:
 
 def buscar(b: dict, mensaje: str, prods, bm, emb_prod, emb_q) -> list:
     lex = bm.puntajes(b["texto"])
-    sem = [sum(x * y for x, y in zip(emb_q, e)) for e in emb_prod]
+    # SIN EMBEDDINGS, solo texto: el orden semantico es el mismo que el lexico.
+    sem = ([sum(x * y for x, y in zip(emb_q, e)) for e in emb_prod]
+           if emb_q else lex)
     rl = {i: r for r, i in enumerate(sorted(range(len(prods)),
                                              key=lambda i: -lex[i]))}
     rs = {i: r for r, i in enumerate(sorted(range(len(prods)),
@@ -228,6 +250,8 @@ def buscar(b: dict, mensaje: str, prods, bm, emb_prod, emb_q) -> list:
     rrf = sorted(range(len(prods)),
                  key=lambda i: -(1 / (60 + rl[i]) + 1 / (60 + rs[i])))
     fuera = [prods[i] for i in rrf]
+    if b.get("rubro") not in (None, "", "ninguno"):
+        fuera = [p for p in fuera if norm(p["categoria"]) == norm(b["rubro"])]
     excl = {norm(m) for m in b.get("excluir_marcas") or []}
     fuera = [p for p in fuera if norm(p["marca"]) not in excl]
     tope = int(b.get("precio_max") or 0)
@@ -318,12 +342,20 @@ def _de_que_mensaje(caso: dict, mensajes) -> str:
 def main(argv) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--corridas", type=int, default=3)
+    # LA CUOTA GRATIS DE EMBEDDINGS ES DE 1000 TEXTOS POR DIA y el catalogo
+    # se lleva 880. Con esto se mide la mitad que no los usa: el texto solo.
+    ap.add_argument("--solo-texto", action="store_true")
+    # EXPLORATORIA: armada DESPUES de ver el oro. No valida nada; lo que
+    # muestre se confirma con una tanda nueva.
+    ap.add_argument("--con-rubro", action="store_true")
     a = ap.parse_args(argv)
     oro = json.loads((AQUI / "oro.json").read_text())["casos"]
     prods = catalogo()
+    if a.con_rubro:
+        RUBROS.extend(sorted({p["categoria"] for p in prods}))
     por_id = {p["id"]: p for p in prods}
     bm = BM25([p["_doc"] for p in prods])
-    emb = embeddings_catalogo(prods)
+    emb = None if a.solo_texto else embeddings_catalogo(prods)
 
     hoy = listas_de_hoy(por_id)
     fila_hoy = {c["id"]: pasa(c, hoy[_de_que_mensaje(c, hoy)])
@@ -338,7 +370,8 @@ def main(argv) -> int:
         for m in mensajes:
             busq[m] = escribir_busquedas(m)
         textos = [b["texto"] for m in mensajes for b in busq[m]]
-        eq = dict(zip(textos, (_unit(e) for e in embeber(textos))))
+        eq = ({t: None for t in textos} if a.solo_texto else
+              dict(zip(textos, (_unit(e) for e in embeber(textos)))))
         listas = {m: [buscar(b, m, prods, bm, emb, eq[b["texto"]])
                       for b in busq[m]] for m in mensajes}
         fila = {c["id"]: pasa(c, listas[c["mensaje"]]) for c in oro}
@@ -362,7 +395,8 @@ def main(argv) -> int:
         print(f"HIBRIDO corrida {n + 1}: {sum(f.values())} de {tot}")
     peor = min(sum(f.values()) for f in corridas)
     print(f"HIBRIDO peor de {a.corridas}: {peor} de {tot}")
-    salida = AQUI / "salida.json"
+    salida = AQUI / ("salida" + ("_solo_texto" if a.solo_texto else "")
+                     + ("_con_rubro" if a.con_rubro else "") + ".json")
     salida.write_text(json.dumps({"hoy": fila_hoy, "corridas": corridas,
                                   "detalle": detalle}, ensure_ascii=False,
                                  indent=1, default=str))

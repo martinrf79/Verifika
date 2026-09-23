@@ -1,0 +1,1339 @@
+{
+ "hoy": {
+  "B01": true,
+  "B02": true,
+  "B03": false,
+  "B04": false,
+  "B05": true,
+  "B06": true,
+  "B07": false,
+  "B08": true,
+  "B09": true,
+  "B10": true,
+  "B11": true,
+  "B12": true,
+  "B13": true,
+  "B14": false,
+  "B15": true,
+  "B16": true,
+  "B17": true,
+  "B18": true,
+  "B19": true,
+  "B20": true
+ },
+ "corridas": [
+  {
+   "B01": true,
+   "B02": true,
+   "B03": true,
+   "B04": false,
+   "B05": true,
+   "B06": true,
+   "B07": true,
+   "B08": true,
+   "B09": true,
+   "B10": true,
+   "B11": true,
+   "B12": true,
+   "B13": true,
+   "B14": true,
+   "B15": true,
+   "B16": true,
+   "B17": true,
+   "B18": true,
+   "B19": true,
+   "B20": true,
+   "B21": true
+  },
+  {
+   "B01": true,
+   "B02": true,
+   "B03": true,
+   "B04": false,
+   "B05": true,
+   "B06": true,
+   "B07": true,
+   "B08": true,
+   "B09": true,
+   "B10": true,
+   "B11": true,
+   "B12": true,
+   "B13": true,
+   "B14": true,
+   "B15": true,
+   "B16": true,
+   "B17": true,
+   "B18": true,
+   "B19": true,
+   "B20": true,
+   "B21": true
+  },
+  {
+   "B01": true,
+   "B02": true,
+   "B03": true,
+   "B04": false,
+   "B05": true,
+   "B06": true,
+   "B07": true,
+   "B08": true,
+   "B09": true,
+   "B10": true,
+   "B11": true,
+   "B12": true,
+   "B13": true,
+   "B14": true,
+   "B15": true,
+   "B16": true,
+   "B17": true,
+   "B18": true,
+   "B19": true,
+   "B20": true,
+   "B21": true
+  }
+ ],
+ "detalle": {
+  "0": {
+   "cuánto sale el mouse logitech G305? // y ese tiene bluetooth?": [
+    [
+     {
+      "texto": "mouse Logitech G305 inalámbrico",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "mouse"
+     },
+     [
+      "Mouse Logitech G305 Lightspeed Negro",
+      "Mouse Logitech G305 Lightspeed Blanco",
+      "Mouse Logitech G Pro Wireless Negro",
+      "Mouse Logitech G Pro Wireless Blanco",
+      "Mouse Logitech G Pro X Superlight Negro"
+     ]
+    ]
+   ],
+   "pasame 3 routers tp-link // el tercero tiene wifi 6?": [
+    [
+     {
+      "texto": "router TP-Link",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "router"
+     },
+     [
+      "Router TP-Link Archer C6 Negro",
+      "Router TP-Link Archer C6 Blanco",
+      "Router TP-Link Archer AX23 Negro",
+      "Router TP-Link Archer AX23 Blanco",
+      "Router TP-Link Deco M4 Mesh Negro"
+     ]
+    ],
+    [
+     {
+      "texto": "router TP-Link Wi-Fi 6",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "router"
+     },
+     [
+      "Router TP-Link Archer C6 Negro",
+      "Router TP-Link Archer C6 Blanco",
+      "Router TP-Link Archer AX23 Negro",
+      "Router TP-Link Archer AX23 Blanco",
+      "Router TP-Link Deco M4 Mesh Negro"
+     ]
+    ]
+   ],
+   "busco una silla gamer // y algo que no pase los 200 mil?": [
+    [
+     {
+      "texto": "silla gamer",
+      "precio_max": 200000,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "silla gamer"
+     },
+     []
+    ]
+   ],
+   "cuánto sale el redragon? // el teclado blanco": [
+    [
+     {
+      "texto": "teclado Redragon blanco",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "teclado"
+     },
+     [
+      "Teclado Redragon Kumara K552 Blanco",
+      "Teclado Redragon K617 Fizz Blanco",
+      "Teclado Redragon Vata K580 Blanco",
+      "Teclado Redragon Vara K551 Blanco",
+      "Teclado Redragon Kumara K552 Negro"
+     ]
+    ]
+   ],
+   "tenés los sony WH-1000XM5 en negro?": [
+    [
+     {
+      "texto": "auriculares Sony WH-1000XM5 color negro",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "auriculares"
+     },
+     [
+      "Auriculares Sony WH-1000XM5 Negro",
+      "Auriculares Sony WH-1000XM5 Blanco",
+      "Auriculares Sony WH-CH520 Negro",
+      "Auriculares Sony WH-CH720N Negro",
+      "Auriculares Sony WH-CH520 Blanco"
+     ]
+    ]
+   ],
+   "el ryzen 5 7600 va en la asus prime B550M-A?": [
+    [
+     {
+      "texto": "procesador AMD Ryzen 5 7600",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "procesador"
+     },
+     [
+      "Procesador AMD Ryzen 5 7600",
+      "Procesador AMD Ryzen 5 5600",
+      "Procesador AMD Ryzen 5 5500",
+      "Procesador AMD Ryzen 5 5600X",
+      "Procesador AMD Ryzen 5 7500F"
+     ]
+    ],
+    [
+     {
+      "texto": "motherboard ASUS Prime B550M-A",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "motherboard"
+     },
+     [
+      "Motherboard Asus Prime B550M-A",
+      "Motherboard Asus Prime B650-Plus",
+      "Motherboard Asus ROG Strix B550-F",
+      "Motherboard MSI PRO B550M-VC",
+      "Motherboard Gigabyte B550M DS3H"
+     ]
+    ]
+   ],
+   "precio del redragon kumara K552 negro, del G305 blanco, y hacen factura A?": [
+    [
+     {
+      "texto": "teclado Redragon Kumara K552 negro",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "teclado"
+     },
+     [
+      "Teclado Redragon Kumara K552 Negro",
+      "Teclado Redragon Kumara K552 Blanco",
+      "Teclado Redragon K617 Fizz Negro",
+      "Teclado Redragon Vata K580 Negro",
+      "Teclado Redragon Vara K551 Negro"
+     ]
+    ],
+    [
+     {
+      "texto": "mouse Logitech G305 blanco",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "mouse"
+     },
+     [
+      "Mouse Logitech G305 Lightspeed Blanco",
+      "Mouse Logitech G305 Lightspeed Negro",
+      "Mouse Logitech G502 X Blanco",
+      "Mouse Logitech G203 Lightsync Blanco",
+      "Mouse Logitech G502 Hero Blanco"
+     ]
+    ]
+   ],
+   "cuánto sale la notebook acer nitro 5 core i5? // tienen local para retirar? // hay cuotas sin interés? // y el horario? // bueno, la notebook que te pregunté primero, la quiero reservar": [
+    [
+     {
+      "texto": "notebook Acer Nitro 5 Intel Core i5",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "notebook"
+     },
+     [
+      "Notebook Acer Nitro 5 Core i7 16GB 1TB SSD Negro",
+      "Notebook Acer Nitro 5 Core i7 16GB 1TB SSD Gris",
+      "Notebook Acer Nitro 5 Core i7 16GB 1TB SSD Plata",
+      "Notebook Acer Nitro 5 Core i5 16GB 512GB SSD Negro",
+      "Notebook Acer Nitro 5 Core i5 16GB 512GB SSD Gris"
+     ]
+    ]
+   ],
+   "quiero 2 memorias corsair vengeance LPX 8GB y un SSD samsung de 1TB // cuánto es todo con envío a Tucumán?": [
+    [
+     {
+      "texto": "memoria ram Corsair Vengeance LPX 8GB",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "memoria ram"
+     },
+     [
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 8GB Negro",
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 8GB Blanco",
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 16GB Negro",
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 32GB Negro",
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 16GB Blanco"
+     ]
+    ],
+    [
+     {
+      "texto": "SSD Samsung 1TB",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "ssd"
+     },
+     [
+      "Ssd Samsung 980 1TB",
+      "Ssd Samsung 980 PRO 1TB",
+      "Ssd Samsung 990 PRO 1TB",
+      "Ssd Samsung 970 EVO Plus 1TB",
+      "Ssd Samsung 870 EVO SATA 1TB"
+     ]
+    ]
+   ],
+   "necesito algo para las videollamadas del trabajo, qué me recomendás?": [
+    [
+     {
+      "texto": "webcam para videollamadas",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "webcam"
+     },
+     [
+      "Webcam Logitech StreamCam",
+      "Webcam AverMedia PW313",
+      "Webcam Razer Kiyo X",
+      "Webcam Logitech Brio 100",
+      "Webcam Razer Kiyo Pro"
+     ]
+    ],
+    [
+     {
+      "texto": "auriculares con microfono para videollamadas",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "auriculares"
+     },
+     [
+      "Auriculares Redragon Pandora Negro",
+      "Auriculares Redragon Pandora Blanco",
+      "Auriculares Logitech G435 Negro",
+      "Auriculares Logitech G535 Negro",
+      "Auriculares HyperX Cloud II Negro"
+     ]
+    ]
+   ],
+   "ola tenés la placa de bideo de 8 gigas más varata": [
+    [
+     {
+      "texto": "placa de video 8 GB",
+      "precio_max": 0,
+      "orden": "barato",
+      "excluir_marcas": [],
+      "rubro": "placa de video"
+     },
+     [
+      "Placa de video MSI Gaming X RX 7600",
+      "Placa de video Gigabyte Eagle RTX 4060",
+      "Placa de video Asus Dual RTX 4060",
+      "Placa de video Gigabyte Gaming OC RTX 4060 Ti",
+      "Placa de video Zotac Twin Edge RTX 4060 Ti"
+     ]
+    ]
+   ],
+   "busco auriculares sin cable pero no JBL // ah no, con cable está bien": [
+    [
+     {
+      "texto": "auriculares con cable",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [
+       "JBL"
+      ],
+      "rubro": "auriculares"
+     },
+     [
+      "Auriculares Redragon Pandora Negro",
+      "Auriculares Redragon Pandora Blanco",
+      "Auriculares Logitech G435 Negro",
+      "Auriculares Logitech G535 Negro",
+      "Auriculares HyperX Cloud II Negro"
+     ]
+    ]
+   ],
+   "el G305 lo tenés en rojo?": [
+    [
+     {
+      "texto": "mouse Logitech G305 rojo",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "mouse"
+     },
+     [
+      "Mouse Logitech G305 Lightspeed Negro",
+      "Mouse Logitech G305 Lightspeed Blanco",
+      "Mouse Logitech G502 X Negro",
+      "Mouse Logitech G203 Lightsync Negro",
+      "Mouse Logitech G502 Hero Negro"
+     ]
+    ]
+   ],
+   "qué diferencia hay entre el archer C6 y el AX23? // y cuál me conviene para un depto chico? // dale, el otro cuánto salía?": [
+    [
+     {
+      "texto": "router TP-Link Archer C6",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "router"
+     },
+     [
+      "Router TP-Link Archer C6 Negro",
+      "Router TP-Link Archer C6 Blanco",
+      "Router TP-Link Archer AX23 Negro",
+      "Router TP-Link Archer AX23 Blanco",
+      "Router TP-Link Archer AX55 Negro"
+     ]
+    ],
+    [
+     {
+      "texto": "router TP-Link Archer AX23",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "router"
+     },
+     [
+      "Router TP-Link Archer AX23 Negro",
+      "Router TP-Link Archer AX23 Blanco",
+      "Router TP-Link Archer AX55 Negro",
+      "Router TP-Link Archer AX73 Negro",
+      "Router TP-Link Archer AX55 Blanco"
+     ]
+    ]
+   ],
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles.": [
+    [
+     {
+      "texto": "auriculares",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "auriculares"
+     },
+     [
+      "Auriculares Redragon Pandora Negro",
+      "Auriculares Redragon Pandora Blanco",
+      "Auriculares Logitech G435 Negro",
+      "Auriculares Logitech G535 Negro",
+      "Auriculares HyperX Cloud II Negro"
+     ]
+    ],
+    [
+     {
+      "texto": "mouse",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "mouse"
+     },
+     [
+      "Mouse Genius NX-7000 Negro",
+      "Mouse Razer Cobra Negro",
+      "Mouse Redragon Predator Negro",
+      "Mouse Genius NX-7000 Blanco",
+      "Mouse Razer Cobra Blanco"
+     ]
+    ],
+    [
+     {
+      "texto": "memoria ram",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "memoria ram"
+     },
+     [
+      "Memoria ram Patriot Viper DDR4 3200 8GB Negro",
+      "Memoria ram Patriot Viper DDR4 3200 16GB Negro",
+      "Memoria ram Patriot Viper DDR4 3200 32GB Negro",
+      "Memoria ram Patriot Viper DDR4 3200 8GB Blanco",
+      "Memoria ram Patriot Viper DDR4 3200 16GB Blanco"
+     ]
+    ]
+   ],
+   "tenés alguna cámara para la compu?": [
+    [
+     {
+      "texto": "webcam para computadora",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "webcam"
+     },
+     [
+      "Webcam Logitech StreamCam",
+      "Webcam AverMedia PW313",
+      "Webcam Razer Kiyo X",
+      "Webcam Logitech Brio 100",
+      "Webcam Razer Kiyo Pro"
+     ]
+    ]
+   ]
+  },
+  "1": {
+   "cuánto sale el mouse logitech G305? // y ese tiene bluetooth?": [
+    [
+     {
+      "texto": "mouse Logitech G305 inalámbrico",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "mouse"
+     },
+     [
+      "Mouse Logitech G305 Lightspeed Negro",
+      "Mouse Logitech G305 Lightspeed Blanco",
+      "Mouse Logitech G Pro Wireless Negro",
+      "Mouse Logitech G Pro Wireless Blanco",
+      "Mouse Logitech G Pro X Superlight Negro"
+     ]
+    ]
+   ],
+   "pasame 3 routers tp-link // el tercero tiene wifi 6?": [
+    [
+     {
+      "texto": "router TP-Link",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "router"
+     },
+     [
+      "Router TP-Link Archer C6 Negro",
+      "Router TP-Link Archer C6 Blanco",
+      "Router TP-Link Archer AX23 Negro",
+      "Router TP-Link Archer AX23 Blanco",
+      "Router TP-Link Deco M4 Mesh Negro"
+     ]
+    ],
+    [
+     {
+      "texto": "router TP-Link Wi-Fi 6",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "router"
+     },
+     [
+      "Router TP-Link Archer C6 Negro",
+      "Router TP-Link Archer C6 Blanco",
+      "Router TP-Link Archer AX23 Negro",
+      "Router TP-Link Archer AX23 Blanco",
+      "Router TP-Link Deco M4 Mesh Negro"
+     ]
+    ]
+   ],
+   "busco una silla gamer // y algo que no pase los 200 mil?": [
+    [
+     {
+      "texto": "silla gamer",
+      "precio_max": 200000,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "silla gamer"
+     },
+     []
+    ]
+   ],
+   "cuánto sale el redragon? // el teclado blanco": [
+    [
+     {
+      "texto": "teclado Redragon blanco",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "teclado"
+     },
+     [
+      "Teclado Redragon Kumara K552 Blanco",
+      "Teclado Redragon K617 Fizz Blanco",
+      "Teclado Redragon Vata K580 Blanco",
+      "Teclado Redragon Vara K551 Blanco",
+      "Teclado Redragon Kumara K552 Negro"
+     ]
+    ]
+   ],
+   "tenés los sony WH-1000XM5 en negro?": [
+    [
+     {
+      "texto": "auriculares Sony WH-1000XM5 negro",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "auriculares"
+     },
+     [
+      "Auriculares Sony WH-1000XM5 Negro",
+      "Auriculares Sony WH-1000XM5 Blanco",
+      "Auriculares Sony WH-CH520 Negro",
+      "Auriculares Sony WH-CH720N Negro",
+      "Auriculares Sony WH-CH520 Blanco"
+     ]
+    ]
+   ],
+   "el ryzen 5 7600 va en la asus prime B550M-A?": [
+    [
+     {
+      "texto": "procesador AMD Ryzen 5 7600",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "procesador"
+     },
+     [
+      "Procesador AMD Ryzen 5 7600",
+      "Procesador AMD Ryzen 5 5600",
+      "Procesador AMD Ryzen 5 5500",
+      "Procesador AMD Ryzen 5 5600X",
+      "Procesador AMD Ryzen 5 7500F"
+     ]
+    ],
+    [
+     {
+      "texto": "motherboard ASUS Prime B550M-A",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "motherboard"
+     },
+     [
+      "Motherboard Asus Prime B550M-A",
+      "Motherboard Asus Prime B650-Plus",
+      "Motherboard Asus ROG Strix B550-F",
+      "Motherboard MSI PRO B550M-VC",
+      "Motherboard Gigabyte B550M DS3H"
+     ]
+    ]
+   ],
+   "precio del redragon kumara K552 negro, del G305 blanco, y hacen factura A?": [
+    [
+     {
+      "texto": "teclado Redragon Kumara K552 negro",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "teclado"
+     },
+     [
+      "Teclado Redragon Kumara K552 Negro",
+      "Teclado Redragon Kumara K552 Blanco",
+      "Teclado Redragon K617 Fizz Negro",
+      "Teclado Redragon Vata K580 Negro",
+      "Teclado Redragon Vara K551 Negro"
+     ]
+    ],
+    [
+     {
+      "texto": "mouse Logitech G305 blanco",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "mouse"
+     },
+     [
+      "Mouse Logitech G305 Lightspeed Blanco",
+      "Mouse Logitech G305 Lightspeed Negro",
+      "Mouse Logitech G502 X Blanco",
+      "Mouse Logitech G203 Lightsync Blanco",
+      "Mouse Logitech G502 Hero Blanco"
+     ]
+    ]
+   ],
+   "cuánto sale la notebook acer nitro 5 core i5? // tienen local para retirar? // hay cuotas sin interés? // y el horario? // bueno, la notebook que te pregunté primero, la quiero reservar": [
+    [
+     {
+      "texto": "notebook Acer Nitro 5 Intel Core i5",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "notebook"
+     },
+     [
+      "Notebook Acer Nitro 5 Core i7 16GB 1TB SSD Negro",
+      "Notebook Acer Nitro 5 Core i7 16GB 1TB SSD Gris",
+      "Notebook Acer Nitro 5 Core i7 16GB 1TB SSD Plata",
+      "Notebook Acer Nitro 5 Core i5 16GB 512GB SSD Negro",
+      "Notebook Acer Nitro 5 Core i5 16GB 512GB SSD Gris"
+     ]
+    ]
+   ],
+   "quiero 2 memorias corsair vengeance LPX 8GB y un SSD samsung de 1TB // cuánto es todo con envío a Tucumán?": [
+    [
+     {
+      "texto": "memoria ram Corsair Vengeance LPX 8GB",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "memoria ram"
+     },
+     [
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 8GB Negro",
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 8GB Blanco",
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 16GB Negro",
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 32GB Negro",
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 16GB Blanco"
+     ]
+    ],
+    [
+     {
+      "texto": "SSD Samsung 1TB",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "ssd"
+     },
+     [
+      "Ssd Samsung 980 1TB",
+      "Ssd Samsung 980 PRO 1TB",
+      "Ssd Samsung 990 PRO 1TB",
+      "Ssd Samsung 970 EVO Plus 1TB",
+      "Ssd Samsung 870 EVO SATA 1TB"
+     ]
+    ]
+   ],
+   "necesito algo para las videollamadas del trabajo, qué me recomendás?": [
+    [
+     {
+      "texto": "webcam para videollamadas",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "webcam"
+     },
+     [
+      "Webcam Logitech StreamCam",
+      "Webcam AverMedia PW313",
+      "Webcam Razer Kiyo X",
+      "Webcam Logitech Brio 100",
+      "Webcam Razer Kiyo Pro"
+     ]
+    ],
+    [
+     {
+      "texto": "auriculares con microfono para videollamadas",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "auriculares"
+     },
+     [
+      "Auriculares Redragon Pandora Negro",
+      "Auriculares Redragon Pandora Blanco",
+      "Auriculares Logitech G435 Negro",
+      "Auriculares Logitech G535 Negro",
+      "Auriculares HyperX Cloud II Negro"
+     ]
+    ]
+   ],
+   "ola tenés la placa de bideo de 8 gigas más varata": [
+    [
+     {
+      "texto": "placa de video 8 GB",
+      "precio_max": 0,
+      "orden": "barato",
+      "excluir_marcas": [],
+      "rubro": "placa de video"
+     },
+     [
+      "Placa de video MSI Gaming X RX 7600",
+      "Placa de video Gigabyte Eagle RTX 4060",
+      "Placa de video Asus Dual RTX 4060",
+      "Placa de video Gigabyte Gaming OC RTX 4060 Ti",
+      "Placa de video Zotac Twin Edge RTX 4060 Ti"
+     ]
+    ]
+   ],
+   "busco auriculares sin cable pero no JBL // ah no, con cable está bien": [
+    [
+     {
+      "texto": "auriculares con cable",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [
+       "JBL"
+      ],
+      "rubro": "auriculares"
+     },
+     [
+      "Auriculares Redragon Pandora Negro",
+      "Auriculares Redragon Pandora Blanco",
+      "Auriculares Logitech G435 Negro",
+      "Auriculares Logitech G535 Negro",
+      "Auriculares HyperX Cloud II Negro"
+     ]
+    ]
+   ],
+   "el G305 lo tenés en rojo?": [
+    [
+     {
+      "texto": "mouse Logitech G305 rojo",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "mouse"
+     },
+     [
+      "Mouse Logitech G305 Lightspeed Negro",
+      "Mouse Logitech G305 Lightspeed Blanco",
+      "Mouse Logitech G502 X Negro",
+      "Mouse Logitech G203 Lightsync Negro",
+      "Mouse Logitech G502 Hero Negro"
+     ]
+    ]
+   ],
+   "qué diferencia hay entre el archer C6 y el AX23? // y cuál me conviene para un depto chico? // dale, el otro cuánto salía?": [
+    [
+     {
+      "texto": "router TP-Link Archer C6",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "router"
+     },
+     [
+      "Router TP-Link Archer C6 Negro",
+      "Router TP-Link Archer C6 Blanco",
+      "Router TP-Link Archer AX23 Negro",
+      "Router TP-Link Archer AX23 Blanco",
+      "Router TP-Link Archer AX55 Negro"
+     ]
+    ],
+    [
+     {
+      "texto": "router TP-Link Archer AX23",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "router"
+     },
+     [
+      "Router TP-Link Archer AX23 Negro",
+      "Router TP-Link Archer AX23 Blanco",
+      "Router TP-Link Archer AX55 Negro",
+      "Router TP-Link Archer AX73 Negro",
+      "Router TP-Link Archer AX55 Blanco"
+     ]
+    ]
+   ],
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles.": [
+    [
+     {
+      "texto": "auriculares",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "auriculares"
+     },
+     [
+      "Auriculares Redragon Pandora Negro",
+      "Auriculares Redragon Pandora Blanco",
+      "Auriculares Logitech G435 Negro",
+      "Auriculares Logitech G535 Negro",
+      "Auriculares HyperX Cloud II Negro"
+     ]
+    ],
+    [
+     {
+      "texto": "mouse",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "mouse"
+     },
+     [
+      "Mouse Genius NX-7000 Negro",
+      "Mouse Razer Cobra Negro",
+      "Mouse Redragon Predator Negro",
+      "Mouse Genius NX-7000 Blanco",
+      "Mouse Razer Cobra Blanco"
+     ]
+    ],
+    [
+     {
+      "texto": "memoria ram",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "memoria ram"
+     },
+     [
+      "Memoria ram Patriot Viper DDR4 3200 8GB Negro",
+      "Memoria ram Patriot Viper DDR4 3200 16GB Negro",
+      "Memoria ram Patriot Viper DDR4 3200 32GB Negro",
+      "Memoria ram Patriot Viper DDR4 3200 8GB Blanco",
+      "Memoria ram Patriot Viper DDR4 3200 16GB Blanco"
+     ]
+    ]
+   ],
+   "tenés alguna cámara para la compu?": [
+    [
+     {
+      "texto": "webcam para computadora",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "webcam"
+     },
+     [
+      "Webcam Logitech StreamCam",
+      "Webcam AverMedia PW313",
+      "Webcam Razer Kiyo X",
+      "Webcam Logitech Brio 100",
+      "Webcam Razer Kiyo Pro"
+     ]
+    ]
+   ]
+  },
+  "2": {
+   "cuánto sale el mouse logitech G305? // y ese tiene bluetooth?": [
+    [
+     {
+      "texto": "mouse logitech G305 inalambrico",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "mouse"
+     },
+     [
+      "Mouse Logitech G305 Lightspeed Negro",
+      "Mouse Logitech G305 Lightspeed Blanco",
+      "Mouse Logitech G Pro Wireless Negro",
+      "Mouse Logitech G Pro Wireless Blanco",
+      "Mouse Logitech G Pro X Superlight Negro"
+     ]
+    ]
+   ],
+   "pasame 3 routers tp-link // el tercero tiene wifi 6?": [
+    [
+     {
+      "texto": "router TP-Link",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "router"
+     },
+     [
+      "Router TP-Link Archer C6 Negro",
+      "Router TP-Link Archer C6 Blanco",
+      "Router TP-Link Archer AX23 Negro",
+      "Router TP-Link Archer AX23 Blanco",
+      "Router TP-Link Deco M4 Mesh Negro"
+     ]
+    ],
+    [
+     {
+      "texto": "router TP-Link Wi-Fi 6",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "router"
+     },
+     [
+      "Router TP-Link Archer C6 Negro",
+      "Router TP-Link Archer C6 Blanco",
+      "Router TP-Link Archer AX23 Negro",
+      "Router TP-Link Archer AX23 Blanco",
+      "Router TP-Link Deco M4 Mesh Negro"
+     ]
+    ]
+   ],
+   "busco una silla gamer // y algo que no pase los 200 mil?": [
+    [
+     {
+      "texto": "silla gamer",
+      "precio_max": 200000,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "silla gamer"
+     },
+     []
+    ]
+   ],
+   "cuánto sale el redragon? // el teclado blanco": [
+    [
+     {
+      "texto": "teclado Redragon blanco",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "teclado"
+     },
+     [
+      "Teclado Redragon Kumara K552 Blanco",
+      "Teclado Redragon K617 Fizz Blanco",
+      "Teclado Redragon Vata K580 Blanco",
+      "Teclado Redragon Vara K551 Blanco",
+      "Teclado Redragon Kumara K552 Negro"
+     ]
+    ]
+   ],
+   "tenés los sony WH-1000XM5 en negro?": [
+    [
+     {
+      "texto": "auriculares Sony WH-1000XM5 color negro",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "auriculares"
+     },
+     [
+      "Auriculares Sony WH-1000XM5 Negro",
+      "Auriculares Sony WH-1000XM5 Blanco",
+      "Auriculares Sony WH-CH520 Negro",
+      "Auriculares Sony WH-CH720N Negro",
+      "Auriculares Sony WH-CH520 Blanco"
+     ]
+    ]
+   ],
+   "el ryzen 5 7600 va en la asus prime B550M-A?": [
+    [
+     {
+      "texto": "procesador AMD Ryzen 5 7600",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "procesador"
+     },
+     [
+      "Procesador AMD Ryzen 5 7600",
+      "Procesador AMD Ryzen 5 5600",
+      "Procesador AMD Ryzen 5 5500",
+      "Procesador AMD Ryzen 5 5600X",
+      "Procesador AMD Ryzen 5 7500F"
+     ]
+    ],
+    [
+     {
+      "texto": "motherboard ASUS Prime B550M-A",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "motherboard"
+     },
+     [
+      "Motherboard Asus Prime B550M-A",
+      "Motherboard Asus Prime B650-Plus",
+      "Motherboard Asus ROG Strix B550-F",
+      "Motherboard MSI PRO B550M-VC",
+      "Motherboard Gigabyte B550M DS3H"
+     ]
+    ]
+   ],
+   "precio del redragon kumara K552 negro, del G305 blanco, y hacen factura A?": [
+    [
+     {
+      "texto": "teclado Redragon Kumara K552 negro",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "teclado"
+     },
+     [
+      "Teclado Redragon Kumara K552 Negro",
+      "Teclado Redragon Kumara K552 Blanco",
+      "Teclado Redragon K617 Fizz Negro",
+      "Teclado Redragon Vata K580 Negro",
+      "Teclado Redragon Vara K551 Negro"
+     ]
+    ],
+    [
+     {
+      "texto": "mouse Logitech G305 blanco",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "mouse"
+     },
+     [
+      "Mouse Logitech G305 Lightspeed Blanco",
+      "Mouse Logitech G305 Lightspeed Negro",
+      "Mouse Logitech G502 X Blanco",
+      "Mouse Logitech G203 Lightsync Blanco",
+      "Mouse Logitech G502 Hero Blanco"
+     ]
+    ]
+   ],
+   "cuánto sale la notebook acer nitro 5 core i5? // tienen local para retirar? // hay cuotas sin interés? // y el horario? // bueno, la notebook que te pregunté primero, la quiero reservar": [
+    [
+     {
+      "texto": "notebook Acer Nitro 5 Intel Core i5",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "notebook"
+     },
+     [
+      "Notebook Acer Nitro 5 Core i7 16GB 1TB SSD Negro",
+      "Notebook Acer Nitro 5 Core i7 16GB 1TB SSD Gris",
+      "Notebook Acer Nitro 5 Core i7 16GB 1TB SSD Plata",
+      "Notebook Acer Nitro 5 Core i5 16GB 512GB SSD Negro",
+      "Notebook Acer Nitro 5 Core i5 16GB 512GB SSD Gris"
+     ]
+    ]
+   ],
+   "quiero 2 memorias corsair vengeance LPX 8GB y un SSD samsung de 1TB // cuánto es todo con envío a Tucumán?": [
+    [
+     {
+      "texto": "memoria ram Corsair Vengeance LPX 8GB",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "memoria ram"
+     },
+     [
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 8GB Negro",
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 8GB Blanco",
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 16GB Negro",
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 32GB Negro",
+      "Memoria ram Corsair Vengeance LPX DDR4 3600 16GB Blanco"
+     ]
+    ],
+    [
+     {
+      "texto": "SSD Samsung 1TB",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "ssd"
+     },
+     [
+      "Ssd Samsung 980 1TB",
+      "Ssd Samsung 980 PRO 1TB",
+      "Ssd Samsung 990 PRO 1TB",
+      "Ssd Samsung 970 EVO Plus 1TB",
+      "Ssd Samsung 870 EVO SATA 1TB"
+     ]
+    ]
+   ],
+   "necesito algo para las videollamadas del trabajo, qué me recomendás?": [
+    [
+     {
+      "texto": "webcam para videollamadas",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "webcam"
+     },
+     [
+      "Webcam Logitech StreamCam",
+      "Webcam AverMedia PW313",
+      "Webcam Razer Kiyo X",
+      "Webcam Logitech Brio 100",
+      "Webcam Razer Kiyo Pro"
+     ]
+    ],
+    [
+     {
+      "texto": "auriculares con microfono para videollamadas",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "auriculares"
+     },
+     [
+      "Auriculares Redragon Pandora Negro",
+      "Auriculares Redragon Pandora Blanco",
+      "Auriculares Logitech G435 Negro",
+      "Auriculares Logitech G535 Negro",
+      "Auriculares HyperX Cloud II Negro"
+     ]
+    ]
+   ],
+   "ola tenés la placa de bideo de 8 gigas más varata": [
+    [
+     {
+      "texto": "placa de video 8 GB",
+      "precio_max": 0,
+      "orden": "barato",
+      "excluir_marcas": [],
+      "rubro": "placa de video"
+     },
+     [
+      "Placa de video MSI Gaming X RX 7600",
+      "Placa de video Gigabyte Eagle RTX 4060",
+      "Placa de video Asus Dual RTX 4060",
+      "Placa de video Gigabyte Gaming OC RTX 4060 Ti",
+      "Placa de video Zotac Twin Edge RTX 4060 Ti"
+     ]
+    ]
+   ],
+   "busco auriculares sin cable pero no JBL // ah no, con cable está bien": [
+    [
+     {
+      "texto": "auriculares con cable",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [
+       "JBL"
+      ],
+      "rubro": "auriculares"
+     },
+     [
+      "Auriculares Redragon Pandora Negro",
+      "Auriculares Redragon Pandora Blanco",
+      "Auriculares Logitech G435 Negro",
+      "Auriculares Logitech G535 Negro",
+      "Auriculares HyperX Cloud II Negro"
+     ]
+    ]
+   ],
+   "el G305 lo tenés en rojo?": [
+    [
+     {
+      "texto": "mouse Logitech G305 rojo",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "mouse"
+     },
+     [
+      "Mouse Logitech G305 Lightspeed Negro",
+      "Mouse Logitech G305 Lightspeed Blanco",
+      "Mouse Logitech G502 X Negro",
+      "Mouse Logitech G203 Lightsync Negro",
+      "Mouse Logitech G502 Hero Negro"
+     ]
+    ]
+   ],
+   "qué diferencia hay entre el archer C6 y el AX23? // y cuál me conviene para un depto chico? // dale, el otro cuánto salía?": [
+    [
+     {
+      "texto": "router TP-Link Archer C6",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "router"
+     },
+     [
+      "Router TP-Link Archer C6 Negro",
+      "Router TP-Link Archer C6 Blanco",
+      "Router TP-Link Archer AX23 Negro",
+      "Router TP-Link Archer AX23 Blanco",
+      "Router TP-Link Archer AX55 Negro"
+     ]
+    ],
+    [
+     {
+      "texto": "router TP-Link Archer AX23",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "router"
+     },
+     [
+      "Router TP-Link Archer AX23 Negro",
+      "Router TP-Link Archer AX23 Blanco",
+      "Router TP-Link Archer AX55 Negro",
+      "Router TP-Link Archer AX73 Negro",
+      "Router TP-Link Archer AX55 Blanco"
+     ]
+    ]
+   ],
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles.": [
+    [
+     {
+      "texto": "auriculares",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "auriculares"
+     },
+     [
+      "Auriculares Redragon Pandora Negro",
+      "Auriculares Redragon Pandora Blanco",
+      "Auriculares Logitech G435 Negro",
+      "Auriculares Logitech G535 Negro",
+      "Auriculares HyperX Cloud II Negro"
+     ]
+    ],
+    [
+     {
+      "texto": "mouse",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "mouse"
+     },
+     [
+      "Mouse Genius NX-7000 Negro",
+      "Mouse Razer Cobra Negro",
+      "Mouse Redragon Predator Negro",
+      "Mouse Genius NX-7000 Blanco",
+      "Mouse Razer Cobra Blanco"
+     ]
+    ],
+    [
+     {
+      "texto": "memoria ram",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "memoria ram"
+     },
+     [
+      "Memoria ram Patriot Viper DDR4 3200 8GB Negro",
+      "Memoria ram Patriot Viper DDR4 3200 16GB Negro",
+      "Memoria ram Patriot Viper DDR4 3200 32GB Negro",
+      "Memoria ram Patriot Viper DDR4 3200 8GB Blanco",
+      "Memoria ram Patriot Viper DDR4 3200 16GB Blanco"
+     ]
+    ]
+   ],
+   "tenés alguna cámara para la compu?": [
+    [
+     {
+      "texto": "webcam para computadora",
+      "precio_max": 0,
+      "orden": "relevancia",
+      "excluir_marcas": [],
+      "rubro": "webcam"
+     },
+     [
+      "Webcam Logitech StreamCam",
+      "Webcam AverMedia PW313",
+      "Webcam Razer Kiyo X",
+      "Webcam Logitech Brio 100",
+      "Webcam Razer Kiyo Pro"
+     ]
+    ]
+   ]
+  }
+ }
+}
