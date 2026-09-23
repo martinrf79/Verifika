@@ -1,0 +1,134 @@
+{
+ "_que_es": "LA TANDA QUE NO SE USA PARA CORREGIR (23-sep-2026). Las 22 charlas de vara_charlas.json se usaron para arreglar el codigo rojo por rojo, asi que ya no pueden decir si el camino nuevo generaliza. Estas se escribieron ANTES de correrlas por primera vez, con rubros y formas que la otra vara no toca: monitores, impresoras, routers, sillas, ram, ssd, webcams; topes negados, rangos, 'no se' que no niega, exclusiones que siguen, referencias lejanas con otro rubro en el medio.",
+ "_regla": "NO SE CORRIGE MIRANDO ESTA VARA. Si una corrida da rojo, el arreglo se valida contra una tanda NUEVA, y esta queda como estaba. Una casilla solo se edita si estaba mal escrita, y el commit lo dice.",
+ "charlas": [
+  {"id": "N1", "clase": "'no se' no niega la marca", "turnos": [
+   {"texto": "hola, no se mucho de esto, quiero un mouse logitech que no sea caro", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "mouse"},
+    {"n": "logitech no queda excluida", "tipo": "sin_condicion", "campo": ["marca"], "valor": "logitech", "prohibe": ["no_contiene", "evita", "distinto"]},
+    {"n": "lo barato primero", "tipo": "barato"},
+    {"n": "sin techo inventado", "tipo": "sin_umbral_inventado", "campo": ["precio_ars"]}]}]},
+  {"id": "N2", "clase": "tope negado: no mas de", "turnos": [
+   {"texto": "necesito un monitor de no mas de 200 mil", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "monitor"},
+    {"n": "el tope es techo", "tipo": "condicion", "campo": ["precio_ars"], "valor": "200000", "acepta": ["menor", "menor_igual"]},
+    {"n": "el tope no queda al reves", "tipo": "sin_condicion", "campo": ["precio_ars"], "valor": "200000", "prohibe": ["mayor", "mayor_igual"]}]}]},
+  {"id": "N3", "clase": "piso de precio", "turnos": [
+   {"texto": "busco una notebook de mas de 900 mil", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "notebook"},
+    {"n": "el piso", "tipo": "condicion", "campo": ["precio_ars"], "valor": "900000", "acepta": ["mayor", "mayor_igual"]}]}]},
+  {"id": "N4", "clase": "rango en lucas", "turnos": [
+   {"texto": "auriculares entre 50 y 100 lucas", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "auriculares"},
+    {"n": "el piso del rango", "tipo": "condicion", "campo": ["precio_ars"], "valor": "50000", "acepta": ["mayor", "mayor_igual"]},
+    {"n": "el techo del rango", "tipo": "condicion", "campo": ["precio_ars"], "valor": "100000", "acepta": ["menor", "menor_igual"]}]}]},
+  {"id": "N5", "clase": "ordinal femenino sobre otro rubro", "turnos": [
+   {"texto": "mostrame webcams logitech", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "webcam"}]},
+   {"texto": "la tercera tiene microfono?", "casillas": [
+    {"n": "'la tercera' es la tercera que mostro", "tipo": "referencia", "de_turno": 1, "posicion": 3}]}]},
+  {"id": "N6", "clase": "referencia lejana con otro producto en el medio", "turnos": [
+   {"texto": "cuanto sale la impresora Epson L3250?", "casillas": [
+    {"n": "la impresora", "tipo": "consulta", "categoria": "impresora"}]},
+   {"texto": "y un router TP-Link Archer C6?", "casillas": [
+    {"n": "el router", "tipo": "consulta", "categoria": "router"}]},
+   {"texto": "hacen envios a Salta?", "casillas": [
+    {"n": "el destino", "tipo": "envio", "destino": "salta"}]},
+   {"texto": "bueno, la impresora mandamela a Salta, cuanto seria?", "casillas": [
+    {"n": "es la impresora del principio", "tipo": "referencia", "modelo": "ecotank l3250"},
+    {"n": "el destino", "tipo": "envio", "destino": "salta"}]}]},
+  {"id": "N7", "clase": "la exclusion sigue al refinar el color", "turnos": [
+   {"texto": "sillas gamer que no sean redragon", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "silla gamer"},
+    {"n": "excluye redragon", "tipo": "condicion", "campo": ["marca"], "valor": "redragon", "acepta": ["no_contiene", "distinto"]}]},
+   {"texto": "y en negro?", "casillas": [
+    {"n": "sigue en sillas", "tipo": "consulta", "categoria": "silla gamer"},
+    {"n": "sigue sin redragon", "tipo": "condicion", "campo": ["marca"], "valor": "redragon", "acepta": ["no_contiene", "distinto"]},
+    {"n": "el color", "tipo": "condicion", "campo": ["color"], "valor": "negro"}]}]},
+  {"id": "N8", "clase": "audio con errores en otro rubro", "turnos": [
+   {"texto": "ola kiero una memoria ram kinston de 16 gigas", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "memoria ram"},
+    {"n": "la capacidad", "tipo": "nombra", "palabra": "16"}]}]},
+  {"id": "N9", "clase": "variante de un producto dicho", "turnos": [
+   {"texto": "precio del parlante Edifier R1280T", "casillas": [
+    {"n": "el parlante", "tipo": "consulta", "categoria": "parlante"}]},
+   {"texto": "lo tenes en blanco?", "casillas": [
+    {"n": "es el R1280T", "tipo": "referencia", "modelo": "r1280t"}]}]},
+  {"id": "N10", "clase": "marca sola: repregunta, y despues el rubro la completa", "turnos": [
+   {"texto": "cuanto sale la samsung?", "casillas": [
+    {"n": "repregunta en vez de elegir", "tipo": "pregunta"}]},
+   {"texto": "el monitor", "casillas": [
+    {"n": "busca monitores", "tipo": "consulta", "categoria": "monitor"},
+    {"n": "arrastra samsung", "tipo": "nombra", "palabra": "samsung"}]}]},
+  {"id": "N11", "clase": "de cada uno sobre dos nombrados, con total", "turnos": [
+   {"texto": "precio del SSD Samsung 980 1TB y de la memoria Kingston Fury Beast DDR4 3200 16GB", "casillas": [
+    {"n": "el ssd", "tipo": "consulta", "categoria": "ssd"},
+    {"n": "la ram", "tipo": "consulta", "categoria": "memoria ram"}]},
+   {"texto": "quiero 3 de cada uno, cuanto me sale todo?", "casillas": [
+    {"n": "el ssd", "tipo": "referencia", "modelo": "980 1tb"},
+    {"n": "la ram", "tipo": "referencia", "modelo": "fury beast ddr4 3200 16gb"},
+    {"n": "la cantidad", "tipo": "cantidad", "valor": 3},
+    {"n": "pide el total", "tipo": "cuenta"}]}]},
+  {"id": "N12", "clase": "'y el otro?' con routers", "turnos": [
+   {"texto": "precio del router TP-Link Archer AX23 y del Tenda AC10", "casillas": [
+    {"n": "los routers", "tipo": "consulta", "categoria": "router"}]},
+   {"texto": "el tp-link tiene wifi 6?", "casillas": [
+    {"n": "es el AX23", "tipo": "referencia", "modelo": "archer ax23"}]},
+   {"texto": "y el otro?", "casillas": [
+    {"n": "es el Tenda", "tipo": "referencia", "modelo": "ac10"}]}]},
+  {"id": "N13", "clase": "corrige la cantidad con 'no, mejor'", "turnos": [
+   {"texto": "quiero 2 webcams Logitech C920", "casillas": [
+    {"n": "la cantidad", "tipo": "cantidad", "valor": 2}]},
+   {"texto": "no, mejor que sean 4", "casillas": [
+    {"n": "es la C920", "tipo": "referencia", "modelo": "c920"},
+    {"n": "la cantidad nueva", "tipo": "cantidad", "valor": 4}]}]},
+  {"id": "N14", "clase": "vuelve despues de una politica: 'la quiero'", "turnos": [
+   {"texto": "cuanto sale la notebook Lenovo IdeaPad 3 Ryzen 7?", "casillas": [
+    {"n": "la notebook", "tipo": "consulta", "categoria": "notebook"}]},
+   {"texto": "tienen cuotas?", "casillas": []},
+   {"texto": "listo, la quiero", "casillas": [
+    {"n": "es la IdeaPad Ryzen 7", "tipo": "referencia", "modelo": "ideapad 3 ryzen 7"}]}]},
+  {"id": "N15", "clase": "superlativo sobre monitores mostrados", "turnos": [
+   {"texto": "mostrame 3 monitores samsung", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "monitor"}]},
+   {"texto": "de esos cual es el mas barato?", "casillas": [
+    {"n": "son los que mostro", "tipo": "referencia", "de_turno": 1, "todos": true},
+    {"n": "lo barato primero", "tipo": "barato"}]}]},
+  {"id": "N16", "clase": "pregunta nueva despues de un producto", "turnos": [
+   {"texto": "precio del mouse Logitech G203", "casillas": [
+    {"n": "el mouse", "tipo": "consulta", "categoria": "mouse"}]},
+   {"texto": "tenes teclados?", "casillas": [
+    {"n": "busca teclados", "tipo": "consulta", "categoria": "teclado"}]}]},
+  {"id": "N17", "clase": "cantidad y destino en una frase", "turnos": [
+   {"texto": "quiero 2 parlantes Logitech Z313 a Neuquen", "casillas": [
+    {"n": "el parlante con su cantidad", "tipo": "consulta", "categoria": "parlante", "cantidad": [2]},
+    {"n": "el destino", "tipo": "envio", "destino": "neuquen"}]}]},
+  {"id": "N18", "clase": "evita graduado sobre el origen", "turnos": [
+   {"texto": "una tablet, en lo posible que no sea china", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "tablet"},
+    {"n": "evita lo chino", "tipo": "condicion", "campo": ["pais_marca", "pais_fabricacion", "origen"], "valor": "china", "acepta": ["evita", "no_contiene", "distinto"]}]}]},
+  {"id": "N19", "clase": "mas barato con la exclusion de antes", "turnos": [
+   {"texto": "impresoras que no sean HP", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "impresora"},
+    {"n": "excluye hp", "tipo": "condicion", "campo": ["marca"], "valor": "hp", "acepta": ["no_contiene", "distinto"]}]},
+   {"texto": "algo mas barato?", "casillas": [
+    {"n": "sigue en impresoras", "tipo": "consulta", "categoria": "impresora"},
+    {"n": "sigue sin hp", "tipo": "condicion", "campo": ["marca"], "valor": "hp", "acepta": ["no_contiene", "distinto"]},
+    {"n": "lo barato primero", "tipo": "barato"}]}]},
+  {"id": "N20", "clase": "dos ordinales con destino", "turnos": [
+   {"texto": "mostrame routers tp-link", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "router"}]},
+   {"texto": "el primero y el segundo, uno de cada uno a Cordoba", "casillas": [
+    {"n": "el primero", "tipo": "referencia", "de_turno": 1, "posicion": 1},
+    {"n": "el segundo", "tipo": "referencia", "de_turno": 1, "posicion": 2},
+    {"n": "el destino", "tipo": "envio", "destino": "cordoba"}]}]},
+  {"id": "N21", "clase": "'sin' que no niega la marca", "turnos": [
+   {"texto": "busco un teclado sin cable, marca logitech", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "teclado"},
+    {"n": "logitech no queda excluida", "tipo": "sin_condicion", "campo": ["marca"], "valor": "logitech", "prohibe": ["no_contiene", "evita", "distinto"]}]}]},
+  {"id": "N22", "clase": "hasta tanto, sin la palabra menos", "turnos": [
+   {"texto": "tengo hasta 80 mil para un ssd", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "ssd"},
+    {"n": "el tope", "tipo": "condicion", "campo": ["precio_ars"], "valor": "80000", "acepta": ["menor", "menor_igual"]}]}]}
+ ]
+}

@@ -551,8 +551,9 @@ def correr(charlas: list, tab: dict, traducir, ver=print) -> tuple:
     return ok, de, na, crudo
 
 
-def charlas_de_la_vara(solo: str = "") -> list:
-    with open(os.path.join(RAIZ, "banco_pruebas", "vara_charlas.json"),
+def charlas_de_la_vara(solo: str = "",
+                      archivo: str = "vara_charlas.json") -> list:
+    with open(os.path.join(RAIZ, "banco_pruebas", archivo),
               encoding="utf-8") as f:
         vara = json.load(f)
     quiero = {x.strip().upper() for x in solo.split(",") if x.strip()}
@@ -568,13 +569,16 @@ def main() -> int:
                     choices=("gemini", "deepseek"))
     ap.add_argument("--solo", default="")
     ap.add_argument("--json", default="")
+    ap.add_argument("--vara", default="vara_charlas.json",
+                    help="vara_charlas_nuevas.json es la que no se usa para "
+                         "corregir")
     ap.add_argument("--grabado", action="store_true",
                     help="repite las fichas grabadas, sin llamar al modelo")
     args = ap.parse_args()
     clon_produccion.preparar_entorno()
     sim_firestore.install()
     tab = T.tablero()
-    charlas = charlas_de_la_vara(args.solo)
+    charlas = charlas_de_la_vara(args.solo, args.vara)
     if args.grabado:
         with open(GRABADAS, encoding="utf-8") as f:
             corridas = json.load(f)["corridas"]

@@ -83,6 +83,22 @@ def _c_condicion(c, p):
     return False
 
 
+def _c_sin_condicion(c, p):
+    """LO QUE NO TIENE QUE APARECER: una condicion con el sentido al reves
+    (23-sep-2026). "No se, quiero un mouse logitech" no excluye Logitech, y
+    "no mas de 200 mil" no es un piso. Falla si alguna consulta trae ese
+    campo y ese valor con un operador prohibido."""
+    for q in _consultas(p):
+        for x in (q.get("condiciones") or []):
+            if _norm(x.get("campo")) not in [_norm(v) for v in c["campo"]]:
+                continue
+            if c.get("valor") and _norm(c["valor"]) not in _norm(x.get("valor")):
+                continue
+            if _norm(x.get("operador")) in [_norm(v) for v in c["prohibe"]]:
+                return False
+    return True
+
+
 def _c_envio(c, p):
     for e in (p.get("envios") or []):
         nombre = e.get("destino") if isinstance(e, dict) else e
@@ -313,6 +329,7 @@ def _c_sin_mecanismo(c, p):
 AUSENCIA = {"temas_limpios"}
 
 CASILLA = {"consulta": _c_consulta, "condicion": _c_condicion,
+           "sin_condicion": _c_sin_condicion,
            "envio": _c_envio, "envio_va": _c_envio_va, "reparto": _c_reparto,
            "cuenta": _c_cuenta, "tema": _c_tema, "busco": _c_busco,
            "orden": _c_orden, "compat": _c_compat, "nombra": _c_nombra,
