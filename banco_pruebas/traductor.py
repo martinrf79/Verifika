@@ -331,19 +331,70 @@ def puntuar(m: dict, ficha: dict, tab: dict) -> dict:
             "copias": copias, "fuera_de_lista": fuera_de_lista}
 
 
+# ── EL MODO LIBRE: mensajes sin respuesta esperada ─────────────────────────
+#
+# LA PRUEBA QUE DICE SI EL TABLERO GENERALIZA (23-sep-2026). El tablero se
+# ajusto mirando la vara, asi que la vara ya no puede decir si sirve para
+# mensajes que nunca vio. Estos mensajes no traen respuesta escrita: se miden
+# con controles que valen para CUALQUIER mensaje, y con el acuerdo entre dos
+# modelos, que se lee a mano donde discrepan.
+
+def _claves_catalogo() -> set:
+    """Las partes de modelo con letra y numero —g203, k380, 24mk430h— de
+    todo el catalogo: si aparecen en una parte de saber general, es un dato
+    de producto puntual contestado de cabeza."""
+    import csv
+    with open(os.path.join(RAIZ, "data", "clientes", TIENDA, "productos.csv"),
+              encoding="utf-8") as f:
+        modelos = [_norm(r.get("modelo")) for r in csv.DictReader(f)]
+    return {w for m in modelos for w in m.split()
+            if len(w) >= 3 and any(c.isdigit() for c in w)
+            and any(c.isalpha() for c in w)}
+
+
+def revisar_libre(texto: str, ficha: dict, claves: set) -> dict:
+    """Los controles que no necesitan respuesta esperada."""
+    import re
+    from app.core.cotejo import renglon_es_copia
+    partes = [p for p in (ficha.get("partes") or []) if isinstance(p, dict)]
+    general_con_producto = [
+        p.get("dice") for p in partes if _norm(p.get("origen")) == "general"
+        and set(_norm(str(p.get("dice")) + " " + str(p.get("producto")))
+                .split()) & claves]
+    # CADA PREGUNTA DEL MENSAJE TIENE SU PARTE: se corta el mensaje en
+    # oraciones y cada una tiene que compartir alguna palabra con contenido
+    # con alguna parte. Una oracion sin parte es algo que se perdio.
+    cubierto = _norm(" ".join(str(p.get("dice")) for p in partes))
+    oraciones = [o for o in re.split(r"[?.!\n]+", texto) if len(_norm(o)) > 3]
+    sueltas = [o.strip() for o in oraciones
+               if not any(len(w) > 3 and w in cubierto.split()
+                          for w in _norm(o).split())]
+    return {"partes": len(partes),
+            "copias": sum(1 for p in partes
+                          if renglon_es_copia(str(p.get("dice")), texto)),
+            "general_con_producto": general_con_producto,
+            "sin_parte": sueltas}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--modelo", default="gemini", choices=("gemini", "deepseek"))
     ap.add_argument("--solo", default="")
     ap.add_argument("--json", default="")
     ap.add_argument("--hilos", type=int, default=6)
-    ap.add_argument("--tablero", default="v2", choices=("v1", "v2", "v3", "v4"))
+    ap.add_argument("--tablero", default="v4",
+                    choices=("v1", "v2", "v3", "v4"))
+    ap.add_argument("--libre", default="",
+                    help="un JSON con una lista de mensajes sin respuesta "
+                         "esperada: se miden con los controles invariantes")
     args = ap.parse_args()
     clon_produccion.preparar_entorno()
     from banco_pruebas import sim_firestore
     sim_firestore.install()
     tab = tablero()
     sistema, esq = prompt(tab, args.tablero), esquema(tab, args.tablero)
+    if args.libre:
+        return _correr_libre(args, sistema, esq)
     with open(VARA, encoding="utf-8") as f:
         vara = json.load(f)
     quiero = {x.strip().upper() for x in args.solo.split(",") if x.strip()}
@@ -390,6 +441,46 @@ def main() -> int:
           f"{lat[len(lat) // 2]}ms p90 {lat[int(len(lat) * .9) - 1]}ms")
     for g, (o, d) in por_grupo.items():
         print(f"   {g:<8} {o}/{d}")
+    if args.json:
+        with open(args.json, "w", encoding="utf-8") as f:
+            json.dump(crudo, f, ensure_ascii=False, indent=1)
+    return 0
+
+
+def _correr_libre(args, sistema, esq) -> int:
+    with open(args.libre, encoding="utf-8") as f:
+        mensajes = json.load(f)
+    if isinstance(mensajes, dict):
+        mensajes = [m for k, v in mensajes.items() if not k.startswith("_")
+                    for m in v]
+    claves = _claves_catalogo()
+
+    def uno(t):
+        try:
+            return t, *traducir(t, args.modelo, sistema, esq)
+        except Exception as e:  # noqa: BLE001
+            return t, {"_error": f"{type(e).__name__}: {str(e)[:120]}"}, 0
+
+    with cf.ThreadPoolExecutor(args.hilos) as ex:
+        filas = list(ex.map(uno, mensajes))
+    crudo, lat, malos = [], [], 0
+    for t, ficha, ms in filas:
+        r = revisar_libre(t, ficha, claves)
+        lat.append(ms)
+        problema = (r["general_con_producto"] or r["sin_parte"]
+                    or r["copias"] < r["partes"] or ficha.get("_error"))
+        malos += bool(problema)
+        if problema:
+            print(f"XX {t[:80]!r}")
+            for k in ("general_con_producto", "sin_parte"):
+                if r[k]:
+                    print(f"      {k}: {r[k]}")
+            if r["copias"] < r["partes"]:
+                print(f"      copias {r['copias']} de {r['partes']}")
+        crudo.append({"texto": t, "ficha": ficha, "ms": ms, **r})
+    lat.sort()
+    print(f"\n{args.modelo.upper()} libre: {len(filas) - malos} de "
+          f"{len(filas)} sin problema invariante   p50 {lat[len(lat) // 2]}ms")
     if args.json:
         with open(args.json, "w", encoding="utf-8") as f:
             json.dump(crudo, f, ensure_ascii=False, indent=1)
