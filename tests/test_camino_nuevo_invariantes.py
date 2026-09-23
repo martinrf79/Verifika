@@ -13,7 +13,9 @@ afirma lo que ninguna ficha puede romper:
      escribio en ESTE mensaje;
   3. ninguna cifra de precio que el cliente no escribio en la charla;
   4. las opciones de una repregunta son productos reales;
-  5. no se cae.
+  5. nada se confirma para comprar sin que el turno anterior lo haya
+     propuesto con los mismos items: el paso 7;
+  6. no se cae.
 
 Y los errores de sentido que se encontraron el 23-sep quedan como casos
 fijos: cada uno daba vuelta lo que el cliente pidio.
@@ -187,12 +189,14 @@ def test_ninguna_ficha_rompe_los_invariantes(tab):
     por_id = {p["id"]: p for p in cat}
     turnos = violaciones = 0
     fallas = []
-    cuenta = {"ids": 0, "memoria": 0, "repregunta": 0, "precio": 0}
+    cuenta = {"ids": 0, "memoria": 0, "repregunta": 0, "precio": 0,
+              "propone": 0}
     for _charla in range(300):
         estado = M.estado_nuevo()
         # LA CIFRA VALE SI LA DIJO EN CUALQUIER TURNO DE LA CHARLA: "de esos
         # el mas barato" hereda el techo que puso antes, y eso es memoria.
         cifras = set()
+        antes = {"accion": None}
         for _t in range(4):
             a, b = rng.sample(cat, 2)
             texto = rng.choice(_MENSAJES).format(
@@ -225,6 +229,16 @@ def test_ninguna_ficha_rompe_los_invariantes(tab):
                     if x.get("campo") == "precio_ars" and \
                             int(x.get("valor") or 0) not in cifras:
                         fallas.append(f"cifra inventada {x}: {texto}")
+            com = pedido["comercial"]
+            cuenta["propone"] += com["accion"] == "proponer"
+            if com["accion"] == "confirmado" and (
+                    antes["accion"] != "proponer"
+                    or com["items"] != antes["items"]):
+                fallas.append(f"confirmado sin propuesta: {texto}")
+            for ids, _n in com["items"]:
+                if not set(ids) <= ids_catalogo:
+                    fallas.append(f"item comercial fuera del catalogo {ids}")
+            antes = com
             for rep in pedido.get("repreguntar") or []:
                 for i in rep.get("opciones") or []:
                     if i not in ids_catalogo:
@@ -236,4 +250,5 @@ def test_ninguna_ficha_rompe_los_invariantes(tab):
     assert turnos == 1200
     assert cuenta["ids"] >= 60 and cuenta["memoria"] >= 15
     assert cuenta["repregunta"] >= 30 and cuenta["precio"] >= 20
+    assert cuenta["propone"] >= 8
     assert violaciones == 0, "\n".join(fallas)

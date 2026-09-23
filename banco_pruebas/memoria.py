@@ -22,6 +22,8 @@ EL ESTADO, y cada casillero tiene un solo dueño:
     destino    el ultimo destino dicho. "Con el envio incluido" lo usa.
     pendiente  lo que quedo sin resolver porque se repregunto. "El mouse",
                despues de "¿cual logitech?", lo completa.
+    propuesta  el pedido exacto que el bot le mostro al cliente para que lo
+               confirme: ids certificados y cantidades. Vive UN turno.
 
 LO QUE NO HACE: no le pide nada al modelo, no guarda texto del bot, no elige
 entre dos candidatos.
@@ -60,7 +62,8 @@ _BUSCAN = {"buscar", "precio", "stock"}
 
 def estado_nuevo() -> dict:
     return {"turno": 0, "listas": [], "foco": [], "busqueda": None,
-            "vigentes": {}, "destino": "", "pendiente": None}
+            "vigentes": {}, "destino": "", "pendiente": None,
+            "propuesta": None}
 
 
 _CAT: list = []
@@ -453,6 +456,65 @@ def al_dia(estado: dict, pedido: dict, resultado: dict,
     return estado
 
 
+# ── PASO 7 · LA COMPUERTA COMERCIAL ────────────────────────────────────────
+#
+# EL LEAD, EL COBRO O LA RESERVA NUNCA SALEN DE LA FICHA SOLA. Que el traductor
+# anote `comprar` es una lectura del modelo, y puede estar mal: "lo quiero ver"
+# no es "lo quiero". Por eso comprar se hace en dos turnos, y el segundo lo
+# decide el codigo contra lo que el cliente VIO:
+#
+#   1. proponer    el cliente quiere comprar y todo lo que nombra esta
+#                  certificado: ids de un solo modelo, sin repregunta abierta.
+#                  El redactor le muestra ESE pedido con su total y pregunta si
+#                  lo confirma. Nada se cierra.
+#   2. confirmado  el turno siguiente, y solo ese, el cliente dice que si
+#                  sin cambiar nada. Recien ahi se crea el lead o se cobra, con
+#                  los items de la PROPUESTA, no con los que lea el modelo ahora.
+#
+# Si en el medio cambia algo —otra cantidad, otro producto— es una propuesta
+# nueva. Si no se sabe cual, falta y se repregunta. Si habla de otra cosa, la
+# propuesta se vence: un "si" tres turnos despues no confirma nada.
+
+_SI = re.compile(r"^\W*(si|dale|ok|okey|listo|confirmo|confirmado|de una|va|"
+                 r"perfecto|joya|buenisimo|esta bien|genial|hacelo|mandale)\b")
+
+
+def _items(pedido: dict) -> list:
+    """[(ids, cantidad o 0)] de lo certificado: un modelo por consulta."""
+    return [(sorted(c["ids"]), int(c.get("cantidad") or 0))
+            for c in pedido.get("consultas") or []
+            if c.get("ids") and c.get("busco") == "uno"
+            and not c.get("_repregunta")]
+
+
+def compuerta(pedido: dict, ficha: dict, mensaje: str, estado: dict) -> dict:
+    """{accion, items, destino, motivo}. accion: None, 'proponer', 'falta' o
+    'confirmado'. Nunca 'confirmado' sin una propuesta del turno anterior."""
+    quiere = any(isinstance(p, dict) and p.get("quiere") == "comprar"
+                 for p in ficha.get("partes") or [])
+    dice_si = bool(_SI.search(_norm(mensaje)))
+    ahora = _items(pedido)
+    destino = next((e.get("destino") for e in pedido.get("envios") or []
+                    if e.get("destino")), "") or estado.get("destino", "")
+    prop = estado.get("propuesta")
+    if prop and prop.get("turno") == estado["turno"] and (dice_si or quiere) \
+            and not pedido.get("repreguntar"):
+        propios = {tuple(ids): n for ids, n in prop["items"]}
+        cambia = any(tuple(ids) not in propios or (n and n != propios[tuple(ids)])
+                     for ids, n in ahora)
+        if not cambia:
+            return {"accion": "confirmado", "items": prop["items"],
+                    "destino": prop.get("destino") or destino, "motivo": ""}
+    if not (quiere or (prop and dice_si)):
+        return {"accion": None, "items": [], "destino": "", "motivo": ""}
+    if pedido.get("repreguntar") or not ahora:
+        return {"accion": "falta", "items": [], "destino": destino,
+                "motivo": "no se cual" if pedido.get("repreguntar")
+                else "no hay un producto certificado"}
+    return {"accion": "proponer", "destino": destino, "motivo": "",
+            "items": [(ids, n or 1) for ids, n in ahora]}
+
+
 # ── LA TANDA: las 22 charlas por el camino nuevo ───────────────────────────
 
 def turno(texto: str, estado: dict, tab: dict, traducir) -> tuple:
@@ -473,7 +535,15 @@ def turno(texto: str, estado: dict, tab: dict, traducir) -> tuple:
                                  envios=pedido["envios"])
     except Exception as e:  # noqa: BLE001 — la tanda no se cae por uno
         resultado = {"resultados": [], "_error": str(e)[:120]}
+    # La intencion se lee en la ficha VALIDADA: una referencia ambigua sale de
+    # la resuelta, y con ella se perdia el "lo quiero" que hay que repreguntar.
+    pedido["comercial"] = compuerta(pedido, limpia, texto, estado)
     nuevo = al_dia(estado, pedido, resultado, texto)
+    # LA PROPUESTA VIVE UN TURNO: la de este, o ninguna.
+    nuevo["propuesta"] = (
+        {"items": pedido["comercial"]["items"], "turno": nuevo["turno"],
+         "destino": pedido["comercial"]["destino"]}
+        if pedido["comercial"]["accion"] == "proponer" else None)
     return {"ficha": ficha, "avisos": avisos, "eventos": eventos,
             "pedido": pedido, "ms": ms}, nuevo
 
