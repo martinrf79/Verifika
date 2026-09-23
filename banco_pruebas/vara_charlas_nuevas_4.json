@@ -1,0 +1,78 @@
+{
+ "_que_es": "LA CUARTA TANDA QUE NO SE USA PARA CORREGIR (23-sep-2026). Valida con otras palabras los arreglos de la tercera —la marca sola con el rubro escrito, lo que resuelve la memoria es de la tienda, el destino del turno anterior, la negacion sobre prefiere, lo liviano— y suma formas nuevas. Escrita ANTES de correrla.",
+ "_regla": "NO SE CORRIGE MIRANDO ESTA VARA. Si una corrida da rojo, el arreglo se valida contra una tanda NUEVA, y esta queda como estaba.",
+ "charlas": [
+  {"id": "R1", "clase": "marca y rubro, y despues lo mas barato", "turnos": [
+   {"texto": "tenes teclados keychron?", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "teclado"},
+    {"n": "la marca como filtro", "tipo": "condicion", "campo": ["marca"], "valor": "keychron"}]},
+   {"texto": "cual sale menos?", "casillas": [
+    {"n": "sigue en teclados", "tipo": "consulta", "categoria": "teclado"},
+    {"n": "lo barato primero", "tipo": "barato"}]}]},
+  {"id": "R2", "clase": "confirmacion corta sobre un producto", "turnos": [
+   {"texto": "cuanto esta el parlante Edifier R1280T negro?", "casillas": [
+    {"n": "el parlante", "tipo": "consulta", "categoria": "parlante"}]},
+   {"texto": "mandame 3", "casillas": [
+    {"n": "es el R1280T", "tipo": "referencia", "modelo": "r1280t"},
+    {"n": "la cantidad", "tipo": "cantidad", "valor": 3}]}]},
+  {"id": "R3", "clase": "agrega un producto al envio que se estaba cotizando", "turnos": [
+   {"texto": "cuanto me cobran de envio a Tucuman?", "casillas": [
+    {"n": "el destino", "tipo": "envio", "destino": "tucuman"}]},
+   {"texto": "agregale un router TP-Link Archer AX23", "casillas": [
+    {"n": "el router", "tipo": "referencia", "modelo": "archer ax23"},
+    {"n": "el destino de antes", "tipo": "envio", "destino": "tucuman"}]}]},
+  {"id": "R4", "clase": "evitar sin decir no", "turnos": [
+   {"texto": "quiero auriculares, idealmente que no sean de marca china", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "auriculares"},
+    {"n": "evita lo chino", "tipo": "condicion", "campo": ["pais_marca", "pais_fabricacion", "origen"], "valor": "china", "acepta": ["evita", "no_contiene", "distinto"]},
+    {"n": "no prefiere lo chino", "tipo": "sin_condicion", "campo": ["pais_marca", "pais_fabricacion", "origen"], "valor": "china", "prohibe": ["prefiere", "contiene"]}]}]},
+  {"id": "R5", "clase": "que pese poco", "turnos": [
+   {"texto": "busco una notebook que pese poco", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "notebook"},
+    {"n": "lo liviano primero", "tipo": "orden", "campo": ["peso_gramos"], "direccion": ["min"]}]}]},
+  {"id": "R6", "clase": "marca de un rubro con el rubro escrito en plural", "turnos": [
+   {"texto": "mostrame monitores lg", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "monitor"},
+    {"n": "la marca como filtro", "tipo": "condicion", "campo": ["marca"], "valor": "lg"}]},
+   {"texto": "el segundo tiene hdmi?", "casillas": [
+    {"n": "el segundo que mostro", "tipo": "referencia", "de_turno": 1, "posicion": 2}]}]},
+  {"id": "R7", "clase": "marca sola de varios rubros, sin rubro", "turnos": [
+   {"texto": "que tenes de razer?", "casillas": [
+    {"n": "nombra razer", "tipo": "nombra", "palabra": "razer"}]}]},
+  {"id": "R8", "clase": "pregunta de politica y vuelve al producto", "turnos": [
+   {"texto": "precio de la memoria Kingston Fury Beast DDR4 3200 16GB", "casillas": [
+    {"n": "la ram", "tipo": "consulta", "categoria": "memoria ram"}]},
+   {"texto": "tiene garantia?", "casillas": []},
+   {"texto": "ok, dame dos", "casillas": [
+    {"n": "es la Fury Beast 16GB", "tipo": "referencia", "modelo": "fury beast ddr4 3200 16gb"},
+    {"n": "la cantidad", "tipo": "cantidad", "valor": 2}]}]},
+  {"id": "R9", "clase": "tope con 'maximo'", "turnos": [
+   {"texto": "un mouse inalambrico maximo 40 mil", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "mouse"},
+    {"n": "el techo", "tipo": "condicion", "campo": ["precio_ars"], "valor": "40000", "acepta": ["menor", "menor_igual"]}]}]},
+  {"id": "R10", "clase": "'el mismo en otro color' con variante que existe", "turnos": [
+   {"texto": "cuanto sale el parlante Logitech Z207 negro?", "casillas": [
+    {"n": "el parlante", "tipo": "consulta", "categoria": "parlante"}]},
+   {"texto": "y en rojo lo tenes?", "casillas": [
+    {"n": "es el Z207", "tipo": "referencia", "modelo": "z207"}]}]},
+  {"id": "R11", "clase": "compu con sus palabras cambia la busqueda", "turnos": [
+   {"texto": "mostrame tablets", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "tablet"}]},
+   {"texto": "y alguna compu para la facu?", "casillas": [
+    {"n": "ahora notebooks", "tipo": "consulta", "categoria": "notebook"}]}]},
+  {"id": "R12", "clase": "rango sin palabras: 100 a 200", "turnos": [
+   {"texto": "sillas gamer 100 a 200 mil", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "silla gamer"},
+    {"n": "el piso", "tipo": "condicion", "campo": ["precio_ars"], "valor": "100000", "acepta": ["mayor", "mayor_igual"]},
+    {"n": "el techo", "tipo": "condicion", "campo": ["precio_ars"], "valor": "200000", "acepta": ["menor", "menor_igual"]}]}]},
+  {"id": "R13", "clase": "webcam con modelo y pedido de compra directo", "turnos": [
+   {"texto": "quiero comprar la Razer Kiyo X", "casillas": [
+    {"n": "es la Kiyo X", "tipo": "referencia", "modelo": "kiyo x"}]}]},
+  {"id": "R14", "clase": "de esos, el mas liviano", "turnos": [
+   {"texto": "mostrame 3 mouse inalambricos", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "mouse"}]},
+   {"texto": "de esos cual pesa menos?", "casillas": [
+    {"n": "son los que mostro", "tipo": "referencia", "de_turno": 1, "todos": true},
+    {"n": "lo liviano primero", "tipo": "orden", "campo": ["peso_gramos"], "direccion": ["min"]}]}]}
+ ]
+}
