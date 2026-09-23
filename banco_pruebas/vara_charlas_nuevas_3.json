@@ -1,0 +1,83 @@
+{
+ "_que_es": "LA TERCERA TANDA QUE NO SE USA PARA CORREGIR (23-sep-2026). Valida los arreglos de la segunda —el rubro que el cliente no escribio, lo caro, toda la tienda— con otras palabras, y suma formas que ninguna tanda tiene: 'disco externo', 'micro', 'que no salga una fortuna', 'y de asus?'. Escrita ANTES de correrla.",
+ "_regla": "NO SE CORRIGE MIRANDO ESTA VARA. Si una corrida da rojo, el arreglo se valida contra una tanda NUEVA, y esta queda como estaba.",
+ "charlas": [
+  {"id": "Q1", "clase": "marca de muchos rubros, y el rubro la completa", "turnos": [
+   {"texto": "cuanto sale el asus?", "casillas": [
+    {"n": "repregunta en vez de elegir", "tipo": "pregunta"}]},
+   {"texto": "el monitor", "casillas": [
+    {"n": "busca monitores", "tipo": "consulta", "categoria": "monitor"},
+    {"n": "arrastra asus", "tipo": "nombra", "palabra": "asus"}]}]},
+  {"id": "Q2", "clase": "recomendacion sin rubro despues de una lista", "turnos": [
+   {"texto": "mostrame auriculares", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "auriculares"}]},
+   {"texto": "cual me recomendas para gaming?", "casillas": [
+    {"n": "sigue en auriculares", "tipo": "consulta", "categoria": "auriculares"}]}]},
+  {"id": "Q3", "clase": "la mas barata de lo mostrado", "turnos": [
+   {"texto": "mostrame impresoras epson", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "impresora"}]},
+   {"texto": "y la mas barata cual es?", "casillas": [
+    {"n": "sigue en impresoras", "tipo": "consulta", "categoria": "impresora"},
+    {"n": "lo barato primero", "tipo": "barato"}]}]},
+  {"id": "Q4", "clase": "rubro con otras palabras: disco externo", "turnos": [
+   {"texto": "busco un disco externo de 2 teras", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "almacenamiento externo"}]}]},
+  {"id": "Q5", "clase": "pedido vago sobre la lista", "turnos": [
+   {"texto": "mostrame routers", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "router"}]},
+   {"texto": "alguno que tenga mas alcance?", "casillas": [
+    {"n": "sigue en routers", "tipo": "consulta", "categoria": "router"}]}]},
+  {"id": "Q6", "clase": "modelo sin marca ni rubro", "turnos": [
+   {"texto": "precio de la Galaxy Tab A9", "casillas": [
+    {"n": "es la Tab A9", "tipo": "referencia", "modelo": "galaxy tab a9"}]}]},
+  {"id": "Q7", "clase": "exclusion de marca en fuentes", "turnos": [
+   {"texto": "necesito una fuente que no sea gigabyte", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "fuente"},
+    {"n": "excluye gigabyte", "tipo": "condicion", "campo": ["marca"], "valor": "gigabyte", "acepta": ["no_contiene", "distinto"]}]}]},
+  {"id": "Q8", "clase": "de menos de, en lucas", "turnos": [
+   {"texto": "tenes placas de video de menos de 500 lucas?", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "placa de video"},
+    {"n": "el techo", "tipo": "condicion", "campo": ["precio_ars"], "valor": "500000", "acepta": ["menor", "menor_igual"]},
+    {"n": "no queda al reves", "tipo": "sin_condicion", "campo": ["precio_ars"], "valor": "500000", "prohibe": ["mayor", "mayor_igual"]}]}]},
+  {"id": "Q9", "clase": "el tercero de tres", "turnos": [
+   {"texto": "mostrame 3 teclados redragon", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "teclado"}]},
+   {"texto": "el tercero cuanto sale?", "casillas": [
+    {"n": "el tercero que mostro", "tipo": "referencia", "de_turno": 1, "posicion": 3}]}]},
+  {"id": "Q10", "clase": "barato dicho de otra forma", "turnos": [
+   {"texto": "hola buenas, queria saber si tienen webcams para streaming, algo que no salga una fortuna", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "webcam"},
+    {"n": "lo barato primero", "tipo": "barato"},
+    {"n": "sin techo inventado", "tipo": "sin_umbral_inventado", "campo": ["precio_ars"]}]}]},
+  {"id": "Q11", "clase": "el destino de antes con 'si le sumo'", "turnos": [
+   {"texto": "cuanto sale el envio a Ushuaia?", "casillas": [
+    {"n": "el destino", "tipo": "envio", "destino": "ushuaia"}]},
+   {"texto": "y si le sumo un mouse Logitech M170 negro?", "casillas": [
+    {"n": "el mouse", "tipo": "referencia", "modelo": "m170"},
+    {"n": "el destino de antes", "tipo": "envio", "destino": "ushuaia"}]}]},
+  {"id": "Q12", "clase": "cantidad sobre el unico producto", "turnos": [
+   {"texto": "tenes la Logitech C920?", "casillas": [
+    {"n": "la webcam", "tipo": "consulta", "categoria": "webcam"}]},
+   {"texto": "dale, quiero 2", "casillas": [
+    {"n": "es la C920", "tipo": "referencia", "modelo": "c920"},
+    {"n": "la cantidad", "tipo": "cantidad", "valor": 2}]}]},
+  {"id": "Q13", "clase": "micro es procesador", "turnos": [
+   {"texto": "busco un micro ryzen", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "procesador"}]}]},
+  {"id": "Q14", "clase": "no chinas sobre la lista", "turnos": [
+   {"texto": "mostrame sillas gamer", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "silla gamer"}]},
+   {"texto": "de esas alguna que no sea china?", "casillas": [
+    {"n": "sigue en sillas", "tipo": "consulta", "categoria": "silla gamer"},
+    {"n": "evita lo chino", "tipo": "condicion", "campo": ["pais_marca", "pais_fabricacion", "origen"], "valor": "china", "acepta": ["evita", "no_contiene", "distinto"]}]}]},
+  {"id": "Q15", "clase": "cambia la marca y sigue el rubro", "turnos": [
+   {"texto": "tenes notebooks lenovo?", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "notebook"}]},
+   {"texto": "y de asus?", "casillas": [
+    {"n": "sigue en notebooks", "tipo": "consulta", "categoria": "notebook"},
+    {"n": "ahora asus", "tipo": "nombra", "palabra": "asus"}]}]},
+  {"id": "Q16", "clase": "el catalogo entero, lo mas barato", "turnos": [
+   {"texto": "que es lo mas barato que venden?", "casillas": [
+    {"n": "lo barato primero", "tipo": "barato"}]}]}
+ ]
+}
