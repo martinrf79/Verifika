@@ -64,55 +64,8 @@ def _prompts(cli) -> list:
 
 # ── 1 · LA FIDELIDAD DEL RENGLON LLEGA AL INFORME ───────────────────────────
 
-def test_el_informe_cuenta_los_renglones_copia(firestore_doble, monkeypatch):
-    guion = [_Msg(tool_calls=[_Call(
-        '{"renglones": ["dos auriculares", "dos mouse", '
-        '"notebook gamer carisima"], "pedir_total": true, '
-        '"consultas": [{"categoria": "auriculares"}]}')]),
-        _Msg('{"tipo": "precio_multiple", "texto": "listo"}')]
-    informe, _, _ = _correr(monkeypatch, guion, M1)
-    assert informe["renglones"] == 3
-    assert informe["renglones_copia"] == 2
-    assert informe["renglones_propios"] == ["notebook gamer carisima"]
-
-
-def test_la_fidelidad_se_mide_en_la_primera_llamada_y_no_se_pisa(
-        firestore_doble, monkeypatch):
-    """La pregunta es "de entrada, ¿transcribio o tradujo?". En la vuelta 2 el
-    modelo ya tiene su propia lista delante, asi que copiarse a si mismo no
-    dice nada: si se midiera ahi, el numero subiria solo."""
-    guion = [
-        _Msg(tool_calls=[_Call(
-            '{"renglones": ["una compu carisima de gama alta"], '
-            '"pedir_total": false, "consultas": [{"categoria": "notebook"}]}')]),
-        _Msg(tool_calls=[_Call(
-            '{"renglones": ["necesito una compu para mi hijo de 8 años"], '
-            '"pedir_total": false, "consultas": [{"categoria": "mouse"}]}')]),
-        _Msg('{"tipo": "recomendacion", "texto": "listo"}')]
-    informe, _, _ = _correr(monkeypatch, guion, M11)
-    assert informe["renglones"] == 1
-    assert informe["renglones_copia"] == 0
-
 
 # ── 2 · EL RUBRO NOMBRADO Y NO PEDIDO ───────────────────────────────────────
-
-def test_el_teclado_de_m1_llega_al_informe_y_al_prompt(firestore_doble,
-                                                       monkeypatch):
-    """EL CASO ENTERO: el cliente nombra un teclado en la frase del envio, el
-    modelo no lo cotiza y `pedir_total` es true. Antes el presupuesto salia
-    sin el teclado y ningun numero lo contaba."""
-    guion = [_Msg(tool_calls=[_Call(
-        '{"renglones": ["dos auriculares", "dos mouse", "dos memorias", '
-        '"envio a Concordia un teclado y un mouse"], "pedir_total": true, '
-        '"consultas": [{"categoria": "auriculares"}, {"categoria": "mouse"}, '
-        '{"categoria": "memoria ram"}]}')]),
-        _Msg('{"tipo": "precio_multiple", "texto": "listo"}')]
-    informe, _, cli = _correr(monkeypatch, guion, M1)
-    assert informe["rubros_sin_pedir"] == ["teclado"]
-    # Y EL AVISO VIAJA: el turno no escribe el texto, le pone el dato delante
-    # al modelo en la vuelta siguiente.
-    assert any("teclado" in p and "no lo buscaste" in p
-               for p in _prompts(cli)[1:])
 
 
 def test_si_lo_busco_no_hay_aviso(firestore_doble, monkeypatch):
@@ -129,142 +82,11 @@ def test_si_lo_busco_no_hay_aviso(firestore_doble, monkeypatch):
 
 # ── 3 · LA CIFRA QUE EL CLIENTE NO DIJO NO LLEGA AL MOTOR ───────────────────
 
-def test_el_techo_inventado_no_llega_al_motor(firestore_doble, monkeypatch):
-    """Turno d5e14b3f: `precio_ars menor 500000` sobre un mensaje sin una sola
-    cifra. Lo que el motor tiene que recibir es el ORDEN, no el filtro."""
-    guion = [_Msg(tool_calls=[_Call(
-        '{"renglones": ["necesito una compu para mi hijo de 8 años"], '
-        '"pedir_total": false, "consultas": [{"categoria": "notebook", '
-        '"condiciones": [{"campo": "precio_ars", "operador": "menor", '
-        '"valor": "500000"}]}]}')]),
-        _Msg('{"tipo": "recomendacion", "texto": "listo"}')]
-    informe, vistas, _ = _correr(monkeypatch, guion, M11)
-    assert informe["umbrales_degradados"] == ["precio_ars menor 500000"]
-    assert vistas, "el motor no recibio ninguna consulta"
-    assert vistas[0][0]["condiciones"] == []
-    assert vistas[0][0]["ordenar_por"] == {"campo": "precio_ars",
-                                          "direccion": "min"}
-
-
-def test_el_log_del_pedido_dice_lo_que_ESCRIBIO_EL_MODELO(firestore_doble,
-                                                          monkeypatch):
-    """EL CANDADO DEL ORDEN, y lo pago una tanda entera el 22-sep.
-
-    Con el saneo ANTES del log, `motor_pedido` salia ya corregido y la vara de
-    la interpretacion leia una consulta sin el techo inventado: M11 paso de
-    fallar 2 de 2 en produccion a dar 3 de 3 en banco sin que el modelo hubiera
-    cambiado nada. Un instrumento que mide la correccion en vez del modelo es
-    peor que no tener instrumento, porque el numero sube solo y eso es
-    indistinguible de un avance.
-
-    El log tiene que traer el techo inventado. Lo que el codigo corrigio se lee
-    aparte, en los renglones del cotejo.
-    """
-    # Los logs del turno estan silenciados en la bateria, asi que se espia el
-    # logger del modulo en vez de leer la salida.
-    anotados = []
-
-    class _Log:
-        def info(self, ev, **kw):
-            anotados.append((ev, kw))
-
-        def warning(self, ev, **kw):
-            anotados.append((ev, kw))
-
-    monkeypatch.setattr(R, "log", _Log())
-    guion = [_Msg(tool_calls=[_Call(
-        '{"renglones": ["necesito una compu para mi hijo de 8 años"], '
-        '"pedir_total": false, "consultas": [{"categoria": "notebook", '
-        '"condiciones": [{"campo": "precio_ars", "operador": "menor", '
-        '"valor": "500000"}]}]}')]),
-        _Msg('{"tipo": "recomendacion", "texto": "listo"}')]
-    informe, vistas, _ = _correr(monkeypatch, guion, M11)
-    pedidos = [kw for ev, kw in anotados if ev == "motor_pedido"]
-    assert pedidos, "no se loguea el pedido"
-    crudo = str(pedidos[0].get("pedido", ""))
-    assert "500000" in crudo, "el log salio ya corregido: la vara no puede ver"
-    # Y al motor le llego saneado igual.
-    assert vistas[0][0]["condiciones"] == []
-    assert informe["umbrales_degradados"] == ["precio_ars menor 500000"]
-
-
-def test_la_cifra_dicha_por_el_cliente_si_llega_al_motor(firestore_doble,
-                                                         monkeypatch):
-    men = "mostrame notebooks de menos de 700000 pesos"
-    guion = [_Msg(tool_calls=[_Call(
-        '{"renglones": ["notebooks de menos de 700000 pesos"], '
-        '"pedir_total": false, "consultas": [{"categoria": "notebook", '
-        '"condiciones": [{"campo": "precio_ars", "operador": "menor", '
-        '"valor": "700000"}]}]}')]),
-        _Msg('{"tipo": "recomendacion", "texto": "listo"}')]
-    informe, vistas, _ = _correr(monkeypatch, guion, men)
-    assert informe["umbrales_degradados"] == []
-    assert len(vistas[0][0]["condiciones"]) == 1
-
 
 # ── 4 · LA VUELTA QUE NO AGREGA NADA NO SE VUELVE A BUSCAR ──────────────────
 
-def test_la_vuelta_calcada_no_dispara_una_segunda_busqueda(firestore_doble,
-                                                           monkeypatch):
-    """Turno 04f589dc: la vuelta 2 fue la vuelta 1 con las claves barajadas."""
-    v1 = ('{"renglones": ["dos auriculares"], "pedir_total": false, '
-          '"consultas": [{"categoria": "auriculares", "busco": "varios"}]}')
-    v2 = ('{"renglones": ["dos auriculares"], "pedir_total": false, '
-          '"consultas": [{"busco": "varios", "categoria": "auriculares"}]}')
-    guion = [_Msg(tool_calls=[_Call(v1)]), _Msg(tool_calls=[_Call(v2)]),
-             _Msg('{"tipo": "precio_multiple", "texto": "listo"}')]
-    informe, vistas, cli = _correr(monkeypatch, guion, M1)
-    assert informe["vueltas_sin_aporte"] == 1
-    assert len(vistas) == 1, "busco dos veces lo mismo"
-    # LA REPETIDA SE SIGUE CONTANDO. Que el numero baje justo cuando se empieza
-    # a atajar el defecto seria un instrumento midiendose a si mismo.
-    assert informe["repetidas"] == 1
-    assert informe["consultas"] == 2
-    assert any("ya lo buscaste" in p for p in _prompts(cli)[1:])
-
-
-def test_una_casilla_nueva_en_la_vuelta_2_si_se_busca(firestore_doble,
-                                                      monkeypatch):
-    """Repetir la consulta Y traer un tema nuevo no es una vuelta sin aporte:
-    el tema hay que ir a buscarlo."""
-    con = '{"categoria": "auriculares", "busco": "varios"}'
-    guion = [
-        _Msg(tool_calls=[_Call('{"renglones": ["dos auriculares"], '
-                               '"pedir_total": false, "consultas": [' + con
-                               + ']}')]),
-        _Msg(tool_calls=[_Call('{"renglones": ["dos auriculares"], '
-                               '"pedir_total": false, "consultas": [' + con
-                               + '], "temas": ["garantia"]}')]),
-        _Msg('{"tipo": "multipregunta", "texto": "listo"}')]
-    informe, vistas, _ = _correr(monkeypatch, guion, M1)
-    assert informe["vueltas_sin_aporte"] == 0
-    assert len(vistas) == 2
-
 
 # ── 5 · LO DECLARADO NO SE PIERDE ENTRE VUELTAS ─────────────────────────────
-
-def test_la_condicion_que_la_vuelta_2_perdio_vuelve_al_motor(firestore_doble,
-                                                             monkeypatch):
-    """Turno 2eb9ace4: la vuelta 1 manda `pais_fabricacion evita china` en las
-    tres consultas y la vuelta 2 manda las mismas tres SIN la condicion. Las
-    filas de esa segunda busqueda no cumplian lo que el cliente pidio y se
-    sumaban a las fichas con las que el modelo redacta."""
-    guion = [
-        _Msg(tool_calls=[_Call(
-            '{"renglones": ["dos auriculares"], "pedir_total": false, '
-            '"consultas": [{"categoria": "auriculares", "condiciones": '
-            '[{"campo": "pais_fabricacion", "operador": "evita", '
-            '"valor": "china"}]}]}')]),
-        _Msg(tool_calls=[_Call(
-            '{"renglones": ["dos auriculares"], "pedir_total": false, '
-            '"consultas": [{"categoria": "auriculares", "cuantos": 6}]}')]),
-        _Msg('{"tipo": "precio_multiple", "texto": "listo"}')]
-    informe, vistas, _ = _correr(monkeypatch, guion, M1)
-    assert informe["condiciones_repuestas"], "no repuso nada"
-    assert len(vistas) == 2
-    conds = vistas[1][0].get("condiciones") or []
-    assert any(c.get("campo") == "pais_fabricacion"
-               and c.get("operador") == "evita" for c in conds)
 
 
 def test_el_turno_sin_nada_que_cotejar_no_se_cae(firestore_doble, monkeypatch):

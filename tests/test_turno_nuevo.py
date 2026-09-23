@@ -480,7 +480,6 @@ def test_el_turno_ENTERO_le_contesta_con_SU_palabra(firestore_doble, monkeypatch
     assert "entre rios" not in texto.lower(), texto
 
 
-
 def test_ningun_molde_pide_un_hueco_que_el_codigo_NO_LLENA():
     """La falla exacta del 11-sep: el molde de envio decia `{{costo_envio}}`,
     que `numeros` no llena, asi que el hueco quedaba crudo y el cliente leia
@@ -977,8 +976,7 @@ def test_el_modelo_LEE_LA_PREGUNTA_ANTES_QUE_LOS_VEINTE_MOLDES(firestore_doble):
 
     SE MIDE EN LA VUELTA DE CONTESTAR, que desde el 15-sep es la unica donde
     los moldes viajan. El requisito no cambio: cambio donde se cumple."""
-    msgs = _conversacion("cuanto pesa el teclado K120",
-                         busca=R.VUELTAS_DE_BUSQUEDA)
+    msgs = _conversacion("cuanto pesa el teclado K120")
     junto = [m["content"] for m in msgs]
     entero = "\n".join(junto)
     assert "LA VOZ_MARCA" in junto[0], "la voz dejo de ir primera"
@@ -986,29 +984,6 @@ def test_el_modelo_LEE_LA_PREGUNTA_ANTES_QUE_LOS_VEINTE_MOLDES(firestore_doble):
     donde_moldes = entero.index("identidad_ambigua")
     assert donde_pregunta < donde_moldes, \
         "el modelo lee los veinte moldes antes de saber que le preguntaron"
-
-
-def test_LOS_MOLDES_NO_VIAJAN_EN_LAS_VUELTAS_DE_BUSCAR(firestore_doble):
-    """DECISION DE MARTIN, 15-sep, FICHA 54 punto 4. Los veinte moldes pesan
-    1.036 tokens y se pagaban en las tres vueltas. En la vuelta de buscar no se
-    decide como suena la respuesta.
-
-    Y NO ES SOLO COSTO: INDUCEN. El modelo elegia un tipo y despues declaraba
-    los campos que ese tipo le sugeria; al pedido con reparto 70/30 le puso
-    `identidad_ambigua` en vez de pedir la cuenta.
-
-    LA SIMETRIA: el tablero ya desaparece en la vuelta de contestar."""
-    buscando = _conversacion("cuanto pesa el teclado K120", busca=1, vuelta=0)
-    assert buscando, "no se le hablo al modelo"
-    entero = "\n".join(m["content"] for m in buscando)
-    assert "identidad_ambigua" not in entero, \
-        "los veinte moldes viajan en la vuelta de buscar"
-    assert "LOS VEINTE TIPOS" not in entero
-    # LO QUE SI TIENE QUE SEGUIR VIAJANDO: las reglas de buscar. Sacar los
-    # moldes no puede llevarse puesto `busco`, que es lo que dispara la
-    # ambiguedad, ni el candado de que solo existe lo que volvio.
-    assert "TODA consulta" in entero and "busco" in entero
-    assert "SOLO EXISTE LO QUE LA BUSQUEDA DEVOLVIO" in entero
 
 
 def test_EL_ESQUEMA_SE_QUEDA_EN_LAS_TRES_VUELTAS(firestore_doble):
@@ -1084,16 +1059,6 @@ def test_el_TIPO_solo_puede_ser_UNO_DE_LOS_VEINTE(firestore_doble):
     assert esq["additionalProperties"] is False
 
 
-def test_el_esquema_viaja_TAMBIEN_en_las_vueltas_con_herramientas(firestore_doble):
-    """Se midio antes de escribirlo: cuando el modelo llama a `buscar` el
-    contenido viene vacio y el esquema no estorba. Por eso va en todas las
-    vueltas, no solo en la de contestar: el modelo puede contestar en
-    cualquiera."""
-    kw = _parametros()
-    assert "tools" in kw, "esta vara dejo de medir: la vuelta no lleva motor"
-    assert kw.get("response_format"), "el esquema se cae cuando hay motor"
-
-
 # ── EL RECORTE DEL RETORNO (13-sep-2026) ────────────────────────────────────
 
 def test_un_retorno_grande_se_recorta_SACANDO_FILAS_y_sigue_siendo_JSON():
@@ -1153,46 +1118,7 @@ def _turno_con(args: str):
         LR._cliente = viejo
 
 
-def test_lo_que_el_modelo_pide_por_compatibilidad_LLEGA_AL_MOTOR(firestore_doble):
-    """El cable entero: el modelo lo pide, el motor lo evalua con la tabla de
-    la casa y el veredicto vuelve contado en el informe. Sin el renglon del
-    informe, una boca nueva es invisible el dia que deja de andar."""
-    _s, _f, _e, _c, informe = _turno_con(
-        '{"compatibilidad": [{"producto": "RAM0001", "con": "MBO0001"}]}')
-    assert informe["compat"] == ["compatible"]
-    assert informe["compat_sin_dato"] == []
-
-
-def test_EL_RENGLON_QUE_DICE_QUE_FILA_LE_FALTA_A_LA_TABLA(firestore_doble):
-    """El par de numeros es el mismo que el de las politicas: lo que se
-    pregunto y lo que la fuente no pudo contestar. El segundo es el que dice
-    que cargar en `compatibilidad.csv`, y sin el un hueco de la tabla es
-    indistinguible de una pregunta que nadie hizo."""
-    _s, _f, _e, _c, informe = _turno_con(
-        '{"compatibilidad": [{"producto": "MOU0001", "con": "mi tostadora"}]}')
-    assert informe["compat"] == ["sin_dato"]
-    assert informe["compat_sin_dato"] == ["MOU0001|mi tostadora"]
-
-
 # ── EL RAMAL A CRITERIO LLEGA AL TURNO (13-sep-2026) ────────────────────────
-
-def test_lo_que_el_modelo_pide_por_CRITERIO_LLEGA_AL_MOTOR(firestore_doble):
-    """El cable entero: el modelo lo pide por la misma puerta, el criterio sale
-    certificado de `base_conocimiento.json` y vuelve contado en el informe. Sin
-    el renglon del informe, una boca nueva es invisible el dia que deja de
-    andar."""
-    _s, _f, _e, _c, informe = _turno_con('{"criterio": ["mouse"]}')
-    assert informe["criterio"] == ["mouse"]
-    assert informe["criterio_sin_resolver"] == []
-
-
-def test_EL_RENGLON_QUE_DICE_QUE_ENTRADA_LE_FALTA_A_LA_BASE(firestore_doble):
-    """El mismo par de numeros que las politicas, la compatibilidad y el envio:
-    lo que se pregunto y lo que la casa no tiene escrito. El segundo dice que
-    entrada agregarle a `base_conocimiento.json`, y sale por el issue 31."""
-    _s, _f, _e, _c, informe = _turno_con('{"criterio": ["garrafa de gas"]}')
-    assert informe["criterio"] == []
-    assert informe["criterio_sin_resolver"] == ["garrafa de gas"]
 
 
 # ── LA CUENTA DEL RETORNO LLEGA A LA GUARDA (14-sep-2026) ───────────────────
@@ -1281,67 +1207,3 @@ class _ClienteGuion:
         return _R()
 
 
-def test_el_reparto_declarado_en_una_vuelta_vale_en_la_que_trae_la_cuenta(
-        firestore_doble):
-    """MEDIDO VIVO EL 20-sep, revision 00555, tres corridas: las tres
-    declararon el reparto y la cuenta en vueltas DISTINTAS.
-
-    Sin acumular, el reparto de la vuelta 1 no existe cuando llega la cuenta, y
-    el cliente lee el total SIN el descuento que pidio. Acordarse no puede
-    depender de que el modelo repita: es lo que el codigo garantiza gratis.
-    """
-    from app.core import llm_reintento as LR
-    guion = [
-        # vuelta 1: el reparto, sin cuenta -no tiene los ids todavia-
-        {"consultas": [{"texto": "mouse", "cuantos": 1, "busco": "varios"}],
-         "reparto_pago": [{"medio": "transferencia", "porcentaje": 70},
-                          {"medio": "mercado pago", "porcentaje": 30}]},
-        # vuelta 2: la cuenta, y el modelo NO repite el reparto
-        {"cuenta": {"items": [{"id": "MOU0001", "cantidad": 2}]}},
-    ]
-    espia = _ClienteGuion(guion)
-    viejo = LR._cliente
-    LR._cliente = lambda: espia
-    try:
-        _, _, _, cuenta, _ = asyncio.run(R._preguntar(
-            "LA VOZ", "", [], "dame el total 70 30", "LA FUENTE",
-            "trace_reparto", TIENDA))
-    finally:
-        LR._cliente = viejo
-    assert cuenta.get("total_ars"), f"no hubo cuenta: {cuenta}"
-    assert cuenta.get("total_final_ars"), (
-        f"el reparto de la vuelta 1 se perdio: {cuenta}")
-
-
-def test_el_modelo_de_la_vuelta_lo_decide_EL_TABLERO(firestore_doble):
-    """La misma linea que decide si viaja el tablero decide el modelo, igual
-    que ya decide los moldes: donde hay herramienta se INTERPRETA, y donde no
-    hay, se REDACTA. Que las tres cosas salgan de la misma condicion hace
-    imposible que se desincronicen.
-
-    Y EL REDACTOR NO SE ENCARECE: la vuelta de contestar sigue con el modelo de
-    siempre. Si esto se rompe, se paga el escalon de arriba en cada turno para
-    escribir un texto con los datos ya resueltos delante.
-    """
-    from app.core import llm_reintento as LR
-    caja = []
-
-    class _Espia(_ClienteEspia):
-        def create(self, *, model, messages, **kw):
-            caja.append((model, bool(kw.get("tools"))))
-            return super().create(model=model, messages=messages, **kw)
-
-    espia = _Espia([], busca=2)  # dos vueltas de busqueda y la de contestar
-    viejo = LR._cliente
-    LR._cliente = lambda: espia
-    try:
-        asyncio.run(R._preguntar("V", "", [], "dame un teclado", "F", "t",
-                                 TIENDA))
-    finally:
-        LR._cliente = viejo
-    con_tablero = [m for m, t in caja if t]
-    sin_tablero = [m for m, t in caja if not t]
-    assert con_tablero and sin_tablero, caja
-    assert all(m == LR._modelo_decisor() for m in con_tablero), caja
-    assert all(m == LR._modelo() for m in sin_tablero), (
-        "el redactor se encarecio: paga el escalon de arriba para escribir")

@@ -43,39 +43,22 @@ from banco_pruebas.leer_interpretacion import _norm  # noqa: E402
 VARA = os.path.join(RAIZ, "banco_pruebas", "vara_traductor.json")
 TIENDA = "verifika_prod"
 
-INTENCIONES = ("buscar", "precio", "stock", "caracteristica", "comparar",
-               "compatibilidad", "envio", "pago", "politica", "comprar",
-               "postventa", "charla")
-ORIGENES = ("tienda", "general", "cliente", "ninguno")
-FUERZAS = ("debe", "prefiere", "evita")
-REFIERE = ("no", "ese", "esos", "posicion", "el_otro", "la_busqueda")
+# LAS LISTAS Y EL TABLERO VIVEN EN app/ desde el 23-sep:
+# `app/core/interprete.py`. La tienda del banco se fija en el contexto, que es
+# de donde la lee ese modulo.
+from app.core.contexto_turno import set_current_tienda  # noqa: E402
+from app.core.interprete import (  # noqa: E402,F401
+    FUERZAS, INTENCIONES, ORIGENES, REFIERE, tablero)
+from app.core import interprete as _I  # noqa: E402
 
-# LOS CAMPOS QUE NO SON CONCEPTOS: prosa o identidad. El producto puntual va en
-# su propia casilla, no como criterio.
-_NO_CONCEPTO = {"nombre", "descripcion", "caracteristicas_extra",
-                "contenido_caja", "garantia_detalle", "modelo", "dimensiones"}
-_ETIQUETA_BASE = {"precio_ars": "el precio", "marca": "la marca",
-                  "color": "el color", "material": "el material",
-                  "peso_gramos": "el peso", "garantia_meses": "la garantia",
-                  "pais_fabricacion": "donde se fabrica",
-                  "pais_marca": "de que pais es la marca"}
-
-
-def tablero() -> dict:
-    """Rubros y conceptos, SALIDOS DEL DATO. Ningun valor del catalogo."""
-    from app.core.filtros_catalogo import campos_filtrables, recorrida
-    rubros = [c for c, _ in recorrida(TIENDA).get("categorias") or []]
-    with open(os.path.join(RAIZ, "data", "clientes", TIENDA,
-                           "specs_preguntables.json"), encoding="utf-8") as f:
-        etiquetas = {s["id"]: s["etiqueta"] for s in json.load(f)["specs"]}
-    etiquetas.update(_ETIQUETA_BASE)
-    conceptos = {c: etiquetas.get(c, c.replace("_", " "))
-                 for c in sorted(campos_filtrables(TIENDA))
-                 if c not in _NO_CONCEPTO}
-    return {"rubros": rubros, "conceptos": conceptos}
+set_current_tienda(TIENDA)
 
 
 def prompt(tab: dict, version: str = "v2") -> str:
+    # LA v6 ES LA QUE CORRE, y vive en app/. Las anteriores quedan aca para
+    # comparar.
+    if version == "v6":
+        return _I.prompt(tab)
     conceptos = "; ".join(f"{c} ({e})" for c, e in tab["conceptos"].items())
     if version in ("v5", "v6"):
         conceptos += "; compatible_con (con que aparato o pieza tiene que andar)"
@@ -150,6 +133,8 @@ CONCEPTOS: {conceptos}."""
 
 
 def esquema(tab: dict, version: str = "v2") -> dict:
+    if version == "v6":
+        return _I.esquema(tab)
     rubros = tab["rubros"] + ["otro", "ninguno"] + (
         ["toda_la_tienda"] if version in ("v5", "v6") else [])
     conceptos = list(tab["conceptos"]) + ["otro"] + (

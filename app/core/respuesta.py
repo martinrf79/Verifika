@@ -422,26 +422,6 @@ def _vigentes_para_guardar(condiciones: dict) -> list:
             and CO.norm(x.get("operador")) in CO.REPONIBLES][:12]
 
 
-def _lo_ultimo_nombrado(vistos: list | None, tienda_id: str) -> list:
-    """[(id, categoria)] de lo que nombro la ultima respuesta, para que el
-    cotejo resuelva "de esos". La categoria sale de la fuente y no de la
-    memoria: la memoria guarda lo que se dijo, la fuente dice que es."""
-    from app.storage.firestore_client import get_product_by_id
-    vistos = vistos or []
-    ultimo = max((int(p.get("turno") or 0) for p in vistos), default=0)
-    fuera = []
-    for p in vistos:
-        if not ultimo or int(p.get("turno") or 0) != ultimo:
-            continue
-        try:
-            prod = get_product_by_id(str(p.get("id")),
-                                     tienda_id=tienda_id) or {}
-        except Exception:  # noqa: BLE001 — sin producto no hay rubro
-            prod = {}
-        fuera.append((str(p.get("id")), str(prod.get("categoria") or "")))
-    return fuera
-
-
 def _nombrados(texto: str, fichas: list, tienda_id: str) -> list:
     """Las fichas que la respuesta NOMBRA, en el orden en que las nombra.
 
@@ -586,11 +566,6 @@ def _parsear(crudo: str) -> dict:
     return {"tipo": "", "texto": (crudo or "").strip()}
 
 
-# Cuantas veces puede buscar el modelo en un turno. Dos, y el numero tiene
-# motivo: una para buscar y otra para corregir si lo que salio no sirve, que es
-# la capacidad que la FICHA 50 pide con todas las letras. La tercera no la pide
-# nadie y cada vuelta es una llamada al modelo.
-VUELTAS_DE_BUSQUEDA = 2
 
 
 def _informe_en_blanco() -> dict:
@@ -741,7 +716,8 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                      fuente: str, trace_id: str, tienda_id: str,
                      localidad_previa: str = "",
                      vigentes: list | None = None,
-                     vistos: list | None = None) -> tuple:
+                     vistos: list | None = None,
+                     estado_interprete: dict | None = None) -> tuple:
     """La llamada al modelo, con el motor de busqueda en la mano.
 
     EL ORDEN DE LECTURA, y es lo que cambio el 12-sep. Lo que el modelo lee,
@@ -775,7 +751,6 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     y que condicion no se pudo aplicar-. Nada de esto se puede reconstruir
     despues desde afuera: si no sale del turno, no existe.
     """
-    from app.core import cotejo as CO
     from app.core import guardas_salida as gs
     from app.core import motor as MT
     from app.core.llm_reintento import _cliente, _modelo, _modelo_decisor
@@ -850,32 +825,71 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     # candado de que el que escribe y el que lee nombren lo mismo.
     fuente_casa = ""
     pedidas: set = set()
-    # LO QUE EL COTEJO NECESITA DE LA FUENTE, LEIDO UNA SOLA VEZ POR TURNO.
-    # `cotejo` no lee la fuente a proposito —hay un test que lo exige— asi que
-    # los dos enums se los pasa este borde, que ya los tiene para el esquema.
-    # Si la recorrida falla, el cotejo sigue midiendo la fidelidad del renglon
-    # y se apagan las dos comprobaciones que dependen del catalogo: un turno
-    # no se cae porque una comprobacion no pueda correr.
-    try:
-        from app.core.filtros_catalogo import campos_ordenables, recorrida
-        _ordenables = campos_ordenables(tienda_id)
-        _categorias = [c for c, _ in recorrida(tienda_id).get(
-            "categorias") or []]
-    except Exception as e:  # noqa: BLE001
-        log.warning("cotejo_sin_fuente", trace_id=trace_id,
-                    error=f"{type(e).__name__}: {str(e)[:120]}")
-        _ordenables, _categorias = [], []
     # LAS CONDICIONES DECLARADAS EN ESTE TURNO, por categoria. Es estado del
     # turno igual que `pedidas`, y vive aca por el mismo motivo: declarado en
     # una vuelta tiene que seguir valiendo en la ultima, que es donde el
     # modelo escribe.
     condiciones_del_turno: dict = _vigentes_que_siguen(vigentes, mensaje)
+
+    # ── EL INTERPRETE, Y ES EL CAMBIO DEL 23-sep ────────────────────────
+    #
+    # EL MODELO YA NO ESCRIBE EL PEDIDO. Hasta hoy, en la vuelta con tablero
+    # el modelo elegia campos, valores, operadores y productos, y el codigo
+    # corregia despues lo que podia. Ahora el traductor llena una ficha contra
+    # un tablero chico, y validar, la memoria y el compilador deciden en
+    # codigo. El motor busca UNA vez y el modelo solo redacta con lo que
+    # volvio. Todo en `app/core/interprete.py`, medido en el banco antes de
+    # pasar aca.
+    from app.core import interprete as IN
+    estado_in = IN.de_la_charla(estado_interprete)
+    ficha = await IN.traducir(mensaje, trace_id)
+    pedido_in, _limpia, avisos_in, eventos_in = IN.del_codigo(
+        ficha, mensaje, estado_in, IN.tablero_de_la_tienda()[0])
+    consultas_in = [MT.orden_plano(dict(c)) for c in pedido_in["consultas"]]
+    log.info("interprete_pedido", trace_id=trace_id,
+             avisos=avisos_in[:6], eventos=eventos_in[:6],
+             comercial=(pedido_in.get("comercial") or {}).get("accion"),
+             repreguntar=len(pedido_in.get("repreguntar") or []),
+             pedido=json.dumps({k: v for k, v in pedido_in.items()
+                                if k != "renglones"},
+                               ensure_ascii=False, default=str)[:2000])
+    informe["llamadas"] += 1
+    informe["renglones"] = len(pedido_in.get("renglones") or [])
+    informe["renglones_copia"] = informe["renglones"]
+    r = MT.buscar(consultas_in, tienda_id, trace_id,
+                  temas=pedido_in.get("temas"),
+                  compat=pedido_in.get("compatibilidad"),
+                  afirma=pedido_in.get("afirma"),
+                  envios=pedido_in.get("envios"),
+                  localidad_previa=localidad_previa,
+                  cuenta=IN.cuenta_pedida(pedido_in) or None,
+                  reparto_pago=pedido_in.get("reparto_pago"))
+    _anotar(informe, consultas_in, pedidas, r)
+    for f in MT.fichas_de(r):
+        if str(f.get("id")) not in {str(x.get("id")) for x in fichas}:
+            fichas.append(f)
+    for e in (r.get("envios") or {}).get("filas") or []:
+        if e.get("monto_ars"):
+            envios[str(e["destino"])] = int(e["monto_ars"])
+    if (r.get("cuenta") or {}).get("total_ars") is not None:
+        cuenta = r["cuenta"]
+    for k in ("politicas", "criterio", "afirma", "compatibilidad", "envios"):
+        if r.get(k):
+            fuente_casa += "\n" + json.dumps(r[k], ensure_ascii=False,
+                                             default=str)
+    hallazgos.append("Volvio: " + _retorno_que_entra(r, trace_id))
+    hallazgos += IN.avisos_para_el_redactor(pedido_in)
+    estado_despues = IN.para_guardar(
+        IN.estado_despues(estado_in, pedido_in, r, mensaje))
+    # LA UNICA VUELTA QUE QUEDA ES LA DE CONTESTAR, sin tablero: ya no hay
+    # nada que el modelo tenga que buscar.
+    herramientas = []
     # EL LOOP ES UN `while` DESDE EL 16-sep, y el motivo es uno solo: la
     # correccion de estado puede pedir UNA vuelta mas. `tope` son las vueltas
     # que llevan tablero, o sea en las que se puede buscar; siempre hay una
     # ultima sin tablero, que es la de contestar. Un turno que no se corrige
     # cuesta exactamente lo que costaba.
-    tope = VUELTAS_DE_BUSQUEDA
+    tope = 0
     vuelta = 0
     corregido = False
     while vuelta <= tope:
@@ -1026,205 +1040,13 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             informe["fichas"] = len(fichas)
             salida["fuente_casa"] = fuente_casa
             salida["vigentes"] = condiciones_del_turno
+            salida["interprete"] = estado_despues
             return salida, fichas, envios, cuenta, informe
 
-        for c in llamadas:
-            informe["llamadas"] += 1
-            try:
-                args = json.loads(c.function.arguments or "{}")
-            except Exception:  # noqa: BLE001 — un JSON roto no tumba el turno
-                args = {}
-                log.warning("motor_argumentos_rotos", trace_id=trace_id,
-                            crudo=str(c.function.arguments)[:200])
-            consultas = args.get("consultas") or []
-            # LOS DOS OBLIGATORIOS VAN PRIMEROS Y NACEN MUDOS (21-sep-2026).
-            # `renglones` es lo que el cliente pidio con SUS palabras y
-            # `pedir_total` el si o no del presupuesto. Los dos VIAJAN Y SE
-            # LOGUEAN Y NADA MAS: ninguna respuesta cambia por ellos, que es
-            # la regla 2 de las seis contra la cascada. La cuenta la sigue
-            # haciendo `cuenta.items` cuando hay ids, igual que ayer.
-            pidio = {"renglones": args.get("renglones") or [],
-                     "pedir_total": bool(args.get("pedir_total")),
-                     "consultas": consultas, "temas": args.get("temas") or [],
-                     "compatibilidad": args.get("compatibilidad") or [],
-                     "afirma": args.get("afirma") or [],
-                     "envios": args.get("envios") or [],
-                     "criterio": args.get("criterio") or [],
-                     "cuenta": args.get("cuenta") or {},
-                     "reparto_pago": args.get("reparto_pago") or []}
-            # LO QUE EL MODELO ESCRIBIO, TAL CUAL, y es EL renglon que faltaba.
-            # `motor_buscar` cuenta cuantas consultas hubo y cuantas filas
-            # volvieron; con que PALABRAS se pidio no quedaba en ningun lado.
-            # El banco lo ve con un espia y produccion no lo veia, asi que la
-            # unica pieza que decide toda la busqueda era la unica invisible.
-            #
-            # VA ANTES DE BUSCAR a proposito: si el motor se cae, el renglon
-            # ya quedo escrito y se puede ver con que lo tumbaron.
-            # EL RECORTE SUBE A 2.000 PORQUE ENTRAN DOS CAMPOS MAS, y este
-            # renglon es lo UNICO que lee la vara de la interpretacion desde
-            # produccion: un pedido cortado a la mitad se lee como un campo
-            # que el modelo no declaro. Son caracteres de log, no tokens.
-            log.info("motor_pedido", trace_id=trace_id, vuelta=vuelta + 1,
-                     pedido=json.dumps(pidio, ensure_ascii=False)[:2000])
-            # ── EL COTEJO, DESPUES DE LOGUEAR Y ANTES DE BUSCAR ────────────
-            #
-            # EL ORDEN ES LO UNICO QUE IMPORTA ACA, y la primera tanda con el
-            # modelo real lo cazo el 22-sep. Con el saneo ANTES del log, el
-            # `motor_pedido` salia ya corregido: la vara leia una consulta sin
-            # el techo inventado y le daba la casilla por buena. M11 paso de
-            # fallar 2 de 2 en produccion a dar 3 de 3 en banco sin que el
-            # modelo hubiera cambiado nada.
-            #
-            # UN INSTRUMENTO QUE MIDE LA CORRECCION EN VEZ DEL MODELO ES PEOR
-            # QUE NO TENER INSTRUMENTO, porque el numero sube solo y eso es
-            # indistinguible de un avance. Es la misma enfermedad que el
-            # umbral movido junto con el trabajo que lo hace pasar, que
-            # CLAUDE.md llama la unica puerta por la que este metodo se
-            # corrompe.
-            #
-            # ASI QUE EL LOG DICE LO QUE ESCRIBIO EL MODELO y estas dos lineas
-            # arreglan lo que le llega al motor. Lo que el codigo corrigio se
-            # lee aparte, en los renglones del cotejo de `motor_turno`.
-            #
-            # LAS DOS VAN ACA Y NO EN EL MOTOR porque el motor no mira el
-            # mensaje del cliente, mira la consulta: cotejar lo declarado
-            # contra lo dicho es trabajo de este borde, el unico lugar donde
-            # estan las dos cosas.
-            #
-            # SANEAR VA ANTES DE REPONER: asi la memoria del turno solo guarda
-            # condiciones ya saneadas y un techo inventado no puede volver a
-            # entrar por la puerta de la reposicion.
-            # EL ORDEN PLANO SE TRADUCE PRIMERO: el saneo degrada un techo
-            # inventado a un orden y tiene que ver el orden que ya pidio.
-            for _c in consultas:
-                if isinstance(_c, dict):
-                    MT.orden_plano(_c)
-            informe["umbrales_degradados"] += CO.sanear_umbrales(
-                consultas, mensaje, _ordenables, trace_id)
-            informe["condiciones_repuestas"] += CO.reponer_condiciones(
-                consultas, condiciones_del_turno, trace_id)
-            # LA PREGUNTA NO ES PREMISA, Y EL PRODUCTO QUE EL RENGLON NOMBRA
-            # SE BUSCA (22-sep-2026). Las dos las midio la tanda de charlas y
-            # el motivo entero esta en `cotejo`, secciones 6 y 7.
-            CO.afirmas_que_preguntan(args.get("afirma"), mensaje, trace_id)
-            _con = dict(args, consultas=consultas)
-            CO.rescatar_nombrados(pidio["renglones"], _con, vistos or [],
-                                  trace_id)
-            _anafora = CO.rescatar_anafora(mensaje, _con, vistos or [],
-                                           trace_id)
-            consultas = _con["consultas"]
-            _recien = _lo_ultimo_nombrado(vistos, tienda_id)
-            CO.restringir_a_esos(mensaje, consultas, _recien, trace_id)
-            # EL PRONOMBRE ATA TAMBIEN LA CONSULTA DEL MODELO: "lo tenes en
-            # rosa?" con el G203 delante no pregunta por los mouses rosa del
-            # catalogo, pregunta por el G203. Medido en CH15: con el rescate
-            # solo, la consulta del modelo seguia buscando en todo el rubro y
-            # la respuesta listaba los colores de todos los mouses.
-            if _anafora:
-                CO.restringir(consultas, [x for x in _recien
-                                          if x[0] in _anafora], trace_id)
-            # ── EL RENGLON ES COPIA, O NO LO ES ───────────────────────────
-            #
-            # Se mide sobre la PRIMERA llamada del turno y nada mas. La
-            # pregunta que contesta es "de entrada, ¿transcribio o tradujo?",
-            # y esa se contesta en la primera, igual que las casillas de
-            # ausencia de la vara. En la vuelta 2 el modelo ya tiene su propia
-            # lista delante, asi que copiarse a si mismo no dice nada nuevo.
-            if not informe["renglones"] and pidio["renglones"]:
-                copias, propios = CO.fidelidad(pidio["renglones"], mensaje)
-                informe["renglones"] = len(pidio["renglones"])
-                informe["renglones_copia"] = copias
-                informe["renglones_propios"] = propios
-                # EL RUBRO NOMBRADO Y NO PEDIDO, que es la omision hecha
-                # afirmacion. Sale del cruce de los renglones COPIA contra
-                # las categorias que las consultas fueron a buscar, y viaja
-                # como aviso: el turno no escribe el texto, le pone el dato
-                # delante al modelo para que pregunte por lo que falta.
-                faltan = CO.rubros_sin_pedir(
-                    pidio["renglones"], mensaje, consultas, _categorias)
-                if faltan:
-                    informe["rubros_sin_pedir"] = faltan
-                    log.info("rubro_sin_pedir", trace_id=trace_id,
-                             rubros=faltan[:4])
-                    hallazgos.append(
-                        "OJO: el cliente nombro " + ", ".join(faltan[:4])
-                        + " y no lo buscaste. Si lo quiere en el pedido, "
-                        "buscalo; si no estas seguro, preguntaselo.")
-            # SE GUARDA ANTES DE BUSCAR, para que la MISMA vuelta que lo
-            # declara ya lo use si ademas trae la cuenta.
-            if args.get("reparto_pago"):
-                reparto = list(args["reparto_pago"])
-            # ── LA VUELTA QUE NO AGREGA NADA ──────────────────────────────
-            #
-            # Si esta llamada repite consultas ya servidas y no trae ninguna
-            # otra casilla, no se vuelve a buscar: el retorno de arriba sigue
-            # delante del modelo y este es el mismo. No baja la latencia —el
-            # motor son 0 ms contra 3.000 del modelo— y lo que da es que el
-            # mismo pedido no pueda volver con dos retornos distintos.
-            if (CO.todo_repetido(consultas, pedidas)
-                    and not any(args.get(k) for k in (
-                        "temas", "compatibilidad", "afirma", "envios",
-                        "criterio", "cuenta", "reparto_pago"))):
-                informe["vueltas_sin_aporte"] += 1
-                # SE ANOTA IGUAL, CON EL RETORNO VACIO: la consulta se pidio,
-                # asi que tiene que seguir contando en `consultas` y en
-                # `repetidas`. Saltear el conteo junto con la busqueda haria
-                # que el numero de repetidas bajara justo cuando empezamos a
-                # atajarlas, que es un instrumento midiendose a si mismo.
-                _anotar(informe, consultas, pedidas, {})
-                log.info("vuelta_sin_aporte", trace_id=trace_id,
-                         vuelta=vuelta + 1, consultas=len(consultas))
-                hallazgos.append(
-                    "Eso ya lo buscaste y te lo devolvi mas arriba: usa ese "
-                    "resultado. Si te falta algo, pedi OTRA cosa.")
-                continue
-            r = MT.buscar(consultas, tienda_id, trace_id,
-                          temas=args.get("temas"),
-                          compat=args.get("compatibilidad"),
-                          afirma=args.get("afirma"),
-                          envios=args.get("envios"),
-                          localidad_previa=localidad_previa,
-                          criterio=args.get("criterio"),
-                          cuenta=args.get("cuenta"),
-                          reparto_pago=reparto)
-            _anotar(informe, consultas, pedidas, r)
-            for f in MT.fichas_de(r):
-                if str(f.get("id")) not in {str(x.get("id")) for x in fichas}:
-                    fichas.append(f)
-            for e in (r.get("envios") or {}).get("filas") or []:
-                if e.get("monto_ars"):
-                    envios[str(e["destino"])] = int(e["monto_ars"])
-            if (r.get("cuenta") or {}).get("total_ars") is not None:
-                cuenta = r["cuenta"]
-            # LO QUE LA CASA TIENE ESCRITO TAMBIEN ES FUENTE (22-sep-2026). Es
-            # la cuarta vez que este modulo aprende la misma leccion, ahora con
-            # las politicas: "¿cuanto sale mandarlo a Rosario?" volvio con la
-            # tarifa Y con el envio gratis desde $250.000, el modelo escribio
-            # las dos y la guarda tiro la respuesta entera por la segunda.
-            # Medido 2 de 2 en la tanda de charlas. Entra SOLO lo que volvio
-            # de la fuente, no la consulta: un umbral que el modelo escribio
-            # en su pedido no se legitima por haberlo pedido.
-            for k in ("politicas", "criterio", "afirma", "compatibilidad",
-                      "envios"):
-                if r.get(k):
-                    fuente_casa += "\n" + json.dumps(
-                        r[k], ensure_ascii=False, default=str)
-            hallazgos.append(
-                # EL RECORTE ERA DE 900 Y CORTABA CONSULTAS ENTERAS. Medido
-                # el 13-sep: un pedido abierto -"algo para jugar que no sea muy
-                # caro"- mando cinco consultas que dan 959 caracteres, asi que
-                # la quinta llegaba partida y el modelo no podia saber que ya
-                # la habia pedido. Seis consultas es el tope, y con el tope
-                # lleno entran holgadas en 1.400.
-                # Y EL RENGLON NO VUELVE EN EL ECO, a proposito. Este
-                # presupuesto ya se agrando una vez -de 900 a 1.400- porque
-                # cortaba consultas enteras; meter la lista adelante volveria
-                # a cortarlas, que es el defecto que se arreglo el 13-sep. El
-                # modelo ya tiene sus renglones en su propia llamada.
-                "Buscaste: " + json.dumps(
-                    {k: v for k, v in pidio.items() if k != "renglones"},
-                    ensure_ascii=False)[:1400]
-                + "\nVolvio: " + _retorno_que_entra(r, trace_id))
+        # SIN TABLERO NO HAY LLAMADAS A HERRAMIENTAS: si el modelo igual
+        # intento una, se contesta con lo que ya volvio en la vuelta de abajo.
+        log.warning("redactor_pidio_herramienta", trace_id=trace_id)
+        tope = max(tope, vuelta + 1)
         vuelta += 1
     informe["fichas"] = len(fichas)
     return {}, fichas, envios, cuenta, informe
@@ -1398,7 +1220,8 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
         _voz(negocio), memoria, history, raw_message, bloque, trace_id,
         tienda_id, localidad_previa=conv.get("ultima_localidad") or "",
         vigentes=(conv.get("preferencias_cliente") or {}).get("vigentes"),
-        vistos=conv.get("productos_vistos") or [])
+        vistos=conv.get("productos_vistos") or [],
+        estado_interprete=conv.get("interprete"))
     etapas["modelo"] = int((time.time() - t) * 1000)
     # EL NUMERO DEL MOTOR, UN RENGLON POR TURNO. Sale SIEMPRE, haya buscado o
     # no: un turno que no busco es un dato, no un hueco en la serie. Lo agrega
@@ -1570,6 +1393,10 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
                           # EL CRITERIO QUE SIGUE VALIENDO. Solo se pisa si
                           # el turno paso por el modelo: un turno caido no
                           # borra lo que el cliente excluyo.
+                          # LA MEMORIA DEL INTERPRETE: lo mostrado, el
+                          # foco, la busqueda, las exclusiones y la
+                          # propuesta de compra. Un turno caido no la pisa.
+                          interprete=salida.get("interprete"),
                           preferencias_cliente=(
                               {"vigentes": _vigentes_para_guardar(
                                   salida["vigentes"])}

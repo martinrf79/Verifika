@@ -49,13 +49,15 @@ código determinista. Los cuatro:
 
 | id | dónde | archivo | cuándo corre |
 |----|-------|---------|--------------|
-| **L1** | decisor / intérprete | `turno.py:310 _pedir_herramientas` | siempre |
-| **L2** | redactor | `turno.py:858 _redactar` | si la mesa tiene puntos |
+| **L1** | traductor: llena la ficha | `interprete.py traducir` | siempre |
+| **L2** | redactor | `respuesta.py _preguntar`, la vuelta sin tablero | siempre |
 | **L3** | extractor de datos del cliente | `cierre.py:239 extraer_datos_cliente` | sólo si la señal es `decision_compra` |
 | **L4** | resumen de memoria larga | `memoria_larga.py:80` | sólo cuando el historial desborda |
 
-L1 corre a temperatura 0 con el modelo decisor. L2 corre a 0.6 con
-`response_format` de esquema estricto. L3 y L4 son auxiliares y no tocan la
+L1 corre a 0.2 con el esquema de la ficha obligado, y no ve la charla: lo que
+decide sobre la ficha —validar, la memoria, compilar— es codigo, en
+`app/core/interprete.py`. L2 corre a 0.3 con `response_format` de esquema
+estricto y sin herramientas: redacta con lo que el motor devolvio. L3 y L4 son auxiliares y no tocan la
 respuesta que lee el cliente, salvo por lo que guardan.
 
 **Ley B — el turno es una sola tubería, doce estaciones.** No hay ramas

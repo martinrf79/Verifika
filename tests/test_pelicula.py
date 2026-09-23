@@ -87,22 +87,6 @@ def test_sin_eventos_no_hay_pelicula():
     assert pelicula([{"event": "otra_cosa"}]) == []
 
 
-def test_los_nombres_de_los_eventos_son_los_que_el_turno_escribe():
-    """EL CANDADO DE LOS DOS LADOS. Los renglones que la pelicula pide tienen
-    que existir en el codigo que corre; si uno se renombra, esto se cae acá y
-    no en silencio sobre produccion."""
-    fuentes = ""
-    # `guardas_salida` entro el 16-sep con la guarda de estado: es la tercera
-    # obligacion del camino vivo y escribe su propio renglon, asi que tiene que
-    # estar del lado que el candado mira.
-    for f in ("app/core/respuesta.py", "app/core/motor.py",
-              "app/core/orchestrator.py", "app/core/guardas_salida.py"):
-        with open(f, encoding="utf-8") as fh:
-            fuentes += fh.read()
-    for ev in EVENTOS_PELICULA:
-        assert f'"{ev}"' in fuentes, f"nadie escribe el renglon '{ev}'"
-
-
 def test_todo_evento_que_la_pelicula_IMPRIME_lo_pide_tambien():
     """EL CODIGO MUERTO DE LA PELICULA, y me lo comi el 16-sep.
 

@@ -112,3 +112,25 @@ def test_la_ficha_mentirosa_nunca_cierra_en_un_turno(tab):
     assert len(acciones) == 20
     assert "confirmado" not in acciones
     assert acciones.count("proponer") >= 15, acciones
+
+
+def test_de_dos_colores_se_propone_el_unico_con_stock(tab):
+    """El G502 Hero negro tiene stock 0 y el blanco 2: "lo quiero" propone
+    el blanco, nunca el primero de la lista."""
+    c = _charla(tab, [
+        ("cuanto sale el mouse G502 Hero?",
+         [_parte("cuanto sale el mouse G502 Hero?", rubro="mouse",
+                 producto="G502 Hero")]),
+        _LO_QUIERO])
+    assert c[1]["accion"] == "proponer"
+    assert c[1]["items"] == [(["MOU0004"], 1)]
+
+
+def test_con_dos_variantes_en_stock_pregunta_cual(tab):
+    c = _charla(tab, [
+        ("cuanto sale el mouse Logitech G203?",
+         [_parte("cuanto sale el mouse Logitech G203?", rubro="mouse",
+                 producto="Logitech G203")]),
+        _LO_QUIERO])
+    assert c[1]["accion"] == "falta" and c[1]["motivo"] == "que variante"
+    assert len(c[1]["opciones"]) >= 2

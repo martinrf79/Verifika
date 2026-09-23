@@ -120,20 +120,6 @@ def test_negar_un_campo_que_no_miro_le_devuelve_el_dato_y_se_le_pide_de_nuevo(
     assert salida["texto"] == "Los teclados dicen china."
 
 
-def test_la_vuelta_de_correccion_lleva_TABLERO(firestore_doble, monkeypatch):
-    """Sin tablero la correccion no sirve para nada: se le pide que busque el
-    campo que no busco, asi que tiene que poder buscar. Es la unica razon por
-    la que el tope de vueltas se mueve."""
-    guion = [
-        _Msg(tool_calls=[_Call('{"consultas": [{"categoria": "teclado"}]}')]),
-        _Msg('{"tipo": "ficha", "texto": "no tenemos el pais de fabricacion"}'),
-        _Msg('{"tipo": "ficha", "texto": "ok"}'),
-    ]
-    cli, _, informe = _correr(monkeypatch, guion)
-    assert informe["correcciones"] == 1
-    assert cli.vistos[-1].get("tools"), "la vuelta de correccion viajo sin tablero"
-
-
 # ── LO QUE NO TIENE QUE PASAR ───────────────────────────────────────────────
 
 def test_un_turno_SIN_afirmacion_no_gasta_una_vuelta_de_mas(firestore_doble,
@@ -148,23 +134,6 @@ def test_un_turno_SIN_afirmacion_no_gasta_una_vuelta_de_mas(firestore_doble,
     assert informe["correcciones"] == 0
     assert len(cli.vistos) == 2, "gasto una vuelta que no hacia falta"
     assert salida["texto"] == "Te paso tres teclados."
-
-
-def test_el_campo_que_SI_miro_no_se_corrige(firestore_doble, monkeypatch):
-    """Si la consulta uso el campo, el modelo tuvo el dato o el motivo delante
-    y lo que diga de el esta respaldado. Corregirlo ahi seria discutirle una
-    verdad."""
-    guion = [
-        _Msg(tool_calls=[_Call(
-            '{"consultas": [{"categoria": "teclado", "condiciones": '
-            '[{"campo": "pais_fabricacion", "operador": "no_contiene", '
-            '"valor": "china"}]}]}')]),
-        _Msg('{"tipo": "ficha", "texto": "Ninguno cumple con el pais de '
-             'fabricacion que pediste."}'),
-    ]
-    cli, _, informe = _correr(monkeypatch, guion)
-    assert informe["correcciones"] == 0
-    assert len(cli.vistos) == 2
 
 
 def test_se_corrige_UNA_sola_vez_por_turno(firestore_doble, monkeypatch):

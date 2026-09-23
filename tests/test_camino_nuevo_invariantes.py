@@ -105,7 +105,7 @@ _MENSAJES = [
     "no se, quiero un {r} {m}", "dale, lo quiero", "algo mas barato?",
     "{r} que no sean {m}", "hola", "precio del {p} y del {q}",
     "{r} hasta {n} mil", "tengo {n} lucas para un {r}",
-    "{r} entre {n} y {n2} mil",
+    "{r} entre {n} y {n2} mil", "quiero comprar el {p}", "si",
 ]
 _BASURA = ["G502 Ultra", "iPhone 15", "Zenbook X99", "teclado",
            "asdf 123", "K120, G203", None, 42]
@@ -130,7 +130,11 @@ def _ficha_mala(rng, texto, tab, cat, a):
         partes.append({
             "dice": texto if creible else rng.choice(
                 [texto[:12], "algo que no dijo"]),
-            "quiere": rng.choice(list(T.INTENCIONES)) if creible
+            # EL QUE DICE COMPRAR, EN LA MITAD DE LAS VECES LO ANOTA ASI: si
+            # no, la compuerta casi no se recorre.
+            "quiere": ("comprar" if re.search(r"comprar|lo quiero", texto)
+                       and rng.random() < 0.5 else
+                       rng.choice(list(T.INTENCIONES))) if creible
             else rng.choice(["vender", None]),
             "origen": "tienda" if creible else rng.choice(
                 list(T.ORIGENES) + ["inventado"]),
@@ -191,7 +195,7 @@ def test_ninguna_ficha_rompe_los_invariantes(tab):
     fallas = []
     cuenta = {"ids": 0, "memoria": 0, "repregunta": 0, "precio": 0,
               "propone": 0}
-    for _charla in range(300):
+    for _charla in range(500):
         estado = M.estado_nuevo()
         # LA CIFRA VALE SI LA DIJO EN CUALQUIER TURNO DE LA CHARLA: "de esos
         # el mas barato" hereda el techo que puso antes, y eso es memoria.
@@ -247,7 +251,7 @@ def test_ninguna_ficha_rompe_los_invariantes(tab):
     # SOBRE CUANTOS CASOS PASO (regla 10.6): los caminos que importan se
     # recorrieron de verdad, no solo los turnos vacios.
     print(cuenta)
-    assert turnos == 1200
+    assert turnos == 2000
     assert cuenta["ids"] >= 60 and cuenta["memoria"] >= 15
     assert cuenta["repregunta"] >= 30 and cuenta["precio"] >= 20
     assert cuenta["propone"] >= 8

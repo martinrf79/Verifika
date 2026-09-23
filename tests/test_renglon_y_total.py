@@ -128,38 +128,6 @@ def test_el_pedido_de_total_NO_vive_adentro_de_la_cuenta(firestore_doble):
 
 # ── EL CABLE, Y NACE MUDO ───────────────────────────────────────────────────
 
-def test_el_pedido_QUE_SE_LOGUEA_lleva_los_dos_campos(firestore_doble,
-                                                      monkeypatch):
-    """`motor_pedido` es lo UNICO que la vara de la interpretacion lee de
-    produccion. Un campo que el modelo declara y no entra ahi no existe para
-    la medicion."""
-    args = json.dumps({"renglones": ["dos teclados", "el mas barato"],
-                       "pedir_total": True,
-                       "consultas": [{"categoria": "teclado"}]})
-    cli = _correr(monkeypatch, [_Msg(tool_calls=[_Call(args)]),
-                                _Msg(content="Te paso dos teclados.")])
-    eco = _texto_de(cli.vistos[1])
-    assert "pedir_total" in eco, "el si o no del presupuesto no se registro"
-
-
-def test_el_renglon_NO_vuelve_en_el_eco_de_lo_buscado(firestore_doble,
-                                                      monkeypatch):
-    """EL PRESUPUESTO DEL ECO YA SE AGRANDO UNA VEZ, de 900 a 1.400, porque
-    cortaba consultas enteras y el modelo no podia saber que ya las habia
-    pedido. Meter la lista de renglones adelante volveria a cortarlas.
-
-    El modelo ya tiene sus renglones en su propia llamada, asi que repetirselos
-    cuesta caracteres y no agrega nada.
-    """
-    args = json.dumps({"renglones": ["UN_RENGLON_QUE_NO_TIENE_QUE_VOLVER"],
-                       "pedir_total": False,
-                       "consultas": [{"categoria": "teclado"}]})
-    cli = _correr(monkeypatch, [_Msg(tool_calls=[_Call(args)]),
-                                _Msg(content="Te paso dos teclados.")])
-    eco = _texto_de(cli.vistos[1])
-    assert "Buscaste:" in eco
-    assert "UN_RENGLON_QUE_NO_TIENE_QUE_VOLVER" not in eco
-
 
 def test_LA_PIEZA_NACE_MUDA_y_no_arma_ninguna_cuenta(firestore_doble):
     """Regla 2 de las seis contra la cascada. `pedir_total` VIAJA Y SE LOGUEA
