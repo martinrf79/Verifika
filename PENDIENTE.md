@@ -68,10 +68,11 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 llena una ficha contra el tablero, y el compilador y la memoria la resuelven en
 codigo: `banco_pruebas/traductor.py`, `compilador.py` y `memoria.py`. Lo que
 falta, en orden:
-- **ABIERTO** · Charlas nuevas que no se usaron para corregir, contra el sobreajuste.
-- **ABIERTO** · Paso 7: las reglas de repregunta, y que el lead, el cobro o la reserva nunca salgan de la ficha sola.
-- **ABIERTO** · El redactor, con el orden de la lista fijado por el codigo, y pasar todo a `app/`.
-- **ESPERA A MARTIN** · Que modelo traduce, DeepSeek o Gemini, y su costo.
+- **ABIERTO** · Correr `banco_pruebas/vara_charlas_nuevas.json`, congelada el 23-sep y nunca corrida: `memoria.py --vara vara_charlas_nuevas.json`, tres veces, cuenta la peor. No se corrige mirandola.
+- **ABIERTO** · Juntar charlas reales de produccion para la tanda siguiente, por el issue 31.
+- **ABIERTO** · El redactor, con el orden de la lista fijado por el codigo, y pasar todo a `app/`, con la compuerta comercial del paso 7 enchufada al lead y al cobro.
+- **ABIERTO** · `arquitectura/MAPA_CABLEADO.md` y este archivo nombran `turno.py` y `tabla.py`, que ya no existen: el turno vivo es `app/core/respuesta.py`.
+- Traduce **Gemini** por ahora, decidido por Martin el 23-sep. DeepSeek queda como comparacion: la defensa contra lo inventado es del codigo y la prueba `tests/test_camino_nuevo_invariantes.py` para los dos.
 
 **22-sep, noche: LA INTERPRETACION CON MEMORIA SE MIDE Y QUEDA EN 122 DE 124.**
 Nueva vara de charlas de varios turnos, `banco_pruebas/vara_charlas.json`, con
