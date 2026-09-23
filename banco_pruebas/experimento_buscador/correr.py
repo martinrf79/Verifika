@@ -126,7 +126,7 @@ def embeber(textos: list) -> list:
     import time
     cli, fuera = _cliente(), []
     for i in range(0, len(textos), 90):
-        for intento in range(8):
+        for intento in range(20):
             try:
                 r = cli.embeddings.create(model="gemini-embedding-001",
                                           input=textos[i:i + 90],
