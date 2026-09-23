@@ -350,6 +350,17 @@ def completar(pedido: dict, mensaje: str, estado: dict, ficha: dict) -> dict:
             if v2 == "exists":
                 veredicto, hits = v2, h2
                 c["texto"] = pegado
+        if veredicto == "not_found" and cat:
+            # EL RUBRO LO PUSO EL MODELO Y PUEDE ESTAR MAL: "la samsung"
+            # anotada como notebook no esta en notebooks. Se mira el catalogo
+            # entero, pero SOLO PARA PREGUNTAR: si ahi hay varios, se
+            # repregunta con ellos. Nunca da uno por seguro: medido el 23-sep,
+            # "logitec k 120" certificado contra todo el catalogo salia un
+            # cooler.
+            v2, h2 = certificar_producto(c["texto"], catalogo())
+            if v2 == "ambiguous":
+                veredicto, hits = v2, h2
+                c.pop("categoria", None)
         if veredicto == "exists":
             # LA VARIANTE QUE NOMBRO: el color escrito junto al modelo, o
             # como condicion —"G203 negro" llega de las dos formas—. Una

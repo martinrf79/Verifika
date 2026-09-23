@@ -267,7 +267,10 @@ def aterrizar(concepto: str, valor: str, fuerza: str, rubro: str,
     if concepto == "precio_ars":
         cifras = _cifras(valor)
         if cifras:
-            if len(cifras) >= 2 and re.search(r"\b(de|entre)\b", v):
+            # DOS CIFRAS EN UN PRECIO SON UN RANGO, digan "entre" o no.
+            # Medido el 23-sep en la tanda nueva: Gemini escribio
+            # "50000-100000" y salia "menor a 50000".
+            if len(cifras) >= 2:
                 fuera["condiciones"] += [
                     {"campo": "precio_ars", "operador": "mayor",
                      "valor": str(min(cifras))},
@@ -287,10 +290,13 @@ def aterrizar(concepto: str, valor: str, fuerza: str, rubro: str,
         # o negar lo caro —"no muy cara", "que no me fundan"—, es lo barato
         # primero. La lista queda para lo que se dice sin negar —"acorde a la
         # crisis"—.
+        # LO BARATO SE LEE TAMBIEN EN LO QUE DIJO EL CLIENTE, no solo en el
+        # valor que escribio el modelo. Medido el 23-sep: a "algo mas
+        # barato?" Gemini le puso de valor "menor", y el orden se perdia.
         elif fuerza == "evita" or (_NIEGA.search(v) and "car" in v) or \
-                any(k in v for k in _BARATO):
+                any(k in v or k in _norm(dice) for k in _BARATO):
             fuera["orden"] = "precio_ars_min"
-        elif any(k in v for k in _CARO):
+        elif any(k in v or k in _norm(dice) for k in _CARO):
             fuera["orden"] = "precio_ars_max"
         return fuera
     if concepto == "peso_gramos" and any(k in v for k in _LIVIANO):

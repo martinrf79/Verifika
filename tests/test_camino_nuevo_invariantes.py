@@ -252,3 +252,32 @@ def test_ninguna_ficha_rompe_los_invariantes(tab):
     assert cuenta["repregunta"] >= 30 and cuenta["precio"] >= 20
     assert cuenta["propone"] >= 8
     assert violaciones == 0, "\n".join(fallas)
+
+
+def _un_turno(tab, texto, **parte):
+    p = {"dice": texto, "quiere": "precio", "origen": "tienda",
+         "rubro": "ninguno", "producto": "", "criterios": [], "cantidad": 0,
+         "destino": "", "refiere": "no", "posiciones": [], "para": ""}
+    p.update(parte)
+    ficha = {"partes": [p], "afirma": [], "reescrita": texto,
+             "criterios_generales": [], "reparto": []}
+    r, _ = M.turno(texto, M.estado_nuevo(), tab, lambda _t: ficha)
+    return r["pedido"]
+
+
+def test_un_rubro_equivocado_del_modelo_repregunta_y_no_elige(tab):
+    """"La samsung" anotada como notebook: Samsung no tiene notebooks. Se
+    mira todo el catalogo y se repregunta, en vez de contestar nada."""
+    p = _un_turno(tab, "cuanto sale la samsung?", rubro="notebook",
+                  producto="samsung")
+    assert p.get("repreguntar")
+    assert not any(c.get("ids") for c in p["consultas"])
+
+
+def test_el_catalogo_entero_nunca_certifica_un_producto(tab):
+    """"logitec k 120" en teclados: la busqueda en todo el catalogo daba un
+    cooler por seguro. Afuera del rubro solo se pregunta."""
+    p = _un_turno(tab, "precio del teclao logitec k 120", rubro="teclado",
+                  producto="logitec k 120")
+    for c in p["consultas"]:
+        assert not any(i.startswith("COO") for i in c.get("ids") or [])
