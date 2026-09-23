@@ -539,8 +539,8 @@
    "texto": "tengo una notebook lenovo ideapad 3 del 2021, que memoria ram le sirve para ampliarla?",
    "partes": [
     {
-     "clave": "ram",
-     "origen": "cliente",
+     "clave": "amplia",
+     "origen": "tienda",
      "quiere": [
       "compatibilidad",
       "buscar"
@@ -646,16 +646,13 @@
    "texto": "se me calienta mucho la notebook cuando juego, que me recomiendan?",
    "partes": [
     {
-     "clave": "calienta",
+     "clave": "recomiendan",
      "origen": [
-      "general",
-      "cliente",
-      "tienda"
+      "tienda",
+      "general"
      ],
      "quiere": [
-      "buscar",
-      "postventa",
-      "caracteristica"
+      "buscar"
      ]
     }
    ],
@@ -669,13 +666,11 @@
    "texto": "mi monitor tiene solo entrada vga, me sirve alguna de sus placas de video?",
    "partes": [
     {
-     "clave": "vga",
-     "origen": [
-      "tienda",
-      "cliente"
-     ],
+     "clave": "placas",
+     "origen": "tienda",
      "quiere": [
-      "compatibilidad"
+      "compatibilidad",
+      "buscar"
      ],
      "rubro": "placa de video"
     }
@@ -690,13 +685,11 @@
    "texto": "mi hijo tiene 8 anos y quiere jugar roblox, que notebook le compro?",
    "partes": [
     {
-     "clave": "roblox",
-     "origen": [
-      "tienda",
-      "general"
-     ],
+     "clave": "compro",
+     "origen": "tienda",
      "quiere": [
-      "buscar"
+      "buscar",
+      "comprar"
      ],
      "rubro": "notebook"
     }
@@ -1354,5 +1347,6 @@
    ]
   }
  ],
- "_forma_v3": "23-sep-2026. La vara se adapta a la forma v3 y NO cambia de requisito: un destino atado a la parte de su producto cuenta como el destino, el reparto en su casilla cuenta como la parte de pago, y un tope o un plazo marcado `puede_ser_criterio` puede venir como criterio en vez de parte. Lo que se exige que el modelo entienda es lo mismo."
+ "_forma_v3": "23-sep-2026. La vara se adapta a la forma v3 y NO cambia de requisito: un destino atado a la parte de su producto cuenta como el destino, el reparto en su casilla cuenta como la parte de pago, y un tope o un plazo marcado `puede_ser_criterio` puede venir como criterio en vez de parte. Lo que se exige que el modelo entienda es lo mismo.",
+ "_frontera_v4": "23-sep-2026. Cuatro expectativas cambian porque cambio el requisito, definido con Martin: el origen cliente es SOLO lo que depende del aparato del cliente; si la parte termina en elegir o mostrar productos de la tienda, es tienda. T25, T30, T31 y T32 esperaban cliente o apuntaban la clave a la parte que el cliente CUENTA, y el modelo la separo bien: lo que cuenta queda como parte suya y lo que pide queda como tienda."
 }
