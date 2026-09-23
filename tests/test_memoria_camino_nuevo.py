@@ -154,13 +154,13 @@ def test_el_producto_corregido_del_audio_pasa_y_el_inventado_no():
 def test_las_corridas_de_las_tandas_nuevas_siguen_enteras(tab):
     """Tres corridas de Gemini por cada tanda nueva del 23-sep. Son de
     regresion, no de validacion: las tandas se arreglaron mirandolas. El
-    numero se dice: nueve corridas, 444 casillas."""
+    numero se dice: doce corridas, 549 casillas."""
     import os
     with open(os.path.join(os.path.dirname(M.GRABADAS),
                            "fichas_tandas_nuevas.json"),
               encoding="utf-8") as f:
         corridas = json.load(f)["corridas"]
-    assert len(corridas) == 9
+    assert len(corridas) == 12
     fallas, total = [], 0
     for k, cor in enumerate(corridas, 1):
         ok, de, _na, _ = M.correr(
@@ -170,5 +170,5 @@ def test_las_corridas_de_las_tandas_nuevas_siguen_enteras(tab):
         total += de
         if ok != de:
             fallas.append(f"corrida {k} {cor['vara']}: {ok} de {de}")
-    assert total == 444
+    assert total == 549
     assert not fallas, fallas

@@ -223,6 +223,14 @@ def resolver(ficha: dict, mensaje: str, estado: dict) -> tuple:
                            f"{b['categoria']}")
             p["rubro"] = b["categoria"]
 
+        # "LA BUSQUEDA" SIN BUSQUEDA ES LO QUE SE ESTA HABLANDO: "y en rojo lo
+        # tenes?" despues de un solo producto. El modelo no ve si hubo una
+        # lista; el codigo si. Medido el 23-sep en la cuarta tanda.
+        if forma == "la_busqueda" and not estado.get("busqueda") and \
+                estado.get("foco") and not tiene_rubro:
+            forma = p["refiere"] = "ese"
+            eventos.append("la busqueda sin busqueda: apunta al foco")
+
         # Y EL RUBRO NOMBRADO MANDA SOBRE "LA BUSQUEDA DE ANTES": "quise
         # decir un monitor" es una busqueda nueva, aunque corrija la vieja.
         if forma == "la_busqueda" and tiene_rubro:

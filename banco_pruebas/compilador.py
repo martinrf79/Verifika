@@ -251,6 +251,15 @@ def _cifras(valor: str) -> list:
 
 _NIEGA = re.compile(r"\b(no|nada|sin|menos|excepto|salvo|ni)\b")
 
+# LA DIRECCION CON LAS PALABRAS DEL MODELO. Para precio y peso el modelo
+# escribe a veces la direccion y no la cosa: "menor", "menos", "minimo". Medido
+# el 23-sep en la cuarta tanda: "cual sale menos?" y "cual pesa menos?" no
+# ordenaban.
+_HACIA_ABAJO = {"menor", "menos", "minimo", "min", "el menor", "bajo",
+                "mas bajo", "inferior"}
+_HACIA_ARRIBA = {"mayor", "mas", "maximo", "max", "el mayor", "alto",
+                 "mas alto", "superior"}
+
 
 def _negado(valor: str, dice: str) -> bool:
     """¿El cliente NIEGA este valor? Se mira el valor, y en el pedazo solo
@@ -341,9 +350,11 @@ def aterrizar(concepto: str, valor: str, fuerza: str, rubro: str,
         # valor que escribio el modelo. Medido el 23-sep: a "algo mas
         # barato?" Gemini le puso de valor "menor", y el orden se perdia.
         elif fuerza == "evita" or (_NIEGA.search(v) and "car" in v) or \
+                v.strip() in _HACIA_ABAJO or \
                 any(k in v or k in _norm(dice) for k in _BARATO):
             fuera["orden"] = "precio_ars_min"
-        elif any(k in v or k in _norm(dice) for k in _CARO):
+        elif v.strip() in _HACIA_ARRIBA or \
+                any(k in v or k in _norm(dice) for k in _CARO):
             fuera["orden"] = "precio_ars_max"
         return fuera
     if concepto == "peso_gramos":
@@ -352,8 +363,10 @@ def aterrizar(concepto: str, valor: str, fuerza: str, rubro: str,
         # Medido el 23-sep en la vara de 19, M10. Un peso sin cifra y sin
         # liviano no es un filtro: no hay texto que un peso contenga.
         if any(k in v or k in _norm(dice) for k in _LIVIANO) or \
-                v in ("minimo", "menor", "min", "el menor"):
+                v.strip() in _HACIA_ABAJO:
             fuera["orden"] = "peso_gramos_min"
+        elif v.strip() in _HACIA_ARRIBA or "pesad" in v:
+            fuera["orden"] = "peso_gramos_max"
         return fuera
     if concepto in ("otro", "compatible_con"):
         return fuera
@@ -374,6 +387,24 @@ def aterrizar(concepto: str, valor: str, fuerza: str, rubro: str,
                 len(_raiz(primera)) >= 4 and _raiz(primera) in raices_v):
             elegido = str(r)
             break
+    if not elegido and reales:
+        # EL VALOR EN OTRO CONCEPTO: "china" anotado como marca no es ninguna
+        # marca, es un pais. Si el valor no existe en su concepto y si en uno
+        # de estos, se muda. Medido el 23-sep en la cuarta tanda: salia
+        # "marca no contiene china", que no excluye nada.
+        for otro in ("pais_marca", "pais_fabricacion", "color", "material",
+                     "conexion"):
+            if otro == concepto:
+                continue
+            for r in ((vocabulario(TIENDA) or {}).get(otro) or {}).get(
+                    "valores") or []:
+                primera = (re.findall(r"\w+", _norm(r)) or [""])[0]
+                if len(_raiz(primera)) >= 4 and _raiz(primera) in {
+                        _raiz(w) for w in re.findall(r"\w+", v)}:
+                    concepto, elegido = otro, str(r)
+                    break
+            if elegido:
+                break
     valor_final = elegido or valor
     if fuerza == "debe":
         op = "contiene"

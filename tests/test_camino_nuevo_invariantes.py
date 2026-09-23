@@ -379,3 +379,32 @@ def test_el_peso_minimo_es_lo_liviano_y_nunca_un_texto(tab):
     assert a == {"condiciones": [], "orden": "peso_gramos_min"}
     b = C.aterrizar("peso_gramos", "pesado", "debe", "mouse", "uno pesado")
     assert b["condiciones"] == []
+
+
+@pytest.mark.parametrize("concepto,valor,dice,esperado", [
+    ("precio_ars", "menor", "cual sale menos?", "precio_ars_min"),
+    ("precio_ars", "mayor", "cual sale mas?", "precio_ars_max"),
+    ("peso_gramos", "menos", "cual pesa menos?", "peso_gramos_min"),
+])
+def test_la_direccion_con_las_palabras_del_modelo(tab, concepto, valor, dice,
+                                                  esperado):
+    assert C.aterrizar(concepto, valor, "prefiere", "x", dice)["orden"] == \
+        esperado
+
+
+def test_un_pais_anotado_como_marca_se_muda_al_pais(tab):
+    a = C.aterrizar("marca", "china", "evita", "auriculares",
+                    "que no sean de marca china")
+    assert [(x["campo"], _norm(x["valor"])) for x in a["condiciones"]] == \
+        [("pais_marca", "china")]
+
+
+def test_la_busqueda_sin_busqueda_apunta_al_foco(tab):
+    p = _dos_turnos(tab, ("cuanto sale el parlante Logitech Z207 negro?",
+                          {"rubro": "parlante", "producto": "Z207 negro",
+                           "quiere": "precio"}),
+                    ("y en rojo lo tenes?",
+                     {"quiere": "caracteristica", "refiere": "la_busqueda",
+                      "criterios": [{"concepto": "color", "valor": "rojo",
+                                     "fuerza": "debe"}]}))
+    assert "z207" in _norm(str(p[1]["consultas"]))
