@@ -1,0 +1,95 @@
+{
+ "_que_es": "LA SEGUNDA TANDA QUE NO SE USA PARA CORREGIR (23-sep-2026). La primera, vara_charlas_nuevas.json, dio 62 de 67 con Gemini y se arreglo mirandola, asi que ya no valida esos arreglos. Esta se escribio ANTES de correrla: las mismas clases de falla con otras palabras —rangos con barra, una marca sola de varios rubros, 'mas economico'—, formas que ninguna vara tiene —'1 palo', 'que no pase', el mas caro de la tienda— y tres mensajes REALES de produccion, copiados tal cual.",
+ "_regla": "NO SE CORRIGE MIRANDO ESTA VARA. Si una corrida da rojo, el arreglo se valida contra una tanda NUEVA, y esta queda como estaba.",
+ "charlas": [
+  {"id": "P1", "clase": "rango de a", "turnos": [
+   {"texto": "algun monitor de 150 a 250 lucas?", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "monitor"},
+    {"n": "el piso", "tipo": "condicion", "campo": ["precio_ars"], "valor": "150000", "acepta": ["mayor", "mayor_igual"]},
+    {"n": "el techo", "tipo": "condicion", "campo": ["precio_ars"], "valor": "250000", "acepta": ["menor", "menor_igual"]}]}]},
+  {"id": "P2", "clase": "rango con barra", "turnos": [
+   {"texto": "necesito un ssd, presupuesto 40/60 mil", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "ssd"},
+    {"n": "el piso", "tipo": "condicion", "campo": ["precio_ars"], "valor": "40000", "acepta": ["mayor", "mayor_igual"]},
+    {"n": "el techo", "tipo": "condicion", "campo": ["precio_ars"], "valor": "60000", "acepta": ["menor", "menor_igual"]}]}]},
+  {"id": "P3", "clase": "marca sola de varios rubros, y el rubro la completa", "turnos": [
+   {"texto": "cuanto sale el lenovo?", "casillas": [
+    {"n": "repregunta en vez de elegir", "tipo": "pregunta"}]},
+   {"texto": "la tablet", "casillas": [
+    {"n": "busca tablets", "tipo": "consulta", "categoria": "tablet"},
+    {"n": "arrastra lenovo", "tipo": "nombra", "palabra": "lenovo"}]}]},
+  {"id": "P4", "clase": "mas economico sobre lo mostrado", "turnos": [
+   {"texto": "mostrame parlantes", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "parlante"}]},
+   {"texto": "algo mas economico?", "casillas": [
+    {"n": "sigue en parlantes", "tipo": "consulta", "categoria": "parlante"},
+    {"n": "lo barato primero", "tipo": "barato"}]}]},
+  {"id": "P5", "clase": "REAL de produccion: celulares o tablet, y una repregunta con error de tipeo", "turnos": [
+   {"texto": "Vendes celulares o tableta para juegos", "casillas": [
+    {"n": "busca tablets", "tipo": "consulta", "categoria": "tablet"}]},
+   {"texto": "Cual es la que puede hacer tareas no gan livianas.", "casillas": [
+    {"n": "sigue en tablets", "tipo": "consulta", "categoria": "tablet"}]}]},
+  {"id": "P6", "clase": "REAL de produccion: premisa falsa sobre un producto", "turnos": [
+   {"texto": "hola el teclado K120 inalambrico ese cuanto sale? creo que se llama asi", "casillas": [
+    {"n": "es el K120", "tipo": "referencia", "modelo": "k120"},
+    {"n": "anota que lo da por inalambrico", "tipo": "afirma", "nombra": ["inalambric"]}]}]},
+  {"id": "P7", "clase": "techo con 'que no pase'", "turnos": [
+   {"texto": "quiero una silla gamer que no pase los 300 mil", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "silla gamer"},
+    {"n": "el techo", "tipo": "condicion", "campo": ["precio_ars"], "valor": "300000", "acepta": ["menor", "menor_igual"]}]}]},
+  {"id": "P8", "clase": "exclusion y despues un ordinal", "turnos": [
+   {"texto": "mostrame mouse que no sean logitech", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "mouse"},
+    {"n": "excluye logitech", "tipo": "condicion", "campo": ["marca"], "valor": "logitech", "acepta": ["no_contiene", "distinto"]}]},
+   {"texto": "el primero cuanto pesa?", "casillas": [
+    {"n": "el primero que mostro", "tipo": "referencia", "de_turno": 1, "posicion": 1}]}]},
+  {"id": "P9", "clase": "cantidad en letras", "turnos": [
+   {"texto": "necesito cuatro memorias kingston fury beast ddr4 3200 8GB", "casillas": [
+    {"n": "la ram con su cantidad", "tipo": "consulta", "categoria": "memoria ram", "cantidad": [4]}]}]},
+  {"id": "P10", "clase": "el destino de antes para un producto nuevo", "turnos": [
+   {"texto": "hacen envios a Mar del Plata?", "casillas": [
+    {"n": "el destino", "tipo": "envio", "destino": "mar del plata"}]},
+   {"texto": "y una webcam Logitech C270 cuanto me sale con envio?", "casillas": [
+    {"n": "la webcam", "tipo": "referencia", "modelo": "c270"},
+    {"n": "el destino de antes", "tipo": "envio", "destino": "mar del plata"}]}]},
+  {"id": "P11", "clase": "el mas caro de lo mostrado", "turnos": [
+   {"texto": "mostrame 3 notebooks asus", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "notebook"}]},
+   {"texto": "de esas cual es la mas cara?", "casillas": [
+    {"n": "son las que mostro", "tipo": "referencia", "de_turno": 1, "todos": true},
+    {"n": "lo caro primero", "tipo": "orden", "campo": ["precio_ars"], "direccion": ["max"]}]}]},
+  {"id": "P12", "clase": "modelo y color en una frase", "turnos": [
+   {"texto": "tenes el Archer C6 en blanco?", "casillas": [
+    {"n": "es el Archer C6", "tipo": "referencia", "modelo": "archer c6"}]}]},
+  {"id": "P13", "clase": "'no me importa la marca' no es una exclusion", "turnos": [
+   {"texto": "no me importa la marca, quiero un cooler barato", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "cooler"},
+    {"n": "lo barato primero", "tipo": "barato"},
+    {"n": "sin techo inventado", "tipo": "sin_umbral_inventado", "campo": ["precio_ars"]}]}]},
+  {"id": "P14", "clase": "uno de cada uno a un destino", "turnos": [
+   {"texto": "precio de la impresora HP Smart Tank 580 y del router Tenda AC10", "casillas": [
+    {"n": "la impresora", "tipo": "consulta", "categoria": "impresora"},
+    {"n": "el router", "tipo": "consulta", "categoria": "router"}]},
+   {"texto": "mandame uno de cada uno a Bahia Blanca", "casillas": [
+    {"n": "la impresora", "tipo": "referencia", "modelo": "smart tank 580"},
+    {"n": "el router", "tipo": "referencia", "modelo": "ac10"},
+    {"n": "el destino", "tipo": "envio", "destino": "bahia blanca"}]}]},
+  {"id": "P15", "clase": "'sin' de una caracteristica no niega la marca", "turnos": [
+   {"texto": "busco auriculares sin microfono, de sony", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "auriculares"},
+    {"n": "sony no queda excluida", "tipo": "sin_condicion", "campo": ["marca"], "valor": "sony", "prohibe": ["no_contiene", "evita", "distinto"]}]}]},
+  {"id": "P16", "clase": "corrige el rubro y mantiene la marca", "turnos": [
+   {"texto": "busco un parlante JBL", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "parlante"}]},
+   {"texto": "perdon, quise decir auriculares JBL", "casillas": [
+    {"n": "ahora auriculares", "tipo": "consulta", "categoria": "auriculares"},
+    {"n": "la marca", "tipo": "nombra", "palabra": "jbl"}]}]},
+  {"id": "P17", "clase": "'1 palo' es un millon", "turnos": [
+   {"texto": "tengo 1 palo para una notebook", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "notebook"},
+    {"n": "el tope", "tipo": "condicion", "campo": ["precio_ars"], "valor": "1000000", "acepta": ["menor", "menor_igual"]}]}]},
+  {"id": "P18", "clase": "el mas caro de toda la tienda", "turnos": [
+   {"texto": "cual es el producto mas caro que tenes?", "casillas": [
+    {"n": "lo caro primero", "tipo": "orden", "campo": ["precio_ars"], "direccion": ["max"]}]}]}
+ ]
+}
