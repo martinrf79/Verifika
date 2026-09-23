@@ -396,6 +396,9 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       # ninguna herramienta. Lista vacia = no hay nada pendiente,
                       # y ese es el dato que la apaga.
                       oferta_diferida: list | None = None,
+                      # LA MEMORIA DEL INTERPRETE: lo mostrado, el foco, la
+                      # busqueda y la propuesta. None no la pisa.
+                      interprete: dict | None = None,
                       **extras):
     # RED CONTRA LA DERIVA sim/prod (bug REAL 8-jul): el doble del banco acepta
     # cualquier kwarg y esta firma enumeraba los suyos; un campo nuevo pasado
@@ -416,6 +419,8 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
     for _k, _v in extras.items():
         if _v is not None:
             datos[_k] = _v
+    if interprete is not None:
+        datos["interprete"] = interprete
     if destino_unico is not None:
         datos["destino_unico"] = destino_unico
     if pedido_categorias_pendiente is not None:

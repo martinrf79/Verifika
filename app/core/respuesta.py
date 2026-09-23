@@ -753,7 +753,7 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     """
     from app.core import guardas_salida as gs
     from app.core import motor as MT
-    from app.core.llm_reintento import _cliente, _modelo, _modelo_decisor
+    from app.core.llm_reintento import _cliente, _modelo
     informe = _informe_en_blanco()
     cli = _cliente()
     if cli is None:
@@ -775,13 +775,6 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     for h in (history or [])[-(settings.HISTORY_LIMIT * 2):]:
         if h.get("role") in ("user", "assistant") and h.get("content"):
             msgs.append({"role": h["role"], "content": str(h["content"])[:900]})
-
-    try:
-        herramientas = [MT.esquema(tienda_id)]
-    except Exception as e:  # noqa: BLE001 — sin esquema se contesta sin buscar
-        log.warning("respuesta_esquema_error", trace_id=trace_id,
-                    error=f"{type(e).__name__}: {str(e)[:120]}")
-        herramientas = []
 
     # NO SE LE REENVIA AL MODELO SU PROPIA LLAMADA, y no es una eleccion de
     # estilo. El protocolo de herramientas pide devolver el mensaje `assistant`
@@ -882,17 +875,19 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
     estado_despues = IN.para_guardar(
         IN.estado_despues(estado_in, pedido_in, r, mensaje))
     # LA UNICA VUELTA QUE QUEDA ES LA DE CONTESTAR, sin tablero: ya no hay
-    # nada que el modelo tenga que buscar.
+    # nada que el modelo tenga que buscar. El esquema del motor ya no se arma.
     herramientas = []
     # EL LOOP ES UN `while` DESDE EL 16-sep, y el motivo es uno solo: la
-    # correccion de estado puede pedir UNA vuelta mas. `tope` son las vueltas
-    # que llevan tablero, o sea en las que se puede buscar; siempre hay una
-    # ultima sin tablero, que es la de contestar. Un turno que no se corrige
-    # cuesta exactamente lo que costaba.
+    # correccion de estado puede pedir UNA vuelta mas. Un turno que no se
+    # corrige es una sola llamada al redactor.
+    #
+    # Y TIENE TOPE DURO, `_TOPE_VUELTAS`: sin tablero el modelo no deberia
+    # pedir herramientas, pero si lo hiciera, cada pedido corria el tope una
+    # vuelta mas y el turno no terminaba nunca.
     tope = 0
     vuelta = 0
     corregido = False
-    while vuelta <= tope:
+    while vuelta <= tope and vuelta < _TOPE_VUELTAS:
         informe["vueltas"] += 1
         # LA FUENTE VIAJABA DOS VECES, y era un bug de cableado, no una
         # eleccion (12-sep-2026). `msgs` ya llevaba un turno de usuario con el
@@ -932,54 +927,17 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
         # forma: que bloques estaban, cuanto pesaban y en que vuelta.
         log.info("prompt_armado", trace_id=trace_id, vuelta=vuelta + 1,
                  con_tablero=bool(tools), con_moldes=not bool(tools),
-                 modelo=(_modelo_decisor() if tools else _modelo()),
+                 modelo=_modelo(),
                  bloques=len(turno), hallazgos=len(hallazgos),
                  tokens=sum(len(str(m.get("content") or "")) for m in turno) // 4)
 
-        # EL MODELO DE LA VUELTA QUE INTERPRETA (20-sep-2026), Y ES UNA
-        # MEDICION, NO UNA MEJORA DECLARADA.
-        #
-        # `llm_reintento._modelo_decisor` ya existia desde el 2-ago para esto
-        # exacto —"se le puede poner uno mas grande SOLO aca, que es donde se
-        # decide"— y quedo sin llamar cuando el decisor viejo se apago el
-        # 11-sep. Esto lo vuelve a enchufar en el camino vivo; no es una pieza
-        # nueva.
-        #
-        # LA MISMA LINEA QUE DECIDE EL TABLERO decide el modelo, igual que ya
-        # decide los moldes: donde hay herramienta se interpreta, y donde no
-        # hay, se redacta. Que las tres cosas salgan de la misma condicion hace
-        # imposible que se desincronicen.
-        #
-        # POR QUE SE PRUEBA: medido el 20-sep sobre M1 y M6, cinco turnos, la
-        # UNICA casilla que falla en los dos mensajes es la cuenta, y el
-        # tablero ya no la mueve —se midio tres veces que el modelo hace el
-        # reparto O la cuenta, nunca las dos—. Eso es firma de capacidad. Si
-        # esto no mueve el numero, el techo es otro y se revierte: es config
-        # operativa y sale con una linea.
-        modelo_vuelta = _modelo_decisor() if tools else _modelo()
 
-        def _call(_tools=tools, _msgs=turno, _modelo_v=modelo_vuelta):
+        def _call(_tools=tools, _msgs=turno):
             extra = {"tools": _tools, "tool_choice": "auto"} if _tools else {}
-            try:
-                r = cli.chat.completions.create(
-                    model=_modelo_v, messages=_msgs, temperature=0.3,
-                    max_tokens=900, response_format=_esquema_respuesta(),
-                    **extra)
-            except Exception as e:  # noqa: BLE001 — ver el renglon de abajo
-                # EL TURNO NO SE CAE POR PROBAR UN MODELO. Un id mal escrito o
-                # una cuota agotada del escalon de arriba dejaria al cliente
-                # SIN RESPUESTA, y eso no es un costo aceptable para una
-                # medicion. Se reintenta una vez con el de siempre y se anota
-                # cual fue, para que el log no mienta sobre quien contesto.
-                if _modelo_v == _modelo():
-                    raise
-                log.warning("modelo_decisor_cayo", trace_id=trace_id,
-                            modelo=_modelo_v,
-                            error=f"{type(e).__name__}: {str(e)[:150]}")
-                r = cli.chat.completions.create(
-                    model=_modelo(), messages=_msgs, temperature=0.3,
-                    max_tokens=900, response_format=_esquema_respuesta(),
-                    **extra)
+            r = cli.chat.completions.create(
+                model=_modelo(), messages=_msgs, temperature=0.3,
+                max_tokens=900, response_format=_esquema_respuesta(),
+                **extra)
             return r.choices[0].message if r.choices else None
 
         try:
@@ -1019,22 +977,9 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
                     corregido = True
                     informe["correcciones"] += 1
                     correccion = aviso
-                    # LA VUELTA QUE VIENE LLEVA TABLERO, y es la unica forma
-                    # de que la correccion sirva: se le pide que busque el
-                    # campo que no busco, asi que tiene que poder buscar.
-                    #
-                    # ES `+2` Y NO `+1`, y el test lo cazo: el tablero viaja
-                    # mientras `vuelta < tope`, asi que para que la vuelta
-                    # `vuelta+1` lo lleve, el tope tiene que quedar en
-                    # `vuelta+2`. Con `+1` la correccion viajaba a una vuelta
-                    # sin tablero, o sea que se le devolvia el dato y no se le
-                    # daba con que buscarlo.
-                    #
-                    # Y LA DE DESPUES NO LO LLEVA, que es lo que cierra el
-                    # turno: si en la vuelta de correccion busca, la siguiente
-                    # es la de contestar. Peor caso, cuatro llamadas en vez de
-                    # tres, y solo en el turno que se corrige.
-                    tope = vuelta + 2
+                    # UNA VUELTA MAS, SIN TABLERO: el dato que le faltaba ya
+                    # viaja en la correccion, asi que no hay nada que buscar.
+                    tope = vuelta + 1
                     vuelta += 1
                     continue
             informe["fichas"] = len(fichas)
@@ -1044,12 +989,17 @@ async def _preguntar(voz: str, memoria: str, history: list, mensaje: str,
             return salida, fichas, envios, cuenta, informe
 
         # SIN TABLERO NO HAY LLAMADAS A HERRAMIENTAS: si el modelo igual
-        # intento una, se contesta con lo que ya volvio en la vuelta de abajo.
+        # intento una, se le pide de nuevo, hasta `_TOPE_VUELTAS`.
         log.warning("redactor_pidio_herramienta", trace_id=trace_id)
         tope = max(tope, vuelta + 1)
         vuelta += 1
     informe["fichas"] = len(fichas)
     return {}, fichas, envios, cuenta, informe
+
+
+# Las llamadas al redactor en un turno, como maximo: contestar, la correccion
+# y una de gracia si el modelo pidio una herramienta que no tiene.
+_TOPE_VUELTAS = 3
 
 
 # Cuanto del retorno le cabe al modelo en una vuelta. El numero es el de

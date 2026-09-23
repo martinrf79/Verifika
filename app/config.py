@@ -49,36 +49,6 @@ class Settings(BaseModel):
     # diarios). NUNCA el alias -latest, que FLOTA y te cambia modelo y costo sin
     # avisar el dia que Google mueve el alias. Se repinea a mano si hace falta.
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
-    # EL DECISOR PIENSA (Martin, 2-ago). La llamada UNO -que decide que
-    # herramienta y con que argumentos- es el paso mas dificil del turno y
-    # corria con el pensamiento APAGADO, heredado de cuando el thinking se comia
-    # los max_tokens del JSON. Medido el 2-ago: con thinking off el decisor
-    # tradujo "el precio no seria tan importante" a orden=caro, ignoro el
-    # excluir=china que el esquema ofrece, y cotizo 4 categorias sobre un pedido
-    # de 3. Ahora piensa. El REDACTOR sigue sin pensar: escribe con el dato
-    # delante y no decide nada.
-    # Vacio = mismo modelo que el redactor. Se le pone otro -ej gemini-3-pro-
-    # SOLO para el decisor, sin encarecer el turno entero.
-    # SE PROBO EL ESCALON DE ARRIBA EL 20-sep Y VUELVE A VACIO EL MISMO DIA.
-    # `gemini-3.8-flash` en la vuelta que interpreta, un turno medido en
-    # produccion, revision 00561, mensaje M6:
-    #
-    #     latencia        15.705 ms   contra 4.400 con flash-lite
-    #     tipo            VACIO       `tipo_vacio`, el JSON no se parseo
-    #     largo           153         contra 600 a 900
-    #     vueltas         3 con tablero, y contesto sin poder encasillarse
-    #
-    # NO ES QUE INTERPRETE PEOR: es que el turno SALIO ROTO. Un tipo vacio no
-    # es cosmetico —de el sale la señal del cierre— y cuatro veces la latencia
-    # se le nota al cliente. La medicion contesto lo que tenia que contestar y
-    # la respuesta es que el techo NO era el modelo.
-    #
-    # EL CABLE SE QUEDA Y QUEDA INERTE: con esto vacio, la vuelta que
-    # interpreta usa el mismo modelo que redacta, que es como venia. Volver a
-    # probar otro id es cambiar esta linea, y ya hay vara para que el redactor
-    # no se encarezca de paso.
-    DECISOR_MODEL: str = os.getenv("DECISOR_MODEL", "")
-    DECISOR_REASONING: str = os.getenv("DECISOR_REASONING", "low")
     # EL RAZONAMIENTO DEL REDACTOR. Estaba CLAVADO en "none" adentro de
     # `_redactar`. Se saco a config para poder MEDIRLO, y se midio con la clave
     # paga el 5-ago sobre las tres preguntas mas duras.
@@ -102,17 +72,6 @@ class Settings(BaseModel):
     # al 10% en cada vuelta del loop; baja la factura ~a la mitad sin cambiar lo
     # que el modelo ve. Se refresca solo al expirar. Config operativa.
     GEMINI_CACHE_TTL_S: int = int(os.getenv("GEMINI_CACHE_TTL_S", "1800"))
-
-    # DECISOR — la llamada UNO de hub_venta, la que elige herramientas. Es config
-    # operativa, no un camino nuevo: con DECISOR_BASE_URL vacio el decisor sigue
-    # yendo por Gemini exactamente como antes, mismo cliente y mismo modelo. Solo
-    # si se setea la base_url el decisor apunta a otro provider compatible con la
-    # API de OpenAI (Groq: https://api.groq.com/openai/v1, OpenAI:
-    # https://api.openai.com/v1). El REDACTOR, la llamada DOS, NO se toca nunca:
-    # sigue en Gemini pase lo que pase.
-    # DECISOR_MODEL ya esta declarado arriba, junto al reasoning del decisor.
-    DECISOR_BASE_URL: str = os.getenv("DECISOR_BASE_URL", "")
-    DECISOR_API_KEY: str = os.getenv("DECISOR_API_KEY", "")
 
     # Comportamiento del LLM
     TEMPERATURE: float = float(os.getenv("TEMPERATURE", "0.2"))

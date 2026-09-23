@@ -140,3 +140,57 @@ def test_un_traductor_caido_no_deja_mudo_al_bot(firestore_doble):
     m = _Modelo([])  # el traductor devuelve un JSON roto
     salida, fichas, *_ = _preguntar(m, "hola")
     assert salida["texto"] and fichas == []
+
+
+class _PideHerramientas(_Modelo):
+    """El redactor pide una herramienta SIEMPRE, aunque no se le mande."""
+
+    def create(self, *, model, messages, **kw):
+        rf = (kw.get("response_format") or {}).get("json_schema") or {}
+        if rf.get("name") == "ficha":
+            return super().create(model=model, messages=messages, **kw)
+        self.llamadas.append({"traductor": False, "tools": bool(kw.get("tools")),
+                              "mensajes": messages})
+        llamada = type("L", (), {"function": type("F", (), {
+            "name": "buscar", "arguments": "{}"})()})()
+        msg = type("M", (), {"content": "", "tool_calls": [llamada]})()
+
+        class _R:
+            choices = [type("C", (), {"message": msg})()]
+        return _R()
+
+
+def test_el_redactor_que_pide_herramientas_no_deja_el_turno_colgado(
+        firestore_doble):
+    """Cada pedido de herramienta corria el tope una vuelta mas: un modelo
+    terco dejaba el turno llamando para siempre. Ahora hay tope duro."""
+    texto = "cuanto sale el teclado K120 negro?"
+    m = _PideHerramientas([_ficha(texto, _parte(texto, rubro="teclado",
+                                                producto="K120 negro"))])
+    salida, *_ = _preguntar(m, texto)
+    redactor = [x for x in m.llamadas if not x["traductor"]]
+    assert len(redactor) == R._TOPE_VUELTAS
+    assert not any(x["tools"] for x in redactor)
+    assert salida == {}
+
+
+def test_la_memoria_del_interprete_es_un_campo_propio_del_guardado():
+    """Pasaba por `**extras` y dejaba un warning de kwarg desconocido en CADA
+    turno, que ensuciaba los logs que se leen en el issue 31."""
+    # SE LEE EL ARCHIVO Y NO EL MODULO: el doble de Firestore reemplaza la
+    # funcion en los tests que lo usan, y la firma que importa es la real.
+    import ast
+    import pathlib
+    ruta = pathlib.Path(__file__).parents[1] / "app/storage/firestore_client.py"
+    fn = next(n for n in ast.walk(ast.parse(ruta.read_text(encoding="utf-8")))
+              if isinstance(n, ast.FunctionDef)
+              and n.name == "save_conversation")
+    assert "interprete" in [a.arg for a in fn.args.args + fn.args.kwonlyargs]
+
+
+def test_el_tablero_muere_con_el_catalogo():
+    from app.core import interprete as IN
+    from app.core.filtros_catalogo import limpiar_cache
+    IN._TABLEROS["tienda_de_prueba"] = ("viejo",)
+    limpiar_cache("tienda_de_prueba")
+    assert "tienda_de_prueba" not in IN._TABLEROS

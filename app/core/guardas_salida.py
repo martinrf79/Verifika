@@ -354,9 +354,9 @@ def correccion_de_estado(texto: str, tocados, tienda_id: str,
         f"En lo que escribiste afirmaste sobre `{campo}`, y en este turno no lo "
         "consultaste ni una vez. La fuente SI lo tiene:\n"
         f"  {dice}\n"
-        "Si el cliente pidio algo sobre ese campo, pedilo por el motor con una "
-        "condicion y con una de esas palabras. Si volves a decir que no lo "
-        "tenemos, le estas mintiendo al cliente.\n"
+        "Contesta con ese dato de la fuente, y si no alcanza para lo que "
+        "pidio, deciselo y ofrecele buscarlo con esas palabras. Si volves a "
+        "decir que no lo tenemos, le estas mintiendo al cliente.\n"
         "Y el resto del pedido se contesta IGUAL: los precios que ya volvieron, "
         "los envios que ya se cotizaron y la cuenta si la pidio. Una condicion "
         "que no se pueda cumplir se dice en un renglon y no cancela nada.")

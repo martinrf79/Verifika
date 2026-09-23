@@ -134,3 +134,36 @@ def test_con_dos_variantes_en_stock_pregunta_cual(tab):
         _LO_QUIERO])
     assert c[1]["accion"] == "falta" and c[1]["motivo"] == "que variante"
     assert len(c[1]["opciones"]) >= 2
+
+
+# ── EL SI QUE NO ES SI (23-sep) ─────────────────────────────────────────────
+#
+# Sin tilde "si" tambien es condicional y "va" tambien es verbo. Despues de una
+# propuesta, una pregunta que empieza asi salia confirmada.
+
+@pytest.mark.parametrize("texto", [
+    "va con cable?", "si lo compro, cuanto tarda?", "ok pero en blanco",
+    "si me llega el viernes lo compro", "va en la B550?"])
+def test_una_pregunta_o_un_si_condicional_no_confirma(tab, texto):
+    c = _charla(tab, [_K120, _LO_QUIERO,
+                      (texto, [_parte(texto, quiere="caracteristica")])])
+    assert c[2]["accion"] != "confirmado", texto
+
+
+@pytest.mark.parametrize("texto", [
+    "si", "dale", "si, dale", "ok.", "confirmo", "listo!", "si dale",
+    "Sí, confirmo"])
+def test_el_si_suelto_confirma(tab, texto):
+    c = _charla(tab, [_K120, _LO_QUIERO,
+                      (texto, [_parte(texto, quiere="charla")])])
+    assert c[2]["accion"] == "confirmado", texto
+
+
+def test_si_con_otro_destino_es_otra_propuesta_con_ese_destino(tab):
+    texto = "si, pero mandalo a Cordoba"
+    c = _charla(tab, [_K120, _LO_QUIERO,
+                      (texto, [_parte(texto, quiere="envio", refiere="ese",
+                                      destino="Cordoba")])])
+    assert c[2]["accion"] == "proponer"
+    assert c[2]["destino"] == "Cordoba"
+    assert c[2]["items"] == c[1]["items"]

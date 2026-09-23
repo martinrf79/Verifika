@@ -1292,7 +1292,21 @@ def al_dia(estado: dict, pedido: dict, resultado: dict,
 # propuesta se vence: un "si" tres turnos despues no confirma nada.
 
 _SI = re.compile(r"^\W*(si|dale|ok|okey|listo|confirmo|confirmado|de una|va|"
-                 r"perfecto|joya|buenisimo|esta bien|genial|hacelo|mandale)\b")
+                 r"perfecto|joya|buenisimo|esta bien|genial|hacelo|mandale)"
+                 r"(\W*$|\s*[,.!]|\s+(dale|lo quiero|confirmo|de una|"
+                 r"mandale|hacelo|va|perfecto|ok)\b)")
+
+
+def _dice_si(mensaje: str) -> bool:
+    """¿El cliente CONFIRMA? Un si suelto, o seguido de una coma o de otro si.
+
+    NO ALCANZA CON QUE EMPIECE CON UN SI, y el motivo es el castellano: sin
+    tilde "si" tambien es condicional y "va" tambien es verbo. "Va en la
+    B550?" o "si lo compro, cuanto tarda?" despues de una propuesta salian
+    confirmadas, y el redactor pasaba al cobro. Una pregunta nunca confirma."""
+    if "?" in (mensaje or ""):
+        return False
+    return bool(_SI.search(_norm(mensaje).strip()))
 
 
 def _items(pedido: dict) -> list:
@@ -1308,16 +1322,24 @@ def compuerta(pedido: dict, ficha: dict, mensaje: str, estado: dict) -> dict:
     'confirmado'. Nunca 'confirmado' sin una propuesta del turno anterior."""
     quiere = any(isinstance(p, dict) and p.get("quiere") == "comprar"
                  for p in ficha.get("partes") or [])
-    dice_si = bool(_SI.search(_norm(mensaje)))
+    dice_si = _dice_si(mensaje)
     ahora = _items(pedido)
-    destino = next((e.get("destino") for e in pedido.get("envios") or []
-                    if e.get("destino")), "") or estado.get("destino", "")
+    dicho = next((e.get("destino") for e in pedido.get("envios") or []
+                  if e.get("destino")), "")
+    destino = dicho or estado.get("destino", "")
     prop = estado.get("propuesta")
     if prop and prop.get("turno") == estado["turno"] and (dice_si or quiere) \
             and not pedido.get("repreguntar"):
         propios = {tuple(ids): n for ids, n in prop["items"]}
         cambia = any(tuple(ids) not in propios or (n and n != propios[tuple(ids)])
                      for ids, n in ahora)
+        # OTRO DESTINO ES OTRA PROPUESTA, con los mismos productos: "si, pero
+        # mandalo a Cordoba" cambia el envio y por lo tanto el total. Antes
+        # confirmaba con el destino viejo.
+        otro = bool(dicho) and _norm(dicho) != _norm(prop.get("destino"))
+        if not cambia and otro:
+            return {"accion": "proponer", "items": prop["items"],
+                    "destino": dicho, "motivo": ""}
         if not cambia:
             return {"accion": "confirmado", "items": prop["items"],
                     "destino": prop.get("destino") or destino, "motivo": ""}
