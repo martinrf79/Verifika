@@ -1,0 +1,1353 @@
+{
+ "_que_es": "LA VARA DEL TRADUCTOR (23-sep-2026). Cuarenta mensajes sueltos para medir SOLO la primera etapa: que el modelo parta el mensaje en todas sus partes y le ponga a cada una su intencion, su ORIGEN —tienda, general, cliente o ninguno— y su rubro. No se contesta nada y no se busca nada: se mide la ficha.",
+ "_como_se_lee": "Cada parte esperada tiene una `clave`: una palabra que tiene que aparecer en el `dice` de alguna parte producida. Contra esa parte se comparan `origen`, `quiere` y `rubro`, que aceptan listas cuando hay mas de una lectura valida. `prohibido_general` es un modelo de producto que NO puede quedar en una parte de origen general: un dato de un producto puntual solo sale de la tienda.",
+ "mensajes": [
+  {
+   "id": "T01",
+   "grupo": "control",
+   "texto": "cuanto sale el teclado logitech K120?",
+   "partes": [
+    {
+     "clave": "k120",
+     "origen": "tienda",
+     "quiere": [
+      "precio"
+     ],
+     "rubro": "teclado"
+    }
+   ]
+  },
+  {
+   "id": "T02",
+   "grupo": "control",
+   "texto": "tienen auriculares bluetooth?",
+   "partes": [
+    {
+     "clave": "auricular",
+     "origen": "tienda",
+     "quiere": [
+      "buscar",
+      "stock"
+     ],
+     "rubro": "auriculares"
+    }
+   ]
+  },
+  {
+   "id": "T03",
+   "grupo": "control",
+   "texto": "hacen envios a Salta?",
+   "partes": [
+    {
+     "clave": "salta",
+     "origen": "tienda",
+     "quiere": [
+      "envio"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T04",
+   "grupo": "control",
+   "texto": "aceptan mercado pago en cuotas?",
+   "partes": [
+    {
+     "clave": "cuota",
+     "origen": "tienda",
+     "quiere": [
+      "pago"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T05",
+   "grupo": "control",
+   "texto": "que garantia tienen los monitores?",
+   "partes": [
+    {
+     "clave": "garantia",
+     "origen": "tienda",
+     "quiere": [
+      "politica",
+      "caracteristica"
+     ],
+     "rubro": [
+      "monitor",
+      "ninguno",
+      "otro"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T06",
+   "grupo": "control",
+   "texto": "hola buenas tardes",
+   "partes": [
+    {
+     "clave": "hola",
+     "origen": "ninguno",
+     "quiere": [
+      "charla"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T07",
+   "grupo": "multi",
+   "texto": "cuanto sale el mouse G203 y si llega a Rosario antes del viernes",
+   "partes": [
+    {
+     "clave": "g203",
+     "origen": "tienda",
+     "quiere": [
+      "precio"
+     ],
+     "rubro": "mouse"
+    },
+    {
+     "clave": "rosario",
+     "origen": "tienda",
+     "quiere": [
+      "envio"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T08",
+   "grupo": "multi",
+   "texto": "necesito una notebook para la facu, que no sea cara, y tambien un mouse inalambrico. hacen factura A?",
+   "partes": [
+    {
+     "clave": "notebook",
+     "origen": "tienda",
+     "quiere": [
+      "buscar"
+     ],
+     "rubro": "notebook"
+    },
+    {
+     "clave": "mouse",
+     "origen": "tienda",
+     "quiere": [
+      "buscar"
+     ],
+     "rubro": "mouse"
+    },
+    {
+     "clave": "factura",
+     "origen": "tienda",
+     "quiere": [
+      "politica",
+      "pago"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T09",
+   "grupo": "multi",
+   "texto": "que diferencia hay entre el G203 y el G502? cual me conviene para jugar al valorant?",
+   "partes": [
+    {
+     "clave": "g502",
+     "origen": "tienda",
+     "quiere": [
+      "comparar"
+     ],
+     "rubro": "mouse"
+    },
+    {
+     "clave": "valorant",
+     "origen": [
+      "general",
+      "tienda"
+     ],
+     "quiere": [
+      "comparar",
+      "buscar",
+      "caracteristica"
+     ]
+    }
+   ],
+   "prohibido_general": [
+    "g203",
+    "g502"
+   ]
+  },
+  {
+   "id": "T10",
+   "grupo": "multi",
+   "texto": "tienen stock del monitor LG 24MK430H? cuanto tarda a Cordoba capital? y si pago por transferencia hay descuento?",
+   "partes": [
+    {
+     "clave": "24mk430h",
+     "origen": "tienda",
+     "quiere": [
+      "stock"
+     ],
+     "rubro": "monitor"
+    },
+    {
+     "clave": "cordoba",
+     "origen": "tienda",
+     "quiere": [
+      "envio"
+     ]
+    },
+    {
+     "clave": "transferencia",
+     "origen": "tienda",
+     "quiere": [
+      "pago"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T11",
+   "grupo": "multi",
+   "texto": "quiero 2 teclados y 3 mouse, lo mas barato que tengas, y pasame el total con envio a Mendoza",
+   "partes": [
+    {
+     "clave": "teclado",
+     "origen": "tienda",
+     "quiere": [
+      "buscar",
+      "comprar",
+      "precio"
+     ],
+     "rubro": "teclado"
+    },
+    {
+     "clave": "mouse",
+     "origen": "tienda",
+     "quiere": [
+      "buscar",
+      "comprar",
+      "precio"
+     ],
+     "rubro": "mouse"
+    },
+    {
+     "clave": "mendoza",
+     "origen": "tienda",
+     "quiere": [
+      "envio",
+      "precio",
+      "comprar"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T12",
+   "grupo": "multi",
+   "texto": "el HyperX Cloud II tiene microfono desmontable? viene en blanco? y cuanta garantia?",
+   "partes": [
+    {
+     "clave": "microfono",
+     "origen": "tienda",
+     "quiere": [
+      "caracteristica"
+     ],
+     "rubro": "auriculares"
+    },
+    {
+     "clave": "blanco",
+     "origen": "tienda",
+     "quiere": [
+      "caracteristica",
+      "stock"
+     ]
+    },
+    {
+     "clave": "garantia",
+     "origen": "tienda",
+     "quiere": [
+      "caracteristica",
+      "politica"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T13",
+   "grupo": "multi",
+   "texto": "si compro hoy cuando me llega a La Plata y puedo retirar en persona?",
+   "partes": [
+    {
+     "clave": "plata",
+     "origen": "tienda",
+     "quiere": [
+      "envio"
+     ]
+    },
+    {
+     "clave": "retirar",
+     "origen": "tienda",
+     "quiere": [
+      "envio",
+      "politica"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T14",
+   "grupo": "multi",
+   "texto": "me arman una pc gamer con 300 mil? que placa de video me recomiendan y que fuente necesito",
+   "partes": [
+    {
+     "clave": "300",
+     "origen": "tienda",
+     "quiere": [
+      "buscar",
+      "precio"
+     ]
+    },
+    {
+     "clave": "placa",
+     "origen": [
+      "tienda",
+      "general"
+     ],
+     "quiere": [
+      "buscar"
+     ],
+     "rubro": "placa de video"
+    },
+    {
+     "clave": "fuente",
+     "origen": [
+      "tienda",
+      "general"
+     ],
+     "quiere": [
+      "buscar",
+      "compatibilidad"
+     ],
+     "rubro": "fuente"
+    }
+   ]
+  },
+  {
+   "id": "T15",
+   "grupo": "multi",
+   "texto": "puedo cambiar el mouse si no me gusta? cuantos dias tengo? y quien paga el envio de vuelta",
+   "partes": [
+    {
+     "clave": "cambiar",
+     "origen": "tienda",
+     "quiere": [
+      "politica",
+      "postventa"
+     ]
+    },
+    {
+     "clave": "dias",
+     "origen": "tienda",
+     "quiere": [
+      "politica",
+      "postventa"
+     ]
+    },
+    {
+     "clave": "envio",
+     "origen": "tienda",
+     "quiere": [
+      "politica",
+      "postventa",
+      "envio"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T16",
+   "grupo": "multi",
+   "texto": "ya pague el pedido 4521, cuando lo despachan? y me mandan el numero de seguimiento?",
+   "partes": [
+    {
+     "clave": "despachan",
+     "origen": "tienda",
+     "quiere": [
+      "postventa"
+     ]
+    },
+    {
+     "clave": "seguimiento",
+     "origen": "tienda",
+     "quiere": [
+      "postventa"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T17",
+   "grupo": "general",
+   "texto": "que conviene mas para programar, 16 o 32 gb de ram?",
+   "partes": [
+    {
+     "clave": "ram",
+     "origen": "general",
+     "quiere": [
+      "caracteristica",
+      "comparar",
+      "buscar"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T18",
+   "grupo": "general",
+   "texto": "que es mejor, un teclado mecanico o uno de membrana?",
+   "partes": [
+    {
+     "clave": "mecanico",
+     "origen": "general",
+     "quiere": [
+      "comparar",
+      "caracteristica"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T19",
+   "grupo": "general",
+   "texto": "para correr modelos de inteligencia artificial en la notebook, que es lo que mas importa?",
+   "partes": [
+    {
+     "clave": "inteligencia",
+     "origen": "general",
+     "quiere": [
+      "caracteristica",
+      "buscar"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T20",
+   "grupo": "general",
+   "texto": "un monitor de 144hz se nota para jugar o es marketing? y tienen alguno?",
+   "partes": [
+    {
+     "clave": "144",
+     "origen": "general",
+     "quiere": [
+      "caracteristica",
+      "comparar"
+     ]
+    },
+    {
+     "clave": "alguno",
+     "origen": "tienda",
+     "quiere": [
+      "buscar",
+      "stock"
+     ],
+     "rubro": "monitor"
+    }
+   ]
+  },
+  {
+   "id": "T21",
+   "grupo": "general",
+   "texto": "el G502 tiene buen sensor para jugar competitivo?",
+   "partes": [
+    {
+     "clave": "g502",
+     "origen": "tienda",
+     "quiere": [
+      "caracteristica"
+     ],
+     "rubro": "mouse"
+    }
+   ],
+   "prohibido_general": [
+    "g502"
+   ]
+  },
+  {
+   "id": "T22",
+   "grupo": "general",
+   "texto": "sirve un ssd externo para jugar desde ahi o es muy lento?",
+   "partes": [
+    {
+     "clave": "ssd",
+     "origen": "general",
+     "quiere": [
+      "caracteristica",
+      "compatibilidad"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T23",
+   "grupo": "general",
+   "texto": "que diferencia hay entre ddr4 y ddr5? vale la pena la diferencia de precio en sus memorias?",
+   "partes": [
+    {
+     "clave": "ddr5",
+     "origen": "general",
+     "quiere": [
+      "comparar",
+      "caracteristica"
+     ]
+    },
+    {
+     "clave": "precio",
+     "origen": "tienda",
+     "quiere": [
+      "precio",
+      "comparar"
+     ],
+     "rubro": "memoria ram"
+    }
+   ]
+  },
+  {
+   "id": "T24",
+   "grupo": "general",
+   "texto": "cuantos watts necesita una placa de video como la rtx 4060?",
+   "partes": [
+    {
+     "clave": "watts",
+     "origen": [
+      "general",
+      "tienda"
+     ],
+     "quiere": [
+      "caracteristica"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T25",
+   "grupo": "cliente",
+   "texto": "tengo una notebook lenovo ideapad 3 del 2021, que memoria ram le sirve para ampliarla?",
+   "partes": [
+    {
+     "clave": "ram",
+     "origen": "cliente",
+     "quiere": [
+      "compatibilidad",
+      "buscar"
+     ],
+     "rubro": [
+      "memoria ram",
+      "notebook"
+     ]
+    }
+   ],
+   "afirma": [
+    "ideapad"
+   ]
+  },
+  {
+   "id": "T26",
+   "grupo": "cliente",
+   "texto": "estos auriculares andan con mi play 4?",
+   "partes": [
+    {
+     "clave": "play",
+     "origen": [
+      "tienda",
+      "cliente"
+     ],
+     "quiere": [
+      "compatibilidad"
+     ],
+     "rubro": "auriculares"
+    }
+   ]
+  },
+  {
+   "id": "T27",
+   "grupo": "cliente",
+   "texto": "mi pc tiene una fuente de 500w, le puedo poner una placa de video nueva? cual me recomendas?",
+   "partes": [
+    {
+     "clave": "500",
+     "origen": "cliente",
+     "quiere": [
+      "compatibilidad"
+     ]
+    },
+    {
+     "clave": "recomendas",
+     "origen": "tienda",
+     "quiere": [
+      "buscar"
+     ],
+     "rubro": "placa de video"
+    }
+   ],
+   "afirma": [
+    "500"
+   ]
+  },
+  {
+   "id": "T28",
+   "grupo": "cliente",
+   "texto": "mi mother es una asus prime b450m, que procesador le entra de los que tienen?",
+   "partes": [
+    {
+     "clave": "procesador",
+     "origen": [
+      "tienda",
+      "cliente"
+     ],
+     "quiere": [
+      "compatibilidad",
+      "buscar"
+     ],
+     "rubro": "procesador"
+    }
+   ],
+   "afirma": [
+    "b450"
+   ]
+  },
+  {
+   "id": "T29",
+   "grupo": "cliente",
+   "texto": "tengo un macbook air m1, el mouse K380 funciona con mac?",
+   "partes": [
+    {
+     "clave": "k380",
+     "origen": [
+      "tienda",
+      "cliente"
+     ],
+     "quiere": [
+      "compatibilidad"
+     ]
+    }
+   ],
+   "afirma": [
+    "macbook"
+   ]
+  },
+  {
+   "id": "T30",
+   "grupo": "cliente",
+   "texto": "se me calienta mucho la notebook cuando juego, que me recomiendan?",
+   "partes": [
+    {
+     "clave": "calienta",
+     "origen": [
+      "general",
+      "cliente",
+      "tienda"
+     ],
+     "quiere": [
+      "buscar",
+      "postventa",
+      "caracteristica"
+     ]
+    }
+   ],
+   "afirma": [
+    "calienta"
+   ]
+  },
+  {
+   "id": "T31",
+   "grupo": "cliente",
+   "texto": "mi monitor tiene solo entrada vga, me sirve alguna de sus placas de video?",
+   "partes": [
+    {
+     "clave": "vga",
+     "origen": [
+      "tienda",
+      "cliente"
+     ],
+     "quiere": [
+      "compatibilidad"
+     ],
+     "rubro": "placa de video"
+    }
+   ],
+   "afirma": [
+    "vga"
+   ]
+  },
+  {
+   "id": "T32",
+   "grupo": "cliente",
+   "texto": "mi hijo tiene 8 anos y quiere jugar roblox, que notebook le compro?",
+   "partes": [
+    {
+     "clave": "roblox",
+     "origen": [
+      "tienda",
+      "general"
+     ],
+     "quiere": [
+      "buscar"
+     ],
+     "rubro": "notebook"
+    }
+   ]
+  },
+  {
+   "id": "T33",
+   "grupo": "premisa",
+   "texto": "el K120 inalambrico cuanto sale?",
+   "partes": [
+    {
+     "clave": "k120",
+     "origen": "tienda",
+     "quiere": [
+      "precio"
+     ],
+     "rubro": "teclado"
+    }
+   ],
+   "afirma": [
+    "inalambrico"
+   ]
+  },
+  {
+   "id": "T34",
+   "grupo": "premisa",
+   "texto": "como el envio es gratis a todo el pais, mandame el G203 a Ushuaia",
+   "partes": [
+    {
+     "clave": "g203",
+     "origen": "tienda",
+     "quiere": [
+      "comprar",
+      "envio"
+     ],
+     "rubro": "mouse"
+    }
+   ],
+   "afirma": [
+    "gratis"
+   ]
+  },
+  {
+   "id": "T35",
+   "grupo": "premisa",
+   "texto": "me dijeron que ustedes tienen la rtx 5090 a 200 mil, es verdad?",
+   "partes": [
+    {
+     "clave": "5090",
+     "origen": "tienda",
+     "quiere": [
+      "precio",
+      "stock"
+     ],
+     "rubro": "placa de video"
+    }
+   ],
+   "afirma": [
+    "200"
+   ]
+  },
+  {
+   "id": "T36",
+   "grupo": "ambiguo",
+   "texto": "cuanto sale el logitech?",
+   "partes": [
+    {
+     "clave": "logitech",
+     "origen": "tienda",
+     "quiere": [
+      "precio"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T37",
+   "grupo": "ambiguo",
+   "texto": "tienen algo para la compu?",
+   "partes": [
+    {
+     "clave": "compu",
+     "origen": "tienda",
+     "quiere": [
+      "buscar"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T38",
+   "grupo": "ambiguo",
+   "texto": "venden celulares?",
+   "partes": [
+    {
+     "clave": "celular",
+     "origen": "tienda",
+     "quiere": [
+      "buscar",
+      "stock"
+     ],
+     "rubro": [
+      "otro",
+      "ninguno"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T39",
+   "grupo": "ruido",
+   "texto": "holaa q tal 😊 xfa pasame precio d los auris hyperx y si hacen envio a cba, graciass",
+   "partes": [
+    {
+     "clave": "hyperx",
+     "origen": "tienda",
+     "quiere": [
+      "precio"
+     ],
+     "rubro": "auriculares"
+    },
+    {
+     "clave": "cba",
+     "origen": "tienda",
+     "quiere": [
+      "envio"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T40",
+   "grupo": "ruido",
+   "texto": "ola kiero saver el presio del teclao logitec k 120 i si tienen en blanko",
+   "partes": [
+    {
+     "clave": "presio",
+     "origen": "tienda",
+     "quiere": [
+      "precio"
+     ],
+     "rubro": "teclado"
+    },
+    {
+     "clave": "blanko",
+     "origen": "tienda",
+     "quiere": [
+      "stock",
+      "caracteristica"
+     ],
+     "rubro": "teclado"
+    }
+   ]
+  },
+  {
+   "id": "T41",
+   "grupo": "largo",
+   "texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "partes": [
+    {
+     "clave": "auricular",
+     "origen": "tienda",
+     "rubro": "auriculares"
+    },
+    {
+     "clave": "mouse",
+     "origen": "tienda",
+     "rubro": "mouse"
+    },
+    {
+     "clave": "memoria",
+     "origen": "tienda",
+     "rubro": "memoria ram"
+    },
+    {
+     "clave": "cordoba",
+     "origen": "tienda",
+     "quiere": [
+      "envio"
+     ]
+    },
+    {
+     "clave": "concordia",
+     "origen": "tienda",
+     "quiere": [
+      "envio"
+     ]
+    },
+    {
+     "clave": "posadas",
+     "origen": "tienda",
+     "quiere": [
+      "envio"
+     ]
+    },
+    {
+     "clave": "setenta",
+     "origen": "tienda",
+     "quiere": [
+      "pago"
+     ]
+    }
+   ],
+   "destinos": [
+    "cordoba",
+    "concordia",
+    "posadas"
+   ],
+   "criterios": [
+    [
+     "pais_fabricacion",
+     "evita"
+    ]
+   ],
+   "reparto": [
+    30,
+    70
+   ]
+  },
+  {
+   "id": "T42",
+   "grupo": "largo",
+   "texto": "Dame precio de 7 articulos 2 notebooks 1 microfono y los demas serian memorias pasame ee acuerdo a la crisis el presupuesto. Envio de los dos primeros a la plata y los otros 5 envios 2 a villa maria y 3 a toledo",
+   "partes": [
+    {
+     "clave": "notebook",
+     "origen": "tienda",
+     "rubro": "notebook"
+    },
+    {
+     "clave": "microfono",
+     "origen": "tienda",
+     "rubro": "microfono"
+    },
+    {
+     "clave": "memoria",
+     "origen": "tienda",
+     "rubro": "memoria ram"
+    },
+    {
+     "clave": "plata",
+     "origen": "tienda",
+     "quiere": [
+      "envio"
+     ]
+    },
+    {
+     "clave": "villa maria",
+     "origen": "tienda",
+     "quiere": [
+      "envio"
+     ]
+    },
+    {
+     "clave": "toledo",
+     "origen": "tienda",
+     "quiere": [
+      "envio"
+     ]
+    }
+   ],
+   "destinos": [
+    "la plata",
+    "villa maria",
+    "toledo"
+   ],
+   "criterios": [
+    [
+     "precio_ars",
+     "prefiere"
+    ]
+   ]
+  },
+  {
+   "id": "T43",
+   "grupo": "largo",
+   "texto": "necesito un aparato rectangular con varias teclas, que sea bueno, pero dada la crisis armame un presupuesto acorde",
+   "partes": [
+    {
+     "clave": "teclas",
+     "origen": "tienda",
+     "quiere": [
+      "buscar",
+      "precio",
+      "comprar"
+     ],
+     "rubro": "teclado"
+    }
+   ]
+  },
+  {
+   "id": "T44",
+   "grupo": "largo",
+   "texto": "hola necesito eso que se pone en la oreja para escuchar musica, que no se escuche el ruido de afuera. audifonos o como se llamen",
+   "partes": [
+    {
+     "clave": "oreja",
+     "origen": "tienda",
+     "quiere": [
+      "buscar"
+     ],
+     "rubro": "auriculares"
+    }
+   ]
+  },
+  {
+   "id": "T45",
+   "grupo": "largo",
+   "texto": "necesito una compu para mi hijo de 8 años, para que juegue y haga la tarea, que no sea muy cara",
+   "partes": [
+    {
+     "clave": "compu",
+     "origen": "tienda",
+     "quiere": [
+      "buscar"
+     ],
+     "rubro": "notebook"
+    }
+   ]
+  },
+  {
+   "id": "T46",
+   "grupo": "largo",
+   "texto": "se me traba la compu cuando abro muchas pestañas, que me recomendas? es para la oficina",
+   "partes": [
+    {
+     "clave": "recomendas",
+     "origen": [
+      "tienda",
+      "general"
+     ],
+     "quiere": [
+      "buscar"
+     ]
+    }
+   ],
+   "afirma": [
+    "traba"
+   ]
+  },
+  {
+   "id": "T47",
+   "grupo": "largo",
+   "texto": "ya busque en la pagina y no encontre. necesito auriculares, cualquiera menos redragon, y si no hay negro mandame blanco",
+   "partes": [
+    {
+     "clave": "auricular",
+     "origen": "tienda",
+     "quiere": [
+      "buscar",
+      "comprar"
+     ],
+     "rubro": "auriculares"
+    }
+   ],
+   "criterios": [
+    [
+     "marca",
+     "evita"
+    ],
+    [
+     "color",
+     "prefiere"
+    ]
+   ]
+  },
+  {
+   "id": "T48",
+   "grupo": "largo",
+   "texto": "dame 3 teclados... no, mejor 4, uno para cada chico. el mas barato pero que sea de marca",
+   "partes": [
+    {
+     "clave": "teclado",
+     "origen": "tienda",
+     "quiere": [
+      "buscar",
+      "comprar",
+      "precio"
+     ],
+     "rubro": "teclado"
+    }
+   ],
+   "cantidad": 4
+  },
+  {
+   "id": "T49",
+   "grupo": "largo",
+   "texto": "necesito un monitor si o si con hdmi, de 24 pulgadas para arriba, preferentemente samsung, y lo necesito para el viernes",
+   "partes": [
+    {
+     "clave": "monitor",
+     "origen": "tienda",
+     "quiere": [
+      "buscar"
+     ],
+     "rubro": "monitor"
+    },
+    {
+     "clave": "viernes",
+     "origen": "tienda",
+     "quiere": [
+      "envio"
+     ]
+    }
+   ],
+   "criterios": [
+    [
+     "marca",
+     "prefiere"
+    ]
+   ]
+  },
+  {
+   "id": "T50",
+   "grupo": "largo",
+   "texto": "tengo 200 mil, armame lo que entre para una pc de escritorio, algo parecido a lo que tenia antes que era una hp",
+   "partes": [
+    {
+     "clave": "200",
+     "origen": "tienda",
+     "quiere": [
+      "buscar",
+      "precio",
+      "comprar"
+     ]
+    }
+   ],
+   "afirma": [
+    "hp"
+   ]
+  },
+  {
+   "id": "T51",
+   "grupo": "duro",
+   "texto": "el mes pasado les compre un mouse y dejo de andar el click derecho, como hago con la garantia? y de paso quiero otro igual pero en blanco",
+   "partes": [
+    {
+     "clave": "garantia",
+     "origen": "tienda",
+     "quiere": [
+      "postventa",
+      "politica"
+     ]
+    },
+    {
+     "clave": "blanco",
+     "origen": "tienda",
+     "quiere": [
+      "buscar",
+      "comprar",
+      "stock"
+     ],
+     "rubro": "mouse"
+    }
+   ],
+   "afirma": [
+    "click"
+   ]
+  },
+  {
+   "id": "T52",
+   "grupo": "duro",
+   "texto": "es para regalo, mi novia hace streaming, que le puedo regalar hasta 150 lucas? microfono o camara, no se",
+   "partes": [
+    {
+     "clave": "regal",
+     "origen": [
+      "tienda",
+      "general"
+     ],
+     "quiere": [
+      "buscar"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T53",
+   "grupo": "duro",
+   "texto": "precio en dolares del monitor samsung 27? y si les pago en usdt o cripto hacen descuento?",
+   "partes": [
+    {
+     "clave": "dolar",
+     "origen": "tienda",
+     "quiere": [
+      "precio",
+      "pago"
+     ],
+     "rubro": "monitor"
+    },
+    {
+     "clave": "cripto",
+     "origen": "tienda",
+     "quiere": [
+      "pago"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T54",
+   "grupo": "duro",
+   "texto": "somos una empresa, necesitamos 20 notebooks iguales, hacen precio por cantidad y factura A? cuanto tardan en conseguirlas?",
+   "partes": [
+    {
+     "clave": "notebook",
+     "origen": "tienda",
+     "quiere": [
+      "buscar",
+      "precio",
+      "comprar"
+     ],
+     "rubro": "notebook"
+    },
+    {
+     "clave": "factura",
+     "origen": "tienda",
+     "quiere": [
+      "politica",
+      "pago"
+     ]
+    },
+    {
+     "clave": "tardan",
+     "origen": "tienda",
+     "quiere": [
+      "stock",
+      "envio"
+     ]
+    }
+   ],
+   "cantidad": 20
+  },
+  {
+   "id": "T55",
+   "grupo": "duro",
+   "texto": "no quiero nada chino, ni la marca ni que este fabricado alla. que mouse gamer me queda?",
+   "partes": [
+    {
+     "clave": "mouse",
+     "origen": "tienda",
+     "quiere": [
+      "buscar"
+     ],
+     "rubro": "mouse"
+    }
+   ],
+   "criterios": [
+    [
+     "pais_fabricacion",
+     "evita"
+    ]
+   ]
+  },
+  {
+   "id": "T56",
+   "grupo": "duro",
+   "texto": "que me conviene mas, comprar una notebook gamer o armar una pc de escritorio con el mismo presupuesto? tengo un millon",
+   "partes": [
+    {
+     "clave": "conviene",
+     "origen": "general",
+     "quiere": [
+      "comparar"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "T57",
+   "grupo": "duro",
+   "texto": "bueno mira te cuento, yo trabajo editando video 4k en premiere y tengo una pc con una 1060 que ya no da mas, que placa me recomendas de las que tenes y me va a alcanzar la fuente de 600 que tengo?",
+   "partes": [
+    {
+     "clave": "recomendas",
+     "origen": "tienda",
+     "quiere": [
+      "buscar"
+     ],
+     "rubro": "placa de video"
+    },
+    {
+     "clave": "600",
+     "origen": [
+      "cliente",
+      "tienda"
+     ],
+     "quiere": [
+      "compatibilidad"
+     ]
+    }
+   ],
+   "afirma": [
+    "1060"
+   ]
+  },
+  {
+   "id": "T58",
+   "grupo": "duro",
+   "texto": "si el G502 esta en stock lo quiero, si no mandame el G203, a nombre de Juan Perez",
+   "partes": [
+    {
+     "clave": "g502",
+     "origen": "tienda",
+     "quiere": [
+      "stock",
+      "comprar"
+     ],
+     "rubro": "mouse"
+    }
+   ]
+  },
+  {
+   "id": "T59",
+   "grupo": "duro",
+   "texto": "el precio que me pasaste ayer era 30 mil y ahora dice 37, por que subio?",
+   "partes": [
+    {
+     "clave": "subio",
+     "origen": "tienda",
+     "quiere": [
+      "precio",
+      "postventa"
+     ]
+    }
+   ],
+   "afirma": [
+    "30"
+   ]
+  },
+  {
+   "id": "T60",
+   "grupo": "duro",
+   "texto": "cual es el teclado mas vendido? y el mejor calificado?",
+   "partes": [
+    {
+     "clave": "vendido",
+     "origen": "tienda",
+     "quiere": [
+      "buscar"
+     ],
+     "rubro": "teclado"
+    },
+    {
+     "clave": "calificado",
+     "origen": "tienda",
+     "quiere": [
+      "buscar"
+     ],
+     "rubro": "teclado"
+    }
+   ]
+  }
+ ]
+}
