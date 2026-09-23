@@ -58,6 +58,7 @@ _OPERADORES_QUE_SIGUEN = {"no_contiene", "evita", "distinto"}
 # Lo que se contesta aunque no se sepa de que producto habla.
 _SIN_PRODUCTO = {"envio", "pago", "politica", "postventa", "charla"}
 _BUSCAN = {"buscar", "precio", "stock"}
+_TODA = re.compile(r"\b(productos?|catalogo|tienda|todo lo que|de todo)\b")
 
 
 def estado_nuevo() -> dict:
@@ -170,12 +171,29 @@ def _a_que(p: dict, estado: dict) -> tuple:
     return "exists", cand
 
 
+def _rubros_escritos(mensaje: str) -> set:
+    """Los rubros que el cliente ESCRIBIO, con sus palabras o las del
+    catalogo. Lo decide el codigo, no el modelo."""
+    from app.core.filtros_catalogo import categorias_nombradas
+    fuera = {_norm(c) for c in categorias_nombradas(mensaje, TIENDA)}
+    # EL PLURAL EN "ES": categorias_nombradas prueba solo la "s", y
+    # "monitores" no le daba monitor. Medido el 23-sep.
+    palabras = re.findall(r"\w+", _norm(mensaje))
+    for rubro in {_norm(p.get("categoria")) for p in catalogo()}:
+        cabeza = rubro.split()[0]
+        if len(cabeza) >= 4 and any(w in (cabeza, cabeza + "s", cabeza + "es")
+                                    for w in palabras):
+            fuera.add(rubro)
+    return fuera
+
+
 def resolver(ficha: dict, mensaje: str, estado: dict) -> tuple:
     """(ficha resuelta, repreguntas, eventos). Nunca inventa: lo que no
     resuelve queda como repregunta, con las opciones reales."""
     partes = [dict(p) for p in ficha.get("partes") or []]
     repreguntas, eventos = [], []
     msg = _norm(mensaje)
+    escritos = _rubros_escritos(mensaje)
     rubros_con_parte = {p.get("rubro") for p in partes}
 
     for p in partes:
@@ -188,6 +206,23 @@ def resolver(ficha: dict, mensaje: str, estado: dict) -> tuple:
         forma = p.get("refiere") or "no"
         tiene_rubro = p.get("rubro") not in (None, "", "ninguno", "otro",
                                              "toda_la_tienda")
+        # UN RUBRO QUE EL CLIENTE NO ESCRIBIO ES UNA SUPOSICION DEL MODELO,
+        # que no ve la charla. Si hay una busqueda en curso de otro rubro,
+        # manda la charla. Medido el 23-sep en la segunda tanda: despues de
+        # hablar de tablets, "cual es la que puede hacer tareas no tan
+        # livianas" salio como notebook. Lo que el cliente escribe con sus
+        # palabras —"laptop", "compu"— lo reconoce categorias_nombradas.
+        # "TODA LA TIENDA" TAMBIEN SE ESCRIBE: "que otros tenes?" despues de
+        # auriculares no la nombra, y el modelo la puso igual.
+        b = estado.get("busqueda")
+        supone = (tiene_rubro and _norm(p["rubro"]) not in escritos) or (
+            p.get("rubro") == "toda_la_tienda" and not _TODA.search(msg))
+        if forma == "no" and supone and not p.get("producto") and b \
+                and _norm(p["rubro"]) != _norm(b["categoria"]):
+            eventos.append(f"rubro que no dijo: {p['rubro']}, sigue en "
+                           f"{b['categoria']}")
+            p["rubro"] = b["categoria"]
+
         # Y EL RUBRO NOMBRADO MANDA SOBRE "LA BUSQUEDA DE ANTES": "quise
         # decir un monitor" es una busqueda nueva, aunque corrija la vieja.
         if forma == "la_busqueda" and tiene_rubro:
@@ -216,6 +251,7 @@ def resolver(ficha: dict, mensaje: str, estado: dict) -> tuple:
         # y "nada de redragon" como generales, y el compilador los aplica a
         # la consulta que salga de aca.
         solo_criterios = (not p.get("producto") and not tiene_rubro and
+                          p.get("rubro") != "toda_la_tienda" and
                           bool(p.get("criterios")
                                or (ficha.get("criterios_generales")
                                    and p.get("quiere") in _BUSCAN)))
@@ -321,6 +357,7 @@ def completar(pedido: dict, mensaje: str, estado: dict, ficha: dict) -> dict:
     antes, las exclusiones que siguen, y la identidad certificada."""
     from app.core.pedido_helpers import certificar_producto
     msg = _norm(mensaje)
+    escritos = _rubros_escritos(mensaje)
     # EL DESTINO DE ANTES, si el cliente habla del envio y no dijo adonde.
     if not pedido.get("envios") and estado["destino"] and _ENVIO.search(msg):
         pedido["envios"] = [{"destino": estado["destino"],
@@ -350,15 +387,16 @@ def completar(pedido: dict, mensaje: str, estado: dict, ficha: dict) -> dict:
             if v2 == "exists":
                 veredicto, hits = v2, h2
                 c["texto"] = pegado
-        if veredicto == "not_found" and cat:
-            # EL RUBRO LO PUSO EL MODELO Y PUEDE ESTAR MAL: "la samsung"
-            # anotada como notebook no esta en notebooks. Se mira el catalogo
-            # entero, pero SOLO PARA PREGUNTAR: si ahi hay varios, se
-            # repregunta con ellos. Nunca da uno por seguro: medido el 23-sep,
-            # "logitec k 120" certificado contra todo el catalogo salia un
-            # cooler.
+        if veredicto != "exists" and cat and cat not in escritos:
+            # EL RUBRO LO PUSO EL MODELO, EL CLIENTE NO LO ESCRIBIO, Y PUEDE
+            # ESTAR MAL: "la samsung" o "el lenovo" anotados como notebook.
+            # Se mira el catalogo entero, pero SOLO PARA PREGUNTAR: si ahi
+            # hay modelos de varios rubros, se repregunta con ellos. Nunca da
+            # uno por seguro: medido el 23-sep, "logitec k 120" certificado
+            # contra todo el catalogo salia un cooler.
             v2, h2 = certificar_producto(c["texto"], catalogo())
-            if v2 == "ambiguous":
+            if v2 == "ambiguous" and len(
+                    {_norm(x.get("categoria")) for x in h2}) > 1:
                 veredicto, hits = v2, h2
                 c.pop("categoria", None)
         if veredicto == "exists":

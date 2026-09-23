@@ -281,3 +281,56 @@ def test_el_catalogo_entero_nunca_certifica_un_producto(tab):
                   producto="logitec k 120")
     for c in p["consultas"]:
         assert not any(i.startswith("COO") for i in c.get("ids") or [])
+
+
+def _dos_turnos(tab, primero, segundo):
+    estado = M.estado_nuevo()
+    pedidos = []
+    for texto, parte in (primero, segundo):
+        p = {"dice": texto, "quiere": "buscar", "origen": "tienda",
+             "rubro": "ninguno", "producto": "", "criterios": [],
+             "cantidad": 0, "destino": "", "refiere": "no", "posiciones": [],
+             "para": ""}
+        p.update(parte)
+        ficha = {"partes": [p], "afirma": [], "reescrita": texto,
+                 "criterios_generales": [], "reparto": []}
+        r, estado = M.turno(texto, estado, tab, lambda _t, _f=ficha: _f)
+        pedidos.append(r["pedido"])
+    return pedidos
+
+
+def test_un_rubro_que_no_escribio_no_le_gana_a_la_charla(tab):
+    p = _dos_turnos(tab, ("mostrame tablets", {"rubro": "tablet"}),
+                    ("cual es la que puede hacer tareas pesadas?",
+                     {"rubro": "notebook"}))
+    assert [c.get("categoria") for c in p[1]["consultas"]] == ["tablet"]
+
+
+def test_un_rubro_escrito_con_sus_palabras_si_cambia_la_busqueda(tab):
+    p = _dos_turnos(tab, ("mostrame tablets", {"rubro": "tablet"}),
+                    ("y alguna compu?", {"rubro": "notebook"}))
+    assert [c.get("categoria") for c in p[1]["consultas"]] == ["notebook"]
+
+
+def test_el_mas_caro_de_la_tienda_ordena_todo_el_catalogo(tab):
+    texto = "cual es el producto mas caro que tenes?"
+    p = _un_turno(tab, texto, quiere="buscar", rubro="toda_la_tienda",
+                  criterios=[{"concepto": "precio_ars", "valor": "mas caro",
+                              "fuerza": "debe"}])
+    assert [(c.get("categoria"), c.get("orden")) for c in p["consultas"]] == \
+        [(None, "precio_ars_max")]
+    assert not p.get("repreguntar")
+
+
+@pytest.mark.parametrize("valor,esperado", [
+    ("la mas cara", "precio_ars_max"), ("el producto mas caro",
+                                        "precio_ars_max"),
+    ("no tan caro", "precio_ars_min")])
+def test_lo_caro_en_femenino_y_suelto(tab, valor, esperado):
+    assert C.aterrizar("precio_ars", valor, "debe", "x", valor)["orden"] == \
+        esperado
+
+
+def test_un_palo_es_un_millon(tab):
+    assert C._cifras("1 palo") == [1000000]
+    assert C._cifras("2 millones y medio") == [2000000]

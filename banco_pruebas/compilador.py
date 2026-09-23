@@ -185,8 +185,10 @@ def _criterios_validos(crudos, conceptos: set, mensaje: str,
 _BARATO = ("barat", "econom", "crisis", "no sea car", "no salga mucho",
            "no me fundan", "no sea muy car", "accesible", "menor precio",
            "lo mas bajo", "no tan car", "presupuesto acorde")
-_CARO = ("lo mas car", "el mas car", "el mejor", "tope de gama",
-         "sin importar el precio")
+# "MAS CAR" A SECAS: "la mas cara", "el producto mas caro". Medido el 23-sep
+# en la segunda tanda: la lista pedia "el mas car" pegado y las dos se
+# perdian. Lo barato se mira antes, asi que "no tan caro" sigue siendo barato.
+_CARO = ("mas car", "el mejor", "tope de gama", "sin importar el precio")
 _LIVIANO = ("livian", "menos pes", "que pese poco")
 _GRADO = ("posible", "lo menos", "en lo posible", "ojala no",
           "preferentemente no")
@@ -196,8 +198,14 @@ def _cifras(valor: str) -> list:
     """Los numeros ESCRITOS en el valor, con mil, lucas y k."""
     t = _norm(valor).replace(".", "")
     crudas = []
-    for m in re.finditer(r"(\d+(?:,\d+)?)\s*(mil|lucas|luca|k)?\b", t):
-        crudas.append((float(m.group(1).replace(",", ".")), bool(m.group(2))))
+    for m in re.finditer(r"(\d+(?:,\d+)?)\s*(mil|lucas|luca|k|palos?|"
+                         r"millon(?:es)?)?\b", t):
+        n = float(m.group(1).replace(",", "."))
+        # "1 PALO" ES UN MILLON, como "1 millon": se estira aca y no pasa
+        # por la regla de mil.
+        if m.group(2) and m.group(2).startswith(("palo", "millon")):
+            n *= 1000
+        crudas.append((n, bool(m.group(2))))
     # "ENTRE 50 Y 100 LUCAS": la unidad del ultimo vale para los dos. Medido
     # el 23-sep: el piso salia en 50 pesos. Solo se estira un numero chico,
     # sin unidad propia, cuando otro del mismo valor la trae.
@@ -426,6 +434,10 @@ def compilar(ficha: dict, mensaje: str, tab: dict) -> dict:
             c["categoria"] = rubro
         if producto:
             c["texto"] = producto
+        elif rubro == "toda_la_tienda":
+            # TODA LA TIENDA ES UNA CONSULTA SIN RUBRO Y SIN TEXTO: "el
+            # producto mas caro" busca en el catalogo entero, con su orden.
+            pass
         elif rubro not in catalogo:
             # SIN RUBRO DEL CATALOGO: se busca por lo que dijo, y el motor
             # ya pesa por rareza. "Un aparato para la compu" es vago y la
