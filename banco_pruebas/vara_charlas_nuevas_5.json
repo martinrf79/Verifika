@@ -1,0 +1,66 @@
+{
+ "_que_es": "LA QUINTA TANDA QUE NO SE USA PARA CORREGIR (23-sep-2026). Valida con otras palabras los arreglos de la cuarta —la direccion con las palabras del modelo, el valor que se muda de concepto, la busqueda sin busqueda— y suma formas nuevas. Escrita ANTES de correrla.",
+ "_regla": "NO SE CORRIGE MIRANDO ESTA VARA. Si una corrida da rojo, el arreglo se valida contra una tanda NUEVA, y esta queda como estaba.",
+ "charlas": [
+  {"id": "S1", "clase": "cual es el mas accesible de lo mostrado", "turnos": [
+   {"texto": "mostrame microfonos", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "microfono"}]},
+   {"texto": "cual es el mas accesible?", "casillas": [
+    {"n": "sigue en microfonos", "tipo": "consulta", "categoria": "microfono"},
+    {"n": "lo barato primero", "tipo": "barato"}]}]},
+  {"id": "S2", "clase": "el que menos pesa, en tablets", "turnos": [
+   {"texto": "tenes tablets samsung?", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "tablet"}]},
+   {"texto": "y cual es la que menos pesa?", "casillas": [
+    {"n": "sigue en tablets", "tipo": "consulta", "categoria": "tablet"},
+    {"n": "lo liviano primero", "tipo": "orden", "campo": ["peso_gramos"], "direccion": ["min"]}]}]},
+  {"id": "S3", "clase": "nacionalidad dicha como origen", "turnos": [
+   {"texto": "busco un mouse que no sea chino", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "mouse"},
+    {"n": "evita lo chino", "tipo": "condicion", "campo": ["pais_marca", "pais_fabricacion", "origen"], "valor": "china", "acepta": ["evita", "no_contiene", "distinto"]}]}]},
+  {"id": "S4", "clase": "otro color de un producto dicho", "turnos": [
+   {"texto": "cuanto sale la memoria Kingston Fury Beast DDR4 3200 8GB negra?", "casillas": [
+    {"n": "la ram", "tipo": "consulta", "categoria": "memoria ram"}]},
+   {"texto": "hay en blanco?", "casillas": [
+    {"n": "es la Fury Beast 8GB", "tipo": "referencia", "modelo": "fury beast ddr4 3200 8gb"}]}]},
+  {"id": "S5", "clase": "el de mas precio sobre lo mostrado", "turnos": [
+   {"texto": "mostrame 3 placas de video", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "placa de video"}]},
+   {"texto": "de esas la de mayor precio cual es?", "casillas": [
+    {"n": "son las que mostro", "tipo": "referencia", "de_turno": 1, "todos": true},
+    {"n": "lo caro primero", "tipo": "orden", "campo": ["precio_ars"], "direccion": ["max"]}]}]},
+  {"id": "S6", "clase": "tope en otra forma: 'no mas de' con lucas", "turnos": [
+   {"texto": "un gabinete que no supere las 150 lucas", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "gabinete"},
+    {"n": "el techo", "tipo": "condicion", "campo": ["precio_ars"], "valor": "150000", "acepta": ["menor", "menor_igual"]}]}]},
+  {"id": "S7", "clase": "referencia por rubro despues de dos productos", "turnos": [
+   {"texto": "precio del mouse Logitech M170 negro y de la webcam Logitech C270", "casillas": [
+    {"n": "el mouse", "tipo": "consulta", "categoria": "mouse"},
+    {"n": "la webcam", "tipo": "consulta", "categoria": "webcam"}]},
+   {"texto": "la camara tiene microfono?", "casillas": [
+    {"n": "es la C270", "tipo": "referencia", "modelo": "c270"}]}]},
+  {"id": "S8", "clase": "cambia de marca manteniendo el rubro", "turnos": [
+   {"texto": "mostrame auriculares hyperx", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "auriculares"}]},
+   {"texto": "y de sony que hay?", "casillas": [
+    {"n": "sigue en auriculares", "tipo": "consulta", "categoria": "auriculares"},
+    {"n": "ahora sony", "tipo": "nombra", "palabra": "sony"}]}]},
+  {"id": "S9", "clase": "compra con cantidad y destino de una", "turnos": [
+   {"texto": "quiero 2 routers Tenda AC10 enviados a Santa Rosa", "casillas": [
+    {"n": "el router con su cantidad", "tipo": "consulta", "categoria": "router", "cantidad": [2]},
+    {"n": "el destino", "tipo": "envio", "destino": "santa rosa"}]}]},
+  {"id": "S10", "clase": "'no' de cortesia no niega", "turnos": [
+   {"texto": "no se si me explico, necesito un ssd samsung", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "ssd"},
+    {"n": "samsung no queda excluida", "tipo": "sin_condicion", "campo": ["marca"], "valor": "samsung", "prohibe": ["no_contiene", "evita", "distinto"]}]}]},
+  {"id": "S11", "clase": "el ultimo de dos nombrados", "turnos": [
+   {"texto": "diferencia entre el teclado Logitech K120 y el Redragon Kumara?", "casillas": [
+    {"n": "los teclados", "tipo": "consulta", "categoria": "teclado"}]},
+   {"texto": "me quedo con el segundo", "casillas": [
+    {"n": "es el Kumara", "tipo": "referencia", "modelo": "kumara"}]}]},
+  {"id": "S12", "clase": "presupuesto con 'tengo' y rubro al final", "turnos": [
+   {"texto": "tengo 90 mil, que auriculares me recomendas?", "casillas": [
+    {"n": "el rubro", "tipo": "consulta", "categoria": "auriculares"},
+    {"n": "el tope", "tipo": "condicion", "campo": ["precio_ars"], "valor": "90000", "acepta": ["menor", "menor_igual"]}]}]}
+ ]
+}
