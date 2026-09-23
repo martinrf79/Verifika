@@ -68,8 +68,8 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 llena una ficha contra el tablero, y el compilador y la memoria la resuelven en
 codigo: `banco_pruebas/traductor.py`, `compilador.py` y `memoria.py`. Lo que
 falta, en orden:
-- **ABIERTO** · Correr `banco_pruebas/vara_charlas_nuevas.json`, congelada el 23-sep y nunca corrida: `memoria.py --vara vara_charlas_nuevas.json`, tres veces, cuenta la peor. No se corrige mirandola.
-- **ABIERTO** · Juntar charlas reales de produccion para la tanda siguiente, por el issue 31.
+- **ABIERTO** · Las tandas que no se usan para corregir, peor de tres con Gemini: 62 de 67, 39 de 45, 31 de 36, 31 de 35, 28 de 29. Cada tanda valida los arreglos de la anterior. La 5 quedo sin corregir: su rojo es "la camara" por webcam, falta el sinonimo. El proximo arreglo se valida con una tanda 6 nueva.
+- **ABIERTO** · Produccion tiene poca charla real: 2 en 30 dias. Hacen falta charlas reales para la tanda siguiente.
 - **ABIERTO** · El redactor, con el orden de la lista fijado por el codigo, y pasar todo a `app/`, con la compuerta comercial del paso 7 enchufada al lead y al cobro.
 - **ABIERTO** · `arquitectura/MAPA_CABLEADO.md` y este archivo nombran `turno.py` y `tabla.py`, que ya no existen: el turno vivo es `app/core/respuesta.py`.
 - Traduce **Gemini** por ahora, decidido por Martin el 23-sep. DeepSeek queda como comparacion: la defensa contra lo inventado es del codigo y la prueba `tests/test_camino_nuevo_invariantes.py` para los dos.
