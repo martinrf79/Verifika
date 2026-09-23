@@ -143,17 +143,41 @@ def validar(ficha: dict, mensaje: str, tab: dict) -> tuple:
                     _norm(p["rubro"])[:4] not in msg:
                 avisos.append(f"rubro de referencia que no dijo: {p['rubro']}")
                 p["rubro"] = "ninguno"
-        p["criterios"] = [c for c in (p.get("criterios") or [])
-                          if isinstance(c, dict)
-                          and c.get("concepto") in conceptos
-                          and c.get("fuerza") in T.FUERZAS]
+        p["criterios"] = _criterios_validos(p.get("criterios"), conceptos,
+                                            mensaje, avisos)
         partes.append(p)
     limpia = dict(ficha, partes=partes)
-    limpia["criterios_generales"] = [
-        c for c in (ficha.get("criterios_generales") or [])
-        if isinstance(c, dict) and c.get("concepto") in conceptos
-        and c.get("fuerza") in T.FUERZAS]
+    limpia["criterios_generales"] = _criterios_validos(
+        ficha.get("criterios_generales"), conceptos, mensaje, avisos)
     return limpia, avisos
+
+
+_CON_CIFRA = ("precio_ars", "peso_gramos")
+
+
+def _criterios_validos(crudos, conceptos: set, mensaje: str,
+                       avisos: list) -> list:
+    """Los criterios de la lista, y SIN UNA CIFRA QUE EL CLIENTE NO ESCRIBIO.
+
+    Es M11 del lado del codigo: a "que no sea muy cara" el modelo le escribe
+    "hasta 500 mil", y compilado eso es un techo que borra productos en
+    silencio. El test de fichas malas lo encontro el 23-sep: la cifra pasaba
+    entera. El numero se saca y queda la palabra, que el compilador lee como
+    orden si dice barato."""
+    dichas = set(_cifras(mensaje))
+    fuera = []
+    for c in crudos or []:
+        if not (isinstance(c, dict) and c.get("concepto") in conceptos
+                and c.get("fuerza") in T.FUERZAS):
+            continue
+        valor = str(c.get("valor") or "")
+        if c["concepto"] in _CON_CIFRA and \
+                not set(_cifras(valor)) <= dichas:
+            avisos.append(f"cifra que no dijo: {valor!r}")
+            c = dict(c, valor=re.sub(r"\d+(?:[.,]\d+)?\s*(mil|lucas|luca|k)?",
+                                     "", valor).strip())
+        fuera.append(c)
+    return fuera
 
 
 # ── 2 · ATERRIZAR ───────────────────────────────────────────────────────────
@@ -171,16 +195,58 @@ _GRADO = ("posible", "lo menos", "en lo posible", "ojala no",
 def _cifras(valor: str) -> list:
     """Los numeros ESCRITOS en el valor, con mil, lucas y k."""
     t = _norm(valor).replace(".", "")
-    fuera = []
+    crudas = []
     for m in re.finditer(r"(\d+(?:,\d+)?)\s*(mil|lucas|luca|k)?\b", t):
-        n = float(m.group(1).replace(",", "."))
-        if m.group(2):
-            n *= 1000
-        fuera.append(int(n))
-    return fuera
+        crudas.append((float(m.group(1).replace(",", ".")), bool(m.group(2))))
+    # "ENTRE 50 Y 100 LUCAS": la unidad del ultimo vale para los dos. Medido
+    # el 23-sep: el piso salia en 50 pesos. Solo se estira un numero chico,
+    # sin unidad propia, cuando otro del mismo valor la trae.
+    con_unidad = any(u for _n, u in crudas)
+    return [int(n * 1000) if u or (con_unidad and n < 1000) else int(n)
+            for n, u in crudas]
 
 
 _NIEGA = re.compile(r"\b(no|nada|sin|menos|excepto|salvo|ni)\b")
+
+
+def _negado(valor: str, dice: str) -> bool:
+    """¿El cliente NIEGA este valor? Se mira el valor, y en el pedazo solo
+    las palabras que lo tienen justo delante, dentro de la misma frase.
+
+    ANTES BASTABA CUALQUIER "no" DEL PEDAZO, y daba vuelta el sentido. Medido
+    el 23-sep: "no se, quiero un mouse logitech" y "busco un teclado sin
+    cable, marca logitech" salian como "marca no contiene logitech". El "no"
+    de "no se" y el "sin" de "sin cable" no niegan la marca. "Cualquiera
+    menos redragon", "que no sean redragon" y "lo menos chino posible" si:
+    la negacion esta pegada al valor."""
+    v = _norm(valor)
+    if _NIEGA.search(v):
+        return True
+    d = _norm(dice)
+    toks = [w for w in re.findall(r"\w+", v) if len(w) >= 3]
+    if not d or not toks:
+        return bool(_NIEGA.search(d))
+    raiz = toks[0][:5]
+    for frase in re.split(r"[,.;:!?\n]+", d):
+        m = re.search(r"\b" + re.escape(raiz), frase)
+        if m:
+            antes = frase[:m.start()].split()[-4:]
+            return bool(_NIEGA.search(" ".join(antes)))
+    # El valor no esta escrito tal cual: se mira el pedazo entero, como antes.
+    return bool(_NIEGA.search(d))
+
+
+# EL SENTIDO DEL NUMERO. "No mas de 200 mil" es un techo aunque diga "mas
+# de", y "no menos de" es un piso aunque diga "menos". Medido el 23-sep: el
+# techo negado salia como piso, con el sentido al reves.
+_TECHO = re.compile(r"\b(no mas de|no pase|no supere|hasta|maximo|como mucho|"
+                    r"tope|menos de|por debajo)\b")
+_PISO = re.compile(r"\b(no menos de|desde|mas de|minimo|arriba|como minimo|"
+                   r"por encima)\b")
+
+
+def _raiz(w: str) -> str:
+    return re.sub(r"(as|os|es|a|o|e|s)$", "", w)
 
 
 def aterrizar(concepto: str, valor: str, fuerza: str, rubro: str,
@@ -195,7 +261,7 @@ def aterrizar(concepto: str, valor: str, fuerza: str, rubro: str,
     from app.core.filtros_catalogo import vocabulario
     v = _norm(valor)
     if fuerza == "debe" and concepto not in ("precio_ars", "peso_gramos") \
-            and (_NIEGA.search(v) or _NIEGA.search(_norm(dice))):
+            and _negado(valor, dice):
         fuerza = "evita"
     fuera = {"condiciones": [], "orden": ""}
     if concepto == "precio_ars":
@@ -207,7 +273,8 @@ def aterrizar(concepto: str, valor: str, fuerza: str, rubro: str,
                      "valor": str(min(cifras))},
                     {"campo": "precio_ars", "operador": "menor",
                      "valor": str(max(cifras))}]
-            elif re.search(r"\b(desde|mas de|minimo|arriba)\b", v):
+            elif re.search(r"\bno menos de\b", v) or (
+                    _PISO.search(v) and not _TECHO.search(v)):
                 fuera["condiciones"].append(
                     {"campo": "precio_ars", "operador": "mayor",
                      "valor": str(cifras[0])})
@@ -237,9 +304,15 @@ def aterrizar(concepto: str, valor: str, fuerza: str, rubro: str,
     reales = ((vocabulario(TIENDA) or {}).get(concepto) or {}).get(
         "valores") or []
     elegido = ""
+    # EL GENERO Y EL NUMERO NO CAMBIAN EL VALOR: "chino" es "China", como
+    # "chinas". Medido el 23-sep: "lo menos chino posible" quedaba como
+    # "evita chino", que no coincide con ningun valor del catalogo.
+    raices_v = {_raiz(w) for w in re.findall(r"\w+", v)}
     for r in reales:
         raiz = _norm(r)[:5]
-        if len(raiz) >= 3 and re.search(r"\b" + re.escape(raiz), v):
+        primera = (re.findall(r"\w+", _norm(r)) or [""])[0]
+        if (len(raiz) >= 3 and re.search(r"\b" + re.escape(raiz), v)) or (
+                len(_raiz(primera)) >= 4 and _raiz(primera) in raices_v):
             elegido = str(r)
             break
     valor_final = elegido or valor
