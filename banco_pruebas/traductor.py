@@ -48,6 +48,7 @@ INTENCIONES = ("buscar", "precio", "stock", "caracteristica", "comparar",
                "postventa", "charla")
 ORIGENES = ("tienda", "general", "cliente", "ninguno")
 FUERZAS = ("debe", "prefiere", "evita")
+REFIERE = ("no", "ese", "esos", "posicion", "el_otro", "la_busqueda")
 
 # LOS CAMPOS QUE NO SON CONCEPTOS: prosa o identidad. El producto puntual va en
 # su propia casilla, no como criterio.
@@ -76,7 +77,7 @@ def tablero() -> dict:
 
 def prompt(tab: dict, version: str = "v2") -> str:
     conceptos = "; ".join(f"{c} ({e})" for c, e in tab["conceptos"].items())
-    if version == "v5":
+    if version in ("v5", "v6"):
         conceptos += "; compatible_con (con que aparato o pieza tiene que andar)"
     v2 = ("" if version == "v1" else
           "- destino: el lugar adonde lo quiere mandar, con sus palabras, o vacio.\n")
@@ -88,7 +89,7 @@ reparto: si reparte el pago —"70 transferencia 30 mercado pago", "mitad y mita
     # v4: LAS TRES FRONTERAS DEFINIDAS CON EJEMPLOS. Salen de los rojos de las
     # corridas del 23-sep: tienda o cliente en los aparatos del cliente, la
     # fuerza de "lo menos chino posible", y envio o postventa.
-    v4 = ("" if version not in ("v4", "v5") else """
+    v4 = ("" if version not in ("v4", "v5", "v6") else """
 FRONTERAS:
 - origen cliente es SOLO lo que depende del aparato o la situacion del cliente y la tienda no puede saber ("¿mi fuente de 500w aguanta?"). Si esa parte termina en elegir o mostrar productos de la tienda ("¿que notebook le compro?", "¿que RAM le sirve de las que tienen?"), es tienda.
 - fuerza: debe = obligatorio ("si o si con hdmi"); prefiere = lo quiere sin exigirlo ("preferentemente samsung", "lo mas barato"); evita = lo que no quiere o quiere lo menos posible ("nada chino", "lo menos chino posible", "cualquiera menos redragon").
@@ -101,6 +102,22 @@ FRONTERAS:
     v5 = ("" if version != "v5" else """
 - rubro 'toda_la_tienda' si pregunta por el catalogo entero ("el producto mas caro", "cuantos productos tenes", "catalogo").
 - anterior: true si se refiere a algo de antes que este mensaje no nombra ("y una intermedia", "ese", "el mismo", "total de nuevo"). Ahi NO adivines el rubro: poné 'ninguno'.
+- para: el uso o proposito que cuenta, con sus palabras ("para guardar fotos", "para zoom del laburo", "para un cyber"), o vacio.
+""")
+    # v6: LA MEMORIA. El modelo NO ve la charla: marca COMO se refiere el
+    # cliente a algo de antes, y el codigo lo resuelve contra lo que se
+    # mostro. Cuatro formas, que son las que la tanda de 22 charlas junto.
+    v6 = ("" if version != "v6" else """
+- rubro 'toda_la_tienda' si pregunta por el catalogo entero ("el producto mas caro", "cuantos productos tenes", "catalogo").
+- refiere: como apunta a algo que se hablo ANTES y este mensaje no nombra por su modelo.
+  ese: uno solo ("ese", "lo quiero", "el mismo", "mandarlo", "que sean 5", "el teclado que me dijiste").
+  esos: varios o todos ("esos", "de esos", "de cada uno", "todo").
+  posicion: por su lugar en la lista ("el segundo", "el primero y el tercero", "el ultimo").
+  el_otro: "el otro", "la otra".
+  la_busqueda: pide mas o distinto de lo que se estaba buscando, sin nombrar el rubro ("que otros tenes", "algo mas barato", "y en blanco?", "mostrame mas").
+  no: nombra lo que quiere, o no apunta a nada anterior. Una pregunta nueva ("tenes mouse?") es no.
+  Con refiere distinto de no, NO adivines el producto; el rubro ponelo solo si lo dice ("el teclado"), si no 'ninguno'.
+- posiciones: con posicion, los lugares (el primero y el tercero: [1, 3]; el ultimo: [-1]). Si no, vacio.
 - para: el uso o proposito que cuenta, con sus palabras ("para guardar fotos", "para zoom del laburo", "para un cyber"), o vacio.
 """)
     regla_afirma = ("" if version == "v1" else
@@ -127,16 +144,16 @@ Por cada parte:
 {v2}
 afirma: lo que el cliente da por cierto, sobre la tienda, un producto o sus propios aparatos. No lo corrijas: anotalo.{regla_afirma}
 reescrita: el mensaje entero bien escrito, en una linea.
-{v3}{v4}{v5}
+{v3}{v4}{v5}{v6}
 RUBROS: {", ".join(tab["rubros"])}.
 CONCEPTOS: {conceptos}."""
 
 
 def esquema(tab: dict, version: str = "v2") -> dict:
     rubros = tab["rubros"] + ["otro", "ninguno"] + (
-        ["toda_la_tienda"] if version == "v5" else [])
+        ["toda_la_tienda"] if version in ("v5", "v6") else [])
     conceptos = list(tab["conceptos"]) + ["otro"] + (
-        ["compatible_con"] if version == "v5" else [])
+        ["compatible_con"] if version in ("v5", "v6") else [])
     parte = {
         "type": "object", "additionalProperties": False,
         "properties": {
@@ -162,6 +179,13 @@ def esquema(tab: dict, version: str = "v2") -> dict:
         parte["properties"]["anterior"] = {"type": "boolean"}
         parte["properties"]["para"] = {"type": "string"}
         parte["required"] += ["anterior", "para"]
+    if version == "v6":
+        parte["properties"]["refiere"] = {
+            "type": "string", "enum": list(REFIERE)}
+        parte["properties"]["posiciones"] = {
+            "type": "array", "items": {"type": "integer"}}
+        parte["properties"]["para"] = {"type": "string"}
+        parte["required"] += ["refiere", "posiciones", "para"]
     criterio = parte["properties"]["criterios"]
     extra_props, extra_req = {}, []
     if version not in ("v1", "v2"):
@@ -401,7 +425,7 @@ def main() -> int:
     ap.add_argument("--json", default="")
     ap.add_argument("--hilos", type=int, default=6)
     ap.add_argument("--tablero", default="v4",
-                    choices=("v1", "v2", "v3", "v4", "v5"))
+                    choices=("v1", "v2", "v3", "v4", "v5", "v6"))
     ap.add_argument("--libre", default="",
                     help="un JSON con una lista de mensajes sin respuesta "
                          "esperada: se miden con los controles invariantes")

@@ -49,6 +49,31 @@ VARA_19 = os.path.join(RAIZ, "banco_pruebas", "vara_interpretacion.json")
 
 # ── 1 · VALIDAR ─────────────────────────────────────────────────────────────
 
+def _escrito(palabra: str, msg: str) -> bool:
+    """¿El cliente escribio esta palabra, con un error de tipeo a lo sumo?
+
+    Un audio transcripto dice "logitec k 120" y el traductor anota "Logitech
+    K120": es lo que dijo, corregido, no un producto inventado. Vale si la
+    palabra esta, si esta con los espacios sacados —"k 120"—, o si difiere
+    en UNA letra de una palabra del mensaje de al menos cinco. Un modelo que
+    el cliente no nombro no pasa: "G502" no esta a una letra de nada."""
+    if palabra in msg or palabra in msg.replace(" ", ""):
+        return True
+    if len(palabra) < 5 or any(c.isdigit() for c in palabra):
+        return False
+    for w in msg.split():
+        if abs(len(w) - len(palabra)) > 1 or len(w) < 5:
+            continue
+        if len(w) == len(palabra):
+            if sum(a != b for a, b in zip(w, palabra)) <= 1:
+                return True
+            continue
+        corta, larga = sorted((w, palabra), key=len)
+        if any(larga[:i] + larga[i + 1:] == corta for i in range(len(larga))):
+            return True
+    return False
+
+
 def validar(ficha: dict, mensaje: str, tab: dict) -> tuple:
     """La ficha que el codigo acepta, y lo que se saco. Con DeepSeek el
     proveedor no obliga las listas, asi que esto es la atadura; con Gemini es
@@ -58,7 +83,8 @@ def validar(ficha: dict, mensaje: str, tab: dict) -> tuple:
     conceptos = set(tab["conceptos"]) | {"otro", "compatible_con"}
     msg = _norm(mensaje)
     avisos, partes = [], []
-    for p in ficha.get("partes") or []:
+    cola = list(ficha.get("partes") or [])
+    for p in cola:
         if not isinstance(p, dict):
             continue
         if not renglon_es_copia(str(p.get("dice")), mensaje):
@@ -74,16 +100,49 @@ def validar(ficha: dict, mensaje: str, tab: dict) -> tuple:
         if p.get("rubro") not in rubros:
             avisos.append(f"rubro fuera de lista: {p.get('rubro')}")
             p["rubro"] = "ninguno"
+        # EL NOMBRE DE UN RUBRO NO ES UN PRODUCTO: "el teclado" anotado como
+        # producto es el rubro, y la memoria decide si apunta atras.
+        prod = _norm(p.get("producto"))
+        rubro_dicho = next((r for r in tab["rubros"] if prod and (
+            prod == _norm(r) or prod.rstrip("s") == _norm(r).rstrip("s"))),
+            None)
+        if rubro_dicho:
+            p["producto"] = ""
+            if p.get("rubro") in (None, "", "ninguno", "otro"):
+                p["rubro"] = rubro_dicho
+            avisos.append(f"producto que es un rubro: {prod!r}")
+        # DOS PRODUCTOS EN UNA CASILLA —"G203, G502"— son dos partes, si
+        # cada uno esta escrito.
+        trozos = [t.strip() for t in re.split(r",| o | y ",
+                                              str(p.get("producto") or ""))
+                  if t.strip()]
+        if len(trozos) > 1 and all(_norm(t) in msg for t in trozos):
+            for t in trozos[1:]:
+                cola.append(dict(p, producto=t))
+            p["producto"] = trozos[0]
         # EL PRODUCTO TIENE QUE ESTAR ESCRITO: un nombre que el cliente no
         # dijo es identidad inventada, la regla 10.0.
         if p.get("producto") and _norm(p["producto"]) not in msg:
             toks = [w for w in _norm(p["producto"]).split() if len(w) > 2]
-            if not toks or not all(w in msg for w in toks):
+            if not toks or not all(_escrito(w, msg) for w in toks):
                 avisos.append(f"producto que no dijo: {p['producto']!r}")
                 p["producto"] = ""
         # LO ANTERIOR NO SE ADIVINA: el rubro lo pone la memoria.
         if p.get("anterior") and not p.get("producto"):
             p["rubro"] = "ninguno"
+        # v6: la forma de referirse sale de una lista, y el rubro de una
+        # referencia vale solo si el cliente lo escribio —"el teclado"—.
+        if "refiere" in p:
+            if p.get("refiere") not in T.REFIERE:
+                avisos.append(f"refiere fuera de lista: {p.get('refiere')}")
+                p["refiere"] = "no"
+            p["posiciones"] = [int(x) for x in (p.get("posiciones") or [])
+                               if isinstance(x, int)]
+            if p["refiere"] != "no" and not p.get("producto") and \
+                    p.get("rubro") in tab["rubros"] and \
+                    _norm(p["rubro"])[:4] not in msg:
+                avisos.append(f"rubro de referencia que no dijo: {p['rubro']}")
+                p["rubro"] = "ninguno"
         p["criterios"] = [c for c in (p.get("criterios") or [])
                           if isinstance(c, dict)
                           and c.get("concepto") in conceptos
@@ -205,7 +264,7 @@ _MEDIOS = (("transfer", "transferencia"), ("mercado", "mercado_pago"),
            ("mp", "mercado_pago"), ("tarjeta", "tarjeta"),
            ("credito", "tarjeta"), ("debito", "tarjeta"))
 _TOTAL = re.compile(r"\b(total|presupuesto|cuanto (es|sale|me sale) todo|"
-                    r"armame|arma me)\b")
+                    r"armame|arma me|incluido|incluyendo)\b")
 _CONSEJO = re.compile(r"\b(conviene|recomend|cual me|que me sirve|mejor)\b")
 _NO_BUSCAN = {"envio", "pago", "politica", "postventa", "charla"}
 
@@ -235,7 +294,8 @@ def compilar(ficha: dict, mensaje: str, tab: dict) -> dict:
             ultima = p
             continue
         if ultima is not None and p.get("criterios") and \
-                p.get("quiere") not in _NO_BUSCAN:
+                p.get("quiere") not in _NO_BUSCAN and \
+                p.get("refiere", "no") == "no":
             ultima["criterios"] = list(ultima.get("criterios") or []) + \
                 [dict(c, _dice=p.get("dice")) for c in p["criterios"]]
             p["criterios"] = []
@@ -257,7 +317,9 @@ def compilar(ficha: dict, mensaje: str, tab: dict) -> dict:
         if p.get("quiere") in _NO_BUSCAN and not p.get("destino") \
                 and not p.get("producto"):
             continue
-        clave = (rubro, _norm(p.get("producto")))
+        # LO QUE RESOLVIO LA MEMORIA es su propia consulta: los ids ya estan
+        # certificados, y dos referencias del mismo modelo no se funden.
+        clave = (rubro, _norm(p.get("producto")), tuple(p.get("_ids") or ()))
         g = grupos.setdefault(clave, {"pide": 0, "envia": 0, "partes": []})
         g["partes"].append(p)
         n = int(p.get("cantidad") or 0)
@@ -265,12 +327,22 @@ def compilar(ficha: dict, mensaje: str, tab: dict) -> dict:
             g["envia"] += n
         else:
             g["pide"] = max(g["pide"], n)
-    for (rubro, _prod), g in grupos.items():
+    for (rubro, _prod, _ids), g in grupos.items():
         ps = g["partes"]
         producto = next((p.get("producto") for p in ps if p.get("producto")),
                         "")
         c = {"busco": "uno" if producto else "varios", "orden": "ninguno",
              "condiciones": []}
+        ids = next((p["_ids"] for p in ps if p.get("_ids")), None)
+        if ids:
+            c["ids"] = list(ids)
+            c["busco"] = "uno" if len(ids) <= 2 else "varios"
+        for p in ps:
+            for x in p.get("_heredadas") or []:
+                if x not in c["condiciones"]:
+                    c["condiciones"].append(dict(x))
+            if p.get("_orden") and c["orden"] == "ninguno":
+                c["orden"] = p["_orden"]
         if rubro in catalogo:
             c["categoria"] = rubro
         if producto:
@@ -283,8 +355,27 @@ def compilar(ficha: dict, mensaje: str, tab: dict) -> dict:
         cant = max(g["pide"], g["envia"])
         if cant:
             c["cantidad"] = cant
-        for crit in [x for p in ps for x in (p.get("criterios") or [])] + \
-                list(generales):
+        # SOBRE UN PRODUCTO YA RESUELTO, UNA CARACTERISTICA ES UNA PREGUNTA
+        # Y NO UN FILTRO: "el teclado es inalambrico?" filtrado por
+        # inalambrico vuelve vacio y el bot diria que no hay.
+        if ids and all(p.get("quiere") in ("caracteristica", "compatibilidad",
+                                             "politica", "comprar", "precio")
+                       for p in ps):
+            pedido.setdefault("preguntas_sobre", []).extend(
+                {"ids": list(ids), "concepto": x.get("concepto"),
+                 "valor": x.get("valor")}
+                for p in ps for x in (p.get("criterios") or []))
+            # EL SUPERLATIVO SI ORDENA: "de esos el mas barato" es orden.
+            for p in ps:
+                for x in p.get("criterios") or []:
+                    o = aterrizar(x.get("concepto"), str(x.get("valor")),
+                                  x.get("fuerza"), rubro, p.get("dice"))
+                    if o["orden"] and c["orden"] == "ninguno":
+                        c["orden"] = o["orden"]
+            propios = []
+        else:
+            propios = [x for p in ps for x in (p.get("criterios") or [])]
+        for crit in propios + list(generales):
             if crit.get("concepto") == "compatible_con":
                 pedido["compatibilidad"].append(
                     {"producto": producto or rubro, "con": crit.get("valor")})
