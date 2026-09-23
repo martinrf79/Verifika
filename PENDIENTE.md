@@ -64,6 +64,15 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
+**23-sep: EL CAMINO NUEVO DE LA INTERPRETACION, EN EL BANCO.** El traductor
+llena una ficha contra el tablero, y el compilador y la memoria la resuelven en
+codigo: `banco_pruebas/traductor.py`, `compilador.py` y `memoria.py`. Lo que
+falta, en orden:
+- **ABIERTO** · Charlas nuevas que no se usaron para corregir, contra el sobreajuste.
+- **ABIERTO** · Paso 7: las reglas de repregunta, y que el lead, el cobro o la reserva nunca salgan de la ficha sola.
+- **ABIERTO** · El redactor, con el orden de la lista fijado por el codigo, y pasar todo a `app/`.
+- **ESPERA A MARTIN** · Que modelo traduce, DeepSeek o Gemini, y su costo.
+
 **22-sep, noche: LA INTERPRETACION CON MEMORIA SE MIDE Y QUEDA EN 122 DE 124.**
 Nueva vara de charlas de varios turnos, `banco_pruebas/vara_charlas.json`, con
 su tanda y un taller que le pregunta al modelo a que id apuntaba. La vara de 19
