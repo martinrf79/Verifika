@@ -1,0 +1,32 @@
+{
+  "_que_es": "EL ORO DEL EXPERIMENTO DEL BUSCADOR (23-sep-2026). Congelado ANTES de escribir el buscador. Cada caso es un pedido de los mensajes REALES que Martin mando por WhatsApp el 23-sep, turnos 7afb9d55 a 3e3562e9 y f438c89f. Se mide si el producto correcto aparece entre los primeros cinco, o si los cinco primeros cumplen lo pedido. No se usa para corregir: si se corrige algo, se valida con otra tanda.",
+  "_tipos": {
+    "ids": "pasa si alguno de los ids aparece entre los cinco primeros",
+    "todos": "pasa si TODOS los resultados, hasta cinco, cumplen el predicado",
+    "vacio": "pasa si despues de los filtros no queda ningun resultado"
+  },
+  "_fuera": "Queda afuera la memoria entre turnos -'el tercero' de una lista mostrada antes- y los veredictos de 'no vendemos celulares': son del paso que lee los resultados, no del buscador.",
+  "casos": [
+    {"id": "B01", "mensaje": "cuánto sale el mouse logitech G305? // y ese tiene bluetooth?", "pide": "el G305", "tipo": "ids", "ids": ["MOU0029", "MOU0030"]},
+    {"id": "B02", "mensaje": "pasame 3 routers tp-link // el tercero tiene wifi 6?", "pide": "routers TP-Link", "tipo": "todos", "pred": {"categoria": ["router"], "marca": "tp-link"}},
+    {"id": "B03", "mensaje": "busco una silla gamer // y algo que no pase los 200 mil?", "pide": "silla gamer hasta 200 mil: no hay", "tipo": "vacio"},
+    {"id": "B04", "mensaje": "cuánto sale el redragon? // el teclado blanco", "pide": "teclado Redragon blanco", "tipo": "todos", "pred": {"categoria": ["teclado"], "marca": "redragon", "color": "blanco"}},
+    {"id": "B05", "mensaje": "tenés los sony WH-1000XM5 en negro?", "pide": "el Sony negro", "tipo": "ids", "ids": ["AUR0009"]},
+    {"id": "B06", "mensaje": "el ryzen 5 7600 va en la asus prime B550M-A?", "pide": "el Ryzen 5 7600", "tipo": "ids", "ids": ["CPU0006"]},
+    {"id": "B07", "mensaje": "el ryzen 5 7600 va en la asus prime B550M-A?", "pide": "la B550M-A", "tipo": "ids", "ids": ["MBO0001"]},
+    {"id": "B08", "mensaje": "precio del redragon kumara K552 negro, del G305 blanco, y hacen factura A?", "pide": "el Kumara negro", "tipo": "ids", "ids": ["TEC0015"]},
+    {"id": "B09", "mensaje": "precio del redragon kumara K552 negro, del G305 blanco, y hacen factura A?", "pide": "el G305 blanco", "tipo": "ids", "ids": ["MOU0030"]},
+    {"id": "B10", "mensaje": "cuánto sale la notebook acer nitro 5 core i5? // tienen local para retirar? // hay cuotas sin interés? // y el horario? // bueno, la notebook que te pregunté primero, la quiero reservar", "pide": "la Nitro 5 Core i5", "tipo": "ids", "ids": ["NOT0073", "NOT0074", "NOT0075"]},
+    {"id": "B11", "mensaje": "quiero 2 memorias corsair vengeance LPX 8GB y un SSD samsung de 1TB // cuánto es todo con envío a Tucumán?", "pide": "las Vengeance LPX 8GB", "tipo": "ids", "ids": ["RAM0013", "RAM0014"]},
+    {"id": "B12", "mensaje": "quiero 2 memorias corsair vengeance LPX 8GB y un SSD samsung de 1TB // cuánto es todo con envío a Tucumán?", "pide": "SSD Samsung de 1TB", "tipo": "todos", "pred": {"categoria": ["ssd"], "marca": "samsung", "nombre": "1tb"}},
+    {"id": "B13", "mensaje": "necesito algo para las videollamadas del trabajo, qué me recomendás?", "pide": "algo para videollamadas", "tipo": "todos", "pred": {"categoria": ["webcam", "auriculares", "microfono"]}},
+    {"id": "B14", "mensaje": "ola tenés la placa de bideo de 8 gigas más varata", "pide": "placa de video de 8GB", "tipo": "todos", "pred": {"categoria": ["placa de video"], "spec": ["memoria_video", "8gb"]}},
+    {"id": "B15", "mensaje": "busco auriculares sin cable pero no JBL // ah no, con cable está bien", "pide": "auriculares que no sean JBL", "tipo": "todos", "pred": {"categoria": ["auriculares"], "marca_no": "jbl"}},
+    {"id": "B16", "mensaje": "el G305 lo tenés en rojo?", "pide": "el G305, para decir que colores hay", "tipo": "ids", "ids": ["MOU0029", "MOU0030"]},
+    {"id": "B17", "mensaje": "qué diferencia hay entre el archer C6 y el AX23? // y cuál me conviene para un depto chico? // dale, el otro cuánto salía?", "pide": "el Archer C6", "tipo": "ids", "ids": ["ROU0001", "ROU0002"]},
+    {"id": "B18", "mensaje": "qué diferencia hay entre el archer C6 y el AX23? // y cuál me conviene para un depto chico? // dale, el otro cuánto salía?", "pide": "el Archer AX23", "tipo": "ids", "ids": ["ROU0003", "ROU0004"]},
+    {"id": "B19", "mensaje": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles.", "pide": "auriculares", "tipo": "todos", "pred": {"categoria": ["auriculares"]}},
+    {"id": "B20", "mensaje": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles.", "pide": "memorias RAM", "tipo": "todos", "pred": {"categoria": ["memoria ram"]}},
+    {"id": "B21", "mensaje": "tenés alguna cámara para la compu?", "pide": "webcam; rojo conocido del banco, no vino de WhatsApp", "tipo": "todos", "pred": {"categoria": ["webcam"]}}
+  ]
+}
