@@ -308,7 +308,8 @@
      "quiere": [
       "buscar",
       "precio"
-     ]
+     ],
+     "puede_ser_criterio": true
     },
     {
      "clave": "placa",
@@ -1098,7 +1099,8 @@
      "origen": "tienda",
      "quiere": [
       "envio"
-     ]
+     ],
+     "puede_ser_criterio": true
     }
    ],
    "criterios": [
@@ -1120,7 +1122,8 @@
       "buscar",
       "precio",
       "comprar"
-     ]
+     ],
+     "puede_ser_criterio": true
     }
    ],
    "afirma": [
@@ -1168,7 +1171,8 @@
      ],
      "quiere": [
       "buscar"
-     ]
+     ],
+     "puede_ser_criterio": true
     }
    ]
   },
@@ -1349,5 +1353,6 @@
     }
    ]
   }
- ]
+ ],
+ "_forma_v3": "23-sep-2026. La vara se adapta a la forma v3 y NO cambia de requisito: un destino atado a la parte de su producto cuenta como el destino, el reparto en su casilla cuenta como la parte de pago, y un tope o un plazo marcado `puede_ser_criterio` puede venir como criterio en vez de parte. Lo que se exige que el modelo entienda es lo mismo."
 }

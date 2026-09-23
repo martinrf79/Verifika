@@ -222,6 +222,18 @@ def puntuar(m: dict, ficha: dict, tab: dict) -> dict:
                 ficha.get("reparto"):
             cand = [{"origen": "tienda", "quiere": "pago",
                      "rubro": e.get("rubro")}]
+        # UN TOPE O UN PLAZO PUEDE SER CRITERIO Y NO PARTE (forma v3): "tengo
+        # 200 mil" es un tope de precio del pedido entero, y asi lo anota. Si
+        # la vara lo marca como `puede_ser_criterio`, encontrarlo en un valor
+        # de criterio cuenta como la parte, con sus controles.
+        if not cand and e.get("puede_ser_criterio"):
+            todos = [c for p in partes for c in (p.get("criterios") or [])] \
+                + list(ficha.get("criterios_generales") or [])
+            if any(clave in _norm(str((c or {}).get("valor")))
+                   for c in todos if isinstance(c, dict)):
+                cand = [{"origen": "tienda", "quiere": (e.get("quiere")
+                                                        or ["buscar"])[0],
+                         "rubro": e.get("rubro") or "ninguno"}]
         de += 1
         if not cand:
             # UNA PARTE QUE FALTA FALLA TAMBIEN SUS CONTROLES. Si no, faltar
@@ -232,8 +244,16 @@ def puntuar(m: dict, ficha: dict, tab: dict) -> dict:
             fallas.append(f"falta la parte '{e['clave']}'")
             continue
         ok += 1
+        # UN DESTINO ATADO A SU PRODUCTO NO TIENE QUE SER UNA PARTE DE ENVIO:
+        # "2 notebooks a La Plata" es una parte de notebook con destino.
+        por_destino = [p for p in cand
+                       if clave in _norm(str(p.get("destino") or ""))]
         for campo in ("origen", "quiere", "rubro"):
             if campo not in e:
+                continue
+            if por_destino and campo in ("quiere", "rubro"):
+                de += 1
+                ok += 1
                 continue
             de += 1
             if any(_acepta(p.get(campo), e[campo]) for p in cand):
