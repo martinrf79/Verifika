@@ -83,6 +83,15 @@ UNA PARTE POR RUBRO Y POR DESTINO: "2 notebooks y 1 microfono" son dos partes, y
 criterios_generales: lo que vale para TODO el pedido y no para un rubro solo —"lo menos chino posible", "acorde a la crisis", "el precio no importa"—, con la misma forma que criterios.
 reparto: si reparte el pago —"70 transferencia 30 mercado pago", "mitad y mitad"—, cada medio con su porcentaje; si no, vacio.
 """)
+    # v4: LAS TRES FRONTERAS DEFINIDAS CON EJEMPLOS. Salen de los rojos de las
+    # corridas del 23-sep: tienda o cliente en los aparatos del cliente, la
+    # fuerza de "lo menos chino posible", y envio o postventa.
+    v4 = ("" if version != "v4" else """
+FRONTERAS:
+- origen cliente es SOLO lo que depende del aparato o la situacion del cliente y la tienda no puede saber ("¿mi fuente de 500w aguanta?"). Si esa parte termina en elegir o mostrar productos de la tienda ("¿que notebook le compro?", "¿que RAM le sirve de las que tienen?"), es tienda.
+- fuerza: debe = obligatorio ("si o si con hdmi"); prefiere = lo quiere sin exigirlo ("preferentemente samsung", "lo mas barato"); evita = lo que no quiere o quiere lo menos posible ("nada chino", "lo menos chino posible", "cualquiera menos redragon").
+- quiere postventa: algo de un pedido ya hecho o un producto ya comprado: despacho, seguimiento, reclamo, garantia de lo que ya compro. Si todavia no compro, es envio o politica.
+""")
     regla_afirma = ("" if version == "v1" else
                     " Si le atribuye una caracteristica a un producto con "
                     "NOMBRE —'el K120 inalambrico'— eso va aca y NO en "
@@ -107,7 +116,7 @@ Por cada parte:
 {v2}
 afirma: lo que el cliente da por cierto, sobre la tienda, un producto o sus propios aparatos. No lo corrijas: anotalo.{regla_afirma}
 reescrita: el mensaje entero bien escrito, en una linea.
-{v3}
+{v3}{v4}
 RUBROS: {", ".join(tab["rubros"])}.
 CONCEPTOS: {conceptos}."""
 
@@ -328,7 +337,7 @@ def main() -> int:
     ap.add_argument("--solo", default="")
     ap.add_argument("--json", default="")
     ap.add_argument("--hilos", type=int, default=6)
-    ap.add_argument("--tablero", default="v2", choices=("v1", "v2", "v3"))
+    ap.add_argument("--tablero", default="v2", choices=("v1", "v2", "v3", "v4"))
     args = ap.parse_args()
     clon_produccion.preparar_entorno()
     from banco_pruebas import sim_firestore
