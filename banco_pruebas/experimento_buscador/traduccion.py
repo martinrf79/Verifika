@@ -287,6 +287,8 @@ def _casilla(k: dict, partes: list, mostrados: list):
     if tipo in ("referencia", "responde_sobre"):
         if "modelo" in k:
             return any(_tiene(p, [k["modelo"]]) for p in partes)
+        if "posicion" not in k:
+            return None  # "de esos, el mas barato": es orden, no ficha
         lista = mostrados[k["de_turno"] - 1] if len(
             mostrados) >= k["de_turno"] else []
         if not lista or k["posicion"] > len(lista):
