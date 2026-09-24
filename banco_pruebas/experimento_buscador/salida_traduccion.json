@@ -1,0 +1,4505 @@
+{
+ "res": {
+  "v6_A": [
+   {
+    "T01": false,
+    "T02": false,
+    "T03": true,
+    "T04": false,
+    "T05": false,
+    "T06": true,
+    "T07": true,
+    "T08": true,
+    "T09": false,
+    "T10": true,
+    "T11": true,
+    "T12": false,
+    "T13": true,
+    "T14": true,
+    "T15": true,
+    "T16": true
+   },
+   {
+    "T01": false,
+    "T02": false,
+    "T03": true,
+    "T04": false,
+    "T05": false,
+    "T06": true,
+    "T07": true,
+    "T08": true,
+    "T09": false,
+    "T10": true,
+    "T11": true,
+    "T12": false,
+    "T13": true,
+    "T14": true,
+    "T15": true,
+    "T16": true
+   },
+   {
+    "T01": false,
+    "T02": false,
+    "T03": true,
+    "T04": false,
+    "T05": false,
+    "T06": true,
+    "T07": true,
+    "T08": true,
+    "T09": false,
+    "T10": true,
+    "T11": true,
+    "T12": false,
+    "T13": true,
+    "T14": false,
+    "T15": true,
+    "T16": true
+   }
+  ],
+  "v7_A": [
+   {
+    "T01": true,
+    "T02": true,
+    "T03": true,
+    "T04": true,
+    "T05": true,
+    "T06": true,
+    "T07": true,
+    "T08": true,
+    "T09": true,
+    "T10": true,
+    "T11": true,
+    "T12": true,
+    "T13": false,
+    "T14": true,
+    "T15": true,
+    "T16": true
+   },
+   {
+    "T01": true,
+    "T02": true,
+    "T03": true,
+    "T04": true,
+    "T05": true,
+    "T06": true,
+    "T07": true,
+    "T08": true,
+    "T09": true,
+    "T10": true,
+    "T11": true,
+    "T12": true,
+    "T13": false,
+    "T14": true,
+    "T15": true,
+    "T16": true
+   },
+   {
+    "T01": true,
+    "T02": true,
+    "T03": true,
+    "T04": true,
+    "T05": true,
+    "T06": true,
+    "T07": true,
+    "T08": true,
+    "T09": true,
+    "T10": true,
+    "T11": true,
+    "T12": true,
+    "T13": false,
+    "T14": true,
+    "T15": true,
+    "T16": true
+   }
+  ],
+  "v7_B": [
+   {
+    "B01": true,
+    "B02": true,
+    "B03": true,
+    "B04": false,
+    "B05": true,
+    "B06": true,
+    "B07": false,
+    "B08": true,
+    "B09": true,
+    "B10": true,
+    "B11": true,
+    "B12": true,
+    "B13": true,
+    "B14": true,
+    "B15": true,
+    "B16": true,
+    "B17": true,
+    "B18": true,
+    "B19": true,
+    "B20": true,
+    "B21": true
+   },
+   {
+    "B01": true,
+    "B02": true,
+    "B03": true,
+    "B04": false,
+    "B05": true,
+    "B06": true,
+    "B07": false,
+    "B08": true,
+    "B09": true,
+    "B10": true,
+    "B11": true,
+    "B12": true,
+    "B13": true,
+    "B14": true,
+    "B15": true,
+    "B16": true,
+    "B17": true,
+    "B18": true,
+    "B19": true,
+    "B20": true,
+    "B21": true
+   },
+   {
+    "B01": true,
+    "B02": true,
+    "B03": true,
+    "B04": false,
+    "B05": true,
+    "B06": true,
+    "B07": false,
+    "B08": true,
+    "B09": true,
+    "B10": true,
+    "B11": true,
+    "B12": true,
+    "B13": true,
+    "B14": true,
+    "B15": true,
+    "B16": true,
+    "B17": true,
+    "B18": true,
+    "B19": true,
+    "B20": true,
+    "B21": true
+   }
+  ],
+  "v7_C": [
+   {
+    "CH1.2.'ese' es el K120": true,
+    "CH1.2.la respuesta habla del K120": true,
+    "CH2.1.el rubro": true,
+    "CH2.2.'el segundo' es el segundo que mostro": true,
+    "CH2.2.la respuesta habla del segundo": true,
+    "CH3.1.el rubro": true,
+    "CH3.2.arrastra el rubro": true,
+    "CH3.2.el color nuevo": true,
+    "CH4.2.cotiza el destino": true,
+    "CH5.2.apunta al K120": true,
+    "CH5.2.apunta al G203": true,
+    "CH6.1.el rubro": true,
+    "CH6.2.arrastra el rubro": true,
+    "CH6.2.excluye la marca": true,
+    "CH7.1.repregunta en vez de elegir": false,
+    "CH7.2.el rubro que contesto": true,
+    "CH7.2.arrastra la marca": true,
+    "CH8.2.el destino": true,
+    "CH8.4.apunta al K120": true,
+    "CH8.4.la respuesta habla del K120": true,
+    "CH9.1.el rubro": true,
+    "CH9.2.el rubro corregido": true,
+    "CH10.1.el rubro": true,
+    "CH10.2.ordena por precio": true,
+    "CH11.2.apunta al M170": true,
+    "CH11.2.la cantidad": true,
+    "CH12.2.busca el G203": true,
+    "CH12.2.la respuesta habla del G203": true,
+    "CH12.2.el color nuevo": true,
+    "CH13.1.el rubro": true,
+    "CH13.2.el primero": true,
+    "CH13.2.el tercero": true,
+    "CH13.2.la cantidad": true,
+    "CH14.2.apunta al K120": true,
+    "CH14.3.'el otro' es el G203": true,
+    "CH14.3.la respuesta habla del G203": true,
+    "CH15.2.'lo' es el G203": true,
+    "CH15.2.el color pedido": true,
+    "CH15.2.la respuesta habla del G203": true,
+    "CH16.1.el rubro": true,
+    "CH16.2.trae el G203": true,
+    "CH16.2.trae el G502": true,
+    "CH17.1.el destino": true,
+    "CH17.2.el producto": true,
+    "CH17.2.arrastra el destino": true,
+    "CH18.1.entiende K120": true,
+    "CH18.1.la respuesta habla del K120": true,
+    "CH19.3.'lo' es el G502": true,
+    "CH20.1.la cantidad": true,
+    "CH20.2.apunta al M170": true,
+    "CH20.2.la cantidad nueva": true,
+    "CH21.1.excluye": false,
+    "CH21.2.arrastra el rubro": true,
+    "CH21.2.arrastra la exclusion": true,
+    "CH21.2.ordena por precio": false,
+    "CH22.2.apunta al K120": true,
+    "CH22.2.la respuesta habla del K120": true
+   },
+   {
+    "CH1.2.'ese' es el K120": true,
+    "CH1.2.la respuesta habla del K120": true,
+    "CH2.1.el rubro": true,
+    "CH2.2.'el segundo' es el segundo que mostro": true,
+    "CH2.2.la respuesta habla del segundo": true,
+    "CH3.1.el rubro": true,
+    "CH3.2.arrastra el rubro": true,
+    "CH3.2.el color nuevo": true,
+    "CH4.2.cotiza el destino": true,
+    "CH5.2.apunta al K120": true,
+    "CH5.2.apunta al G203": true,
+    "CH6.1.el rubro": true,
+    "CH6.2.arrastra el rubro": true,
+    "CH6.2.excluye la marca": true,
+    "CH7.1.repregunta en vez de elegir": true,
+    "CH7.2.el rubro que contesto": true,
+    "CH7.2.arrastra la marca": true,
+    "CH8.2.el destino": true,
+    "CH8.4.apunta al K120": true,
+    "CH8.4.la respuesta habla del K120": true,
+    "CH9.1.el rubro": true,
+    "CH9.2.el rubro corregido": true,
+    "CH10.1.el rubro": true,
+    "CH10.2.ordena por precio": true,
+    "CH11.2.apunta al M170": true,
+    "CH11.2.la cantidad": true,
+    "CH12.2.busca el G203": true,
+    "CH12.2.la respuesta habla del G203": true,
+    "CH12.2.el color nuevo": true,
+    "CH13.1.el rubro": true,
+    "CH13.2.el primero": true,
+    "CH13.2.el tercero": true,
+    "CH13.2.la cantidad": true,
+    "CH14.2.apunta al K120": true,
+    "CH14.3.'el otro' es el G203": true,
+    "CH14.3.la respuesta habla del G203": true,
+    "CH15.2.'lo' es el G203": true,
+    "CH15.2.el color pedido": true,
+    "CH15.2.la respuesta habla del G203": true,
+    "CH16.1.el rubro": true,
+    "CH16.2.trae el G203": true,
+    "CH16.2.trae el G502": true,
+    "CH17.1.el destino": true,
+    "CH17.2.el producto": true,
+    "CH17.2.arrastra el destino": true,
+    "CH18.1.entiende K120": true,
+    "CH18.1.la respuesta habla del K120": true,
+    "CH19.3.'lo' es el G502": true,
+    "CH20.1.la cantidad": true,
+    "CH20.2.apunta al M170": true,
+    "CH20.2.la cantidad nueva": true,
+    "CH21.1.excluye": false,
+    "CH21.2.arrastra el rubro": true,
+    "CH21.2.arrastra la exclusion": true,
+    "CH21.2.ordena por precio": false,
+    "CH22.2.apunta al K120": true,
+    "CH22.2.la respuesta habla del K120": true
+   },
+   {
+    "CH1.2.'ese' es el K120": true,
+    "CH1.2.la respuesta habla del K120": true,
+    "CH2.1.el rubro": true,
+    "CH2.2.'el segundo' es el segundo que mostro": true,
+    "CH2.2.la respuesta habla del segundo": true,
+    "CH3.1.el rubro": true,
+    "CH3.2.arrastra el rubro": true,
+    "CH3.2.el color nuevo": true,
+    "CH4.2.cotiza el destino": true,
+    "CH5.2.apunta al K120": true,
+    "CH5.2.apunta al G203": true,
+    "CH6.1.el rubro": true,
+    "CH6.2.arrastra el rubro": true,
+    "CH6.2.excluye la marca": true,
+    "CH7.1.repregunta en vez de elegir": false,
+    "CH7.2.el rubro que contesto": true,
+    "CH7.2.arrastra la marca": true,
+    "CH8.2.el destino": true,
+    "CH8.4.apunta al K120": true,
+    "CH8.4.la respuesta habla del K120": true,
+    "CH9.1.el rubro": true,
+    "CH9.2.el rubro corregido": true,
+    "CH10.1.el rubro": true,
+    "CH10.2.ordena por precio": true,
+    "CH11.2.apunta al M170": true,
+    "CH11.2.la cantidad": true,
+    "CH12.2.busca el G203": true,
+    "CH12.2.la respuesta habla del G203": true,
+    "CH12.2.el color nuevo": true,
+    "CH13.1.el rubro": true,
+    "CH13.2.el primero": true,
+    "CH13.2.el tercero": true,
+    "CH13.2.la cantidad": true,
+    "CH14.2.apunta al K120": true,
+    "CH14.3.'el otro' es el G203": true,
+    "CH14.3.la respuesta habla del G203": true,
+    "CH15.2.'lo' es el G203": true,
+    "CH15.2.el color pedido": true,
+    "CH15.2.la respuesta habla del G203": true,
+    "CH16.1.el rubro": true,
+    "CH16.2.trae el G203": true,
+    "CH16.2.trae el G502": true,
+    "CH17.1.el destino": true,
+    "CH17.2.el producto": true,
+    "CH17.2.arrastra el destino": true,
+    "CH18.1.entiende K120": true,
+    "CH18.1.la respuesta habla del K120": true,
+    "CH19.3.'lo' es el G502": true,
+    "CH20.1.la cantidad": true,
+    "CH20.2.apunta al M170": true,
+    "CH20.2.la cantidad nueva": true,
+    "CH21.1.excluye": false,
+    "CH21.2.arrastra el rubro": true,
+    "CH21.2.arrastra la exclusion": true,
+    "CH21.2.ordena por precio": false,
+    "CH22.2.apunta al K120": true,
+    "CH22.2.la respuesta habla del K120": true
+   }
+  ]
+ },
+ "detalle": [
+  {
+   "v6": {
+    "cuánto sale el mouse logitech G305? // y ese tiene bluetooth?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Cuánto sale el mouse Logitech G305 y si ese modelo tiene Bluetooth.",
+     "partes": [
+      {
+       "dice": "cuánto sale el mouse logitech G305?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "cuanto",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y ese tiene bluetooth?",
+       "quiere": "caracteristica",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "bluetooth",
+         "valor": "si",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "pasame 3 routers tp-link // el tercero tiene wifi 6?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Pasame 3 routers TP-Link y decime si el tercero tiene Wi-Fi 6.",
+     "partes": [
+      {
+       "dice": "pasame 3 routers tp-link",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "tp-link",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "tp-link",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 3,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "el tercero tiene wifi 6?",
+       "quiere": "caracteristica",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "wifi",
+         "valor": "6",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "posicion",
+       "posiciones": [
+        3
+       ],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "tp-link",
+       "dice": "el cliente busca 3 routers de esta marca"
+      }
+     ]
+    },
+    "busco una silla gamer // y algo que no pase los 200 mil?": {
+     "criterios_generales": [
+      {
+       "concepto": "precio_ars",
+       "valor": "200000",
+       "fuerza": "debe"
+      }
+     ],
+     "reparto": [],
+     "reescrita": "Busco una silla gamer que no supere los 200 mil pesos.",
+     "partes": [
+      {
+       "dice": "busco una silla gamer",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "silla gamer",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y algo que no pase los 200 mil?",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "silla gamer",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "200000",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "cuánto sale el redragon? // el teclado blanco": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Cuánto sale el teclado Redragon blanco?",
+     "partes": [
+      {
+       "dice": "cuánto sale el redragon?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "teclado",
+       "producto": "redragon",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "el teclado blanco",
+       "quiere": "caracteristica",
+       "origen": "tienda",
+       "rubro": "teclado",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "blanco",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "teclado",
+       "dice": "es blanco"
+      }
+     ]
+    },
+    "tenés los sony WH-1000XM5 en negro?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Tenés los Sony WH-1000XM5 en color negro?",
+     "partes": [
+      {
+       "dice": "tenés los sony WH-1000XM5 en negro?",
+       "quiere": "stock",
+       "origen": "tienda",
+       "rubro": "auriculares",
+       "producto": "Sony WH-1000XM5",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "negro",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "el ryzen 5 7600 va en la asus prime B550M-A?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "¿El procesador Ryzen 5 7600 es compatible con la motherboard Asus Prime B550M-A?",
+     "partes": [
+      {
+       "dice": "el ryzen 5 7600 va en la asus prime B550M-A?",
+       "quiere": "compatibilidad",
+       "origen": "tienda",
+       "rubro": "procesador",
+       "producto": "Ryzen 5 7600",
+       "criterios": [
+        {
+         "concepto": "compatible_con",
+         "valor": "Asus Prime B550M-A",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "Ryzen 5 7600",
+       "dice": "el ryzen 5 7600"
+      },
+      {
+       "sobre": "Asus Prime B550M-A",
+       "dice": "la asus prime B550M-A"
+      }
+     ]
+    },
+    "precio del redragon kumara K552 negro, del G305 blanco, y hacen factura A?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Precio del teclado Redragon Kumara K552 negro, precio del mouse G305 blanco y si hacen factura A.",
+     "partes": [
+      {
+       "dice": "precio del redragon kumara K552 negro",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "teclado",
+       "producto": "redragon kumara K552",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "negro",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "del G305 blanco",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "G305",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "blanco",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y hacen factura A?",
+       "quiere": "politica",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "cuánto sale la notebook acer nitro 5 core i5? // tienen local para retirar? // hay cuotas sin interés? // y el horario? // bueno, la notebook que te pregunté primero, la quiero reservar": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Cuánto sale la notebook Acer Nitro 5 Core i5, tienen local para retirar, hay cuotas sin interés, cuál es el horario y quiero reservar la notebook que pregunté primero.",
+     "partes": [
+      {
+       "dice": "cuánto sale la notebook acer nitro 5 core i5?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "notebook",
+       "producto": "acer nitro 5 core i5",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "tienen local para retirar?",
+       "quiere": "envio",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "hay cuotas sin interés?",
+       "quiere": "pago",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y el horario?",
+       "quiere": "charla",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "bueno, la notebook que te pregunté primero, la quiero reservar",
+       "quiere": "comprar",
+       "origen": "tienda",
+       "rubro": "notebook",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "quiero 2 memorias corsair vengeance LPX 8GB y un SSD samsung de 1TB // cuánto es todo con envío a Tucumán?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Quiero comprar 2 memorias Corsair Vengeance LPX 8GB y un SSD Samsung de 1TB. ¿Cuál es el precio total con envío a Tucumán?",
+     "partes": [
+      {
+       "dice": "quiero 2 memorias corsair vengeance LPX 8GB",
+       "quiere": "comprar",
+       "origen": "tienda",
+       "rubro": "memoria ram",
+       "producto": "corsair vengeance LPX 8GB",
+       "criterios": [],
+       "cantidad": 2,
+       "destino": "Tucumán",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y un SSD samsung de 1TB",
+       "quiere": "comprar",
+       "origen": "tienda",
+       "rubro": "ssd",
+       "producto": "SSD samsung 1TB",
+       "criterios": [],
+       "cantidad": 1,
+       "destino": "Tucumán",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "cuánto es todo con envío a Tucumán?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "Tucumán",
+       "refiere": "esos",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "ola tenés la placa de bideo de 8 gigas más varata": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Hola, ¿tenés la placa de video de 8 gigas más barata?",
+     "partes": [
+      {
+       "dice": "tenés la placa de bideo de 8 gigas más varata",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "placa de video",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "memoria_video",
+         "valor": "8 gigas",
+         "fuerza": "debe"
+        },
+        {
+         "concepto": "precio_ars",
+         "valor": "más barata",
+         "fuerza": "prefiere"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "busco auriculares sin cable pero no JBL // ah no, con cable está bien": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Busco auriculares con cable y que no sean de la marca JBL.",
+     "partes": [
+      {
+       "dice": "busco auriculares sin cable pero no JBL // ah no, con cable está bien",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "auriculares",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "conexion",
+         "valor": "con cable",
+         "fuerza": "debe"
+        },
+        {
+         "concepto": "marca",
+         "valor": "JBL",
+         "fuerza": "evita"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "el G305 lo tenés en rojo?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "¿Tienen el mouse G305 en color rojo?",
+     "partes": [
+      {
+       "dice": "el G305 lo tenés en rojo?",
+       "quiere": "stock",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "G305",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "rojo",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "G305",
+       "dice": "el G305 lo tenés"
+      }
+     ]
+    },
+    "tenés alguna cámara para la compu?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Tenés alguna cámara para la computadora?",
+     "partes": [
+      {
+       "dice": "tenés alguna cámara para la compu?",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "webcam",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": "la compu"
+      }
+     ],
+     "afirma": []
+    },
+    "necesito algo para las videollamadas del trabajo, qué me recomendás?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Necesito algo para las videollamadas del trabajo, ¿qué me recomendás?",
+     "partes": [
+      {
+       "dice": "necesito algo para las videollamadas del trabajo, qué me recomendás?",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "webcam",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": "videollamadas del trabajo"
+      }
+     ],
+     "afirma": []
+    },
+    "qué diferencia hay entre el archer C6 y el AX23? // y cuál me conviene para un depto chico? // dale, el otro cuánto salía?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Qué diferencia hay entre el Archer C6 y el AX23? Cuál me conviene para un depto chico? Cuánto salía el otro?",
+     "partes": [
+      {
+       "dice": "qué diferencia hay entre el archer C6 y el AX23?",
+       "quiere": "comparar",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "Archer C6 y AX23",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y cuál me conviene para un depto chico?",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "otro",
+         "valor": "depto chico",
+         "fuerza": "prefiere"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": "depto chico"
+      },
+      {
+       "dice": "dale, el otro cuánto salía?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "el_otro",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles.": {
+     "criterios_generales": [
+      {
+       "concepto": "pais_fabricacion",
+       "valor": "no chino",
+       "fuerza": "evita"
+      },
+      {
+       "concepto": "precio_ars",
+       "valor": "no importante",
+       "fuerza": "prefiere"
+      }
+     ],
+     "reparto": [],
+     "reescrita": "Deme precio de dos auriculares, dos mouse y dos memorias RAM. El precio no es tan importante, pero necesito que tengan la menor cantidad de componentes chinos posibles.",
+     "partes": [
+      {
+       "dice": "dos auriculares",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "auriculares",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 2,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "dos mouse",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 2,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "dos memorias",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "memoria ram",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 2,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    }
+   },
+   "v7": {
+    "cuánto sale el mouse logitech G305? // y ese tiene bluetooth?": {
+     "reescrita": "Cuánto sale el mouse Logitech G305 y si tiene Bluetooth.",
+     "partes": [
+      {
+       "dice": "cuánto sale el mouse logitech G305?",
+       "quiere": "precio",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "busqueda": "mouse Logitech G305",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "consultar",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y ese tiene bluetooth?",
+       "quiere": "caracteristica",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "busqueda": "mouse Logitech G305 Bluetooth",
+       "criterios": [
+        {
+         "concepto": "bluetooth",
+         "valor": "si",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "pasame 3 routers tp-link // el tercero tiene wifi 6?": {
+     "reescrita": "Pasame 3 routers TP-Link y decime si el tercero tiene Wi-Fi 6.",
+     "partes": [
+      {
+       "dice": "pasame 3 routers tp-link",
+       "quiere": "buscar",
+       "rubro": "router",
+       "producto": "router TP-Link",
+       "busqueda": "router TP-Link",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "TP-Link",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 3,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "el tercero tiene wifi 6?",
+       "quiere": "caracteristica",
+       "rubro": "router",
+       "producto": "router TP-Link",
+       "busqueda": "router TP-Link wifi 6",
+       "criterios": [
+        {
+         "concepto": "wifi",
+         "valor": "6",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "busco una silla gamer // y algo que no pase los 200 mil?": {
+     "reescrita": "Busco una silla gamer que no supere los 200.000 pesos.",
+     "partes": [
+      {
+       "dice": "busco una silla gamer",
+       "quiere": "buscar",
+       "rubro": "silla gamer",
+       "producto": "",
+       "busqueda": "silla gamer",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y algo que no pase los 200 mil?",
+       "quiere": "buscar",
+       "rubro": "silla gamer",
+       "producto": "silla gamer",
+       "busqueda": "silla gamer precio hasta 200000",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "200000",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "cuánto sale el redragon? // el teclado blanco": {
+     "reescrita": "Cuánto sale el teclado Redragon blanco?",
+     "partes": [
+      {
+       "dice": "cuánto sale el redragon? // el teclado blanco",
+       "quiere": "precio",
+       "rubro": "teclado",
+       "producto": "teclado Redragon",
+       "busqueda": "teclado Redragon color blanco",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Redragon",
+         "fuerza": "quiere"
+        },
+        {
+         "concepto": "color",
+         "valor": "blanco",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "tenés los sony WH-1000XM5 en negro?": {
+     "reescrita": "Tenés los auriculares Sony WH-1000XM5 en color negro?",
+     "partes": [
+      {
+       "dice": "tenés los sony WH-1000XM5 en negro?",
+       "quiere": "stock",
+       "rubro": "auriculares",
+       "producto": "Sony WH-1000XM5",
+       "busqueda": "auriculares Sony WH-1000XM5 color negro",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "negro",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "el ryzen 5 7600 va en la asus prime B550M-A?": {
+     "reescrita": "El procesador AMD Ryzen 5 7600 es compatible con la placa madre Asus Prime B550M-A?",
+     "partes": [
+      {
+       "dice": "el ryzen 5 7600 va en la asus prime B550M-A?",
+       "quiere": "compatibilidad",
+       "rubro": "procesador",
+       "producto": "AMD Ryzen 5 7600",
+       "busqueda": "procesador AMD Ryzen 5 7600",
+       "criterios": [
+        {
+         "concepto": "compatible_con",
+         "valor": "Asus Prime B550M-A",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "precio del redragon kumara K552 negro, del G305 blanco, y hacen factura A?": {
+     "reescrita": "Precio del teclado Redragon Kumara K552 negro, precio del mouse Logitech G305 blanco y consulta sobre emisión de factura A.",
+     "partes": [
+      {
+       "dice": "precio del redragon kumara K552 negro",
+       "quiere": "precio",
+       "rubro": "teclado",
+       "producto": "Redragon Kumara K552",
+       "busqueda": "teclado Redragon Kumara K552 color negro",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "negro",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "del G305 blanco",
+       "quiere": "precio",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "busqueda": "mouse Logitech G305 color blanco",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "blanco",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y hacen factura A?",
+       "quiere": "pago",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "cuánto sale la notebook acer nitro 5 core i5? // tienen local para retirar? // hay cuotas sin interés? // y el horario? // bueno, la notebook que te pregunté primero, la quiero reservar": {
+     "reescrita": "Cuánto sale la notebook Acer Nitro 5 con procesador Core i5, tienen local para retirar, hay cuotas sin interés, cuál es el horario y quiero reservar la notebook Acer Nitro 5 Core i5.",
+     "partes": [
+      {
+       "dice": "cuánto sale la notebook acer nitro 5 core i5?",
+       "quiere": "precio",
+       "rubro": "notebook",
+       "producto": "Acer Nitro 5 Core i5",
+       "busqueda": "notebook Acer Nitro 5 procesador Core i5",
+       "criterios": [
+        {
+         "concepto": "procesador",
+         "valor": "Core i5",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "tienen local para retirar?",
+       "quiere": "envio",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "hay cuotas sin interés?",
+       "quiere": "pago",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y el horario?",
+       "quiere": "charla",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "bueno, la notebook que te pregunté primero, la quiero reservar",
+       "quiere": "comprar",
+       "rubro": "notebook",
+       "producto": "Acer Nitro 5 Core i5",
+       "busqueda": "notebook Acer Nitro 5 procesador Core i5",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 1,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "quiero 2 memorias corsair vengeance LPX 8GB y un SSD samsung de 1TB // cuánto es todo con envío a Tucumán?": {
+     "reescrita": "Quiero comprar 2 memorias RAM Corsair Vengeance LPX 8GB, un SSD Samsung 1TB y consultar el precio total con envío a Tucumán.",
+     "partes": [
+      {
+       "dice": "quiero 2 memorias corsair vengeance LPX 8GB",
+       "quiere": "comprar",
+       "rubro": "memoria ram",
+       "producto": "Corsair Vengeance LPX 8GB",
+       "busqueda": "memoria ram Corsair Vengeance LPX 8GB",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Corsair",
+         "fuerza": "quiere"
+        },
+        {
+         "concepto": "ram",
+         "valor": "8 GB",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 2,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y un SSD samsung de 1TB",
+       "quiere": "comprar",
+       "rubro": "ssd",
+       "producto": "SSD Samsung 1TB",
+       "busqueda": "SSD Samsung 1TB",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Samsung",
+         "fuerza": "quiere"
+        },
+        {
+         "concepto": "almacenamiento",
+         "valor": "1 TB",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 1,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "cuánto es todo con envío a Tucumán?",
+       "quiere": "envio",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "Tucumán",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "ola tenés la placa de bideo de 8 gigas más varata": {
+     "reescrita": "Hola, ¿tenés la placa de video de 8 GB más barata?",
+     "partes": [
+      {
+       "dice": "ola tenés la placa de bideo de 8 gigas más varata",
+       "quiere": "buscar",
+       "rubro": "placa de video",
+       "producto": "placa de video 8 GB",
+       "busqueda": "placa de video 8 GB",
+       "criterios": [
+        {
+         "concepto": "ram",
+         "valor": "8 GB",
+         "fuerza": "quiere"
+        },
+        {
+         "concepto": "precio_ars",
+         "valor": "más barato",
+         "fuerza": "prefiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "busco auriculares sin cable pero no JBL // ah no, con cable está bien": {
+     "reescrita": "Busco auriculares con cable.",
+     "partes": [
+      {
+       "dice": "busco auriculares sin cable pero no JBL // ah no, con cable está bien",
+       "quiere": "buscar",
+       "rubro": "auriculares",
+       "producto": "auriculares",
+       "busqueda": "auriculares con cable",
+       "criterios": [
+        {
+         "concepto": "conexion",
+         "valor": "con cable",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "el G305 lo tenés en rojo?": {
+     "reescrita": "El mouse Logitech G305 lo tenés en color rojo?",
+     "partes": [
+      {
+       "dice": "el G305 lo tenés en rojo?",
+       "quiere": "stock",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "busqueda": "mouse Logitech G305 color rojo",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "rojo",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "tenés alguna cámara para la compu?": {
+     "reescrita": "tenés alguna cámara para la compu?",
+     "partes": [
+      {
+       "dice": "tenés alguna cámara para la compu?",
+       "quiere": "buscar",
+       "rubro": "webcam",
+       "producto": "webcam",
+       "busqueda": "webcam para computadora",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "necesito algo para las videollamadas del trabajo, qué me recomendás?": {
+     "reescrita": "Necesito una webcam para videollamadas de trabajo, ¿qué me recomendás?",
+     "partes": [
+      {
+       "dice": "necesito algo para las videollamadas del trabajo, qué me recomendás?",
+       "quiere": "buscar",
+       "rubro": "webcam",
+       "producto": "webcam",
+       "busqueda": "webcam para videollamadas",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "qué diferencia hay entre el archer C6 y el AX23? // y cuál me conviene para un depto chico? // dale, el otro cuánto salía?": {
+     "reescrita": "Qué diferencia hay entre el router TP-Link Archer C6 y el router TP-Link AX23, cuál me conviene para un departamento chico y cuál es el precio del Archer C6?",
+     "partes": [
+      {
+       "dice": "qué diferencia hay entre el archer C6 y el AX23?",
+       "quiere": "comparar",
+       "rubro": "router",
+       "producto": "TP-Link Archer C6 y TP-Link AX23",
+       "busqueda": "router TP-Link Archer C6 y router TP-Link AX23",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y cuál me conviene para un depto chico?",
+       "quiere": "buscar",
+       "rubro": "router",
+       "producto": "TP-Link Archer C6 o TP-Link AX23",
+       "busqueda": "router para departamento pequeño",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "dale, el otro cuánto salía?",
+       "quiere": "precio",
+       "rubro": "router",
+       "producto": "TP-Link Archer C6",
+       "busqueda": "router TP-Link Archer C6",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "consultar",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles.": {
+     "reescrita": "Dame precio de dos auriculares, dos mouse y dos memorias RAM, priorizando productos que no sean de origen chino.",
+     "partes": [
+      {
+       "dice": "Dame precio de dos auriculares",
+       "quiere": "precio",
+       "rubro": "auriculares",
+       "producto": "",
+       "busqueda": "auriculares",
+       "criterios": [
+        {
+         "concepto": "pais_fabricacion",
+         "valor": "no chino",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 2,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "dos mouse",
+       "quiere": "precio",
+       "rubro": "mouse",
+       "producto": "",
+       "busqueda": "mouse",
+       "criterios": [
+        {
+         "concepto": "pais_fabricacion",
+         "valor": "no chino",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 2,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y dos memorias",
+       "quiere": "precio",
+       "rubro": "memoria ram",
+       "producto": "",
+       "busqueda": "memoria ram",
+       "criterios": [
+        {
+         "concepto": "pais_fabricacion",
+         "valor": "no chino",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 2,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    }
+   },
+   "fallas_C": [
+    [
+     "CH7.1.repregunta en vez de elegir",
+     "cuanto sale el logitech?",
+     [
+      {
+       "dice": "cuanto sale el logitech?",
+       "quiere": "precio",
+       "rubro": "mouse",
+       "producto": "Logitech",
+       "busqueda": "mouse Logitech",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Logitech",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    ],
+    [
+     "CH21.1.excluye",
+     "auriculares que no sean redragon",
+     [
+      {
+       "dice": "auriculares que no sean redragon",
+       "quiere": "buscar",
+       "rubro": "auriculares",
+       "producto": "",
+       "busqueda": "auriculares",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Redragon",
+         "fuerza": "no_quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    ],
+    [
+     "CH21.2.ordena por precio",
+     "y algo mas barato?",
+     [
+      {
+       "dice": "y algo mas barato?",
+       "quiere": "buscar",
+       "rubro": "auriculares",
+       "producto": "Logitech G435 Negro",
+       "busqueda": "auriculares marca distinta a Redragon con precio menor a Logitech G435",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Redragon",
+         "fuerza": "no_quiere"
+        },
+        {
+         "concepto": "precio_ars",
+         "valor": "menor a Logitech G435",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    ]
+   ]
+  },
+  {
+   "v6": {
+    "cuánto sale el mouse logitech G305? // y ese tiene bluetooth?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Cuánto sale el mouse Logitech G305 y si ese modelo tiene Bluetooth.",
+     "partes": [
+      {
+       "dice": "cuánto sale el mouse logitech G305?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "cuanto",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y ese tiene bluetooth?",
+       "quiere": "caracteristica",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "bluetooth",
+         "valor": "si",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "pasame 3 routers tp-link // el tercero tiene wifi 6?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Pasame 3 routers TP-Link y decime si el tercero tiene Wi-Fi 6.",
+     "partes": [
+      {
+       "dice": "pasame 3 routers tp-link",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "tp-link",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "tp-link",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 3,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "el tercero tiene wifi 6?",
+       "quiere": "caracteristica",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "wifi",
+         "valor": "6",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "posicion",
+       "posiciones": [
+        3
+       ],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "router",
+       "dice": "el tercero tiene wifi 6"
+      }
+     ]
+    },
+    "busco una silla gamer // y algo que no pase los 200 mil?": {
+     "criterios_generales": [
+      {
+       "concepto": "precio_ars",
+       "valor": "200000",
+       "fuerza": "debe"
+      }
+     ],
+     "reparto": [],
+     "reescrita": "Busco una silla gamer que no supere los 200 mil pesos.",
+     "partes": [
+      {
+       "dice": "busco una silla gamer",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "silla gamer",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y algo que no pase los 200 mil?",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "silla gamer",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "200000",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "cuánto sale el redragon? // el teclado blanco": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Cuánto sale el teclado Redragon blanco?",
+     "partes": [
+      {
+       "dice": "cuánto sale el redragon?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "teclado",
+       "producto": "redragon",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "el teclado blanco",
+       "quiere": "caracteristica",
+       "origen": "tienda",
+       "rubro": "teclado",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "blanco",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "teclado",
+       "dice": "es blanco"
+      }
+     ]
+    },
+    "tenés los sony WH-1000XM5 en negro?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Tenés los auriculares Sony WH-1000XM5 en color negro?",
+     "partes": [
+      {
+       "dice": "tenés los sony WH-1000XM5 en negro?",
+       "quiere": "stock",
+       "origen": "tienda",
+       "rubro": "auriculares",
+       "producto": "Sony WH-1000XM5",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "negro",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "el ryzen 5 7600 va en la asus prime B550M-A?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "El procesador Ryzen 5 7600, ¿es compatible con la motherboard Asus Prime B550M-A?",
+     "partes": [
+      {
+       "dice": "el ryzen 5 7600 va en la asus prime B550M-A?",
+       "quiere": "compatibilidad",
+       "origen": "tienda",
+       "rubro": "procesador",
+       "producto": "Ryzen 5 7600",
+       "criterios": [
+        {
+         "concepto": "compatible_con",
+         "valor": "Asus Prime B550M-A",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "Ryzen 5 7600",
+       "dice": "es un procesador"
+      },
+      {
+       "sobre": "Asus Prime B550M-A",
+       "dice": "es una motherboard"
+      }
+     ]
+    },
+    "precio del redragon kumara K552 negro, del G305 blanco, y hacen factura A?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Precio del teclado Redragon Kumara K552 negro, precio del mouse G305 blanco y si hacen factura A.",
+     "partes": [
+      {
+       "dice": "precio del redragon kumara K552 negro",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "teclado",
+       "producto": "redragon kumara K552",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "negro",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "del G305 blanco",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "G305",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "blanco",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y hacen factura A?",
+       "quiere": "politica",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "cuánto sale la notebook acer nitro 5 core i5? // tienen local para retirar? // hay cuotas sin interés? // y el horario? // bueno, la notebook que te pregunté primero, la quiero reservar": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Cuánto sale la notebook Acer Nitro 5 Core i5, tienen local para retirar, hay cuotas sin interés, cuál es el horario y quiero reservar la notebook que pregunté primero.",
+     "partes": [
+      {
+       "dice": "cuánto sale la notebook acer nitro 5 core i5?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "notebook",
+       "producto": "acer nitro 5 core i5",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "tienen local para retirar?",
+       "quiere": "envio",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "hay cuotas sin interés?",
+       "quiere": "pago",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y el horario?",
+       "quiere": "charla",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "bueno, la notebook que te pregunté primero, la quiero reservar",
+       "quiere": "comprar",
+       "origen": "tienda",
+       "rubro": "notebook",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "quiero 2 memorias corsair vengeance LPX 8GB y un SSD samsung de 1TB // cuánto es todo con envío a Tucumán?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Quiero 2 memorias Corsair Vengeance LPX 8GB y un SSD Samsung de 1TB. ¿Cuánto es el total con envío a Tucumán?",
+     "partes": [
+      {
+       "dice": "quiero 2 memorias corsair vengeance LPX 8GB",
+       "quiere": "comprar",
+       "origen": "tienda",
+       "rubro": "memoria ram",
+       "producto": "corsair vengeance LPX 8GB",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "corsair",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 2,
+       "destino": "Tucumán",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y un SSD samsung de 1TB",
+       "quiere": "comprar",
+       "origen": "tienda",
+       "rubro": "ssd",
+       "producto": "SSD samsung de 1TB",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "samsung",
+         "fuerza": "debe"
+        },
+        {
+         "concepto": "almacenamiento",
+         "valor": "1TB",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "Tucumán",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "cuánto es todo con envío a Tucumán?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "Tucumán",
+       "refiere": "esos",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "ola tenés la placa de bideo de 8 gigas más varata": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Hola, ¿tenés la placa de video de 8 gigas más barata?",
+     "partes": [
+      {
+       "dice": "tenés la placa de bideo de 8 gigas más varata",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "placa de video",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "memoria_video",
+         "valor": "8 gigas",
+         "fuerza": "debe"
+        },
+        {
+         "concepto": "precio_ars",
+         "valor": "más barata",
+         "fuerza": "prefiere"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "busco auriculares sin cable pero no JBL // ah no, con cable está bien": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Busco auriculares con cable.",
+     "partes": [
+      {
+       "dice": "busco auriculares sin cable pero no JBL",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "auriculares",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "conexion",
+         "valor": "inalambrico",
+         "fuerza": "debe"
+        },
+        {
+         "concepto": "marca",
+         "valor": "JBL",
+         "fuerza": "evita"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "ah no, con cable está bien",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "auriculares",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "conexion",
+         "valor": "con cable",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "el G305 lo tenés en rojo?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "¿Tienen el mouse Logitech G305 en color rojo?",
+     "partes": [
+      {
+       "dice": "el G305 lo tenés en rojo?",
+       "quiere": "stock",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "G305",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "rojo",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "G305",
+       "dice": "el G305 lo tenés en rojo"
+      }
+     ]
+    },
+    "tenés alguna cámara para la compu?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Tenés alguna cámara para la computadora?",
+     "partes": [
+      {
+       "dice": "tenés alguna cámara para la compu?",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "webcam",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": "la compu"
+      }
+     ],
+     "afirma": []
+    },
+    "necesito algo para las videollamadas del trabajo, qué me recomendás?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Necesito algo para las videollamadas del trabajo, ¿qué me recomendás?",
+     "partes": [
+      {
+       "dice": "necesito algo para las videollamadas del trabajo, qué me recomendás?",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "webcam",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": "videollamadas del trabajo"
+      }
+     ],
+     "afirma": []
+    },
+    "qué diferencia hay entre el archer C6 y el AX23? // y cuál me conviene para un depto chico? // dale, el otro cuánto salía?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Qué diferencia hay entre el Archer C6 y el AX23? Cuál me conviene para un depto chico? Cuánto salía el otro?",
+     "partes": [
+      {
+       "dice": "qué diferencia hay entre el archer C6 y el AX23?",
+       "quiere": "comparar",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "Archer C6 y AX23",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y cuál me conviene para un depto chico?",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "otro",
+         "valor": "depto chico",
+         "fuerza": "prefiere"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": "depto chico"
+      },
+      {
+       "dice": "dale, el otro cuánto salía?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "el_otro",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles.": {
+     "criterios_generales": [
+      {
+       "concepto": "pais_fabricacion",
+       "valor": "no chino",
+       "fuerza": "evita"
+      },
+      {
+       "concepto": "precio_ars",
+       "valor": "no importante",
+       "fuerza": "prefiere"
+      }
+     ],
+     "reparto": [],
+     "reescrita": "Deme precio de dos auriculares, dos mouse y dos memorias RAM. El precio no es tan importante, pero necesito que tengan la menor cantidad de componentes chinos posible.",
+     "partes": [
+      {
+       "dice": "dos auriculares",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "auriculares",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 2,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "dos mouse",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 2,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "dos memorias",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "memoria ram",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 2,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    }
+   },
+   "v7": {
+    "cuánto sale el mouse logitech G305? // y ese tiene bluetooth?": {
+     "reescrita": "Cuánto sale el mouse Logitech G305 y si cuenta con conectividad Bluetooth.",
+     "partes": [
+      {
+       "dice": "cuánto sale el mouse logitech G305?",
+       "quiere": "precio",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "busqueda": "mouse Logitech G305",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "consultar",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y ese tiene bluetooth?",
+       "quiere": "caracteristica",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "busqueda": "mouse Logitech G305 bluetooth",
+       "criterios": [
+        {
+         "concepto": "bluetooth",
+         "valor": "si",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "pasame 3 routers tp-link // el tercero tiene wifi 6?": {
+     "reescrita": "Pasame 3 routers TP-Link y decime si el tercero tiene Wi-Fi 6.",
+     "partes": [
+      {
+       "dice": "pasame 3 routers tp-link",
+       "quiere": "buscar",
+       "rubro": "router",
+       "producto": "router TP-Link",
+       "busqueda": "router TP-Link",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "TP-Link",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 3,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "el tercero tiene wifi 6?",
+       "quiere": "caracteristica",
+       "rubro": "router",
+       "producto": "router TP-Link",
+       "busqueda": "router TP-Link wifi 6",
+       "criterios": [
+        {
+         "concepto": "wifi",
+         "valor": "6",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "busco una silla gamer // y algo que no pase los 200 mil?": {
+     "reescrita": "Busco una silla gamer que no supere los 200.000 pesos.",
+     "partes": [
+      {
+       "dice": "busco una silla gamer",
+       "quiere": "buscar",
+       "rubro": "silla gamer",
+       "producto": "",
+       "busqueda": "silla gamer",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y algo que no pase los 200 mil?",
+       "quiere": "buscar",
+       "rubro": "silla gamer",
+       "producto": "silla gamer",
+       "busqueda": "silla gamer precio hasta 200000",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "200000",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "cuánto sale el redragon? // el teclado blanco": {
+     "reescrita": "Cuánto sale el teclado Redragon blanco?",
+     "partes": [
+      {
+       "dice": "cuánto sale el redragon? // el teclado blanco",
+       "quiere": "precio",
+       "rubro": "teclado",
+       "producto": "teclado Redragon",
+       "busqueda": "teclado Redragon color blanco",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Redragon",
+         "fuerza": "quiere"
+        },
+        {
+         "concepto": "color",
+         "valor": "blanco",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "tenés los sony WH-1000XM5 en negro?": {
+     "reescrita": "Tenés los auriculares Sony WH-1000XM5 en color negro?",
+     "partes": [
+      {
+       "dice": "tenés los sony WH-1000XM5 en negro?",
+       "quiere": "stock",
+       "rubro": "auriculares",
+       "producto": "Sony WH-1000XM5",
+       "busqueda": "auriculares Sony WH-1000XM5 color negro",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "negro",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "el ryzen 5 7600 va en la asus prime B550M-A?": {
+     "reescrita": "El procesador AMD Ryzen 5 7600 es compatible con la placa madre Asus Prime B550M-A?",
+     "partes": [
+      {
+       "dice": "el ryzen 5 7600 va en la asus prime B550M-A?",
+       "quiere": "compatibilidad",
+       "rubro": "procesador",
+       "producto": "AMD Ryzen 5 7600",
+       "busqueda": "procesador AMD Ryzen 5 7600",
+       "criterios": [
+        {
+         "concepto": "compatible_con",
+         "valor": "Asus Prime B550M-A",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "precio del redragon kumara K552 negro, del G305 blanco, y hacen factura A?": {
+     "reescrita": "Precio del teclado Redragon Kumara K552 negro, precio del mouse Logitech G305 blanco y consulta sobre emisión de factura A.",
+     "partes": [
+      {
+       "dice": "precio del redragon kumara K552 negro",
+       "quiere": "precio",
+       "rubro": "teclado",
+       "producto": "Redragon Kumara K552",
+       "busqueda": "teclado Redragon Kumara K552 color negro",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "negro",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "del G305 blanco",
+       "quiere": "precio",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "busqueda": "mouse Logitech G305 color blanco",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "blanco",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y hacen factura A?",
+       "quiere": "pago",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "cuánto sale la notebook acer nitro 5 core i5? // tienen local para retirar? // hay cuotas sin interés? // y el horario? // bueno, la notebook que te pregunté primero, la quiero reservar": {
+     "reescrita": "Cuánto sale la notebook Acer Nitro 5 con procesador Core i5, tienen local para retirar, hay cuotas sin interés, cuál es el horario y quiero reservar la notebook Acer Nitro 5 Core i5.",
+     "partes": [
+      {
+       "dice": "cuánto sale la notebook acer nitro 5 core i5?",
+       "quiere": "precio",
+       "rubro": "notebook",
+       "producto": "Acer Nitro 5 Core i5",
+       "busqueda": "notebook Acer Nitro 5 procesador Core i5",
+       "criterios": [
+        {
+         "concepto": "procesador",
+         "valor": "Core i5",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "tienen local para retirar?",
+       "quiere": "envio",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "hay cuotas sin interés?",
+       "quiere": "pago",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y el horario?",
+       "quiere": "charla",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "bueno, la notebook que te pregunté primero, la quiero reservar",
+       "quiere": "comprar",
+       "rubro": "notebook",
+       "producto": "Acer Nitro 5 Core i5",
+       "busqueda": "notebook Acer Nitro 5 procesador Core i5",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 1,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "quiero 2 memorias corsair vengeance LPX 8GB y un SSD samsung de 1TB // cuánto es todo con envío a Tucumán?": {
+     "reescrita": "Quiero comprar 2 memorias RAM Corsair Vengeance LPX 8GB, un SSD Samsung 1TB y consultar el precio total con envío a Tucumán.",
+     "partes": [
+      {
+       "dice": "quiero 2 memorias corsair vengeance LPX 8GB",
+       "quiere": "comprar",
+       "rubro": "memoria ram",
+       "producto": "Corsair Vengeance LPX 8GB",
+       "busqueda": "memoria ram Corsair Vengeance LPX 8GB",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Corsair",
+         "fuerza": "quiere"
+        },
+        {
+         "concepto": "ram",
+         "valor": "8 GB",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 2,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y un SSD samsung de 1TB",
+       "quiere": "comprar",
+       "rubro": "ssd",
+       "producto": "SSD Samsung 1TB",
+       "busqueda": "SSD Samsung 1TB",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Samsung",
+         "fuerza": "quiere"
+        },
+        {
+         "concepto": "almacenamiento",
+         "valor": "1 TB",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 1,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "cuánto es todo con envío a Tucumán?",
+       "quiere": "envio",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "Tucumán",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "ola tenés la placa de bideo de 8 gigas más varata": {
+     "reescrita": "Hola, tenés la placa de video de 8 GB más barata?",
+     "partes": [
+      {
+       "dice": "ola tenés la placa de bideo de 8 gigas más varata",
+       "quiere": "buscar",
+       "rubro": "placa de video",
+       "producto": "placa de video 8 GB",
+       "busqueda": "placa de video 8 GB",
+       "criterios": [
+        {
+         "concepto": "ram",
+         "valor": "8 GB",
+         "fuerza": "quiere"
+        },
+        {
+         "concepto": "precio_ars",
+         "valor": "más barato",
+         "fuerza": "prefiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "busco auriculares sin cable pero no JBL // ah no, con cable está bien": {
+     "reescrita": "Busco auriculares con cable.",
+     "partes": [
+      {
+       "dice": "busco auriculares sin cable pero no JBL // ah no, con cable está bien",
+       "quiere": "buscar",
+       "rubro": "auriculares",
+       "producto": "auriculares",
+       "busqueda": "auriculares con cable",
+       "criterios": [
+        {
+         "concepto": "conexion",
+         "valor": "con cable",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "el G305 lo tenés en rojo?": {
+     "reescrita": "El mouse Logitech G305 lo tenés en color rojo?",
+     "partes": [
+      {
+       "dice": "el G305 lo tenés en rojo?",
+       "quiere": "stock",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "busqueda": "mouse Logitech G305 color rojo",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "rojo",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "tenés alguna cámara para la compu?": {
+     "reescrita": "tenés alguna cámara para la compu?",
+     "partes": [
+      {
+       "dice": "tenés alguna cámara para la compu?",
+       "quiere": "buscar",
+       "rubro": "webcam",
+       "producto": "webcam",
+       "busqueda": "webcam para computadora",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "necesito algo para las videollamadas del trabajo, qué me recomendás?": {
+     "reescrita": "Necesito una webcam para videollamadas de trabajo, ¿qué me recomendás?",
+     "partes": [
+      {
+       "dice": "necesito algo para las videollamadas del trabajo, qué me recomendás?",
+       "quiere": "buscar",
+       "rubro": "webcam",
+       "producto": "webcam",
+       "busqueda": "webcam para videollamadas",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "qué diferencia hay entre el archer C6 y el AX23? // y cuál me conviene para un depto chico? // dale, el otro cuánto salía?": {
+     "reescrita": "Qué diferencia hay entre el router TP-Link Archer C6 y el router TP-Link Archer AX23, cuál me conviene para un departamento chico y cuál es el precio del Archer C6?",
+     "partes": [
+      {
+       "dice": "qué diferencia hay entre el archer C6 y el AX23?",
+       "quiere": "comparar",
+       "rubro": "router",
+       "producto": "TP-Link Archer C6 y TP-Link Archer AX23",
+       "busqueda": "router TP-Link Archer C6 y router TP-Link Archer AX23",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y cuál me conviene para un depto chico?",
+       "quiere": "buscar",
+       "rubro": "router",
+       "producto": "TP-Link Archer C6 o TP-Link Archer AX23",
+       "busqueda": "router para departamento pequeño",
+       "criterios": [
+        {
+         "concepto": "otro",
+         "valor": "departamento pequeño",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "dale, el otro cuánto salía?",
+       "quiere": "precio",
+       "rubro": "router",
+       "producto": "TP-Link Archer C6",
+       "busqueda": "router TP-Link Archer C6",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "consultar",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles.": {
+     "reescrita": "Necesito precio de dos auriculares, dos mouse y dos memorias RAM, preferentemente de origen no chino.",
+     "partes": [
+      {
+       "dice": "Dame precio de dos auriculares",
+       "quiere": "precio",
+       "rubro": "auriculares",
+       "producto": "",
+       "busqueda": "auriculares",
+       "criterios": [
+        {
+         "concepto": "pais_fabricacion",
+         "valor": "no chino",
+         "fuerza": "prefiere"
+        }
+       ],
+       "mostrar": 2,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "dos mouse",
+       "quiere": "precio",
+       "rubro": "mouse",
+       "producto": "",
+       "busqueda": "mouse",
+       "criterios": [
+        {
+         "concepto": "pais_fabricacion",
+         "valor": "no chino",
+         "fuerza": "prefiere"
+        }
+       ],
+       "mostrar": 2,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y dos memorias",
+       "quiere": "precio",
+       "rubro": "memoria ram",
+       "producto": "",
+       "busqueda": "memoria ram",
+       "criterios": [
+        {
+         "concepto": "pais_fabricacion",
+         "valor": "no chino",
+         "fuerza": "prefiere"
+        }
+       ],
+       "mostrar": 2,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    }
+   },
+   "fallas_C": [
+    [
+     "CH21.1.excluye",
+     "auriculares que no sean redragon",
+     [
+      {
+       "dice": "auriculares que no sean redragon",
+       "quiere": "buscar",
+       "rubro": "auriculares",
+       "producto": "",
+       "busqueda": "auriculares",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Redragon",
+         "fuerza": "no_quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    ],
+    [
+     "CH21.2.ordena por precio",
+     "y algo mas barato?",
+     [
+      {
+       "dice": "y algo mas barato?",
+       "quiere": "buscar",
+       "rubro": "auriculares",
+       "producto": "Logitech G435 Negro",
+       "busqueda": "auriculares marca distinta a Redragon con precio menor a Logitech G435",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Redragon",
+         "fuerza": "no_quiere"
+        },
+        {
+         "concepto": "precio_ars",
+         "valor": "menor a Logitech G435",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    ]
+   ]
+  },
+  {
+   "v6": {
+    "cuánto sale el mouse logitech G305? // y ese tiene bluetooth?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Cuánto sale el mouse Logitech G305 y si ese tiene Bluetooth.",
+     "partes": [
+      {
+       "dice": "cuánto sale el mouse logitech G305?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "cuanto",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y ese tiene bluetooth?",
+       "quiere": "caracteristica",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "bluetooth",
+         "valor": "si",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "pasame 3 routers tp-link // el tercero tiene wifi 6?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Pasame 3 routers TP-Link y decime si el tercero tiene Wi-Fi 6.",
+     "partes": [
+      {
+       "dice": "pasame 3 routers tp-link",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "tp-link",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "tp-link",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 3,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "el tercero tiene wifi 6?",
+       "quiere": "caracteristica",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "wifi",
+         "valor": "6",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "posicion",
+       "posiciones": [
+        3
+       ],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "tp-link",
+       "dice": "existen routers de la marca tp-link"
+      }
+     ]
+    },
+    "busco una silla gamer // y algo que no pase los 200 mil?": {
+     "criterios_generales": [
+      {
+       "concepto": "precio_ars",
+       "valor": "200000",
+       "fuerza": "debe"
+      }
+     ],
+     "reparto": [],
+     "reescrita": "Busco una silla gamer que no supere los 200 mil pesos.",
+     "partes": [
+      {
+       "dice": "busco una silla gamer",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "silla gamer",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y algo que no pase los 200 mil?",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "silla gamer",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "200000",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "cuánto sale el redragon? // el teclado blanco": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Cuánto sale el teclado Redragon blanco?",
+     "partes": [
+      {
+       "dice": "cuánto sale el redragon?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "teclado",
+       "producto": "redragon",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "el teclado blanco",
+       "quiere": "caracteristica",
+       "origen": "tienda",
+       "rubro": "teclado",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "blanco",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "teclado",
+       "dice": "es blanco"
+      }
+     ]
+    },
+    "tenés los sony WH-1000XM5 en negro?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Tenés los auriculares Sony WH-1000XM5 en color negro?",
+     "partes": [
+      {
+       "dice": "tenés los sony WH-1000XM5 en negro?",
+       "quiere": "stock",
+       "origen": "tienda",
+       "rubro": "auriculares",
+       "producto": "Sony WH-1000XM5",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "negro",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "el ryzen 5 7600 va en la asus prime B550M-A?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "¿El procesador Ryzen 5 7600 es compatible con la motherboard Asus Prime B550M-A?",
+     "partes": [
+      {
+       "dice": "el ryzen 5 7600 va en la asus prime B550M-A?",
+       "quiere": "compatibilidad",
+       "origen": "tienda",
+       "rubro": "procesador",
+       "producto": "Ryzen 5 7600",
+       "criterios": [
+        {
+         "concepto": "compatible_con",
+         "valor": "Asus Prime B550M-A",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "Ryzen 5 7600",
+       "dice": "es un procesador"
+      },
+      {
+       "sobre": "Asus Prime B550M-A",
+       "dice": "es una motherboard"
+      }
+     ]
+    },
+    "precio del redragon kumara K552 negro, del G305 blanco, y hacen factura A?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Precio del teclado Redragon Kumara K552 negro, precio del mouse G305 blanco y si hacen factura A.",
+     "partes": [
+      {
+       "dice": "precio del redragon kumara K552 negro",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "teclado",
+       "producto": "redragon kumara K552",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "negro",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "del G305 blanco",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "G305",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "blanco",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y hacen factura A?",
+       "quiere": "politica",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "cuánto sale la notebook acer nitro 5 core i5? // tienen local para retirar? // hay cuotas sin interés? // y el horario? // bueno, la notebook que te pregunté primero, la quiero reservar": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Cuánto sale la notebook Acer Nitro 5 Core i5, tienen local para retirar, hay cuotas sin interés, cuál es el horario y quiero reservar la notebook que pregunté primero.",
+     "partes": [
+      {
+       "dice": "cuánto sale la notebook acer nitro 5 core i5?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "notebook",
+       "producto": "acer nitro 5 core i5",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "tienen local para retirar?",
+       "quiere": "envio",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "hay cuotas sin interés?",
+       "quiere": "pago",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y el horario?",
+       "quiere": "charla",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "bueno, la notebook que te pregunté primero, la quiero reservar",
+       "quiere": "comprar",
+       "origen": "tienda",
+       "rubro": "notebook",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "acer nitro 5 core i5",
+       "dice": "es una notebook"
+      }
+     ]
+    },
+    "quiero 2 memorias corsair vengeance LPX 8GB y un SSD samsung de 1TB // cuánto es todo con envío a Tucumán?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Quiero 2 memorias Corsair Vengeance LPX 8GB y un SSD Samsung de 1TB. ¿Cuánto es el total con envío a Tucumán?",
+     "partes": [
+      {
+       "dice": "quiero 2 memorias corsair vengeance LPX 8GB",
+       "quiere": "comprar",
+       "origen": "tienda",
+       "rubro": "memoria ram",
+       "producto": "corsair vengeance LPX 8GB",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "corsair",
+         "fuerza": "debe"
+        },
+        {
+         "concepto": "ram",
+         "valor": "8GB",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 2,
+       "destino": "Tucumán",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y un SSD samsung de 1TB",
+       "quiere": "comprar",
+       "origen": "tienda",
+       "rubro": "ssd",
+       "producto": "SSD samsung 1TB",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "samsung",
+         "fuerza": "debe"
+        },
+        {
+         "concepto": "almacenamiento",
+         "valor": "1TB",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "Tucumán",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "cuánto es todo con envío a Tucumán?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "ninguno",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "Tucumán",
+       "refiere": "esos",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "ola tenés la placa de bideo de 8 gigas más varata": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Hola, ¿tenés la placa de video de 8GB más barata?",
+     "partes": [
+      {
+       "dice": "tenés la placa de bideo de 8 gigas más varata",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "placa de video",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "memoria_video",
+         "valor": "8 gigas",
+         "fuerza": "debe"
+        },
+        {
+         "concepto": "precio_ars",
+         "valor": "más barata",
+         "fuerza": "prefiere"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "busco auriculares sin cable pero no JBL // ah no, con cable está bien": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Busco auriculares con cable, que no sean JBL.",
+     "partes": [
+      {
+       "dice": "busco auriculares sin cable pero no JBL",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "auriculares",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "conexion",
+         "valor": "inalambrico",
+         "fuerza": "evita"
+        },
+        {
+         "concepto": "marca",
+         "valor": "JBL",
+         "fuerza": "evita"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "ah no, con cable está bien",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "auriculares",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "conexion",
+         "valor": "con cable",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "ese",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "el G305 lo tenés en rojo?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "¿Tienen el mouse G305 en color rojo?",
+     "partes": [
+      {
+       "dice": "el G305 lo tenés en rojo?",
+       "quiere": "stock",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "G305",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "rojo",
+         "fuerza": "debe"
+        }
+       ],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "G305",
+       "dice": "el G305 existe"
+      }
+     ]
+    },
+    "tenés alguna cámara para la compu?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Tenés alguna cámara para la computadora?",
+     "partes": [
+      {
+       "dice": "tenés alguna cámara para la compu?",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "webcam",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": "la compu"
+      }
+     ],
+     "afirma": []
+    },
+    "necesito algo para las videollamadas del trabajo, qué me recomendás?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Necesito algo para las videollamadas del trabajo, ¿qué me recomendás?",
+     "partes": [
+      {
+       "dice": "necesito algo para las videollamadas del trabajo, qué me recomendás?",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "webcam",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 1,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": "videollamadas del trabajo"
+      }
+     ],
+     "afirma": []
+    },
+    "qué diferencia hay entre el archer C6 y el AX23? // y cuál me conviene para un depto chico? // dale, el otro cuánto salía?": {
+     "criterios_generales": [],
+     "reparto": [],
+     "reescrita": "Qué diferencia hay entre el Archer C6 y el AX23? Cuál me conviene para un depto chico? Cuánto salía el otro?",
+     "partes": [
+      {
+       "dice": "qué diferencia hay entre el archer C6 y el AX23?",
+       "quiere": "comparar",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "Archer C6 y AX23",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "y cuál me conviene para un depto chico?",
+       "quiere": "buscar",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "",
+       "criterios": [
+        {
+         "concepto": "otro",
+         "valor": "depto chico",
+         "fuerza": "prefiere"
+        }
+       ],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": "depto chico"
+      },
+      {
+       "dice": "dale, el otro cuánto salía?",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "router",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 0,
+       "destino": "",
+       "refiere": "el_otro",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": []
+    },
+    "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles.": {
+     "criterios_generales": [
+      {
+       "concepto": "pais_fabricacion",
+       "valor": "no chino",
+       "fuerza": "prefiere"
+      }
+     ],
+     "reparto": [],
+     "reescrita": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles.",
+     "partes": [
+      {
+       "dice": "Dame precio de dos auriculares",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "auriculares",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 2,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "dos mouse",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "mouse",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 2,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      },
+      {
+       "dice": "dos memorias",
+       "quiere": "precio",
+       "origen": "tienda",
+       "rubro": "memoria ram",
+       "producto": "",
+       "criterios": [],
+       "cantidad": 2,
+       "destino": "",
+       "refiere": "no",
+       "posiciones": [],
+       "para": ""
+      }
+     ],
+     "afirma": [
+      {
+       "sobre": "precio",
+       "dice": "no sería tan importante"
+      }
+     ]
+    }
+   },
+   "v7": {
+    "cuánto sale el mouse logitech G305? // y ese tiene bluetooth?": {
+     "reescrita": "Cuánto sale el mouse Logitech G305 y si tiene Bluetooth.",
+     "partes": [
+      {
+       "dice": "cuánto sale el mouse logitech G305?",
+       "quiere": "precio",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "busqueda": "mouse Logitech G305",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "consultar",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y ese tiene bluetooth?",
+       "quiere": "caracteristica",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "busqueda": "mouse Logitech G305 Bluetooth",
+       "criterios": [
+        {
+         "concepto": "bluetooth",
+         "valor": "si",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "pasame 3 routers tp-link // el tercero tiene wifi 6?": {
+     "reescrita": "Pasame 3 routers TP-Link y decime si el tercero tiene Wi-Fi 6.",
+     "partes": [
+      {
+       "dice": "pasame 3 routers tp-link",
+       "quiere": "buscar",
+       "rubro": "router",
+       "producto": "router TP-Link",
+       "busqueda": "router TP-Link",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "TP-Link",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 3,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "el tercero tiene wifi 6?",
+       "quiere": "caracteristica",
+       "rubro": "router",
+       "producto": "router TP-Link",
+       "busqueda": "router TP-Link wifi 6",
+       "criterios": [
+        {
+         "concepto": "wifi",
+         "valor": "6",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "busco una silla gamer // y algo que no pase los 200 mil?": {
+     "reescrita": "Busco una silla gamer que no supere los 200.000 pesos.",
+     "partes": [
+      {
+       "dice": "busco una silla gamer",
+       "quiere": "buscar",
+       "rubro": "silla gamer",
+       "producto": "",
+       "busqueda": "silla gamer",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y algo que no pase los 200 mil?",
+       "quiere": "buscar",
+       "rubro": "silla gamer",
+       "producto": "silla gamer",
+       "busqueda": "silla gamer precio hasta 200000",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "200000",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "cuánto sale el redragon? // el teclado blanco": {
+     "reescrita": "Cuánto sale el teclado Redragon blanco?",
+     "partes": [
+      {
+       "dice": "cuánto sale el redragon? // el teclado blanco",
+       "quiere": "precio",
+       "rubro": "teclado",
+       "producto": "teclado Redragon",
+       "busqueda": "teclado Redragon color blanco",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Redragon",
+         "fuerza": "quiere"
+        },
+        {
+         "concepto": "color",
+         "valor": "blanco",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "tenés los sony WH-1000XM5 en negro?": {
+     "reescrita": "Tenés los auriculares Sony WH-1000XM5 en color negro?",
+     "partes": [
+      {
+       "dice": "tenés los sony WH-1000XM5 en negro?",
+       "quiere": "stock",
+       "rubro": "auriculares",
+       "producto": "Sony WH-1000XM5",
+       "busqueda": "auriculares Sony WH-1000XM5 color negro",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "negro",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "el ryzen 5 7600 va en la asus prime B550M-A?": {
+     "reescrita": "El procesador AMD Ryzen 5 7600 es compatible con la motherboard ASUS Prime B550M-A?",
+     "partes": [
+      {
+       "dice": "el ryzen 5 7600 va en la asus prime B550M-A?",
+       "quiere": "compatibilidad",
+       "rubro": "procesador",
+       "producto": "AMD Ryzen 5 7600",
+       "busqueda": "procesador AMD Ryzen 5 7600",
+       "criterios": [
+        {
+         "concepto": "compatible_con",
+         "valor": "ASUS Prime B550M-A",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "precio del redragon kumara K552 negro, del G305 blanco, y hacen factura A?": {
+     "reescrita": "Precio del teclado Redragon Kumara K552 negro, precio del mouse Logitech G305 blanco y consulta sobre emisión de factura A.",
+     "partes": [
+      {
+       "dice": "precio del redragon kumara K552 negro",
+       "quiere": "precio",
+       "rubro": "teclado",
+       "producto": "Redragon Kumara K552",
+       "busqueda": "teclado Redragon Kumara K552 color negro",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "negro",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "del G305 blanco",
+       "quiere": "precio",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "busqueda": "mouse Logitech G305 color blanco",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "blanco",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y hacen factura A?",
+       "quiere": "pago",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "cuánto sale la notebook acer nitro 5 core i5? // tienen local para retirar? // hay cuotas sin interés? // y el horario? // bueno, la notebook que te pregunté primero, la quiero reservar": {
+     "reescrita": "Cuánto sale la notebook Acer Nitro 5 con procesador Core i5, tienen local para retirar, hay cuotas sin interés, cuál es el horario y quiero reservar la notebook Acer Nitro 5.",
+     "partes": [
+      {
+       "dice": "cuánto sale la notebook acer nitro 5 core i5?",
+       "quiere": "precio",
+       "rubro": "notebook",
+       "producto": "Acer Nitro 5 Core i5",
+       "busqueda": "notebook Acer Nitro 5 procesador Core i5",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Acer",
+         "fuerza": "quiere"
+        },
+        {
+         "concepto": "procesador",
+         "valor": "Core i5",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "tienen local para retirar?",
+       "quiere": "envio",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "hay cuotas sin interés?",
+       "quiere": "pago",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y el horario?",
+       "quiere": "charla",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "bueno, la notebook que te pregunté primero, la quiero reservar",
+       "quiere": "comprar",
+       "rubro": "notebook",
+       "producto": "Acer Nitro 5 Core i5",
+       "busqueda": "notebook Acer Nitro 5 procesador Core i5",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 1,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "quiero 2 memorias corsair vengeance LPX 8GB y un SSD samsung de 1TB // cuánto es todo con envío a Tucumán?": {
+     "reescrita": "Quiero comprar 2 memorias RAM Corsair Vengeance LPX 8GB, un SSD Samsung 1TB y consultar el precio total con envío a Tucumán.",
+     "partes": [
+      {
+       "dice": "quiero 2 memorias corsair vengeance LPX 8GB",
+       "quiere": "comprar",
+       "rubro": "memoria ram",
+       "producto": "Corsair Vengeance LPX 8GB",
+       "busqueda": "memoria ram Corsair Vengeance LPX 8GB",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Corsair",
+         "fuerza": "quiere"
+        },
+        {
+         "concepto": "ram",
+         "valor": "8 GB",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 2,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y un SSD samsung de 1TB",
+       "quiere": "comprar",
+       "rubro": "ssd",
+       "producto": "SSD Samsung 1TB",
+       "busqueda": "ssd Samsung 1TB",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Samsung",
+         "fuerza": "quiere"
+        },
+        {
+         "concepto": "almacenamiento",
+         "valor": "1 TB",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 1,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "cuánto es todo con envío a Tucumán?",
+       "quiere": "envio",
+       "rubro": "ninguno",
+       "producto": "",
+       "busqueda": "",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "Tucumán",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "ola tenés la placa de bideo de 8 gigas más varata": {
+     "reescrita": "Hola, ¿tenés la placa de video de 8 GB más barata?",
+     "partes": [
+      {
+       "dice": "ola tenés la placa de bideo de 8 gigas más varata",
+       "quiere": "buscar",
+       "rubro": "placa de video",
+       "producto": "placa de video 8 GB",
+       "busqueda": "placa de video 8 GB",
+       "criterios": [
+        {
+         "concepto": "ram",
+         "valor": "8 GB",
+         "fuerza": "quiere"
+        },
+        {
+         "concepto": "precio_ars",
+         "valor": "más barato",
+         "fuerza": "prefiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "busco auriculares sin cable pero no JBL // ah no, con cable está bien": {
+     "reescrita": "Busco auriculares con cable.",
+     "partes": [
+      {
+       "dice": "busco auriculares sin cable pero no JBL // ah no, con cable está bien",
+       "quiere": "buscar",
+       "rubro": "auriculares",
+       "producto": "auriculares",
+       "busqueda": "auriculares con cable",
+       "criterios": [
+        {
+         "concepto": "conexion",
+         "valor": "con cable",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "el G305 lo tenés en rojo?": {
+     "reescrita": "El mouse Logitech G305 lo tenés en color rojo?",
+     "partes": [
+      {
+       "dice": "el G305 lo tenés en rojo?",
+       "quiere": "stock",
+       "rubro": "mouse",
+       "producto": "Logitech G305",
+       "busqueda": "mouse Logitech G305 color rojo",
+       "criterios": [
+        {
+         "concepto": "color",
+         "valor": "rojo",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "tenés alguna cámara para la compu?": {
+     "reescrita": "Tenés alguna webcam para computadora?",
+     "partes": [
+      {
+       "dice": "tenés alguna cámara para la compu?",
+       "quiere": "buscar",
+       "rubro": "webcam",
+       "producto": "webcam",
+       "busqueda": "webcam para computadora",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "necesito algo para las videollamadas del trabajo, qué me recomendás?": {
+     "reescrita": "Necesito una webcam para videollamadas de trabajo, ¿qué me recomendás?",
+     "partes": [
+      {
+       "dice": "necesito algo para las videollamadas del trabajo, qué me recomendás?",
+       "quiere": "buscar",
+       "rubro": "webcam",
+       "producto": "webcam",
+       "busqueda": "webcam para videollamadas",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "qué diferencia hay entre el archer C6 y el AX23? // y cuál me conviene para un depto chico? // dale, el otro cuánto salía?": {
+     "reescrita": "Qué diferencia hay entre el router TP-Link Archer C6 y el router TP-Link AX23, cuál me conviene para un departamento chico y cuál es el precio del Archer C6?",
+     "partes": [
+      {
+       "dice": "qué diferencia hay entre el archer C6 y el AX23?",
+       "quiere": "comparar",
+       "rubro": "router",
+       "producto": "TP-Link Archer C6 y TP-Link AX23",
+       "busqueda": "router TP-Link Archer C6 y router TP-Link AX23",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y cuál me conviene para un depto chico?",
+       "quiere": "buscar",
+       "rubro": "router",
+       "producto": "TP-Link Archer C6 o TP-Link AX23",
+       "busqueda": "router para departamento pequeño",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "dale, el otro cuánto salía?",
+       "quiere": "precio",
+       "rubro": "router",
+       "producto": "TP-Link Archer C6",
+       "busqueda": "router TP-Link Archer C6",
+       "criterios": [
+        {
+         "concepto": "precio_ars",
+         "valor": "consultar",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    },
+    "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles.": {
+     "reescrita": "Necesito precio de dos auriculares, dos mouse y dos memorias RAM, preferentemente de fabricación no china.",
+     "partes": [
+      {
+       "dice": "Dame precio de dos auriculares",
+       "quiere": "precio",
+       "rubro": "auriculares",
+       "producto": "",
+       "busqueda": "auriculares",
+       "criterios": [
+        {
+         "concepto": "pais_fabricacion",
+         "valor": "no chino",
+         "fuerza": "prefiere"
+        }
+       ],
+       "mostrar": 2,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "dos mouse",
+       "quiere": "precio",
+       "rubro": "mouse",
+       "producto": "",
+       "busqueda": "mouse",
+       "criterios": [
+        {
+         "concepto": "pais_fabricacion",
+         "valor": "no chino",
+         "fuerza": "prefiere"
+        }
+       ],
+       "mostrar": 2,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      },
+      {
+       "dice": "y dos memorias",
+       "quiere": "precio",
+       "rubro": "memoria ram",
+       "producto": "",
+       "busqueda": "memoria ram",
+       "criterios": [
+        {
+         "concepto": "pais_fabricacion",
+         "valor": "no chino",
+         "fuerza": "prefiere"
+        }
+       ],
+       "mostrar": 2,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    }
+   },
+   "fallas_C": [
+    [
+     "CH7.1.repregunta en vez de elegir",
+     "cuanto sale el logitech?",
+     [
+      {
+       "dice": "cuanto sale el logitech?",
+       "quiere": "precio",
+       "rubro": "mouse",
+       "producto": "mouse Logitech",
+       "busqueda": "mouse Logitech",
+       "criterios": [],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    ],
+    [
+     "CH21.1.excluye",
+     "auriculares que no sean redragon",
+     [
+      {
+       "dice": "auriculares que no sean redragon",
+       "quiere": "buscar",
+       "rubro": "auriculares",
+       "producto": "",
+       "busqueda": "auriculares",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Redragon",
+         "fuerza": "no_quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    ],
+    [
+     "CH21.2.ordena por precio",
+     "y algo mas barato?",
+     [
+      {
+       "dice": "y algo mas barato?",
+       "quiere": "buscar",
+       "rubro": "auriculares",
+       "producto": "Logitech G435 Negro",
+       "busqueda": "auriculares marca distinta a Redragon con precio menor a Logitech G435",
+       "criterios": [
+        {
+         "concepto": "marca",
+         "valor": "Redragon",
+         "fuerza": "no_quiere"
+        },
+        {
+         "concepto": "precio_ars",
+         "valor": "menor a Logitech G435",
+         "fuerza": "quiere"
+        }
+       ],
+       "mostrar": 0,
+       "comprar": 0,
+       "destino": "",
+       "repreguntar": ""
+      }
+     ]
+    ]
+   ]
+  }
+ ]
+}
