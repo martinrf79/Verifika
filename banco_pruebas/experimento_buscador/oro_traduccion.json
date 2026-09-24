@@ -1,0 +1,22 @@
+{
+  "_que_es": "EL ORO DE LA TRADUCCION (24-sep-2026). Congelado ANTES de escribir el traductor v7. Cada caso es un mensaje REAL de WhatsApp del 23-sep y lo que la ficha tiene que decir, sin importar que haga el codigo despues. Se suma al oro del buscador, oro.json, y a la vara de charlas con memoria, banco_pruebas/vara_charlas.json.",
+  "_como_se_lee": "Cada parte de la ficha se aplana a un texto: producto, busqueda y los valores de los criterios que el cliente QUIERE. 'menciona' pasa si alguna parte tiene todas las palabras. 'excluye' pasa si algun criterio que el cliente NO quiere tiene la palabra. 'no_excluye' pasa si ninguno la tiene. 'no_compra' pasa si ninguna parte pide comprar. 'comprar' pasa si una parte que menciona la palabra pide esa cantidad. 'destino' y 'rubro' miran esa casilla. 'tope' pasa si un criterio de precio que el cliente quiere tiene la cifra.",
+  "casos": [
+    {"id": "T01", "mensaje": "cuánto sale el mouse logitech G305? // y ese tiene bluetooth?", "pide": "'ese' es el G305", "check": {"menciona": ["g305", "bluetooth"]}},
+    {"id": "T02", "mensaje": "pasame 3 routers tp-link // el tercero tiene wifi 6?", "pide": "'pasame 3' no es comprar", "check": {"no_compra": true}},
+    {"id": "T03", "mensaje": "busco una silla gamer // y algo que no pase los 200 mil?", "pide": "el tope es de la silla", "check": {"tope": "200"}},
+    {"id": "T04", "mensaje": "busco una silla gamer // y algo que no pase los 200 mil?", "pide": "la segunda parte sigue en sillas", "check": {"menciona": ["silla"]}},
+    {"id": "T05", "mensaje": "cuánto sale el redragon? // el teclado blanco", "pide": "teclado redragon blanco, junto", "check": {"menciona": ["redragon", "blanco"]}},
+    {"id": "T06", "mensaje": "tenés los sony WH-1000XM5 en negro?", "pide": "el Sony en negro", "check": {"menciona": ["1000xm5", "negro"]}},
+    {"id": "T07", "mensaje": "el ryzen 5 7600 va en la asus prime B550M-A?", "pide": "nombra la placa", "check": {"menciona": ["b550m"]}},
+    {"id": "T08", "mensaje": "precio del redragon kumara K552 negro, del G305 blanco, y hacen factura A?", "pide": "el G305 blanco", "check": {"menciona": ["g305", "blanco"]}},
+    {"id": "T09", "mensaje": "cuánto sale la notebook acer nitro 5 core i5? // tienen local para retirar? // hay cuotas sin interés? // y el horario? // bueno, la notebook que te pregunté primero, la quiero reservar", "pide": "reservar es la Nitro 5", "check": {"comprar": ["nitro", 1]}},
+    {"id": "T10", "mensaje": "quiero 2 memorias corsair vengeance LPX 8GB y un SSD samsung de 1TB // cuánto es todo con envío a Tucumán?", "pide": "dos memorias", "check": {"comprar": ["vengeance", 2]}},
+    {"id": "T11", "mensaje": "quiero 2 memorias corsair vengeance LPX 8GB y un SSD samsung de 1TB // cuánto es todo con envío a Tucumán?", "pide": "el destino", "check": {"destino": "tucuman"}},
+    {"id": "T12", "mensaje": "ola tenés la placa de bideo de 8 gigas más varata", "pide": "8 GB en la busqueda", "check": {"menciona": ["8", "gb"]}},
+    {"id": "T13", "mensaje": "busco auriculares sin cable pero no JBL // ah no, con cable está bien", "pide": "no quiere JBL", "check": {"excluye": "jbl"}},
+    {"id": "T14", "mensaje": "busco auriculares sin cable pero no JBL // ah no, con cable está bien", "pide": "'sin cable' no se excluye", "check": {"no_excluye": ["sin cable", "inalambric", "bluetooth"]}},
+    {"id": "T15", "mensaje": "el G305 lo tenés en rojo?", "pide": "el G305 en rojo", "check": {"menciona": ["g305", "rojo"]}},
+    {"id": "T16", "mensaje": "tenés alguna cámara para la compu?", "pide": "es una webcam", "check": {"rubro": "webcam"}}
+  ]
+}
