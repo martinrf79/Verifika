@@ -64,6 +64,9 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
+**25-sep: LA PROXIMA SESION ARRANCA POR `arquitectura/FICHA_58_la_traduccion_en_gramatica.md`, paso 1.**
+- **ABIERTO** · La interpretacion se define primero: las 58 combinaciones escritas a mano, despues el tablero y la medicion. Los pasos 4 a 6 son opcionales.
+
 **23-sep: EL CAMINO NUEVO DE LA INTERPRETACION, EN EL BANCO.** El traductor
 llena una ficha contra el tablero, y el compilador y la memoria la resuelven en
 codigo: `banco_pruebas/traductor.py`, `compilador.py` y `memoria.py`. Lo que
