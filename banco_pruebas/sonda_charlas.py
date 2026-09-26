@@ -22,9 +22,20 @@ Las casillas se traducen a lo que se ve en un loop de herramientas:
 Y dos invariantes por turno: toda cifra de plata vino de una herramienta, y la
 respuesta no esta vacia. Tambien se anota el caché que informa la API.
 
-  python3 -m banco_pruebas.sonda_charlas                 todas
+LA VARA DE LAS 58 (`--vara 58`, de `vara_58.py`) puntua SOLO lo que recibe el
+cliente —dice, plata, pregunta, alguna—, asi que sirve para los tres caminos:
+
+  --camino simulado  el loop con las herramientas de juguete del banco del asistente
+  --camino motor     el loop con la herramienta REAL: `app.core.motor.esquema` y
+                     `motor.buscar` sobre el Firestore del clon. El buscador es
+                     el de produccion; lo que cambia es quien conversa.
+  --camino clon      PRODUCCION TAL CUAL: `clon_produccion.turno`, el webhook de
+                     WhatsApp entero. Es la linea de base contra la que se mide.
+
+  python3 -m banco_pruebas.sonda_charlas                 las varas viejas, simulado
+  python3 -m banco_pruebas.sonda_charlas --vara 58 --camino motor
   python3 -m banco_pruebas.sonda_charlas CH1 CH9         solo esas
-  opciones: --hilos 1  --temp 0.2  --etiqueta base  --regla-dura
+  opciones: --hilos 1  --temp 0.2  --etiqueta base  --regla-dura  --informe
 """
 import glob
 import json
@@ -42,7 +53,9 @@ MODELOS = sorted({(_n(p["modelo"]), p["categoria"]) for p in BA.PRODUCTOS if len
                  key=lambda m: -len(m[0]))
 
 
-def charlas():
+def charlas(vara=""):
+    if vara == "58":
+        return json.load(open("banco_pruebas/vara_58.json", encoding="utf-8"))["charlas"]
     out = []
     for f in sorted(glob.glob("banco_pruebas/vara_charlas*.json")):
         sufijo = re.sub(r".*vara_charlas_?|\.json", "", f)
@@ -80,8 +93,36 @@ def _modelo_de(casilla, respuestas):
     return lista[pos - 1] if 0 < pos <= len(lista) else None
 
 
+def _dice(palabra, texto):
+    return any(_n(o) in _n(texto) for o in palabra.split("|"))
+
+
 def nota_casilla(k, llamadas, texto, respuestas):
     tipo, args = k["tipo"], _n(json.dumps([a for _, a in llamadas], ensure_ascii=False))
+    # ── las de la vara de las 58: solo miran lo que recibe el cliente ──
+    if tipo == "dice":
+        return all(_dice(p, texto) for p in k["palabras"])
+    if tipo == "no_dice":
+        return not any(_dice(p, texto) for p in k["palabras"])
+    if tipo == "plata":
+        return str(k["monto"]) in re.sub(r"\D+", " ", _plata(texto)).split()
+    if tipo == "no_patron":
+        return not re.search(k["patron"], _n(texto))
+    if tipo == "todas":
+        return all(nota_casilla(o, llamadas, texto, respuestas) is True for o in k["opciones"])
+    if tipo == "alguna":
+        return any(nota_casilla(o, llamadas, texto, respuestas) is True for o in k["opciones"])
+    if tipo == "mas_barato_de":
+        mostrados = _mostrados(respuestas[k["de_turno"] - 1])
+        precios = {}
+        for p in BA.PRODUCTOS:
+            e = (_n(p["modelo"]) + " " + _n(p["color"])).strip()
+            if e in mostrados:
+                precios[e] = int(p["precio_ars"])
+        if not precios:
+            return None
+        barato = min(precios, key=precios.get)
+        return all(w in _n(texto) for w in barato.split()[:-1]) if " " in barato else barato in _n(texto)
     busq = [a for n, a in llamadas if n == "buscar"]
     if tipo in ("referencia", "responde_sobre"):
         m = _modelo_de(k, respuestas)
@@ -102,8 +143,9 @@ def nota_casilla(k, llamadas, texto, respuestas):
         return any(n == "envio" and _n(k["destino"])[:5] in _n(a.get("lugar", "")) for n, a in llamadas)
     if tipo == "cuenta":
         return any(n == "calcular" for n, _ in llamadas)
-    if tipo == "pregunta":
-        return "?" in texto and not any(n == "comprar" for n, _ in llamadas)
+    if tipo == "pregunta":  # repregunta: con signo, o pidiendo el dato sin signo
+        pide = "?" in texto or re.search(r"necesito que|decime|pasame|indicame|contame|me confirmas", _n(texto))
+        return bool(pide) and not any(n == "comprar" for n, _ in llamadas)
     if tipo == "nombra":
         return _n(k["palabra"]) in args
     if tipo == "tema":
@@ -132,14 +174,63 @@ def nota_casilla(k, llamadas, texto, respuestas):
     return None
 
 
-def correr(charla, cli, modelo, temp, sistema):
+_MOTOR = {}
+
+
+def _herramientas(camino):
+    """Las herramientas y quien las ejecuta, segun el camino."""
+    if camino != "motor":
+        return BA.TOOLS, lambda n, a: BA.CUERPOS[n](**a)
+    if not _MOTOR:
+        from banco_pruebas import clon_produccion as C
+        C.preparar_entorno()
+        C.instalar()
+        from app.core import motor
+        from app.core.contexto_turno import set_current_tienda
+        set_current_tienda(C.TIENDA)
+        _MOTOR.update(tools=[motor.esquema(C.TIENDA)], motor=motor, tienda=C.TIENDA)
+    m = _MOTOR
+
+    def ejecutar(nombre, args):
+        from app.core.contexto_turno import set_current_tienda
+        set_current_tienda(m["tienda"])  # el contexto no cruza de hilo
+        # LA MISMA TRADUCCION QUE HACE PRODUCCION en `respuesta.py`: el esquema
+        # del motor y la firma de `buscar` no usan los mismos nombres.
+        mt = m["motor"]
+        return mt.buscar([mt.orden_plano(dict(c)) for c in args.get("consultas") or []],
+                         m["tienda"], "sonda", temas=args.get("temas"),
+                         compat=args.get("compatibilidad"), afirma=args.get("afirma"),
+                         envios=args.get("envios"), cuenta=args.get("cuenta") or None,
+                         reparto_pago=args.get("reparto_pago"))
+    return m["tools"], ejecutar
+
+
+def correr_clon(charla, n_corrida=0):
+    """Produccion tal cual: el webhook entero por el clon, turno por turno."""
+    import asyncio
+    from banco_pruebas import clon_produccion as C
+    uid = f"sonda_{charla['id']}_{n_corrida}"
+    C.reiniciar_cliente(uid)
+    respuestas, turnos = [], []
+    for i, t in enumerate(charla["turnos"], 1):
+        partes = asyncio.run(C.turno(uid, t["texto"]))
+        texto = "\n".join(partes)
+        respuestas.append(texto)
+        casillas = [(k["n"], nota_casilla(k, [], texto, respuestas)) for k in t["casillas"]]
+        turnos.append({"turno": i, "texto": t["texto"], "casillas": casillas, "plata_no_vista": [],
+                       "vacia": not texto.strip(), "llamadas": [], "respuesta": texto, "uso": []})
+    return turnos
+
+
+def correr(charla, cli, modelo, temp, sistema, camino="simulado"):
+    tools, ejecutar = _herramientas(camino)
     msgs = [{"role": "system", "content": sistema}]
     respuestas, vistos, turnos = [], "", []
     for i, t in enumerate(charla["turnos"], 1):
         msgs.append({"role": "user", "content": t["texto"]})
         llamadas, texto, uso = [], "", []
         for _ in range(5):
-            r = _llamar(cli, modelo, msgs, temp, tools=BA.TOOLS, pausa=0)
+            r = _llamar(cli, modelo, msgs, temp, tools=tools, pausa=0)
             u = r.usage
             det = getattr(u, "prompt_tokens_details", None) if u else None
             uso.append({"entrada": u.prompt_tokens if u else 0,
@@ -156,7 +247,7 @@ def correr(charla, cli, modelo, temp, sistema):
                 except ValueError:
                     args = {}
                 try:
-                    out = BA.CUERPOS[c.function.name](**args)
+                    out = ejecutar(c.function.name, args)
                 except Exception as e:  # noqa: BLE001 — un argumento raro no tira la charla
                     out = {"error": str(e)[:100]}
                 llamadas.append((c.function.name, args))
@@ -165,7 +256,7 @@ def correr(charla, cli, modelo, temp, sistema):
         msgs.append({"role": "assistant", "content": texto})
         respuestas.append(texto)
         casillas = [(k["n"], nota_casilla(k, llamadas, texto, respuestas)) for k in t["casillas"]]
-        visto = set(re.sub(r"\D+", " ", vistos).split())
+        visto = set(re.sub(r"\D+", " ", _plata(vistos)).split())
         plata_mala = [c for c in re.findall(r"\$\s?(\d{4,})", _plata(texto)) if c not in visto]
         turnos.append({"turno": i, "texto": t["texto"], "casillas": casillas, "plata_no_vista": plata_mala,
                        "vacia": not texto.strip(), "llamadas": [f"{n}{json.dumps(a, ensure_ascii=False)}"
@@ -174,9 +265,21 @@ def correr(charla, cli, modelo, temp, sistema):
     return turnos
 
 
+def _recalificar(f):
+    """La vara de las 58 mira solo la respuesta: se recalifica desde lo guardado."""
+    vara = {c["id"]: c for c in charlas("58")}
+    if f["id"] not in vara or not f["etiqueta"].startswith("v58"):
+        return f
+    respuestas = [t["respuesta"] for t in f["turnos"]]
+    for t, tv in zip(f["turnos"], vara[f["id"]]["turnos"]):
+        t["casillas"] = [(k["n"], nota_casilla(k, [], t["respuesta"], respuestas[:t["turno"]]))
+                         for k in tv["casillas"]]
+    return f
+
+
 def informe(etiqueta):
     filas = [json.loads(x) for x in open(SALIDA, encoding="utf-8")]
-    filas = [f for f in filas if f["etiqueta"] == etiqueta]
+    filas = [_recalificar(f) for f in filas if f["etiqueta"] == etiqueta]
     cas = [(c, t) for f in filas for t in f["turnos"] for c in t["casillas"]]
     ok = sum(c[1] is True for c, _ in cas)
     mal = [(c, t) for c, t in cas if c[1] is False]
@@ -214,6 +317,9 @@ def main():
             return v
         return defecto
     hilos, temp, etiqueta = opt("--hilos", 1, int), opt("--temp", 0.2, float), opt("--etiqueta", "base", str)
+    vara, camino = opt("--vara", "", str), opt("--camino", "simulado", str)
+    if vara and etiqueta == "base":
+        etiqueta = f"v{vara}_{camino}"
     sistema = S_VENDEDOR
     if "--regla-dura" in a:
         a.remove("--regla-dura")
@@ -222,6 +328,10 @@ def main():
         informe(etiqueta)
         return
     pedidas = set(a)
+    if camino in ("motor", "clon"):
+        from banco_pruebas import clon_produccion as C
+        C.preparar_entorno()  # ANTES de importar app.config: si no, la clave y la tienda quedan mal
+        C.instalar()
     cli, modelo = _cliente()
     nombre = modelo.replace(" (paga)", "")
     hechas = set()
@@ -229,13 +339,15 @@ def main():
         hechas = {json.loads(x)["id"] for x in open(SALIDA, encoding="utf-8") if json.loads(x)["etiqueta"] == etiqueta}
     except FileNotFoundError:
         pass
-    cola = [c for c in charlas() if (not pedidas or c["id"] in pedidas) and c["id"] not in hechas]
+    if camino == "clon":
+        hilos = 1  # el conector del clon es uno solo: los turnos van de a uno
+    cola = [c for c in charlas(vara) if (not pedidas or c["id"] in pedidas) and c["id"] not in hechas]
     print(f"{modelo} · {len(cola)} charlas · temp {temp} · hilos {hilos} · etiqueta {etiqueta}")
     candado = threading.Lock()
 
     def una(c):
         t0 = time.time()
-        turnos = correr(c, cli, nombre, temp, sistema)
+        turnos = correr_clon(c) if camino == "clon" else correr(c, cli, nombre, temp, sistema, camino)
         with candado:
             with open(SALIDA, "a", encoding="utf-8") as f:
                 f.write(json.dumps({"etiqueta": etiqueta, "modelo": modelo, "id": c["id"], "clase": c.get("clase"),

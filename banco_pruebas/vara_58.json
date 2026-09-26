@@ -1,0 +1,1595 @@
+{
+ "_que_es": "Las 58 combinaciones de la ficha 58 como charlas. Las genera banco_pruebas/vara_58.py: no se edita a mano.",
+ "charlas": [
+  {
+   "id": "C01",
+   "grupo": "A",
+   "clase": "nombrar",
+   "turnos": [
+    {
+     "texto": "tenes el G305?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g305"
+       ],
+       "n": "dice g305"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "stock|disponible|tenemos|hay|tengo"
+       ],
+       "n": "dice stock|disponible|tenemos|hay|tengo"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C02",
+   "grupo": "A",
+   "clase": "buscar un rubro",
+   "turnos": [
+    {
+     "texto": "que parlantes tenes?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "edifier|genius|jbl|logitech"
+       ],
+       "n": "dice edifier|genius|jbl|logitech"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C03",
+   "grupo": "A",
+   "clase": "nombrar y preguntar un dato que la ficha no trae",
+   "turnos": [
+    {
+     "texto": "cuantos dpi tiene el G502 Hero?",
+     "casillas": [
+      {
+       "tipo": "no_patron",
+       "patron": "\\d[\\d.]*\\s*(dpi|ppp)",
+       "n": "no inventa los dpi"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C04",
+   "grupo": "A",
+   "clase": "nombrar y dar por cierto algo falso",
+   "turnos": [
+    {
+     "texto": "el K120, que es inalambrico, cuanto sale?",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 14500,
+       "n": "el monto 14500"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "cable|usb"
+       ],
+       "n": "corrige: es con cable"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C05",
+   "grupo": "A",
+   "clase": "exigir",
+   "turnos": [
+    {
+     "texto": "busco una notebook con 16 GB de RAM",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "16"
+       ],
+       "n": "dice 16"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "notebook|lenovo|asus|hp|acer|dell"
+       ],
+       "n": "dice notebook|lenovo|asus|hp|acer|dell"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C06",
+   "grupo": "A",
+   "clase": "preferir",
+   "turnos": [
+    {
+     "texto": "quiero un mouse inalambrico, preferentemente Logitech",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "logitech"
+       ],
+       "n": "dice logitech"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C07",
+   "grupo": "A",
+   "clase": "rechazar",
+   "turnos": [
+    {
+     "texto": "un mouse que no sea Genius",
+     "casillas": [
+      {
+       "tipo": "no_patron",
+       "patron": "genius (dx|nx)",
+       "n": "no ofrece un Genius"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "logitech|redragon|razer|hyperx"
+       ],
+       "n": "dice logitech|redragon|razer|hyperx"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C08",
+   "grupo": "A",
+   "clase": "lo menos posible",
+   "turnos": [
+    {
+     "texto": "una tablet, lo menos china posible",
+     "casillas": [
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "samsung"
+         ],
+         "n": "dice samsung"
+        },
+        {
+         "tipo": "dice",
+         "palabras": [
+          "china|chino"
+         ],
+         "n": "dice china|chino"
+        }
+       ],
+       "n": "Samsung, o dice que todas se fabrican en China"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C09",
+   "grupo": "A",
+   "clase": "ordenar",
+   "turnos": [
+    {
+     "texto": "cual es el monitor mas barato?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "t35f"
+       ],
+       "n": "dice t35f"
+      },
+      {
+       "tipo": "plata",
+       "monto": 151000,
+       "n": "el monto 151000"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C10",
+   "grupo": "A",
+   "clase": "mandar",
+   "turnos": [
+    {
+     "texto": "cuanto sale el envio a Posadas?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "posadas"
+       ],
+       "n": "dice posadas"
+      },
+      {
+       "tipo": "plata",
+       "monto": 10000,
+       "n": "el monto 10000"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C11",
+   "grupo": "A",
+   "clase": "politica de la casa",
+   "turnos": [
+    {
+     "texto": "hacen factura A?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "factura a|factura"
+       ],
+       "n": "dice factura a|factura"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "cuit"
+       ],
+       "n": "dice cuit"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C12",
+   "grupo": "A",
+   "clase": "dato falso de la tienda",
+   "turnos": [
+    {
+     "texto": "tienen 50 por ciento off en todo, no?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "transferencia"
+       ],
+       "n": "dice el descuento real"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "\\bs[ií],?\\s+(tenemos|hay)\\s+(un\\s+)?50",
+       "n": "no confirma el 50 por ciento"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C13",
+   "grupo": "A",
+   "clase": "si mismo",
+   "turnos": [
+    {
+     "texto": "soy revendedor, tienen precio mayorista?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "mayorista|reventa|cantidad"
+       ],
+       "n": "dice mayorista|reventa|cantidad"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C14",
+   "grupo": "A",
+   "clase": "explicar saber general",
+   "turnos": [
+    {
+     "texto": "que conviene, DDR4 o DDR5?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "ddr4"
+       ],
+       "n": "dice ddr4"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "ddr5"
+       ],
+       "n": "dice ddr5"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C15",
+   "grupo": "A",
+   "clase": "comprar",
+   "turnos": [
+    {
+     "texto": "me llevo dos G305 negros",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g305"
+       ],
+       "n": "dice g305"
+      },
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "plata",
+         "monto": 161000,
+         "n": "el monto 161000"
+        },
+        {
+         "tipo": "alguna",
+         "opciones": [
+          {
+           "tipo": "dice",
+           "palabras": [
+            "reserv"
+           ],
+           "n": "dice reserv"
+          },
+          {
+           "tipo": "dice",
+           "palabras": [
+            "nombre"
+           ],
+           "n": "dice nombre"
+          },
+          {
+           "tipo": "dice",
+           "palabras": [
+            "confirm"
+           ],
+           "n": "dice confirm"
+          }
+         ],
+         "n": "avanza la compra"
+        }
+       ],
+       "n": "el total o avanza la compra"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C16",
+   "grupo": "A",
+   "clase": "repartir el pago",
+   "turnos": [
+    {
+     "texto": "me llevo el K120 negro, pago 70 por ciento transferencia y 30 por ciento Mercado Pago",
+     "casillas": [
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "plata",
+         "monto": 10150,
+         "n": "el monto 10150"
+        },
+        {
+         "tipo": "plata",
+         "monto": 9135,
+         "n": "el monto 9135"
+        }
+       ],
+       "n": "la parte de transferencia, con o sin el 10 de descuento"
+      },
+      {
+       "tipo": "plata",
+       "monto": 4350,
+       "n": "el monto 4350"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C17",
+   "grupo": "B",
+   "clase": "varios productos con distinto verbo",
+   "turnos": [
+    {
+     "texto": "cuanto sale el G305 y que teclados mecanicos tenes?",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 80500,
+       "n": "el monto 80500"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "redragon|keychron|hyperx|corsair|razer|asus|genius|logitech"
+       ],
+       "n": "dice redragon|keychron|hyperx|corsair|razer|asus|genius|logitech"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C18",
+   "grupo": "B",
+   "clase": "productos y mandar",
+   "turnos": [
+    {
+     "texto": "tenes auriculares JBL y cuanto sale mandarlos a Cordoba?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "jbl"
+       ],
+       "n": "dice jbl"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "cordoba|córdoba"
+       ],
+       "n": "dice cordoba|córdoba"
+      },
+      {
+       "tipo": "plata",
+       "monto": 7500,
+       "n": "el monto 7500"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C19",
+   "grupo": "B",
+   "clase": "productos y casa",
+   "turnos": [
+    {
+     "texto": "el G203 tiene stock? y hacen factura A?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g203"
+       ],
+       "n": "dice g203"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "factura"
+       ],
+       "n": "dice factura"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C20",
+   "grupo": "B",
+   "clase": "productos y sumar",
+   "turnos": [
+    {
+     "texto": "sumame dos K120 negros y un G203 negro",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 66500,
+       "n": "el monto 66500"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C21",
+   "grupo": "B",
+   "clase": "sumar y repartir",
+   "turnos": [
+    {
+     "texto": "quiero un G305 negro y un K120 negro",
+     "casillas": []
+    },
+    {
+     "texto": "sumame todo y pago 70 por ciento transferencia y 30 por ciento Mercado Pago",
+     "casillas": [
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "plata",
+         "monto": 95000,
+         "n": "el monto 95000"
+        },
+        {
+         "tipo": "plata",
+         "monto": 88350,
+         "n": "el monto 88350"
+        }
+       ],
+       "n": "el total, con o sin descuento"
+      },
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "plata",
+         "monto": 66500,
+         "n": "el monto 66500"
+        },
+        {
+         "tipo": "plata",
+         "monto": 59850,
+         "n": "el monto 59850"
+        }
+       ],
+       "n": "la parte de transferencia, con o sin descuento"
+      },
+      {
+       "tipo": "plata",
+       "monto": 28500,
+       "n": "el monto 28500"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C22",
+   "grupo": "B",
+   "clase": "tienda y saber general",
+   "turnos": [
+    {
+     "texto": "el G305 sirve para jugar? cuanto sale?",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 80500,
+       "n": "el monto 80500"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "jug|gaming|gamer|juego"
+       ],
+       "n": "dice jug|gaming|gamer|juego"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C23",
+   "grupo": "C",
+   "clase": "condicion a una sola pieza",
+   "turnos": [
+    {
+     "texto": "quiero el G305 en blanco y un K120",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "blanco"
+       ],
+       "n": "dice blanco"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "k120"
+       ],
+       "n": "dice k120"
+      },
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "todas",
+         "opciones": [
+          {
+           "tipo": "plata",
+           "monto": 80500,
+           "n": "el monto 80500"
+          },
+          {
+           "tipo": "plata",
+           "monto": 14500,
+           "n": "el monto 14500"
+          }
+         ],
+         "n": "los dos precios"
+        },
+        {
+         "tipo": "pregunta",
+         "n": "pregunta el color del K120"
+        }
+       ],
+       "n": "los precios, o pregunta el color del K120 que no dijo"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C24",
+   "grupo": "C",
+   "clase": "condicion a todas",
+   "turnos": [
+    {
+     "texto": "teclado y mouse, los dos lo mas baratos posible",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "kb-110x|kb110x|k120"
+       ],
+       "n": "dice kb-110x|kb110x|k120"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "dx-110|dx110"
+       ],
+       "n": "dice dx-110|dx110"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C25",
+   "grupo": "C",
+   "clase": "cantidad por pieza",
+   "turnos": [
+    {
+     "texto": "dos G305 negros y tres K120 blancos, cuanto es?",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 204500,
+       "n": "el monto 204500"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C26",
+   "grupo": "C",
+   "clase": "destino por pieza",
+   "turnos": [
+    {
+     "texto": "mandame un G203 a Rosario y otro a Mendoza, cuanto sale cada envio?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "rosario"
+       ],
+       "n": "dice rosario"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "mendoza"
+       ],
+       "n": "dice mendoza"
+      },
+      {
+       "tipo": "plata",
+       "monto": 7000,
+       "n": "el monto 7000"
+      },
+      {
+       "tipo": "plata",
+       "monto": 9000,
+       "n": "el monto 9000"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C27",
+   "grupo": "C",
+   "clase": "ordenar dentro de un grupo dado",
+   "turnos": [
+    {
+     "texto": "mostrame mouse Logitech",
+     "casillas": []
+    },
+    {
+     "texto": "de esos, cual es el mas barato?",
+     "casillas": [
+      {
+       "tipo": "mas_barato_de",
+       "de_turno": 1,
+       "n": "el mas barato de lo mostrado"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C28",
+   "grupo": "D",
+   "clase": "si no hay, esto otro",
+   "turnos": [
+    {
+     "texto": "si no hay G502 Hero en negro, pasame el G305",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g305"
+       ],
+       "n": "dice g305"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "no hay|sin stock|agotad|no tenemos|no tengo|no tiene stock|no esta disponible"
+       ],
+       "n": "dice que el negro no hay"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C29",
+   "grupo": "D",
+   "clase": "si da si, comprar",
+   "turnos": [
+    {
+     "texto": "si el G305 anda con Mac, me lo llevo",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "mac"
+       ],
+       "n": "dice mac"
+      },
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "reserv"
+         ],
+         "n": "dice reserv"
+        },
+        {
+         "tipo": "dice",
+         "palabras": [
+          "nombre"
+         ],
+         "n": "dice nombre"
+        },
+        {
+         "tipo": "dice",
+         "palabras": [
+          "confirm"
+         ],
+         "n": "dice confirm"
+        }
+       ],
+       "n": "avanza la compra"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C30",
+   "grupo": "D",
+   "clase": "si el cruce da no, una alternativa",
+   "turnos": [
+    {
+     "texto": "tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "ddr5"
+       ],
+       "n": "dice ddr5"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "fury beast ddr5|renegade|ddr5 5600|ddr5 6400"
+       ],
+       "n": "dice fury beast ddr5|renegade|ddr5 5600|ddr5 6400"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C31",
+   "grupo": "D",
+   "clase": "si el total pasa un monto, quitar",
+   "turnos": [
+    {
+     "texto": "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 161000,
+       "n": "el monto 161000"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C32",
+   "grupo": "D",
+   "clase": "comparar dos y elegir",
+   "turnos": [
+    {
+     "texto": "entre el G305 y el G203, dame el que sea inalambrico",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g305"
+       ],
+       "n": "dice g305"
+      },
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "reserv"
+         ],
+         "n": "dice reserv"
+        },
+        {
+         "tipo": "dice",
+         "palabras": [
+          "nombre"
+         ],
+         "n": "dice nombre"
+        },
+        {
+         "tipo": "dice",
+         "palabras": [
+          "confirm"
+         ],
+         "n": "dice confirm"
+        }
+       ],
+       "n": "avanza la compra"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C33",
+   "grupo": "E",
+   "clase": "en el mismo mensaje",
+   "turnos": [
+    {
+     "texto": "quiero un teclado Redragon, ah no, mejor Logitech",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "logitech"
+       ],
+       "n": "dice logitech"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C34",
+   "grupo": "E",
+   "clase": "de otro turno",
+   "turnos": [
+    {
+     "texto": "cuanto sale mandar un G203 a Rosario?",
+     "casillas": []
+    },
+    {
+     "texto": "me equivoque, era para Cordoba, no Rosario",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "cordoba|córdoba"
+       ],
+       "n": "dice cordoba|córdoba"
+      },
+      {
+       "tipo": "plata",
+       "monto": 7500,
+       "n": "el monto 7500"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C35",
+   "grupo": "E",
+   "clase": "cambiar una condicion vigente",
+   "turnos": [
+    {
+     "texto": "busco un mouse gamer Logitech",
+     "casillas": []
+    },
+    {
+     "texto": "ya no importa la marca, pasame otras opciones",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "razer|redragon|genius|hyperx|corsair|steelseries"
+       ],
+       "n": "dice razer|redragon|genius|hyperx|corsair|steelseries"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C36",
+   "grupo": "F",
+   "clase": "lo suyo con un producto: cruzar",
+   "turnos": [
+    {
+     "texto": "el G305 anda con mi Mac?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "mac"
+       ],
+       "n": "dice mac"
+      },
+      {
+       "tipo": "no_dice",
+       "palabras": [
+        "no es compatible",
+        "no anda",
+        "no funciona"
+       ],
+       "n": "no dice no es compatible ni no anda ni no funciona"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C37",
+   "grupo": "F",
+   "clase": "lo suyo con un rubro",
+   "turnos": [
+    {
+     "texto": "tengo una notebook, que memoria ram le sirve?",
+     "casillas": [
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "escritorio"
+         ],
+         "n": "dice escritorio"
+        },
+        {
+         "tipo": "dice",
+         "palabras": [
+          "no tenemos|no tengo|no hay"
+         ],
+         "n": "dice no tenemos|no tengo|no hay"
+        },
+        {
+         "tipo": "pregunta",
+         "n": "repregunta"
+        }
+       ],
+       "n": "dice que las que hay son de escritorio o pregunta"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "(le sirve|es compatible|anda) (la|con) .*fury",
+       "n": "no afirma que una de escritorio le sirve"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C38",
+   "grupo": "F",
+   "clase": "lo suyo sin el dato que el cruce pide",
+   "turnos": [
+    {
+     "texto": "cuanto sale la Kingston Fury Beast DDR4 16GB?",
+     "casillas": []
+    },
+    {
+     "texto": "le sirve a mi pc?",
+     "casillas": [
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "pregunta",
+         "n": "repregunta"
+        },
+        {
+         "tipo": "dice",
+         "palabras": [
+          "ddr4",
+          "escritorio"
+         ],
+         "n": "dice ddr4 y escritorio"
+        }
+       ],
+       "n": "pregunta que PC es, o explica que pide DDR4 de escritorio"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C39",
+   "grupo": "F",
+   "clase": "dato falso de producto",
+   "turnos": [
+    {
+     "texto": "el G203 es inalambrico, no? lo quiero para viajar",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "cable"
+       ],
+       "n": "dice cable"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C40",
+   "grupo": "F",
+   "clase": "dato falso de la tienda",
+   "turnos": [
+    {
+     "texto": "me dijeron que el envio es gratis a todo el pais, no?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "250"
+       ],
+       "n": "dice 250"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C41",
+   "grupo": "F",
+   "clase": "si mismo pidiendo un permiso",
+   "turnos": [
+    {
+     "texto": "soy jubilado, tienen descuento?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "transferencia"
+       ],
+       "n": "dice transferencia"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C42",
+   "grupo": "F",
+   "clase": "condiciones imposibles juntas",
+   "turnos": [
+    {
+     "texto": "quiero una notebook con 64 GB de RAM por menos de 200 mil",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "no tenemos|no hay|no tengo|no encontr|no contamos|no figura"
+       ],
+       "n": "dice no tenemos|no hay|no tengo|no encontr|no contamos|no figura"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C43",
+   "grupo": "G",
+   "clase": "ese",
+   "turnos": [
+    {
+     "texto": "cuanto sale el K120?",
+     "casillas": []
+    },
+    {
+     "texto": "y ese es inalambrico?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "cable"
+       ],
+       "n": "dice cable"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C44",
+   "grupo": "G",
+   "clase": "el otro",
+   "turnos": [
+    {
+     "texto": "cuanto salen el G305 y el G203?",
+     "casillas": []
+    },
+    {
+     "texto": "el G305 no me convence, el otro tiene stock?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g203"
+       ],
+       "n": "dice g203"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C45",
+   "grupo": "G",
+   "clase": "modificar la busqueda anterior",
+   "turnos": [
+    {
+     "texto": "busco un mouse Logitech con cable",
+     "casillas": []
+    },
+    {
+     "texto": "y en blanco?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "blanco"
+       ],
+       "n": "dice blanco"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "logitech|g203|g502|m170"
+       ],
+       "n": "dice logitech|g203|g502|m170"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C46",
+   "grupo": "G",
+   "clase": "heredar una condicion vigente",
+   "turnos": [
+    {
+     "texto": "busco un teclado que no sea Redragon",
+     "casillas": []
+    },
+    {
+     "texto": "y alguno mecanico?",
+     "casillas": [
+      {
+       "tipo": "no_dice",
+       "palabras": [
+        "redragon"
+       ],
+       "n": "no dice redragon"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C47",
+   "grupo": "G",
+   "clase": "dato del cliente dicho antes",
+   "turnos": [
+    {
+     "texto": "hola, soy de Posadas, Misiones",
+     "casillas": []
+    },
+    {
+     "texto": "cuanto me sale el G203 negro con envio?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "posadas"
+       ],
+       "n": "dice posadas"
+      },
+      {
+       "tipo": "plata",
+       "monto": 47500,
+       "n": "el monto 47500"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C48",
+   "grupo": "G",
+   "clase": "pedido anterior",
+   "turnos": [
+    {
+     "texto": "me llevo un G305 negro",
+     "casillas": []
+    },
+    {
+     "texto": "mandamelo a Rosario, cuanto seria en total?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "rosario"
+       ],
+       "n": "dice rosario"
+      },
+      {
+       "tipo": "plata",
+       "monto": 87500,
+       "n": "el monto 87500"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C49",
+   "grupo": "G",
+   "clase": "referencia lejana por nombre parcial",
+   "turnos": [
+    {
+     "texto": "cuanto sale el teclado Logitech K120 negro?",
+     "casillas": []
+    },
+    {
+     "texto": "y auriculares JBL tenes?",
+     "casillas": []
+    },
+    {
+     "texto": "tenes webcams?",
+     "casillas": []
+    },
+    {
+     "texto": "el teclado logi ese del principio, tiene stock?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "k120"
+       ],
+       "n": "dice k120"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C50",
+   "grupo": "G",
+   "clase": "respuesta a una repregunta",
+   "turnos": [
+    {
+     "texto": "estoy entre el G203 y el G305",
+     "casillas": []
+    },
+    {
+     "texto": "me llevo uno",
+     "casillas": [
+      {
+       "tipo": "pregunta",
+       "n": "pregunta cual"
+      }
+     ]
+    },
+    {
+     "texto": "el primero",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g203"
+       ],
+       "n": "dice g203"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C51",
+   "grupo": "G",
+   "clase": "a otra pieza del mismo mensaje",
+   "turnos": [
+    {
+     "texto": "cuanto sale el G305 negro? y mandame ese a Cordoba",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 80500,
+       "n": "el monto 80500"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "cordoba|córdoba"
+       ],
+       "n": "dice cordoba|córdoba"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C52",
+   "grupo": "G",
+   "clase": "sin destino",
+   "turnos": [
+    {
+     "texto": "que tenes en mouse Logitech, teclados Logitech y auriculares JBL?",
+     "casillas": []
+    },
+    {
+     "texto": "y ese cuanto?",
+     "casillas": [
+      {
+       "tipo": "pregunta",
+       "n": "pregunta cual de todos"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C53",
+   "grupo": "H",
+   "clase": "memoria con dependencia",
+   "turnos": [
+    {
+     "texto": "cuanto sale el G502 Hero?",
+     "casillas": []
+    },
+    {
+     "texto": "del que me dijiste, si no hay en negro dame el blanco",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "blanco"
+       ],
+       "n": "dice blanco"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C54",
+   "grupo": "H",
+   "clase": "lo suyo con dependencia y orden",
+   "turnos": [
+    {
+     "texto": "tengo una fuente de 550 watts, cual es la placa de video mas potente que aguante?",
+     "casillas": [
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "4060"
+         ],
+         "n": "dice 4060"
+        },
+        {
+         "tipo": "dice",
+         "palabras": [
+          "no figura|no tengo el dato|consumo|depende"
+         ],
+         "n": "dice no figura|no tengo el dato|consumo|depende"
+        }
+       ],
+       "n": "una 4060, o dice que falta el consumo"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C55",
+   "grupo": "H",
+   "clase": "memoria, correccion y compra",
+   "turnos": [
+    {
+     "texto": "cuanto salen el G305 negro y el G203 negro?",
+     "casillas": []
+    },
+    {
+     "texto": "me gusta el G305",
+     "casillas": []
+    },
+    {
+     "texto": "ah no, el otro, y ese me lo llevo",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g203"
+       ],
+       "n": "dice g203"
+      },
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "reserv"
+         ],
+         "n": "dice reserv"
+        },
+        {
+         "tipo": "dice",
+         "palabras": [
+          "nombre"
+         ],
+         "n": "dice nombre"
+        },
+        {
+         "tipo": "dice",
+         "palabras": [
+          "confirm"
+         ],
+         "n": "dice confirm"
+        }
+       ],
+       "n": "avanza la compra"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C56",
+   "grupo": "H",
+   "clase": "multipregunta con dato falso y compra condicional",
+   "turnos": [
+    {
+     "texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 14500,
+       "n": "el monto 14500"
+      },
+      {
+       "tipo": "no_dice",
+       "palabras": [
+        "te reserve",
+        "te reservé",
+        "reservado"
+       ],
+       "n": "no dice te reserve ni te reservé ni reservado"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C57",
+   "grupo": "I",
+   "clase": "otro",
+   "turnos": [
+    {
+     "texto": "cual es la capital de Francia?",
+     "casillas": [
+      {
+       "tipo": "no_patron",
+       "patron": "\\$\\s?\\d",
+       "n": "no mete plata"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C58",
+   "grupo": "I",
+   "clase": "charla mezclada con pedido",
+   "turnos": [
+    {
+     "texto": "jaja buenisimo gracias crack, che y el G305 tiene garantia?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "24"
+       ],
+       "n": "dice 24"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
