@@ -31,7 +31,7 @@ Si la cuota se agota, se corta limpio y se sigue otro dia con el mismo comando.
   python3 -m banco_pruebas.sonda_modelo                 todas las familias
   python3 -m banco_pruebas.sonda_modelo P3 P4           solo esas
   python3 -m banco_pruebas.sonda_modelo --informe       solo el informe
-  opciones: --reps 5  --pausa 4  --temp 0.2  --etiqueta base  --hilos 1
+  opciones: --reps 5  --pausa 4  --temp 0.2  --etiqueta base  --hilos 1  --regla-dura
   con la paga, solo si Martin la pide: BANCO_CLAVE_PAGA=true ... --pausa 0 --hilos 8
 """
 import csv
@@ -832,6 +832,11 @@ def main():
     reps, pausa = opt("--reps", 5, int), opt("--pausa", 4.0, float)
     temp, etiqueta = opt("--temp", 0.2, float), opt("--etiqueta", "base", str)
     hilos = opt("--hilos", 1, int)
+    if "--regla-dura" in a:  # la regla dura para TODAS las pruebas con herramientas
+        a.remove("--regla-dura")
+        global S_VENDEDOR
+        S_VENDEDOR += REGLA_DURA
+        _con_herramientas.__defaults__ = _con_herramientas.__defaults__[:-1] + (S_VENDEDOR,)
     if "--informe" in a:
         informe(etiqueta)
         return

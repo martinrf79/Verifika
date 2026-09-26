@@ -64,9 +64,48 @@ arreglada.
 - Su opinión sobre sí mismo vale poco: a una pregunta sobre cuentas contestó
   sobre contabilidad general.
 
+## Segunda tanda, el mismo día
+
+**La regla dura no rompe nada.** Con la regla al final en todas las pruebas
+con herramientas: elegir, dependencias y no inventar dieron todo bien, 205 de
+205, incluido el "12.000 DPI" que antes fallaba siempre.
+
+**La temperatura alta trae el azar.** A temperatura 1 aparecen los casos a
+medias: partir, correcciones y planes, y una vez inventó un precio que antes
+nunca inventaba. Regla: temperatura baja en todo lo que interpreta o decide.
+
+**Charlas de varios turnos.** Se corrieron las 104 charlas de las varas del
+repo, 179 turnos, con el historial entero como memoria y sin libreta, con
+`banco_pruebas/sonda_charlas.py`. Quedaron 60 enteras bien por la nota
+automática. Leídas una por una, las fallas son de tres clases:
+
+- **Del banco, no del modelo, la mayoría.** La nota no reconocía un producto
+  pedido por id, una compra por id, o una respuesta correcta sacada del
+  historial sin llamar a nada.
+- **De las herramientas, muchas.** El buscador de prueba no tiene precio
+  mínimo, origen ni peso, y su rubro no entiende "disco externo". El modelo
+  entonces concluye mal con datos parciales: dijo que no había notebooks de
+  más de 900 mil porque la herramienta le mostró sólo tres. **El buscador es
+  el cuello, no el modelo.**
+- **Del modelo, pocas y conocidas:** no repregunta ante "el asus" con varios;
+  pierde la marca cuando el cliente cambia de rubro, "el monitor" después de
+  hablar de Samsung; suma plata él mismo en vez de llamar a calcular, cinco
+  turnos, con la cuenta bien; y una vez dio por sabido el costo de envío a
+  Salta sin consultarlo.
+
+La memoria lejana sin libreta anduvo: el destino de hace varios turnos, "el
+tercero", "cuál sale menos", "la impresora del principio".
+
+**El caché anda, también con herramientas obligatorias.** Con un comienzo
+largo e idéntico, la API informó entre 57 y 85 por ciento de la entrada
+cacheada, con herramientas y con llamada obligatoria. En las charlas dio cero
+porque el prompt no llegaba al mínimo que el proveedor cachea. Regla: adelante
+lo fijo y largo —sistema, herramientas y tablero, siempre iguales y en el
+mismo orden—; atrás lo que cambia. Lo que lo rompe es variar la lista de
+herramientas por turno o meter algo cambiante adelante.
+
 ## Lo que queda por medir
 
-- Si la regla dura del final rompe otras pruebas de no inventar.
-- Temperatura más alta, que es donde puede aparecer la variación.
-- Charlas de varios turnos: la sonda mide un turno por vez.
 - Las charlas reales del issue 31, como fuente de pruebas nuevas.
+- El buscador de verdad del repo en lugar del simulado, que es donde se
+  concentraron las fallas.
