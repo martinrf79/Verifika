@@ -86,40 +86,8 @@ def test_la_memoria_muestra_lo_MAS_RECIENTE_y_no_lo_mas_viejo():
     assert "X11" in m and "X00" not in m
 
 
-def test_el_umbral_que_la_casa_devolvio_no_tira_la_respuesta(
-        firestore_doble, monkeypatch):
-    """La tarifa y el 'envio gratis desde $250.000' volvieron del motor: son
-    fuente, y copiarlos no es inventar."""
-    texto = ("El envio a Rosario sale $7.000. Recorda que es gratis a partir "
-             "de $250.000.")
-    salida = {"tipo": "costo_envio", "texto": texto,
-              "fuente_casa": '{"filas": [{"destino": "Rosario", '
-                             '"monto_ars": 7000}], "gratis_desde": 250000}'}
-    informe = R._informe_en_blanco()
-    informe["llamadas"] = 1
-    monkeypatch.setattr(
-        R, "_preguntar",
-        lambda *a, **k: asyncio.sleep(
-            0, result=(salida, [], {"Rosario": 7000}, {}, informe)))
-    fuera = asyncio.run(R.procesar_turno(
-        "sonda_umbral", "y a Rosario?", TIENDA, "telegram", "trace_umbral"))
-    assert "250.000" in fuera, fuera
 
 
-def test_un_umbral_que_NADIE_devolvio_sigue_cayendo(firestore_doble,
-                                                    monkeypatch):
-    """El arreglo no abre la puerta: una cifra sin procedencia sigue tirando
-    la respuesta."""
-    salida = {"tipo": "costo_envio", "fuente_casa": "",
-              "texto": "Es gratis a partir de $999.999."}
-    informe = R._informe_en_blanco()
-    informe["llamadas"] = 1
-    monkeypatch.setattr(
-        R, "_preguntar",
-        lambda *a, **k: asyncio.sleep(0, result=(salida, [], {}, {}, informe)))
-    fuera = asyncio.run(R.procesar_turno(
-        "sonda_umbral2", "y a Rosario?", TIENDA, "telegram", "trace_u2"))
-    assert "999.999" not in fuera
 
 
 def test_un_modelo_en_dos_colores_es_UN_renglon():
@@ -178,37 +146,11 @@ REDRAGON = {"categoria": "auriculares", "campo": "marca",
             "operador": "no_contiene", "valor": "redragon"}
 
 
-def test_la_exclusion_se_arrastra_al_turno_siguiente():
-    vig = R._vigentes_que_siguen([REDRAGON], "y algo mas barato?")
-    assert list(vig) == ["auriculares"]
-    (cond,) = vig["auriculares"].values()
-    assert cond["valor"] == "redragon"
 
 
-def test_si_el_cliente_vuelve_a_nombrar_el_valor_manda_lo_que_dice_ahora():
-    """'ahora si, mostrame redragon': el codigo no le repone lo que levanto."""
-    assert R._vigentes_que_siguen([REDRAGON], "ahora si, mostrame Redragon") \
-        == {}
 
 
-def test_un_filtro_positivo_no_se_arrastra():
-    """Una positiva puede vaciar la busqueda; solo excluir o graduar pasa."""
-    positiva = dict(REDRAGON, operador="contiene")
-    assert R._vigentes_que_siguen([positiva], "otros?") == {}
 
 
-def test_la_exclusion_se_repone_en_la_busqueda_del_mismo_rubro():
-    from app.core import cotejo as CO
-    vig = R._vigentes_que_siguen([REDRAGON], "y algo mas barato?")
-    consultas = [{"categoria": "auriculares",
-                  "ordenar_por": {"campo": "precio_ars", "direccion": "min"}}]
-    CO.reponer_condiciones(consultas, vig)
-    assert consultas[0]["condiciones"][0]["valor"] == "redragon"
 
 
-def test_ida_y_vuelta_por_lo_que_se_guarda():
-    vig = R._vigentes_que_siguen([REDRAGON], "otros?")
-    guardado = R._vigentes_para_guardar(vig)
-    assert guardado == [REDRAGON]
-    m = R._memoria_texto({"preferencias_cliente": {"vigentes": guardado}})
-    assert "redragon" in m.lower()

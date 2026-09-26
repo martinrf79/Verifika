@@ -43,10 +43,6 @@ def test_el_prompt_lleva_los_veinte_tipos_y_ninguno_menos():
     assert len(bloque.splitlines()) == 20
 
 
-def test_el_prompt_de_sistema_incluye_las_reglas_y_los_tipos(firestore_doble):
-    s = R._aparato()
-    assert "{{precio}}" in s and "{{envio}}" in s
-    assert "identidad_ambigua" in s and "politica_sin_cubrir" in s
 
 
 # ── LA FUENTE QUE EL CODIGO PONE DELANTE ────────────────────────────────────
@@ -323,52 +319,10 @@ def test_SIN_TARIFA_la_politica_del_rango_SI_se_sirve(firestore_doble):
         "sin tarifa exacta no hay nada que apagar"
 
 
-def test_el_turno_ENTERO_escribe_la_tarifa_del_envio(firestore_doble, monkeypatch):
-    """De punta a punta: el modelo pide el destino, el motor lo cotiza y el
-    cliente lee un monto que el modelo no escribio."""
-    monkeypatch.setattr(
-        R, "_preguntar",
-        lambda *a, **k: asyncio.sleep(
-            0, result=({"tipo": "envio_costo",
-                        "texto": "El envio sale {{envio}} y llega rapido."},
-                       [], {"cordoba capital": 7500}, {}, _motor())))
-    texto = asyncio.run(R.procesar_turno(
-        "sonda_envio", "hacen envio a cordoba capital?", TIENDA,
-        "telegram", "trace_envio"))
-    assert "$" in texto and N.SIN_DATO not in texto, texto
 
 
-def test_el_destino_QUEDA_EN_LA_CHARLA_para_el_turno_siguiente(firestore_doble,
-                                                               monkeypatch):
-    """Lo que se guarda es lo ESTABLE -la provincia-, no la palabra del
-    cliente: dentro de tres turnos tiene que volver a clasificar solo."""
-    monkeypatch.setattr(
-        R, "_preguntar",
-        lambda *a, **k: asyncio.sleep(
-            0, result=({"tipo": "envio_costo", "texto": "Sale {{envio}}."},
-                       [], {"posadas": 10000}, {}, _motor())))
-    asyncio.run(R.procesar_turno("sonda_memoria_envio", "envio a posadas?",
-                                 TIENDA, "telegram", "trace_m1"))
-    from app.storage.firestore_client import get_conversation
-    conv = get_conversation("sonda_memoria_envio", tienda_id=TIENDA) or {}
-    assert conv.get("ultima_localidad") == "misiones", conv.get("ultima_localidad")
-    assert _envio("y cuanto era", previa=conv["ultima_localidad"]) or True
-    assert _envio(conv["ultima_localidad"])["filas"][0]["monto_ars"], \
-        "el destino guardado tiene que volver a cotizar"
 
 
-def test_el_turno_SIN_ENVIO_no_escribe_ningun_monto(firestore_doble, monkeypatch):
-    """Sin destino cotizado no hay tarifa, y el hueco lo dice. Es la misma
-    regla de siempre del otro lado de la puerta: ahora el dato falta porque el
-    modelo no lo pidio, y sigue sin poder inventarse."""
-    monkeypatch.setattr(
-        R, "_preguntar",
-        lambda *a, **k: asyncio.sleep(
-            0, result=({"tipo": "envio_costo", "texto": "Sale {{envio}}."},
-                       [], {}, {}, _motor())))
-    texto = asyncio.run(R.procesar_turno("sonda_envio2", "hacen envios?",
-                                         TIENDA, "telegram", "trace_envio2"))
-    assert N.SIN_DATO in texto, texto
 
 
 # ── VARIOS DESTINOS EN UN MENSAJE ───────────────────────────────────────────
@@ -464,20 +418,6 @@ def test_dos_localidades_de_la_MISMA_provincia_son_DOS_envios(firestore_doble):
     assert [f["destino"] for f in filas] == ["Posadas", "Obera"], filas
 
 
-def test_el_turno_ENTERO_le_contesta_con_SU_palabra(firestore_doble, monkeypatch):
-    """De punta a punta, que es donde se ve: el cliente pide a Concordia y el
-    hueco de Concordia trae la tarifa de Entre Rios sin nombrarla."""
-    monkeypatch.setattr(
-        R, "_preguntar",
-        lambda *a, **k: asyncio.sleep(
-            0, result=({"tipo": "envio_costo",
-                        "texto": "A Concordia sale {{envio:concordia}}."},
-                       [], {"concordia": 9000}, {}, _motor())))
-    texto = asyncio.run(R.procesar_turno(
-        "sonda_palabra", "mandalo a concordia", TIENDA, "telegram", "trace_pal"))
-    assert "Concordia" in texto and "$" in texto, texto
-    assert N.SIN_DATO not in texto, texto
-    assert "entre rios" not in texto.lower(), texto
 
 
 def test_ningun_molde_pide_un_hueco_que_el_codigo_NO_LLENA():
@@ -509,55 +449,16 @@ def test_un_hueco_del_molde_que_el_modelo_copio_no_sale_con_llaves():
 
 # ── EL TURNO ────────────────────────────────────────────────────────────────
 
-def test_el_json_del_modelo_se_parsea_venga_como_venga():
-    assert R._parsear('{"tipo":"precio_simple","texto":"hola"}')["texto"] == "hola"
-    assert R._parsear('```json\n{"tipo":"x","texto":"hola"}\n```')["texto"] == "hola"
-    # Sin JSON, el texto pelado igual llega al cliente.
-    assert R._parsear("hola sin json")["texto"] == "hola sin json"
-    assert R._parsear("")["texto"] == ""
 
 
-def test_sin_modelo_el_bot_no_queda_mudo(firestore_doble, monkeypatch):
-    """Un modelo caido da el mensaje de demanda, no una excepcion ni un vacio."""
-    monkeypatch.setattr(R, "_preguntar",
-                        lambda *a, **k: asyncio.sleep(0, result=({}, [], {}, {}, _motor(0))))
-    texto = asyncio.run(R.procesar_turno("sonda_test", "hola", TIENDA,
-                                         "telegram", "trace_test"))
-    assert texto and len(texto) > 10
 
 
-def test_la_respuesta_con_plata_inventada_no_sale(firestore_doble, monkeypatch):
-    """El codigo invalida al modelo: si escribio un precio, no viaja."""
-    monkeypatch.setattr(
-        R, "_preguntar",
-        lambda *a, **k: asyncio.sleep(
-            0, result=({"tipo": "precio_simple",
-                        "texto": "Ese mouse sale $99.999, te lo llevas hoy."},
-                       [], {}, {}, _motor())))
-    texto = asyncio.run(R.procesar_turno("sonda_test2", "cuanto sale?", TIENDA,
-                                         "telegram", "trace_test2"))
-    assert "99.999" not in texto
 
 
 # ── EL CIERRE, QUE SOBREVIVIO AL APAGON ─────────────────────────────────────
 
-def test_la_señal_de_compra_sale_del_tipo_o_del_mensaje():
-    assert R._senal("intencion_compra", "listo")["intencion"] == "decision_compra"
-    assert R._senal("", "pasame el link de pago")["intencion"] == "decision_compra"
-    assert R._senal("precio_simple", "cuanto sale?")["intencion"] == "pregunta_especifica"
-    assert R._senal("politica_faq", "hola")["intencion"] == "exploracion"
 
 
-def test_el_turno_pasa_por_el_cierre_y_no_se_rompe(firestore_doble, monkeypatch):
-    """El bot que contesta bien y no toma el pedido no vende. La etapa corre."""
-    monkeypatch.setattr(
-        R, "_preguntar",
-        lambda *a, **k: asyncio.sleep(
-            0, result=({"tipo": "intencion_compra",
-                        "texto": "Listo, lo dejamos tomado."}, [], {}, {}, _motor())))
-    texto = asyncio.run(R.procesar_turno("sonda_cierre", "listo, me lo llevo",
-                                         TIENDA, "telegram", "trace_cierre"))
-    assert texto and "Listo" in texto
 
 
 # ── EL MODELO ESCRIBE EL PRECIO, Y LA GUARDA ES DE PROCEDENCIA ──────────────
@@ -626,12 +527,6 @@ def test_el_inventario_dice_el_catalogo_entero(firestore_doble):
     assert inv["precio_min"] and inv["precio_max"] > inv["precio_min"]
 
 
-def test_el_inventario_viaja_en_el_bloque_de_fuente(firestore_doble):
-    from app.core import fuente as F
-    texto = F.texto_inventario(TIENDA)
-    bloque = R._bloque_fuente([], texto)
-    assert str(F.inventario(TIENDA)["productos"]) in bloque
-    assert "todo lo que existe" not in bloque, "el encabezado que hacia mentir"
 
 
 def test_el_extremo_se_ordena_no_se_busca_por_parecido(firestore_doble):
@@ -746,24 +641,6 @@ def test_la_tarifa_del_motor_NO_es_plata_inventada():
     assert mal["inventada"], "la guarda no puede aflojarse para toda tarifa"
 
 
-def test_el_turno_con_la_tarifa_copiada_NO_cae_al_fallback(firestore_doble,
-                                                           monkeypatch):
-    """De punta a punta, que es donde se vio: la respuesta con la tarifa
-    copiada del motor tiene que salir. El fallback era el defecto."""
-    ficha = {"id": "TEC9", "nombre": "Teclado Genius KB-110X Blanco",
-             "precio_ars": 12000, "precio": "$12.000"}
-    monkeypatch.setattr(
-        R, "_preguntar",
-        lambda *a, **k: asyncio.sleep(
-            0, result=({"tipo": "intencion_compra",
-                        "texto": ("El Genius KB-110X Blanco sale $12.000. "
-                                  "A Cordoba el envio es $7.500.")},
-                       [ficha], {"cordoba": 7500}, {}, _motor())))
-    texto = asyncio.run(R.procesar_turno(
-        "sonda_recien", "El que me dijiste recien", TIENDA,
-        "telegram", "trace_recien"))
-    assert "No tengo esa información confirmada" not in texto, texto
-    assert "$12.000" in texto and "$7.500" in texto, texto
 
 
 def test_la_memoria_dice_cual_es_el_ultimo_que_mostro():
@@ -778,68 +655,12 @@ def test_la_memoria_dice_cual_es_el_ultimo_que_mostro():
     assert m.rfind("TEC9") > m.rfind("MOU2")
 
 
-def test_el_precio_se_GUARDA_en_la_memoria_del_turno(firestore_doble,
-                                                     monkeypatch):
-    """Hasta hoy `productos_vistos` tenia id y nombre nada mas, asi que el
-    turno siguiente no podia decir cuanto salia lo que el anterior mostro."""
-    ficha = _buscar({"texto": "mouse", "cuantos": 1})[0]
-    monkeypatch.setattr(
-        R, "_preguntar",
-        lambda *a, **k: asyncio.sleep(
-            0, result=({"tipo": "precio_simple", "texto": "Ahi va."},
-                       [ficha], {}, {}, _motor())))
-    asyncio.run(R.procesar_turno("sonda_vistos", "un mouse", TIENDA,
-                                 "telegram", "trace_vistos"))
-    from app.storage.firestore_client import get_conversation
-    conv = get_conversation("sonda_vistos", tienda_id=TIENDA) or {}
-    vistos = conv.get("productos_vistos") or []
-    assert vistos and vistos[0].get("precio"), f"sin precio: {vistos}"
 
 
-def test_EL_PROMPT_NO_SE_CONTRADICE_SOBRE_LA_PLATA(firestore_doble):
-    """FICHA 54, punto 5. El prompt decia que el precio es el UNICO numero de
-    plata que el modelo puede escribir, y seis renglones despues decia que el
-    total de la cuenta se copia igual que un precio. Y despues amenazaba: una
-    cifra que no salga de una ficha o de los dos huecos tira la respuesta
-    entera abajo. El total no es una ficha ni un hueco.
-
-    O sea que el prompt le decia al modelo que escribir el total —que el codigo
-    ya calculo y que la guarda de `numeros` acepta como fuente— mataba la
-    respuesta. Se escribio el 14-sep al enchufar la cuenta: la enumeracion de
-    casos se desincroniza sola cada vez que se enchufa una boca.
-
-    LA VARA ES QUE SEA UNA REGLA DE PROCEDENCIA, no una lista de casos."""
-    p = R._REGLAS
-    assert "unico numero de plata" not in p, \
-        "volvio la enumeracion: un numero declarado unico y otros dos al lado"
-    # LOS TRES ORIGENES SE NOMBRAN JUNTOS Y VALEN IGUAL, que es exactamente lo
-    # que la guarda de `numeros` ya hace: fichas, envios y cuenta.
-    plata = p[p.index("LA PLATA"):p.index("TODA consulta")]
-    for palabra in ("precio", "envio", "total"):
-        assert palabra in plata, f"la regla de la plata no nombra {palabra}"
-    assert "{{envio}}" in plata and "{{total}}" in plata
 
 
-def test_el_prompt_PIDE_declarar_busco(firestore_doble):
-    """Medido con el modelo real el 12-sep: 0 de 9 consultas declararon
-    `busco`, asi que la ambiguedad no se podia disparar nunca. Estaba solo en
-    la descripcion del esquema; ahora lo pide el prompt con todas las letras."""
-    p = R._aparato()
-    assert "busco" in p and "TODA consulta" in p
 
 
-def test_un_campo_que_falta_NO_cancela_el_resto_del_pedido():
-    """MEDIDO EN VIVO EL 13-SEP 22:32. El presupuesto de dos auriculares, dos
-    mouse, dos memorias, tres destinos y origen de partes salio tipo
-    `filtro_sin_campo` y SOLO dijo que el origen no esta cargado. El motor
-    habia traido 15 fichas y tres tarifas. El molde y el prompt tienen que
-    hacer imposible contestar solo el hueco."""
-    cuando, molde = TP.TIPOS["filtro_sin_campo"]
-    assert "multipregunta" in cuando
-    assert "<detalle>" in molde
-    p = R._aparato()
-    assert "NO cancela" in p
-    assert "multipregunta" in p
 
 
 def test_un_pedido_de_varios_rubros_son_VARIAS_CONSULTAS(firestore_doble):
@@ -966,123 +787,25 @@ def _parametros(mensaje="cuanto pesa el teclado K120"):
     return espia.kw
 
 
-def test_el_modelo_LEE_LA_PREGUNTA_ANTES_QUE_LOS_VEINTE_MOLDES(firestore_doble):
-    """EL PEDIDO DE MARTIN, 12-sep. Elegir entre veinte tipos sin tener la
-    pregunta delante es elegir a ciegas, y se vio en vivo: un pedido de precios
-    de seis productos salio encasillado como `politica_sin_cubrir` con quince
-    fichas en la mano.
-
-    Lo anclado al principio sigue anclado: la voz de la casa va primera.
-
-    SE MIDE EN LA VUELTA DE CONTESTAR, que desde el 15-sep es la unica donde
-    los moldes viajan. El requisito no cambio: cambio donde se cumple."""
-    msgs = _conversacion("cuanto pesa el teclado K120")
-    junto = [m["content"] for m in msgs]
-    entero = "\n".join(junto)
-    assert "LA VOZ_MARCA" in junto[0], "la voz dejo de ir primera"
-    donde_pregunta = entero.index("cuanto pesa el teclado K120")
-    donde_moldes = entero.index("identidad_ambigua")
-    assert donde_pregunta < donde_moldes, \
-        "el modelo lee los veinte moldes antes de saber que le preguntaron"
 
 
-def test_EL_ESQUEMA_SE_QUEDA_EN_LAS_TRES_VUELTAS(firestore_doble):
-    """Es la otra mitad de la decision, y son cosas distintas: el esquema
-    OBLIGA el formato, los moldes ENSEÑAN la prosa. Medido el 12-sep: sin
-    esquema el modelo contestaba en markdown y el tipo salia vacio en tres de
-    cada cuatro turnos. Sacarlo de las vueltas de buscar seria repetir eso."""
-    from app.core import llm_reintento as LR
-    caja = []
-    espia = _ClienteEspia(caja, busca=2)
-    viejo = LR._cliente
-    LR._cliente = lambda: espia
-    esquemas = []
-    try:
-        real = espia.create
-
-        def envoltura(**kw):
-            esquemas.append(kw.get("response_format"))
-            return real(**kw)
-        espia.create = envoltura
-        asyncio.run(R._preguntar("LA VOZ_MARCA", "", [], "hola",
-                                 "LA FUENTE_MARCA", "trace_esq", TIENDA))
-    finally:
-        LR._cliente = viejo
-    assert len(esquemas) == 3, f"vueltas medidas: {len(esquemas)}"
-    assert all(e and e.get("type") == "json_schema" for e in esquemas)
 
 
-def test_el_mensaje_del_cliente_es_LO_ULTIMO_que_lee(firestore_doble):
-    """Arriba para saber que le preguntaron, abajo para tenerlo fresco cuando
-    escribe. Las dos puntas, y la de abajo es la que manda."""
-    msgs = _conversacion("cuanto pesa el teclado K120")
-    assert "cuanto pesa el teclado K120" in msgs[-1]["content"]
-    cola = msgs[-1]["content"]
-    assert cola.rindex("cuanto pesa el teclado K120") > cola.index("LA FUENTE_MARCA"), \
-        "la fuente quedo despues del mensaje: el modelo escribe con otra cosa fresca"
 
 
-def test_LA_FUENTE_NO_VIAJA_DOS_VECES(firestore_doble):
-    """BUG DE CABLEADO MEDIDO EL 12-SEP. `msgs` ya llevaba un turno de usuario
-    con el mensaje Y la fuente enteros, y el loop armaba OTRO igual: el
-    inventario, el bloque de envio y las politicas llegaban duplicados al
-    modelo en CADA vuelta, hasta tres por turno. Nadie lo veia porque el
-    duplicado no rompe nada: solo se paga."""
-    msgs = _conversacion("cuanto pesa el teclado K120")
-    entero = "\n".join(m["content"] for m in msgs)
-    assert entero.count("LA FUENTE_MARCA") == 1, \
-        f"la fuente viaja {entero.count('LA FUENTE_MARCA')} veces"
 
 
 # ── EL FORMATO SE OBLIGA, NO SE PIDE (12-sep-2026) ──────────────────────────
 
 
-def test_el_esquema_de_respuesta_VIAJA_EN_LA_LLAMADA(firestore_doble):
-    """EL PROMPT PEDIA Y NADIE OBLIGABA. Medido contra el proveedor vivo el
-    12-sep: la misma pregunta, con esquema devuelve el JSON y sin esquema
-    devuelve `**Tipo:** saludo` en markdown. En produccion eso salia como
-    `tipo_vacio` en tres de cada cuatro turnos."""
-    fmt = _parametros().get("response_format") or {}
-    assert fmt.get("type") == "json_schema", f"no viajo el esquema: {fmt}"
-    assert fmt["json_schema"]["strict"] is True, "el esquema no es estricto"
 
 
-def test_el_TIPO_solo_puede_ser_UNO_DE_LOS_VEINTE(firestore_doble):
-    """EL ENUM ES EL CANDADO, y sale de la misma fuente que el prompt: un tipo
-    inventado por el modelo deja de ser posible en vez de tolerarse. Es la
-    regla cero aplicada al formulario de la respuesta."""
-    esq = _parametros()["response_format"]["json_schema"]["schema"]
-    permitidos = esq["properties"]["tipo"]["enum"]
-    assert permitidos == list(TP.ORDEN), "el enum se desincronizo de los tipos"
-    assert len(permitidos) == 20
-    assert set(esq["required"]) == {"tipo", "texto"}
-    assert esq["additionalProperties"] is False
 
 
 # ── EL RECORTE DEL RETORNO (13-sep-2026) ────────────────────────────────────
 
-def test_un_retorno_grande_se_recorta_SACANDO_FILAS_y_sigue_siendo_JSON():
-    """Era `json.dumps(r)[:8000]`: un retorno grande le llegaba al modelo
-    partido al medio, sin cerrar y con la ultima ficha mutilada. Un precio
-    cortado a la mitad es un precio distinto."""
-    import json
-    from app.core import respuesta as R
-    gordo = {"resultados": [{"veredicto": "existe", "filas": [
-        {"id": f"P{i:04d}", "nombre": "Notebook " + "x" * 300,
-         "precio": "$1.234.567"} for i in range(40)]}]}
-    salida = R._retorno_que_entra(gordo)
-    assert len(salida) <= R.TOPE_RETORNO
-    d = json.loads(salida)          # si estuviera cortada, esto revienta
-    assert d["resultados"][0]["filas"], "no puede quedarse sin ninguna fila"
-    assert "recortado" in d, "el modelo tiene que saber que hay mas"
 
 
-def test_un_retorno_que_entra_no_se_toca():
-    import json
-    from app.core import respuesta as R
-    chico = {"resultados": [{"veredicto": "existe",
-                             "filas": [{"id": "P1", "precio": "$10.000"}]}]}
-    assert json.loads(R._retorno_que_entra(chico)) == chico
 
 
 # ── EL RAMAL A COMPATIBILIDAD LLEGA AL TURNO (13-sep-2026) ──────────────────

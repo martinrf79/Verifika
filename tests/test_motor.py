@@ -20,7 +20,9 @@ TIENDA = "verifika_prod"
 
 # El recorte con que el turno le pasa el retorno al modelo, leido de ahi y no
 # copiado: un numero escrito dos veces se separa el dia que uno cambia.
-from app.core.respuesta import TOPE_RETORNO as MT_TOPE
+# El tope del retorno de una llamada al motor. Vivia en el turno del
+# interprete, que se borro; el motor lo sigue respetando y el agente lo compacta.
+MT_TOPE = 8000
 
 
 @pytest.fixture(autouse=True)

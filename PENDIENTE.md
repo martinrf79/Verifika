@@ -64,20 +64,14 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 
 ## Abierto
 
-**25-sep: LA PROXIMA SESION ARRANCA POR `arquitectura/FICHA_58_la_traduccion_en_gramatica.md`, paso 1.**
-- **ABIERTO** · La interpretacion se define primero: las 58 combinaciones escritas a mano, despues el tablero y la medicion. Los pasos 4 a 6 son opcionales.
-
-**23-sep: EL CAMINO NUEVO DE LA INTERPRETACION, EN EL BANCO.** El traductor
-llena una ficha contra el tablero, y el compilador y la memoria la resuelven en
-codigo: `banco_pruebas/traductor.py`, `compilador.py` y `memoria.py`. Lo que
-falta, en orden:
-- **ABIERTO** · Las tandas que no se usan para corregir, peor de tres con Gemini: 62 de 67, 39 de 45, 31 de 36, 31 de 35, 28 de 29. Cada tanda valida los arreglos de la anterior. La 5 quedo sin corregir: su rojo es "la camara" por webcam, falta el sinonimo. El proximo arreglo se valida con una tanda 6 nueva.
-- **ABIERTO** · Produccion tiene poca charla real: 2 en 30 dias. Hacen falta charlas reales para la tanda siguiente.
-- **ABIERTO** · El camino nuevo corre en `app/core/interprete.py` desde el 23-sep. Falta verlo con charlas reales por WhatsApp y el issue 31: la ficha de cada turno queda en el log `interprete_ficha`.
-- **ABIERTO** · 23-sep, la revision del camino nuevo cerro cinco cosas: el si con pregunta ya no confirma, otro destino es otra propuesta, el redactor tiene tope de tres vueltas, la correccion ya no pide buscar, y el decisor muerto se saco. Falta la tanda por WhatsApp que lo mida.
-- **ESPERA A MARTIN** · La compuerta de compra hoy solo le avisa al redactor. El cierre y el lead siguen como antes, con el tipo que elige el redactor: enchufarlos a la compuerta es cambiar el cierre.
-- **ABIERTO** · `arquitectura/MAPA_CABLEADO.md` y este archivo nombran `turno.py` y `tabla.py`, que ya no existen: el turno vivo es `app/core/respuesta.py`.
-- Traduce **Gemini** por ahora, decidido por Martin el 23-sep. DeepSeek queda como comparacion: la defensa contra lo inventado es del codigo y la prueba `tests/test_camino_nuevo_invariantes.py` para los dos.
+**26-sep: EL AGENTE REEMPLAZO AL INTERPRETE.** El turno vivo es `app/core/respuesta.py` sobre `app/core/agente.py`: busqueda agentica con herramientas chicas sobre el motor, tablero en capas y alias por tienda. La historia esta en `arquitectura/FICHA_59` a `FICHA_62`.
+- **ABIERTO** · Probarlo por WhatsApp y leer el issue 31: cada turno deja `agente_turno` con las herramientas, los tokens y el cache.
+- **ABIERTO** · La compra por `reservar` entra al cierre como senal de decision; falta verla cerrar un pedido real con el nombre y el link.
+- **ABIERTO** · El esquema grande del motor, `motor.esquema`, ya no lo usa el turno: lo usan tests y banco. Se borra con sus tests en su propio commit.
+- **ABIERTO** · El cache da cero: el prompt fijo, unos 1.700 tokens, no llega al minimo del proveedor. Medir el umbral y decidir si vale engordar lo fijo.
+- **ABIERTO** · Lo que falla en la vara de las 58: el reparto de pago sale como total final sin las dos partes, y "dame el que sea inalambrico" no ofrece reservar.
+- **ABIERTO** · `arquitectura/MAPA_CABLEADO.md` sigue describiendo el turno del interprete.
+- Para otra tienda: `scripts/generar_alias.py <tienda>` una vez, y el prompt no cambia.
 
 **22-sep, noche: LA INTERPRETACION CON MEMORIA SE MIDE Y QUEDA EN 122 DE 124.**
 Nueva vara de charlas de varios turnos, `banco_pruebas/vara_charlas.json`, con

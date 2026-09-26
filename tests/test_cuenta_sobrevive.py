@@ -96,26 +96,3 @@ def test_una_cuenta_que_no_se_pudo_hacer_no_pisa_la_anterior():
     assert "items" not in c and "total_ars" not in c
 
 
-def test_EL_TURNO_ENTERO_deja_el_presupuesto_en_la_charla(firestore_doble,
-                                                          monkeypatch):
-    """EL ESLABON DEL MEDIO, de punta a punta. Los dos de arriba pueden estar
-    sanos y el defecto vivir igual si el turno no llama al save con los
-    campos: fue exactamente asi durante meses, con los dos campos en la
-    memoria y nadie escribiendolos."""
-    cuenta = {"total_ars": 75000, "total": "$75.000",
-              "detalle": "Presupuesto:\n- 2x Mouse: $37.500 c/u = $75.000\n"
-                         "Total: $75.000",
-              "items": [{"id": "MOU0001", "cantidad": 2, "nombre": "Mouse"}]}
-    monkeypatch.setattr(
-        R, "_preguntar",
-        lambda *a, **k: asyncio.sleep(
-            0, result=({"tipo": "precio_multiple", "texto": "Son $75.000."},
-                       [], {}, cuenta, R._informe_en_blanco())))
-    asyncio.run(R.procesar_turno("sonda_carrito", "dos mouse cuanto sale",
-                                 TIENDA, "telegram", "trace_carrito"))
-    from app.storage.firestore_client import get_conversation
-    conv = get_conversation("sonda_carrito", tienda_id=TIENDA) or {}
-    assert "$75.000" in (conv.get("ultimo_presupuesto") or "")
-    assert conv.get("carrito_vigente") == cuenta["items"]
-    # Y LA VUELTA COMPLETA: lo guardado es lo que el turno siguiente lee.
-    assert "2x MOU0001" in R._memoria_texto(conv)

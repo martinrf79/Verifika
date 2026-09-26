@@ -91,64 +91,12 @@ def _texto_de(kw) -> str:
 
 # ── EL CASO MEDIDO ──────────────────────────────────────────────────────────
 
-def test_negar_un_campo_que_no_miro_le_devuelve_el_dato_y_se_le_pide_de_nuevo(
-        firestore_doble, monkeypatch):
-    """El turno del 16-sep, reproducido: busca sin condiciones y niega el pais.
-
-    Lo que tiene que pasar ahora: el codigo le devuelve los valores reales del
-    campo y le da una vuelta mas, CON tablero, para que pueda buscarlo."""
-    guion = [
-        # vuelta 1: busca, sin una sola condicion. Igual que el turno real.
-        _Msg(tool_calls=[_Call('{"consultas": [{"categoria": "teclado", '
-                               '"busco": "varios"}]}')]),
-        # vuelta 2: contesta negando un campo que nunca consulto
-        _Msg('{"tipo": "multipregunta", "texto": "No contamos con informacion '
-             'sobre el pais de fabricacion de nuestros productos."}'),
-        # vuelta 3: con el dato delante, contesta bien
-        _Msg('{"tipo": "multipregunta", "texto": "Los teclados dicen china."}'),
-    ]
-    cli, salida, informe = _correr(monkeypatch, guion)
-    assert informe["correcciones"] == 1, "la correccion no se disparo"
-    assert len(cli.vistos) == 3, "no le dio la vuelta de mas"
-    ultimo = _texto_de(cli.vistos[-1])
-    assert "CORRECCION DEL CODIGO" in ultimo
-    assert "pais_fabricacion" in ultimo
-    # Y EL DATO REAL VIAJA, que es el punto: sin los valores de la fuente el
-    # modelo no tiene con que corregirse.
-    assert "china" in ultimo
-    assert "880" in ultimo, "tiene que decir en cuantos esta cargado"
-    assert salida["texto"] == "Los teclados dicen china."
 
 
 # ── LO QUE NO TIENE QUE PASAR ───────────────────────────────────────────────
 
-def test_un_turno_SIN_afirmacion_no_gasta_una_vuelta_de_mas(firestore_doble,
-                                                            monkeypatch):
-    """LA CONTRACARA, Y ES LA QUE PROTEGE EL COSTO. Un turno que no afirma
-    sobre nada cuesta exactamente lo que costaba antes del 16-sep."""
-    guion = [
-        _Msg(tool_calls=[_Call('{"consultas": [{"categoria": "teclado"}]}')]),
-        _Msg('{"tipo": "lista", "texto": "Te paso tres teclados."}'),
-    ]
-    cli, salida, informe = _correr(monkeypatch, guion)
-    assert informe["correcciones"] == 0
-    assert len(cli.vistos) == 2, "gasto una vuelta que no hacia falta"
-    assert salida["texto"] == "Te paso tres teclados."
 
 
-def test_se_corrige_UNA_sola_vez_por_turno(firestore_doble, monkeypatch):
-    """La segunda correccion seria perseguir al modelo hasta que diga lo que
-    queremos, que es otra cosa y no se hace. Si insiste, la respuesta sale."""
-    guion = [
-        _Msg(tool_calls=[_Call('{"consultas": [{"categoria": "teclado"}]}')]),
-        _Msg('{"tipo": "ficha", "texto": "no tenemos el pais de fabricacion"}'),
-        _Msg('{"tipo": "ficha", "texto": "insisto, no tenemos el pais de '
-             'fabricacion"}'),
-    ]
-    cli, salida, informe = _correr(monkeypatch, guion)
-    assert informe["correcciones"] == 1
-    assert len(cli.vistos) == 3, "se le pidio una segunda vez"
-    assert "insisto" in salida["texto"], "la respuesta tiene que salir igual"
 
 
 def test_EL_CASO_DE_LAS_19_47_un_campo_de_UNA_palabra_SI_se_corrige(

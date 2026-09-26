@@ -54,9 +54,12 @@ _INDICES: dict = {}
 
 
 def _alias(tienda_id: str) -> dict:
-    import os
-    ruta = f"data/clientes/{tienda_id}/alias.json"
-    if not os.path.exists(ruta):
+    """Los alias de la tienda. Sin archivo, el indice anda igual con los
+    nombres y los tags: los alias suman, no son condicion."""
+    from pathlib import Path
+    ruta = Path(__file__).resolve().parents[2] / "data" / "clientes" / tienda_id / "alias.json"
+    if not ruta.exists():
+        log.warning("agente_sin_alias", tienda_id=tienda_id)
         return {}
     with open(ruta, encoding="utf-8") as f:
         return json.load(f)
@@ -127,8 +130,12 @@ def _fila(f: dict, detalle: bool) -> dict:
     out = {k: f.get(k) for k in ("id", "nombre", "precio", "stock") if f.get(k) is not None}
     if f.get("no_cumple"):
         out["no_cumple"] = f["no_cumple"]
+    # LOS DATOS VAN TAMBIEN EN LA LISTA. Sin ellos el modelo completaba de
+    # memoria —"la C920 es 1080p"— y la guarda de procedencia tiraba la
+    # respuesta entera. Con el dato delante lo copia en vez de adivinarlo.
+    if f.get("specs"):
+        out["datos"] = f["specs"]
     if detalle:
-        out["datos"] = f.get("specs") or {}
         out["descripcion"] = str(f.get("descripcion") or "")[:260]
         for k in ("garantia_detalle", "contenido_caja", "compat"):
             if f.get(k):
@@ -353,9 +360,15 @@ def ejecutar(nombre: str, args: dict, tienda_id: str) -> dict:
         return {"error": "la consulta fallo; proba con otras palabras"}
 
 
-async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "") -> dict:
-    """Un turno: el historial de la charla (roles user y assistant), el mensaje
-    nuevo, y vuelve el texto con lo que se consulto. No lanza."""
+async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "",
+                memoria: str = "") -> dict:
+    """Un turno: el historial de la charla (roles user y assistant), la memoria
+    larga que arma `respuesta` y el mensaje nuevo. Vuelve el texto con lo que
+    se consulto. No lanza.
+
+    LO FIJO ADELANTE, LO QUE CAMBIA ATRAS: el sistema y las herramientas son
+    siempre iguales y el proveedor los cachea; la memoria, la charla y el
+    mensaje van despues."""
     from app.core.contexto_turno import set_current_tienda
     from app.core.llm_reintento import _cliente, _modelo, llamar_con_reintento
     set_current_tienda(tienda_id)
@@ -363,8 +376,10 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     if cli is None:
         return {"texto": "", "llamadas": [], "uso": [], "error": "sin clave"}
     tools = esquema(tienda_id)
-    msgs = [{"role": "system", "content": sistema(tienda_id)}] + list(historial or []) + [
-        {"role": "user", "content": mensaje}]
+    msgs = [{"role": "system", "content": sistema(tienda_id)}]
+    if memoria.strip():
+        msgs.append({"role": "system", "content": "MEMORIA DE LA CHARLA:\n" + memoria.strip()})
+    msgs += list(historial or []) + [{"role": "user", "content": mensaje}]
     llamadas, uso, vistas, texto, t0 = [], [], {}, "", time.time()
     for vuelta in range(MAX_VUELTAS + 1):
         ultima = vuelta == MAX_VUELTAS

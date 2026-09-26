@@ -766,15 +766,15 @@ def limpiar_cache(tienda_id: str | None = None) -> None:
     La llama `firestore_client.invalidate_cache`: lo que se deriva del catalogo
     muere junto con el catalogo, siempre, y no por separado.
     """
-    # EL TABLERO DEL TRADUCTOR TAMBIEN SALE DEL CATALOGO —rubros y conceptos—
+    # EL INDICE DEL AGENTE TAMBIEN SALE DEL CATALOGO —rubros, tags y temas—
     # y muere con el: sin esto un rubro nuevo no entraba hasta el deploy.
-    from app.core import interprete
+    from app.core import agente
     if tienda_id is None:
         _cache.clear()
-        interprete._TABLEROS.clear()
+        agente._INDICES.clear()
     else:
         _cache.pop(tienda_id, None)
-        interprete._TABLEROS.pop(tienda_id, None)
+        agente._INDICES.pop(tienda_id, None)
 
 
 def _a_numero(v):
