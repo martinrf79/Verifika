@@ -138,7 +138,7 @@ CHARLAS = [
       t("si el G305 anda con Mac, me lo llevo", dice("mac"), RESERVA)),
     c(30, "D", "si el cruce da no, una alternativa",
       t("tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?",
-        dice("ddr5"), dice("fury beast ddr5|renegade|ddr5 5600|ddr5 6400"))),
+        dice("ddr5"), dice("5600|6400|renegade", n="nombra una memoria DDR5 del catalogo"))),
     c(31, "D", "si el total pasa un monto, quitar",
       t("sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX", plata(161000))),
     c(32, "D", "comparar dos y elegir",
@@ -217,15 +217,38 @@ CHARLAS = [
 ]
 
 
+# ── J · JERGA: la traduccion pura, la misma de `desmenuzar.py`. La respuesta
+# tiene que nombrar algo del rubro correcto: una marca que la tienda vende ahi.
+def j(num, texto, *casillas):
+    return {"id": f"J{num:02d}", "grupo": "J", "clase": "jerga", "turnos": [t(texto, *casillas)]}
+
+
+JERGA = [
+    j(1, "necesito un aparato rectangular con teclas y dada la crisis dame uno acorde",
+      dice("teclado"), dice("genius|logitech|redragon|k120|kb-110", n="un teclado barato")),
+    j(2, "algo para escuchar musica sin cables en el colectivo",
+      dice("auricular"), dice("jbl|sony|hyperx|logitech|redragon|razer|sennheiser")),
+    j(3, "una compu portatil para la facu que no sea un fierro", dice("acer|asus|dell|hp|lenovo")),
+    j(4, "la pantalla para la pc, algo grandecito", dice("monitor"), dice("aoc|asus|dell|gigabyte|lg|msi|philips|samsung|viewsonic")),
+    j(5, "un disco externo de 2 teras", dice("kingston|samsung|sandisk|seagate|toshiba|western|no tenemos|no hay|no tengo")),
+    j(6, "algo para hacer videollamadas con buena imagen", dice("webcam|camara|cámara"), dice("avermedia|genius|logitech|razer")),
+    j(7, "el bicho ese para que ande el wifi en toda la casa", dice("mercusys|tenda|tp-link")),
+    j(8, "una silla para viciar horas sin que me duela la espalda", dice("silla"), dice("corsair|cougar|dt3|gamemax|noblechairs|proseat|redragon")),
+    j(9, "la placa para meterle a la pc y jugar al fifa", dice("asrock|asus|gigabyte|msi|powercolor|sapphire|xfx|zotac|rtx|rx ")),
+    j(10, "si lo compro y viene fallado que hago?", dice("garant"), no_patron(r"\$\s?\d", "no mete plata")),
+]
+
+
 def main():
     assert [int(x["id"][1:]) for x in CHARLAS] == list(range(1, 59)), "tienen que ser las 58, en orden"
     doc = {"_que_es": "Las 58 combinaciones de la ficha 58 como charlas. Las genera "
                       "banco_pruebas/vara_58.py: no se edita a mano.",
-           "charlas": CHARLAS}
+           "charlas": CHARLAS + JERGA}
     with open(SALIDA, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
-    print(f"{len(CHARLAS)} charlas, {sum(len(x['turnos']) for x in CHARLAS)} turnos, "
-          f"{sum(len(t_['casillas']) for x in CHARLAS for t_ in x['turnos'])} casillas -> {SALIDA}")
+    todas = CHARLAS + JERGA
+    print(f"{len(todas)} charlas, {sum(len(x['turnos']) for x in todas)} turnos, "
+          f"{sum(len(t_['casillas']) for x in todas for t_ in x['turnos'])} casillas -> {SALIDA}")
 
 
 if __name__ == "__main__":

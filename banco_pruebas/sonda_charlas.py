@@ -29,6 +29,9 @@ cliente —dice, plata, pregunta, alguna—, asi que sirve para los tres caminos
   --camino motor     el loop con la herramienta REAL: `app.core.motor.esquema` y
                      `motor.buscar` sobre el Firestore del clon. El buscador es
                      el de produccion; lo que cambia es quien conversa.
+  --camino agente    `app.core.agente.turno`, el camino nuevo de la ficha 62:
+                     herramientas chicas sobre el motor, tablero en capas, alias.
+                     Es el MISMO codigo que va a correr en produccion.
   --camino clon      PRODUCCION TAL CUAL: `clon_produccion.turno`, el webhook de
                      WhatsApp entero. Es la linea de base contra la que se mide.
 
@@ -222,6 +225,29 @@ def correr_clon(charla, n_corrida=0):
     return turnos
 
 
+def correr_agente(charla):
+    """El camino nuevo, llamando al codigo de app/ tal cual."""
+    import asyncio
+    from app.core import agente
+    from banco_pruebas import clon_produccion as C
+    historial, respuestas, turnos = [], [], []
+    for i, t in enumerate(charla["turnos"], 1):
+        r = asyncio.run(agente.turno(historial, t["texto"], C.TIENDA, trace_id=f"sonda_{charla['id']}"))
+        texto = r["texto"]
+        historial += [{"role": "user", "content": t["texto"]}, {"role": "assistant", "content": texto}]
+        respuestas.append(texto)
+        vistos = json.dumps([x["vuelve"] for x in r["llamadas"]], ensure_ascii=False, default=str)
+        llamadas = [(x["herramienta"], x["args"]) for x in r["llamadas"]]
+        casillas = [(k["n"], nota_casilla(k, llamadas, texto, respuestas)) for k in t["casillas"]]
+        visto = set(re.sub(r"\D+", " ", _plata(vistos)).split())
+        plata_mala = [c for c in re.findall(r"\$\s?(\d{4,})", _plata(texto)) if c not in visto]
+        turnos.append({"turno": i, "texto": t["texto"], "casillas": casillas, "plata_no_vista": plata_mala,
+                       "vacia": not texto.strip(),
+                       "llamadas": [f"{n}{json.dumps(a, ensure_ascii=False)}" for n, a in llamadas],
+                       "respuesta": texto, "uso": r["uso"]})
+    return turnos
+
+
 def correr(charla, cli, modelo, temp, sistema, camino="simulado"):
     tools, ejecutar = _herramientas(camino)
     msgs = [{"role": "system", "content": sistema}]
@@ -328,7 +354,7 @@ def main():
         informe(etiqueta)
         return
     pedidas = set(a)
-    if camino in ("motor", "clon"):
+    if camino in ("motor", "clon", "agente"):
         from banco_pruebas import clon_produccion as C
         C.preparar_entorno()  # ANTES de importar app.config: si no, la clave y la tienda quedan mal
         C.instalar()
@@ -347,7 +373,12 @@ def main():
 
     def una(c):
         t0 = time.time()
-        turnos = correr_clon(c) if camino == "clon" else correr(c, cli, nombre, temp, sistema, camino)
+        if camino == "clon":
+            turnos = correr_clon(c)
+        elif camino == "agente":
+            turnos = correr_agente(c)
+        else:
+            turnos = correr(c, cli, nombre, temp, sistema, camino)
         with candado:
             with open(SALIDA, "a", encoding="utf-8") as f:
                 f.write(json.dumps({"etiqueta": etiqueta, "modelo": modelo, "id": c["id"], "clase": c.get("clase"),

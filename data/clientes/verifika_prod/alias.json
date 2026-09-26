@@ -1,0 +1,1117 @@
+{
+ "_que_es": "Como nombran los clientes cada rubro, tema y campo. Lo genera scripts/generar_alias.py con el modelo, una vez por tienda: no se edita a mano.",
+ "rubros": {
+  "almacenamiento externo": [
+   "disco de 1tb",
+   "disco duro",
+   "disco externo",
+   "disco portatil",
+   "disco rigido",
+   "disco usb",
+   "el aparatito para guardar fotos",
+   "el coso para hacer backup"
+  ],
+  "auriculares": [
+   "auriculares bluetooth",
+   "auriculares con microfono",
+   "auris",
+   "auris gamer",
+   "auris inalambricos",
+   "auris para el bondi",
+   "los cascos",
+   "los que se enchufan al celu",
+   "los que van en la oreja"
+  ],
+  "cargador": [
+   "cargador de celu",
+   "cargador de pared",
+   "cargador rapido",
+   "cargador tipo c",
+   "el cable para cargar",
+   "el cablecito",
+   "el enchufe del telefono",
+   "el transformador"
+  ],
+  "cooler": [
+   "cooler fan",
+   "cooler para el cpu",
+   "cooler rgb",
+   "el coso que tira aire",
+   "el ventilador de la pc",
+   "ventilador",
+   "ventilador para el gabinete"
+  ],
+  "fuente": [
+   "el transformador de la pc",
+   "fuente de alimentacion",
+   "fuente de poder",
+   "la cajita de energia",
+   "la fuente de 600w",
+   "la fuente de la pc"
+  ],
+  "gabinete": [
+   "el cpu",
+   "el gabinete",
+   "el gabinete con vidrio",
+   "el gabinete gamer",
+   "la caja de la pc",
+   "la carcasa",
+   "la torre"
+  ],
+  "impresora": [
+   "impresora",
+   "impresora a chorro de tinta",
+   "impresora laser",
+   "la impresora para imprimir",
+   "la impresora wifi",
+   "la maquina de imprimir",
+   "la multifuncion"
+  ],
+  "memoria ram": [
+   "la ram para que no se trabe",
+   "memoria",
+   "memoria de 8gb",
+   "memoria de la pc",
+   "modulos de memoria",
+   "ram",
+   "stick de ram"
+  ],
+  "microfono": [
+   "el coso para grabar voz",
+   "el microfono para hablar",
+   "mic",
+   "mic condensador",
+   "micro",
+   "microfono de escritorio",
+   "microfono para stream"
+  ],
+  "monitor": [
+   "el display",
+   "el monitor de la pc",
+   "la pantalla de la compu",
+   "la tele para la pc",
+   "monitor",
+   "monitor de 24 pulgadas",
+   "monitor gamer",
+   "pantalla"
+  ],
+  "motherboard": [
+   "el mother",
+   "la placa base",
+   "la placa donde va todo conectado",
+   "la placa principal",
+   "mother",
+   "placa madre"
+  ],
+  "mouse": [
+   "el coso para mover el cursor",
+   "el mouse de la compu",
+   "mouse",
+   "mouse con luces",
+   "mouse gamer",
+   "mouse inalambrico",
+   "mouse pad (aunque es el pad)",
+   "raton"
+  ],
+  "notebook": [
+   "la compu de escritorio pero movil",
+   "la compu para llevar a la facu",
+   "la compu portatil",
+   "la netbook",
+   "la notebook",
+   "la portatil",
+   "laptop"
+  ],
+  "parlante": [
+   "altavoces",
+   "el parlante para escuchar musica",
+   "el parlante portatil",
+   "los parlantes con sonido",
+   "parlante bluetooth",
+   "parlantes",
+   "parlantes para la pc"
+  ],
+  "placa de video": [
+   "la gpu",
+   "la placa de 8gb",
+   "la placa de graficos",
+   "la placa de video dedicada",
+   "la placa para jugar",
+   "la placa para que los juegos vuelen",
+   "placa de video"
+  ],
+  "procesador": [
+   "el cerebro de la pc",
+   "el chip de la pc",
+   "el cpu",
+   "micro",
+   "procesador",
+   "procesador amd",
+   "procesador intel"
+  ],
+  "router": [
+   "el aparato del wifi",
+   "el aparato que tira señal",
+   "el coso de internet",
+   "el modem",
+   "el router de fibra",
+   "router",
+   "router wifi"
+  ],
+  "silla gamer": [
+   "butaca gamer",
+   "la silla con rueditas",
+   "la silla de escritorio",
+   "la silla para estar sentado horas",
+   "la silla para jugar",
+   "silla ergonomica",
+   "silla gamer"
+  ],
+  "ssd": [
+   "disco de estado solido",
+   "disco m2",
+   "disco solido",
+   "disco ssd",
+   "el disco rapido",
+   "el solido para que prenda rapido",
+   "ssd"
+  ],
+  "tablet": [
+   "la ipad (generico)",
+   "la pantalla portatil",
+   "la pantalla tactil",
+   "la tablet",
+   "la tablet para los chicos",
+   "la tablet para ver pelis",
+   "tablet"
+  ],
+  "teclado": [
+   "el coso para escribir",
+   "el teclado de la pc",
+   "teclado",
+   "teclado con luces",
+   "teclado gamer",
+   "teclado inalambrico",
+   "teclado mecanico"
+  ],
+  "webcam": [
+   "camara",
+   "camara web",
+   "la camara para la pc",
+   "la camara para las reuniones",
+   "la camara para stremear",
+   "la camara para zoom",
+   "webcam"
+  ]
+ },
+ "temas": {
+  "ubicacion": [
+   "donde estan",
+   "donde los encuentro",
+   "donde queda el local",
+   "donde queda el showroom",
+   "en que zona estan",
+   "pasame la direccion",
+   "por donde paso a buscarlo",
+   "tienen sucursal fisica"
+  ],
+  "horarios": [
+   "a que hora cierran",
+   "abren los sabados",
+   "cuando puedo pasar",
+   "estan abiertos ahora",
+   "hasta que hora estan",
+   "horario de atencion",
+   "que horario manejan"
+  ],
+  "formas_pago": [
+   "aceptan transferencia",
+   "como les pago",
+   "como puedo pagar",
+   "que formas de pago tienen",
+   "que medios aceptan",
+   "reciben tarjeta",
+   "se puede pagar con debito",
+   "tienen mercado pago"
+  ],
+  "cuotas": [
+   "con que tarjeta hay cuotas",
+   "cuantas cuotas me dan",
+   "hacen cuotas sin interes",
+   "se puede financiar",
+   "se puede pagar en cuotas",
+   "tienen cuotas",
+   "tienen plan de pagos"
+  ],
+  "envios": [
+   "como mandan las cosas",
+   "como me llega",
+   "envian a domicilio",
+   "hacen envios",
+   "hacen envios al interior",
+   "por donde mandan el pedido",
+   "tienen moto"
+  ],
+  "costo_envio": [
+   "cuanto me cobran el envio",
+   "cuanto me sale que me lo traigan",
+   "cuanto sale el envio",
+   "cuanto sale el envio a capital",
+   "es gratis el envio",
+   "tienen envio sin cargo"
+  ],
+  "plazo_envio": [
+   "cuando lo despachan",
+   "cuando me llega",
+   "cuanto tarda en llegar",
+   "cuantos dias tarda el envio",
+   "en cuanto tiempo lo tengo",
+   "tarda mucho en llegar"
+  ],
+  "garantia": [
+   "cuanto tiempo de garantia me dan",
+   "la garantia es oficial",
+   "que cubre la garantia",
+   "que garantia tiene",
+   "si falla me lo cambian",
+   "si se rompe que hago",
+   "tienen garantia"
+  ],
+  "devoluciones": [
+   "como hago para devolverlo",
+   "puedo devolverlo",
+   "que pasa si quiero cambiarlo",
+   "se puede devolver si me arrepiento",
+   "si no me gusta lo puedo cambiar",
+   "tienen cambio",
+   "tienen politica de devolucion"
+  ],
+  "factura": [
+   "facturan",
+   "hacen factura a",
+   "hacen factura con cuit",
+   "me dan factura",
+   "me mandan la factura por mail",
+   "necesito el comprobante",
+   "necesito factura"
+  ],
+  "descuento_transferencia": [
+   "cuanto me descuentan si pago por transferencia",
+   "hacen precio por transferencia",
+   "hay rebaja si transfiero",
+   "si pago en efectivo hay descuento",
+   "tienen descuento por transferencia",
+   "tienen promo por transferencia"
+  ],
+  "redes": [
+   "donde los sigo",
+   "donde puedo ver lo que venden",
+   "pasame su pagina",
+   "suben fotos a las redes",
+   "tienen facebook",
+   "tienen instagram"
+  ],
+  "contacto_humano": [
+   "hay un humano aca",
+   "me atiende una persona",
+   "no quiero hablar con el bot",
+   "pasame con un vendedor",
+   "quiero hablar con alguien",
+   "quiero hablar con un asesor"
+  ],
+  "asesoramiento": [
+   "cual es mejor",
+   "me ayudas a decidir",
+   "me orientas un poco",
+   "necesito ayuda para elegir",
+   "no se cual elegir",
+   "que me conviene comprar",
+   "que me recomendas"
+  ],
+  "reservas": [
+   "lo puedo señar",
+   "me guardas uno hasta mañana",
+   "me lo podes guardar",
+   "me reservas uno",
+   "se puede reservar",
+   "tienen stock para reservar"
+  ],
+  "marcas_originales": [
+   "es copia o es original",
+   "es el original posta",
+   "es trucho",
+   "son los posta",
+   "son originales",
+   "tienen garantia de originalidad",
+   "venden cosas originales"
+  ],
+  "usados": [
+   "es nuevo o usado",
+   "tienen cosas de segunda mano",
+   "tienen equipos usados",
+   "venden cosas de outlet",
+   "venden reacondicionados",
+   "venden usados"
+  ],
+  "precios_iva": [
+   "el precio es con iva",
+   "el precio incluye iva",
+   "el precio tiene iva incluido",
+   "es mas iva",
+   "es precio final",
+   "facturan con iva"
+  ],
+  "defectuoso": [
+   "el aparato no funciona",
+   "esta fallado",
+   "me vino con una falla",
+   "me vino roto",
+   "no anda",
+   "no me anda el equipo",
+   "no prende",
+   "tiene un problema",
+   "vino fallado"
+  ],
+  "envio_urgente": [
+   "hacen envios en el dia",
+   "llega hoy si compro ahora",
+   "lo necesito para hoy",
+   "lo puedo tener hoy mismo",
+   "necesito que me llegue ya",
+   "tienen envio express"
+  ],
+  "mayoristas": [
+   "hacen descuento por cantidad",
+   "hacen precio por mayor",
+   "tienen lista mayorista",
+   "tienen precio mayorista",
+   "venden a revendedores",
+   "venden por mayor"
+  ],
+  "formas_contacto": [
+   "como los contacto",
+   "como me comunico con ustedes",
+   "pasame un numero",
+   "tienen mail",
+   "tienen otro medio de contacto",
+   "tienen telefono"
+  ],
+  "envoltorio_regalo": [
+   "es para un regalo, lo envuelven",
+   "hacen envoltorio de regalo",
+   "le ponen papel de regalo",
+   "lo pueden envolver para regalo",
+   "me lo mandas para regalo",
+   "tienen bolsita de regalo"
+  ],
+  "contenido_caja": [
+   "que trae el paquete",
+   "que trae en la caja",
+   "que viene incluido",
+   "trae los accesorios",
+   "viene completo",
+   "viene con auriculares",
+   "viene con cargador"
+  ],
+  "origen_procedencia": [
+   "de donde son",
+   "de donde viene el producto",
+   "donde lo fabrican",
+   "es importado",
+   "es industria argentina",
+   "es nacional"
+  ],
+  "material_composicion": [
+   "de que esta hecho",
+   "es de buen material",
+   "es metalico o es todo plastico",
+   "es plastico o metal",
+   "es resistente el material",
+   "que calidad tiene el plastico",
+   "se raya facil",
+   "se siente barato al tacto",
+   "se siente premium"
+  ],
+  "fabricacion": [
+   "donde lo arman",
+   "donde se hace esto",
+   "es chino o original",
+   "es copia o es posta",
+   "es de buena procedencia",
+   "es nacional o importado",
+   "quien lo fabrica"
+  ],
+  "especificaciones": [
+   "es bueno para jugar",
+   "es mejor que el modelo anterior",
+   "es potente",
+   "es rapido",
+   "pasame la ficha tecnica",
+   "que capacidad tiene",
+   "que caracteristicas tiene",
+   "que onda las specs",
+   "que procesador trae",
+   "que tiene adentro"
+  ],
+  "compatibilidad": [
+   "anda con mi celu",
+   "es compatible con iphone",
+   "es para pc o consola",
+   "funciona con android",
+   "le va a mi compu",
+   "lo puedo usar en la mac",
+   "se conecta a cualquier cosa",
+   "sirve para el tele"
+  ],
+  "garantia_como_usar": [
+   "como activo la garantia",
+   "cuanto tiempo de garantia tiene",
+   "me cubre si se cae",
+   "me dan factura para la garantia",
+   "que pasa si deja de andar",
+   "si se rompe que hago",
+   "si viene fallado que hago",
+   "tengo que llevarlo al service",
+   "tiene garantia"
+  ],
+  "stock_disponibilidad": [
+   "cuando entra mas",
+   "esta para entrega inmediata",
+   "hay disponible",
+   "hay en color negro",
+   "quedan unidades",
+   "te queda alguno",
+   "tenes todavia",
+   "tienen en stock"
+  ],
+  "embalaje_envio": [
+   "como lo mandan",
+   "es discreto el paquete",
+   "lo envian bien embalado",
+   "lo mandan en caja cerrada",
+   "se rompe en el viaje",
+   "viene bien protegido",
+   "viene con burbujas"
+  ],
+  "retiro_local": [
+   "donde estan ubicados",
+   "en que zona estan",
+   "puedo caer hoy a buscarlo",
+   "puedo pasar a buscarlo",
+   "puedo retirar por el negocio",
+   "tienen local a la calle",
+   "tienen showroom para ver"
+  ],
+  "reembolso": [
+   "como es el tema de la devolucion",
+   "como recupero mi guita",
+   "hacen reintegro",
+   "me devolves la plata",
+   "me hacen nota de credito",
+   "si me arrepiento me devuelven la plata",
+   "si no me gusta me devuelven el efectivo"
+  ],
+  "seguimiento_pedido": [
+   "como rastreo el envio",
+   "cuando lo despachan",
+   "cuando me llega",
+   "donde esta mi paquete",
+   "pasame el numero de seguimiento",
+   "por donde viene mi compra",
+   "tienen tracking",
+   "todavia no me llego nada"
+  ],
+  "cancelacion_pedido": [
+   "como anulo el pedido",
+   "me arrepenti de la compra",
+   "puedo dar de baja el pedido",
+   "quiero cancelar la compra",
+   "se puede frenar el envio",
+   "ya no lo quiero, cancelalo"
+  ],
+  "envio_exterior": [
+   "hacen envios a otros paises",
+   "hacen envios internacionales",
+   "mandan al exterior",
+   "puedo comprar desde otro pais",
+   "venden para afuera"
+  ],
+  "confianza_seguridad": [
+   "es seguro comprar aca",
+   "es una pagina real",
+   "no me van a estafar",
+   "son de fiar",
+   "son estafadores",
+   "tienen local fisico para ir",
+   "tienen referencias"
+  ],
+  "como_comprar": [
+   "como agrego al carrito",
+   "como finalizo la compra",
+   "como hago para comprar",
+   "es por aca o por la web",
+   "me explicas como pedir",
+   "no entiendo la pagina",
+   "tengo que registrarme"
+  ],
+  "pago_contra_entrega": [
+   "le doy la plata al del correo",
+   "pago en efectivo al recibir",
+   "puedo pagar cuando llega",
+   "se puede pagar en el momento",
+   "tienen pago contra entrega"
+  ],
+  "monedas_aceptadas": [
+   "aceptan dolares",
+   "aceptan transferencia",
+   "puedo pagar con tarjeta de afuera",
+   "puedo pagar en efectivo",
+   "toman billetes de cara chica",
+   "toman cripto"
+  ],
+  "datos_fiscales": [
+   "hacen factura consumidor final",
+   "me haces factura a",
+   "necesito factura para deducir",
+   "necesito factura para la empresa",
+   "pasanos el cuit",
+   "tienen factura oficial"
+  ],
+  "cambios": [
+   "me lo cambian si no anda",
+   "no me gusto el color, lo cambio",
+   "puedo cambiarlo por otro",
+   "se puede hacer cambio",
+   "tengo que llevarlo para cambiarlo",
+   "tienen politica de cambios"
+  ],
+  "promociones": [
+   "hacen precio por cantidad",
+   "hay cuotas sin interes",
+   "hay rebajas ahora",
+   "tienen 3 cuotas sin interes",
+   "tienen algun cupon",
+   "tienen algun descuento",
+   "tienen promo por pago efectivo"
+  ],
+  "teclado_mecanico_membrana": [
+   "es de los que hacen ruido",
+   "es de membrana o mecanico",
+   "es el aparatito con teclas",
+   "es silencioso",
+   "es teclado de oficina o gamer",
+   "es teclado gamer",
+   "se siente el click"
+  ],
+  "mouse_dpi": [
+   "es mouse gamer con dpi",
+   "es muy lento el cursor",
+   "es preciso para jugar",
+   "es sensible el mouse",
+   "se puede cambiar la sensibilidad",
+   "tiene para regular la velocidad"
+  ],
+  "cambio_direccion": [
+   "me equivoque en el numero de casa",
+   "me mude, mandalo a otro lado",
+   "puedo cambiar la direccion de envio",
+   "puse mal la calle",
+   "se puede modificar el domicilio"
+  ],
+  "reposicion_stock": [
+   "avisenme cuando tengan",
+   "cuando llega mas mercaderia",
+   "cuando reponen",
+   "cuando vuelven a entrar",
+   "se quedaron sin stock",
+   "tienen fecha de ingreso"
+  ],
+  "soporte_configuracion": [
+   "como lo sincronizo",
+   "como se configura esto",
+   "me ayudas a ponerlo en marcha",
+   "no me anda el aparato",
+   "no me reconoce el dispositivo",
+   "no se como instalarlo",
+   "se me desconecta solo"
+  ],
+  "verificacion_pagos": [
+   "cuando me acreditan el pago",
+   "les llego la plata",
+   "les mande el comprobante",
+   "tienen mi pago",
+   "ya hice la transferencia",
+   "ya les pague, fijense"
+  ]
+ },
+ "campos": {
+  "almacenamiento": [
+   "almacenaje",
+   "capacidad",
+   "cuanto espacio tiene",
+   "cuanto le entra",
+   "cuantos archivos puedo guardar",
+   "disco",
+   "espacio",
+   "gb",
+   "gigas",
+   "memoria interna"
+  ],
+  "bateria": [
+   "autonomia",
+   "cuantas horas de uso",
+   "cuanto aguanta prendido",
+   "cuanto dura la carga",
+   "cuanto le dura la bateria",
+   "cuanto tiempo tira",
+   "la carga",
+   "la pila",
+   "se agota rapido",
+   "se banca todo el dia"
+  ],
+  "bluetooth": [
+   "bluetoo",
+   "blut",
+   "conecta con auriculares",
+   "el blutu",
+   "el blutuz",
+   "se conecta al celu",
+   "se conecta sin cables",
+   "se empareja",
+   "tiene para el parlante",
+   "tiene para vincular inalambrico"
+  ],
+  "camara": [
+   "cuantos megapixeles tiene",
+   "la calidad de imagen",
+   "la cam",
+   "la definicion de la foto",
+   "la foto",
+   "la lente",
+   "para sacar selfies",
+   "para subir a insta",
+   "que tal la camarita",
+   "saca buenas fotos"
+  ],
+  "caracteristicas_extra": [
+   "alguna funcion extra",
+   "funciones especiales",
+   "que chiches tiene",
+   "que funciones tiene",
+   "que mas hace",
+   "que mas le puedo sumar",
+   "que mas trae",
+   "que onda el equipo",
+   "que trae de especial",
+   "trae algo mas"
+  ],
+  "color": [
+   "de que color viene",
+   "el colorcito",
+   "el tono",
+   "en que colores lo tenes",
+   "es negro o gris",
+   "que colores tenes disponibles",
+   "que onda el color",
+   "que tonos hay",
+   "tenes en otro color",
+   "viene en blanco"
+  ],
+  "conexion": [
+   "como lo conecto a la pc",
+   "como lo enchufo",
+   "como se conecta",
+   "como se vincula",
+   "la entrada",
+   "la entrada de cable",
+   "que tipo de ficha usa",
+   "se conecta a internet",
+   "se conecta por cable",
+   "tiene para enchufar"
+  ],
+  "contenido_caja": [
+   "que hay en la caja",
+   "que incluye el paquete",
+   "que me mandan",
+   "que trae en la caja",
+   "que viene adentro",
+   "trae accesorios",
+   "trae los cables",
+   "viene con auriculares",
+   "viene con cargador",
+   "viene con funda"
+  ],
+  "descripcion": [
+   "como funciona",
+   "contame un poco",
+   "de que se trata",
+   "explicame que es",
+   "para que sirve",
+   "pasame info",
+   "que es este producto",
+   "que es esto",
+   "que hace",
+   "que onda el aparato"
+  ],
+  "dimensiones": [
+   "cuanto mide",
+   "el tamaño",
+   "entra en la mochila",
+   "es chiquito",
+   "es compacto",
+   "es muy aparatoso",
+   "es muy grande",
+   "medidas",
+   "que dimensiones tiene",
+   "que tamaño tiene"
+  ],
+  "formato": [
+   "el formato",
+   "es alargado",
+   "es chato",
+   "es cuadrado",
+   "es de escritorio",
+   "es tipo notebook",
+   "es tipo torre",
+   "la estructura",
+   "la forma",
+   "que diseño tiene"
+  ],
+  "garantia_detalle": [
+   "como es el tema del service",
+   "la garantia cubre caidas",
+   "la garantia es oficial",
+   "que cubre",
+   "que cubre la garantia",
+   "que incluye la garantia",
+   "que pasa si falla",
+   "si no anda me lo cambian",
+   "si se rompe que hago",
+   "tengo cambio directo"
+  ],
+  "garantia_meses": [
+   "cuanto dura la garantia",
+   "cuanto tiempo de garantia",
+   "cuanto tiempo me cubre",
+   "cuanto tiempo me das",
+   "cuantos meses me das",
+   "cuantos meses tiene",
+   "es garantia larga",
+   "es por un año",
+   "hasta cuando tengo garantia",
+   "tiene un año"
+  ],
+  "hz": [
+   "cuantos hercios",
+   "cuantos hz tiene",
+   "es de 144",
+   "es de 60 o 120",
+   "hercios",
+   "la fluidez",
+   "la frecuencia",
+   "la tasa de refresco",
+   "la velocidad de pantalla",
+   "se ve fluido"
+  ],
+  "lector_huella": [
+   "desbloqueo dactilar",
+   "huellero",
+   "lector de dedo",
+   "puedo poner la huella",
+   "se abre con la huella",
+   "se desbloquea asi",
+   "se desbloquea con el dedo",
+   "tiene para poner el dedo",
+   "tiene sensor",
+   "tiene sensor de huella"
+  ],
+  "lector_tarjetas": [
+   "donde pongo la tarjeta",
+   "le puedo poner memoria",
+   "le puedo sumar memoria con tarjeta",
+   "lee sd",
+   "lee tarjetas de memoria",
+   "puedo meterle una tarjeta",
+   "ranura para memoria",
+   "tiene lector",
+   "tiene para la micro sd",
+   "tiene ranura sd"
+  ],
+  "marca": [
+   "de que marca es",
+   "es de buena marca",
+   "es de marca",
+   "es generico",
+   "es marca conocida",
+   "es original",
+   "la marca",
+   "que marca es",
+   "que marca es el equipo",
+   "que marca me recomendas"
+  ],
+  "material": [
+   "de que esta hecho",
+   "es de aluminio",
+   "es de buen material",
+   "es de plastico",
+   "es de vidrio",
+   "es metalico",
+   "es plastico duro",
+   "que material es",
+   "se raya facil",
+   "se siente resistente"
+  ],
+  "memoria_video": [
+   "cuanta memoria tiene la placa",
+   "cuanta placa de video tiene",
+   "cuanta placa tiene",
+   "cuantos gb de video",
+   "es de 4gb o 8gb",
+   "es para juegos",
+   "la memoria de video",
+   "la memoria grafica",
+   "la vram",
+   "memoria para juegos"
+  ],
+  "modelo": [
+   "el modelo exacto",
+   "es el modelo pro",
+   "es el modelo viejo",
+   "es el nuevo",
+   "es el ultimo modelo",
+   "que linea es",
+   "que modelo es",
+   "que modelo me mandas",
+   "que version",
+   "que version es"
+  ],
+  "nombre": [
+   "como figura en la web",
+   "como le dicen",
+   "como lo busco",
+   "como se llama",
+   "como se llama el aparato",
+   "cual es el nombre",
+   "el nombre",
+   "el nombre del producto",
+   "el nombrecito",
+   "que producto es"
+  ],
+  "pais_fabricacion": [
+   "donde esta hecho",
+   "donde lo armaron",
+   "donde lo hicieron",
+   "donde se fabrica",
+   "donde se fabrico",
+   "es chino",
+   "es de afuera",
+   "es importado",
+   "es industria argentina",
+   "es nacional"
+  ],
+  "pais_marca": [
+   "de donde es la marca",
+   "de donde viene la marca",
+   "de que origen es la marca",
+   "de que pais es",
+   "es marca americana",
+   "es marca china",
+   "es marca de afuera",
+   "es marca japonesa",
+   "es marca nacional",
+   "es una marca de eeuu"
+  ],
+  "panel": [
+   "es ips",
+   "es oled",
+   "es panel ips",
+   "es pantalla led",
+   "la pantalla es buena",
+   "que pantalla tiene",
+   "que tecnologia de pantalla usa",
+   "que tipo de display tiene",
+   "que tipo de panel es",
+   "se ve bien de costado"
+  ],
+  "peso_gramos": [
+   "cuanto pesa",
+   "cuantos gramos pesa",
+   "el peso",
+   "es facil de transportar",
+   "es liviano",
+   "es muy liviano",
+   "es muy pesado",
+   "es pesadito",
+   "es pesado",
+   "se puede llevar en el bolso"
+  ],
+  "potencia": [
+   "cuanta potencia tiene",
+   "cuanta potencia tira",
+   "cuantos w",
+   "cuantos watts",
+   "es de muchos watts",
+   "es muy potente",
+   "es potente",
+   "es potente el motor",
+   "se banca mucho",
+   "tiene fuerza"
+  ],
+  "precio_ars": [
+   "a cuanto lo tenes",
+   "cuanto cuesta",
+   "cuanto me sale",
+   "cuanto sale",
+   "cuanto vale",
+   "esta en pesos",
+   "esta muy caro",
+   "pasame el precio",
+   "precio",
+   "que precio tiene"
+  ],
+  "procesador": [
+   "es i5 o i7",
+   "es rapido",
+   "es rapido para trabajar",
+   "es ryzen",
+   "es veloz",
+   "que chip tiene",
+   "que micro tiene",
+   "que onda el procesador",
+   "que procesador tiene",
+   "que procesador usa"
+  ],
+  "puertos": [
+   "cuantos puertos trae",
+   "donde conecto el mouse",
+   "donde enchufo el cable",
+   "que conectores tiene",
+   "que entradas tiene",
+   "tiene entrada para auriculares",
+   "tiene hdmi",
+   "tiene muchas entradas",
+   "tiene usb",
+   "tiene usb c"
+  ],
+  "ram": [
+   "cuanta memoria ram",
+   "cuanta memoria tiene",
+   "cuanta ram tiene",
+   "cuanta ram trae",
+   "cuantos gb de ram",
+   "es buena la ram",
+   "es de 16gb",
+   "es de 8gb",
+   "es rapida",
+   "se traba si abro muchas cosas"
+  ],
+  "ram_ampliable": [
+   "es ampliable",
+   "le puedo poner mas ram despues",
+   "le puedo sumar mas",
+   "puedo ampliar la memoria",
+   "se le puede agregar mas ram",
+   "se puede agrandar la ram",
+   "se puede cambiar la ram",
+   "se puede expandir",
+   "se puede mejorar la ram",
+   "tiene slots libres"
+  ],
+  "resistencia_agua": [
+   "es a prueba de agua",
+   "es resistente al agua",
+   "es sumergible",
+   "es waterproof",
+   "se la banca si llueve",
+   "se puede mojar",
+   "se puede usar en la pileta",
+   "si se moja se rompe",
+   "tiene proteccion contra agua",
+   "tiene proteccion ip"
+  ],
+  "resolucion": [
+   "es 1080p",
+   "es 4k",
+   "es full hd",
+   "la resolucion",
+   "que calidad de pantalla tiene",
+   "que definicion tiene",
+   "que resolucion tiene",
+   "se ve bien",
+   "se ve en hd",
+   "se ve pixelado"
+  ],
+  "retroiluminacion": [
+   "es iluminado",
+   "se ilumina el teclado",
+   "se le prenden luces",
+   "se prenden las teclas",
+   "se ve en la oscuridad",
+   "tiene luces",
+   "tiene luces rgb",
+   "tiene luz",
+   "tiene luz atras",
+   "tiene retroiluminacion"
+  ],
+  "sensor": [
+   "que sensores tiene",
+   "que sensores tiene el equipo",
+   "que sensores trae",
+   "que sensores usa",
+   "tiene giroscopio",
+   "tiene sensor de luz",
+   "tiene sensor de movimiento",
+   "tiene sensor de proximidad",
+   "tiene sensor de temperatura",
+   "trae sensores"
+  ],
+  "switch_teclado": [
+   "es de membrana",
+   "es mecanico",
+   "es ruidoso al escribir",
+   "es silencioso",
+   "es switch azul o rojo",
+   "es teclado mecanico",
+   "que switch trae",
+   "que switch usa",
+   "que teclas tiene",
+   "que tipo de teclas tiene"
+  ],
+  "tactil": [
+   "es pantalla tactil",
+   "es tactil",
+   "es tactil la pantalla",
+   "es touch",
+   "puedo usar los dedos",
+   "se maneja con el dedo",
+   "se maneja tocando",
+   "se puede tocar la pantalla",
+   "se puede usar como tablet",
+   "tiene pantalla touch"
+  ],
+  "thunderbolt": [
+   "es compatible con thunderbolt",
+   "es compatible con thunderbolt 4",
+   "es thunderbolt",
+   "tiene entrada tipo c rapida",
+   "tiene para conectar dock",
+   "tiene puerto de alta velocidad",
+   "tiene puerto especial",
+   "tiene puerto rayo",
+   "tiene puerto thunderbolt",
+   "tiene thunderbolt"
+  ],
+  "wifi": [
+   "agarra bien el wifi",
+   "se conecta a internet",
+   "se conecta a la red",
+   "se conecta al modem",
+   "se conecta sin cables a internet",
+   "tiene antena wifi",
+   "tiene para wifi",
+   "tiene placa de red",
+   "tiene wifi",
+   "tiene wifi 6"
+  ]
+ }
+}

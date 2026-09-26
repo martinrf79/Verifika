@@ -838,9 +838,9 @@
       {
        "tipo": "dice",
        "palabras": [
-        "fury beast ddr5|renegade|ddr5 5600|ddr5 6400"
+        "5600|6400|renegade"
        ],
-       "n": "dice fury beast ddr5|renegade|ddr5 5600|ddr5 6400"
+       "n": "nombra una memoria DDR5 del catalogo"
       }
      ]
     }
@@ -1586,6 +1586,236 @@
         "24"
        ],
        "n": "dice 24"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "J01",
+   "grupo": "J",
+   "clase": "jerga",
+   "turnos": [
+    {
+     "texto": "necesito un aparato rectangular con teclas y dada la crisis dame uno acorde",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "teclado"
+       ],
+       "n": "dice teclado"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "genius|logitech|redragon|k120|kb-110"
+       ],
+       "n": "un teclado barato"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "J02",
+   "grupo": "J",
+   "clase": "jerga",
+   "turnos": [
+    {
+     "texto": "algo para escuchar musica sin cables en el colectivo",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "auricular"
+       ],
+       "n": "dice auricular"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "jbl|sony|hyperx|logitech|redragon|razer|sennheiser"
+       ],
+       "n": "dice jbl|sony|hyperx|logitech|redragon|razer|sennheiser"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "J03",
+   "grupo": "J",
+   "clase": "jerga",
+   "turnos": [
+    {
+     "texto": "una compu portatil para la facu que no sea un fierro",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "acer|asus|dell|hp|lenovo"
+       ],
+       "n": "dice acer|asus|dell|hp|lenovo"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "J04",
+   "grupo": "J",
+   "clase": "jerga",
+   "turnos": [
+    {
+     "texto": "la pantalla para la pc, algo grandecito",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "monitor"
+       ],
+       "n": "dice monitor"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "aoc|asus|dell|gigabyte|lg|msi|philips|samsung|viewsonic"
+       ],
+       "n": "dice aoc|asus|dell|gigabyte|lg|msi|philips|samsung|viewsonic"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "J05",
+   "grupo": "J",
+   "clase": "jerga",
+   "turnos": [
+    {
+     "texto": "un disco externo de 2 teras",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "kingston|samsung|sandisk|seagate|toshiba|western|no tenemos|no hay|no tengo"
+       ],
+       "n": "dice kingston|samsung|sandisk|seagate|toshiba|western|no tenemos|no hay|no tengo"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "J06",
+   "grupo": "J",
+   "clase": "jerga",
+   "turnos": [
+    {
+     "texto": "algo para hacer videollamadas con buena imagen",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "webcam|camara|cámara"
+       ],
+       "n": "dice webcam|camara|cámara"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "avermedia|genius|logitech|razer"
+       ],
+       "n": "dice avermedia|genius|logitech|razer"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "J07",
+   "grupo": "J",
+   "clase": "jerga",
+   "turnos": [
+    {
+     "texto": "el bicho ese para que ande el wifi en toda la casa",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "mercusys|tenda|tp-link"
+       ],
+       "n": "dice mercusys|tenda|tp-link"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "J08",
+   "grupo": "J",
+   "clase": "jerga",
+   "turnos": [
+    {
+     "texto": "una silla para viciar horas sin que me duela la espalda",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "silla"
+       ],
+       "n": "dice silla"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "corsair|cougar|dt3|gamemax|noblechairs|proseat|redragon"
+       ],
+       "n": "dice corsair|cougar|dt3|gamemax|noblechairs|proseat|redragon"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "J09",
+   "grupo": "J",
+   "clase": "jerga",
+   "turnos": [
+    {
+     "texto": "la placa para meterle a la pc y jugar al fifa",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "asrock|asus|gigabyte|msi|powercolor|sapphire|xfx|zotac|rtx|rx "
+       ],
+       "n": "dice asrock|asus|gigabyte|msi|powercolor|sapphire|xfx|zotac|rtx|rx "
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "J10",
+   "grupo": "J",
+   "clase": "jerga",
+   "turnos": [
+    {
+     "texto": "si lo compro y viene fallado que hago?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "garant"
+       ],
+       "n": "dice garant"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "\\$\\s?\\d",
+       "n": "no mete plata"
       }
      ]
     }
