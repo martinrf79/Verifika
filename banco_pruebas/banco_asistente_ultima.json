@@ -1,0 +1,61 @@
+[
+ {
+  "caso": 16,
+  "ok": true,
+  "fallas": [],
+  "seg": 6.1,
+  "tokens": 3466,
+  "vueltas": 2,
+  "llamadas": [
+   "producto{\"nombre\": \"K120 negro\"}",
+   "calcular{\"items\": [{\"cantidad\": 1, \"id\": \"TEC0029\"}], \"reparto\": [{\"porcentaje\": 70, \"medio\": \"transferencia\"}, {\"medio\": \"mercado pago\", \"porcentaje\": 30}]}"
+  ],
+  "mensaje": "me llevo el K120 negro, pago 70 transferencia y 30 mercado pago",
+  "respuesta": "¡Buenísimo! El Logitech K120 negro sale $14.500.\n\nPara el pago, te queda así:\n*   $10.150 por transferencia.\n*   $4.350 por Mercado Pago.\n\n¿Querés que te lo reserve así ya cerramos la compra?"
+ },
+ {
+  "caso": 20,
+  "ok": false,
+  "fallas": [
+   "falto calcular(items~TEC0029|TEC0030)"
+  ],
+  "seg": 2.2,
+  "tokens": 2184,
+  "vueltas": 1,
+  "llamadas": [
+   "buscar{\"rubro\": \"teclado\", \"texto\": \"K120\"}",
+   "buscar{\"texto\": \"G203\", \"rubro\": \"mouse\"}"
+  ],
+  "mensaje": "sumame dos K120 y un G203",
+  "respuesta": "¿Preferís los modelos en color negro o blanco para los teclados y el mouse? Así te hago el cálculo exacto."
+ },
+ {
+  "caso": 35,
+  "ok": true,
+  "fallas": [],
+  "seg": 4.4,
+  "tokens": 3369,
+  "vueltas": 2,
+  "llamadas": [
+   "buscar{\"texto\": \"inalambrico\", \"rubro\": \"mouse\"}",
+   "buscar{\"texto\": \"inalambrico\", \"rubro\": \"mouse\", \"sin_marca\": \"logitech\"}"
+  ],
+  "mensaje": "ya no importa la marca, pasame mas opciones",
+  "respuesta": "Dale, acá tenés otras opciones de mouse inalámbricos:\n\n*   **Razer DeathAdder V3** (Negro o Blanco): $132.000.\n*   **Logitech G Pro Wireless** (Negro o Blanco): $186.000.\n\n¿Te interesa alguno de estos?"
+ },
+ {
+  "caso": 52,
+  "ok": false,
+  "fallas": [
+   "llamo sin necesidad"
+  ],
+  "seg": 4.5,
+  "tokens": 2184,
+  "vueltas": 1,
+  "llamadas": [
+   "producto{\"nombre\": \"JBL Tune 510BT Negro\"}"
+  ],
+  "mensaje": "y ese cuanto?",
+  "respuesta": "El JBL Tune 510BT sale $78.000. ¿Te interesa llevarlo?"
+ }
+]
