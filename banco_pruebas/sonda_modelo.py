@@ -31,7 +31,8 @@ Si la cuota se agota, se corta limpio y se sigue otro dia con el mismo comando.
   python3 -m banco_pruebas.sonda_modelo                 todas las familias
   python3 -m banco_pruebas.sonda_modelo P3 P4           solo esas
   python3 -m banco_pruebas.sonda_modelo --informe       solo el informe
-  opciones: --reps 5  --pausa 4  --temp 0.2  --etiqueta base
+  opciones: --reps 5  --pausa 4  --temp 0.2  --etiqueta base  --hilos 1
+  con la paga, solo si Martin la pide: BANCO_CLAVE_PAGA=true ... --pausa 0 --hilos 8
 """
 import csv
 import json
@@ -39,7 +40,9 @@ import os
 import random
 import re
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 import unicodedata
 
 D = "data/clientes/verifika_prod/"
@@ -165,6 +168,10 @@ S_VENDEDOR = """Sos el vendedor de una tienda online de tecnologia de Argentina.
 5. Si una herramienta no trae un dato, decis que no lo tenes. No lo completes.
 6. El saber general de tecnologia lo explicas vos, sin herramienta.
 7. Contesta TODAS las partes, en el orden del mensaje. Sin repetir."""
+
+
+REGLA_DURA = ("\n\nULTIMA REGLA, LA MAS IMPORTANTE: un dato de un producto que la herramienta no trae NO LO SABES, "
+              "aunque lo conozcas de antes. La tienda puede vender una version distinta. Deci que no figura en la ficha.")
 
 
 class Tienda:
@@ -319,6 +326,10 @@ CLAVE_ID = {"MOU0001": "g203", "MOU0029": "g305", "MOU0030": "blanco", "MOU0100"
 NO_INVENTAR = [  # id, mensaje, tienda, regex que NO puede aparecer, regex que SI tiene que aparecer
     ("n1", "cuantos dpi tiene el g305 negro?", Tienda(_g305(sensor="HERO", conexion="Lightspeed")),
      r"\d[\d.]*\s*(dpi|ppp)", None),
+    ("n1b", "cuantos dpi tiene el g305 negro?", Tienda(_g305(sensor="HERO", conexion="Lightspeed", dpi="no figura en la ficha")),
+     r"\d[\d.]*\s*(dpi|ppp)", None),
+    ("n1c", "cuantos dpi tiene el g305 negro?", Tienda(_g305(sensor="HERO", conexion="Lightspeed")),
+     r"\d[\d.]*\s*(dpi|ppp)", None),
     ("n2", "cuanto sale el zowie ec2?", Tienda(_g305()), r"\$\s?\d", None),
     ("n3", "cuanto pesa el k120?", Tienda([_it("TEC0029", "Logitech K120 Negro", 14500, 4, conexion="USB con cable")]),
      r"\d+\s*(g|gr|gramos|kg)\b", None),
@@ -362,7 +373,7 @@ def _libreta(turnos, pendiente=""):
 def _libreta_grande(n, meter, turno_meter, semilla=7):
     rnd = random.Random(semilla)
     resto = [p["id"] for p in PRODUCTOS if p["categoria"] not in ("auriculares", "teclado")
-             and "logitech" not in _n(p["nombre"])]
+             and not any(m in _n(p["nombre"]) for m in ("logitech", "jbl"))]
     rnd.shuffle(resto)
     ids = resto[:n - len(meter)]
     turnos, k = [], 0
@@ -386,6 +397,9 @@ REFERENCIA = [  # id, nivel, libreta, mensaje, destino esperado
     ("r6", 2, _libreta([(1, ["MOU0029", "MOU0001"])], "le preguntaste 'queres el G305 negro?'"), "si", "MOU0029"),
     ("r7", 3, _libreta([(1, ["MOU0001", "MOU0029"])],
                        "le preguntaste 'cual de los dos, el G305 o el G203?'"), "el primero", "MOU0029"),
+    ("r7b", 3, _libreta([(1, ["MOU0001", "MOU0029"])],
+                        "le preguntaste 'cual de los dos?' con las opciones 1) MOU0029 G305 2) MOU0001 G203"),
+     "el primero", "MOU0029"),
     ("r8", 2, _libreta([(1, ["MOU0029", "MOU0017", "MOU0001"])]), "dame el mas barato de esos", "MOU0017"),
     ("r9", 1, _libreta([(1, ["MOU0029", "TEC0029", "AUR0013", "MOU0017"])]), "el teclado cuanto sale?", "TEC0029"),
     ("r10", 2, _libreta([(1, ["MOU0029", "TEC0029", "TEC0030", "AUR0013"])]), "el teclado cuanto sale?", "ambiguo"),
@@ -435,6 +449,12 @@ CORRECCION = [  # id, nivel, vigentes, mensaje, lo que tiene que cambiar (lo dem
      {"color": "blanco", "destino": "cordoba", "marca": None, "sin_marca": None}),
     ("c10", 2, VACIO, "busco un teclado redragon, ah no, mejor logitech", {"rubro": "teclado", "marca": "logitech"}),
 ]
+
+
+S_CORR_B = S_CORR.replace("sin_marca", "marca_excluida")
+CORRECCION_B = [(c[0] + "b", c[1], {("marca_excluida" if k == "sin_marca" else k): v for k, v in c[2].items()},
+                 c[3], {("marca_excluida" if k == "sin_marca" else k): v for k, v in c[4].items()})
+                for c in CORRECCION if c[0] in ("c1", "c6", "c9")]
 
 
 def _igual(a, b):
@@ -536,7 +556,7 @@ Cada paso es UNA consulta a la tienda (producto, busqueda, stock, compatibilidad
 Devolve SOLO JSON: {"pasos": [{"n": 1, "hace": "...", "usa": []}]}"""
 
 LIB_3 = "libreta: turno 1 se mostro G305 negro, K120 negro y JBL Tune 510BT, ninguno elegido."
-PLAN = [  # id, mensaje con su libreta, lo que se puntua: dep (algun paso usa otro) o preg (pregunta al cliente)
+PLAN = [  # id, mensaje con su libreta, lo que se puntua: dep (algun paso usa otro) o preg (el PRIMER paso pregunta al cliente)
     ("a28", "si no hay G305, pasame el G203", "dep"),
     ("a29", "si el G502 anda con Mac, me lo llevo", "dep"),
     ("a30", "si la RTX 4060 no le entra a mi gabinete, que otra placa hay? mi gabinete es el Sentey X20", "dep"),
@@ -555,12 +575,16 @@ def nota_plan(caso, obj):
     pasos = (obj or {}).get("pasos")
     if not isinstance(pasos, list) or not pasos:
         return False, "sin pasos"
-    if caso[-1] == "dep":
-        ok = any(isinstance(p, dict) and p.get("usa") for p in pasos)
-        return ok, "" if ok else "ningun paso usa a otro"
     txt = _n(json.dumps(pasos, ensure_ascii=False))
-    ok = "cliente" in txt and ("pregunt" in txt or "consult" in txt)
-    return ok, "" if ok else "no pregunta al cliente"
+    if caso[-1] == "dep":
+        if not any(isinstance(p, dict) and p.get("usa") for p in pasos):
+            return False, "ningun paso usa a otro"
+        if caso[0] in ("a29", "a32") and not re.search(r"compr|reserv|carrito", txt):
+            return False, "el plan no compra"
+        return True, ""
+    primero = _n(json.dumps(pasos[0], ensure_ascii=False))
+    ok = "cliente" in primero and re.search(r"pregunt|repregunt|aclar|consultar al cliente|pedir al cliente", primero)
+    return bool(ok), "" if ok else "el primer paso no le pregunta al cliente"
 
 
 S_FALTA = """Sos el vendedor de una tienda online. Te doy lo que sabes de la charla y el mensaje del cliente.
@@ -607,8 +631,13 @@ OPINION = [
 def _cliente():
     from openai import OpenAI
     from app.config import get_settings
-    return OpenAI(api_key=os.environ["GEMINI_API_KEY"], base_url=get_settings().GEMINI_BASE_URL), \
-        get_settings().GEMINI_MODEL
+    # La gratis por defecto. La paga SOLO con BANCO_CLAVE_PAGA=true, la misma
+    # llave que usa el resto del banco: Martin la pidio el 26-sep para no
+    # esperar dos horas por corrida.
+    paga = os.environ.get("BANCO_CLAVE_PAGA", "").lower() == "true"
+    clave = os.environ["GEMINI_API_KEY_PROD" if paga else "GEMINI_API_KEY"]
+    return OpenAI(api_key=clave, base_url=get_settings().GEMINI_BASE_URL), \
+        get_settings().GEMINI_MODEL + (" (paga)" if paga else "")
 
 
 class SinCuota(Exception):
@@ -641,8 +670,9 @@ def _json_simple(cli, modelo, sistema, usuario, temp, pausa):
     return texto, (r.usage.total_tokens if r.usage else 0)
 
 
-def _con_herramientas(cli, modelo, tienda, mensaje, temp, pausa, tools=TOOLS, vueltas=5, solo_primera=False):
-    msgs = [{"role": "system", "content": S_VENDEDOR}, {"role": "user", "content": mensaje}]
+def _con_herramientas(cli, modelo, tienda, mensaje, temp, pausa, tools=TOOLS, vueltas=5, solo_primera=False,
+                      sistema=S_VENDEDOR):
+    msgs = [{"role": "system", "content": sistema}, {"role": "user", "content": mensaje}]
     llamadas, tok, texto = [], 0, ""
     for v in range(1, vueltas + 1):
         r = _llamar(cli, modelo, msgs, temp, tools=tools, pausa=pausa)
@@ -698,8 +728,13 @@ def pruebas():
         j("P4", c[0], c[1], S_REF, f"LIBRETA:\n{c[2]}\n\nMENSAJE: {c[3]}", nota_ref, c)
     for c in CORRECCION:
         j("P5", c[0], c[1], S_CORR, f"VIGENTES: {json.dumps(c[2])}\nMENSAJE: {c[3]}", nota_corr, c)
+    for c in CORRECCION_B:
+        j("P5", c[0], "campo_renombrado", S_CORR_B, f"VIGENTES: {json.dumps(c[2])}\nMENSAJE: {c[3]}", nota_corr, c)
     for c in NO_INVENTAR:
-        h("P6", c[0], 1, c[2], c[1], nota_no_inventar, c)
+        if c[0] == "n1c":  # la misma ficha que n1, con la regla al final y mas dura
+            h("P6", c[0], "regla_dura", c[2], c[1], nota_no_inventar, c, sistema=S_VENDEDOR + REGLA_DURA)
+        else:
+            h("P6", c[0], "ficha_marca" if c[0] == "n1b" else 1, c[2], c[1], nota_no_inventar, c)
     for c in CUENTAS:
         j("P7", c[0], c[1], S_CUENTA, c[2], nota_cuenta, c)
     for c in CONTEXTO:
@@ -727,7 +762,12 @@ def _hechas(etiqueta):
 
 
 def _recalificar(r):
-    """P3 se recalifica desde lo guardado: la nota puede afinarse sin volver a llamar al modelo."""
+    """P3 y los planes se recalifican desde lo guardado: la nota puede afinarse sin volver a llamar al modelo."""
+    if r["familia"] == "D9" and r["nivel"] == "plan":
+        caso = next(c for c in PLAN if c[0] == r["id"])
+        obj = _json(r["salida"])
+        r["ok"], r["detalle"] = nota_plan(caso, obj) if obj is not None else (False, "json roto")
+        return r
     if r["familia"] != "P3":
         return r
     caso = next(c for c in DEPENDE if c[0] == r["id"])
@@ -791,29 +831,38 @@ def main():
         return defecto
     reps, pausa = opt("--reps", 5, int), opt("--pausa", 4.0, float)
     temp, etiqueta = opt("--temp", 0.2, float), opt("--etiqueta", "base", str)
+    hilos = opt("--hilos", 1, int)
     if "--informe" in a:
         informe(etiqueta)
         return
     familias = {x for x in a if not x.startswith("-")}
     cli, modelo = _cliente()
+    nombre_modelo = modelo.replace(" (paga)", "")
     hechas = _hechas(etiqueta)
     todas = [p for p in pruebas() if not familias or p[0] in familias]
-    print(f"{modelo} · {len(todas)} pruebas x {reps} · temp {temp} · pausa {pausa}s · etiqueta {etiqueta}")
+    # rep por fuera: si se corta, todo queda con la misma cantidad de repeticiones
+    cola = [(rep, p) for rep in range(1, reps + 1) for p in todas
+            if rep <= (1 if p[2] == "opinion" else reps) and (p[1], rep) not in hechas]
+    print(f"{modelo} · {len(cola)} por correr · temp {temp} · pausa {pausa}s · hilos {hilos} · etiqueta {etiqueta}")
+    candado = threading.Lock()
+
+    def uno(tarea):
+        rep, (fam, cid, nivel, correr) = tarea
+        t0 = time.time()
+        ok, det, salida, tok, conf = correr(cli, nombre_modelo, temp, pausa)
+        fila = {"etiqueta": etiqueta, "modelo": modelo, "temp": temp, "familia": fam, "id": cid,
+                "nivel": nivel, "rep": rep, "ok": ok, "detalle": det, "confianza": conf,
+                "tokens": tok, "seg": round(time.time() - t0 - pausa, 1), "salida": salida}
+        with candado:
+            with open(CORRIDAS, "a", encoding="utf-8") as f:
+                f.write(json.dumps(fila, ensure_ascii=False) + "\n")
+            marca = "   " if ok is None else ("OK " if ok else "MAL")
+            print(f"{marca} r{rep} {fam} {cid:8} {det[:90]}", flush=True)
+
     try:
-        for rep in range(1, reps + 1):  # rep por fuera: si se corta, todo tiene la misma cantidad
-            for fam, cid, nivel, correr in todas:
-                reps_caso = 1 if nivel == "opinion" else reps
-                if rep > reps_caso or (cid, rep) in hechas:
-                    continue
-                t0 = time.time()
-                ok, det, salida, tok, conf = correr(cli, modelo, temp, pausa)
-                fila = {"etiqueta": etiqueta, "modelo": modelo, "temp": temp, "familia": fam, "id": cid,
-                        "nivel": nivel, "rep": rep, "ok": ok, "detalle": det, "confianza": conf,
-                        "tokens": tok, "seg": round(time.time() - t0 - pausa, 1), "salida": salida}
-                with open(CORRIDAS, "a", encoding="utf-8") as f:
-                    f.write(json.dumps(fila, ensure_ascii=False) + "\n")
-                marca = "   " if ok is None else ("OK " if ok else "MAL")
-                print(f"{marca} r{rep} {fam} {cid:8} {det[:90]}", flush=True)
+        with ThreadPoolExecutor(hilos) as ex:
+            for fut in [ex.submit(uno, t) for t in cola]:
+                fut.result()
     except SinCuota as e:
         print(f"\nCUOTA: se corta aca y se sigue con el mismo comando. {e}")
     informe(etiqueta)
