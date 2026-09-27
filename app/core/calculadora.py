@@ -639,7 +639,7 @@ def calculate_total(items: list[dict] | None = None,
     base_total = total + extra_min
     if pago and not hay_rango:
         from app.core.pago_split import calcular_split, render_split
-        _pct = 0
+        _pct, _cond = 0, ""
         try:
             from app.storage.firestore_client import get_all_faq as _gaf_pct
             _vt = (((_gaf_pct(tienda_id=tid) or {}).get("descuento_transferencia")
@@ -648,9 +648,10 @@ def calculate_total(items: list[dict] | None = None,
                         if (v.get("unidad") or "").lower() == "porcentaje"), None)
             if _dv:
                 _pct = int(_dv.get("monto", 0))
+                _cond = str(_dv.get("condicion") or "")
         except Exception as _e:
             log.warning(f"calculate_total split_pct_faq_error {_e}")
-        _split = calcular_split(base_total, pago, _pct)
+        _split = calcular_split(base_total, pago, _pct, _cond)
         if _split.get("ok"):
             _pres = _render_presentacion(
                 detalle, extras_detalle, total, total_ars=base_total)

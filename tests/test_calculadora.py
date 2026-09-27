@@ -331,13 +331,16 @@ def test_split_mitad_no_descuenta_mercado_pago():
     # Error de PLATA cazado leyendo la charla del guion 31: el medio
     # 'mercado_pago' con guion bajo no era reconocido como Mercado Pago y le
     # aplicaba el 10% de descuento tambien a esa mitad.
-    from app.core.pago_split import calcular_split, es_mercado_pago
-    assert es_mercado_pago("mercado_pago")
-    assert es_mercado_pago("Mercado Pago")
-    assert not es_mercado_pago("transferencia")
+    # Desde el 27-sep el descuento lo decide la condicion de la FAQ, no "todo
+    # lo que no es Mercado Pago": ver test_descuento_por_condicion.py.
+    from app.core.pago_split import calcular_split, lleva_descuento
+    cond = "pago por transferencia bancaria"
+    assert not lleva_descuento("mercado_pago", cond)
+    assert not lleva_descuento("Mercado Pago", cond)
+    assert lleva_descuento("transferencia", cond)
     pago = [{"medio": "transferencia", "porcentaje": 50},
             {"medio": "mercado pago", "porcentaje": 50}]
-    r = calcular_split(175500, pago, 10)
+    r = calcular_split(175500, pago, 10, cond)
     assert r["ok"]
     por_medio = {p["medio"]: p for p in r["partes"]}
     assert por_medio["transferencia"]["monto_final_ars"] == 78975

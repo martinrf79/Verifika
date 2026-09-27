@@ -7,12 +7,17 @@ porcentaje y cubre cualquier combinación (50/50, 70/30, 60/40, tres medios, los
 que sean) mientras sumen 100. El código dueña TODA la cuenta; el solver no
 calcula ni una cifra.
 
-Regla de negocio (Martín, 6-jul): todo medio que NO sea Mercado Pago cuenta como
-transferencia y lleva el descuento; solo Mercado Pago queda afuera. El porcentaje
-de descuento sale de la FAQ descuento_transferencia, no hardcodeado.
+Regla de negocio (Martín, 27-sep): lleva el descuento el medio que nombra la
+CONDICION del descuento en la FAQ de la tienda —"pago por transferencia
+bancaria"—. El porcentaje y la condicion salen de la misma entrada de la FAQ.
+Hasta el 27-sep la regla era "todo lo que no es Mercado Pago", de cuando la
+tienda cobraba solo de esas dos formas: en WhatsApp salio un 10% de descuento
+con la tarjeta Naranja. Una lista de excepciones arreglaba esa tarjeta y dejaba
+la proxima; leer la condicion cubre cualquier medio y cualquier tienda.
 
 Lógica pura, determinista, sin LLM ni Firestore (los datos entran por parámetro).
 """
+import re
 import unicodedata
 
 
@@ -21,13 +26,20 @@ def _norm(s: str) -> str:
     return "".join(c for c in s if not unicodedata.combining(c)).strip()
 
 
-def es_mercado_pago(medio: str) -> bool:
-    """True si el medio es Mercado Pago (único que NO lleva descuento). Todo lo
-    demás (transferencia, Ualá, billeteras, etc.) cuenta como transferencia.
-    Tolera guion bajo ('mercado_pago'): sin esto, el split del 11-jul le
-    aplico el descuento a la mitad de Mercado Pago (error de PLATA)."""
-    m = _norm(medio).replace("_", " ").replace("-", " ")
-    return "mercado pago" in m or "mercadopago" in m or m in ("mp", "mercado")
+# Las palabras de la condicion que no nombran un medio: "PAGO por transferencia"
+# no puede hacer que "Mercado PAGO" lleve el descuento.
+_NO_NOMBRAN = {"pago", "pagos", "pagar", "pagando", "abonar", "abonando", "compra", "compras",
+               "con", "por", "del", "de", "en", "el", "la", "los", "las", "local"}
+
+
+def _palabras(t: str) -> set:
+    return {w for w in re.findall(r"[a-z]+", _norm(t).replace("_", " ")) if len(w) > 3} - _NO_NOMBRAN
+
+
+def lleva_descuento(medio: str, condicion: str) -> bool:
+    """True si el medio nombra lo que dice la condicion del descuento. Sin
+    condicion escrita no hay descuento: no se inventa."""
+    return bool(_palabras(medio) & _palabras(condicion))
 
 
 def _money(n) -> str:
@@ -35,13 +47,14 @@ def _money(n) -> str:
 
 
 def calcular_split(base_ars: int, pago: list[dict],
-                   pct_descuento: int) -> dict:
-    """Reparte base_ars entre los medios de `pago` y aplica el descuento por
-    transferencia a la parte que no es Mercado Pago.
+                   pct_descuento: int, condicion: str) -> dict:
+    """Reparte base_ars entre los medios de `pago` y aplica el descuento a la
+    parte cuyo medio nombra la `condicion` del descuento.
 
     pago: lista de {"medio": str, "porcentaje": number}. Los porcentajes deben
         sumar 100 (se tolera ±1 por redondeo). Cubre cualquier reparto.
     pct_descuento: porcentaje de descuento por transferencia (de la FAQ).
+    condicion: la condicion del descuento, de la misma entrada de la FAQ.
 
     Devuelve {ok, partes:[{medio, porcentaje, monto_ars, es_transferencia,
     descuento_ars, monto_final_ars}], descuento_total_ars, total_final_ars}.
@@ -71,7 +84,7 @@ def calcular_split(base_ars: int, pago: list[dict],
         else:
             monto = base_ars - acumulado  # cierra exacto
         acumulado += monto
-        es_transf = not es_mercado_pago(p["medio"])
+        es_transf = lleva_descuento(p["medio"], condicion)
         desc = round(monto * pct_descuento / 100) if es_transf else 0
         partes.append({
             "medio": str(p["medio"]).strip(),
