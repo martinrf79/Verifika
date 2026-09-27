@@ -21,7 +21,7 @@ Las piezas correctas estan escritas a mano abajo, antes de correr.
 
   python3 -m banco_pruebas.desmenuzar                  A, B y C, cinco repeticiones
   python3 -m banco_pruebas.desmenuzar --informe
-  opciones: --formas A,B,C  --reps 5  --hilos 8
+  opciones: --formas A,B,C  --reps 5  --hilos 8  --etiqueta base
 """
 import csv
 import json
@@ -336,8 +336,10 @@ def correr(forma, caso, cli, modelo):
     return {"partir": partir, "traducir": trad, "detalle": det, "tokens": tok, "piezas": piezas}
 
 
-def informe():
-    filas = [json.loads(x) for x in open(SALIDA, encoding="utf-8")]
+def informe(etiqueta="base"):
+    # Las corridas del 26-sep no tienen etiqueta: son "base".
+    filas = [r for r in (json.loads(x) for x in open(SALIDA, encoding="utf-8"))
+             if r.get("etiqueta", "base") == etiqueta]
     por_id = {c[0]: c for c in CASOS}
     for r in filas:  # se recalifica desde lo guardado
         if r["piezas"]:
@@ -377,8 +379,9 @@ def main():
             return v
         return defecto
     formas, reps, hilos = opt("--formas", "A,B,C").split(","), int(opt("--reps", 5)), int(opt("--hilos", 8))
+    etiqueta = opt("--etiqueta", "base")
     if "--informe" in a:
-        informe()
+        informe(etiqueta)
         return
     from banco_pruebas.sonda_modelo import _cliente
     cli, modelo = _cliente()
@@ -391,11 +394,12 @@ def main():
         forma, caso, rep = t
         r = correr(forma, caso, cli, nombre)
         with candado, open(SALIDA, "a", encoding="utf-8") as f:
-            f.write(json.dumps({"forma": forma, "id": caso[0], "rep": rep, **r}, ensure_ascii=False) + "\n")
+            f.write(json.dumps({"etiqueta": etiqueta, "forma": forma, "id": caso[0], "rep": rep, **r},
+                               ensure_ascii=False) + "\n")
     with ThreadPoolExecutor(hilos) as ex:
         for fut in [ex.submit(uno, t) for t in cola]:
             fut.result()
-    informe()
+    informe(etiqueta)
 
 
 if __name__ == "__main__":

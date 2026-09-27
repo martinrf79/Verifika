@@ -634,6 +634,10 @@ def _cliente():
     # La gratis por defecto. La paga SOLO con BANCO_CLAVE_PAGA=true, la misma
     # llave que usa el resto del banco: Martin la pidio el 26-sep para no
     # esperar dos horas por corrida.
+    if get_settings().LLM_PROVIDER == "deepseek":
+        # El otro proveedor que se mide, el mismo que elige la app (27-sep).
+        s = get_settings()
+        return OpenAI(api_key=s.DEEPSEEK_API_KEY, base_url=s.DEEPSEEK_BASE_URL), s.DEEPSEEK_MODEL
     paga = os.environ.get("BANCO_CLAVE_PAGA", "").lower() == "true"
     clave = os.environ["GEMINI_API_KEY_PROD" if paga else "GEMINI_API_KEY"]
     return OpenAI(api_key=clave, base_url=get_settings().GEMINI_BASE_URL), \
