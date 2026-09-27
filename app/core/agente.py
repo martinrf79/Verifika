@@ -545,9 +545,85 @@ def _pide_reparto(mensaje: str) -> bool:
     return any(_NUMEROS[a] + _NUMEROS[b] == 100 for a, b in _PALABRAS.findall(t))
 
 
-def faltantes(mensaje: str, llamadas: list) -> dict:
+# LA COMPRA QUE SE CAE (27-sep). Medido en tres tandas de las 58 por el clon:
+# "si anda con Mac me lo llevo" y "dame el que sea inalambrico" no llaman a
+# reservar nunca; "el primero" y "ese me lo llevo", una de cada tres. El verbo
+# tiene que ser de compra, no de gusto: "lo quiero para viajar" no compra.
+_COMPRA = re.compile(r"\b(?:me\s+(?:lo|la|los|las)\s+llevo|me\s+llevo|me\s+(?:lo|la)\s+quedo"
+                     r"|(?:lo|la|los|las)\s+compro|llevo\s+(?:uno|una|dos|tres|\d+)"
+                     r"|reserv[aá](?:me)?(?:lo|la|los|las)|dame\s+(?:el|la|los|las)\s+que)\b")
+
+
+def _compra(texto: str) -> bool:
+    return bool(_COMPRA.search(_n(texto)))
+
+
+def _compra_pendiente(mensaje: str, llamadas: list, historial: list) -> bool:
+    """El cliente dijo que compra y nadie llamo a reservar.
+
+    Sin un producto a la vista no hay nada que reservar: "me lo llevo a casa"
+    sin charla ni consulta no avisa. Y la compra que quedo abierta en el turno
+    anterior —"me llevo uno", "¿cual de los dos?"— sigue viva en la respuesta
+    "el primero", salvo que lo que se pregunto fuera el nombre para cerrar."""
+    if any(x.get("herramienta") == "reservar" for x in llamadas or []):
+        return False
+    charla = [m for m in historial or [] if m.get("role") in ("user", "assistant")]
+    if _compra(mensaje):
+        return bool(llamadas) or bool(charla)
+    if len(charla) >= 2 and charla[-2].get("role") == "user" and charla[-1].get("role") == "assistant":
+        antes, pregunto = charla[-2].get("content") or "", charla[-1].get("content") or ""
+        return _compra(antes) and "?" in pregunto and "nombre" not in _n(pregunto)
+    return False
+
+
+# LA MARCA QUE EL CLIENTE SACO ANTES (27-sep). Medido tres de tres en el clon:
+# "un teclado que no sea Redragon" y despues "y alguno mecanico?" busca sin
+# sacar Redragon. El prompt ya dice que una condicion sigue valiendo; no
+# alcanzo. Solo se arrastran MARCAS de la tienda —"que no sea caro" no es una
+# exclusion que el buscador entienda— y solo al mismo rubro.
+_EXCLUYE = re.compile(r"\b(?:que\s+no\s+sean?|nada\s+de|menos|excepto|salvo)\s+(?:de\s+|un\s+|una\s+)?"
+                      r"([a-z0-9][\w-]*)")
+_SUELTA = re.compile(r"\b(?:no\s+importa\s+la\s+marca|cualquier\s+marca|la\s+marca\s+no\s+importa)\b")
+_OPS_FUERA = {"no_contiene", "evita", "distinto", "excluir"}
+
+
+def _marcas(tienda_id: str) -> dict:
+    from app.storage.firestore_client import get_all_products
+    return {_n(p.get("marca")): p.get("marca") for p in get_all_products(tienda_id=tienda_id) or []
+            if p.get("marca")}
+
+
+def _excluidas_perdidas(mensaje: str, llamadas: list, historial: list, tienda_id: str) -> list:
+    """Las marcas que el cliente excluyo en la charla y la busqueda de este
+    turno, del mismo rubro, no excluye. Vacio si el cliente las solto o las
+    volvio a nombrar."""
+    busq = [x.get("args") or {} for x in llamadas or [] if x.get("herramienta") == "buscar"]
+    if not busq or not tienda_id or _SUELTA.search(_n(mensaje)):
+        return []
+    marcas = _marcas(tienda_id)
+    out = []
+    pedidos = [m.get("content") or "" for m in (historial or []) if m.get("role") == "user"][-4:]
+    for antes in pedidos:
+        rub_antes, _ = _rubro(" ".join(w for w in _n(antes).split() if w not in marcas), tienda_id)
+        for m in _EXCLUYE.findall(_n(antes)):
+            if m not in marcas or m in _n(mensaje):
+                continue
+            for a in busq:
+                rub, _ = _rubro(str(a.get("rubro") or a.get("que") or ""), tienda_id)
+                if rub_antes and rub and rub != rub_antes:
+                    continue
+                fuera = any(m in _n(c.get("valor")) and _n(c.get("operador")) in _OPS_FUERA
+                            for c in a.get("condiciones") or [] if isinstance(c, dict))
+                if not fuera and marcas[m] not in out:
+                    out.append(marcas[m])
+    return out
+
+
+def faltantes(mensaje: str, llamadas: list, historial: list = None, tienda_id: str = "") -> dict:
     """Lo que el mensaje pide y ninguna herramienta consulto: destinos sin
-    cotizar y un reparto de pago sin cuenta. Vacio si no falta nada."""
+    cotizar, un reparto de pago sin cuenta, una compra sin reservar y una
+    marca que el cliente excluyo antes y la busqueda perdio. Vacio si no falta
+    nada."""
     out: dict = {}
     consultados = set()
     for x in llamadas or []:
@@ -563,6 +639,11 @@ def faltantes(mensaje: str, llamadas: list) -> dict:
             x.get("herramienta") == "cuenta" and (x.get("args") or {}).get("reparto_pago")
             for x in llamadas or []):
         out["reparto"] = True
+    if _compra_pendiente(mensaje, llamadas, historial):
+        out["compra"] = True
+    excluidas = _excluidas_perdidas(mensaje, llamadas, historial, tienda_id)
+    if excluidas:
+        out["excluidas"] = excluidas
     return out
 
 
@@ -572,6 +653,18 @@ def _aviso(f: dict) -> str:
         partes.append("nombro estos destinos y no cotizaste el envio: " + ", ".join(f["destinos"]))
     if f.get("reparto"):
         partes.append("pidio repartir el pago en porcentajes y no llamaste a cuenta con reparto_pago")
+    if f.get("excluidas"):
+        partes.append("antes pidio que no sea " + ", ".join(f["excluidas"]) + " y la busqueda de ahora no lo "
+                      "excluye. Si sigue valiendo, repeti la busqueda con esa condicion")
+    if f.get("compra"):
+        # NO SE LE DEJA LA SALIDA DE VOLVER A CONFIRMAR. Medido en C32: con
+        # "si ya sabes cual" el modelo contestaba "¿queres que te lo reserve?"
+        # al cliente que acababa de decir "dame". Reservar ya dice que falta
+        # —el color, cual de dos— y con eso pregunta lo que corresponde.
+        partes.append("dijo que compra y no llamaste a reservar. Llama a reservar con el producto; si falta "
+                      "elegir color o cual, la herramienta te lo dice y preguntas solo eso, sin volver a "
+                      "confirmar la compra. Si la compra dependia de una condicion que no se cumplio, no "
+                      "reserves y deciselo")
     return ("REVISION DEL SISTEMA, no es un mensaje del cliente y no la menciones. Antes de contestar: el "
             "cliente " + "; ".join(partes) + ". Hacelo con las herramientas. Si para hacerlo te falta un dato "
             "del cliente, preguntaselo. Despues contesta TODO el mensaje del cliente.")
@@ -640,7 +733,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
         m = r.choices[0].message
         texto = m.content or ""
         if not m.tool_calls:
-            falta = {} if (avisado or ultima) else faltantes(mensaje, llamadas)
+            falta = {} if (avisado or ultima) else faltantes(mensaje, llamadas, historial, tienda_id)
             if not falta:
                 break
             # El borrador NO se agrega: el modelo contesta de nuevo, entero.

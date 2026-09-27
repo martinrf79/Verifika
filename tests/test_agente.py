@@ -243,6 +243,89 @@ def test_la_completitud_ve_lo_que_se_pidio(msg, destinos, reparto):
     assert f.get("destinos", []) == destinos and bool(f.get("reparto")) == reparto
 
 
+# LA COMPRA QUE SE CAE (27-sep-2026). Medido en tres tandas de las 58 por el
+# clon: "si anda con Mac me lo llevo" y "dame el que sea inalambrico" nunca
+# llaman a reservar; "el primero" y "ese me lo llevo" una vez de cada tres.
+
+def _ll(herr, **args):
+    return {"herramienta": herr, "args": args}
+
+
+@pytest.mark.parametrize("msg,llamadas,historial", [
+    ("si el G305 anda con Mac, me lo llevo", [_ll("compatibilidad", producto="G305", con="Mac")], []),
+    ("entre el G305 y el G203, dame el que sea inalambrico", [_ll("buscar", que="G305 G203")], []),
+    ("ah no, el otro, y ese me lo llevo", [],
+     [{"role": "user", "content": "me gusta el G305"},
+      {"role": "assistant", "content": "el G305 negro es inalambrico y sale $80.500"}]),
+    ("el primero", [],
+     [{"role": "user", "content": "me llevo uno"},
+      {"role": "assistant", "content": "cual de los dos, el G203 o el G305?"}]),
+])
+def test_la_completitud_ve_la_compra_sin_reservar(msg, llamadas, historial):
+    assert A.faltantes(msg, llamadas, historial).get("compra")
+    assert "reservar" in A._aviso({"compra": True})
+
+
+@pytest.mark.parametrize("msg,llamadas,historial", [
+    ("me lo llevo a casa", [], []),
+    ("me llevo dos G305 negros", [_ll("reservar", producto="G305 negro", cantidad=2)], []),
+    ("el G203 es inalambrico, no? lo quiero para viajar", [_ll("producto", nombre="G203")], []),
+    ("que parlantes tenes?", [_ll("buscar", rubro="parlante")], []),
+    ("Martin", [], [{"role": "user", "content": "me lo llevo"},
+                    {"role": "assistant", "content": "Listo, reservado. ¿Me pasas tu nombre?"}]),
+    ("y en blanco?", [_ll("buscar", que="blanco")],
+     [{"role": "user", "content": "busco un mouse Logitech con cable"},
+      {"role": "assistant", "content": "tengo el G203 y el G502 Hero, ¿cual te gusta?"}]),
+])
+def test_la_compra_no_se_inventa(msg, llamadas, historial):
+    assert not A.faltantes(msg, llamadas, historial).get("compra")
+
+
+# LA CONDICION DE ANTES QUE SE PIERDE (27-sep-2026). Medido en tres tandas de
+# las 58 por el clon, tres de tres: "busco un teclado que no sea Redragon" y
+# despues "y alguno mecanico?" busca mecanicos sin sacar Redragon.
+
+_SIN_REDRAGON = [{"role": "user", "content": "busco un teclado que no sea Redragon"},
+                 {"role": "assistant", "content": "tengo el K120 y el Keychron K2"}]
+
+
+def test_la_completitud_ve_la_exclusion_de_antes_que_se_perdio():
+    f = A.faltantes("y alguno mecanico?", [_ll("buscar", rubro="teclado", condiciones=[
+        {"campo": "switch_teclado", "operador": "contiene", "valor": "mecanico"}])], _SIN_REDRAGON, TIENDA)
+    assert f.get("excluidas") == ["Redragon"]
+    assert "Redragon" in A._aviso(f)
+
+
+@pytest.mark.parametrize("msg,llamadas", [
+    ("y alguno mecanico?", [_ll("buscar", rubro="teclado", condiciones=[
+        {"campo": "marca", "operador": "no_contiene", "valor": "Redragon"}])]),
+    ("y alguno mecanico?", [_ll("buscar", rubro="teclado", condiciones=[
+        {"campo": "marca", "operador": "evita", "valor": "redragon"}])]),
+    ("bueno, mostrame los Redragon mecanicos", [_ll("buscar", rubro="teclado", que="redragon")]),
+    ("ya no importa la marca, alguno mecanico?", [_ll("buscar", rubro="teclado")]),
+    ("y mouse tenes?", [_ll("buscar", rubro="mouse")]),
+    ("y alguno mecanico?", []),
+])
+def test_la_exclusion_de_antes_no_se_inventa(msg, llamadas):
+    assert not A.faltantes(msg, llamadas, _SIN_REDRAGON, TIENDA).get("excluidas")
+
+
+def test_una_exclusion_que_no_es_marca_no_se_arrastra():
+    h = [{"role": "user", "content": "busco un teclado que no sea caro"},
+         {"role": "assistant", "content": "tengo el K120"}]
+    assert not A.faltantes("y alguno mecanico?", [_ll("buscar", rubro="teclado")], h, TIENDA).get("excluidas")
+
+
+def test_el_turno_le_pasa_la_charla_a_la_completitud(modelo):
+    m = modelo([_resp("Es el G203, ¿en que color?"),
+                _resp("", [_llamada("reservar", producto="G203 negro", cantidad=1)]),
+                _resp("Listo, pasame tu nombre.")])
+    r = _turno([{"role": "user", "content": "me llevo uno"},
+                {"role": "assistant", "content": "cual de los dos, el G203 o el G305?"}], "el primero")
+    assert "reservar" in m.pedidos[1]["messages"][-1]["content"]
+    assert r["texto"] == "Listo, pasame tu nombre."
+
+
 def test_si_falta_algo_el_modelo_tiene_una_vuelta_mas_con_el_aviso(modelo):
     m = modelo([_resp("Tengo auriculares HyperX."),
                 _resp("", [_llamada("envio", destinos=["Posadas"])]),
