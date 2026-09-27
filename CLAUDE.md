@@ -307,6 +307,15 @@ no se hace deploy.
 **6. Un test dice sobre CUÁNTOS casos pasó, no solo que pasó.** — *El CI llamó a
 los casetes con `|| true` y estuvo verde cinco días sin correr nada.*
 
+**7. ARREGLO, NO PARCHE.** Un arreglo corrige la causa donde vive ese dato o esa
+decisión, y cubre la clase entera. Un parche reacciona al síntoma y la próxima
+variante pide otro. **La prueba:** si mañana llega la misma falla dicha de otra
+forma, ¿queda cubierta sin tocar nada? Si hay que sumar otra frase, otra palabra
+a una lista u otra línea al prompt, es parche. Cuando no hay arreglo a mano, el
+parche se dice como parche en el commit. Toda mejora pasa además por
+`banco_pruebas/puerta.py`. — *27-sep: el descuento de transferencia se aplicaba
+a la tarjeta Naranja porque el código decía "todo lo que no es Mercado Pago".*
+
 ---
 
 ## 11. CÓMO SE COMPORTA CLAUDE CODE
