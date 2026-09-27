@@ -75,7 +75,7 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
       else
         echo "       main local tiene $(git rev-list --count origin/main..HEAD 2>/dev/null || echo '?') commit(s) propios: puede ser trabajo sin pushear."
       fi
-      echo "       NO TRABAJES ASI. Es la REGLA CERO BIS de papeles/ARRANQUE.md."
+      echo "       NO TRABAJES ASI. Es la regla de CLAUDE.md: se trabaja en main."
       echo "       Miralo con: git status && git log --oneline origin/main..HEAD"
     fi
   fi
@@ -117,19 +117,19 @@ que son los que hacen algo en vez de pedirlo:
   - Se prueba con la clave GRATIS. La paga solo si Martin la pide en esa misma
     sesion, y hay hook que lo bloquea.
   - Lo que el cliente lee sale de base_conocimiento.json, no de app/.
-  - Cuantos productos, temas o barridos hay NO se escribe en ningun texto:
-    papeles/INVENTARIO_FUENTE.md e papeles/INVENTARIO_BARRIDO.md, que tienen candado.
+  - Cuantos productos o temas hay NO se escribe en ningun texto:
+    papeles/INVENTARIO_FUENTE.md, que tiene candado.
 
 >>> LOS INSTRUMENTOS, y que contesta cada uno <<<
-  banco_pruebas/las_40.py          las 40 preguntas de Martin, parte de codigo
-  banco_pruebas/mapa.py            que funcion no la toca ninguna prueba
-  pytest tests/test_charlas_grabadas.py   el turno completo, gratis
-  banco_pruebas/explorador.py      charlas que NADIE escribio, por el camino vivo
-  banco_pruebas/produccion.py      las charlas REALES, auditadas solas
-  banco_pruebas/objetivo.py        la nota contra el objetivo
-  banco_pruebas/interpretacion.py  separa ENTENDER de CONTESTAR
+  pytest -q                              bateria offline, sin LLM
+  banco_pruebas/produccion.py            charlas reales de Cloud Run
+  banco_pruebas/puerta.py                una mejora contra la base, charla a charla
+  banco_pruebas/vara_58.py               la vara de las 58
+  banco_pruebas/censo_cableado.py        puntas sueltas del cableado
+  banco_pruebas/sonda_turno.py           un turno por dentro
 
-Detalle historico: archivo/papeles_viejos/. Reglas: CLAUDE.md. Mapa: MAPA.md.
+Camino vivo: orchestrator -> respuesta.procesar_turno -> agente.turno
+Reglas: CLAUDE.md. Donde esta cada cosa: MAPA.md. Orden abierta: FICHA_63.
 =============================================================================
 REGLAS
 
@@ -191,26 +191,20 @@ print(f"  rama: {rama}" + ("  <-- OJO, se trabaja en main" if rama != "main" els
       + ("  | arbol sucio" if sucio else "")
       + (f"  | {len(sin_pushear.splitlines())} commits SIN PUSHEAR" if sin_pushear else ""))
 
-# LAS CREDENCIALES QUE SI ESTAN. Nunca el valor, solo si esta y cuanto mide.
-# Nace de que una sesion afirmo que no habia clave de Firestore teniendola en
-# el entorno, y por esa afirmacion se planifico mal medio dia.
 env = []
 for v in ("GCP_SA_KEY_B64", "GEMINI_API_KEY", "GEMINI_API_KEY_PROD",
           "DEEPSEEK_API_KEY", "OPENAI_API_KEY"):
     env.append(f"{v}={'SI' if os.environ.get(v) else 'no'}")
 print("  claves en el entorno: " + "  ".join(env))
 print("  (GCP_SA_KEY_B64 es claude-lector, SOLO LECTURA: con eso"
-      " `python3 banco_pruebas/produccion.py` audita tus charlas reales gratis)")
+      " `python3 banco_pruebas/produccion.py` audita tus charlas reales)")
 
 print("  pisos medidos:")
-print("    charlas grabadas   " + leer("banco_pruebas/casetes/_piso.json",
-                                       "puntos", "total", "llamadas_max"))
-print("    peso del turno     " + leer("banco_pruebas/peso_techo.json",
-                                       "bytes_por_llamada"))
-print("    cosas a medias     " + leer("tests/a_medias_techo.json", "a_medias"))
-print("    puerta sin LLM     " + leer("banco_pruebas/puerta_piso.json",
-                                       "_turnos", "_items_turnos_exactos_pct"))
+print("    cableado           " + leer("banco_pruebas/cableado_techo.json",
+                                       "techo"))
+print("    interpretacion     " + leer("banco_pruebas/interpretacion_piso.json",
+                                       "corridas_perfectas", "casillas_de_la_vara"))
 PYEOF
-echo '  el marcador del proyecto es banco_pruebas/las_40.py: correlo antes de proponer nada.'
+echo "  el marcador: pytest -q. Una mejora, por banco_pruebas/puerta.py."
 echo "======================================================================="
 echo ""

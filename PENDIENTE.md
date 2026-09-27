@@ -15,6 +15,8 @@ Camino vivo: `orchestrator` → `respuesta.procesar_turno` → `agente.turno` so
 `motor.buscar`. Unidad de trabajo: `arquitectura/FICHA_63_la_puerta_de_las_mejoras.md`.
 Dónde está cada cosa: `MAPA.md`.
 
+---
+
 ## Abierto
 
 - **ABIERTO** · Probar el agente por WhatsApp y leer el issue 31: cada turno deja `agente_turno`.
