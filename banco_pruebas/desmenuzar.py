@@ -107,8 +107,11 @@ CASOS = [
      "de esos, cual es el mas barato?", [p("buscar|producto", "barat|m170|precio", rubro="mouse")]),
     ("C28", [], "si no hay G502 Hero en negro, pasame el G305",
      [p(PROD, "g502", rubro="mouse"), p("producto|comprar|buscar", "g305", dep=True)]),
+    # C29 y C50: el G305 y el G203 vienen en dos colores y el cliente no dijo
+    # cual. Reservar sin saberlo es elegir por el; preguntar el color vale.
+    # Misma decision de Martin que C32, 27-sep.
     ("C29", [], "si el G305 anda con Mac, me lo llevo",
-     [p("compatibilidad", "g305", "mac"), p("comprar", "g305", dep=True)]),
+     [p("compatibilidad", "g305", "mac"), p("comprar|repreguntar", "g305", dep=True)]),
     ("C30", [], "tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?",
      [p("compatibilidad", "ddr4|fury|kingston"), p("buscar", "ddr5", rubro="memoria ram", dep=True)]),
     ("C31", [], "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX",
@@ -157,7 +160,7 @@ CASOS = [
      "el teclado logi ese del principio, tiene stock?", [p(PROD, "k120", rubro="teclado")]),
     ("C50", ["cliente: estoy entre el G203 y el G305", "bot: el G203 sale $37.500 y el G305 $80.500",
              "cliente: me llevo uno", "bot: cual de los dos, el G203 o el G305?"],
-     "el primero", [p("comprar", "g203")]),
+     "el primero", [p("comprar|repreguntar", "g203")]),
     ("C51", [], "cuanto sale el G305 negro? y mandame ese a Cordoba",
      [p(PROD, "g305", rubro="mouse"), p("envio", "cordoba|córdoba")]),
     ("C52", ["cliente: que tenes en mouse Logitech, teclados Logitech y auriculares JBL?",
