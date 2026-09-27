@@ -577,9 +577,13 @@ def charlas(tok: str, limite: int = 20, usuario: str = "",
     """
     if usuario:
         doc = _get(f"{_BASE}/tiendas/{TIENDA}/conversaciones/{usuario}", tok)
-        return ([(usuario, _respuestas_del_bot(doc))],
-                {"ventana_s": 0, "vistas": 1, "usuario": usuario,
-                 "dialogos": {usuario: _dialogo(doc)}})
+        out = [(usuario, _respuestas_del_bot(doc))]
+        dialogos = {usuario: _dialogo(doc)}
+        for uid, d in _archivadas(tok, desde_s, usuario):
+            out.append((uid, _respuestas_del_bot(d)))
+            dialogos[uid] = _dialogo(d)
+        return (out, {"ventana_s": 0, "vistas": len(out), "usuario": usuario,
+                      "dialogos": dialogos})
 
     tope = max(1, min(int(limite), 300))
     corte = (time.time() - desde_s) if desde_s else 0
@@ -603,8 +607,40 @@ def charlas(tok: str, limite: int = 20, usuario: str = "",
         token = datos.get("nextPageToken") or ""
         if len(out) >= tope or not token or not desde_s:
             break
+    for uid, d in _archivadas(tok, desde_s):
+        if len(out) >= tope:
+            break
+        vistas += 1
+        out.append((uid, _respuestas_del_bot(d)))
+        dialogos[uid] = _dialogo(d)
     return out, {"ventana_s": desde_s, "vistas": vistas, "usuario": "",
                  "dialogos": dialogos}
+
+
+def _archivadas(tok: str, desde_s: int = 0, usuario: str = "") -> list:
+    """Las charlas que el RESET_CODE archivo desde el 27-sep: `(id, doc)`,
+    donde el id es `<usuario>_<fecha del reset>`. Con `desde_s`, solo las
+    archivadas dentro de la ventana."""
+    corte = (time.time() - desde_s) if desde_s else 0
+    out, token = [], ""
+    while True:
+        url = f"{_BASE}/tiendas/{TIENDA}/conversaciones_archivo?pageSize=300"
+        if token:
+            url += f"&pageToken={urllib.parse.quote(token)}"
+        try:
+            datos = _get(url, tok)
+        except Exception:  # noqa: BLE001 — sin archivo, el informe sale igual
+            return out
+        for doc in datos.get("documents", []) or []:
+            uid = str(doc.get("name", "")).rsplit("/", 1)[-1]
+            if usuario and not uid.startswith(usuario + "_"):
+                continue
+            if corte and _cuando(doc) < corte:
+                continue
+            out.append((uid, doc))
+        token = datos.get("nextPageToken") or ""
+        if not token:
+            return out
 
 
 # ── EL INFORME ──────────────────────────────────────────────────────────────

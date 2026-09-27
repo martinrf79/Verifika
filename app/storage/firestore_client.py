@@ -497,7 +497,23 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
 
 
 def reset_conversation(user_id: str, tienda_id: str | None = None):
-    _tienda_ref(tienda_id).collection("conversaciones").document(user_id).delete()
+    """El RESET_CODE arranca la charla de cero, pero NO la borra: la ARCHIVA.
+
+    27-sep: Martin probo cuatro veces seguidas la misma pregunta con un reset
+    entre cada una, y de tres de esas respuestas no quedo nada. Los logs no
+    guardan el texto, y el reset borraba el unico lugar que si. Ahora la charla
+    se copia a `conversaciones_archivo/<usuario>_<fecha>` y ahi la lee
+    `banco_pruebas/produccion.py`."""
+    ref = _tienda_ref(tienda_id).collection("conversaciones").document(user_id)
+    try:
+        doc = ref.get()
+        if doc.exists:
+            _tienda_ref(tienda_id).collection("conversaciones_archivo").document(
+                f"{user_id}_{time.strftime('%Y%m%dT%H%M%S', time.gmtime())}").set(
+                {**(doc.to_dict() or {}), "usuario": user_id, "archivada_en": firestore.SERVER_TIMESTAMP})
+    except Exception as e:  # noqa: BLE001 — el reset se hace igual aunque no se archive
+        log.warning("reset_archivo_error", user_id=user_id, error=str(e)[:120])
+    ref.delete()
 
 
 # ────────────────────────────────────────────────────────────

@@ -181,6 +181,19 @@ def test_el_color_que_no_se_mostro_primero_queda_en_la_memoria_del_turno():
     assert next(f for f in fichas if f["id"] == "MOU0002")["nombre"].endswith("Blanco")
 
 
+@pytest.mark.parametrize("pregunta", [
+    "medios de pago y descuentos por cantidad",
+    "que medios de pago reciben y si tienen descuentos por cantidad",
+    "Dime qué medios de pago reciben Y si tienen descuentos por cantidad"])
+def test_una_pregunta_de_la_casa_con_varios_temas_trae_todos(pregunta):
+    """El bot dijo "no tenemos descuentos por cantidad": `mayoristas` quedo
+    cuarto y el corte era tres."""
+    temas = A.temas_de(pregunta, TIENDA)
+    assert "mayoristas" in temas and "formas_pago" in temas
+    r = A.h_politica(TIENDA, pregunta=pregunta)
+    assert any("cantidad" in json.dumps(p, ensure_ascii=False).lower() for p in r["politicas"])
+
+
 # ── LA COMPLETITUD, MECANICA ─────────────────────────────────────────────────
 #
 # Medido el 19-sep cuatro de cuatro y el 26-sep otra vez: el reparto de pago y

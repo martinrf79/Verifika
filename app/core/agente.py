@@ -97,7 +97,9 @@ def indice(tienda_id: str) -> dict:
     for t, d in (faq.items() if isinstance(faq, dict) else []):
         kw = " ".join((d or {}).get("keywords") or []) if isinstance(d, dict) else ""
         temas[t] = {"nombre": _tokens(t.replace("_", " ")),
-                    "alias": _tokens(kw + " " + " ".join((al.get("temas") or {}).get(t, [])))}
+                    "alias": _tokens(kw + " " + " ".join((al.get("temas") or {}).get(t, []))),
+                    "frases": [_n(k) for k in ((d or {}).get("keywords") or []) if isinstance(d, dict)
+                               and len(_n(k)) > 3]}
     campos = {c: {"nombre": _tokens(c.replace("_", " ")),
                   "alias": _tokens(" ".join((al.get("campos") or {}).get(c, [])))}
               for c in campos_filtrables(tienda_id)}
@@ -341,8 +343,26 @@ def h_envio(tienda_id: str, destinos=None, **_) -> dict:
     return r.get("envios") or {"veredicto": "sin_tarifa", "destinos": ds}
 
 
+def temas_de(pregunta: str, tienda_id: str, tope: int = 6) -> list:
+    """Los temas de la casa para una pregunta que puede traer varios.
+
+    26-sep, 23:57, WhatsApp: "que medios de pago reciben y si tienen descuentos
+    por cantidad". El indice ubico tres temas de pago y `mayoristas` quedo
+    cuarto, afuera del corte. El modelo no lo vio y le dijo al cliente que no
+    hay descuento por cantidad, cuando la FAQ dice que si. Ahora entra primero
+    el tema cuya frase de la FAQ aparece tal cual —"por cantidad"—, y despues
+    cada parte de la pregunta se ubica por separado."""
+    t = _n(pregunta)
+    idx = indice(tienda_id)["temas"]
+    out = [k for k, b in idx.items() if any(f in t for f in b.get("frases") or [])]
+    for parte in [x for x in re.split(r"[,;?]|\by\b|\be\b|\btambien\b", t) if x.strip()]:
+        out += ubicar(parte, "temas", tienda_id, n=2)
+    out += ubicar(pregunta, "temas", tienda_id)
+    return list(dict.fromkeys(out))[:tope]
+
+
 def h_politica(tienda_id: str, pregunta: str = "", **_) -> dict:
-    temas = ubicar(pregunta, "temas", tienda_id) or [pregunta]
+    temas = temas_de(pregunta, tienda_id) or [pregunta]
     r = _motor().buscar([], tienda_id, _trace(), temas=temas)
     out = {"politicas": r.get("politicas") or []}
     if not out["politicas"]:

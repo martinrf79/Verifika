@@ -31,6 +31,13 @@ está acá.
    `/logs`. El informe vuelve con los invariantes, los logs de Cloud Run y
    —desde el 3-sep— la charla literal. **Los logs NO guardan el texto de la
    respuesta:** `turno_ok` anota largo, latencia y puntos, nunca el mensaje.
+   **Desde una sesión de Claude Code en la nube se lee directo**, sin issue:
+   el entorno trae `GCP_SA_KEY_B64`, la cuenta `claude-lector`, de solo
+   lectura. `python3 banco_pruebas/produccion.py --desde 6h` da los logs del
+   turno y la charla literal; `--usuario <numero>` da una sola. Desde el
+   27-sep el reset `Verifika2026` ARCHIVA la charla en vez de borrarla, y el
+   mismo comando la lee. Lo que el modelo le pidió a cada herramienta está en
+   `agente_turno`, campo `pedidos`.
 5. **Una sesión que no puede correr `pytest` ni `gcloud`** —Cowork, el celular—
    igual llega a todo: al repo por la integración de GitHub, que lee y escribe
    `main` incluidos los workflows, y a producción por el issue 31.
