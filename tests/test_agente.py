@@ -111,6 +111,170 @@ def test_el_prompt_no_crece_con_el_catalogo():
     assert len(s) < 9000
 
 
+# ── LA BOCA INVARIANTE: el mismo pedido dicho de otra forma, los mismos hechos ──
+#
+# 26-sep, 23:59, WhatsApp, la pregunta compleja de siempre. En produccion el
+# modelo pidio el rubro como condicion `categoria` y el motor la ignoro: las
+# tres busquedas volvieron con los mismos dos procesadores y el cliente leyo
+# "el sistema no reconoce auriculares, mouse o memoria ram". Por el clon, la
+# misma pregunta pidio "sin China" como exclusion dura: cero, y el bot dijo que
+# todo era chino, cuando las memorias son "taiwan o china segun linea". Las dos
+# veces el catalogo tenia el pais de fabricacion y la fila que volvia no lo
+# traia. Lo que no puede pasar es que la respuesta dependa de COMO lo pidio.
+
+def test_el_rubro_pedido_como_condicion_categoria_se_busca_en_el_rubro():
+    for rubro, prefijo in (("auriculares", "AUR"), ("mouse", "MOU"), ("memoria ram", "RAM")):
+        r = A.h_buscar(TIENDA, cuantos=2, condiciones=[
+            {"campo": "categoria", "operador": "igual", "valor": rubro}])
+        assert r["filas"] and all(f["id"].startswith(prefijo) for f in r["filas"]), rubro
+        assert "no_aplicado" not in r
+
+
+def test_la_fila_trae_el_valor_del_campo_que_se_pidio():
+    r = A.h_buscar(TIENDA, rubro="auriculares", cuantos=2, condiciones=[
+        {"campo": "pais_fabricacion", "operador": "evita", "valor": "China"}])
+    assert all(f.get("pais_fabricacion") == "china" for f in r["filas"])
+
+
+def test_exclusion_dura_o_blanda_devuelven_los_mismos_hechos_del_rubro():
+    """"sin China" y "lo menos chino posible" tienen que dejarle al modelo el
+    mismo hecho: que valores hay en el rubro y cuantos de cada uno."""
+    for op in ("no_contiene", "evita", "igual"):
+        a = A.h_buscar(TIENDA, rubro="auriculares", cuantos=2, condiciones=[
+            {"campo": "pais_fabricacion", "operador": op, "valor": "China"}])
+        m = A.h_buscar(TIENDA, rubro="memoria ram", cuantos=2, condiciones=[
+            {"campo": "pais_fabricacion", "operador": op, "valor": "China"}])
+        assert a["valores_en_el_rubro"]["pais_fabricacion"] == {"china": 46}, op
+        assert m["valores_en_el_rubro"]["pais_fabricacion"] == {"taiwan o china segun linea": 96}, op
+        assert a["filas"] and m["filas"], op
+
+
+def test_las_fichas_del_turno_traen_el_precio_en_numero_para_la_suma_verificada():
+    """"los dos $49.500" es una suma correcta de dos precios que volvieron. Sin
+    `precio_ars` en las fichas la guarda no podia comprobarla y tiraba la
+    respuesta entera."""
+    fichas, _, _ = R._lo_que_volvio([{"herramienta": "buscar", "vuelve": {"filas": [
+        {"id": "MOU0001", "nombre": "G203", "precio": "$37.500"},
+        {"id": "MOU0009", "nombre": "M170", "precio": "$12.000"}]}}])
+    assert [f["precio_ars"] for f in fichas] == [37500, 12000]
+    from app.core import numeros as N
+    _, inf = N.llenar("El G203 sale $37.500 y el M170 $12.000, los dos $49.500.", fichas)
+    assert not inf["inventada"]
+
+
+def test_un_modelo_en_dos_colores_es_un_renglon_y_lo_sin_stock_baja():
+    """A "dos mouse" volvian el DX-110 negro y el blanco sin stock: el modelo
+    armo la cuenta con el blanco y la cuenta no salio."""
+    r = A.h_buscar(TIENDA, rubro="mouse", cuantos=2, condiciones=[
+        {"campo": "pais_fabricacion", "operador": "no_contiene", "valor": "China"}])
+    ids = [f["id"] for f in r["filas"]]
+    assert len(r["filas"]) == 2 and not {"MOU0023", "MOU0024"} <= set(ids)
+    assert all(f["stock"] > 0 for f in r["filas"])
+    dx = next(f for f in r["filas"] if f["id"] in ("MOU0023", "MOU0024"))
+    assert {v["color"]: v["stock"] for v in dx["variantes"]} == {"Negro": 11, "Blanco": 0}
+
+
+def test_el_color_que_no_se_mostro_primero_queda_en_la_memoria_del_turno():
+    fichas, _, _ = R._lo_que_volvio([{"herramienta": "buscar", "vuelve": A.h_buscar(
+        TIENDA, rubro="mouse", que="G203", cuantos=1)}])
+    assert {"MOU0001", "MOU0002"} <= {f["id"] for f in fichas}
+    assert next(f for f in fichas if f["id"] == "MOU0002")["nombre"].endswith("Blanco")
+
+
+# ── LA COMPLETITUD, MECANICA ─────────────────────────────────────────────────
+#
+# Medido el 19-sep cuatro de cuatro y el 26-sep otra vez: el reparto de pago y
+# los destinos se caen del turno. Cambiar el texto del prompt no lo arreglo
+# nunca. El codigo lee el mensaje, ve que pidio y que no se consulto, y se lo
+# marca al modelo UNA vez antes de que conteste.
+
+COMPLEJA = ("Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan "
+            "importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un "
+            "auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a "
+            "Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en "
+            "setenta treinta, ya que veré en la fase siguiente cómo seguimos")
+
+
+def test_la_completitud_ve_los_destinos_y_el_reparto_de_la_pregunta_compleja():
+    f = A.faltantes(COMPLEJA, [])
+    assert sorted(f["destinos"]) == ["Concordia", "Córdoba capital", "posadas"]
+    assert f["reparto"]
+
+
+def test_lo_consultado_no_falta():
+    llamadas = [{"herramienta": "envio", "args": {"destinos": ["Cordoba", "Concordia, Entre Rios"]}},
+                {"herramienta": "cuenta", "args": {"items": [], "destino": "Posadas",
+                                                   "reparto_pago": [{"medio": "transferencia", "porcentaje": 70}]}}]
+    assert A.faltantes(COMPLEJA, llamadas) == {}
+
+
+@pytest.mark.parametrize("msg", [
+    "que parlantes tenes?", "el G305 anda con mi Mac?", "una compu portatil para la facu",
+    "hola, soy de Posadas, Misiones", "algo para escuchar musica sin cables en el colectivo",
+    "quiero una notebook con 64 GB de RAM por menos de 200 mil", "tienen 50 por ciento off en todo, no?",
+    "una silla para viciar horas", "me lo llevo a casa", "dame el precio del 12/09",
+    "sumame dos K120 negros y un G203 negro", "cual es la capital de Francia?"])
+def test_la_completitud_no_inventa_pedidos(msg):
+    assert A.faltantes(msg, []) == {}
+
+
+@pytest.mark.parametrize("msg,destinos,reparto", [
+    ("cuanto sale el envio a Posadas?", ["Posadas"], False),
+    ("mandame un G203 a Rosario y otro a Mendoza", ["Rosario", "Mendoza"], False),
+    ("me equivoque, era para Cordoba, no Rosario", ["Cordoba"], False),
+    ("me llevo el K120, pago 70 por ciento transferencia y 30 por ciento Mercado Pago", [], True),
+    ("dividilo 60/40", [], True),
+    ("mitad y mitad", [], True)])
+def test_la_completitud_ve_lo_que_se_pidio(msg, destinos, reparto):
+    f = A.faltantes(msg, [])
+    assert f.get("destinos", []) == destinos and bool(f.get("reparto")) == reparto
+
+
+def test_si_falta_algo_el_modelo_tiene_una_vuelta_mas_con_el_aviso(modelo):
+    m = modelo([_resp("Tengo auriculares HyperX."),
+                _resp("", [_llamada("envio", destinos=["Posadas"])]),
+                _resp("El envio a Posadas sale $10.000.")])
+    r = _turno([], "tenes auriculares? y cuanto sale el envio a Posadas?")
+    assert r["texto"] == "El envio a Posadas sale $10.000."
+    aviso = m.pedidos[1]["messages"][-1]
+    assert aviso["role"] == "user" and "Posadas" in aviso["content"]
+    assert "Tengo auriculares HyperX." not in json.dumps(m.pedidos[1]["messages"], ensure_ascii=False)
+
+
+def test_el_aviso_de_completitud_se_da_una_sola_vez(modelo):
+    m = modelo([_resp("No se."), _resp("Sigo sin saber.")])
+    r = _turno([], "cuanto sale el envio a Posadas?")
+    assert r["texto"] == "Sigo sin saber." and len(m.pedidos) == 2
+
+
+def test_si_el_modelo_se_cae_despues_del_aviso_sale_el_borrador(modelo, monkeypatch):
+    pedidos = []
+
+    def _create(**kw):
+        pedidos.append(kw)
+        if len(pedidos) == 1:
+            return _resp("El envio a Posadas no lo tengo.")
+        raise ValueError("400 bad request")
+    monkeypatch.setattr("app.core.llm_reintento._cliente",
+                        lambda: NS(chat=NS(completions=NS(create=_create))))
+    assert _turno([], "cuanto sale el envio a Posadas?")["texto"] == "El envio a Posadas no lo tengo."
+
+
+def test_la_condicion_categoria_no_llega_al_motor_aunque_venga_el_rubro():
+    r = A.h_buscar(TIENDA, rubro="mouse", condiciones=[{"campo": "categoria", "operador": "igual", "valor": "mouse"}])
+    assert "no_aplicado" not in r and r["filas"][0]["id"].startswith("MOU")
+
+
+def test_si_el_modelo_se_cae_a_mitad_no_sale_el_texto_de_antes_de_buscar(modelo, monkeypatch):
+    def _create(**kw):
+        if kw["messages"][-1]["role"] == "tool":
+            raise ValueError("400 bad request")
+        return _resp("Dejame buscar...", [_llamada("buscar", rubro="mouse")])
+    monkeypatch.setattr("app.core.llm_reintento._cliente",
+                        lambda: NS(chat=NS(completions=NS(create=_create))))
+    assert _turno([], "que mouse tenes?")["texto"] == ""
+
+
 # ── EL LOOP ──────────────────────────────────────────────────────────────────
 
 def test_el_agente_consulta_lee_y_contesta(modelo):

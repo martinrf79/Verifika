@@ -70,6 +70,7 @@ contradicciones, y el aviso del reparto de pago distingue "sin medio" de
 - **ABIERTO** · El esquema grande del motor, `motor.esquema`, ya no lo usa el turno: lo usan tests y banco. Se borra con sus tests en su propio commit.
 - **ABIERTO** · El cache da cero: el prompt fijo, unos 1.700 tokens, no llega al minimo del proveedor. Medir el umbral y decidir si vale engordar lo fijo.
 - **ABIERTO** · Lo que falla en la vara de las 58: el reparto de pago sale como total final sin las dos partes, y "dame el que sea inalambrico" no ofrece reservar.
+- **ABIERTO** · 27-sep: la pregunta compleja por el clon ya cotiza los tres envios siempre, por la completitud mecanica. Falta: el modelo sigue diciendo "todo es chino" aunque las memorias son Taiwan o China, y a veces pregunta en vez de armar la cuenta del 70/30.
 - **ABIERTO** · `arquitectura/MAPA_CABLEADO.md` sigue describiendo el turno del interprete.
 - Para otra tienda: `scripts/generar_alias.py <tienda>` una vez, y el prompt no cambia.
 

@@ -23,6 +23,7 @@ escribir una cifra que no salio de una herramienta, afirmar la identidad de un
 producto que el motor no certifico, e inventar una politica de la casa.
 """
 import json
+import re
 import time
 
 from app.config import get_settings
@@ -272,7 +273,21 @@ def _lo_que_volvio(llamadas: list) -> tuple:
     def filas(r):
         for f in (r or {}).get("filas") or []:
             if f.get("id") and str(f["id"]) not in {str(x.get("id")) for x in fichas}:
-                fichas.append({"id": f["id"], "nombre": f.get("nombre"), "precio": f.get("precio")})
+                # EL PRECIO TAMBIEN EN NUMERO: la guarda de plata suma con
+                # `precio_ars`, y sin el tiraba por inventada una suma correcta
+                # de dos precios que si volvieron.
+                ars = re.sub(r"\D", "", str(f.get("precio") or ""))
+                fichas.append({"id": f["id"], "nombre": f.get("nombre"), "precio": f.get("precio"),
+                               **({"precio_ars": int(ars)} if ars else {})})
+            # Los otros colores del renglon tambien se vieron: "y en blanco?"
+            # tiene que poder volver a ellos por su id.
+            for v in f.get("variantes") or []:
+                if v.get("id") and str(v["id"]) not in {str(x.get("id")) for x in fichas}:
+                    ars = re.sub(r"\D", "", str(v.get("precio") or ""))
+                    from app.storage.firestore_client import get_product_by_id
+                    prod = get_product_by_id(str(v["id"])) or {}
+                    fichas.append({"id": v["id"], "nombre": prod.get("nombre") or f.get("nombre"),
+                                   "precio": v.get("precio"), **({"precio_ars": int(ars)} if ars else {})})
         for sub in (r or {}).get("por_condicion") or []:
             filas(sub)
 
