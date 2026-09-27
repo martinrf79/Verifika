@@ -226,8 +226,21 @@ NO_CORRE = {
 }
 
 
+_POR_ID = {p["id"].lower(): p for p in CATALOGO}
+
+# Lo que se hace con el resultado. Una pieza de ACCION tiene que estar en el
+# turno del mensaje; una de CONSULTA puede venir de un turno anterior de la
+# charla: "si no hay en negro, el blanco" con el stock ya visto antes no
+# obliga a pedir la ficha otra vez.
+ACCION = {"comprar", "cuenta", "envio"}
+
+
 def _texto_llamada(x: dict) -> str:
-    return _n(x["herramienta"] + " " + json.dumps(x["args"], ensure_ascii=False))
+    """Los argumentos como texto, con el NOMBRE de cada id que aparezca: por
+    el clon el modelo pide "MOU0029" y la pieza dice "g305"."""
+    t = _n(x["herramienta"] + " " + json.dumps(x["args"], ensure_ascii=False))
+    nombres = [_n(_POR_ID[i]["nombre"]) for i in re.findall(r"[a-z]{3}\d{4}", t) if i in _POR_ID]
+    return t + " " + " ".join(nombres)
 
 
 def _cumple(e: dict, x: dict) -> bool:
@@ -245,7 +258,8 @@ def _cumple(e: dict, x: dict) -> bool:
     # la ficha del K120: trae la conexion, la garantia y los colores. Una
     # clave que no nombra un producto no tiene por que viajar en el pedido.
     # Pero una pieza de la casa —"tienen 50 off?"— no la verifica una ficha.
-    if h == "producto":
+    # Igual una busqueda por el nombre de un producto: sus filas traen los datos.
+    if h == "producto" or (h == "buscar" and categoria_de(t)):
         if e["tema"]:
             return False
         claves = [c for c in claves if any(categoria_de(o) for o in c.split("|"))]
@@ -280,15 +294,18 @@ def _pregunta(texto: str) -> bool:
     return "?" in (texto or "") or bool(re.search(r"\b(decime|contame|avisame|pasame|indicame)\b", _n(texto)))
 
 
-def nota_piezas(caso, llamadas: list, texto: str = "") -> dict:
+def nota_piezas(caso, llamadas: list, texto: str = "", previas: list = ()) -> dict:
     """La interpretacion de un turno contra sus piezas correctas.
 
     Devuelve {piezas, bien, traduce_mal, faltan, sobran, detalle}. Una pieza
     esta BIEN si tiene su llamada, esa llamada traduce bien, y si la pieza
     depende de otra, viene en una vuelta posterior. `sobran` son llamadas que
-    no cubren ninguna pieza: no restan, se informan."""
+    no cubren ninguna pieza: no restan, se informan. `previas` son las
+    llamadas de los turnos anteriores de la charla: cubren solo piezas de
+    consulta, nunca de ACCION."""
     esperadas = caso[3]
     ls = llamadas_de(llamadas)
+    antes = [{**x, "vuelta": 0} for x in llamadas_de(previas)]
     usadas: set = set()
     bien = 0
     faltan, trad, detalle = [], [], []
@@ -305,6 +322,11 @@ def nota_piezas(caso, llamadas: list, texto: str = "") -> dict:
                 faltan.append(nombre)
             continue
         cand = [j for j, x in enumerate(ls) if _cumple(e, x)]
+        if not cand and e["tipos"][0] not in ACCION:
+            vieja = next((x for x in antes if _cumple(e, x) and not _traduce(e, x)), None)
+            if vieja:
+                bien += not e["opc"]
+                continue
         if (caso[0], e["tipos"][0]) in NO_CORRE:
             if cand:
                 faltan.append(f"{nombre} corrio y no tenia que correr")

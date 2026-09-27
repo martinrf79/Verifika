@@ -113,8 +113,11 @@ CASOS = [
      [p("compatibilidad", "ddr4|fury|kingston"), p("buscar", "ddr5", rubro="memoria ram", dep=True)]),
     ("C31", [], "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX",
      [p("cuenta", "mx", "g305", "300")]),
+    # La compra O la pregunta del color: el G305 viene en negro y en blanco, y
+    # reservar sin saber cual es elegir por el cliente. Decidido por Martin el 27-sep.
     ("C32", [], "entre el G305 y el G203, dame el que sea inalambrico",
-     [p("producto|buscar|compatibilidad", "inalambric"), p("comprar", "g305|g203|inalambric", dep=True)]),
+     [p("producto|buscar|compatibilidad", "inalambric"),
+      p("comprar|repreguntar", "g305|g203|inalambric", dep=True)]),
     ("C33", [], "quiero un teclado Redragon, ah no, mejor Logitech", [p("buscar", "logitech", rubro="teclado")]),
     ("C34", ["cliente: cuanto sale mandar un G203 a Rosario?", "bot: a Rosario el envio sale $7.000"],
      "me equivoque, era para Cordoba, no Rosario", [p("envio", "cordoba|córdoba")]),

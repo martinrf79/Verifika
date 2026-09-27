@@ -340,8 +340,7 @@ def _recalificar(f):
 
 
 def informe(etiqueta):
-    filas = [json.loads(x) for x in open(SALIDA, encoding="utf-8")]
-    filas = [_recalificar(f) for f in filas if f["etiqueta"] == etiqueta]
+    filas = cargar(etiqueta)
     cas = [(c, t) for f in filas for t in f["turnos"] for c in t["casillas"]]
     ok = sum(c[1] is True for c, _ in cas)
     mal = [(c, t) for c, t in cas if c[1] is False]
@@ -349,8 +348,7 @@ def informe(etiqueta):
     na = sum(c[1] is None for c, _ in cas)
     turnos = [t for f in filas for t in f["turnos"]]
     plata = [t for t in turnos if t["plata_no_vista"]]
-    charlas_ok = sum(all(c[1] in (True, None, "sin_herramienta") for t in f["turnos"] for c in t["casillas"])
-                     and not any(t["plata_no_vista"] or t["vacia"] for t in f["turnos"]) for f in filas)
+    charlas_ok = sum(respuesta_ok(f) for f in filas)
     print(f"\nCHARLAS · {etiqueta} · {len(filas)} charlas, {len(turnos)} turnos")
     print(f"casillas: {ok} bien, {len(mal)} mal, {sinh} contestadas sin herramienta, {na} no aplican")
     print(f"charlas enteras bien: {charlas_ok} de {len(filas)}")
@@ -368,6 +366,30 @@ def informe(etiqueta):
         print(f"  plata no vista {t['plata_no_vista']} en: {t['texto'][:60]}")
     if etiqueta.startswith("v58"):
         informe_interpretacion(filas)
+
+
+def respuesta_ok(f) -> bool:
+    """La charla entera bien por lo que recibio el cliente. `f` ya recalificada."""
+    return (all(c[1] in (True, None, "sin_herramienta") for t in f["turnos"] for c in t["casillas"])
+            and not any(t["plata_no_vista"] or t["vacia"] for t in f["turnos"]))
+
+
+def interpretacion_de(f, caso) -> dict:
+    """Las llamadas del ultimo turno contra las piezas del caso; las de los
+    turnos anteriores cubren solo consultas."""
+    from banco_pruebas.pedido_agente import llamadas_de, nota_piezas
+    t = f["turnos"][-1]
+    ll = t.get("llamadas") or []
+    if t.get("vueltas"):
+        ll = [{**x, "vuelta": v} for x, v in zip(llamadas_de(ll), t["vueltas"])]
+    previas = [x for tt in f["turnos"][:-1] for x in (tt.get("llamadas") or [])]
+    return nota_piezas(caso, ll, t["respuesta"], previas)
+
+
+def cargar(etiqueta) -> list:
+    """Las charlas guardadas de una etiqueta, recalificadas con la vara de hoy."""
+    filas = [json.loads(x) for x in open(SALIDA, encoding="utf-8")]
+    return [_recalificar(f) for f in filas if f["etiqueta"] == etiqueta]
 
 
 def informe_interpretacion(filas):
@@ -389,11 +411,7 @@ def informe_interpretacion(filas):
     malos = []
     for f in con:
         t = f["turnos"][-1]
-        ll = t.get("llamadas") or []
-        if t.get("vueltas"):
-            from banco_pruebas.pedido_agente import llamadas_de
-            ll = [{**x, "vuelta": v} for x, v in zip(llamadas_de(ll), t["vueltas"])]
-        n = nota_piezas(casos[f["id"]], ll, t["respuesta"])
+        n = interpretacion_de(f, casos[f["id"]])
         piezas += n["piezas"]
         bien += n["bien"]
         enteras += n["bien"] == n["piezas"]
