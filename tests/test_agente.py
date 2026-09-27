@@ -23,6 +23,7 @@ def _doble(firestore_doble):
     from app.core.filtros_catalogo import limpiar_cache
     set_current_tienda(TIENDA)
     limpiar_cache()
+    A.CLIENTE_DIJO.set("")
     return firestore_doble
 
 
@@ -98,6 +99,8 @@ def test_la_cuenta_suma_el_envio_y_la_hace_la_calculadora():
 
 
 def test_reservar_certifica_el_producto_y_pide_el_nombre():
+    # Desde el 27-sep el color lo tiene que haber dicho el cliente.
+    A.CLIENTE_DIJO.set("me llevo el G203 negro")
     r = A.h_reservar(TIENDA, producto="G203 negro", cantidad=1)
     assert r["veredicto"] == "listo_para_cerrar" and r["id"] == "MOU0001"
     assert "nombre" in r["falta"]
@@ -314,6 +317,37 @@ def test_una_exclusion_que_no_es_marca_no_se_arrastra():
     h = [{"role": "user", "content": "busco un teclado que no sea caro"},
          {"role": "assistant", "content": "tengo el K120"}]
     assert not A.faltantes("y alguno mecanico?", [_ll("buscar", rubro="teclado")], h, TIENDA).get("excluidas")
+
+
+# EL COLOR LO ELIGE EL CLIENTE (27-sep-2026). Medido en WhatsApp: el bot
+# pregunto "¿negro o blanco?", el cliente no contesto el color, y en el turno
+# siguiente el modelo reservo el negro. La identidad no la infiere el modelo:
+# reservar solo acepta una variante que el cliente nombro.
+
+def test_reservar_no_acepta_un_color_que_el_cliente_no_dijo():
+    A.CLIENTE_DIJO.set("entre el G305 y el G203, dame el que sea inalambrico\nsi el G305 anda con Mac, me lo llevo")
+    r = A.h_reservar(TIENDA, "Mouse Logitech G305 Lightspeed Negro", 1)
+    assert r["veredicto"] == "falta_elegir"
+    assert {"Negro", "Blanco"} <= set(r["opciones"])
+
+
+def test_reservar_acepta_el_color_que_el_cliente_dijo():
+    A.CLIENTE_DIJO.set("el G305 en blanco, me lo llevo")
+    assert A.h_reservar(TIENDA, "MOU0030", 1)["veredicto"] == "listo_para_cerrar"
+
+
+def test_un_producto_de_un_solo_color_no_pregunta_el_color():
+    A.CLIENTE_DIJO.set("me llevo el monitor LG 24MK430H")
+    assert A.h_reservar(TIENDA, "MON0001", 1)["veredicto"] == "listo_para_cerrar"
+
+
+def test_el_turno_le_dice_a_reservar_lo_que_dijo_el_cliente(modelo):
+    m = modelo([_resp("", [_llamada("reservar", producto="MOU0029", cantidad=1)]),
+                _resp("¿Negro o blanco?")])
+    r = _turno([{"role": "user", "content": "entre el G305 y el G203, dame el que sea inalambrico"},
+                {"role": "assistant", "content": "El G305. ¿Negro o blanco?"}],
+               "si anda con Mac me lo llevo")
+    assert r["llamadas"][0]["vuelve"]["veredicto"] == "falta_elegir"
 
 
 def test_el_turno_le_pasa_la_charla_a_la_completitud(modelo):

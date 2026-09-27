@@ -42,6 +42,9 @@ FILAS = 5
 # fijo "agente" y el informe del issue 31 no podia atar una busqueda a su
 # turno: decia que el turno "se cayo antes" cuando no se habia caido.
 _TRACE: contextvars.ContextVar = contextvars.ContextVar("agente_trace", default="agente")
+# LO QUE ESCRIBIO EL CLIENTE en la charla, para que `reservar` sepa si la
+# variante la eligio el o la eligio el modelo. Lo pone `turno`.
+CLIENTE_DIJO: contextvars.ContextVar = contextvars.ContextVar("agente_cliente_dijo", default="")
 
 
 def _trace() -> str:
@@ -387,6 +390,19 @@ def h_cuenta(tienda_id: str, items=None, destino: str = "", reparto_pago=None, *
     return out
 
 
+def _otros_colores(pid: str, tienda_id: str) -> dict:
+    """{color, opciones} si el producto viene en mas de un color; vacio si no."""
+    from app.storage.firestore_client import get_all_products
+    todos = get_all_products(tienda_id=tienda_id) or []
+    p = next((x for x in todos if x.get("id") == pid), None)
+    if not p or not p.get("color"):
+        return {}
+    clave = (p.get("categoria"), p.get("marca"), p.get("modelo"))
+    colores = [x.get("color") for x in todos
+               if (x.get("categoria"), x.get("marca"), x.get("modelo")) == clave and x.get("color")]
+    return {"color": p["color"], "opciones": colores} if len(set(colores)) > 1 else {}
+
+
 def h_reservar(tienda_id: str, producto: str = "", cantidad: int = 1, **_) -> dict:
     r = _motor().buscar([], tienda_id, _trace(), cuenta={"items": [{"id": producto, "cantidad": cantidad}]})
     c = r.get("cuenta") or {}
@@ -394,6 +410,14 @@ def h_reservar(tienda_id: str, producto: str = "", cantidad: int = 1, **_) -> di
     if not its:
         return {"veredicto": "no_se_pudo", "motivo": c.get("sin_total") or c.get("motivo") or "no certificado"}
     pid = its[0]["id"]
+    # EL COLOR LO ELIGE EL CLIENTE (27-sep). Medido en WhatsApp: el bot pregunto
+    # "¿negro o blanco?", el cliente no contesto, y el modelo reservo el negro.
+    # Es la regla cero: la identidad no la infiere el modelo. Si el producto
+    # viene en otros colores y el cliente no nombro este, no se reserva.
+    otros = _otros_colores(pid, tienda_id)
+    if otros and _n(otros["color"]) not in _n(CLIENTE_DIJO.get()):
+        return {"veredicto": "falta_elegir", "opciones": otros["opciones"],
+                "motivo": "el cliente no eligio el color: preguntale cual, sin volver a confirmar la compra"}
     ficha = h_producto(tienda_id, pid)
     stock = next((f.get("stock") for f in ficha.get("filas") or [] if f.get("id") == pid), None)
     if stock is not None and int(stock) < int(cantidad):
@@ -697,6 +721,8 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     from app.core.llm_reintento import _cliente, _modelo, llamar_con_reintento
     set_current_tienda(tienda_id)
     _TRACE.set(trace_id or "agente")
+    CLIENTE_DIJO.set("\n".join([m.get("content") or "" for m in historial or [] if m.get("role") == "user"]
+                                + [mensaje or ""]))
     tope_s = float(get_settings().LLM_TIMEOUT_SECONDS)
     cli = _cliente()
     if cli is None:
