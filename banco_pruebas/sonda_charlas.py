@@ -35,6 +35,15 @@ cliente —dice, plata, pregunta, alguna—, asi que sirve para los tres caminos
   --camino clon      PRODUCCION TAL CUAL: `clon_produccion.turno`, el webhook de
                      WhatsApp entero. Es la linea de base contra la que se mide.
 
+LA INTERPRETACION, APARTE DE LA RESPUESTA (27-sep-2026). Por el agente y por el
+clon se guardan las llamadas a herramientas de cada turno, con su vuelta. El
+informe de la vara de las 58 suma entonces una segunda nota: las piezas de
+`desmenuzar.CASOS` contra esas llamadas, con `pedido_agente.nota_piezas`. La
+primera dice si el cliente recibio lo correcto; la segunda si el modelo
+entendio y le pidio al codigo lo correcto. Separadas, se sabe donde arreglar.
+Y las varas viejas por el agente o el clon se puntuan con las casillas de
+`tanda_charlas`, sobre el pedido traducido: una sola definicion de correcto.
+
   python3 -m banco_pruebas.sonda_charlas                 las varas viejas, simulado
   python3 -m banco_pruebas.sonda_charlas --vara 58 --camino motor
   python3 -m banco_pruebas.sonda_charlas CH1 CH9         solo esas
@@ -208,20 +217,48 @@ def _herramientas(camino):
     return m["tools"], ejecutar
 
 
+_CATALOGO = []
+
+
+def _casillas(charla, t, llamadas, texto, respuestas, historia):
+    """La vara de las 58 mira la respuesta; las varas viejas, por el agente o
+    el clon, se puntuan con las casillas de `tanda_charlas` sobre el pedido
+    traducido de las llamadas. `historia` lleva lo que nombro cada respuesta."""
+    if "grupo" in charla:  # la vara de las 58
+        return [(k["n"], nota_casilla(k, [], texto, respuestas)) for k in t["casillas"]]
+    from banco_pruebas import tanda_charlas as TC
+    from banco_pruebas.pedido_agente import pedido
+    if not _CATALOGO:
+        _CATALOGO.extend(TC._catalogo())
+    res = TC.puntuar_turno(t["casillas"], pedido(llamadas), historia, _CATALOGO, texto)
+    historia.append({"mostrados": TC.mostrados(texto, _CATALOGO)})
+    return res
+
+
+def _guardadas(llamadas):
+    return ([f"{x['herramienta']}{json.dumps(x['args'], ensure_ascii=False)}" for x in llamadas],
+            [x.get("vuelta") for x in llamadas])
+
+
 def correr_clon(charla, n_corrida=0):
-    """Produccion tal cual: el webhook entero por el clon, turno por turno."""
+    """Produccion tal cual: el webhook entero por el clon, turno por turno.
+    Desde el 27-sep se espian las llamadas del agente adentro del webhook."""
     import asyncio
     from banco_pruebas import clon_produccion as C
+    from banco_pruebas.pedido_agente import espiar
     uid = f"sonda_{charla['id']}_{n_corrida}"
     C.reiniciar_cliente(uid)
-    respuestas, turnos = [], []
+    respuestas, turnos, historia = [], [], []
     for i, t in enumerate(charla["turnos"], 1):
-        partes = asyncio.run(C.turno(uid, t["texto"]))
+        with espiar() as llamadas:
+            partes = asyncio.run(C.turno(uid, t["texto"]))
         texto = "\n".join(partes)
         respuestas.append(texto)
-        casillas = [(k["n"], nota_casilla(k, [], texto, respuestas)) for k in t["casillas"]]
+        casillas = _casillas(charla, t, llamadas, texto, respuestas, historia)
+        crudas, vueltas = _guardadas(llamadas)
         turnos.append({"turno": i, "texto": t["texto"], "casillas": casillas, "plata_no_vista": [],
-                       "vacia": not texto.strip(), "llamadas": [], "respuesta": texto, "uso": []})
+                       "vacia": not texto.strip(), "llamadas": crudas, "vueltas": vueltas,
+                       "respuesta": texto, "uso": []})
     return turnos
 
 
@@ -230,20 +267,19 @@ def correr_agente(charla):
     import asyncio
     from app.core import agente
     from banco_pruebas import clon_produccion as C
-    historial, respuestas, turnos = [], [], []
+    historial, respuestas, turnos, historia = [], [], [], []
     for i, t in enumerate(charla["turnos"], 1):
         r = asyncio.run(agente.turno(historial, t["texto"], C.TIENDA, trace_id=f"sonda_{charla['id']}"))
         texto = r["texto"]
         historial += [{"role": "user", "content": t["texto"]}, {"role": "assistant", "content": texto}]
         respuestas.append(texto)
         vistos = json.dumps([x["vuelve"] for x in r["llamadas"]], ensure_ascii=False, default=str)
-        llamadas = [(x["herramienta"], x["args"]) for x in r["llamadas"]]
-        casillas = [(k["n"], nota_casilla(k, llamadas, texto, respuestas)) for k in t["casillas"]]
+        casillas = _casillas(charla, t, r["llamadas"], texto, respuestas, historia)
         visto = set(re.sub(r"\D+", " ", _plata(vistos)).split())
         plata_mala = [c for c in re.findall(r"\$\s?(\d{4,})", _plata(texto)) if c not in visto]
+        crudas, vueltas = _guardadas(r["llamadas"])
         turnos.append({"turno": i, "texto": t["texto"], "casillas": casillas, "plata_no_vista": plata_mala,
-                       "vacia": not texto.strip(),
-                       "llamadas": [f"{n}{json.dumps(a, ensure_ascii=False)}" for n, a in llamadas],
+                       "vacia": not texto.strip(), "llamadas": crudas, "vueltas": vueltas,
                        "respuesta": texto, "uso": r["uso"]})
     return turnos
 
@@ -330,6 +366,42 @@ def informe(etiqueta):
     print(f"\ncache: {cache} de {ent} tokens de entrada ({100 * cache // max(1, ent)}%), {len(usos)} llamadas")
     for t in plata[:5]:
         print(f"  plata no vista {t['plata_no_vista']} en: {t['texto'][:60]}")
+    if etiqueta.startswith("v58"):
+        informe_interpretacion(filas)
+
+
+def informe_interpretacion(filas):
+    """LO QUE EL MODELO LE PIDIO AL CODIGO en el ultimo turno de cada charla,
+    contra las piezas de `desmenuzar.CASOS`. Sin llamar al modelo."""
+    from banco_pruebas.desmenuzar import CASOS
+    from banco_pruebas.pedido_agente import nota_piezas, preparar_sin_modelo
+    casos = {c[0]: c for c in CASOS}
+    # Una charla sin llamadas puede estar bien —"la capital de Francia"—: lo
+    # que se mira es si la CORRIDA guardo llamadas, no cada charla.
+    guardo = any(t.get("llamadas") for f in filas for t in f["turnos"])
+    con = [f for f in filas if f["id"] in casos] if guardo else []
+    print(f"\nINTERPRETACION · las llamadas del ultimo turno contra las piezas de desmenuzar")
+    if not con:
+        print("  estas corridas no guardaron llamadas: el clon las guarda desde el 27-sep")
+        return
+    preparar_sin_modelo()
+    piezas = bien = enteras = 0
+    malos = []
+    for f in con:
+        t = f["turnos"][-1]
+        ll = t.get("llamadas") or []
+        if t.get("vueltas"):
+            from banco_pruebas.pedido_agente import llamadas_de
+            ll = [{**x, "vuelta": v} for x, v in zip(llamadas_de(ll), t["vueltas"])]
+        n = nota_piezas(casos[f["id"]], ll, t["respuesta"])
+        piezas += n["piezas"]
+        bien += n["bien"]
+        enteras += n["bien"] == n["piezas"]
+        if n["bien"] < n["piezas"]:
+            malos.append((f["id"], n["detalle"], t["texto"]))
+    print(f"  piezas bien: {bien} de {piezas} · mensajes enteros: {enteras} de {len(con)}")
+    for cid, det, txt in sorted(malos):
+        print(f"    {cid}  {det[:80]}   ({txt[:40]})")
 
 
 def main():

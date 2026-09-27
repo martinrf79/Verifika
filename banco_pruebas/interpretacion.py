@@ -11,10 +11,14 @@ mal, no hay forma de saber si fue porque **no entendio** el mensaje o porque
 entendio bien y despues se perdio. Son dos problemas distintos con dos
 soluciones distintas, y sin separarlos se arregla a ciegas.
 
-QUE MIDE. Solo la DECLARACION: lo que el modelo dice que entendio cuando llama a
-`registrar_pedido`. Eso es, literalmente, el interprete de hoy -el viejo tenia
-mas campos y tipados, pero cumple el mismo rol-. Se compara contra la verdad de
-la pregunta, campo por campo, sin mirar una sola letra de la respuesta.
+QUE MIDE. Solo lo que el modelo PIDIO: sus llamadas a herramientas en el turno.
+Hasta el 26-sep era la declaracion de `registrar_pedido`; desde que el agente
+reemplazo al interprete, lo que entendio son las herramientas que llamo y con
+que. Se espia `agente.turno`, las llamadas pasan a la forma del pedido con
+`pedido_agente.pedido`, y se compara contra la verdad de la pregunta, campo
+por campo, sin mirar la respuesta. La unica excepcion es la contradiccion del
+teclado: el agente no tiene donde declararla, asi que cuenta si la respuesta
+la nombra.
 
 Y EN LA MISMA CORRIDA SE CRUZA CON LA RESPUESTA. Es lo que convierte esto en una
 decision y no en un dato suelto:
@@ -32,6 +36,7 @@ nada y hay que mirar a otro lado.
 USO:
     python3 banco_pruebas/interpretacion.py --repeticiones 3
 """
+import json
 import sys
 from pathlib import Path
 
@@ -48,19 +53,23 @@ TIENDA = "verifika_prod"
 # ── LA VERDAD DE LA PREGUNTA, campo por campo ───────────────────────────────
 # Los diez hechos que un vendedor humano sacaria del mensaje. No es opinion:
 # cada uno esta escrito literalmente en la pregunta de Martin.
-def medir_declaracion(d: dict) -> list:
-    """(nombre, ok, detalle) por cada cosa que el modelo tenia que entender."""
+def medir_declaracion(d: dict, texto: str = "") -> list:
+    """(nombre, ok, detalle) por cada cosa que el modelo tenia que entender.
+    `d` es el pedido de `pedido_agente.pedido`."""
+    from banco_pruebas.pedido_agente import categoria_de
     d = d or {}
-    items = list(d.get("items") or [])
-    txt = " ".join(_n(i.get("que")) for i in items)
-    restr = " ".join(_n(r) for r in (d.get("restricciones") or []))
-    contra = " ".join(_n(c) for c in (d.get("contradicciones") or []))
-    dest = [_n(x) for x in (d.get("destinos") or [])]
-    dest_txt = " ".join(dest + [_n(i.get("destino")) for i in items])
+    cats = [_n(q.get("categoria")) for q in (d.get("consultas") or [])]
+    items = list((d.get("cuenta") or {}).get("items") or [])
+    cats += [_n(categoria_de(i.get("id"))) for i in items]
+    txt = " ".join(cats)
+    restr = _n(json.dumps([q.get("condiciones") for q in (d.get("consultas") or [])],
+                          ensure_ascii=False))
+    contra = _n(texto)
+    dest_txt = " ".join(_n(e.get("destino")) for e in (d.get("envios") or []))
     cants = {}
     for i in items:
         for rubro in ("auricular", "mouse", "memoria"):
-            if rubro in _n(i.get("que")):
+            if rubro in _n(categoria_de(i.get("id"))):
                 cants[rubro] = cants.get(rubro, 0) + int(i.get("cantidad") or 1)
     return [
         ("rubro_auriculares", "auricular" in txt, "declaro auriculares"),
@@ -69,21 +78,18 @@ def medir_declaracion(d: dict) -> list:
         ("cantidades_de_a_dos",
          all(cants.get(r) == 2 for r in ("auricular", "mouse", "memoria")),
          f"dos de cada uno; declaro {cants or 'nada'}"),
-        ("pide_precio", bool(d.get("pide_precio")), "el cliente pidio precio"),
+        ("pide_precio", bool(d.get("pedir_total")), "el cliente pidio precio: llamo a cuenta"),
         ("destino_cordoba", "cordoba" in dest_txt, "Cordoba capital"),
         ("destino_concordia", "concordia" in dest_txt, "Concordia"),
         ("destino_posadas", "posadas" in dest_txt, "Posadas"),
-        ("criterio_de_origen", "chin" in restr or "chin" in _n(str(d)),
+        ("criterio_de_origen", any(x in restr for x in ("chin", "origen", "pais")),
          "las menos partes chinas posibles"),
         # Se acepta por el campo TIPADO -el camino bueno- o por la frase en
         # restricciones, que es la red. Lo que se mide es si ENTENDIO el
         # reparto, no por que puerta lo declaro.
-        ("reparto_de_pago",
-         bool(d.get("reparto_pago"))
-         or any(x in restr for x in ("70", "setenta", "30", "treinta")),
-         "el reparto 70/30"),
+        ("reparto_de_pago", bool(d.get("reparto_pago")), "el reparto 70/30, en la cuenta"),
         ("contradiccion_del_teclado", "teclado" in contra,
-         "el teclado nombrado en el envio y no en el pedido"),
+         "el teclado nombrado en el envio y no en el pedido: la respuesta lo nombra"),
     ]
 
 
@@ -99,44 +105,28 @@ def correr(repeticiones: int = 3) -> dict:
     # esquivaban: la misma falla que este repo ya pago dos veces, una
     # regla escrita en dos lados que quedaron distintas.
     from banco_pruebas import clon_produccion as clon
-    from app.core import hub_venta as HV
+    from banco_pruebas.pedido_agente import espiar, pedido
     clon.instalar()
 
-    # Se captura la PRIMERA declaracion del turno, que es la interpretacion del
-    # mensaje del cliente. Las de rondas siguientes son repeticiones suyas.
-    declarado: list = []
-    orig = HV._ejecutar_en_paralelo
-
-    async def espia(pedidos, tienda_id, trace_id):
-        for p_ in (pedidos or []):
-            if isinstance(p_, dict) and p_.get("nombre") == "registrar_pedido":
-                if not declarado:
-                    declarado.append(dict(p_.get("args") or {}))
-        return await orig(pedidos, tienda_id, trace_id)
-    HV._ejecutar_en_paralelo = espia
-
     filas = []
-    try:
-        for nombre, msg in VARIANTES.items():
-            corridas = []
-            for i in range(max(1, repeticiones)):
-                declarado.clear()
-                usuario = f"interp_{nombre}_{i}"
-                clon.reiniciar_cliente(usuario)
-                partes = asyncio.get_event_loop().run_until_complete(
-                    clon.turno(usuario, msg))
-                texto = "\n".join(partes)
-                dec = medir_declaracion(declarado[0] if declarado else {})
-                n_dec = round(100 * sum(1 for _, ok, _ in dec if ok)
-                              / max(1, len(dec)))
-                n_res = nota(medir_estado(texto, _cuenta_del_texto(texto)),
-                             medir_comunicacion(texto, msg))["nota"]
-                corridas.append({"entiende": n_dec, "contesta": n_res,
-                                 "fallas": [k for k, ok, _ in dec if not ok],
-                                 "declaro": declarado[0] if declarado else {}})
-            filas.append({"variante": nombre, "corridas": corridas})
-    finally:
-        HV._ejecutar_en_paralelo = orig
+    for nombre, msg in VARIANTES.items():
+        corridas = []
+        for i in range(max(1, repeticiones)):
+            usuario = f"interp_{nombre}_{i}"
+            clon.reiniciar_cliente(usuario)
+            with espiar() as llamadas:
+                partes = asyncio.run(clon.turno(usuario, msg))
+            texto = "\n".join(partes)
+            declarado = [pedido(llamadas)]
+            dec = medir_declaracion(declarado[0], texto)
+            n_dec = round(100 * sum(1 for _, ok, _ in dec if ok)
+                          / max(1, len(dec)))
+            n_res = nota(medir_estado(texto, _cuenta_del_texto(texto)),
+                         medir_comunicacion(texto, msg))["nota"]
+            corridas.append({"entiende": n_dec, "contesta": n_res,
+                             "fallas": [k for k, ok, _ in dec if not ok],
+                             "declaro": declarado[0]})
+        filas.append({"variante": nombre, "corridas": corridas})
     return {"filas": filas, "repeticiones": repeticiones}
 
 

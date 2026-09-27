@@ -2,7 +2,10 @@
 """EL NUMERO DE LA INTERPRETACION, LEIDO DE PRODUCCION.
 
 QUE HACE Y QUE NO. Lee los logs de Cloud Run del bot vivo, busca el
-`motor_pedido` de cada turno y lo cruza contra `vara_interpretacion.json`.
+`agente_turno` de cada turno —sus `pedidos`, lo que el modelo le pidio a cada
+herramienta—, lo pasa a la forma del pedido con `pedido_agente.pedido` y lo
+cruza contra `vara_interpretacion.json`. Hasta el 27-sep leia `motor_pedido`,
+el evento del interprete, que desde el 26-sep no emite nadie.
 NO llama al modelo, NO usa la clave de nadie y NO simula un turno: mide lo que
 YA paso en WhatsApp. Por eso vive en `banco_pruebas/` —que no deploya— pero no
 es un banco: es el instrumento del camino real.
@@ -13,8 +16,9 @@ Con el blanco dibujado de nuevo cada vez, un avance y un error de conteo se
 parecen demasiado. Escrita, el numero sale solo.
 
 LAS DOS COLUMNAS. `v1` es lo que el modelo declaro en su PRIMERA llamada; `<=v2`
-es lo acumulado hasta la segunda. La consigna de Martin fue "una vuelta o a lo
-sumo dos", asi que las dos se cuentan y ninguna sola alcanza para juzgar.
+es lo acumulado hasta la segunda. El log del agente no trae la vuelta de cada
+pedido, asi que ahi el turno entero es una sola vuelta y las dos columnas
+coinciden.
 
 Uso, desde la raiz y con la credencial de lectura en el entorno:
 
@@ -29,6 +33,8 @@ import unicodedata
 from datetime import datetime, timedelta, timezone
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if RAIZ not in sys.path:
+    sys.path.insert(0, RAIZ)
 VARA = os.path.join(RAIZ, "banco_pruebas", "vara_interpretacion.json")
 SERVICIO = "agente-bot"
 
@@ -118,6 +124,13 @@ def _c_temas_limpios(c, p):
     20-sep: medido 4 de 4 en M6, el modelo agrego `confianza_seguridad`,
     `pedir_descuento` y `envio_urgente` a un cliente que no pregunto ninguna.
     Antes del enum no podia pasar; es el costo del candado y se mide."""
+    # CON EL AGENTE, EL RUIDO SE CUENTA EN PREGUNTAS (27-sep-2026). El modelo
+    # ya no elige temas de un enum: pregunta a `politica` y el CODIGO ubica
+    # hasta seis temas por pregunta. Contar esos seis mediria al indice, no al
+    # modelo. Lo que el modelo agrega de mas es una pregunta a la casa que el
+    # cliente no hizo, y eso es lo que se cuenta. Mide lo mismo: si metio ruido.
+    if "politicas_pedidas" in p:
+        return p["politicas_pedidas"] <= int(c.get("tope", 0))
     return len(p.get("temas") or []) <= int(c.get("tope", 0))
 
 
@@ -388,7 +401,7 @@ def _turnos(minutos: int) -> list:
               f'resource.labels.service_name="{SERVICIO}" '
               f'timestamp>="{desde}" '
               f'(jsonPayload.event="message_received" OR '
-              f'jsonPayload.event="motor_pedido")')
+              f'jsonPayload.event="agente_turno")')
     r = requests.post(
         "https://logging.googleapis.com/v2/entries:list",
         headers={"Authorization": f"Bearer {cred.token}"},
@@ -407,11 +420,10 @@ def _turnos(minutos: int) -> list:
                      "labels", {}).get("revision_name", ""), "vueltas": []}
             turnos.append(t)
             por_trace[tr] = t
-        elif d.get("event") == "motor_pedido" and tr in por_trace:
-            try:
-                por_trace[tr]["vueltas"].append(json.loads(d["pedido"]))
-            except Exception:  # noqa: BLE001 — un pedido roto no tumba la lectura
-                pass
+        elif d.get("event") == "agente_turno" and tr in por_trace:
+            from banco_pruebas.pedido_agente import llamadas_del_log, pedido
+            por_trace[tr]["vueltas"].append(
+                pedido(llamadas_del_log(d.get("pedidos"))))
     return turnos
 
 
@@ -560,6 +572,10 @@ def puntuar(vistos: list, imprimir: bool = True) -> dict:
 
 def main(argv):
     minutos = int(argv[0]) if argv else 30
+    # El tema de una `politica` lo ubica el indice de la fuente: se arma con
+    # el doble del clon, que lee los mismos archivos del repo.
+    from banco_pruebas.pedido_agente import preparar_sin_modelo
+    preparar_sin_modelo()
     vistos = emparejar(_turnos(minutos), cargar_vara())
     if not vistos:
         print(f"ningun turno de la vara en los ultimos {minutos} minutos")

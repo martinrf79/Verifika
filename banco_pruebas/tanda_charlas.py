@@ -8,9 +8,21 @@ segundo", "y en blanco?", "el que me dijiste al principio". Nada lo media.
 
 COMO. Cada charla corre por el camino VIVO entero —`clon_produccion.turno`, el
 webhook, el doble de Firestore con la memoria de verdad entre turnos— y cada
-turno se puntua sobre lo que el modelo declaro en ESE turno, todas sus vueltas
+turno se puntua sobre lo que el modelo pidio en ESE turno, todas sus vueltas
 juntas. Las casillas de un mensaje suelto son las MISMAS de
 `leer_interpretacion.CASILLA`; aca se suman las que solo existen en una charla.
+
+DESDE EL 27-sep LO QUE SE PUNTUA SON LAS LLAMADAS DEL AGENTE. Hasta ahi se leia
+el `motor_pedido` del interprete, que desde el 26-sep nadie emite: la tanda
+media cero sin avisar. Ahora se espia `agente.turno` y sus llamadas pasan a la
+forma del pedido con `pedido_agente.pedido`, que es la unica traduccion.
+
+LAS TRES VARAS, con `--vara`:
+  charlas         `vara_charlas.json`, la del 122 de 124. Es el default.
+  todas           todas las `vara_charlas*.json`.
+  interpretacion  los 19 mensajes sueltos de `vara_interpretacion.json`, cada
+                  uno como una charla de un turno. Es la tanda offline de lo
+                  que `leer_interpretacion.py` lee de produccion.
 
 LA POSICION SE RESUELVE CONTRA LO QUE EL BOT MOSTRO, no contra una lista fija:
 "el segundo" es el segundo modelo que nombro la respuesta de ese turno. Si
@@ -20,10 +32,12 @@ encontrar el segundo de una lista de uno seria medir al que mide—.
 Uso, desde la raiz:
     BANCO_CLAVE_PAGA=true python3 banco_pruebas/tanda_charlas.py
     python3 banco_pruebas/tanda_charlas.py --solo CH2,CH7 --pausa 0
+    python3 banco_pruebas/tanda_charlas.py --vara interpretacion --pausa 0
 """
 import argparse
 import asyncio
 import csv
+import glob
 import json
 import os
 import sys
@@ -35,7 +49,8 @@ if RAIZ not in sys.path:
 
 from banco_pruebas import clon_produccion, observador  # noqa: E402
 from banco_pruebas.leer_interpretacion import (  # noqa: E402
-    CASILLA, _juntar, _norm)
+    CASILLA, DEUDA, _norm)
+from banco_pruebas.pedido_agente import espiar, pedido as pedido_de  # noqa: E402
 
 VARA = os.path.join(RAIZ, "banco_pruebas", "vara_charlas.json")
 CATALOGO = os.path.join(RAIZ, "data", "clientes", "verifika_prod",
@@ -160,6 +175,8 @@ def puntuar_turno(casillas, pedido, historia, catalogo, texto) -> list:
     """[(nombre, True|False|None)]. None es 'no aplica'."""
     fuera = []
     for c in casillas:
+        if c["tipo"] == DEUDA:  # la deuda se lista en la vara, no se puntua
+            continue
         if c["tipo"] in DE_CHARLA:
             ok = DE_CHARLA[c["tipo"]](c, pedido, historia, catalogo, texto)
         else:
@@ -188,7 +205,6 @@ async def _que_le_falto(c, nombre, memoria, mensaje, historia,
     escribio: HUECO DE TABLERO. Si no, la memoria no le alcanzo: HUECO DE
     MEMORIA. Una explicacion de por que fallo no se pide: no se puede
     verificar, es prosa bien escrita."""
-    from banco_pruebas.taller import _preguntar_al_modelo
     esp = _esperado(c, historia, catalogo) or []
     ids = set().union(*[i for _m, i in esp]) if esp else set()
     pregunta = (memoria + "\n\nEl cliente escribe: '" + mensaje + "'. ¿A "
@@ -204,6 +220,17 @@ async def _que_le_falto(c, nombre, memoria, mensaje, historia,
     return f"{nombre}: {veredicto} — contesto {crudo.strip()[:60]!r}"
 
 
+async def _preguntar_al_modelo(pregunta: str) -> str:
+    """Una pregunta suelta al MISMO modelo y la misma puerta que el turno.
+    Vivia en `taller.py`, que se borro; sin esto `--taller` reventaba."""
+    from app.core.llm_reintento import _cliente, _modelo, llamar_con_reintento
+    cli = _cliente()
+    r = await llamar_con_reintento(lambda: cli.chat.completions.create(
+        model=_modelo(), messages=[{"role": "user", "content": pregunta}],
+        temperature=0), timeout_s=60)
+    return r.choices[0].message.content or ""
+
+
 async def correr_charla(ch: dict, corrida: int, catalogo: list,
                         pausa: float, taller: bool = False) -> dict:
     uid = f"charla-{ch['id']}-{corrida}-{int(time.time())}"
@@ -214,7 +241,7 @@ async def correr_charla(ch: dict, corrida: int, catalogo: list,
             await asyncio.sleep(pausa)
         memoria_antes = _memoria_de(uid)
         t0 = time.time()
-        with observador.turno() as t:
+        with observador.turno() as t, espiar() as llamadas:
             try:
                 partes = await clon_produccion.turno(uid, tu["texto"])
             except Exception as e:  # noqa: BLE001 — un turno caido no tumba
@@ -222,16 +249,7 @@ async def correr_charla(ch: dict, corrida: int, catalogo: list,
                 print(f"   ERROR {type(e).__name__}: {str(e)[:140]}")
         texto = "\n".join(partes)
         radares = sorted({str(r.get("event")) for r in t.radares()})
-        pedidos = []
-        for e in t.eventos:
-            if e.get("event") == "motor_pedido":
-                try:
-                    pedidos.append(json.loads(e["pedido"]))
-                except Exception:  # noqa: BLE001
-                    pass
-        junto: dict = {}
-        for x in pedidos:
-            junto = _juntar(junto, x)
+        junto: dict = pedido_de(llamadas)
         # LO QUE EL CODIGO REPUSO TAMBIEN ES LA BUSQUEDA. El `motor_pedido` es
         # lo que declaro el modelo; una exclusion que el cotejo le devolvio a
         # la consulta vive en `motor_turno.condiciones_repuestas`, con la
@@ -274,12 +292,33 @@ async def correr_charla(ch: dict, corrida: int, catalogo: list,
         historia.append({"texto": texto, "mostrados": mostrados(texto, catalogo),
                          "pedido": junto})
         filas.append({"turno": n, "cliente": tu["texto"], "bot": texto,
-                      "pedido": junto, "llamadas": len(pedidos),
+                      "pedido": junto, "llamadas": len(llamadas),
+                      "herramientas": [f"{x['herramienta']} {json.dumps(x['args'], ensure_ascii=False)}"
+                                       for x in llamadas],
                       "ms": int((time.time() - t0) * 1000), "caido": caido,
                       "casillas": res, "radares": radares,
                       "diagnostico": diagnostico,
                       "mostrados": [m for m, _ in historia[-1]["mostrados"]]})
     return {"id": ch["id"], "clase": ch["clase"], "turnos": filas}
+
+
+def cargar(cual: str = "charlas") -> list:
+    """Las charlas de la vara pedida, con la misma forma."""
+    if cual == "interpretacion":
+        with open(os.path.join(RAIZ, "banco_pruebas", "vara_interpretacion.json"),
+                  encoding="utf-8") as f:
+            return [{"id": m["id"], "clase": "mensaje suelto",
+                     "turnos": [{"texto": m["texto"], "casillas": m["casillas"]}]}
+                    for m in json.load(f)["mensajes"]]
+    archivos = [VARA] if cual == "charlas" else sorted(glob.glob(
+        os.path.join(RAIZ, "banco_pruebas", "vara_charlas*.json")))
+    out = []
+    for a in archivos:
+        sufijo = os.path.basename(a)[len("vara_charlas"):-len(".json")].strip("_")
+        with open(a, encoding="utf-8") as f:
+            for c in json.load(f)["charlas"]:
+                out.append({**c, "id": c["id"] + (f"_{sufijo}" if sufijo else "")})
+    return out
 
 
 def _imprimir(r: dict) -> tuple:
@@ -290,6 +329,8 @@ def _imprimir(r: dict) -> tuple:
         print(f"  T{f['turno']} {f['llamadas']} busq {f['ms']}ms{marca}  "
               f"cliente: {f['cliente'][:60]}")
         print(f"      bot: {f['bot'][:160].replace(chr(10), ' / ')}")
+        for h in f.get("herramientas") or []:
+            print(f"      pidio: {h[:150]}")
         if f.get("radares"):
             print(f"      radares: {', '.join(f['radares'])}")
         if f["mostrados"]:
@@ -313,6 +354,8 @@ def _imprimir(r: dict) -> tuple:
 async def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--solo", default="")
+    ap.add_argument("--vara", default="charlas",
+                    choices=["charlas", "todas", "interpretacion"])
     ap.add_argument("--pausa", type=float, default=4.0)
     ap.add_argument("--repeticiones", type=int, default=1)
     ap.add_argument("--json", default="")
@@ -326,10 +369,8 @@ async def main() -> int:
     clon_produccion.instalar()
     observador.instalar(consola=False)
     catalogo = _catalogo()
-    with open(VARA, encoding="utf-8") as f:
-        vara = json.load(f)
     quiero = {x.strip().upper() for x in args.solo.split(",") if x.strip()}
-    charlas = [c for c in vara["charlas"]
+    charlas = [c for c in cargar(args.vara)
                if not quiero or c["id"].upper() in quiero]
 
     crudo, total = [], [0, 0, 0, 0]
