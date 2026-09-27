@@ -61,9 +61,8 @@ SIN_ORDEN = "ninguno"
 
 
 def orden_plano(consulta: dict) -> dict:
-    """Traduce el `orden` plano que escribe el modelo —`precio_ars_min`— al
-    `ordenar_por` que leen el motor y el cotejo. `ninguno` no ordena. Si el
-    modelo igual mando un `ordenar_por`, se respeta: gana lo explicito."""
+    """Traduce el `orden` plano —`precio_ars_min`— al `ordenar_por` que lee
+    el motor. `ninguno` no ordena. Si ya vino `ordenar_por`, gana eso."""
     c = consulta
     o = str(c.get("orden") or "")
     if o and o != SIN_ORDEN and not c.get("ordenar_por"):
@@ -126,15 +125,11 @@ class _Cond:
         self.valor = (d or {}).get("valor", "")
 
 
-# ── EL ESQUEMA QUE VE EL MODELO ─────────────────────────────────────────────
+# ── EL ESQUEMA GRANDE ───────────────────────────────────────────────────────
 #
-# VIAJA COMO HERRAMIENTA DEL PROVEEDOR, NO COMO TEXTO. Es el primero de los
-# tres candados de la FICHA 50: el modelo la ve en cada turno, con los nombres
-# de campo validados por el enum. Un campo que no esta en el catalogo no se
-# puede ni nombrar.
-#
-# LOS ENUMS SALEN DE LA FUENTE VIVA, igual que siempre. Tienda nueva, catalogo
-# nuevo, esquema nuevo, sin tocar una linea de codigo.
+# El turno vivo NO lo usa: el agente tiene herramientas chicas. Queda porque
+# tests y banco lo miden. Se borra con esos tests, en su propio commit.
+# Los enums salen de la fuente viva.
 
 
 def _equipos(tienda_id: str) -> str:
@@ -190,12 +185,6 @@ def esquema(tienda_id: str) -> dict:
                         "campo": {
                             "type": "string",
                             "enum": campos + [SIN_CAMPO],
-                            # LA LEYENDA VIVE ACA, pegada al campo que decide.
-                            # El enum cierra los NOMBRES; esto dice, de cada
-                            # uno, en cuantos productos esta cargado y CON QUE
-                            # PALABRAS esta escrito. Es la parte B del tablero
-                            # y sale de la fuente viva, asi que una tienda
-                            # nueva trae su vocabulario sin tocar codigo.
                             "description": (
                                 "El campo del catalogo. Esto es lo que hay "
                                 "adentro de cada uno:\n\n" + vocab)},
@@ -216,23 +205,8 @@ def esquema(tienda_id: str) -> dict:
                                "'preferentemente Logitech' es `prefiere` "
                                "logitech. Vuelven TODOS y te digo cuantos "
                                "cumplen. `no_contiene` es para cuando EXCLUYE."},
-            # SOLO LOS NUMERICOS, y el enum de los 41 que habia aca era caro
-            # y ademas estaba mal: sobre una etiqueta -`color`, `bluetooth`- el
-            # orden es alfabetico y no contesta ninguna pregunta de un cliente.
-            # `orden_tiene_sentido` ya lo rechazaba DESPUES, o sea que el
-            # modelo gastaba una consulta para que el motor le dijera que no.
-            # EL ORDEN ES PLANO Y OBLIGATORIO, CON SALIDA (22-sep-2026). Era
-            # un objeto opcional `ordenar_por` y medido en M17 —"algo q no
-            # salga mucho"— el modelo lo omitia 1 de 2: sin orden, el cliente
-            # que pidio lo barato recibia cualquier cosa. Es el patron que ya
-            # funciono tres veces en este repo —`SIN_TEMA`,
-            # `medio_no_disponible`, `pedir_total`—: una casilla que SIEMPRE
-            # tiene respuesta puede ser obligatoria, y `ninguno` es la
-            # respuesta cuando no pidio orden. Una sola forma: el objeto se
-            # borra y el codigo traduce esto para el motor.
-            #
-            # SOLO LOS NUMERICOS, como siempre: sobre una etiqueta el orden es
-            # alfabetico y no contesta ninguna pregunta de un cliente.
+            # Orden plano y obligatorio. Solo campos numericos: sobre una
+            # etiqueta el orden es alfabetico y no contesta nada.
             "orden": {
                 "type": "string",
                 "enum": [SIN_ORDEN] + [f"{c}_{d}" for c in ordenables
@@ -253,24 +227,11 @@ def esquema(tienda_id: str) -> dict:
                                "y tenes que preguntar cual."},
             "cuantos": {"type": "integer",
                         "description": f"Filas, hasta {TOPE_FILAS}."},
-            # LA CANTIDAD ES EL CALCULO DE ESTA BOCA, y por eso entra como un
-            # campo de la consulta y no como una herramienta nueva. "Dos
-            # teclados de esos" vuelve con el subtotal ya hecho, asi el modelo
-            # copia en vez de multiplicar. No se confunde con `cuantos`: una
-            # dice cuantas FILAS mostrar, la otra cuantas UNIDADES compra.
+            # `cuantos` es filas a mostrar; `cantidad` es unidades a comprar.
             "cantidad": {"type": "integer",
-                         # QUE DEVUELVE NO VA ACA: el subtotal lo explica el
-                     # encabezado del retorno, que nace con el retorno.
                      "description": "Cuantas UNIDADES de cada producto pide "
                                     "el cliente. No es la cantidad de "
                                     "filas."},
-            # EL CAMPO `specs` SE BORRO EL 14-sep, y es la vieja que se apaga
-            # por la que se prende. Se habia agregado el 13-sep para que el
-            # mapa de specs no engordara la ficha, pero lo que engordaba era la
-            # PROSA: medido, 60 al 63 por ciento del retorno de toda lista, y
-            # las specs completas son mas baratas que ella en los cuatro
-            # rubros. Sacada la prosa, las specs entran enteras y no hay nada
-            # que pedir. La medicion esta en `fuente._ficha_corta`.
         },
         "required": ["orden"],
     }
@@ -278,53 +239,10 @@ def esquema(tienda_id: str) -> dict:
         "type": "function",
         "function": {
             "name": NOMBRE,
-            # LA DESCRIPCION ES EL TABLERO, y por eso dice lo que antes decia
-            # el prompt en prosa. El esquema viaja en las vueltas donde SE
-            # PUEDE buscar y desaparece en la de contestar, que es justo donde
-            # esto ya no sirve; el prompt viajaba las tres. Mudarlo no borra
-            # una instruccion: la pone donde se usa.
-            #
-            # LAS CINCO BOCAS SE NOMBRAN. Una boca que el tablero no nombra no
-            # existe para el modelo aunque tenga cable, y hasta hoy se
-            # nombraban dos: el catalogo y los temas.
-            #
-            # Y YA NO SE ESCRIBE ACA (16-sep-2026, FICHA 55 §4.2). El indice
-            # sale de `bocas.para_el_tablero`, que es la MISMA lista de la que
-            # sale el encabezado del retorno y la regla de la plata del
-            # prompt. Escribirlo dos veces es lo que hizo que el encabezado
-            # tardara tres dias en enterarse de que habia cinco bocas.
             "description": BC.para_el_tablero(),
             "parameters": {
                 "type": "object",
                 "properties": {
-                    # EL RENGLON, Y VA PRIMERO A PROPOSITO (21-sep-2026).
-                    #
-                    # EL MODELO ESCRIBE EN ORDEN, campo por campo. Hasta hoy
-                    # lo primero que escribia eran las `consultas`, que ya es
-                    # traducir y repartir a la vez; y lo ultimo de todo, seis
-                    # campos despues, la `cuenta`. El peor lugar posible para
-                    # lo que mas se olvidaba.
-                    #
-                    # ACA NO SE INTERPRETA, SE COPIA. Es la unica casilla del
-                    # esquema que no le pide al modelo ninguna decision: que
-                    # dijo el cliente, renglon por renglon, con sus palabras.
-                    # Despues llena el resto con su propia lista delante, que
-                    # es un andamio y no una instruccion: no le pedimos que se
-                    # acuerde, le damos de donde copiar.
-                    #
-                    # ES LA PLANILLA PLANA DE LA FICHA 55 §4.1, NACIDA MUDA.
-                    # Viaja, se loguea y NO cambia una sola respuesta, que es
-                    # la regla 2 de las seis contra la cascada. El dia que el
-                    # codigo rutee estos renglones, el campo ya va a estar
-                    # lleno y medido sobre charlas reales.
-                    #
-                    # Y DA UN NUMERO QUE HOY NO EXISTE: cuantos renglones
-                    # enumero contra cuantas casillas lleno. Enumerar siete y
-                    # llenar cinco es un problema de REPARTO; enumerar cuatro
-                    # es que no entendio. Hoy los dos fracasos se ven iguales.
-                    #
-                    # QUE EL ORDEN DEL ESQUEMA MANDE EL ORDEN DE ESCRITURA ES
-                    # UNA APUESTA, no una ley: se mide en la proxima tanda.
                     "renglones": {
                         "type": "array",
                         "items": {"type": "string"},
@@ -336,29 +254,6 @@ def esquema(tienda_id: str) -> dict:
                             "villa maria', 'la garantia'. Despues llenas los "
                             "campos de abajo con esta lista delante, y no "
                             "dejas ningun renglon afuera.")},
-                    # EL PEDIDO DE TOTAL, PLANO Y OBLIGATORIO, y sale de
-                    # adentro de `cuenta` por el mismo motivo por el que el
-                    # 20-sep el reparto salio de ahi: adentro le pedia al
-                    # modelo DOS decisiones para una cosa que el cliente dijo
-                    # una vez.
-                    #
-                    # PEOR QUE EL REPARTO, PORQUE ERA IMPOSIBLE. `cuenta.items`
-                    # pide un ID por producto y en la vuelta 1 el cliente
-                    # nombro RUBROS -"dos notebooks"-: el modelo todavia no
-                    # miro el catalogo y no tiene un solo id que escribir.
-                    # Medido tres veces, se la salteaba y hacia el reparto O
-                    # la cuenta, nunca las dos. No elegia: zafaba de una
-                    # casilla que no podia completar.
-                    #
-                    # UN SI O NO SIEMPRE TIENE RESPUESTA, y por eso este SI
-                    # puede ser obligatorio. Un objeto anidado obligatorio
-                    # seria peor que opcional: lo forzaria a inventar algo
-                    # para llenarlo.
-                    #
-                    # NACE MUDO: viaja, se loguea y no arma ninguna cuenta.
-                    # La cuenta la sigue haciendo `cuenta.items` cuando hay
-                    # ids, igual que ayer. Darle poder de frenar o de pedir es
-                    # la vuelta siguiente, cuando el numero diga que se llena.
                     "pedir_total": {
                         "type": "boolean",
                         "description": (
@@ -367,90 +262,15 @@ def esquema(tienda_id: str) -> dict:
                             "aunque todavia no tengas los ids.")},
                     "consultas": {"type": "array", "items": consulta,
                                   "description": f"Hasta {TOPE_CONSULTAS}."},
-                    # EL MAPA 3, Y ES UN CAMPO MAS DE LA MISMA PUERTA. No hay
-                    # una herramienta nueva a proposito: el mecanismo de buscar
-                    # en la fuente es el mismo, cambia que se busca. Una
-                    # herramienta aparte serian dos puertas para lo mismo.
-                    #
-                    # UNA SOLA PUERTA PARA TODO LO QUE LA CASA TIENE
-                    # ESCRITO (20-sep-2026), y antes eran dos: `temas` y
-                    # `criterio`. Eran la MISMA puerta con dos nombres. Las dos
-                    # entraban por `fuente.certificar_temas` y las dos repartian
-                    # por area con `_de_la_casa`, o sea que LA CAJA LA ELIGE EL
-                    # CODIGO y da igual por cual de los dos campos entre el
-                    # tema. Al modelo se le estaba haciendo elegir, en cada
-                    # turno, una cosa que el codigo ya resuelve solo.
-                    #
-                    # Y ESTA ESCRITO DESDE EL 4-ago, en `temas_consultables`:
-                    # "un tema es un tema; de que archivo sale es asunto del
-                    # codigo". El tablero era el unico lugar que todavia no lo
-                    # cumplia.
-                    #
-                    # AHORA LLEVA ENUM, y eso da vuelta la decision de la FICHA
-                    # 06 del 23-ago con la cuenta medida al lado. Entonces eran
-                    # 129 nombres y 2.299 bytes y salio por peso; hoy, sin los
-                    # dos pilares de conducta, son 104 y 1.821, y la leyenda
-                    # acaba de devolver 1.087 caracteres bajando su techo.
-                    #
-                    # LO QUE COMPRA: un candado duro donde habia atadura
-                    # blanda. Un tema que la casa no tiene escrito deja de
-                    # poder nombrarse, que es la misma regla con la que el
-                    # esquema cierra los nombres de campo del catalogo.
                     "temas": {
                         "type": "array",
                         "items": {"type": "string",
                                   "enum": _TEMAS(tienda_id) + [SIN_TEMA]},
-                        # LA DESCRIPCION NO REPITE EL INDICE, y eso es el
-                        # bloque 0 de CLAUDE.md: la segunda descripcion de lo
-                        # mismo es el telefono descompuesto. QUE contesta esta
-                        # boca lo dice el indice, arriba; aca va solo como se
-                        # elige y que pasa si no esta.
-                        # SOLO LO QUE PREGUNTO, y es el defecto que trajo el
-                        # enum. Medido 4 de 4 el 20-sep: a un pedido de
-                        # precios le agrego `confianza_seguridad`,
-                        # `pedir_descuento` y `envio_urgente`, que el cliente
-                        # no nombro. Antes del enum no podia pasar —no tenia
-                        # de donde elegir—; es el costo del candado.
                         "description": (
                             "SOLO lo que el cliente PREGUNTO: si no pregunto "
                             "nada de la casa, va vacio. Elegi el nombre de la "
                             "lista que cubre lo que pregunto. Si ninguno lo "
                             f"cubre poné '{SIN_TEMA}'. Hasta {TOPE_TEMAS}.")},
-                    # LA BOCA DE COMPATIBILIDAD, Y ES UN CAMPO MAS DE LA MISMA
-                    # PUERTA (13-sep-2026). Mismo criterio que `temas`: el
-                    # mecanismo de preguntarle a la fuente es el mismo, cambia
-                    # QUE se le pregunta. Una herramienta aparte serian dos
-                    # puertas para lo mismo.
-                    #
-                    # CONSUME UN ID CERTIFICADO, y eso es la regla 10.0: la
-                    # identidad la decide una funcion determinista, no esta
-                    # pregunta. Compatibilidad e identidad siguen siendo dos
-                    # ejes y no se mezclan.
-                    #
-                    # LO QUE CAMBIO EL 15-sep ES QUIEN CERTIFICA, no si se
-                    # certifica: `producto` acepta el nombre que dijo el
-                    # cliente y lo resuelve el CODIGO, adentro de la boca, con
-                    # la misma consulta que escribiria el modelo. Antes hacia
-                    # falta una vuelta previa para conseguir el id, y medido el
-                    # 15-sep esa vuelta se comia la pregunta: el paso uno
-                    # volvia `ambiguo` y el turno se quedaba ahi. El motivo
-                    # entero esta en `_un_compat`.
-                    # LA BOCA DE ENVIO, QUE HASTA HOY EMPUJABA EL CODIGO.
-                    # El destino sigue siendo determinista -lo clasifica la
-                    # tabla, no el modelo-; lo que cambia es quien PIDE. El
-                    # modelo nombra el lugar con las palabras del cliente, que
-                    # ademas es la unica parte del envio que no es argentina.
-                    # EL VINCULO (20-sep-2026), Y ES LA CASILLA QUE NO SE
-                    # PODIA LLENAR. `envios` era una lista de TEXTOS pelados,
-                    # asi que "un auricular y un mouse va a Cordoba" no tenia
-                    # donde escribirse: el modelo declaraba los tres destinos y
-                    # la atadura se perdia, medido 0 de 4 en cuatro tandas.
-                    #
-                    # NO SE CERTIFICA NADA, y por eso es barato: `va` son las
-                    # palabras del cliente y viajan como vinieron. El destino
-                    # lo sigue clasificando la tabla —eso no cambia— y `va`
-                    # vuelve pegado a su tarifa para que el modelo pueda decir
-                    # QUE va a cada lado en vez de listar tres montos sueltos.
                     "envios": {
                         "type": "array",
                         "items": {
@@ -475,60 +295,15 @@ def esquema(tienda_id: str) -> dict:
                             "devuelvo la tarifa y el hueco que copias donde "
                             "vaya el costo: el monto NO lo escribis vos. "
                             f"Hasta {TOPE_ENVIOS}.")},
-                    # EL REPARTO DEL PAGO SUBE AL PRIMER NIVEL (20-sep-2026)
-                    # y sale de adentro de `cuenta`, donde nacio el 14-sep.
-                    #
-                    # MEDIDO CUATRO VECES EN WHATSAPP EL 19-sep, mismo mensaje:
-                    # "divide el presupuesto en setenta treinta" se declaro
-                    # CERO de 4. Adentro de `cuenta` el modelo tiene que tomar
-                    # DOS decisiones para escribir una cosa que el cliente dijo
-                    # una vez: primero resolver que quiere una cuenta, y recien
-                    # ahi puede anotar el reparto. Las cuatro veces se quedo en
-                    # la primera y el reparto no existio.
-                    #
-                    # Y HAY MEDICION DE QUE LO PLANO SE LLENA: en esas mismas
-                    # cuatro corridas `envios` —primer nivel, lista de textos—
-                    # salio 4 de 4, y `condiciones` —anidado dos niveles y
-                    # opcional— salio 0 de 4. No es criterio del modelo, es
-                    # forma del esquema.
-                    #
-                    # UNA COSA QUE EL CLIENTE DICE ES UN CAMPO. Esa es la regla
-                    # entera, y es la misma por la que `temas` y `criterio` se
-                    # fundieron en uno: no hacerle tomar al modelo decisiones
-                    # que el cliente no tomo.
                     "reparto_pago": {
                         "type": "array",
                         "items": {
                             "type": "object",
                             "properties": {
-                                # EL MEDIO SE CIERRA (21-sep-2026), Y ERA EL
-                                # ULTIMO CAMPO QUE AFIRMABA ALGO DE LA TIENDA
-                                # SIN VERIFICARSE.
-                                #
-                                # MEDIDO: con `medio: "criptomonedas"` la
-                                # cuenta salio con total y sin una palabra de
-                                # aviso. Y sale PEOR que sin aviso: la regla
-                                # de `pago_split` es que todo lo que NO es
-                                # Mercado Pago cuenta como transferencia y
-                                # lleva el descuento, asi que el bot cotizaba
-                                # un 10% menos por un medio que la tienda no
-                                # acepta. Plata mal, que es la regla 3.1.
-                                #
-                                # TRES VALORES Y NO MAS, y no salen de la
-                                # prosa de la FAQ: salen de lo que el CODIGO
-                                # distingue. `pago_split` solo separa Mercado
-                                # Pago del resto; que la tienda liste Visa,
-                                # Mastercard y Amex no cambia una cuenta.
-                                # Perseguir la prosa para sacar marcas seria
-                                # la enfermedad que este repo ya pago tres
-                                # veces.
-                                #
-                                # Y EL CUARTO ES LA SALIDA, no un relleno:
-                                # `medio_no_disponible` es el SIN_CAMPO del
-                                # pago. Un cliente que dice "mitad en efectivo"
-                                # tiene donde declararse, y el codigo puede
-                                # decir que no se toma en vez de cobrarle un
-                                # descuento que no corresponde.
+                                # Tres medios que el codigo distingue, mas
+                                # `medio_no_disponible`. Un medio inventado
+                                # no se acomoda: pago_split lo trataria como
+                                # transferencia y le aplicaria el descuento.
                                 "medio": {
                                     "type": "string",
                                     "enum": ["transferencia", "mercado_pago",
@@ -547,11 +322,6 @@ def esquema(tienda_id: str) -> dict:
                             "Mercado Pago'. Suman 100. Anotalo en la MISMA "
                             "llamada, aunque no tengas los ids: me lo guardo y "
                             "lo aplico cuando llegue la cuenta.")},
-                    # LO QUE EL CLIENTE AFIRMA (22-sep-2026). El motivo entero
-                    # esta en `_una_afirmacion`: una sola casilla para la
-                    # premisa falsa y para el dato que el cliente aporta,
-                    # porque al modelo no se le pide que decida cual de las
-                    # dos es. Anota lo que dijo; el codigo verifica.
                     "afirma": {
                         "type": "array",
                         "items": {
@@ -594,32 +364,9 @@ def esquema(tienda_id: str) -> dict:
                                                    + equipos + "— o el id de "
                                                    "OTRO producto."}},
                             "required": ["producto", "con"]},
-                        # NO REPITE EL INDICE NI EL RETORNO: que contesta
-                        # esta boca lo dice el indice, y que hacer con el
-                        # veredicto lo dice el encabezado del retorno.
                         "description": (
                             "'¿anda con mi PS5?', '¿esta memoria entra en "
                             f"esta mother?'. Hasta {TOPE_COMPAT}.")},
-                    # EL CAMPO `criterio` SE BORRO EL 20-sep, y es la vieja
-                    # que se apaga por la que se prende. Nacio el 13-sep como
-                    # la quinta boca cableada, y lo que se vio despues es que
-                    # no era una puerta distinta: `criterio_de` y
-                    # `politicas_de` son la misma funcion con otro nombre —la
-                    # misma certificacion y el mismo reparto por area— asi que
-                    # el campo solo le pedia al modelo que adivinara nuestro
-                    # archivero. La BOCA sigue viva y sigue devolviendo su
-                    # caja; lo que se apaga es la segunda forma de pedirla.
-                    # `motor.buscar` conserva el parametro para no romper a
-                    # quien lo llame, pero el tablero ya no lo ofrece.
-                    # LA CUENTA, Y NO ES UNA BOCA: NO TIENE AREA DE FUENTE.
-                    # Es aritmetica sobre lo que las bocas ya devolvieron, y
-                    # por eso vive en el RETORNO. Es un campo mas de la misma
-                    # puerta por el mismo criterio que las otras cinco: el
-                    # mecanismo es el mismo, cambia que se pide.
-                    #
-                    # LOS DESTINOS NO SE PIDEN ACA: salen de `envios`, en esta
-                    # misma llamada. Pedirlos dos veces abre la puerta a que
-                    # las dos respuestas no coincidan.
                     "cuenta": {
                         "type": "object",
                         "properties": {
@@ -640,22 +387,9 @@ def esquema(tienda_id: str) -> dict:
                                         "cantidad": {"type": "integer"}},
                                     "required": ["id"]}},
                             },
-                        # IDEM: el indice ya dice que contesta y que la
-                        # suma la hace el codigo.
                         "description": (
                             "Vuelve el total ya sumado —con envio y "
                             "descuento— y el detalle.")}},
-                # LOS DOS UNICOS OBLIGATORIOS, y hasta hoy no habia ninguno.
-                # Un campo opcional se puede olvidar gratis y sin dejar
-                # rastro; uno obligatorio no se puede saltear, porque no hay
-                # respuesta valida sin el. No es que el modelo se acuerde
-                # mejor: es que la forma no lo permite. Empuja muy fuerte,
-                # no es un candado fisico.
-                #
-                # SOLO ESTOS DOS PORQUE SON LOS UNICOS QUE SIEMPRE TIENEN
-                # RESPUESTA. Obligar `envios` o `temas` seria pedirle que
-                # llene con ruido lo que el cliente no dijo, que es el defecto
-                # que el enum de temas ya trajo una vez.
                 "required": ["renglones", "pedir_total"]},
         },
     }
