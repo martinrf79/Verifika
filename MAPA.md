@@ -1,125 +1,90 @@
-# MAPA — que querés tocar, a que archivo ir
+# MAPA — qué querés tocar, a qué archivo ir
 
-Una sola pagina, y es la que hace que Martin y cualquier sesion vean lo mismo.
-No cuenta el estado del sistema ni las reglas: eso es `CLAUDE.md` bloque 0, que
-sigue siendo la puerta unica, y `PENDIENTE.md`, que dice lo que esta abierto.
-Esto dice DONDE ESTA CADA COSA, y nada mas.
+Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
+`CLAUDE.md` y `PENDIENTE.md`. Esto dice DÓNDE ESTÁ CADA COSA.
 
-Si movés o partís un archivo, se actualiza esta pagina en el mismo commit.
-
-## CON QUE ARRANCA UNA SESION NUEVA — tres archivos y ninguno mas
+## Con qué arranca una sesión nueva — tres archivos y ninguno más
 
 1. El bloque 0 de `CLAUDE.md`, que son las reglas.
-2. Esta pagina, que dice donde esta cada cosa.
-3. `arquitectura/FICHA_53_el_tablero.md`, que es la unidad de trabajo
-   abierta desde el 13-sep-2026: el indice de la fuente. La 50 guarda las
-   tres decisiones y el 1.349. La 52 nombra las bocas y el croquis.
+2. Esta página.
+3. `arquitectura/FICHA_63_la_puerta_de_las_mejoras.md`, la unidad de trabajo desde el 27-sep.
 
-**ARRANQUE CORTO PARA LA SESION QUE SIGUE, y son cinco lineas:**
+**Arranque corto:**
 
-1. El camino vivo es `app/core/respuesta.py`. El motor ya busca. Lo viejo
-   esta apagado en `archivo/apagado_11sep/` y NO se reenchufa.
-2. Se lee `arquitectura/FICHA_53_el_tablero.md` ENTERA antes de tocar nada.
-   El diseño esta acordado; lo que falta es la leyenda.
-3. **No se crea una funcion sin mirar si ya existe.** `recorrida` ya saca
-   tipo, categorias y rango. La leyenda es la misma pasada con variedad,
-   cobertura y lo que no tiene.
-4. **No se cambia el diseño sin preguntarle a Martin.** Una leyenda a
-   medias ensena mal.
-5. Cada falla real de WhatsApp entra como caso en `tests/test_turno_nuevo.py`
-   ANTES de arreglarla. El tablero sirve si bajan las vueltas de `motor_turno`.
+1. El camino vivo es `orchestrator` → `respuesta.procesar_turno` → `agente.turno`.
+   El motor busca. Lo viejo está en `archivo/` y NO se reenchufa.
+2. Se lee `FICHA_63` entera antes de tocar una mejora. El agente vive en la 62.
+3. No se crea una función sin mirar si ya existe. La identidad la certifica
+   `motor.lo_nombra`; la plata, `calculadora`.
+4. No se cambia el diseño sin preguntarle a Martín.
+5. Cada falla real de WhatsApp entra como caso en `tests/test_agente.py`
+   ANTES de arreglarla.
 
-Con esos tres se arranca sabiendo todo lo que hace falta. Leer el repo entero o
-explorar carpetas es lo que gasta de mas y no agrega nada.
+## El bot que corre — `app/`
 
-## EL BOT QUE CORRE — `app/`
-
-| Que querés tocar | Archivo |
+| Qué querés tocar | Archivo |
 | --- | --- |
-| Entrada de WhatsApp y Telegram, webhooks, salud | `app/main.py` |
-| Despacho del turno, anti-jailbreak, reset | `app/core/orchestrator.py` |
-| EL TURNO COMPLETO, las cinco etapas | `app/core/respuesta.py` |
-| LOS VEINTE TIPOS de pregunta y su respuesta generica, que son el prompt | `app/core/tipos.py` |
-| EL TABLERO: indice de la fuente, candado mas leyenda | `arquitectura/FICHA_53_el_tablero.md` |
-| Las tres decisiones del mapa y el techo de 1.349 tokens | `arquitectura/FICHA_50_los_tres_mapas.md` |
-| Lo que el codigo pone delante del modelo: fichas del catalogo y politicas certificadas | `app/core/fuente.py` |
-| LOS DOS NUMEROS, precio y envio, y la guarda de plata inventada | `app/core/numeros.py` |
+| Entrada de WhatsApp y Telegram, webhooks | `app/main.py` |
+| Despacho, anti-jailbreak, reset | `app/core/orchestrator.py` |
+| El turno: agente, guarda de plata, cierre, memoria | `app/core/respuesta.py` |
+| El agente: herramientas chicas, índice, alias | `app/core/agente.py` |
+| El motor: buscar, identidad, filtros, cuenta | `app/core/motor.py` |
+| Precio y envío que el modelo no puede inventar | `app/core/numeros.py` |
 | La llamada al modelo y el reintento | `app/core/llm_reintento.py` |
-| Campos y filtros del catalogo, el enum de `campo` | `app/core/filtros_catalogo.py` |
-| Cuenta, precios, envio | `app/core/calculadora.py`, `app/core/envio.py` |
+| Campos y filtros del catálogo | `app/core/filtros_catalogo.py` |
+| Cuenta, precios, envío | `app/core/calculadora.py`, `app/core/envio.py` |
 | Cierre y cobro | `app/core/cierre.py`, `app/core/camino_cobro.py`, `app/core/pago.py` |
 | Aviso de lead | `app/core/leads.py` |
 | Prosa fija de la casa | `app/core/guia_venta_prosa.py` |
-| Memoria de la charla y estado de venta | `app/core/estado_venta.py`, `app/core/memoria_larga.py` |
+| Memoria de la charla | `app/core/memoria_larga.py` |
 | Leer y escribir Firestore | `app/storage/firestore_client.py` |
-| Configuracion y secretos | `app/config.py` |
+| Configuración y secretos | `app/config.py` |
 
-## LA FUENTE DE VERDAD — `data/`
+## La fuente de verdad — `data/`
 
-Catalogos y FAQ por tienda, bajo `data/clientes/<tienda>/`. En produccion el
-catalogo se lee de Firestore; esto es la carga y el respaldo.
+Catálogos y FAQ por tienda, bajo `data/clientes/<tienda>/`. En producción el
+catálogo se lee de Firestore; esto es la carga y el respaldo. No se toca sin
+permiso.
 
-## MEDICION — `banco_pruebas/`
+## Medición — `banco_pruebas/`
 
-| Que querés medir | Archivo |
+| Qué querés medir | Archivo |
 | --- | --- |
-| LOS TIPOS DE PREGUNTA y la respuesta generica de cada uno: `python3 -m banco_pruebas.preguntas` | `banco_pruebas/preguntas.py` |
-| UN turno por dentro, las ocho etapas con sus datos | `banco_pruebas/sonda_turno.py` |
-| LA INTERPRETACION: ¿declara en la casilla que corresponde? | `banco_pruebas/banco_llamada_uno.py` |
-| EL ORDEN: ¿la restriccion en prosa sale al campo y la direccion que el cliente pidio? Offline y gratis | `banco_pruebas/barrido_orden.py` |
-| Produccion como banco: charlas reales contra invariantes | `banco_pruebas/produccion.py` |
-| Charlas grabadas para reproducir sin gastar modelo | `banco_pruebas/casetes/` |
-| Salidas de todas las corridas, sin recortar | `banco_pruebas/salidas/` |
+| Producción: charlas reales, invariantes, `agente_turno` | `banco_pruebas/produccion.py` |
+| La vara de las 58 | `banco_pruebas/vara_58.py` |
+| Un turno por dentro | `banco_pruebas/sonda_turno.py` |
+| El censo del cableado | `banco_pruebas/censo_cableado.py` |
 
 Esta carpeta NO deploya y no entra a la imagen de Cloud Run.
 
-## BATERIA OFFLINE — `tests/`
+## Batería offline — `tests/`
 
-Corre sola en cada push a main, antes del deploy. Si algo se pone rojo, el
-deploy ni arranca. Sin modelo y sin credenciales.
+Corre sola en cada push a main, antes del deploy. Sin modelo y sin credenciales.
 
-## AUTOMATICO — `.github/workflows/`
+## Automático — `.github/workflows/`
 
-| Workflow | Que hace |
+| Workflow | Qué hace |
 | --- | --- |
-| `deploy.yml` | bateria offline y deploy a Cloud Run |
+| `deploy.yml` | batería offline y deploy a Cloud Run |
 | `sonda.yml` | atiende `/sonda` y `/vara` en un issue |
-| `puente_cowork.yml` | atiende `/logs`: logs de produccion e invariantes |
-| `aplicar_parche.yml` | aplica lo que se deja en `archivo/parches/` |
-| `test.yml`, `calidad.yml`, `diagnostico.yml` | bateria, nocturno, diagnostico |
+| `puente_cowork.yml` | atiende `/logs`: logs de producción e invariantes |
 
-## PAPELES — `papeles/` y `arquitectura/`
+## Papeles — `papeles/` y `arquitectura/`
 
-`papeles/` son los documentos de referencia que hasta el 10-sep-2026 vivian
-sueltos en la raiz. `arquitectura/` son las fichas y los planes, y ahi viven
-`arquitectura/PLAN_INTERPRETACION.md`, que es lo que estamos haciendo, y
-`arquitectura/MAPA_CABLEADO.md`, que nombra cada parte del cableado.
+`arquitectura/` es la orden de trabajo viva: fichas 59 a 62 y el mapa de
+nombres. Las fichas cerradas (30 a 58) y los planes viejos están en
+`archivo/fichas_cerradas/`. `papeles/` guarda decisiones, objetivo, deploy y
+el inventario de la fuente.
 
-UNA ACLARACION QUE EVITA UN TELEFONO DESCOMPUESTO: las fichas y lo apagado
-siguen nombrando esos documentos por su ruta VIEJA, sin `papeles/`, y es a
-proposito. Una ficha del 26-ago que dice `DECISIONES.md` esta contando donde
-vivia ese documento ESE DIA, y eso es cierto. Reescribir el relato para que
-apunte a la ruta de hoy seria falsearlo. Si una ficha nombra un documento y no
-lo encontrás, esta en `papeles/`.
+## Apagado — `archivo/` y `reserva/`
 
-## APAGADO — `archivo/` y `reserva/`
+Lo que no corre. `archivo/` es lo apagado; `reserva/` es lo reenchufable.
+Ninguna de las dos deploya. Si algo de ahí hace falta, se mueve de vuelta a
+mano y en su propio commit.
 
-Lo que no corre. `archivo/` es lo apagado y el deposito de cambios;
-`reserva/` es lo reenchufable. Ninguna de las dos deploya.
+## Cómo se pide una medición
 
-**`archivo/apagado_11sep/` es el apagon grande.** Ahi esta la arquitectura de
-moldes, mesa y dos llamadas entera: `molde.py`, `herramientas.py`, `turno.py`,
-`tabla.py`, `indice.py`, `resolver.py`, `pedido.py` y sus tests. No se borro
-para poder leerla, pero **nada de `app/` la importa**: si algo de ahi hace
-falta, se mueve de vuelta a mano y en su propio commit.
+Se comenta en el issue 31, o desde una sesión de nube con `GCP_SA_KEY_B64`:
 
-## COMO SE PIDE UNA MEDICION DESDE UNA SESION
-
-Se comenta en el issue 31 del repo:
-
-    /logs sev=INFO fresh=6h limit=300     logs de produccion e invariantes
-    /sonda <pregunta>                     un turno completo por dentro
-    /vara                                 los 36 casos de interpretacion
-
-Las tres dejan la salida entera en `banco_pruebas/salidas/` y contestan en el
-mismo issue. Nadie pega una clave en un chat.
+    python3 banco_pruebas/produccion.py --desde 6h
+    /logs sev=INFO fresh=6h limit=300

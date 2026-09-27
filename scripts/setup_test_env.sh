@@ -129,7 +129,7 @@ que son los que hacen algo en vez de pedirlo:
   banco_pruebas/objetivo.py        la nota contra el objetivo
   banco_pruebas/interpretacion.py  separa ENTENDER de CONTESTAR
 
-Detalle historico: papeles/RESUMEN_PARA_NUEVO_CHAT.md. Reglas: CLAUDE.md.
+Detalle historico: archivo/papeles_viejos/. Reglas: CLAUDE.md. Mapa: MAPA.md.
 =============================================================================
 REGLAS
 

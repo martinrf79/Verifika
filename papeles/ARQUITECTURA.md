@@ -2,17 +2,13 @@
 
 > **PUERTA ÚNICA: el bloque 0 de `CLAUDE.md`.** Se entra por ahí.
 >
-> **Y ESTE MAPA QUEDÓ ATRÁS DEL CÓDIGO (3-sep-2026).** El diagrama de abajo
-> entra por `hub_venta` y sus cuatro puertas de salida. Ese camino **se apagó**
-> el 3-sep a `archivo/plomeria_apagada/` —commit `f6de0c5`—: el turno vivo hoy
-> es `app/core/turno.py` sobre la mesa de `app/core/tabla.py`, en seis pasos.
-> Lo que sigue valiendo entero es **el principio** y **el reparto de quién
-> decide qué**; lo que no vale es el cableado dibujado. Reescribirlo es trabajo
-> propio y todavía no se hizo. Mientras tanto: **el camino vivo se lee de
-> `app/core/`, no de acá.**
+> **27-sep-2026. EL CABLEADO DIBUJADO ACÁ NO CORRE.** El camino vivo es
+> `respuesta.procesar_turno` sobre `agente.turno`. Se lee de `MAPA.md` y
+> de `app/core/`, no de acá. Lo que sigue valiendo es el principio: el
+> control está ANTES de que el modelo escriba.
 
-Mapa de referencia permanente. El estado del día vive en
-`RESUMEN_PARA_NUEVO_CHAT.md`, lo decidido en `DECISIONES.md`. Los números
+Mapa de referencia permanente. Lo decidido vive en
+`DECISIONES.md`. Los números
 del censo salen de `banco_pruebas/peso_del_censo.py` y el candado está en
 `tests/test_censo_del_grafo.py`. Esto es cómo se ordena el sistema.
 

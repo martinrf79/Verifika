@@ -1,7 +1,7 @@
 """EL TABLERO — el indice de la fuente que el modelo lee antes de buscar.
 
 Es el componente 7 de la FICHA 52 y su diseno esta en
-`arquitectura/FICHA_53_el_tablero.md`. Aca vive su vara, y son dos cosas
+`archivo/fichas_cerradas/FICHA_53_el_tablero.md`. Aca vive su vara, y son dos cosas
 distintas: LO QUE TIENE QUE DECIR y LO QUE NO PUEDE PESAR.
 
 EL TECHO SOLO BAJA. Si una sesion lo sube, que sea en su propio commit y con

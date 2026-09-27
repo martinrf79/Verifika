@@ -1,25 +1,23 @@
 # MAPA DEL CABLEADO — nomenclatura, numeración y dónde se corta
 
-**ÉSTE ES EL ÚNICO LUGAR DONDE SE NOMBRA EL CABLEADO.** Las estaciones `T`, las
-juntas `J`, los puntos de modelo `L` y las desconexiones `D` se definen acá y en
-ningún otro archivo. Si otro `.md` necesita hablar de una parte del sistema, la
-nombra por su número y remite acá; no la vuelve a describir. Es la misma regla
-de la puerta única del bloque 0 de `CLAUDE.md`, aplicada a los nombres: la
-segunda descripción de lo mismo es el teléfono descompuesto.
+> **27-sep-2026. ESTE ARCHIVO NOMBRA EL CAMINO DEL INTÉRPRETE, APAGADO EL
+> 26-sep.** Las estaciones `T`, las juntas `J` y los puntos `L` de abajo
+> describen `turno.py` / `tabla.py` / `interprete.py`. Ese camino no corre.
+> El camino vivo es `orchestrator` → `respuesta.procesar_turno` →
+> `agente.turno` sobre `motor.buscar`. Los números `D` se conservan: son
+> el único vocabulario estable de las fallas. Reescribir las `T` es ficha
+> propia; hasta entonces gana el código y `MAPA.md`.
+>
+> Las fichas 52 y 53 que este texto cita viven en
+> `archivo/fichas_cerradas/`.
 
-**LOS NOMBRES DEL DISEÑO NUEVO VIVEN EN `FICHA_52_las_seis_bocas.md`, y no
-acá.** Este archivo nombra lo que está CABLEADO; la ficha 52 nombra a dónde va
-—tablero, motor, ramales, bocas, retorno, redacción, guarda—. **Las dos que más
-se confunden están definidas ahí y sólo ahí:** una BOCA es un área de la fuente
-de verdad, un RAMAL es el cable que la conecta al motor. Son cinco bocas y el
-archivo se sigue llamando `las_seis_bocas` por lo que ya lo cita. Cómo se
-genera el tablero vive en `FICHA_53_el_tablero.md`. No se contradicen
-porque no hablan de lo mismo. A medida que cada ramal de la 52 se construya, su
-nombre baja acá con número propio y la 52 deja de nombrarlo.
+**ÉSTE ES EL ÚNICO LUGAR DONDE SE NOMBRA EL CABLEADO HISTÓRICO.** Las
+estaciones `T`, las juntas `J`, los puntos de modelo `L` y las desconexiones
+`D` se definen acá y en ningún otro archivo. Si otro `.md` necesita hablar de
+una parte vieja, la nombra por su número y remite acá.
 
-Leído del código de `main` el 6-sep-2026. Todo lo que dice este archivo se
-puede verificar abriendo el archivo y la línea que se nombra. Si algo acá
-contradice al código, gana el código.
+Leído del código de `main` el 6-sep-2026. Si algo acá contradice al código
+de hoy, gana el código.
 
 Para qué sirve: para poder decir "se rompió en T6-J3" en vez de "el bot
 contestó mal". Cada pieza tiene un número estable. El número no cambia aunque

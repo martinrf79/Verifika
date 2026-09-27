@@ -1,13 +1,8 @@
-"""
-PEDIDO_HELPERS — funciones PURAS compartidas de pedido/producto.
+"""CERTIFICAR PRODUCTO — solo lo usa el interprete viejo del banco.
 
-Fuente ÚNICA de estos helpers. Nacieron dentro de interprete_libre (2296 líneas,
-legado), que se borró con el cambio de arquitectura del 1-ago junto con
-solver_gemini: hoy los usa el camino vivo -hub_venta, herramientas,
-estado_venta, guia_pedido- y nadie más. Acá vive `certificar_producto`, que es
-la regla cero del proyecto: quién decide si un producto existe es el CÓDIGO.
-
-Sin dependencias de app.*: son puras, operan sobre los datos que reciben.
+Salis de `app/core/` el 27-sep-2026: el camino vivo certifica identidad en
+`motor.lo_nombra`, no aca. El docstring viejo mentia —decía que lo usaban
+hub_venta, herramientas y guia_pedido, apagados hace semanas—.
 """
 from functools import lru_cache as _lru_cache
 

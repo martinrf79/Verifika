@@ -1,21 +1,7 @@
-"""
-GUIA DE COMPRA DETERMINISTA — "el mas barato con stock" lo computa el CODIGO.
+"""CATEGORIA NO VENDIDA — el codigo niega lo que la tienda no vende.
 
-El hueco real del 2-jul: el cliente pidio "el mas barato con stock" y el solver
-ELIGIO mal (nego stock que existia y upselleo a lo caro). Elegir el minimo de una
-lista es un problema CERRADO: fuente de verdad + chequeo univoco. Eso es del
-codigo, no del modelo (generar > corregir > verificar).
-
-Queda `categoria_no_vendida`, que la llama `herramientas` para negar honesto
-lo que la tienda no vende. `mas_barato_con_stock` salio con la FICHA 38: el
-vivo ya no la llamaba; el snapshot de `archivo/` la sigue nombrando.
-
-QUE SE BORRO EL 14-AGO-2026 y por que se cuenta. Este modulo tenia ademas
-`guia_mas_barato`, que armaba un bloque de texto para inyectarle al solver, con
-`intermedio_con_stock` y `_categorias_en_juego` de ayudantes. Era el camino
-viejo: el mapa midio que no se llega a ninguna de las tres desde ningun webhook.
-Hoy el que decide el producto es el pedido sellado de `guia_pedido`, no un
-bloque de prompt. Si algun dia hace falta ese bloque, esta en git.
+La llama `motor.buscar`. Si el cliente pide un rubro que no esta en el
+catalogo, vuelve `not_found` con la alternativa real, no con cinco mouse.
 """
 import re
 import unicodedata
@@ -126,32 +112,3 @@ def categoria_no_vendida(mensaje: str,
     if alt and not any(_norm(c) == _norm(alt) for c in reales):
         alt = None
     return pedida, alt
-
-
-# ── CERTIFICADOR DE MODELO PUNTUAL (19-jul, guiones 39/40 de la consigna) ────
-# "¿Tienen el ROG Strix G15?" / "¿el monitor Samsung Odyssey G5?": el modelo
-# NO esta en catalogo y el turno salia hueco ("te lo confirmo al instante")
-# o con una politica inventada ("por politica no trabajamos Asus"). La
-# identidad la decide el CODIGO (regla cero): token de modelo que no existe
-# en el catalogo -> not_found honesto + opciones reales de la categoria.
-
-# El cliente esta preguntando por un producto (no charlando de otra cosa).
-_RE_PIDE_PRODUCTO = re.compile(
-    r"\b(tienen|tenes|tene|hay|stock|disponib\w*|precio|busco|quiero"
-    r"|modelo|me interesa)\b")
-
-# Token con pinta de modelo: letras y numeros mezclados (g15, x3d, mx518).
-_RE_TOKEN_MODELO = re.compile(r"^[a-z]+\d+[a-z0-9]*$")
-
-# Unidades y medidas que parecen modelo pero no lo son (4k, 27p, 16gb solo).
-_RE_UNIDAD = re.compile(
-    r"^\d+[a-z]{1,3}$|^(full|ultra)hd$|^[0-9]+(gb|tb|hz|mah|dpi|mm|cm|w)$")
-
-_STOP_MODELO = {"modelo", "el", "la", "los", "las", "de", "del", "un", "una",
-                "en", "con", "y", "o", "stock", "tienen", "hay", "para"}
-
-
-# Verbos de DECISION: "quiero, dame, sumalo" no es una pregunta de identidad,
-# es un pedido, y ese lo conduce el flujo de pedido normal.
-_RE_DECISION = re.compile(r"\b(quiero|dame|sumal[oa]|sumame|llevo|comprar"
-                          r"|agrega|anotal[oa])\b")

@@ -1,20 +1,9 @@
-"""LOS VEINTE TIPOS — el unico catalogo que ve el modelo.
+"""LOS VEINTE TIPOS — catalogo del banco, no del turno vivo.
 
-Cualquier pregunta que un cliente puede hacer cae en uno de estos veinte. Cada
-uno trae CUANDO aplica y COMO suena la respuesta. El molde lleva huecos
-`{{...}}`: lo que va adentro del hueco lo pone el CODIGO, nunca el modelo.
-
-POR QUE ESTO ES EL PROMPT Y NO UNA TABLA INTERNA (11-sep-2026). La arquitectura
-de moldes, mesa y dos llamadas se apago entera. En su lugar el modelo recibe
-estos veinte moldes y contesta con uno. Es mas barato: los veinte pesan 1.767
-tokens y lo que se fue pesaba mas de 5.000 por turno.
-
-LOS UNICOS NUMEROS QUE EXISTEN SON DOS: el precio de un producto y el costo de
-un envio. Los pone `app/core/numeros.py` a partir de la ficha y de la tabla de
-envios. El modelo tiene prohibido escribir un digito de plata, y hay guarda.
-
-El banco de preguntas de ejemplo -tres por tipo- vive en
-`banco_pruebas/preguntas.py`, que importa de aca. Una sola fuente.
+El agente de `app/core/agente.py` no lee esto. Lo importan
+`banco_pruebas/preguntas.py`, el censo de huecos y la sonda. Se queda aca
+porque el censo y esas herramientas lo necesitan; enchufarlo al turno vivo
+lo decide Martin.
 """
 
 # {tipo: (cuando aplica, molde de la respuesta)}
@@ -94,6 +83,6 @@ def molde(tipo: str) -> str:
 
 
 def bloque_para_el_prompt() -> str:
-    """Los veinte tipos, tal cual viajan al modelo. Una linea por tipo."""
+    """Los veinte tipos, una linea cada uno. Lo leen el banco y la sonda."""
     return "\n".join(f"{t} | cuando: {c} | responde: {r}"
                       for t, (c, r) in TIPOS.items())

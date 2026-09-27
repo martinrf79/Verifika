@@ -1,147 +1,33 @@
 # arquitectura/ — la orden de trabajo
 
-**Esta carpeta es lo único que hace falta leer para trabajar.** Martín le nombra
-esta ruta a Claude Code, Claude Code lee la ficha que esté abierta, y el
-resultado lo ven los tres en el mismo lugar.
+**Esta carpeta es lo único que hace falta leer para trabajar.** La ficha
+abierta es `FICHA_63_la_puerta_de_las_mejoras.md`. Las cerradas (30 a 58) y
+los planes viejos están en `archivo/fichas_cerradas/`.
 
----
-
-## Los dos números que dicen dónde está el proyecto
-
-No hace falta abrir nada. Se corre `pytest -q` y se mira cuántos `PLAN:` y
-cuántos `A MEDIAS:` hay. Esos dos números no se copian acá: envejecen.
-
-```
-A MEDIAS   algo que se EMPEZÓ y no se terminó.  Tiene que llegar a CERO.
-PLAN       algo que TODAVÍA NO SE EMPEZÓ.       Baja al hacerse.
-```
-
-La orden de trabajo abierta: **`FICHA_53_el_tablero.md`.** El motor ya
-busca. Falta el índice: candado más leyenda, techo 1.500 tokens de lo que
-viaja. Las bocas y el croquis están en la 52. Las tres decisiones del mapa,
-en la 50.
-
-Detrás de ella, el orden grande no cambió y está en `FORMULARIO_V2.md`
-sección 6: primero D2 —la vara de la capa 4—, después el hueco 4, después
-el hueco 1.
-
-Qué pasó con las fichas 46 y 47, porque el que lea esto las va a buscar:
-**nunca se escribieron.** Sus dos casos siguen abiertos con otro nombre en
-`MAPA_CABLEADO.md`, que desde el 6-sep es el único lugar donde se nombra el
-cableado: el ruteo de la política es **D7**, y los dos extremos sueltos son
-**D12**. La batería que las contaba con marcas `PLAN:` se apagó el 2-sep con
-el resto de los candados de proceso. La 45 cerró el loop. La 48 apagó las
-seis puertas y el termómetro. Los termómetros de la 36 no se fuerzan.
-
----
-
-## Cómo se cierra un paso, y por qué hay un rojo en el medio
-
-Esto confunde la primera vez y conviene tenerlo a mano:
-
-```
-1. hoy        el test falla + la marca puesta   → xfailed   batería VERDE
-2.            se hace el trabajo
-3. un minuto  el test PASA + la marca puesta    → XPASS     batería ROJA ← el aviso
-4.            se saca la marca, baja el techo   → passed    batería VERDE, uno menos
-```
-
-El paso 3 no es un problema: es **un cartel de obra en una calle que ya está
-arreglada.** `strict=True` obliga a sacarlo. Sin eso, un pendiente ya resuelto
-seguiría contando como pendiente para siempre y el número mentiría.
-
----
-
-## Qué hay acá, y qué hay en la raíz
-
-**Acá: la orden de trabajo.** Qué se hace ahora, con qué archivos, qué NO se
-toca, cómo se verifica.
+## Qué hay acá
 
 | archivo | qué es |
 |---|---|
 | `README.md` | esta puerta |
-| `FICHA_30_la_simplificacion.md` | el diagnóstico del recorte |
-| `FICHA_34_el_nexo.md` | primera sesión: el nexo, cerrada |
-| `FICHA_35_la_puerta.md` | segunda sesión: la puerta, cerrada |
-| `FICHA_36_el_numero.md` | tercera sesión: el número; termómetros siguen |
-| `FICHA_41_un_idioma.md` | un idioma, el del molde; cerrada |
-| `FICHA_42_el_catalogo_de_la_pregunta.md` | el catálogo de la pregunta; cerrada |
-| `FICHA_43_la_salida_habla_las_familias.md` | la salida habla las familias abiertas; cerrada |
-| `FICHA_44_deposito_y_robustez.md` | depósito sin borrar; el diagnóstico |
-| `FICHA_45_el_loop.md` | el loop adentro del turno; CONFLICTO pregunta; cerrada |
-| `FICHA_48_el_apagon.md` | el primer apagón: seis puertas y el termómetro; cerrada |
-| `FICHA_49_la_obligacion_muda.md` | D13 y D15 cerraron; queda D14 |
-| `FICHA_50_los_tres_mapas.md` | un motor, consulta estructurada, techo 1.349 |
-| `FICHA_52_las_seis_bocas.md` | el croquis: bocas, ramales, tablero |
-| `FICHA_53_el_tablero.md` | **la orden abierta**: el índice de la fuente |
-| `MAPA_CABLEADO.md` | el único lugar donde se nombra el cableado y el estado de cada falla |
-| `FORMULARIO_V2.md` | los huecos del formulario y el orden grande |
-| `PLAN_REDUCCION.md` | la campaña de agosto: qué se queda vs qué ya fue a archivo/ |
+| `FICHA_63_la_puerta_de_las_mejoras.md` | **la orden abierta**: cómo entra cada mejora |
+| `FICHA_62_el_agente.md` | el modelo busca solo |
+| `FICHA_61_desmenuzar_y_traducir.md` | cómo se parte el pedido, medida |
+| `FICHA_60_las_58_por_tres_caminos.md` | la vara de las 58 |
+| `FICHA_59_lo_que_el_modelo_puede.md` | qué puede el modelo, antes de diseñar |
+| `MAPA_CABLEADO.md` | nombres históricos T/J/L/D. El camino vivo ya no es ese |
 
-**En la raíz: la biblioteca.** Se consulta para entender POR QUÉ, no para saber
-qué hacer.
+## El camino vivo, en una línea
 
-| archivo | qué manda |
-|---|---|
-| `../PASO0_CENSO.md` | los NÚMEROS medidos, y cómo volver a sacarlos |
-| `../DECISIONES.md` | QUÉ se decidió y por qué — 40 líneas |
-| `../PLAN_RECORTE.md` | CÓMO se hace cada paso y en qué orden |
-| `../ARQUITECTURA.md` | cómo está ordenado el sistema hoy |
-| `../tests/test_plan_de_la_obligacion.py` | **el plan de ahora**: D13, D14 y D15 |
-
-> **Los tres planes viejos ya no están en `tests/`.** `test_plan_del_recorte.py`,
-> `test_plan_de_la_simplificacion.py` y `test_plan_de_la_robustez.py` se apagaron
-> el 2-sep con los otros setenta y tres, y viven en `archivo/tests_apagados/`.
-> Se leen para entender qué se pedía; no cuentan nada. Lo que quedó abierto de
-> ellos está en `MAPA_CABLEADO.md` con número de desconexión.
-
-> **Por qué los cuatro no están físicamente acá.** Reescribir 45 KB de prosa
-> para cambiarles la ruta agrega riesgo de transcripción y no gana nada: nadie
-> los abre por su ubicación, los abre por el enlace. La división que importa no
-> es de carpetas, es de trabajos: **una orden de trabajo se lee para hacer, una
-> referencia se lee para entender.** Si igual conviene moverlos, es su propio
-> commit y su propia verificación.
-
----
+`orchestrator` → `respuesta.procesar_turno` → `agente.turno` sobre
+`motor.buscar`. Identidad, plata y tarifas las certifica el código.
 
 ## Quién escribe qué
 
 ```
-EL DISEÑO (Cowork)   escribe .md y tests/. Nunca toca app/.
-                     Pone los pasos en ROJO.
-
-LA INGENIERÍA        escribe app/. Pone los rojos en VERDE.
-(Claude Code)        NO puede modificar un test para que pase.
-
-MARTÍN               aprueba el push, que es lo que deploya.
+EL DISEÑO     escribe .md y tests/. Nunca toca app/.
+LA INGENIERÍA escribe app/. No reescribe la vara para que pase.
+MARTÍN        aprueba el push, que es lo que deploya.
 ```
 
-**La regla que sostiene esto:** el que implementa no reescribe la vara. Si el
-test lo escribe el diseño y lo pone en verde la ingeniería, el punto ciego no se
-comparte. Un test que se afloja para pasar es un test borrado con otro nombre.
-
-Si un test está mal, se discute y se cambia **a propósito**, y el commit explica
-el requisito nuevo. Es el único motivo legítimo para editar lo que un test
-espera.
-
----
-
-## Verde no es lo mismo que funciona
-
-Lo más importante de esta carpeta, y hay que decirlo aunque incomode.
-
-**Un test verde prueba lo que el test afirma, no que el bot venda bien.** Este
-repo ya vivió el caso: el 29-jul el CI llamaba a los casetes con `|| true`,
-imprimía "sin casetes grabados" y estuvo **verde cinco días sin correr nada**.
-
-Por eso cada paso de esta carpeta cierra con tres condiciones, no con una:
-
-1. **Su test pasa**, y pasa sobre el número de casos declarado —no sobre cero.
-2. **Ningún número del piso baja.** `casetes/_piso.json` guarda puntos, llamadas
-   y largo; si uno empeora, el corte se revierte entero.
-3. **La charla completa sigue andando.** Un test de pieza no ve las juntas, y
-   las juntas son donde vivieron los dos bugs registrados. Lo único que ve una
-   junta es la charla corrida de punta a punta.
-
-Y un paso no se declara hecho por la mitad: **o cierra con las tres, o sigue
-abierto.**
+Verde no es lo mismo que funciona. Un test prueba lo que afirma, no que el
+bot venda bien.

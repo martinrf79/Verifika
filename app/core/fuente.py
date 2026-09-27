@@ -282,8 +282,7 @@ def certificar_temas(nombres: list, tienda_id: str) -> dict:
 
 # ── LOS PRODUCTOS QUE EL MENSAJE NOMBRA ─────────────────────────────────────
 #
-# El certificador de identidad -`pedido_helpers.certificar_producto`- sigue
-# siendo quien dice si un producto EXISTE.
+# La identidad la certifica `motor.lo_nombra`, no este modulo.
 #
 # LAS FICHAS YA NO SALEN DE ACA (11-sep-2026). `fichas_relevantes` adivinaba
 # cuales ponerle delante al modelo leyendo el mensaje crudo; ahora las busca el

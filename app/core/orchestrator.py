@@ -1,16 +1,8 @@
-"""
-ORCHESTRATOR — despachador minimo.
+"""ORCHESTRATOR — despachador minimo.
 
-El turno entero lo maneja el HUB DE VENTA: app/core/hub_venta.py. Dos llamadas
-al modelo -que buscar, y redactar con el dato delante- y las herramientas
-corriendo en paralelo en el medio. El dato duro sale de la fuente porque lo trae
-una herramienta; lo que la herramienta no trajo, no existe para el modelo. El
-cierre y el cobro los resuelve la capa de leads reusada. Lo unico que queda antes
-es el filtro de entrada anti-jailbreak.
-
-El camino atado -interprete de veinte campos, solver de fragmentos, render, juez,
-red de verificadores y guardas de salida- se BORRO el 2-ago. No convive apagado
-al lado: la red para volver atras es git.
+Antes del turno: anti-jailbreak y la palabra de reset. El turno entero lo
+hace `respuesta.procesar_turno` sobre `agente.turno`. La tienda la resuelve
+el backend, nunca el modelo.
 """
 import uuid
 

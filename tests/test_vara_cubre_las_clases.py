@@ -20,7 +20,8 @@ import re
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VARA = os.path.join(RAIZ, "banco_pruebas", "vara_interpretacion.json")
-FICHA = os.path.join(RAIZ, "arquitectura", "FICHA_56_el_idioma_del_cliente.md")
+FICHA = os.path.join(RAIZ, "archivo", "fichas_cerradas",
+                     "FICHA_56_el_idioma_del_cliente.md")
 
 
 def _vara() -> dict:

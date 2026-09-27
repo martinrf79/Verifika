@@ -21,8 +21,8 @@ No deploya. Está en `.gcloudignore` y en `paths-ignore` de `deploy.yml`.
 
 La FICHA 34 dejó el primer snapshot. La 35 agregó el de aduana. La 36
 copia el reposicion que todavía corre, distinto del de la 34, cuando esa
-sesión lo saque del vivo. Qué se apaga y en qué sesión está en
-`arquitectura/PLAN_REDUCCION.md`.
+sesión lo saque del vivo. El plan de esa campaña está en
+`archivo/fichas_cerradas/PLAN_REDUCCION.md`.
 
 | archivo | qué era | se borra cuando |
 |---|---|---|
@@ -39,8 +39,29 @@ sesión lo saque del vivo. Qué se apaga y en qué sesión está en
 
 ## Qué NO va acá
 
-Barridos, casetes, el índice del turno, la calculadora, `certificar_producto`,
-`filtros_catalogo`. Eso es el motor. Si entra acá, se apagó de más.
+Barridos, casetes, la calculadora, `filtros_catalogo`, el motor. Eso es el
+camino vivo. Si entra acá, se apagó de más.
+
+### `archivo/cotejo_interprete_20260926/` — el cotejo del intérprete
+
+`cotejo.py` y sus dos tests. Entró el 22-sep al turno del intérprete. El
+26-sep el agente lo reemplazó y **ningún módulo de `app/` lo volvió a
+importar**. Se guarda con sus tests; no se borra.
+
+### `archivo/fichas_cerradas/` — fichas 30 a 58 y planes viejos
+
+El diseño del intérprete, el tablero, las seis bocas, los planes de recorte.
+La orden viva quedó en `arquitectura/` con las fichas 59 a 62.
+
+### `archivo/papeles_viejos/` — resúmenes y planes que ya no son puerta
+
+`RESUMEN_PARA_NUEVO_CHAT.md`, `PLAN_RECORTE.md`, `PASO0_CENSO.md`,
+`ARRANQUE.md`, `CONSIGNA_PREGUNTAS_REALES.md`, `INVENTARIO_BARRIDO.md`.
+
+### `archivo/documentacion/PENDIENTE_hasta_27sep.md`
+
+El diario que `PENDIENTE.md` arrastraba (573 líneas). El vivo volvió a ser
+la lista corta del día.
 
 
 ## PASO 1 DEL RECORTE DEL 2-SEP — lo que estaba alrededor de `app/`, no adentro

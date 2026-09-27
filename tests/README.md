@@ -138,6 +138,6 @@ Cada caso tiene ahora su candado.
 
 ## Cómo arranca un chat nuevo
 
-Leer `CLAUDE.md` (reglas) y `papeles/RESUMEN_PARA_NUEVO_CHAT.md` (estado), y correr
+Leer `CLAUDE.md` (reglas), `MAPA.md` y `PENDIENTE.md`, y correr
 `pytest` para ver qué está en rojo. Con eso el chat arranca sabiendo todo y sigue
 por el próximo rojo, sin re-investigar ni quemar tokens.

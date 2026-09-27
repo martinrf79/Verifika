@@ -497,7 +497,7 @@ def _resolver_fuera_de_lista(resultado: dict, mensaje: str,
         return resultado
     real = None
     try:
-        from app.core.pedido_helpers import certificar_producto
+        from banco_pruebas.interprete_viejo.pedido_helpers import certificar_producto
         from app.storage.firestore_client import get_all_products
         veredicto, hits = certificar_producto(
             mensaje, get_all_products(tienda_id=tienda_id))

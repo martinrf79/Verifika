@@ -48,9 +48,9 @@ está acá.
 estaba contada en tres párrafos: ahora es una línea entre guiones. La regla está
 entera; lo que se comprimió es el cuento. Si algo hace falta, `git log` lo tiene.
 
-**Qué NO va acá:** el estado (`papeles/RESUMEN_PARA_NUEVO_CHAT.md`), lo que falta
-(`PENDIENTE.md`), lo decidido (`papeles/DECISIONES.md`), cómo se ordena el sistema
-(`papeles/ARQUITECTURA.md`), y la unidad de trabajo abierta (`arquitectura/`).
+**Qué NO va acá:** el estado (`PENDIENTE.md` y `git log`), lo decidido
+(`papeles/DECISIONES.md`), cómo se ordena el sistema (`MAPA.md`), y la
+unidad de trabajo abierta (`arquitectura/FICHA_63_la_puerta_de_las_mejoras.md`).
 
 ---
 
