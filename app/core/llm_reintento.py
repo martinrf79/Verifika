@@ -172,6 +172,9 @@ def _cliente():
     import os
     from openai import OpenAI
     settings = _settings()
+    if settings.LLM_PROVIDER == "deepseek":
+        key = (settings.DEEPSEEK_API_KEY or os.environ.get("DEEPSEEK_API_KEY") or "").strip()
+        return OpenAI(api_key=key, base_url=settings.DEEPSEEK_BASE_URL) if key else None
     key = (settings.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY") or "")
     key = key.split()[0] if key else ""
     if not key:
@@ -180,4 +183,7 @@ def _cliente():
 
 
 def _modelo() -> str:
-    return _settings().GEMINI_MODEL or "gemini-3.1-flash-lite"
+    s = _settings()
+    if s.LLM_PROVIDER == "deepseek":
+        return s.DEEPSEEK_MODEL or "deepseek-chat"
+    return s.GEMINI_MODEL or "gemini-3.1-flash-lite"

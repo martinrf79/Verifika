@@ -67,6 +67,12 @@ class Settings(BaseModel):
     GEMINI_BASE_URL: str = os.getenv(
         "GEMINI_BASE_URL",
         "https://generativelanguage.googleapis.com/v1beta/openai/")
+    # DEEPSEEK, el otro proveedor que se mide (27-sep-2026). Mismo protocolo
+    # OpenAI, misma puerta: se elige con LLM_PROVIDER=deepseek. El default
+    # sigue siendo gemini y produccion no cambia hasta que se decida.
+    DEEPSEEK_API_KEY: str = os.getenv("DEEPSEEK_API_KEY", "")
+    DEEPSEEK_BASE_URL: str = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+    DEEPSEEK_MODEL: str = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
     # TTL del cache explicito de contexto (system + schema de tools) que usa el
     # solver por el endpoint NATIVO. El prefijo fijo se cachea una vez y se cobra
     # al 10% en cada vuelta del loop; baja la factura ~a la mitad sin cambiar lo
