@@ -12,7 +12,7 @@ python3 -m pytest -q          la batería offline
 ```
 
 Camino vivo: `orchestrator` → `respuesta.procesar_turno` → `agente.turno` sobre
-`motor.buscar`. Unidad de trabajo: `arquitectura/FICHA_63_la_puerta_de_las_mejoras.md`.
+`motor.buscar`. Unidad de trabajo: `arquitectura/FICHA_64_la_interpretacion_robusta.md`.
 Dónde está cada cosa: `MAPA.md`.
 
 ---
@@ -21,11 +21,12 @@ Dónde está cada cosa: `MAPA.md`.
 
 - **ABIERTO** · Probar el agente por WhatsApp y leer el issue 31: cada turno deja `agente_turno`.
 - **ABIERTO** · La compra por `reservar` entra al cierre; falta verla cerrar un pedido real con nombre y link.
-- **ABIERTO** · `motor.esquema` ya no lo usa el turno: lo usan tests y banco. Se borra con sus tests en su propio commit.
+- **ABIERTO** · `motor.esquema` ya no lo usa el turno: lo usan tests y banco. Se borra con sus tests en su propio commit; su campo `orden` ya no lo lee nadie.
 - **ABIERTO** · El cache da cero: el prompt fijo no llega al mínimo del proveedor. Medir el umbral.
 - **ABIERTO** · 27-sep, FICHA 63: C46 contesta "de los que te mencioné" sin buscar el resto; el 70/30 a veces sale como total. Desde el 28-sep el reparto se anticipa en la primera vuelta. Toda mejora pasa por `banco_pruebas/puerta.py`.
 - **ABIERTO** · El modelo sigue diciendo "todo es chino" aunque las memorias son Taiwan o China; a veces pregunta en vez de armar el 70/30.
-- **ABIERTO** · 28-sep: medir la INTERPRETACION sola, lo que el modelo le pide a cada herramienta, antes de tocar el prompt. El prompt fijo pesa ~1.500 tokens; el costo de un turno esta en las vueltas.
+- **ABIERTO** · 28-sep, FICHA 64: la interpretación da 61-62 de 68, seis charlas fallan siempre. Plan en la ficha; rubros y temas en lista se probó y se revirtió.
+- **ABIERTO** · El arranque de sesión muestra la interpretación "sin medir": su piso se archivó. Arreglar la línea toca `scripts/`, que deploya.
 - **ESPERA A MARTIN** · Ante un tema `ambiguous` el código sirve todos los candidatos. Si Martín quiere la repregunta, es una línea.
 - **ESPERA A MARTIN** · Retención de charlas: cuánto tiempo y con qué criterio se borran.
 - **ESPERA A MARTIN** · Restricción de origen: el campo del catálogo es prosa; hace falta un campo normalizado, no un arreglo de código.

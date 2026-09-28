@@ -50,7 +50,8 @@ entera; lo que se comprimió es el cuento. Si algo hace falta, `git log` lo tien
 
 **Qué NO va acá:** el estado (`PENDIENTE.md` y `git log`), lo decidido
 (`papeles/DECISIONES.md`), cómo se ordena el sistema (`MAPA.md`), y la
-unidad de trabajo abierta (`arquitectura/FICHA_63_la_puerta_de_las_mejoras.md`).
+unidad de trabajo abierta (`arquitectura/FICHA_64_la_interpretacion_robusta.md`, con el método
+de la `FICHA_63`).
 
 ---
 

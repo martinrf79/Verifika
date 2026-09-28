@@ -1,7 +1,7 @@
 # arquitectura/ — la orden de trabajo
 
 **Esta carpeta es lo único que hace falta leer para trabajar.** La ficha
-abierta es `FICHA_63_la_puerta_de_las_mejoras.md`. Las cerradas (30 a 58) y
+abierta es `FICHA_64_la_interpretacion_robusta.md`; el método es la 63. Las cerradas (30 a 58) y
 los planes viejos están en `archivo/fichas_cerradas/`.
 
 ## Qué hay acá
@@ -9,7 +9,8 @@ los planes viejos están en `archivo/fichas_cerradas/`.
 | archivo | qué es |
 |---|---|
 | `README.md` | esta puerta |
-| `FICHA_63_la_puerta_de_las_mejoras.md` | **la orden abierta**: cómo entra cada mejora |
+| `FICHA_64_la_interpretacion_robusta.md` | **la orden abierta**: la interpretación, medida, y el plan |
+| `FICHA_63_la_puerta_de_las_mejoras.md` | el método: cómo entra cada mejora |
 | `FICHA_62_el_agente.md` | el modelo busca solo |
 | `FICHA_61_desmenuzar_y_traducir.md` | cómo se parte el pedido, medida |
 | `FICHA_60_las_58_por_tres_caminos.md` | la vara de las 58 |
