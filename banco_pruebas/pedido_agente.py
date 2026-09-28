@@ -139,6 +139,15 @@ def temas_de(pregunta: str) -> list:
     return agente.temas_de(pregunta, TIENDA) if pregunta else []
 
 
+def temas_de_llamada(a: dict) -> list:
+    """Los temas de una llamada a `politica`: los que el modelo eligio de la
+    lista, si la llamada los trae; si no, los que el indice ubica en la
+    pregunta, que es como se resolvian las corridas guardadas antes."""
+    if isinstance(a.get("temas"), list):
+        return [str(t) for t in a["temas"]]
+    return temas_de(str(a.get("pregunta") or ""))
+
+
 def _categoria_llamada(x: dict) -> str:
     """El rubro que la tienda entendio: el de las filas que volvieron si las
     hay, si no el del producto nombrado o el del rubro que escribio."""
@@ -202,7 +211,7 @@ def pedido(llamadas: list) -> dict:
         elif h == "politica":
             preg = str(a.get("pregunta") or "")
             p["politicas_pedidas"] += 1
-            p["temas"] += [{"tema": t, "dicho": preg} for t in temas_de(preg)]
+            p["temas"] += [{"tema": t, "dicho": preg} for t in temas_de_llamada(a)]
             p["afirma"].append({"sobre": "politica", "dice": preg})
         elif h == "compatibilidad":
             p["compatibilidad"].append({"producto": a.get("producto"), "con": a.get("con")})
@@ -286,7 +295,7 @@ def _traduce(e: dict, x: dict) -> list:
         if _n(cat) != _n(e["rubro"]):
             fallas.append(f"rubro {cat or '-'} por {e['rubro']}")
     if e["tema"] and x["herramienta"] == "politica":
-        ts = temas_de(str(x["args"].get("pregunta") or ""))
+        ts = temas_de_llamada(x["args"])
         if not set(_n(t) for t in ts) & {_n(t) for t in e["tema"]}:
             fallas.append(f"tema {(ts or ['-'])[0]} por {e['tema'][0]}")
     if e["cond"]:
