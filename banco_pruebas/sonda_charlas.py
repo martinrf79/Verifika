@@ -258,7 +258,7 @@ def correr_clon(charla, n_corrida=0):
         crudas, vueltas = _guardadas(llamadas)
         turnos.append({"turno": i, "texto": t["texto"], "casillas": casillas, "plata_no_vista": [],
                        "vacia": not texto.strip(), "llamadas": crudas, "vueltas": vueltas,
-                       "respuesta": texto, "uso": []})
+                       "respuesta": texto, "uso": list(llamadas.uso)})
     return turnos
 
 

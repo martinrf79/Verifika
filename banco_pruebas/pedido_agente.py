@@ -80,12 +80,20 @@ def espiar():
     por el clon entero. `respuesta` llama `agente.turno` por el modulo, asi
     que alcanza con envolverlo ahi."""
     from app.core import agente
-    visto: list = []
+
+    class _Visto(list):
+        """Las llamadas, y en `uso` los tokens de cada vuelta: sin eso el
+        clon no podia decir cuanto costo un turno (28-sep)."""
+        uso: list
+
+    visto = _Visto()
+    visto.uso = []
     orig = agente.turno
 
     async def envuelto(*a, **k):
         r = await orig(*a, **k)
         visto.extend(r.get("llamadas") or [])
+        visto.uso.extend(r.get("uso") or [])
         return r
     agente.turno = envuelto
     try:
