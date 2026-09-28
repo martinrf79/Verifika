@@ -177,6 +177,42 @@ def test_un_modelo_en_dos_colores_es_un_renglon_y_lo_sin_stock_baja():
     assert {v["color"]: v["stock"] for v in dx["variantes"]} == {"Negro": 11, "Blanco": 0}
 
 
+def test_la_ficha_de_un_modelo_en_dos_colores_es_un_renglon():
+    """"tenes el G305?" volvia dos fichas enteras, negro y blanco, con los
+    mismos datos, la misma garantia y la misma caja: medido el 28-sep sobre
+    las tres tandas de base, `producto` era el 39% de todo lo que volvia. El
+    color no se pierde: va en `variantes` y lo sigue eligiendo el cliente."""
+    r = A.h_producto(TIENDA, "Logitech G305")
+    assert len(r["filas"]) == 1
+    assert {v["id"] for v in r["filas"][0]["variantes"]} == {"MOU0029", "MOU0030"}
+    assert r["veredicto"] == "ambiguo" and "color" in r["motivo"]
+
+
+def test_la_variante_no_repite_el_precio_del_renglon():
+    r = A._juntar_colores({"filas": [{"id": "MOU0001", "precio": "$37.500", "stock": 5},
+                                     {"id": "MOU0002", "precio": "$40.000", "stock": 2}]}, 5, TIENDA)
+    v = {x["id"]: x for x in r["filas"][0]["variantes"]}
+    assert "precio" not in v["MOU0001"] and v["MOU0002"]["precio"] == "$40.000"
+
+
+def test_el_dato_que_ya_esta_en_la_fila_no_se_repite_en_datos():
+    r = A.h_buscar(TIENDA, rubro="mouse", cuantos=2, condiciones=[
+        {"campo": "conexion", "operador": "contiene", "valor": "inalambrico"}])
+    assert all(f.get("conexion") and "conexion" not in (f.get("datos") or {}) for f in r["filas"])
+
+
+def test_la_variante_sin_precio_toma_el_del_renglon_en_las_fichas_del_turno():
+    fichas, _, _ = R._lo_que_volvio([{"herramienta": "producto", "vuelve": A.h_producto(TIENDA, "Logitech G305")}])
+    assert {f["id"]: f["precio_ars"] for f in fichas} == {"MOU0029": 80500, "MOU0030": 80500}
+
+
+def test_reservar_ve_el_stock_del_color_elegido():
+    A.CLIENTE_DIJO.set("me llevo 20 G305 blancos")
+    assert A.h_reservar(TIENDA, "MOU0030", 20)["veredicto"] == "listo_para_cerrar"
+    A.CLIENTE_DIJO.set("me llevo 20 G305 negros")
+    assert A.h_reservar(TIENDA, "MOU0029", 20)["veredicto"] != "listo_para_cerrar"
+
+
 def test_el_color_que_no_se_mostro_primero_queda_en_la_memoria_del_turno():
     fichas, _, _ = R._lo_que_volvio([{"herramienta": "buscar", "vuelve": A.h_buscar(
         TIENDA, rubro="mouse", que="G203", cuantos=1)}])

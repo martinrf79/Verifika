@@ -283,11 +283,14 @@ def _lo_que_volvio(llamadas: list) -> tuple:
             # tiene que poder volver a ellos por su id.
             for v in f.get("variantes") or []:
                 if v.get("id") and str(v["id"]) not in {str(x.get("id")) for x in fichas}:
-                    ars = re.sub(r"\D", "", str(v.get("precio") or ""))
+                    # Sin precio propio es el del renglon: la variante solo
+                    # lo trae cuando es otro.
+                    ars = re.sub(r"\D", "", str(v.get("precio") or f.get("precio") or ""))
                     from app.storage.firestore_client import get_product_by_id
                     prod = get_product_by_id(str(v["id"])) or {}
                     fichas.append({"id": v["id"], "nombre": prod.get("nombre") or f.get("nombre"),
-                                   "precio": v.get("precio"), **({"precio_ars": int(ars)} if ars else {})})
+                                   "precio": v.get("precio") or f.get("precio"),
+                                   **({"precio_ars": int(ars)} if ars else {})})
         for sub in (r or {}).get("por_condicion") or []:
             filas(sub)
 

@@ -156,8 +156,11 @@ def _fila(f: dict, detalle: bool, pedidos=()) -> dict:
     # LOS DATOS VAN TAMBIEN EN LA LISTA. Sin ellos el modelo completaba de
     # memoria —"la C920 es 1080p"— y la guarda de procedencia tiraba la
     # respuesta entera. Con el dato delante lo copia en vez de adivinarlo.
-    if f.get("specs"):
-        out["datos"] = f["specs"]
+    # Sin repetir lo que la fila ya trae arriba: el campo pedido viajaba dos
+    # veces, suelto y adentro de `datos`.
+    datos = {k: v for k, v in (f.get("specs") or {}).items() if k not in out}
+    if datos:
+        out["datos"] = datos
     if detalle:
         out["descripcion"] = str(f.get("descripcion") or "")[:260]
         for k in ("garantia_detalle", "contenido_caja", "compat"):
@@ -256,7 +259,10 @@ def _juntar_colores(r: dict, cuantos: int, tienda_id: str) -> dict:
         vs.sort(key=lambda x: not hay(x[0]))
         f = dict(vs[0][0])
         if len(vs) > 1:
-            f["variantes"] = [{"id": v.get("id"), "color": c, "stock": v.get("stock"), "precio": v.get("precio")}
+            # El precio de la variante va solo si es otro: casi siempre es el
+            # del renglon, y repetido era un quinto de lo que volvia.
+            f["variantes"] = [{"id": v.get("id"), "color": c, "stock": v.get("stock"),
+                               **({"precio": v.get("precio")} if v.get("precio") != f.get("precio") else {})}
                               for v, c in vs]
         filas.append((f, any(hay(v) for v, _ in vs)))
     filas.sort(key=lambda x: not x[1])
@@ -335,8 +341,18 @@ def h_buscar(tienda_id: str, que: str = "", rubro: str = "", condiciones=None, o
 
 
 def h_producto(tienda_id: str, nombre: str = "", **_) -> dict:
+    """UN MODELO EN VARIOS COLORES ES UNA FICHA, como en `buscar` (28-sep).
+    "Tenes el G305?" devolvia dos fichas enteras con la misma descripcion,
+    garantia y caja; medido sobre las tres tandas de base, `producto` era el
+    39% de todo lo que volvia. El veredicto del motor no cambia: si era
+    ambiguo sigue ambiguo, y el motivo dice que lo que falta es el color."""
     r = (_motor().buscar([{"texto": nombre, "busco": "uno", "cuantos": 4}], tienda_id,
                          _trace()).get("resultados") or [{}])[0]
+    antes = len(r.get("filas") or [])
+    r = _juntar_colores(r, antes or 1, tienda_id)
+    if r.get("veredicto") == "ambiguo" and antes > 1 and len(r["filas"]) == 1:
+        r = {**r, "motivo": "es un solo modelo en varios colores: los datos son los mismos y el color lo "
+                            "elige el cliente, esta en variantes"}
     return _resultado(r, detalle=True)
 
 
@@ -418,8 +434,8 @@ def h_reservar(tienda_id: str, producto: str = "", cantidad: int = 1, **_) -> di
     if otros and _n(otros["color"]) not in _n(CLIENTE_DIJO.get()):
         return {"veredicto": "falta_elegir", "opciones": otros["opciones"],
                 "motivo": "el cliente no eligio el color: preguntale cual, sin volver a confirmar la compra"}
-    ficha = h_producto(tienda_id, pid)
-    stock = next((f.get("stock") for f in ficha.get("filas") or [] if f.get("id") == pid), None)
+    from app.storage.firestore_client import get_product_by_id
+    stock = (get_product_by_id(str(pid), tienda_id=tienda_id) or {}).get("stock")
     if stock is not None and int(stock) < int(cantidad):
         return {"veredicto": "sin_stock_suficiente", "id": pid, "stock": stock}
     return {"veredicto": "listo_para_cerrar", "id": pid, "nombre": its[0].get("nombre"),
