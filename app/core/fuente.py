@@ -292,10 +292,6 @@ def certificar_temas(nombres: list, tienda_id: str) -> dict:
 # sigue aca porque es la forma de la ficha, y la usa el motor.
 
 
-def _norm_cat(c) -> str:
-    return _norm(str(c or ""))
-
-
 def _plata(n) -> str:
     """El precio como se escribe, no como se guarda. Vacio si no hay precio:
     una ficha sin precio no puede inventar uno."""

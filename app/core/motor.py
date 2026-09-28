@@ -60,16 +60,6 @@ TOPE_FILAS = 8
 SIN_ORDEN = "ninguno"
 
 
-def orden_plano(consulta: dict) -> dict:
-    """Traduce el `orden` plano —`precio_ars_min`— al `ordenar_por` que lee
-    el motor. `ninguno` no ordena. Si ya vino `ordenar_por`, gana eso."""
-    c = consulta
-    o = str(c.get("orden") or "")
-    if o and o != SIN_ORDEN and not c.get("ordenar_por"):
-        campo, _, direccion = o.rpartition("_")
-        if campo and direccion in ("min", "max"):
-            c["ordenar_por"] = {"campo": campo, "direccion": direccion}
-    return c
 FILAS_POR_DEFECTO = 5
 
 # Cuantas consultas entran en una llamada. Un pedido multiple —"dos auriculares,

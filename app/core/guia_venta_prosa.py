@@ -79,12 +79,6 @@ _CATEGORIAS_META: dict[str, dict] = {}
 _ORDEN_TEMAS: list[str] = []
 
 
-def categorias_conocimiento() -> list[str]:
-    """La lista cerrada de ids de categoria de la fuente de verdad, en orden.
-    Es el enum unico del Contactor; el interprete y el hub leen de aca."""
-    return list(_corpus_de(_tienda_actual())["categorias_ids"])
-
-
 def meta_categoria(cat_id: str) -> dict:
     """Grupo y pilar de una categoria, para enrutar sin decidir. {} si no existe."""
     corpus = _corpus_de(_tienda_actual())

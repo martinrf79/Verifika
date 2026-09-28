@@ -560,8 +560,8 @@ def puntuar(vistos: list, imprimir: bool = True) -> dict:
               f"\n        turnos leidos: {len(vistos)}")
         if nuc and n_de and n_de != total:
             print(f"\n  NUCLEO ({len(nuc)} turnos): {n_v1} de {n_de}"
-                  f"   — es el unico numero comparable con"
-                  f" interpretacion_piso.json")
+                  f"   — el piso viejo con que se comparaba esta en"
+                  f" archivo/banco_interpretacion_28sep/")
         if deudas:
             print(f"  SIN CASILLA: {deudas} clases que el cliente dice y el"
                   f" esquema no tiene donde anotar.")
