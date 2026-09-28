@@ -687,6 +687,26 @@ def faltantes(mensaje: str, llamadas: list, historial: list = None, tienda_id: s
     return out
 
 
+def _anticipo(f: dict) -> str:
+    """Lo que la completitud lee en el mensaje, dicho ANTES de la primera
+    vuelta (28-sep). Medido en produccion: la pregunta compleja costaba cinco
+    vueltas, 17.000 tokens y 10 segundos porque los destinos y el reparto se
+    marcaban recien cuando el modelo ya habia contestado, y cada vuelta vuelve
+    a mandar todo. Es la MISMA lectura de `faltantes`, no otra: el aviso de
+    despues queda como red para lo que igual no se consulte."""
+    partes = []
+    if f.get("destinos"):
+        partes.append("nombra estos destinos, cotiza el envio a cada uno: " + ", ".join(f["destinos"]))
+    if f.get("reparto"):
+        partes.append("pide repartir el pago en porcentajes: la cuenta va con reparto_pago")
+    if f.get("compra"):
+        partes.append("dice que compra: llama a reservar con el producto; si la compra depende de una "
+                      "condicion, primero verificala")
+    return ("LECTURA DEL SISTEMA, no es un mensaje del cliente y no la menciones. En el mensaje de arriba "
+            "el cliente " + "; ".join(partes) + ". Consultalo con las herramientas junto con todo lo demas "
+            "que pide.")
+
+
 def _aviso(f: dict) -> str:
     partes = []
     if f.get("destinos"):
@@ -748,6 +768,9 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     if memoria.strip():
         msgs.append({"role": "system", "content": "MEMORIA DE LA CHARLA:\n" + memoria.strip()})
     msgs += list(historial or []) + [{"role": "user", "content": mensaje}]
+    anticipado = faltantes(mensaje, [], historial, tienda_id)
+    if anticipado:
+        msgs.append({"role": "user", "content": _anticipo(anticipado)})
     llamadas, uso, vistas, texto, t0 = [], [], {}, "", time.time()
     avisado: dict = {}
     borrador = ""
@@ -803,6 +826,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
              # LO QUE EL MODELO LE PIDIO AL CODIGO, tal cual: sin esto el
              # informe del issue 31 no puede decir si fallo el pedido o la boca.
              pedidos=[f"{x['herramienta']} {json.dumps(x['args'], ensure_ascii=False)}"[:240] for x in llamadas][:10],
+             anticipo=anticipado or None,
              aviso_completitud=avisado or None,
              tokens=sum(x["entrada"] for x in uso), cache=sum(x["cache"] for x in uso),
              ms=int((time.time() - t0) * 1000))

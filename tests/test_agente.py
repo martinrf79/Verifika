@@ -407,6 +407,34 @@ def test_si_falta_algo_el_modelo_tiene_una_vuelta_mas_con_el_aviso(modelo):
     assert "Tengo auriculares HyperX." not in json.dumps(m.pedidos[1]["messages"], ensure_ascii=False)
 
 
+def test_lo_que_el_codigo_lee_en_el_mensaje_va_en_la_primera_vuelta(modelo):
+    """28-sep, producción: la pregunta compleja costaba 5 vueltas, 17.000
+    tokens y 10 segundos, porque los destinos y el reparto se marcaban DESPUÉS
+    de que el modelo contestaba. Lo mismo que lee la completitud va con el
+    mensaje desde la primera vuelta."""
+    m = modelo([_resp("dale")])
+    _turno([], COMPLEJA)
+    nota = m.pedidos[0]["messages"][-1]
+    assert nota["role"] == "user" and nota["content"] != COMPLEJA
+    assert all(d in nota["content"] for d in ("Córdoba capital", "Concordia", "posadas"))
+    assert "reparto_pago" in nota["content"]
+    assert m.pedidos[0]["messages"][-2] == {"role": "user", "content": COMPLEJA}
+
+
+def test_la_compra_de_la_charla_va_en_la_primera_vuelta(modelo):
+    m = modelo([_resp("dale")])
+    _turno([{"role": "user", "content": "me llevo uno"},
+            {"role": "assistant", "content": "cual de los dos, el G203 o el G305?"}], "el primero")
+    assert "reservar" in m.pedidos[0]["messages"][-1]["content"]
+
+
+def test_lo_anticipado_y_consultado_no_se_vuelve_a_avisar(modelo):
+    m = modelo([_resp("", [_llamada("envio", destinos=["Posadas"])]),
+                _resp("El envio a Posadas sale $10.000.")])
+    r = _turno([], "cuanto sale el envio a Posadas?")
+    assert r["texto"] == "El envio a Posadas sale $10.000." and len(m.pedidos) == 2
+
+
 def test_el_aviso_de_completitud_se_da_una_sola_vez(modelo):
     m = modelo([_resp("No se."), _resp("Sigo sin saber.")])
     r = _turno([], "cuanto sale el envio a Posadas?")
