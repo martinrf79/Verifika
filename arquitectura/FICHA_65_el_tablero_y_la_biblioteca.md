@@ -501,3 +501,172 @@ modelo sigue llamando herramientas y viendo resultados, como hoy. Lo nuevo:
    es una muestra.
 
 Se mide igual: las 58 por la puerta y los sesenta y tres nuevos.
+
+---
+
+## 15. Segunda iteración, 29-sep: la revisión en cada llamada del agente
+
+El bucle del agente se quedó. Se midieron por separado las dos mitades de la
+propuesta de la sección 14, porque juntas movían al modelo de forma
+impredecible.
+
+**Lo que el modelo lee —el vocabulario en el prompt— no se sostiene.** Con los
+temas y los datos de sí o no en el prompt, los sesenta y tres nuevos dieron 71
+de 72 contra 57 de la base, pero la vara de las 58 rompió cinco: el modelo dejó
+de nombrar el G305, perdió "lo menos china posible" y dejó de reservar en C53.
+Movida la misma información a la descripción del campo de `buscar`, el
+parlante se arregló y el monitor volvió a afirmar 32 pulgadas. Cada lugar
+arregla unas charlas y rompe otras: con este modelo, el texto del prompt es un
+parche que se mueve. No entra.
+
+**Lo que el código revisa —sin cambiar una palabra de lo que el modelo lee—
+sí.** Corridas `v58_rev_`: respuesta 62, 63 y 61 contra 62, 61 y 63 de la base;
+interpretación 63 de 68 en las tres contra 61 y 62. Los sesenta y tres nuevos,
+60 de 72 contra 57, con los mismos tokens de hoy. La puerta: arregla C46 en la
+interpretación y J01 en la respuesta; rompe la respuesta de C46.
+
+**La C46 no rompió: mejoró, y la casilla la castiga.** Antes contestaba "de los
+que te mencioné" sin buscar —abierto desde la FICHA 63—. Ahora busca los
+mecánicos, conserva la exclusión y la dice: "que no sean de la marca Redragon".
+La casilla exige que la respuesta no contenga la palabra. El que implementa no
+reescribe la vara: lo decide Martín.
+
+Lo que hace la revisión, en `agente.revisar` y `agente.ejecutar`:
+
+- un rubro usado como producto vuelve con "preguntale cuál";
+- un dato que el rubro no trae se aterriza donde vive el valor —DDR5 en el
+  nombre— y, si no vive en ningún lado, vuelve con dónde está ese dato;
+- un valor fuera de una lista cerrada vuelve con los valores que hay;
+- un valor que el rubro no escribe en ningún campo vuelve con cómo lo escribe;
+- el reparto en fracciones pasa a porcentaje, y uno que no suma cien vuelve;
+- una búsqueda sin orden dice que es una muestra;
+- una marca excluida en el mensaje y perdida por la búsqueda la reclama la
+  completitud, con la misma lectura que ya hacía sobre la charla.
+
+Lo que queda para después: el tema de la FAQ lo sigue eligiendo el código
+—"si me llega roto" sirve `cambios`—, el parlante que se moja y el monitor más
+grande, que sólo se arreglaron con vocabulario en el prompt, y el combo con
+tope de plata.
+
+**No entró a `main`.** La sección 16 midió que la redacción de sus avisos le
+hacía decir al cliente "no tenemos". La versión con la redacción corregida
+está en `archivo/revision_ficha65_30sep/revision_segura.patch`, para medirla en
+la sala antes de subirla.
+
+---
+
+## 16. Lo que el modelo puede, preguntado y medido — 29 y 30-sep
+
+Martín pidió dejar de adivinar y preguntarle al modelo. Los guiones y sus
+respuestas están en `archivo/revision_ficha65_30sep/`.
+
+### La entrevista
+
+Con su prompt y sus herramientas reales, el modelo dijo:
+
+- conoce el nombre de cada campo pero no qué trae adentro: no sabe si un valor
+  es sí o no, un código o un texto;
+- con los nombres de los temas duda —"si llega roto": devoluciones o
+  defectuoso— y prefiere leer qué contesta cada uno;
+- quiere la información de la tienda en las herramientas y no en el prompt,
+  "para mantener mi forma de contestar";
+- "es_una_muestra" lo entendió como producto de exhibición;
+- un aviso de pedido mal escrito lo leyó como un dato del producto, y se lo
+  diría al cliente.
+
+### La redacción de lo que vuelve de una herramienta
+
+Medido cinco veces cada una: redactado como "no_cierra", el aviso hizo que el
+modelo le dijera al cliente "no tenemos parlantes resistentes al agua" cinco de
+cinco. Redactado como "pedido mal escrito, esto no es un dato del producto, no
+se lo digas al cliente, volvé a llamar", reintentó cinco de cinco. **Todo lo que
+no es un dato del producto tiene que decirlo con esas palabras.**
+
+### La información en la descripción de las herramientas
+
+Con frases nuevas, tres repeticiones, solo la primera llamada: el tema de la
+FAQ elegido por el código acierta 39 de 54; con `tema` como parámetro de
+`politica` y los temas con tres frases en su descripción, 54 de 54. El campo:
+27 de 33 hoy; con cómo escribe la fuente cada dato en la descripción del campo,
+33 de 33.
+
+### La capacidad leyendo, sin herramientas
+
+El mismo dato en prosa, tabla y JSON, en una charla con memoria:
+
+- en tabla o JSON, un par de rubros chicos: todo bien, con memoria y políticas;
+- en prosa: menos de la mitad, porque la prosa del catálogo no trae los datos
+  técnicos —la resistencia al agua solo está en la ficha estructurada—;
+- el rubro más grande: falla el más liviano y el conteo en los tres formatos,
+  y se contradice entre una respuesta y la siguiente.
+
+**Ordenar, contar y buscar el máximo lo hace el código. El modelo lee bien una
+lista corta ya filtrada. La ingesta tiene que pasar la prosa a campos.**
+
+### Las 58, seis configuraciones, tres corridas
+
+Respuesta bien, interpretación bien, charlas bien las tres veces, tokens por
+turno:
+
+- bot en vivo: 62, 61,7, 55 —4.200—;
+- bot en vivo con frases nuevas: 60, 59,7, 51;
+- solo la revisión: 62, 63, 56 —4.400—;
+- vocabulario en el prompt: 60, 60, 50;
+- vocabulario en las herramientas: 63, 60,3, 53 —7.000—;
+- vocabulario en las herramientas con frases nuevas: 61, 62,3, 53.
+
+Los sesenta y tres mensajes nuevos, de 72 chequeos: 57 en vivo, 60 con la
+revisión, 71 con vocabulario en el prompt, 68 en las herramientas.
+
+**Lo que dicen:** el vocabulario arregla los huecos nuevos pero no mejora las 58
+y cuesta caro; la revisión es gratis y la más consistente; decirlo de otra
+forma resta dos puntos; fallan en todas: refinar la búsqueda anterior —C45,
+C46—, el orden implícito —J01—, C37, C27 y respuestas de jerga. Eso no es de
+formato: es memoria estructurada y diseño.
+
+### Lo que se sabe de afuera
+
+τ-bench, de Sierra, es la referencia: los mejores modelos resuelven cerca del
+61 % de las tareas de retail en un intento y cerca del 25 % si se exige la misma
+tarea ocho veces seguidas. Con usuarios simulados el éxito sube hasta 77,8 %
+contra 63,6 % con 451 personas reales. Con modelos chicos, adaptar la
+descripción de las herramientas al modelo mejora hasta 17 %.
+
+**Estimación para producción:** si el banco da 92 %, producción entre 78 y 85 %
+de turnos enteramente bien. Lo que más resta: mensajes cortos y ambiguos,
+charlas largas y audio.
+
+### El costo, y por qué existe la sala
+
+El 28 y 29-sep el banco se llevó unos diez dólares de la clave paga, del orden
+de treinta millones de tokens de entrada: cinco vueltas enteras de la vara por
+el clon con tres corridas, las sesenta y tres en ocho versiones, y las pruebas
+sueltas. Producción no tuvo ni una charla. Una tanda, `v58_herr_`, corrió
+aunque Martín la había cortado.
+
+Desde el 30-sep se explora en **la sala**, `banco_pruebas/sala.py`: la misma
+vara, solo el último turno, con la clave gratis, una repetición y un tope que
+corta solo.
+
+### El rumbo, acordado con Martín el 30-sep
+
+Un entorno paralelo en la ejecución, no en el código: la sala corre el mismo
+agente y el mismo motor que producción, sin deployar. Mudar es pushear lo que
+ya se probó.
+
+1. Lo que el modelo interpreta bien tres de tres en la sala se le deja; lo
+   demás va al código o a la repregunta.
+2. Lo mínimo que el código necesita son las piezas: acción, producto o rubro,
+   condiciones, orden, cantidad, destino, reparto, tema y referencia. Los
+   argumentos de las herramientas son eso y el código valida cada una.
+3. Lo que vuelve de una herramienta: avisos rotulados como que no son un dato
+   del producto, nombres que no se malinterpreten, resultados cortos.
+4. Memoria en objetos, primero la última búsqueda.
+5. Un cambio por vez en la sala con la gratis; tres corridas para confirmar;
+   el clon y la puerta solo para lo que entra.
+
+**Lo primero de la sesión que sigue:** medir en la sala la revisión con la
+redacción segura, `revision_segura.patch`, contra el bot en vivo.
+
+**Espera a Martín:** la casilla "no dice redragon" de C46; si las frases nuevas
+—`frases_nuevas_58.json`— entran como segunda vara.

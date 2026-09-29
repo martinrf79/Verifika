@@ -1,0 +1,387 @@
+diff --git a/app/core/agente.py b/app/core/agente.py
+index 71cf622..976a273 100644
+--- a/app/core/agente.py
++++ b/app/core/agente.py
+@@ -106,10 +106,93 @@ def indice(tienda_id: str) -> dict:
+     campos = {c: {"nombre": _tokens(c.replace("_", " ")),
+                   "alias": _tokens(" ".join((al.get("campos") or {}).get(c, [])))}
+               for c in campos_filtrables(tienda_id)}
+-    _INDICES[tienda_id] = {"rubros": rubros, "temas": temas, "campos": campos}
++    _INDICES[tienda_id] = {"rubros": rubros, "temas": temas, "campos": campos,
++                           "fichas": _fichas(tienda_id, get_all_products(tienda_id=tienda_id) or [])}
+     return _INDICES[tienda_id]
+ 
+ 
++# ══ LAS FICHAS: que dato trae cada producto, de que clase y en que rubros ═══
++#
++# EL MODELO VEIA LOS NOMBRES DE LOS CAMPOS Y NO LO QUE HAY ADENTRO (29-sep).
++# Medido con sesenta mensajes nuevos, tres corridas: "parlante que se pueda
++# mojar" filtro por `caracteristicas_extra` teniendo `resistencia_agua`, y
++# contesto "no tenemos" con dos parlantes IP67 en stock; "el monitor mas
++# grande" ordeno por `dimensiones`, que es una etiqueta, y afirmo 32 pulgadas
++# con uno de 49. El codigo ya sabia las dos cosas —el tipo de cada campo y si
++# ordena— y no se las decia. Esto se las dice, derivado del catalogo: no crece
++# con los productos, crece con los campos.
++
++_LARGO_MAGNITUD = 20
++# La identidad la escribe el cliente con sus palabras y la certifica el motor:
++# sus valores no se muestran —serian productos y marcas en el prompt fijo—.
++_IDENTIDAD = {"nombre", "modelo", "marca"}
++_VALORES_DE_MUESTRA = 4
++
++
++def _es_magnitud(v) -> bool:
++    """"75Hz", "512GB SSD", "4.2W RMS": el numero adelante y corto. "core i5
++    16gb" o una descripcion traen numeros y no son una medida del producto."""
++    from app.core.fuente_producto import valor_numerico
++    if isinstance(v, (int, float)) and not isinstance(v, bool):
++        return True
++    s = str(v or "").strip()
++    return (len(s) <= _LARGO_MAGNITUD and re.match(r"\d", s) is not None
++            and valor_numerico(s) is not None)
++
++
++def _fichas(tienda_id: str, prods: list) -> dict:
++    """{campo: {tipo, valores, rubros}}. `tipo` es `magnitud` si sus valores
++    son medidas y se puede ordenar, `si_no`, `lista` si tiene pocos valores cortos, o
++    `texto`. `rubros` son los rubros donde la mitad de los productos lo trae."""
++    from app.core.filtros_catalogo import _valor_crudo, campos_filtrables, recorrida
++    campos = campos_filtrables(tienda_id)
++    vistos = recorrida(tienda_id).get("valores") or {}
++    por_rubro: dict = {}
++    for p in prods:
++        if isinstance(p, dict) and p.get("categoria"):
++            por_rubro.setdefault(p["categoria"], []).append(p)
++    out = {}
++    for c, tipo in campos.items():
++        rubros, todos = [], []
++        for rb, ps in por_rubro.items():
++            vals = [v for v in (_valor_crudo(p, c) for p in ps) if v not in (None, "", [], {})]
++            if len(vals) < len(ps) * 0.5:
++                continue
++            rubros.append(rb)
++            todos += vals
++        # Sobre TODOS sus valores: `caracteristicas_extra` dice "8GB GDDR6" en
++        # las placas de video y "sensor optico" en el resto. No es una medida.
++        magnitud = bool(todos) and sum(1 for v in todos if _es_magnitud(v)) >= len(todos) * 0.8
++        v = vistos.get(c) or {}
++        cuenta = v.get("vistos") or {}
++        lista = list(cuenta)
++        if tipo == "si_no":
++            clase = "si_no"
++        elif magnitud:
++            clase = "magnitud"
++        elif not v.get("truncado") and len(lista) <= 8 and all(len(str(x)) <= 20 for x in lista):
++            clase = "lista"
++        else:
++            clase = "texto"
++        # COMO LO ESCRIBE LA FUENTE. El modelo pedia `ram igual 16` y la fuente
++        # dice "16gb": el motor lo rechazaba por vocabulario y el bot elegia uno
++        # de cinco. Y pedia `bluetooth` para "inalambrico" teniendo `conexion`
++        # que dice "inalambrico". Los valores mas repetidos y cortos; un campo
++        # donde cada producto dice otra cosa —nombre, descripcion— no lleva.
++        if clase == "lista":
++            valores = lista
++        elif clase == "si_no" or c in _IDENTIDAD:
++            valores = []
++        else:
++            valores = [str(x) for x, n in sorted(cuenta.items(), key=lambda kv: -kv[1])
++                       if n > 1 and len(str(x)) <= 30][:_VALORES_DE_MUESTRA]
++        out[c] = {"tipo": clase, "valores": valores,
++                  "rubros": [] if len(rubros) >= len(por_rubro) - 2 else rubros}
++    return out
++
++
++
++
+ def ubicar(texto: str, grupo: str, tienda_id: str, n: int = 3) -> list:
+     """Los mejores candidatos de un grupo para las palabras del modelo. El
+     nombre pesa el doble que un alias: "mouse" es mouse aunque algun
+@@ -519,6 +602,8 @@ def sistema(tienda_id: str) -> str:
+     return f"{UNIVERSAL}\n\nLA TIENDA vende estos rubros: {rubros}.\n\n{REGLA_FINAL}"
+ 
+ 
++
++
+ # ══ LA COMPLETITUD: lo que el mensaje pidio y nadie consulto ═══════════════
+ #
+ # MEDIDO CUATRO DE CUATRO EL 19-SEP Y OTRA VEZ EL 26-SEP: de la pregunta
+@@ -627,6 +712,34 @@ _SUELTA = re.compile(r"\b(?:no\s+importa\s+la\s+marca|cualquier\s+marca|la\s+mar
+ _OPS_FUERA = {"no_contiene", "evita", "distinto", "excluir"}
+ 
+ 
++# "QUE NO SEA LOGITECH NI REDRAGON": la exclusion y las que se le encadenan.
++_EXCLUYE_CADENA = re.compile(r"\b(?:que\s+no\s+sean?|nada\s+de|excepto|salvo)\s+(?:de\s+|un\s+|una\s+)?"
++                             r"([a-z0-9][\w-]*(?:\s*(?:,|\bni\b|\by\b|\bo\b)\s*[a-z0-9][\w-]*)*)")
++
++
++def excluidas_del_mensaje(mensaje: str, tienda_id: str) -> list:
++    """Las marcas que el cliente excluye en ESTE mensaje."""
++    marcas = _marcas(tienda_id)
++    out = []
++    for grupo in _EXCLUYE_CADENA.findall(_n(mensaje)):
++        for w in re.split(r"\s*(?:,|\bni\b|\by\b|\bo\b)\s*", grupo):
++            if w in marcas and marcas[w] not in out:
++                out.append(marcas[w])
++    return out
++
++
++def _excluidas_ahora(mensaje: str, llamadas: list, tienda_id: str) -> list:
++    """Las marcas que este mensaje excluye y ninguna busqueda de este turno
++    excluye. Medido el 29-sep: el modelo perdio "que no sea Logitech ni
++    Redragon" dos de tres veces y el bot dijo que solo trabaja con Logitech."""
++    busq = [x.get("args") or {} for x in llamadas or [] if x.get("herramienta") == "buscar"]
++    if not busq or not tienda_id:
++        return []
++    return [m for m in excluidas_del_mensaje(mensaje, tienda_id)
++            if not any(_n(m) in _n(c.get("valor")) and _n(c.get("operador")) in _OPS_FUERA
++                       for a in busq for c in a.get("condiciones") or [] if isinstance(c, dict))]
++
++
+ def _marcas(tienda_id: str) -> dict:
+     from app.storage.firestore_client import get_all_products
+     return {_n(p.get("marca")): p.get("marca") for p in get_all_products(tienda_id=tienda_id) or []
+@@ -684,6 +797,9 @@ def faltantes(mensaje: str, llamadas: list, historial: list = None, tienda_id: s
+     excluidas = _excluidas_perdidas(mensaje, llamadas, historial, tienda_id)
+     if excluidas:
+         out["excluidas"] = excluidas
++    ahora = _excluidas_ahora(mensaje, llamadas, tienda_id)
++    if ahora:
++        out["excluye_ahora"] = ahora
+     return out
+ 
+ 
+@@ -713,6 +829,9 @@ def _aviso(f: dict) -> str:
+         partes.append("nombro estos destinos y no cotizaste el envio: " + ", ".join(f["destinos"]))
+     if f.get("reparto"):
+         partes.append("pidio repartir el pago en porcentajes y no llamaste a cuenta con reparto_pago")
++    if f.get("excluye_ahora"):
++        partes.append("pidio que no sea " + ", ".join(f["excluye_ahora"]) + " y la busqueda no lo excluye: "
++                      "repetila con esa marca en no_contiene")
+     if f.get("excluidas"):
+         partes.append("antes pidio que no sea " + ", ".join(f["excluidas"]) + " y la busqueda de ahora no lo "
+                       "excluye. Si sigue valiendo, repeti la busqueda con esa condicion")
+@@ -732,12 +851,121 @@ def _aviso(f: dict) -> str:
+ 
+ # ══ EL TURNO ════════════════════════════════════════════════════════════════
+ 
++# ══ LA REVISION: cada pedido contra la fuente, antes de ejecutarlo ═════════
++#
++# FICHA 65, 29-sep. El prototipo que traducia todo de una vez no paso la vara
++# de las 58, pero lo que arreglo los huecos medidos no era la traduccion: era
++# el codigo revisando cada pedido contra la fuente. Aca entra en el bucle de
++# siempre. Si un pedido no cierra, vuelve como resultado de esa herramienta con
++# lo que si existe, y el modelo corrige en la vuelta siguiente, que es lo que
++# ya sabe hacer —FICHA 59—.
++
++def _del_rubro(rub: str, tienda_id: str) -> list:
++    from app.storage.firestore_client import get_all_products
++    return [p for p in get_all_products(tienda_id=tienda_id) or [] if p.get("categoria") == rub]
++
++
++def _valores_en(prods: list, campo: str, n: int = 6) -> list:
++    """Como escribe la fuente ese dato en esos productos: el libro, abierto."""
++    from app.core.filtros_catalogo import _valor_crudo
++    cuenta: dict = {}
++    for p in prods:
++        v = _valor_crudo(p, campo)
++        if v not in (None, "", [], {}):
++            cuenta[str(v).lower()] = cuenta.get(str(v).lower(), 0) + 1
++    return [v for v, _ in sorted(cuenta.items(), key=lambda kv: -kv[1])][:n]
++
++
++def revisar(nombre: str, args: dict, tienda_id: str) -> list:
++    """Lo que no cierra del pedido, con lo que si existe. Vacio si cierra."""
++    from app.core.filtros_catalogo import _valor_crudo, campos_con_el_valor, campos_filtrables, evaluar
++    ix = indice(tienda_id)
++    fichas, errores = ix["fichas"], []
++    rubros = {_n(r) for r in ix["rubros"]}
++    if nombre in ("producto", "reservar", "compatibilidad"):
++        nom = str(args.get("nombre") or args.get("producto") or "")
++        if nom and _n(nom) in rubros:
++            errores.append(f"'{nom}' es un rubro, no un producto. Si el cliente no dijo cual, preguntaselo; "
++                           f"si pregunta por todos, usa buscar")
++    if nombre == "cuenta" and args.get("reparto_pago"):
++        rep = [x for x in args["reparto_pago"] if isinstance(x, dict)]
++        total = sum(float(x.get("porcentaje") or 0) for x in rep)
++        if abs(total - 1) < 0.01:
++            for x in rep:
++                x["porcentaje"] = round(float(x.get("porcentaje") or 0) * 100, 2)
++        elif rep and abs(total - 100) > 0.5:
++            errores.append(f"el reparto suma {total:g}; tiene que sumar 100")
++    if nombre == "buscar":
++        rub, _ = _rubro(str(args.get("rubro") or ""), tienda_id)
++        prods = _del_rubro(rub, tienda_id) if rub else []
++        tipos = campos_filtrables(tienda_id)
++        for c in args.get("condiciones") or []:
++            if not isinstance(c, dict):
++                continue
++            campo, valor, op = c.get("campo"), str(c.get("valor") or ""), c.get("operador")
++            f = fichas.get(campo)
++            if f is None or not rub:
++                continue
++            if f["rubros"] and rub not in f["rubros"]:
++                # SI EL VALOR VIVE EN OTRO DATO DEL RUBRO, SE ATERRIZA AHI, como
++                # hace `h_buscar` con el cero. Medido en C30: "formato ddr5" en
++                # memorias se rechazaba, el modelo buscaba "DDR5" como texto,
++                # volvian DDR4 y el bot dijo que no hay DDR5.
++                donde = campos_con_el_valor(prods, valor, tienda_id) if prods and valor else []
++                if donde:
++                    c["campo"] = "nombre" if "nombre" in donde else donde[0]
++                    c["operador"] = "no_contiene" if op in ("no_contiene", "evita") else "contiene"
++                    continue
++                errores.append(f"en {rub} no hay dato {campo}; esta en: {', '.join(f['rubros'])}")
++                continue
++            if f["tipo"] == "lista" and op in ("contiene", "igual", "prefiere") and \
++                    _n(valor) not in {_n(v) for v in f["valores"]}:
++                # UN VALOR FUERA DE LA LISTA PUEDE VIVIR EN OTRO DATO. Medido en
++                # C30: "formato igual ddr5" se nego como que la tienda no lo
++                # tiene, y las DDR5 estan en el nombre: el bot dijo que no hay.
++                if prods and campos_con_el_valor(prods, valor, tienda_id):
++                    continue
++                errores.append(f"'{valor}' no es un valor de {campo}; sus valores son: {' | '.join(f['valores'])}")
++                continue
++            # UN VALOR QUE EL RUBRO NO ESCRIBE EN NINGUN LADO. Si vive en otro
++            # campo, `h_buscar` ya lo reubica: aca solo lo que no esta en ninguno.
++            if f["tipo"] in ("texto", "magnitud") and op in ("contiene", "igual") and prods and \
++                    any(_valor_crudo(p, campo) not in (None, "", [], {}) for p in prods) and \
++                    not any(evaluar(p, campo, op, valor, tipos.get(campo, "texto")) is True for p in prods) and \
++                    not campos_con_el_valor(prods, valor, tienda_id):
++                errores.append(f"en {rub}, {campo} no dice '{valor}'; ahi la fuente escribe: "
++                               f"{' | '.join(_valores_en(prods, campo))}")
++    return errores
++
++
+ def ejecutar(nombre: str, args: dict, tienda_id: str) -> dict:
+     f = HERRAMIENTAS.get(nombre)
+     if not f:
+         return {"error": f"no existe la herramienta {nombre}"}
+     try:
+-        return f(tienda_id, **(args or {}))
++        errores = revisar(nombre, args or {}, tienda_id)
++        if errores:
++            log.info("agente_no_cierra", trace_id=_trace(), herramienta=nombre, errores=errores)
++            # EL AVISO DICE QUE NO ES UN DATO DEL PRODUCTO, con esas palabras.
++            # Medido el 29-sep, cinco de cinco: redactado como "no_cierra" el
++            # modelo le dijo al cliente "no tenemos parlantes resistentes al
++            # agua", con tres en stock. Dicho asi, reintenta cinco de cinco.
++            return {"pedido_mal_escrito": errores,
++                    "esto_no_es_un_dato_del_producto": "no se lo digas al cliente: corregi el pedido y volve a llamar"}
++        out = f(tienda_id, **(args or {}))
++        # LA MUESTRA SE DICE EN EL DATO. "El monitor mas grande" buscaba sin
++        # orden, volvian cinco de veinticuatro y el bot afirmaba el mas grande
++        # de los cinco; "que no sea Logitech" volvia con cinco Logitech y el
++        # bot dijo que solo trabaja con esa marca.
++        if nombre == "buscar" and isinstance(out, dict) and not (args.get("orden") or {}).get("campo"):
++            n, total = len(out.get("filas") or []), out.get("cuantos_habia") or 0
++            if total > n:
++                # "es_una_muestra" el modelo lo entendio como producto de
++                # exhibicion. Se dice que son algunas filas de cuantas.
++                out["aviso_para_vos"] = (f"estas {n} filas son algunas de {total}, sin ordenar: no sirven para "
++                                         f"decir cual es el mas o el menos de algo, ni que no haya otras. Si hace "
++                                         f"falta, volve a buscar con orden o con condiciones")
++        return out
+     except Exception as e:  # noqa: BLE001 — una herramienta que falla no deja al bot mudo
+         log.warning("agente_herramienta_error", herramienta=nombre, error=f"{type(e).__name__}: {str(e)[:160]}")
+         return {"error": "la consulta fallo; proba con otras palabras"}
+diff --git a/tests/test_agente.py b/tests/test_agente.py
+index a5d94d0..3b12bfe 100644
+--- a/tests/test_agente.py
++++ b/tests/test_agente.py
+@@ -562,3 +562,96 @@ def test_lo_que_el_cliente_vio_queda_en_la_memoria(monkeypatch):
+     conv = get_conversation("t_agente_vistos", tienda_id=TIENDA)
+     assert [p["id"] for p in conv["productos_vistos"]] == ["MOU0001"]
+     assert "MOU0001" in R._memoria_texto(conv)
++
++
++# ── LA REVISION ANTES DE EJECUTAR — FICHA 65, 29-sep ─────────────────────────
++#
++# Medido con sesenta y tres mensajes nuevos: el modelo filtraba por un dato que
++# no era, pedia un valor que el rubro no escribe, perdia marcas excluidas,
++# mandaba el reparto en fracciones y usaba un rubro como si fuera un producto.
++# Cada pedido se revisa contra la fuente y, si no cierra, vuelve con lo que si
++# existe; el modelo corrige en la vuelta siguiente.
++
++def test_las_fichas_dicen_la_clase_de_cada_dato():
++    f = A.indice(TIENDA)["fichas"]
++    assert f["resistencia_agua"]["tipo"] == "si_no"
++    assert f["precio_ars"]["tipo"] == "magnitud"
++    assert f["switch_teclado"]["tipo"] == "lista"
++    # "8GB GDDR6" en las placas de video no hace de caracteristicas_extra una medida
++    assert f["caracteristicas_extra"]["tipo"] == "texto"
++    assert f["dimensiones"]["tipo"] == "texto" and f["peso_gramos"]["tipo"] == "magnitud"
++
++
++
++
++def test_un_rubro_no_es_un_producto():
++    """"El mouse tiene garantia?" elegia un mouse cualquiera como el del cliente."""
++    r = A.ejecutar("producto", {"nombre": "mouse"}, TIENDA)
++    assert r.get("pedido_mal_escrito") and "rubro" in r["pedido_mal_escrito"][0]
++
++
++def test_un_valor_fuera_de_la_lista_cerrada_vuelve_con_los_que_hay():
++    r = A.ejecutar("buscar", {"rubro": "teclado", "condiciones": [
++        {"campo": "switch_teclado", "operador": "igual", "valor": "switch blue"}]}, TIENDA)
++    assert r.get("pedido_mal_escrito") and "switch red" in r["pedido_mal_escrito"][0]
++
++
++def test_un_dato_que_el_rubro_no_trae_vuelve_con_donde_esta():
++    r = A.ejecutar("buscar", {"rubro": "silla gamer", "condiciones": [
++        {"campo": "hz", "operador": "mayor", "valor": "144"}]}, TIENDA)
++    assert r.get("pedido_mal_escrito") and "monitor" in r["pedido_mal_escrito"][0]
++
++
++def test_un_valor_que_el_rubro_no_escribe_vuelve_con_como_lo_escribe():
++    """"SSD de 1 tera": "1tb ssd" es como lo escriben las notebooks."""
++    r = A.ejecutar("buscar", {"rubro": "ssd", "condiciones": [
++        {"campo": "almacenamiento", "operador": "igual", "valor": "1tb ssd"}]}, TIENDA)
++    assert r.get("pedido_mal_escrito") and "la fuente escribe" in r["pedido_mal_escrito"][0]
++
++
++def test_un_valor_que_vive_en_otro_campo_no_se_frena():
++    """DDR5 vive en el nombre: `h_buscar` ya lo reubica, la revision no lo frena."""
++    r = A.ejecutar("buscar", {"rubro": "memoria ram", "condiciones": [
++        {"campo": "ram", "operador": "contiene", "valor": "DDR5"}]}, TIENDA)
++    assert "pedido_mal_escrito" not in r and r["filas"]
++
++
++def test_el_reparto_en_fracciones_se_pasa_a_porcentaje():
++    """Mitad y mitad llego como 0.5 y el bot invento que no se puede dividir."""
++    args = {"items": [{"producto": "G203", "cantidad": 1}],
++            "reparto_pago": [{"medio": "transferencia", "porcentaje": 0.5}, {"medio": "mercado pago", "porcentaje": 0.5}]}
++    r = A.ejecutar("cuenta", args, TIENDA)
++    assert "pedido_mal_escrito" not in r and [x["porcentaje"] for x in args["reparto_pago"]] == [50, 50]
++
++
++def test_un_reparto_que_no_suma_cien_vuelve():
++    r = A.ejecutar("cuenta", {"items": [{"producto": "G203"}], "reparto_pago": [
++        {"medio": "transferencia", "porcentaje": 70}, {"medio": "mercado pago", "porcentaje": 20}]}, TIENDA)
++    assert r.get("pedido_mal_escrito") and "suma 90" in r["pedido_mal_escrito"][0]
++
++
++def test_una_busqueda_sin_orden_dice_que_aviso_para_vos():
++    r = A.ejecutar("buscar", {"rubro": "monitor"}, TIENDA)
++    assert "aviso_para_vos" in r
++    r = A.ejecutar("buscar", {"rubro": "monitor", "orden": {"campo": "precio_ars", "direccion": "max"}}, TIENDA)
++    assert "aviso_para_vos" not in r
++
++
++
++def test_las_marcas_excluidas_en_el_mensaje_tienen_que_viajar():
++    msg = "quiero un mouse que no sea logitech ni redragon"
++    assert A.excluidas_del_mensaje(msg, TIENDA) == ["Logitech", "Redragon"]
++    sin = [{"herramienta": "buscar", "args": {"rubro": "mouse"}}]
++    assert A.faltantes(msg, sin, [], TIENDA).get("excluye_ahora") == ["Logitech", "Redragon"]
++    con = [{"herramienta": "buscar", "args": {"rubro": "mouse", "condiciones": [
++        {"campo": "marca", "operador": "no_contiene", "valor": "logitech"},
++        {"campo": "marca", "operador": "no_contiene", "valor": "redragon"}]}}]
++    assert "excluye_ahora" not in A.faltantes(msg, con, [], TIENDA)
++
++
++def test_un_dato_que_el_rubro_no_trae_se_aterriza_donde_vive_el_valor():
++    """C30: "formato ddr5" en memorias se rechazaba, el modelo buscaba "DDR5"
++    como texto, volvian DDR4 y el bot dijo que no hay DDR5."""
++    a = {"rubro": "memoria ram", "condiciones": [{"campo": "formato", "operador": "igual", "valor": "ddr5"}]}
++    r = A.ejecutar("buscar", a, TIENDA)
++    assert "pedido_mal_escrito" not in r and r["filas"] and all("DDR5" in f["nombre"] for f in r["filas"])

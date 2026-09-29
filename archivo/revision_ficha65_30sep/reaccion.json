@@ -1,0 +1,389 @@
+{
+ "e1_actual": [
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"valor\":\"si\",\"campo\":\"resistencia_agua\",\"operador\":\"contiene\"}]}"
+    ]
+   ],
+   "calls": [],
+   "texto": "No me figura ningún parlante con resistencia al agua en el catálogo. ¿Querés que busque algún otro producto o tenés alguna otra preferencia?"
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"valor\":\"si\",\"campo\":\"resistencia_agua\",\"operador\":\"contiene\"}]}"
+    ]
+   ],
+   "calls": [],
+   "texto": "No encontré parlantes con resistencia al agua en el catálogo. ¿Querés que busque algún otro tipo de parlante o algún otro producto?"
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"operador\":\"contiene\",\"valor\":\"si\",\"campo\":\"resistencia_agua\"}]}"
+    ]
+   ],
+   "calls": [],
+   "texto": "No me figura ningún parlante con resistencia al agua en el catálogo. ¿Querés que busque algún otro modelo o alguna otra característica?"
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"campo\":\"resistencia_agua\",\"valor\":\"si\",\"operador\":\"contiene\"}]}"
+    ]
+   ],
+   "calls": [],
+   "texto": "No me figura ningún parlante con resistencia al agua en el catálogo. ¿Querés que busque algún otro producto o tenés alguna otra característica en mente?"
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"condiciones\":[{\"campo\":\"resistencia_agua\",\"valor\":\"si\",\"operador\":\"contiene\"}],\"rubro\":\"parlante\"}"
+    ]
+   ],
+   "calls": [],
+   "texto": "No me figura ningún parlante con resistencia al agua en el catálogo. ¿Querés que busque algún otro producto o tenés alguna otra preferencia?"
+  }
+ ],
+ "e1_meta": [
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"valor\":\"si\",\"campo\":\"resistencia_agua\",\"operador\":\"contiene\"}]}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"valor\":\"resistente al agua\",\"campo\":\"descripcion\",\"operador\":\"contiene\"}]}"
+    ]
+   ],
+   "texto": ""
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"campo\":\"resistencia_agua\",\"valor\":\"si\",\"operador\":\"contiene\"}]}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"operador\":\"contiene\",\"valor\":\"resistente al agua\",\"campo\":\"descripcion\"}]}"
+    ]
+   ],
+   "texto": ""
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"condiciones\":[{\"operador\":\"contiene\",\"valor\":\"si\",\"campo\":\"resistencia_agua\"}],\"rubro\":\"parlante\"}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"condiciones\":[{\"campo\":\"descripcion\",\"valor\":\"resistente al agua\",\"operador\":\"contiene\"}],\"rubro\":\"parlante\"}"
+    ]
+   ],
+   "texto": ""
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"campo\":\"resistencia_agua\",\"operador\":\"contiene\",\"valor\":\"si\"}]}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"valor\":\"resistente al agua\",\"campo\":\"descripcion\",\"operador\":\"contiene\"}]}"
+    ]
+   ],
+   "texto": ""
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"condiciones\":[{\"operador\":\"contiene\",\"valor\":\"si\",\"campo\":\"resistencia_agua\"}],\"rubro\":\"parlante\"}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"condiciones\":[{\"valor\":\"resistente al agua\",\"campo\":\"descripcion\",\"operador\":\"contiene\"}],\"rubro\":\"parlante\"}"
+    ]
+   ],
+   "texto": ""
+  }
+ ],
+ "e1_sugerencia": [
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"campo\":\"resistencia_agua\",\"operador\":\"contiene\",\"valor\":\"si\"}]}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"condiciones\":[{\"operador\":\"contiene\",\"campo\":\"caracteristicas_extra\",\"valor\":\"resistente al agua\"}],\"rubro\":\"parlante\"}"
+    ]
+   ],
+   "texto": ""
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"valor\":\"si\",\"campo\":\"resistencia_agua\",\"operador\":\"contiene\"}]}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"condiciones\":[{\"valor\":\"resistente al agua\",\"operador\":\"contiene\",\"campo\":\"caracteristicas_extra\"}],\"rubro\":\"parlante\"}"
+    ]
+   ],
+   "texto": ""
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"campo\":\"resistencia_agua\",\"valor\":\"si\",\"operador\":\"contiene\"}]}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"campo\":\"caracteristicas_extra\",\"operador\":\"contiene\",\"valor\":\"resistente al agua\"}]}"
+    ]
+   ],
+   "texto": ""
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"condiciones\":[{\"operador\":\"contiene\",\"valor\":\"si\",\"campo\":\"resistencia_agua\"}],\"rubro\":\"parlante\"}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"valor\":\"resistente al agua\",\"operador\":\"contiene\",\"campo\":\"caracteristicas_extra\"}]}"
+    ]
+   ],
+   "texto": ""
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"parlante\",\"condiciones\":[{\"valor\":\"si\",\"campo\":\"resistencia_agua\",\"operador\":\"contiene\"}]}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"condiciones\":[{\"campo\":\"caracteristicas_extra\",\"valor\":\"resistente al agua\",\"operador\":\"contiene\"}],\"rubro\":\"parlante\"}"
+    ]
+   ],
+   "texto": ""
+  }
+ ],
+ "e2_nada": [
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"monitor\",\"orden\":{\"campo\":\"dimensiones\",\"direccion\":\"max\"}}"
+    ]
+   ],
+   "calls": [],
+   "texto": "El más grande que tenemos es de 32 pulgadas. Tenemos dos opciones: el LG 32GN600 a $417.500 y el Samsung Odyssey G5 32 a $480.000. ¿Te interesa alguno en particular?"
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"monitor\",\"orden\":{\"campo\":\"dimensiones\",\"direccion\":\"max\"}}"
+    ]
+   ],
+   "calls": [],
+   "texto": "El más grande que tenemos es de 32 pulgadas. Tenemos dos modelos: el LG 32GN600 a $417.500 y el Samsung Odyssey G5 32 a $480.000. ¿Te interesa alguno?"
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"orden\":{\"campo\":\"dimensiones\",\"direccion\":\"max\"},\"rubro\":\"monitor\"}"
+    ]
+   ],
+   "calls": [],
+   "texto": "El más grande que tenemos es de 32 pulgadas. Tenemos dos opciones: el **Monitor LG 32GN600** a $417.500 y el **Monitor Samsung Odyssey G5 32** a $480.000. Ambos tienen 165Hz y resolución QHD."
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"monitor\",\"orden\":{\"direccion\":\"max\",\"campo\":\"dimensiones\"}}"
+    ]
+   ],
+   "calls": [],
+   "texto": "El más grande que tenemos es de 32 pulgadas. Tenemos dos opciones: el **Monitor LG 32GN600** a $417.500 y el **Monitor Samsung Odyssey G5 32** a $480.000. Ambos tienen 165Hz y resolución QHD."
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"monitor\",\"orden\":{\"campo\":\"dimensiones\",\"direccion\":\"max\"}}"
+    ]
+   ],
+   "calls": [],
+   "texto": "El más grande que tenemos es de 32 pulgadas. Tenemos dos opciones: el LG 32GN600 a $417.500 y el Samsung Odyssey G5 32 a $480.000. ¿Te interesa alguno en particular?"
+  }
+ ],
+ "e2_muestra": [
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"monitor\",\"orden\":{\"campo\":\"dimensiones\",\"direccion\":\"max\"}}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"que\":\"monitor 32 pulgadas\",\"rubro\":\"monitor\"}"
+    ]
+   ],
+   "texto": ""
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"orden\":{\"direccion\":\"max\",\"campo\":\"dimensiones\"},\"rubro\":\"monitor\"}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"rubro\":\"monitor\",\"que\":\"monitor 32 pulgadas\"}"
+    ]
+   ],
+   "texto": ""
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"monitor\",\"orden\":{\"direccion\":\"max\",\"campo\":\"dimensiones\"}}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"rubro\":\"monitor\",\"que\":\"monitor 32 pulgadas\"}"
+    ]
+   ],
+   "texto": ""
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"orden\":{\"campo\":\"dimensiones\",\"direccion\":\"max\"},\"rubro\":\"monitor\"}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"que\":\"monitor 32 pulgadas\",\"rubro\":\"monitor\"}"
+    ]
+   ],
+   "texto": ""
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"orden\":{\"direccion\":\"max\",\"campo\":\"dimensiones\"},\"rubro\":\"monitor\"}"
+    ]
+   ],
+   "calls": [
+    [
+     "buscar",
+     "{\"rubro\":\"monitor\",\"que\":\"monitor 32 pulgadas\"}"
+    ]
+   ],
+   "texto": ""
+  }
+ ],
+ "e2_mostradas": [
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"monitor\",\"orden\":{\"direccion\":\"max\",\"campo\":\"dimensiones\"}}"
+    ]
+   ],
+   "calls": [],
+   "texto": "El monitor más grande que tenemos es de 32 pulgadas. Tenemos dos opciones: el **LG 32GN600** a $417.500 y el **Samsung Odyssey G5 32** a $480.000. Ambos tienen resolución QHD y 165Hz."
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"monitor\",\"orden\":{\"campo\":\"dimensiones\",\"direccion\":\"max\"}}"
+    ]
+   ],
+   "calls": [],
+   "texto": "El más grande que tenemos es de 32 pulgadas. Tenemos dos opciones: el **Monitor LG 32GN600** a $417.500 y el **Monitor Samsung Odyssey G5 32** a $480.000. ¿Te interesa alguno de estos?"
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"orden\":{\"campo\":\"dimensiones\",\"direccion\":\"max\"},\"rubro\":\"monitor\"}"
+    ]
+   ],
+   "calls": [],
+   "texto": "El monitor más grande que tenemos es de 32 pulgadas. Tenemos dos opciones: el **LG 32GN600** a $417.500 y el **Samsung Odyssey G5 32** a $480.000. Ambos tienen resolución QHD y 165Hz."
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"monitor\",\"orden\":{\"direccion\":\"max\",\"campo\":\"dimensiones\"}}"
+    ]
+   ],
+   "calls": [],
+   "texto": "El monitor más grande que tenemos es de 32 pulgadas. Contamos con dos modelos: el **LG 32GN600** a $417.500 y el **Samsung Odyssey G5 32** a $480.000. Ambos tienen resolución QHD y 165Hz."
+  },
+  {
+   "primera": [
+    [
+     "buscar",
+     "{\"rubro\":\"monitor\",\"orden\":{\"direccion\":\"max\",\"campo\":\"dimensiones\"}}"
+    ]
+   ],
+   "calls": [],
+   "texto": "El monitor más grande que tenemos es de 32 pulgadas. Tenemos dos opciones: el **LG 32GN600** a $417.500 y el **Samsung Odyssey G5 32** a $480.000. Ambos tienen resolución QHD y 165Hz."
+  }
+ ]
+}
