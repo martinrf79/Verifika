@@ -15,6 +15,7 @@ número se reporta con su control al lado.
 | Una mejora contra la base | `python3 -m banco_pruebas.puerta` |
 | La vara de las 58 | `python3 banco_pruebas/vara_58.py` |
 | Un turno por dentro | `python3 banco_pruebas/sonda_turno.py` |
+| Explorar la traducción, barato y con la gratis | `python3 -m banco_pruebas.sala --etiqueta prueba` |
 | Puntas sueltas del cableado | `python3 banco_pruebas/censo_cableado.py` |
 
 Toda mejora pasa por `puerta.py` (ficha 63): no se toca la vara mientras
@@ -48,6 +49,12 @@ Por el clon va de a una charla; las tres corridas se pueden lanzar en
 paralelo como procesos aparte. Con la clave gratis se traba por el límite
 por minuto; la paga necesita la orden de Martín en la sesión y la marca
 `MARTIN_AUTORIZO_LA_PAGA=<fecha>` en el comando, lo exige el candado.
+
+**La sala** (`sala.py`) es la misma vara, las mismas piezas y el mismo
+calificador, pero corre solo el último turno de cada charla —los anteriores
+salen de una corrida guardada—, sin el webhook, con la clave gratis, una
+repetición y un tope de tokens. Sirve para explorar; lo que entra se decide
+igual por el clon y la puerta.
 
 Lo que se lee de producción, aparte: `leer_interpretacion.py` y
 `produccion.py`.
