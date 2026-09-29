@@ -25,7 +25,7 @@ Dónde está cada cosa: `MAPA.md`.
 - **ABIERTO** · El cache da cero: el prompt fijo no llega al mínimo del proveedor. Medir el umbral.
 - **ABIERTO** · 27-sep, FICHA 63: C46 contesta "de los que te mencioné" sin buscar el resto; el 70/30 a veces sale como total. Desde el 28-sep el reparto se anticipa en la primera vuelta. Toda mejora pasa por `banco_pruebas/puerta.py`.
 - **ABIERTO** · El modelo sigue diciendo "todo es chino" aunque las memorias son Taiwan o China; a veces pregunta en vez de armar el 70/30.
-- **ABIERTO** · 29-sep, FICHA 65: la interpretación se rediseña como tablero y biblioteca. Diseño escrito, sin código; sigue el paso 0 del plan. Decisiones de Martín en su sección 12.
+- **ABIERTO** · 29-sep, FICHA 65: el prototipo de traducir todo de una vez NO PASÓ la vara de las 58 —rompe dependencias y memoria— y se revirtió. Mejoró los 63 nuevos. Propuesta en la sección 14: validar en cada llamada del agente.
 - **ABIERTO** · El arranque de sesión muestra la interpretación "sin medir": su piso se archivó. Arreglar la línea toca `scripts/`, que deploya.
 - **ESPERA A MARTIN** · Ante un tema `ambiguous` el código sirve todos los candidatos. Si Martín quiere la repregunta, es una línea.
 - **ESPERA A MARTIN** · Retención de charlas: cuánto tiempo y con qué criterio se borran.

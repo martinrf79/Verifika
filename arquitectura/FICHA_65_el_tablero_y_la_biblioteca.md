@@ -448,3 +448,56 @@ arma otro.
 
 Cada paso en su propio commit. Si un paso no pasa, se revierte y se anota por
 qué en esta ficha.
+
+---
+
+## 14. Primera medición, 29-sep: NO PASA, se revirtió
+
+Se construyó el prototipo entero —traducir con herramienta obligatoria,
+validar, ejecutar, redactar— y se midió por el clon con la clave paga pedida
+por Martín. El código quedó en `archivo/tablero_ficha65_29sep/`: el módulo, el
+parche que lo cableaba, sus veinte tests offline y los sesenta y tres mensajes
+nuevos. El camino vivo quedó como estaba.
+
+**Los sesenta y tres mensajes nuevos, tres corridas: mejora clara.** Se
+arreglaron en tres de tres el parlante que se moja, el producto roto con su
+tema, el combo con tope, el mouse inalámbrico que no sea negro, las marcas
+excluidas, el SSD de 1 tera con sus cinco modelos y el pago mitad y mitad. El
+monitor más grande pasó de afirmar 32 pulgadas a contestar bien o decir que no
+puede ordenar por tamaño.
+
+**La vara de las 58, tres corridas contra `v58_p_`: rompe más de lo que
+arregla.** La puerta dio arregla 6, rompe 18. Respuesta 60, 59 y 60 contra 62,
+61 y 63 de la base; interpretación 53 de 68 en las tres contra 61 y 62. El
+turno pasó de unos 4.200 a unos 5.100 tokens y el caché siguió en cero.
+
+**Por qué rompe.** Lo que rompió son dependencias y memoria: "si anda con Mac
+me lo llevo", "si no hay en negro el blanco", "era para Córdoba, no Rosario",
+"el primero", "ah no, el otro, y ese me lo llevo". La FICHA 59 ya había medido
+que el modelo hace eso solo **dentro del bucle del agente**, porque ve el
+resultado antes de decidir el paso siguiente. Traducir todo de una vez, antes
+de ver nada, le saca justo esa capacidad. Es el mismo límite que cerró la
+FICHA 58.
+
+**Lo que sí sirvió** vive en la frontera de las herramientas, no en la fase
+de traducción: el vocabulario de la tienda delante, el tema elegido por el
+modelo, y el código revisando cada pedido contra la fuente —dato que no está
+en el rubro, valor que el rubro no escribe, orden sobre una etiqueta, marca
+excluida perdida, reparto en fracciones, rubro usado como producto, "no
+tenemos" sin consultar—.
+
+### La próxima iteración propuesta
+
+**El bucle del agente se queda; la validación entra en cada llamada.** El
+modelo sigue llamando herramientas y viendo resultados, como hoy. Lo nuevo:
+
+1. el prompt fijo lleva el vocabulario de la tienda —rubros, temas con qué
+   contestan y datos con su clase—;
+2. `politica` recibe el tema que elige el modelo, y el código suma los suyos;
+3. cada llamada se valida **antes** de ejecutarse con las mismas reglas del
+   prototipo, y si no cierra vuelve como resultado de esa herramienta con lo
+   que sí existe;
+4. "no tenemos" lo confirma el catálogo, y una búsqueda sin orden dice que
+   es una muestra.
+
+Se mide igual: las 58 por la puerta y los sesenta y tres nuevos.

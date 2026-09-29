@@ -1,0 +1,167 @@
+diff --git a/app/core/agente.py b/app/core/agente.py
+index 71cf622..e8a3a85 100644
+--- a/app/core/agente.py
++++ b/app/core/agente.py
+@@ -106,10 +106,105 @@ def indice(tienda_id: str) -> dict:
+     campos = {c: {"nombre": _tokens(c.replace("_", " ")),
+                   "alias": _tokens(" ".join((al.get("campos") or {}).get(c, [])))}
+               for c in campos_filtrables(tienda_id)}
+-    _INDICES[tienda_id] = {"rubros": rubros, "temas": temas, "campos": campos}
++    _INDICES[tienda_id] = {"rubros": rubros, "temas": temas, "campos": campos,
++                           "fichas": _fichas(tienda_id, get_all_products(tienda_id=tienda_id) or [])}
+     return _INDICES[tienda_id]
+ 
+ 
++# ══ LAS FICHAS: que dato trae cada producto, de que clase y en que rubros ═══
++#
++# EL MODELO VEIA LOS NOMBRES DE LOS CAMPOS Y NO LO QUE HAY ADENTRO (29-sep).
++# Medido con sesenta mensajes nuevos, tres corridas: "parlante que se pueda
++# mojar" filtro por `caracteristicas_extra` teniendo `resistencia_agua`, y
++# contesto "no tenemos" con dos parlantes IP67 en stock; "el monitor mas
++# grande" ordeno por `dimensiones`, que es una etiqueta, y afirmo 32 pulgadas
++# con uno de 49. El codigo ya sabia las dos cosas —el tipo de cada campo y si
++# ordena— y no se las decia. Esto se las dice, derivado del catalogo: no crece
++# con los productos, crece con los campos.
++
++_LARGO_MAGNITUD = 20
++_VALORES_DE_MUESTRA = 4
++
++
++def _es_magnitud(v) -> bool:
++    """"75Hz", "512GB SSD", "4.2W RMS": el numero adelante y corto. "core i5
++    16gb" o una descripcion traen numeros y no son una medida del producto."""
++    from app.core.fuente_producto import valor_numerico
++    if isinstance(v, (int, float)) and not isinstance(v, bool):
++        return True
++    s = str(v or "").strip()
++    return (len(s) <= _LARGO_MAGNITUD and re.match(r"\d", s) is not None
++            and valor_numerico(s) is not None)
++
++
++def _fichas(tienda_id: str, prods: list) -> dict:
++    """{campo: {tipo, valores, rubros}}. `tipo` es `magnitud` si sus valores
++    son medidas y se puede ordenar, `si_no`, `lista` si tiene pocos valores cortos, o
++    `texto`. `rubros` son los rubros donde la mitad de los productos lo trae."""
++    from app.core.filtros_catalogo import _valor_crudo, campos_filtrables, recorrida
++    campos = campos_filtrables(tienda_id)
++    vistos = recorrida(tienda_id).get("valores") or {}
++    por_rubro: dict = {}
++    for p in prods:
++        if isinstance(p, dict) and p.get("categoria"):
++            por_rubro.setdefault(p["categoria"], []).append(p)
++    out = {}
++    for c, tipo in campos.items():
++        rubros, todos = [], []
++        for rb, ps in por_rubro.items():
++            vals = [v for v in (_valor_crudo(p, c) for p in ps) if v not in (None, "", [], {})]
++            if len(vals) < len(ps) * 0.5:
++                continue
++            rubros.append(rb)
++            todos += vals
++        # Sobre TODOS sus valores: `caracteristicas_extra` dice "8GB GDDR6" en
++        # las placas de video y "sensor optico" en el resto. No es una medida.
++        magnitud = bool(todos) and sum(1 for v in todos if _es_magnitud(v)) >= len(todos) * 0.8
++        v = vistos.get(c) or {}
++        cuenta = v.get("vistos") or {}
++        lista = list(cuenta)
++        if tipo == "si_no":
++            clase = "si_no"
++        elif magnitud:
++            clase = "magnitud"
++        elif not v.get("truncado") and len(lista) <= 8 and all(len(str(x)) <= 20 for x in lista):
++            clase = "lista"
++        else:
++            clase = "texto"
++        # COMO LO ESCRIBE LA FUENTE. El modelo pedia `ram igual 16` y la fuente
++        # dice "16gb": el motor lo rechazaba por vocabulario y el bot elegia uno
++        # de cinco. Y pedia `bluetooth` para "inalambrico" teniendo `conexion`
++        # que dice "inalambrico". Los valores mas repetidos y cortos; un campo
++        # donde cada producto dice otra cosa —nombre, descripcion— no lleva.
++        if clase == "lista":
++            valores = lista
++        elif clase == "si_no":
++            valores = []
++        else:
++            valores = [str(x) for x, n in sorted(cuenta.items(), key=lambda kv: -kv[1])
++                       if n > 1 and len(str(x)) <= 30][:_VALORES_DE_MUESTRA]
++        out[c] = {"tipo": clase, "valores": valores,
++                  "rubros": [] if len(rubros) >= len(por_rubro) - 2 else rubros}
++    return out
++
++
++def ordenables(tienda_id: str) -> list:
++    return sorted(c for c, f in indice(tienda_id)["fichas"].items() if f["tipo"] == "magnitud")
++
++
++def fichas_texto(tienda_id: str) -> str:
++    """Una linea por campo: que clase de dato es y en que rubros esta."""
++    clase = {"magnitud": "medida, se ordena", "si_no": "si o no", "texto": "texto", "lista": "solo estos valores"}
++    lineas = []
++    for c, f in sorted(indice(tienda_id)["fichas"].items()):
++        que = clase[f["tipo"]]
++        if f["valores"]:
++            que += (": " if f["tipo"] == "lista" else ", la fuente escribe: ") + " | ".join(f["valores"])
++        donde = ", ".join(f["rubros"]) if f["rubros"] else "todos"
++        lineas.append(f"- {c} ({que}). En: {donde}")
++    return "\n".join(lineas)
++
++
+ def ubicar(texto: str, grupo: str, tienda_id: str, n: int = 3) -> list:
+     """Los mejores candidatos de un grupo para las palabras del modelo. El
+     nombre pesa el doble que un alias: "mouse" es mouse aunque algun
+diff --git a/app/core/respuesta.py b/app/core/respuesta.py
+index 9da007b..d6fb7cd 100644
+--- a/app/core/respuesta.py
++++ b/app/core/respuesta.py
+@@ -379,8 +379,8 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
+     Misma firma que el turno viejo: el orchestrator no cambia."""
+     t0 = time.time()
+     etapas: dict = {}
+-    from app.core import agente
+     from app.core import guardas_salida as gs
++    from app.core import tablero
+     from app.core.contexto_turno import set_current_tienda
+ 
+     set_current_tienda(tienda_id)
+@@ -391,7 +391,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
+     # ── 1. AGENTE ───────────────────────────────────────────────────────
+     t = time.time()
+     memoria = _memoria_texto(conv)
+-    r = await agente.turno([{"role": m.get("role"), "content": m.get("content") or ""}
++    r = await tablero.turno([{"role": m.get("role"), "content": m.get("content") or ""}
+                             for m in history if m.get("role") in ("user", "assistant")],
+                            raw_message, tienda_id, trace_id=trace_id, memoria=memoria)
+     llamadas = r.get("llamadas") or []
+diff --git a/banco_pruebas/pedido_agente.py b/banco_pruebas/pedido_agente.py
+index b13e94a..be1b605 100644
+--- a/banco_pruebas/pedido_agente.py
++++ b/banco_pruebas/pedido_agente.py
+@@ -77,9 +77,10 @@ def llamadas_del_log(pedidos: list) -> list:
+ @contextlib.contextmanager
+ def espiar():
+     """Junta las llamadas de cada `agente.turno` que corre adentro, tambien
+-    por el clon entero. `respuesta` llama `agente.turno` por el modulo, asi
+-    que alcanza con envolverlo ahi."""
+-    from app.core import agente
++    por el clon entero. `respuesta` llama `tablero.turno` por el modulo, asi
++    que alcanza con envolverlo ahi —FICHA 65: el tablero reemplazo al bucle
++    del agente—."""
++    from app.core import tablero as agente
+ 
+     class _Visto(list):
+         """Las llamadas, y en `uso` los tokens de cada vuelta: sin eso el
+diff --git a/tests/test_agente.py b/tests/test_agente.py
+index a5d94d0..274b706 100644
+--- a/tests/test_agente.py
++++ b/tests/test_agente.py
+@@ -514,7 +514,9 @@ def test_lo_fijo_va_adelante_y_lo_que_cambia_atras(modelo):
+ def _agente_fijo(monkeypatch, texto, llamadas):
+     async def falso(historial, mensaje, tienda_id, trace_id="", memoria=""):
+         return {"texto": texto, "llamadas": llamadas, "uso": []}
+-    monkeypatch.setattr(A, "turno", falso)
++    # El turno vivo es el del tablero desde la FICHA 65: `respuesta` lo llama ahi.
++    from app.core import tablero
++    monkeypatch.setattr(tablero, "turno", falso)
+ 
+ 
+ def _procesar(uid, msg):
