@@ -1,9 +1,8 @@
 """EL TABLERO — el turno en tres pasos, calibrado en el laboratorio (30-sep-2026).
 
-ESTA EN RESERVA HASTA QUE MARTIN DECIDA EL CAMBIO: `app/` no lo importa. Lo
-corre el banco, `sonda_charlas --camino tablero`, por el clon entero. Pasar a
-produccion es moverlo a `app/core/` y que `respuesta.procesar_turno` llame a
-`tablero.turno` en vez de `agente.turno`.
+ES EL TURNO VIVO DESDE EL 30-SEP: `respuesta.procesar_turno` lo llama en vez
+de `agente.turno`. Las herramientas y la completitud siguen en `agente`. Se
+mide por el clon con `sonda_charlas --vara todas`.
 
 MISMA ENTRADA Y MISMA SALIDA QUE `agente.turno`: el historial, el mensaje, la
 tienda y la memoria que arma `respuesta`; vuelve el texto, las llamadas con lo
@@ -81,11 +80,35 @@ PREGUNTAS = ("Sos el interprete de una tienda online de tecnologia de Argentina.
              "Del ULTIMO mensaje del cliente, contesta si o no a cada pregunta:\n"
              + "\n".join(f"{k}: {v}" for k, v in BANDERAS.items()))
 
+# LAS GUIAS: procedimientos que el codigo suma a la correccion SOLO cuando la
+# pregunta de si o no los detecto. Medido el 30-sep: los doce dificiles pasan
+# de 24 a 33 de 36 sin tocar los de control, y el mensaje simple no los paga.
+GUIAS = {
+    "condicional": "GUIA · CONDICIONES. 1. Separa la condicion —lo que hay que averiguar— de la accion —lo que se hace "
+                   "segun el resultado—. 2. La condicion es una pieza del tipo que la averigua: producto para stock, "
+                   "color o precio; compatibilidad; verificar. 3. La accion es otra pieza —comprar, buscar, producto— "
+                   "con depende_de apuntando a la condicion. 4. \"Dame el que cumpla X\" entre varios: una pieza que "
+                   "averigua X de cada uno y una comprar que depende de ella. 5. Una condicion sobre el total de una "
+                   "cuenta (\"si pasa de\") va en las condiciones de esa cuenta.",
+    "pide_total": "GUIA · CUENTA. Una pieza cuenta con TODOS los productos elegidos, de este mensaje y de la charla, "
+                  "cada uno con su cantidad y color. El destino si lo nombro ahora o antes. Si ademas pide mandarlo, "
+                  "tambien una pieza envio.",
+    "referencia_ambigua": "GUIA · REFERENCIAS. 1. Lista los productos que nombro el bot en su ultimo mensaje, en orden. "
+                          "2. \"El primero\", \"el segundo\" es por posicion; \"el otro\" es el que NO eligio o "
+                          "descarto; \"ese\" es el ultimo nombrado. 3. Si hay mas de uno posible y nada decide cual, "
+                          "tipo repreguntar.",
+    "afirma_algo": "GUIA · AFIRMACIONES. Ademas de lo que pregunta, una pieza verificar con lo que el cliente da por "
+                   "cierto: si es de un producto, con el nombre del producto; si es de la tienda, con el tema.",
+    "falta_dato_cliente": "GUIA · DATO QUE FALTA. Pone el tipo de lo que pide —compatibilidad, buscar— y en \"falta\" "
+                          "el dato del cliente que hace falta. No inventes su equipo.",
+}
+
 REDACTOR = """Sos el vendedor de {negocio}, una tienda online de tecnologia de Argentina. Hablas en espanol argentino, con voseo, corto y claro, sin repetir.
 Te paso el ultimo mensaje del cliente y los HECHOS que consulto el sistema para cada parte.
 1. Contesta TODAS las partes del mensaje, en orden.
 2. Cada dato de la tienda —producto, precio, stock, envio, politica, compatibilidad— sale SOLO de los HECHOS. Lo que no esta en los HECHOS no lo sabes, aunque lo conozcas de antes: deci que no figura. Nunca escribas un monto que no este en los HECHOS o en la charla, y no sumes ni calcules vos: si falta un total, no lo des.
-3. Si un hecho dice ambiguo, falta_elegir o pregunta_al_cliente, hace UNA pregunta corta y contesta igual las demas partes. Si no existe, decilo y ofrece lo que si hay en los HECHOS. Las filas que trae un resultado son las que hay; una nota_interna no es un dato del producto y no se la digas al cliente.
+3. Si un hecho dice ambiguo, falta_elegir o pregunta_al_cliente, hace UNA pregunta corta y contesta igual las demas partes. Si no existe, decilo y ofrece lo que si hay en los HECHOS. Las filas que trae un resultado son las que hay; una nota_interna no es un dato del producto y no se la digas al cliente. Si un resultado dice no_se_pudo_filtrar_por, ese dato no figura en la ficha: decilo asi y mostra lo que hay; nunca digas que no hay productos con ese dato.
+9. No escribas codigos internos de producto: nombralos por su nombre.
 4. Si una parte dependia de otra, decidi con lo que dicen los HECHOS y explicalo en una linea.
 5. Si el cliente da algo por cierto y los HECHOS dicen otra cosa, corregilo con amabilidad.
 6. Si hay una cuenta, copia su detalle tal cual, renglon por renglon: cada producto, el envio, cada parte del reparto y el total.
@@ -232,6 +255,7 @@ def _orden(piezas: list) -> list:
 
 _ID = re.compile(r"\b([A-Z]{3}\d{4})\b")
 _NO_ES_DATO = ("no_aplicado", "valores_en_el_rubro", "cuantos_habia", "rubros_posibles")
+_ID_ENTRE_PARENTESIS = re.compile(r"\s*\((?:ID:?\s*)?[A-Z]{3}\d{4}\)")
 _NOTAS = ("aviso", "nota")
 _GENERICAS = {"mouse", "teclado", "auriculares", "auricular", "monitor", "notebook", "webcam", "parlante", "silla",
               "el", "la", "de", "los", "las", "un", "una", "en", "con"}
@@ -289,6 +313,27 @@ def _destino(pz: dict, piezas: list, mensaje: str, historial: list, memoria: str
     return m.group(1).strip() if m else ""
 
 
+def _elegidos(items: list, llamadas: list, memoria: str, tienda_id: str) -> list:
+    """LA CUENTA SUMA LO QUE EL CLIENTE ELIGIO, NO LO QUE EL BOT MOSTRO (30-sep,
+    M10): ante "cuanto es todo" el interprete metia los doce productos de la
+    lista. Elegido es lo que el cliente nombro, lo reservado y lo que ya estaba
+    en el pedido. Si el filtro deja la cuenta vacia, queda como vino."""
+    from app.storage.firestore_client import get_product_by_id
+    dijo = A._n(CLIENTE_DIJO.get())
+    reservados = {str((x.get("vuelve") or {}).get("id")) for x in llamadas if x.get("herramienta") == "reservar"}
+    p = re.search(r"EN EL PEDIDO, tal como se conto: (.+)", memoria or "")
+    pedido = set(_ID.findall(p.group(1))) if p else set()
+
+    def nombrado(pid: str) -> bool:
+        prod = get_product_by_id(pid, tienda_id=tienda_id) or {}
+        todas = [w for w in re.findall(r"[a-z0-9]+", A._n(prod.get("modelo") or "")) if len(w) > 1]
+        claves = [w for w in todas if any(c.isdigit() for c in w)] or todas  # "G203 Lightsync": alcanza g203
+        return bool(claves) and all(w in dijo for w in claves)
+    quedan = [i for i in items if not _ID.fullmatch(str(i.get("producto"))) or str(i["producto"]) in reservados
+              or str(i["producto"]) in pedido or nombrado(str(i["producto"]))]
+    return quedan or items
+
+
 def _reparto(rep):
     if not rep:
         return None
@@ -298,12 +343,25 @@ def _reparto(rep):
     return rep or None
 
 
+def _sin_ids(texto: str, tienda_id: str) -> str:
+    """El id entre parentesis se borra; el id suelto se cambia por el nombre."""
+    from app.storage.firestore_client import get_product_by_id
+    texto = _ID_ENTRE_PARENTESIS.sub("", texto or "")
+    return _ID.sub(lambda m: (get_product_by_id(m.group(1), tienda_id=tienda_id) or {}).get("nombre") or m.group(1),
+                   texto)
+
+
 def _para_redactar(out: dict) -> dict:
     """Lo que devolvio la herramienta, sin lo que es para corregir la consulta:
     el redactor lo leia como dato del producto."""
     if not isinstance(out, dict):
         return out
     limpio = {k: v for k, v in out.items() if k not in _NO_ES_DATO and k not in _NOTAS}
+    # LA CONDICION QUE NO SE PUDO FILTRAR SE DICE COMO TAL (30-sep, J02): sin
+    # esto el redactor veia filas sin el dato y contestaba "no tenemos".
+    sin_filtro = [str(x.get("campo")) for x in out.get("no_aplicado") or [] if isinstance(x, dict) and x.get("campo")]
+    if sin_filtro:
+        limpio["no_se_pudo_filtrar_por"] = sin_filtro
     notas = {k: out[k] for k in _NOTAS if out.get(k)}
     if notas:
         limpio["nota_interna"] = notas
@@ -341,6 +399,8 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
                 # UNA CUENTA CORRE SI EL CLIENTE PIDE UN TOTAL O UN REPARTO, o si
                 # todo lo que suma quedo certificado: con pedido y destino, el
                 # total lo tiene que dar la cuenta, no el redactor sumando.
+                if len(args["items"]) > 1:
+                    args["items"] = _elegidos(args["items"], llamadas, ctx["memoria"], tienda_id)
                 certificada = bool(args["items"]) and all(_ID.fullmatch(str(i["producto"])) for i in args["items"])
                 if not (ctx["pide_total"] or args.get("reparto_pago") or certificada):
                     h = None
@@ -425,6 +485,8 @@ def _revision(piezas: list, banderas: dict, llamadas: list, mensaje: str, histor
             and not any(p.get("tipo") == "cuenta" and p.get("condiciones") for p in piezas):
         partes.append("pone una condicion y ninguna pieza depende de otra: separa la condicion y la accion "
                       "con depende_de")
+    if banderas.get("afirma_algo") and "verificar" not in tipos:
+        partes.append("da algo por cierto y ninguna pieza lo verifica")
     f = faltantes(mensaje, llamadas, historial, tienda_id)
     if f.get("destinos"):
         partes.append("nombra estos destinos y ninguna pieza los cotiza: " + ", ".join(f["destinos"]))
@@ -477,7 +539,8 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     revision = _revision(piezas, banderas, llamadas, mensaje, historial, tienda_id)
     if revision:
         try:
-            t2 = await _pedir(cli, [{"role": "system", "content": sis_i}] + charla
+            guias = "\n".join(GUIAS[k] for k, v in banderas.items() if v and k in GUIAS)
+            t2 = await _pedir(cli, [{"role": "system", "content": sis_i + ("\n" + guias if guias else "")}] + charla
                               + [{"role": "assistant", "content": t_piezas}, {"role": "user", "content": revision}],
                               TEMP_INTERPRETAR, esq, trace_id, uso, "revision")
             nuevas = [p for p in (_json(t2).get("piezas") or []) if isinstance(p, dict)]
@@ -507,9 +570,15 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
                              + [{"role": "user", "content": pedido}], TEMP_REDACTAR, None, trace_id, uso, "redactar")
     except Exception as e:  # noqa: BLE001 — sin texto el turno cae al aviso honesto
         log.warning("tablero_modelo_error", trace_id=trace_id, paso="redactar", error=str(e)[:150])
-    log.info("tablero_turno", trace_id=trace_id, piezas=[p.get("tipo") for p in piezas],
-             banderas=[k for k, v in banderas.items() if v], revision=bool(revision),
+    # LOS IDS INTERNOS NO LLEGAN AL CLIENTE: lo borra el codigo, no se le pide.
+    texto = _sin_ids(texto, tienda_id)
+    # EL MISMO EVENTO QUE DEJABA EL AGENTE, con los mismos campos: el informe
+    # del issue 31 y `leer_interpretacion` leen `agente_turno` y sus `pedidos`.
+    log.info("agente_turno", trace_id=trace_id, vueltas=len(uso), llamadas=len(llamadas),
+             herramientas=[x["herramienta"] for x in llamadas],
              pedidos=[f"{x['herramienta']} {json.dumps(x['args'], ensure_ascii=False)}"[:240] for x in llamadas][:10],
-             llamadas_modelo=len(uso), tokens=sum(x["entrada"] for x in uso),
+             piezas=[p.get("tipo") for p in piezas], banderas=[k for k, v in banderas.items() if v],
+             revision=bool(revision), largo=len(texto),
+             tokens=sum(x["entrada"] for x in uso), cache=sum(x["cache"] for x in uso),
              salida=sum(x["salida"] for x in uso), ms=int((time.time() - t0) * 1000))
     return {"texto": texto, "llamadas": llamadas, "uso": uso, "hechos": hechos}

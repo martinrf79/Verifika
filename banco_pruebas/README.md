@@ -1,7 +1,7 @@
 # EL BANCO — cómo se mide Verifika
 
 Si un documento viejo dice otra cosa, manda este. El camino vivo es el
-agente: `respuesta.procesar_turno` sobre `agente.turno`.
+tablero: `respuesta.procesar_turno` sobre `tablero.turno` (FICHA 65, sección 17).
 
 **Ninguna sesión declara verde sin un número de una charla real**, y el
 número se reporta con su control al lado.
@@ -17,7 +17,7 @@ número se reporta con su control al lado.
 | Un turno por dentro | `python3 banco_pruebas/sonda_turno.py` |
 | Cuánto va a costar una tanda, y cuánto costaron | `python3 -m banco_pruebas.costo estimar` · `costo real` |
 | Probar al modelo directo, con tope en dólares | `python3 -m banco_pruebas.laboratorio escalera --item rubro` |
-| El tablero por el clon entero | `python3 -m banco_pruebas.sonda_charlas --vara todas --camino tablero` |
+| Las 58 y las de memoria por el clon | `python3 -m banco_pruebas.sonda_charlas --vara todas --etiqueta algo_1` |
 | Puntas sueltas del cableado | `python3 banco_pruebas/censo_cableado.py` |
 
 Toda mejora pasa por `puerta.py` (ficha 63): no se toca la vara mientras
@@ -63,9 +63,8 @@ trae también los huecos y las charlas de memoria. Reemplaza a la sala.
 medido en las corridas guardadas, y suma lo que costó cada una. Los precios
 viven en `precios_llm.json`, con fecha y fuente.
 
-**El tablero** (`reserva/tablero.py`) corre por el clon con `--camino tablero`:
-el webhook, la memoria, la guarda de plata y el cierre son los de producción.
-`--vara todas` suma las charlas de memoria a las 58.
+**El tablero** (`app/core/tablero.py`) es el turno vivo desde el 30-sep: el
+clon lo corre solo. `--vara todas` suma las charlas de memoria a las 58.
 
 Lo que se lee de producción, aparte: `leer_interpretacion.py` y
 `produccion.py`.

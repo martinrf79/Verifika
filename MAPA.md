@@ -12,7 +12,7 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 
 **Arranque corto:**
 
-1. El camino vivo es `orchestrator` → `respuesta.procesar_turno` → `agente.turno`.
+1. El camino vivo es `orchestrator` → `respuesta.procesar_turno` → `tablero.turno`, que usa las herramientas de `agente`.
    El motor busca. Lo viejo está en `archivo/` y NO se reenchufa.
 2. Se leen `FICHA_65` y `FICHA_63` enteras antes de tocar una mejora. La 64 es la medición de antes. El agente vive en la 62.
 3. No se crea una función sin mirar si ya existe. La identidad la certifica

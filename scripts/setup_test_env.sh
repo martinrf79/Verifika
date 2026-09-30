@@ -128,7 +128,7 @@ que son los que hacen algo en vez de pedirlo:
   banco_pruebas/censo_cableado.py        puntas sueltas del cableado
   banco_pruebas/sonda_turno.py           un turno por dentro
 
-Camino vivo: orchestrator -> respuesta.procesar_turno -> agente.turno
+Camino vivo: orchestrator -> respuesta.procesar_turno -> tablero.turno
 Reglas: CLAUDE.md. Donde esta cada cosa: MAPA.md. Orden abierta: FICHA_63.
 =============================================================================
 REGLAS

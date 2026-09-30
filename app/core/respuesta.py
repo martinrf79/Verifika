@@ -8,9 +8,10 @@ esquema grande; ahora busca solo con herramientas chicas. Todo eso vive en
 `app/core/agente.py`. No conviven: el interprete se borro en este commit.
 
 EL FLUJO, entero:
-  1. AGENTE   `agente.turno`: el modelo lee la charla y la memoria, llama las
-              herramientas que necesita —buscar, producto, envio, politica,
-              compatibilidad, cuenta, reservar—, lee lo que vuelve y contesta.
+  1. TABLERO  `tablero.turno`, desde el 30-sep: el modelo parte el mensaje en
+              piezas, el codigo corre las herramientas del agente —buscar,
+              producto, envio, politica, compatibilidad, cuenta, reservar— y
+              un redactor contesta solo con lo que volvio. FICHA 65.
   2. NUMEROS  la guarda de procedencia de siempre: si quedo una cifra de plata
               que ninguna herramienta devolvio, la respuesta no sale.
   3. CIERRE   si el cliente decidio comprar, se toma el pedido y se manda el
@@ -379,8 +380,8 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     Misma firma que el turno viejo: el orchestrator no cambia."""
     t0 = time.time()
     etapas: dict = {}
-    from app.core import agente
     from app.core import guardas_salida as gs
+    from app.core import tablero
     from app.core.contexto_turno import set_current_tienda
 
     set_current_tienda(tienda_id)
@@ -391,12 +392,12 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     # ── 1. AGENTE ───────────────────────────────────────────────────────
     t = time.time()
     memoria = _memoria_texto(conv)
-    r = await agente.turno([{"role": m.get("role"), "content": m.get("content") or ""}
+    r = await tablero.turno([{"role": m.get("role"), "content": m.get("content") or ""}
                             for m in history if m.get("role") in ("user", "assistant")],
                            raw_message, tienda_id, trace_id=trace_id, memoria=memoria)
     llamadas = r.get("llamadas") or []
     fichas, envios, cuenta = _lo_que_volvio(llamadas)
-    etapas["agente"] = int((time.time() - t) * 1000)
+    etapas["turno"] = int((time.time() - t) * 1000)
     if not llamadas:
         # Se CUENTA cada turno que contesto sin consultar: no se bloquea —la
         # guarda de procedencia ya impide que salga una cifra que no vio—,

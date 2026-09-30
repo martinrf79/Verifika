@@ -512,9 +512,11 @@ def test_lo_fijo_va_adelante_y_lo_que_cambia_atras(modelo):
 # ── EL TURNO ENTERO ──────────────────────────────────────────────────────────
 
 def _agente_fijo(monkeypatch, texto, llamadas):
+    # Desde el 30-sep `respuesta` llama al tablero: el turno fijo va ahi.
     async def falso(historial, mensaje, tienda_id, trace_id="", memoria=""):
         return {"texto": texto, "llamadas": llamadas, "uso": []}
-    monkeypatch.setattr(A, "turno", falso)
+    from app.core import tablero
+    monkeypatch.setattr(tablero, "turno", falso)
 
 
 def _procesar(uid, msg):

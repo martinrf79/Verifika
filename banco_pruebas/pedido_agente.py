@@ -76,30 +76,30 @@ def llamadas_del_log(pedidos: list) -> list:
 
 @contextlib.contextmanager
 def espiar():
-    """Junta las llamadas de cada `agente.turno` que corre adentro, tambien
-    por el clon entero. `respuesta` llama `agente.turno` por el modulo, asi
-    que alcanza con envolverlo ahi."""
-    from app.core import agente
+    """Junta las llamadas de cada turno que corre adentro, tambien por el clon
+    entero. `respuesta` llama `tablero.turno` por el modulo desde el 30-sep,
+    asi que alcanza con envolverlo ahi."""
+    from app.core import tablero
 
     class _Visto(list):
-        """Las llamadas, y en `uso` los tokens de cada vuelta: sin eso el
-        clon no podia decir cuanto costo un turno (28-sep)."""
+        """Las llamadas, y en `uso` los tokens de cada llamada al modelo: sin
+        eso el clon no podia decir cuanto costo un turno (28-sep)."""
         uso: list
 
     visto = _Visto()
     visto.uso = []
-    orig = agente.turno
+    orig = tablero.turno
 
     async def envuelto(*a, **k):
         r = await orig(*a, **k)
         visto.extend(r.get("llamadas") or [])
         visto.uso.extend(r.get("uso") or [])
         return r
-    agente.turno = envuelto
+    tablero.turno = envuelto
     try:
         yield visto
     finally:
-        agente.turno = orig
+        tablero.turno = orig
 
 
 # ══ LO QUE LA TIENDA ENTIENDE DE CADA LLAMADA ═══════════════════════════════

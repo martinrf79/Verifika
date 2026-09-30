@@ -1,7 +1,7 @@
 """ORCHESTRATOR — despachador minimo.
 
 Antes del turno: anti-jailbreak y la palabra de reset. El turno entero lo
-hace `respuesta.procesar_turno` sobre `agente.turno`. La tienda la resuelve
+hace `respuesta.procesar_turno` sobre `tablero.turno`. La tienda la resuelve
 el backend, nunca el modelo.
 """
 import uuid

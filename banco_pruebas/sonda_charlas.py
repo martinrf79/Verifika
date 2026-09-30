@@ -18,7 +18,7 @@ base. El README de esta carpeta dice el procedimiento entero.
   python3 -m banco_pruebas.sonda_charlas --etiqueta v58_algo_1       las 68 por el clon
   python3 -m banco_pruebas.sonda_charlas C27 C46 --etiqueta prueba   solo esas
   python3 -m banco_pruebas.sonda_charlas --informe --etiqueta v58_algo_1
-  opciones: --camino agente (agente.turno sin el webhook)  --hilos N (solo por el agente)
+  opciones: --vara todas (las 58 y las de memoria)  --camino agente (el turno viejo, sin el webhook)
 
 Hasta el 28-sep corria tambien las varas viejas, un camino simulado y uno
 sobre `motor.esquema`. Salieron con los bancos viejos de interpretacion, que
@@ -286,13 +286,8 @@ def main():
     C.preparar_entorno()  # ANTES de importar app.config: si no, la clave y la tienda quedan mal
     C.instalar()
     _, modelo = _cliente()
-    if camino == "tablero":
-        # EL TABLERO POR EL CLON ENTERO: el webhook, la memoria, la guarda de
-        # plata y el cierre son los de produccion; solo cambia el turno.
-        from app.core import agente
-        from reserva import tablero
-        agente.turno = tablero.turno
-        modelo += " · tablero"
+    if camino == "tablero":  # desde el 30-sep el clon YA corre el tablero: es el turno vivo
+        camino = "clon"
     hechas = set()
     try:
         hechas = {json.loads(x)["id"] for x in open(SALIDA, encoding="utf-8") if json.loads(x)["etiqueta"] == etiqueta}
