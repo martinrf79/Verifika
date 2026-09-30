@@ -15,7 +15,9 @@ número se reporta con su control al lado.
 | Una mejora contra la base | `python3 -m banco_pruebas.puerta` |
 | La vara de las 58 | `python3 banco_pruebas/vara_58.py` |
 | Un turno por dentro | `python3 banco_pruebas/sonda_turno.py` |
-| Explorar la traducción, barato y con la gratis | `python3 -m banco_pruebas.sala --etiqueta prueba` |
+| Cuánto va a costar una tanda, y cuánto costaron | `python3 -m banco_pruebas.costo estimar` · `costo real` |
+| Probar al modelo directo, con tope en dólares | `python3 -m banco_pruebas.laboratorio escalera --item rubro` |
+| El tablero por el clon entero | `python3 -m banco_pruebas.sonda_charlas --vara todas --camino tablero` |
 | Puntas sueltas del cableado | `python3 banco_pruebas/censo_cableado.py` |
 
 Toda mejora pasa por `puerta.py` (ficha 63): no se toca la vara mientras
@@ -50,16 +52,29 @@ paralelo como procesos aparte. Con la clave gratis se traba por el límite
 por minuto; la paga necesita la orden de Martín en la sesión y la marca
 `MARTIN_AUTORIZO_LA_PAGA=<fecha>` en el comando, lo exige el candado.
 
-**La sala** (`sala.py`) es la misma vara, las mismas piezas y el mismo
-calificador, pero corre solo el último turno de cada charla —los anteriores
-salen de una corrida guardada—, sin el webhook, con la clave gratis, una
-repetición y un tope de tokens. Sirve para explorar; lo que entra se decide
-igual por el clon y la puerta.
+**El laboratorio** (`laboratorio.py`, 30-sep) le habla al modelo directo, sin
+el bot alrededor: cada llamada anota tokens de entrada y salida y lo que
+cuesta, y corta solo en un tope de dólares. `escalera` mide cuánta información
+de la fuente necesita cada ítem de `lista_finita.json` —rubro, tema, dato,
+acción—: cada escalón una vez y el mejor cinco. La lista se edita a mano y
+trae también los huecos y las charlas de memoria. Reemplaza a la sala.
+
+**La calculadora** (`costo.py`) estima una tanda antes de correrla con lo
+medido en las corridas guardadas, y suma lo que costó cada una. Los precios
+viven en `precios_llm.json`, con fecha y fuente.
+
+**El tablero** (`reserva/tablero.py`) corre por el clon con `--camino tablero`:
+el webhook, la memoria, la guarda de plata y el cierre son los de producción.
+`--vara todas` suma las charlas de memoria a las 58.
 
 Lo que se lee de producción, aparte: `leer_interpretacion.py` y
 `produccion.py`.
 
 ## Lo que ya no se corre
+
+El 30-sep salieron a `archivo/bancos_30sep/` la sala, `censo_puntos`,
+`censo_oferta`, `con_modelo_perfecto`, `peso_de_la_cadena`,
+`sin_camino_offline` y `tanda_viva`: nadie los importaba ni los corría.
 
 `las_40.py`, `mapa.py`, `oro.py` y los tests de casetes se apagaron. Están
 en `archivo/`. No se reenchufan.

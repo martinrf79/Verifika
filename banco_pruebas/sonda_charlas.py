@@ -40,6 +40,11 @@ MODELOS = sorted({(_n(p["modelo"]), p["categoria"]) for p in BA.PRODUCTOS if len
 
 
 def charlas(vara="58"):
+    """La vara de las 58; con "memoria", las charlas largas de `lista_finita.json`."""
+    if vara == "memoria":
+        return json.load(open("banco_pruebas/lista_finita.json", encoding="utf-8"))["memoria"]["charlas"]
+    if vara == "todas":
+        return charlas("58") + charlas("memoria")
     return json.load(open("banco_pruebas/vara_58.json", encoding="utf-8"))["charlas"]
 
 
@@ -94,6 +99,14 @@ def nota_casilla(k, llamadas, texto, respuestas):
             return None
         barato = min(precios, key=precios.get)
         return all(w in _n(texto) for w in barato.split()[:-1]) if " " in barato else barato in _n(texto)
+    if tipo == "n_de":  # "la segunda", "el primero": el de esa posicion de lo mostrado
+        mostrados = _mostrados(respuestas[k["de_turno"] - 1])
+        if len(mostrados) < k["pos"]:
+            return None
+        return all(w in _n(texto) for w in mostrados[k["pos"] - 1].split()[:2])
+    if tipo == "tope_plata":  # ningun monto de la respuesta pasa el tope
+        montos = [int(x) for x in re.findall(r"\$\s?(\d{4,})", _plata(texto))]
+        return bool(montos) and max(montos) <= k["monto"]
     if tipo == "pregunta":  # repregunta: con signo, o pidiendo el dato sin signo
         pide = "?" in texto or re.search(r"necesito que|decime|pasame|indicame|contame|me confirmas", _n(texto))
         return bool(pide) and not any(n == "comprar" for n, _ in llamadas)
@@ -155,8 +168,8 @@ def correr_agente(charla):
 
 def _recalificar(f):
     """La vara de las 58 mira solo la respuesta: se recalifica desde lo guardado."""
-    vara = {c["id"]: c for c in charlas("58")}
-    if f["id"] not in vara or not f["etiqueta"].startswith("v58"):
+    vara = {c["id"]: c for c in charlas("todas")}
+    if f["id"] not in vara or not f["etiqueta"].startswith(("v58", "tab")):
         return f
     respuestas = [t["respuesta"] for t in f["turnos"]]
     for t, tv in zip(f["turnos"], vara[f["id"]]["turnos"]):
@@ -259,10 +272,10 @@ def main():
             return v
         return defecto
     hilos, etiqueta = opt("--hilos", 1, int), opt("--etiqueta", "base", str)
-    opt("--vara", "58", str)  # la unica vara; se acepta para no romper los comandos viejos
+    vara = opt("--vara", "58", str)
     camino = opt("--camino", "clon", str)
-    if camino not in ("clon", "agente"):
-        sys.exit(f"camino {camino}: solo hay clon y agente")
+    if camino not in ("clon", "agente", "tablero"):
+        sys.exit(f"camino {camino}: solo hay clon, agente y tablero")
     if etiqueta == "base":
         etiqueta = f"v58_{camino}"
     if "--informe" in a:
@@ -273,20 +286,27 @@ def main():
     C.preparar_entorno()  # ANTES de importar app.config: si no, la clave y la tienda quedan mal
     C.instalar()
     _, modelo = _cliente()
+    if camino == "tablero":
+        # EL TABLERO POR EL CLON ENTERO: el webhook, la memoria, la guarda de
+        # plata y el cierre son los de produccion; solo cambia el turno.
+        from app.core import agente
+        from reserva import tablero
+        agente.turno = tablero.turno
+        modelo += " · tablero"
     hechas = set()
     try:
         hechas = {json.loads(x)["id"] for x in open(SALIDA, encoding="utf-8") if json.loads(x)["etiqueta"] == etiqueta}
     except FileNotFoundError:
         pass
-    if camino == "clon":
+    if camino in ("clon", "tablero"):
         hilos = 1  # el conector del clon es uno solo: los turnos van de a uno
-    cola = [c for c in charlas() if (not pedidas or c["id"] in pedidas) and c["id"] not in hechas]
+    cola = [c for c in charlas(vara) if (not pedidas or c["id"] in pedidas) and c["id"] not in hechas]
     print(f"{modelo} · {len(cola)} charlas · hilos {hilos} · etiqueta {etiqueta}")
     candado = threading.Lock()
 
     def una(c):
         t0 = time.time()
-        turnos = correr_clon(c) if camino == "clon" else correr_agente(c)
+        turnos = correr_agente(c) if camino == "agente" else correr_clon(c)
         with candado:
             with open(SALIDA, "a", encoding="utf-8") as f:
                 f.write(json.dumps({"etiqueta": etiqueta, "modelo": modelo, "id": c["id"], "clase": c.get("clase"),

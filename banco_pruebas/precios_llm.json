@@ -1,0 +1,18 @@
+{
+  "_como": "dolares por millon de tokens. Se actualiza a mano cuando cambia la lista del proveedor; la fecha y la fuente dicen de cuando es cada precio.",
+  "gemini-3.1-flash-lite": {
+    "entrada": 0.25,
+    "cache": 0.025,
+    "salida": 1.50,
+    "fecha": "2026-09-29",
+    "fuente": "openrouter.ai/google/gemini-3.1-flash-lite; el precio de cache es el 10 % de la entrada, supuesto por la regla de Google, no leido"
+  },
+  "deepseek-chat": {
+    "entrada": 0.15,
+    "cache": 0.003,
+    "salida": 0.60,
+    "pico": {"factor": 2, "horas_utc": [[1, 4], [6, 10]], "solo_dias_habiles": true},
+    "fecha": "2026-09-29",
+    "fuente": "DeepSeek-V4.1-Flash, el unico flash que lista /models desde el 10-sep; eesel.ai y apidog.com. La pagina oficial esta bloqueada desde el entorno"
+  }
+}

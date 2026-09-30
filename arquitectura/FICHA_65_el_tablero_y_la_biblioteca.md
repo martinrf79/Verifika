@@ -670,3 +670,80 @@ redacción segura, `revision_segura.patch`, contra el bot en vivo.
 
 **Espera a Martín:** la casilla "no dice redragon" de C46; si las frases nuevas
 —`frases_nuevas_58.json`— entran como segunda vara.
+
+---
+
+## 17. El tablero medido entero — 30-sep
+
+Martín pidió dejar de probar el bot entero para saber qué entiende el modelo,
+y medir antes de gastar. Se armaron tres cosas: `banco_pruebas/costo.py`, la
+calculadora; `banco_pruebas/laboratorio.py`, que le habla al modelo directo
+con un tope en dólares; y `banco_pruebas/lista_finita.json`, la lista editable
+de lo que el cliente puede pedir. La sesión entera costó cerca de un dólar
+con veinte; el 28 y 29-sep se habían ido diez.
+
+### Cuánta información necesita el modelo, por ítem
+
+Cada escalón una vez; el mejor, cinco veces:
+
+- rubro: con los nombres, 41 de 41 siempre; sin nada, 63 %.
+- dato: con los nombres, 17 de 17 siempre; el índice del código solo, 94 %.
+- tema: con los nombres, 24 de 26 siempre. Las dos fallas las cubre servir
+  también los dos temas del índice: 10 de 10.
+- acción: con una línea por acción, 83 %; las reglas largas y los ejemplos
+  no suman.
+
+### Lo que el modelo ve y no arma
+
+Once casos no salían nunca. Cinco preguntas de sí o no —condicional, falta un
+dato del cliente, referencia ambigua, da algo por cierto, pide un total— los
+detectan todos. Preguntándole al propio modelo por sus errores salieron cuatro
+reglas de partir: siete de los once pasan a salir siempre, sin romper los de
+control. Los que quedan los arma el código a partir de las preguntas.
+Temperatura cero y salida forzada con esquema: un poco mejor y menos salida.
+El razonamiento del modelo no conviene: de 5 a 20 veces más lento y caro.
+Un grupo aparte —las 58 dichas de otra forma— confirmó que las reglas no se
+aprendieron los casos: 82 % sin ellas, 91 % con ellas.
+
+### El flujo completo, por el clon
+
+`reserva/tablero.py`: dos llamadas en paralelo —las piezas y las preguntas—,
+el código corre las herramientas del agente, y un redactor que solo ve lo que
+devolvió el código. Misma entrada y salida que `agente.turno`: la memoria, la
+guarda de plata y el cierre son los de producción.
+
+Tres corridas de las 58 y de doce charlas nuevas de memoria:
+
+- las 58: 65, 65 y 64 de 68; el bot en vivo, 62, 61 y 63.
+- memoria: 11, 9 y 11 de 12; el bot en vivo, 9.
+- 2.050 tokens de entrada y 340 de salida por turno; el bot en vivo, 4.160 de
+  entrada. 3,4 segundos por turno contra 2,3.
+- cero respuestas tiradas por la guarda de plata.
+
+Lo que costó llegar ahí y queda como regla: una consulta repetida tiene que
+llevarle su resultado al redactor —sin eso inventó una política—, y la
+identidad se certifica solo si la fila nombra todo lo pedido —el buscador
+devolvía un gabinete para "MX Master 3S"—.
+
+### Lo que falla, y cómo
+
+De las fallas, la mayoría son repreguntas o respuestas incompletas. Errores
+de verdad, tres:
+
+- J02: "todos los auriculares son con cable". El dato de bluetooth está en
+  prosa en el catálogo: es la ingesta de la sección 5, no el tablero.
+- C55, una de tres: sumó un producto de más al resolver "el otro".
+- M12: después del nombre promete contacto y no manda el cobro. Falla igual
+  en el bot en vivo.
+
+Y un defecto de forma: el redactor a veces le muestra al cliente el id
+interno del producto.
+
+### Antes de producción
+
+1. Que el redactor no escriba ids; que una afirmación de "no tenemos" solo
+   salga si la búsqueda volvió vacía sin condiciones en prosa.
+2. La ingesta del bluetooth y el origen a campos, sección 5.
+3. Tres corridas más por el clon con esos arreglos.
+4. El cambio en `respuesta.procesar_turno`, en su propio commit, y probarlo
+   por WhatsApp leyendo el issue 31. Si sale peor, se revierte con git.
