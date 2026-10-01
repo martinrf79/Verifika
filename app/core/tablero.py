@@ -66,7 +66,8 @@ REGLAS DE PARTIR:
 3. En cuenta, inclui en items lo ya elegido en la charla y el destino si lo pide.
 4. Si para contestar falta un dato del cliente, pone el tipo de lo que pide y el dato en "falta".
 5. "Ese", "el otro", "el segundo" y lo que el cliente dijo antes estan en la charla y en la memoria: resolvelos con el nombre del producto. Una condicion que el cliente puso antes sigue valiendo hasta que la cambie, y el alcance de una busqueda sale de lo que busco el cliente, no de lo que mostro el bot.
-6. producto es el nombre del producto como lo nombro el cliente o la charla, con el color o la variante si los dijo. Nunca inventes precios ni stock."""
+6. producto es el nombre del producto como lo nombro el cliente o la charla, con el color o la variante si los dijo. Nunca inventes precios ni stock.
+7. Si pide algo que la tienda no vende, el rubro es "{no_lo_vende}"."""
 
 BANDERAS = {
     "condicional": "el mensaje pone una condicion: si pasa una cosa, hacer otra, o elegir segun un dato",
@@ -119,6 +120,12 @@ Te paso el ultimo mensaje del cliente y los HECHOS que consulto el sistema para 
 
 # ══ EL ESQUEMA DE SALIDA: el vocabulario de la tienda como listas cerradas ═
 
+# EL RUBRO QUE LA TIENDA NO VENDE TAMBIEN ES UNA RESPUESTA (1-oct, K12). Con la
+# lista cerrada el interprete tenia que elegir un rubro de la tienda, y
+# "celulares" salia como notebook: el cliente leia notebooks Samsung que no
+# pidio. `not_found` es un resultado valido, regla 10.0.
+NO_LO_VENDE = "no lo vende la tienda"
+
 def _vocabulario(tienda_id: str) -> tuple:
     from app.core.filtros_catalogo import campos_filtrables
     idx = A.indice(tienda_id)
@@ -133,7 +140,7 @@ def esquema_piezas(tienda_id: str) -> dict:
         "tipo": {"type": "string", "enum": list(ACCIONES)},
         "texto": S,
         "producto": S,
-        "rubro": {"type": "string", "enum": rubros},
+        "rubro": {"type": "string", "enum": rubros + [NO_LO_VENDE]},
         "cantidad": {"type": "integer", "description": "cuantos pidio el cliente de este producto o rubro"},
         "condiciones": {"type": "array", "items": {"type": "object", "properties": {
             "campo": {"type": "string", "enum": campos},
@@ -222,6 +229,8 @@ def a_herramienta(pz: dict) -> tuple:
     t = pz.get("tipo")
     if t == "producto" or (t == "verificar" and pz.get("producto")):
         return "producto", {"nombre": _nombre(pz)}
+    if t == "buscar" and pz.get("rubro") == NO_LO_VENDE:
+        return None, None
     if t == "buscar":
         return "buscar", {"que": pz.get("producto") or "", "rubro": pz.get("rubro") or "",
                           "condiciones": pz.get("condiciones") or [], "orden": pz.get("orden") or None}
@@ -684,7 +693,7 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
     """Corre cada pieza con su herramienta. Vuelve los HECHOS, uno por pieza."""
     piezas = _normalizar(_envios_juntos(piezas), tienda_id)
     hechos = []
-    ctx["busquedas"], ctx["usados"] = [], {}
+    ctx["busquedas"], ctx["usados"], ctx["no_vende"] = [], {}, []
     articulos = _conservar(piezas, tienda_id, ctx.get("mensaje") or "")
     if articulos:
         hechos.append({"parte": "los articulos pedidos contra lo repartido por destino", "tipo": "articulos",
@@ -731,6 +740,9 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
             d = _destino(pz, piezas, ctx["mensaje"], ctx["historial"], ctx["memoria"])
             args["destinos"] = [d] if d else []
         hecho = {"parte": pz.get("texto"), "tipo": pz.get("tipo")}
+        if pz.get("tipo") == "buscar" and pz.get("rubro") == NO_LO_VENDE:
+            hecho["resultado"] = {"veredicto": "no_existe", "motivo": "la tienda no vende ese rubro"}
+            ctx["no_vende"].append((pz, {}))
         if pz.get("depende_de"):
             hecho["depende_de_la_parte"] = pz["depende_de"]
         # LO QUE EL MENSAJE YA DICE NO FALTA (1-oct): el interprete pone el
@@ -861,9 +873,11 @@ def busqueda_vigente(busquedas: list) -> str:
     Logitech". Esto sobrevive al turno y el interprete lo lee en la memoria."""
     renglones = []
     for pz, _ in busquedas or []:
+        if not isinstance(pz, dict):
+            continue
         partes = [pz.get("rubro") or "toda la tienda"]
-        if pz.get("producto"):
-            partes.append(f"que {pz['producto']}")
+        if pz.get("producto") or pz.get("rubro") == NO_LO_VENDE:
+            partes.append(f"que {pz.get('producto') or pz.get('texto')}")
         partes += [f"{c.get('campo')} {c.get('operador')} {c.get('valor')}" for c in pz.get("condiciones") or []
                    if isinstance(c, dict)]
         o = pz.get("orden") or {}
@@ -893,7 +907,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     t0 = time.time()
     uso, llamadas = [], []
     charla = _charla(historial, memoria, mensaje)
-    sis_i = INTERPRETE.format(acciones="; ".join(f"{k}: {v}" for k, v in ACCIONES.items()))
+    sis_i = INTERPRETE.format(acciones="; ".join(f"{k}: {v}" for k, v in ACCIONES.items()), no_lo_vende=NO_LO_VENDE)
     esq = _formato("piezas", esquema_piezas(tienda_id))
     try:
         t_piezas, t_banderas = await asyncio.gather(
@@ -956,4 +970,4 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
              tokens=sum(x["entrada"] for x in uso), cache=sum(x["cache"] for x in uso),
              salida=sum(x["salida"] for x in uso), ms=int((time.time() - t0) * 1000))
     return {"texto": texto, "llamadas": llamadas, "uso": uso, "hechos": hechos,
-            "busqueda": busqueda_vigente(ctx.get("busquedas"))}
+            "busqueda": busqueda_vigente((ctx.get("busquedas") or []) + (ctx.get("no_vende") or []))}

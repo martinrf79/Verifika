@@ -497,7 +497,8 @@ def referencia(reps: int, modelo: str, etiqueta: str, tope: float, hilos: int, i
     from app.core import tablero as TB
     cli, nombre = cliente(modelo)
     casos = [c for c in json.load(open(LISTA, encoding="utf-8"))["referencia"]["casos"] if not ids or c["id"] in ids]
-    sis = TB.INTERPRETE.format(acciones="; ".join(f"{k}: {v}" for k, v in TB.ACCIONES.items()))
+    sis = TB.INTERPRETE.format(acciones="; ".join(f"{k}: {v}" for k, v in TB.ACCIONES.items()),
+                               no_lo_vende=TB.NO_LO_VENDE)
     esq = {"type": "json_schema", "json_schema": {"name": "piezas", "schema": TB.esquema_piezas(T)}}
     cola = [(c, rep) for rep in range(1, reps + 1) for c in casos]
     gastado = [0.0]

@@ -287,3 +287,14 @@ def test_la_pieza_repetida_de_un_rubro_no_duplica_lo_pedido():
         {"n": 4, "tipo": "cuenta", "items": [{"producto": "auriculares", "cantidad": 1}]},
         {"n": 5, "tipo": "cuenta", "items": [{"producto": "auriculares", "cantidad": 1}]}]
     assert T._conservar(piezas, TIENDA, "dos auriculares") == {}
+
+
+def test_un_rubro_que_la_tienda_no_vende_es_no_existe_y_no_se_busca():
+    """K12: con la lista cerrada, "celulares" salia como notebook."""
+    pz = [{"n": 1, "tipo": "buscar", "texto": "tenes celulares samsung", "rubro": T.NO_LO_VENDE}]
+    ctx = {"mensaje": "tenes celulares samsung?", "historial": [], "memoria": "", "pide_total": False}
+    llamadas = []
+    hechos = T.correr_piezas(pz, TIENDA, llamadas, 1, ctx)
+    assert llamadas == [] and hechos[0]["resultado"]["veredicto"] == "no_existe"
+    assert T.NO_LO_VENDE in T.esquema_piezas(TIENDA)["properties"]["piezas"]["items"]["properties"]["rubro"]["enum"]
+    assert "celulares" in T.busqueda_vigente(ctx["no_vende"])
