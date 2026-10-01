@@ -27,6 +27,14 @@ EL TOPE corta solo: antes de cada llamada suma lo gastado y, si pasa
 `escalera` mide cuanta informacion de la fuente necesita el modelo para cada
 item de `lista_finita.json`, y cuantos tokens cuesta cada escalon.
 
+  python3 -m banco_pruebas.laboratorio referencia --reps 3 --etiqueta ref_1
+  python3 -m banco_pruebas.laboratorio referencia --etiqueta ref_1 --informe
+
+`referencia` mide COMO NOMBRA EL CLIENTE AL ARTICULO —por modelo, precio,
+caracteristica, origen, jerga o memoria, solo o dentro de un pedido compuesto—
+con el interprete del tablero tal cual: su prompt, su esquema y su
+temperatura. Los casos estan en `lista_finita.json`, seccion referencia.
+
 `piezas` corre las charlas de `desmenuzar.CASOS` —la vara de las 58 mas la
 jerga— con su prompt y su nota, y dice por caso si salio siempre, a veces o
 nunca.
@@ -64,9 +72,11 @@ def cliente(modelo: str):
     return OpenAI(api_key=gratis, base_url="https://generativelanguage.googleapis.com/v1beta/openai/"), modelo
 
 
-def llamar(cli, modelo: str, msgs: list, tools=None, max_tokens=None, temp=0.2) -> dict:
+def llamar(cli, modelo: str, msgs: list, tools=None, max_tokens=None, temp=0.2, formato=None) -> dict:
     """Una llamada. Aguanta el 429 de la gratis. Vuelve texto, tokens y segundos."""
     kw = {"tools": tools, "tool_choice": "auto"} if tools else {}
+    if formato:
+        kw["response_format"] = formato
     if max_tokens:
         kw["max_tokens"] = max_tokens
     espera, t0 = 15, time.time()
@@ -430,6 +440,115 @@ def informe_escalera(etiqueta: str, item: str) -> None:
         print("  por accion esperada, fallas: " + " · ".join(f"{t} {mal[t]}/{tot[t]}" for t in sorted(tot, key=lambda t: -mal[t] / tot[t])))
 
 
+# ══ REFERENCIA: como nombra el cliente al articulo ═════════════════════════
+#
+# El interprete del tablero, sin el resto del bot: el mismo prompt, el mismo
+# esquema forzado y la misma temperatura que produccion. Sin la memoria que
+# arma `respuesta`: solo el historial. Es un piso, no un techo.
+
+def _cumple(pz: dict, e: dict) -> bool:
+    """Una pieza del interprete contra lo esperado. Ver `lista_finita.json`."""
+    import re
+    from app.core import agente as A
+    n = A._n
+    if "tipo" in e and pz.get("tipo") not in e["tipo"].split("|"):
+        return False
+    if "rubro" in e and n(pz.get("rubro") or "") != n(e["rubro"]):
+        return False
+    txt = n(" ".join([str(pz.get("producto") or ""), str(pz.get("texto") or "")]
+                     + [str(i.get("producto")) for i in pz.get("items") or [] if isinstance(i, dict)]))
+    if "producto" in e and not re.search(e["producto"], txt):
+        return False
+    if "orden" in e:
+        campo, dire = e["orden"].split(":")
+        o = pz.get("orden") or {}
+        if o.get("campo") != campo or o.get("direccion") != dire:
+            return False
+    if "cant" in e:
+        cants = [pz.get("cantidad")] + [i.get("cantidad") for i in pz.get("items") or [] if isinstance(i, dict)]
+        if e["cant"] not in cants:
+            return False
+    if "destinos" in e and not re.search(e["destinos"], n(" ".join(map(str, pz.get("destinos") or [])))):
+        return False
+    if "tema" in e and pz.get("tema") not in e["tema"].split("|"):
+        return False
+    if e.get("reparto") and not pz.get("reparto_pago"):
+        return False
+    for c in e.get("cond") or []:
+        campos, ops, val = c.split(":", 2)
+        if not any(x.get("campo") in campos.split("|") and x.get("operador") in ops.split("|")
+                   and re.search(val, n(str(x.get("valor") or "")).replace(".", "")) for x in pz.get("condiciones") or []):
+            return False
+    return True
+
+
+def nota_referencia(piezas: list, espera: list) -> tuple:
+    """(bien, lo que falto). Cada pieza esperada tiene que aparecer; las de mas no restan."""
+    faltan = []
+    for e in espera:
+        alts = e["o"] if "o" in e else [e]
+        if not any(_cumple(p, a) for p in piezas for a in alts):
+            faltan.append(json.dumps(alts[0], ensure_ascii=False))
+    return not faltan, faltan
+
+
+def referencia(reps: int, modelo: str, etiqueta: str, tope: float, hilos: int, ids: list) -> None:
+    A, T = _fuente()
+    from app.core import tablero as TB
+    cli, nombre = cliente(modelo)
+    casos = [c for c in json.load(open(LISTA, encoding="utf-8"))["referencia"]["casos"] if not ids or c["id"] in ids]
+    sis = TB.INTERPRETE.format(acciones="; ".join(f"{k}: {v}" for k, v in TB.ACCIONES.items()))
+    esq = {"type": "json_schema", "json_schema": {"name": "piezas", "schema": TB.esquema_piezas(T)}}
+    cola = [(c, rep) for rep in range(1, reps + 1) for c in casos]
+    gastado = [0.0]
+    print(f"{nombre} · referencia · {len(cola)} llamadas · tope {tope} dolares")
+
+    def uno(t):
+        caso, rep = t
+        if gastado[0] >= tope:
+            return
+        msgs = [{"role": "system", "content": sis}] + caso["charla"] + [{"role": "user", "content": caso["mensaje"]}]
+        try:
+            r = llamar(cli, nombre, msgs, temp=TB.TEMP_INTERPRETAR, formato=esq)
+        except Exception as e:  # noqa: BLE001
+            print(f"  {caso['id']} error {str(e)[:100]}")
+            return
+        piezas = [p for p in (TB._json(r["texto"]).get("piezas") or []) if isinstance(p, dict)]
+        bien, faltan = nota_referencia(piezas, caso["espera"])
+        with _escribir:
+            gastado[0] += r["dolares"]
+        anotar({"etiqueta": etiqueta, "modelo": nombre, "modo": "referencia", "id": caso["id"], "forma": caso["forma"],
+                "rep": rep, "bien": bien, "faltan": faltan, "piezas": piezas, "entrada": r["entrada"],
+                "salida_tokens": r["salida"], "dolares": r["dolares"], "seg": r["seg"]})
+    with ThreadPoolExecutor(hilos) as ex:
+        list(ex.map(uno, cola))
+    informe_referencia(etiqueta)
+
+
+def informe_referencia(etiqueta: str) -> None:
+    filas = [json.loads(x) for x in open(SALIDA, encoding="utf-8")] if SALIDA.exists() else []
+    filas = [f for f in filas if f["etiqueta"] == etiqueta and f.get("modo") == "referencia"]
+    if not filas:
+        sys.exit(f"no hay filas con la etiqueta {etiqueta}")
+    por = {}
+    for f in filas:
+        por.setdefault((f["forma"], f["id"]), []).append(f)
+    print(f"\nREFERENCIA · {etiqueta} · {filas[0]['modelo']} · {len(filas)} llamadas · {len(por)} casos")
+    formas = list(dict.fromkeys(k[0] for k in por))
+    for fo in formas:
+        ks = [k for k in por if k[0] == fo]
+        siempre = sum(all(x["bien"] for x in por[k]) for k in ks)
+        nunca = sum(not any(x["bien"] for x in por[k]) for k in ks)
+        print(f"  {fo:15} {len(ks):2} casos · SIEMPRE {siempre} · A VECES {len(ks) - siempre - nunca} · NUNCA {nunca}")
+    e, s = sum(f["entrada"] for f in filas), sum(f["salida_tokens"] for f in filas)
+    print(f"  tokens por llamada: entrada {e // len(filas)} · salida {s // len(filas)} · "
+          f"{sum(f['seg'] for f in filas) / len(filas):.1f} s · costo si fuera paga {sum(f['dolares'] for f in filas):.4f} dolares")
+    for k, v in por.items():
+        if not all(x["bien"] for x in v):
+            falta = [y for x in v for y in x["faltan"]]
+            print(f"    {k[1]} {sum(x['bien'] for x in v)}/{len(v)}  falta {max(set(falta), key=falta.count)[:110]}")
+
+
 def main():
     a = sys.argv[1:]
     que = a.pop(0) if a else ""
@@ -450,6 +569,12 @@ def main():
         else:
             escalera(item, modelo, etiqueta, opt(a, "--tope", TOPE, float), opt(a, "--hilos", 4, int),
                      opt(a, "--reps", 5, int), opt(a, "--escalon", ""))
+    elif que == "referencia":
+        if "--informe" in a:
+            informe_referencia(etiqueta)
+        else:
+            referencia(opt(a, "--reps", 3, int), modelo, etiqueta, opt(a, "--tope", TOPE, float),
+                       opt(a, "--hilos", 4, int), [x for x in a if not x.startswith("--")])
     elif que == "informe":
         informe(etiqueta)
     elif que == "saldo":

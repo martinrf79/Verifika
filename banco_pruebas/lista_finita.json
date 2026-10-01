@@ -1604,5 +1604,801 @@
     ]
    }
   ]
+ },
+ "referencia": {
+  "capa": "interpretacion",
+  "pregunta": "como nombra el cliente al articulo: por modelo, por precio, por una caracteristica, por el origen, con jerga o por la memoria, sola o dentro de un pedido compuesto. Se mide SOLO la salida del interprete del tablero, con su prompt y su esquema. espera: cada pieza que tiene que aparecer; tipo y op con | son alternativas; rubro vacio es toda la tienda; o es cualquiera de esas piezas; cond es campo:operador:valor, con expresion regular en el valor.",
+  "casos": [
+   {
+    "id": "RM1",
+    "forma": "modelo",
+    "charla": [],
+    "mensaje": "tenes el mouse Logitech M170?",
+    "espera": [
+     {
+      "tipo": "producto|buscar",
+      "producto": "m170"
+     }
+    ]
+   },
+   {
+    "id": "RM2",
+    "forma": "modelo",
+    "charla": [],
+    "mensaje": "cuanto sale la memoria Kingston Fury Beast de 8?",
+    "espera": [
+     {
+      "tipo": "producto|buscar",
+      "producto": "fury"
+     }
+    ]
+   },
+   {
+    "id": "RM3",
+    "forma": "modelo",
+    "charla": [],
+    "mensaje": "el monitor samsung t35f lo tenes en stock?",
+    "espera": [
+     {
+      "tipo": "producto|buscar",
+      "producto": "t35f"
+     }
+    ]
+   },
+   {
+    "id": "RM4",
+    "forma": "modelo",
+    "charla": [],
+    "mensaje": "quiero el teclado genius kb110x blanco",
+    "espera": [
+     {
+      "tipo": "producto|comprar|buscar",
+      "producto": "kb.?110"
+     }
+    ]
+   },
+   {
+    "id": "RM5",
+    "forma": "modelo",
+    "charla": [],
+    "mensaje": "precio del redragon zeus x y del pandora",
+    "espera": [
+     {
+      "tipo": "producto|buscar",
+      "producto": "zeus"
+     },
+     {
+      "tipo": "producto|buscar",
+      "producto": "pandora"
+     }
+    ]
+   },
+   {
+    "id": "RP1",
+    "forma": "precio",
+    "charla": [],
+    "mensaje": "cual es el mouse mas barato?",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "mouse",
+      "orden": "precio_ars:min"
+     }
+    ]
+   },
+   {
+    "id": "RP2",
+    "forma": "precio",
+    "charla": [],
+    "mensaje": "pasame los 3 teclados mas baratos",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "teclado",
+      "orden": "precio_ars:min",
+      "cant": 3
+     }
+    ]
+   },
+   {
+    "id": "RP3",
+    "forma": "precio",
+    "charla": [],
+    "mensaje": "cual es el articulo mas caro de toda la tienda?",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "",
+      "orden": "precio_ars:max"
+     }
+    ]
+   },
+   {
+    "id": "RP4",
+    "forma": "precio",
+    "charla": [],
+    "mensaje": "dame el precio de los dos articulos mas baratos que tengas y de los dos mas caros",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "",
+      "orden": "precio_ars:min",
+      "cant": 2
+     },
+     {
+      "tipo": "buscar",
+      "rubro": "",
+      "orden": "precio_ars:max",
+      "cant": 2
+     }
+    ]
+   },
+   {
+    "id": "RP5",
+    "forma": "precio",
+    "charla": [],
+    "mensaje": "auriculares de hasta 60 mil",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "auriculares",
+      "cond": [
+       "precio_ars:menor|igual:60.?000"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RP6",
+    "forma": "precio",
+    "charla": [],
+    "mensaje": "monitores entre 150 y 200 lucas",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "monitor",
+      "cond": [
+       "precio_ars:mayor:150.?000",
+       "precio_ars:menor:200.?000"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RP7",
+    "forma": "precio",
+    "charla": [],
+    "mensaje": "una notebook acorde a la crisis",
+    "espera": [
+     {
+      "o": [
+       {
+        "tipo": "buscar",
+        "rubro": "notebook",
+        "orden": "precio_ars:min"
+       },
+       {
+        "tipo": "buscar",
+        "rubro": "notebook",
+        "cond": [
+         "precio_ars:menor|evita:."
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RP8",
+    "forma": "precio",
+    "charla": [],
+    "mensaje": "tenes algo mas barato que el Genius DX-110?",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "mouse",
+      "cond": [
+       "precio_ars:menor:."
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RF1",
+    "forma": "caracteristica",
+    "charla": [],
+    "mensaje": "cual es el mouse mas liviano?",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "mouse",
+      "orden": "peso_gramos:min"
+     }
+    ]
+   },
+   {
+    "id": "RF2",
+    "forma": "caracteristica",
+    "charla": [],
+    "mensaje": "un teclado que pese menos de 500 gramos",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "teclado",
+      "cond": [
+       "peso_gramos:menor:500"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RF3",
+    "forma": "caracteristica",
+    "charla": [],
+    "mensaje": "auriculares con 2 años de garantia",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "auriculares",
+      "cond": [
+       "garantia_meses:igual|mayor|contiene:24"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RF4",
+    "forma": "caracteristica",
+    "charla": [],
+    "mensaje": "cual es la notebook con mas garantia?",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "notebook",
+      "orden": "garantia_meses:max"
+     }
+    ]
+   },
+   {
+    "id": "RF5",
+    "forma": "caracteristica",
+    "charla": [],
+    "mensaje": "cuanto dura la garantia del mouse genius dx-110?",
+    "espera": [
+     {
+      "tipo": "producto|politica",
+      "producto": "dx.?110"
+     }
+    ]
+   },
+   {
+    "id": "RF6",
+    "forma": "caracteristica",
+    "charla": [],
+    "mensaje": "busco un monitor de 144 hz",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "monitor",
+      "cond": [
+       "hz:igual|contiene|mayor:144"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RF7",
+    "forma": "caracteristica",
+    "charla": [],
+    "mensaje": "auriculares bluetooth",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "auriculares",
+      "cond": [
+       "bluetooth|conexion:igual|contiene:si|true|bluetooth"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RF8",
+    "forma": "caracteristica",
+    "charla": [],
+    "mensaje": "notebook con 16 de ram y lector de huella",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "notebook",
+      "cond": [
+       "ram:igual|contiene|mayor:16",
+       "lector_huella:igual|contiene:si|true"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RO1",
+    "forma": "origen",
+    "charla": [],
+    "mensaje": "un mouse que no sea fabricado en china",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "mouse",
+      "cond": [
+       "pais_fabricacion:no_contiene|evita:china"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RO2",
+    "forma": "origen",
+    "charla": [],
+    "mensaje": "auriculares, lo menos chinos posible",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "auriculares",
+      "cond": [
+       "pais_fabricacion|pais_marca:no_contiene|evita:china"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RO3",
+    "forma": "origen",
+    "charla": [],
+    "mensaje": "un teclado de marca que no sea china, aunque se fabrique alla",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "teclado",
+      "cond": [
+       "pais_marca:no_contiene|evita:china"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RO4",
+    "forma": "origen",
+    "charla": [],
+    "mensaje": "que memorias tenes de marca estadounidense?",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "memoria ram",
+      "cond": [
+       "pais_marca:contiene|igual|prefiere:estados unidos|usa|eeuu"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RJ1",
+    "forma": "jerga",
+    "charla": [],
+    "mensaje": "necesito un aparato rectangular con teclas",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "teclado"
+     }
+    ]
+   },
+   {
+    "id": "RJ2",
+    "forma": "jerga",
+    "charla": [],
+    "mensaje": "algo para escuchar musica sin cables en el colectivo",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "auriculares"
+     }
+    ]
+   },
+   {
+    "id": "RJ3",
+    "forma": "jerga",
+    "charla": [],
+    "mensaje": "la compu portatil mas baratita que tengas",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "notebook",
+      "orden": "precio_ars:min"
+     }
+    ]
+   },
+   {
+    "id": "RJ4",
+    "forma": "jerga",
+    "charla": [],
+    "mensaje": "el bicho ese para que ande el wifi en toda la casa",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "router"
+     }
+    ]
+   },
+   {
+    "id": "RJ5",
+    "forma": "jerga",
+    "charla": [],
+    "mensaje": "dame precio de un parlante, ten en cuenta que estamos en crisis",
+    "espera": [
+     {
+      "o": [
+       {
+        "tipo": "buscar",
+        "rubro": "parlante",
+        "orden": "precio_ars:min"
+       },
+       {
+        "tipo": "buscar",
+        "rubro": "parlante",
+        "cond": [
+         "precio_ars:menor|evita:."
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RE1",
+    "forma": "memoria",
+    "charla": [
+     {
+      "role": "user",
+      "content": "que mouse baratos tenes?"
+     },
+     {
+      "role": "assistant",
+      "content": "Tengo el Mouse Genius DX-110 Negro a $8.500, el Mouse Logitech M170 Negro a $12.000 y el Mouse Logitech G203 Negro a $37.500."
+     }
+    ],
+    "mensaje": "el segundo cuanto pesa?",
+    "espera": [
+     {
+      "tipo": "producto|verificar",
+      "producto": "m170"
+     }
+    ]
+   },
+   {
+    "id": "RE2",
+    "forma": "memoria",
+    "charla": [
+     {
+      "role": "user",
+      "content": "que mouse baratos tenes?"
+     },
+     {
+      "role": "assistant",
+      "content": "Tengo el Mouse Genius DX-110 Negro a $8.500, el Mouse Logitech M170 Negro a $12.000 y el Mouse Logitech G203 Negro a $37.500."
+     }
+    ],
+    "mensaje": "el genius no me convence, el otro logitech tiene stock?",
+    "espera": [
+     {
+      "o": [
+       {
+        "tipo": "producto",
+        "producto": "g203"
+       },
+       {
+        "tipo": "producto",
+        "producto": "m170"
+       },
+       {
+        "tipo": "repreguntar"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RE3",
+    "forma": "memoria",
+    "charla": [
+     {
+      "role": "user",
+      "content": "que mouse baratos tenes?"
+     },
+     {
+      "role": "assistant",
+      "content": "Tengo el Mouse Genius DX-110 Negro a $8.500, el Mouse Logitech M170 Negro a $12.000 y el Mouse Logitech G203 Negro a $37.500."
+     }
+    ],
+    "mensaje": "de esos, cual es el mas liviano?",
+    "espera": [
+     {
+      "o": [
+       {
+        "tipo": "buscar",
+        "orden": "peso_gramos:min"
+       },
+       {
+        "tipo": "producto",
+        "producto": "dx.?110|m170|g203"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RE4",
+    "forma": "memoria",
+    "charla": [
+     {
+      "role": "user",
+      "content": "busco perifericos pero nada fabricado en china"
+     },
+     {
+      "role": "assistant",
+      "content": "Dale. Que estas buscando?"
+     },
+     {
+      "role": "user",
+      "content": "mostrame mouse"
+     },
+     {
+      "role": "assistant",
+      "content": "De mouse fabricados fuera de China no tengo, todos se fabrican en China."
+     }
+    ],
+    "mensaje": "y teclados?",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "teclado",
+      "cond": [
+       "pais_fabricacion|pais_marca:no_contiene|evita:china"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RE5",
+    "forma": "memoria",
+    "charla": [
+     {
+      "role": "user",
+      "content": "tengo 40 mil para gastar"
+     },
+     {
+      "role": "assistant",
+      "content": "Perfecto, que estas buscando?"
+     }
+    ],
+    "mensaje": "que auriculares me alcanzan?",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "auriculares",
+      "cond": [
+       "precio_ars:menor|igual:40.?000"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RE6",
+    "forma": "memoria",
+    "charla": [
+     {
+      "role": "user",
+      "content": "cuanto sale el mouse genius dx-110 negro?"
+     },
+     {
+      "role": "assistant",
+      "content": "El Mouse Genius DX-110 Negro sale $8.500."
+     },
+     {
+      "role": "user",
+      "content": "tenes webcams?"
+     },
+     {
+      "role": "assistant",
+      "content": "Tengo la Logitech C920 y la Logitech C270."
+     },
+     {
+      "role": "user",
+      "content": "y parlantes JBL?"
+     },
+     {
+      "role": "assistant",
+      "content": "Tengo el JBL Go 3 y el JBL Flip 6."
+     },
+     {
+      "role": "user",
+      "content": "hacen factura A?"
+     },
+     {
+      "role": "assistant",
+      "content": "Si, hacemos factura A."
+     }
+    ],
+    "mensaje": "volviendo al mouse del principio, cuanto pesa?",
+    "espera": [
+     {
+      "tipo": "producto|verificar",
+      "producto": "dx.?110"
+     }
+    ]
+   },
+   {
+    "id": "RE7",
+    "forma": "memoria",
+    "charla": [
+     {
+      "role": "user",
+      "content": "auriculares baratos?"
+     },
+     {
+      "role": "assistant",
+      "content": "Los mas baratos son los Auriculares Redragon Zeus X Negro a $57.500."
+     }
+    ],
+    "mensaje": "sumame dos de esos con envio a Rosario",
+    "espera": [
+     {
+      "tipo": "cuenta",
+      "producto": "zeus",
+      "cant": 2
+     }
+    ]
+   },
+   {
+    "id": "RE8",
+    "forma": "memoria",
+    "charla": [
+     {
+      "role": "user",
+      "content": "que mouse baratos tenes?"
+     },
+     {
+      "role": "assistant",
+      "content": "Tengo el Mouse Genius DX-110 Negro a $8.500, el Mouse Logitech M170 Negro a $12.000 y el Mouse Logitech G203 Negro a $37.500."
+     }
+    ],
+    "mensaje": "mandame el primero a Cordoba",
+    "espera": [
+     {
+      "tipo": "envio|cuenta|comprar",
+      "destinos": "cordoba"
+     },
+     {
+      "o": [
+       {
+        "tipo": "cuenta|comprar|producto",
+        "producto": "dx.?110"
+       },
+       {
+        "tipo": "envio",
+        "destinos": "cordoba"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "RX1",
+    "forma": "compuesto",
+    "charla": [],
+    "mensaje": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "auriculares",
+      "orden": "precio_ars:min"
+     },
+     {
+      "tipo": "buscar",
+      "rubro": "mouse",
+      "orden": "precio_ars:min"
+     },
+     {
+      "tipo": "cuenta|envio",
+      "destinos": "cordoba"
+     }
+    ]
+   },
+   {
+    "id": "RX2",
+    "forma": "compuesto",
+    "charla": [],
+    "mensaje": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Una memoria y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "auriculares",
+      "cond": [
+       "pais_fabricacion|pais_marca:no_contiene|evita:china"
+      ]
+     },
+     {
+      "tipo": "buscar",
+      "rubro": "mouse",
+      "cond": [
+       "pais_fabricacion|pais_marca:no_contiene|evita:china"
+      ]
+     },
+     {
+      "tipo": "buscar",
+      "rubro": "memoria ram",
+      "cond": [
+       "pais_fabricacion|pais_marca:no_contiene|evita:china"
+      ]
+     },
+     {
+      "tipo": "envio|cuenta",
+      "destinos": "concordia"
+     },
+     {
+      "tipo": "envio|cuenta",
+      "destinos": "posadas"
+     },
+     {
+      "tipo": "cuenta",
+      "reparto": true
+     }
+    ]
+   },
+   {
+    "id": "RX3",
+    "forma": "compuesto",
+    "charla": [],
+    "mensaje": "precio de los dos articulos mas baratos y de los dos mas caros, que medios de pago reciben y si tienen descuentos por cantidad",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "",
+      "orden": "precio_ars:min"
+     },
+     {
+      "tipo": "buscar",
+      "rubro": "",
+      "orden": "precio_ars:max"
+     },
+     {
+      "tipo": "politica",
+      "tema": "formas_pago"
+     },
+     {
+      "tipo": "politica",
+      "tema": "mayoristas|promociones"
+     }
+    ]
+   },
+   {
+    "id": "RX4",
+    "forma": "compuesto",
+    "charla": [],
+    "mensaje": "el mouse mas liviano y el teclado mas barato, los dos a Rosario, cuanto es todo?",
+    "espera": [
+     {
+      "tipo": "buscar",
+      "rubro": "mouse",
+      "orden": "peso_gramos:min"
+     },
+     {
+      "tipo": "buscar",
+      "rubro": "teclado",
+      "orden": "precio_ars:min"
+     },
+     {
+      "tipo": "cuenta|envio",
+      "destinos": "rosario"
+     }
+    ]
+   }
+  ]
  }
 }
