@@ -17,7 +17,9 @@ número se reporta con su control al lado.
 | Un turno por dentro | `python3 banco_pruebas/sonda_turno.py` |
 | Cuánto va a costar una tanda, y cuánto costaron | `python3 -m banco_pruebas.costo estimar` · `costo real` |
 | Probar al modelo directo, con tope en dólares | `python3 -m banco_pruebas.laboratorio escalera --item rubro` |
-| Las 58 y las de memoria por el clon | `python3 -m banco_pruebas.sonda_charlas --vara todas --etiqueta algo_1` |
+| Cómo nombra el cliente al artículo, solo el intérprete | `python3 -m banco_pruebas.laboratorio referencia --etiqueta ref_1` |
+| El banco de todos los días por el clon: complejas, memoria y centinelas | `python3 -m banco_pruebas.sonda_charlas --vara compleja --etiqueta tab_algo_1` |
+| Todo por el clon, antes de un deploy | `python3 -m banco_pruebas.sonda_charlas --vara todas --etiqueta tab_algo_1` |
 | Puntas sueltas del cableado | `python3 banco_pruebas/censo_cableado.py` |
 
 Toda mejora pasa por `puerta.py` (ficha 63): no se toca la vara mientras
@@ -64,7 +66,11 @@ medido en las corridas guardadas, y suma lo que costó cada una. Los precios
 viven en `precios_llm.json`, con fecha y fuente.
 
 **El tablero** (`app/core/tablero.py`) es el turno vivo desde el 30-sep: el
-clon lo corre solo. `--vara todas` suma las charlas de memoria a las 58.
+clon lo corre solo. Lo simple se mide en el laboratorio, que es barato; por
+el clon va lo complejo. `--vara compleja` son el grupo K de `vara_58.py` —los
+pedidos como los escribe el cliente de verdad—, la memoria y diez centinelas
+de las 58. `--vara todas` es todo junto, antes de un deploy. La etiqueta tiene
+que empezar con `tab` para que se recalifique con la vara del día.
 
 Lo que se lee de producción, aparte: `leer_interpretacion.py` y
 `produccion.py`.

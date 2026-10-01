@@ -18,7 +18,7 @@ base. El README de esta carpeta dice el procedimiento entero.
   python3 -m banco_pruebas.sonda_charlas --etiqueta v58_algo_1       las 68 por el clon
   python3 -m banco_pruebas.sonda_charlas C27 C46 --etiqueta prueba   solo esas
   python3 -m banco_pruebas.sonda_charlas --informe --etiqueta v58_algo_1
-  opciones: --vara todas (las 58 y las de memoria)  --camino agente (el turno viejo, sin el webhook)
+  opciones: --vara compleja (la de todos los dias)  --vara todas (todo, antes de un deploy)  --camino agente (el turno viejo, sin el webhook)
 
 Hasta el 28-sep corria tambien las varas viejas, un camino simulado y uno
 sobre `motor.esquema`. Salieron con los bancos viejos de interpretacion, que
@@ -40,12 +40,25 @@ MODELOS = sorted({(_n(p["modelo"]), p["categoria"]) for p in BA.PRODUCTOS if len
 
 
 def charlas(vara="58"):
-    """La vara de las 58; con "memoria", las charlas largas de `lista_finita.json`."""
+    """Que charlas corre el banco. Una sola fuente: `vara_58.json` y la memoria
+    de `lista_finita.json`.
+
+      58         las 58 y la jerga, como hasta el 1-oct
+      memoria    las charlas largas de memoria
+      compleja   LA DE TODOS LOS DIAS: las complejas del grupo K, la memoria y
+                 diez centinelas de las 58. Lo simple se da por cubierto si sale
+                 lo complejo; las centinelas avisan si no.
+      todas      todo junto, antes de un deploy
+    """
     if vara == "memoria":
         return json.load(open("banco_pruebas/lista_finita.json", encoding="utf-8"))["memoria"]["charlas"]
+    doc = json.load(open("banco_pruebas/vara_58.json", encoding="utf-8"))
     if vara == "todas":
-        return charlas("58") + charlas("memoria")
-    return json.load(open("banco_pruebas/vara_58.json", encoding="utf-8"))["charlas"]
+        return doc["charlas"] + charlas("memoria")
+    if vara == "compleja":
+        return ([c for c in doc["charlas"] if c["grupo"] == "K"] + charlas("memoria")
+                + [c for c in doc["charlas"] if c["id"] in doc["centinelas"]])
+    return [c for c in doc["charlas"] if c["grupo"] != "K"]
 
 
 COLORES = sorted({_n(p["color"]) for p in BA.PRODUCTOS if p["color"]}, key=len, reverse=True)
