@@ -61,7 +61,7 @@ ACCIONES = {
 INTERPRETE = """Sos el interprete de una tienda online de tecnologia de Argentina. No le contestas al cliente: partis su ultimo mensaje en piezas para que el codigo las resuelva.
 tipo es uno de estos: {acciones}.
 REGLAS DE PARTIR:
-1. Una pieza por cada producto o rubro, aunque compartan condiciones: la condicion se repite en cada una.
+1. Una pieza por cada producto o rubro, con la cantidad que pidio el cliente, aunque compartan condiciones: la condicion se repite en cada una.
 2. Si el cliente hace algo segun un resultado —"si X, Y", "dame el que cumpla X"—, X es una pieza propia y Y otra con depende_de apuntando a X. Excepcion: una regla sobre el total de una cuenta va en las condiciones de esa cuenta.
 3. En cuenta, inclui en items lo ya elegido en la charla y el destino si lo pide.
 4. Si para contestar falta un dato del cliente, pone el tipo de lo que pide y el dato en "falta".
@@ -111,7 +111,8 @@ Te paso el ultimo mensaje del cliente y los HECHOS que consulto el sistema para 
 9. No escribas codigos internos de producto: nombralos por su nombre.
 4. Si una parte dependia de otra, decidi con lo que dicen los HECHOS y explicalo en una linea.
 5. Si el cliente da algo por cierto y los HECHOS dicen otra cosa, corregilo con amabilidad.
-6. Si hay una cuenta, copia su detalle tal cual, renglon por renglon: cada producto, el envio, cada parte del reparto y el total.
+6. Si hay una cuenta, copia su detalle tal cual, renglon por renglon: cada producto, el envio, cada parte del reparto y el total. Si hay un total_general, va al final y una sola vez, con su reparto.
+10. Si hay un hecho de articulos, decilo en una linea antes de los presupuestos, con sus palabras: lo que no estaba en la lista y que se tomo en su lugar, lo que el cliente nombro fuera de la lista, o que articulo quedo sin destino; y pregunta una vez si esta bien. No le agregues motivos.
 7. El saber general de tecnologia lo explicas vos.
 8. Pedile el nombre SOLO si el cliente dijo que compra. Nunca pidas DNI, tarjeta ni CBU. No cierres cada mensaje ofreciendo comprar."""
 
@@ -143,9 +144,11 @@ def esquema_piezas(tienda_id: str) -> dict:
         "tema": {"type": "string", "enum": temas},
         "con": S,
         "destinos": {"type": "array", "items": S},
-        "cantidad": {"type": "integer"},
+        "cantidad": {"type": "integer", "description": "cuantos pidio el cliente de este producto o rubro"},
         "items": {"type": "array", "items": {"type": "object", "properties": {
-            "producto": S, "cantidad": {"type": "integer"}}, "required": ["producto", "cantidad"]}},
+            "producto": S, "cantidad": {"type": "integer"},
+            "destino": {"type": "string", "description": "a donde va este item, si el cliente reparte por destino"}},
+            "required": ["producto", "cantidad"]}},
         "reparto_pago": {"type": "array", "items": {"type": "object", "properties": {
             "medio": S, "porcentaje": {"type": "number", "description": "de 0 a 100"}},
             "required": ["medio", "porcentaje"]}},
@@ -351,6 +354,7 @@ def _normalizar(piezas: list, tienda_id: str) -> list:
                 b["condiciones"] = list(b.get("condiciones") or []) + [c for c in s["condiciones"]
                                                                        if c not in (b.get("condiciones") or [])]
         piezas = [p for p in piezas if p not in sueltas]
+    piezas = [q for p in piezas for q in _por_destino(p)]
     cuenta = next((p for p in piezas if p.get("tipo") == "cuenta"), None)
     if cuenta is not None and not cuenta.get("reparto_pago"):
         rep = next((p.get("reparto_pago") for p in piezas if p.get("reparto_pago")), None)
@@ -358,6 +362,19 @@ def _normalizar(piezas: list, tienda_id: str) -> list:
             cuenta["reparto_pago"] = rep
     al_final = ("cuenta", "comprar")
     return [p for p in piezas if p.get("tipo") not in al_final] + [p for p in piezas if p.get("tipo") in al_final]
+
+
+def _por_destino(p: dict) -> list:
+    """Una cuenta cuyos items van a dos o mas destinos es una cuenta por
+    destino: "un auricular y un mouse a Cordoba, el resto a Posadas"."""
+    if p.get("tipo") != "cuenta":
+        return [p]
+    items = [i for i in p.get("items") or [] if isinstance(i, dict)]
+    destinos = list(dict.fromkeys(str(i.get("destino") or "").strip() for i in items))
+    if len([d for d in destinos if d]) < 2:
+        return [p]
+    return [{**p, "texto": f"cuenta para {d}" if d else "items sin destino", "destinos": [d] if d else [],
+             "items": [i for i in items if str(i.get("destino") or "").strip() == d]} for d in destinos]
 
 
 def _palabras(texto: str) -> set:
@@ -522,11 +539,129 @@ def _envios_juntos(piezas: list) -> list:
     return [uno if p is env[0] else p for p in piezas if p not in env[1:]]
 
 
+def _rubro_de(nombre: str, tienda_id: str) -> str:
+    """El rubro de un item de cuenta: el nombre si es un rubro, o la categoria
+    del producto si certifica a uno solo."""
+    r = _es_rubro(nombre, tienda_id)
+    if r or not nombre:
+        return r
+    pid = nombre if _ID.fullmatch(nombre.strip()) else _certificado(nombre, tienda_id, [])
+    if not _ID.fullmatch(str(pid)):
+        return ""
+    from app.storage.firestore_client import get_product_by_id
+    return str((get_product_by_id(str(pid), tienda_id=tienda_id) or {}).get("categoria") or "")
+
+
+def _rubros_nombrados(texto: str, tienda_id: str) -> list:
+    """Los rubros que el texto nombra, palabra por palabra: "un teclado"."""
+    out = []
+    for w in re.findall(r"[a-z]+", A._n(texto)):
+        r = _es_rubro(w, tienda_id) if len(w) > 3 else ""
+        if r and r not in out:
+            out.append(r)
+    return out
+
+
+def _conservar(piezas: list, tienda_id: str, mensaje: str = "") -> dict:
+    """LOS ARTICULOS SE CONSERVAN (1-oct, K20). Cuando el cliente pide una lista
+    —"dos auriculares, dos mouse y dos memorias"— y la reparte en destinos, lo
+    repartido tiene que cerrar con la lista. El modelo parte bien cada destino
+    pero no cuenta: un teclado que no estaba entraba a Concordia y una memoria
+    quedaba sin destino, sin que nadie lo dijera.
+
+    Cuenta por rubro lo pedido —la cantidad de cada busqueda— contra lo que
+    llevan las cuentas. Si un item no es de ningun rubro pedido y a la lista le
+    falta exactamente esa cantidad, se toma lo que falta en su lugar y se dice.
+    Lo que no cierra se informa: sin destino o fuera de la lista. Un rubro que
+    el cliente nombro y no esta en la lista ni en ninguna cuenta —el
+    interprete ya puso otro en su lugar— tambien se dice. Cambia las
+    piezas en el lugar y vuelve lo que el redactor tiene que decir; vacio si
+    cierra o si no hay lista con cantidades."""
+    cuentas = [p for p in piezas if p.get("tipo") == "cuenta" and p.get("items")]
+    pedido: dict = {}
+    for p in piezas:
+        if p.get("tipo") == "buscar" and p.get("rubro") and int(p.get("cantidad") or 0) > 0:
+            pedido[p["rubro"]] = pedido.get(p["rubro"], 0) + int(p["cantidad"])
+    if len(cuentas) < 2 or not pedido:
+        return {}
+    asignado, fuera = {}, []
+    for c in cuentas:
+        for i in c["items"]:
+            if not isinstance(i, dict):
+                continue
+            r = _rubro_de(str(i.get("producto") or ""), tienda_id)
+            if r in pedido:
+                asignado[r] = asignado.get(r, 0) + int(i.get("cantidad") or 1)
+            elif r:
+                fuera.append((c, i, r))
+    faltan = [r for r in pedido for _ in range(pedido[r] - asignado.get(r, 0))]
+    informe: dict = {}
+    if fuera and sum(int(i.get("cantidad") or 1) for _, i, _ in fuera) == len(faltan):
+        for c, i, r in fuera:
+            toma = [faltan.pop(0) for _ in range(int(i.get("cantidad") or 1))][0]
+            informe.setdefault("reemplazo", []).append(
+                {"dijo": i.get("producto"), "destino": c.get("texto"), "se_tomo": toma,
+                 "por_que": f"{i.get('producto')} no estaba entre los articulos pedidos y quedaba "
+                            f"{toma} sin destino"})
+            i["producto"] = toma
+        fuera = []
+    if faltan:
+        informe["sin_destino"] = [f"{faltan.count(r)} {r}" for r in dict.fromkeys(faltan)]
+    if fuera:
+        informe["fuera_de_lista"] = [str(i.get("producto")) for _, i, _ in fuera]
+    llevan = {_rubro_de(str(i.get("producto") or ""), tienda_id) for c in cuentas for i in c["items"]
+              if isinstance(i, dict)}
+    sin_pedir = [r for r in _rubros_nombrados(mensaje, tienda_id) if r not in pedido and r not in llevan
+                 and r not in {x["dijo"] for x in informe.get("reemplazo") or []}]
+    if sin_pedir and not informe.get("reemplazo"):
+        lista = ", ".join(f"{n} {r}" for r, n in pedido.items())
+        informe["nombro_fuera_de_la_lista"] = [f"{r}: la tienda vende {r}, pero no estaba entre los articulos que "
+                                               f"pidio el cliente ({lista}); los presupuestos llevan los de su lista"
+                                               for r in sin_pedir]
+    if informe:
+        informe["pedido"] = [f"{n} {r}" for r, n in pedido.items()]
+    return informe
+
+
+def _total_general(bloques: list, reparto, tienda_id: str) -> dict:
+    """EL TOTAL GENERAL Y EL REPARTO SOBRE ESE TOTAL (1-oct, K20). Con un
+    presupuesto por destino el cliente pide "dividi en setenta treinta" una vez:
+    es sobre todo. La suma la hace el codigo con los totales que ya dio la
+    cuenta de cada destino, y el reparto, la misma funcion de siempre."""
+    from app.core.pago_split import calcular_split, descuento_de, render_split
+    from app.core.calculadora import _money
+    totales = [int(c["total_ars"]) for c in bloques]
+    base = sum(totales)
+    out = {"total_ars": base, "total": _money(base), "bloques_ars": totales}
+    detalle = f"Total general de los {len(totales)} presupuestos: {_money(base)}"
+    if reparto:
+        split = calcular_split(base, reparto, *descuento_de(tienda_id))
+        if split.get("ok"):
+            out["split_pago"] = split
+            out["total_final_ars"] = split["total_final_ars"]
+            detalle += "\n\n" + render_split(split)
+    out["detalle"] = detalle
+    return out
+
+
 def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx: dict) -> list:
     """Corre cada pieza con su herramienta. Vuelve los HECHOS, uno por pieza."""
     piezas = _normalizar(_envios_juntos(piezas), tienda_id)
     hechos = []
     ctx["busquedas"], ctx["usados"] = [], {}
+    articulos = _conservar(piezas, tienda_id, ctx.get("mensaje") or "")
+    if articulos:
+        hechos.append({"parte": "los articulos pedidos contra lo repartido por destino", "tipo": "articulos",
+                       "resultado": articulos})
+    # CON VARIOS DESTINOS EL REPARTO VA SOBRE EL TOTAL: cada bloque sale sin el
+    # suyo, y el total general lo lleva una vez.
+    varias = [p for p in piezas if p.get("tipo") == "cuenta"]
+    reparto_total = None
+    if len(varias) > 1:
+        reparto_total = next((p.get("reparto_pago") for p in varias if p.get("reparto_pago")), None)
+        for p in varias:
+            p["reparto_pago"] = None
+    bloques = []
     vistas = {json.dumps([x["herramienta"], x["args"]], sort_keys=True, default=str): x.get("vuelve") for x in llamadas}
     for pz in _orden(piezas):
         h, args = a_herramienta(pz)
@@ -580,7 +715,17 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
             hecho["resultado"] = _para_redactar(vistas[clave])
             if h == "buscar":
                 ctx["busquedas"].append((pz, vistas[clave]))
+            if h == "cuenta" and ((vistas[clave] or {}).get("cuenta") or {}).get("total_ars") is not None:
+                bloques.append(vistas[clave]["cuenta"])
         hechos.append(hecho)
+    if len(bloques) > 1:
+        rep = _reparto(reparto_total)
+        tg = _total_general(bloques, rep, tienda_id)
+        llamadas.append({"vuelta": vuelta, "herramienta": "total_general",
+                         "args": {"bloques": len(bloques), "reparto_pago": rep},
+                         "vuelve": tg})
+        hechos.append({"parte": "el total general de todos los presupuestos", "tipo": "total_general",
+                       "resultado": {"total_general": tg["total"], "detalle": tg["detalle"]}})
     return hechos
 
 
@@ -657,6 +802,13 @@ def _revision(piezas: list, banderas: dict, llamadas: list, mensaje: str, histor
         partes.append("pide repartir el pago en porcentajes: la cuenta va con reparto_pago")
     if f.get("compra"):
         partes.append("dice que compra y no hay pieza comprar")
+    destinos = list(dict.fromkeys(A._lugar(d) for d in A._destinos_del_mensaje(mensaje)))
+    cuentas = [p for p in piezas if p.get("tipo") == "cuenta"]
+    por_destino = len(cuentas) > 1 or any(len({str(i.get("destino") or "") for i in p.get("items") or []
+                                                if isinstance(i, dict)} - {""}) > 1 for p in cuentas)
+    if len(destinos) > 1 and (banderas.get("pide_total") or f.get("reparto") or cuentas) and not por_destino:
+        partes.append(f"reparte los articulos en {len(destinos)} destinos: en la cuenta, cada item con su destino, "
+                      "y en cada buscar la cantidad que pidio")
     if f.get("excluidas"):
         partes.append("antes pidio que no sea " + ", ".join(f["excluidas"]) + ": la busqueda lo excluye con "
                       "una condicion evita o no_contiene")

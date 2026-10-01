@@ -638,19 +638,8 @@ def calculate_total(items: list[dict] | None = None,
     # no calcula ni una cifra: pasa 'pago' y el codigo devuelve el bloque sellado.
     base_total = total + extra_min
     if pago and not hay_rango:
-        from app.core.pago_split import calcular_split, render_split
-        _pct, _cond = 0, ""
-        try:
-            from app.storage.firestore_client import get_all_faq as _gaf_pct
-            _vt = (((_gaf_pct(tienda_id=tid) or {}).get("descuento_transferencia")
-                    or {}).get("valores") or [])
-            _dv = next((v for v in _vt
-                        if (v.get("unidad") or "").lower() == "porcentaje"), None)
-            if _dv:
-                _pct = int(_dv.get("monto", 0))
-                _cond = str(_dv.get("condicion") or "")
-        except Exception as _e:
-            log.warning(f"calculate_total split_pct_faq_error {_e}")
+        from app.core.pago_split import calcular_split, descuento_de, render_split
+        _pct, _cond = descuento_de(tid)
         _split = calcular_split(base_total, pago, _pct, _cond)
         if _split.get("ok"):
             _pres = _render_presentacion(

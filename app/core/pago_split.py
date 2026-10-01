@@ -46,6 +46,22 @@ def _money(n) -> str:
     return f"{int(round(n)):,}".replace(",", ".")
 
 
+def descuento_de(tienda_id: str) -> tuple:
+    """(porcentaje, condicion) del descuento por transferencia, de la FAQ de la
+    tienda. (0, "") si no hay: el reparto sale sin descuento, no se inventa."""
+    try:
+        from app.storage.firestore_client import get_all_faq
+        vt = (((get_all_faq(tienda_id=tienda_id) or {}).get("descuento_transferencia")
+               or {}).get("valores") or [])
+        dv = next((v for v in vt if (v.get("unidad") or "").lower() == "porcentaje"), None)
+        if dv:
+            return int(dv.get("monto", 0)), str(dv.get("condicion") or "")
+    except Exception as e:  # noqa: BLE001 — sin FAQ el reparto va sin descuento
+        from app.logger import get_logger
+        get_logger(__name__).warning("descuento_de_faq_error", error=str(e)[:150])
+    return 0, ""
+
+
 def calcular_split(base_ars: int, pago: list[dict],
                    pct_descuento: int, condicion: str) -> dict:
     """Reparte base_ars entre los medios de `pago` y aplica el descuento a la

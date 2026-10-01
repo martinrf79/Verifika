@@ -178,3 +178,67 @@ def test_el_medio_que_el_cliente_no_nombro_no_se_inventa():
 def test_la_cuenta_suma_un_envio_por_destino():
     r = A.h_cuenta(TIENDA, items=[{"producto": "MOU0023", "cantidad": 1}], destinos=["Rosario", "Concordia"])
     assert r["cuenta"]["total_ars"] == 8500 + 7000 + 6500
+
+
+# ══ LOS ARTICULOS SE CONSERVAN (1-oct, K20): lo pedido cierra con lo repartido ═
+
+K20 = ("Dame precio de dos auriculares, dos mouse y dos memorias. Un auricular y un mouse a Cordoba capital. "
+       "Un teclado y un mouse a Concordia. Los otros dos a Posadas. Divide el presupuesto en setenta treinta")
+
+
+def _lista(*rubros):
+    return [{"n": i, "tipo": "buscar", "texto": r, "rubro": r, "cantidad": 2} for i, r in enumerate(rubros, 1)]
+
+
+def test_una_cuenta_con_items_a_varios_destinos_es_una_cuenta_por_destino():
+    p = {"tipo": "cuenta", "items": [{"producto": "mouse", "cantidad": 1, "destino": "Cordoba"},
+                                     {"producto": "auriculares", "cantidad": 1, "destino": "Posadas"},
+                                     {"producto": "memoria ram", "cantidad": 1, "destino": "Cordoba"}]}
+    partes = T._por_destino(p)
+    assert [(x["destinos"], len(x["items"])) for x in partes] == [(["Cordoba"], 2), (["Posadas"], 1)]
+
+
+def test_lo_que_no_estaba_en_la_lista_se_cambia_por_lo_que_quedo_sin_destino():
+    cuentas = [{"n": 4, "tipo": "cuenta", "texto": "a Cordoba", "items": [{"producto": "auriculares", "cantidad": 1},
+                                                                          {"producto": "mouse", "cantidad": 1}]},
+               {"n": 5, "tipo": "cuenta", "texto": "a Concordia", "items": [{"producto": "teclado", "cantidad": 1},
+                                                                            {"producto": "mouse", "cantidad": 1}]},
+               {"n": 6, "tipo": "cuenta", "texto": "a Posadas", "items": [{"producto": "auriculares", "cantidad": 1},
+                                                                          {"producto": "memoria ram", "cantidad": 1}]}]
+    piezas = _lista("auriculares", "mouse", "memoria ram") + cuentas
+    inf = T._conservar(piezas, TIENDA, K20)
+    assert inf["reemplazo"][0]["dijo"] == "teclado" and inf["reemplazo"][0]["se_tomo"] == "memoria ram"
+    assert cuentas[1]["items"][0]["producto"] == "memoria ram" and "sin_destino" not in inf
+
+
+def test_lo_que_queda_sin_destino_se_informa_y_lo_nombrado_fuera_de_la_lista_tambien():
+    cuentas = [{"n": 4, "tipo": "cuenta", "items": [{"producto": "auriculares", "cantidad": 1}]},
+               {"n": 5, "tipo": "cuenta", "items": [{"producto": "mouse", "cantidad": 2}]}]
+    inf = T._conservar(_lista("auriculares", "mouse") + cuentas, TIENDA, "dos auriculares y dos mouse")
+    assert inf["sin_destino"] == ["1 auriculares"]
+    cerradas = [{"n": 4, "tipo": "cuenta", "items": [{"producto": "auriculares", "cantidad": 2}]},
+                {"n": 5, "tipo": "cuenta", "items": [{"producto": "mouse", "cantidad": 2}]}]
+    inf = T._conservar(_lista("auriculares", "mouse") + cerradas, TIENDA, "y un teclado a Concordia")
+    assert "teclado" in inf["nombro_fuera_de_la_lista"][0]
+    assert T._conservar(_lista("auriculares", "mouse") + cerradas, TIENDA, "dos auriculares y dos mouse") == {}
+
+
+def test_con_varios_destinos_hay_un_total_general_y_el_reparto_va_sobre_el(monkeypatch):
+    """K20: el 70/30 se pide una vez y es sobre todo. Cada destino sale sin el
+    suyo; el total general es la suma de los bloques, y el reparto, sobre ella."""
+    A.CLIENTE_DIJO.set(K20)
+    piezas = [{"n": 1, "tipo": "cuenta", "texto": "a Rosario", "destinos": ["Rosario"],
+               "items": [{"producto": "MOU0023", "cantidad": 1}],
+               "reparto_pago": [{"medio": "x", "porcentaje": 70}, {"medio": "y", "porcentaje": 30}]},
+              {"n": 2, "tipo": "cuenta", "texto": "a Concordia", "destinos": ["Concordia"],
+               "items": [{"producto": "MOU0023", "cantidad": 1}]}]
+    ctx = {"mensaje": K20, "historial": [], "memoria": "", "pide_total": True}
+    llamadas = []
+    hechos = T.correr_piezas(piezas, TIENDA, llamadas, 1, ctx)
+    cuentas = [x for x in llamadas if x["herramienta"] == "cuenta"]
+    assert len(cuentas) == 2 and not any(x["args"]["reparto_pago"] for x in cuentas)
+    tg = next(x for x in llamadas if x["herramienta"] == "total_general")["vuelve"]
+    assert tg["total_ars"] == (8500 + 7000) + (8500 + 6500)
+    assert [p["monto_ars"] for p in tg["split_pago"]["partes"]] == [21350, 9150]
+    assert hechos[-1]["tipo"] == "total_general"
+    assert not A.faltantes(K20, llamadas).get("reparto")

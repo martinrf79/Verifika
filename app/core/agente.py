@@ -680,7 +680,7 @@ def faltantes(mensaje: str, llamadas: list, historial: list = None, tienda_id: s
     if sin:
         out["destinos"] = sin
     if _pide_reparto(mensaje) and not any(
-            x.get("herramienta") == "cuenta" and (x.get("args") or {}).get("reparto_pago")
+            x.get("herramienta") in ("cuenta", "total_general") and (x.get("args") or {}).get("reparto_pago")
             for x in llamadas or []):
         out["reparto"] = True
     if _compra_pendiente(mensaje, llamadas, historial):
