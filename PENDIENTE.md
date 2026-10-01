@@ -24,7 +24,8 @@ Dónde está cada cosa: `MAPA.md`.
 - **ABIERTO** · El cache da cero: el prompt fijo no llega al mínimo del proveedor. Medir el umbral.
 - **ABIERTO** · 27-sep, FICHA 63: C46 contesta "de los que te mencioné" sin buscar el resto; el 70/30 a veces sale como total. Desde el 28-sep el reparto se anticipa en la primera vuelta. Toda mejora pasa por `banco_pruebas/puerta.py`.
 - **ABIERTO** · El modelo sigue diciendo "todo es chino" aunque las memorias son Taiwan o China; a veces pregunta en vez de armar el 70/30.
-- **ABIERTO** · 30-sep: el turno vivo es el tablero, `app/core/tablero.py`. Probarlo por WhatsApp y leer el issue 31; si sale peor que el agente, se revierte con git.
+- **ABIERTO** · 1-oct: el tablero tiene la segunda vuelta, la cuenta sale de lo que busco el turno. Probar por WhatsApp los mensajes del grupo K de `vara_58.py` y leer `produccion.py`. El banco de todos los dias es `sonda_charlas --vara compleja`.
+- **ABIERTO** · Complejas que siguen mal, por clase: una condicion o exclusion de un turno anterior se pierde, K17 y M03; "y el mas barato?" no hereda "de toda la tienda", K18; varios rubros sin total, K06 a K09 y K11; "algo parecido" a lo que no se vende, K12; el catalogo, K19.
 - **ABIERTO** · `agente.turno`, `agente.sistema` y `agente.esquema` ya no los usa el turno: se borran con sus tests en su propio commit, como `motor.esquema`.
 - **ESPERA A MARTIN** · El catalogo dice que los auriculares bluetooth son con cable: `specs_por_modelo.csv` no trae bluetooth y cae el valor del rubro. Es `data/clientes/`: pide su permiso.
 - **ABIERTO** · El arranque de sesión muestra la interpretación "sin medir": su piso se archivó. Arreglar la línea toca `scripts/`, que deploya.

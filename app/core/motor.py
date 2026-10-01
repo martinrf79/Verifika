@@ -565,8 +565,11 @@ def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
         reparto = [x for x in reparto if x not in no_disp]
 
     try:
+        # UN ENVIO POR DESTINO (1-oct): la calculadora cobra cada destino con
+        # su tarifa si sabe cuantos son. Sin `destinos` cobraba uno solo y
+        # "un mouse a Rosario y otro a Concordia" salia con un envio de menos.
         r = calculate_total(items=items, items_extra=extras or None,
-                            pago=reparto or None)
+                            pago=reparto or None, destinos=max(1, len(extras)))
     except Exception as e:  # noqa: BLE001 — una cuenta rota no tumba el turno
         log.warning("motor_cuenta_total_error", trace_id=trace_id,
                     error=f"{type(e).__name__}: {str(e)[:150]}")

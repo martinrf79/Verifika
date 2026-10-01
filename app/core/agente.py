@@ -394,11 +394,15 @@ def h_compatibilidad(tienda_id: str, producto: str = "", con: str = "", **_) -> 
     return {"compatibilidad": r.get("compatibilidad") or {"veredicto": "sin_dato"}}
 
 
-def h_cuenta(tienda_id: str, items=None, destino: str = "", reparto_pago=None, **_) -> dict:
+def h_cuenta(tienda_id: str, items=None, destino: str = "", reparto_pago=None, destinos=None, **_) -> dict:
     its = [{"id": str(i.get("producto") or i.get("id") or ""), "cantidad": int(i.get("cantidad") or 1)}
            for i in (items or []) if isinstance(i, dict)]
+    # UN ENVIO POR DESTINO (1-oct): "un mouse a Rosario y el resto a Concordia"
+    # son dos envios. El motor suma cada fila cotizada; con uno solo la cuenta
+    # salia con un envio de menos.
+    ds = [str(d) for d in (destinos or []) if str(d).strip()] or ([destino] if destino else [])
     r = _motor().buscar([], tienda_id, _trace(), cuenta={"items": its},
-                        envios=[{"destino": destino, "va": "todo"}] if destino else None,
+                        envios=[{"destino": d, "va": "todo"} for d in ds] or None,
                         reparto_pago=reparto_pago or None)
     out = {"cuenta": r.get("cuenta") or {"veredicto": "sin_total"}}
     if r.get("envios"):
@@ -670,8 +674,8 @@ def faltantes(mensaje: str, llamadas: list, historial: list = None, tienda_id: s
         a = x.get("args") or {}
         if x.get("herramienta") == "envio":
             consultados |= {_lugar(str(d)) for d in a.get("destinos") or []}
-        if x.get("herramienta") == "cuenta" and a.get("destino"):
-            consultados.add(_lugar(str(a["destino"])))
+        if x.get("herramienta") == "cuenta":
+            consultados |= {_lugar(str(d)) for d in [a.get("destino")] + list(a.get("destinos") or []) if d}
     sin = [d for d in _destinos_del_mensaje(mensaje) if _lugar(d) not in consultados]
     if sin:
         out["destinos"] = sin

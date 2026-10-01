@@ -117,3 +117,64 @@ def test_procesar_turno_llama_al_tablero(monkeypatch):
         return {"texto": "desde el tablero", "llamadas": [], "uso": []}
     monkeypatch.setattr(T, "turno", falso)
     assert "desde el tablero" in asyncio.run(R.procesar_turno("t_tab", "hola", TIENDA, "whatsapp", "t")).lower()
+
+
+# ══ LA SEGUNDA VUELTA (1-oct): la cuenta sale de lo que busco el turno ══════
+
+def test_buscar_elegir_y_sumar_en_el_mismo_mensaje(monkeypatch):
+    """K03 del banco: el interprete arma dos busquedas y una cuenta con items
+    genericos. La cuenta suma la primera fila con stock de cada busqueda, con
+    la cantidad pedida, y el envio del destino."""
+    _con(monkeypatch, _Modelo([
+        {"n": 1, "tipo": "buscar", "texto": "dos auriculares, los mas baratos", "rubro": "auriculares",
+         "orden": {"campo": "precio_ars", "direccion": "min"}},
+        {"n": 2, "tipo": "buscar", "texto": "dos mouse, los mas baratos", "rubro": "mouse",
+         "orden": {"campo": "precio_ars", "direccion": "min"}},
+        {"n": 3, "tipo": "cuenta", "texto": "sumame todo", "depende_de": [1, 2], "falta": "destino: Cordoba",
+         "items": [{"producto": "auriculares", "cantidad": 2}, {"producto": "mouse", "cantidad": 2}]}],
+        banderas={"pide_total": True}))
+    r = _turno("dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital")
+    cuenta = next(x for x in r["llamadas"] if x["herramienta"] == "cuenta")
+    assert [(i["producto"], i["cantidad"]) for i in cuenta["args"]["items"]] == [("AUR0019", 2), ("MOU0023", 2)]
+    assert cuenta["vuelve"]["cuenta"]["total_ars"] == 139500
+    # el destino que el cliente dijo no se le vuelve a preguntar
+    assert not any(h.get("pregunta_al_cliente") for h in r["hechos"])
+
+
+def test_un_rubro_escrito_como_producto_se_busca_y_la_condicion_suelta_vale_para_todos():
+    piezas = T._normalizar([
+        {"n": 1, "tipo": "producto", "producto": "auriculares"},
+        {"n": 2, "tipo": "producto", "producto": "memorias"},
+        {"n": 3, "tipo": "buscar", "condiciones": [{"campo": "pais_fabricacion", "operador": "evita",
+                                                    "valor": "China"}]},
+        {"n": 4, "tipo": "cuenta", "items": []},
+        {"n": 5, "tipo": "producto", "producto": "K120", "reparto_pago": [{"medio": "x", "porcentaje": 70}]}],
+        TIENDA)
+    assert [(p["tipo"], p.get("rubro")) for p in piezas[:2]] == [("buscar", "auriculares"), ("buscar", "memoria ram")]
+    assert all(p["condiciones"][0]["campo"] == "pais_fabricacion" for p in piezas[:2])
+    assert 3 not in [p["n"] for p in piezas]
+    assert piezas[-1]["tipo"] == "cuenta" and piezas[-1]["reparto_pago"]
+
+
+def test_cada_cuenta_lleva_su_destino_y_una_sola_lleva_todos():
+    envio = {"tipo": "envio", "destinos": ["Rosario", "Concordia"]}
+    sola = {"tipo": "cuenta", "texto": "sumame todo"}
+    assert T._destinos_del_turno(sola, [sola, envio]) == ["Rosario", "Concordia"]
+    a = {"tipo": "cuenta", "destinos": ["Rosario"]}
+    b = {"tipo": "cuenta", "texto": "una memoria y un mouse a Concordia"}
+    assert T._destinos_del_turno(a, [a, b, envio]) == ["Rosario"]
+    assert "Concordia" in T._destinos_del_turno(b, [a, b, envio])[0]
+
+
+def test_el_medio_que_el_cliente_no_nombro_no_se_inventa():
+    A.CLIENTE_DIJO.set("dividi el presupuesto en setenta treinta")
+    rep = T._reparto([{"medio": "efectivo", "porcentaje": 70}, {"medio": "tarjeta", "porcentaje": 30}])
+    assert [r["medio"] for r in rep] == ["parte 1", "parte 2"]
+    A.CLIENTE_DIJO.set("pago 70 por ciento transferencia y 30 por ciento Mercado Pago")
+    rep = T._reparto([{"medio": "transferencia", "porcentaje": 70}, {"medio": "Mercado Pago", "porcentaje": 30}])
+    assert [r["medio"] for r in rep] == ["transferencia", "Mercado Pago"]
+
+
+def test_la_cuenta_suma_un_envio_por_destino():
+    r = A.h_cuenta(TIENDA, items=[{"producto": "MOU0023", "cantidad": 1}], destinos=["Rosario", "Concordia"])
+    assert r["cuenta"]["total_ars"] == 8500 + 7000 + 6500

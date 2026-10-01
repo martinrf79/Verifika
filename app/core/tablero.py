@@ -313,7 +313,137 @@ def _destino(pz: dict, piezas: list, mensaje: str, historial: list, memoria: str
     return m.group(1).strip() if m else ""
 
 
-def _elegidos(items: list, llamadas: list, memoria: str, tienda_id: str) -> list:
+def _es_rubro(nombre: str, tienda_id: str) -> str:
+    """El rubro si el "producto" que escribio el interprete es un rubro y nada
+    mas: "auriculares", "memorias". Un rubro no es un producto, es una busqueda."""
+    n = A._n(nombre).strip()
+    if not n:
+        return ""
+    for r in _vocabulario(tienda_id)[0]:
+        rn = A._n(r)
+        if n in (rn, rn + "s", rn + "es") or rn in (n, n[:-1], n[:-2]) \
+                or (" " in rn and n.split()[0] in (rn.split()[0], rn.split()[0] + "s", rn.split()[0] + "es")
+                    and len(n.split()) == 1):
+            return r
+    return ""
+
+
+def _normalizar(piezas: list, tienda_id: str) -> list:
+    """Lo que el interprete parte bien y nombra mal, ordenado antes de correr.
+    Medido el 1-oct con `laboratorio referencia`:
+    - un rubro escrito como producto —"dos auriculares"— se busca;
+    - una condicion suelta, sin rubro ni producto —"lo menos chino posible"—,
+      vale para todas las busquedas del mensaje: combinacion 24;
+    - el reparto del pago pegado a otra pieza va a la cuenta;
+    - la cuenta y la compra corren al final, despues de lo que buscan."""
+    piezas = [dict(p) for p in piezas]
+    for p in piezas:
+        if p.get("tipo") == "producto" and not _ID.fullmatch(str(p.get("producto") or "")):
+            r = _es_rubro(p.get("producto") or "", tienda_id)
+            if r:
+                p.update({"tipo": "buscar", "rubro": r, "producto": ""})
+    busquedas = [p for p in piezas if p.get("tipo") == "buscar" and (p.get("rubro") or p.get("producto"))]
+    sueltas = [p for p in piezas if p.get("tipo") == "buscar" and not p.get("rubro") and not p.get("producto")
+               and not p.get("orden") and p.get("condiciones")]
+    if busquedas and sueltas:
+        for s in sueltas:
+            for b in busquedas:
+                b["condiciones"] = list(b.get("condiciones") or []) + [c for c in s["condiciones"]
+                                                                       if c not in (b.get("condiciones") or [])]
+        piezas = [p for p in piezas if p not in sueltas]
+    cuenta = next((p for p in piezas if p.get("tipo") == "cuenta"), None)
+    if cuenta is not None and not cuenta.get("reparto_pago"):
+        rep = next((p.get("reparto_pago") for p in piezas if p.get("reparto_pago")), None)
+        if rep:
+            cuenta["reparto_pago"] = rep
+    al_final = ("cuenta", "comprar")
+    return [p for p in piezas if p.get("tipo") not in al_final] + [p for p in piezas if p.get("tipo") in al_final]
+
+
+def _palabras(texto: str) -> set:
+    return {w for w in re.findall(r"[a-z0-9]+", A._n(texto)) if len(w) > 2}
+
+
+def _de_la_busqueda(nombre: str, busquedas: list, usados: dict, pendientes: int) -> str:
+    """LA SEGUNDA VUELTA (1-oct). Un item de la cuenta que no es un producto
+    —"auriculares", "el mouse mas liviano", "articulo mas barato 1"— sale de
+    una busqueda que este mismo turno ya corrio: la de palabras mas parecidas, y
+    de ella la fila que sigue, con stock. Asi "los dos mas baratos" son la
+    primera y la segunda fila. El id lo pone el codigo, nunca el modelo."""
+    if not busquedas:
+        return ""
+    pal = _palabras(nombre)
+    puntos = [len(pal & _palabras(" ".join(str(b[0].get(k) or "") for k in ("texto", "rubro", "producto"))))
+              + (5 if b[0].get("rubro") and A._n(b[0]["rubro"]).split()[0][:5] in A._n(nombre) else 0)
+              for b in busquedas]
+    if max(puntos) == 0:
+        # Sin palabras en comun, solo si hay una busqueda por item y en orden.
+        if pendientes != len(busquedas):
+            return ""
+        i = min(range(len(busquedas)), key=lambda j: usados.get(j, 0))
+    else:
+        i = puntos.index(max(puntos))
+    pid, usados[i] = _fila_con_stock(busquedas[i][1], usados.get(i, 0))
+    return pid
+
+
+def _fila_con_stock(out: dict, desde: int = 0) -> tuple:
+    """(id, siguiente) de la primera fila desde `desde` que tiene stock, en ella
+    o en otro color. Sin ninguna, ("", fin)."""
+    filas = (out or {}).get("filas") or []
+    for k, f in enumerate(filas[desde:], desde):
+        opciones = [{"id": f.get("id"), "stock": f.get("stock")}] + list(f.get("variantes") or [])
+        con = next((o for o in opciones if o.get("id") and (o.get("stock") is None or int(o["stock"] or 0) > 0)),
+                   None)
+        if con:
+            return str(con["id"]), k + 1
+    return "", len(filas)
+
+
+def _resolver_items(items: list, tienda_id: str, llamadas: list, ctx: dict) -> list:
+    """Cada item de una cuenta, certificado por nombre; el que no certifica y
+    vino de una busqueda de este turno, por la segunda vuelta."""
+    out, pend = [], []
+    for i in items:
+        if not isinstance(i, dict):
+            continue
+        pid = _certificado(str(i.get("producto") or ""), tienda_id, llamadas)
+        out.append({**i, "producto": pid})
+        if not _ID.fullmatch(str(pid)):
+            pend.append(out[-1])
+    usados = ctx.setdefault("usados", {})
+    for i in pend:
+        pid = _de_la_busqueda(str(i["producto"]), ctx.get("busquedas") or [], usados, len(pend))
+        if pid:
+            i["producto"] = pid
+            ctx.setdefault("resueltos", set()).add(pid)
+    return out
+
+
+def _destinos_del_turno(pz: dict, piezas: list) -> list:
+    """Los destinos de una cuenta: un envio por destino. Los suyos si los trae,
+    en la pieza o en su texto —"un auricular y un mouse a Cordoba"—. Si es la
+    unica cuenta del mensaje, todos los que el mensaje cotiza. Con varias
+    cuentas, cada una con el suyo: el 1-oct cada una de tres cuentas llevo los
+    tres envios."""
+    propios = [str(d) for d in pz.get("destinos") or [] if str(d).strip()]
+    varias = sum(p.get("tipo") == "cuenta" for p in piezas) > 1
+    if not propios and varias and pz.get("texto"):
+        # Del texto, solo con varias cuentas y solo un lugar del padron.
+        propios = [_lugar_en(pz["texto"])] if _lugar_en(pz["texto"]) else []
+    if propios or varias:
+        return list(dict.fromkeys(propios))
+    return list(dict.fromkeys(str(d) for p in piezas if p.get("tipo") == "envio"
+                              for d in p.get("destinos") or [] if str(d).strip()))
+
+
+_FALTA_LUGAR = re.compile(r"destin|envi|direcc|localidad|ciudad|domicilio|calle|lugar")
+# El esquema no tiene nulo para "falta": el modelo escribe "ninguna" y era una
+# pregunta al cliente.
+_NADA = re.compile(r"|ningun[oa]?|nada|no|none|null|n/?a|-")
+
+
+def _elegidos(items: list, llamadas: list, memoria: str, tienda_id: str, resueltos: set = None) -> list:
     """LA CUENTA SUMA LO QUE EL CLIENTE ELIGIO, NO LO QUE EL BOT MOSTRO (30-sep,
     M10): ante "cuanto es todo" el interprete metia los doce productos de la
     lista. Elegido es lo que el cliente nombro, lo reservado y lo que ya estaba
@@ -329,8 +459,9 @@ def _elegidos(items: list, llamadas: list, memoria: str, tienda_id: str) -> list
         todas = [w for w in re.findall(r"[a-z0-9]+", A._n(prod.get("modelo") or "")) if len(w) > 1]
         claves = [w for w in todas if any(c.isdigit() for c in w)] or todas  # "G203 Lightsync": alcanza g203
         return bool(claves) and all(w in dijo for w in claves)
+    resueltos = resueltos or set()
     quedan = [i for i in items if not _ID.fullmatch(str(i.get("producto"))) or str(i["producto"]) in reservados
-              or str(i["producto"]) in pedido or nombrado(str(i["producto"]))]
+              or str(i["producto"]) in pedido or str(i["producto"]) in resueltos or nombrado(str(i["producto"]))]
     return quedan or items
 
 
@@ -338,6 +469,12 @@ def _reparto(rep):
     if not rep:
         return None
     rep = [r for r in rep if isinstance(r, dict)]
+    # EL MEDIO LO NOMBRA EL CLIENTE O NO HAY MEDIO (1-oct): ante "dividi el
+    # presupuesto en setenta treinta" el interprete escribio efectivo y
+    # tarjeta, y el cliente leyo medios que nunca dijo.
+    dijo = A._n(CLIENTE_DIJO.get())
+    rep = [{**r, "medio": r.get("medio") if _palabras(str(r.get("medio") or "")) & _palabras(dijo)
+            else f"parte {i}"} for i, r in enumerate(rep, 1)]
     if rep and all(float(r.get("porcentaje") or 0) <= 1 for r in rep):
         rep = [{**r, "porcentaje": round(float(r.get("porcentaje") or 0) * 100, 2)} for r in rep]
     return rep or None
@@ -387,37 +524,50 @@ def _envios_juntos(piezas: list) -> list:
 
 def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx: dict) -> list:
     """Corre cada pieza con su herramienta. Vuelve los HECHOS, uno por pieza."""
-    piezas = _envios_juntos(piezas)
+    piezas = _normalizar(_envios_juntos(piezas), tienda_id)
     hechos = []
+    ctx["busquedas"], ctx["usados"] = [], {}
     vistas = {json.dumps([x["herramienta"], x["args"]], sort_keys=True, default=str): x.get("vuelve") for x in llamadas}
     for pz in _orden(piezas):
         h, args = a_herramienta(pz)
         if h in ("cuenta", "reservar"):
             if h == "cuenta":
-                args["items"] = [{**i, "producto": _certificado(str(i.get("producto") or ""), tienda_id, llamadas)}
-                                 for i in args.get("items") or [] if isinstance(i, dict)]
+                args["items"] = _resolver_items(args.get("items") or [], tienda_id, llamadas, ctx)
                 # UNA CUENTA CORRE SI EL CLIENTE PIDE UN TOTAL O UN REPARTO, o si
                 # todo lo que suma quedo certificado: con pedido y destino, el
                 # total lo tiene que dar la cuenta, no el redactor sumando.
                 if len(args["items"]) > 1:
-                    args["items"] = _elegidos(args["items"], llamadas, ctx["memoria"], tienda_id)
+                    args["items"] = _elegidos(args["items"], llamadas, ctx["memoria"], tienda_id,
+                                              ctx.get("resueltos"))
                 certificada = bool(args["items"]) and all(_ID.fullmatch(str(i["producto"])) for i in args["items"])
                 if not (ctx["pide_total"] or args.get("reparto_pago") or certificada):
                     h = None
                     ctx["cuenta_pedida"] = True  # la pidio el interprete sin productos certificados
                 args["destino"] = args.get("destino") or _destino(pz, piezas, ctx["mensaje"], ctx["historial"],
                                                                    ctx["memoria"])
+                args["destinos"] = _destinos_del_turno(pz, piezas) or ([args["destino"]] if args["destino"] else [])
+                if args["destinos"]:
+                    args["destino"] = args["destinos"][0]
                 args["reparto_pago"] = _reparto(args.get("reparto_pago"))
             else:
                 args["producto"] = _certificado(args["producto"], tienda_id, llamadas)
+                if not _ID.fullmatch(str(args["producto"])):
+                    pid = _de_la_busqueda(args["producto"], ctx["busquedas"], ctx["usados"], 1)
+                    if pid:
+                        args["producto"] = pid
         if h == "envio" and not args.get("destinos"):
             d = _destino(pz, piezas, ctx["mensaje"], ctx["historial"], ctx["memoria"])
             args["destinos"] = [d] if d else []
         hecho = {"parte": pz.get("texto"), "tipo": pz.get("tipo")}
         if pz.get("depende_de"):
             hecho["depende_de_la_parte"] = pz["depende_de"]
-        if pz.get("falta"):
-            hecho["pregunta_al_cliente"] = pz["falta"]
+        # LO QUE EL MENSAJE YA DICE NO FALTA (1-oct): el interprete pone el
+        # destino en "falta" aunque el cliente lo haya nombrado, y el bot le
+        # preguntaba por la direccion que ya habia dado.
+        falta = "" if _NADA.fullmatch(A._n(str(pz.get("falta") or "")).strip()) else pz.get("falta")
+        if falta and not (_FALTA_LUGAR.search(A._n(falta)) and _destino(
+                pz, piezas, ctx["mensaje"], ctx["historial"], ctx["memoria"])):
+            hecho["pregunta_al_cliente"] = falta
         if h:
             # LA CONSULTA REPETIDA NO SE VUELVE A HACER, PERO SU RESULTADO SI
             # LLEGA AL REDACTOR. Sin esto, la correccion dejaba la parte sin
@@ -428,6 +578,8 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
                 llamadas.append({"vuelta": vuelta, "herramienta": h, "args": args, "vuelve": out})
                 vistas[clave] = out
             hecho["resultado"] = _para_redactar(vistas[clave])
+            if h == "buscar":
+                ctx["busquedas"].append((pz, vistas[clave]))
         hechos.append(hecho)
     return hechos
 
@@ -457,16 +609,27 @@ def _cuenta_del_codigo(piezas: list, llamadas: list, tienda_id: str, ctx: dict, 
             ids.append(str(filas[0]["id"]))
         if x["herramienta"] == "reservar" and v.get("id"):
             ids.append(str(v["id"]))
+    cant = {str(i.get("producto")): i.get("cantidad") or 1 for p in piezas for i in p.get("items") or []}
+    # LA SEGUNDA VUELTA TAMBIEN ACA: si este turno solo busco —"dos auriculares
+    # y dos mouse, los mas baratos, sumame todo"—, la cuenta sale de lo que
+    # encontro cada busqueda, con la cantidad que pidio el cliente.
+    if not ids:
+        for pz, out in ctx.get("busquedas") or []:
+            pid = _fila_con_stock(out)[0]
+            if pid:
+                ids.append(pid)
+                cant[pid] = pz.get("cantidad") or 1
     if not ids:
         ids = _ids_recientes(ctx["memoria"])
     ids = list(dict.fromkeys(ids))
     if not ids:
         return {}
-    cant = {str(i.get("producto")): i.get("cantidad") or 1 for p in piezas for i in p.get("items") or []}
     rep = next((p.get("reparto_pago") for p in piezas if p.get("reparto_pago")), None)
+    destinos = _destinos_del_turno({}, piezas)
     args = {"items": [{"producto": i, "cantidad": cant.get(i, 1)} for i in ids],
-            "destino": _destino({}, piezas, ctx["mensaje"], ctx["historial"], ctx["memoria"]),
-            "reparto_pago": _reparto(rep)}
+            "destino": (destinos or [""])[0] or _destino({}, piezas, ctx["mensaje"], ctx["historial"],
+                                                         ctx["memoria"]),
+            "destinos": destinos, "reparto_pago": _reparto(rep)}
     out = ejecutar("cuenta", args, tienda_id)
     llamadas.append({"vuelta": vuelta, "herramienta": "cuenta", "args": args, "vuelve": out})
     return {"parte": "el total que pidio el cliente", "tipo": "cuenta", "resultado": _para_redactar(out)}
@@ -533,7 +696,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
         return {"texto": "", "llamadas": [], "uso": uso}
     piezas = [p for p in (_json(t_piezas).get("piezas") or []) if isinstance(p, dict)]
     banderas = _json(t_banderas)
-    ctx = {"mensaje": mensaje, "historial": historial, "memoria": memoria,
+    ctx = {"mensaje": mensaje, "historial": historial, "memoria": memoria, "tienda_id": tienda_id,
            "pide_total": bool(banderas.get("pide_total")) or A._pide_reparto(mensaje)}
     hechos = correr_piezas(piezas, tienda_id, llamadas, 1, ctx)
     revision = _revision(piezas, banderas, llamadas, mensaje, historial, tienda_id)
