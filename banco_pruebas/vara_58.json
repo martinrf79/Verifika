@@ -1979,6 +1979,24 @@
        "n": "no habla de procesadores"
       },
       {
+       "tipo": "articulos",
+       "minimos": {
+        "auricular": 2,
+        "mouse": 2,
+        "memoria": 2
+       },
+       "n": "conserva 2 auricular, 2 mouse, 2 memoria"
+      },
+      {
+       "tipo": "total_general",
+       "n": "total general: la suma de los bloques"
+      },
+      {
+       "tipo": "reparto_total",
+       "pct": 70,
+       "n": "el 70% sobre el total general"
+      },
+      {
        "tipo": "no_patron",
        "patron": "\\bids?\\b|el sistema|identificador|denominacion|[a-z]{3}\\d{4}|no existe un articulo con ese nombre|no (puedo|podemos) sumarl",
        "n": "sin jerga interna"
@@ -2817,6 +2835,24 @@
         }
        ],
        "n": "marca que el teclado no estaba entre los seis"
+      },
+      {
+       "tipo": "articulos",
+       "minimos": {
+        "auricular": 2,
+        "mouse": 2,
+        "memoria": 2
+       },
+       "n": "conserva 2 auricular, 2 mouse, 2 memoria"
+      },
+      {
+       "tipo": "total_general",
+       "n": "total general: la suma de los bloques"
+      },
+      {
+       "tipo": "reparto_total",
+       "pct": 70,
+       "n": "el 70% sobre el total general"
       },
       {
        "tipo": "no_patron",

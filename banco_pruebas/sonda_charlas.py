@@ -86,6 +86,25 @@ def _dice(palabra, texto):
     return any(_n(o) in _n(texto) for o in palabra.split("|"))
 
 
+_MONTO = re.compile(r"\$\s?(\d{4,})")
+
+
+def _total_general(texto):
+    """El monto que es la suma de los totales de dos o mas bloques. Los
+    totales de bloque son los renglones que empiezan con "Total"; el "Total
+    final" de un reparto repite el de su bloque y no cuenta."""
+    t = _plata(texto)
+    bloques = [int(m) for r in t.splitlines()
+               if re.match(r"\W*total\b(?!\s*final)", _n(r)) for m in _MONTO.findall(r)[-1:]]
+    for x in sorted({int(m) for m in _MONTO.findall(t)}, reverse=True):
+        resto = list(bloques)
+        if x in resto:
+            resto.remove(x)
+        if len(resto) >= 2 and sum(resto) == x:
+            return x
+    return None
+
+
 def nota_casilla(k, llamadas, texto, respuestas):
     """Una casilla de la vara de las 58: solo mira lo que recibe el cliente."""
     tipo = k["tipo"]
@@ -117,6 +136,14 @@ def nota_casilla(k, llamadas, texto, respuestas):
         if len(mostrados) < k["pos"]:
             return None
         return all(w in _n(texto) for w in mostrados[k["pos"] - 1].split()[:2])
+    if tipo == "articulos":  # "1x Auriculares ...": ningun articulo pedido sin destino
+        renglones = re.findall(r"(\d+)\s?x\s+([^\n:]+)", _n(texto))
+        return all(sum(int(c) for c, nom in renglones if p in nom) >= m for p, m in k["minimos"].items())
+    if tipo == "total_general":
+        return _total_general(texto) is not None
+    if tipo == "reparto_total":
+        tot = _total_general(texto)
+        return bool(tot) and str(round(tot * k["pct"] / 100)) in re.sub(r"\D+", " ", _plata(texto)).split()
     if tipo == "tope_plata":  # ningun monto de la respuesta pasa el tope
         montos = [int(x) for x in re.findall(r"\$\s?(\d{4,})", _plata(texto))]
         return bool(montos) and max(montos) <= k["monto"]

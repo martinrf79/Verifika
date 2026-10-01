@@ -18,6 +18,10 @@ vara puntua el loop de herramientas del banco y el camino real por el clon.
   todas         valen todas juntas: sirve adentro de alguna
   responde_sobre  habla del producto que se mostro en tal turno y posicion
   mas_barato_de   nombra el mas barato de los que se mostraron en tal turno
+  articulos     cuenta los renglones "Nx ..." por palabra: ningun articulo
+                pedido queda sin destino
+  total_general hay un monto que es la suma de los totales de cada bloque
+  reparto_total el porcentaje sale sobre ese total general, no por bloque
 
 Los turnos sin casillas preparan la memoria: el bot contesta de verdad y lo que
 muestra es lo que despues se referencia.
@@ -56,6 +60,19 @@ def todas(*ops, n):
 
 def alguna(*ops, n):
     return {"tipo": "alguna", "opciones": list(ops), "n": n}
+
+
+def articulos(n="", **minimos):
+    return {"tipo": "articulos", "minimos": minimos, "n": n or "conserva " + ", ".join(
+        f"{v} {k}" for k, v in minimos.items())}
+
+
+def total_general(n="total general: la suma de los bloques"):
+    return {"tipo": "total_general", "n": n}
+
+
+def reparto_total(pct, n=""):
+    return {"tipo": "reparto_total", "pct": pct, "n": n or f"el {pct}% sobre el total general"}
 
 
 def t(texto, *casillas):
@@ -272,7 +289,7 @@ COMPLEJAS = [
         "presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos.",
         dice("auricular"), dice("mouse"), dice("memoria"), plata(7500), plata(6500), plata(10000),
         dice("70"), dice("30"), dice("total"), no_patron(r"intel|amd|procesador", "no habla de procesadores"),
-        SIN_JERGA)),
+        articulos(auricular=2, mouse=2, memoria=2), total_general(), reparto_total(70), SIN_JERGA)),
     k(3, "buscar, elegir y sumar: los mas baratos de dos rubros con envio",
       t("dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital",
         dice("zeus"), dice("dx-110"), plata(7500), alguna(plata(139500), plata(148000), n="el total"), SIN_JERGA)),
@@ -357,7 +374,7 @@ COMPLEJAS = [
         alguna(dice("no estaba|no lo mencionaste|no figuraba|en vez de|en lugar de|era una memoria|era un auricular"
                     "|sumo el teclado|agrego el teclado|siete articulos|7 articulos"), pregunta(),
                n="marca que el teclado no estaba entre los seis"),
-        SIN_JERGA)),
+        articulos(auricular=2, mouse=2, memoria=2), total_general(), reparto_total(70), SIN_JERGA)),
     k(19, "real: el catalogo",
       t("Tenes catalogo? que tipo de productos venden?", dice("mouse"), dice("teclado"), dice("notebook"), SIN_JERGA)),
 ]
