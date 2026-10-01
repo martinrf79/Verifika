@@ -113,7 +113,7 @@ Te paso el ultimo mensaje del cliente y los HECHOS que consulto el sistema para 
 4. Si una parte dependia de otra, decidi con lo que dicen los HECHOS y explicalo en una linea.
 5. Si el cliente da algo por cierto y los HECHOS dicen otra cosa, corregilo con amabilidad.
 6. Si hay una cuenta, copia su detalle tal cual, renglon por renglon: cada producto, el envio, cada parte del reparto y el total. Si hay un total_general, va al final y una sola vez, con su reparto.
-10. Si hay un hecho de articulos, decilo en una linea antes de los presupuestos, con sus palabras: lo que no estaba en la lista y que se tomo en su lugar, lo que el cliente nombro fuera de la lista, o que articulo quedo sin destino; y pregunta una vez si esta bien. No le agregues motivos.
+10. Si hay un hecho de articulos, decilo en una linea antes de los presupuestos, con sus palabras: lo que no estaba en la lista y que se tomo en su lugar, lo que el cliente nombro fuera de la lista, o que articulo quedo sin destino; y pregunta una vez si esta bien. No le agregues motivos ni nombres al sistema.
 7. El saber general de tecnologia lo explicas vos.
 8. Pedile el nombre SOLO si el cliente dijo que compra. Nunca pidas DNI, tarjeta ni CBU. No cierres cada mensaje ofreciendo comprar."""
 
@@ -334,7 +334,9 @@ def _es_rubro(nombre: str, tienda_id: str) -> str:
         return ""
     for r in _vocabulario(tienda_id)[0]:
         rn = A._n(r)
-        if n in (rn, rn + "s", rn + "es") or rn in (n, n[:-1], n[:-2]) \
+        # "auricular" es "auriculares": el singular del rubro plural (1-oct, K20).
+        singular = rn[:-2] if rn.endswith("es") else rn[:-1] if rn.endswith("s") else rn
+        if n in (rn, rn + "s", rn + "es", singular) or rn in (n, n[:-1], n[:-2]) \
                 or (" " in rn and n.split()[0] in (rn.split()[0], rn.split()[0] + "s", rn.split()[0] + "es")
                     and len(n.split()) == 1):
             return r
@@ -351,11 +353,22 @@ def _normalizar(piezas: list, tienda_id: str) -> list:
     - el reparto del pago pegado a otra pieza va a la cuenta;
     - la cuenta y la compra corren al final, despues de lo que buscan."""
     piezas = [dict(p) for p in piezas]
+    convertidas = []
     for p in piezas:
         if p.get("tipo") == "producto" and not _ID.fullmatch(str(p.get("producto") or "")):
             r = _es_rubro(p.get("producto") or "", tienda_id)
             if r:
                 p.update({"tipo": "buscar", "rubro": r, "producto": ""})
+                convertidas.append(p)
+    # El rubro escrito como producto no trae orden: hereda el que comparten
+    # las otras busquedas del mensaje —"dos mouse, dos teclados y dos
+    # auriculares, los mas baratos"— (1-oct, K07).
+    ordenes = [json.dumps(p["orden"], sort_keys=True) for p in piezas if p.get("tipo") == "buscar"
+               and p not in convertidas and (p.get("orden") or {}).get("campo")]
+    if ordenes and len(set(ordenes)) == 1:
+        for p in convertidas:
+            if not (p.get("orden") or {}).get("campo"):
+                p["orden"] = json.loads(ordenes[0])
     busquedas = [p for p in piezas if p.get("tipo") == "buscar" and (p.get("rubro") or p.get("producto"))]
     sueltas = [p for p in piezas if p.get("tipo") == "buscar" and not p.get("rubro") and not p.get("producto")
                and not p.get("orden") and p.get("condiciones")]
@@ -765,17 +778,48 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
             if h == "buscar":
                 ctx["busquedas"].append((pz, vistas[clave]))
             if h == "cuenta" and ((vistas[clave] or {}).get("cuenta") or {}).get("total_ars") is not None:
-                bloques.append(vistas[clave]["cuenta"])
+                bloques.append((args, vistas[clave]["cuenta"]))
         hechos.append(hecho)
     if len(bloques) > 1:
-        rep = _reparto(reparto_total)
-        tg = _total_general(bloques, rep, tienda_id)
-        llamadas.append({"vuelta": vuelta, "herramienta": "total_general",
-                         "args": {"bloques": len(bloques), "reparto_pago": rep},
-                         "vuelve": tg})
-        hechos.append({"parte": "el total general de todos los presupuestos", "tipo": "total_general",
-                       "resultado": {"total_general": tg["total"], "detalle": tg["detalle"]}})
+        hechos.append(_hecho_total_general(bloques, _reparto(reparto_total), tienda_id, llamadas, vuelta, ctx))
     return hechos
+
+
+def _hecho_total_general(bloques: list, rep, tienda_id: str, llamadas: list, vuelta: int, ctx: dict) -> dict:
+    """El total general como llamada —la guarda de plata ve sus montos— y como
+    hecho para el redactor. Deja en `ctx["bloques"]` que va a cada destino,
+    para que el turno siguiente lo encuentre en la memoria."""
+    from app.storage.firestore_client import get_product_by_id
+    tg = _total_general([c for _, c in bloques], rep, tienda_id)
+    llamadas.append({"vuelta": vuelta, "herramienta": "total_general",
+                     "args": {"bloques": len(bloques), "reparto_pago": rep}, "vuelve": tg})
+    grupos = []
+    for args, _ in bloques:
+        items = [{"producto": str(i["producto"]), "cantidad": int(i.get("cantidad") or 1)}
+                 for i in args.get("items") or [] if _ID.fullmatch(str(i.get("producto")))]
+        # `cats` es el formato que `calculadora` ya lee de grupos_envio.
+        cats = [{"n": i["cantidad"], "cat": str((get_product_by_id(i["producto"], tienda_id=tienda_id) or {})
+                                                .get("categoria") or "")} for i in items]
+        grupos.append({"destino": (args.get("destinos") or [args.get("destino") or ""])[0],
+                       "items": items, "cats": cats})
+    ctx["bloques"] = grupos
+    return {"parte": "el total general de todos los presupuestos", "tipo": "total_general",
+            "resultado": {"total_general": tg["total"], "detalle": tg["detalle"]}}
+
+
+_BLOQUES = re.compile(r"LOS PRESUPUESTOS POR DESTINO[^\n]*\n((?:- .+\n?)+)")
+
+
+def bloques_en_memoria(memoria: str) -> list:
+    """Los presupuestos por destino que la memoria trae del turno anterior."""
+    m = _BLOQUES.search(memoria or "")
+    out = []
+    for r in (m.group(1).splitlines() if m else []):
+        d = re.match(r"- (.+?): ", r)
+        items = [{"producto": pid, "cantidad": int(n)} for n, pid in re.findall(r"(\d+)x ([A-Z]{3}\d{4})", r)]
+        if d and items:
+            out.append({"destino": d.group(1).strip(), "items": items})
+    return out
 
 
 def _ids_recientes(memoria: str) -> list:
@@ -813,12 +857,27 @@ def _cuenta_del_codigo(piezas: list, llamadas: list, tienda_id: str, ctx: dict, 
             if pid:
                 ids.append(pid)
                 cant[pid] = pz.get("cantidad") or 1
+    rep = next((p.get("reparto_pago") for p in piezas if p.get("reparto_pago")), None)
+    # LOS PRESUPUESTOS POR DESTINO SOBREVIVEN AL TURNO (1-oct, K07): "decime
+    # mitad transferencia y mitad mercado pago" despues de tres destinos es
+    # sobre los tres. Se rearma cada bloque y el total general, con el reparto
+    # nuevo.
+    grupos = bloques_en_memoria(ctx["memoria"]) if not ids else []
+    if len(grupos) > 1:
+        bloques = []
+        for g in grupos:
+            args = {"items": g["items"], "destino": g["destino"], "destinos": [g["destino"]], "reparto_pago": None}
+            out = ejecutar("cuenta", args, tienda_id)
+            llamadas.append({"vuelta": vuelta, "herramienta": "cuenta", "args": args, "vuelve": out})
+            if (out.get("cuenta") or {}).get("total_ars") is not None:
+                bloques.append((args, out["cuenta"]))
+        if len(bloques) > 1:
+            return _hecho_total_general(bloques, _reparto(rep), tienda_id, llamadas, vuelta, ctx)
     if not ids:
         ids = _ids_recientes(ctx["memoria"])
     ids = list(dict.fromkeys(ids))
     if not ids:
         return {}
-    rep = next((p.get("reparto_pago") for p in piezas if p.get("reparto_pago")), None)
     destinos = _destinos_del_turno({}, piezas)
     args = {"items": [{"producto": i, "cantidad": cant.get(i, 1)} for i in ids],
             "destino": (destinos or [""])[0] or _destino({}, piezas, ctx["mensaje"], ctx["historial"],
@@ -855,6 +914,14 @@ def _revision(piezas: list, banderas: dict, llamadas: list, mensaje: str, histor
     cuentas = [p for p in piezas if p.get("tipo") == "cuenta"]
     por_destino = len(cuentas) > 1 or any(len({str(i.get("destino") or "") for i in p.get("items") or []
                                                 if isinstance(i, dict)} - {""}) > 1 for p in cuentas)
+    buscados = {p.get("rubro") for p in piezas if p.get("tipo") == "buscar"} | {
+        _es_rubro(p.get("producto") or "", tienda_id) for p in piezas if p.get("tipo") == "producto"}
+    sin_buscar = list(dict.fromkeys(r for p in cuentas for i in p.get("items") or [] if isinstance(i, dict)
+                                    for r in [_es_rubro(str(i.get("producto") or ""), tienda_id)]
+                                    if r and r not in buscados))
+    if sin_buscar:
+        partes.append("la cuenta lleva rubros que ninguna pieza busca: " + ", ".join(sin_buscar)
+                      + ". Agrega una pieza buscar por cada uno, con la cantidad y con orden si pide barato o caro")
     if len(destinos) > 1 and (banderas.get("pide_total") or f.get("reparto") or cuentas) and not por_destino:
         partes.append(f"reparte los articulos en {len(destinos)} destinos: en la cuenta, cada item con su destino, "
                       "y en cada buscar la cantidad que pidio")
@@ -970,4 +1037,5 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
              tokens=sum(x["entrada"] for x in uso), cache=sum(x["cache"] for x in uso),
              salida=sum(x["salida"] for x in uso), ms=int((time.time() - t0) * 1000))
     return {"texto": texto, "llamadas": llamadas, "uso": uso, "hechos": hechos,
-            "busqueda": busqueda_vigente((ctx.get("busquedas") or []) + (ctx.get("no_vende") or []))}
+            "busqueda": busqueda_vigente((ctx.get("busquedas") or []) + (ctx.get("no_vende") or [])),
+            "bloques": ctx.get("bloques")}

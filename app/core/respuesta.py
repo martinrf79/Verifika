@@ -130,6 +130,16 @@ def _memoria_texto(conv: dict) -> str:
             "EL ULTIMO PRESUPUESTO que ya le pasaste. Estos numeros son "
             "fuente: copialos tal cual. Si el pedido cambio, pedi la cuenta de "
             "nuevo con la herramienta cuenta en vez de corregirlos a mano:\n" + presu[:700])
+    grupos = [g for g in (conv.get("grupos_envio") or []) if isinstance(g, dict) and g.get("items")]
+    if len(grupos) > 1:
+        # UN PRESUPUESTO POR DESTINO, y el reparto que pida despues es sobre
+        # todos (1-oct, K07). El presupuesto de arriba es solo el ultimo bloque.
+        from app.storage.firestore_client import get_product_by_id as _gp
+        partes.append("LOS PRESUPUESTOS POR DESTINO que ya le pasaste, y un total general:\n" + "\n".join(
+            f"- {g.get('destino')}: " + ", ".join(
+                f"{i.get('cantidad') or 1}x {i.get('producto')} "
+                f"{(_gp(str(i.get('producto'))) or {}).get('nombre') or ''}".strip() for i in g["items"])
+            for g in grupos[:4]))
     carrito = conv.get("carrito_vigente") or []
     if carrito:
         # CON ID Y CON CANTIDAD, por lo mismo que los productos vistos: sin el
@@ -491,6 +501,8 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
                           carrito_vigente=carrito,
                           datos_cliente_parciales=datos_cliente,
                           criterio_cliente=r.get("busqueda") or None,
+                          # Una cuenta de un solo destino borra los bloques viejos.
+                          grupos_envio=r.get("bloques") or ([] if presupuesto else None),
                           pregunta_cierre_hecha=cierre_hecho)
     except Exception as e:  # noqa: BLE001
         log.warning("respuesta_save_error", trace_id=trace_id, error=str(e)[:150])

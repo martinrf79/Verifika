@@ -298,3 +298,41 @@ def test_un_rubro_que_la_tienda_no_vende_es_no_existe_y_no_se_busca():
     assert llamadas == [] and hechos[0]["resultado"]["veredicto"] == "no_existe"
     assert T.NO_LO_VENDE in T.esquema_piezas(TIENDA)["properties"]["piezas"]["items"]["properties"]["rubro"]["enum"]
     assert "celulares" in T.busqueda_vigente(ctx["no_vende"])
+
+
+def test_el_reparto_nuevo_sobre_los_presupuestos_por_destino_de_la_memoria(monkeypatch):
+    """K07: tres destinos en un turno y en el siguiente "mitad transferencia y
+    mitad mercado pago". La memoria trae los bloques y el codigo los rearma con
+    el reparto nuevo, sobre el total general."""
+    conv = {"grupos_envio": [{"destino": "Rosario", "items": [{"producto": "MOU0023", "cantidad": 1}]},
+                             {"destino": "Concordia", "items": [{"producto": "MOU0023", "cantidad": 1}]}]}
+    memoria = R._memoria_texto(conv)
+    assert [g["destino"] for g in T.bloques_en_memoria(memoria)] == ["Rosario", "Concordia"]
+    _con(monkeypatch, _Modelo([{"n": 1, "tipo": "cuenta", "texto": "mitad y mitad", "items": [],
+                                "reparto_pago": [{"medio": "transferencia", "porcentaje": 50},
+                                                 {"medio": "mercado pago", "porcentaje": 50}]}],
+                              banderas={"pide_total": True}))
+    r = asyncio.run(T.turno([], "Decime mitad transferencia y mitad mercado pago como quedaria", TIENDA,
+                            trace_id="t", memoria=memoria))
+    tg = next(x for x in r["llamadas"] if x["herramienta"] == "total_general")["vuelve"]
+    assert tg["total_ars"] == (8500 + 7000) + (8500 + 6500)
+    assert [p["medio"] for p in tg["split_pago"]["partes"]] == ["transferencia", "mercado pago"]
+    assert len(r["bloques"]) == 2
+
+
+def test_el_rubro_escrito_como_producto_hereda_el_orden_comun():
+    o = {"campo": "precio_ars", "direccion": "min"}
+    piezas = T._normalizar([{"n": 1, "tipo": "buscar", "rubro": "mouse", "orden": o},
+                            {"n": 2, "tipo": "buscar", "rubro": "teclado", "orden": o},
+                            {"n": 3, "tipo": "producto", "producto": "Auriculares"}], TIENDA)
+    assert piezas[2]["rubro"] == "auriculares" and piezas[2]["orden"] == o
+
+
+def test_el_singular_de_un_rubro_plural_es_el_rubro():
+    assert T._es_rubro("auricular", TIENDA) == "auriculares"
+    assert T._es_rubro("mouse", TIENDA) == "mouse"
+
+
+def test_la_cuenta_con_un_rubro_que_nadie_busca_pide_revision():
+    piezas = [{"n": 1, "tipo": "cuenta", "items": [{"producto": "notebook", "cantidad": 2}]}]
+    assert "notebook" in T._revision(piezas, {}, [], "dos notebooks", [], TIENDA)
