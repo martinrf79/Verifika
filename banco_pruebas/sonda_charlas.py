@@ -19,6 +19,8 @@ base. El README de esta carpeta dice el procedimiento entero.
   python3 -m banco_pruebas.sonda_charlas C27 C46 --etiqueta prueba   solo esas
   python3 -m banco_pruebas.sonda_charlas --informe --etiqueta v58_algo_1
   opciones: --vara compleja (la de todos los dias)  --vara todas (todo, antes de un deploy)  --camino agente (el turno viejo, sin el webhook)
+            --interprete <modelo>: el interprete, las preguntas de si o no y la revision con otro modelo; el
+            redactor sigue con el de config. Para medir si el techo es el modelo (1-oct). No toca app/.
 
 Hasta el 28-sep corria tambien las varas viejas, un camino simulado y uno
 sobre `motor.esquema`. Salieron con los bancos viejos de interpretacion, que
@@ -301,6 +303,26 @@ def informe_interpretacion(filas):
         print(f"    {cid}  {det[:80]}   ({txt[:40]})")
 
 
+def interprete_con(modelo: str) -> None:
+    """Los pasos de interpretar del tablero con otro modelo. Solo en el banco:
+    se envuelve `tablero._pedir`, el redactor queda con el de config."""
+    from app.core import llm_reintento as L
+    from app.core import tablero as T
+    original, modelo_de_config = T._pedir, L._modelo
+
+    async def _pedir(cli, msgs, temp, formato, trace_id, uso, paso):
+        if paso == "redactar":
+            return await original(cli, msgs, temp, formato, trace_id, uso, paso)
+        L._modelo = lambda: modelo
+        try:
+            out = await original(cli, msgs, temp, formato, trace_id, uso, paso)
+        finally:
+            L._modelo = modelo_de_config
+        uso[-1]["modelo"] = modelo
+        return out
+    T._pedir = _pedir
+
+
 def main():
     a = sys.argv[1:]
 
@@ -314,6 +336,7 @@ def main():
     hilos, etiqueta = opt("--hilos", 1, int), opt("--etiqueta", "base", str)
     vara = opt("--vara", "58", str)
     camino = opt("--camino", "clon", str)
+    interprete = opt("--interprete", "", str)
     if camino not in ("clon", "agente", "tablero"):
         sys.exit(f"camino {camino}: solo hay clon, agente y tablero")
     if etiqueta == "base":
@@ -326,6 +349,9 @@ def main():
     C.preparar_entorno()  # ANTES de importar app.config: si no, la clave y la tienda quedan mal
     C.instalar()
     _, modelo = _cliente()
+    if interprete:
+        interprete_con(interprete)
+        modelo = f"{modelo} + interprete {interprete}"
     if camino == "tablero":  # desde el 30-sep el clon YA corre el tablero: es el turno vivo
         camino = "clon"
     hechas = set()
