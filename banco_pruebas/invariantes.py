@@ -52,9 +52,10 @@ _RE_TOTAL = re.compile(r"^\s*total\s*:\s*\$([\d\.]+)\s*$",
                        re.IGNORECASE | re.MULTILINE)
 _RE_TOTAL_FINAL = re.compile(r"^\s*total\s+final\s*:\s*\$([\d\.]+)\s*$",
                              re.IGNORECASE | re.MULTILINE)
-# "- transferencia (65%): $146.250 - 10% descuento = $131.625"
+# "- transferencia (65%): $146.250 - 10% descuento = $131.625". Cualquier medio:
+# desde el 1-oct, si el cliente no lo nombra, es "parte 1".
 _RE_SPLIT = re.compile(
-    r"^\s*-\s*(?P<medio>transferencia|mercado ?pago)\s*\(\s*(?P<pct>[\d.,]+)\s*%\s*\)"
+    r"^\s*-\s*(?P<medio>[^()\n:]{2,40}?)\s*\(\s*(?P<pct>[\d.,]+)\s*%\s*\)"
     r"\s*:\s*(?P<montos>.*\S)\s*$", re.IGNORECASE | re.MULTILINE)
 # Los extras entre el subtotal y el total: envio, descuento, sena.
 _RE_EXTRA = re.compile(
@@ -94,7 +95,30 @@ def _falla(regla, detalle):
 
 
 # ── LOS INVARIANTES ─────────────────────────────────────────────────────────
+def presupuestos(mensaje: str) -> list:
+    """El mensaje partido en presupuestos: uno nuevo empieza en el primer
+    renglon de producto despues de un "Total". Desde el 1-oct el bot manda un
+    presupuesto por destino y un total general, y los invariantes que suponian
+    una sola cuenta por mensaje marcaban tres totales distintos como
+    contradiccion. El total general y su reparto quedan en el ultimo."""
+    bloques, actual, cerrado = [], [], False
+    for linea in (mensaje or "").splitlines():
+        if _RE_ITEM.match(linea) and cerrado:
+            bloques.append("\n".join(actual))
+            actual, cerrado = [], False
+        actual.append(linea)
+        if _RE_TOTAL.match(linea) or _RE_TOTAL_FINAL.match(linea):
+            cerrado = True
+    bloques.append("\n".join(actual))
+    return [b for b in bloques if b.strip()]
+
+
 def cuenta_cierra(mensaje: str) -> list:
+    """Cada presupuesto del mensaje, por separado."""
+    return [f for b in presupuestos(mensaje) for f in _cuenta_cierra(b)]
+
+
+def _cuenta_cierra(mensaje: str) -> list:
     """La aritmetica de la cuenta, que es la unica plata que el cliente ve.
 
     Tres cosas, y las tres son sumas que no admiten opinion:
@@ -202,7 +226,12 @@ def lo_cobrado_es_lo_facturado(mensaje: str) -> list:
 def un_solo_total_por_concepto(mensaje: str) -> list:
     """Dos "Total:" distintos en un mensaje es una contradiccion de plata. Que
     convivan "Total" y "Total final" es correcto -uno es antes del descuento-;
-    que haya dos "Total:" con numeros distintos, no."""
+    que haya dos "Total:" con numeros distintos, no. Se mira por presupuesto:
+    un total por destino es uno por bloque."""
+    return [f for b in presupuestos(mensaje) for f in _un_solo_total(b)]
+
+
+def _un_solo_total(mensaje: str) -> list:
     vistos = {_plata(x) for x in _RE_TOTAL.findall(mensaje or "")}
     if len(vistos) > 1:
         return [_falla("dos_totales_distintos",
@@ -256,7 +285,12 @@ def nada_se_dice_dos_veces(mensaje: str) -> list:
         fallas.append(_falla("renglon_repetido_en_el_mensaje",
                              f"{len(repetidas)} renglones calcados, "
                              f"p.ej. '{repetidas[0][:60]}'"))
-    if len(_RE_SUBTOTAL.findall(mensaje or "")) > 1:
+    # El bloque dos veces es el MISMO bloque calcado; dos destinos son dos
+    # bloques distintos.
+    cuentas = [_n(" ".join(l for l in b.splitlines() if _RE_ITEM.match(l) or _RE_SUBTOTAL.match(l)))
+               for b in presupuestos(mensaje)]
+    cuentas = [c for c in cuentas if c]
+    if len(cuentas) != len(set(cuentas)):
         fallas.append(_falla("la_cuenta_dos_veces",
                              "el bloque del presupuesto aparece mas de una vez"))
     return fallas
