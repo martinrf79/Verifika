@@ -353,22 +353,21 @@ def _normalizar(piezas: list, tienda_id: str) -> list:
     - el reparto del pago pegado a otra pieza va a la cuenta;
     - la cuenta y la compra corren al final, despues de lo que buscan."""
     piezas = [dict(p) for p in piezas]
-    convertidas = []
     for p in piezas:
         if p.get("tipo") == "producto" and not _ID.fullmatch(str(p.get("producto") or "")):
             r = _es_rubro(p.get("producto") or "", tienda_id)
             if r:
                 p.update({"tipo": "buscar", "rubro": r, "producto": ""})
-                convertidas.append(p)
-    # El rubro escrito como producto no trae orden: hereda el que comparten
-    # las otras busquedas del mensaje —"dos mouse, dos teclados y dos
-    # auriculares, los mas baratos"— (1-oct, K07).
-    ordenes = [json.dumps(p["orden"], sort_keys=True) for p in piezas if p.get("tipo") == "buscar"
-               and p not in convertidas and (p.get("orden") or {}).get("campo")]
-    if ordenes and len(set(ordenes)) == 1:
-        for p in convertidas:
-            if not (p.get("orden") or {}).get("campo"):
-                p["orden"] = json.loads(ordenes[0])
+    # EL ORDEN QUE COMPARTE EL MENSAJE VALE PARA TODAS SUS BUSQUEDAS, como la
+    # condicion de la regla 1: "dos mouse, dos teclados y dos auriculares, los
+    # mas baratos" salia con el orden en dos de las tres (1-oct, K07). Solo si
+    # dos o mas lo traen y ninguna trae otro.
+    con_orden = [json.dumps(p["orden"], sort_keys=True) for p in piezas if p.get("tipo") == "buscar"
+                 and (p.get("rubro") or p.get("producto")) and (p.get("orden") or {}).get("campo")]
+    if len(con_orden) > 1 and len(set(con_orden)) == 1:
+        for p in piezas:
+            if p.get("tipo") == "buscar" and p.get("rubro") and not (p.get("orden") or {}).get("campo"):
+                p["orden"] = json.loads(con_orden[0])
     busquedas = [p for p in piezas if p.get("tipo") == "buscar" and (p.get("rubro") or p.get("producto"))]
     sueltas = [p for p in piezas if p.get("tipo") == "buscar" and not p.get("rubro") and not p.get("producto")
                and not p.get("orden") and p.get("condiciones")]

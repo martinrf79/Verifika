@@ -320,12 +320,17 @@ def test_el_reparto_nuevo_sobre_los_presupuestos_por_destino_de_la_memoria(monke
     assert len(r["bloques"]) == 2
 
 
-def test_el_rubro_escrito_como_producto_hereda_el_orden_comun():
+def test_la_busqueda_sin_orden_hereda_el_orden_comun_del_mensaje():
     o = {"campo": "precio_ars", "direccion": "min"}
     piezas = T._normalizar([{"n": 1, "tipo": "buscar", "rubro": "mouse", "orden": o},
                             {"n": 2, "tipo": "buscar", "rubro": "teclado", "orden": o},
-                            {"n": 3, "tipo": "producto", "producto": "Auriculares"}], TIENDA)
-    assert piezas[2]["rubro"] == "auriculares" and piezas[2]["orden"] == o
+                            {"n": 3, "tipo": "producto", "producto": "Auriculares"},
+                            {"n": 4, "tipo": "buscar", "rubro": "monitor"}], TIENDA)
+    assert piezas[2]["rubro"] == "auriculares" and piezas[2]["orden"] == o and piezas[3]["orden"] == o
+    # con uno solo, o con dos distintos, no se hereda
+    una = T._normalizar([{"n": 1, "tipo": "buscar", "rubro": "mouse", "orden": o},
+                         {"n": 2, "tipo": "buscar", "rubro": "teclado"}], TIENDA)
+    assert not una[1].get("orden")
 
 
 def test_el_singular_de_un_rubro_plural_es_el_rubro():
