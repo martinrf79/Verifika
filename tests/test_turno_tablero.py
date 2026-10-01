@@ -242,3 +242,48 @@ def test_con_varios_destinos_hay_un_total_general_y_el_reparto_va_sobre_el(monke
     assert [p["monto_ars"] for p in tg["split_pago"]["partes"]] == [21350, 9150]
     assert hechos[-1]["tipo"] == "total_general"
     assert not A.faltantes(K20, llamadas).get("reparto")
+
+
+# ══ LA MEMORIA GUARDA LO QUE BUSCO EL CLIENTE (1-oct, K17, K18, M03) ════════
+
+def test_lo_que_busco_el_cliente_sobrevive_al_turno_y_va_a_la_memoria():
+    b = [({"rubro": "", "orden": {"campo": "precio_ars", "direccion": "max"}}, {}),
+         ({"rubro": "mouse", "condiciones": [{"campo": "marca", "operador": "no_contiene", "valor": "Genius"}]}, {})]
+    v = T.busqueda_vigente(b)
+    assert v.splitlines() == ["buscar toda la tienda, orden precio_ars max",
+                              "buscar mouse, marca no_contiene Genius"]
+    assert "toda la tienda" in R._memoria_texto({"criterio_cliente": v})
+
+
+def test_un_modelo_en_dos_colores_es_uno_si_el_cliente_no_nombro_el_color():
+    A.CLIENTE_DIJO.set("sumame uno de cada uno")
+    items = [{"producto": "MOU0023", "cantidad": 1}, {"producto": "MOU0024", "cantidad": 1}]
+    assert T._un_color_por_modelo(items, TIENDA) == [items[0]]
+    A.CLIENTE_DIJO.set("uno negro y uno blanco")
+    assert T._un_color_por_modelo(items, TIENDA) == items
+
+
+def test_el_orden_suelto_vale_para_las_busquedas_que_no_traen_el_suyo():
+    piezas = T._normalizar([
+        {"n": 1, "tipo": "buscar", "rubro": "auriculares", "cantidad": 2},
+        {"n": 2, "tipo": "buscar", "rubro": "mouse", "cantidad": 2},
+        {"n": 3, "tipo": "buscar", "texto": "los mas baratos", "orden": {"campo": "precio_ars", "direccion": "min"}}],
+        TIENDA)
+    assert [p["orden"]["direccion"] for p in piezas] == ["min", "min"]
+    sola = T._normalizar([{"n": 1, "tipo": "buscar", "orden": {"campo": "precio_ars", "direccion": "max"}}], TIENDA)
+    assert len(sola) == 1
+
+
+def test_en_el_esquema_la_cantidad_va_antes_que_el_orden():
+    """Medido el 1-oct: con la cantidad despues del orden, el interprete
+    llenaba la cantidad y dejaba el orden afuera. "Los 3 mas baratos" salia
+    sin orden."""
+    props = list(T.esquema_piezas(TIENDA)["properties"]["piezas"]["items"]["properties"])
+    assert props.index("cantidad") < props.index("orden")
+
+
+def test_la_pieza_repetida_de_un_rubro_no_duplica_lo_pedido():
+    piezas = _lista("auriculares") + _lista("auriculares") + [
+        {"n": 4, "tipo": "cuenta", "items": [{"producto": "auriculares", "cantidad": 1}]},
+        {"n": 5, "tipo": "cuenta", "items": [{"producto": "auriculares", "cantidad": 1}]}]
+    assert T._conservar(piezas, TIENDA, "dos auriculares") == {}

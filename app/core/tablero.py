@@ -65,7 +65,7 @@ REGLAS DE PARTIR:
 2. Si el cliente hace algo segun un resultado —"si X, Y", "dame el que cumpla X"—, X es una pieza propia y Y otra con depende_de apuntando a X. Excepcion: una regla sobre el total de una cuenta va en las condiciones de esa cuenta.
 3. En cuenta, inclui en items lo ya elegido en la charla y el destino si lo pide.
 4. Si para contestar falta un dato del cliente, pone el tipo de lo que pide y el dato en "falta".
-5. "Ese", "el otro", "el segundo" y lo que el cliente dijo antes estan en la charla y en la memoria: resolvelos con el nombre del producto. Una condicion que el cliente puso antes sigue valiendo hasta que la cambie.
+5. "Ese", "el otro", "el segundo" y lo que el cliente dijo antes estan en la charla y en la memoria: resolvelos con el nombre del producto. Una condicion que el cliente puso antes sigue valiendo hasta que la cambie, y el alcance de una busqueda sale de lo que busco el cliente, no de lo que mostro el bot.
 6. producto es el nombre del producto como lo nombro el cliente o la charla, con el color o la variante si los dijo. Nunca inventes precios ni stock."""
 
 BANDERAS = {
@@ -134,17 +134,18 @@ def esquema_piezas(tienda_id: str) -> dict:
         "texto": S,
         "producto": S,
         "rubro": {"type": "string", "enum": rubros},
+        "cantidad": {"type": "integer", "description": "cuantos pidio el cliente de este producto o rubro"},
         "condiciones": {"type": "array", "items": {"type": "object", "properties": {
             "campo": {"type": "string", "enum": campos},
             "operador": {"type": "string", "enum": ["contiene", "no_contiene", "igual", "mayor", "menor",
                                                     "prefiere", "evita"]},
             "valor": S}, "required": ["campo", "operador", "valor"]}},
-        "orden": {"type": "object", "properties": {"campo": {"type": "string", "enum": campos},
-                                                   "direccion": {"type": "string", "enum": ["min", "max"]}}},
+        "orden": {"type": "object", "description": "si pide el mas barato, caro, liviano o grande: el campo y min o max",
+                  "properties": {"campo": {"type": "string", "enum": campos},
+                                 "direccion": {"type": "string", "enum": ["min", "max"]}}},
         "tema": {"type": "string", "enum": temas},
         "con": S,
         "destinos": {"type": "array", "items": S},
-        "cantidad": {"type": "integer", "description": "cuantos pidio el cliente de este producto o rubro"},
         "items": {"type": "array", "items": {"type": "object", "properties": {
             "producto": S, "cantidad": {"type": "integer"},
             "destino": {"type": "string", "description": "a donde va este item, si el cliente reparte por destino"}},
@@ -335,8 +336,9 @@ def _normalizar(piezas: list, tienda_id: str) -> list:
     """Lo que el interprete parte bien y nombra mal, ordenado antes de correr.
     Medido el 1-oct con `laboratorio referencia`:
     - un rubro escrito como producto —"dos auriculares"— se busca;
-    - una condicion suelta, sin rubro ni producto —"lo menos chino posible"—,
-      vale para todas las busquedas del mensaje: combinacion 24;
+    - una condicion o un orden sueltos, sin rubro ni producto —"lo menos
+      chino posible", "los mas baratos"—, valen para todas las busquedas del
+      mensaje: combinacion 24;
     - el reparto del pago pegado a otra pieza va a la cuenta;
     - la cuenta y la compra corren al final, despues de lo que buscan."""
     piezas = [dict(p) for p in piezas]
@@ -354,6 +356,15 @@ def _normalizar(piezas: list, tienda_id: str) -> list:
                 b["condiciones"] = list(b.get("condiciones") or []) + [c for c in s["condiciones"]
                                                                        if c not in (b.get("condiciones") or [])]
         piezas = [p for p in piezas if p not in sueltas]
+    # El orden suelto —"los mas baratos" como pieza propia— vale igual para
+    # las busquedas que no traen el suyo (1-oct, K03).
+    orden_suelto = [p for p in piezas if p.get("tipo") == "buscar" and not p.get("rubro") and not p.get("producto")
+                    and not p.get("condiciones") and (p.get("orden") or {}).get("campo")]
+    if busquedas and orden_suelto:
+        for b in busquedas:
+            if not (b.get("orden") or {}).get("campo"):
+                b["orden"] = dict(orden_suelto[0]["orden"])
+        piezas = [p for p in piezas if p not in orden_suelto]
     piezas = [q for p in piezas for q in _por_destino(p)]
     cuenta = next((p for p in piezas if p.get("tipo") == "cuenta"), None)
     if cuenta is not None and not cuenta.get("reparto_pago"):
@@ -482,6 +493,28 @@ def _elegidos(items: list, llamadas: list, memoria: str, tienda_id: str, resuelt
     return quedan or items
 
 
+def _un_color_por_modelo(items: list, tienda_id: str) -> list:
+    """UN MODELO EN VARIOS COLORES ES UNA OPCION (1-oct, K18). La memoria
+    muestra cada renglon con sus colores, y ante "sumame uno de cada uno" el
+    interprete metia el negro y el blanco. Si el cliente no nombro el color,
+    de cada modelo queda uno: el primero con stock."""
+    from app.storage.firestore_client import get_product_by_id
+    dijo = A._n(CLIENTE_DIJO.get())
+    grupos: dict = {}
+    for i in items:
+        pid = str(i.get("producto"))
+        p = (get_product_by_id(pid, tienda_id=tienda_id) or {}) if _ID.fullmatch(pid) else {}
+        clave = (p.get("categoria"), A._n(p.get("modelo") or "")) if p.get("modelo") else pid
+        grupos.setdefault(clave, []).append((i, p))
+    out = []
+    for g in grupos.values():
+        if len(g) == 1 or any(p.get("color") and A._n(p["color"]) in dijo for _, p in g):
+            out += [i for i, _ in g]
+            continue
+        out.append(next((i for i, p in g if int(p.get("stock") or 0) > 0), g[0][0]))
+    return [i for i in items if i in out]
+
+
 def _reparto(rep):
     if not rep:
         return None
@@ -581,7 +614,10 @@ def _conservar(piezas: list, tienda_id: str, mensaje: str = "") -> dict:
     pedido: dict = {}
     for p in piezas:
         if p.get("tipo") == "buscar" and p.get("rubro") and int(p.get("cantidad") or 0) > 0:
-            pedido[p["rubro"]] = pedido.get(p["rubro"], 0) + int(p["cantidad"])
+            # EL MAXIMO, NO LA SUMA: la revision repite la pieza del rubro —"ver
+            # si hay" y "precio de"— y la suma daba cuatro auriculares pedidos.
+            # Contar de menos solo debilita el aviso; contar de mas lo inventa.
+            pedido[p["rubro"]] = max(pedido.get(p["rubro"], 0), int(p["cantidad"]))
     if len(cuentas) < 2 or not pedido:
         return {}
     asignado, fuera = {}, []
@@ -672,6 +708,7 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
                 # todo lo que suma quedo certificado: con pedido y destino, el
                 # total lo tiene que dar la cuenta, no el redactor sumando.
                 if len(args["items"]) > 1:
+                    args["items"] = _un_color_por_modelo(args["items"], tienda_id)
                     args["items"] = _elegidos(args["items"], llamadas, ctx["memoria"], tienda_id,
                                               ctx.get("resueltos"))
                 certificada = bool(args["items"]) and all(_ID.fullmatch(str(i["producto"])) for i in args["items"])
@@ -816,6 +853,28 @@ def _revision(piezas: list, banderas: dict, llamadas: list, mensaje: str, histor
             + ". Devolve TODAS las piezas de nuevo, corregidas.") if partes else ""
 
 
+def busqueda_vigente(busquedas: list) -> str:
+    """LO QUE EL CLIENTE BUSCO, COMO SE INTERPRETO (1-oct, K17, K18, M03). La
+    memoria guardaba lo que el bot mostro y no lo que el cliente pidio: "y el
+    mas barato?" despues de "el mas caro que vendes" heredaba el rubro del
+    producto mostrado, y "y teclados?" perdia el "que no sea Genius ni
+    Logitech". Esto sobrevive al turno y el interprete lo lee en la memoria."""
+    renglones = []
+    for pz, _ in busquedas or []:
+        partes = [pz.get("rubro") or "toda la tienda"]
+        if pz.get("producto"):
+            partes.append(f"que {pz['producto']}")
+        partes += [f"{c.get('campo')} {c.get('operador')} {c.get('valor')}" for c in pz.get("condiciones") or []
+                   if isinstance(c, dict)]
+        o = pz.get("orden") or {}
+        if o.get("campo"):
+            partes.append(f"orden {o['campo']} {o.get('direccion') or ''}".strip())
+        r = "buscar " + ", ".join(str(x) for x in partes)
+        if r not in renglones:
+            renglones.append(r)
+    return "\n".join(renglones[:4])
+
+
 # ══ EL TURNO ════════════════════════════════════════════════════════════════
 
 async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "",
@@ -896,4 +955,5 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
              revision=bool(revision), largo=len(texto),
              tokens=sum(x["entrada"] for x in uso), cache=sum(x["cache"] for x in uso),
              salida=sum(x["salida"] for x in uso), ms=int((time.time() - t0) * 1000))
-    return {"texto": texto, "llamadas": llamadas, "uso": uso, "hechos": hechos}
+    return {"texto": texto, "llamadas": llamadas, "uso": uso, "hechos": hechos,
+            "busqueda": busqueda_vigente(ctx.get("busquedas"))}

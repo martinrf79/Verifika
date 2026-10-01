@@ -139,6 +139,13 @@ def _memoria_texto(conv: dict) -> str:
         partes.append("EN EL PEDIDO, tal como se conto: " + " · ".join(
             f"{p.get('cantidad') or 1}x {p.get('id')} {p.get('nombre') or ''}".strip()
             for p in carrito[:8]))
+    busco = (conv.get("criterio_cliente") or "").strip()
+    if busco:
+        # LO QUE EL CLIENTE BUSCO, no lo que el bot mostro (1-oct): "y teclados?"
+        # o "y el mas barato?" heredan de aca el alcance y las condiciones.
+        partes.append("LO ULTIMO QUE BUSCO EL CLIENTE, como se interpreto. Un mensaje que sigue la busqueda "
+                      "—'y teclados?', 'y el mas barato?'— hereda de aca el alcance y las condiciones que no "
+                      "cambio; 'toda la tienda' es sin rubro:\n" + busco[:400])
     descartados = [str(x) for x in (conv.get("descartados") or [])]
     if descartados:
         partes.append("Ya dijo que NO a: " + ", ".join(descartados[:6]))
@@ -483,6 +490,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
                           ultimo_presupuesto=presupuesto,
                           carrito_vigente=carrito,
                           datos_cliente_parciales=datos_cliente,
+                          criterio_cliente=r.get("busqueda") or None,
                           pregunta_cierre_hecha=cierre_hecho)
     except Exception as e:  # noqa: BLE001
         log.warning("respuesta_save_error", trace_id=trace_id, error=str(e)[:150])
