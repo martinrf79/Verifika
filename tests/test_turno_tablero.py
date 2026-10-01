@@ -341,3 +341,8 @@ def test_el_singular_de_un_rubro_plural_es_el_rubro():
 def test_la_cuenta_con_un_rubro_que_nadie_busca_pide_revision():
     piezas = [{"n": 1, "tipo": "cuenta", "items": [{"producto": "notebook", "cantidad": 2}]}]
     assert "notebook" in T._revision(piezas, {}, [], "dos notebooks", [], TIENDA)
+
+
+def test_dos_mitades_son_un_reparto():
+    assert A._pide_reparto("Decime mitad transferencia y mitad mercado pago como quedaria")
+    assert not A._pide_reparto("la mitad de precio?")

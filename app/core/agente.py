@@ -579,7 +579,9 @@ def _destinos_del_mensaje(mensaje: str) -> list:
 
 def _pide_reparto(mensaje: str) -> bool:
     t = _n(mensaje)
-    if "mitad y mitad" in t or "mitad y la otra mitad" in t:
+    # Dos mitades son un reparto: "mitad y mitad", "mitad transferencia y
+    # mitad mercado pago" (1-oct, K07).
+    if len(re.findall(r"\bmitad\b", t)) >= 2:
         return True
     pct = [int(x) for x in _PCT.findall(t)]
     if len(pct) >= 2 and sum(pct[:2]) == 100:

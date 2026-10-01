@@ -773,6 +773,8 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
                 out = ejecutar(h, args, tienda_id)
                 llamadas.append({"vuelta": vuelta, "herramienta": h, "args": args, "vuelve": out})
                 vistas[clave] = out
+            if h == "cuenta" and ((vistas[clave] or {}).get("cuenta") or {}).get("total_ars") is None:
+                ctx["cuenta_pedida"] = True  # corrio y no dio total: la arma el codigo al final
             hecho["resultado"] = _para_redactar(vistas[clave])
             if h == "buscar":
                 ctx["busquedas"].append((pz, vistas[clave]))
@@ -989,6 +991,8 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     banderas = _json(t_banderas)
     ctx = {"mensaje": mensaje, "historial": historial, "memoria": memoria, "tienda_id": tienda_id,
            "pide_total": bool(banderas.get("pide_total")) or A._pide_reparto(mensaje)}
+    # El reparto que el interprete puso en una pieza tambien es un total pedido.
+    ctx["pide_total"] = ctx["pide_total"] or any(p.get("reparto_pago") for p in piezas)
     hechos = correr_piezas(piezas, tienda_id, llamadas, 1, ctx)
     revision = _revision(piezas, banderas, llamadas, mensaje, historial, tienda_id)
     if revision:
