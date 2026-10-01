@@ -303,6 +303,30 @@ def informe_interpretacion(filas):
         print(f"    {cid}  {det[:80]}   ({txt[:40]})")
 
 
+# EL FRENO DE GASTO (1-oct). Esa noche las tandas con la clave paga agotaron
+# el credito prepago y produccion, que usa esa clave, quedo sin modelo. La
+# calculadora existia y no se miraba antes de cada tanda: ahora la mira el
+# banco, y con la paga no corre si la estimacion pasa el tope. Con la gratis
+# solo informa. El tope es por proceso: tres corridas en paralelo, tres topes.
+TOPE_DOLARES = 0.25
+
+
+def frenar_por_costo(cola: list, modelo: str, tope: float) -> bool:
+    """True si se puede correr."""
+    from banco_pruebas import costo
+    if not cola:
+        return True
+    turnos = sum(len(c["turnos"]) for c in cola) / len(cola)
+    est = costo.estimar(len(cola), turnos, 1, modelo.split(" + ")[0])
+    paga = "(paga)" in modelo
+    print(f"costo estimado: {est['dolares']:.3f} dolares{' de la PAGA' if paga else ', gratis'} · tope {tope}")
+    if paga and est["dolares"] > tope:
+        print(f"FRENADO: la estimacion pasa el tope de {tope} dolares. Achica la tanda o subi --tope "
+              "con la orden de Martin.")
+        return False
+    return True
+
+
 def interprete_con(modelo: str) -> None:
     """Los pasos de interpretar del tablero con otro modelo. Solo en el banco:
     se envuelve `tablero._pedir`, el redactor queda con el de config."""
@@ -337,6 +361,7 @@ def main():
     vara = opt("--vara", "58", str)
     camino = opt("--camino", "clon", str)
     interprete = opt("--interprete", "", str)
+    tope = opt("--tope", TOPE_DOLARES, float)
     if camino not in ("clon", "agente", "tablero"):
         sys.exit(f"camino {camino}: solo hay clon, agente y tablero")
     if etiqueta == "base":
@@ -363,6 +388,8 @@ def main():
         hilos = 1  # el conector del clon es uno solo: los turnos van de a uno
     cola = [c for c in charlas(vara) if (not pedidas or c["id"] in pedidas) and c["id"] not in hechas]
     print(f"{modelo} · {len(cola)} charlas · hilos {hilos} · etiqueta {etiqueta}")
+    if not frenar_por_costo(cola, modelo, tope):
+        return
     candado = threading.Lock()
 
     def una(c):

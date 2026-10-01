@@ -40,3 +40,10 @@ def test_el_reparto_del_total_general_que_no_suma_sigue_siendo_falla():
 def test_el_mismo_bloque_calcado_sigue_siendo_falla():
     uno = "- 1x A: $1.000 c/u = $1.000\nSubtotal: $1.000\nTotal: $1.000"
     assert "la_cuenta_dos_veces" in [f["regla"] for f in I.revisar(uno + "\n" + uno)]
+
+
+def test_el_banco_frena_una_tanda_paga_que_pasa_el_tope():
+    from banco_pruebas import sonda_charlas as S
+    cola = S.charlas("compleja")
+    assert not S.frenar_por_costo(cola, "gemini-3.1-flash-lite (paga)", 0.01)
+    assert S.frenar_por_costo(cola, "gemini-3.1-flash-lite", 0.01)  # la gratis no frena
