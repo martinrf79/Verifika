@@ -39,7 +39,10 @@ MAYORIA = 2
 
 def notas(prefijo: str) -> dict:
     """{id: [(respuesta_ok, interpretacion_ok), ...]} de todas las corridas
-    cuya etiqueta empieza con el prefijo."""
+    cuya etiqueta empieza con el prefijo. Una charla sin piezas en
+    `desmenuzar.CASOS` —las complejas del grupo K, la memoria— se juzga solo por
+    la respuesta: hasta el 1-oct la puerta las salteaba, y las complejas no
+    pasaban por ella."""
     from banco_pruebas.desmenuzar import CASOS
     casos = {c[0]: c for c in CASOS}
     etiquetas = sorted({json.loads(x)["etiqueta"] for x in open(S.SALIDA, encoding="utf-8")
@@ -48,6 +51,7 @@ def notas(prefijo: str) -> dict:
     for e in etiquetas:
         for f in S.cargar(e):
             if f["id"] not in casos:
+                out.setdefault(f["id"], []).append((S.respuesta_ok(f), None))
                 continue
             n = S.interpretacion_de(f, casos[f["id"]])
             out.setdefault(f["id"], []).append((S.respuesta_ok(f), n["bien"] == n["piezas"]))
@@ -61,6 +65,8 @@ def comparar(base: dict, cambio: dict, busca=()) -> dict:
         if not nc:
             continue
         for k, eje in ((0, "respuesta"), (1, "interpretacion")):
+            if any(x[k] is None for x in nb + nc):
+                continue
             b_mal = sum(not x[k] for x in nb)
             c_mal = sum(not x[k] for x in nc)
             if b_mal == 0 and c_mal >= MAYORIA:
@@ -71,7 +77,7 @@ def comparar(base: dict, cambio: dict, busca=()) -> dict:
                 arregla.append(f"{cid} {eje}")
     for cid in busca:
         nc = cambio["notas"].get(cid) or []
-        if not nc or sum(x[0] and x[1] for x in nc) < MAYORIA:
+        if not nc or sum(x[0] and x[1] is not False for x in nc) < MAYORIA:
             sigue_mal.append(cid)
     return {"rompe": rompe, "tiembla": tiembla, "arregla": arregla, "sigue_mal": sigue_mal,
             "pasa": not rompe and not sigue_mal}
