@@ -75,6 +75,8 @@ BANDERAS = {
     "referencia_ambigua": "dice 'ese', 'el otro' y en la charla hay mas de un producto al que puede referirse",
     "afirma_algo": "el cliente da algo por cierto de la tienda o de un producto, aunque sea dentro de otra pregunta",
     "pide_total": "pide el total de una compra: varios productos, cantidades o envio sumados",
+    "confirma_resumen": "el bot le resumio un pedido y le pregunto si esta bien, y el cliente lo acepta o le "
+                        "corrige un detalle",
 }
 
 PREGUNTAS = ("Sos el interprete de una tienda online de tecnologia de Argentina. No le contestas al cliente. "
@@ -113,6 +115,7 @@ Te paso el ultimo mensaje del cliente y los HECHOS que consulto el sistema para 
 4. Si una parte dependia de otra, decidi con lo que dicen los HECHOS y explicalo en una linea.
 5. Si el cliente da algo por cierto y los HECHOS dicen otra cosa, corregilo con amabilidad.
 6. Si hay una cuenta, copia su detalle tal cual, renglon por renglon: cada producto, el envio, cada parte del reparto y el total. Si hay un total_general, va al final y una sola vez, con su reparto.
+11. Si hay un hecho confirmar_pedido, NO des precios ni totales: deci en pocas lineas que entendiste que va a cada destino, lo que no cierra con sus palabras, y pregunta una vez si esta bien para pasarle los presupuestos. Contesta igual las otras partes del mensaje.
 10. Si hay un hecho de articulos, decilo en una linea antes de los presupuestos, con sus palabras: lo que no estaba en la lista y que se tomo en su lugar, lo que el cliente nombro fuera de la lista, o que articulo quedo sin destino; y pregunta una vez si esta bien. No le agregues motivos ni nombres al sistema.
 7. El saber general de tecnologia lo explicas vos.
 8. Pedile el nombre SOLO si el cliente dijo que compra. Nunca pidas DNI, tarjeta ni CBU. No cierres cada mensaje ofreciendo comprar."""
@@ -701,13 +704,34 @@ def _total_general(bloques: list, reparto, tienda_id: str) -> dict:
     return out
 
 
+def _reparto_en_cuentas(piezas: list) -> list:
+    """Las piezas con el reparto pegado a la primera cuenta, donde lo busca
+    el codigo al retomar el pedido."""
+    rep = next((p.get("reparto_pago") for p in piezas if p.get("reparto_pago")), None)
+    out = [dict(p) for p in piezas]
+    cuenta = next((p for p in out if p.get("tipo") == "cuenta"), None)
+    if rep and cuenta is not None and not cuenta.get("reparto_pago"):
+        cuenta["reparto_pago"] = rep
+    return out
+
+
 def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx: dict) -> list:
     """Corre cada pieza con su herramienta. Vuelve los HECHOS, uno por pieza."""
     piezas = _normalizar(_envios_juntos(piezas), tienda_id)
     hechos = []
     ctx["busquedas"], ctx["usados"], ctx["no_vende"] = [], {}, []
+    antes = [dict(p) for p in piezas]
     articulos = _conservar(piezas, tienda_id, ctx.get("mensaje") or "")
-    if articulos:
+    # SI LO REPARTIDO NO CIERRA, PRIMERO SE CONFIRMA (1-oct, K20): no se busca
+    # ni se cuenta nada del pedido; se guarda y se le pregunta al cliente.
+    confirmar = bool(articulos) and ctx.get("puede_confirmar")
+    if confirmar:
+        from app.core import pedido as PD
+        ctx["pedido"] = PD.guardar(_reparto_en_cuentas(antes), articulos)
+        hechos.append({"parte": "el pedido, antes de calcular", "tipo": "confirmar_pedido",
+                       "resultado": {"entendi": PD.resumen(piezas), "no_cierra": articulos,
+                                     "pregunta": "si esta bien asi; con su ok se pasan los presupuestos"}})
+    elif articulos:
         hechos.append({"parte": "los articulos pedidos contra lo repartido por destino", "tipo": "articulos",
                        "resultado": articulos})
     # CON VARIOS DESTINOS EL REPARTO VA SOBRE EL TOTAL: cada bloque sale sin el
@@ -721,6 +745,8 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
     bloques = []
     vistas = {json.dumps([x["herramienta"], x["args"]], sort_keys=True, default=str): x.get("vuelve") for x in llamadas}
     for pz in _orden(piezas):
+        if confirmar and pz.get("tipo") in ("buscar", "cuenta", "producto", "comprar", "envio"):
+            continue
         h, args = a_herramienta(pz)
         if h in ("cuenta", "reservar"):
             if h == "cuenta":
@@ -960,7 +986,7 @@ def busqueda_vigente(busquedas: list) -> str:
 # ══ EL TURNO ════════════════════════════════════════════════════════════════
 
 async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "",
-                memoria: str = "") -> dict:
+                memoria: str = "", pedido: dict = None) -> dict:
     """Un turno con el tablero. Misma firma y misma salida que `agente.turno`. No lanza."""
     from app.core import guardas_salida as gs
     from app.core.contexto_turno import set_current_tienda
@@ -989,13 +1015,25 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
         return {"texto": "", "llamadas": [], "uso": uso}
     piezas = [p for p in (_json(t_piezas).get("piezas") or []) if isinstance(p, dict)]
     banderas = _json(t_banderas)
+    from app.core import pedido as PD
+    guardado = PD.pendiente(pedido)
     ctx = {"mensaje": mensaje, "historial": historial, "memoria": memoria, "tienda_id": tienda_id,
-           "pide_total": bool(banderas.get("pide_total")) or A._pide_reparto(mensaje)}
+           "pide_total": bool(banderas.get("pide_total")) or A._pide_reparto(mensaje),
+           "puede_confirmar": not guardado}
+    # EL PEDIDO GUARDADO SE RETOMA CON EL SI DEL CLIENTE. Si en vez de aceptar
+    # corrige y el interprete rearmo las cuentas, cuenta la correccion. Si el
+    # mensaje es de otra cosa, el pedido sigue esperando.
+    consumido = False
+    if guardado and (banderas.get("confirma_resumen") or any(p.get("tipo") == "cuenta" for p in piezas)):
+        consumido = True
+        ctx["pide_total"] = True
+        if not any(p.get("tipo") == "cuenta" for p in piezas):
+            piezas = PD.retomar(guardado, piezas)
     # El reparto que el interprete puso en una pieza tambien es un total pedido.
     ctx["pide_total"] = ctx["pide_total"] or any(p.get("reparto_pago") for p in piezas)
     hechos = correr_piezas(piezas, tienda_id, llamadas, 1, ctx)
     revision = _revision(piezas, banderas, llamadas, mensaje, historial, tienda_id)
-    if revision:
+    if revision and not ctx.get("pedido"):
         try:
             guias = "\n".join(GUIAS[k] for k, v in banderas.items() if v and k in GUIAS)
             t2 = await _pedir(cli, [{"role": "system", "content": sis_i + ("\n" + guias if guias else "")}] + charla
@@ -1007,7 +1045,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
                 hechos = correr_piezas(piezas, tienda_id, llamadas, 2, ctx)
         except Exception as e:  # noqa: BLE001
             log.warning("tablero_modelo_error", trace_id=trace_id, paso="revision", error=str(e)[:150])
-    if (ctx["pide_total"] or ctx.get("cuenta_pedida")) and not any(x["herramienta"] == "cuenta" and ((x.get("vuelve") or {}).get("cuenta") or {})
+    if not ctx.get("pedido") and (ctx["pide_total"] or ctx.get("cuenta_pedida")) and not any(x["herramienta"] == "cuenta" and ((x.get("vuelve") or {}).get("cuenta") or {})
                                      .get("total_ars") is not None for x in llamadas):
         h = _cuenta_del_codigo(piezas, llamadas, tienda_id, ctx, 3)
         if h:
@@ -1015,7 +1053,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     # LO QUE EL MODELO DETECTA Y NO ARMA, LO ARMA EL CODIGO: si falta un dato
     # del cliente o la referencia es ambigua y ninguna pieza lo pregunta, se
     # pregunta.
-    if (banderas.get("falta_dato_cliente") or banderas.get("referencia_ambigua")) \
+    if not ctx.get("pedido") and (banderas.get("falta_dato_cliente") or banderas.get("referencia_ambigua")) \
             and not any(p.get("tipo") == "repreguntar" or p.get("falta") for p in piezas):
         hechos.append({"pregunta_al_cliente": "falta un dato del cliente o no se sabe a cual se refiere: "
                                               "preguntale eso solo"})
@@ -1041,4 +1079,6 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
              salida=sum(x["salida"] for x in uso), ms=int((time.time() - t0) * 1000))
     return {"texto": texto, "llamadas": llamadas, "uso": uso, "hechos": hechos,
             "busqueda": busqueda_vigente((ctx.get("busquedas") or []) + (ctx.get("no_vende") or [])),
-            "bloques": ctx.get("bloques")}
+            "bloques": ctx.get("bloques"),
+            # El pedido a confirmar se guarda; el retomado se borra; si no, no cambia.
+            "pedido": ctx.get("pedido") or ({} if consumido else None)}

@@ -113,7 +113,7 @@ def test_si_falta_un_dato_del_cliente_el_codigo_pide_la_repregunta(monkeypatch):
 
 
 def test_procesar_turno_llama_al_tablero(monkeypatch):
-    async def falso(historial, mensaje, tienda_id, trace_id="", memoria=""):
+    async def falso(historial, mensaje, tienda_id, trace_id="", memoria="", pedido=None):
         return {"texto": "desde el tablero", "llamadas": [], "uso": []}
     monkeypatch.setattr(T, "turno", falso)
     assert "desde el tablero" in asyncio.run(R.procesar_turno("t_tab", "hola", TIENDA, "whatsapp", "t")).lower()
@@ -346,3 +346,40 @@ def test_la_cuenta_con_un_rubro_que_nadie_busca_pide_revision():
 def test_dos_mitades_son_un_reparto():
     assert A._pide_reparto("Decime mitad transferencia y mitad mercado pago como quedaria")
     assert not A._pide_reparto("la mitad de precio?")
+
+
+# ══ PRIMERO SE CONFIRMA, DESPUES SE CALCULA (1-oct, K20) ═════════════════════
+
+def _k20_piezas():
+    return (_lista("mouse", "memoria ram") + [
+        {"n": 4, "tipo": "cuenta", "texto": "a Rosario", "destinos": ["Rosario"],
+         "items": [{"producto": "mouse", "cantidad": 1}, {"producto": "memoria ram", "cantidad": 1}],
+         "reparto_pago": [{"medio": "x", "porcentaje": 70}, {"medio": "y", "porcentaje": 30}]},
+        {"n": 5, "tipo": "cuenta", "texto": "a Concordia", "destinos": ["Concordia"],
+         "items": [{"producto": "teclado", "cantidad": 1}, {"producto": "mouse", "cantidad": 1}]}])
+
+
+def test_si_lo_repartido_no_cierra_se_confirma_antes_de_calcular(monkeypatch):
+    msg = "dos mouse y dos memorias. un mouse y una memoria a Rosario, un teclado y un mouse a Concordia. 70/30"
+    m = _con(monkeypatch, _Modelo(_k20_piezas(), banderas={"pide_total": True}))
+    r = _turno(msg)
+    assert not any(x["herramienta"] in ("cuenta", "total_general", "buscar") for x in r["llamadas"])
+    assert r["hechos"][0]["tipo"] == "confirmar_pedido"
+    assert r["pedido"]["piezas"] and r["pedido"]["avisos"]["reemplazo"][0]["dijo"] == "teclado"
+    assert "confirmar_pedido" in m.pedidos[-1]["messages"][-1]["content"]
+    # el si del cliente: corre lo guardado, con el reparto sobre el total, y borra el pedido
+    _con(monkeypatch, _Modelo([{"n": 1, "tipo": "charla", "texto": "si"}],
+                              banderas={"confirma_resumen": True}))
+    r2 = asyncio.run(T.turno([{"role": "user", "content": msg}, {"role": "assistant", "content": "¿esta bien?"}],
+                             "si, dale", TIENDA, trace_id="t", pedido=r["pedido"]))
+    cuentas = [x for x in r2["llamadas"] if x["herramienta"] == "cuenta"]
+    assert len(cuentas) == 2 and any(x["herramienta"] == "total_general" for x in r2["llamadas"])
+    assert r2["pedido"] == {}
+
+
+def test_un_mensaje_de_otra_cosa_deja_el_pedido_esperando(monkeypatch):
+    _con(monkeypatch, _Modelo([{"n": 1, "tipo": "politica", "texto": "hacen factura A?", "tema": "facturacion"}]))
+    from app.core import pedido as PD
+    guardado = PD.guardar(_k20_piezas(), {"sin_destino": ["1 mouse"]})
+    r = asyncio.run(T.turno([], "hacen factura A?", TIENDA, trace_id="t", pedido=guardado))
+    assert not any(x["herramienta"] == "cuenta" for x in r["llamadas"]) and r["pedido"] is None
