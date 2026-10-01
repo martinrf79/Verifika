@@ -2765,6 +2765,69 @@
    ]
   },
   {
+   "id": "K20",
+   "grupo": "K",
+   "clase": "real, la version original: nombra un teclado que no estaba en la lista y deja un auricular sin destino",
+   "turnos": [
+    {
+     "texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 7500,
+       "n": "el monto 7500"
+      },
+      {
+       "tipo": "plata",
+       "monto": 6500,
+       "n": "el monto 6500"
+      },
+      {
+       "tipo": "plata",
+       "monto": 10000,
+       "n": "el monto 10000"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "70"
+       ],
+       "n": "dice 70"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "30"
+       ],
+       "n": "dice 30"
+      },
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "no estaba|no lo mencionaste|no figuraba|en vez de|en lugar de|era una memoria|era un auricular|sumo el teclado|agrego el teclado|siete articulos|7 articulos"
+         ],
+         "n": "dice no estaba|no lo mencionaste|no figuraba|en vez de|en lugar de|era una memoria|era un auricular|sumo el teclado|agrego el teclado|siete articulos|7 articulos"
+        },
+        {
+         "tipo": "pregunta",
+         "n": "repregunta"
+        }
+       ],
+       "n": "marca que el teclado no estaba entre los seis"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "\\bids?\\b|el sistema|identificador|denominacion|[a-z]{3}\\d{4}|no existe un articulo con ese nombre|no (puedo|podemos) sumarl",
+       "n": "sin jerga interna"
+      }
+     ]
+    }
+   ]
+  },
+  {
    "id": "K19",
    "grupo": "K",
    "clase": "real: el catalogo",

@@ -26,6 +26,7 @@ Dónde está cada cosa: `MAPA.md`.
 - **ABIERTO** · El modelo sigue diciendo "todo es chino" aunque las memorias son Taiwan o China; a veces pregunta en vez de armar el 70/30.
 - **ABIERTO** · 1-oct: el tablero tiene la segunda vuelta, la cuenta sale de lo que busco el turno. Probar por WhatsApp los mensajes del grupo K de `vara_58.py` y leer `produccion.py`. El banco de todos los dias es `sonda_charlas --vara compleja`.
 - **ABIERTO** · Complejas que siguen mal, por clase: una condicion o exclusion de un turno anterior se pierde, K17 y M03; "y el mas barato?" no hereda "de toda la tienda", K18; varios rubros sin total, K06 a K09 y K11; "algo parecido" a lo que no se vende, K12; el catalogo, K19.
+- **ABIERTO** · 1-oct, WhatsApp despues del deploy, K20: sin datos inventados y la plata bien por bloque, pero un auricular pedido queda sin destino, no marca que el teclado no estaba entre los seis, y no da total general ni 70/30 sobre el total. `produccion.py` marca falso positivo con dos presupuestos en un mensaje.
 - **ABIERTO** · `agente.turno`, `agente.sistema` y `agente.esquema` ya no los usa el turno: se borran con sus tests en su propio commit, como `motor.esquema`.
 - **ESPERA A MARTIN** · El catalogo dice que los auriculares bluetooth son con cable: `specs_por_modelo.csv` no trae bluetooth y cae el valor del rubro. Es `data/clientes/`: pide su permiso.
 - **ABIERTO** · El arranque de sesión muestra la interpretación "sin medir": su piso se archivó. Arreglar la línea toca `scripts/`, que deploya.
