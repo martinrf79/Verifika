@@ -365,15 +365,15 @@ COMPLEJAS = [
       t("cual es el articulo mas caro que vendes?", dice("rog strix"), plata(3100500)),
       t("y el mas barato?", dice("dx-110"), plata(8500)),
       t("sumame uno de cada uno con envio a Posadas", plata(3109000), SIN_JERGA)),
-    k(20, "real, la version original: nombra un teclado que no estaba en la lista y deja un auricular sin destino",
+    k(20, "real, la version original: nombra un teclado que no estaba en la lista. Desde el 1-oct el bot "
+          "confirma lo que entendio antes de calcular, y con el si arma los tres presupuestos",
       t("Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que "
         "necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. "
         "Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el "
         "presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+        dice("teclado"), dice("memoria"), pregunta(n="pregunta antes de calcular"), SIN_JERGA),
+      t("si, el teclado era una memoria",
         plata(7500), plata(6500), plata(10000), dice("70"), dice("30"),
-        alguna(dice("no estaba|no lo mencionaste|no figuraba|en vez de|en lugar de|era una memoria|era un auricular"
-                    "|sumo el teclado|agrego el teclado|siete articulos|7 articulos"), pregunta(),
-               n="marca que el teclado no estaba entre los seis"),
         articulos(auricular=2, mouse=2, memoria=2), total_general(), reparto_total(70), SIN_JERGA)),
     k(19, "real: el catalogo",
       t("Tenes catalogo? que tipo de productos venden?", dice("mouse"), dice("teclado"), dice("notebook"), SIN_JERGA)),

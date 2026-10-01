@@ -2785,10 +2785,38 @@
   {
    "id": "K20",
    "grupo": "K",
-   "clase": "real, la version original: nombra un teclado que no estaba en la lista y deja un auricular sin destino",
+   "clase": "real, la version original: nombra un teclado que no estaba en la lista. Desde el 1-oct el bot confirma lo que entendio antes de calcular, y con el si arma los tres presupuestos",
    "turnos": [
     {
      "texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "teclado"
+       ],
+       "n": "dice teclado"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "memoria"
+       ],
+       "n": "dice memoria"
+      },
+      {
+       "tipo": "pregunta",
+       "n": "pregunta antes de calcular"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "\\bids?\\b|el sistema|identificador|denominacion|[a-z]{3}\\d{4}|no existe un articulo con ese nombre|no (puedo|podemos) sumarl",
+       "n": "sin jerga interna"
+      }
+     ]
+    },
+    {
+     "texto": "si, el teclado era una memoria",
      "casillas": [
       {
        "tipo": "plata",
@@ -2818,23 +2846,6 @@
         "30"
        ],
        "n": "dice 30"
-      },
-      {
-       "tipo": "alguna",
-       "opciones": [
-        {
-         "tipo": "dice",
-         "palabras": [
-          "no estaba|no lo mencionaste|no figuraba|en vez de|en lugar de|era una memoria|era un auricular|sumo el teclado|agrego el teclado|siete articulos|7 articulos"
-         ],
-         "n": "dice no estaba|no lo mencionaste|no figuraba|en vez de|en lugar de|era una memoria|era un auricular|sumo el teclado|agrego el teclado|siete articulos|7 articulos"
-        },
-        {
-         "tipo": "pregunta",
-         "n": "repregunta"
-        }
-       ],
-       "n": "marca que el teclado no estaba entre los seis"
       },
       {
        "tipo": "articulos",
