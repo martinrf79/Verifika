@@ -140,8 +140,11 @@ def instalar() -> dict:
 
     # CADA LLAMADA CON LA PAGA SE ANOTA Y SE MIRA CONTRA EL TOPE DEL DIA: se
     # envuelve la unica puerta del bot al modelo, `llm_reintento._cliente`.
+    # DEEPSEEK TAMBIEN ES PLATA (2-oct): no tiene cuota gratis, cada llamada
+    # se cobra, y va al mismo libro y al mismo tope del dia.
     paga = (os.environ.get("GEMINI_API_KEY_PROD") or "").strip()
-    if paga and (os.environ.get("GEMINI_API_KEY") or "").strip() == paga:
+    deepseek = os.environ.get("LLM_PROVIDER", "").lower() == "deepseek"
+    if deepseek or (paga and (os.environ.get("GEMINI_API_KEY") or "").strip() == paga):
         from app.core import llm_reintento
         from banco_pruebas import libro_paga
         puerta = llm_reintento._cliente
