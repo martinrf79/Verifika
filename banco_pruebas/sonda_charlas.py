@@ -164,25 +164,130 @@ def _guardadas(llamadas):
             [x.get("vuelta") for x in llamadas])
 
 
-def correr_clon(charla, n_corrida=0):
+# ══ LA GRABACION DEL MODELO (2-oct) ═════════════════════════════════════════
+#
+# POR QUE. Hasta el 1-oct cada corrida llamaba al modelo y guardaba solo lo que
+# el codigo hizo despues. Asi cada prueba del codigo gastaba cuota, y el azar
+# del modelo tapaba si el codigo habia mejorado. Ahora cada turno guarda lo
+# CRUDO que devolvio el modelo en cada paso —las piezas, las preguntas de si o
+# no, la revision, el texto del redactor— y lo que el codigo le entrego al
+# redactor, los hechos. Con `--reproducir <etiqueta>` el banco corre el codigo
+# de hoy sobre esa traduccion real, sin llamar al modelo y gratis.
+#
+# Lo que se juzga al reproducir es el CODIGO: las casillas se miran sobre los
+# hechos, que es lo que el codigo arma con lo que entrego el modelo. Si el
+# codigo de hoy pide un paso que la grabacion no tiene —una revision que antes
+# no se pedia—, el turno queda "sin grabacion" y no se juzga.
+
+class SinGrabacion(Exception):
+    pass
+
+
+_TURNO: dict = {"crudas": [], "hechos": None, "reproducir": None}
+
+
+def _instalar_grabador():
+    """Envuelve `tablero._pedir` y `tablero.turno` una sola vez: graba cada
+    salida cruda y los hechos del turno; si hay grabacion cargada, la devuelve
+    en vez de llamar al modelo."""
+    from app.core import tablero as T
+    if getattr(T._pedir, "_grabador", False):
+        return
+    pedir, turno = T._pedir, T.turno
+
+    async def _pedir(cli, msgs, temp, formato, trace_id, uso, paso):
+        cola = _TURNO["reproducir"]
+        if cola is not None:
+            i = next((k for k, x in enumerate(cola) if x["paso"] == paso), None)
+            if i is None:
+                raise SinGrabacion(paso)
+            salida = cola.pop(i)["salida"]
+            uso.append({"paso": paso, "entrada": 0, "salida": 0, "cache": 0})
+        else:
+            salida = await pedir(cli, msgs, temp, formato, trace_id, uso, paso)
+        _TURNO["crudas"].append({"paso": paso, "salida": salida})
+        return salida
+
+    async def _turno(*a, **k):
+        r = await turno(*a, **k)
+        _TURNO["hechos"] = r.get("hechos")
+        return r
+    _pedir._grabador = True
+    T._pedir, T.turno = _pedir, _turno
+
+
+def texto_de_hechos(hechos) -> str:
+    """Los hechos como texto para las casillas: cada string, renglon por renglon
+    —el detalle de una cuenta trae sus "1x ..." y sus "Total:"—, y el JSON."""
+    out = []
+
+    def junta(x):
+        if isinstance(x, dict):
+            for v in x.values():
+                junta(v)
+        elif isinstance(x, list):
+            for v in x:
+                junta(v)
+        elif isinstance(x, (str, int, float)) and not isinstance(x, bool):
+            out.append(str(x))
+    junta(hechos or [])
+    return "\n".join(out) + "\n" + json.dumps(hechos or [], ensure_ascii=False, default=str)
+
+
+_PIDE_PREGUNTAR = ("pregunta_al_cliente", "confirmar_pedido", "falta_elegir", "ambiguo")
+
+
+def nota_codigo(k, texto_codigo, respuestas):
+    """Una casilla sobre los hechos. La jerga es de la redaccion y no aplica;
+    la repregunta es que el codigo le pidio al redactor preguntar."""
+    if k["tipo"] == "no_patron":
+        return None
+    if k["tipo"] == "pregunta":
+        return any(x in texto_codigo for x in _PIDE_PREGUNTAR)
+    if k["tipo"] in ("alguna", "todas"):
+        notas = [nota_codigo(o, texto_codigo, respuestas) for o in k["opciones"]]
+        validas = [n for n in notas if n is not None]
+        if not validas:
+            return None
+        return any(n is True for n in validas) if k["tipo"] == "alguna" else all(n is True for n in validas)
+    return nota_casilla(k, [], texto_codigo, respuestas)
+
+
+def correr_clon(charla, n_corrida=0, grabado=None):
     """Produccion tal cual: el webhook entero por el clon, turno por turno.
-    Desde el 27-sep se espian las llamadas del agente adentro del webhook."""
+    Desde el 27-sep se espian las llamadas del agente adentro del webhook; desde
+    el 2-oct se graba lo crudo del modelo. Con `grabado` —los turnos de una
+    corrida guardada— se reproduce sin llamar al modelo."""
     import asyncio
     from banco_pruebas import clon_produccion as C
     from banco_pruebas.pedido_agente import espiar
+    _instalar_grabador()
     uid = f"sonda_{charla['id']}_{n_corrida}"
     C.reiniciar_cliente(uid)
     respuestas, turnos, historia = [], [], []
     for i, t in enumerate(charla["turnos"], 1):
-        with espiar() as llamadas:
-            partes = asyncio.run(C.turno(uid, t["texto"]))
+        _TURNO.update(crudas=[], hechos=None,
+                      reproducir=None if grabado is None else
+                      [dict(x) for x in (grabado[i - 1].get("crudas_modelo") or [])] if i <= len(grabado) else [])
+        sin = False
+        try:
+            with espiar() as llamadas:
+                partes = asyncio.run(C.turno(uid, t["texto"]))
+        except SinGrabacion:
+            partes, sin = [], True
         texto = "\n".join(partes)
         respuestas.append(texto)
-        casillas = _casillas(charla, t, llamadas, texto, respuestas, historia)
+        codigo = texto_de_hechos(_TURNO["hechos"])
+        casillas = (None if sin else
+                    [(k["n"], nota_codigo(k, codigo, respuestas)) for k in t["casillas"]] if grabado is not None
+                    else _casillas(charla, t, llamadas, texto, respuestas, historia))
         crudas, vueltas = _guardadas(llamadas)
-        turnos.append({"turno": i, "texto": t["texto"], "casillas": casillas, "plata_no_vista": [],
+        turnos.append({"turno": i, "texto": t["texto"], "casillas": casillas or [], "plata_no_vista": [],
                        "vacia": not texto.strip(), "llamadas": crudas, "vueltas": vueltas,
-                       "respuesta": texto, "uso": list(llamadas.uso)})
+                       "respuesta": texto, "uso": list(llamadas.uso),
+                       "crudas_modelo": list(_TURNO["crudas"]), "texto_codigo": codigo,
+                       "sin_grabacion": sin})
+    _TURNO["reproducir"] = None
     return turnos
 
 
@@ -211,12 +316,17 @@ def correr_agente(charla):
 def _recalificar(f):
     """La vara de las 58 mira solo la respuesta: se recalifica desde lo guardado."""
     vara = {c["id"]: c for c in charlas("todas")}
-    if f["id"] not in vara or not f["etiqueta"].startswith(("v58", "tab")):
+    if f["id"] not in vara or not f["etiqueta"].startswith(("v58", "tab", "rep")):
         return f
+    # Al reproducir se juzga el codigo: las casillas miran los hechos.
+    campo = "texto_codigo" if f["etiqueta"].startswith("rep") else "respuesta"
     respuestas = [t["respuesta"] for t in f["turnos"]]
     for t, tv in zip(f["turnos"], vara[f["id"]]["turnos"]):
-        t["casillas"] = [(k["n"], nota_casilla(k, [], t["respuesta"], respuestas[:t["turno"]]))
-                         for k in tv["casillas"]]
+        if t.get("sin_grabacion"):
+            t["casillas"] = []
+            continue
+        nota = nota_codigo if campo == "texto_codigo" else (lambda k, x, r: nota_casilla(k, [], x, r))
+        t["casillas"] = [(k["n"], nota(k, t.get(campo) or "", respuestas[:t["turno"]])) for k in tv["casillas"]]
     return f
 
 
@@ -362,6 +472,7 @@ def main():
     camino = opt("--camino", "clon", str)
     interprete = opt("--interprete", "", str)
     tope = opt("--tope", TOPE_DOLARES, float)
+    reproducir = opt("--reproducir", "", str)
     if camino not in ("clon", "agente", "tablero"):
         sys.exit(f"camino {camino}: solo hay clon, agente y tablero")
     if etiqueta == "base":
@@ -386,15 +497,24 @@ def main():
         pass
     if camino in ("clon", "tablero"):
         hilos = 1  # el conector del clon es uno solo: los turnos van de a uno
-    cola = [c for c in charlas(vara) if (not pedidas or c["id"] in pedidas) and c["id"] not in hechas]
+    grabadas = {}
+    if reproducir:
+        grabadas = {json.loads(x)["id"]: json.loads(x)["turnos"] for x in open(SALIDA, encoding="utf-8")
+                    if json.loads(x)["etiqueta"] == reproducir}
+        if not etiqueta.startswith("rep"):
+            sys.exit("al reproducir, la etiqueta empieza con rep: se juzga el codigo, no la respuesta")
+    cola = [c for c in charlas(vara) if (not pedidas or c["id"] in pedidas) and c["id"] not in hechas
+            and (not reproducir or (c["id"] in grabadas and any(t.get("crudas_modelo") for t in grabadas[c["id"]])))]
     print(f"{modelo} · {len(cola)} charlas · hilos {hilos} · etiqueta {etiqueta}")
-    if not frenar_por_costo(cola, modelo, tope):
+    if reproducir:
+        print(f"REPRODUCE {reproducir}: sin llamar al modelo, {len(cola)} charlas grabadas")
+    elif not frenar_por_costo(cola, modelo, tope):
         return
     candado = threading.Lock()
 
     def una(c):
         t0 = time.time()
-        turnos = correr_agente(c) if camino == "agente" else correr_clon(c)
+        turnos = correr_agente(c) if camino == "agente" else correr_clon(c, grabado=grabadas.get(c["id"]))
         with candado:
             with open(SALIDA, "a", encoding="utf-8") as f:
                 f.write(json.dumps({"etiqueta": etiqueta, "modelo": modelo, "id": c["id"], "clase": c.get("clase"),

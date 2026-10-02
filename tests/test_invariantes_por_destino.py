@@ -47,3 +47,17 @@ def test_el_banco_frena_una_tanda_paga_que_pasa_el_tope():
     cola = S.charlas("compleja")
     assert not S.frenar_por_costo(cola, "gemini-3.1-flash-lite (paga)", 0.01)
     assert S.frenar_por_costo(cola, "gemini-3.1-flash-lite", 0.01)  # la gratis no frena
+
+
+def test_al_reproducir_se_juzga_el_codigo_sobre_los_hechos():
+    """2-oct: las casillas de la vara, sobre lo que el codigo le dio al redactor."""
+    from banco_pruebas import sonda_charlas as S
+    hechos = [{"tipo": "cuenta", "resultado": {"cuenta": {"detalle": "- 1x Mouse Genius DX-110: $8.500 c/u = $8.500\\n"
+                                                                     "Total: $15.500", "id": "MOU0023"}}}]
+    txt = S.texto_de_hechos(hechos)
+    assert S.nota_codigo({"tipo": "plata", "monto": 15500}, txt, []) is True
+    assert S.nota_codigo({"tipo": "articulos", "minimos": {"mouse": 1}}, txt, []) is True
+    # la jerga es de la redaccion: sobre los hechos, que traen ids, no aplica
+    assert S.nota_codigo({"tipo": "no_patron", "patron": r"[a-z]{3}\\d{4}"}, txt, []) is None
+    assert S.nota_codigo({"tipo": "pregunta"}, txt, []) is False
+    assert S.nota_codigo({"tipo": "pregunta"}, S.texto_de_hechos([{"pregunta_al_cliente": "x"}]), []) is True
