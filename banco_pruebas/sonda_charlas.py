@@ -192,6 +192,10 @@ class SinGrabacion(Exception):
 
 
 _TURNO: dict = {"crudas": [], "hechos": None, "reproducir": None}
+# La gratis tiene tope de pedidos por minuto: a la velocidad del banco el 2-oct
+# devolvio 368 rechazos y 25 de 42 charlas salieron con el aviso de demanda.
+# Con --pausa se espera entre turnos; con la paga no hace falta.
+PAUSA = {"seg": 0.0}
 
 
 def _instalar_grabador():
@@ -274,6 +278,8 @@ def correr_clon(charla, n_corrida=0, grabado=None):
     C.reiniciar_cliente(uid)
     respuestas, turnos, historia = [], [], []
     for i, t in enumerate(charla["turnos"], 1):
+        if PAUSA["seg"] and grabado is None:
+            time.sleep(PAUSA["seg"])
         _TURNO.update(crudas=[], hechos=None,
                       reproducir=None if grabado is None else
                       [dict(x) for x in (grabado[i - 1].get("crudas_modelo") or [])] if i <= len(grabado) else [])
@@ -481,6 +487,7 @@ def main():
     interprete = opt("--interprete", "", str)
     tope = opt("--tope", TOPE_DOLARES, float)
     reproducir = opt("--reproducir", "", str)
+    PAUSA["seg"] = opt("--pausa", 0.0, float)
     if camino not in ("clon", "agente", "tablero"):
         sys.exit(f"camino {camino}: solo hay clon, agente y tablero")
     if etiqueta == "base":
