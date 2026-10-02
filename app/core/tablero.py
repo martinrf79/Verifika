@@ -147,8 +147,7 @@ def esquema_piezas(tienda_id: str) -> dict:
         "cantidad": {"type": "integer", "description": "cuantos pidio el cliente de este producto o rubro"},
         "condiciones": {"type": "array", "items": {"type": "object", "properties": {
             "campo": {"type": "string", "enum": campos},
-            "operador": {"type": "string", "enum": ["contiene", "no_contiene", "igual", "mayor", "menor",
-                                                    "prefiere", "evita"]},
+            "operador": {"type": "string", "enum": list(OPERADORES)},
             "valor": S}, "required": ["campo", "operador", "valor"]}},
         "orden": {"type": "object", "description": "si pide el mas barato, caro, liviano o grande: el campo y min o max",
                   "properties": {"campo": {"type": "string", "enum": campos},
@@ -179,6 +178,192 @@ def _formato(nombre: str, esquema: dict) -> dict:
     if get_settings().LLM_PROVIDER == "deepseek":  # sin esquema estricto: JSON a secas
         return {"type": "json_object"}
     return {"type": "json_schema", "json_schema": {"name": nombre, "schema": esquema}}
+
+
+def _con_esquema(sistema: str, formato: dict, esquema: dict) -> str:
+    """Sin esquema estricto el modelo no ve las listas cerradas: van en el prompt."""
+    if formato.get("type") == "json_schema":
+        return sistema
+    return sistema + "\nDevolve SOLO un JSON con este esquema, y en los campos con enum SOLO esos valores:\n" \
+        + json.dumps(esquema, ensure_ascii=False)
+
+
+# ══ LA ATADURA: el vocabulario de la tienda lo garantiza el codigo ══════════
+# (2-oct) Hasta hoy la lista cerrada la garantizaba el esquema estricto del
+# proveedor, y un modelo que da JSON a secas —DeepSeek directo— podia nombrar un
+# rubro, un campo o un tema que la tienda no tiene, o contestar "no" como texto
+# a una pregunta de si o no, que en Python es verdadero. Ahora cada pieza pasa
+# por aca con cualquier modelo: lo que no existe se lleva al valor mas cercano
+# o se descarta, y lo descartado se le devuelve UNA vez al modelo con el error.
+
+OPERADORES = ("contiene", "no_contiene", "igual", "mayor", "menor", "prefiere", "evita")
+_SI = ("true", "si", "sí", "yes", "1")
+
+
+def _cercano(valor, opciones) -> str:
+    """El valor de la lista que el modelo quiso nombrar, o vacio. Primero igual
+    sin tildes ni mayusculas; despues un unico prefijo —"precio" es
+    "precio_ars"—; despues por parecido de letras."""
+    import difflib
+    v = A._n(valor).strip().replace(" ", "_")
+    if not v:
+        return ""
+    norm = {A._n(o).replace(" ", "_"): o for o in opciones}
+    if v in norm:
+        return norm[v]
+    pref = [o for k, o in norm.items() if k.startswith(v + "_") or v.startswith(k + "_")]
+    if len(pref) == 1:
+        return pref[0]
+    m = difflib.get_close_matches(v, list(norm), n=1, cutoff=0.8)
+    return norm[m[0]] if m else ""
+
+
+def _entero(v):
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return int(v)
+    m = re.fullmatch(r"\s*(\d+)\s*", str(v or ""))
+    return int(m.group(1)) if m else None
+
+
+def _numero(v):
+    """El numero tal cual vino; "70%" es 70, y entero si es entero."""
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return v
+    try:
+        f = float(str(v).replace("%", "").replace(",", ".").strip())
+    except ValueError:
+        return None
+    return int(f) if f.is_integer() else f
+
+
+def piezas_de(texto: str) -> list:
+    """Las piezas del JSON del interprete: bajo "piezas", o la lista sola."""
+    try:
+        crudo = json.loads(texto)
+    except ValueError:
+        crudo = _json(texto)
+    if isinstance(crudo, dict):
+        crudo = crudo.get("piezas") if "piezas" in crudo else ([crudo] if crudo.get("tipo") else [])
+    return [p for p in crudo or [] if isinstance(p, dict)] if isinstance(crudo, list) else []
+
+
+def banderas_de(texto: str) -> dict:
+    """Las preguntas de si o no como booleanos: "no" en texto es falso."""
+    crudo = _json(texto)
+    return {k: (crudo.get(k) is True or str(crudo.get(k)).strip().lower() in _SI) for k in BANDERAS}
+
+
+def atar(piezas: list, tienda_id: str) -> tuple:
+    """(piezas atadas, errores, corregidos). Cada valor de lista cerrada que no
+    existe se lleva al mas cercano —corregido— o se descarta —error—."""
+    rubros, temas, campos = _vocabulario(tienda_id)
+    errores, corregidos, out = [], [], []
+
+    def cerrado(clave, valor, opciones, donde):
+        if valor in opciones:
+            return valor
+        c = _cercano(valor, opciones) or (clave == "rubro" and _es_rubro(str(valor), tienda_id)) or ""
+        if c:
+            corregidos.append(f"{donde} {clave} {valor!r} -> {c!r}")
+        else:
+            errores.append(f"{donde}: {clave} {valor!r} no existe en la tienda; vale uno de: " + ", ".join(opciones))
+        return c
+
+    for i, p in enumerate(piezas):
+        if not isinstance(p, dict):
+            continue
+        n = _entero(p.get("n"))
+        p = {**p, "n": n if n is not None else i + 1}
+        donde = f"pieza {p['n']}"
+        tipo = cerrado("tipo", p.get("tipo"), list(ACCIONES), donde) if p.get("tipo") else ""
+        if not tipo:
+            if not p.get("tipo"):
+                errores.append(f"{donde}: le falta el tipo")
+            continue
+        p["tipo"] = tipo
+        p["texto"] = str(p.get("texto") or "")
+        for k in ("producto", "con", "falta"):
+            if k in p:
+                p[k] = str(p[k] or "")
+        if p.get("rubro"):
+            r = cerrado("rubro", p["rubro"], rubros + [NO_LO_VENDE], donde)
+            if r:
+                p["rubro"] = r
+            else:
+                # Sin rubro la busqueda va por el texto: no se pierde lo pedido.
+                p["producto"] = p.get("producto") or str(p.pop("rubro"))
+                p.pop("rubro", None)
+        else:
+            p.pop("rubro", None)
+        if p.get("tema"):
+            t = cerrado("tema", p["tema"], temas, donde)
+            p["tema"] = t
+            if not t:
+                p.pop("tema")
+        else:
+            p.pop("tema", None)
+        for k in ("cantidad",):
+            if k in p:
+                v = _entero(p[k])
+                if v is None:
+                    p.pop(k)
+                else:
+                    p[k] = v
+        conds = []
+        for c in p.get("condiciones") or [] if isinstance(p.get("condiciones"), list) else []:
+            if not isinstance(c, dict) or c.get("valor") in (None, ""):
+                continue
+            campo = cerrado("campo", c.get("campo"), campos, donde) if c.get("campo") else ""
+            op = cerrado("operador", c.get("operador"), list(OPERADORES), donde) if c.get("operador") else ""
+            if not c.get("campo") or not c.get("operador"):
+                errores.append(f"{donde}: una condicion sin campo u operador")
+            if campo and op:
+                conds.append({"campo": campo, "operador": op, "valor": str(c["valor"])})
+        if conds or "condiciones" in p:
+            p["condiciones"] = conds
+        o = p.get("orden")
+        if isinstance(o, dict) and o.get("campo"):
+            campo = cerrado("campo", o["campo"], campos, donde)
+            dire = cerrado("direccion", o.get("direccion") or "min", ["min", "max"], donde)
+            if campo and dire:
+                p["orden"] = {"campo": campo, "direccion": dire}
+            else:
+                p.pop("orden")
+        else:
+            p.pop("orden", None)
+        if "destinos" in p:
+            ds = p["destinos"] if isinstance(p["destinos"], list) else [p["destinos"]]
+            p["destinos"] = [str(d) for d in ds if str(d or "").strip()]
+        if "items" in p:
+            items = []
+            for it in p["items"] if isinstance(p["items"], list) else []:
+                if isinstance(it, dict) and str(it.get("producto") or "").strip():
+                    it = {**it, "producto": str(it["producto"]), "cantidad": _entero(it.get("cantidad")) or 1}
+                    if "destino" in it:
+                        it["destino"] = str(it["destino"] or "")
+                    items.append(it)
+            p["items"] = items
+        if "reparto_pago" in p:
+            rep = []
+            for r in p["reparto_pago"] if isinstance(p["reparto_pago"], list) else []:
+                pct = _numero(r.get("porcentaje")) if isinstance(r, dict) else None
+                if pct is not None and str(r.get("medio") or "").strip():
+                    rep.append({"medio": str(r["medio"]), "porcentaje": pct})
+            p["reparto_pago"] = rep
+        if "depende_de" in p:
+            ds = p["depende_de"] if isinstance(p["depende_de"], list) else [p["depende_de"]]
+            p["depende_de"] = [d for d in (_entero(x) for x in ds) if d is not None]
+        out.append(p)
+    return out, errores, corregidos
+
+
+def _pedido_de_atadura(errores: list) -> str:
+    return ("ATADURA DEL SISTEMA, no es del cliente. Estas piezas traen valores que la tienda no tiene: "
+            + "; ".join(errores) + ". Devolve TODAS las piezas de nuevo, con los valores de la lista.")
 
 
 # ══ LAS LLAMADAS ════════════════════════════════════════════════════════════
@@ -1002,19 +1187,39 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     uso, llamadas = [], []
     charla = _charla(historial, memoria, mensaje)
     sis_i = INTERPRETE.format(acciones="; ".join(f"{k}: {v}" for k, v in ACCIONES.items()), no_lo_vende=NO_LO_VENDE)
-    esq = _formato("piezas", esquema_piezas(tienda_id))
+    esquema = esquema_piezas(tienda_id)
+    esq = _formato("piezas", esquema)
+    sis_i = _con_esquema(sis_i, esq, esquema)
+    esq_b = _formato("banderas", _esquema_banderas())
     try:
         t_piezas, t_banderas = await asyncio.gather(
             _pedir(cli, [{"role": "system", "content": sis_i}] + charla, TEMP_INTERPRETAR, esq, trace_id, uso,
                    "interpretar"),
-            _pedir(cli, [{"role": "system", "content": PREGUNTAS}] + charla, TEMP_INTERPRETAR,
-                   _formato("banderas", _esquema_banderas()), trace_id, uso, "banderas"))
+            _pedir(cli, [{"role": "system", "content": _con_esquema(PREGUNTAS, esq_b, _esquema_banderas())}]
+                   + charla, TEMP_INTERPRETAR, esq_b, trace_id, uso, "banderas"))
     except Exception as e:  # noqa: BLE001 — el turno no se rompe por el modelo
         log.warning("tablero_modelo_error", trace_id=trace_id, paso="interpretar",
                     error=f"{type(e).__name__}: {str(e)[:150]}")
         return {"texto": "", "llamadas": [], "uso": uso}
-    piezas = [p for p in (_json(t_piezas).get("piezas") or []) if isinstance(p, dict)]
-    banderas = _json(t_banderas)
+    piezas, errores, corregidos = atar(piezas_de(t_piezas), tienda_id)
+    reintento = False
+    if errores:
+        # UNA vez: el modelo ve su salida y el error, y lo que siga roto se descarta.
+        reintento = True
+        try:
+            t_piezas = await _pedir(cli, [{"role": "system", "content": sis_i}] + charla
+                                    + [{"role": "assistant", "content": t_piezas},
+                                       {"role": "user", "content": _pedido_de_atadura(errores)}],
+                                    TEMP_INTERPRETAR, esq, trace_id, uso, "atadura")
+            piezas, errores2, corregidos2 = atar(piezas_de(t_piezas), tienda_id)
+            corregidos += corregidos2
+            errores += errores2
+        except Exception as e:  # noqa: BLE001 — se sigue con lo atado
+            log.warning("tablero_modelo_error", trace_id=trace_id, paso="atadura", error=str(e)[:150])
+    if errores or corregidos:
+        log.info("tablero_atadura", trace_id=trace_id, errores=errores[:6], corregidos=corregidos[:6],
+                 reintento=reintento)
+    banderas = banderas_de(t_banderas)
     from app.core import pedido as PD
     guardado = PD.pendiente(pedido)
     ctx = {"mensaje": mensaje, "historial": historial, "memoria": memoria, "tienda_id": tienda_id,
@@ -1039,7 +1244,10 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
             t2 = await _pedir(cli, [{"role": "system", "content": sis_i + ("\n" + guias if guias else "")}] + charla
                               + [{"role": "assistant", "content": t_piezas}, {"role": "user", "content": revision}],
                               TEMP_INTERPRETAR, esq, trace_id, uso, "revision")
-            nuevas = [p for p in (_json(t2).get("piezas") or []) if isinstance(p, dict)]
+            nuevas, err_rev, corr_rev = atar(piezas_de(t2), tienda_id)
+            if err_rev or corr_rev:
+                log.info("tablero_atadura", trace_id=trace_id, paso="revision", errores=err_rev[:6],
+                         corregidos=corr_rev[:6], reintento=False)
             if nuevas:
                 piezas = nuevas
                 hechos = correr_piezas(piezas, tienda_id, llamadas, 2, ctx)
