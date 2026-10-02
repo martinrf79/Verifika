@@ -63,8 +63,10 @@ def cliente(modelo: str):
         return OpenAI(api_key=clave, base_url="https://api.deepseek.com"), modelo
     if os.environ.get("BANCO_CLAVE_PAGA", "").lower() == "true":
         # Solo con la marca con fecha de scripts/guard_clave.sh: Martin la pidio en la sesion.
-        return OpenAI(api_key=os.environ["GEMINI_API_KEY_PROD"].strip(),
-                      base_url="https://generativelanguage.googleapis.com/v1beta/openai/"), modelo
+        from banco_pruebas import libro_paga
+        libro_paga.puede()
+        return libro_paga.envolver(OpenAI(api_key=os.environ["GEMINI_API_KEY_PROD"].strip(),
+                                          base_url="https://generativelanguage.googleapis.com/v1beta/openai/")), modelo
     gratis = (os.environ.get("GEMINI_API_KEY_FREE") or os.environ.get("GEMINI_API_KEY") or "").split()
     gratis = gratis[0] if gratis else ""
     if not gratis or gratis == (os.environ.get("GEMINI_API_KEY_PROD") or "").strip():

@@ -640,6 +640,11 @@ def _cliente():
         return OpenAI(api_key=s.DEEPSEEK_API_KEY, base_url=s.DEEPSEEK_BASE_URL), s.DEEPSEEK_MODEL
     paga = os.environ.get("BANCO_CLAVE_PAGA", "").lower() == "true"
     clave = os.environ["GEMINI_API_KEY_PROD" if paga else "GEMINI_API_KEY"]
+    from banco_pruebas import libro_paga
+    if paga or clave.strip() == (os.environ.get("GEMINI_API_KEY_PROD") or "").strip():
+        libro_paga.puede()
+        return libro_paga.envolver(OpenAI(api_key=clave, base_url=get_settings().GEMINI_BASE_URL)), \
+            get_settings().GEMINI_MODEL + " (paga)"
     return OpenAI(api_key=clave, base_url=get_settings().GEMINI_BASE_URL), \
         get_settings().GEMINI_MODEL + (" (paga)" if paga else "")
 

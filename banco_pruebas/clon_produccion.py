@@ -90,6 +90,9 @@ def preparar_entorno() -> dict:
     paga = (os.environ.get("GEMINI_API_KEY_PROD") or "").strip()
     quiere_paga = os.environ.get("BANCO_CLAVE_PAGA", "").lower() == "true"
     if paga and quiere_paga:
+        # EL TOPE DIARIO DE LA PAGA, para todas las corridas juntas (2-oct).
+        from banco_pruebas import libro_paga
+        libro_paga.puede()
         os.environ["GEMINI_API_KEY"] = paga
         detalle = {"clave": "GEMINI_API_KEY_PROD (PAGA, pedida a proposito)"}
     else:
@@ -134,6 +137,19 @@ def instalar() -> dict:
         return _conectores.setdefault("actual", ConectorBanco())
 
     main.get_whatsapp_connector_for_tienda = _conector
+
+    # CADA LLAMADA CON LA PAGA SE ANOTA Y SE MIRA CONTRA EL TOPE DEL DIA: se
+    # envuelve la unica puerta del bot al modelo, `llm_reintento._cliente`.
+    paga = (os.environ.get("GEMINI_API_KEY_PROD") or "").strip()
+    if paga and (os.environ.get("GEMINI_API_KEY") or "").strip() == paga:
+        from app.core import llm_reintento
+        from banco_pruebas import libro_paga
+        puerta = llm_reintento._cliente
+        if not getattr(puerta, "_libro", False):
+            def _cliente_anotado():
+                return libro_paga.envolver(puerta())
+            _cliente_anotado._libro = True
+            llm_reintento._cliente = _cliente_anotado
 
     from app.config import get_settings
     from app.core.leads import modo_cierre

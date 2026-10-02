@@ -174,6 +174,15 @@ necesitaban la paga: el banco mide comportamiento, no cuota. Y el día que el
 banco y producción compartieron la gratis, las corridas se comieron las 500
 requests y el bot vivo quedó contestando "estoy con mucha demanda".*
 
+**TOPE DIARIO DE LA PAGA, para todas las corridas juntas.** Cada llamada del
+banco con la paga se anota sola en `banco_pruebas/libro_paga.jsonl`, y al
+llegar al tope del día ninguna herramienta la puede usar hasta el día
+siguiente. El tope vive en `banco_pruebas/libro_paga.py`; lo gastado se ve con
+`python3 -m banco_pruebas.libro_paga`. Producción usa la misma clave: agotarla
+deja al bot sin modelo. — *1-oct: cinco tandas, cada una bajo su tope por
+corrida, agotaron el crédito; Google cobró unos 5 dólares y el banco había
+anotado 1,58.*
+
 **PRODUCCIÓN va con la paga y eso no se toca.** No proponer pasarla a la gratis.
 
 **Cuándo SÍ se pide la paga:** el banco vivo con repeticiones y las pruebas

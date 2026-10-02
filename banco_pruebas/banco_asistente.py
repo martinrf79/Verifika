@@ -289,8 +289,12 @@ CASOS = [
 
 def _cliente():
     from app.config import get_settings
-    return OpenAI(api_key=os.environ["GEMINI_API_KEY"],
-                  base_url=get_settings().GEMINI_BASE_URL), get_settings().GEMINI_MODEL
+    from banco_pruebas import libro_paga
+    cli = OpenAI(api_key=os.environ["GEMINI_API_KEY"], base_url=get_settings().GEMINI_BASE_URL)
+    if os.environ["GEMINI_API_KEY"].strip() == (os.environ.get("GEMINI_API_KEY_PROD") or "").strip():
+        libro_paga.puede()
+        cli = libro_paga.envolver(cli)
+    return cli, get_settings().GEMINI_MODEL
 
 
 def _llamar(cli, modelo, msgs):

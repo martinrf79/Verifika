@@ -61,3 +61,18 @@ def test_al_reproducir_se_juzga_el_codigo_sobre_los_hechos():
     assert S.nota_codigo({"tipo": "no_patron", "patron": r"[a-z]{3}\\d{4}"}, txt, []) is None
     assert S.nota_codigo({"tipo": "pregunta"}, txt, []) is False
     assert S.nota_codigo({"tipo": "pregunta"}, S.texto_de_hechos([{"pregunta_al_cliente": "x"}]), []) is True
+
+
+def test_el_libro_de_la_paga_anota_y_frena_en_el_tope_del_dia(tmp_path, monkeypatch):
+    """2-oct: un tope por corrida no frena cinco corridas. El del libro es por dia."""
+    from types import SimpleNamespace as NS
+    import pytest
+    from banco_pruebas import libro_paga as L
+    monkeypatch.setattr(L, "LIBRO", tmp_path / "libro.jsonl")
+    monkeypatch.setattr(L, "TOPE_DIARIO", 0.001)
+    uso = NS(prompt_tokens=10000, completion_tokens=1000)
+    cli = NS(chat=NS(completions=NS(create=lambda **k: NS(usage=uso))))
+    L.envolver(cli).chat.completions.create(model="gemini-3.1-flash-lite")
+    assert L.hoy() > 0.001
+    with pytest.raises(L.TopeDiario):
+        cli.chat.completions.create(model="gemini-3.1-flash-lite")

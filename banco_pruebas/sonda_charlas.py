@@ -196,6 +196,7 @@ _TURNO: dict = {"crudas": [], "hechos": None, "reproducir": None}
 # devolvio 368 rechazos y 25 de 42 charlas salieron con el aviso de demanda.
 # Con --pausa se espera entre turnos; con la paga no hace falta.
 PAUSA = {"seg": 0.0}
+_SIN_MODELO = "estoy con mucha demanda"
 
 
 def _instalar_grabador():
@@ -530,6 +531,11 @@ def main():
     def una(c):
         t0 = time.time()
         turnos = correr_agente(c) if camino == "agente" else correr_clon(c, grabado=grabadas.get(c["id"]))
+        # SIN MODELO NO SE GUARDA (2-oct): un turno que salio con el aviso de
+        # demanda es la cuota, no el bot. La charla no se escribe y la tanda
+        # para; la proxima corrida con la misma etiqueta sigue desde aca.
+        if not grabadas and any(_SIN_MODELO in (t.get("respuesta") or "") for t in turnos):
+            raise SinCuota(f"{c['id']}: el modelo no contesto, se para la tanda")
         with candado:
             with open(SALIDA, "a", encoding="utf-8") as f:
                 f.write(json.dumps({"etiqueta": etiqueta, "modelo": modelo, "id": c["id"], "clase": c.get("clase"),
