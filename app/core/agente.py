@@ -142,7 +142,10 @@ def _rubro(texto: str, tienda_id: str):
 # ══ LO QUE VUELVE: corto, porque viaja en cada vuelta ══════════════════════
 
 def _fila(f: dict, detalle: bool, pedidos=()) -> dict:
-    out = {k: f.get(k) for k in ("id", "nombre", "precio", "stock") if f.get(k) is not None}
+    # La cantidad y su subtotal, si el cliente pidio unidades: los hace la
+    # calculadora en el motor y aca se tiraban (2-oct, guion 52).
+    out = {k: f.get(k) for k in ("id", "nombre", "precio", "stock", "cantidad", "subtotal") if f.get(k) is not None
+           and (k not in ("cantidad", "subtotal") or f.get("subtotal"))}
     # EL CAMPO QUE SE PIDIO VUELVE CON SU VALOR. El motor ya lo pone en la
     # fila; aca se tiraba, y el modelo contestaba "no figura el pais de
     # fabricacion" con el pais en el catalogo —26-sep, 23:59—.
@@ -382,7 +385,7 @@ def h_buscar(tienda_id: str, que: str = "", rubro: str = "", condiciones=None, o
     return out
 
 
-def h_producto(tienda_id: str, nombre: str = "", **_) -> dict:
+def h_producto(tienda_id: str, nombre: str = "", cantidad: int = 1, **_) -> dict:
     """UN MODELO EN VARIOS COLORES ES UNA FICHA, como en `buscar` (28-sep).
     "Tenes el G305?" devolvia dos fichas enteras con la misma descripcion,
     garantia y caja; medido sobre las tres tandas de base, `producto` era el
@@ -391,10 +394,10 @@ def h_producto(tienda_id: str, nombre: str = "", **_) -> dict:
     ids, resto = ids_nombrados(nombre, tienda_id)
     if ids:
         ids = list(dict.fromkeys(x for i in ids for x in _con_el_color(i, resto, tienda_id)))
-        r = (_motor().buscar([{"ids": ids, "busco": "uno", "cuantos": max(4, len(ids))}], tienda_id,
-                             _trace()).get("resultados") or [{}])[0]
+        r = (_motor().buscar([{"ids": ids, "busco": "uno", "cuantos": max(4, len(ids)), "cantidad": cantidad}],
+                             tienda_id, _trace()).get("resultados") or [{}])[0]
         return _resultado(_juntar_colores(r, len(ids), tienda_id), detalle=True)
-    r = (_motor().buscar([{"texto": nombre, "busco": "uno", "cuantos": 4}], tienda_id,
+    r = (_motor().buscar([{"texto": nombre, "busco": "uno", "cuantos": 4, "cantidad": cantidad}], tienda_id,
                          _trace()).get("resultados") or [{}])[0]
     antes = len(r.get("filas") or [])
     r = _juntar_colores(r, antes or 1, tienda_id)
@@ -466,8 +469,11 @@ def _otros_colores(pid: str, tienda_id: str) -> dict:
     if not p or not p.get("color"):
         return {}
     clave = (p.get("categoria"), p.get("marca"), p.get("modelo"))
+    # ELEGIR ENTRE LO QUE NO HAY NO ES ELEGIR (2-oct, guion 52): el KB-110X
+    # blanco tiene stock y el negro no, y el bot preguntaba "negro o blanco".
     colores = [x.get("color") for x in todos
-               if (x.get("categoria"), x.get("marca"), x.get("modelo")) == clave and x.get("color")]
+               if (x.get("categoria"), x.get("marca"), x.get("modelo")) == clave and x.get("color")
+               and (x is p or int(x.get("stock") or 0) > 0)]
     return {"color": p["color"], "opciones": colores} if len(set(colores)) > 1 else {}
 
 

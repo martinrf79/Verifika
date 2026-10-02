@@ -416,7 +416,10 @@ def a_herramienta(pz: dict) -> tuple:
     """(herramienta, args) para una pieza, o (None, None) si no consulta nada."""
     t = pz.get("tipo")
     if t == "producto" or (t == "verificar" and pz.get("producto")):
-        return "producto", {"nombre": _nombre(pz)}
+        # "Sumame 3 de esos": con la cantidad, el motor trae el subtotal hecho
+        # por la calculadora (2-oct, guion 52).
+        cant = pz.get("cantidad") if isinstance(pz.get("cantidad"), int) and pz["cantidad"] > 1 else None
+        return "producto", {"nombre": _nombre(pz), **({"cantidad": cant} if cant else {})}
     if t == "buscar" and pz.get("rubro") == NO_LO_VENDE:
         return None, None
     if t == "buscar":
@@ -424,7 +427,10 @@ def a_herramienta(pz: dict) -> tuple:
                           "condiciones": pz.get("condiciones") or [], "orden": pz.get("orden") or None}
     if t == "envio":
         return "envio", {"destinos": pz.get("destinos") or []}
-    if t in ("politica", "verificar"):
+    if t in ("politica", "verificar") or (t in ("repreguntar", "explicar") and pz.get("tema")):
+        # Una repregunta o una explicacion con un tema de la tienda —"como
+        # pago" leido como falta el medio— tambien lleva lo que dice la tienda
+        # (2-oct, guion 32).
         # El tema que eligio el modelo va adelante de la pregunta: `politica`
         # suma los del indice. Si no coinciden, se sirven los dos —la red—.
         return "politica", {"pregunta": f"{(pz.get('tema') or '').replace('_', ' ')} {pz.get('texto') or ''}".strip()}
@@ -481,6 +487,13 @@ def _certificado(nombre: str, tienda_id: str, llamadas: list) -> str:
             if nom and pedido and all(w in nom for w in pedido):
                 hits.append(str(pid))
     hits = list(dict.fromkeys(hits))
+    # EL NOMBRE EXACTO DE UNA FICHA ES ESA FICHA (2-oct, guion 30): el
+    # interprete copia el nombre del catalogo, "Auriculares Logitech G Pro X
+    # Negro", y el mouse "G Pro X Superlight Negro" tambien nombra todo eso.
+    exacto = [pid for pid in hits if A._n((get_product_by_id(pid, tienda_id=tienda_id) or {}).get("nombre")
+                                          or "").strip() == A._n(nombre).strip()]
+    if len(exacto) == 1:
+        return exacto[0]
     return hits[0] if len(hits) == 1 else nombre
 
 
@@ -713,8 +726,12 @@ def _elegidos(items: list, llamadas: list, memoria: str, tienda_id: str, resuelt
     def nombrado(pid: str) -> bool:
         prod = get_product_by_id(pid, tienda_id=tienda_id) or {}
         todas = [w for w in re.findall(r"[a-z0-9]+", A._n(prod.get("modelo") or "")) if len(w) > 1]
-        claves = [w for w in todas if any(c.isdigit() for c in w)] or todas  # "G203 Lightsync": alcanza g203
-        return bool(claves) and all(w in dijo for w in claves)
+        claves = [w for w in todas if any(c.isdigit() for c in w)]  # "G203 Lightsync": alcanza g203
+        if claves:
+            return all(w in dijo for w in claves)
+        # Sin numero, la palabra mas larga del modelo: "stinger 2" nombra el
+        # "Cloud Stinger 2" aunque no diga "cloud" (2-oct, guion 32).
+        return bool(todas) and max(todas, key=len) in dijo
     resueltos = (resueltos or set()) | respondidos_en(memoria)
     quedan = [i for i in items if not _ID.fullmatch(str(i.get("producto"))) or str(i["producto"]) in reservados
               or str(i["producto"]) in pedido or str(i["producto"]) in resueltos or nombrado(str(i["producto"]))]

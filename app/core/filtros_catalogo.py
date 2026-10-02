@@ -1273,10 +1273,10 @@ def relevancia(prod: dict, texto: str, raras: dict | None = None) -> float:
     por relevancia seria devolver vacio, que es la regla que no se rompe.
     """
     palabras = palabras_utiles(texto)
+    puntos = _frase_corta(prod, texto)
     if not palabras:
-        return 0.0
+        return puntos
     campos = _texto_del_producto(prod)
-    puntos = 0.0
     for w in palabras:
         peso_rareza = 1.0 if raras is None else raras.get(w, 1.0)
         if peso_rareza <= 0:
@@ -1285,6 +1285,24 @@ def relevancia(prod: dict, texto: str, raras: dict | None = None) -> float:
             if _texto_contiene(valor, w):
                 puntos += peso * peso_rareza
     return puntos
+
+
+def _frase_corta(prod: dict, texto: str) -> float:
+    """LO QUE LAS PALABRAS CORTAS DICEN JUNTAS (2-oct, guion 30). `palabras_utiles`
+    descarta lo de menos de tres letras, y "g pro x" quedaba en "pro": ganaba
+    una memoria Crucial Pro y el cliente leia que el G Pro X era una RAM. Un
+    tramo seguido de la consulta que lleva una palabra corta y aparece igual
+    en el nombre o el modelo es un nombre de modelo, y pesa por su largo."""
+    ws = [w for w in _norm(texto).split() if w not in _VACIAS]
+    if len(ws) < 2 or all(len(w) >= 3 for w in ws):
+        return 0.0
+    donde = " " + " ".join(_norm(_valor_crudo(prod, c)) for c in ("nombre", "modelo")) + " "
+    for n in range(len(ws), 1, -1):
+        for i in range(len(ws) - n + 1):
+            tramo = ws[i:i + n]
+            if any(len(w) < 3 for w in tramo) and f" {' '.join(tramo)} " in donde:
+                return 5.0 * n
+    return 0.0
 
 
 def palabras_utiles(texto: str) -> list[str]:

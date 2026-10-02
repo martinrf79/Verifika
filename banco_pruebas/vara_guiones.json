@@ -1,0 +1,1128 @@
+{
+ "_que_es": "Los guiones de memoria mas dificiles de banco_pruebas/guiones, con casillas donde la respuesta es una sola: precios, envios y totales del catalogo real. Se graban con DeepSeek y se reproducen sin modelo.",
+ "charlas": [
+  {
+   "id": "G01",
+   "grupo": "G",
+   "clase": "guion 37: el carrito que cambia ocho veces, total item por item y descuento",
+   "turnos": [
+    {
+     "texto": "buenas, arranco de a poco. mostrame mouse hasta 50 mil",
+     "casillas": []
+    },
+    {
+     "texto": "dame el g203 negro",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g203"
+       ],
+       "n": "dice g203"
+      },
+      {
+       "tipo": "plata",
+       "monto": 37500,
+       "n": "el monto 37500"
+      }
+     ]
+    },
+    {
+     "texto": "ahora teclados, algo inalambrico",
+     "casillas": []
+    },
+    {
+     "texto": "el k380 negro sumalo",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "k380"
+       ],
+       "n": "dice k380"
+      }
+     ]
+    },
+    {
+     "texto": "cuanto llevo hasta aca",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 92500,
+       "n": "el monto 92500"
+      }
+     ]
+    },
+    {
+     "texto": "agregame un ssd samsung 980 de 1tb",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "980"
+       ],
+       "n": "dice 980"
+      },
+      {
+       "tipo": "plata",
+       "monto": 44000,
+       "n": "el monto 44000"
+      }
+     ]
+    },
+    {
+     "texto": "y una memoria ram de 16 negro, 2 unidades",
+     "casillas": []
+    },
+    {
+     "texto": "total actualizado",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g203"
+       ],
+       "n": "dice g203"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "k380"
+       ],
+       "n": "dice k380"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "980"
+       ],
+       "n": "dice 980"
+      }
+     ]
+    },
+    {
+     "texto": "el ssd cambialo por el de 2tb",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "2tb"
+       ],
+       "n": "dice 2tb"
+      },
+      {
+       "tipo": "plata",
+       "monto": 50500,
+       "n": "el monto 50500"
+      }
+     ]
+    },
+    {
+     "texto": "y el teclado que sea blanco",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "k380"
+       ],
+       "n": "dice k380"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "blanc"
+       ],
+       "n": "dice blanc"
+      }
+     ]
+    },
+    {
+     "texto": "total de nuevo",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g203"
+       ],
+       "n": "dice g203"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "k380"
+       ],
+       "n": "dice k380"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "2tb"
+       ],
+       "n": "dice 2tb"
+      }
+     ]
+    },
+    {
+     "texto": "sacame una de las memorias, dejame una sola",
+     "casillas": []
+    },
+    {
+     "texto": "envio a Bahia Blanca",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 6000,
+       "n": "el monto 6000"
+      }
+     ]
+    },
+    {
+     "texto": "total final, item por item, con envio",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g203"
+       ],
+       "n": "dice g203"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "k380"
+       ],
+       "n": "dice k380"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "2tb"
+       ],
+       "n": "dice 2tb"
+      },
+      {
+       "tipo": "plata",
+       "monto": 6000,
+       "n": "el monto 6000"
+      }
+     ]
+    },
+    {
+     "texto": "listo, pago todo por transferencia. cuanto queda con el descuento",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "transferencia"
+       ],
+       "n": "dice transferencia"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "G02",
+   "grupo": "G",
+   "clase": "guion 71: saca el teclado y lo vuelve a poner",
+   "turnos": [
+    {
+     "texto": "quiero 2 mouse genius dx-110 negro y 1 teclado, cuanto sale?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "dx-110"
+       ],
+       "n": "dice dx-110"
+      },
+      {
+       "tipo": "plata",
+       "monto": 17000,
+       "n": "el monto 17000"
+      }
+     ]
+    },
+    {
+     "texto": "no, el teclado sacalo, dejame solo los mouse",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "dx-110"
+       ],
+       "n": "dice dx-110"
+      },
+      {
+       "tipo": "plata",
+       "monto": 17000,
+       "n": "el monto 17000"
+      }
+     ]
+    },
+    {
+     "texto": "mejor volve a ponerlo, pero uno solo",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "teclado"
+       ],
+       "n": "dice teclado"
+      }
+     ]
+    },
+    {
+     "texto": "cuantas unidades de cada cosa quedaron?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "dx-110"
+       ],
+       "n": "dice dx-110"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "G03",
+   "grupo": "G",
+   "clase": "guion 30: G Pro X ambiguo, se resuelve, se compara y se suma",
+   "turnos": [
+    {
+     "texto": "hola, tenes el g pro x?",
+     "casillas": [
+      {
+       "tipo": "pregunta",
+       "n": "repregunta"
+      }
+     ]
+    },
+    {
+     "texto": "si, el g pro x, cuanto sale",
+     "casillas": [
+      {
+       "tipo": "pregunta",
+       "n": "repregunta"
+      }
+     ]
+    },
+    {
+     "texto": "mmm no se, el que usan los profesionales",
+     "casillas": [
+      {
+       "tipo": "pregunta",
+       "n": "repregunta"
+      }
+     ]
+    },
+    {
+     "texto": "bueno el mouse, el g pro x",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "superlight"
+       ],
+       "n": "dice superlight"
+      },
+      {
+       "tipo": "plata",
+       "monto": 163000,
+       "n": "el monto 163000"
+      }
+     ]
+    },
+    {
+     "texto": "ese, cuanto sale y que stock tenes",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "superlight"
+       ],
+       "n": "dice superlight"
+      },
+      {
+       "tipo": "plata",
+       "monto": 163000,
+       "n": "el monto 163000"
+      }
+     ]
+    },
+    {
+     "texto": "en blanco lo tenes?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "blanc"
+       ],
+       "n": "dice blanc"
+      }
+     ]
+    },
+    {
+     "texto": "esperá, y el g pro wireless es el mismo?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "wireless"
+       ],
+       "n": "dice wireless"
+      },
+      {
+       "tipo": "plata",
+       "monto": 186000,
+       "n": "el monto 186000"
+      }
+     ]
+    },
+    {
+     "texto": "cual de los dos es mas liviano",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "superlight"
+       ],
+       "n": "dice superlight"
+      }
+     ]
+    },
+    {
+     "texto": "me quedo con el superlight blanco",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "superlight"
+       ],
+       "n": "dice superlight"
+      }
+     ]
+    },
+    {
+     "texto": "sumame el g pro x auriculares tambien, el negro",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 284000,
+       "n": "el monto 284000"
+      }
+     ]
+    },
+    {
+     "texto": "cuanto es todo junto con envio a La Plata",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 447000,
+       "n": "el monto 447000"
+      }
+     ]
+    },
+    {
+     "texto": "confirmame los dos productos exactos que estoy llevando, con el nombre completo",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "superlight"
+       ],
+       "n": "dice superlight"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "auricular"
+       ],
+       "n": "dice auricular"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "G04",
+   "grupo": "G",
+   "clase": "guion 32: tres destinos que cambian y se cancelan",
+   "turnos": [
+    {
+     "texto": "hola, necesito 3 mouse g203 negro. uno va a Cordoba capital, uno a Concordia y uno a Posadas",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g203"
+       ],
+       "n": "dice g203"
+      }
+     ]
+    },
+    {
+     "texto": "cuanto sale cada envio",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 7500,
+       "n": "el monto 7500"
+      },
+      {
+       "tipo": "plata",
+       "monto": 6500,
+       "n": "el monto 6500"
+      },
+      {
+       "tipo": "plata",
+       "monto": 10000,
+       "n": "el monto 10000"
+      }
+     ]
+    },
+    {
+     "texto": "sumale a cada uno unos auriculares stinger 2 negro",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "stinger"
+       ],
+       "n": "dice stinger"
+      }
+     ]
+    },
+    {
+     "texto": "cuanto es el total ahora, con los tres envios",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 346500,
+       "n": "el monto 346500"
+      }
+     ]
+    },
+    {
+     "texto": "el de Posadas cambialo, mandalo a Ushuaia",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "ushuaia"
+       ],
+       "n": "dice ushuaia"
+      }
+     ]
+    },
+    {
+     "texto": "recalculame todo",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 348500,
+       "n": "el monto 348500"
+      }
+     ]
+    },
+    {
+     "texto": "el de Concordia cancelalo, ese lo retiro yo",
+     "casillas": []
+    },
+    {
+     "texto": "ahora cuanto queda",
+     "casillas": []
+    },
+    {
+     "texto": "esperá, el de Ushuaia que lleva? confirmame item por item",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "g203"
+       ],
+       "n": "dice g203"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "stinger"
+       ],
+       "n": "dice stinger"
+      }
+     ]
+    },
+    {
+     "texto": "sumale 2 memorias ram de 16 negro al de Cordoba",
+     "casillas": []
+    },
+    {
+     "texto": "total final por destino y total general",
+     "casillas": [
+      {
+       "tipo": "total_general",
+       "n": "da total general"
+      }
+     ]
+    },
+    {
+     "texto": "listo, como pago",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "transferencia"
+       ],
+       "n": "dice transferencia"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "G05",
+   "grupo": "G",
+   "clase": "guion 38: dos del mismo rubro que no se unifican, y dos destinos",
+   "turnos": [
+    {
+     "texto": "hola, necesito 2 mouse",
+     "casillas": []
+    },
+    {
+     "texto": "uno para mi y uno para mi hermana, no tienen que ser iguales",
+     "casillas": []
+    },
+    {
+     "texto": "el mio que sea gamer, el de ella que sea barato y blanco",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "blanc"
+       ],
+       "n": "dice blanc"
+      }
+     ]
+    },
+    {
+     "texto": "si, esos dos. cuanto salen",
+     "casillas": []
+    },
+    {
+     "texto": "sumame 2 teclados tambien, uno mecanico y uno comun",
+     "casillas": []
+    },
+    {
+     "texto": "confirmame los 4 productos, que son distintos entre si",
+     "casillas": []
+    },
+    {
+     "texto": "el mouse de mi hermana mandalo a Concordia, el resto a Cordoba capital",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 6500,
+       "n": "el monto 6500"
+      }
+     ]
+    },
+    {
+     "texto": "cuanto es cada envio",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 6500,
+       "n": "el monto 6500"
+      }
+     ]
+    },
+    {
+     "texto": "a ver, listame que va a cada destino",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "concordia"
+       ],
+       "n": "dice concordia"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "cordoba"
+       ],
+       "n": "dice cordoba"
+      }
+     ]
+    },
+    {
+     "texto": "los teclados que sean los dos iguales, el k380 negro",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "k380"
+       ],
+       "n": "dice k380"
+      }
+     ]
+    },
+    {
+     "texto": "ahora si, total por destino",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "k380"
+       ],
+       "n": "dice k380"
+      }
+     ]
+    },
+    {
+     "texto": "confirmame antes de pagar: cuantas unidades en total y cuales son",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "k380"
+       ],
+       "n": "dice k380"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "G06",
+   "grupo": "G",
+   "clase": "guion 33: presupuesto del turno uno, zurdo, y la contradiccion lejana",
+   "turnos": [
+    {
+     "texto": "hola, busco una notebook, presupuesto hasta 800 mil",
+     "casillas": []
+    },
+    {
+     "texto": "que tenes en ese rango",
+     "casillas": []
+    },
+    {
+     "texto": "la lenovo ideapad ryzen 7 me gusta",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "ideapad"
+       ],
+       "n": "dice ideapad"
+      },
+      {
+       "tipo": "plata",
+       "monto": 827000,
+       "n": "el monto 827000"
+      }
+     ]
+    },
+    {
+     "texto": "igual soy zurdo, tenelo en cuenta para lo que sumemos despues",
+     "casillas": []
+    },
+    {
+     "texto": "sumame un mouse",
+     "casillas": []
+    },
+    {
+     "texto": "ese no, uno que me sirva a mi",
+     "casillas": []
+    },
+    {
+     "texto": "ok. y un teclado tambien",
+     "casillas": []
+    },
+    {
+     "texto": "mandame todo a Santa Fe capital",
+     "casillas": []
+    },
+    {
+     "texto": "cuanto es el total",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "ideapad"
+       ],
+       "n": "dice ideapad"
+      }
+     ]
+    },
+    {
+     "texto": "ah pera, te dije hasta 800 mil y esto se fue arriba",
+     "casillas": []
+    },
+    {
+     "texto": "en realidad puedo estirarme a 1 millon, pero no mas",
+     "casillas": []
+    },
+    {
+     "texto": "entonces dejame la notebook y el mouse, el teclado sacalo",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "ideapad"
+       ],
+       "n": "dice ideapad"
+      }
+     ]
+    },
+    {
+     "texto": "confirmame el total y que estoy respetando lo que te dije al principio",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "ideapad"
+       ],
+       "n": "dice ideapad"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "G07",
+   "grupo": "G",
+   "clase": "guion 52: el teclado anotado, ruido, cantidad que cambia y destino",
+   "turnos": [
+    {
+     "texto": "hola, ando viendo mouse y teclado para la oficina",
+     "casillas": []
+    },
+    {
+     "texto": "mostrame los mas baratos de cada uno",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "dx-110"
+       ],
+       "n": "dice dx-110"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "kb-110"
+       ],
+       "n": "dice kb-110"
+      }
+     ]
+    },
+    {
+     "texto": "el mouse dejalo, pero el teclado ese anotamelo que me interesa",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "kb-110"
+       ],
+       "n": "dice kb-110"
+      }
+     ]
+    },
+    {
+     "texto": "che y aparte, hacen factura A? se puede en cuotas?",
+     "casillas": []
+    },
+    {
+     "texto": "volvamos a lo importante, el teclado que te dije sirve para escribir todo el dia?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "kb-110"
+       ],
+       "n": "dice kb-110"
+      }
+     ]
+    },
+    {
+     "texto": "dale, sumame 3 de esos",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 36000,
+       "n": "el monto 36000"
+      }
+     ]
+    },
+    {
+     "texto": "uy no, mejor 2, y mandalos a Salta capital",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 24000,
+       "n": "el monto 24000"
+      }
+     ]
+    },
+    {
+     "texto": "cuanto me sale todo con el envio?",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 34500,
+       "n": "el monto 34500"
+      }
+     ]
+    },
+    {
+     "texto": "pera, no me habias dicho otro precio antes? jaja no me quieras cargar",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 34500,
+       "n": "el monto 34500"
+      }
+     ]
+    },
+    {
+     "texto": "listo dale, lo llevo, como sigo?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "kb-110"
+       ],
+       "n": "dice kb-110"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "G08",
+   "grupo": "G",
+   "clase": "guion 53: dos oficinas, los mas baratos, presupuesto y el primero",
+   "turnos": [
+    {
+     "texto": "necesito equipar dos oficinas, algo economico",
+     "casillas": []
+    },
+    {
+     "texto": "pasame los 2 mouse y 2 teclados mas baratos que tengas",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "dx-110"
+       ],
+       "n": "dice dx-110"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "kb-110"
+       ],
+       "n": "dice kb-110"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "k120"
+       ],
+       "n": "dice k120"
+      }
+     ]
+    },
+    {
+     "texto": "uno de cada uno va a Cordoba capital y el resto a Rosario",
+     "casillas": []
+    },
+    {
+     "texto": "el que va a Rosario que sea el teclado, cambialo, no el mouse",
+     "casillas": []
+    },
+    {
+     "texto": "cuanto me queda de envio por cada lado?",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 7500,
+       "n": "el monto 7500"
+      },
+      {
+       "tipo": "plata",
+       "monto": 7000,
+       "n": "el monto 7000"
+      }
+     ]
+    },
+    {
+     "texto": "tengo 60 lucas para todo, me entra o me paso?",
+     "casillas": []
+    },
+    {
+     "texto": "y una cosa, son originales los productos?",
+     "casillas": []
+    },
+    {
+     "texto": "el primero que me mostraste, el de Cordoba, ese confirmamelo",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "dx-110"
+       ],
+       "n": "dice dx-110"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "G09",
+   "grupo": "G",
+   "clase": "guion 28: el mouse anotado al principio, un auricular que entra y sale",
+   "turnos": [
+    {
+     "texto": "hola, estoy armando un setup, tenes mouse y auriculares?",
+     "casillas": []
+    },
+    {
+     "texto": "el mouse Logitech M170 negro me interesa, anotalo que despues vemos el resto",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "m170"
+       ],
+       "n": "dice m170"
+      },
+      {
+       "tipo": "plata",
+       "monto": 12000,
+       "n": "el monto 12000"
+      }
+     ]
+    },
+    {
+     "texto": "que auriculares con microfono tenes?",
+     "casillas": []
+    },
+    {
+     "texto": "alguno sirve para playstation? lo quiero para la play 5",
+     "casillas": []
+    },
+    {
+     "texto": "cuantas cuotas puedo hacer? y aceptan tarjeta de debito?",
+     "casillas": []
+    },
+    {
+     "texto": "mi hermano dice que en otro lado esta mas barato, no se",
+     "casillas": []
+    },
+    {
+     "texto": "bueno dale, sumame el HyperX Cloud II a la compra",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "cloud ii"
+       ],
+       "n": "dice cloud ii"
+      },
+      {
+       "tipo": "plata",
+       "monto": 125500,
+       "n": "el monto 125500"
+      }
+     ]
+    },
+    {
+     "texto": "pensandolo mejor el auricular no, sacalo",
+     "casillas": []
+    },
+    {
+     "texto": "el envio va a Villa Maria, Cordoba, cuanto me queda?",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 7500,
+       "n": "el monto 7500"
+      },
+      {
+       "tipo": "plata",
+       "monto": 19500,
+       "n": "el monto 19500"
+      }
+     ]
+    },
+    {
+     "texto": "listo, cerrame la compra con el mouse que te mencione al principio, pasame el total final con envio",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "m170"
+       ],
+       "n": "dice m170"
+      },
+      {
+       "tipo": "plata",
+       "monto": 19500,
+       "n": "el monto 19500"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "G10",
+   "grupo": "G",
+   "clase": "guion 70: la referencia lejana entre rubros",
+   "turnos": [
+    {
+     "texto": "hola, que teclados tenes?",
+     "casillas": []
+    },
+    {
+     "texto": "y de mouse que hay?",
+     "casillas": []
+    },
+    {
+     "texto": "el primero que me mostraste de teclado, cuanto era?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "teclado"
+       ],
+       "n": "dice teclado"
+      }
+     ]
+    },
+    {
+     "texto": "sumale dos de esos y un mouse de los baratos, cuanto me queda?",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "teclado"
+       ],
+       "n": "dice teclado"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "mouse"
+       ],
+       "n": "dice mouse"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -646,7 +646,13 @@ def _certificar_id(nombre: str, catalogo: list, tienda_id: str) -> dict:
     candidatos = (exactos or
                   [{"id": f.get("id"), "nombre": f.get("nombre")}
                    for f in filas])[:TOPE_AMBIGUO]
-    lista = [f"{c.get('nombre')} ({c.get('id')})" for c in candidatos]
+    # CON SU PRECIO (2-oct, guion 28): "el HyperX Cloud II" en dos colores
+    # volvia sin un solo monto, y el cliente que pidio sumarlo no leia cuanto
+    # sale. El precio es de la ficha; elegir sigue siendo del cliente.
+    precios = {str(p.get("id")): p.get("precio_ars") for p in catalogo}
+    lista = [f"{c.get('nombre')} ({c.get('id')}"
+             + (f", ${precios[str(c.get('id'))]:,}".replace(",", ".") if precios.get(str(c.get("id"))) else "")
+             + ")" for c in candidatos]
     return {"sin_total": f"'{nombre}' puede ser mas de uno y cada uno sale "
                          f"distinto, asi que no lo cuento: no elijas, "
                          f"pregunta cual de estos y volve a pedirme la cuenta "

@@ -492,3 +492,52 @@ def test_la_memoria_marca_lo_que_respondio():
               {"id": "NOT0157", "nombre": "Notebook Asus ROG Strix G16 Ryzen", "precio": "$2.827.000"}]
     vistos = R._vistos_al_dia([], fichas, "Te paso.", 1, TIENDA, ["NOT0160"])
     assert [v.get("respuesta", False) for v in vistos] == [True, False]
+
+
+# ══ LOS GUIONES DE MEMORIA grabados con DeepSeek, `vara_guiones.json` (2-oct) ══
+
+def test_las_palabras_cortas_juntas_nombran_un_modelo():
+    """Guion 30: "g pro x" quedaba en "pro" y ganaba una memoria Crucial Pro."""
+    r = A.ejecutar("producto", {"nombre": "g pro x"}, TIENDA)
+    assert r["veredicto"] == "ambiguo"
+    assert {f["id"][:3] for f in r["filas"]} == {"MOU", "AUR"}
+
+
+def test_el_nombre_exacto_del_catalogo_certifica_aunque_otro_lo_contenga():
+    assert T._certificado("Auriculares Logitech G Pro X Negro", TIENDA, []) == "AUR0005"
+
+
+def test_la_palabra_mas_larga_del_modelo_alcanza_para_nombrarlo():
+    """Guion 32: "stinger 2" es el "Cloud Stinger 2" y la cuenta no lo tira."""
+    A.CLIENTE_DIJO.set("sumale a cada uno unos auriculares stinger 2 negro")
+    items = [{"producto": "MOU0001", "cantidad": 1}, {"producto": "AUR0003", "cantidad": 1},
+             {"producto": "TEC0003", "cantidad": 1}]
+    assert [i["producto"] for i in T._elegidos(items, [], "", TIENDA)] == ["AUR0003"]
+
+
+def test_producto_con_cantidad_trae_el_subtotal():
+    """Guion 52: "sumame 3 de esos"."""
+    pz = {"n": 1, "tipo": "producto", "texto": "sumame 3", "producto": "Teclado Genius KB-110X Blanco", "cantidad": 3}
+    h, args = T.a_herramienta(pz)
+    r = A.ejecutar(h, args, TIENDA)
+    assert r["filas"][0]["subtotal"] == "$36.000"
+
+
+def test_no_se_pregunta_el_color_entre_lo_que_no_hay():
+    """Guion 52: el KB-110X negro no tiene stock; el blanco es el unico."""
+    A.CLIENTE_DIJO.set("lo llevo")
+    r = A.ejecutar("reservar", {"producto": "TEC0020", "cantidad": 2}, TIENDA)
+    assert r["veredicto"] == "listo_para_cerrar"
+
+
+def test_una_repregunta_con_tema_lleva_lo_que_dice_la_tienda():
+    """Guion 32: "como pago" leido como falta el medio de pago."""
+    h, args = T.a_herramienta({"n": 1, "tipo": "repreguntar", "texto": "como pago", "tema": "formas_pago",
+                               "falta": "medio de pago"})
+    assert h == "politica" and "formas pago" in args["pregunta"]
+
+
+def test_lo_ambiguo_de_la_cuenta_dice_el_precio_de_cada_uno():
+    """Guion 28: "sumame el HyperX Cloud II" en dos colores."""
+    r = A.ejecutar("cuenta", {"items": [{"producto": "Auriculares HyperX Cloud II", "cantidad": 1}]}, TIENDA)
+    assert "125.500" in json.dumps(r, ensure_ascii=False)

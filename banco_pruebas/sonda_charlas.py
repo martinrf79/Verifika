@@ -52,7 +52,10 @@ def charlas(vara="58"):
                  lo complejo; las centinelas avisan si no.
       todas      todo junto, antes de un deploy
       produccion las charlas reales cosechadas de produccion, sin casillas
+      guiones    los guiones de memoria mas dificiles, con casillas: `vara_guiones.json`
     """
+    if vara == "guiones":
+        return json.load(open("banco_pruebas/vara_guiones.json", encoding="utf-8"))["charlas"]
     if vara == "produccion":
         # Las charlas reales de Martin, de `cosecha.py`. Sin casillas: se juzgan
         # con los invariantes de produccion y sirven para grabar al modelo con
