@@ -51,7 +51,15 @@ def charlas(vara="58"):
                  diez centinelas de las 58. Lo simple se da por cubierto si sale
                  lo complejo; las centinelas avisan si no.
       todas      todo junto, antes de un deploy
+      produccion las charlas reales cosechadas de produccion, sin casillas
     """
+    if vara == "produccion":
+        # Las charlas reales de Martin, de `cosecha.py`. Sin casillas: se juzgan
+        # con los invariantes de produccion y sirven para grabar al modelo con
+        # las preguntas como las escribe el cliente de verdad.
+        return [{"id": c["id"], "grupo": "P", "clase": f"real, {c['desde']}",
+                 "turnos": [{"texto": t["texto"], "casillas": []} for t in c["turnos"]]}
+                for c in (json.loads(x) for x in open("banco_pruebas/cosecha_produccion.jsonl", encoding="utf-8"))]
     if vara == "memoria":
         return json.load(open("banco_pruebas/lista_finita.json", encoding="utf-8"))["memoria"]["charlas"]
     doc = json.load(open("banco_pruebas/vara_58.json", encoding="utf-8"))
