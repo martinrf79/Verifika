@@ -680,6 +680,25 @@ _FALTA_LUGAR = re.compile(r"destin|envi|direcc|localidad|ciudad|domicilio|calle|
 _NADA = re.compile(r"|ningun[oa]?|nada|no|none|null|n/?a|-")
 
 
+def respondidos_en(memoria: str) -> set:
+    """Los ids que la memoria marca como la respuesta a lo que el cliente pidio."""
+    from app.core.respuesta import RESPUESTA
+    return set(re.findall(r"([A-Z]{3}\d{4}): [^/\n]*?" + re.escape(RESPUESTA), memoria or ""))
+
+
+def respondidos(busquedas: list) -> list:
+    """Lo que respondio cada busqueda por criterio de este turno: con orden,
+    las primeras filas hasta la cantidad pedida, uno si no dijo cuantos, con
+    sus colores. Sin orden no hay una respuesta: hay una lista."""
+    out = []
+    for pz, res in busquedas or []:
+        if not isinstance(pz, dict) or not (pz.get("orden") or {}).get("campo"):
+            continue
+        for f in ((res or {}).get("filas") or [])[:max(1, int(pz.get("cantidad") or 1))]:
+            out += [str(f.get("id"))] + [str(v.get("id")) for v in f.get("variantes") or []]
+    return list(dict.fromkeys(i for i in out if i and i != "None"))
+
+
 def _elegidos(items: list, llamadas: list, memoria: str, tienda_id: str, resueltos: set = None) -> list:
     """LA CUENTA SUMA LO QUE EL CLIENTE ELIGIO, NO LO QUE EL BOT MOSTRO (30-sep,
     M10): ante "cuanto es todo" el interprete metia los doce productos de la
@@ -696,7 +715,7 @@ def _elegidos(items: list, llamadas: list, memoria: str, tienda_id: str, resuelt
         todas = [w for w in re.findall(r"[a-z0-9]+", A._n(prod.get("modelo") or "")) if len(w) > 1]
         claves = [w for w in todas if any(c.isdigit() for c in w)] or todas  # "G203 Lightsync": alcanza g203
         return bool(claves) and all(w in dijo for w in claves)
-    resueltos = resueltos or set()
+    resueltos = (resueltos or set()) | respondidos_en(memoria)
     quedan = [i for i in items if not _ID.fullmatch(str(i.get("producto"))) or str(i["producto"]) in reservados
               or str(i["producto"]) in pedido or str(i["producto"]) in resueltos or nombrado(str(i["producto"]))]
     return quedan or items
@@ -900,9 +919,63 @@ def _reparto_en_cuentas(piezas: list) -> list:
     return out
 
 
+_EXCLUYEN = ("no_contiene", "evita")
+
+
+def exclusiones_vigentes(memoria: str) -> list:
+    """Las exclusiones de la ultima busqueda del cliente, leidas del renglon
+    que escribe `busqueda_vigente`: "buscar mouse, marca no_contiene Genius"."""
+    out = []
+    for renglon in re.findall(r"^buscar (.+)$", memoria or "", re.M):
+        for parte in renglon.split(", "):
+            w = parte.split(" ", 2)
+            if len(w) == 3 and w[1] in _EXCLUYEN:
+                c = {"campo": w[0], "operador": w[1], "valor": w[2]}
+                if c not in out:
+                    out.append(c)
+    return out
+
+
+def exclusiones_de(piezas: list) -> list:
+    return [{"campo": c.get("campo"), "operador": c.get("operador"), "valor": c.get("valor")}
+            for p in piezas if p.get("tipo") == "buscar" for c in p.get("condiciones") or []
+            if isinstance(c, dict) and c.get("operador") in _EXCLUYEN]
+
+
+def _heredar_exclusiones(piezas: list, memoria: str, mensaje: str, del_mensaje: list = None) -> list:
+    """LA EXCLUSION SIGUE VALIENDO HASTA QUE EL CLIENTE LA SUELTE (2-oct, K17).
+    "Que no sea Genius ni Logitech" y despues "y teclados?": la busqueda nueva
+    salia sin la exclusion y el bot mostraba Logitech. La memoria la tenia
+    como texto y el interprete no siempre la copiaba. Ahora la copia el
+    codigo: solo lo que EXCLUYE, que es preferencia del cliente y vale para
+    cualquier rubro; lo que elige —"auriculares JBL"— es de esa busqueda y no
+    se hereda. Se suelta si el mensaje dice que la marca no importa o vuelve
+    a nombrar lo excluido."""
+    m = A._n(mensaje)
+    vigentes = [] if A._SUELTA.search(m) else [c for c in exclusiones_vigentes(memoria)
+                                               if A._n(c["valor"]) not in m]
+    # Lo que la primera lectura de ESTE mensaje excluia tampoco se pierde en
+    # la revision: el 2-oct, K17, la correccion paso las exclusiones a una
+    # pieza verificar y dejo la busqueda limpia.
+    vigentes += [c for c in del_mensaje or [] if c not in vigentes]
+    if not vigentes:
+        return piezas
+    out = []
+    for p in piezas:
+        if p.get("tipo") == "buscar" and p.get("rubro") != NO_LO_VENDE:
+            propias = p.get("condiciones") or []
+            suma = [c for c in vigentes
+                    if not any(A._n(x.get("valor")) == A._n(c["valor"]) for x in propias if isinstance(x, dict))]
+            if suma:
+                p = {**p, "condiciones": list(propias) + suma}
+        out.append(p)
+    return out
+
+
 def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx: dict) -> list:
     """Corre cada pieza con su herramienta. Vuelve los HECHOS, uno por pieza."""
-    piezas = _normalizar(_envios_juntos(piezas), tienda_id)
+    piezas = _heredar_exclusiones(_normalizar(_envios_juntos(piezas), tienda_id), ctx.get("memoria") or "",
+                                  ctx.get("mensaje") or "", ctx.get("excluye_el_mensaje"))
     hechos = []
     ctx["busquedas"], ctx["usados"], ctx["no_vende"] = [], {}, []
     antes = [dict(p) for p in piezas]
@@ -966,6 +1039,12 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
         if pz.get("tipo") == "buscar" and pz.get("rubro") == NO_LO_VENDE:
             hecho["resultado"] = {"veredicto": "no_existe", "motivo": "la tienda no vende ese rubro"}
             ctx["no_vende"].append((pz, {}))
+        # LO QUE VENDE LA TIENDA LO DICE EL CODIGO (2-oct, K12 y K19): "que
+        # venden?" llega como saber general, y "y algo parecido?" despues de
+        # un rubro que no hay, como no lo vende. Sin la lista el redactor no
+        # tenia de donde decir que si hay, y contestaba de memoria o nada.
+        if pz.get("tipo") == "explicar" or pz.get("rubro") == NO_LO_VENDE:
+            hecho["la_tienda_vende"] = _vocabulario(tienda_id)[0]
         if pz.get("depende_de"):
             hecho["depende_de_la_parte"] = pz["depende_de"]
         # LO QUE EL MENSAJE YA DICE NO FALTA (1-oct): el interprete pone el
@@ -1202,6 +1281,10 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
                     error=f"{type(e).__name__}: {str(e)[:150]}")
         return {"texto": "", "llamadas": [], "uso": uso}
     piezas, errores, corregidos = atar(piezas_de(t_piezas), tienda_id)
+    if not piezas and not errores:
+        # Todo mensaje es al menos una pieza: sin ninguna, la salida vino rota
+        # (2-oct, M06 con DeepSeek: el texto vacio).
+        errores = ["no devolviste ninguna pieza: todo mensaje es al menos una, aunque sea charla"]
     reintento = False
     if errores:
         # UNA vez: el modelo ve su salida y el error, y lo que siga roto se descarta.
@@ -1249,6 +1332,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
                 log.info("tablero_atadura", trace_id=trace_id, paso="revision", errores=err_rev[:6],
                          corregidos=corr_rev[:6], reintento=False)
             if nuevas:
+                ctx["excluye_el_mensaje"] = exclusiones_de(piezas)
                 piezas = nuevas
                 hechos = correr_piezas(piezas, tienda_id, llamadas, 2, ctx)
         except Exception as e:  # noqa: BLE001
@@ -1288,5 +1372,6 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     return {"texto": texto, "llamadas": llamadas, "uso": uso, "hechos": hechos,
             "busqueda": busqueda_vigente((ctx.get("busquedas") or []) + (ctx.get("no_vende") or [])),
             "bloques": ctx.get("bloques"),
+            "respondidos": respondidos(ctx.get("busquedas")),
             # El pedido a confirmar se guarda; el retomado se borra; si no, no cambia.
             "pedido": ctx.get("pedido") or ({} if consumido else None)}

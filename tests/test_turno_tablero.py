@@ -383,3 +383,112 @@ def test_un_mensaje_de_otra_cosa_deja_el_pedido_esperando(monkeypatch):
     guardado = PD.guardar(_k20_piezas(), {"sin_destino": ["1 mouse"]})
     r = asyncio.run(T.turno([], "hacen factura A?", TIENDA, trace_id="t", pedido=guardado))
     assert not any(x["herramienta"] == "cuenta" for x in r["llamadas"]) and r["pedido"] is None
+
+
+# ══ LO GRABADO: las charlas de `grab_1` que el codigo resolvia mal (2-oct) ══
+
+def _filas(r):
+    return [f.get("id") for f in r.get("filas") or []]
+
+
+def test_el_id_que_resolvio_el_interprete_es_la_identidad():
+    """M06, M10: "la segunda", "el primero" llegan como id y se buscaban como texto."""
+    r = A.ejecutar("producto", {"nombre": "WEB0002"}, TIENDA)
+    assert r["veredicto"] == "existe" and _filas(r) == ["WEB0002"]
+
+
+def test_el_id_con_un_color_es_el_mismo_modelo_en_ese_color():
+    """M01: "volviendo al mouse del principio, lo tenes en negro?" llega como id y color."""
+    from app.storage.firestore_client import get_all_products
+    negro = next(p["id"] for p in get_all_products(tienda_id=TIENDA)
+                 if "G305" in p.get("nombre", "") and p.get("color", "").lower() == "negro")
+    r = A.ejecutar("producto", {"nombre": "MOU0030 negro"}, TIENDA)
+    assert _filas(r) == [negro]
+    assert _filas(A.ejecutar("producto", {"nombre": "MOU0030"}, TIENDA)) == ["MOU0030"]
+
+
+def test_un_id_en_las_condiciones_de_una_busqueda_va_por_id():
+    """C44: "el otro" llego como condicion modelo igual MOU0001."""
+    r = A.ejecutar("buscar", {"rubro": "mouse", "condiciones": [
+        {"campo": "modelo", "operador": "igual", "valor": "MOU0001"}]}, TIENDA)
+    assert r["veredicto"] == "existe" and _filas(r)[0] in ("MOU0001", "MOU0002")
+
+
+_MEMORIA_EXCLUYE = "LO ULTIMO QUE BUSCO EL CLIENTE:\nbuscar mouse, marca no_contiene Genius, marca no_contiene Logitech"
+
+
+def test_la_exclusion_sigue_valiendo_en_otro_rubro():
+    """K17: "que no sea Genius ni Logitech" y despues "y teclados?"."""
+    pz = T._heredar_exclusiones([{"n": 1, "tipo": "buscar", "texto": "y teclados?", "rubro": "teclado"}],
+                                _MEMORIA_EXCLUYE, "y teclados?")
+    assert {c["valor"] for c in pz[0]["condiciones"]} == {"Genius", "Logitech"}
+
+
+def test_la_exclusion_se_suelta_si_el_cliente_la_suelta_o_vuelve_a_nombrar_la_marca():
+    pz = [{"n": 1, "tipo": "buscar", "texto": "x", "rubro": "teclado"}]
+    assert "condiciones" not in T._heredar_exclusiones(pz, _MEMORIA_EXCLUYE, "y teclados, cualquier marca")[0]
+    vale = T._heredar_exclusiones(pz, _MEMORIA_EXCLUYE, "y teclados logitech?")[0]["condiciones"]
+    assert [c["valor"] for c in vale] == ["Genius"]
+
+
+def test_lo_que_elige_una_busqueda_no_se_hereda():
+    """M10: "auriculares JBL" y despues "un mouse barato" no es un mouse JBL."""
+    memoria = "buscar auriculares, marca igual JBL"
+    pz = T._heredar_exclusiones([{"n": 1, "tipo": "buscar", "texto": "y un mouse", "rubro": "mouse"}],
+                                memoria, "y un mouse")
+    assert "condiciones" not in pz[0]
+
+
+def test_la_revision_no_pierde_lo_que_el_mensaje_excluia(monkeypatch):
+    """K17, primer turno: la correccion paso las exclusiones a una pieza verificar."""
+    excluye = [{"campo": "marca", "operador": "no_contiene", "valor": "Genius"}]
+    m = _con(monkeypatch, _Modelo([{"n": 1, "tipo": "buscar", "texto": "un mouse que no sea Genius",
+                                    "rubro": "mouse", "condiciones": excluye}], banderas={"afirma_algo": True}))
+    corregidas = [{"n": 1, "tipo": "verificar", "texto": "x", "condiciones": excluye},
+                  {"n": 2, "tipo": "buscar", "texto": "un mouse", "rubro": "mouse"}]
+    pedidos = []
+
+    def create(**kw):
+        pedidos.append(kw)
+        if kw["messages"][-1]["content"].startswith("REVISION"):
+            return T_resp(json.dumps({"piezas": corregidas}))
+        return m._create(**kw)
+    m.chat.completions.create = create
+    r = _turno("busco un mouse que no sea Genius")
+    ultima = [x for x in r["llamadas"] if x["herramienta"] == "buscar"][-1]
+    assert excluye[0] in ultima["args"]["condiciones"]
+
+
+def T_resp(cont):
+    return NS(choices=[NS(message=NS(content=cont))],
+              usage=NS(prompt_tokens=100, completion_tokens=10, prompt_tokens_details=None))
+
+
+def test_saber_general_y_lo_que_no_se_vende_llevan_lo_que_vende_la_tienda(monkeypatch):
+    """K19 "que tipo de productos venden?" y K12 "y algo parecido?" despues de celulares."""
+    _con(monkeypatch, _Modelo([{"n": 1, "tipo": "explicar", "texto": "que venden?"},
+                               {"n": 2, "tipo": "buscar", "texto": "celulares", "rubro": T.NO_LO_VENDE}]))
+    r = _turno("que venden? tenes celulares?")
+    vende = [h.get("la_tienda_vende") for h in r["hechos"] if h.get("tipo") in ("explicar", "buscar")]
+    assert len(vende) == 2 and all("tablet" in v and "mouse" in v for v in vende)
+
+
+def test_lo_que_respondio_el_mas_caro_es_lo_elegido_y_el_resto_de_la_lista_no():
+    """K18: "el mas caro" mostro cinco notebooks; "sumame uno de cada uno" suma el primero."""
+    busq = [({"tipo": "buscar", "orden": {"campo": "precio_ars", "direccion": "max"}},
+             {"filas": [{"id": "NOT0160", "variantes": [{"id": "NOT0160"}, {"id": "NOT0162"}]}, {"id": "NOT0157"}]}),
+            ({"tipo": "buscar", "rubro": "mouse"}, {"filas": [{"id": "MOU0009"}]})]
+    assert T.respondidos(busq) == ["NOT0160", "NOT0162"]
+    from app.core.respuesta import RESPUESTA
+    memoria = (f"- NOT0160: Notebook Asus, $3.100.500{RESPUESTA}\n- NOT0157: Notebook Asus Ryzen, $2.827.000\n"
+               f"1. MOU0023: Mouse Genius DX-110 Negro, $8.500{RESPUESTA} / MOU0024: Mouse Genius DX-110 Blanco")
+    items = [{"producto": i, "cantidad": 1} for i in ("NOT0160", "NOT0157", "NOT0124", "MOU0023")]
+    assert [i["producto"] for i in T._elegidos(items, [], memoria, TIENDA)] == ["NOT0160", "MOU0023"]
+
+
+def test_la_memoria_marca_lo_que_respondio():
+    from app.core import respuesta as R
+    fichas = [{"id": "NOT0160", "nombre": "Notebook Asus ROG Strix G16", "precio": "$3.100.500"},
+              {"id": "NOT0157", "nombre": "Notebook Asus ROG Strix G16 Ryzen", "precio": "$2.827.000"}]
+    vistos = R._vistos_al_dia([], fichas, "Te paso.", 1, TIENDA, ["NOT0160"])
+    assert [v.get("respuesta", False) for v in vistos] == [True, False]

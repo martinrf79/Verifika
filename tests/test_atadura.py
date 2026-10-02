@@ -143,3 +143,9 @@ def test_si_sigue_roto_se_descarta_y_no_se_insiste(monkeypatch):
 def test_con_esquema_estricto_el_prompt_no_cambia():
     esquema = T.esquema_piezas(TIENDA)
     assert T._con_esquema("X", {"type": "json_schema"}, esquema) == "X"
+
+
+def test_sin_ninguna_pieza_vuelve_una_vez(monkeypatch):
+    m = _SinEsquema([], [{"n": 1, "tipo": "charla", "texto": "hola"}])
+    r = _turno_sin_esquema(monkeypatch, m, "hola")
+    assert [u["paso"] for u in r["uso"]].count("atadura") == 1

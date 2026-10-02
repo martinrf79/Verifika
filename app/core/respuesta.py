@@ -77,6 +77,7 @@ def _memoria_texto(conv: dict) -> str:
                 f"{n}. " + " / ".join(
                     f"{p.get('id')}: {p.get('nombre')}"
                     + (f", {p['precio']}" if p.get("precio") else "")
+                    + (RESPUESTA if p.get("respuesta") else "")
                     for p in ps)
                 for n, (_c, ps) in enumerate(grupos[:8], 1)))
         vistos = [p for p in vistos if p not in recien]
@@ -107,6 +108,7 @@ def _memoria_texto(conv: dict) -> str:
             + "\n".join(
                 f"- {p.get('id')}: {p.get('nombre')}"
                 + (f", {p['precio']}" if p.get("precio") else "")
+                + (RESPUESTA if p.get("respuesta") else "")
                 for p in vistos[-8:]))
     # EL ULTIMO PRESUPUESTO, Y ES FUENTE COMO EL PRECIO DE ARRIBA (15-sep-2026).
     #
@@ -235,8 +237,15 @@ def _norm_simple(t) -> str:
     return "".join(c for c in t if unicodedata.category(c) != "Mn")
 
 
+# LO QUE RESPONDIO A LO QUE EL CLIENTE PIDIO POR CRITERIO (2-oct, K18): "el mas
+# caro" mostraba cinco notebooks y la memoria los guardaba iguales, asi que
+# "sumame uno de cada uno" sumaba los cinco. La respuesta era el primero; los
+# otros eran contexto. La marca va pegada al id y `tablero._elegidos` la lee.
+RESPUESTA = " · fue la respuesta a lo que pidio"
+
+
 def _vistos_al_dia(vistos: list, fichas: list, texto: str, turno: int,
-                   tienda_id: str) -> list:
+                   tienda_id: str, respondidos: list = None) -> list:
     """La lista de productos vistos despues de este turno.
 
     LO NOMBRADO VA AL FINAL, EN SU ORDEN Y CON SU TURNO. Si la respuesta no
@@ -257,7 +266,8 @@ def _vistos_al_dia(vistos: list, fichas: list, texto: str, turno: int,
                       "precio": f.get("precio"),
                       "modelo": f.get("modelo") or "",
                       "grupo": f.get("grupo") or f.get("modelo") or "",
-                      "turno": turno if nombrados else 0})
+                      "turno": turno if nombrados else 0,
+                      **({"respuesta": True} if str(f.get("id")) in set(map(str, respondidos or [])) else {})})
     return fuera
 
 
@@ -478,7 +488,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     vistos = _vistos_al_dia(
         previos, fichas, texto,
         max((int(p.get("turno") or 0) for p in previos), default=0) + 1,
-        tienda_id)
+        tienda_id, r.get("respondidos"))
     # EL DESTINO QUE SE GUARDA ES EL QUE SE COTIZO, ya estable —la provincia,
     # no "Posadas"—, para que dentro de tres turnos vuelva a clasificar solo.
     from app.core import fuente as F

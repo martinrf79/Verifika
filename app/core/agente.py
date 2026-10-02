@@ -269,6 +269,42 @@ def _juntar_colores(r: dict, cuantos: int, tienda_id: str) -> dict:
     return {**r, "filas": [f for f, _ in filas][:max(1, int(cuantos or FILAS))]}
 
 
+def ids_nombrados(texto: str, tienda_id: str) -> tuple:
+    """(los ids de la tienda que trae el texto, lo que queda). EL ID ES LA
+    IDENTIDAD YA CERTIFICADA (2-oct, M01, M06, M10, C44): la memoria guarda los
+    ids de lo que se mostro y el interprete resuelve "la segunda" o "el otro"
+    con el id. La herramienta lo buscaba como texto, ninguna ficha dice
+    "WEB0002" en el nombre, y volvia no_existe o un producto ajeno."""
+    from app.storage.firestore_client import get_product_by_id
+    ids, resto = [], []
+    for w in str(texto or "").split():
+        tok = w.strip(".,;:()[]¿?¡!\"'")
+        if len(tok) > 2 and any(ch.isdigit() for ch in tok) and any(ch.isalpha() for ch in tok) \
+                and get_product_by_id(tok.upper(), tienda_id=tienda_id):
+            ids.append(tok.upper())
+        else:
+            resto.append(w)
+    return list(dict.fromkeys(ids)), " ".join(resto)
+
+
+def _con_el_color(pid: str, resto: str, tienda_id: str) -> list:
+    """El id en el color que nombra el resto: "MOU0030 blanco" es el mismo
+    modelo en blanco. Si nombra otra cosa y no es un color del modelo, van
+    todos sus colores, y el redactor ve cuales hay."""
+    from app.storage.firestore_client import get_all_products, get_product_by_id
+    p = get_product_by_id(pid, tienda_id=tienda_id) or {}
+    palabras = set(re.findall(r"[a-z0-9]+", _n(resto)))
+    if not palabras or not p.get("modelo"):
+        return [pid]
+    hermanos = [q for q in get_all_products(tienda_id=tienda_id) or []
+                if q.get("marca") == p.get("marca") and q.get("modelo") == p.get("modelo")]
+    colores = {str(q.get("id")): set(re.findall(r"[a-z0-9]+", _n(q.get("color") or ""))) for q in hermanos}
+    if len(hermanos) < 2 or not any(c & palabras for c in colores.values()):
+        return [pid]
+    elegido = [i for i, c in colores.items() if c and c <= palabras]
+    return elegido or [pid]
+
+
 def h_buscar(tienda_id: str, que: str = "", rubro: str = "", condiciones=None, orden=None,
              cuantos: int = FILAS, **_) -> dict:
     M = _motor()
@@ -276,6 +312,12 @@ def h_buscar(tienda_id: str, que: str = "", rubro: str = "", condiciones=None, o
         cuantos = max(1, min(int(cuantos or FILAS), 10))
     except (TypeError, ValueError):
         cuantos = FILAS
+    # Un id en la busqueda —"modelo igual MOU0001"— es un producto ya
+    # certificado: va por id, como `producto`.
+    ids, _ = ids_nombrados(" ".join([str(que or "")] + [str(c.get("valor") or "") for c in condiciones or []
+                                                         if isinstance(c, dict)]), tienda_id)
+    if ids:
+        return h_producto(tienda_id, " ".join(ids))
     conds, rubro = _condiciones_y_rubro(condiciones, rubro)
     rub, cand = _rubro(rubro, tienda_id)
     if rubro and not rub and not cand:
@@ -346,6 +388,12 @@ def h_producto(tienda_id: str, nombre: str = "", **_) -> dict:
     garantia y caja; medido sobre las tres tandas de base, `producto` era el
     39% de todo lo que volvia. El veredicto del motor no cambia: si era
     ambiguo sigue ambiguo, y el motivo dice que lo que falta es el color."""
+    ids, resto = ids_nombrados(nombre, tienda_id)
+    if ids:
+        ids = list(dict.fromkeys(x for i in ids for x in _con_el_color(i, resto, tienda_id)))
+        r = (_motor().buscar([{"ids": ids, "busco": "uno", "cuantos": max(4, len(ids))}], tienda_id,
+                             _trace()).get("resultados") or [{}])[0]
+        return _resultado(_juntar_colores(r, len(ids), tienda_id), detalle=True)
     r = (_motor().buscar([{"texto": nombre, "busco": "uno", "cuantos": 4}], tienda_id,
                          _trace()).get("resultados") or [{}])[0]
     antes = len(r.get("filas") or [])
