@@ -19,6 +19,7 @@ Dónde está cada cosa: `MAPA.md`.
 
 ## Abierto
 
+- **ABIERTO** · 2-oct, LA SIGUIENTE SESION: las 8 de `grab_1`, verificadas contra la reproduccion `rep_1`, sin modelo. Cuatro clases, un arreglo por clase: 1) redaccion, C14 K06 K08, el codigo tiene el dato y la respuesta lo pierde: control despues del redactor, lo que el cliente nombro y los hechos traen va en la respuesta, si falta vuelve una vez; 2) memoria como texto, K17 K18: la busqueda vigente como estructura, el codigo hereda las condiciones; uno de cada uno sale de lo respondido en turnos anteriores, por id; 3) referencias que resuelve el codigo, M06 la segunda contando sobre lo mostrado, K19 el catalogo con los rubros de la tienda; 4) K12 algo parecido, tabla de rubros afines en `data/clientes/`: pide permiso a Martin. Orden: 3, 2, 1, 4; todo con la gratis y `--pausa 20`.
 - **ABIERTO** · 1-oct: el pedido como estado, `app/core/pedido.py`. Si lo repartido no cierra, el bot confirma antes de calcular y con el si corre lo guardado. Probado sin modelo; SIN MEDIR EN VIVO, la gratis llego a su tope diario. Medir K20 y `--vara compleja` contra tabL con la gratis antes de deployar.
 - **ESPERA A MARTIN** · 1-oct, 23 hs: la clave paga devuelve 402, creditos prepagos agotados. Produccion usa esa clave: hasta recargar en AI Studio el bot contesta el aviso de demanda. La prueba del interprete con `gemini-3.8-flash`, tabX, quedo sin medir por eso: 31 de 42 charlas sin modelo.
 - **ABIERTO** · La compra por `reservar` entra al cierre; falta verla cerrar un pedido real con nombre y link.
