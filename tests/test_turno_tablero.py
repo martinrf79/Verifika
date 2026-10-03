@@ -541,3 +541,20 @@ def test_lo_ambiguo_de_la_cuenta_dice_el_precio_de_cada_uno():
     """Guion 28: "sumame el HyperX Cloud II" en dos colores."""
     r = A.ejecutar("cuenta", {"items": [{"producto": "Auriculares HyperX Cloud II", "cantidad": 1}]}, TIENDA)
     assert "125.500" in json.dumps(r, ensure_ascii=False)
+
+
+# ══ PRODUCCION, 3-oct: "el teclado no figura en nuestro catalogo" ══════════
+
+def test_el_aviso_de_articulos_dice_que_la_tienda_si_vende_lo_que_quedo_fuera(monkeypatch):
+    msg = "dos mouse y dos memorias. un mouse y una memoria a Rosario, un teclado y un mouse a Concordia. 70/30"
+    _con(monkeypatch, _Modelo(_k20_piezas(), banderas={"pide_total": True}))
+    r = _turno(msg)
+    aviso = json.dumps(r["hechos"], ensure_ascii=False)
+    assert "la tienda si vende teclado" in aviso
+
+
+def test_no_tenes_teclados_lleva_lo_que_vende_la_tienda(monkeypatch):
+    _con(monkeypatch, _Modelo([{"n": 1, "tipo": "verificar", "texto": "no tenes teclados", "tema": "stock_disponibilidad"}],
+                              banderas={"afirma_algo": True}))
+    r = _turno("me confundi, no tenes teclados")
+    assert "teclado" in r["hechos"][0]["la_tienda_vende"]

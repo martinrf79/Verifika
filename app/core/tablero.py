@@ -882,14 +882,18 @@ def _conservar(piezas: list, tienda_id: str, mensaje: str = "") -> dict:
             toma = [faltan.pop(0) for _ in range(int(i.get("cantidad") or 1))][0]
             informe.setdefault("reemplazo", []).append(
                 {"dijo": i.get("producto"), "destino": c.get("texto"), "se_tomo": toma,
-                 "por_que": f"{i.get('producto')} no estaba entre los articulos pedidos y quedaba "
-                            f"{toma} sin destino"})
+                 # LA TIENDA SI LO VENDE, Y SE DICE (3-oct, produccion): "no estaba entre los
+                 # articulos pedidos" salio como "el teclado no figura en nuestro catalogo",
+                 # y el turno siguiente el bot le dio la razon al "no tenes teclados".
+                 "por_que": f"la tienda si vende {r}; {i.get('producto')} no estaba entre los articulos "
+                            f"que pidio el cliente y quedaba {toma} sin destino"})
             i["producto"] = toma
         fuera = []
     if faltan:
         informe["sin_destino"] = [f"{faltan.count(r)} {r}" for r in dict.fromkeys(faltan)]
     if fuera:
-        informe["fuera_de_lista"] = [str(i.get("producto")) for _, i, _ in fuera]
+        informe["fuera_de_lista"] = [f"{i.get('producto')}: la tienda si vende {r}, pero no estaba entre los "
+                                     f"articulos que pidio el cliente" for _, i, r in fuera]
     llevan = {_rubro_de(str(i.get("producto") or ""), tienda_id) for c in cuentas for i in c["items"]
               if isinstance(i, dict)}
     sin_pedir = [r for r in _rubros_nombrados(mensaje, tienda_id) if r not in pedido and r not in llevan
@@ -1060,7 +1064,10 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
         # venden?" llega como saber general, y "y algo parecido?" despues de
         # un rubro que no hay, como no lo vende. Sin la lista el redactor no
         # tenia de donde decir que si hay, y contestaba de memoria o nada.
-        if pz.get("tipo") == "explicar" or pz.get("rubro") == NO_LO_VENDE:
+        # Y una verificacion sin producto —"no tenes teclados?"— tambien: sin la
+        # lista, el redactor le daba la razon al cliente (3-oct, produccion).
+        if pz.get("tipo") == "explicar" or pz.get("rubro") == NO_LO_VENDE \
+                or (pz.get("tipo") == "verificar" and not pz.get("producto")):
             hecho["la_tienda_vende"] = _vocabulario(tienda_id)[0]
         if pz.get("depende_de"):
             hecho["depende_de_la_parte"] = pz["depende_de"]
