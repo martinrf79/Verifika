@@ -59,6 +59,7 @@ NEXOS = """NEXOS: lo que dice el cliente y como se pide.
 - "si pasa X, hace Y", "si hay, dame tal", "dame el que cumpla X" -> pedi lo necesario para saber X y agrega una linea
   decidir; el sistema te devuelve los datos y ahi escribis las lineas finales.
 - "cuanto sale el envio a X", "cuanto sale cada envio" -> envio, una linea por destino
+- "anda con", "le sirve a", "entra en", "es compatible con", "sirve para mi" -> compatibilidad <producto> | <equipo del cliente>
 - "el de Posadas", "lo de Rosario" -> en cambiar, escribi "destino Posadas" en lugar del id: se mueve todo lo de ese destino
 - "cuanto es todo", "total", "recalculame", "item por item" -> cuenta. "pago 70 transferencia 30 mercado pago" -> pago
 - "me habias dicho otro precio" -> mira PRESUPUESTOS DADOS en el ESTADO y pedi la cuenta para comparar
@@ -87,6 +88,7 @@ D<n> | preguntar | <lo que falta y no se puede deducir>
 D<n> | humano                     (el cliente pide una persona, o la charla no se puede resolver)
 D<n> | nada
 D<n> | envio | <destino>            (cuanto cuesta mandar a ese destino)
+D<n> | compatibilidad | <id P o nombre del producto> | <el equipo o producto del cliente: notebook, mac, ps5, la placa P2...>
 Reglas: D<k> es el PRIMER articulo que devuelva esa linea; D<k>.2 el segundo, D<k>.3 el tercero. Si el cliente quiere dos articulos distintos de una busqueda, agrega D1 y D1.2; si quiere 2 unidades del mismo, agrega D1 con cantidad 2. Un producto que el cliente nombra (G203, K380 negro) se pide con producto, no con buscar. Usa los id P del ESTADO para todo lo ya nombrado. No escribas precios. Solo las lineas."""
 
 REDACTA = ("Sos el vendedor de una tienda online de tecnologia de Argentina. Hablas en espanol argentino, con voseo, claro "
@@ -317,6 +319,13 @@ class Sesion:
                 hechos[l["id"]] = dict(L.politica(["contacto humano persona vendedor"]),
                                        aviso="PASAR A UNA PERSONA: deci que un vendedor de la tienda sigue la charla")
                 self.humano = True
+            elif t == "compatibilidad":
+                p = self.ref(c[0] if c else "", hechos, usados)
+                from app.core import agente as A
+                from app.core.contexto_turno import get_current_tienda
+                hechos[l["id"]] = {"aviso": "compatibilidad: " + json.dumps(A.h_compatibilidad(
+                    get_current_tienda() or "verifika_prod", producto=(p or {}).get("nombre") or (c[0] if c else ""),
+                    con=c[1] if len(c) > 1 else ""), ensure_ascii=False, default=str)}
             elif t == "envio":
                 tarifa = L.costo_envio(c[0] if c else "")
                 hechos[l["id"]] = ({"aviso": f"envio a {c[0]}: {plata(tarifa)}; gratis si lo de ese envio supera $250.000; "
@@ -587,5 +596,5 @@ class Sesion:
 
 
 INDICE = indice()
-L.TIPOS = ("humano", "envio", "buscar", "producto", "rubros", "politica", "agregar", "sacar", "cambiar", "olvidar", "cuenta", "pago",
+L.TIPOS = ("humano", "envio", "compatibilidad", "buscar", "producto", "rubros", "politica", "agregar", "sacar", "cambiar", "olvidar", "cuenta", "pago",
            "decidir", "preguntar", "nada")
