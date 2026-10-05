@@ -51,10 +51,32 @@ corrida buena:
 | nexos | 23 de 30 | 74 de 84 |
 | tablero de producción | 22 de 30 | 74 de 84 |
 
-### Corrida completa, etiqueta `v1`
+### Corrida completa, etiqueta `v1`, 5-oct
 
-PENDIENTE de correr: DeepSeek y el modelo de producción, tres repeticiones
-cada uno.
+Son los dos modelos, las dos formas y tres repeticiones. La corrida y las
+entrevistas costaron 25 centavos.
+
+| modelo y forma | casos enteros bien, por repetición | partes bien | ajuste | reserva |
+|---|---|---|---|---|
+| DeepSeek con nexos | 25, 26 y 25 de 30 | 92 % | 38 de 45 | 38 de 45 |
+| DeepSeek con el tablero de producción | 21, 21 y 21 | 86 % | 24 de 45 | 39 de 45 |
+| modelo de producción con nexos | 20, 20 y 19 | 84 % | 30 de 45 | 29 de 45 |
+| **modelo de producción con el tablero, o sea el bot de hoy** | 16, 16 y 18 | 75 % | 16 de 45 | 34 de 45 |
+
+**Lo que dicen los números:**
+- **Los nexos ganan con los dos modelos**: de 21 a 25 con DeepSeek, y de 16 a
+  20 con el modelo de producción. El formato pesa tanto como el modelo.
+- **La mejor combinación es DeepSeek con nexos.** Ajuste y reserva dan igual,
+  38 y 38, así que no hay sobreajuste.
+- **El tablero cae fuerte en el ajuste.** Es porque la mitad de ajuste se
+  quedó, por el orden, con las charlas reales más difíciles: K01, K20, R15 y
+  la del humano. Ahí el tablero pierde y los nexos no.
+- **A temperatura cero, cada caso da casi siempre tres de tres o cero de
+  tres**, como dijo la ficha 59. Cada falla es de diseño y se arregla una vez.
+- **X01 da cero en las cuatro combinaciones.** Es "si anda quiero dos, uno a
+  Rosario y otro a Córdoba". El reparto de un mismo producto entre destinos
+  no lo hace bien ningún modelo con ningún formato, así que lo tiene que
+  garantizar el código: la red de la ficha 66 o el pedido como estado.
 
 ## Lo que ya muestra el piloto, falla por falla
 
@@ -92,12 +114,39 @@ que escribió y lo que faltaba. Le pregunta qué leyó, por qué y qué le hubie
 ayudado. Corre solo sobre casos de ajuste, nunca de reserva. Lo que digan va
 acá, resumido, y se prueba como cualquier otra mejora.
 
-PENDIENTE: correrlas sobre `v1`.
+### Lo que dijo DeepSeek sobre `v1`
+
+El detalle está en `desmenuzado_entrevistas.jsonl`. Cada pista apunta a una
+clase de falla, no a un caso:
+- **Tablero:** el rubro no tiene un valor para "cualquier rubro", y por eso
+  escribe "no lo vende la tienda". Pide "toda la tienda" en la lista.
+- **Tablero:** "precio de un rubro sin modelo es buscar", y "crisis" o
+  "presupuesto" quieren decir lo más barato. Pide la regla.
+- **Tablero:** buscar no lleva cantidad ni destino por ítem, y elegir uno ya
+  mostrado tiene que ir como producto, no como buscar.
+- **Tablero:** "hacen envíos al exterior" es política, no envío.
+- **Tablero:** si el cliente pide un humano, no se vuelve a interpretar lo
+  viejo de la charla.
+- **Tablero:** para cambiar un destino, la cuenta repite todos los ítems
+  vigentes. Pide un ejemplo.
+- **Nexos:** "uno a A y otro a B" va como dos agregar de uno, nunca "cantidad
+  2 y cambiar destino". Pide el ejemplo con ids.
+- **Nexos:** pide una forma de línea para "no se vende" y un campo de precio
+  máximo.
+
+### Lección sobre cómo entrevistar
+
+En la primera tanda la pregunta le mostraba al modelo las partes faltantes en
+el formato interno del corrector, con `{"t": ...}`. **El modelo de producción
+creyó que ese era el formato que tenía que escribir** y todas sus respuestas
+quedaron contaminadas. DeepSeek no se confundió. **Regla:** a la entrevista se
+le dice lo que faltó con palabras del cliente, nunca con estructuras internas.
 
 ## Cómo se sigue
 
-1. Correr `v1` completo, con los dos modelos y tres repeticiones.
-2. Entrevistar las fallas de ajuste.
+1. Hecho: `v1` y las entrevistas.
+2. Arreglar la entrevista para que hable en palabras del cliente, y volver a
+   entrevistar al modelo de producción.
 3. Corregir por clase, no por caso:
    - el formato, sumando "toda la tienda", el tope de precio y "no se vende";
    - el código, con la compra de varios ítems y el destino sin producto;
