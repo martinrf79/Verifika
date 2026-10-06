@@ -231,3 +231,64 @@ modelo de producción corrió con la clave gratis. Costó siete centavos.
   Son faltas de formato de los nexos y siguen abiertas.
 - **Costo:** unos 4.200 tokens de entrada contra unos 3.000 de los nexos,
   porque es una llamada más. La lista y las explicaciones van en caché.
+
+### Las guías afinadas, 6-oct, etiquetas `num2` y `num3`
+
+`guias58.py` v2 se afinó solo con fallas de AJUSTE de `num1`. Cada guía lleva
+ahora tres cosas:
+- la regla;
+- un ejemplo resuelto, sacado de las 58 y no de los casos del banco;
+- cuándo no es ese número.
+
+Además hay cuatro números nuevos que las 58 no cubrían: 59 no se vende, 60
+tope de precio, 61 toda la tienda y 62 pedir una persona. Y la lista de la
+primera llamada lleva pistas para los números que se confunden: "crisis" es 9,
+"cómo te pago" es 11, y "de esos" con "dame" es 27 y 15.
+
+**Error propio en `num2`:** los ejemplos iban sin "D1 |". El modelo de
+producción los copió así, el código descartó esas líneas, y cayó a 23. En
+`num3` cada ejemplo lleva la forma exacta. **Regla:** un ejemplo para el
+modelo se escribe con la forma exacta que se le pide, porque la copia.
+
+En `num3` el modelo de producción corrió con la paga. La clave gratis se
+agotó a mitad de la tanda, y Martín había dicho que en ese caso se usara la
+paga.
+
+| modelo | `num1`, guías v1 | `num3`, guías v2 | ajuste | reserva |
+|---|---|---|---|---|
+| modelo de producción | 25, 25 y 25 | 25, 25 y 25 | de 36 a 39 | de 39 a 36 |
+| DeepSeek | 23, 23 y 22 | 24, 23 y 23 | de 37 a 34 | de 31 a 36 |
+
+**Lo que dice:**
+- **Arreglar por clase arregla esa clase.** X05, "no se vende" con tope de
+  precio, pasa de cero a tres de tres con los dos modelos.
+- **El total no se mueve con el modelo de producción.** Lo que sube en ajuste
+  baja en reserva, así que el techo de este camino, a una sola traducción,
+  anda por 25 de 30.
+- **DeepSeek mejora en la reserva**, de 31 a 36, y empata con lo que daba
+  con nexos.
+- **X01, el reparto por destino, volvió a cero en DeepSeek.** En `num1` lo
+  pasaba con una regla escrita en palabras del cliente; el ejemplo de las 58
+  que la reemplazó no alcanza. Es un caso de ajuste, así que no se toca la
+  guía por él. Va al código: la red de la ficha 66 o el pedido como estado.
+- **Lo que queda en los dos:**
+  - X16, la garantía y el Windows de cada notebook, que sale como política y
+    no como ficha del producto;
+  - X24, la webcam más barata;
+  - X06, el segundo en blanco.
+
+## Jev, un clasificador sin texto: investigado el 6-oct
+
+Jev es de TypeSafe AI. Recibe un texto y preguntas con listas cerradas, y
+devuelve la opción con su probabilidad, sin escribir texto. Sería la PRIMERA
+llamada, la de los números, con dos ventajas: da confianza por opción y es
+barata, 0,042 dólares por millón de tokens de entrada y la salida gratis.
+
+**Lo que no hace es partir el mensaje.** Clasifica un texto entero, así que
+igual hace falta que un modelo lo parta antes, o hacerle una pregunta por
+parte.
+
+**No se pudo probar:** está en OpenRouter y en la API de TypeSafe, y el
+entorno no tiene esa clave. Además no hay datos de cómo le va en español.
+**Para probarlo hace falta que Martín consiga la clave.** La prueba sería la
+misma tanda de treinta casos con Jev en la primera llamada.

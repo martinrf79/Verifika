@@ -346,13 +346,13 @@ LISTA:
 
 def numeros_de(modelo, s, mensaje):
     """LA PRIMERA LLAMADA del camino de numeros: partes con uno a tres numeros de la ficha 58."""
-    from numeros58 import LISTA
+    from guias58 import LISTA
     crudo, u = _crear(modelo, [{"role": "system", "content": PIDE_NUMEROS + LISTA},
                                {"role": "user", "content": s.estado() + "\n\nULTIMOS MENSAJES:\n"
                                 + (s.ultimos() or "(ninguno)") + f"\n\nMENSAJE DEL CLIENTE: {mensaje}"}])
     partes = []
     for m in re.finditer(r"^\s*(\d+)\s*\|\s*([\d ,]+)\|\s*(.+)$", crudo, re.M):
-        nums = [int(x) for x in re.findall(r"\d+", m.group(2)) if 1 <= int(x) <= 58][:3]
+        nums = [int(x) for x in re.findall(r"\d+", m.group(2)) if 1 <= int(x) <= 62][:3]
         partes.append((m.group(1), nums, m.group(3).strip()))
     return crudo, partes, u
 
@@ -364,11 +364,11 @@ def correr_nexos(modelo, ctx, mensaje, numeros=False):
     usos, previo = [], ""
     if numeros:
         # LA SEGUNDA LLAMADA recibe, en vez de todos los nexos, SOLO la explicacion de los numeros elegidos
-        from guias58 import G
+        from guias58 import guia as _guia
         c0, partes, u0 = numeros_de(modelo, s, mensaje)
         usos.append(u0)
         elegidos = sorted({x for _, ns, _ in partes for x in ns})
-        guia = "COMO SE PIDE CADA TIPO DE PEDIDO DE ESTE MENSAJE:\n" + "\n".join(f"{k}. {G[k]}" for k in elegidos)
+        guia = _guia(elegidos)
         sistema = NX.PIDE + "\n\n" + NX.INDICE + "\n\n" + guia
         extra = "\n\nPARTES DEL MENSAJE, con su tipo:\n" + "\n".join(
             f"{i} [{', '.join(map(str, ns))}] {t}" for i, ns, t in partes)
