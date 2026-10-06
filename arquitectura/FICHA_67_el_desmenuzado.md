@@ -193,3 +193,41 @@ Eso ya es la forma de los nexos.
 
 **Lo que sí sirve de la idea:** usar las 58 como VARA y como lista de ejemplos
 para los nexos, no como etiqueta de salida.
+
+### Los números en dos llamadas, 6-oct, etiqueta `num1`
+
+Es la versión de Martín y tiene dos llamadas:
+- **Primera llamada:** el modelo parte el mensaje y le pone a cada parte de
+  uno a tres números de la ficha 58.
+- **Segunda llamada:** el modelo escribe las líneas de los nexos, pero en vez
+  de todos los nexos recibe SOLO la explicación larga de los números que
+  eligió. Esas explicaciones están en `banco_pruebas/nexos/guias58.py`.
+  Tiene las mismas dos vueltas: el reintento por formato y el decidir.
+
+Son los mismos treinta casos, el mismo corrector y tres repeticiones. El
+modelo de producción corrió con la clave gratis. Costó siete centavos.
+
+| modelo y camino | casos enteros por repetición | partes | ajuste | reserva |
+|---|---|---|---|---|
+| modelo de producción con números | 25, 25 y 25 | 92 % | 36 de 45 | 39 de 45 |
+| modelo de producción con nexos, `v1` | 20, 20 y 19 | 84 % | 30 | 29 |
+| DeepSeek con números | 23, 23 y 22 | 91 % | 37 | 31 |
+| DeepSeek con nexos, `v1` | 25, 26 y 25 | 92 % | 38 | 38 |
+
+**Lo que dicen los números:**
+- **Con el modelo de producción, los números ganan claro**: de 20 a 25 casos.
+  Y la ganancia no es de ajuste: la reserva sube de 29 a 39.
+- **Con DeepSeek, los números pierden un poco**: de 25 a 23, con la reserva
+  de 38 a 31. A DeepSeek le alcanza la lista entera de nexos; al modelo más
+  barato le sirve recibir solo lo que aplica a este mensaje.
+- **X01, el reparto por destino, sale tres de tres con DeepSeek** por primera
+  vez. Hay que decirlo: la explicación 26 lleva la regla que DeepSeek dio en
+  su entrevista sobre X01, que es un caso de ajuste.
+- **Lo que sigue fallando en todos:**
+  - X05, por el tope de precio y el "no se vende";
+  - X24, por la webcam más barata;
+  - X06, por el segundo en blanco.
+
+  Son faltas de formato de los nexos y siguen abiertas.
+- **Costo:** unos 4.200 tokens de entrada contra unos 3.000 de los nexos,
+  porque es una llamada más. La lista y las explicaciones van en caché.

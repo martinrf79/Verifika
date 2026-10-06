@@ -334,16 +334,53 @@ def correr_tablero(modelo, ctx, mensaje):
     return {"crudo": crudo, "piezas": piezas, "banderas": T.banderas_de(cb), "usos": usos}
 
 
-def correr_nexos(modelo, ctx, mensaje):
+PIDE_NUMEROS = """Sos el traductor de una tienda online de tecnologia de Argentina. No le contestas al cliente.
+Parti el ULTIMO mensaje del cliente en partes, una por cada cosa que pide o dice, y a cada parte ponele de UNO a TRES numeros de la lista: los tipos de pedido que tiene esa parte. La lista trae un ejemplo de cada numero: no busques la misma frase, busca el mismo tipo de pedido. Usa el estado de la charla para entender 'ese', 'el otro' o 'de esos'.
+Una linea por parte, con esta forma exacta:
+<n de parte> | <numeros separados por coma> | <la parte con las palabras del cliente>
+Solo las lineas.
+
+LISTA:
+"""
+
+
+def numeros_de(modelo, s, mensaje):
+    """LA PRIMERA LLAMADA del camino de numeros: partes con uno a tres numeros de la ficha 58."""
+    from numeros58 import LISTA
+    crudo, u = _crear(modelo, [{"role": "system", "content": PIDE_NUMEROS + LISTA},
+                               {"role": "user", "content": s.estado() + "\n\nULTIMOS MENSAJES:\n"
+                                + (s.ultimos() or "(ninguno)") + f"\n\nMENSAJE DEL CLIENTE: {mensaje}"}])
+    partes = []
+    for m in re.finditer(r"^\s*(\d+)\s*\|\s*([\d ,]+)\|\s*(.+)$", crudo, re.M):
+        nums = [int(x) for x in re.findall(r"\d+", m.group(2)) if 1 <= int(x) <= 58][:3]
+        partes.append((m.group(1), nums, m.group(3).strip()))
+    return crudo, partes, u
+
+
+def correr_nexos(modelo, ctx, mensaje, numeros=False):
     import nexos as NX
     s = sesion_de(ctx)
     s.mensaje = mensaje
-    base = [{"role": "system", "content": NX.PIDE + "\n\n" + NX.INDICE + "\n\n" + NX.NEXOS},
+    usos, previo = [], ""
+    if numeros:
+        # LA SEGUNDA LLAMADA recibe, en vez de todos los nexos, SOLO la explicacion de los numeros elegidos
+        from guias58 import G
+        c0, partes, u0 = numeros_de(modelo, s, mensaje)
+        usos.append(u0)
+        elegidos = sorted({x for _, ns, _ in partes for x in ns})
+        guia = "COMO SE PIDE CADA TIPO DE PEDIDO DE ESTE MENSAJE:\n" + "\n".join(f"{k}. {G[k]}" for k in elegidos)
+        sistema = NX.PIDE + "\n\n" + NX.INDICE + "\n\n" + guia
+        extra = "\n\nPARTES DEL MENSAJE, con su tipo:\n" + "\n".join(
+            f"{i} [{', '.join(map(str, ns))}] {t}" for i, ns, t in partes)
+        previo = c0 + "\n--- numeros ---\n"
+    else:
+        sistema, extra = NX.PIDE + "\n\n" + NX.INDICE + "\n\n" + NX.NEXOS, ""
+    base = [{"role": "system", "content": sistema},
             {"role": "user", "content": s.estado() + "\n\nULTIMOS MENSAJES:\n" + (s.ultimos() or "(ninguno)")
-             + f"\n\nMENSAJE DEL CLIENTE: {mensaje}"}]
+             + f"\n\nMENSAJE DEL CLIENTE: {mensaje}" + extra}]
     crudo, u1 = _crear(modelo, base)
     lineas, malas = L.parsear(crudo)
-    usos = [u1]
+    usos.append(u1)
     if malas or not lineas:
         crudo2, u2 = _crear(modelo, base + [{"role": "assistant", "content": crudo}, {
             "role": "user", "content": "Estas lineas no tienen la forma pedida: " + " / ".join(malas or ["ninguna linea"])
@@ -365,7 +402,7 @@ def correr_nexos(modelo, ctx, mensaje):
         rondas.append(s.renumerar(l2))
         crudo += "\n--- decidir ---\n" + crudo2
         usos.append(u2)
-    return {"crudo": crudo, "rondas": rondas, "malas": malas, "usos": usos}
+    return {"crudo": previo + crudo, "rondas": rondas, "malas": malas, "usos": usos}
 
 
 # ══ DE LA SALIDA A ATOMOS: lo que el codigo recibe, en un idioma comun ══════
@@ -660,7 +697,8 @@ def uno(modelo, forma, caso, rep, etiqueta):
     set_current_tienda(TIENDA)
     t0 = time.time()
     try:
-        r = correr_tablero(modelo, ctx, msg) if forma == "tablero" else correr_nexos(modelo, ctx, msg)
+        r = correr_tablero(modelo, ctx, msg) if forma == "tablero" else \
+            correr_nexos(modelo, ctx, msg, numeros=(forma == "numeros"))
         r["crudo_sin_ctx"] = r["crudo"]
         nota = corregir(caso, forma, r)
     except Exception as e:  # noqa: BLE001
@@ -691,7 +729,7 @@ def rearmar(fila):
         r = {"crudo": fila["crudo"], "piezas": piezas, "banderas": fila.get("banderas") or {}}
     else:
         import nexos as NX  # noqa: F401 — fija L.TIPOS
-        primera, _, segunda = fila["crudo"].partition("\n--- decidir ---\n")
+        primera, _, segunda = fila["crudo"].split("\n--- numeros ---\n")[-1].partition("\n--- decidir ---\n")
         lineas, malas = L.parsear(primera.split("\n--- formato ---\n")[-1])
         rondas = [NX.Sesion.renumerar(lineas)] + ([NX.Sesion.renumerar(L.parsear(segunda)[0])] if segunda else [])
         r = {"crudo": fila["crudo"], "rondas": rondas, "malas": malas}
