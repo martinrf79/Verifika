@@ -156,3 +156,40 @@ le dice lo que faltó con palabras del cliente, nunca con estructuras internas.
    - **casos enteros:** 27 de 30 o más, en las tres repeticiones;
    - **pedido:** cero errores de reparto que cambien la plata;
    - **reserva:** no más de un caso por debajo del ajuste.
+
+## Los 58 como números, 6-oct
+
+Fue idea de Martín: el modelo parte el mensaje y a cada parte le pone el número
+de la combinación de la ficha 58. Delante tiene la lista con un ejemplo de cada
+una. El banco es `banco_pruebas/nexos/numeros58.py`. Son quince mensajes
+complejos con dos repeticiones por modelo, y costó un centavo.
+
+**Tokens: es viable.**
+- La lista con nombre y ejemplo suma unos 1.100 tokens fijos, que van en
+  caché.
+- La salida es de unos 5 tokens por mensaje, o unos 20 si lleva además lo que
+  nombra cada parte.
+
+**Lo que hace el modelo: no sirve así.**
+- Los casos enteros salieron 11 de 30 con DeepSeek y 10 de 30 con el modelo de
+  producción. Con nexos son 25 de 30 en la ficha.
+- **Las 58 no son una partición.** Mezclan tipos simples con combinaciones de
+  tipos. "Si el G305 anda con Mac, me lo llevo" es un solo número, el 29, o
+  dos números, el 36 y el 15, y el código no puede saber cuál de los dos
+  caminos tomó el modelo.
+- **Los modelos no coinciden entre sí.** Para "ninguno me convence", uno pone
+  el 35 y el otro el 44.
+- **El número solo no alcanza.** El código sigue necesitando el producto, la
+  cantidad y el destino.
+
+**Lo que dijeron los dos modelos en la entrevista, y coinciden:**
+- 58 es demasiado y se superponen: los datos falsos, los varios productos y
+  las referencias se confunden entre sí;
+- el número solo no alcanza;
+- prefieren palabras a números;
+- proponen pocos tipos de acción, de 10 a 15, y los datos por separado.
+
+Eso ya es la forma de los nexos.
+
+**Lo que sí sirve de la idea:** usar las 58 como VARA y como lista de ejemplos
+para los nexos, no como etiqueta de salida.
