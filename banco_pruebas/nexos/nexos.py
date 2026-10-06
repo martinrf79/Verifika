@@ -123,7 +123,10 @@ def ficha(p, corta=False):
     datos = [f"{k} {s[k]}" for k in _CAMPOS_FICHA if s.get(k)]
     if corta:
         return "; ".join(datos[:3])
-    extra = [f"garantia {p['garantia_meses']} meses" if p.get("garantia_meses") else "",
+    colores = [f"{q['color']} ({'stock ' + str(q['stock']) if q['stock'] > 0 else 'sin stock'})" for q in P
+               if q["marca"] == p["marca"] and q["modelo"] == p["modelo"] and q["color"]]
+    extra = ["colores: " + ", ".join(colores) if len(colores) > 1 else "",
+             f"garantia {p['garantia_meses']} meses" if p.get("garantia_meses") else "",
              p.get("caracteristicas_extra") or "", f"uso {p['uso_recomendado']}" if p.get("uso_recomendado") else "",
              p.get("origen") or "", (p.get("descripcion") or "")[:160]]
     return "; ".join(x for x in datos + extra if x)
@@ -185,10 +188,21 @@ class Sesion:
         return "\n".join(out)
 
     # ── resolver lineas ──
+    def id_con_variante(self, x):
+        """'P2 blanco', 'P1 en negro': el producto del ESTADO en ese color o capacidad. Sin variante, el mismo."""
+        m = re.fullmatch(r"(P\d+)\s*(?:,|en|de)?\s*(.*)", (x or "").strip())
+        if not m or m.group(1) not in self.prods:
+            return None
+        p = self.prods[m.group(1)]
+        resto = n(m.group(2))
+        if not resto or n(p["color"]) in resto:
+            return p
+        return self.variante(p, resto) or p
+
     def ref(self, x, hechos, usados):
         x = x.strip()
-        if re.fullmatch(r"P\d+", x):
-            return self.prods.get(x)
+        if re.match(r"P\d+\b", x):
+            return self.id_con_variante(x)
         m = re.fullmatch(r"(D\d+)(?:\.(\d+))?", x)
         if m:
             filas = (hechos.get(m.group(1)) or {}).get("filas") or []
@@ -217,7 +231,8 @@ class Sesion:
         cands = [q for q in P if q["categoria"] == p["categoria"] and q["marca"] == p["marca"] and q is not p
                  and base & set(re.findall(r"[a-z]+", n(q["modelo"])))]
         pal = [w for w in re.findall(r"[a-z0-9]+", t) if w not in ("variante", "que", "sea", "el", "la", "de", "por", "en")]
-        mejor = sorted(cands, key=lambda q: -sum(w in n(q["nombre"]) for w in pal))
+        mismo = [q for q in cands if q["modelo"] == p["modelo"]]  # el mismo modelo en otro color va primero
+        mejor = sorted(cands, key=lambda q: (-sum(w in n(q["nombre"]) for w in pal), q not in mismo))
         if mejor and sum(w in n(mejor[0]["nombre"]) for w in pal) > 0:
             return mejor[0]
         return None
@@ -298,8 +313,8 @@ class Sesion:
                 hechos[l["id"]] = h
             elif t == "producto":
                 x = (c[0] if c else "").strip()
-                if re.fullmatch(r"P\d+", x) and x in self.prods:
-                    hechos[l["id"]] = {"filas": [self.prods[x]], "ficha": True}
+                if self.id_con_variante(x):
+                    hechos[l["id"]] = {"filas": [self.id_con_variante(x)], "ficha": True}
                 else:
                     p = self.identificar(x)
                     hechos[l["id"]] = dict({"filas": [p]} if p else L.producto(c), ficha=True)
@@ -360,6 +375,8 @@ class Sesion:
                 p = self.ref(c[0], hechos, usados)
                 k = self.por_nombre.get(p["nombre"]) if p else None
                 arg = " ".join(c[1:]).strip()
+                if not arg and n(c[0]).startswith("destino "):  # "cambiar | destino Cordoba": todo va ahi
+                    arg, c[0], p, k = c[0], "todo", None, None
                 its = [it for it in self.pedido if it["p"] == k] if k else []
                 viejo = re.sub(r"^destino\s+", "", n(c[0]))
                 if n(arg).startswith("destino"):
@@ -471,6 +488,8 @@ class Sesion:
             medios = re.findall(r"transferencia|mercado ?pago|tarjeta|efectivo", n(self.mensaje))
             pcts = re.findall(r"(\d+)\s*(?:%|por ?ciento)", n(txt) + " " + n(self.mensaje))
             pares = list(zip(medios, pcts))
+        if not pares:  # "70, 30" sin medio: el reparto del presupuesto, sin descuento
+            pares = [(f"parte {i}", x) for i, x in enumerate(re.findall(r"\d+", txt), 1)]
         for medio, pct in pares:
             monto = round(tot * int(pct) / 100)
             s = f"{medio.strip()} {pct}%: {plata(monto)}"

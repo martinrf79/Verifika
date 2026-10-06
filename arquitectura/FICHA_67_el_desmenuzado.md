@@ -292,3 +292,79 @@ parte.
 entorno no tiene esa clave. Además no hay datos de cómo le va en español.
 **Para probarlo hace falta que Martín consiga la clave.** La prueba sería la
 misma tanda de treinta casos con Jev en la primera llamada.
+
+## Las 58 como ejemplos resueltos, 6-oct, etiquetas `ej1`, `ej2` y `zval`
+
+**La idea.** El modelo ya no elige un número. Lo hace una sola llamada, que recibe cuatro cosas:
+- **la forma de las líneas**, la de los nexos;
+- **el índice de la tienda**: rubros con marcas, lo que no se vende y los temas de política;
+- **un mapa de fuentes nuevo**: qué dato está en la ficha, en el catálogo, en las políticas o en el pedido, y cómo
+  se atan las partes de un mismo mensaje;
+- **los ejemplos.** Son las 58, más los cuatro números nuevos y algunas variantes, ya resueltas con su estado y sus
+  líneas. El código elige las más parecidas al mensaje y las pone delante. La elección es por parecido de palabras,
+  sobre el mensaje entero y sobre cada cláusula.
+
+Todo vive en `banco_pruebas/nexos/ejemplos58.py`. Son dos formas:
+- `ejemplos`, que no lleva los nexos;
+- `ejnexos`, que además lleva los nexos.
+
+La idea viene de la literatura de traducción a programas con ejemplos elegidos por parecido.
+
+**Arreglos de código.** Son por clase, en `nexos.py`:
+- `P2 blanco` es P2 en ese color. Antes no se entendía, y la variante elegía otro modelo de la misma marca.
+- La ficha lista los colores del modelo con su stock.
+- `cambiar | destino X` sin producto mueve todo el pedido.
+- Un pago con porcentajes y sin medio, como "70, 30", reparte el total.
+
+**Dos reservas nuevas, escritas antes de correr:**
+- **Y, doce casos.** Se escribió antes de `ej1`. Sus fallas de `ej1` movieron arreglos de código y un ejemplo, así
+  que ya no está limpia.
+- **Z, doce casos.** Se escribió después de `ej1` y antes de `ej2`, y no se miró para ajustar nada. **Es la medida
+  limpia.**
+
+**Costo.** Lo que se gastó en todas las tandas del día se ve en el libro de la paga.
+
+### `ej2`, tres repeticiones, casos X enteros
+
+| modelo y forma | X de 30 | ajuste | reserva | Y de 12 | tokens de entrada |
+|---|---|---|---|---|---|
+| DeepSeek con `ejemplos` | 29, 29 y 28 | 42 de 45 | 44 de 45 | 12, 11 y 11 | 3.400 |
+| DeepSeek con `ejnexos` | 29, 27 y 29 | 44 | 41 | 12, 12 y 11 | 4.600 |
+| modelo de producción con `ejemplos` | 26, 26 y 27 | 43 | 36 | 12, 11 y 12 | 3.100 |
+| modelo de producción con `ejnexos` | 27, 27 y 27 | 42 | 39 | 11, 11 y 11 | 4.200 |
+
+Como referencia, `num3`, el camino de los números en dos llamadas, daba:
+- con el modelo de producción, 25, 25 y 25;
+- con DeepSeek, 24, 23 y 23.
+
+### `zval`, la validación limpia: Z, doce casos
+
+| modelo y forma | Z de 12 por repetición | partes |
+|---|---|---|
+| **modelo de producción con `ejemplos`** | **12, 12 y 12** | 81 de 81 |
+| modelo de producción con `ejnexos` | 11, 11 y 11 | 78 de 81 |
+| DeepSeek con `ejemplos` | 11, 12 y 11 | 79 de 81 |
+| modelo de producción con nexos, sin ejemplos | 9, una repetición | 24 de 27 |
+| modelo de producción con números, dos llamadas | 7, una repetición | 22 de 27 |
+
+**Lo que dice:**
+- **Es una llamada en vez de dos.** La latencia mediana baja a la mitad que la de los números: unos 4 segundos
+  contra 8 a 10, con el mismo reintento por formato.
+- **Usa menos tokens:** unos 3.000 de entrada contra 4.000, y la mitad de salida.
+- **En la validación limpia, el modelo de producción no falló ningún caso.** Los dos caminos anteriores fallan 3 y 5
+  de 12 en los mismos mensajes.
+- **DeepSeek con `ejemplos` pasa la vara en X**, con 27 o más en las tres repeticiones, y la reserva no queda por
+  debajo del ajuste.
+- **El modelo de producción queda en 26 o 27 en X**, y su reserva queda debajo del ajuste.
+
+**Lo que queda en X con el modelo de producción:**
+- **X24.** "Una webcam buena", seguido de "el más barato de cada uno", sale como buena calidad.
+- **X04.** En la segunda vuelta del decidir pregunta en vez de agregar.
+- **X10, que es K20.** El origen y el teclado siguen fallando con todos.
+
+En la reserva no se ajustó nada.
+
+**Cómo se sigue:**
+- Llevar este camino al turno: los nexos con ejemplos, en lugar de `tablero`. Va en su propia ficha y por
+  `puerta.py`.
+- Medir la redacción con estos datos sobre las charlas reales de `reales_vara.py`.

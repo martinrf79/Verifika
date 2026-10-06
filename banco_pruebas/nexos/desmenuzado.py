@@ -204,6 +204,94 @@ CASOS = [
 ]
 RESERVA = {c[0] for i, c in enumerate(CASOS) if i % 2 == 1}
 
+# LA RESERVA NUEVA, escrita el 6-oct ANTES de correr la forma de los ejemplos y sin mirar sus salidas: las fallas
+# de X ya se vieron todas, asi que esta es la unica medida limpia de esa forma. No se ajusta nada con ella.
+CASOS_Y = [
+    ("Y01", MOUSES, "el del medio lo tenes en blanco? y el mas barato de los tres cuanto pesa?",
+     {"partes": [{"t": "prod", "prod": "g305"}, {"t": "prod", "prod": "g203"}], "no": ["agregar"]}),
+    ("Y02", None, "necesito dos monitores y un parlante, lo mas economico posible, y decime si hacen factura B",
+     {"partes": [{"t": "buscar", "rubro": "monitor", "orden": "min", "cant": 2},
+                 {"t": "buscar", "rubro": "parlante", "orden": "min"},
+                 {"t": "politica", "tema": ["factura", "datos_fiscales"]}], "no": ["agregar"]}),
+    ("Y03", NOTES, "la segunda la tenes en negro? si hay, anotamela y mandala a Mendoza",
+     {"partes": [{"t": "prod", "prod": "aspire 5"}, {"t": "condicion"}],
+      "carrito": [("aspire 5.*negro", 1, "mendoza")]}),
+    ("Y04", CARRITO, "agregame dos K120 blancos que van a Tucuman y lo de Rosario dejalo como esta, cuanto queda?",
+     {"partes": [{"t": "cuenta"}],
+      "carrito": [("g305", 1, "rosario"), ("k380", 1, "rosario"), ("k120.*blanco", 2, "tucuman")]}),
+    ("Y05", None, "tienen smartwatch? y si no, que auriculares bluetooth tienen que no pasen de 100 mil?",
+     {"partes": [{"t": "novende"}, {"t": "buscar", "rubro": "auriculares", "cond": "100"}], "no": ["agregar"]}),
+    ("Y06", PC, "la placa de video esa entra en el gabinete que tengo? es un mid tower. y el mother soporta ddr5?",
+     {"partes": [{"t": "compat", "prod": "rtx 4060", "con": "gabinete|tower"},
+                 {"t": "alt", "de": [{"t": "compat", "prod": "b550m", "con": "ddr5"}, {"t": "prod", "prod": "b550m"}]}],
+      "no": ["agregar"]}),
+    ("Y07", SIN_REDRAGON, "y teclados? los dos mas baratos",
+     {"partes": [{"t": "buscar", "rubro": "teclado", "orden": "min", "cant": 2, "excluye": "redragon"}],
+      "no": ["agregar"]}),
+    ("Y08", None, "quiero hablar con un vendedor, tengo dudas con una compra grande",
+     {"partes": [{"t": "alt", "de": [{"t": "humano"}, {"t": "politica", "tema": ["contacto_humano"]}]}],
+      "no": ["agregar", "buscar"]}),
+    ("Y09", G305_ANOTADO, "sumale un K380 negro, todo a Neuquen, y pago mitad transferencia mitad mercado pago",
+     {"partes": [{"t": "pago", "medios": {"transferencia": 50, "mercado": 50}}, {"t": "cuenta"}],
+      "carrito": [("g305", 1, "neuquen"), ("k380.*negro", 1, "neuquen")]}),
+    ("Y10", None, "si el teclado K380 es compatible con iPad me llevo uno blanco a Rosario, y que garantia tiene?",
+     {"partes": [{"t": "compat", "prod": "k380", "con": "ipad|tablet"}, {"t": "condicion"},
+                 {"t": "alt", "de": [{"t": "politica", "tema": ["garantia", "garantia_como_usar"]},
+                                     {"t": "ficha", "prod": "k380"}]}]}),
+    ("Y11", MOUSES, "cuanto sale el envio de los tres a Corrientes? cual tiene mas garantia?",
+     {"partes": [{"t": "alt", "de": [{"t": "envio", "destino": "corrientes"}, {"t": "destino", "destino": "corrientes"}]},
+                 {"t": "prod", "prod": "g203"}, {"t": "prod", "prod": "g305"}, {"t": "prod", "prod": "mx master"}]}),
+    ("Y12", None, "pasame el procesador mas potente de AMD y una mother que le sirva",
+     {"partes": [{"t": "buscar", "rubro": "procesador", "orden": "max", "cond": "amd"},
+                 {"t": "alt", "de": [{"t": "buscar", "rubro": "motherboard"}, {"t": "compat", "prod": ".", "con": "."}]}],
+      "no": ["agregar"]}),
+]
+# LA VALIDACION, escrita el 6-oct despues de `ej1` y ANTES de `ej2`, sin mirar nunca sus salidas para ajustar: los Y ya
+# movieron arreglos de codigo y ejemplos, asi que la medida limpia final es esta.
+SSDS = {"antes": [("necesito un ssd de 1 tera", "Te paso tres:\n1. Ssd Kingston NV2 1TB, $36.500.\n"
+                   "2. Ssd Samsung 980 1TB, $44.000.\n3. Ssd Crucial P3 Plus 1TB, $49.500.")],
+        "vistos": ["SSD0011", "SSD0002", "SSD0026"]}
+CASOS_Z = [
+    ("Z01", SSDS, "el de samsung lo tenes en 2 teras? y el mas barato de los tres cuanto tarda en llegar a Rafaela?",
+     {"partes": [{"t": "prod", "prod": "980 2tb"},
+                 {"t": "alt", "de": [{"t": "envio", "destino": "rafaela"}, {"t": "destino", "destino": "rafaela"},
+                                     {"t": "politica", "tema": ["plazo_envio", "envios"]}]}], "no": ["agregar"]}),
+    ("Z02", None, "hola buenas, nesecito un mouse para mi hijo q no sea muy caro y un auricular con microfono, tienen cuotas?",
+     {"partes": [{"t": "buscar", "rubro": "mouse", "orden": "min"}, {"t": "buscar", "rubro": "auriculares"},
+                 {"t": "politica", "tema": ["cuotas", "formas_pago"]}], "no": ["agregar"]}),
+    ("Z03", SSDS, "dame dos del primero y uno del ultimo, todo a Parana",
+     {"partes": [{"t": "cuenta"}], "carrito": [("nv2 1tb", 2, "parana"), ("p3 plus 1tb", 1, "parana")]}),
+    ("Z04", CARRITO, "el teclado cambialo por uno blanco y agregame otro mouse igual pero que vaya a Santa Fe",
+     {"partes": [{"t": "cuenta"}],
+      "carrito": [("g305.*negro", 1, "rosario"), ("k380.*blanco", 1, "rosario"), ("g305.*negro", 1, "santa fe")]}),
+    ("Z05", None, "venden impresoras? cual es la mas barata que imprima a color y cuanto sale mandarla a Corrientes?",
+     {"partes": [{"t": "buscar", "rubro": "impresora", "orden": "min", "cond": "color"},
+                 {"t": "alt", "de": [{"t": "envio", "destino": "corrientes"}, {"t": "destino", "destino": "corrientes"}]}],
+      "no": ["agregar"]}),
+    ("Z06", NOTES, "si la primera trae windows me la llevo, sino la otra",
+     {"partes": [{"t": "prod", "prod": "hp 245"}, {"t": "condicion"}]}),
+    ("Z07", None, "cual es el ssd mas rapido que tienen de 1 tera? y anda en una ps5?",
+     {"partes": [{"t": "buscar", "rubro": "ssd", "cond": "1 ?t"}, {"t": "compat", "prod": ".", "con": "ps5|play"}],
+      "no": ["agregar"]}),
+    ("Z08", SIN_REDRAGON, "el segundo me gusta, lo tenes en blanco? anotame uno",
+     {"partes": [{"t": "prod", "prod": "quantum 200"}], "carrito": [("quantum 200.*blanco", 1, "")]}),
+    ("Z09", None, "Buenas! Somos una escuela y necesitamos 10 teclados y 10 mouse con cable, los mas baratos. Hacen precio "
+                  "por cantidad? Facturan A?",
+     {"partes": [{"t": "buscar", "rubro": "teclado", "orden": "min"}, {"t": "buscar", "rubro": "mouse", "orden": "min"},
+                 {"t": "politica", "tema": ["mayoristas", "promociones"]},
+                 {"t": "politica", "tema": ["factura", "datos_fiscales"]}]}),
+    ("Z10", PC_CARRITO, "saca la placa de video, y el resto mandalo a Rosario. cuanto queda pagando todo con mercado pago?",
+     {"partes": [{"t": "pago", "medios": {"mercado": 100}}, {"t": "cuenta"}],
+      "carrito": [("ryzen 5 5600", 1, "rosario"), ("b550m", 1, "rosario")]}),
+    ("Z11", MOUSES, "ninguno, quiero uno vertical para la muñeca",
+     {"partes": [{"t": "buscar", "rubro": "mouse", "cond": "vertical|ergonom"}], "no": ["agregar"]}),
+    ("Z12", None, "me mandaron un mouse fallado, como hago el cambio? y de paso cuanto sale el G502 X",
+     {"partes": [{"t": "politica", "tema": ["defectuoso", "garantia", "cambios", "devoluciones", "garantia_como_usar"]},
+                 {"t": "prod", "prod": "g502 x"}], "no": ["agregar"]}),
+]
+NUEVOS = {c[0] for c in CASOS_Y + CASOS_Z}
+CASOS = CASOS + CASOS_Y + CASOS_Z
+
 # ══ EL CATALOGO, para leer lo que llega ══════════════════════════════════════
 
 import lineas as L  # noqa: E402
@@ -357,11 +445,20 @@ def numeros_de(modelo, s, mensaje):
     return crudo, partes, u
 
 
-def correr_nexos(modelo, ctx, mensaje, numeros=False):
+def correr_nexos(modelo, ctx, mensaje, numeros=False, ejemplos=""):
     import nexos as NX
     s = sesion_de(ctx)
     s.mensaje = mensaje
     usos, previo = [], ""
+    if ejemplos:
+        # UNA llamada: forma, indice, fuentes y, en el mensaje, los ejemplos de las 58 que elige el codigo por parecido
+        import ejemplos58 as E
+        sistema = NX.PIDE + "\n\n" + NX.INDICE + "\n\n" + E.FUENTES + ("\n\n" + NX.NEXOS if ejemplos == "ejnexos" else "")
+        extra = "\n\n" + E.bloque(mensaje)
+        base = [{"role": "system", "content": sistema},
+                {"role": "user", "content": extra.strip() + "\n\n=== ESTA CHARLA ===\n" + s.estado() + "\n\nULTIMOS MENSAJES:\n"
+                 + (s.ultimos() or "(ninguno)") + f"\n\nMENSAJE DEL CLIENTE: {mensaje}"}]
+        return _vueltas(modelo, s, base, usos, previo)
     if numeros:
         # LA SEGUNDA LLAMADA recibe, en vez de todos los nexos, SOLO la explicacion de los numeros elegidos
         from guias58 import guia as _guia
@@ -378,6 +475,11 @@ def correr_nexos(modelo, ctx, mensaje, numeros=False):
     base = [{"role": "system", "content": sistema},
             {"role": "user", "content": s.estado() + "\n\nULTIMOS MENSAJES:\n" + (s.ultimos() or "(ninguno)")
              + f"\n\nMENSAJE DEL CLIENTE: {mensaje}" + extra}]
+    return _vueltas(modelo, s, base, usos, previo)
+
+
+def _vueltas(modelo, s, base, usos, previo):
+    """La llamada, el reintento por formato y la segunda vuelta del decidir: iguales para todas las formas de nexos."""
     crudo, u1 = _crear(modelo, base)
     lineas, malas = L.parsear(crudo)
     usos.append(u1)
@@ -505,13 +607,13 @@ def atomos_nexos(r, ctx, s=None):
             out.append(a)
         elif t == "producto":
             x = c[0].strip()
-            nom = s.prods[x]["nombre"] if x in s.prods else x
+            nom = s.id_con_variante(x)["nombre"] if s.id_con_variante(x) else x
             por_id[l["id"]] = nom
             out.append({"t": "prod", "prod": nom})
         elif t == "compatibilidad":
             x = c[0].strip()
             y = c[1].strip()
-            out.append({"t": "compat", "prod": s.prods[x]["nombre"] if x in s.prods else por_id.get(x, x),
+            out.append({"t": "compat", "prod": s.id_con_variante(x)["nombre"] if s.id_con_variante(x) else por_id.get(x, x),
                         "con": s.prods[y]["nombre"] if y in s.prods else por_id.get(y, y)})
         elif t == "politica":
             out.append({"t": "politica", "tema": tema_de(c[0])})
@@ -519,7 +621,7 @@ def atomos_nexos(r, ctx, s=None):
             out.append({"t": "envio", "destino": c[0]})
         elif t in ("agregar", "cambiar", "sacar"):
             x = c[0].strip()
-            nom = s.prods[x]["nombre"] if x in s.prods else por_id.get(re.sub(r"\.\d+$", "", x), x)
+            nom = s.id_con_variante(x)["nombre"] if s.id_con_variante(x) else por_id.get(re.sub(r"\.\d+$", "", x), x)
             out.append({"t": t, "prod": nom, "cant": _entero(c[1]) if t == "agregar" else None,
                         "destino": c[2] if t == "agregar" else c[1]})
         elif t == "cuenta":
@@ -530,6 +632,8 @@ def atomos_nexos(r, ctx, s=None):
                 med[n(m)] = int(p)
             if not med and re.search(r"transfer", n(c[0])):
                 med["transferencia"] = 100
+            if not med:  # "70, 30": el reparto sin medio
+                med = {f"parte {i}": int(p) for i, p in enumerate(re.findall(r"\d+", c[0] + " " + c[1]), 1)}
             out.append({"t": "pago", "medios": med})
         elif t == "decidir":
             out.append({"t": "condicion"})
@@ -698,7 +802,8 @@ def uno(modelo, forma, caso, rep, etiqueta):
     t0 = time.time()
     try:
         r = correr_tablero(modelo, ctx, msg) if forma == "tablero" else \
-            correr_nexos(modelo, ctx, msg, numeros=(forma == "numeros"))
+            correr_nexos(modelo, ctx, msg, numeros=(forma == "numeros"),
+                                                       ejemplos=forma if forma.startswith("ej") else "")
         r["crudo_sin_ctx"] = r["crudo"]
         nota = corregir(caso, forma, r)
     except Exception as e:  # noqa: BLE001
@@ -757,16 +862,20 @@ def informe(etiqueta):
     print(f"\nDESMENUZADO {etiqueta}: casos bien enteros, partes bien, por modelo y forma")
     for (m, fo), fs in sorted(grupos.items()):
         reps = sorted({f["rep"] for f in fs})
-        por_rep = [sum(f["ok"] for f in fs if f["rep"] == r) for r in reps]
-        n_casos = len({f["id"] for f in fs})
+        por_rep = [sum(f["ok"] for f in fs if f["rep"] == r and f["id"] not in NUEVOS) for r in reps]
+        n_casos = len({f["id"] for f in fs if f["id"] not in NUEVOS})
         pb = sum(f["bien"] for f in fs)
         pt = sum(f["partes"] for f in fs)
-        aj = [f for f in fs if not f["reserva"]]
-        rs = [f for f in fs if f["reserva"]]
+        ny = [f for f in fs if f["id"] in NUEVOS]
+        fs_x = [f for f in fs if f["id"] not in NUEVOS]
+        aj = [f for f in fs_x if not f["reserva"]]
+        rs = [f for f in fs_x if f["reserva"]]
         tok = sum(sum(u[0] for u in f["tokens"]) for f in fs) / max(1, len(fs))
         print(f"  {m:24s} {fo:8s} casos {por_rep} de {n_casos} · partes {pb}/{pt} ({100 * pb // max(1, pt)}%) · "
               f"ajuste {sum(f['ok'] for f in aj)}/{len(aj)} reserva {sum(f['ok'] for f in rs)}/{len(rs)} · "
-              f"prohibidos {sum(bool(f.get('prohibidos')) for f in fs)} · tokens de entrada {int(tok)}")
+              f"prohibidos {sum(bool(f.get('prohibidos')) for f in fs)} · tokens de entrada {int(tok)}"
+              + "".join(f" · {L_} {[sum(f['ok'] for f in ny if f['rep'] == r and f['id'][0] == L_) for r in reps]} de "
+                        f"{len({f['id'] for f in ny if f['id'][0] == L_})}" for L_ in "YZ" if any(f["id"][0] == L_ for f in ny)))
     print("\nPOR CASO, bien en las repeticiones de cada modelo y forma:")
     claves = sorted(grupos)
     print("  caso  " + "  ".join(f"{m.split('-')[0][:6]}/{fo[:3]}" for m, fo in claves))
@@ -775,7 +884,7 @@ def informe(etiqueta):
         for k in claves:
             fs = [f for f in grupos[k] if f["id"] == cid]
             celdas.append(f"{sum(f['ok'] for f in fs)}/{len(fs)}".rjust(10))
-        print(f"  {cid}{'r' if cid in RESERVA else ' '} " + " ".join(celdas))
+        print(f"  {cid}{'r' if cid in RESERVA else ('n' if cid in NUEVOS else ' ')} " + " ".join(celdas))
     print("\nLO QUE FALTA, por clase de parte:")
     for k in claves:
         cnt = {}
@@ -805,7 +914,7 @@ Contesta corto, en tres renglones:
 def entrevistar(etiqueta, rep=1):
     filas = [json.loads(x) for x in open(SALIDA, encoding="utf-8")]
     malas = [f for f in filas if f["etiqueta"] == etiqueta and f["rep"] == rep and not f["ok"]
-             and not f["crudo"].startswith("ERROR") and not f["reserva"]]
+             and not f["crudo"].startswith("ERROR") and not f["reserva"] and f["id"] not in NUEVOS]
     out = os.path.join(AQUI, "desmenuzado_entrevistas.jsonl")
     for f in malas:
         cid, ctx, msg, esp = next(c for c in CASOS if c[0] == f["id"])
