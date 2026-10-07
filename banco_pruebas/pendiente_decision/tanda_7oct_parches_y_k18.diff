@@ -1,0 +1,202 @@
+diff --git a/app/core/ejemplos_interprete.json b/app/core/ejemplos_interprete.json
+index 6362e40..be7ae5e 100644
+--- a/app/core/ejemplos_interprete.json
++++ b/app/core/ejemplos_interprete.json
+@@ -1592,6 +1592,75 @@
+      "tema": "formas_pago"
+     }
+    ]
++  },
++  {
++   "id": "C26c",
++   "memoria": "",
++   "mensaje": "precio de dos notebooks y dos auriculares, buenos, confio en vos. una notebook y un auricular van a Salta y el resto a Jujuy",
++   "piezas": [
++    {
++     "n": 1,
++     "tipo": "buscar",
++     "texto": "dos notebooks buenas",
++     "rubro": "notebook",
++     "cantidad": 2
++    },
++    {
++     "n": 2,
++     "tipo": "buscar",
++     "texto": "dos auriculares buenos",
++     "rubro": "auriculares",
++     "cantidad": 2
++    },
++    {
++     "n": 3,
++     "tipo": "cuenta",
++     "texto": "una notebook y un auricular a Salta, el resto a Jujuy",
++     "items": [
++      {
++       "producto": "notebook",
++       "cantidad": 1,
++       "destino": "Salta"
++      },
++      {
++       "producto": "auriculares",
++       "cantidad": 1,
++       "destino": "Salta"
++      },
++      {
++       "producto": "notebook",
++       "cantidad": 1,
++       "destino": "Jujuy"
++      },
++      {
++       "producto": "auriculares",
++       "cantidad": 1,
++       "destino": "Jujuy"
++      }
++     ],
++     "depende_de": [
++      1,
++      2
++     ]
++    }
++   ]
++  },
++  {
++   "id": "N61b",
++   "memoria": "",
++   "mensaje": "pasame los tres articulos mas baratos de la tienda, en total serian tres, despues te digo a donde van",
++   "piezas": [
++    {
++     "n": 1,
++     "tipo": "buscar",
++     "texto": "los tres articulos mas baratos de toda la tienda",
++     "cantidad": 3,
++     "orden": {
++      "campo": "precio_ars",
++      "direccion": "min"
++     }
++    }
++   ]
+   }
+  ]
+ }
+\ No newline at end of file
+diff --git a/app/core/tablero.py b/app/core/tablero.py
+index d1a7341..b9aaf99 100644
+--- a/app/core/tablero.py
++++ b/app/core/tablero.py
+@@ -74,7 +74,8 @@ BANDERAS = {
+     "falta_dato_cliente": "para contestar falta un dato del cliente que no dio: su equipo, su modelo",
+     "referencia_ambigua": "dice 'ese', 'el otro' y en la charla hay mas de un producto al que puede referirse",
+     "afirma_algo": "el cliente da algo por cierto de la tienda o de un producto, aunque sea dentro de otra pregunta",
+-    "pide_total": "pide el total de una compra: varios productos, cantidades o envio sumados",
++    "pide_total": "pide el total de una compra: la suma en plata de varios productos, cantidades o envio. Contar "
++                  "articulos no es pedir un total: 'en total serian cuatro' es cuantos son, no cuanto suman",
+     "confirma_resumen": "el bot le resumio un pedido y le pregunto si esta bien, y el cliente lo acepta o le "
+                         "corrige un detalle",
+ }
+@@ -477,9 +478,10 @@ _GENERICAS = {"mouse", "teclado", "auriculares", "auricular", "monitor", "notebo
+               "el", "la", "de", "los", "las", "un", "una", "en", "con"}
+ 
+ 
+-def _certificado(nombre: str, tienda_id: str, llamadas: list) -> str:
++def _certificado(nombre: str, tienda_id: str, llamadas: list, vistos: list = None) -> str:
+     """El id del producto si la identidad es UNA —regla 10.0—; si no, el nombre
+-    tal cual, y la cuenta devuelve la ambiguedad para preguntar."""
++    tal cual, y la cuenta devuelve la ambiguedad para preguntar. `vistos` son
++    los ids que el bot ya nombro en la charla."""
+     if not nombre or _ID.fullmatch(nombre.strip()):
+         return nombre
+     r = ejecutar("producto", {"nombre": nombre}, tienda_id)
+@@ -503,6 +505,16 @@ def _certificado(nombre: str, tienda_id: str, llamadas: list) -> str:
+                                           or "").strip() == A._n(nombre).strip()]
+     if len(exacto) == 1:
+         return exacto[0]
++    # LO QUE EL BOT YA MOSTRO ES ESA FICHA (7-oct, K18): "la ROG Strix G16"
++    # sin color nombra tres fichas. Si la charla mostro una sola, es esa. Si
++    # mostro el modelo con sus colores y todos salen lo mismo, es la primera
++    # que nombro el bot, la que la busqueda puso adelante. Con precios
++    # distintos sigue siendo una duda para el cliente.
++    en_charla = sorted((pid for pid in hits if pid in (vistos or [])), key=lambda pid: vistos.index(pid))
++    if len(hits) > 1 and en_charla:
++        precios = {(get_product_by_id(pid, tienda_id=tienda_id) or {}).get("precio_ars") for pid in en_charla}
++        if len(en_charla) == 1 or len(precios) == 1:
++            return en_charla[0]
+     return hits[0] if len(hits) == 1 else nombre
+ 
+ 
+@@ -666,7 +678,7 @@ def _resolver_items(items: list, tienda_id: str, llamadas: list, ctx: dict) -> l
+     for i in items:
+         if not isinstance(i, dict):
+             continue
+-        pid = _certificado(str(i.get("producto") or ""), tienda_id, llamadas)
++        pid = _certificado(str(i.get("producto") or ""), tienda_id, llamadas, _ID.findall(ctx.get("memoria") or ""))
+         out.append({**i, "producto": pid})
+         if not _ID.fullmatch(str(pid)):
+             pend.append(out[-1])
+@@ -1006,9 +1018,57 @@ def _heredar_exclusiones(piezas: list, memoria: str, mensaje: str, del_mensaje:
+     return out
+ 
+ 
++_SUPERLATIVO = re.compile(r"\bmas (barat|economic|car)\w*")
++_DE_ESOS = re.compile(r"\b(esos|esas|de los que|de las que)\b")
++
++
++def _superlativo_de_lo_buscado(piezas: list, memoria: str, mensaje: str, tienda_id: str) -> list:
++    """"EL MAS BARATO DE ESOS TECLADOS" ES DE LA BUSQUEDA, NO DE LO MOSTRADO
++    (7-oct, K17). El bot muestra unos pocos de una busqueda que trajo mas; el
++    interprete elegia el mas barato entre los mostrados y el cliente se quedaba
++    sin el de verdad. Si el mensaje pide el mas barato o el mas caro "de esos"
++    y la ultima busqueda del cliente es de ese rubro, la pieza pasa a ser esa
++    misma busqueda ordenada por precio: el minimo lo calcula el codigo."""
++    m = A._n(mensaje)
++    sup = _SUPERLATIVO.search(m)
++    if not sup or not _DE_ESOS.search(m):
++        return piezas
++    direccion = "max" if sup.group(1) == "car" else "min"
++    busquedas: dict = {}
++    for renglon in re.findall(r"^buscar (.+)$", memoria or "", re.M):
++        rubro, *partes = renglon.split(", ")
++        conds = [{"campo": w[0], "operador": w[1], "valor": w[2]}
++                 for w in (x.split(" ", 2) for x in partes) if len(w) == 3 and w[1] in OPERADORES]
++        busquedas.setdefault(rubro.strip(), []).append(conds)
++    out = []
++    for p in piezas:
++        if p.get("tipo") in ("producto", "buscar"):
++            rubro = p.get("rubro") or _rubro_de(str(p.get("producto") or ""), tienda_id) \
++                or next(iter(_rubros_nombrados(p.get("texto") or "", tienda_id)), "")
++            if rubro and len(busquedas.get(rubro) or []) == 1:
++                conds = busquedas[rubro][0]
++                propias = [c for c in p.get("condiciones") or [] if p.get("tipo") == "buscar" and c not in conds]
++                p = {"n": p.get("n"), "tipo": "buscar", "texto": p.get("texto"), "rubro": rubro, "cantidad": 1,
++                     "condiciones": conds + propias, "orden": {"campo": "precio_ars", "direccion": direccion},
++                     **({"depende_de": p["depende_de"]} if p.get("depende_de") else {})}
++        out.append(p)
++    return out
++
++
++def _envio_con_destino(out: dict, destinos: list) -> None:
++    """EL RENGLON DEL ENVIO DICE A DONDE VA (7-oct, M10). La calculadora escribe
++    "Envio: $7.000" porque no sabe el nombre del lugar, y el redactor copia el
++    detalle tal cual: el cliente leia el costo sin saber de que envio era."""
++    c = (out or {}).get("cuenta") or {}
++    if len(destinos) == 1 and isinstance(c.get("detalle"), str):
++        c["detalle"] = re.sub(r"(?m)^(\W*)Envio:", lambda m: f"{m.group(1)}Envio a {destinos[0]}:", c["detalle"])
++
++
+ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx: dict) -> list:
+     """Corre cada pieza con su herramienta. Vuelve los HECHOS, uno por pieza."""
+-    piezas = _heredar_exclusiones(_normalizar(_envios_juntos(piezas), tienda_id), ctx.get("memoria") or "",
++    piezas = _superlativo_de_lo_buscado(_normalizar(_envios_juntos(piezas), tienda_id), ctx.get("memoria") or "",
++                                        ctx.get("mensaje") or "", tienda_id)
++    piezas = _heredar_exclusiones(piezas, ctx.get("memoria") or "",
+                                   ctx.get("mensaje") or "", ctx.get("excluye_el_mensaje"))
+     hechos = []
+     ctx["busquedas"], ctx["usados"], ctx["no_vende"] = [], {}, []
+@@ -1098,6 +1158,8 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
+             clave = json.dumps([h, args], sort_keys=True, default=str)
+             if clave not in vistas:
+                 out = ejecutar(h, args, tienda_id)
++                if h == "cuenta":
++                    _envio_con_destino(out, args.get("destinos") or [])
+                 llamadas.append({"vuelta": vuelta, "herramienta": h, "args": args, "vuelve": out})
+                 vistas[clave] = out
+             if h == "cuenta" and ((vistas[clave] or {}).get("cuenta") or {}).get("total_ars") is None:
