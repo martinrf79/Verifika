@@ -370,8 +370,9 @@ def _pedido_de_atadura(errores: list) -> str:
 
 async def _pedir(cli, msgs: list, temp: float, formato: dict | None, trace_id: str, uso: list, paso: str) -> str:
     from app.config import get_settings
-    from app.core.llm_reintento import _modelo, llamar_con_reintento
+    from app.core.llm_reintento import _modelo, llamar_con_reintento, un_sistema
     kw = {"response_format": formato} if formato else {}
+    msgs = un_sistema(msgs)
 
     def _call():
         return cli.chat.completions.create(model=_modelo(), messages=msgs, temperature=temp, **kw)

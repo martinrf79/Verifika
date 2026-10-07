@@ -144,6 +144,26 @@ async def llamar_con_reintento(fn, *, timeout_s: float | None = None,
     raise ultimo
 
 
+def un_sistema(msgs: list) -> list:
+    """UN SOLO MENSAJE DE SISTEMA, al principio (7-oct-2026, FICHA 67).
+
+    La puerta OpenAI de Gemini se queda con el ULTIMO mensaje de sistema y tira
+    los anteriores, sin error. El tablero mandaba sus reglas y despues la
+    memoria como otro sistema: desde el segundo mensaje de cada charla, el
+    interprete, las preguntas de si o no y el redactor corrian sin sus
+    instrucciones. Medido: el interprete con 5.400 caracteres de reglas y
+    ejemplos informaba los mismos 298 tokens de entrada que sin ellos, y una
+    palabra secreta dicha en el primer sistema no la sabia el modelo.
+
+    Aca se juntan todos, en orden, antes de llamar. Vale para cualquier
+    proveedor: el que leia varios lee lo mismo en uno."""
+    sistemas = [m.get("content") or "" for m in msgs if m.get("role") == "system"]
+    if len(sistemas) < 2:
+        return list(msgs)
+    return [{"role": "system", "content": "\n\n".join(s for s in sistemas if s)}] + \
+        [m for m in msgs if m.get("role") != "system"]
+
+
 def _settings():
     from app.config import get_settings
     return get_settings()
