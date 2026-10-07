@@ -834,7 +834,11 @@ def _rubro_de(nombre: str, tienda_id: str) -> str:
         return r
     pid = nombre if _ID.fullmatch(nombre.strip()) else _certificado(nombre, tienda_id, [])
     if not _ID.fullmatch(str(pid)):
-        return ""
+        # "TECLADO MAS BARATO" ES DEL RUBRO TECLADO (7-oct, K06 y K07): el
+        # interprete describe el item con el rubro adentro. Sin esto el reparto
+        # que cerraba se contaba sin destino y el turno frenaba a confirmar.
+        nombrados = _rubros_nombrados(nombre, tienda_id)
+        return nombrados[0] if len(nombrados) == 1 else ""
     from app.storage.firestore_client import get_product_by_id
     return str((get_product_by_id(str(pid), tienda_id=tienda_id) or {}).get("categoria") or "")
 
@@ -1067,7 +1071,7 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
             args["destinos"] = [d] if d else []
         hecho = {"parte": pz.get("texto"), "tipo": pz.get("tipo")}
         if pz.get("tipo") == "buscar" and pz.get("rubro") == NO_LO_VENDE:
-            hecho["resultado"] = {"veredicto": "no_existe", "motivo": "la tienda no vende ese rubro"}
+            hecho["resultado"] = {"veredicto": "no_existe", "motivo": "no vendemos ese rubro"}
             ctx["no_vende"].append((pz, {}))
         # LO QUE VENDE LA TIENDA LO DICE EL CODIGO (2-oct, K12 y K19): "que
         # venden?" llega como saber general, y "y algo parecido?" despues de

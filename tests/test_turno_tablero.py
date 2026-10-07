@@ -223,6 +223,18 @@ def test_lo_que_queda_sin_destino_se_informa_y_lo_nombrado_fuera_de_la_lista_tam
     assert T._conservar(_lista("auriculares", "mouse") + cerradas, TIENDA, "dos auriculares y dos mouse") == {}
 
 
+def test_el_item_descripto_con_el_rubro_adentro_es_de_ese_rubro():
+    """K06 y K07, 7-oct: "teclado mas barato" es del rubro teclado. Sin esto el
+    reparto que cerraba se contaba sin destino y el turno frenaba a confirmar."""
+    cuentas = [{"n": 4, "tipo": "cuenta", "items": [{"producto": "teclado más barato", "cantidad": 1, "destino": "Rosario"},
+                                                    {"producto": "auricular más barato", "cantidad": 1, "destino": "Rosario"}]},
+               {"n": 5, "tipo": "cuenta", "items": [{"producto": "teclado más barato", "cantidad": 1, "destino": "Salta"},
+                                                    {"producto": "auricular más barato", "cantidad": 1, "destino": "Salta"}]}]
+    assert T._conservar(_lista("teclado", "auriculares") + cuentas, TIENDA, "dos teclados y dos auriculares") == {}
+    assert T._rubro_de("teclado más barato", TIENDA) == "teclado"
+    assert T._rubro_de("teclado y mouse", TIENDA) == ""
+
+
 def test_con_varios_destinos_hay_un_total_general_y_el_reparto_va_sobre_el(monkeypatch):
     """K20: el 70/30 se pide una vez y es sobre todo. Cada destino sale sin el
     suyo; el total general es la suma de los bloques, y el reparto, sobre ella."""
