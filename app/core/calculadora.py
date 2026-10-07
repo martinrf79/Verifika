@@ -100,7 +100,9 @@ def _label_extra(e: dict) -> str:
             return f"Sena {pct}%: {_money(monto)} (pago parcial)"
         return f"Recargo {pct}%: +{_money(monto)}"
     _dest = int(e.get("destinos", 1) or 1)
-    _suf = f" ({_dest} envios)" if _dest > 1 else ""
+    # EL ENVIO DICE A DONDE VA (7-oct, M10): el cliente leia "Envio: $7.000"
+    # sin saber de que envio era, y el redactor copia este renglon tal cual.
+    _suf = f" ({_dest} envios)" if _dest > 1 else (f" a {e['lugar']}" if e.get("lugar") else "")
     if modalidad == "rango":
         return (f"Envio{_suf}: entre {_money(e.get('monto_min', 0))} y "
                 f"{_money(e.get('monto_max', 0))}")
@@ -591,6 +593,7 @@ def calculate_total(items: list[dict] | None = None,
                     "faq_tema": "costo_envio", "concepto": concepto_env,
                     "modalidad": "fijo", "monto": _env_min,
                     **({"destinos": n_envios} if n_envios > 1 else {}),
+                    **({"lugar": _locs[0]} if n_envios <= 1 and _locs[0] else {}),
                     **({"envio_gratis_auto": True} if _env_min == 0 else {}),
                     "condicion": ("envio gratis por umbral" if _env_min == 0
                                   else "tarifa de envio cotizada por zona"),

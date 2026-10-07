@@ -91,8 +91,8 @@ def test_las_piezas_se_leen_con_o_sin_la_clave_y_con_texto_alrededor():
 
 
 def test_un_no_en_texto_es_falso():
-    b = T.banderas_de('{"pide_total": "no", "condicional": "si", "afirma_algo": true, "referencia_ambigua": "false"}')
-    assert b["pide_total"] is False and b["condicional"] is True and b["afirma_algo"] is True
+    b = T.banderas_de('{"falta_dato_cliente": "no", "condicional": "si", "afirma_algo": true, "referencia_ambigua": "false"}')
+    assert b["falta_dato_cliente"] is False and b["condicional"] is True and b["afirma_algo"] is True
     assert b["referencia_ambigua"] is False and set(b) == set(T.BANDERAS)
 
 

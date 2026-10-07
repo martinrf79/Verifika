@@ -721,28 +721,56 @@
   },
   {
    "id": "C27",
-   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500\n2. MOU0029: Mouse Logitech G305 Lightspeed Negro, $80.500\n3. MOU0007: Mouse Logitech MX Master 3S Negro, $203.000",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500\n2. MOU0029: Mouse Logitech G305 Lightspeed Negro, $80.500\n3. MOU0007: Mouse Logitech MX Master 3S Negro, $203.000\nLO ULTIMO QUE BUSCO EL CLIENTE, como se interpreto:\nbuscar mouse, marca igual Logitech",
    "mensaje": "de esos, cual es el mas barato?",
    "piezas": [
     {
      "n": 1,
-     "tipo": "producto",
+     "tipo": "buscar",
      "texto": "el mas barato de esos",
-     "producto": "Mouse Logitech G203 Lightsync Negro"
+     "rubro": "mouse",
+     "cantidad": 1,
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+     },
+     "sobre_lo_buscado": true
     }
    ]
   },
   {
    "id": "C27b",
-   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500\n2. MOU0029: Mouse Logitech G305 Lightspeed Negro, $80.500\n3. MOU0007: Mouse Logitech MX Master 3S Negro, $203.000",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500\n2. MOU0029: Mouse Logitech G305 Lightspeed Negro, $80.500\n3. MOU0007: Mouse Logitech MX Master 3S Negro, $203.000\nLO ULTIMO QUE BUSCO EL CLIENTE, como se interpreto:\nbuscar mouse, marca igual Logitech",
    "mensaje": "de esos dame el inalambrico mas barato",
    "piezas": [
     {
      "n": 1,
-     "tipo": "comprar",
+     "tipo": "buscar",
      "texto": "de esos, el inalambrico mas barato",
-     "producto": "Mouse Logitech G305 Lightspeed Negro",
-     "cantidad": 1
+     "rubro": "mouse",
+     "cantidad": 1,
+     "condiciones": [
+      {
+       "campo": "conexion",
+       "operador": "contiene",
+       "valor": "inalambrico"
+      }
+     ],
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+     },
+     "sobre_lo_buscado": true
+    },
+    {
+     "n": 2,
+     "tipo": "comprar",
+     "texto": "me lo llevo",
+     "producto": "el mouse inalambrico mas barato",
+     "cantidad": 1,
+     "depende_de": [
+      1
+     ]
     }
    ]
   },

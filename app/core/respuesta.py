@@ -72,7 +72,8 @@ def _memoria_texto(conv: dict) -> str:
             "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el "
             "cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' "
             "o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el "
-            "catalogo:\n"
+            "catalogo; si pide el mas barato o el mas caro de esos, es dentro "
+            "de lo que busco, con sobre_lo_buscado:\n"
             + "\n".join(
                 f"{n}. " + " / ".join(
                     f"{p.get('id')}: {p.get('nombre')}"

@@ -74,7 +74,6 @@ BANDERAS = {
     "falta_dato_cliente": "para contestar falta un dato del cliente que no dio: su equipo, su modelo",
     "referencia_ambigua": "dice 'ese', 'el otro' y en la charla hay mas de un producto al que puede referirse",
     "afirma_algo": "el cliente da algo por cierto de la tienda o de un producto, aunque sea dentro de otra pregunta",
-    "pide_total": "pide el total de una compra: varios productos, cantidades o envio sumados",
     "confirma_resumen": "el bot le resumio un pedido y le pregunto si esta bien, y el cliente lo acepta o le "
                         "corrige un detalle",
 }
@@ -93,9 +92,6 @@ GUIAS = {
                    "con depende_de apuntando a la condicion. 4. \"Dame el que cumpla X\" entre varios: una pieza que "
                    "averigua X de cada uno y una comprar que depende de ella. 5. Una condicion sobre el total de una "
                    "cuenta (\"si pasa de\") va en las condiciones de esa cuenta.",
-    "pide_total": "GUIA · CUENTA. Una pieza cuenta con TODOS los productos elegidos, de este mensaje y de la charla, "
-                  "cada uno con su cantidad y color. El destino si lo nombro ahora o antes. Si ademas pide mandarlo, "
-                  "tambien una pieza envio.",
     "referencia_ambigua": "GUIA · REFERENCIAS. 1. Lista los productos que nombro el bot en su ultimo mensaje, en orden. "
                           "2. \"El primero\", \"el segundo\" es por posicion; \"el otro\" es el que NO eligio o "
                           "descarto; \"ese\" es el ultimo nombrado. 3. Si hay mas de uno posible y nada decide cual, "
@@ -164,6 +160,9 @@ def esquema_piezas(tienda_id: str) -> dict:
             "required": ["medio", "porcentaje"]}},
         "depende_de": {"type": "array", "items": {"type": "integer"}},
         "falta": S,
+        "sobre_lo_buscado": {"type": "boolean", "description":
+                             "true si el cliente elige dentro de lo que ya busco: 'el mas barato de esos', "
+                             "'de esos el inalambrico'. El codigo le suma las condiciones de esa busqueda"},
     }, "required": ["n", "tipo", "texto"]}
     return {"type": "object", "properties": {"piezas": {"type": "array", "items": pieza}}, "required": ["piezas"]}
 
@@ -362,6 +361,8 @@ def atar(piezas: list, tienda_id: str) -> tuple:
                 if pct is not None and str(r.get("medio") or "").strip():
                     rep.append({"medio": str(r["medio"]), "porcentaje": pct})
             p["reparto_pago"] = rep
+        if "sobre_lo_buscado" in p:
+            p["sobre_lo_buscado"] = str(p["sobre_lo_buscado"]).strip().lower() in _SI
         if "depende_de" in p:
             ds = p["depende_de"] if isinstance(p["depende_de"], list) else [p["depende_de"]]
             p["depende_de"] = [d for d in (_entero(x) for x in ds) if d is not None]
@@ -477,9 +478,10 @@ _GENERICAS = {"mouse", "teclado", "auriculares", "auricular", "monitor", "notebo
               "el", "la", "de", "los", "las", "un", "una", "en", "con"}
 
 
-def _certificado(nombre: str, tienda_id: str, llamadas: list) -> str:
+def _certificado(nombre: str, tienda_id: str, llamadas: list, vistos: list = None) -> str:
     """El id del producto si la identidad es UNA —regla 10.0—; si no, el nombre
-    tal cual, y la cuenta devuelve la ambiguedad para preguntar."""
+    tal cual, y la cuenta devuelve la ambiguedad para preguntar. `vistos` son
+    los ids que el bot ya nombro en la charla, en orden."""
     if not nombre or _ID.fullmatch(nombre.strip()):
         return nombre
     r = ejecutar("producto", {"nombre": nombre}, tienda_id)
@@ -503,6 +505,16 @@ def _certificado(nombre: str, tienda_id: str, llamadas: list) -> str:
                                           or "").strip() == A._n(nombre).strip()]
     if len(exacto) == 1:
         return exacto[0]
+    # LO QUE EL BOT YA MOSTRO ES ESA FICHA (7-oct, K18, decidido por Martin):
+    # "la ROG Strix G16" sin color nombra tres fichas. Si la charla mostro una
+    # sola, es esa. Si mostro el modelo con sus colores y todos salen lo mismo,
+    # es la primera que nombro el bot, la que la busqueda puso adelante. Con
+    # precios distintos sigue siendo una duda para el cliente.
+    en_charla = sorted((pid for pid in hits if pid in (vistos or [])), key=lambda pid: vistos.index(pid))
+    if len(hits) > 1 and en_charla:
+        precios = {(get_product_by_id(pid, tienda_id=tienda_id) or {}).get("precio_ars") for pid in en_charla}
+        if len(en_charla) == 1 or len(precios) == 1:
+            return en_charla[0]
     return hits[0] if len(hits) == 1 else nombre
 
 
@@ -666,7 +678,7 @@ def _resolver_items(items: list, tienda_id: str, llamadas: list, ctx: dict) -> l
     for i in items:
         if not isinstance(i, dict):
             continue
-        pid = _certificado(str(i.get("producto") or ""), tienda_id, llamadas)
+        pid = _certificado(str(i.get("producto") or ""), tienda_id, llamadas, _ID.findall(ctx.get("memoria") or ""))
         out.append({**i, "producto": pid})
         if not _ID.fullmatch(str(pid)):
             pend.append(out[-1])
@@ -956,17 +968,48 @@ def _reparto_en_cuentas(piezas: list) -> list:
 _EXCLUYEN = ("no_contiene", "evita")
 
 
-def exclusiones_vigentes(memoria: str) -> list:
-    """Las exclusiones de la ultima busqueda del cliente, leidas del renglon
-    que escribe `busqueda_vigente`: "buscar mouse, marca no_contiene Genius"."""
+def busquedas_vigentes(memoria: str) -> list:
+    """Las ultimas busquedas del cliente, leidas de los renglones que escribe
+    `busqueda_vigente`: "buscar mouse, marca no_contiene Genius" vuelve como
+    {"rubro": "mouse", "condiciones": [...]}. "toda la tienda" es sin rubro."""
     out = []
     for renglon in re.findall(r"^buscar (.+)$", memoria or "", re.M):
-        for parte in renglon.split(", "):
-            w = parte.split(" ", 2)
-            if len(w) == 3 and w[1] in _EXCLUYEN:
-                c = {"campo": w[0], "operador": w[1], "valor": w[2]}
-                if c not in out:
-                    out.append(c)
+        rubro, *partes = renglon.split(", ")
+        conds = [{"campo": w[0], "operador": w[1], "valor": w[2]}
+                 for w in (x.split(" ", 2) for x in partes) if len(w) == 3 and w[1] in OPERADORES]
+        out.append({"rubro": "" if rubro.strip() == "toda la tienda" else rubro.strip(), "condiciones": conds})
+    return out
+
+
+def exclusiones_vigentes(memoria: str) -> list:
+    """Las exclusiones de la ultima busqueda del cliente."""
+    out = []
+    for b in busquedas_vigentes(memoria):
+        for c in b["condiciones"]:
+            if c["operador"] in _EXCLUYEN and c not in out:
+                out.append(c)
+    return out
+
+
+def _sobre_lo_buscado(piezas: list, memoria: str) -> list:
+    """"EL MAS BARATO DE ESOS TECLADOS" SE ELIGE EN LA BUSQUEDA, NO EN LO
+    MOSTRADO (7-oct, K17). El bot muestra unos pocos de una busqueda que trajo
+    mas. El interprete marca `sobre_lo_buscado` y el codigo le suma a la pieza
+    las condiciones de esa busqueda; el orden lo pone la pieza y el minimo lo
+    calcula el buscador, no el modelo mirando una lista."""
+    vigentes = busquedas_vigentes(memoria)
+    out = []
+    for p in piezas:
+        if p.get("tipo") == "buscar" and p.get("sobre_lo_buscado") and vigentes:
+            mismas = [b for b in vigentes if b["rubro"] == p.get("rubro")] or \
+                     (vigentes if not p.get("rubro") and len(vigentes) == 1 else [])
+            if len(mismas) == 1:
+                propias = p.get("condiciones") or []
+                p = {**p, "rubro": p.get("rubro") or mismas[0]["rubro"] or None,
+                     "condiciones": [c for c in mismas[0]["condiciones"] if c not in propias] + propias}
+                if not p["rubro"]:
+                    p.pop("rubro")
+        out.append(p)
     return out
 
 
@@ -1008,7 +1051,8 @@ def _heredar_exclusiones(piezas: list, memoria: str, mensaje: str, del_mensaje: 
 
 def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx: dict) -> list:
     """Corre cada pieza con su herramienta. Vuelve los HECHOS, uno por pieza."""
-    piezas = _heredar_exclusiones(_normalizar(_envios_juntos(piezas), tienda_id), ctx.get("memoria") or "",
+    piezas = _sobre_lo_buscado(_normalizar(_envios_juntos(piezas), tienda_id), ctx.get("memoria") or "")
+    piezas = _heredar_exclusiones(piezas, ctx.get("memoria") or "",
                                   ctx.get("mensaje") or "", ctx.get("excluye_el_mensaje"))
     hechos = []
     ctx["busquedas"], ctx["usados"], ctx["no_vende"] = [], {}, []
@@ -1071,7 +1115,7 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
             args["destinos"] = [d] if d else []
         hecho = {"parte": pz.get("texto"), "tipo": pz.get("tipo")}
         if pz.get("tipo") == "buscar" and pz.get("rubro") == NO_LO_VENDE:
-            hecho["resultado"] = {"veredicto": "no_existe", "motivo": "no vendemos ese rubro"}
+            hecho["resultado"] = {"veredicto": "no_existe", "motivo": "la tienda no vende ese rubro"}
             ctx["no_vende"].append((pz, {}))
         # LO QUE VENDE LA TIENDA LO DICE EL CODIGO (2-oct, K12 y K19): "que
         # venden?" llega como saber general, y "y algo parecido?" despues de
@@ -1223,8 +1267,6 @@ def _revision(piezas: list, banderas: dict, llamadas: list, mensaje: str, histor
     agente, mas lo que marcaron las preguntas de si o no."""
     partes = []
     tipos = {p.get("tipo") for p in piezas}
-    if banderas.get("pide_total") and "cuenta" not in tipos:
-        partes.append("pide un total y no hay pieza cuenta: agregala con todos los productos y el destino")
     if banderas.get("condicional") and not any(p.get("depende_de") for p in piezas) \
             and not any(p.get("tipo") == "cuenta" and p.get("condiciones") for p in piezas):
         partes.append("pone una condicion y ninguna pieza depende de otra: separa la condicion y la accion "
@@ -1250,7 +1292,7 @@ def _revision(piezas: list, banderas: dict, llamadas: list, mensaje: str, histor
     if sin_buscar:
         partes.append("la cuenta lleva rubros que ninguna pieza busca: " + ", ".join(sin_buscar)
                       + ". Agrega una pieza buscar por cada uno, con la cantidad y con orden si pide barato o caro")
-    if len(destinos) > 1 and (banderas.get("pide_total") or f.get("reparto") or cuentas) and not por_destino:
+    if len(destinos) > 1 and (f.get("reparto") or cuentas) and not por_destino:
         partes.append(f"reparte los articulos en {len(destinos)} destinos: en la cuenta, cada item con su destino, "
                       "y en cada buscar la cantidad que pidio")
     if f.get("excluidas"):
@@ -1343,7 +1385,13 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     from app.core import pedido as PD
     guardado = PD.pendiente(pedido)
     ctx = {"mensaje": mensaje, "historial": historial, "memoria": memoria, "tienda_id": tienda_id,
-           "pide_total": bool(banderas.get("pide_total")) or A._pide_reparto(mensaje),
+           # EL TOTAL PEDIDO LO DICEN LAS PIEZAS (7-oct, K01). Habia una
+           # pregunta de si o no aparte, y cuando no coincidia con las piezas
+           # mandaba ella: la revision agregaba una cuenta y el bot se
+           # disculpaba por un total que el cliente no pidio, porque "en total
+           # serian cuatro articulos" es cuantos son, no cuanto suman. Una sola
+           # lectura: la pieza cuenta del interprete, o el reparto del pago.
+           "pide_total": any(p.get("tipo") == "cuenta" for p in piezas) or A._pide_reparto(mensaje),
            "puede_confirmar": not guardado}
     # EL PEDIDO GUARDADO SE RETOMA CON EL SI DEL CLIENTE. Si en vez de aceptar
     # corrige y el interprete rearmo las cuentas, cuenta la correccion. Si el
@@ -1371,6 +1419,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
             if nuevas:
                 ctx["excluye_el_mensaje"] = exclusiones_de(piezas)
                 piezas = nuevas
+                ctx["pide_total"] = ctx["pide_total"] or any(p.get("tipo") == "cuenta" for p in piezas)
                 hechos = correr_piezas(piezas, tienda_id, llamadas, 2, ctx)
         except Exception as e:  # noqa: BLE001
             log.warning("tablero_modelo_error", trace_id=trace_id, paso="revision", error=str(e)[:150])

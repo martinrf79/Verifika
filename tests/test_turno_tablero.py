@@ -570,3 +570,49 @@ def test_no_tenes_teclados_lleva_lo_que_vende_la_tienda(monkeypatch):
                               banderas={"afirma_algo": True}))
     r = _turno("me confundi, no tenes teclados")
     assert "teclado" in r["hechos"][0]["la_tienda_vende"]
+
+
+# ══ 7-oct: los arreglos de la vara compleja grabada en vivo ═════════════════
+
+def test_un_modelo_sin_color_es_la_ficha_que_el_bot_ya_mostro():
+    """K18: "la ROG Strix G16" nombra tres colores al mismo precio. La charla
+    mostro el Gris primero: es ese. Sin lo mostrado, sigue siendo una duda."""
+    nombre = "Notebook Asus ROG Strix G16 Core i7 16GB 1TB SSD"
+    assert T._certificado(nombre, TIENDA, []) == nombre
+    assert T._certificado(nombre, TIENDA, [], ["MOU0023", "NOT0160", "NOT0162", "NOT0161"]) == "NOT0160"
+    assert T._certificado(nombre, TIENDA, [], ["NOT0162"]) == "NOT0162"
+
+
+def test_el_mas_barato_de_esos_se_elige_en_la_busqueda_del_cliente(monkeypatch):
+    """K17: la busqueda trajo mas teclados que los cuatro mostrados. Con
+    sobre_lo_buscado la pieza hereda las condiciones de esa busqueda y el
+    buscador da el mas barato de todos, no el modelo mirando la lista."""
+    memoria = ("LO ULTIMO QUE BUSCO EL CLIENTE, como se interpreto:\n"
+               "buscar teclado, marca no_contiene Genius, marca no_contiene Logitech")
+    pz = T._sobre_lo_buscado([{"n": 1, "tipo": "buscar", "texto": "el mas barato de esos", "rubro": "teclado",
+                               "orden": {"campo": "precio_ars", "direccion": "min"}, "sobre_lo_buscado": True}],
+                             memoria)
+    assert {c["valor"] for c in pz[0]["condiciones"]} == {"Genius", "Logitech"}
+    sin_marca = T._sobre_lo_buscado([{"n": 1, "tipo": "buscar", "rubro": "teclado"}], memoria)
+    assert "condiciones" not in sin_marca[0]
+    assert T.busquedas_vigentes("buscar toda la tienda, orden precio_ars max") == [{"rubro": "", "condiciones": []}]
+
+
+def test_el_renglon_del_envio_dice_a_donde_va(firestore_doble):
+    """M10: el cliente leia "Envio: $7.000" sin saber de que envio era."""
+    from app.core.calculadora import _label_extra
+    assert _label_extra({"concepto": "envio", "modalidad": "fijo", "monto": 7000, "lugar": "Rosario"}) \
+        == "Envio a Rosario: $7.000"
+    assert _label_extra({"concepto": "envio", "modalidad": "fijo", "monto": 7000, "destinos": 2}) \
+        == "Envio (2 envios): $7.000"
+
+
+def test_sin_pieza_cuenta_no_hay_total_aunque_diga_en_total(monkeypatch):
+    """K01: "en total serian cuatro articulos" es cuantos son. El total pedido
+    lo dicen las piezas: sin cuenta no se arma una ni se disculpa por ella."""
+    _con(monkeypatch, _Modelo([
+        {"n": 1, "tipo": "buscar", "texto": "los dos mas baratos", "cantidad": 2,
+         "orden": {"campo": "precio_ars", "direccion": "min"}},
+        {"n": 2, "tipo": "politica", "texto": "medios de pago", "tema": "formas_pago"}]))
+    r = _turno("dame el precio de los dos articulos mas baratos, en total serian dos, despues te digo el envio")
+    assert not any(x["herramienta"] in ("cuenta", "total_general") for x in r["llamadas"])
