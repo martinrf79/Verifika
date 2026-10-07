@@ -368,3 +368,41 @@ En la reserva no se ajustó nada.
 - Llevar este camino al turno: los nexos con ejemplos, en lugar de `tablero`. Va en su propia ficha y por
   `puerta.py`.
 - Medir la redacción con estos datos sobre las charlas reales de `reales_vara.py`.
+
+## Los ejemplos al turno, y el sistema que se perdía, 7-oct
+
+**Lo que se llevó al turno.** No se reemplazó `tablero` por los nexos: se le dio
+al intérprete del tablero la misma idea de los ejemplos resueltos, en su propio
+formato de piezas. Así la ejecución, la plata y el cierre siguen siendo los de
+producción.
+- `app/core/ejemplos_interprete.json`: las 58, los cuatro números nuevos y
+  variantes, escritos como piezas. Cada uno pasa la atadura sin tocarlo, con
+  candado en `tests/test_ejemplos.py`.
+- `app/core/ejemplos.py`: el código elige hasta ocho por parecido, igual que
+  `ejemplos58.py`, y van al final del prompt del intérprete.
+
+**Lo que se encontró al medirlo.** La puerta OpenAI de Gemini se queda con el
+ÚLTIMO mensaje de sistema y tira los anteriores, sin error. El tablero mandaba
+sus reglas y después la memoria como otro sistema. Desde el segundo mensaje de
+cada charla, el intérprete, las preguntas de sí o no y el redactor corrían sin
+sus instrucciones. Se vio porque los tokens de entrada daban igual con y sin
+5.400 caracteres de ejemplos, y se confirmó con una palabra secreta en el
+primer sistema que el modelo no sabía. El arreglo es
+`llm_reintento.un_sistema`, en `tablero._pedir`: junta todos los sistemas en uno.
+
+**Lo medido.** Modelo de producción, clave gratis, una repetición, la forma
+`tablero` del desmenuzado:
+
+| camino | X de 30 | Y de 12 | Z de 12 |
+|---|---|---|---|
+| el bot de hoy, `v1` y `tabyz_base` | 16, 16 y 18 | 2 | 7 |
+| solo ejemplos, `tabej_1` | 18 | 5 | 7 |
+| solo un sistema, `tabsis_1` | 17 | 5 | 8 |
+| **los dos, `tabej_2`** | **25** | **9** | **11** |
+
+Separados mueven poco: con el sistema perdido los ejemplos casi no llegaban, y
+sin ejemplos las reglas solas no alcanzan. Juntos, el intérprete de producción
+llega a lo que daba la forma de los nexos con ejemplos.
+
+**Lo que falta medir:** el turno entero por `puerta.py`, sobre todo el redactor,
+que también corría sin sus reglas desde el segundo mensaje. Y tres repeticiones.

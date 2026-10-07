@@ -382,7 +382,8 @@ def _crear(modelo, msgs, formato=None):
                 with _lock:
                     time.sleep(0.6)
             kw = {"response_format": formato} if formato else {}
-            r = cli(modelo).chat.completions.create(model=modelo, messages=msgs, temperature=0.0, **kw)
+            from app.core.llm_reintento import un_sistema  # como produccion: un solo sistema
+            r = cli(modelo).chat.completions.create(model=modelo, messages=un_sistema(msgs), temperature=0.0, **kw)
             u = r.usage
             return r.choices[0].message.content or "", (getattr(u, "prompt_tokens", 0), getattr(u, "completion_tokens", 0))
         except Exception as e:  # noqa: BLE001
@@ -401,7 +402,7 @@ def correr_tablero(modelo, ctx, mensaje):
     esquema = T.esquema_piezas(TIENDA)
     fmt = {"type": "json_object"} if "deepseek" in modelo else \
         {"type": "json_schema", "json_schema": {"name": "piezas", "schema": esquema}}
-    sis = T._con_esquema(sis, fmt, esquema)
+    sis = T.con_ejemplos(T._con_esquema(sis, fmt, esquema), mensaje)
     fb = {"type": "json_object"} if "deepseek" in modelo else \
         {"type": "json_schema", "json_schema": {"name": "banderas", "schema": T._esquema_banderas()}}
     crudo, u1 = _crear(modelo, [{"role": "system", "content": sis}] + charla, fmt)

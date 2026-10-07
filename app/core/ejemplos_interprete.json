@@ -1,0 +1,1597 @@
+{
+ "version": 1,
+ "ejemplos": [
+  {
+   "id": "C01",
+   "memoria": "",
+   "mensaje": "tenes el G305?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "tenes el G305",
+     "producto": "G305"
+    }
+   ]
+  },
+  {
+   "id": "C02",
+   "memoria": "",
+   "mensaje": "que parlantes tenes?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "que parlantes tenes",
+     "rubro": "parlante"
+    }
+   ]
+  },
+  {
+   "id": "C03",
+   "memoria": "",
+   "mensaje": "cuantos dpi tiene el G502 Hero?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "cuantos dpi tiene el G502 Hero",
+     "producto": "G502 Hero"
+    }
+   ]
+  },
+  {
+   "id": "C04",
+   "memoria": "",
+   "mensaje": "el K120, que es inalambrico, cuanto sale?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "cuanto sale el K120",
+     "producto": "K120"
+    },
+    {
+     "n": 2,
+     "tipo": "verificar",
+     "texto": "que es inalambrico",
+     "producto": "K120",
+     "condiciones": [
+      {
+       "campo": "conexion",
+       "operador": "igual",
+       "valor": "inalambrico"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C05",
+   "memoria": "",
+   "mensaje": "busco una notebook con 16 GB de RAM",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "notebook con 16 GB de RAM",
+     "rubro": "notebook",
+     "condiciones": [
+      {
+       "campo": "ram",
+       "operador": "contiene",
+       "valor": "16"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C06",
+   "memoria": "",
+   "mensaje": "quiero un mouse inalambrico, preferentemente Logitech",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "mouse inalambrico, preferentemente Logitech",
+     "rubro": "mouse",
+     "cantidad": 1,
+     "condiciones": [
+      {
+       "campo": "conexion",
+       "operador": "contiene",
+       "valor": "inalambrico"
+      },
+      {
+       "campo": "marca",
+       "operador": "prefiere",
+       "valor": "Logitech"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C07",
+   "memoria": "",
+   "mensaje": "un mouse que no sea Genius",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "mouse que no sea Genius",
+     "rubro": "mouse",
+     "cantidad": 1,
+     "condiciones": [
+      {
+       "campo": "marca",
+       "operador": "no_contiene",
+       "valor": "Genius"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C08",
+   "memoria": "",
+   "mensaje": "una tablet, lo menos china posible",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "tablet lo menos china posible",
+     "rubro": "tablet",
+     "cantidad": 1,
+     "condiciones": [
+      {
+       "campo": "pais_fabricacion",
+       "operador": "evita",
+       "valor": "China"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C09",
+   "memoria": "",
+   "mensaje": "cual es el monitor mas barato?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "el monitor mas barato",
+     "rubro": "monitor",
+     "cantidad": 1,
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+     }
+    }
+   ]
+  },
+  {
+   "id": "C09b",
+   "memoria": "",
+   "mensaje": "pasame 2 parlantes y un router, de acuerdo a la crisis",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "2 parlantes, lo mas barato por la crisis",
+     "rubro": "parlante",
+     "cantidad": 2,
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+     }
+    },
+    {
+     "n": 2,
+     "tipo": "buscar",
+     "texto": "un router, lo mas barato por la crisis",
+     "rubro": "router",
+     "cantidad": 1,
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+     }
+    }
+   ]
+  },
+  {
+   "id": "C10",
+   "memoria": "",
+   "mensaje": "cuanto sale el envio a Posadas? cuanto tarda?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "envio",
+     "texto": "cuanto sale el envio a Posadas",
+     "destinos": [
+      "Posadas"
+     ]
+    },
+    {
+     "n": 2,
+     "tipo": "politica",
+     "texto": "cuanto tarda el envio",
+     "tema": "plazo_envio"
+    }
+   ]
+  },
+  {
+   "id": "C11",
+   "memoria": "",
+   "mensaje": "hacen factura A?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "politica",
+     "texto": "hacen factura A",
+     "tema": "factura"
+    }
+   ]
+  },
+  {
+   "id": "C11b",
+   "memoria": "",
+   "mensaje": "aceptan tarjeta de credito? en cuantas cuotas?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "politica",
+     "texto": "aceptan tarjeta de credito",
+     "tema": "formas_pago"
+    },
+    {
+     "n": 2,
+     "tipo": "politica",
+     "texto": "en cuantas cuotas",
+     "tema": "cuotas"
+    }
+   ]
+  },
+  {
+   "id": "C11c",
+   "memoria": "",
+   "mensaje": "mandan a Chile? y a que hora abren?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "politica",
+     "texto": "mandan a Chile",
+     "tema": "envio_exterior"
+    },
+    {
+     "n": 2,
+     "tipo": "politica",
+     "texto": "a que hora abren",
+     "tema": "horarios"
+    }
+   ]
+  },
+  {
+   "id": "C12",
+   "memoria": "",
+   "mensaje": "tienen 50 por ciento off en todo, no?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "verificar",
+     "texto": "50 por ciento off en todo",
+     "tema": "promociones"
+    }
+   ]
+  },
+  {
+   "id": "C13",
+   "memoria": "",
+   "mensaje": "soy revendedor, tienen precio mayorista?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "politica",
+     "texto": "precio mayorista",
+     "tema": "mayoristas"
+    }
+   ]
+  },
+  {
+   "id": "C14",
+   "memoria": "",
+   "mensaje": "que conviene, DDR4 o DDR5?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "explicar",
+     "texto": "que conviene, DDR4 o DDR5"
+    }
+   ]
+  },
+  {
+   "id": "C15",
+   "memoria": "",
+   "mensaje": "me llevo dos G305 negros",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "comprar",
+     "texto": "me llevo dos G305 negros",
+     "producto": "G305 negro",
+     "cantidad": 2
+    }
+   ]
+  },
+  {
+   "id": "C16",
+   "memoria": "",
+   "mensaje": "me llevo el K120 negro, pago 70 por ciento transferencia y 30 por ciento Mercado Pago",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "comprar",
+     "texto": "me llevo el K120 negro",
+     "producto": "K120 negro",
+     "cantidad": 1
+    },
+    {
+     "n": 2,
+     "tipo": "cuenta",
+     "texto": "pago 70 transferencia y 30 Mercado Pago",
+     "items": [
+      {
+       "producto": "K120 negro",
+       "cantidad": 1
+      }
+     ],
+     "reparto_pago": [
+      {
+       "medio": "transferencia",
+       "porcentaje": 70
+      },
+      {
+       "medio": "Mercado Pago",
+       "porcentaje": 30
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C17",
+   "memoria": "",
+   "mensaje": "cuanto sale el G305 y que teclados mecanicos tenes?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "cuanto sale el G305",
+     "producto": "G305"
+    },
+    {
+     "n": 2,
+     "tipo": "buscar",
+     "texto": "teclados mecanicos",
+     "rubro": "teclado",
+     "condiciones": [
+      {
+       "campo": "switch_teclado",
+       "operador": "contiene",
+       "valor": "mecanico"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C18",
+   "memoria": "",
+   "mensaje": "tenes auriculares JBL y cuanto sale mandarlos a Cordoba?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "auriculares JBL",
+     "rubro": "auriculares",
+     "condiciones": [
+      {
+       "campo": "marca",
+       "operador": "igual",
+       "valor": "JBL"
+      }
+     ]
+    },
+    {
+     "n": 2,
+     "tipo": "envio",
+     "texto": "cuanto sale mandarlos a Cordoba",
+     "destinos": [
+      "Cordoba"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C19",
+   "memoria": "",
+   "mensaje": "el G203 tiene stock? y hacen factura A?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "el G203 tiene stock",
+     "producto": "G203"
+    },
+    {
+     "n": 2,
+     "tipo": "politica",
+     "texto": "hacen factura A",
+     "tema": "factura"
+    }
+   ]
+  },
+  {
+   "id": "C20",
+   "memoria": "",
+   "mensaje": "sumame dos K120 negros y un G203 negro",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "dos K120 negros y un G203 negro",
+     "items": [
+      {
+       "producto": "K120 negro",
+       "cantidad": 2
+      },
+      {
+       "producto": "G203 negro",
+       "cantidad": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C21",
+   "memoria": "EN EL PEDIDO, tal como se conto: 1x MOU0029 Mouse Logitech G305 Lightspeed Negro · 1x TEC0029 Teclado Logitech K120 Negro",
+   "mensaje": "sumame todo y pago 70 por ciento transferencia y 30 por ciento Mercado Pago",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "sumame todo con el reparto",
+     "items": [
+      {
+       "producto": "MOU0029",
+       "cantidad": 1
+      },
+      {
+       "producto": "TEC0029",
+       "cantidad": 1
+      }
+     ],
+     "reparto_pago": [
+      {
+       "medio": "transferencia",
+       "porcentaje": 70
+      },
+      {
+       "medio": "Mercado Pago",
+       "porcentaje": 30
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C21b",
+   "memoria": "EN EL PEDIDO, tal como se conto: 2x TEC0029 Teclado Logitech K120 Negro\nEnvia a: Salta",
+   "mensaje": "cuanto me queda todo si pago con transferencia?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "todo pagando con transferencia",
+     "items": [
+      {
+       "producto": "TEC0029",
+       "cantidad": 2,
+       "destino": "Salta"
+      }
+     ],
+     "destinos": [
+      "Salta"
+     ],
+     "reparto_pago": [
+      {
+       "medio": "transferencia",
+       "porcentaje": 100
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C22",
+   "memoria": "",
+   "mensaje": "el G305 sirve para jugar? cuanto sale?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "el G305 sirve para jugar y cuanto sale",
+     "producto": "G305"
+    }
+   ]
+  },
+  {
+   "id": "C23",
+   "memoria": "",
+   "mensaje": "quiero el G305 en blanco y un K120",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "comprar",
+     "texto": "quiero el G305 en blanco",
+     "producto": "G305 blanco",
+     "cantidad": 1
+    },
+    {
+     "n": 2,
+     "tipo": "comprar",
+     "texto": "y un K120",
+     "producto": "K120",
+     "cantidad": 1
+    }
+   ]
+  },
+  {
+   "id": "C23b",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500\n2. MOU0029: Mouse Logitech G305 Lightspeed Negro, $80.500\n3. MOU0007: Mouse Logitech MX Master 3S Negro, $203.000",
+   "mensaje": "el primero lo quiero en blanco, hay? y el ultimo pesa mucho?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "el primero en blanco, hay",
+     "producto": "Mouse Logitech G203 Lightsync Blanco"
+    },
+    {
+     "n": 2,
+     "tipo": "producto",
+     "texto": "el ultimo pesa mucho",
+     "producto": "Mouse Logitech MX Master 3S Negro"
+    }
+   ]
+  },
+  {
+   "id": "C24",
+   "memoria": "",
+   "mensaje": "teclado y mouse, los dos lo mas baratos posible",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "teclado lo mas barato",
+     "rubro": "teclado",
+     "cantidad": 1,
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+     }
+    },
+    {
+     "n": 2,
+     "tipo": "buscar",
+     "texto": "mouse lo mas barato",
+     "rubro": "mouse",
+     "cantidad": 1,
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+     }
+    }
+   ]
+  },
+  {
+   "id": "C24b",
+   "memoria": "",
+   "mensaje": "busco un parlante bueno que sea bluetooth y unos auriculares que no sean JBL, cual es el mas economico de cada uno?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "parlante bluetooth, el mas economico",
+     "rubro": "parlante",
+     "cantidad": 1,
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+     },
+     "condiciones": [
+      {
+       "campo": "bluetooth",
+       "operador": "igual",
+       "valor": "si"
+      }
+     ]
+    },
+    {
+     "n": 2,
+     "tipo": "buscar",
+     "texto": "auriculares que no sean JBL, el mas economico",
+     "rubro": "auriculares",
+     "cantidad": 1,
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+     },
+     "condiciones": [
+      {
+       "campo": "marca",
+       "operador": "no_contiene",
+       "valor": "JBL"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C25",
+   "memoria": "",
+   "mensaje": "dos G305 negros y tres K120 blancos, cuanto es?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "dos G305 negros y tres K120 blancos",
+     "items": [
+      {
+       "producto": "G305 negro",
+       "cantidad": 2
+      },
+      {
+       "producto": "K120 blanco",
+       "cantidad": 3
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C26",
+   "memoria": "",
+   "mensaje": "mandame un G203 a Rosario y otro a Mendoza, cuanto sale cada envio?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "un G203 a Rosario y otro a Mendoza",
+     "items": [
+      {
+       "producto": "G203",
+       "cantidad": 1,
+       "destino": "Rosario"
+      },
+      {
+       "producto": "G203",
+       "cantidad": 1,
+       "destino": "Mendoza"
+      }
+     ]
+    },
+    {
+     "n": 2,
+     "tipo": "envio",
+     "texto": "cuanto sale cada envio",
+     "destinos": [
+      "Rosario",
+      "Mendoza"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C26b",
+   "memoria": "",
+   "mensaje": "quiero tres K120, dos a Salta y uno a Jujuy",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "tres K120, dos a Salta y uno a Jujuy",
+     "items": [
+      {
+       "producto": "K120",
+       "cantidad": 2,
+       "destino": "Salta"
+      },
+      {
+       "producto": "K120",
+       "cantidad": 1,
+       "destino": "Jujuy"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C27",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500\n2. MOU0029: Mouse Logitech G305 Lightspeed Negro, $80.500\n3. MOU0007: Mouse Logitech MX Master 3S Negro, $203.000",
+   "mensaje": "de esos, cual es el mas barato?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "el mas barato de esos",
+     "producto": "Mouse Logitech G203 Lightsync Negro"
+    }
+   ]
+  },
+  {
+   "id": "C27b",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500\n2. MOU0029: Mouse Logitech G305 Lightspeed Negro, $80.500\n3. MOU0007: Mouse Logitech MX Master 3S Negro, $203.000",
+   "mensaje": "de esos dame el inalambrico mas barato",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "comprar",
+     "texto": "de esos, el inalambrico mas barato",
+     "producto": "Mouse Logitech G305 Lightspeed Negro",
+     "cantidad": 1
+    }
+   ]
+  },
+  {
+   "id": "C28",
+   "memoria": "",
+   "mensaje": "si no hay G502 Hero en negro, pasame el G305",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "hay G502 Hero en negro",
+     "producto": "G502 Hero negro"
+    },
+    {
+     "n": 2,
+     "tipo": "producto",
+     "texto": "si no hay, el G305",
+     "producto": "G305",
+     "depende_de": [
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C29",
+   "memoria": "",
+   "mensaje": "si el G305 anda con Mac, me lo llevo",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "compatibilidad",
+     "texto": "el G305 anda con Mac",
+     "producto": "G305",
+     "con": "Mac"
+    },
+    {
+     "n": 2,
+     "tipo": "comprar",
+     "texto": "si anda, me lo llevo",
+     "producto": "G305",
+     "cantidad": 1,
+     "depende_de": [
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C29b",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500\n2. MOU0029: Mouse Logitech G305 Lightspeed Negro, $80.500\n3. MOU0007: Mouse Logitech MX Master 3S Negro, $203.000",
+   "mensaje": "el mas caro de esos anda con Windows? si anda mandame dos, uno a Tucuman y otro a Salta",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "compatibilidad",
+     "texto": "el mas caro de esos anda con Windows",
+     "producto": "Mouse Logitech MX Master 3S Negro",
+     "con": "Windows"
+    },
+    {
+     "n": 2,
+     "tipo": "cuenta",
+     "texto": "si anda, uno a Tucuman y otro a Salta",
+     "depende_de": [
+      1
+     ],
+     "items": [
+      {
+       "producto": "Mouse Logitech MX Master 3S Negro",
+       "cantidad": 1,
+       "destino": "Tucuman"
+      },
+      {
+       "producto": "Mouse Logitech MX Master 3S Negro",
+       "cantidad": 1,
+       "destino": "Salta"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C30",
+   "memoria": "",
+   "mensaje": "tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "compatibilidad",
+     "texto": "la Kingston Fury Beast DDR4 le sirve a su PC DDR5",
+     "producto": "Kingston Fury Beast DDR4 16GB",
+     "con": "PC de escritorio con placa DDR5"
+    },
+    {
+     "n": 2,
+     "tipo": "buscar",
+     "texto": "si no sirve, que otra memoria hay",
+     "rubro": "memoria ram",
+     "condiciones": [
+      {
+       "campo": "nombre",
+       "operador": "contiene",
+       "valor": "DDR5"
+      }
+     ],
+     "depende_de": [
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C31",
+   "memoria": "",
+   "mensaje": "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "un MX Master 3S negro y dos G305 negros; si pasa de 300 mil, sin el MX",
+     "items": [
+      {
+       "producto": "MX Master 3S negro",
+       "cantidad": 1
+      },
+      {
+       "producto": "G305 negro",
+       "cantidad": 2
+      }
+     ],
+     "condiciones": [
+      {
+       "campo": "precio_ars",
+       "operador": "menor",
+       "valor": "300000"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C32",
+   "memoria": "",
+   "mensaje": "entre el G305 y el G203, dame el que sea inalambrico",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "el G305, es inalambrico?",
+     "producto": "G305"
+    },
+    {
+     "n": 2,
+     "tipo": "producto",
+     "texto": "el G203, es inalambrico?",
+     "producto": "G203"
+    },
+    {
+     "n": 3,
+     "tipo": "comprar",
+     "texto": "dame el que sea inalambrico",
+     "depende_de": [
+      1,
+      2
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C33",
+   "memoria": "",
+   "mensaje": "quiero un teclado Redragon, ah no, mejor Logitech",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "teclado Logitech",
+     "rubro": "teclado",
+     "cantidad": 1,
+     "condiciones": [
+      {
+       "campo": "marca",
+       "operador": "igual",
+       "valor": "Logitech"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C34",
+   "memoria": "EN EL PEDIDO, tal como se conto: 1x MOU0001 Mouse Logitech G203 Lightsync Negro\nEnvia a: Rosario",
+   "mensaje": "me equivoque, era para Cordoba, no Rosario",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "el mismo pedido, a Cordoba",
+     "items": [
+      {
+       "producto": "MOU0001",
+       "cantidad": 1,
+       "destino": "Cordoba"
+      }
+     ],
+     "destinos": [
+      "Cordoba"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C34b",
+   "memoria": "EN EL PEDIDO, tal como se conto: 1x MOU0029 Mouse Logitech G305 Lightspeed Negro · 1x TEC0003 Teclado Logitech K380 Negro\nEnvia a: Rosario",
+   "mensaje": "saca el mouse, el teclado que sean tres y cambialo a blanco",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "sin el mouse, tres teclados K380 blancos",
+     "items": [
+      {
+       "producto": "Teclado Logitech K380 Blanco",
+       "cantidad": 3,
+       "destino": "Rosario"
+      }
+     ],
+     "destinos": [
+      "Rosario"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C34c",
+   "memoria": "EN EL PEDIDO, tal como se conto: 1x MOU0001 Mouse Logitech G203 Lightsync Negro\nEnvia a: Salta",
+   "mensaje": "sumame otro igual pero en blanco que vaya a Jujuy",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "el de Salta y otro igual en blanco a Jujuy",
+     "items": [
+      {
+       "producto": "MOU0001",
+       "cantidad": 1,
+       "destino": "Salta"
+      },
+      {
+       "producto": "Mouse Logitech G203 Lightsync Blanco",
+       "cantidad": 1,
+       "destino": "Jujuy"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C35",
+   "memoria": "LO ULTIMO QUE BUSCO EL CLIENTE, como se interpreto:\nbuscar mouse, marca igual Logitech",
+   "mensaje": "ya no importa la marca, pasame otras opciones",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "otras opciones de mouse, de cualquier marca",
+     "rubro": "mouse"
+    }
+   ]
+  },
+  {
+   "id": "C36",
+   "memoria": "",
+   "mensaje": "el G305 anda con mi Mac?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "compatibilidad",
+     "texto": "el G305 anda con su Mac",
+     "producto": "G305",
+     "con": "Mac"
+    }
+   ]
+  },
+  {
+   "id": "C37",
+   "memoria": "",
+   "mensaje": "tengo una notebook, que memoria ram le sirve?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "memoria ram para notebook",
+     "rubro": "memoria ram",
+     "condiciones": [
+      {
+       "campo": "formato",
+       "operador": "contiene",
+       "valor": "SODIMM"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C38",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. RAM0003: Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro, $41.000",
+   "mensaje": "le sirve a mi pc?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "compatibilidad",
+     "texto": "la memoria le sirve a su pc",
+     "producto": "Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro",
+     "con": "su pc",
+     "falta": "que placa madre o que memoria usa su pc"
+    }
+   ]
+  },
+  {
+   "id": "C39",
+   "memoria": "",
+   "mensaje": "el G203 es inalambrico, no? lo quiero para viajar",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "verificar",
+     "texto": "el G203 es inalambrico",
+     "producto": "G203",
+     "condiciones": [
+      {
+       "campo": "conexion",
+       "operador": "igual",
+       "valor": "inalambrico"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C40",
+   "memoria": "",
+   "mensaje": "me dijeron que el envio es gratis a todo el pais, no?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "verificar",
+     "texto": "el envio es gratis a todo el pais",
+     "tema": "costo_envio"
+    }
+   ]
+  },
+  {
+   "id": "C41",
+   "memoria": "",
+   "mensaje": "soy jubilado, tienen descuento?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "politica",
+     "texto": "descuento para jubilados",
+     "tema": "promociones"
+    }
+   ]
+  },
+  {
+   "id": "C42",
+   "memoria": "",
+   "mensaje": "quiero una notebook con 64 GB de RAM por menos de 200 mil",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "notebook con 64 GB de RAM por menos de 200 mil",
+     "rubro": "notebook",
+     "condiciones": [
+      {
+       "campo": "ram",
+       "operador": "contiene",
+       "valor": "64"
+      },
+      {
+       "campo": "precio_ars",
+       "operador": "menor",
+       "valor": "200000"
+      }
+     ],
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+     }
+    }
+   ]
+  },
+  {
+   "id": "C43",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. TEC0029: Teclado Logitech K120 Negro, $14.500",
+   "mensaje": "y ese es inalambrico?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "ese es inalambrico",
+     "producto": "Teclado Logitech K120 Negro"
+    }
+   ]
+  },
+  {
+   "id": "C44",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0029: Mouse Logitech G305 Lightspeed Negro, $80.500\n2. MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500",
+   "mensaje": "el G305 no me convence, el otro tiene stock?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "el otro tiene stock",
+     "producto": "Mouse Logitech G203 Lightsync Negro"
+    }
+   ]
+  },
+  {
+   "id": "C45",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500",
+   "mensaje": "y en blanco?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "el mismo en blanco",
+     "producto": "Mouse Logitech G203 Lightsync Blanco"
+    }
+   ]
+  },
+  {
+   "id": "C46",
+   "memoria": "LO ULTIMO QUE BUSCO EL CLIENTE, como se interpreto:\nbuscar teclado, marca no_contiene Redragon",
+   "mensaje": "y alguno mecanico?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "teclado mecanico que no sea Redragon",
+     "rubro": "teclado",
+     "condiciones": [
+      {
+       "campo": "switch_teclado",
+       "operador": "contiene",
+       "valor": "mecanico"
+      },
+      {
+       "campo": "marca",
+       "operador": "no_contiene",
+       "valor": "Redragon"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C46b",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500\n2. MOU0029: Mouse Logitech G305 Lightspeed Negro, $80.500\n3. MOU0007: Mouse Logitech MX Master 3S Negro, $203.000",
+   "mensaje": "ninguno me gusta, mostrame auriculares inalambricos, los tres mas baratos",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "los tres auriculares inalambricos mas baratos",
+     "rubro": "auriculares",
+     "cantidad": 3,
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+     },
+     "condiciones": [
+      {
+       "campo": "conexion",
+       "operador": "contiene",
+       "valor": "inalambrico"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C47",
+   "memoria": "",
+   "mensaje": "hola, soy de Posadas, Misiones. cuanto me sale el G203 negro con envio?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "el G203 negro con envio a Posadas",
+     "items": [
+      {
+       "producto": "G203 negro",
+       "cantidad": 1,
+       "destino": "Posadas"
+      }
+     ],
+     "destinos": [
+      "Posadas"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C48",
+   "memoria": "EN EL PEDIDO, tal como se conto: 1x MOU0029 Mouse Logitech G305 Lightspeed Negro",
+   "mensaje": "mandamelo a Rosario, cuanto seria en total?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "el pedido con envio a Rosario",
+     "items": [
+      {
+       "producto": "MOU0029",
+       "cantidad": 1,
+       "destino": "Rosario"
+      }
+     ],
+     "destinos": [
+      "Rosario"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C49",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. TEC0029: Teclado Logitech K120 Negro, $14.500\n2. AUR0013: Auriculares JBL Tune 510BT Negro, $78.000\n3. WEB0001: Webcam Logitech C920 HD Pro, $141.000",
+   "mensaje": "el teclado logi ese del principio, tiene stock?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "el teclado Logitech del principio",
+     "producto": "Teclado Logitech K120 Negro"
+    }
+   ]
+  },
+  {
+   "id": "C50",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500\n2. MOU0029: Mouse Logitech G305 Lightspeed Negro, $80.500",
+   "mensaje": "el primero",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "comprar",
+     "texto": "elige el primero",
+     "producto": "Mouse Logitech G203 Lightsync Negro",
+     "cantidad": 1
+    }
+   ]
+  },
+  {
+   "id": "C51",
+   "memoria": "",
+   "mensaje": "cuanto sale el G305 negro? y mandame ese a Cordoba",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "cuanto sale el G305 negro",
+     "producto": "G305 negro"
+    },
+    {
+     "n": 2,
+     "tipo": "cuenta",
+     "texto": "mandame ese a Cordoba",
+     "items": [
+      {
+       "producto": "G305 negro",
+       "cantidad": 1,
+       "destino": "Cordoba"
+      }
+     ],
+     "destinos": [
+      "Cordoba"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C52",
+   "memoria": "",
+   "mensaje": "que tenes en mouse Logitech, teclados Logitech y auriculares JBL?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "mouse Logitech",
+     "rubro": "mouse",
+     "condiciones": [
+      {
+       "campo": "marca",
+       "operador": "igual",
+       "valor": "Logitech"
+      }
+     ]
+    },
+    {
+     "n": 2,
+     "tipo": "buscar",
+     "texto": "teclados Logitech",
+     "rubro": "teclado",
+     "condiciones": [
+      {
+       "campo": "marca",
+       "operador": "igual",
+       "valor": "Logitech"
+      }
+     ]
+    },
+    {
+     "n": 3,
+     "tipo": "buscar",
+     "texto": "auriculares JBL",
+     "rubro": "auriculares",
+     "condiciones": [
+      {
+       "campo": "marca",
+       "operador": "igual",
+       "valor": "JBL"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C53",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0003: Mouse Logitech G502 Hero Negro, $70.000",
+   "mensaje": "del que me dijiste, si no hay en negro dame el blanco",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "producto",
+     "texto": "hay en negro",
+     "producto": "Mouse Logitech G502 Hero Negro"
+    },
+    {
+     "n": 2,
+     "tipo": "comprar",
+     "texto": "si no hay, el blanco",
+     "producto": "Mouse Logitech G502 Hero Blanco",
+     "cantidad": 1,
+     "depende_de": [
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C54",
+   "memoria": "",
+   "mensaje": "tengo una fuente de 550 watts, cual es la placa de video mas potente que aguante?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "la placa de video mas potente que aguante una fuente de 550W",
+     "rubro": "placa de video",
+     "cantidad": 1,
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "max"
+     }
+    }
+   ]
+  },
+  {
+   "id": "C55",
+   "memoria": "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el catalogo:\n1. MOU0029: Mouse Logitech G305 Lightspeed Negro, $80.500\n2. MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500",
+   "mensaje": "me gusta el G305, ah no, el otro, y ese me lo llevo",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "comprar",
+     "texto": "el otro, me lo llevo",
+     "producto": "Mouse Logitech G203 Lightsync Negro",
+     "cantidad": 1
+    }
+   ]
+  },
+  {
+   "id": "C56",
+   "memoria": "",
+   "mensaje": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "verificar",
+     "texto": "tienen 50 off",
+     "tema": "promociones"
+    },
+    {
+     "n": 2,
+     "tipo": "producto",
+     "texto": "cuanto sale el K120 negro",
+     "producto": "K120 negro"
+    },
+    {
+     "n": 3,
+     "tipo": "comprar",
+     "texto": "si sale menos de 10 mil, dos",
+     "producto": "K120 negro",
+     "cantidad": 2,
+     "depende_de": [
+      2
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C57",
+   "memoria": "",
+   "mensaje": "cual es la capital de Francia?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "charla",
+     "texto": "cual es la capital de Francia"
+    }
+   ]
+  },
+  {
+   "id": "C58",
+   "memoria": "",
+   "mensaje": "jaja buenisimo gracias crack, che y el G305 tiene garantia?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "charla",
+     "texto": "jaja buenisimo gracias"
+    },
+    {
+     "n": 2,
+     "tipo": "producto",
+     "texto": "el G305 tiene garantia",
+     "producto": "G305"
+    }
+   ]
+  },
+  {
+   "id": "N59",
+   "memoria": "",
+   "mensaje": "tienen celulares? si no, algo parecido",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "celulares",
+     "rubro": "no lo vende la tienda",
+     "producto": "celular"
+    },
+    {
+     "n": 2,
+     "tipo": "buscar",
+     "texto": "algo parecido a un celular",
+     "rubro": "tablet",
+     "depende_de": [
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "N60",
+   "memoria": "",
+   "mensaje": "un monitor que no pase de 300 mil",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "monitor hasta 300 mil",
+     "rubro": "monitor",
+     "cantidad": 1,
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+     },
+     "condiciones": [
+      {
+       "campo": "precio_ars",
+       "operador": "menor",
+       "valor": "300000"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "N61",
+   "memoria": "",
+   "mensaje": "que es lo mas barato y lo mas caro que vendes?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "buscar",
+     "texto": "lo mas barato de toda la tienda",
+     "cantidad": 1,
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "min"
+     }
+    },
+    {
+     "n": 2,
+     "tipo": "buscar",
+     "texto": "lo mas caro de toda la tienda",
+     "cantidad": 1,
+     "orden": {
+      "campo": "precio_ars",
+      "direccion": "max"
+     }
+    }
+   ]
+  },
+  {
+   "id": "N62",
+   "memoria": "",
+   "mensaje": "quiero hablar con alguien de la tienda",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "politica",
+     "texto": "hablar con una persona",
+     "tema": "contacto_humano"
+    }
+   ]
+  },
+  {
+   "id": "N63",
+   "memoria": "",
+   "mensaje": "listo, cerramos. Soy Ana Gomez. como te pago?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "comprar",
+     "texto": "cierra la compra, se llama Ana Gomez"
+    },
+    {
+     "n": 2,
+     "tipo": "politica",
+     "texto": "como te pago",
+     "tema": "formas_pago"
+    }
+   ]
+  }
+ ]
+}

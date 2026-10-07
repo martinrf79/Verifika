@@ -188,6 +188,14 @@ def _con_esquema(sistema: str, formato: dict, esquema: dict) -> str:
         + json.dumps(esquema, ensure_ascii=False)
 
 
+def con_ejemplos(sistema: str, mensaje: str) -> str:
+    """LOS EJEMPLOS RESUELTOS MAS PARECIDOS AL MENSAJE, al final del prompt del
+    interprete (FICHA 67, 7-oct). Los elige el codigo: `app/core/ejemplos.py`."""
+    from app.core.ejemplos import bloque
+    b = bloque(mensaje)
+    return sistema + "\n\n" + b if b else sistema
+
+
 # ══ LA ATADURA: el vocabulario de la tienda lo garantiza el codigo ══════════
 # (2-oct) Hasta hoy la lista cerrada la garantizaba el esquema estricto del
 # proveedor, y un modelo que da JSON a secas —DeepSeek directo— podia nombrar un
@@ -1293,7 +1301,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     sis_i = INTERPRETE.format(acciones="; ".join(f"{k}: {v}" for k, v in ACCIONES.items()), no_lo_vende=NO_LO_VENDE)
     esquema = esquema_piezas(tienda_id)
     esq = _formato("piezas", esquema)
-    sis_i = _con_esquema(sis_i, esq, esquema)
+    sis_i = con_ejemplos(_con_esquema(sis_i, esq, esquema), mensaje)
     esq_b = _formato("banderas", _esquema_banderas())
     try:
         t_piezas, t_banderas = await asyncio.gather(
