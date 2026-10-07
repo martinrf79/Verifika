@@ -152,6 +152,9 @@ def nota_casilla(k, llamadas, texto, respuestas):
     if tipo == "articulos":  # "1x Auriculares ...": ningun articulo pedido sin destino
         renglones = re.findall(r"(\d+)\s?x\s+([^\n:]+)", _n(texto))
         return all(sum(int(c) for c, nom in renglones if p in nom) >= m for p, m in k["minimos"].items())
+    if tipo == "articulos_exactos":  # K21, 7-oct: ni uno de mas ni uno de menos en los presupuestos
+        renglones = re.findall(r"(\d+)\s?x\s+([^\n:]+)", _n(texto))
+        return all(sum(int(c) for c, nom in renglones if p in nom) == m for p, m in k["cantidades"].items())
     if tipo == "total_general":
         return _total_general(texto) is not None
     if tipo == "reparto_total":

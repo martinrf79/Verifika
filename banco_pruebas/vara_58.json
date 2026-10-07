@@ -2911,6 +2911,237 @@
      ]
     }
    ]
+  },
+  {
+   "id": "K21",
+   "grupo": "K",
+   "clase": "real 7-oct por WhatsApp, Julio: la K20 hasta el cierre. Pide 7 articulos en tres destinos, pasa a los mas baratos, da el nombre y paga. El bot perdio el pedido al cerrar",
+   "turnos": [
+    {
+     "texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+     "casillas": [
+      {
+       "tipo": "pregunta",
+       "n": "pregunta antes de calcular"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "\\bids?\\b|el sistema|identificador|denominacion|[a-z]{3}\\d{4}|no existe un articulo con ese nombre|no (puedo|podemos) sumarl",
+       "n": "sin jerga interna"
+      }
+     ]
+    },
+    {
+     "texto": "En realidad son 7 articulos el teclado va a concordia, lo demas esta bien",
+     "casillas": [
+      {
+       "tipo": "articulos_exactos",
+       "cantidades": {
+        "auricular": 2,
+        "mouse": 2,
+        "memoria": 2,
+        "teclado": 1
+       },
+       "n": "exactamente 2 auricular, 2 mouse, 2 memoria y 1 teclado"
+      },
+      {
+       "tipo": "total_general",
+       "n": "total general: la suma de los bloques"
+      },
+      {
+       "tipo": "reparto_total",
+       "pct": 70,
+       "n": "el 70% sobre el total general"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "\\bids?\\b|el sistema|identificador|denominacion|[a-z]{3}\\d{4}|no existe un articulo con ese nombre|no (puedo|podemos) sumarl",
+       "n": "sin jerga interna"
+      }
+     ]
+    },
+    {
+     "texto": "Como son chinos seria todo igual salvo el precio, quiero los mas economicos de cada clase.",
+     "casillas": [
+      {
+       "tipo": "dice",
+       "palabras": [
+        "dx-110"
+       ],
+       "n": "dice dx-110"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "zeus"
+       ],
+       "n": "dice zeus"
+      },
+      {
+       "tipo": "dice",
+       "palabras": [
+        "kb-110"
+       ],
+       "n": "dice kb-110"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "\\bids?\\b|el sistema|identificador|denominacion|[a-z]{3}\\d{4}|no existe un articulo con ese nombre|no (puedo|podemos) sumarl",
+       "n": "sin jerga interna"
+      }
+     ]
+    },
+    {
+     "texto": "Sip",
+     "casillas": [
+      {
+       "tipo": "articulos_exactos",
+       "cantidades": {
+        "auricular": 2,
+        "mouse": 2,
+        "memoria": 2,
+        "teclado": 1
+       },
+       "n": "exactamente 2 auricular, 2 mouse, 2 memoria y 1 teclado"
+      },
+      {
+       "tipo": "plata",
+       "monto": 237000,
+       "n": "el monto 237000"
+      },
+      {
+       "tipo": "reparto_total",
+       "pct": 70,
+       "n": "el 70% sobre el total general"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "\\bids?\\b|el sistema|identificador|denominacion|[a-z]{3}\\d{4}|no existe un articulo con ese nombre|no (puedo|podemos) sumarl",
+       "n": "sin jerga interna"
+      }
+     ]
+    },
+    {
+     "texto": "Mi nombre es Julio",
+     "casillas": [
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "link"
+         ],
+         "n": "dice link"
+        },
+        {
+         "tipo": "dice",
+         "palabras": [
+          "transfer"
+         ],
+         "n": "dice transfer"
+        },
+        {
+         "tipo": "dice",
+         "palabras": [
+          "mercado"
+         ],
+         "n": "dice mercado"
+        },
+        {
+         "tipo": "dice",
+         "palabras": [
+          "pago"
+         ],
+         "n": "dice pago"
+        }
+       ],
+       "n": "avanza al cobro"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "negro o blanco|blanco o negro|que color|cual color|elegis el color|elijas el color",
+       "n": "no vuelve a preguntar el color"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "codigo postal|que provincia|la provincia",
+       "n": "no pide destinos que ya tiene"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "\\bids?\\b|el sistema|identificador|denominacion|[a-z]{3}\\d{4}|no existe un articulo con ese nombre|no (puedo|podemos) sumarl",
+       "n": "sin jerga interna"
+      }
+     ]
+    },
+    {
+     "texto": "Si",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 237000,
+       "n": "el monto 237000"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "negro o blanco|blanco o negro|que color|cual color|elegis el color|elijas el color",
+       "n": "no vuelve a preguntar el color"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "codigo postal|que provincia|la provincia",
+       "n": "no pide destinos que ya tiene"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "\\bids?\\b|el sistema|identificador|denominacion|[a-z]{3}\\d{4}|no existe un articulo con ese nombre|no (puedo|podemos) sumarl",
+       "n": "sin jerga interna"
+      }
+     ]
+    },
+    {
+     "texto": "Color indistinto 70 por ciento transferencia",
+     "casillas": [
+      {
+       "tipo": "plata",
+       "monto": 71100,
+       "n": "el monto 71100"
+      },
+      {
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "plata",
+         "monto": 149310,
+         "n": "el monto 149310"
+        },
+        {
+         "tipo": "plata",
+         "monto": 165900,
+         "n": "el monto 165900"
+        }
+       ],
+       "n": "la parte de transferencia"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "negro o blanco|blanco o negro|que color|cual color|elegis el color|elijas el color",
+       "n": "no vuelve a preguntar el color"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "codigo postal|que provincia|la provincia",
+       "n": "no pide destinos que ya tiene"
+      },
+      {
+       "tipo": "no_patron",
+       "patron": "\\bids?\\b|el sistema|identificador|denominacion|[a-z]{3}\\d{4}|no existe un articulo con ese nombre|no (puedo|podemos) sumarl",
+       "n": "sin jerga interna"
+      }
+     ]
+    }
+   ]
   }
  ]
 }

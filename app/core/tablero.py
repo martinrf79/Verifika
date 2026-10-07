@@ -160,6 +160,10 @@ def esquema_piezas(tienda_id: str) -> dict:
             "required": ["medio", "porcentaje"]}},
         "depende_de": {"type": "array", "items": {"type": "integer"}},
         "falta": S,
+        "sobre_el_pedido": {"type": "boolean", "description":
+                            "true si el cliente se refiere al pedido que ya le presupuestaste y no nombra "
+                            "articulos nuevos: lo acepta, lo compra, da su nombre para cerrarlo o cambia como "
+                            "lo paga. Los articulos, cantidades y destinos los pone el codigo"},
         "sobre_lo_buscado": {"type": "boolean", "description":
                              "true si el cliente elige dentro de lo que ya busco: 'el mas barato de esos', "
                              "'de esos el inalambrico'. El codigo le suma las condiciones de esa busqueda"},
@@ -187,11 +191,12 @@ def _con_esquema(sistema: str, formato: dict, esquema: dict) -> str:
         + json.dumps(esquema, ensure_ascii=False)
 
 
-def con_ejemplos(sistema: str, mensaje: str) -> str:
+def con_ejemplos(sistema: str, mensaje: str, memoria: str = "") -> str:
     """LOS EJEMPLOS RESUELTOS MAS PARECIDOS AL MENSAJE, al final del prompt del
-    interprete (FICHA 67, 7-oct). Los elige el codigo: `app/core/ejemplos.py`."""
+    interprete (FICHA 67, 7-oct). Los elige el codigo: `app/core/ejemplos.py`.
+    Con un pedido vigente en la memoria van primero los de ese estado."""
     from app.core.ejemplos import bloque
-    b = bloque(mensaje)
+    b = bloque(mensaje, estado="pedido" if pedido_vigente(memoria) else "")
     return sistema + "\n\n" + b if b else sistema
 
 
@@ -361,8 +366,9 @@ def atar(piezas: list, tienda_id: str) -> tuple:
                 if pct is not None and str(r.get("medio") or "").strip():
                     rep.append({"medio": str(r["medio"]), "porcentaje": pct})
             p["reparto_pago"] = rep
-        if "sobre_lo_buscado" in p:
-            p["sobre_lo_buscado"] = str(p["sobre_lo_buscado"]).strip().lower() in _SI
+        for k in ("sobre_lo_buscado", "sobre_el_pedido"):
+            if k in p:
+                p[k] = str(p[k]).strip().lower() in _SI
         if "depende_de" in p:
             ds = p["depende_de"] if isinstance(p["depende_de"], list) else [p["depende_de"]]
             p["depende_de"] = [d for d in (_entero(x) for x in ds) if d is not None]
@@ -453,7 +459,8 @@ def a_herramienta(pz: dict) -> tuple:
                           "reparto_pago": pz.get("reparto_pago") or None}
     if t == "comprar" and (pz.get("producto") or pz.get("items")):
         prod = pz.get("producto") or pz["items"][0].get("producto")
-        return "reservar", {"producto": _nombre({**pz, "producto": prod}), "cantidad": pz.get("cantidad") or 1}
+        return "reservar", {"producto": _nombre({**pz, "producto": prod}), "cantidad": pz.get("cantidad") or 1,
+                            **({"aceptado": True} if pz.get("del_pedido") else {})}
     return None, None
 
 
@@ -741,8 +748,8 @@ def _elegidos(items: list, llamadas: list, memoria: str, tienda_id: str, resuelt
     from app.storage.firestore_client import get_product_by_id
     dijo = A._n(CLIENTE_DIJO.get())
     reservados = {str((x.get("vuelve") or {}).get("id")) for x in llamadas if x.get("herramienta") == "reservar"}
-    p = re.search(r"EN EL PEDIDO, tal como se conto: (.+)", memoria or "")
-    pedido = set(_ID.findall(p.group(1))) if p else set()
+    # El pedido vigente entero, de uno o de varios destinos (7-oct, K21).
+    pedido = {str(i["producto"]) for b in pedido_vigente(memoria) for i in b["items"]}
 
     def nombrado(pid: str) -> bool:
         prod = get_product_by_id(pid, tienda_id=tienda_id) or {}
@@ -1051,6 +1058,7 @@ def _heredar_exclusiones(piezas: list, memoria: str, mensaje: str, del_mensaje: 
 
 def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx: dict) -> list:
     """Corre cada pieza con su herramienta. Vuelve los HECHOS, uno por pieza."""
+    piezas = _sobre_el_pedido(piezas, ctx.get("memoria") or "")
     piezas = _sobre_lo_buscado(_normalizar(_envios_juntos(piezas), tienda_id), ctx.get("memoria") or "")
     piezas = _heredar_exclusiones(piezas, ctx.get("memoria") or "",
                                   ctx.get("mensaje") or "", ctx.get("excluye_el_mensaje"))
@@ -1191,6 +1199,58 @@ def bloques_en_memoria(memoria: str) -> list:
         items = [{"producto": pid, "cantidad": int(n)} for n, pid in re.findall(r"(\d+)x ([A-Z]{3}\d{4})", r)]
         if d and items:
             out.append({"destino": d.group(1).strip(), "items": items})
+    return out
+
+
+def pedido_vigente(memoria: str) -> list:
+    """EL PEDIDO QUE EL CLIENTE YA TIENE, como lo dejo el codigo (7-oct, K21):
+    los presupuestos por destino, o el pedido de un destino con su lugar. Cada
+    bloque es {"destino", "items": [{"producto": id, "cantidad"}]}. Vacio si
+    no hay pedido."""
+    grupos = bloques_en_memoria(memoria)
+    if grupos:
+        return grupos
+    p = re.search(r"EN EL PEDIDO, tal como se conto: (.+)", memoria or "")
+    items = [{"producto": pid, "cantidad": int(n)} for n, pid in re.findall(r"(\d+)x ([A-Z]{3}\d{4})", p.group(1))] \
+        if p else []
+    lugar = re.search(r"^Envia a: (.+)$", memoria or "", re.M)
+    return [{"destino": lugar.group(1).strip() if lugar else "", "items": items}] if items else []
+
+
+def _sobre_el_pedido(piezas: list, memoria: str) -> list:
+    """EL PEDIDO LO PONE EL CODIGO, NO EL INTERPRETE (7-oct, K21). Con el
+    pedido ya presupuestado, "si", "me llamo Julio" o "70 por ciento
+    transferencia" no nombran articulos. El interprete rearmaba el pedido en
+    cada mensaje y lo perdia: una cuenta con un destino solo, un articulo de
+    mas, la compra del primero. Ahora marca `sobre_el_pedido` y el codigo
+    pone cada bloque guardado: una cuenta por destino con el reparto que pida,
+    y si compra, una reserva por articulo."""
+    pedido = pedido_vigente(memoria)
+    if not pedido or not any(p.get("sobre_el_pedido") for p in piezas):
+        return piezas
+    out, n = [], 1000
+    for p in piezas:
+        if not p.get("sobre_el_pedido") or p.get("tipo") not in ("cuenta", "comprar"):
+            out.append(p)
+            continue
+        rep = p.get("reparto_pago")
+        if p.get("tipo") == "comprar":
+            # Una reserva por producto, con lo que suma en todos los destinos:
+            # el stock se mira contra el total que se lleva.
+            cantidades: dict = {}
+            for b in pedido:
+                for i in b["items"]:
+                    cantidades[i["producto"]] = cantidades.get(i["producto"], 0) + i["cantidad"]
+            for pid, q in cantidades.items():
+                n += 1
+                out.append({"n": n, "tipo": "comprar", "texto": p.get("texto"), "producto": pid, "cantidad": q,
+                            "del_pedido": True})
+        for k, b in enumerate(pedido):
+            n += 1
+            out.append({"n": n, "tipo": "cuenta", "texto": f"cuenta para {b['destino']}" if b["destino"] else p.get("texto"),
+                        "items": [dict(i, destino=b["destino"]) for i in b["items"]],
+                        "destinos": [b["destino"]] if b["destino"] else [],
+                        **({"reparto_pago": rep} if rep and k == 0 else {})})
     return out
 
 
@@ -1347,7 +1407,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     sis_i = INTERPRETE.format(acciones="; ".join(f"{k}: {v}" for k, v in ACCIONES.items()), no_lo_vende=NO_LO_VENDE)
     esquema = esquema_piezas(tienda_id)
     esq = _formato("piezas", esquema)
-    sis_i = con_ejemplos(_con_esquema(sis_i, esq, esquema), mensaje)
+    sis_i = con_ejemplos(_con_esquema(sis_i, esq, esquema), mensaje, memoria)
     esq_b = _formato("banderas", _esquema_banderas())
     try:
         t_piezas, t_banderas = await asyncio.gather(
@@ -1391,7 +1451,8 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
            # disculpaba por un total que el cliente no pidio, porque "en total
            # serian cuatro articulos" es cuantos son, no cuanto suman. Una sola
            # lectura: la pieza cuenta del interprete, o el reparto del pago.
-           "pide_total": any(p.get("tipo") == "cuenta" for p in piezas) or A._pide_reparto(mensaje),
+           "pide_total": any(p.get("tipo") == "cuenta" or p.get("sobre_el_pedido") for p in piezas)
+                         or A._pide_reparto(mensaje),
            "puede_confirmar": not guardado}
     # EL PEDIDO GUARDADO SE RETOMA CON EL SI DEL CLIENTE. Si en vez de aceptar
     # corrige y el interprete rearmo las cuentas, cuenta la correccion. Si el

@@ -477,7 +477,7 @@ def _otros_colores(pid: str, tienda_id: str) -> dict:
     return {"color": p["color"], "opciones": colores} if len(set(colores)) > 1 else {}
 
 
-def h_reservar(tienda_id: str, producto: str = "", cantidad: int = 1, **_) -> dict:
+def h_reservar(tienda_id: str, producto: str = "", cantidad: int = 1, aceptado: bool = False, **_) -> dict:
     r = _motor().buscar([], tienda_id, _trace(), cuenta={"items": [{"id": producto, "cantidad": cantidad}]})
     c = r.get("cuenta") or {}
     its = c.get("items") or []
@@ -488,8 +488,10 @@ def h_reservar(tienda_id: str, producto: str = "", cantidad: int = 1, **_) -> di
     # "¿negro o blanco?", el cliente no contesto, y el modelo reservo el negro.
     # Es la regla cero: la identidad no la infiere el modelo. Si el producto
     # viene en otros colores y el cliente no nombro este, no se reserva.
+    # La excepcion es el pedido que el cliente ya acepto (7-oct, K21): ese
+    # presupuesto le nombro cada color, asi que la identidad ya la eligio el.
     otros = _otros_colores(pid, tienda_id)
-    if otros and _n(otros["color"]) not in _n(CLIENTE_DIJO.get()):
+    if otros and not aceptado and _n(otros["color"]) not in _n(CLIENTE_DIJO.get()):
         return {"veredicto": "falta_elegir", "opciones": otros["opciones"],
                 "motivo": "el cliente no eligio el color: preguntale cual, sin volver a confirmar la compra"}
     from app.storage.firestore_client import get_product_by_id

@@ -16,7 +16,8 @@ pase la atadura del tablero.
 
 Recuperacion: TF-IDF sobre palabras, sin dependencias. El mensaje se parte en
 clausulas solo para buscar: el mensaje entero trae sus tres ejemplos mas
-parecidos y cada clausula los suyos, hasta ocho sin repetir.
+parecidos y cada clausula los suyos, hasta ocho sin repetir. Si la charla
+tiene un pedido vigente, van primero los ejemplos de estado "pedido".
 """
 import json
 import math
@@ -73,9 +74,11 @@ def clausulas(mensaje: str) -> list:
     return [p.strip() for p in partes if _toks(p)]
 
 
-def elegir(mensaje: str, k_total: int = 8, k_clausula: int = 2, k_entero: int = 3) -> list:
-    """Los ejemplos mas parecidos: los del mensaje entero y los de cada clausula, sin repetir."""
-    elegidos: list = []
+def elegir(mensaje: str, k_total: int = 8, k_clausula: int = 2, k_entero: int = 3, estado: str = "") -> list:
+    """Los ejemplos mas parecidos: los del mensaje entero y los de cada clausula, sin repetir. Con un
+    `estado` de la charla —"pedido"—, primero los ejemplos de ese estado: "si" o "sip" no tienen
+    palabras para parecerse, y lo que deciden es el estado en que llegan."""
+    elegidos: list = [i for i, e in enumerate(EJEMPLOS) if estado and e.get("estado") == estado]
 
     def top(texto, k):
         v = _vec(_toks(texto))
@@ -89,9 +92,9 @@ def elegir(mensaje: str, k_total: int = 8, k_clausula: int = 2, k_entero: int = 
     return [EJEMPLOS[i] for i in elegidos[:k_total]]
 
 
-def bloque(mensaje: str) -> str:
+def bloque(mensaje: str, estado: str = "") -> str:
     """El texto que va al final del prompt del interprete. Vacio si nada se parece."""
-    elegidos = elegir(mensaje)
+    elegidos = elegir(mensaje, estado=estado)
     if not elegidos:
         return ""
     out = ["EJEMPLOS RESUELTOS, parecidos a este mensaje. La memoria de cada ejemplo es la de ESE ejemplo, no la de "

@@ -1620,6 +1620,112 @@
      "tema": "formas_pago"
     }
    ]
+  },
+  {
+   "id": "P01",
+   "memoria": "LOS PRESUPUESTOS POR DESTINO que ya le pasaste, y un total general:\n- Salta: 1x MOU0001 Mouse Logitech G203 Lightsync Negro, 1x TEC0029 Teclado Logitech K120 Negro\n- Mendoza: 2x TEC0029 Teclado Logitech K120 Negro\nEL ULTIMO PRESUPUESTO que ya le pasaste:\nTotal general de los 2 presupuestos: $95.000",
+   "mensaje": "dale, va eso",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "comprar",
+     "texto": "acepta el pedido presupuestado",
+     "sobre_el_pedido": true
+    }
+   ],
+   "estado": "pedido"
+  },
+  {
+   "id": "P02",
+   "memoria": "LOS PRESUPUESTOS POR DESTINO que ya le pasaste, y un total general:\n- Salta: 1x MOU0001 Mouse Logitech G203 Lightsync Negro, 1x TEC0029 Teclado Logitech K120 Negro\n- Mendoza: 2x TEC0029 Teclado Logitech K120 Negro\nEL ULTIMO PRESUPUESTO que ya le pasaste:\nTotal general de los 2 presupuestos: $95.000\nEl bot le pidio el nombre para avanzar.",
+   "mensaje": "mi nombre es Carla Diaz",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "comprar",
+     "texto": "da su nombre para cerrar el pedido",
+     "sobre_el_pedido": true
+    }
+   ],
+   "estado": "pedido"
+  },
+  {
+   "id": "P03",
+   "memoria": "LOS PRESUPUESTOS POR DESTINO que ya le pasaste, y un total general:\n- Salta: 1x MOU0001 Mouse Logitech G203 Lightsync Negro, 1x TEC0029 Teclado Logitech K120 Negro\n- Mendoza: 2x TEC0029 Teclado Logitech K120 Negro\nEL ULTIMO PRESUPUESTO que ya le pasaste:\nTotal general de los 2 presupuestos: $95.000",
+   "mensaje": "lo pago mitad con mercado pago y mitad por transferencia",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "el pedido con el pago repartido",
+     "sobre_el_pedido": true,
+     "reparto_pago": [
+      {
+       "medio": "mercado pago",
+       "porcentaje": 50
+      },
+      {
+       "medio": "transferencia",
+       "porcentaje": 50
+      }
+     ]
+    }
+   ],
+   "estado": "pedido"
+  },
+  {
+   "id": "P04",
+   "memoria": "EN EL PEDIDO, tal como se conto: 2x MOU0029 Mouse Logitech G305 Lightspeed Negro\nEnvia a: Rosario",
+   "mensaje": "el color me da igual, cerralo y te pago con transferencia",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "comprar",
+     "texto": "cierra el pedido",
+     "sobre_el_pedido": true
+    },
+    {
+     "n": 2,
+     "tipo": "cuenta",
+     "texto": "paga todo por transferencia",
+     "sobre_el_pedido": true,
+     "reparto_pago": [
+      {
+       "medio": "transferencia",
+       "porcentaje": 100
+      }
+     ]
+    }
+   ],
+   "estado": "pedido"
+  },
+  {
+   "id": "P05",
+   "memoria": "EN EL PEDIDO, tal como se conto: 2x MOU0029 Mouse Logitech G305 Lightspeed Negro\nEnvia a: Rosario",
+   "mensaje": "y si sumo un K120 negro mas?",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "el pedido mas un K120 negro",
+     "items": [
+      {
+       "producto": "MOU0029",
+       "cantidad": 2,
+       "destino": "Rosario"
+      },
+      {
+       "producto": "K120 negro",
+       "cantidad": 1,
+       "destino": "Rosario"
+      }
+     ],
+     "destinos": [
+      "Rosario"
+     ]
+    }
+   ],
+   "estado": "pedido"
   }
  ]
 }

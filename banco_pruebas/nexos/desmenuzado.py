@@ -402,7 +402,7 @@ def correr_tablero(modelo, ctx, mensaje):
     esquema = T.esquema_piezas(TIENDA)
     fmt = {"type": "json_object"} if "deepseek" in modelo else \
         {"type": "json_schema", "json_schema": {"name": "piezas", "schema": esquema}}
-    sis = T.con_ejemplos(T._con_esquema(sis, fmt, esquema), mensaje)
+    sis = T.con_ejemplos(T._con_esquema(sis, fmt, esquema), mensaje, _memoria_texto(conv_de(ctx)))
     fb = {"type": "json_object"} if "deepseek" in modelo else \
         {"type": "json_schema", "json_schema": {"name": "banderas", "schema": T._esquema_banderas()}}
     crudo, u1 = _crear(modelo, [{"role": "system", "content": sis}] + charla, fmt)

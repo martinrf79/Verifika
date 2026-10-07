@@ -616,3 +616,44 @@ def test_sin_pieza_cuenta_no_hay_total_aunque_diga_en_total(monkeypatch):
         {"n": 2, "tipo": "politica", "texto": "medios de pago", "tema": "formas_pago"}]))
     r = _turno("dame el precio de los dos articulos mas baratos, en total serian dos, despues te digo el envio")
     assert not any(x["herramienta"] in ("cuenta", "total_general") for x in r["llamadas"])
+
+
+# ══ 7-oct, K21: el pedido lo pone el codigo ═════════════════════════════════
+
+_MULTI = ("LOS PRESUPUESTOS POR DESTINO que ya le pasaste, y un total general:\n"
+          "- Córdoba capital: 1x AUR0019 Auriculares Redragon Zeus X Negro, 1x MOU0023 Mouse Genius DX-110 Negro\n"
+          "- Posadas: 1x AUR0019 Auriculares Redragon Zeus X Negro, 1x RAM0001 Memoria\n"
+          "- Concordia: 1x MOU0023 Mouse Genius DX-110 Negro, 1x RAM0001 Memoria, 1x TEC0020 Teclado\n")
+
+
+def test_el_pedido_vigente_sale_de_la_memoria():
+    assert [(b["destino"], len(b["items"])) for b in T.pedido_vigente(_MULTI)] == \
+        [("Córdoba capital", 2), ("Posadas", 2), ("Concordia", 3)]
+    uno = "EN EL PEDIDO, tal como se conto: 2x MOU0029 Mouse Logitech G305\nEnvia a: Rosario"
+    assert T.pedido_vigente(uno) == [{"destino": "Rosario", "items": [{"producto": "MOU0029", "cantidad": 2}]}]
+    assert T.pedido_vigente("") == []
+
+
+def test_el_nombre_sobre_el_pedido_reserva_todo_y_da_el_total_general(monkeypatch):
+    """K21: "mi nombre es Julio" despues del presupuesto. Se reservan los siete
+    articulos, no el primero, y el total general es el de los tres destinos."""
+    _con(monkeypatch, _Modelo([{"n": 1, "tipo": "comprar", "texto": "da su nombre", "sobre_el_pedido": True}]))
+    r = _turno("Mi nombre es Julio", memoria=_MULTI)
+    reservas = [x for x in r["llamadas"] if x["herramienta"] == "reservar"]
+    assert sum(x["args"]["cantidad"] for x in reservas) == 7
+    # el presupuesto aceptado ya le nombro cada color: no se vuelve a preguntar
+    assert {x["vuelve"]["veredicto"] for x in reservas} == {"listo_para_cerrar"}
+    tg = next(x for x in r["llamadas"] if x["herramienta"] == "total_general")["vuelve"]
+    assert tg["total_ars"] == 237000
+
+
+def test_el_reparto_sobre_el_pedido_va_sobre_el_total_general(monkeypatch):
+    """K21: "70 por ciento transferencia" no rearma el pedido: es sobre los tres destinos."""
+    _con(monkeypatch, _Modelo([{"n": 1, "tipo": "cuenta", "texto": "70 transferencia", "sobre_el_pedido": True,
+                                "items": [{"producto": "MOU0023", "cantidad": 2}],
+                                "reparto_pago": [{"medio": "transferencia", "porcentaje": 70},
+                                                 {"medio": "mercado pago", "porcentaje": 30}]}]))
+    r = _turno("Color indistinto 70 por ciento transferencia", memoria=_MULTI)
+    tg = next(x for x in r["llamadas"] if x["herramienta"] == "total_general")["vuelve"]
+    assert tg["total_ars"] == 237000
+    assert [p["monto_ars"] for p in tg["split_pago"]["partes"]][1] == 71100

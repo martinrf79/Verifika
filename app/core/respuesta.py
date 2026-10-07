@@ -504,6 +504,14 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     if (cuenta or {}).get("total_ars") is not None:
         presupuesto = str(cuenta.get("detalle") or "")[:900] or None
         carrito = cuenta.get("items") or None
+    # CON VARIOS DESTINOS EL PRESUPUESTO ES EL TOTAL GENERAL (7-oct, K21): la
+    # ultima cuenta es un solo destino, y el cierre cobraba eso. Lo que va a
+    # cada destino ya queda en `grupos_envio`.
+    general = next((x.get("vuelve") for x in reversed(llamadas) if x.get("herramienta") == "total_general"
+                    and (x.get("vuelve") or {}).get("total_ars") is not None), None)
+    if general:
+        presupuesto = str(general.get("detalle") or "")[:900] or presupuesto
+        carrito = None
     try:
         save_conversation(user_id, history, resumen, tienda_id=tienda_id,
                           estado_conversacion="en_curso",
