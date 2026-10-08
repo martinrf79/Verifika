@@ -164,6 +164,9 @@ def esquema_piezas(tienda_id: str) -> dict:
                             "true si el cliente se refiere al pedido que ya le presupuestaste y no nombra "
                             "articulos nuevos: lo acepta, lo compra, da su nombre para cerrarlo o cambia como "
                             "lo paga. Los articulos, cantidades y destinos los pone el codigo"},
+        "con_lo_mostrado": {"type": "boolean", "description":
+                            "con sobre_el_pedido: true si acepta el pedido con los productos que le acabas de "
+                            "mostrar en lugar de los que tenia, mismos destinos y cantidades"},
         "sobre_lo_buscado": {"type": "boolean", "description":
                              "true si el cliente elige dentro de lo que ya busco: 'el mas barato de esos', "
                              "'de esos el inalambrico'. El codigo le suma las condiciones de esa busqueda"},
@@ -366,7 +369,7 @@ def atar(piezas: list, tienda_id: str) -> tuple:
                 if pct is not None and str(r.get("medio") or "").strip():
                     rep.append({"medio": str(r["medio"]), "porcentaje": pct})
             p["reparto_pago"] = rep
-        for k in ("sobre_lo_buscado", "sobre_el_pedido"):
+        for k in ("sobre_lo_buscado", "sobre_el_pedido", "con_lo_mostrado"):
             if k in p:
                 p[k] = str(p[k]).strip().lower() in _SI
         if "depende_de" in p:
@@ -661,6 +664,11 @@ def _de_la_busqueda(nombre: str, busquedas: list, usados: dict, pendientes: int)
         i = min(range(len(busquedas)), key=lambda j: usados.get(j, 0))
     else:
         i = puntos.index(max(puntos))
+    # LA FILA SIGUIENTE SOLO SI SE PIDIERON VARIOS DISTINTOS (8-oct, K21): "los
+    # dos mas baratos" son dos productos; "el mas economico de cada clase" para
+    # dos destinos es el mismo, dos veces. Lo dice la cantidad de la busqueda.
+    if int(busquedas[i][0].get("cantidad") or 1) <= 1:
+        return _fila_con_stock(busquedas[i][1], 0)[0]
     pid, usados[i] = _fila_con_stock(busquedas[i][1], usados.get(i, 0))
     return pid
 
@@ -1058,7 +1066,7 @@ def _heredar_exclusiones(piezas: list, memoria: str, mensaje: str, del_mensaje: 
 
 def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx: dict) -> list:
     """Corre cada pieza con su herramienta. Vuelve los HECHOS, uno por pieza."""
-    piezas = _sobre_el_pedido(piezas, ctx.get("memoria") or "")
+    piezas = _sobre_el_pedido(_reparto_leido(piezas, ctx.get("mensaje") or ""), ctx.get("memoria") or "", tienda_id)
     piezas = _sobre_lo_buscado(_normalizar(_envios_juntos(piezas), tienda_id), ctx.get("memoria") or "")
     piezas = _heredar_exclusiones(piezas, ctx.get("memoria") or "",
                                   ctx.get("mensaje") or "", ctx.get("excluye_el_mensaje"))
@@ -1217,7 +1225,55 @@ def pedido_vigente(memoria: str) -> list:
     return [{"destino": lugar.group(1).strip() if lugar else "", "items": items}] if items else []
 
 
-def _sobre_el_pedido(piezas: list, memoria: str) -> list:
+def _mostrados(memoria: str) -> list:
+    """Lo que nombro el ultimo mensaje del bot, un renglon por modelo con sus
+    colores: [[id, id_otro_color], ...], en el orden en que se leyo."""
+    m = re.search(r"LO QUE NOMBRASTE EN TU ULTIMO MENSAJE.*?\n((?:\d+\..*\n?)+)", memoria or "", re.S)
+    return [r for r in (_ID.findall(x) for x in (m.group(1).splitlines() if m else [])) if r]
+
+
+def _con_lo_mostrado(pedido: list, memoria: str, tienda_id: str) -> list:
+    """EL MISMO PEDIDO CON LO QUE EL BOT ACABA DE MOSTRAR (7-oct, K21). "Quiero
+    los mas economicos de cada clase", el bot los muestra, y "sip": mismos
+    destinos y cantidades, y cada articulo cambia por el mostrado de su rubro.
+    El interprete escribia los productos el mismo y elegia la variante sin
+    stock o uno que nadie mostro; ahora los pone el codigo. De cada renglon va
+    el primer color con stock para lo que se lleva en todo el pedido."""
+    from app.storage.firestore_client import get_product_by_id
+
+    def prod(pid):
+        return get_product_by_id(str(pid), tienda_id=tienda_id) or {}
+    lleva: dict = {}
+    for b in pedido:
+        for i in b["items"]:
+            cat = str(prod(i["producto"]).get("categoria") or "")
+            lleva[cat] = lleva.get(cat, 0) + i["cantidad"]
+    por_rubro: dict = {}
+    for renglon in _mostrados(memoria):
+        cat = str(prod(renglon[0]).get("categoria") or "")
+        if cat in lleva and cat not in por_rubro:
+            con_stock = [pid for pid in renglon if int(prod(pid).get("stock") or 0) >= lleva[cat]]
+            por_rubro[cat] = (con_stock or renglon)[0]
+    return [{"destino": b["destino"],
+             "items": [dict(i, producto=por_rubro.get(str(prod(i["producto"]).get("categoria") or ""), i["producto"]))
+                       for i in b["items"]]} for b in pedido]
+
+
+def _reparto_leido(piezas: list, mensaje: str) -> list:
+    """El reparto que el mensaje dice con porcentaje y medio, en la cuenta que
+    lo perdio (7-oct, K21). Solo completa: si ninguna pieza trae reparto y hay
+    una cuenta o una pieza sobre el pedido. No crea cuentas."""
+    rep = A.reparto_del_mensaje(mensaje)
+    if not rep or any(p.get("reparto_pago") for p in piezas):
+        return piezas
+    destino = next((p for p in piezas if p.get("tipo") == "cuenta"), None) \
+        or next((p for p in piezas if p.get("sobre_el_pedido")), None)
+    if destino is None:
+        return piezas
+    return [dict(p, reparto_pago=rep) if p is destino else p for p in piezas]
+
+
+def _sobre_el_pedido(piezas: list, memoria: str, tienda_id: str = "") -> list:
     """EL PEDIDO LO PONE EL CODIGO, NO EL INTERPRETE (7-oct, K21). Con el
     pedido ya presupuestado, "si", "me llamo Julio" o "70 por ciento
     transferencia" no nombran articulos. El interprete rearmaba el pedido en
@@ -1228,6 +1284,8 @@ def _sobre_el_pedido(piezas: list, memoria: str) -> list:
     pedido = pedido_vigente(memoria)
     if not pedido or not any(p.get("sobre_el_pedido") for p in piezas):
         return piezas
+    if any(p.get("sobre_el_pedido") and p.get("con_lo_mostrado") for p in piezas):
+        pedido = _con_lo_mostrado(pedido, memoria, tienda_id)
     out, n = [], 1000
     for p in piezas:
         if not p.get("sobre_el_pedido") or p.get("tipo") not in ("cuenta", "comprar"):
@@ -1256,9 +1314,8 @@ def _sobre_el_pedido(piezas: list, memoria: str) -> list:
 
 def _ids_recientes(memoria: str) -> list:
     """Los ids de lo que el bot nombro en su ultimo mensaje, y el pedido."""
-    m = re.search(r"LO QUE NOMBRASTE EN TU ULTIMO MENSAJE.*?\n((?:\d+\..*\n?)+)", memoria or "", re.S)
     # Un renglon es un modelo en varios colores: vale el primero, el que se nombro.
-    ids = [x[0] for x in (_ID.findall(r) for r in (m.group(1).splitlines() if m else [])) if x]
+    ids = [r[0] for r in _mostrados(memoria)]
     p = re.search(r"EN EL PEDIDO, tal como se conto: (.+)", memoria or "")
     if p:
         ids += _ID.findall(p.group(1))

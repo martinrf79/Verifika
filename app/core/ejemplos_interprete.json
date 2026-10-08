@@ -1726,6 +1726,21 @@
     }
    ],
    "estado": "pedido"
+  },
+  {
+   "id": "P06",
+   "estado": "pedido",
+   "memoria": "LOS PRESUPUESTOS POR DESTINO que ya le pasaste, y un total general:\n- Salta: 1x MOU0001 Mouse Logitech G203 Lightsync Negro, 1x TEC0029 Teclado Logitech K120 Negro\n- Mendoza: 2x TEC0029 Teclado Logitech K120 Negro\nEL ULTIMO PRESUPUESTO que ya le pasaste:\nTotal general de los 2 presupuestos: $95.000\nLO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el cliente lo leyo:\n1. MOU0023: Mouse Genius DX-110 Negro, $8.500 / MOU0024: Mouse Genius DX-110 Blanco, $8.500\n2. TEC0020: Teclado Genius KB-110X Blanco, $12.000",
+   "mensaje": "si, armalo con esos mas baratos",
+   "piezas": [
+    {
+     "n": 1,
+     "tipo": "cuenta",
+     "texto": "el mismo pedido con los productos recien mostrados",
+     "sobre_el_pedido": true,
+     "con_lo_mostrado": true
+    }
+   ]
   }
  ]
 }

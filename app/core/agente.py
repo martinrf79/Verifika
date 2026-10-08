@@ -647,6 +647,29 @@ def _pide_reparto(mensaje: str) -> bool:
     return any(_NUMEROS[a] + _NUMEROS[b] == 100 for a, b in _PALABRAS.findall(t))
 
 
+# EL REPARTO QUE DICE EL MENSAJE LO LEE EL CODIGO (7-oct, K21). "Color
+# indistinto 70 por ciento transferencia": el interprete armo la cuenta sin el
+# reparto, la revision se lo pidio y siguio sin el, y el cliente no vio el
+# descuento. Cada porcentaje va con el medio que lo sigue, tal como lo dice el
+# cliente: que medio lleva descuento lo decide `pago_split` con la condicion
+# de la FAQ, no una lista de aca. Lo que no suma 100 va como "resto".
+_PCT_MEDIO = re.compile(r"(\d{1,3})\s*(?:%|por\s*ciento)\s*(?:(?:en|con|por|de|a|el|la|lo|pago|pagado)\s+)*"
+                        r"([a-z][a-z ]{2,30}?)(?=\s*(?:\by\b|,|\.|;|$|\d))")
+
+
+def reparto_del_mensaje(mensaje: str) -> list:
+    """[{"medio", "porcentaje"}] si el mensaje reparte el pago con porcentaje y
+    medio, completado a 100 con "resto". Vacio si no reparte o se pasa de 100."""
+    pares = [(int(p), m.strip()) for p, m in _PCT_MEDIO.findall(_n(mensaje)) if 0 < int(p) <= 100 and m.strip()]
+    total = sum(p for p, _ in pares)
+    if not pares or total > 100:
+        return []
+    out = [{"medio": m, "porcentaje": p} for p, m in pares]
+    if total < 100:
+        out.append({"medio": "resto", "porcentaje": 100 - total})
+    return out
+
+
 # LA COMPRA QUE SE CAE (27-sep). Medido en tres tandas de las 58 por el clon:
 # "si anda con Mac me lo llevo" y "dame el que sea inalambrico" no llaman a
 # reservar nunca; "el primero" y "ese me lo llevo", una de cada tres. El verbo

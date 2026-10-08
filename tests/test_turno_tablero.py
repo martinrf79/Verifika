@@ -657,3 +657,26 @@ def test_el_reparto_sobre_el_pedido_va_sobre_el_total_general(monkeypatch):
     tg = next(x for x in r["llamadas"] if x["herramienta"] == "total_general")["vuelve"]
     assert tg["total_ars"] == 237000
     assert [p["monto_ars"] for p in tg["split_pago"]["partes"]][1] == 71100
+
+
+def test_el_reparto_que_dice_el_mensaje_completa_la_cuenta_que_lo_perdio():
+    """K21: "Color indistinto 70 por ciento transferencia" llego sin reparto."""
+    from app.core.agente import reparto_del_mensaje
+    assert reparto_del_mensaje("Color indistinto 70 por ciento transferencia") == \
+        [{"medio": "transferencia", "porcentaje": 70}, {"medio": "resto", "porcentaje": 30}]
+    assert reparto_del_mensaje("tenes 50 por ciento off?") == []
+    pz = T._reparto_leido([{"n": 1, "tipo": "cuenta", "sobre_el_pedido": True}], "70 por ciento transferencia")
+    assert pz[0]["reparto_pago"][0] == {"medio": "transferencia", "porcentaje": 70}
+    # sin cuenta no se inventa una: una pregunta de promociones queda como esta
+    sin = [{"n": 1, "tipo": "politica", "tema": "promociones"}]
+    assert T._reparto_leido(sin, "hay 50 por ciento de descuento en todo.") == sin
+
+
+def test_el_pedido_con_lo_mostrado_cambia_cada_articulo_por_el_de_su_rubro_con_stock():
+    """K21: "sip" despues de mostrar los mas baratos. Mismos destinos y cantidades;
+    del DX-110 va el negro, que tiene stock, no el blanco."""
+    memoria = _MULTI + ("LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden:\n"
+                        "1. MOU0024: Mouse Genius DX-110 Blanco, $8.500 / MOU0023: Mouse Genius DX-110 Negro, $8.500\n")
+    pedido = T._con_lo_mostrado([{"destino": "Rosario", "items": [{"producto": "MOU0001", "cantidad": 2}]}],
+                                memoria, TIENDA)
+    assert pedido == [{"destino": "Rosario", "items": [{"producto": "MOU0023", "cantidad": 2}]}]
