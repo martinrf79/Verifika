@@ -53,6 +53,24 @@ intérprete y el redactor, con un solo renderizador.
 - Toda referencia del cliente —"ese", "el segundo", "lo de Rosario", "uno
   igual"— se resuelve contra la ficha a un id concreto.
 
+## El control de cambios
+
+Después de aplicar las operaciones de un mensaje, el código compara la ficha
+de antes con la de después.
+- Si todo lo que cambió está nombrado o referido en el mensaje del cliente,
+  sigue sin preguntar.
+- Si algo cambió sin que el cliente lo nombrara —un artículo que desapareció,
+  una cantidad o un destino que se movió solo— o si una operación es ambigua,
+  no calcula: el bot confirma en una línea lo que entendió. Por ejemplo:
+  "Entendí: lo de Rosario pasa a Neuquén y sumo un mouse blanco a Rosario, ¿va?".
+  Con el sí, se aplica.
+
+Es la forma de que el bot sepa cuándo no sabe sin otra llamada al modelo: lo
+decide el código comparando. Las dos lecturas, medidas en `dosl_1`, preguntaban
+en la mitad de los mensajes; esto pregunta sólo cuando el pedido cambió de una
+forma que el cliente no dijo. Reemplaza la confirmación de `pedido.py`, que hoy
+sólo mira si lo repartido cierra con lo pedido.
+
 ## Qué reemplaza
 
 Los nueve campos sueltos y sus bloques de texto en `respuesta._memoria_texto`
