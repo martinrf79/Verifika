@@ -94,6 +94,16 @@ CASILLAS_3 = CASILLAS_2.replace(
 # El formato del pedido no tenia campo de color: el modelo no tenia donde ponerlo y lo mandaba a condiciones (Z08).
 assert CASILLAS_3 != CASILLAS_2
 
+# LA FICHA 4 (10-oct): con la informacion 2 el modelo ve los datos tecnicos de cada producto, y en X04 y X13 contesto
+# la compatibilidad el mismo en vez de marcarla: el socket de la placa estaba a la vista. La casilla dice lo que pide
+# el cliente, nunca la respuesta, aunque el dato este en la ficha: la verifica el codigo.
+CASILLAS_4 = CASILLAS_3.replace(
+    '- compatibilidad: si un producto anda con un equipo u otro producto. [{"producto", "con"}]',
+    '- compatibilidad: si un producto anda, entra o sirve con un equipo u otro producto. Va SIEMPRE que lo pregunte o '
+    'que una compra dependa de eso, aunque veas el dato en la ficha: la respuesta la verifica el codigo, no vos. '
+    '[{"producto", "con"}]')
+assert CASILLAS_4 != CASILLAS_3
+
 
 def datos_de_la_tienda() -> str:
     """Lo que la tienda ya tiene escrito y el modelo no puede adivinar: lo que no vende con su alternativa, y que
@@ -217,7 +227,7 @@ def consigna(procedimiento: str = "") -> str:
     rubros, temas, _ = T._vocabulario(D.TIENDA)
     proc = ("\nPROCEDIMIENTO para descifrar el mensaje, seguilo paso por paso:\n" + procedimiento + "\n") if procedimiento else ""
     if FICHA["version"] >= 2:
-        return CONSIGNA.format(casillas=CASILLAS_3 if FICHA["version"] >= 3 else CASILLAS_2, rubros=", ".join(rubros), temas="(abajo, con lo que abarca cada uno)",
+        return CONSIGNA.format(casillas={4: CASILLAS_4, 3: CASILLAS_3}.get(FICHA["version"], CASILLAS_2), rubros=", ".join(rubros), temas="(abajo, con lo que abarca cada uno)",
                                procedimiento=proc) + "\n\n" + datos_de_la_tienda()
     return CONSIGNA.format(casillas=CASILLAS, rubros=", ".join(rubros), temas=", ".join(temas), procedimiento=proc)
 
@@ -510,7 +520,7 @@ def main():
     ap.add_argument("--version", type=int, default=1)
     ap.add_argument("--informe")
     ap.add_argument("--reglas", help="etiqueta de la ronda de la que salen las reglas por casilla")
-    ap.add_argument("--ficha", type=int, default=1, help="1 la original, 2 y 3 con las definiciones corregidas")
+    ap.add_argument("--ficha", type=int, default=1, help="1 la original, 2 a 4 con las definiciones corregidas")
     ap.add_argument("--casos", default="", help="solo estos casos, separados por coma")
     ap.add_argument("--info-v", type=int, default=1, help="1 la informacion de la charla original, 2 con los datos de cada producto")
     ap.add_argument("--info", help="etiqueta de la ronda sobre la que se entrevista la informacion, con --casos")
