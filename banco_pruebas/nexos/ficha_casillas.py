@@ -15,7 +15,7 @@ Y el ciclo para que el modelo diga una y otra vez como descifrar una pregunta co
   python3 banco_pruebas/nexos/ficha_casillas.py --procedimiento fc0 --version 1
   python3 banco_pruebas/nexos/ficha_casillas.py --ronda fc1 --con 1
 """
-import argparse, json, os, sys, threading
+import argparse, csv, json, os, sys, threading
 from concurrent.futures import ThreadPoolExecutor
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
@@ -125,8 +125,71 @@ Devolve SOLO un JSON:
   "vacias": ["las casillas que este mensaje no llena"]}}"""
 
 
+# LA INFORMACION 2 (10-oct): lo que pidio Gemini en la entrevista fc5_3_info. En 8 de 12 casos le faltaron los datos
+# de los productos ya mostrados —colores con stock, datos tecnicos— y pidio el pedido primero. Cada producto de la
+# charla va con TODO lo que la tienda sabe de el, sacado de la fuente, en un renglon.
+INFO = {"version": 1}
+_SPECS = None
+
+
+def _specs() -> dict:
+    global _SPECS
+    if _SPECS is None:
+        raiz = os.path.dirname(os.path.dirname(AQUI))
+        _SPECS = {(r["marca"], r["modelo"]): r for r in csv.DictReader(
+            open(os.path.join(raiz, "data/clientes/verifika_prod/specs_por_modelo.csv"), encoding="utf-8"))}
+    return _SPECS
+
+
+def datos_de(pid: str) -> str:
+    """Un producto de la charla con lo que la tienda sabe de el: precio, stock, los otros colores con stock y los
+    datos tecnicos. El modelo resuelve "el mas liviano" o "el que anda a pila" sin inventar."""
+    p = D.POR_ID[pid]
+    colores = [q["color"] for q in D.POR_ID.values() if q.get("modelo") == p.get("modelo")
+               and q.get("marca") == p.get("marca") and q.get("color") and int(q.get("stock") or 0) > 0]
+    sp = _specs().get((p.get("marca"), p.get("modelo")), {})
+    datos = [f"{k.replace('_', ' ')}: {v}" for k, v in sp.items() if v and k not in ("marca", "modelo", "categoria")]
+    if p.get("peso_gramos"):
+        datos.append(f"peso: {p['peso_gramos']} g")
+    if p.get("garantia_meses"):
+        datos.append(f"garantia: {p['garantia_meses']} meses")
+    if p.get("caracteristicas_extra"):
+        datos.append(p["caracteristicas_extra"])
+    return (f"{p['nombre']} ${int(p['precio']):,}".replace(",", ".") + f", stock {p.get('stock') or 0}"
+            + (f"; colores con stock: {', '.join(colores)}" if colores else "") + "; " + "; ".join(datos))
+
+
+def lo_que_ya_sabe_2(ctx) -> str:
+    if not ctx:
+        return "LO QUE YA SABE LA FICHA: nada, es el primer mensaje."
+    r = ["LO QUE YA SABE LA FICHA:"]
+    if ctx.get("carrito"):
+        r.append("- PEDIDO ACTUAL: " + "; ".join(f"{q} {D.POR_ID[p]['nombre']} a {d or 'sin destino'}"
+                                                 for p, q, d in ctx["carrito"]))
+    if ctx.get("presupuesto"):
+        r.append("- ultimo presupuesto: " + ctx["presupuesto"])
+    if ctx.get("vistos"):
+        r.append("- LO MOSTRADO en el ultimo mensaje, en orden, con todo lo que la tienda sabe de cada uno:")
+        r += [f"  {i}. {datos_de(p)}" for i, p in enumerate(ctx["vistos"], 1)]
+    otros = [p for p, _, _ in ctx.get("carrito") or [] if p not in (ctx.get("vistos") or [])]
+    if otros:
+        r.append("- LO PEDIDO que no se mostro recien:")
+        r += [f"  - {datos_de(p)}" for p in dict.fromkeys(otros)]
+    if ctx.get("criterio"):
+        r.append("- lo que busco el cliente: " + ctx["criterio"])
+    if ctx.get("excluye"):
+        r.append("- exclusiones que siguen valiendo, para cualquier rubro hasta que el cliente las saque: que no sea "
+                 + ", ".join(ctx["excluye"]))
+    r.append("- LA CHARLA:")
+    for c, v in ctx.get("antes") or []:
+        r.append(f"  CLIENTE dijo: {c}\n  VENDEDOR contesto: {v}")
+    return "\n".join(r)
+
+
 def lo_que_ya_sabe(ctx) -> str:
     """Lo que la ficha ya trae de la charla, escrito por el codigo."""
+    if INFO["version"] >= 2:
+        return lo_que_ya_sabe_2(ctx)
     if not ctx:
         return "LO QUE YA SABE LA FICHA: nada, es el primer mensaje."
     r = ["LO QUE YA SABE LA FICHA:"]
@@ -258,7 +321,7 @@ def uno(caso, etiqueta, procedimiento):
     except Exception as e:  # noqa: BLE001
         crudo, uso, salida = f"ERROR {type(e).__name__}: {str(e)[:200]}", (0, 0), {}
         nota = {"partes": 0, "bien": 0, "ok": False, "faltan": ["ERROR"], "carrito_ok": False, "prohibidos": []}
-    fila = {"etiqueta": etiqueta, "modelo": MODELO, "id": cid, "reserva": cid in D.RESERVA, "ficha": FICHA["version"],
+    fila = {"etiqueta": etiqueta, "modelo": MODELO, "id": cid, "reserva": cid in D.RESERVA, "ficha": FICHA["version"], "info": INFO["version"],
             "partes_esperadas": len(esp["partes"]) + (1 if esp.get("carrito") else 0),
             "tokens": list(uso), "crudo": crudo[:6000], "pasos": salida.get("pasos"), **nota}
     with _lock:
@@ -404,6 +467,39 @@ def reglas(etiqueta, version):
     json.dump(previos, open(PROCS, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
 
+PIDE_INFO = """Esto es una revision, no un turno con el cliente. Arriba esta lo que recibiste y la ficha que llenaste.
+No hablo de la ficha sino de la INFORMACION que te dimos para llenarla: las definiciones, los rubros, lo que no se
+vende, los temas de politica y lo que ya sabe la ficha de la charla. Contestame directo, en cinco renglones:
+1. LO QUE USASTE: que dato de lo que te dimos usaste para cada casilla que llenaste.
+2. LO QUE TE FALTO: que dato buscaste y no estaba, y por eso supusiste o lo dejaste para despues. Por ejemplo colores,
+   variantes, marcas, datos tecnicos, stock, envios o lo dicho antes en la charla.
+3. LO QUE TE SOBRO: que parte no usaste o te distrajo.
+4. EL ORDEN: si la informacion estuviera ordenada de otra forma, cual te haria leer el mensaje mas rapido y sin errores.
+5. UN SOLO DATO MAS: si antes de leer este mensaje el codigo te pudiera dar un dato mas de ESTA charla, cual seria y en
+   que forma."""
+
+
+def info(etiqueta, casos):
+    """Entrevista sobre la INFORMACION que recibe el modelo, no sobre la ficha (10-oct, Martin: optimizar las dos).
+    Se hace sobre casos de ajuste, bien y mal: en los que salen bien tambien se ve lo que sobra."""
+    por_id = {c[0]: c for c in D.CASOS}
+    salida = os.path.join(D.AQUI, "desmenuzado_entrevistas.jsonl")
+    for cid, f in sorted(recalificar(etiqueta).items()):
+        if cid not in casos.split(",") or f["reserva"] or f["crudo"].startswith("ERROR"):
+            continue
+        FICHA["version"] = f.get("ficha", FICHA["version"])
+        _, ctx, msg, _ = por_id[cid]
+        msgs = [{"role": "system", "content": consigna()},
+                {"role": "user", "content": lo_que_ya_sabe(ctx) + f"\n\nULTIMO MENSAJE DEL CLIENTE: {msg}"},
+                {"role": "assistant", "content": f["crudo"][:4000]},
+                {"role": "user", "content": PIDE_INFO}]
+        r, _ = D._crear(MODELO, msgs)
+        with open(salida, "a", encoding="utf-8") as o:
+            o.write(json.dumps({"etiqueta": f"{etiqueta}_info", "modelo": MODELO, "id": cid, "ok": f["ok"],
+                                "mensaje": msg, "respuesta": r}, ensure_ascii=False) + "\n")
+        print(f"\n== {cid} {'bien' if f['ok'] else 'MAL'}\nCLIENTE: {msg}\n{r}", flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ronda")
@@ -414,8 +510,11 @@ def main():
     ap.add_argument("--reglas", help="etiqueta de la ronda de la que salen las reglas por casilla")
     ap.add_argument("--ficha", type=int, default=1, help="1 la original, 2 y 3 con las definiciones corregidas")
     ap.add_argument("--casos", default="", help="solo estos casos, separados por coma")
+    ap.add_argument("--info-v", type=int, default=1, help="1 la informacion de la charla original, 2 con los datos de cada producto")
+    ap.add_argument("--info", help="etiqueta de la ronda sobre la que se entrevista la informacion, con --casos")
     a = ap.parse_args()
     FICHA["version"] = a.ficha
+    INFO["version"] = a.info_v
     D.preparar()
     if a.ronda:
         ronda(a.ronda, a.con, a.casos)
@@ -423,6 +522,8 @@ def main():
         procedimiento(a.procedimiento, a.version)
     elif a.reglas:
         reglas(a.reglas, a.version)
+    elif a.info:
+        info(a.info, a.casos)
     elif a.informe:
         informe(a.informe)
 
