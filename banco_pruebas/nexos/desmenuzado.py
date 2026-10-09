@@ -307,8 +307,63 @@ CASOS_W = [
      {"partes": [{"t": "cuenta"}], "carrito": [("mx master 3s", 1, "cordoba"), ("mx master 3s", 1, "mendoza")]}),
 ]
 RESERVA |= {"W02", "W04", "W06"}
-NUEVOS = {c[0] for c in CASOS_Y + CASOS_Z + CASOS_W}
-CASOS = CASOS + CASOS_Y + CASOS_Z + CASOS_W
+
+# LOS PRIMEROS MENSAJES NUEVOS (10-oct), escritos ANTES de correrlos y sin mirar salidas: los 24 primeros de X, Y y Z
+# ya se usaron para ajustar la ficha, asi que no dicen si la primera interpretacion es robusta. Prueban la
+# informacion: jerga que no esta en la lista de rubros, lo que no se vende y no esta en la tabla, marcas excluidas,
+# un medio de pago solo, una compra condicionada por precio, el dato del cliente que falta. Los pares son reserva.
+CASOS_P = [
+    ("P01", None, "hola, tenes pendrives de 1 tera? y joysticks para la pc?",
+     {"partes": [{"t": "buscar", "rubro": "almacenamiento externo", "cond": "1 ?t|tera"}, {"t": "novende"}],
+      "no": ["agregar"]}),
+    ("P02", None, "busco auris inalambricos para el gym, que no sean Redragon ni JBL, hasta 80 lucas",
+     {"partes": [{"t": "buscar", "rubro": "auriculares", "cond": "inalambr|bluetooth|wireless"},
+                 {"t": "buscar", "rubro": "auriculares", "excluye": "redragon"},
+                 {"t": "buscar", "rubro": "auriculares", "cond": "jbl"},
+                 {"t": "buscar", "rubro": "auriculares", "cond": "80"}], "no": ["agregar"]}),
+    ("P03", None, "necesito armar 3 puestos de oficina: 3 monitores, 3 teclados y 3 mouse, los mas baratos. 2 puestos "
+                  "van a Rosario y 1 a Parana",
+     {"partes": [{"t": "buscar", "rubro": "monitor", "orden": "min"}, {"t": "buscar", "rubro": "teclado", "orden": "min"},
+                 {"t": "buscar", "rubro": "mouse", "orden": "min"},
+                 {"t": "alt", "de": [{"t": "destino", "destino": "rosario"}, {"t": "envio", "destino": "rosario"}]},
+                 {"t": "alt", "de": [{"t": "destino", "destino": "parana"}, {"t": "envio", "destino": "parana"}]}]}),
+    ("P04", None, "cuanto sale el teclado Logitech K120 blanco? y el G502 X lo tienen en blanco?",
+     {"partes": [{"t": "prod", "prod": "k120"}, {"t": "prod", "prod": "g502 x"}], "no": ["agregar"]}),
+    ("P05", None, "Quiero comprar la RTX 4070 de Zotac, me la mandan a Bahia Blanca? pago con transferencia, hay "
+                  "descuento?",
+     {"partes": [{"t": "prod", "prod": "zotac"}, {"t": "politica", "tema": ["descuento_transferencia"]},
+                 {"t": "alt", "de": [{"t": "envio", "destino": "bahia"}, {"t": "destino", "destino": "bahia"}]},
+                 {"t": "pago", "medios": {"transfer": 100}}],
+      "carrito": [("zotac.*4070", 1, "bahia")]}),
+    ("P06", None, "que fuente me recomendas para una 4070? y un gabinete blanco donde entre todo",
+     {"partes": [{"t": "buscar", "rubro": "fuente"}, {"t": "buscar", "rubro": "gabinete", "cond": "blanc"}],
+      "no": ["agregar"]}),
+    ("P07", None, "tienen cargador de 20W para el celu? y alguna tele de 50 pulgadas?",
+     {"partes": [{"t": "buscar", "rubro": "cargador", "cond": "20"}, {"t": "novende"}], "no": ["agregar"]}),
+    ("P08", None, "me pasas el numero de alguien que me atienda? ah, y aceptan dolares o cripto?",
+     {"partes": [{"t": "alt", "de": [{"t": "humano"}, {"t": "politica", "tema": ["contacto_humano", "formas_contacto"]}]},
+                 {"t": "politica", "tema": ["monedas_aceptadas"]}], "no": ["agregar", "buscar"]}),
+    ("P09", None, "si el ssd Crucial MX500 de 1 tera esta a menos de 90 mil me llevo dos",
+     {"partes": [{"t": "prod", "prod": "mx500"}, {"t": "condicion"}], "carrito": [("mx500.*1 ?tb", 2, "")]}),
+    ("P10", None, "un mouse pad grande y un microfono usb para streamear, el mejor que tengas",
+     {"partes": [{"t": "novende"}, {"t": "buscar", "rubro": "microfono", "cond": "usb"}], "no": ["agregar"]}),
+    ("P11", None, "Necesito una notebook para diseno, minimo 16 de ram, que no sea HP, y que me llegue antes del viernes "
+                  "a Cordoba",
+     {"partes": [{"t": "buscar", "rubro": "notebook", "cond": "16"}, {"t": "buscar", "rubro": "notebook", "excluye": "hp"},
+                 {"t": "alt", "de": [{"t": "envio", "destino": "cordoba"},
+                                     {"t": "politica", "tema": ["plazo_envio", "envio_urgente"]}]}],
+      "no": ["agregar"]}),
+    ("P12", None, "la silla gamer mas cara que tengas en negro, y cuantas cuotas sin interes?",
+     {"partes": [{"t": "buscar", "rubro": "silla gamer", "orden": "max", "cond": "negr"},
+                 {"t": "politica", "tema": ["cuotas"]}], "no": ["agregar"]}),
+    ("P13", None, "la memoria Kingston Fury Beast DDR4 de 16GB anda en mi mother?",
+     {"partes": [{"t": "prod", "prod": "fury beast"}, {"t": "preguntar"}], "no": ["agregar"]}),
+    ("P14", None, "mandame 2 routers TP-Link Archer C6, uno a Tucuman y otro a Jujuy, y decime cuanto es todo",
+     {"partes": [{"t": "cuenta"}], "carrito": [("archer c6", 1, "tucuman"), ("archer c6", 1, "jujuy")]}),
+]
+RESERVA |= {c[0] for i, c in enumerate(CASOS_P) if i % 2 == 1}
+NUEVOS = {c[0] for c in CASOS_Y + CASOS_Z + CASOS_W + CASOS_P}
+CASOS = CASOS + CASOS_Y + CASOS_Z + CASOS_W + CASOS_P
 
 # ══ EL CATALOGO, para leer lo que llega ══════════════════════════════════════
 

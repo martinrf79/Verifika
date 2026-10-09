@@ -306,8 +306,25 @@ def carrito(llena: dict, ctx) -> list:
     return [(D.POR_ID[p]["nombre"], q, d) for p, q, d in (ctx or {}).get("carrito", [])]
 
 
+CASILLAS_DE_LA_FICHA = ("jerga", "referencias", "productos", "busquedas", "no_vende", "compatibilidad", "politicas",
+                        "envios", "pedido", "condiciones", "preguntar", "humano")
+
+
+def atar_ficha(llena: dict) -> dict:
+    """LAS CASILLAS SON UNA LISTA CERRADA, Y LA GARANTIZA EL CODIGO (10-oct, Y08). El modelo a veces nombra la casilla
+    con el tema de la politica —"contacto_humano": true— en vez de ponerlo en politicas. Una casilla que no existe y es
+    un tema de la tienda va a politicas; cualquier otra se descarta. Es la atadura del tablero, para la ficha."""
+    out = {k: v for k, v in llena.items() if k in CASILLAS_DE_LA_FICHA}
+    for k, v in llena.items():
+        tema = D.n(str(k)).replace(" ", "_")
+        if k not in CASILLAS_DE_LA_FICHA and tema in D.TEMAS and v not in (None, False, "", []):
+            out["politicas"] = _lista(out.get("politicas")) + [tema]
+    return out
+
+
 def corregir(caso, llena: dict) -> dict:
     cid, ctx, msg, esp = caso
+    llena = atar_ficha(llena)
     at = atomos(llena)
     faltan = [e for e in esp["partes"] if not any(D.cumple(e, a) for a in at)]
     prohibidos = [t for t in esp.get("no", []) if any(a["t"] == t for a in at)]
