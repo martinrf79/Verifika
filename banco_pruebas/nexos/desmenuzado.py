@@ -289,8 +289,26 @@ CASOS_Z = [
      {"partes": [{"t": "politica", "tema": ["defectuoso", "garantia", "cambios", "devoluciones", "garantia_como_usar"]},
                  {"t": "prod", "prod": "g502 x"}], "no": ["agregar"]}),
 ]
-NUEVOS = {c[0] for c in CASOS_Y + CASOS_Z}
-CASOS = CASOS + CASOS_Y + CASOS_Z
+# LOS CASOS W, 10-oct, escritos antes de cambiar la informacion que recibe el modelo: la referencia se resuelve
+# SOLO con un dato de lo mostrado que no esta en el nombre ni en lo que dijo el vendedor —peso, luces, pila, huella,
+# carga—. Miden si la informacion de la charla alcanza para leer bien. Los pares son reserva.
+CASOS_W = [
+    ("W01", MOUSES, "el mas liviano de los tres anotamelo para Rosario",
+     {"partes": [{"t": "cuenta"}], "carrito": [("mx master 3s", 1, "rosario")]}),
+    ("W02", MOUSES, "el que tiene luces lo tenes en blanco? si hay anotame uno",
+     {"partes": [{"t": "prod", "prod": "g203"}, {"t": "condicion"}], "carrito": [("g203.*blanco", 1, "")]}),
+    ("W03", NOTES, "la que tiene lector de huella me la llevo, mandala a Salta",
+     {"partes": [{"t": "cuenta"}], "carrito": [("aspire 5", 1, "salta")]}),
+    ("W04", NOTES, "la mas liviana de las dos tiene el teclado iluminado?",
+     {"partes": [{"t": "prod", "prod": "245 g9"}], "no": ["agregar"]}),
+    ("W05", MOUSES, "el que anda a pila cuanto le dura?",
+     {"partes": [{"t": "prod", "prod": "g305"}], "no": ["agregar"]}),
+    ("W06", MOUSES, "dame dos del que se carga por usb c, uno a Cordoba y otro a Mendoza",
+     {"partes": [{"t": "cuenta"}], "carrito": [("mx master 3s", 1, "cordoba"), ("mx master 3s", 1, "mendoza")]}),
+]
+RESERVA |= {"W02", "W04", "W06"}
+NUEVOS = {c[0] for c in CASOS_Y + CASOS_Z + CASOS_W}
+CASOS = CASOS + CASOS_Y + CASOS_Z + CASOS_W
 
 # ══ EL CATALOGO, para leer lo que llega ══════════════════════════════════════
 
