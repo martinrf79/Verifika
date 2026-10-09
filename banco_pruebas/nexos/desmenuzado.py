@@ -912,9 +912,76 @@ Contesta corto, en tres renglones:
 3. QUE TE HUBIERA AYUDADO: un cambio concreto en lo que recibis -una regla, un ejemplo, un dato del estado, una forma de linea o de campo- que te haga escribirlo bien la proxima vez, para este caso y para los parecidos."""
 
 
+def _legible(rx: str) -> str:
+    return re.sub(r"\.\*|\||\\b", " ", str(rx)).strip()
+
+
+def en_palabras(p: dict) -> str:
+    """Una parte esperada dicha como la diria el cliente, nunca en el formato del corrector: la ficha 67
+    midio que el modelo copia esa forma interna y su respuesta queda contaminada."""
+    t = p.get("t")
+    orden = {"min": ", el mas barato", "max": ", el mas caro"}.get(p.get("orden") or "", "")
+    if t == "buscar":
+        r = p.get("rubro")
+        rubro = "en toda la tienda" if r in (None, "*", "") else f"de {r}"
+        return (f"buscar productos {rubro}{orden}" + (f", {p['cant']} articulos" if p.get("cant") else "")
+                + (f", con la condicion '{_legible(p['cond'])}'" if p.get("cond") else "")
+                + (f", sin la marca {p['excluye']}" if p.get("excluye") else ""))
+    if t in ("prod", "ficha"):
+        return f"consultar el producto {_legible(p.get('prod'))}"
+    if t == "compat":
+        return f"averiguar si {_legible(p.get('prod'))} anda con {_legible(p.get('con'))}"
+    if t == "politica":
+        return "contestar la regla de la tienda sobre " + " o ".join(x.replace("_", " ") for x in p.get("tema") or [])
+    if t in ("envio", "destino"):
+        return f"cotizar el envio a {p.get('destino')}"
+    if t == "pago":
+        return "repartir el pago: " + ", ".join(f"{m} {v} por ciento" for m, v in (p.get("medios") or {}).items())
+    if t == "cuenta":
+        return "dar el total del pedido"
+    if t == "condicion":
+        return "separar la condicion que puso el cliente de lo que hace si se cumple"
+    if t == "novende":
+        return "decir que eso no se vende"
+    if t == "preguntar":
+        return "preguntarle al cliente el dato que falta"
+    if t == "humano":
+        return "pasarlo a una persona"
+    if t == "alt":
+        return " o bien ".join(en_palabras(x) for x in p.get("de") or [])
+    return str(t)
+
+
+SINTESIS = """Esto es una revision general, no un turno con el cliente. Sos el interprete de una tienda: partis el mensaje del
+cliente en piezas para que el codigo las resuelva. En estos casos tu traduccion no le dio al codigo lo que necesitaba:
+{casos}
+Contesta en cinco renglones como maximo: que te falta para partir bien los mensajes complejos —una regla, una forma de
+pieza, un dato del estado de la charla, un tipo de ejemplo— y que harias distinto. Concreto, para todos los casos parecidos,
+no para estos."""
+
+
+def sintesis(etiqueta, rep=1):
+    """Despues de las entrevistas: a cada modelo, que le falta en general (9-oct)."""
+    filas = [json.loads(x) for x in open(SALIDA, encoding="utf-8")]
+    ultima = {(f["modelo"], f["id"]): f for f in filas if f["etiqueta"] == etiqueta and f["rep"] == rep}
+    out = os.path.join(AQUI, "desmenuzado_entrevistas.jsonl")
+    for modelo in sorted({m for m, _ in ultima}):
+        malas = [f for (m, _), f in ultima.items() if m == modelo and not f["ok"] and not f["reserva"]]
+        casos = "\n".join(f"- CLIENTE: {next(c for c in CASOS if c[0] == f['id'])[2]}\n  FALTO: "
+                          + "; ".join(en_palabras(json.loads(x)) if x.startswith("{") else x for x in f.get("faltan") or [])
+                          + ("" if f.get("carrito_ok", True) else "; el pedido no quedo con lo que pidio, cantidad y destino")
+                          for f in malas)
+        resp, _ = _crear(modelo, [{"role": "user", "content": SINTESIS.format(casos=casos)}])
+        with open(out, "a", encoding="utf-8") as o:
+            o.write(json.dumps({"etiqueta": etiqueta, "modelo": modelo, "id": "SINTESIS", "respuesta": resp},
+                               ensure_ascii=False) + "\n")
+        print(f"\n== SINTESIS {modelo}\n{resp}", flush=True)
+
+
 def entrevistar(etiqueta, rep=1):
     filas = [json.loads(x) for x in open(SALIDA, encoding="utf-8")]
-    malas = [f for f in filas if f["etiqueta"] == etiqueta and f["rep"] == rep and not f["ok"]
+    ultima = {(f["modelo"], f["forma"], f["id"]): f for f in filas if f["etiqueta"] == etiqueta and f["rep"] == rep}
+    malas = [f for f in ultima.values() if not f["ok"]
              and not f["crudo"].startswith("ERROR") and not f["reserva"] and f["id"] not in NUEVOS]
     out = os.path.join(AQUI, "desmenuzado_entrevistas.jsonl")
     for f in malas:
@@ -927,6 +994,8 @@ def entrevistar(etiqueta, rep=1):
                                       no_lo_vende=T.NO_LO_VENDE)
             esquema = T.esquema_piezas(TIENDA)
             sis = T._con_esquema(sis, {"type": "json_object"}, esquema)  # el esquema a la vista, en texto
+            # Lo que vio de verdad en el turno: con los ejemplos que eligio el codigo (9-oct).
+            sis = T.con_ejemplos(sis, msg, _memoria_texto(conv_de(ctx)))
             base = [{"role": "system", "content": sis}] + charla
         else:
             import nexos as NX
@@ -937,9 +1006,11 @@ def entrevistar(etiqueta, rep=1):
         carrito = ""
         if not f.get("carrito_ok", True):
             carrito = ("Y el pedido tenia que quedar asi, con cantidad y destino: "
-                       + "; ".join(f"{q} de {rx} a {d or 'sin destino'}" for rx, q, d in esp["carrito"])
-                       + f". Quedo: {f.get('carrito')}.")
-        pregunta = PREGUNTA_ENTREVISTA.format(faltan="\n".join("- " + x for x in f.get("faltan") or []) or "- (ninguna)",
+                       + "; ".join(f"{q} de {_legible(rx)} a {d or 'sin destino'}" for rx, q, d in esp["carrito"])
+                       + f". Quedo: " + "; ".join(f"{q} de {p} a {d or 'sin destino'}" for p, q, d in f.get("carrito") or [])
+                       + ".")
+        faltan = [en_palabras(json.loads(x)) if x.startswith("{") else x for x in f.get("faltan") or []]
+        pregunta = PREGUNTA_ENTREVISTA.format(faltan="\n".join("- " + x for x in faltan) or "- (ninguna)",
                                               carrito=carrito + (" Ademas aparecio algo que no se pidio: "
                                                                  + ", ".join(f["prohibidos"]) if f.get("prohibidos") else ""))
         resp, _ = _crear(f["modelo"], base + [{"role": "assistant", "content": f["crudo"][:3000]},
@@ -969,6 +1040,7 @@ def main():
         return 0 if oraculo() else 1
     if a.entrevista:
         entrevistar(a.entrevista)
+        sintesis(a.entrevista)
         return 0
     if a.recorregir:
         recorregir(a.recorregir)
