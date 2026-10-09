@@ -262,8 +262,10 @@ def atomos(llena: dict) -> list:
         out.append({"t": "humano"})
     ped = llena.get("pedido") if isinstance(llena.get("pedido"), dict) else {}
     if ped.get("reparto_pago"):
-        out.append({"t": "pago", "medios": {D.n(str(x.get("medio"))): x.get("porcentaje")
-                                            for x in _lista(ped["reparto_pago"]) if isinstance(x, dict)}})
+        # Dos medios sin nombre —"a definir" 70 y 30— no se pisan: cada uno con su numero de renglon.
+        repartos = [x for x in _lista(ped["reparto_pago"]) if isinstance(x, dict)]
+        out.append({"t": "pago", "medios": {f"{D.n(str(x.get('medio')))} {k}": x.get("porcentaje")
+                                            for k, x in enumerate(repartos)}})
     # Un cambio del pedido lo recalcula el codigo (ficha 68): el total esta implicito.
     if ped.get("pide_total") or ped.get("reparto_pago") or ped.get("cambia"):
         out.append({"t": "cuenta"})
