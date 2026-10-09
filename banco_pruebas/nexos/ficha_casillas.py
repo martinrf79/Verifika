@@ -82,6 +82,19 @@ CASILLAS_2 = """LA FICHA DE LA CHARLA. Estas son TODAS las casillas que puede ll
 - humano: true si pide hablar con una persona."""
 
 
+# LA FICHA 3 (10-oct): dos ajustes de lo que dijo Gemini sobre X15 y Z08, los fallos de ajuste de la ficha 2.
+CASILLAS_3 = CASILLAS_2.replace(
+    'cada uno con la cantidad, el color o variante que pidio y su destino;',
+    'cada uno con la cantidad, el color o variante que pidio y su destino —si en el mismo mensaje pregunta por un color '
+    'y pide anotarlo, va en ese color aunque no este confirmado: el codigo verifica—;').replace(
+    'va aca como si y entonces, ADEMAS de ir en el pedido. [{"si", "entonces"}]',
+    'va aca como si y entonces, ADEMAS de ir en el pedido. Una pregunta hipotetica —"si agrego tal cosa, llego a tal '
+    'otra?"— tambien va aca, y NO cambia el pedido. [{"si", "entonces"}]').replace(
+    '"articulos": [{"producto", "cantidad", "destino"}]', '"articulos": [{"producto", "color", "cantidad", "destino"}]')
+# El formato del pedido no tenia campo de color: el modelo no tenia donde ponerlo y lo mandaba a condiciones (Z08).
+assert CASILLAS_3 != CASILLAS_2
+
+
 def datos_de_la_tienda() -> str:
     """Lo que la tienda ya tiene escrito y el modelo no puede adivinar: lo que no vende con su alternativa, y que
     abarca cada tema de politica. Sale de la fuente, no de una lista de aca."""
@@ -141,7 +154,7 @@ def consigna(procedimiento: str = "") -> str:
     rubros, temas, _ = T._vocabulario(D.TIENDA)
     proc = ("\nPROCEDIMIENTO para descifrar el mensaje, seguilo paso por paso:\n" + procedimiento + "\n") if procedimiento else ""
     if FICHA["version"] >= 2:
-        return CONSIGNA.format(casillas=CASILLAS_2, rubros=", ".join(rubros), temas="(abajo, con lo que abarca cada uno)",
+        return CONSIGNA.format(casillas=CASILLAS_3 if FICHA["version"] >= 3 else CASILLAS_2, rubros=", ".join(rubros), temas="(abajo, con lo que abarca cada uno)",
                                procedimiento=proc) + "\n\n" + datos_de_la_tienda()
     return CONSIGNA.format(casillas=CASILLAS, rubros=", ".join(rubros), temas=", ".join(temas), procedimiento=proc)
 
@@ -202,10 +215,17 @@ def atomos(llena: dict) -> list:
 _SIN_DESTINO = ("", "nada", "sin destino", "sin definir", "ninguno", "no definido", "a definir", "null", "none")
 
 
+def _con_color(a: dict) -> str:
+    prod, color = str(a.get("producto") or ""), str(a.get("color") or "")
+    if not color or D.n(color) in _SIN_DESTINO or D.n(color) in D.n(prod):
+        return prod
+    return f"{prod} {color}"
+
+
 def carrito(llena: dict, ctx) -> list:
     ped = llena.get("pedido") if isinstance(llena.get("pedido"), dict) else {}
     if ped.get("cambia") and ped.get("articulos"):
-        return [(str(a.get("producto") or ""), int(a.get("cantidad") or 1),
+        return [(_con_color(a), int(a.get("cantidad") or 1),
                  "" if D.n(str(a.get("destino") or "")) in _SIN_DESTINO else str(a["destino"]))
                 for a in _lista(ped["articulos"]) if isinstance(a, dict)]
     return [(D.POR_ID[p]["nombre"], q, d) for p, q, d in (ctx or {}).get("carrito", [])]
@@ -285,12 +305,14 @@ def informe(etiqueta):
                   + ("" if f.get("carrito_ok", True) else " | pedido mal: " + str(f.get("carrito"))[:120]))
 
 
-def ronda(etiqueta, version):
+def ronda(etiqueta, version, casos=""):
     procedimiento = ""
     if version:
         procedimiento = json.load(open(PROCS, encoding="utf-8"))[str(version)]
+    # Para iterar, solo los que fallan y unos de control (10-oct, Martin: usar bien los recursos).
+    lista = [c for c in D.CASOS if not casos or c[0] in casos.split(",")]
     with ThreadPoolExecutor(3) as ex:
-        for f in ex.map(lambda c: uno(c, etiqueta, procedimiento), D.CASOS):
+        for f in ex.map(lambda c: uno(c, etiqueta, procedimiento), lista):
             print(f"{f['id']}: {'BIEN' if f['ok'] else 'MAL '} {f['bien']}/{f['partes']}", flush=True)
     informe(etiqueta)
 
@@ -390,12 +412,13 @@ def main():
     ap.add_argument("--version", type=int, default=1)
     ap.add_argument("--informe")
     ap.add_argument("--reglas", help="etiqueta de la ronda de la que salen las reglas por casilla")
-    ap.add_argument("--ficha", type=int, default=1, help="1 la ficha original, 2 con las definiciones corregidas")
+    ap.add_argument("--ficha", type=int, default=1, help="1 la original, 2 y 3 con las definiciones corregidas")
+    ap.add_argument("--casos", default="", help="solo estos casos, separados por coma")
     a = ap.parse_args()
     FICHA["version"] = a.ficha
     D.preparar()
     if a.ronda:
-        ronda(a.ronda, a.con)
+        ronda(a.ronda, a.con, a.casos)
     elif a.procedimiento:
         procedimiento(a.procedimiento, a.version)
     elif a.reglas:
